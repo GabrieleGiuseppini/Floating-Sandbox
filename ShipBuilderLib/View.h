@@ -119,59 +119,65 @@ public:
 
     void EnableVisualGrid(bool doEnable);
 
-    void SetPrimaryLayer(LayerType value)
+    void SetPrimaryVisualization(VisualizationType visualization)
     {
-        mPrimaryLayer = value;
+        mPrimaryVisualization = visualization;
     }
 
-    float GetOtherLayersOpacity() const
+    float GetOtherVisualizationsOpacity() const
     {
-        return mOtherLayersOpacity;
+        return mOtherVisualizationsOpacity;
     }
 
-    void SetOtherLayersOpacity(float value)
+    void SetOtherVisualizationsOpacity(float value)
     {
-        mOtherLayersOpacity = value;
+        mOtherVisualizationsOpacity = value;
     }
 
     // Sticky, always drawn
     void UploadBackgroundTexture(RgbaImageData && texture);
 
     //
-    // Structural (all sticky)
+    // Game viz (all sticky)
+    //
+
+    void UploadGameVisualizationTexture(RgbaImageData const & texture);
+
+    void RemoveGameVisualizationTexture();
+
+    bool HasGameVisualizationTexture() const
+    {
+        return mHasGameVisualizationTexture;
+    }
+
+    //
+    // Structural layer viz (all sticky)
     //
 
     void UploadStructuralLayerVisualizationTexture(RgbaImageData const & texture);
 
-    void UpdateStructuralLayerVisualizationTexture(
-        rgbaColor const * regionPixels,
-        int xOffset,
-        int yOffset,
-        int width,
-        int height);
+    void RemoveStructuralLayerVisualizationTexture();
+
+    bool HasStructuralLayerVisualizationTexture() const
+    {
+        return mHasStructuralLayerVisualizationTexture;
+    }
 
     //
-    // Electrical (all sticky)
+    // Electrical layer viz (all sticky)
     //
 
     void UploadElectricalLayerVisualizationTexture(RgbaImageData const & texture);
-
-    void UpdateElectricalLayerVisualizationTexture(
-        rgbaColor const * regionPixels,
-        int xOffset,
-        int yOffset,
-        int width,
-        int height);
 
     void RemoveElectricalLayerVisualizationTexture();
 
     bool HasElectricalLayerVisualizationTexture() const
     {
-        return mHasElectricalTexture;
+        return mHasElectricalLayerVisualizationTexture;
     }
 
     //
-    // Ropes (all sticky)
+    // Ropes layer viz (all sticky)
     //
 
     void UploadRopesLayerVisualization(RopeBuffer const & ropeBuffer);
@@ -184,7 +190,7 @@ public:
     }
 
     //
-    // Texture (all sticky)
+    // Texture layer viz (all sticky)
     //
 
     void UploadTextureLayerVisualizationTexture(RgbaImageData const & texture);
@@ -193,7 +199,7 @@ public:
 
     bool HasTextureLayerVisualizationTexture() const
     {
-        return mHasTextureTexture;
+        return mHasTextureLayerVisualizationTexture;
     }
 
     //
@@ -241,7 +247,11 @@ private:
 
     void UploadTextureVertices(GameOpenGLVBO const & vbo);
 
-    void RenderRopes();
+    void RenderGameVisualizationTexture();
+    void RenderStructuralLayerVisualizationTexture();
+    void RenderElectricalLayerVisualizationTexture();
+    void RenderRopesLayerVisualization();
+    void RenderTextureLayerVisualizationTexture();
 
     vec3f GetOverlayColor(OverlayMode mode) const;
 
@@ -405,31 +415,37 @@ private:
     GameOpenGLVAO mCanvasVAO;
     GameOpenGLVBO mCanvasVBO;
 
-    // Structural visualization
-    GameOpenGLVAO mStructuralTextureVAO;
-    GameOpenGLVBO mStructuralTextureVBO;
-    GameOpenGLTexture mStructuralTextureOpenGLHandle;
-    bool mHasStructuralTexture;
+    // Game visualization
+    GameOpenGLVAO mGameVisualizationTextureVAO;
+    GameOpenGLVBO mGameVisualizationTextureVBO;
+    GameOpenGLTexture mGameVisualizationTextureOpenGLHandle;
+    bool mHasGameVisualizationTexture;
 
-    // Electrical visualization
-    GameOpenGLVAO mElectricalTextureVAO;
-    GameOpenGLVBO mElectricalTextureVBO;
-    GameOpenGLTexture mElectricalTextureOpenGLHandle;
-    bool mHasElectricalTexture;
+    // Structural layer visualization
+    GameOpenGLVAO mStructuralLayerVisualizationTextureVAO;
+    GameOpenGLVBO mStructuralLayerVisualizationTextureVBO;
+    GameOpenGLTexture mStructuralLayerVisualizationTextureOpenGLHandle;
+    bool mHasStructuralLayerVisualizationTexture;
 
-    // Ropes visualization
+    // Electrical layer visualization
+    GameOpenGLVAO mElectricalLayerVisualizationTextureVAO;
+    GameOpenGLVBO mElectricalLayerVisualizationTextureVBO;
+    GameOpenGLTexture mElectricalLayerVisualizationTextureOpenGLHandle;
+    bool mHasElectricalLayerVisualizationTexture;
+
+    // Ropes layer visualization
     GameOpenGLVAO mRopesVAO;
     GameOpenGLVBO mRopesVBO;
     size_t mRopeCount;
 
-    // Texture visualization
-    GameOpenGLVAO mTextureTextureVAO;
-    GameOpenGLVBO mTextureTextureVBO;
-    GameOpenGLTexture mTextureTextureOpenGLHandle;
-    bool mHasTextureTexture;
+    // Texture layer visualization
+    GameOpenGLVAO mTextureLayerVisualizationTextureVAO;
+    GameOpenGLVBO mTextureLayerVisualizationTextureVBO;
+    GameOpenGLTexture mTextureLayerVisualizationTextureOpenGLHandle;
+    bool mHasTextureLayerVisualizationTexture;
 
-    // Layers opacity
-    float mOtherLayersOpacity;
+    // Visualizations opacity
+    float mOtherVisualizationsOpacity;
 
     // Grid
     GameOpenGLVAO mGridVAO;
@@ -460,7 +476,7 @@ private:
     // Settings from outside
     //
 
-    LayerType mPrimaryLayer;
+    VisualizationType mPrimaryVisualization;
 };
 
 }

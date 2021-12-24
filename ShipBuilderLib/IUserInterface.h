@@ -37,10 +37,11 @@ public:
     // Notifies of a (possible) change in the presence of a layer
     virtual void OnLayerPresenceChanged() = 0;
 
-    // Notifies of a (possible) change in the primary layer
-    virtual void OnPrimaryLayerChanged(LayerType primaryLayer) = 0;
+    // Notifies of a (possible) change in the primary visualization
+    virtual void OnPrimaryVisualizationChanged(VisualizationType primaryVisualization) = 0;
 
-    // Notifies of a (possible) change in a layer's visualization mode
+    // Notifies of a (possible) change in a visualization mode
+    virtual void OnGameVisualizationModeChanged(GameVisualizationModeType mode) = 0;
     virtual void OnStructuralLayerVisualizationModeChanged(StructuralLayerVisualizationModeType mode) = 0;
     virtual void OnElectricalLayerVisualizationModeChanged(ElectricalLayerVisualizationModeType mode) = 0;
     virtual void OnRopesLayerVisualizationModeChanged(RopesLayerVisualizationModeType mode) = 0;

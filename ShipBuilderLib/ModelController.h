@@ -74,8 +74,6 @@ public:
 
     ModelValidationResults ValidateModel() const;
 
-    void UploadVisualizations(View & view);
-
 #ifdef _DEBUG
     bool IsInEphemeralVisualization() const
     {
@@ -147,10 +145,6 @@ public:
         ShipSpaceRect const & sourceRegion,
         ShipSpaceCoordinates const & targetOrigin);
 
-    void SetStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType mode);
-
-    RgbaImageData const & GetStructuralLayerVisualization() const;
-
     //
     // Electrical
     //
@@ -180,8 +174,6 @@ public:
         ElectricalLayerData const & sourceLayerRegion,
         ShipSpaceRect const & sourceRegion,
         ShipSpaceCoordinates const & targetOrigin);
-
-    void SetElectricalLayerVisualizationMode(std::optional<ElectricalLayerVisualizationModeType> mode);
 
     //
     // Ropes
@@ -219,8 +211,6 @@ public:
 
     void RestoreRopesLayerForEphemeralVisualization(RopesLayerData const & sourceLayer);
 
-    void SetRopesLayerVisualizationMode(std::optional<RopesLayerVisualizationModeType> mode);
-
     //
     // Texture
     //
@@ -237,7 +227,23 @@ public:
         std::unique_ptr<TextureLayerData> textureLayer,
         std::optional<std::string> originalTextureArtCredits);
 
-    void SetTextureLayerVisualizationMode(std::optional<TextureLayerVisualizationModeType> mode);
+    //
+    // Visualizations
+    //
+
+    void SetGameVisualizationMode(GameVisualizationModeType mode);
+
+    void SetStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType mode);
+
+    RgbaImageData const & GetStructuralLayerVisualization() const;
+
+    void SetElectricalLayerVisualizationMode(ElectricalLayerVisualizationModeType mode);
+
+    void SetRopesLayerVisualizationMode(RopesLayerVisualizationModeType mode);
+
+    void SetTextureLayerVisualizationMode(TextureLayerVisualizationModeType mode);
+
+    void UploadVisualizations(View & view);
 
 private:
 
@@ -276,6 +282,8 @@ private:
         bool doContiguousOnly,
         typename LayerTypeTraits<TLayer>::layer_data_type const & layer);
 
+    void UpdateGameVisualization(ShipSpaceRect const & region);
+
     void UpdateStructuralLayerVisualization(ShipSpaceRect const & region);
 
     void UpdateElectricalLayerVisualization(ShipSpaceRect const & region);
@@ -307,18 +315,22 @@ private:
     // Visualizations
     //
 
-    std::optional<StructuralLayerVisualizationModeType> mStructuralLayerVisualizationMode;
+    GameVisualizationModeType mGameVisualizationMode;
+    // TODOHERE: texture members
+    std::optional<ImageRect> mDirtyGameVisualizationRegion;
+
+    StructuralLayerVisualizationModeType mStructuralLayerVisualizationMode;
     std::unique_ptr<RgbaImageData> mStructuralLayerVisualizationTexture;
     std::optional<ImageRect> mDirtyStructuralLayerVisualizationRegion;
 
-    std::optional<ElectricalLayerVisualizationModeType> mElectricalLayerVisualizationMode;
+    ElectricalLayerVisualizationModeType mElectricalLayerVisualizationMode;
     std::unique_ptr<RgbaImageData> mElectricalLayerVisualizationTexture;
     std::optional<ImageRect> mDirtyElectricalLayerVisualizationRegion;
 
-    std::optional<RopesLayerVisualizationModeType> mRopesLayerVisualizationMode;
+    RopesLayerVisualizationModeType mRopesLayerVisualizationMode;
     bool mIsRopesLayerVisualizationDirty;
 
-    std::optional<TextureLayerVisualizationModeType> mTextureLayerVisualizationMode;
+    TextureLayerVisualizationModeType mTextureLayerVisualizationMode;
     bool mIsTextureLayerVisualizationDirty;
 
     //

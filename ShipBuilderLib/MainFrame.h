@@ -88,8 +88,9 @@ public:
 
     void OnLayerPresenceChanged() override;
 
-    void OnPrimaryLayerChanged(LayerType primaryLayer) override;
+    void OnPrimaryVisualizationChanged(VisualizationType primaryVisualization) override;
 
+    void OnGameVisualizationModeChanged(GameVisualizationModeType mode) override;
     void OnStructuralLayerVisualizationModeChanged(StructuralLayerVisualizationModeType mode) override;
     void OnElectricalLayerVisualizationModeChanged(ElectricalLayerVisualizationModeType mode) override;
     void OnRopesLayerVisualizationModeChanged(RopesLayerVisualizationModeType mode) override;
@@ -122,8 +123,8 @@ private:
     wxPanel * CreateFilePanel(wxWindow * parent);
     wxPanel * CreateShipSettingsPanel(wxWindow * parent);
     wxPanel * CreateToolSettingsPanel(wxWindow * parent);
-    wxPanel * CreateLayersPanel(wxWindow * parent);
-    wxPanel * CreateLayersVisualizationPanel(wxWindow * parent);
+    wxPanel * CreateVisualizationsPanel(wxWindow * parent);
+    wxPanel * CreateVisualizationDetailsPanel(wxWindow * parent);
     wxPanel * CreateToolbarPanel(wxWindow * parent);
     wxPanel * CreateUndoPanel(wxWindow * parent);
     wxPanel * CreateWorkPanel(wxWindow * parent);
@@ -237,9 +238,11 @@ private:
 
     void DeviateFocus();
 
-    float OtherLayersOpacitySliderToOpacity(int sliderValue);
+    float OtherVisualizationsOpacitySliderToOpacity(int sliderValue) const;
 
-    int OtherLayersOpacityToSlider(float opacityValue);
+    int OtherVisualizationsOpacityToSlider(float opacityValue) const;
+
+    size_t LayerToVisualizationIndex(LayerType layer) const;
 
     //
     // UI Consistency
@@ -255,8 +258,9 @@ private:
 
     void ReconciliateUIWithLayerPresence();
 
-    void ReconciliateUIWithPrimaryLayerSelection(LayerType primaryLayer);
+    void ReconciliateUIWithPrimaryVisualizationSelection(VisualizationType primaryVisualization);
 
+    void ReconciliateUIWithGameVisualizationModeSelection(GameVisualizationModeType mode);
     void ReconciliateUIWithStructuralLayerVisualizationModeSelection(StructuralLayerVisualizationModeType mode);
     void ReconciliateUIWithElectricalLayerVisualizationModeSelection(ElectricalLayerVisualizationModeType mode);
     void ReconciliateUIWithRopesLayerVisualizationModeSelection(RopesLayerVisualizationModeType mode);
@@ -310,20 +314,26 @@ private:
     wxSizer * mToolSettingsPanelsSizer;
     std::vector<std::tuple<ToolType, wxPanel *>> mToolSettingsPanels;
 
-    // Layers panel
-    std::array<BitmapToggleButton *, LayerCount> mLayerSelectButtons;
+    // Visualization panel
+    std::array<BitmapToggleButton *, VisualizationCount> mVisualizationSelectButtons;
     std::array<BitmapButton *, LayerCount> mLayerExportButtons;
     std::array<BitmapButton *, LayerCount> mLayerDeleteButtons;
 
-    // Layers visualization panel
-    wxSlider * mOtherLayersOpacitySlider;
-    wxSizer * mLayerVisualizationModePanelsSizer;
-    std::array<wxPanel *, LayerCount> mLayerVisualizationModePanels;
-    BitmapToggleButton * mStructuralLayerParticleVisualizationModeButton;
-    BitmapToggleButton * mStructuralLayerAutoTexturizationVisualizationModeButton;
-    BitmapToggleButton * mStructuralLayerTextureVisualizationModeButton;
-    BitmapToggleButton * mTextureLayerNoVisualizationModeButton;
-    BitmapToggleButton * mTextureLayerMatteModeButton;
+    // Visualization details panel
+    wxSlider * mOtherVisualizationsOpacitySlider;
+    wxSizer * mVisualizationModePanelsSizer;
+    std::array<wxPanel *, VisualizationCount> mVisualizationModePanels;
+    BitmapToggleButton * mGameVisualizationNoneModeButton;
+    BitmapToggleButton * mGameVisualizationAutoTexturizationModeButton;
+    BitmapToggleButton * mGameVisualizationTextureModeButton;
+    BitmapToggleButton * mStructuralLayerVisualizationNoneModeButton;
+    BitmapToggleButton * mStructuralLayerVisualizationPixelModeButton;
+    BitmapToggleButton * mElectricalLayerVisualizationNoneModeButton;
+    BitmapToggleButton * mElectricalLayerVisualizationPixelModeButton;
+    BitmapToggleButton * mRopesLayerVisualizationNoneModeButton;
+    BitmapToggleButton * mRopesLayerVisualizationLinesModeButton;
+    BitmapToggleButton * mTextureLayerVisualizationNoneModeButton;
+    BitmapToggleButton * mTextureLayerVisualizationMatteModeButton;
 
     // Toolbar panel
     wxSizer * mToolbarPanelsSizer;

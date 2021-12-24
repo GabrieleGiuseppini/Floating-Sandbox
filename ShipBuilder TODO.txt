@@ -11,32 +11,30 @@ https://gamejolt.com/x/permalink/comment/11730705
 			- Comment-out triangulation
 			! We will remove triangulation shortly
 	+ Comment at ShipFactory::MakeTextureCoords
+	+ Do test on autotexturization: confirm that bottom-left triangle is textured based on quad above *and* quad to the right
 
-	- Do test on autotexturization: confirm that bottom-left triangle is textured based on quad above *and* quad to the right
-
-	- New SB enum: VisualizationType
-		- Game, StructuralLayer, ...
-	- New viz mode enum: GameVizMode; values: auto-tex, texture, none
-		- StructuralVizMode instead becomes: "pixel", none
-
-	- VisualizationType is now the type of PrimaryLayer
-		- View
-		- Controller
-		- MainFrame
-
-	- UI:
-		- New "layer" row above Structural for Game viz
-			- Toolbar tools for this layer is same as structural
-			- No new/remove/import/export buttons
-			- Viz mode buttons
-		- StructuralLayer has just pixel and "none" viz modes
-
-	- ShipBuilder::View has two new "texture" viz: Game
+	+ New SB enum: VisualizationType
+		+ Game, StructuralLayer, ...
+	+ New viz mode enum: GameVizMode; values: auto-tex, texture, none
+		+ StructuralVizMode instead becomes: "pixel", none
+	+ VisualizationType is now the type of PrimaryLayer
+		+ View
+		+ Controller
+		+ MainFrame
+	+ UI:
+		+ New "layer" row above Structural for Game viz
+			+ Toolbar tools for this layer is same as structural
+			+ No new/remove/import/export buttons
+			+ Viz mode buttons
+		+ StructuralLayer has just pixel and "none" viz modes
+		+ All viz modes have "none"
+	+ ShipBuilder::View has two new "texture" viz: Game
 		! StructuralLayer viz texture goes back to being a small texture of size=ShipSize
 
-	- ModelController visualizations:
-		- New Game viz:
-			- Updated each time we update either Structural or Texture vizs
+	= ModelController visualizations:
+		+ Controller & ModelController: viz mode is not anymore std::opt (as we have None)
+		= New Game viz:
+			+ Updated each time we update either Structural or Texture vizs
 			- Viz members:
 				- Auto-tex texture
 				- own texture

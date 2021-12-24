@@ -160,8 +160,11 @@ public:
 
     void ResizeShip(ShipSpaceSize const & newSize);
 
-    LayerType GetPrimaryLayer() const;
-    void SelectPrimaryLayer(LayerType primaryLayer);
+    VisualizationType GetPrimaryVisualization() const;
+    void SelectPrimaryVisualization(VisualizationType primaryVisualization);
+
+    GameVisualizationModeType GetGameVisualizationMode() const;
+    void SetGameVisualizationMode(GameVisualizationModeType mode);
 
     StructuralLayerVisualizationModeType GetStructuralLayerVisualizationMode() const;
     void SetStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType mode);
@@ -175,7 +178,7 @@ public:
     TextureLayerVisualizationModeType GetTextureLayerVisualizationMode() const;
     void SetTextureLayerVisualizationMode(TextureLayerVisualizationModeType mode);
 
-    void SetOtherLayersOpacity(float opacity);
+    void SetOtherVisualizationsOpacity(float opacity);
 
     std::optional<ToolType> GetCurrentTool() const;
     void SetCurrentTool(std::optional<ToolType> tool);
@@ -251,7 +254,7 @@ private:
         std::optional<ShipPhysicsData> && physicsData,
         std::optional<std::optional<ShipAutoTexturizationSettings>> && autoTexturizationSettings);
 
-    void InternalSelectPrimaryLayer(LayerType primaryLayer);
+    void InternalSelectPrimaryVisualization(VisualizationType primaryVisualization);
 
     void InternalUpdateVisualizationModes();
 
@@ -283,8 +286,9 @@ private:
     // State
     //
 
-    LayerType mPrimaryLayer;
+    VisualizationType mPrimaryVisualization;
 
+    GameVisualizationModeType mGameVisualizationMode;
     StructuralLayerVisualizationModeType mStructuralLayerVisualizationMode;
     ElectricalLayerVisualizationModeType mElectricalLayerVisualizationMode;
     RopesLayerVisualizationModeType mRopesLayerVisualizationMode;
@@ -293,7 +297,7 @@ private:
     std::optional<ToolType> mCurrentToolType;
     std::unique_ptr<Tool> mCurrentTool;
 
-    // The last tool that was used for each primary layer
+    // The last tool that was used for each layer
     std::array<std::optional<ToolType>, LayerCount> mLastToolTypePerLayer;
 };
 

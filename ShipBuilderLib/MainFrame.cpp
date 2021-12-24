@@ -50,7 +50,7 @@ int constexpr ButtonMargin = 4;
 
 ImageSize constexpr MaterialSwathSize(80, 100);
 
-int constexpr MaxLayerTransparency = 128;
+int constexpr MaxVisualizationTransparency = 128;
 
 MainFrame::MainFrame(
     wxApp * mainApp,
@@ -180,7 +180,7 @@ MainFrame::MainFrame(
         {
             wxBoxSizer * row1Col0VSizer = new wxBoxSizer(wxVERTICAL);
 
-            // Layers panel
+            // Visualizations panel
             {
                 wxSizer * tmpVSizer = new wxBoxSizer(wxVERTICAL);
 
@@ -195,20 +195,20 @@ MainFrame::MainFrame(
                 }
 
                 {
-                    wxPanel * layersPanel = CreateLayersPanel(mMainPanel);
+                    wxPanel * panel = CreateVisualizationsPanel(mMainPanel);
 
                     tmpVSizer->Add(
-                        layersPanel,
+                        panel,
                         0,
                         wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxRIGHT,
                         4);
                 }
 
                 {
-                    wxPanel * layersVisualizationPanel = CreateLayersVisualizationPanel(mMainPanel);
+                    wxPanel * panel = CreateVisualizationDetailsPanel(mMainPanel);
 
                     tmpVSizer->Add(
-                        layersVisualizationPanel,
+                        panel,
                         0,
                         wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxRIGHT,
                         4);
@@ -521,8 +521,8 @@ MainFrame::MainFrame(
 
     // Sync UI with view parameters
 
-    mOtherLayersOpacitySlider->SetValue(
-        OtherLayersOpacityToSlider(mView->GetOtherLayersOpacity()));
+    mOtherVisualizationsOpacitySlider->SetValue(
+        OtherVisualizationsOpacityToSlider(mView->GetOtherVisualizationsOpacity()));
 }
 
 void MainFrame::OpenForNewShip()
@@ -625,11 +625,19 @@ void MainFrame::OnLayerPresenceChanged()
     }
 }
 
-void MainFrame::OnPrimaryLayerChanged(LayerType primaryLayer)
+void MainFrame::OnPrimaryVisualizationChanged(VisualizationType primaryVisualization)
 {
     if (mController)
     {
-        ReconciliateUIWithPrimaryLayerSelection(primaryLayer);
+        ReconciliateUIWithPrimaryVisualizationSelection(primaryVisualization);
+    }
+}
+
+void MainFrame::OnGameVisualizationModeChanged(GameVisualizationModeType mode)
+{
+    if (mController)
+    {
+        ReconciliateUIWithGameVisualizationModeSelection(mode);
     }
 }
 
@@ -1110,7 +1118,7 @@ wxPanel * MainFrame::CreateToolSettingsPanel(wxWindow * parent)
     return panel;
 }
 
-wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
+wxPanel * MainFrame::CreateVisualizationsPanel(wxWindow * parent)
 {
     wxPanel * panel = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 
@@ -1118,45 +1126,50 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
 
     rootVSizer->AddSpacer(10);
 
-    // Layer management
+    // Visualizations management
     {
-        wxGridBagSizer * layerManagerSizer = new wxGridBagSizer(0, 0);
+        wxGridBagSizer * visualizationManagerSizer = new wxGridBagSizer(0, 0);
 
         {
-            auto const createButtonRow = [&](LayerType layer, int iRow)
+            auto const createButtonRow = [&](VisualizationType visualization, int iRow)
             {
                 wxString const sureQuestion = _("The current changes to the layer will be lost; are you sure you want to continue?");
-
-                size_t iLayer = static_cast<size_t>(layer);
 
                 // Selector
                 {
                     std::string buttonBitmapName;
                     wxString buttonTooltip;
-                    switch (layer)
+                    switch (visualization)
                     {
-                        case LayerType::Electrical:
+                        case VisualizationType::Game:
+                        {
+                            buttonBitmapName = "game_visualization";
+                            buttonTooltip = _("Game view");
+                            break;
+                        }
+
+                        case VisualizationType::ElectricalLayer:
                         {
                             buttonBitmapName = "electrical_layer";
                             buttonTooltip = _("Electrical layer");
                             break;
                         }
 
-                        case LayerType::Ropes:
+                        case VisualizationType::RopesLayer:
                         {
                             buttonBitmapName = "ropes_layer";
                             buttonTooltip = _("Ropes layer");
                             break;
                         }
 
-                        case LayerType::Structural:
+                        case VisualizationType::StructuralLayer:
                         {
                             buttonBitmapName = "structural_layer";
                             buttonTooltip = _("Structural layer");
                             break;
                         }
 
-                        case LayerType::Texture:
+                        case VisualizationType::TextureLayer:
                         {
                             buttonBitmapName = "texture_layer";
                             buttonTooltip = _("Texture layer");
@@ -1167,36 +1180,37 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
                     auto * selectorButton = new BitmapToggleButton(
                         panel,
                         mResourceLocator.GetBitmapFilePath(buttonBitmapName),
-                        [this, layer]()
+                        [this, visualization]()
                         {
-                            mController->SelectPrimaryLayer(layer);
+                            mController->SelectPrimaryVisualization(visualization);
                         },
                         buttonTooltip);
 
-                    layerManagerSizer->Add(
+                    visualizationManagerSizer->Add(
                         selectorButton,
                         wxGBPosition(iRow * 3, 0),
                         wxGBSpan(2, 1),
                         wxALIGN_CENTER_VERTICAL,
                         0);
 
-                    mLayerSelectButtons[iLayer] = selectorButton;
+                    mVisualizationSelectButtons[static_cast<size_t>(visualization)] = selectorButton;
                 }
 
                 // New
+                if (visualization != VisualizationType::Game)
                 {
                     BitmapButton * newButton;
 
-                    if (layer != LayerType::Texture)
+                    if (visualization != VisualizationType::TextureLayer)
                     {
                         newButton = new BitmapButton(
                             panel,
                             mResourceLocator.GetBitmapFilePath("new_layer_button"),
-                            [this, layer, sureQuestion]()
+                            [this, visualization, sureQuestion]()
                             {
-                                switch (layer)
+                                switch (visualization)
                                 {
-                                    case LayerType::Electrical:
+                                    case VisualizationType::ElectricalLayer:
                                     {
                                         if (mController->HasModelLayer(LayerType::Electrical)
                                             && mController->IsModelDirty(LayerType::Electrical))
@@ -1213,7 +1227,7 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
                                         break;
                                     }
 
-                                    case LayerType::Ropes:
+                                    case VisualizationType::RopesLayer:
                                     {
                                         if (mController->HasModelLayer(LayerType::Ropes)
                                             && mController->IsModelDirty(LayerType::Ropes))
@@ -1230,7 +1244,7 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
                                         break;
                                     }
 
-                                    case LayerType::Structural:
+                                    case VisualizationType::StructuralLayer:
                                     {
                                         if (mController->HasModelLayer(LayerType::Structural)
                                             && mController->IsModelDirty(LayerType::Structural))
@@ -1247,7 +1261,8 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
                                         break;
                                     }
 
-                                    case LayerType::Texture:
+                                    case VisualizationType::Game:
+                                    case VisualizationType::TextureLayer:
                                     {
                                         assert(false);
                                         break;
@@ -1278,7 +1293,7 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
                             _("Import this layer from an image file."));
                     }
 
-                    layerManagerSizer->Add(
+                    visualizationManagerSizer->Add(
                         newButton,
                         wxGBPosition(iRow * 3, 1),
                         wxGBSpan(1, 1),
@@ -1287,20 +1302,21 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
                 }
 
                 // Import
+                if (visualization != VisualizationType::Game)
                 {
                     // TODO: also here ask user if sure when the layer is dirty
 
                     auto * importButton = new BitmapButton(
                         panel,
                         mResourceLocator.GetBitmapFilePath("open_layer_button"),
-                        [this, layer]()
+                        [this, visualization]()
                         {
                             // TODO
                             UnderConstructionDialog::Show(this, mResourceLocator);
                         },
                         _("Import this layer from another ship."));
 
-                    layerManagerSizer->Add(
+                    visualizationManagerSizer->Add(
                         importButton,
                         wxGBPosition(iRow * 3 + 1, 1),
                         wxGBSpan(1, 1),
@@ -1309,19 +1325,20 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
                 }
 
                 // Delete
+                if (visualization != VisualizationType::Game)
                 {
                     BitmapButton * deleteButton;
 
-                    if (layer != LayerType::Structural)
+                    if (visualization != VisualizationType::StructuralLayer)
                     {
                         deleteButton = new BitmapButton(
                             panel,
                             mResourceLocator.GetBitmapFilePath("delete_layer_button"),
-                            [this, layer, sureQuestion]()
+                            [this, visualization, sureQuestion]()
                             {
-                                switch (layer)
+                                switch (visualization)
                                 {
-                                    case LayerType::Electrical:
+                                    case VisualizationType::ElectricalLayer:
                                     {
                                         assert(mController->HasModelLayer(LayerType::Electrical));
 
@@ -1339,7 +1356,7 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
                                         break;
                                     }
 
-                                    case LayerType::Ropes:
+                                    case VisualizationType::RopesLayer:
                                     {
                                         assert(mController->HasModelLayer(LayerType::Ropes));
 
@@ -1357,13 +1374,7 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
                                         break;
                                     }
 
-                                    case LayerType::Structural:
-                                    {
-                                        assert(false);
-                                        break;
-                                    }
-
-                                    case LayerType::Texture:
+                                    case VisualizationType::TextureLayer:
                                     {
                                         assert(mController->HasModelLayer(LayerType::Texture));
 
@@ -1380,11 +1391,18 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
 
                                         break;
                                     }
+
+                                    case VisualizationType::Game:
+                                    case VisualizationType::StructuralLayer:
+                                    {
+                                        assert(false);
+                                        break;
+                                    }
                                 }
                             },
                             _("Remove this layer."));
 
-                        layerManagerSizer->Add(
+                        visualizationManagerSizer->Add(
                             deleteButton,
                             wxGBPosition(iRow * 3, 2),
                             wxGBSpan(1, 1),
@@ -1396,27 +1414,28 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
                         deleteButton = nullptr;
                     }
 
-                    mLayerDeleteButtons[iLayer] = deleteButton;
+                    mLayerDeleteButtons[static_cast<size_t>(VisualizationToLayer(visualization))] = deleteButton;
                 }
 
                 // Export
+                if (visualization != VisualizationType::Game)
                 {
                     BitmapButton * exportButton;
 
-                    if (layer == LayerType::Structural
-                        || layer == LayerType::Texture)
+                    if (visualization == VisualizationType::StructuralLayer
+                        || visualization == VisualizationType::TextureLayer)
                     {
                         exportButton = new BitmapButton(
                             panel,
                             mResourceLocator.GetBitmapFilePath("save_layer_button"),
-                            [this, layer]()
+                            [this, visualization]()
                             {
                                 // TODO
                                 UnderConstructionDialog::Show(this, mResourceLocator);
                             },
                             _("Export this layer to a file."));
 
-                        layerManagerSizer->Add(
+                        visualizationManagerSizer->Add(
                             exportButton,
                             wxGBPosition(iRow * 3 + 1, 2),
                             wxGBSpan(1, 1),
@@ -1428,11 +1447,11 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
                         exportButton = nullptr;
                     }
 
-                    mLayerExportButtons[iLayer] = exportButton;
+                    mLayerExportButtons[static_cast<size_t>(VisualizationToLayer(visualization))] = exportButton;
                 }
 
                 // Spacer
-                layerManagerSizer->Add(
+                visualizationManagerSizer->Add(
                     new wxGBSizerItem(
                         -1,
                         12,
@@ -1440,17 +1459,19 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
                         wxGBSpan(1, LayerCount)));
             };
 
-            createButtonRow(LayerType::Structural, 0);
+            createButtonRow(VisualizationType::Game, 0);
 
-            createButtonRow(LayerType::Electrical, 1);
+            createButtonRow(VisualizationType::StructuralLayer, 1);
 
-            createButtonRow(LayerType::Ropes, 2);
+            createButtonRow(VisualizationType::ElectricalLayer, 2);
 
-            createButtonRow(LayerType::Texture, 3);
+            createButtonRow(VisualizationType::RopesLayer, 3);
+
+            createButtonRow(VisualizationType::TextureLayer, 4);
         }
 
         rootVSizer->Add(
-            layerManagerSizer,
+            visualizationManagerSizer,
             0,
             wxALIGN_CENTER_HORIZONTAL,
             0);
@@ -1461,28 +1482,28 @@ wxPanel * MainFrame::CreateLayersPanel(wxWindow * parent)
     return panel;
 }
 
-wxPanel * MainFrame::CreateLayersVisualizationPanel(wxWindow * parent)
+wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
 {
     wxPanel * panel = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 
     wxBoxSizer * rootHSizer = new wxBoxSizer(wxHORIZONTAL);
 
-    // Other layers opacity slider
+    // Other visualizations opacity slider
     {
-        mOtherLayersOpacitySlider = new wxSlider(panel, wxID_ANY, 0, 0, MaxLayerTransparency,
+        mOtherVisualizationsOpacitySlider = new wxSlider(panel, wxID_ANY, 0, 0, MaxVisualizationTransparency,
             wxDefaultPosition, wxDefaultSize, wxSL_VERTICAL | wxSL_INVERSE);
 
-        mOtherLayersOpacitySlider->Bind(
+        mOtherVisualizationsOpacitySlider->Bind(
             wxEVT_SLIDER,
             [this](wxCommandEvent &)
             {
                 assert(mController);
-                float const opacity = OtherLayersOpacitySliderToOpacity(mOtherLayersOpacitySlider->GetValue());
-                mController->SetOtherLayersOpacity(opacity);
+                float const opacity = OtherVisualizationsOpacitySliderToOpacity(mOtherVisualizationsOpacitySlider->GetValue());
+                mController->SetOtherVisualizationsOpacity(opacity);
             });
 
         rootHSizer->Add(
-            mOtherLayersOpacitySlider,
+            mOtherVisualizationsOpacitySlider,
             0, // Retain horizontal width
             wxEXPAND, // Expand vertically
             0);
@@ -1490,57 +1511,58 @@ wxPanel * MainFrame::CreateLayersVisualizationPanel(wxWindow * parent)
 
     rootHSizer->AddSpacer(15);
 
-    // View modifiers
+    // Viz modifiers
     {
-        mLayerVisualizationModePanelsSizer = new wxBoxSizer(wxVERTICAL);
+        mVisualizationModePanelsSizer = new wxBoxSizer(wxVERTICAL);
 
-        mLayerVisualizationModePanelsSizer->AddSpacer(7);
+        mVisualizationModePanelsSizer->AddSpacer(7);
 
-        // Structure viz mode
+        // Game viz mode
         {
-            wxPanel * structuralLayerVisualizationModesPanel = new wxPanel(panel);
+            wxPanel * gameVisualizationModesPanel = new wxPanel(panel);
 
             wxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
 
-            // Particle mode
+            // None mode
             {
-                mStructuralLayerParticleVisualizationModeButton = new BitmapToggleButton(
-                    structuralLayerVisualizationModesPanel,
-                    mResourceLocator.GetBitmapFilePath("particle_mode_icon_small"),
+                mGameVisualizationNoneModeButton = new BitmapToggleButton(
+                    gameVisualizationModesPanel,
+                    mResourceLocator.GetBitmapFilePath("x_small"),
                     [this]()
                     {
                         assert(mController);
-                        mController->SetStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType::ParticleMode);
+                        mController->SetGameVisualizationMode(GameVisualizationModeType::None);
 
                         DeviateFocus();
                     },
-                    _("Particle mode: view individual structural particles."));
+                    _("No visualization: the game view is not drawn."));
 
                 vSizer->Add(
-                    mStructuralLayerParticleVisualizationModeButton,
+                    mGameVisualizationNoneModeButton,
                     0, // Retain V size
                     wxALIGN_CENTER_HORIZONTAL,
                     0);
             }
 
+
             vSizer->AddSpacer(5);
 
             // Auto-texturization mode
             {
-                mStructuralLayerAutoTexturizationVisualizationModeButton = new BitmapToggleButton(
-                    structuralLayerVisualizationModesPanel,
+                mGameVisualizationAutoTexturizationModeButton = new BitmapToggleButton(
+                    gameVisualizationModesPanel,
                     mResourceLocator.GetBitmapFilePath("autotexturization_mode_icon_small"),
                     [this]()
                     {
                         assert(mController);
-                        mController->SetStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType::AutoTexturizationMode);
+                        mController->SetGameVisualizationMode(GameVisualizationModeType::AutoTexturizationMode);
 
                         DeviateFocus();
                     },
                     _("Auto-texturization mode: view ship as when it is auto-texturized."));
 
                 vSizer->Add(
-                    mStructuralLayerAutoTexturizationVisualizationModeButton,
+                    mGameVisualizationAutoTexturizationModeButton,
                     0, // Retain V size
                     wxALIGN_CENTER_HORIZONTAL,
                     0);
@@ -1550,20 +1572,81 @@ wxPanel * MainFrame::CreateLayersVisualizationPanel(wxWindow * parent)
 
             // Texture mode
             {
-                mStructuralLayerTextureVisualizationModeButton = new BitmapToggleButton(
-                    structuralLayerVisualizationModesPanel,
+                mGameVisualizationTextureModeButton = new BitmapToggleButton(
+                    gameVisualizationModesPanel,
                     mResourceLocator.GetBitmapFilePath("structural_texture_mode_icon_small"),
                     [this]()
                     {
                         assert(mController);
-                        mController->SetStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType::TextureMode);
+                        mController->SetGameVisualizationMode(GameVisualizationModeType::TextureMode);
 
                         DeviateFocus();
                     },
-                    _("Texture mode: view ship with texture masked with the ship's structure."));
+                    _("Texture mode: view ship with texture."));
 
                 vSizer->Add(
-                    mStructuralLayerTextureVisualizationModeButton,
+                    mGameVisualizationTextureModeButton,
+                    0, // Retain V size
+                    wxALIGN_CENTER_HORIZONTAL,
+                    0);
+            }
+
+            gameVisualizationModesPanel->SetSizerAndFit(vSizer);
+
+            mVisualizationModePanelsSizer->Add(
+                gameVisualizationModesPanel,
+                1, // Expand vertically
+                wxALIGN_CENTER_HORIZONTAL,
+                0);
+
+            mVisualizationModePanels[static_cast<size_t>(VisualizationType::Game)] = gameVisualizationModesPanel;
+        }
+
+        // Structure viz mode
+        {
+            wxPanel * structuralLayerVisualizationModesPanel = new wxPanel(panel);
+
+            wxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
+
+            // None mode
+            {
+                mStructuralLayerVisualizationNoneModeButton = new BitmapToggleButton(
+                    structuralLayerVisualizationModesPanel,
+                    mResourceLocator.GetBitmapFilePath("x_small"),
+                    [this]()
+                    {
+                        assert(mController);
+                        mController->SetStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType::None);
+
+                        DeviateFocus();
+                    },
+                    _("No visualization: the structural layer is not drawn."));
+
+                vSizer->Add(
+                    mStructuralLayerVisualizationNoneModeButton,
+                    0, // Retain V size
+                    wxALIGN_CENTER_HORIZONTAL,
+                    0);
+            }
+
+            vSizer->AddSpacer(5);
+
+            // Pixel mode
+            {
+                mStructuralLayerVisualizationPixelModeButton = new BitmapToggleButton(
+                    structuralLayerVisualizationModesPanel,
+                    mResourceLocator.GetBitmapFilePath("pixel_mode_icon_small"),
+                    [this]()
+                    {
+                        assert(mController);
+                        mController->SetStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType::PixelMode);
+
+                        DeviateFocus();
+                    },
+                    _("Pixel mode: view structural particles as pixels."));
+
+                vSizer->Add(
+                    mStructuralLayerVisualizationPixelModeButton,
                     0, // Retain V size
                     wxALIGN_CENTER_HORIZONTAL,
                     0);
@@ -1571,25 +1654,135 @@ wxPanel * MainFrame::CreateLayersVisualizationPanel(wxWindow * parent)
 
             structuralLayerVisualizationModesPanel->SetSizerAndFit(vSizer);
 
-            mLayerVisualizationModePanelsSizer->Add(
+            mVisualizationModePanelsSizer->Add(
                 structuralLayerVisualizationModesPanel,
                 1, // Expand vertically
                 wxALIGN_CENTER_HORIZONTAL,
                 0);
 
-            mLayerVisualizationModePanels[static_cast<size_t>(LayerType::Structural)] = structuralLayerVisualizationModesPanel;
+            mVisualizationModePanels[static_cast<size_t>(VisualizationType::StructuralLayer)] = structuralLayerVisualizationModesPanel;
         }
 
         // Electrical viz mode
         {
-            // Nothing at the moment
-            mLayerVisualizationModePanels[static_cast<size_t>(LayerType::Electrical)] = nullptr;
+            wxPanel * electricalLayerVisualizationModesPanel = new wxPanel(panel);
+
+            wxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
+
+            // None mode
+            {
+                mElectricalLayerVisualizationNoneModeButton = new BitmapToggleButton(
+                    electricalLayerVisualizationModesPanel,
+                    mResourceLocator.GetBitmapFilePath("x_small"),
+                    [this]()
+                    {
+                        assert(mController);
+                        mController->SetElectricalLayerVisualizationMode(ElectricalLayerVisualizationModeType::None);
+
+                        DeviateFocus();
+                    },
+                    _("No visualization: the electrical layer is not drawn."));
+
+                vSizer->Add(
+                    mElectricalLayerVisualizationNoneModeButton,
+                    0, // Retain V size
+                    wxALIGN_CENTER_HORIZONTAL,
+                    0);
+            }
+
+            vSizer->AddSpacer(5);
+
+            // Pixel mode
+            {
+                mElectricalLayerVisualizationPixelModeButton = new BitmapToggleButton(
+                    electricalLayerVisualizationModesPanel,
+                    mResourceLocator.GetBitmapFilePath("pixel_mode_icon_small"),
+                    [this]()
+                    {
+                        assert(mController);
+                        mController->SetElectricalLayerVisualizationMode(ElectricalLayerVisualizationModeType::PixelMode);
+
+                        DeviateFocus();
+                    },
+                    _("Pixel mode: view electrical particles as pixels."));
+
+                vSizer->Add(
+                    mElectricalLayerVisualizationPixelModeButton,
+                    0, // Retain V size
+                    wxALIGN_CENTER_HORIZONTAL,
+                    0);
+            }
+
+            electricalLayerVisualizationModesPanel->SetSizerAndFit(vSizer);
+
+            mVisualizationModePanelsSizer->Add(
+                electricalLayerVisualizationModesPanel,
+                1, // Expand vertically
+                wxALIGN_CENTER_HORIZONTAL,
+                0);
+
+            mVisualizationModePanels[static_cast<size_t>(VisualizationType::ElectricalLayer)] = electricalLayerVisualizationModesPanel;
         }
 
         // Ropes viz mode
         {
-            // Nothing at the moment
-            mLayerVisualizationModePanels[static_cast<size_t>(LayerType::Ropes)] = nullptr;
+            wxPanel * ropesLayerVisualizationModesPanel = new wxPanel(panel);
+
+            wxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
+
+            // None mode
+            {
+                mRopesLayerVisualizationNoneModeButton = new BitmapToggleButton(
+                    ropesLayerVisualizationModesPanel,
+                    mResourceLocator.GetBitmapFilePath("x_small"),
+                    [this]()
+                    {
+                        assert(mController);
+                        mController->SetRopesLayerVisualizationMode(RopesLayerVisualizationModeType::None);
+
+                        DeviateFocus();
+                    },
+                    _("No visualization: the ropes layer is not drawn."));
+
+                vSizer->Add(
+                    mRopesLayerVisualizationNoneModeButton,
+                    0, // Retain V size
+                    wxALIGN_CENTER_HORIZONTAL,
+                    0);
+            }
+
+            vSizer->AddSpacer(5);
+
+            // Lines mode
+            {
+                mRopesLayerVisualizationLinesModeButton = new BitmapToggleButton(
+                    ropesLayerVisualizationModesPanel,
+                    mResourceLocator.GetBitmapFilePath("lines_mode_icon_small"),
+                    [this]()
+                    {
+                        assert(mController);
+                        mController->SetRopesLayerVisualizationMode(RopesLayerVisualizationModeType::LinesMode);
+
+                        DeviateFocus();
+                    },
+                    _("Lines mode: view ropes as lines."));
+
+                vSizer->Add(
+                    mRopesLayerVisualizationLinesModeButton,
+                    0, // Retain V size
+                    wxALIGN_CENTER_HORIZONTAL,
+                    0);
+            }
+
+            ropesLayerVisualizationModesPanel->SetSizerAndFit(vSizer);
+
+            mVisualizationModePanelsSizer->Add(
+                ropesLayerVisualizationModesPanel,
+                1, // Expand vertically
+                wxALIGN_CENTER_HORIZONTAL,
+                0);
+
+            mVisualizationModePanels[static_cast<size_t>(VisualizationType::RopesLayer)] = ropesLayerVisualizationModesPanel;
         }
 
         // Texture viz mode
@@ -1598,22 +1791,22 @@ wxPanel * MainFrame::CreateLayersVisualizationPanel(wxWindow * parent)
 
             wxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
 
-            // No viz mode
+            // None mode
             {
-                mTextureLayerNoVisualizationModeButton = new BitmapToggleButton(
+                mTextureLayerVisualizationNoneModeButton = new BitmapToggleButton(
                     textureLayerVisualizationModesPanel,
                     mResourceLocator.GetBitmapFilePath("x_small"),
                     [this]()
                     {
                         assert(mController);
-                        mController->SetTextureLayerVisualizationMode(TextureLayerVisualizationModeType::NoVisualizationMode);
+                        mController->SetTextureLayerVisualizationMode(TextureLayerVisualizationModeType::None);
 
                         DeviateFocus();
                     },
                     _("No visualization: the texture layer is not drawn."));
 
                 vSizer->Add(
-                    mTextureLayerNoVisualizationModeButton,
+                    mTextureLayerVisualizationNoneModeButton,
                     0, // Retain V size
                     wxALIGN_CENTER_HORIZONTAL,
                     0);
@@ -1623,7 +1816,7 @@ wxPanel * MainFrame::CreateLayersVisualizationPanel(wxWindow * parent)
 
             // Matte mode
             {
-                mTextureLayerMatteModeButton = new BitmapToggleButton(
+                mTextureLayerVisualizationMatteModeButton = new BitmapToggleButton(
                     textureLayerVisualizationModesPanel,
                     mResourceLocator.GetBitmapFilePath("texture_mode_icon_small"),
                     [this]()
@@ -1636,7 +1829,7 @@ wxPanel * MainFrame::CreateLayersVisualizationPanel(wxWindow * parent)
                     _("Matte mode: view texture as an opaque image."));
 
                 vSizer->Add(
-                    mTextureLayerMatteModeButton,
+                    mTextureLayerVisualizationMatteModeButton,
                     0, // Retain V size
                     wxALIGN_CENTER_HORIZONTAL,
                     0);
@@ -1644,16 +1837,16 @@ wxPanel * MainFrame::CreateLayersVisualizationPanel(wxWindow * parent)
 
             textureLayerVisualizationModesPanel->SetSizerAndFit(vSizer);
 
-            mLayerVisualizationModePanelsSizer->Add(
+            mVisualizationModePanelsSizer->Add(
                 textureLayerVisualizationModesPanel,
                 1, // Expand vertically
                 wxALIGN_CENTER_HORIZONTAL,
                 0);
 
-            mLayerVisualizationModePanels[static_cast<size_t>(LayerType::Texture)] = textureLayerVisualizationModesPanel;
+            mVisualizationModePanels[static_cast<size_t>(VisualizationType::TextureLayer)] = textureLayerVisualizationModesPanel;
         }
 
-        mLayerVisualizationModePanelsSizer->AddStretchSpacer(1);
+        mVisualizationModePanelsSizer->AddStretchSpacer(1);
 
         // View grid button
         {
@@ -1673,30 +1866,27 @@ wxPanel * MainFrame::CreateLayersVisualizationPanel(wxWindow * parent)
                     DeviateFocus();
                 });
 
-            mLayerVisualizationModePanelsSizer->Add(
+            mVisualizationModePanelsSizer->Add(
                 viewGridButton,
                 0, // Retain vertical width
                 wxALIGN_CENTER_HORIZONTAL, // Do not expand vertically
                 0);
         }
 
-        mLayerVisualizationModePanelsSizer->AddSpacer(7);
+        mVisualizationModePanelsSizer->AddSpacer(7);
 
         rootHSizer->Add(
-            mLayerVisualizationModePanelsSizer,
+            mVisualizationModePanelsSizer,
             0, // Retain horizontal width
             wxEXPAND, // Expand vertically
             0);
     }
 
-    // Before we freeze this panel's size, make only its structural layer 
+    // Before we freeze this panel's size, make only its "Game"
     // viz mode panel visible, which is currently the tallest
-    for (size_t iLayer = 0; iLayer < LayerCount; ++iLayer)
+    for (size_t iVisualization = 0; iVisualization < VisualizationCount; ++iVisualization)
     {
-        if (mLayerVisualizationModePanels[iLayer] != nullptr)
-        {
-            mLayerVisualizationModePanelsSizer->Show(mLayerVisualizationModePanels[iLayer], iLayer == static_cast<size_t>(LayerType::Structural));
-        }
+        mVisualizationModePanelsSizer->Show(mVisualizationModePanels[iVisualization], iVisualization == static_cast<size_t>(VisualizationType::Game));
     }
     
     panel->SetSizerAndFit(rootHSizer);
@@ -3310,26 +3500,55 @@ void MainFrame::SetFrameTitle(std::string const & shipName, bool isDirty)
 
 void MainFrame::DeviateFocus()
 {
-    // Set focus on primary layer buttn
-    uint32_t const iPrimaryLayer = static_cast<uint32_t>(mController->GetPrimaryLayer());
-    mLayerSelectButtons[iPrimaryLayer]->SetFocus();
+    // Set focus on primary visualization button
+    uint32_t const iPrimaryVisualization = static_cast<uint32_t>(mController->GetPrimaryVisualization());
+    mVisualizationSelectButtons[iPrimaryVisualization]->SetFocus();
 }
 
-float MainFrame::OtherLayersOpacitySliderToOpacity(int sliderValue)
+float MainFrame::OtherVisualizationsOpacitySliderToOpacity(int sliderValue) const
 {
     float const opacity =
         static_cast<float>(sliderValue)
-        / static_cast<float>(MaxLayerTransparency);
+        / static_cast<float>(MaxVisualizationTransparency);
 
     return opacity;
 }
 
-int MainFrame::OtherLayersOpacityToSlider(float opacityValue)
+int MainFrame::OtherVisualizationsOpacityToSlider(float opacityValue) const
 {
     int const sliderValue = static_cast<int>(
-        opacityValue * static_cast<float>(MaxLayerTransparency));
+        opacityValue * static_cast<float>(MaxVisualizationTransparency));
 
     return sliderValue;
+}
+
+size_t MainFrame::LayerToVisualizationIndex(LayerType layer) const
+{
+    switch (layer)
+    {
+        case LayerType::Structural:
+        {
+            return static_cast<size_t>(VisualizationType::StructuralLayer);
+        }
+
+        case LayerType::Electrical:
+        {
+            return static_cast<size_t>(VisualizationType::ElectricalLayer);
+        }
+
+        case LayerType::Ropes:
+        {
+            return static_cast<size_t>(VisualizationType::RopesLayer);
+        }
+
+        case LayerType::Texture:
+        {
+            return static_cast<size_t>(VisualizationType::TextureLayer);
+        }
+    }
+
+    assert(false);
+    return std::numeric_limits<size_t>::max();
 }
 
 void MainFrame::ReconciliateUI()
@@ -3339,7 +3558,8 @@ void MainFrame::ReconciliateUI()
     ReconciliateUIWithShipName(mController->GetShipMetadata().ShipName);
     ReconciliateUIWithLayerPresence();
     ReconciliateUIWithShipSize(mController->GetShipSize());
-    ReconciliateUIWithPrimaryLayerSelection(mController->GetPrimaryLayer());
+    ReconciliateUIWithPrimaryVisualizationSelection(mController->GetPrimaryVisualization());
+    ReconciliateUIWithGameVisualizationModeSelection(mController->GetGameVisualizationMode());
     ReconciliateUIWithStructuralLayerVisualizationModeSelection(mController->GetStructuralLayerVisualizationMode());
     ReconciliateUIWithElectricalLayerVisualizationModeSelection(mController->GetElectricalLayerVisualizationMode());
     ReconciliateUIWithRopesLayerVisualizationModeSelection(mController->GetRopesLayerVisualizationMode());
@@ -3387,15 +3607,15 @@ void MainFrame::ReconciliateUIWithLayerPresence()
     // New, Load: always
     // Delete, Save: if HasLayer
     // Slider: only enabled if > 1 layers
-    // Structural layer auto-texturization viz mode: only if texture layer not present
-    // Structural layer texture viz mode: only if texture layer present
+    // Game viz auto-texturization mode: only if texture layer not present
+    // Game viz texture mode: only if texture layer present
     //
 
     for (uint32_t iLayer = 0; iLayer < LayerCount; ++iLayer)
     {
         bool const hasLayer = mController->HasModelLayer(static_cast<LayerType>(iLayer));
 
-        mLayerSelectButtons[iLayer]->Enable(hasLayer);
+        mVisualizationSelectButtons[LayerToVisualizationIndex(static_cast<LayerType>(iLayer))]->Enable(hasLayer);
 
         if (mLayerExportButtons[iLayer] != nullptr
             && mLayerExportButtons[iLayer]->IsEnabled() != hasLayer)
@@ -3410,69 +3630,72 @@ void MainFrame::ReconciliateUIWithLayerPresence()
         }
     }
 
-    mOtherLayersOpacitySlider->Enable(mController->HasModelExtraLayers());
+    mOtherVisualizationsOpacitySlider->Enable(mController->HasModelExtraLayers());
 
     if (mController->HasModelLayer(LayerType::Texture))
     {
-        mStructuralLayerAutoTexturizationVisualizationModeButton->Enable(false);
-        mStructuralLayerTextureVisualizationModeButton->Enable(true);
+        mGameVisualizationAutoTexturizationModeButton->Enable(false);
+        mGameVisualizationTextureModeButton->Enable(true);
     }
     else
     {
-        mStructuralLayerAutoTexturizationVisualizationModeButton->Enable(true);
-        mStructuralLayerTextureVisualizationModeButton->Enable(false);
+        mGameVisualizationAutoTexturizationModeButton->Enable(true);
+        mGameVisualizationTextureModeButton->Enable(false);
     }
 
-    mLayerSelectButtons[static_cast<size_t>(mController->GetPrimaryLayer())]->SetFocus(); // Prevent other random buttons for getting focus
+    mVisualizationSelectButtons[static_cast<size_t>(mController->GetPrimaryVisualization())]->SetFocus(); // Prevent other random buttons from getting focus
 }
 
-void MainFrame::ReconciliateUIWithPrimaryLayerSelection(LayerType primaryLayer)
+void MainFrame::ReconciliateUIWithPrimaryVisualizationSelection(VisualizationType primaryVisualization)
 {
     assert(mController);
 
     //
-    // Toggle various UI elements <-> primary layer
+    // Toggle various UI elements <-> primary viz
     //
 
     bool hasToggledToolPanel = false;
     bool hasToggledLayerVisualizationModePanel = false;
 
-    assert(mController->HasModelLayer(primaryLayer));
-    
-    for (uint32_t iLayer = 0; iLayer < LayerCount; ++iLayer)
+    auto const iPrimaryVisualization = static_cast<uint32_t>(primaryVisualization);
+    for (uint32_t iVisualization = 0; iVisualization < VisualizationCount; ++iVisualization)
     {
-        bool const isSelected = (iLayer == static_cast<uint32_t>(primaryLayer));
+        bool const isVisualizationSelected = (iVisualization == iPrimaryVisualization);
 
-        // Layer selection buttons
-        if (mLayerSelectButtons[iLayer]->GetValue() != isSelected)
+        // Visualization selection buttons
+        if (mVisualizationSelectButtons[iVisualization]->GetValue() != isVisualizationSelected)
         {
-            mLayerSelectButtons[iLayer]->SetValue(isSelected);
+            mVisualizationSelectButtons[iVisualization]->SetValue(isVisualizationSelected);
 
-            if (isSelected)
+            if (isVisualizationSelected)
             {
-                mLayerSelectButtons[iLayer]->SetFocus(); // Prevent other random buttons for getting focus
+                mVisualizationSelectButtons[iVisualization]->SetFocus(); // Prevent other random buttons for getting focus
             }
         }
 
         // Layer visualization mode panels
-        if (mLayerVisualizationModePanels[iLayer] != nullptr 
-            && mLayerVisualizationModePanelsSizer->IsShown(mLayerVisualizationModePanels[iLayer]) != isSelected)
+        if (mVisualizationModePanelsSizer->IsShown(mVisualizationModePanels[iVisualization]) != isVisualizationSelected)
         {
-            mLayerVisualizationModePanelsSizer->Show(mLayerVisualizationModePanels[iLayer], isSelected);
+            mVisualizationModePanelsSizer->Show(mVisualizationModePanels[iVisualization], isVisualizationSelected);
             hasToggledLayerVisualizationModePanel = true;
         }
+    }
 
+    auto const iPrimaryLayer = static_cast<uint32_t>(VisualizationToLayer(primaryVisualization));
+    for (uint32_t iLayer = 0; iLayer < LayerCount; ++iLayer)
+    {
         // Toolbar panels
-        if (mToolbarPanelsSizer->IsShown(mToolbarPanels[iLayer]) != isSelected)
+        bool const isLayerSelected = (iLayer == iPrimaryLayer);
+        if (mToolbarPanelsSizer->IsShown(mToolbarPanels[iLayer]) != isLayerSelected)
         {
-            mToolbarPanelsSizer->Show(mToolbarPanels[iLayer], isSelected);
+            mToolbarPanelsSizer->Show(mToolbarPanels[iLayer], isLayerSelected);
             hasToggledToolPanel = true;
         }
     }
 
     if (hasToggledLayerVisualizationModePanel)
     {
-        mLayerVisualizationModePanelsSizer->Layout();
+        mVisualizationModePanelsSizer->Layout();
     }
 
     if (hasToggledToolPanel)
@@ -3481,27 +3704,35 @@ void MainFrame::ReconciliateUIWithPrimaryLayerSelection(LayerType primaryLayer)
     }
 }
 
+void MainFrame::ReconciliateUIWithGameVisualizationModeSelection(GameVisualizationModeType mode)
+{
+    mGameVisualizationNoneModeButton->SetValue(mode == GameVisualizationModeType::None);
+    mGameVisualizationAutoTexturizationModeButton->SetValue(mode == GameVisualizationModeType::AutoTexturizationMode);
+    mGameVisualizationTextureModeButton->SetValue(mode == GameVisualizationModeType::TextureMode);
+}
+
 void MainFrame::ReconciliateUIWithStructuralLayerVisualizationModeSelection(StructuralLayerVisualizationModeType mode)
 {
-    mStructuralLayerParticleVisualizationModeButton->SetValue(mode == StructuralLayerVisualizationModeType::ParticleMode);
-    mStructuralLayerAutoTexturizationVisualizationModeButton->SetValue(mode == StructuralLayerVisualizationModeType::AutoTexturizationMode);
-    mStructuralLayerTextureVisualizationModeButton->SetValue(mode == StructuralLayerVisualizationModeType::TextureMode);
+    mStructuralLayerVisualizationNoneModeButton->SetValue(mode == StructuralLayerVisualizationModeType::None);
+    mStructuralLayerVisualizationPixelModeButton->SetValue(mode == StructuralLayerVisualizationModeType::PixelMode);
 }
 
-void MainFrame::ReconciliateUIWithElectricalLayerVisualizationModeSelection(ElectricalLayerVisualizationModeType /*mode*/)
+void MainFrame::ReconciliateUIWithElectricalLayerVisualizationModeSelection(ElectricalLayerVisualizationModeType mode)
 {
-    // Nop at this moment
+    mElectricalLayerVisualizationNoneModeButton->SetValue(mode == ElectricalLayerVisualizationModeType::None);
+    mElectricalLayerVisualizationPixelModeButton->SetValue(mode == ElectricalLayerVisualizationModeType::PixelMode);
 }
 
-void MainFrame::ReconciliateUIWithRopesLayerVisualizationModeSelection(RopesLayerVisualizationModeType /*mode*/)
+void MainFrame::ReconciliateUIWithRopesLayerVisualizationModeSelection(RopesLayerVisualizationModeType mode)
 {
-    // Nop at this moment
+    mRopesLayerVisualizationNoneModeButton->SetValue(mode == RopesLayerVisualizationModeType::None);
+    mRopesLayerVisualizationLinesModeButton->SetValue(mode == RopesLayerVisualizationModeType::LinesMode);
 }
 
 void MainFrame::ReconciliateUIWithTextureLayerVisualizationModeSelection(TextureLayerVisualizationModeType mode)
 {
-    mTextureLayerNoVisualizationModeButton->SetValue(mode == TextureLayerVisualizationModeType::NoVisualizationMode);
-    mTextureLayerMatteModeButton->SetValue(mode == TextureLayerVisualizationModeType::MatteMode);
+    mTextureLayerVisualizationNoneModeButton->SetValue(mode == TextureLayerVisualizationModeType::None);
+    mTextureLayerVisualizationMatteModeButton->SetValue(mode == TextureLayerVisualizationModeType::MatteMode);
 }
 
 void MainFrame::ReconciliateUIWithModelDirtiness()

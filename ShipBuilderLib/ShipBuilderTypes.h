@@ -38,27 +38,81 @@ enum class MaterialPlaneType
     Background
 };
 
-enum class StructuralLayerVisualizationModeType
+//
+// Visualization
+//
+
+enum class VisualizationType : std::uint32_t
 {
-    ParticleMode,
+    Game = 0,
+    StructuralLayer,
+    ElectricalLayer,
+    RopesLayer,
+    TextureLayer
+};
+
+size_t constexpr VisualizationCount = static_cast<size_t>(VisualizationType::TextureLayer) + 1;
+
+inline LayerType VisualizationToLayer(VisualizationType visualization)
+{
+    switch (visualization)
+    {
+        case VisualizationType::Game:
+        case VisualizationType::StructuralLayer:
+        {
+            return LayerType::Structural;
+        }
+
+        case VisualizationType::ElectricalLayer:
+        {
+            return LayerType::Electrical;
+        }
+
+        case VisualizationType::RopesLayer:
+        {
+            return LayerType::Ropes;
+        }
+
+        case VisualizationType::TextureLayer:
+        {
+            return LayerType::Texture;
+        }
+    }
+
+    assert(false);
+    return LayerType::Structural;
+}
+
+enum class GameVisualizationModeType
+{
+    None,
     AutoTexturizationMode,
     TextureMode
 };
 
+enum class StructuralLayerVisualizationModeType
+{
+    None,
+    PixelMode
+    // FUTURE: ParticleMode
+};
+
 enum class ElectricalLayerVisualizationModeType
 {
-    ParticleMode
+    None,
+    PixelMode
     // FUTURE: CircuitMode
 };
 
 enum class RopesLayerVisualizationModeType
 {
+    None,
     LinesMode
 };
 
 enum class TextureLayerVisualizationModeType
 {
-    NoVisualizationMode,
+    None,
     MatteMode
 };
 

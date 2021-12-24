@@ -25,11 +25,12 @@ View::View(
     , mSwapRenderBuffersFunction(swapRenderBuffersFunction)
     //////////////////////////////////
     , mHasBackgroundTexture(false)
-    , mHasStructuralTexture(false)
-    , mHasElectricalTexture(false)
-    , mHasTextureTexture(false)
+    , mHasGameVisualizationTexture(false)
+    , mHasStructuralLayerVisualizationTexture(false)
+    , mHasElectricalLayerVisualizationTexture(false)
     , mRopeCount(false)
-    , mOtherLayersOpacity(0.75f)
+    , mHasTextureLayerVisualizationTexture(false)
+    , mOtherVisualizationsOpacity(0.75f)
     , mIsGridEnabled(false)
     , mCircleOverlayCenter(0, 0) // Will be overwritten
     , mCircleOverlayColor(vec3f::zero()) // Will be overwritten
@@ -39,7 +40,7 @@ View::View(
     , mHasRectOverlay(false)
     , mDashedLineOverlayColor(vec3f::zero()) // Will be overwritten
     //////////////////////////////////
-    , mPrimaryLayer(LayerType::Structural)
+    , mPrimaryVisualization(VisualizationType::StructuralLayer)
 {
     //
     // Initialize global OpenGL settings
@@ -145,7 +146,7 @@ View::View(
     }
 
     //
-    // Initialize Structural visualization and VAO
+    // Initialize game layer visualization and VAO
     //
 
     {
@@ -157,10 +158,10 @@ View::View(
 
         // Create texture OpenGL handle
         glGenTextures(1, &tmpGLuint);
-        mStructuralTextureOpenGLHandle = tmpGLuint;
+        mGameVisualizationTextureOpenGLHandle = tmpGLuint;
 
         // Configure texture
-        glBindTexture(GL_TEXTURE_2D, *mStructuralTextureOpenGLHandle);
+        glBindTexture(GL_TEXTURE_2D, *mGameVisualizationTextureOpenGLHandle);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -173,16 +174,16 @@ View::View(
 
         // Create VAO
         glGenVertexArrays(1, &tmpGLuint);
-        mStructuralTextureVAO = tmpGLuint;
-        glBindVertexArray(*mStructuralTextureVAO);
+        mGameVisualizationTextureVAO = tmpGLuint;
+        glBindVertexArray(*mGameVisualizationTextureVAO);
         CheckOpenGLError();
 
         // Create VBO
         glGenBuffers(1, &tmpGLuint);
-        mStructuralTextureVBO = tmpGLuint;
+        mGameVisualizationTextureVBO = tmpGLuint;
 
         // Describe vertex attributes
-        glBindBuffer(GL_ARRAY_BUFFER, *mStructuralTextureVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, *mGameVisualizationTextureVBO);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Texture));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Texture), 4, GL_FLOAT, GL_FALSE, sizeof(TextureVertex), (void *)0);
         CheckOpenGLError();
@@ -191,7 +192,7 @@ View::View(
     }
 
     //
-    // Initialize Electrical visualization and VAO
+    // Initialize structural layer visualization and VAO
     //
 
     {
@@ -203,10 +204,10 @@ View::View(
 
         // Create texture OpenGL handle
         glGenTextures(1, &tmpGLuint);
-        mElectricalTextureOpenGLHandle = tmpGLuint;
+        mStructuralLayerVisualizationTextureOpenGLHandle = tmpGLuint;
 
         // Configure texture
-        glBindTexture(GL_TEXTURE_2D, *mElectricalTextureOpenGLHandle);
+        glBindTexture(GL_TEXTURE_2D, *mStructuralLayerVisualizationTextureOpenGLHandle);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -219,16 +220,16 @@ View::View(
 
         // Create VAO
         glGenVertexArrays(1, &tmpGLuint);
-        mElectricalTextureVAO = tmpGLuint;
-        glBindVertexArray(*mElectricalTextureVAO);
+        mStructuralLayerVisualizationTextureVAO = tmpGLuint;
+        glBindVertexArray(*mStructuralLayerVisualizationTextureVAO);
         CheckOpenGLError();
 
         // Create VBO
         glGenBuffers(1, &tmpGLuint);
-        mElectricalTextureVBO = tmpGLuint;
+        mStructuralLayerVisualizationTextureVBO = tmpGLuint;
 
         // Describe vertex attributes
-        glBindBuffer(GL_ARRAY_BUFFER, *mElectricalTextureVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, *mStructuralLayerVisualizationTextureVBO);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Texture));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Texture), 4, GL_FLOAT, GL_FALSE, sizeof(TextureVertex), (void *)0);
         CheckOpenGLError();
@@ -237,7 +238,53 @@ View::View(
     }
 
     //
-    // Initialize Ropes visualization VAO
+    // Initialize electrical layer visualization and VAO
+    //
+
+    {
+        GLuint tmpGLuint;
+
+        //
+        // Texture
+        //
+
+        // Create texture OpenGL handle
+        glGenTextures(1, &tmpGLuint);
+        mElectricalLayerVisualizationTextureOpenGLHandle = tmpGLuint;
+
+        // Configure texture
+        glBindTexture(GL_TEXTURE_2D, *mElectricalLayerVisualizationTextureOpenGLHandle);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        CheckOpenGLError();
+
+        //
+        // VAO
+        //
+
+        // Create VAO
+        glGenVertexArrays(1, &tmpGLuint);
+        mElectricalLayerVisualizationTextureVAO = tmpGLuint;
+        glBindVertexArray(*mElectricalLayerVisualizationTextureVAO);
+        CheckOpenGLError();
+
+        // Create VBO
+        glGenBuffers(1, &tmpGLuint);
+        mElectricalLayerVisualizationTextureVBO = tmpGLuint;
+
+        // Describe vertex attributes
+        glBindBuffer(GL_ARRAY_BUFFER, *mElectricalLayerVisualizationTextureVBO);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Texture));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Texture), 4, GL_FLOAT, GL_FALSE, sizeof(TextureVertex), (void *)0);
+        CheckOpenGLError();
+
+        glBindVertexArray(0);
+    }
+
+    //
+    // Initialize ropes layer visualization VAO
     //
 
     {
@@ -266,7 +313,7 @@ View::View(
     }
 
     //
-    // Initialize Texture visualization and VAO
+    // Initialize texture layer visualization and VAO
     //
 
     {
@@ -278,10 +325,10 @@ View::View(
 
         // Create texture OpenGL handle
         glGenTextures(1, &tmpGLuint);
-        mTextureTextureOpenGLHandle = tmpGLuint;
+        mTextureLayerVisualizationTextureOpenGLHandle = tmpGLuint;
 
         // Configure texture
-        glBindTexture(GL_TEXTURE_2D, *mTextureTextureOpenGLHandle);
+        glBindTexture(GL_TEXTURE_2D, *mTextureLayerVisualizationTextureOpenGLHandle);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -294,16 +341,16 @@ View::View(
 
         // Create VAO
         glGenVertexArrays(1, &tmpGLuint);
-        mTextureTextureVAO = tmpGLuint;
-        glBindVertexArray(*mTextureTextureVAO);
+        mTextureLayerVisualizationTextureVAO = tmpGLuint;
+        glBindVertexArray(*mTextureLayerVisualizationTextureVAO);
         CheckOpenGLError();
 
         // Create VBO
         glGenBuffers(1, &tmpGLuint);
-        mTextureTextureVBO = tmpGLuint;
+        mTextureLayerVisualizationTextureVBO = tmpGLuint;
 
         // Describe vertex attributes
-        glBindBuffer(GL_ARRAY_BUFFER, *mTextureTextureVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, *mTextureLayerVisualizationTextureVBO);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Texture));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Texture), 4, GL_FLOAT, GL_FALSE, sizeof(TextureVertex), (void *)0);
         CheckOpenGLError();
@@ -499,14 +546,14 @@ void View::UploadBackgroundTexture(RgbaImageData && texture)
     mHasBackgroundTexture = true;
 }
 
-void View::UploadStructuralLayerVisualizationTexture(RgbaImageData const & texture)
+void View::UploadGameVisualizationTexture(RgbaImageData const & texture)
 {
     //
     // Upload texture
     //
 
     // Bind texture
-    glBindTexture(GL_TEXTURE_2D, *mStructuralTextureOpenGLHandle);
+    glBindTexture(GL_TEXTURE_2D, *mGameVisualizationTextureOpenGLHandle);
     CheckOpenGLError();
 
     // Upload texture
@@ -516,33 +563,49 @@ void View::UploadStructuralLayerVisualizationTexture(RgbaImageData const & textu
     // Upload vertices
     //
 
-    UploadTextureVertices(mStructuralTextureVBO);
+    UploadTextureVertices(mGameVisualizationTextureVBO);
 
     //
     // Remember we have this texture
     //
 
-    mHasStructuralTexture = true;
+    mHasGameVisualizationTexture = true;
 }
 
-void View::UpdateStructuralLayerVisualizationTexture(
-    rgbaColor const * regionPixels,
-    int xOffset,
-    int yOffset,
-    int width,
-    int height)
+void View::RemoveGameVisualizationTexture()
 {
+    mHasGameVisualizationTexture = false;
+}
+
+void View::UploadStructuralLayerVisualizationTexture(RgbaImageData const & texture)
+{
+    //
+    // Upload texture
+    //
+
     // Bind texture
-    glBindTexture(GL_TEXTURE_2D, *mStructuralTextureOpenGLHandle);
+    glBindTexture(GL_TEXTURE_2D, *mStructuralLayerVisualizationTextureOpenGLHandle);
     CheckOpenGLError();
 
-    // Upload texture region
-    GameOpenGL::UploadTextureRegion(
-        regionPixels,
-        xOffset,
-        yOffset,
-        width,
-        height);
+    // Upload texture
+    GameOpenGL::UploadTexture(texture);
+
+    //
+    // Upload vertices
+    //
+
+    UploadTextureVertices(mStructuralLayerVisualizationTextureVBO);
+
+    //
+    // Remember we have this texture
+    //
+
+    mHasStructuralLayerVisualizationTexture = true;
+}
+
+void View::RemoveStructuralLayerVisualizationTexture()
+{
+    mHasStructuralLayerVisualizationTexture = false;
 }
 
 void View::UploadElectricalLayerVisualizationTexture(RgbaImageData const & texture)
@@ -552,7 +615,7 @@ void View::UploadElectricalLayerVisualizationTexture(RgbaImageData const & textu
     //
 
     // Bind texture
-    glBindTexture(GL_TEXTURE_2D, *mElectricalTextureOpenGLHandle);
+    glBindTexture(GL_TEXTURE_2D, *mElectricalLayerVisualizationTextureOpenGLHandle);
     CheckOpenGLError();
 
     // Upload texture
@@ -562,38 +625,18 @@ void View::UploadElectricalLayerVisualizationTexture(RgbaImageData const & textu
     // Upload vertices
     //
 
-    UploadTextureVertices(mElectricalTextureVBO);
+    UploadTextureVertices(mElectricalLayerVisualizationTextureVBO);
 
     //
     // Remember we have this texture
     //
 
-    mHasElectricalTexture = true;
-}
-
-void View::UpdateElectricalLayerVisualizationTexture(
-    rgbaColor const * regionPixels,
-    int xOffset,
-    int yOffset,
-    int width,
-    int height)
-{
-    // Bind texture
-    glBindTexture(GL_TEXTURE_2D, *mElectricalTextureOpenGLHandle);
-    CheckOpenGLError();
-
-    // Upload texture region
-    GameOpenGL::UploadTextureRegion(
-        regionPixels,
-        xOffset,
-        yOffset,
-        width,
-        height);
+    mHasElectricalLayerVisualizationTexture = true;
 }
 
 void View::RemoveElectricalLayerVisualizationTexture()
 {
-    mHasElectricalTexture = false;
+    mHasElectricalLayerVisualizationTexture = false;
 }
 
 void View::UploadRopesLayerVisualization(RopeBuffer const & ropeBuffer)
@@ -648,7 +691,7 @@ void View::UploadTextureLayerVisualizationTexture(RgbaImageData const & texture)
     //
 
     // Bind texture
-    glBindTexture(GL_TEXTURE_2D, *mTextureTextureOpenGLHandle);
+    glBindTexture(GL_TEXTURE_2D, *mTextureLayerVisualizationTextureOpenGLHandle);
     CheckOpenGLError();
 
     // Upload texture
@@ -658,18 +701,18 @@ void View::UploadTextureLayerVisualizationTexture(RgbaImageData const & texture)
     // Upload vertices
     //
 
-    UploadTextureVertices(mTextureTextureVBO);
+    UploadTextureVertices(mTextureLayerVisualizationTextureVBO);
 
     //
     // Remember we have this texture
     //
 
-    mHasTextureTexture = true;
+    mHasTextureLayerVisualizationTexture = true;
 }
 
 void View::RemoveTextureLayerVisualizationTexture()
 {
-    mHasTextureTexture = false;
+    mHasTextureLayerVisualizationTexture = false;
 }
 
 void View::UploadCircleOverlay(
@@ -793,84 +836,41 @@ void View::Render()
         CheckOpenGLError();
     }
 
-    // Ropes, unless they're primary layer
-    if (mRopeCount > 0 && mPrimaryLayer != LayerType::Ropes)
+    // Ropes - when they're not the primary viz (in which case we render them on top of structural)
+    if (mRopeCount > 0 && mPrimaryVisualization != VisualizationType::RopesLayer)
     {
-        RenderRopes();
+        RenderRopesLayerVisualization();
     }
 
-    // Structural visualization
-    if (mHasStructuralTexture)
+    // Game visualization
+    if (mHasGameVisualizationTexture)
     {
-        // Set this texture in the shader's sampler
-        mShaderManager->ActivateTexture<ProgramParameterType::TextureUnit1>();
-        glBindTexture(GL_TEXTURE_2D, *mStructuralTextureOpenGLHandle);
-
-        // Bind VAO
-        glBindVertexArray(*mStructuralTextureVAO);
-
-        // Activate program
-        mShaderManager->ActivateProgram<ProgramType::Texture>();
-
-        // Set opacity
-        mShaderManager->SetProgramParameter<ProgramType::Texture, ProgramParameterType::Opacity>(
-            mPrimaryLayer == LayerType::Structural ? 1.0f : mOtherLayersOpacity);
-
-        // Draw
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-        CheckOpenGLError();
+        RenderGameVisualizationTexture();
     }
 
-    // Electrical visualization
-    if (mHasElectricalTexture)
+    // Structural layer visualization texture
+    if (mHasStructuralLayerVisualizationTexture)
     {
-        // Set this texture in the shader's sampler
-        mShaderManager->ActivateTexture<ProgramParameterType::TextureUnit1>();
-        glBindTexture(GL_TEXTURE_2D, *mElectricalTextureOpenGLHandle);
-
-        // Bind VAO
-        glBindVertexArray(*mElectricalTextureVAO);
-
-        // Activate program
-        mShaderManager->ActivateProgram<ProgramType::Texture>();
-
-        // Set opacity
-        mShaderManager->SetProgramParameter<ProgramType::Texture, ProgramParameterType::Opacity>(
-            mPrimaryLayer == LayerType::Electrical ? 1.0f : mOtherLayersOpacity);
-
-        // Draw
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-        CheckOpenGLError();
+        RenderStructuralLayerVisualizationTexture();
     }
 
-    // Ropes, but only when they're primary layer
-    if (mRopeCount > 0 && mPrimaryLayer == LayerType::Ropes)
+    // Electrical layer visualization texture
+    if (mHasElectricalLayerVisualizationTexture)
     {
-        RenderRopes();
+        RenderElectricalLayerVisualizationTexture();
     }
 
-    // Texture visualization
-    if (mHasTextureTexture)
+    // Ropes layer, but only when it's primary viz
+    if (mRopeCount > 0 && mPrimaryVisualization == VisualizationType::RopesLayer)
     {
-        // Set this texture in the shader's sampler
-        mShaderManager->ActivateTexture<ProgramParameterType::TextureUnit1>();
-        glBindTexture(GL_TEXTURE_2D, *mTextureTextureOpenGLHandle);
-
-        // Bind VAO
-        glBindVertexArray(*mTextureTextureVAO);
-
-        // Activate program
-        mShaderManager->ActivateProgram<ProgramType::Texture>();
-
-        // Set opacity
-        mShaderManager->SetProgramParameter<ProgramType::Texture, ProgramParameterType::Opacity>(
-            mPrimaryLayer == LayerType::Texture ? 1.0f : mOtherLayersOpacity);
-
-        // Draw
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-        CheckOpenGLError();
+        RenderRopesLayerVisualization();
     }
 
+    // Texture layer visualization texture
+    if (mHasTextureLayerVisualizationTexture)
+    {
+        RenderTextureLayerVisualizationTexture();
+    }
 
     // Grid
     if (mIsGridEnabled)
@@ -1343,7 +1343,70 @@ void View::UploadTextureVertices(GameOpenGLVBO const & vbo)
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void View::RenderRopes()
+void View::RenderGameVisualizationTexture()
+{
+    // Set this texture in the shader's sampler
+    mShaderManager->ActivateTexture<ProgramParameterType::TextureUnit1>();
+    glBindTexture(GL_TEXTURE_2D, *mGameVisualizationTextureOpenGLHandle);
+
+    // Bind VAO
+    glBindVertexArray(*mGameVisualizationTextureVAO);
+
+    // Activate program
+    mShaderManager->ActivateProgram<ProgramType::Texture>();
+
+    // Set opacity
+    mShaderManager->SetProgramParameter<ProgramType::Texture, ProgramParameterType::Opacity>(
+        mPrimaryVisualization == VisualizationType::Game ? 1.0f : mOtherVisualizationsOpacity);
+
+    // Draw
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    CheckOpenGLError();
+}
+
+void View::RenderStructuralLayerVisualizationTexture()
+{
+    // Set this texture in the shader's sampler
+    mShaderManager->ActivateTexture<ProgramParameterType::TextureUnit1>();
+    glBindTexture(GL_TEXTURE_2D, *mStructuralLayerVisualizationTextureOpenGLHandle);
+
+    // Bind VAO
+    glBindVertexArray(*mStructuralLayerVisualizationTextureVAO);
+
+    // Activate program
+    mShaderManager->ActivateProgram<ProgramType::Texture>();
+
+    // Set opacity
+    mShaderManager->SetProgramParameter<ProgramType::Texture, ProgramParameterType::Opacity>(
+        mPrimaryVisualization == VisualizationType::StructuralLayer ? 1.0f : mOtherVisualizationsOpacity);
+
+    // Draw
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    CheckOpenGLError();
+}
+
+void View::RenderElectricalLayerVisualizationTexture()
+{
+    // Set this texture in the shader's sampler
+    mShaderManager->ActivateTexture<ProgramParameterType::TextureUnit1>();
+    glBindTexture(GL_TEXTURE_2D, *mElectricalLayerVisualizationTextureOpenGLHandle);
+
+    // Bind VAO
+    glBindVertexArray(*mElectricalLayerVisualizationTextureVAO);
+
+    // Activate program
+    mShaderManager->ActivateProgram<ProgramType::Texture>();
+
+    // Set opacity
+    mShaderManager->SetProgramParameter<ProgramType::Texture, ProgramParameterType::Opacity>(
+        mPrimaryVisualization == VisualizationType::ElectricalLayer ? 1.0f : mOtherVisualizationsOpacity);
+
+    // Draw
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    CheckOpenGLError();
+}
+
+void View::RenderRopesLayerVisualization()
 {
     // Bind VAO
     glBindVertexArray(*mRopesVAO);
@@ -1353,13 +1416,34 @@ void View::RenderRopes()
 
     // Set opacity
     mShaderManager->SetProgramParameter<ProgramType::Rope, ProgramParameterType::Opacity>(
-        mPrimaryLayer == LayerType::Ropes ? 1.0f : mOtherLayersOpacity);
+        mPrimaryVisualization == VisualizationType::RopesLayer ? 1.0f : mOtherVisualizationsOpacity);
 
     // Set line width
     glLineWidth(2.5f);
 
     // Draw
     glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(mRopeCount * 2));
+    CheckOpenGLError();
+}
+
+void View::RenderTextureLayerVisualizationTexture()
+{
+    // Set this texture in the shader's sampler
+    mShaderManager->ActivateTexture<ProgramParameterType::TextureUnit1>();
+    glBindTexture(GL_TEXTURE_2D, *mTextureLayerVisualizationTextureOpenGLHandle);
+
+    // Bind VAO
+    glBindVertexArray(*mTextureLayerVisualizationTextureVAO);
+
+    // Activate program
+    mShaderManager->ActivateProgram<ProgramType::Texture>();
+
+    // Set opacity
+    mShaderManager->SetProgramParameter<ProgramType::Texture, ProgramParameterType::Opacity>(
+        mPrimaryVisualization == VisualizationType::TextureLayer ? 1.0f : mOtherVisualizationsOpacity);
+
+    // Draw
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     CheckOpenGLError();
 }
 
