@@ -316,7 +316,8 @@ private:
     //
 
     GameVisualizationModeType mGameVisualizationMode;
-    // TODOHERE: texture members
+    std::unique_ptr<RgbaImageData> mGameVisualizationAutoTexturizationTexture;
+    std::unique_ptr<RgbaImageData> mGameVisualizationTexture;
     std::optional<ImageRect> mDirtyGameVisualizationRegion;
 
     StructuralLayerVisualizationModeType mStructuralLayerVisualizationMode;

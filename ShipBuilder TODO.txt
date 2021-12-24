@@ -31,23 +31,31 @@ https://gamejolt.com/x/permalink/comment/11730705
 	+ ShipBuilder::View has two new "texture" viz: Game
 		! StructuralLayer viz texture goes back to being a small texture of size=ShipSize
 
+	- MainFrame: enablement of OtherVisOpacitySlider should be true also when structural + game
+		- So always enabled?
+
 	= ModelController visualizations:
 		+ Controller & ModelController: viz mode is not anymore std::opt (as we have None)
 		= New Game viz:
 			+ Updated each time we update either Structural or Texture vizs
-			- Viz members:
-				- Auto-tex texture
-				- own texture
-			- Algo:
+			+ Viz members:
+				+ Auto-tex texture
+				+ own texture
+			- UpdateGameVisualization Algo:
 				- If auto => update auto-tex texture; source=auto-tex texture
-				- Else (tex) => source=tex texture
-				- Sample source into own using triangulation and 0.5 offset 
+				- Else if tex => source=tex texture
+				- Else if none => return
+				- Sample source into own texture using triangulation and 0.5 offset 
 					- Double-check Y-order of 1,2,3,4 vertices
 
 	- Remove triangulation from ShipTexturizer
 
-	- View: see if Game and Texture textures should be drawn with 0.5 offset
-		- Quad: from Ship=(0,0) @ tex=(0.5/w, 0.5/h) to Ship=(w-1, h-1)+1pixel @ tex=(1.0-0.5/w, 1.0-0.5/h)
+	- View:
+		- Nail down Z-order of visualizations
+		- See if Game and Texture textures should be drawn with 0.5 offset
+			- Quad: from Ship=(0,0) @ tex=(0.5/w, 0.5/h) to Ship=(w-1, h-1)+1pixel @ tex=(1.0-0.5/w, 1.0-0.5/h)
+
+	- MainFrame: Game viz: add "export to image" button
 
 = Visualization modes: (*)
 	+ Each layer has a visualization mode

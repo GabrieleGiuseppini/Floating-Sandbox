@@ -44,6 +44,8 @@ ModelController::ModelController(
     , mElectricalParticleCount(0)
     /////
     , mGameVisualizationMode(GameVisualizationModeType::None)
+    , mGameVisualizationAutoTexturizationTexture()
+    , mGameVisualizationTexture()
     , mDirtyGameVisualizationRegion()
     , mStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType::None)
     , mStructuralLayerVisualizationTexture()
@@ -982,22 +984,39 @@ void ModelController::SetGameVisualizationMode(GameVisualizationModeType mode)
         return;
     }
 
-    // TODOHERE
-    ////// Calculate size of structural visualization mode texture
-    ////ImageSize textureSize = (mode == StructuralLayerVisualizationModeType::ParticleMode)
-    ////    ? ImageSize(mModel.GetShipSize().width, mModel.GetShipSize().height)
-    ////    : ShipTexturizer::CalculateHighDefinitionTextureSize(mModel.GetShipSize());
+    if (mode != GameVisualizationModeType::None)
+    {
+        auto const textureSize = ShipTexturizer::CalculateHighDefinitionTextureSize(mModel.GetShipSize());
 
-    ////// Check if size is different
-    ////if (!mStructuralLayerVisualizationTexture
-    ////    || mStructuralLayerVisualizationTexture->Size != textureSize)
-    ////{
-    ////    mStructuralLayerVisualizationTexture = std::make_unique<RgbaImageData>(textureSize);
-    ////}
+        if (mGameVisualizationMode == GameVisualizationModeType::None)
+        {
+            // Initialize game visualization texture
+            assert(!mGameVisualizationTexture);
+            mGameVisualizationTexture = std::make_unique<RgbaImageData>(textureSize);
+        }
 
-    ////mStructuralLayerVisualizationMode = mode;
+        if (mode == GameVisualizationModeType::AutoTexturizationMode)
+        {
+            mGameVisualizationAutoTexturizationTexture = std::make_unique<RgbaImageData>(textureSize);
+        }
+        else
+        {
+            mGameVisualizationAutoTexturizationTexture.reset();
+        }
 
-    ////UpdateStructuralLayerVisualization(GetWholeShipRect());
+        mGameVisualizationMode = mode;
+
+        UpdateGameVisualization(GetWholeShipRect());
+    }
+    else
+    {
+        // Shutdown game visualization
+        mGameVisualizationMode = GameVisualizationModeType::None;
+        mGameVisualizationAutoTexturizationTexture.reset();
+        assert(mGameVisualizationTexture);
+        mGameVisualizationTexture.reset();
+        mDirtyGameVisualizationRegion.reset();
+    }
 }
 
 void ModelController::SetStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType mode)
@@ -1135,7 +1154,27 @@ void ModelController::UploadVisualizations(View & view)
     // remove visualizations that are not needed
     //
 
-    // TODO: game
+    if (mGameVisualizationMode != GameVisualizationModeType::None)
+    {
+        assert(mGameVisualizationTexture);
+
+        if (mDirtyGameVisualizationRegion.has_value())
+        {
+            view.UploadGameVisualizationTexture(*mGameVisualizationTexture);
+
+            mDirtyGameVisualizationRegion.reset();
+        }
+    }
+    else
+    {
+        assert(!mGameVisualizationTexture);
+        assert(!mDirtyGameVisualizationRegion.has_value());
+
+        if (view.HasGameVisualizationTexture())
+        {
+            view.RemoveGameVisualizationTexture();
+        }
+    }
 
     if (mStructuralLayerVisualizationMode != StructuralLayerVisualizationModeType::None)
     {
@@ -1487,11 +1526,6 @@ std::optional<ShipSpaceRect> ModelController::Flood(
 
 void ModelController::UpdateGameVisualization(ShipSpaceRect const & region)
 {
-    if (mGameVisualizationMode == GameVisualizationModeType::None)
-    {
-        return;
-    }
-
     // TODOHERE
 
     ////assert(mModel.HasLayer(LayerType::Structural));
@@ -1588,8 +1622,6 @@ void ModelController::UpdateGameVisualization(ShipSpaceRect const & region)
 
 void ModelController::UpdateStructuralLayerVisualization(ShipSpaceRect const & region)
 {
-    // Update visualization
-
     switch (mStructuralLayerVisualizationMode)
     {
         case StructuralLayerVisualizationModeType::PixelMode:
