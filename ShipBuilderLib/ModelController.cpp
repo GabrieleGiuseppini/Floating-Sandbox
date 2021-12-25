@@ -953,8 +953,6 @@ void ModelController::RemoveTextureLayer()
 
     // Remove art credits from metadata
     mModel.GetShipMetadata().ArtCredits.reset();
-
-    UpdateGameVisualization(GetWholeShipRect());
 }
 
 std::unique_ptr<TextureLayerData> ModelController::CloneTextureLayer() const
@@ -1526,98 +1524,92 @@ std::optional<ShipSpaceRect> ModelController::Flood(
 
 void ModelController::UpdateGameVisualization(ShipSpaceRect const & region)
 {
-    // TODOHERE
+    //
+    // 1. Prepare source of triangularized rendering
+    //
 
-    ////assert(mModel.HasLayer(LayerType::Structural));
-    ////assert(mStructuralLayerVisualizationTexture);
+    RgbaImageData const * sourceTexture = nullptr;
 
-    ////// Update visualization
+    switch (mGameVisualizationMode)
+    {
+        case GameVisualizationModeType::AutoTexturizationMode:
+        {
+            assert(mModel.HasLayer(LayerType::Structural));
+            assert(mGameVisualizationAutoTexturizationTexture);
 
-    ////ShipSpaceRect effectiveRegion = region;
+            ShipAutoTexturizationSettings settings = mModel.GetShipAutoTexturizationSettings().value_or(ShipAutoTexturizationSettings());
 
-    ////switch (*mStructuralLayerVisualizationMode)
-    ////{
-    ////    case StructuralLayerVisualizationModeType::ParticleMode:
-    ////    {
-    ////        assert(mStructuralLayerVisualizationTexture->Size.width == mModel.GetShipSize().width
-    ////            && mStructuralLayerVisualizationTexture->Size.height == mModel.GetShipSize().height);
+            mShipTexturizer.AutoTexturizeInto(
+                mModel.GetStructuralLayer(),
+                region,
+                *mGameVisualizationAutoTexturizationTexture,
+                settings);
 
-    ////        rgbaColor const emptyColor = rgbaColor(EmptyMaterialColorKey, 0); // Fully transparent
+            sourceTexture = mGameVisualizationAutoTexturizationTexture.get();
 
-    ////        auto const & structuralLayerBuffer = mModel.GetStructuralLayer().Buffer;
-    ////        RgbaImageData & structuralRenderColorTexture = *mStructuralLayerVisualizationTexture;
+            break;
+        }
 
-    ////        for (int y = effectiveRegion.origin.y; y < effectiveRegion.origin.y + effectiveRegion.size.height; ++y)
-    ////        {
-    ////            for (int x = effectiveRegion.origin.x; x < effectiveRegion.origin.x + effectiveRegion.size.width; ++x)
-    ////            {
-    ////                auto const structuralMaterial = structuralLayerBuffer[{x, y}].Material;
+        case GameVisualizationModeType::TextureMode:
+        {
+            assert(mModel.HasLayer(LayerType::Structural));
+            assert(mModel.HasLayer(LayerType::Texture));
 
-    ////                structuralRenderColorTexture[{x, y}] = structuralMaterial != nullptr
-    ////                    ? rgbaColor(structuralMaterial->RenderColor, 255)
-    ////                    : emptyColor;
-    ////            }
-    ////        }
+            sourceTexture = &mModel.GetTextureLayer().Buffer;
+            
+            break;
+        }
 
-    ////        break;
-    ////    }
+        case GameVisualizationModeType::None:
+        {
+            return;
+        }
+    }
 
-    ////    case StructuralLayerVisualizationModeType::AutoTexturizationMode:
-    ////    {
-    ////        ShipAutoTexturizationSettings settings; // Pickup defaults
-    ////        settings.Mode = ShipAutoTexturizationModeType::MaterialTextures;
+    assert(sourceTexture != nullptr);
 
-    ////        if (mModel.GetShipAutoTexturizationSettings().has_value())
-    ////        {
-    ////            settings.MaterialTextureMagnification = mModel.GetShipAutoTexturizationSettings()->MaterialTextureMagnification;
-    ////            settings.MaterialTextureTransparency = mModel.GetShipAutoTexturizationSettings()->MaterialTextureTransparency;
-    ////        }
+    //
+    // 2. Do triangularized rendering
+    //
 
-    ////        mShipTexturizer.AutoTexturizeInto(
-    ////            mModel.GetStructuralLayer(),
-    ////            effectiveRegion,
-    ////            *mStructuralLayerVisualizationTexture,
-    ////            settings);
+    // Given that texturization looks at x+1 and y+1, we enlarge the region down and to the left
+    ShipSpaceRect effectiveRegion = region;
+    if (effectiveRegion.origin.x > 0)
+    {
+        effectiveRegion.origin.x -= 1;
+        effectiveRegion.size.width += 1;
+    }
 
-    ////        break;
-    ////    }
+    if (effectiveRegion.origin.y > 0)
+    {
+        effectiveRegion.origin.y -= 1;
+        effectiveRegion.size.height += 1;
+    }
 
-    ////    case StructuralLayerVisualizationModeType::TextureMode:
-    ////    {
-    ////        // Given that texturization looks at x+1 and y+1, we enlarge the region down and to the left
+    assert(mGameVisualizationTexture);
+    
+    mShipTexturizer.RenderShipInto(
+        mModel.GetStructuralLayer(),
+        effectiveRegion,
+        *sourceTexture,
+        *mGameVisualizationTexture);
 
-    ////        if (effectiveRegion.origin.x > 0)
-    ////        {
-    ////            effectiveRegion.origin.x -= 1;
-    ////            effectiveRegion.size.width += 1;
-    ////        }
+    //
+    // 3. Remember dirty region
+    //
 
-    ////        if (effectiveRegion.origin.y > 0)
-    ////        {
-    ////            effectiveRegion.origin.y -= 1;
-    ////            effectiveRegion.size.height += 1;
-    ////        }
+    ImageRect const imageRegion = ImageRect(
+        { effectiveRegion.origin.x, effectiveRegion.origin.y },
+        { effectiveRegion.size.width, effectiveRegion.size.height });
 
-    ////        mShipTexturizer.SampleTexturizeInto(
-    ////            mModel.GetStructuralLayer(),
-    ////            effectiveRegion,
-    ////            mModel.GetTextureLayer().Buffer,
-    ////            *mStructuralLayerVisualizationTexture);
-    ////    }
-    ////}
-
-    ////// Remember dirty region
-    ////ImageRect const imageRegion = ImageRect(
-    ////    { effectiveRegion.origin.x, effectiveRegion.origin.y },
-    ////    { effectiveRegion.size.width, effectiveRegion.size.height });
-    ////if (!mDirtyStructuralLayerVisualizationRegion.has_value())
-    ////{
-    ////    mDirtyStructuralLayerVisualizationRegion = imageRegion;
-    ////}
-    ////else
-    ////{
-    ////    mDirtyStructuralLayerVisualizationRegion->UnionWith(imageRegion);
-    ////}
+    if (!mDirtyGameVisualizationRegion.has_value())
+    {
+        mDirtyGameVisualizationRegion = imageRegion;
+    }
+    else
+    {
+        mDirtyGameVisualizationRegion->UnionWith(imageRegion);
+    }
 }
 
 void ModelController::UpdateStructuralLayerVisualization(ShipSpaceRect const & region)

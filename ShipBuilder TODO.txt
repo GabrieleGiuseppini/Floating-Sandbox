@@ -30,9 +30,8 @@ https://gamejolt.com/x/permalink/comment/11730705
 		+ All viz modes have "none"
 	+ ShipBuilder::View has two new "texture" viz: Game
 		! StructuralLayer viz texture goes back to being a small texture of size=ShipSize
-
-	- MainFrame: enablement of OtherVisOpacitySlider should be true also when structural + game
-		- So always enabled?
+	+ MainFrame: enablement of OtherVizOpacitySlider should be true also when structural + game
+		+ So always enabled?
 
 	= ModelController visualizations:
 		+ Controller & ModelController: viz mode is not anymore std::opt (as we have None)
@@ -41,21 +40,26 @@ https://gamejolt.com/x/permalink/comment/11730705
 			+ Viz members:
 				+ Auto-tex texture
 				+ own texture
-			- UpdateGameVisualization Algo:
-				- If auto => update auto-tex texture; source=auto-tex texture
-				- Else if tex => source=tex texture
-				- Else if none => return
-				- Sample source into own texture using triangulation and 0.5 offset 
-					- Double-check Y-order of 1,2,3,4 vertices
-
-	- Remove triangulation from ShipTexturizer
+			= UpdateGameVisualization Algo:
+				+ If auto => update auto-tex texture; source=auto-tex texture
+				+ Else if tex => source=tex texture
+				+ Else if none => return
+				= Sample source into own texture using triangulation and 0.5 offset 
+					+ Double-check Y-order of 1,2,3,4 vertices
+					- Do 0.5
 
 	- View:
-		- Nail down Z-order of visualizations
+		= Nail down Z-order of visualizations
+			+ Between game and struct: primary goes first
+			- See other layers
 		- See if Game and Texture textures should be drawn with 0.5 offset
 			- Quad: from Ship=(0,0) @ tex=(0.5/w, 0.5/h) to Ship=(w-1, h-1)+1pixel @ tex=(1.0-0.5/w, 1.0-0.5/h)
 
+	- UI: viz mode details panel is too tall
+		- If we hide also game viz panel it gets shorter, but if we show that one only, it's too tall - see how tall that guy is indeed
 	- MainFrame: Game viz: add "export to image" button
+
+	- Structural layer viz: do Particle mode
 
 = Visualization modes: (*)
 	+ Each layer has a visualization mode

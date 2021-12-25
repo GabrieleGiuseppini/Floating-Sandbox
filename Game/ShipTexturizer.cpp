@@ -220,10 +220,10 @@ void ShipTexturizer::AutoTexturizeInto(
     }
 }
 
-void ShipTexturizer::SampleTexturizeInto(
+void ShipTexturizer::RenderShipInto(
     StructuralLayerData const & structuralLayer,
     ShipSpaceRect const & structuralLayerRegion,
-    RgbaImageData & sourceTextureImage,
+    RgbaImageData const & sourceTextureImage,
     RgbaImageData & targetTextureImage) const
 {
     rgbaColor constexpr TransparentColor = rgbaColor::zero(); // Fully transparent
@@ -249,6 +249,17 @@ void ShipTexturizer::SampleTexturizeInto(
         / static_cast<float>(targetTextureImage.Size.width);
 
     //
+    // Here we offset the texture coords by half of a "ship pixel" (which is multiple texture pixels)
+    // in the same way as we do when we build the ship at simulation time.
+    // We do this so that the texture for a particle at ship coords (x, y) is sampled at the center of the 
+    // texture's quad for that particle.
+    //
+
+    float const sampleOffsetX = 0.5f / static_cast<float>(structuralLayer.Buffer.Size.width);
+    float const sampleOffsetY = 0.5f / static_cast<float>(structuralLayer.Buffer.Size.height);
+
+
+    //
     // Populate texture
     //
 
@@ -268,180 +279,140 @@ void ShipTexturizer::SampleTexturizeInto(
     {
         for (int x = startX; x < endX; ++x)
         {
-            ShipSpaceCoordinates const coords = ShipSpaceCoordinates(x, y);
+            //
+            // We now populate the target texture in the quad whose corners lie at these coordinates (in the target texture):
+            //
+            // 3:(x * magnificationFactor, (y + 1) * magnificationFactor) ... 4:((x + 1) * magnificationFactor, (y + 1) * magnificationFactor)
+            // ...
+            // ...
+            // ...
+            // 1:[x * magnificationFactor, y * magnificationFactor] ... 2:((x + 1) * magnificationFactor, y * magnificationFactor)
+            //
+            // We actually populate quads or triangles (with |side|==magnificationFactor), depending on the presence of the four corners. We do so by:
+            //  - Looping for all target YY's in the quad
+            //  - For each YY:
+            //      - Fill-in the XX segment between xxStart and xxEnd, and transparent outside
+            //      - Change xxStart and xxEnd depending on Y
+            //
 
-            // Get structure pixel color
-            StructuralMaterial const * const structuralMaterial = structuralBuffer[coords].Material;
-            rgbaColor const structurePixelColor = structuralMaterial != nullptr
-                ? rgbaColor(structuralMaterial->RenderColor, 255)
-                : rgbaColor::zero(); // Fully transparent
+            //
+            // Determine quad vertices
+            //
 
-            int targetQuadOffset =
-                (y * magnificationFactor) * targetTextureImage.Size.width
-                + x * magnificationFactor;
+            // Init with no quad
+            int xxStart = magnificationFactor, xxStartIncr = 0;
+            int xxEnd = magnificationFactor, xxEndIncr = 0;
 
-            if (structuralMaterial == nullptr)
+            bool const hasVertex1 = structuralBuffer[{x, y}].Material != nullptr;
+
+            ShipSpaceCoordinates const coords2 = ShipSpaceCoordinates(x + 1, y);
+            bool const hasVertex2 = coords2.IsInSize(structuralSize) && structuralBuffer[coords2].Material != nullptr;
+
+            ShipSpaceCoordinates const coords3 = ShipSpaceCoordinates(x, y + 1);
+            bool const hasVertex3 = coords3.IsInSize(structuralSize) && structuralBuffer[coords3].Material != nullptr;
+
+            ShipSpaceCoordinates const coords4 = ShipSpaceCoordinates(x + 1, y + 1);
+            bool const hasVertex4 = coords4.IsInSize(structuralSize) && structuralBuffer[coords4].Material != nullptr;
+
+            if (hasVertex1)
             {
-                // Fill quad with color
-                for (int yy = 0; yy < magnificationFactor; ++yy, targetQuadOffset += targetTextureImage.Size.width)
+                if (hasVertex2)
                 {
-                    for (int xx = 0; xx < magnificationFactor; ++xx)
+                    if (hasVertex3)
                     {
-                        targetImageData[targetQuadOffset + xx] = TransparentColor;
+                        if (hasVertex4)
+                        {
+                            // Whole quad
+                            xxStart = 0; xxStartIncr = 0;
+                            xxEnd = magnificationFactor; xxEndIncr = 0;
+                        }
+                        else
+                        {
+                            // 3
+                            // |
+                            // 1---2
+
+                            xxStart = 0; xxStartIncr = 0;
+                            xxEnd = magnificationFactor; xxEndIncr = -1;
+                        }
+                    }
+                    else if (hasVertex4)
+                    {
+                        //     4
+                        //     |
+                        // 1---2
+
+                        xxStart = 0; xxStartIncr = 1;
+                        xxEnd = magnificationFactor; xxEndIncr = 0;
+                    }
+                }
+                else
+                {
+                    // No vertex 2
+
+                    if (hasVertex3 && hasVertex4)
+                    {
+                        // 3---4
+                        // |
+                        // 1
+
+                        xxStart = 0; xxStartIncr = 0;
+                        xxEnd = 0; xxEndIncr = 1;
                     }
                 }
             }
             else
             {
-                for (int yy = 0; yy < magnificationFactor; ++yy, targetQuadOffset += targetTextureImage.Size.width)
-                {
-                    for (int xx = 0; xx < magnificationFactor; ++xx)
-                    {
-                        rgbaColor const textureSample = SampleTextureNearest(
-                            sourceTextureImage,
-                            targetTextureSpaceToSourceTextureSpace * (x * magnificationFactor + xx),
-                            targetTextureSpaceToSourceTextureSpace * (y * magnificationFactor + yy));
+                // No vertex 1
 
-                        targetImageData[targetQuadOffset + xx] = textureSample;
-                    }
+                if (hasVertex2 && hasVertex3 && hasVertex4)
+                {
+                    // 3---4
+                    //     |
+                    //     2
+
+                    xxStart = magnificationFactor; xxStartIncr = -1;
+                    xxEnd = magnificationFactor; xxEndIncr = 0;
                 }
             }
 
-            ////// TODOOLD: Triangulation
-            //////
-            ////// We now populate the target texture in the quad whose corners lie at these coordinates (in the target texture):
-            //////
-            ////// 1:[x * magnificationFactor, y * magnificationFactor] ... 2:((x + 1) * magnificationFactor, y * magnificationFactor)
-            ////// ...
-            ////// ...
-            ////// ...
-            ////// 3:((x + 1) * magnificationFactor, (y + 1) * magnificationFactor) ... 4:((x + 1) * magnificationFactor, (y + 1) * magnificationFactor)
-            //////
-            ////// We actually populate quads or triangles (with |side|==magnificationFactor), depending on the presence of the four corners. We do so by:
-            //////  - Looping for all target YY's in the quad
-            //////  - For each YY:
-            //////      - Fill-in the XX segment between xxStart and xxEnd, and transparent outside
-            //////      - Change xxStart and xxEnd depending on Y
-            //////
+            //
+            // Fill-in quads
+            //
 
-            //////
-            ////// Determine quad vertices
-            //////
+            int targetQuadOffset =
+                (y * magnificationFactor) * targetTextureImage.Size.width
+                + x * magnificationFactor;
 
-            ////// Init with no quad
-            ////int xxStart = magnificationFactor, xxStartIncr = 0;
-            ////int xxEnd = magnificationFactor, xxEndIncr = 0;
+            for (int yy = 0; 
+                yy < magnificationFactor; 
+                ++yy, xxStart += xxStartIncr, xxEnd += xxEndIncr, targetQuadOffset += targetTextureImage.Size.width)
+            {
+                // Prefix - fill with empty
+                assert(0 <= xxStart && xxStart <= magnificationFactor);
+                for (int xx = 0; xx < xxStart; ++xx)
+                {
+                    targetImageData[targetQuadOffset + xx] = transparentColor;
+                }
 
-            ////bool const hasVertex1 = structuralBuffer[{x, y}].Material != nullptr;
+                // Body - fill with source texture
+                for (int xx = xxStart; xx < xxEnd; ++xx)
+                {
+                    rgbaColor const textureSample = SampleTextureNearest(
+                        sourceTextureImage,
+                        sampleOffsetX + targetTextureSpaceToSourceTextureSpace * (x * magnificationFactor + xx),
+                        sampleOffsetY + targetTextureSpaceToSourceTextureSpace * (y * magnificationFactor + yy));
 
-            ////ShipSpaceCoordinates const coords2 = ShipSpaceCoordinates(x + 1, y);
-            ////bool const hasVertex2 = coords2.IsInSize(structuralSize) && structuralBuffer[coords2].Material != nullptr;
+                    targetImageData[targetQuadOffset + xx] = textureSample;
+                }
 
-            ////ShipSpaceCoordinates const coords3 = ShipSpaceCoordinates(x, y + 1);
-            ////bool const hasVertex3 = coords3.IsInSize(structuralSize) && structuralBuffer[coords3].Material != nullptr;
-
-            ////ShipSpaceCoordinates const coords4 = ShipSpaceCoordinates(x + 1, y + 1);
-            ////bool const hasVertex4 = coords4.IsInSize(structuralSize) && structuralBuffer[coords4].Material != nullptr;
-
-            ////if (hasVertex1)
-            ////{
-            ////    if (hasVertex2)
-            ////    {
-            ////        if (hasVertex3)
-            ////        {
-            ////            if (hasVertex4)
-            ////            {
-            ////                // Whole quad
-            ////                xxStart = 0; xxStartIncr = 0;
-            ////                xxEnd = magnificationFactor; xxEndIncr = 0;
-            ////            }
-            ////            else
-            ////            {
-            ////                // 1---2
-            ////                // |
-            ////                // 3
-
-            ////                xxStart = 0; xxStartIncr = 0;
-            ////                xxEnd = magnificationFactor; xxEndIncr = -1;
-            ////            }
-            ////        }
-            ////        else if (hasVertex4)
-            ////        {
-            ////            // 1---2
-            ////            //     |
-            ////            //     4
-
-            ////            xxStart = 0; xxStartIncr = 1;
-            ////            xxEnd = magnificationFactor; xxEndIncr = 0;
-            ////        }
-            ////    }
-            ////    else
-            ////    {
-            ////        // No vertex 2
-
-            ////        if (hasVertex3 && hasVertex4)
-            ////        {
-            ////            // 1
-            ////            // |
-            ////            // 3---4
-
-            ////            xxStart = 0; xxStartIncr = 0;
-            ////            xxEnd = 0; xxEndIncr = 1;
-            ////        }
-            ////    }
-            ////}
-            ////else
-            ////{
-            ////    // No vertex 1
-
-            ////    if (hasVertex2 && hasVertex3 && hasVertex4)
-            ////    {
-            ////        //     2
-            ////        //     |
-            ////        // 3---4
-
-            ////        xxStart = magnificationFactor; xxStartIncr = -1;
-            ////        xxEnd = magnificationFactor; xxEndIncr = 0;
-            ////    }
-            ////}
-
-            //////
-            ////// Fill-in quads
-            //////
-
-            ////int targetQuadOffset =
-            ////    (y * magnificationFactor) * targetTextureImage.Size.width
-            ////    + x * magnificationFactor;
-
-            ////for (int yy = 0; 
-            ////    yy < magnificationFactor; 
-            ////    ++yy, xxStart += xxStartIncr, xxEnd += xxEndIncr, targetQuadOffset += targetTextureImage.Size.width)
-            ////{
-            ////    // Prefix - fill with empty
-            ////    assert(0 <= xxStart && xxStart <= magnificationFactor);
-            ////    for (int xx = 0; xx < xxStart; ++xx)
-            ////    {
-            ////        targetImageData[targetQuadOffset + xx] = transparentColor;
-            ////    }
-
-            ////    // Body - fill with source texture
-            ////    for (int xx = xxStart; xx < xxEnd; ++xx)
-            ////    {
-            ////        rgbaColor const textureSample = SampleTexture(
-            ////            sourceTextureImage,
-            ////            targetTextureSpaceToSourceTextureSpace * (x * magnificationFactor + xx),
-            ////            targetTextureSpaceToSourceTextureSpace * (y * magnificationFactor + yy));
-
-            ////        targetImageData[targetQuadOffset + xx] = textureSample;
-            ////    }
-
-            ////    // Suffix - fill with empty
-            ////    assert(0 <= xxEnd && xxEnd <= magnificationFactor);
-            ////    for (int xx = xxEnd; xx < magnificationFactor; ++xx)
-            ////    {
-            ////        targetImageData[targetQuadOffset + xx] = transparentColor;
-            ////    }
-            ////}
+                // Suffix - fill with empty
+                assert(0 <= xxEnd && xxEnd <= magnificationFactor);
+                for (int xx = xxEnd; xx < magnificationFactor; ++xx)
+                {
+                    targetImageData[targetQuadOffset + xx] = transparentColor;
+                }
+            }
         }
     }
 }

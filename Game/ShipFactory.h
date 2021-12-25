@@ -116,12 +116,12 @@ private:
         // Where (SW, SH) are the ship dimensions, and o is the offset (which is < 1.0)
         //
 
-        float const deadCenterOffsetX = 0.5f / static_cast<float>(shipSize.width);
-        float const deadCenterOffsetY = 0.5f / static_cast<float>(shipSize.height);
+        float const sampleOffsetX = 0.5f / static_cast<float>(shipSize.width);
+        float const sampleOffsetY = 0.5f / static_cast<float>(shipSize.height);
 
         return vec2f(
-            static_cast<float>(x) / static_cast<float>(shipSize.width) + deadCenterOffsetX,
-            static_cast<float>(y) / static_cast<float>(shipSize.height) + deadCenterOffsetY);
+            static_cast<float>(x) / static_cast<float>(shipSize.width) + sampleOffsetX,
+            static_cast<float>(y) / static_cast<float>(shipSize.height) + sampleOffsetY);
     }
 
     static void AppendRopes(

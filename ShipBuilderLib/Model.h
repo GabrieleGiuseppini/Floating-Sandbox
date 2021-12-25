@@ -134,17 +134,6 @@ public:
         return mLayerPresenceMap[static_cast<size_t>(layer)];
     }
 
-    bool HasExtraLayers() const
-    {
-        for (size_t iLayer = 1; iLayer < LayerCount; ++iLayer)
-        {
-            if (mLayerPresenceMap[iLayer])
-                return true;
-        }
-
-        return false;
-    }
-
     DirtyState const & GetDirtyState() const
     {
         return mDirtyState;

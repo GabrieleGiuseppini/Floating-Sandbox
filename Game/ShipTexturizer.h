@@ -39,10 +39,10 @@ public:
         RgbaImageData & targetTextureImage,
         ShipAutoTexturizationSettings const & settings) const;
 
-    void SampleTexturizeInto(
+    void RenderShipInto(
         StructuralLayerData const & structuralLayer,
         ShipSpaceRect const & structuralLayerRegion,
-        RgbaImageData & sourceTextureImage,
+        RgbaImageData const & sourceTextureImage,
         RgbaImageData & targetTextureImage) const;
 
     template<typename TMaterial>

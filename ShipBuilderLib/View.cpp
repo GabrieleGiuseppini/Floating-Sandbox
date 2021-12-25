@@ -842,16 +842,33 @@ void View::Render()
         RenderRopesLayerVisualization();
     }
 
-    // Game visualization
-    if (mHasGameVisualizationTexture)
-    {
-        RenderGameVisualizationTexture();
-    }
+    //
+    // Game and structural visualization
+    //
 
-    // Structural layer visualization texture
-    if (mHasStructuralLayerVisualizationTexture)
+    if (mPrimaryVisualization == VisualizationType::Game)
     {
-        RenderStructuralLayerVisualizationTexture();
+        if (mHasGameVisualizationTexture)
+        {
+            RenderGameVisualizationTexture();
+        }
+
+        if (mHasStructuralLayerVisualizationTexture)
+        {
+            RenderStructuralLayerVisualizationTexture();
+        }
+    }
+    else
+    {
+        if (mHasStructuralLayerVisualizationTexture)
+        {
+            RenderStructuralLayerVisualizationTexture();
+        }
+
+        if (mHasGameVisualizationTexture)
+        {
+            RenderGameVisualizationTexture();
+        }
     }
 
     // Electrical layer visualization texture

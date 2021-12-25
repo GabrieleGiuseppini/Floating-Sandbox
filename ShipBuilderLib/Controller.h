@@ -101,12 +101,6 @@ public:
         return mModelController->GetModel().HasLayer(layer);
     }
 
-    bool HasModelExtraLayers() const
-    {
-        assert(mModelController);
-        return mModelController->GetModel().HasExtraLayers();
-    }
-
     bool IsModelDirty() const
     {
         assert(mModelController);

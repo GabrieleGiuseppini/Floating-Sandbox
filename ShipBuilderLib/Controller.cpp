@@ -633,7 +633,7 @@ void Controller::RemoveTextureLayer()
     // Switch primary viz if it was this one
     if (mPrimaryVisualization == VisualizationType::TextureLayer)
     {
-        InternalSelectPrimaryVisualization(VisualizationType::TextureLayer);
+        InternalSelectPrimaryVisualization(VisualizationType::Game);
     }
 
     // Change texture visualization mode so that next time a texture

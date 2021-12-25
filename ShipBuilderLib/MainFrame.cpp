@@ -1875,18 +1875,18 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
 
         mVisualizationModePanelsSizer->AddSpacer(7);
 
+        // Before we freeze this panel's size, make only its "Game"
+        // viz mode panel visible, which is currently the tallest
+        for (size_t iVisualization = 0; iVisualization < VisualizationCount; ++iVisualization)
+        {
+            mVisualizationModePanelsSizer->Show(mVisualizationModePanels[iVisualization], iVisualization == static_cast<size_t>(VisualizationType::Game));
+        }
+
         rootHSizer->Add(
             mVisualizationModePanelsSizer,
             0, // Retain horizontal width
             wxEXPAND, // Expand vertically
             0);
-    }
-
-    // Before we freeze this panel's size, make only its "Game"
-    // viz mode panel visible, which is currently the tallest
-    for (size_t iVisualization = 0; iVisualization < VisualizationCount; ++iVisualization)
-    {
-        mVisualizationModePanelsSizer->Show(mVisualizationModePanels[iVisualization], iVisualization == static_cast<size_t>(VisualizationType::Game));
     }
     
     panel->SetSizerAndFit(rootHSizer);
@@ -3606,7 +3606,6 @@ void MainFrame::ReconciliateUIWithLayerPresence()
     // Presence button: if HasLayer
     // New, Load: always
     // Delete, Save: if HasLayer
-    // Slider: only enabled if > 1 layers
     // Game viz auto-texturization mode: only if texture layer not present
     // Game viz texture mode: only if texture layer present
     //
@@ -3629,8 +3628,6 @@ void MainFrame::ReconciliateUIWithLayerPresence()
             mLayerDeleteButtons[iLayer]->Enable(hasLayer);
         }
     }
-
-    mOtherVisualizationsOpacitySlider->Enable(mController->HasModelExtraLayers());
 
     if (mController->HasModelLayer(LayerType::Texture))
     {
