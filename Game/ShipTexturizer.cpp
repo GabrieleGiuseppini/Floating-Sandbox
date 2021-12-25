@@ -255,8 +255,11 @@ void ShipTexturizer::RenderShipInto(
     // texture's quad for that particle.
     //
 
-    float const sampleOffsetX = 0.5f / static_cast<float>(structuralLayer.Buffer.Size.width);
-    float const sampleOffsetY = 0.5f / static_cast<float>(structuralLayer.Buffer.Size.height);
+    float const sourcePixelsPerShipParticleX = static_cast<float>(sourceTextureImage.Size.width) / static_cast<float>(structuralLayer.Buffer.Size.width);
+    float const sourcePixelsPerShipParticleY = static_cast<float>(sourceTextureImage.Size.height) / static_cast<float>(structuralLayer.Buffer.Size.height);
+
+    float const sampleOffsetX = sourcePixelsPerShipParticleX / 2.0f;
+    float const sampleOffsetY = sourcePixelsPerShipParticleY / 2.0f;
 
 
     //

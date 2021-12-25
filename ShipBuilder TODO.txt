@@ -46,12 +46,14 @@ https://gamejolt.com/x/permalink/comment/11730705
 				+ Else if none => return
 				= Sample source into own texture using triangulation and 0.5 offset 
 					+ Double-check Y-order of 1,2,3,4 vertices
-					- Do 0.5
+					= Do 0.5
 
-	- View:
+	= View:
 		= Nail down Z-order of visualizations
 			+ Between game and struct: primary goes first
-			- See other layers
+			- When texture layer is primary: should go first
+			- May be rule is: whichever of game, structure, texture is primary, goes first; elec and ropes are fine to always be super-imposed 
+				- Exception: ropes goes always *behind* when it's not primary
 		- See if Game and Texture textures should be drawn with 0.5 offset
 			- Quad: from Ship=(0,0) @ tex=(0.5/w, 0.5/h) to Ship=(w-1, h-1)+1pixel @ tex=(1.0-0.5/w, 1.0-0.5/h)
 

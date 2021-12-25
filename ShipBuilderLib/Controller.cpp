@@ -500,7 +500,7 @@ void Controller::RemoveRopesLayer()
 {
     auto const scopedToolResumeState = SuspendTool();
 
-    // TODO: undo, copy from texture
+    // TODO: do undo, copy from texture
     // Remove layer
     mModelController->RemoveRopesLayer();
     mUserInterface.OnLayerPresenceChanged();
