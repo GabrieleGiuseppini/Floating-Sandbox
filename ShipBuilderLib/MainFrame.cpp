@@ -1595,7 +1595,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
 
             mVisualizationModePanelsSizer->Add(
                 gameVisualizationModesPanel,
-                1, // Expand vertically
+                0,
                 wxALIGN_CENTER_HORIZONTAL,
                 0);
 
@@ -1656,7 +1656,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
 
             mVisualizationModePanelsSizer->Add(
                 structuralLayerVisualizationModesPanel,
-                1, // Expand vertically
+                0,
                 wxALIGN_CENTER_HORIZONTAL,
                 0);
 
@@ -1717,7 +1717,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
 
             mVisualizationModePanelsSizer->Add(
                 electricalLayerVisualizationModesPanel,
-                1, // Expand vertically
+                0,
                 wxALIGN_CENTER_HORIZONTAL,
                 0);
 
@@ -1778,7 +1778,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
 
             mVisualizationModePanelsSizer->Add(
                 ropesLayerVisualizationModesPanel,
-                1, // Expand vertically
+                0,
                 wxALIGN_CENTER_HORIZONTAL,
                 0);
 
@@ -1839,12 +1839,14 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
 
             mVisualizationModePanelsSizer->Add(
                 textureLayerVisualizationModesPanel,
-                1, // Expand vertically
+                0,
                 wxALIGN_CENTER_HORIZONTAL,
                 0);
 
             mVisualizationModePanels[static_cast<size_t>(VisualizationType::TextureLayer)] = textureLayerVisualizationModesPanel;
         }
+
+        mVisualizationModePanelsSizer->AddSpacer(10);
 
         mVisualizationModePanelsSizer->AddStretchSpacer(1);
 

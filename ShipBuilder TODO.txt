@@ -55,8 +55,6 @@ https://gamejolt.com/x/permalink/comment/11730705
 		- See if Game and Texture textures should be drawn with 0.5 offset
 			- Quad: from Ship=(0,0) @ tex=(0.5/w, 0.5/h) to Ship=(w-1, h-1)+1pixel @ tex=(1.0-0.5/w, 1.0-0.5/h)
 
-	- UI: viz mode details panel is too tall
-		- If we hide also game viz panel it gets shorter, but if we show that one only, it's too tall - see how tall that guy is indeed
 	- MainFrame: Game viz: add "export to image" button
 
 	- Structural layer viz: do Particle mode
