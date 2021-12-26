@@ -143,6 +143,10 @@ public:
 
     void UploadGameVisualizationTexture(RgbaImageData const & texture);
 
+    void UpdateGameVisualizationTexture(
+        RgbaImageData const & subTexture,
+        ImageCoordinates const & origin);
+
     void RemoveGameVisualizationTexture();
 
     bool HasGameVisualizationTexture() const

@@ -318,6 +318,7 @@ private:
     GameVisualizationModeType mGameVisualizationMode;
     std::unique_ptr<RgbaImageData> mGameVisualizationAutoTexturizationTexture;
     std::unique_ptr<RgbaImageData> mGameVisualizationTexture;
+    int mGameVisualizationTextureMagnificationFactor;
     std::optional<ImageRect> mDirtyGameVisualizationRegion;
 
     StructuralLayerVisualizationModeType mStructuralLayerVisualizationMode;

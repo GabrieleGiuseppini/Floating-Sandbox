@@ -46,6 +46,7 @@ ModelController::ModelController(
     , mGameVisualizationMode(GameVisualizationModeType::None)
     , mGameVisualizationAutoTexturizationTexture()
     , mGameVisualizationTexture()
+    , mGameVisualizationTextureMagnificationFactor(0)
     , mDirtyGameVisualizationRegion()
     , mStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType::None)
     , mStructuralLayerVisualizationTexture()
@@ -984,18 +985,24 @@ void ModelController::SetGameVisualizationMode(GameVisualizationModeType mode)
 
     if (mode != GameVisualizationModeType::None)
     {
-        auto const textureSize = ShipTexturizer::CalculateHighDefinitionTextureSize(mModel.GetShipSize());
-
         if (mGameVisualizationMode == GameVisualizationModeType::None)
         {
             // Initialize game visualization texture
+
             assert(!mGameVisualizationTexture);
+
+            mGameVisualizationTextureMagnificationFactor = ShipTexturizer::CalculateHighDefinitionTextureMagnificationFactor(mModel.GetShipSize());
+            ImageSize const textureSize = ImageSize(
+                mModel.GetShipSize().width * mGameVisualizationTextureMagnificationFactor,
+                mModel.GetShipSize().height * mGameVisualizationTextureMagnificationFactor);
+            
             mGameVisualizationTexture = std::make_unique<RgbaImageData>(textureSize);
         }
 
         if (mode == GameVisualizationModeType::AutoTexturizationMode)
         {
-            mGameVisualizationAutoTexturizationTexture = std::make_unique<RgbaImageData>(textureSize);
+            assert(mGameVisualizationTexture);
+            mGameVisualizationAutoTexturizationTexture = std::make_unique<RgbaImageData>(mGameVisualizationTexture->Size);
         }
         else
         {
@@ -1158,7 +1165,26 @@ void ModelController::UploadVisualizations(View & view)
 
         if (mDirtyGameVisualizationRegion.has_value())
         {
-            view.UploadGameVisualizationTexture(*mGameVisualizationTexture);
+            if (*mDirtyGameVisualizationRegion != mGameVisualizationTexture->Size)
+            {
+                //
+                // For better performance, we only upload the dirty sub-texture
+                //
+
+                auto subTexture = RgbaImageData(mDirtyGameVisualizationRegion->size);
+                subTexture.BlitFromRegion(
+                    *mGameVisualizationTexture,
+                    *mDirtyGameVisualizationRegion,
+                    { 0, 0 });
+
+                view.UpdateGameVisualizationTexture(
+                    subTexture,
+                    mDirtyGameVisualizationRegion->origin);
+            }
+            else
+            {
+                view.UploadGameVisualizationTexture(*mGameVisualizationTexture);
+            }
 
             mDirtyGameVisualizationRegion.reset();
         }
@@ -1543,6 +1569,7 @@ void ModelController::UpdateGameVisualization(ShipSpaceRect const & region)
                 mModel.GetStructuralLayer(),
                 region,
                 *mGameVisualizationAutoTexturizationTexture,
+                mGameVisualizationTextureMagnificationFactor,
                 settings);
 
             sourceTexture = mGameVisualizationAutoTexturizationTexture.get();
@@ -1592,15 +1619,16 @@ void ModelController::UpdateGameVisualization(ShipSpaceRect const & region)
         mModel.GetStructuralLayer(),
         effectiveRegion,
         *sourceTexture,
-        *mGameVisualizationTexture);
+        *mGameVisualizationTexture,
+        mGameVisualizationTextureMagnificationFactor);
 
     //
     // 3. Remember dirty region
     //
 
     ImageRect const imageRegion = ImageRect(
-        { effectiveRegion.origin.x, effectiveRegion.origin.y },
-        { effectiveRegion.size.width, effectiveRegion.size.height });
+        { effectiveRegion.origin.x * mGameVisualizationTextureMagnificationFactor, effectiveRegion.origin.y * mGameVisualizationTextureMagnificationFactor },
+        { effectiveRegion.size.width * mGameVisualizationTextureMagnificationFactor, effectiveRegion.size.height * mGameVisualizationTextureMagnificationFactor });
 
     if (!mDirtyGameVisualizationRegion.has_value())
     {
@@ -1646,8 +1674,7 @@ void ModelController::UpdateStructuralLayerVisualization(ShipSpaceRect const & r
 
         case StructuralLayerVisualizationModeType::None:
         {
-            assert(false);
-            break;
+            return;
         }
     }
 

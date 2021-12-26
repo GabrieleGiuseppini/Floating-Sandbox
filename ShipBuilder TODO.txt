@@ -47,16 +47,15 @@ https://gamejolt.com/x/permalink/comment/11730705
 					+ Double-check Y-order of 1,2,3,4 vertices
 					+ Do 0.5
 	+ When loading ship with texture, game viz's auto-texturization mode does not get switched to texture mode
-
-	- Perf of game viz texture: upload only sub-texture
-		- ModelController needs to remember also DirtyViewRegion
+	+ Perf of game viz texture: upload only sub-texture
+		+ ModelController needs to remember also DirtyViewRegion
 
 	= View:
-		= Nail down Z-order of visualizations
+		+ Nail down Z-order of visualizations
 			+ Between game and struct: primary goes first
-			- When texture layer is primary: texture layer should go first
-			- May be rule is: whichever of game, structure, texture is primary, goes first; elec and ropes are fine to always be super-imposed 
-				- Exception: ropes goes always *behind* when it's not primary
+			+ When texture layer is primary: texture layer should go first
+			+ May be rule is: whichever of game, structure, texture is primary, goes first; elec and ropes are fine to always be super-imposed 
+				+ Exception: ropes goes always *behind* when it's not primary
 		- Make Game and Texture textures drawn with 0.5 offset
 			- Quad: from Ship=(0,0) @ tex=(0.5/w, 0.5/h) to Ship=(w-1, h-1)+1pixel @ tex=(1.0-0.5/w, 1.0-0.5/h)
 
@@ -64,6 +63,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 		- Rearc icons now:
 			- Export: above=<file==folder|image==photo> below=<arrow pointing up>
 			- Import: above=<file==folder|image==photo> below=<arrow pointing down>
+		- TODO: ropes are missing...
 
 	- Structural layer viz: do Particle mode
 		- Via shader
@@ -166,11 +166,6 @@ https://gamejolt.com/x/permalink/comment/11730705
 			- Do we need to store whole vec3/4f in texture? Can just R (and possibly A for future transparent material textures like Chain) suffice?
 			- Would nearest neighbor suffice?
 		- Replace round with (truncate + 0.5)
-		- See if can upload only dirty region rather than whole texture
-			- Requires one of:
-				- Alloc sub-texture and copy to it
-					- ModelController needs to also remember DirtyTextureViewRegion
-				- Isolate sub-texture (full width though)
 	- See perf of new auto-texturization wrt previous released version
 
 - Texture flood tool

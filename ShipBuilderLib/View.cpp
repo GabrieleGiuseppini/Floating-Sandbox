@@ -572,6 +572,25 @@ void View::UploadGameVisualizationTexture(RgbaImageData const & texture)
     mHasGameVisualizationTexture = true;
 }
 
+void View::UpdateGameVisualizationTexture(
+    RgbaImageData const & subTexture,
+    ImageCoordinates const & origin)
+{
+    assert(mHasGameVisualizationTexture);
+
+    // Bind texture
+    glBindTexture(GL_TEXTURE_2D, *mGameVisualizationTextureOpenGLHandle);
+    CheckOpenGLError();
+
+    // Upload texture region
+    GameOpenGL::UploadTextureRegion(
+        subTexture.Data.get(),
+        origin.x,
+        origin.y,
+        subTexture.Size.width,
+        subTexture.Size.height);
+}
+
 void View::RemoveGameVisualizationTexture()
 {
     mHasGameVisualizationTexture = false;
@@ -836,38 +855,62 @@ void View::Render()
         CheckOpenGLError();
     }
 
+    //
+    // Visualizations
+    //
+
     // Ropes - when they're not the primary viz (in which case we render them on top of structural)
     if (mRopeCount > 0 && mPrimaryVisualization != VisualizationType::RopesLayer)
     {
         RenderRopesLayerVisualization();
     }
 
-    //
-    // Game and structural visualization
-    //
-
+    // Game, structural, and texture visualizations - whichever is primary goes first
     if (mPrimaryVisualization == VisualizationType::Game)
     {
         if (mHasGameVisualizationTexture)
         {
             RenderGameVisualizationTexture();
         }
-
-        if (mHasStructuralLayerVisualizationTexture)
-        {
-            RenderStructuralLayerVisualizationTexture();
-        }
     }
-    else
+    else if (mPrimaryVisualization == VisualizationType::StructuralLayer)
     {
         if (mHasStructuralLayerVisualizationTexture)
         {
             RenderStructuralLayerVisualizationTexture();
         }
+    }
+    else if (mPrimaryVisualization == VisualizationType::TextureLayer)
+    {
+        if (mHasTextureLayerVisualizationTexture)
+        {
+            RenderTextureLayerVisualizationTexture();
+        }
+    }
 
+    // Game, structural, and texture visualizations - when they're not primary
+
+    if (mPrimaryVisualization != VisualizationType::Game)
+    {
         if (mHasGameVisualizationTexture)
         {
             RenderGameVisualizationTexture();
+        }
+    }
+
+    if (mPrimaryVisualization != VisualizationType::StructuralLayer)
+    {
+        if (mHasStructuralLayerVisualizationTexture)
+        {
+            RenderStructuralLayerVisualizationTexture();
+        }
+    }
+
+    if (mPrimaryVisualization != VisualizationType::TextureLayer)
+    {
+        if (mHasTextureLayerVisualizationTexture)
+        {
+            RenderTextureLayerVisualizationTexture();
         }
     }
 
@@ -883,11 +926,9 @@ void View::Render()
         RenderRopesLayerVisualization();
     }
 
-    // Texture layer visualization texture
-    if (mHasTextureLayerVisualizationTexture)
-    {
-        RenderTextureLayerVisualizationTexture();
-    }
+    //
+    // Misc stuff on top of visualizations
+    //
 
     // Grid
     if (mIsGridEnabled)

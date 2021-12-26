@@ -27,7 +27,7 @@ public:
         MaterialDatabase const & materialDatabase,
         ResourceLocator const & resourceLocator);
 
-    static ImageSize CalculateHighDefinitionTextureSize(ShipSpaceSize const & shipSize);
+    static int CalculateHighDefinitionTextureMagnificationFactor(ShipSpaceSize const & shipSize);
 
     RgbaImageData MakeAutoTexture(
         StructuralLayerData const & structuralLayer,
@@ -37,13 +37,15 @@ public:
         StructuralLayerData const & structuralLayer,
         ShipSpaceRect const & structuralLayerRegion,
         RgbaImageData & targetTextureImage,
+        int magnificationFactor,
         ShipAutoTexturizationSettings const & settings) const;
 
     void RenderShipInto(
         StructuralLayerData const & structuralLayer,
         ShipSpaceRect const & structuralLayerRegion,
         RgbaImageData const & sourceTextureImage,
-        RgbaImageData & targetTextureImage) const;
+        RgbaImageData & targetTextureImage,
+        int magnificationFactor) const;
 
     template<typename TMaterial>
     RgbaImageData MakeTextureSample(

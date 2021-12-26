@@ -41,7 +41,7 @@ ShipTexturizer::ShipTexturizer(
 {
 }
 
-ImageSize ShipTexturizer::CalculateHighDefinitionTextureSize(ShipSpaceSize const & shipSize)
+int ShipTexturizer::CalculateHighDefinitionTextureMagnificationFactor(ShipSpaceSize const & shipSize)
 {
     //
     // Calculate target texture size: integral multiple of structure size, but without
@@ -54,9 +54,7 @@ ImageSize ShipTexturizer::CalculateHighDefinitionTextureSize(ShipSpaceSize const
 
     int const magnificationFactor = std::min(32, std::max(1, 4096 / maxDimension));
 
-    return ImageSize(
-        shipSize.width * magnificationFactor,
-        shipSize.height * magnificationFactor);
+    return magnificationFactor;
 }
 
 RgbaImageData ShipTexturizer::MakeAutoTexture(
@@ -70,7 +68,10 @@ RgbaImageData ShipTexturizer::MakeAutoTexture(
 
     // Calculate texture size
     ShipSpaceSize const shipSize = structuralLayer.Buffer.Size;
-    ImageSize const textureSize = CalculateHighDefinitionTextureSize(shipSize);
+    int magnificationFactor = CalculateHighDefinitionTextureMagnificationFactor(shipSize);
+    ImageSize const textureSize = ImageSize(
+        shipSize.width * magnificationFactor,
+        shipSize.height * magnificationFactor);
 
     // Allocate texture image
     RgbaImageData texture = RgbaImageData(textureSize);
@@ -85,6 +86,7 @@ RgbaImageData ShipTexturizer::MakeAutoTexture(
         structuralLayer,
         ShipSpaceRect({ 0, 0 }, shipSize), // Whole quad
         texture,
+        magnificationFactor,
         actualSettings);
 
     LogMessage("ShipTexturizer: completed auto-texturization:",
@@ -98,6 +100,7 @@ void ShipTexturizer::AutoTexturizeInto(
     StructuralLayerData const & structuralLayer,
     ShipSpaceRect const & structuralLayerRegion,
     RgbaImageData & targetTextureImage,
+    int magnificationFactor,
     ShipAutoTexturizationSettings const & settings) const
 {
     //
@@ -106,7 +109,7 @@ void ShipTexturizer::AutoTexturizeInto(
     
     assert((targetTextureImage.Size.width % structuralLayer.Buffer.Size.width) == 0
         && (targetTextureImage.Size.height % structuralLayer.Buffer.Size.height) == 0);
-    int const magnificationFactor = targetTextureImage.Size.width / structuralLayer.Buffer.Size.width;
+    assert(magnificationFactor == targetTextureImage.Size.width / structuralLayer.Buffer.Size.width);
     assert(magnificationFactor == targetTextureImage.Size.height / structuralLayer.Buffer.Size.height);
 
     float const magnificationFactorInvF = 1.0f / static_cast<float>(magnificationFactor);
@@ -224,7 +227,8 @@ void ShipTexturizer::RenderShipInto(
     StructuralLayerData const & structuralLayer,
     ShipSpaceRect const & structuralLayerRegion,
     RgbaImageData const & sourceTextureImage,
-    RgbaImageData & targetTextureImage) const
+    RgbaImageData & targetTextureImage,
+    int magnificationFactor) const
 {
     rgbaColor constexpr TransparentColor = rgbaColor::zero(); // Fully transparent
 
@@ -241,7 +245,7 @@ void ShipTexturizer::RenderShipInto(
 
     assert((targetTextureImage.Size.width % structuralLayer.Buffer.Size.width) == 0
         && (targetTextureImage.Size.height % structuralLayer.Buffer.Size.height) == 0);
-    int const magnificationFactor = targetTextureImage.Size.width / structuralLayer.Buffer.Size.width;
+    assert(magnificationFactor == targetTextureImage.Size.width / structuralLayer.Buffer.Size.width);
     assert(magnificationFactor == targetTextureImage.Size.height / structuralLayer.Buffer.Size.height);
 
     float const targetTextureSpaceToSourceTextureSpace =
