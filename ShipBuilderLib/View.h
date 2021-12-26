@@ -141,17 +141,17 @@ public:
     // Game viz (all sticky)
     //
 
-    void UploadGameVisualizationTexture(RgbaImageData const & texture);
+    void UploadGameVisualization(RgbaImageData const & texture);
 
     void UpdateGameVisualizationTexture(
         RgbaImageData const & subTexture,
         ImageCoordinates const & origin);
 
-    void RemoveGameVisualizationTexture();
+    void RemoveGameVisualization();
 
-    bool HasGameVisualizationTexture() const
+    bool HasGameVisualization() const
     {
-        return mHasGameVisualizationTexture;
+        return mHasGameVisualization;
     }
 
     //
@@ -166,26 +166,26 @@ public:
 
     void SetStructuralLayerVisualizationDrawMode(StructuralLayerVisualizationDrawMode mode);
 
-    void UploadStructuralLayerVisualizationTexture(RgbaImageData const & texture);
+    void UploadStructuralLayerVisualization(RgbaImageData const & texture);
 
-    void RemoveStructuralLayerVisualizationTexture();
+    void RemoveStructuralLayerVisualization();
 
-    bool HasStructuralLayerVisualizationTexture() const
+    bool HasStructuralLayerVisualization() const
     {
-        return mHasStructuralLayerVisualizationTexture;
+        return mHasStructuralLayerVisualization;
     }
 
     //
     // Electrical layer viz (all sticky)
     //
 
-    void UploadElectricalLayerVisualizationTexture(RgbaImageData const & texture);
+    void UploadElectricalLayerVisualization(RgbaImageData const & texture);
 
-    void RemoveElectricalLayerVisualizationTexture();
+    void RemoveElectricalLayerVisualization();
 
-    bool HasElectricalLayerVisualizationTexture() const
+    bool HasElectricalLayerVisualization() const
     {
-        return mHasElectricalLayerVisualizationTexture;
+        return mHasElectricalLayerVisualization;
     }
 
     //
@@ -205,13 +205,13 @@ public:
     // Texture layer viz (all sticky)
     //
 
-    void UploadTextureLayerVisualizationTexture(RgbaImageData const & texture);
+    void UploadTextureLayerVisualization(RgbaImageData const & texture);
 
-    void RemoveTextureLayerVisualizationTexture();
+    void RemoveTextureLayerVisualization();
 
-    bool HasTextureLayerVisualizationTexture() const
+    bool HasTextureLayerVisualization() const
     {
-        return mHasTextureLayerVisualizationTexture;
+        return mHasTextureLayerVisualization;
     }
 
     //
@@ -429,23 +429,23 @@ private:
     GameOpenGLVBO mCanvasVBO;
 
     // Game visualization
-    GameOpenGLVAO mGameVisualizationTextureVAO;
-    GameOpenGLVBO mGameVisualizationTextureVBO;
+    GameOpenGLVAO mGameVisualizationVAO;
+    GameOpenGLVBO mGameVisualizationVBO;
     GameOpenGLTexture mGameVisualizationTexture;
-    bool mHasGameVisualizationTexture;
+    bool mHasGameVisualization;
 
     // Structural layer visualization
-    GameOpenGLVAO mStructuralLayerVisualizationTextureVAO;
-    GameOpenGLVBO mStructuralLayerVisualizationTextureVBO;
-    GameOpenGLTexture mStructuralLayerVisualizationTextureTexture;
-    bool mHasStructuralLayerVisualizationTexture;
+    GameOpenGLVAO mStructuralLayerVisualizationVAO;
+    GameOpenGLVBO mStructuralLayerVisualizationVBO;
+    GameOpenGLTexture mStructuralLayerVisualizationTexture;
+    bool mHasStructuralLayerVisualization;
     ProgramType mStructuralLayerVisualizationShader;
 
     // Electrical layer visualization
-    GameOpenGLVAO mElectricalLayerVisualizationTextureVAO;
-    GameOpenGLVBO mElectricalLayerVisualizationTextureVBO;
+    GameOpenGLVAO mElectricalLayerVisualizationVAO;
+    GameOpenGLVBO mElectricalLayerVisualizationVBO;
     GameOpenGLTexture mElectricalLayerVisualizationTexture;
-    bool mHasElectricalLayerVisualizationTexture;
+    bool mHasElectricalLayerVisualization;
 
     // Ropes layer visualization
     GameOpenGLVAO mRopesVAO;
@@ -453,10 +453,10 @@ private:
     size_t mRopeCount;
 
     // Texture layer visualization
-    GameOpenGLVAO mTextureLayerVisualizationTextureVAO;
-    GameOpenGLVBO mTextureLayerVisualizationTextureVBO;
-    GameOpenGLTexture mTextureLayerVisualizationTextureTexture;
-    bool mHasTextureLayerVisualizationTexture;
+    GameOpenGLVAO mTextureLayerVisualizationVAO;
+    GameOpenGLVBO mTextureLayerVisualizationVBO;
+    GameOpenGLTexture mTextureLayerVisualizationTexture;
+    bool mHasTextureLayerVisualization;
 
     // Visualizations opacity
     float mOtherVisualizationsOpacity;

@@ -25,12 +25,12 @@ View::View(
     , mSwapRenderBuffersFunction(swapRenderBuffersFunction)
     //////////////////////////////////
     , mHasBackgroundTexture(false)
-    , mHasGameVisualizationTexture(false)
-    , mHasStructuralLayerVisualizationTexture(false)
+    , mHasGameVisualization(false)
+    , mHasStructuralLayerVisualization(false)
     , mStructuralLayerVisualizationShader(ProgramType::Texture) // Will be overwritten
-    , mHasElectricalLayerVisualizationTexture(false)
+    , mHasElectricalLayerVisualization(false)
     , mRopeCount(false)
-    , mHasTextureLayerVisualizationTexture(false)
+    , mHasTextureLayerVisualization(false)
     , mOtherVisualizationsOpacity(0.75f)
     , mIsGridEnabled(false)
     , mCircleOverlayCenter(0, 0) // Will be overwritten
@@ -175,16 +175,16 @@ View::View(
 
         // Create VAO
         glGenVertexArrays(1, &tmpGLuint);
-        mGameVisualizationTextureVAO = tmpGLuint;
-        glBindVertexArray(*mGameVisualizationTextureVAO);
+        mGameVisualizationVAO = tmpGLuint;
+        glBindVertexArray(*mGameVisualizationVAO);
         CheckOpenGLError();
 
         // Create VBO
         glGenBuffers(1, &tmpGLuint);
-        mGameVisualizationTextureVBO = tmpGLuint;
+        mGameVisualizationVBO = tmpGLuint;
 
         // Describe vertex attributes
-        glBindBuffer(GL_ARRAY_BUFFER, *mGameVisualizationTextureVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, *mGameVisualizationVBO);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Texture));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Texture), 4, GL_FLOAT, GL_FALSE, sizeof(TextureVertex), (void *)0);
         CheckOpenGLError();
@@ -205,10 +205,10 @@ View::View(
 
         // Create texture OpenGL handle
         glGenTextures(1, &tmpGLuint);
-        mStructuralLayerVisualizationTextureTexture = tmpGLuint;
+        mStructuralLayerVisualizationTexture = tmpGLuint;
 
         // Configure texture
-        glBindTexture(GL_TEXTURE_2D, *mStructuralLayerVisualizationTextureTexture);
+        glBindTexture(GL_TEXTURE_2D, *mStructuralLayerVisualizationTexture);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -221,16 +221,16 @@ View::View(
 
         // Create VAO
         glGenVertexArrays(1, &tmpGLuint);
-        mStructuralLayerVisualizationTextureVAO = tmpGLuint;
-        glBindVertexArray(*mStructuralLayerVisualizationTextureVAO);
+        mStructuralLayerVisualizationVAO = tmpGLuint;
+        glBindVertexArray(*mStructuralLayerVisualizationVAO);
         CheckOpenGLError();
 
         // Create VBO
         glGenBuffers(1, &tmpGLuint);
-        mStructuralLayerVisualizationTextureVBO = tmpGLuint;
+        mStructuralLayerVisualizationVBO = tmpGLuint;
 
         // Describe vertex attributes
-        glBindBuffer(GL_ARRAY_BUFFER, *mStructuralLayerVisualizationTextureVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, *mStructuralLayerVisualizationVBO);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Texture));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Texture), 4, GL_FLOAT, GL_FALSE, sizeof(TextureVertex), (void *)0);
         CheckOpenGLError();
@@ -267,16 +267,16 @@ View::View(
 
         // Create VAO
         glGenVertexArrays(1, &tmpGLuint);
-        mElectricalLayerVisualizationTextureVAO = tmpGLuint;
-        glBindVertexArray(*mElectricalLayerVisualizationTextureVAO);
+        mElectricalLayerVisualizationVAO = tmpGLuint;
+        glBindVertexArray(*mElectricalLayerVisualizationVAO);
         CheckOpenGLError();
 
         // Create VBO
         glGenBuffers(1, &tmpGLuint);
-        mElectricalLayerVisualizationTextureVBO = tmpGLuint;
+        mElectricalLayerVisualizationVBO = tmpGLuint;
 
         // Describe vertex attributes
-        glBindBuffer(GL_ARRAY_BUFFER, *mElectricalLayerVisualizationTextureVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, *mElectricalLayerVisualizationVBO);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Texture));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Texture), 4, GL_FLOAT, GL_FALSE, sizeof(TextureVertex), (void *)0);
         CheckOpenGLError();
@@ -326,10 +326,10 @@ View::View(
 
         // Create texture OpenGL handle
         glGenTextures(1, &tmpGLuint);
-        mTextureLayerVisualizationTextureTexture = tmpGLuint;
+        mTextureLayerVisualizationTexture = tmpGLuint;
 
         // Configure texture
-        glBindTexture(GL_TEXTURE_2D, *mTextureLayerVisualizationTextureTexture);
+        glBindTexture(GL_TEXTURE_2D, *mTextureLayerVisualizationTexture);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -342,16 +342,16 @@ View::View(
 
         // Create VAO
         glGenVertexArrays(1, &tmpGLuint);
-        mTextureLayerVisualizationTextureVAO = tmpGLuint;
-        glBindVertexArray(*mTextureLayerVisualizationTextureVAO);
+        mTextureLayerVisualizationVAO = tmpGLuint;
+        glBindVertexArray(*mTextureLayerVisualizationVAO);
         CheckOpenGLError();
 
         // Create VBO
         glGenBuffers(1, &tmpGLuint);
-        mTextureLayerVisualizationTextureVBO = tmpGLuint;
+        mTextureLayerVisualizationVBO = tmpGLuint;
 
         // Describe vertex attributes
-        glBindBuffer(GL_ARRAY_BUFFER, *mTextureLayerVisualizationTextureVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, *mTextureLayerVisualizationVBO);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Texture));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Texture), 4, GL_FLOAT, GL_FALSE, sizeof(TextureVertex), (void *)0);
         CheckOpenGLError();
@@ -547,7 +547,7 @@ void View::UploadBackgroundTexture(RgbaImageData && texture)
     mHasBackgroundTexture = true;
 }
 
-void View::UploadGameVisualizationTexture(RgbaImageData const & texture)
+void View::UploadGameVisualization(RgbaImageData const & texture)
 {
     //
     // Upload texture
@@ -563,21 +563,21 @@ void View::UploadGameVisualizationTexture(RgbaImageData const & texture)
     //
     // Upload vertices
     //
-
-    UploadTextureVertices(mGameVisualizationTextureVBO);
+    
+    UploadTextureVertices(mGameVisualizationVBO);
 
     //
-    // Remember we have this texture
+    // Remember we have this visualization
     //
 
-    mHasGameVisualizationTexture = true;
+    mHasGameVisualization = true;
 }
 
 void View::UpdateGameVisualizationTexture(
     RgbaImageData const & subTexture,
     ImageCoordinates const & origin)
 {
-    assert(mHasGameVisualizationTexture);
+    assert(mHasGameVisualization);
 
     // Bind texture
     glBindTexture(GL_TEXTURE_2D, *mGameVisualizationTexture);
@@ -592,9 +592,9 @@ void View::UpdateGameVisualizationTexture(
         subTexture.Size.height);
 }
 
-void View::RemoveGameVisualizationTexture()
+void View::RemoveGameVisualization()
 {
-    mHasGameVisualizationTexture = false;
+    mHasGameVisualization = false;
 }
 
 void View::SetStructuralLayerVisualizationDrawMode(StructuralLayerVisualizationDrawMode mode)
@@ -615,14 +615,14 @@ void View::SetStructuralLayerVisualizationDrawMode(StructuralLayerVisualizationD
     }
 }
 
-void View::UploadStructuralLayerVisualizationTexture(RgbaImageData const & texture)
+void View::UploadStructuralLayerVisualization(RgbaImageData const & texture)
 {
     //
     // Upload texture
     //
 
     // Bind texture
-    glBindTexture(GL_TEXTURE_2D, *mStructuralLayerVisualizationTextureTexture);
+    glBindTexture(GL_TEXTURE_2D, *mStructuralLayerVisualizationTexture);
     CheckOpenGLError();
 
     // Upload texture
@@ -632,13 +632,13 @@ void View::UploadStructuralLayerVisualizationTexture(RgbaImageData const & textu
     // Upload vertices
     //
 
-    UploadTextureVertices(mStructuralLayerVisualizationTextureVBO);
+    UploadTextureVertices(mStructuralLayerVisualizationVBO);
 
     //
-    // Remember we have this texture
+    // Remember we have this visualization
     //
 
-    mHasStructuralLayerVisualizationTexture = true;
+    mHasStructuralLayerVisualization = true;
 
     //
     // Update visualization
@@ -647,12 +647,12 @@ void View::UploadStructuralLayerVisualizationTexture(RgbaImageData const & textu
     UpdateStructuralLayerVisualization();
 }
 
-void View::RemoveStructuralLayerVisualizationTexture()
+void View::RemoveStructuralLayerVisualization()
 {
-    mHasStructuralLayerVisualizationTexture = false;
+    mHasStructuralLayerVisualization = false;
 }
 
-void View::UploadElectricalLayerVisualizationTexture(RgbaImageData const & texture)
+void View::UploadElectricalLayerVisualization(RgbaImageData const & texture)
 {
     //
     // Upload texture
@@ -669,18 +669,18 @@ void View::UploadElectricalLayerVisualizationTexture(RgbaImageData const & textu
     // Upload vertices
     //
 
-    UploadTextureVertices(mElectricalLayerVisualizationTextureVBO);
+    UploadTextureVertices(mElectricalLayerVisualizationVBO);
 
     //
-    // Remember we have this texture
+    // Remember we have this visualization
     //
 
-    mHasElectricalLayerVisualizationTexture = true;
+    mHasElectricalLayerVisualization = true;
 }
 
-void View::RemoveElectricalLayerVisualizationTexture()
+void View::RemoveElectricalLayerVisualization()
 {
-    mHasElectricalLayerVisualizationTexture = false;
+    mHasElectricalLayerVisualization = false;
 }
 
 void View::UploadRopesLayerVisualization(RopeBuffer const & ropeBuffer)
@@ -728,14 +728,14 @@ void View::RemoveRopesLayerVisualization()
     mRopeCount = 0;
 }
 
-void View::UploadTextureLayerVisualizationTexture(RgbaImageData const & texture)
+void View::UploadTextureLayerVisualization(RgbaImageData const & texture)
 {
     //
     // Upload texture
     //
 
     // Bind texture
-    glBindTexture(GL_TEXTURE_2D, *mTextureLayerVisualizationTextureTexture);
+    glBindTexture(GL_TEXTURE_2D, *mTextureLayerVisualizationTexture);
     CheckOpenGLError();
 
     // Upload texture
@@ -778,21 +778,21 @@ void View::UploadTextureLayerVisualizationTexture(RgbaImageData const & texture)
     // Upload vertices
     //
 
-    glBindBuffer(GL_ARRAY_BUFFER, *mTextureLayerVisualizationTextureVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, *mTextureLayerVisualizationVBO);
     glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size() * sizeof(TextureVertex), vertexBuffer.data(), GL_STATIC_DRAW);
     CheckOpenGLError();
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     //
-    // Remember we have this texture
+    // Remember we have this visualization
     //
 
-    mHasTextureLayerVisualizationTexture = true;
+    mHasTextureLayerVisualization = true;
 }
 
-void View::RemoveTextureLayerVisualizationTexture()
+void View::RemoveTextureLayerVisualization()
 {
-    mHasTextureLayerVisualizationTexture = false;
+    mHasTextureLayerVisualization = false;
 }
 
 void View::UploadCircleOverlay(
@@ -929,21 +929,21 @@ void View::Render()
     // Game, structural, and texture visualizations - whichever is primary goes first
     if (mPrimaryVisualization == VisualizationType::Game)
     {
-        if (mHasGameVisualizationTexture)
+        if (mHasGameVisualization)
         {
             RenderGameVisualization();
         }
     }
     else if (mPrimaryVisualization == VisualizationType::StructuralLayer)
     {
-        if (mHasStructuralLayerVisualizationTexture)
+        if (mHasStructuralLayerVisualization)
         {
             RenderStructuralLayerVisualization();
         }
     }
     else if (mPrimaryVisualization == VisualizationType::TextureLayer)
     {
-        if (mHasTextureLayerVisualizationTexture)
+        if (mHasTextureLayerVisualization)
         {
             RenderTextureLayerVisualization();
         }
@@ -953,7 +953,7 @@ void View::Render()
 
     if (mPrimaryVisualization != VisualizationType::Game)
     {
-        if (mHasGameVisualizationTexture)
+        if (mHasGameVisualization)
         {
             RenderGameVisualization();
         }
@@ -961,7 +961,7 @@ void View::Render()
 
     if (mPrimaryVisualization != VisualizationType::StructuralLayer)
     {
-        if (mHasStructuralLayerVisualizationTexture)
+        if (mHasStructuralLayerVisualization)
         {
             RenderStructuralLayerVisualization();
         }
@@ -969,14 +969,14 @@ void View::Render()
 
     if (mPrimaryVisualization != VisualizationType::TextureLayer)
     {
-        if (mHasTextureLayerVisualizationTexture)
+        if (mHasTextureLayerVisualization)
         {
             RenderTextureLayerVisualization();
         }
     }
 
-    // Electrical layer visualization texture
-    if (mHasElectricalLayerVisualizationTexture)
+    // Electrical layer visualization
+    if (mHasElectricalLayerVisualization)
     {
         RenderElectricalLayerVisualization();
     }
@@ -1071,7 +1071,7 @@ void View::OnViewModelUpdated()
 
     UpdateGrid();
 
-    if (mHasStructuralLayerVisualizationTexture)
+    if (mHasStructuralLayerVisualization)
     {
         UpdateStructuralLayerVisualization();
     }
@@ -1495,7 +1495,7 @@ void View::RenderGameVisualization()
     glBindTexture(GL_TEXTURE_2D, *mGameVisualizationTexture);
 
     // Bind VAO
-    glBindVertexArray(*mGameVisualizationTextureVAO);
+    glBindVertexArray(*mGameVisualizationVAO);
 
     // Activate program
     mShaderManager->ActivateProgram<ProgramType::Texture>();
@@ -1513,10 +1513,10 @@ void View::RenderStructuralLayerVisualization()
 {
     // Set this texture in the shader's sampler
     mShaderManager->ActivateTexture<ProgramParameterType::TextureUnit1>();
-    glBindTexture(GL_TEXTURE_2D, *mStructuralLayerVisualizationTextureTexture);
+    glBindTexture(GL_TEXTURE_2D, *mStructuralLayerVisualizationTexture);
 
     // Bind VAO
-    glBindVertexArray(*mStructuralLayerVisualizationTextureVAO);
+    glBindVertexArray(*mStructuralLayerVisualizationVAO);
 
     // Activate program
     mShaderManager->ActivateProgram(mStructuralLayerVisualizationShader);
@@ -1538,7 +1538,7 @@ void View::RenderElectricalLayerVisualization()
     glBindTexture(GL_TEXTURE_2D, *mElectricalLayerVisualizationTexture);
 
     // Bind VAO
-    glBindVertexArray(*mElectricalLayerVisualizationTextureVAO);
+    glBindVertexArray(*mElectricalLayerVisualizationVAO);
 
     // Activate program
     mShaderManager->ActivateProgram<ProgramType::Texture>();
@@ -1576,10 +1576,10 @@ void View::RenderTextureLayerVisualization()
 {
     // Set this texture in the shader's sampler
     mShaderManager->ActivateTexture<ProgramParameterType::TextureUnit1>();
-    glBindTexture(GL_TEXTURE_2D, *mTextureLayerVisualizationTextureTexture);
+    glBindTexture(GL_TEXTURE_2D, *mTextureLayerVisualizationTexture);
 
     // Bind VAO
-    glBindVertexArray(*mTextureLayerVisualizationTextureVAO);
+    glBindVertexArray(*mTextureLayerVisualizationVAO);
 
     // Activate program
     mShaderManager->ActivateProgram<ProgramType::Texture>();

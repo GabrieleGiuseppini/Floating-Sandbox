@@ -1183,7 +1183,7 @@ void ModelController::UploadVisualizations(View & view)
             }
             else
             {
-                view.UploadGameVisualizationTexture(*mGameVisualizationTexture);
+                view.UploadGameVisualization(*mGameVisualizationTexture);
             }
 
             mDirtyGameVisualizationRegion.reset();
@@ -1194,9 +1194,9 @@ void ModelController::UploadVisualizations(View & view)
         assert(!mGameVisualizationTexture);
         assert(!mDirtyGameVisualizationRegion.has_value());
 
-        if (view.HasGameVisualizationTexture())
+        if (view.HasGameVisualization())
         {
-            view.RemoveGameVisualizationTexture();
+            view.RemoveGameVisualization();
         }
     }
 
@@ -1217,8 +1217,8 @@ void ModelController::UploadVisualizations(View & view)
                 view.SetStructuralLayerVisualizationDrawMode(View::StructuralLayerVisualizationDrawMode::PixelMode);
             }
 
-            // Upload texture
-            view.UploadStructuralLayerVisualizationTexture(*mStructuralLayerVisualizationTexture);
+            // Upload visualization
+            view.UploadStructuralLayerVisualization(*mStructuralLayerVisualizationTexture);
 
             mDirtyStructuralLayerVisualizationRegion.reset();
         }
@@ -1228,9 +1228,9 @@ void ModelController::UploadVisualizations(View & view)
         assert(!mStructuralLayerVisualizationTexture);
         assert(!mDirtyStructuralLayerVisualizationRegion.has_value());
 
-        if (view.HasStructuralLayerVisualizationTexture())
+        if (view.HasStructuralLayerVisualization())
         {
-            view.RemoveStructuralLayerVisualizationTexture();
+            view.RemoveStructuralLayerVisualization();
         }
     }
 
@@ -1240,7 +1240,7 @@ void ModelController::UploadVisualizations(View & view)
 
         if (mDirtyElectricalLayerVisualizationRegion.has_value())
         {
-            view.UploadElectricalLayerVisualizationTexture(*mElectricalLayerVisualizationTexture);
+            view.UploadElectricalLayerVisualization(*mElectricalLayerVisualizationTexture);
 
             mDirtyElectricalLayerVisualizationRegion.reset();
         }
@@ -1250,9 +1250,9 @@ void ModelController::UploadVisualizations(View & view)
         assert(!mElectricalLayerVisualizationTexture);
         assert(!mDirtyElectricalLayerVisualizationRegion.has_value());
 
-        if (view.HasElectricalLayerVisualizationTexture())
+        if (view.HasElectricalLayerVisualization())
         {
-            view.RemoveElectricalLayerVisualizationTexture();
+            view.RemoveElectricalLayerVisualization();
         }
     }
 
@@ -1283,7 +1283,7 @@ void ModelController::UploadVisualizations(View & view)
 
         if (mIsTextureLayerVisualizationDirty)
         {
-            view.UploadTextureLayerVisualizationTexture(mModel.GetTextureLayer().Buffer);
+            view.UploadTextureLayerVisualization(mModel.GetTextureLayer().Buffer);
 
             mIsTextureLayerVisualizationDirty = false;
         }
@@ -1292,9 +1292,9 @@ void ModelController::UploadVisualizations(View & view)
     {
         assert(!mIsTextureLayerVisualizationDirty);
 
-        if (view.HasTextureLayerVisualizationTexture())
+        if (view.HasTextureLayerVisualization())
         {
-            view.RemoveTextureLayerVisualizationTexture();
+            view.RemoveTextureLayerVisualization();
         }
     }
 }
