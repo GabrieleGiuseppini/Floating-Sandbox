@@ -49,24 +49,23 @@ https://gamejolt.com/x/permalink/comment/11730705
 	+ When loading ship with texture, game viz's auto-texturization mode does not get switched to texture mode
 	+ Perf of game viz texture: upload only sub-texture
 		+ ModelController needs to remember also DirtyViewRegion
-
-	= View:
+	+ View:
 		+ Nail down Z-order of visualizations
 			+ Between game and struct: primary goes first
 			+ When texture layer is primary: texture layer should go first
 			+ May be rule is: whichever of game, structure, texture is primary, goes first; elec and ropes are fine to always be super-imposed 
 				+ Exception: ropes goes always *behind* when it's not primary
-		- Make Game and Texture textures drawn with 0.5 offset
-			- Quad: from Ship=(0,0) @ tex=(0.5/w, 0.5/h) to Ship=(w-1, h-1)+1pixel @ tex=(1.0-0.5/w, 1.0-0.5/h)
+		+ Make Texture texture drawn with 0.5 offset
+			+ Quad: from Ship=(0,0) @ tex=(0.5/w, 0.5/h) to Ship=(w-1, h-1)+1pixel @ tex=(1.0-0.5/w, 1.0-0.5/h)
+
+	- Structural layer viz: do Particle mode
+		- Via shader
 
 	- MainFrame: Game viz: add "export to image" button
 		- Rearc icons now:
 			- Export: above=<file==folder|image==photo> below=<arrow pointing up>
 			- Import: above=<file==folder|image==photo> below=<arrow pointing down>
 		- TODO: ropes are missing...
-
-	- Structural layer viz: do Particle mode
-		- Via shader
 
 = Visualization modes: (*)
 	+ Each layer has a visualization mode

@@ -717,10 +717,46 @@ void View::UploadTextureLayerVisualizationTexture(RgbaImageData const & texture)
     GameOpenGL::UploadTexture(texture);
 
     //
+    // Create vertices
+    //
+    // We draw the texture with the same "0.5 ship offset" that we use at ShipFactory
+    //
+
+    float const shipWidth = static_cast<float>(mViewModel.GetShipSize().width);
+    float const shipHeight = static_cast<float>(mViewModel.GetShipSize().height);
+    float const offsetX = 0.5f / shipWidth;
+    float const offsetY = 0.5f / shipHeight;
+
+    std::array<TextureVertex, 4> vertexBuffer;
+
+    // Bottom-left
+    vertexBuffer[0] = TextureVertex(
+        vec2f(0.0f, 0.0f),
+        vec2f(offsetX, offsetY));
+
+    // Top-left
+    vertexBuffer[1] = TextureVertex(
+        vec2f(0.0f, shipHeight - 1),
+        vec2f(offsetX, 1.0f - offsetY));
+
+    // Bottom-right
+    vertexBuffer[2] = TextureVertex(
+        vec2f(shipWidth - 1, 0.0f),
+        vec2f(1.0f - offsetX, offsetY));
+
+    // Top-right
+    vertexBuffer[3] = TextureVertex(
+        vec2f(shipWidth - 1, shipHeight - 1),
+        vec2f(1.0f - offsetX, 1.0f - offsetY));
+
+    //
     // Upload vertices
     //
 
-    UploadTextureVertices(mTextureLayerVisualizationTextureVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, *mTextureLayerVisualizationTextureVBO);
+    glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size() * sizeof(TextureVertex), vertexBuffer.data(), GL_STATIC_DRAW);
+    CheckOpenGLError();
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     //
     // Remember we have this texture
