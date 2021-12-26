@@ -1,6 +1,6 @@
 https://gamejolt.com/x/permalink/comment/11730705
 
-= Texturization rearc:
++ Texturization rearc:
 	! Auto-texturizer stays as it was one step ago: auto-texturization (with no triangulation) - and sample-texturization
 	! ShipBuilder produces StructuralTexture doing its own triangulation on top of texture, and adding offset (baked into texture)
 		! View does NOT add offset
@@ -57,35 +57,34 @@ https://gamejolt.com/x/permalink/comment/11730705
 				+ Exception: ropes goes always *behind* when it's not primary
 		+ Make Texture texture drawn with 0.5 offset
 			+ Quad: from Ship=(0,0) @ tex=(0.5/w, 0.5/h) to Ship=(w-1, h-1)+1pixel @ tex=(1.0-0.5/w, 1.0-0.5/h)
-
-	= Structural layer viz: do Particle mode
+	+ Structural layer viz: do Particle mode
 		! Via shader
 		+ MainFrame:
 			+ Button
 				+ Icon: square with circle
 		+ Controller
 		+ ModelController
-		= View:
+		+ View:
 			+ Methods
-			- Shader
+			+ Shader
 			+ VAO setup
 			+ OnViewModelUpdated
 			+ RenderStructureParticles
 			+ ModelController/View: not separate structurual layer, but View::StructuralLayerVizDrawMode (=={Particle, Pixel}) => mStructuralLayerVizDrawMode ShaderType
 				+ Then: UploadXXXVisualization()/Has/RemoveXXXVisualization()
-		- See if we want it to be the default
+		+ See if we want it to be the default
 
 = Visualization modes: (*)
 	+ Each layer has a visualization mode
 	+ Selectors are in new set of panels - with visibility dependent on primary layer - in LayersVisualization panel
 		+ On top of grid view button
-	= Modes: (each an enum in ShipBuilderTypes)
-		- Game:
-			- Auto-Texturization
-			- Texture (only if texture layer exists)
-		- Structural layer:
-			- Pixel
-			- Particle (drawn as little circle at L-B corner)
+	+ Modes: (each an enum in ShipBuilderTypes)
+		+ Game:
+			+ Auto-Texturization (only if texture layer does not exist)
+			+ Texture (only if texture layer exists)
+		+ Structural layer:
+			+ Pixel
+			+ Particle
 		+ Electrical:
 			+ Particle
 			- Circuit (long-term)
@@ -154,7 +153,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 			+ But still based on same magnification
 			+ Has "triangle" algorithm, based on count of points in four vertices of each square
 		+ Does structural vix for region Foo impact region outside Foo? If so, take that into account at ModelController::UpdateStrucuturalViz, enlarging dirty region (possibly among other things)
-		= Make sure that when checking for vertices, we're not constrained by region size but rather by whole structure size
+		+ Make sure that when checking for vertices, we're not constrained by region size but rather by whole structure size
 		- See if can make lines for those cases that only have two vertices
 		- Verify triangulation matches Game's
 		- See if nearest neighbor is still ok
@@ -482,6 +481,9 @@ https://gamejolt.com/x/permalink/comment/11730705
 		- Start visit from all sources
 		- Assume all switches, etc. are conductive
 		- Make sure all sinks have been reached
+
+- Visualizations:
+	- Electrical layer's "circuit" visualization
 
 = Ship file format:
 	+ Fixed endianness

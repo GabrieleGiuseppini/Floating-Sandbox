@@ -69,6 +69,8 @@ View::View(
     mShaderManager = ShaderManager<ShaderManagerTraits>::CreateInstance(resourceLocator.GetShipBuilderShadersRootPath());
 
     // Set texture samplers in programs
+    mShaderManager->ActivateProgram<ProgramType::StructureParticles>();
+    mShaderManager->SetTextureParameters<ProgramType::StructureParticles>();
     mShaderManager->ActivateProgram<ProgramType::Texture>();
     mShaderManager->SetTextureParameters<ProgramType::Texture>();
     mShaderManager->ActivateProgram<ProgramType::TextureNdc>();

@@ -77,7 +77,7 @@ Controller::Controller(
     // State
     , mPrimaryVisualization(VisualizationType::StructuralLayer)
     , mGameVisualizationMode(mModelController->GetModel().HasLayer(LayerType::Texture) ? GameVisualizationModeType::TextureMode : GameVisualizationModeType::AutoTexturizationMode)
-    , mStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType::PixelMode)
+    , mStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType::ParticleMode)
     , mElectricalLayerVisualizationMode(ElectricalLayerVisualizationModeType::PixelMode)
     , mRopesLayerVisualizationMode(RopesLayerVisualizationModeType::LinesMode)
     , mTextureLayerVisualizationMode(TextureLayerVisualizationModeType::MatteMode)
