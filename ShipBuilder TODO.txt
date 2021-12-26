@@ -149,14 +149,13 @@ https://gamejolt.com/x/permalink/comment/11730705
 		+ Verify settings
 	= Texture visualization
 		+ ModelController::SetStructuralLayerVizMode: realloc texture for right sizes when changing between types that require different...sizes
-		= ShipTexturizer: new method with whole new implementation, which takes texture from outside (& no settings)
+		+ ShipTexturizer: new method with whole new implementation, which takes texture from outside (& no settings)
 			+ But still based on same magnification
 			+ Has "triangle" algorithm, based on count of points in four vertices of each square
 		+ Does structural vix for region Foo impact region outside Foo? If so, take that into account at ModelController::UpdateStrucuturalViz, enlarging dirty region (possibly among other things)
 		+ Make sure that when checking for vertices, we're not constrained by region size but rather by whole structure size
+		+ Verify triangulation matches Game's
 		- See if can make lines for those cases that only have two vertices
-		- Verify triangulation matches Game's
-		- See if nearest neighbor is still ok
 	- Perf improvements:
 		- Auto-texturization
 			- Do benchmarks
@@ -204,7 +203,6 @@ https://gamejolt.com/x/permalink/comment/11730705
 								- See broken Y
 							= Controller::SetTextureLayer
 								= Undo
-							- Texture visualization (see immediately above) for testing
 						= For resize
 							+ Dialog
 								+ Dimensions lock button
@@ -227,7 +225,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 								- Undo
 				- Texture-import-from-button issue: see if specifying two bitmaps works
 			- .shp, .shp2 (load whole and throw away)
-				- Might as well allow user to select .png's (for simplicity in ShipLoadDialog), will be discared afterwards anyway
+				- Might as well allow user to select also .png's (for simplicity in ShipLoadDialog), will be discarded (errored) afterwards anyway - see next line
 				- Show error if no layer exists in definition
 			= After import, also replace art credits
 				= Empty if from image, from imported ship otherwise (even if empty)
@@ -236,6 +234,8 @@ https://gamejolt.com/x/permalink/comment/11730705
 	- Notes:
 		- Any import from .shp2 requires password
 		- All imports push an undo
+
+- Send for testing
 
 - Resize workflow:
 	+ Button - in Ship Settings panel, slightly separated from the File buttons
