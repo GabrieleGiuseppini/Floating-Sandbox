@@ -71,7 +71,8 @@ https://gamejolt.com/x/permalink/comment/11730705
 			+ VAO setup
 			+ OnViewModelUpdated
 			+ RenderStructureParticles
-			- ModelController/View: not separate structurual layer, but View::StructuralLayerVizDrawMode (=={Particle, Pixel}) => mStructuralLayerVizDrawMode ShaderType
+			= ModelController/View: not separate structurual layer, but View::StructuralLayerVizDrawMode (=={Particle, Pixel}) => mStructuralLayerVizDrawMode ShaderType
+				- Then: UploadXXXVisualization()/Has/RemoveXXXVisualization()
 		- See if we want it to be the default
 
 = Visualization modes: (*)

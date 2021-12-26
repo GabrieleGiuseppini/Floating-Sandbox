@@ -1206,24 +1206,19 @@ void ModelController::UploadVisualizations(View & view)
 
         if (mDirtyStructuralLayerVisualizationRegion.has_value())
         {
+            // Refresh mode
             if (mStructuralLayerVisualizationMode == StructuralLayerVisualizationModeType::ParticleMode)
             {
-                if (view.HasStructuralLayerVisualizationTexture())
-                {
-                    view.RemoveStructuralLayerVisualizationTexture();
-                }
-
-                view.UploadStructuralLayerVisualizationParticles(*mStructuralLayerVisualizationTexture);
+                view.SetStructuralLayerVisualizationDrawMode(View::StructuralLayerVisualizationDrawMode::ParticleMode);
             }
             else
             {
-                if (view.HasStructuralLayerVisualizationParticles())
-                {
-                    view.RemoveStructuralLayerVisualizationParticles();
-                }
-
-                view.UploadStructuralLayerVisualizationTexture(*mStructuralLayerVisualizationTexture);
+                assert(mStructuralLayerVisualizationMode == StructuralLayerVisualizationModeType::PixelMode);
+                view.SetStructuralLayerVisualizationDrawMode(View::StructuralLayerVisualizationDrawMode::PixelMode);
             }
+
+            // Upload texture
+            view.UploadStructuralLayerVisualizationTexture(*mStructuralLayerVisualizationTexture);
 
             mDirtyStructuralLayerVisualizationRegion.reset();
         }
@@ -1236,11 +1231,6 @@ void ModelController::UploadVisualizations(View & view)
         if (view.HasStructuralLayerVisualizationTexture())
         {
             view.RemoveStructuralLayerVisualizationTexture();
-        }
-
-        if (view.HasStructuralLayerVisualizationParticles())
-        {
-            view.RemoveStructuralLayerVisualizationParticles();
         }
     }
 
