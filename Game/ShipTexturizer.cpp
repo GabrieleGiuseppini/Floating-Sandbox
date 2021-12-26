@@ -261,7 +261,6 @@ void ShipTexturizer::RenderShipInto(
     float const sampleOffsetX = sourcePixelsPerShipParticleX / 2.0f;
     float const sampleOffsetY = sourcePixelsPerShipParticleY / 2.0f;
 
-
     //
     // Populate texture
     //

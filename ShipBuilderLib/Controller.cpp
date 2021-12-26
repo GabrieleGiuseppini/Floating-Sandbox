@@ -76,7 +76,7 @@ Controller::Controller(
     , mResourceLocator(resourceLocator)
     // State
     , mPrimaryVisualization(VisualizationType::StructuralLayer)
-    , mGameVisualizationMode(GameVisualizationModeType::AutoTexturizationMode)
+    , mGameVisualizationMode(mModelController->GetModel().HasLayer(LayerType::Texture) ? GameVisualizationModeType::TextureMode : GameVisualizationModeType::AutoTexturizationMode)
     , mStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType::PixelMode)
     , mElectricalLayerVisualizationMode(ElectricalLayerVisualizationModeType::PixelMode)
     , mRopesLayerVisualizationMode(RopesLayerVisualizationModeType::LinesMode)
