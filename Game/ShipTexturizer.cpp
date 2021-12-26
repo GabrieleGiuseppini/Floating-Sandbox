@@ -404,6 +404,7 @@ void ShipTexturizer::RenderShipInto(
                 // Body - fill with source texture
                 for (int xx = xxStart; xx < xxEnd; ++xx)
                 {
+                    // TODO: this is simple nearest neighbor, see if enough
                     rgbaColor const textureSample = SampleTextureNearest(
                         sourceTextureImage,
                         sampleOffsetX + targetTextureSpaceToSourceTextureSpace * (x * magnificationFactor + xx),
@@ -677,7 +678,6 @@ rgbaColor ShipTexturizer::SampleTextureNearest(
     float pixelX,
     float pixelY) const
 {
-    // TODO: this is simple nearest neighbor, see if enough
     ImageCoordinates const i = ImageCoordinates::FromFloatRound({ pixelX, pixelY });
     ImageCoordinates const iPixelCoords = ImageCoordinates(
         std::min(i.x, texture.Size.width - 1),
