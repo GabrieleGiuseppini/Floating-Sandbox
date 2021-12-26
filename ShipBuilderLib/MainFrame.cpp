@@ -45,7 +45,6 @@
 
 namespace ShipBuilder {
 
-
 int constexpr ButtonMargin = 4;
 
 ImageSize constexpr MaterialSwathSize(80, 100);
@@ -1629,7 +1628,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
                     0);
             }
 
-            vSizer->AddSpacer(5);
+            vSizer->AddSpacer(ButtonMargin);
 
             // Particle mode
             {
@@ -1652,7 +1651,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
                     0);
             }
 
-            vSizer->AddSpacer(5);
+            vSizer->AddSpacer(ButtonMargin);
 
             // Pixel mode
             {
@@ -1713,7 +1712,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
                     0);
             }
 
-            vSizer->AddSpacer(5);
+            vSizer->AddSpacer(ButtonMargin);
 
             // Pixel mode
             {
@@ -1774,7 +1773,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
                     0);
             }
 
-            vSizer->AddSpacer(5);
+            vSizer->AddSpacer(ButtonMargin);
 
             // Lines mode
             {
@@ -1835,7 +1834,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
                     0);
             }
 
-            vSizer->AddSpacer(5);
+            vSizer->AddSpacer(ButtonMargin);
 
             // Matte mode
             {
@@ -1959,7 +1958,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
         // Tools
 
         {
-            wxGridBagSizer * toolsSizer = new wxGridBagSizer(3, 3);
+            wxGridBagSizer * toolsSizer = new wxGridBagSizer(ButtonMargin, ButtonMargin);
 
             // Pencil
             {
@@ -2122,7 +2121,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
         // Tools
 
         {
-            wxGridBagSizer * toolsSizer = new wxGridBagSizer(3, 3);
+            wxGridBagSizer * toolsSizer = new wxGridBagSizer(ButtonMargin, ButtonMargin);
 
             // Pencil
             {
@@ -2269,7 +2268,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
         // Tools
 
         {
-            wxGridBagSizer * toolsSizer = new wxGridBagSizer(3, 3);
+            wxGridBagSizer * toolsSizer = new wxGridBagSizer(ButtonMargin, ButtonMargin);
 
             // RopePencil
             {
@@ -2400,7 +2399,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
         // Tools
 
         {
-            wxGridBagSizer * toolsSizer = new wxGridBagSizer(3, 3);
+            wxGridBagSizer * toolsSizer = new wxGridBagSizer(ButtonMargin, ButtonMargin);
 
             // Move
             {
