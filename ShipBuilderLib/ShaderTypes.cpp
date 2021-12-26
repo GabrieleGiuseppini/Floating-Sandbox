@@ -27,6 +27,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::RectOverlay;
     else if (lstr == "rope")
         return ProgramType::Rope;
+    else if (lstr == "structure_particles")
+        return ProgramType::StructureParticles;
     else if (lstr == "texture")
         return ProgramType::Texture;
     else if (lstr == "texture_ndc")
@@ -51,6 +53,8 @@ std::string ProgramTypeToStr(ProgramType program)
             return "RectOverlay";
         case ProgramType::Rope:
             return "Rope";
+        case ProgramType::StructureParticles:
+            return "StructureParticles";
         case ProgramType::Texture:
             return "Texture";
         case ProgramType::TextureNdc:
@@ -71,6 +75,8 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::PixelSize;
     else if (str == "PixelStep")
         return ProgramParameterType::PixelStep;
+    else if (str == "ShipParticleTextureSize")
+        return ProgramParameterType::ShipParticleTextureSize;
     else if (str == "BackgroundTextureUnit")
         return ProgramParameterType::BackgroundTextureUnit;
     else if (str == "TextureUnit1")
@@ -91,6 +97,8 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
             return "PixelSize";
         case ProgramParameterType::PixelStep:
             return "PixelStep";
+        case ProgramParameterType::ShipParticleTextureSize:
+            return "ShipParticleTextureSize";
         case ProgramParameterType::BackgroundTextureUnit:
             return "BackgroundTextureUnit";
         case ProgramParameterType::TextureUnit1:

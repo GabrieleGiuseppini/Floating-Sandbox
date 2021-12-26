@@ -93,8 +93,8 @@ enum class GameVisualizationModeType
 enum class StructuralLayerVisualizationModeType
 {
     None,
+    ParticleMode,
     PixelMode
-    // FUTURE: ParticleMode
 };
 
 enum class ElectricalLayerVisualizationModeType

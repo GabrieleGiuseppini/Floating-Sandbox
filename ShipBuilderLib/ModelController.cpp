@@ -1206,7 +1206,24 @@ void ModelController::UploadVisualizations(View & view)
 
         if (mDirtyStructuralLayerVisualizationRegion.has_value())
         {
-            view.UploadStructuralLayerVisualizationTexture(*mStructuralLayerVisualizationTexture);
+            if (mStructuralLayerVisualizationMode == StructuralLayerVisualizationModeType::ParticleMode)
+            {
+                if (view.HasStructuralLayerVisualizationTexture())
+                {
+                    view.RemoveStructuralLayerVisualizationTexture();
+                }
+
+                view.UploadStructuralLayerVisualizationParticles(*mStructuralLayerVisualizationTexture);
+            }
+            else
+            {
+                if (view.HasStructuralLayerVisualizationParticles())
+                {
+                    view.RemoveStructuralLayerVisualizationParticles();
+                }
+
+                view.UploadStructuralLayerVisualizationTexture(*mStructuralLayerVisualizationTexture);
+            }
 
             mDirtyStructuralLayerVisualizationRegion.reset();
         }
@@ -1219,6 +1236,11 @@ void ModelController::UploadVisualizations(View & view)
         if (view.HasStructuralLayerVisualizationTexture())
         {
             view.RemoveStructuralLayerVisualizationTexture();
+        }
+
+        if (view.HasStructuralLayerVisualizationParticles())
+        {
+            view.RemoveStructuralLayerVisualizationParticles();
         }
     }
 
@@ -1644,6 +1666,7 @@ void ModelController::UpdateStructuralLayerVisualization(ShipSpaceRect const & r
 {
     switch (mStructuralLayerVisualizationMode)
     {
+        case StructuralLayerVisualizationModeType::ParticleMode:
         case StructuralLayerVisualizationModeType::PixelMode:
         {
             assert(mModel.HasLayer(LayerType::Structural));

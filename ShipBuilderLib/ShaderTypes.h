@@ -24,6 +24,7 @@ enum class ProgramType
     Grid,
     RectOverlay,
     Rope,
+    StructureParticles,
     Texture,
     TextureNdc,
 
@@ -38,6 +39,7 @@ enum class ProgramParameterType : uint8_t
 {
     Opacity = 0,
     OrthoMatrix,
+    ShipParticleTextureSize,
     PixelSize,
     PixelStep,
 

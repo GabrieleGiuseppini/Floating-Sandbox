@@ -1631,6 +1631,29 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
 
             vSizer->AddSpacer(5);
 
+            // Particle mode
+            {
+                mStructuralLayerVisualizationParticleModeButton = new BitmapToggleButton(
+                    structuralLayerVisualizationModesPanel,
+                    mResourceLocator.GetBitmapFilePath("particle_mode_icon_small"),
+                    [this]()
+                    {
+                        assert(mController);
+                        mController->SetStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType::ParticleMode);
+
+                        DeviateFocus();
+                    },
+                    _("Particle mode: view individual structure particles."));
+
+                vSizer->Add(
+                    mStructuralLayerVisualizationParticleModeButton,
+                    0, // Retain V size
+                    wxALIGN_CENTER_HORIZONTAL,
+                    0);
+            }
+
+            vSizer->AddSpacer(5);
+
             // Pixel mode
             {
                 mStructuralLayerVisualizationPixelModeButton = new BitmapToggleButton(
@@ -3713,6 +3736,7 @@ void MainFrame::ReconciliateUIWithGameVisualizationModeSelection(GameVisualizati
 void MainFrame::ReconciliateUIWithStructuralLayerVisualizationModeSelection(StructuralLayerVisualizationModeType mode)
 {
     mStructuralLayerVisualizationNoneModeButton->SetValue(mode == StructuralLayerVisualizationModeType::None);
+    mStructuralLayerVisualizationParticleModeButton->SetValue(mode == StructuralLayerVisualizationModeType::ParticleMode);
     mStructuralLayerVisualizationPixelModeButton->SetValue(mode == StructuralLayerVisualizationModeType::PixelMode);
 }
 

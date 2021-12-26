@@ -158,6 +158,12 @@ public:
     // Structural layer viz (all sticky)
     //
 
+    enum class StructuralLayerVisualizationDrawMode
+    {
+        Particle,
+        Pixel
+    };
+
     void UploadStructuralLayerVisualizationTexture(RgbaImageData const & texture);
 
     void RemoveStructuralLayerVisualizationTexture();
@@ -165,6 +171,15 @@ public:
     bool HasStructuralLayerVisualizationTexture() const
     {
         return mHasStructuralLayerVisualizationTexture;
+    }
+
+    void UploadStructuralLayerVisualizationParticles(RgbaImageData const & particlesMap);
+
+    void RemoveStructuralLayerVisualizationParticles();
+
+    bool HasStructuralLayerVisualizationParticles() const
+    {
+        return mHasStructuralLayerVisualizationParticles;
     }
 
     //
@@ -245,6 +260,7 @@ private:
 
     void UpdateCanvas();
     void UpdateGrid();
+    void UpdateStructuralLayerVisualizationParticles();
     void UpdateCircleOverlay();
     void UpdateRectOverlay();
     void UpdateDashedLineOverlay();
@@ -253,6 +269,7 @@ private:
 
     void RenderGameVisualizationTexture();
     void RenderStructuralLayerVisualizationTexture();
+    void RenderStructuralLayerVisualizationParticles();
     void RenderElectricalLayerVisualizationTexture();
     void RenderRopesLayerVisualization();
     void RenderTextureLayerVisualizationTexture();
@@ -412,40 +429,46 @@ private:
     // Background texture
     GameOpenGLVAO mBackgroundTextureVAO;
     GameOpenGLVBO mBackgroundTextureVBO;
-    GameOpenGLTexture mBackgroundTextureOpenGLHandle;
+    GameOpenGLTexture mBackgroundTexture;
     bool mHasBackgroundTexture;
 
     // Canvas
     GameOpenGLVAO mCanvasVAO;
     GameOpenGLVBO mCanvasVBO;
 
-    // Game visualization
+    // Game visualization - texture
     GameOpenGLVAO mGameVisualizationTextureVAO;
     GameOpenGLVBO mGameVisualizationTextureVBO;
-    GameOpenGLTexture mGameVisualizationTextureOpenGLHandle;
+    GameOpenGLTexture mGameVisualizationTexture;
     bool mHasGameVisualizationTexture;
 
-    // Structural layer visualization
+    // Structural layer visualization - texture
     GameOpenGLVAO mStructuralLayerVisualizationTextureVAO;
     GameOpenGLVBO mStructuralLayerVisualizationTextureVBO;
-    GameOpenGLTexture mStructuralLayerVisualizationTextureOpenGLHandle;
+    GameOpenGLTexture mStructuralLayerVisualizationTextureTexture;
     bool mHasStructuralLayerVisualizationTexture;
 
-    // Electrical layer visualization
+    // Structural layer visualization - particles
+    GameOpenGLVAO mStructuralLayerVisualizationParticlesVAO;
+    GameOpenGLVBO mStructuralLayerVisualizationParticlesVBO;
+    GameOpenGLTexture mStructuralLayerVisualizationParticlesTexture;
+    bool mHasStructuralLayerVisualizationParticles;
+
+    // Electrical layer visualization - texture
     GameOpenGLVAO mElectricalLayerVisualizationTextureVAO;
     GameOpenGLVBO mElectricalLayerVisualizationTextureVBO;
-    GameOpenGLTexture mElectricalLayerVisualizationTextureOpenGLHandle;
+    GameOpenGLTexture mElectricalLayerVisualizationTexture;
     bool mHasElectricalLayerVisualizationTexture;
 
-    // Ropes layer visualization
+    // Ropes layer visualization - ropes
     GameOpenGLVAO mRopesVAO;
     GameOpenGLVBO mRopesVBO;
     size_t mRopeCount;
 
-    // Texture layer visualization
+    // Texture layer visualization - texture
     GameOpenGLVAO mTextureLayerVisualizationTextureVAO;
     GameOpenGLVBO mTextureLayerVisualizationTextureVBO;
-    GameOpenGLTexture mTextureLayerVisualizationTextureOpenGLHandle;
+    GameOpenGLTexture mTextureLayerVisualizationTextureTexture;
     bool mHasTextureLayerVisualizationTexture;
 
     // Visualizations opacity
