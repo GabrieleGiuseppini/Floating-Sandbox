@@ -297,7 +297,7 @@ void ShipTexturizer::RenderShipInto(
             // We actually populate quads or triangles (with |side|==magnificationFactor), depending on the presence of the four corners. We do so by:
             //  - Looping for all target YY's in the quad
             //  - For each YY:
-            //      - Fill-in the XX segment between xxStart and xxEnd, and transparent outside
+            //      - Fill-in the XX segment between xxStart and xxEnd, and transparent outside (prefix and suffix)
             //      - Change xxStart and xxEnd depending on Y
             //
 
@@ -305,7 +305,7 @@ void ShipTexturizer::RenderShipInto(
             // Determine quad vertices
             //
 
-            // Init with no quad
+            // Init with no quad - prefix only
             int xxStart = magnificationFactor, xxStartIncr = 0;
             int xxEnd = magnificationFactor, xxEndIncr = 0;
 
@@ -383,7 +383,7 @@ void ShipTexturizer::RenderShipInto(
             }
 
             //
-            // Fill-in quads
+            // Fill-in quad
             //
 
             int targetQuadOffset =

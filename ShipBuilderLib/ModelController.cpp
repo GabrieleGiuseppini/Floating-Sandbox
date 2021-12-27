@@ -1638,17 +1638,17 @@ void ModelController::UpdateGameVisualization(ShipSpaceRect const & region)
     // 3. Remember dirty region
     //
 
-    ImageRect const imageRegion = ImageRect(
+    ImageRect const effectiveRegionImage = ImageRect(
         { effectiveRegion.origin.x * mGameVisualizationTextureMagnificationFactor, effectiveRegion.origin.y * mGameVisualizationTextureMagnificationFactor },
         { effectiveRegion.size.width * mGameVisualizationTextureMagnificationFactor, effectiveRegion.size.height * mGameVisualizationTextureMagnificationFactor });
 
     if (!mDirtyGameVisualizationRegion.has_value())
     {
-        mDirtyGameVisualizationRegion = imageRegion;
+        mDirtyGameVisualizationRegion = effectiveRegionImage;
     }
     else
     {
-        mDirtyGameVisualizationRegion->UnionWith(imageRegion);
+        mDirtyGameVisualizationRegion->UnionWith(effectiveRegionImage);
     }
 }
 

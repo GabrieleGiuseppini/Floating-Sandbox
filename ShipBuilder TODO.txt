@@ -155,7 +155,16 @@ https://gamejolt.com/x/permalink/comment/11730705
 		+ Does structural vix for region Foo impact region outside Foo? If so, take that into account at ModelController::UpdateStrucuturalViz, enlarging dirty region (possibly among other things)
 		+ Make sure that when checking for vertices, we're not constrained by region size but rather by whole structure size
 		+ Verify triangulation matches Game's
-		- See if can make lines for those cases that only have two vertices
+		= See if can make lines for those cases that only have two vertices
+			+ Fix eph viz restore - leaves triangle at x-1
+			- Ugly; rearc:
+				- Undo ShipTexturizer changes
+				- Change structural layer's "particle" mode into "mesh" mode
+					- Naming
+					- Icon
+					- Shader
+				- See offset so that lines and particles are centered on grid crossings
+					- TODO - HOW?
 	- Perf improvements:
 		- Auto-texturization
 			- Do benchmarks
