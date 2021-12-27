@@ -1207,9 +1207,9 @@ void ModelController::UploadVisualizations(View & view)
         if (mDirtyStructuralLayerVisualizationRegion.has_value())
         {
             // Refresh mode
-            if (mStructuralLayerVisualizationMode == StructuralLayerVisualizationModeType::ParticleMode)
+            if (mStructuralLayerVisualizationMode == StructuralLayerVisualizationModeType::MeshMode)
             {
-                view.SetStructuralLayerVisualizationDrawMode(View::StructuralLayerVisualizationDrawMode::ParticleMode);
+                view.SetStructuralLayerVisualizationDrawMode(View::StructuralLayerVisualizationDrawMode::MeshMode);
             }
             else
             {
@@ -1656,7 +1656,7 @@ void ModelController::UpdateStructuralLayerVisualization(ShipSpaceRect const & r
 {
     switch (mStructuralLayerVisualizationMode)
     {
-        case StructuralLayerVisualizationModeType::ParticleMode:
+        case StructuralLayerVisualizationModeType::MeshMode:
         case StructuralLayerVisualizationModeType::PixelMode:
         {
             assert(mModel.HasLayer(LayerType::Structural));

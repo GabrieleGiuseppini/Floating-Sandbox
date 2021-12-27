@@ -69,8 +69,8 @@ View::View(
     mShaderManager = ShaderManager<ShaderManagerTraits>::CreateInstance(resourceLocator.GetShipBuilderShadersRootPath());
 
     // Set texture samplers in programs
-    mShaderManager->ActivateProgram<ProgramType::StructureParticles>();
-    mShaderManager->SetTextureParameters<ProgramType::StructureParticles>();
+    mShaderManager->ActivateProgram<ProgramType::StructureMesh>();
+    mShaderManager->SetTextureParameters<ProgramType::StructureMesh>();
     mShaderManager->ActivateProgram<ProgramType::Texture>();
     mShaderManager->SetTextureParameters<ProgramType::Texture>();
     mShaderManager->ActivateProgram<ProgramType::TextureNdc>();
@@ -92,6 +92,7 @@ View::View(
         mBackgroundTexture = tmpGLuint;
 
         // Configure texture
+        mShaderManager->ActivateTexture<ProgramParameterType::BackgroundTextureUnit>();
         glBindTexture(GL_TEXTURE_2D, *mBackgroundTexture);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -164,6 +165,7 @@ View::View(
         mGameVisualizationTexture = tmpGLuint;
 
         // Configure texture
+        mShaderManager->ActivateTexture<ProgramParameterType::TextureUnit1>();
         glBindTexture(GL_TEXTURE_2D, *mGameVisualizationTexture);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -210,6 +212,7 @@ View::View(
         mStructuralLayerVisualizationTexture = tmpGLuint;
 
         // Configure texture
+        mShaderManager->ActivateTexture<ProgramParameterType::TextureUnit1>();
         glBindTexture(GL_TEXTURE_2D, *mStructuralLayerVisualizationTexture);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -256,6 +259,7 @@ View::View(
         mElectricalLayerVisualizationTexture = tmpGLuint;
 
         // Configure texture
+        mShaderManager->ActivateTexture<ProgramParameterType::TextureUnit1>();
         glBindTexture(GL_TEXTURE_2D, *mElectricalLayerVisualizationTexture);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -331,6 +335,7 @@ View::View(
         mTextureLayerVisualizationTexture = tmpGLuint;
 
         // Configure texture
+        mShaderManager->ActivateTexture<ProgramParameterType::TextureUnit1>();
         glBindTexture(GL_TEXTURE_2D, *mTextureLayerVisualizationTexture);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -603,9 +608,9 @@ void View::SetStructuralLayerVisualizationDrawMode(StructuralLayerVisualizationD
 {
     switch (mode)
     {
-        case StructuralLayerVisualizationDrawMode::ParticleMode:
+        case StructuralLayerVisualizationDrawMode::MeshMode:
         {
-            mStructuralLayerVisualizationShader = ProgramType::StructureParticles;
+            mStructuralLayerVisualizationShader = ProgramType::StructureMesh;
             break;
         }
 
@@ -1123,8 +1128,8 @@ void View::OnViewModelUpdated()
     mShaderManager->SetProgramParameter<ProgramType::Rope, ProgramParameterType::OrthoMatrix>(
         orthoMatrix);
 
-    mShaderManager->ActivateProgram<ProgramType::StructureParticles>();
-    mShaderManager->SetProgramParameter<ProgramType::StructureParticles, ProgramParameterType::OrthoMatrix>(
+    mShaderManager->ActivateProgram<ProgramType::StructureMesh>();
+    mShaderManager->SetProgramParameter<ProgramType::StructureMesh, ProgramParameterType::OrthoMatrix>(
         orthoMatrix);
 
     mShaderManager->ActivateProgram<ProgramType::Texture>();
@@ -1274,8 +1279,8 @@ void View::UpdateStructuralLayerVisualization()
         1.0f / shipWidth,
         1.0f / shipHeight);
 
-    mShaderManager->ActivateProgram<ProgramType::StructureParticles>();
-    mShaderManager->SetProgramParameter<ProgramType::StructureParticles, ProgramParameterType::ShipParticleTextureSize>(shipParticleTextureSize.x, shipParticleTextureSize.y);
+    mShaderManager->ActivateProgram<ProgramType::StructureMesh>();
+    mShaderManager->SetProgramParameter<ProgramType::StructureMesh, ProgramParameterType::ShipParticleTextureSize>(shipParticleTextureSize.x, shipParticleTextureSize.y);
 }
 
 void View::UpdateCircleOverlay()

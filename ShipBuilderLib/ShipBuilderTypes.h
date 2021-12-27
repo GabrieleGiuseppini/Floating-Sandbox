@@ -93,7 +93,7 @@ enum class GameVisualizationModeType
 enum class StructuralLayerVisualizationModeType
 {
     None,
-    ParticleMode,
+    MeshMode,
     PixelMode
 };
 

@@ -1630,22 +1630,22 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
 
             vSizer->AddSpacer(ButtonMargin);
 
-            // Particle mode
+            // Mesh mode
             {
-                mStructuralLayerVisualizationParticleModeButton = new BitmapToggleButton(
+                mStructuralLayerVisualizationMeshModeButton = new BitmapToggleButton(
                     structuralLayerVisualizationModesPanel,
-                    mResourceLocator.GetBitmapFilePath("particle_mode_icon_small"),
+                    mResourceLocator.GetBitmapFilePath("mesh_mode_icon_small"),
                     [this]()
                     {
                         assert(mController);
-                        mController->SetStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType::ParticleMode);
+                        mController->SetStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType::MeshMode);
 
                         DeviateFocus();
                     },
-                    _("Particle mode: view individual structure particles."));
+                    _("Mesh mode: view the structural mesh as it is induced by the structure particles."));
 
                 vSizer->Add(
-                    mStructuralLayerVisualizationParticleModeButton,
+                    mStructuralLayerVisualizationMeshModeButton,
                     0, // Retain V size
                     wxALIGN_CENTER_HORIZONTAL,
                     0);
@@ -3735,7 +3735,7 @@ void MainFrame::ReconciliateUIWithGameVisualizationModeSelection(GameVisualizati
 void MainFrame::ReconciliateUIWithStructuralLayerVisualizationModeSelection(StructuralLayerVisualizationModeType mode)
 {
     mStructuralLayerVisualizationNoneModeButton->SetValue(mode == StructuralLayerVisualizationModeType::None);
-    mStructuralLayerVisualizationParticleModeButton->SetValue(mode == StructuralLayerVisualizationModeType::ParticleMode);
+    mStructuralLayerVisualizationMeshModeButton->SetValue(mode == StructuralLayerVisualizationModeType::MeshMode);
     mStructuralLayerVisualizationPixelModeButton->SetValue(mode == StructuralLayerVisualizationModeType::PixelMode);
 }
 

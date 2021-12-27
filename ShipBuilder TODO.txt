@@ -157,12 +157,15 @@ https://gamejolt.com/x/permalink/comment/11730705
 		+ Verify triangulation matches Game's
 		= See if can make lines for those cases that only have two vertices
 			+ Fix eph viz restore - leaves triangle at x-1
-			- Ugly; rearc:
-				- Undo ShipTexturizer changes
-				- Change structural layer's "particle" mode into "mesh" mode
-					- Naming
-					- Icon
-					- Shader
+			= Ugly; rearc:
+				+ Undo ShipTexturizer changes
+				= Change structural layer's "particle" mode into "mesh" mode
+					+ Naming
+					+ Icon
+					= Shader
+						- Sampling issue
+						- Diagonal lines: redo line equation (need x/y ratio)
+						- Undo shader's TODOTEST's
 				- See offset so that lines and particles are centered on grid crossings
 					- TODO - HOW?
 	- Perf improvements:

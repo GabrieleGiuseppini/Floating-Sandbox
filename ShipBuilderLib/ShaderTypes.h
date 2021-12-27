@@ -24,7 +24,7 @@ enum class ProgramType
     Grid,
     RectOverlay,
     Rope,
-    StructureParticles,
+    StructureMesh,
     Texture,
     TextureNdc,
 

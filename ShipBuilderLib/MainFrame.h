@@ -327,7 +327,7 @@ private:
     BitmapToggleButton * mGameVisualizationAutoTexturizationModeButton;
     BitmapToggleButton * mGameVisualizationTextureModeButton;
     BitmapToggleButton * mStructuralLayerVisualizationNoneModeButton;
-    BitmapToggleButton * mStructuralLayerVisualizationParticleModeButton;
+    BitmapToggleButton * mStructuralLayerVisualizationMeshModeButton;
     BitmapToggleButton * mStructuralLayerVisualizationPixelModeButton;
     BitmapToggleButton * mElectricalLayerVisualizationNoneModeButton;
     BitmapToggleButton * mElectricalLayerVisualizationPixelModeButton;

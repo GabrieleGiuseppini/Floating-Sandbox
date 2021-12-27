@@ -160,7 +160,7 @@ public:
 
     enum class StructuralLayerVisualizationDrawMode
     {
-        ParticleMode,
+        MeshMode,
         PixelMode
     };
 

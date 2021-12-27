@@ -27,8 +27,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::RectOverlay;
     else if (lstr == "rope")
         return ProgramType::Rope;
-    else if (lstr == "structure_particles")
-        return ProgramType::StructureParticles;
+    else if (lstr == "structure_mesh")
+        return ProgramType::StructureMesh;
     else if (lstr == "texture")
         return ProgramType::Texture;
     else if (lstr == "texture_ndc")
@@ -53,8 +53,8 @@ std::string ProgramTypeToStr(ProgramType program)
             return "RectOverlay";
         case ProgramType::Rope:
             return "Rope";
-        case ProgramType::StructureParticles:
-            return "StructureParticles";
+        case ProgramType::StructureMesh:
+            return "StructureMesh";
         case ProgramType::Texture:
             return "Texture";
         case ProgramType::TextureNdc:
