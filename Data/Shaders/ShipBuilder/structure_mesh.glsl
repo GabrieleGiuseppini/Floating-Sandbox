@@ -78,12 +78,12 @@ void main()
     //
 
     // Depth=1 when in the bottom-left corner of the ship particle square,
-    // and when no 1-* lines at all
+    // and when no 1-3 and 1-4 lines
     vec2 particleSize = paramShipParticleTextureSize / 3.0;
     float particleDepth = hasVertex1
         * step(f.x, particleSize.x)
         * step(f.y, particleSize.y)
-        * (1.0 - min(1.0, hasVertex2 + hasVertex3 + hasVertex4));
+        * (1.0 - min(1.0, hasVertex3 + hasVertex4));
 
     //
     // Lines

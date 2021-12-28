@@ -159,15 +159,14 @@ https://gamejolt.com/x/permalink/comment/11730705
 			+ Fix eph viz restore - leaves triangle at x-1
 			= Ugly; rearc:
 				+ Undo ShipTexturizer changes
-				= Change structural layer's "particle" mode into "mesh" mode
+				+ Change structural layer's "particle" mode into "mesh" mode
 					+ Naming
-					- Icon
-					= Shader
+					+ Icon
+					+ Shader
 						+ Sampling issue
 						+ Diagonal lines: redo line equation (need x/y ratio)
-						- Border sampling
-				- See offset so that lines and particles are centered on grid crossings
-					- TODO - HOW?
+						+ Border sampling
+				- See offset so that lines and particles are centered on grid crossings?
 	- Perf improvements:
 		- Auto-texturization
 			- Do benchmarks
