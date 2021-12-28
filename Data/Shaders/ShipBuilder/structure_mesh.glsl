@@ -31,16 +31,20 @@ uniform sampler2D paramTextureUnit1;
 
 // Params
 uniform float paramOpacity;
-uniform vec2 paramShipParticleTextureSize;
+uniform vec2 paramShipParticleTextureSize; // Size of one ship particle in texture space (i.e. in the [0, 1] space), separately for x and y
 
 void main()
 {
     // Calculate quantized texture coords
     vec2 quv = floor(vertexTextureCoordinates / paramShipParticleTextureSize) * paramShipParticleTextureSize;
-    
+
     // Calculate fractional position of this pixel's position in this ship particle's square
     vec2 f = vertexTextureCoordinates - quv;
-        
+
+    // Given that the texture is setup for nearest, we offset the UV coords so that we sample instead
+    // smack in the middle of the texture
+    quv += paramShipParticleTextureSize / 2.0;
+            
     // Vertices
     vec4 particle1Color = texture2D(paramTextureUnit1, quv);
     float hasVertex1 = particle1Color.w;
@@ -50,18 +54,24 @@ void main()
     float hasVertex4 = texture2D(paramTextureUnit1, quv + paramShipParticleTextureSize).w;
     
     vec2 lineThickness = paramShipParticleTextureSize / 8.0;
-    float lineThicknessD = length(lineThickness) / 2.0;
+    float halfLineThicknessD = length(lineThickness) / 2.0;
     
-    // Particle: depth=1 when in the bottom-left corner of the ship particle square,
+    //
+    // Particle
+    //
+
+    // Depth=1 when in the bottom-left corner of the ship particle square,
     // and when no 1-* lines at all
     vec2 particleSize = paramShipParticleTextureSize / 3.0;
     float particleDepth = hasVertex1
         * step(f.x, particleSize.x)
         * step(f.y, particleSize.y)
-        // TODOTEST
-        ;
-        //* (1.0 - min(1.0, hasVertex2 + hasVertex3 + hasVertex4));
+        * (1.0 - min(1.0, hasVertex2 + hasVertex3 + hasVertex4));
     
+    //
+    // Lines
+    //
+
     // 1---2
     float line12Depth = (hasVertex1 * hasVertex2)
         * step(f.y, lineThickness.y);
@@ -76,13 +86,13 @@ void main()
     //   /
     // 1
     float line14Depth = (hasVertex1 * hasVertex4)
-        * step(abs(f.y - f.x), lineThicknessD);
+        * step(abs(f.y - paramShipParticleTextureSize.y / paramShipParticleTextureSize.x * f.x), halfLineThicknessD);
         
     // 3
     //   \
     //     2
     float line23Depth = (hasVertex2 * hasVertex3)
-        * step(abs(paramShipParticleTextureSize.y + lineThickness.y - f.y - f.x), lineThicknessD);
+        * step(abs(paramShipParticleTextureSize.y - f.y - paramShipParticleTextureSize.y / paramShipParticleTextureSize.x * f.x), halfLineThicknessD);
         
     //
     // Combine outputs

@@ -163,9 +163,9 @@ https://gamejolt.com/x/permalink/comment/11730705
 					+ Naming
 					+ Icon
 					= Shader
-						- Sampling issue
-						- Diagonal lines: redo line equation (need x/y ratio)
-						- Undo shader's TODOTEST's
+						+ Sampling issue
+						+ Diagonal lines: redo line equation (need x/y ratio)
+						- Border sampling
 				- See offset so that lines and particles are centered on grid crossings
 					- TODO - HOW?
 	- Perf improvements:
