@@ -14,8 +14,8 @@ uniform mat4 paramOrthoMatrix;
 
 void main()
 {
-    vertexTextureCoordinates = inTexture.zw; 
-    
+    vertexTextureCoordinates = inTexture.zw;
+
     gl_Position = paramOrthoMatrix * vec4(inTexture.xy, 0.0, 1.0);
 }
 
@@ -44,18 +44,35 @@ void main()
     // Given that the texture is setup for nearest, we offset the UV coords so that we sample instead
     // smack in the middle of the texture
     quv += paramShipParticleTextureSize / 2.0;
-            
-    // Vertices
-    vec4 particle1Color = texture2D(paramTextureUnit1, quv);
-    float hasVertex1 = particle1Color.w;
-    vec4 particle2Color = texture2D(paramTextureUnit1, quv + vec2(paramShipParticleTextureSize.x, 0.0));
-    float hasVertex2 = particle2Color.w;
-    float hasVertex3 = texture2D(paramTextureUnit1, quv + vec2(0.0, paramShipParticleTextureSize.y)).w;
-    float hasVertex4 = texture2D(paramTextureUnit1, quv + paramShipParticleTextureSize).w;
-    
+
+    // Line thickness
     vec2 lineThickness = paramShipParticleTextureSize / 8.0;
     float halfLineThicknessD = length(lineThickness) / 2.0;
-    
+
+    //
+    // Vertices
+    //
+
+    vec4 particle1Color = texture2D(paramTextureUnit1, quv);
+    float hasVertex1 = particle1Color.w;
+
+    vec2 particle2quv = quv + vec2(paramShipParticleTextureSize.x, 0.);
+    vec4 particle2Color = texture2D(paramTextureUnit1, particle2quv);
+    float hasVertex2 =
+        particle2Color.w
+        * step(particle2quv.x, 1.0);
+
+    vec2 particle3quv = quv + vec2(0., paramShipParticleTextureSize.y);
+    float hasVertex3 =
+        texture2D(paramTextureUnit1, particle3quv).w
+        * step(particle3quv.y, 1.0);
+
+    vec2 particle4quv = quv + paramShipParticleTextureSize;
+    float hasVertex4 =
+        texture2D(paramTextureUnit1, particle4quv).w
+        * step(particle4quv.x, 1.0)
+        * step(particle4quv.y, 1.0);
+
     //
     // Particle
     //
@@ -67,7 +84,7 @@ void main()
         * step(f.x, particleSize.x)
         * step(f.y, particleSize.y)
         * (1.0 - min(1.0, hasVertex2 + hasVertex3 + hasVertex4));
-    
+
     //
     // Lines
     //
@@ -81,33 +98,33 @@ void main()
     // 1
     float line13Depth = (hasVertex1 * hasVertex3)
         * step(f.x, lineThickness.x);
-        
+
     //     4
     //   /
     // 1
     float line14Depth = (hasVertex1 * hasVertex4)
         * step(abs(f.y - paramShipParticleTextureSize.y / paramShipParticleTextureSize.x * f.x), halfLineThicknessD);
-        
+
     // 3
     //   \
     //     2
     float line23Depth = (hasVertex2 * hasVertex3)
         * step(abs(paramShipParticleTextureSize.y - f.y - paramShipParticleTextureSize.y / paramShipParticleTextureSize.x * f.x), halfLineThicknessD);
-        
+
     //
     // Combine outputs
     //
-    
+
     vec4 color1 = vec4(
         particle1Color.xyz,
         min(1.0, particleDepth + line12Depth + line13Depth + line14Depth));
-        
+
     vec4 color2 = vec4(
         particle2Color.xyz,
         line23Depth);
-        
+
     gl_FragColor = mix(
         color1,
         color2,
         color2.w * paramOpacity);
-} 
+}
