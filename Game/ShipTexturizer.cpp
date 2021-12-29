@@ -209,15 +209,31 @@ void ShipTexturizer::AutoTexturizeInto(
                             worldX * worldToMaterialTexturePixelConversionFactor,
                             worldY * worldToMaterialTexturePixelConversionFactor);
 
-                        // Bi-directional multiply blending
-                        vec3f const resultantColorF = BidirMultiplyBlend(structurePixelColorF, bumpMapSample);
+                        //
+                        // Bi-directional multiply blending between structural color and bumpmap sample "value" (just r),
+                        // blended again with structural color via material transparency
+                        //
 
-                        // Store resultant color blended with original color via material transparency, and using 
-                        // structure's alpha channel value as the final alpha
+                        float const whateverFactor = (2.0f * bumpMapSample.x - 1.0f) * materialTextureAlpha;
+
+                        vec3f resultantColor;
+                        if (bumpMapSample.x <= 0.5f)
+                        {
+                            // Damper: input * [0.0, 1.0]
+                            // Then: mix of input and of result of multiply-blend, via materialTextureAlpha
+                            resultantColor = structurePixelColorF * (1.0f + whateverFactor);
+                        }
+                        else
+                        {
+                            // Amplifier: input + (bump - input) * [0.0, 1.0]
+                            // Then: mix of input and of result of multiply-blend, via materialTextureAlpha
+                            float const bFactor = bumpMapSample.x * whateverFactor;
+                            resultantColor = structurePixelColorF * (1.0f - whateverFactor) + vec3f(bFactor, bFactor, bFactor);
+                        }
+
+                        // Store resultant color, using structure's alpha channel value as the final alpha
                         targetImageData[targetQuadOffset + xx] = rgbaColor(
-                            Mix(structurePixelColorF,
-                                resultantColorF,
-                                materialTextureAlpha),
+                            resultantColor,
                             structurePixelColor.a);
                     }
                 }
