@@ -229,14 +229,12 @@ void ShipTexturizer::AutoTexturizeInto(
                     // Loop for all Xs
                     //
 
-                    float worldX = static_cast<float>(x);
-                    for (int xx = 0; xx < magnificationFactor; ++xx, worldX += magnificationFactorInvF)
+                    float pixelX = static_cast<float>(x) * worldToMaterialTexturePixelConversionFactor;
+                    for (int xx = 0; xx < magnificationFactor; ++xx, pixelX += magnificationFactorInvF * worldToMaterialTexturePixelConversionFactor)
                     {
                         //
                         // Bilinear interpolation for X
                         //
-
-                        float const pixelX = worldX * worldToMaterialTexturePixelConversionFactor;
 
                         // Integral part
                         auto pixelXI = FastTruncateToArchInt(pixelX);
