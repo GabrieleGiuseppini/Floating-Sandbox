@@ -15,6 +15,8 @@ public:
 
     explicit ResourceLocator(std::string const & argv0);
 
+    explicit ResourceLocator(std::filesystem::path const & rootProgramPath);
+
 public:
 
     //

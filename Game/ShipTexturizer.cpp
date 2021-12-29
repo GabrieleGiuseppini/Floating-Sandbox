@@ -672,6 +672,19 @@ vec3f ShipTexturizer::SampleTextureBilinear(
         pixelDy);
 }
 
+vec3f ShipTexturizer::SampleTextureNearest(
+    Vec3fImageData const & texture,
+    float pixelX,
+    float pixelY) const
+{
+    ImageCoordinates const i = ImageCoordinates::FromFloatRound({ pixelX, pixelY });
+    ImageCoordinates const iPixelCoords = ImageCoordinates(
+        i.x % static_cast<ImageCoordinates::integral_type>(texture.Size.width),
+        i.y % static_cast<ImageCoordinates::integral_type>(texture.Size.height));
+
+    return texture[iPixelCoords];
+}
+
 rgbaColor ShipTexturizer::SampleTextureNearest(
     RgbaImageData const & texture,
     float pixelX,

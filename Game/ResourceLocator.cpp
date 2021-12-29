@@ -11,10 +11,15 @@
 #include <regex>
 
 ResourceLocator::ResourceLocator(std::string const & argv0)
-    : mRootPath(std::filesystem::canonical(std::filesystem::path(argv0)).parent_path())
+    : ResourceLocator(std::filesystem::canonical(std::filesystem::path(argv0)).parent_path())
 {
     LogMessage("ResourceLocator: argv0=", argv0, " rootPath=", mRootPath,
         " currentPath=", std::filesystem::current_path());
+}
+
+ResourceLocator::ResourceLocator(std::filesystem::path const & rootProgramPath)
+    : mRootPath(rootProgramPath)
+{
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////

@@ -114,6 +114,11 @@ private:
         float pixelX,
         float pixelY) const;
 
+    inline vec3f SampleTextureNearest(
+        Vec3fImageData const & texture,
+        float pixelX,
+        float pixelY) const;
+
     inline rgbaColor SampleTextureNearest(
         RgbaImageData const & texture,
         float pixelX,

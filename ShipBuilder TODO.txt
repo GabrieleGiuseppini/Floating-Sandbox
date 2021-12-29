@@ -74,7 +74,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 				+ Then: UploadXXXVisualization()/Has/RemoveXXXVisualization()
 		+ See if we want it to be the default
 
-= Visualization modes: (*)
+= Visualization modes:
 	+ Each layer has a visualization mode
 	+ Selectors are in new set of panels - with visibility dependent on primary layer - in LayersVisualization panel
 		+ On top of grid view button
@@ -147,7 +147,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 	+ Auto-texturization visualization
 		+ ModelController::SetStructuralLayerVizMode: realloc texture for right sizes when changing between types that require different...sizes
 		+ Verify settings
-	= Texture visualization
+	+ Texture visualization
 		+ ModelController::SetStructuralLayerVizMode: realloc texture for right sizes when changing between types that require different...sizes
 		+ ShipTexturizer: new method with whole new implementation, which takes texture from outside (& no settings)
 			+ But still based on same magnification
@@ -155,9 +155,9 @@ https://gamejolt.com/x/permalink/comment/11730705
 		+ Does structural vix for region Foo impact region outside Foo? If so, take that into account at ModelController::UpdateStrucuturalViz, enlarging dirty region (possibly among other things)
 		+ Make sure that when checking for vertices, we're not constrained by region size but rather by whole structure size
 		+ Verify triangulation matches Game's
-		= See if can make lines for those cases that only have two vertices
+		+ See if can make lines for those cases that only have two vertices
 			+ Fix eph viz restore - leaves triangle at x-1
-			= Ugly; rearc:
+			+ Ugly; rearc:
 				+ Undo ShipTexturizer changes
 				+ Change structural layer's "particle" mode into "mesh" mode
 					+ Naming
@@ -166,13 +166,13 @@ https://gamejolt.com/x/permalink/comment/11730705
 						+ Sampling issue
 						+ Diagonal lines: redo line equation (need x/y ratio)
 						+ Border sampling
-				- See offset so that lines and particles are centered on grid crossings?
-	- Perf improvements:
-		- Auto-texturization
-			- Do benchmarks
+	= Perf improvements:
+		= Auto-texturization
+			+ Do benchmarks
 			- Do we need to store whole vec3/4f in texture? Can just R (and possibly A for future transparent material textures like Chain) suffice?
 			- Would nearest neighbor suffice?
-		- Replace round with (truncate + 0.5)
+			- Replace round with truncate(. + 0.5)
+			X Avoid worldX/Y re-multiplication by changing it into textureX/Y (and adjusting incr accordingly)
 	- See perf of new auto-texturization wrt previous released version
 
 - Import/Export:
@@ -205,6 +205,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 						- Devil 32 (R+D)
 						- Test four configurations
 					- Ubuntu
+						- See if benchmarks project still needs now wxWidgets just for jpeg
 				- Load file and pass to Controller
 					= Resize workflow
 						= For texture

@@ -1,4 +1,5 @@
 set (BENCHMARK_SOURCES
+	AutoTexturization.cpp
         DiffuseLight.cpp
         DivisionByZero.cpp
         GameMath.cpp
@@ -17,10 +18,12 @@ source_group(" " FILES ${BENCHMARK_SOURCES})
 
 add_executable (Benchmarks ${BENCHMARK_SOURCES})
 
-target_link_libraries (Benchmarks
-        GameCoreLib
+target_include_directories(Benchmarks PRIVATE .)
+target_link_libraries (Benchmarks        
         GameLib
+	GameCoreLib
         GPUCalcLib
+	${wxWidgets_LIBRARIES} # Just for jpeg
         ${OPENGL_LIBRARIES}
         benchmark::benchmark
         benchmark::benchmark_main
@@ -43,7 +46,6 @@ if (MSVC)
                         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
         )
 
-        #set_property(TARGET Benchmarks
         set_target_properties(
                 Benchmarks
                 PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD_DEBUG TRUE)
