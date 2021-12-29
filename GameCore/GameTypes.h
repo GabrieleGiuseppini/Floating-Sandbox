@@ -317,8 +317,8 @@ struct _IntegralSize
     static _IntegralSize<TIntegralTag> FromFloatRound(vec2f const & vec)
     {
         return _IntegralSize<TIntegralTag>(
-            static_cast<integral_type>(std::round(vec.x)),
-            static_cast<integral_type>(std::round(vec.y)));
+            static_cast<integral_type>(FastTruncateToArchInt(vec.x + 0.5f)),
+            static_cast<integral_type>(FastTruncateToArchInt(vec.y + 0.5f)));
     }
 
     inline bool operator==(_IntegralSize<TIntegralTag> const & other) const
@@ -418,8 +418,8 @@ struct _IntegralCoordinates
     static _IntegralCoordinates<TIntegralTag> FromFloatRound(vec2f const & vec)
     {
         return _IntegralCoordinates<TIntegralTag>(
-            static_cast<integral_type>(std::round(vec.x)),
-            static_cast<integral_type>(std::round(vec.y)));
+            static_cast<integral_type>(FastTruncateToArchInt(vec.x + 0.5f)),
+            static_cast<integral_type>(FastTruncateToArchInt(vec.y + 0.5f)));
     }
 
     inline bool operator==(_IntegralCoordinates<TIntegralTag> const & other) const
