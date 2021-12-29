@@ -326,6 +326,9 @@ Render:
 				- Check changes to mPoints.SetPosition since a version ago
 		+ See rogue waves
 
+		- Text material textures for chains: transparent chain texture
+			- Change texturizer so that we load alpha from image
+
 		- TimCan pack
 		- Raynair updates
 

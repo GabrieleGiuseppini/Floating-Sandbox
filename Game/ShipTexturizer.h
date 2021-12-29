@@ -91,7 +91,7 @@ public:
 
 private:
 
-    using Vec3fImageData = ImageData<vec3f>;
+    using Vec2fImageData = ImageData<vec2f>;
 
 private:
 
@@ -107,19 +107,19 @@ private:
         rgbaColor const & renderColor,
         std::optional<std::string> const & textureName) const;
 
-    inline Vec3fImageData const & GetMaterialTexture(std::optional<std::string> const & textureName) const;
+    inline Vec2fImageData const & GetMaterialTexture(std::optional<std::string> const & textureName) const;
 
     void ResetMaterialTextureCacheUseCounts() const;
 
     void PurgeMaterialTextureCache(size_t maxSize) const;
 
-    inline vec3f SampleTextureBilinear(
-        Vec3fImageData const & texture,
+    inline vec2f SampleTextureBilinear(
+        Vec2fImageData const & texture,
         float pixelX,
         float pixelY) const;
 
-    inline vec3f SampleTextureNearest(
-        Vec3fImageData const & texture,
+    inline vec2f SampleTextureNearest(
+        Vec2fImageData const & texture,
         float pixelX,
         float pixelY) const;
 
@@ -145,10 +145,10 @@ private:
 
     struct CachedTexture
     {
-        Vec3fImageData Texture;
+        Vec2fImageData Texture;
         size_t UseCount;
 
-        CachedTexture(Vec3fImageData && texture)
+        CachedTexture(Vec2fImageData && texture)
             : Texture(std::move(texture))
             , UseCount(0)
         {}

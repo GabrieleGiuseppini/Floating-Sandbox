@@ -20,12 +20,25 @@ size_t constexpr MaterialTextureCacheSizeLowWatermark = 25;
 std::string const MaterialTextureNameNone = "none";
 
 namespace /*anonymous*/ {
-
-    inline float BidirMultiplyBlend(float x1, float x2)
+    
+    inline vec3f BidirMultiplyBlend(
+        vec3f const & inputColor,
+        vec2f const & bumpMapSample)
     {
-        return (x2 <= 0.5f)
-            ? x1 * 2.0f * x2                        // Damper: x1 * [0.0, 1.0]
-            : x1 + (x2 - x1) * 2.0f * (x2 - 0.5f);  // Amplifier:x1 + (x2 - x1) * [0.0, 1.0]
+        if (bumpMapSample.x <= 0.5f)
+        {
+            // Damper: x1 * [0.0, 1.0]
+            return inputColor * 2.0f * bumpMapSample.x;
+        }
+        else
+        {
+            // Amplifier: x1 + (x2 - x1) * [0.0, 1.0]
+            float const factor = 2.0f * (bumpMapSample.x - 0.5f);
+            return vec3f(
+                inputColor.x + (bumpMapSample.x - inputColor.x) * factor,
+                inputColor.y + (bumpMapSample.x - inputColor.y) * factor,
+                inputColor.z + (bumpMapSample.x - inputColor.z) * factor);
+        }
     }
 }
 
@@ -175,7 +188,7 @@ void ShipTexturizer::AutoTexturizeInto(
 
                 // Get bump map texture
                 assert(structuralMaterial != nullptr);
-                Vec3fImageData const & materialTexture = GetMaterialTexture(structuralMaterial->MaterialTextureName);
+                Vec2fImageData const & materialTexture = GetMaterialTexture(structuralMaterial->MaterialTextureName);
 
                 //
                 // Fill quad with color multiply-blended with "bump map" texture
@@ -191,22 +204,13 @@ void ShipTexturizer::AutoTexturizeInto(
                     float worldX = static_cast<float>(x);
                     for (int xx = 0; xx < magnificationFactor; ++xx, worldX += magnificationFactorInvF)
                     {
-                        vec3f const bumpMapSample = SampleTextureBilinear(
+                        vec2f const bumpMapSample = SampleTextureBilinear(
                             materialTexture,
                             worldX * worldToMaterialTexturePixelConversionFactor,
                             worldY * worldToMaterialTexturePixelConversionFactor);
 
-                        ////// Vanilla multiply blending
-                        ////vec3f const resultantColor(
-                        ////    structurePixelColorF.x * bumpMapSample.x,
-                        ////    structurePixelColorF.y * bumpMapSample.y,
-                        ////    structurePixelColorF.z * bumpMapSample.z);
-
                         // Bi-directional multiply blending
-                        vec3f const resultantColorF(
-                            BidirMultiplyBlend(structurePixelColorF.x, bumpMapSample.x),
-                            BidirMultiplyBlend(structurePixelColorF.y, bumpMapSample.y),
-                            BidirMultiplyBlend(structurePixelColorF.z, bumpMapSample.z));
+                        vec3f const resultantColorF = BidirMultiplyBlend(structurePixelColorF, bumpMapSample);
 
                         // Store resultant color, using structure's alpha channel value,
                         // and blended with transparency
@@ -503,7 +507,7 @@ RgbaImageData ShipTexturizer::MakeTextureSample(
     auto sampleData = std::make_unique<rgbaColor[]>(sampleSize.GetLinearSize());
 
     // Get bump map texture and render color
-    Vec3fImageData const & materialTexture = GetMaterialTexture(textureName);
+    Vec2fImageData const & materialTexture = GetMaterialTexture(textureName);
     vec3f const renderPixelColorF = renderColor.toVec3f();
 
     // Calculate constants
@@ -520,16 +524,13 @@ RgbaImageData ShipTexturizer::MakeTextureSample(
 
         for (int x = 0; x < sampleSize.width / 2; ++x)
         {
-            vec3f const bumpMapSample = SampleTextureBilinear(
+            vec2f const bumpMapSample = SampleTextureBilinear(
                 materialTexture,
                 static_cast<float>(x) * sampleToMaterialTexturePixelConversionFactor,
                 static_cast<float>(y) * sampleToMaterialTexturePixelConversionFactor);
 
             // Bi-directional multiply blending
-            vec3f const resultantColorF(
-                BidirMultiplyBlend(renderPixelColorF.x, bumpMapSample.x),
-                BidirMultiplyBlend(renderPixelColorF.y, bumpMapSample.y),
-                BidirMultiplyBlend(renderPixelColorF.z, bumpMapSample.z));
+            vec3f const resultantColorF = BidirMultiplyBlend(renderPixelColorF, bumpMapSample);
 
             // Store resultant color to the left side, using structure's alpha channel value,
             // and blended with transparency
@@ -547,7 +548,7 @@ RgbaImageData ShipTexturizer::MakeTextureSample(
     return RgbaImageData(sampleSize, std::move(sampleData));
 }
 
-ShipTexturizer::Vec3fImageData const & ShipTexturizer::GetMaterialTexture(std::optional<std::string> const & textureName) const
+ShipTexturizer::Vec2fImageData const & ShipTexturizer::GetMaterialTexture(std::optional<std::string> const & textureName) const
 {
     std::string const actualTextureName = textureName.value_or(MaterialTextureNameNone);
 
@@ -572,18 +573,23 @@ ShipTexturizer::Vec3fImageData const & ShipTexturizer::GetMaterialTexture(std::o
         assert(mMaterialTextureNameToTextureFilePathMap.count(actualTextureName) > 0);
         RgbImageData texture = ImageFileTools::LoadImageRgb(mMaterialTextureNameToTextureFilePathMap.at(actualTextureName));
 
-        // Convert to vec3f
+        // Convert to vec2f
         auto const pixelCount = texture.Size.GetLinearSize();
-        std::unique_ptr<vec3f[]> vec3fTexture = std::make_unique<vec3f[]>(pixelCount);
+        std::unique_ptr<vec2f[]> vec2fTexture = std::make_unique<vec2f[]>(pixelCount);
         for (int p = 0; p < pixelCount; ++p)
         {
-            vec3fTexture[p] = texture.Data[p].toVec3f();
+            assert(texture.Data[p].r == texture.Data[p].g);
+            assert(texture.Data[p].r == texture.Data[p].b);
+
+            vec2fTexture[p] = vec2f(
+                static_cast<float>(texture.Data[p].r) / 255.0f,
+                1.0f); // Alpha: at this moment we hardcode it as opaque, we'll think whether we want to make transparent chains
         }
 
         // Insert texture into cache
         auto const inserted = mMaterialTextureCache.emplace(
             actualTextureName,
-            Vec3fImageData(texture.Size, std::move(vec3fTexture)));
+            Vec2fImageData(texture.Size, std::move(vec2fTexture)));
 
         assert(inserted.second);
 
@@ -633,8 +639,8 @@ void ShipTexturizer::PurgeMaterialTextureCache(size_t maxSize) const
     }
 }
 
-vec3f ShipTexturizer::SampleTextureBilinear(
-    Vec3fImageData const & texture,
+vec2f ShipTexturizer::SampleTextureBilinear(
+    Vec2fImageData const & texture,
     float pixelX,
     float pixelY) const
 {
@@ -663,13 +669,13 @@ vec3f ShipTexturizer::SampleTextureBilinear(
     int const nextPixelYI = (pixelYI + 1) % static_cast<decltype(pixelYI)>(texture.Size.height);
 
     // Linear interpolation between x samples at bottom
-    vec3f const interpolatedXColorBottom = Mix(
+    vec2f const interpolatedXColorBottom = Mix(
         texture.Data[pixelXI + pixelYI * texture.Size.width],
         texture.Data[nextPixelXI + pixelYI * texture.Size.width],
         pixelDx);
 
     // Linear interpolation between x samples at top
-    vec3f const interpolatedXColorTop = Mix(
+    vec2f const interpolatedXColorTop = Mix(
         texture.Data[pixelXI + nextPixelYI * texture.Size.width],
         texture.Data[nextPixelXI + nextPixelYI * texture.Size.width],
         pixelDx);
@@ -681,8 +687,8 @@ vec3f ShipTexturizer::SampleTextureBilinear(
         pixelDy);
 }
 
-vec3f ShipTexturizer::SampleTextureNearest(
-    Vec3fImageData const & texture,
+vec2f ShipTexturizer::SampleTextureNearest(
+    Vec2fImageData const & texture,
     float pixelX,
     float pixelY) const
 {
