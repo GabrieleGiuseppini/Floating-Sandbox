@@ -215,9 +215,11 @@ void ShipTexturizer::AutoTexturizeInto(
 
                     // Wrap integral coordinates
                     pixelYI %= static_cast<decltype(pixelYI)>(materialTexture.Size.height);
+                    auto const pixelYIOffset = pixelYI * materialTexture.Size.width;
 
                     // Next Y
-                    int const nextPixelYI = (pixelYI + 1) % static_cast<decltype(pixelYI)>(materialTexture.Size.height);
+                    auto const nextPixelYI = (pixelYI + 1) % static_cast<decltype(pixelYI)>(materialTexture.Size.height);
+                    auto const nextPixelYIOffset = nextPixelYI * materialTexture.Size.width;;
 
                     assert(pixelYI >= 0 && pixelYI < materialTexture.Size.height);
                     assert(pixelDy >= 0.0f && pixelDy < 1.0f);
@@ -254,14 +256,14 @@ void ShipTexturizer::AutoTexturizeInto(
 
                         // Linear interpolation between x samples at bottom
                         vec2f const interpolatedXColorBottom = Mix(
-                            materialTexture.Data[pixelXI + pixelYI * materialTexture.Size.width],
-                            materialTexture.Data[nextPixelXI + pixelYI * materialTexture.Size.width],
+                            materialTexture.Data[pixelXI + pixelYIOffset],
+                            materialTexture.Data[nextPixelXI + pixelYIOffset],
                             pixelDx);
 
                         // Linear interpolation between x samples at top
                         vec2f const interpolatedXColorTop = Mix(
-                            materialTexture.Data[pixelXI + nextPixelYI * materialTexture.Size.width],
-                            materialTexture.Data[nextPixelXI + nextPixelYI * materialTexture.Size.width],
+                            materialTexture.Data[pixelXI + nextPixelYIOffset],
+                            materialTexture.Data[nextPixelXI + nextPixelYIOffset],
                             pixelDx);
 
                         // Linear interpolation between two vertical samples
