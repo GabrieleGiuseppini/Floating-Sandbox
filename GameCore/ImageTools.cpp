@@ -105,17 +105,3 @@ RgbImageData ImageTools::ToAlpha(RgbaImageData const & imageData)
 
     return RgbImageData(imageData.Size, std::move(newImageData));
 }
-
-Vec3fImageData ImageTools::ToVec3f(RgbImageData const & imageData)
-{
-    auto const pixelCount = imageData.Size.GetLinearSize();
-
-    std::unique_ptr<vec3f[]> convertedData = std::make_unique<vec3f[]>(pixelCount);
-
-    for (int p = 0; p < pixelCount; ++p)
-    {
-        convertedData[p] = imageData.Data[p].toVec3f();
-    }
-
-    return Vec3fImageData(imageData.Size, std::move(convertedData));
-}

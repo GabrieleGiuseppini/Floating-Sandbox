@@ -8,11 +8,9 @@
 #include "Buffer2D.h"
 #include "Colors.h"
 #include "GameTypes.h"
-#include "Vectors.h"
 
 template <typename TColor>
 using ImageData = Buffer2D<TColor, struct ImageTag>;
 
 using RgbImageData = ImageData<rgbColor>;
 using RgbaImageData = ImageData<rgbaColor>;
-using Vec3fImageData = ImageData<vec3f>;

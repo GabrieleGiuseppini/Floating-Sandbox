@@ -9,7 +9,6 @@
 
 #include <GameCore/GameException.h>
 #include <GameCore/GameMath.h>
-#include <GameCore/ImageTools.h>
 #include <GameCore/Log.h>
 
 #include <algorithm>
@@ -548,7 +547,7 @@ RgbaImageData ShipTexturizer::MakeTextureSample(
     return RgbaImageData(sampleSize, std::move(sampleData));
 }
 
-Vec3fImageData const & ShipTexturizer::GetMaterialTexture(std::optional<std::string> const & textureName) const
+ShipTexturizer::Vec3fImageData const & ShipTexturizer::GetMaterialTexture(std::optional<std::string> const & textureName) const
 {
     std::string const actualTextureName = textureName.value_or(MaterialTextureNameNone);
 
@@ -569,12 +568,22 @@ Vec3fImageData const & ShipTexturizer::GetMaterialTexture(std::optional<std::str
             PurgeMaterialTextureCache(MaterialTextureCacheSizeLowWatermark);
         }
 
-        // Load and cache texture
+        // Load texture
         assert(mMaterialTextureNameToTextureFilePathMap.count(actualTextureName) > 0);
         RgbImageData texture = ImageFileTools::LoadImageRgb(mMaterialTextureNameToTextureFilePathMap.at(actualTextureName));
+
+        // Convert to vec3f
+        auto const pixelCount = texture.Size.GetLinearSize();
+        std::unique_ptr<vec3f[]> vec3fTexture = std::make_unique<vec3f[]>(pixelCount);
+        for (int p = 0; p < pixelCount; ++p)
+        {
+            vec3fTexture[p] = texture.Data[p].toVec3f();
+        }
+
+        // Insert texture into cache
         auto const inserted = mMaterialTextureCache.emplace(
             actualTextureName,
-            ImageTools::ToVec3f(texture));
+            Vec3fImageData(texture.Size, std::move(vec3fTexture)));
 
         assert(inserted.second);
 

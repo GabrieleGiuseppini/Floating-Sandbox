@@ -91,6 +91,10 @@ public:
 
 private:
 
+    using Vec3fImageData = ImageData<vec3f>;
+
+private:
+
     static std::unordered_map<std::string, std::filesystem::path> MakeMaterialTextureNameToTextureFilePathMap(
         MaterialDatabase const & materialDatabase,
         ResourceLocator const & resourceLocator);
