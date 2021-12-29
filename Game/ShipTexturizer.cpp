@@ -201,13 +201,74 @@ void ShipTexturizer::AutoTexturizeInto(
                 {
                     int const targetQuadOffset = baseTargetQuadOffset + yy * targetTextureImage.Size.width;
 
+                    //
+                    // Prepare bilinear interpolation for Y
+                    //
+
+                    float const pixelY = worldY * worldToMaterialTexturePixelConversionFactor;
+
+                    // Integral part
+                    auto pixelYI = FastTruncateToArchInt(pixelY);
+
+                    // Fractional part between index and next index
+                    float const pixelDy = pixelY - pixelYI;
+
+                    // Wrap integral coordinates
+                    pixelYI %= static_cast<decltype(pixelYI)>(materialTexture.Size.height);
+
+                    // Next Y
+                    int const nextPixelYI = (pixelYI + 1) % static_cast<decltype(pixelYI)>(materialTexture.Size.height);
+
+                    assert(pixelYI >= 0 && pixelYI < materialTexture.Size.height);
+                    assert(pixelDy >= 0.0f && pixelDy < 1.0f);
+                    assert(nextPixelYI >= 0 && nextPixelYI < materialTexture.Size.height);
+
+                    //
+                    // Loop for all Xs
+                    //
+
                     float worldX = static_cast<float>(x);
                     for (int xx = 0; xx < magnificationFactor; ++xx, worldX += magnificationFactorInvF)
                     {
-                        vec2f const bumpMapSample = SampleTextureBilinear(
-                            materialTexture,
-                            worldX * worldToMaterialTexturePixelConversionFactor,
-                            worldY * worldToMaterialTexturePixelConversionFactor);
+                        //
+                        // Bilinear interpolation for X
+                        //
+
+                        float const pixelX = worldX * worldToMaterialTexturePixelConversionFactor;
+
+                        // Integral part
+                        auto pixelXI = FastTruncateToArchInt(pixelX);
+
+                        // Fractional part between index and next index
+                        float const pixelDx = pixelX - pixelXI;
+
+                        // Wrap integral coordinates
+                        pixelXI %= static_cast<decltype(pixelXI)>(materialTexture.Size.width);
+
+                        // Next X
+                        int const nextPixelXI = (pixelXI + 1) % static_cast<decltype(pixelXI)>(materialTexture.Size.width);
+
+                        assert(pixelXI >= 0 && pixelXI < texture.Size.width);
+                        assert(pixelDx >= 0.0f && pixelDx < 1.0f);
+                        assert(nextPixelXI >= 0 && nextPixelXI < texture.Size.width);
+
+                        // Linear interpolation between x samples at bottom
+                        vec2f const interpolatedXColorBottom = Mix(
+                            materialTexture.Data[pixelXI + pixelYI * materialTexture.Size.width],
+                            materialTexture.Data[nextPixelXI + pixelYI * materialTexture.Size.width],
+                            pixelDx);
+
+                        // Linear interpolation between x samples at top
+                        vec2f const interpolatedXColorTop = Mix(
+                            materialTexture.Data[pixelXI + nextPixelYI * materialTexture.Size.width],
+                            materialTexture.Data[nextPixelXI + nextPixelYI * materialTexture.Size.width],
+                            pixelDx);
+
+                        // Linear interpolation between two vertical samples
+                        vec2f const bumpMapSample = Mix(
+                            interpolatedXColorBottom,
+                            interpolatedXColorTop,
+                            pixelDy);
 
                         //
                         // Bi-directional multiply blending between structural color and bumpmap sample "value" (just r),
