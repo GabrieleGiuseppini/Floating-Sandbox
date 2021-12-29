@@ -212,8 +212,8 @@ void ShipTexturizer::AutoTexturizeInto(
                         // Bi-directional multiply blending
                         vec3f const resultantColorF = BidirMultiplyBlend(structurePixelColorF, bumpMapSample);
 
-                        // Store resultant color, using structure's alpha channel value,
-                        // and blended with transparency
+                        // Store resultant color blended with original color via material transparency, and using 
+                        // structure's alpha channel value as the final alpha
                         targetImageData[targetQuadOffset + xx] = rgbaColor(
                             Mix(structurePixelColorF,
                                 resultantColorF,

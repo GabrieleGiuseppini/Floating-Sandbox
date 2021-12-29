@@ -169,7 +169,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 	= Perf improvements:
 		= Auto-texturization
 			+ Do benchmarks
-			- Do we need to store whole vec3f in texture? Can just R (and possibly A for future transparent material textures like Chain) suffice?
+			+ Do we need to store whole vec3f in texture? Can just R (and possibly A for future transparent material textures like Chain) suffice?
 			- Compute x int+fract once for each of the magnificationFactor rows
 			- Would nearest neighbor suffice?
 			- Replace round with truncate(. + 0.5)
