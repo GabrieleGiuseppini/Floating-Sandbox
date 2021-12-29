@@ -117,14 +117,14 @@ void main()
 
     vec4 color1 = vec4(
         particle1Color.xyz,
-        min(1.0, particleDepth + line12Depth + line13Depth + line14Depth));
+        min(1.0, particleDepth + line12Depth + line13Depth + line14Depth) * paramOpacity);
 
     vec4 color2 = vec4(
         particle2Color.xyz,
-        line23Depth);
+        line23Depth * paramOpacity);
 
     gl_FragColor = mix(
         color1,
         color2,
-        color2.w * paramOpacity);
+        color2.w);
 }
