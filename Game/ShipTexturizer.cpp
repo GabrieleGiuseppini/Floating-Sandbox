@@ -131,6 +131,16 @@ void ShipTexturizer::AutoTexturizeInto(
 
     float const materialTextureAlpha = 1.0f - settings.MaterialTextureTransparency;
 
+    struct XInterpolationData
+    {
+        register_int pixelXI;
+        float pixelDx;
+        register_int nextPixelXI;
+    };
+
+    std::vector<XInterpolationData> xInterpolationData;
+    xInterpolationData.resize(magnificationFactor);
+
     //
     // Populate texture
     //
@@ -191,6 +201,30 @@ void ShipTexturizer::AutoTexturizeInto(
                 Vec2fImageData const & materialTexture = GetMaterialTexture(structuralMaterial->MaterialTextureName);
 
                 //
+                // Prepare bilinear interpolation along X
+                //
+
+                float pixelX = static_cast<float>(x) * worldToMaterialTexturePixelConversionFactor;
+                for (int xx = 0; xx < magnificationFactor; ++xx, pixelX += magnificationFactorInvF * worldToMaterialTexturePixelConversionFactor)
+                {
+                    // Integral part
+                    xInterpolationData[xx].pixelXI = FastTruncateToArchInt(pixelX);
+
+                    // Fractional part between index and next index
+                    xInterpolationData[xx].pixelDx = pixelX - xInterpolationData[xx].pixelXI;
+
+                    // Wrap integral coordinates
+                    xInterpolationData[xx].pixelXI %= static_cast<register_int>(materialTexture.Size.width);
+
+                    // Next X
+                    xInterpolationData[xx].nextPixelXI = (xInterpolationData[xx].pixelXI + 1) % static_cast<register_int>(materialTexture.Size.width);
+
+                    assert(xInterpolationData[xx].pixelXI >= 0 && xInterpolationData[xx].pixelXI < materialTexture.Size.width);
+                    assert(xInterpolationData[xx].pixelDx >= 0.0f && xInterpolationData[xx].pixelDx < 1.0f);
+                    assert(xInterpolationData[xx].nextPixelXI >= 0 && xInterpolationData[xx].nextPixelXI < materialTexture.Size.width);
+                }
+
+                //
                 // Fill quad with color multiply-blended with "bump map" texture
                 //
 
@@ -229,40 +263,23 @@ void ShipTexturizer::AutoTexturizeInto(
                     // Loop for all Xs
                     //
 
-                    float pixelX = static_cast<float>(x) * worldToMaterialTexturePixelConversionFactor;
-                    for (int xx = 0; xx < magnificationFactor; ++xx, pixelX += magnificationFactorInvF * worldToMaterialTexturePixelConversionFactor)
+                    for (int xx = 0; xx < magnificationFactor; ++xx)
                     {
                         //
                         // Bilinear interpolation for X
                         //
 
-                        // Integral part
-                        auto pixelXI = FastTruncateToArchInt(pixelX);
-
-                        // Fractional part between index and next index
-                        float const pixelDx = pixelX - pixelXI;
-
-                        // Wrap integral coordinates
-                        pixelXI %= static_cast<decltype(pixelXI)>(materialTexture.Size.width);
-
-                        // Next X
-                        int const nextPixelXI = (pixelXI + 1) % static_cast<decltype(pixelXI)>(materialTexture.Size.width);
-
-                        assert(pixelXI >= 0 && pixelXI < texture.Size.width);
-                        assert(pixelDx >= 0.0f && pixelDx < 1.0f);
-                        assert(nextPixelXI >= 0 && nextPixelXI < texture.Size.width);
-
                         // Linear interpolation between x samples at bottom
                         vec2f const interpolatedXColorBottom = Mix(
-                            materialTexture.Data[pixelXI + pixelYIOffset],
-                            materialTexture.Data[nextPixelXI + pixelYIOffset],
-                            pixelDx);
+                            materialTexture.Data[xInterpolationData[xx].pixelXI + pixelYIOffset],
+                            materialTexture.Data[xInterpolationData[xx].nextPixelXI + pixelYIOffset],
+                            xInterpolationData[xx].pixelDx);
 
                         // Linear interpolation between x samples at top
                         vec2f const interpolatedXColorTop = Mix(
-                            materialTexture.Data[pixelXI + nextPixelYIOffset],
-                            materialTexture.Data[nextPixelXI + nextPixelYIOffset],
-                            pixelDx);
+                            materialTexture.Data[xInterpolationData[xx].pixelXI + nextPixelYIOffset],
+                            materialTexture.Data[xInterpolationData[xx].nextPixelXI + nextPixelYIOffset],
+                            xInterpolationData[xx].pixelDx);
 
                         // Linear interpolation between two vertical samples
                         vec2f const bumpMapSample = Mix(
