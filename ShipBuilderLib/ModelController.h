@@ -19,6 +19,7 @@
 #include <GameCore/GameTypes.h>
 #include <GameCore/ImageData.h>
 
+#include <array>
 #include <memory>
 #include <optional>
 #include <vector>
@@ -243,7 +244,7 @@ public:
 
     void SetTextureLayerVisualizationMode(TextureLayerVisualizationModeType mode);
 
-    void UploadVisualizations(View & view);
+    void UpdateVisualizations(View & view);
 
 private:
 
@@ -282,7 +283,15 @@ private:
         bool doContiguousOnly,
         typename LayerTypeTraits<TLayer>::layer_data_type const & layer);
 
-    void UpdateGameVisualization(ShipSpaceRect const & region);
+    // Viz
+
+    template<VisualizationType TVisualization>
+    void RegisterDirtyVisualization(ShipSpaceRect const & region);
+
+    template<VisualizationType TVisualization>
+    void ResetDirtyVisualization();
+
+    ImageRect UpdateGameVisualization(ShipSpaceRect const & region);
 
     void UpdateStructuralLayerVisualization(ShipSpaceRect const & region);
 
@@ -319,21 +328,19 @@ private:
     std::unique_ptr<RgbaImageData> mGameVisualizationAutoTexturizationTexture;
     std::unique_ptr<RgbaImageData> mGameVisualizationTexture;
     int mGameVisualizationTextureMagnificationFactor;
-    std::optional<ImageRect> mDirtyGameVisualizationRegion;
 
     StructuralLayerVisualizationModeType mStructuralLayerVisualizationMode;
     std::unique_ptr<RgbaImageData> mStructuralLayerVisualizationTexture;
-    std::optional<ImageRect> mDirtyStructuralLayerVisualizationRegion;
 
     ElectricalLayerVisualizationModeType mElectricalLayerVisualizationMode;
     std::unique_ptr<RgbaImageData> mElectricalLayerVisualizationTexture;
-    std::optional<ImageRect> mDirtyElectricalLayerVisualizationRegion;
 
     RopesLayerVisualizationModeType mRopesLayerVisualizationMode;
-    bool mIsRopesLayerVisualizationDirty;
 
     TextureLayerVisualizationModeType mTextureLayerVisualizationMode;
-    bool mIsTextureLayerVisualizationDirty;
+
+    // Regions whose visualization needs to be *updated* and uploaded
+    std::array<std::optional<ShipSpaceRect>, VisualizationCount> mDirtyVisualizationRegions;
 
     //
     // Debugging

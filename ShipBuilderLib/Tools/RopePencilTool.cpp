@@ -59,7 +59,7 @@ RopePencilTool::~RopePencilTool()
         HideOverlay();
     }
 
-    mModelController.UploadVisualizations(mView);
+    mModelController.UpdateVisualizations(mView);
     mUserInterface.RefreshView();
 }
 
@@ -82,7 +82,7 @@ void RopePencilTool::OnMouseMove(ShipSpaceCoordinates const & mouseCoordinates)
         DoTempVisualization(mouseCoordinates);
     }
 
-    mModelController.UploadVisualizations(mView);
+    mModelController.UpdateVisualizations(mView);
     mUserInterface.RefreshView();
 }
 
@@ -112,7 +112,7 @@ void RopePencilTool::OnLeftMouseDown()
 
     // Leave overlay
 
-    mModelController.UploadVisualizations(mView);
+    mModelController.UpdateVisualizations(mView);
     mUserInterface.RefreshView();
 }
 
@@ -139,7 +139,7 @@ void RopePencilTool::OnLeftMouseUp()
 
     // Leave overlay
 
-    mModelController.UploadVisualizations(mView);
+    mModelController.UpdateVisualizations(mView);
     mUserInterface.RefreshView();
 }
 
@@ -169,7 +169,7 @@ void RopePencilTool::OnRightMouseDown()
 
     // Leave overlay
 
-    mModelController.UploadVisualizations(mView);
+    mModelController.UpdateVisualizations(mView);
     mUserInterface.RefreshView();
 }
 
@@ -196,7 +196,7 @@ void RopePencilTool::OnRightMouseUp()
 
     // Leave overlay
 
-    mModelController.UploadVisualizations(mView);
+    mModelController.UpdateVisualizations(mView);
     mUserInterface.RefreshView();
 }
 

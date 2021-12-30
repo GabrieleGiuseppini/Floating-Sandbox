@@ -211,25 +211,32 @@ https://gamejolt.com/x/permalink/comment/11730705
 						- See if benchmarks project now still needs wxWidgets just for jpeg
 				= Load file and pass to Controller
 					= Resize workflow
-						= For texture
+						+ For texture
 							+ Dialog
 							+ Resize image								
 								+ Buffer2D::Reframe								
 									+ See broken Y
-							= Controller::SetTextureLayer
-								= Undo
-									- Rearc: ModelController:
-										- Dirty region to *update*, one for each viz
-											- Array member
-											- Updated each time we currently invoke UpdateXXXViz
-										- Dirty region to *upload*, one for each viz
-											- Array member
-											- Set by the (now private) UpdateXXXViz()
-										- UpdateXXXViz(): they are all private, invoked *only* by single public UpdateVisualizations
-										- ModelController::UpdateVisualizations()
-											- Invokes all individual UpdateXXXViz()
-										- ModelController::UploadVisualizations()
-											- Like now
+							+ Controller::SetTextureLayer
+								+ Undo
+									+ Rearc: ModelController:
+										+ Dirty region to *update* and *upload*, one for each viz
+											+ Array member
+											+ Updated each time we currently invoke UpdateXXXViz
+											+ Also updated at New/Set/Remove/Restore layer
+										+ UpdateXXXViz(): they are all private, invoked *only* by single public UpdateVisualizations
+										+ ModelController::UpdateVisualizations(View)
+											+ Invokes all individual UpdateXXXViz()
+											+ Then uploads/removes from view
+										+ Controller: invoke UpdateVisualizations(View) at:
+											+ New
+											+ Set
+											+ Restore
+											+ Flip
+											+ Edits (tools)
+										+ Test:
+											+ Flood tool
+											+ Line tool
+											+ Pencil tool
 						= For resize
 							+ Dialog
 								+ Dimensions lock button

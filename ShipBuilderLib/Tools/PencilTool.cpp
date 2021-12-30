@@ -130,7 +130,7 @@ PencilTool<TLayer, IsEraser>::PencilTool(
             assert(mTempVisualizationDirtyShipRegion);
 
             // Visualize
-            mModelController.UploadVisualizations(mView);
+            mModelController.UpdateVisualizations(mView);
             mUserInterface.RefreshView();
         }
     }
@@ -147,7 +147,7 @@ PencilTool<TLayer, IsEraser>::~PencilTool()
         assert(!mTempVisualizationDirtyShipRegion);
 
         // Visualize
-        mModelController.UploadVisualizations(mView);
+        mModelController.UpdateVisualizations(mView);
         mUserInterface.RefreshView();
     }
 }
@@ -185,7 +185,7 @@ void PencilTool<TLayer, IsEraser>::OnMouseMove(ShipSpaceCoordinates const & mous
             }
 
             // Visualize
-            mModelController.UploadVisualizations(mView);
+            mModelController.UpdateVisualizations(mView);
             mUserInterface.RefreshView();
         }
     }
@@ -346,12 +346,12 @@ void PencilTool<TLayer, IsEraser>::DoEdit(ShipSpaceCoordinates const & mouseCoor
         SetLayerDirty(TLayer);
     }
 
-    // Refresh model visualizations
-    mModelController.UploadVisualizations(mView);
-    mUserInterface.RefreshView();
-
     // Update previous engagement
     mEngagementData->PreviousEngagementPosition = mouseCoordinates;
+
+    // Refresh model visualizations
+    mModelController.UpdateVisualizations(mView);
+    mUserInterface.RefreshView();
 }
 
 template<LayerType TLayer, bool IsEraser>

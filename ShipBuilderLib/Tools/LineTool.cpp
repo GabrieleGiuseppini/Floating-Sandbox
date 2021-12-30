@@ -78,7 +78,7 @@ LineTool<TLayer>::LineTool(
         DoEphemeralVisualization(*mouseCoordinates);
 
         // Visualize
-        mModelController.UploadVisualizations(mView);
+        mModelController.UpdateVisualizations(mView);
         mUserInterface.RefreshView();
     }
 }
@@ -92,7 +92,7 @@ LineTool<TLayer>::~LineTool()
         mEphemeralVisualization.reset();
 
         // Visualize
-        mModelController.UploadVisualizations(mView);
+        mModelController.UpdateVisualizations(mView);
         mUserInterface.RefreshView();
     }
 }
@@ -109,7 +109,7 @@ void LineTool<TLayer>::OnMouseMove(ShipSpaceCoordinates const & mouseCoordinates
     DoEphemeralVisualization(mouseCoordinates);
 
     // Visualize
-    mModelController.UploadVisualizations(mView);
+    mModelController.UpdateVisualizations(mView);
     mUserInterface.RefreshView();
 }
 
@@ -133,7 +133,7 @@ void LineTool<TLayer>::OnLeftMouseDown()
     DoEphemeralVisualization(mUserInterface.GetMouseCoordinates());
 
     // Visualize
-    mModelController.UploadVisualizations(mView);
+    mModelController.UpdateVisualizations(mView);
     mUserInterface.RefreshView();
 }
 
@@ -157,7 +157,7 @@ void LineTool<TLayer>::OnLeftMouseUp()
     DoEphemeralVisualization(mouseCoordinates);
 
     // Visualize
-    mModelController.UploadVisualizations(mView);
+    mModelController.UpdateVisualizations(mView);
     mUserInterface.RefreshView();
 }
 
@@ -166,7 +166,6 @@ void LineTool<TLayer>::OnRightMouseDown()
 {
     // Restore ephemeral visualization (if any)
     mEphemeralVisualization.reset();
-
 
     ShipSpaceCoordinates const mouseCoordinates = mUserInterface.GetMouseCoordinates();
 
@@ -182,7 +181,7 @@ void LineTool<TLayer>::OnRightMouseDown()
     DoEphemeralVisualization(mUserInterface.GetMouseCoordinates());
 
     // Visualize
-    mModelController.UploadVisualizations(mView);
+    mModelController.UpdateVisualizations(mView);
     mUserInterface.RefreshView();
 }
 
@@ -191,7 +190,6 @@ void LineTool<TLayer>::OnRightMouseUp()
 {
     // Restore ephemeral visualization (if any)
     mEphemeralVisualization.reset();
-
 
     ShipSpaceCoordinates const mouseCoordinates = mUserInterface.GetMouseCoordinates();
 
@@ -207,7 +205,7 @@ void LineTool<TLayer>::OnRightMouseUp()
     DoEphemeralVisualization(mouseCoordinates);
 
     // Visualize
-    mModelController.UploadVisualizations(mView);
+    mModelController.UpdateVisualizations(mView);
     mUserInterface.RefreshView();
 }
 
@@ -223,7 +221,7 @@ void LineTool<TLayer>::OnShiftKeyDown()
     DoEphemeralVisualization(mUserInterface.GetMouseCoordinates());
 
     // Visualize
-    mModelController.UploadVisualizations(mView);
+    mModelController.UpdateVisualizations(mView);
     mUserInterface.RefreshView();
 }
 
@@ -239,7 +237,7 @@ void LineTool<TLayer>::OnShiftKeyUp()
     DoEphemeralVisualization(mUserInterface.GetMouseCoordinates());
 
     // Visualize
-    mModelController.UploadVisualizations(mView);
+    mModelController.UpdateVisualizations(mView);
     mUserInterface.RefreshView();
 }
 

@@ -47,22 +47,19 @@ ModelController::ModelController(
     , mGameVisualizationAutoTexturizationTexture()
     , mGameVisualizationTexture()
     , mGameVisualizationTextureMagnificationFactor(0)
-    , mDirtyGameVisualizationRegion()
     , mStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType::None)
     , mStructuralLayerVisualizationTexture()
-    , mDirtyStructuralLayerVisualizationRegion()
     , mElectricalLayerVisualizationMode(ElectricalLayerVisualizationModeType::None)
     , mElectricalLayerVisualizationTexture()
-    , mDirtyElectricalLayerVisualizationRegion()
     , mRopesLayerVisualizationMode(RopesLayerVisualizationModeType::None)
-    , mIsRopesLayerVisualizationDirty(false)
     , mTextureLayerVisualizationMode(TextureLayerVisualizationModeType::None)
-    , mIsTextureLayerVisualizationDirty(false)
     /////
     , mIsStructuralLayerInEphemeralVisualization(false)
     , mIsElectricalLayerInEphemeralVisualization(false)
     , mIsRopesLayerInEphemeralVisualization(false)
 {
+    mDirtyVisualizationRegions.fill(std::nullopt);
+
     // Model is not dirty now
     assert(!mModel.GetIsDirty());
 
@@ -234,7 +231,7 @@ void ModelController::Flip(DirectionType direction)
 
         mModel.GetStructuralLayer().Buffer.Flip(direction);
 
-        UpdateStructuralLayerVisualization(GetWholeShipRect());
+        RegisterDirtyVisualization<VisualizationType::StructuralLayer>(GetWholeShipRect());
     }
 
     // Electrical layer
@@ -244,7 +241,7 @@ void ModelController::Flip(DirectionType direction)
 
         mModel.GetElectricalLayer().Buffer.Flip(direction);
 
-        UpdateElectricalLayerVisualization(GetWholeShipRect());
+        RegisterDirtyVisualization<VisualizationType::ElectricalLayer>(GetWholeShipRect());
     }
 
     // Ropes layer
@@ -254,7 +251,7 @@ void ModelController::Flip(DirectionType direction)
 
         mModel.GetRopesLayer().Buffer.Flip(direction, mModel.GetShipSize());
 
-        UpdateRopesLayerVisualization();
+        RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
     }
 
     // Texture layer
@@ -262,10 +259,11 @@ void ModelController::Flip(DirectionType direction)
     {
         mModel.GetTextureLayer().Buffer.Flip(direction);
 
-        UpdateTextureLayerVisualization();
+        RegisterDirtyVisualization<VisualizationType::TextureLayer>(GetWholeShipRect());
     }
 
-    UpdateGameVisualization(GetWholeShipRect());
+    //...and Game we do regardless, as there's always a structural layer at least
+    RegisterDirtyVisualization<VisualizationType::Game>(GetWholeShipRect());
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -278,8 +276,8 @@ void ModelController::NewStructuralLayer()
 
     InitializeStructuralLayerAnalysis();
 
-    UpdateGameVisualization(GetWholeShipRect());
-    UpdateStructuralLayerVisualization(GetWholeShipRect());
+    RegisterDirtyVisualization<VisualizationType::Game>(GetWholeShipRect());
+    RegisterDirtyVisualization<VisualizationType::StructuralLayer>(GetWholeShipRect());
 
     mIsStructuralLayerInEphemeralVisualization = false;
 }
@@ -292,8 +290,8 @@ void ModelController::SetStructuralLayer(/*TODO*/)
 
     InitializeStructuralLayerAnalysis();
 
-    UpdateGameVisualization(GetWholeShipRect());
-    UpdateStructuralLayerVisualization(GetWholeShipRect());
+    RegisterDirtyVisualization<VisualizationType::Game>(GetWholeShipRect());
+    RegisterDirtyVisualization<VisualizationType::StructuralLayer>(GetWholeShipRect());
 
     mIsStructuralLayerInEphemeralVisualization = false;
 }
@@ -322,8 +320,8 @@ void ModelController::StructuralRegionFill(
     // Update visualization
     //
 
-    UpdateGameVisualization(region);
-    UpdateStructuralLayerVisualization(region);
+    RegisterDirtyVisualization<VisualizationType::Game>(region);
+    RegisterDirtyVisualization<VisualizationType::StructuralLayer>(region);
 }
 
 std::optional<ShipSpaceRect> ModelController::StructuralFlood(
@@ -351,8 +349,8 @@ std::optional<ShipSpaceRect> ModelController::StructuralFlood(
         // Update visualization
         //
 
-        UpdateGameVisualization(*affectedRect);
-        UpdateStructuralLayerVisualization(*affectedRect);
+        RegisterDirtyVisualization<VisualizationType::Game>(*affectedRect);
+        RegisterDirtyVisualization<VisualizationType::StructuralLayer>(*affectedRect);
     }
 
     return affectedRect;
@@ -386,8 +384,8 @@ void ModelController::RestoreStructuralLayerRegion(
     // Update visualization
     //
 
-    UpdateGameVisualization({ targetOrigin, sourceRegion.size });
-    UpdateStructuralLayerVisualization({ targetOrigin, sourceRegion.size });
+    RegisterDirtyVisualization<VisualizationType::Game>(ShipSpaceRect(targetOrigin, sourceRegion.size));
+    RegisterDirtyVisualization<VisualizationType::StructuralLayer>(ShipSpaceRect(targetOrigin, sourceRegion.size));
 }
 
 void ModelController::StructuralRegionFillForEphemeralVisualization(
@@ -414,8 +412,8 @@ void ModelController::StructuralRegionFillForEphemeralVisualization(
     // Update visualization
     //
 
-    UpdateGameVisualization(region);
-    UpdateStructuralLayerVisualization(region);
+    RegisterDirtyVisualization<VisualizationType::Game>(region);
+    RegisterDirtyVisualization<VisualizationType::StructuralLayer>(region);
 
     // Remember we are in temp visualization now
     mIsStructuralLayerInEphemeralVisualization = true;
@@ -443,8 +441,8 @@ void ModelController::RestoreStructuralLayerRegionForEphemeralVisualization(
     // Update visualization
     //
 
-    UpdateGameVisualization({ targetOrigin, sourceRegion.size });
-    UpdateStructuralLayerVisualization({ targetOrigin, sourceRegion.size });
+    RegisterDirtyVisualization<VisualizationType::Game>(ShipSpaceRect(targetOrigin, sourceRegion.size));
+    RegisterDirtyVisualization<VisualizationType::StructuralLayer>(ShipSpaceRect(targetOrigin, sourceRegion.size));
 
     // Remember we are not anymore in temp visualization
     mIsStructuralLayerInEphemeralVisualization = false;
@@ -460,7 +458,7 @@ void ModelController::NewElectricalLayer()
 
     InitializeElectricalLayerAnalysis();
 
-    UpdateElectricalLayerVisualization(GetWholeShipRect());
+    RegisterDirtyVisualization<VisualizationType::ElectricalLayer>(GetWholeShipRect());
 
     mIsElectricalLayerInEphemeralVisualization = false;
 }
@@ -471,7 +469,7 @@ void ModelController::SetElectricalLayer(/*TODO*/)
 
     InitializeElectricalLayerAnalysis();
 
-    UpdateElectricalLayerVisualization(GetWholeShipRect());
+    RegisterDirtyVisualization<VisualizationType::ElectricalLayer>(GetWholeShipRect());
 
     mIsElectricalLayerInEphemeralVisualization = false;
 }
@@ -482,9 +480,9 @@ void ModelController::RemoveElectricalLayer()
 
     mModel.RemoveElectricalLayer();
 
-    assert(!mModel.HasLayer(LayerType::Electrical));
-
     InitializeElectricalLayerAnalysis();
+
+    RegisterDirtyVisualization<VisualizationType::ElectricalLayer>(GetWholeShipRect());
 
     mIsElectricalLayerInEphemeralVisualization = false;
 }
@@ -545,7 +543,7 @@ std::optional<ShipSpaceRect> ModelController::TrimElectricalParticlesWithoutSubs
 
     if (affectedRect.has_value())
     {
-        UpdateElectricalLayerVisualization(*affectedRect);
+        RegisterDirtyVisualization<VisualizationType::ElectricalLayer>(*affectedRect);
     }
 
     return affectedRect;
@@ -575,7 +573,7 @@ void ModelController::ElectricalRegionFill(
     // Update visualization
     //
 
-    UpdateElectricalLayerVisualization(region);
+    RegisterDirtyVisualization<VisualizationType::ElectricalLayer>(region);
 }
 
 void ModelController::RestoreElectricalLayerRegion(
@@ -608,7 +606,7 @@ void ModelController::RestoreElectricalLayerRegion(
     // Update visualization
     //
 
-    UpdateElectricalLayerVisualization({ targetOrigin, sourceRegion.size });
+    RegisterDirtyVisualization<VisualizationType::ElectricalLayer>(ShipSpaceRect(targetOrigin, sourceRegion.size));
 }
 
 void ModelController::ElectricalRegionFillForEphemeralVisualization(
@@ -635,7 +633,7 @@ void ModelController::ElectricalRegionFillForEphemeralVisualization(
     // Update visualization
     //
 
-    UpdateElectricalLayerVisualization(region);
+    RegisterDirtyVisualization<VisualizationType::ElectricalLayer>(region);
 
     // Remember we are in temp visualization now
     mIsElectricalLayerInEphemeralVisualization = true;
@@ -663,7 +661,7 @@ void ModelController::RestoreElectricalLayerRegionForEphemeralVisualization(
     // Update visualization
     //
 
-    UpdateElectricalLayerVisualization({ targetOrigin, sourceRegion.size });
+    RegisterDirtyVisualization<VisualizationType::ElectricalLayer>(ShipSpaceRect(targetOrigin, sourceRegion.size));
 
     // Remember we are not anymore in temp visualization
     mIsElectricalLayerInEphemeralVisualization = false;
@@ -679,7 +677,7 @@ void ModelController::NewRopesLayer()
 
     InitializeRopesLayerAnalysis();
 
-    UpdateRopesLayerVisualization();
+    RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
 
     mIsRopesLayerInEphemeralVisualization = false;
 }
@@ -690,7 +688,7 @@ void ModelController::SetRopesLayer(/*TODO*/)
 
     InitializeRopesLayerAnalysis();
 
-    UpdateRopesLayerVisualization();
+    RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
 
     mIsRopesLayerInEphemeralVisualization = false;
 }
@@ -701,9 +699,9 @@ void ModelController::RemoveRopesLayer()
 
     mModel.RemoveRopesLayer();
 
-    assert(!mModel.HasLayer(LayerType::Ropes));
-
     InitializeRopesLayerAnalysis();
+
+    RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
 
     mIsRopesLayerInEphemeralVisualization = false;
 }
@@ -755,7 +753,7 @@ void ModelController::AddRope(
     // Update visualization
     //
 
-    UpdateRopesLayerVisualization();
+    RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
 }
 
 void ModelController::MoveRopeEndpoint(
@@ -782,7 +780,7 @@ void ModelController::MoveRopeEndpoint(
     // Update visualization
     //
 
-    UpdateRopesLayerVisualization();
+    RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
 }
 
 bool ModelController::EraseRopeAt(ShipSpaceCoordinates const & coords)
@@ -810,7 +808,7 @@ bool ModelController::EraseRopeAt(ShipSpaceCoordinates const & coords)
         mModel.GetRopesLayer().Buffer.Erase(srchIt);
 
         // Update visualization
-        UpdateRopesLayerVisualization();
+        RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
 
         return true;
     }
@@ -842,7 +840,7 @@ void ModelController::RestoreRopesLayer(RopesLayerData && sourceLayer)
     // Update visualization
     //
 
-    UpdateRopesLayerVisualization();
+    RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
 }
 
 void ModelController::AddRopeForEphemeralVisualization(
@@ -865,7 +863,7 @@ void ModelController::AddRopeForEphemeralVisualization(
     // Update visualization
     //
 
-    UpdateRopesLayerVisualization();
+    RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
 
     // Remember we are in temp visualization now
     mIsRopesLayerInEphemeralVisualization = true;
@@ -893,7 +891,7 @@ void ModelController::ModelController::MoveRopeEndpointForEphemeralVisualization
     // Update visualization
     //
 
-    UpdateRopesLayerVisualization();
+    RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
 
     // Remember we are in temp visualization now
     mIsRopesLayerInEphemeralVisualization = true;
@@ -915,7 +913,7 @@ void ModelController::RestoreRopesLayerForEphemeralVisualization(RopesLayerData 
     // Update visualization
     //
 
-    UpdateRopesLayerVisualization();
+    RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
 
     // Remember we are not anymore in temp visualization
     mIsRopesLayerInEphemeralVisualization = false;
@@ -929,8 +927,8 @@ void ModelController::NewTextureLayer()
 {
     mModel.NewTextureLayer();
 
-    UpdateGameVisualization(GetWholeShipRect());
-    UpdateTextureLayerVisualization();
+    RegisterDirtyVisualization<VisualizationType::Game>(GetWholeShipRect());
+    RegisterDirtyVisualization<VisualizationType::TextureLayer>(GetWholeShipRect());
 }
 
 void ModelController::SetTextureLayer(
@@ -940,8 +938,8 @@ void ModelController::SetTextureLayer(
     mModel.SetTextureLayer(std::move(textureLayer));
     mModel.GetShipMetadata().ArtCredits = std::move(originalTextureArtCredits);
 
-    UpdateGameVisualization(GetWholeShipRect());
-    UpdateTextureLayerVisualization();
+    RegisterDirtyVisualization<VisualizationType::Game>(GetWholeShipRect());
+    RegisterDirtyVisualization<VisualizationType::TextureLayer>(GetWholeShipRect());
 }
 
 void ModelController::RemoveTextureLayer()
@@ -949,11 +947,10 @@ void ModelController::RemoveTextureLayer()
     assert(mModel.HasLayer(LayerType::Texture));
 
     mModel.RemoveTextureLayer();
-
-    assert(!mModel.HasLayer(LayerType::Texture));
-
-    // Remove art credits from metadata
     mModel.GetShipMetadata().ArtCredits.reset();
+
+    RegisterDirtyVisualization<VisualizationType::Game>(GetWholeShipRect());
+    RegisterDirtyVisualization<VisualizationType::TextureLayer>(GetWholeShipRect());
 }
 
 std::unique_ptr<TextureLayerData> ModelController::CloneTextureLayer() const
@@ -968,7 +965,8 @@ void ModelController::RestoreTextureLayer(
     mModel.RestoreTextureLayer(std::move(textureLayer));
     mModel.GetShipMetadata().ArtCredits = std::move(originalTextureArtCredits);
 
-    // Visualization will be updated by controller, as mode might change 
+    RegisterDirtyVisualization<VisualizationType::Game>(GetWholeShipRect());
+    RegisterDirtyVisualization<VisualizationType::TextureLayer>(GetWholeShipRect());
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1011,7 +1009,7 @@ void ModelController::SetGameVisualizationMode(GameVisualizationModeType mode)
 
         mGameVisualizationMode = mode;
 
-        UpdateGameVisualization(GetWholeShipRect());
+        RegisterDirtyVisualization<VisualizationType::Game>(GetWholeShipRect());
     }
     else
     {
@@ -1020,7 +1018,7 @@ void ModelController::SetGameVisualizationMode(GameVisualizationModeType mode)
         mGameVisualizationAutoTexturizationTexture.reset();
         assert(mGameVisualizationTexture);
         mGameVisualizationTexture.reset();
-        mDirtyGameVisualizationRegion.reset();
+        ResetDirtyVisualization<VisualizationType::Game>();
     }
 }
 
@@ -1043,7 +1041,7 @@ void ModelController::SetStructuralLayerVisualizationMode(StructuralLayerVisuali
 
         mStructuralLayerVisualizationMode = mode;
 
-        UpdateStructuralLayerVisualization(GetWholeShipRect());
+        RegisterDirtyVisualization<VisualizationType::StructuralLayer>(GetWholeShipRect());
     }
     else
     {
@@ -1051,7 +1049,7 @@ void ModelController::SetStructuralLayerVisualizationMode(StructuralLayerVisuali
         mStructuralLayerVisualizationMode = StructuralLayerVisualizationModeType::None;
         assert(mStructuralLayerVisualizationTexture);
         mStructuralLayerVisualizationTexture.reset();
-        mDirtyStructuralLayerVisualizationRegion.reset();
+        ResetDirtyVisualization<VisualizationType::StructuralLayer>();
     }
 }
 
@@ -1084,7 +1082,7 @@ void ModelController::SetElectricalLayerVisualizationMode(ElectricalLayerVisuali
 
         mElectricalLayerVisualizationMode = mode;
 
-        UpdateElectricalLayerVisualization(GetWholeShipRect());
+        RegisterDirtyVisualization<VisualizationType::ElectricalLayer>(GetWholeShipRect());
     }
     else
     {
@@ -1092,7 +1090,7 @@ void ModelController::SetElectricalLayerVisualizationMode(ElectricalLayerVisuali
         mElectricalLayerVisualizationMode = ElectricalLayerVisualizationModeType::None;
         assert(mElectricalLayerVisualizationTexture);
         mElectricalLayerVisualizationTexture.reset();
-        mDirtyElectricalLayerVisualizationRegion.reset();
+        ResetDirtyVisualization<VisualizationType::ElectricalLayer>();
     }
 }
 
@@ -1114,13 +1112,13 @@ void ModelController::SetRopesLayerVisualizationMode(RopesLayerVisualizationMode
 
         mRopesLayerVisualizationMode = mode;
 
-        UpdateRopesLayerVisualization();
+        RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
     }
     else
     {
         // Shutdown ropes visualization
         mRopesLayerVisualizationMode = RopesLayerVisualizationModeType::None;
-        mIsRopesLayerVisualizationDirty = false;
+        ResetDirtyVisualization<VisualizationType::RopesLayer>();
     }
 }
 
@@ -1142,20 +1140,20 @@ void ModelController::SetTextureLayerVisualizationMode(TextureLayerVisualization
 
         mTextureLayerVisualizationMode = mode;
 
-        UpdateTextureLayerVisualization();
+        RegisterDirtyVisualization<VisualizationType::TextureLayer>(GetWholeShipRect());
     }
     else
     {
         // Shutdown texture visualization
         mTextureLayerVisualizationMode = TextureLayerVisualizationModeType::None;
-        mIsTextureLayerVisualizationDirty = false;
+        ResetDirtyVisualization<VisualizationType::TextureLayer>();
     }
 }
 
-void ModelController::UploadVisualizations(View & view)
+void ModelController::UpdateVisualizations(View & view)
 {
     //
-    // Upload visualizations that are dirty, and
+    // Update and upload visualizations that are dirty, and
     // remove visualizations that are not needed
     //
 
@@ -1163,36 +1161,41 @@ void ModelController::UploadVisualizations(View & view)
     {
         assert(mGameVisualizationTexture);
 
-        if (mDirtyGameVisualizationRegion.has_value())
+        std::optional<ShipSpaceRect> & dirtyShipRegion = mDirtyVisualizationRegions[static_cast<size_t>(VisualizationType::Game)];
+        if (dirtyShipRegion.has_value())
         {
-            if (*mDirtyGameVisualizationRegion != mGameVisualizationTexture->Size)
+            // Update visualization
+            ImageRect const dirtyTextureRegion = UpdateGameVisualization(*dirtyShipRegion);
+
+            // Upload visualization
+            if (dirtyTextureRegion != mGameVisualizationTexture->Size)
             {
                 //
                 // For better performance, we only upload the dirty sub-texture
                 //
 
-                auto subTexture = RgbaImageData(mDirtyGameVisualizationRegion->size);
+                auto subTexture = RgbaImageData(dirtyTextureRegion.size);
                 subTexture.BlitFromRegion(
                     *mGameVisualizationTexture,
-                    *mDirtyGameVisualizationRegion,
+                    dirtyTextureRegion,
                     { 0, 0 });
 
                 view.UpdateGameVisualizationTexture(
                     subTexture,
-                    mDirtyGameVisualizationRegion->origin);
+                    dirtyTextureRegion.origin);
             }
             else
             {
                 view.UploadGameVisualization(*mGameVisualizationTexture);
             }
 
-            mDirtyGameVisualizationRegion.reset();
+            dirtyShipRegion.reset();
         }
     }
     else
     {
         assert(!mGameVisualizationTexture);
-        assert(!mDirtyGameVisualizationRegion.has_value());
+        assert(!mDirtyVisualizationRegions[static_cast<size_t>(VisualizationType::Game)].has_value());
 
         if (view.HasGameVisualization())
         {
@@ -1204,9 +1207,10 @@ void ModelController::UploadVisualizations(View & view)
     {
         assert(mStructuralLayerVisualizationTexture);
 
-        if (mDirtyStructuralLayerVisualizationRegion.has_value())
+        std::optional<ShipSpaceRect> & dirtyShipRegion = mDirtyVisualizationRegions[static_cast<size_t>(VisualizationType::StructuralLayer)];
+        if (dirtyShipRegion.has_value())
         {
-            // Refresh mode
+            // Refresh viz mode
             if (mStructuralLayerVisualizationMode == StructuralLayerVisualizationModeType::MeshMode)
             {
                 view.SetStructuralLayerVisualizationDrawMode(View::StructuralLayerVisualizationDrawMode::MeshMode);
@@ -1217,16 +1221,19 @@ void ModelController::UploadVisualizations(View & view)
                 view.SetStructuralLayerVisualizationDrawMode(View::StructuralLayerVisualizationDrawMode::PixelMode);
             }
 
+            // Update visualization
+            UpdateStructuralLayerVisualization(*dirtyShipRegion);
+
             // Upload visualization
             view.UploadStructuralLayerVisualization(*mStructuralLayerVisualizationTexture);
 
-            mDirtyStructuralLayerVisualizationRegion.reset();
+            dirtyShipRegion.reset();
         }
     }
     else
     {
         assert(!mStructuralLayerVisualizationTexture);
-        assert(!mDirtyStructuralLayerVisualizationRegion.has_value());
+        assert(!mDirtyVisualizationRegions[static_cast<size_t>(VisualizationType::StructuralLayer)].has_value());
 
         if (view.HasStructuralLayerVisualization())
         {
@@ -1238,17 +1245,22 @@ void ModelController::UploadVisualizations(View & view)
     {
         assert(mElectricalLayerVisualizationTexture);
 
-        if (mDirtyElectricalLayerVisualizationRegion.has_value())
+        std::optional<ShipSpaceRect> & dirtyShipRegion = mDirtyVisualizationRegions[static_cast<size_t>(VisualizationType::ElectricalLayer)];
+        if (dirtyShipRegion.has_value())
         {
+            // Update visualization
+            UpdateElectricalLayerVisualization(*dirtyShipRegion);
+
+            // Upload visualization
             view.UploadElectricalLayerVisualization(*mElectricalLayerVisualizationTexture);
 
-            mDirtyElectricalLayerVisualizationRegion.reset();
+            dirtyShipRegion.reset();
         }
     }
     else
     {
         assert(!mElectricalLayerVisualizationTexture);
-        assert(!mDirtyElectricalLayerVisualizationRegion.has_value());
+        assert(!mDirtyVisualizationRegions[static_cast<size_t>(VisualizationType::ElectricalLayer)].has_value());
 
         if (view.HasElectricalLayerVisualization())
         {
@@ -1260,16 +1272,21 @@ void ModelController::UploadVisualizations(View & view)
     {
         assert(mModel.HasLayer(LayerType::Ropes));
 
-        if (mIsRopesLayerVisualizationDirty)
+        std::optional<ShipSpaceRect> & dirtyShipRegion = mDirtyVisualizationRegions[static_cast<size_t>(VisualizationType::RopesLayer)];
+        if (dirtyShipRegion.has_value())
         {
+            // Update visualization
+            UpdateRopesLayerVisualization(); // Dirty region not needed in this implementation
+
+            // Upload visualization
             view.UploadRopesLayerVisualization(mModel.GetRopesLayer().Buffer);
 
-            mIsRopesLayerVisualizationDirty = false;
+            dirtyShipRegion.reset();
         }
     }
     else
     {
-        assert(!mIsRopesLayerVisualizationDirty);
+        assert(!mDirtyVisualizationRegions[static_cast<size_t>(VisualizationType::RopesLayer)].has_value());
 
         if (view.HasRopesLayerVisualization())
         {
@@ -1281,16 +1298,21 @@ void ModelController::UploadVisualizations(View & view)
     {
         assert(mModel.HasLayer(LayerType::Texture));
 
-        if (mIsTextureLayerVisualizationDirty)
+        std::optional<ShipSpaceRect> & dirtyShipRegion = mDirtyVisualizationRegions[static_cast<size_t>(VisualizationType::TextureLayer)];
+        if (dirtyShipRegion.has_value())
         {
+            // Update visualization
+            UpdateTextureLayerVisualization(); // Dirty region not needed in this implementation
+
+            // Upload visualization
             view.UploadTextureLayerVisualization(mModel.GetTextureLayer().Buffer);
 
-            mIsTextureLayerVisualizationDirty = false;
+            dirtyShipRegion.reset();
         }
     }
     else
     {
-        assert(!mIsTextureLayerVisualizationDirty);
+        assert(!mDirtyVisualizationRegions[static_cast<size_t>(VisualizationType::TextureLayer)].has_value());
 
         if (view.HasTextureLayerVisualization())
         {
@@ -1560,7 +1582,30 @@ std::optional<ShipSpaceRect> ModelController::Flood(
     }
 }
 
-void ModelController::UpdateGameVisualization(ShipSpaceRect const & region)
+//////////////////////////////////////////////////////////////////////////////////////////////
+
+template<VisualizationType TVisualization>
+void ModelController::RegisterDirtyVisualization(ShipSpaceRect const & region)
+{
+    size_t constexpr VizIndex = static_cast<size_t>(TVisualization);
+
+    if (!mDirtyVisualizationRegions[VizIndex].has_value())
+    {
+        mDirtyVisualizationRegions[VizIndex] = region;
+    }
+    else
+    {
+        mDirtyVisualizationRegions[VizIndex]->UnionWith(region);
+    }
+}
+
+template<VisualizationType TVisualization>
+void ModelController::ResetDirtyVisualization()
+{
+    mDirtyVisualizationRegions[static_cast<size_t>(TVisualization)].reset();
+}
+
+ImageRect ModelController::UpdateGameVisualization(ShipSpaceRect const & region)
 {
     //
     // 1. Prepare source of triangularized rendering
@@ -1568,41 +1613,30 @@ void ModelController::UpdateGameVisualization(ShipSpaceRect const & region)
 
     RgbaImageData const * sourceTexture = nullptr;
 
-    switch (mGameVisualizationMode)
+    if (mGameVisualizationMode == GameVisualizationModeType::AutoTexturizationMode)
     {
-        case GameVisualizationModeType::AutoTexturizationMode:
-        {
-            assert(mModel.HasLayer(LayerType::Structural));
-            assert(mGameVisualizationAutoTexturizationTexture);
+        assert(mModel.HasLayer(LayerType::Structural));
+        assert(mGameVisualizationAutoTexturizationTexture);
 
-            ShipAutoTexturizationSettings settings = mModel.GetShipAutoTexturizationSettings().value_or(ShipAutoTexturizationSettings());
+        ShipAutoTexturizationSettings settings = mModel.GetShipAutoTexturizationSettings().value_or(ShipAutoTexturizationSettings());
 
-            mShipTexturizer.AutoTexturizeInto(
-                mModel.GetStructuralLayer(),
-                region,
-                *mGameVisualizationAutoTexturizationTexture,
-                mGameVisualizationTextureMagnificationFactor,
-                settings);
+        mShipTexturizer.AutoTexturizeInto(
+            mModel.GetStructuralLayer(),
+            region,
+            *mGameVisualizationAutoTexturizationTexture,
+            mGameVisualizationTextureMagnificationFactor,
+            settings);
 
-            sourceTexture = mGameVisualizationAutoTexturizationTexture.get();
+        sourceTexture = mGameVisualizationAutoTexturizationTexture.get();
+    }
+    else
+    {
+        assert(mGameVisualizationMode == GameVisualizationModeType::TextureMode);
 
-            break;
-        }
+        assert(mModel.HasLayer(LayerType::Structural));
+        assert(mModel.HasLayer(LayerType::Texture));
 
-        case GameVisualizationModeType::TextureMode:
-        {
-            assert(mModel.HasLayer(LayerType::Structural));
-            assert(mModel.HasLayer(LayerType::Texture));
-
-            sourceTexture = &mModel.GetTextureLayer().Buffer;
-            
-            break;
-        }
-
-        case GameVisualizationModeType::None:
-        {
-            return;
-        }
+        sourceTexture = &mModel.GetTextureLayer().Buffer;
     }
 
     assert(sourceTexture != nullptr);
@@ -1635,21 +1669,12 @@ void ModelController::UpdateGameVisualization(ShipSpaceRect const & region)
         mGameVisualizationTextureMagnificationFactor);
 
     //
-    // 3. Remember dirty region
+    // 3. Return dirty image region
     //
 
-    ImageRect const effectiveRegionImage = ImageRect(
+    return ImageRect(
         { effectiveRegion.origin.x * mGameVisualizationTextureMagnificationFactor, effectiveRegion.origin.y * mGameVisualizationTextureMagnificationFactor },
         { effectiveRegion.size.width * mGameVisualizationTextureMagnificationFactor, effectiveRegion.size.height * mGameVisualizationTextureMagnificationFactor });
-
-    if (!mDirtyGameVisualizationRegion.has_value())
-    {
-        mDirtyGameVisualizationRegion = effectiveRegionImage;
-    }
-    else
-    {
-        mDirtyGameVisualizationRegion->UnionWith(effectiveRegionImage);
-    }
 }
 
 void ModelController::UpdateStructuralLayerVisualization(ShipSpaceRect const & region)
@@ -1690,17 +1715,6 @@ void ModelController::UpdateStructuralLayerVisualization(ShipSpaceRect const & r
             return;
         }
     }
-
-    // Remember dirty region
-    ImageRect const imageRegion = ImageRect({ region.origin.x, region.origin.y }, { region.size.width, region.size.height });
-    if (!mDirtyStructuralLayerVisualizationRegion.has_value())
-    {
-        mDirtyStructuralLayerVisualizationRegion = imageRegion;
-    }
-    else
-    {
-        mDirtyStructuralLayerVisualizationRegion->UnionWith(imageRegion);
-    }
 }
 
 void ModelController::UpdateElectricalLayerVisualization(ShipSpaceRect const & region)
@@ -1740,17 +1754,6 @@ void ModelController::UpdateElectricalLayerVisualization(ShipSpaceRect const & r
             return;
         }
     }
-    
-    // Remember dirty region
-    ImageRect const imageRegion = ImageRect({ region.origin.x, region.origin.y }, { region.size.width, region.size.height });
-    if (!mDirtyElectricalLayerVisualizationRegion.has_value())
-    {
-        mDirtyElectricalLayerVisualizationRegion = imageRegion;
-    }
-    else
-    {
-        mDirtyElectricalLayerVisualizationRegion->UnionWith(imageRegion);
-    }
 }
 
 void ModelController::UpdateRopesLayerVisualization()
@@ -1770,8 +1773,6 @@ void ModelController::UpdateRopesLayerVisualization()
             return;
         }
     }
-
-    mIsRopesLayerVisualizationDirty = true;
 }
 
 void ModelController::UpdateTextureLayerVisualization()
@@ -1791,8 +1792,6 @@ void ModelController::UpdateTextureLayerVisualization()
             return;
         }
     }
-
-    mIsTextureLayerVisualizationDirty = true;
 }
 
 }
