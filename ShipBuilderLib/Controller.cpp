@@ -714,6 +714,7 @@ void Controller::RestoreTextureLayerForUndo(
 
     mUserInterface.OnLayerPresenceChanged();
 
+    // Reconciliate visualization modes with layer presence
     if (!mModelController->GetModel().HasLayer(LayerType::Texture))
     {
         // If game visualization mode is the one only allowed with texture, 

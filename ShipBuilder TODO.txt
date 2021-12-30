@@ -253,7 +253,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 								+ Fix the problem with super zoom
 								+ Capture mouse
 							= Controller::ResizeShip
-								- ModelController::ResizeShip
+								= ModelController::ResizeShip
 									- Do all layers like Flip()
 								= Undo
 				- Texture-import-from-button issue: see if specifying two bitmaps works
@@ -268,11 +268,11 @@ https://gamejolt.com/x/permalink/comment/11730705
 		- Any import from .shp2 requires password
 		- All imports push an undo
 
-- Send for testing
-
 - Resize workflow:
 	+ Button - in Ship Settings panel, slightly separated from the File buttons
 	- Click -> Dialog for Canvas Centering/Clipping (i.e. "Anchor choice") -> Controller -> ...TODO...
+
+- Send for testing
 
 - MainFrame: Game viz: add "export to image" button
 	- Rearc icons now:
