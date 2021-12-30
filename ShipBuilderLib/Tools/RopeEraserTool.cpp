@@ -179,7 +179,7 @@ void RopeEraserTool::StopEngagement()
             mEngagementData->OriginalDirtyState,
             [originalLayerClone = std::move(mOriginalLayerClone)](Controller & controller) mutable
             {
-                controller.RestoreLayerForUndo(std::move(originalLayerClone));
+                controller.RestoreRopesLayerForUndo(std::make_unique<RopesLayerData>(std::move(originalLayerClone)));
             });
 
         // Take new orig clone

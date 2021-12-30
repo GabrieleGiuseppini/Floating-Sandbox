@@ -266,6 +266,13 @@ void ModelController::Flip(DirectionType direction)
     RegisterDirtyVisualization<VisualizationType::Game>(GetWholeShipRect());
 }
 
+void ModelController::ResizeShip(
+    ShipSpaceSize const & newSize,
+    ShipSpaceCoordinates const & originOffset)
+{
+    // TODOHERE: copy from Flip() above
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Structural
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -294,6 +301,11 @@ void ModelController::SetStructuralLayer(/*TODO*/)
     RegisterDirtyVisualization<VisualizationType::StructuralLayer>(GetWholeShipRect());
 
     mIsStructuralLayerInEphemeralVisualization = false;
+}
+
+StructuralLayerData ModelController::CloneStructuralLayer() const
+{
+    return mModel.CloneStructuralLayer();
 }
 
 void ModelController::StructuralRegionFill(
@@ -386,6 +398,30 @@ void ModelController::RestoreStructuralLayerRegion(
 
     RegisterDirtyVisualization<VisualizationType::Game>(ShipSpaceRect(targetOrigin, sourceRegion.size));
     RegisterDirtyVisualization<VisualizationType::StructuralLayer>(ShipSpaceRect(targetOrigin, sourceRegion.size));
+}
+
+void ModelController::RestoreStructuralLayer(StructuralLayerData && sourceLayer)
+{    
+    assert(!mIsStructuralLayerInEphemeralVisualization);
+
+    //
+    // Restore model
+    //
+
+    mModel.RestoreStructuralLayer(std::move(sourceLayer));
+
+    //
+    // Re-initialize layer analysis
+    //
+
+    InitializeStructuralLayerAnalysis();
+
+    //
+    // Update visualization
+    //
+
+    RegisterDirtyVisualization<VisualizationType::Game>(GetWholeShipRect());
+    RegisterDirtyVisualization<VisualizationType::StructuralLayer>(GetWholeShipRect());
 }
 
 void ModelController::StructuralRegionFillForEphemeralVisualization(
@@ -485,6 +521,11 @@ void ModelController::RemoveElectricalLayer()
     RegisterDirtyVisualization<VisualizationType::ElectricalLayer>(GetWholeShipRect());
 
     mIsElectricalLayerInEphemeralVisualization = false;
+}
+
+std::unique_ptr<ElectricalLayerData> ModelController::CloneElectricalLayer() const
+{
+    return mModel.CloneElectricalLayer();
 }
 
 bool ModelController::IsElectricalParticleAllowedAt(ShipSpaceCoordinates const & coords) const
@@ -609,6 +650,29 @@ void ModelController::RestoreElectricalLayerRegion(
     RegisterDirtyVisualization<VisualizationType::ElectricalLayer>(ShipSpaceRect(targetOrigin, sourceRegion.size));
 }
 
+void ModelController::RestoreElectricalLayer(std::unique_ptr<ElectricalLayerData> sourceLayer)
+{
+    assert(!mIsElectricalLayerInEphemeralVisualization);
+
+    //
+    // Restore model
+    //
+
+    mModel.RestoreElectricalLayer(std::move(sourceLayer));
+
+    //
+    // Re-initialize layer analysis (and instance IDs)
+    //
+
+    InitializeElectricalLayerAnalysis();
+
+    //
+    // Update visualization
+    //
+
+    RegisterDirtyVisualization<VisualizationType::ElectricalLayer>(GetWholeShipRect());
+}
+
 void ModelController::ElectricalRegionFillForEphemeralVisualization(
     ShipSpaceRect const & region,
     ElectricalMaterial const * material)
@@ -704,6 +768,11 @@ void ModelController::RemoveRopesLayer()
     RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
 
     mIsRopesLayerInEphemeralVisualization = false;
+}
+
+std::unique_ptr<RopesLayerData> ModelController::CloneRopesLayer() const
+{
+    return mModel.CloneRopesLayer();
 }
 
 std::optional<size_t> ModelController::GetRopeElementIndexAt(ShipSpaceCoordinates const & coords) const
@@ -818,17 +887,15 @@ bool ModelController::EraseRopeAt(ShipSpaceCoordinates const & coords)
     }
 }
 
-void ModelController::RestoreRopesLayer(RopesLayerData && sourceLayer)
+void ModelController::RestoreRopesLayer(std::unique_ptr<RopesLayerData> sourceLayer)
 {
-    assert(mModel.HasLayer(LayerType::Ropes));
-
-    assert(!mIsElectricalLayerInEphemeralVisualization);
+    assert(!mIsRopesLayerInEphemeralVisualization);
 
     //
     // Restore model
     //
 
-    mModel.GetRopesLayer().Buffer = std::move(sourceLayer.Buffer);
+    mModel.RestoreRopesLayer(std::move(sourceLayer));
 
     //
     // Re-initialize layer analysis
@@ -962,8 +1029,16 @@ void ModelController::RestoreTextureLayer(
     std::unique_ptr<TextureLayerData> textureLayer,
     std::optional<std::string> originalTextureArtCredits)
 {
+    //
+    // Restore model
+    //
+    
     mModel.RestoreTextureLayer(std::move(textureLayer));
     mModel.GetShipMetadata().ArtCredits = std::move(originalTextureArtCredits);
+
+    //
+    // Update visualization
+    //
 
     RegisterDirtyVisualization<VisualizationType::Game>(GetWholeShipRect());
     RegisterDirtyVisualization<VisualizationType::TextureLayer>(GetWholeShipRect());

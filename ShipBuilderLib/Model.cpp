@@ -50,7 +50,7 @@ ShipDefinition Model::MakeShipDefinition() const
 {
     return ShipDefinition(
         GetShipSize(),
-        CloneExistingLayer<LayerType::Structural>(),
+        CloneStructuralLayer(),
         CloneElectricalLayer(),
         CloneRopesLayer(),
         CloneTextureLayer(),
@@ -71,6 +71,22 @@ void Model::NewStructuralLayer()
 void Model::SetStructuralLayer(/*TODO*/)
 {
     // TODO
+}
+
+StructuralLayerData Model::CloneStructuralLayer() const
+{
+    assert(mStructuralLayer);
+
+    return mStructuralLayer->Clone();
+}
+
+void Model::RestoreStructuralLayer(StructuralLayerData && structuralLayer)
+{
+    // Replace layer
+    mStructuralLayer = std::make_unique<StructuralLayerData>(std::move(structuralLayer));
+
+    // Update presence map
+    mLayerPresenceMap[static_cast<size_t>(LayerType::Structural)] = true;
 }
 
 void Model::NewElectricalLayer()
@@ -112,6 +128,15 @@ std::unique_ptr<ElectricalLayerData> Model::CloneElectricalLayer() const
     return clonedLayer;
 }
 
+void Model::RestoreElectricalLayer(std::unique_ptr<ElectricalLayerData> electricalLayer)
+{
+    // Replace layer
+    mElectricalLayer = std::move(electricalLayer);
+
+    // Update presence map
+    mLayerPresenceMap[static_cast<size_t>(LayerType::Electrical)] = (bool)mElectricalLayer;
+}
+
 void Model::NewRopesLayer()
 {
     // Reset layer
@@ -145,6 +170,15 @@ std::unique_ptr<RopesLayerData> Model::CloneRopesLayer() const
     }
 
     return clonedLayer;
+}
+
+void Model::RestoreRopesLayer(std::unique_ptr<RopesLayerData> ropesLayer)
+{
+    // Replace layer
+    mRopesLayer = std::move(ropesLayer);
+
+    // Update presence map
+    mLayerPresenceMap[static_cast<size_t>(LayerType::Ropes)] = (bool)mRopesLayer;
 }
 
 void Model::NewTextureLayer()

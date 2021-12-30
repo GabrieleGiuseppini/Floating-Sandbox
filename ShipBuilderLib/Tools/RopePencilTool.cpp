@@ -321,7 +321,7 @@ void RopePencilTool::CommmitAndStopEngagement(ShipSpaceCoordinates const & coord
                 mEngagementData->OriginalDirtyState,
                 [originalLayerClone = std::move(mEngagementData->OriginalLayerClone)](Controller & controller) mutable
                 {
-                    controller.RestoreLayerForUndo(std::move(originalLayerClone));
+                    controller.RestoreRopesLayerForUndo(std::make_unique<RopesLayerData>(std::move(originalLayerClone)));
                 });
         }
     }

@@ -219,6 +219,9 @@ public:
     void NewStructuralLayer();
     void SetStructuralLayer(/*TODO*/);
 
+    StructuralLayerData CloneStructuralLayer() const;
+    void RestoreStructuralLayer(StructuralLayerData && structuralLayer);
+
     ElectricalLayerData const & GetElectricalLayer() const
     {
         assert(mElectricalLayer);
@@ -236,6 +239,7 @@ public:
     void RemoveElectricalLayer();
 
     std::unique_ptr<ElectricalLayerData> CloneElectricalLayer() const;
+    void RestoreElectricalLayer(std::unique_ptr<ElectricalLayerData> electricalLayer);
 
     RopesLayerData const & GetRopesLayer() const
     {
@@ -254,6 +258,7 @@ public:
     void RemoveRopesLayer();
 
     std::unique_ptr<RopesLayerData> CloneRopesLayer() const;
+    void RestoreRopesLayer(std::unique_ptr<RopesLayerData> ropesLayer);
 
     TextureLayerData const & GetTextureLayer() const
     {

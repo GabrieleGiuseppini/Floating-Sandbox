@@ -252,11 +252,10 @@ https://gamejolt.com/x/permalink/comment/11730705
 											+ Calc coords at OnChange iff mAnchorCoords.HasValue()
 								+ Fix the problem with super zoom
 								+ Capture mouse
-							- Controller::ResizeShip
-								- See if it makes sense to have a helper that takes action as (template) arg and does usual prefix and postfix
+							= Controller::ResizeShip
 								- ModelController::ResizeShip
-									- Resize model
-								- Undo
+									- Do all layers like Flip()
+								= Undo
 				- Texture-import-from-button issue: see if specifying two bitmaps works
 			- .shp, .shp2 (load whole and throw away)
 				- Might as well allow user to select also .png's (for simplicity in ShipLoadDialog), will be discarded (errored) afterwards anyway - see next line

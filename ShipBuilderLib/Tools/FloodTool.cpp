@@ -97,7 +97,8 @@ void FloodTool<TLayer>::DoEdit(
             layerDirtyStateClone,
             [clippedLayerClone = std::move(clippedLayerClone), origin = affectedRegion->origin](Controller & controller) mutable
             {
-                controller.RestoreLayerRegionForUndo(std::move(clippedLayerClone), origin);
+                static_assert(TLayer == LayerType::Structural);
+                controller.RestoreStructuralLayerRegionForUndo(std::move(clippedLayerClone), origin);
             });
 
         // Mark layer as dirty

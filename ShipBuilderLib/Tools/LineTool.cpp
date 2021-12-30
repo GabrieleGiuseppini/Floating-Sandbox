@@ -310,7 +310,16 @@ void LineTool<TLayer>::EndEngagement(ShipSpaceCoordinates const & mouseCoordinat
             mEngagementData->OriginalDirtyState,
             [clippedLayerClone = std::move(clippedLayerClone), origin = resultantEffectiveRect->origin](Controller & controller) mutable
             {
-                controller.RestoreLayerRegionForUndo(std::move(clippedLayerClone), origin);
+                if constexpr (TLayer == LayerType::Structural)
+                {
+                    controller.RestoreStructuralLayerRegionForUndo(std::move(clippedLayerClone), origin);
+                }
+                else
+                {
+                    static_assert(TLayer == LayerType::Electrical);
+
+                    controller.RestoreElectricalLayerRegionForUndo(std::move(clippedLayerClone), origin);
+                }
             });
     }
 

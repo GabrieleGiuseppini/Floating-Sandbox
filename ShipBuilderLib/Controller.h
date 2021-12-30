@@ -123,7 +123,7 @@ public:
 
     void NewStructuralLayer();
     void SetStructuralLayer(/*TODO*/);
-    void RestoreLayerRegionForUndo(
+    void RestoreStructuralLayerRegionForUndo(
         StructuralLayerData && layerRegion,
         ShipSpaceCoordinates const & origin);
     void RestoreStructuralLayerForUndo(StructuralLayerData && structuralLayer);
@@ -132,7 +132,7 @@ public:
     void NewElectricalLayer();
     void SetElectricalLayer(/*TODO*/);
     void RemoveElectricalLayer();
-    void RestoreLayerRegionForUndo(
+    void RestoreElectricalLayerRegionForUndo(
         ElectricalLayerData && layerRegion,
         ShipSpaceCoordinates const & origin);
     void RestoreElectricalLayerForUndo(std::unique_ptr<ElectricalLayerData> electricalLayer);
@@ -141,7 +141,6 @@ public:
     void NewRopesLayer();
     void SetRopesLayer(/*TODO*/);
     void RemoveRopesLayer();
-    void RestoreLayerForUndo(RopesLayerData && layer);
     void RestoreRopesLayerForUndo(std::unique_ptr<RopesLayerData> ropesLayer);
 
     void SetTextureLayer(

@@ -143,6 +143,8 @@ public:
         ShipSpaceRect const & sourceRegion,
         ShipSpaceCoordinates const & targetOrigin);
 
+    void RestoreStructuralLayer(StructuralLayerData && sourceLayer);
+
     void StructuralRegionFillForEphemeralVisualization(
         ShipSpaceRect const & region,
         StructuralMaterial const * material);
@@ -174,6 +176,8 @@ public:
         ElectricalLayerData && sourceLayerRegion,
         ShipSpaceRect const & sourceRegion,
         ShipSpaceCoordinates const & targetOrigin);
+
+    void RestoreElectricalLayer(std::unique_ptr<ElectricalLayerData> sourceLayer);
 
     void ElectricalRegionFillForEphemeralVisualization(
         ShipSpaceRect const & region,
@@ -208,7 +212,7 @@ public:
 
     bool EraseRopeAt(ShipSpaceCoordinates const & coords);
 
-    void RestoreRopesLayer(RopesLayerData && sourceLayer);
+    void RestoreRopesLayer(std::unique_ptr<RopesLayerData> sourceLayer);
 
     void AddRopeForEphemeralVisualization(
         ShipSpaceCoordinates const & startCoords,

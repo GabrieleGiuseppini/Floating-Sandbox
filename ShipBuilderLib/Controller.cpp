@@ -274,7 +274,7 @@ void Controller::SetStructuralLayer(/*TODO*/)
     mUserInterface.RefreshView();
 }
 
-void Controller::RestoreLayerRegionForUndo(
+void Controller::RestoreStructuralLayerRegionForUndo(
     StructuralLayerData && layerRegion,
     ShipSpaceCoordinates const & origin)
 {
@@ -290,6 +290,19 @@ void Controller::RestoreLayerRegionForUndo(
     // No need to update dirtyness, this is for undo
 
     // Refresh model visualization
+    mModelController->UpdateVisualizations(mView);
+    mUserInterface.RefreshView();
+}
+
+void Controller::RestoreStructuralLayerForUndo(StructuralLayerData && structuralLayer)
+{
+    auto const scopedToolResumeState = SuspendTool();
+
+    mModelController->RestoreStructuralLayer(std::move(structuralLayer));
+
+    // No need to update dirtyness, this is for undo
+
+    // Refresh model visualizations
     mModelController->UpdateVisualizations(mView);
     mUserInterface.RefreshView();
 }
@@ -382,7 +395,7 @@ void Controller::RemoveElectricalLayer()
     mUserInterface.RefreshView();
 }
 
-void Controller::RestoreLayerRegionForUndo(
+void Controller::RestoreElectricalLayerRegionForUndo(
     ElectricalLayerData && layerRegion,
     ShipSpaceCoordinates const & origin)
 {
@@ -394,6 +407,24 @@ void Controller::RestoreLayerRegionForUndo(
         origin);
 
     // No need to update dirtyness, this is for undo
+
+    // Refresh model visualizations
+    mModelController->UpdateVisualizations(mView);
+    mUserInterface.RefreshView();
+}
+
+void Controller::RestoreElectricalLayerForUndo(std::unique_ptr<ElectricalLayerData> electricalLayer)
+{
+    auto const scopedToolResumeState = SuspendTool();
+
+    mModelController->RestoreElectricalLayer(std::move(electricalLayer));
+
+    mUserInterface.OnLayerPresenceChanged();
+
+    // No need to update dirtyness, this is for undo
+
+    // Update visualization modes
+    InternalUpdateVisualizationModes();
 
     // Refresh model visualizations
     mModelController->UpdateVisualizations(mView);
@@ -428,7 +459,7 @@ void Controller::TrimElectricalParticlesWithoutSubstratum()
                 originalDirtyStateClone,
                 [clippedRegionClone = std::move(clippedRegionClone), origin = affectedRect->origin](Controller & controller) mutable
                 {
-                    controller.RestoreLayerRegionForUndo(std::move(clippedRegionClone), origin);
+                    controller.RestoreElectricalLayerRegionForUndo(std::move(clippedRegionClone), origin);
                 });
             
             mUserInterface.OnUndoStackStateChanged();
@@ -525,13 +556,18 @@ void Controller::RemoveRopesLayer()
     mUserInterface.RefreshView();
 }
 
-void Controller::RestoreLayerForUndo(RopesLayerData && layer)
+void Controller::RestoreRopesLayerForUndo(std::unique_ptr<RopesLayerData> ropesLayer)
 {
     auto const scopedToolResumeState = SuspendTool();
 
-    mModelController->RestoreRopesLayer(std::move(layer));
+    mModelController->RestoreRopesLayer(std::move(ropesLayer));
+
+    mUserInterface.OnLayerPresenceChanged();
 
     // No need to update dirtyness, this is for undo
+
+    // Update visualization modes
+    InternalUpdateVisualizationModes();
 
     // Refresh model visualizations
     mModelController->UpdateVisualizations(mView);
