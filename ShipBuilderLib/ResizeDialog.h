@@ -38,7 +38,9 @@ public:
         IntegralRectSize const & targetSize);
 
     IntegralRectSize GetTargetSize() const;
-    IntegralCoordinates GetOffset() const;
+
+    // Position in final buffer of bottom-left corner wrt. bottom-left corner of target
+    ImageCoordinates GetOffset() const;
 
 private:
 

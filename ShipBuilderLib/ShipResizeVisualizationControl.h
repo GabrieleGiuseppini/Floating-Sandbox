@@ -40,7 +40,7 @@ public:
     void Deinitialize();
     
     void SetTargetSize(IntegralRectSize const & targetSize);
-    void SetAnchor(std::optional<IntegralCoordinates> const & anchorCoordinates);
+    void SetAnchor(std::optional<IntegralCoordinates> const & anchorCoordinates); // wrt. top-left corner
 
 private:
 

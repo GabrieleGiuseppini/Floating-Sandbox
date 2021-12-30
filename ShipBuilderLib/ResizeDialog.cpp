@@ -26,7 +26,7 @@ ResizeDialog::ResizeDialog(
         wxEmptyString,
         wxDefaultPosition,
         wxSize(400, 200),
-        wxCAPTION | wxCLOSE_BOX | wxFRAME_SHAPED);
+        wxCAPTION | wxCLOSE_BOX | wxFRAME_SHAPED | wxSTAY_ON_TOP);
 
     SetBackgroundColour(GetDefaultAttributes().colBg);
 
@@ -411,9 +411,17 @@ IntegralRectSize ResizeDialog::GetTargetSize() const
         mTargetHeightSpinBox->GetValue());
 }
 
-IntegralCoordinates ResizeDialog::GetOffset() const
+ImageCoordinates ResizeDialog::GetOffset() const
 {
-    return mShipResizeVisualizationControl->GetOffset();
+    // Convert from offset of top-left corner wrt top-left corner, to
+    // offset of bottom-left corner wrt bottom-left corner
+
+    auto const topLeftCornerOffset = mShipResizeVisualizationControl->GetOffset();
+    auto const targetSize = GetTargetSize();
+
+    return ImageCoordinates(
+        topLeftCornerOffset.x,
+        targetSize.height - (topLeftCornerOffset.y + mSourceSize.height));
 }
 
 void ResizeDialog::OnOkButton(wxCommandEvent & /*event*/)

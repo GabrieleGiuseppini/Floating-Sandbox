@@ -204,18 +204,18 @@ https://gamejolt.com/x/permalink/comment/11730705
 				= Add jpg support to DevIL
 					+ http://www.ijg.org/
 					= Windows
-						= Devil 64 (R+D)
+						+ Devil 64 (R+D)
 						- Devil 32 (R+D)
 						- Test four configurations
 					- Ubuntu
-						- See if benchmarks project still needs now wxWidgets just for jpeg
-				- Load file and pass to Controller
+						- See if benchmarks project now still needs wxWidgets just for jpeg
+				= Load file and pass to Controller
 					= Resize workflow
 						= For texture
 							+ Dialog
-							= Resize image
-								= Buffer2D
-								- See broken Y
+							+ Resize image								
+								+ Buffer2D::Reframe								
+									+ See broken Y
 							= Controller::SetTextureLayer
 								= Undo
 						= For resize

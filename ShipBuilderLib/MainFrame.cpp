@@ -3266,7 +3266,7 @@ void MainFrame::ImportTextureLayerFromImage()
                 auto const originOffset = mResizeDialog->GetOffset();
 
                 image = image.Reframe(
-                    ImageCoordinates(originOffset.x, originOffset.y),
+                    originOffset,
                     ImageSize(targetSize.width, targetSize.height),
                     rgbaColor::zero());
             }
