@@ -218,12 +218,18 @@ https://gamejolt.com/x/permalink/comment/11730705
 									+ See broken Y
 							= Controller::SetTextureLayer
 								= Undo
-									- ModelController::RestoreTextureLayer: atm we don't update visualizations, while we should because we're not 
-									  guaranteed to update them via InternalUpdateVisualizationModes
-									  - Also, if restore removes layer, we crash
-									  - Solution is for Controller to explicitly cause MC::UpdateViz() to be invoked at or after InternalUpdateVisualizationModes, also when
-									    there's no real change in mode
-									    - Or: ModelController::SetXXXViz() should always update - no "new==old=>nop" statement
+									- Rearc: ModelController:
+										- Dirty region to *update*, one for each viz
+											- Array member
+											- Updated each time we currently invoke UpdateXXXViz
+										- Dirty region to *upload*, one for each viz
+											- Array member
+											- Set by the (now private) UpdateXXXViz()
+										- UpdateXXXViz(): they are all private, invoked *only* by single public UpdateVisualizations
+										- ModelController::UpdateVisualizations()
+											- Invokes all individual UpdateXXXViz()
+										- ModelController::UploadVisualizations()
+											- Like now
 						= For resize
 							+ Dialog
 								+ Dimensions lock button
