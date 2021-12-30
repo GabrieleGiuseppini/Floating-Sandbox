@@ -280,9 +280,11 @@ void Controller::RestoreLayerRegionForUndo(
 {
     auto const scopedToolResumeState = SuspendTool();
 
+    ShipSpaceRect const regionRect({ {0, 0}, layerRegion.Buffer.Size });
+
     mModelController->RestoreStructuralLayerRegion(
         std::move(layerRegion),
-        { {0, 0}, layerRegion.Buffer.Size},
+        regionRect,
         origin);
 
     // No need to update dirtyness, this is for undo
@@ -544,7 +546,7 @@ void Controller::SetTextureLayer(
 
     // Update layer
     {
-        // Save state
+        // Get state snapshot
         auto originalDirtyStateClone = mModelController->GetModel().GetDirtyState();
         auto originalLayerClone = mModelController->GetModel().CloneTextureLayer();
         auto originalTextureArtCredits = mModelController->GetShipMetadata().ArtCredits;
