@@ -29,18 +29,18 @@ public:
         wxWindow * parent,
         ResourceLocator const & resourceLocator);
 
-    int ShowModalForResize(
+    bool ShowModalForResize(
         RgbaImageData const & image,
         IntegralRectSize const & targetSize);
 
-    int ShowModalForTexture(
+    bool ShowModalForTexture(
         RgbaImageData const & image,
         IntegralRectSize const & targetSize);
 
     IntegralRectSize GetTargetSize() const;
 
-    // Position in final buffer of bottom-left corner wrt. bottom-left corner of target
-    ImageCoordinates GetOffset() const;
+    // Position in final buffer of top-left corner wrt. top-left corner of target
+    IntegralCoordinates GetOffset() const;
 
 private:
 

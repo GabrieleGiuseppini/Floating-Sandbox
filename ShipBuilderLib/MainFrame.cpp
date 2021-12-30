@@ -3263,10 +3263,16 @@ void MainFrame::ImportTextureLayerFromImage()
                 // Resize
                 //
 
+                // Position in final buffer of top-left corner wrt. top-left corner of target...
                 auto const originOffset = mResizeDialog->GetOffset();
 
+                // ...transformed to position of bottom-left corner wrt. bottom-left corner
+                ImageCoordinates imageOriginOffset = ImageCoordinates(
+                    originOffset.x,
+                    targetSize.height - (originOffset.y + image.Size.height));
+
                 image = image.Reframe(
-                    originOffset,
+                    imageOriginOffset,
                     ImageSize(targetSize.width, targetSize.height),
                     rgbaColor::zero());
             }
@@ -3291,10 +3297,22 @@ void MainFrame::OpenShipCanvasResize()
     }
 
     auto const & preview = mController->GetStructuralLayerVisualization();
-    if (mResizeDialog->ShowModalForResize(preview, IntegralRectSize(preview.Size.width, preview.Size.height)))
+    if (!mResizeDialog->ShowModalForResize(preview, IntegralRectSize(preview.Size.width, preview.Size.height)))
     {
-        // tODOHERE
+        // User aborted
+        return;
     }
+
+    //
+    // Resize
+    //
+
+    auto const targetSize = mResizeDialog->GetTargetSize();
+    auto const originOffset = mResizeDialog->GetOffset(); // Position in final buffer of top-left corner wrt. top-left corner of target...
+
+    mController->ResizeShip(
+        ShipSpaceSize(targetSize.width, targetSize.height),
+        ShipSpaceCoordinates(originOffset.x, originOffset.y));
 }
 
 void MainFrame::OpenShipProperties()

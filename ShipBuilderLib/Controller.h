@@ -152,7 +152,9 @@ public:
     void Flip(DirectionType direction);
     void FlipForUndo(DirectionType direction);
 
-    void ResizeShip(ShipSpaceSize const & newSize);
+    void ResizeShip(
+        ShipSpaceSize const & newSize,
+        ShipSpaceCoordinates const & originOffset);
 
     VisualizationType GetPrimaryVisualization() const;
     void SelectPrimaryVisualization(VisualizationType primaryVisualization);

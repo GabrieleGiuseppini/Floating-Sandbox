@@ -382,7 +382,7 @@ ResizeDialog::ResizeDialog(
     Centre(wxCENTER_ON_SCREEN | wxBOTH);
 }
 
-int ResizeDialog::ShowModalForResize(
+bool ResizeDialog::ShowModalForResize(
     RgbaImageData const & image,
     IntegralRectSize const & targetSize)
 {
@@ -390,10 +390,10 @@ int ResizeDialog::ShowModalForResize(
 
     ReconciliateUI(image, targetSize, ModeType::ForResize);
 
-    return wxDialog::ShowModal();
+    return wxDialog::ShowModal() == wxID_OK;
 }
 
-int ResizeDialog::ShowModalForTexture(
+bool ResizeDialog::ShowModalForTexture(
     RgbaImageData const & image,
     IntegralRectSize const & targetSize)
 {
@@ -401,7 +401,7 @@ int ResizeDialog::ShowModalForTexture(
 
     ReconciliateUI(image, targetSize, ModeType::ForTexture);
 
-    return wxDialog::ShowModal();
+    return wxDialog::ShowModal() == wxID_OK;
 }
 
 IntegralRectSize ResizeDialog::GetTargetSize() const
@@ -411,17 +411,9 @@ IntegralRectSize ResizeDialog::GetTargetSize() const
         mTargetHeightSpinBox->GetValue());
 }
 
-ImageCoordinates ResizeDialog::GetOffset() const
+IntegralCoordinates ResizeDialog::GetOffset() const
 {
-    // Convert from offset of top-left corner wrt top-left corner, to
-    // offset of bottom-left corner wrt bottom-left corner
-
-    auto const topLeftCornerOffset = mShipResizeVisualizationControl->GetOffset();
-    auto const targetSize = GetTargetSize();
-
-    return ImageCoordinates(
-        topLeftCornerOffset.x,
-        targetSize.height - (topLeftCornerOffset.y + mSourceSize.height));
+    return mShipResizeVisualizationControl->GetOffset();
 }
 
 void ResizeDialog::OnOkButton(wxCommandEvent & /*event*/)

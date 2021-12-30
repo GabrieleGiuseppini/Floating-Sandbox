@@ -719,24 +719,27 @@ void Controller::FlipForUndo(DirectionType direction)
     Flip<true>(direction);
 }
 
-void Controller::ResizeShip(ShipSpaceSize const & newSize)
+void Controller::ResizeShip(
+    ShipSpaceSize const & newSize,
+    ShipSpaceCoordinates const & originOffset)
 {
     // TODO: reset tool
     // TODO: tell ModelController
     // TODO: update dirtyness (of all present layers)
     // TODO: undo
 
-    // Notify view of new size
-    mView.SetShipSize(newSize);
-    mUserInterface.OnViewModelChanged();
-    mUserInterface.RefreshView();
+    // TOOTEST
+    ////// Notify view of new size
+    ////mView.SetShipSize(newSize);
+    ////mUserInterface.OnViewModelChanged();
+    ////mUserInterface.RefreshView();
 
-    // Notify UI of new ship size
-    mUserInterface.OnShipSizeChanged(newSize);
+    ////// Notify UI of new ship size
+    ////mUserInterface.OnShipSizeChanged(newSize);
 
-    // Refresh model visualizations
-    mModelController->UpdateVisualizations(mView);
-    mUserInterface.RefreshView();
+    ////// Refresh model visualizations
+    ////mModelController->UpdateVisualizations(mView);
+    ////mUserInterface.RefreshView();
 }
 
 VisualizationType Controller::GetPrimaryVisualization() const
