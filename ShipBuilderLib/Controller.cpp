@@ -723,23 +723,66 @@ void Controller::ResizeShip(
     ShipSpaceSize const & newSize,
     ShipSpaceCoordinates const & originOffset)
 {
-    // TODO: reset tool
-    // TODO: tell ModelController
-    // TODO: update dirtyness (of all present layers)
-    // TODO: undo
+    auto const scopedToolResumeState = SuspendTool();
 
-    // TOOTEST
-    ////// Notify view of new size
-    ////mView.SetShipSize(newSize);
-    ////mUserInterface.OnViewModelChanged();
-    ////mUserInterface.RefreshView();
+    // Store undo
+    {
+        // Get dirty state
+        Model::DirtyState const originalDirtyState = mModelController->GetModel().GetDirtyState();
 
-    ////// Notify UI of new ship size
-    ////mUserInterface.OnShipSizeChanged(newSize);
+        // Clone all layers
+        auto structuralLayerClone = mModelController->CloneStructuralLayer();
+        auto electricalLayerClone = mModelController->CloneElectricalLayer();
+        auto ropesLayerClone = mModelController->CloneRopesLayer();
+        auto textureLayerClone = mModelController->CloneTextureLayer();
+        auto textureArtCreditsClone = mModelController->GetShipMetadata().ArtCredits;
 
-    ////// Refresh model visualizations
-    ////mModelController->UpdateVisualizations(mView);
-    ////mUserInterface.RefreshView();
+        // Calculate cost
+        size_t const totalCost =
+            structuralLayerClone.Buffer.GetByteSize()
+            + (electricalLayerClone ? electricalLayerClone->Buffer.GetByteSize() : 0)
+            + (ropesLayerClone ? ropesLayerClone->Buffer.GetSize() * sizeof(RopeElement) : 0)
+            + (textureLayerClone ? textureLayerClone->Buffer.GetByteSize() : 0);
+
+        // Create undo
+        mUndoStack.Push(
+            _("Resize Ship"),
+            totalCost,
+            originalDirtyState,
+            [structuralLayerClone = std::move(structuralLayerClone)
+                , electricalLayerClone = std::move(electricalLayerClone)
+                , ropesLayerClone = std::move(ropesLayerClone)
+                , textureLayerClone = std::move(textureLayerClone)
+                , textureArtCreditsClone = std::move(textureArtCreditsClone)](Controller & controller) mutable
+            {
+                controller.RestoreStructuralLayerForUndo(std::move(structuralLayerClone));
+                controller.RestoreElectricalLayerForUndo(std::move(electricalLayerClone));
+                controller.RestoreRopesLayerForUndo(std::move(ropesLayerClone));
+                controller.RestoreTextureLayerForUndo(
+                    std::move(textureLayerClone),
+                    std::move(textureArtCreditsClone));
+            });
+        mUserInterface.OnUndoStackStateChanged();
+    }
+
+    // Resize
+    mModelController->ResizeShip(newSize, originOffset);
+
+    // Update dirtyness
+    mModelController->SetAllLayersDirty();
+    mUserInterface.OnModelDirtyChanged();
+
+    // Notify view of new size
+    mView.SetShipSize(newSize);
+    mUserInterface.OnViewModelChanged();
+    mUserInterface.RefreshView();
+
+    // Notify UI of new ship size
+    mUserInterface.OnShipSizeChanged(newSize);
+
+    // Refresh model visualizations
+    mModelController->UpdateVisualizations(mView);
+    mUserInterface.RefreshView();
 }
 
 VisualizationType Controller::GetPrimaryVisualization() const

@@ -126,6 +126,7 @@ public:
     void RestoreLayerRegionForUndo(
         StructuralLayerData && layerRegion,
         ShipSpaceCoordinates const & origin);
+    void RestoreStructuralLayerForUndo(StructuralLayerData && structuralLayer);
     RgbaImageData const & GetStructuralLayerVisualization();
 
     void NewElectricalLayer();
@@ -134,12 +135,14 @@ public:
     void RestoreLayerRegionForUndo(
         ElectricalLayerData && layerRegion,
         ShipSpaceCoordinates const & origin);
+    void RestoreElectricalLayerForUndo(std::unique_ptr<ElectricalLayerData> electricalLayer);
     void TrimElectricalParticlesWithoutSubstratum();
 
     void NewRopesLayer();
     void SetRopesLayer(/*TODO*/);
     void RemoveRopesLayer();
     void RestoreLayerForUndo(RopesLayerData && layer);
+    void RestoreRopesLayerForUndo(std::unique_ptr<RopesLayerData> ropesLayer);
 
     void SetTextureLayer(
         TextureLayerData && textureLayer,

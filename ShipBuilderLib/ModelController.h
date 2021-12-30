@@ -116,12 +116,18 @@ public:
 
     void Flip(DirectionType direction);
 
+    void ResizeShip(
+        ShipSpaceSize const & newSize,
+        ShipSpaceCoordinates const & originOffset);
+
     //
     // Structural
     //
 
     void NewStructuralLayer();
     void SetStructuralLayer(/*TODO*/);
+
+    StructuralLayerData CloneStructuralLayer() const;
 
     void StructuralRegionFill(
         ShipSpaceRect const & region,
@@ -154,6 +160,8 @@ public:
     void SetElectricalLayer(/*TODO*/);
     void RemoveElectricalLayer();
 
+    std::unique_ptr<ElectricalLayerData> CloneElectricalLayer() const;
+
     bool IsElectricalParticleAllowedAt(ShipSpaceCoordinates const & coords) const;
 
     std::optional<ShipSpaceRect> TrimElectricalParticlesWithoutSubstratum();
@@ -183,6 +191,8 @@ public:
     void NewRopesLayer();
     void SetRopesLayer(/*TODO*/);
     void RemoveRopesLayer();
+
+    std::unique_ptr<RopesLayerData> CloneRopesLayer() const;
 
     std::optional<size_t> GetRopeElementIndexAt(ShipSpaceCoordinates const & coords) const;
 
