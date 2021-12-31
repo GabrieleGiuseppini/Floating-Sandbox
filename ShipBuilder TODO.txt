@@ -254,8 +254,18 @@ https://gamejolt.com/x/permalink/comment/11730705
 								+ Capture mouse
 							= Controller::ResizeShip
 								= ModelController::ResizeShip
-									- Do all layers like Flip()
+									= Do all layers like Flip()
+										+ Structural
+										+ Electrical
+										+ Ropes
+										- Texture
+											- Calc image size
+												- Move MainFrame's calculation to helper of _IntegralRectSize, which takes another _Integral rect size
+										- Test completely empty afterwards, all layers
+									+ Electrical: remove panel elements that are gone
 								= Undo
+									- Instead of executing undo via 4 calls to Controller::RestoreXXXLayerForUndo, do one single call to
+									  new Controller::RestoreAllLayersForUndo
 				- Texture-import-from-button issue: see if specifying two bitmaps works
 			- .shp, .shp2 (load whole and throw away)
 				- Might as well allow user to select also .png's (for simplicity in ShipLoadDialog), will be discarded (errored) afterwards anyway - see next line

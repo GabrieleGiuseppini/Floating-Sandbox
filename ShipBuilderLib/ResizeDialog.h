@@ -39,7 +39,7 @@ public:
 
     IntegralRectSize GetTargetSize() const;
 
-    // Position in final buffer of top-left corner wrt. top-left corner of target
+    // Position in final buffer of bottom-left corner wrt. bottom-left corner of target
     IntegralCoordinates GetOffset() const;
 
 private:

@@ -174,9 +174,9 @@ public:
         }
     }
 
-    Buffer2D Reframe(
-        _IntegralCoordinates<TIntegralTag> const & originOffset, // Position in final buffer of original {0, 0}
+    Buffer2D MakeReframed(
         _IntegralSize<TIntegralTag> const & newSize, // Final size
+        _IntegralCoordinates<TIntegralTag> const & originOffset, // Position in final buffer of original {0, 0}
         TElement const & fillerValue) const
     {
         auto newData = std::make_unique<TElement[]>(newSize.width * newSize.height);

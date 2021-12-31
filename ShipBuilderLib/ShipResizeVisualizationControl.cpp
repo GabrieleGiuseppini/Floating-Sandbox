@@ -271,29 +271,37 @@ void ShipResizeVisualizationControl::OnChange()
         newImageSizeImage = vec2i(
             std::min(newImageSizeImage.x, mImage.GetWidth() - newImageOriginImage.x),
             std::min(newImageSizeImage.y, mImage.GetHeight() - newImageOriginImage.y));
-        
-        //
-        // Create new clip
-        //
 
-        assert(newImageOriginImage.x + newImageSizeImage.x <= mImage.GetWidth());
-        assert(newImageOriginImage.y + newImageSizeImage.y <= mImage.GetHeight());
-        
-        auto clippedImage = wxImage(newImageSizeImage.x, newImageSizeImage.y, false);
-        clippedImage.Paste(mImage, -newImageOriginImage.x, -newImageOriginImage.y);
+        if (newImageSizeImage.x > 0 && newImageSizeImage.y > 0)
+        {
+            //
+            // Create new clip
+            //
 
-        vec2i const newImageSizeDCi = newImageRectDC->size.to_vec2i_round();
-        vec2i const newImageOriginDCi = newImageRectDC->origin.to_vec2i_round();
+            assert(newImageOriginImage.x + newImageSizeImage.x <= mImage.GetWidth());
+            assert(newImageOriginImage.y + newImageSizeImage.y <= mImage.GetHeight());
 
-        mResizedBitmapClip = wxBitmap(
-            clippedImage
-            .Scale(
-                newImageSizeDCi.x,
-                newImageSizeDCi.y,
-                wxIMAGE_QUALITY_NEAREST),
-            wxBITMAP_SCREEN_DEPTH);
+            auto clippedImage = wxImage(newImageSizeImage.x, newImageSizeImage.y, false);
+            clippedImage.Paste(mImage, -newImageOriginImage.x, -newImageOriginImage.y);
 
-        mResizedBitmapOriginDC = wxPoint(newImageOriginDCi.x, newImageOriginDCi.y);
+            vec2i const newImageSizeDCi = newImageRectDC->size.to_vec2i_round();
+            vec2i const newImageOriginDCi = newImageRectDC->origin.to_vec2i_round();
+
+            mResizedBitmapClip = wxBitmap(
+                clippedImage
+                .Scale(
+                    newImageSizeDCi.x,
+                    newImageSizeDCi.y,
+                    wxIMAGE_QUALITY_NEAREST),
+                wxBITMAP_SCREEN_DEPTH);
+
+            mResizedBitmapOriginDC = wxPoint(newImageOriginDCi.x, newImageOriginDCi.y);
+        }
+        else
+        {
+            // No clip
+            mResizedBitmapClip = wxBitmap();
+        }
     }
     else
     {

@@ -270,7 +270,111 @@ void ModelController::ResizeShip(
     ShipSpaceSize const & newSize,
     ShipSpaceCoordinates const & originOffset)
 {
-    // TODOHERE: copy from Flip() above
+    //
+    // Calculate "static" (remaining) rect - wrt old coordinates 
+    //
+
+    std::optional<ShipSpaceRect> staticShipRect =
+        GetWholeShipRect().MakeIntersectionWith(ShipSpaceRect(originOffset, newSize));
+
+    if (staticShipRect.has_value())
+    {
+        // Make origin wrt old coords
+        staticShipRect->origin.x = std::max(0, -originOffset.x);
+        staticShipRect->origin.y = std::max(0, -originOffset.y);
+    }
+
+    //
+    // Resize
+    //
+
+    ShipSpaceRect newWholeShipRect({ 0, 0 }, newSize);
+
+    // Structural layer
+    {
+        assert(mModel.HasLayer(LayerType::Structural));
+
+        assert(!mIsStructuralLayerInEphemeralVisualization);
+
+        mModel.GetStructuralLayer().Buffer = mModel.GetStructuralLayer().Buffer.MakeReframed(
+            newSize,
+            originOffset,
+            StructuralElement(nullptr));
+
+        InitializeStructuralLayerAnalysis();
+
+        RegisterDirtyVisualization<VisualizationType::StructuralLayer>(newWholeShipRect);
+    }
+
+    // Electrical layer
+    if (mModel.HasLayer(LayerType::Electrical))
+    {
+        assert(!mIsElectricalLayerInEphemeralVisualization);
+
+        // Panel
+        if (staticShipRect.has_value())
+        {
+            for (int y = 0; y < mModel.GetElectricalLayer().Buffer.Size.height; ++y)
+            {
+                for (int x = 0; x < mModel.GetElectricalLayer().Buffer.Size.width; ++x)
+                {
+                    auto const coords = ShipSpaceCoordinates({ x, y });
+
+                    auto const instanceIndex = mModel.GetElectricalLayer().Buffer[coords].InstanceIndex;
+                    if (instanceIndex != NoneElectricalElementInstanceIndex
+                        && !coords.IsInRect(*staticShipRect))
+                    {
+                        // This instanced element will be gone
+                        auto searchIt = mModel.GetElectricalLayer().Panel.find(instanceIndex);
+                        if (searchIt != mModel.GetElectricalLayer().Panel.end())
+                        {
+                            mModel.GetElectricalLayer().Panel.erase(searchIt);
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            mModel.GetElectricalLayer().Panel.clear();
+        }
+
+        // Elements
+        mModel.GetElectricalLayer().Buffer = mModel.GetElectricalLayer().Buffer.MakeReframed(
+            newSize,
+            originOffset,
+            ElectricalElement(nullptr, NoneElectricalElementInstanceIndex));
+
+        InitializeElectricalLayerAnalysis();
+
+        RegisterDirtyVisualization<VisualizationType::ElectricalLayer>(newWholeShipRect);
+    }
+
+    // Ropes layer
+    if (mModel.HasLayer(LayerType::Ropes))
+    {
+        assert(!mIsRopesLayerInEphemeralVisualization);
+
+        mModel.GetRopesLayer().Buffer.Reframe(newSize, originOffset);
+
+        InitializeRopesLayerAnalysis();
+
+        RegisterDirtyVisualization<VisualizationType::RopesLayer>(newWholeShipRect);
+    }
+
+    // Texture layer
+    if (mModel.HasLayer(LayerType::Texture))
+    {
+        // TODOHERE: calc image rect
+
+        RegisterDirtyVisualization<VisualizationType::TextureLayer>(newWholeShipRect);
+    }
+
+    //...and Game we do regardless, as there's always a structural layer at least
+    RegisterDirtyVisualization<VisualizationType::Game>(newWholeShipRect);
+
+    assert(mModel.GetShipSize() == newSize);
+    assert(GetWholeShipRect() == newWholeShipRect);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

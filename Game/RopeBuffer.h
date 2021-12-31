@@ -63,6 +63,11 @@ struct RopeBuffer
         mBuffer.erase(it);
     }
 
+    void Clear()
+    {
+        mBuffer.clear();
+    }
+
     void Flip(
         DirectionType direction,
         ShipSpaceSize const & size)
@@ -78,6 +83,52 @@ struct RopeBuffer
         else if (direction == (DirectionType::Vertical | DirectionType::Horizontal))
         {
             Flip<true, true>(size);
+        }
+    }
+
+    void Trim(
+        ShipSpaceCoordinates const & origin,
+        ShipSpaceSize const & size)
+    {
+        ShipSpaceRect const rect(origin, size);
+
+        for (auto it = mBuffer.begin(); it != mBuffer.end(); /* incremented in loop */)
+        {
+            if (!it->StartCoords.IsInRect(rect)
+                || !it->EndCoords.IsInRect(rect))
+            {
+                it = mBuffer.erase(it);
+            }
+            else
+            {
+                ++it;
+            }
+        }
+    }
+
+    void Reframe(
+        ShipSpaceSize const & newSize, // Final size
+        ShipSpaceCoordinates const & originOffset) // Position in final buffer of original {0, 0}
+    {
+        ShipSpaceSize coordsOffset(originOffset.x, originOffset.y);
+
+        for (auto it = mBuffer.begin(); it != mBuffer.end(); /* incremented in loop */)
+        {
+            // Shift
+            auto const newStartCoords = it->StartCoords + coordsOffset;
+            auto const newEndCoords = it->EndCoords + coordsOffset;
+            if (!newStartCoords.IsInSize(newSize)
+                || !newEndCoords.IsInSize(newSize))
+            {
+                it = mBuffer.erase(it);
+            }
+            else
+            {
+                it->StartCoords = newStartCoords;
+                it->EndCoords = newEndCoords;
+
+                ++it;
+            }
         }
     }
 

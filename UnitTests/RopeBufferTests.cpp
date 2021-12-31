@@ -95,3 +95,141 @@ TEST(RopeBufferTests, Flip_HorizontalAndVertical)
     EXPECT_EQ(ShipSpaceCoordinates(0, 0), buffer[1].StartCoords);
     EXPECT_EQ(ShipSpaceCoordinates(11, 19), buffer[1].EndCoords);
 }
+
+TEST(RopeBufferTests, Trim)
+{
+    RopeBuffer buffer;
+
+    buffer.EmplaceBack(
+        ShipSpaceCoordinates(4, 5),
+        ShipSpaceCoordinates(10, 10),
+        nullptr,
+        rgbaColor(1, 2, 3, 4));
+
+    buffer.EmplaceBack(
+        ShipSpaceCoordinates(7, 19),
+        ShipSpaceCoordinates(6, 15),
+        nullptr,
+        rgbaColor(1, 2, 3, 4));
+
+    buffer.EmplaceBack(
+        ShipSpaceCoordinates(14, 15),
+        ShipSpaceCoordinates(1, 1),
+        nullptr,
+        rgbaColor(1, 2, 3, 4));
+
+    buffer.Trim(
+        { 5, 6 },
+        { 100, 200 });
+
+    ASSERT_EQ(buffer.GetSize(), 1);
+
+    EXPECT_EQ(ShipSpaceCoordinates(7, 19), buffer[0].StartCoords);
+    EXPECT_EQ(ShipSpaceCoordinates(6, 15), buffer[0].EndCoords);
+}
+
+TEST(RopeBufferTests, Trim_BecomesEmpty)
+{
+    RopeBuffer buffer;
+
+    buffer.EmplaceBack(
+        ShipSpaceCoordinates(4, 5),
+        ShipSpaceCoordinates(10, 10),
+        nullptr,
+        rgbaColor(1, 2, 3, 4));
+
+    buffer.EmplaceBack(
+        ShipSpaceCoordinates(7, 19),
+        ShipSpaceCoordinates(6, 15),
+        nullptr,
+        rgbaColor(1, 2, 3, 4));
+
+    buffer.EmplaceBack(
+        ShipSpaceCoordinates(14, 15),
+        ShipSpaceCoordinates(1, 1),
+        nullptr,
+        rgbaColor(1, 2, 3, 4));
+
+    buffer.Trim(
+        { 35, 36 },
+        { 100, 200 });
+
+    ASSERT_EQ(buffer.GetSize(), 0);
+}
+
+TEST(RopeBufferTests, Reframe)
+{
+    RopeBuffer buffer;
+
+    buffer.EmplaceBack(
+        ShipSpaceCoordinates(4, 5),
+        ShipSpaceCoordinates(10, 10),
+        nullptr,
+        rgbaColor(1, 2, 3, 4));
+
+    buffer.EmplaceBack(
+        ShipSpaceCoordinates(7, 18),
+        ShipSpaceCoordinates(6, 15),
+        nullptr,
+        rgbaColor(1, 2, 3, 4));
+
+    buffer.EmplaceBack(
+        ShipSpaceCoordinates(14, 15),
+        ShipSpaceCoordinates(1, 1),
+        nullptr,
+        rgbaColor(1, 2, 3, 4));
+
+    buffer.EmplaceBack(
+        ShipSpaceCoordinates(5, 14),
+        ShipSpaceCoordinates(6, 15),
+        nullptr,
+        rgbaColor(1, 2, 3, 4));
+
+    buffer.EmplaceBack(
+        ShipSpaceCoordinates(8, 14),
+        ShipSpaceCoordinates(6, 15),
+        nullptr,
+        rgbaColor(1, 2, 3, 4));
+
+    buffer.Reframe(
+        { 3, 5 },
+        { -5, -14 });
+
+    ASSERT_EQ(buffer.GetSize(), 2);
+
+    EXPECT_EQ(ShipSpaceCoordinates(2, 4), buffer[0].StartCoords);
+    EXPECT_EQ(ShipSpaceCoordinates(1, 1), buffer[0].EndCoords);
+
+    EXPECT_EQ(ShipSpaceCoordinates(0, 0), buffer[1].StartCoords);
+    EXPECT_EQ(ShipSpaceCoordinates(1, 1), buffer[1].EndCoords);
+}
+
+TEST(RopeBufferTests, Reframe_BecomesEmpty)
+{
+    RopeBuffer buffer;
+
+    buffer.EmplaceBack(
+        ShipSpaceCoordinates(4, 5),
+        ShipSpaceCoordinates(10, 10),
+        nullptr,
+        rgbaColor(1, 2, 3, 4));
+
+    buffer.EmplaceBack(
+        ShipSpaceCoordinates(9, 19),
+        ShipSpaceCoordinates(8, 15),
+        nullptr,
+        rgbaColor(1, 2, 3, 4));
+
+    buffer.EmplaceBack(
+        ShipSpaceCoordinates(14, 15),
+        ShipSpaceCoordinates(1, 1),
+        nullptr,
+        rgbaColor(1, 2, 3, 4));
+
+    buffer.Reframe(
+        { 2, 1 },
+        { -5, -14 });
+
+    ASSERT_EQ(buffer.GetSize(), 0);
+}
+

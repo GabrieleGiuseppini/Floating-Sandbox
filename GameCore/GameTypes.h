@@ -466,6 +466,13 @@ struct _IntegralCoordinates
         return x >= 0 && x < size.width && y >= 0 && y < size.height;
     }
 
+    template<typename TRect>
+    bool IsInRect(TRect const & rect) const
+    {
+        return x >= rect.origin.x && x < rect.origin.x + rect.size.width 
+            && y >= rect.origin.y && y < rect.origin.y + rect.size.height;
+    }
+
     _IntegralCoordinates<TIntegralTag> FlipX(integral_type width) const
     {
         assert(width > x);

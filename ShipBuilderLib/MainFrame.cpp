@@ -3263,17 +3263,11 @@ void MainFrame::ImportTextureLayerFromImage()
                 // Resize
                 //
 
-                // Position in final buffer of top-left corner wrt. top-left corner of target...
                 auto const originOffset = mResizeDialog->GetOffset();
 
-                // ...transformed to position of bottom-left corner wrt. bottom-left corner
-                ImageCoordinates imageOriginOffset = ImageCoordinates(
-                    originOffset.x,
-                    targetSize.height - (originOffset.y + image.Size.height));
-
-                image = image.Reframe(
-                    imageOriginOffset,
+                image = image.MakeReframed(
                     ImageSize(targetSize.width, targetSize.height),
+                    ImageCoordinates(originOffset.x, originOffset.y),
                     rgbaColor::zero());
             }
 
@@ -3308,7 +3302,7 @@ void MainFrame::OpenShipCanvasResize()
     //
 
     auto const targetSize = mResizeDialog->GetTargetSize();
-    auto const originOffset = mResizeDialog->GetOffset(); // Position in final buffer of top-left corner wrt. top-left corner of target...
+    auto const originOffset = mResizeDialog->GetOffset();
 
     mController->ResizeShip(
         ShipSpaceSize(targetSize.width, targetSize.height),

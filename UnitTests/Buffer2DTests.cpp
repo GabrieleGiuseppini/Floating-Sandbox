@@ -300,7 +300,7 @@ TEST(Buffer2DTests, Flip_HorizontalAndVertical)
     }
 }
 
-TEST(Buffer2DTests, Reframe_SameRect)
+TEST(Buffer2DTests, MakeReframed_SameRect)
 {
     Buffer2D<int, struct IntegralTag> sourceBuffer(8, 8);
 
@@ -313,9 +313,9 @@ TEST(Buffer2DTests, Reframe_SameRect)
         }
     }
 
-    auto const targetBuffer = sourceBuffer.Reframe(
-        { 0, 0 },
+    auto const targetBuffer = sourceBuffer.MakeReframed(
         sourceBuffer.Size,
+        { 0, 0 },
         999999);
 
     ASSERT_EQ(targetBuffer.Size, sourceBuffer.Size);
@@ -329,7 +329,7 @@ TEST(Buffer2DTests, Reframe_SameRect)
     }
 }
 
-TEST(Buffer2DTests, Reframe_SameOrigin_SmallerSize)
+TEST(Buffer2DTests, MakeReframed_SameOrigin_SmallerSize)
 {
     Buffer2D<int, struct IntegralTag> sourceBuffer(8, 8);
 
@@ -342,9 +342,9 @@ TEST(Buffer2DTests, Reframe_SameOrigin_SmallerSize)
         }
     }
 
-    auto const targetBuffer = sourceBuffer.Reframe(
-        { 0, 0 },
+    auto const targetBuffer = sourceBuffer.MakeReframed(
         { 6, 4 },
+        { 0, 0 },
         999999);
 
     ASSERT_EQ(targetBuffer.Size, IntegralRectSize(6, 4));
@@ -358,7 +358,7 @@ TEST(Buffer2DTests, Reframe_SameOrigin_SmallerSize)
     }
 }
 
-TEST(Buffer2DTests, Reframe_SameOrigin_LargerSize)
+TEST(Buffer2DTests, MakeReframed_SameOrigin_LargerSize)
 {
     Buffer2D<int, struct IntegralTag> sourceBuffer(8, 7);
 
@@ -371,9 +371,9 @@ TEST(Buffer2DTests, Reframe_SameOrigin_LargerSize)
         }
     }
 
-    auto const targetBuffer = sourceBuffer.Reframe(
-        { 0, 0 },
+    auto const targetBuffer = sourceBuffer.MakeReframed(
         { 10, 12 },
+        { 0, 0 },
         999999);
 
     ASSERT_EQ(targetBuffer.Size, IntegralRectSize(10, 12));
@@ -394,7 +394,7 @@ TEST(Buffer2DTests, Reframe_SameOrigin_LargerSize)
     }
 }
 
-TEST(Buffer2DTests, Reframe_DifferentOrigin_OutOrigin_SameSize)
+TEST(Buffer2DTests, MakeReframed_DifferentOrigin_OutOrigin_SameSize)
 {
     Buffer2D<int, struct IntegralTag> sourceBuffer(8, 6);
 
@@ -407,9 +407,9 @@ TEST(Buffer2DTests, Reframe_DifferentOrigin_OutOrigin_SameSize)
         }
     }
 
-    auto const targetBuffer = sourceBuffer.Reframe(
-        { -2, -1 },
+    auto const targetBuffer = sourceBuffer.MakeReframed(
         { 6, 5 },
+        { -2, -1 },
         999999);
 
     ASSERT_EQ(targetBuffer.Size, IntegralRectSize(6, 5));
@@ -423,7 +423,7 @@ TEST(Buffer2DTests, Reframe_DifferentOrigin_OutOrigin_SameSize)
     }
 }
 
-TEST(Buffer2DTests, Reframe_DifferentOrigin_OutOrigin_SmallerSize)
+TEST(Buffer2DTests, MakeReframed_DifferentOrigin_OutOrigin_SmallerSize)
 {
     Buffer2D<int, struct IntegralTag> sourceBuffer(8, 6);
 
@@ -436,9 +436,9 @@ TEST(Buffer2DTests, Reframe_DifferentOrigin_OutOrigin_SmallerSize)
         }
     }
 
-    auto const targetBuffer = sourceBuffer.Reframe(
-        { -1, -2 },
+    auto const targetBuffer = sourceBuffer.MakeReframed(
         { 5, 4 },
+        { -1, -2 },
         999999);
 
     ASSERT_EQ(targetBuffer.Size, IntegralRectSize(5, 4));
@@ -452,7 +452,7 @@ TEST(Buffer2DTests, Reframe_DifferentOrigin_OutOrigin_SmallerSize)
     }
 }
 
-TEST(Buffer2DTests, Reframe_DifferentOrigin_OutOrigin_LargerSize)
+TEST(Buffer2DTests, MakeReframed_DifferentOrigin_OutOrigin_LargerSize)
 {
     Buffer2D<int, struct IntegralTag> sourceBuffer(8, 6);
 
@@ -465,9 +465,9 @@ TEST(Buffer2DTests, Reframe_DifferentOrigin_OutOrigin_LargerSize)
         }
     }
 
-    auto const targetBuffer = sourceBuffer.Reframe(
-        { -1, -2 },
+    auto const targetBuffer = sourceBuffer.MakeReframed(
         { 8, 6 },
+        { -1, -2 },
         999999);
 
     ASSERT_EQ(targetBuffer.Size, IntegralRectSize(8, 6));
@@ -488,7 +488,7 @@ TEST(Buffer2DTests, Reframe_DifferentOrigin_OutOrigin_LargerSize)
     }
 }
 
-TEST(Buffer2DTests, Reframe_DifferentOrigin_InOrigin_SameSize)
+TEST(Buffer2DTests, MakeReframed_DifferentOrigin_InOrigin_SameSize)
 {
     Buffer2D<int, struct IntegralTag> sourceBuffer(8, 6);
 
@@ -501,9 +501,9 @@ TEST(Buffer2DTests, Reframe_DifferentOrigin_InOrigin_SameSize)
         }
     }
 
-    auto const targetBuffer = sourceBuffer.Reframe(
-        { 2, 1 },
+    auto const targetBuffer = sourceBuffer.MakeReframed(
         { 6, 5 },
+        { 2, 1 },
         999999);
 
     ASSERT_EQ(targetBuffer.Size, IntegralRectSize(6, 5));
@@ -524,7 +524,7 @@ TEST(Buffer2DTests, Reframe_DifferentOrigin_InOrigin_SameSize)
     }
 }
 
-TEST(Buffer2DTests, Reframe_DifferentOrigin_InOrigin_SmallerSize)
+TEST(Buffer2DTests, MakeReframed_DifferentOrigin_InOrigin_SmallerSize)
 {
     Buffer2D<int, struct IntegralTag> sourceBuffer(8, 6);
 
@@ -537,9 +537,9 @@ TEST(Buffer2DTests, Reframe_DifferentOrigin_InOrigin_SmallerSize)
         }
     }
 
-    auto const targetBuffer = sourceBuffer.Reframe(
-        { 2, 1 },
+    auto const targetBuffer = sourceBuffer.MakeReframed(
         { 4, 3 },
+        { 2, 1 },
         999999);
 
     ASSERT_EQ(targetBuffer.Size, IntegralRectSize(4, 3));
@@ -560,7 +560,7 @@ TEST(Buffer2DTests, Reframe_DifferentOrigin_InOrigin_SmallerSize)
     }
 }
 
-TEST(Buffer2DTests, Reframe_DifferentOrigin_InOrigin_LargerSize)
+TEST(Buffer2DTests, MakeReframed_DifferentOrigin_InOrigin_LargerSize)
 {
     Buffer2D<int, struct IntegralTag> sourceBuffer(8, 6);
 
@@ -573,9 +573,9 @@ TEST(Buffer2DTests, Reframe_DifferentOrigin_InOrigin_LargerSize)
         }
     }
 
-    auto const targetBuffer = sourceBuffer.Reframe(
-        { 2, 1 },
+    auto const targetBuffer = sourceBuffer.MakeReframed(
         { 12, 16 },
+        { 2, 1 },
         999999);
 
     ASSERT_EQ(targetBuffer.Size, IntegralRectSize(12, 16));
@@ -592,6 +592,35 @@ TEST(Buffer2DTests, Reframe_DifferentOrigin_InOrigin_LargerSize)
             {
                 EXPECT_EQ(targetBuffer[coords], sourceBuffer[coords - IntegralRectSize(2, 1)]);
             }
+        }
+    }
+}
+
+TEST(Buffer2DTests, MakeReframed_BecomesEmpty)
+{
+    Buffer2D<int, struct IntegralTag> sourceBuffer(8, 6);
+
+    int iVal = 100;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[IntegralCoordinates(x, y)] = iVal++;
+        }
+    }
+
+    auto const targetBuffer = sourceBuffer.MakeReframed(
+        { 12, 16 },
+        { -8, -6 },
+        999999);
+
+    ASSERT_EQ(targetBuffer.Size, IntegralRectSize(12, 16));
+    for (int y = 0; y < 16; ++y)
+    {
+        for (int x = 0; x < 12; ++x)
+        {
+            auto const coords = IntegralCoordinates(x, y);
+            EXPECT_EQ(targetBuffer[coords], 999999);
         }
     }
 }

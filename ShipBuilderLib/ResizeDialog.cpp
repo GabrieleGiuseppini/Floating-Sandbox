@@ -413,7 +413,12 @@ IntegralRectSize ResizeDialog::GetTargetSize() const
 
 IntegralCoordinates ResizeDialog::GetOffset() const
 {
-    return mShipResizeVisualizationControl->GetOffset();
+    auto const topLeftOffset = mShipResizeVisualizationControl->GetOffset();
+    auto const targetSize = GetTargetSize();
+
+    return IntegralCoordinates(
+        topLeftOffset.x,
+        targetSize.height - (topLeftOffset.y + mSourceSize.height));
 }
 
 void ResizeDialog::OnOkButton(wxCommandEvent & /*event*/)

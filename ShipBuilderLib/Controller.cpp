@@ -812,7 +812,6 @@ void Controller::ResizeShip(
     // Notify view of new size
     mView.SetShipSize(newSize);
     mUserInterface.OnViewModelChanged();
-    mUserInterface.RefreshView();
 
     // Notify UI of new ship size
     mUserInterface.OnShipSizeChanged(newSize);
