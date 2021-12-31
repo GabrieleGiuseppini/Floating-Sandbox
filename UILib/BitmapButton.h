@@ -29,8 +29,8 @@ public:
             wxDefaultSize,
             wxBU_EXACTFIT)
     {
-        auto img = wxImage(bitmapFilePath.string(), wxBITMAP_TYPE_PNG);
-        SetBitmap(wxBitmap(img));
+        auto bmp = wxBitmap(bitmapFilePath.string(), wxBITMAP_TYPE_PNG);
+        SetBitmap(bmp);
 
         if (!toolTipLabel.empty())
             SetToolTip(toolTipLabel);

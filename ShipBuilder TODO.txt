@@ -276,7 +276,6 @@ https://gamejolt.com/x/permalink/comment/11730705
 								+ Undo
 									+ Instead of executing undo via 4 calls to Controller::RestoreXXXLayerForUndo, do one single call to
 									  new Controller::RestoreAllLayersForUndo
-				- Texture-import-from-button issue: see if specifying two bitmaps works
 			- .shp, .shp2 (load whole and throw away)
 				- Might as well allow user to select also .png's (for simplicity in ShipLoadDialog), will be discarded (errored) afterwards anyway - see next line
 				- Show error if no layer exists in definition
