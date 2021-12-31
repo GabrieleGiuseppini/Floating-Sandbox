@@ -274,8 +274,9 @@ void ModelController::ResizeShip(
     // Calculate "static" (remaining) rect - wrt old coordinates 
     //
 
-    std::optional<ShipSpaceRect> staticShipRect =
-        GetWholeShipRect().MakeIntersectionWith(ShipSpaceRect(originOffset, newSize));
+    auto const originalShipRect = GetWholeShipRect();
+
+    std::optional<ShipSpaceRect> staticShipRect = originalShipRect.MakeIntersectionWith(ShipSpaceRect(originOffset, newSize));
 
     if (staticShipRect.has_value())
     {
@@ -284,11 +285,14 @@ void ModelController::ResizeShip(
         staticShipRect->origin.y = std::max(0, -originOffset.y);
     }
 
+
     //
-    // Resize
+    // Resize model
     //
 
     ShipSpaceRect newWholeShipRect({ 0, 0 }, newSize);
+
+    mModel.SetShipSize(newSize);
 
     // Structural layer
     {
@@ -365,7 +369,18 @@ void ModelController::ResizeShip(
     // Texture layer
     if (mModel.HasLayer(LayerType::Texture))
     {
-        // TODOHERE: calc image rect
+        // Calc rect in texture coordinates space, assuming the original ratio matches
+        float const textureRatio = static_cast<float>(mModel.GetTextureLayer().Buffer.Size.width) / static_cast<float>(mModel.GetTextureLayer().Buffer.Size.height);
+        float const shipRatio = static_cast<float>(originalShipRect.size.width) / static_cast<float>(originalShipRect.size.height);
+        assert(std::abs(1.0f - textureRatio / shipRatio) < 0.1f);
+        float const shipToImage = static_cast<float>(mModel.GetTextureLayer().Buffer.Size.width) / static_cast<float>(originalShipRect.size.width);
+        ImageSize const imageNewSize = ImageSize::FromFloatRound(newSize.ToFloat() * shipToImage);
+        ImageCoordinates imageOriginOffset = ImageCoordinates::FromFloatRound(originOffset.ToFloat() * shipToImage);
+
+        mModel.GetTextureLayer().Buffer = mModel.GetTextureLayer().Buffer.MakeReframed(
+            imageNewSize,
+            imageOriginOffset,
+            rgbaColor(0, 0, 0, 0));
 
         RegisterDirtyVisualization<VisualizationType::TextureLayer>(newWholeShipRect);
     }

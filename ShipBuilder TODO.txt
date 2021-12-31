@@ -259,9 +259,12 @@ https://gamejolt.com/x/permalink/comment/11730705
 										+ Electrical
 										+ Ropes
 										- Texture
-											- Calc image size
-												- Move MainFrame's calculation to helper of _IntegralRectSize, which takes another _Integral rect size
+											+ Calc image size
+											- FIX: also sizes of visualizations have to change
+												- What if we alloc/dealloc textures at MC::UpdateVisualizations() rather than at MC::SetXXXVizMode?
+													- And then at MC::ResizeShip() we simply nuke textures
 										- Test completely empty afterwards, all layers
+										- Test actual resize
 									+ Electrical: remove panel elements that are gone
 								= Undo
 									- Instead of executing undo via 4 calls to Controller::RestoreXXXLayerForUndo, do one single call to
@@ -281,6 +284,8 @@ https://gamejolt.com/x/permalink/comment/11730705
 - Resize workflow:
 	+ Button - in Ship Settings panel, slightly separated from the File buttons
 	- Click -> Dialog for Canvas Centering/Clipping (i.e. "Anchor choice") -> Controller -> ...TODO...
+
+- Edit->Trim()
 
 - Send for testing
 

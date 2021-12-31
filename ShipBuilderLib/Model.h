@@ -85,6 +85,11 @@ public:
         return mShipSize;
     }
 
+    void SetShipSize(ShipSpaceSize const & size)
+    {
+        mShipSize = size;
+    }
+
     ShipMetadata const & GetShipMetadata() const
     {
         return mShipMetadata;
