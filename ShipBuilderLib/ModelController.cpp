@@ -307,6 +307,8 @@ void ModelController::ResizeShip(
 
         InitializeStructuralLayerAnalysis();
 
+        // Initialize visualization
+        mStructuralLayerVisualizationTexture.reset();
         RegisterDirtyVisualization<VisualizationType::StructuralLayer>(newWholeShipRect);
     }
 
@@ -351,6 +353,8 @@ void ModelController::ResizeShip(
 
         InitializeElectricalLayerAnalysis();
 
+        // Initialize visualization
+        mElectricalLayerVisualizationTexture.reset();
         RegisterDirtyVisualization<VisualizationType::ElectricalLayer>(newWholeShipRect);
     }
 
@@ -385,8 +389,13 @@ void ModelController::ResizeShip(
         RegisterDirtyVisualization<VisualizationType::TextureLayer>(newWholeShipRect);
     }
 
-    //...and Game we do regardless, as there's always a structural layer at least
-    RegisterDirtyVisualization<VisualizationType::Game>(newWholeShipRect);
+    // Initialize game visualizations
+    {
+        mGameVisualizationTexture.reset();
+        mGameVisualizationAutoTexturizationTexture.reset();
+
+        RegisterDirtyVisualization<VisualizationType::Game>(newWholeShipRect);
+    }
 
     assert(mModel.GetShipSize() == newSize);
     assert(GetWholeShipRect() == newWholeShipRect);
@@ -1177,26 +1186,7 @@ void ModelController::SetGameVisualizationMode(GameVisualizationModeType mode)
 
     if (mode != GameVisualizationModeType::None)
     {
-        if (mGameVisualizationMode == GameVisualizationModeType::None)
-        {
-            // Initialize game visualization texture
-
-            assert(!mGameVisualizationTexture);
-
-            mGameVisualizationTextureMagnificationFactor = ShipTexturizer::CalculateHighDefinitionTextureMagnificationFactor(mModel.GetShipSize());
-            ImageSize const textureSize = ImageSize(
-                mModel.GetShipSize().width * mGameVisualizationTextureMagnificationFactor,
-                mModel.GetShipSize().height * mGameVisualizationTextureMagnificationFactor);
-            
-            mGameVisualizationTexture = std::make_unique<RgbaImageData>(textureSize);
-        }
-
-        if (mode == GameVisualizationModeType::AutoTexturizationMode)
-        {
-            assert(mGameVisualizationTexture);
-            mGameVisualizationAutoTexturizationTexture = std::make_unique<RgbaImageData>(mGameVisualizationTexture->Size);
-        }
-        else
+        if (mode != GameVisualizationModeType::AutoTexturizationMode)
         {
             mGameVisualizationAutoTexturizationTexture.reset();
         }
@@ -1226,13 +1216,6 @@ void ModelController::SetStructuralLayerVisualizationMode(StructuralLayerVisuali
 
     if (mode != StructuralLayerVisualizationModeType::None)
     {
-        if (mStructuralLayerVisualizationMode == StructuralLayerVisualizationModeType::None)
-        {
-            // Initialize structural visualization
-            assert(!mStructuralLayerVisualizationTexture);
-            mStructuralLayerVisualizationTexture = std::make_unique<RgbaImageData>(ImageSize(mModel.GetShipSize().width, mModel.GetShipSize().height));
-        }
-
         mStructuralLayerVisualizationMode = mode;
 
         RegisterDirtyVisualization<VisualizationType::StructuralLayer>(GetWholeShipRect());
@@ -1267,13 +1250,6 @@ void ModelController::SetElectricalLayerVisualizationMode(ElectricalLayerVisuali
 
     if (mode != ElectricalLayerVisualizationModeType::None)
     {
-        if (mElectricalLayerVisualizationMode == ElectricalLayerVisualizationModeType::None)
-        {
-            // Initialize electrical visualization
-            assert(!mElectricalLayerVisualizationTexture);
-            mElectricalLayerVisualizationTexture = std::make_unique<RgbaImageData>(mModel.GetShipSize().width, mModel.GetShipSize().height);
-        }
-
         mElectricalLayerVisualizationMode = mode;
 
         RegisterDirtyVisualization<VisualizationType::ElectricalLayer>(GetWholeShipRect());
@@ -1298,12 +1274,6 @@ void ModelController::SetRopesLayerVisualizationMode(RopesLayerVisualizationMode
 
     if (mode != RopesLayerVisualizationModeType::None)
     {
-        if (mRopesLayerVisualizationMode == RopesLayerVisualizationModeType::None)
-        {
-            // Initialize ropes visualization
-            // ...nop for now
-        }
-
         mRopesLayerVisualizationMode = mode;
 
         RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
@@ -1326,12 +1296,6 @@ void ModelController::SetTextureLayerVisualizationMode(TextureLayerVisualization
 
     if (mode != TextureLayerVisualizationModeType::None)
     {
-        if (mTextureLayerVisualizationMode == TextureLayerVisualizationModeType::None)
-        {
-            // Initialize texture visualization
-            // ...nop for now
-        }
-
         mTextureLayerVisualizationMode = mode;
 
         RegisterDirtyVisualization<VisualizationType::TextureLayer>(GetWholeShipRect());
@@ -1353,7 +1317,22 @@ void ModelController::UpdateVisualizations(View & view)
 
     if (mGameVisualizationMode != GameVisualizationModeType::None)
     {
-        assert(mGameVisualizationTexture);
+        if (!mGameVisualizationTexture)
+        {
+            // Initialize game visualization texture
+            mGameVisualizationTextureMagnificationFactor = ShipTexturizer::CalculateHighDefinitionTextureMagnificationFactor(mModel.GetShipSize());
+            ImageSize const textureSize = ImageSize(
+                mModel.GetShipSize().width * mGameVisualizationTextureMagnificationFactor,
+                mModel.GetShipSize().height * mGameVisualizationTextureMagnificationFactor);
+
+            mGameVisualizationTexture = std::make_unique<RgbaImageData>(textureSize);
+        }
+        
+        if (mGameVisualizationMode == GameVisualizationModeType::AutoTexturizationMode && !mGameVisualizationAutoTexturizationTexture)
+        {
+            // Initialize auto-texturization texture
+            mGameVisualizationAutoTexturizationTexture = std::make_unique<RgbaImageData>(mGameVisualizationTexture->Size);
+        }
 
         std::optional<ShipSpaceRect> & dirtyShipRegion = mDirtyVisualizationRegions[static_cast<size_t>(VisualizationType::Game)];
         if (dirtyShipRegion.has_value())
@@ -1399,7 +1378,11 @@ void ModelController::UpdateVisualizations(View & view)
 
     if (mStructuralLayerVisualizationMode != StructuralLayerVisualizationModeType::None)
     {
-        assert(mStructuralLayerVisualizationTexture);
+        if (!mStructuralLayerVisualizationTexture)
+        {
+            // Initialize structural visualization
+            mStructuralLayerVisualizationTexture = std::make_unique<RgbaImageData>(ImageSize(mModel.GetShipSize().width, mModel.GetShipSize().height));
+        }
 
         std::optional<ShipSpaceRect> & dirtyShipRegion = mDirtyVisualizationRegions[static_cast<size_t>(VisualizationType::StructuralLayer)];
         if (dirtyShipRegion.has_value())
@@ -1437,7 +1420,11 @@ void ModelController::UpdateVisualizations(View & view)
 
     if (mElectricalLayerVisualizationMode != ElectricalLayerVisualizationModeType::None)
     {
-        assert(mElectricalLayerVisualizationTexture);
+        if (!mElectricalLayerVisualizationTexture)
+        {
+            // Initialize electrical visualization
+            mElectricalLayerVisualizationTexture = std::make_unique<RgbaImageData>(mModel.GetShipSize().width, mModel.GetShipSize().height);
+        }
 
         std::optional<ShipSpaceRect> & dirtyShipRegion = mDirtyVisualizationRegions[static_cast<size_t>(VisualizationType::ElectricalLayer)];
         if (dirtyShipRegion.has_value())

@@ -253,18 +253,18 @@ https://gamejolt.com/x/permalink/comment/11730705
 								+ Fix the problem with super zoom
 								+ Capture mouse
 							= Controller::ResizeShip
-								= ModelController::ResizeShip
-									= Do all layers like Flip()
+								+ ModelController::ResizeShip
+									+ Do all layers like Flip()
 										+ Structural
 										+ Electrical
 										+ Ropes
-										- Texture
+										+ Texture
 											+ Calc image size
-											- FIX: also sizes of visualizations have to change
-												- What if we alloc/dealloc textures at MC::UpdateVisualizations() rather than at MC::SetXXXVizMode?
-													- And then at MC::ResizeShip() we simply nuke textures
-										- Test completely empty afterwards, all layers
-										- Test actual resize
+											+ FIX: also sizes of visualizations have to change
+												+ What if we alloc textures at MC::UpdateVisualizations() rather than at MC::SetXXXVizMode?
+												+ And then at MC::ResizeShip() we simply nuke textures
+										+ Test completely empty afterwards, all layers
+										+ Test actual resize
 									+ Electrical: remove panel elements that are gone
 								= Undo
 									- Instead of executing undo via 4 calls to Controller::RestoreXXXLayerForUndo, do one single call to
@@ -283,7 +283,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 
 - Resize workflow:
 	+ Button - in Ship Settings panel, slightly separated from the File buttons
-	- Click -> Dialog for Canvas Centering/Clipping (i.e. "Anchor choice") -> Controller -> ...TODO...
+	+ Click -> Dialog for Canvas Centering/Clipping (i.e. "Anchor choice") -> Controller -> MC::ResizeShip()
 
 - Edit->Trim()
 
