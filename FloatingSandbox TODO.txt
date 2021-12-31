@@ -318,29 +318,50 @@ Render:
 			+ Ubuntu
 		+ Fix slice tool + SHIFT (no locking at all)
 
-		- See "Titanic Interior" ship for GameJolt comment ("In early versions of the game, the texture was crisp, but now it is not")
+		= Mac/Sam
+			+ CMakeFiles: add `set (CMAKE_FIND_LIBRARY_SUFFIXES ".a")`			
+			- See Sam's issue with wxWidgets
+				- Ask him to enable DBG_MSG in FindwxWidgets.cmake under FS
+				- Then: ask him to check result of:
+					sh /Applications/Development/FS-app/static-libs/wxWidgets/bin/wx-config --libs 
 
-		- Sam: DevIL finding static jpeg
 		= Test Titanic sinking to floor and see what really happens
 			- ImpactWithOceanFloor: do we do anything that causes more breakage with high velocity, by any chance?
 				- Check changes to mPoints.SetPosition since a version ago
 		+ See rogue waves
 
-		- Text material textures for chains: transparent chain texture
-			- Change texturizer so that we load alpha from image
+		- See if can avoid "splash/flood" sound when just ropes are flooded
+
+		- After many many hours, rain looks aweful - very likely due to timer values being high
+		- After many hours, zoom stutters
+			- Can test both with faking RealTimeClock start time?
+			- Solutions for long-running clock: https://randomascii.wordpress.com/2012/02/13/dont-store-that-in-a-float/
+				- Rain solution: 
+				- Zoom solution: ParameterSmoother: various timestamp members become time_point (rather than float's)
+			- Might have same issue with various tools
+			- TODO: is it really worth fixing this?
+
+		- Flames: see if can have softer rotation
+
+		- Lower volume of pump sound when many pumps are playing
+			- Generically: instanced sounds: instances of same type share (via shared_ptr) common data  - just # of instances atm
+				- Then, when # of instances is updated, volume of all instances is changed accordingly
+		
+		- Preferences flag for starting full-screen
 
 		- TimCan pack
 		- Raynair updates
+		- Pocketwatch ships
 
-		- See if can avoid "splash/flood" sound when just ropes are flooded
 
-		- Preferences flag for starting full-screen
+
+
+		- Test material textures for chains: transparent chain texture
+			- Change texturizer so that we load alpha from image
 
 		- Bubbles issue (that "old" issue)
 			- Add temp code to calc total internal water, and see if it's true that it keeps increasing
 			- Do same for "other internal pressure"
-
-		- Flames: see if can have softer rotation
 
 		- See windows timer/50fps thing
 			! http://mirrors.arcadecontrols.com/www.sysinternals.com/Information/HighResolutionTimers.html
@@ -754,6 +775,8 @@ Render:
 				- Please send me a screenshot of this one
 	+ Disable multi-threaded rendering on MacOS - at RenderContext when instantiating TaskThread, but make it so BootSettings may still swing the decision either way
 	+ FPS: 13-14
+	- Build issues:
+		- set (CMAKE_FIND_LIBRARY_SUFFIXES ".a")
 	= Current path (absolute-pathness in ResourceLocator): see if with app packaging, current directory is the executable's directory. If not, use current process directory
 		+ Add log entry for current directory *and* for executable directory
 	- Packaging:
@@ -763,9 +786,6 @@ Render:
 		- DevIL: so's?
 
 - Marketing:
-	- Make new "demo" video
-		- Contents:
-			-
 	- GameJolt:
 		- Use new video as preview
 	- www.floatingsandbox.com:

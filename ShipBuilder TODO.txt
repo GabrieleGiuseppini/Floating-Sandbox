@@ -1,6 +1,28 @@
 https://gamejolt.com/x/permalink/comment/11730705
 
-- Send for testing
++ Send for testing
+- Test 32-bit jpeg below
+- Test Ubuntu below
+- Merge into master
+
+- New/Set/Remove layers:
+	- New:
+		- Make internal helper templated on LayerType, with all code
+		- Additions:
+			- Undo
+				- Note: texture layer clear should also remember metadata (art credits)
+	- Set:
+		- Make internal helper templated on LayerType, with all code
+		- Additions:
+			- Undo
+				- Note: texture layer change should also remember metadata (art credits)
+	- Remove:
+		- Make internal helper templated on LayerType, with all code
+		- Additions:
+			= Undo
+				= Note: texture layer removal should also remember metadata (art credits)
+
+- Release
 
 = Import/Export:
 	- Structural:
@@ -121,23 +143,6 @@ https://gamejolt.com/x/permalink/comment/11730705
 			- Controller::RestoreTextureLayerForUndo
 			- Controller::ResizeShip
 			- No need to do at removal...
-
-- New/Set/Remove layers:
-	- New:
-		- Make internal helper templated on LayerType, with all code
-		- Additions:
-			- Undo
-				- Note: texture layer clear should also remember metadata (art credits)
-	- Set:
-		- Make internal helper templated on LayerType, with all code
-		- Additions:
-			- Undo
-				- Note: texture layer change should also remember metadata (art credits)
-	- Remove:
-		- Make internal helper templated on LayerType, with all code
-		- Additions:
-			= Undo
-				= Note: texture layer removal should also remember metadata (art credits)
 
 - ShipPropertiesEditDialog: ship prefix normalizer
 	+ Make text file out of https://en.wikipedia.org/wiki/Ship_prefix, with just list of prefixes

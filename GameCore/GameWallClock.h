@@ -34,7 +34,7 @@ public:
 
     /*
      * Returns the current time as a fractional number of seconds since an arbitrary
-     * reference moment. Is not subject to the game pausing.
+     * reference moment. It is not subject to the game pausing.
      *
      * Useful as a "t" variable when the trend is important - not its absolute value.
      */

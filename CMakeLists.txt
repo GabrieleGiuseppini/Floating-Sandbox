@@ -23,6 +23,11 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 option(FS_USE_STATIC_LIBS "Force static linking" ON)
 option(FS_BUILD_BENCHMARKS "Build benchmarks" ON)
 
+# Force finding static libs
+if(NOT WIN32)
+	set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+endif()
+
 ####################################################
 # Custom CMake modules
 ####################################################
