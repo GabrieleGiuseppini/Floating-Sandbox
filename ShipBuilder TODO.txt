@@ -73,6 +73,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 			+ ModelController/View: not separate structurual layer, but View::StructuralLayerVizDrawMode (=={Particle, Pixel}) => mStructuralLayerVizDrawMode ShaderType
 				+ Then: UploadXXXVisualization()/Has/RemoveXXXVisualization()
 		+ See if we want it to be the default
+
 + Visualization modes:
 	+ Each layer has a visualization mode
 	+ Selectors are in new set of panels - with visibility dependent on primary layer - in LayersVisualization panel
@@ -178,7 +179,13 @@ https://gamejolt.com/x/permalink/comment/11730705
 			+ Replace round with truncate(. + 0.5)
 	+ See perf of new auto-texturization wrt previous released version
 
-- Import/Export:
++ Do not switch to primary-texture at Controller::SetTexture, for now
+
++ Resize workflow:
+	+ Button - in Ship Settings panel, slightly separated from the File buttons
+	+ Click -> Dialog for Canvas Centering/Clipping (i.e. "Anchor choice") -> Controller -> MC::ResizeShip()
+
+= Import/Export:
 	- Structural:
 		- Import from:
 			- .png, .shp, .shp2 (load whole and throw away)
@@ -209,8 +216,8 @@ https://gamejolt.com/x/permalink/comment/11730705
 						- Test four configurations
 					- Ubuntu
 						- See if benchmarks project now still needs wxWidgets just for jpeg
-				= Load file and pass to Controller
-					= Resize workflow
+				+ Load file and pass to Controller
+					+ Resize workflow
 						+ For texture
 							+ Dialog
 							+ Resize image								
@@ -237,7 +244,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 											+ Flood tool
 											+ Line tool
 											+ Pencil tool
-						= For resize
+						+ For resize
 							+ Dialog
 								+ Dimensions lock button
 								+ When changing target size, need to honor anchor
@@ -252,7 +259,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 											+ Calc coords at OnChange iff mAnchorCoords.HasValue()
 								+ Fix the problem with super zoom
 								+ Capture mouse
-							= Controller::ResizeShip
+							+ Controller::ResizeShip
 								+ ModelController::ResizeShip
 									+ Do all layers like Flip()
 										+ Structural
@@ -266,8 +273,8 @@ https://gamejolt.com/x/permalink/comment/11730705
 										+ Test completely empty afterwards, all layers
 										+ Test actual resize
 									+ Electrical: remove panel elements that are gone
-								= Undo
-									- Instead of executing undo via 4 calls to Controller::RestoreXXXLayerForUndo, do one single call to
+								+ Undo
+									+ Instead of executing undo via 4 calls to Controller::RestoreXXXLayerForUndo, do one single call to
 									  new Controller::RestoreAllLayersForUndo
 				- Texture-import-from-button issue: see if specifying two bitmaps works
 			- .shp, .shp2 (load whole and throw away)
@@ -280,10 +287,6 @@ https://gamejolt.com/x/permalink/comment/11730705
 	- Notes:
 		- Any import from .shp2 requires password
 		- All imports push an undo
-
-- Resize workflow:
-	+ Button - in Ship Settings panel, slightly separated from the File buttons
-	+ Click -> Dialog for Canvas Centering/Clipping (i.e. "Anchor choice") -> Controller -> MC::ResizeShip()
 
 - Edit->Trim()
 

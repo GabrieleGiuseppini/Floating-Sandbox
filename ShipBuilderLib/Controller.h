@@ -151,6 +151,14 @@ public:
         std::unique_ptr<TextureLayerData> textureLayer,
         std::optional<std::string> originalTextureArtCredits);
 
+    void RestoreAllLayersForUndo(
+        ShipSpaceSize const & shipSize,
+        StructuralLayerData && structuralLayer,
+        std::unique_ptr<ElectricalLayerData> electricalLayer,
+        std::unique_ptr<RopesLayerData> ropesLayer,
+        std::unique_ptr<TextureLayerData> textureLayer,
+        std::optional<std::string> originalTextureArtCredits);
+
     void Flip(DirectionType direction);
     void FlipForUndo(DirectionType direction);
 
@@ -253,6 +261,8 @@ private:
         std::optional<std::optional<ShipAutoTexturizationSettings>> && autoTexturizationSettings);
 
     void InternalSelectPrimaryVisualization(VisualizationType primaryVisualization);
+
+    void InternalReconciliateTextureVisualizationMode();
 
     void InternalUpdateVisualizationModes();
 

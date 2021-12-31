@@ -609,21 +609,16 @@ void Controller::SetTextureLayer(
         mUserInterface.OnUndoStackStateChanged();
     }
 
-    // Switch primary viz to this one
-    if (mPrimaryVisualization != VisualizationType::TextureLayer)
-    {
-        InternalSelectPrimaryVisualization(VisualizationType::TextureLayer);
-    }
-
-    // If game visualization mode is the one only allowed without texture, 
-    // change it to texture
-    if (mGameVisualizationMode == GameVisualizationModeType::AutoTexturizationMode)
-    {
-        mGameVisualizationMode = GameVisualizationModeType::TextureMode;
-        mUserInterface.OnGameVisualizationModeChanged(mGameVisualizationMode);
-    }
+    // FUTUREWORK: disabled primary layer switch for this release, as there are no tool
+    // and thus it's pointless
+    ////// Switch primary viz to this one
+    ////if (mPrimaryVisualization != VisualizationType::TextureLayer)
+    ////{
+    ////    InternalSelectPrimaryVisualization(VisualizationType::TextureLayer);
+    ////}
 
     // Update visualization modes
+    InternalReconciliateTextureVisualizationMode();
     InternalUpdateVisualizationModes();
 
     // Update dirtyness
@@ -682,19 +677,12 @@ void Controller::RemoveTextureLayer()
         mUserInterface.OnTextureLayerVisualizationModeChanged(mTextureLayerVisualizationMode);
     }
 
-    // If game visualization mode is the one only allowed for texture, 
-    // change it to auto-texturization
-    if (mGameVisualizationMode == GameVisualizationModeType::TextureMode)
-    {
-        mGameVisualizationMode = GameVisualizationModeType::AutoTexturizationMode;
-        mUserInterface.OnGameVisualizationModeChanged(mGameVisualizationMode);
-    }
-
     // Update dirtyness
     mModelController->SetLayerDirty(LayerType::Texture);
     mUserInterface.OnModelDirtyChanged();
 
     // Update visualization modes
+    InternalReconciliateTextureVisualizationMode();
     InternalUpdateVisualizationModes();
 
     // Refresh model visualizations
@@ -714,31 +702,61 @@ void Controller::RestoreTextureLayerForUndo(
 
     mUserInterface.OnLayerPresenceChanged();
 
-    // Reconciliate visualization modes with layer presence
-    if (!mModelController->GetModel().HasLayer(LayerType::Texture))
-    {
-        // If game visualization mode is the one only allowed with texture, 
-        // change it to auto-texturization
-        if (mGameVisualizationMode == GameVisualizationModeType::TextureMode)
-        {
-            mGameVisualizationMode = GameVisualizationModeType::AutoTexturizationMode;
-            mUserInterface.OnGameVisualizationModeChanged(mGameVisualizationMode);
-        }
-    }
-    else
-    {
-        // If game visualization mode is the one only allowed without texture, 
-        // change it to texture
-        if (mGameVisualizationMode == GameVisualizationModeType::AutoTexturizationMode)
-        {
-            mGameVisualizationMode = GameVisualizationModeType::TextureMode;
-            mUserInterface.OnGameVisualizationModeChanged(mGameVisualizationMode);
-        }
-    }
-
     // No need to update dirtyness, this is for undo
 
     // Update visualization modes
+    InternalReconciliateTextureVisualizationMode();
+    InternalUpdateVisualizationModes();
+
+    // Refresh model visualizations
+    mModelController->UpdateVisualizations(mView);
+    mUserInterface.RefreshView();
+}
+
+void Controller::RestoreAllLayersForUndo(
+    ShipSpaceSize const & shipSize,
+    StructuralLayerData && structuralLayer,
+    std::unique_ptr<ElectricalLayerData> electricalLayer,
+    std::unique_ptr<RopesLayerData> ropesLayer,
+    std::unique_ptr<TextureLayerData> textureLayer,
+    std::optional<std::string> originalTextureArtCredits)
+{
+    auto const scopedToolResumeState = SuspendTool();
+
+    //
+    // Model
+    //
+
+    mModelController->SetShipSize(shipSize);
+
+    mModelController->RestoreStructuralLayer(std::move(structuralLayer));
+
+    mModelController->RestoreElectricalLayer(std::move(electricalLayer));
+
+    mModelController->RestoreRopesLayer(std::move(ropesLayer));
+
+    mModelController->RestoreTextureLayer(
+        std::move(textureLayer),
+        std::move(originalTextureArtCredits));
+
+    //
+    // Finalize
+    //
+
+    // We (might) have changed the presence of layers
+    mUserInterface.OnLayerPresenceChanged();
+
+    // No need to update dirtyness, this is for undo
+
+    // Notify view of (possibly) new size
+    mView.SetShipSize(shipSize);
+    mUserInterface.OnViewModelChanged();
+
+    // Notify UI of (possibly) new ship size
+    mUserInterface.OnShipSizeChanged(shipSize);
+
+    // Update visualization modes
+    InternalReconciliateTextureVisualizationMode();
     InternalUpdateVisualizationModes();
 
     // Refresh model visualizations
@@ -786,16 +804,18 @@ void Controller::ResizeShip(
             _("Resize Ship"),
             totalCost,
             originalDirtyState,
-            [structuralLayerClone = std::move(structuralLayerClone)
-                , electricalLayerClone = std::move(electricalLayerClone)
-                , ropesLayerClone = std::move(ropesLayerClone)
-                , textureLayerClone = std::move(textureLayerClone)
-                , textureArtCreditsClone = std::move(textureArtCreditsClone)](Controller & controller) mutable
+            [shipSize = mModelController->GetModel().GetShipSize()
+            , structuralLayerClone = std::move(structuralLayerClone)
+            , electricalLayerClone = std::move(electricalLayerClone)
+            , ropesLayerClone = std::move(ropesLayerClone)
+            , textureLayerClone = std::move(textureLayerClone)
+            , textureArtCreditsClone = std::move(textureArtCreditsClone)](Controller & controller) mutable
             {
-                controller.RestoreStructuralLayerForUndo(std::move(structuralLayerClone));
-                controller.RestoreElectricalLayerForUndo(std::move(electricalLayerClone));
-                controller.RestoreRopesLayerForUndo(std::move(ropesLayerClone));
-                controller.RestoreTextureLayerForUndo(
+                controller.RestoreAllLayersForUndo(
+                    shipSize,
+                    std::move(structuralLayerClone),
+                    std::move(electricalLayerClone),
+                    std::move(ropesLayerClone),
                     std::move(textureLayerClone),
                     std::move(textureArtCreditsClone));
             });
@@ -1233,6 +1253,30 @@ void Controller::InternalSelectPrimaryVisualization(VisualizationType primaryVis
 
     // Tell view
     mView.SetPrimaryVisualization(primaryVisualization);
+}
+
+void Controller::InternalReconciliateTextureVisualizationMode()
+{
+    if (!mModelController->GetModel().HasLayer(LayerType::Texture))
+    {
+        // If game visualization mode is the one only allowed with texture, 
+        // change it to auto-texturization
+        if (mGameVisualizationMode == GameVisualizationModeType::TextureMode)
+        {
+            mGameVisualizationMode = GameVisualizationModeType::AutoTexturizationMode;
+            mUserInterface.OnGameVisualizationModeChanged(mGameVisualizationMode);
+        }
+    }
+    else
+    {
+        // If game visualization mode is the one only allowed without texture, 
+        // change it to texture
+        if (mGameVisualizationMode == GameVisualizationModeType::AutoTexturizationMode)
+        {
+            mGameVisualizationMode = GameVisualizationModeType::TextureMode;
+            mUserInterface.OnGameVisualizationModeChanged(mGameVisualizationMode);
+        }
+    }
 }
 
 void Controller::InternalUpdateVisualizationModes()

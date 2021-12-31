@@ -51,6 +51,11 @@ public:
         return mModel;
     }
 
+    void SetShipSize(ShipSpaceSize const & shipSize)
+    {
+        mModel.SetShipSize(shipSize);
+    }
+
     std::optional<ShipSpaceRect> CalculateBoundingBox() const;
 
     void SetLayerDirty(LayerType layer)

@@ -393,7 +393,6 @@ void ModelController::ResizeShip(
     {
         mGameVisualizationTexture.reset();
         mGameVisualizationAutoTexturizationTexture.reset();
-
         RegisterDirtyVisualization<VisualizationType::Game>(newWholeShipRect);
     }
 
@@ -548,7 +547,10 @@ void ModelController::RestoreStructuralLayer(StructuralLayerData && sourceLayer)
     // Update visualization
     //
 
+    mGameVisualizationTexture.reset();
+    mGameVisualizationAutoTexturizationTexture.reset();
     RegisterDirtyVisualization<VisualizationType::Game>(GetWholeShipRect());
+    mStructuralLayerVisualizationTexture.reset();
     RegisterDirtyVisualization<VisualizationType::StructuralLayer>(GetWholeShipRect());
 }
 
@@ -798,7 +800,12 @@ void ModelController::RestoreElectricalLayer(std::unique_ptr<ElectricalLayerData
     // Update visualization
     //
 
-    RegisterDirtyVisualization<VisualizationType::ElectricalLayer>(GetWholeShipRect());
+    mElectricalLayerVisualizationTexture.reset();
+
+    if (mModel.HasLayer(LayerType::Electrical))
+        RegisterDirtyVisualization<VisualizationType::ElectricalLayer>(GetWholeShipRect());
+    else
+        ResetDirtyVisualization<VisualizationType::ElectricalLayer>();
 }
 
 void ModelController::ElectricalRegionFillForEphemeralVisualization(
@@ -1035,7 +1042,10 @@ void ModelController::RestoreRopesLayer(std::unique_ptr<RopesLayerData> sourceLa
     // Update visualization
     //
 
-    RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
+    if (mModel.HasLayer(LayerType::Ropes))
+        RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
+    else
+        ResetDirtyVisualization<VisualizationType::RopesLayer>();
 }
 
 void ModelController::AddRopeForEphemeralVisualization(
@@ -1168,8 +1178,14 @@ void ModelController::RestoreTextureLayer(
     // Update visualization
     //
 
+    mGameVisualizationTexture.reset();
+    mGameVisualizationAutoTexturizationTexture.release();
     RegisterDirtyVisualization<VisualizationType::Game>(GetWholeShipRect());
-    RegisterDirtyVisualization<VisualizationType::TextureLayer>(GetWholeShipRect());
+
+    if (mModel.HasLayer(LayerType::Texture))
+        RegisterDirtyVisualization<VisualizationType::TextureLayer>(GetWholeShipRect());
+    else
+        ResetDirtyVisualization<VisualizationType::TextureLayer>();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
