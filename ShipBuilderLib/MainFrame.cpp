@@ -392,6 +392,12 @@ MainFrame::MainFrame(
         editMenu->Append(new wxMenuItem(editMenu, wxID_SEPARATOR));
 
         {
+            wxMenuItem * menuItem = new wxMenuItem(editMenu, wxID_ANY, _("Auto-Trim"), _("Removes empty space around the ship"), wxITEM_NORMAL);
+            editMenu->Append(menuItem);
+            Connect(menuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnEditAutoTrimMenuItem);
+        }
+
+        {
             wxMenuItem * menuItem = new wxMenuItem(editMenu, wxID_ANY, _("Flip Ship Horizontally"), _("Flip the ship horizontally"), wxITEM_NORMAL);
             editMenu->Append(menuItem);
             Connect(menuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnEditFlipHorizontallyMenuItem);
@@ -2927,6 +2933,11 @@ void MainFrame::OnClose(wxCloseEvent & event)
 void MainFrame::OnEditUndoMenuItem(wxCommandEvent & /*event*/)
 {
     mController->UndoLast();
+}
+
+void MainFrame::OnEditAutoTrimMenuItem(wxCommandEvent & /*event*/)
+{
+    mController->AutoTrim();
 }
 
 void MainFrame::OnEditFlipHorizontallyMenuItem(wxCommandEvent & /*event*/)

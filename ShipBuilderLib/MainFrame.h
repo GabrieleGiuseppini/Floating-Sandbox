@@ -164,6 +164,7 @@ private:
     void OnQuit(wxCommandEvent & event);
     void OnClose(wxCloseEvent & event);
     void OnEditUndoMenuItem(wxCommandEvent & event);
+    void OnEditAutoTrimMenuItem(wxCommandEvent & event);
     void OnEditFlipHorizontallyMenuItem(wxCommandEvent & event);
     void OnEditFlipVerticallyMenuItem(wxCommandEvent & event);
     void OnEditResizeShipMenuItem(wxCommandEvent & event);

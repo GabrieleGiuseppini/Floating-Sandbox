@@ -1,189 +1,6 @@
 https://gamejolt.com/x/permalink/comment/11730705
 
-+ Texturization rearc:
-	! Auto-texturizer stays as it was one step ago: auto-texturization (with no triangulation) - and sample-texturization
-	! ShipBuilder produces StructuralTexture doing its own triangulation on top of texture, and adding offset (baked into texture)
-		! View does NOT add offset
-	! New viz: "Game"
-	+ Undo ShipTexturizer changes; revert to:
-		+ Auto-texturization - with no triangulation
-		- Sample-texturization
-			- Comment-out triangulation
-			! We will remove triangulation shortly
-	+ Comment at ShipFactory::MakeTextureCoords
-	+ Do test on autotexturization: confirm that bottom-left triangle is textured based on quad above *and* quad to the right
-
-	+ New SB enum: VisualizationType
-		+ Game, StructuralLayer, ...
-	+ New viz mode enum: GameVizMode; values: auto-tex, texture, none
-		+ StructuralVizMode instead becomes: "pixel", none
-	+ VisualizationType is now the type of PrimaryLayer
-		+ View
-		+ Controller
-		+ MainFrame
-	+ UI:
-		+ New "layer" row above Structural for Game viz
-			+ Toolbar tools for this layer is same as structural
-			+ No new/remove/import/export buttons
-			+ Viz mode buttons
-		+ StructuralLayer has just pixel and "none" viz modes
-		+ All viz modes have "none"
-	+ ShipBuilder::View has two new "texture" viz: Game
-		! StructuralLayer viz texture goes back to being a small texture of size=ShipSize
-	+ MainFrame: enablement of OtherVizOpacitySlider should be true also when structural + game
-		+ So always enabled?
-	+ ModelController visualizations:
-		+ Controller & ModelController: viz mode is not anymore std::opt (as we have None)
-		+ New Game viz:
-			+ Updated each time we update either Structural or Texture vizs
-			+ Viz members:
-				+ Auto-tex texture
-				+ own texture
-			+ UpdateGameVisualization Algo:
-				+ If auto => update auto-tex texture; source=auto-tex texture
-				+ Else if tex => source=tex texture
-				+ Else if none => return
-				+ Sample source into own texture using triangulation and 0.5 offset 
-					+ Double-check Y-order of 1,2,3,4 vertices
-					+ Do 0.5
-	+ When loading ship with texture, game viz's auto-texturization mode does not get switched to texture mode
-	+ Perf of game viz texture: upload only sub-texture
-		+ ModelController needs to remember also DirtyViewRegion
-	+ View:
-		+ Nail down Z-order of visualizations
-			+ Between game and struct: primary goes first
-			+ When texture layer is primary: texture layer should go first
-			+ May be rule is: whichever of game, structure, texture is primary, goes first; elec and ropes are fine to always be super-imposed 
-				+ Exception: ropes goes always *behind* when it's not primary
-		+ Make Texture texture drawn with 0.5 offset
-			+ Quad: from Ship=(0,0) @ tex=(0.5/w, 0.5/h) to Ship=(w-1, h-1)+1pixel @ tex=(1.0-0.5/w, 1.0-0.5/h)
-	+ Structural layer viz: do Particle mode
-		! Via shader
-		+ MainFrame:
-			+ Button
-				+ Icon: square with circle
-		+ Controller
-		+ ModelController
-		+ View:
-			+ Methods
-			+ Shader
-			+ VAO setup
-			+ OnViewModelUpdated
-			+ RenderStructureParticles
-			+ ModelController/View: not separate structurual layer, but View::StructuralLayerVizDrawMode (=={Particle, Pixel}) => mStructuralLayerVizDrawMode ShaderType
-				+ Then: UploadXXXVisualization()/Has/RemoveXXXVisualization()
-		+ See if we want it to be the default
-
-+ Visualization modes:
-	+ Each layer has a visualization mode
-	+ Selectors are in new set of panels - with visibility dependent on primary layer - in LayersVisualization panel
-		+ On top of grid view button
-	+ Modes: (each an enum in ShipBuilderTypes)
-		+ Game:
-			+ Auto-Texturization (only if texture layer does not exist)
-			+ Texture (only if texture layer exists)
-		+ Structural layer:
-			+ Pixel
-			+ Particle
-		+ Electrical:
-			+ Particle
-			- Circuit (long-term)
-		+ Ropes:
-			+ Lines
-		+ Texture:
-			+ Matte
-	+ Dynamics:
-		! Spec:
-			- ModelController APIs take opt<viz mode> so that Controller can orchestrate turning whole layer viz on or off
-				- e.g.: texture viz is only on if structure mode is particle
-				- Controller is responsible for turning on/off entire layer viz - ModelController does nothing at New and Remove
-		+ Controller::SetXXXVisualizationMode
-			+ Set mXXXVisualizationMode
-			+ Call UpdateVisualizationMode()
-			+ Refresh view
-			+ IUserInterface->OnXXXVizModeChanged()
-		+ Hook buttons to Controller::SetXXXVisualizationMode
-		+ private InternalUpdateVizModes:
-			+ Called at each change of:
-				+ Layer presence
-					+ Including cctor
-					+ Including undo restore's
-				+ Viz mode change
-			+ Orchestrate calls to ModelController::SetXXXVisualizationMode
-		+ ModelController::SetXXXVisualizationMode(opt)
-			+ if (new == old) => nop
-			+ If !new && old:
-				+ Free texture
-				+ Clear DirtyXXXVizRegion
-			+ Else if new != old:
-				+ (Re)alloc texture // This moves here from UploadVisualization() and initializations (cctor and New() calls)
-				+ UpdateXXXVisualization(whole region) => will update dirty region
-			+ Store mXXXVisualizationMode
-			+ Remove init/shutdown @ 
-				+ UpdateXXXVisualization()
-				+ RemoveLayer
-			+ UpdateXXXLayerViz:
-				+ No check for layer presence, but assert
-		+ ModelController::cctor:
-			+ No viz initialization, will be done by Controller
-		+ ModelController::SetXXXLayer:
-			+ ...set XXX layer...
-			+ Note: only works like this if new size == old size, hence no realloc; see if it's also the assumption here
-			+ UpdateXXXVisualization(whole region)
-		+ ModelController::RemoveXXXLayer:
-			+ No viz removal, will be done by Controller
-		+ ModelController::UpdateVisualization
-		+ ModelController::UploadViz
-			+ Remove from view if has it and don't need to do
-	+ Misc:
-		+ MainFrame: enable/disable structural texture mode at OnLayerPresenceChanged
-		+ Check out that ElectricalTexture vertex creation TODOHERE in View.cpp
-		+ new texture mode for...no texture
-			+ UI
-				+ Icon for structure-matte
-			+ Controller
-			+ ModelController
-			+ See UI: when texture layer is created, which one is selected
-	+ Auto-texturization visualization
-		+ ModelController::SetStructuralLayerVizMode: realloc texture for right sizes when changing between types that require different...sizes
-		+ Verify settings
-	+ Texture visualization
-		+ ModelController::SetStructuralLayerVizMode: realloc texture for right sizes when changing between types that require different...sizes
-		+ ShipTexturizer: new method with whole new implementation, which takes texture from outside (& no settings)
-			+ But still based on same magnification
-			+ Has "triangle" algorithm, based on count of points in four vertices of each square
-		+ Does structural vix for region Foo impact region outside Foo? If so, take that into account at ModelController::UpdateStrucuturalViz, enlarging dirty region (possibly among other things)
-		+ Make sure that when checking for vertices, we're not constrained by region size but rather by whole structure size
-		+ Verify triangulation matches Game's
-		+ See if can make lines for those cases that only have two vertices
-			+ Fix eph viz restore - leaves triangle at x-1
-			+ Ugly; rearc:
-				+ Undo ShipTexturizer changes
-				+ Change structural layer's "particle" mode into "mesh" mode
-					+ Naming
-					+ Icon
-					+ Shader
-						+ Sampling issue
-						+ Diagonal lines: redo line equation (need x/y ratio)
-						+ Border sampling
-	+ Perf improvements:
-		+ Auto-texturization
-			+ Do benchmarks
-			+ Do we need to store whole vec3f in texture? Can just R (and possibly A for future transparent material textures like Chain) suffice?
-			+ Merge together multiply-blend with Mix
-			+ Compute x int+fract once for each of the magnificationFactor rows
-			+ Avoid worldX/Y re-multiplication by changing it into textureX/Y (and adjusting incr accordingly)
-			X constexpr pointers
-		+ RenderShipInto:
-			+ Do benchmarks
-			+ Replace round with truncate(. + 0.5)
-	+ See perf of new auto-texturization wrt previous released version
-
-+ Do not switch to primary-texture at Controller::SetTexture, for now
-
-+ Resize workflow:
-	+ Button - in Ship Settings panel, slightly separated from the File buttons
-	+ Click -> Dialog for Canvas Centering/Clipping (i.e. "Anchor choice") -> Controller -> MC::ResizeShip()
+- Send for testing
 
 = Import/Export:
 	- Structural:
@@ -286,10 +103,6 @@ https://gamejolt.com/x/permalink/comment/11730705
 	- Notes:
 		- Any import from .shp2 requires password
 		- All imports push an undo
-
-- Edit->Trim()
-
-- Send for testing
 
 - MainFrame: Game viz: add "export to image" button
 	- Rearc icons now:
@@ -1519,3 +1332,190 @@ DONE
 		+ Aluminium Chain
 		+ "Strong" variants for all rope sub-categories
 			+ In same category, but different sub-category (e.g. "Iron Chains" and "Iron Chains Strong" - see where we've put "Hull"); only strength (and possibly stiffness) changes
+
++ Texturization rearc:
+	! Auto-texturizer stays as it was one step ago: auto-texturization (with no triangulation) - and sample-texturization
+	! ShipBuilder produces StructuralTexture doing its own triangulation on top of texture, and adding offset (baked into texture)
+		! View does NOT add offset
+	! New viz: "Game"
+	+ Undo ShipTexturizer changes; revert to:
+		+ Auto-texturization - with no triangulation
+		- Sample-texturization
+			- Comment-out triangulation
+			! We will remove triangulation shortly
+	+ Comment at ShipFactory::MakeTextureCoords
+	+ Do test on autotexturization: confirm that bottom-left triangle is textured based on quad above *and* quad to the right
+
+	+ New SB enum: VisualizationType
+		+ Game, StructuralLayer, ...
+	+ New viz mode enum: GameVizMode; values: auto-tex, texture, none
+		+ StructuralVizMode instead becomes: "pixel", none
+	+ VisualizationType is now the type of PrimaryLayer
+		+ View
+		+ Controller
+		+ MainFrame
+	+ UI:
+		+ New "layer" row above Structural for Game viz
+			+ Toolbar tools for this layer is same as structural
+			+ No new/remove/import/export buttons
+			+ Viz mode buttons
+		+ StructuralLayer has just pixel and "none" viz modes
+		+ All viz modes have "none"
+	+ ShipBuilder::View has two new "texture" viz: Game
+		! StructuralLayer viz texture goes back to being a small texture of size=ShipSize
+	+ MainFrame: enablement of OtherVizOpacitySlider should be true also when structural + game
+		+ So always enabled?
+	+ ModelController visualizations:
+		+ Controller & ModelController: viz mode is not anymore std::opt (as we have None)
+		+ New Game viz:
+			+ Updated each time we update either Structural or Texture vizs
+			+ Viz members:
+				+ Auto-tex texture
+				+ own texture
+			+ UpdateGameVisualization Algo:
+				+ If auto => update auto-tex texture; source=auto-tex texture
+				+ Else if tex => source=tex texture
+				+ Else if none => return
+				+ Sample source into own texture using triangulation and 0.5 offset 
+					+ Double-check Y-order of 1,2,3,4 vertices
+					+ Do 0.5
+	+ When loading ship with texture, game viz's auto-texturization mode does not get switched to texture mode
+	+ Perf of game viz texture: upload only sub-texture
+		+ ModelController needs to remember also DirtyViewRegion
+	+ View:
+		+ Nail down Z-order of visualizations
+			+ Between game and struct: primary goes first
+			+ When texture layer is primary: texture layer should go first
+			+ May be rule is: whichever of game, structure, texture is primary, goes first; elec and ropes are fine to always be super-imposed 
+				+ Exception: ropes goes always *behind* when it's not primary
+		+ Make Texture texture drawn with 0.5 offset
+			+ Quad: from Ship=(0,0) @ tex=(0.5/w, 0.5/h) to Ship=(w-1, h-1)+1pixel @ tex=(1.0-0.5/w, 1.0-0.5/h)
+	+ Structural layer viz: do Particle mode
+		! Via shader
+		+ MainFrame:
+			+ Button
+				+ Icon: square with circle
+		+ Controller
+		+ ModelController
+		+ View:
+			+ Methods
+			+ Shader
+			+ VAO setup
+			+ OnViewModelUpdated
+			+ RenderStructureParticles
+			+ ModelController/View: not separate structurual layer, but View::StructuralLayerVizDrawMode (=={Particle, Pixel}) => mStructuralLayerVizDrawMode ShaderType
+				+ Then: UploadXXXVisualization()/Has/RemoveXXXVisualization()
+		+ See if we want it to be the default
+
++ Visualization modes:
+	+ Each layer has a visualization mode
+	+ Selectors are in new set of panels - with visibility dependent on primary layer - in LayersVisualization panel
+		+ On top of grid view button
+	+ Modes: (each an enum in ShipBuilderTypes)
+		+ Game:
+			+ Auto-Texturization (only if texture layer does not exist)
+			+ Texture (only if texture layer exists)
+		+ Structural layer:
+			+ Pixel
+			+ Particle
+		+ Electrical:
+			+ Particle
+			- Circuit (long-term)
+		+ Ropes:
+			+ Lines
+		+ Texture:
+			+ Matte
+	+ Dynamics:
+		! Spec:
+			- ModelController APIs take opt<viz mode> so that Controller can orchestrate turning whole layer viz on or off
+				- e.g.: texture viz is only on if structure mode is particle
+				- Controller is responsible for turning on/off entire layer viz - ModelController does nothing at New and Remove
+		+ Controller::SetXXXVisualizationMode
+			+ Set mXXXVisualizationMode
+			+ Call UpdateVisualizationMode()
+			+ Refresh view
+			+ IUserInterface->OnXXXVizModeChanged()
+		+ Hook buttons to Controller::SetXXXVisualizationMode
+		+ private InternalUpdateVizModes:
+			+ Called at each change of:
+				+ Layer presence
+					+ Including cctor
+					+ Including undo restore's
+				+ Viz mode change
+			+ Orchestrate calls to ModelController::SetXXXVisualizationMode
+		+ ModelController::SetXXXVisualizationMode(opt)
+			+ if (new == old) => nop
+			+ If !new && old:
+				+ Free texture
+				+ Clear DirtyXXXVizRegion
+			+ Else if new != old:
+				+ (Re)alloc texture // This moves here from UploadVisualization() and initializations (cctor and New() calls)
+				+ UpdateXXXVisualization(whole region) => will update dirty region
+			+ Store mXXXVisualizationMode
+			+ Remove init/shutdown @ 
+				+ UpdateXXXVisualization()
+				+ RemoveLayer
+			+ UpdateXXXLayerViz:
+				+ No check for layer presence, but assert
+		+ ModelController::cctor:
+			+ No viz initialization, will be done by Controller
+		+ ModelController::SetXXXLayer:
+			+ ...set XXX layer...
+			+ Note: only works like this if new size == old size, hence no realloc; see if it's also the assumption here
+			+ UpdateXXXVisualization(whole region)
+		+ ModelController::RemoveXXXLayer:
+			+ No viz removal, will be done by Controller
+		+ ModelController::UpdateVisualization
+		+ ModelController::UploadViz
+			+ Remove from view if has it and don't need to do
+	+ Misc:
+		+ MainFrame: enable/disable structural texture mode at OnLayerPresenceChanged
+		+ Check out that ElectricalTexture vertex creation TODOHERE in View.cpp
+		+ new texture mode for...no texture
+			+ UI
+				+ Icon for structure-matte
+			+ Controller
+			+ ModelController
+			+ See UI: when texture layer is created, which one is selected
+	+ Auto-texturization visualization
+		+ ModelController::SetStructuralLayerVizMode: realloc texture for right sizes when changing between types that require different...sizes
+		+ Verify settings
+	+ Texture visualization
+		+ ModelController::SetStructuralLayerVizMode: realloc texture for right sizes when changing between types that require different...sizes
+		+ ShipTexturizer: new method with whole new implementation, which takes texture from outside (& no settings)
+			+ But still based on same magnification
+			+ Has "triangle" algorithm, based on count of points in four vertices of each square
+		+ Does structural vix for region Foo impact region outside Foo? If so, take that into account at ModelController::UpdateStrucuturalViz, enlarging dirty region (possibly among other things)
+		+ Make sure that when checking for vertices, we're not constrained by region size but rather by whole structure size
+		+ Verify triangulation matches Game's
+		+ See if can make lines for those cases that only have two vertices
+			+ Fix eph viz restore - leaves triangle at x-1
+			+ Ugly; rearc:
+				+ Undo ShipTexturizer changes
+				+ Change structural layer's "particle" mode into "mesh" mode
+					+ Naming
+					+ Icon
+					+ Shader
+						+ Sampling issue
+						+ Diagonal lines: redo line equation (need x/y ratio)
+						+ Border sampling
+	+ Perf improvements:
+		+ Auto-texturization
+			+ Do benchmarks
+			+ Do we need to store whole vec3f in texture? Can just R (and possibly A for future transparent material textures like Chain) suffice?
+			+ Merge together multiply-blend with Mix
+			+ Compute x int+fract once for each of the magnificationFactor rows
+			+ Avoid worldX/Y re-multiplication by changing it into textureX/Y (and adjusting incr accordingly)
+			X constexpr pointers
+		+ RenderShipInto:
+			+ Do benchmarks
+			+ Replace round with truncate(. + 0.5)
+	+ See perf of new auto-texturization wrt previous released version
+
++ Do not switch to primary-texture at Controller::SetTexture, for now
+
++ Resize workflow:
+	+ Button - in Ship Settings panel, slightly separated from the File buttons
+	+ Click -> Dialog for Canvas Centering/Clipping (i.e. "Anchor choice") -> Controller -> MC::ResizeShip()
+
++ Edit->Trim()

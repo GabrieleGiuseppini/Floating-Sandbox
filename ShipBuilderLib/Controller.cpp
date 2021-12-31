@@ -764,14 +764,35 @@ void Controller::RestoreAllLayersForUndo(
     mUserInterface.RefreshView();
 }
 
+void Controller::AutoTrim()
+{
+    auto const scopedToolResumeState = SuspendTool();
+
+    std::optional<ShipSpaceRect> const boundingRect = mModelController->CalculateBoundingBox();
+
+    if (boundingRect.has_value())
+    {
+        InternalResizeShip(
+            boundingRect->size,
+            ShipSpaceCoordinates(
+                -boundingRect->origin.x,
+                -boundingRect->origin.y),
+            _("Trim"));
+    }
+}
+
 void Controller::Flip(DirectionType direction)
 {
-    Flip<false>(direction);
+    auto const scopedToolResumeState = SuspendTool();
+
+    InternalFlip<false>(direction);
 }
 
 void Controller::FlipForUndo(DirectionType direction)
 {
-    Flip<true>(direction);
+    auto const scopedToolResumeState = SuspendTool();
+
+    InternalFlip<true>(direction);
 }
 
 void Controller::ResizeShip(
@@ -780,65 +801,10 @@ void Controller::ResizeShip(
 {
     auto const scopedToolResumeState = SuspendTool();
 
-    // Store undo
-    {
-        // Get dirty state
-        Model::DirtyState const originalDirtyState = mModelController->GetModel().GetDirtyState();
-
-        // Clone all layers
-        auto structuralLayerClone = mModelController->CloneStructuralLayer();
-        auto electricalLayerClone = mModelController->CloneElectricalLayer();
-        auto ropesLayerClone = mModelController->CloneRopesLayer();
-        auto textureLayerClone = mModelController->CloneTextureLayer();
-        auto textureArtCreditsClone = mModelController->GetShipMetadata().ArtCredits;
-
-        // Calculate cost
-        size_t const totalCost =
-            structuralLayerClone.Buffer.GetByteSize()
-            + (electricalLayerClone ? electricalLayerClone->Buffer.GetByteSize() : 0)
-            + (ropesLayerClone ? ropesLayerClone->Buffer.GetSize() * sizeof(RopeElement) : 0)
-            + (textureLayerClone ? textureLayerClone->Buffer.GetByteSize() : 0);
-
-        // Create undo
-        mUndoStack.Push(
-            _("Resize Ship"),
-            totalCost,
-            originalDirtyState,
-            [shipSize = mModelController->GetModel().GetShipSize()
-            , structuralLayerClone = std::move(structuralLayerClone)
-            , electricalLayerClone = std::move(electricalLayerClone)
-            , ropesLayerClone = std::move(ropesLayerClone)
-            , textureLayerClone = std::move(textureLayerClone)
-            , textureArtCreditsClone = std::move(textureArtCreditsClone)](Controller & controller) mutable
-            {
-                controller.RestoreAllLayersForUndo(
-                    shipSize,
-                    std::move(structuralLayerClone),
-                    std::move(electricalLayerClone),
-                    std::move(ropesLayerClone),
-                    std::move(textureLayerClone),
-                    std::move(textureArtCreditsClone));
-            });
-        mUserInterface.OnUndoStackStateChanged();
-    }
-
-    // Resize
-    mModelController->ResizeShip(newSize, originOffset);
-
-    // Update dirtyness
-    mModelController->SetAllLayersDirty();
-    mUserInterface.OnModelDirtyChanged();
-
-    // Notify view of new size
-    mView.SetShipSize(newSize);
-    mUserInterface.OnViewModelChanged();
-
-    // Notify UI of new ship size
-    mUserInterface.OnShipSizeChanged(newSize);
-
-    // Refresh model visualizations
-    mModelController->UpdateVisualizations(mView);
-    mUserInterface.RefreshView();
+    InternalResizeShip(
+        newSize,
+        originOffset,
+        _("Resize Ship"));
 }
 
 VisualizationType Controller::GetPrimaryVisualization() const
@@ -1495,11 +1461,75 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
     return nullptr;
 }
 
-template<bool IsForUndo>
-void Controller::Flip(DirectionType direction)
+void Controller::InternalResizeShip(
+    ShipSpaceSize const & newSize,
+    ShipSpaceCoordinates const & originOffset,
+    wxString const & actionName)
 {
-    auto const scopedToolResumeState = SuspendTool();
+    // Store undo
+    {
+        // Get dirty state
+        Model::DirtyState const originalDirtyState = mModelController->GetModel().GetDirtyState();
 
+        // Clone all layers
+        auto structuralLayerClone = mModelController->CloneStructuralLayer();
+        auto electricalLayerClone = mModelController->CloneElectricalLayer();
+        auto ropesLayerClone = mModelController->CloneRopesLayer();
+        auto textureLayerClone = mModelController->CloneTextureLayer();
+        auto textureArtCreditsClone = mModelController->GetShipMetadata().ArtCredits;
+
+        // Calculate cost
+        size_t const totalCost =
+            structuralLayerClone.Buffer.GetByteSize()
+            + (electricalLayerClone ? electricalLayerClone->Buffer.GetByteSize() : 0)
+            + (ropesLayerClone ? ropesLayerClone->Buffer.GetSize() * sizeof(RopeElement) : 0)
+            + (textureLayerClone ? textureLayerClone->Buffer.GetByteSize() : 0);
+
+        // Create undo
+        mUndoStack.Push(
+            actionName,
+            totalCost,
+            originalDirtyState,
+            [shipSize = mModelController->GetModel().GetShipSize()
+            , structuralLayerClone = std::move(structuralLayerClone)
+            , electricalLayerClone = std::move(electricalLayerClone)
+            , ropesLayerClone = std::move(ropesLayerClone)
+            , textureLayerClone = std::move(textureLayerClone)
+            , textureArtCreditsClone = std::move(textureArtCreditsClone)](Controller & controller) mutable
+            {
+                controller.RestoreAllLayersForUndo(
+                    shipSize,
+                    std::move(structuralLayerClone),
+                    std::move(electricalLayerClone),
+                    std::move(ropesLayerClone),
+                    std::move(textureLayerClone),
+                    std::move(textureArtCreditsClone));
+            });
+        mUserInterface.OnUndoStackStateChanged();
+    }
+
+    // Resize
+    mModelController->ResizeShip(newSize, originOffset);
+
+    // Update dirtyness
+    mModelController->SetAllLayersDirty();
+    mUserInterface.OnModelDirtyChanged();
+
+    // Notify view of new size
+    mView.SetShipSize(newSize);
+    mUserInterface.OnViewModelChanged();
+
+    // Notify UI of new ship size
+    mUserInterface.OnShipSizeChanged(newSize);
+
+    // Refresh model visualizations
+    mModelController->UpdateVisualizations(mView);
+    mUserInterface.RefreshView();
+}
+
+template<bool IsForUndo>
+void Controller::InternalFlip(DirectionType direction)
+{
     if constexpr (!IsForUndo)
     {
         // Get dirty state

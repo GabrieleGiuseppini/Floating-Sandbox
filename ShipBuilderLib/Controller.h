@@ -159,6 +159,8 @@ public:
         std::unique_ptr<TextureLayerData> textureLayer,
         std::optional<std::string> originalTextureArtCredits);
 
+    void AutoTrim();
+
     void Flip(DirectionType direction);
     void FlipForUndo(DirectionType direction);
 
@@ -275,8 +277,13 @@ private:
 
     std::unique_ptr<Tool> MakeTool(ToolType toolType);
 
+    void InternalResizeShip(
+        ShipSpaceSize const & newSize,
+        ShipSpaceCoordinates const & originOffset,
+        wxString const & actionName);
+
     template<bool IsForUndo>
-    void Flip(DirectionType direction);
+    void InternalFlip(DirectionType direction);
 
     void RefreshToolCoordinatesDisplay();
 
