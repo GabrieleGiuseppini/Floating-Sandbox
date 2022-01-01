@@ -23,7 +23,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 option(FS_USE_STATIC_LIBS "Force static linking" ON)
 option(FS_BUILD_BENCHMARKS "Build benchmarks" ON)
 
-# Force finding static libs
+# Force finding static libs on Linux/Mac
 if(NOT WIN32)
 	set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
 endif()
@@ -88,7 +88,7 @@ if(FS_USE_STATIC_LIBS)
 	# as static libs, and we expect to _use_ it as static libs,
 	# so tell the DevIL include files that DevIL is used as static libs.
 	# Note: in this case we also expect the DevIL libs to be statically-linked
-	# with the png and zlib static libs
+	# with the png, jpg, and zlib static libs
 	add_compile_definitions("IL_STATIC_LIB")
 endif()
 

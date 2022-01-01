@@ -1,8 +1,40 @@
 https://gamejolt.com/x/permalink/comment/11730705
 
 + Send for testing
-- Test 32-bit jpeg below
-- Test Ubuntu below
+
+= Add jpg support to DevIL
+	+ http://www.ijg.org/
+	+ Make DevIL statically linked with JPEG as well
+	= Rebuild 64-bit, debug + release
+		- Test both
+	= Rebuild 32-bit, debug + release
+		- Test both
+	- Ubuntu
+
+- Rearc of libs:
+	! libs (zlib, jpeg, png) no more statically linked into DevIL and wxWidgets
+	- Backup build folders (DevIL, wxWidgets)
+	- Build without linking-in:
+		- wxWidgets (see where it takes ZLIB and PNG and JPEG from?)
+		- DevIL
+	- FS:
+		- Update CMake to take also ZLIB, PNG, and JPEG from UserSettings.cmake
+			- While you're at it: from main CMake, if user-specified not set, find "normally"
+				- Add enough debug logging
+			- Also change comment in main CMake for IL/static libs
+		- Test:
+			- 64
+				- Release
+					- And run
+				- Debug
+					- And run
+			- 32
+				- Release
+					- And run
+				- Debug
+					- And run
+	- Update readme and start "building on Windows" doc
+
 - Merge into master
 
 - New/Set/Remove layers:
@@ -45,16 +77,8 @@ https://gamejolt.com/x/permalink/comment/11730705
 		+ No export (can save .shp2 and import from there)
 	= Texture:
 		= Import: two separate import buttons
-			= .png
+			+ .png
 				+ New ImageLoadDialog
-				= Add jpg support to DevIL
-					+ http://www.ijg.org/
-					= Windows
-						+ Devil 64 (R+D)
-						- Devil 32 (R+D)
-						- Test four configurations
-					- Ubuntu
-						- See if benchmarks project now still needs wxWidgets just for jpeg
 				+ Load file and pass to Controller
 					+ Resize workflow
 						+ For texture

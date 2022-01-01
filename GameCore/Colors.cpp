@@ -13,8 +13,8 @@
 rgbColor rgbColor::fromString(std::string const & str)
 {
     unsigned int components[3];
-    int iStart = 0;
-    for (int c = 0; c < 3; ++c)
+    size_t iStart = 0;
+    for (size_t c = 0; c < 3; ++c)
     {
         // Skip spaces
         while (iStart < str.length() && str[iStart] == ' ')
@@ -28,7 +28,7 @@ rgbColor rgbColor::fromString(std::string const & str)
         }
 
         // Find next 3rd char, space, or eos
-        int iEnd = iStart + 1;
+        size_t iEnd = iStart + 1;
         if (iEnd < str.length()
             && str[iEnd] != ' ')
         {
@@ -62,8 +62,8 @@ std::string rgbColor::toString() const
 rgbaColor rgbaColor::fromString(std::string const & str)
 {
     unsigned int components[4];
-    int iStart = 0;
-    for (int c = 0; c < 4; ++c)
+    size_t iStart = 0;
+    for (size_t c = 0; c < 4; ++c)
     {
         // Skip spaces
         while (iStart < str.length() && str[iStart] == ' ')
@@ -77,7 +77,7 @@ rgbaColor rgbaColor::fromString(std::string const & str)
         }
 
         // Find next 3rd char, space, or eos
-        int iEnd = iStart + 1;
+        size_t iEnd = iStart + 1;
         if (iEnd < str.length()
             && str[iEnd] != ' ')
         {

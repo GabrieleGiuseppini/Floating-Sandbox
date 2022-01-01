@@ -23,7 +23,6 @@ target_link_libraries (Benchmarks
         GameLib
 	GameCoreLib
         GPUCalcLib
-	${wxWidgets_LIBRARIES} # Just for jpeg
         ${OPENGL_LIBRARIES}
         benchmark::benchmark
         benchmark::benchmark_main

@@ -339,7 +339,7 @@ struct _IntegralSize
             this->height * factor);
     }
 
-    inline int GetLinearSize() const
+    inline size_t GetLinearSize() const
     {
         return this->width * this->height;
     }
