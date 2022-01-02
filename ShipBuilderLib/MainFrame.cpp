@@ -790,6 +790,29 @@ void MainFrame::ScrollIntoViewIfNeeded(DisplayLogicalCoordinates const & workCan
 
 /////////////////////////////////////////////////////////////////////
 
+wxAcceleratorEntry MainFrame::MakePlainAcceleratorKey(int key, wxMenuItem * menuItem)
+{
+    auto const keyId = wxNewId();
+    wxAcceleratorEntry entry(wxACCEL_NORMAL, key, keyId);
+    this->Bind(
+        wxEVT_MENU,
+        [menuItem, this](wxCommandEvent &)
+    {
+        // Toggle menu - if it's checkable
+        if (menuItem->IsCheckable())
+        {
+            menuItem->Check(!menuItem->IsChecked());
+        }
+
+        // Fire menu event handler
+        wxCommandEvent evt(wxEVT_COMMAND_MENU_SELECTED, menuItem->GetId());
+        ::wxPostEvent(this, evt);
+    },
+        keyId);
+
+    return entry;
+}
+
 wxPanel * MainFrame::CreateFilePanel(wxWindow * parent)
 {
     wxPanel * panel = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize);

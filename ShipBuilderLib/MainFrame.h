@@ -122,6 +122,7 @@ public:
 
 private:
 
+    wxAcceleratorEntry MakePlainAcceleratorKey(int key, wxMenuItem * menuItem);
     wxPanel * CreateFilePanel(wxWindow * parent);
     wxPanel * CreateShipSettingsPanel(wxWindow * parent);
     wxPanel * CreateToolSettingsPanel(wxWindow * parent);
