@@ -317,8 +317,6 @@ void ShipResizeVisualizationControl::Render(wxDC & dc)
 {
     dc.Clear();
 
-    wxSize const size = GetSize();
-
     //
     // Draw target rectangle 1
     //

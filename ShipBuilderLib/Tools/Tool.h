@@ -5,12 +5,12 @@
 ***************************************************************************************/
 #pragma once
 
-#include "IUserInterface.h"
-#include "ModelController.h"
-#include "ShipBuilderTypes.h"
-#include "UndoStack.h"
-#include "WorkbenchState.h"
-#include "View.h"
+#include <IUserInterface.h>
+#include <ModelController.h>
+#include <ShipBuilderTypes.h>
+#include <UndoStack.h>
+#include <WorkbenchState.h>
+#include <View.h>
 
 #include <GameCore/GameTypes.h>
 

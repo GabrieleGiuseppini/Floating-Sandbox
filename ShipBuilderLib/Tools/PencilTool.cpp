@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #include "PencilTool.h"
 
-#include "Controller.h"
+#include <Controller.h>
 
 #include <GameCore/GameGeometry.h>
 
@@ -282,7 +282,6 @@ void PencilTool<TLayer, IsEraser>::DoEdit(ShipSpaceCoordinates const & mouseCoor
 {
     assert(mEngagementData);
 
-    int const pencilSize = GetPencilSize();
     LayerMaterialType const * const fillMaterial = GetFillMaterial(mEngagementData->Plane);
 
     bool hasEdited = false;
