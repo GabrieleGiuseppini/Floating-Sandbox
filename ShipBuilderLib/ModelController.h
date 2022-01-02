@@ -307,9 +307,6 @@ private:
     template<VisualizationType TVisualization>
     void RegisterDirtyVisualization(ShipSpaceRect const & region);
 
-    template<VisualizationType TVisualization>
-    void ResetDirtyVisualization();
-
     ImageRect UpdateGameVisualization(ShipSpaceRect const & region);
 
     void UpdateStructuralLayerVisualization(ShipSpaceRect const & region);

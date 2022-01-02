@@ -803,11 +803,7 @@ void ModelController::RestoreElectricalLayer(std::unique_ptr<ElectricalLayerData
     //
 
     mElectricalLayerVisualizationTexture.reset();
-
-    if (mModel.HasLayer(LayerType::Electrical))
-        RegisterDirtyVisualization<VisualizationType::ElectricalLayer>(GetWholeShipRect());
-    else
-        ResetDirtyVisualization<VisualizationType::ElectricalLayer>();
+    RegisterDirtyVisualization<VisualizationType::ElectricalLayer>(GetWholeShipRect());
 }
 
 void ModelController::ElectricalRegionFillForEphemeralVisualization(
@@ -1044,10 +1040,7 @@ void ModelController::RestoreRopesLayer(std::unique_ptr<RopesLayerData> sourceLa
     // Update visualization
     //
 
-    if (mModel.HasLayer(LayerType::Ropes))
-        RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
-    else
-        ResetDirtyVisualization<VisualizationType::RopesLayer>();
+    RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
 }
 
 void ModelController::AddRopeForEphemeralVisualization(
@@ -1183,11 +1176,7 @@ void ModelController::RestoreTextureLayer(
     mGameVisualizationTexture.reset();
     mGameVisualizationAutoTexturizationTexture.release();
     RegisterDirtyVisualization<VisualizationType::Game>(GetWholeShipRect());
-
-    if (mModel.HasLayer(LayerType::Texture))
-        RegisterDirtyVisualization<VisualizationType::TextureLayer>(GetWholeShipRect());
-    else
-        ResetDirtyVisualization<VisualizationType::TextureLayer>();
+    RegisterDirtyVisualization<VisualizationType::TextureLayer>(GetWholeShipRect());
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1220,7 +1209,6 @@ void ModelController::SetGameVisualizationMode(GameVisualizationModeType mode)
         mGameVisualizationAutoTexturizationTexture.reset();
         assert(mGameVisualizationTexture);
         mGameVisualizationTexture.reset();
-        ResetDirtyVisualization<VisualizationType::Game>();
     }
 }
 
@@ -1244,7 +1232,6 @@ void ModelController::SetStructuralLayerVisualizationMode(StructuralLayerVisuali
         mStructuralLayerVisualizationMode = StructuralLayerVisualizationModeType::None;
         assert(mStructuralLayerVisualizationTexture);
         mStructuralLayerVisualizationTexture.reset();
-        ResetDirtyVisualization<VisualizationType::StructuralLayer>();
     }
 }
 
@@ -1278,7 +1265,6 @@ void ModelController::SetElectricalLayerVisualizationMode(ElectricalLayerVisuali
         mElectricalLayerVisualizationMode = ElectricalLayerVisualizationModeType::None;
         assert(mElectricalLayerVisualizationTexture);
         mElectricalLayerVisualizationTexture.reset();
-        ResetDirtyVisualization<VisualizationType::ElectricalLayer>();
     }
 }
 
@@ -1300,7 +1286,6 @@ void ModelController::SetRopesLayerVisualizationMode(RopesLayerVisualizationMode
     {
         // Shutdown ropes visualization
         mRopesLayerVisualizationMode = RopesLayerVisualizationModeType::None;
-        ResetDirtyVisualization<VisualizationType::RopesLayer>();
     }
 }
 
@@ -1322,7 +1307,6 @@ void ModelController::SetTextureLayerVisualizationMode(TextureLayerVisualization
     {
         // Shutdown texture visualization
         mTextureLayerVisualizationMode = TextureLayerVisualizationModeType::None;
-        ResetDirtyVisualization<VisualizationType::TextureLayer>();
     }
 }
 
@@ -1332,6 +1316,8 @@ void ModelController::UpdateVisualizations(View & view)
     // Update and upload visualizations that are dirty, and
     // remove visualizations that are not needed
     //
+
+    // Game
 
     if (mGameVisualizationMode != GameVisualizationModeType::None)
     {
@@ -1352,7 +1338,7 @@ void ModelController::UpdateVisualizations(View & view)
             mGameVisualizationAutoTexturizationTexture = std::make_unique<RgbaImageData>(mGameVisualizationTexture->Size);
         }
 
-        std::optional<ShipSpaceRect> & dirtyShipRegion = mDirtyVisualizationRegions[static_cast<size_t>(VisualizationType::Game)];
+        auto const & dirtyShipRegion = mDirtyVisualizationRegions[static_cast<size_t>(VisualizationType::Game)];
         if (dirtyShipRegion.has_value())
         {
             // Update visualization
@@ -1379,20 +1365,21 @@ void ModelController::UpdateVisualizations(View & view)
             {
                 view.UploadGameVisualization(*mGameVisualizationTexture);
             }
-
-            dirtyShipRegion.reset();
         }
     }
     else
     {
         assert(!mGameVisualizationTexture);
-        assert(!mDirtyVisualizationRegions[static_cast<size_t>(VisualizationType::Game)].has_value());
 
         if (view.HasGameVisualization())
         {
             view.RemoveGameVisualization();
         }
     }
+
+    mDirtyVisualizationRegions[static_cast<size_t>(VisualizationType::Game)].reset();
+
+    // Structural
 
     if (mStructuralLayerVisualizationMode != StructuralLayerVisualizationModeType::None)
     {
@@ -1402,7 +1389,7 @@ void ModelController::UpdateVisualizations(View & view)
             mStructuralLayerVisualizationTexture = std::make_unique<RgbaImageData>(ImageSize(mModel.GetShipSize().width, mModel.GetShipSize().height));
         }
 
-        std::optional<ShipSpaceRect> & dirtyShipRegion = mDirtyVisualizationRegions[static_cast<size_t>(VisualizationType::StructuralLayer)];
+        auto const & dirtyShipRegion = mDirtyVisualizationRegions[static_cast<size_t>(VisualizationType::StructuralLayer)];
         if (dirtyShipRegion.has_value())
         {
             // Refresh viz mode
@@ -1421,20 +1408,21 @@ void ModelController::UpdateVisualizations(View & view)
 
             // Upload visualization
             view.UploadStructuralLayerVisualization(*mStructuralLayerVisualizationTexture);
-
-            dirtyShipRegion.reset();
         }
     }
     else
     {
         assert(!mStructuralLayerVisualizationTexture);
-        assert(!mDirtyVisualizationRegions[static_cast<size_t>(VisualizationType::StructuralLayer)].has_value());
 
         if (view.HasStructuralLayerVisualization())
         {
             view.RemoveStructuralLayerVisualization();
         }
     }
+
+    mDirtyVisualizationRegions[static_cast<size_t>(VisualizationType::StructuralLayer)].reset();
+
+    // Electrical
 
     if (mElectricalLayerVisualizationMode != ElectricalLayerVisualizationModeType::None)
     {
@@ -1444,7 +1432,7 @@ void ModelController::UpdateVisualizations(View & view)
             mElectricalLayerVisualizationTexture = std::make_unique<RgbaImageData>(mModel.GetShipSize().width, mModel.GetShipSize().height);
         }
 
-        std::optional<ShipSpaceRect> & dirtyShipRegion = mDirtyVisualizationRegions[static_cast<size_t>(VisualizationType::ElectricalLayer)];
+        auto const & dirtyShipRegion = mDirtyVisualizationRegions[static_cast<size_t>(VisualizationType::ElectricalLayer)];
         if (dirtyShipRegion.has_value())
         {
             // Update visualization
@@ -1452,14 +1440,11 @@ void ModelController::UpdateVisualizations(View & view)
 
             // Upload visualization
             view.UploadElectricalLayerVisualization(*mElectricalLayerVisualizationTexture);
-
-            dirtyShipRegion.reset();
         }
     }
     else
     {
         assert(!mElectricalLayerVisualizationTexture);
-        assert(!mDirtyVisualizationRegions[static_cast<size_t>(VisualizationType::ElectricalLayer)].has_value());
 
         if (view.HasElectricalLayerVisualization())
         {
@@ -1467,11 +1452,15 @@ void ModelController::UpdateVisualizations(View & view)
         }
     }
 
+    mDirtyVisualizationRegions[static_cast<size_t>(VisualizationType::ElectricalLayer)].reset();
+
+    // Ropes
+
     if (mRopesLayerVisualizationMode != RopesLayerVisualizationModeType::None)
     {
         assert(mModel.HasLayer(LayerType::Ropes));
 
-        std::optional<ShipSpaceRect> & dirtyShipRegion = mDirtyVisualizationRegions[static_cast<size_t>(VisualizationType::RopesLayer)];
+        auto const & dirtyShipRegion = mDirtyVisualizationRegions[static_cast<size_t>(VisualizationType::RopesLayer)];
         if (dirtyShipRegion.has_value())
         {
             // Update visualization
@@ -1479,25 +1468,25 @@ void ModelController::UpdateVisualizations(View & view)
 
             // Upload visualization
             view.UploadRopesLayerVisualization(mModel.GetRopesLayer().Buffer);
-
-            dirtyShipRegion.reset();
         }
     }
     else
     {
-        assert(!mDirtyVisualizationRegions[static_cast<size_t>(VisualizationType::RopesLayer)].has_value());
-
         if (view.HasRopesLayerVisualization())
         {
             view.RemoveRopesLayerVisualization();
         }
     }
 
+    mDirtyVisualizationRegions[static_cast<size_t>(VisualizationType::RopesLayer)].reset();
+
+    // Texture
+
     if (mTextureLayerVisualizationMode != TextureLayerVisualizationModeType::None)
     {
         assert(mModel.HasLayer(LayerType::Texture));
 
-        std::optional<ShipSpaceRect> & dirtyShipRegion = mDirtyVisualizationRegions[static_cast<size_t>(VisualizationType::TextureLayer)];
+        auto const & dirtyShipRegion = mDirtyVisualizationRegions[static_cast<size_t>(VisualizationType::TextureLayer)];
         if (dirtyShipRegion.has_value())
         {
             // Update visualization
@@ -1505,19 +1494,17 @@ void ModelController::UpdateVisualizations(View & view)
 
             // Upload visualization
             view.UploadTextureLayerVisualization(mModel.GetTextureLayer().Buffer);
-
-            dirtyShipRegion.reset();
         }
     }
     else
     {
-        assert(!mDirtyVisualizationRegions[static_cast<size_t>(VisualizationType::TextureLayer)].has_value());
-
         if (view.HasTextureLayerVisualization())
         {
             view.RemoveTextureLayerVisualization();
         }
     }
+
+    mDirtyVisualizationRegions[static_cast<size_t>(VisualizationType::TextureLayer)].reset();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1796,12 +1783,6 @@ void ModelController::RegisterDirtyVisualization(ShipSpaceRect const & region)
     {
         mDirtyVisualizationRegions[VizIndex]->UnionWith(region);
     }
-}
-
-template<VisualizationType TVisualization>
-void ModelController::ResetDirtyVisualization()
-{
-    mDirtyVisualizationRegions[static_cast<size_t>(TVisualization)].reset();
 }
 
 ImageRect ModelController::UpdateGameVisualization(ShipSpaceRect const & region)
