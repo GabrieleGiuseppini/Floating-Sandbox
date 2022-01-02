@@ -61,13 +61,23 @@ https://gamejolt.com/x/permalink/comment/11730705
 
 + Install: copy also ShipBuilder.exe
 
-- Merge into master
++ Merge into master
 
-- Discord
+- Fixes:
+	- Fix assert after removing structural viz mode
+		- Change: allow dirty region setting, reset at UpdateViz() also when None
+			- And Nuke ClearDirty()
+	- ModelController::GetStructuralVizMode when "none" is set
+		- Verify crashes
+		- Fix: TODO
 
 - Fix Ubuntu:
+	- ShipBuilder: failed OpenGL initialization
 	- Background of shipbuilder leaks into clouds
 		- See if it's the same on Windows when we disable multi-threading - if so we have a problem with context switching
+
+- Solve issue of Electrical Layer not aligning (visually) with the Structural Layer by default
+	- Might need a New Electrical visualization mode: "mesh mode", so that it aligns with structural's mesh mode
 
 - New/Set/Remove layers:
 	- New:
@@ -451,6 +461,8 @@ https://gamejolt.com/x/permalink/comment/11730705
 	- Each time we StartTool() (e.g. at AddLayer, etc.) we end up refreshing modelcontroller's visualization and OpenGL visualization, twice
 	- TO-SPEC:
 		- What to do with background music when switching back and forth?
+	- Ability to import an image to trace over it
+		- Like a texture layer, but not saved and not part of the ship
 
 - Ephemeral visualization rearch:
 	- Current structure:

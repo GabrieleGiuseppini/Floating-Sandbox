@@ -318,6 +318,10 @@ Render:
 			+ Ubuntu
 		+ Fix slice tool + SHIFT (no locking at all)
 
+		- Do Mattia's video and post together with https://www.youtube.com/watch?v=X2n4Q25Ld34
+
+		- Lower heat radius in Ultra-Violent mode
+
 		= Mac/Sam
 			+ CMakeFiles: add `set (CMAKE_FIND_LIBRARY_SUFFIXES ".a")`			
 			- See Sam's issue with wxWidgets

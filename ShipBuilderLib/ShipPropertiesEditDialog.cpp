@@ -558,8 +558,8 @@ void ShipPropertiesEditDialog::PopulatePhysicsDataPanel(wxPanel * panel)
                         // Tell viz control
                         mShipOffsetVisualizationControl->SetOffsetY(value);
 
-                        // Tell edit box
-                        mOffsetYEditSpinBox->SetValue(value);
+                        // Tell edit box - marking it as dirty
+                        mOffsetYEditSpinBox->ChangeValue(value);
 
                         OnDirty();
                     });
@@ -593,8 +593,8 @@ void ShipPropertiesEditDialog::PopulatePhysicsDataPanel(wxPanel * panel)
                         // Tell viz control
                         mShipOffsetVisualizationControl->SetOffsetX(value);
 
-                        // Tell edit box
-                        mOffsetXEditSpinBox->SetValue(value);
+                        // Tell edit box - marking it as dirty
+                        mOffsetXEditSpinBox->ChangeValue(value);
 
                         OnDirty();
                     });
