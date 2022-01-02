@@ -370,8 +370,6 @@ void ShipTexturizer::RenderShipInto(
     auto const & structuralBuffer = structuralLayer.Buffer;
     auto targetImageData = targetTextureImage.Data.get();
 
-    rgbaColor constexpr transparentColor = rgbaColor::zero();
-    
     int const startY = structuralLayerRegion.origin.y;
     int const endY = structuralLayerRegion.origin.y + structuralLayerRegion.size.height;
 
@@ -495,7 +493,7 @@ void ShipTexturizer::RenderShipInto(
                 assert(0 <= xxStart && xxStart <= magnificationFactor);
                 for (int xx = 0; xx < xxStart; ++xx)
                 {
-                    targetImageData[targetQuadOffset + xx] = transparentColor;
+                    targetImageData[targetQuadOffset + xx] = TransparentColor;
                 }
 
                 // Body - fill with source texture
@@ -513,7 +511,7 @@ void ShipTexturizer::RenderShipInto(
                 assert(0 <= xxEnd && xxEnd <= magnificationFactor);
                 for (int xx = xxEnd; xx < magnificationFactor; ++xx)
                 {
-                    targetImageData[targetQuadOffset + xx] = transparentColor;
+                    targetImageData[targetQuadOffset + xx] = TransparentColor;
                 }
             }
         }

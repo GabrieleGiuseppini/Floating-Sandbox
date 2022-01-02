@@ -182,8 +182,8 @@ inline void GenerateIntegralLinePath(
         }
 
         return _IntegralCoordinates<_TIntegralTag>(
-            static_cast<_IntegralCoordinates<_TIntegralTag>::integral_type>(std::round(newPosition.x)),
-            static_cast<_IntegralCoordinates<_TIntegralTag>::integral_type>(std::round(newPosition.y)));
+            static_cast<typename _IntegralCoordinates<_TIntegralTag>::integral_type>(std::round(newPosition.x)),
+            static_cast<typename _IntegralCoordinates<_TIntegralTag>::integral_type>(std::round(newPosition.y)));
     };
 
     //
