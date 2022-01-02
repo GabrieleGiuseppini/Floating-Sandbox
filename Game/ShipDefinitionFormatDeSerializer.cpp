@@ -470,7 +470,7 @@ PasswordHash ShipDefinitionFormatDeSerializer::CalculatePasswordHash(std::string
 // Write
 
 template<typename TSectionBodyAppender>
-static void ShipDefinitionFormatDeSerializer::AppendSection(
+void ShipDefinitionFormatDeSerializer::AppendSection(
     std::ofstream & outputFile,
     std::uint32_t tag,
     TSectionBodyAppender const & sectionBodyAppender,

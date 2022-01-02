@@ -65,17 +65,17 @@ GameController::GameController(
     MaterialDatabase && materialDatabase,
     ResourceLocator const & resourceLocator,
     ProgressCallback const & progressCallback)
+    // State machines
+    : mTsunamiNotificationStateMachine()
+    , mThanosSnapStateMachines()
+    , mDayLightCycleStateMachine()
     // World
-    : mWorld()
+    , mWorld()
     , mFishSpeciesDatabase(std::move(fishSpeciesDatabase))
     , mMaterialDatabase(std::move(materialDatabase))
     // Ship factory
     , mShipStrengthRandomizer()
     , mShipTexturizer(mMaterialDatabase, resourceLocator)
-    // State machines
-    , mTsunamiNotificationStateMachine()
-    , mThanosSnapStateMachines()
-    , mDayLightCycleStateMachine()
     // State
     , mGameParameters()
     , mIsPaused(false)
