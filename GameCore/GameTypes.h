@@ -252,7 +252,7 @@ inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, Sequ
 }
 
 // Password hash
-using PasswordHash = size_t;
+using PasswordHash = std::uint64_t;
 
 // Variable-length 16-bit unsigned integer
 struct var_uint16_t

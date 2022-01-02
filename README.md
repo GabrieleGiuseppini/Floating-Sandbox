@@ -74,10 +74,12 @@ In order to build the game, you will need the following dependencies:
 - <a href="https://github.com/kazuho/picojson">picojson</a> (header-only JSON parser and serializer)
 - <a href="https://github.com/google/benchmark">Google Benchmark</a>
 - <a href="https://github.com/google/googletest/">Google Test</a> release-1.10.0
+- ...and the ubiquitous _zlib_, _jpeg_, and _libpng_ libraries.
 
 A custom `UserSettings.cmake` may be used in order to configure the locations of all dependencies. If you want to use it, copy the `UserSettings.example-<platform>.cmake` example file to `UserSettings.cmake` and adapt it to your setup. In case you do not want to use this file, you can use the example to get an overview of all CMake variables you might need to use to configure the dependencies.
 
 Over the years I've been writing down OS-specific build steps:
+- [Windows](https://github.com/GabrieleGiuseppini/Floating-Sandbox/blob/master/BUILD-Windows.md)
 - [Ubuntu](https://github.com/GabrieleGiuseppini/Floating-Sandbox/blob/master/BUILD-Ubuntu.md)
 
 # Contributing

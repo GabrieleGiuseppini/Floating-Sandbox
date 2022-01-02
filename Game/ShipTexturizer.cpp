@@ -670,7 +670,7 @@ ShipTexturizer::Vec2fImageData const & ShipTexturizer::GetMaterialTexture(std::o
         // Convert to vec2f
         auto const pixelCount = texture.Size.GetLinearSize();
         std::unique_ptr<vec2f[]> vec2fTexture = std::make_unique<vec2f[]>(pixelCount);
-        for (int p = 0; p < pixelCount; ++p)
+        for (size_t p = 0; p < pixelCount; ++p)
         {
             assert(texture.Data[p].r == texture.Data[p].g);
             assert(texture.Data[p].r == texture.Data[p].b);

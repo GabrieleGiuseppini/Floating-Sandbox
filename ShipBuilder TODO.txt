@@ -2,40 +2,63 @@ https://gamejolt.com/x/permalink/comment/11730705
 
 + Send for testing
 
-= Add jpg support to DevIL
-	+ http://www.ijg.org/
-	+ Make DevIL statically linked with JPEG as well
-	= Rebuild 64-bit, debug + release
-		- Test both
-	= Rebuild 32-bit, debug + release
-		- Test both
-	- Ubuntu
-
-- Rearc of libs:
++ Rearc of libs:
 	! libs (zlib, jpeg, png) no more statically linked into DevIL and wxWidgets
-	- Backup build folders (DevIL, wxWidgets)
-	- Build without linking-in:
-		- wxWidgets (see where it takes ZLIB and PNG and JPEG from?)
-		- DevIL
-	- FS:
-		- Update CMake to take also ZLIB, PNG, and JPEG from UserSettings.cmake
-			- While you're at it: from main CMake, if user-specified not set, find "normally"
-				- Add enough debug logging
-			- Also change comment in main CMake for IL/static libs
-		- Test:
-			- 64
-				- Release
-					- And run
-				- Debug
-					- And run
-			- 32
-				- Release
-					- And run
-				- Debug
-					- And run
-	- Update readme and start "building on Windows" doc
+	+ Backup build folders (DevIL, wxWidgets)
+	+ Test on 64-bit:
+		+ Build DevIL 64 without linking-in
+		+ Build wxWidgets 64 with external ZLib, JPEG, and PNG (not built-in)
+		+ FS:
+			+ First off, verify can't link because all three are missing
+				+ With wxWidgets with built-ins:
+					+ Benchmark: PNG and JPEG are missing
+					+ ShipBuilder: PNG is missing
+				+ With wxWidgets without built-ins:
+					+ Benchmark: PNG and JPEG are missing
+					+ ShipBuilder: PNG and JPEG are missing
+			+ Update CMake to take also ZLIB, PNG, and JPEG from UserSettings.cmake
+				+ Also change comment in main CMake for IL/static libs
+			+ Build 64:
+				+ benchmarks RelWithDebInfo
+				+ FloatingSandbox RelWithDebInfo
+				+ FloatingSandbox Debug
+	+ On success:
+		+ Update readme w/dependencies
+		+ Start "building on Windows" doc
+		+ See to fix FS linker warning about "Editandcontinue / Incremental"
+		+ Build DevIL:
+			+ Update my edits to DevIL's cmake: remove zlib, png, and jpeg *lib files*
+			+ 64
+			+ 32
+		+ Build wxWidgets 32
+			+ Unify output under single SDK folder
+		+ Re-generate FS solution files
+			+ 64
+				+ Verify wxWidgets pickup
+			+ 32
+				+ Verify wxWidgets pickup
+		+ (Re-)Verify all builds: ALL_BUILD and run FS:
+			+ 32
+				+ RelWithDebInfo
+				+ Release
+				+ Debug
+			+ 64
+				+ RelWithDebInfo
+				+ Release
+				+ Debug
+	+ Finish Windows build instructions
+
+- Commit + Push
+
+- Ubuntu build
+	- After verifying we need jpeg, update Ubuntu build instructions
 
 - Merge into master
+
+- Discord
+
+- Fix Ubuntu:
+	- 
 
 - New/Set/Remove layers:
 	- New:

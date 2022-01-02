@@ -4,6 +4,10 @@ if(POLICY CMP0048)
 	cmake_policy(SET CMP0048 NEW)
 endif()
 
+if(POLICY CMP0074)
+	cmake_policy(SET CMP0074 NEW)
+endif()
+
 if(POLICY CMP0082)
 	# Run install rules in specified order
 	cmake_policy(SET CMP0082 NEW)
@@ -26,6 +30,15 @@ option(FS_BUILD_BENCHMARKS "Build benchmarks" ON)
 # Force finding static libs on Linux/Mac
 if(NOT WIN32)
 	set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+endif()
+
+# Set architecture on Windows, so we may build 64- and 32-bit with agility
+if(WIN32)
+	if( CMAKE_SIZEOF_VOID_P EQUAL 4 )
+		set(CMAKE_LIBRARY_ARCHITECTURE "Win32")
+	else()
+		set(CMAKE_LIBRARY_ARCHITECTURE "x64")
+	endif()
 endif()
 
 ####################################################
@@ -68,6 +81,14 @@ if(FS_BUILD_BENCHMARKS)
 endif()
 
 #
+# zlib, jpeg, png
+#
+
+find_package(ZLIB REQUIRED)
+find_package(JPEG REQUIRED)
+find_package(PNG REQUIRED)
+
+#
 # wxWidgets
 #
 
@@ -86,9 +107,7 @@ find_package(DevIL REQUIRED)
 if(FS_USE_STATIC_LIBS)
 	# If we use static linking, we expect to have built DevIL 
 	# as static libs, and we expect to _use_ it as static libs,
-	# so tell the DevIL include files that DevIL is used as static libs.
-	# Note: in this case we also expect the DevIL libs to be statically-linked
-	# with the png, jpg, and zlib static libs
+	# so tell the DevIL include files that DevIL is used as static libs
 	add_compile_definitions("IL_STATIC_LIB")
 endif()
 

@@ -137,7 +137,7 @@ TEST(GeometryTests, GenerateLinePath_Minimal_Distance0)
             generatedCoordinates.push_back(pt);
         });
 
-    ASSERT_EQ(generatedCoordinates.size(), 1);
+    ASSERT_EQ(generatedCoordinates.size(), 1u);
     EXPECT_EQ(generatedCoordinates[0], IntegralCoordinates(3, 5));
 }
 
@@ -153,7 +153,7 @@ TEST(GeometryTests, GenerateLinePath_Minimal_Distance1)
             generatedCoordinates.push_back(pt);
         });
 
-    ASSERT_EQ(generatedCoordinates.size(), 2);
+    ASSERT_EQ(generatedCoordinates.size(), 2u);
     EXPECT_EQ(generatedCoordinates[0], IntegralCoordinates(3, 5));
     EXPECT_EQ(generatedCoordinates[1], IntegralCoordinates(4, 6));
 }
@@ -170,7 +170,7 @@ TEST(GeometryTests, GenerateLinePath_Minimal_Distance2_Diagonal)
             generatedCoordinates.push_back(pt);
         });
 
-    ASSERT_EQ(generatedCoordinates.size(), 3);
+    ASSERT_EQ(generatedCoordinates.size(), 3u);
     EXPECT_EQ(generatedCoordinates[0], IntegralCoordinates(3, 5));
     EXPECT_EQ(generatedCoordinates[1], IntegralCoordinates(4, 6));
     EXPECT_EQ(generatedCoordinates[2], IntegralCoordinates(5, 7));
@@ -188,7 +188,7 @@ TEST(GeometryTests, GenerateLinePath_Minimal_Distance2_VerticalDown)
             generatedCoordinates.push_back(pt);
         });
 
-    ASSERT_EQ(generatedCoordinates.size(), 3);
+    ASSERT_EQ(generatedCoordinates.size(), 3u);
     EXPECT_EQ(generatedCoordinates[0], IntegralCoordinates(3, 5));
     EXPECT_EQ(generatedCoordinates[1], IntegralCoordinates(3, 6));
     EXPECT_EQ(generatedCoordinates[2], IntegralCoordinates(3, 7));
@@ -206,7 +206,7 @@ TEST(GeometryTests, GenerateLinePath_Minimal_Distance2_VerticalUp)
             generatedCoordinates.push_back(pt);
         });
 
-    ASSERT_EQ(generatedCoordinates.size(), 3);
+    ASSERT_EQ(generatedCoordinates.size(), 3u);
     EXPECT_EQ(generatedCoordinates[0], IntegralCoordinates(3, 5));
     EXPECT_EQ(generatedCoordinates[1], IntegralCoordinates(3, 4));
     EXPECT_EQ(generatedCoordinates[2], IntegralCoordinates(3, 3));
@@ -224,7 +224,7 @@ TEST(GeometryTests, GenerateLinePath_Minimal_Distance2_HorizontalLeft)
             generatedCoordinates.push_back(pt);
         });
 
-    ASSERT_EQ(generatedCoordinates.size(), 3);
+    ASSERT_EQ(generatedCoordinates.size(), 3u);
     EXPECT_EQ(generatedCoordinates[0], IntegralCoordinates(3, 5));
     EXPECT_EQ(generatedCoordinates[1], IntegralCoordinates(2, 5));
     EXPECT_EQ(generatedCoordinates[2], IntegralCoordinates(1, 5));
@@ -242,7 +242,7 @@ TEST(GeometryTests, GenerateLinePath_Minimal_Distance2_HorizontalRight)
             generatedCoordinates.push_back(pt);
         });
 
-    ASSERT_EQ(generatedCoordinates.size(), 3);
+    ASSERT_EQ(generatedCoordinates.size(), 3u);
     EXPECT_EQ(generatedCoordinates[0], IntegralCoordinates(3, 5));
     EXPECT_EQ(generatedCoordinates[1], IntegralCoordinates(4, 5));
     EXPECT_EQ(generatedCoordinates[2], IntegralCoordinates(5, 5));
@@ -260,7 +260,7 @@ TEST(GeometryTests, GenerateLinePath_WithAdjacentSteps_Distance0)
             generatedCoordinates.push_back(pt);
         });
 
-    ASSERT_EQ(generatedCoordinates.size(), 1);
+    ASSERT_EQ(generatedCoordinates.size(), 1u);
     EXPECT_EQ(generatedCoordinates[0], IntegralCoordinates(3, 5));
 }
 
@@ -276,7 +276,7 @@ TEST(GeometryTests, GenerateLinePath_WithAdjacentSteps_Distance1)
             generatedCoordinates.push_back(pt);
         });
 
-    ASSERT_EQ(generatedCoordinates.size(), 3);
+    ASSERT_EQ(generatedCoordinates.size(), 3u);
     EXPECT_EQ(generatedCoordinates[0], IntegralCoordinates(3, 5));
     EXPECT_EQ(generatedCoordinates[1], IntegralCoordinates(3, 6));
     EXPECT_EQ(generatedCoordinates[2], IntegralCoordinates(4, 6));
@@ -294,7 +294,7 @@ TEST(GeometryTests, GenerateLinePath_WithAdjacentSteps_Distance2_Diagonal_Equal)
             generatedCoordinates.push_back(pt);
         });
 
-    ASSERT_EQ(generatedCoordinates.size(), 5);
+    ASSERT_EQ(generatedCoordinates.size(), 5u);
     EXPECT_EQ(generatedCoordinates[0], IntegralCoordinates(3, 5));
     EXPECT_EQ(generatedCoordinates[1], IntegralCoordinates(3, 6));
     EXPECT_EQ(generatedCoordinates[2], IntegralCoordinates(4, 6));
@@ -314,7 +314,7 @@ TEST(GeometryTests, GenerateLinePath_WithAdjacentSteps_Distance2_Diagonal_MoreX)
             generatedCoordinates.push_back(pt);
         });
 
-    ASSERT_EQ(generatedCoordinates.size(), 4);
+    ASSERT_EQ(generatedCoordinates.size(), 4u);
     EXPECT_EQ(generatedCoordinates[0], IntegralCoordinates(3, 5));
     EXPECT_EQ(generatedCoordinates[1], IntegralCoordinates(4, 5));
     EXPECT_EQ(generatedCoordinates[2], IntegralCoordinates(4, 6));
@@ -333,7 +333,7 @@ TEST(GeometryTests, GenerateLinePath_WithAdjacentSteps_Distance2_Diagonal_MoreY)
             generatedCoordinates.push_back(pt);
         });
 
-    ASSERT_EQ(generatedCoordinates.size(), 4);
+    ASSERT_EQ(generatedCoordinates.size(), 4u);
     EXPECT_EQ(generatedCoordinates[0], IntegralCoordinates(3, 5));
     EXPECT_EQ(generatedCoordinates[1], IntegralCoordinates(3, 6));
     EXPECT_EQ(generatedCoordinates[2], IntegralCoordinates(4, 6));
@@ -352,7 +352,7 @@ TEST(GeometryTests, GenerateLinePath_WithAdjacentSteps_Distance2_VerticalDown)
             generatedCoordinates.push_back(pt);
         });
 
-    ASSERT_EQ(generatedCoordinates.size(), 3);
+    ASSERT_EQ(generatedCoordinates.size(), 3u);
     EXPECT_EQ(generatedCoordinates[0], IntegralCoordinates(3, 5));
     EXPECT_EQ(generatedCoordinates[1], IntegralCoordinates(3, 6));
     EXPECT_EQ(generatedCoordinates[2], IntegralCoordinates(3, 7));
@@ -370,7 +370,7 @@ TEST(GeometryTests, GenerateLinePath_WithAdjacentSteps_Distance2_VerticalUp)
             generatedCoordinates.push_back(pt);
         });
 
-    ASSERT_EQ(generatedCoordinates.size(), 3);
+    ASSERT_EQ(generatedCoordinates.size(), 3u);
     EXPECT_EQ(generatedCoordinates[0], IntegralCoordinates(3, 5));
     EXPECT_EQ(generatedCoordinates[1], IntegralCoordinates(3, 4));
     EXPECT_EQ(generatedCoordinates[2], IntegralCoordinates(3, 3));
@@ -388,7 +388,7 @@ TEST(GeometryTests, GenerateLinePath_WithAdjacentSteps_Distance2_HorizontalLeft)
             generatedCoordinates.push_back(pt);
         });
 
-    ASSERT_EQ(generatedCoordinates.size(), 3);
+    ASSERT_EQ(generatedCoordinates.size(), 3u);
     EXPECT_EQ(generatedCoordinates[0], IntegralCoordinates(3, 5));
     EXPECT_EQ(generatedCoordinates[1], IntegralCoordinates(2, 5));
     EXPECT_EQ(generatedCoordinates[2], IntegralCoordinates(1, 5));
@@ -406,7 +406,7 @@ TEST(GeometryTests, GenerateLinePath_WithAdjacentSteps_Distance2_HorizontalRight
             generatedCoordinates.push_back(pt);
         });
 
-    ASSERT_EQ(generatedCoordinates.size(), 3);
+    ASSERT_EQ(generatedCoordinates.size(), 3u);
     EXPECT_EQ(generatedCoordinates[0], IntegralCoordinates(3, 5));
     EXPECT_EQ(generatedCoordinates[1], IntegralCoordinates(4, 5));
     EXPECT_EQ(generatedCoordinates[2], IntegralCoordinates(5, 5));

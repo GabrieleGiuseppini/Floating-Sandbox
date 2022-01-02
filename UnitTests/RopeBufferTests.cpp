@@ -14,7 +14,7 @@ TEST(RopeBufferTests, Clone)
 
     RopeBuffer clone = buffer.Clone();
 
-    ASSERT_EQ(1, clone.GetSize());
+    ASSERT_EQ(clone.GetSize(), 1u);
     EXPECT_EQ(ShipSpaceCoordinates(4, 5), clone[0].StartCoords);
     EXPECT_EQ(ShipSpaceCoordinates(10, 10), clone[0].EndCoords);
     EXPECT_EQ(nullptr, clone[0].Material);
@@ -122,7 +122,7 @@ TEST(RopeBufferTests, Trim)
         { 5, 6 },
         { 100, 200 });
 
-    ASSERT_EQ(buffer.GetSize(), 1);
+    ASSERT_EQ(buffer.GetSize(), 1u);
 
     EXPECT_EQ(ShipSpaceCoordinates(7, 19), buffer[0].StartCoords);
     EXPECT_EQ(ShipSpaceCoordinates(6, 15), buffer[0].EndCoords);
@@ -154,7 +154,7 @@ TEST(RopeBufferTests, Trim_BecomesEmpty)
         { 35, 36 },
         { 100, 200 });
 
-    ASSERT_EQ(buffer.GetSize(), 0);
+    ASSERT_EQ(buffer.GetSize(), 0u);
 }
 
 TEST(RopeBufferTests, Reframe)
@@ -195,7 +195,7 @@ TEST(RopeBufferTests, Reframe)
         { 3, 5 },
         { -5, -14 });
 
-    ASSERT_EQ(buffer.GetSize(), 2);
+    ASSERT_EQ(buffer.GetSize(), 2u);
 
     EXPECT_EQ(ShipSpaceCoordinates(2, 4), buffer[0].StartCoords);
     EXPECT_EQ(ShipSpaceCoordinates(1, 1), buffer[0].EndCoords);
@@ -230,6 +230,6 @@ TEST(RopeBufferTests, Reframe_BecomesEmpty)
         { 2, 1 },
         { -5, -14 });
 
-    ASSERT_EQ(buffer.GetSize(), 0);
+    ASSERT_EQ(buffer.GetSize(), 0u);
 }
 

@@ -91,7 +91,7 @@ TEST(ShipDefinitionFormatDeSerializerTests, Metadata_Full)
     sourceMd.ArtCredits = "KillerWhale";
     sourceMd.Author = "Gabriele Giuseppini";
     sourceMd.Description = "Supercaligragilisticexpiralidocius";
-    sourceMd.Password = 0x1122334455667788;
+    sourceMd.Password = 0x1122334455667788u;
     sourceMd.Scale = ShipSpaceToWorldSpaceCoordsRatio(4.0f, 100.5f);
     sourceMd.ShipName = "Best ship";
     sourceMd.YearBuilt = "2020-2021";
@@ -229,7 +229,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerTests, VariousSizes_Unifo
                 ShipSpaceSize(iParam, 1),
                 StructuralElement(nullptr))); // Empty
 
-        ASSERT_EQ(sourceStructuralLayer.Buffer.Size.GetLinearSize(), iParam);
+        ASSERT_EQ(sourceStructuralLayer.Buffer.Size.GetLinearSize(), static_cast<size_t>(iParam));
 
         DeSerializationBuffer<BigEndianess> buffer(256);
         ShipDefinitionFormatDeSerializer::AppendStructuralLayer(sourceStructuralLayer, buffer);

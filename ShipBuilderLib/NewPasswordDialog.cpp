@@ -205,7 +205,7 @@ void NewPasswordDialog::OnPasswordKey()
 
         bool hasDigits = false;
         bool hasPunct = false;
-        for (int c = 0; c < passwordValue.Length(); ++c)
+        for (size_t c = 0; c < passwordValue.Length(); ++c)
         {
             if (std::isdigit(passwordValue[c]))
                 hasDigits = true;

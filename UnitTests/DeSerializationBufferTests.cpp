@@ -46,7 +46,7 @@ TEST(DeSerializationBufferTests, BigEndian_uint16_WriteAtAndRead)
     DeSerializationBuffer<BigEndianess> b(16);
 
     size_t idx = b.ReserveAndAdvance<uint16_t>();
-    ASSERT_EQ(idx, 0);
+    ASSERT_EQ(idx, 0u);
 
     uint16_t sourceVal = 0x0412;
     size_t const sourceSize = b.WriteAt<std::uint16_t>(sourceVal, idx);
@@ -77,7 +77,7 @@ TEST(DeSerializationBufferTests, BigEndian_uint32_WriteAtAndRead)
     DeSerializationBuffer<BigEndianess> b(16);
 
     size_t idx = b.ReserveAndAdvance<uint32_t>();
-    ASSERT_EQ(idx, 0);
+    ASSERT_EQ(idx, 0u);
 
     uint32_t sourceVal = 0xff001122;
     size_t const sourceSize = b.WriteAt<std::uint32_t>(sourceVal, idx);
@@ -168,7 +168,7 @@ TEST(DeSerializationBufferTests, BigEndian_float_WriteAtAndRead)
     DeSerializationBuffer<BigEndianess> b(16);
 
     size_t idx = b.ReserveAndAdvance<float>();
-    ASSERT_EQ(idx, 0);
+    ASSERT_EQ(idx, 0u);
 
     float sourceVal = 4.25f;
     size_t const sourceSize = b.WriteAt<float>(sourceVal, idx);
@@ -212,11 +212,11 @@ TEST(DeSerializationBufferTests, BigEndian_var_uint16_AppendAndRead)
         size_t const writeSize = b.Append<var_uint16_t>(var_uint16_t(sourceValue));
         if (sourceValue <= 0x7f)
         {
-            ASSERT_EQ(writeSize, 1);
+            ASSERT_EQ(writeSize, 1u);
         }
         else
         {
-            ASSERT_EQ(writeSize, 2);
+            ASSERT_EQ(writeSize, 2u);
         }
 
         var_uint16_t readValue;
@@ -230,11 +230,11 @@ TEST(DeSerializationBufferTests, BigEndian_ReserveAndAdvance_Struct)
 {
     DeSerializationBuffer<BigEndianess> b(4);
 
-    ASSERT_EQ(b.GetSize(), 0);
+    ASSERT_EQ(b.GetSize(), 0u);
 
     size_t indexStart1 = b.ReserveAndAdvance<TestElement>();
 
-    EXPECT_EQ(indexStart1, 0);
+    EXPECT_EQ(indexStart1, 0u);
     EXPECT_EQ(b.GetSize(), sizeof(TestElement));
 }
 
@@ -242,22 +242,22 @@ TEST(DeSerializationBufferTests, BigEndian_ReserveAndAdvance_Bytes)
 {
     DeSerializationBuffer<BigEndianess> b(4);
 
-    ASSERT_EQ(b.GetSize(), 0);
+    ASSERT_EQ(b.GetSize(), 0u);
 
     size_t indexStart1 = b.ReserveAndAdvance(456);
 
-    EXPECT_EQ(indexStart1, 0);
-    EXPECT_EQ(b.GetSize(), 456);
+    EXPECT_EQ(indexStart1, 0u);
+    EXPECT_EQ(b.GetSize(), 456u);
 }
 
 TEST(DeSerializationBufferTests, BigEndian_Receive)
 {
     DeSerializationBuffer<BigEndianess> b(4);
 
-    ASSERT_EQ(b.GetSize(), 0);
+    ASSERT_EQ(b.GetSize(), 0u);
 
     auto const ptr = b.Receive(1024);
-    ASSERT_EQ(b.GetSize(), 1024);
+    ASSERT_EQ(b.GetSize(), 1024u);
 
     unsigned char testData[] = { 2, 3, 8, 252 };
     std::memcpy(ptr, testData, 4);
@@ -310,7 +310,7 @@ TEST(DeSerializationBufferTests, Append_Bytes)
 
     // Verify
 
-    ASSERT_EQ(b.GetSize(), 8);
+    ASSERT_EQ(b.GetSize(), 8u);
 
     // 1
 

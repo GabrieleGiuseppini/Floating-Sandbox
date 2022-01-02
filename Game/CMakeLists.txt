@@ -160,6 +160,9 @@ target_link_libraries (GameLib
 	GameCoreLib
 	GameOpenGLLib
 	GPUCalcLib
+	${ZLIB_LIBRARY}
+	${JPEG_LIBRARY}
+	${PNG_LIBRARY}
 	${IL_LIBRARIES}
 	${ILU_LIBRARIES}
 	${ILUT_LIBRARIES}

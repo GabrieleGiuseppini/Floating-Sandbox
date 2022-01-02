@@ -22,6 +22,8 @@ target_link_libraries (GPUCalcTest
 	GameCoreLib
 	GameOpenGLLib
 	GPUCalcLib
+	${ZLIB_LIBRARY}
+	${PNG_LIBRARY}
 	${OPENGL_LIBRARIES}
 	${wxWidgets_LIBRARIES}
 	${ADDITIONAL_LIBRARIES})

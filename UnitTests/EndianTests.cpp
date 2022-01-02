@@ -148,11 +148,11 @@ TEST(EndianTests, var_uint16_t_WriteRead_Big)
         size_t const writeSize = BigEndian<var_uint16_t>::Write(var_uint16_t(sourceValue), buffer);
         if (sourceValue <= 0x7f)
         {
-            ASSERT_EQ(writeSize, 1);
+            ASSERT_EQ(writeSize, 1u);
         }
         else
         {
-            ASSERT_EQ(writeSize, 2);
+            ASSERT_EQ(writeSize, 2u);
         }
 
         var_uint16_t readValue;
@@ -171,11 +171,11 @@ TEST(EndianTests, var_uint16_t_WriteRead_Little)
         size_t const writeSize = LittleEndian<var_uint16_t>::Write(var_uint16_t(sourceValue), buffer);
         if (sourceValue <= 0x7f)
         {
-            ASSERT_EQ(writeSize, 1);
+            ASSERT_EQ(writeSize, 1u);
         }
         else
         {
-            ASSERT_EQ(writeSize, 2);
+            ASSERT_EQ(writeSize, 2u);
         }
 
         var_uint16_t readValue;
