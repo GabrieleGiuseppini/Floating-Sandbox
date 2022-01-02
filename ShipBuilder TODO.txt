@@ -48,10 +48,19 @@ https://gamejolt.com/x/permalink/comment/11730705
 				+ Debug
 	+ Finish Windows build instructions
 
-- Commit + Push
++ Commit + Push
 
-- Ubuntu build
-	- After verifying we need jpeg, update Ubuntu build instructions
+= Ubuntu build
+	+ Verify we need jpeg
+	+ Install jpeg
+		+ Update instructions
+	+ Build DevIL
+	+ Build wxWidgets
+	- Build FS (release)
+		- Fix C++ compilation issues
+	- Verify runs:
+		- png
+		- jpeg
 
 - Merge into master
 

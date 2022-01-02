@@ -70,9 +70,13 @@ sudo apt install libglu1-mesa-dev
 ```
 sudo apt install zlib1g-dev
 ```
-### pnglib SDK
+### libpng SDK
 ```
 sudo apt install libpng-dev
+```
+### libjpeg SDK
+```
+sudo apt install libjpeg-dev
 ```
 # Preparing Prerequisite Libraries
 Here we clone and build the libraries required by Floating Sandbox. Some notes:
@@ -158,7 +162,7 @@ First of all, we're going to configure the build for GTK, with UNICODE and OpenG
 cd ~/git/wxWidgets
 mkdir my_wx_build
 cd my_wx_build
-../configure --disable-shared --with-gtk=3 --with-libpng --with-libxpm --without-libjpeg --without-libtiff --without-expat --disable-pnm --disable-gif --disable-pcx --disable-iff --with-opengl --prefix=${HOME}/fs_libs/wxWidgets --exec_prefix=${HOME}/fs_libs/wxWidgets --disable-tests --disable-rpath
+../configure --disable-shared --with-gtk=3 --with-libpng --with-libxpm --with-libjpeg --without-libtiff --without-expat --disable-pnm --disable-gif --disable-pcx --disable-iff --with-opengl --prefix=${HOME}/fs_libs/wxWidgets --exec_prefix=${HOME}/fs_libs/wxWidgets --disable-tests --disable-rpath
 ```
 The output of the last `configure` step should look like this:
 ```

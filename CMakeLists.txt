@@ -28,9 +28,9 @@ option(FS_USE_STATIC_LIBS "Force static linking" ON)
 option(FS_BUILD_BENCHMARKS "Build benchmarks" ON)
 
 # Force finding static libs on Linux/Mac
-if(NOT WIN32)
-	set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
-endif()
+#if(NOT WIN32)
+#	set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+#endif()
 
 # Set architecture on Windows, so we may build 64- and 32-bit with agility
 if(WIN32)

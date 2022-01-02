@@ -152,7 +152,7 @@ The output of this last command should look like this - after substituting obvio
 -- Generating done
 -- Build files have been written to: C:/Users/FSUser/source/build/wxWidgets-3.1.4
 ```
-Now it's time to build wxWidgets. Open the solution in Visual Studio, select the `Release` configuration, start a build for the `INSTALL` project, and go grab a cup of coffee.
+Now it's time to build wxWidgets. Open the solution in Visual Studio, select the `Release` configuration, and start a build for the `INSTALL` project. Do not go for a coffee yet as this build is gonna be quite quick.
 After the build is complete and installed, you should see the following under your new `%SDK_ROOT%\wxWidgets-3.1.4` directory:
 ```
 01/01/2022  06:31 PM    <DIR>          .
@@ -251,9 +251,9 @@ The output of this last command should look like this - after substituting obvio
 -- Generating done
 -- Build files have been written to: C:/Users/FSUser/source/Floating-Sandbox/build
 ```
-Open the solution in Visual Studio, select the `Release` configuration, and start a build for the `INSTALL` project.
+Open the solution in Visual Studio, select the `Release` configuration, and start a build for the `INSTALL` project. Now it's time for that cup of coffee.
 ### Running
-At this moment you should have the game neatly laid out under your `%USERPROFILE%\floating-sandbox` directory:
+When the build is complete you should have the game neatly laid out under your `%USERPROFILE%\floating-sandbox` directory:
 ```
 C:\Users\FSUser\floating-sandbox>dir
  Volume in drive C is OS
