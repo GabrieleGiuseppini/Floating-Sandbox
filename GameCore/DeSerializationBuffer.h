@@ -12,6 +12,35 @@
 #include <cstring>
 #include <memory>
 #include <string>
+#include <type_traits>
+
+////TODOTEST
+////namespace /*anoynmous*/ {
+////
+////    template<typename TEndianess, typename TType>
+////    struct _detail
+////    {
+////        size_t Append(
+////            TType const & value,
+////            unsigned char * buffer,
+////            size_t & bufferSize)
+////        {
+////            // Make sure it fits
+////            size_t const requiredSize = sizeof(TType);
+////            EnsureMayAppend(mSize + requiredSize);
+////
+////            // Append
+////            size_t const sz = Endian<T, TEndianess>::Write(value, mBuffer.get() + mSize);
+////            assert(sz <= requiredSize);
+////
+////            // Advance
+////            mSize += sz;
+////
+////            return sz;
+////        }
+////    };
+////
+////}
 
 template<typename TEndianess>
 class DeSerializationBuffer
@@ -94,7 +123,7 @@ public:
      * Appends the specified value to the end of the buffer, growing the buffer.
      * Returns the number of bytes written.
      */
-    template<typename T>
+    template<typename T, typename std::enable_if_t<!std::is_same_v<T, std::string>, int> = 0>
     size_t Append(T const & value)
     {
         // Make sure it fits
@@ -115,8 +144,8 @@ public:
      * Appends the specified string to the end of the buffer, growing the buffer.
      * Returns the number of bytes written.
      */
-    template<>
-    size_t Append(std::string const & value)
+    template<typename T, typename std::enable_if_t<std::is_same_v<T, std::string>, int> = 0>
+    size_t Append(T const & value)
     {
         // Make sure it fits
         size_t const requiredSize = sizeof(std::uint32_t) + value.length();
@@ -158,7 +187,7 @@ public:
      * Reads a value from the specified index.
      * Returns the number of bytes read.
      */
-    template<typename T>
+    template<typename T, typename std::enable_if_t<!std::is_same_v<T, var_uint16_t> && !std::is_same_v<T, std::string>, int> = 0>
     size_t ReadAt(size_t index, T & value) const
     {
         assert(index + sizeof(T) <= mAllocatedSize);
@@ -167,11 +196,11 @@ public:
     }
 
     /*
-     * Reads a value from the specified index.
+     * Reads a var_uint16_t value from the specified index.
      * Returns the number of bytes read.
      */
-    template<>
-    size_t ReadAt<var_uint16_t>(size_t index, var_uint16_t & value) const
+    template<typename T, typename std::enable_if_t<std::is_same_v<T, var_uint16_t>, int> = 0>
+    size_t ReadAt(size_t index, T & value) const
     {
         assert(index + 1 <= mAllocatedSize);
 
@@ -182,8 +211,8 @@ public:
      * Reads a string at the specified index.
      * Returns the number of bytes read.
      */
-    template<>
-    size_t ReadAt<std::string>(size_t index, std::string & value) const
+    template<typename T, typename std::enable_if_t<std::is_same_v<T, std::string>, int> = 0>
+    size_t ReadAt(size_t index, T & value) const
     {
         // Read length
         assert(index + sizeof(std::uint32_t) <= mAllocatedSize);

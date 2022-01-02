@@ -56,8 +56,8 @@ https://gamejolt.com/x/permalink/comment/11730705
 		+ Update instructions
 	+ Build DevIL
 	+ Build wxWidgets
-	- Build FS (release)
-		- Fix C++ compilation issues
+	= Build FS (release)
+		= Fix C++ compilation issues
 	- Verify runs:
 		- png
 		- jpeg
