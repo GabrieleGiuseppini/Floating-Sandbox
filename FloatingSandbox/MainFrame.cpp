@@ -1035,11 +1035,12 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     // Create ShipBuilder frame
     //
 
-    // TODO: add progress reporting if ShipBuilder creation starts creating longer
+    // TODO: add progress reporting if ShipBuilder creation starts taking longer
     try
     {
         mShipBuilderMainFrame = std::make_unique<ShipBuilder::MainFrame>(
             mMainApp,
+            GetIcon(),
             mResourceLocator,
             mLocalizationManager,
             mGameController->GetMaterialDatabase(),

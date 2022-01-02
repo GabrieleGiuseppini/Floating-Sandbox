@@ -32,6 +32,7 @@
 #include <wx/frame.h>
 #include <wx/glcanvas.h> // Need to include this *after* our glad.h has been included, so that wxGLCanvas ends
                          // up *not* including the system's OpenGL header but glad's instead
+#include <wx/icon.h>
 #include <wx/menu.h>
 #include <wx/panel.h>
 #include <wx/scrolbar.h>
@@ -62,6 +63,7 @@ public:
 
     MainFrame(
         wxApp * mainApp,
+        wxIcon const & icon,
         ResourceLocator const & resourceLocator,
         LocalizationManager const & localizationManager,
         MaterialDatabase const & materialDatabase,

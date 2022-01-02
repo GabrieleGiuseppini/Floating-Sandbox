@@ -21,8 +21,9 @@
 
 #include <memory>
 
-#ifndef _MSC_VER
-// Define icon
+#ifdef _MSC_VER
+// Nothing to do, we use resources
+#else
 #include "Resources/ShipBBB.xpm"
 #endif
 
@@ -126,6 +127,7 @@ bool MainApp::OnInit()
 
         mMainFrame = new ShipBuilder::MainFrame(
             this,
+            wxICON(BBB_SHIP_ICON),
             *mResourceLocator,
             *mLocalizationManager,
             *mMaterialDatabase,

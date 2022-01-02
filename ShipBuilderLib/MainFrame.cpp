@@ -47,6 +47,7 @@ int constexpr MaxVisualizationTransparency = 128;
 
 MainFrame::MainFrame(
     wxApp * mainApp,
+    wxIcon const & icon,
     ResourceLocator const & resourceLocator,
     LocalizationManager const & localizationManager,
     MaterialDatabase const & materialDatabase,
@@ -76,7 +77,7 @@ MainFrame::MainFrame(
 
     Bind(wxEVT_CLOSE_WINDOW, &MainFrame::OnClose, this);
 
-    SetIcon(wxICON(BBB_SHIP_ICON));
+    SetIcon(icon);
     SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
     Maximize();
     Centre();
