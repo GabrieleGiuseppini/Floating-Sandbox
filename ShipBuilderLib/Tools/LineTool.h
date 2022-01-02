@@ -68,8 +68,10 @@ private:
         ShipSpaceCoordinates const & endPoint,
         TVisitor && visitor);
 
+    using HasEdited = StrongTypedBool<struct _HasEdited>;
+
     template<bool TIsForEphemeralVisualization>
-    std::pair<std::optional<ShipSpaceRect>, StrongTypedBool<struct HasEdited>> TryFill(
+    std::pair<std::optional<ShipSpaceRect>, HasEdited> TryFill(
         ShipSpaceCoordinates const & pos,
         LayerMaterialType const * fillMaterial);
 

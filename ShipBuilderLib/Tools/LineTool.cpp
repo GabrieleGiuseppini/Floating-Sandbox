@@ -492,7 +492,7 @@ void LineTool<TLayer>::DoLine(
 
 template<LayerType TLayer>
 template<bool TIsForEphemeralVisualization>
-std::pair<std::optional<ShipSpaceRect>, StrongTypedBool<struct HasEdited>> LineTool<TLayer>::TryFill(
+std::pair<std::optional<ShipSpaceRect>, typename LineTool<TLayer>::HasEdited> LineTool<TLayer>::TryFill(
     ShipSpaceCoordinates const & pos,
     LayerMaterialType const * fillMaterial)
 {
@@ -514,7 +514,7 @@ std::pair<std::optional<ShipSpaceRect>, StrongTypedBool<struct HasEdited>> LineT
                     fillMaterial);
             }
 
-            return std::make_pair(affectedRect, StrongTypedTrue<HasEdited>);
+            return std::make_pair(affectedRect, StrongTypedTrue<_HasEdited>);
         }
         else
         {
@@ -536,13 +536,13 @@ std::pair<std::optional<ShipSpaceRect>, StrongTypedBool<struct HasEdited>> LineT
                         fillMaterial);
                 }
 
-                return std::make_pair(affectedRect, StrongTypedTrue<HasEdited>);
+                return std::make_pair(affectedRect, StrongTypedTrue<_HasEdited>);
             }
         }
     }
 
     // Haven't filled
-    return std::make_pair(affectedRect, StrongTypedFalse<HasEdited>);
+    return std::make_pair(affectedRect, StrongTypedFalse<_HasEdited>);
 }
 
 template<LayerType TLayer>
