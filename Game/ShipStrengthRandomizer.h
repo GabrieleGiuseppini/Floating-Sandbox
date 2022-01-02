@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include "ShipBuildTypes.h"
+#include "ShipFactoryTypes.h"
 
 #include <GameCore/Matrix.h>
 #include <GameCore/Vectors.h>
@@ -21,14 +21,14 @@ public:
     ShipStrengthRandomizer();
 
     void RandomizeStrength(
-        ShipBuildPointIndexMatrix const & pointIndexMatrix,
+        ShipFactoryPointIndexMatrix const & pointIndexMatrix,
         vec2i const & pointIndexMatrixRegionOrigin,
         vec2i const & pointIndexMatrixRegionSize,
-        std::vector<ShipBuildPoint> & pointInfos2,
+        std::vector<ShipFactoryPoint> & pointInfos2,
         std::vector<ElementIndex> const & pointIndexRemap2,
-        std::vector<ShipBuildSpring> const & springInfos2,
-        std::vector<ShipBuildTriangle> const & triangleInfos1,
-        std::vector<ShipBuildFrontier> const & shipBuildFrontiers) const;
+        std::vector<ShipFactorySpring> const & springInfos2,
+        std::vector<ShipFactoryTriangle> const & triangleInfos1,
+        std::vector<ShipFactoryFrontier> const & shipFactoryFrontiers) const;
 
     //
     // Settings
@@ -56,7 +56,7 @@ public:
 
 private:
 
-    void RandomizeStrength_Perlin(std::vector<ShipBuildPoint> & pointInfos2) const;
+    void RandomizeStrength_Perlin(std::vector<ShipFactoryPoint> & pointInfos2) const;
 
     struct BatikDistance
     {
@@ -73,14 +73,14 @@ private:
     using BatikDistanceMatrix = Matrix2<BatikDistance>;
 
     void RandomizeStrength_Batik(
-        ShipBuildPointIndexMatrix const & pointIndexMatrix,
+        ShipFactoryPointIndexMatrix const & pointIndexMatrix,
         vec2i const & pointIndexMatrixRegionOrigin,
         vec2i const & pointIndexMatrixRegionSize,
-        std::vector<ShipBuildPoint> & pointInfos2,
+        std::vector<ShipFactoryPoint> & pointInfos2,
         std::vector<ElementIndex> const & pointIndexRemap2,
-        std::vector<ShipBuildSpring> const & springInfos2,
-        std::vector<ShipBuildTriangle> const & triangleInfos1,
-        std::vector<ShipBuildFrontier> const & shipBuildFrontiers) const;
+        std::vector<ShipFactorySpring> const & springInfos2,
+        std::vector<ShipFactoryTriangle> const & triangleInfos1,
+        std::vector<ShipFactoryFrontier> const & shipFactoryFrontiers) const;
 
     template<typename TRandomEngine>
     void PropagateBatikCrack(

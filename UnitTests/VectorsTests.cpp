@@ -40,6 +40,15 @@ TEST(VectorsTests, Sum_2i)
     EXPECT_EQ(c.y, 9);
 }
 
+TEST(VectorsTests, Float_to_Integral_Round_2f)
+{
+    vec2f a(1.4f, 5.8f);
+    vec2i const b = a.to_vec2i_round();
+
+    EXPECT_EQ(b.x, 1);
+    EXPECT_EQ(b.y, 6);
+}
+
 class Normalization2fTest : public testing::TestWithParam<std::tuple<vec2f, vec2f>>
 {
 public:

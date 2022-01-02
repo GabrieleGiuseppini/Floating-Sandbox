@@ -8,8 +8,6 @@ set  (FLOATING_SANDBOX_SOURCES
 	EventTickerPanel.cpp
 	EventTickerPanel.h
 	GLCanvas.h
-	LocalizationManager.cpp
-	LocalizationManager.h
 	MainApp.cpp
 	MainFrame.cpp
 	MainFrame.h
@@ -25,8 +23,6 @@ set  (FLOATING_SANDBOX_SOURCES
 	SoundController.h
 	Sounds.cpp
 	Sounds.h
-	StandardSystemPaths.cpp
-	StandardSystemPaths.h
 	SwitchboardPanel.cpp
 	SwitchboardPanel.h
 	ToolController.cpp
@@ -39,8 +35,6 @@ set  (FLOATING_SANDBOX_SOURCES
 	UnhandledExceptionHandler.h
 	UpdateChecker.cpp
 	UpdateChecker.h
-	WxHelpers.cpp
-	WxHelpers.h
 )
 
 set  (DIALOGS_SOURCES
@@ -56,28 +50,17 @@ set  (DIALOGS_SOURCES
 	DebugDialog.h
 	HelpDialog.cpp
 	HelpDialog.h
-	LoggingDialog.cpp
-	LoggingDialog.h
 	NewVersionDisplayDialog.cpp
 	NewVersionDisplayDialog.h
 	PreferencesDialog.cpp
 	PreferencesDialog.h
 	SettingsDialog.cpp
 	SettingsDialog.h
-	ShipDescriptionDialog.cpp
-	ShipDescriptionDialog.h
-	ShipLoadDialog.cpp
-	ShipLoadDialog.h
-	ShipPreviewWindow.cpp
-	ShipPreviewWindow.h
 	SplashScreenDialog.cpp
 	SplashScreenDialog.h
 	StartupTipDialog.cpp
 	StartupTipDialog.h
 )
-
-source_group(" " FILES ${FLOATING_SANDBOX_SOURCES})
-source_group("Dialogs" FILES ${DIALOGS_SOURCES})
 
 set(RESOURCE_FILES "")
 if(MSVC)
@@ -91,6 +74,8 @@ else()
 		Resources/ShipBBB.xpm)
 endif()
 
+source_group(" " FILES ${FLOATING_SANDBOX_SOURCES})
+source_group("Dialogs" FILES ${DIALOGS_SOURCES})
 source_group("Resources" FILES ${RESOURCE_FILES})
 
 add_executable (FloatingSandbox ${FLOATING_SANDBOX_SOURCES} ${DIALOGS_SOURCES} ${RESOURCE_FILES})
@@ -105,7 +90,8 @@ target_link_libraries (FloatingSandbox
 	GameLib
 	GameOpenGLLib
 	GPUCalcLib
-	UIControlsLib
+	ShipBuilderLib
+	UILib
 	sfml-audio
 	sfml-network
 	sfml-system
@@ -142,7 +128,7 @@ endif()
 # Copy files
 #
 
-message (STATUS "Copying data files and runtime files...")
+message (STATUS "Copying data files and runtime files for FloatingSandbox...")
 
 file(COPY "${CMAKE_SOURCE_DIR}/Data" "${CMAKE_SOURCE_DIR}/Ships"
 	DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/Debug")

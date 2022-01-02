@@ -23,7 +23,7 @@ ImageSize ImageFileTools::GetImageSize(std::filesystem::path const & filepath)
     // Load image
     //
 
-    ILuint imgHandle = InternalLoadImage(filepath);
+    ILuint imageHandle = InternalOpenImage(filepath);
 
     //
     // Get size
@@ -37,7 +37,7 @@ ImageSize ImageFileTools::GetImageSize(std::filesystem::path const & filepath)
     // Delete image
     //
 
-    ilDeleteImage(imgHandle);
+    ilDeleteImage(imageHandle);
 
 
     //
@@ -55,7 +55,7 @@ ImageSize ImageFileTools::GetImageSize(std::filesystem::path const & filepath)
 RgbaImageData ImageFileTools::LoadImageRgba(std::filesystem::path const & filepath)
 {
     return InternalLoadImage<rgbaColor>(
-        filepath,
+        InternalOpenImage(filepath),
         IL_RGBA,
         IL_ORIGIN_LOWER_LEFT,
         std::nullopt);
@@ -64,7 +64,7 @@ RgbaImageData ImageFileTools::LoadImageRgba(std::filesystem::path const & filepa
 RgbImageData ImageFileTools::LoadImageRgb(std::filesystem::path const & filepath)
 {
     return InternalLoadImage<rgbColor>(
-        filepath,
+        InternalOpenImage(filepath),
         IL_RGB,
         IL_ORIGIN_LOWER_LEFT,
         std::nullopt);
@@ -75,15 +75,15 @@ RgbaImageData ImageFileTools::LoadImageRgbaAndMagnify(
     int magnificationFactor)
 {
     return InternalLoadImage<rgbaColor>(
-        filepath,
+        InternalOpenImage(filepath),
         IL_RGBA,
         IL_ORIGIN_LOWER_LEFT,
         ResizeInfo(
             [magnificationFactor](ImageSize const & originalImageSize)
             {
                 return ImageSize(
-                    originalImageSize.Width * magnificationFactor,
-                    originalImageSize.Height * magnificationFactor);
+                    originalImageSize.width * magnificationFactor,
+                    originalImageSize.height * magnificationFactor);
             },
             ILU_NEAREST));
 }
@@ -93,7 +93,7 @@ RgbaImageData ImageFileTools::LoadImageRgbaAndResize(
     int resizedWidth)
 {
     return InternalLoadImage<rgbaColor>(
-        filepath,
+        InternalOpenImage(filepath),
         IL_RGBA,
         IL_ORIGIN_LOWER_LEFT,
         ResizeInfo(
@@ -103,8 +103,8 @@ RgbaImageData ImageFileTools::LoadImageRgbaAndResize(
                     resizedWidth,
                     static_cast<int>(
                         round(
-                            static_cast<float>(originalImageSize.Height)
-                            / static_cast<float>(originalImageSize.Width)
+                            static_cast<float>(originalImageSize.height)
+                            / static_cast<float>(originalImageSize.width)
                             * static_cast<float>(resizedWidth))));
             },
             ILU_BILINEAR));
@@ -115,7 +115,7 @@ RgbaImageData ImageFileTools::LoadImageRgbaAndResize(
     ImageSize const & maxSize)
 {
     return InternalLoadImageAndResize<rgbaColor>(
-        filepath,
+        InternalOpenImage(filepath),
         IL_RGBA,
         maxSize);
 }
@@ -125,16 +125,16 @@ RgbImageData ImageFileTools::LoadImageRgbAndResize(
     ImageSize const & maxSize)
 {
     return InternalLoadImageAndResize<rgbColor>(
-        filepath,
+        InternalOpenImage(filepath),
         IL_RGB,
         maxSize);
 }
 
-void ImageFileTools::SaveImage(
+void ImageFileTools::SavePngImage(
     std::filesystem::path filepath,
     RgbaImageData const & image)
 {
-    InternalSaveImage(
+    InternalSavePngImage(
         image.Size,
         image.Data.get(),
         4,
@@ -142,16 +142,68 @@ void ImageFileTools::SaveImage(
         filepath);
 }
 
-void ImageFileTools::SaveImage(
+void ImageFileTools::SavePngImage(
     std::filesystem::path filepath,
     RgbImageData const & image)
 {
-    InternalSaveImage(
+    InternalSavePngImage(
         image.Size,
         image.Data.get(),
         3,
         IL_RGB,
         filepath);
+}
+
+RgbaImageData ImageFileTools::DecodePngImage(DeSerializationBuffer<BigEndianess> const & buffer)
+{
+    return InternalLoadImage<rgbaColor>(
+        InternalOpenImage(buffer, IL_PNG),
+        IL_RGBA,
+        IL_ORIGIN_LOWER_LEFT,
+        std::nullopt);
+}
+
+RgbaImageData ImageFileTools::DecodePngImageAndResize(
+    DeSerializationBuffer<BigEndianess> const & buffer,
+    ImageSize const & maxSize)
+{
+    return InternalLoadImageAndResize<rgbaColor>(
+        InternalOpenImage(buffer, IL_PNG),
+        IL_RGBA,
+        maxSize);
+}
+
+size_t ImageFileTools::EncodePngImage(
+    RgbaImageData const & image,
+    DeSerializationBuffer<BigEndianess> & buffer)
+{
+    CheckInitialized();
+
+    ILuint imageHandle;
+    ilGenImages(1, &imageHandle);
+    ilBindImage(imageHandle);
+
+    ilTexImage(
+        image.Size.width,
+        image.Size.height,
+        1,
+        static_cast<ILubyte>(4), // bpp
+        IL_RGBA,
+        IL_UNSIGNED_BYTE,
+        const_cast<void *>(reinterpret_cast<void const *>(image.Data.get())));
+
+    // Get required size
+    auto const requiredSize = ilSaveL(IL_PNG, nullptr, 0);
+
+    // Reserve room and advance
+    void * buf = reinterpret_cast<void *>(buffer.Receive(static_cast<size_t>(requiredSize)));
+
+    // Encode to buffer
+    ilSaveL(IL_PNG, buf, requiredSize);
+
+    ilDeleteImage(imageHandle);
+
+    return static_cast<size_t>(requiredSize);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -170,7 +222,7 @@ void ImageFileTools::CheckInitialized()
     }
 }
 
-unsigned int ImageFileTools::InternalLoadImage(std::filesystem::path const & filepath)
+unsigned int ImageFileTools::InternalOpenImage(std::filesystem::path const & filepath)
 {
     CheckInitialized();
 
@@ -179,7 +231,7 @@ unsigned int ImageFileTools::InternalLoadImage(std::filesystem::path const & fil
     ilBindImage(imghandle);
 
     //
-    // Load image
+    // Load image file
     //
 
     std::string const filepathStr = filepath.string();
@@ -202,45 +254,68 @@ unsigned int ImageFileTools::InternalLoadImage(std::filesystem::path const & fil
     return static_cast<unsigned int>(imghandle);
 }
 
+unsigned int ImageFileTools::InternalOpenImage(
+    DeSerializationBuffer<BigEndianess> const & buffer,
+    unsigned int imageType)
+{
+    CheckInitialized();
+
+    ILuint imghandle;
+    ilGenImages(1, &imghandle);
+    ilBindImage(imghandle);
+
+    //
+    // Decode image
+    //
+
+    if (!ilLoadL(
+        static_cast<ILenum>(imageType),
+        reinterpret_cast<void const *>(buffer.GetData()),
+        static_cast<ILuint>(buffer.GetSize())))
+    {
+        ILint const devilError = ilGetError();
+
+        // Provide DevIL's error message now
+        std::string const devilErrorMessage(iluErrorString(devilError));
+        throw GameException("Could not load image: " + devilErrorMessage);
+    }
+
+    return static_cast<unsigned int>(imghandle);
+}
+
 template <typename TColor>
 ImageData<TColor> ImageFileTools::InternalLoadImageAndResize(
-    std::filesystem::path const & filepath,
+    unsigned int imageHandle,
     int targetFormat,
     ImageSize const & maxSize)
 {
     return InternalLoadImage<TColor>(
-        filepath,
+        imageHandle,
         targetFormat,
         IL_ORIGIN_LOWER_LEFT,
         ResizeInfo(
             [maxSize](ImageSize const & originalImageSize)
             {
-                float wShrinkFactor = static_cast<float>(maxSize.Width) / static_cast<float>(originalImageSize.Width);
-                float hShrinkFactor = static_cast<float>(maxSize.Height) / static_cast<float>(originalImageSize.Height);
+                float wShrinkFactor = static_cast<float>(maxSize.width) / static_cast<float>(originalImageSize.width);
+                float hShrinkFactor = static_cast<float>(maxSize.height) / static_cast<float>(originalImageSize.height);
                 float shrinkFactor = std::min(
                     std::min(wShrinkFactor, hShrinkFactor),
                     1.0f);
 
                 return ImageSize(
-                    static_cast<int>(round(static_cast<float>(originalImageSize.Width) * shrinkFactor)),
-                    static_cast<int>(round(static_cast<float>(originalImageSize.Height) * shrinkFactor)));
+                    static_cast<int>(round(static_cast<float>(originalImageSize.width) * shrinkFactor)),
+                    static_cast<int>(round(static_cast<float>(originalImageSize.height) * shrinkFactor)));
             },
             ILU_BILINEAR));
 }
 
 template <typename TColor>
 ImageData<TColor> ImageFileTools::InternalLoadImage(
-    std::filesystem::path const & filepath,
+    unsigned int imageHandle,
     int targetFormat,
     int targetOrigin,
     std::optional<ResizeInfo> resizeInfo)
 {
-    //
-    // Load image
-    //
-
-    ILuint imgHandle = InternalLoadImage(filepath);
-
     //
     // Check if we need to convert it
     //
@@ -253,7 +328,7 @@ ImageData<TColor> ImageFileTools::InternalLoadImage(
         {
             ILint devilError = ilGetError();
             std::string devilErrorMessage(iluErrorString(devilError));
-            throw GameException("Could not convert image \"" + filepath.string() + "\": " + devilErrorMessage);
+            throw GameException("Could not convert image: " + devilErrorMessage);
         }
     }
 
@@ -262,7 +337,6 @@ ImageData<TColor> ImageFileTools::InternalLoadImage(
     {
         iluFlipImage();
     }
-
 
     //
     // Get metadata
@@ -276,7 +350,6 @@ ImageData<TColor> ImageFileTools::InternalLoadImage(
 
     assert(bpp == sizeof(TColor));
 
-
     //
     // Resize it
     //
@@ -287,7 +360,7 @@ ImageData<TColor> ImageFileTools::InternalLoadImage(
 
         auto newImageSize = resizeInfo->ResizeHandler(imageSize);
 
-        if (!iluScale(newImageSize.Width, newImageSize.Height, depth))
+        if (!iluScale(newImageSize.width, newImageSize.height, depth))
         {
             ILint devilError = ilGetError();
             std::string devilErrorMessage(iluErrorString(devilError));
@@ -297,28 +370,26 @@ ImageData<TColor> ImageFileTools::InternalLoadImage(
         imageSize = newImageSize;
     }
 
-
     //
     // Create data
     //
 
     ILubyte const * imageData = ilGetData();
-    auto data = std::make_unique<TColor[]>(imageSize.Width * imageSize.Height);
-    std::memcpy(static_cast<void*>(data.get()), imageData, imageSize.Width * imageSize.Height * bpp);
+    auto data = std::make_unique<TColor[]>(imageSize.width * imageSize.height);
+    std::memcpy(static_cast<void *>(data.get()), imageData, imageSize.width * imageSize.height * bpp);
 
     //
     // Delete image
     //
 
-    ilDeleteImage(imgHandle);
-
+    ilDeleteImage(imageHandle);
 
     return ImageData<TColor>(
         imageSize,
         std::move(data));
 }
 
-void ImageFileTools::InternalSaveImage(
+void ImageFileTools::InternalSavePngImage(
     ImageSize imageSize,
     void const * imageData,
     int bpp,
@@ -332,8 +403,8 @@ void ImageFileTools::InternalSaveImage(
     ilBindImage(imghandle);
 
     ilTexImage(
-        imageSize.Width,
-        imageSize.Height,
+        imageSize.width,
+        imageSize.height,
         1,
         static_cast<ILubyte>(bpp),
         format,

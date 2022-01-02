@@ -102,3 +102,126 @@ inline bool IsPointInTriangle(
         && (pPosition - bPosition).cross(cPosition - bPosition) >= 0.0f
         && (pPosition - cPosition).cross(aPosition - cPosition) >= 0.0f;
 }
+
+/*
+ * Calculates a line path between (and including) the specified endpoints, going
+ * through integral coordinates.
+ */
+
+enum class IntegralLineType
+{
+    Minimal,
+    WithAdjacentSteps
+};
+
+template<IntegralLineType TType, typename _TIntegralTag, typename TVisitor>
+inline void GenerateIntegralLinePath(
+    _IntegralCoordinates<_TIntegralTag> const & startPoint,
+    _IntegralCoordinates<_TIntegralTag> const & endPoint,
+    TVisitor const & visitor)
+{
+    //
+    // Visit starting point
+    //
+
+    visitor(startPoint);
+
+    // Check whether we are done
+    if (startPoint == endPoint)
+    {
+        return;
+    }
+
+    //
+    // "Draw" line from start position to end position
+    //
+    // Go along widest of Dx and Dy, in steps of 1.0, until we're very close to end position
+    //
+
+    // W = wide, N = narrow
+
+    int const dx = endPoint.x - startPoint.x;
+    int const dy = endPoint.y - startPoint.y;
+    bool widestIsX;
+    float slope;
+    float startW, startN;
+    float endW;
+    float stepW; // +1.0/-1.0
+    if (std::abs(dx) > std::abs(dy))
+    {
+        widestIsX = true;
+        slope = static_cast<float>(dy) / static_cast<float>(dx);
+        startW = static_cast<float>(startPoint.x);
+        startN = static_cast<float>(startPoint.y);
+        endW = static_cast<float>(endPoint.x);
+        stepW = static_cast<float>(dx) / static_cast<float>(std::abs(dx));
+    }
+    else
+    {
+        widestIsX = false;
+        slope = static_cast<float>(dx) / static_cast<float>(dy);
+        startW = static_cast<float>(startPoint.y);
+        startN = static_cast<float>(startPoint.x);
+        endW = static_cast<float>(endPoint.y);
+        stepW = static_cast<float>(dy) / static_cast<float>(std::abs(dy));
+    }
+
+    float curW = startW;
+    float curN = startN;
+
+    auto const makePosition = [&]() ->_IntegralCoordinates<_TIntegralTag>
+    {
+        vec2f newPosition;
+        if (widestIsX)
+        {
+            newPosition = vec2f(curW, curN);
+        }
+        else
+        {
+            newPosition = vec2f(curN, curW);
+        }
+
+        return _IntegralCoordinates<_TIntegralTag>(
+            static_cast<typename _IntegralCoordinates<_TIntegralTag>::integral_type>(std::round(newPosition.x)),
+            static_cast<typename _IntegralCoordinates<_TIntegralTag>::integral_type>(std::round(newPosition.y)));
+    };
+
+    //
+    // Visit all other points
+    //
+
+    _IntegralCoordinates<_TIntegralTag> oldPosition = startPoint;
+
+    while (true)
+    {
+        curW += stepW;
+
+        if constexpr (TType == IntegralLineType::WithAdjacentSteps)
+        {
+            auto const newPosition = makePosition();
+            if (newPosition != oldPosition)
+            {
+                visitor(newPosition);
+
+                oldPosition = newPosition;
+            }
+        }
+
+        curN += slope * stepW;
+
+        auto const newPosition = makePosition();
+        if (newPosition != oldPosition)
+        {
+            visitor(newPosition);
+
+            oldPosition = newPosition;
+        }
+
+        // Check if done
+        if (fabs(endW - curW) <= 0.5f)
+        {
+            // Reached destination
+            break;
+        }
+    }
+}

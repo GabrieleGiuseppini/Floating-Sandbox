@@ -10,13 +10,14 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <utility>
 
 #define STRINGIZE2(s) #s
 #define STRINGIZE(s) STRINGIZE2(s)
 
 #define APPLICATION_VERSION_MAJOR               1
 #define APPLICATION_VERSION_MINOR               16
-#define APPLICATION_VERSION_PATCH               8
+#define APPLICATION_VERSION_PATCH               9
 #define APPLICATION_VERSION_BUILD               1
 
 #define APPLICATION_VERSION_LONG_STR    STRINGIZE(APPLICATION_VERSION_MAJOR)        \
@@ -111,6 +112,16 @@ public:
     friend inline bool operator>=(Version const & l, Version const & r)
     {
         return !(l < r);
+    }
+
+    int GetMajor() const
+    {
+        return mMajor;
+    }
+
+    int GetMinor() const
+    {
+        return mMinor;
     }
 
     static Version FromString(std::string const & str)

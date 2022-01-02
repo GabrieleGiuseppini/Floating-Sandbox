@@ -15,6 +15,8 @@ public:
 
     explicit ResourceLocator(std::string const & argv0);
 
+    explicit ResourceLocator(std::filesystem::path const & rootProgramPath);
+
 public:
 
     //
@@ -38,7 +40,7 @@ public:
 
     std::filesystem::path GetTexturesRootFolderPath() const;
 
-    std::filesystem::path GetMaterialTexturesFolderPath() const;
+    std::filesystem::path GetMaterialTextureFilePath(std::string const & materialTextureName) const;
 
 
     //
@@ -121,7 +123,9 @@ public:
     // Shaders
     //
 
-    std::filesystem::path GetRenderShadersRootPath() const;
+    std::filesystem::path GetGameShadersRootPath() const;
+
+    std::filesystem::path GetShipBuilderShadersRootPath() const;
 
     std::filesystem::path GetGPUCalcShadersRootPath() const;
 

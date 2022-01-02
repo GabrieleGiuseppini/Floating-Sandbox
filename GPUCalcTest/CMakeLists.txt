@@ -22,6 +22,8 @@ target_link_libraries (GPUCalcTest
 	GameCoreLib
 	GameOpenGLLib
 	GPUCalcLib
+	${ZLIB_LIBRARY}
+	${PNG_LIBRARY}
 	${OPENGL_LIBRARIES}
 	${wxWidgets_LIBRARIES}
 	${ADDITIONAL_LIBRARIES})
@@ -57,7 +59,7 @@ endif (MSVC)
 # Copy files
 #
 
-message (STATUS "Copying data files...")
+message (STATUS "Copying data files for GPUCalcTest...")
 
 file(COPY "${CMAKE_SOURCE_DIR}/Data/Shaders/GPUCalc"
 	DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/Debug/Shaders")

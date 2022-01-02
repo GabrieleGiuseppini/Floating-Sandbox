@@ -1365,8 +1365,8 @@ void Ship::ApplyStaticPressureForces(
 
     // Publish stats
     mGameEventHandler->OnStaticPressureUpdated(
-        mStaticPressureNetForceMagnitudeSum / mStaticPressureNetForceMagnitudeCount,
-        mStaticPressureIterationsPercentagesSum / mStaticPressureIterationsCount);
+        mStaticPressureNetForceMagnitudeCount != 0.0f ? mStaticPressureNetForceMagnitudeSum / mStaticPressureNetForceMagnitudeCount : 0.0f,
+        mStaticPressureIterationsCount != 0.0f ? mStaticPressureIterationsPercentagesSum / mStaticPressureIterationsCount : 0.0f);
 }
 
 void Ship::ApplyStaticPressureForces(

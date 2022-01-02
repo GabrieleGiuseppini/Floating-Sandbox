@@ -43,7 +43,7 @@ void UploadedTextureManager<TextureGroups>::UploadNextFrame(
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     // Upload texture data
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, frame.Metadata.Size.Width, frame.Metadata.Size.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, frame.TextureData.Data.get());
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, frame.Metadata.Size.width, frame.Metadata.Size.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, frame.TextureData.Data.get());
     if (GL_NO_ERROR != glGetError())
     {
         throw GameException("Error uploading texture onto GPU");

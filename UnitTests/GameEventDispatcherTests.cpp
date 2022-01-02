@@ -20,14 +20,16 @@ using MockHandler = StrictMock<_MockGameEventHandler>;
 StructuralMaterial MakeStructuralMaterial(std::string name)
 {
     return StructuralMaterial(
+        rgbColor(1, 2, 3),
         name,
+        rgbColor::zero(),
         1.0f,
         1.0f,
         1.0f,
         1.0f,
         1.0f,
-        vec4f::zero(),
-        std::nullopt,
+        0.5f, // StrainThresholdFraction
+        std::nullopt, // Unique type
         std::nullopt, // Sound
         "TestMaterial",
         // Water
@@ -47,7 +49,9 @@ StructuralMaterial MakeStructuralMaterial(std::string name)
         0.0f, // Strength
         // Misc
         1.0f,
-        false);
+        false,
+        // Palette
+        std::nullopt);
 }
 
 /////////////////////////////////////////////////////////////////

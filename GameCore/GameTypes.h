@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "Colors.h"
 #include "EnumFlags.h"
 #include "SysSpecifics.h"
 #include "Vectors.h"
@@ -65,7 +66,7 @@ static constexpr PlaneId NonePlaneId = std::numeric_limits<PlaneId>::max();
  *
  * Comparable and ordered. Start from 0.
  */
-using ElectricalElementInstanceIndex = std::uint8_t; // Max 255 instances
+using ElectricalElementInstanceIndex = std::uint16_t;
 static constexpr ElectricalElementInstanceIndex NoneElectricalElementInstanceIndex = std::numeric_limits<ElectricalElementInstanceIndex>::max();
 
 /*
@@ -250,44 +251,504 @@ inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, Sequ
     return os;
 }
 
+// Password hash
+using PasswordHash = std::uint64_t;
+
+// Variable-length 16-bit unsigned integer
+struct var_uint16_t
+{
+public:
+
+    static std::uint16_t constexpr MaxValue = 0x03fff;
+
+    std::uint16_t value() const
+    {
+        return mValue;
+    }
+
+    var_uint16_t() = default;
+
+    constexpr explicit var_uint16_t(std::uint16_t value)
+        : mValue(value)
+    {
+        assert(value <= MaxValue);
+    }
+
+private:
+
+    std::uint16_t mValue;
+};
+
+namespace std {
+    template<> class numeric_limits<var_uint16_t>
+    {
+    public:
+        static constexpr var_uint16_t min() { return var_uint16_t(0); };
+        static constexpr var_uint16_t max() { return var_uint16_t(var_uint16_t::MaxValue); };
+        static constexpr var_uint16_t lowest() { return min(); };
+    };
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // Geometry
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-/*
- * Integral point's coordinates.
+/* 
+ * Integral system
  */
-struct IntegralPoint
-{
-    int X;
-    int Y;
 
-    constexpr IntegralPoint(
-        int x,
-        int y)
-        : X(x)
-        , Y(y)
+#pragma pack(push, 1)
+
+template<typename TIntegralTag>
+struct _IntegralSize
+{
+    using integral_type = int;
+
+    integral_type width;
+    integral_type height;
+
+    constexpr _IntegralSize(
+        integral_type _width,
+        integral_type _height)
+        : width(_width)
+        , height(_height)
     {}
 
-    IntegralPoint FlipY(int height) const
+    static _IntegralSize<TIntegralTag> FromFloatRound(vec2f const & vec)
     {
-        assert(height > Y);
-        return IntegralPoint(X, height - 1 - Y);
+        return _IntegralSize<TIntegralTag>(
+            static_cast<integral_type>(FastTruncateToArchInt(vec.x + 0.5f)),
+            static_cast<integral_type>(FastTruncateToArchInt(vec.y + 0.5f)));
+    }
+
+    inline bool operator==(_IntegralSize<TIntegralTag> const & other) const
+    {
+        return this->width == other.width
+            && this->height == other.height;
+    }
+
+    inline bool operator!=(_IntegralSize<TIntegralTag> const & other) const
+    {
+        return !(*this == other);
+    }
+
+    inline _IntegralSize<TIntegralTag> operator*(integral_type factor) const
+    {
+        return _IntegralSize<TIntegralTag>(
+            this->width * factor,
+            this->height * factor);
+    }
+
+    inline size_t GetLinearSize() const
+    {
+        return this->width * this->height;
+    }
+
+    inline _IntegralSize<TIntegralTag> Union(_IntegralSize<TIntegralTag> const & other) const
+    {
+        return _IntegralSize<TIntegralTag>(
+            std::max(this->width, other.width),
+            std::max(this->height, other.height));
+    }
+
+    inline _IntegralSize<TIntegralTag> Intersection(_IntegralSize<TIntegralTag> const & other) const
+    {
+        return _IntegralSize<TIntegralTag>(
+            std::min(this->width, other.width),
+            std::min(this->height, other.height));
+    }
+
+    vec2f ToFloat() const
+    {
+        return vec2f(
+            static_cast<float>(width),
+            static_cast<float>(height));
+    }
+
+    template<typename TCoordsRatio>
+    vec2f ToFractionalCoords(TCoordsRatio const & coordsRatio) const
+    {
+        assert(coordsRatio.inputUnits != 0.0f);
+
+        return vec2f(
+            static_cast<float>(width) / coordsRatio.inputUnits * coordsRatio.outputUnits,
+            static_cast<float>(height) / coordsRatio.inputUnits * coordsRatio.outputUnits);
     }
 
     std::string ToString() const
     {
         std::stringstream ss;
-        ss << "(" << X << ", " << Y << ")";
+        ss << "(" << width << " x " << height << ")";
         return ss.str();
     }
 };
 
-inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, IntegralPoint const & p)
+#pragma pack(pop)
+
+template<typename TTag>
+inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, _IntegralSize<TTag> const & is)
+{
+    os << is.ToString();
+    return os;
+}
+
+using IntegralRectSize = _IntegralSize<struct IntegralTag>;
+using ImageSize = _IntegralSize<struct ImageTag>;
+using ShipSpaceSize = _IntegralSize<struct ShipSpaceTag>;
+using DisplayLogicalSize = _IntegralSize<struct DisplayLogicalTag>;
+using DisplayPhysicalSize = _IntegralSize<struct DisplayPhysicalTag>;
+
+#pragma pack(push, 1)
+
+template<typename TIntegralTag>
+struct _IntegralCoordinates
+{
+    using integral_type = int;
+
+    integral_type x;
+    integral_type y;
+
+    constexpr _IntegralCoordinates(
+        integral_type _x,
+        integral_type _y)
+        : x(_x)
+        , y(_y)
+    {}
+
+    static _IntegralCoordinates<TIntegralTag> FromFloatRound(vec2f const & vec)
+    {
+        return _IntegralCoordinates<TIntegralTag>(
+            static_cast<integral_type>(FastTruncateToArchInt(vec.x + 0.5f)),
+            static_cast<integral_type>(FastTruncateToArchInt(vec.y + 0.5f)));
+    }
+
+    inline bool operator==(_IntegralCoordinates<TIntegralTag> const & other) const
+    {
+        return this->x == other.x
+            && this->y == other.y;
+    }
+
+    inline bool operator!=(_IntegralCoordinates<TIntegralTag> const & other) const
+    {
+        return !(*this == other);
+    }
+
+    inline _IntegralCoordinates<TIntegralTag> operator+(_IntegralSize<TIntegralTag> const & sz) const
+    {
+        return _IntegralCoordinates<TIntegralTag>(
+            this->x + sz.width,
+            this->y + sz.height);
+    }
+
+    inline void operator+=(_IntegralSize<TIntegralTag> const & sz)
+    {
+        this->x += sz.width;
+        this->y += sz.height;
+    }
+
+    inline _IntegralSize<TIntegralTag> operator-(_IntegralCoordinates<TIntegralTag> const & other) const
+    {
+        return _IntegralSize<TIntegralTag>(
+            this->x - other.x,
+            this->y - other.y);
+    }
+
+    inline _IntegralCoordinates<TIntegralTag> operator-(_IntegralSize<TIntegralTag> const & offset) const
+    {
+        return _IntegralCoordinates<TIntegralTag>(
+            this->x - offset.width,
+            this->y - offset.height);
+    }
+
+    template<typename TSize>
+    bool IsInSize(TSize const & size) const
+    {
+        return x >= 0 && x < size.width && y >= 0 && y < size.height;
+    }
+
+    template<typename TRect>
+    bool IsInRect(TRect const & rect) const
+    {
+        return x >= rect.origin.x && x < rect.origin.x + rect.size.width 
+            && y >= rect.origin.y && y < rect.origin.y + rect.size.height;
+    }
+
+    _IntegralCoordinates<TIntegralTag> FlipX(integral_type width) const
+    {
+        assert(width > x);
+        return _IntegralCoordinates<TIntegralTag>(width - 1 - x, y);
+    }
+
+    _IntegralCoordinates<TIntegralTag> FlipY(integral_type height) const
+    {
+        assert(height > y);
+        return _IntegralCoordinates<TIntegralTag>(x, height - 1 - y);
+    }
+
+    vec2f ToFloat() const
+    {
+        return vec2f(
+            static_cast<float>(x),
+            static_cast<float>(y));
+    }
+
+    template<typename TCoordsRatio>
+    vec2f ToFractionalCoords(TCoordsRatio const & coordsRatio) const
+    {
+        assert(coordsRatio.inputUnits != 0.0f);
+
+        return vec2f(
+            static_cast<float>(x) / coordsRatio.inputUnits * coordsRatio.outputUnits,
+            static_cast<float>(y) / coordsRatio.inputUnits * coordsRatio.outputUnits);
+    }
+
+    std::string ToString() const
+    {
+        std::stringstream ss;
+        ss << "(" << x << ", " << y << ")";
+        return ss.str();
+    }
+};
+
+#pragma pack(pop)
+
+template<typename TTag>
+inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, _IntegralCoordinates<TTag> const & p)
 {
     os << p.ToString();
     return os;
 }
+
+using IntegralCoordinates = _IntegralCoordinates<struct IntegralTag>; // Generic integer
+using ImageCoordinates = _IntegralCoordinates<struct ImageTag>; // Image
+using ShipSpaceCoordinates = _IntegralCoordinates<struct ShipSpaceTag>; // Y=0 at bottom
+using DisplayLogicalCoordinates = _IntegralCoordinates<struct DisplayLogicalTag>; // Y=0 at top
+using DisplayPhysicalCoordinates = _IntegralCoordinates<struct DisplayPhysicalTag>; // Y=0 at top
+
+#pragma pack(push)
+
+template<typename TIntegralTag>
+struct _IntegralRect
+{
+    _IntegralCoordinates<TIntegralTag> origin;
+    _IntegralSize<TIntegralTag> size;
+
+    constexpr _IntegralRect()
+        : origin(0,0 )
+        , size(0, 0)
+    {}
+
+    constexpr _IntegralRect(
+        _IntegralCoordinates<TIntegralTag> const & _origin,
+        _IntegralSize<TIntegralTag> const & _size)
+        : origin(_origin)
+        , size(_size)
+    {}
+
+    constexpr _IntegralRect(_IntegralCoordinates<TIntegralTag> const & _origin)
+        : origin(_origin)
+        , size(1, 1)
+    {}
+
+    constexpr _IntegralRect(_IntegralSize<TIntegralTag> const & _size)
+        : origin(0, 0)
+        , size(_size)
+    {}
+
+    inline bool operator==(_IntegralRect<TIntegralTag> const & other) const
+    {
+        return origin == other.origin
+            && size == other.size;
+    }
+
+    inline bool operator!=(_IntegralRect<TIntegralTag> const & other) const
+    {
+        return !(*this == other);
+    }
+
+    bool IsContainedInRect(_IntegralRect<TIntegralTag> const & container) const
+    {
+        return origin.x >= container.origin.x
+            && origin.y >= container.origin.y
+            && origin.x + size.width <= container.origin.x + container.size.width
+            && origin.y + size.height <= container.origin.y + container.size.height;
+    }
+
+    void UnionWith(_IntegralCoordinates<TIntegralTag> const & other)
+    {
+        auto const newOrigin = _IntegralCoordinates<TIntegralTag>(
+            std::min(origin.x, other.x),
+            std::min(origin.y, other.y));
+
+        auto const newSize = _IntegralSize<TIntegralTag>(
+            std::max(origin.x + size.width, other.x + 1) - newOrigin.x,
+            std::max(origin.y + size.height, other.y + 1) - newOrigin.y);
+
+        assert(newSize.width >= 0 && newSize.height >= 0);
+
+        origin = newOrigin;
+        size = newSize;
+    }
+
+    void UnionWith(_IntegralRect<TIntegralTag> const & other)
+    {
+        auto const newOrigin = _IntegralCoordinates<TIntegralTag>(
+            std::min(origin.x, other.origin.x),
+            std::min(origin.y, other.origin.y));
+
+        auto const newSize = _IntegralSize<TIntegralTag>(
+            std::max(origin.x + size.width, other.origin.x + other.size.width) - newOrigin.x,
+            std::max(origin.y + size.height, other.origin.y + other.size.height) - newOrigin.y);
+
+        assert(newSize.width >= 0 && newSize.height >= 0);
+
+        origin = newOrigin;
+        size = newSize;
+    }
+
+    std::optional<_IntegralRect<TIntegralTag>> MakeIntersectionWith(_IntegralRect<TIntegralTag> const & other) const
+    {
+        auto const newOrigin = _IntegralCoordinates<TIntegralTag>(
+            std::max(origin.x, other.origin.x),
+            std::max(origin.y, other.origin.y));
+
+        auto const newSize = _IntegralSize<TIntegralTag>(
+            std::min(size.width - (newOrigin.x - origin.x), other.size.width - (newOrigin.x - other.origin.x)),
+            std::min(size.height - (newOrigin.y - origin.y), other.size.height - (newOrigin.y - other.origin.y)));
+
+        if (newSize.width <= 0 || newSize.height <= 0)
+        {
+            return std::nullopt;
+        }
+        else
+        {
+            return _IntegralRect<TIntegralTag>(
+                newOrigin,
+                newSize);
+        }
+    }
+
+    std::string ToString() const
+    {
+        std::stringstream ss;
+        ss << "(" << origin.x << ", " << origin.y << " -> " << size.width << " x " << size.height << ")";
+        return ss.str();
+    }
+};
+
+#pragma pack(pop)
+
+using IntegralRect = _IntegralRect<struct IntegralTag>;
+using ImageRect = _IntegralRect<struct ImageTag>;
+using ShipSpaceRect = _IntegralRect<struct ShipSpaceTag>;
+using DisplayPhysicalRect = _IntegralRect<struct DisplayPhysicalTag>; // Y=0 at top
+
+template<typename TIntegralTag>
+struct _IntegralCoordsRatio
+{
+    float inputUnits; // i.e. how many integral units
+    float outputUnits; // i.e. how many float units
+
+    constexpr _IntegralCoordsRatio(
+        float _inputUnits,
+        float _outputUnits)
+        : inputUnits(_inputUnits)
+        , outputUnits(_outputUnits)
+    {}
+
+    inline bool operator==(_IntegralCoordsRatio<TIntegralTag> const & other) const
+    {
+        return inputUnits == other.inputUnits
+            && outputUnits == other.outputUnits;
+    }
+};
+
+using ShipSpaceToWorldSpaceCoordsRatio = _IntegralCoordsRatio<struct ShipSpaceTag>;
+
+/*
+ * Float rectangle.
+ */
+
+#pragma pack(push)
+
+struct FloatRect
+{
+    vec2f origin;
+    vec2f size;
+
+    constexpr FloatRect()
+        : origin(vec2f::zero())
+        , size(vec2f::zero())
+    {}
+
+    constexpr FloatRect(
+        vec2f const & _origin,
+        vec2f const & _size)
+        : origin(_origin)
+        , size(_size)
+    {}
+
+    inline bool operator==(FloatRect const & other) const
+    {
+        return origin == other.origin
+            && size == other.size;
+    }
+
+    bool IsContainedInRect(FloatRect const & container) const
+    {
+        return origin.x >= container.origin.x
+            && origin.y >= container.origin.y
+            && origin.x + size.x <= container.origin.x + container.size.x
+            && origin.y + size.y <= container.origin.y + container.size.y;
+    }
+
+    void UnionWith(FloatRect const & other)
+    {
+        auto const newOrigin = vec2f(
+            std::min(origin.x, other.origin.x),
+            std::min(origin.y, other.origin.y));
+
+        auto const newSize = vec2f(
+            std::max(origin.x + size.x, other.origin.x + other.size.x) - newOrigin.x,
+            std::max(origin.y + size.y, other.origin.y + other.size.y) - newOrigin.y);
+
+        assert(newSize.x >= 0 && newSize.y >= 0);
+
+        origin = newOrigin;
+        size = newSize;
+    }
+
+    std::optional<FloatRect> MakeIntersectionWith(FloatRect const & other) const
+    {
+        auto const newOrigin = vec2f(
+            std::max(origin.x, other.origin.x),
+            std::max(origin.y, other.origin.y));
+
+        auto const newSize = vec2f(
+            std::min(size.x - (newOrigin.x - origin.x), other.size.x - (newOrigin.x - other.origin.x)),
+            std::min(size.y - (newOrigin.y - origin.y), other.size.y - (newOrigin.y - other.origin.y)));
+
+        if (newSize.x <= 0 || newSize.y <= 0)
+        {
+            return std::nullopt;
+        }
+        else
+        {
+            return FloatRect(
+                newOrigin,
+                newSize);
+        }
+    }
+
+    std::string ToString() const
+    {
+        std::stringstream ss;
+        ss << "(" << origin.x << ", " << origin.y << " -> " << size.x << " x " << size.y << ")";
+        return ss.str();
+    }
+};
+
+#pragma pack(pop)
 
 /*
  * Octants, i.e. the direction of a spring connecting two neighbors.
@@ -296,9 +757,47 @@ inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, Inte
  */
 using Octant = std::int32_t;
 
+/*
+ * Generic directions.
+ */
+enum class DirectionType
+{
+    Horizontal = 1,
+    Vertical = 2
+};
+
+template <> struct is_flag<DirectionType> : std::true_type {};
+
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // Game
 ////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*
+ * The color key of materials.
+ */
+using MaterialColorKey = rgbColor;
+
+static MaterialColorKey constexpr EmptyMaterialColorKey = MaterialColorKey(255, 255, 255);
+
+/*
+ * The different layers.
+ */
+enum class LayerType : std::uint32_t
+{
+    Structural = 0,
+    Electrical = 1,
+    Ropes = 2,
+    Texture = 3
+};
+
+/*
+ * The different material layers.
+ */
+enum class MaterialLayerType
+{
+    Structural,
+    Electrical
+};
 
 /*
  * Types of frontiers (duh).
@@ -400,12 +899,12 @@ DurationShortLongType StrToDurationShortLongType(std::string const & str);
  */
 struct ElectricalPanelElementMetadata
 {
-    std::optional<IntegralPoint> PanelCoordinates;
+    std::optional<IntegralCoordinates> PanelCoordinates;
     std::optional<std::string> Label;
     bool IsHidden;
 
     ElectricalPanelElementMetadata(
-        std::optional<IntegralPoint> panelCoordinates,
+        std::optional<IntegralCoordinates> panelCoordinates,
         std::optional<std::string> label,
         bool isHidden)
         : PanelCoordinates(std::move(panelCoordinates))
@@ -441,116 +940,15 @@ template <> struct is_flag<ToolApplicationLocus> : std::true_type {};
 // Rendering
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-template<typename TTag>
-struct _PixelSize
-{
-    int width;
-    int height;
-
-    _PixelSize(
-        int _width,
-        int _height)
-        : width(_width)
-        , height(_height)
-    {}
-
-    static _PixelSize<TTag> FromFloat(vec2f const & vec)
-    {
-        return _PixelSize<TTag>(
-            static_cast<int>(std::round(vec.x)),
-            static_cast<int>(std::round(vec.y)));
-    }
-
-    inline bool operator==(_PixelSize<TTag> const & other) const
-    {
-        return this->width == other.width
-            && this->height == other.height;
-    }
-
-    vec2f ToFloat() const
-    {
-        return vec2f(
-            static_cast<float>(width),
-            static_cast<float>(height));
-    }
-};
-
-using LogicalPixelSize = _PixelSize<struct LogicalCoordinatesTag>;
-using PhysicalPixelSize = _PixelSize<struct PhysicalCoordinatesTag>;
-
-template<typename TTag>
-struct _PixelCoordinates
-{
-    int x;
-    int y;
-
-    _PixelCoordinates(
-        int _x,
-        int _y)
-        : x(_x)
-        , y(_y)
-    {}
-
-    static _PixelCoordinates<TTag> FromFloat(vec2f const & vec)
-    {
-        return _PixelCoordinates<TTag>(
-            static_cast<int>(std::round(vec.x)),
-            static_cast<int>(std::round(vec.y)));
-    }
-
-    inline bool operator==(_PixelCoordinates<TTag> const & other) const
-    {
-        return this->x == other.x
-            && this->y == other.y;
-    }
-
-    inline _PixelSize<TTag> operator-(_PixelCoordinates<TTag> const & other) const
-    {
-        return _PixelSize<TTag>(
-            this->x - other.x,
-            this->y - other.y);
-    }
-
-    vec2f ToFloat() const
-    {
-        return vec2f(
-            static_cast<float>(x),
-            static_cast<float>(y));
-    }
-};
-
-using LogicalPixelCoordinates = _PixelCoordinates<struct LogicalCoordinatesTag>;
-using PhysicalPixelCoordinates = _PixelCoordinates<struct PhysicalCoordinatesTag>;
-
 /*
  * The different auto-texturization modes for ships that don't have a texture layer.
+ *
+ * Note: enum value are serialized in ship files, do not change.
  */
-enum class ShipAutoTexturizationModeType : std::int64_t
+enum class ShipAutoTexturizationModeType : std::uint32_t
 {
     FlatStructure = 1,      // Builds texture using structural materials' RenderColor
     MaterialTextures = 2    // Builds texture using materials' "Bump Maps"
-};
-
-/*
- * Ship auto-texturization settings.
- */
-struct ShipAutoTexturizationSettings
-{
-    ShipAutoTexturizationModeType Mode;
-    float MaterialTextureMagnification;
-    float MaterialTextureTransparency;
-
-    ShipAutoTexturizationSettings(
-        ShipAutoTexturizationModeType mode,
-        float materialTextureMagnification,
-        float materialTextureTransparency)
-        : Mode(mode)
-        , MaterialTextureMagnification(materialTextureMagnification)
-        , MaterialTextureTransparency(materialTextureTransparency)
-    {}
-
-    static ShipAutoTexturizationSettings FromJSON(picojson::object const & jsonObject);
-    picojson::object ToJSON() const;
 };
 
 /*

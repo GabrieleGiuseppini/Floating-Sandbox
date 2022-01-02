@@ -6,7 +6,7 @@
 #pragma once
 
 #include "ShipDefinition.h"
-#include "ShipPreview.h"
+#include "ShipPreviewData.h"
 #include "ShipPreviewImageDatabase.h"
 
 #include <GameCore/FileSystem.h>
@@ -28,14 +28,8 @@ public:
         std::filesystem::path const & directoryPath,
         std::shared_ptr<IFileSystem> fileSystem);
 
-    /*
-     * Gets a list of all files in this directory that are ships. The files
-     * are sorted by filename.
-     */
-    std::vector<std::filesystem::path> EnumerateShipFilePaths() const;
-
     RgbaImageData LoadPreviewImage(
-        ShipPreview const & shipPreview,
+        ShipPreviewData const & shipPreview,
         ImageSize const & maxImageSize);
 
     void Commit(bool isVisitCompleted);

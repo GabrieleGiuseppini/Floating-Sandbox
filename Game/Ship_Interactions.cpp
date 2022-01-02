@@ -618,13 +618,13 @@ bool Ship::ExtinguishFireAt(
                 //
 
                 float const strength = 1.0f - SmoothStep(
-                    squareRadius / 2.0f,
+                    squareRadius * 3.0f / 4.0f,
                     squareRadius,
                     pointSquareDistance);
 
                 mPoints.AddHeat(
                     pointIndex,
-                    -950000.0f * strength);
+                    -1000000.0f * strength);
             }
 
             // Remember we've found a point

@@ -14,8 +14,8 @@ TEST(TextureAtlasTests, OneTexture_MipMappable)
 
     auto atlasSpecification = TextureAtlasBuilder<CloudTextureGroups>::BuildMipMappableAtlasSpecification(textureInfos);
 
-    EXPECT_EQ(512, atlasSpecification.AtlasSize.Width);
-    EXPECT_EQ(256, atlasSpecification.AtlasSize.Height);
+    EXPECT_EQ(512, atlasSpecification.AtlasSize.width);
+    EXPECT_EQ(256, atlasSpecification.AtlasSize.height);
 
     ASSERT_EQ(1u, atlasSpecification.TexturePositions.size());
     ASSERT_EQ(TextureFrameId<CloudTextureGroups>(CloudTextureGroups::Cloud, 5), atlasSpecification.TexturePositions[0].FrameId);
@@ -39,8 +39,8 @@ TEST(TextureAtlasTests, Placement1_MipMappable)
 
     auto atlasSpecification = TextureAtlasBuilder<CloudTextureGroups>::BuildMipMappableAtlasSpecification(textureInfos);
 
-    EXPECT_EQ(512, atlasSpecification.AtlasSize.Width);
-    EXPECT_EQ(256, atlasSpecification.AtlasSize.Height);
+    EXPECT_EQ(512, atlasSpecification.AtlasSize.width);
+    EXPECT_EQ(256, atlasSpecification.AtlasSize.height);
 
     ASSERT_EQ(8u, atlasSpecification.TexturePositions.size());
 
@@ -93,8 +93,8 @@ TEST(TextureAtlasTests, Placement1_NonMipMappable)
 
     auto atlasSpecification = TextureAtlasBuilder<CloudTextureGroups>::BuildAtlasSpecification(textureInfos);
 
-    EXPECT_EQ(512, atlasSpecification.AtlasSize.Width);
-    EXPECT_EQ(256, atlasSpecification.AtlasSize.Height);
+    EXPECT_EQ(512, atlasSpecification.AtlasSize.width);
+    EXPECT_EQ(256, atlasSpecification.AtlasSize.height);
 
     ASSERT_EQ(8u, atlasSpecification.TexturePositions.size());
 
@@ -140,8 +140,8 @@ TEST(TextureAtlasTests, RoundsAtlasSize_MipMappable)
 
     auto atlasSpecification = TextureAtlasBuilder<CloudTextureGroups>::BuildMipMappableAtlasSpecification(textureInfos);
 
-    EXPECT_EQ(512, atlasSpecification.AtlasSize.Width);
-    EXPECT_EQ(256, atlasSpecification.AtlasSize.Height);
+    EXPECT_EQ(512, atlasSpecification.AtlasSize.width);
+    EXPECT_EQ(256, atlasSpecification.AtlasSize.height);
 }
 
 TEST(TextureAtlasTests, RegularAtlas)
@@ -167,8 +167,8 @@ TEST(TextureAtlasTests, RegularAtlas)
 
     auto atlasSpecification = TextureAtlasBuilder<CloudTextureGroups>::BuildRegularAtlasSpecification(textureInfos);
 
-    EXPECT_EQ(256, atlasSpecification.AtlasSize.Width);
-    EXPECT_EQ(256, atlasSpecification.AtlasSize.Height);
+    EXPECT_EQ(256, atlasSpecification.AtlasSize.width);
+    EXPECT_EQ(256, atlasSpecification.AtlasSize.height);
 
     ASSERT_EQ(16u, atlasSpecification.TexturePositions.size());
 

@@ -13,8 +13,8 @@ template <typename TextureGroups>
 void TextureFrameMetadata<TextureGroups>::Serialize(picojson::object & root) const
 {
     picojson::object size;
-    size["width"] = picojson::value(static_cast<int64_t>(Size.Width));
-    size["height"] = picojson::value(static_cast<int64_t>(Size.Height));
+    size["width"] = picojson::value(static_cast<int64_t>(Size.width));
+    size["height"] = picojson::value(static_cast<int64_t>(Size.height));
     root["size"] = picojson::value(size);
 
     picojson::object worldSize;
@@ -25,8 +25,8 @@ void TextureFrameMetadata<TextureGroups>::Serialize(picojson::object & root) con
     root["has_own_ambient_light"] = picojson::value(HasOwnAmbientLight);
 
     picojson::object anchorCenter;
-    anchorCenter["x"] = picojson::value(static_cast<int64_t>(AnchorCenter.X));
-    anchorCenter["y"] = picojson::value(static_cast<int64_t>(AnchorCenter.Y));
+    anchorCenter["x"] = picojson::value(static_cast<int64_t>(AnchorCenter.x));
+    anchorCenter["y"] = picojson::value(static_cast<int64_t>(AnchorCenter.y));
     root["anchor_center"] = picojson::value(anchorCenter);
 
     picojson::object anchorCenterWorld;
@@ -57,7 +57,7 @@ TextureFrameMetadata<TextureGroups> TextureFrameMetadata<TextureGroups>::Deseria
     bool hasOwnAmbientLight = root.at("has_own_ambient_light").get<bool>();
 
     picojson::object const & anchorCenterJson = root.at("anchor_center").get<picojson::object>();
-    IntegralPoint anchorCenter(
+    ImageCoordinates anchorCenter(
         static_cast<int>(anchorCenterJson.at("x").get<int64_t>()),
         static_cast<int>(anchorCenterJson.at("y").get<int64_t>()));
 
@@ -265,8 +265,8 @@ TextureDatabase<TextureDatabaseTraits> TextureDatabase<TextureDatabaseTraits>::L
                     }
                     else if (!!frameWorldScaling)
                     {
-                        worldWidth = static_cast<float>(textureSize.Width) * (*frameWorldScaling);
-                        worldHeight = static_cast<float>(textureSize.Height) * (*frameWorldScaling);
+                        worldWidth = static_cast<float>(textureSize.width) * (*frameWorldScaling);
+                        worldHeight = static_cast<float>(textureSize.height) * (*frameWorldScaling);
                     }
                     else if (!!groupWorldWidth || !!groupWorldHeight)
                     {
@@ -285,8 +285,8 @@ TextureDatabase<TextureDatabaseTraits> TextureDatabase<TextureDatabaseTraits>::L
                     }
                     else if (!!groupWorldScaling)
                     {
-                        worldWidth = static_cast<float>(textureSize.Width) * (*groupWorldScaling);
-                        worldHeight = static_cast<float>(textureSize.Height) * (*groupWorldScaling);
+                        worldWidth = static_cast<float>(textureSize.width) * (*groupWorldScaling);
+                        worldHeight = static_cast<float>(textureSize.height) * (*groupWorldScaling);
                     }
                     else
                     {
@@ -295,12 +295,12 @@ TextureDatabase<TextureDatabaseTraits> TextureDatabase<TextureDatabaseTraits>::L
 
                     bool hasOwnAmbientLight = !!frameHasOwnAmbientLight ? *frameHasOwnAmbientLight : groupHasOwnAmbientLight;
 
-                    int anchorX = (textureSize.Width / 2) + (!!frameAnchorOffsetX ? *frameAnchorOffsetX : groupAnchorOffsetX);
-                    int anchorY = (textureSize.Height / 2) + (!!frameAnchorOffsetY ? *frameAnchorOffsetY : groupAnchorOffsetY);
+                    int anchorX = (textureSize.width / 2) + (!!frameAnchorOffsetX ? *frameAnchorOffsetX : groupAnchorOffsetX);
+                    int anchorY = (textureSize.height / 2) + (!!frameAnchorOffsetY ? *frameAnchorOffsetY : groupAnchorOffsetY);
 
                     // Transform to world
-                    float anchorWorldX = static_cast<float>(anchorX) * worldWidth / static_cast<float>(textureSize.Width);
-                    float anchorWorldY = static_cast<float>(textureSize.Height - anchorY) * worldHeight / static_cast<float>(textureSize.Height);
+                    float anchorWorldX = static_cast<float>(anchorX) * worldWidth / static_cast<float>(textureSize.width);
+                    float anchorWorldY = static_cast<float>(textureSize.height - anchorY) * worldHeight / static_cast<float>(textureSize.height);
 
                     std::string name = !!frameName ? *frameName : std::to_string(frameIndex);
 
@@ -316,7 +316,7 @@ TextureDatabase<TextureDatabaseTraits> TextureDatabase<TextureDatabaseTraits>::L
                                 worldWidth,
                                 worldHeight,
                                 hasOwnAmbientLight,
-                                IntegralPoint(
+                                ImageCoordinates(
                                     anchorX,
                                     anchorY),
                                 vec2f(

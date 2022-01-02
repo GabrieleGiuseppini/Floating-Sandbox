@@ -251,15 +251,28 @@ void GameOpenGL::BindAttributeLocation(
     }
 }
 
-void GameOpenGL::UploadTexture(
-    RgbaImageData texture,
-    GLint internalFormat)
+void GameOpenGL::UploadTexture(RgbaImageData const & texture)
 {
-    glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, texture.Size.Width, texture.Size.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture.Data.get());
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.Size.width, texture.Size.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture.Data.get());
     GLenum glError = glGetError();
     if (GL_NO_ERROR != glError)
     {
         throw GameException("Error uploading texture onto GPU: " + std::to_string(glError));
+    }
+}
+
+void GameOpenGL::UploadTextureRegion(
+    rgbaColor const * textureData,
+    int xOffset,
+    int yOffset,
+    int width,
+    int height)
+{
+    glTexSubImage2D(GL_TEXTURE_2D, 0, xOffset, yOffset, width, height, GL_RGBA, GL_UNSIGNED_BYTE, textureData);
+    GLenum glError = glGetError();
+    if (GL_NO_ERROR != glError)
+    {
+        throw GameException("Error uploading texture region onto GPU: " + std::to_string(glError));
     }
 }
 
@@ -271,7 +284,7 @@ void GameOpenGL::UploadMipmappedTexture(
     // Upload base image
     //
 
-    glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, baseTexture.Size.Width, baseTexture.Size.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, baseTexture.Data.get());
+    glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, baseTexture.Size.width, baseTexture.Size.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, baseTexture.Data.get());
     GLenum glError = glGetError();
     if (GL_NO_ERROR != glError)
     {
@@ -289,19 +302,19 @@ void GameOpenGL::UploadMipmappedTexture(
     std::unique_ptr<rgbaColor[]> writeBuffer = std::make_unique<rgbaColor[]>(
         std::max(
             1,
-            (readImageSize.Width / 2) * (readImageSize.Height / 2)));
+            (readImageSize.width / 2) * (readImageSize.height / 2)));
 
     for (GLint textureLevel = 1; ; ++textureLevel)
     {
-        if (readImageSize.Width == 1 && readImageSize.Height == 1)
+        if (readImageSize.width == 1 && readImageSize.height == 1)
         {
             // We're done!
             break;
         }
 
         // Calculate dimensions of new write buffer
-        int width = std::max(1, readImageSize.Width / 2);
-        int height = std::max(1, readImageSize.Height / 2);
+        int width = std::max(1, readImageSize.width / 2);
+        int height = std::max(1, readImageSize.height / 2);
 
         // Create new buffer
         rgbaColor const * rp = readBuffer.get();
@@ -309,8 +322,8 @@ void GameOpenGL::UploadMipmappedTexture(
         for (int h = 0; h < height; ++h)
         {
             int const baseWriteIndex = h * width;
-            int const baseReadIndex = (h * 2) * readImageSize.Width;
-            int const baseReadIndexNextLine = (h * 2 + 1) * readImageSize.Width;
+            int const baseReadIndex = (h * 2) * readImageSize.width;
+            int const baseReadIndexNextLine = (h * 2 + 1) * readImageSize.width;
             for (int w = 0; w < width; ++w)
             {
                 //
@@ -322,14 +335,14 @@ void GameOpenGL::UploadMipmappedTexture(
 
                 rgbaColorAccumulation sum(rp[rIndex]);
 
-                if (readImageSize.Width > 1)
+                if (readImageSize.width > 1)
                     sum += rp[rIndex + 1];
 
-                if (readImageSize.Height > 1)
+                if (readImageSize.height > 1)
                 {
                     sum += rp[rIndexNextLine];
 
-                    if (readImageSize.Width > 1)
+                    if (readImageSize.width > 1)
                         sum += rp[rIndexNextLine + 1];
                 }
 
@@ -355,8 +368,8 @@ void GameOpenGL::UploadMipmappedPowerOfTwoTexture(
     RgbaImageData baseTexture,
     int maxDimension)
 {
-    assert(baseTexture.Size.Width == ceil_power_of_two(baseTexture.Size.Width));
-    assert(baseTexture.Size.Height == ceil_power_of_two(baseTexture.Size.Height));
+    assert(baseTexture.Size.width == ceil_power_of_two(baseTexture.Size.width));
+    assert(baseTexture.Size.height == ceil_power_of_two(baseTexture.Size.height));
 
 
     //
@@ -367,8 +380,8 @@ void GameOpenGL::UploadMipmappedPowerOfTwoTexture(
         GL_TEXTURE_2D,
         0,
         GL_RGBA,
-        baseTexture.Size.Width,
-        baseTexture.Size.Height,
+        baseTexture.Size.width,
+        baseTexture.Size.height,
         0,
         GL_RGBA,
         GL_UNSIGNED_BYTE,
@@ -388,8 +401,8 @@ void GameOpenGL::UploadMipmappedPowerOfTwoTexture(
     for (int divisor = 2; maxDimension / divisor >= 1; divisor *= 2)
     {
         // Calculate dimensions of new write buffer
-        int newWidth = std::max(1, baseTexture.Size.Width / divisor);
-        int newHeight = std::max(1, baseTexture.Size.Height / divisor);
+        int newWidth = std::max(1, baseTexture.Size.width / divisor);
+        int newHeight = std::max(1, baseTexture.Size.height / divisor);
 
         // Allocate new write buffer
         writeBuffer.reset(new rgbaColor[newWidth * newHeight]);

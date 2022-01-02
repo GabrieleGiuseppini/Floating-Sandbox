@@ -7,6 +7,7 @@
 
 #include <GameCore/Colors.h>
 #include <GameCore/GameException.h>
+#include <GameCore/GameTypes.h>
 #include <GameCore/Vectors.h>
 
 #include <picojson.h>
@@ -14,9 +15,18 @@
 #include <optional>
 #include <string>
 
+struct MaterialPaletteCoordinatesType
+{
+    std::string Category;
+    std::string SubCategory;
+    unsigned int SubCategoryOrdinal; // Ordinal in SubCategory
+};
+
 struct StructuralMaterial
 {
 public:
+
+    static MaterialLayerType constexpr MaterialLayer = MaterialLayerType::Structural;
 
     enum class MaterialCombustionType
     {
@@ -37,6 +47,7 @@ public:
     {
         AirBubble,
         Cable,
+        Chain,
         Cloth,
         Gas,
         Glass,
@@ -44,18 +55,22 @@ public:
         Metal,
         Plastic,
         Rubber,
+        RubberBand,
         Wood,
     };
 
 public:
 
+    MaterialColorKey ColorKey;
+
     std::string Name;
+    rgbColor RenderColor;
     float Strength;
     float NominalMass;
     float Density;
     float BuoyancyVolumeFill;
     float Stiffness;
-    vec4f RenderColor;
+    float StrainThresholdFraction;
 
     std::optional<MaterialUniqueType> UniqueType;
 
@@ -84,9 +99,14 @@ public:
     float WindReceptivity;
     bool IsLegacyElectrical;
 
+    // Palette
+    std::optional<MaterialPaletteCoordinatesType> PaletteCoordinates;
+
 public:
 
     static StructuralMaterial Create(
+        MaterialColorKey const & colorKey,
+        unsigned int ordinal,
         rgbColor const & renderColor,
         picojson::object const & structuralMaterialJson);
 
@@ -117,13 +137,15 @@ public:
     }
 
     StructuralMaterial(
+        MaterialColorKey const & colorKey,
         std::string name,
+        rgbColor const & renderColor,
         float strength,
         float nominalMass,
         float density,
         float buoyancyVolumeFill,
         float stiffness,
-        vec4f renderColor,
+        float strainThresholdFraction,
         std::optional<MaterialUniqueType> uniqueType,
         std::optional<MaterialSoundType> materialSound,
         std::optional<std::string> materialTextureName,
@@ -144,14 +166,18 @@ public:
         float explosiveCombustionStrength,
         // Misc
         float windReceptivity,
-        bool isLegacyElectrical)
-        : Name(name)
+        bool isLegacyElectrical,
+        // Palette
+        std::optional<MaterialPaletteCoordinatesType> paletteCoordinates)
+        : ColorKey(colorKey)
+        , Name(name)
+        , RenderColor(renderColor)
         , Strength(strength)
         , NominalMass(nominalMass)
         , Density(density)
         , BuoyancyVolumeFill(buoyancyVolumeFill)
         , Stiffness(stiffness)
-        , RenderColor(renderColor)
+        , StrainThresholdFraction(strainThresholdFraction)
         , UniqueType(uniqueType)
         , MaterialSound(materialSound)
         , MaterialTextureName(materialTextureName)
@@ -170,12 +196,50 @@ public:
         , ExplosiveCombustionStrength(explosiveCombustionStrength)
         , WindReceptivity(windReceptivity)
         , IsLegacyElectrical(isLegacyElectrical)
+        , PaletteCoordinates(paletteCoordinates)
+    {}
+
+    // For tests
+    StructuralMaterial(
+        MaterialColorKey const & colorKey,
+        std::string name,
+        rgbColor const & renderColor)
+        : ColorKey(colorKey)
+        , Name(name)
+        , RenderColor(renderColor)
+        , Strength(1.0f)
+        , NominalMass(1.0f)
+        , Density(1.0f)
+        , BuoyancyVolumeFill(1.0f)
+        , Stiffness(1.0f)
+        , StrainThresholdFraction(0.5f)
+        , UniqueType(std::nullopt)
+        , MaterialSound(std::nullopt)
+        , MaterialTextureName(std::nullopt)
+        , IsHull(false)
+        , WaterIntake(1.0f)
+        , WaterDiffusionSpeed(1.0f)
+        , WaterRetention(1.0f)
+        , RustReceptivity(1.0f)
+        , IgnitionTemperature(200.0f)
+        , MeltingTemperature(200.0f)
+        , ThermalConductivity(1.0f)
+        , ThermalExpansionCoefficient(1.0f)
+        , SpecificHeat(1.0f)
+        , CombustionType(MaterialCombustionType::Combustion)
+        , ExplosiveCombustionRadius(1.0f)
+        , ExplosiveCombustionStrength(1.0f)
+        , WindReceptivity(1.0f)
+        , IsLegacyElectrical(false)
+        , PaletteCoordinates(std::nullopt)
     {}
 };
 
 struct ElectricalMaterial
 {
 public:
+
+    static MaterialLayerType constexpr MaterialLayer = MaterialLayerType::Electrical;
 
     enum class ElectricalElementType
     {
@@ -221,7 +285,10 @@ public:
 
 public:
 
+    MaterialColorKey ColorKey;
+
     std::string Name;
+    rgbColor RenderColor;
 
     ElectricalElementType ElectricalType;
 
@@ -260,9 +327,16 @@ public:
     // Water pump
     float WaterPumpNominalForce;
 
+    // Palette
+    std::optional<MaterialPaletteCoordinatesType> PaletteCoordinates;
+
 public:
 
-    static ElectricalMaterial Create(picojson::object const & electricalMaterialJson);
+    static ElectricalMaterial Create(
+        MaterialColorKey const & colorKey,
+        unsigned int ordinal,
+        rgbColor const & renderColor,
+        picojson::object const & electricalMaterialJson);
 
     static ElectricalElementType StrToElectricalElementType(std::string const & str);
 
@@ -273,7 +347,9 @@ public:
     static ShipSoundElementType StrToShipSoundElementType(std::string const & str);
 
     ElectricalMaterial(
+        MaterialColorKey const & colorKey,
         std::string name,
+        rgbColor const & renderColor,
         ElectricalElementType electricalType,
         bool isSelfPowered,
         bool conductsElectricity,
@@ -292,8 +368,11 @@ public:
         float engineResponsiveness,
         InteractiveSwitchElementType interactiveSwitchType,
         ShipSoundElementType shipSoundType,
-        float waterPumpNominalForce)
-        : Name(name)
+        float waterPumpNominalForce,
+        std::optional<MaterialPaletteCoordinatesType> paletteCoordinates)
+        : ColorKey(colorKey)
+        , Name(name)
+        , RenderColor(renderColor)
         , ElectricalType(electricalType)
         , IsSelfPowered(isSelfPowered)
         , ConductsElectricity(conductsElectricity)
@@ -314,6 +393,40 @@ public:
         , InteractiveSwitchType(interactiveSwitchType)
         , ShipSoundType(shipSoundType)
         , WaterPumpNominalForce(waterPumpNominalForce)
+        , PaletteCoordinates(paletteCoordinates)
+    {
+    }
+
+    // For tests
+    ElectricalMaterial(
+        MaterialColorKey const & colorKey,
+        std::string name,
+        rgbColor const & renderColor,
+        bool isInstanced)
+        : ColorKey(colorKey)
+        , Name(name)
+        , RenderColor(renderColor)
+        , ElectricalType(ElectricalElementType::Cable)
+        , IsSelfPowered(false)
+        , ConductsElectricity(true)
+        , Luminiscence(1.0f)
+        , LightColor(vec4f::zero())
+        , LightSpread(1.0f)
+        , WetFailureRate(0.0f)
+        , HeatGenerated(0.0f)
+        , MinimumOperatingTemperature(0.0f)
+        , MaximumOperatingTemperature(1000.0f)
+        , ParticleEmissionRate(1.0f)
+        //
+        , IsInstanced(isInstanced)
+        , EngineType(EngineElementType::Diesel)
+        , EngineCCWDirection(1.0f)
+        , EnginePower(1.0f)
+        , EngineResponsiveness(1.0f)
+        , InteractiveSwitchType(InteractiveSwitchElementType::Push)
+        , ShipSoundType(ShipSoundElementType::Bell1)
+        , WaterPumpNominalForce(0.0f)
+        , PaletteCoordinates(std::nullopt)
     {
     }
 };

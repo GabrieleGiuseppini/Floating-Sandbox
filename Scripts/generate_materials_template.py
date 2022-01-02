@@ -1,13 +1,42 @@
 from copy import deepcopy
+from dataclasses import dataclass
 import json
 from operator import itemgetter
 import re
 import sys
+from typing import List
+
+MAX_WIDTH = 16
+
+
+@dataclass
+class SubCategory:
+    category_name: str
+    sub_category_name: str
+    materials: list  # normalized
+
+
+def get_subcategory(category_name, sub_category_name, root_obj) -> List[SubCategory]:
+    materials = [m for m in root_obj["materials"] if ("palette_coordinates" in m and m["palette_coordinates"]["sub_category"] == sub_category_name)]
+    materials_normalized = []
+    for m in materials:
+        # Normalize color key
+        color_keys = m["color_key"]
+        if not isinstance(color_keys, list):
+            color_keys = [color_keys]
+        for c in color_keys:
+            new_material = deepcopy(m)
+            new_material["color_key"] = c
+            materials_normalized.append(new_material)
+    # Sort by ordinal
+    materials_normalized.sort(key=lambda m: m["palette_coordinates"]["sub_category_ordinal"])
+    return SubCategory(category_name, sub_category_name, materials_normalized)
+
 
 def main():
     
-    if len(sys.argv) != 3 or (sys.argv[2] != "s" and sys.argv[2] != "e"):
-        print("Usage: generate_materials_template.py <path_to_materials_json> s|e")
+    if len(sys.argv) != 3 or (sys.argv[2] != "s" and sys.argv[2] != "e" and sys.argv[2] != "r"):
+        print("Usage: generate_materials_template.py <path_to_materials_json> s|e|r")
         sys.exit(-1)
 
     json_content = ""
@@ -16,62 +45,27 @@ def main():
         for line in f:
             json_content += comment_re.sub(r"\1", line)
 
-    data = json.loads(json_content)
+    root_obj = json.loads(json_content)
 
     is_structural = (sys.argv[2] == "s")
 
-
     #
-    # Prepare data
+    # Read palette
     #
 
-    # d: key=row_order, val=list((row_name,col_order,col_name,Material))
-    d={}
-    
-    for elem in data:
-
-        name = elem["name"]
-
-        # Hide legacy elements
-        if "is_legacy_electrical" in elem and elem["is_legacy_electrical"] == True:
-            continue;
-        
-        row = elem["template"]["row"]
-        row_parts = row.split("|")        
-        row_order = int(row_parts[0])
-        if len(row_parts) == 2:
-            row_name = row_parts[1]
-        else:
-            row_name = name
+    palette: List[SubCategory] = []
+    if sys.argv[2] == "s":
+        palette_root = root_obj["palettes"]["structural_palette"]
+    elif sys.argv[2] == "r":
+        palette_root = root_obj["palettes"]["ropes_palette"]
+    else:
+        palette_root = root_obj["palettes"]["electrical_palette"]
+    for category_obj in palette_root:
+        category_name = category_obj["category"]
+        for sub_category_name in category_obj["sub_categories"]:
+            sub_category = get_subcategory(category_name, sub_category_name, root_obj)
+            palette.append(sub_category)
             
-        col = str(elem["template"]["column"])
-        col_parts = col.split("|")
-        col_order = int(col_parts[0])
-        col_name = None        
-        if len(col_parts) == 2:
-            col_name = col_parts[1]
-        else:
-            col_name = ""
-
-        # Normalize color_key to array
-        if not isinstance(elem["color_key"], list):
-            color_keys = [elem["color_key"]]
-        else:
-            color_keys = elem["color_key"]
-
-        # Store
-        d_vals = d.setdefault(row_order, [])
-        for color_key in color_keys:
-            elem2 = deepcopy(elem)
-            elem2["color_key"] = color_key
-            d_vals.append((row_name,col_order,col_name,elem2))
-            col_order = col_order + 1
-
-    # Sort cols by row_order, col_order
-    for k,v in d.items():
-        d[k] = sorted(v, key=itemgetter(1))
-
-
     #
     # Generate HTML
     #
@@ -81,81 +75,56 @@ def main():
     html += "</head><body>"
 
     if is_structural:
-        spacing = 0
+        spacing = 4
     else:
-        spacing = 1
+        spacing = 4
 
+    # Open HTML
     html += "<table style='border: 1px solid black' cellpadding=0 cellspacing={}>".format(spacing)
 
-    # Visit all rows
-    for k in sorted(d.keys()):
+    # Visit palette and generate rows
+    color_row_html = ""
+    data_row_html = ""
+    column_count = 0
+    current_category_name = None
+    for sub_category in palette:
+        sc_column_count = 1 + len(sub_category.materials)
+        if (column_count + sc_column_count > MAX_WIDTH or sub_category.category_name != current_category_name) and column_count > 0:
+            # Close row
+            html += "<tr>" + color_row_html + "</tr><tr>" + data_row_html + "</tr>"
+            color_row_html = ""
+            data_row_html = ""
+            column_count = 0
 
-        input_col_values = d[k]
+        # Title
+        color_row_html += "<td valign='middle' align='right' style='padding-right:5px;font-size:10px;'>" + sub_category.sub_category_name + "</td>"
+        data_row_html += "<td></td>"
 
-        output_col_values = [] # (row_name,col_order,col_name,Material)
-
-        # 1. Prepare data
-        ci = 0
-        labels_count = 0
-        cur_row_name = None
-        while ci < len(input_col_values):
-            input_col_value = input_col_values[ci]
-            if input_col_value[1] + labels_count <= len(output_col_values):
-                if input_col_value[0] != cur_row_name:
-                    output_col_values.append(input_col_value[0])
-                    labels_count += 1
-                    cur_row_name = input_col_value[0]
-                else:
-                    output_col_values.append(input_col_value)
-                    ci += 1
+        # Process all colors
+        for m in sub_category.materials:
+            # --- Color ---
+            color_row_html += "<td bgcolor='" + m["color_key"] + "'class='border_top' style='width:70px;height:20px'>&nbsp;</td>"
+            # --- Data ---
+            data_row_html += "<td style='font-size:9px;vertical-align:top'>"
+            if is_structural:
+                data_row_html += "{:.2f}".format(m["mass"]["nominal_mass"] * m["mass"]["density"]) + "|" + str(m["strength"]) + "|" + str(m["stiffness"])
             else:
-                output_col_values.append(None)
+                data_row_html += m["name"]
+            data_row_html += "</td>"
 
-        # 2. Render
+        # Advance
+        column_count = column_count + 1 + len(sub_category.materials)
+        current_category_name = sub_category.category_name
 
-        # Colors
-        html += "<tr>"
-        for c in output_col_values:
-            if c:
-                if type(c) != tuple:
-                    # Title
-                    html += "<td valign='middle' align='right' style='padding-right:5px;font-size:10px;'>" + c + "</td>"
-                else:
-                    html += "<td bgcolor='" + c[3]["color_key"] + "'class='border_top' style='width: 50px;'>&nbsp;</td>"
-            else:
-                html += "<td style='width: 50px;'>&nbsp;</td>"
+    # Close last row, if any
+    if column_count > 0:
+        html += "<tr>" + color_row_html + "</tr><tr>" + data_row_html + "</tr>"
 
-        # Name
-        html += "<tr>"
-        for c in output_col_values:
-            if c:
-                if type(c) != tuple:
-                    html += "<td/>"
-                else:
-                    html += "<td style='font-size:8px;'>" + c[2] + "</td>"
-            else:
-                html += "<td/>"
-        html += "</tr>"
-
-        # Data
-        html += "<tr>"
-        for c in output_col_values:
-            if c:
-                if type(c) != tuple:
-                    html += "<td/>"
-                else:
-                    html += "<td style='font-size:9px;'>"
-                    if is_structural:
-                        html += "{:.2f}".format(c[3]["mass"]["nominal_mass"] * c[3]["mass"]["density"]) + "|" + str(c[3]["strength"]) + "|" + str(c[3]["stiffness"])
-                    html += "</td>"
-            else:
-                html += "<td/>"
-        html += "</tr>"
-
-        
+    # Close HTML
     html += "</table>";
     html += "</body></html>";
 
+    # Write HTML
     with open("materials_template.html", "w") as html_file:
         html_file.write(html)
 

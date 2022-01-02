@@ -5,61 +5,107 @@
  ***************************************************************************************/
 #include "Colors.h"
 
+#include "GameException.h"
+
 #include <iomanip>
 #include <sstream>
 
 rgbColor rgbColor::fromString(std::string const & str)
 {
-    std::stringstream ss(str);
-    ss << std::hex << std::setfill('0') << std::setw(2);
+    unsigned int components[3];
+    size_t iStart = 0;
+    for (size_t c = 0; c < 3; ++c)
+    {
+        // Skip spaces
+        while (iStart < str.length() && str[iStart] == ' ')
+        {
+            ++iStart;
+        }
 
-    unsigned int r, g, b;
-    ss >> r >> g >> b;
+        if (iStart >= str.length())
+        {
+            throw GameException("RGB color string \"" + str + "\" is invalid");
+        }
+
+        // Find next 3rd char, space, or eos
+        size_t iEnd = iStart + 1;
+        if (iEnd < str.length()
+            && str[iEnd] != ' ')
+        {
+            ++iEnd;
+        }
+
+        std::stringstream ss(str.substr(iStart, iEnd - iStart));
+        ss >> std::hex >> std::setfill('0') >> std::setw(2) >> components[c];
+
+        iStart = iEnd;
+    }
 
     return rgbColor(
-        static_cast<rgbColor::data_type>(r),
-        static_cast<rgbColor::data_type>(g),
-        static_cast<rgbColor::data_type>(b));
+        static_cast<rgbColor::data_type>(components[0]),
+        static_cast<rgbColor::data_type>(components[1]),
+        static_cast<rgbColor::data_type>(components[2]));
 }
 
 std::string rgbColor::toString() const
 {
     std::stringstream ss;
 
-    ss << std::hex << std::setfill('0') << std::setw(2)
-        << static_cast<unsigned int>(r)
-        << ' '
-        << static_cast<unsigned int>(g)
-        << ' '
-        << static_cast<unsigned int>(b);
+    ss << std::hex << std::setfill('0')
+        << std::setw(2) << static_cast<unsigned int>(r)
+        << std::setw(2) << static_cast<unsigned int>(g)
+        << std::setw(2) << static_cast<unsigned int>(b);
 
     return ss.str();
 }
 
 rgbaColor rgbaColor::fromString(std::string const & str)
 {
-    std::stringstream ss(str);
-    ss << std::hex << std::setfill('0') << std::setw(2);
+    unsigned int components[4];
+    size_t iStart = 0;
+    for (size_t c = 0; c < 4; ++c)
+    {
+        // Skip spaces
+        while (iStart < str.length() && str[iStart] == ' ')
+        {
+            ++iStart;
+        }
 
-    unsigned int r, g, b, a;
-    ss >> r >> g >> b >> a;
+        if (iStart >= str.length())
+        {
+            throw GameException("RGBA color string \"" + str + "\" is invalid");
+        }
+
+        // Find next 3rd char, space, or eos
+        size_t iEnd = iStart + 1;
+        if (iEnd < str.length()
+            && str[iEnd] != ' ')
+        {
+            ++iEnd;
+        }
+
+        std::stringstream ss(str.substr(iStart, iEnd - iStart));
+        ss >> std::hex >> std::setfill('0') >> std::setw(2) >> components[c];
+
+        iStart = iEnd;
+    }
 
     return rgbaColor(
-        static_cast<rgbaColor::data_type>(r),
-        static_cast<rgbaColor::data_type>(g),
-        static_cast<rgbaColor::data_type>(b),
-        static_cast<rgbaColor::data_type>(a));
+        static_cast<rgbColor::data_type>(components[0]),
+        static_cast<rgbColor::data_type>(components[1]),
+        static_cast<rgbColor::data_type>(components[2]),
+        static_cast<rgbColor::data_type>(components[3]));
 }
 
 std::string rgbaColor::toString() const
 {
     std::stringstream ss;
 
-    ss << std::hex << std::setfill('0') << std::setw(2)
-        << static_cast<unsigned int>(r)
-        << static_cast<unsigned int>(g)
-        << static_cast<unsigned int>(b)
-        << static_cast<unsigned int>(a);
+    ss << std::hex << std::setfill('0')
+        << std::setw(2) << static_cast<unsigned int>(r)
+        << std::setw(2) << static_cast<unsigned int>(g)
+        << std::setw(2) << static_cast<unsigned int>(b)
+        << std::setw(2) << static_cast<unsigned int>(a);
 
     return ss.str();
 }

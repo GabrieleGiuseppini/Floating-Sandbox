@@ -410,8 +410,8 @@ public:
         //
 
         // Resolution of atlas, for dead center calculations
-        float const dTextureX = 1.0f / (2.0f * static_cast<float>(mExplosionTextureAtlasMetadata.GetSize().Width));
-        float const dTextureY = 1.0f / (2.0f * static_cast<float>(mExplosionTextureAtlasMetadata.GetSize().Height));
+        float const dTextureX = 1.0f / (2.0f * static_cast<float>(mExplosionTextureAtlasMetadata.GetSize().width));
+        float const dTextureY = 1.0f / (2.0f * static_cast<float>(mExplosionTextureAtlasMetadata.GetSize().height));
 
         // Calculate render half quad size - magic offset to account for
         // empty outskirts of frames

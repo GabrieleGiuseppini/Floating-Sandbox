@@ -13,6 +13,8 @@
 #include <ostream>
 #include <string>
 
+struct vec2i;
+
 #pragma pack(push, 1)
 
 struct vec2f
@@ -292,6 +294,8 @@ public:
     }
 
     std::string toString() const;
+
+    vec2i to_vec2i_round() const;
 };
 
 #pragma pack(pop)
@@ -742,10 +746,10 @@ public:
         return vec2i(-y, x);
     }
 
-    template<typename TRect>
-    bool IsInRect(TRect const & rect) const
+    template<typename TSize>
+    bool IsInSize(TSize const & size) const
     {
-        return x >= 0 && x < rect.Width && y >= 0 && y < rect.Height;
+        return x >= 0 && x < size.width && y >= 0 && y < size.height;
     }
 
     std::string toString() const;
@@ -761,4 +765,11 @@ inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, vec2
 {
     os << v.toString();
     return os;
+}
+
+inline vec2i vec2f::to_vec2i_round() const
+{
+    return vec2i(
+        static_cast<int>(std::round(x)),
+        static_cast<int>(std::round(y)));
 }

@@ -5,8 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
-#include <UIControls/ScalarTimeSeriesProbeControl.h>
-#include <UIControls/UnFocusablePanel.h>
+#include <UILib/ScalarTimeSeriesProbeControl.h>
+#include <UILib/UnFocusablePanel.h>
 
 #include <Game/IGameController.h>
 #include <Game/IGameEventHandlers.h>

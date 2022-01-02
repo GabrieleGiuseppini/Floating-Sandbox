@@ -4,6 +4,10 @@ if(POLICY CMP0048)
 	cmake_policy(SET CMP0048 NEW)
 endif()
 
+if(POLICY CMP0074)
+	cmake_policy(SET CMP0074 NEW)
+endif()
+
 if(POLICY CMP0082)
 	# Run install rules in specified order
 	cmake_policy(SET CMP0082 NEW)
@@ -22,6 +26,20 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 option(FS_USE_STATIC_LIBS "Force static linking" ON)
 option(FS_BUILD_BENCHMARKS "Build benchmarks" ON)
+
+# Force finding static libs on Linux/Mac
+#if(NOT WIN32)
+#	set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+#endif()
+
+# Set architecture on Windows, so we may build 64- and 32-bit with agility
+if(WIN32)
+	if( CMAKE_SIZEOF_VOID_P EQUAL 4 )
+		set(CMAKE_LIBRARY_ARCHITECTURE "Win32")
+	else()
+		set(CMAKE_LIBRARY_ARCHITECTURE "x64")
+	endif()
+endif()
 
 ####################################################
 # Custom CMake modules
@@ -63,12 +81,20 @@ if(FS_BUILD_BENCHMARKS)
 endif()
 
 #
+# zlib, jpeg, png
+#
+
+find_package(ZLIB REQUIRED)
+find_package(JPEG REQUIRED)
+find_package(PNG REQUIRED)
+
+#
 # wxWidgets
 #
 
 message(STATUS "wxWidgets_ROOT:" ${wxWidgets_ROOT})
 
-find_package(wxWidgets REQUIRED base gl core html)
+find_package(wxWidgets REQUIRED base gl core html propgrid)
 
 #
 # DevIL
@@ -81,9 +107,7 @@ find_package(DevIL REQUIRED)
 if(FS_USE_STATIC_LIBS)
 	# If we use static linking, we expect to have built DevIL 
 	# as static libs, and we expect to _use_ it as static libs,
-	# so tell the DevIL include files that DevIL is used as static libs.
-	# Note: in this case we also expect the DevIL libs to be statically-linked
-	# with the png and zlib static libs
+	# so tell the DevIL include files that DevIL is used as static libs
 	add_compile_definitions("IL_STATIC_LIB")
 endif()
 
@@ -261,8 +285,10 @@ add_subdirectory(GameCore)
 add_subdirectory(GameOpenGL)
 add_subdirectory(GPUCalc)
 add_subdirectory(GPUCalcTest)
+add_subdirectory(ShipBuilder)
+add_subdirectory(ShipBuilderLib)
 add_subdirectory(ShipTools)
-add_subdirectory(UIControls)
+add_subdirectory(UILib)
 add_subdirectory(UnitTests)
 
 if(FS_BUILD_BENCHMARKS)
@@ -306,6 +332,7 @@ message (STATUS "c Flags Debug:" ${CMAKE_C_FLAGS_DEBUG})
 message (STATUS "exe Linker Flags Release:" ${CMAKE_EXE_LINKER_FLAGS_RELEASE})
 message (STATUS "exe Linker Flags RelWithDebInfo:" ${CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO})
 message (STATUS "exe Linker Flags Debug:" ${CMAKE_EXE_LINKER_FLAGS_DEBUG})
+message (STATUS "wxWidgets libraries:" "${wxWidgets_LIBRARIES}")
 message (STATUS "Additional libraries:" "${ADDITIONAL_LIBRARIES}")
 message (STATUS "Install directory:" ${CMAKE_INSTALL_PREFIX})
 message (STATUS "-----------------------------------------------------")

@@ -80,7 +80,7 @@ RenderContext::RenderContext(
     // Render parameters
     , mRenderParameters(
         renderDeviceProperties.InitialCanvasSize,
-        renderDeviceProperties.LogicalToPhysicalPixelFactor)
+        renderDeviceProperties.LogicalToPhysicalDisplayFactor)
     // State
     , mWindSpeedMagnitudeRunningAverage(0.0f)
     , mCurrentWindSpeedMagnitude(0.0f)
@@ -139,7 +139,7 @@ RenderContext::RenderContext(
             // Load shader manager
             //
 
-            mShaderManager = ShaderManager<ShaderManagerTraits>::CreateInstance(resourceLocator.GetRenderShadersRootPath());
+            mShaderManager = ShaderManager<ShaderManagerTraits>::CreateInstance(resourceLocator.GetGameShadersRootPath());
         });
 
     progressCallback(0.1f, ProgressMessageType::InitializingNoise);
@@ -300,8 +300,8 @@ void RenderContext::Reset()
 void RenderContext::ValidateShipTexture(RgbaImageData const & texture) const
 {
     // Check texture against max texture size
-    if (texture.Size.Width > GameOpenGL::MaxTextureSize
-        || texture.Size.Height > GameOpenGL::MaxTextureSize)
+    if (texture.Size.width > GameOpenGL::MaxTextureSize
+        || texture.Size.height > GameOpenGL::MaxTextureSize)
     {
         throw GameException("We are sorry, but this ship's texture image is too large for your graphics card.");
     }
@@ -356,9 +356,9 @@ RgbImageData RenderContext::TakeScreenshot()
     // Allocate buffer
     //
 
-    auto const canvasPhysicalPixelSize = mRenderParameters.View.GetCanvasPhysicalPixelSize();
+    auto const canvasPhysicalSize = mRenderParameters.View.GetCanvasPhysicalSize();
 
-    auto pixelBuffer = std::make_unique<rgbColor[]>(canvasPhysicalPixelSize.width * canvasPhysicalPixelSize.height);
+    auto pixelBuffer = std::make_unique<rgbColor[]>(canvasPhysicalSize.GetLinearSize());
 
     //
     // Take screnshot - synchronously
@@ -380,12 +380,12 @@ RgbImageData RenderContext::TakeScreenshot()
             CheckOpenGLError();
 
             // Read
-            glReadPixels(0, 0, canvasPhysicalPixelSize.width, canvasPhysicalPixelSize.height, GL_RGB, GL_UNSIGNED_BYTE, pixelBuffer.get());
+            glReadPixels(0, 0, canvasPhysicalSize.width, canvasPhysicalSize.height, GL_RGB, GL_UNSIGNED_BYTE, pixelBuffer.get());
             CheckOpenGLError();
         });
 
     return RgbImageData(
-        ImageSize(canvasPhysicalPixelSize.width, canvasPhysicalPixelSize.height),
+        ImageSize(canvasPhysicalSize.width, canvasPhysicalSize.height),
         std::move(pixelBuffer));
 }
 
@@ -622,7 +622,7 @@ void RenderContext::ApplyCanvasSizeChanges(RenderParameters const & renderParame
     auto const & view = renderParameters.View;
 
     // Set viewport and scissor
-    glViewport(0, 0, view.GetCanvasPhysicalPixelSize().width, view.GetCanvasPhysicalPixelSize().height);
+    glViewport(0, 0, view.GetCanvasPhysicalSize().width, view.GetCanvasPhysicalSize().height);
 
 #if FS_IS_OS_MACOS()
     // After changing the viewport, on MacOS one must also re-make the context current;

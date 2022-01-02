@@ -5,9 +5,10 @@
 ***************************************************************************************/
 #pragma once
 
+#include "Layers.h"
 #include "MaterialDatabase.h"
 #include "ResourceLocator.h"
-#include "ShipBuildTypes.h"
+#include "ShipAutoTexturizationSettings.h"
 
 #include <GameCore/GameTypes.h>
 #include <GameCore/ImageData.h>
@@ -22,15 +23,42 @@ class ShipTexturizer
 {
 public:
 
-    ShipTexturizer(ResourceLocator const & resourceLocator);
+    ShipTexturizer(
+        MaterialDatabase const & materialDatabase,
+        ResourceLocator const & resourceLocator);
 
-    void VerifyMaterialDatabase(MaterialDatabase const & materialDatabase) const;
+    static int CalculateHighDefinitionTextureMagnificationFactor(ShipSpaceSize const & shipSize);
 
-    RgbaImageData Texturize(
-        std::optional<ShipAutoTexturizationSettings> const & shipDefinitionSettings,
-        ImageSize const & structureSize,
-        ShipBuildPointIndexMatrix const & pointMatrix, // One more point on each side, to avoid checking for boundaries
-        std::vector<ShipBuildPoint> const & points) const;
+    RgbaImageData MakeAutoTexture(
+        StructuralLayerData const & structuralLayer,
+        std::optional<ShipAutoTexturizationSettings> const & settings) const;
+
+    void AutoTexturizeInto(
+        StructuralLayerData const & structuralLayer,
+        ShipSpaceRect const & structuralLayerRegion,
+        RgbaImageData & targetTextureImage,
+        int magnificationFactor,
+        ShipAutoTexturizationSettings const & settings) const;
+
+    void RenderShipInto(
+        StructuralLayerData const & structuralLayer,
+        ShipSpaceRect const & structuralLayerRegion,
+        RgbaImageData const & sourceTextureImage,
+        RgbaImageData & targetTextureImage,
+        int magnificationFactor) const;
+
+    template<typename TMaterial>
+    RgbaImageData MakeTextureSample(
+        std::optional<ShipAutoTexturizationSettings> const & settings,
+        ImageSize const & sampleSize,
+        TMaterial const & material) const
+    {
+        return MakeTextureSample(
+            settings,
+            sampleSize,
+            rgbaColor(material.RenderColor, 255),
+            material.MaterialTextureName);
+    }
 
     //
     // Settings
@@ -63,18 +91,40 @@ public:
 
 private:
 
-    static std::unordered_map<std::string, std::filesystem::path> MakeMaterialTextureNameToTextureFilePathMap(std::filesystem::path const materialTexturesFolderPath);
+    using Vec2fImageData = ImageData<vec2f>;
+
+private:
+
+    static std::unordered_map<std::string, std::filesystem::path> MakeMaterialTextureNameToTextureFilePathMap(
+        MaterialDatabase const & materialDatabase,
+        ResourceLocator const & resourceLocator);
 
     static float MaterialTextureMagnificationToPixelConversionFactor(float magnification);
 
-    inline Vec3fImageData const & GetMaterialTexture(std::optional<std::string> const & textureName) const;
+    RgbaImageData MakeTextureSample(
+        std::optional<ShipAutoTexturizationSettings> const & settings,
+        ImageSize const & sampleSize,
+        rgbaColor const & renderColor,
+        std::optional<std::string> const & textureName) const;
+
+    inline Vec2fImageData const & GetMaterialTexture(std::optional<std::string> const & textureName) const;
 
     void ResetMaterialTextureCacheUseCounts() const;
 
     void PurgeMaterialTextureCache(size_t maxSize) const;
 
-    inline vec3f SampleTexture(
-        Vec3fImageData const & texture,
+    inline vec2f SampleTextureBilinear(
+        Vec2fImageData const & texture,
+        float pixelX,
+        float pixelY) const;
+
+    inline vec2f SampleTextureNearest(
+        Vec2fImageData const & texture,
+        float pixelX,
+        float pixelY) const;
+
+    inline rgbaColor SampleTextureNearest(
+        RgbaImageData const & texture,
         float pixelX,
         float pixelY) const;
 
@@ -91,16 +141,14 @@ private:
     // Material textures
     //
 
-    std::filesystem::path const mMaterialTexturesFolderPath;
-
     std::unordered_map<std::string, std::filesystem::path> const mMaterialTextureNameToTextureFilePathMap;
 
     struct CachedTexture
     {
-        Vec3fImageData Texture;
+        Vec2fImageData Texture;
         size_t UseCount;
 
-        CachedTexture(Vec3fImageData && texture)
+        CachedTexture(Vec2fImageData && texture)
             : Texture(std::move(texture))
             , UseCount(0)
         {}

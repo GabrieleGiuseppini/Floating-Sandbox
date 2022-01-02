@@ -11,17 +11,21 @@ set  (SOURCES
 	BootSettings.h
 	BoundedVector.h
 	Buffer.h
+	Buffer2D.h
 	BufferAllocator.h
 	BuildInfo.h
 	CircularList.h
 	Colors.cpp
 	Colors.h
+	DeSerializationBuffer.h
 	ElementContainer.h
 	ElementIndexRangeIterator.h
+	Endian.h
 	EnumFlags.h
 	ExponentialSliderCore.cpp
 	ExponentialSliderCore.h
 	FileSystem.h
+	Finalizer.h
 	FixedSizeVector.h
 	FixedTickSliderCore.cpp
 	FixedTickSliderCore.h
@@ -36,11 +40,10 @@ set  (SOURCES
 	GameTypes.h
 	GameWallClock.h
 	ImageData.h
-	ImageSize.h
 	ImageTools.cpp
 	ImageTools.h
 	IntegralLinearSliderCore.h
-	ISliderCore.h
+	ISliderCore.h	
 	LinearSliderCore.cpp
 	LinearSliderCore.h
 	Log.cpp
@@ -51,7 +54,7 @@ set  (SOURCES
 	PrecalculatedFunction.cpp
 	PrecalculatedFunction.h
 	ProgressCallback.h
-	RunningAverage.h
+	RunningAverage.h	
 	Settings.cpp
 	Settings.h
 	StrongTypeDef.h
@@ -65,6 +68,7 @@ set  (SOURCES
 	TruncatedPriorityQueue.h
 	TupleKeys.h
 	UniqueBuffer.h
+	UserGameException.h
 	Utils.cpp
 	Utils.h	
 	Vectors.cpp
@@ -83,9 +87,7 @@ target_link_libraries (GameCoreLib
 	${ADDITIONAL_LIBRARIES})
 
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
-
 	target_link_libraries (GameCoreLib
 		"stdc++fs")
-
 endif()
 

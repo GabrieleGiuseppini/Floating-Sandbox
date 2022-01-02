@@ -74,10 +74,10 @@ NotificationRenderContext::NotificationRenderContext(
     {
         TextureFrameMetadata<FontTextureGroups> frameMetadata = TextureFrameMetadata<FontTextureGroups>(
             fonts[f].Texture.Size,
-            static_cast<float>(fonts[f].Texture.Size.Width),
-            static_cast<float>(fonts[f].Texture.Size.Height),
+            static_cast<float>(fonts[f].Texture.Size.width),
+            static_cast<float>(fonts[f].Texture.Size.height),
             false,
-            IntegralPoint(0, 0),
+            ImageCoordinates(0, 0),
             vec2f::zero(),
             TextureFrameId<FontTextureGroups>(
                 FontTextureGroups::Font,
@@ -114,7 +114,7 @@ NotificationRenderContext::NotificationRenderContext(
     CheckOpenGLError();
 
     // Upload texture atlas
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fontTextureAtlas.AtlasData.Size.Width, fontTextureAtlas.AtlasData.Size.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, fontTextureAtlas.AtlasData.Data.get());
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fontTextureAtlas.AtlasData.Size.width, fontTextureAtlas.AtlasData.Size.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, fontTextureAtlas.AtlasData.Data.get());
     CheckOpenGLError();
 
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -158,8 +158,8 @@ NotificationRenderContext::NotificationRenderContext(
                 static_cast<TextureFrameIndex>(f)));
 
         // Dimensions of a cell of this font, in the atlas' texture space coordinates
-        float const fontCellWidthAtlasTextureSpace = static_cast<float>(fonts[f].Metadata.GetCellScreenWidth()) / static_cast<float>(fontTextureAtlas.Metadata.GetSize().Width);
-        float const fontCellHeightAtlasTextureSpace = static_cast<float>(fonts[f].Metadata.GetCellScreenHeight()) / static_cast<float>(fontTextureAtlas.Metadata.GetSize().Height);
+        float const fontCellWidthAtlasTextureSpace = static_cast<float>(fonts[f].Metadata.GetCellScreenWidth()) / static_cast<float>(fontTextureAtlas.Metadata.GetSize().width);
+        float const fontCellHeightAtlasTextureSpace = static_cast<float>(fonts[f].Metadata.GetCellScreenHeight()) / static_cast<float>(fontTextureAtlas.Metadata.GetSize().height);
 
         // Coordinates for each character
         std::array<vec2f, 256> GlyphTextureBottomLefts;
@@ -175,7 +175,7 @@ NotificationRenderContext::NotificationRenderContext(
             // Texture-space right x
             float const glyphRightAtlasTextureSpace =
                 glyphLeftAtlasTextureSpace
-                + static_cast<float>(fonts[f].Metadata.GetGlyphScreenWidth(c) - 1) / static_cast<float>(fontTextureAtlas.Metadata.GetSize().Width);
+                + static_cast<float>(fonts[f].Metadata.GetGlyphScreenWidth(c) - 1) / static_cast<float>(fontTextureAtlas.Metadata.GetSize().width);
 
             // Texture-space top y
             // Note: font texture is flipped vertically (top of character is at lower V coordinates)
@@ -186,7 +186,7 @@ NotificationRenderContext::NotificationRenderContext(
 
             float const glyphBottomAtlasTextureSpace =
                 glyphTopAtlasTextureSpace
-                + static_cast<float>(fonts[f].Metadata.GetGlyphScreenHeight(c) - 1) / static_cast<float>(fontTextureAtlas.Metadata.GetSize().Height);
+                + static_cast<float>(fonts[f].Metadata.GetGlyphScreenHeight(c) - 1) / static_cast<float>(fontTextureAtlas.Metadata.GetSize().height);
 
             GlyphTextureBottomLefts[c] = vec2f(glyphLeftAtlasTextureSpace, glyphBottomAtlasTextureSpace);
             GlyphTextureTopRights[c] = vec2f(glyphRightAtlasTextureSpace, glyphTopAtlasTextureSpace);
@@ -519,8 +519,8 @@ void NotificationRenderContext::ApplyCanvasSizeChanges(RenderParameters const & 
     auto const & view = renderParameters.View;
 
     // Recalculate screen -> NDC conversion factors
-    mScreenToNdcX = 2.0f / static_cast<float>(view.GetCanvasPhysicalPixelSize().width);
-    mScreenToNdcY = 2.0f / static_cast<float>(view.GetCanvasPhysicalPixelSize().height);
+    mScreenToNdcX = 2.0f / static_cast<float>(view.GetCanvasPhysicalSize().width);
+    mScreenToNdcY = 2.0f / static_cast<float>(view.GetCanvasPhysicalSize().height);
 
     // Make sure we re-calculate (and re-upload) all text vertices
     // at the next iteration
@@ -536,8 +536,8 @@ void NotificationRenderContext::ApplyCanvasSizeChanges(RenderParameters const & 
     // Recalculate NDC dimensions of physics probe panel
     auto const & atlasFrame = mGenericLinearTextureAtlasMetadata.GetFrameMetadata(TextureFrameId<GenericLinearTextureGroups>(GenericLinearTextureGroups::PhysicsProbePanel, 0));
     mPhysicsProbePanelNdcDimensions = vec2f(
-        static_cast<float>(atlasFrame.FrameMetadata.Size.Width) * mScreenToNdcX,
-        static_cast<float>(atlasFrame.FrameMetadata.Size.Height) * mScreenToNdcY);
+        static_cast<float>(atlasFrame.FrameMetadata.Size.width) * mScreenToNdcX,
+        static_cast<float>(atlasFrame.FrameMetadata.Size.height) * mScreenToNdcY);
 
     // Set parameters
     mShaderManager.ActivateProgram<ProgramType::PhysicsProbePanel>();
@@ -982,8 +982,8 @@ void NotificationRenderContext::GenerateTextVertices(TextNotificationTypeContext
                     textLine.Text.length());
 
                 linePositionNdc += vec2f(
-                    1.f - (MarginScreen + static_cast<float>(lineExtent.Width)) * mScreenToNdcX,
-                    -1.f + (MarginScreen + static_cast<float>(lineExtent.Height)) * mScreenToNdcY);
+                    1.f - (MarginScreen + static_cast<float>(lineExtent.width)) * mScreenToNdcX,
+                    -1.f + (MarginScreen + static_cast<float>(lineExtent.height)) * mScreenToNdcY);
 
                 break;
             }
@@ -1004,7 +1004,7 @@ void NotificationRenderContext::GenerateTextVertices(TextNotificationTypeContext
                     textLine.Text.length());
 
                 linePositionNdc += vec2f(
-                    1.f - (MarginScreen + static_cast<float>(lineExtent.Width)) * mScreenToNdcX,
+                    1.f - (MarginScreen + static_cast<float>(lineExtent.width)) * mScreenToNdcX,
                     1.f - MarginTopScreen * mScreenToNdcY);
 
                 break;
@@ -1017,7 +1017,7 @@ void NotificationRenderContext::GenerateTextVertices(TextNotificationTypeContext
                     textLine.Text.length());
 
                 linePositionNdc += vec2f(
-                    -1.f + (PhysicsProbePanelDepthBottomRight.x - static_cast<float>(lineExtent.Width)) * mScreenToNdcX,
+                    -1.f + (PhysicsProbePanelDepthBottomRight.x - static_cast<float>(lineExtent.width)) * mScreenToNdcX,
                     -1.f + PhysicsProbePanelDepthBottomRight.y * mScreenToNdcY);
 
                 break;
@@ -1030,7 +1030,7 @@ void NotificationRenderContext::GenerateTextVertices(TextNotificationTypeContext
                     textLine.Text.length());
 
                 linePositionNdc += vec2f(
-                    -1.f + (PhysicsProbePanelPressureBottomRight.x - static_cast<float>(lineExtent.Width)) * mScreenToNdcX,
+                    -1.f + (PhysicsProbePanelPressureBottomRight.x - static_cast<float>(lineExtent.width)) * mScreenToNdcX,
                     -1.f + PhysicsProbePanelPressureBottomRight.y * mScreenToNdcY);
 
                 break;
@@ -1043,7 +1043,7 @@ void NotificationRenderContext::GenerateTextVertices(TextNotificationTypeContext
                     textLine.Text.length());
 
                 linePositionNdc += vec2f(
-                    -1.f + (PhysicsProbePanelSpeedBottomRight.x - static_cast<float>(lineExtent.Width)) * mScreenToNdcX,
+                    -1.f + (PhysicsProbePanelSpeedBottomRight.x - static_cast<float>(lineExtent.width)) * mScreenToNdcX,
                     -1.f + PhysicsProbePanelSpeedBottomRight.y * mScreenToNdcY);
 
                 break;
@@ -1056,7 +1056,7 @@ void NotificationRenderContext::GenerateTextVertices(TextNotificationTypeContext
                     textLine.Text.length());
 
                 linePositionNdc += vec2f(
-                    -1.f + (PhysicsProbePanelTemperatureBottomRight.x - static_cast<float>(lineExtent.Width)) * mScreenToNdcX,
+                    -1.f + (PhysicsProbePanelTemperatureBottomRight.x - static_cast<float>(lineExtent.width)) * mScreenToNdcX,
                     -1.f + PhysicsProbePanelTemperatureBottomRight.y * mScreenToNdcY);
 
                 break;
@@ -1151,8 +1151,8 @@ void NotificationRenderContext::GenerateTextureNotificationVertices()
         ImageSize const & frameSize = frame.FrameMetadata.Size;
 
         vec2f quadTopLeft( // Start with offset
-            textureNotification.ScreenOffset.x * static_cast<float>(frameSize.Width) * mScreenToNdcX,
-            -textureNotification.ScreenOffset.y * static_cast<float>(frameSize.Height) * mScreenToNdcY);
+            textureNotification.ScreenOffset.x * static_cast<float>(frameSize.width) * mScreenToNdcX,
+            -textureNotification.ScreenOffset.y * static_cast<float>(frameSize.height) * mScreenToNdcY);
 
         switch (textureNotification.Anchor)
         {
@@ -1160,7 +1160,7 @@ void NotificationRenderContext::GenerateTextureNotificationVertices()
             {
                 quadTopLeft += vec2f(
                     -1.f + MarginScreen * mScreenToNdcX,
-                    -1.f + (MarginScreen + static_cast<float>(frameSize.Height)) * mScreenToNdcY);
+                    -1.f + (MarginScreen + static_cast<float>(frameSize.height)) * mScreenToNdcY);
 
                 break;
             }
@@ -1168,8 +1168,8 @@ void NotificationRenderContext::GenerateTextureNotificationVertices()
             case AnchorPositionType::BottomRight:
             {
                 quadTopLeft += vec2f(
-                    1.f - (MarginScreen + static_cast<float>(frameSize.Width)) * mScreenToNdcX,
-                    -1.f + (MarginScreen + static_cast<float>(frameSize.Height)) * mScreenToNdcY);
+                    1.f - (MarginScreen + static_cast<float>(frameSize.width)) * mScreenToNdcX,
+                    -1.f + (MarginScreen + static_cast<float>(frameSize.height)) * mScreenToNdcY);
 
                 break;
             }
@@ -1186,7 +1186,7 @@ void NotificationRenderContext::GenerateTextureNotificationVertices()
             case AnchorPositionType::TopRight:
             {
                 quadTopLeft += vec2f(
-                    1.f - (MarginScreen + static_cast<float>(frameSize.Width)) * mScreenToNdcX,
+                    1.f - (MarginScreen + static_cast<float>(frameSize.width)) * mScreenToNdcX,
                     1.f - MarginTopScreen * mScreenToNdcY);
 
                 break;
@@ -1194,8 +1194,8 @@ void NotificationRenderContext::GenerateTextureNotificationVertices()
         }
 
         vec2f quadBottomRight = quadTopLeft + vec2f(
-            static_cast<float>(frameSize.Width) * mScreenToNdcX,
-            -static_cast<float>(frameSize.Height) * mScreenToNdcY);
+            static_cast<float>(frameSize.width) * mScreenToNdcX,
+            -static_cast<float>(frameSize.height) * mScreenToNdcY);
 
         // Append vertices - two triangles
 

@@ -5,7 +5,6 @@
 ***************************************************************************************/
 #pragma once
 
-#include <GameCore/ImageSize.h>
 #include <GameCore/GameTypes.h>
 
 #include <cstdint>
@@ -14,8 +13,8 @@
 
 struct RenderDeviceProperties
 {
-    LogicalPixelSize InitialCanvasSize;
-    int LogicalToPhysicalPixelFactor;
+    DisplayLogicalSize InitialCanvasSize;
+    int LogicalToPhysicalDisplayFactor;
 
     std::optional<bool> DoForceNoGlFinish;
     std::optional<bool> DoForceNoMultithreadedRendering;
@@ -24,14 +23,14 @@ struct RenderDeviceProperties
     std::function<void()> SwapRenderBuffersFunction;
 
     RenderDeviceProperties(
-        LogicalPixelSize initialCanvasSize,
-        int logicalToPhysicalPixelFactor,
+        DisplayLogicalSize initialCanvasSize,
+        int logicalToPhysicalDisplayFactor,
         std::optional<bool> doForceNoGlFinish,
         std::optional<bool> doForceNoMultithreadedRendering,
         std::function<void()> makeRenderContextCurrentFunction,
         std::function<void()> swapRenderBuffersFunction)
         : InitialCanvasSize(initialCanvasSize)
-        , LogicalToPhysicalPixelFactor(logicalToPhysicalPixelFactor)
+        , LogicalToPhysicalDisplayFactor(logicalToPhysicalDisplayFactor)
         , DoForceNoGlFinish(doForceNoGlFinish)
         , DoForceNoMultithreadedRendering(doForceNoMultithreadedRendering)
         , MakeRenderContextCurrentFunction(std::move(makeRenderContextCurrentFunction))

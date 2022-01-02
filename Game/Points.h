@@ -699,7 +699,7 @@ public:
         float strength,
         ElementIndex electricalElementIndex,
         bool isStructurallyLeaking,
-        vec4f const & color,
+        rgbaColor const & color,
         vec2f const & textureCoordinates,
         float randomNormalizedUniformFloat);
 

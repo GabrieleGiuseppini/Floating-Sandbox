@@ -14,7 +14,6 @@
 #include "Physics.h"
 #include "RenderContext.h"
 #include "ResourceLocator.h"
-#include "ShipBuilder.h"
 #include "ShipDefinition.h"
 #include "VisibleWorld.h"
 

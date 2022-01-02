@@ -1,58 +1,47 @@
 /***************************************************************************************
 * Original Author:		Gabriele Giuseppini
-* Created:				2018-03-19
+* Created:				2021-09-21
 * Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
 #pragma once
 
+#include "Layers.h"
+#include "ShipAutoTexturizationSettings.h"
 #include "ShipMetadata.h"
 #include "ShipPhysicsData.h"
 
-#include <GameCore/ImageData.h>
-
-#include <filesystem>
+#include <memory>
 #include <optional>
 
-/*
-* The complete definition of a ship.
-*/
 struct ShipDefinition
 {
-public:
+    ShipSpaceSize Size;
 
-    RgbImageData StructuralLayerImage;
-
-    std::optional<RgbImageData> RopesLayerImage;
-
-    std::optional<RgbImageData> ElectricalLayerImage;
-
-    std::optional<RgbaImageData> TextureLayerImage;
-
-    std::optional<ShipAutoTexturizationSettings> const AutoTexturizationSettings;
+    StructuralLayerData StructuralLayer;
+    std::unique_ptr<ElectricalLayerData> ElectricalLayer;
+    std::unique_ptr<RopesLayerData> RopesLayer;
+    std::unique_ptr<TextureLayerData> TextureLayer;
 
     ShipMetadata Metadata;
-
     ShipPhysicsData PhysicsData;
-
-    static ShipDefinition Load(std::filesystem::path const & filepath);
-
-private:
+    std::optional<ShipAutoTexturizationSettings> const AutoTexturizationSettings;
 
     ShipDefinition(
-        RgbImageData structuralLayerImage,
-        std::optional<RgbImageData> ropesLayerImage,
-        std::optional<RgbImageData> electricalLayerImage,
-        std::optional<RgbaImageData> textureLayerImage,
-        std::optional<ShipAutoTexturizationSettings> autoTexturizationSettings,
-        ShipMetadata metadata,
-        ShipPhysicsData physicsData)
-        : StructuralLayerImage(std::move(structuralLayerImage))
-        , RopesLayerImage(std::move(ropesLayerImage))
-        , ElectricalLayerImage(std::move(electricalLayerImage))
-        , TextureLayerImage(std::move(textureLayerImage))
-        , AutoTexturizationSettings(std::move(autoTexturizationSettings))
-        , Metadata(std::move(metadata))
-        , PhysicsData(std::move(physicsData))
-    {
-    }
+        ShipSpaceSize const & size,
+        StructuralLayerData && structuralLayer,
+        std::unique_ptr<ElectricalLayerData> && electricalLayer,
+        std::unique_ptr<RopesLayerData> && ropesLayer,
+        std::unique_ptr<TextureLayerData> && textureLayer,
+        ShipMetadata const & metadata,
+        ShipPhysicsData const & physicsData,
+        std::optional<ShipAutoTexturizationSettings> const & autoTexturizationSettings)
+        : Size(size)
+        , StructuralLayer(std::move(structuralLayer))
+        , ElectricalLayer(std::move(electricalLayer))
+        , RopesLayer(std::move(ropesLayer))
+        , TextureLayer(std::move(textureLayer))
+        , Metadata(metadata)
+        , PhysicsData(physicsData)
+        , AutoTexturizationSettings(autoTexturizationSettings)
+    {}
 };

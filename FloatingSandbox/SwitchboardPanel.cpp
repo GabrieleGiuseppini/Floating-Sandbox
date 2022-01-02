@@ -5,14 +5,13 @@
 ***************************************************************************************/
 #include "SwitchboardPanel.h"
 
-#include "WxHelpers.h"
+#include <UILib/LayoutHelper.h>
+#include <UILib/WxHelpers.h>
 
 #include <GameCore/ImageTools.h>
 
 #include <Game/GameParameters.h>
 #include <Game/ImageFileTools.h>
-
-#include <UIControls/LayoutHelper.h>
 
 #include <wx/clntdata.h>
 #include <wx/cursor.h>

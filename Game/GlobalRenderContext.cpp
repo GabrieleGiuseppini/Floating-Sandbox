@@ -121,8 +121,8 @@ void GlobalRenderContext::InitializeGenericTextures(ResourceLocator const & reso
     mShaderManager.ActivateProgram<ProgramType::ShipFlamesBackground>();
     mShaderManager.SetTextureParameters<ProgramType::ShipFlamesBackground>();
     mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground, ProgramParameterType::AtlasTile1Dx>(
-        1.0f / static_cast<float>(fireAtlasFrameMetadata.FrameMetadata.Size.Width),
-        1.0f / static_cast<float>(fireAtlasFrameMetadata.FrameMetadata.Size.Height));
+        1.0f / static_cast<float>(fireAtlasFrameMetadata.FrameMetadata.Size.width),
+        1.0f / static_cast<float>(fireAtlasFrameMetadata.FrameMetadata.Size.height));
     mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground, ProgramParameterType::AtlasTile1LeftBottomTextureCoordinates>(
         fireAtlasFrameMetadata.TextureCoordinatesBottomLeft.x,
         fireAtlasFrameMetadata.TextureCoordinatesBottomLeft.y);
@@ -134,8 +134,8 @@ void GlobalRenderContext::InitializeGenericTextures(ResourceLocator const & reso
     mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground>();
     mShaderManager.SetTextureParameters<ProgramType::ShipFlamesForeground>();
     mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground, ProgramParameterType::AtlasTile1Dx>(
-        1.0f / static_cast<float>(fireAtlasFrameMetadata.FrameMetadata.Size.Width),
-        1.0f / static_cast<float>(fireAtlasFrameMetadata.FrameMetadata.Size.Height));
+        1.0f / static_cast<float>(fireAtlasFrameMetadata.FrameMetadata.Size.width),
+        1.0f / static_cast<float>(fireAtlasFrameMetadata.FrameMetadata.Size.height));
     mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground, ProgramParameterType::AtlasTile1LeftBottomTextureCoordinates>(
         fireAtlasFrameMetadata.TextureCoordinatesBottomLeft.x,
         fireAtlasFrameMetadata.TextureCoordinatesBottomLeft.y);

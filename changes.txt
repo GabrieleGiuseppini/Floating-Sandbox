@@ -1,4 +1,9 @@
 TODO
+- First build with integrated "Ship Builder", which allows players to create and edit ships from within the game
+	- TODO: more features planned
+- Added new materials for ropes:
+	- Metal Chains
+	- Rubber Band
 - Fixed "slice lock"
 
 1.16.7

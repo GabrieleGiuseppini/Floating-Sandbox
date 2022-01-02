@@ -9,7 +9,6 @@
 
 #include <GameCore/GameException.h>
 #include <GameCore/GameMath.h>
-#include <GameCore/ImageTools.h>
 #include <GameCore/Log.h>
 
 #include <algorithm>
@@ -18,102 +17,157 @@
 size_t constexpr MaterialTextureCacheSizeHighWatermark = 40;
 size_t constexpr MaterialTextureCacheSizeLowWatermark = 25;
 
+std::string const MaterialTextureNameNone = "none";
+
 namespace /*anonymous*/ {
-
-    inline float BidirMultiplyBlend(float x1, float x2)
+    
+    inline vec3f BidirMultiplyBlend(
+        vec3f const & inputColor,
+        vec2f const & bumpMapSample)
     {
-        return (x2 <= 0.5f)
-            ? x1 * 2.0f * x2                        // Damper: x1 * [0.0, 1.0]
-            : x1 + (x2 - x1) * 2.0f * (x2 - 0.5f);  // Amplifier:x1 + (x2 - x1) * [0.0, 1.0]
-    }
-}
-
-ShipTexturizer::ShipTexturizer(ResourceLocator const & resourceLocator)
-    // Here is where default settings live
-    : mSharedSettings(
-        ShipAutoTexturizationModeType::MaterialTextures,
-        1.0f, // MaterialTextureMagnification
-        0.0f) // MaterialTextureTransparency
-    , mDoForceSharedSettingsOntoShipSettings(false)
-    , mMaterialTexturesFolderPath(resourceLocator.GetMaterialTexturesFolderPath())
-    , mMaterialTextureNameToTextureFilePathMap(MakeMaterialTextureNameToTextureFilePathMap(mMaterialTexturesFolderPath))
-    , mMaterialTextureCache()
-{
-}
-
-void ShipTexturizer::VerifyMaterialDatabase(MaterialDatabase const & materialDatabase) const
-{
-    for (auto const & entry : materialDatabase.GetStructuralMaterialsByColorKeys())
-    {
-        if (entry.second.MaterialTextureName.has_value())
+        if (bumpMapSample.x <= 0.5f)
         {
-            if (mMaterialTextureNameToTextureFilePathMap.count(*entry.second.MaterialTextureName) == 0)
-            {
-                throw GameException(
-                    "Material texture name \"" + *entry.second.MaterialTextureName + "\""
-                    + " specified for material \"" + entry.second.Name + "\" is unknown");
-            }
+            // Damper: x1 * [0.0, 1.0]
+            return inputColor * 2.0f * bumpMapSample.x;
+        }
+        else
+        {
+            // Amplifier: x1 + (x2 - x1) * [0.0, 1.0]
+            float const factor = 2.0f * (bumpMapSample.x - 0.5f);
+            return vec3f(
+                inputColor.x + (bumpMapSample.x - inputColor.x) * factor,
+                inputColor.y + (bumpMapSample.x - inputColor.y) * factor,
+                inputColor.z + (bumpMapSample.x - inputColor.z) * factor);
         }
     }
 }
 
-RgbaImageData ShipTexturizer::Texturize(
-    std::optional<ShipAutoTexturizationSettings> const & shipDefinitionSettings,
-    ImageSize const & structureSize,
-    ShipBuildPointIndexMatrix const & pointMatrix, // One more point on each side, to avoid checking for boundaries
-    std::vector<ShipBuildPoint> const & points) const
+ShipTexturizer::ShipTexturizer(
+    MaterialDatabase const & materialDatabase,
+    ResourceLocator const & resourceLocator)
+    : mSharedSettings() // Default settings
+    , mDoForceSharedSettingsOntoShipSettings(false)
+    , mMaterialTextureNameToTextureFilePathMap(
+        MakeMaterialTextureNameToTextureFilePathMap(materialDatabase, resourceLocator))
+    , mMaterialTextureCache()
 {
-    auto const startTime = std::chrono::steady_clock::now();
+}
 
-    // Zero-out cache usage counts
-    ResetMaterialTextureCacheUseCounts();
-
+int ShipTexturizer::CalculateHighDefinitionTextureMagnificationFactor(ShipSpaceSize const & shipSize)
+{
     //
     // Calculate target texture size: integral multiple of structure size, but without
     // exceeding 4096 (magic number, also max texture size for low-end gfx cards),
     // and no more than 32 times the original size
     //
 
-    int const maxDimension = std::max(structureSize.Width, structureSize.Height);
+    int const maxDimension = std::max(shipSize.width, shipSize.height);
     assert(maxDimension > 0);
 
     int const magnificationFactor = std::min(32, std::max(1, 4096 / maxDimension));
-    float const magnificationFactorInvF = 1.0f / static_cast<float>(magnificationFactor);
 
-    ImageSize const textureSize = structureSize * magnificationFactor;
+    return magnificationFactor;
+}
 
+RgbaImageData ShipTexturizer::MakeAutoTexture(
+    StructuralLayerData const & structuralLayer,
+    std::optional<ShipAutoTexturizationSettings> const & settings) const
+{
+    auto const startTime = std::chrono::steady_clock::now();
+
+    // Zero-out cache usage counts
+    ResetMaterialTextureCacheUseCounts();
+
+    // Calculate texture size
+    ShipSpaceSize const shipSize = structuralLayer.Buffer.Size;
+    int magnificationFactor = CalculateHighDefinitionTextureMagnificationFactor(shipSize);
+    ImageSize const textureSize = ImageSize(
+        shipSize.width * magnificationFactor,
+        shipSize.height * magnificationFactor);
+
+    // Allocate texture image
+    RgbaImageData texture = RgbaImageData(textureSize);
+
+    // Nail down settings
+    ShipAutoTexturizationSettings const & actualSettings = (mDoForceSharedSettingsOntoShipSettings || !settings.has_value())
+        ? mSharedSettings
+        : *settings;
+
+    // Texturize
+    AutoTexturizeInto(
+        structuralLayer,
+        ShipSpaceRect({ 0, 0 }, shipSize), // Whole quad
+        texture,
+        magnificationFactor,
+        actualSettings);
+
+    LogMessage("ShipTexturizer: completed auto-texturization:",
+        " shipSize=", shipSize, " textureSize=", textureSize,
+        " time=", std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - startTime).count(), "us");
+
+    return texture;
+}
+
+void ShipTexturizer::AutoTexturizeInto(
+    StructuralLayerData const & structuralLayer,
+    ShipSpaceRect const & structuralLayerRegion,
+    RgbaImageData & targetTextureImage,
+    int magnificationFactor,
+    ShipAutoTexturizationSettings const & settings) const
+{
     //
     // Prepare constants
     //
+    
+    assert((targetTextureImage.Size.width % structuralLayer.Buffer.Size.width) == 0
+        && (targetTextureImage.Size.height % structuralLayer.Buffer.Size.height) == 0);
+    assert(magnificationFactor == targetTextureImage.Size.width / structuralLayer.Buffer.Size.width);
+    assert(magnificationFactor == targetTextureImage.Size.height / structuralLayer.Buffer.Size.height);
 
-    ShipAutoTexturizationSettings const & settings = (mDoForceSharedSettingsOntoShipSettings || !shipDefinitionSettings.has_value())
-        ? mSharedSettings
-        : *shipDefinitionSettings;
+    float const magnificationFactorInvF = 1.0f / static_cast<float>(magnificationFactor);
 
-    float const materialTextureWorldToPixelConversionFactor =
+    float const worldToMaterialTexturePixelConversionFactor =
         MaterialTextureMagnificationToPixelConversionFactor(settings.MaterialTextureMagnification);
 
     float const materialTextureAlpha = 1.0f - settings.MaterialTextureTransparency;
 
-    //
-    // Create texture
-    //
-
-    auto newImageData = std::make_unique<rgbaColor[]>(textureSize.GetPixelCount());
-
-    for (int y = 1; y <= structureSize.Height; ++y)
+    struct XInterpolationData
     {
-        for (int x = 1; x <= structureSize.Width; ++x)
+        register_int pixelXI;
+        float pixelDx;
+        register_int nextPixelXI;
+    };
+
+    std::vector<XInterpolationData> xInterpolationData;
+    xInterpolationData.resize(magnificationFactor);
+
+    //
+    // Populate texture
+    //
+
+    auto targetImageData = targetTextureImage.Data.get();
+    auto const & structuralBuffer = structuralLayer.Buffer;
+
+    int const startY = structuralLayerRegion.origin.y;
+    int const endY = structuralLayerRegion.origin.y + structuralLayerRegion.size.height;
+
+    int const startX = structuralLayerRegion.origin.x;
+    int const endX = structuralLayerRegion.origin.x + structuralLayerRegion.size.width;
+
+    for (int y = startY; y < endY; ++y)
+    {
+        for (int x = startX; x < endX; ++x)
         {
-            vec2i const pixelCoords(x, y);
+            ShipSpaceCoordinates const coords = ShipSpaceCoordinates(x, y);
 
             // Get structure pixel color
-            rgbaColor const structurePixelColor = pointMatrix[pixelCoords].has_value()
-                ? rgbaColor(points[*pointMatrix[pixelCoords]].StructuralMtl.RenderColor)
+            StructuralMaterial const * const structuralMaterial = structuralBuffer[coords].Material;
+            rgbaColor const structurePixelColor = structuralMaterial != nullptr
+                ? rgbaColor(structuralMaterial->RenderColor, 255)
                 : rgbaColor::zero(); // Fully transparent
 
             if (settings.Mode == ShipAutoTexturizationModeType::FlatStructure
-                || !pointMatrix[pixelCoords].has_value())
+                || structuralMaterial == nullptr)
             {
                 //
                 // Flat structure
@@ -123,12 +177,12 @@ RgbaImageData ShipTexturizer::Texturize(
                 for (int yy = 0; yy < magnificationFactor; ++yy)
                 {
                     int const quadOffset =
-                        (x - 1) * magnificationFactor
-                        + ((y - 1) * magnificationFactor + yy) * textureSize.Width;
+                        x * magnificationFactor
+                        + (y * magnificationFactor + yy) * targetTextureImage.Size.width;
 
                     for (int xx = 0; xx < magnificationFactor; ++xx)
                     {
-                        newImageData[quadOffset + xx] = structurePixelColor;
+                        targetImageData[quadOffset + xx] = structurePixelColor;
                     }
                 }
             }
@@ -143,82 +197,378 @@ RgbaImageData ShipTexturizer::Texturize(
                 vec3f const structurePixelColorF = structurePixelColor.toVec3f();
 
                 // Get bump map texture
-                assert(pointMatrix[pixelCoords].has_value());
-                Vec3fImageData const & materialTexture = GetMaterialTexture(points[*pointMatrix[pixelCoords]].StructuralMtl.MaterialTextureName);
+                assert(structuralMaterial != nullptr);
+                Vec2fImageData const & materialTexture = GetMaterialTexture(structuralMaterial->MaterialTextureName);
+
+                //
+                // Prepare bilinear interpolation along X
+                //
+
+                float pixelX = static_cast<float>(x) * worldToMaterialTexturePixelConversionFactor;
+                for (int xx = 0; xx < magnificationFactor; ++xx, pixelX += magnificationFactorInvF * worldToMaterialTexturePixelConversionFactor)
+                {
+                    // Integral part
+                    xInterpolationData[xx].pixelXI = FastTruncateToArchInt(pixelX);
+
+                    // Fractional part between index and next index
+                    xInterpolationData[xx].pixelDx = pixelX - xInterpolationData[xx].pixelXI;
+
+                    // Wrap integral coordinates
+                    xInterpolationData[xx].pixelXI %= static_cast<register_int>(materialTexture.Size.width);
+
+                    // Next X
+                    xInterpolationData[xx].nextPixelXI = (xInterpolationData[xx].pixelXI + 1) % static_cast<register_int>(materialTexture.Size.width);
+
+                    assert(xInterpolationData[xx].pixelXI >= 0 && xInterpolationData[xx].pixelXI < materialTexture.Size.width);
+                    assert(xInterpolationData[xx].pixelDx >= 0.0f && xInterpolationData[xx].pixelDx < 1.0f);
+                    assert(xInterpolationData[xx].nextPixelXI >= 0 && xInterpolationData[xx].nextPixelXI < materialTexture.Size.width);
+                }
 
                 //
                 // Fill quad with color multiply-blended with "bump map" texture
                 //
 
-                int const baseTargetQuadOffset = ((x - 1) + (y - 1) * textureSize.Width) * magnificationFactor;
+                int const baseTargetQuadOffset = (x + y * targetTextureImage.Size.width) * magnificationFactor;
 
-                float worldY = static_cast<float>(y - 1);
+                float worldY = static_cast<float>(y);
                 for (int yy = 0; yy < magnificationFactor; ++yy, worldY += magnificationFactorInvF)
                 {
-                    int const targetQuadOffset = baseTargetQuadOffset + yy * textureSize.Width;
+                    int const targetQuadOffset = baseTargetQuadOffset + yy * targetTextureImage.Size.width;
 
-                    float worldX = static_cast<float>(x - 1);
-                    for (int xx = 0; xx < magnificationFactor; ++xx, worldX += magnificationFactorInvF)
+                    //
+                    // Prepare bilinear interpolation for Y
+                    //
+
+                    float const pixelY = worldY * worldToMaterialTexturePixelConversionFactor;
+
+                    // Integral part
+                    auto pixelYI = FastTruncateToArchInt(pixelY);
+
+                    // Fractional part between index and next index
+                    float const pixelDy = pixelY - pixelYI;
+
+                    // Wrap integral coordinates
+                    pixelYI %= static_cast<decltype(pixelYI)>(materialTexture.Size.height);
+                    auto const pixelYIOffset = pixelYI * materialTexture.Size.width;
+
+                    // Next Y
+                    auto const nextPixelYI = (pixelYI + 1) % static_cast<decltype(pixelYI)>(materialTexture.Size.height);
+                    auto const nextPixelYIOffset = nextPixelYI * materialTexture.Size.width;;
+
+                    assert(pixelYI >= 0 && pixelYI < materialTexture.Size.height);
+                    assert(pixelDy >= 0.0f && pixelDy < 1.0f);
+                    assert(nextPixelYI >= 0 && nextPixelYI < materialTexture.Size.height);
+
+                    //
+                    // Loop for all Xs
+                    //
+
+                    for (int xx = 0; xx < magnificationFactor; ++xx)
                     {
-                        vec3f const bumpMapSample = SampleTexture(
-                            materialTexture,
-                            worldX * materialTextureWorldToPixelConversionFactor,
-                            worldY * materialTextureWorldToPixelConversionFactor);
+                        //
+                        // Bilinear interpolation for X
+                        //
 
-                        ////// Vanilla multiply blending
-                        ////vec3f const resultantColor(
-                        ////    structurePixelColorF.x * bumpMapSample.x,
-                        ////    structurePixelColorF.y * bumpMapSample.y,
-                        ////    structurePixelColorF.z * bumpMapSample.z);
+                        // Linear interpolation between x samples at bottom
+                        vec2f const interpolatedXColorBottom = Mix(
+                            materialTexture.Data[xInterpolationData[xx].pixelXI + pixelYIOffset],
+                            materialTexture.Data[xInterpolationData[xx].nextPixelXI + pixelYIOffset],
+                            xInterpolationData[xx].pixelDx);
 
-                        // Bi-directional multiply blending
-                        vec3f const resultantColorF(
-                            BidirMultiplyBlend(structurePixelColorF.x, bumpMapSample.x),
-                            BidirMultiplyBlend(structurePixelColorF.y, bumpMapSample.y),
-                            BidirMultiplyBlend(structurePixelColorF.z, bumpMapSample.z));
+                        // Linear interpolation between x samples at top
+                        vec2f const interpolatedXColorTop = Mix(
+                            materialTexture.Data[xInterpolationData[xx].pixelXI + nextPixelYIOffset],
+                            materialTexture.Data[xInterpolationData[xx].nextPixelXI + nextPixelYIOffset],
+                            xInterpolationData[xx].pixelDx);
 
-                        // Store resultant color, using structure's alpha channel value,
-                        // and blended with transparency
-                        newImageData[targetQuadOffset + xx] = rgbaColor(
-                            Mix(structurePixelColorF,
-                                resultantColorF,
-                                materialTextureAlpha),
+                        // Linear interpolation between two vertical samples
+                        vec2f const bumpMapSample = Mix(
+                            interpolatedXColorBottom,
+                            interpolatedXColorTop,
+                            pixelDy);
+
+                        //
+                        // Bi-directional multiply blending between structural color and bumpmap sample "value" (just r),
+                        // blended again with structural color via material transparency
+                        //
+
+                        float const whateverFactor = (2.0f * bumpMapSample.x - 1.0f) * materialTextureAlpha;
+
+                        vec3f resultantColor;
+                        if (bumpMapSample.x <= 0.5f)
+                        {
+                            // Damper: input * [0.0, 1.0]
+                            // Then: mix of input and of result of multiply-blend, via materialTextureAlpha
+                            resultantColor = structurePixelColorF * (1.0f + whateverFactor);
+                        }
+                        else
+                        {
+                            // Amplifier: input + (bump - input) * [0.0, 1.0]
+                            // Then: mix of input and of result of multiply-blend, via materialTextureAlpha
+                            float const bFactor = bumpMapSample.x * whateverFactor;
+                            resultantColor = structurePixelColorF * (1.0f - whateverFactor) + vec3f(bFactor, bFactor, bFactor);
+                        }
+
+                        // Store resultant color, using structure's alpha channel value as the final alpha
+                        targetImageData[targetQuadOffset + xx] = rgbaColor(
+                            resultantColor,
                             structurePixelColor.a);
                     }
                 }
             }
         }
     }
+}
 
-    LogMessage("ShipTexturizer: completed auto-texturization:",
-        " materialTextureMagnification=", settings.MaterialTextureMagnification,
-        " structureSize=", structureSize, " textureSize=", textureSize, " magFactor=", magnificationFactor,
-        " time=", std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - startTime).count(), "us");
+void ShipTexturizer::RenderShipInto(
+    StructuralLayerData const & structuralLayer,
+    ShipSpaceRect const & structuralLayerRegion,
+    RgbaImageData const & sourceTextureImage,
+    RgbaImageData & targetTextureImage,
+    int magnificationFactor) const
+{
+    rgbaColor constexpr TransparentColor = rgbaColor::zero(); // Fully transparent
 
-    return RgbaImageData(textureSize, std::move(newImageData));
+    //
+    // Expectations:
+    //
+    // - The size of the target texture image is an integral multiple of the size of the structural layer
+    // - The ratio of the structural layer dimensions is the same as the ratio of the source texture image
+    //
+
+    //
+    // Prepare constants
+    //
+
+    assert((targetTextureImage.Size.width % structuralLayer.Buffer.Size.width) == 0
+        && (targetTextureImage.Size.height % structuralLayer.Buffer.Size.height) == 0);
+    assert(magnificationFactor == targetTextureImage.Size.width / structuralLayer.Buffer.Size.width);
+    assert(magnificationFactor == targetTextureImage.Size.height / structuralLayer.Buffer.Size.height);
+
+    float const targetTextureSpaceToSourceTextureSpace =
+        static_cast<float>(sourceTextureImage.Size.width)
+        / static_cast<float>(targetTextureImage.Size.width);
+
+    //
+    // Here we offset the texture coords by half of a "ship pixel" (which is multiple texture pixels)
+    // in the same way as we do when we build the ship at simulation time.
+    // We do this so that the texture for a particle at ship coords (x, y) is sampled at the center of the 
+    // texture's quad for that particle.
+    //
+
+    float const sourcePixelsPerShipParticleX = static_cast<float>(sourceTextureImage.Size.width) / static_cast<float>(structuralLayer.Buffer.Size.width);
+    float const sourcePixelsPerShipParticleY = static_cast<float>(sourceTextureImage.Size.height) / static_cast<float>(structuralLayer.Buffer.Size.height);
+
+    float const sampleOffsetX = sourcePixelsPerShipParticleX / 2.0f;
+    float const sampleOffsetY = sourcePixelsPerShipParticleY / 2.0f;
+
+    //
+    // Populate texture
+    //
+
+    ShipSpaceSize const structuralSize = structuralLayer.Buffer.Size;
+    auto const & structuralBuffer = structuralLayer.Buffer;
+    auto targetImageData = targetTextureImage.Data.get();
+
+    int const startY = structuralLayerRegion.origin.y;
+    int const endY = structuralLayerRegion.origin.y + structuralLayerRegion.size.height;
+
+    int const startX = structuralLayerRegion.origin.x;
+    int const endX = structuralLayerRegion.origin.x + structuralLayerRegion.size.width;
+
+    for (int y = startY; y < endY; ++y)
+    {
+        for (int x = startX; x < endX; ++x)
+        {
+            //
+            // We now populate the target texture in the quad whose corners lie at these coordinates (in the target texture):
+            //
+            // 3:(x * magnificationFactor, (y + 1) * magnificationFactor) ... 4:((x + 1) * magnificationFactor, (y + 1) * magnificationFactor)
+            // ...
+            // ...
+            // ...
+            // 1:[x * magnificationFactor, y * magnificationFactor] ... 2:((x + 1) * magnificationFactor, y * magnificationFactor)
+            //
+            // We actually populate quads or triangles (with |side|==magnificationFactor), depending on the presence of the four corners. We do so by:
+            //  - Looping for all target YY's in the quad
+            //  - For each YY:
+            //      - Fill-in the XX segment between xxStart and xxEnd, and transparent outside (prefix and suffix)
+            //      - Change xxStart and xxEnd depending on Y
+            //
+
+            //
+            // Determine quad vertices
+            //
+
+            // Init with no quad - prefix only
+            int xxStart = magnificationFactor, xxStartIncr = 0;
+            int xxEnd = magnificationFactor, xxEndIncr = 0;
+
+            bool const hasVertex1 = structuralBuffer[{x, y}].Material != nullptr;
+
+            ShipSpaceCoordinates const coords2 = ShipSpaceCoordinates(x + 1, y);
+            bool const hasVertex2 = coords2.IsInSize(structuralSize) && structuralBuffer[coords2].Material != nullptr;
+
+            ShipSpaceCoordinates const coords3 = ShipSpaceCoordinates(x, y + 1);
+            bool const hasVertex3 = coords3.IsInSize(structuralSize) && structuralBuffer[coords3].Material != nullptr;
+
+            ShipSpaceCoordinates const coords4 = ShipSpaceCoordinates(x + 1, y + 1);
+            bool const hasVertex4 = coords4.IsInSize(structuralSize) && structuralBuffer[coords4].Material != nullptr;
+
+            if (hasVertex1)
+            {
+                if (hasVertex2)
+                {
+                    if (hasVertex3)
+                    {
+                        if (hasVertex4)
+                        {
+                            // Whole quad
+                            xxStart = 0; xxStartIncr = 0;
+                            xxEnd = magnificationFactor; xxEndIncr = 0;
+                        }
+                        else
+                        {
+                            // 3
+                            // |
+                            // 1---2
+
+                            xxStart = 0; xxStartIncr = 0;
+                            xxEnd = magnificationFactor; xxEndIncr = -1;
+                        }
+                    }
+                    else if (hasVertex4)
+                    {
+                        //     4
+                        //     |
+                        // 1---2
+
+                        xxStart = 0; xxStartIncr = 1;
+                        xxEnd = magnificationFactor; xxEndIncr = 0;
+                    }
+                }
+                else
+                {
+                    // No vertex 2
+
+                    if (hasVertex3 && hasVertex4)
+                    {
+                        // 3---4
+                        // |
+                        // 1
+
+                        xxStart = 0; xxStartIncr = 0;
+                        xxEnd = 0; xxEndIncr = 1;
+                    }
+                }
+            }
+            else
+            {
+                // No vertex 1
+
+                if (hasVertex2 && hasVertex3 && hasVertex4)
+                {
+                    // 3---4
+                    //     |
+                    //     2
+
+                    xxStart = magnificationFactor; xxStartIncr = -1;
+                    xxEnd = magnificationFactor; xxEndIncr = 0;
+                }
+            }
+
+            //
+            // Fill-in quad
+            //
+
+            int targetQuadOffset =
+                (y * magnificationFactor) * targetTextureImage.Size.width
+                + x * magnificationFactor;
+
+            for (int yy = 0; 
+                yy < magnificationFactor; 
+                ++yy, xxStart += xxStartIncr, xxEnd += xxEndIncr, targetQuadOffset += targetTextureImage.Size.width)
+            {
+                // Prefix - fill with empty
+                assert(0 <= xxStart && xxStart <= magnificationFactor);
+                for (int xx = 0; xx < xxStart; ++xx)
+                {
+                    targetImageData[targetQuadOffset + xx] = TransparentColor;
+                }
+
+                // Body - fill with source texture
+                for (int xx = xxStart; xx < xxEnd; ++xx)
+                {
+                    rgbaColor const textureSample = SampleTextureNearest( // Nearest neighbor is enough
+                        sourceTextureImage,
+                        sampleOffsetX + targetTextureSpaceToSourceTextureSpace * (x * magnificationFactor + xx),
+                        sampleOffsetY + targetTextureSpaceToSourceTextureSpace * (y * magnificationFactor + yy));
+
+                    targetImageData[targetQuadOffset + xx] = textureSample;
+                }
+
+                // Suffix - fill with empty
+                assert(0 <= xxEnd && xxEnd <= magnificationFactor);
+                for (int xx = xxEnd; xx < magnificationFactor; ++xx)
+                {
+                    targetImageData[targetQuadOffset + xx] = TransparentColor;
+                }
+            }
+        }
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
 
-std::unordered_map<std::string, std::filesystem::path> ShipTexturizer::MakeMaterialTextureNameToTextureFilePathMap(std::filesystem::path const materialTexturesFolderPath)
+std::unordered_map<std::string, std::filesystem::path> ShipTexturizer::MakeMaterialTextureNameToTextureFilePathMap(
+    MaterialDatabase const & materialDatabase,
+    ResourceLocator const & resourceLocator)
 {
     std::unordered_map<std::string, std::filesystem::path> materialTextureNameToTextureFilePath;
 
-    for (auto const & entryIt : std::filesystem::directory_iterator(materialTexturesFolderPath))
+    // Add "none" entry
     {
-        if (std::filesystem::is_regular_file(entryIt.path()))
-        {
-            // We only expect png's
-            if (entryIt.path().extension().string() == ".png")
-            {
-                std::string const textureName = entryIt.path().stem().string();
+        std::filesystem::path const materialTextureFilePath = resourceLocator.GetMaterialTextureFilePath(MaterialTextureNameNone);
 
-                assert(materialTextureNameToTextureFilePath.count(textureName) == 0);
-                materialTextureNameToTextureFilePath[textureName] = entryIt.path();
-            }
-            else
+        // Make sure file exists
+        if (!std::filesystem::exists(materialTextureFilePath)
+            || !std::filesystem::is_regular_file(materialTextureFilePath))
+        {
+            throw GameException(
+                "Cannot find material texture file for texture name \"" + MaterialTextureNameNone + "\"");
+        }
+
+        // Store mapping
+        materialTextureNameToTextureFilePath[MaterialTextureNameNone] = materialTextureFilePath;
+    }
+
+    // Add entries for all materials
+    for (auto const & category : materialDatabase.GetStructuralMaterialPalette().Categories)
+    {
+        for (auto const & subCategory : category.SubCategories)
+        {
+            for (StructuralMaterial const & material : subCategory.Materials)
             {
-                LogMessage("WARNING: found file \"" + entryIt.path().string() + "\" with unexpected extension while loading material textures");
+                if (material.MaterialTextureName.has_value())
+                {
+                    std::string const & materialTextureName = *material.MaterialTextureName;
+                    if (materialTextureNameToTextureFilePath.count(materialTextureName) == 0)
+                    {
+                        std::filesystem::path const materialTextureFilePath = resourceLocator.GetMaterialTextureFilePath(materialTextureName);
+
+                        // Make sure file exists
+                        if (!std::filesystem::exists(materialTextureFilePath)
+                            || !std::filesystem::is_regular_file(materialTextureFilePath))
+                        {
+                            throw GameException(
+                                "Cannot find material texture file for texture name \"" + materialTextureName + "\""
+                                + " specified for material \"" + material.Name + "\"");
+                        }
+
+                        // Store mapping
+                        materialTextureNameToTextureFilePath[materialTextureName] = materialTextureFilePath;
+                    }
+                }
             }
         }
     }
@@ -232,9 +582,67 @@ float ShipTexturizer::MaterialTextureMagnificationToPixelConversionFactor(float 
     return 1.0f / (0.08f * magnification);
 }
 
-Vec3fImageData const & ShipTexturizer::GetMaterialTexture(std::optional<std::string> const & textureName) const
+RgbaImageData ShipTexturizer::MakeTextureSample(
+    std::optional<ShipAutoTexturizationSettings> const & settings,
+    ImageSize const & sampleSize,
+    rgbaColor const & renderColor,
+    std::optional<std::string> const & textureName) const
 {
-    std::string const actualTextureName = textureName.value_or("none");
+    assert(sampleSize.width >= 2); // We'll split the width in half
+
+    // Use shared settings if no settings have been provided
+    ShipAutoTexturizationSettings const & effectiveSettings = !settings.has_value()
+        ? mSharedSettings
+        : *settings;
+
+    // Create output image
+    auto sampleData = std::make_unique<rgbaColor[]>(sampleSize.GetLinearSize());
+
+    // Get bump map texture and render color
+    Vec2fImageData const & materialTexture = GetMaterialTexture(textureName);
+    vec3f const renderPixelColorF = renderColor.toVec3f();
+
+    // Calculate constants
+    float const sampleToMaterialTexturePixelConversionFactor = 1.0f / effectiveSettings.MaterialTextureMagnification;
+    float const materialTextureAlpha = 1.0f - effectiveSettings.MaterialTextureTransparency;
+
+    //
+    // Fill quad with color multiply-blended with "bump map" texture
+    //
+
+    for (int y = 0; y < sampleSize.height; ++y)
+    {
+        int const targetQuadOffset = y * sampleSize.width;
+
+        for (int x = 0; x < sampleSize.width / 2; ++x)
+        {
+            vec2f const bumpMapSample = SampleTextureBilinear(
+                materialTexture,
+                static_cast<float>(x) * sampleToMaterialTexturePixelConversionFactor,
+                static_cast<float>(y) * sampleToMaterialTexturePixelConversionFactor);
+
+            // Bi-directional multiply blending
+            vec3f const resultantColorF = BidirMultiplyBlend(renderPixelColorF, bumpMapSample);
+
+            // Store resultant color to the left side, using structure's alpha channel value,
+            // and blended with transparency
+            sampleData[targetQuadOffset + x] = rgbaColor(
+                Mix(renderPixelColorF,
+                    resultantColorF,
+                    materialTextureAlpha),
+                renderColor.a);
+
+            // Store instead raw render color to the right side
+            sampleData[targetQuadOffset + x + sampleSize.width / 2] = renderColor;
+        }
+    }
+
+    return RgbaImageData(sampleSize, std::move(sampleData));
+}
+
+ShipTexturizer::Vec2fImageData const & ShipTexturizer::GetMaterialTexture(std::optional<std::string> const & textureName) const
+{
+    std::string const actualTextureName = textureName.value_or(MaterialTextureNameNone);
 
     auto const & it = mMaterialTextureCache.find(actualTextureName);
     if (it != mMaterialTextureCache.end())
@@ -253,12 +661,27 @@ Vec3fImageData const & ShipTexturizer::GetMaterialTexture(std::optional<std::str
             PurgeMaterialTextureCache(MaterialTextureCacheSizeLowWatermark);
         }
 
-        // Load and cache texture
+        // Load texture
         assert(mMaterialTextureNameToTextureFilePathMap.count(actualTextureName) > 0);
         RgbImageData texture = ImageFileTools::LoadImageRgb(mMaterialTextureNameToTextureFilePathMap.at(actualTextureName));
+
+        // Convert to vec2f
+        auto const pixelCount = texture.Size.GetLinearSize();
+        std::unique_ptr<vec2f[]> vec2fTexture = std::make_unique<vec2f[]>(pixelCount);
+        for (size_t p = 0; p < pixelCount; ++p)
+        {
+            assert(texture.Data[p].r == texture.Data[p].g);
+            assert(texture.Data[p].r == texture.Data[p].b);
+
+            vec2fTexture[p] = vec2f(
+                static_cast<float>(texture.Data[p].r) / 255.0f,
+                1.0f); // Alpha: at this moment we hardcode it as opaque, we'll think whether we want to make transparent chains
+        }
+
+        // Insert texture into cache
         auto const inserted = mMaterialTextureCache.emplace(
             actualTextureName,
-            ImageTools::ToVec3f(texture));
+            Vec2fImageData(texture.Size, std::move(vec2fTexture)));
 
         assert(inserted.second);
 
@@ -308,8 +731,8 @@ void ShipTexturizer::PurgeMaterialTextureCache(size_t maxSize) const
     }
 }
 
-vec3f ShipTexturizer::SampleTexture(
-    Vec3fImageData const & texture,
+vec2f ShipTexturizer::SampleTextureBilinear(
+    Vec2fImageData const & texture,
     float pixelX,
     float pixelY) const
 {
@@ -322,31 +745,31 @@ vec3f ShipTexturizer::SampleTexture(
     float const pixelDy = pixelY - pixelYI;
 
     // Wrap integral coordinates
-    pixelXI %= static_cast<decltype(pixelXI)>(texture.Size.Width);
-    pixelYI %= static_cast<decltype(pixelYI)>(texture.Size.Height);
+    pixelXI %= static_cast<decltype(pixelXI)>(texture.Size.width);
+    pixelYI %= static_cast<decltype(pixelYI)>(texture.Size.height);
 
-    assert(pixelXI >= 0 && pixelXI < texture.Size.Width);
+    assert(pixelXI >= 0 && pixelXI < texture.Size.width);
     assert(pixelDx >= 0.0f && pixelDx < 1.0f);
-    assert(pixelYI >= 0 && pixelYI < texture.Size.Height);
+    assert(pixelYI >= 0 && pixelYI < texture.Size.height);
     assert(pixelDy >= 0.0f && pixelDy < 1.0f);
 
     //
     // Bilinear
     //
 
-    int const nextPixelXI = (pixelXI + 1) % static_cast<decltype(pixelXI)>(texture.Size.Width);
-    int const nextPixelYI = (pixelYI + 1) % static_cast<decltype(pixelYI)>(texture.Size.Height);
+    int const nextPixelXI = (pixelXI + 1) % static_cast<decltype(pixelXI)>(texture.Size.width);
+    int const nextPixelYI = (pixelYI + 1) % static_cast<decltype(pixelYI)>(texture.Size.height);
 
     // Linear interpolation between x samples at bottom
-    vec3f const interpolatedXColorBottom = Mix(
-        texture.Data[pixelXI + pixelYI * texture.Size.Width],
-        texture.Data[nextPixelXI + pixelYI * texture.Size.Width],
+    vec2f const interpolatedXColorBottom = Mix(
+        texture.Data[pixelXI + pixelYI * texture.Size.width],
+        texture.Data[nextPixelXI + pixelYI * texture.Size.width],
         pixelDx);
 
     // Linear interpolation between x samples at top
-    vec3f const interpolatedXColorTop = Mix(
-        texture.Data[pixelXI + nextPixelYI * texture.Size.Width],
-        texture.Data[nextPixelXI + nextPixelYI * texture.Size.Width],
+    vec2f const interpolatedXColorTop = Mix(
+        texture.Data[pixelXI + nextPixelYI * texture.Size.width],
+        texture.Data[nextPixelXI + nextPixelYI * texture.Size.width],
         pixelDx);
 
     // Linear interpolation between two vertical samples
@@ -354,4 +777,30 @@ vec3f ShipTexturizer::SampleTexture(
         interpolatedXColorBottom,
         interpolatedXColorTop,
         pixelDy);
+}
+
+vec2f ShipTexturizer::SampleTextureNearest(
+    Vec2fImageData const & texture,
+    float pixelX,
+    float pixelY) const
+{
+    ImageCoordinates const i = ImageCoordinates::FromFloatRound({ pixelX, pixelY });
+    ImageCoordinates const iPixelCoords = ImageCoordinates(
+        i.x % static_cast<ImageCoordinates::integral_type>(texture.Size.width),
+        i.y % static_cast<ImageCoordinates::integral_type>(texture.Size.height));
+
+    return texture[iPixelCoords];
+}
+
+rgbaColor ShipTexturizer::SampleTextureNearest(
+    RgbaImageData const & texture,
+    float pixelX,
+    float pixelY) const
+{
+    ImageCoordinates const i = ImageCoordinates::FromFloatRound({ pixelX, pixelY });
+    ImageCoordinates const iPixelCoords = ImageCoordinates(
+        std::min(i.x, texture.Size.width - 1),
+        std::min(i.y, texture.Size.height - 1));
+
+    return texture[iPixelCoords];
 }

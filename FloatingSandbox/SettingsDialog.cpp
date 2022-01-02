@@ -5,7 +5,7 @@
  ***************************************************************************************/
 #include "SettingsDialog.h"
 
-#include "WxHelpers.h"
+#include <UILib/WxHelpers.h>
 
 #include <GameCore/ExponentialSliderCore.h>
 #include <GameCore/FixedTickSliderCore.h>
@@ -519,6 +519,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
             {
                 mMechanicalQualitySlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Simulation Quality"),
@@ -546,6 +547,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
             {
                 mStrengthSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Strength Adjust"),
@@ -572,6 +574,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
             {
                 mGlobalDampingAdjustmentSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Global Damping Adjust"),
@@ -598,6 +601,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
             {
                 mStaticPressureForceAdjustmentSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Static Pressure Adjust"),
@@ -645,6 +649,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
             {
                 mThermalConductivityAdjustmentSlider = new SliderControl<float>(
                     thermodynamicsBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Thermal Conductivity Adjust"),
@@ -671,6 +676,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
             {
                 mHeatDissipationAdjustmentSlider = new SliderControl<float>(
                     thermodynamicsBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Heat Dissipation Adjust"),
@@ -767,6 +773,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
             {
                 mIgnitionTemperatureAdjustmentSlider = new SliderControl<float>(
                     combustionBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Burning Point Adjust"),
@@ -793,6 +800,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
             {
                 mMeltingTemperatureAdjustmentSlider = new SliderControl<float>(
                     combustionBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Melting Point Adjust"),
@@ -819,6 +827,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
             {
                 mCombustionSpeedAdjustmentSlider = new SliderControl<float>(
                     combustionBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Combustion Speed Adjust"),
@@ -845,6 +854,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
             {
                 mCombustionHeatAdjustmentSlider = new SliderControl<float>(
                     combustionBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Combustion Heat Adjust"),
@@ -871,6 +881,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
             {
                 mMaxBurningParticlesSlider = new SliderControl<unsigned int>(
                     combustionBoxSizer->GetStaticBox(),
+                    SliderControl<unsigned int>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Max Burning Particles"),
@@ -930,6 +941,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
             {
                 mWaterDensityAdjustmentSlider = new SliderControl<float>(
                     waterBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Density Adjust"),
@@ -956,6 +968,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
             {
                 mWaterFrictionDragSlider = new SliderControl<float>(
                     waterBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Friction Drag Adjust"),
@@ -982,6 +995,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
             {
                 mWaterPressureDragSlider = new SliderControl<float>(
                     waterBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Pressure Drag Adjust"),
@@ -1008,6 +1022,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
             {
                 mWaterImpactForceAdjustmentSlider = new SliderControl<float>(
                     waterBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Impact Force Adjust"),
@@ -1034,6 +1049,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
             {
                 mHydrostaticPressureCounterbalanceAdjustmentSlider = new SliderControl<float>(
                     waterBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Hydrostatic Pressure Adjust"),
@@ -1060,6 +1076,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
             {
                 mWaterTemperatureSlider = new SliderControl<float>(
                     waterBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Temperature"),
@@ -1106,6 +1123,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
             {
                 mRotAcceler8rSlider = new SliderControl<float>(
                     rottingBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Rot Acceler8r"),
@@ -1153,6 +1171,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
             {
                 mOceanDepthSlider = new SliderControl<float>(
                     oceanBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Depth"),
@@ -1200,6 +1219,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
             {
                 mWaterIntakeSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Speed Adjust"),
@@ -1226,6 +1246,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
             {
                 mWaterDiffusionSpeedSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Diffusion Speed"),
@@ -1251,6 +1272,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
             {
                 mWaterCrazynessSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Fluid Crazyness"),
@@ -1299,6 +1321,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
             {
                 mOceanFloorBumpinessSlider = new SliderControl<float>(
                     oceanFloorBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Bumpiness"),
@@ -1351,6 +1374,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
             {
                 mOceanFloorDetailAmplificationSlider = new SliderControl<float>(
                     oceanFloorBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     -1,
                     _("Detail"),
@@ -1377,6 +1401,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
             {
                 mOceanFloorElasticitySlider = new SliderControl<float>(
                     oceanFloorBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Elasticity"),
@@ -1402,6 +1427,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
             {
                 mOceanFloorFrictionSlider = new SliderControl<float>(
                     oceanFloorBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Friction"),
@@ -1427,6 +1453,7 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
             {
                 mOceanFloorSiltHardnessSlider = new SliderControl<float>(
                     oceanFloorBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Silt Hardness"),
@@ -1510,6 +1537,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
             {
                 mWindSpeedBaseSlider = new SliderControl<float>(
                     windBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     -1,
                     _("Base Speed"),
@@ -1559,6 +1587,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
             {
                 mWindGustAmplitudeSlider = new SliderControl<float>(
                     windBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     -1,
                     _("Gust Amplitude"),
@@ -1607,6 +1636,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
             {
                 mBasalWaveHeightAdjustmentSlider = new SliderControl<float>(
                     wavesBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Height Adjust"),
@@ -1632,6 +1662,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
             {
                 mBasalWaveLengthAdjustmentSlider = new SliderControl<float>(
                     wavesBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Width Adjust"),
@@ -1658,6 +1689,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
             {
                 mBasalWaveSpeedAdjustmentSlider = new SliderControl<float>(
                     wavesBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Speed Adjust"),
@@ -1728,6 +1760,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
             {
                 mWaterDisplacementWaveHeightAdjustmentSlider = new SliderControl<float>(
                     displacementWavesBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     -1,
                     _("Height Adjust"),
@@ -1753,6 +1786,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
             {
                 mWaveSmoothnessAdjustmentSlider = new SliderControl<float>(
                     displacementWavesBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Smoothness Adjust"),
@@ -1801,6 +1835,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
             {
                 mTsunamiRateSlider = new SliderControl<std::chrono::minutes::rep>(
                     wavePhenomenaBoxSizer->GetStaticBox(),
+                    SliderControl<std::chrono::minutes::rep>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Tsunami Rate"),
@@ -1826,6 +1861,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
             {
                 mRogueWaveRateSlider = new SliderControl<std::chrono::seconds::rep>(
                     wavePhenomenaBoxSizer->GetStaticBox(),
+                    SliderControl<std::chrono::seconds::rep>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Rogue Wave Rate"),
@@ -1872,6 +1908,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
             {
                 mStormStrengthAdjustmentSlider = new SliderControl<float>(
                     stormsBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Strength Adjust"),
@@ -1922,6 +1959,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
             {
                 mRainFloodAdjustmentSlider = new SliderControl<float>(
                     stormsBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     -1,
                     _("Rain Flood Adjust"),
@@ -1948,6 +1986,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
             {
                 mStormDurationSlider = new SliderControl<std::chrono::seconds::rep>(
                     stormsBoxSizer->GetStaticBox(),
+                    SliderControl<std::chrono::seconds::rep>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Duration"),
@@ -1973,6 +2012,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
             {
                 mStormRateSlider = new SliderControl<std::chrono::minutes::rep>(
                     stormsBoxSizer->GetStaticBox(),
+                    SliderControl<std::chrono::minutes::rep>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Rate"),
@@ -2033,6 +2073,7 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
             {
                 mAirDensityAdjustmentSlider = new SliderControl<float>(
                     airBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Density Adjust"),
@@ -2059,6 +2100,7 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
             {
                 mAirFrictionDragSlider = new SliderControl<float>(
                     airBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Friction Drag Adjust"),
@@ -2085,6 +2127,7 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
             {
                 mAirPressureDragSlider = new SliderControl<float>(
                     airBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Pressure Drag Adjust"),
@@ -2111,6 +2154,7 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
             {
                 mAirTemperatureSlider = new SliderControl<float>(
                     airBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Temperature"),
@@ -2136,6 +2180,7 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
             {
                 mAirBubbleDensitySlider = new SliderControl<float>(
                     airBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     -1,
                     _("Air Bubbles Density"),
@@ -2182,6 +2227,7 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
             {
                 mSmokeEmissionDensityAdjustmentSlider = new SliderControl<float>(
                     smokeBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Density Adjust"),
@@ -2208,6 +2254,7 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
             {
                 mSmokeParticleLifetimeAdjustmentSlider = new SliderControl<float>(
                     smokeBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Persistence Adjust"),
@@ -2256,6 +2303,7 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
             {
                 mNumberOfStarsSlider = new SliderControl<unsigned int>(
                     skyBoxSizer->GetStaticBox(),
+                    SliderControl<unsigned int>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Number of Stars"),
@@ -2281,6 +2329,7 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
             {
                 mNumberOfCloudsSlider = new SliderControl<unsigned int>(
                     skyBoxSizer->GetStaticBox(),
+                    SliderControl<unsigned int>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Number of Clouds"),
@@ -2330,6 +2379,7 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
             {
                 mDayLightCycleDurationSlider = new SliderControl<std::chrono::minutes::rep>(
                     skyBoxSizer->GetStaticBox(),
+                    SliderControl<std::chrono::minutes::rep>::DirectionType::Vertical,
                     SliderWidth,
                     -1,
                     _("Daylight Cycle Duration"),
@@ -2390,6 +2440,7 @@ void SettingsDialog::PopulateLightsElectricalAndFishesPanel(wxPanel * panel)
             {
                 mLuminiscenceSlider = new SliderControl<float>(
                     lightsBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Luminiscence Adjust"),
@@ -2416,6 +2467,7 @@ void SettingsDialog::PopulateLightsElectricalAndFishesPanel(wxPanel * panel)
             {
                 mLightSpreadSlider = new SliderControl<float>(
                     lightsBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Spread Adjust"),
@@ -2484,6 +2536,7 @@ void SettingsDialog::PopulateLightsElectricalAndFishesPanel(wxPanel * panel)
             {
                 mEngineThrustAdjustmentSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     -1,
                     _("Engine Thrust Adjust"),
@@ -2510,6 +2563,7 @@ void SettingsDialog::PopulateLightsElectricalAndFishesPanel(wxPanel * panel)
             {
                 mWaterPumpPowerAdjustmentSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Water Pump Power Adjust"),
@@ -2536,6 +2590,7 @@ void SettingsDialog::PopulateLightsElectricalAndFishesPanel(wxPanel * panel)
             {
                 mElectricalElementHeatProducedAdjustmentSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Heat Generation Adjust"),
@@ -2583,6 +2638,7 @@ void SettingsDialog::PopulateLightsElectricalAndFishesPanel(wxPanel * panel)
             {
                 mNumberOfFishesSlider = new SliderControl<unsigned int>(
                     boxSizer->GetStaticBox(),
+                    SliderControl<unsigned int>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Number of Fishes"),
@@ -2608,6 +2664,7 @@ void SettingsDialog::PopulateLightsElectricalAndFishesPanel(wxPanel * panel)
             {
                 mFishSizeMultiplierSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Size Multiplier"),
@@ -2633,6 +2690,7 @@ void SettingsDialog::PopulateLightsElectricalAndFishesPanel(wxPanel * panel)
             {
                 mFishSpeedAdjustmentSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Speed Adjust"),
@@ -2682,6 +2740,7 @@ void SettingsDialog::PopulateLightsElectricalAndFishesPanel(wxPanel * panel)
             {
                 mFishShoalRadiusAdjustmentSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     -1,
                     _("Shoal Radius Adjust"),
@@ -2807,6 +2866,7 @@ void SettingsDialog::PopulateDestructiveToolsPanel(
             {
                 mBombBlastRadiusSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Blast Radius"),
@@ -2832,6 +2892,7 @@ void SettingsDialog::PopulateDestructiveToolsPanel(
             {
                 mBombBlastForceAdjustmentSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Blast Force Adjust"),
@@ -2857,6 +2918,7 @@ void SettingsDialog::PopulateDestructiveToolsPanel(
             {
                 mBombBlastHeatSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Blast Heat"),
@@ -2883,6 +2945,7 @@ void SettingsDialog::PopulateDestructiveToolsPanel(
             {
                 mAntiMatterBombImplosionStrengthSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("AM Bomb Implosion Strength"),
@@ -2945,6 +3008,7 @@ void SettingsDialog::PopulateDestructiveToolsPanel(
             {
                 mDestroyRadiusSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Destroy Radius"),
@@ -3007,6 +3071,7 @@ void SettingsDialog::PopulateDestructiveToolsPanel(
             {
                 mBlastToolRadiusSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Radius"),
@@ -3032,6 +3097,7 @@ void SettingsDialog::PopulateDestructiveToolsPanel(
             {
                 mBlastToolForceAdjustmentSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Force Adjust"),
@@ -3124,6 +3190,7 @@ void SettingsDialog::PopulateOtherToolsPanel(
             {
                 mScrubRotRadiusSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Radius"),
@@ -3186,6 +3253,7 @@ void SettingsDialog::PopulateOtherToolsPanel(
             {
                 mFloodRadiusSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Radius"),
@@ -3211,6 +3279,7 @@ void SettingsDialog::PopulateOtherToolsPanel(
             {
                 mFloodQuantitySlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Flow"),
@@ -3273,6 +3342,7 @@ void SettingsDialog::PopulateOtherToolsPanel(
             {
                 mInjectPressureQuantitySlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Flow"),
@@ -3336,6 +3406,7 @@ void SettingsDialog::PopulateOtherToolsPanel(
             {
                 mRepairRadiusSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Radius"),
@@ -3361,6 +3432,7 @@ void SettingsDialog::PopulateOtherToolsPanel(
             {
                 mRepairSpeedAdjustmentSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Speed Adjust"),
@@ -3423,6 +3495,7 @@ void SettingsDialog::PopulateOtherToolsPanel(
             {
                 mHeatBlasterRadiusSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Radius"),
@@ -3448,6 +3521,7 @@ void SettingsDialog::PopulateOtherToolsPanel(
             {
                 mHeatBlasterHeatFlowSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Heat"),
@@ -3654,6 +3728,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
             {
                 mOceanTransparencySlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Transparency"),
@@ -3679,6 +3754,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
             {
                 mOceanDarkeningRateSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Darkening Rate"),
@@ -3938,6 +4014,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
             {
                 mHeatSensitivitySlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Heat Boost"),
@@ -3963,6 +4040,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
             {
                 mShipAmbientLightSensitivitySlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Night Vision"),
@@ -3988,6 +4066,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
             {
                 mShipFlameSizeAdjustmentSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Flame Size Adjust"),
@@ -4056,6 +4135,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
             {
                 mWaterContrastSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     -1,
                     _("Contrast"),
@@ -4081,6 +4161,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
             {
                 mWaterLevelOfDetailSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Level of Detail"),
@@ -4136,6 +4217,7 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
             {
                 mEffectsVolumeSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Effects Volume"),
@@ -4161,6 +4243,7 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
             {
                 mToolsVolumeSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Tools Volume"),
@@ -4272,6 +4355,7 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
             {
                 mSpringStiffnessSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Spring Stiffness Adjust"),
@@ -4299,6 +4383,7 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
             {
                 mSpringDampingSlider = new SliderControl<float>(
                     boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
                     _("Spring Damping Adjust"),

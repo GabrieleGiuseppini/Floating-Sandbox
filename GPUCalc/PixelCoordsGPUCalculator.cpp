@@ -19,7 +19,7 @@ PixelCoordsGPUCalculator::PixelCoordsGPUCalculator(
     , mDataPoints(dataPoints)
     , mFrameSize(CalculateRequiredRenderBufferSize(dataPoints))
 {
-    LogMessage("PixelCoordsGPUCalculator: FrameSize=", mFrameSize.Width, "x", mFrameSize.Height);
+    LogMessage("PixelCoordsGPUCalculator: FrameSize=", mFrameSize.width, "x", mFrameSize.height);
 
     GLuint tmpGLuint;
 
@@ -31,7 +31,7 @@ PixelCoordsGPUCalculator::PixelCoordsGPUCalculator(
     this->ActivateOpenGLContext();
 
     // Set viewport size
-    glViewport(0, 0, mFrameSize.Width, mFrameSize.Height);
+    glViewport(0, 0, mFrameSize.width, mFrameSize.height);
     CheckOpenGLError();
 
     // Set polygon mode
@@ -71,8 +71,8 @@ PixelCoordsGPUCalculator::PixelCoordsGPUCalculator(
     glRenderbufferStorage(
         GL_RENDERBUFFER,
         GL_RGBA32F,
-        mFrameSize.Width,
-        mFrameSize.Height);
+        mFrameSize.width,
+        mFrameSize.height);
     CheckOpenGLError();
 
     // Attach color buffer to FBO
@@ -153,17 +153,17 @@ void PixelCoordsGPUCalculator::Run(vec4f * result)
     // Read
     //
 
-    int wholeRows = static_cast<int>(mDataPoints) / mFrameSize.Width;
+    int wholeRows = static_cast<int>(mDataPoints) / mFrameSize.width;
     if (wholeRows > 0)
     {
-        glReadPixels(0, 0, mFrameSize.Width, wholeRows, GL_RGBA, GL_FLOAT, result);
+        glReadPixels(0, 0, mFrameSize.width, wholeRows, GL_RGBA, GL_FLOAT, result);
         CheckOpenGLError();
     }
 
-    int reminderCols = static_cast<int>(mDataPoints) % mFrameSize.Width;
+    int reminderCols = static_cast<int>(mDataPoints) % mFrameSize.width;
     if (reminderCols > 0)
     {
-        glReadPixels(0, wholeRows, reminderCols, 1, GL_RGBA, GL_FLOAT, result + sizeof(vec4f) * wholeRows * mFrameSize.Width);
+        glReadPixels(0, wholeRows, reminderCols, 1, GL_RGBA, GL_FLOAT, result + sizeof(vec4f) * wholeRows * mFrameSize.width);
         CheckOpenGLError();
     }
 

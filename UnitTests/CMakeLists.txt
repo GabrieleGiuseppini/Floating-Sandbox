@@ -21,21 +21,30 @@ set (UNIT_TEST_SOURCES
 	AlgorithmsTests.cpp
 	BoundedVectorTests.cpp
 	BufferTests.cpp
+	Buffer2DTests.cpp
 	CircularListTests.cpp
+	ColorsTests.cpp
+	DeSerializationBufferTests.cpp
+	ElectricalElementInstanceIndexFactoryTests.cpp
+	EndianTests.cpp
 	EnumFlagsTests.cpp
+	FinalizerTests.cpp
 	FixedSizeVectorTests.cpp
 	FloatingPointTests.cpp
 	GameEventDispatcherTests.cpp
 	GameGeometryTests.cpp
 	GameMathTests.cpp
+	IntegralSystemTests.cpp
 	LayoutHelperTests.cpp
 	main.cpp
 	Matrix2Tests.cpp
 	MemoryStreamsTests.cpp
 	ParameterSmootherTests.cpp
 	PrecalculatedFunctionTests.cpp
+	RopeBufferTests.cpp
 	SettingsTests.cpp
 	ShaderManagerTests.cpp
+	ShipDefinitionFormatDeSerializerTests.cpp
 	ShipPreviewDirectoryManagerTests.cpp
 	SliderCoreTests.cpp
 	StrongTypeDefTests.cpp
@@ -49,6 +58,7 @@ set (UNIT_TEST_SOURCES
 	UniqueBufferTests.cpp
 	Utils.cpp
 	Utils.h
+	UtilsTests.cpp
 	VectorsTests.cpp
 	VersionTests.cpp
 )
@@ -64,7 +74,8 @@ target_link_libraries (UnitTests
 	GameCoreLib
 	GameLib
 	GPUCalcLib
-	UIControlsLib
+	ShipBuilderLib
+	UILib
 	${OPENGL_LIBRARIES}
 	gmock
 	gtest

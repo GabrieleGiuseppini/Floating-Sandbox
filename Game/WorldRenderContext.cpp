@@ -397,8 +397,8 @@ WorldRenderContext::WorldRenderContext(
     mShaderManager.ActivateProgram<ProgramType::WorldBorder>();
     mShaderManager.SetTextureParameters<ProgramType::WorldBorder>();
     mShaderManager.SetProgramParameter<ProgramType::WorldBorder, ProgramParameterType::AtlasTile1Dx>(
-        1.0f / static_cast<float>(worldBorderAtlasFrameMetadata.FrameMetadata.Size.Width),
-        1.0f / static_cast<float>(worldBorderAtlasFrameMetadata.FrameMetadata.Size.Height));
+        1.0f / static_cast<float>(worldBorderAtlasFrameMetadata.FrameMetadata.Size.width),
+        1.0f / static_cast<float>(worldBorderAtlasFrameMetadata.FrameMetadata.Size.height));
     mShaderManager.SetProgramParameter<ProgramType::WorldBorder, ProgramParameterType::AtlasTile1LeftBottomTextureCoordinates>(
         worldBorderAtlasFrameMetadata.TextureCoordinatesBottomLeft.x,
         worldBorderAtlasFrameMetadata.TextureCoordinatesBottomLeft.y);
@@ -444,7 +444,7 @@ void WorldRenderContext::InitializeCloudTextures(ResourceLocator const & resourc
         AtlasOptions::None,
         [](float, ProgressMessageType) {});
 
-    LogMessage("Cloud texture atlas size: ", cloudTextureAtlas.AtlasData.Size.ToString());
+    LogMessage("Cloud texture atlas size: ", cloudTextureAtlas.AtlasData.Size);
 
     mShaderManager.ActivateTexture<ProgramParameterType::CloudsAtlasTexture>();
 
@@ -537,7 +537,7 @@ void WorldRenderContext::InitializeFishTextures(ResourceLocator const & resource
         AtlasOptions::None,
         [](float, ProgressMessageType) {});
 
-    LogMessage("Fish texture atlas size: ", fishTextureAtlas.AtlasData.Size.ToString());
+    LogMessage("Fish texture atlas size: ", fishTextureAtlas.AtlasData.Size);
 
     mShaderManager.ActivateTexture<ProgramParameterType::FishesAtlasTexture>();
 
@@ -1467,8 +1467,8 @@ void WorldRenderContext::ApplyCanvasSizeChanges(RenderParameters const & renderP
     // Set shader parameters
 
     vec2f const viewportSize = vec2f(
-        static_cast<float>(view.GetCanvasPhysicalPixelSize().width),
-        static_cast<float>(view.GetCanvasPhysicalPixelSize().height));
+        static_cast<float>(view.GetCanvasPhysicalSize().width),
+        static_cast<float>(view.GetCanvasPhysicalSize().height));
 
     mShaderManager.ActivateProgram<ProgramType::CrossOfLight>();
     mShaderManager.SetProgramParameter<ProgramType::CrossOfLight, ProgramParameterType::ViewportSize>(
@@ -1804,16 +1804,16 @@ void WorldRenderContext::RecalculateWorldBorder(RenderParameters const & renderP
 
     // Calculate width and height, in world coordinates, of the world border, under the constraint
     // that we want to ensure that the texture is rendered with half of its original pixel size
-    float const worldBorderWorldWidth = viewModel.PixelWidthToWorldWidth(static_cast<float>(worldBorderTextureSize.Width)) / 2.0f;
-    float const worldBorderWorldHeight = viewModel.PixelHeightToWorldHeight(static_cast<float>(worldBorderTextureSize.Height)) / 2.0f;
+    float const worldBorderWorldWidth = viewModel.PixelWidthToWorldWidth(static_cast<float>(worldBorderTextureSize.width)) / 2.0f;
+    float const worldBorderWorldHeight = viewModel.PixelHeightToWorldHeight(static_cast<float>(worldBorderTextureSize.height)) / 2.0f;
 
     // Max coordinates in texture space (e.g. 3.0 means three frames); note that the texture bottom-left origin
     // already starts at a dead pixel (0.5/size)
     float const textureSpaceWidth =
         GameParameters::MaxWorldWidth / worldBorderWorldWidth
-        - 1.0f / static_cast<float>(worldBorderTextureSize.Width);
+        - 1.0f / static_cast<float>(worldBorderTextureSize.width);
     float const textureSpaceHeight = GameParameters::MaxWorldHeight / worldBorderWorldHeight
-        - 1.0f / static_cast<float>(worldBorderTextureSize.Height);
+        - 1.0f / static_cast<float>(worldBorderTextureSize.height);
 
 
     //

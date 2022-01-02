@@ -62,8 +62,8 @@ struct InputState
     bool IsLeftMouseDown;
     bool IsRightMouseDown;
     bool IsShiftKeyDown;
-    LogicalPixelCoordinates MousePosition;
-    LogicalPixelCoordinates PreviousMousePosition;
+    DisplayLogicalCoordinates MousePosition;
+    DisplayLogicalCoordinates PreviousMousePosition;
 
     InputState()
         : IsLeftMouseDown(false)
@@ -235,7 +235,7 @@ private:
     //
 
     // Previous mouse position and time when we looked at it
-    LogicalPixelCoordinates mPreviousMousePosition;
+    DisplayLogicalCoordinates mPreviousMousePosition;
     std::chrono::steady_clock::time_point mPreviousTimestamp;
 
     // The total accumulated press time - the proxy for the strength of the tool
@@ -307,8 +307,8 @@ public:
                 // Move
                 mGameController->MoveBy(
                     mCurrentTrajectory->EngagedMovableObjectId,
-                    LogicalPixelSize::FromFloat(newCurrentPosition - mCurrentTrajectory->CurrentPosition),
-                    LogicalPixelSize::FromFloat(newCurrentPosition - mCurrentTrajectory->CurrentPosition));
+                    DisplayLogicalSize::FromFloatRound(newCurrentPosition - mCurrentTrajectory->CurrentPosition),
+                    DisplayLogicalSize::FromFloatRound(newCurrentPosition - mCurrentTrajectory->CurrentPosition));
             }
             else
             {
@@ -316,7 +316,7 @@ public:
                 mGameController->RotateBy(
                     mCurrentTrajectory->EngagedMovableObjectId,
                     newCurrentPosition.y - mCurrentTrajectory->CurrentPosition.y,
-                    LogicalPixelCoordinates::FromFloat(*mCurrentTrajectory->RotationCenter),
+                    DisplayLogicalCoordinates::FromFloatRound(*mCurrentTrajectory->RotationCenter),
                     newCurrentPosition.y - mCurrentTrajectory->CurrentPosition.y);
             }
 
@@ -338,8 +338,8 @@ public:
                         // Move to stop
                         mGameController->MoveBy(
                             mCurrentTrajectory->EngagedMovableObjectId,
-                            LogicalPixelSize(0, 0),
-                            LogicalPixelSize(0, 0));
+                            DisplayLogicalSize(0, 0),
+                            DisplayLogicalSize(0, 0));
                     }
                     else
                     {
@@ -347,7 +347,7 @@ public:
                         mGameController->RotateBy(
                             mCurrentTrajectory->EngagedMovableObjectId,
                             0.0f,
-                            LogicalPixelCoordinates::FromFloat(*mCurrentTrajectory->RotationCenter),
+                            DisplayLogicalCoordinates::FromFloatRound(*mCurrentTrajectory->RotationCenter),
                             0.0f);
                     }
                 }
@@ -504,8 +504,8 @@ private:
                     {
                         mGameController->MoveBy(
                             mCurrentTrajectory->EngagedMovableObjectId,
-                            LogicalPixelSize(0, 0),
-                            LogicalPixelSize::FromFloat(mCurrentTrajectory->EndPosition - mCurrentTrajectory->CurrentPosition));
+                            DisplayLogicalSize(0, 0),
+                            DisplayLogicalSize::FromFloatRound(mCurrentTrajectory->EndPosition - mCurrentTrajectory->CurrentPosition));
                     }
                     else
                     {
@@ -513,7 +513,7 @@ private:
                         mGameController->RotateBy(
                             mCurrentTrajectory->EngagedMovableObjectId,
                             0.0f,
-                            LogicalPixelCoordinates::FromFloat(*mCurrentTrajectory->RotationCenter),
+                            DisplayLogicalCoordinates::FromFloatRound(*mCurrentTrajectory->RotationCenter),
                             mCurrentTrajectory->EndPosition.y - mCurrentTrajectory->CurrentPosition.y);
                     }
 
@@ -714,7 +714,7 @@ public:
                 // 2. Calculate convergence speed based on speed of mouse move
 
                 vec2f const mouseMovementStride = inputState.MousePosition.ToFloat() - mCurrentEngagementState->LastScreenPosition;
-                float const worldStride = mGameController->ScreenOffsetToWorldOffset(LogicalPixelSize::FromFloat(mouseMovementStride)).length();
+                float const worldStride = mGameController->ScreenOffsetToWorldOffset(DisplayLogicalSize::FromFloatRound(mouseMovementStride)).length();
 
                 // New convergence rate:
                 // - Stride < 2.0: 0.03 (76 steps to 0.9 of target)
@@ -745,7 +745,7 @@ public:
                 // 4. Apply force towards current position
                 mGameController->Pull(
                     mCurrentEngagementState->PickedParticle,
-                    LogicalPixelCoordinates::FromFloat(mCurrentEngagementState->CurrentScreenPosition));
+                    DisplayLogicalCoordinates::FromFloatRound(mCurrentEngagementState->CurrentScreenPosition));
             }
         }
         else
@@ -995,7 +995,7 @@ private:
         mSoundController->PlaySawSound(mIsUnderwater);
     }
 
-    LogicalPixelCoordinates CalculateTargetPosition(InputState const & inputState) const
+    DisplayLogicalCoordinates CalculateTargetPosition(InputState const & inputState) const
     {
         if (mCurrentLockedDirection.has_value())
         {
@@ -1006,7 +1006,7 @@ private:
                 sourcePosition
                 + *mCurrentLockedDirection * (inputState.MousePosition.ToFloat() - sourcePosition).dot(*mCurrentLockedDirection);
 
-            return LogicalPixelCoordinates::FromFloat(targetPosition);
+            return DisplayLogicalCoordinates::FromFloatRound(targetPosition);
         }
         else
         {
@@ -1038,7 +1038,7 @@ private:
     //
 
     // The previous mouse position; when set, we have a segment and can saw
-    std::optional<LogicalPixelCoordinates> mPreviousMousePos;
+    std::optional<DisplayLogicalCoordinates> mPreviousMousePos;
 
     // The current locked direction, in case locking is activated
     std::optional<vec2f> mCurrentLockedDirection;
@@ -1998,7 +1998,7 @@ public:
             }
 
             auto const targetPosition = inputState.IsShiftKeyDown
-                ? LogicalPixelCoordinates(inputState.MousePosition.x, mCurrentTrajectoryPreviousPosition->y)
+                ? DisplayLogicalCoordinates(inputState.MousePosition.x, mCurrentTrajectoryPreviousPosition->y)
                 : inputState.MousePosition;
 
             auto const isAdjusted = mGameController->AdjustOceanFloorTo(
@@ -2051,7 +2051,7 @@ private:
     }
 
     // Our state
-    std::optional<LogicalPixelCoordinates> mCurrentTrajectoryPreviousPosition; // When set, indicates it's engaged
+    std::optional<DisplayLogicalCoordinates> mCurrentTrajectoryPreviousPosition; // When set, indicates it's engaged
 
     // The cursors
     wxImage const * mCurrentCursor; // To track cursor changes
@@ -2221,7 +2221,7 @@ private:
     //
 
     // The previous mouse position; when set, we have a segment and can strike
-    std::optional<LogicalPixelCoordinates> mPreviousMousePos;
+    std::optional<DisplayLogicalCoordinates> mPreviousMousePos;
 
     // The previous strike vector, which we want to remember in order to
     // detect directions changes for the scrubbing/rotting sound

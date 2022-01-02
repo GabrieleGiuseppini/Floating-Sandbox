@@ -22,9 +22,9 @@ namespace /* anonymous */ {
         int x)
     {
         int imageY;
-        for (imageY = imageData.Size.Height - 1; imageY >= 0; --imageY)
+        for (imageY = imageData.Size.height - 1; imageY >= 0; --imageY)
         {
-            int pointIndex = imageY * imageData.Size.Width + x;
+            int pointIndex = imageY * imageData.Size.width + x;
             if (imageData.Data[pointIndex] != rgbColor::zero())
             {
                 // Found it!
@@ -42,14 +42,14 @@ OceanFloorTerrain OceanFloorTerrain::LoadFromImage(std::filesystem::path const &
 
     // Load image
     RgbImageData oceanFloorImage = ImageFileTools::LoadImageRgb(imageFilePath);
-    float const halfHeight = static_cast<float>(oceanFloorImage.Size.Height) / 2.0f;
+    float const halfHeight = static_cast<float>(oceanFloorImage.Size.height) / 2.0f;
 
     // Calculate SampleI->WorldX factor, i.e. world width between two samples
     float constexpr Dx = GameParameters::MaxWorldWidth / GameParameters::OceanFloorTerrainSamples<float>;
 
     // Calculate WorldX->ImageX factor: we want the entire width of this image to fit the entire
     // world width (by stretching or compressing)
-    float const worldXToImageX = static_cast<float>(oceanFloorImage.Size.Width) / GameParameters::MaxWorldWidth;
+    float const worldXToImageX = static_cast<float>(oceanFloorImage.Size.width) / GameParameters::MaxWorldWidth;
 
     for (size_t s = 0; s < GameParameters::OceanFloorTerrainSamples<size_t>; ++s)
     {
@@ -63,13 +63,13 @@ OceanFloorTerrain OceanFloorTerrain::LoadFromImage(std::filesystem::path const &
         int const imageXI = static_cast<int>(std::floor(imageX));
         float const imageXIF = imageX - static_cast<float>(imageXI);
 
-        assert(imageXI >= 0 && imageXI < oceanFloorImage.Size.Width);
+        assert(imageXI >= 0 && imageXI < oceanFloorImage.Size.width);
 
         // Find topmost Y's at this image X
         //      Y=H at topmost => s=H/2, Y=0 if nothing found => s=-H/2
         float const sampleValue = static_cast<float>(GetTopmostY(oceanFloorImage, imageXI)) - halfHeight;
 
-        if (imageXI < oceanFloorImage.Size.Width - 1)
+        if (imageXI < oceanFloorImage.Size.width - 1)
         {
             // Interpolate with next pixel
             float const sampleValue2 = static_cast<float>(GetTopmostY(oceanFloorImage, imageXI + 1)) - halfHeight;

@@ -7,7 +7,23 @@
 
 #include <GameCore/Utils.h>
 
+namespace /* anonymous */ {
+
+    MaterialPaletteCoordinatesType DeserializePaletteCoordinates(picojson::object const & paletteCoordinatesJson)
+    {
+        MaterialPaletteCoordinatesType paletteCoordinates;
+        paletteCoordinates.Category = Utils::GetMandatoryJsonMember<std::string>(paletteCoordinatesJson, "category");
+        paletteCoordinates.SubCategory = Utils::GetMandatoryJsonMember<std::string>(paletteCoordinatesJson, "sub_category");
+        paletteCoordinates.SubCategoryOrdinal = static_cast<unsigned int>(Utils::GetMandatoryJsonMember<int64_t>(paletteCoordinatesJson, "sub_category_ordinal"));
+
+        return paletteCoordinates;
+    }
+
+}
+
 StructuralMaterial StructuralMaterial::Create(
+    MaterialColorKey const & colorKey,
+    unsigned int ordinal,
     rgbColor const & renderColor,
     picojson::object const & structuralMaterialJson)
 {
@@ -21,15 +37,16 @@ StructuralMaterial StructuralMaterial::Create(
         float const nominalMass = Utils::GetMandatoryJsonMember<float>(massJson, "nominal_mass");
         float const density = Utils::GetMandatoryJsonMember<float>(massJson, "density");
         float const buoyancyVolumeFill = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "buoyancy_volume_fill");
-
         float const stiffness = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "stiffness", 1.0);
+        float const strainThresholdFraction = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "strain_threshold_fraction", 0.5f);
 
+        // Assign unique type - arbitrarily to first of series of colors
         std::optional<MaterialUniqueType> uniqueType;
-        if (name == "Air")
+        if (name == "Air" && ordinal == 0)
             uniqueType = MaterialUniqueType::Air;
-        else if (name == "Rope")
+        else if (name == "Rope" && ordinal == 0)
             uniqueType = MaterialUniqueType::Rope;
-        else if (name == "Water")
+        else if (name == "Water" && ordinal == 0)
             uniqueType = MaterialUniqueType::Water;
 
         std::optional<std::string> const materialSoundStr = Utils::GetOptionalJsonMember<std::string>(structuralMaterialJson, "sound_type");
@@ -63,14 +80,31 @@ StructuralMaterial StructuralMaterial::Create(
         float const windReceptivity = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "wind_receptivity", 0.0);
         bool isLegacyElectrical = Utils::GetOptionalJsonMember<bool>(structuralMaterialJson, "is_legacy_electrical", false);
 
+        // Palette coordinates
+
+        std::optional<MaterialPaletteCoordinatesType> paletteCoordinates;
+        auto const & paletteCoordinatesJson = Utils::GetOptionalJsonObject(structuralMaterialJson, "palette_coordinates");
+        if (!isLegacyElectrical)
+        {
+            if (!paletteCoordinatesJson.has_value())
+            {
+                throw GameException(std::string("Non-legacy-electrical material \"") + name + "\" doesn't have palette_coordinates member");
+            }
+
+            paletteCoordinates = DeserializePaletteCoordinates(*paletteCoordinatesJson);
+            paletteCoordinates->SubCategoryOrdinal += ordinal;
+        }
+
         return StructuralMaterial(
+            colorKey,
             name,
+            renderColor,
             strength,
             nominalMass,
             density,
             buoyancyVolumeFill,
             stiffness,
-            renderColor.toVec4f(1.0f),
+            strainThresholdFraction,
             uniqueType,
             materialSound,
             materialTextureName,
@@ -90,7 +124,9 @@ StructuralMaterial StructuralMaterial::Create(
             explosiveCombustionStrength,
             // Misc
             windReceptivity,
-            isLegacyElectrical);
+            isLegacyElectrical,
+            // Palette
+            paletteCoordinates);
     }
     catch (GameException const & ex)
     {
@@ -104,6 +140,8 @@ StructuralMaterial::MaterialSoundType StructuralMaterial::StrToMaterialSoundType
         return MaterialSoundType::AirBubble;
     else if (Utils::CaseInsensitiveEquals(str, "Cable"))
         return MaterialSoundType::Cable;
+    else if (Utils::CaseInsensitiveEquals(str, "Chain"))
+        return MaterialSoundType::Chain;
     else if (Utils::CaseInsensitiveEquals(str, "Cloth"))
         return MaterialSoundType::Cloth;
     else if (Utils::CaseInsensitiveEquals(str, "Gas"))
@@ -118,6 +156,8 @@ StructuralMaterial::MaterialSoundType StructuralMaterial::StrToMaterialSoundType
         return MaterialSoundType::Plastic;
     else if (Utils::CaseInsensitiveEquals(str, "Rubber"))
         return MaterialSoundType::Rubber;
+    else if (Utils::CaseInsensitiveEquals(str, "RubberBand"))
+        return MaterialSoundType::RubberBand;
     else if (Utils::CaseInsensitiveEquals(str, "Wood"))
         return MaterialSoundType::Wood;
     else
@@ -134,7 +174,11 @@ StructuralMaterial::MaterialCombustionType StructuralMaterial::StrToMaterialComb
         throw GameException("Unrecognized MaterialCombustionType \"" + str + "\"");
 }
 
-ElectricalMaterial ElectricalMaterial::Create(picojson::object const & electricalMaterialJson)
+ElectricalMaterial ElectricalMaterial::Create(
+    MaterialColorKey const & colorKey,
+    unsigned int ordinal,
+    rgbColor const & renderColor,
+    picojson::object const & electricalMaterialJson)
 {
     std::string name = Utils::GetMandatoryJsonMember<std::string>(electricalMaterialJson, "name");
 
@@ -233,8 +277,19 @@ ElectricalMaterial ElectricalMaterial::Create(picojson::object const & electrica
             waterPumpNominalForce = Utils::GetMandatoryJsonMember<float>(electricalMaterialJson, "water_pump_nominal_force");
         }
 
+        // Palette coordinates
+        std::optional<MaterialPaletteCoordinatesType> paletteCoordinates;
+        auto const & paletteCoordinatesJson = Utils::GetOptionalJsonObject(electricalMaterialJson, "palette_coordinates");
+        if (paletteCoordinatesJson.has_value())
+        {
+            paletteCoordinates = DeserializePaletteCoordinates(*paletteCoordinatesJson);
+            paletteCoordinates->SubCategoryOrdinal += ordinal;
+        }
+
         return ElectricalMaterial(
+            colorKey,
             name,
+            renderColor,
             electricalType,
             isSelfPowered,
             conductsElectricity,
@@ -253,7 +308,8 @@ ElectricalMaterial ElectricalMaterial::Create(picojson::object const & electrica
             engineResponsiveness,
             interactiveSwitchType,
             shipSoundType,
-            waterPumpNominalForce);
+            waterPumpNominalForce,
+            paletteCoordinates);
     }
     catch (GameException const & ex)
     {

@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #include "ShipPreviewDirectoryManager.h"
 
-#include "ShipDefinitionFile.h"
+#include "ShipDeSerializer.h"
 
 #include <GameCore/Log.h>
 
@@ -32,53 +32,15 @@ std::unique_ptr<ShipPreviewDirectoryManager> ShipPreviewDirectoryManager::Create
             PersistedShipPreviewImageDatabase::Load(directoryPath / DatabaseFileName, fileSystem)));
 }
 
-std::vector<std::filesystem::path> ShipPreviewDirectoryManager::EnumerateShipFilePaths() const
-{
-    std::vector<std::filesystem::path> shipFilePaths;
-
-    //
-    // Enumerate files
-    //
-
-    LogMessage("ShipPreviewDirectoryManager::EnumerateShipFilePaths(): start");
-
-    auto allFilePaths = mFileSystem->ListFiles(mDirectoryPath);
-
-    std::copy_if(
-        allFilePaths.cbegin(),
-        allFilePaths.cend(),
-        std::back_inserter(shipFilePaths),
-        [](auto const & filePath)
-        {
-            return ShipDefinitionFile::IsShipDefinitionFile(filePath);
-        });
-
-    //
-    // Sort by filename
-    //
-
-    std::sort(
-        shipFilePaths.begin(),
-        shipFilePaths.end(),
-        [](auto const & a, auto const & b) -> bool
-        {
-            return a.filename().compare(b.filename()) < 0;
-        });
-
-    LogMessage("ShipPreviewDirectoryManager::EnumerateShipFilePaths(): end (", shipFilePaths.size(), " files)");
-
-    return shipFilePaths;
-}
-
 RgbaImageData ShipPreviewDirectoryManager::LoadPreviewImage(
-    ShipPreview const & shipPreview,
+    ShipPreviewData const & previewData,
     ImageSize const & maxImageSize)
 {
-    auto const previewImageFilename = shipPreview.PreviewImageFilePath.filename();
+    auto const previewImageFilename = previewData.PreviewFilePath.filename();
 
     // Get last-modified of preview image file
     // (will throw if the file does not exist)
-    auto const previewImageFileLastModified = mFileSystem->GetLastModifiedTime(shipPreview.PreviewImageFilePath);
+    auto const previewImageFileLastModified = mFileSystem->GetLastModifiedTime(previewData.PreviewFilePath);
 
     // See if this preview file may be served by old database
     auto oldDbPreviewImage = mOldDatabase.TryGetPreviewImage(previewImageFilename, previewImageFileLastModified);
@@ -106,13 +68,13 @@ RgbaImageData ShipPreviewDirectoryManager::LoadPreviewImage(
         LogMessage("ShipPreviewDirectoryManager::LoadPreviewImage(): can't serve '", previewImageFilename.string(), "' from persisted DB; loading...");
 
         // Load preview image
-        RgbaImageData previewImage = shipPreview.LoadPreviewImage(maxImageSize);
+        RgbaImageData previewImage = ShipDeSerializer::LoadShipPreviewImage(previewData, maxImageSize);
 
         // Add to new DB
         mNewDatabase.Add(
             previewImageFilename,
             previewImageFileLastModified,
-            previewImage.MakeCopy());
+            std::make_unique<RgbaImageData>(previewImage.Clone()));
 
         return previewImage;
     }

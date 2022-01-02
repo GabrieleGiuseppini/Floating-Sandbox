@@ -25,7 +25,7 @@ ShipAnalyzer::AnalysisInfo ShipAnalyzer::Analyze(
     // Load image
     auto image = ImageFileTools::LoadImageRgb(std::filesystem::path(inputFile));
 
-    float const halfWidth = static_cast<float>(image.Size.Width) / 2.0f;
+    float const halfWidth = static_cast<float>(image.Size.width) / 2.0f;
 
     // Load materials
     auto materials = MaterialDatabase::Load(materialsDir);
@@ -35,16 +35,16 @@ ShipAnalyzer::AnalysisInfo ShipAnalyzer::Analyze(
     float totalMass = 0.0f;
     float totalDisplacedDensity = 0.0f; // Assuming fully submersed
     float numPoints = 0.0f;
-    for (int x = 0; x < image.Size.Width; ++x)
+    for (int x = 0; x < image.Size.width; ++x)
     {
         float const worldX = static_cast<float>(x) - halfWidth;
 
         // From bottom to top
-        for (int y = 0; y < image.Size.Height; ++y)
+        for (int y = 0; y < image.Size.height; ++y)
         {
             vec2f const worldPosition(worldX, static_cast<float>(y));
 
-            auto const pixelIndex = (x + y * image.Size.Width);
+            auto const pixelIndex = (x + y * image.Size.width);
             StructuralMaterial const * const structuralMaterial = materials.FindStructuralMaterial(image.Data[pixelIndex]);
             if (nullptr != structuralMaterial)
             {

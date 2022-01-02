@@ -8,21 +8,23 @@
 #include "DebugDialog.h"
 #include "EventTickerPanel.h"
 #include "HelpDialog.h"
-#include "LocalizationManager.h"
-#include "LoggingDialog.h"
 #include "MusicController.h"
 #include "PreferencesDialog.h"
 #include "ProbePanel.h"
 #include "SettingsDialog.h"
 #include "SettingsManager.h"
-#include "ShipLoadDialog.h"
 #include "SoundController.h"
 #include "SwitchboardPanel.h"
 #include "ToolController.h"
 #include "UIPreferencesManager.h"
 #include "UpdateChecker.h"
 
-#include <UIControls/UnFocusablePanel.h>
+#include <ShipBuilderLib/MainFrame.h>
+
+#include <UILib/LocalizationManager.h>
+#include <UILib/LoggingDialog.h>
+#include <UILib/ShipLoadDialog.h>
+#include <UILib/UnFocusablePanel.h>
 
 #include <Game/GameController.h>
 #include <Game/IGameEventHandlers.h>
@@ -224,6 +226,8 @@ private:
     void OnNormalScreenMenuItemSelected(wxCommandEvent & event);
     void OnMuteMenuItemSelected(wxCommandEvent & event);
     void OnHelpMenuItemSelected(wxCommandEvent & event);
+    void OnShipBuilderNewShipMenuItemSelected(wxCommandEvent & event);
+    void OnShipBuilderEditShipMenuItemSelected(wxCommandEvent & event);
     void OnAboutMenuItemSelected(wxCommandEvent & event);
     void OnCheckForUpdatesMenuItemSelected(wxCommandEvent & event);
 
@@ -345,12 +349,12 @@ private:
         }
     }
 
-    void ResetState();
+    void ResetShipState();
 
     void UpdateFrameTitle();
 
     void OnError(
-        std::string const & message,
+        wxString const & message,
         bool die);
 
     void PostGameStepTimer(std::chrono::milliseconds duration);
@@ -363,13 +367,25 @@ private:
 
     static std::filesystem::path ChooseDefaultShip(ResourceLocator const & resourceLocator);
 
+    void LoadShip(
+        std::filesystem::path const & shipFilePath,
+        bool isFromUser);
+
     void OnShipLoaded(std::filesystem::path shipFilePath);
 
     wxAcceleratorEntry MakePlainAcceleratorKey(int key, wxMenuItem * menuItem);
 
+    void SwitchToShipBuilderForNewShip();
+
+    void SwitchToShipBuilderForCurrentShip();
+
+    void SwitchFromShipBuilder(std::optional<std::filesystem::path> shipFilePath);
+
 private:
 
     wxApp * const mMainApp;
+
+    std::unique_ptr<ShipBuilder::MainFrame> mShipBuilderMainFrame;
 
     //
     // Helpers

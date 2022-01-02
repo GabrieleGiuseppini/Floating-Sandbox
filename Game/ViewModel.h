@@ -32,15 +32,15 @@ public:
     ViewModel(
         float zoom,
         vec2f cameraWorldPosition,
-        LogicalPixelSize const & logicalCanvasSize,
+        DisplayLogicalSize const & logicalCanvasSize,
         int logicalToPhysicalPixelFactor)
         : mZoom(zoom)
         , mCam(cameraWorldPosition)
-        , mCanvasLogicalPixelSize(logicalCanvasSize)
-        , mCanvasPhysicalPixelSize(
+        , mCanvasLogicalSize(logicalCanvasSize)
+        , mCanvasPhysicalSize(
             logicalCanvasSize.width * logicalToPhysicalPixelFactor,
             logicalCanvasSize.height * logicalToPhysicalPixelFactor)
-        , mLogicalToPhysicalPixelFactor(logicalToPhysicalPixelFactor)
+        , mLogicalToPhysicalDisplayFactor(logicalToPhysicalPixelFactor)
         , mPixelOffsetX(0.0f)
         , mPixelOffsetY(0.0f)
     {
@@ -174,28 +174,28 @@ public:
         return mVisibleWorld;
     }
 
-    LogicalPixelSize const & GetCanvasLogicalPixelSize() const
+    DisplayLogicalSize const & GetCanvasLogicalSize() const
     {
-        return mCanvasLogicalPixelSize;
+        return mCanvasLogicalSize;
     }
 
-    PhysicalPixelSize const & GetCanvasPhysicalPixelSize() const
+    DisplayPhysicalSize const & GetCanvasPhysicalSize() const
     {
-        return mCanvasPhysicalPixelSize;
+        return mCanvasPhysicalSize;
     }
 
     float GetAspectRatio() const
     {
-        return static_cast<float>(mCanvasPhysicalPixelSize.width) / static_cast<float>(mCanvasPhysicalPixelSize.height);
+        return static_cast<float>(mCanvasPhysicalSize.width) / static_cast<float>(mCanvasPhysicalSize.height);
     }
 
-    void SetCanvasLogicalPixelSize(LogicalPixelSize const & canvasSize)
+    void SetCanvasLogicalSize(DisplayLogicalSize const & canvasSize)
     {
-        mCanvasLogicalPixelSize = canvasSize;
+        mCanvasLogicalSize = canvasSize;
 
-        mCanvasPhysicalPixelSize = PhysicalPixelSize(
-            canvasSize.width * mLogicalToPhysicalPixelFactor,
-            canvasSize.height * mLogicalToPhysicalPixelFactor);
+        mCanvasPhysicalSize = DisplayPhysicalSize(
+            canvasSize.width * mLogicalToPhysicalDisplayFactor,
+            canvasSize.height * mLogicalToPhysicalDisplayFactor);
 
         // Adjust zoom so that the new visible world dimensions are contained within the maximum
         SetZoom(mZoom);
@@ -243,32 +243,32 @@ public:
             worldCoordinates.y * mKernelOrthoMatrix[1][1] + mKernelOrthoMatrix[3][1]);
     }
 
-    inline vec2f ScreenToWorld(LogicalPixelCoordinates const & screenCoordinates) const
+    inline vec2f ScreenToWorld(DisplayLogicalCoordinates const & screenCoordinates) const
     {
         vec2f const worldCoordinates = vec2f(
             Clamp(
-                (static_cast<float>(screenCoordinates.x * mLogicalToPhysicalPixelFactor) / static_cast<float>(mCanvasPhysicalPixelSize.width) - 0.5f) * mVisibleWorld.Width + mCam.x,
+                (static_cast<float>(screenCoordinates.x * mLogicalToPhysicalDisplayFactor) / static_cast<float>(mCanvasPhysicalSize.width) - 0.5f) * mVisibleWorld.Width + mCam.x,
                 -GameParameters::HalfMaxWorldWidth,
                 GameParameters::HalfMaxWorldWidth),
             Clamp(
-                (static_cast<float>(screenCoordinates.y * mLogicalToPhysicalPixelFactor) / static_cast<float>(mCanvasPhysicalPixelSize.height) - 0.5f) * -mVisibleWorld.Height + mCam.y,
+                (static_cast<float>(screenCoordinates.y * mLogicalToPhysicalDisplayFactor) / static_cast<float>(mCanvasPhysicalSize.height) - 0.5f) * -mVisibleWorld.Height + mCam.y,
                 -GameParameters::HalfMaxWorldHeight,
                 GameParameters::HalfMaxWorldHeight));
 
         return worldCoordinates;
     }
 
-    inline vec2f ScreenOffsetToWorldOffset(LogicalPixelSize const & screenOffset) const
+    inline vec2f ScreenOffsetToWorldOffset(DisplayLogicalSize const & screenOffset) const
     {
         return vec2f(
-            static_cast<float>(screenOffset.width * mLogicalToPhysicalPixelFactor) / static_cast<float>(mCanvasPhysicalPixelSize.width) * mVisibleWorld.Width,
-            static_cast<float>(-screenOffset.height * mLogicalToPhysicalPixelFactor) / static_cast<float>(mCanvasPhysicalPixelSize.height) * mVisibleWorld.Height);
+            static_cast<float>(screenOffset.width * mLogicalToPhysicalDisplayFactor) / static_cast<float>(mCanvasPhysicalSize.width) * mVisibleWorld.Width,
+            static_cast<float>(-screenOffset.height * mLogicalToPhysicalDisplayFactor) / static_cast<float>(mCanvasPhysicalSize.height) * mVisibleWorld.Height);
     }
 
     inline float PixelWidthToWorldWidth(float pixelWidth) const
     {
         // Width between 0 and 1.0
-        float const ndcW = pixelWidth / static_cast<float>(mCanvasPhysicalPixelSize.width);
+        float const ndcW = pixelWidth / static_cast<float>(mCanvasPhysicalSize.width);
 
         // A width of 1 is the entire visible world width
         return ndcW * mVisibleWorld.Width;
@@ -277,7 +277,7 @@ public:
     inline float PixelHeightToWorldHeight(float pixelHeight) const
     {
         // Height between 0 and 1.0
-        float const ndcH = pixelHeight / static_cast<float>(mCanvasPhysicalPixelSize.height);
+        float const ndcH = pixelHeight / static_cast<float>(mCanvasPhysicalSize.height);
 
         // An NDC height of 1 is the entire visible world height
         return ndcH * mVisibleWorld.Height;
@@ -406,10 +406,9 @@ private:
             mCam.x + (mVisibleWorld.Width /2.0f),
             mCam.y - (mVisibleWorld.Height / 2.0f));
 
-        mCanvasToVisibleWorldHeightRatio = static_cast<float>(mCanvasPhysicalPixelSize.height) / mVisibleWorld.Height;
-        mCanvasWidthToHeightRatio = static_cast<float>(mCanvasPhysicalPixelSize.width) / static_cast<float>(mCanvasPhysicalPixelSize.height);
+        mCanvasToVisibleWorldHeightRatio = static_cast<float>(mCanvasPhysicalSize.height) / mVisibleWorld.Height;
+        mCanvasWidthToHeightRatio = static_cast<float>(mCanvasPhysicalSize.width) / static_cast<float>(mCanvasPhysicalSize.height);
 
-        //
         // Ortho Matrix:
         //
         //  2 / WrdW            0                   0                0
@@ -433,9 +432,9 @@ private:
     // Primary inputs
     float mZoom;
     vec2f mCam; // World coordinates
-    LogicalPixelSize mCanvasLogicalPixelSize;
-    PhysicalPixelSize mCanvasPhysicalPixelSize;
-    int mLogicalToPhysicalPixelFactor;
+    DisplayLogicalSize mCanvasLogicalSize;
+    DisplayPhysicalSize mCanvasPhysicalSize;
+    int mLogicalToPhysicalDisplayFactor;
     float mPixelOffsetX;
     float mPixelOffsetY;
 

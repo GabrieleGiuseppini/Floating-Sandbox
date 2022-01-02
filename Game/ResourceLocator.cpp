@@ -11,10 +11,15 @@
 #include <regex>
 
 ResourceLocator::ResourceLocator(std::string const & argv0)
-    : mRootPath(std::filesystem::canonical(std::filesystem::path(argv0)).parent_path())
+    : ResourceLocator(std::filesystem::canonical(std::filesystem::path(argv0)).parent_path())
 {
     LogMessage("ResourceLocator: argv0=", argv0, " rootPath=", mRootPath,
         " currentPath=", std::filesystem::current_path());
+}
+
+ResourceLocator::ResourceLocator(std::filesystem::path const & rootProgramPath)
+    : mRootPath(rootProgramPath)
+{
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -61,9 +66,9 @@ std::filesystem::path ResourceLocator::GetTexturesRootFolderPath() const
     return MakeAbsolutePath(std::filesystem::path("Data")) / "Textures";
 }
 
-std::filesystem::path ResourceLocator::GetMaterialTexturesFolderPath() const
+std::filesystem::path ResourceLocator::GetMaterialTextureFilePath(std::string const & materialTextureName) const
 {
-    return GetTexturesRootFolderPath() / "Materials";
+    return GetTexturesRootFolderPath() / "Material" / (materialTextureName + ".png");
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -252,9 +257,14 @@ std::filesystem::path ResourceLocator::GetHelpFilePath(
 // Shaders
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-std::filesystem::path ResourceLocator::GetRenderShadersRootPath() const
+std::filesystem::path ResourceLocator::GetGameShadersRootPath() const
 {
-    return MakeAbsolutePath(std::filesystem::path("Data")) / "Shaders" / "Render";
+    return MakeAbsolutePath(std::filesystem::path("Data")) / "Shaders" / "Game";
+}
+
+std::filesystem::path ResourceLocator::GetShipBuilderShadersRootPath() const
+{
+    return MakeAbsolutePath(std::filesystem::path("Data")) / "Shaders" / "ShipBuilder";
 }
 
 std::filesystem::path ResourceLocator::GetGPUCalcShadersRootPath() const

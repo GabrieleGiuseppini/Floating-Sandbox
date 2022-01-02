@@ -6,6 +6,7 @@
 #include "GameController.h"
 
 #include "ComputerCalibration.h"
+#include "ShipDeSerializer.h"
 
 #include <GameCore/GameMath.h>
 #include <GameCore/Log.h>
@@ -68,6 +69,13 @@ GameController::GameController(
     : mTsunamiNotificationStateMachine()
     , mThanosSnapStateMachines()
     , mDayLightCycleStateMachine()
+    // World
+    , mWorld()
+    , mFishSpeciesDatabase(std::move(fishSpeciesDatabase))
+    , mMaterialDatabase(std::move(materialDatabase))
+    // Ship factory
+    , mShipStrengthRandomizer()
+    , mShipTexturizer(mMaterialDatabase, resourceLocator)
     // State
     , mGameParameters()
     , mIsPaused(false)
@@ -80,7 +88,6 @@ GameController::GameController(
     // Doers
     , mRenderContext(std::move(renderContext))
     , mGameEventDispatcher(std::move(gameEventDispatcher))
-    , mShipBuilder(resourceLocator)
     , mNotificationLayer(
         mGameParameters.IsUltraViolentMode,
         false /*loaded value will come later*/,
@@ -88,16 +95,6 @@ GameController::GameController(
         mRenderContext->GetDisplayUnitsSystem(),
         mGameEventDispatcher)
     , mTaskThreadPool(std::make_shared<TaskThreadPool>())
-    // World
-    , mFishSpeciesDatabase(std::move(fishSpeciesDatabase))
-    , mMaterialDatabase(std::move(materialDatabase))
-    , mWorld(new Physics::World(
-        OceanFloorTerrain::LoadFromImage(resourceLocator.GetDefaultOceanFloorTerrainFilePath()),
-        mFishSpeciesDatabase,
-        mGameEventDispatcher,
-        mTaskThreadPool,
-        mGameParameters,
-        mRenderContext->GetVisibleWorld()))
     // Smoothing
     , mFloatParameterSmoothers()
     , mZoomParameterSmoother()
@@ -112,8 +109,14 @@ GameController::GameController(
     , mLastPublishedTotalFrameCount(0u)
     , mSkippedFirstStatPublishes(0)
 {
-    // Verify materials' textures
-    mShipBuilder.VerifyMaterialDatabase(mMaterialDatabase);
+    // Create world
+    mWorld = std::make_unique<Physics::World>(
+        OceanFloorTerrain::LoadFromImage(resourceLocator.GetDefaultOceanFloorTerrainFilePath()),
+        mFishSpeciesDatabase,
+        mGameEventDispatcher,
+        mTaskThreadPool,
+        mGameParameters,
+        mRenderContext->GetVisibleWorld());
 
     // Register ourselves as event handler for the events we care about
     mGameEventDispatcher->RegisterLifecycleEventHandler(this);
@@ -285,26 +288,28 @@ ShipMetadata GameController::ResetAndReloadShip(std::filesystem::path const & sh
 ShipMetadata GameController::AddShip(std::filesystem::path const & shipDefinitionFilepath)
 {
     // Load ship definition
-    auto shipDefinition = ShipDefinition::Load(shipDefinitionFilepath);
+    auto shipDefinition = ShipDeSerializer::LoadShip(shipDefinitionFilepath, mMaterialDatabase);
 
     // Pre-validate ship's texture, if any
-    if (shipDefinition.TextureLayerImage.has_value())
-        mRenderContext->ValidateShipTexture(*shipDefinition.TextureLayerImage);
+    if (shipDefinition.TextureLayer)
+        mRenderContext->ValidateShipTexture(shipDefinition.TextureLayer->Buffer);
 
     // Remember metadata
     ShipMetadata shipMetadata(shipDefinition.Metadata);
 
     //
-    // Build ship
+    // Produce ship
     //
 
     auto const shipId = mWorld->GetNextShipId();
 
-    auto [ship, textureImage] = mShipBuilder.Create(
+    auto [ship, textureImage] = ShipFactory::Create(
         shipId,
         *mWorld,
         std::move(shipDefinition),
         mMaterialDatabase,
+        mShipTexturizer,
+        mShipStrengthRandomizer,
         mGameEventDispatcher,
         mTaskThreadPool,
         mGameParameters);
@@ -584,7 +589,7 @@ void GameController::NotifySoundMuted(bool isSoundMuted)
 }
 
 void GameController::ScareFish(
-    LogicalPixelCoordinates const & screenCoordinates,
+    DisplayLogicalCoordinates const & screenCoordinates,
     float radius,
     std::chrono::milliseconds delay)
 {
@@ -599,7 +604,7 @@ void GameController::ScareFish(
 }
 
 void GameController::AttractFish(
-    LogicalPixelCoordinates const & screenCoordinates,
+    DisplayLogicalCoordinates const & screenCoordinates,
     float radius,
     std::chrono::milliseconds delay)
 {
@@ -614,7 +619,7 @@ void GameController::AttractFish(
 }
 
 void GameController::PickObjectToMove(
-    LogicalPixelCoordinates const & screenCoordinates,
+    DisplayLogicalCoordinates const & screenCoordinates,
     std::optional<ElementId> & elementId)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
@@ -627,7 +632,7 @@ void GameController::PickObjectToMove(
         mGameParameters);
 }
 
-std::optional<ElementId> GameController::PickObjectForPickAndPull(LogicalPixelCoordinates const & screenCoordinates)
+std::optional<ElementId> GameController::PickObjectForPickAndPull(DisplayLogicalCoordinates const & screenCoordinates)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
@@ -640,7 +645,7 @@ std::optional<ElementId> GameController::PickObjectForPickAndPull(LogicalPixelCo
 
 void GameController::Pull(
     ElementId elementId,
-    LogicalPixelCoordinates const & screenTarget)
+    DisplayLogicalCoordinates const & screenTarget)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenTarget);
 
@@ -653,7 +658,7 @@ void GameController::Pull(
 }
 
 void GameController::PickObjectToMove(
-    LogicalPixelCoordinates const & screenCoordinates,
+    DisplayLogicalCoordinates const & screenCoordinates,
     std::optional<ShipId> & shipId)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
@@ -669,8 +674,8 @@ void GameController::PickObjectToMove(
 
 void GameController::MoveBy(
     ElementId elementId,
-    LogicalPixelSize const & screenOffset,
-    LogicalPixelSize const & inertialScreenOffset)
+    DisplayLogicalSize const & screenOffset,
+    DisplayLogicalSize const & inertialScreenOffset)
 {
     vec2f const worldOffset = mRenderContext->ScreenOffsetToWorldOffset(screenOffset);
     vec2f const inertialVelocity = mRenderContext->ScreenOffsetToWorldOffset(inertialScreenOffset);
@@ -686,8 +691,8 @@ void GameController::MoveBy(
 
 void GameController::MoveBy(
     ShipId shipId,
-    LogicalPixelSize const & screenOffset,
-    LogicalPixelSize const & inertialScreenOffset)
+    DisplayLogicalSize const & screenOffset,
+    DisplayLogicalSize const & inertialScreenOffset)
 {
     vec2f const worldOffset = mRenderContext->ScreenOffsetToWorldOffset(screenOffset);
     vec2f const inertialVelocity = mRenderContext->ScreenOffsetToWorldOffset(inertialScreenOffset);
@@ -704,12 +709,12 @@ void GameController::MoveBy(
 void GameController::RotateBy(
     ElementId elementId,
     float screenDeltaY,
-    LogicalPixelCoordinates const & screenCenter,
+    DisplayLogicalCoordinates const & screenCenter,
     float inertialScreenDeltaY)
 {
     float const angle =
         2.0f * Pi<float>
-        / static_cast<float>(mRenderContext->GetCanvasLogicalPixelSize().height)
+        / static_cast<float>(mRenderContext->GetCanvasLogicalSize().height)
         * screenDeltaY
         * 1.5f; // More responsive
 
@@ -717,7 +722,7 @@ void GameController::RotateBy(
 
     float const inertialAngle =
         2.0f * Pi<float>
-        / static_cast<float>(mRenderContext->GetCanvasLogicalPixelSize().height)
+        / static_cast<float>(mRenderContext->GetCanvasLogicalSize().height)
         * inertialScreenDeltaY;
 
     // Apply action
@@ -733,19 +738,19 @@ void GameController::RotateBy(
 void GameController::RotateBy(
     ShipId shipId,
     float screenDeltaY,
-    LogicalPixelCoordinates const & screenCenter,
+    DisplayLogicalCoordinates const & screenCenter,
     float inertialScreenDeltaY)
 {
     float const angle =
         2.0f * Pi<float>
-        / static_cast<float>(mRenderContext->GetCanvasLogicalPixelSize().height)
+        / static_cast<float>(mRenderContext->GetCanvasLogicalSize().height)
         * screenDeltaY;
 
     vec2f const worldCenter = mRenderContext->ScreenToWorld(screenCenter);
 
     float const inertialAngle =
         2.0f * Pi<float>
-        / static_cast<float>(mRenderContext->GetCanvasLogicalPixelSize().height)
+        / static_cast<float>(mRenderContext->GetCanvasLogicalSize().height)
         * inertialScreenDeltaY;
 
     // Apply action
@@ -759,7 +764,7 @@ void GameController::RotateBy(
 }
 
 void GameController::DestroyAt(
-    LogicalPixelCoordinates const & screenCoordinates,
+    DisplayLogicalCoordinates const & screenCoordinates,
     float radiusMultiplier)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
@@ -773,7 +778,7 @@ void GameController::DestroyAt(
 }
 
 void GameController::RepairAt(
-    LogicalPixelCoordinates const & screenCoordinates,
+    DisplayLogicalCoordinates const & screenCoordinates,
     float radiusMultiplier,
     SequenceNumber repairStepId)
 {
@@ -789,8 +794,8 @@ void GameController::RepairAt(
 }
 
 bool GameController::SawThrough(
-    LogicalPixelCoordinates const & startScreenCoordinates,
-    LogicalPixelCoordinates const & endScreenCoordinates,
+    DisplayLogicalCoordinates const & startScreenCoordinates,
+    DisplayLogicalCoordinates const & endScreenCoordinates,
     bool isFirstSegment)
 {
     vec2f const startWorldCoordinates = mRenderContext->ScreenToWorld(startScreenCoordinates);
@@ -806,7 +811,7 @@ bool GameController::SawThrough(
 }
 
 bool GameController::ApplyHeatBlasterAt(
-    LogicalPixelCoordinates const & screenCoordinates,
+    DisplayLogicalCoordinates const & screenCoordinates,
     HeatBlasterActionType action)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
@@ -839,7 +844,7 @@ bool GameController::ApplyHeatBlasterAt(
     return isApplied;
 }
 
-bool GameController::ExtinguishFireAt(LogicalPixelCoordinates const & screenCoordinates)
+bool GameController::ExtinguishFireAt(DisplayLogicalCoordinates const & screenCoordinates)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
@@ -867,7 +872,7 @@ bool GameController::ExtinguishFireAt(LogicalPixelCoordinates const & screenCoor
 }
 
 void GameController::ApplyBlastAt(
-    LogicalPixelCoordinates const & screenCoordinates,
+    DisplayLogicalCoordinates const & screenCoordinates,
     float radiusMultiplier,
     float forceMultiplier,
     float renderProgress,
@@ -898,7 +903,7 @@ void GameController::ApplyBlastAt(
 }
 
 bool GameController::ApplyElectricSparkAt(
-    LogicalPixelCoordinates const & screenCoordinates,
+    DisplayLogicalCoordinates const & screenCoordinates,
     std::uint64_t counter,
     float lengthMultiplier,
     float currentSimulationTime)
@@ -916,7 +921,7 @@ bool GameController::ApplyElectricSparkAt(
 }
 
 void GameController::DrawTo(
-    LogicalPixelCoordinates const & screenCoordinates,
+    DisplayLogicalCoordinates const & screenCoordinates,
     float strengthFraction)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
@@ -930,7 +935,7 @@ void GameController::DrawTo(
 }
 
 void GameController::SwirlAt(
-    LogicalPixelCoordinates const & screenCoordinates,
+    DisplayLogicalCoordinates const & screenCoordinates,
     float strengthFraction)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
@@ -943,7 +948,7 @@ void GameController::SwirlAt(
         mGameParameters);
 }
 
-void GameController::TogglePinAt(LogicalPixelCoordinates const & screenCoordinates)
+void GameController::TogglePinAt(DisplayLogicalCoordinates const & screenCoordinates)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
@@ -962,7 +967,7 @@ void GameController::RemoveAllPins()
 }
 
 std::optional<ToolApplicationLocus> GameController::InjectPressureAt(
-    LogicalPixelCoordinates const & screenCoordinates,
+    DisplayLogicalCoordinates const & screenCoordinates,
     float pressureQuantityMultiplier)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
@@ -987,7 +992,7 @@ std::optional<ToolApplicationLocus> GameController::InjectPressureAt(
 }
 
 bool GameController::FloodAt(
-    LogicalPixelCoordinates const & screenCoordinates,
+    DisplayLogicalCoordinates const & screenCoordinates,
     float waterQuantityMultiplier)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
@@ -1000,7 +1005,7 @@ bool GameController::FloodAt(
         mGameParameters);
 }
 
-void GameController::ToggleAntiMatterBombAt(LogicalPixelCoordinates const & screenCoordinates)
+void GameController::ToggleAntiMatterBombAt(DisplayLogicalCoordinates const & screenCoordinates)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
@@ -1011,7 +1016,7 @@ void GameController::ToggleAntiMatterBombAt(LogicalPixelCoordinates const & scre
         mGameParameters);
 }
 
-void GameController::ToggleImpactBombAt(LogicalPixelCoordinates const & screenCoordinates)
+void GameController::ToggleImpactBombAt(DisplayLogicalCoordinates const & screenCoordinates)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
@@ -1022,7 +1027,7 @@ void GameController::ToggleImpactBombAt(LogicalPixelCoordinates const & screenCo
         mGameParameters);
 }
 
-void GameController::TogglePhysicsProbeAt(LogicalPixelCoordinates const & screenCoordinates)
+void GameController::TogglePhysicsProbeAt(DisplayLogicalCoordinates const & screenCoordinates)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
@@ -1039,7 +1044,7 @@ void GameController::TogglePhysicsProbeAt(LogicalPixelCoordinates const & screen
     }
 }
 
-void GameController::ToggleRCBombAt(LogicalPixelCoordinates const & screenCoordinates)
+void GameController::ToggleRCBombAt(DisplayLogicalCoordinates const & screenCoordinates)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
@@ -1050,7 +1055,7 @@ void GameController::ToggleRCBombAt(LogicalPixelCoordinates const & screenCoordi
         mGameParameters);
 }
 
-void GameController::ToggleTimerBombAt(LogicalPixelCoordinates const & screenCoordinates)
+void GameController::ToggleTimerBombAt(DisplayLogicalCoordinates const & screenCoordinates)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
@@ -1075,7 +1080,7 @@ void GameController::DetonateAntiMatterBombs()
     mWorld->DetonateAntiMatterBombs();
 }
 
-void GameController::AdjustOceanSurfaceTo(std::optional<LogicalPixelCoordinates> const & screenCoordinates)
+void GameController::AdjustOceanSurfaceTo(std::optional<DisplayLogicalCoordinates> const & screenCoordinates)
 {
     std::optional<vec2f> const worldCoordinates = !!screenCoordinates
         ? mRenderContext->ScreenToWorld(*screenCoordinates)
@@ -1087,8 +1092,8 @@ void GameController::AdjustOceanSurfaceTo(std::optional<LogicalPixelCoordinates>
 }
 
 std::optional<bool> GameController::AdjustOceanFloorTo(
-    LogicalPixelCoordinates const & startScreenCoordinates,
-    LogicalPixelCoordinates const & endScreenCoordinates)
+    DisplayLogicalCoordinates const & startScreenCoordinates,
+    DisplayLogicalCoordinates const & endScreenCoordinates)
 {
     vec2f const startWorldCoordinates = mRenderContext->ScreenToWorld(startScreenCoordinates);
     vec2f const endWorldCoordinates = mRenderContext->ScreenToWorld(endScreenCoordinates);
@@ -1102,8 +1107,8 @@ std::optional<bool> GameController::AdjustOceanFloorTo(
 }
 
 bool GameController::ScrubThrough(
-    LogicalPixelCoordinates const & startScreenCoordinates,
-    LogicalPixelCoordinates const & endScreenCoordinates)
+    DisplayLogicalCoordinates const & startScreenCoordinates,
+    DisplayLogicalCoordinates const & endScreenCoordinates)
 {
     vec2f const startWorldCoordinates = mRenderContext->ScreenToWorld(startScreenCoordinates);
     vec2f const endWorldCoordinates = mRenderContext->ScreenToWorld(endScreenCoordinates);
@@ -1117,8 +1122,8 @@ bool GameController::ScrubThrough(
 }
 
 bool GameController::RotThrough(
-    LogicalPixelCoordinates const & startScreenCoordinates,
-    LogicalPixelCoordinates const & endScreenCoordinates)
+    DisplayLogicalCoordinates const & startScreenCoordinates,
+    DisplayLogicalCoordinates const & endScreenCoordinates)
 {
     vec2f const startWorldCoordinates = mRenderContext->ScreenToWorld(startScreenCoordinates);
     vec2f const endWorldCoordinates = mRenderContext->ScreenToWorld(endScreenCoordinates);
@@ -1131,14 +1136,14 @@ bool GameController::RotThrough(
         mGameParameters);
 }
 
-void GameController::ApplyThanosSnapAt(LogicalPixelCoordinates const & screenCoordinates)
+void GameController::ApplyThanosSnapAt(DisplayLogicalCoordinates const & screenCoordinates)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
     StartThanosSnapStateMachine(worldCoordinates.x, mWorld->GetCurrentSimulationTime());
 }
 
-std::optional<ElementId> GameController::GetNearestPointAt(LogicalPixelCoordinates const & screenCoordinates) const
+std::optional<ElementId> GameController::GetNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
@@ -1146,7 +1151,7 @@ std::optional<ElementId> GameController::GetNearestPointAt(LogicalPixelCoordinat
     return mWorld->GetNearestPointAt(worldCoordinates, 1.0f);
 }
 
-void GameController::QueryNearestPointAt(LogicalPixelCoordinates const & screenCoordinates) const
+void GameController::QueryNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
@@ -1222,17 +1227,17 @@ bool GameController::RestoreTriangle(ElementId triangleId)
 // Render controls
 //
 
-void GameController::SetCanvasSize(LogicalPixelSize const & canvasSize)
+void GameController::SetCanvasSize(DisplayLogicalSize const & canvasSize)
 {
     // Tell RenderContext
-    mRenderContext->SetCanvasLogicalPixelSize(canvasSize);
+    mRenderContext->SetCanvasLogicalSize(canvasSize);
 
     // Pickup eventual changes to view model properties
     mZoomParameterSmoother->SetValueImmediate(mRenderContext->GetZoom());
     mCameraWorldPositionParameterSmoother->SetValueImmediate(mRenderContext->GetCameraWorldPosition());
 }
 
-void GameController::Pan(LogicalPixelSize const & screenOffset)
+void GameController::Pan(DisplayLogicalSize const & screenOffset)
 {
     vec2f const worldOffset = mRenderContext->ScreenOffsetToWorldOffset(screenOffset);
 
@@ -1245,7 +1250,7 @@ void GameController::Pan(LogicalPixelSize const & screenOffset)
         GameWallClock::GetInstance().ContinuousNowAsFloat());
 }
 
-void GameController::PanImmediate(LogicalPixelSize const & screenOffset)
+void GameController::PanImmediate(DisplayLogicalSize const & screenOffset)
 {
     vec2f const worldOffset = mRenderContext->ScreenOffsetToWorldOffset(screenOffset);
 
@@ -1290,12 +1295,12 @@ void GameController::ResetZoom()
     mZoomParameterSmoother->SetValueImmediate(newTargetZoom);
 }
 
-vec2f GameController::ScreenToWorld(LogicalPixelCoordinates const & screenCoordinates) const
+vec2f GameController::ScreenToWorld(DisplayLogicalCoordinates const & screenCoordinates) const
 {
     return mRenderContext->ScreenToWorld(screenCoordinates);
 }
 
-vec2f GameController::ScreenOffsetToWorldOffset(LogicalPixelSize const & screenOffset) const
+vec2f GameController::ScreenOffsetToWorldOffset(DisplayLogicalSize const & screenOffset) const
 {
     return mRenderContext->ScreenOffsetToWorldOffset(screenOffset);
 }
@@ -1342,11 +1347,11 @@ ShipMetadata GameController::ResetAndLoadShip(
     assert(!!mWorld);
 
     // Load ship definition
-    auto shipDefinition = ShipDefinition::Load(shipDefinitionFilepath);
+    auto shipDefinition = ShipDeSerializer::LoadShip(shipDefinitionFilepath, mMaterialDatabase);
 
     // Pre-validate ship's texture
-    if (shipDefinition.TextureLayerImage.has_value())
-        mRenderContext->ValidateShipTexture(*shipDefinition.TextureLayerImage);
+    if (shipDefinition.TextureLayer)
+        mRenderContext->ValidateShipTexture(shipDefinition.TextureLayer->Buffer);
 
     // Save metadata
     ShipMetadata shipMetadata(shipDefinition.Metadata);
@@ -1360,13 +1365,15 @@ ShipMetadata GameController::ResetAndLoadShip(
         mGameParameters,
         mRenderContext->GetVisibleWorld());
 
-    // Build ship
+    // Produce ship
     auto const shipId = newWorld->GetNextShipId();
-    auto [ship, textureImage] = mShipBuilder.Create(
+    auto [ship, textureImage] = ShipFactory::Create(
         shipId,
         *newWorld,
         std::move(shipDefinition),
         mMaterialDatabase,
+        mShipTexturizer,
+        mShipStrengthRandomizer,
         mGameEventDispatcher,
         mTaskThreadPool,
         mGameParameters);

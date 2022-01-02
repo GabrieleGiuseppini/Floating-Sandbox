@@ -21,8 +21,11 @@ set  (GAME_SOURCES
 	IGameEventHandlers.h
 	ImageFileTools.cpp
 	ImageFileTools.h
+	LayerElements.h
+	Layers.h
 	Materials.cpp
 	Materials.h
+	MaterialDatabase.cpp
 	MaterialDatabase.h
 	NotificationLayer.cpp
 	NotificationLayer.h
@@ -32,17 +35,22 @@ set  (GAME_SOURCES
 	RenderDeviceProperties.h
 	ResourceLocator.cpp
 	ResourceLocator.h
-	ShipBuilder.cpp
-	ShipBuilder.h
-	ShipBuildTypes.h
-	ShipDefinition.cpp
+	RopeBuffer.h
+	ShipAutoTexturizationSettings.cpp
+	ShipAutoTexturizationSettings.h
+	ShipDefinitionFormatDeSerializer.cpp
+	ShipDefinitionFormatDeSerializer.h
+	ShipDeSerializer.cpp
+	ShipDeSerializer.h
+	ShipFactory.cpp
+	ShipFactory.h
+	ShipFactoryTypes.h
 	ShipDefinition.h
-	ShipDefinitionFile.cpp
-	ShipDefinitionFile.h
-	ShipPhysicsData.h
+	ShipLegacyFormatDeSerializer.cpp
+	ShipLegacyFormatDeSerializer.h
 	ShipMetadata.h
-	ShipPreview.cpp
-	ShipPreview.h
+	ShipPhysicsData.h
+	ShipPreviewData.h
 	ShipPreviewDirectoryManager.cpp
 	ShipPreviewDirectoryManager.h
 	ShipPreviewImageDatabase.cpp
@@ -152,6 +160,9 @@ target_link_libraries (GameLib
 	GameCoreLib
 	GameOpenGLLib
 	GPUCalcLib
+	${ZLIB_LIBRARY}
+	${JPEG_LIBRARY}
+	${PNG_LIBRARY}
 	${IL_LIBRARIES}
 	${ILU_LIBRARIES}
 	${ILUT_LIBRARIES}

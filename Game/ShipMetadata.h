@@ -10,12 +10,11 @@
 
 #include <optional>
 #include <string>
-#include <map>
 
 /*
  * Metadata for a ship.
  */
-struct ShipMetadata
+struct ShipMetadata final
 {
 public:
 
@@ -29,7 +28,25 @@ public:
 
     std::optional<std::string> Description;
 
-    std::map<ElectricalElementInstanceIndex, ElectricalPanelElementMetadata> ElectricalPanelMetadata;
+    ShipSpaceToWorldSpaceCoordsRatio Scale;
+
+    bool DoHideElectricalsInPreview;
+    bool DoHideHDInPreview;
+
+    std::optional<PasswordHash> Password;
+
+    explicit ShipMetadata(std::string shipName)
+        : ShipName(std::move(shipName))
+        , Author()
+        , ArtCredits()
+        , YearBuilt()
+        , Description()
+        , Scale(1.0f, 1.0f) // Default is 1:1
+        , DoHideElectricalsInPreview(false)
+        , DoHideHDInPreview(false)
+        , Password()
+    {
+    }
 
     ShipMetadata(
         std::string shipName,
@@ -37,23 +54,19 @@ public:
         std::optional<std::string> artCredits,
         std::optional<std::string> yearBuilt,
         std::optional<std::string> description,
-        std::map<ElectricalElementInstanceIndex, ElectricalPanelElementMetadata> electricalPanelMetadata)
+        ShipSpaceToWorldSpaceCoordsRatio scale,
+        bool doHideElectricalsInPreview,
+        bool doHideHDInPreview,
+        std::optional<PasswordHash> password)
         : ShipName(std::move(shipName))
         , Author(std::move(author))
         , ArtCredits(std::move(artCredits))
         , YearBuilt(std::move(yearBuilt))
         , Description(std::move(description))
-        , ElectricalPanelMetadata(std::move(electricalPanelMetadata))
-    {
-    }
-
-    ShipMetadata(std::string shipName)
-        : ShipName(std::move(shipName))
-        , Author()
-        , ArtCredits()
-        , YearBuilt()
-        , Description()
-        , ElectricalPanelMetadata()
+        , Scale(scale)
+        , DoHideElectricalsInPreview(doHideElectricalsInPreview)
+        , DoHideHDInPreview(doHideHDInPreview)
+        , Password(password)
     {
     }
 

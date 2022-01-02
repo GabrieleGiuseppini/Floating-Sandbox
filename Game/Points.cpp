@@ -24,7 +24,7 @@ void Points::Add(
     float strength,
     ElementIndex electricalElementIndex,
     bool isStructurallyLeaking,
-    vec4f const & color,
+    rgbaColor const & color,
     vec2f const & textureCoordinates,
     float randomNormalizedUniformFloat)
 {
@@ -114,7 +114,7 @@ void Points::Add(
     mRandomNormalizedUniformFloatBuffer.emplace_back(randomNormalizedUniformFloat);
 
     // Immutable render attributes
-    mColorBuffer.emplace_back(color);
+    mColorBuffer.emplace_back(color.toVec4f());
     mTextureCoordinatesBuffer.emplace_back(textureCoordinates);
 }
 
@@ -196,7 +196,7 @@ void Points::CreateEphemeralParticleAirBubble(
     mPlaneIdFloatBuffer[pointIndex] = static_cast<float>(planeId);
     mIsPlaneIdBufferEphemeralDirty = true;
 
-    mColorBuffer[pointIndex] = airStructuralMaterial.RenderColor;
+    mColorBuffer[pointIndex] = airStructuralMaterial.RenderColor.toVec4f(1.0f);
     mIsEphemeralColorBufferDirty = true;
 }
 
@@ -269,7 +269,7 @@ void Points::CreateEphemeralParticleDebris(
     mPlaneIdFloatBuffer[pointIndex] = static_cast<float>(planeId);
     mIsPlaneIdBufferEphemeralDirty = true;
 
-    mColorBuffer[pointIndex] = structuralMaterial.RenderColor;
+    mColorBuffer[pointIndex] = structuralMaterial.RenderColor.toVec4f(1.0f);
     mIsEphemeralColorBufferDirty = true;
 
     // Remember that ephemeral points are dirty now
@@ -361,7 +361,7 @@ void Points::CreateEphemeralParticleSmoke(
     mPlaneIdFloatBuffer[pointIndex] = static_cast<float>(planeId);
     mIsPlaneIdBufferEphemeralDirty = true;
 
-    mColorBuffer[pointIndex] = airStructuralMaterial.RenderColor;
+    mColorBuffer[pointIndex] = airStructuralMaterial.RenderColor.toVec4f(1.0f);
     mIsEphemeralColorBufferDirty = true;
 }
 
@@ -506,7 +506,7 @@ void Points::CreateEphemeralParticleWakeBubble(
     mPlaneIdFloatBuffer[pointIndex] = static_cast<float>(planeId);
     mIsPlaneIdBufferEphemeralDirty = true;
 
-    mColorBuffer[pointIndex] = waterStructuralMaterial.RenderColor;
+    mColorBuffer[pointIndex] = waterStructuralMaterial.RenderColor.toVec4f(1.0f);
     mIsEphemeralColorBufferDirty = true;
 }
 

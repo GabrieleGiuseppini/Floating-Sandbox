@@ -17,7 +17,7 @@ namespace {
     {
         ImageSize dimensions(magicNumber, magicNumber);
 
-        std::unique_ptr<rgbaColor[]> buffer = std::make_unique<rgbaColor[]>(dimensions.GetPixelCount());
+        std::unique_ptr<rgbaColor[]> buffer = std::make_unique<rgbaColor[]>(dimensions.GetLinearSize());
 
         return RgbaImageData(
             dimensions,
