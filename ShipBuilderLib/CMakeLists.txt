@@ -71,7 +71,7 @@ source_group("UI" FILES ${UI_SOURCES})
 
 add_library (ShipBuilderLib ${SHIPBUILDER_LIB_SOURCES} ${TOOLS_SOURCES} ${UI_SOURCES})
 
-target_include_directories(ShipBuilderLib PRIVATE .)
+target_include_directories(ShipBuilderLib PUBLIC .)
 target_include_directories(ShipBuilderLib PRIVATE ${wxWidgets_INCLUDE_DIRS})
 target_compile_definitions(ShipBuilderLib PRIVATE "${wxWidgets_DEFINITIONS}")
 target_link_libraries (ShipBuilderLib
