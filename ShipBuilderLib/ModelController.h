@@ -56,6 +56,8 @@ public:
         mModel.SetShipSize(shipSize);
     }
 
+    std::unique_ptr<RgbaImageData> MakePreview() const;
+
     std::optional<ShipSpaceRect> CalculateBoundingBox() const;
 
     void SetLayerDirty(LayerType layer)
@@ -255,8 +257,6 @@ public:
 
     void SetStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType mode);
 
-    RgbaImageData const & GetStructuralLayerVisualization() const;
-
     void SetElectricalLayerVisualizationMode(ElectricalLayerVisualizationModeType mode);
 
     void SetRopesLayerVisualizationMode(RopesLayerVisualizationModeType mode);
@@ -270,6 +270,11 @@ private:
     ModelController(
         Model && model,
         ShipTexturizer const & shipTexturizer);
+
+    inline ShipSpaceRect GetWholeShipRect() const
+    {
+        return { ShipSpaceCoordinates(0, 0), mModel.GetShipSize() };
+    }
 
     void InitializeStructuralLayerAnalysis();
 
@@ -311,16 +316,15 @@ private:
 
     void UpdateStructuralLayerVisualization(ShipSpaceRect const & region);
 
+    void RenderStructureInto(
+        ShipSpaceRect const & structureRegion,
+        RgbaImageData & texture) const;
+
     void UpdateElectricalLayerVisualization(ShipSpaceRect const & region);
 
     void UpdateRopesLayerVisualization();
 
     void UpdateTextureLayerVisualization();
-
-    inline ShipSpaceRect GetWholeShipRect() const
-    {
-        return { ShipSpaceCoordinates(0, 0), mModel.GetShipSize() };
-    }
 
 private:
 

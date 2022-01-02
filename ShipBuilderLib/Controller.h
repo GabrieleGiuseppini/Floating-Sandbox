@@ -117,6 +117,8 @@ public:
 
     void RestoreDirtyState(Model::DirtyState && dirtyState);
 
+    std::unique_ptr<RgbaImageData> MakePreview() const;
+
     std::optional<ShipSpaceRect> CalculateBoundingBox() const;
 
     ModelValidationResults ValidateModel();
@@ -127,7 +129,6 @@ public:
         StructuralLayerData && layerRegion,
         ShipSpaceCoordinates const & origin);
     void RestoreStructuralLayerForUndo(StructuralLayerData && structuralLayer);
-    RgbaImageData const & GetStructuralLayerVisualization();
 
     void NewElectricalLayer();
     void SetElectricalLayer(/*TODO*/);

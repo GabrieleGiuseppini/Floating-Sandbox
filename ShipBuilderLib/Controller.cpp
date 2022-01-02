@@ -213,6 +213,13 @@ ModelValidationResults Controller::ValidateModel()
     return mModelController->ValidateModel();
 }
 
+std::unique_ptr<RgbaImageData> Controller::MakePreview() const
+{
+    auto const scopedToolResumeState = SuspendTool();
+
+    return mModelController->MakePreview();
+}
+
 std::optional<ShipSpaceRect> Controller::CalculateBoundingBox() const
 {
     auto const scopedToolResumeState = SuspendTool();
@@ -305,13 +312,6 @@ void Controller::RestoreStructuralLayerForUndo(StructuralLayerData && structural
     // Refresh model visualizations
     mModelController->UpdateVisualizations(mView);
     mUserInterface.RefreshView();
-}
-
-RgbaImageData const & Controller::GetStructuralLayerVisualization()
-{
-    auto const scopedToolResumeState = SuspendTool();
-
-    return mModelController->GetStructuralLayerVisualization();
 }
 
 void Controller::NewElectricalLayer()
@@ -1057,7 +1057,7 @@ void Controller::ResetView()
     mUserInterface.RefreshView();
 }
 
-void Controller::OnWorkCanvasResized(DisplayLogicalSize const & newSize)
+void Controller::OnWorkCanvasResized(DisplayLogicalSize const & /*newSize*/)
 {
     // Note: we don't tell view, as MainFrame is responsible for that
 

@@ -63,13 +63,11 @@ https://gamejolt.com/x/permalink/comment/11730705
 
 + Merge into master
 
-= Fixes:
++ Fixes:
 	+ Fix assert after removing structural viz mode
 		+ Change: allow dirty region setting, reset at UpdateViz() also when None
 			+ And Nuke ClearDirty()
-	- ModelController::GetStructuralVizMode when "none" is set
-		- Verify crashes
-		- Fix: TODO
+	+ ModelController::GetStructuralVizMode when "none" is set
 
 - Fix Ubuntu:
 	- ShipBuilder: failed OpenGL initialization

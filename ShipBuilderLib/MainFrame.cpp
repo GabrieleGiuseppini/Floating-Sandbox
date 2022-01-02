@@ -3319,8 +3319,13 @@ void MainFrame::OpenShipCanvasResize()
         mResizeDialog = std::make_unique<ResizeDialog>(this, mResourceLocator);
     }
 
-    auto const & preview = mController->GetStructuralLayerVisualization();
-    if (!mResizeDialog->ShowModalForResize(preview, IntegralRectSize(preview.Size.width, preview.Size.height)))
+    // Make ship preview
+    auto const shipPreviewImage = mController->MakePreview();
+
+    // Start with target size == current ship size
+    IntegralRectSize const initialTargetSize(mController->GetShipSize().width, mController->GetShipSize().height);
+
+    if (!mResizeDialog->ShowModalForResize(*shipPreviewImage, initialTargetSize))
     {
         // User aborted
         return;
@@ -3345,12 +3350,15 @@ void MainFrame::OpenShipProperties()
         mShipPropertiesEditDialog = std::make_unique<ShipPropertiesEditDialog>(this, mResourceLocator);
     }
 
+    // Make ship preview
+    auto const shipPreviewImage = mController->MakePreview();
+
     mShipPropertiesEditDialog->ShowModal(
         *mController,
         mController->GetShipMetadata(),
         mController->GetShipPhysicsData(),
         mController->GetShipAutoTexturizationSettings(),
-        mController->GetStructuralLayerVisualization(),
+        *shipPreviewImage,
         mController->HasModelLayer(LayerType::Texture));
 }
 

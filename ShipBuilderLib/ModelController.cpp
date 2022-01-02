@@ -74,6 +74,19 @@ ShipDefinition ModelController::MakeShipDefinition() const
     return mModel.MakeShipDefinition();
 }
 
+std::unique_ptr<RgbaImageData> ModelController::MakePreview() const
+{
+    assert(mModel.HasLayer(LayerType::Structural));
+
+    auto previewTexture = std::make_unique<RgbaImageData>(ImageSize(mModel.GetShipSize().width, mModel.GetShipSize().height));
+
+    RenderStructureInto(
+        GetWholeShipRect(),
+        *previewTexture);
+
+    return previewTexture;
+}
+
 std::optional<ShipSpaceRect> ModelController::CalculateBoundingBox() const
 {
     std::optional<ShipSpaceRect> boundingBox;
@@ -1235,16 +1248,6 @@ void ModelController::SetStructuralLayerVisualizationMode(StructuralLayerVisuali
     }
 }
 
-RgbaImageData const & ModelController::GetStructuralLayerVisualization() const
-{
-    assert(mModel.HasLayer(LayerType::Structural));
-
-    assert(!mIsStructuralLayerInEphemeralVisualization);
-
-    assert(mStructuralLayerVisualizationTexture);
-    return *mStructuralLayerVisualizationTexture;
-}
-
 void ModelController::SetElectricalLayerVisualizationMode(ElectricalLayerVisualizationModeType mode)
 {
     if (mode == mElectricalLayerVisualizationMode)
@@ -1864,28 +1867,11 @@ void ModelController::UpdateStructuralLayerVisualization(ShipSpaceRect const & r
         case StructuralLayerVisualizationModeType::MeshMode:
         case StructuralLayerVisualizationModeType::PixelMode:
         {
-            assert(mModel.HasLayer(LayerType::Structural));
             assert(mStructuralLayerVisualizationTexture);
 
-            assert(mStructuralLayerVisualizationTexture->Size.width == mModel.GetShipSize().width
-                && mStructuralLayerVisualizationTexture->Size.height == mModel.GetShipSize().height);
-
-            rgbaColor const emptyColor = rgbaColor(EmptyMaterialColorKey, 0); // Fully transparent
-
-            auto const & structuralLayerBuffer = mModel.GetStructuralLayer().Buffer;
-            RgbaImageData & structuralRenderColorTexture = *mStructuralLayerVisualizationTexture;
-
-            for (int y = region.origin.y; y < region.origin.y + region.size.height; ++y)
-            {
-                for (int x = region.origin.x; x < region.origin.x + region.size.width; ++x)
-                {
-                    auto const structuralMaterial = structuralLayerBuffer[{x, y}].Material;
-
-                    structuralRenderColorTexture[{x, y}] = structuralMaterial != nullptr
-                        ? rgbaColor(structuralMaterial->RenderColor, 255)
-                        : emptyColor;
-                }
-            }
+            RenderStructureInto(
+                region,
+                *mStructuralLayerVisualizationTexture);
 
             break;
         }
@@ -1893,6 +1879,32 @@ void ModelController::UpdateStructuralLayerVisualization(ShipSpaceRect const & r
         case StructuralLayerVisualizationModeType::None:
         {
             return;
+        }
+    }
+}
+
+void ModelController::RenderStructureInto(
+    ShipSpaceRect const & structureRegion,
+    RgbaImageData & texture) const
+{
+    assert(mModel.HasLayer(LayerType::Structural));
+
+    assert(texture.Size.width == mModel.GetStructuralLayer().Buffer.Size.width
+        && texture.Size.height == mModel.GetStructuralLayer().Buffer.Size.height);
+
+    rgbaColor const emptyColor = rgbaColor(EmptyMaterialColorKey, 0); // Fully transparent
+
+    auto const & structuralLayerBuffer = mModel.GetStructuralLayer().Buffer;
+
+    for (int y = structureRegion.origin.y; y < structureRegion.origin.y + structureRegion.size.height; ++y)
+    {
+        for (int x = structureRegion.origin.x; x < structureRegion.origin.x + structureRegion.size.width; ++x)
+        {
+            auto const structuralMaterial = structuralLayerBuffer[{x, y}].Material;
+
+            texture[{x, y}] = (structuralMaterial != nullptr)
+                ? rgbaColor(structuralMaterial->RenderColor, 255)
+                : emptyColor;
         }
     }
 }
