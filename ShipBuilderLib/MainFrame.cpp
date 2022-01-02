@@ -35,12 +35,6 @@
 #include <wx/utils.h>
 #include <wx/wupdlock.h>
 
-#ifdef _MSC_VER
- // Nothing to do here - we use RC files
-#else
-#include "Resources/ShipBBB.xpm"
-#endif
-
 #include <cassert>
 
 namespace ShipBuilder {

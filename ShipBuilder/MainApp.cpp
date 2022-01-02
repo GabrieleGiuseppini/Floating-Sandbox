@@ -21,6 +21,11 @@
 
 #include <memory>
 
+#ifndef _MSC_VER
+// Define icon
+#include "Resources/ShipBBB.xpm"
+#endif
+
 #ifdef _DEBUG
 #ifdef _MSC_VER
 #include <signal.h>

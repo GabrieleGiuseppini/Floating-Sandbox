@@ -62,9 +62,6 @@ set  (DIALOGS_SOURCES
 	StartupTipDialog.h
 )
 
-source_group(" " FILES ${FLOATING_SANDBOX_SOURCES})
-source_group("Dialogs" FILES ${DIALOGS_SOURCES})
-
 set(RESOURCE_FILES "")
 if(MSVC)
 	list(APPEND RESOURCE_FILES
@@ -77,6 +74,8 @@ else()
 		Resources/ShipBBB.xpm)
 endif()
 
+source_group(" " FILES ${FLOATING_SANDBOX_SOURCES})
+source_group("Dialogs" FILES ${DIALOGS_SOURCES})
 source_group("Resources" FILES ${RESOURCE_FILES})
 
 add_executable (FloatingSandbox ${FLOATING_SANDBOX_SOURCES} ${DIALOGS_SOURCES} ${RESOURCE_FILES})

@@ -68,9 +68,9 @@ Controller::Controller(
     WorkbenchState & workbenchState,
     IUserInterface & userInterface,
     ResourceLocator const & resourceLocator)
-    : mModelController(std::move(modelController))
+    : mView(view)
+    , mModelController(std::move(modelController))
     , mUndoStack()
-    , mView(view)
     , mWorkbenchState(workbenchState)
     , mUserInterface(userInterface)
     , mResourceLocator(resourceLocator)

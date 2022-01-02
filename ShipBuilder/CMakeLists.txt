@@ -7,8 +7,6 @@ set  (SHIPBUILDER_SOURCES
 	MainApp.cpp
 )
 
-source_group(" " FILES ${SHIPBUILDER_SOURCES})
-
 set(RESOURCE_FILES "")
 if(MSVC)
 	list(APPEND RESOURCE_FILES
@@ -21,6 +19,7 @@ else()
 		Resources/ShipBBB.xpm)
 endif()
 
+source_group(" " FILES ${SHIPBUILDER_SOURCES})
 source_group("Resources" FILES ${RESOURCE_FILES})
 
 add_executable (ShipBuilder ${SHIPBUILDER_SOURCES} ${RESOURCE_FILES})
