@@ -74,3 +74,13 @@ file(COPY "${CMAKE_SOURCE_DIR}/Data"
 	DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/Release")
 file(COPY "${CMAKE_SOURCE_DIR}/Data"
 	DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/RelWithDebInfo")
+
+####################################################
+# Install
+####################################################
+
+# Main binary
+install(TARGETS ShipBuilder
+	CONFIGURATIONS Release RelWithDebInfo Debug
+        RUNTIME
+	DESTINATION .)

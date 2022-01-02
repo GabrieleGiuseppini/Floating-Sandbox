@@ -353,6 +353,11 @@ Render:
 		- Raynair updates
 		- Pocketwatch ships
 
+		- MSI Installer:
+			- Also install ShipBuilder.exe
+
+
+
 
 
 
