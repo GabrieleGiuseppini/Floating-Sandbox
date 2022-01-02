@@ -374,8 +374,10 @@ void ModelController::ResizeShip(
     if (mModel.HasLayer(LayerType::Texture))
     {
         // Calc rect in texture coordinates space, assuming the original ratio matches
+#ifdef _DEBUG
         float const textureRatio = static_cast<float>(mModel.GetTextureLayer().Buffer.Size.width) / static_cast<float>(mModel.GetTextureLayer().Buffer.Size.height);
         float const shipRatio = static_cast<float>(originalShipRect.size.width) / static_cast<float>(originalShipRect.size.height);
+#endif
         assert(std::abs(1.0f - textureRatio / shipRatio) < 0.1f);
         float const shipToImage = static_cast<float>(mModel.GetTextureLayer().Buffer.Size.width) / static_cast<float>(originalShipRect.size.width);
         ImageSize const imageNewSize = ImageSize::FromFloatRound(newSize.ToFloat() * shipToImage);
