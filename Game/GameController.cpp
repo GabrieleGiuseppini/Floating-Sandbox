@@ -546,7 +546,7 @@ void GameController::ReplayRecordedEvent(RecordedEvent const & event)
 
 void GameController::SetPaused(bool isPaused)
 {
-    // Freeze time
+    // Pause/resume time
     GameWallClock::GetInstance().SetPaused(isPaused);
 
     // Change state

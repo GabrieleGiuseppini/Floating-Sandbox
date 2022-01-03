@@ -2195,7 +2195,7 @@ void MainFrame::RunGameIteration()
         // It took us longer than the timer duration, hence run a game iteration
         // as soon as possible, but still giving the event loop some time to drain
         // UI events
-        wxWakeUpIdle(); // Ensure an Idle event is proeuced even if we are...idle
+        wxWakeUpIdle(); // Ensure an Idle event is produced even if we are...idle
     }
     else
     {
