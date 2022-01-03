@@ -266,7 +266,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 	- TODO: ropes are missing...
 
 - Texture flood tool
-	- First off: mouse coordinates from MainFrame to Controller becomes LogicalDisplayCoords, and they're converted to ShipSpace coords where needed
+	+ First off: mouse coordinates from MainFrame to Controller becomes LogicalDisplayCoords, and they're converted to ShipSpace coords where needed
 	- Conversion to texture coords: done by View & ViewModel, exactly like conversion to ShipSpaceCoords, and invoked by texture tool(s)
 		- ViewModel also stores texture layer size (as ImageSize), next to ShipSize; set into View 
 		  by Controller (via View.SetTextureLayerSize) at each texture layer size change (OR: implicitly from UploadTexture? Would be best as we don't have to remember to SetTextureLayerSize at multiple sites, 
@@ -276,6 +276,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 			- Controller::RestoreTextureLayerForUndo
 			- Controller::ResizeShip
 			- No need to do at removal...
+	- Tolerance, etc.
 
 - ShipPropertiesEditDialog: ship prefix normalizer
 	+ Make text file out of https://en.wikipedia.org/wiki/Ship_prefix, with just list of prefixes
