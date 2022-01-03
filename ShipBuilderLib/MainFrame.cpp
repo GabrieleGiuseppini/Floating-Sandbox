@@ -735,7 +735,7 @@ void MainFrame::SwapRenderBuffers()
     mWorkCanvas->SwapBuffers();
 }
 
-ShipSpaceCoordinates MainFrame::GetMouseCoordinates() const
+DisplayLogicalCoordinates MainFrame::GetMouseCoordinates() const
 {
     wxMouseState const mouseState = wxGetMouseState();
     int x = mouseState.GetX();
@@ -745,11 +745,10 @@ ShipSpaceCoordinates MainFrame::GetMouseCoordinates() const
     assert(mWorkCanvas);
     mWorkCanvas->ScreenToClient(&x, &y);
 
-    // TODOHERE: GetMouseCoordinates returns LogicalDisplayCoords
-    return mView->ScreenToShipSpace({ x, y });
+    return DisplayLogicalCoordinates(x, y);
 }
 
-std::optional<ShipSpaceCoordinates> MainFrame::GetMouseCoordinatesIfInWorkCanvas() const
+std::optional<DisplayLogicalCoordinates> MainFrame::GetMouseCoordinatesIfInWorkCanvas() const
 {
     //
     // This function basically simulates the mouse<->focused window logic, returning mouse
@@ -768,7 +767,7 @@ std::optional<ShipSpaceCoordinates> MainFrame::GetMouseCoordinatesIfInWorkCanvas
     if ((mWorkCanvas->HitTest(x, y) == wxHT_WINDOW_INSIDE && !mWorkCanvasHScrollBar->HasCapture() && !mWorkCanvasVScrollBar->HasCapture())
         || mIsMouseCapturedByWorkCanvas)
     {
-        return mView->ScreenToShipSpace({ x, y });
+        return DisplayLogicalCoordinates(x, y);
     }
     else
     {
@@ -2762,8 +2761,7 @@ void MainFrame::OnWorkCanvasMouseMove(wxMouseEvent & event)
 {
     if (mController)
     {
-        // TODOHERE: OnMouseMove takes LogicalDisplayCoords
-        mController->OnMouseMove(mView->ScreenToShipSpace({ event.GetX(), event.GetY() }));
+        mController->OnMouseMove(DisplayLogicalCoordinates(event.GetX(), event.GetY()));
     }
 }
 
@@ -3424,7 +3422,7 @@ void MainFrame::DoNewShip()
     // Make name
     std::string const shipName = "MyShip-" + Utils::MakeNowDateAndTimeString();
 
-    // Initialize controller (won't fire UI reconciliations)
+    // Initialize controller
     mController = Controller::CreateNew(
         shipName,
         *mOpenGLManager,

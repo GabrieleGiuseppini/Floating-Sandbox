@@ -37,7 +37,7 @@ RopeEraserTool::RopeEraserTool(
     auto const mouseCoordinates = mUserInterface.GetMouseCoordinatesIfInWorkCanvas();
     if (mouseCoordinates)
     {
-        DrawOverlay(*mouseCoordinates);
+        DrawOverlay(ScreenToShipSpace(*mouseCoordinates));
 
         mModelController.UpdateVisualizations(mView);
         mUserInterface.RefreshView();
@@ -56,19 +56,21 @@ RopeEraserTool::~RopeEraserTool()
     }
 }
 
-void RopeEraserTool::OnMouseMove(ShipSpaceCoordinates const & mouseCoordinates)
+void RopeEraserTool::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates)
 {
+    auto const mouseShipSpaceCoords = ScreenToShipSpace(mouseCoordinates);
+
     if (mEngagementData.has_value())
     {
         // Do action
-        DoAction(mouseCoordinates);
+        DoAction(mouseShipSpaceCoords);
 
         // No need to do eph viz when engaged
     }
     else
     {
         // Draw overlay
-        DrawOverlay(mouseCoordinates);
+        DrawOverlay(mouseShipSpaceCoords);
     }
 
     mModelController.UpdateVisualizations(mView);
@@ -111,7 +113,7 @@ void RopeEraserTool::OnMouseDown()
     StartEngagement();
 
     // Do action
-    DoAction(mUserInterface.GetMouseCoordinates());
+    DoAction(GetCurrentMouseCoordinatesInShipSpace());
 
     // No need to do eph viz when engaged
 
@@ -130,7 +132,7 @@ void RopeEraserTool::OnMouseUp()
         StopEngagement();
 
         // Restart overlay
-        DrawOverlay(mUserInterface.GetMouseCoordinates());
+        DrawOverlay(GetCurrentMouseCoordinatesInShipSpace());
 
         assert(mHasOverlay);
 

@@ -115,9 +115,9 @@ public:
 
     void SwapRenderBuffers() override;
 
-    ShipSpaceCoordinates GetMouseCoordinates() const override;
+    DisplayLogicalCoordinates GetMouseCoordinates() const override;
 
-    std::optional<ShipSpaceCoordinates> GetMouseCoordinatesIfInWorkCanvas() const override;
+    std::optional<DisplayLogicalCoordinates> GetMouseCoordinatesIfInWorkCanvas() const override;
 
     void SetToolCursor(wxImage const & cursorImage) override;
 

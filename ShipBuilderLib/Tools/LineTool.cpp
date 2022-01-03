@@ -75,7 +75,7 @@ LineTool<TLayer>::LineTool(
     auto const mouseCoordinates = mUserInterface.GetMouseCoordinatesIfInWorkCanvas();
     if (mouseCoordinates)
     {
-        DoEphemeralVisualization(*mouseCoordinates);
+        DoEphemeralVisualization(ScreenToShipSpace(*mouseCoordinates));
 
         // Visualize
         mModelController.UpdateVisualizations(mView);
@@ -98,7 +98,7 @@ LineTool<TLayer>::~LineTool()
 }
 
 template<LayerType TLayer>
-void LineTool<TLayer>::OnMouseMove(ShipSpaceCoordinates const & mouseCoordinates)
+void LineTool<TLayer>::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates)
 {
     // Assuming L/R button transitions already communicated
 
@@ -106,7 +106,7 @@ void LineTool<TLayer>::OnMouseMove(ShipSpaceCoordinates const & mouseCoordinates
     mEphemeralVisualization.reset();
 
     // Do ephemeral visualization
-    DoEphemeralVisualization(mouseCoordinates);
+    DoEphemeralVisualization(ScreenToShipSpace(mouseCoordinates));
 
     // Visualize
     mModelController.UpdateVisualizations(mView);
@@ -119,7 +119,7 @@ void LineTool<TLayer>::OnLeftMouseDown()
     // Restore ephemeral visualization (if any)
     mEphemeralVisualization.reset();
 
-    ShipSpaceCoordinates const mouseCoordinates = mUserInterface.GetMouseCoordinates();
+    ShipSpaceCoordinates const mouseCoordinates = GetCurrentMouseCoordinatesInShipSpace();
 
     // Engage
     if (!mEngagementData)
@@ -130,7 +130,7 @@ void LineTool<TLayer>::OnLeftMouseDown()
     }
 
     // Do ephemeral visualization
-    DoEphemeralVisualization(mUserInterface.GetMouseCoordinates());
+    DoEphemeralVisualization(mouseCoordinates);
 
     // Visualize
     mModelController.UpdateVisualizations(mView);
@@ -143,7 +143,7 @@ void LineTool<TLayer>::OnLeftMouseUp()
     // Restore ephemeral visualization (if any)
     mEphemeralVisualization.reset();
 
-    ShipSpaceCoordinates const mouseCoordinates = mUserInterface.GetMouseCoordinates();
+    ShipSpaceCoordinates const mouseCoordinates = GetCurrentMouseCoordinatesInShipSpace();
 
     // Disengage, eventually
     if (mEngagementData)
@@ -167,7 +167,7 @@ void LineTool<TLayer>::OnRightMouseDown()
     // Restore ephemeral visualization (if any)
     mEphemeralVisualization.reset();
 
-    ShipSpaceCoordinates const mouseCoordinates = mUserInterface.GetMouseCoordinates();
+    ShipSpaceCoordinates const mouseCoordinates = GetCurrentMouseCoordinatesInShipSpace();
 
     // Engage
     if (!mEngagementData)
@@ -178,7 +178,7 @@ void LineTool<TLayer>::OnRightMouseDown()
     }
 
     // Do ephemeral visualization
-    DoEphemeralVisualization(mUserInterface.GetMouseCoordinates());
+    DoEphemeralVisualization(mouseCoordinates);
 
     // Visualize
     mModelController.UpdateVisualizations(mView);
@@ -191,7 +191,7 @@ void LineTool<TLayer>::OnRightMouseUp()
     // Restore ephemeral visualization (if any)
     mEphemeralVisualization.reset();
 
-    ShipSpaceCoordinates const mouseCoordinates = mUserInterface.GetMouseCoordinates();
+    ShipSpaceCoordinates const mouseCoordinates = GetCurrentMouseCoordinatesInShipSpace();
 
     // Disengage, eventually
     if (mEngagementData)
@@ -218,7 +218,7 @@ void LineTool<TLayer>::OnShiftKeyDown()
     mIsShiftDown = true;
 
     // Do ephemeral visualization
-    DoEphemeralVisualization(mUserInterface.GetMouseCoordinates());
+    DoEphemeralVisualization(GetCurrentMouseCoordinatesInShipSpace());
 
     // Visualize
     mModelController.UpdateVisualizations(mView);
@@ -234,7 +234,7 @@ void LineTool<TLayer>::OnShiftKeyUp()
     mIsShiftDown = false;
 
     // Do ephemeral visualization
-    DoEphemeralVisualization(mUserInterface.GetMouseCoordinates());
+    DoEphemeralVisualization(GetCurrentMouseCoordinatesInShipSpace());
 
     // Visualize
     mModelController.UpdateVisualizations(mView);

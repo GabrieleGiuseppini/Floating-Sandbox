@@ -45,7 +45,7 @@ public:
     // Event handlers
     //
 
-    virtual void OnMouseMove(ShipSpaceCoordinates const & mouseCoordinates) = 0;
+    virtual void OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates) = 0;
     virtual void OnLeftMouseDown() = 0;
     virtual void OnLeftMouseUp() = 0;
     virtual void OnRightMouseDown() = 0;
@@ -69,6 +69,16 @@ protected:
         , mUserInterface(userInterface)
         , mView(view)
     {}
+
+    ShipSpaceCoordinates GetCurrentMouseCoordinatesInShipSpace()
+    {
+        return mView.ScreenToShipSpace(mUserInterface.GetMouseCoordinates());
+    }
+
+    ShipSpaceCoordinates ScreenToShipSpace(DisplayLogicalCoordinates const & displayCoordinates)
+    {
+        return mView.ScreenToShipSpace(displayCoordinates);
+    }
 
     void SetCursor(wxImage const & cursorImage)
     {

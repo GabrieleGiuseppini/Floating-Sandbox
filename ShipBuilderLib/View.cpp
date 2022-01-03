@@ -18,7 +18,7 @@ View::View(
     int logicalToPhysicalPixelFactor,
     std::function<void()> swapRenderBuffersFunction,
     ResourceLocator const & resourceLocator)
-    : mOpenGLContext(openGLManager.MakeContext())
+    : mOpenGLContext()
     , mViewModel(
         initialShipSpaceSize,
         initialDisplaySize,
@@ -45,6 +45,12 @@ View::View(
     //////////////////////////////////
     , mPrimaryVisualization(VisualizationType::StructuralLayer)
 {
+    //
+    // Create OpenGL context and make it current
+    //
+
+    mOpenGLContext = openGLManager.MakeContextAndMakeCurrent();
+
     //
     // Initialize global OpenGL settings
     //

@@ -53,7 +53,7 @@ template<LayerType TLayer>
 void FloodTool<TLayer>::OnLeftMouseDown()
 {
     DoEdit(
-        mUserInterface.GetMouseCoordinates(),
+        GetCurrentMouseCoordinatesInShipSpace(),
         StrongTypedFalse<IsRightMouseButton>);
 }
 
@@ -61,7 +61,7 @@ template<LayerType TLayer>
 void FloodTool<TLayer>::OnRightMouseDown()
 {
     DoEdit(
-        mUserInterface.GetMouseCoordinates(),
+        GetCurrentMouseCoordinatesInShipSpace(),
         StrongTypedTrue<IsRightMouseButton>);
 }
 

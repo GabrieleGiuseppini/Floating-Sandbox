@@ -213,7 +213,7 @@ public:
 
     void EnableVisualGrid(bool doEnable);
 
-    void OnMouseMove(ShipSpaceCoordinates const & mouseCoordinates);
+    void OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates);
     void OnLeftMouseDown();
     void OnLeftMouseUp();
     void OnRightMouseDown();

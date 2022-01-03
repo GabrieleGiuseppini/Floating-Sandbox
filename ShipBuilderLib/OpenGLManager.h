@@ -47,7 +47,7 @@ public:
         , mNeedToInitializeOpenGL(doOpenGLInitialization)
     {}
 
-    std::unique_ptr<OpenGLContext> MakeContext()
+    std::unique_ptr<OpenGLContext> MakeContextAndMakeCurrent()
     {
         auto glContext = std::make_unique<wxGLContext>(&mGLCanvas);
         glContext->SetCurrent(mGLCanvas);

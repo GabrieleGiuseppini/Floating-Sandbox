@@ -69,14 +69,15 @@ https://gamejolt.com/x/permalink/comment/11730705
 			+ And Nuke ClearDirty()
 	+ ModelController::GetStructuralVizMode when "none" is set
 
-- Fix OpenGL issues
-	- Rearc:
-		- Controller owns View which owns OpenGLContext
-			- View ownership
-			- Context creation by View
-			- Mouse is in LogicalDisplayCoords
+= Fix OpenGL issues
+	= Rearc:
+		= Controller owns View which owns OpenGLContext
+			+ View ownership
+			+ Context creation by View
+			+ Mouse is in LogicalDisplayCoords
 		- Test at end:
 			- Other layers' opacity slider <-> view
+		- Mark TODO item in this plan for mouse coords change
 	- OLD:
 		- Fix OpenGL on Windows single-threaded:
 			= Crash during initialization

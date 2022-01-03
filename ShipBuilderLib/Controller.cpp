@@ -1054,8 +1054,7 @@ void Controller::AddZoom(int deltaZoom)
     // Tell tool about the new mouse (ship space) position, but only
     // if the mouse is in the canvas
     auto const mouseCoordinates = mUserInterface.GetMouseCoordinatesIfInWorkCanvas();
-    if (mouseCoordinates
-        && mCurrentTool)
+    if (mouseCoordinates && mCurrentTool)
     {
         mCurrentTool->OnMouseMove(*mouseCoordinates);
     }
@@ -1126,7 +1125,7 @@ void Controller::EnableVisualGrid(bool doEnable)
     mUserInterface.RefreshView();
 }
 
-void Controller::OnMouseMove(ShipSpaceCoordinates const & mouseCoordinates)
+void Controller::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates)
 {
     // Forward to tool
     if (mCurrentTool)
@@ -1622,7 +1621,7 @@ void Controller::InternalFlip(DirectionType direction)
 void Controller::RefreshToolCoordinatesDisplay()
 {
     // Calculate ship coordinates
-    ShipSpaceCoordinates mouseShipSpaceCoordinates = mUserInterface.GetMouseCoordinates();
+    ShipSpaceCoordinates mouseShipSpaceCoordinates = mView->ScreenToShipSpace(mUserInterface.GetMouseCoordinates());
 
     // Check if within ship canvas
     if (mouseShipSpaceCoordinates.IsInSize(mModelController->GetModel().GetShipSize()))

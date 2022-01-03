@@ -75,9 +75,9 @@ public:
 
     virtual void SwapRenderBuffers() = 0;
 
-    virtual ShipSpaceCoordinates GetMouseCoordinates() const = 0;
+    virtual DisplayLogicalCoordinates GetMouseCoordinates() const = 0;
 
-    virtual std::optional<ShipSpaceCoordinates> GetMouseCoordinatesIfInWorkCanvas() const = 0;
+    virtual std::optional<DisplayLogicalCoordinates> GetMouseCoordinatesIfInWorkCanvas() const = 0;
 
     virtual void SetToolCursor(wxImage const & cursorImage) = 0;
 

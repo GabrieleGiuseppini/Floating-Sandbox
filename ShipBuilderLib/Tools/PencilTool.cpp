@@ -120,7 +120,7 @@ PencilTool<TLayer, IsEraser>::PencilTool(
     if (mouseCoordinates)
     {
         // Calculate affected rect
-        std::optional<ShipSpaceRect> const affectedRect = CalculateApplicableRect(*mouseCoordinates);
+        std::optional<ShipSpaceRect> const affectedRect = CalculateApplicableRect(ScreenToShipSpace(*mouseCoordinates));
 
         // Apply (temporary) change
         if (affectedRect)
@@ -153,9 +153,11 @@ PencilTool<TLayer, IsEraser>::~PencilTool()
 }
 
 template<LayerType TLayer, bool IsEraser>
-void PencilTool<TLayer, IsEraser>::OnMouseMove(ShipSpaceCoordinates const & mouseCoordinates)
+void PencilTool<TLayer, IsEraser>::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates)
 {
     // Assuming L/R button transitions already communicated
+
+    auto const mouseShipSpaceCoords = ScreenToShipSpace(mouseCoordinates);
 
     if (!mEngagementData)
     {
@@ -164,7 +166,7 @@ void PencilTool<TLayer, IsEraser>::OnMouseMove(ShipSpaceCoordinates const & mous
         //
 
         // Calculate affected rect
-        std::optional<ShipSpaceRect> const affectedRect = CalculateApplicableRect(mouseCoordinates);
+        std::optional<ShipSpaceRect> const affectedRect = CalculateApplicableRect(mouseShipSpaceCoords);
 
         if (affectedRect != mTempVisualizationDirtyShipRegion)
         {
@@ -191,7 +193,7 @@ void PencilTool<TLayer, IsEraser>::OnMouseMove(ShipSpaceCoordinates const & mous
     }
     else
     {
-        DoEdit(mouseCoordinates);
+        DoEdit(mouseShipSpaceCoords);
     }
 }
 
@@ -213,7 +215,7 @@ void PencilTool<TLayer, IsEraser>::OnLeftMouseDown()
         assert(mEngagementData);
     }
 
-    DoEdit(mUserInterface.GetMouseCoordinates());
+    DoEdit(GetCurrentMouseCoordinatesInShipSpace());
 }
 
 template<LayerType TLayer, bool IsEraser>
@@ -248,7 +250,7 @@ void PencilTool<TLayer, IsEraser>::OnRightMouseDown()
         assert(mEngagementData);
     }
 
-    DoEdit(mUserInterface.GetMouseCoordinates());
+    DoEdit(GetCurrentMouseCoordinatesInShipSpace());
 }
 
 template<LayerType TLayer, bool IsEraser>
