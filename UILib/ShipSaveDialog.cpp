@@ -58,8 +58,6 @@ int ShipSaveDialog::ShowModal(
 
 	SetFilename(shipFilename + shipFileExtension);
 
-	LogMessage("TODOTEST: ShipSaveDialog: DefaultDir=", GetDirectory().ToStdString(), " Filename=", GetFilename().ToStdString(), " Sys=", StandardSystemPaths::GetInstance().GetUserShipFolderPath().string());
-
 	return ShowModal();
 }
 

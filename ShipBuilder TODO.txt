@@ -120,30 +120,16 @@ https://gamejolt.com/x/permalink/comment/11730705
 					+ Entire shebang
 					+ Editing password-protected ship from FS
 		- 3: Think if can re-use view (and thus context) across Controller re-create's for NewShip and LoadShip
+			- First test a Release build to see if it's really noticeable
 			- option 1: extract from old controller and insert into new controller?
 		+ Mark TODO item in this plan for mouse coords change as done
 		- Remove single-threaded boot setting
-		- Re-test on Windows
-	- OLD:
-		- Fix OpenGL on Windows single-threaded:
-			= Crash during initialization
-				= Make our OpenGL context current again after ShipBuilder
-					- Initialization:
-					-	32 @0 wglMakeCurrent(hdc = 0xffffffffc301313c, hglrc = 0x40000) = TRUE
-					- After ShipBuilderFrame created:
-						5134 @0 wglMakeCurrent(hdc = 0xffffffffc301313c, hglrc = 0x40000) = TRUE
-			
-
-		- Fix Ubuntu:
-			+ ShipBuilder: failed OpenGL initialization
-			= Background of shipbuilder leaks into clouds
-				- See if it's the same on Windows when we disable multi-threading - if so we have a problem with context switching
-			+ Crash when starting ship builder
-				- See if it's https://wiki.wxwidgets.org/WxGLCanvas#Sharing_Canvas_Context
+		- Re-test w/multi-threading on Windows
 
 - Fix Ubuntu:
 	+ Grid button size
-	- Not adding extension to ship name when saving it
+	+ Not adding extension to ship name when saving it
+	+ Default save directory
 	- Undo stack at weird position
 	- Material palette not opening
 	- Model validation crash
