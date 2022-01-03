@@ -190,8 +190,6 @@ private:
         return !mReturnToGameFunctor;
     }
 
-    void OnOpenForLoadShipIdleEvent(wxIdleEvent & event);
-
     void Open();
 
     void NewShip();
@@ -391,12 +389,22 @@ private:
     bool mutable mIsMouseCapturedByWorkCanvas;
 
     //
+    // Open action
+    //
+    // This is the mechanism that allows the builder to initialize on the first OnPaint event
+    //
+
+    using InitialAction = std::function<void()>;
+
+    // When set, we still have to perform the initial action
+    std::optional<InitialAction> mInitialAction;
+
+    //
     // State
     //
 
     WorkbenchState mWorkbenchState;
 
-    std::filesystem::path mOpenForLoadShipFilePath;
     std::optional<std::filesystem::path> mCurrentShipFilePath;
     std::vector<std::filesystem::path> mShipLoadDirectories;
 };

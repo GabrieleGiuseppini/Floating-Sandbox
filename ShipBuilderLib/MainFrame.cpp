@@ -507,8 +507,13 @@ MainFrame::MainFrame(
 
 void MainFrame::OpenForNewShip()
 {
-    // New ship
-    DoNewShip();
+    // Enqueue deferred action: New ship
+    assert(!mInitialAction.has_value());
+    mInitialAction.emplace(
+        [this]()
+        {
+            DoNewShip();
+        });
 
     // Open ourselves
     Open();
@@ -516,9 +521,18 @@ void MainFrame::OpenForNewShip()
 
 void MainFrame::OpenForLoadShip(std::filesystem::path const & shipFilePath)
 {
-    // Register idle event for delayed load
-    mOpenForLoadShipFilePath = shipFilePath;
-    Bind(wxEVT_IDLE, (wxObjectEventFunction)&MainFrame::OnOpenForLoadShipIdleEvent, this);
+    // Enqueue deferred action: Load ship
+    assert(!mInitialAction.has_value());
+    mInitialAction.emplace(
+        [=]()
+        {
+            if (!DoLoadShip(shipFilePath))
+            {
+                // No luck loading ship...
+                // ...just create new ship
+                DoNewShip();
+            }
+        });
 
     // Open ourselves
     Open();
@@ -2512,7 +2526,6 @@ wxPanel * MainFrame::CreateWorkPanel(wxWindow * parent)
         mWorkCanvas->Connect(wxEVT_KEY_DOWN, (wxObjectEventFunction)&MainFrame::OnWorkCanvasKeyDown, 0, this);
         mWorkCanvas->Connect(wxEVT_KEY_UP, (wxObjectEventFunction)&MainFrame::OnWorkCanvasKeyUp, 0, this);
 
-
         sizer->Add(
             mWorkCanvas.get(),
             1, // Occupy all space
@@ -2639,8 +2652,18 @@ std::tuple<wxPanel *, wxSizer *> MainFrame::CreateToolSettingsToolSizePanel(
 
 void MainFrame::OnWorkCanvasPaint(wxPaintEvent & /*event*/)
 {
-    LogMessage("OnWorkCanvasPaint (with", (!mController ? "out" : ""), " controller)");
+    LogMessage("OnWorkCanvasPaint (with", (!mController ? "out" : ""), " controller, with", (!mInitialAction ? "out" : ""), " initial action)");
 
+    // Execute initial action, if any
+    if (mInitialAction.has_value())
+    {
+        (*mInitialAction)();
+
+        // No more initial action to execute
+        mInitialAction.reset();
+    }
+
+    // Render, if we have a controller
     if (mController)
     {
         mController->Render();
@@ -3035,22 +3058,6 @@ void MainFrame::OnRopeMaterialSelected(fsStructuralMaterialSelectedEvent & event
 }
 
 //////////////////////////////////////////////////////////////////
-
-void MainFrame::OnOpenForLoadShipIdleEvent(wxIdleEvent & /*event*/)
-{
-    // Unbind idle event handler
-    bool result = Unbind(wxEVT_IDLE, (wxObjectEventFunction)&MainFrame::OnOpenForLoadShipIdleEvent, this);
-    assert(result);
-    (void)result;
-    
-    // Load ship
-    if (!DoLoadShip(mOpenForLoadShipFilePath))
-    {
-        // No luck loading ship...
-        // ...just create new ship
-        DoNewShip();
-    }
-}
 
 void MainFrame::Open()
 {
