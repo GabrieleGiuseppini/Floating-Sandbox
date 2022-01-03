@@ -3228,11 +3228,11 @@ void MainFrame::QuitAndSwitchBackToGame()
 
 void MainFrame::SwitchBackToGame(std::optional<std::filesystem::path> shipFilePath)
 {
-    // Let go of controller
-    mController.reset();
-
     // Hide self
     Show(false);
+
+    // Let go of controller
+    mController.reset();
 
     // Invoke functor to go back
     assert(mReturnToGameFunctor);
