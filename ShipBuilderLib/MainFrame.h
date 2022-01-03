@@ -9,10 +9,10 @@
 #include "IUserInterface.h"
 #include "MaterialPalette.h"
 #include "ModelValidationDialog.h"
+#include "OpenGLManager.h"
 #include "ResizeDialog.h"
 #include "ShipPropertiesEditDialog.h"
 #include "StatusBar.h"
-#include "View.h"
 #include "WorkbenchState.h"
 
 #include <UILib/BitmapButton.h>
@@ -26,12 +26,9 @@
 #include <Game/ResourceLocator.h>
 #include <Game/ShipTexturizer.h>
 
-#include <GameOpenGL/GameOpenGL.h>
-
 #include <wx/app.h>
 #include <wx/frame.h>
-#include <wx/glcanvas.h> // Need to include this *after* our glad.h has been included, so that wxGLCanvas ends
-                         // up *not* including the system's OpenGL header but glad's instead
+#include <wx/glcanvas.h> // Need to include this *after* our glad.h has been included (from OpenGLManager.h)
 #include <wx/icon.h>
 #include <wx/menu.h>
 #include <wx/panel.h>
@@ -51,7 +48,7 @@ namespace ShipBuilder {
 /*
  * The main window of the ship builder GUI.
  *
- * - Owns Controller and View
+ * - Owns Controller
  * - Very thin, calls into Controller for each high-level interaction (e.g. new tool selected, tool setting changed) and for each mouse event
  * - Implements IUserInterface with interface needed by Controller, e.g. to make UI state changes, to capture the mouse, to update visualization of undo stack
  * - Owns WorkbenchState
@@ -98,6 +95,8 @@ public:
     void OnRopesLayerVisualizationModeChanged(RopesLayerVisualizationModeType mode) override;
     void OnTextureLayerVisualizationModeChanged(TextureLayerVisualizationModeType mode) override;
 
+    void OnOtherVisualizationsOpacityChanged(float opacity) override;
+
     void OnModelDirtyChanged() override;
 
     void OnWorkbenchStateChanged() override;
@@ -110,6 +109,12 @@ public:
 
     void OnError(wxString const & errorMessage) const override;
 
+    DisplayLogicalSize GetDisplaySize() const override;
+
+    int GetLogicalToPhysicalPixelFactor() const override;
+
+    void SwapRenderBuffers() override;
+
     ShipSpaceCoordinates GetMouseCoordinates() const override;
 
     std::optional<ShipSpaceCoordinates> GetMouseCoordinatesIfInWorkCanvas() const override;
@@ -117,8 +122,6 @@ public:
     void SetToolCursor(wxImage const & cursorImage) override;
 
     void ResetToolCursor() override;
-
-    void ScrollIntoViewIfNeeded(DisplayLogicalCoordinates const & workCanvasDisplayLogicalCoordinates) override;
 
 private:
 
@@ -288,8 +291,9 @@ private:
     // Owned members
     //
 
-    std::unique_ptr<View> mView;
-    std::unique_ptr<Controller> mController;
+    OpenGLManager mOpenGLManager;
+
+    std::unique_ptr<Controller> mController; // Comes and goes as we are opened/close
 
     //
     // Helpers
@@ -357,7 +361,6 @@ private:
 
     // Work panel
     std::unique_ptr<wxGLCanvas> mWorkCanvas;
-    std::unique_ptr<wxGLContext> mGLContext;
     wxScrollBar * mWorkCanvasHScrollBar;
     wxScrollBar * mWorkCanvasVScrollBar;
 

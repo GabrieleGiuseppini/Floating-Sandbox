@@ -12,12 +12,14 @@
 namespace ShipBuilder {
 
 View::View(
+    OpenGLManager & openGLManager,
     ShipSpaceSize initialShipSpaceSize,
     DisplayLogicalSize initialDisplaySize,
     int logicalToPhysicalPixelFactor,
     std::function<void()> swapRenderBuffersFunction,
     ResourceLocator const & resourceLocator)
-    : mViewModel(
+    : mOpenGLContext(openGLManager.MakeContext())
+    , mViewModel(
         initialShipSpaceSize,
         initialDisplaySize,
         logicalToPhysicalPixelFactor)

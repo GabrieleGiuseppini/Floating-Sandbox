@@ -7,6 +7,7 @@
 
 #include "IUserInterface.h"
 #include "ModelController.h"
+#include "OpenGLManager.h"
 #include "UndoStack.h"
 #include "ShipBuilderTypes.h"
 #include "View.h"
@@ -30,7 +31,7 @@ namespace ShipBuilder {
  *
  * It is the only actor that acts on the ModelController, and the only actor that acts on the UI.
  *
- * - Owns ModelController, takes reference to View
+ * - Owns ModelController and View
  * - Main Frame calls into Controller for each user interaction, including button clicks
  *      - Controller->Main Frame callbacks via IUserInterface
  * - Maintains UI state (e.g. grid toggle, visible layers), instructing View
@@ -45,7 +46,7 @@ public:
 
     static std::unique_ptr<Controller> CreateNew(
         std::string const & shipName,
-        View & view,
+        OpenGLManager & openGLManager,
         WorkbenchState & workbenchState,
         IUserInterface & userInterface,
         ShipTexturizer const & shipTexturizer,
@@ -53,7 +54,7 @@ public:
 
     static std::unique_ptr<Controller> CreateForShip(
         ShipDefinition && shipDefinition,
-        View & view,
+        OpenGLManager & openGLManager,
         WorkbenchState & workbenchState,
         IUserInterface & userInterface,
         ShipTexturizer const & shipTexturizer,
@@ -198,6 +199,12 @@ public:
     void UndoLast();
     void UndoUntil(size_t index);
 
+    void Render();
+
+    ShipSpaceCoordinates const & GetCameraShipSpacePosition() const;
+    ShipSpaceSize GetCameraRange() const;
+    ShipSpaceSize GetCameraThumbSize() const;
+
     void AddZoom(int deltaZoom);
     void SetCamera(int camX, int camY);
     void ResetView();
@@ -253,7 +260,7 @@ private:
 
     Controller(
         std::unique_ptr<ModelController> modelController,
-        View & view,
+        OpenGLManager & openGLManager,
         WorkbenchState & workbenchState,
         IUserInterface & userInterface,
         ResourceLocator const & resourceLocator);
@@ -290,7 +297,7 @@ private:
 
 private:
 
-    View & mView;
+    std::unique_ptr<View> mView;
     std::unique_ptr<ModelController> mModelController;
     UndoStack mUndoStack;
     WorkbenchState & mWorkbenchState;

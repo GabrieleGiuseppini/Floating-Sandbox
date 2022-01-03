@@ -75,11 +75,6 @@ protected:
         mUserInterface.SetToolCursor(cursorImage);
     }
 
-    void ScrollIntoViewIfNeeded(DisplayLogicalCoordinates const & mouseScreenPosition)
-    {
-        mUserInterface.ScrollIntoViewIfNeeded(mouseScreenPosition);
-    }
-
     void SetLayerDirty(LayerType layer)
     {
         mModelController.SetLayerDirty(layer);

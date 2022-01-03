@@ -11,13 +11,15 @@
 #include "Tools/RopeEraserTool.h"
 #include "Tools/RopePencilTool.h"
 
+#include <Game/ImageFileTools.h>
+
 #include <cassert>
 
 namespace ShipBuilder {
 
 std::unique_ptr<Controller> Controller::CreateNew(
     std::string const & shipName,
-    View & view,
+    OpenGLManager & openGLManager,
     WorkbenchState & workbenchState,
     IUserInterface & userInterface,
     ShipTexturizer const & shipTexturizer,
@@ -31,7 +33,7 @@ std::unique_ptr<Controller> Controller::CreateNew(
     std::unique_ptr<Controller> controller = std::unique_ptr<Controller>(
         new Controller(
             std::move(modelController),
-            view,
+            openGLManager,
             workbenchState,
             userInterface,
             resourceLocator));
@@ -41,7 +43,7 @@ std::unique_ptr<Controller> Controller::CreateNew(
 
 std::unique_ptr<Controller> Controller::CreateForShip(
     ShipDefinition && shipDefinition,
-    View & view,
+    OpenGLManager & openGLManager,
     WorkbenchState & workbenchState,
     IUserInterface & userInterface,
     ShipTexturizer const & shipTexturizer,
@@ -54,7 +56,7 @@ std::unique_ptr<Controller> Controller::CreateForShip(
     std::unique_ptr<Controller> controller = std::unique_ptr<Controller>(
         new Controller(
             std::move(modelController),
-            view,
+            openGLManager,
             workbenchState,
             userInterface,
             resourceLocator));
@@ -64,11 +66,11 @@ std::unique_ptr<Controller> Controller::CreateForShip(
 
 Controller::Controller(
     std::unique_ptr<ModelController> modelController,
-    View & view,
+    OpenGLManager & openGLManager,
     WorkbenchState & workbenchState,
     IUserInterface & userInterface,
     ResourceLocator const & resourceLocator)
-    : mView(view)
+    : mView()
     , mModelController(std::move(modelController))
     , mUndoStack()
     , mWorkbenchState(workbenchState)
@@ -88,12 +90,34 @@ Controller::Controller(
     // We assume we start with at least a structural layer
     assert(mModelController->GetModel().HasLayer(LayerType::Structural));
 
-    // Tell view new workspace size and settings
-    mView.SetShipSize(mModelController->GetModel().GetShipSize());
-    mView.SetPrimaryVisualization(mPrimaryVisualization);
+    //
+    // Create view
+    //
+
+    mView = std::make_unique<View>(
+        openGLManager,
+        mModelController->GetModel().GetShipSize(),
+        mUserInterface.GetDisplaySize(),
+        mUserInterface.GetLogicalToPhysicalPixelFactor(),
+        [this]()
+        {
+            mUserInterface.SwapRenderBuffers();
+        },
+        mResourceLocator);
+
+    mView->UploadBackgroundTexture(
+        ImageFileTools::LoadImageRgba(
+            mResourceLocator.GetBitmapFilePath("shipbuilder_background")));
+
+    // Tell view settings
+    mView->SetPrimaryVisualization(mPrimaryVisualization);
 
     // Set ideal zoom
-    mView.SetZoom(mView.CalculateIdealZoom());
+    mView->SetZoom(mView->CalculateIdealZoom());
+
+    //
+    // Initialize
+    //
 
     // Initialize layer visualizations
     InternalUpdateVisualizationModes();
@@ -106,9 +130,10 @@ Controller::Controller(
     mUserInterface.OnRopesLayerVisualizationModeChanged(mRopesLayerVisualizationMode);
     mUserInterface.OnTextureLayerVisualizationModeChanged(mTextureLayerVisualizationMode);
     mUserInterface.OnCurrentToolChanged(*mCurrentToolType);
+    mUserInterface.OnOtherVisualizationsOpacityChanged(mView->GetOtherVisualizationsOpacity());
 
     // Upload layers' visualizations
-    mModelController->UpdateVisualizations(mView);
+    mModelController->UpdateVisualizations(*mView);
 }
 
 ShipDefinition Controller::MakeShipDefinition()
@@ -250,7 +275,7 @@ void Controller::NewStructuralLayer()
     InternalUpdateVisualizationModes();
 
     // Refresh model visualizations
-    mModelController->UpdateVisualizations(mView);
+    mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
 }
 
@@ -277,7 +302,7 @@ void Controller::SetStructuralLayer(/*TODO*/)
     InternalUpdateVisualizationModes();
 
     // Refresh model visualizations
-    mModelController->UpdateVisualizations(mView);
+    mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
 }
 
@@ -297,7 +322,7 @@ void Controller::RestoreStructuralLayerRegionForUndo(
     // No need to update dirtyness, this is for undo
 
     // Refresh model visualization
-    mModelController->UpdateVisualizations(mView);
+    mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
 }
 
@@ -310,7 +335,7 @@ void Controller::RestoreStructuralLayerForUndo(StructuralLayerData && structural
     // No need to update dirtyness, this is for undo
 
     // Refresh model visualizations
-    mModelController->UpdateVisualizations(mView);
+    mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
 }
 
@@ -337,7 +362,7 @@ void Controller::NewElectricalLayer()
     InternalUpdateVisualizationModes();
 
     // Refresh model visualization
-    mModelController->UpdateVisualizations(mView);
+    mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
 }
 
@@ -364,7 +389,7 @@ void Controller::SetElectricalLayer(/*TODO*/)
     InternalUpdateVisualizationModes();
 
     // Refresh model visualizations
-    mModelController->UpdateVisualizations(mView);
+    mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
 }
 
@@ -391,7 +416,7 @@ void Controller::RemoveElectricalLayer()
     InternalUpdateVisualizationModes();
 
     // Refresh model visualizations
-    mModelController->UpdateVisualizations(mView);
+    mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
 }
 
@@ -409,7 +434,7 @@ void Controller::RestoreElectricalLayerRegionForUndo(
     // No need to update dirtyness, this is for undo
 
     // Refresh model visualizations
-    mModelController->UpdateVisualizations(mView);
+    mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
 }
 
@@ -427,7 +452,7 @@ void Controller::RestoreElectricalLayerForUndo(std::unique_ptr<ElectricalLayerDa
     InternalUpdateVisualizationModes();
 
     // Refresh model visualizations
-    mModelController->UpdateVisualizations(mView);
+    mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
 }
 
@@ -471,7 +496,7 @@ void Controller::TrimElectricalParticlesWithoutSubstratum()
     mUserInterface.OnModelDirtyChanged();
 
     // Refresh model visualizations
-    mModelController->UpdateVisualizations(mView);
+    mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
 }
 
@@ -498,7 +523,7 @@ void Controller::NewRopesLayer()
     InternalUpdateVisualizationModes();
 
     // Refresh model visualizations
-    mModelController->UpdateVisualizations(mView);
+    mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
 }
 
@@ -525,7 +550,7 @@ void Controller::SetRopesLayer(/*TODO*/)
     InternalUpdateVisualizationModes();
 
     // Refresh model visualizations
-    mModelController->UpdateVisualizations(mView);
+    mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
 }
 
@@ -552,7 +577,7 @@ void Controller::RemoveRopesLayer()
     InternalUpdateVisualizationModes();
 
     // Refresh model visualizations
-    mModelController->UpdateVisualizations(mView);
+    mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
 }
 
@@ -570,7 +595,7 @@ void Controller::RestoreRopesLayerForUndo(std::unique_ptr<RopesLayerData> ropesL
     InternalUpdateVisualizationModes();
 
     // Refresh model visualizations
-    mModelController->UpdateVisualizations(mView);
+    mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
 }
 
@@ -626,7 +651,7 @@ void Controller::SetTextureLayer(
     mUserInterface.OnModelDirtyChanged();
 
     // Refresh model visualizations
-    mModelController->UpdateVisualizations(mView);
+    mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
 }
 
@@ -686,7 +711,7 @@ void Controller::RemoveTextureLayer()
     InternalUpdateVisualizationModes();
 
     // Refresh model visualizations
-    mModelController->UpdateVisualizations(mView);
+    mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
 }
 
@@ -709,7 +734,7 @@ void Controller::RestoreTextureLayerForUndo(
     InternalUpdateVisualizationModes();
 
     // Refresh model visualizations
-    mModelController->UpdateVisualizations(mView);
+    mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
 }
 
@@ -749,7 +774,7 @@ void Controller::RestoreAllLayersForUndo(
     // No need to update dirtyness, this is for undo
 
     // Notify view of (possibly) new size
-    mView.SetShipSize(shipSize);
+    mView->SetShipSize(shipSize);
     mUserInterface.OnViewModelChanged();
 
     // Notify UI of (possibly) new ship size
@@ -760,7 +785,7 @@ void Controller::RestoreAllLayersForUndo(
     InternalUpdateVisualizationModes();
 
     // Refresh model visualizations
-    mModelController->UpdateVisualizations(mView);
+    mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
 }
 
@@ -843,7 +868,7 @@ void Controller::SetGameVisualizationMode(GameVisualizationModeType mode)
     mUserInterface.OnGameVisualizationModeChanged(mode);
 
     // Refresh model visualizations
-    mModelController->UpdateVisualizations(mView);
+    mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
 }
 
@@ -863,7 +888,7 @@ void Controller::SetStructuralLayerVisualizationMode(StructuralLayerVisualizatio
     mUserInterface.OnStructuralLayerVisualizationModeChanged(mode);
 
     // Refresh model visualizations
-    mModelController->UpdateVisualizations(mView);
+    mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
 }
 
@@ -883,7 +908,7 @@ void Controller::SetElectricalLayerVisualizationMode(ElectricalLayerVisualizatio
     mUserInterface.OnElectricalLayerVisualizationModeChanged(mode);
 
     // Refresh model visualizations
-    mModelController->UpdateVisualizations(mView);
+    mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
 }
 
@@ -903,7 +928,7 @@ void Controller::SetRopesLayerVisualizationMode(RopesLayerVisualizationModeType 
     mUserInterface.OnRopesLayerVisualizationModeChanged(mode);
 
     // Refresh model visualizations
-    mModelController->UpdateVisualizations(mView);
+    mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
 }
 
@@ -923,13 +948,13 @@ void Controller::SetTextureLayerVisualizationMode(TextureLayerVisualizationModeT
     mUserInterface.OnTextureLayerVisualizationModeChanged(mode);
 
     // Refresh model visualizations
-    mModelController->UpdateVisualizations(mView);
+    mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
 }
 
 void Controller::SetOtherVisualizationsOpacity(float opacity)
 {
-    mView.SetOtherVisualizationsOpacity(opacity);
+    mView->SetOtherVisualizationsOpacity(opacity);
 
     mUserInterface.RefreshView();
 }
@@ -1002,9 +1027,29 @@ void Controller::UndoUntil(size_t index)
     mUserInterface.OnUndoStackStateChanged();
 }
 
+void Controller::Render()
+{
+    mView->Render();
+}
+
+ShipSpaceCoordinates const & Controller::GetCameraShipSpacePosition() const
+{
+    return mView->GetCameraShipSpacePosition();
+}
+
+ShipSpaceSize Controller::GetCameraRange() const
+{
+    return mView->GetCameraRange();
+}
+
+ShipSpaceSize Controller::GetCameraThumbSize() const
+{
+    return mView->GetCameraThumbSize();
+}
+
 void Controller::AddZoom(int deltaZoom)
 {
-    mView.SetZoom(mView.GetZoom() + deltaZoom);
+    mView->SetZoom(mView->GetZoom() + deltaZoom);
 
     // Tell tool about the new mouse (ship space) position, but only
     // if the mouse is in the canvas
@@ -1022,7 +1067,7 @@ void Controller::AddZoom(int deltaZoom)
 
 void Controller::SetCamera(int camX, int camY)
 {
-    mView.SetCameraShipSpacePosition(ShipSpaceCoordinates(camX, camY));
+    mView->SetCameraShipSpacePosition(ShipSpaceCoordinates(camX, camY));
 
     // Tell tool about the new mouse (ship space) position, but only
     // if the mouse is in the canvas
@@ -1040,8 +1085,8 @@ void Controller::SetCamera(int camX, int camY)
 
 void Controller::ResetView()
 {
-    mView.SetZoom(0);
-    mView.SetCameraShipSpacePosition(ShipSpaceCoordinates(0, 0));
+    mView->SetZoom(0);
+    mView->SetCameraShipSpacePosition(ShipSpaceCoordinates(0, 0));
 
     // Tell tool about the new mouse (ship space) position, but only
     // if the mouse is in the canvas
@@ -1057,9 +1102,10 @@ void Controller::ResetView()
     mUserInterface.RefreshView();
 }
 
-void Controller::OnWorkCanvasResized(DisplayLogicalSize const & /*newSize*/)
+void Controller::OnWorkCanvasResized(DisplayLogicalSize const & newSize)
 {
-    // Note: we don't tell view, as MainFrame is responsible for that
+    // Tell view
+    mView->SetDisplayLogicalSize(newSize);
 
     // Tell tool about the new mouse (ship space) position, but only
     // if the mouse is in the canvas
@@ -1076,7 +1122,7 @@ void Controller::OnWorkCanvasResized(DisplayLogicalSize const & /*newSize*/)
 
 void Controller::EnableVisualGrid(bool doEnable)
 {
-    mView.EnableVisualGrid(doEnable);
+    mView->EnableVisualGrid(doEnable);
     mUserInterface.RefreshView();
 }
 
@@ -1218,7 +1264,7 @@ void Controller::InternalSelectPrimaryVisualization(VisualizationType primaryVis
     mUserInterface.OnPrimaryVisualizationChanged(primaryVisualization);
 
     // Tell view
-    mView.SetPrimaryVisualization(primaryVisualization);
+    mView->SetPrimaryVisualization(primaryVisualization);
 }
 
 void Controller::InternalReconciliateTextureVisualizationMode()
@@ -1364,7 +1410,7 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
                 mUndoStack,
                 mWorkbenchState,
                 mUserInterface,
-                mView,
+                *mView,
                 mResourceLocator);
         }
 
@@ -1375,7 +1421,7 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
                 mUndoStack,
                 mWorkbenchState,
                 mUserInterface,
-                mView,
+                *mView,
                 mResourceLocator);
         }
 
@@ -1386,7 +1432,7 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
                 mUndoStack,
                 mWorkbenchState,
                 mUserInterface,
-                mView,
+                *mView,
                 mResourceLocator);
         }
 
@@ -1397,7 +1443,7 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
                 mUndoStack,
                 mWorkbenchState,
                 mUserInterface,
-                mView,
+                *mView,
                 mResourceLocator);
         }
 
@@ -1408,7 +1454,7 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
                 mUndoStack,
                 mWorkbenchState,
                 mUserInterface,
-                mView,
+                *mView,
                 mResourceLocator);
         }
 
@@ -1419,7 +1465,7 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
                 mUndoStack,
                 mWorkbenchState,
                 mUserInterface,
-                mView,
+                *mView,
                 mResourceLocator);
         }
 
@@ -1430,7 +1476,7 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
                 mUndoStack,
                 mWorkbenchState,
                 mUserInterface,
-                mView,
+                *mView,
                 mResourceLocator);
         }
 
@@ -1441,7 +1487,7 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
                 mUndoStack,
                 mWorkbenchState,
                 mUserInterface,
-                mView,
+                *mView,
                 mResourceLocator);
         }
 
@@ -1452,7 +1498,7 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
                 mUndoStack,
                 mWorkbenchState,
                 mUserInterface,
-                mView,
+                *mView,
                 mResourceLocator);
         }
     }
@@ -1516,14 +1562,14 @@ void Controller::InternalResizeShip(
     mUserInterface.OnModelDirtyChanged();
 
     // Notify view of new size
-    mView.SetShipSize(newSize);
+    mView->SetShipSize(newSize);
     mUserInterface.OnViewModelChanged();
 
     // Notify UI of new ship size
     mUserInterface.OnShipSizeChanged(newSize);
 
     // Refresh model visualizations
-    mModelController->UpdateVisualizations(mView);
+    mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
 }
 
@@ -1569,7 +1615,7 @@ void Controller::InternalFlip(DirectionType direction)
     }
 
     // Refresh model visualizations
-    mModelController->UpdateVisualizations(mView);
+    mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
 }
 

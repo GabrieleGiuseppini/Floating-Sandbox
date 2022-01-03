@@ -55,6 +55,8 @@ MainFrame::MainFrame(
     std::function<void(std::optional<std::filesystem::path>)> returnToGameFunctor)
     : mMainApp(mainApp)
     , mReturnToGameFunctor(std::move(returnToGameFunctor))
+    , mOpenGLManager(IsStandAlone())
+    , mController()
     , mResourceLocator(resourceLocator)
     , mLocalizationManager(localizationManager)
     , mMaterialDatabase(materialDatabase)
@@ -420,7 +422,6 @@ MainFrame::MainFrame(
     }
 
     // View
-
     {
         wxMenu * viewMenu = new wxMenu();
 
@@ -469,60 +470,31 @@ MainFrame::MainFrame(
     // Setup material palettes
     //
 
-    mStructuralMaterialPalette = std::make_unique<MaterialPalette<LayerType::Structural>>(
-        this,
-        mMaterialDatabase.GetStructuralMaterialPalette(),
-        mShipTexturizer,
-        mResourceLocator);
-
-    mStructuralMaterialPalette->Bind(fsEVT_STRUCTURAL_MATERIAL_SELECTED, &MainFrame::OnStructuralMaterialSelected, this);
-
-    mElectricalMaterialPalette = std::make_unique<MaterialPalette<LayerType::Electrical>>(
-        this,
-        mMaterialDatabase.GetElectricalMaterialPalette(),
-        mShipTexturizer,
-        mResourceLocator);
-
-    mElectricalMaterialPalette->Bind(fsEVT_ELECTRICAL_MATERIAL_SELECTED, &MainFrame::OnElectricalMaterialSelected, this);
-
-    mRopesMaterialPalette = std::make_unique<MaterialPalette<LayerType::Ropes>>(
-        this,
-        mMaterialDatabase.GetRopeMaterialPalette(),
-        mShipTexturizer,
-        mResourceLocator);
-
-    mRopesMaterialPalette->Bind(fsEVT_STRUCTURAL_MATERIAL_SELECTED, &MainFrame::OnRopeMaterialSelected, this);
-
-    //
-    // Create view
-    //
-
-    if (IsStandAlone())
     {
-        // Initialize OpenGL
-        GameOpenGL::InitOpenGL();
+        mStructuralMaterialPalette = std::make_unique<MaterialPalette<LayerType::Structural>>(
+            this,
+            mMaterialDatabase.GetStructuralMaterialPalette(),
+            mShipTexturizer,
+            mResourceLocator);
+
+        mStructuralMaterialPalette->Bind(fsEVT_STRUCTURAL_MATERIAL_SELECTED, &MainFrame::OnStructuralMaterialSelected, this);
+
+        mElectricalMaterialPalette = std::make_unique<MaterialPalette<LayerType::Electrical>>(
+            this,
+            mMaterialDatabase.GetElectricalMaterialPalette(),
+            mShipTexturizer,
+            mResourceLocator);
+
+        mElectricalMaterialPalette->Bind(fsEVT_ELECTRICAL_MATERIAL_SELECTED, &MainFrame::OnElectricalMaterialSelected, this);
+
+        mRopesMaterialPalette = std::make_unique<MaterialPalette<LayerType::Ropes>>(
+            this,
+            mMaterialDatabase.GetRopeMaterialPalette(),
+            mShipTexturizer,
+            mResourceLocator);
+
+        mRopesMaterialPalette->Bind(fsEVT_STRUCTURAL_MATERIAL_SELECTED, &MainFrame::OnRopeMaterialSelected, this);
     }
-
-    mView = std::make_unique<View>(
-        ShipSpaceSize(0, 0), // We don't have a ship yet
-        DisplayLogicalSize(
-            mWorkCanvas->GetSize().GetWidth(),
-            mWorkCanvas->GetSize().GetHeight()),
-        mWorkCanvas->GetContentScaleFactor(),
-        [this]()
-        {
-            mWorkCanvas->SwapBuffers();
-        },
-        mResourceLocator);
-
-    mView->UploadBackgroundTexture(
-        ImageFileTools::LoadImageRgba(
-            mResourceLocator.GetBitmapFilePath("shipbuilder_background")));
-
-    // Sync UI with view parameters
-
-    mOtherVisualizationsOpacitySlider->SetValue(
-        OtherVisualizationsOpacityToSlider(mView->GetOtherVisualizationsOpacity()));
 }
 
 void MainFrame::OpenForNewShip()
@@ -550,10 +522,9 @@ void MainFrame::OpenForLoadShip(std::filesystem::path const & shipFilePath)
 
 void MainFrame::RefreshView()
 {
-    if (mWorkCanvas)
-    {
-        mWorkCanvas->Refresh();
-    }
+    assert(mWorkCanvas);
+
+    mWorkCanvas->Refresh();
 }
 
 void MainFrame::OnViewModelChanged()
@@ -673,6 +644,10 @@ void MainFrame::OnTextureLayerVisualizationModeChanged(TextureLayerVisualization
     }
 }
 
+void MainFrame::OnOtherVisualizationsOpacityChanged(float opacity)
+{
+    mOtherVisualizationsOpacitySlider->SetValue(OtherVisualizationsOpacityToSlider(opacity));
+}
 
 void MainFrame::OnModelDirtyChanged()
 {
@@ -729,6 +704,29 @@ void MainFrame::OnError(wxString const & errorMessage) const
     wxMessageBox(errorMessage, _("Error"), wxICON_ERROR);
 }
 
+DisplayLogicalSize MainFrame::GetDisplaySize() const
+{
+    assert(mWorkCanvas);
+
+    return DisplayLogicalSize(
+        mWorkCanvas->GetSize().GetWidth(),
+        mWorkCanvas->GetSize().GetHeight());
+}
+
+int MainFrame::GetLogicalToPhysicalPixelFactor() const
+{
+    assert(mWorkCanvas);
+
+    return mWorkCanvas->GetContentScaleFactor();
+}
+
+void MainFrame::SwapRenderBuffers()
+{
+    assert(mWorkCanvas);
+
+    mWorkCanvas->SwapBuffers();
+}
+
 ShipSpaceCoordinates MainFrame::GetMouseCoordinates() const
 {
     wxMouseState const mouseState = wxGetMouseState();
@@ -739,6 +737,7 @@ ShipSpaceCoordinates MainFrame::GetMouseCoordinates() const
     assert(mWorkCanvas);
     mWorkCanvas->ScreenToClient(&x, &y);
 
+    // TODOHERE: GetMouseCoordinates returns LogicalDisplayCoords
     return mView->ScreenToShipSpace({ x, y });
 }
 
@@ -777,15 +776,6 @@ void MainFrame::SetToolCursor(wxImage const & cursorImage)
 void MainFrame::ResetToolCursor()
 {
     mWorkCanvas->SetCursor(wxNullCursor);
-}
-
-void MainFrame::ScrollIntoViewIfNeeded(DisplayLogicalCoordinates const & workCanvasDisplayLogicalCoordinates)
-{
-    // TODOTEST
-    LogMessage("TODOTEST: MainFrame::ScrollIntoViewIfNeeded(", workCanvasDisplayLogicalCoordinates.ToString(), ") WorkCanvasSize=(",
-        mWorkCanvas->GetSize().GetWidth(), ", ", mWorkCanvas->GetSize().GetHeight());
-
-    // TODO: if we have to scroll, invoke Controller::PanCamera which will notify us back
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -2518,13 +2508,6 @@ wxPanel * MainFrame::CreateWorkPanel(wxWindow * parent)
             1, // Occupy all space
             wxEXPAND, // Stretch as much as available
             0);
-
-        //
-        // Create GL context, and make it current on the canvas
-        //
-
-        mGLContext = std::make_unique<wxGLContext>(mWorkCanvas.get());
-        mGLContext->SetCurrent(*mWorkCanvas);
     }
 
     auto const onScroll = [this]()
@@ -2646,28 +2629,19 @@ std::tuple<wxPanel *, wxSizer *> MainFrame::CreateToolSettingsToolSizePanel(
 
 void MainFrame::OnWorkCanvasPaint(wxPaintEvent & /*event*/)
 {
-    if (mView)
+    if (mController)
     {
-        mView->Render();
+        mController->Render();
     }
 }
 
 void MainFrame::OnWorkCanvasResize(wxSizeEvent & event)
 {
-    LogMessage("OnWorkCanvasResize: ", event.GetSize().GetX(), "x", event.GetSize().GetY());
-
-    auto const workCanvasSize = GetWorkCanvasSize();
-
-    // We take care of notifying the view ourselves, as we might have a view
-    // but not a controller
-    if (mView)
-    {
-        mView->SetDisplayLogicalSize(workCanvasSize);
-    }
+    LogMessage("OnWorkCanvasResize (with", (!mController ? "out" : ""), " controller): ", event.GetSize().GetX(), "x", event.GetSize().GetY());
 
     if (mController)
     {
-        mController->OnWorkCanvasResized(workCanvasSize);
+        mController->OnWorkCanvasResized(GetWorkCanvasSize());
     }
 
     // Allow resizing to occur, this is a hook
@@ -2780,6 +2754,7 @@ void MainFrame::OnWorkCanvasMouseMove(wxMouseEvent & event)
 {
     if (mController)
     {
+        // TODOHERE: OnMouseMove takes LogicalDisplayCoords
         mController->OnMouseMove(mView->ScreenToShipSpace({ event.GetX(), event.GetY() }));
     }
 }
@@ -2941,9 +2916,6 @@ void MainFrame::OnClose(wxCloseEvent & event)
 
     // Nuke controller, now that all dependencies are still alive
     mController.reset();
-
-    // Nuke view, now that the OpenGL context still works
-    mView.reset();
 
     event.Skip();
 }
@@ -3447,7 +3419,7 @@ void MainFrame::DoNewShip()
     // Initialize controller (won't fire UI reconciliations)
     mController = Controller::CreateNew(
         shipName,
-        *mView,
+        mOpenGLManager,
         mWorkbenchState,
         *this,
         mShipTexturizer,
@@ -3473,7 +3445,7 @@ bool MainFrame::DoLoadShip(std::filesystem::path const & shipFilePath)
             // Initialize controller with ship
             mController = Controller::CreateForShip(
                 std::move(shipDefinition),
-                *mView,
+                mOpenGLManager,
                 mWorkbenchState,
                 *this,
                 mShipTexturizer,
@@ -3539,27 +3511,29 @@ DisplayLogicalSize MainFrame::GetWorkCanvasSize() const
 
 void MainFrame::RecalculateWorkCanvasPanning()
 {
-    assert(mView);
+    if (mController)
+    {
+        //
+        // We populate the scollbar with work space coordinates
+        //
 
-    //
-    // We populate the scollbar with work space coordinates
-    //
+        ShipSpaceCoordinates const cameraPos = mController->GetCameraShipSpacePosition();
+        ShipSpaceSize const cameraRange = mController->GetCameraRange();
+        ShipSpaceSize const cameraThumbSize = mController->GetCameraThumbSize();
+        
 
-    ShipSpaceCoordinates const cameraPos = mView->GetCameraShipSpacePosition();
-    ShipSpaceSize const cameraThumbSize = mView->GetCameraThumbSize();
-    ShipSpaceSize const cameraRange = mView->GetCameraRange();
+        mWorkCanvasHScrollBar->SetScrollbar(
+            cameraPos.x,
+            cameraThumbSize.width,
+            cameraRange.width,
+            cameraThumbSize.width); // page size  == thumb
 
-    mWorkCanvasHScrollBar->SetScrollbar(
-        cameraPos.x,
-        cameraThumbSize.width,
-        cameraRange.width,
-        cameraThumbSize.width); // page size  == thumb
-
-    mWorkCanvasVScrollBar->SetScrollbar(
-        cameraPos.y,
-        cameraThumbSize.height,
-        cameraRange.height,
-        cameraThumbSize.height); // page size  == thumb
+        mWorkCanvasVScrollBar->SetScrollbar(
+            cameraPos.y,
+            cameraThumbSize.height,
+            cameraRange.height,
+            cameraThumbSize.height); // page size  == thumb
+    }
 }
 
 void MainFrame::SetFrameTitle(std::string const & shipName, bool isDirty)

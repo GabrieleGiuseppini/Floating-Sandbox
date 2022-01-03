@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "OpenGLManager.h"
 #include "ShaderTypes.h"
 #include "ShipBuilderTypes.h"
 #include "ViewModel.h"
@@ -37,6 +38,7 @@ class View
 public:
 
     View(
+        OpenGLManager & openGLManager,
         ShipSpaceSize initialShipSpaceSize,
         DisplayLogicalSize initialDisplaySize,
         int logicalToPhysicalPixelFactor,
@@ -270,6 +272,7 @@ private:
 
 private:
 
+    std::unique_ptr<OpenGLContext> mOpenGLContext; // Just placeholder
     ViewModel mViewModel;
     std::unique_ptr<ShaderManager<ShaderManagerTraits>> mShaderManager;
     std::function<void()> const mSwapRenderBuffersFunction;
