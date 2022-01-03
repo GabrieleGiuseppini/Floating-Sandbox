@@ -40,14 +40,17 @@ class OpenGLManager final
 {
 public:
 
-    OpenGLManager(bool doOpenGLInitialization)
-        : mNeedToInitializeOpenGL(doOpenGLInitialization)
+    OpenGLManager(
+        wxGLCanvas & glCanvas,
+        bool doOpenGLInitialization)
+        : mGLCanvas(glCanvas)
+        , mNeedToInitializeOpenGL(doOpenGLInitialization)
     {}
 
-    std::unique_ptr<OpenGLContext> MakeContext(wxGLCanvas & glCanvas)
+    std::unique_ptr<OpenGLContext> MakeContext()
     {
-        auto glContext = std::make_unique<wxGLContext>(&glCanvas);
-        glContext->SetCurrent(glCanvas);
+        auto glContext = std::make_unique<wxGLContext>(&mGLCanvas);
+        glContext->SetCurrent(mGLCanvas);
 
         if (mNeedToInitializeOpenGL)
         {
@@ -62,6 +65,7 @@ public:
 
 private:
 
+    wxGLCanvas & mGLCanvas;
     bool mNeedToInitializeOpenGL;
 };
 

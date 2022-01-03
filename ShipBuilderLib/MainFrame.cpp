@@ -55,7 +55,7 @@ MainFrame::MainFrame(
     std::function<void(std::optional<std::filesystem::path>)> returnToGameFunctor)
     : mMainApp(mainApp)
     , mReturnToGameFunctor(std::move(returnToGameFunctor))
-    , mOpenGLManager(IsStandAlone())
+    , mOpenGLManager()
     , mController()
     , mResourceLocator(resourceLocator)
     , mLocalizationManager(localizationManager)
@@ -495,6 +495,14 @@ MainFrame::MainFrame(
 
         mRopesMaterialPalette->Bind(fsEVT_STRUCTURAL_MATERIAL_SELECTED, &MainFrame::OnRopeMaterialSelected, this);
     }
+
+    //
+    // Initialize OpenGL manager
+    //
+
+    mOpenGLManager = std::make_unique<OpenGLManager>(
+        *mWorkCanvas,
+        IsStandAlone());
 }
 
 void MainFrame::OpenForNewShip()
@@ -3419,7 +3427,7 @@ void MainFrame::DoNewShip()
     // Initialize controller (won't fire UI reconciliations)
     mController = Controller::CreateNew(
         shipName,
-        mOpenGLManager,
+        *mOpenGLManager,
         mWorkbenchState,
         *this,
         mShipTexturizer,
@@ -3445,7 +3453,7 @@ bool MainFrame::DoLoadShip(std::filesystem::path const & shipFilePath)
             // Initialize controller with ship
             mController = Controller::CreateForShip(
                 std::move(shipDefinition),
-                mOpenGLManager,
+                *mOpenGLManager,
                 mWorkbenchState,
                 *this,
                 mShipTexturizer,

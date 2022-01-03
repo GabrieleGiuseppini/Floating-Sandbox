@@ -291,7 +291,7 @@ private:
     // Owned members
     //
 
-    OpenGLManager mOpenGLManager;
+    std::unique_ptr<OpenGLManager> mOpenGLManager;
 
     std::unique_ptr<Controller> mController; // Comes and goes as we are opened/close
 
