@@ -2555,8 +2555,10 @@ void MainFrame::SwitchFromShipBuilder(std::optional<std::filesystem::path> shipF
 
     // Make ourselves the topmost frame
     mMainApp->SetTopWindow(this);
-
     mMainApp->Yield();
+
+    // Switch back to our OpenGL context, now that we've left the builder's one
+    mGameController->RebindOpenGLContext();
 
     if (shipFilePath.has_value())
     {
