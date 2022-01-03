@@ -9,6 +9,9 @@
 
 #include <Game/ShipDeSerializer.h>
 
+// TODOTEST
+#include <GameCore/Log.h>
+
 namespace ShipBuilder {
 
 ShipSaveDialog::ShipSaveDialog(wxWindow * parent)
@@ -28,7 +31,7 @@ int ShipSaveDialog::ShowModal(
 	std::string const & shipFilename,
 	GoalType goal)
 {
-	SetFilename(shipFilename);
+	std::string shipFileExtension;
 
 	switch (goal)
 	{
@@ -36,8 +39,8 @@ int ShipSaveDialog::ShowModal(
 		{
 			SetMessage(_("Save this ship"));
 
-			auto const ext = ShipDeSerializer::GetShipDefinitionFileExtension();
-			SetWildcard(_("Ship files") + wxS(" (*") + ext + wxS(")|*") + ext);
+			shipFileExtension = ShipDeSerializer::GetShipDefinitionFileExtension();
+			SetWildcard(_("Ship files") + wxS(" (*") + shipFileExtension + wxS(")|*") + shipFileExtension);
 
 			break;
 		}
@@ -46,12 +49,16 @@ int ShipSaveDialog::ShowModal(
 		{
 			SetMessage(_("Save the structural layer"));
 
-			auto const ext = ShipDeSerializer::GetImageDefinitionFileExtension();
-			SetWildcard(_("Structure-only image files") + wxS(" (*") + ext + + wxS(")|*") + ext);
+			shipFileExtension = ShipDeSerializer::GetImageDefinitionFileExtension();
+			SetWildcard(_("Structure-only image files") + wxS(" (*") + shipFileExtension + + wxS(")|*") + shipFileExtension);
 
 			break;
 		}
 	}
+
+	SetFilename(shipFilename + shipFileExtension);
+
+	LogMessage("TODOTEST: ShipSaveDialog: DefaultDir=", GetDirectory().ToStdString(), " Filename=", GetFilename().ToStdString(), " Sys=", StandardSystemPaths::GetInstance().GetUserShipFolderPath().string());
 
 	return ShowModal();
 }
