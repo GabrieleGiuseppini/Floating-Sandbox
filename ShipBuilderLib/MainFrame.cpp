@@ -2654,10 +2654,12 @@ void MainFrame::OnWorkCanvasPaint(wxPaintEvent & /*event*/)
     // Execute initial action, if any
     if (mInitialAction.has_value())
     {
-        (*mInitialAction)();
-
-        // No more initial action to execute
+        // Extract and cleanup initial action - so a ShowModal coming from within it and processing this OnPaint here does not go through this again forever
+        auto const initialAction = std::move(*mInitialAction);
         mInitialAction.reset();
+
+        // Execute
+        initialAction();
     }
 
     // Render, if we have a controller

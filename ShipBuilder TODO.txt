@@ -113,13 +113,17 @@ https://gamejolt.com/x/permalink/comment/11730705
 						+ Switch to builder
 			+ c. Make FS context current after SB has been closed
 				+ Test first (on Ubuntu) if we may do so simply *outside* of a Paint event, i.e. in FS::MainFrame::SwitchFromShipBuilder, *BEFORE LoadShip*
-			- Test at end:
-				- Editing password-protected ship from FS
-				- Ubuntu: entire shebang
+			= Test at end:
+				+ Windows:
+					+ Editing password-protected ship from FS
+				= Ubuntu: 
+					+ Entire shebang
+					- Editing password-protected ship from FS
 		- 3: Think if can re-use view (and thus context) across Controller re-create's for NewShip and LoadShip
 			- option 1: extract from old controller and insert into new controller?
-		- Mark TODO item in this plan for mouse coords change as done
+		+ Mark TODO item in this plan for mouse coords change as done
 		- Remove single-threaded boot setting
+		- Re-test on Windows
 	- OLD:
 		- Fix OpenGL on Windows single-threaded:
 			= Crash during initialization
