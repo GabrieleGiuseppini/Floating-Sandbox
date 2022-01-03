@@ -1914,9 +1914,6 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
         {
             auto bitmap = WxHelpers::LoadBitmap("view_grid_button", mResourceLocator);
             auto viewGridButton = new wxBitmapToggleButton(panel, wxID_ANY, bitmap, wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
-            //auto buttonSize = bitmap.GetSize();
-            //buttonSize.IncBy(4, 4);
-            //viewGridButton->SetMaxSize(buttonSize);
             viewGridButton->SetToolTip(_("Enable/Disable the visual guides."));
             viewGridButton->Bind(
                 wxEVT_TOGGLEBUTTON,

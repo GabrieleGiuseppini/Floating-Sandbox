@@ -111,8 +111,8 @@ https://gamejolt.com/x/permalink/comment/11730705
 						+ ShowError(!die)
 						+ ShowError(die)
 						+ Switch to builder
-			= c. Make FS context current after SB has been closed
-				- Test first (on Ubuntu) if we may do so simply *outside* of a Paint event, i.e. in FS::MainFrame::SwitchFromShipBuilder, *BEFORE LoadShip*
+			+ c. Make FS context current after SB has been closed
+				+ Test first (on Ubuntu) if we may do so simply *outside* of a Paint event, i.e. in FS::MainFrame::SwitchFromShipBuilder, *BEFORE LoadShip*
 			- Test at end:
 				- Editing password-protected ship from FS
 				- Ubuntu: entire shebang
@@ -138,7 +138,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 				- See if it's https://wiki.wxwidgets.org/WxGLCanvas#Sharing_Canvas_Context
 
 - Fix Ubuntu:
-	- Grid button size
+	+ Grid button size
 	- Undo stack at weird position
 	- Material palette not opening
 	- Model validation crash
