@@ -1330,8 +1330,8 @@ void MainFrame::OnMainGLCanvasPaint(wxPaintEvent & event)
     if (!!mSplashScreenDialog)
     {
         //
-        // Now that we (and our glCanvas) are visible, we may transfer
-        // the OpenGL context to the canvas and close the splash screen
+        // Now that the glCanvas is visible, we may transfer the 
+        // OpenGL context to the canvas and close the splash screen
         //
 
         LogMessage("MainFrame::OnMainGLCanvasPaint(): rebinding OpenGLContext to main GL canvas, and hiding SplashScreen");

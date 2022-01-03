@@ -81,7 +81,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 			= Test at end:
 				+ Other layers' opacity slider <-> view
 				+ UI reconciliation at each of Controller creations
-				- Ubuntu: stand-alone ShipBuilder
+				- Ubuntu: stand-alone ShipBuilder - might still need to be shown
 		- 2. FS's main frame: make context current at each first Paint() after SB has been closed
 			- Test at end:
 				- Editing password-protected ship from FS

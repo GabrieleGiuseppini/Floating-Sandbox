@@ -2639,6 +2639,8 @@ std::tuple<wxPanel *, wxSizer *> MainFrame::CreateToolSettingsToolSizePanel(
 
 void MainFrame::OnWorkCanvasPaint(wxPaintEvent & /*event*/)
 {
+    LogMessage("OnWorkCanvasPaint (with", (!mController ? "out" : ""), " controller)");
+
     if (mController)
     {
         mController->Render();
@@ -3052,6 +3054,8 @@ void MainFrame::OnOpenForLoadShipIdleEvent(wxIdleEvent & /*event*/)
 
 void MainFrame::Open()
 {
+    LogMessage("MainFrame::Open()");
+
     // Show us
     Show(true);
 
