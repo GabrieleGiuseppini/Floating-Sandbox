@@ -120,21 +120,23 @@ https://gamejolt.com/x/permalink/comment/11730705
 					+ Entire shebang
 					+ Editing password-protected ship from FS
 		- 3: Think if can re-use view (and thus context) across Controller re-create's for NewShip and LoadShip
-			- First test a Release build to see if it's really noticeable
+			+ First test a Release build to see if it's really noticeable - it still is, a bit
 			- option 1: extract from old controller and insert into new controller?
 		+ Mark TODO item in this plan for mouse coords change as done
-		- Remove single-threaded boot setting
-		- Re-test w/multi-threading on Windows
+		+ Remove single-threaded boot setting
+		+ Re-test w/multi-threading on Windows
+
+- Send for testing
 
 - Fix Ubuntu:
 	+ Grid button size
 	+ Not adding extension to ship name when saving it
 	+ Default save directory
 	- Undo stack at weird position
-	- Material palette not opening
-	- Model validation crash
+	= Model validation crash
 
 - Solve issue of Electrical Layer not aligning (visually) with the Structural Layer by default
+	- See if aligning pixels on corners of mesh - or aligning mesh on corners of pixels - would solve the issue
 	- Might need a New Electrical visualization mode: "mesh mode", so that it aligns with structural's mesh mode
 
 - New/Set/Remove layers:

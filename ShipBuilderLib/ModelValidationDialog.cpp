@@ -493,12 +493,21 @@ void ModelValidationDialog::ShowResults(ModelValidationResults const & results)
                         auto label = new wxStaticText(contentWindow, wxID_ANY, labelText,
                             wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
 
+                        // Semaphore to prevent Wrap() calls re-entering the SIZE event handler
+                        // (as they do on GTK) from running infinite loops
+                        bool isWrapping = false;
+
                         label->Bind(
                             wxEVT_SIZE,
-                            [label, contentWindow, labelText](wxSizeEvent & event)
+                            [label, contentWindow, labelText, isWrapping](wxSizeEvent & event) mutable
                             {
-                                label->SetLabel(labelText);
-                                label->Wrap(contentWindow->GetClientSize().GetWidth() - 10);
+                                if (!isWrapping)
+                                {
+                                    isWrapping = true;
+                                    label->SetLabel(labelText);
+                                    label->Wrap(contentWindow->GetClientSize().GetWidth() - 10);
+                                    isWrapping = false;
+                                }
 
                                 event.Skip();
                             });
