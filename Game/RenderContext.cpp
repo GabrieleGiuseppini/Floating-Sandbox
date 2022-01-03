@@ -596,6 +596,15 @@ void RenderContext::RenderEnd()
     // Nop
 }
 
+void RenderContext::WaitForPendingTasks()
+{
+    if (!!mLastRenderDrawCompletionIndicator)
+    {
+        mLastRenderDrawCompletionIndicator->Wait();
+        mLastRenderDrawCompletionIndicator.reset();
+    }
+}
+
 ////////////////////////////////////////////////////////////////////////////////////
 
 void RenderContext::ProcessParameterChanges(RenderParameters const & renderParameters)

@@ -60,6 +60,8 @@ struct IGameController
     // Game Control and notifications
     //
 
+    virtual void Freeze() = 0;
+    virtual void Thaw() = 0;
     virtual void SetPaused(bool isPaused) = 0;
     virtual void SetMoveToolEngaged(bool isEngaged) = 0;
     virtual void DisplaySettingsLoadedNotification() = 0;

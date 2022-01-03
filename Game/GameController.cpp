@@ -78,6 +78,7 @@ GameController::GameController(
     , mShipTexturizer(mMaterialDatabase, resourceLocator)
     // State
     , mGameParameters()
+    , mIsFrozen(false)
     , mIsPaused(false)
     , mIsPulseUpdateSet(false)
     , mIsMoveToolEngaged(false)
@@ -334,6 +335,8 @@ RgbImageData GameController::TakeScreenshot()
 
 void GameController::RunGameIteration()
 {
+    assert(!mIsFrozen); // Not supposed to be invoked at all if we're frozen
+
     //
     // Initialize stats, if needed
     //
@@ -544,8 +547,33 @@ void GameController::ReplayRecordedEvent(RecordedEvent const & event)
 // Interactions
 /////////////////////////////////////////////////////////////
 
+void GameController::Freeze()
+{
+    assert(!mIsFrozen);
+
+    // Wait for pending render tasks
+    mRenderContext->WaitForPendingTasks();
+
+    // Pause time
+    GameWallClock::GetInstance().SetPaused(true);
+
+    mIsFrozen = true;
+}
+
+void GameController::Thaw()
+{
+    assert(mIsFrozen);
+
+    // Resume time
+    GameWallClock::GetInstance().SetPaused(mIsPaused); // If we're paused, returned to paused
+
+    mIsFrozen = false;
+}
+
 void GameController::SetPaused(bool isPaused)
 {
+    assert(!mIsFrozen); // Not supposed to be invoked while frozen, for no particular reason other than simplicity of state mgmt...
+
     // Pause/resume time
     GameWallClock::GetInstance().SetPaused(isPaused);
 

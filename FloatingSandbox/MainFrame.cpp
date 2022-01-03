@@ -116,6 +116,7 @@ MainFrame::MainFrame(
     , mPreviousShipFilePath()
     , mHasWindowBeenShown(false)
     , mHasStartupTipBeenChecked(false)
+    , mIsGameFrozen(false)
     , mPauseCount(0)
     , mCurrentShipTitles()
     , mCurrentRCBombCount(0u)
@@ -1219,15 +1220,8 @@ void MainFrame::OnPostInitializeIdle(wxIdleEvent & /*event*/)
 
 void MainFrame::OnMainFrameClose(wxCloseEvent & /*event*/)
 {
-    if (!!mGameTimer)
-    {
-        mGameTimer->Stop();
-    }
-
-    if (!!mLowFrequencyTimer)
-    {
-        mLowFrequencyTimer->Stop();
-    }
+    // Stop game
+    FreezeGame();
 
     // Save last-modified settings, if enabled
     if (!!mUIPreferencesManager && mUIPreferencesManager->GetSaveSettingsOnExit())
@@ -1312,7 +1306,9 @@ void MainFrame::OnCheckUpdatesTimerTrigger(wxTimerEvent & /*event*/)
 
 void MainFrame::OnIdle(wxIdleEvent & /*event*/)
 {
-    if (mHasStartupTipBeenChecked && !!mGameTimer && !mGameTimer->IsRunning())
+    if (mHasStartupTipBeenChecked 
+        && (mGameTimer != nullptr && !mGameTimer->IsRunning())
+        && !mIsGameFrozen)
     {
         RunGameIteration();
     }
@@ -2205,14 +2201,8 @@ void MainFrame::RunGameIteration()
 #endif
 }
 
-void MainFrame::ResetShipState()
+void MainFrame::ResetShipUIState()
 {
-    assert(!!mSoundController);
-    mSoundController->Reset();
-
-    assert(!!mMusicController);
-    mMusicController->Reset();
-
     mScareFishMenuItem->Enable(false);
     mRCBombsDetonateMenuItem->Enable(false);
     mAntiMatterBombsDetonateMenuItem->Enable(false);
@@ -2244,8 +2234,35 @@ void MainFrame::OnError(
     wxString const & message,
     bool die)
 {
+    // Stop game
+    FreezeGame();
+
+    // Show message
+    wxMessageBox(message, _("Maritime Disaster"), wxICON_ERROR);
+
+    if (die)
+    {
+        // Exit
+        this->Destroy();
+    }
+
+    // Restart game
+    // (yes, even if destroyed, we'll freeze again on exit)
+    ThawGame();
+}
+
+void MainFrame::FreezeGame()
+{
+    assert(!mIsGameFrozen);
+
     //
-    // Stop timers first
+    // Prevent OnIdle, among other things, from running a game iteration
+    //
+
+    mIsGameFrozen = true;
+
+    //
+    // Stop timers
     //
 
     if (!!mGameTimer)
@@ -2258,53 +2275,52 @@ void MainFrame::OnError(
         mLowFrequencyTimer->Stop();
     }
 
+    //
+    // Freeze game controller
+    //
+
+    mGameController->Freeze();
 
     //
-    // Show message
+    // Stop sounds
     //
 
-    wxMessageBox(message, _("Maritime Disaster"), wxICON_ERROR);
+    assert(!!mSoundController);
+    mSoundController->Reset();
 
-    if (die)
-    {
-        //
-        // Exit
-        //
-
-        this->Destroy();
-    }
-    else
-    {
-        // Restart game
-
-        if (!!mGameTimer)
-        {
-            PostGameStepTimer(mGameTimerDuration);
-        }
-
-        if (!!mLowFrequencyTimer)
-        {
-            StartLowFrequencyTimer();
-        }
-    }
+    assert(!!mMusicController);
+    mMusicController->Reset();
 }
 
-void MainFrame::PostGameStepTimer(std::chrono::milliseconds duration)
+void MainFrame::ThawGame()
 {
-    assert(!!mGameTimer);
+    assert(mIsGameFrozen);
 
-    mGameTimer->Start(
-        duration.count(),
-        true); // One-shot
-}
+    //
+    // Thaw game controller
+    //
 
-void MainFrame::StartLowFrequencyTimer()
-{
-    assert(!!mLowFrequencyTimer);
+    mGameController->Thaw();
 
-    mLowFrequencyTimer->Start(
-        1000,
-        false); // Continuous
+    //
+    // Restart timers
+    //
+
+    if (!!mGameTimer)
+    {
+        PostGameStepTimer(mGameTimerDuration);
+    }
+
+    if (!!mLowFrequencyTimer)
+    {
+        StartLowFrequencyTimer();
+    }
+
+    //
+    // Re-allow OnIdle, among other things, to run a game iteration
+    //
+
+    mIsGameFrozen = false;
 }
 
 void MainFrame::SetPaused(bool isPaused)
@@ -2352,6 +2368,24 @@ void MainFrame::SetPaused(bool isPaused)
     }
 }
 
+void MainFrame::PostGameStepTimer(std::chrono::milliseconds duration)
+{
+    assert(!!mGameTimer);
+
+    mGameTimer->Start(
+        duration.count(),
+        true); // One-shot
+}
+
+void MainFrame::StartLowFrequencyTimer()
+{
+    assert(!!mLowFrequencyTimer);
+
+    mLowFrequencyTimer->Start(
+        1000,
+        false); // Continuous
+}
+
 void MainFrame::ReconcileWithUIPreferences()
 {
     mPreviousShipFilePath = mUIPreferencesManager->GetLastShipLoadedFilePath();
@@ -2385,12 +2419,27 @@ void MainFrame::LoadShip(
     std::filesystem::path const & shipFilePath,
     bool isFromUser)
 {
-    ResetShipState();
+    //
+    // Reset
+    //
 
-    assert(!!mGameController);
+    assert(!!mSoundController);
+    mSoundController->Reset();
+
+    assert(!!mMusicController);
+    mMusicController->Reset();
+
+    ResetShipUIState();
+    
+    //
+    // Load ship
+    //
+
     try
     {
-        auto shipMetadata = mGameController->ResetAndLoadShip(shipFilePath);
+        // Load
+        assert(!!mGameController);
+        auto const shipMetadata = mGameController->ResetAndLoadShip(shipFilePath);
 
         // Succeeded
         OnShipLoaded(shipFilePath);
@@ -2475,8 +2524,8 @@ wxAcceleratorEntry MainFrame::MakePlainAcceleratorKey(int key, wxMenuItem * menu
 
 void MainFrame::SwitchToShipBuilderForNewShip()
 {
-    // Pause everything
-    SetPaused(true);
+    // Freeze game
+    FreezeGame();
 
     // Hide us
     Show(false);
@@ -2488,8 +2537,8 @@ void MainFrame::SwitchToShipBuilderForNewShip()
 
 void MainFrame::SwitchToShipBuilderForCurrentShip()
 {
-    // Pause everything
-    SetPaused(true);
+    // Freeze game
+    FreezeGame();
 
     // Hide us
     Show(false);
@@ -2521,5 +2570,5 @@ void MainFrame::SwitchFromShipBuilder(std::optional<std::filesystem::path> shipF
     }
 
     // Restart
-    SetPaused(false);
+    ThawGame();
 }

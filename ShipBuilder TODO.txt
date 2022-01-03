@@ -84,31 +84,33 @@ https://gamejolt.com/x/permalink/comment/11730705
 				+ Ubuntu: stand-alone ShipBuilder
 		= 2. FS integration
 			+ a. Creating ShipBuilder frame changes current OpenGL context
-			- b. After opening ShipBuilder frame, timer still kicks-in
-				- b1. Need a "full pause", not the current one which still updates everything; here's algo:
-					- Freeze:
-						- Stop (eventual) game timer; Stop (eventual) low-frequency timer
-							- See MainFrame::OnError, which now changes to invoke Freeze()
-						- Prevent OnIdle from running GameIteration
-							- Use mIsGameFrozen
-								- OnMainFrameClose() also calls Freeze() now
-						- mGameController->Freeze()
-							- Simply pause clock
-						- mSoundController->Reset()
-						- mMusicController->Reset()
-					- Resuming:
-						- mGameController->Thaw()
-							- Simply resume clock
-						- Allow OnIdle to run GameIteration
-							- Use mIsGameFrozen
-						- Restart game timer; Restart low-frequency timer
-							- See MainFrame::OnError, which no changes to invoke Thaw()
-					- Move mSoundController/mMusicController->Reset() out of ResetShipState() (->"ResetShipUIState") and back into other callers of LoadShip()
-					- Test:
-						- Destroy path
-						- ShowError(!die)
-						- ShowError(die)
-						- Switch to build
+			+ b. After opening ShipBuilder frame, timer still kicks-in
+				+ b1. Need a "full pause", not the current one which still updates everything; here's algo:
+					+ Freeze:
+						+ Prevent OnIdle from running GameIteration
+							+ Use mIsGameFrozen
+								+ OnMainFrameClose() also calls Freeze() now
+						+ Stop (eventual) game timer; Stop (eventual) low-frequency timer
+							+ See MainFrame::OnError, which now changes to invoke Freeze()
+						+ mGameController->Freeze()
+							+ Simply pause clock
+						+ mSoundController->Reset()
+						+ mMusicController->Reset()
+					+ Resuming:
+						+ mGameController->Thaw()
+							+ Simply resume clock
+						+ Restart game timer; Restart low-frequency timer
+							+ See MainFrame::OnError, which no changes to invoke Thaw()
+						+ Re-allow OnIdle to run GameIteration
+							+ Use mIsGameFrozen
+					+ Move mSoundController/mMusicController->Reset() out of ResetShipState() (->"ResetShipUIState") and back into other callers of LoadShip()
+					+ GameController::Freeze: needs to wait for (eventual) RenderContext render to complete
+					+ Invoke both
+					+ Test:
+						+ Destroy path
+						+ ShowError(!die)
+						+ ShowError(die)
+						+ Switch to builder
 			- c. Make FS context current after SB has been closed
 				- Test first (on Ubuntu) if we may do so simply *outside* of a Paint event, i.e. in FS::MainFrame::SwitchFromShipBuilder, *BEFORE LoadShip*
 			- Test at end:
