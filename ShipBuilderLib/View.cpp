@@ -12,19 +12,21 @@
 namespace ShipBuilder {
 
 View::View(
+    OpenGLManager & openGLManager,
     ShipSpaceSize initialShipSpaceSize,
     DisplayLogicalSize initialDisplaySize,
     int logicalToPhysicalPixelFactor,
     std::function<void()> swapRenderBuffersFunction,
     ResourceLocator const & resourceLocator)
-    : mViewModel(
+    : mOpenGLContext()
+    , mViewModel(
         initialShipSpaceSize,
         initialDisplaySize,
         logicalToPhysicalPixelFactor)
     , mShaderManager()
     , mSwapRenderBuffersFunction(swapRenderBuffersFunction)
     //////////////////////////////////
-    , mHasBackgroundTexture(false)
+    , mBackgroundTextureSize()
     , mHasGameVisualization(false)
     , mHasStructuralLayerVisualization(false)
     , mStructuralLayerVisualizationShader(ProgramType::Texture) // Will be overwritten
@@ -43,6 +45,12 @@ View::View(
     //////////////////////////////////
     , mPrimaryVisualization(VisualizationType::StructuralLayer)
 {
+    //
+    // Create OpenGL context and make it current
+    //
+
+    mOpenGLContext = openGLManager.MakeContextAndMakeCurrent();
+
     //
     // Initialize global OpenGL settings
     //
@@ -494,6 +502,8 @@ void View::EnableVisualGrid(bool doEnable)
 
 void View::UploadBackgroundTexture(RgbaImageData && texture)
 {
+    auto const textureSize = texture.Size;
+
     //
     // Upload texture
     //
@@ -506,52 +516,16 @@ void View::UploadBackgroundTexture(RgbaImageData && texture)
     GameOpenGL::UploadTexture(std::move(texture));
 
     //
-    // Create vertices (in NDC)
-    //
-
-    // The texture coordinate at the bottom of the quad obeys the texture's aspect ratio,
-    // rather than the screen's
-
-    float const textureBottom =
-        -(static_cast<float>(texture.Size.height) - static_cast<float>(mViewModel.GetDisplayPhysicalSize().height))
-            / static_cast<float>(mViewModel.GetDisplayPhysicalSize().height);
-
-    std::array<TextureNdcVertex, 4> vertexBuffer;
-
-    // Bottom-left
-    vertexBuffer[0] = TextureNdcVertex(
-        vec2f(-1.0f, -1.0f),
-        vec2f(0.0f, textureBottom));
-
-    // Top-left
-    vertexBuffer[1] = TextureNdcVertex(
-        vec2f(-1.0f, 1.0f),
-        vec2f(0.0f, 1.0f));
-
-    // Bottom-right
-    vertexBuffer[2] = TextureNdcVertex(
-        vec2f(1.0f, -1.0f),
-        vec2f(1.0f, textureBottom));
-
-    // Top-right
-    vertexBuffer[3] = TextureNdcVertex(
-        vec2f(1.0f, 1.0f),
-        vec2f(1.0f, 1.0f));
-
-    //
     // Upload vertices
     //
 
-    glBindBuffer(GL_ARRAY_BUFFER, *mBackgroundTextureVBO);
-    glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size() * sizeof(TextureNdcVertex), vertexBuffer.data(), GL_STATIC_DRAW);
-    CheckOpenGLError();
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    UpdateBackgroundTexture(textureSize);
 
     //
-    // Remember we have this texture
+    // Remember texture size - and that we have this texture
     //
 
-    mHasBackgroundTexture = true;
+    mBackgroundTextureSize = textureSize;
 }
 
 void View::UploadGameVisualization(RgbaImageData const & texture)
@@ -887,7 +861,7 @@ void View::Render()
     glDisable(GL_SCISSOR_TEST);
 
     // Background texture
-    if (mHasBackgroundTexture)
+    if (mBackgroundTextureSize.has_value())
     {
         // Set this texture in the shader's sampler
         mShaderManager->ActivateTexture<ProgramParameterType::BackgroundTextureUnit>();
@@ -1074,6 +1048,11 @@ void View::Render()
 
 void View::OnViewModelUpdated()
 {
+    if (mBackgroundTextureSize.has_value())
+    {
+        UpdateBackgroundTexture(*mBackgroundTextureSize);
+    }
+
     UpdateCanvas();
 
     UpdateGrid();
@@ -1147,6 +1126,51 @@ void View::OnViewModelUpdated()
         physicalCanvasRect.size.width, 
         physicalCanvasRect.size.height);
     CheckOpenGLError();
+}
+
+void View::UpdateBackgroundTexture(ImageSize const & textureSize)
+{
+    //
+    // Create vertices (in NDC)
+    //
+
+    // The texture coordinate at the bottom of the quad obeys the texture's aspect ratio,
+    // rather than the screen's
+
+    float const textureBottom =
+        -(static_cast<float>(textureSize.height) - static_cast<float>(mViewModel.GetDisplayPhysicalSize().height))
+        / static_cast<float>(mViewModel.GetDisplayPhysicalSize().height);
+
+    std::array<TextureNdcVertex, 4> vertexBuffer;
+
+    // Bottom-left
+    vertexBuffer[0] = TextureNdcVertex(
+        vec2f(-1.0f, -1.0f),
+        vec2f(0.0f, textureBottom));
+
+    // Top-left
+    vertexBuffer[1] = TextureNdcVertex(
+        vec2f(-1.0f, 1.0f),
+        vec2f(0.0f, 1.0f));
+
+    // Bottom-right
+    vertexBuffer[2] = TextureNdcVertex(
+        vec2f(1.0f, -1.0f),
+        vec2f(1.0f, textureBottom));
+
+    // Top-right
+    vertexBuffer[3] = TextureNdcVertex(
+        vec2f(1.0f, 1.0f),
+        vec2f(1.0f, 1.0f));
+
+    //
+    // Upload vertices
+    //
+
+    glBindBuffer(GL_ARRAY_BUFFER, *mBackgroundTextureVBO);
+    glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size() * sizeof(TextureNdcVertex), vertexBuffer.data(), GL_STATIC_DRAW);
+    CheckOpenGLError();
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void View::UpdateCanvas()

@@ -7,6 +7,4 @@
 
 namespace ShipBuilder {
 
-// TODO: is this file needed?
-
 }

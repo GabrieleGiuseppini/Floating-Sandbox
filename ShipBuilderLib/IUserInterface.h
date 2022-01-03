@@ -47,6 +47,9 @@ public:
     virtual void OnRopesLayerVisualizationModeChanged(RopesLayerVisualizationModeType mode) = 0;
     virtual void OnTextureLayerVisualizationModeChanged(TextureLayerVisualizationModeType mode) = 0;
 
+    // Notifies of a (possible) change in the opacity of "other layers"
+    virtual void OnOtherVisualizationsOpacityChanged(float opacity) = 0;
+
     // Notifies of a (possible) change in the dirtiness of the model
     virtual void OnModelDirtyChanged() = 0;
 
@@ -66,16 +69,19 @@ public:
 
     virtual void OnError(wxString const & errorMessage) const = 0;
 
-    virtual ShipSpaceCoordinates GetMouseCoordinates() const = 0;
+    virtual DisplayLogicalSize GetDisplaySize() const = 0;
 
-    virtual std::optional<ShipSpaceCoordinates> GetMouseCoordinatesIfInWorkCanvas() const = 0;
+    virtual int GetLogicalToPhysicalPixelFactor() const = 0;
+
+    virtual void SwapRenderBuffers() = 0;
+
+    virtual DisplayLogicalCoordinates GetMouseCoordinates() const = 0;
+
+    virtual std::optional<DisplayLogicalCoordinates> GetMouseCoordinatesIfInWorkCanvas() const = 0;
 
     virtual void SetToolCursor(wxImage const & cursorImage) = 0;
 
     virtual void ResetToolCursor() = 0;
-
-    // Scrolls the work canvas to ensure the specified logical coordinates are visible
-    virtual void ScrollIntoViewIfNeeded(DisplayLogicalCoordinates const & workCanvasDisplayLogicalCoordinates) = 0;
 };
 
 }

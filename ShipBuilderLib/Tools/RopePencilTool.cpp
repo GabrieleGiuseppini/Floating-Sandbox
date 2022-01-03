@@ -37,7 +37,7 @@ RopePencilTool::RopePencilTool(
     auto const mouseCoordinates = mUserInterface.GetMouseCoordinatesIfInWorkCanvas();
     if (mouseCoordinates)
     {
-        DrawOverlay(*mouseCoordinates);
+        DrawOverlay(ScreenToShipSpace(*mouseCoordinates));
 
         mUserInterface.RefreshView();
     }
@@ -63,8 +63,10 @@ RopePencilTool::~RopePencilTool()
     mUserInterface.RefreshView();
 }
 
-void RopePencilTool::OnMouseMove(ShipSpaceCoordinates const & mouseCoordinates)
+void RopePencilTool::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates)
 {
+    auto const mouseShipSpaceCoords = ScreenToShipSpace(mouseCoordinates);
+
     // Mend our ephemeral visualization, if any
     if (mHasTempVisualization)
     {
@@ -74,12 +76,12 @@ void RopePencilTool::OnMouseMove(ShipSpaceCoordinates const & mouseCoordinates)
     }
 
     // Do overlay
-    DrawOverlay(mouseCoordinates);
+    DrawOverlay(mouseShipSpaceCoords);
 
     // Do ephemeral visualization
     if (mEngagementData.has_value())
     {
-        DoTempVisualization(mouseCoordinates);
+        DoTempVisualization(mouseShipSpaceCoords);
     }
 
     mModelController.UpdateVisualizations(mView);
@@ -96,7 +98,7 @@ void RopePencilTool::OnLeftMouseDown()
         assert(!mHasTempVisualization);
     }
 
-    ShipSpaceCoordinates const mouseCoordinates = mUserInterface.GetMouseCoordinates();
+    ShipSpaceCoordinates const mouseCoordinates = GetCurrentMouseCoordinatesInShipSpace();
 
     // Check if should start engagement
     if (!mEngagementData.has_value())
@@ -126,7 +128,7 @@ void RopePencilTool::OnLeftMouseUp()
         assert(!mHasTempVisualization);
     }
 
-    ShipSpaceCoordinates const mouseCoordinates = mUserInterface.GetMouseCoordinates();
+    ShipSpaceCoordinates const mouseCoordinates = GetCurrentMouseCoordinatesInShipSpace();
 
     // Check if should stop engagement
     if (mEngagementData.has_value())
@@ -153,7 +155,7 @@ void RopePencilTool::OnRightMouseDown()
         assert(!mHasTempVisualization);
     }
 
-    ShipSpaceCoordinates const mouseCoordinates = mUserInterface.GetMouseCoordinates();
+    ShipSpaceCoordinates const mouseCoordinates = GetCurrentMouseCoordinatesInShipSpace();
 
     // Check if should start engagement
     if (!mEngagementData)
@@ -183,7 +185,7 @@ void RopePencilTool::OnRightMouseUp()
         assert(!mHasTempVisualization);
     }
 
-    ShipSpaceCoordinates const mouseCoordinates = mUserInterface.GetMouseCoordinates();
+    ShipSpaceCoordinates const mouseCoordinates = GetCurrentMouseCoordinatesInShipSpace();
 
     // Check if should stop engagement
     if (mEngagementData.has_value())

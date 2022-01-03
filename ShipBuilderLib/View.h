@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "OpenGLManager.h"
 #include "ShaderTypes.h"
 #include "ShipBuilderTypes.h"
 #include "ViewModel.h"
@@ -37,6 +38,7 @@ class View
 public:
 
     View(
+        OpenGLManager & openGLManager,
         ShipSpaceSize initialShipSpaceSize,
         DisplayLogicalSize initialDisplaySize,
         int logicalToPhysicalPixelFactor,
@@ -251,6 +253,7 @@ private:
 
     void OnViewModelUpdated();
 
+    void UpdateBackgroundTexture(ImageSize const & textureSize);
     void UpdateCanvas();
     void UpdateGrid();
     void UpdateStructuralLayerVisualization();
@@ -270,6 +273,7 @@ private:
 
 private:
 
+    std::unique_ptr<OpenGLContext> mOpenGLContext; // Just placeholder
     ViewModel mViewModel;
     std::unique_ptr<ShaderManager<ShaderManagerTraits>> mShaderManager;
     std::function<void()> const mSwapRenderBuffersFunction;
@@ -422,7 +426,7 @@ private:
     GameOpenGLVAO mBackgroundTextureVAO;
     GameOpenGLVBO mBackgroundTextureVBO;
     GameOpenGLTexture mBackgroundTexture;
-    bool mHasBackgroundTexture;
+    std::optional<ImageSize> mBackgroundTextureSize; // Also works as indicator
 
     // Canvas
     GameOpenGLVAO mCanvasVAO;

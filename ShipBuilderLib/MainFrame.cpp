@@ -55,6 +55,8 @@ MainFrame::MainFrame(
     std::function<void(std::optional<std::filesystem::path>)> returnToGameFunctor)
     : mMainApp(mainApp)
     , mReturnToGameFunctor(std::move(returnToGameFunctor))
+    , mOpenGLManager()
+    , mController()
     , mResourceLocator(resourceLocator)
     , mLocalizationManager(localizationManager)
     , mMaterialDatabase(materialDatabase)
@@ -420,7 +422,6 @@ MainFrame::MainFrame(
     }
 
     // View
-
     {
         wxMenu * viewMenu = new wxMenu();
 
@@ -469,66 +470,50 @@ MainFrame::MainFrame(
     // Setup material palettes
     //
 
-    mStructuralMaterialPalette = std::make_unique<MaterialPalette<LayerType::Structural>>(
-        this,
-        mMaterialDatabase.GetStructuralMaterialPalette(),
-        mShipTexturizer,
-        mResourceLocator);
-
-    mStructuralMaterialPalette->Bind(fsEVT_STRUCTURAL_MATERIAL_SELECTED, &MainFrame::OnStructuralMaterialSelected, this);
-
-    mElectricalMaterialPalette = std::make_unique<MaterialPalette<LayerType::Electrical>>(
-        this,
-        mMaterialDatabase.GetElectricalMaterialPalette(),
-        mShipTexturizer,
-        mResourceLocator);
-
-    mElectricalMaterialPalette->Bind(fsEVT_ELECTRICAL_MATERIAL_SELECTED, &MainFrame::OnElectricalMaterialSelected, this);
-
-    mRopesMaterialPalette = std::make_unique<MaterialPalette<LayerType::Ropes>>(
-        this,
-        mMaterialDatabase.GetRopeMaterialPalette(),
-        mShipTexturizer,
-        mResourceLocator);
-
-    mRopesMaterialPalette->Bind(fsEVT_STRUCTURAL_MATERIAL_SELECTED, &MainFrame::OnRopeMaterialSelected, this);
-
-    //
-    // Create view
-    //
-
-    if (IsStandAlone())
     {
-        // Initialize OpenGL
-        GameOpenGL::InitOpenGL();
+        mStructuralMaterialPalette = std::make_unique<MaterialPalette<LayerType::Structural>>(
+            this,
+            mMaterialDatabase.GetStructuralMaterialPalette(),
+            mShipTexturizer,
+            mResourceLocator);
+
+        mStructuralMaterialPalette->Bind(fsEVT_STRUCTURAL_MATERIAL_SELECTED, &MainFrame::OnStructuralMaterialSelected, this);
+
+        mElectricalMaterialPalette = std::make_unique<MaterialPalette<LayerType::Electrical>>(
+            this,
+            mMaterialDatabase.GetElectricalMaterialPalette(),
+            mShipTexturizer,
+            mResourceLocator);
+
+        mElectricalMaterialPalette->Bind(fsEVT_ELECTRICAL_MATERIAL_SELECTED, &MainFrame::OnElectricalMaterialSelected, this);
+
+        mRopesMaterialPalette = std::make_unique<MaterialPalette<LayerType::Ropes>>(
+            this,
+            mMaterialDatabase.GetRopeMaterialPalette(),
+            mShipTexturizer,
+            mResourceLocator);
+
+        mRopesMaterialPalette->Bind(fsEVT_STRUCTURAL_MATERIAL_SELECTED, &MainFrame::OnRopeMaterialSelected, this);
     }
 
-    mView = std::make_unique<View>(
-        ShipSpaceSize(0, 0), // We don't have a ship yet
-        DisplayLogicalSize(
-            mWorkCanvas->GetSize().GetWidth(),
-            mWorkCanvas->GetSize().GetHeight()),
-        mWorkCanvas->GetContentScaleFactor(),
-        [this]()
-        {
-            mWorkCanvas->SwapBuffers();
-        },
-        mResourceLocator);
+    //
+    // Initialize OpenGL manager
+    //
 
-    mView->UploadBackgroundTexture(
-        ImageFileTools::LoadImageRgba(
-            mResourceLocator.GetBitmapFilePath("shipbuilder_background")));
-
-    // Sync UI with view parameters
-
-    mOtherVisualizationsOpacitySlider->SetValue(
-        OtherVisualizationsOpacityToSlider(mView->GetOtherVisualizationsOpacity()));
+    mOpenGLManager = std::make_unique<OpenGLManager>(
+        *mWorkCanvas,
+        IsStandAlone());
 }
 
 void MainFrame::OpenForNewShip()
 {
-    // New ship
-    DoNewShip();
+    // Enqueue deferred action: New ship
+    assert(!mInitialAction.has_value());
+    mInitialAction.emplace(
+        [this]()
+        {
+            DoNewShip();
+        });
 
     // Open ourselves
     Open();
@@ -536,9 +521,18 @@ void MainFrame::OpenForNewShip()
 
 void MainFrame::OpenForLoadShip(std::filesystem::path const & shipFilePath)
 {
-    // Register idle event for delayed load
-    mOpenForLoadShipFilePath = shipFilePath;
-    Bind(wxEVT_IDLE, (wxObjectEventFunction)&MainFrame::OnOpenForLoadShipIdleEvent, this);
+    // Enqueue deferred action: Load ship
+    assert(!mInitialAction.has_value());
+    mInitialAction.emplace(
+        [=]()
+        {
+            if (!DoLoadShip(shipFilePath))
+            {
+                // No luck loading ship...
+                // ...just create new ship
+                DoNewShip();
+            }
+        });
 
     // Open ourselves
     Open();
@@ -550,10 +544,9 @@ void MainFrame::OpenForLoadShip(std::filesystem::path const & shipFilePath)
 
 void MainFrame::RefreshView()
 {
-    if (mWorkCanvas)
-    {
-        mWorkCanvas->Refresh();
-    }
+    assert(mWorkCanvas);
+
+    mWorkCanvas->Refresh();
 }
 
 void MainFrame::OnViewModelChanged()
@@ -673,6 +666,13 @@ void MainFrame::OnTextureLayerVisualizationModeChanged(TextureLayerVisualization
     }
 }
 
+void MainFrame::OnOtherVisualizationsOpacityChanged(float opacity)
+{
+    if (mController)
+    {
+        ReconciliateUIWithOtherLayersOpacity(opacity);
+    }
+}
 
 void MainFrame::OnModelDirtyChanged()
 {
@@ -729,7 +729,30 @@ void MainFrame::OnError(wxString const & errorMessage) const
     wxMessageBox(errorMessage, _("Error"), wxICON_ERROR);
 }
 
-ShipSpaceCoordinates MainFrame::GetMouseCoordinates() const
+DisplayLogicalSize MainFrame::GetDisplaySize() const
+{
+    assert(mWorkCanvas);
+
+    return DisplayLogicalSize(
+        mWorkCanvas->GetSize().GetWidth(),
+        mWorkCanvas->GetSize().GetHeight());
+}
+
+int MainFrame::GetLogicalToPhysicalPixelFactor() const
+{
+    assert(mWorkCanvas);
+
+    return mWorkCanvas->GetContentScaleFactor();
+}
+
+void MainFrame::SwapRenderBuffers()
+{
+    assert(mWorkCanvas);
+
+    mWorkCanvas->SwapBuffers();
+}
+
+DisplayLogicalCoordinates MainFrame::GetMouseCoordinates() const
 {
     wxMouseState const mouseState = wxGetMouseState();
     int x = mouseState.GetX();
@@ -739,10 +762,10 @@ ShipSpaceCoordinates MainFrame::GetMouseCoordinates() const
     assert(mWorkCanvas);
     mWorkCanvas->ScreenToClient(&x, &y);
 
-    return mView->ScreenToShipSpace({ x, y });
+    return DisplayLogicalCoordinates(x, y);
 }
 
-std::optional<ShipSpaceCoordinates> MainFrame::GetMouseCoordinatesIfInWorkCanvas() const
+std::optional<DisplayLogicalCoordinates> MainFrame::GetMouseCoordinatesIfInWorkCanvas() const
 {
     //
     // This function basically simulates the mouse<->focused window logic, returning mouse
@@ -761,7 +784,7 @@ std::optional<ShipSpaceCoordinates> MainFrame::GetMouseCoordinatesIfInWorkCanvas
     if ((mWorkCanvas->HitTest(x, y) == wxHT_WINDOW_INSIDE && !mWorkCanvasHScrollBar->HasCapture() && !mWorkCanvasVScrollBar->HasCapture())
         || mIsMouseCapturedByWorkCanvas)
     {
-        return mView->ScreenToShipSpace({ x, y });
+        return DisplayLogicalCoordinates(x, y);
     }
     else
     {
@@ -777,15 +800,6 @@ void MainFrame::SetToolCursor(wxImage const & cursorImage)
 void MainFrame::ResetToolCursor()
 {
     mWorkCanvas->SetCursor(wxNullCursor);
-}
-
-void MainFrame::ScrollIntoViewIfNeeded(DisplayLogicalCoordinates const & workCanvasDisplayLogicalCoordinates)
-{
-    // TODOTEST
-    LogMessage("TODOTEST: MainFrame::ScrollIntoViewIfNeeded(", workCanvasDisplayLogicalCoordinates.ToString(), ") WorkCanvasSize=(",
-        mWorkCanvas->GetSize().GetWidth(), ", ", mWorkCanvas->GetSize().GetHeight());
-
-    // TODO: if we have to scroll, invoke Controller::PanCamera which will notify us back
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -1899,10 +1913,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
         // View grid button
         {
             auto bitmap = WxHelpers::LoadBitmap("view_grid_button", mResourceLocator);
-            auto viewGridButton = new wxBitmapToggleButton(panel, wxID_ANY, bitmap);
-            auto buttonSize = bitmap.GetSize();
-            buttonSize.IncBy(4, 4);
-            viewGridButton->SetMaxSize(buttonSize);
+            auto viewGridButton = new wxBitmapToggleButton(panel, wxID_ANY, bitmap, wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
             viewGridButton->SetToolTip(_("Enable/Disable the visual guides."));
             viewGridButton->Bind(
                 wxEVT_TOGGLEBUTTON,
@@ -2512,19 +2523,11 @@ wxPanel * MainFrame::CreateWorkPanel(wxWindow * parent)
         mWorkCanvas->Connect(wxEVT_KEY_DOWN, (wxObjectEventFunction)&MainFrame::OnWorkCanvasKeyDown, 0, this);
         mWorkCanvas->Connect(wxEVT_KEY_UP, (wxObjectEventFunction)&MainFrame::OnWorkCanvasKeyUp, 0, this);
 
-
         sizer->Add(
             mWorkCanvas.get(),
             1, // Occupy all space
             wxEXPAND, // Stretch as much as available
             0);
-
-        //
-        // Create GL context, and make it current on the canvas
-        //
-
-        mGLContext = std::make_unique<wxGLContext>(mWorkCanvas.get());
-        mGLContext->SetCurrent(*mWorkCanvas);
     }
 
     auto const onScroll = [this]()
@@ -2646,28 +2649,31 @@ std::tuple<wxPanel *, wxSizer *> MainFrame::CreateToolSettingsToolSizePanel(
 
 void MainFrame::OnWorkCanvasPaint(wxPaintEvent & /*event*/)
 {
-    if (mView)
+    LogMessage("OnWorkCanvasPaint (with", (!mController ? "out" : ""), " controller, with", (!mInitialAction ? "out" : ""), " initial action)");
+
+    // Execute initial action, if any
+    if (mInitialAction.has_value())
     {
-        mView->Render();
+        (*mInitialAction)();
+
+        // No more initial action to execute
+        mInitialAction.reset();
+    }
+
+    // Render, if we have a controller
+    if (mController)
+    {
+        mController->Render();
     }
 }
 
 void MainFrame::OnWorkCanvasResize(wxSizeEvent & event)
 {
-    LogMessage("OnWorkCanvasResize: ", event.GetSize().GetX(), "x", event.GetSize().GetY());
-
-    auto const workCanvasSize = GetWorkCanvasSize();
-
-    // We take care of notifying the view ourselves, as we might have a view
-    // but not a controller
-    if (mView)
-    {
-        mView->SetDisplayLogicalSize(workCanvasSize);
-    }
+    LogMessage("OnWorkCanvasResize (with", (!mController ? "out" : ""), " controller): ", event.GetSize().GetX(), "x", event.GetSize().GetY());
 
     if (mController)
     {
-        mController->OnWorkCanvasResized(workCanvasSize);
+        mController->OnWorkCanvasResized(GetWorkCanvasSize());
     }
 
     // Allow resizing to occur, this is a hook
@@ -2780,7 +2786,7 @@ void MainFrame::OnWorkCanvasMouseMove(wxMouseEvent & event)
 {
     if (mController)
     {
-        mController->OnMouseMove(mView->ScreenToShipSpace({ event.GetX(), event.GetY() }));
+        mController->OnMouseMove(DisplayLogicalCoordinates(event.GetX(), event.GetY()));
     }
 }
 
@@ -2942,9 +2948,6 @@ void MainFrame::OnClose(wxCloseEvent & event)
     // Nuke controller, now that all dependencies are still alive
     mController.reset();
 
-    // Nuke view, now that the OpenGL context still works
-    mView.reset();
-
     event.Skip();
 }
 
@@ -3053,24 +3056,10 @@ void MainFrame::OnRopeMaterialSelected(fsStructuralMaterialSelectedEvent & event
 
 //////////////////////////////////////////////////////////////////
 
-void MainFrame::OnOpenForLoadShipIdleEvent(wxIdleEvent & /*event*/)
-{
-    // Unbind idle event handler
-    bool result = Unbind(wxEVT_IDLE, (wxObjectEventFunction)&MainFrame::OnOpenForLoadShipIdleEvent, this);
-    assert(result);
-    (void)result;
-    
-    // Load ship
-    if (!DoLoadShip(mOpenForLoadShipFilePath))
-    {
-        // No luck loading ship...
-        // ...just create new ship
-        DoNewShip();
-    }
-}
-
 void MainFrame::Open()
 {
+    LogMessage("MainFrame::Open()");
+
     // Show us
     Show(true);
 
@@ -3236,11 +3225,11 @@ void MainFrame::QuitAndSwitchBackToGame()
 
 void MainFrame::SwitchBackToGame(std::optional<std::filesystem::path> shipFilePath)
 {
-    // Let go of controller
-    mController.reset();
-
     // Hide self
     Show(false);
+
+    // Let go of controller
+    mController.reset();
 
     // Invoke functor to go back
     assert(mReturnToGameFunctor);
@@ -3444,10 +3433,13 @@ void MainFrame::DoNewShip()
     // Make name
     std::string const shipName = "MyShip-" + Utils::MakeNowDateAndTimeString();
 
-    // Initialize controller (won't fire UI reconciliations)
+    // Dispose of current controller - including its OpenGL machinery
+    mController.reset();
+
+    // Create new controller with empty ship
     mController = Controller::CreateNew(
         shipName,
-        *mView,
+        *mOpenGLManager,
         mWorkbenchState,
         *this,
         mShipTexturizer,
@@ -3462,51 +3454,68 @@ void MainFrame::DoNewShip()
 
 bool MainFrame::DoLoadShip(std::filesystem::path const & shipFilePath)
 {
+    //
+    // Load definition
+    //
+
+    std::optional<ShipDefinition> shipDefinition;
     try
     {
-        // Load ship
-        ShipDefinition shipDefinition = ShipDeSerializer::LoadShip(shipFilePath, mMaterialDatabase);
-
-        // Check password
-        if (AskPasswordDialog::CheckPasswordProtectedEdit(shipDefinition, this, mResourceLocator))
-        {
-            // Initialize controller with ship
-            mController = Controller::CreateForShip(
-                std::move(shipDefinition),
-                *mView,
-                mWorkbenchState,
-                *this,
-                mShipTexturizer,
-                mResourceLocator);
-
-            // Remember file path - but only if it's a definition file in the "official" format, not a legacy one
-            if (ShipDeSerializer::IsShipDefinitionFile(shipFilePath))
-            {
-                mCurrentShipFilePath = shipFilePath;
-            }
-            else
-            {
-                mCurrentShipFilePath.reset();
-            }
-
-            // Reconciliate UI
-            ReconciliateUI();
-
-            // Success
-            return true;
-        }
+        shipDefinition.emplace(ShipDeSerializer::LoadShip(shipFilePath, mMaterialDatabase));
     }
     catch (UserGameException const & exc)
     {
         ShowError(mLocalizationManager.MakeErrorMessage(exc));
+        return false;
     }
     catch (std::runtime_error const & exc)
     {
         ShowError(exc.what());
+        return false;
     }
 
-    // No luck
-    return false;
+    assert(shipDefinition.has_value());
+
+    //
+    // Check password
+    //
+
+    if (!AskPasswordDialog::CheckPasswordProtectedEdit(*shipDefinition, this, mResourceLocator))
+    {
+        return false;
+    }
+
+    //
+    // Recreate controller
+    //
+
+    // Dispose of current controller - including its OpenGL machinery
+    mController.reset();
+
+    // Create new controller with ship
+    mController = Controller::CreateForShip(
+        std::move(*shipDefinition),
+        *mOpenGLManager,
+        mWorkbenchState,
+        *this,
+        mShipTexturizer,
+        mResourceLocator);
+
+    // Remember file path - but only if it's a definition file in the "official" format, not a legacy one
+    if (ShipDeSerializer::IsShipDefinitionFile(shipFilePath))
+    {
+        mCurrentShipFilePath = shipFilePath;
+    }
+    else
+    {
+        mCurrentShipFilePath.reset();
+    }
+
+    // Reconciliate UI
+    ReconciliateUI();
+
+    // Success
+    return true;
 }
 
 void MainFrame::DoSaveShip(std::filesystem::path const & shipFilePath)
@@ -3539,27 +3548,29 @@ DisplayLogicalSize MainFrame::GetWorkCanvasSize() const
 
 void MainFrame::RecalculateWorkCanvasPanning()
 {
-    assert(mView);
+    if (mController)
+    {
+        //
+        // We populate the scollbar with work space coordinates
+        //
 
-    //
-    // We populate the scollbar with work space coordinates
-    //
+        ShipSpaceCoordinates const cameraPos = mController->GetCameraShipSpacePosition();
+        ShipSpaceSize const cameraRange = mController->GetCameraRange();
+        ShipSpaceSize const cameraThumbSize = mController->GetCameraThumbSize();
+        
 
-    ShipSpaceCoordinates const cameraPos = mView->GetCameraShipSpacePosition();
-    ShipSpaceSize const cameraThumbSize = mView->GetCameraThumbSize();
-    ShipSpaceSize const cameraRange = mView->GetCameraRange();
+        mWorkCanvasHScrollBar->SetScrollbar(
+            cameraPos.x,
+            cameraThumbSize.width,
+            cameraRange.width,
+            cameraThumbSize.width); // page size  == thumb
 
-    mWorkCanvasHScrollBar->SetScrollbar(
-        cameraPos.x,
-        cameraThumbSize.width,
-        cameraRange.width,
-        cameraThumbSize.width); // page size  == thumb
-
-    mWorkCanvasVScrollBar->SetScrollbar(
-        cameraPos.y,
-        cameraThumbSize.height,
-        cameraRange.height,
-        cameraThumbSize.height); // page size  == thumb
+        mWorkCanvasVScrollBar->SetScrollbar(
+            cameraPos.y,
+            cameraThumbSize.height,
+            cameraRange.height,
+            cameraThumbSize.height); // page size  == thumb
+    }
 }
 
 void MainFrame::SetFrameTitle(std::string const & shipName, bool isDirty)
@@ -3637,6 +3648,7 @@ void MainFrame::ReconciliateUI()
     ReconciliateUIWithElectricalLayerVisualizationModeSelection(mController->GetElectricalLayerVisualizationMode());
     ReconciliateUIWithRopesLayerVisualizationModeSelection(mController->GetRopesLayerVisualizationMode());
     ReconciliateUIWithTextureLayerVisualizationModeSelection(mController->GetTextureLayerVisualizationMode());
+    ReconciliateUIWithOtherLayersOpacity(mController->GetOtherVisualizationsOpacity());
     ReconciliateUIWithModelDirtiness();
     ReconciliateUIWithWorkbenchState();
     ReconciliateUIWithSelectedTool(mController->GetCurrentTool());
@@ -3804,6 +3816,11 @@ void MainFrame::ReconciliateUIWithTextureLayerVisualizationModeSelection(Texture
 {
     mTextureLayerVisualizationNoneModeButton->SetValue(mode == TextureLayerVisualizationModeType::None);
     mTextureLayerVisualizationMatteModeButton->SetValue(mode == TextureLayerVisualizationModeType::MatteMode);
+}
+
+void MainFrame::ReconciliateUIWithOtherLayersOpacity(float opacity)
+{
+    mOtherVisualizationsOpacitySlider->SetValue(OtherVisualizationsOpacityToSlider(opacity));
 }
 
 void MainFrame::ReconciliateUIWithModelDirtiness()

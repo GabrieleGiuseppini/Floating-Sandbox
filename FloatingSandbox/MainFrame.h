@@ -349,7 +349,7 @@ private:
         }
     }
 
-    void ResetShipState();
+    void ResetShipUIState();
 
     void UpdateFrameTitle();
 
@@ -357,11 +357,15 @@ private:
         wxString const & message,
         bool die);
 
+    void FreezeGame();
+
+    void ThawGame();
+
+    void SetPaused(bool isPaused);
+
     void PostGameStepTimer(std::chrono::milliseconds duration);
 
     void StartLowFrequencyTimer();
-
-    void SetPaused(bool isPaused);
 
     void ReconcileWithUIPreferences();
 
@@ -410,6 +414,7 @@ private:
 
     bool mHasWindowBeenShown;
     bool mHasStartupTipBeenChecked;
+    bool mIsGameFrozen;
     int mPauseCount;
     std::vector<std::string> mCurrentShipTitles;
     size_t mCurrentRCBombCount;

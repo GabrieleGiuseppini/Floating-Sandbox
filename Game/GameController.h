@@ -154,6 +154,8 @@ public:
     // Game Control and notifications
     //
 
+    void Freeze() override;
+    void Thaw() override;
     void SetPaused(bool isPaused) override;
     void SetMoveToolEngaged(bool isEngaged) override;
     void DisplaySettingsLoadedNotification() override;
@@ -915,6 +917,7 @@ private:
     //
 
     GameParameters mGameParameters;
+    bool mIsFrozen;
     bool mIsPaused;
     bool mIsPulseUpdateSet;
     bool mIsMoveToolEngaged;

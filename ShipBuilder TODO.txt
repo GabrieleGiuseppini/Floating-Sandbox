@@ -69,21 +69,79 @@ https://gamejolt.com/x/permalink/comment/11730705
 			+ And Nuke ClearDirty()
 	+ ModelController::GetStructuralVizMode when "none" is set
 
-- Fix OpenGL on Windows single-threaded:
-	= Crash during initialization
-		= Make our OpenGL context current again after ShipBuilder
-			- Initialization:
-			-	32 @0 wglMakeCurrent(hdc = 0xffffffffc301313c, hglrc = 0x40000) = TRUE
-			- After ShipBuilderFrame created:
-				5134 @0 wglMakeCurrent(hdc = 0xffffffffc301313c, hglrc = 0x40000) = TRUE
-	- Remove single-threadedness
+= Fix OpenGL issues
+	= Rearc:
+		+ 1. Controller owns View which owns OpenGLContext
+			+ View ownership
+			+ Context creation by View
+			+ Mouse is in LogicalDisplayCoords
+			+ Finalize Controller reset at each creation
+			+ Fix background image
+				+ Need to re-upload vertices at each view model change
+			+ Test at end:
+				+ Other layers' opacity slider <-> view
+				+ UI reconciliation at each of Controller creations
+				+ Ubuntu: stand-alone ShipBuilder
+		= 2. FS integration
+			+ a. Creating ShipBuilder frame changes current OpenGL context
+			+ b. After opening ShipBuilder frame, timer still kicks-in
+				+ b1. Need a "full pause", not the current one which still updates everything; here's algo:
+					+ Freeze:
+						+ Prevent OnIdle from running GameIteration
+							+ Use mIsGameFrozen
+								+ OnMainFrameClose() also calls Freeze() now
+						+ Stop (eventual) game timer; Stop (eventual) low-frequency timer
+							+ See MainFrame::OnError, which now changes to invoke Freeze()
+						+ mGameController->Freeze()
+							+ Simply pause clock
+						+ mSoundController->Reset()
+						+ mMusicController->Reset()
+					+ Resuming:
+						+ mGameController->Thaw()
+							+ Simply resume clock
+						+ Restart game timer; Restart low-frequency timer
+							+ See MainFrame::OnError, which no changes to invoke Thaw()
+						+ Re-allow OnIdle to run GameIteration
+							+ Use mIsGameFrozen
+					+ Move mSoundController/mMusicController->Reset() out of ResetShipState() (->"ResetShipUIState") and back into other callers of LoadShip()
+					+ GameController::Freeze: needs to wait for (eventual) RenderContext render to complete
+					+ Invoke both
+					+ Test:
+						+ Destroy path
+						+ ShowError(!die)
+						+ ShowError(die)
+						+ Switch to builder
+			+ c. Make FS context current after SB has been closed
+				+ Test first (on Ubuntu) if we may do so simply *outside* of a Paint event, i.e. in FS::MainFrame::SwitchFromShipBuilder, *BEFORE LoadShip*
+			- Test at end:
+				- Editing password-protected ship from FS
+				- Ubuntu: entire shebang
+		- 3: Think if can re-use view (and thus context) across Controller re-create's for NewShip and LoadShip
+			- option 1: extract from old controller and insert into new controller?
+		- Mark TODO item in this plan for mouse coords change as done
+		- Remove single-threaded boot setting
+	- OLD:
+		- Fix OpenGL on Windows single-threaded:
+			= Crash during initialization
+				= Make our OpenGL context current again after ShipBuilder
+					- Initialization:
+					-	32 @0 wglMakeCurrent(hdc = 0xffffffffc301313c, hglrc = 0x40000) = TRUE
+					- After ShipBuilderFrame created:
+						5134 @0 wglMakeCurrent(hdc = 0xffffffffc301313c, hglrc = 0x40000) = TRUE
+			
+
+		- Fix Ubuntu:
+			+ ShipBuilder: failed OpenGL initialization
+			= Background of shipbuilder leaks into clouds
+				- See if it's the same on Windows when we disable multi-threading - if so we have a problem with context switching
+			+ Crash when starting ship builder
+				- See if it's https://wiki.wxwidgets.org/WxGLCanvas#Sharing_Canvas_Context
 
 - Fix Ubuntu:
-	- ShipBuilder: failed OpenGL initialization
-	- Background of shipbuilder leaks into clouds
-		- See if it's the same on Windows when we disable multi-threading - if so we have a problem with context switching
-	- Crash when starting ship builder
-		- See if it's https://wiki.wxwidgets.org/WxGLCanvas#Sharing_Canvas_Context
+	+ Grid button size
+	- Undo stack at weird position
+	- Material palette not opening
+	- Model validation crash
 
 - Solve issue of Electrical Layer not aligning (visually) with the Structural Layer by default
 	- Might need a New Electrical visualization mode: "mesh mode", so that it aligns with structural's mesh mode
@@ -208,7 +266,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 	- TODO: ropes are missing...
 
 - Texture flood tool
-	- First off: mouse coordinates from MainFrame to Controller becomes LogicalDisplayCoords, and they're converted to ShipSpace coords where needed
+	+ First off: mouse coordinates from MainFrame to Controller becomes LogicalDisplayCoords, and they're converted to ShipSpace coords where needed
 	- Conversion to texture coords: done by View & ViewModel, exactly like conversion to ShipSpaceCoords, and invoked by texture tool(s)
 		- ViewModel also stores texture layer size (as ImageSize), next to ShipSize; set into View 
 		  by Controller (via View.SetTextureLayerSize) at each texture layer size change (OR: implicitly from UploadTexture? Would be best as we don't have to remember to SetTextureLayerSize at multiple sites, 
@@ -218,6 +276,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 			- Controller::RestoreTextureLayerForUndo
 			- Controller::ResizeShip
 			- No need to do at removal...
+	- Tolerance, etc.
 
 - ShipPropertiesEditDialog: ship prefix normalizer
 	+ Make text file out of https://en.wikipedia.org/wiki/Ship_prefix, with just list of prefixes

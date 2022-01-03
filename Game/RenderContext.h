@@ -978,6 +978,8 @@ public:
 
     void RenderEnd();
 
+    void WaitForPendingTasks();
+
 private:
 
     void ProcessParameterChanges(RenderParameters const & renderParameters);
