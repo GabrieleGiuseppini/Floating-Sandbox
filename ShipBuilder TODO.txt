@@ -71,13 +71,24 @@ https://gamejolt.com/x/permalink/comment/11730705
 
 = Fix OpenGL issues
 	= Rearc:
-		= Controller owns View which owns OpenGLContext
+		= 1. Controller owns View which owns OpenGLContext
 			+ View ownership
 			+ Context creation by View
 			+ Mouse is in LogicalDisplayCoords
-		- Test at end:
-			- Other layers' opacity slider <-> view
-		- Mark TODO item in this plan for mouse coords change
+			+ Finalize Controller reset at each creation
+			- Fix background image
+				- Need to re-upload vertices at each view model change
+			- Test at end:
+				+ Other layers' opacity slider <-> view
+				+ UI reconciliation at each of Controller creations
+				- Ubuntu: stand-alone ShipBuilder
+		- 2. FS's main frame: make context current at each first Paint() after SB has been closed
+			- Test at end:
+				- Editing password-protected ship from FS
+				- Ubuntu: entire shebang
+		- 3: think if can re-use view (and thus context) across Controller re-create's for NewShip and LoadShip
+			- option 1: extract from old and insert into new?
+		- Mark TODO item in this plan for mouse coords change as done
 	- OLD:
 		- Fix OpenGL on Windows single-threaded:
 			= Crash during initialization

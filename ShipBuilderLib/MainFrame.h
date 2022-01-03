@@ -273,6 +273,8 @@ private:
     void ReconciliateUIWithRopesLayerVisualizationModeSelection(RopesLayerVisualizationModeType mode);
     void ReconciliateUIWithTextureLayerVisualizationModeSelection(TextureLayerVisualizationModeType mode);
 
+    void ReconciliateUIWithOtherLayersOpacity(float opacity);
+
     void ReconciliateUIWithModelDirtiness();
 
     void ReconciliateUIWithWorkbenchState();

@@ -188,6 +188,7 @@ public:
     TextureLayerVisualizationModeType GetTextureLayerVisualizationMode() const;
     void SetTextureLayerVisualizationMode(TextureLayerVisualizationModeType mode);
 
+    float GetOtherVisualizationsOpacity() const;
     void SetOtherVisualizationsOpacity(float opacity);
 
     std::optional<ToolType> GetCurrentTool() const;

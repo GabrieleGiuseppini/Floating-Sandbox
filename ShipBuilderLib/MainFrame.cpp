@@ -654,7 +654,10 @@ void MainFrame::OnTextureLayerVisualizationModeChanged(TextureLayerVisualization
 
 void MainFrame::OnOtherVisualizationsOpacityChanged(float opacity)
 {
-    mOtherVisualizationsOpacitySlider->SetValue(OtherVisualizationsOpacityToSlider(opacity));
+    if (mController)
+    {
+        ReconciliateUIWithOtherLayersOpacity(opacity);
+    }
 }
 
 void MainFrame::OnModelDirtyChanged()
@@ -3422,7 +3425,10 @@ void MainFrame::DoNewShip()
     // Make name
     std::string const shipName = "MyShip-" + Utils::MakeNowDateAndTimeString();
 
-    // Initialize controller
+    // Dispose of current controller - including its OpenGL machinery
+    mController.reset();
+
+    // Create new controller with empty ship
     mController = Controller::CreateNew(
         shipName,
         *mOpenGLManager,
@@ -3440,51 +3446,68 @@ void MainFrame::DoNewShip()
 
 bool MainFrame::DoLoadShip(std::filesystem::path const & shipFilePath)
 {
+    //
+    // Load definition
+    //
+
+    std::optional<ShipDefinition> shipDefinition;
     try
     {
-        // Load ship
-        ShipDefinition shipDefinition = ShipDeSerializer::LoadShip(shipFilePath, mMaterialDatabase);
-
-        // Check password
-        if (AskPasswordDialog::CheckPasswordProtectedEdit(shipDefinition, this, mResourceLocator))
-        {
-            // Initialize controller with ship
-            mController = Controller::CreateForShip(
-                std::move(shipDefinition),
-                *mOpenGLManager,
-                mWorkbenchState,
-                *this,
-                mShipTexturizer,
-                mResourceLocator);
-
-            // Remember file path - but only if it's a definition file in the "official" format, not a legacy one
-            if (ShipDeSerializer::IsShipDefinitionFile(shipFilePath))
-            {
-                mCurrentShipFilePath = shipFilePath;
-            }
-            else
-            {
-                mCurrentShipFilePath.reset();
-            }
-
-            // Reconciliate UI
-            ReconciliateUI();
-
-            // Success
-            return true;
-        }
+        shipDefinition.emplace(ShipDeSerializer::LoadShip(shipFilePath, mMaterialDatabase));
     }
     catch (UserGameException const & exc)
     {
         ShowError(mLocalizationManager.MakeErrorMessage(exc));
+        return false;
     }
     catch (std::runtime_error const & exc)
     {
         ShowError(exc.what());
+        return false;
     }
 
-    // No luck
-    return false;
+    assert(shipDefinition.has_value());
+
+    //
+    // Check password
+    //
+
+    if (!AskPasswordDialog::CheckPasswordProtectedEdit(*shipDefinition, this, mResourceLocator))
+    {
+        return false;
+    }
+
+    //
+    // Recreate controller
+    //
+
+    // Dispose of current controller - including its OpenGL machinery
+    mController.reset();
+
+    // Create new controller with ship
+    mController = Controller::CreateForShip(
+        std::move(*shipDefinition),
+        *mOpenGLManager,
+        mWorkbenchState,
+        *this,
+        mShipTexturizer,
+        mResourceLocator);
+
+    // Remember file path - but only if it's a definition file in the "official" format, not a legacy one
+    if (ShipDeSerializer::IsShipDefinitionFile(shipFilePath))
+    {
+        mCurrentShipFilePath = shipFilePath;
+    }
+    else
+    {
+        mCurrentShipFilePath.reset();
+    }
+
+    // Reconciliate UI
+    ReconciliateUI();
+
+    // Success
+    return true;
 }
 
 void MainFrame::DoSaveShip(std::filesystem::path const & shipFilePath)
@@ -3617,6 +3640,7 @@ void MainFrame::ReconciliateUI()
     ReconciliateUIWithElectricalLayerVisualizationModeSelection(mController->GetElectricalLayerVisualizationMode());
     ReconciliateUIWithRopesLayerVisualizationModeSelection(mController->GetRopesLayerVisualizationMode());
     ReconciliateUIWithTextureLayerVisualizationModeSelection(mController->GetTextureLayerVisualizationMode());
+    ReconciliateUIWithOtherLayersOpacity(mController->GetOtherVisualizationsOpacity());
     ReconciliateUIWithModelDirtiness();
     ReconciliateUIWithWorkbenchState();
     ReconciliateUIWithSelectedTool(mController->GetCurrentTool());
@@ -3784,6 +3808,11 @@ void MainFrame::ReconciliateUIWithTextureLayerVisualizationModeSelection(Texture
 {
     mTextureLayerVisualizationNoneModeButton->SetValue(mode == TextureLayerVisualizationModeType::None);
     mTextureLayerVisualizationMatteModeButton->SetValue(mode == TextureLayerVisualizationModeType::MatteMode);
+}
+
+void MainFrame::ReconciliateUIWithOtherLayersOpacity(float opacity)
+{
+    mOtherVisualizationsOpacitySlider->SetValue(OtherVisualizationsOpacityToSlider(opacity));
 }
 
 void MainFrame::ReconciliateUIWithModelDirtiness()

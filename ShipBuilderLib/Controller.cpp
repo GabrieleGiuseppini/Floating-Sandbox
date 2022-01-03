@@ -122,16 +122,6 @@ Controller::Controller(
     // Initialize layer visualizations
     InternalUpdateVisualizationModes();
 
-    // Notify our initializations
-    mUserInterface.OnPrimaryVisualizationChanged(mPrimaryVisualization);
-    mUserInterface.OnGameVisualizationModeChanged(mGameVisualizationMode);
-    mUserInterface.OnStructuralLayerVisualizationModeChanged(mStructuralLayerVisualizationMode);
-    mUserInterface.OnElectricalLayerVisualizationModeChanged(mElectricalLayerVisualizationMode);
-    mUserInterface.OnRopesLayerVisualizationModeChanged(mRopesLayerVisualizationMode);
-    mUserInterface.OnTextureLayerVisualizationModeChanged(mTextureLayerVisualizationMode);
-    mUserInterface.OnCurrentToolChanged(*mCurrentToolType);
-    mUserInterface.OnOtherVisualizationsOpacityChanged(mView->GetOtherVisualizationsOpacity());
-
     // Upload layers' visualizations
     mModelController->UpdateVisualizations(*mView);
 }
@@ -950,6 +940,11 @@ void Controller::SetTextureLayerVisualizationMode(TextureLayerVisualizationModeT
     // Refresh model visualizations
     mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
+}
+
+float Controller::GetOtherVisualizationsOpacity() const
+{
+    return mView->GetOtherVisualizationsOpacity();
 }
 
 void Controller::SetOtherVisualizationsOpacity(float opacity)
