@@ -360,6 +360,7 @@ Render:
 		- MSI Installer:
 			- Also install ShipBuilder.exe
 
+		- Check how many older FS's exist, to see if can enable/upload changes.txt again
 
 
 

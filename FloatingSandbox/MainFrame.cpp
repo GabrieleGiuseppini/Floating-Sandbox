@@ -1035,28 +1035,32 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     // Create ShipBuilder frame
     //
 
-    // TODO: add progress reporting if ShipBuilder creation starts taking longer
-    try
     {
-        mShipBuilderMainFrame = std::make_unique<ShipBuilder::MainFrame>(
-            mMainApp,
-            GetIcon(),
-            mResourceLocator,
-            mLocalizationManager,
-            mGameController->GetMaterialDatabase(),
-            mGameController->GetShipTexturizer(),
-            [this](std::optional<std::filesystem::path> shipFilePath)
-            {
-                this->SwitchFromShipBuilder(shipFilePath);
-            });
-    }
-    catch (std::exception const & e)
-    {
-        splash.reset();
+        try
+        {
+            mShipBuilderMainFrame = std::make_unique<ShipBuilder::MainFrame>(
+                mMainApp,
+                GetIcon(),
+                mResourceLocator,
+                mLocalizationManager,
+                mGameController->GetMaterialDatabase(),
+                mGameController->GetShipTexturizer(),
+                [this](std::optional<std::filesystem::path> shipFilePath)
+                {
+                    this->SwitchFromShipBuilder(shipFilePath);
+                });
+        }
+        catch (std::exception const & e)
+        {
+            splash.reset();
 
-        OnError("Error during initialization of ship builder: " + std::string(e.what()), true);
+            OnError("Error during initialization of ship builder: " + std::string(e.what()), true);
 
-        return;
+            return;
+        }
+
+        // Given that we might have made another OpenGL context current, make our context current again
+        mGameController->RebindOpenGLContext();
     }
 
     //

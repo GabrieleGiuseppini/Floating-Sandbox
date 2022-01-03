@@ -71,23 +71,32 @@ https://gamejolt.com/x/permalink/comment/11730705
 
 = Fix OpenGL issues
 	= Rearc:
-		= 1. Controller owns View which owns OpenGLContext
+		+ 1. Controller owns View which owns OpenGLContext
 			+ View ownership
 			+ Context creation by View
 			+ Mouse is in LogicalDisplayCoords
 			+ Finalize Controller reset at each creation
 			+ Fix background image
 				+ Need to re-upload vertices at each view model change
-			= Test at end:
+			+ Test at end:
 				+ Other layers' opacity slider <-> view
 				+ UI reconciliation at each of Controller creations
-				- Ubuntu: stand-alone ShipBuilder - might still need to be shown
-		- 2. FS's main frame: make context current at each first Paint() after SB has been closed
+				+ Ubuntu: stand-alone ShipBuilder
+		= 2. FS integration
+			+ a. Creating ShipBuilder frame changes current OpenGL context
+			- b. After opening ShipBuilder frame, timer still kicks-in
+				- Need a "full pause", not the current one which still updates everything; here's algo:
+					- Pausing:
+						- TODO
+					- Resuming:
+						- TODO
+			- c. Make FS context current after SB has been closed
+				- Test first (on Ubuntu) if we may do so simply *outside* of a Paint event, i.e. in FS::MainFrame::SwitchFromShipBuilder, *BEFORE LoadShip*
 			- Test at end:
 				- Editing password-protected ship from FS
 				- Ubuntu: entire shebang
-		- 3: think if can re-use view (and thus context) across Controller re-create's for NewShip and LoadShip
-			- option 1: extract from old and insert into new?
+		- 3: Think if can re-use view (and thus context) across Controller re-create's for NewShip and LoadShip
+			- option 1: extract from old controller and insert into new controller?
 		- Mark TODO item in this plan for mouse coords change as done
 	- OLD:
 		- Fix OpenGL on Windows single-threaded:
@@ -100,11 +109,17 @@ https://gamejolt.com/x/permalink/comment/11730705
 			- Remove single-threadedness
 
 		- Fix Ubuntu:
-			- ShipBuilder: failed OpenGL initialization
-			- Background of shipbuilder leaks into clouds
+			+ ShipBuilder: failed OpenGL initialization
+			= Background of shipbuilder leaks into clouds
 				- See if it's the same on Windows when we disable multi-threading - if so we have a problem with context switching
-			- Crash when starting ship builder
+			+ Crash when starting ship builder
 				- See if it's https://wiki.wxwidgets.org/WxGLCanvas#Sharing_Canvas_Context
+
+- Fix Ubuntu:
+	- Grid button size
+	- Undo stack at weird position
+	- Material palette not opening
+	- Model validation crash
 
 - Solve issue of Electrical Layer not aligning (visually) with the Structural Layer by default
 	- Might need a New Electrical visualization mode: "mesh mode", so that it aligns with structural's mesh mode
