@@ -76,9 +76,9 @@ https://gamejolt.com/x/permalink/comment/11730705
 			+ Context creation by View
 			+ Mouse is in LogicalDisplayCoords
 			+ Finalize Controller reset at each creation
-			- Fix background image
-				- Need to re-upload vertices at each view model change
-			- Test at end:
+			+ Fix background image
+				+ Need to re-upload vertices at each view model change
+			= Test at end:
 				+ Other layers' opacity slider <-> view
 				+ UI reconciliation at each of Controller creations
 				- Ubuntu: stand-alone ShipBuilder

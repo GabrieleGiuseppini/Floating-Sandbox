@@ -253,6 +253,7 @@ private:
 
     void OnViewModelUpdated();
 
+    void UpdateBackgroundTexture(ImageSize const & textureSize);
     void UpdateCanvas();
     void UpdateGrid();
     void UpdateStructuralLayerVisualization();
@@ -425,7 +426,7 @@ private:
     GameOpenGLVAO mBackgroundTextureVAO;
     GameOpenGLVBO mBackgroundTextureVBO;
     GameOpenGLTexture mBackgroundTexture;
-    bool mHasBackgroundTexture;
+    std::optional<ImageSize> mBackgroundTextureSize; // Also works as indicator
 
     // Canvas
     GameOpenGLVAO mCanvasVAO;
