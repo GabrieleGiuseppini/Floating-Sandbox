@@ -119,12 +119,24 @@ https://gamejolt.com/x/permalink/comment/11730705
 				+ Ubuntu: 
 					+ Entire shebang
 					+ Editing password-protected ship from FS
-		- 3: Think if can re-use view (and thus context) across Controller re-create's for NewShip and LoadShip
+		= 3: Think if can re-use view (and thus context) across Controller re-create's for NewShip and LoadShip
 			+ First test a Release build to see if it's really noticeable - it still is, a bit
-			- option 1: extract from old controller and insert into new controller?
+			X See if can OpenGL-Display earlier
+				+ a: Create view earlier
+				X b: Display earlier
+					X Background immediately
+				X NO, it's ugly - you still see the whole white, and the whole shebang to reduce the time is not worth it
 		+ Mark TODO item in this plan for mouse coords change as done
 		+ Remove single-threaded boot setting
 		+ Re-test w/multi-threading on Windows
+
+= Fix mesh shader problem
+	+ Fix shader
+	- Then fix texturizer
+
+- Fix: after opening editor with mouse on canvas, tool is not initialized
+
+- Fix ropes alignment
 
 - Send for testing
 
@@ -132,8 +144,9 @@ https://gamejolt.com/x/permalink/comment/11730705
 	+ Grid button size
 	+ Not adding extension to ship name when saving it
 	+ Default save directory
-	- Undo stack at weird position
-	= Model validation crash
+	+ Model validation crash
+	- Undo stack is at weird position and covers rest
+		- Note: it's the same as at the and of the SB cctor
 
 - Solve issue of Electrical Layer not aligning (visually) with the Structural Layer by default
 	- See if aligning pixels on corners of mesh - or aligning mesh on corners of pixels - would solve the issue

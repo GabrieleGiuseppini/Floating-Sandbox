@@ -109,7 +109,7 @@ void main()
     //   \
     //     2
     float line23Depth = (hasVertex2 * hasVertex3)
-        * step(abs(paramShipParticleTextureSize.y - f.y - paramShipParticleTextureSize.y / paramShipParticleTextureSize.x * f.x), halfLineThicknessD);
+        * step(abs(paramShipParticleTextureSize.y + lineThickness.y - f.y - paramShipParticleTextureSize.y / paramShipParticleTextureSize.x * f.x), halfLineThicknessD);
 
     //
     // Combine outputs
