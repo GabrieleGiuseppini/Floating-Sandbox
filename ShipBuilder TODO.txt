@@ -154,7 +154,6 @@ https://gamejolt.com/x/permalink/comment/11730705
 	= Option 1: Shift game viz, Texture viz, and Mesh shader so that they are aligned
 		+ Texture viz
 		= Game viz
-			! Problem with sampling of texture within ShipTexturizer::RenderShipInto: it samples OK, but then we shift the output, hence the texture goes out of sync
 			! Facts:
 				- Structure pixel at (0, 0):
 					- World: (0, 0) [short of half ship width]
@@ -162,7 +161,20 @@ https://gamejolt.com/x/permalink/comment/11730705
 				- Structure pixel at (W-1, H-1):
 					- World: (W-1, H-1) [short of half ship width]
 					- Texture: (1.0 - 0.5/SW, 1.0 - 0.5/SH)
-			- TODOHERE
+				- So, if we plan to just shift output of ShipTexturizer::RenderShipInto to be at center of grid, texture viz must be as follows:
+					- Center of ship square at (0, 0) must be (0.5/SW, 0.5/SH)
+					- Center of ship square at (W-1, H-1) must be (1.0 - 0.5/SW, 1.0 - 0.5/SH)
+					- It seems to be the case
+			! Problem: left and bottom texture borders do not appear in game viz
+				! Also before
+			+ Fix ShipTexturizer::RenderShipInto
+			- Try with nearest instead of bi-linear
+			- Test:
+				- With texture
+				- With auto-texturization
+				- Compare texture with Game's
+				- Compare auto-texturization with Game's
+			- Make sample functions templated
 		- Mesh shader
 			- TODO: see if shader has to change, or whether just quad shift is enough
 		- View: unify/cleanup vertices creation/upload
