@@ -77,6 +77,8 @@ public:
 
     virtual DisplayLogicalCoordinates GetMouseCoordinates() const = 0;
 
+    virtual bool IsMouseInWorkCanvas() const = 0;
+
     virtual std::optional<DisplayLogicalCoordinates> GetMouseCoordinatesIfInWorkCanvas() const = 0;
 
     virtual void SetToolCursor(wxImage const & cursorImage) = 0;

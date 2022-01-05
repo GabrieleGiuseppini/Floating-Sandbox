@@ -765,6 +765,11 @@ DisplayLogicalCoordinates MainFrame::GetMouseCoordinates() const
     return DisplayLogicalCoordinates(x, y);
 }
 
+bool MainFrame::IsMouseInWorkCanvas() const
+{
+    return IsLogicallyInWorkCanvas(GetMouseCoordinates());
+}
+
 std::optional<DisplayLogicalCoordinates> MainFrame::GetMouseCoordinatesIfInWorkCanvas() const
 {
     //
@@ -772,19 +777,10 @@ std::optional<DisplayLogicalCoordinates> MainFrame::GetMouseCoordinatesIfInWorkC
     // coordinates only if the work canvas would legitimately receive a mouse event
     //
 
-    wxMouseState const mouseState = wxGetMouseState();
-    int x = mouseState.GetX();
-    int y = mouseState.GetY();
-
-    // Convert to work canvas coordinates
-    assert(mWorkCanvas);
-    mWorkCanvas->ScreenToClient(&x, &y);
-
-    // Check if in canvas (but not captured by scrollbars), or if simply captured
-    if ((mWorkCanvas->HitTest(x, y) == wxHT_WINDOW_INSIDE && !mWorkCanvasHScrollBar->HasCapture() && !mWorkCanvasVScrollBar->HasCapture())
-        || mIsMouseCapturedByWorkCanvas)
+    DisplayLogicalCoordinates const mouseCoords = GetMouseCoordinates();    
+    if (IsLogicallyInWorkCanvas(mouseCoords))
     {
-        return DisplayLogicalCoordinates(x, y);
+        return mouseCoords;
     }
     else
     {
@@ -3539,6 +3535,13 @@ void MainFrame::DoSaveShip(std::filesystem::path const & shipFilePath)
 
     // Clear dirtyness
     mController->ClearModelDirty();
+}
+
+bool MainFrame::IsLogicallyInWorkCanvas(DisplayLogicalCoordinates const & coords) const
+{
+    // Check if in canvas (but not captured by scrollbars), or if simply captured
+    return (mWorkCanvas->HitTest(coords.x, coords.y) == wxHT_WINDOW_INSIDE && !mWorkCanvasHScrollBar->HasCapture() && !mWorkCanvasVScrollBar->HasCapture())
+        || mIsMouseCapturedByWorkCanvas;
 }
 
 DisplayLogicalSize MainFrame::GetWorkCanvasSize() const

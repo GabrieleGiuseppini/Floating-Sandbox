@@ -130,10 +130,10 @@ https://gamejolt.com/x/permalink/comment/11730705
 		+ Remove single-threaded boot setting
 		+ Re-test w/multi-threading on Windows
 
-
-- Fix: after opening editor with mouse on canvas, tool is not initialized
-	- ATM, after Controller cctor, tool needs to exist or not depending on whether the mouse in in the work canvas or not, because at OnMouseEnter we expect to have no tool
-		- So add a IUserInterface::IsMouseInWorkCanvas()
++ Fix: after opening editor with mouse on canvas, tool is not initialized
+	+ ATM, after Controller cctor, tool needs to exist or not depending on whether the mouse in in the work canvas or not, because at OnMouseEnter we expect to have no tool
+		! It used to work because we would Show() *after* Controller, and wxWidgets/MSW would generate an OnEnterWindow()
+		+ So add a IUserInterface::IsMouseInWorkCanvas()
 
 - Re-arc visualizations for alignment:
 	- Problems:

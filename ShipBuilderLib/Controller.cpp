@@ -122,6 +122,15 @@ Controller::Controller(
     // Initialize layer visualizations
     InternalUpdateVisualizationModes();
 
+    // Create tool if mouse is (logically) in work canvas at this very moment
+    if (mUserInterface.IsMouseInWorkCanvas())
+    {
+        if (mCurrentToolType.has_value())
+        {
+            mCurrentTool = MakeTool(*mCurrentToolType);
+        }
+    }
+
     // Upload layers' visualizations
     mModelController->UpdateVisualizations(*mView);
 }

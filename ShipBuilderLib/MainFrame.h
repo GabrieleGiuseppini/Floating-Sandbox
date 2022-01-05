@@ -117,6 +117,8 @@ public:
 
     DisplayLogicalCoordinates GetMouseCoordinates() const override;
 
+    bool IsMouseInWorkCanvas() const override;
+
     std::optional<DisplayLogicalCoordinates> GetMouseCoordinatesIfInWorkCanvas() const override;
 
     void SetToolCursor(wxImage const & cursorImage) override;
@@ -234,6 +236,8 @@ private:
     bool DoLoadShip(std::filesystem::path const & shipFilePath);
 
     void DoSaveShip(std::filesystem::path const & shipFilePath);
+
+    bool IsLogicallyInWorkCanvas(DisplayLogicalCoordinates const & coords) const;
 
     DisplayLogicalSize GetWorkCanvasSize() const;
 
