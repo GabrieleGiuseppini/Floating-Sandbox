@@ -350,7 +350,7 @@ void ShipTexturizer::RenderShipInto(
         / static_cast<float>(targetTextureImage.Size.width);
 
     //
-    // Here we offset the texture coords by half of a "ship pixel" (which is multiple texture pixels)
+    // Here we sample the texture with an offset of half of a "ship pixel" (which is multiple texture pixels) on both sides,
     // in the same way as we do when we build the ship at simulation time.
     // We do this so that the texture for a particle at ship coords (x, y) is sampled at the center of the 
     // texture's quad for that particle.
