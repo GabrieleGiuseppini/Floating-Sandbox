@@ -69,8 +69,8 @@ https://gamejolt.com/x/permalink/comment/11730705
 			+ And Nuke ClearDirty()
 	+ ModelController::GetStructuralVizMode when "none" is set
 
-= Fix OpenGL issues
-	= Rearc:
++ Fix OpenGL issues
+	+ Rearc:
 		+ 1. Controller owns View which owns OpenGLContext
 			+ View ownership
 			+ Context creation by View
@@ -82,7 +82,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 				+ Other layers' opacity slider <-> view
 				+ UI reconciliation at each of Controller creations
 				+ Ubuntu: stand-alone ShipBuilder
-		= 2. FS integration
+		+ 2. FS integration
 			+ a. Creating ShipBuilder frame changes current OpenGL context
 			+ b. After opening ShipBuilder frame, timer still kicks-in
 				+ b1. Need a "full pause", not the current one which still updates everything; here's algo:
@@ -119,7 +119,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 				+ Ubuntu: 
 					+ Entire shebang
 					+ Editing password-protected ship from FS
-		= 3: Think if can re-use view (and thus context) across Controller re-create's for NewShip and LoadShip
+		+ 3: Think if can re-use view (and thus context) across Controller re-create's for NewShip and LoadShip
 			+ First test a Release build to see if it's really noticeable - it still is, a bit
 			X See if can OpenGL-Display earlier
 				+ a: Create view earlier
@@ -130,13 +130,30 @@ https://gamejolt.com/x/permalink/comment/11730705
 		+ Remove single-threaded boot setting
 		+ Re-test w/multi-threading on Windows
 
-= Fix mesh shader problem
-	+ Fix shader
-	- Then fix texturizer
 
 - Fix: after opening editor with mouse on canvas, tool is not initialized
+	- ATM, after Controller cctor, tool needs to exist or not depending on whether the mouse in in the work canvas or not, because at OnMouseEnter we expect to have no tool
+		- So add a IUserInterface::IsMouseInWorkCanvas()
 
-- Fix ropes alignment
+- Re-arc visualizations for alignment:
+	- Problems:
+		= Fix mesh shader problem
+			+ Fix shader
+			- Then fix texturizer
+				- To decide: mesh: is line in [0, LineThickness] interval of square, or is it in [-LineThickness/2, LineThickness/2] interval?
+					- Try mesh shader in [-LineThickness/2, LineThickness/2]
+			- Test with two wildly different x/y ratios
+		- Fix ropes alignment
+
+		- Mesh or Pixel rearc?
+			- Option 1: pixel rearc
+				- Pixel should be displayed at center of grid lines
+			- TODO: consider also electrical
+				- If we move pixels along grid lines - including *electrical* pixels - then we're set, they align
+	- Option 1: Shift game and Texture viz's so that they are aligned
+		- TODOHERE
+
+
 
 - Send for testing
 
