@@ -20,7 +20,7 @@ ImageLoadDialog::ImageLoadDialog(wxWindow * parent)
 {
 	SetMessage(_("Load an Image"));
 
-	SetWildcard(_("JPG image files") + wxS(" (*.jpg)|*.jpg|") + _("PNG image files") + wxS(" (*.png)|*.png"));
+	SetWildcard(_("Image files ") + wxS("(*.jpg; *.png)|*.jpg; *.png"));
 }
 
 }
