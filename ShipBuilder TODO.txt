@@ -181,9 +181,12 @@ https://gamejolt.com/x/permalink/comment/11730705
 					+ Compare texture with Game's
 					+ Compare auto-texturization with Game's
 			+ Cleanup sampling functions
-		- Mesh shader
-			- TODO: see if shader has to change, or whether just quad shift is enough
+		= Mesh shader
+			+ See whether just quad shift (at shader) is enough
+			- Remove line thickness adjustment
+			- Draw particle rounds 
 		- View:.cpp unify/cleanup vertices creation/upload
+		- Merge into master
 
 - Send for testing
 

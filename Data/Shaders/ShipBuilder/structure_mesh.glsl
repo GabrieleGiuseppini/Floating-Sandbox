@@ -35,11 +35,15 @@ uniform vec2 paramShipParticleTextureSize; // Size of one ship particle in textu
 
 void main()
 {
+    // Shift by half of a ship particle square,
+    // as particles are taken to exist at the *center* of each square
+    vec2 shiftedVertexTextureCoordinates = vertexTextureCoordinates - paramShipParticleTextureSize / 2.0;
+
     // Calculate quantized texture coords
-    vec2 quv = floor(vertexTextureCoordinates / paramShipParticleTextureSize) * paramShipParticleTextureSize;
+    vec2 quv = floor(shiftedVertexTextureCoordinates / paramShipParticleTextureSize) * paramShipParticleTextureSize;
 
     // Calculate fractional position of this pixel's position in this ship particle's square
-    vec2 f = vertexTextureCoordinates - quv;
+    vec2 f = shiftedVertexTextureCoordinates - quv;
 
     // Given that the texture is setup for nearest, we offset the UV coords so that we sample instead
     // smack in the middle of the texture
@@ -52,25 +56,37 @@ void main()
     //
     // Vertices
     //
+    // 3---4
+    // |   |
+    // 1---2
 
     vec4 particle1Color = texture2D(paramTextureUnit1, quv);
-    float hasVertex1 = particle1Color.w;
+    float hasVertex1 = 
+        particle1Color.w
+        * step(0.0, quv.x)
+        * step(0.0, quv.y);
 
     vec2 particle2quv = quv + vec2(paramShipParticleTextureSize.x, 0.);
     vec4 particle2Color = texture2D(paramTextureUnit1, particle2quv);
     float hasVertex2 =
         particle2Color.w
-        * step(particle2quv.x, 1.0);
+        * step(0.0, particle2quv.x)
+        * step(particle2quv.x, 1.0)
+        * step(0.0, particle2quv.y);
 
     vec2 particle3quv = quv + vec2(0., paramShipParticleTextureSize.y);
     float hasVertex3 =
         texture2D(paramTextureUnit1, particle3quv).w
+        * step(0.0, particle3quv.x)
+        * step(0.0, particle3quv.y)
         * step(particle3quv.y, 1.0);
 
     vec2 particle4quv = quv + paramShipParticleTextureSize;
     float hasVertex4 =
         texture2D(paramTextureUnit1, particle4quv).w
+        * step(0.0, particle4quv.x)
         * step(particle4quv.x, 1.0)
+        * step(0.0, particle4quv.y)
         * step(particle4quv.y, 1.0);
 
     //

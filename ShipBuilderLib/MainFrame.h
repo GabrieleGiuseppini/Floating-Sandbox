@@ -239,6 +239,8 @@ private:
 
     void DoSaveShip(std::filesystem::path const & shipFilePath);
 
+    void BailOut();
+
     bool IsLogicallyInWorkCanvas(DisplayLogicalCoordinates const & coords) const;
 
     DisplayLogicalSize GetWorkCanvasSize() const;
