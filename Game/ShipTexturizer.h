@@ -116,7 +116,8 @@ private:
     inline rgbaColor SampleTextureBilinear(
         RgbaImageData const & texture,
         float pixelX,
-        float pixelY) const;
+        float pixelY,
+        bool doTODOLog) const;
 
     inline vec2f SampleTextureBilinear(
         Vec2fImageData const & texture,
