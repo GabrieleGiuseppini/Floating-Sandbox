@@ -119,8 +119,6 @@ public:
 
 public:
 
-    void EnableVisualGrid(bool doEnable);
-
     void SetPrimaryVisualization(VisualizationType visualization)
     {
         mPrimaryVisualization = visualization;
@@ -134,6 +132,13 @@ public:
     void SetOtherVisualizationsOpacity(float value)
     {
         mOtherVisualizationsOpacity = value;
+    }
+
+    void EnableVisualGrid(bool doEnable);
+
+    bool IsVisualGridEnabled() const
+    {
+        return mIsGridEnabled;
     }
 
     // Sticky, always drawn

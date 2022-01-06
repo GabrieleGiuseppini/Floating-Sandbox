@@ -153,7 +153,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 					- If we move pixels along grid lines - including *electrical* pixels - then we're set, they align
 	= Option 1: Shift game viz, Texture viz, and Mesh shader so that they are aligned
 		+ Texture viz
-		= Game viz
+		+ Game viz
 			! Facts:
 				- Structure pixel at (0, 0):
 					- World: (0, 0) [short of half ship width]
@@ -167,25 +167,23 @@ https://gamejolt.com/x/permalink/comment/11730705
 					- It seems to be the case
 			! Problem: left and bottom texture borders do not appear in game viz
 				! Also before
-			= Fix ShipTexturizer::RenderShipInto
+			+ Fix ShipTexturizer::RenderShipInto
 				+ New conversions
-				- Deal with width/height = 1
+				+ Deal with width/height = 1
 				X Try with nearest
-				- No need to mod at Sample() (assert)
-				= Test:
+				+ No need to mod at Sample() (assert)
+				+ Test:
 					+ With texture
 						+ Equal size texture
 						+ Larger texture
 						+ Smaller texture
-					- With auto-texturization
-					- Compare texture with Game's
-					- Compare auto-texturization with Game's
-			- Cleanup sampling functions
+					+ With auto-texturization
+					+ Compare texture with Game's
+					+ Compare auto-texturization with Game's
+			+ Cleanup sampling functions
 		- Mesh shader
 			- TODO: see if shader has to change, or whether just quad shift is enough
-		- View: unify/cleanup vertices creation/upload
-
-- LoadShip is broken - because of OnEnterWindow generated when Dialog closes while we've already created the tool
+		- View:.cpp unify/cleanup vertices creation/upload
 
 - Send for testing
 

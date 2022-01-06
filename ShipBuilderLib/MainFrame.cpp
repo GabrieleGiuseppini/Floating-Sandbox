@@ -674,6 +674,14 @@ void MainFrame::OnOtherVisualizationsOpacityChanged(float opacity)
     }
 }
 
+void MainFrame::OnVisualGridEnablementChanged(bool isEnabled)
+{
+    if (mController)
+    {
+        ReconciliateUIWithVisualGridEnablement(isEnabled);
+    }
+}
+
 void MainFrame::OnModelDirtyChanged()
 {
     if (mController)
@@ -1909,9 +1917,9 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
         // View grid button
         {
             auto bitmap = WxHelpers::LoadBitmap("view_grid_button", mResourceLocator);
-            auto viewGridButton = new wxBitmapToggleButton(panel, wxID_ANY, bitmap, wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
-            viewGridButton->SetToolTip(_("Enable/Disable the visual guides."));
-            viewGridButton->Bind(
+            mViewGridButton = new wxBitmapToggleButton(panel, wxID_ANY, bitmap, wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
+            mViewGridButton->SetToolTip(_("Enable/Disable the visual guides."));
+            mViewGridButton->Bind(
                 wxEVT_TOGGLEBUTTON,
                 [this](wxCommandEvent & event)
                 {
@@ -1922,7 +1930,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
                 });
 
             mVisualizationModePanelsSizer->Add(
-                viewGridButton,
+                mViewGridButton,
                 0, // Retain vertical width
                 wxALIGN_CENTER_HORIZONTAL, // Do not expand vertically
                 0);
@@ -3654,6 +3662,7 @@ void MainFrame::ReconciliateUI()
     ReconciliateUIWithRopesLayerVisualizationModeSelection(mController->GetRopesLayerVisualizationMode());
     ReconciliateUIWithTextureLayerVisualizationModeSelection(mController->GetTextureLayerVisualizationMode());
     ReconciliateUIWithOtherLayersOpacity(mController->GetOtherVisualizationsOpacity());
+    ReconciliateUIWithVisualGridEnablement(mController->IsVisualGridEnabled());
     ReconciliateUIWithModelDirtiness();
     ReconciliateUIWithWorkbenchState();
     ReconciliateUIWithSelectedTool(mController->GetCurrentTool());
@@ -3826,6 +3835,11 @@ void MainFrame::ReconciliateUIWithTextureLayerVisualizationModeSelection(Texture
 void MainFrame::ReconciliateUIWithOtherLayersOpacity(float opacity)
 {
     mOtherVisualizationsOpacitySlider->SetValue(OtherVisualizationsOpacityToSlider(opacity));
+}
+
+void MainFrame::ReconciliateUIWithVisualGridEnablement(bool isEnabled)
+{
+    mViewGridButton->SetValue(isEnabled);
 }
 
 void MainFrame::ReconciliateUIWithModelDirtiness()

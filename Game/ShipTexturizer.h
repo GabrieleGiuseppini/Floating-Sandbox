@@ -113,22 +113,12 @@ private:
 
     void PurgeMaterialTextureCache(size_t maxSize) const;
 
-    inline rgbaColor SampleTextureBilinear(
+    inline rgbaColor SampleTextureBilinearConstrained(
         RgbaImageData const & texture,
         float pixelX,
         float pixelY) const;
 
-    inline vec2f SampleTextureBilinear(
-        Vec2fImageData const & texture,
-        float pixelX,
-        float pixelY) const;
-
-    inline rgbaColor SampleTextureNearest(
-        RgbaImageData const & texture,
-        float pixelX,
-        float pixelY) const;
-
-    inline vec2f SampleTextureNearest(
+    inline vec2f SampleTextureBilinearRepeated(
         Vec2fImageData const & texture,
         float pixelX,
         float pixelY) const;

@@ -191,6 +191,9 @@ public:
     float GetOtherVisualizationsOpacity() const;
     void SetOtherVisualizationsOpacity(float opacity);
 
+    bool IsVisualGridEnabled() const;
+    void EnableVisualGrid(bool doEnable);
+
     std::optional<ToolType> GetCurrentTool() const;
     void SetCurrentTool(std::optional<ToolType> tool);
 
@@ -211,8 +214,6 @@ public:
     void ResetView();
 
     void OnWorkCanvasResized(DisplayLogicalSize const & newSize);
-
-    void EnableVisualGrid(bool doEnable);
 
     void OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates);
     void OnLeftMouseDown();

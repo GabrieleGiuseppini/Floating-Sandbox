@@ -963,6 +963,17 @@ void Controller::SetOtherVisualizationsOpacity(float opacity)
     mUserInterface.RefreshView();
 }
 
+bool Controller::IsVisualGridEnabled() const
+{
+    return mView->IsVisualGridEnabled();
+}
+
+void Controller::EnableVisualGrid(bool doEnable)
+{
+    mView->EnableVisualGrid(doEnable);
+    mUserInterface.RefreshView();
+}
+
 std::optional<ToolType> Controller::GetCurrentTool() const
 {
     return mCurrentToolType;
@@ -1121,12 +1132,6 @@ void Controller::OnWorkCanvasResized(DisplayLogicalSize const & newSize)
 
     // Tell UI
     mUserInterface.OnViewModelChanged();
-}
-
-void Controller::EnableVisualGrid(bool doEnable)
-{
-    mView->EnableVisualGrid(doEnable);
-    mUserInterface.RefreshView();
 }
 
 void Controller::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates)
@@ -1388,7 +1393,7 @@ bool Controller::InternalSuspendTool()
 
 void Controller::InternalResumeTool()
 {
-    assert(!mCurrentTool);
+    mCurrentTool.reset();
 
     if (mCurrentToolType.has_value())
     {

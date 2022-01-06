@@ -97,6 +97,8 @@ public:
 
     void OnOtherVisualizationsOpacityChanged(float opacity) override;
 
+    void OnVisualGridEnablementChanged(bool isEnabled) override;
+
     void OnModelDirtyChanged() override;
 
     void OnWorkbenchStateChanged() override;
@@ -277,6 +279,8 @@ private:
 
     void ReconciliateUIWithOtherLayersOpacity(float opacity);
 
+    void ReconciliateUIWithVisualGridEnablement(bool isEnabled);
+
     void ReconciliateUIWithModelDirtiness();
 
     void ReconciliateUIWithWorkbenchState();
@@ -347,6 +351,7 @@ private:
     BitmapToggleButton * mRopesLayerVisualizationLinesModeButton;
     BitmapToggleButton * mTextureLayerVisualizationNoneModeButton;
     BitmapToggleButton * mTextureLayerVisualizationMatteModeButton;
+    wxBitmapToggleButton * mViewGridButton;
 
     // Toolbar panel
     wxSizer * mToolbarPanelsSizer;
