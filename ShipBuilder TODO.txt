@@ -168,21 +168,15 @@ https://gamejolt.com/x/permalink/comment/11730705
 			! Problem: left and bottom texture borders do not appear in game viz
 				! Also before
 			= Fix ShipTexturizer::RenderShipInto
-				= New conversions
-					- DOESN'T ALWAYS WORK - PixelXi goes to zero at right:
-						TextureW=80, x=198 out of W=200
-						x=198 xx=0 sampleOffsetX=0.2 SrcWidth=80 sourcePixelsPerShipParticleX=0.4 ShipWidth=200
-						x=198 => SrcX = OffsetX + (80 - 0.4)/200 * 198 = OffsetX + 78.804
-						x=200 => SrcX = OffsetX + (80 - 0.4)/200 * 200 = OffsetX + (80 - 0.4)
-						pixelX=79.004 pixelXI=79 nextPixelXI=0
-
+				+ New conversions
+				- Deal with width/height = 1
 				- Try with nearest
 				- No need to mod at Sample() (assert)
 				= Test:
-					= With texture
+					+ With texture
 						+ Equal size texture
-						- Larger texture
-						- Smaller texture
+						+ Larger texture
+						+ Smaller texture
 					- With auto-texturization
 					- Compare texture with Game's
 					- Compare auto-texturization with Game's
