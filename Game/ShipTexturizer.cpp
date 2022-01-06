@@ -362,12 +362,12 @@ void ShipTexturizer::RenderShipInto(
 
     // Src = Offset + shipSpaceToSourceTextureSpace * Ship
 
-    // At ShipX = ShipWidth (imaginary right edge) we want SrcX = SrcWidth - 1 - OffsetX
+    // At ShipX = ShipWidth - 1 (right edge) we want SrcX = SrcWidth - 1 - OffsetX
     float const shipSpaceToSourceTextureSpaceX =
         (static_cast<float>(sourceTextureImage.Size.width) - 1.0f - sourcePixelsPerShipParticleX) 
         / (static_cast<float>(structuralLayer.Buffer.Size.width) - 1.0f);
 
-    // At ShipY = ShipHeight (imaginary top edge) we want SrcY = SrcHeight - 1 - OffsetY
+    // At ShipY = ShipHeight - 1 (top edge) we want SrcY = SrcHeight - 1 - OffsetY
     float const shipSpaceToSourceTextureSpaceY =
         (static_cast<float>(sourceTextureImage.Size.height) - 1.0f - sourcePixelsPerShipParticleY)
         / (static_cast<float>(structuralLayer.Buffer.Size.height) - 1.0f);
@@ -379,11 +379,6 @@ void ShipTexturizer::RenderShipInto(
     float const targetTextureSpaceToSourceTextureSpaceY =
         targetTextureSpaceToShipTextureSpace
         * shipSpaceToSourceTextureSpaceY;
-
-    LogMessage("TODOTEST: sampleOffsetX=", sampleOffsetX, " sampleOffsetY=", sampleOffsetY, 
-        " targetTextureSpaceToSourceTextureSpaceX=", targetTextureSpaceToSourceTextureSpaceX, 
-        " targetTextureSpaceToSourceTextureSpaceY=", targetTextureSpaceToSourceTextureSpaceY,
-        " magnificationFactor=", magnificationFactor);
 
     //
     // Populate texture
@@ -522,31 +517,10 @@ void ShipTexturizer::RenderShipInto(
                 // Body - fill with source texture
                 for (int xx = xxStart; xx < xxEnd; ++xx)
                 {
-                    ////LogMessage("x=", x, " xx=", xx, " sampleOffsetX=", sampleOffsetX, " SrcWidth=", sourceTextureImage.Size.width, " sourcePixelsPerShipParticleX=", sourcePixelsPerShipParticleX,
-                    ////    " ShipWidth=", structuralLayer.Buffer.Size.width);
-
-                    // TODOTEST
                     rgbaColor const textureSample = SampleTextureBilinear(
                         sourceTextureImage,
                         sampleOffsetX + targetTextureSpaceToSourceTextureSpaceX * (x * magnificationFactor + xx),
-                        sampleOffsetY + targetTextureSpaceToSourceTextureSpaceY * (y * magnificationFactor + yy),
-                        false);
-                    
-                    ////float const pixelX =
-                    ////    sampleOffsetX
-                    ////    + (static_cast<float>(sourceTextureImage.Size.width) - 1.0f - sourcePixelsPerShipParticleX) / (static_cast<float>(structuralLayer.Buffer.Size.width) - 1.0f)
-                    ////    * (static_cast<float>(x) + static_cast<float>(xx) / static_cast<float>(magnificationFactor));
-
-                    ////float const pixelY =
-                    ////    sampleOffsetY
-                    ////    + (static_cast<float>(sourceTextureImage.Size.height) - 1.0f - sourcePixelsPerShipParticleY) / (static_cast<float>(structuralLayer.Buffer.Size.height) - 1.0f)
-                    ////    * (static_cast<float>(y) + static_cast<float>(yy) / static_cast<float>(magnificationFactor));
-
-                    ////rgbaColor const textureSample = SampleTextureBilinear(
-                    ////    sourceTextureImage,
-                    ////    pixelX,
-                    ////    pixelY,
-                    ////    false);
+                        sampleOffsetY + targetTextureSpaceToSourceTextureSpaceY * (y * magnificationFactor + yy));
 
                     targetImageData[targetQuadOffset + xx] = textureSample;
                 }
@@ -778,8 +752,7 @@ void ShipTexturizer::PurgeMaterialTextureCache(size_t maxSize) const
 rgbaColor ShipTexturizer::SampleTextureBilinear(
     RgbaImageData const & texture,
     float pixelX,
-    float pixelY,
-    bool doTODOLog) const
+    float pixelY) const
 {
     // Integral part
     auto pixelXI = FastTruncateToArchInt(pixelX);
@@ -816,12 +789,6 @@ rgbaColor ShipTexturizer::SampleTextureBilinear(
         texture.Data[pixelXI + nextPixelYI * texture.Size.width].toVec4f(),
         texture.Data[nextPixelXI + nextPixelYI * texture.Size.width].toVec4f(),
         pixelDx);
-
-    // TODOTEST
-    if (doTODOLog)
-    {
-        LogMessage("pixelX=", pixelX, " pixelXI=", pixelXI, " nextPixelXI=", nextPixelXI);
-    }
 
     // Linear interpolation between two vertical samples
     return rgbaColor(

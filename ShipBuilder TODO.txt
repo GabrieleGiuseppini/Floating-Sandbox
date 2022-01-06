@@ -170,7 +170,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 			= Fix ShipTexturizer::RenderShipInto
 				+ New conversions
 				- Deal with width/height = 1
-				- Try with nearest
+				X Try with nearest
 				- No need to mod at Sample() (assert)
 				= Test:
 					+ With texture
