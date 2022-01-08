@@ -476,7 +476,7 @@ void ShipTexturizer::RenderShipInto(
                         // 1
 
                         xxStart = 0; xxStartIncr = 0;
-                        xxEnd = 0; xxEndIncr = 1;
+                        xxEnd = 1; xxEndIncr = 1;
                     }
                 }
             }
@@ -490,7 +490,7 @@ void ShipTexturizer::RenderShipInto(
                     //     |
                     //     2
 
-                    xxStart = magnificationFactor; xxStartIncr = -1;
+                    xxStart = magnificationFactor - 1; xxStartIncr = -1;
                     xxEnd = magnificationFactor; xxEndIncr = 0;
                 }
             }
@@ -771,8 +771,8 @@ rgbaColor ShipTexturizer::SampleTextureBilinearConstrained(
     // Bilinear
     //
 
-    int const nextPixelXI = pixelXI + 1;
-    int const nextPixelYI = pixelYI + 1;
+    auto const nextPixelXI = pixelXI + 1;
+    auto const nextPixelYI = pixelYI + 1;
 
     assert(nextPixelXI < texture.Size.width);
     assert(nextPixelYI < texture.Size.height);
