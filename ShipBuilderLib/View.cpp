@@ -542,10 +542,54 @@ void View::UploadGameVisualization(RgbaImageData const & texture)
     GameOpenGL::UploadTexture(texture);
 
     //
+    // Create vertices
+    //
+    //
+    // We assume that the *content* of this texture is already offseted (on both sides)
+    // by half of a "ship pixel" (which is multiple texture pixels) in the same way as 
+    // we do when we build the ship at simulation time.
+    // We do this so that the texture for a particle at ship coords (x, y) is sampled at the center of the 
+    // texture's quad for that particle.
+    //
+    // Here, we only shift the *quad* itself by half of a ship particle square,
+    // as particles are taken to exist at the *center* of each square.
+    //
+
+    float const shipWidth = static_cast<float>(mViewModel.GetShipSize().width);
+    float const shipHeight = static_cast<float>(mViewModel.GetShipSize().height);
+    float const quadOffsetX = 0.5f;
+    float const quadOffsetY = 0.5f;
+
+    std::array<TextureVertex, 4> vertexBuffer;
+
+    // Bottom-left
+    vertexBuffer[0] = TextureVertex(
+        vec2f(quadOffsetX, quadOffsetY),
+        vec2f(0.0f, 0.0f));
+
+    // Top-left
+    vertexBuffer[1] = TextureVertex(
+        vec2f(quadOffsetX, shipHeight + quadOffsetY),
+        vec2f(0.0f, 1.0f));
+
+    // Bottom-right
+    vertexBuffer[2] = TextureVertex(
+        vec2f(shipWidth + quadOffsetX, quadOffsetY),
+        vec2f(1.0f, 0.0f));
+
+    // Top-right
+    vertexBuffer[3] = TextureVertex(
+        vec2f(shipWidth + quadOffsetX, shipHeight + quadOffsetY),
+        vec2f(1.0f, 1.0f));
+
+    //
     // Upload vertices
     //
-    
-    UploadTextureVertices(mGameVisualizationVBO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, *mGameVisualizationVBO);
+    glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size() * sizeof(TextureVertex), vertexBuffer.data(), GL_STATIC_DRAW);
+    CheckOpenGLError();
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     //
     // Remember we have this visualization
@@ -725,35 +769,41 @@ void View::UploadTextureLayerVisualization(RgbaImageData const & texture)
     //
     // Create vertices
     //
-    // We draw the texture with the same "0.5 ship offset" that we use at ShipFactory
+    // We map the texture with the same "0.5 ship offset" that we use at ShipFactory,
+    // which is for sampling the texture at the center of each ship particle square.
+    //
+    // Moreover, we draw the *quad* itself shifted by half of a ship particle square,
+    // as particles are taken to exist at the *center* of each square.
     //
 
     float const shipWidth = static_cast<float>(mViewModel.GetShipSize().width);
     float const shipHeight = static_cast<float>(mViewModel.GetShipSize().height);
-    float const offsetX = 0.5f / shipWidth;
-    float const offsetY = 0.5f / shipHeight;
+    float const quadOffsetX = 0.5f;
+    float const quadOffsetY = 0.5f;
+    float const texOffsetX = 0.5f / shipWidth;
+    float const texOffsetY = 0.5f / shipHeight;
 
     std::array<TextureVertex, 4> vertexBuffer;
 
     // Bottom-left
     vertexBuffer[0] = TextureVertex(
-        vec2f(0.0f, 0.0f),
-        vec2f(offsetX, offsetY));
+        vec2f(quadOffsetX, quadOffsetY),
+        vec2f(texOffsetX, texOffsetY));
 
     // Top-left
     vertexBuffer[1] = TextureVertex(
-        vec2f(0.0f, shipHeight - 1),
-        vec2f(offsetX, 1.0f - offsetY));
+        vec2f(quadOffsetX, shipHeight - quadOffsetY),
+        vec2f(texOffsetX, 1.0f - texOffsetY));
 
     // Bottom-right
     vertexBuffer[2] = TextureVertex(
-        vec2f(shipWidth - 1, 0.0f),
-        vec2f(1.0f - offsetX, offsetY));
+        vec2f(shipWidth - quadOffsetX, quadOffsetY),
+        vec2f(1.0f - texOffsetX, texOffsetY));
 
     // Top-right
     vertexBuffer[3] = TextureVertex(
-        vec2f(shipWidth - 1, shipHeight - 1),
-        vec2f(1.0f - offsetX, 1.0f - offsetY));
+        vec2f(shipWidth - quadOffsetX, shipHeight - quadOffsetY),
+        vec2f(1.0f - texOffsetX, 1.0f - texOffsetY));
 
     //
     // Upload vertices
@@ -1296,6 +1346,8 @@ void View::UpdateStructuralLayerVisualization()
     // Set ship particle texture size - normalized size (i.e. in the 0->1 texture space) of 1 ship particle pixel (w, h separately)
     //
 
+    vec2f const pixelsPerShipParticle = mViewModel.ShipSpaceSizeToPhysicalDisplaySize({ 1, 1 }).ToFloat();
+
     float const shipWidth = static_cast<float>(mViewModel.GetShipSize().width);
     float const shipHeight = static_cast<float>(mViewModel.GetShipSize().height);
 
@@ -1304,6 +1356,7 @@ void View::UpdateStructuralLayerVisualization()
         1.0f / shipHeight);
 
     mShaderManager->ActivateProgram<ProgramType::StructureMesh>();
+    mShaderManager->SetProgramParameter<ProgramType::StructureMesh, ProgramParameterType::PixelsPerShipParticle>(pixelsPerShipParticle.x, pixelsPerShipParticle.y);
     mShaderManager->SetProgramParameter<ProgramType::StructureMesh, ProgramParameterType::ShipParticleTextureSize>(shipParticleTextureSize.x, shipParticleTextureSize.y);
 }
 

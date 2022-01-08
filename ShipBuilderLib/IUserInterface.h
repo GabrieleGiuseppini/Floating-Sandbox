@@ -50,6 +50,9 @@ public:
     // Notifies of a (possible) change in the opacity of "other layers"
     virtual void OnOtherVisualizationsOpacityChanged(float opacity) = 0;
 
+    // Notifies of a (possible) change in the visual grid
+    virtual void OnVisualGridEnablementChanged(bool isEnabled) = 0;
+
     // Notifies of a (possible) change in the dirtiness of the model
     virtual void OnModelDirtyChanged() = 0;
 

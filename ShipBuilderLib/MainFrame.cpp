@@ -674,6 +674,14 @@ void MainFrame::OnOtherVisualizationsOpacityChanged(float opacity)
     }
 }
 
+void MainFrame::OnVisualGridEnablementChanged(bool isEnabled)
+{
+    if (mController)
+    {
+        ReconciliateUIWithVisualGridEnablement(isEnabled);
+    }
+}
+
 void MainFrame::OnModelDirtyChanged()
 {
     if (mController)
@@ -1909,9 +1917,9 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
         // View grid button
         {
             auto bitmap = WxHelpers::LoadBitmap("view_grid_button", mResourceLocator);
-            auto viewGridButton = new wxBitmapToggleButton(panel, wxID_ANY, bitmap, wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
-            viewGridButton->SetToolTip(_("Enable/Disable the visual guides."));
-            viewGridButton->Bind(
+            mViewGridButton = new wxBitmapToggleButton(panel, wxID_ANY, bitmap, wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
+            mViewGridButton->SetToolTip(_("Enable/Disable the visual guides."));
+            mViewGridButton->Bind(
                 wxEVT_TOGGLEBUTTON,
                 [this](wxCommandEvent & event)
                 {
@@ -1922,7 +1930,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
                 });
 
             mVisualizationModePanelsSizer->Add(
-                viewGridButton,
+                mViewGridButton,
                 0, // Retain vertical width
                 wxALIGN_CENTER_HORIZONTAL, // Do not expand vertically
                 0);
@@ -2645,17 +2653,27 @@ std::tuple<wxPanel *, wxSizer *> MainFrame::CreateToolSettingsToolSizePanel(
 
 void MainFrame::OnWorkCanvasPaint(wxPaintEvent & /*event*/)
 {
-    LogMessage("OnWorkCanvasPaint (with", (!mController ? "out" : ""), " controller, with", (!mInitialAction ? "out" : ""), " initial action)");
+    //LogMessage("OnWorkCanvasPaint (with", (!mController ? "out" : ""), " controller, with", (!mInitialAction ? "out" : ""), " initial action)");
 
     // Execute initial action, if any
     if (mInitialAction.has_value())
     {
-        // Extract and cleanup initial action - so a ShowModal coming from within it and processing this OnPaint here does not go through this again forever
+        // Extract and cleanup initial action - so a ShowModal coming from within it and kicking off a new OnPaint does not enter an infinite loop
         auto const initialAction = std::move(*mInitialAction);
         mInitialAction.reset();
 
         // Execute
-        initialAction();
+        try
+        {
+            initialAction();
+        }
+        catch (std::exception const & e)
+        {
+            ShowError(std::string(e.what()));
+
+            // No need to continue, bail out
+            BailOut();
+        }
     }
 
     // Render, if we have a controller
@@ -2922,29 +2940,32 @@ void MainFrame::OnQuit(wxCommandEvent & /*event*/)
 
 void MainFrame::OnClose(wxCloseEvent & event)
 {
-    if (event.CanVeto() && mController->IsModelDirty())
+    if (mController)
     {
-        // Ask user if they really want
-        int result = AskUserIfSave();
-        if (result == wxYES)
+        if (event.CanVeto() && mController->IsModelDirty())
         {
-            if (!SaveShip())
+            // Ask user if they really want
+            int result = AskUserIfSave();
+            if (result == wxYES)
+            {
+                if (!SaveShip())
+                {
+                    // Changed their mind
+                    result = wxCANCEL;
+                }
+            }
+
+            if (result == wxCANCEL)
             {
                 // Changed their mind
-                result = wxCANCEL;
+                event.Veto();
+                return;
             }
         }
 
-        if (result == wxCANCEL)
-        {
-            // Changed their mind
-            event.Veto();
-            return;
-        }
+        // Nuke controller, now that all dependencies are still alive
+        mController.reset();
     }
-
-    // Nuke controller, now that all dependencies are still alive
-    mController.reset();
 
     event.Skip();
 }
@@ -3537,6 +3558,18 @@ void MainFrame::DoSaveShip(std::filesystem::path const & shipFilePath)
     mController->ClearModelDirty();
 }
 
+void MainFrame::BailOut()
+{
+    if (IsStandAlone())
+    {
+        Close();
+    }
+    else
+    {
+        SwitchBackToGame(std::nullopt);
+    }
+}
+
 bool MainFrame::IsLogicallyInWorkCanvas(DisplayLogicalCoordinates const & coords) const
 {
     // Check if in canvas (but not captured by scrollbars), or if simply captured
@@ -3654,6 +3687,7 @@ void MainFrame::ReconciliateUI()
     ReconciliateUIWithRopesLayerVisualizationModeSelection(mController->GetRopesLayerVisualizationMode());
     ReconciliateUIWithTextureLayerVisualizationModeSelection(mController->GetTextureLayerVisualizationMode());
     ReconciliateUIWithOtherLayersOpacity(mController->GetOtherVisualizationsOpacity());
+    ReconciliateUIWithVisualGridEnablement(mController->IsVisualGridEnabled());
     ReconciliateUIWithModelDirtiness();
     ReconciliateUIWithWorkbenchState();
     ReconciliateUIWithSelectedTool(mController->GetCurrentTool());
@@ -3826,6 +3860,11 @@ void MainFrame::ReconciliateUIWithTextureLayerVisualizationModeSelection(Texture
 void MainFrame::ReconciliateUIWithOtherLayersOpacity(float opacity)
 {
     mOtherVisualizationsOpacitySlider->SetValue(OtherVisualizationsOpacityToSlider(opacity));
+}
+
+void MainFrame::ReconciliateUIWithVisualGridEnablement(bool isEnabled)
+{
+    mViewGridButton->SetValue(isEnabled);
 }
 
 void MainFrame::ReconciliateUIWithModelDirtiness()

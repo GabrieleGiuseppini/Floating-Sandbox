@@ -71,6 +71,8 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::Opacity;
     else if (str == "OrthoMatrix")
         return ProgramParameterType::OrthoMatrix;
+    else if (str == "PixelsPerShipParticle")
+        return ProgramParameterType::PixelsPerShipParticle;
     else if (str == "PixelSize")
         return ProgramParameterType::PixelSize;
     else if (str == "PixelStep")
@@ -93,6 +95,8 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
             return "Opacity";
         case ProgramParameterType::OrthoMatrix:
             return "OrthoMatrix";
+        case ProgramParameterType::PixelsPerShipParticle:
+            return "PixelsPerShipParticle";
         case ProgramParameterType::PixelSize:
             return "PixelSize";
         case ProgramParameterType::PixelStep:

@@ -97,6 +97,8 @@ public:
 
     void OnOtherVisualizationsOpacityChanged(float opacity) override;
 
+    void OnVisualGridEnablementChanged(bool isEnabled) override;
+
     void OnModelDirtyChanged() override;
 
     void OnWorkbenchStateChanged() override;
@@ -237,6 +239,8 @@ private:
 
     void DoSaveShip(std::filesystem::path const & shipFilePath);
 
+    void BailOut();
+
     bool IsLogicallyInWorkCanvas(DisplayLogicalCoordinates const & coords) const;
 
     DisplayLogicalSize GetWorkCanvasSize() const;
@@ -276,6 +280,8 @@ private:
     void ReconciliateUIWithTextureLayerVisualizationModeSelection(TextureLayerVisualizationModeType mode);
 
     void ReconciliateUIWithOtherLayersOpacity(float opacity);
+
+    void ReconciliateUIWithVisualGridEnablement(bool isEnabled);
 
     void ReconciliateUIWithModelDirtiness();
 
@@ -347,6 +353,7 @@ private:
     BitmapToggleButton * mRopesLayerVisualizationLinesModeButton;
     BitmapToggleButton * mTextureLayerVisualizationNoneModeButton;
     BitmapToggleButton * mTextureLayerVisualizationMatteModeButton;
+    wxBitmapToggleButton * mViewGridButton;
 
     // Toolbar panel
     wxSizer * mToolbarPanelsSizer;
