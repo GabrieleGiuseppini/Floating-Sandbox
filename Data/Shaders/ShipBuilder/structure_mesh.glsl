@@ -50,10 +50,10 @@ void main()
     vec2 quvSample = quvBL + paramShipParticleTextureSize / 2.0;
     
     // Line thickness in the normalized fractional position space
-    vec2 lineThicknessV = 
+    vec2 lineThickness = 
         0.51 // Pixels on either side
         / paramPixelsPerShipParticle;
-    float lineThickness = length(lineThicknessV) * 2.0;
+    float lineThicknessD = length(lineThickness);
     
     //
     // Vertices
@@ -116,28 +116,28 @@ void main()
     //   5
     //    \
     //     9
-    float isOnLine19 = step(abs(1.0 - fBLn.y - fBLn.x), lineThickness);
+    float isOnLine19 = step(abs(1.0 - fBLn.y - fBLn.x), lineThicknessD);
     
     //   2
     //   |
     //   5
     //   |
     //   8
-    float isOnLine28 = step(abs(0.5 - fBLn.x), lineThickness);
+    float isOnLine28 = step(abs(0.5 - fBLn.x), lineThickness.x);
 
     //     3
     //    /  
     //   5
     //  /
     // 7
-    float isOnLine37 = step(abs(fBLn.y - fBLn.x), lineThickness);
+    float isOnLine37 = step(abs(fBLn.y - fBLn.x), lineThicknessD);
     
     //
     //
     // 4-5-6
     //
     //
-    float isOnLine46 = step(abs(0.5 - fBLn.y), lineThickness);
+    float isOnLine46 = step(abs(0.5 - fBLn.y), lineThickness.y);
     
     //
     // Combine
