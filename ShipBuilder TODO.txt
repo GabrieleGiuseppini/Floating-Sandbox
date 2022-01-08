@@ -182,11 +182,16 @@ https://gamejolt.com/x/permalink/comment/11730705
 					+ Compare auto-texturization with Game's
 			+ Cleanup sampling functions
 		= Mesh shader
-			+ See whether just quad shift (at shader) is enough
-			- Remove line thickness adjustment
-			- Draw particle rounds 
+			X See whether just quad shift (at shader) is enough
+			= Rewrite centered
+				- Line thickness needs to be calcd from outside to guarantee at least one pixel
+			+ Draw particle rounds 
 		- View:.cpp unify/cleanup vertices creation/upload
+		- Nail down better defaults for viz modes
 		- Merge into master
+
+- Frame cctor: see if startup looks better if we setup primary layer already in cttor
+	- If so: consider having a Defaults or State class
 
 - Send for testing
 

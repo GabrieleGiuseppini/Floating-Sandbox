@@ -31,116 +31,154 @@ uniform sampler2D paramTextureUnit1;
 
 // Params
 uniform float paramOpacity;
+uniform vec2 paramPixelsPerShipParticle;
 uniform vec2 paramShipParticleTextureSize; // Size of one ship particle in texture space (i.e. in the [0, 1] space), separately for x and y
 
 void main()
 {
-    // Shift by half of a ship particle square,
-    // as particles are taken to exist at the *center* of each square
-    vec2 shiftedVertexTextureCoordinates = vertexTextureCoordinates - paramShipParticleTextureSize / 2.0;
-
-    // Calculate quantized texture coords
-    vec2 quv = floor(shiftedVertexTextureCoordinates / paramShipParticleTextureSize) * paramShipParticleTextureSize;
-
-    // Calculate fractional position of this pixel's position in this ship particle's square
-    vec2 f = shiftedVertexTextureCoordinates - quv;
-
+    // Calculate quantized texture coords - coords of bottom-left corner
+    vec2 quvBL = floor(vertexTextureCoordinates / paramShipParticleTextureSize) * paramShipParticleTextureSize;
+    
+    // Calculate fractional position of this pixel's position in this ship particle's square, wrt BL
+    vec2 fBL = (vertexTextureCoordinates - quvBL);
+    
+    // Normalized fractional position
+    vec2 fBLn = fBL / paramShipParticleTextureSize;
+    
     // Given that the texture is setup for nearest, we offset the UV coords so that we sample instead
-    // smack in the middle of the texture
-    quv += paramShipParticleTextureSize / 2.0;
-
-    // Line thickness
-    vec2 lineThickness = paramShipParticleTextureSize / 8.0;
-    float halfLineThicknessD = length(lineThickness) / 2.0;
-
+    // smack in the middle of the ship particle
+    vec2 quvSample = quvBL + paramShipParticleTextureSize / 2.0;
+    
+    // Line thickness in the normalized fractional position space
+    vec2 lineThicknessV = 
+        0.51 // Pixels on either side
+        / paramPixelsPerShipParticle;
+    float lineThickness = length(lineThicknessV) * 2.0;
+    
     //
     // Vertices
     //
-    // 3---4
-    // |   |
-    // 1---2
-
-    vec4 particle1Color = texture2D(paramTextureUnit1, quv);
-    float hasVertex1 = 
-        particle1Color.w
-        * step(0.0, quv.x)
-        * step(0.0, quv.y);
-
-    vec2 particle2quv = quv + vec2(paramShipParticleTextureSize.x, 0.);
-    vec4 particle2Color = texture2D(paramTextureUnit1, particle2quv);
-    float hasVertex2 =
-        particle2Color.w
-        * step(0.0, particle2quv.x)
-        * step(particle2quv.x, 1.0)
-        * step(0.0, particle2quv.y);
-
-    vec2 particle3quv = quv + vec2(0., paramShipParticleTextureSize.y);
-    float hasVertex3 =
-        texture2D(paramTextureUnit1, particle3quv).w
-        * step(0.0, particle3quv.x)
-        * step(0.0, particle3quv.y)
-        * step(particle3quv.y, 1.0);
-
-    vec2 particle4quv = quv + paramShipParticleTextureSize;
-    float hasVertex4 =
-        texture2D(paramTextureUnit1, particle4quv).w
-        * step(0.0, particle4quv.x)
-        * step(particle4quv.x, 1.0)
-        * step(0.0, particle4quv.y)
-        * step(particle4quv.y, 1.0);
-
+    // 1-2-3  +
+    // |\|/|  |
+    // 4-5-6  
+    // |/|\|  |
+    // 7-8-9  -
     //
-    // Particle
-    //
+    
+    // Pre-calc "booleans" for bound checks
+    float hasXMinus = step(0.0, quvSample.x - paramShipParticleTextureSize.x);
+    float hasXPlus = step(quvSample.x + paramShipParticleTextureSize.x, 1.0);
+    float hasYMinus = step(0.0, quvSample.y - paramShipParticleTextureSize.y);
+    float hasYPlus = step(quvSample.y + paramShipParticleTextureSize.y, 1.0);
+    
+    // 1
+    vec2 particle1quv = quvSample + vec2(-paramShipParticleTextureSize.x, paramShipParticleTextureSize.y);
+    float hasVertex1 = texture2D(paramTextureUnit1, particle1quv).w;
+        
+    // 2
+    vec2 particle2quv = quvSample + vec2(0., paramShipParticleTextureSize.y);
+    float hasVertex2 = texture2D(paramTextureUnit1, particle2quv).w;        
 
-    // Depth=1 when in the bottom-left corner of the ship particle square,
-    // and when no 1-3 and 1-4 lines
-    vec2 particleSize = paramShipParticleTextureSize / 3.0;
-    float particleDepth = hasVertex1
-        * step(f.x, particleSize.x)
-        * step(f.y, particleSize.y)
-        * (1.0 - min(1.0, hasVertex3 + hasVertex4));
+    // 3
+    vec2 particle3quv = quvSample + vec2(paramShipParticleTextureSize.x, paramShipParticleTextureSize.y);
+    float hasVertex3 = texture2D(paramTextureUnit1, particle3quv).w;
+        
+    // 4
+    vec2 particle4quv = quvSample + vec2(-paramShipParticleTextureSize.x, 0.);
+    float hasVertex4 = texture2D(paramTextureUnit1, particle4quv).w;              
+
+    // 5
+    vec4 particle5Color = texture2D(paramTextureUnit1, quvSample);
+    float hasVertex5 = particle5Color.w;
+        
+    // 6
+    vec2 particle6quv = quvSample + vec2(paramShipParticleTextureSize.x, 0.);
+    float hasVertex6 = texture2D(paramTextureUnit1, particle6quv).w;          
+    
+    // 7
+    vec2 particle7quv = quvSample + vec2(-paramShipParticleTextureSize.x, -paramShipParticleTextureSize.y);
+    float hasVertex7 = texture2D(paramTextureUnit1, particle7quv).w;
+
+    // 8
+    vec2 particle8quv = quvSample + vec2(0., -paramShipParticleTextureSize.y);
+    float hasVertex8 = texture2D(paramTextureUnit1, particle8quv).w;
+
+    // 9
+    vec2 particle9quv = quvSample + vec2(paramShipParticleTextureSize.x, -paramShipParticleTextureSize.y);
+    float hasVertex9 = texture2D(paramTextureUnit1, particle9quv).w;
 
     //
     // Lines
     //
-
-    // 1---2
-    float line12Depth = (hasVertex1 * hasVertex2)
-        * step(f.y, lineThickness.y);
-
-    // 3
-    // |
+    
     // 1
-    float line13Depth = (hasVertex1 * hasVertex3)
-        * step(f.x, lineThickness.x);
+    //  \
+    //   5
+    //    \
+    //     9
+    float isOnLine19 = step(abs(1.0 - fBLn.y - fBLn.x), lineThickness);
+    
+    //   2
+    //   |
+    //   5
+    //   |
+    //   8
+    float isOnLine28 = step(abs(0.5 - fBLn.x), lineThickness);
 
-    //     4
-    //   /
-    // 1
-    float line14Depth = (hasVertex1 * hasVertex4)
-        * step(abs(f.y - paramShipParticleTextureSize.y / paramShipParticleTextureSize.x * f.x), halfLineThicknessD);
+    //     3
+    //    /  
+    //   5
+    //  /
+    // 7
+    float isOnLine37 = step(abs(fBLn.y - fBLn.x), lineThickness);
+    
+    //
+    //
+    // 4-5-6
+    //
+    //
+    float isOnLine46 = step(abs(0.5 - fBLn.y), lineThickness);
+    
+    //
+    // Combine
+    //
+    
+    float isOnUpperLines =
+        step(0.5, fBLn.y)
+        * hasYPlus
+        * (hasVertex1 * hasXMinus * isOnLine19 + hasVertex2 * isOnLine28 + hasVertex3 * hasXPlus * isOnLine37);
+    
+    float isOnLeftLines =
+        step(fBLn.x, 0.5)
+        * hasXMinus
+        * (hasVertex4 * isOnLine46);
 
-    // 3
-    //   \
-    //     2
-    float line23Depth = (hasVertex2 * hasVertex3)
-        * step(abs(paramShipParticleTextureSize.y + lineThickness.y - f.y - paramShipParticleTextureSize.y / paramShipParticleTextureSize.x * f.x), halfLineThicknessD);
+    float isOnRightLines =
+        step(0.5, fBLn.x)
+        * hasXPlus
+        * (hasVertex6 * isOnLine46);
+    
+    float isOnLowerLines =
+        step(fBLn.y, 0.5)
+        * hasYMinus
+        * (hasVertex7 * hasXMinus * isOnLine37 + hasVertex8 * isOnLine28 + hasVertex9 * hasXPlus * isOnLine19);
+                
+    //
+    // Particle
+    //
+    
+    # define ParticleSize .15
+    float isOnParticle = step(length(fBLn - .5), ParticleSize);
 
     //
     // Combine outputs
     //
-
-    vec4 color1 = vec4(
-        particle1Color.xyz,
-        min(1.0, particleDepth + line12Depth + line13Depth + line14Depth) * paramOpacity);
-
-    vec4 color2 = vec4(
-        particle2Color.xyz,
-        line23Depth * paramOpacity);
-
-    gl_FragColor = mix(
-        color1,
-        color2,
-        color2.w);
+    
+    gl_FragColor = vec4(
+        particle5Color.xyz,
+        hasVertex5 
+        * min(
+            1.0, 
+            isOnParticle + isOnUpperLines + isOnLowerLines + isOnLeftLines + isOnRightLines)
+        * paramOpacity);
 }

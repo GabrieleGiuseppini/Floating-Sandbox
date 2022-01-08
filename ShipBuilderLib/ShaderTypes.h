@@ -39,9 +39,10 @@ enum class ProgramParameterType : uint8_t
 {
     Opacity = 0,
     OrthoMatrix,
-    ShipParticleTextureSize,
+    PixelsPerShipParticle,
     PixelSize,
     PixelStep,
+    ShipParticleTextureSize,
 
     // Texture units
     BackgroundTextureUnit,

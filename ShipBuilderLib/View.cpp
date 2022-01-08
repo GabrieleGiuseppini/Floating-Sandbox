@@ -1346,6 +1346,8 @@ void View::UpdateStructuralLayerVisualization()
     // Set ship particle texture size - normalized size (i.e. in the 0->1 texture space) of 1 ship particle pixel (w, h separately)
     //
 
+    vec2f const pixelsPerShipParticle = mViewModel.ShipSpaceSizeToPhysicalDisplaySize({ 1, 1 }).ToFloat();
+
     float const shipWidth = static_cast<float>(mViewModel.GetShipSize().width);
     float const shipHeight = static_cast<float>(mViewModel.GetShipSize().height);
 
@@ -1354,6 +1356,7 @@ void View::UpdateStructuralLayerVisualization()
         1.0f / shipHeight);
 
     mShaderManager->ActivateProgram<ProgramType::StructureMesh>();
+    mShaderManager->SetProgramParameter<ProgramType::StructureMesh, ProgramParameterType::PixelsPerShipParticle>(pixelsPerShipParticle.x, pixelsPerShipParticle.y);
     mShaderManager->SetProgramParameter<ProgramType::StructureMesh, ProgramParameterType::ShipParticleTextureSize>(shipParticleTextureSize.x, shipParticleTextureSize.y);
 }
 
