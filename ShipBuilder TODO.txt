@@ -173,11 +173,18 @@ https://gamejolt.com/x/permalink/comment/11730705
 	+ ShipTexturizer::RenderShipInto: 2-3-4 and 1-3-4 need to cover diagonal
 	+ Nail down better defaults for viz modes
 	+ Fix ropes alignment
+	+ Merge into master & nuke branch
 	- View:.cpp unify/cleanup vertices creation/upload
-	- Merge into master & nuke branch
 
 - Frame cctor: see if startup looks better if we setup primary layer already in cttor
-	- If so: consider having a Defaults or State class
+	- If so: ControllerState class
+		- With:
+			- primary layer
+			- tool
+			- viz modes
+			- TODO: others?
+		- Has own defaults
+		- Owned by MainFrame, passed to Controller as & who stores as member
 
 - Send for testing
 
