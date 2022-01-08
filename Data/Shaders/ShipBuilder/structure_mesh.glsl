@@ -168,7 +168,7 @@ void main()
     //
     
     # define ParticleSize .15
-    float isOnParticle = step(length(fBLn - .5), ParticleSize);
+    float isOnParticle = 1.0 - smoothstep(ParticleSize - ParticleSize/3., ParticleSize + ParticleSize/3., length(fBLn - .5));
 
     //
     // Combine outputs
