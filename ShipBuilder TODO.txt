@@ -171,9 +171,9 @@ https://gamejolt.com/x/permalink/comment/11730705
 			+ Line thickness needs to be calcd from outside to guarantee at least one pixel
 		+ Draw particle rounds 
 	+ ShipTexturizer::RenderShipInto: 2-3-4 and 1-3-4 need to cover diagonal
-	- View:.cpp unify/cleanup vertices creation/upload
-	- Nail down better defaults for viz modes
+	+ Nail down better defaults for viz modes
 	+ Fix ropes alignment
+	- View:.cpp unify/cleanup vertices creation/upload
 	- Merge into master & nuke branch
 
 - Frame cctor: see if startup looks better if we setup primary layer already in cttor
