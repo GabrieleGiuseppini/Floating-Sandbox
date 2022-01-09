@@ -493,6 +493,8 @@ View::View(
 
         glBindVertexArray(0);
     }
+
+    // Here we assume there will be an OnViewModelUpdated() call generated
 }
 
 void View::EnableVisualGrid(bool doEnable)
@@ -554,43 +556,19 @@ void View::UploadGameVisualization(RgbaImageData const & texture)
     // Here, we only shift the *quad* itself by half of a ship particle square,
     // as particles are taken to exist at the *center* of each square.
     //
-
+    
     float const shipWidth = static_cast<float>(mViewModel.GetShipSize().width);
     float const shipHeight = static_cast<float>(mViewModel.GetShipSize().height);
-    float const quadOffsetX = 0.5f;
-    float const quadOffsetY = 0.5f;
+    float constexpr QuadOffsetX = 0.5f;
+    float constexpr QuadOffsetY = 0.5f;
 
-    std::array<TextureVertex, 4> vertexBuffer;
-
-    // Bottom-left
-    vertexBuffer[0] = TextureVertex(
-        vec2f(quadOffsetX, quadOffsetY),
-        vec2f(0.0f, 0.0f));
-
-    // Top-left
-    vertexBuffer[1] = TextureVertex(
-        vec2f(quadOffsetX, shipHeight + quadOffsetY),
-        vec2f(0.0f, 1.0f));
-
-    // Bottom-right
-    vertexBuffer[2] = TextureVertex(
-        vec2f(shipWidth + quadOffsetX, quadOffsetY),
-        vec2f(1.0f, 0.0f));
-
-    // Top-right
-    vertexBuffer[3] = TextureVertex(
-        vec2f(shipWidth + quadOffsetX, shipHeight + quadOffsetY),
-        vec2f(1.0f, 1.0f));
-
-    //
-    // Upload vertices
-    //
-
-    glBindBuffer(GL_ARRAY_BUFFER, *mGameVisualizationVBO);
-    glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size() * sizeof(TextureVertex), vertexBuffer.data(), GL_STATIC_DRAW);
-    CheckOpenGLError();
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
+    UploadTextureVertices(
+        QuadOffsetX, 0.0f,
+        shipWidth + QuadOffsetX, 1.0f,
+        QuadOffsetY, 0.0f,
+        shipHeight + QuadOffsetY, 1.0f,
+        *mGameVisualizationVBO);
+    
     //
     // Remember we have this visualization
     //
@@ -657,19 +635,21 @@ void View::UploadStructuralLayerVisualization(RgbaImageData const & texture)
     // Upload vertices
     //
 
-    UploadTextureVertices(mStructuralLayerVisualizationVBO);
+    float const shipWidth = static_cast<float>(mViewModel.GetShipSize().width);
+    float const shipHeight = static_cast<float>(mViewModel.GetShipSize().height);
+
+    UploadTextureVertices(
+        0.0f, 0.0f,
+        shipWidth, 1.0f,
+        0.0f, 0.0f,
+        shipHeight, 1.0f,
+        mStructuralLayerVisualizationVBO);
 
     //
     // Remember we have this visualization
     //
 
     mHasStructuralLayerVisualization = true;
-
-    //
-    // Update visualization
-    //
-
-    UpdateStructuralLayerVisualization();
 }
 
 void View::RemoveStructuralLayerVisualization()
@@ -694,7 +674,15 @@ void View::UploadElectricalLayerVisualization(RgbaImageData const & texture)
     // Upload vertices
     //
 
-    UploadTextureVertices(mElectricalLayerVisualizationVBO);
+    float const shipWidth = static_cast<float>(mViewModel.GetShipSize().width);
+    float const shipHeight = static_cast<float>(mViewModel.GetShipSize().height);
+
+    UploadTextureVertices(
+        0.0f, 0.0f,
+        shipWidth, 1.0f,
+        0.0f, 0.0f,
+        shipHeight, 1.0f,
+        mElectricalLayerVisualizationVBO);
 
     //
     // Remember we have this visualization
@@ -778,41 +766,17 @@ void View::UploadTextureLayerVisualization(RgbaImageData const & texture)
 
     float const shipWidth = static_cast<float>(mViewModel.GetShipSize().width);
     float const shipHeight = static_cast<float>(mViewModel.GetShipSize().height);
-    float const quadOffsetX = 0.5f;
-    float const quadOffsetY = 0.5f;
+    float constexpr QuadOffsetX = 0.5f;
+    float constexpr QuadOffsetY = 0.5f;
     float const texOffsetX = 0.5f / shipWidth;
     float const texOffsetY = 0.5f / shipHeight;
 
-    std::array<TextureVertex, 4> vertexBuffer;
-
-    // Bottom-left
-    vertexBuffer[0] = TextureVertex(
-        vec2f(quadOffsetX, quadOffsetY),
-        vec2f(texOffsetX, texOffsetY));
-
-    // Top-left
-    vertexBuffer[1] = TextureVertex(
-        vec2f(quadOffsetX, shipHeight - quadOffsetY),
-        vec2f(texOffsetX, 1.0f - texOffsetY));
-
-    // Bottom-right
-    vertexBuffer[2] = TextureVertex(
-        vec2f(shipWidth - quadOffsetX, quadOffsetY),
-        vec2f(1.0f - texOffsetX, texOffsetY));
-
-    // Top-right
-    vertexBuffer[3] = TextureVertex(
-        vec2f(shipWidth - quadOffsetX, shipHeight - quadOffsetY),
-        vec2f(1.0f - texOffsetX, 1.0f - texOffsetY));
-
-    //
-    // Upload vertices
-    //
-
-    glBindBuffer(GL_ARRAY_BUFFER, *mTextureLayerVisualizationVBO);
-    glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size() * sizeof(TextureVertex), vertexBuffer.data(), GL_STATIC_DRAW);
-    CheckOpenGLError();
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    UploadTextureVertices(
+        QuadOffsetX, texOffsetX,
+        shipWidth - QuadOffsetX, 1.0f - texOffsetX,
+        QuadOffsetY, texOffsetY,
+        shipHeight - QuadOffsetY, 1.0f - texOffsetY,
+        mTextureLayerVisualizationVBO);
 
     //
     // Remember we have this visualization
@@ -1098,6 +1062,8 @@ void View::Render()
 
 void View::OnViewModelUpdated()
 {
+    UpdateStructuralLayerVisualizationParameters();
+
     if (mBackgroundTextureSize.has_value())
     {
         UpdateBackgroundTexture(*mBackgroundTextureSize);
@@ -1106,11 +1072,6 @@ void View::OnViewModelUpdated()
     UpdateCanvas();
 
     UpdateGrid();
-
-    if (mHasStructuralLayerVisualization)
-    {
-        UpdateStructuralLayerVisualization();
-    }
 
     if (mHasCircleOverlay)
     {
@@ -1176,6 +1137,26 @@ void View::OnViewModelUpdated()
         physicalCanvasRect.size.width, 
         physicalCanvasRect.size.height);
     CheckOpenGLError();
+}
+
+void View::UpdateStructuralLayerVisualizationParameters()
+{
+    //
+    // Set ship particle texture size - normalized size (i.e. in the 0->1 texture space) of 1 ship particle pixel (w, h separately)
+    //
+
+    vec2f const pixelsPerShipParticle = mViewModel.ShipSpaceSizeToPhysicalDisplaySize({ 1, 1 }).ToFloat();
+
+    float const shipWidth = static_cast<float>(mViewModel.GetShipSize().width);
+    float const shipHeight = static_cast<float>(mViewModel.GetShipSize().height);
+
+    vec2f const shipParticleTextureSize = vec2f(
+        1.0f / shipWidth,
+        1.0f / shipHeight);
+
+    mShaderManager->ActivateProgram<ProgramType::StructureMesh>();
+    mShaderManager->SetProgramParameter<ProgramType::StructureMesh, ProgramParameterType::PixelsPerShipParticle>(pixelsPerShipParticle.x, pixelsPerShipParticle.y);
+    mShaderManager->SetProgramParameter<ProgramType::StructureMesh, ProgramParameterType::ShipParticleTextureSize>(shipParticleTextureSize.x, shipParticleTextureSize.y);
 }
 
 void View::UpdateBackgroundTexture(ImageSize const & textureSize)
@@ -1338,26 +1319,6 @@ void View::UpdateGrid()
     mShaderManager->ActivateProgram<ProgramType::Grid>();
     mShaderManager->SetProgramParameter<ProgramType::Grid, ProgramParameterType::PixelStep>(
         pixelStepSize);
-}
-
-void View::UpdateStructuralLayerVisualization()
-{
-    //
-    // Set ship particle texture size - normalized size (i.e. in the 0->1 texture space) of 1 ship particle pixel (w, h separately)
-    //
-
-    vec2f const pixelsPerShipParticle = mViewModel.ShipSpaceSizeToPhysicalDisplaySize({ 1, 1 }).ToFloat();
-
-    float const shipWidth = static_cast<float>(mViewModel.GetShipSize().width);
-    float const shipHeight = static_cast<float>(mViewModel.GetShipSize().height);
-
-    vec2f const shipParticleTextureSize = vec2f(
-        1.0f / shipWidth,
-        1.0f / shipHeight);
-
-    mShaderManager->ActivateProgram<ProgramType::StructureMesh>();
-    mShaderManager->SetProgramParameter<ProgramType::StructureMesh, ProgramParameterType::PixelsPerShipParticle>(pixelsPerShipParticle.x, pixelsPerShipParticle.y);
-    mShaderManager->SetProgramParameter<ProgramType::StructureMesh, ProgramParameterType::ShipParticleTextureSize>(shipParticleTextureSize.x, shipParticleTextureSize.y);
 }
 
 void View::UpdateCircleOverlay()
@@ -1531,36 +1492,34 @@ void View::UpdateDashedLineOverlay()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void View::UploadTextureVertices(GameOpenGLVBO const & vbo)
+void View::UploadTextureVertices(
+    float leftXShip, float leftXTex,
+    float rightXShip, float rightTex,
+    float bottomYShip, float bottomYTex,
+    float topYShip, float topYTex,
+    GameOpenGLVBO const & vbo)
 {
-    //
-    // Create vertices
-    //
-
-    float const shipWidth = static_cast<float>(mViewModel.GetShipSize().width);
-    float const shipHeight = static_cast<float>(mViewModel.GetShipSize().height);
-
     std::array<TextureVertex, 4> vertexBuffer;
 
     // Bottom-left
     vertexBuffer[0] = TextureVertex(
-        vec2f(0.0f, 0.0f),
-        vec2f(0.0f, 0.0f));
+        vec2f(leftXShip, bottomYShip),
+        vec2f(leftXTex, bottomYTex));
 
     // Top-left
     vertexBuffer[1] = TextureVertex(
-        vec2f(0.0f, shipHeight),
-        vec2f(0.0f, 1.0f));
+        vec2f(leftXShip, topYShip),
+        vec2f(leftXTex, topYTex));
 
     // Bottom-right
     vertexBuffer[2] = TextureVertex(
-        vec2f(shipWidth, 0.0f),
-        vec2f(1.0f, 0.0f));
+        vec2f(rightXShip, bottomYShip),
+        vec2f(rightTex, bottomYTex));
 
     // Top-right
     vertexBuffer[3] = TextureVertex(
-        vec2f(shipWidth, shipHeight),
-        vec2f(1.0f, 1.0f));
+        vec2f(rightXShip, topYShip),
+        vec2f(rightTex, topYTex));
 
     //
     // Upload vertices
@@ -1570,6 +1529,7 @@ void View::UploadTextureVertices(GameOpenGLVBO const & vbo)
     glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size() * sizeof(TextureVertex), vertexBuffer.data(), GL_STATIC_DRAW);
     CheckOpenGLError();
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+
 }
 
 void View::RenderGameVisualization()

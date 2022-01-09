@@ -258,15 +258,21 @@ private:
 
     void OnViewModelUpdated();
 
+    void UpdateStructuralLayerVisualizationParameters();
+
     void UpdateBackgroundTexture(ImageSize const & textureSize);
     void UpdateCanvas();
     void UpdateGrid();
-    void UpdateStructuralLayerVisualization();
     void UpdateCircleOverlay();
     void UpdateRectOverlay();
     void UpdateDashedLineOverlay();
 
-    void UploadTextureVertices(GameOpenGLVBO const & vbo);
+    inline void UploadTextureVertices(
+        float leftXShip, float leftXTex,
+        float rightXShip, float rightTex,
+        float bottomYShip, float bottomYTex,
+        float topYShip, float topYTex,
+        GameOpenGLVBO const & vbo);
 
     void RenderGameVisualization();
     void RenderStructuralLayerVisualization();

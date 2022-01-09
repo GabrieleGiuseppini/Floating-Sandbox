@@ -174,17 +174,25 @@ https://gamejolt.com/x/permalink/comment/11730705
 	+ Nail down better defaults for viz modes
 	+ Fix ropes alignment
 	+ Merge into master & nuke branch
-	- View:.cpp unify/cleanup vertices creation/upload
+	+ View:.cpp 
+		+ Unify/cleanup vertices creation/upload
+		+ Call UpdateStructuralLayer only at ViewModel changes, not from Upload
+	+ New defaults:
+		+ LayerViz: Game
+		+ StructuralVizMode: Particle
+	- Shader:
+		- H and V lines: make step band 1.0 wide (now it's 1.1)
 
 - Frame cctor: see if startup looks better if we setup primary layer already in cttor
-	- If so: ControllerState class
-		- With:
+	- If so: shove the following in WorkbenchState:
 			- primary layer
 			- tool
 			- viz modes
+			- grid enabled, opacity
+				- Move out of View
 			- TODO: others?
 		- Has own defaults
-		- Owned by MainFrame, passed to Controller as & who stores as member
+		- Replace OnWorkbenchStateChanged with OnXXXChanged(XXX)
 
 - Send for testing
 
