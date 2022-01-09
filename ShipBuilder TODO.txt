@@ -135,7 +135,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 		! It used to work because we would Show() *after* Controller, and wxWidgets/MSW would generate an OnEnterWindow()
 		+ So add a IUserInterface::IsMouseInWorkCanvas()
 
-= Re-arc visualizations for alignment: shift game viz, Texture viz, and Mesh shader so that they are aligned
++ Re-arc visualizations for alignment: shift game viz, Texture viz, and Mesh shader so that they are aligned
 	+ Texture viz
 	+ Game viz
 		! Facts:
@@ -180,8 +180,8 @@ https://gamejolt.com/x/permalink/comment/11730705
 	+ New defaults:
 		+ LayerViz: Game
 		+ StructuralVizMode: Particle
-	- Shader:
-		- H and V lines: make step band 1.0 wide (now it's 1.1)
+	+ Shader:
+		+ H and V lines: make step band 1.0 wide (now it's 1.1)
 
 - Frame cctor: see if startup looks better if we setup primary layer already in cttor
 	- If so: shove the following in WorkbenchState:
