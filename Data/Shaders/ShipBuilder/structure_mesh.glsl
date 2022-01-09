@@ -51,9 +51,9 @@ void main()
     
     // Line thickness in the normalized fractional position space
     vec2 lineThickness = 
-        0.51 // Pixels on either side
+        1.0 // Pixels
         / paramPixelsPerShipParticle;
-    float lineThicknessD = length(lineThickness);
+    float lineThicknessD = length(lineThickness / 2.0);
     
     //
     // Vertices
@@ -123,7 +123,9 @@ void main()
     //   5
     //   |
     //   8
-    float isOnLine28 = step(abs(0.5 - fBLn.x), lineThickness.x);
+    float isOnLine28 = 
+        step(0.5 - lineThickness.x, fBLn.x)
+        * step(fBLn.x, 0.5);
 
     //     3
     //    /  
@@ -137,7 +139,9 @@ void main()
     // 4-5-6
     //
     //
-    float isOnLine46 = step(abs(0.5 - fBLn.y), lineThickness.y);
+    float isOnLine46 = 
+        step(0.5 - lineThickness.y, fBLn.y)
+        * step(fBLn.y, 0.5);
     
     //
     // Combine
