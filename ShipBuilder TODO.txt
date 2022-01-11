@@ -208,6 +208,16 @@ https://gamejolt.com/x/permalink/comment/11730705
 			+ MainFrame cctor reconciliates with WorkbenchState
 			+ Controller cctor notifies own to IUserInterface
 		+ Then: MainFrame::OnXXXChanged: see if they still need to check for Controller
+	= Notif's originating from controller's cctor
+		+ OnViewModelChanged
+		+ OnShipNameChanged
+			+ Requires dirtyness, currently asked to Controller
+		+ OnShipSizeChanged
+		+ OnLayerPresenceChanged
+		+ OnModelDirtyChanged
+			+ Requires ship name, currently asked to Controller
+		+ OnUndoStackStateChanged
+			+ Make it take a stack
 	- Paths coming back: e.g. MainFrame.opacity_slider -> Controller -> IUserInterface -> Reconciliate; make efficient:
 		- Opacity slider
 		- Grid

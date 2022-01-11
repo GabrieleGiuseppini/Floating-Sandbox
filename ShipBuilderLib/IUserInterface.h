@@ -8,6 +8,7 @@
 #include "Model.h"
 #include "ShipBuilderTypes.h"
 #include "UndoStack.h"
+#include "ViewModel.h"
 
 #include <wx/image.h>
 #include <wx/string.h>
@@ -15,6 +16,8 @@
 #include <optional>
 
 namespace ShipBuilder {
+
+class Controller;
 
 /*
  * Interface of MainFrame that is seen by Controller and underneath.
@@ -26,19 +29,19 @@ public:
     virtual void RefreshView() = 0;
 
     // Notifies of a change in the view model geometry
-    virtual void OnViewModelChanged() = 0;
+    virtual void OnViewModelChanged(ViewModel const & viewModel) = 0;
 
     // Notifies of a change in the size of the model
     virtual void OnShipSizeChanged(ShipSpaceSize const & shipSpaceSize) = 0;
 
     // Notifies of a change in the name of the ship
-    virtual void OnShipNameChanged(std::string const & newName) = 0;
+    virtual void OnShipNameChanged(Model const & model) = 0;
 
     // Notifies of a (possible) change in the presence of a layer
-    virtual void OnLayerPresenceChanged() = 0;
+    virtual void OnLayerPresenceChanged(Model const & model) = 0;
 
     // Notifies of a (possible) change in the dirtiness of the model
-    virtual void OnModelDirtyChanged() = 0;
+    virtual void OnModelDirtyChanged(Model const & model) = 0;
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -63,7 +66,7 @@ public:
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Notifies of a change in the state of the undo stack
-    virtual void OnUndoStackStateChanged() = 0;
+    virtual void OnUndoStackStateChanged(UndoStack & undoStack) = 0;
 
     // Notifies of a change in the tool coordinates to display
     virtual void OnToolCoordinatesChanged(std::optional<ShipSpaceCoordinates> coordinates) = 0;

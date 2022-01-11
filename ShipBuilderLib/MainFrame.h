@@ -79,15 +79,15 @@ public:
 
     void RefreshView() override;
 
-    void OnViewModelChanged() override;
+    void OnViewModelChanged(ViewModel const & viewModel) override;
 
     void OnShipSizeChanged(ShipSpaceSize const & shipSize) override;
 
-    void OnShipNameChanged(std::string const & newName) override;
+    void OnShipNameChanged(Model const & model) override;
 
-    void OnLayerPresenceChanged() override;
+    void OnLayerPresenceChanged(Model const & model) override;
 
-    void OnModelDirtyChanged() override;
+    void OnModelDirtyChanged(Model const & model) override;
 
     //
 
@@ -111,7 +111,7 @@ public:
 
     //
 
-    void OnUndoStackStateChanged() override;
+    void OnUndoStackStateChanged(UndoStack & undoStack) override;
 
     void OnToolCoordinatesChanged(std::optional<ShipSpaceCoordinates> coordinates) override;
 
@@ -251,7 +251,7 @@ private:
 
     DisplayLogicalSize GetWorkCanvasSize() const;
 
-    void RecalculateWorkCanvasPanning();
+    void RecalculateWorkCanvasPanning(ViewModel const & viewModel);
 
     void SetFrameTitle(std::string const & shipName, bool isDirty);
 
@@ -269,15 +269,15 @@ private:
 
     void ReconciliateUIWithWorkbenchState();
 
-    void ReconciliateUIWithViewModel();
+    void ReconciliateUIWithViewModel(ViewModel const & viewModel);
 
     void ReconciliateUIWithShipSize(ShipSpaceSize const & shipSize);
 
-    void ReconciliateUIWithShipName(std::string const & shipName);
+    void ReconciliateUIWithShipTitle(std::string const & shipName, bool isShipDirty);
 
-    void ReconciliateUIWithLayerPresence(Controller const & controller);
+    void ReconciliateUIWithLayerPresence(Model const & model);
     
-    void ReconciliateUIWithModelDirtiness(Controller const & controller);
+    void ReconciliateUIWithModelDirtiness(Model const & model);
 
     //
 
@@ -301,7 +301,7 @@ private:
 
     //
 
-    void ReconciliateUIWithUndoStackState(Controller & controller);
+    void ReconciliateUIWithUndoStackState(UndoStack & undoStack);
 
 private:
 

@@ -193,17 +193,10 @@ public:
     void SetElectricalMaterial(MaterialPlaneType plane, ElectricalMaterial const * material);
     void SetRopeMaterial(MaterialPlaneType plane, StructuralMaterial const * material);
 
-    bool CanUndo() const;
-    size_t GetUndoStackSize() const;
-    wxString const & GetUndoTitleAt(size_t index) const;
     void UndoLast();
     void UndoUntil(size_t index);
 
     void Render();
-
-    ShipSpaceCoordinates const & GetCameraShipSpacePosition() const;
-    ShipSpaceSize GetCameraRange() const;
-    ShipSpaceSize GetCameraThumbSize() const;
 
     void AddZoom(int deltaZoom);
     void SetCamera(int camX, int camY);

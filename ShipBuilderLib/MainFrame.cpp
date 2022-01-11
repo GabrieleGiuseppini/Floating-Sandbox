@@ -556,24 +556,18 @@ void MainFrame::RefreshView()
     mWorkCanvas->Refresh();
 }
 
-void MainFrame::OnViewModelChanged()
+void MainFrame::OnViewModelChanged(ViewModel const & viewModel)
 {
-    assert(mController);
-
-    ReconciliateUIWithViewModel();
+    ReconciliateUIWithViewModel(viewModel);
 }
 
 void MainFrame::OnShipSizeChanged(ShipSpaceSize const & shipSize)
 {
-    assert(mController);
-
     ReconciliateUIWithShipSize(shipSize);
 }
 
-void MainFrame::OnShipNameChanged(std::string const & newName)
+void MainFrame::OnShipNameChanged(Model const & model)
 {
-    assert(mController);
-
     //
     // Ship filename workflow
     //
@@ -584,6 +578,8 @@ void MainFrame::OnShipNameChanged(std::string const & newName)
     // 
     // - Ask user if wants to rename file
     //
+
+    std::string const & newName = model.GetShipMetadata().ShipName;
 
     std::string const newShipFilename = Utils::MakeFilenameSafeString(newName) + ShipDeSerializer::GetShipDefinitionFileExtension();
 
@@ -611,21 +607,17 @@ void MainFrame::OnShipNameChanged(std::string const & newName)
     // Reconciliate UI
     //
 
-    ReconciliateUIWithShipName(newName);
+    ReconciliateUIWithShipTitle(newName, model.GetIsDirty());
 }
 
-void MainFrame::OnLayerPresenceChanged()
+void MainFrame::OnLayerPresenceChanged(Model const & model)
 {
-    assert(mController);
-    
-    ReconciliateUIWithLayerPresence(*mController);
+    ReconciliateUIWithLayerPresence(model);
 }
 
-void MainFrame::OnModelDirtyChanged()
+void MainFrame::OnModelDirtyChanged(Model const & model)
 {
-    assert(mController);
-
-    ReconciliateUIWithModelDirtiness(*mController);
+    ReconciliateUIWithModelDirtiness(model);
 }
 
 void MainFrame::OnStructuralMaterialChanged(MaterialPlaneType plane, StructuralMaterial const * material)
@@ -688,11 +680,9 @@ void MainFrame::OnVisualGridEnablementChanged(bool isEnabled)
     ReconciliateUIWithVisualGridEnablement(isEnabled);
 }
 
-void MainFrame::OnUndoStackStateChanged()
+void MainFrame::OnUndoStackStateChanged(UndoStack & undoStack)
 {
-    assert(mController);
-
-    ReconciliateUIWithUndoStackState(*mController);
+    ReconciliateUIWithUndoStackState(undoStack);
 }
 
 void MainFrame::OnToolCoordinatesChanged(std::optional<ShipSpaceCoordinates> coordinates)
@@ -3538,17 +3528,15 @@ DisplayLogicalSize MainFrame::GetWorkCanvasSize() const
         mWorkCanvas->GetSize().GetHeight());
 }
 
-void MainFrame::RecalculateWorkCanvasPanning()
+void MainFrame::RecalculateWorkCanvasPanning(ViewModel const & viewModel)
 {
-    assert(mController);
-
     //
     // We populate the scollbar with work space coordinates
     //
 
-    ShipSpaceCoordinates const cameraPos = mController->GetCameraShipSpacePosition();
-    ShipSpaceSize const cameraRange = mController->GetCameraRange();
-    ShipSpaceSize const cameraThumbSize = mController->GetCameraThumbSize();
+    ShipSpaceCoordinates const cameraPos = viewModel.GetCameraShipSpacePosition();
+    ShipSpaceSize const cameraRange = viewModel.GetCameraRange();
+    ShipSpaceSize const cameraThumbSize = viewModel.GetCameraThumbSize();
         
 
     mWorkCanvasHScrollBar->SetScrollbar(
@@ -3650,9 +3638,9 @@ void MainFrame::ReconciliateUIWithWorkbenchState()
     ReconciliateUIWithVisualGridEnablement(mWorkbenchState.IsGridEnabled());
 }
 
-void MainFrame::ReconciliateUIWithViewModel()
+void MainFrame::ReconciliateUIWithViewModel(ViewModel const & viewModel)
 {
-    RecalculateWorkCanvasPanning();
+    RecalculateWorkCanvasPanning(viewModel);
 
     // TODO: set zoom in StatusBar
 }
@@ -3662,14 +3650,12 @@ void MainFrame::ReconciliateUIWithShipSize(ShipSpaceSize const & shipSize)
     // TODO: status bar
 }
 
-void MainFrame::ReconciliateUIWithShipName(std::string const & shipName)
+void MainFrame::ReconciliateUIWithShipTitle(std::string const & shipName, bool isShipDirty)
 {
-    assert(mController);
-
-    SetFrameTitle(shipName, mController->IsModelDirty());
+    SetFrameTitle(shipName, isShipDirty);
 }
 
-void MainFrame::ReconciliateUIWithLayerPresence(Controller const & controller)
+void MainFrame::ReconciliateUIWithLayerPresence(Model const & model)
 {
     //
     // Rules
@@ -3683,7 +3669,7 @@ void MainFrame::ReconciliateUIWithLayerPresence(Controller const & controller)
 
     for (uint32_t iLayer = 0; iLayer < LayerCount; ++iLayer)
     {
-        bool const hasLayer = controller.HasModelLayer(static_cast<LayerType>(iLayer));
+        bool const hasLayer = model.HasLayer(static_cast<LayerType>(iLayer));
 
         mVisualizationSelectButtons[LayerToVisualizationIndex(static_cast<LayerType>(iLayer))]->Enable(hasLayer);
 
@@ -3700,7 +3686,7 @@ void MainFrame::ReconciliateUIWithLayerPresence(Controller const & controller)
         }
     }
 
-    if (controller.HasModelLayer(LayerType::Texture))
+    if (model.HasLayer(LayerType::Texture))
     {
         mGameVisualizationAutoTexturizationModeButton->Enable(false);
         mGameVisualizationTextureModeButton->Enable(true);
@@ -3714,9 +3700,9 @@ void MainFrame::ReconciliateUIWithLayerPresence(Controller const & controller)
     mVisualizationSelectButtons[static_cast<size_t>(mWorkbenchState.GetPrimaryVisualization())]->SetFocus(); // Prevent other random buttons from getting focus
 }
 
-void MainFrame::ReconciliateUIWithModelDirtiness(Controller const & controller)
+void MainFrame::ReconciliateUIWithModelDirtiness(Model const & model)
 {
-    bool const isDirty = controller.IsModelDirty();
+    bool const isDirty = model.GetIsDirty();
 
     if (mSaveShipMenuItem->IsEnabled() != isDirty)
     {
@@ -3734,7 +3720,7 @@ void MainFrame::ReconciliateUIWithModelDirtiness(Controller const & controller)
         mSaveShipButton->Enable(isDirty);
     }
 
-    SetFrameTitle(controller.GetShipMetadata().ShipName, isDirty);
+    SetFrameTitle(model.GetShipMetadata().ShipName, isDirty);
 }
 
 void MainFrame::ReconciliateUIWithStructuralMaterial(MaterialPlaneType plane, StructuralMaterial const * material)
@@ -4005,13 +3991,13 @@ void MainFrame::ReconciliateUIWithVisualGridEnablement(bool isEnabled)
     mViewGridButton->SetValue(isEnabled);
 }
 
-void MainFrame::ReconciliateUIWithUndoStackState(Controller & controller)
+void MainFrame::ReconciliateUIWithUndoStackState(UndoStack & undoStack)
 {
     //
     // Menu item
     //
 
-    bool const canUndo = controller.CanUndo();
+    bool const canUndo = !undoStack.IsEmpty();
     if (mUndoMenuItem->IsEnabled() != canUndo)
     {
         mUndoMenuItem->Enable(canUndo);
@@ -4027,16 +4013,17 @@ void MainFrame::ReconciliateUIWithUndoStackState(Controller & controller)
     mUndoStackPanel->GetSizer()->Clear(true);
 
     // Populate
-    for (size_t stackItemIndex = 0; stackItemIndex < controller.GetUndoStackSize(); ++stackItemIndex)
+    for (size_t stackItemIndex = 0; stackItemIndex < undoStack.GetSize(); ++stackItemIndex)
     {
-        auto button = new HighlightableTextButton(mUndoStackPanel, controller.GetUndoTitleAt(stackItemIndex));
-        button->SetHighlighted(stackItemIndex == controller.GetUndoStackSize() - 1);
+        auto button = new HighlightableTextButton(mUndoStackPanel, undoStack.GetTitleAt(stackItemIndex));
+        button->SetHighlighted(stackItemIndex == undoStack.GetSize() - 1);
 
         button->Bind(
             wxEVT_BUTTON,
-            [this, stackItemIndex, &controller](wxCommandEvent &)
+            [this, stackItemIndex](wxCommandEvent &)
             {
-                controller.UndoUntil(stackItemIndex);
+                assert(mController);
+                mController->UndoUntil(stackItemIndex);
             });
 
         mUndoStackPanel->GetSizer()->Add(

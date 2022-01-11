@@ -48,6 +48,11 @@ public:
         std::function<void()> swapRenderBuffersFunction,
         ResourceLocator const & resourceLocator);
 
+    ViewModel const & GetViewModel() const
+    {
+        return mViewModel;
+    }
+
     int GetZoom() const
     {
         return mViewModel.GetZoom();

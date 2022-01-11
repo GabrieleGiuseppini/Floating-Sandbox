@@ -88,14 +88,14 @@ protected:
     void SetLayerDirty(LayerType layer)
     {
         mModelController.SetLayerDirty(layer);
-        mUserInterface.OnModelDirtyChanged();
+        mUserInterface.OnModelDirtyChanged(mModelController.GetModel());
     }
 
     template<typename ... TArgs>
     void PushUndoAction(TArgs&& ... args)
     {
         mUndoStack.Push(std::forward<TArgs>(args)...);
-        mUserInterface.OnUndoStackStateChanged();
+        mUserInterface.OnUndoStackStateChanged(mUndoStack);
     }
 
 protected:
