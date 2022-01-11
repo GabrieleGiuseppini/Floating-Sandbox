@@ -81,11 +81,21 @@ public:
 
     void OnViewModelChanged() override;
 
-    void OnShipNameChanged(std::string const & newName) override;
-
     void OnShipSizeChanged(ShipSpaceSize const & shipSize) override;
 
+    void OnShipNameChanged(std::string const & newName) override;
+
     void OnLayerPresenceChanged() override;
+
+    void OnModelDirtyChanged() override;
+
+    //
+
+    void OnStructuralMaterialChanged(MaterialPlaneType plane, StructuralMaterial const * material) override;
+    void OnElectricalMaterialChanged(MaterialPlaneType plane, ElectricalMaterial const * material) override;
+    void OnRopesMaterialChanged(MaterialPlaneType plane, StructuralMaterial const * material) override;
+
+    void OnCurrentToolChanged(std::optional<ToolType> tool) override;
 
     void OnPrimaryVisualizationChanged(VisualizationType primaryVisualization) override;
 
@@ -99,11 +109,7 @@ public:
 
     void OnVisualGridEnablementChanged(bool isEnabled) override;
 
-    void OnModelDirtyChanged() override;
-
-    void OnWorkbenchStateChanged() override;
-
-    void OnCurrentToolChanged(std::optional<ToolType> tool) override;
+    //
 
     void OnUndoStackStateChanged() override;
 
@@ -261,15 +267,25 @@ private:
     // UI Consistency
     //
 
-    void ReconciliateUI();
+    void ReconciliateUIWithWorkbenchState();
 
     void ReconciliateUIWithViewModel();
 
-    void ReconciliateUIWithShipName(std::string const & shipName);
-
     void ReconciliateUIWithShipSize(ShipSpaceSize const & shipSize);
 
-    void ReconciliateUIWithLayerPresence();
+    void ReconciliateUIWithShipName(std::string const & shipName);
+
+    void ReconciliateUIWithLayerPresence(Controller const & controller);
+    
+    void ReconciliateUIWithModelDirtiness(Controller const & controller);
+
+    //
+
+    void ReconciliateUIWithStructuralMaterial(MaterialPlaneType plane, StructuralMaterial const * material);
+    void ReconciliateUIWithElectricalMaterial(MaterialPlaneType plane, ElectricalMaterial const * material);
+    void ReconciliateUIWithRopesMaterial(MaterialPlaneType plane, StructuralMaterial const * material);
+
+    void ReconciliateUIWithSelectedTool(std::optional<ToolType> tool);
 
     void ReconciliateUIWithPrimaryVisualizationSelection(VisualizationType primaryVisualization);
 
@@ -279,17 +295,13 @@ private:
     void ReconciliateUIWithRopesLayerVisualizationModeSelection(RopesLayerVisualizationModeType mode);
     void ReconciliateUIWithTextureLayerVisualizationModeSelection(TextureLayerVisualizationModeType mode);
 
-    void ReconciliateUIWithOtherLayersOpacity(float opacity);
+    void ReconciliateUIWithOtherVisualizationsOpacity(float opacity);
 
     void ReconciliateUIWithVisualGridEnablement(bool isEnabled);
 
-    void ReconciliateUIWithModelDirtiness();
+    //
 
-    void ReconciliateUIWithWorkbenchState();
-
-    void ReconciliateUIWithSelectedTool(std::optional<ToolType> tool);
-
-    void ReconciliateUIWithUndoStackState();
+    void ReconciliateUIWithUndoStackState(Controller & controller);
 
 private:
 

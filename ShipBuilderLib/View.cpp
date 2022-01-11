@@ -12,16 +12,19 @@
 namespace ShipBuilder {
 
 View::View(
-    OpenGLManager & openGLManager,
-    ShipSpaceSize initialShipSpaceSize,
-    DisplayLogicalSize initialDisplaySize,
+    ShipSpaceSize shipSpaceSize,
+    VisualizationType primaryVisualization,
+    float otherVisualizationsOpacity,
+    bool isGridEnabled,
+    DisplayLogicalSize displaySize,
     int logicalToPhysicalPixelFactor,
+    OpenGLManager & openGLManager,
     std::function<void()> swapRenderBuffersFunction,
     ResourceLocator const & resourceLocator)
     : mOpenGLContext()
     , mViewModel(
-        initialShipSpaceSize,
-        initialDisplaySize,
+        shipSpaceSize,
+        displaySize,
         logicalToPhysicalPixelFactor)
     , mShaderManager()
     , mSwapRenderBuffersFunction(swapRenderBuffersFunction)
@@ -33,8 +36,7 @@ View::View(
     , mHasElectricalLayerVisualization(false)
     , mRopeCount(false)
     , mHasTextureLayerVisualization(false)
-    , mOtherVisualizationsOpacity(0.75f)
-    , mIsGridEnabled(false)
+    , mIsGridEnabled(isGridEnabled)
     , mCircleOverlayCenter(0, 0) // Will be overwritten
     , mCircleOverlayColor(vec3f::zero()) // Will be overwritten
     , mHasCircleOverlay(false)
@@ -43,7 +45,8 @@ View::View(
     , mHasRectOverlay(false)
     , mDashedLineOverlayColor(vec3f::zero()) // Will be overwritten
     //////////////////////////////////
-    , mPrimaryVisualization(VisualizationType::StructuralLayer)
+    , mPrimaryVisualization(primaryVisualization)
+    , mOtherVisualizationsOpacity(otherVisualizationsOpacity)
 {
     //
     // Create OpenGL context and make it current

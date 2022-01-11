@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
+#include "ShipBuilderTypes.h"
+
 #include <Game/Materials.h>
 #include <Game/MaterialDatabase.h>
 
@@ -13,16 +15,20 @@
 namespace ShipBuilder {
 
 /*
- * This class aggregates the current state of the shipbuilder work tools.
- * It is completely independent from the model - is holds exclusively
- * tools-related settings, so ther is no need to reset/change/update
- * at creation of new models.
+ * This class aggregates the current state of the ship builder editor.
+ *
+ * This state is managed by the Controller but lives in the MainFrame,
+ * and thus its lifetime is longer than the Controller's.
  */
 class WorkbenchState
 {
 public:
 
     WorkbenchState(MaterialDatabase const & materialDatabase);
+
+    //
+    // Materials
+    //
 
     StructuralMaterial const * GetStructuralForegroundMaterial() const
     {
@@ -84,6 +90,20 @@ public:
         mRopesBackgroundMaterial = material;
     }
 
+    //
+    // Tools
+    //
+
+    std::optional<ToolType> GetCurrentToolType() const
+    {
+        return mCurrentToolType;
+    }
+
+    void SetCurrentToolType(std::optional<ToolType> toolType)
+    {
+        mCurrentToolType = toolType;
+    }
+
     std::uint32_t GetStructuralPencilToolSize() const
     {
         return mStructuralPencilToolSize;
@@ -134,8 +154,93 @@ public:
         mStructuralFloodToolIsContiguous = value;
     }
 
+    //
+    // Visualizations
+    //
+
+    VisualizationType GetPrimaryVisualization() const
+    {
+        return mPrimaryVisualization;
+    }
+
+    void SetPrimaryVisualization(VisualizationType visualization)
+    {
+        mPrimaryVisualization = visualization;
+    }
+
+    GameVisualizationModeType GetGameVisualizationMode() const
+    {
+        return mGameVisualizationMode;
+    }
+
+    void SetGameVisualizationMode(GameVisualizationModeType mode)
+    {
+        mGameVisualizationMode = mode;
+    }
+
+    StructuralLayerVisualizationModeType GetStructuralLayerVisualizationMode() const
+    {
+        return mStructuralLayerVisualizationMode;
+    }
+
+    void SetStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType mode)
+    {
+        mStructuralLayerVisualizationMode = mode;
+    }
+
+    ElectricalLayerVisualizationModeType GetElectricalLayerVisualizationMode() const
+    {
+        return mElectricalLayerVisualizationMode;
+    }
+
+    void SetElectricalLayerVisualizationMode(ElectricalLayerVisualizationModeType mode)
+    {
+        mElectricalLayerVisualizationMode = mode;
+    }
+
+    RopesLayerVisualizationModeType GetRopesLayerVisualizationMode() const
+    {
+        return mRopesLayerVisualizationMode;
+    }
+
+    void SetRopesLayerVisualizationMode(RopesLayerVisualizationModeType mode)
+    {
+        mRopesLayerVisualizationMode = mode;
+    }
+
+    TextureLayerVisualizationModeType GetTextureLayerVisualizationMode() const
+    {
+        return mTextureLayerVisualizationMode;
+    }
+
+    void SetTextureLayerVisualizationMode(TextureLayerVisualizationModeType mode)
+    {
+        mTextureLayerVisualizationMode = mode;
+    }
+
+    float GetOtherVisualizationsOpacity() const
+    {
+        return mOtherVisualizationsOpacity;
+    }
+
+    void SetOtherVisualizationsOpacity(float value)
+    {
+        mOtherVisualizationsOpacity = value;
+    }
+    
+    bool IsGridEnabled() const
+    {
+        return mIsGridEnabled;
+    }
+
+    void EnableGrid(bool value)
+    {
+        mIsGridEnabled = value;
+    }
+
 private:
 
+    // Materials
     StructuralMaterial const * mStructuralForegroundMaterial;
     StructuralMaterial const * mStructuralBackgroundMaterial;
     ElectricalMaterial const * mElectricalForegroundMaterial;
@@ -143,11 +248,23 @@ private:
     StructuralMaterial const * mRopesForegroundMaterial;
     StructuralMaterial const * mRopesBackgroundMaterial;
 
+    // Tool settings
+    std::optional<ToolType> mCurrentToolType;
     std::uint32_t mStructuralPencilToolSize;
     std::uint32_t mStructuralEraserToolSize;
     std::uint32_t mStructuralLineToolSize;
     bool mStructuralLineToolIsHullMode;
     bool mStructuralFloodToolIsContiguous;
+
+    // Visualizations
+    VisualizationType mPrimaryVisualization;
+    GameVisualizationModeType mGameVisualizationMode;
+    StructuralLayerVisualizationModeType mStructuralLayerVisualizationMode;
+    ElectricalLayerVisualizationModeType mElectricalLayerVisualizationMode;
+    RopesLayerVisualizationModeType mRopesLayerVisualizationMode;
+    TextureLayerVisualizationModeType mTextureLayerVisualizationMode;
+    float mOtherVisualizationsOpacity;
+    bool mIsGridEnabled;
 };
 
 }

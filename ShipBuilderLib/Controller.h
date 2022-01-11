@@ -170,19 +170,11 @@ public:
         ShipSpaceSize const & newSize,
         ShipSpaceCoordinates const & originOffset);
 
-    VisualizationType GetPrimaryVisualization() const;
     void SelectPrimaryVisualization(VisualizationType primaryVisualization);
 
-    GameVisualizationModeType GetGameVisualizationMode() const;
     void SetGameVisualizationMode(GameVisualizationModeType mode);
-
-    StructuralLayerVisualizationModeType GetStructuralLayerVisualizationMode() const;
     void SetStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType mode);
-
-    ElectricalLayerVisualizationModeType GetElectricalLayerVisualizationMode() const;
     void SetElectricalLayerVisualizationMode(ElectricalLayerVisualizationModeType mode);
-
-    RopesLayerVisualizationModeType GetRopesLayerVisualizationMode() const;
     void SetRopesLayerVisualizationMode(RopesLayerVisualizationModeType mode);
 
     TextureLayerVisualizationModeType GetTextureLayerVisualizationMode() const;
@@ -196,6 +188,10 @@ public:
 
     std::optional<ToolType> GetCurrentTool() const;
     void SetCurrentTool(std::optional<ToolType> tool);
+
+    void SetStructuralMaterial(MaterialPlaneType plane, StructuralMaterial const * material);
+    void SetElectricalMaterial(MaterialPlaneType plane, ElectricalMaterial const * material);
+    void SetRopeMaterial(MaterialPlaneType plane, StructuralMaterial const * material);
 
     bool CanUndo() const;
     size_t GetUndoStackSize() const;
@@ -276,7 +272,7 @@ private:
 
     void InternalReconciliateTextureVisualizationMode();
 
-    void InternalUpdateVisualizationModes();
+    void InternalUpdateModelControllerVisualizationModes();
 
     void InternalSetCurrentTool(std::optional<ToolType> toolType);
 
@@ -311,15 +307,6 @@ private:
     // State
     //
 
-    VisualizationType mPrimaryVisualization;
-
-    GameVisualizationModeType mGameVisualizationMode;
-    StructuralLayerVisualizationModeType mStructuralLayerVisualizationMode;
-    ElectricalLayerVisualizationModeType mElectricalLayerVisualizationMode;
-    RopesLayerVisualizationModeType mRopesLayerVisualizationMode;
-    TextureLayerVisualizationModeType mTextureLayerVisualizationMode;
-
-    std::optional<ToolType> mCurrentToolType;
     std::unique_ptr<Tool> mCurrentTool;
 
     // The last tool that was used for each layer

@@ -37,11 +37,14 @@ class View
 {
 public:
 
-    View(
-        OpenGLManager & openGLManager,
-        ShipSpaceSize initialShipSpaceSize,
-        DisplayLogicalSize initialDisplaySize,
+    View(        
+        ShipSpaceSize shipSpaceSize,
+        VisualizationType primaryVisualization,
+        float otherVisualizationsOpacity,
+        bool isGridEnabled,
+        DisplayLogicalSize displaySize,
         int logicalToPhysicalPixelFactor,
+        OpenGLManager & openGLManager,
         std::function<void()> swapRenderBuffersFunction,
         ResourceLocator const & resourceLocator);
 
@@ -124,22 +127,12 @@ public:
         mPrimaryVisualization = visualization;
     }
 
-    float GetOtherVisualizationsOpacity() const
-    {
-        return mOtherVisualizationsOpacity;
-    }
-
     void SetOtherVisualizationsOpacity(float value)
     {
         mOtherVisualizationsOpacity = value;
     }
 
     void EnableVisualGrid(bool doEnable);
-
-    bool IsVisualGridEnabled() const
-    {
-        return mIsGridEnabled;
-    }
 
     // Sticky, always drawn
     void UploadBackgroundTexture(RgbaImageData && texture);
@@ -473,9 +466,6 @@ private:
     GameOpenGLTexture mTextureLayerVisualizationTexture;
     bool mHasTextureLayerVisualization;
 
-    // Visualizations opacity
-    float mOtherVisualizationsOpacity;
-
     // Grid
     GameOpenGLVAO mGridVAO;
     GameOpenGLVBO mGridVBO;
@@ -506,6 +496,7 @@ private:
     //
 
     VisualizationType mPrimaryVisualization;
+    float mOtherVisualizationsOpacity;
 };
 
 }

@@ -45,11 +45,25 @@ WorkbenchState::WorkbenchState(MaterialDatabase const & materialDatabase)
     // Default tool settings
     //
 
+    mCurrentToolType = ToolType::StructuralPencil;
     mStructuralPencilToolSize = 1;
     mStructuralEraserToolSize = 4;
     mStructuralLineToolSize = 1;
     mStructuralLineToolIsHullMode = false;
     mStructuralFloodToolIsContiguous = true;
+
+    //
+    // Default visualization settings
+    //
+
+    mPrimaryVisualization = VisualizationType::Game;
+    mGameVisualizationMode = GameVisualizationModeType::AutoTexturizationMode; // Will be changed (by Controller) to Texture when loading a ship with texture
+    mStructuralLayerVisualizationMode = StructuralLayerVisualizationModeType::PixelMode;
+    mElectricalLayerVisualizationMode = ElectricalLayerVisualizationModeType::PixelMode;
+    mRopesLayerVisualizationMode = RopesLayerVisualizationModeType::LinesMode;
+    mTextureLayerVisualizationMode = TextureLayerVisualizationModeType::MatteMode;
+    mOtherVisualizationsOpacity = 0.75f;
+    mIsGridEnabled = false;
 }
 
 }

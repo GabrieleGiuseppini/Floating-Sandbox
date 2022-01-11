@@ -184,15 +184,36 @@ https://gamejolt.com/x/permalink/comment/11730705
 		+ H and V lines: make step band 1.0 wide (now it's 1.1)
 
 - Frame cctor: see if startup looks better if we setup primary layer already in cttor
-	- If so: shove the following in WorkbenchState:
-			- primary layer
-			- tool
-			- viz modes
-			- grid enabled, opacity
-				- Move out of View
-			- TODO: others?
-		- Has own defaults
-		- Replace OnWorkbenchStateChanged with OnXXXChanged(XXX)
+	+ If so: shove the following in WorkbenchState:
+			+ primary viz
+			+ tool
+			+ viz modes
+			+ grid enabled, opacity
+				+ Move both out of View
+		+ Has own defaults
+		+ Replace OnWorkbenchStateChanged with OnXXXChanged(XXX)
+	+ MainFrame cctor: invoke ReconciliateUIWithXXX() for WorkbenchState things
+	+ Controller:
+		+ cctor: invoke all IUserInterface::OnXXXChanged() for all but WorkbenchState
+			+ Also make sure we notify if we change game viz mode
+	= View:
+		+ cctor:
+			+ Take external settings (prim viz, enableGrid, opacity) in cctor 
+			+ Initialize otherVisualizationsOpacity - like all 3
+			+ Make sure grid param is taken and used (in effect immediately)
+			+ Make sure primary visualization is taken and used (in effect immediately)
+	= MainFrame:
+		+ OnStructuralMaterialSelected (from palette): invoke Controller, who invokes IUserInterface
+		+ See if ReconciliateUI() is still needed; after all:
+			+ MainFrame cctor reconciliates with WorkbenchState
+			+ Controller cctor notifies own to IUserInterface
+		+ Then: MainFrame::OnXXXChanged: see if they still need to check for Controller
+	- Paths coming back: e.g. MainFrame.opacity_slider -> Controller -> IUserInterface -> Reconciliate; make efficient:
+		- Opacity slider
+		- Grid
+	- Test:
+		- Old ReconciliateUI() (called at New and Load) used to invoke mMainPanel->Layout();
+		- Permanence of 3 View settings across Controller re-create's
 
 - Send for testing
 

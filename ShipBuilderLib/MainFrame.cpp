@@ -41,6 +41,7 @@ namespace ShipBuilder {
 
 int constexpr ButtonMargin = 4;
 
+static std::string const ClearMaterialName = "Clear";
 ImageSize constexpr MaterialSwathSize(80, 100);
 
 int constexpr MaxVisualizationTransparency = 128;
@@ -503,6 +504,12 @@ MainFrame::MainFrame(
     mOpenGLManager = std::make_unique<OpenGLManager>(
         *mWorkCanvas,
         IsStandAlone());
+
+    //
+    // Reconciliate with workbench state
+    //
+
+    ReconciliateUIWithWorkbenchState();
 }
 
 void MainFrame::OpenForNewShip()
@@ -551,167 +558,141 @@ void MainFrame::RefreshView()
 
 void MainFrame::OnViewModelChanged()
 {
-    if (mController)
-    {
-        ReconciliateUIWithViewModel();
-    }
-}
+    assert(mController);
 
-void MainFrame::OnShipNameChanged(std::string const & newName)
-{
-    if (mController)
-    {
-        //
-        // Ship filename workflow
-        //
-        // - If we have a current ship file path,
-        // - And the file exists,
-        // - And its filename is different than the filename that comes from the new ship name,
-        // - And this new filename does not exist:
-        // 
-        // - Ask user if wants to rename file
-        //
-
-        std::string const newShipFilename = Utils::MakeFilenameSafeString(newName) + ShipDeSerializer::GetShipDefinitionFileExtension();
-
-        if (mCurrentShipFilePath.has_value()
-            && std::filesystem::exists(*mCurrentShipFilePath)
-            && newShipFilename != mCurrentShipFilePath->filename().string())
-        {
-            std::filesystem::path const newFilepath = mCurrentShipFilePath->parent_path() / newShipFilename;
-            if (!std::filesystem::exists(newFilepath)
-                && AskUserIfRename(newShipFilename))
-            {
-                // Rename
-                std::filesystem::rename(*mCurrentShipFilePath, newFilepath);
-                mCurrentShipFilePath = newFilepath;
-            }
-            else
-            {
-                // Doesn't want to rename, hence at this moment the ship has no backing file anymore...
-                // ...clear filename, so that Save will become SaveAs
-                mCurrentShipFilePath.reset();
-            }
-        }
-
-        //
-        // Reconciliate UI
-        //
-
-        ReconciliateUIWithShipName(newName);
-    }
+    ReconciliateUIWithViewModel();
 }
 
 void MainFrame::OnShipSizeChanged(ShipSpaceSize const & shipSize)
 {
-    if (mController)
+    assert(mController);
+
+    ReconciliateUIWithShipSize(shipSize);
+}
+
+void MainFrame::OnShipNameChanged(std::string const & newName)
+{
+    assert(mController);
+
+    //
+    // Ship filename workflow
+    //
+    // - If we have a current ship file path,
+    // - And the file exists,
+    // - And its filename is different than the filename that comes from the new ship name,
+    // - And this new filename does not exist:
+    // 
+    // - Ask user if wants to rename file
+    //
+
+    std::string const newShipFilename = Utils::MakeFilenameSafeString(newName) + ShipDeSerializer::GetShipDefinitionFileExtension();
+
+    if (mCurrentShipFilePath.has_value()
+        && std::filesystem::exists(*mCurrentShipFilePath)
+        && newShipFilename != mCurrentShipFilePath->filename().string())
     {
-        ReconciliateUIWithShipSize(shipSize);
+        std::filesystem::path const newFilepath = mCurrentShipFilePath->parent_path() / newShipFilename;
+        if (!std::filesystem::exists(newFilepath)
+            && AskUserIfRename(newShipFilename))
+        {
+            // Rename
+            std::filesystem::rename(*mCurrentShipFilePath, newFilepath);
+            mCurrentShipFilePath = newFilepath;
+        }
+        else
+        {
+            // Doesn't want to rename, hence at this moment the ship has no backing file anymore...
+            // ...clear filename, so that Save will become SaveAs
+            mCurrentShipFilePath.reset();
+        }
     }
+
+    //
+    // Reconciliate UI
+    //
+
+    ReconciliateUIWithShipName(newName);
 }
 
 void MainFrame::OnLayerPresenceChanged()
 {
-    if (mController)
-    {
-        ReconciliateUIWithLayerPresence();
-    }
-}
-
-void MainFrame::OnPrimaryVisualizationChanged(VisualizationType primaryVisualization)
-{
-    if (mController)
-    {
-        ReconciliateUIWithPrimaryVisualizationSelection(primaryVisualization);
-    }
-}
-
-void MainFrame::OnGameVisualizationModeChanged(GameVisualizationModeType mode)
-{
-    if (mController)
-    {
-        ReconciliateUIWithGameVisualizationModeSelection(mode);
-    }
-}
-
-void MainFrame::OnStructuralLayerVisualizationModeChanged(StructuralLayerVisualizationModeType mode)
-{
-    if (mController)
-    {
-        ReconciliateUIWithStructuralLayerVisualizationModeSelection(mode);
-    }
-}
-
-void MainFrame::OnElectricalLayerVisualizationModeChanged(ElectricalLayerVisualizationModeType mode)
-{
-    if (mController)
-    {
-        ReconciliateUIWithElectricalLayerVisualizationModeSelection(mode);
-    }
-}
-
-void MainFrame::OnRopesLayerVisualizationModeChanged(RopesLayerVisualizationModeType mode)
-{
-    if (mController)
-    {
-        ReconciliateUIWithRopesLayerVisualizationModeSelection(mode);
-    }
-}
-
-void MainFrame::OnTextureLayerVisualizationModeChanged(TextureLayerVisualizationModeType mode)
-{
-    if (mController)
-    {
-        ReconciliateUIWithTextureLayerVisualizationModeSelection(mode);
-    }
-}
-
-void MainFrame::OnOtherVisualizationsOpacityChanged(float opacity)
-{
-    if (mController)
-    {
-        ReconciliateUIWithOtherLayersOpacity(opacity);
-    }
-}
-
-void MainFrame::OnVisualGridEnablementChanged(bool isEnabled)
-{
-    if (mController)
-    {
-        ReconciliateUIWithVisualGridEnablement(isEnabled);
-    }
+    assert(mController);
+    
+    ReconciliateUIWithLayerPresence(*mController);
 }
 
 void MainFrame::OnModelDirtyChanged()
 {
-    if (mController)
-    {
-        ReconciliateUIWithModelDirtiness();
-    }
+    assert(mController);
+
+    ReconciliateUIWithModelDirtiness(*mController);
 }
 
-void MainFrame::OnWorkbenchStateChanged()
+void MainFrame::OnStructuralMaterialChanged(MaterialPlaneType plane, StructuralMaterial const * material)
 {
-    if (mController)
-    {
-        ReconciliateUIWithWorkbenchState();
-    }
+    ReconciliateUIWithStructuralMaterial(plane, material);
+}
+
+void MainFrame::OnElectricalMaterialChanged(MaterialPlaneType plane, ElectricalMaterial const * material)
+{
+    ReconciliateUIWithElectricalMaterial(plane, material);
+}
+
+void MainFrame::OnRopesMaterialChanged(MaterialPlaneType plane, StructuralMaterial const * material)
+{
+    ReconciliateUIWithRopesMaterial(plane, material);
 }
 
 void MainFrame::OnCurrentToolChanged(std::optional<ToolType> tool)
 {
-    if (mController)
-    {
-        ReconciliateUIWithSelectedTool(tool);
-    }
+    ReconciliateUIWithSelectedTool(tool);
+}
+
+void MainFrame::OnPrimaryVisualizationChanged(VisualizationType primaryVisualization)
+{
+    ReconciliateUIWithPrimaryVisualizationSelection(primaryVisualization);
+}
+
+void MainFrame::OnGameVisualizationModeChanged(GameVisualizationModeType mode)
+{
+    ReconciliateUIWithGameVisualizationModeSelection(mode);
+}
+
+void MainFrame::OnStructuralLayerVisualizationModeChanged(StructuralLayerVisualizationModeType mode)
+{
+    ReconciliateUIWithStructuralLayerVisualizationModeSelection(mode);
+}
+
+void MainFrame::OnElectricalLayerVisualizationModeChanged(ElectricalLayerVisualizationModeType mode)
+{
+    ReconciliateUIWithElectricalLayerVisualizationModeSelection(mode);
+}
+
+void MainFrame::OnRopesLayerVisualizationModeChanged(RopesLayerVisualizationModeType mode)
+{
+    ReconciliateUIWithRopesLayerVisualizationModeSelection(mode);
+}
+
+void MainFrame::OnTextureLayerVisualizationModeChanged(TextureLayerVisualizationModeType mode)
+{
+    ReconciliateUIWithTextureLayerVisualizationModeSelection(mode);
+}
+
+void MainFrame::OnOtherVisualizationsOpacityChanged(float opacity)
+{
+    ReconciliateUIWithOtherVisualizationsOpacity(opacity);
+}
+
+void MainFrame::OnVisualGridEnablementChanged(bool isEnabled)
+{
+    ReconciliateUIWithVisualGridEnablement(isEnabled);
 }
 
 void MainFrame::OnUndoStackStateChanged()
 {
-    if (mController)
-    {
-        ReconciliateUIWithUndoStackState();
-    }
+    assert(mController);
+
+    ReconciliateUIWithUndoStackState(*mController);
 }
 
 void MainFrame::OnToolCoordinatesChanged(std::optional<ShipSpaceCoordinates> coordinates)
@@ -3030,47 +3011,23 @@ void MainFrame::OnOpenLogWindowMenuItemSelected(wxCommandEvent & /*event*/)
 
 void MainFrame::OnStructuralMaterialSelected(fsStructuralMaterialSelectedEvent & event)
 {
-    if (event.GetMaterialPlane() == MaterialPlaneType::Foreground)
-    {
-        mWorkbenchState.SetStructuralForegroundMaterial(event.GetMaterial());
-    }
-    else
-    {
-        assert(event.GetMaterialPlane() == MaterialPlaneType::Background);
-        mWorkbenchState.SetStructuralBackgroundMaterial(event.GetMaterial());
-    }
+    assert(mController);
 
-    ReconciliateUIWithWorkbenchState();
+    mController->SetStructuralMaterial(event.GetMaterialPlane(), event.GetMaterial());
 }
 
 void MainFrame::OnElectricalMaterialSelected(fsElectricalMaterialSelectedEvent & event)
 {
-    if (event.GetMaterialPlane() == MaterialPlaneType::Foreground)
-    {
-        mWorkbenchState.SetElectricalForegroundMaterial(event.GetMaterial());
-    }
-    else
-    {
-        assert(event.GetMaterialPlane() == MaterialPlaneType::Background);
-        mWorkbenchState.SetElectricalBackgroundMaterial(event.GetMaterial());
-    }
+    assert(mController);
 
-    ReconciliateUIWithWorkbenchState();
+    mController->SetElectricalMaterial(event.GetMaterialPlane(), event.GetMaterial());
 }
 
 void MainFrame::OnRopeMaterialSelected(fsStructuralMaterialSelectedEvent & event)
 {
-    if (event.GetMaterialPlane() == MaterialPlaneType::Foreground)
-    {
-        mWorkbenchState.SetRopesForegroundMaterial(event.GetMaterial());
-    }
-    else
-    {
-        assert(event.GetMaterialPlane() == MaterialPlaneType::Background);
-        mWorkbenchState.SetRopesBackgroundMaterial(event.GetMaterial());
-    }
+    assert(mController);
 
-    ReconciliateUIWithWorkbenchState();
+    mController->SetRopeMaterial(event.GetMaterialPlane(), event.GetMaterial());
 }
 
 //////////////////////////////////////////////////////////////////
@@ -3455,6 +3412,9 @@ void MainFrame::DoNewShip()
     // Dispose of current controller - including its OpenGL machinery
     mController.reset();
 
+    // Reset current ship filename
+    mCurrentShipFilePath.reset();
+
     // Create new controller with empty ship
     mController = Controller::CreateNew(
         shipName,
@@ -3463,12 +3423,6 @@ void MainFrame::DoNewShip()
         *this,
         mShipTexturizer,
         mResourceLocator);
-
-    // Reset current ship filename
-    mCurrentShipFilePath.reset();
-
-    // Reconciliate UI
-    ReconciliateUI();
 }
 
 bool MainFrame::DoLoadShip(std::filesystem::path const & shipFilePath)
@@ -3511,6 +3465,9 @@ bool MainFrame::DoLoadShip(std::filesystem::path const & shipFilePath)
     // Dispose of current controller - including its OpenGL machinery
     mController.reset();
 
+    // Reset current ship filename
+    mCurrentShipFilePath.reset();
+
     // Create new controller with ship
     mController = Controller::CreateForShip(
         std::move(*shipDefinition),
@@ -3529,9 +3486,6 @@ bool MainFrame::DoLoadShip(std::filesystem::path const & shipFilePath)
     {
         mCurrentShipFilePath.reset();
     }
-
-    // Reconciliate UI
-    ReconciliateUI();
 
     // Success
     return true;
@@ -3586,29 +3540,28 @@ DisplayLogicalSize MainFrame::GetWorkCanvasSize() const
 
 void MainFrame::RecalculateWorkCanvasPanning()
 {
-    if (mController)
-    {
-        //
-        // We populate the scollbar with work space coordinates
-        //
+    assert(mController);
 
-        ShipSpaceCoordinates const cameraPos = mController->GetCameraShipSpacePosition();
-        ShipSpaceSize const cameraRange = mController->GetCameraRange();
-        ShipSpaceSize const cameraThumbSize = mController->GetCameraThumbSize();
+    //
+    // We populate the scollbar with work space coordinates
+    //
+
+    ShipSpaceCoordinates const cameraPos = mController->GetCameraShipSpacePosition();
+    ShipSpaceSize const cameraRange = mController->GetCameraRange();
+    ShipSpaceSize const cameraThumbSize = mController->GetCameraThumbSize();
         
 
-        mWorkCanvasHScrollBar->SetScrollbar(
-            cameraPos.x,
-            cameraThumbSize.width,
-            cameraRange.width,
-            cameraThumbSize.width); // page size  == thumb
+    mWorkCanvasHScrollBar->SetScrollbar(
+        cameraPos.x,
+        cameraThumbSize.width,
+        cameraRange.width,
+        cameraThumbSize.width); // page size  == thumb
 
-        mWorkCanvasVScrollBar->SetScrollbar(
-            cameraPos.y,
-            cameraThumbSize.height,
-            cameraRange.height,
-            cameraThumbSize.height); // page size  == thumb
-    }
+    mWorkCanvasVScrollBar->SetScrollbar(
+        cameraPos.y,
+        cameraThumbSize.height,
+        cameraRange.height,
+        cameraThumbSize.height); // page size  == thumb
 }
 
 void MainFrame::SetFrameTitle(std::string const & shipName, bool isDirty)
@@ -3623,7 +3576,7 @@ void MainFrame::SetFrameTitle(std::string const & shipName, bool isDirty)
 void MainFrame::DeviateFocus()
 {
     // Set focus on primary visualization button
-    uint32_t const iPrimaryVisualization = static_cast<uint32_t>(mController->GetPrimaryVisualization());
+    uint32_t const iPrimaryVisualization = static_cast<uint32_t>(mWorkbenchState.GetPrimaryVisualization());
     mVisualizationSelectButtons[iPrimaryVisualization]->SetFocus();
 }
 
@@ -3673,30 +3626,28 @@ size_t MainFrame::LayerToVisualizationIndex(LayerType layer) const
     return std::numeric_limits<size_t>::max();
 }
 
-void MainFrame::ReconciliateUI()
+void MainFrame::ReconciliateUIWithWorkbenchState()
 {
-    assert(mController);
-    ReconciliateUIWithViewModel();
-    ReconciliateUIWithShipName(mController->GetShipMetadata().ShipName);
-    ReconciliateUIWithLayerPresence();
-    ReconciliateUIWithShipSize(mController->GetShipSize());
-    ReconciliateUIWithPrimaryVisualizationSelection(mController->GetPrimaryVisualization());
-    ReconciliateUIWithGameVisualizationModeSelection(mController->GetGameVisualizationMode());
-    ReconciliateUIWithStructuralLayerVisualizationModeSelection(mController->GetStructuralLayerVisualizationMode());
-    ReconciliateUIWithElectricalLayerVisualizationModeSelection(mController->GetElectricalLayerVisualizationMode());
-    ReconciliateUIWithRopesLayerVisualizationModeSelection(mController->GetRopesLayerVisualizationMode());
-    ReconciliateUIWithTextureLayerVisualizationModeSelection(mController->GetTextureLayerVisualizationMode());
-    ReconciliateUIWithOtherLayersOpacity(mController->GetOtherVisualizationsOpacity());
-    ReconciliateUIWithVisualGridEnablement(mController->IsVisualGridEnabled());
-    ReconciliateUIWithModelDirtiness();
-    ReconciliateUIWithWorkbenchState();
-    ReconciliateUIWithSelectedTool(mController->GetCurrentTool());
-    ReconciliateUIWithUndoStackState();
+    ReconciliateUIWithStructuralMaterial(MaterialPlaneType::Foreground, mWorkbenchState.GetStructuralForegroundMaterial());
+    ReconciliateUIWithStructuralMaterial(MaterialPlaneType::Background, mWorkbenchState.GetStructuralBackgroundMaterial());
+    ReconciliateUIWithElectricalMaterial(MaterialPlaneType::Foreground, mWorkbenchState.GetElectricalForegroundMaterial());
+    ReconciliateUIWithElectricalMaterial(MaterialPlaneType::Background, mWorkbenchState.GetElectricalBackgroundMaterial());
+    ReconciliateUIWithRopesMaterial(MaterialPlaneType::Foreground, mWorkbenchState.GetRopesForegroundMaterial());
+    ReconciliateUIWithRopesMaterial(MaterialPlaneType::Background, mWorkbenchState.GetRopesBackgroundMaterial());
 
-    mMainPanel->Layout();
+    ReconciliateUIWithSelectedTool(mWorkbenchState.GetCurrentToolType());
 
-    assert(mWorkCanvas);
-    mWorkCanvas->Refresh();
+    ReconciliateUIWithPrimaryVisualizationSelection(mWorkbenchState.GetPrimaryVisualization());
+
+    ReconciliateUIWithGameVisualizationModeSelection(mWorkbenchState.GetGameVisualizationMode());
+    ReconciliateUIWithStructuralLayerVisualizationModeSelection(mWorkbenchState.GetStructuralLayerVisualizationMode());
+    ReconciliateUIWithElectricalLayerVisualizationModeSelection(mWorkbenchState.GetElectricalLayerVisualizationMode());
+    ReconciliateUIWithRopesLayerVisualizationModeSelection(mWorkbenchState.GetRopesLayerVisualizationMode());
+    ReconciliateUIWithTextureLayerVisualizationModeSelection(mWorkbenchState.GetTextureLayerVisualizationMode());
+
+    ReconciliateUIWithOtherVisualizationsOpacity(mWorkbenchState.GetOtherVisualizationsOpacity());
+
+    ReconciliateUIWithVisualGridEnablement(mWorkbenchState.IsGridEnabled());
 }
 
 void MainFrame::ReconciliateUIWithViewModel()
@@ -3706,24 +3657,20 @@ void MainFrame::ReconciliateUIWithViewModel()
     // TODO: set zoom in StatusBar
 }
 
-void MainFrame::ReconciliateUIWithShipName(std::string const & shipName)
-{
-    SetFrameTitle(shipName, mController->IsModelDirty());
-}
-
 void MainFrame::ReconciliateUIWithShipSize(ShipSpaceSize const & shipSize)
 {
-    assert(mController);
-
-    RecalculateWorkCanvasPanning();
-
     // TODO: status bar
 }
 
-void MainFrame::ReconciliateUIWithLayerPresence()
+void MainFrame::ReconciliateUIWithShipName(std::string const & shipName)
 {
     assert(mController);
 
+    SetFrameTitle(shipName, mController->IsModelDirty());
+}
+
+void MainFrame::ReconciliateUIWithLayerPresence(Controller const & controller)
+{
     //
     // Rules
     //
@@ -3736,7 +3683,7 @@ void MainFrame::ReconciliateUIWithLayerPresence()
 
     for (uint32_t iLayer = 0; iLayer < LayerCount; ++iLayer)
     {
-        bool const hasLayer = mController->HasModelLayer(static_cast<LayerType>(iLayer));
+        bool const hasLayer = controller.HasModelLayer(static_cast<LayerType>(iLayer));
 
         mVisualizationSelectButtons[LayerToVisualizationIndex(static_cast<LayerType>(iLayer))]->Enable(hasLayer);
 
@@ -3753,7 +3700,7 @@ void MainFrame::ReconciliateUIWithLayerPresence()
         }
     }
 
-    if (mController->HasModelLayer(LayerType::Texture))
+    if (controller.HasModelLayer(LayerType::Texture))
     {
         mGameVisualizationAutoTexturizationModeButton->Enable(false);
         mGameVisualizationTextureModeButton->Enable(true);
@@ -3764,13 +3711,204 @@ void MainFrame::ReconciliateUIWithLayerPresence()
         mGameVisualizationTextureModeButton->Enable(false);
     }
 
-    mVisualizationSelectButtons[static_cast<size_t>(mController->GetPrimaryVisualization())]->SetFocus(); // Prevent other random buttons from getting focus
+    mVisualizationSelectButtons[static_cast<size_t>(mWorkbenchState.GetPrimaryVisualization())]->SetFocus(); // Prevent other random buttons from getting focus
+}
+
+void MainFrame::ReconciliateUIWithModelDirtiness(Controller const & controller)
+{
+    bool const isDirty = controller.IsModelDirty();
+
+    if (mSaveShipMenuItem->IsEnabled() != isDirty)
+    {
+        mSaveShipMenuItem->Enable(isDirty);
+    }
+
+    if (mSaveAndGoBackMenuItem != nullptr
+        && mSaveAndGoBackMenuItem->IsEnabled() != isDirty)
+    {
+        mSaveAndGoBackMenuItem->Enable(false);
+    }
+
+    if (mSaveShipButton->IsEnabled() != isDirty)
+    {
+        mSaveShipButton->Enable(isDirty);
+    }
+
+    SetFrameTitle(controller.GetShipMetadata().ShipName, isDirty);
+}
+
+void MainFrame::ReconciliateUIWithStructuralMaterial(MaterialPlaneType plane, StructuralMaterial const * material)
+{
+    switch (plane)
+    {
+        case MaterialPlaneType::Foreground:
+        {
+            if (material != nullptr)
+            {
+                wxBitmap foreStructuralBitmap = WxHelpers::MakeBitmap(
+                    mShipTexturizer.MakeTextureSample(
+                        std::nullopt, // Use shared settings
+                        MaterialSwathSize,
+                        *material));
+
+                mStructuralForegroundMaterialSelector->SetBitmap(foreStructuralBitmap);
+                mStructuralForegroundMaterialSelector->SetToolTip(material->Name);
+            }
+            else
+            {
+                mStructuralForegroundMaterialSelector->SetBitmap(mNullMaterialBitmap);
+                mStructuralForegroundMaterialSelector->SetToolTip(ClearMaterialName);
+            }
+
+            break;
+        }
+
+        case MaterialPlaneType::Background:
+        {
+            if (material != nullptr)
+            {
+                wxBitmap backStructuralBitmap = WxHelpers::MakeBitmap(
+                    mShipTexturizer.MakeTextureSample(
+                        std::nullopt, // Use shared settings
+                        MaterialSwathSize,
+                        *material));
+
+                mStructuralBackgroundMaterialSelector->SetBitmap(backStructuralBitmap);
+                mStructuralBackgroundMaterialSelector->SetToolTip(material->Name);
+            }
+            else
+            {
+                mStructuralBackgroundMaterialSelector->SetBitmap(mNullMaterialBitmap);
+                mStructuralBackgroundMaterialSelector->SetToolTip(ClearMaterialName);
+            }
+
+            break;
+        }
+    }
+}
+
+void MainFrame::ReconciliateUIWithElectricalMaterial(MaterialPlaneType plane, ElectricalMaterial const * material)
+{
+    switch (plane)
+    {
+        case MaterialPlaneType::Foreground:
+        {
+            if (material != nullptr)
+            {
+                wxBitmap foreElectricalBitmap = WxHelpers::MakeMatteBitmap(
+                    rgbaColor(material->RenderColor, 255),
+                    MaterialSwathSize);
+
+                mElectricalForegroundMaterialSelector->SetBitmap(foreElectricalBitmap);
+                mElectricalForegroundMaterialSelector->SetToolTip(material->Name);
+            }
+            else
+            {
+                mElectricalForegroundMaterialSelector->SetBitmap(mNullMaterialBitmap);
+                mElectricalForegroundMaterialSelector->SetToolTip(ClearMaterialName);
+            }
+
+            break;
+        }
+
+        case MaterialPlaneType::Background:
+        {
+            if (material != nullptr)
+            {
+                wxBitmap backElectricalBitmap = WxHelpers::MakeMatteBitmap(
+                    rgbaColor(material->RenderColor, 255),
+                    MaterialSwathSize);
+
+                mElectricalBackgroundMaterialSelector->SetBitmap(backElectricalBitmap);
+                mElectricalBackgroundMaterialSelector->SetToolTip(material->Name);
+            }
+            else
+            {
+                mElectricalBackgroundMaterialSelector->SetBitmap(mNullMaterialBitmap);
+                mElectricalBackgroundMaterialSelector->SetToolTip(ClearMaterialName);
+            }
+
+            break;
+        }
+    }
+}
+
+void MainFrame::ReconciliateUIWithRopesMaterial(MaterialPlaneType plane, StructuralMaterial const * material)
+{
+    switch (plane)
+    {
+        case MaterialPlaneType::Foreground:
+        {
+            if (material != nullptr)
+            {
+                wxBitmap foreRopesBitmap = WxHelpers::MakeBitmap(
+                    mShipTexturizer.MakeTextureSample(
+                        std::nullopt, // Use shared settings
+                        MaterialSwathSize,
+                        *material));
+
+                mRopesForegroundMaterialSelector->SetBitmap(foreRopesBitmap);
+                mRopesForegroundMaterialSelector->SetToolTip(material->Name);
+            }
+            else
+            {
+                mRopesForegroundMaterialSelector->SetBitmap(mNullMaterialBitmap);
+                mRopesForegroundMaterialSelector->SetToolTip(ClearMaterialName);
+            }
+
+            break;
+        }
+
+        case MaterialPlaneType::Background:
+        {
+            if (material != nullptr)
+            {
+                wxBitmap backRopesBitmap = WxHelpers::MakeBitmap(
+                    mShipTexturizer.MakeTextureSample(
+                        std::nullopt, // Use shared settings
+                        MaterialSwathSize,
+                        *material));
+
+                mRopesBackgroundMaterialSelector->SetBitmap(backRopesBitmap);
+                mRopesBackgroundMaterialSelector->SetToolTip(material->Name);
+            }
+            else
+            {
+                mRopesBackgroundMaterialSelector->SetBitmap(mNullMaterialBitmap);
+                mRopesBackgroundMaterialSelector->SetToolTip(ClearMaterialName);
+            }
+
+            break;
+        }
+    }
+}
+
+void MainFrame::ReconciliateUIWithSelectedTool(std::optional<ToolType> tool)
+{
+    // Select this tool's button and unselect the others
+    for (size_t i = 0; i < mToolButtons.size(); ++i)
+    {
+        bool const isSelected = (tool.has_value() && i == static_cast<size_t>(*tool));
+
+        if (mToolButtons[i]->GetValue() != isSelected)
+        {
+            mToolButtons[i]->SetValue(isSelected);
+        }
+    }
+
+    // Show this tool's settings panel and hide the others
+    for (auto const & entry : mToolSettingsPanels)
+    {
+        bool const isSelected = (tool.has_value() && std::get<0>(entry) == *tool);
+
+        mToolSettingsPanelsSizer->Show(std::get<1>(entry), isSelected);
+    }
+
+    mToolSettingsPanelsSizer->Layout();
 }
 
 void MainFrame::ReconciliateUIWithPrimaryVisualizationSelection(VisualizationType primaryVisualization)
 {
-    assert(mController);
-
     //
     // Toggle various UI elements <-> primary viz
     //
@@ -3857,7 +3995,7 @@ void MainFrame::ReconciliateUIWithTextureLayerVisualizationModeSelection(Texture
     mTextureLayerVisualizationMatteModeButton->SetValue(mode == TextureLayerVisualizationModeType::MatteMode);
 }
 
-void MainFrame::ReconciliateUIWithOtherLayersOpacity(float opacity)
+void MainFrame::ReconciliateUIWithOtherVisualizationsOpacity(float opacity)
 {
     mOtherVisualizationsOpacitySlider->SetValue(OtherVisualizationsOpacityToSlider(opacity));
 }
@@ -3867,191 +4005,13 @@ void MainFrame::ReconciliateUIWithVisualGridEnablement(bool isEnabled)
     mViewGridButton->SetValue(isEnabled);
 }
 
-void MainFrame::ReconciliateUIWithModelDirtiness()
+void MainFrame::ReconciliateUIWithUndoStackState(Controller & controller)
 {
-    assert(mController);
-
-    bool const isDirty = mController->IsModelDirty();
-
-    if (mSaveShipMenuItem->IsEnabled() != isDirty)
-    {
-        mSaveShipMenuItem->Enable(isDirty);
-    }
-
-    if (mSaveAndGoBackMenuItem != nullptr
-        && mSaveAndGoBackMenuItem->IsEnabled() != isDirty)
-    {
-        mSaveAndGoBackMenuItem->Enable(false);
-    }
-
-    if (mSaveShipButton->IsEnabled() != isDirty)
-    {
-        mSaveShipButton->Enable(isDirty);
-    }
-
-    SetFrameTitle(mController->GetShipMetadata().ShipName, isDirty);
-}
-
-void MainFrame::ReconciliateUIWithWorkbenchState()
-{
-    assert(mController);
-
-    // Populate swaths in toolbars
-    {
-        static std::string const ClearMaterialName = "Clear";
-
-        {
-            auto const * foreStructuralMaterial = mWorkbenchState.GetStructuralForegroundMaterial();
-            if (foreStructuralMaterial != nullptr)
-            {
-                wxBitmap foreStructuralBitmap = WxHelpers::MakeBitmap(
-                    mShipTexturizer.MakeTextureSample(
-                        std::nullopt, // Use shared settings
-                        MaterialSwathSize,
-                        *foreStructuralMaterial));
-
-                mStructuralForegroundMaterialSelector->SetBitmap(foreStructuralBitmap);
-                mStructuralForegroundMaterialSelector->SetToolTip(foreStructuralMaterial->Name);
-            }
-            else
-            {
-                mStructuralForegroundMaterialSelector->SetBitmap(mNullMaterialBitmap);
-                mStructuralForegroundMaterialSelector->SetToolTip(ClearMaterialName);
-            }
-
-            auto const * backStructuralMaterial = mWorkbenchState.GetStructuralBackgroundMaterial();
-            if (backStructuralMaterial != nullptr)
-            {
-                wxBitmap backStructuralBitmap = WxHelpers::MakeBitmap(
-                    mShipTexturizer.MakeTextureSample(
-                        std::nullopt, // Use shared settings
-                        MaterialSwathSize,
-                        *backStructuralMaterial));
-
-                mStructuralBackgroundMaterialSelector->SetBitmap(backStructuralBitmap);
-                mStructuralBackgroundMaterialSelector->SetToolTip(backStructuralMaterial->Name);
-            }
-            else
-            {
-                mStructuralBackgroundMaterialSelector->SetBitmap(mNullMaterialBitmap);
-                mStructuralBackgroundMaterialSelector->SetToolTip(ClearMaterialName);
-            }
-        }
-
-        {
-            auto const * foreElectricalMaterial = mWorkbenchState.GetElectricalForegroundMaterial();
-            if (foreElectricalMaterial != nullptr)
-            {
-                wxBitmap foreElectricalBitmap = WxHelpers::MakeMatteBitmap(
-                    rgbaColor(foreElectricalMaterial->RenderColor, 255),
-                    MaterialSwathSize);
-
-                mElectricalForegroundMaterialSelector->SetBitmap(foreElectricalBitmap);
-                mElectricalForegroundMaterialSelector->SetToolTip(foreElectricalMaterial->Name);
-            }
-            else
-            {
-                mElectricalForegroundMaterialSelector->SetBitmap(mNullMaterialBitmap);
-                mElectricalForegroundMaterialSelector->SetToolTip(ClearMaterialName);
-            }
-
-            auto const * backElectricalMaterial = mWorkbenchState.GetElectricalBackgroundMaterial();
-            if (backElectricalMaterial != nullptr)
-            {
-                wxBitmap backElectricalBitmap = WxHelpers::MakeMatteBitmap(
-                    rgbaColor(backElectricalMaterial->RenderColor, 255),
-                    MaterialSwathSize);
-
-                mElectricalBackgroundMaterialSelector->SetBitmap(backElectricalBitmap);
-                mElectricalBackgroundMaterialSelector->SetToolTip(backElectricalMaterial->Name);
-            }
-            else
-            {
-                mElectricalBackgroundMaterialSelector->SetBitmap(mNullMaterialBitmap);
-                mElectricalBackgroundMaterialSelector->SetToolTip(ClearMaterialName);
-            }
-        }
-
-        {
-            auto const * foreRopesMaterial = mWorkbenchState.GetRopesForegroundMaterial();
-            if (foreRopesMaterial != nullptr)
-            {
-                wxBitmap foreRopesBitmap = WxHelpers::MakeBitmap(
-                    mShipTexturizer.MakeTextureSample(
-                        std::nullopt, // Use shared settings
-                        MaterialSwathSize,
-                        *foreRopesMaterial));
-
-                mRopesForegroundMaterialSelector->SetBitmap(foreRopesBitmap);
-                mRopesForegroundMaterialSelector->SetToolTip(foreRopesMaterial->Name);
-            }
-            else
-            {
-                mRopesForegroundMaterialSelector->SetBitmap(mNullMaterialBitmap);
-                mRopesForegroundMaterialSelector->SetToolTip(ClearMaterialName);
-            }
-
-            auto const * backRopesMaterial = mWorkbenchState.GetRopesBackgroundMaterial();
-            if (backRopesMaterial != nullptr)
-            {
-                wxBitmap backRopesBitmap = WxHelpers::MakeBitmap(
-                    mShipTexturizer.MakeTextureSample(
-                        std::nullopt, // Use shared settings
-                        MaterialSwathSize,
-                        *backRopesMaterial));
-
-                mRopesBackgroundMaterialSelector->SetBitmap(backRopesBitmap);
-                mRopesBackgroundMaterialSelector->SetToolTip(backRopesMaterial->Name);
-            }
-            else
-            {
-                mRopesBackgroundMaterialSelector->SetBitmap(mNullMaterialBitmap);
-                mRopesBackgroundMaterialSelector->SetToolTip(ClearMaterialName);
-            }
-        }
-    }
-
-    // Note: at this moment we're not populating settings in ToolSettings toolbar, as all controls
-    // are initialized with the settings' current values, and the only source of change for the
-    // values are the controls themselves. If that changes, this would be the place to reconciliate
-    // the workbench state with the controls.
-}
-
-void MainFrame::ReconciliateUIWithSelectedTool(std::optional<ToolType> tool)
-{
-    assert(mController);
-
-    // Select this tool's button and unselect the others
-    for (size_t i = 0; i < mToolButtons.size(); ++i)
-    {
-        bool const isSelected = (tool.has_value() && i == static_cast<size_t>(*tool));
-
-        if (mToolButtons[i]->GetValue() != isSelected)
-        {
-            mToolButtons[i]->SetValue(isSelected);
-        }
-    }
-
-    // Show this tool's settings panel and hide the others
-    for (auto const & entry : mToolSettingsPanels)
-    {
-        bool const isSelected = (tool.has_value() && std::get<0>(entry) == *tool);
-
-        mToolSettingsPanelsSizer->Show(std::get<1>(entry), isSelected);
-    }
-
-    mToolSettingsPanelsSizer->Layout();
-}
-
-void MainFrame::ReconciliateUIWithUndoStackState()
-{
-    assert(mController);
-
     //
     // Menu item
     //
 
-    bool const canUndo = mController->CanUndo();
+    bool const canUndo = controller.CanUndo();
     if (mUndoMenuItem->IsEnabled() != canUndo)
     {
         mUndoMenuItem->Enable(canUndo);
@@ -4067,16 +4027,16 @@ void MainFrame::ReconciliateUIWithUndoStackState()
     mUndoStackPanel->GetSizer()->Clear(true);
 
     // Populate
-    for (size_t stackItemIndex = 0; stackItemIndex < mController->GetUndoStackSize(); ++stackItemIndex)
+    for (size_t stackItemIndex = 0; stackItemIndex < controller.GetUndoStackSize(); ++stackItemIndex)
     {
-        auto button = new HighlightableTextButton(mUndoStackPanel, mController->GetUndoTitleAt(stackItemIndex));
-        button->SetHighlighted(stackItemIndex == mController->GetUndoStackSize() - 1);
+        auto button = new HighlightableTextButton(mUndoStackPanel, controller.GetUndoTitleAt(stackItemIndex));
+        button->SetHighlighted(stackItemIndex == controller.GetUndoStackSize() - 1);
 
         button->Bind(
             wxEVT_BUTTON,
-            [this, stackItemIndex](wxCommandEvent &)
+            [this, stackItemIndex, &controller](wxCommandEvent &)
             {
-                mController->UndoUntil(stackItemIndex);
+                controller.UndoUntil(stackItemIndex);
             });
 
         mUndoStackPanel->GetSizer()->Add(

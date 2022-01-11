@@ -77,13 +77,6 @@ Controller::Controller(
     , mUserInterface(userInterface)
     , mResourceLocator(resourceLocator)
     // State
-    , mPrimaryVisualization(VisualizationType::Game)
-    , mGameVisualizationMode(mModelController->GetModel().HasLayer(LayerType::Texture) ? GameVisualizationModeType::TextureMode : GameVisualizationModeType::AutoTexturizationMode)
-    , mStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType::PixelMode)
-    , mElectricalLayerVisualizationMode(ElectricalLayerVisualizationModeType::PixelMode)
-    , mRopesLayerVisualizationMode(RopesLayerVisualizationModeType::LinesMode)
-    , mTextureLayerVisualizationMode(TextureLayerVisualizationModeType::MatteMode)
-    , mCurrentToolType(ToolType::StructuralPencil)
     , mCurrentTool()
     , mLastToolTypePerLayer({ToolType::StructuralPencil, ToolType::ElectricalPencil, ToolType::RopePencil, std::nullopt})
 {
@@ -95,10 +88,13 @@ Controller::Controller(
     //
 
     mView = std::make_unique<View>(
-        openGLManager,
         mModelController->GetModel().GetShipSize(),
+        mWorkbenchState.GetPrimaryVisualization(),
+        mWorkbenchState.GetOtherVisualizationsOpacity(),
+        mWorkbenchState.IsGridEnabled(),
         mUserInterface.GetDisplaySize(),
         mUserInterface.GetLogicalToPhysicalPixelFactor(),
+        openGLManager,
         [this]()
         {
             mUserInterface.SwapRenderBuffers();
@@ -109,30 +105,45 @@ Controller::Controller(
         ImageFileTools::LoadImageRgba(
             mResourceLocator.GetBitmapFilePath("shipbuilder_background")));
 
-    // Tell view settings
-    mView->SetPrimaryVisualization(mPrimaryVisualization);
-
     // Set ideal zoom
     mView->SetZoom(mView->CalculateIdealZoom());
 
     //
-    // Initialize
+    // Sync with UI
+    //
+
+    mUserInterface.OnViewModelChanged();
+    mUserInterface.OnShipNameChanged(mModelController->GetShipMetadata().ShipName);
+    mUserInterface.OnShipSizeChanged(GetShipSize());
+    mUserInterface.OnLayerPresenceChanged();
+    mUserInterface.OnModelDirtyChanged();
+    mUserInterface.OnUndoStackStateChanged();
+    
+    //
+    // Initialize visualization
     //
 
     // Initialize layer visualizations
-    InternalUpdateVisualizationModes();
-
-    // Create tool if mouse is (logically) in work canvas at this very moment
-    if (mUserInterface.IsMouseInWorkCanvas())
-    {
-        if (mCurrentToolType.has_value())
-        {
-            mCurrentTool = MakeTool(*mCurrentToolType);
-        }
-    }
+    InternalReconciliateTextureVisualizationMode();
+    InternalUpdateModelControllerVisualizationModes();
 
     // Upload layers' visualizations
     mModelController->UpdateVisualizations(*mView);
+
+    // Refresh view
+    mUserInterface.RefreshView();
+
+    //
+    // Create tool - iff mouse is (logically) in work canvas at this very moment
+    //
+
+    if (mUserInterface.IsMouseInWorkCanvas())
+    {
+        if (mWorkbenchState.GetCurrentToolType().has_value())
+        {
+            mCurrentTool = MakeTool(*mWorkbenchState.GetCurrentToolType());
+        }
+    }
 }
 
 ShipDefinition Controller::MakeShipDefinition()
@@ -261,7 +272,7 @@ void Controller::NewStructuralLayer()
     mUserInterface.OnLayerPresenceChanged();
 
     // Switch primary viz to this one
-    if (mPrimaryVisualization != VisualizationType::StructuralLayer)
+    if (mWorkbenchState.GetPrimaryVisualization() != VisualizationType::StructuralLayer)
     {
         InternalSelectPrimaryVisualization(VisualizationType::StructuralLayer);
     }
@@ -271,7 +282,7 @@ void Controller::NewStructuralLayer()
     mUserInterface.OnModelDirtyChanged();
 
     // Update visualization modes
-    InternalUpdateVisualizationModes();
+    InternalUpdateModelControllerVisualizationModes();
 
     // Refresh model visualizations
     mModelController->UpdateVisualizations(*mView);
@@ -288,7 +299,7 @@ void Controller::SetStructuralLayer(/*TODO*/)
     mUserInterface.OnLayerPresenceChanged();
 
     // Switch primary viz to this one
-    if (mPrimaryVisualization != VisualizationType::StructuralLayer)
+    if (mWorkbenchState.GetPrimaryVisualization() != VisualizationType::StructuralLayer)
     {
         InternalSelectPrimaryVisualization(VisualizationType::StructuralLayer);
     }
@@ -298,7 +309,7 @@ void Controller::SetStructuralLayer(/*TODO*/)
     mUserInterface.OnModelDirtyChanged();
 
     // Update visualization modes
-    InternalUpdateVisualizationModes();
+    InternalUpdateModelControllerVisualizationModes();
 
     // Refresh model visualizations
     mModelController->UpdateVisualizations(*mView);
@@ -348,7 +359,7 @@ void Controller::NewElectricalLayer()
     mUserInterface.OnLayerPresenceChanged();
 
     // Switch primary viz to this one
-    if (mPrimaryVisualization != VisualizationType::ElectricalLayer)
+    if (mWorkbenchState.GetPrimaryVisualization() != VisualizationType::ElectricalLayer)
     {
         InternalSelectPrimaryVisualization(VisualizationType::ElectricalLayer);
     }
@@ -358,7 +369,7 @@ void Controller::NewElectricalLayer()
     mUserInterface.OnModelDirtyChanged();
 
     // Update visualization modes
-    InternalUpdateVisualizationModes();
+    InternalUpdateModelControllerVisualizationModes();
 
     // Refresh model visualization
     mModelController->UpdateVisualizations(*mView);
@@ -375,7 +386,7 @@ void Controller::SetElectricalLayer(/*TODO*/)
     mUserInterface.OnLayerPresenceChanged();
 
     // Switch primary layer to this one
-    if (mPrimaryVisualization != VisualizationType::ElectricalLayer)
+    if (mWorkbenchState.GetPrimaryVisualization() != VisualizationType::ElectricalLayer)
     {
         InternalSelectPrimaryVisualization(VisualizationType::ElectricalLayer);
     }
@@ -385,7 +396,7 @@ void Controller::SetElectricalLayer(/*TODO*/)
     mUserInterface.OnModelDirtyChanged();
 
     // Update visualization modes
-    InternalUpdateVisualizationModes();
+    InternalUpdateModelControllerVisualizationModes();
 
     // Refresh model visualizations
     mModelController->UpdateVisualizations(*mView);
@@ -402,7 +413,7 @@ void Controller::RemoveElectricalLayer()
     mUserInterface.OnLayerPresenceChanged();
 
     // Switch primary viz if it was this one
-    if (mPrimaryVisualization == VisualizationType::ElectricalLayer)
+    if (mWorkbenchState.GetPrimaryVisualization() == VisualizationType::ElectricalLayer)
     {
         InternalSelectPrimaryVisualization(VisualizationType::Game);
     }
@@ -412,7 +423,7 @@ void Controller::RemoveElectricalLayer()
     mUserInterface.OnModelDirtyChanged();
 
     // Update visualization modes
-    InternalUpdateVisualizationModes();
+    InternalUpdateModelControllerVisualizationModes();
 
     // Refresh model visualizations
     mModelController->UpdateVisualizations(*mView);
@@ -448,7 +459,7 @@ void Controller::RestoreElectricalLayerForUndo(std::unique_ptr<ElectricalLayerDa
     // No need to update dirtyness, this is for undo
 
     // Update visualization modes
-    InternalUpdateVisualizationModes();
+    InternalUpdateModelControllerVisualizationModes();
 
     // Refresh model visualizations
     mModelController->UpdateVisualizations(*mView);
@@ -509,7 +520,7 @@ void Controller::NewRopesLayer()
     mUserInterface.OnLayerPresenceChanged();
 
     // Switch primary viz to this one
-    if (mPrimaryVisualization != VisualizationType::RopesLayer)
+    if (mWorkbenchState.GetPrimaryVisualization() != VisualizationType::RopesLayer)
     {
         InternalSelectPrimaryVisualization(VisualizationType::RopesLayer);
     }
@@ -519,7 +530,7 @@ void Controller::NewRopesLayer()
     mUserInterface.OnModelDirtyChanged();
 
     // Update visualization modes
-    InternalUpdateVisualizationModes();
+    InternalUpdateModelControllerVisualizationModes();
 
     // Refresh model visualizations
     mModelController->UpdateVisualizations(*mView);
@@ -536,7 +547,7 @@ void Controller::SetRopesLayer(/*TODO*/)
     mUserInterface.OnLayerPresenceChanged();
 
     // Switch primary viz to this one
-    if (mPrimaryVisualization != VisualizationType::RopesLayer)
+    if (mWorkbenchState.GetPrimaryVisualization() != VisualizationType::RopesLayer)
     {
         InternalSelectPrimaryVisualization(VisualizationType::RopesLayer);
     }
@@ -546,7 +557,7 @@ void Controller::SetRopesLayer(/*TODO*/)
     mUserInterface.OnModelDirtyChanged();
 
     // Update visualization modes
-    InternalUpdateVisualizationModes();
+    InternalUpdateModelControllerVisualizationModes();
 
     // Refresh model visualizations
     mModelController->UpdateVisualizations(*mView);
@@ -563,7 +574,7 @@ void Controller::RemoveRopesLayer()
     mUserInterface.OnLayerPresenceChanged();
 
     // Switch primary viz if it was this one
-    if (mPrimaryVisualization == VisualizationType::RopesLayer)
+    if (mWorkbenchState.GetPrimaryVisualization() == VisualizationType::RopesLayer)
     {
         InternalSelectPrimaryVisualization(VisualizationType::Game);
     }
@@ -573,7 +584,7 @@ void Controller::RemoveRopesLayer()
     mUserInterface.OnModelDirtyChanged();
 
     // Update visualization modes
-    InternalUpdateVisualizationModes();
+    InternalUpdateModelControllerVisualizationModes();
 
     // Refresh model visualizations
     mModelController->UpdateVisualizations(*mView);
@@ -591,7 +602,7 @@ void Controller::RestoreRopesLayerForUndo(std::unique_ptr<RopesLayerData> ropesL
     // No need to update dirtyness, this is for undo
 
     // Update visualization modes
-    InternalUpdateVisualizationModes();
+    InternalUpdateModelControllerVisualizationModes();
 
     // Refresh model visualizations
     mModelController->UpdateVisualizations(*mView);
@@ -633,7 +644,7 @@ void Controller::SetTextureLayer(
         mUserInterface.OnUndoStackStateChanged();
     }
 
-    // FUTUREWORK: disabled primary layer switch for this release, as there are no tool
+    // FUTUREWORK: disabled primary layer switch for this release, as there are no tools
     // and thus it's pointless
     ////// Switch primary viz to this one
     ////if (mPrimaryVisualization != VisualizationType::TextureLayer)
@@ -643,7 +654,7 @@ void Controller::SetTextureLayer(
 
     // Update visualization modes
     InternalReconciliateTextureVisualizationMode();
-    InternalUpdateVisualizationModes();
+    InternalUpdateModelControllerVisualizationModes();
 
     // Update dirtyness
     mModelController->SetLayerDirty(LayerType::Texture);
@@ -688,17 +699,17 @@ void Controller::RemoveTextureLayer()
     }
 
     // Switch primary viz if it was this one
-    if (mPrimaryVisualization == VisualizationType::TextureLayer)
+    if (mWorkbenchState.GetPrimaryVisualization() == VisualizationType::TextureLayer)
     {
         InternalSelectPrimaryVisualization(VisualizationType::Game);
     }
 
     // Change texture visualization mode so that next time a texture
     // layer is present, we don't start in "none" mode
-    if (mTextureLayerVisualizationMode == TextureLayerVisualizationModeType::None)
+    if (mWorkbenchState.GetTextureLayerVisualizationMode() == TextureLayerVisualizationModeType::None)
     {
-        mTextureLayerVisualizationMode = TextureLayerVisualizationModeType::MatteMode; // Default for newly-created layer
-        mUserInterface.OnTextureLayerVisualizationModeChanged(mTextureLayerVisualizationMode);
+        mWorkbenchState.SetTextureLayerVisualizationMode(TextureLayerVisualizationModeType::MatteMode); // New default for next layer
+        mUserInterface.OnTextureLayerVisualizationModeChanged(TextureLayerVisualizationModeType::MatteMode);
     }
 
     // Update dirtyness
@@ -707,7 +718,7 @@ void Controller::RemoveTextureLayer()
 
     // Update visualization modes
     InternalReconciliateTextureVisualizationMode();
-    InternalUpdateVisualizationModes();
+    InternalUpdateModelControllerVisualizationModes();
 
     // Refresh model visualizations
     mModelController->UpdateVisualizations(*mView);
@@ -730,7 +741,7 @@ void Controller::RestoreTextureLayerForUndo(
 
     // Update visualization modes
     InternalReconciliateTextureVisualizationMode();
-    InternalUpdateVisualizationModes();
+    InternalUpdateModelControllerVisualizationModes();
 
     // Refresh model visualizations
     mModelController->UpdateVisualizations(*mView);
@@ -781,7 +792,7 @@ void Controller::RestoreAllLayersForUndo(
 
     // Update visualization modes
     InternalReconciliateTextureVisualizationMode();
-    InternalUpdateVisualizationModes();
+    InternalUpdateModelControllerVisualizationModes();
 
     // Refresh model visualizations
     mModelController->UpdateVisualizations(*mView);
@@ -831,14 +842,9 @@ void Controller::ResizeShip(
         _("Resize Ship"));
 }
 
-VisualizationType Controller::GetPrimaryVisualization() const
-{
-    return mPrimaryVisualization;
-}
-
 void Controller::SelectPrimaryVisualization(VisualizationType primaryVisualization)
 {
-    if (primaryVisualization != mPrimaryVisualization)
+    if (primaryVisualization != mWorkbenchState.GetPrimaryVisualization())
     {
         {
             auto const scopedToolResumeState = SuspendTool();
@@ -851,154 +857,185 @@ void Controller::SelectPrimaryVisualization(VisualizationType primaryVisualizati
     }
 }
 
-GameVisualizationModeType Controller::GetGameVisualizationMode() const
-{
-    return mGameVisualizationMode;
-}
-
 void Controller::SetGameVisualizationMode(GameVisualizationModeType mode)
 {
-    mGameVisualizationMode = mode;
-
-    // Update visualization modes
-    InternalUpdateVisualizationModes();
+    mWorkbenchState.SetGameVisualizationMode(mode);
 
     // Notify
     mUserInterface.OnGameVisualizationModeChanged(mode);
 
+    // Update visualization modes
+    InternalUpdateModelControllerVisualizationModes();
+
     // Refresh model visualizations
     mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
-}
-
-StructuralLayerVisualizationModeType Controller::GetStructuralLayerVisualizationMode() const
-{
-    return mStructuralLayerVisualizationMode;
 }
 
 void Controller::SetStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType mode)
 {
-    mStructuralLayerVisualizationMode = mode;
-
-    // Update visualization modes
-    InternalUpdateVisualizationModes();
+    mWorkbenchState.SetStructuralLayerVisualizationMode(mode);
 
     // Notify
     mUserInterface.OnStructuralLayerVisualizationModeChanged(mode);
 
+    // Update visualization modes
+    InternalUpdateModelControllerVisualizationModes();
+
     // Refresh model visualizations
     mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
-}
-
-ElectricalLayerVisualizationModeType Controller::GetElectricalLayerVisualizationMode() const
-{
-    return mElectricalLayerVisualizationMode;
 }
 
 void Controller::SetElectricalLayerVisualizationMode(ElectricalLayerVisualizationModeType mode)
 {
-    mElectricalLayerVisualizationMode = mode;
-
-    // Update visualization modes
-    InternalUpdateVisualizationModes();
+    mWorkbenchState.SetElectricalLayerVisualizationMode(mode);
 
     // Notify
     mUserInterface.OnElectricalLayerVisualizationModeChanged(mode);
 
+    // Update visualization modes
+    InternalUpdateModelControllerVisualizationModes();
+
     // Refresh model visualizations
     mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
-}
-
-RopesLayerVisualizationModeType Controller::GetRopesLayerVisualizationMode() const
-{
-    return mRopesLayerVisualizationMode;
 }
 
 void Controller::SetRopesLayerVisualizationMode(RopesLayerVisualizationModeType mode)
 {
-    mRopesLayerVisualizationMode = mode;
-
-    // Update visualization modes
-    InternalUpdateVisualizationModes();
+    mWorkbenchState.SetRopesLayerVisualizationMode(mode);
 
     // Notify
     mUserInterface.OnRopesLayerVisualizationModeChanged(mode);
 
+    // Update visualization modes
+    InternalUpdateModelControllerVisualizationModes();
+
     // Refresh model visualizations
     mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
-}
-
-TextureLayerVisualizationModeType Controller::GetTextureLayerVisualizationMode() const
-{
-    return mTextureLayerVisualizationMode;
 }
 
 void Controller::SetTextureLayerVisualizationMode(TextureLayerVisualizationModeType mode)
 {
-    mTextureLayerVisualizationMode = mode;
-
-    // Update visualization modes
-    InternalUpdateVisualizationModes();
+    mWorkbenchState.SetTextureLayerVisualizationMode(mode);
 
     // Notify
     mUserInterface.OnTextureLayerVisualizationModeChanged(mode);
+
+    // Update visualization modes
+    InternalUpdateModelControllerVisualizationModes();
 
     // Refresh model visualizations
     mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
 }
 
-float Controller::GetOtherVisualizationsOpacity() const
-{
-    return mView->GetOtherVisualizationsOpacity();
-}
-
 void Controller::SetOtherVisualizationsOpacity(float opacity)
 {
+    mWorkbenchState.SetOtherVisualizationsOpacity(opacity);
+
+    // Notify
+    mUserInterface.OnOtherVisualizationsOpacityChanged(opacity);
+
+    // Update view
     mView->SetOtherVisualizationsOpacity(opacity);
-
     mUserInterface.RefreshView();
-}
-
-bool Controller::IsVisualGridEnabled() const
-{
-    return mView->IsVisualGridEnabled();
 }
 
 void Controller::EnableVisualGrid(bool doEnable)
 {
+    mWorkbenchState.EnableGrid(doEnable);
+
+    // Notify
+    mUserInterface.OnVisualGridEnablementChanged(doEnable);
+
+    // Update view
     mView->EnableVisualGrid(doEnable);
     mUserInterface.RefreshView();
 }
 
-std::optional<ToolType> Controller::GetCurrentTool() const
-{
-    return mCurrentToolType;
-}
-
 void Controller::SetCurrentTool(std::optional<ToolType> tool)
 {
-    if (tool != mCurrentToolType)
+    if (tool != mWorkbenchState.GetCurrentToolType())
     {
         bool const hadTool = (mCurrentTool != nullptr);
 
         // Nuke current tool
-        mCurrentToolType.reset();
+        mWorkbenchState.SetCurrentToolType(std::nullopt);
         mCurrentTool.reset();
 
         InternalSetCurrentTool(tool);
 
         // Make new tool - unless we are suspended
-        assert(mCurrentToolType == tool);
-        if (mCurrentToolType.has_value()
+        assert(mWorkbenchState.GetCurrentToolType() == tool);
+        if (mWorkbenchState.GetCurrentToolType().has_value()
             && hadTool)
         {
-            mCurrentTool = MakeTool(*mCurrentToolType);
+            mCurrentTool = MakeTool(*mWorkbenchState.GetCurrentToolType());
         }
     }
+}
+
+void Controller::SetStructuralMaterial(MaterialPlaneType plane, StructuralMaterial const * material)
+{
+    switch (plane)
+    {
+        case MaterialPlaneType::Foreground:
+        {
+            mWorkbenchState.SetStructuralForegroundMaterial(material);
+            break;
+        }
+
+        case MaterialPlaneType::Background:
+        {
+            mWorkbenchState.SetStructuralBackgroundMaterial(material);
+            break;
+        }
+    }
+
+    mUserInterface.OnStructuralMaterialChanged(plane, material);
+}
+
+void Controller::SetElectricalMaterial(MaterialPlaneType plane, ElectricalMaterial const * material)
+{
+    switch (plane)
+    {
+        case MaterialPlaneType::Foreground:
+        {
+            mWorkbenchState.SetElectricalForegroundMaterial(material);
+            break;
+        }
+
+        case MaterialPlaneType::Background:
+        {
+            mWorkbenchState.SetElectricalBackgroundMaterial(material);
+            break;
+        }
+    }
+
+    mUserInterface.OnElectricalMaterialChanged(plane, material);
+}
+
+void Controller::SetRopeMaterial(MaterialPlaneType plane, StructuralMaterial const * material)
+{
+    switch (plane)
+    {
+        case MaterialPlaneType::Foreground:
+        {
+            mWorkbenchState.SetRopesForegroundMaterial(material);
+            break;
+        }
+
+        case MaterialPlaneType::Background:
+        {
+            mWorkbenchState.SetRopesBackgroundMaterial(material);
+            break;
+        }
+    }
+
+    mUserInterface.OnRopesMaterialChanged(plane, material);
 }
 
 bool Controller::CanUndo() const
@@ -1259,17 +1296,17 @@ void Controller::InternalSelectPrimaryVisualization(VisualizationType primaryVis
     //
 
     assert(!mCurrentTool);
-    assert(mPrimaryVisualization != primaryVisualization);
+    assert(mWorkbenchState.GetPrimaryVisualization() != primaryVisualization);
 
     // Store new primary visualization
-    mPrimaryVisualization = primaryVisualization;
+    mWorkbenchState.SetPrimaryVisualization(primaryVisualization);
+
+    // Notify
+    mUserInterface.OnPrimaryVisualizationChanged(primaryVisualization);
 
     // Select the last tool we have used for this new viz's layer
     // Note: stores new tool for new layer
     InternalSetCurrentTool(mLastToolTypePerLayer[static_cast<size_t>(VisualizationToLayer(primaryVisualization))]);
-
-    // Notify
-    mUserInterface.OnPrimaryVisualizationChanged(primaryVisualization);
 
     // Tell view
     mView->SetPrimaryVisualization(primaryVisualization);
@@ -1281,25 +1318,25 @@ void Controller::InternalReconciliateTextureVisualizationMode()
     {
         // If game visualization mode is the one only allowed with texture, 
         // change it to auto-texturization
-        if (mGameVisualizationMode == GameVisualizationModeType::TextureMode)
+        if (mWorkbenchState.GetGameVisualizationMode() == GameVisualizationModeType::TextureMode)
         {
-            mGameVisualizationMode = GameVisualizationModeType::AutoTexturizationMode;
-            mUserInterface.OnGameVisualizationModeChanged(mGameVisualizationMode);
+            mWorkbenchState.SetGameVisualizationMode(GameVisualizationModeType::AutoTexturizationMode);
+            mUserInterface.OnGameVisualizationModeChanged(GameVisualizationModeType::AutoTexturizationMode);
         }
     }
     else
     {
         // If game visualization mode is the one only allowed without texture, 
         // change it to texture
-        if (mGameVisualizationMode == GameVisualizationModeType::AutoTexturizationMode)
+        if (mWorkbenchState.GetGameVisualizationMode() == GameVisualizationModeType::AutoTexturizationMode)
         {
-            mGameVisualizationMode = GameVisualizationModeType::TextureMode;
-            mUserInterface.OnGameVisualizationModeChanged(mGameVisualizationMode);
+            mWorkbenchState.SetGameVisualizationMode(GameVisualizationModeType::TextureMode);
+            mUserInterface.OnGameVisualizationModeChanged(GameVisualizationModeType::TextureMode);
         }
     }
 }
 
-void Controller::InternalUpdateVisualizationModes()
+void Controller::InternalUpdateModelControllerVisualizationModes()
 {
     //
     // Here we orchestrate the viz mode that we want for the ModelController
@@ -1307,19 +1344,19 @@ void Controller::InternalUpdateVisualizationModes()
 
     // Game
 
-    mModelController->SetGameVisualizationMode(mGameVisualizationMode);
+    mModelController->SetGameVisualizationMode(mWorkbenchState.GetGameVisualizationMode());
 
     // Structural
 
     assert(mModelController->GetModel().HasLayer(LayerType::Structural));
 
-    mModelController->SetStructuralLayerVisualizationMode(mStructuralLayerVisualizationMode);
+    mModelController->SetStructuralLayerVisualizationMode(mWorkbenchState.GetStructuralLayerVisualizationMode());
 
     // Electrical
 
     if (mModelController->GetModel().HasLayer(LayerType::Electrical))
     {
-        mModelController->SetElectricalLayerVisualizationMode(mElectricalLayerVisualizationMode);
+        mModelController->SetElectricalLayerVisualizationMode(mWorkbenchState.GetElectricalLayerVisualizationMode());
     }
     else
     {
@@ -1330,7 +1367,7 @@ void Controller::InternalUpdateVisualizationModes()
 
     if (mModelController->GetModel().HasLayer(LayerType::Ropes))
     {
-        mModelController->SetRopesLayerVisualizationMode(mRopesLayerVisualizationMode);
+        mModelController->SetRopesLayerVisualizationMode(mWorkbenchState.GetRopesLayerVisualizationMode());
     }
     else
     {
@@ -1341,7 +1378,7 @@ void Controller::InternalUpdateVisualizationModes()
 
     if (mModelController->GetModel().HasLayer(LayerType::Texture))
     {
-        mModelController->SetTextureLayerVisualizationMode(mTextureLayerVisualizationMode);
+        mModelController->SetTextureLayerVisualizationMode(mWorkbenchState.GetTextureLayerVisualizationMode());
     }
     else
     {
@@ -1359,7 +1396,10 @@ void Controller::InternalSetCurrentTool(std::optional<ToolType> toolType)
     assert(!mCurrentTool);
 
     // Set current tool
-    mCurrentToolType = toolType;
+    mWorkbenchState.SetCurrentToolType(toolType);
+
+    // Notify
+    mUserInterface.OnCurrentToolChanged(toolType);
 
     if (!toolType.has_value())
     {
@@ -1368,10 +1408,7 @@ void Controller::InternalSetCurrentTool(std::optional<ToolType> toolType)
     }
 
     // Remember new tool as the last tool of this primary visualization's layer
-    mLastToolTypePerLayer[static_cast<size_t>(VisualizationToLayer(mPrimaryVisualization))] = toolType;
-
-    // Notify UI
-    mUserInterface.OnCurrentToolChanged(mCurrentToolType);
+    mLastToolTypePerLayer[static_cast<size_t>(VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization()))] = toolType;
 }
 
 Controller::ScopedToolResumeState Controller::SuspendTool() const
@@ -1395,9 +1432,9 @@ void Controller::InternalResumeTool()
 {
     mCurrentTool.reset();
 
-    if (mCurrentToolType.has_value())
+    if (mWorkbenchState.GetCurrentToolType().has_value())
     {
-        mCurrentTool = MakeTool(*mCurrentToolType);
+        mCurrentTool = MakeTool(*mWorkbenchState.GetCurrentToolType());
     }
 }
 

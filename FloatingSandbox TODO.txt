@@ -322,6 +322,8 @@ Render:
 
 		- Lower heat radius in Ultra-Violent mode
 
+		- See if repro's: https://www.reddit.com/r/FloatingSandbox/comments/riq290/found_an_interesting_bug/
+
 		= Mac/Sam
 			+ CMakeFiles: add `set (CMAKE_FIND_LIBRARY_SUFFIXES ".a")`			
 			- See Sam's issue with wxWidgets
