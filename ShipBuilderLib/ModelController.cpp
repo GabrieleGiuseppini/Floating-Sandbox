@@ -1225,6 +1225,14 @@ void ModelController::SetGameVisualizationMode(GameVisualizationModeType mode)
     }
 }
 
+void ModelController::ForceWholeGameVisualizationRefresh()
+{
+    if (mGameVisualizationMode != GameVisualizationModeType::None)
+    {
+        RegisterDirtyVisualization<VisualizationType::Game>(GetWholeShipRect());
+    }
+}
+
 void ModelController::SetStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType mode)
 {
     if (mode == mStructuralLayerVisualizationMode)

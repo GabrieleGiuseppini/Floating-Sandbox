@@ -254,6 +254,7 @@ public:
     //
 
     void SetGameVisualizationMode(GameVisualizationModeType mode);
+    void ForceWholeGameVisualizationRefresh();
 
     void SetStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType mode);
 

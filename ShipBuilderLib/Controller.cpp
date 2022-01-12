@@ -1251,6 +1251,16 @@ void Controller::InternalSetShipProperties(
     if (autoTexturizationSettings.has_value())
     {
         mModelController->SetShipAutoTexturizationSettings(std::move(*autoTexturizationSettings));
+
+        if (mWorkbenchState.GetGameVisualizationMode() == GameVisualizationModeType::AutoTexturizationMode)
+        {
+            // Redo game viz
+            mModelController->ForceWholeGameVisualizationRefresh();
+
+            // Refresh model visualizations
+            mModelController->UpdateVisualizations(*mView);
+            mUserInterface.RefreshView();
+        }
     }
 }
 

@@ -226,14 +226,16 @@ https://gamejolt.com/x/permalink/comment/11730705
 		+ Permanence of 3 View settings across Controller re-create's
 		+ Permanence of all other settings across Controller re-create's
 
-= Fix Ubuntu:
++ Fix Ubuntu:
 	+ Grid button size
 	+ Not adding extension to ship name when saving it
 	+ Default save directory
 	+ Model validation crash
 	+ Undo stack is at weird position and covers rest
 		+ Note: it's the same as at the and of the SB cctor
-	- Spin boxes are H instead of V
+
++ After changing ShipMetadata's auto-texturization settings, should update Game Viz if it's Auto-Tex
+	+ @ Controller::InternalSetShipProperties
 
 - Generate localization files and update langs
 - Do some Italian
