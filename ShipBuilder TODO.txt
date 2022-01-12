@@ -1,253 +1,5 @@
 https://gamejolt.com/x/permalink/comment/11730705
 
-+ Send for testing
-
-+ Rearc of libs:
-	! libs (zlib, jpeg, png) no more statically linked into DevIL and wxWidgets
-	+ Backup build folders (DevIL, wxWidgets)
-	+ Test on 64-bit:
-		+ Build DevIL 64 without linking-in
-		+ Build wxWidgets 64 with external ZLib, JPEG, and PNG (not built-in)
-		+ FS:
-			+ First off, verify can't link because all three are missing
-				+ With wxWidgets with built-ins:
-					+ Benchmark: PNG and JPEG are missing
-					+ ShipBuilder: PNG is missing
-				+ With wxWidgets without built-ins:
-					+ Benchmark: PNG and JPEG are missing
-					+ ShipBuilder: PNG and JPEG are missing
-			+ Update CMake to take also ZLIB, PNG, and JPEG from UserSettings.cmake
-				+ Also change comment in main CMake for IL/static libs
-			+ Build 64:
-				+ benchmarks RelWithDebInfo
-				+ FloatingSandbox RelWithDebInfo
-				+ FloatingSandbox Debug
-	+ On success:
-		+ Update readme w/dependencies
-		+ Start "building on Windows" doc
-		+ See to fix FS linker warning about "Editandcontinue / Incremental"
-		+ Build DevIL:
-			+ Update my edits to DevIL's cmake: remove zlib, png, and jpeg *lib files*
-			+ 64
-			+ 32
-		+ Build wxWidgets 32
-			+ Unify output under single SDK folder
-		+ Re-generate FS solution files
-			+ 64
-				+ Verify wxWidgets pickup
-			+ 32
-				+ Verify wxWidgets pickup
-		+ (Re-)Verify all builds: ALL_BUILD and run FS:
-			+ 32
-				+ RelWithDebInfo
-				+ Release
-				+ Debug
-			+ 64
-				+ RelWithDebInfo
-				+ Release
-				+ Debug
-	+ Finish Windows build instructions
-
-+ Commit + Push
-
-+ Ubuntu build
-	+ Verify we need jpeg
-	+ Install jpeg
-		+ Update instructions
-	+ Build DevIL
-	+ Build wxWidgets
-	+ Build FS (release)
-		+ Fix C++ compilation issues
-
-+ Install: copy also ShipBuilder.exe
-
-+ Merge into master
-
-+ Fixes:
-	+ Fix assert after removing structural viz mode
-		+ Change: allow dirty region setting, reset at UpdateViz() also when None
-			+ And Nuke ClearDirty()
-	+ ModelController::GetStructuralVizMode when "none" is set
-
-+ Fix OpenGL issues
-	+ Rearc:
-		+ 1. Controller owns View which owns OpenGLContext
-			+ View ownership
-			+ Context creation by View
-			+ Mouse is in LogicalDisplayCoords
-			+ Finalize Controller reset at each creation
-			+ Fix background image
-				+ Need to re-upload vertices at each view model change
-			+ Test at end:
-				+ Other layers' opacity slider <-> view
-				+ UI reconciliation at each of Controller creations
-				+ Ubuntu: stand-alone ShipBuilder
-		+ 2. FS integration
-			+ a. Creating ShipBuilder frame changes current OpenGL context
-			+ b. After opening ShipBuilder frame, timer still kicks-in
-				+ b1. Need a "full pause", not the current one which still updates everything; here's algo:
-					+ Freeze:
-						+ Prevent OnIdle from running GameIteration
-							+ Use mIsGameFrozen
-								+ OnMainFrameClose() also calls Freeze() now
-						+ Stop (eventual) game timer; Stop (eventual) low-frequency timer
-							+ See MainFrame::OnError, which now changes to invoke Freeze()
-						+ mGameController->Freeze()
-							+ Simply pause clock
-						+ mSoundController->Reset()
-						+ mMusicController->Reset()
-					+ Resuming:
-						+ mGameController->Thaw()
-							+ Simply resume clock
-						+ Restart game timer; Restart low-frequency timer
-							+ See MainFrame::OnError, which no changes to invoke Thaw()
-						+ Re-allow OnIdle to run GameIteration
-							+ Use mIsGameFrozen
-					+ Move mSoundController/mMusicController->Reset() out of ResetShipState() (->"ResetShipUIState") and back into other callers of LoadShip()
-					+ GameController::Freeze: needs to wait for (eventual) RenderContext render to complete
-					+ Invoke both
-					+ Test:
-						+ Destroy path
-						+ ShowError(!die)
-						+ ShowError(die)
-						+ Switch to builder
-			+ c. Make FS context current after SB has been closed
-				+ Test first (on Ubuntu) if we may do so simply *outside* of a Paint event, i.e. in FS::MainFrame::SwitchFromShipBuilder, *BEFORE LoadShip*
-			+ Test at end:
-				+ Windows:
-					+ Editing password-protected ship from FS
-				+ Ubuntu: 
-					+ Entire shebang
-					+ Editing password-protected ship from FS
-		+ 3: Think if can re-use view (and thus context) across Controller re-create's for NewShip and LoadShip
-			+ First test a Release build to see if it's really noticeable - it still is, a bit
-			X See if can OpenGL-Display earlier
-				+ a: Create view earlier
-				X b: Display earlier
-					X Background immediately
-				X NO, it's ugly - you still see the whole white, and the whole shebang to reduce the time is not worth it
-		+ Mark TODO item in this plan for mouse coords change as done
-		+ Remove single-threaded boot setting
-		+ Re-test w/multi-threading on Windows
-
-+ Fix: after opening editor with mouse on canvas, tool is not initialized
-	+ ATM, after Controller cctor, tool needs to exist or not depending on whether the mouse in in the work canvas or not, because at OnMouseEnter we expect to have no tool
-		! It used to work because we would Show() *after* Controller, and wxWidgets/MSW would generate an OnEnterWindow()
-		+ So add a IUserInterface::IsMouseInWorkCanvas()
-
-+ Re-arc visualizations for alignment: shift game viz, Texture viz, and Mesh shader so that they are aligned
-	+ Texture viz
-	+ Game viz
-		! Facts:
-			- Structure pixel at (0, 0):
-				- World: (0, 0) [short of half ship width]
-				- Texture: (0.5/SW, 0.5/SH)
-			- Structure pixel at (W-1, H-1):
-				- World: (W-1, H-1) [short of half ship width]
-				- Texture: (1.0 - 0.5/SW, 1.0 - 0.5/SH)
-			- So, if we plan to just shift output of ShipTexturizer::RenderShipInto to be at center of grid, texture viz must be as follows:
-				- Center of ship square at (0, 0) must be (0.5/SW, 0.5/SH)
-				- Center of ship square at (W-1, H-1) must be (1.0 - 0.5/SW, 1.0 - 0.5/SH)
-				- It seems to be the case
-		! Problem: left and bottom texture borders do not appear in game viz
-			! Also before
-		+ Fix ShipTexturizer::RenderShipInto
-			+ New conversions
-			+ Deal with width/height = 1
-			X Try with nearest
-			+ No need to mod at Sample() (assert)
-			+ Test:
-				+ With texture
-					+ Equal size texture
-					+ Larger texture
-					+ Smaller texture
-				+ With auto-texturization
-				+ Compare texture with Game's
-				+ Compare auto-texturization with Game's
-		+ Cleanup sampling functions
-	+ Mesh shader
-		X See whether just quad shift (at shader) is enough
-		+ Rewrite centered
-			+ Line thickness needs to be calcd from outside to guarantee at least one pixel
-		+ Draw particle rounds 
-	+ ShipTexturizer::RenderShipInto: 2-3-4 and 1-3-4 need to cover diagonal
-	+ Nail down better defaults for viz modes
-	+ Fix ropes alignment
-	+ Merge into master & nuke branch
-	+ View:.cpp 
-		+ Unify/cleanup vertices creation/upload
-		+ Call UpdateStructuralLayer only at ViewModel changes, not from Upload
-	+ New defaults:
-		+ LayerViz: Game
-		+ StructuralVizMode: Particle
-	+ Shader:
-		+ H and V lines: make step band 1.0 wide (now it's 1.1)
-
-+ Frame cctor: see if startup looks better if we setup primary layer already in cttor
-	+ If so: shove the following in WorkbenchState:
-			+ primary viz
-			+ tool
-			+ viz modes
-			+ grid enabled, opacity
-				+ Move both out of View
-		+ Has own defaults
-		+ Replace OnWorkbenchStateChanged with OnXXXChanged(XXX)
-	+ MainFrame cctor: invoke ReconciliateUIWithXXX() for WorkbenchState things
-	+ Controller:
-		+ cctor: invoke all IUserInterface::OnXXXChanged() for all but WorkbenchState
-			+ Also make sure we notify if we change game viz mode
-	+ View:
-		+ cctor:
-			+ Take external settings (prim viz, enableGrid, opacity) in cctor 
-			+ Initialize otherVisualizationsOpacity - like all 3
-			+ Make sure grid param is taken and used (in effect immediately)
-			+ Make sure primary visualization is taken and used (in effect immediately)
-	+ MainFrame:
-		+ OnStructuralMaterialSelected (from palette): invoke Controller, who invokes IUserInterface
-		+ See if ReconciliateUI() is still needed; after all:
-			+ MainFrame cctor reconciliates with WorkbenchState
-			+ Controller cctor notifies own to IUserInterface
-		+ Then: MainFrame::OnXXXChanged: see if they still need to check for Controller
-	+ Notif's originating from controller's cctor
-		+ OnViewModelChanged
-		+ OnShipNameChanged
-			+ Requires dirtyness, currently asked to Controller
-		+ OnShipSizeChanged
-		+ OnLayerPresenceChanged
-		+ OnModelDirtyChanged
-			+ Requires ship name, currently asked to Controller
-		+ OnUndoStackStateChanged
-			+ Make it take a stack
-	+ Paths coming back: e.g. MainFrame.opacity_slider -> Controller -> IUserInterface -> Reconciliate; make efficient:
-		+ Opacity slider
-		+ Grid
-	+ Test:
-		+ Old ReconciliateUI() (called at New and Load) used to invoke mMainPanel->Layout()
-		+ Permanence of 3 View settings across Controller re-create's
-		+ Permanence of all other settings across Controller re-create's
-
-+ Fix Ubuntu:
-	+ Grid button size
-	+ Not adding extension to ship name when saving it
-	+ Default save directory
-	+ Model validation crash
-	+ Undo stack is at weird position and covers rest
-		+ Note: it's the same as at the and of the SB cctor
-
-+ After changing ShipMetadata's auto-texturization settings, should update Game Viz if it's Auto-Tex
-	+ @ Controller::InternalSetShipProperties
-
-+ Localization kickoff
-	+ Extract strings
-	+ Update all langs
-	+ Change copyright year in all langs
-	+ Do some Italian
-
-+ Send for testing
-+ Send for localization
-- Linux build
-
-- Bump up version
 
 - New/Set/Remove layers:
 	- New:
@@ -267,6 +19,9 @@ https://gamejolt.com/x/permalink/comment/11730705
 				= Note: texture layer removal should also remember metadata (art credits)
 
 - Release
+
+- Sampler tool (*)
+- Rotate 90 (CW and CCW)
 
 = Import/Export:
 	- Structural:
@@ -1763,3 +1518,254 @@ DONE
 	+ Click -> Dialog for Canvas Centering/Clipping (i.e. "Anchor choice") -> Controller -> MC::ResizeShip()
 
 + Edit->Trim()
+
++ Send for testing
+
++ Rearc of libs:
+	! libs (zlib, jpeg, png) no more statically linked into DevIL and wxWidgets
+	+ Backup build folders (DevIL, wxWidgets)
+	+ Test on 64-bit:
+		+ Build DevIL 64 without linking-in
+		+ Build wxWidgets 64 with external ZLib, JPEG, and PNG (not built-in)
+		+ FS:
+			+ First off, verify can't link because all three are missing
+				+ With wxWidgets with built-ins:
+					+ Benchmark: PNG and JPEG are missing
+					+ ShipBuilder: PNG is missing
+				+ With wxWidgets without built-ins:
+					+ Benchmark: PNG and JPEG are missing
+					+ ShipBuilder: PNG and JPEG are missing
+			+ Update CMake to take also ZLIB, PNG, and JPEG from UserSettings.cmake
+				+ Also change comment in main CMake for IL/static libs
+			+ Build 64:
+				+ benchmarks RelWithDebInfo
+				+ FloatingSandbox RelWithDebInfo
+				+ FloatingSandbox Debug
+	+ On success:
+		+ Update readme w/dependencies
+		+ Start "building on Windows" doc
+		+ See to fix FS linker warning about "Editandcontinue / Incremental"
+		+ Build DevIL:
+			+ Update my edits to DevIL's cmake: remove zlib, png, and jpeg *lib files*
+			+ 64
+			+ 32
+		+ Build wxWidgets 32
+			+ Unify output under single SDK folder
+		+ Re-generate FS solution files
+			+ 64
+				+ Verify wxWidgets pickup
+			+ 32
+				+ Verify wxWidgets pickup
+		+ (Re-)Verify all builds: ALL_BUILD and run FS:
+			+ 32
+				+ RelWithDebInfo
+				+ Release
+				+ Debug
+			+ 64
+				+ RelWithDebInfo
+				+ Release
+				+ Debug
+	+ Finish Windows build instructions
+
++ Commit + Push
+
++ Ubuntu build
+	+ Verify we need jpeg
+	+ Install jpeg
+		+ Update instructions
+	+ Build DevIL
+	+ Build wxWidgets
+	+ Build FS (release)
+		+ Fix C++ compilation issues
+
++ Install: copy also ShipBuilder.exe
+
++ Merge into master
+
++ Fixes:
+	+ Fix assert after removing structural viz mode
+		+ Change: allow dirty region setting, reset at UpdateViz() also when None
+			+ And Nuke ClearDirty()
+	+ ModelController::GetStructuralVizMode when "none" is set
+
++ Fix OpenGL issues
+	+ Rearc:
+		+ 1. Controller owns View which owns OpenGLContext
+			+ View ownership
+			+ Context creation by View
+			+ Mouse is in LogicalDisplayCoords
+			+ Finalize Controller reset at each creation
+			+ Fix background image
+				+ Need to re-upload vertices at each view model change
+			+ Test at end:
+				+ Other layers' opacity slider <-> view
+				+ UI reconciliation at each of Controller creations
+				+ Ubuntu: stand-alone ShipBuilder
+		+ 2. FS integration
+			+ a. Creating ShipBuilder frame changes current OpenGL context
+			+ b. After opening ShipBuilder frame, timer still kicks-in
+				+ b1. Need a "full pause", not the current one which still updates everything; here's algo:
+					+ Freeze:
+						+ Prevent OnIdle from running GameIteration
+							+ Use mIsGameFrozen
+								+ OnMainFrameClose() also calls Freeze() now
+						+ Stop (eventual) game timer; Stop (eventual) low-frequency timer
+							+ See MainFrame::OnError, which now changes to invoke Freeze()
+						+ mGameController->Freeze()
+							+ Simply pause clock
+						+ mSoundController->Reset()
+						+ mMusicController->Reset()
+					+ Resuming:
+						+ mGameController->Thaw()
+							+ Simply resume clock
+						+ Restart game timer; Restart low-frequency timer
+							+ See MainFrame::OnError, which no changes to invoke Thaw()
+						+ Re-allow OnIdle to run GameIteration
+							+ Use mIsGameFrozen
+					+ Move mSoundController/mMusicController->Reset() out of ResetShipState() (->"ResetShipUIState") and back into other callers of LoadShip()
+					+ GameController::Freeze: needs to wait for (eventual) RenderContext render to complete
+					+ Invoke both
+					+ Test:
+						+ Destroy path
+						+ ShowError(!die)
+						+ ShowError(die)
+						+ Switch to builder
+			+ c. Make FS context current after SB has been closed
+				+ Test first (on Ubuntu) if we may do so simply *outside* of a Paint event, i.e. in FS::MainFrame::SwitchFromShipBuilder, *BEFORE LoadShip*
+			+ Test at end:
+				+ Windows:
+					+ Editing password-protected ship from FS
+				+ Ubuntu: 
+					+ Entire shebang
+					+ Editing password-protected ship from FS
+		+ 3: Think if can re-use view (and thus context) across Controller re-create's for NewShip and LoadShip
+			+ First test a Release build to see if it's really noticeable - it still is, a bit
+			X See if can OpenGL-Display earlier
+				+ a: Create view earlier
+				X b: Display earlier
+					X Background immediately
+				X NO, it's ugly - you still see the whole white, and the whole shebang to reduce the time is not worth it
+		+ Mark TODO item in this plan for mouse coords change as done
+		+ Remove single-threaded boot setting
+		+ Re-test w/multi-threading on Windows
+
++ Fix: after opening editor with mouse on canvas, tool is not initialized
+	+ ATM, after Controller cctor, tool needs to exist or not depending on whether the mouse in in the work canvas or not, because at OnMouseEnter we expect to have no tool
+		! It used to work because we would Show() *after* Controller, and wxWidgets/MSW would generate an OnEnterWindow()
+		+ So add a IUserInterface::IsMouseInWorkCanvas()
+
++ Re-arc visualizations for alignment: shift game viz, Texture viz, and Mesh shader so that they are aligned
+	+ Texture viz
+	+ Game viz
+		! Facts:
+			- Structure pixel at (0, 0):
+				- World: (0, 0) [short of half ship width]
+				- Texture: (0.5/SW, 0.5/SH)
+			- Structure pixel at (W-1, H-1):
+				- World: (W-1, H-1) [short of half ship width]
+				- Texture: (1.0 - 0.5/SW, 1.0 - 0.5/SH)
+			- So, if we plan to just shift output of ShipTexturizer::RenderShipInto to be at center of grid, texture viz must be as follows:
+				- Center of ship square at (0, 0) must be (0.5/SW, 0.5/SH)
+				- Center of ship square at (W-1, H-1) must be (1.0 - 0.5/SW, 1.0 - 0.5/SH)
+				- It seems to be the case
+		! Problem: left and bottom texture borders do not appear in game viz
+			! Also before
+		+ Fix ShipTexturizer::RenderShipInto
+			+ New conversions
+			+ Deal with width/height = 1
+			X Try with nearest
+			+ No need to mod at Sample() (assert)
+			+ Test:
+				+ With texture
+					+ Equal size texture
+					+ Larger texture
+					+ Smaller texture
+				+ With auto-texturization
+				+ Compare texture with Game's
+				+ Compare auto-texturization with Game's
+		+ Cleanup sampling functions
+	+ Mesh shader
+		X See whether just quad shift (at shader) is enough
+		+ Rewrite centered
+			+ Line thickness needs to be calcd from outside to guarantee at least one pixel
+		+ Draw particle rounds 
+	+ ShipTexturizer::RenderShipInto: 2-3-4 and 1-3-4 need to cover diagonal
+	+ Nail down better defaults for viz modes
+	+ Fix ropes alignment
+	+ Merge into master & nuke branch
+	+ View:.cpp 
+		+ Unify/cleanup vertices creation/upload
+		+ Call UpdateStructuralLayer only at ViewModel changes, not from Upload
+	+ New defaults:
+		+ LayerViz: Game
+		+ StructuralVizMode: Particle
+	+ Shader:
+		+ H and V lines: make step band 1.0 wide (now it's 1.1)
+
++ Frame cctor: see if startup looks better if we setup primary layer already in cttor
+	+ If so: shove the following in WorkbenchState:
+			+ primary viz
+			+ tool
+			+ viz modes
+			+ grid enabled, opacity
+				+ Move both out of View
+		+ Has own defaults
+		+ Replace OnWorkbenchStateChanged with OnXXXChanged(XXX)
+	+ MainFrame cctor: invoke ReconciliateUIWithXXX() for WorkbenchState things
+	+ Controller:
+		+ cctor: invoke all IUserInterface::OnXXXChanged() for all but WorkbenchState
+			+ Also make sure we notify if we change game viz mode
+	+ View:
+		+ cctor:
+			+ Take external settings (prim viz, enableGrid, opacity) in cctor 
+			+ Initialize otherVisualizationsOpacity - like all 3
+			+ Make sure grid param is taken and used (in effect immediately)
+			+ Make sure primary visualization is taken and used (in effect immediately)
+	+ MainFrame:
+		+ OnStructuralMaterialSelected (from palette): invoke Controller, who invokes IUserInterface
+		+ See if ReconciliateUI() is still needed; after all:
+			+ MainFrame cctor reconciliates with WorkbenchState
+			+ Controller cctor notifies own to IUserInterface
+		+ Then: MainFrame::OnXXXChanged: see if they still need to check for Controller
+	+ Notif's originating from controller's cctor
+		+ OnViewModelChanged
+		+ OnShipNameChanged
+			+ Requires dirtyness, currently asked to Controller
+		+ OnShipSizeChanged
+		+ OnLayerPresenceChanged
+		+ OnModelDirtyChanged
+			+ Requires ship name, currently asked to Controller
+		+ OnUndoStackStateChanged
+			+ Make it take a stack
+	+ Paths coming back: e.g. MainFrame.opacity_slider -> Controller -> IUserInterface -> Reconciliate; make efficient:
+		+ Opacity slider
+		+ Grid
+	+ Test:
+		+ Old ReconciliateUI() (called at New and Load) used to invoke mMainPanel->Layout()
+		+ Permanence of 3 View settings across Controller re-create's
+		+ Permanence of all other settings across Controller re-create's
+
++ Fix Ubuntu:
+	+ Grid button size
+	+ Not adding extension to ship name when saving it
+	+ Default save directory
+	+ Model validation crash
+	+ Undo stack is at weird position and covers rest
+		+ Note: it's the same as at the and of the SB cctor
+
++ After changing ShipMetadata's auto-texturization settings, should update Game Viz if it's Auto-Tex
+	+ @ Controller::InternalSetShipProperties
+
++ Localization kickoff
+	+ Extract strings
+	+ Update all langs
+	+ Change copyright year in all langs
+	+ Do some Italian
+
++ Send for testing
++ Send for localization
+
++ Linux build
+	+ Send for testing
+
++ Bump up version

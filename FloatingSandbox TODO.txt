@@ -31,6 +31,8 @@
 				- Check changes to mPoints.SetPosition since a version ago
 		+ See rogue waves
 
+		- New horn sound
+
 		- See if can avoid "splash/flood" sound when just ropes are flooded
 
 		- After many many hours, rain looks aweful - very likely due to timer values being high
@@ -846,7 +848,7 @@
 	- See impact of drawing onto texture and then quad'ing the texture onto the screen (w/no filtering) (*)
 		- If fine:
 			- Do stars once and for all
-			- Spec gfx niceties such as reflections and after-effect
+			- Spec gfx niceties such as reflections and after-effects/post-processing
 
 	- Lights improvement options (*)
 		- "Static light":
@@ -997,8 +999,11 @@
 		- https://www.opengl.org/discussion_boards/showthread.php/154811-magnifying-glass-effect
 		- https://www.shadertoy.com/view/4tdXDl
 
-	- Add a flashlight to see the ships deep underwater. Its hard to see the ships at some depths. Plus the idea of seeing a rusty hulk of metal appear out of the dark abyss is really cool.
-		- Requires "sources of light" feature
+	- Add a flashlight to see the ships deep underwater. Its hard to see the ships at some depths. Plus the idea of seeing a rusty hulk of metal appear out of the dark abyss is really cool
+		- Requires "sources of light" feature (*)
+
+	- Less repetitive auto-texturization:
+		- Material textures have to become procedurally-generated
 
 - Dynamics:
 
