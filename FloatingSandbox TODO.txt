@@ -1,308 +1,3 @@
-=================================================
-Current perf:
-=================================================
-1.16.5:
-- default ship:
-	- Old dell, RelWithDebInfo: FPS:30.65 UPD:19.5ms UPL:0.18ms RND:12.80ms
-- Perf analysis: default_ship, between 10s and 30s (run stopped after 20s displayed):
-	- GameController::RunGameIteration: 86.52%
-		- World::Update: 85.21%
-			- Ship::Update: 81.50%
-				- Ship::ApplySpringForces_BySprings: 56.98%
-				- Ship::UpdateWaterVelocities: 7.50%
-				- Ship::HandleCollisionsWithSeaFloor: 4.24%
-				- Ship::IntegrateAndResetSpringForces: 4.02%
-				- Ship::PropagateHeat: 2.48%
-				- Ship::EqualizeInternalPRessure: 2.02%
-				- Ship::ApplyWorldForces: 1.34%
-				- Springs::UpdateForStrains: 1.01%
-				- Ship::ApplyStaticPRessureForces: 0.02%
-				- Points::UpdateMasses: 0.33%
-				- Ship::TrimForWorldBounds: 0.31%
-				- Points::UpdateEphemeralParticles: 0.22%
-			- OceanSurface::GenerateSamples: 2.04%
-			- OceanSurface::Update: 1.42%
-		- World::RenderUpload: 1.08%
-=================================================
-1.16.4.next, during Hydrostatic pressure
-- default ship: Update=4.66ms
-=================================================
-1.16.3.next, after OpenGL optimizations (edge springs, etc.)
-- default ship, 20s
-	- Old dell: 31.9 FPS, 19.1 UPD, 11.8 RND (RelWithDebInfo)
-1.16.3.next, after periodic CollisionsWithSeaFloor, and Points::CachedDepths:
-- default_ship, 20s
-	- Old dell: 30.4/30.5 FPS, 18.8/19.1 UPD, 12.7/13.6 RND (RelWithDebInfo)
-	- New Dell: 4.45 UPD, 5.35/5.38 RND (RelWithDebInfo)
-- GameController::RunGameIteration: 86.72%
-	- World::Update: 85.69%
-		- Ship::Update: 83.59%
-			- Ship::ApplySpringForces_BySprings: 60.63%
-			- Ship::UpdateWaterVelocities: 8.76%
-			- Ship::HandleCollisionsWithSeaFloor: 4.73%
-			- Ship::IntegrateAndResetSpringForces: 3.60%
-			- Ship::PropagateHeat: 2.08%
-			- Ship::ApplyWorldForces: 1.62%
-			- Springs::UpdateForStrains: 0.93%
-		- OceanSurface::GenerateSamples: 1.27%
-		- OceanSurface::Update: 0.55%
-	- World::RenderUpload: 0.86%
-=================================================
-- After initial 1.16.3 perf optimizations:
-- default_ship, 40s, in [6s, 49s]
-	- Old dell: 30.20 (RelWithDebInfo)
-- GameController::RunGameIteration: 86.94%
-	- World::Update: 86.17%
-		- Ship::Update: 84.40%
-			- Ship::ApplySpringForces_BySprings: 56.69%
-			- Ship::HandleCollisionsWithSeaFloor: 9.00%
-			- Ship::UpdateWaterVelocities: 8.45%
-			- Ship::IntegrateAndResetSpringForces: 4.01%
-			- Ship::PropagateHeat: 2.29%
-			- Ship::ApplyWorldForces: 1.61%
-			- Springs::UpdateForStrains: 1.08%
-			- Points::UpdateMasses: 0.41%
-			- Ship::DiffuseLight: 0.37%
-			- Ship::TrimForWorldBounds: 0.25%
-			- Ship::UpdateWaterInflow: 0.10%
-		- OceanSurface::GenerateSamples: 1.20%
-		- OceanSurface::Update: 0.30%
-=================================================
-1.16.0
-- DELL new (default_ship): FPS=62.9 UPD=4.8ms RND=4.3ms
-- DELL old (default_ship, basic ocean): FPS=29.8/30.0 UPD=20.4ms, RND=12.6ms/12.9ms
-- HP (default_ship, basic ocean): FPS=20.4 UPD=48.05ms RND=14.2ms
-- Samsung (default_ship, basic ocean): FPS=23.4, UPD=42.3ms, RND=7.8ms 
-=================================================
-1.14
-- After forces rearc and iterations=30: FPS=30.16, Ums=22.5
-- Call tree (45 sec game play, w/out PostInitialize):
-	- MainFrame::OnGameTimerTrigger: 90.91%
-		- World::UpdateAndRender: 87.23%
-			- Ship::Update: 62.09%
-				- Ship::UpdateMechanicalDynamics: 52.50%
-					- ApplySpringForces: 39.15%
-					- HandleCollisionsWithSeaFloor: 6.73%
-					- IntegrateAndResetSpringForces: 5.57%
-					- ApplyWorldForces: 0.40%
-					- UpdateMasses: 0.33%
-				- Ship::UpdateWaterDynamics: 6.91%
-				- Ship::UpdateHeatDynamics: 1.68%
-				- Ship::UpdateForStrains: 0.81%
-				- Ship::DiffuseLight: 0.23%
-				- Ship::TrimWorldBounds: 0.15%
-			- Ship::Render: 20.16%
-			- RenderContext::RenderOcean: 1.54%
-			- RenderContext::RenderStars: 1.19%
-			- OceanSurface::Update: 0.24%
-			- Wind::Update: 0.07%
-		- wxGLCanvas::SwapBuffers: 1.42%
-=================================================
-1.13
-- After DiffuseLight rearc: FPS=29.5, U/R=19
-=================================================
-1.12
-- fps: 29.1/29.5/30.1
-- UR: 221/227
-=================================================
-- fps: 29.2/29.4 (Samsung w/Krafting: 17.0)
-- UR: 210/220 (Samsung w/Krafting: 690%)
-- GameController::InternalUpdate: 62.0%
-	- World::Update: 61.98%
-		- Ship::Update: 60.92%
-			- Ship::UpdateMechanicalDynamics: 49.92%
-				- Ship::UpdateSpringForces: 36.50%
-				- Ship::UpdatePointForces: 5.95%
-				- Ship::HandleCollisionsWithSeaFloor: 3.63%
-				- Ship::IntegrateAndResetPointForces: 3.59%
-				- Ship::UpdateTotalMasses: 0.24%
-			- Ship::UpdateWaterDynamics: 6.81%
-			- Ship::DiffuseLight: 2.99%
-			- Springs::UpdateStrains: 1.02%
-		- OceanSurface::GenerateSamples: 0.74%
-		- OceanSurface::Update: 0.24%
-- GameController::InternalRender: 22.7%
-	- Ship::Render: 19.30%
-	- RenderSkyEnd: 2.16%
-	- RenderOcean: 0.58%
-=================================================
-Before SWE:
-- fps: 30.8
-- UR: 224
-=================================================
-Before ocean/land rearc:
-- fps: 30.5/30.5/30.7/30.85
-=================================================
-Before decay:
-- fps: 30.7/30.7/30.8/30.9/32.0
-- U/R: 193.x%
-- RunGameIteration: TODO:86.62% (initialization time)
-- World::Update: 60.25%
-		- UpdateMechanicalDynamics: 49.32%
-			- UpdateSpringForces: 37.99%
-			- UpdatePointForces: 5.51%
-			- HandleCollisionsWithSeafFloor: 3.38%
-			- IntegrateAndResetPointForces: 2.30%
-			- UpdateTotalMasses: 0.13%
-		- UpdateWaterDynamics: 6.72%
-			- UpdateWaterVelocities: 6.57%
-			- UpdateWaterInflow: 0.08%
-		- DiffuseLight: 2.94%
-			- FastPow2: 1.44%
-- World::Render: 22.54%
-	- Ship::Render: 19.36%
-	- RenderSkyEnd: 2.33%
-	- RenderOcean: 0.70%
-=================================================
-Before Vertex Attribute Optimization:
-- fps: 28.2/28.4 (miracle: 28.7/29.0/29.1)
-- World::Update: 54.66%
-		- UpdateMechanicalDynamics: 44.64%
-			- UpdateSpringForces: 34.70%
-			- UpdatePointForces: 4.88%
-			- HandleCollisionsWithSeafFloor: 2.89%
-			- IntegrateAndResetPointForces: 1.99%
-			- UpdateTotalMasses: 0.15%
-		- UpdateWaterDynamics: 6.29%
-		- DiffuseLight: 2.62%
-- World::Render: 28.24%
-	- Ship::Render: 25.11%
-	- RenderSkyEnd: 2.23%
-	- RenderOcean: 0.77%
-=================================================
-Before VAO:
-- fps: 28.1/28.3
-=================================================
-Before bound world and point light<->ambient light additiveness:
-- fps: 29.0/29.2/29.4
-=================================================
-Before Z buffer:
-- fps: 30.2/30.6/31.2
-=================================================
-Before wind:
-- fps: 30.8/31.0/31.3
-=================================================
-Before exp optimization:
-- fps: 30.8/31.0/31.3
-- World::Update: 58.48%
-		- UpdateMechanicalDynamics: 48.44%
-			- UpdateSpringForces: 38.25%
-			- UpdatePointForces: 4.47%
-			- HandleCollisionsWithSeafFloor: 3.43%
-			- IntegrateAndResetPointForces: 2.10%
-			- UpdateTotalMasses: 0.19%
-		- UpdateWaterDynamics: 7.79%
-			- UpdateWaterVelocities: 7.64%
-		- DiffuseLight: 1.31%
-- World::Render: 28.15%
-	- RenderContext::RenderCloudsEnd: 3.98%
-=================================================
-Before diffusion improvement:
-- fps: 31.5/31.7
-=================================================
-Current perf (spring optimization + double spring iterations)
-=================================================
-- fps: 31.3 (Samsung: 20.3 (Krafting)) (Mattia's: 15.5 (Krafting))
-- World::Update: 57.05%
-	- Ship::Update: 56.89%
-		- UpdateMechanicalDynamics: 47.56%
-			- UpdateSpringForces: 37.08%
-			- UpdatePointForces: 5.30%
-			- HandleCollisionsWithSeafFloor: 2.92%
-			- IntegrateAndResetPointForces: 2.26%
-		- UpdateWaterDynamics: 7.83%
-			- UpdateWaterVelocities: 7.72%
-- World::Render: 28.15%
-	- RenderContext::RenderCloudsEnd: 3.98%
-
-=================================================
-Past perf (ephemeral particles)
-=================================================
-- fps: 28.8/29.0
-=================================================
-1.7.0 perf from users
-	- Titanic: 50
-	- Titanic: 55
-	- Titanic: 48.3
-
-=================================================
-1.6.0 perf
-=================================================
-- fps: 29.6 (Samsung: TBD:31.5 (Krafting)) (Mattia's: TBD:25.1 (Krafting))
-- GameController::Update: 35.06%
-	- Ship::Update: 34.33%
-		- UpdateMechanicalDynamics: 25.70%
-			- UpdateSpringForces: 18.80%
-			- UpdatePointForces: 3.45%
-			- HandleCollisionsWithSeafloor: 2.45%
-			- IntegratePointForces: 1.00%
-		- UpdateWaterDynamics: 7.83%
-			- UpdateWaterVelocities: 7.73%
-			- UpdateWaterInflow: 0.05%
-		- UpdateStrains: 0.78%
-	- DiffuseLight: 0.58%
-	- WaterSurface::Update: 0.11%
-- World::Render: 57.00%
-	- ShipRenderContext::RenderEnd: 52.87%
-	- RenderContext::RenderCloudsEnd: 1.49%
-	- RenderContext::RenderStart: 0.50%
-	- Ship::Render: 0.14%
-		- UploadPoints: 0.12%
-	- RenderContext::RenderWater: 0.05%
-	- World::RenderClouds: 0.04%
-		- fmodf: 0.02%
-	- RenderContext::RenderLand: 0.01%
-- RenderContext::RenderEnd: 0.35%
-	- TextRenderContext::RenderEnd: 0.35%
-- wxGLCanvas::SwapBuffers: 1.07%
-=================================================
-NoInline
-- World::Render: 53.36%
-	- ShipRenderContext::RenderEnd: 49.69%
-		- ig4: 49.22%
-		- RenderRopes: 0.43%
-		- ...
-	- RenderContext::RenderCloudsEnd: 1.37%
-	- RenderContext::RenderStart: 0.46%
-	- RenderContext::RenderWater: 0.04%
-	- World::RenderClouds: 0.02%
-		- fmodf: 0.01%
-	- Ship::Render (with uploads): 0.15%
-	- RenderContext::RenderLand: 0.01%
-	- RenderContext::UploadLandAndWaterEnd: 0.04%
-	- RenderContext::UploadLandAndWater: 0.03%
-- RenderContext::RenderEnd: 0.30%
-=================================================
-Render:
-	- No Ship::RenderEnd: 64fps
-	- Only springs: 30fps
-	- Only triangles: 42fps
-=================================================
-1.3.0 perf
-=================================================
-- fps: 27.3
-- GameController::DoStep: 33.06%
-	- Ship::Update: 32.07%
-		- UpdateDynamics: 25.53%
-			- UpdateSpringForces: 18.72%
-			- UpdatePointForces: 3.55%
-			- HandleCollisionsWithSeafloor: 2.27%
-			- Integrate: 0.98%
-		- GravitateWater: 4.60%
-		- BalancePressure: 1.06%
-		- UpdateStrains: 0.83%
-		- LeakWater: 0.03%
-	- DiffuseLight: 0.89%
-	- WaterSurface::Update: 0.09%
-		- sinf: 0.07%
-- MainFrame::RenderGame: 60.47%
-	- ShipRenderContext::Render: 53.52% (Incl) 0.00% (Excl)
-		- ShipRenderContext::RenderSprings: 30.72%
-		- ShipRenderContext::RenderTriangles: 22.29%
-		- ShipRenderContext::RenderRopes: 0.45%
-		- Points::Upload: 0.14%
-	- RenderContext::RenderCloudsEnd: 2.87%
-
 ====================================================
 ====================================================
 ====================== Plan ========================
@@ -310,7 +5,7 @@ Render:
 ====================================================
 
 - Roadmap:
-	- 1.16.8:
+	- 1.17.0:
 		+ Change version minor
 		+ Nuke Ship Editor request for help from Readme
 		+ FindSFML
@@ -696,15 +391,16 @@ Render:
 		- MouseMove's are delayed and/or skipped
 		- The plain '+' key doesn't work as shortcut
 		- The switchboard panel's background selection popup is crippled
+		- SpinBox is only horizontal
 	+ Build as RELEASE
 		+ See if have to set _DEBUG in CMake also for Linux, so it appears in BuildInfo
 			+ Test
 	+ README.md
 		+ Requirements: do different by OS
-	= Gather testers and send them tar.gz
-		= gabe3333342323, ayjanu: sent friend requests
+	+ Gather testers and send them tar.gz
+		X gabe3333342323, ayjanu: sent friend requests
 		+ Walther first
-	= TheCrafters001: Real Hardware on a Live Linux USB Drive, OS: Linux Mint 20.1 (Ubuntu/Debian Based)
+	+ TheCrafters001: Real Hardware on a Live Linux USB Drive, OS: Linux Mint 20.1 (Ubuntu/Debian Based)
 		+ Make fixes:
 			+ Fix keyboard shortcut => menu checking
 				+ Test:
@@ -716,7 +412,7 @@ Render:
 				+ Remove diagnostic logging
 		+ Add him to credits
 			+ Discord: give him feedback and ask alias for credits: "TheCrafters001"
-		- Send him new beta
+		+ Send him new beta
 	+ Test new feautures:
 		+ Inflatable balloon popping
 	
@@ -1861,6 +1557,324 @@ Render:
 
 - Collision detection - for multiple ships
 	- Nearest neighbor: http://www.cs.umd.edu/~mount/ANN/
+
+==============================================================================
+==============================================================================
+==============================================================================
+==============================================================================
+==============================================================================
+==== PERF
+==============================================================================
+==============================================================================
+==============================================================================
+==============================================================================
+==============================================================================
+
+=================================================
+Current perf:
+=================================================
+1.16.5:
+- default ship:
+	- Old dell, RelWithDebInfo: FPS:30.65 UPD:19.5ms UPL:0.18ms RND:12.80ms
+- Perf analysis: default_ship, between 10s and 30s (run stopped after 20s displayed):
+	- GameController::RunGameIteration: 86.52%
+		- World::Update: 85.21%
+			- Ship::Update: 81.50%
+				- Ship::ApplySpringForces_BySprings: 56.98%
+				- Ship::UpdateWaterVelocities: 7.50%
+				- Ship::HandleCollisionsWithSeaFloor: 4.24%
+				- Ship::IntegrateAndResetSpringForces: 4.02%
+				- Ship::PropagateHeat: 2.48%
+				- Ship::EqualizeInternalPRessure: 2.02%
+				- Ship::ApplyWorldForces: 1.34%
+				- Springs::UpdateForStrains: 1.01%
+				- Ship::ApplyStaticPRessureForces: 0.02%
+				- Points::UpdateMasses: 0.33%
+				- Ship::TrimForWorldBounds: 0.31%
+				- Points::UpdateEphemeralParticles: 0.22%
+			- OceanSurface::GenerateSamples: 2.04%
+			- OceanSurface::Update: 1.42%
+		- World::RenderUpload: 1.08%
+=================================================
+1.16.4.next, during Hydrostatic pressure
+- default ship: Update=4.66ms
+=================================================
+1.16.3.next, after OpenGL optimizations (edge springs, etc.)
+- default ship, 20s
+	- Old dell: 31.9 FPS, 19.1 UPD, 11.8 RND (RelWithDebInfo)
+1.16.3.next, after periodic CollisionsWithSeaFloor, and Points::CachedDepths:
+- default_ship, 20s
+	- Old dell: 30.4/30.5 FPS, 18.8/19.1 UPD, 12.7/13.6 RND (RelWithDebInfo)
+	- New Dell: 4.45 UPD, 5.35/5.38 RND (RelWithDebInfo)
+- GameController::RunGameIteration: 86.72%
+	- World::Update: 85.69%
+		- Ship::Update: 83.59%
+			- Ship::ApplySpringForces_BySprings: 60.63%
+			- Ship::UpdateWaterVelocities: 8.76%
+			- Ship::HandleCollisionsWithSeaFloor: 4.73%
+			- Ship::IntegrateAndResetSpringForces: 3.60%
+			- Ship::PropagateHeat: 2.08%
+			- Ship::ApplyWorldForces: 1.62%
+			- Springs::UpdateForStrains: 0.93%
+		- OceanSurface::GenerateSamples: 1.27%
+		- OceanSurface::Update: 0.55%
+	- World::RenderUpload: 0.86%
+=================================================
+- After initial 1.16.3 perf optimizations:
+- default_ship, 40s, in [6s, 49s]
+	- Old dell: 30.20 (RelWithDebInfo)
+- GameController::RunGameIteration: 86.94%
+	- World::Update: 86.17%
+		- Ship::Update: 84.40%
+			- Ship::ApplySpringForces_BySprings: 56.69%
+			- Ship::HandleCollisionsWithSeaFloor: 9.00%
+			- Ship::UpdateWaterVelocities: 8.45%
+			- Ship::IntegrateAndResetSpringForces: 4.01%
+			- Ship::PropagateHeat: 2.29%
+			- Ship::ApplyWorldForces: 1.61%
+			- Springs::UpdateForStrains: 1.08%
+			- Points::UpdateMasses: 0.41%
+			- Ship::DiffuseLight: 0.37%
+			- Ship::TrimForWorldBounds: 0.25%
+			- Ship::UpdateWaterInflow: 0.10%
+		- OceanSurface::GenerateSamples: 1.20%
+		- OceanSurface::Update: 0.30%
+=================================================
+1.16.0
+- DELL new (default_ship): FPS=62.9 UPD=4.8ms RND=4.3ms
+- DELL old (default_ship, basic ocean): FPS=29.8/30.0 UPD=20.4ms, RND=12.6ms/12.9ms
+- HP (default_ship, basic ocean): FPS=20.4 UPD=48.05ms RND=14.2ms
+- Samsung (default_ship, basic ocean): FPS=23.4, UPD=42.3ms, RND=7.8ms 
+=================================================
+1.14
+- After forces rearc and iterations=30: FPS=30.16, Ums=22.5
+- Call tree (45 sec game play, w/out PostInitialize):
+	- MainFrame::OnGameTimerTrigger: 90.91%
+		- World::UpdateAndRender: 87.23%
+			- Ship::Update: 62.09%
+				- Ship::UpdateMechanicalDynamics: 52.50%
+					- ApplySpringForces: 39.15%
+					- HandleCollisionsWithSeaFloor: 6.73%
+					- IntegrateAndResetSpringForces: 5.57%
+					- ApplyWorldForces: 0.40%
+					- UpdateMasses: 0.33%
+				- Ship::UpdateWaterDynamics: 6.91%
+				- Ship::UpdateHeatDynamics: 1.68%
+				- Ship::UpdateForStrains: 0.81%
+				- Ship::DiffuseLight: 0.23%
+				- Ship::TrimWorldBounds: 0.15%
+			- Ship::Render: 20.16%
+			- RenderContext::RenderOcean: 1.54%
+			- RenderContext::RenderStars: 1.19%
+			- OceanSurface::Update: 0.24%
+			- Wind::Update: 0.07%
+		- wxGLCanvas::SwapBuffers: 1.42%
+=================================================
+1.13
+- After DiffuseLight rearc: FPS=29.5, U/R=19
+=================================================
+1.12
+- fps: 29.1/29.5/30.1
+- UR: 221/227
+=================================================
+- fps: 29.2/29.4 (Samsung w/Krafting: 17.0)
+- UR: 210/220 (Samsung w/Krafting: 690%)
+- GameController::InternalUpdate: 62.0%
+	- World::Update: 61.98%
+		- Ship::Update: 60.92%
+			- Ship::UpdateMechanicalDynamics: 49.92%
+				- Ship::UpdateSpringForces: 36.50%
+				- Ship::UpdatePointForces: 5.95%
+				- Ship::HandleCollisionsWithSeaFloor: 3.63%
+				- Ship::IntegrateAndResetPointForces: 3.59%
+				- Ship::UpdateTotalMasses: 0.24%
+			- Ship::UpdateWaterDynamics: 6.81%
+			- Ship::DiffuseLight: 2.99%
+			- Springs::UpdateStrains: 1.02%
+		- OceanSurface::GenerateSamples: 0.74%
+		- OceanSurface::Update: 0.24%
+- GameController::InternalRender: 22.7%
+	- Ship::Render: 19.30%
+	- RenderSkyEnd: 2.16%
+	- RenderOcean: 0.58%
+=================================================
+Before SWE:
+- fps: 30.8
+- UR: 224
+=================================================
+Before ocean/land rearc:
+- fps: 30.5/30.5/30.7/30.85
+=================================================
+Before decay:
+- fps: 30.7/30.7/30.8/30.9/32.0
+- U/R: 193.x%
+- RunGameIteration: TODO:86.62% (initialization time)
+- World::Update: 60.25%
+		- UpdateMechanicalDynamics: 49.32%
+			- UpdateSpringForces: 37.99%
+			- UpdatePointForces: 5.51%
+			- HandleCollisionsWithSeafFloor: 3.38%
+			- IntegrateAndResetPointForces: 2.30%
+			- UpdateTotalMasses: 0.13%
+		- UpdateWaterDynamics: 6.72%
+			- UpdateWaterVelocities: 6.57%
+			- UpdateWaterInflow: 0.08%
+		- DiffuseLight: 2.94%
+			- FastPow2: 1.44%
+- World::Render: 22.54%
+	- Ship::Render: 19.36%
+	- RenderSkyEnd: 2.33%
+	- RenderOcean: 0.70%
+=================================================
+Before Vertex Attribute Optimization:
+- fps: 28.2/28.4 (miracle: 28.7/29.0/29.1)
+- World::Update: 54.66%
+		- UpdateMechanicalDynamics: 44.64%
+			- UpdateSpringForces: 34.70%
+			- UpdatePointForces: 4.88%
+			- HandleCollisionsWithSeafFloor: 2.89%
+			- IntegrateAndResetPointForces: 1.99%
+			- UpdateTotalMasses: 0.15%
+		- UpdateWaterDynamics: 6.29%
+		- DiffuseLight: 2.62%
+- World::Render: 28.24%
+	- Ship::Render: 25.11%
+	- RenderSkyEnd: 2.23%
+	- RenderOcean: 0.77%
+=================================================
+Before VAO:
+- fps: 28.1/28.3
+=================================================
+Before bound world and point light<->ambient light additiveness:
+- fps: 29.0/29.2/29.4
+=================================================
+Before Z buffer:
+- fps: 30.2/30.6/31.2
+=================================================
+Before wind:
+- fps: 30.8/31.0/31.3
+=================================================
+Before exp optimization:
+- fps: 30.8/31.0/31.3
+- World::Update: 58.48%
+		- UpdateMechanicalDynamics: 48.44%
+			- UpdateSpringForces: 38.25%
+			- UpdatePointForces: 4.47%
+			- HandleCollisionsWithSeafFloor: 3.43%
+			- IntegrateAndResetPointForces: 2.10%
+			- UpdateTotalMasses: 0.19%
+		- UpdateWaterDynamics: 7.79%
+			- UpdateWaterVelocities: 7.64%
+		- DiffuseLight: 1.31%
+- World::Render: 28.15%
+	- RenderContext::RenderCloudsEnd: 3.98%
+=================================================
+Before diffusion improvement:
+- fps: 31.5/31.7
+=================================================
+Current perf (spring optimization + double spring iterations)
+=================================================
+- fps: 31.3 (Samsung: 20.3 (Krafting)) (Mattia's: 15.5 (Krafting))
+- World::Update: 57.05%
+	- Ship::Update: 56.89%
+		- UpdateMechanicalDynamics: 47.56%
+			- UpdateSpringForces: 37.08%
+			- UpdatePointForces: 5.30%
+			- HandleCollisionsWithSeafFloor: 2.92%
+			- IntegrateAndResetPointForces: 2.26%
+		- UpdateWaterDynamics: 7.83%
+			- UpdateWaterVelocities: 7.72%
+- World::Render: 28.15%
+	- RenderContext::RenderCloudsEnd: 3.98%
+
+=================================================
+Past perf (ephemeral particles)
+=================================================
+- fps: 28.8/29.0
+=================================================
+1.7.0 perf from users
+	- Titanic: 50
+	- Titanic: 55
+	- Titanic: 48.3
+
+=================================================
+1.6.0 perf
+=================================================
+- fps: 29.6 (Samsung: TBD:31.5 (Krafting)) (Mattia's: TBD:25.1 (Krafting))
+- GameController::Update: 35.06%
+	- Ship::Update: 34.33%
+		- UpdateMechanicalDynamics: 25.70%
+			- UpdateSpringForces: 18.80%
+			- UpdatePointForces: 3.45%
+			- HandleCollisionsWithSeafloor: 2.45%
+			- IntegratePointForces: 1.00%
+		- UpdateWaterDynamics: 7.83%
+			- UpdateWaterVelocities: 7.73%
+			- UpdateWaterInflow: 0.05%
+		- UpdateStrains: 0.78%
+	- DiffuseLight: 0.58%
+	- WaterSurface::Update: 0.11%
+- World::Render: 57.00%
+	- ShipRenderContext::RenderEnd: 52.87%
+	- RenderContext::RenderCloudsEnd: 1.49%
+	- RenderContext::RenderStart: 0.50%
+	- Ship::Render: 0.14%
+		- UploadPoints: 0.12%
+	- RenderContext::RenderWater: 0.05%
+	- World::RenderClouds: 0.04%
+		- fmodf: 0.02%
+	- RenderContext::RenderLand: 0.01%
+- RenderContext::RenderEnd: 0.35%
+	- TextRenderContext::RenderEnd: 0.35%
+- wxGLCanvas::SwapBuffers: 1.07%
+=================================================
+NoInline
+- World::Render: 53.36%
+	- ShipRenderContext::RenderEnd: 49.69%
+		- ig4: 49.22%
+		- RenderRopes: 0.43%
+		- ...
+	- RenderContext::RenderCloudsEnd: 1.37%
+	- RenderContext::RenderStart: 0.46%
+	- RenderContext::RenderWater: 0.04%
+	- World::RenderClouds: 0.02%
+		- fmodf: 0.01%
+	- Ship::Render (with uploads): 0.15%
+	- RenderContext::RenderLand: 0.01%
+	- RenderContext::UploadLandAndWaterEnd: 0.04%
+	- RenderContext::UploadLandAndWater: 0.03%
+- RenderContext::RenderEnd: 0.30%
+=================================================
+Render:
+	- No Ship::RenderEnd: 64fps
+	- Only springs: 30fps
+	- Only triangles: 42fps
+=================================================
+1.3.0 perf
+=================================================
+- fps: 27.3
+- GameController::DoStep: 33.06%
+	- Ship::Update: 32.07%
+		- UpdateDynamics: 25.53%
+			- UpdateSpringForces: 18.72%
+			- UpdatePointForces: 3.55%
+			- HandleCollisionsWithSeafloor: 2.27%
+			- Integrate: 0.98%
+		- GravitateWater: 4.60%
+		- BalancePressure: 1.06%
+		- UpdateStrains: 0.83%
+		- LeakWater: 0.03%
+	- DiffuseLight: 0.89%
+	- WaterSurface::Update: 0.09%
+		- sinf: 0.07%
+- MainFrame::RenderGame: 60.47%
+	- ShipRenderContext::Render: 53.52% (Incl) 0.00% (Excl)
+		- ShipRenderContext::RenderSprings: 30.72%
+		- ShipRenderContext::RenderTriangles: 22.29%
+		- ShipRenderContext::RenderRopes: 0.45%
+		- Points::Upload: 0.14%
+	- RenderContext::RenderCloudsEnd: 2.87%
+
 
 ==============================================================================
 ==============================================================================
@@ -13290,5 +13304,4 @@ IF WX:
 			+ www.floatingsandbox.com:
 				+ Update current version in FAQ
 			+ Announce on Discord server
-
 
