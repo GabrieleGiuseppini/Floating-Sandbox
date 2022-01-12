@@ -320,8 +320,8 @@ ResizeDialog::ResizeDialog(
         dialogVSizer->Add(
             hSizer,
             0,
-            wxALIGN_CENTER_HORIZONTAL,
-            0);
+            wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxRIGHT,
+            10);
     }
 
     dialogVSizer->AddSpacer(20);

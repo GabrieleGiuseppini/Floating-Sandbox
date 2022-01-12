@@ -226,18 +226,19 @@ https://gamejolt.com/x/permalink/comment/11730705
 		+ Permanence of 3 View settings across Controller re-create's
 		+ Permanence of all other settings across Controller re-create's
 
-- Generate localization files and update langs
-- Do some Italian
-- Send for testing
-- Bump up version
-
-- Fix Ubuntu:
+= Fix Ubuntu:
 	+ Grid button size
 	+ Not adding extension to ship name when saving it
 	+ Default save directory
 	+ Model validation crash
-	- Undo stack is at weird position and covers rest
-		- Note: it's the same as at the and of the SB cctor
+	+ Undo stack is at weird position and covers rest
+		+ Note: it's the same as at the and of the SB cctor
+	- Spin boxes are H instead of V
+
+- Generate localization files and update langs
+- Do some Italian
+- Send for testing
+- Bump up version
 
 - Solve issue of Electrical Layer not aligning (visually) with the Structural Layer by default
 	- See if aligning pixels on corners of mesh - or aligning mesh on corners of pixels - would solve the issue
