@@ -245,6 +245,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 
 - Send for testing
 - Send for localization
+
 - Bump up version
 
 - New/Set/Remove layers:
