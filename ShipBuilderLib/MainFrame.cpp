@@ -3983,12 +3983,19 @@ void MainFrame::ReconciliateUIWithTextureLayerVisualizationModeSelection(Texture
 
 void MainFrame::ReconciliateUIWithOtherVisualizationsOpacity(float opacity)
 {
-    mOtherVisualizationsOpacitySlider->SetValue(OtherVisualizationsOpacityToSlider(opacity));
+    auto const sliderValue = OtherVisualizationsOpacityToSlider(opacity);
+    if (sliderValue != mOtherVisualizationsOpacitySlider->GetValue())
+    {
+        mOtherVisualizationsOpacitySlider->SetValue(sliderValue);
+    }
 }
 
 void MainFrame::ReconciliateUIWithVisualGridEnablement(bool isEnabled)
 {
-    mViewGridButton->SetValue(isEnabled);
+    if (mViewGridButton->GetValue() != isEnabled)
+    {
+        mViewGridButton->SetValue(isEnabled);
+    }
 }
 
 void MainFrame::ReconciliateUIWithUndoStackState(UndoStack & undoStack)
