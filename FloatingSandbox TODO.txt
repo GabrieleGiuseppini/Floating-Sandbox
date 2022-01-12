@@ -347,7 +347,6 @@ Render:
 			- Might have same issue with various tools
 			- TODO: is it really worth fixing this?
 
-		- Flames: see if can have softer rotation
 
 		- Lower volume of pump sound when many pumps are playing
 			- Generically: instanced sounds: instances of same type share (via shared_ptr) common data  - just # of instances atm
@@ -355,15 +354,16 @@ Render:
 		
 		- Preferences flag for starting full-screen
 
+		- Flames: see if can have softer rotation
+
 		- TimCan pack
 		- Raynair updates
 		- Pocketwatch ships
 
-		- MSI Installer:
-			- Also install ShipBuilder.exe
-
 		- Check how many older FS's exist, to see if can enable/upload changes.txt again
 
+		- MSI Installer:
+			- Also install ShipBuilder.exe
 
 
 

@@ -237,14 +237,15 @@ https://gamejolt.com/x/permalink/comment/11730705
 + After changing ShipMetadata's auto-texturization settings, should update Game Viz if it's Auto-Tex
 	+ @ Controller::InternalSetShipProperties
 
-- Generate localization files and update langs
-- Do some Italian
-- Send for testing
-- Bump up version
++ Localization kickoff
+	+ Extract strings
+	+ Update all langs
+	+ Change copyright year in all langs
+	+ Do some Italian
 
-- Solve issue of Electrical Layer not aligning (visually) with the Structural Layer by default
-	- See if aligning pixels on corners of mesh - or aligning mesh on corners of pixels - would solve the issue
-	- Might need a New Electrical visualization mode: "mesh mode", so that it aligns with structural's mesh mode
+- Send for testing
+- Send for localization
+- Bump up version
 
 - New/Set/Remove layers:
 	- New:
