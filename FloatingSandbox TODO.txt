@@ -24,11 +24,17 @@
 				= Test all callers of OceanSurface::DisplaceAt:
 					+ Air bubbles
 						+ Make more incisive
-					= Water displacement
+					+ Water displacement
 						+ Make more incisive
-						- Compare with old
-					- Others?
-				- Cleanup Ship::
+						+ Compare with old
+					+ Fishes up
+					+ Fishes down
+					+ Blast Tool
+					+ Explosion blast
+					= Engine
+						- Try more depth
+						- Try more than 4.0
+
 				- Cleanup OceanSurface.h::DisplaceAt()
 					- See assembly
 

@@ -1238,8 +1238,6 @@ void Ship::ApplyWorldSurfaceForces(
                         * depthAttenuation
                         * SignStep(0.0f, verticalVelocity) // Displacement has same sign as vertical velocity
                         * Step(0.0f, thisPointDepth) // No displacement for above-water points
-                        // TODOTEST
-                        ////* 0.36f; // Magic number
                         * 0.4f; // Magic number
 
                     mParentWorld.DisplaceOceanSurfaceAt(thisPointPosition.x, displacement);
