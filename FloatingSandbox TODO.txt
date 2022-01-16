@@ -19,7 +19,18 @@
 
 		= https://www.reddit.com/r/FloatingSandbox/comments/riq290/found_an_interesting_bug/
 			+ Can repro
-			- It's due to multiple particles insisting on same depression
+			! It's due to multiple particles insisting on same depression
+			= OceanSurface::DisplaceAt: set to value that's larger (abs'ly) between current and new
+				= Test all callers of OceanSurface::DisplaceAt:
+					+ Air bubbles
+						+ Make more incisive
+					= Water displacement
+						+ Make more incisive
+						- Compare with old
+					- Others?
+				- Cleanup Ship::
+				- Cleanup OceanSurface.h::DisplaceAt()
+					- See assembly
 
 		= Test Titanic sinking to floor and see what really happens
 			- 1: add count of spring breakages (temporarily) - as CustomProbe

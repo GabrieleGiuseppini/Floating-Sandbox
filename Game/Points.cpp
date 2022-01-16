@@ -1040,7 +1040,7 @@ void Points::UpdateCombustionHighFrequency(
                     + GameRandomEngine::GetInstance().GenerateExponentialReal(
                         gameParameters.SmokeEmissionDensityAdjustment
                         * pointCombustionState.FlameDevelopment
-                        / 1.5f); // TODOHERE: replace with Material's properties, precalc'd with gameParameters.SmokeEmissionDensityAdjustment
+                        / 1.5f); // CODEWORK: replace with Material's properties, precalc'd with gameParameters.SmokeEmissionDensityAdjustment
             }
 
             // See if it's time to emit smoke
@@ -1330,7 +1330,7 @@ void Points::UpdateEphemeralParticles(
                             {
                                 mParentWorld.DisplaceOceanSurfaceAt(
                                     GetPosition(pointIndex).x,
-                                    (oceanFloorDisplacementAtAirBubbleSurfacingSurfaceOffset - depth) / 2.0f); // Magic number
+                                    (oceanFloorDisplacementAtAirBubbleSurfacingSurfaceOffset - depth) * 0.75f);  // Magic number
 
                                 mGameEventHandler->OnAirBubbleSurfaced(1);
                             }

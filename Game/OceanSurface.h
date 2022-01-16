@@ -117,7 +117,13 @@ public:
         assert(sampleIndexI >= 0 && sampleIndexI < SamplesCount);
 
         // Store
-        mDeltaHeightBuffer[(DeltaHeightSmoothing / 2) + sampleIndexI] += yOffset / SWEHeightFieldAmplification;
+        // TODOTEST
+        //mDeltaHeightBuffer[DeltaHeightBufferPrefixSize + sampleIndexI] += yOffset / SWEHeightFieldAmplification;
+        float const yDisplacement = yOffset / SWEHeightFieldAmplification;
+        if (std::abs(yDisplacement) > mDeltaHeightBuffer[DeltaHeightBufferPrefixSize + sampleIndexI])
+        {
+            mDeltaHeightBuffer[DeltaHeightBufferPrefixSize + sampleIndexI] = yDisplacement;
+        }
     }
 
     void ApplyThanosSnap(

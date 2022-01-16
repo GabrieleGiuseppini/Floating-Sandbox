@@ -1039,12 +1039,12 @@ void Ship::ApplyWorldSurfaceForces(
     // Water displacement constants
     //
 
-    float constexpr wdmX0 = 3.75f; // Velocity at which displacement transitions from quadratic to linear
-    float constexpr wdmY0 = 0.3f; // Displacement magnitude at x0
+    float constexpr wdmX0 = 2.0f; // Vertical velocity at which displacement transitions from quadratic to linear
+    float constexpr wdmY0 = 0.16f; // Displacement magnitude at x0
 
     // Linear portion
     float const wdmLinearSlope =
-        GameParameters::SimulationStepTimeDuration<float> * 4.0f // Magic number
+        GameParameters::SimulationStepTimeDuration<float> * 6.0f // Magic number
         * gameParameters.WaterDisplacementWaveHeightAdjustment;
 
     // Quadratic portion: y = ax^2 + bx, with constraints:
@@ -1229,36 +1229,18 @@ void Ship::ApplyWorldSurfaceForces(
                     // Linear attenuation up to maxDepth
                     float const depthAttenuation = 1.0f - LinearStep(0.0f, maxDepth, thisPointDepth); // Tapers down contribution the deeper the point is
 
-                    // 1.17.0: removed mass impact altogether as it seems not to contribute importantly enough to justify the extra calculations
-                    //////
-                    ////// Mass impact
-                    ////// - The impact of mass should follow a square root law, but for performance we approximate it
-                    //////   with a linear law based on some points taken on a sqrt curve
-                    //////
-
-                    ////float constexpr Mass1 = 18.0f;
-                    ////float constexpr Impact1 = 11.0f;
-                    ////float constexpr Mass2 = 1000.0f;
-                    ////float constexpr Impact2 = 25.0f;
-
-                    ////float const massImpact =
-                    ////    Impact1 +
-                    ////        (std::min(mPoints.GetMass(thisPointIndex), 1500.0f) - Mass1) // Avoid unrealistic displacement at very high masses
-                    ////        * (Impact2 - Impact1) / (Mass2 - Mass1);
-                    float constexpr massImpact =
-                        11.0f + (25.0f - 11.0f) / 2.0f;
-
                     //
                     // Displacement
                     //
 
                     float const displacement =
                         (absVerticalVelocity < wdmX0 ? quadraticDisplacementMagnitude : linearDisplacementMagnitude)
-                        * massImpact
                         * depthAttenuation
                         * SignStep(0.0f, verticalVelocity) // Displacement has same sign as vertical velocity
                         * Step(0.0f, thisPointDepth) // No displacement for above-water points
-                        * 0.02f; // Magic number
+                        // TODOTEST
+                        ////* 0.36f; // Magic number
+                        * 0.4f; // Magic number
 
                     mParentWorld.DisplaceOceanSurfaceAt(thisPointPosition.x, displacement);
 
