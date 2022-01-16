@@ -5,7 +5,7 @@
 ====================================================
 
 - Roadmap:
-	- 1.17.0:
+	= 1.17.0:
 		+ Change version minor
 		+ Nuke Ship Editor request for help from Readme
 		+ FindSFML
@@ -15,13 +15,11 @@
 		+ Fix slice tool + SHIFT (no locking at all)		
 		+ Lower heat radius in Ultra-Violent mode
 		+ Preferences flag for starting full-screen
-
-		- See if can avoid "splash/flood" sound when just ropes are flooded
-			- Repro first
-
-		- Do Mattia's video and post together with https://www.youtube.com/watch?v=X2n4Q25Ld34
+		+ See if can avoid "splash/flood" sound when just ropes are flooded
 
 		- See if repro's: https://www.reddit.com/r/FloatingSandbox/comments/riq290/found_an_interesting_bug/
+
+		- Do Mattia's video and post together with https://www.youtube.com/watch?v=X2n4Q25Ld34
 
 		= Mac/Sam
 			+ CMakeFiles: add `set (CMAKE_FIND_LIBRARY_SUFFIXES ".a")`			
@@ -31,15 +29,15 @@
 					sh /Applications/Development/FS-app/static-libs/wxWidgets/bin/wx-config --libs 
 
 		= Test Titanic sinking to floor and see what really happens
-			- Add count of spring breakages (temporarily) - as CustomProbe
-			- Backup exe
+			- 1: add count of spring breakages (temporarily) - as CustomProbe
+			- 2: backup exe
 			- Test separately the impact of:
 				- Velocity change (w/no position)
 				- Position change (w/no velocity)
 			- Avenues:
-				- Lower returned velocity when underwater
+				- Lower returned velocity when underwater (e.g. because of water damp)
 				- More frequest invocations from spring loop
-			- Remove spring breakage count
+			- At end: remove spring breakage count
 
 		- Silting a bit thicker
 			- "I have silting on all the way but the ships go no further than a couple pixels into the mud"

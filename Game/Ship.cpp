@@ -382,21 +382,23 @@ void Ship::Update(
     // Update intake of pressure and water
     //
 
-    float waterTakenInStep = 0.f;
+    {
+        float waterTakenInStep = 0.f;
 
-    // - Inputs: P.Position, P.Water, P.IsLeaking, P.Temperature, P.PlaneId
-    // - Outputs: P.InternalPressure, P.Water, P.CumulatedIntakenWater
-    // - Creates ephemeral particles
-    UpdatePressureAndWaterInflow(
-        effectiveAirDensity,
-        effectiveWaterDensity,
-        currentSimulationTime,
-        stormParameters,
-        gameParameters,
-        waterTakenInStep);
+        // - Inputs: P.Position, P.Water, P.IsLeaking, P.Temperature, P.PlaneId
+        // - Outputs: P.InternalPressure, P.Water, P.CumulatedIntakenWater
+        // - Creates ephemeral particles
+        UpdatePressureAndWaterInflow(
+            effectiveAirDensity,
+            effectiveWaterDensity,
+            currentSimulationTime,
+            stormParameters,
+            gameParameters,
+            waterTakenInStep);
 
-    // Notify intaken water
-    mGameEventHandler->OnWaterTaken(waterTakenInStep);
+        // Notify intaken water
+        mGameEventHandler->OnWaterTaken(waterTakenInStep);
+    }
 
     //
     // Equalize internal pressure
@@ -2178,8 +2180,14 @@ void Ship::UpdatePressureAndWaterInflow(
                 mPoints.GetCumulatedIntakenWater(pointIndex) = 0.0f;
             }
 
-            // Adjust total water taken during this step
-            waterTakenInStep += totalDeltaWater;
+            // Adjust total water taken during this step, but not counting
+            // ropes, to prevent "rushing water" sound from playing for
+            // ropes, and also to prevent rope-only ships from playing
+            // "farewell"
+            if (!mPoints.IsRope(pointIndex))
+            {
+                waterTakenInStep += totalDeltaWater;
+            }
         }
     }
 }
