@@ -36,6 +36,7 @@ public:
 private:
 
     void OnScreenshotDirPickerChanged(wxCommandEvent & event);
+    void OnStartInFullScreenCheckBoxClicked(wxCommandEvent & event);
     void OnShowTipOnStartupCheckBoxClicked(wxCommandEvent & event);
     void OnCheckForUpdatesAtStartupCheckBoxClicked(wxCommandEvent & event);
     void OnSaveSettingsOnExitCheckBoxClicked(wxCommandEvent & event);
@@ -83,6 +84,7 @@ private:
 
     // Game panel
     wxDirPickerCtrl * mScreenshotDirPickerCtrl;
+    wxCheckBox * mStartInFullScreenCheckBox;
     wxCheckBox * mShowTipOnStartupCheckBox;
     wxCheckBox * mCheckForUpdatesAtStartupCheckBox;
     wxCheckBox * mSaveSettingsOnExitCheckBox;

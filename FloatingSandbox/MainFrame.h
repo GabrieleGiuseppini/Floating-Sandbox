@@ -54,10 +54,6 @@ class MainFrame final
     , public IAtmosphereGameEventHandler
     , public IGenericGameEventHandler
 {
-private:
-
-    static constexpr bool StartInFullScreenMode = true;
-
 public:
 
     MainFrame(
@@ -335,8 +331,10 @@ private:
 
             this->Show(true);
 
-            if (StartInFullScreenMode)
+            if (!mUIPreferencesManager || mUIPreferencesManager->GetStartInFullScreen())
+            {
                 this->ShowFullScreen(true, wxFULLSCREEN_NOBORDER);
+            }
 
 #ifdef __WXGTK__
             // Make sure the main frame is correctly laid out afterwards

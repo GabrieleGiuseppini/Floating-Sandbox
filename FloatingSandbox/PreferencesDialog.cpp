@@ -149,6 +149,14 @@ void PreferencesDialog::OnScreenshotDirPickerChanged(wxCommandEvent & /*event*/)
     mOnChangeCallback();
 }
 
+void PreferencesDialog::OnStartInFullScreenCheckBoxClicked(wxCommandEvent & /*event*/)
+{
+    assert(!!mUIPreferencesManager);
+    mUIPreferencesManager->SetStartInFullScreen(mStartInFullScreenCheckBox->GetValue());
+
+    mOnChangeCallback();
+}
+
 void PreferencesDialog::OnShowTipOnStartupCheckBoxClicked(wxCommandEvent & /*event*/)
 {
     assert(!!mUIPreferencesManager);
@@ -383,13 +391,13 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
             //
 
             {
-                mShowTipOnStartupCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY,
-                    _("Show Tips on Startup"), wxDefaultPosition, wxDefaultSize, 0);
-                mShowTipOnStartupCheckBox->SetToolTip(_("Enables or disables the tips shown when the game starts."));
-                mShowTipOnStartupCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowTipOnStartupCheckBoxClicked, this);
+                mStartInFullScreenCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY,
+                    _("Start in Full Screen"), wxDefaultPosition, wxDefaultSize, 0);
+                mStartInFullScreenCheckBox->SetToolTip(_("Selects whether the game starts in full-screen mode or as a normal window."));
+                mStartInFullScreenCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnStartInFullScreenCheckBoxClicked, this);
 
                 sizer->Add(
-                    mShowTipOnStartupCheckBox,
+                    mStartInFullScreenCheckBox,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
                     wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxBOTTOM,
@@ -428,13 +436,13 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
             //
 
             {
-                mCheckForUpdatesAtStartupCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY,
-                    _("Check for Updates on Startup"), wxDefaultPosition, wxDefaultSize, 0);
-                mCheckForUpdatesAtStartupCheckBox->SetToolTip(_("Enables or disables checking for new versions when the game starts."));
-                mCheckForUpdatesAtStartupCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnCheckForUpdatesAtStartupCheckBoxClicked, this);
+                mShowTipOnStartupCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY,
+                    _("Show Tips on Startup"), wxDefaultPosition, wxDefaultSize, 0);
+                mShowTipOnStartupCheckBox->SetToolTip(_("Enables or disables the tips shown when the game starts."));
+                mShowTipOnStartupCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowTipOnStartupCheckBoxClicked, this);
 
                 sizer->Add(
-                    mCheckForUpdatesAtStartupCheckBox,
+                    mShowTipOnStartupCheckBox,
                     wxGBPosition(1, 0),
                     wxGBSpan(1, 1),
                     wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxBOTTOM,
@@ -473,13 +481,13 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
             //
 
             {
-                mSaveSettingsOnExitCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY,
-                    _("Save Settings on Exit"), wxDefaultPosition, wxDefaultSize, 0);
-                mSaveSettingsOnExitCheckBox->SetToolTip(_("Enables or disables saving the last-modified settings when exiting the game."));
-                mSaveSettingsOnExitCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnSaveSettingsOnExitCheckBoxClicked, this);
+                mCheckForUpdatesAtStartupCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY,
+                    _("Check for Updates on Startup"), wxDefaultPosition, wxDefaultSize, 0);
+                mCheckForUpdatesAtStartupCheckBox->SetToolTip(_("Enables or disables checking for new versions when the game starts."));
+                mCheckForUpdatesAtStartupCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnCheckForUpdatesAtStartupCheckBoxClicked, this);
 
                 sizer->Add(
-                    mSaveSettingsOnExitCheckBox,
+                    mCheckForUpdatesAtStartupCheckBox,
                     wxGBPosition(2, 0),
                     wxGBSpan(1, 1),
                     wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxBOTTOM,
@@ -505,19 +513,19 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
             //
 
             {
-                mShowTsunamiNotificationsCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY,
-                    _("Show Tsunami Notifications"), wxDefaultPosition, wxDefaultSize, 0);
-                mShowTsunamiNotificationsCheckBox->SetToolTip(_("Enables or disables notifications when a tsunami is being spawned."));
-                mShowTsunamiNotificationsCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowTsunamiNotificationsCheckBoxClicked, this);
+                mSaveSettingsOnExitCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY,
+                    _("Save Settings on Exit"), wxDefaultPosition, wxDefaultSize, 0);
+                mSaveSettingsOnExitCheckBox->SetToolTip(_("Enables or disables saving the last-modified settings when exiting the game."));
+                mSaveSettingsOnExitCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnSaveSettingsOnExitCheckBoxClicked, this);
 
                 sizer->Add(
-                    mShowTsunamiNotificationsCheckBox,
+                    mSaveSettingsOnExitCheckBox,
                     wxGBPosition(3, 0),
                     wxGBSpan(1, 1),
                     wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxBOTTOM,
                     UserInterfaceBorder);
             }
-
+            
             {
                 mShowExtendedStatusTextCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY,
                     _("Show Extended Status Text"), wxDefaultPosition, wxDefaultSize, 0);
@@ -537,18 +545,36 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
             //
 
             {
+                mShowTsunamiNotificationsCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY,
+                    _("Show Tsunami Notifications"), wxDefaultPosition, wxDefaultSize, 0);
+                mShowTsunamiNotificationsCheckBox->SetToolTip(_("Enables or disables notifications when a tsunami is being spawned."));
+                mShowTsunamiNotificationsCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowTsunamiNotificationsCheckBoxClicked, this);
+
+                sizer->Add(
+                    mShowTsunamiNotificationsCheckBox,
+                    wxGBPosition(4, 0),
+                    wxGBSpan(1, 1),
+                    wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxBOTTOM,
+                    UserInterfaceBorder);
+            }
+
+            //
+            // Row 6
+            //
+
+            {
                 wxStaticText * displayUnitsSystemStaticText = new wxStaticText(boxSizer->GetStaticBox(), wxID_ANY, _("Units system:"));
 
                 sizer->Add(
                     displayUnitsSystemStaticText,
-                    wxGBPosition(4, 0),
+                    wxGBPosition(5, 0),
                     wxGBSpan(1, 4),
                     wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT,
                     UserInterfaceBorder);
             }
 
             //
-            // Row 6
+            // Row 7
             //
 
             {
@@ -612,7 +638,7 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
 
                 sizer->Add(
                     mDisplayUnitsSettingsComboBox,
-                    wxGBPosition(5, 0),
+                    wxGBPosition(6, 0),
                     wxGBSpan(1, 4),
                     wxALIGN_LEFT | wxLEFT | wxBOTTOM | wxRIGHT,
                     UserInterfaceBorder);
@@ -627,7 +653,7 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
 
                 sizer->Add(
                     screenshotDirStaticText,
-                    wxGBPosition(6, 0),
+                    wxGBPosition(7, 0),
                     wxGBSpan(1, 4),
                     wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT,
                     UserInterfaceBorder);
@@ -651,7 +677,7 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
 
                 sizer->Add(
                     mScreenshotDirPickerCtrl,
-                    wxGBPosition(7, 0),
+                    wxGBPosition(8, 0),
                     wxGBSpan(1, 4),
                     wxEXPAND | wxLEFT | wxBOTTOM | wxRIGHT,
                     UserInterfaceBorder);
@@ -1206,6 +1232,7 @@ void PreferencesDialog::ReadSettings()
 
     mScreenshotDirPickerCtrl->SetPath(mUIPreferencesManager->GetScreenshotsFolderPath().string());
 
+    mStartInFullScreenCheckBox->SetValue(mUIPreferencesManager->GetStartInFullScreen());
     mShowTipOnStartupCheckBox->SetValue(mUIPreferencesManager->GetShowStartupTip());
     mCheckForUpdatesAtStartupCheckBox->SetValue(mUIPreferencesManager->GetCheckUpdatesAtStartup());
     mSaveSettingsOnExitCheckBox->SetValue(mUIPreferencesManager->GetSaveSettingsOnExit());

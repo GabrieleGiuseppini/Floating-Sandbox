@@ -11,13 +11,13 @@
 		+ FindSFML
 			+ Windows
 			+ Ubuntu
-		+ Fix slice tool + SHIFT (no locking at all)
-		
-		+ Lower heat radius in Ultra-Violent mode
 
-		- Preferences flag for starting full-screen
+		+ Fix slice tool + SHIFT (no locking at all)		
+		+ Lower heat radius in Ultra-Violent mode
+		+ Preferences flag for starting full-screen
 
 		- See if can avoid "splash/flood" sound when just ropes are flooded
+			- Repro first
 
 		- Do Mattia's video and post together with https://www.youtube.com/watch?v=X2n4Q25Ld34
 
@@ -47,7 +47,7 @@
 		
 		+ See rogue waves
 
-		- New horn sound from TimCan
+		- New sounds from TimCan
 
 		- After many many hours, rain looks aweful - very likely due to timer values being high
 			- Storm: store timestamp of rain start, and pass (now-start)::to_float() to shader

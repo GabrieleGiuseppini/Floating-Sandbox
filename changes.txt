@@ -6,6 +6,7 @@
 	- Rubber Band
 - Fixed "slice lock"
 - Lowered HeatBlaster radius when in ultra-violent mode
+- Added "Preferences" setting for starting the game in full-screen mode or as a normal window
 - Reworked spanish translation "ahora hasta yo entiendo"
 
 1.16.7

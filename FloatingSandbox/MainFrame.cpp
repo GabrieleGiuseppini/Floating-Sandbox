@@ -517,12 +517,10 @@ MainFrame::MainFrame(
             mFullScreenMenuItem = new wxMenuItem(optionsMenu, ID_FULL_SCREEN_MENUITEM, _("Full Screen") + wxS("\tF11"), wxEmptyString, wxITEM_NORMAL);
             optionsMenu->Append(mFullScreenMenuItem);
             Connect(ID_FULL_SCREEN_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnFullScreenMenuItemSelected);
-            mFullScreenMenuItem->Enable(!StartInFullScreenMode);
 
             mNormalScreenMenuItem = new wxMenuItem(optionsMenu, ID_NORMAL_SCREEN_MENUITEM, _("Normal Screen") + wxS("\tESC"), wxEmptyString, wxITEM_NORMAL);
             optionsMenu->Append(mNormalScreenMenuItem);
             Connect(ID_NORMAL_SCREEN_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnNormalScreenMenuItemSelected);
-            mNormalScreenMenuItem->Enable(StartInFullScreenMode);
 
             optionsMenu->Append(new wxMenuItem(optionsMenu, wxID_SEPARATOR));
 
@@ -2388,6 +2386,11 @@ void MainFrame::StartLowFrequencyTimer()
 
 void MainFrame::ReconcileWithUIPreferences()
 {
+    assert(mUIPreferencesManager);
+
+    mFullScreenMenuItem->Enable(!mUIPreferencesManager->GetStartInFullScreen());
+    mNormalScreenMenuItem->Enable(mUIPreferencesManager->GetStartInFullScreen());
+
     mPreviousShipFilePath = mUIPreferencesManager->GetLastShipLoadedFilePath();
     mReloadPreviousShipMenuItem->Enable(!mPreviousShipFilePath.empty());
 

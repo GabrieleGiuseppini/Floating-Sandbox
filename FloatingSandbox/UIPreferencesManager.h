@@ -130,6 +130,16 @@ public:
         mBlacklistedUpdates.clear();
     }
 
+    bool GetStartInFullScreen() const
+    {
+        return mStartInFullScreen;
+    }
+
+    void SetStartInFullScreen(bool value)
+    {
+        mStartInFullScreen = value;
+    }
+
     bool GetShowStartupTip() const
     {
         return mShowStartupTip;
@@ -411,6 +421,7 @@ private:
 
     std::vector<Version> mBlacklistedUpdates;
     bool mCheckUpdatesAtStartup;
+    bool mStartInFullScreen;
     bool mShowStartupTip;
     bool mSaveSettingsOnExit;
     bool mShowShipDescriptionsAtShipLoad;

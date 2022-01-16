@@ -30,6 +30,7 @@ UIPreferencesManager::UIPreferencesManager(
 
     mBlacklistedUpdates = { };
     mCheckUpdatesAtStartup = true;
+    mStartInFullScreen = true;
     mShowStartupTip = true;
     mSaveSettingsOnExit = true;
     mShowShipDescriptionsAtShipLoad = true;
@@ -206,6 +207,16 @@ void UIPreferencesManager::LoadPreferences()
             checkUpdatesAtStartupIt != preferencesRootObject->end() && checkUpdatesAtStartupIt->second.is<bool>())
         {
             mCheckUpdatesAtStartup = checkUpdatesAtStartupIt->second.get<bool>();
+        }
+
+        //
+        // Start in full screen
+        //
+
+        if (auto startInFullScreenIt = preferencesRootObject->find("start_in_full_screen");
+            startInFullScreenIt != preferencesRootObject->end() && startInFullScreenIt->second.is<bool>())
+        {
+            mStartInFullScreen = startInFullScreenIt->second.get<bool>();
         }
 
         //
@@ -471,6 +482,9 @@ void UIPreferencesManager::SavePreferences() const
 
     // Add check updates at startup
     preferencesRootObject["check_updates_at_startup"] = picojson::value(mCheckUpdatesAtStartup);
+
+    // Add start in full screen
+    preferencesRootObject["start_in_full_screen"] = picojson::value(mStartInFullScreen);
 
     // Add show startup tip
     preferencesRootObject["show_startup_tip"] = picojson::value(mShowStartupTip);
