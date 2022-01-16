@@ -5,6 +5,7 @@
 	- Metal Chain
 	- Rubber Band
 - Fixed "slice lock"
+- Lowered HeatBlaster radius when in ultra-violent mode
 - Reworked spanish translation "ahora hasta yo entiendo"
 
 1.16.7

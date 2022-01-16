@@ -12,30 +12,45 @@
 			+ Windows
 			+ Ubuntu
 		+ Fix slice tool + SHIFT (no locking at all)
+		
+		+ Lower heat radius in Ultra-Violent mode
+
+		- Preferences flag for starting full-screen
+
+		- See if can avoid "splash/flood" sound when just ropes are flooded
 
 		- Do Mattia's video and post together with https://www.youtube.com/watch?v=X2n4Q25Ld34
-
-		- Lower heat radius in Ultra-Violent mode
 
 		- See if repro's: https://www.reddit.com/r/FloatingSandbox/comments/riq290/found_an_interesting_bug/
 
 		= Mac/Sam
 			+ CMakeFiles: add `set (CMAKE_FIND_LIBRARY_SUFFIXES ".a")`			
 			- See Sam's issue with wxWidgets
-				- Ask him to enable DBG_MSG in FindwxWidgets.cmake under FS
-				- Then: ask him to check result of:
+				+ Ask him to enable DBG_MSG in FindwxWidgets.cmake under FS
+				+ Then: ask him to check result of:
 					sh /Applications/Development/FS-app/static-libs/wxWidgets/bin/wx-config --libs 
 
 		= Test Titanic sinking to floor and see what really happens
-			- ImpactWithOceanFloor: do we do anything that causes more breakage with high velocity, by any chance?
-				- Check changes to mPoints.SetPosition since a version ago
+			- Add count of spring breakages (temporarily) - as CustomProbe
+			- Backup exe
+			- Test separately the impact of:
+				- Velocity change (w/no position)
+				- Position change (w/no velocity)
+			- Avenues:
+				- Lower returned velocity when underwater
+				- More frequest invocations from spring loop
+			- Remove spring breakage count
+
+		- Silting a bit thicker
+			- "I have silting on all the way but the ships go no further than a couple pixels into the mud"
+			- "Plus they tend to jump if a section goes in a bit too deep"
+		
 		+ See rogue waves
 
-		- New horn sound
-
-		- See if can avoid "splash/flood" sound when just ropes are flooded
+		- New horn sound from TimCan
 
 		- After many many hours, rain looks aweful - very likely due to timer values being high
+			- Storm: store timestamp of rain start, and pass (now-start)::to_float() to shader
 		- After many hours, zoom stutters
 			- Can test both with faking RealTimeClock start time?
 			- Solutions for long-running clock: https://randomascii.wordpress.com/2012/02/13/dont-store-that-in-a-float/
@@ -44,13 +59,10 @@
 			- Might have same issue with various tools
 			- TODO: is it really worth fixing this?
 
-
 		- Lower volume of pump sound when many pumps are playing
 			- Generically: instanced sounds: instances of same type share (via shared_ptr) common data  - just # of instances atm
 				- Then, when # of instances is updated, volume of all instances is changed accordingly
 		
-		- Preferences flag for starting full-screen
-
 		- Flames: see if can have softer rotation
 
 		- TimCan pack
@@ -61,9 +73,7 @@
 
 		- MSI Installer:
 			- Also install ShipBuilder.exe
-
-
-
+			- Set shell handler for .shp2 files
 
 		- Test material textures for chains: transparent chain texture
 			- Change texturizer so that we load alpha from image

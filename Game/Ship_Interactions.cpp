@@ -589,8 +589,10 @@ bool Ship::ExtinguishFireAt(
     float radius,
     GameParameters const & gameParameters)
 {
-    float const squareRadius =
-        radius * radius
+    float const squareRadius = radius * radius;
+
+    float const heatRemoved =
+        1000000.0f
         * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
     // Search for burning points within the radius
@@ -624,7 +626,7 @@ bool Ship::ExtinguishFireAt(
 
                 mPoints.AddHeat(
                     pointIndex,
-                    -1000000.0f * strength);
+                    -heatRemoved * strength);
             }
 
             // Remember we've found a point

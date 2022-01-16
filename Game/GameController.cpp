@@ -847,7 +847,9 @@ bool GameController::ApplyHeatBlasterAt(
     // Calculate radius
     float radius = mGameParameters.HeatBlasterRadius;
     if (mGameParameters.IsUltraViolentMode)
-        radius *= 10.0f;
+    {
+        radius *= 5.0f;
+    }
 
     // Apply action
     assert(!!mWorld);
@@ -879,7 +881,9 @@ bool GameController::ExtinguishFireAt(DisplayLogicalCoordinates const & screenCo
     // Calculate radius
     float radius = mGameParameters.FireExtinguisherRadius;
     if (mGameParameters.IsUltraViolentMode)
-        radius *= 10.0f;
+    {
+        radius *= 5.0f;
+    }
 
     // Apply action
     assert(!!mWorld);
