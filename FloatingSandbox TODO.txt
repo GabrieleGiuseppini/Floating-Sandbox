@@ -17,16 +17,9 @@
 		+ Preferences flag for starting full-screen
 		+ See if can avoid "splash/flood" sound when just ropes are flooded
 
-		- See if repro's: https://www.reddit.com/r/FloatingSandbox/comments/riq290/found_an_interesting_bug/
-
-		- Do Mattia's video and post together with https://www.youtube.com/watch?v=X2n4Q25Ld34
-
-		= Mac/Sam
-			+ CMakeFiles: add `set (CMAKE_FIND_LIBRARY_SUFFIXES ".a")`			
-			- See Sam's issue with wxWidgets
-				+ Ask him to enable DBG_MSG in FindwxWidgets.cmake under FS
-				+ Then: ask him to check result of:
-					sh /Applications/Development/FS-app/static-libs/wxWidgets/bin/wx-config --libs 
+		= https://www.reddit.com/r/FloatingSandbox/comments/riq290/found_an_interesting_bug/
+			+ Can repro
+			- It's due to multiple particles insisting on same depression
 
 		= Test Titanic sinking to floor and see what really happens
 			- 1: add count of spring breakages (temporarily) - as CustomProbe
@@ -42,6 +35,13 @@
 		- Silting a bit thicker
 			- "I have silting on all the way but the ships go no further than a couple pixels into the mud"
 			- "Plus they tend to jump if a section goes in a bit too deep"
+
+		= Mac/Sam
+			+ CMakeFiles: add `set (CMAKE_FIND_LIBRARY_SUFFIXES ".a")`			
+			- See Sam's issue with wxWidgets
+				+ Ask him to enable DBG_MSG in FindwxWidgets.cmake under FS
+				+ Then: ask him to check result of:
+					sh /Applications/Development/FS-app/static-libs/wxWidgets/bin/wx-config --libs 
 		
 		+ See rogue waves
 
@@ -69,9 +69,15 @@
 
 		- Check how many older FS's exist, to see if can enable/upload changes.txt again
 
+		- Do Mattia's video and post together with https://www.youtube.com/watch?v=X2n4Q25Ld34
+
+		- Localization
+
 		- MSI Installer:
 			- Also install ShipBuilder.exe
 			- Set shell handler for .shp2 files
+
+		- Release
 
 		- Test material textures for chains: transparent chain texture
 			- Change texturizer so that we load alpha from image

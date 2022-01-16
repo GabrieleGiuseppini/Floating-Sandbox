@@ -1229,21 +1229,24 @@ void Ship::ApplyWorldSurfaceForces(
                     // Linear attenuation up to maxDepth
                     float const depthAttenuation = 1.0f - LinearStep(0.0f, maxDepth, thisPointDepth); // Tapers down contribution the deeper the point is
 
-                    //
-                    // Mass impact
-                    // - The impact of mass should follow a square root law, but for performance we approximate it
-                    //   with a linear law based on some points taken on a sqrt curve
-                    //
+                    // 1.17.0: removed mass impact altogether as it seems not to contribute importantly enough to justify the extra calculations
+                    //////
+                    ////// Mass impact
+                    ////// - The impact of mass should follow a square root law, but for performance we approximate it
+                    //////   with a linear law based on some points taken on a sqrt curve
+                    //////
 
-                    float constexpr Mass1 = 18.0f;
-                    float constexpr Impact1 = 11.0f;
-                    float constexpr Mass2 = 1000.0f;
-                    float constexpr Impact2 = 25.0f;
+                    ////float constexpr Mass1 = 18.0f;
+                    ////float constexpr Impact1 = 11.0f;
+                    ////float constexpr Mass2 = 1000.0f;
+                    ////float constexpr Impact2 = 25.0f;
 
-                    float const massImpact =
-                        Impact1 +
-                            (std::min(mPoints.GetMass(thisPointIndex), 1500.0f) - Mass1) // Avoid unrealistic displacement at very high masses
-                            * (Impact2 - Impact1) / (Mass2 - Mass1);
+                    ////float const massImpact =
+                    ////    Impact1 +
+                    ////        (std::min(mPoints.GetMass(thisPointIndex), 1500.0f) - Mass1) // Avoid unrealistic displacement at very high masses
+                    ////        * (Impact2 - Impact1) / (Mass2 - Mass1);
+                    float constexpr massImpact =
+                        11.0f + (25.0f - 11.0f) / 2.0f;
 
                     //
                     // Displacement
