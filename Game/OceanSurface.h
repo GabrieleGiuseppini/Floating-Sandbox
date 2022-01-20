@@ -116,9 +116,7 @@ public:
 
         assert(sampleIndexI >= 0 && sampleIndexI < SamplesCount);
 
-        // Store
-        // TODOTEST
-        //mDeltaHeightBuffer[DeltaHeightBufferPrefixSize + sampleIndexI] += yOffset / SWEHeightFieldAmplification;
+        // Store - the one with the largest absolute magnitude wins
         float const yDisplacement = yOffset / SWEHeightFieldAmplification;
         if (std::abs(yDisplacement) > mDeltaHeightBuffer[DeltaHeightBufferPrefixSize + sampleIndexI])
         {

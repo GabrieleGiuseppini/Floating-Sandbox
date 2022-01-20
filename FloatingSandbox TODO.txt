@@ -17,11 +17,11 @@
 		+ Preferences flag for starting full-screen
 		+ See if can avoid "splash/flood" sound when just ropes are flooded
 
-		= https://www.reddit.com/r/FloatingSandbox/comments/riq290/found_an_interesting_bug/
+		+ https://www.reddit.com/r/FloatingSandbox/comments/riq290/found_an_interesting_bug/
 			+ Can repro
 			! It's due to multiple particles insisting on same depression
-			= OceanSurface::DisplaceAt: set to value that's larger (abs'ly) between current and new
-				= Test all callers of OceanSurface::DisplaceAt:
+			+ OceanSurface::DisplaceAt: set to value that's larger (abs'ly) between current and new
+				+ Test all callers of OceanSurface::DisplaceAt:
 					+ Air bubbles
 						+ Make more incisive
 					+ Water displacement
@@ -31,12 +31,12 @@
 					+ Fishes down
 					+ Blast Tool
 					+ Explosion blast
-					= Engine
-						- Try more depth
-						- Try more than 4.0
-
-				- Cleanup OceanSurface.h::DisplaceAt()
-					- See assembly
+					+ Engine
+						+ Try different depth curve
+							+ Half-smoothstep
+							X Try linear
+				+ Cleanup OceanSurface.h::DisplaceAt()
+					+ See assembly
 
 		= Test Titanic sinking to floor and see what really happens
 			- 1: add count of spring breakages (temporarily) - as CustomProbe
@@ -66,6 +66,7 @@
 
 		- After many many hours, rain looks aweful - very likely due to timer values being high
 			- Storm: store timestamp of rain start, and pass (now-start)::to_float() to shader
+
 		- After many hours, zoom stutters
 			- Can test both with faking RealTimeClock start time?
 			- Solutions for long-running clock: https://randomascii.wordpress.com/2012/02/13/dont-store-that-in-a-float/

@@ -1,6 +1,8 @@
 https://gamejolt.com/x/permalink/comment/11730705
 
 
+- Don't overwrite files from stock Ships directory
+
 - New/Set/Remove layers:
 	- New:
 		- Make internal helper templated on LayerType, with all code
