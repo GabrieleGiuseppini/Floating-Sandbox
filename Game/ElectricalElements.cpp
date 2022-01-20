@@ -1894,11 +1894,11 @@ void ElectricalElements::UpdateSinks(
                     // Displace ocean surface
                     if (gameParameters.DoDisplaceWater)
                     {
-                        // Offset from engine due to thrust
+                        // Offset from engine due to thrust - along the thrust direction
                         vec2f const engineOffset =
                             -thrustForce
                             * GameParameters::SimulationStepTimeDuration<float> * GameParameters::SimulationStepTimeDuration<float>
-                            * 0.05f;
+                            *0.025f;
 
                         vec2f const engineOffsetedPosition = enginePosition + engineOffset;
 
@@ -1910,10 +1910,11 @@ void ElectricalElements::UpdateSinks(
                         float const sinePerturbation = std::sin(currentSimulationTime * 2.5f);
 
                         // Displacement amount - goes to zero after a certain depth threshold
+                        float constexpr MaxDepth = 10.0f;
                         float const displacementAmount =
                             4.0f * absThrustMagnitude
                             * (1.0f + sinePerturbation) / 2.0f
-                            * (1.0f - SmoothStep(0.0f, 10.0f, offsetedEngineDepth));
+                            * (1.0f - std::min(2.0f * SmoothStep(0.0f, 2.0f * MaxDepth, offsetedEngineDepth), 1.0f));
 
                         mParentWorld.DisplaceOceanSurfaceAt(
                             engineOffsetedPosition.x,
