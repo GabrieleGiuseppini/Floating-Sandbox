@@ -3085,7 +3085,7 @@ public:
 
                 if (inputState.IsShiftKeyDown)
                 {
-                    mSoundController->PlayWindGustSound();
+                    mSoundController->PlayWindGustShortSound();
                 }
 
                 doUpdateCursor = true;
@@ -3210,7 +3210,7 @@ public:
         if (mEngagementData.has_value()
             && mEngagementData->CurrentState != EngagementData::StateType::ZeroFront)
         {
-            mSoundController->PlayWindGustSound();
+            mSoundController->PlayWindGustShortSound();
         }
     }
 

@@ -504,6 +504,7 @@ SoundController::SoundController(
         }
         else if (soundType == SoundType::Wave
                 || soundType == SoundType::WindGust
+                || soundType == SoundType::WindGustShort
                 || soundType == SoundType::Thunder
                 || soundType == SoundType::Lightning
                 || soundType == SoundType::FireSizzling
@@ -1302,12 +1303,12 @@ void SoundController::PlayBlastToolFastSound()
     }
 }
 
-void SoundController::PlayWindGustSound()
+void SoundController::PlayWindGustShortSound()
 {
     PlayOneShotMultipleChoiceSound(
-        SoundType::WindGust,
+        SoundType::WindGustShort,
         SoundGroupType::Effects,
-        50.0f,
+        100.0f,
         true);
 }
 

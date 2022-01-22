@@ -166,7 +166,7 @@ public:
     void PlayBlastToolSlow2Sound();
     void PlayBlastToolFastSound();
 
-    void PlayWindGustSound();
+    void PlayWindGustShortSound();
 
     void PlaySnapshotSound();
 

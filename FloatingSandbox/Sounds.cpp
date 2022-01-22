@@ -109,6 +109,8 @@ SoundType StrToSoundType(std::string const & str)
         return SoundType::Wind;
     else if (Utils::CaseInsensitiveEquals(str, "WindGust"))
         return SoundType::WindGust;
+    else if (Utils::CaseInsensitiveEquals(str, "WindGustShort"))
+        return SoundType::WindGustShort;
     else if (Utils::CaseInsensitiveEquals(str, "Rain"))
         return SoundType::Rain;
     else if (Utils::CaseInsensitiveEquals(str, "Thunder"))

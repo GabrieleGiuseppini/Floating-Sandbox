@@ -79,6 +79,7 @@ enum class SoundType : uint32_t
     Wave,
     Wind,
     WindGust,
+    WindGustShort,
     Rain,
     Thunder,
     Lightning,

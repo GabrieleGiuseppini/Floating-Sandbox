@@ -49,16 +49,22 @@
 				- Move radii calcn to GameController
 				- Invoke notification from GameController
 				- Shader
+					- VertexAttribs:
+						- Vertex world pos
+						- Center world pos
+						- Radius
+						- Intensity
+						- TODO: three radii (Pre-, Main-, and Zero- fronts)
 			- Application:
 				- Wind speed seems slow
 			= Tool:
 				+ Tool should be reset at ship reset/load
 					+ @ MainFrame::LoadShip(...)
 				+ Problem with shift boost/main front intensity is not 1
-				- Sounds
-					- Make new "sudden wind gust" sounds
-					= Gust at left down, iff shift
-					= Gust at shift down, iff engaged
+				= Sounds
+					+ Make new "sudden wind gust" sounds
+					+ Gust at left down, iff shift
+					+ Gust at shift down, iff engaged
 					- Background wind
 						- And stop at Deinitialize()
 			- Accelerator key
@@ -66,6 +72,8 @@
 				- Shift modifier?
 			- Finalize:
 				- Check tool wind speed setting range in SettingsDialog
+				- Merge into master
+				- Changes.txt
 
 		= Test Titanic sinking to floor and see what really happens
 			- 1: add count of spring breakages (temporarily) - as CustomProbe
