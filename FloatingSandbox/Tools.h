@@ -3180,7 +3180,7 @@ public:
             mGameController->ApplyRadialWindFrom(
                 inputState.MousePosition,
                 mEngagementData->GetElapsedPreFrontSimulationTime(currentSimulationTime),
-                intensity * (inputState.IsShiftKeyDown ? 2.5f : 1.0f),
+                intensity * (inputState.IsShiftKeyDown ? 3.0f : 1.0f),
                 mEngagementData->GetElapsedMainFrontSimulationTime(currentSimulationTime),
                 intensity * (inputState.IsShiftKeyDown ? 1.5f : 1.0f));
 

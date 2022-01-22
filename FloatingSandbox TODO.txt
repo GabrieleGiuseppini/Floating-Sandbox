@@ -63,6 +63,8 @@
 				+ State machine:
 					+ Remove zero front - after all intensity is going down anyway
 				- Change cursor
+					- Molen
+					- Shift modifier?
 				= Sounds
 					+ Make new "sudden wind gust" sounds
 					+ Gust at left down, iff shift
@@ -70,8 +72,6 @@
 					- Background wind
 						- And stop at Deinitialize()
 			- Accelerator key
-			- Cursor:
-				- Shift modifier?
 			- Finalize:
 				- Check tool wind speed setting range in SettingsDialog
 				- Merge into master
