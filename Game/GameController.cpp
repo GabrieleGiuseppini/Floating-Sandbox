@@ -952,6 +952,28 @@ bool GameController::ApplyElectricSparkAt(
         mGameParameters);
 }
 
+void GameController::ApplyRadialWindFrom(
+    DisplayLogicalCoordinates const & sourcePos,
+    float preFrontSimulationTime,
+    float preFrontIntensityMultiplier,
+    float mainFrontSimulationTime,
+    float mainFrontIntensityMultiplier,
+    float zeroFrontSimulationTime)
+{
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(sourcePos);
+
+    // Apply action
+    assert(!!mWorld);
+    return mWorld->ApplyRadialWindFrom(
+        worldCoordinates,
+        preFrontSimulationTime,
+        preFrontIntensityMultiplier,
+        mainFrontSimulationTime,
+        mainFrontIntensityMultiplier,
+        zeroFrontSimulationTime,
+        mGameParameters);
+}
+
 void GameController::DrawTo(
     DisplayLogicalCoordinates const & screenCoordinates,
     float strengthFraction)

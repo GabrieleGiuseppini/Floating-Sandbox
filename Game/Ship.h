@@ -168,6 +168,15 @@ public:
         float currentSimulationTime,
         GameParameters const & gameParameters);
 
+    void ApplyRadialWindFrom(
+        vec2f const & sourcePos,
+        float preFrontRadius,
+        float preFrontWindSpeed,
+        float mainFrontRadius,
+        float mainFrontWindSpeed,
+        float zeroFrontRadius,
+        GameParameters const & gameParameters);
+
     void DrawTo(
         vec2f const & targetPos,
         float strengthFraction,
@@ -285,7 +294,8 @@ private:
             Blast,
             Draw,
             Pull,
-            Swirl
+            Swirl,
+            RadialWind
         };
 
         InteractionType Type;
@@ -358,6 +368,33 @@ private:
 
             SwirlArguments Swirl;
 
+            struct RadialWindArguments
+            {
+                vec2f SourcePos;
+                float PreFrontRadius;
+                float PreFrontWindForceMagnitude;
+                float MainFrontRadius;
+                float MainFrontWindForceMagnitude;
+                float ZeroFrontRadius;
+
+                RadialWindArguments(
+                    vec2f sourcePos,
+                    float preFrontRadius,
+                    float preFrontWindForceMagnitude,
+                    float mainFrontRadius,
+                    float mainFrontWindForceMagnitude,
+                    float zeroFrontRadius)
+                    : SourcePos(sourcePos)
+                    , PreFrontRadius(preFrontRadius)
+                    , PreFrontWindForceMagnitude(preFrontWindForceMagnitude)
+                    , MainFrontRadius(mainFrontRadius)
+                    , MainFrontWindForceMagnitude(mainFrontWindForceMagnitude)
+                    , ZeroFrontRadius(zeroFrontRadius)
+                {}
+            };
+
+            RadialWindArguments RadialWind;
+
             ArgumentsUnion(BlastArguments blast)
                 : Blast(blast)
             {}
@@ -373,6 +410,11 @@ private:
             ArgumentsUnion(SwirlArguments swirl)
                 : Swirl(swirl)
             {}
+
+            ArgumentsUnion(RadialWindArguments radialWind)
+                : RadialWind(radialWind)
+            {}
+
         } Arguments;
 
         Interaction(ArgumentsUnion::BlastArguments blast)
@@ -398,6 +440,12 @@ private:
             , Arguments(swirl)
         {
         }
+
+        Interaction(ArgumentsUnion::RadialWindArguments radialWind)
+            : Type(InteractionType::RadialWind)
+            , Arguments(radialWind)
+        {
+        }
     };
 
     std::list<Interaction> mQueuedInteractions;
@@ -409,6 +457,8 @@ private:
     void Pull(Interaction::ArgumentsUnion::PullArguments const & args);
 
     void SwirlAt(Interaction::ArgumentsUnion::SwirlArguments const & args);
+
+    void ApplyRadialWindFrom(Interaction::ArgumentsUnion::RadialWindArguments const & args);
 
 private:
 

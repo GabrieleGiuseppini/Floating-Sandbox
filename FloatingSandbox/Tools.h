@@ -16,6 +16,7 @@
 #include <wx/image.h>
 #include <wx/window.h>
 
+#include <array>
 #include <cassert>
 #include <chrono>
 #include <cmath>
@@ -54,7 +55,8 @@ enum class ToolType
     ScareFish,
     PhysicsProbe,
     BlastTool,
-    ElectricSparkTool
+    ElectricSparkTool,
+    WindMakerTool
 };
 
 struct InputState
@@ -87,7 +89,7 @@ public:
     ToolType GetToolType() const { return mToolType; }
 
     virtual void Initialize(InputState const & inputState) = 0;
-    virtual void Deinitialize(InputState const & inputState) = 0;
+    virtual void Deinitialize() = 0;
 
     virtual void UpdateSimulation(InputState const & inputState, float currentSimulationTime) = 0;
 
@@ -128,7 +130,7 @@ public:
 
     virtual ~OneShotTool() {}
 
-    virtual void Deinitialize(InputState const & /*inputState*/) override {}
+    virtual void Deinitialize() override {}
 
     virtual void UpdateSimulation(InputState const & /*inputState*/, float /*currentSimulationTime*/) override {}
 
@@ -267,7 +269,7 @@ public:
         ProcessInputStateChange(inputState);
     }
 
-    virtual void Deinitialize(InputState const & /*inputState*/) override
+    virtual void Deinitialize() override
     {
         if (!!mEngagedMovableObjectId)
         {
@@ -670,9 +672,7 @@ public:
         SetCurrentCursor();
     }
 
-    virtual void Deinitialize(InputState const & /*inputState*/) override
-    {
-    }
+    virtual void Deinitialize() override {}
 
     virtual void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
     {
@@ -824,9 +824,7 @@ public:
         SetBasisCursor(inputState);
     }
 
-    virtual void Deinitialize(InputState const & /*inputState*/) override
-    {
-    }
+    virtual void Deinitialize() override {}
 
     virtual void OnLeftMouseDown(InputState const & inputState) override
     {
@@ -891,7 +889,7 @@ public:
         SetCurrentCursor(inputState);
     }
 
-    virtual void Deinitialize(InputState const & /*inputState*/) override
+    virtual void Deinitialize() override
     {
         // Stop sound if we're playing
         mSoundController->StopSawSound();
@@ -1081,7 +1079,7 @@ public:
         SetCurrentCursor();
     }
 
-    virtual void Deinitialize(InputState const & /*inputState*/) override
+    virtual void Deinitialize() override
     {
         // Stop sound
         mSoundController->StopHeatBlasterSound();
@@ -1198,7 +1196,7 @@ public:
         SetCurrentCursor();
     }
 
-    virtual void Deinitialize(InputState const & /*inputState*/) override
+    virtual void Deinitialize() override
     {
         // Stop sound
         mSoundController->StopFireExtinguisherSound();
@@ -1300,7 +1298,7 @@ public:
         SetBasisCursor(inputState);
     }
 
-    virtual void Deinitialize(InputState const & /*inputState*/) override
+    virtual void Deinitialize() override
     {
         // Stop sound
         mSoundController->StopDrawSound();
@@ -1405,7 +1403,7 @@ public:
         SetBasisCursor(inputState);
     }
 
-    virtual void Deinitialize(InputState const & /*inputState*/) override
+    virtual void Deinitialize() override
     {
         // Stop sound
         mSoundController->StopSwirlSound();
@@ -1541,7 +1539,7 @@ public:
         SetCurrentCursor();
     }
 
-    virtual void Deinitialize(InputState const & /*inputState*/) override
+    virtual void Deinitialize() override
     {
         if (mCurrentAction.has_value())
         {
@@ -1672,7 +1670,7 @@ public:
         SetCurrentCursor();
     }
 
-    virtual void Deinitialize(InputState const & /*inputState*/) override
+    virtual void Deinitialize() override
     {
         // Stop sound
         mSoundController->StopFloodHoseSound();
@@ -1904,7 +1902,7 @@ public:
         SetCurrentCursor(inputState);
     }
 
-    virtual void Deinitialize(InputState const & /*inputState*/) override
+    virtual void Deinitialize() override
     {
         mSoundController->StopWaveMakerSound();
     }
@@ -1984,7 +1982,7 @@ public:
         }
     }
 
-    virtual void Deinitialize(InputState const & /*inputState*/) override
+    virtual void Deinitialize() override
     {
     }
 
@@ -2093,7 +2091,7 @@ public:
         SetCurrentCursor(inputState);
     }
 
-    virtual void Deinitialize(InputState const & /*inputState*/) override {}
+    virtual void Deinitialize() override {}
 
     virtual void UpdateSimulation(InputState const & /*inputState*/, float /*currentSimulationTime*/) override {}
 
@@ -2250,7 +2248,7 @@ public:
         UpdateCurrentCursor();
     }
 
-    virtual void Deinitialize(InputState const & /*inputState*/) override
+    virtual void Deinitialize() override
     {
         // Stop sound, just in case
         mSoundController->StopRepairStructureSound();
@@ -2432,7 +2430,7 @@ public:
         SetCurrentCursor();
     }
 
-    virtual void Deinitialize(InputState const & /*inputState*/) override
+    virtual void Deinitialize() override
     {
         if (mIsEngaged)
         {
@@ -2670,7 +2668,7 @@ public:
         SetCurrentCursor(inputState.IsShiftKeyDown);
     }
 
-    virtual void Deinitialize(InputState const & /*inputState*/) override {}
+    virtual void Deinitialize() override {}
 
     virtual void UpdateSimulation(InputState const & inputState, float currentSimulationTime) override
     {
@@ -2904,7 +2902,7 @@ public:
         SetCurrentCursor();
     }
 
-    virtual void Deinitialize(InputState const & /*inputState*/) override
+    virtual void Deinitialize() override
     {
         // Stop sound
         mSoundController->StopElectricSparkSound();
@@ -3041,4 +3039,247 @@ private:
     // The cursors
     wxImage const mUpCursorImage;
     wxImage const mDownCursorImage;
+};
+
+class WindMakerTool final : public Tool
+{
+public:
+
+    WindMakerTool(
+        IToolCursorManager & toolCursorManager,
+        std::shared_ptr<IGameController> gameController,
+        std::shared_ptr<SoundController> soundController,
+        ResourceLocator const & resourceLocator);
+
+public:
+
+    virtual void Initialize(InputState const & /*inputState*/) override
+    {
+        // Reset state
+        mEngagementData.reset();
+
+        SetCurrentCursor();
+    }
+
+    virtual void Deinitialize() override
+    {
+        if (mEngagementData.has_value())
+        {
+            // TODO: stop sounds
+        }
+    }
+
+    virtual void UpdateSimulation(InputState const & inputState, float currentSimulationTime) override
+    {
+        bool doUpdateCursor = false;
+
+        if (!mEngagementData.has_value())
+        {
+            if (inputState.IsLeftMouseDown)
+            {
+                //
+                // Start engagement
+                //
+
+                mEngagementData.emplace(currentSimulationTime);
+
+                if (inputState.IsShiftKeyDown)
+                {
+                    mSoundController->PlayWindGustSound();
+                }
+
+                doUpdateCursor = true;
+            }
+        }
+        else
+        {
+            //
+            // Update cursor
+            //
+
+            float const totalElapsed = mEngagementData->GetElapsedPreFrontSimulationTime(currentSimulationTime);
+            int cursorIndex = static_cast<int>(totalElapsed / 0.1f) % 2;
+            if (cursorIndex != mEngagementData->CurrentCursorIndex)
+            {
+                mEngagementData->CurrentCursorIndex = cursorIndex;
+                doUpdateCursor = true;
+            }
+
+            //
+            // Update state machine
+            //
+
+            if (((mEngagementData->CurrentState == EngagementData::StateType::PreFront) || (mEngagementData->CurrentState == EngagementData::StateType::MainFront))
+                && !inputState.IsLeftMouseDown)
+            {
+                // User left the mouse button...
+                // ...transition to zero state
+                mEngagementData->CurrentState = EngagementData::StateType::ZeroFront;
+                mEngagementData->ZeroFrontStartSimulationTime = currentSimulationTime;
+            }
+
+            float intensity = 0.0f;
+            switch (mEngagementData->CurrentState)
+            {
+                case EngagementData::StateType::PreFront:
+                {
+                    float const stateDuration = inputState.IsShiftKeyDown
+                        ? 0.050f // 50ms
+                        : 1.5f; // 1.5s
+
+                    auto const elapsed = mEngagementData->GetElapsedPreFrontSimulationTime(currentSimulationTime);
+
+                    if (elapsed >= stateDuration)
+                    {
+                        intensity = 1.0f;
+
+                        // Transition
+                        mEngagementData->CurrentState = EngagementData::StateType::MainFront;
+                        mEngagementData->MainFrontStartSimulationTime = currentSimulationTime;
+                    }
+                    else
+                    {
+                        intensity = elapsed / stateDuration;
+                    }
+
+                    break;
+                }
+
+                case EngagementData::StateType::MainFront:
+                {
+                    intensity = 1.0f;
+
+                    break;
+                }
+
+                case EngagementData::StateType::ZeroFront:
+                {
+                    float constexpr ZeroFrontDuration = 2.0f;
+
+                    float const elapsed = mEngagementData->GetElapsedZeroFrontSimulationTime(currentSimulationTime);
+
+                    // See if we're done
+                    if (elapsed >= ZeroFrontDuration)
+                    {
+                        intensity = 0.0f;
+
+                        // Done!
+                        mEngagementData.reset();
+                        doUpdateCursor = true;
+                    }
+                    else
+                    {
+                        intensity = 1.0f - elapsed / ZeroFrontDuration;
+                    }
+
+                    break;
+                }
+            }
+
+            // Invoke world
+            mGameController->ApplyRadialWindFrom(
+                inputState.MousePosition,
+                mEngagementData->GetElapsedPreFrontSimulationTime(currentSimulationTime),
+                intensity * (inputState.IsShiftKeyDown ? 2.0f : 1.0f),
+                mEngagementData->GetElapsedMainFrontSimulationTime(currentSimulationTime),
+                intensity * (inputState.IsShiftKeyDown ? 1.5f : 1.0f),
+                mEngagementData->GetElapsedZeroFrontSimulationTime(currentSimulationTime));
+
+            // Sound
+            // TODO
+        }
+
+        if (doUpdateCursor)
+        {
+            SetCurrentCursor();
+        }
+    }
+
+    virtual void OnMouseMove(InputState const & /*inputState*/) override {}
+
+    virtual void OnLeftMouseDown(InputState const & /*inputState*/) override
+    {
+        // Whatever our state, let's restart from scratch
+        mEngagementData.reset();
+    }
+
+    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}
+
+    virtual void OnShiftKeyDown(InputState const & /*inputState*/) override 
+    {
+        if (mEngagementData.has_value()
+            && mEngagementData->CurrentState != EngagementData::StateType::ZeroFront)
+        {
+            mSoundController->PlayWindGustSound();
+        }
+    }
+
+    virtual void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+
+private:
+
+    void SetCurrentCursor()
+    {
+        if (!mEngagementData.has_value()
+            || mEngagementData->CurrentState == EngagementData::StateType::ZeroFront)
+        {
+            mToolCursorManager.SetToolCursor(mUpCursorImage);
+        }
+        else
+        {
+            mToolCursorManager.SetToolCursor(mDownCursorImages[mEngagementData->CurrentCursorIndex]);
+        }
+    }
+
+    struct EngagementData
+    {
+        enum class StateType
+        {
+            PreFront,
+            MainFront,
+            ZeroFront
+        };
+
+        StateType CurrentState;
+
+        float PreFrontStartSimulationTime;
+        std::optional<float> MainFrontStartSimulationTime;
+        std::optional<float> ZeroFrontStartSimulationTime;
+
+        int CurrentCursorIndex;
+
+        EngagementData(float startSimulationTime)
+            : CurrentState(StateType::PreFront)
+            , PreFrontStartSimulationTime(startSimulationTime)
+            , MainFrontStartSimulationTime()
+            , ZeroFrontStartSimulationTime()
+            , CurrentCursorIndex(0)
+        { }
+
+        float GetElapsedPreFrontSimulationTime(float currentSimulationTime) const
+        {
+            return std::max(currentSimulationTime - PreFrontStartSimulationTime, 0.0f);
+        }
+
+        float GetElapsedMainFrontSimulationTime(float currentSimulationTime) const
+        {
+            return MainFrontStartSimulationTime.has_value()
+                ? currentSimulationTime - *MainFrontStartSimulationTime
+                : 0.0f;
+        }
+
+        float GetElapsedZeroFrontSimulationTime(float currentSimulationTime) const
+        {
+            return ZeroFrontStartSimulationTime.has_value()
+                ? currentSimulationTime - *ZeroFrontStartSimulationTime
+                : 0.0f;
+        }
+    };
+
+    // Our state
+    std::optional<EngagementData> mEngagementData;
+
+    // The cursors
+    wxImage const mUpCursorImage;
+    std::array<wxImage, 2> mDownCursorImages;
 };

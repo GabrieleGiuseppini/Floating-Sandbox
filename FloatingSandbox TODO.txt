@@ -38,6 +38,35 @@
 				+ Cleanup OceanSurface.h::DisplaceAt()
 					+ See assembly
 
+		= Wind tool
+			= Need non-zero wind receptivity for all materials
+				= Test first with hacking WindReceptivity in interaction
+					= Test 0.1
+				- Then, test normal wind with hacking WindReceptivity in materials, 0.1
+					- Goal: use a single WindReceptivity for both normal Wind and for WindTool
+					- Test look'n'feel of various ships under wind, and then under storm
+			- Visual feedback (shader)
+				- Move radii calcn to GameController
+				- Invoke notification from GameController
+				- Shader
+			- Application:
+				- Wind speed seems slow
+			= Tool:
+				+ Tool should be reset at ship reset/load
+					+ @ MainFrame::LoadShip(...)
+				+ Problem with shift boost/main front intensity is not 1
+				- Sounds
+					- Make new "sudden wind gust" sounds
+					= Gust at left down, iff shift
+					= Gust at shift down, iff engaged
+					- Background wind
+						- And stop at Deinitialize()
+			- Accelerator key
+			- Cursor:
+				- Shift modifier?
+			- Finalize:
+				- Check tool wind speed setting range in SettingsDialog
+
 		= Test Titanic sinking to floor and see what really happens
 			- 1: add count of spring breakages (temporarily) - as CustomProbe
 			- 2: backup exe
@@ -80,6 +109,8 @@
 				- Then, when # of instances is updated, volume of all instances is changed accordingly
 		
 		- Flames: see if can have softer rotation
+
+		- Re-make templates
 
 		- TimCan pack
 		- Raynair updates

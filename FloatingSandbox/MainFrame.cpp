@@ -409,6 +409,11 @@ MainFrame::MainFrame(
                 }
 
                 {
+                    auto menuItem = ADD_TOOL_MENUITEM(_("WindMaker"), wxS("\t9"), "wind_cursor_up", OnWindMakerMenuItemSelected);
+                    ADD_PLAIN_ACCELERATOR_KEY('9', menuItem);
+                }
+
+                {
                     auto menuItem = ADD_TOOL_MENUITEM(_("Adjust Terrain"), wxS("\tJ"), "terrain_adjust_cursor_up", OnAdjustTerrainMenuItemSelected);
                     ADD_PLAIN_ACCELERATOR_KEY('J', menuItem);
                 }
@@ -1761,6 +1766,12 @@ void MainFrame::OnWaveMakerMenuItemSelected(wxCommandEvent & /*event*/)
     mToolController->SetTool(ToolType::WaveMaker);
 }
 
+void MainFrame::OnWindMakerMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mToolController);
+    mToolController->SetTool(ToolType::WindMakerTool);
+}
+
 void MainFrame::OnAdjustTerrainMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mToolController);
@@ -2425,6 +2436,9 @@ void MainFrame::LoadShip(
     //
     // Reset
     //
+
+    assert(!!mToolController);
+    mToolController->Reset();
 
     assert(!!mSoundController);
     mSoundController->Reset();

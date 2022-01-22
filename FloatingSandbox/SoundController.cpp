@@ -1302,6 +1302,15 @@ void SoundController::PlayBlastToolFastSound()
     }
 }
 
+void SoundController::PlayWindGustSound()
+{
+    PlayOneShotMultipleChoiceSound(
+        SoundType::WindGust,
+        SoundGroupType::Effects,
+        50.0f,
+        true);
+}
+
 void SoundController::PlaySnapshotSound()
 {
     PlayOneShotMultipleChoiceSound(

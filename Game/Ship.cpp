@@ -866,6 +866,13 @@ void Ship::ApplyQueuedInteractionForces()
 
                 break;
             }
+
+            case Interaction::InteractionType::RadialWind:
+            {
+                ApplyRadialWindFrom(interaction.Arguments.RadialWind);
+
+                break;
+            }
         }
     }
 

@@ -166,6 +166,8 @@ public:
     void PlayBlastToolSlow2Sound();
     void PlayBlastToolFastSound();
 
+    void PlayWindGustSound();
+
     void PlaySnapshotSound();
 
     void PlayElectricalPanelOpenSound(bool isClose);

@@ -637,3 +637,27 @@ ElectricSparkTool::ElectricSparkTool(
     , mDownCursorImage(WxHelpers::LoadCursorImage("electric_spark_cursor_down", 13, 31, resourceLocator))
 {
 }
+
+////////////////////////////////////////////////////////////////////////
+// WindTool
+////////////////////////////////////////////////////////////////////////
+
+WindMakerTool::WindMakerTool(
+    IToolCursorManager & toolCursorManager,
+    std::shared_ptr<IGameController> gameController,
+    std::shared_ptr<SoundController> soundController,
+    ResourceLocator const & resourceLocator)
+    : Tool(
+        ToolType::WindMakerTool,
+        toolCursorManager,
+        std::move(gameController),
+        std::move(soundController))
+    , mEngagementData()
+    , mUpCursorImage(WxHelpers::LoadCursorImage("wind_cursor_up", 15, 15, resourceLocator))
+    , mDownCursorImages(
+        {
+            WxHelpers::LoadCursorImage("wind_cursor_down_1", 15, 15, resourceLocator),
+            WxHelpers::LoadCursorImage("wind_cursor_down_2", 15, 15, resourceLocator)
+        })
+{
+}

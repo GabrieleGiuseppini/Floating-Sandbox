@@ -430,6 +430,46 @@ bool World::ApplyElectricSparkAt(
     return atLeastOneShipApplied;
 }
 
+void World::ApplyRadialWindFrom(
+    vec2f const & sourcePos,
+    float preFrontSimulationTimeElapsed,
+    float preFrontIntensityMultiplier,
+    float mainFrontSimulationTimeElapsed,
+    float mainFrontIntensityMultiplier,
+    float zeroFrontSimulationTimeElapsed,
+    GameParameters const & gameParameters)
+{
+    // TODO
+    LogMessage("TODOTEST: Pre: DeltaT=", preFrontSimulationTimeElapsed, ", I=", preFrontIntensityMultiplier,
+        " Main: DeltaT=", mainFrontSimulationTimeElapsed, ", I=", mainFrontIntensityMultiplier,
+        " Zero: DeltaT=", zeroFrontSimulationTimeElapsed);
+
+    // Calculate wind speed, in m/s
+    float const effectiveWindSpeed =
+        gameParameters.WindMakerToolWindSpeed * 1000.0f / 3600.0f
+        * (gameParameters.IsUltraViolentMode ? 3.5f : 1.0f);
+
+    // Calculate distance traveled along fronts
+    float preFrontRadius = effectiveWindSpeed * preFrontSimulationTimeElapsed;
+    float mainFrontRadius = effectiveWindSpeed * mainFrontSimulationTimeElapsed;
+    float zeroFrontRadius = effectiveWindSpeed * zeroFrontSimulationTimeElapsed;
+
+    // Apply to ships
+    for (auto & ship : mAllShips)
+    {
+        ship->ApplyRadialWindFrom(
+            sourcePos,
+            preFrontRadius,
+            effectiveWindSpeed * preFrontIntensityMultiplier,
+            mainFrontRadius,
+            effectiveWindSpeed * mainFrontIntensityMultiplier,
+            zeroFrontRadius,
+            gameParameters);
+    }
+
+    // TODO: ocean
+}
+
 void World::DrawTo(
     vec2f const & targetPos,
     float strengthFraction,

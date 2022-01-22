@@ -145,14 +145,15 @@ private:
     SliderControl<float> * mBlastToolForceAdjustmentSlider;
 
     // Other Tools
-    SliderControl<float> * mScrubRotRadiusSlider;
     SliderControl<float> * mFloodRadiusSlider;
     SliderControl<float> * mFloodQuantitySlider;
+    SliderControl<float> * mHeatBlasterRadiusSlider;
+    SliderControl<float> * mHeatBlasterHeatFlowSlider;
     SliderControl<float> * mInjectPressureQuantitySlider;
     SliderControl<float> * mRepairRadiusSlider;
     SliderControl<float> * mRepairSpeedAdjustmentSlider;
-    SliderControl<float> * mHeatBlasterRadiusSlider;
-    SliderControl<float> * mHeatBlasterHeatFlowSlider;
+    SliderControl<float> * mScrubRotRadiusSlider;
+    SliderControl<float> * mWindMakerWindSpeedSlider;
 
     // Rendering
     wxRadioButton * mTextureOceanRenderModeRadioButton;

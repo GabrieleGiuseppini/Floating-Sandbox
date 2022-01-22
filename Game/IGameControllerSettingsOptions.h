@@ -257,8 +257,11 @@ struct IGameControllerSettingsOptions
     virtual float GetMinBlastToolForceAdjustment() const = 0;
     virtual float GetMaxBlastToolForceAdjustment() const = 0;
 
-    virtual float GetMinScrubRotRadius() const = 0;
-    virtual float GetMaxScrubRotRadius() const = 0;
+    virtual float GetMinScrubRotToolRadius() const = 0;
+    virtual float GetMaxScrubRotToolRadius() const = 0;
+
+    virtual float GetMinWindMakerToolWindSpeed() const = 0;
+    virtual float GetMaxWindMakerToolWindSpeed() const = 0;
 
     virtual float GetMinAirBubblesDensity() const = 0;
     virtual float GetMaxAirBubblesDensity() const = 0;
