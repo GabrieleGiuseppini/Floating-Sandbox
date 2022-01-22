@@ -3113,9 +3113,9 @@ public:
                 && !inputState.IsLeftMouseDown)
             {
                 // User left the mouse button...
-                // ...transition to zero state
-                mEngagementData->CurrentState = EngagementData::StateType::ZeroFront;
-                mEngagementData->ZeroFrontStartSimulationTime = currentSimulationTime;
+                // ...transition to tear down
+                mEngagementData->CurrentState = EngagementData::StateType::TearDown;
+                mEngagementData->TearDownStartSimulationTime = currentSimulationTime;
             }
 
             float intensity = 0.0f;
@@ -3152,14 +3152,14 @@ public:
                     break;
                 }
 
-                case EngagementData::StateType::ZeroFront:
+                case EngagementData::StateType::TearDown:
                 {
-                    float constexpr ZeroFrontDuration = 2.0f;
+                    float constexpr TearDownDuration = 2.0f;
 
-                    float const elapsed = mEngagementData->GetElapsedZeroFrontSimulationTime(currentSimulationTime);
+                    float const elapsed = mEngagementData->GetElapsedTearDownSimulationTime(currentSimulationTime);
 
                     // See if we're done
-                    if (elapsed >= ZeroFrontDuration)
+                    if (elapsed >= TearDownDuration)
                     {
                         intensity = 0.0f;
 
@@ -3169,7 +3169,7 @@ public:
                     }
                     else
                     {
-                        intensity = 1.0f - elapsed / ZeroFrontDuration;
+                        intensity = 1.0f - elapsed / TearDownDuration;
                     }
 
                     break;
@@ -3180,10 +3180,9 @@ public:
             mGameController->ApplyRadialWindFrom(
                 inputState.MousePosition,
                 mEngagementData->GetElapsedPreFrontSimulationTime(currentSimulationTime),
-                intensity * (inputState.IsShiftKeyDown ? 2.0f : 1.0f),
+                intensity * (inputState.IsShiftKeyDown ? 2.5f : 1.0f),
                 mEngagementData->GetElapsedMainFrontSimulationTime(currentSimulationTime),
-                intensity * (inputState.IsShiftKeyDown ? 1.5f : 1.0f),
-                mEngagementData->GetElapsedZeroFrontSimulationTime(currentSimulationTime));
+                intensity * (inputState.IsShiftKeyDown ? 1.5f : 1.0f));
 
             // Sound
             // TODO
@@ -3208,7 +3207,7 @@ public:
     virtual void OnShiftKeyDown(InputState const & /*inputState*/) override 
     {
         if (mEngagementData.has_value()
-            && mEngagementData->CurrentState != EngagementData::StateType::ZeroFront)
+            && mEngagementData->CurrentState != EngagementData::StateType::TearDown)
         {
             mSoundController->PlayWindGustShortSound();
         }
@@ -3221,7 +3220,7 @@ private:
     void SetCurrentCursor()
     {
         if (!mEngagementData.has_value()
-            || mEngagementData->CurrentState == EngagementData::StateType::ZeroFront)
+            || mEngagementData->CurrentState == EngagementData::StateType::TearDown)
         {
             mToolCursorManager.SetToolCursor(mUpCursorImage);
         }
@@ -3237,14 +3236,14 @@ private:
         {
             PreFront,
             MainFront,
-            ZeroFront
+            TearDown
         };
 
         StateType CurrentState;
 
         float PreFrontStartSimulationTime;
         std::optional<float> MainFrontStartSimulationTime;
-        std::optional<float> ZeroFrontStartSimulationTime;
+        std::optional<float> TearDownStartSimulationTime;
 
         int CurrentCursorIndex;
 
@@ -3252,7 +3251,7 @@ private:
             : CurrentState(StateType::PreFront)
             , PreFrontStartSimulationTime(startSimulationTime)
             , MainFrontStartSimulationTime()
-            , ZeroFrontStartSimulationTime()
+            , TearDownStartSimulationTime()
             , CurrentCursorIndex(0)
         { }
 
@@ -3268,10 +3267,10 @@ private:
                 : 0.0f;
         }
 
-        float GetElapsedZeroFrontSimulationTime(float currentSimulationTime) const
+        float GetElapsedTearDownSimulationTime(float currentSimulationTime) const
         {
-            return ZeroFrontStartSimulationTime.has_value()
-                ? currentSimulationTime - *ZeroFrontStartSimulationTime
+            return TearDownStartSimulationTime.has_value()
+                ? currentSimulationTime - *TearDownStartSimulationTime
                 : 0.0f;
         }
     };

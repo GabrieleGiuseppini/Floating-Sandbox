@@ -510,8 +510,7 @@ public:
 		float preFrontRadius,
 		float preFrontIntensityMultiplier,
 		float mainFrontRadius,
-		float mainFrontIntensityMultiplier,
-		float zeroFrontRadius)
+		float mainFrontIntensityMultiplier)
 	{
 		//
 		// Populate vertices
@@ -530,8 +529,7 @@ public:
 			preFrontRadius,
 			preFrontIntensityMultiplier,
 			mainFrontRadius,
-			mainFrontIntensityMultiplier,
-			zeroFrontRadius);
+			mainFrontIntensityMultiplier);
 
 		mWindSphereVertexBuffer.emplace_back(
 			vec2f(left, top),
@@ -539,8 +537,7 @@ public:
 			preFrontRadius,
 			preFrontIntensityMultiplier,
 			mainFrontRadius,
-			mainFrontIntensityMultiplier,
-			zeroFrontRadius);
+			mainFrontIntensityMultiplier);
 
 		mWindSphereVertexBuffer.emplace_back(
 			vec2f(right, bottom),
@@ -548,8 +545,7 @@ public:
 			preFrontRadius,
 			preFrontIntensityMultiplier,
 			mainFrontRadius,
-			mainFrontIntensityMultiplier,
-			zeroFrontRadius);
+			mainFrontIntensityMultiplier);
 
 		// Triangle 2
 
@@ -559,8 +555,7 @@ public:
 			preFrontRadius,
 			preFrontIntensityMultiplier,
 			mainFrontRadius,
-			mainFrontIntensityMultiplier,
-			zeroFrontRadius);
+			mainFrontIntensityMultiplier);
 
 		mWindSphereVertexBuffer.emplace_back(
 			vec2f(right, bottom),
@@ -568,8 +563,7 @@ public:
 			preFrontRadius,
 			preFrontIntensityMultiplier,
 			mainFrontRadius,
-			mainFrontIntensityMultiplier,
-			zeroFrontRadius);
+			mainFrontIntensityMultiplier);
 
 		mWindSphereVertexBuffer.emplace_back(
 			vec2f(right, top),
@@ -577,8 +571,7 @@ public:
 			preFrontRadius,
 			preFrontIntensityMultiplier,
 			mainFrontRadius,
-			mainFrontIntensityMultiplier,
-			zeroFrontRadius);
+			mainFrontIntensityMultiplier);
 	}
 
 	void UploadEnd();
@@ -770,7 +763,6 @@ private:
 		float preFrontIntensity;
 		float mainFrontRadius;
 		float mainFrontIntensity;
-		float zeroFrontRadius;
 
 		WindSphereVertex(
 			vec2f _vertexPosition,
@@ -778,15 +770,13 @@ private:
 			float _preFrontRadius,
 			float _preFrontIntensity,
 			float _mainFrontRadius,
-			float _mainFrontIntensity,
-			float _zeroFrontRadius)
+			float _mainFrontIntensity)
 			: vertexPosition(_vertexPosition)
 			, centerPosition(_centerPosition)
 			, preFrontRadius(_preFrontRadius)
 			, preFrontIntensity(_preFrontIntensity)
 			, mainFrontRadius(_mainFrontRadius)
 			, mainFrontIntensity(_mainFrontIntensity)
-			, zeroFrontRadius(_zeroFrontRadius)
 		{}
 	};
 

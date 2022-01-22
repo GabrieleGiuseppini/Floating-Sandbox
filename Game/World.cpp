@@ -436,7 +436,6 @@ void World::ApplyRadialWindFrom(
     float preFrontWindSpeed,
     float mainFrontRadius,
     float mainFrontWindSpeed,
-    float zeroFrontRadius,
     GameParameters const & gameParameters)
 {
     // Apply to ships
@@ -448,7 +447,6 @@ void World::ApplyRadialWindFrom(
             preFrontWindSpeed,
             mainFrontRadius,
             mainFrontWindSpeed,
-            zeroFrontRadius,
             gameParameters);
     }
 

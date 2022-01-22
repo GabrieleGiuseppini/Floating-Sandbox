@@ -707,7 +707,6 @@ void Ship::ApplyRadialWindFrom(
     float preFrontWindSpeed,
     float mainFrontRadius,
     float mainFrontWindSpeed,
-    float zeroFrontRadius,
     GameParameters const & gameParameters)
 {
     float const effectiveAirDensity = Formulae::CalculateAirDensity(
@@ -734,8 +733,7 @@ void Ship::ApplyRadialWindFrom(
             preFrontRadius,
             preFrontWindForceMagnitude,
             mainFrontRadius,
-            mainFrontWindForceMagnitude,
-            zeroFrontRadius));
+            mainFrontWindForceMagnitude));
 }
 
 void Ship::ApplyRadialWindFrom(Interaction::ArgumentsUnion::RadialWindArguments const & args)
@@ -750,29 +748,26 @@ void Ship::ApplyRadialWindFrom(Interaction::ArgumentsUnion::RadialWindArguments 
             float const radius = displacement.length();
             if (radius < args.PreFrontRadius) // Within sphere
             {
-                if (radius > args.ZeroFrontRadius) // Within non-zero sphere
+                // Calculate force magnitude
+                float windForceMagnitude;
+                if (radius < args.MainFrontRadius)
                 {
-                    // Calculate force magnitude
-                    float windForceMagnitude;
-                    if (radius < args.MainFrontRadius)
-                    {
-                        windForceMagnitude = args.MainFrontWindForceMagnitude;
-                    }
-                    else
-                    {
-                        windForceMagnitude = args.PreFrontWindForceMagnitude;
-                    }
-
-                    // Calculate wind receptivity of this material
-                    //
-                    // Note: here we cheetah
-                    // TODOTEST
-                    float const materialWindReceptivity = std::max(mPoints.GetMaterialWindReceptivity(pointIndex), 0.1f);
-
-                    mPoints.AddStaticForce(
-                        pointIndex,
-                        displacement.normalise(radius) * windForceMagnitude * materialWindReceptivity);
+                    windForceMagnitude = args.MainFrontWindForceMagnitude;
                 }
+                else
+                {
+                    windForceMagnitude = args.PreFrontWindForceMagnitude;
+                }
+
+                // Calculate wind receptivity of this material
+                //
+                // Note: here we cheetah
+                // TODOTEST
+                float const materialWindReceptivity = std::max(mPoints.GetMaterialWindReceptivity(pointIndex), 0.1f);
+
+                mPoints.AddStaticForce(
+                    pointIndex,
+                    displacement.normalise(radius) * windForceMagnitude * materialWindReceptivity);
             }
         }
     }

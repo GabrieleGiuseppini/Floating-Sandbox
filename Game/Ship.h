@@ -174,7 +174,6 @@ public:
         float preFrontWindSpeed,
         float mainFrontRadius,
         float mainFrontWindSpeed,
-        float zeroFrontRadius,
         GameParameters const & gameParameters);
 
     void DrawTo(
@@ -375,21 +374,18 @@ private:
                 float PreFrontWindForceMagnitude;
                 float MainFrontRadius;
                 float MainFrontWindForceMagnitude;
-                float ZeroFrontRadius;
 
                 RadialWindArguments(
                     vec2f sourcePos,
                     float preFrontRadius,
                     float preFrontWindForceMagnitude,
                     float mainFrontRadius,
-                    float mainFrontWindForceMagnitude,
-                    float zeroFrontRadius)
+                    float mainFrontWindForceMagnitude)
                     : SourcePos(sourcePos)
                     , PreFrontRadius(preFrontRadius)
                     , PreFrontWindForceMagnitude(preFrontWindForceMagnitude)
                     , MainFrontRadius(mainFrontRadius)
                     , MainFrontWindForceMagnitude(mainFrontWindForceMagnitude)
-                    , ZeroFrontRadius(zeroFrontRadius)
                 {}
             };
 

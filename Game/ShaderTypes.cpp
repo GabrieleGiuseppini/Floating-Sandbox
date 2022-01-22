@@ -588,8 +588,6 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::WindSphere1;
     else if (Utils::CaseInsensitiveEquals(str, "WindSphere2"))
         return VertexAttributeType::WindSphere2;
-    else if (Utils::CaseInsensitiveEquals(str, "WindSphere3"))
-        return VertexAttributeType::WindSphere3;
     else
         throw GameException("Unrecognized vertex attribute \"" + str + "\"");
 }

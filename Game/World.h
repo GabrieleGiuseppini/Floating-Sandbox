@@ -220,7 +220,6 @@ public:
         float preFrontWindSpeed,
         float mainFrontRadius,
         float mainFrontWindSpeed,
-        float zeroFrontRadius,
         GameParameters const & gameParameters);
 
     void DrawTo(

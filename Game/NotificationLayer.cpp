@@ -646,8 +646,7 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 			mWindSphereToRender->PreFrontRadius,
 			mWindSphereToRender->PreFrontIntensityMultiplier,
 			mWindSphereToRender->MainFrontRadius,
-			mWindSphereToRender->MainFrontIntensityMultiplier,
-			mWindSphereToRender->ZeroFrontRadius);
+			mWindSphereToRender->MainFrontIntensityMultiplier);
 
 		mWindSphereToRender.reset();
 	}

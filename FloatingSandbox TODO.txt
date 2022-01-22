@@ -45,24 +45,24 @@
 				- Then, test normal wind with hacking WindReceptivity in materials, 0.1
 					- Goal: use a single WindReceptivity for both normal Wind and for WindTool
 					- Test look'n'feel of various ships under wind, and then under storm
-			= Visual feedback (shader)
+			+ Visual feedback (shader)
 				+ Move radii calcn to GameController
 				+ Invoke notification from GameController
 				+ NotificationRenderContext
-				= Shader
-					- Find way to have softer border
+				+ Shader
 					+ Finalize blending
 			- Application:
 				- Wind speed seems slow
 				- Flames:
-					- Store temporary wind @ Ship (center & single velocity) & use it at flames
+					- Store temporary wind @ Ship (center & single velocity, or TODO: both?) & use it at flames
 						- Reset it at end of Ship::Update
 			= Tool:
 				+ Tool should be reset at ship reset/load
 					+ @ MainFrame::LoadShip(...)
 				+ Problem with shift boost/main front intensity is not 1
-				- State machine:
-					- Do we end zero front? After all intensity is going down anyway
+				+ State machine:
+					+ Remove zero front - after all intensity is going down anyway
+				- Change cursor
 				= Sounds
 					+ Make new "sudden wind gust" sounds
 					+ Gust at left down, iff shift

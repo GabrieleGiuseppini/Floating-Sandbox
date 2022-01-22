@@ -957,13 +957,11 @@ void GameController::ApplyRadialWindFrom(
     float preFrontSimulationTimeElapsed,
     float preFrontIntensityMultiplier,
     float mainFrontSimulationTimeElapsed,
-    float mainFrontIntensityMultiplier,
-    float zeroFrontSimulationTimeElapsed)
+    float mainFrontIntensityMultiplier)
 {
     // TODO
     LogMessage("TODOTEST: Pre: DeltaT=", preFrontSimulationTimeElapsed, ", I=", preFrontIntensityMultiplier,
-        " Main: DeltaT=", mainFrontSimulationTimeElapsed, ", I=", mainFrontIntensityMultiplier,
-        " Zero: DeltaT=", zeroFrontSimulationTimeElapsed);
+        " Main: DeltaT=", mainFrontSimulationTimeElapsed, ", I=", mainFrontIntensityMultiplier);
 
     vec2f const sourceWorldCoordinates = mRenderContext->ScreenToWorld(sourcePos);
 
@@ -975,7 +973,6 @@ void GameController::ApplyRadialWindFrom(
     // Calculate distance traveled along fronts
     float preFrontRadius = effectiveWindSpeed * preFrontSimulationTimeElapsed;
     float mainFrontRadius = effectiveWindSpeed * mainFrontSimulationTimeElapsed;
-    float zeroFrontRadius = effectiveWindSpeed * zeroFrontSimulationTimeElapsed;
 
     // Apply action
     assert(!!mWorld);
@@ -985,7 +982,6 @@ void GameController::ApplyRadialWindFrom(
         effectiveWindSpeed * preFrontIntensityMultiplier,
         mainFrontRadius,
         effectiveWindSpeed * mainFrontIntensityMultiplier,
-        zeroFrontRadius,
         mGameParameters);
 
     // Draw notification (one frame only)
@@ -994,8 +990,7 @@ void GameController::ApplyRadialWindFrom(
         preFrontRadius,
         preFrontIntensityMultiplier,
         mainFrontRadius,
-        mainFrontIntensityMultiplier,
-        zeroFrontRadius);
+        mainFrontIntensityMultiplier);
 }
 
 void GameController::DrawTo(

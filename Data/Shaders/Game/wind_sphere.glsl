@@ -6,7 +6,6 @@
 // Inputs
 in vec4 inWindSphere1;  // VertexPosition (world), CenterPosition (world)
 in vec4 inWindSphere2;  // PreFrontRadius (world), PreFrontIntensity, MainFrontRadius (world), MainFrontIntensity
-in float inWindSphere3; // ZeroFrontRadius (world)
 
 // Outputs
 out vec2 vertexPositionWorld;
@@ -15,7 +14,6 @@ out float preFrontRadiusWorld;
 out float preFrontIntensity;
 out float mainFrontRadiusWorld;
 out float mainFrontIntensity;
-out float zeroFrontRadiusWorld;
 
 // Parameters
 uniform mat4 paramOrthoMatrix;
@@ -28,7 +26,6 @@ void main()
     preFrontIntensity = inWindSphere2.y;
     mainFrontRadiusWorld = inWindSphere2.z;
     mainFrontIntensity = inWindSphere2.w;
-    zeroFrontRadiusWorld = inWindSphere3;
 
     gl_Position = paramOrthoMatrix * vec4(vertexPositionWorld, -1.0, 1.0);
 }
@@ -44,7 +41,6 @@ in float preFrontRadiusWorld;
 in float preFrontIntensity;
 in float mainFrontRadiusWorld;
 in float mainFrontIntensity;
-in float zeroFrontRadiusWorld;
 
 // Texture
 uniform sampler2D paramNoiseTexture2;
@@ -59,21 +55,21 @@ float GetNoise(vec2 uv) // -> (0.0, 1.0)
 
 void main()
 {
-    //
+//
     // 1. Sphere inclusion check
     //
-
+    
+    #define IntensityMultiplier .05
+    
     vec2 radiusArcWorld = vertexPositionWorld - centerPositionWorld;
     
     float pointRadiusWorld = length(radiusArcWorld);
 
     float isInSphere = 
-        (1.0 - step(preFrontRadiusWorld, pointRadiusWorld)) * preFrontIntensity * .5
+        (1.0 - step(preFrontRadiusWorld, pointRadiusWorld)) * preFrontIntensity * IntensityMultiplier
         * step(mainFrontRadiusWorld, pointRadiusWorld)
         +
-        (1.0 - step(mainFrontRadiusWorld, pointRadiusWorld)) * mainFrontIntensity * .5;
-        
-    isInSphere *= step(zeroFrontRadiusWorld, pointRadiusWorld);
+        (1.0 - step(mainFrontRadiusWorld, pointRadiusWorld)) * mainFrontIntensity * IntensityMultiplier;
             
     //
     // 2. Wave inclusion check
@@ -86,7 +82,7 @@ void main()
         length(radiusArcWorld), 
         atan(radiusArcWorld.y, radiusArcWorld.x) / (2.0 * 3.14159265358979323844) + 0.5);
         
-    float isInWave = GetNoise(vec2(ra.x * RadialFactor, ra.y) + vec2(-paramTime * .8, 0.));
+    float isInWave = GetNoise(vec2(ra.x * RadialFactor, ra.y) + vec2(-paramTime * .5, 0.));
     
     
     //
@@ -95,8 +91,6 @@ void main()
     
     float whiteDepth = isInSphere * isInWave;
         
-    // TODOTEST
-    //vec4 color = vec4(whiteDepth, whiteDepth, whiteDepth, whiteDepth);
     vec4 color = vec4(1., 1., 1., whiteDepth);
     
     ///////

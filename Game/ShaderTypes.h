@@ -248,8 +248,7 @@ enum class VertexAttributeType : GLuint
     PressureInjectionHalo2 = 1,
 
     WindSphere1 = 0,
-    WindSphere2 = 1,
-    WindSphere3 = 2
+    WindSphere2 = 1
 };
 
 VertexAttributeType StrToVertexAttributeType(std::string const & str);

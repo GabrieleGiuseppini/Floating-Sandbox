@@ -413,14 +413,12 @@ NotificationRenderContext::NotificationRenderContext(
         mWindSphereVBO = tmpGLuint;
 
         // Describe vertex attributes
-        static_assert(sizeof(WindSphereVertex) == (4 + 4 + 1) * sizeof(float));
+        static_assert(sizeof(WindSphereVertex) == (4 + 4) * sizeof(float));
         glBindBuffer(GL_ARRAY_BUFFER, *mWindSphereVBO);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::WindSphere1));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::WindSphere1), 4, GL_FLOAT, GL_FALSE, sizeof(WindSphereVertex), (void *)0);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::WindSphere2));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::WindSphere2), 4, GL_FLOAT, GL_FALSE, sizeof(WindSphereVertex), (void *)(4 * sizeof(float)));
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::WindSphere3));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::WindSphere3), 1, GL_FLOAT, GL_FALSE, sizeof(WindSphereVertex), (void *)((4 + 4) * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);

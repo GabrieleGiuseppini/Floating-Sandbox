@@ -113,16 +113,14 @@ public:
 		float preFrontRadius,
 		float preFrontIntensityMultiplier,
 		float mainFrontRadius,
-		float mainFrontIntensityMultiplier,
-		float zeroFrontRadius)
+		float mainFrontIntensityMultiplier)
 	{
 		mWindSphereToRender.emplace(
 			sourcePos,
 			preFrontRadius,
 			preFrontIntensityMultiplier,
 			mainFrontRadius,
-			mainFrontIntensityMultiplier,
-			zeroFrontRadius);
+			mainFrontIntensityMultiplier);
 	}
 
 	void Reset();
@@ -370,21 +368,18 @@ private:
 		float PreFrontIntensityMultiplier;
 		float MainFrontRadius;
 		float MainFrontIntensityMultiplier;
-		float ZeroFrontRadius;
 
 		WindSphere(
 			vec2f const & sourcePos,
 			float preFrontRadius,
 			float preFrontIntensityMultiplier,
 			float mainFrontRadius,
-			float mainFrontIntensityMultiplier,
-			float zeroFrontRadius)
+			float mainFrontIntensityMultiplier)
 			: SourcePos(sourcePos)
 			, PreFrontRadius(preFrontRadius)
 			, PreFrontIntensityMultiplier(preFrontIntensityMultiplier)
 			, MainFrontRadius(mainFrontRadius)
 			, MainFrontIntensityMultiplier(mainFrontIntensityMultiplier)
-			, ZeroFrontRadius(zeroFrontRadius)
 		{}
 	};
 
