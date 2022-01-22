@@ -2288,17 +2288,24 @@ void MainFrame::FreezeGame()
     // Freeze game controller
     //
 
-    mGameController->Freeze();
+    if (!!mGameController)
+    {
+        mGameController->Freeze();
+    }
 
     //
     // Stop sounds
     //
 
-    assert(!!mSoundController);
-    mSoundController->Reset();
+    if (!!mSoundController)
+    {
+        mSoundController->Reset();
+    }
 
-    assert(!!mMusicController);
-    mMusicController->Reset();
+    if (!!mMusicController)
+    {
+        mMusicController->Reset();
+    }
 }
 
 void MainFrame::ThawGame()
@@ -2309,7 +2316,10 @@ void MainFrame::ThawGame()
     // Thaw game controller
     //
 
-    mGameController->Thaw();
+    if (!!mGameController)
+    {
+        mGameController->Thaw();
+    }
 
     //
     // Restart timers

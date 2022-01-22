@@ -107,6 +107,24 @@ public:
 			flowMultiplier);
 	}
 
+	// One frame only; after RenderUpload() it's gone
+	inline void SetWindSphere(
+		vec2f const & sourcePos,
+		float preFrontRadius,
+		float preFrontIntensityMultiplier,
+		float mainFrontRadius,
+		float mainFrontIntensityMultiplier,
+		float zeroFrontRadius)
+	{
+		mWindSphereToRender.emplace(
+			sourcePos,
+			preFrontRadius,
+			preFrontIntensityMultiplier,
+			mainFrontRadius,
+			mainFrontIntensityMultiplier,
+			zeroFrontRadius);
+	}
+
 	void Reset();
 
     void Update(float now);
@@ -344,4 +362,33 @@ private:
 	// When set, will be uploaded to display the pressure injection
 	// - and then reset (one-time use, it's a special case as it's really UI)
 	std::optional<PressureInjectionHalo> mPressureInjectionHaloToRender;
+
+	struct WindSphere
+	{
+		vec2f const SourcePos;
+		float PreFrontRadius;
+		float PreFrontIntensityMultiplier;
+		float MainFrontRadius;
+		float MainFrontIntensityMultiplier;
+		float ZeroFrontRadius;
+
+		WindSphere(
+			vec2f const & sourcePos,
+			float preFrontRadius,
+			float preFrontIntensityMultiplier,
+			float mainFrontRadius,
+			float mainFrontIntensityMultiplier,
+			float zeroFrontRadius)
+			: SourcePos(sourcePos)
+			, PreFrontRadius(preFrontRadius)
+			, PreFrontIntensityMultiplier(preFrontIntensityMultiplier)
+			, MainFrontRadius(mainFrontRadius)
+			, MainFrontIntensityMultiplier(mainFrontIntensityMultiplier)
+			, ZeroFrontRadius(zeroFrontRadius)
+		{}
+	};
+
+	// When set, will be uploaded to display the wind sphere
+	// - and then reset (one-time use, it's a special case as it's really UI)
+	std::optional<WindSphere> mWindSphereToRender;
 };

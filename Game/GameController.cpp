@@ -954,24 +954,48 @@ bool GameController::ApplyElectricSparkAt(
 
 void GameController::ApplyRadialWindFrom(
     DisplayLogicalCoordinates const & sourcePos,
-    float preFrontSimulationTime,
+    float preFrontSimulationTimeElapsed,
     float preFrontIntensityMultiplier,
-    float mainFrontSimulationTime,
+    float mainFrontSimulationTimeElapsed,
     float mainFrontIntensityMultiplier,
-    float zeroFrontSimulationTime)
+    float zeroFrontSimulationTimeElapsed)
 {
-    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(sourcePos);
+    // TODO
+    LogMessage("TODOTEST: Pre: DeltaT=", preFrontSimulationTimeElapsed, ", I=", preFrontIntensityMultiplier,
+        " Main: DeltaT=", mainFrontSimulationTimeElapsed, ", I=", mainFrontIntensityMultiplier,
+        " Zero: DeltaT=", zeroFrontSimulationTimeElapsed);
+
+    vec2f const sourceWorldCoordinates = mRenderContext->ScreenToWorld(sourcePos);
+
+    // Calculate wind speed, in m/s
+    float const effectiveWindSpeed =
+        mGameParameters.WindMakerToolWindSpeed * 1000.0f / 3600.0f
+        * (mGameParameters.IsUltraViolentMode ? 3.5f : 1.0f);
+
+    // Calculate distance traveled along fronts
+    float preFrontRadius = effectiveWindSpeed * preFrontSimulationTimeElapsed;
+    float mainFrontRadius = effectiveWindSpeed * mainFrontSimulationTimeElapsed;
+    float zeroFrontRadius = effectiveWindSpeed * zeroFrontSimulationTimeElapsed;
 
     // Apply action
     assert(!!mWorld);
-    return mWorld->ApplyRadialWindFrom(
-        worldCoordinates,
-        preFrontSimulationTime,
-        preFrontIntensityMultiplier,
-        mainFrontSimulationTime,
-        mainFrontIntensityMultiplier,
-        zeroFrontSimulationTime,
+    mWorld->ApplyRadialWindFrom(
+        sourceWorldCoordinates,
+        preFrontRadius,
+        effectiveWindSpeed * preFrontIntensityMultiplier,
+        mainFrontRadius,
+        effectiveWindSpeed * mainFrontIntensityMultiplier,
+        zeroFrontRadius,
         mGameParameters);
+
+    // Draw notification (one frame only)
+    mNotificationLayer.SetWindSphere(
+        sourceWorldCoordinates,
+        preFrontRadius,
+        preFrontIntensityMultiplier,
+        mainFrontRadius,
+        mainFrontIntensityMultiplier,
+        zeroFrontRadius);
 }
 
 void GameController::DrawTo(

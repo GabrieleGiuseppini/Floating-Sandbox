@@ -638,6 +638,20 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 
 		mPressureInjectionHaloToRender.reset();
 	}
+
+	if (mWindSphereToRender.has_value())
+	{
+		notificationRenderContext.UploadWindSphere(
+			mWindSphereToRender->SourcePos,
+			mWindSphereToRender->PreFrontRadius,
+			mWindSphereToRender->PreFrontIntensityMultiplier,
+			mWindSphereToRender->MainFrontRadius,
+			mWindSphereToRender->MainFrontIntensityMultiplier,
+			mWindSphereToRender->ZeroFrontRadius);
+
+		mWindSphereToRender.reset();
+	}
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

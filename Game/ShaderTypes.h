@@ -82,6 +82,7 @@ enum class ProgramType
     Stars,
     Text,
     TextureNotifications,
+    WindSphere,
     WorldBorder,
 
     _Last = WorldBorder
@@ -244,7 +245,11 @@ enum class VertexAttributeType : GLuint
     BlastToolHalo2 = 1,
 
     PressureInjectionHalo1 = 0,
-    PressureInjectionHalo2 = 1
+    PressureInjectionHalo2 = 1,
+
+    WindSphere1 = 0,
+    WindSphere2 = 1,
+    WindSphere3 = 2
 };
 
 VertexAttributeType StrToVertexAttributeType(std::string const & str);

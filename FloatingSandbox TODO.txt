@@ -45,16 +45,11 @@
 				- Then, test normal wind with hacking WindReceptivity in materials, 0.1
 					- Goal: use a single WindReceptivity for both normal Wind and for WindTool
 					- Test look'n'feel of various ships under wind, and then under storm
-			- Visual feedback (shader)
-				- Move radii calcn to GameController
-				- Invoke notification from GameController
+			= Visual feedback (shader)
+				+ Move radii calcn to GameController
+				+ Invoke notification from GameController
+				+ NotificationRenderContext
 				- Shader
-					- VertexAttribs:
-						- Vertex world pos
-						- Center world pos
-						- Radius
-						- Intensity
-						- TODO: three radii (Pre-, Main-, and Zero- fronts)
 			- Application:
 				- Wind speed seems slow
 			= Tool:

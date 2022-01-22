@@ -432,37 +432,22 @@ bool World::ApplyElectricSparkAt(
 
 void World::ApplyRadialWindFrom(
     vec2f const & sourcePos,
-    float preFrontSimulationTimeElapsed,
-    float preFrontIntensityMultiplier,
-    float mainFrontSimulationTimeElapsed,
-    float mainFrontIntensityMultiplier,
-    float zeroFrontSimulationTimeElapsed,
+    float preFrontRadius,
+    float preFrontWindSpeed,
+    float mainFrontRadius,
+    float mainFrontWindSpeed,
+    float zeroFrontRadius,
     GameParameters const & gameParameters)
 {
-    // TODO
-    LogMessage("TODOTEST: Pre: DeltaT=", preFrontSimulationTimeElapsed, ", I=", preFrontIntensityMultiplier,
-        " Main: DeltaT=", mainFrontSimulationTimeElapsed, ", I=", mainFrontIntensityMultiplier,
-        " Zero: DeltaT=", zeroFrontSimulationTimeElapsed);
-
-    // Calculate wind speed, in m/s
-    float const effectiveWindSpeed =
-        gameParameters.WindMakerToolWindSpeed * 1000.0f / 3600.0f
-        * (gameParameters.IsUltraViolentMode ? 3.5f : 1.0f);
-
-    // Calculate distance traveled along fronts
-    float preFrontRadius = effectiveWindSpeed * preFrontSimulationTimeElapsed;
-    float mainFrontRadius = effectiveWindSpeed * mainFrontSimulationTimeElapsed;
-    float zeroFrontRadius = effectiveWindSpeed * zeroFrontSimulationTimeElapsed;
-
     // Apply to ships
     for (auto & ship : mAllShips)
     {
         ship->ApplyRadialWindFrom(
             sourcePos,
             preFrontRadius,
-            effectiveWindSpeed * preFrontIntensityMultiplier,
+            preFrontWindSpeed,
             mainFrontRadius,
-            effectiveWindSpeed * mainFrontIntensityMultiplier,
+            mainFrontWindSpeed,
             zeroFrontRadius,
             gameParameters);
     }

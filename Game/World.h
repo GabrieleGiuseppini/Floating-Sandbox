@@ -216,11 +216,11 @@ public:
 
     void ApplyRadialWindFrom(
         vec2f const & sourcePos,
-        float preFrontSimulationTimeElapsed,
-        float preFrontIntensityMultiplier,
-        float mainFrontSimulationTimeElapsed,
-        float mainFrontIntensityMultiplier,
-        float zeroFrontSimulationTimeElapsed,
+        float preFrontRadius,
+        float preFrontWindSpeed,
+        float mainFrontRadius,
+        float mainFrontWindSpeed,
+        float zeroFrontRadius,
         GameParameters const & gameParameters);
 
     void DrawTo(

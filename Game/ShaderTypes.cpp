@@ -143,6 +143,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::Text;
     else if (lstr == "texture_notifications")
         return ProgramType::TextureNotifications;
+    else if (lstr == "wind_sphere")
+        return ProgramType::WindSphere;
     else if (lstr == "world_border")
         return ProgramType::WorldBorder;
     else
@@ -281,6 +283,8 @@ std::string ProgramTypeToStr(ProgramType program)
         return "Text";
     case ProgramType::TextureNotifications:
         return "TextureNotifications";
+    case ProgramType::WindSphere:
+        return "WindSphere";
     case ProgramType::WorldBorder:
         return "WorldBorder";
     }
@@ -580,6 +584,12 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::PressureInjectionHalo1;
     else if (Utils::CaseInsensitiveEquals(str, "PressureInjectionHalo2"))
         return VertexAttributeType::PressureInjectionHalo2;
+    else if (Utils::CaseInsensitiveEquals(str, "WindSphere1"))
+        return VertexAttributeType::WindSphere1;
+    else if (Utils::CaseInsensitiveEquals(str, "WindSphere2"))
+        return VertexAttributeType::WindSphere2;
+    else if (Utils::CaseInsensitiveEquals(str, "WindSphere3"))
+        return VertexAttributeType::WindSphere3;
     else
         throw GameException("Unrecognized vertex attribute \"" + str + "\"");
 }
