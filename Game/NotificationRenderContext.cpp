@@ -424,6 +424,12 @@ NotificationRenderContext::NotificationRenderContext(
         CheckOpenGLError();
 
         glBindVertexArray(0);
+
+        // Set noise in shader
+        mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture2>();
+        glBindTexture(GL_TEXTURE_2D, globalRenderContext.GetNoiseTextureOpenGLHandle(1));
+        mShaderManager.ActivateProgram<ProgramType::WindSphere>();
+        mShaderManager.SetTextureParameters<ProgramType::WindSphere>();
     }
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -1002,17 +1008,19 @@ void NotificationRenderContext::RenderDrawWindSphere()
 
         mShaderManager.ActivateProgram<ProgramType::WindSphere>();
 
-        // Setup blending
-        glBlendFunc(GL_SRC_COLOR, GL_ONE);
-        glBlendEquation(GL_FUNC_ADD);
+        // TODOTEST
+        ////// Setup blending
+        ////glBlendFunc(GL_SRC_COLOR, GL_ONE);
+        ////glBlendEquation(GL_FUNC_ADD);
 
         // Draw
         assert((mWindSphereVertexBuffer.size() % 6) == 0);
         glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mWindSphereVertexBuffer.size()));
 
-        // Reset blending
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glBlendEquation(GL_FUNC_ADD);
+        // TODOTEST
+        ////// Reset blending
+        ////glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        ////glBlendEquation(GL_FUNC_ADD);
 
         glBindVertexArray(0);
     }

@@ -50,6 +50,7 @@
 				+ Invoke notification from GameController
 				+ NotificationRenderContext
 				- Shader
+					- Finalize blending
 			- Application:
 				- Wind speed seems slow
 			= Tool:

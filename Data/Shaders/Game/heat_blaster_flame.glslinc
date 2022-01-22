@@ -51,7 +51,7 @@ float GetFlameRadius(float direction) // direction: +1 => outward, -1 => inward
     // (r, a) (r=[0.0, 1.0], a=[0.0, 1.0 CCW from W])
     vec2 uv = vec2(
         length(flameSpacePosition) / sqrt(0.5), 
-        (atan(flameSpacePosition.y, flameSpacePosition.x) / (2.0 * PI) + 0.5));
+        atan(flameSpacePosition.y, flameSpacePosition.x) / (2.0 * PI) + 0.5);
     
     // Scale radius to better fit in quad
     uv.x *= 1.2;
