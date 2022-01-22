@@ -79,7 +79,7 @@ void main()
     // 2. Wave inclusion check
     //
     
-    #define RadialFactor 1. / 25.
+    #define RadialFactor 1. / 200.
     
     // (r, a) (r=[0.0, +INF], a=[0.0, 1.0 CCW from W])
     vec2 ra = vec2(

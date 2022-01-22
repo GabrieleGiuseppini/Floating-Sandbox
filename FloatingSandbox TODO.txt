@@ -49,14 +49,20 @@
 				+ Move radii calcn to GameController
 				+ Invoke notification from GameController
 				+ NotificationRenderContext
-				- Shader
-					- Finalize blending
+				= Shader
+					- Find way to have softer border
+					+ Finalize blending
 			- Application:
 				- Wind speed seems slow
+				- Flames:
+					- Store temporary wind @ Ship (center & single velocity) & use it at flames
+						- Reset it at end of Ship::Update
 			= Tool:
 				+ Tool should be reset at ship reset/load
 					+ @ MainFrame::LoadShip(...)
 				+ Problem with shift boost/main front intensity is not 1
+				- State machine:
+					- Do we end zero front? After all intensity is going down anyway
 				= Sounds
 					+ Make new "sudden wind gust" sounds
 					+ Gust at left down, iff shift

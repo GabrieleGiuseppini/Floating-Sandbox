@@ -1008,19 +1008,9 @@ void NotificationRenderContext::RenderDrawWindSphere()
 
         mShaderManager.ActivateProgram<ProgramType::WindSphere>();
 
-        // TODOTEST
-        ////// Setup blending
-        ////glBlendFunc(GL_SRC_COLOR, GL_ONE);
-        ////glBlendEquation(GL_FUNC_ADD);
-
         // Draw
         assert((mWindSphereVertexBuffer.size() % 6) == 0);
         glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mWindSphereVertexBuffer.size()));
-
-        // TODOTEST
-        ////// Reset blending
-        ////glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        ////glBlendEquation(GL_FUNC_ADD);
 
         glBindVertexArray(0);
     }
