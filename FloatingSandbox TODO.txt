@@ -39,12 +39,21 @@
 					+ See assembly
 
 		= Wind tool
-			= Need non-zero wind receptivity for all materials
-				= Test first with hacking WindReceptivity in interaction
-					= Test 0.1
-				- Then, test normal wind with hacking WindReceptivity in materials, 0.1
-					- Goal: use a single WindReceptivity for both normal Wind and for WindTool
-					- Test look'n'feel of various ships under wind, and then under storm
+			+ Need non-zero wind receptivity for all materials
+				+ Test first with hacking WindReceptivity in interaction
+					+ Test 0.1
+				+ Then, test normal wind with hacking WindReceptivity in materials, 0.1
+					! Goal: use a single WindReceptivity for both normal Wind and for WindTool
+					+ Test look'n'feel of various ships under wind, and then under storm
+						+ Storm
+						+ Fallback ship
+						+ Blimps move a lot with default wind
+					+ If can go ahead with this:
+						+ Remove cheating at ShipInteractions
+						+ Remove cheating at Material
+						+ Update json
+							+ Check cardboard and paper
+						+ Mention in changes.txt
 			+ Visual feedback (shader)
 				+ Move radii calcn to GameController
 				+ Invoke notification from GameController
@@ -64,21 +73,22 @@
 					- Use pre-front, its radius and intensity
 			- Flames:
 				- Flame shader's FlameWindRotationAngle parameter must become vertex attribute
+					- See if can unify particle velocity with this new wind (and with global wind)
 					- TODO: how uploaded?
 				- See if ShipRenderContext still needs wind afterwards
 				- OLD:
 				- Store temporary wind @ Ship (center & single velocity, or TODO: both?) & use it at flames
 					- Reset it at end of Ship::Update
-			= Tool:
+			+ Tool:
 				+ Tool should be reset at ship reset/load
 					+ @ MainFrame::LoadShip(...)
 				+ Problem with shift boost/main front intensity is not 1
 				+ State machine:
 					+ Remove zero front - after all intensity is going down anyway
 				+ Lock position at TearDown
-				= Change cursor
+				+ Change cursor
 					+ Molen
-					- Shift modifier?
+					+ Shift modifier
 			- Accelerator key
 			- Finalize:
 				- Check tool wind speed setting range in SettingsDialog

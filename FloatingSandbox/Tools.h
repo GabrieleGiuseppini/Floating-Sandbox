@@ -3098,7 +3098,7 @@ public:
             //
 
             float const totalElapsed = mEngagementData->GetElapsedPreFrontSimulationTime(currentSimulationTime);
-            int cursorIndex = static_cast<int>(totalElapsed / 0.05f) % 3;
+            int cursorIndex = static_cast<int>(totalElapsed / (inputState.IsShiftKeyDown ? 0.025f : 0.05f)) % 3;
             if (cursorIndex != mEngagementData->CurrentCursorIndex)
             {
                 mEngagementData->CurrentCursorIndex = cursorIndex;
