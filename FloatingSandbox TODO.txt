@@ -74,7 +74,6 @@
 			- Flames:
 				- Flame shader's FlameWindRotationAngle parameter must become vertex attribute
 					- See if can unify particle velocity with this new wind (and with global wind)
-					- TODO: how uploaded?
 				- See if ShipRenderContext still needs wind afterwards
 				- OLD:
 				- Store temporary wind @ Ship (center & single velocity, or TODO: both?) & use it at flames
