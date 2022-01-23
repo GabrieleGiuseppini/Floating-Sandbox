@@ -73,11 +73,19 @@
 					+ Use pre-front, its radius and intensity
 			- Flames:
 				- Flame shader's FlameWindRotationAngle parameter must become vertex attribute
-					- See if can unify particle velocity with this new wind (and with global wind)
+					- New step at Points::UpdateCombustionHighFrequency, populating new CombustionState member: rotation angle (or whatever it is we do now)
+						- Step 1: use global wind like now
+							- Compare with previous
+								- See if need slow convergence
+						- Step 2: global wind wrt flame vector
+						- Step 3: add interactive wind
+							- Wind interaction: store temporary wind @ Ship (pre-front radius & main velocity, or TODO: both?)
+								- Reset it at end of Ship::Update
+					- Uploaded to ShipRenderContext when we upload flames at Points
+					- Taken by shader in VertexAttribute instead of uniform
 				- See if ShipRenderContext still needs wind afterwards
-				- OLD:
-				- Store temporary wind @ Ship (center & single velocity, or TODO: both?) & use it at flames
-					- Reset it at end of Ship::Update
+					- Note: WorldRenderContext would still need it
+				- Investigate turning off combustion with high wind
 			+ Tool:
 				+ Tool should be reset at ship reset/load
 					+ @ MainFrame::LoadShip(...)
