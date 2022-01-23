@@ -67,8 +67,8 @@
 				+ Background wind
 					+ New sound member of SoundController: WindMakerWindSound
 					+ And stop at Deinitialize()
-			- World:
-				- Velocity used for radius should also depend on intensity
+			= World:
+				+ Velocity used for radius should also depend on intensity
 				- Ocean surface
 					- Use pre-front, its radius and intensity
 			- Flames:

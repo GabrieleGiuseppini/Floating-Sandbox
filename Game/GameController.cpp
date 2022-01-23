@@ -962,22 +962,24 @@ void GameController::ApplyRadialWindFrom(
     vec2f const sourceWorldCoordinates = mRenderContext->ScreenToWorld(sourcePos);
 
     // Calculate wind speed, in m/s
-    float const effectiveWindSpeed =
+    float const effectiveBaseWindSpeed =
         mGameParameters.WindMakerToolWindSpeed * 1000.0f / 3600.0f
         * (mGameParameters.IsUltraViolentMode ? 3.5f : 1.0f);
+    float const preFrontWindSpeed = effectiveBaseWindSpeed * preFrontIntensityMultiplier;
+    float const mainFrontWindSpeed = effectiveBaseWindSpeed * mainFrontIntensityMultiplier;
 
     // Calculate distance traveled along fronts
-    float preFrontRadius = effectiveWindSpeed * preFrontSimulationTimeElapsed;
-    float mainFrontRadius = effectiveWindSpeed * mainFrontSimulationTimeElapsed;
+    float preFrontRadius = preFrontWindSpeed * preFrontSimulationTimeElapsed;
+    float mainFrontRadius = mainFrontWindSpeed * mainFrontSimulationTimeElapsed;
 
     // Apply action
     assert(!!mWorld);
     mWorld->ApplyRadialWindFrom(
         sourceWorldCoordinates,
         preFrontRadius,
-        effectiveWindSpeed * preFrontIntensityMultiplier,
+        preFrontWindSpeed,
         mainFrontRadius,
-        effectiveWindSpeed * mainFrontIntensityMultiplier,
+        mainFrontWindSpeed,
         mGameParameters);
 
     // Draw notification (one frame only)
