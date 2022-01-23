@@ -3098,7 +3098,7 @@ public:
             //
 
             float const totalElapsed = mEngagementData->GetElapsedPreFrontSimulationTime(currentSimulationTime);
-            int cursorIndex = static_cast<int>(totalElapsed / 0.1f) % 2;
+            int cursorIndex = static_cast<int>(totalElapsed / 0.05f) % 3;
             if (cursorIndex != mEngagementData->CurrentCursorIndex)
             {
                 mEngagementData->CurrentCursorIndex = cursorIndex;
@@ -3114,15 +3114,18 @@ public:
             {
                 // User left the mouse button...
                 // ...transition to tear down
-                mEngagementData->CurrentState = EngagementData::StateType::TearDown;
-                mEngagementData->TearDownStartSimulationTime = currentSimulationTime;
+                mEngagementData->TransitionToTearDown(currentSimulationTime, inputState.MousePosition);
             }
 
+            DisplayLogicalCoordinates centerPosition(0, 0);
             float intensity = 0.0f;
+
             switch (mEngagementData->CurrentState)
             {
                 case EngagementData::StateType::PreFront:
                 {
+                    centerPosition = inputState.MousePosition;
+
                     float const stateDuration = inputState.IsShiftKeyDown
                         ? 0.050f // 50ms
                         : 1.5f; // 1.5s
@@ -3147,6 +3150,8 @@ public:
 
                 case EngagementData::StateType::MainFront:
                 {
+                    centerPosition = inputState.MousePosition;
+
                     intensity = 1.0f;
 
                     break;
@@ -3154,6 +3159,9 @@ public:
 
                 case EngagementData::StateType::TearDown:
                 {
+                    assert(mEngagementData->TearDownCenterPosition.has_value());
+                    centerPosition = *(mEngagementData->TearDownCenterPosition);
+
                     float constexpr TearDownDuration = 2.0f;
 
                     float const elapsed = mEngagementData->GetElapsedTearDownSimulationTime(currentSimulationTime);
@@ -3182,7 +3190,7 @@ public:
 
             // Invoke world
             mGameController->ApplyRadialWindFrom(
-                inputState.MousePosition,
+                centerPosition,
                 mEngagementData->GetElapsedPreFrontSimulationTime(currentSimulationTime),
                 preFrontIntensityMultiplier,
                 mEngagementData->GetElapsedMainFrontSimulationTime(currentSimulationTime),
@@ -3249,6 +3257,8 @@ private:
         std::optional<float> MainFrontStartSimulationTime;
         std::optional<float> TearDownStartSimulationTime;
 
+        std::optional<DisplayLogicalCoordinates> TearDownCenterPosition;
+
         int CurrentCursorIndex;
 
         EngagementData(float startSimulationTime)
@@ -3256,8 +3266,18 @@ private:
             , PreFrontStartSimulationTime(startSimulationTime)
             , MainFrontStartSimulationTime()
             , TearDownStartSimulationTime()
+            , TearDownCenterPosition()
             , CurrentCursorIndex(0)
         { }
+
+        void TransitionToTearDown(
+            float startSimulationTime,
+            DisplayLogicalCoordinates const & position)
+        {
+            CurrentState = StateType::TearDown;
+            TearDownStartSimulationTime = startSimulationTime;
+            TearDownCenterPosition = position;
+        }
 
         float GetElapsedPreFrontSimulationTime(float currentSimulationTime) const
         {
@@ -3284,5 +3304,5 @@ private:
 
     // The cursors
     wxImage const mUpCursorImage;
-    std::array<wxImage, 2> mDownCursorImages;
+    std::array<wxImage, 3> mDownCursorImages;
 };

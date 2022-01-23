@@ -657,7 +657,8 @@ WindMakerTool::WindMakerTool(
     , mDownCursorImages(
         {
             WxHelpers::LoadCursorImage("wind_cursor_down_1", 15, 15, resourceLocator),
-            WxHelpers::LoadCursorImage("wind_cursor_down_2", 15, 15, resourceLocator)
+            WxHelpers::LoadCursorImage("wind_cursor_down_2", 15, 15, resourceLocator),
+            WxHelpers::LoadCursorImage("wind_cursor_down_3", 15, 15, resourceLocator)
         })
 {
 }

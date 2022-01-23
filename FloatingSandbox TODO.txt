@@ -75,9 +75,9 @@
 				+ Problem with shift boost/main front intensity is not 1
 				+ State machine:
 					+ Remove zero front - after all intensity is going down anyway
-				- Lock position at TearDown?
-				- Change cursor
-					- Molen
+				+ Lock position at TearDown
+				= Change cursor
+					+ Molen
 					- Shift modifier?
 			- Accelerator key
 			- Finalize:

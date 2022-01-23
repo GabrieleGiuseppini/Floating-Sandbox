@@ -959,10 +959,6 @@ void GameController::ApplyRadialWindFrom(
     float mainFrontSimulationTimeElapsed,
     float mainFrontIntensityMultiplier)
 {
-    // TODO
-    LogMessage("TODOTEST: Pre: DeltaT=", preFrontSimulationTimeElapsed, ", I=", preFrontIntensityMultiplier,
-        " Main: DeltaT=", mainFrontSimulationTimeElapsed, ", I=", mainFrontIntensityMultiplier);
-
     vec2f const sourceWorldCoordinates = mRenderContext->ScreenToWorld(sourcePos);
 
     // Calculate wind speed, in m/s
