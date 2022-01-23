@@ -67,10 +67,10 @@
 				+ Background wind
 					+ New sound member of SoundController: WindMakerWindSound
 					+ And stop at Deinitialize()
-			= World:
+			+ World:
 				+ Velocity used for radius should also depend on intensity
-				- Ocean surface
-					- Use pre-front, its radius and intensity
+				+ Ocean surface
+					+ Use pre-front, its radius and intensity
 			- Flames:
 				- Flame shader's FlameWindRotationAngle parameter must become vertex attribute
 					- See if can unify particle velocity with this new wind (and with global wind)

@@ -450,7 +450,26 @@ void World::ApplyRadialWindFrom(
             gameParameters);
     }
 
-    // TODO: ocean
+    // Apply to ocean
+    //
+    // We displace the ocean surface where the sphere meets the ocean:
+    //
+    //       /|
+    //     r/ |h
+    //     /  |
+    //     ----
+    //      d
+    if (preFrontRadius >= sourcePos.y)
+    {
+        float const d = std::sqrt(preFrontRadius * preFrontRadius - sourcePos.y * sourcePos.y);
+
+        float const displacementMagnitude =
+            preFrontWindSpeed / 10.0f // Magic number
+            * SignStep(0.0f, -sourcePos.y);
+
+        mOceanSurface.DisplaceAt(sourcePos.x - d, displacementMagnitude);
+        mOceanSurface.DisplaceAt(sourcePos.x + d, displacementMagnitude);
+    }
 }
 
 void World::DrawTo(
