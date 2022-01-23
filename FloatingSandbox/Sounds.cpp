@@ -205,14 +205,14 @@ SizeType StrToSizeType(std::string const & str)
 
 std::unique_ptr<SoundFile> SoundFile::Load(std::filesystem::path const & soundFilePath)
 {
-    auto soundFile = std::make_unique<SoundFile>();
-
-    if (!soundFile->SoundBuffer.loadFromFile(soundFilePath.string()))
+    sf::SoundBuffer sb;
+    if (!sb.loadFromFile(soundFilePath.string()))
     {
         throw GameException("Cannot load sound \"" + soundFilePath.filename().string() + "\"");
     }
 
-    soundFile->Filename = soundFilePath.filename().string();
-
-    return soundFile;
+    return std::unique_ptr<SoundFile>(
+        new SoundFile(
+            std::move(sb),
+            soundFilePath.filename().string()));
 }

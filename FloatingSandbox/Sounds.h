@@ -130,14 +130,28 @@ struct SoundFile
 
     static std::unique_ptr<SoundFile> Load(std::filesystem::path const & soundFilePath);
 
+    std::unique_ptr<SoundFile> Clone() const
+    {
+        return std::unique_ptr<SoundFile>(
+            new SoundFile(
+                sf::SoundBuffer(SoundBuffer),
+                Filename));
+    }
+
 private:
 
-    ////SoundFile(
-    ////    std::unique_ptr<sf::SoundBuffer> soundBuffer,
-    ////    std::string const & filename)
-    ////    : SoundBuffer(std::move(soundBuffer))
-    ////    , Filename(filename)
-    ////{}
+    SoundFile(
+        sf::SoundBuffer && soundBuffer,
+        std::string const & filename)
+        : SoundBuffer(std::move(soundBuffer))
+        , Filename(filename)
+    {}
+
+    SoundFile(SoundFile const & other)
+    {
+        SoundBuffer = other.SoundBuffer;
+        Filename = other.Filename;
+    }
 };
 
 enum class SizeType : int

@@ -166,6 +166,9 @@ public:
     void PlayBlastToolSlow2Sound();
     void PlayBlastToolFastSound();
 
+    void PlayOrUpdateWindMakerWindSound(float volume);
+    void StopWindMakerWindSound();
+
     void PlayWindGustShortSound();
 
     void PlaySnapshotSound();
@@ -598,6 +601,7 @@ private:
     OneShotSingleChoiceSound mBlastToolSlow1Sound;
     OneShotSingleChoiceSound mBlastToolSlow2Sound;
     OneShotSingleChoiceSound mBlastToolFastSound;
+    ContinuousSingleChoiceSound mWindMakerWindSound;
 
     ContinuousSingleChoiceSound mWaterRushSound;
     ContinuousSingleChoiceSound mWaterSplashSound;

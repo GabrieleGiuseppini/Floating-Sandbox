@@ -3065,7 +3065,7 @@ public:
     {
         if (mEngagementData.has_value())
         {
-            // TODO: stop sounds
+            mSoundController->StopWindMakerWindSound();
         }
     }
 
@@ -3176,16 +3176,20 @@ public:
                 }
             }
 
+            // Calculate intensity multipliers
+            float const preFrontIntensityMultiplier = intensity * (inputState.IsShiftKeyDown ? 3.0f : 1.0f);
+            float const mainFrontIntensityMultiplier = intensity * (inputState.IsShiftKeyDown ? 1.5f : 1.0f);
+
             // Invoke world
             mGameController->ApplyRadialWindFrom(
                 inputState.MousePosition,
                 mEngagementData->GetElapsedPreFrontSimulationTime(currentSimulationTime),
-                intensity * (inputState.IsShiftKeyDown ? 3.0f : 1.0f),
+                preFrontIntensityMultiplier,
                 mEngagementData->GetElapsedMainFrontSimulationTime(currentSimulationTime),
-                intensity * (inputState.IsShiftKeyDown ? 1.5f : 1.0f));
+                mainFrontIntensityMultiplier);
 
             // Sound
-            // TODO
+            mSoundController->PlayOrUpdateWindMakerWindSound(mainFrontIntensityMultiplier * 50.0f);
         }
 
         if (doUpdateCursor)

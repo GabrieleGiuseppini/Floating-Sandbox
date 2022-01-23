@@ -1183,7 +1183,6 @@ void Points::UpdateCombustionHighFrequency(
             }
         }
 
-
         //
         // Calculate flame vector
         //
