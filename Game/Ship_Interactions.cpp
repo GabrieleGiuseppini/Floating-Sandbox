@@ -766,6 +766,12 @@ void Ship::ApplyRadialWindFrom(Interaction::ArgumentsUnion::RadialWindArguments 
             }
         }
     }
+
+    // Remember wind field
+    mWindField.emplace(
+        args.SourcePos,
+        args.PreFrontRadius,
+        args.PreFrontWindForceMagnitude);
 }
 
 void Ship::DrawTo(

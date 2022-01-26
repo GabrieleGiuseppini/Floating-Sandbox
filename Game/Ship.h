@@ -854,6 +854,9 @@ private:
     // Index of last-queried point - used as an aid to debugging
     ElementIndex mutable mLastQueriedPointIndex;
 
+    // Last-applied (interactive) wind field
+    std::optional<WindField> mWindField;
+
     //
     // Static pressure
     //

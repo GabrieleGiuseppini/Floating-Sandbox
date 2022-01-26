@@ -940,6 +940,7 @@ void Points::UpdateCombustionHighFrequency(
     float /*currentSimulationTime*/,
     float dt,
     vec2f const & globalWindSpeed,
+    std::optional<WindField> const & windField,
     GameParameters const & gameParameters)
 {
     //
@@ -963,6 +964,8 @@ void Points::UpdateCombustionHighFrequency(
 
     for (auto const pointIndex : mBurningPoints)
     {
+        vec2f const & pointPosition = GetPosition(pointIndex);
+
         CombustionState & pointCombustionState = mCombustionStateBuffer[pointIndex];
 
         assert(pointCombustionState.State != CombustionState::StateType::NotBurning); // Otherwise it wouldn't be in this set
@@ -1007,7 +1010,7 @@ void Points::UpdateCombustionHighFrequency(
 
                 // Calculate direction coefficient so to prefer upwards direction:
                 // 0.9 + 1.0*(1 - cos(theta)): 2.9 N, 0.9 S, 1.9 W and E
-                vec2f const springDir = (GetPosition(otherEndpointIndex) - GetPosition(pointIndex)).normalise();
+                vec2f const springDir = (GetPosition(otherEndpointIndex) - pointPosition).normalise();
                 float const dirAlpha =
                     (0.9f + 1.0f * (1.0f - springDir.dot(GameParameters::GravityNormalized)));
                 // No normalization: when using normalization flame does not propagate along rope
@@ -1056,7 +1059,7 @@ void Points::UpdateCombustionHighFrequency(
 
                 // Generate particle
                 CreateEphemeralParticleHeavySmoke(
-                    GetPosition(pointIndex),
+                    pointPosition,
                     GetTemperature(pointIndex),
                     currentSimulationTime,
                     GetPlaneId(pointIndex),
@@ -1195,7 +1198,7 @@ void Points::UpdateCombustionHighFrequency(
 
         // Vector Q is the vector describing the ideal, final flame's
         // direction and length
-        vec2f const pointVelocity = GetVelocity(pointIndex);
+        vec2f const & pointVelocity = GetVelocity(pointIndex);
         vec2f const Q = CalculateIdealFlameVector(
             pointVelocity,
             100.0f); // Particle's velocity has a larger impact on the final vector
@@ -1227,10 +1230,21 @@ void Points::UpdateCombustionHighFrequency(
         // We simulate inertia by converging slowly to the target angle.
         //
 
-        // TODOHERE: other contributions
         vec2f resultantWindSpeedVector =
             globalWindSpeed
             - pointVelocity;
+
+        if (windField.has_value())
+        {
+            vec2f const displacement = pointPosition - windField->FieldCenterPos;
+            float const radius = displacement.length();
+            if (radius < windField->FieldRadius)
+            {
+                resultantWindSpeedVector +=
+                    displacement.normalise(radius)
+                    * windField->WindSpeed;
+            }
+        }
         
         // Projection of wind speed vector along flame
         vec2f const flameDir = pointCombustionState.FlameVector.normalise();

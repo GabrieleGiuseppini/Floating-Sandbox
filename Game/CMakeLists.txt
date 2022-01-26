@@ -86,6 +86,7 @@ set  (PHYSICS_SOURCES
 	Physics.h
 	PhysicsProbeGadget.cpp
 	PhysicsProbeGadget.h
+	PhysicsTypes.h
 	PinnedPoints.cpp
 	PinnedPoints.h
 	Points.cpp

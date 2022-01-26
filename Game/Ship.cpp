@@ -176,7 +176,7 @@ void Ship::Update(
     /////////////////////////////////////////////////////////////////
     // At this moment:
     //  - Particle positions are within world boundaries
-    //  - Particle non-spring forces contain interaction-provided forces
+    //  - Particle non-spring forces contain (some of) interaction-provided forces
     /////////////////////////////////////////////////////////////////
 
     // Get the current wall clock time
@@ -542,6 +542,7 @@ void Ship::Update(
                 currentSimulationTime,
                 GameParameters::SimulationStepTimeDuration<float>,
                 mParentWorld.GetCurrentWindSpeed(),
+                mWindField,
                 gameParameters);
         });
 
@@ -605,6 +606,8 @@ void Ship::Update(
             mRepairGracePeriodMultiplier = 1.0f;
         }
     }
+
+    mWindField.reset();
 }
 
 void Ship::RenderUpload(Render::RenderContext & renderContext)
