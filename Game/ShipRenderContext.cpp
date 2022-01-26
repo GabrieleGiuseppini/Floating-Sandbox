@@ -60,8 +60,6 @@ ShipRenderContext::ShipRenderContext(
     , mFlameForegroundCount(0u)
     , mFlameVBO()
     , mFlameVBOAllocatedVertexSize(0u)
-    , mFlameWindSpeedMagnitude(0.0f)
-    , mIsFlameWindSpeedMagnitudeDirty(true)
     //
     , mExplosionPlaneVertexBuffers()
     , mExplosionTotalVertexCount(0u)
@@ -322,11 +320,11 @@ ShipRenderContext::ShipRenderContext(
 
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mFlameVBO);
-        static_assert(sizeof(FlameVertex) == (4 + 2) * sizeof(float));
+        static_assert(sizeof(FlameVertex) == (4 + 3) * sizeof(float));
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Flame1));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Flame1), 4, GL_FLOAT, GL_FALSE, sizeof(FlameVertex), (void*)0);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Flame2));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Flame2), 2, GL_FLOAT, GL_FALSE, sizeof(FlameVertex), (void*)((4) * sizeof(float)));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Flame2), 3, GL_FLOAT, GL_FALSE, sizeof(FlameVertex), (void*)((4) * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -1676,30 +1674,13 @@ void ShipRenderContext::RenderPrepareFlames()
 
     if (mFlameBackgroundCount > 0 || mFlameForegroundCount > 0)
     {
-        float const flameSpeed = GameWallClock::GetInstance().NowAsFloat() * 0.345f;
+        float const flameProgress = GameWallClock::GetInstance().NowAsFloat() * 0.345f;
 
         mShaderManager.ActivateProgram<ProgramType::ShipFlamesBackground>();
-        mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground, ProgramParameterType::FlameSpeed>(flameSpeed);
+        mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground, ProgramParameterType::FlameProgress>(flameProgress);
 
         mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground>();
-        mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground, ProgramParameterType::FlameSpeed>(flameSpeed);
-
-        if (mIsFlameWindSpeedMagnitudeDirty)
-        {
-            float const windRotationAngle = std::copysign(
-                0.5f * SmoothStep(0.0f, 100.0f, std::abs(mFlameWindSpeedMagnitude)),
-                -mFlameWindSpeedMagnitude);
-
-            mShaderManager.ActivateProgram<ProgramType::ShipFlamesBackground>();
-            mShaderManager.SetProgramParameter<ProgramType::ShipFlamesBackground, ProgramParameterType::FlameWindRotationAngle>(
-                windRotationAngle);
-
-            mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground>();
-            mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground, ProgramParameterType::FlameWindRotationAngle>(
-                windRotationAngle);
-
-            mIsFlameWindSpeedMagnitudeDirty = true;
-        }
+        mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground, ProgramParameterType::FlameProgress>(flameProgress);
     }
 }
 

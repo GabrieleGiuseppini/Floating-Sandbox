@@ -81,12 +81,6 @@ public:
 
     void UploadStart(PlaneId maxMaxPlaneId);
 
-    inline void UploadWind(float smoothedWindSpeedMagnitude)
-    {
-        mFlameWindSpeedMagnitude = smoothedWindSpeedMagnitude;
-        mIsFlameWindSpeedMagnitudeDirty = true;
-    }
-
     //
     // Points
     //
@@ -343,6 +337,7 @@ public:
         PlaneId planeId,
         vec2f const & baseCenterPosition,
         vec2f const & flameVector,
+        float flameWindRotationAngle,
         float scale,
         float flamePersonalitySeed)
     {
@@ -352,6 +347,7 @@ public:
             planeId,
             baseCenterPosition,
             flameVector,
+            flameWindRotationAngle,
             scale,
             flamePersonalitySeed);
 
@@ -367,6 +363,7 @@ public:
         PlaneId planeId,
         vec2f const & baseCenterPosition,
         vec2f const & flameVector,
+        float flameWindRotationAngle,
         float scale,
         float flamePersonalitySeed)
     {
@@ -374,6 +371,7 @@ public:
             planeId,
             baseCenterPosition,
             flameVector,
+            flameWindRotationAngle,
             scale,
             flamePersonalitySeed);
 
@@ -953,6 +951,7 @@ private:
         PlaneId planeId,
         vec2f const & baseCenterPosition,
         vec2f const & flameVector,
+        float flameWindRotationAngle,
         float scale,
         float flamePersonalitySeed)
     {
@@ -1008,6 +1007,7 @@ private:
             vec2f(C.x, C.y),
             static_cast<float>(planeId),
             flamePersonalitySeed,
+            flameWindRotationAngle,
             vec2f(-1.0f, 1.0f));
 
         // Top-right
@@ -1015,6 +1015,7 @@ private:
             vec2f(D.x, D.y),
             static_cast<float>(planeId),
             flamePersonalitySeed,
+            flameWindRotationAngle,
             vec2f(1.0f, 1.0f));
 
         // Bottom-left
@@ -1022,6 +1023,7 @@ private:
             vec2f(A.x, A.y),
             static_cast<float>(planeId),
             flamePersonalitySeed,
+            flameWindRotationAngle,
             vec2f(-1.0f, 0.0f));
 
         // Triangle 2
@@ -1031,6 +1033,7 @@ private:
             vec2f(D.x, D.y),
             static_cast<float>(planeId),
             flamePersonalitySeed,
+            flameWindRotationAngle,
             vec2f(1.0f, 1.0f));
 
         // Bottom-left
@@ -1038,6 +1041,7 @@ private:
             vec2f(A.x, A.y),
             static_cast<float>(planeId),
             flamePersonalitySeed,
+            flameWindRotationAngle,
             vec2f(-1.0f, 0.0f));
 
         // Bottom-right
@@ -1045,6 +1049,7 @@ private:
             vec2f(B.x, B.y),
             static_cast<float>(planeId),
             flamePersonalitySeed,
+            flameWindRotationAngle,
             vec2f(1.0f, 0.0f));
     }
 
@@ -1255,17 +1260,20 @@ private:
     {
         vec2f vertexPosition;
         float planeId;
-        float flamePersonalitySeed;
+        float personalitySeed;
+        float windRotationAngle;
         vec2f flameSpacePosition;
 
         FlameVertex(
             vec2f _vertexPosition,
             float _planeId,
-            float _flamePersonalitySeed,
+            float _personalitySeed,
+            float _windRotationAngle,
             vec2f _flameSpacePosition)
             : vertexPosition(_vertexPosition)
             , planeId(_planeId)
-            , flamePersonalitySeed(_flamePersonalitySeed)
+            , personalitySeed(_personalitySeed)
+            , windRotationAngle(_windRotationAngle)
             , flameSpacePosition(_flameSpacePosition)
         {}
     };
@@ -1457,8 +1465,6 @@ private:
     size_t mFlameForegroundCount;
     GameOpenGLVBO mFlameVBO;
     size_t mFlameVBOAllocatedVertexSize;
-    float mFlameWindSpeedMagnitude;
-    bool mIsFlameWindSpeedMagnitudeDirty;
 
     std::vector<ExplosionPlaneData> mExplosionPlaneVertexBuffers;
     size_t mExplosionTotalVertexCount; // Calculated at RenderPrepare and cached for convenience

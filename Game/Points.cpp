@@ -939,6 +939,7 @@ void Points::UpdateCombustionLowFrequency(
 void Points::UpdateCombustionHighFrequency(
     float /*currentSimulationTime*/,
     float dt,
+    vec2f const & windSpeed,
     GameParameters const & gameParameters)
 {
     //
@@ -1208,14 +1209,34 @@ void Points::UpdateCombustionHighFrequency(
         // Convergence rate inversely depends on the magnitude of change:
         // - A big change: little rate (lots of inertia)
         // - A small change: big rate (immediately responsive)
-        float constexpr MinConvergenceRate = 0.02f;
-        float constexpr MaxConvergenceRate = 0.05f;
-        float const changeMagnitude = std::abs(Q.angleCw(pointCombustionState.FlameVector));
-        float const convergenceRate =
-            MinConvergenceRate
-            + (MaxConvergenceRate - MinConvergenceRate) * (1.0f - LinearStep(0.0f, Pi<float>, changeMagnitude));
+        float constexpr MinFlameVectorConvergenceRate = 0.02f;
+        float constexpr MaxFlameVectorConvergenceRate = 0.05f;
+        float const flameVectorChangeMagnitude = std::abs(Q.angleCw(pointCombustionState.FlameVector));
+        float const flameVectorConvergenceRate =
+            MinFlameVectorConvergenceRate
+            + (MaxFlameVectorConvergenceRate - MinFlameVectorConvergenceRate) * (1.0f - LinearStep(0.0f, Pi<float>, flameVectorChangeMagnitude));
 
-        pointCombustionState.FlameVector += (Q - pointCombustionState.FlameVector) * convergenceRate;
+        pointCombustionState.FlameVector += 
+            (Q - pointCombustionState.FlameVector) 
+            * flameVectorConvergenceRate;
+
+        //
+        // Calculate flame wind rotation angle
+        //
+        // We simulate inertia by converging slowly to the target angle.
+        //
+
+        float constexpr FlameWindRotationAngleConvergenceRate = 0.025f;
+
+        // TODOHERE
+        float const windSpeedMagnitude = windSpeed.x;
+        float const targetFlameWindRotationAngle = std::copysign(
+            0.5f * SmoothStep(0.0f, 100.0f, std::abs(windSpeedMagnitude)),
+            -windSpeedMagnitude);
+
+        pointCombustionState.FlameWindRotationAngle +=
+            (targetFlameWindRotationAngle - pointCombustionState.FlameWindRotationAngle)
+            * FlameWindRotationAngleConvergenceRate;
     }
 
     //
@@ -1720,6 +1741,7 @@ void Points::UploadFlames(
                 GetPlaneId(pointIndex),
                 GetPosition(pointIndex),
                 mCombustionStateBuffer[pointIndex].FlameVector,
+                mCombustionStateBuffer[pointIndex].FlameWindRotationAngle,
                 mCombustionStateBuffer[pointIndex].FlameDevelopment, // scale
                 mRandomNormalizedUniformFloatBuffer[pointIndex]);
         }
@@ -1734,6 +1756,7 @@ void Points::UploadFlames(
                 GetPlaneId(pointIndex),
                 GetPosition(pointIndex),
                 mCombustionStateBuffer[pointIndex].FlameVector,
+                mCombustionStateBuffer[pointIndex].FlameWindRotationAngle,
                 mCombustionStateBuffer[pointIndex].FlameDevelopment, // scale
                 mRandomNormalizedUniformFloatBuffer[pointIndex]);
         }

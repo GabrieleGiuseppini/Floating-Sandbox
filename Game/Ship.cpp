@@ -541,6 +541,7 @@ void Ship::Update(
             mPoints.UpdateCombustionHighFrequency(
                 currentSimulationTime,
                 GameParameters::SimulationStepTimeDuration<float>,
+                mParentWorld.GetCurrentWindSpeed(),
                 gameParameters);
         });
 

@@ -4,21 +4,23 @@
 #define out varying
 
 // Inputs
-in vec4 inFlame1; // Position (vec2), PlaneId, FlamePersonalitySeed
-in vec2 inFlame2; // FlameSpacePosition
+in vec4 inFlame1; // Position (vec2), PlaneId, PersonalitySeed
+in vec3 inFlame2; // WindRotationAngle, FlameSpacePosition
 
 // Outputs
+out float windRotationAngle;
 out vec2 flameSpacePosition;
 out vec2 noiseOffset;
 
 // Params
 uniform mat4 paramOrthoMatrix;
-uniform float paramFlameSpeed;
+uniform float paramFlameProgress;
 
 void main()
 {
-    flameSpacePosition = inFlame2.xy;
-    noiseOffset = vec2(inFlame1.w, inFlame1.w - paramFlameSpeed);
+    windRotationAngle = inFlame2.x;
+    flameSpacePosition = inFlame2.yz;
+    noiseOffset = vec2(inFlame1.w, inFlame1.w - paramFlameProgress);
 
     gl_Position = paramOrthoMatrix * vec4(inFlame1.xyz, 1.0);
 }
@@ -28,6 +30,7 @@ void main()
 #define in varying
 
 // Inputs from previous shader
+in float windRotationAngle; // [-0.5, +0.5]
 in vec2 flameSpacePosition; // (x=[-1.0, 1.0], y=[0.0, 1.0])
 in vec2 noiseOffset;
 
@@ -39,8 +42,7 @@ uniform sampler2D paramGenericLinearTexturesAtlasTexture;
 uniform vec2 paramAtlasTile1Dx; // span across two pixels
 uniform vec2 paramAtlasTile1LeftBottomTextureCoordinates;
 uniform vec2 paramAtlasTile1Size;
-uniform float paramFlameWindRotationAngle;
-uniform float paramFlameSpeed;
+uniform float paramFlameProgress;
 
 //
 // Loosely based on "Flame in the Wind" by kuvkar (https://www.shadertoy.com/view/4tXXRn)
@@ -66,7 +68,7 @@ void main()
     //
     
     // Rotation angle is higher the higher we go
-    float windAngle = paramFlameWindRotationAngle * flameSpacePosition.y;
+    float windAngle = windRotationAngle * flameSpacePosition.y;
     windAngle += (noiseOffset.x - .5) * windAngle * 1.6; // Randomize with personality seed, +/- 80%
             
     // Rotate around bottom
@@ -146,7 +148,7 @@ void main()
     vec2 colorVirtualTextureCoords = fract(
         vec2(
             uv.x / ColorResolution,
-            uv.y / ColorResolution - paramFlameSpeed * 1.5 + noiseOffset.x)); // Adding some per-flame random Y displacement
+            uv.y / ColorResolution - paramFlameProgress * 1.5 + noiseOffset.x)); // Adding some per-flame random Y displacement
 
     // Clamp to dead center pixels
     colorVirtualTextureCoords.y = clamp(colorVirtualTextureCoords.y, paramAtlasTile1Dx.y, 1.0 - paramAtlasTile1Dx.y);
@@ -174,7 +176,7 @@ void main()
     //
 
     vec2 srCoords = (flameSpacePosition + vec2(1.0, 0.0)) * vec2(0.5, 1.0); // [0.0, 1.0] [0.0, 1.0]
-    srCoords.y = fract(srCoords.y - paramFlameSpeed); // Wrap
+    srCoords.y = fract(srCoords.y - paramFlameProgress); // Wrap
     srCoords.y = clamp(srCoords.y, paramAtlasTile1Dx.y, 1.0 - paramAtlasTile1Dx.y); // Clamp to fight against linear filtering - though no idea why dx works and dx/2.0 does not work
     vec2 sampleCoords = paramAtlasTile1LeftBottomTextureCoordinates + paramAtlasTile1Size * srCoords;
     vec4 testCol = texture2D(paramGenericLinearTexturesAtlasTexture, sampleCoords);

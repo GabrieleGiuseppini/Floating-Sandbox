@@ -227,13 +227,20 @@ private:
 
         float FlameDevelopment;
         float MaxFlameDevelopment;
-        float NextSmokeEmissionSimulationTimestamp;
+        // FUTUREWORK
+        //float NextSmokeEmissionSimulationTimestamp;
 
         // The current flame vector, which provides direction and magnitude
-        // of the flame quad. Slowly converges to the target vector, which
-        // is the resultant of buoyancy making the flame upwards, added to
-        // the particle's current velocity
+        // of the flame quad. 
+        // Slowly converges to the target vector, which is the resultant of 
+        // (air) buoyancy making the flame upwards, added to the particle's 
+        // current velocity
         vec2f FlameVector;
+
+        // Angle of the flame tilt due to moving air; consumed by the shader.
+        // Slowly converges to the target value.
+        // Domain: [-0.5, 0.5].
+        float FlameWindRotationAngle;
 
         CombustionState()
         {
@@ -245,8 +252,10 @@ private:
             State = StateType::NotBurning;
             FlameDevelopment = 0.0f;
             MaxFlameDevelopment = 0.0f;
-            NextSmokeEmissionSimulationTimestamp = 0.0f;
+            // FUTUREWORK
+            //NextSmokeEmissionSimulationTimestamp = 0.0f;
             FlameVector = vec2f(0.0f, 1.0f);
+            FlameWindRotationAngle = 0.0f;
         }
     };
 
@@ -813,6 +822,7 @@ public:
     void UpdateCombustionHighFrequency(
         float currentSimulationTime,
         float dt,
+        vec2f const & windSpeed,
         GameParameters const & gameParameters);
 
     void ReorderBurningPointsForDepth();

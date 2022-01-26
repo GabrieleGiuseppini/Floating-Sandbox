@@ -652,11 +652,6 @@ public:
         {
             mWorldRenderContext->UploadWind(smoothedWindMagnitude);
 
-            for (auto & ship : mShips)
-            {
-                ship->UploadWind(smoothedWindMagnitude);
-            }
-
             mCurrentWindSpeedMagnitude = smoothedWindMagnitude;
         }
     }
