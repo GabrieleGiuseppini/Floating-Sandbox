@@ -82,16 +82,16 @@
 							+ Compare with previous
 								+ See if need again smoothed wind speed: it does need it
 								+ If so, see if can do it with convergence rate
-						- Step 2: global wind wrt flame vector
-							- Add temporary debug code to make flames at an auto-rotating angle
-						- Step 3: own velocity added to global wind
+						+ Step 2: global wind wrt flame vector
+							+ Add temporary debug code to make flames at an auto-rotating angle
+						+ Step 3: own velocity added to global wind
 						- Step 4: add interactive wind
 							- Wind interaction: store temporary wind @ Ship (WindField) (pre-front radius & main velocity, or TODO: both?)
 								- Reset it at end of Ship::Update
-					- Uploaded to ShipRenderContext when we upload flames at Points
-					- Taken by shader in VertexAttribute instead of uniform
-				- See if ShipRenderContext still needs wind afterwards
-					- Note: WorldRenderContext would still need it
+					+ Uploaded to ShipRenderContext when we upload flames at Points
+					+ Taken by shader in VertexAttribute instead of uniform
+				+ See if ShipRenderContext still needs wind afterwards
+					+ Note: WorldRenderContext would still need it
 				- Investigate turning off combustion with high wind
 			+ Tool:
 				+ Tool should be reset at ship reset/load

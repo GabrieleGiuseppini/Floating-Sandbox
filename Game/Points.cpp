@@ -1195,17 +1195,13 @@ void Points::UpdateCombustionHighFrequency(
 
         // Vector Q is the vector describing the ideal, final flame's
         // direction and length
+        vec2f const pointVelocity = GetVelocity(pointIndex);
         vec2f const Q = CalculateIdealFlameVector(
-            GetVelocity(pointIndex),
+            pointVelocity,
             100.0f); // Particle's velocity has a larger impact on the final vector
 
-        //
         // Inertia: converge current flame vector towards target vector Q
         //
-        //  fv(n) = rate * Q + (1 - rate) * fv(n-1)
-        // http://www.calcul.com/show/calculator/recursive?values=[{%22n%22:0,%22value%22:1,%22valid%22:true}]&expression=0.2%20*%205%20+%20(1%20-%200.2)*f(n-1)&target=0&endTarget=80&range=true
-        //
-
         // Convergence rate inversely depends on the magnitude of change:
         // - A big change: little rate (lots of inertia)
         // - A small change: big rate (immediately responsive)
@@ -1221,13 +1217,6 @@ void Points::UpdateCombustionHighFrequency(
             * flameVectorConvergenceRate;
 
         //
-        // TODOTEST - DEBUG CODE
-        ////{
-        ////    float angle = -currentSimulationTime * 0.1f;
-        ////    pointCombustionState.FlameVector = vec2f(-1.0f, 0.0f).rotate(angle);
-        ////}
-
-        //
         // Calculate flame wind rotation angle
         //
         // The wind rotation angle has three components:
@@ -1238,9 +1227,10 @@ void Points::UpdateCombustionHighFrequency(
         // We simulate inertia by converging slowly to the target angle.
         //
 
-        vec2f resultantWindSpeedVector = globalWindSpeed;
-
         // TODOHERE: other contributions
+        vec2f resultantWindSpeedVector =
+            globalWindSpeed
+            - pointVelocity;
         
         // Projection of wind speed vector along flame
         vec2f const flameDir = pointCombustionState.FlameVector.normalise();
@@ -1251,7 +1241,7 @@ void Points::UpdateCombustionHighFrequency(
         //  - Wind perpendicular to flame: proj=|0|, angle = +/-MAX/2
         //  - Wind against flame: proj=-|W|, angle = +/-MAX
         float const targetFlameWindRotationAngle =
-            0.5f
+            0.45f
             * LinearStep(0.0f, 100.0f, resultantWindSpeedVector.length() - windSpeedMagnitudeAlongFlame)
             * (resultantWindSpeedVector.cross(flameDir) > 0.0f ? -1.0f : 1.0f); // The sign of the angle is positive (CW) when the wind vector is to the right of the flame vector
 

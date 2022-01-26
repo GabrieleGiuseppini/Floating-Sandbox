@@ -239,7 +239,7 @@ private:
 
         // Angle of the flame tilt due to moving air; consumed by the shader.
         // Slowly converges to the target value.
-        // Domain: [-0.5, 0.5].
+        // Domain: ~[-0.5, 0.5].
         float FlameWindRotationAngle;
 
         CombustionState()
