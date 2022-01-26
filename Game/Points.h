@@ -822,7 +822,7 @@ public:
     void UpdateCombustionHighFrequency(
         float currentSimulationTime,
         float dt,
-        vec2f const & windSpeed,
+        vec2f const & globalWindSpeed,
         GameParameters const & gameParameters);
 
     void ReorderBurningPointsForDepth();

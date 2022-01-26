@@ -939,7 +939,7 @@ void Points::UpdateCombustionLowFrequency(
 void Points::UpdateCombustionHighFrequency(
     float /*currentSimulationTime*/,
     float dt,
-    vec2f const & windSpeed,
+    vec2f const & globalWindSpeed,
     GameParameters const & gameParameters)
 {
     //
@@ -1221,19 +1221,42 @@ void Points::UpdateCombustionHighFrequency(
             * flameVectorConvergenceRate;
 
         //
+        // TODOTEST - DEBUG CODE
+        ////{
+        ////    float angle = -currentSimulationTime * 0.1f;
+        ////    pointCombustionState.FlameVector = vec2f(-1.0f, 0.0f).rotate(angle);
+        ////}
+
+        //
         // Calculate flame wind rotation angle
+        //
+        // The wind rotation angle has three components:
+        //  - Global wind
+        //  - Interactive wind (i.e. the WindMaker), if any
+        //  - Particle's velocity
         //
         // We simulate inertia by converging slowly to the target angle.
         //
 
-        float constexpr FlameWindRotationAngleConvergenceRate = 0.025f;
+        vec2f resultantWindSpeedVector = globalWindSpeed;
 
-        // TODOHERE
-        float const windSpeedMagnitude = windSpeed.x;
-        float const targetFlameWindRotationAngle = std::copysign(
-            0.5f * SmoothStep(0.0f, 100.0f, std::abs(windSpeedMagnitude)),
-            -windSpeedMagnitude);
+        // TODOHERE: other contributions
+        
+        // Projection of wind speed vector along flame
+        vec2f const flameDir = pointCombustionState.FlameVector.normalise();
+        float const windSpeedMagnitudeAlongFlame = resultantWindSpeedVector.dot(flameDir);
 
+        // Our angle moves opposite to the projection of wind along the flame:
+        //  - Wind aligned with flame: proj=|W|, angle = 0
+        //  - Wind perpendicular to flame: proj=|0|, angle = +/-MAX/2
+        //  - Wind against flame: proj=-|W|, angle = +/-MAX
+        float const targetFlameWindRotationAngle =
+            0.5f
+            * LinearStep(0.0f, 100.0f, resultantWindSpeedVector.length() - windSpeedMagnitudeAlongFlame)
+            * (resultantWindSpeedVector.cross(flameDir) > 0.0f ? -1.0f : 1.0f); // The sign of the angle is positive (CW) when the wind vector is to the right of the flame vector
+
+        // Converge
+        float constexpr FlameWindRotationAngleConvergenceRate = 0.055f;
         pointCombustionState.FlameWindRotationAngle +=
             (targetFlameWindRotationAngle - pointCombustionState.FlameWindRotationAngle)
             * FlameWindRotationAngleConvergenceRate;
