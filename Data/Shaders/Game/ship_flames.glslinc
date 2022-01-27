@@ -133,7 +133,7 @@ void main()
 
     vec2 alphaVirtualTextureCoords = vec2(
             ((uv.x + 1.0) + noiseOffset.x) / AlphaResolution,
-            min(flameSpacePosition.y, 1.0 - 0.5 / 128.0)); // y has to fit perfectly in the 0..1 range, squashing a little bit more to ensure we get to dead center
+            min(flameSpacePosition.y, 1.0 - paramAtlasTile1Dx.y)); // y has to fit perfectly in the 0..1 range, taking into account the dead-center dy
 
     vec2 alphaSampleCoords = paramAtlasTile1LeftBottomTextureCoordinates + paramAtlasTile1Size * alphaVirtualTextureCoords;
     vec4 sampledAlphaSample = texture2D(paramGenericLinearTexturesAtlasTexture, alphaSampleCoords);
