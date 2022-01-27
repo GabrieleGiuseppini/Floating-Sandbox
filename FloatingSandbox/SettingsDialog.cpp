@@ -2443,8 +2443,8 @@ void SettingsDialog::PopulateLightsElectricalAndFishesPanel(wxPanel * panel)
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
-                    _("Luminiscence Adjust"),
-                    _("Adjusts the quantity of light emitted by luminiscent materials."),
+                    _("Luminescence Adjust"),
+                    _("Adjusts the quantity of light emitted by luminescent materials."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::LuminiscenceAdjustment, value);
@@ -2471,7 +2471,7 @@ void SettingsDialog::PopulateLightsElectricalAndFishesPanel(wxPanel * panel)
                     SliderWidth,
                     SliderHeight,
                     _("Spread Adjust"),
-                    _("Adjusts how wide light emitted by luminiscent materials spreads out."),
+                    _("Adjusts how wide light emitted by luminescent materials spreads out."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::LightSpreadAdjustment, value);

@@ -75,7 +75,7 @@ msgstr "Informazioni e ringraziamenti"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1284
 msgid "Add or clean the layer."
-msgstr ""
+msgstr "Aggiungi o azzera il layer."
 
 #: ..\FloatingSandbox\MainFrame.cpp:412
 msgid "Adjust Terrain"
@@ -442,6 +442,9 @@ msgid ""
 "layer beneath them. Particles in the electrical layer must always be above "
 "particles in the structural layer."
 msgstr ""
+"Tutte le particelle nel layer elettrico hanno una corrispondente particella "
+"nel layer strutturale sotto di esso. Le particelle nel layer elettrico "
+"devono sempre essere sovrapposte a particelle nel layer strutturale."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4790
 msgid "Apply Saved Settings"
@@ -457,6 +460,8 @@ msgid ""
 "Are you sure you want to remove password protection for this ship, allowing "
 "everyone to make changes to it?"
 msgstr ""
+"Siete sicuri di voler rimuovere la password, rendendo possibile a chiunque "
+"di poter modificare la nave?"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4845
 #, c-format
@@ -479,17 +484,19 @@ msgstr "Attrai/respingi"
 
 #: ..\ShipBuilderLib\ShipPropertiesEditDialog.cpp:223
 msgid "Author(s)"
-msgstr ""
+msgstr "Autore/i"
 
 #: ..\ShipBuilderLib\ShipPropertiesEditDialog.cpp:305
 msgid ""
 "Author(s) of the texture - if different than the ship author, e.g. "
 "\"Neurodancer (Shipbucket.com)\""
 msgstr ""
+"Autore/i della texture - quando diverso/i dall'autore/i della nave; per "
+"esempio, \"Neurodancer (Shipbucket.com)\""
 
 #: ..\ShipBuilderLib\ShipPropertiesEditDialog.cpp:257
 msgid "Author(s), e.g. \"Ellen Ripley; David Gahan\""
-msgstr ""
+msgstr "Autore/i; per esempio, \"Ellen Ripley; David Gahan\""
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:736
 #: ..\ShipBuilderLib\ShipPropertiesEditDialog.cpp:88
@@ -498,7 +505,7 @@ msgstr "Auto-texturizzazione"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:393
 msgid "Auto-Trim"
-msgstr ""
+msgstr "Ritaglia"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:973
 msgid "Auto-Zoom at Ship Load"
@@ -507,6 +514,8 @@ msgstr "Auto-zoom al caricamento della nave"
 #: ..\ShipBuilderLib\MainFrame.cpp:1574
 msgid "Auto-texturization mode: view ship as when it is auto-texturized."
 msgstr ""
+"Modalità auto-texturizzazione: mostra la nave come quando la modalità auto-"
+"texturizzazione è abilitata."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2356
 msgid "Automatic Daylight Cycle"
@@ -561,10 +570,8 @@ msgid "Bumpiness"
 msgstr "Ondulazione"
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:566
-#, fuzzy
-#| msgid "Tools Volume"
 msgid "Buoyant Volume"
-msgstr "Volume suoni strumenti"
+msgstr "Volume galleggiabilità"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:779
 msgid "Burning Point Adjust"
@@ -572,7 +579,7 @@ msgstr "Punto di combustione"
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:691
 msgid "Cable"
-msgstr ""
+msgstr "Cavo"
 
 #: ..\FloatingSandbox\SplashScreenDialog.cpp:126
 msgid "Calibrating game on the computer..."
@@ -592,10 +599,8 @@ msgid "Cannot Check for Updates at This Moment"
 msgstr "Impossibile verificare la disponibilità di aggiornamenti"
 
 #: ..\ShipBuilderLib\ResizeDialog.cpp:468
-#, fuzzy
-#| msgid "Material Textures"
 msgid "Center Texture"
-msgstr "Texture dei materiali"
+msgstr "Centra texture"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:448
 msgid ""
@@ -612,7 +617,7 @@ msgstr ""
 
 #: ..\ShipBuilderLib\ShipPropertiesEditDialog.cpp:858
 msgid "Changes the level of detail of materials' textures."
-msgstr ""
+msgstr "Regola il livello di dettaglio delle texture dei materiali."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:796
 msgid ""
@@ -623,10 +628,8 @@ msgstr ""
 "questa impostazione saranno visibili solo dopo il caricamento di una nave."
 
 #: ..\ShipBuilderLib\ShipPropertiesEditDialog.cpp:896
-#, fuzzy
-#| msgid "Adjusts the transparency of sea water."
 msgid "Changes the transparency of materials' textures."
-msgstr "Regola la trasparenza del mare."
+msgstr "Regola la trasparenza delle texture dei materiali."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:824
 msgid ""
@@ -646,7 +649,7 @@ msgstr "Controlla disponibilità aggiornamenti..."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:954
 msgid "Check the ship for issues"
-msgstr ""
+msgstr "Analizza la nave"
 
 #: ..\FloatingSandbox\CheckForUpdatesDialog.cpp:20
 msgid "Checking for Updates..."
@@ -657,14 +660,12 @@ msgid "Checking for updates..."
 msgstr "Verifica disponibilità aggiornamenti in corso..."
 
 #: ..\ShipBuilderLib\ModelValidationDialog.cpp:54
-#, fuzzy
-#| msgid "Checking for Updates..."
 msgid "Checking ship..."
-msgstr "Ricerca aggiornamenti..."
+msgstr "Analisi nave..."
 
 #: ..\ShipBuilderLib\ShipPropertiesEditDialog.cpp:993
 msgid "Clear the password to allow everyone to make changes to this ship."
-msgstr ""
+msgstr "Rimuovi la password per consentire a chiunque di modificare la nave."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:281
 msgid "Closes the window keeping all changes."
@@ -684,26 +685,25 @@ msgid "Combustion Speed Adjust"
 msgstr "Velocità di combustione"
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:571
-#, fuzzy
-#| msgid "Combustion"
 msgid "Combustion Type"
-msgstr "Combustione"
+msgstr "Modalità combustione"
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:592
 msgid "Conductive"
-msgstr ""
+msgstr "Conduttivo"
 
 #: ..\ShipBuilderLib\NewPasswordDialog.cpp:99
 msgid "Confirm password:"
-msgstr ""
+msgstr "Conferma password:"
 
 #: ..\ShipBuilderLib\ModelValidationDialog.cpp:297
 msgid "Congratulations! The ship has no issues and it may be saved."
 msgstr ""
+"Congratulazioni! La nave non presenta problemi e può quindi essere salvata."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1090
 msgid "Contiguous only"
-msgstr ""
+msgstr "Solo confinante"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4141
 msgid "Contrast"
@@ -740,14 +740,12 @@ msgid "Copyright (c) Laurent Gomila"
 msgstr "Copyright (c) Laurent Gomila"
 
 #: ..\FloatingSandbox\MainFrame.cpp:542
-#, fuzzy
-#| msgid "Get More Ships..."
 msgid "Create New Ship..."
-msgstr "Scarica ulteriori navi..."
+msgstr "Crea nuova nave..."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:329 ..\ShipBuilderLib\MainFrame.cpp:821
 msgid "Create a new empty ship"
-msgstr ""
+msgstr "Crea una nuova nave"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3760
 msgid "Darkening Rate"
@@ -799,16 +797,16 @@ msgstr "Gradiente profondità"
 
 #: ..\ShipBuilderLib\ShipPropertiesEditDialog.cpp:72
 #: ..\ShipBuilderLib\ShipPropertiesEditDialog.cpp:378
-#, fuzzy
-#| msgid "Description:"
 msgid "Description"
-msgstr "Descrizione:"
+msgstr "Descrizione"
 
 #: ..\ShipBuilderLib\ShipPropertiesEditDialog.cpp:405
 msgid ""
 "Description of the ship, as long or short as you want, or empty to leave the "
 "ship without a description"
 msgstr ""
+"Una breve o estesa descrizione della nave; lasciare vuoto per non associare "
+"alcuna descrizione"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4772
 #: ..\FloatingSandbox\SettingsDialog.cpp:4976
@@ -845,7 +843,7 @@ msgstr "Innesca bombe telecomandate"
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:706
 msgid "Diesel"
-msgstr ""
+msgstr "Diesel"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1252
 msgid "Diffusion Speed"
@@ -857,11 +855,11 @@ msgstr "Diminuisci luminosità"
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:731
 msgid "Direction (rad)"
-msgstr ""
+msgstr "Direzione (rad)"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:365 ..\ShipBuilderLib\MainFrame.cpp:899
 msgid "Discard the current ship and return to the simulator"
-msgstr ""
+msgstr "Abbandona le modifiche a questa nave e torna al simulatore"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1737
 msgid "Displace Water"
@@ -872,14 +870,13 @@ msgid "Displacement Waves"
 msgstr "Onde da spostamento"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:3387
-#, fuzzy, c-format
-#| msgid "Are you sure you want to delete settings \"%s\"?"
+#, c-format
 msgid "Do you also want to rename the ship file to \"%s\"?"
-msgstr "Siete sicuri di voler eliminare i parametri \"%s\"?"
+msgstr "Volete anche cambiare il nome del file della nave con \"%s\"?"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:3380
 msgid "Do you want to save your changes before continuing?"
-msgstr ""
+msgstr "Volete salvare i cambiamenti in sospeso prima di continuare?"
 
 #: ..\FloatingSandbox\NewVersionDisplayDialog.cpp:64
 msgid "Don't check for updates at startup"
@@ -948,11 +945,11 @@ msgstr "Mostra struttura"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2289
 msgid "Draw a rope between two endpoints"
-msgstr ""
+msgstr "Traccia una corda tra due estremità"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2174
 msgid "Draw electrical elements in lines"
-msgstr ""
+msgstr "Colloca elementi elettrici lungo linee"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4426
 msgid "Draw in Wireframe Mode"
@@ -960,15 +957,15 @@ msgstr "Disegna wireframe"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2142
 msgid "Draw individual electrical elements"
-msgstr ""
+msgstr "Colloca elementi elettrici"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1979
 msgid "Draw individual structure particles"
-msgstr ""
+msgstr "Colloca particelle strutturali"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2011
 msgid "Draw particles in lines"
-msgstr ""
+msgstr "Colloca particelle lungo linee"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3832
 msgid "Draws the ocean floor using a static color."
@@ -999,14 +996,12 @@ msgid "Dynamic Forces"
 msgstr "Forze dinamiche"
 
 #: ..\FloatingSandbox\MainFrame.cpp:546
-#, fuzzy
-#| msgid "Load Ship..."
 msgid "Edit This Ship..."
-msgstr "Carica nave..."
+msgstr "Modifica questa nave..."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:417 ..\ShipBuilderLib\MainFrame.cpp:940
 msgid "Edit the ship properties"
-msgstr ""
+msgstr "Modifica le proprietà della nave"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4223
 msgid "Effects Volume"
@@ -1021,10 +1016,8 @@ msgid "Electric Spark"
 msgstr "Arco elettrico"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1166
-#, fuzzy
-#| msgid "Electricals"
 msgid "Electrical layer"
-msgstr "Elettrotecnica"
+msgstr "Layer elettrico"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2508
 msgid "Electricals"
@@ -1032,7 +1025,7 @@ msgstr "Elettrotecnica"
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:825
 msgid "Emission Rate"
-msgstr ""
+msgstr "Densità di emissione"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2717
 msgid "Enable Shoaling"
@@ -1040,7 +1033,7 @@ msgstr "Abilita Branco"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1892
 msgid "Enable/Disable the visual guides."
-msgstr ""
+msgstr "Abilita o disabilita le guide visive."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:734
 msgid "Enables or disables amplification of tool forces and inflicted damages."
@@ -1226,11 +1219,11 @@ msgstr "Abilita o disabilita la visualizzazione dei bordi delle navi."
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:697
 msgid "Engine"
-msgstr ""
+msgstr "Motore"
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:741
 msgid "Engine Controller"
-msgstr ""
+msgstr "Controllore motore"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2542
 msgid "Engine Thrust Adjust"
@@ -1238,23 +1231,23 @@ msgstr "Spinta motore"
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:700
 msgid "Engine Type"
-msgstr ""
+msgstr "Tipo motore"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2158
 msgid "Erase individual electrical elements"
-msgstr ""
+msgstr "Rimuovi elementi elettrici"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1995
 msgid "Erase individual structure particles"
-msgstr ""
+msgstr "Rimuovi particelle strutturali"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2305
 msgid "Erase rope endpoints"
-msgstr ""
+msgstr "Rimuovi funi"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1007
 msgid "Eraser size:"
-msgstr ""
+msgstr "Dimensioni cancellino:"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:5650
 #: ..\ShipBuilderLib\MainFrame.cpp:708
@@ -1266,14 +1259,12 @@ msgid "Event Recording"
 msgstr "Registrazione Eventi"
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:642
-#, fuzzy
-#| msgid "Draw Explosions"
 msgid "Explosion"
-msgstr "Visualizza esplosioni"
+msgstr "Esplosione"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1448
 msgid "Export this layer to a file."
-msgstr ""
+msgstr "Esporta questo layer."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:899
 msgid "Extent"
@@ -1298,7 +1289,7 @@ msgstr "Musica d'addio"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2027
 msgid "Fill an area with structure particles"
-msgstr ""
+msgstr "Riempi un'area con particelle strutturali"
 
 #: ..\FloatingSandbox\MainFrame.cpp:342
 msgid "Fire Extinguisher"
@@ -1310,11 +1301,12 @@ msgstr "Pesci"
 
 #: ..\ShipBuilderLib\ModelValidationDialog.cpp:527
 msgid "Fix This Error"
-msgstr ""
+msgstr "Correggi"
 
 #: ..\ShipBuilderLib\ModelValidationDialog.cpp:470
 msgid "Fix this error by removing the offending electrical particles."
 msgstr ""
+"Correggi questo errore rimuovendo le particelle elettriche che lo causano."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4072
 msgid "Flame Size Adjust"
@@ -1330,43 +1322,43 @@ msgid "Flat Structure"
 msgstr "Struttura a tinta unita"
 
 #: ..\ShipBuilderLib\ShipPropertiesEditDialog.cpp:775
-#, fuzzy
-#| msgid "Flat Structure"
 msgid "Flat Structure mode."
-msgstr "Struttura a tinta unita"
+msgstr "Modalità struttura a tinta unita."
 
 #: ..\ShipBuilderLib\ShipPropertiesEditDialog.cpp:786
 msgid ""
 "Flat Structure mode: generates a texture using the particles' matte colors."
 msgstr ""
+"Modalità struttura a tinta unita: genera un'immagine utilizzando i colori "
+"delle particelle strutturali."
 
 #: ..\ShipBuilderLib\Controller.cpp:1610
 msgid "Flip H"
-msgstr ""
+msgstr "Capovolta O"
 
 #: ..\ShipBuilderLib\Controller.cpp:1614
 msgid "Flip H+V"
-msgstr ""
+msgstr "Capovolta O+V"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:399
 msgid "Flip Ship Horizontally"
-msgstr ""
+msgstr "Capovolgi nave orizzontalmente"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:405
 msgid "Flip Ship Vertically"
-msgstr ""
+msgstr "Capovolgi nave verticalmente"
 
 #: ..\ShipBuilderLib\Controller.cpp:1612
 msgid "Flip V"
-msgstr ""
+msgstr "Capovolta V"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:399
 msgid "Flip the ship horizontally"
-msgstr ""
+msgstr "Capovolgi la nave lungo la direzione orizzontale"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:405
 msgid "Flip the ship vertically"
-msgstr ""
+msgstr "Capovolgi la nave lungo la direzione verticale"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3231
 msgid "Flood Tool"
@@ -1377,6 +1369,9 @@ msgid ""
 "Flood only particles touching each other. When not checked, the flood tool "
 "effectively replaces a material with another."
 msgstr ""
+"Espandi solamente tra particelle in contatto l'una con l'altra. Quando "
+"quest'opzione non è abilitata, lo strumento semplicemente sostituisce un "
+"materiale con un altro."
 
 #: ..\FloatingSandbox\MainFrame.cpp:377
 msgid "Flood/Dry"
@@ -1437,10 +1432,8 @@ msgid "Game Preferences..."
 msgstr "Preferenze..."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1159
-#, fuzzy
-#| msgid "Game"
 msgid "Game view"
-msgstr "Gioco"
+msgstr "Visualizzazione gioco"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4664
 msgid "Generate Debris"
@@ -1455,10 +1448,8 @@ msgid "Generate Sparkles"
 msgstr "Genera scintille"
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:747
-#, fuzzy
-#| msgid "Generate Debris"
 msgid "Generator"
-msgstr "Genera detriti"
+msgstr "Generatore"
 
 #: ..\FloatingSandbox\MainFrame.cpp:214
 msgid "Get More Ships..."
@@ -1505,10 +1496,8 @@ msgid "Heat Draw Options"
 msgstr "Visualizzazione calore"
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:593
-#, fuzzy
-#| msgid "Heat Generation Adjust"
 msgid "Heat Generated (KJ/s)"
-msgstr "Generazione calore"
+msgstr "Calore generato (KJ/s)"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2596
 msgid "Heat Generation Adjust"
@@ -1549,7 +1538,7 @@ msgstr ""
 
 #: ..\ShipBuilderLib\ShipPropertiesEditDialog.cpp:508
 msgid "Horizontal and vertical offset of the ship, in meters"
-msgstr ""
+msgstr "Posizione orizzontale e verticale della nave, in metri"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3286
 msgid "How much water is injected or drained by the flood tool (m3)."
@@ -1566,17 +1555,15 @@ msgstr "L'ampiezza dell'area interessata dal tool Inonda/asciuga (m)."
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:565
 msgid "Hull"
-msgstr ""
+msgstr "Scafo"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1055
 msgid "Hydrostatic Pressure Adjust"
 msgstr "Pressione idrostatica"
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:572
-#, fuzzy
-#| msgid "Water Temperature"
 msgid "Ignition Temperature (K)"
-msgstr "Temperatura acqua"
+msgstr "Punto di combustione (K)"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1028
 msgid "Impact Force Adjust"
@@ -1584,15 +1571,15 @@ msgstr "Forza d'impatto"
 
 #: ..\ShipBuilderLib\Controller.cpp:634
 msgid "Import Texture Layer"
-msgstr ""
+msgstr "Importa layer immagine"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1305
 msgid "Import this layer from an image file."
-msgstr ""
+msgstr "Importa questo layer da un file immagine."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1329
 msgid "Import this layer from another ship."
-msgstr ""
+msgstr "Importa questo layer da un'altra nave."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3973
 msgid "Incandescence"
@@ -1620,34 +1607,32 @@ msgstr "Pressurizza/depressurizza"
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:594
 msgid "Instanced"
-msgstr ""
+msgstr "Instanziato"
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:753
 msgid "Interactive Switch"
-msgstr ""
+msgstr "Interruttore interattivo"
 
 #: ..\ShipBuilderLib\ShipPropertiesEditDialog.cpp:618
-#, fuzzy
-#| msgid "Draw Internal Pressure"
 msgid "Internal Pressure"
-msgstr "Visualizza pressione interna"
+msgstr "Pressione interna"
 
 #: ..\ShipBuilderLib\ShipPropertiesEditDialog.cpp:641
 msgid ""
 "Internal pressure that the ship is initially spawned with, in atmospheres"
-msgstr ""
+msgstr "La pressione interna iniziale, in atmosfere"
 
 #: ..\ShipBuilderLib\AskPasswordDialog.cpp:231
 msgid "Invalid Password"
-msgstr ""
+msgstr "Password non valida"
 
 #: ..\ShipBuilderLib\AskPasswordDialog.cpp:241
 msgid "Invalid password!"
-msgstr ""
+msgstr "La password non è valida!"
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:779
 msgid "Lamp"
-msgstr ""
+msgstr "Lampada"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3921
 msgid "Lamp Light"
@@ -1682,11 +1667,11 @@ msgstr "Luci, elettrotecnica, e pesci"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1036
 msgid "Line size:"
-msgstr ""
+msgstr "Dimensioni linea:"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1803
 msgid "Lines mode: view ropes as lines."
-msgstr ""
+msgstr "Modalità linee: visualizza funi via linee."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4716
 msgid "Load Settings"
@@ -1697,10 +1682,8 @@ msgid "Load Ship..."
 msgstr "Carica nave..."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:335 ..\ShipBuilderLib\MainFrame.cpp:837
-#, fuzzy
-#| msgid "Load Ship"
 msgid "Load a ship"
-msgstr "Carica nave"
+msgstr "Carica una nave"
 
 #: ..\FloatingSandbox\SplashScreenDialog.cpp:119
 msgid "Loading cloud texture atlas..."
@@ -1756,8 +1739,6 @@ msgstr ""
 "radiazione rossa, rendendo l'incandescenza visibile a temperature più basse."
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:782
-#, fuzzy
-#| msgid "Luminiscence Adjust"
 msgid "Luminescence"
 msgstr "Luminescenza"
 
@@ -1779,26 +1760,26 @@ msgstr "Disastro marittimo"
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:562
 msgid "Mass (Kg)"
-msgstr ""
+msgstr "Massa (Kg)"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:757
 msgid "Material Textures"
 msgstr "Texture dei materiali"
 
 #: ..\ShipBuilderLib\ShipPropertiesEditDialog.cpp:814
-#, fuzzy
-#| msgid "Material Textures"
 msgid "Material Textures mode."
-msgstr "Texture dei materiali"
+msgstr "Modalità texture dei materiali."
 
 #: ..\ShipBuilderLib\ShipPropertiesEditDialog.cpp:825
 msgid ""
 "Material Textures mode: generates a texture using material-specific textures."
 msgstr ""
+"Modalità texture dei materiali: genera una texture utilizzando le proprietà "
+"dei materiali."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1864
 msgid "Matte mode: view texture as an opaque image."
-msgstr ""
+msgstr "Modalità tinta unita: visualizza texture come un'immagine piatta."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:887
 msgid "Max Burning Particles"
@@ -1817,20 +1798,20 @@ msgid "Melting Point Adjust"
 msgstr "Punto di fusione"
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:573
-#, fuzzy
-#| msgid "Water Temperature"
 msgid "Melting Temperature (K)"
-msgstr "Temperatura acqua"
+msgstr "Punto di fusione (K)"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1658
 msgid ""
 "Mesh mode: view the structural mesh as it is induced by the structure "
 "particles."
 msgstr ""
+"Modalità struttura: visualizza la struttura derivata dalle particelle "
+"strutturali."
 
 #: ..\ShipBuilderLib\ShipPropertiesEditDialog.cpp:64
 msgid "Metadata"
-msgstr ""
+msgstr "Proprietà"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:935
 msgid "Miscellaneous"
@@ -1867,17 +1848,15 @@ msgstr "Abilita o disabilita tutti i suoni."
 
 #: ..\ShipBuilderLib\ShipPropertiesEditDialog.cpp:209
 msgid "Name of the ship, e.g. \"R.M.S. Titanic\""
-msgstr ""
+msgstr "Nome della nave; ad esempio, \"R.M.S. Titanic\""
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4941
 msgid "Name:"
 msgstr "Nome:"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:329
-#, fuzzy
-#| msgid "Ship"
 msgid "New Ship"
-msgstr "Nave"
+msgstr "Nuova nave"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4046
 msgid "Night Vision"
@@ -1893,27 +1872,27 @@ msgstr "Non ci sono nuovi aggiornamenti"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1719
 msgid "No visualization: the electrical layer is not drawn."
-msgstr ""
+msgstr "Nessuna visualizzazione: il layer elettrico non è visualizzato."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1550
 msgid "No visualization: the game view is not drawn."
-msgstr ""
+msgstr "Nessuna visualizzazione: la modalità gioco non è visualizzata."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1780
 msgid "No visualization: the ropes layer is not drawn."
-msgstr ""
+msgstr "Nessuna visualizzazione: il layer delle funi non è visualizzato."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1635
 msgid "No visualization: the structural layer is not drawn."
-msgstr ""
+msgstr "Nessuna visualizzazione: il layer strutturale non è visualizzato."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1841
 msgid "No visualization: the texture layer is not drawn."
-msgstr ""
+msgstr "Nessuna visualizzazione: il layer immagine non è visualizzato."
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:838
 msgid "Nominal Force"
-msgstr ""
+msgstr "Forza nominale"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3975
 #: ..\FloatingSandbox\SettingsDialog.cpp:4592
@@ -1961,7 +1940,7 @@ msgstr "Once oceaniche"
 
 #: ..\ShipBuilderLib\ShipPropertiesEditDialog.cpp:431
 msgid "Offset"
-msgstr ""
+msgstr "Scostamento"
 
 #: ..\ShipBuilderLib\ModelValidationDialog.cpp:456
 msgid ""
@@ -1969,6 +1948,9 @@ msgid ""
 "structural layer beneath them. Particles in the electrical layer must always "
 "be above particles in the structural layer."
 msgstr ""
+"Alcune particelle nel layer elettrico non hanno corrispondenti particelle "
+"nel layer strutturale sottostante. Le particelle nel layer elettrico devono "
+"sempre essere sovrapposte a particelle nel layer strutturale."
 
 #: ..\FloatingSandbox\MainFrame.cpp:582
 msgid "Open Download Page"
@@ -1988,11 +1970,11 @@ msgstr "Finestra di log"
 
 #: ..\FloatingSandbox\MainFrame.cpp:542
 msgid "Open the ShipBuilder to create a new ship"
-msgstr ""
+msgstr "Apri lo ShipBuilder per creare una nuova nave"
 
 #: ..\FloatingSandbox\MainFrame.cpp:546
 msgid "Open the ShipBuilder to edit the currently-loaded ship"
-msgstr ""
+msgstr "Apri lo ShipBuilder per modificare questa nave"
 
 #: ..\FloatingSandbox\CreditsPanel.cpp:72
 msgid "Original concept (c) Luke Wren, Francis Racicot (Pac0master) 2013"
@@ -2000,7 +1982,7 @@ msgstr "Idea originale (c) Luke Wren, Francis Racicot (Pac0master) 2013"
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:804
 msgid "Other Sink"
-msgstr ""
+msgstr "Altro carico"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:222
 msgid "Other Tools"
@@ -2008,7 +1990,7 @@ msgstr "Altri strumenti"
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:712
 msgid "Outboard"
-msgstr ""
+msgstr "Fuoribordo"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:777
 msgid ""
@@ -2035,7 +2017,7 @@ msgstr "Incremento panoramica"
 
 #: ..\ShipBuilderLib\ShipPropertiesEditDialog.cpp:96
 msgid "Password Protection"
-msgstr ""
+msgstr "Protezione password"
 
 #: ..\FloatingSandbox\MainFrame.cpp:259
 msgid "Pause"
@@ -2047,7 +2029,7 @@ msgstr "Pausa simulatore"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:978
 msgid "Pencil size:"
-msgstr ""
+msgstr "Dimensioni matita:"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2260
 msgid "Persistence Adjust"
@@ -2063,11 +2045,11 @@ msgstr "Pinza"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1742
 msgid "Pixel mode: view electrical particles as pixels."
-msgstr ""
+msgstr "Modalità pixel: visualizza particelle elettriche come pixel."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1681
 msgid "Pixel mode: view structural particles as pixels."
-msgstr ""
+msgstr "Modalità pixel: visualizza particelle strutturali come pixel."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:1130
 msgid "Play Background Music"
@@ -2102,11 +2084,11 @@ msgstr ""
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:725
 msgid "Power (HP)"
-msgstr ""
+msgstr "Potenza (HP)"
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:810
 msgid "Power Monitor"
-msgstr ""
+msgstr "Sensore di corrente"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1001
 #: ..\FloatingSandbox\SettingsDialog.cpp:2133
@@ -2139,15 +2121,15 @@ msgstr "Programmato in Amsterdam, Paesi Bassi"
 
 #: ..\ShipBuilderLib\Controller.cpp:204
 msgid "Properties"
-msgstr ""
+msgstr "Proprietà"
 
 #: ..\ShipBuilderLib\AskPasswordDialog.cpp:53
 msgid "Provide Password"
-msgstr ""
+msgstr "Specifica una password"
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:762
 msgid "Push Button"
-msgstr ""
+msgstr "Interruttore a pressione"
 
 #: ..\FloatingSandbox\MainFrame.cpp:226 ..\ShipBuilderLib\MainFrame.cpp:372
 msgid "Quit"
@@ -2155,13 +2137,11 @@ msgstr "Esci"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:365
 msgid "Quit and Return to Game"
-msgstr ""
+msgstr "Abbandona e ritorna al simulatore"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:372
-#, fuzzy
-#| msgid "Quit the game"
 msgid "Quit the builder"
-msgstr "Esci dal simulatore"
+msgstr "Esci dallo ShipBuilder"
 
 #: ..\FloatingSandbox\MainFrame.cpp:226
 msgid "Quit the game"
@@ -2205,19 +2185,19 @@ msgstr "Carica nave precedente all'avvio"
 
 #: ..\ShipBuilderLib\Controller.cpp:688
 msgid "Remove Texture Layer"
-msgstr ""
+msgstr "Riomuovi layer immagine"
 
 #: ..\ShipBuilderLib\ShipPropertiesEditDialog.cpp:982
 msgid "Remove the password lock."
-msgstr ""
+msgstr "Rimuovi la protezione password."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1415
 msgid "Remove this layer."
-msgstr ""
+msgstr "Rimuovi questo layer."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:393
 msgid "Removes empty space around the ship"
-msgstr ""
+msgstr "Rimuovi spazio vuoto attorno alla nave"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:234
 msgid "Rendering"
@@ -2257,21 +2237,19 @@ msgstr "Ripristina tutti i parametri ai loro valori di default."
 
 #: ..\ShipBuilderLib\Controller.cpp:842 ..\ShipBuilderLib\ResizeDialog.cpp:462
 msgid "Resize Ship"
-msgstr ""
+msgstr "Ri-dimensiona nave"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:411
-#, fuzzy
-#| msgid "Get More Ships..."
 msgid "Resize Ship..."
-msgstr "Scarica ulteriori navi..."
+msgstr "Ri-dimensiona nave..."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:411 ..\ShipBuilderLib\MainFrame.cpp:926
 msgid "Resize the ship"
-msgstr ""
+msgstr "Cambia le dimensioni della nave"
 
 #: ..\ShipBuilderLib\ModelValidationDialog.cpp:347
 msgid "Resolving the following warning(s) would improve this ship:"
-msgstr ""
+msgstr "La risoluzione dei seguenti problemi migliorerebbe la nave:"
 
 #: ..\FloatingSandbox\DebugDialog.cpp:164
 msgid "Restore"
@@ -2288,7 +2266,7 @@ msgstr "Ripristina!"
 #: ..\ShipBuilderLib\AskPasswordDialog.cpp:309
 #, c-format
 msgid "Retry in %d..."
-msgstr ""
+msgstr "Riprova in %d..."
 
 #: ..\FloatingSandbox\BootSettingsDialog.cpp:144
 #: ..\FloatingSandbox\SettingsDialog.cpp:273
@@ -2323,7 +2301,7 @@ msgstr "Frequenza onde anomale"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1173
 msgid "Ropes layer"
-msgstr ""
+msgstr "Layer funi"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1129
 msgid "Rot Acceler8r"
@@ -2335,7 +2313,7 @@ msgstr "Putrefazione"
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:567
 msgid "Rust Receptivity"
-msgstr ""
+msgstr "Suscettibilità alla ruggine"
 
 #: ..\FloatingSandbox\CreditsPanel.cpp:105
 msgid "SHIP ENGINEERING"
@@ -2351,7 +2329,7 @@ msgstr "RINGRAZIAMENTI SPECIALI"
 
 #: ..\ShipBuilderLib\ModelValidationDialog.cpp:617
 msgid "Save"
-msgstr ""
+msgstr "Salva"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:5001
 msgid "Save Current Settings"
@@ -2370,40 +2348,32 @@ msgid "Save Settings on Exit"
 msgstr "Salva parametri in uscita"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:341
-#, fuzzy
-#| msgid "Load Ship"
 msgid "Save Ship"
-msgstr "Carica nave"
+msgstr "Salva nave"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:358
-#, fuzzy
-#| msgid "Load Ship..."
 msgid "Save Ship As..."
-msgstr "Carica nave..."
+msgstr "Salva nave con nome..."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:348
 msgid "Save Ship and Return to Game"
-msgstr ""
+msgstr "Salva nave e torna al simulatore"
 
 #: ..\FloatingSandbox\BootSettingsDialog.cpp:151
 msgid "Save and Quit"
 msgstr "Salva ed esci"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:341 ..\ShipBuilderLib\MainFrame.cpp:853
-#, fuzzy
-#| msgid "Save Current Settings"
 msgid "Save the current ship"
-msgstr "Salva parametri correnti"
+msgstr "Salva questa nave"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:348 ..\ShipBuilderLib\MainFrame.cpp:884
-#, fuzzy
-#| msgid "Saves the current settings using the specified name."
 msgid "Save the current ship and return to the simulator"
-msgstr "Salva i parametri correnti sotto il nome selezionato."
+msgstr "Salva questa nave e torna al simulatore"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:358 ..\ShipBuilderLib\MainFrame.cpp:869
 msgid "Save the current ship to a different file"
-msgstr ""
+msgstr "Salva questa nave in un nuovo file"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:5002
 msgid "Saves the current settings using the specified name."
@@ -2443,27 +2413,27 @@ msgstr "Imposta la modalità di visualizzazione del calore sulla nave."
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:591
 msgid "Self-Powered"
-msgstr ""
+msgstr "Auto-alimentato"
 
 #: ..\ShipBuilderLib\ShipPropertiesEditDialog.cpp:961
 msgid ""
 "Set a password to prevent unauthorized people from making changes to this "
 "ship."
 msgstr ""
+"Imposta una password per impedire ad altre persone di apportare modifiche a "
+"questa nave."
 
 #: ..\ShipBuilderLib\ShipPropertiesEditDialog.cpp:950
 msgid "Set a password to protect edits to this ship."
-msgstr ""
+msgstr "Imposta una password per impedire modifiche a questa nave."
 
 #: ..\ShipBuilderLib\ShipPropertiesEditDialog.cpp:718
-#, fuzzy
-#| msgid "Auto-Texturization"
 msgid "Set auto-texturization settings."
-msgstr "Auto-texturizzazione"
+msgstr "Imposta proprietà auto-texturizzazione."
 
 #: ..\ShipBuilderLib\ShipPropertiesEditDialog.cpp:729
 msgid "Set ship-specific auto-texturization settings."
-msgstr ""
+msgstr "Imposta proprietà auto-texturizzazione per questa nave."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3929
 msgid "Sets the color of lamp lights."
@@ -2542,24 +2512,20 @@ msgid "Ship Debug Draw Options"
 msgstr "Visualizzazione debug navi"
 
 #: ..\ShipBuilderLib\ModelValidationDialog.cpp:30
-#, fuzzy
-#| msgid "Ships"
 msgid "Ship Issues"
-msgstr "Navi"
+msgstr "Problemi"
 
 #: ..\ShipBuilderLib\ShipPropertiesEditDialog.cpp:171
-#, fuzzy
-#| msgid "Ship"
 msgid "Ship Name"
-msgstr "Nave"
+msgstr "Nome"
 
 #: ..\ShipBuilderLib\ShipPropertiesEditDialog.cpp:43
 msgid "Ship Properties"
-msgstr ""
+msgstr "Proprietà"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:417
 msgid "Ship Properties..."
-msgstr ""
+msgstr "Proprietà..."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:84
 msgid "Ships"
@@ -2670,7 +2636,7 @@ msgstr "Fumo"
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:822
 msgid "Smoke Emitter"
-msgstr ""
+msgstr "Emettitore fumo"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1792
 msgid "Smoothness Adjust"
@@ -2682,7 +2648,7 @@ msgstr "Suoni"
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:816
 msgid "Sound Emitter"
-msgstr ""
+msgstr "Emettitore suoni"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:246
 msgid "Sound and Advanced Settings"
@@ -2694,7 +2660,7 @@ msgstr "Pioggia"
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:574
 msgid "Specific Heat (J/(Kg*K))"
-msgstr ""
+msgstr "Calore specifico (J/(Kg*K))"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1225
 #: ..\FloatingSandbox\SettingsDialog.cpp:1695
@@ -2704,8 +2670,6 @@ msgid "Speed Adjust"
 msgstr "Velocità"
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:788
-#, fuzzy
-#| msgid "Spread Adjust"
 msgid "Spread"
 msgstr "Diffusione"
 
@@ -2739,7 +2703,7 @@ msgstr "Pressione statica netta"
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:718
 msgid "Steam"
-msgstr ""
+msgstr "A vapore"
 
 #: ..\FloatingSandbox\MainFrame.cpp:265
 msgid "Step"
@@ -2751,17 +2715,15 @@ msgstr "Incrementa un frame alla volta"
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:564
 msgid "Stiffness"
-msgstr ""
+msgstr "Rigidità"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1902
 msgid "Storms"
 msgstr "Tempeste"
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:563
-#, fuzzy
-#| msgid "Draw Strength"
 msgid "Strength"
-msgstr "Visualizza resistenza"
+msgstr "Resistenza"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:553
 #: ..\FloatingSandbox\SettingsDialog.cpp:1914
@@ -2773,14 +2735,12 @@ msgid "Strength Randomization"
 msgstr "Randomizzazione resistenza"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1180
-#, fuzzy
-#| msgid "Draw Structure"
 msgid "Structural layer"
-msgstr "Mostra struttura"
+msgstr "Layer strutturale"
 
 #: ..\ShipBuilderLib\ModelValidationDialog.cpp:282
 msgid "Success"
-msgstr ""
+msgstr "Successo"
 
 #: ..\FloatingSandbox\MainFrame.cpp:362
 msgid "Swirl/Counterswirl"
@@ -2788,7 +2748,7 @@ msgstr "Vortice/anti-vortice"
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:756
 msgid "Switch Type"
-msgstr ""
+msgstr "Tipo interruttore"
 
 #: ..\FloatingSandbox\CreditsPanel.cpp:79
 msgid "TESTING"
@@ -2809,10 +2769,8 @@ msgid "Texture"
 msgstr "Texture"
 
 #: ..\ShipBuilderLib\ShipPropertiesEditDialog.cpp:271
-#, fuzzy
-#| msgid "Texture"
 msgid "Texture Credits"
-msgstr "Texture"
+msgstr "Accreditamenti texture"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:795
 #: ..\ShipBuilderLib\ShipPropertiesEditDialog.cpp:857
@@ -2825,14 +2783,12 @@ msgid "Texture Transparency"
 msgstr "Trasparenza texture"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1187
-#, fuzzy
-#| msgid "Texture"
 msgid "Texture layer"
-msgstr "Texture"
+msgstr "Layer immagine"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1597
 msgid "Texture mode: view ship with texture."
-msgstr ""
+msgstr "Modalità texture: visualizza la nave con la texture."
 
 #: ..\FloatingSandbox\MainFrame.cpp:402
 msgid "Thanos' Snap"
@@ -2856,6 +2812,8 @@ msgid ""
 "The current changes to the layer will be lost; are you sure you want to "
 "continue?"
 msgstr ""
+"Le ultime modifiche a questo layer saranno perse; siete sicuri di voler "
+"continuare?"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2187
 msgid "The density of air bubbles generated when water enters a ship."
@@ -2876,11 +2834,14 @@ msgid ""
 "causing the simulation to lag on low-end computers. It is advisable to "
 "reduce the number of light-emitting electrical particles."
 msgstr ""
+"Il layer elettrico contiene troppe particelle luminose, con il rischio di "
+"rallentare la simulazione su computer meno recenti. Si suggerisce di "
+"diminuire il numero di particelle luminose."
 
 #: ..\ShipBuilderLib\ModelValidationDialog.cpp:484
 msgid ""
 "The electrical layer does not contain too many light-emitting particles."
-msgstr ""
+msgstr "Il numero di particelle luminose nel layer elettrico non è eccessivo."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1868
 msgid ""
@@ -2926,7 +2887,7 @@ msgstr ""
 
 #: ..\ShipBuilderLib\ShipPropertiesEditDialog.cpp:878
 msgid "The level of detail of materials' textures"
-msgstr ""
+msgstr "Il livello di dettaglio delle texture dei materiali"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:888
 msgid ""
@@ -2979,28 +2940,25 @@ msgstr "Il raggio di azione dell'HeatBlaster (m)."
 msgid ""
 "The ship is password-protected, please provide the password to continue:"
 msgstr ""
+"Questa nave è protetta da un password; digita la password per proseguire:"
 
 #: ..\ShipBuilderLib\ModelValidationDialog.cpp:327
 msgid "The ship may not be saved unless the following error(s) are resolved:"
 msgstr ""
+"La nave non può essere salvata fino a quando i seguenti errori non sono "
+"stati risolti:"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1008
-#, fuzzy
-#| msgid "The radius of the blast tool (m)."
 msgid "The size of the eraser tool."
-msgstr "Il raggio di azione dell'HeatBlaster (m)."
+msgstr "Le dimensioni del cancellino."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1037
-#, fuzzy
-#| msgid "The radius of the blast tool (m)."
 msgid "The size of the line tool."
-msgstr "Il raggio di azione dell'HeatBlaster (m)."
+msgstr "Le dimensioni dello strumento linee."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:979
-#, fuzzy
-#| msgid "The radius of the blast tool (m)."
 msgid "The size of the pencil tool."
-msgstr "Il raggio di azione dell'HeatBlaster (m)."
+msgstr "Le dimensioni dello strumento matita."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3015
 msgid "The starting radius of the damage caused by destructive tools (m)."
@@ -3008,7 +2966,7 @@ msgstr "Il raggio iniziale del danno causato dagli strumenti distruttivi (m)."
 
 #: ..\ShipBuilderLib\ModelValidationDialog.cpp:432
 msgid "The structural layer contains at least one particle."
-msgstr ""
+msgstr "Il layer strutturale contiene almeno una particella."
 
 #: ..\ShipBuilderLib\ModelValidationDialog.cpp:442
 msgid ""
@@ -3016,14 +2974,17 @@ msgid ""
 "simulation to lag on low-end computers. It is advisable to reduce the number "
 "of structural particles."
 msgstr ""
+"Il layer strutturale contiene troppe particelle, con il rischio di "
+"rallentare la simulazione su computer meno recenti. Si suggerisce di "
+"diminuire il numero di particelle strutturali."
 
 #: ..\ShipBuilderLib\ModelValidationDialog.cpp:446
 msgid "The structural layer does not contain too many particles."
-msgstr ""
+msgstr "Il numero di particelle nel layer strutturale non è eccessivo."
 
 #: ..\ShipBuilderLib\ModelValidationDialog.cpp:428
 msgid "The structural layer is empty. Place at least one particle in it."
-msgstr ""
+msgstr "Il layer strutturale è vuoto. Occorre collocare almeno una particella."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2161
 msgid "The temperature of air (K)."
@@ -3034,16 +2995,12 @@ msgid "The temperature of water (K)."
 msgstr "La temperatura dell'acqua (K)."
 
 #: ..\ShipBuilderLib\ShipPropertiesEditDialog.cpp:915
-#, fuzzy
-#| msgid "Adjusts the transparency of sea water."
 msgid "The transparency of materials' textures"
-msgstr "Regola la trasparenza del mare."
+msgstr "La trasparenza delle texture dei materiali."
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:575
-#, fuzzy
-#| msgid "Thermal Conductivity Adjust"
 msgid "Thermal Conductivity (W/(m*K))"
-msgstr "Conduttività termica"
+msgstr "Conduttività termica (W/(m*K))"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:655
 msgid "Thermal Conductivity Adjust"
@@ -3051,7 +3008,7 @@ msgstr "Conduttività termica"
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:576
 msgid "Thermal Expansion Coefficient (1/K)"
-msgstr ""
+msgstr "Coefficiente di espansione termica (1/K)"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:643
 msgid "Thermodynamics"
@@ -3106,10 +3063,8 @@ msgid "Toggle RC Bomb"
 msgstr "Bomba telecomandata"
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:768
-#, fuzzy
-#| msgid "Toggle Pin"
 msgid "Toggle Switch"
-msgstr "Spillo"
+msgstr "Interruttore a levetta"
 
 #: ..\FloatingSandbox\MainFrame.cpp:382
 msgid "Toggle Timer Bomb"
@@ -3117,7 +3072,7 @@ msgstr "Bomba ad orologeria"
 
 #: ..\ShipBuilderLib\AskPasswordDialog.cpp:313
 msgid "Too many attempts, aborting."
-msgstr ""
+msgstr "Tentativi esauriti, operazione annullata."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4249
 msgid "Tools Volume"
@@ -3149,13 +3104,11 @@ msgstr "Provoca tsunami"
 
 #: ..\ShipBuilderLib\Controller.cpp:815
 msgid "Trim"
-msgstr ""
+msgstr "Ritaglio"
 
 #: ..\ShipBuilderLib\Controller.cpp:492
-#, fuzzy
-#| msgid "Electricals"
 msgid "Trim Electrical"
-msgstr "Elettrotecnica"
+msgstr "Ritaglio layer elettrico"
 
 #: ..\FloatingSandbox\BootSettingsDialog.cpp:66
 #: ..\FloatingSandbox\BootSettingsDialog.cpp:111
@@ -3168,15 +3121,15 @@ msgstr "Frequenza tsunami"
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:683
 msgid "Type"
-msgstr ""
+msgstr "Tipo"
 
 #: ..\ShipBuilderLib\NewPasswordDialog.cpp:25
 msgid "Type New Password"
-msgstr ""
+msgstr "Digita nuova password"
 
 #: ..\ShipBuilderLib\NewPasswordDialog.cpp:50
 msgid "Type your new password:"
-msgstr ""
+msgstr "Digita la nuova password:"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:716
 msgid "Ultra-Violent Mode"
@@ -3189,7 +3142,7 @@ msgstr "Ripristina"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:385
 msgid "Undo the last edit operation"
-msgstr ""
+msgstr "Annulla l'ultima operazione"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:540
 msgid "Units system:"
@@ -3201,11 +3154,11 @@ msgstr "Durata update"
 
 #: ..\ShipBuilderLib\ShipPropertiesEditDialog.cpp:692
 msgid "Use the global auto-texturization settings of the simulator."
-msgstr ""
+msgstr "Usa le impostazioni globali di auto-texturizzazione."
 
 #: ..\ShipBuilderLib\ShipPropertiesEditDialog.cpp:681
 msgid "Use the global auto-texturization settings."
-msgstr ""
+msgstr "Usa le impostazioni globali di auto-texturizzazione."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:369
 msgid "User Interface"
@@ -3251,20 +3204,16 @@ msgid "Water Momenta"
 msgstr "Quantità moto acqua"
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:835
-#, fuzzy
-#| msgid "Water"
 msgid "Water Pump"
-msgstr "Acqua"
+msgstr "Pompa acqua"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2569
 msgid "Water Pump Power Adjust"
 msgstr "Potenza pompe"
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:848
-#, fuzzy
-#| msgid "Water Splash"
 msgid "Water Switch"
-msgstr "Potenza acqua"
+msgstr "Interruttore ad acqua"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4596
 msgid "Water Velocities"
@@ -3276,11 +3225,11 @@ msgstr "Acqua ed oceano"
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:854
 msgid "Watertight Door"
-msgstr ""
+msgstr "Porta a tenuta stagna"
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:794
 msgid "Watertight Factor"
-msgstr ""
+msgstr "Fattore tenuta stagna"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1829
 msgid "Wave Phenomena"
@@ -3327,6 +3276,8 @@ msgstr ""
 #: ..\ShipBuilderLib\MainFrame.cpp:1050
 msgid "When enabled, draw lines with pixel edges touching each other"
 msgstr ""
+"Abilitando questa opzione, le linee sono tracciate con pixel adiacenti l'un "
+"l'altro."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1668
 msgid "Width Adjust"
@@ -3346,11 +3297,11 @@ msgstr "Vento e onde"
 
 #: ..\ShipBuilderLib\ShipPropertiesEditDialog.cpp:319
 msgid "Year Built"
-msgstr ""
+msgstr "Anno costruzione"
 
 #: ..\ShipBuilderLib\ShipPropertiesEditDialog.cpp:353
 msgid "Year in which the ship was built, e.g. \"1911\""
-msgstr ""
+msgstr "L'anno in cui la nave è stata costruita; ad esempio, \"1911\""
 
 #: ..\FloatingSandbox\MainFrame.cpp:239 ..\ShipBuilderLib\MainFrame.cpp:429
 msgid "Zoom In"

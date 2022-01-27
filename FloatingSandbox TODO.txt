@@ -161,6 +161,11 @@
 		- Do Mattia's video and post together with https://www.youtube.com/watch?v=X2n4Q25Ld34
 
 		- Localization
+			= IT
+				- When done, update for other small changes
+				- Tests:
+					- ShipBuilder's Material Palette's property grid
+						- Also: Engine Types
 
 		- MSI Installer:
 			- Also install ShipBuilder.exe
