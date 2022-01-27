@@ -198,6 +198,7 @@ public:
     bool ExtinguishFireAt(DisplayLogicalCoordinates const & screenCoordinates) override;
     void ApplyBlastAt(DisplayLogicalCoordinates const & screenCoordinates, float radiusMultiplier, float forceMultiplier, float renderProgress, float personalitySeed) override;
     bool ApplyElectricSparkAt(DisplayLogicalCoordinates const & screenCoordinates, std::uint64_t counter, float lengthMultiplier, float currentSimulationTime) override;
+    void ApplyRadialWindFrom(DisplayLogicalCoordinates const & sourcePos, float preFrontSimulationTimeElapsed, float preFrontIntensityMultiplier, float mainFrontSimulationTimeElapsed, float mainFrontIntensityMultiplier) override;
     void DrawTo(DisplayLogicalCoordinates const & screenCoordinates, float strengthFraction) override;
     void SwirlAt(DisplayLogicalCoordinates const & screenCoordinates, float strengthFraction) override;
     void TogglePinAt(DisplayLogicalCoordinates const & screenCoordinates) override;
@@ -668,10 +669,15 @@ public:
     float GetMinBlastToolForceAdjustment() const override { return GameParameters::MinBlastToolForceAdjustment; }
     float GetMaxBlastToolForceAdjustment() const override { return GameParameters::MaxBlastToolForceAdjustment; }
 
-    float GetScrubRotRadius() const override { return mGameParameters.ScrubRotRadius; }
-    void SetScrubRotRadius(float value) override { mGameParameters.ScrubRotRadius = value; }
-    float GetMinScrubRotRadius() const override { return GameParameters::MinScrubRotRadius; }
-    float GetMaxScrubRotRadius() const override { return GameParameters::MaxScrubRotRadius; }
+    float GetScrubRotToolRadius() const override { return mGameParameters.ScrubRotToolRadius; }
+    void SetScrubRotToolRadius(float value) override { mGameParameters.ScrubRotToolRadius = value; }
+    float GetMinScrubRotToolRadius() const override { return GameParameters::MinScrubRotToolRadius; }
+    float GetMaxScrubRotToolRadius() const override { return GameParameters::MaxScrubRotToolRadius; }
+
+    float GetWindMakerToolWindSpeed() const override { return mGameParameters.WindMakerToolWindSpeed; }
+    void SetWindMakerToolWindSpeed(float value) override { mGameParameters.WindMakerToolWindSpeed = value; }
+    float GetMinWindMakerToolWindSpeed() const override { return GameParameters::MinWindMakerToolWindSpeed; }
+    float GetMaxWindMakerToolWindSpeed() const override { return GameParameters::MaxWindMakerToolWindSpeed; }
 
     float GetLuminiscenceAdjustment() const override { return mGameParameters.LuminiscenceAdjustment; }
     void SetLuminiscenceAdjustment(float value) override { mGameParameters.LuminiscenceAdjustment = value; }

@@ -143,6 +143,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::Text;
     else if (lstr == "texture_notifications")
         return ProgramType::TextureNotifications;
+    else if (lstr == "wind_sphere")
+        return ProgramType::WindSphere;
     else if (lstr == "world_border")
         return ProgramType::WorldBorder;
     else
@@ -281,6 +283,8 @@ std::string ProgramTypeToStr(ProgramType program)
         return "Text";
     case ProgramType::TextureNotifications:
         return "TextureNotifications";
+    case ProgramType::WindSphere:
+        return "WindSphere";
     case ProgramType::WorldBorder:
         return "WorldBorder";
     }
@@ -299,10 +303,8 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::AtlasTile1Size;
     else if (str == "EffectiveAmbientLightIntensity")
         return ProgramParameterType::EffectiveAmbientLightIntensity;
-    else if (str == "FlameSpeed")
-        return ProgramParameterType::FlameSpeed;
-    else if (str == "FlameWindRotationAngle")
-        return ProgramParameterType::FlameWindRotationAngle;
+    else if (str == "FlameProgress")
+        return ProgramParameterType::FlameProgress;
     else if (str == "HeatShift")
         return ProgramParameterType::HeatShift;
     else if (str == "LampLightColor")
@@ -384,10 +386,8 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
         return "AtlasTile1Size";
     case ProgramParameterType::EffectiveAmbientLightIntensity:
         return "EffectiveAmbientLightIntensity";
-    case ProgramParameterType::FlameSpeed:
-        return "FlameSpeed";
-    case ProgramParameterType::FlameWindRotationAngle:
-        return "FlameWindRotationAngle";
+    case ProgramParameterType::FlameProgress:
+        return "FlameProgress";
     case ProgramParameterType::HeatShift:
         return "HeatShift";
     case ProgramParameterType::LampLightColor:
@@ -580,6 +580,10 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::PressureInjectionHalo1;
     else if (Utils::CaseInsensitiveEquals(str, "PressureInjectionHalo2"))
         return VertexAttributeType::PressureInjectionHalo2;
+    else if (Utils::CaseInsensitiveEquals(str, "WindSphere1"))
+        return VertexAttributeType::WindSphere1;
+    else if (Utils::CaseInsensitiveEquals(str, "WindSphere2"))
+        return VertexAttributeType::WindSphere2;
     else
         throw GameException("Unrecognized vertex attribute \"" + str + "\"");
 }

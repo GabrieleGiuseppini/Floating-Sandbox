@@ -430,6 +430,48 @@ bool World::ApplyElectricSparkAt(
     return atLeastOneShipApplied;
 }
 
+void World::ApplyRadialWindFrom(
+    vec2f const & sourcePos,
+    float preFrontRadius,
+    float preFrontWindSpeed,
+    float mainFrontRadius,
+    float mainFrontWindSpeed,
+    GameParameters const & gameParameters)
+{
+    // Apply to ships
+    for (auto & ship : mAllShips)
+    {
+        ship->ApplyRadialWindFrom(
+            sourcePos,
+            preFrontRadius,
+            preFrontWindSpeed,
+            mainFrontRadius,
+            mainFrontWindSpeed,
+            gameParameters);
+    }
+
+    // Apply to ocean
+    //
+    // We displace the ocean surface where the sphere meets the ocean:
+    //
+    //       /|
+    //     r/ |h
+    //     /  |
+    //     ----
+    //      d
+    if (preFrontRadius >= sourcePos.y)
+    {
+        float const d = std::sqrt(preFrontRadius * preFrontRadius - sourcePos.y * sourcePos.y);
+
+        float const displacementMagnitude =
+            preFrontWindSpeed / 10.0f // Magic number
+            * SignStep(0.0f, -sourcePos.y);
+
+        mOceanSurface.DisplaceAt(sourcePos.x - d, displacementMagnitude);
+        mOceanSurface.DisplaceAt(sourcePos.x + d, displacementMagnitude);
+    }
+}
+
 void World::DrawTo(
     vec2f const & targetPos,
     float strengthFraction,

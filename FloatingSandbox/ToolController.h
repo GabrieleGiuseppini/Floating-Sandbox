@@ -39,7 +39,7 @@ public:
 
         // Notify old tool
         if (nullptr != mCurrentTool)
-            mCurrentTool->Deinitialize(mInputState);
+            mCurrentTool->Deinitialize();
 
         // Switch tool
         mCurrentTool = mAllTools[static_cast<size_t>(toolType)].get();
@@ -54,7 +54,7 @@ public:
         // Notify old tool
         if (nullptr != mCurrentTool)
         {
-            mCurrentTool->Deinitialize(mInputState);
+            mCurrentTool->Deinitialize();
             InternalSetCurrentToolCursor();
         }
     }
@@ -73,6 +73,17 @@ public:
         if (nullptr != mCurrentTool)
         {
             mCurrentTool->UpdateSimulation(mInputState, currentSimulationTime);
+        }
+    }
+
+    void Reset()
+    {
+        if (nullptr != mCurrentTool)
+        {
+            mCurrentTool->Deinitialize();
+            mCurrentTool->Initialize(mInputState);
+
+            InternalSetCurrentToolCursor();
         }
     }
 

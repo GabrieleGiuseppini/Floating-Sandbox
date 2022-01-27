@@ -277,8 +277,11 @@ struct IGameControllerSettings
     virtual float GetBlastToolForceAdjustment() const = 0;
     virtual void SetBlastToolForceAdjustment(float value) = 0;
 
-    virtual float GetScrubRotRadius() const = 0;
-    virtual void SetScrubRotRadius(float value) = 0;
+    virtual float GetScrubRotToolRadius() const = 0;
+    virtual void SetScrubRotToolRadius(float value) = 0;
+
+    virtual float GetWindMakerToolWindSpeed() const = 0;
+    virtual void SetWindMakerToolWindSpeed(float value) = 0;
 
     virtual bool GetUltraViolentMode() const = 0;
     virtual void SetUltraViolentMode(bool value) = 0;

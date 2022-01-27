@@ -505,6 +505,75 @@ public:
 			flowMultiplier);
 	}
 
+	inline void UploadWindSphere(
+		vec2f const & centerPosition,
+		float preFrontRadius,
+		float preFrontIntensityMultiplier,
+		float mainFrontRadius,
+		float mainFrontIntensityMultiplier)
+	{
+		//
+		// Populate vertices
+		//
+
+		float const left = centerPosition.x - preFrontRadius;
+		float const right = centerPosition.x + preFrontRadius;
+		float const top = centerPosition.y + preFrontRadius;
+		float const bottom = centerPosition.y - preFrontRadius;
+
+		// Triangle 1
+
+		mWindSphereVertexBuffer.emplace_back(
+			vec2f(left, bottom),
+			centerPosition,
+			preFrontRadius,
+			preFrontIntensityMultiplier,
+			mainFrontRadius,
+			mainFrontIntensityMultiplier);
+
+		mWindSphereVertexBuffer.emplace_back(
+			vec2f(left, top),
+			centerPosition,
+			preFrontRadius,
+			preFrontIntensityMultiplier,
+			mainFrontRadius,
+			mainFrontIntensityMultiplier);
+
+		mWindSphereVertexBuffer.emplace_back(
+			vec2f(right, bottom),
+			centerPosition,
+			preFrontRadius,
+			preFrontIntensityMultiplier,
+			mainFrontRadius,
+			mainFrontIntensityMultiplier);
+
+		// Triangle 2
+
+		mWindSphereVertexBuffer.emplace_back(
+			vec2f(left, top),
+			centerPosition,
+			preFrontRadius,
+			preFrontIntensityMultiplier,
+			mainFrontRadius,
+			mainFrontIntensityMultiplier);
+
+		mWindSphereVertexBuffer.emplace_back(
+			vec2f(right, bottom),
+			centerPosition,
+			preFrontRadius,
+			preFrontIntensityMultiplier,
+			mainFrontRadius,
+			mainFrontIntensityMultiplier);
+
+		mWindSphereVertexBuffer.emplace_back(
+			vec2f(right, top),
+			centerPosition,
+			preFrontRadius,
+			preFrontIntensityMultiplier,
+			mainFrontRadius,
+			mainFrontIntensityMultiplier);
+	}
+
 	void UploadEnd();
 
 	void ProcessParameterChanges(RenderParameters const & renderParameters);
@@ -540,6 +609,9 @@ private:
 
 	inline void RenderPreparePressureInjectionHalo();
 	inline void RenderDrawPressureInjectionHalo();
+
+	inline void RenderPrepareWindSphere();
+	inline void RenderDrawWindSphere();
 
 private:
 
@@ -680,6 +752,31 @@ private:
 			: vertexPosition(_vertexPosition)
 			, haloSpacePosition(_haloSpacePosition)
 			, flowMultiplier(_flowMultiplier)
+		{}
+	};
+
+	struct WindSphereVertex
+	{
+		vec2f vertexPosition;
+		vec2f centerPosition;
+		float preFrontRadius;
+		float preFrontIntensity;
+		float mainFrontRadius;
+		float mainFrontIntensity;
+
+		WindSphereVertex(
+			vec2f _vertexPosition,
+			vec2f _centerPosition,
+			float _preFrontRadius,
+			float _preFrontIntensity,
+			float _mainFrontRadius,
+			float _mainFrontIntensity)
+			: vertexPosition(_vertexPosition)
+			, centerPosition(_centerPosition)
+			, preFrontRadius(_preFrontRadius)
+			, preFrontIntensity(_preFrontIntensity)
+			, mainFrontRadius(_mainFrontRadius)
+			, mainFrontIntensity(_mainFrontIntensity)
 		{}
 	};
 
@@ -828,6 +925,10 @@ private:
 	GameOpenGLVAO mPressureInjectionHaloVAO;
 	std::vector<PressureInjectionHaloVertex> mPressureInjectionHaloVertexBuffer;
 	GameOpenGLVBO mPressureInjectionHaloVBO;
+
+	GameOpenGLVAO mWindSphereVAO;
+	std::vector<WindSphereVertex> mWindSphereVertexBuffer;
+	GameOpenGLVBO mWindSphereVBO;
 };
 
 }

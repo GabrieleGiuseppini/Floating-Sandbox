@@ -952,6 +952,45 @@ bool GameController::ApplyElectricSparkAt(
         mGameParameters);
 }
 
+void GameController::ApplyRadialWindFrom(
+    DisplayLogicalCoordinates const & sourcePos,
+    float preFrontSimulationTimeElapsed,
+    float preFrontIntensityMultiplier,
+    float mainFrontSimulationTimeElapsed,
+    float mainFrontIntensityMultiplier)
+{
+    vec2f const sourceWorldCoordinates = mRenderContext->ScreenToWorld(sourcePos);
+
+    // Calculate wind speed, in m/s
+    float const effectiveBaseWindSpeed =
+        mGameParameters.WindMakerToolWindSpeed * 1000.0f / 3600.0f
+        * (mGameParameters.IsUltraViolentMode ? 3.5f : 1.0f);
+    float const preFrontWindSpeed = effectiveBaseWindSpeed * preFrontIntensityMultiplier;
+    float const mainFrontWindSpeed = effectiveBaseWindSpeed * mainFrontIntensityMultiplier;
+
+    // Calculate distance traveled along fronts
+    float preFrontRadius = preFrontWindSpeed * preFrontSimulationTimeElapsed;
+    float mainFrontRadius = mainFrontWindSpeed * mainFrontSimulationTimeElapsed;
+
+    // Apply action
+    assert(!!mWorld);
+    mWorld->ApplyRadialWindFrom(
+        sourceWorldCoordinates,
+        preFrontRadius,
+        preFrontWindSpeed,
+        mainFrontRadius,
+        mainFrontWindSpeed,
+        mGameParameters);
+
+    // Draw notification (one frame only)
+    mNotificationLayer.SetWindSphere(
+        sourceWorldCoordinates,
+        preFrontRadius,
+        preFrontIntensityMultiplier,
+        mainFrontRadius,
+        mainFrontIntensityMultiplier);
+}
+
 void GameController::DrawTo(
     DisplayLogicalCoordinates const & screenCoordinates,
     float strengthFraction)

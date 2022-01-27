@@ -529,9 +529,13 @@ struct GameParameters
     static float constexpr MinBlastToolForceAdjustment = 0.1f;
     static float constexpr MaxBlastToolForceAdjustment = 10.0f;
 
-    float ScrubRotRadius;
-    static float constexpr MinScrubRotRadius = 1.0f;
-    static float constexpr MaxScrubRotRadius = 20.0f;
+    float ScrubRotToolRadius;
+    static float constexpr MinScrubRotToolRadius = 1.0f;
+    static float constexpr MaxScrubRotToolRadius = 20.0f;
+
+    float WindMakerToolWindSpeed; // Beaufort scale, km/h
+    static float constexpr MinWindMakerToolWindSpeed = 20.0f;
+    static float constexpr MaxWindMakerToolWindSpeed = 200.0f;
 
     bool IsUltraViolentMode;
 

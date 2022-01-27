@@ -409,6 +409,11 @@ MainFrame::MainFrame(
                 }
 
                 {
+                    auto menuItem = ADD_TOOL_MENUITEM(_("WindMaker"), wxS("\t9"), "wind_cursor_up", OnWindMakerMenuItemSelected);
+                    ADD_PLAIN_ACCELERATOR_KEY('9', menuItem);
+                }
+
+                {
                     auto menuItem = ADD_TOOL_MENUITEM(_("Adjust Terrain"), wxS("\tJ"), "terrain_adjust_cursor_up", OnAdjustTerrainMenuItemSelected);
                     ADD_PLAIN_ACCELERATOR_KEY('J', menuItem);
                 }
@@ -1761,6 +1766,12 @@ void MainFrame::OnWaveMakerMenuItemSelected(wxCommandEvent & /*event*/)
     mToolController->SetTool(ToolType::WaveMaker);
 }
 
+void MainFrame::OnWindMakerMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mToolController);
+    mToolController->SetTool(ToolType::WindMakerTool);
+}
+
 void MainFrame::OnAdjustTerrainMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mToolController);
@@ -2277,17 +2288,24 @@ void MainFrame::FreezeGame()
     // Freeze game controller
     //
 
-    mGameController->Freeze();
+    if (!!mGameController)
+    {
+        mGameController->Freeze();
+    }
 
     //
     // Stop sounds
     //
 
-    assert(!!mSoundController);
-    mSoundController->Reset();
+    if (!!mSoundController)
+    {
+        mSoundController->Reset();
+    }
 
-    assert(!!mMusicController);
-    mMusicController->Reset();
+    if (!!mMusicController)
+    {
+        mMusicController->Reset();
+    }
 }
 
 void MainFrame::ThawGame()
@@ -2298,7 +2316,10 @@ void MainFrame::ThawGame()
     // Thaw game controller
     //
 
-    mGameController->Thaw();
+    if (!!mGameController)
+    {
+        mGameController->Thaw();
+    }
 
     //
     // Restart timers
@@ -2425,6 +2446,9 @@ void MainFrame::LoadShip(
     //
     // Reset
     //
+
+    assert(!!mToolController);
+    mToolController->Reset();
 
     assert(!!mSoundController);
     mSoundController->Reset();

@@ -214,6 +214,14 @@ public:
         float currentSimulationTime,
         GameParameters const & gameParameters);
 
+    void ApplyRadialWindFrom(
+        vec2f const & sourcePos,
+        float preFrontRadius,
+        float preFrontWindSpeed,
+        float mainFrontRadius,
+        float mainFrontWindSpeed,
+        GameParameters const & gameParameters);
+
     void DrawTo(
         vec2f const & targetPos,
         float strengthFraction,

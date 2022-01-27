@@ -116,6 +116,10 @@ void GlobalRenderContext::InitializeGenericTextures(ResourceLocator const & reso
     mGenericLinearTextureAtlasMetadata = std::make_unique<TextureAtlasMetadata<GenericLinearTextureGroups>>(
         genericLinearTextureAtlas.Metadata);
 
+    //
+    // Flames
+    //
+
     // Set FlamesBackground shader parameters
     auto const & fireAtlasFrameMetadata = mGenericLinearTextureAtlasMetadata->GetFrameMetadata(GenericLinearTextureGroups::Fire, 0);
     mShaderManager.ActivateProgram<ProgramType::ShipFlamesBackground>();

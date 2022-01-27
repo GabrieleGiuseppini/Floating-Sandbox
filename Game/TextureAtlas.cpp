@@ -648,7 +648,7 @@ TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::BuildAtlas(
             texturePosition.FrameLeftX,
             texturePosition.FrameBottomY);
 
-        // Calculate frame dimensions in texture space
+        // Calculate frame dimensions in texture space - the whole thing, ignoring dx/dy
         float const textureSpaceFrameWidth = static_cast<float>(textureFrame.TextureData.Size.width) / static_cast<float>(specification.AtlasSize.width);
         float const textureSpaceFrameHeight = static_cast<float>(textureFrame.TextureData.Size.height) / static_cast<float>(specification.AtlasSize.height);
 

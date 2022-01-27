@@ -11,7 +11,7 @@ The game is really a generic physics simulator that can be used to simulate just
 As of now the simulator implements the following aspects of physics:
 - Classical mechanics - Hookean laws for springs, impacts
 - Thermodynamics - heat transfer, dissipation, combustion
-- Fluid dynamics - buoyancy, drag, hydrostatic and atmospheric pressure
+- Fluid dynamics - buoyancy, drag, hydrostatic and atmospheric pressure, wind
 - Basic electrotechnics - conductivity
 
 <img src="https://i.imgur.com/kovxCty.png">

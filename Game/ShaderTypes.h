@@ -82,6 +82,7 @@ enum class ProgramType
     Stars,
     Text,
     TextureNotifications,
+    WindSphere,
     WorldBorder,
 
     _Last = WorldBorder
@@ -97,8 +98,7 @@ enum class ProgramParameterType : uint8_t
     AtlasTile1LeftBottomTextureCoordinates,
     AtlasTile1Size,
     EffectiveAmbientLightIntensity,
-    FlameSpeed,
-    FlameWindRotationAngle,
+    FlameProgress,
     HeatShift,
     LampLightColor,
     LandFlatColor,
@@ -244,7 +244,10 @@ enum class VertexAttributeType : GLuint
     BlastToolHalo2 = 1,
 
     PressureInjectionHalo1 = 0,
-    PressureInjectionHalo2 = 1
+    PressureInjectionHalo2 = 1,
+
+    WindSphere1 = 0,
+    WindSphere2 = 1
 };
 
 VertexAttributeType StrToVertexAttributeType(std::string const & str);

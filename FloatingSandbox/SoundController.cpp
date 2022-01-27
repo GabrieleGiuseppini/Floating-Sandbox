@@ -76,6 +76,7 @@ SoundController::SoundController(
     , mBlastToolSlow1Sound()
     , mBlastToolSlow2Sound()
     , mBlastToolFastSound()
+    , mWindMakerWindSound()
     , mWaterRushSound()
     , mWaterSplashSound()
     , mAirBubblesSurfacingSound(0.23f, 0.12f)
@@ -342,6 +343,12 @@ SoundController::SoundController(
         else if (soundType == SoundType::Wind)
         {
             mWindSound.Initialize(
+                soundFile->Clone(),
+                100.0f,
+                mMasterEffectsVolume,
+                mMasterEffectsMuted);
+
+            mWindMakerWindSound.Initialize(
                 std::move(soundFile),
                 100.0f,
                 mMasterEffectsVolume,
@@ -504,6 +511,7 @@ SoundController::SoundController(
         }
         else if (soundType == SoundType::Wave
                 || soundType == SoundType::WindGust
+                || soundType == SoundType::WindGustShort
                 || soundType == SoundType::Thunder
                 || soundType == SoundType::Lightning
                 || soundType == SoundType::FireSizzling
@@ -855,6 +863,7 @@ void SoundController::SetMasterEffectsVolume(float volume)
 
     mSawedMetalSound.SetMasterVolume(mMasterEffectsVolume);
     mSawedWoodSound.SetMasterVolume(mMasterEffectsVolume);
+    mWindMakerWindSound.SetMasterVolume(mMasterEffectsVolume);
     mWaterRushSound.SetMasterVolume(mMasterEffectsVolume);
     mWaterSplashSound.SetMasterVolume(mMasterEffectsVolume);
     mAirBubblesSurfacingSound.SetMasterVolume(mMasterEffectsVolume);
@@ -884,6 +893,7 @@ void SoundController::SetMasterEffectsMuted(bool isMuted)
 
     mSawedMetalSound.SetMuted(mMasterEffectsMuted);
     mSawedWoodSound.SetMuted(mMasterEffectsMuted);
+    mWindMakerWindSound.SetMuted(mMasterEffectsMuted);
     mWaterRushSound.SetMuted(mMasterEffectsMuted);
     mWaterSplashSound.SetMuted(mMasterEffectsMuted);
     mAirBubblesSurfacingSound.SetMuted(mMasterEffectsMuted);
@@ -929,6 +939,7 @@ void SoundController::SetMasterToolsVolume(float volume)
     mWaveMakerSound.SetMasterVolume(mMasterToolsVolume);
     mFishScareSound.SetMasterVolume(mMasterToolsVolume);
     mFishFoodSound.SetMasterVolume(mMasterToolsVolume);
+    mWindMakerWindSound.SetMasterVolume(mMasterToolsVolume);
 }
 
 void SoundController::SetMasterToolsMuted(bool isMuted)
@@ -962,6 +973,7 @@ void SoundController::SetMasterToolsMuted(bool isMuted)
     mWaveMakerSound.SetMuted(mMasterToolsMuted);
     mFishScareSound.SetMuted(mMasterToolsMuted);
     mFishFoodSound.SetMuted(mMasterToolsMuted);
+    mWindMakerWindSound.SetMuted(mMasterToolsMuted);
 }
 
 void SoundController::SetPlayBreakSounds(bool playBreakSounds)
@@ -1302,6 +1314,25 @@ void SoundController::PlayBlastToolFastSound()
     }
 }
 
+void SoundController::PlayOrUpdateWindMakerWindSound(float volume)
+{
+    mWindMakerWindSound.SetVolume(volume);
+}
+
+void SoundController::StopWindMakerWindSound()
+{
+    mWindMakerWindSound.Stop();
+}
+
+void SoundController::PlayWindGustShortSound()
+{
+    PlayOneShotMultipleChoiceSound(
+        SoundType::WindGustShort,
+        SoundGroupType::Effects,
+        100.0f,
+        true);
+}
+
 void SoundController::PlaySnapshotSound()
 {
     PlayOneShotMultipleChoiceSound(
@@ -1401,6 +1432,7 @@ void SoundController::Reset()
     mWaveMakerSound.Reset();
     mFishScareSound.Reset();
     mFishFoodSound.Reset();
+    mWindMakerWindSound.Reset();
 
     mWaterRushSound.Reset();
     mWaterSplashSound.Reset();

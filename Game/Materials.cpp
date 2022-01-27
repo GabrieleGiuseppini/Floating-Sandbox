@@ -77,7 +77,7 @@ StructuralMaterial StructuralMaterial::Create(
 
         // Misc
 
-        float const windReceptivity = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "wind_receptivity", 0.0);
+        float const windReceptivity = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "wind_receptivity");
         bool isLegacyElectrical = Utils::GetOptionalJsonMember<bool>(structuralMaterialJson, "is_legacy_electrical", false);
 
         // Palette coordinates
