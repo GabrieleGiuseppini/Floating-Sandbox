@@ -129,7 +129,7 @@ void main()
     // Sample alpha
     //
 
-    #define AlphaResolution 2.5 // When >= 2, we're guaranteed to fall within the atlas tile's boundaries
+    #define AlphaResolution 2.0 // When >= 2, we're guaranteed to fall within the atlas tile's boundaries
 
     vec2 alphaVirtualTextureCoords = vec2(
             ((uv.x + 1.0) + noiseOffset.x) / AlphaResolution,

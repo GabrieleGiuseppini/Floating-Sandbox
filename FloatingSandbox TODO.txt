@@ -71,7 +71,7 @@
 				+ Velocity used for radius should also depend on intensity
 				+ Ocean surface
 					+ Use pre-front, its radius and intensity
-			= Flames:
+			+ Flames:
 				+ Flame shader's FlameWindRotationAngle parameter must become vertex attribute
 					= New step at Points::UpdateCombustionHighFrequency, populating new CombustionState member: rotation angle (or whatever it is we do now)
 						+ Step 1: use global wind like now
@@ -92,7 +92,6 @@
 					+ Taken by shader in VertexAttribute instead of uniform
 				+ See if ShipRenderContext still needs wind afterwards
 					+ Note: WorldRenderContext would still need it
-				- Investigate turning off combustion with high wind
 			+ Tool:
 				+ Tool should be reset at ship reset/load
 					+ @ MainFrame::LoadShip(...)
@@ -103,9 +102,8 @@
 				+ Change cursor
 					+ Molen
 					+ Shift modifier
-			- Accelerator key
-			- Finalize:
-				- Check tool wind speed setting range in SettingsDialog
+			= Finalize:
+				+ Check tool wind speed setting range in SettingsDialog
 				- Merge into master
 				- Changes.txt
 
