@@ -38,7 +38,7 @@
 				+ Cleanup OceanSurface.h::DisplaceAt()
 					+ See assembly
 
-		= Wind tool
+		+ Wind tool
 			+ Need non-zero wind receptivity for all materials
 				+ Test first with hacking WindReceptivity in interaction
 					+ Test 0.1
@@ -102,10 +102,10 @@
 				+ Change cursor
 					+ Molen
 					+ Shift modifier
-			= Finalize:
+			+ Finalize:
 				+ Check tool wind speed setting range in SettingsDialog
-				- Merge into master
-				- Changes.txt
+				+ Merge into master
+				+ Changes.txt
 
 		= Test Titanic sinking to floor and see what really happens
 			- 1: add count of spring breakages (temporarily) - as CustomProbe
@@ -117,6 +117,10 @@
 				- Lower returned velocity when underwater (e.g. because of water damp)
 				- More frequest invocations from spring loop
 			- At end: remove spring breakage count
+
+		- Lower volume of pump sound when many pumps are playing
+			- Generically: instanced sounds: instances of same type share (via shared_ptr) common data  - just # of instances atm
+				- Then, when # of instances is updated, volume of all instances is changed accordingly
 
 		- Silting a bit thicker
 			- "I have silting on all the way but the ships go no further than a couple pixels into the mud"
@@ -143,14 +147,8 @@
 				- Zoom solution: ParameterSmoother: various timestamp members become time_point (rather than float's)
 			- Might have same issue with various tools
 			- TODO: is it really worth fixing this?
-
-		- Lower volume of pump sound when many pumps are playing
-			- Generically: instanced sounds: instances of same type share (via shared_ptr) common data  - just # of instances atm
-				- Then, when # of instances is updated, volume of all instances is changed accordingly
-		
-		- Flames: see if can have softer rotation
-
-		- Re-make templates
+	
+		- Re-make material templates
 
 		- TimCan pack
 		- Raynair updates

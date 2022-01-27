@@ -2,8 +2,13 @@
 - First release with "Ship Builder" - the integrated ship editor which allows players to create and edit ships from within the game
 	- This first version already allows for creating ships with all layers (structural, electrical, ropes, and texture)
 	- Many more tools and features are planned for subsequent releases
-- Re-calibrated susceptibility of all materials to wind
-	- New settings are more realistic - watch out for ships and aircrafts drifting away with strong winds!
+- Improved wind simulation
+	- Re-calibrated susceptibility of all materials to wind
+		- New settings are more realistic - watch out for ships and aircrafts drifting away with strong winds!
+	- Improved influence of wind on flames
+- Added "WindMaker" tool
+	- It's now possible to generate (radial) winds at will
+	- Check out the effect of the SHIFT key on the tool!
 - Added new materials for ropes:
 	- Metal Chain
 	- Rubber Band
