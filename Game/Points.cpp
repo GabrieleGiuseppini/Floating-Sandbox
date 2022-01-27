@@ -831,7 +831,7 @@ void Points::UpdateCombustionLowFrequency(
             mCombustionStateBuffer[pointIndex].FlameDevelopment =
                 0.1f + 0.5f * SmoothStep(0.0f, 2.0f, std::get<1>(mCombustionIgnitionCandidates[i]));
 
-            // Max development: random and depending on number of springs connected to this point
+            // Calculate max development: random and depending on number of springs connected to this point
             // (so chains have smaller flames)
             float const deltaSizeDueToConnectedSprings =
                 static_cast<float>(mConnectedSpringsBuffer[pointIndex].ConnectedSprings.size())
@@ -840,7 +840,7 @@ void Points::UpdateCombustionLowFrequency(
                 0.25f + deltaSizeDueToConnectedSprings + 0.5f * mRandomNormalizedUniformFloatBuffer[pointIndex], // 0.25 + dsdtcs -> 0.75 + dsdtcs
                 mCombustionStateBuffer[pointIndex].FlameDevelopment);
 
-            // Reset flame vector
+            // Initialize flame vector
             mCombustionStateBuffer[pointIndex].FlameVector = CalculateIdealFlameVector(
                 GetVelocity(pointIndex),
                 200.0f); // For an initial flame, we want the particle's current velocity to have a smaller impact on the flame vector
@@ -2155,20 +2155,18 @@ vec2f Points::CalculateIdealFlameVector(
     //      Q = (1-a) * B - a * V
     // Where 'a' depends on the magnitude of the particle's velocity.
 
+    vec2f constexpr B = vec2f(0.0f, 1.0f);
+
     // The interpolation factor depends on the magnitude of the particle's velocity,
     // via a magic formula; the more the particle's velocity, the more the resultant
     // vector is aligned with the particle's velocity
     float const interpolationFactor = SmoothStep(0.0f, pointVelocityMagnitudeThreshold, pointVelocity.length());
-
-    vec2f constexpr B = vec2f(0.0f, 1.0f);
     vec2f Q = B * (1.0f - interpolationFactor) - pointVelocity * interpolationFactor;
-    float const Ql = Q.length();
 
-    // Qn = normalized Q
-    vec2f const Qn = Q.normalise(Ql);
-
-    // Limit length of Q: no more than Qlmax
+    // Magnitude of vector is capped
     float constexpr Qlmax = 1.8f; // Magic number
+    float const Ql = Q.length();
+    vec2f const Qn = Q.normalise(Ql);    
     Q = Qn * std::min(Ql, Qlmax);
 
     return Q;
