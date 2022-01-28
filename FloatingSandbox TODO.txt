@@ -108,15 +108,32 @@
 				+ Changes.txt
 
 		= Test Titanic sinking to floor and see what really happens
-			- 1: add count of spring breakages (temporarily) - as CustomProbe
-			- 2: backup exe
-			- Test separately the impact of:
-				- Velocity change (w/no position)
-				- Position change (w/no velocity)
-			- Avenues:
-				- Lower returned velocity when underwater (e.g. because of water damp)
-				- More frequest invocations from spring loop
-			- At end: remove spring breakage count
+			+ 1: add count of spring breakages (temporarily) - as CustomProbe
+				+ Test 1:
+					- Concrete ball: 0 -> 435-442
+					- R.M.S. Titanic: initial hole 45-50 -> 670 (split) -> 735 (sinking) -> 4373
+					- R.M.S. Titanic: V-cut in half + hole 88 -> 3920
+			+ 2: backup exe
+			+ Test separately the impact of:
+				+ Velocity change (w/no position): cb: 228, tit: 2750
+					X BUT: fast things penetrate floor
+				+ Position change (w/velocity zero'd): cb: 508, tit: 3760
+			+ Test how it goes with doing (again) impact calc'n for each cycle: cb: 361, tit: 4100
+			+ Test how it goes with no weakening: cb: 243, tit: 2830
+			+ Test look'n'feel with previous version of FS - the one before static pressure but after hydrodynamics (i.e. after right speed)
+			= Fix StrengthRandomizer: instead of making weaker, make both weaker and stronger (i.e. center)
+				+ Constraint to satisfy: total sum of point.Strength stays the same
+				+ Calc number of particles first which will be weakened
+				+ Result: cb: 235, tit: 3000-3300
+				+ Lower weakening: 0.5
+				+ Result: cb: 271, tit: 3000
+				- Test:
+					- Triton
+					- Sub
+				+ Do not load from usersettings for lower versions
+					+ Add version, default is previous one
+			- TODO, DECIDE: At end: remove spring breakage count, from:
+				- ProbePanel					
 
 		- Lower volume of pump sound when many pumps are playing
 			- Generically: instanced sounds: instances of same type share (via shared_ptr) common data  - just # of instances atm

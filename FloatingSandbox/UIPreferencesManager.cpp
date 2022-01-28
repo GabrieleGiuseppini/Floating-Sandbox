@@ -10,6 +10,7 @@
 #include <Game/ResourceLocator.h>
 
 #include <GameCore/Utils.h>
+#include <GameCore/Version.h>
 
 UIPreferencesManager::UIPreferencesManager(
     std::shared_ptr<IGameController> gameController,
@@ -113,6 +114,17 @@ void UIPreferencesManager::LoadPreferences()
     auto const preferencesRootObject = LoadPreferencesRootObject();
     if (preferencesRootObject.has_value())
     {
+        //
+        // Load version
+        //
+
+        Version settingsVersion(1, 16, 7, 0);
+        if (auto versionIt = preferencesRootObject->find("version");
+            versionIt != preferencesRootObject->end() && versionIt->second.is<std::string>())
+        {
+            settingsVersion = Version::FromString(versionIt->second.get<std::string>());
+        }
+
         //
         // Ship load directories
         //
@@ -306,7 +318,8 @@ void UIPreferencesManager::LoadPreferences()
         //
 
         if (auto it = preferencesRootObject->find("ship_strength_randomization_extent");
-            it != preferencesRootObject->end() && it->second.is<double>())
+            it != preferencesRootObject->end() && it->second.is<double>()
+            && settingsVersion >= Version(1, 17, 0, 0)) // We've changed default value in 1.17.0
         {
             mGameController->SetShipStrengthRandomizationExtent(static_cast<float>(it->second.get<double>()));
         }
@@ -449,6 +462,9 @@ void UIPreferencesManager::LoadPreferences()
 void UIPreferencesManager::SavePreferences() const
 {
     picojson::object preferencesRootObject;
+
+    // Add version
+    preferencesRootObject["version"] = picojson::value(Version::CurrentVersion().ToString());
 
     // Add ship load directories
 
