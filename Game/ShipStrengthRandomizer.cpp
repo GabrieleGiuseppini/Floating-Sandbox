@@ -326,21 +326,55 @@ void ShipStrengthRandomizer::RandomizeStrength_Batik(
     // Randomize strengths
     //
 
+    // Do first pass, calculating total weakening
+    size_t nonWeakenedParticlesCount = 0;
+    float totalToBeWeakenedStrength = 0.0f;
     for (int x = 0; x < distanceMatrix.width; ++x)
     {
         for (int y = 0; y < distanceMatrix.height; ++y)
         {
             vec2i const pointCoords(x, y);
 
-            if (distanceMatrix[pointCoords].IsCrack)
+            if (auto const & pointIndex1 = pointIndexMatrix[pointCoords + pointIndexMatrixRegionOrigin];
+                pointIndex1.has_value()
+                && !pointInfos2[pointIndexRemap2[*pointIndex1]].ConnectedTriangles1.empty())
             {
-                assert(distanceMatrix[pointCoords].Distance == 0.0f);
-
-                if (auto const & pointIndex1 = pointIndexMatrix[pointCoords + pointIndexMatrixRegionOrigin];
-                    pointIndex1.has_value()
-                    && !pointInfos2[pointIndexRemap2[*pointIndex1]].ConnectedTriangles1.empty())
+                if (distanceMatrix[pointCoords].IsCrack)
                 {
-                    pointInfos2[pointIndexRemap2[*pointIndex1]].Strength *= (1.0f - mRandomizationExtent);
+                    totalToBeWeakenedStrength += pointInfos2[pointIndexRemap2[*pointIndex1]].Strength;
+                }
+                else
+                {
+                    ++nonWeakenedParticlesCount;
+                }
+            }
+        }
+    }
+
+    // Second pass: actual weakening (and strengthening)
+
+    float const perParticleWeakeningToDistribute = (nonWeakenedParticlesCount > 0)
+        ? totalToBeWeakenedStrength * mRandomizationExtent / 2.0f / static_cast<float>(nonWeakenedParticlesCount)
+        : 0.0f;
+
+    for (int x = 0; x < distanceMatrix.width; ++x)
+    {
+        for (int y = 0; y < distanceMatrix.height; ++y)
+        {
+            vec2i const pointCoords(x, y);
+
+            if (auto const & pointIndex1 = pointIndexMatrix[pointCoords + pointIndexMatrixRegionOrigin];
+                pointIndex1.has_value()
+                && !pointInfos2[pointIndexRemap2[*pointIndex1]].ConnectedTriangles1.empty())
+            {
+                if (distanceMatrix[pointCoords].IsCrack)
+                {
+                    // Weakend by half
+                    pointInfos2[pointIndexRemap2[*pointIndex1]].Strength *= (1.0f - mRandomizationExtent / 2.0f);
+                }
+                else
+                {
+                    pointInfos2[pointIndexRemap2[*pointIndex1]].Strength += perParticleWeakeningToDistribute;
                 }
             }
         }
