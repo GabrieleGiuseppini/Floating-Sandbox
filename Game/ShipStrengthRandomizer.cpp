@@ -23,7 +23,7 @@ static vec2i const OctantDirections[8] = {
 ShipStrengthRandomizer::ShipStrengthRandomizer()
     // Settings defaults
     : mDensityAdjustment(1.0f)
-    , mRandomizationExtent(0.5f)
+    , mRandomizationExtent(0.453f)
 {
 }
 

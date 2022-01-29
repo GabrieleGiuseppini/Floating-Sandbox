@@ -121,19 +121,23 @@
 			+ Test how it goes with doing (again) impact calc'n for each cycle: cb: 361, tit: 4100
 			+ Test how it goes with no weakening: cb: 243, tit: 2830
 			+ Test look'n'feel with previous version of FS - the one before static pressure but after hydrodynamics (i.e. after right speed)
-			= Fix StrengthRandomizer: instead of making weaker, make both weaker and stronger (i.e. center)
+			+ Fix StrengthRandomizer: instead of making weaker, make both weaker and stronger (i.e. center)
 				+ Constraint to satisfy: total sum of point.Strength stays the same
 				+ Calc number of particles first which will be weakened
 				+ Result: cb: 235, tit: 3000-3300
 				+ Lower weakening: 0.5
-				+ Result: cb: 271, tit: 3000
-				- Test:
-					- Triton
-					- Sub
+					+ Result: cb: 271, tit: 3000
+				+ Lower weakening: 0.453
+					+ Result: cb: 229, tit: 2700
+				+ Test:
+					+ Triton
+					+ Sub
 				+ Do not load from usersettings for lower versions
 					+ Add version, default is previous one
+				+ Finalize weakening setting
 			- TODO, DECIDE: At end: remove spring breakage count, from:
-				- ProbePanel					
+				- ProbePanel
+			- changes.txt
 
 		- Lower volume of pump sound when many pumps are playing
 			- Generically: instanced sounds: instances of same type share (via shared_ptr) common data  - just # of instances atm
@@ -142,6 +146,8 @@
 		- Silting a bit thicker
 			- "I have silting on all the way but the ships go no further than a couple pixels into the mud"
 			- "Plus they tend to jump if a section goes in a bit too deep"
+
+		- Send for testing
 
 		= Mac/Sam
 			+ CMakeFiles: add `set (CMAKE_FIND_LIBRARY_SUFFIXES ".a")`			
@@ -153,17 +159,6 @@
 		+ See rogue waves
 
 		- New sounds from TimCan
-
-		- After many many hours, rain looks aweful - very likely due to timer values being high
-			- Storm: store timestamp of rain start, and pass (now-start)::to_float() to shader
-
-		- After many hours, zoom stutters
-			- Can test both with faking RealTimeClock start time?
-			- Solutions for long-running clock: https://randomascii.wordpress.com/2012/02/13/dont-store-that-in-a-float/
-				- Rain solution: 
-				- Zoom solution: ParameterSmoother: various timestamp members become time_point (rather than float's)
-			- Might have same issue with various tools
-			- TODO: is it really worth fixing this?
 	
 		- Re-make material templates
 
@@ -178,13 +173,14 @@
 		- Do Mattia's video and post together with https://www.youtube.com/watch?v=X2n4Q25Ld34
 
 		- Localization
-			+ IT
+			= IT
+				- Initial tips
 			- RU
 				- Take first
-				- Send second
+				- Send second + initial tips
 			- ES
 				- Take first
-				- Send second
+				- Send second + initial tips
 
 		- MSI Installer:
 			- Also install ShipBuilder.exe
@@ -778,6 +774,18 @@
 	- Looped sounds (engines, bells, horns, etc.): make them OGG with built-in loop points (see https://rpgmaker.net/tutorials/1341/)
 	- Redo SetEventRecorder dynamics between GameController/World/Ship
 		- Also GameController::Reset() should clear all events
+
+- Known issues:
+	- After many many hours, rain looks aweful - very likely due to timer values being high
+		- Storm: store timestamp of rain start, and pass (now-start)::to_float() to shader
+
+	- After many hours, zoom stutters
+		- Can test both with faking RealTimeClock start time?
+		- Solutions for long-running clock: https://randomascii.wordpress.com/2012/02/13/dont-store-that-in-a-float/
+			- Rain solution: 
+			- Zoom solution: ParameterSmoother: various timestamp members become time_point (rather than float's)
+		- Might have same issue with various tools
+		- TODO: is it really worth fixing this?
 
 
 - Simulation Optimizations:
