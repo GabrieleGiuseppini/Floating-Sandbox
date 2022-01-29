@@ -136,7 +136,7 @@
 					+ Add version, default is previous one
 				+ Finalize weakening setting
 			+ Cleanup ProbePabel, leaving breakage count
-			- Send for opinion
+			+ Send for opinion
 			- changes.txt
 
 		- Lower volume of pump sound when many pumps are playing

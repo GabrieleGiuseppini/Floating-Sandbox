@@ -114,7 +114,7 @@ bool RCBombGadget::Update(
 
                 // Blast force
                 float const blastForce =
-                    70.0f * 50000.0f // Magic number
+                    55.0f * 50000.0f // Magic number
                     * (gameParameters.IsUltraViolentMode
                         ? std::min(gameParameters.BombBlastForceAdjustment * 10.0f, GameParameters::MaxBombBlastForceAdjustment * 2.0f)
                         : gameParameters.BombBlastForceAdjustment);

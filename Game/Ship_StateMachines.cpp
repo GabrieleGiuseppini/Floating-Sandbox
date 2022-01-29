@@ -43,8 +43,8 @@ bool Ship::UpdateExplosionStateMachine(
         vec2f const centerPosition = explosionStateMachine.CenterPosition;
 
         // Blast progress: reaches max at a fraction of the blast duration,
-        // as the whole duration includes also gfx effects while the blast should
-        // last for less time
+        // as the whole explosion duration includes also gfx effects while
+        // the actual blast should last for less time
         float const blastProgress = explosionStateMachine.CurrentProgress * 4.0f;
 
         // Blast radius: from 1.0 to BlastRadius, linearly with progress
@@ -84,12 +84,12 @@ bool Ship::UpdateExplosionStateMachine(
                 //
                 // Apply blast force
                 //
-                // (inversely proportional to distance, not second power as one would expect though)
+                // (inversely proportional to square root of distance, not second power as one would expect though)
                 //
 
                 mPoints.AddStaticForce(
                     pointIndex,
-                    pointRadius.normalise(pointRadiusLength) / std::max(pointRadiusLength, 1.0f) * explosionStateMachine.BlastForce);
+                    pointRadius.normalise_approx(pointRadiusLength) / std::sqrt(std::max(pointRadiusLength, 1.0f)) * explosionStateMachine.BlastForce);
 
                 //
                 // Inject heat at this point
