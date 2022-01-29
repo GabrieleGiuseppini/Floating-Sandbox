@@ -147,6 +147,17 @@
 			- "I have silting on all the way but the ships go no further than a couple pixels into the mud"
 			- "Plus they tend to jump if a section goes in a bit too deep"
 
+		- Localization
+			= IT
+				+ Do first & second
+				- Update (probe panel)
+			- RU
+				+ Take first
+				- Update & send second + initial tips
+			- ES
+				+ Take first
+				- Update & send second + initial tips
+
 		- Send for testing
 
 		= Mac/Sam
@@ -157,8 +168,6 @@
 					sh /Applications/Development/FS-app/static-libs/wxWidgets/bin/wx-config --libs 
 		
 		+ See rogue waves
-
-		- New sounds from TimCan
 	
 		- Re-make material templates
 
@@ -172,21 +181,13 @@
 
 		- Do Mattia's video and post together with https://www.youtube.com/watch?v=X2n4Q25Ld34
 
-		- Localization
-			= IT
-				- Update (probe panel)
-			- RU
-				- Take first
-				- Update & send second + initial tips
-			- ES
-				- Take first
-				- Update & send second + initial tips
-
 		- MSI Installer:
 			- Also install ShipBuilder.exe
 			- Set shell handler for .shp2 files
 
 		- Release
+
+		- New sounds from TimCan
 
 		- Test material textures for chains: transparent chain texture
 			- Change texturizer so that we load alpha from image
@@ -1142,7 +1143,17 @@
 
 - Dynamics:
 
-	- Transfer of momentum from waves
+	- "Soft" setting for ocean floors
+		- Just less impact
+
+	- Sediment on ocean floor
+		- Things basically bury a bit
+		- Could be adjusted to where players could see through it or not, to show how much is under the mud
+		- Sediment could also preserve anything that is buried under it
+
+
+	- Transfer of momentum from waves to ship
+		- When ship surface intersects water surface
 		- Option A: by point visit; all points which were not underwater in previous step and are now (via double buffer for Points::CachedDepth), receive force
 		  proportional to OceanSurface::VelocityVector
 			- OceanSurface::VelocityVector: direction=normal, magnitude=SWE velocity. With two options:
@@ -1353,9 +1364,6 @@
 			- Any devices should only be connected in 4 direction (sides only)
 		- Option C: multiple electrical layers
 
-	- Transfer momentum from waves to ship
-		- When ship surface intersects water surface
-
 	= Ocean floor deforming upon impact (*)
 		! Better done after frontier work, so that may calculate pointness
 		+ ParentWorld exposes DisplaceOceanFloor(x, offsetY)
@@ -1475,11 +1483,6 @@
 
 	- Ripple: "basically you click and hold somewhere on the ship, and when you let go, it sends a ripple into the ship, weak points might tear,
 	  or start getting damaged, etc."
-
-	- Sediment on ocean floor
-		- Things basically bury a bit
-		- Could be adjusted to where players could see through it or not, to show how much is under the mud
-		- Sediment could also preserve anything that is buried under it
 
 - Game Interactions and Controls:
 
