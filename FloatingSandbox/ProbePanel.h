@@ -24,6 +24,7 @@ class ProbePanel final
     , public IStatisticsGameEventHandler
 	, public IAtmosphereGameEventHandler
     , public IGenericGameEventHandler
+    , public IStructuralGameEventHandler
 {
 public:
 
@@ -45,6 +46,7 @@ public:
         gameController.RegisterStatisticsEventHandler(this);
 		gameController.RegisterAtmosphereEventHandler(this);
         gameController.RegisterGenericEventHandler(this);
+        gameController.RegisterStructuralEventHandler(this);
     }
 
     void OnGameReset() override;
@@ -73,6 +75,11 @@ public:
         float netForce,
         float complexity) override;
 
+    void OnBreak(
+        StructuralMaterial const & structuralMaterial,
+        bool isUnderwater,
+        unsigned int size) override;
+
 private:
 
     bool IsActive() const
@@ -80,7 +87,8 @@ private:
         return this->IsShown();
     }
 
-    std::unique_ptr<ScalarTimeSeriesProbeControl> AddScalarTimeSeriesProbe(
+    template<typename TProbeControl>
+    std::unique_ptr<TProbeControl> AddScalarTimeSeriesProbe(
         wxString const & name,
         int sampleCount);
 
@@ -98,5 +106,6 @@ private:
     std::unique_ptr<ScalarTimeSeriesProbeControl> mWindSpeedProbe;
     std::unique_ptr<ScalarTimeSeriesProbeControl> mStaticPressureNetForceProbe;
     std::unique_ptr<ScalarTimeSeriesProbeControl> mStaticPressureComplexityProbe;
+    std::unique_ptr<IntegratingScalarTimeSeriesProbeControl> mTotalDamageProbe;
     std::unordered_map<std::string, std::unique_ptr<ScalarTimeSeriesProbeControl>> mCustomProbes;
 };

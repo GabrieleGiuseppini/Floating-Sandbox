@@ -25,7 +25,7 @@ StartupTipDialog::StartupTipDialog(
             this,
             wxID_ANY,
             wxDefaultPosition,
-            wxSize(480, 250),
+            wxSize(480, 270),
             wxHW_SCROLLBAR_AUTO | wxHW_NO_SELECTION);
 
         html->SetBorders(0);

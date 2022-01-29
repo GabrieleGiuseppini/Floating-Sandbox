@@ -49,10 +49,6 @@ ScalarTimeSeriesProbeControl::ScalarTimeSeriesProbeControl(
     Reset();
 }
 
-ScalarTimeSeriesProbeControl::~ScalarTimeSeriesProbeControl()
-{
-}
-
 void ScalarTimeSeriesProbeControl::RegisterSample(float value)
 {
     mMaxValue = std::max(mMaxValue, value);

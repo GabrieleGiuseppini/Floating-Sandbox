@@ -135,8 +135,8 @@
 				+ Do not load from usersettings for lower versions
 					+ Add version, default is previous one
 				+ Finalize weakening setting
-			- TODO, DECIDE: At end: remove spring breakage count, from:
-				- ProbePanel
+			+ Cleanup ProbePabel, leaving breakage count
+			- Send for opinion
 			- changes.txt
 
 		- Lower volume of pump sound when many pumps are playing
@@ -174,13 +174,13 @@
 
 		- Localization
 			= IT
-				- Initial tips
+				- Update (probe panel)
 			- RU
 				- Take first
-				- Send second + initial tips
+				- Update & send second + initial tips
 			- ES
 				- Take first
-				- Send second + initial tips
+				- Update & send second + initial tips
 
 		- MSI Installer:
 			- Also install ShipBuilder.exe
