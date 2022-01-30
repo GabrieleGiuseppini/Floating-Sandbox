@@ -107,7 +107,14 @@
 				+ Merge into master
 				+ Changes.txt
 
-		= Test Titanic sinking to floor and see what really happens
+		+ Fix OceanSurface/WaveMaker bug
+			! It's due to interactive state machine populating DeltaBuffer, which then gets added to main buffer
+			+ Fix
+				+ Load only target-cur in delta (rather than target, like now)
+			+ Test tsunami and rogue waves
+			+ changes.txt
+
+		+ Test Titanic sinking to floor and see what really happens
 			+ 1: add count of spring breakages (temporarily) - as CustomProbe
 				+ Test 1:
 					- Concrete ball: 0 -> 435-442
@@ -137,11 +144,25 @@
 				+ Finalize weakening setting
 			+ Cleanup ProbePabel, leaving breakage count
 			+ Send for opinion
-			- changes.txt
+			+ changes.txt
 
-		- Lower volume of pump sound when many pumps are playing
-			- Generically: instanced sounds: instances of same type share (via shared_ptr) common data  - just # of instances atm
-				- Then, when # of instances is updated, volume of all instances is changed accordingly
+		= Lower volume of pump sound when many pumps are playing
+			! We are lucky that we know # of pumps in advance; copy code from engines then
+			= Alternative: based on currently-playing # of sounds, all done @ MultiInstanceLoopedSounds
+				+ Maintain count per sound type (regardless of underwater) @ Start, Stop
+				~ Option 1:
+					+ @ each change in the count per-sound type, update all vols
+					! Problem: when N sounds stop, the remainder (e.g. 1) shoots up
+				- Option 2:
+					- Like 1, but just at each Start - *not* at End
+			- Test w/a ship having both engines and pumps, comparing with prev version
+				- Engines
+				- Pumps
+			- Remove engine, pumps counting @ SoundController
+
+		- Check WaterPump power adjust
+
+		- Fix problem with screwed up preferences
 
 		- Silting a bit thicker
 			- "I have silting on all the way but the ships go no further than a couple pixels into the mud"
@@ -161,11 +182,8 @@
 		- Send for testing
 
 		= Mac/Sam
-			+ CMakeFiles: add `set (CMAKE_FIND_LIBRARY_SUFFIXES ".a")`			
-			- See Sam's issue with wxWidgets
-				+ Ask him to enable DBG_MSG in FindwxWidgets.cmake under FS
-				+ Then: ask him to check result of:
-					sh /Applications/Development/FS-app/static-libs/wxWidgets/bin/wx-config --libs 
+			- FS build cannot find wxWidgets
+				+ Issue is due to pthread and iconv libs not found; added FIND_PACKAGE for APPLE in CMakeFiles
 		
 		+ See rogue waves
 	
@@ -188,6 +206,16 @@
 		- Release
 
 		- New sounds from TimCan
+
+		- Make "Internal Watertight" version of hull/non-hull materials
+			- Watertight (i.e. hull) but lighter than hull
+			- Rename materials (json and code): "Hull" -> "?"
+			- May be: larger materials rearc:
+				- XYZ Hull
+				- XYZ I-Beam
+				- XYZ Thin Wall
+				- XYZ Thick Wall
+				- Names: bulkhead, deck
 
 		- Test material textures for chains: transparent chain texture
 			- Change texturizer so that we load alpha from image
