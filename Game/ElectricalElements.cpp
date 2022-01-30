@@ -1609,7 +1609,7 @@ void ElectricalElements::UpdateSinks(
                 // Converge current force
                 waterPumpState.CurrentNormalizedForce +=
                     (waterPumpState.TargetNormalizedForce - waterPumpState.CurrentNormalizedForce)
-                    * 0.025f; // Convergence rate, magic number
+                    * 0.03f; // Convergence rate, magic number
                 if (std::abs(waterPumpState.CurrentNormalizedForce - waterPumpState.TargetNormalizedForce) < 0.001f)
                 {
                     waterPumpState.CurrentNormalizedForce = waterPumpState.TargetNormalizedForce;
