@@ -150,7 +150,7 @@ private:
     }
 
     void AddToSWEWaveHeight(
-        size_t centerIndex,
+        size_t centerIndex, // Coords are in SWE Buffer space
         float height)
     {
         mDeltaHeightBuffer[centerIndex - SWEBufferPrefixSize + DeltaHeightBufferPrefixSize] += (height - SWEHeightFieldOffset);
@@ -325,7 +325,7 @@ private:
             float highHeight,
             float currentSimulationTime);
 
-        // Absolute coordinate, not sample coordinate
+        // Absolute coordinate in SWE buffer space, not sample coordinate
         auto GetCenterIndex() const
         {
             return mCenterIndex;
@@ -388,7 +388,7 @@ private:
             float fallDelay, // sec
             float currentSimulationTime);
 
-        // Absolute coordinate, not sample coordinate
+        // Absolute coordinate in SWE buffer state, not sample coordinate
         auto GetCenterIndex() const
         {
             return mCenterIndex;
