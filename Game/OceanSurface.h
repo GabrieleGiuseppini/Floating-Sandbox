@@ -149,11 +149,12 @@ private:
         return sampleIndexI;
     }
 
-    void AddToSWEWaveHeight(
+    void AddToSWEWaveHeightViaDeltaBuffer(
         size_t centerIndex, // Coords are in SWE Buffer space
         float height)
     {
-        mDeltaHeightBuffer[centerIndex - SWEBufferPrefixSize + DeltaHeightBufferPrefixSize] += (height - SWEHeightFieldOffset);
+        float const currentSWEHeight = mSWEHeightField[centerIndex];
+        mDeltaHeightBuffer[centerIndex - SWEBufferPrefixSize + DeltaHeightBufferPrefixSize] += (height - currentSWEHeight);
     }
 
     void RecalculateWaveCoefficients(

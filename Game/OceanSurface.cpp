@@ -108,7 +108,7 @@ void OceanSurface::Update(
         else
         {
             // Apply
-            AddToSWEWaveHeight(
+            AddToSWEWaveHeightViaDeltaBuffer(
                 mSWEInteractiveWaveStateMachine->GetCenterIndex(),
                 *heightValue);
         }
@@ -126,7 +126,7 @@ void OceanSurface::Update(
         else
         {
             // Apply
-            AddToSWEWaveHeight(
+            AddToSWEWaveHeightViaDeltaBuffer(
                 mSWETsunamiWaveStateMachine->GetCenterIndex(),
                 *heightValue);
         }
@@ -167,7 +167,7 @@ void OceanSurface::Update(
         else
         {
             // Apply
-            AddToSWEWaveHeight(
+            AddToSWEWaveHeightViaDeltaBuffer(
                 mSWERogueWaveWaveStateMachine->GetCenterIndex(),
                 *heightValue);
         }
