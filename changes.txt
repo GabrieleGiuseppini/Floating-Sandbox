@@ -12,6 +12,7 @@
 - Added new materials for ropes:
 	- Metal Chain
 	- Rubber Band
+- Improved water displacement caused by ships
 - Fixed exhaggerated destruction at touchdowns on ocean floor
 - Fixed "slice lock"
 - Fixed bug with WaveMaker waves sometimes becoming too tall and crashing the game
