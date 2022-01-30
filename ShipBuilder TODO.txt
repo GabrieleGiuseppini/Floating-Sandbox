@@ -5,6 +5,8 @@ https://gamejolt.com/x/permalink/comment/11730705
 - Test Titanic's alignments
 - Test on old Dell
 
+- Release
+
 - New/Set/Remove layers:
 	- New:
 		- Make internal helper templated on LayerType, with all code
@@ -22,9 +24,10 @@ https://gamejolt.com/x/permalink/comment/11730705
 			= Undo
 				= Note: texture layer removal should also remember metadata (art credits)
 
-- Release
+- MaterialsPalette: make flag for making it its own wxFrame, so one can use it in a second monitor
 
 - Sampler tool (*)
+
 - Rotate 90 (CW and CCW)
 
 = Import/Export:
