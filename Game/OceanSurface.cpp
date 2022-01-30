@@ -1128,12 +1128,7 @@ std::optional<float> OceanSurface::SWEInteractiveWaveStateMachine::Update(
             return std::nullopt;
         }
 
-        // Modulate height to simulate a bouncing wave
-        // (a bit of a hack)
-        return
-            (mCurrentHeight - SWEHeightFieldOffset)
-            * std::sin(2.0f * Pi<float> / 0.2f * elapsed)
-            + SWEHeightFieldOffset;
+        return mCurrentHeight;
     }
 }
 

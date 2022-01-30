@@ -153,7 +153,7 @@ private:
         size_t centerIndex,
         float height)
     {
-        mDeltaHeightBuffer[centerIndex] += (height - SWEHeightFieldOffset);
+        mDeltaHeightBuffer[centerIndex - SWEBufferPrefixSize + DeltaHeightBufferPrefixSize] += (height - SWEHeightFieldOffset);
     }
 
     void RecalculateWaveCoefficients(
