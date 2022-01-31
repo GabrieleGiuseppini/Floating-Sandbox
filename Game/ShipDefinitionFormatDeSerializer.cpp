@@ -156,6 +156,14 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
                     break;
                 }
 
+                case static_cast<uint32_t>(MainSectionTagType::Preview_PNG) :
+                {
+                    // Ignore and skip section
+                    inputFile.seekg(sectionHeader.SectionBodySize, std::ios_base::cur);
+
+                    break;
+                }
+
                 default:
                 {
                     // Unrecognized tag
