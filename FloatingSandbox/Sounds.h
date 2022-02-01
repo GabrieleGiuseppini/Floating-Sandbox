@@ -1500,26 +1500,43 @@ public:
         auto sound = std::make_unique<sf::Music>();
         sound->openFromFile(soundFileInfoIt->second->FilePath.string());
 
+        // Calculate volume
+        // 0 -> 1
+        // 1 -> 0.6
+        // 5 -> 0.1
+        // 10 -> 0.01
+        // y = 0.01076043 + 0.986362*e^(-0.5049688*x)
+        size_t & playingCount = mCurrentlyPlayingSoundCountsPerSoundType[soundType];
+        volume *= Clamp(0.01076043f + 0.986362f * std::exp(-0.5049688f * static_cast<float>(playingCount)), 0.0f, 1.0f);
+
         // Setup sound
-        InternalSetVolume(*sound, volume);
+        InternalSetVolumeForSound(*sound, volume);
         sound->setLoop(true);
         if (soundFileInfoIt->second->LoopStartSample != 0.0f || soundFileInfoIt->second->LoopEndSample != 0.0f)
+        {
             sound->setLoopPoints(
                 sf::Music::TimeSpan(
                     sf::seconds(soundFileInfoIt->second->LoopStartSample),
                     sf::seconds(soundFileInfoIt->second->LoopEndSample - soundFileInfoIt->second->LoopStartSample)));
+        }
+
+        // Start sound
         sound->play();
 
         // Pause immediately if we're currently paused
         if (mIsPaused)
+        {
             sound->pause();
+        }
 
         // Store playing sound
-        std::uintptr_t soundFileInfoId = reinterpret_cast<std::uintptr_t>(soundFileInfoIt->second.get());
         mPlayingSounds.emplace(
             std::piecewise_construct,
             std::forward_as_tuple(instanceId),
-            std::forward_as_tuple(std::move(sound), volume, soundFileInfoId));
+            std::forward_as_tuple(std::move(sound), soundType, volume));
+
+        // Maintain count and aggregate volume
+        ++playingCount;
     }
 
     /*
@@ -1530,6 +1547,7 @@ public:
         bool isUnderwater,
         float volume)
     {
+        // Figure out the sound type for this instance
         if (auto const srchIt = mInstanceIdToSoundType.find(instanceId);
             srchIt != mInstanceIdToSoundType.cend())
         {
@@ -1546,9 +1564,14 @@ public:
         if (auto it = mPlayingSounds.find(instanceId);
             it != mPlayingSounds.end())
         {
+            SoundType const soundType = it->second.Type;
+
             // Mark as not playing anymore, and let the sound run to its end
             it->second.IsPlaying = false;
             it->second.Sound->setLoop(false);
+
+            // Maintain count and aggregate volume
+            mCurrentlyPlayingSoundCountsPerSoundType[soundType]--;
         }
     }
 
@@ -1569,6 +1592,7 @@ public:
     {
         mInstanceIdToSoundType.clear();
         mPlayingSounds.clear();
+        mCurrentlyPlayingSoundCountsPerSoundType.clear();
     }
 
 private:
@@ -1592,13 +1616,13 @@ private:
     {
         for (auto it = mPlayingSounds.begin(); it != mPlayingSounds.end(); ++it)
         {
-            InternalSetVolume(
+            InternalSetVolumeForSound(
                 *(it->second.Sound),
                 it->second.Volume);
         }
     }
 
-    void InternalSetVolume(
+    void InternalSetVolumeForSound(
         sf::Music & sound,
         float volume)
     {
@@ -1619,6 +1643,10 @@ private:
     bool mIsPaused;
     float mMasterVolume;
     bool mIsMuted;
+
+    //
+    // Association between <SoundType, Underwater-ness> and actual sound file
+    //
 
     struct SoundFileInfo
     {
@@ -1641,23 +1669,33 @@ private:
     // InstanceId<->SoundType (optional)
     std::unordered_map<TInstanceId, SoundType> mInstanceIdToSoundType;
 
+    //
+    // Currently-playing sounds, keyed by instance ID
+    //
+
     struct PlayingSoundInfo
     {
         std::unique_ptr<sf::Music> Sound;
-        bool IsPlaying; // Cleared when loop has been stopped; says nothing about being paused
-        float Volume;
-        std::uintptr_t const SoundFileInfoId;
+        SoundType Type;
+        bool IsPlaying; // Cleared when loop has been stopped via Stop(); says nothing about being paused
+        float Volume; // Static volume asked for instance by caller; not necessarily volume being used for this instance now
 
         PlayingSoundInfo(
             std::unique_ptr<sf::Music> sound,
-            float volume,
-            std::uintptr_t soundFileInfoId)
+            SoundType type,
+            float volume)
             : Sound(std::move(sound))
+            , Type(type)
             , IsPlaying(true) // Start as playing
             , Volume(volume)
-            , SoundFileInfoId(soundFileInfoId)
         {}
     };
 
     std::unordered_map<TInstanceId, PlayingSoundInfo> mPlayingSounds;
+
+    //
+    // Counts of currently-playing sounds, by sound type
+    //
+
+    std::unordered_map<SoundType, size_t> mCurrentlyPlayingSoundCountsPerSoundType;
 };

@@ -44,7 +44,6 @@ SoundController::SoundController(
     , mCurrentWaterSplashedTrigger(WaveSplashTriggerSize)
     , mLastWindSpeedAbsoluteMagnitude(0.0f)
     , mWindVolumeRunningAverage()
-    , mShipEnginesCount(0.0f)
     , mLastWaterDisplacedMagnitude(0.0f)
     , mLastWaterDisplacedMagnitudeDerivative(0.0f)
     // One-shot sounds
@@ -1453,7 +1452,6 @@ void SoundController::Reset()
     mCurrentWaterSplashedTrigger = WaveSplashTriggerSize;
     mLastWindSpeedAbsoluteMagnitude = 0.0f;
     mWindVolumeRunningAverage.Reset();
-    mShipEnginesCount = 0.0f;
     mLastWaterDisplacedMagnitude = 0.0f;
     mLastWaterDisplacedMagnitudeDerivative = 0.0f;
 }
@@ -1865,9 +1863,6 @@ void SoundController::OnEngineMonitorCreated(
             mLoopedSounds.AddSoundTypeForInstanceId(electricalElementId, SoundType::EngineSteam2);
         }
     }
-
-    // Update count of engines
-    mShipEnginesCount += 1.0f;
 }
 
 void SoundController::OnWaterPumpCreated(
@@ -1953,18 +1948,11 @@ void SoundController::OnEngineMonitorUpdated(
             }
         }
 
-        // Scale volume with total number of engines in the ship
-        //
-        // Scaling function constraints:
-        //      1  engine : 1.0f
-        //      10 engines: 0.2f
-        assert(mShipEnginesCount > 0.0f);
-        float constexpr volumeScalingSlope = (1.0f - 0.2f) / (1.0f - 10.0f);
-        volume *= (1.0f - volumeScalingSlope) + volumeScalingSlope * mShipEnginesCount;
-
         // Make sure sound is running
         if (!mLoopedSounds.IsPlaying(electricalElementId))
+        {
             mLoopedSounds.Start(electricalElementId, false, volume);
+        }
 
         // Set pitch
         mLoopedSounds.SetPitch(electricalElementId, pitch);
@@ -2056,7 +2044,9 @@ void SoundController::OnWaterPumpUpdated(
     {
         // Make sure sound is running
         if (!mLoopedSounds.IsPlaying(electricalElementId))
+        {
             mLoopedSounds.Start(electricalElementId, false, 100.0f);
+        }
 
         // Set pitch
         mLoopedSounds.SetPitch(electricalElementId, normalizedForce);

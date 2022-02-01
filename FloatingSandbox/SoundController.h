@@ -499,7 +499,6 @@ private:
     float mCurrentWaterSplashedTrigger;
     float mLastWindSpeedAbsoluteMagnitude;
     RunningAverage<70> mWindVolumeRunningAverage;
-    float mShipEnginesCount;
 
     // Water displacement state
     float mLastWaterDisplacedMagnitude;
