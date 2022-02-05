@@ -155,12 +155,6 @@
 			+ Test values
 			+ changes.txt
 
-		- Check bomb blasts, just w/adjust, to see if can reach a better balance
-
-		- Silting a bit thicker
-			- "I have silting on all the way but the ships go no further than a couple pixels into the mud"
-			- "Plus they tend to jump if a section goes in a bit too deep"
-
 		- Localization
 			= IT
 				+ Do first & second
