@@ -155,16 +155,22 @@
 		+ Make command-line arg for main exe
 			+ MainFrame cctor takes opt<fs::path> for ship
 
-		- Localization
+		= Localization
 			= IT
 				+ Do first & second
-				- Update (probe panel)
+				+ Update (probe panel)
+				- Test
+					- Including error ship
 			- RU
 				+ Take first
 				- Update & send second + initial tips
+				- Test
+					- Including error ship
 			- ES
 				+ Take first
 				- Update & send second + initial tips
+				- Test
+					- Including error ship
 
 		- Send for final testing
 
