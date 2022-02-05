@@ -55,51 +55,51 @@ PreferencesDialog::PreferencesDialog(
 
     wxBoxSizer * dialogVSizer = new wxBoxSizer(wxVERTICAL);
 
-    wxNotebook * notebook = new wxNotebook(
-        this,
-        wxID_ANY,
-        wxPoint(-1, -1),
-        wxSize(-1, -1),
-        wxNB_TOP);
+    {
+        wxNotebook * notebook = new wxNotebook(
+            this,
+            wxID_ANY,
+            wxDefaultPosition,
+            wxDefaultSize,
+            wxNB_TOP | wxNB_NOPAGETHEME);
 
-    //
-    // Game Preferences
-    //
+        //
+        // Game Preferences
+        //
 
-    wxPanel * gamePanel = new wxPanel(notebook);
+        wxPanel * gamePanel = new wxPanel(notebook);
 
-    PopulateGamePanel(gamePanel);
+        PopulateGamePanel(gamePanel);
 
-    notebook->AddPage(gamePanel, _("Game"));
-
-
-    //
-    // Ship Preferences
-    //
-
-    wxPanel * shipsPanel = new wxPanel(notebook);
-
-    PopulateShipPanel(shipsPanel);
-
-    notebook->AddPage(shipsPanel, _("Ships"));
+        notebook->AddPage(gamePanel, _("Game"));
 
 
-    //
-    // Global Sound and Music
-    //
+        //
+        // Ship Preferences
+        //
 
-    wxPanel * musicPanel = new wxPanel(notebook);
+        wxPanel * shipsPanel = new wxPanel(notebook);
 
-    PopulateMusicPanel(musicPanel);
+        PopulateShipPanel(shipsPanel);
 
-    notebook->AddPage(musicPanel, _("Global Sound and Music"));
+        notebook->AddPage(shipsPanel, _("Ships"));
 
 
+        //
+        // Global Sound and Music
+        //
 
-    dialogVSizer->Add(notebook, 1, wxEXPAND);
+        wxPanel * musicPanel = new wxPanel(notebook);
+
+        PopulateMusicPanel(musicPanel);
+
+        notebook->AddPage(musicPanel, _("Global Sound and Music"));
+
+        dialogVSizer->Add(notebook, 0);
+        dialogVSizer->Fit(notebook);
+    }
 
     dialogVSizer->AddSpacer(20);
-
 
     // Buttons
 
@@ -683,13 +683,7 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
                     UserInterfaceBorder);
             }
 
-            // Add spacer column
-            {
-                gridSizer->Add(1, 1, wxGBPosition(1, 0), wxGBSpan(8, 1), wxEXPAND);
-                sizer->AddGrowableCol(1, 1);
-            }
-
-            boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
+            boxSizer->Add(sizer, 0, wxALL, StaticBoxInsetMargin);
         }
 
         gridSizer->Add(
@@ -747,7 +741,7 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
     for (int c = 0; c < gridSizer->GetCols(); ++c)
         gridSizer->AddGrowableCol(c);
 
-    panel->SetSizer(gridSizer);
+    panel->SetSizerAndFit(gridSizer);
 }
 
 void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
@@ -878,82 +872,6 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
     }
 
     //
-    // Strength randomization
-    //
-
-    {
-        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Strength Randomization"));
-
-        {
-            wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
-
-            // Density Adjustment
-            {
-                mStrengthRandomizationDensityAdjustmentSlider = new SliderControl<float>(
-                    boxSizer->GetStaticBox(),
-                    SliderControl<float>::DirectionType::Vertical,
-                    SliderWidth,
-                    SliderHeight,
-                    _("Density Adjust"),
-                    _("Adjusts the amount of weaknesses injected in structures. Changes to this setting will only be in effect when the next ship is loaded."),
-                    [this](float value)
-                    {
-                        assert(!!mUIPreferencesManager);
-                        mUIPreferencesManager->SetShipStrengthRandomizationDensityAdjustment(value);
-                        mOnChangeCallback();
-                    },
-                    std::make_unique<ExponentialSliderCore>(
-                        0.0f,
-                        1.0f,
-                        10.0f));
-
-                sizer->Add(
-                    mStrengthRandomizationDensityAdjustmentSlider,
-                    wxGBPosition(0, 0),
-                    wxGBSpan(1, 1),
-                    wxEXPAND | wxALL,
-                    CellBorderInner);
-            }
-
-            // Randomization Extent
-            {
-                mStrengthRandomizationExtentSlider = new SliderControl<float>(
-                    boxSizer->GetStaticBox(),
-                    SliderControl<float>::DirectionType::Vertical,
-                    SliderWidth,
-                    SliderHeight,
-                    _("Extent"),
-                    _("Adjusts the extent to which structures are weakened. Changes to this setting will only be in effect when the next ship is loaded."),
-                    [this](float value)
-                    {
-                        assert(!!mUIPreferencesManager);
-                        mUIPreferencesManager->SetShipStrengthRandomizationExtent(value);
-                        mOnChangeCallback();
-                    },
-                    std::make_unique<LinearSliderCore>(
-                        0.0f,
-                        1.0f));
-
-                sizer->Add(
-                    mStrengthRandomizationExtentSlider,
-                    wxGBPosition(0, 1),
-                    wxGBSpan(1, 1),
-                    wxEXPAND | wxALL,
-                    CellBorderInner);
-            }
-
-            boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
-        }
-
-        gridSizer->Add(
-            boxSizer,
-            wxGBPosition(0, 1),
-            wxGBSpan(1, 1),
-            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
-            CellBorderOuter);
-    }
-
-    //
     // Misc
     //
 
@@ -1043,14 +961,13 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(0, 2),
+            wxGBPosition(0, 1),
             wxGBSpan(1, 1),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
 
     // Finalize panel
-
     panel->SetSizerAndFit(gridSizer);
 }
 
@@ -1217,7 +1134,7 @@ void PreferencesDialog::PopulateMusicPanel(wxPanel * panel)
 
         vSizer->Add(
             gridSizer,
-            1,
+            0,
             wxEXPAND,
             0);
     }
@@ -1285,8 +1202,6 @@ void PreferencesDialog::ReadSettings()
     mForceSharedAutoTexturizationSettingsOntoShipCheckBox->SetValue(mUIPreferencesManager->GetShipAutoTexturizationForceSharedSettingsOntoShipDefinition());
     mMaterialTextureMagnificationSlider->SetValue(mUIPreferencesManager->GetShipAutoTexturizationSharedSettings().MaterialTextureMagnification);
     mMaterialTextureTransparencySlider->SetValue(mUIPreferencesManager->GetShipAutoTexturizationSharedSettings().MaterialTextureTransparency);
-    mStrengthRandomizationDensityAdjustmentSlider->SetValue(mUIPreferencesManager->GetShipStrengthRandomizationDensityAdjustment());
-    mStrengthRandomizationExtentSlider->SetValue(mUIPreferencesManager->GetShipStrengthRandomizationExtent());
 
     mGlobalMuteCheckBox->SetValue(mUIPreferencesManager->GetGlobalMute());
     mBackgroundMusicVolumeSlider->SetValue(mUIPreferencesManager->GetBackgroundMusicVolume());

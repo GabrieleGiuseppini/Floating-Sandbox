@@ -188,6 +188,8 @@ private:
     wxCheckBox * mPlayStressSoundsCheckBox;
     wxCheckBox * mPlayWindSoundCheckBox;
     wxCheckBox * mPlayAirBubbleSurfaceSoundCheckBox;
+    SliderControl<float> * mStrengthRandomizationDensityAdjustmentSlider;
+    SliderControl<float> * mStrengthRandomizationExtentSlider;
     SliderControl<float> * mSpringStiffnessSlider;
     SliderControl<float> * mSpringDampingSlider;
     wxRadioBox * mDebugShipRenderModeRadioBox;

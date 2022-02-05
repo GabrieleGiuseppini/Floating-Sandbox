@@ -4407,6 +4407,77 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
             CellBorderInner);
     }
 
+    // Strength Randomization
+    {
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Strength Randomization"));
+
+        {
+            wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
+
+            // Density Adjustment
+            {
+                mStrengthRandomizationDensityAdjustmentSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Density Adjust"),
+                    _("Adjusts the amount of weaknesses injected in structures. Changes to this setting will only be in effect when the next ship is loaded."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::ShipStrengthRandomizationDensityAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<ExponentialSliderCore>(
+                        mGameControllerSettingsOptions->GetMinShipStrengthRandomizationDensityAdjustment(),
+                        1.0f,
+                        mGameControllerSettingsOptions->GetMaxShipStrengthRandomizationDensityAdjustment()));
+
+                sizer->Add(
+                    mStrengthRandomizationDensityAdjustmentSlider,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorderInner);
+            }
+
+            // Randomization Extent
+            {
+                mStrengthRandomizationExtentSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Extent"),
+                    _("Adjusts the extent to which structures are weakened. Changes to this setting will only be in effect when the next ship is loaded."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::ShipStrengthRandomizationExtent, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions->GetMinShipStrengthRandomizationExtent(),
+                        mGameControllerSettingsOptions->GetMaxShipStrengthRandomizationExtent()));
+
+                sizer->Add(
+                    mStrengthRandomizationExtentSlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorderInner);
+            }
+
+            boxSizer->Add(sizer, 0, wxALL, StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            boxSizer,
+            wxGBPosition(0, 2),
+            wxGBSpan(1, 2),
+            wxALL | wxALIGN_CENTER_HORIZONTAL,
+            CellBorderInner);
+    }
+
     // Advanced
     {
         wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Advanced"));
@@ -4475,7 +4546,7 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(0, 2),
+            wxGBPosition(0, 4),
             wxGBSpan(1, 2),
             wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderInner);
@@ -4714,7 +4785,7 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
         gridSizer->Add(
             mVectorFieldRenderModeRadioBox,
             wxGBPosition(1, 2),
-            wxGBSpan(1, 1),
+            wxGBSpan(1, 2),
             wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderInner);
     }
@@ -4753,8 +4824,8 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(1, 3),
-            wxGBSpan(1, 1),
+            wxGBPosition(1, 4),
+            wxGBSpan(1, 2),
             wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderInner);
     }
@@ -5419,6 +5490,8 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mPlayWindSoundCheckBox->SetValue(settings.GetValue<bool>(GameSettings::PlayWindSound));
     mPlayAirBubbleSurfaceSoundCheckBox->SetValue(settings.GetValue<bool>(GameSettings::PlayAirBubbleSurfaceSound));
 
+    mStrengthRandomizationDensityAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::ShipStrengthRandomizationDensityAdjustment));
+    mStrengthRandomizationExtentSlider->SetValue(settings.GetValue<float>(GameSettings::ShipStrengthRandomizationExtent));
     mSpringStiffnessSlider->SetValue(settings.GetValue<float>(GameSettings::SpringStiffnessAdjustment));
     mSpringDampingSlider->SetValue(settings.GetValue<float>(GameSettings::SpringDampingAdjustment));
 

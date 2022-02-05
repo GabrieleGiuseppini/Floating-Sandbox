@@ -279,12 +279,6 @@ public:
     bool GetShipAutoTexturizationDoForceSharedSettingsOntoShipSettings() const override { return mShipTexturizer.GetDoForceSharedSettingsOntoShipSettings(); }
     void SetShipAutoTexturizationDoForceSharedSettingsOntoShipSettings(bool value) override { mShipTexturizer.SetDoForceSharedSettingsOntoShipSettings(value); }
 
-    float GetShipStrengthRandomizationDensityAdjustment() const override { return mShipStrengthRandomizer.GetDensityAdjustment(); }
-    void SetShipStrengthRandomizationDensityAdjustment(float value) override { mShipStrengthRandomizer.SetDensityAdjustment(value); }
-
-    float GetShipStrengthRandomizationExtent() const override { return mShipStrengthRandomizer.GetRandomizationExtent(); }
-    void SetShipStrengthRandomizationExtent(float value) override { mShipStrengthRandomizer.SetRandomizationExtent(value); }
-
     /////////////////////////////////////////////////////////
     // IGameControllerSettings and IGameControllerSettingsOptions
     /////////////////////////////////////////////////////////
@@ -723,6 +717,16 @@ public:
     void SetDayLightCycleDuration(std::chrono::minutes value) override { mGameParameters.DayLightCycleDuration = value; }
     std::chrono::minutes GetMinDayLightCycleDuration() const override { return GameParameters::MinDayLightCycleDuration; }
     std::chrono::minutes GetMaxDayLightCycleDuration() const override { return GameParameters::MaxDayLightCycleDuration; }
+
+    float GetShipStrengthRandomizationDensityAdjustment() const override { return mShipStrengthRandomizer.GetDensityAdjustment(); }
+    void SetShipStrengthRandomizationDensityAdjustment(float value) override { mShipStrengthRandomizer.SetDensityAdjustment(value); }
+    float GetMinShipStrengthRandomizationDensityAdjustment() const override { return 0.0f; }
+    float GetMaxShipStrengthRandomizationDensityAdjustment() const override { return 10.0f; }
+
+    float GetShipStrengthRandomizationExtent() const override { return mShipStrengthRandomizer.GetRandomizationExtent(); }
+    void SetShipStrengthRandomizationExtent(float value) override { mShipStrengthRandomizer.SetRandomizationExtent(value); }
+    float GetMinShipStrengthRandomizationExtent() const override { return 0.0f; }
+    float GetMaxShipStrengthRandomizationExtent() const override { return 1.0f; }
 
     //
     // Render parameters

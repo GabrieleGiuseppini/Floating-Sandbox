@@ -310,6 +310,12 @@ struct IGameControllerSettings
     virtual std::chrono::minutes GetDayLightCycleDuration() const = 0;
     virtual void SetDayLightCycleDuration(std::chrono::minutes value) = 0;
 
+    virtual float GetShipStrengthRandomizationDensityAdjustment() const = 0;
+    virtual void SetShipStrengthRandomizationDensityAdjustment(float value) = 0;
+
+    virtual float GetShipStrengthRandomizationExtent() const = 0;
+    virtual void SetShipStrengthRandomizationExtent(float value) = 0;
+
     //
     // Render parameters
     //

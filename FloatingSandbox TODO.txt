@@ -143,12 +143,16 @@
 			+ changes.txt
 		+ Check WaterPump power adjust
 
-		= Lower volume of pump sound when many pumps are playing
+		+ Lower volume of pump sound when many pumps are playing
 			! We are lucky that we know # of pumps in advance; copy code from engines then
-			- Try removing exponential at InternalSetVolume
 
-		- Fix problem with screwed up preferences
-			- Move strength rnd settings to SettingsDialog
+		= Fix problem with strength randomization preferences screwing up game because they are persistent
+			= Move strength rnd settings to SettingsDialog
+				+ Remove from preferences
+				+ Fix Preferences dialog height: GamePanel
+				+ Fix layout of SettingsDialog page
+					+ Tighter H
+			- changes.txt
 
 		- Check bomb blasts, just w/adjust, to see if can reach a better balance
 
@@ -167,7 +171,7 @@
 				+ Take first
 				- Update & send second + initial tips
 
-		- Send for testing
+		- Send for final testing
 
 		= Mac/Sam
 			- FS build cannot find wxWidgets

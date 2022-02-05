@@ -116,6 +116,8 @@ enum class GameSettings : size_t
     NumberOfClouds,
     DoDayLightCycle,
     DayLightCycleDuration,
+    ShipStrengthRandomizationDensityAdjustment,
+    ShipStrengthRandomizationExtent,
 
     // Render
     FlatSkyColor,

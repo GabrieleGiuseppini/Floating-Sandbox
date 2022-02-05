@@ -184,10 +184,4 @@ struct IGameController
 
     virtual bool GetShipAutoTexturizationDoForceSharedSettingsOntoShipSettings() const = 0;
     virtual void SetShipAutoTexturizationDoForceSharedSettingsOntoShipSettings(bool value) = 0;
-
-    virtual float GetShipStrengthRandomizationDensityAdjustment() const = 0;
-    virtual void SetShipStrengthRandomizationDensityAdjustment(float value) = 0;
-
-    virtual float GetShipStrengthRandomizationExtent() const = 0;
-    virtual void SetShipStrengthRandomizationExtent(float value) = 0;
 };
