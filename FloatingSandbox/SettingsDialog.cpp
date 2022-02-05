@@ -1889,7 +1889,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
         gridSizer->Add(
             wavePhenomenaBoxSizer,
             wxGBPosition(1, 0),
-            wxGBSpan(1, 2),
+            wxGBSpan(1, 1),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
@@ -2041,8 +2041,8 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
 
         gridSizer->Add(
             stormsBoxSizer,
-            wxGBPosition(1, 2),
-            wxGBSpan(1, 2),
+            wxGBPosition(1, 1),
+            wxGBSpan(1, 3),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
@@ -3318,7 +3318,7 @@ void SettingsDialog::PopulateOtherToolsPanel(
         gridSizer->Add(
             boxSizer,
             wxGBPosition(0, 2),
-            wxGBSpan(1, 3),
+            wxGBSpan(1, 2),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
@@ -3381,7 +3381,7 @@ void SettingsDialog::PopulateOtherToolsPanel(
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(0, 5),
+            wxGBPosition(0, 4),
             wxGBSpan(1, 1),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
@@ -3549,8 +3549,8 @@ void SettingsDialog::PopulateOtherToolsPanel(
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(1, 3),
-            wxGBSpan(1, 1),
+            wxGBPosition(1, 2),
+            wxGBSpan(1, 2),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
@@ -3612,7 +3612,7 @@ void SettingsDialog::PopulateOtherToolsPanel(
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(1, 5),
+            wxGBPosition(1, 4),
             wxGBSpan(1, 1),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
@@ -4473,7 +4473,7 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
         gridSizer->Add(
             boxSizer,
             wxGBPosition(0, 2),
-            wxGBSpan(1, 2),
+            wxGBSpan(1, 1),
             wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderInner);
     }
@@ -4546,8 +4546,8 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(0, 4),
-            wxGBSpan(1, 2),
+            wxGBPosition(0, 3),
+            wxGBSpan(1, 1),
             wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderInner);
     }
@@ -4785,7 +4785,7 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
         gridSizer->Add(
             mVectorFieldRenderModeRadioBox,
             wxGBPosition(1, 2),
-            wxGBSpan(1, 2),
+            wxGBSpan(1, 1),
             wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderInner);
     }
@@ -4824,8 +4824,8 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(1, 4),
-            wxGBSpan(1, 2),
+            wxGBPosition(1, 3),
+            wxGBSpan(1, 1),
             wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderInner);
     }

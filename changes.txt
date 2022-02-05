@@ -18,6 +18,7 @@
 - Fixed bug with WaveMaker waves sometimes becoming too tall and crashing the game
 - Lowered HeatBlaster radius when in ultra-violent mode
 - Added "Preferences" setting for starting the game in full-screen mode or as a normal window
+- Moved Strength Randomization settings from the "Preferences" window to the "Settings" window
 - Reworked spanish translation "ahora hasta yo entiendo"
 
 1.16.7
