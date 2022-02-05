@@ -99,6 +99,7 @@ long const ID_CHECK_UPDATES_TIMER = wxNewId();
 
 MainFrame::MainFrame(
     wxApp * mainApp,
+    std::optional<std::filesystem::path> initialShipFilePath,
     ResourceLocator const & resourceLocator,
     LocalizationManager & localizationManager)
     : mCurrentOpenGLCanvas(nullptr)
@@ -112,6 +113,7 @@ MainFrame::MainFrame(
     , mSettingsManager()
     , mUIPreferencesManager()
     // State
+    , mInitialShipFilePath(initialShipFilePath)
     , mCurrentShipFilePath()
     , mPreviousShipFilePath()
     , mHasWindowBeenShown(false)
@@ -1089,17 +1091,25 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
     try
     {
-        // See if the last loaded ship is applicable
         std::filesystem::path startupShipFilePath;
-        if (mUIPreferencesManager->GetReloadLastLoadedShipOnStartup())
-        {
-            startupShipFilePath = mUIPreferencesManager->GetLastShipLoadedFilePath();
 
-            // Make sure it still exists
-            if (!startupShipFilePath.empty()
-                && !std::filesystem::exists(startupShipFilePath))
+        if (mInitialShipFilePath.has_value())
+        {
+            startupShipFilePath = *mInitialShipFilePath;
+        }
+        else
+        {
+            // See if the last loaded ship is applicable
+            if (mUIPreferencesManager->GetReloadLastLoadedShipOnStartup())
             {
-                startupShipFilePath.clear();
+                startupShipFilePath = mUIPreferencesManager->GetLastShipLoadedFilePath();
+
+                // Make sure it still exists
+                if (!startupShipFilePath.empty()
+                    && !std::filesystem::exists(startupShipFilePath))
+                {
+                    startupShipFilePath.clear();
+                }
             }
         }
 

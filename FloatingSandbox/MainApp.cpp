@@ -20,8 +20,10 @@
 #include <GameCore/SysSpecifics.h>
 
 #include <wx/app.h>
+#include <wx/cmdline.h>
 #include <wx/msgdlg.h>
 
+#include <filesystem>
 #include <functional>
 #include <memory>
 #include <optional>
@@ -53,6 +55,7 @@ public:
     MainApp();
 
     virtual bool OnInit() override;
+    virtual void OnInitCmdLine(wxCmdLineParser & parser) override;
 
     virtual int FilterEvent(wxEvent & event) override;
 
@@ -166,7 +169,7 @@ bool MainApp::OnInit()
     try
     {
         //
-        // Initialize resource locator
+        // Initialize resource locator, using executable's path
         //
 
         mResourceLocator = std::make_unique<ResourceLocator>(std::string(argv[0]));
@@ -183,10 +186,31 @@ bool MainApp::OnInit()
         mLocalizationManager = LocalizationManager::CreateInstance(preferredLanguage, *mResourceLocator);
 
         //
+        // See if we've been given a ship file path to start with
+        //
+
+        std::optional<std::filesystem::path> initialFilePath;
+        if (argc > 1)
+        {
+            try
+            {
+                std::filesystem::path const tmp = std::filesystem::path(std::string(argv[1]));
+                if (std::filesystem::exists(tmp)
+                    && std::filesystem::is_regular_file(tmp))
+                {
+                    initialFilePath = tmp;
+
+                    LogMessage("Initial file path: \"", initialFilePath->string(), "\"");
+                }
+            }
+            catch(...) { /* Ignore */ }
+        }
+
+        //
         // Create frame
         //
 
-        mMainFrame = new MainFrame(this, *mResourceLocator , *mLocalizationManager);
+        mMainFrame = new MainFrame(this, initialFilePath, *mResourceLocator , *mLocalizationManager);
 
         SetTopWindow(mMainFrame);
 
@@ -216,6 +240,12 @@ bool MainApp::OnInit()
         // Abort
         return false;
     }
+}
+
+void MainApp::OnInitCmdLine(wxCmdLineParser & parser)
+{
+    // Allow just one argument
+    parser.AddParam(wxEmptyString, wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL);
 }
 
 int MainApp::FilterEvent(wxEvent & event)

@@ -142,10 +142,8 @@
 			+ Send for opinion
 			+ changes.txt
 		+ Check WaterPump power adjust
-
 		+ Lower volume of pump sound when many pumps are playing
 			! We are lucky that we know # of pumps in advance; copy code from engines then
-
 		+ Fix problem with strength randomization preferences screwing up game because they are persistent
 			+ Move strength rnd settings to SettingsDialog
 				+ Remove from preferences
@@ -154,6 +152,8 @@
 					+ Tighter H
 			+ Test values
 			+ changes.txt
+		+ Make command-line arg for main exe
+			+ MainFrame cctor takes opt<fs::path> for ship
 
 		- Localization
 			= IT
@@ -191,8 +191,7 @@
 			- Also install ShipBuilder.exe
 			- Set shell handler for .shp2 files
 				- See https://stackoverflow.com/questions/138550/how-to-register-file-types-extensions-with-a-wix-installer
-				- Need command-line arg for main exe
-					- MainFrame cctor takes opt<fs::path> for ship
+				- Invoke man exe with command-line arg
 
 		- Release
 
@@ -219,6 +218,7 @@
 			! http://mirrors.arcadecontrols.com/www.sysinternals.com/Information/HighResolutionTimers.html
 			+ @ 50fps: Windows timer resolution (min/max/cur): 15.625 / 0.500 / 15.621 ms
 			+ @ 64fps: Windows timer resolution (min/max/cur): 15.625 / 0.500 / 0.997 ms
+				   Windows timer resolution (min/max/cur): 15.625 / 0.500 / 0.997 ms
 
 		- More parallelism at Ship::Update
 

@@ -41,6 +41,7 @@
 #include <atomic>
 #include <chrono>
 #include <cstdint>
+#include <filesystem>
 #include <memory>
 #include <optional>
 #include <vector>
@@ -58,6 +59,7 @@ public:
 
     MainFrame(
         wxApp * mainApp,
+        std::optional<std::filesystem::path> initialShipFilePath,
         ResourceLocator const & resourceLocator,
         LocalizationManager & localizationManager);
 
@@ -408,6 +410,7 @@ private:
     // State
     //
 
+    std::optional<std::filesystem::path> const mInitialShipFilePath;
     std::filesystem::path mCurrentShipFilePath;
     std::filesystem::path mPreviousShipFilePath;
 
