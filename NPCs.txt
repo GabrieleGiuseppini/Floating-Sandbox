@@ -38,6 +38,14 @@ Details
 		- "Walkabaility" of springs is maintained at destroy and repair
 	- A specific "Paths" (or "FloorPlan") layer provides a bitmask indicating which particles are walkable and which are not
 		- When the layer is absent, the bitmask is created automatically with the hullness of particles
+
+- Walking:
+	- A given walkable spring has effectively two sides, and thus we need to remember on which side we are
+		- Example: we're walking on a spring, and then ship is rotated by 180 degrees: we need now to fall, rather than continue walking on the other side of the spring
+	- An NPC then remembers:
+		- Which spring it's walking on, and
+		- Which of the two endpoints is at its *right* when the NPC is staring at us
+
 - State machine(s):
 	- Constrained regime:
 		- Freefall state:
@@ -54,6 +62,7 @@ Details
 		- Landed state:
 			! Temporary state, exists for animation
 			- Do hole check to check for transition to Free regime
+			- TODOHERE: incorporate "remembering *right* endpoint of spring we're walking on" from here on
 			- From here, after some time: choose a walking direction: "left" or "right", then transition to Walking_MakeNextChoice
 				- TODO: see below if we actually can find next spring without having an incoming spring
 		- Walking:
@@ -62,6 +71,7 @@ Details
 			- When mid-spring:
 				- Calculate velocity:
 					- TODO: resultant of constant WalkingVelocity in the direction of the walk with gravity (projected along spring) + friction
+					- TODO: incorporate "remembering *right* endpoint of spring we're walking on" from here on
 				- Move by velocity
 			- When the NPC reaches an endpoint of the walkable spring: transition to Walking_MakeNextChoice state
 		- Walking_MakeNextChoice:

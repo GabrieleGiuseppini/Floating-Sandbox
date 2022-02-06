@@ -154,6 +154,10 @@
 			+ changes.txt
 		+ Make command-line arg for main exe
 			+ MainFrame cctor takes opt<fs::path> for ship
+		+ Re-make material templates
+		+ Fix splash sound flanger
+			! It's the WaterDisplacementWave sound, not the Splash sound
+			+ Min delay for WaterDisplacementWave sound
 
 		= Localization
 			= IT
@@ -180,10 +184,15 @@
 		
 		+ See rogue waves
 	
-		- Re-make material templates
-
 		- TimCan pack
-		- Raynair updates
+		= Raynair updates
+			+ A-320 update
+			= BAE
+				= Finalize those in _TO_TAKE
+				- Make .shp2
+			- Skoda
+				- Tell him has holes
+			- changes.txt
 		- Pocketwatch ships
 		- 4 Tanks
 
@@ -226,6 +235,11 @@
 			+ @ 50fps: Windows timer resolution (min/max/cur): 15.625 / 0.500 / 15.621 ms
 			+ @ 64fps: Windows timer resolution (min/max/cur): 15.625 / 0.500 / 0.997 ms
 				   Windows timer resolution (min/max/cur): 15.625 / 0.500 / 0.997 ms
+
+		- Affinitize threads on Windows:
+			- Main thread (@GameController)
+			- Task threads (@ThreadPool)
+			- Rendering thread (@TaskThread)
 
 		- More parallelism at Ship::Update
 
