@@ -1,8 +1,13 @@
 https://gamejolt.com/x/permalink/comment/11730705
 
 
-- Don't overwrite files from stock Ships directory
-	- Which is ResourceLocator::GetInstalledShipFolderPath
++ Don't overwrite files from stock Ships directory
+	+ Test first it happens
+	+ Fix @ MainFrame::DoLoadShip
+		+ Path is ResourceLocator::GetInstalledShipFolderPath
+		+ Unit tests
+	+ Test again
+
 + Test Titanic's alignments
 - Test on old Dell
 

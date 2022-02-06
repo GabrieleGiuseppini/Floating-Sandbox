@@ -71,7 +71,7 @@ We are now ready to generate the Visual Studio solution file as follows:
 cd %BUILD_ROOT%
 mkdir DevIL-1.8.0
 cd DevIL-1.8.0
-cmake %SOURCE_ROOT%\DevIL\DevIL -D BUILD_SHARED_LIBS=OFF -D ZLIB_ROOT=%SDK_ROOT%\ZLib-1.2.11 -D JPEG_ROOT=%SDK_ROOT%\jpeg-9d -D PNG_ROOT=%SDK_ROOT%\LibPNG-1.6.37 -D CMAKE_POLICY_DEFAULT_CMP0012=NEW -D CMAKE_POLICY_DEFAULT_CMP0074=NEW -D CMAKE_LIBRARY_ARCHITECTURE=x64 -D CMAKE_INSTALL_PREFIX=%SDK_ROOT%\DevIL-1.8.0
+cmake %SOURCE_ROOT%\DevIL\DevIL -D BUILD_SHARED_LIBS=OFF -D ZLIB_ROOT=%SDK_ROOT%\ZLib-1.2.11 -D JPEG_ROOT=%SDK_ROOT%\jpeg-9d -D PNG_ROOT=%SDK_ROOT%\LibPNG-1.6.37 -D IL_NO_TIF=1 -D IL_NO_JP2=1 -D CMAKE_POLICY_DEFAULT_CMP0012=NEW -D CMAKE_POLICY_DEFAULT_CMP0074=NEW -D CMAKE_LIBRARY_ARCHITECTURE=x64 -D CMAKE_INSTALL_PREFIX=%SDK_ROOT%\DevIL-1.8.0
 ```
 Do not worry if you see errors about CMake not being able to find the TIFF, Jasper, or other image format libraries - it's only important that it finds the ZLIB, PNG, and JPEG libraries that you've built earlier.
 

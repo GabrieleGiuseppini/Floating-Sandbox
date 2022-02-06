@@ -3467,8 +3467,10 @@ bool MainFrame::DoLoadShip(std::filesystem::path const & shipFilePath)
         mShipTexturizer,
         mResourceLocator);
 
-    // Remember file path - but only if it's a definition file in the "official" format, not a legacy one
-    if (ShipDeSerializer::IsShipDefinitionFile(shipFilePath))
+    // Remember file path - but only if it's a definition file in the "official" format (not a legacy one),
+    // and only if it's not a stock ship (otherwise users could overwrite game ships unknowingly)
+    if (ShipDeSerializer::IsShipDefinitionFile(shipFilePath)
+        && !Utils::IsFileUnderDirectory(shipFilePath, mResourceLocator.GetInstalledShipFolderPath()))
     {
         mCurrentShipFilePath = shipFilePath;
     }

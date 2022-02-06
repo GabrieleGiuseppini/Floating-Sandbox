@@ -9,16 +9,14 @@
 
 #include <Game/ShipDeSerializer.h>
 
-// TODOTEST
-#include <GameCore/Log.h>
-
 namespace ShipBuilder {
 
 ShipSaveDialog::ShipSaveDialog(wxWindow * parent)
 	: wxFileDialog(
 		parent,
 		wxEmptyString,
-		StandardSystemPaths::GetInstance().GetUserShipFolderPath().string(),
+		StandardSystemPaths::GetInstance().GetUserShipFolderPath().string() 
+			+ std::filesystem::path::preferred_separator, // See https://forums.wxwidgets.org/viewtopic.php?t=42293
 		wxEmptyString,
 		wxEmptyString,
 		wxFD_SAVE | wxFD_OVERWRITE_PROMPT,
