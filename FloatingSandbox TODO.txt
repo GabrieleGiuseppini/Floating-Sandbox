@@ -162,19 +162,23 @@
 		- Do final ShipBuilder tasks (*<--)
 
 		= Localization
-			= IT
+			+ IT
 				+ Do first & second
 				+ Update (probe panel)
+				+ Test
+					+ Including error ship
+			= RU
+				+ Take first
+				+ Update & send second + initial tips
+				- Get back po file
+				- Get back initial tip line
 				- Test
 					- Including error ship
-			- RU
+			= ES
 				+ Take first
-				- Update & send second + initial tips
-				- Test
-					- Including error ship
-			- ES
-				+ Take first
-				- Update & send second + initial tips
+				+ Update & send second + initial tips
+				- Get back po file
+				+ Get back initial tip line
 				- Test
 					- Including error ship
 
@@ -203,7 +207,7 @@
 			- Linker issue: DevIL references but can't find jpeg, png, jas, tiff
 				- Add png, jpg to shiptools, unittests
 					- ADDITIONAL_LIBRARIES is empty
-						- Find correct IF to detect
+						= Find correct IF to detect - asked to try again
 						- See if FIND_PACKAGE for pthread and iconv is still needed after that
 				- See if need to rebuild DevIL without JAS, TIFF
 		
