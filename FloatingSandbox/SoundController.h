@@ -537,12 +537,13 @@ private:
     {
         switch (soundType)
         {
+            case SoundType::WaterDisplacementWave:
+                return std::chrono::milliseconds(100);
             case SoundType::Break:
             case SoundType::Destroy:
             case SoundType::LightFlicker:
             case SoundType::RepairSpring:
             case SoundType::RepairTriangle:
-            case SoundType::WaterDisplacementWave:
                 return std::chrono::milliseconds(200);
             case SoundType::Stress:
             case SoundType::TerrainAdjust:
