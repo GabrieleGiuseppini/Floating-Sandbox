@@ -197,7 +197,8 @@
 			- Also install ShipBuilder.exe
 			- Set shell handler for .shp2 files
 				- See https://stackoverflow.com/questions/138550/how-to-register-file-types-extensions-with-a-wix-installer
-				- Invoke man exe with command-line arg
+				- Invoke main exe with command-line arg
+				- Also file icon
 
 		- Release
 
