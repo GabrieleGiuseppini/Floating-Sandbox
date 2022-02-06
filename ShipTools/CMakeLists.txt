@@ -30,7 +30,7 @@ target_link_libraries (ShipTools
 	${ADDITIONAL_LIBRARIES})
 
 
-if(MSVC)
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 	set_target_properties(ShipTools PROPERTIES LINK_FLAGS "/SUBSYSTEM:CONSOLE /NODEFAULTLIB:MSVCRTD")
 endif()
 
@@ -39,7 +39,7 @@ endif()
 # Set VS properties
 #
 
-if(MSVC)
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 
 	set_target_properties(
 		ShipTools

@@ -8,7 +8,7 @@ set  (SHIPBUILDER_SOURCES
 )
 
 set(RESOURCE_FILES "")
-if(MSVC)
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 	list(APPEND RESOURCE_FILES
 		Resources/ShipBuilder.rc
 		Resources/ShipAAA.ico
@@ -40,16 +40,16 @@ target_link_libraries (ShipBuilder
 	${ADDITIONAL_LIBRARIES})
 
 
-if (MSVC)
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 	set_target_properties(ShipBuilder PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS /NODEFAULTLIB:MSVCRTD")
-endif (MSVC)
+endif ()
 
 
 #
 # VS properties
 #
 
-if(MSVC)
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 	
 	set_target_properties(
 		ShipBuilder

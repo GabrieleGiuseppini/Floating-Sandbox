@@ -159,6 +159,8 @@
 			! It's the WaterDisplacementWave sound, not the Splash sound
 			+ Min delay for WaterDisplacementWave sound
 
+		- Do final ShipBuilder tasks (*<--)
+
 		= Localization
 			= IT
 				+ Do first & second
@@ -176,26 +178,37 @@
 				- Test
 					- Including error ship
 
+		- Ships:
+			- TimCan pack
+			= Raynair updates
+				+ A-320 update
+				+ BAE					
+				- Skoda
+					- Tell him has holes				
+			- Pocketwatch ships
+				- SS Belgenland 1914
+			+ 4 Tanks
+			= R.M.S. Atlantic's ships
+				+ I'll take the S.Stephen
+				- Add to credits: "R.M.S. Atlantic"
+			+ Finalize those in _TO_TAKE
+				- Make .shp2
+				- changes.txt
+
 		- Send for final testing
 
 		= Mac/Sam
-			- FS build cannot find wxWidgets
+			+ FS build cannot find wxWidgets
 				+ Issue is due to pthread and iconv libs not found; added FIND_PACKAGE for APPLE in CMakeFiles
+			- Linker issue: DevIL references but can't find jpeg, png, jas, tiff
+				- Add png, jpg to shiptools, unittests
+					- ADDITIONAL_LIBRARIES is empty
+						- Find correct IF to detect
+						- See if FIND_PACKAGE for pthread and iconv is still needed after that
+				- See if need to rebuild DevIL without JAS, TIFF
 		
 		+ See rogue waves
 	
-		- TimCan pack
-		= Raynair updates
-			+ A-320 update
-			= BAE
-				= Finalize those in _TO_TAKE
-				- Make .shp2
-			- Skoda
-				- Tell him has holes
-			- changes.txt
-		- Pocketwatch ships
-		- 4 Tanks
-
 		- Tests:
 			- New changes.txt found (aka old bug)
 				- Check how many older FS's exist, to see if can enable/upload changes.txt again

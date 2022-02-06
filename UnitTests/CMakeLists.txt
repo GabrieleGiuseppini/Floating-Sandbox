@@ -1,8 +1,8 @@
 enable_testing()
 
-if(MSVC)
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING /DGTEST_HAS_TR1_TUPLE=0")
-endif(MSVC)
+endif()
 
 #
 # Setup google test
@@ -85,7 +85,7 @@ target_link_libraries (UnitTests
 # Set VS properties
 #
 
-if (MSVC)
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 
 	set_target_properties(
 		UnitTests
@@ -97,4 +97,4 @@ if (MSVC)
 			RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
 	)
 
-endif (MSVC)
+endif ()

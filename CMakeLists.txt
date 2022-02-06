@@ -189,7 +189,7 @@ add_subdirectory(${GTEST_DIR} gtest EXCLUDE_FROM_ALL)
 
 set(CMAKE_CXX_STANDARD 17)
 
-if(MSVC)
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_CRT_SECURE_NO_WARNINGS")
 
@@ -261,7 +261,7 @@ if(MSVC)
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB:MSVCRT /NODEFAULTLIB:MSVCRTD")
 	add_compile_options(/permissive-)
 
-elseif(CMAKE_COMPILER_IS_GNUXX OR CMAKE_COMPILER_IS_GNUCC)
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall -O3 -ffast-math -fno-math-errno -funsafe-math-optimizations -ffinite-math-only -fno-trapping-math")
 	set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -Wall -O3 -ffast-math -fno-math-errno -funsafe-math-optimizations -ffinite-math-only -fno-trapping-math")
@@ -275,9 +275,9 @@ add_definitions(-DPICOJSON_USE_INT64)
 # Libraries
 ####################################################
 
-if(MSVC)
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 	set(ADDITIONAL_LIBRARIES comctl32 rpcrt4 advapi32)
-elseif(CMAKE_COMPILER_IS_GNUXX OR CMAKE_COMPILER_IS_GNUCC)
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 	set(ADDITIONAL_LIBRARIES ${CMAKE_DL_LIBS} pthread stdc++fs atomic png)
 	if (UNIX)
 	    list(APPEND ADDITIONAL_LIBRARIES X11)
@@ -308,7 +308,7 @@ endif()
 # Visual Studio specifics
 ####################################################
 
-if(MSVC)
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 	set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT "FloatingSandbox")
 endif()
 
@@ -330,6 +330,7 @@ DefineUserPostInstall()
 ####################################################
 
 message (STATUS "-----------------------------------------------------")
+message (STATUS "CMake CXX compiler ID:" ${CMAKE_CXX_COMPILER_ID})
 message (STATUS "cxx Flags:" ${CMAKE_CXX_FLAGS})
 message (STATUS "cxx Flags Release:" ${CMAKE_CXX_FLAGS_RELEASE})
 message (STATUS "cxx Flags RelWithDebInfo:" ${CMAKE_CXX_FLAGS_RELWITHDEBINFO})
