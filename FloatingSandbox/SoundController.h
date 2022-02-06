@@ -539,9 +539,10 @@ private:
         {
             case SoundType::Break:
             case SoundType::Destroy:
+            case SoundType::LightFlicker:
             case SoundType::RepairSpring:
             case SoundType::RepairTriangle:
-            case SoundType::LightFlicker:
+            case SoundType::WaterDisplacementWave:
                 return std::chrono::milliseconds(200);
             case SoundType::Stress:
             case SoundType::TerrainAdjust:

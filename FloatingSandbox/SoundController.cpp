@@ -1691,7 +1691,7 @@ void SoundController::OnWaterDisplaced(float waterDisplacedMagnitude)
 
     if (waterDisplacementMagnitudeDerivative > mLastWaterDisplacedMagnitudeDerivative)
     {
-        // The derivative is growing, the curve is getting steeper
+        // The derivative is growing, thus the curve is getting steeper
 
         if (waterDisplacementMagnitudeDerivative > 0.5f)
         {
