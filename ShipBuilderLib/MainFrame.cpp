@@ -219,9 +219,9 @@ MainFrame::MainFrame(
 
                 row1Col0VSizer->Add(
                     panel,
-                    0,
-                    wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxRIGHT,
-                    4);
+                    1, // Expand vertically, a little
+                    wxALIGN_CENTER_HORIZONTAL,
+                    0);
             }
 
             // Separator
@@ -232,7 +232,7 @@ MainFrame::MainFrame(
                     line,
                     0,
                     wxEXPAND | wxTOP | wxBOTTOM,
-                    4);
+                    8);
             }
 
             // Toolbar panel
@@ -254,7 +254,7 @@ MainFrame::MainFrame(
                     line,
                     0,
                     wxEXPAND | wxTOP | wxBOTTOM,
-                    4);
+                    8);
             }
 
             // Undo panel
@@ -263,7 +263,7 @@ MainFrame::MainFrame(
 
                 row1Col0VSizer->Add(
                     undoPanel,
-                    1, // Expand vertically
+                    2, // Expand vertically
                     wxEXPAND, // Expand horizontally
                     0);
             }
@@ -2085,7 +2085,6 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
                     0);
             }
 
-
             vSizer->AddSpacer(5);
 
             // Auto-texturization mode
@@ -2462,8 +2461,6 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
     wxPanel * panel = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 
     mToolbarPanelsSizer = new wxBoxSizer(wxVERTICAL);
-
-    mToolbarPanelsSizer->AddSpacer(6);
 
     auto const makeToolButton = [this](
         ToolType tool,
@@ -4111,11 +4108,9 @@ void MainFrame::SetFrameTitle(std::string const & shipName, bool isDirty)
 
 void MainFrame::DeviateFocus()
 {
-    /* TODOOLD - STILL NEEDED? IF NOT, NUKE METHOD
     // Set focus on primary visualization button
     uint32_t const iPrimaryVisualization = static_cast<uint32_t>(mWorkbenchState.GetPrimaryVisualization());
     mVisualizationSelectButtons[iPrimaryVisualization]->SetFocus();
-    */
 }
 
 float MainFrame::OtherVisualizationsOpacitySliderToOpacity(int sliderValue) const
@@ -4247,8 +4242,7 @@ void MainFrame::ReconciliateUIWithLayerPresence(Model const & model)
         mGameVisualizationTextureModeButton->Enable(false);
     }
 
-    // TODOOLD - STILL NEEDED?
-    //mVisualizationSelectButtons[static_cast<size_t>(mWorkbenchState.GetPrimaryVisualization())]->SetFocus(); // Prevent other random buttons from getting focus
+    mVisualizationSelectButtons[static_cast<size_t>(mWorkbenchState.GetPrimaryVisualization())]->SetFocus(); // Prevent other random buttons from getting focus
 }
 
 void MainFrame::ReconciliateUIWithModelDirtiness(Model const & model)
