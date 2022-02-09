@@ -4453,21 +4453,21 @@ void MainFrame::ReconciliateUIWithPrimaryVisualizationSelection(VisualizationTyp
     bool hasToggledToolPanel = false;
     bool hasToggledLayerVisualizationModePanel = false;
 
-    // Layer selector:
-    // - If viz is Structural: StructuralLayer=T, GameViz=F
-    // - If viz is Game: StructuralLayer=T, GameViz=T
-    // - If viz is XXX:  XXX=T, GameViz=F
-    mVisualizationSelectButtons[static_cast<size_t>(VisualizationType::StructuralLayer)]->SetValue(primaryVisualization == VisualizationType::StructuralLayer || primaryVisualization == VisualizationType::Game);
-    mVisualizationSelectButtons[static_cast<size_t>(VisualizationType::Game)]->SetValue(primaryVisualization == VisualizationType::Game);
-    mVisualizationSelectButtons[static_cast<size_t>(VisualizationType::ElectricalLayer)]->SetValue(primaryVisualization == VisualizationType::ElectricalLayer);
-    mVisualizationSelectButtons[static_cast<size_t>(VisualizationType::RopesLayer)]->SetValue(primaryVisualization == VisualizationType::RopesLayer);
-    mVisualizationSelectButtons[static_cast<size_t>(VisualizationType::TextureLayer)]->SetValue(primaryVisualization == VisualizationType::TextureLayer);
-
-    // Layer visualization mode panels
     auto const iPrimaryVisualization = static_cast<uint32_t>(primaryVisualization);
     for (uint32_t iVisualization = 0; iVisualization < VisualizationCount; ++iVisualization)
     {
         bool const isVisualizationSelected = (iVisualization == iPrimaryVisualization);
+
+        // Visualization selection buttons
+        if (mVisualizationSelectButtons[iVisualization]->GetValue() != isVisualizationSelected)
+        {
+            mVisualizationSelectButtons[iVisualization]->SetValue(isVisualizationSelected);
+
+            if (isVisualizationSelected)
+            {
+                mVisualizationSelectButtons[iVisualization]->SetFocus(); // Prevent other random buttons for getting focus
+            }
+        }
 
         // Layer visualization mode panels
         if (mVisualizationModePanelsSizer->IsShown(mVisualizationModePanels[iVisualization]) != isVisualizationSelected)
@@ -4477,10 +4477,10 @@ void MainFrame::ReconciliateUIWithPrimaryVisualizationSelection(VisualizationTyp
         }
     }
 
-    // Toolbar panels
     auto const iPrimaryLayer = static_cast<uint32_t>(VisualizationToLayer(primaryVisualization));
     for (uint32_t iLayer = 0; iLayer < LayerCount; ++iLayer)
     {
+        // Toolbar panels
         bool const isLayerSelected = (iLayer == iPrimaryLayer);
         if (mToolbarPanelsSizer->IsShown(mToolbarPanels[iLayer]) != isLayerSelected)
         {

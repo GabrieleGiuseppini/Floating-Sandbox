@@ -14,7 +14,8 @@ https://gamejolt.com/x/permalink/comment/11730705
 = UIRearc
 	= DO
 		= Move GameViz selector to StructuralLayer
-			- Fix
+			+ Fix
+			- Fix radio behavior of select button
 		+ File "toolbar"
 			+ Quit button
 		+ Ship "toolbar"
@@ -25,10 +26,10 @@ https://gamejolt.com/x/permalink/comment/11730705
 	- Copy all useful PSDs to Authoring
 		- Nuke useless PSDs from Authoring
 	- Follow-ups
-		- Fixup col0
-			- H margins,col 
-			- Separator(s)
-			- Undo stack width
+		+ Fixup col0
+			+ H margins,col 
+			+ Separator(s)
+			+ Undo stack width
 		- Color of labels @ tool settings
 	- Re-test UI on old Dell
 
