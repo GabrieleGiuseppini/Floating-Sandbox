@@ -32,6 +32,9 @@
 #include <wx/icon.h>
 #include <wx/menu.h>
 #include <wx/panel.h>
+#include <wx/ribbon/bar.h>
+#include <wx/ribbon/buttonbar.h>
+#include <wx/ribbon/page.h>
 #include <wx/scrolbar.h>
 #include <wx/scrolwin.h>
 #include <wx/slider.h>
@@ -136,10 +139,14 @@ public:
 private:
 
     wxAcceleratorEntry MakePlainAcceleratorKey(int key, wxMenuItem * menuItem);
-    wxPanel * CreateFilePanel(wxWindow * parent);
-    wxPanel * CreateShipSettingsPanel(wxWindow * parent);
+    wxRibbonPage * CreateFileRibbonPage(wxRibbonBar * parent);
+    wxRibbonPage * CreateShipSettingsRibbonPage(wxRibbonBar * parent);
+    wxRibbonPage * CreateLayersAndVisualizationsRibbonPage(wxRibbonBar * parent);
+    wxRibbonPanel * CreateLayerAndVisualizationRibbonPanel(wxRibbonPage * parent, VisualizationType visualization);
     wxPanel * CreateToolSettingsPanel(wxWindow * parent);
+    /* TODOOLD
     wxPanel * CreateVisualizationsPanel(wxWindow * parent);
+    */
     wxPanel * CreateVisualizationDetailsPanel(wxWindow * parent);
     wxPanel * CreateToolbarPanel(wxWindow * parent);
     wxPanel * CreateUndoPanel(wxWindow * parent);
@@ -340,14 +347,27 @@ private:
     // File panel
     BitmapButton * mSaveShipButton;
 
+    // Layers and Visualizations ribbon
+    enum LayersAndVisualizationsButtons
+    {
+        LayersAndVisualizationsButtons_Select,
+        LayersAndVisualizationsButtons_NewOpen,
+        LayersAndVisualizationsButtons_Import,
+        LayersAndVisualizationsButtons_Delete,
+        LayersAndVisualizationsButtons_Export
+    };
+    std::array<wxRibbonButtonBar *, VisualizationCount> mLayersAndVisualizationsRibbonButtonBars;
+
     // Tool settings panel
     wxSizer * mToolSettingsPanelsSizer;
     std::vector<std::tuple<ToolType, wxPanel *>> mToolSettingsPanels;
 
+    /* TODOOLD
     // Visualization panel
     std::array<BitmapToggleButton *, VisualizationCount> mVisualizationSelectButtons;
     std::array<BitmapButton *, LayerCount> mLayerExportButtons;
     std::array<BitmapButton *, LayerCount> mLayerDeleteButtons;
+    */
 
     // Visualization details panel
     wxSlider * mOtherVisualizationsOpacitySlider;
