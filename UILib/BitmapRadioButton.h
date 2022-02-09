@@ -1,6 +1,6 @@
 /***************************************************************************************
 * Original Author:      Gabriele Giuseppini
-* Created:              2021-08-29
+* Created:              2022-02-09
 * Copyright:            Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
 #pragma once
@@ -12,11 +12,16 @@
 #include <filesystem>
 #include <functional>
 
-class BitmapToggleButton : public wxToggleButton
+/*
+ *
+Once pressed, may only be set to false via SetValue().
+ *
+ */
+class BitmapRadioButton : public wxToggleButton
 {
 public:
 
-    BitmapToggleButton(
+    BitmapRadioButton(
         wxWindow * parent,
         std::filesystem::path const & bitmapFilePath,
         std::function<void()> onClickHandler,
@@ -39,6 +44,9 @@ public:
             wxEVT_TOGGLEBUTTON,
             [onClickHandler, this](wxCommandEvent & /*event*/)
             {
+                if (!this->GetValue())
+                    SetValue(true);
+
                 onClickHandler();
             });
     }

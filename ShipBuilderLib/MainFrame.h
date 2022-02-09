@@ -16,6 +16,7 @@
 #include "WorkbenchState.h"
 
 #include <UILib/BitmapButton.h>
+#include <UILib/BitmapRadioButton.h>
 #include <UILib/BitmapToggleButton.h>
 #include <UILib/LocalizationManager.h>
 #include <UILib/LoggingDialog.h>
@@ -350,7 +351,7 @@ private:
     BitmapButton * mSaveShipButton;
 
     // Layers and Visualizations ribbon
-    std::array<BitmapToggleButton *, VisualizationCount> mVisualizationSelectButtons;
+    std::array<BitmapRadioButton *, VisualizationCount> mVisualizationSelectButtons;
     std::array<BitmapButton *, LayerCount> mLayerExportButtons;
     std::array<BitmapButton *, LayerCount> mLayerDeleteButtons;
 
@@ -362,24 +363,24 @@ private:
     wxSlider * mOtherVisualizationsOpacitySlider;
     wxSizer * mVisualizationModePanelsSizer;
     std::array<wxPanel *, VisualizationCount> mVisualizationModePanels;
-    BitmapToggleButton * mGameVisualizationNoneModeButton;
-    BitmapToggleButton * mGameVisualizationAutoTexturizationModeButton;
-    BitmapToggleButton * mGameVisualizationTextureModeButton;
-    BitmapToggleButton * mStructuralLayerVisualizationNoneModeButton;
-    BitmapToggleButton * mStructuralLayerVisualizationMeshModeButton;
-    BitmapToggleButton * mStructuralLayerVisualizationPixelModeButton;
-    BitmapToggleButton * mElectricalLayerVisualizationNoneModeButton;
-    BitmapToggleButton * mElectricalLayerVisualizationPixelModeButton;
-    BitmapToggleButton * mRopesLayerVisualizationNoneModeButton;
-    BitmapToggleButton * mRopesLayerVisualizationLinesModeButton;
-    BitmapToggleButton * mTextureLayerVisualizationNoneModeButton;
-    BitmapToggleButton * mTextureLayerVisualizationMatteModeButton;
+    BitmapRadioButton * mGameVisualizationNoneModeButton;
+    BitmapRadioButton * mGameVisualizationAutoTexturizationModeButton;
+    BitmapRadioButton * mGameVisualizationTextureModeButton;
+    BitmapRadioButton * mStructuralLayerVisualizationNoneModeButton;
+    BitmapRadioButton * mStructuralLayerVisualizationMeshModeButton;
+    BitmapRadioButton * mStructuralLayerVisualizationPixelModeButton;
+    BitmapRadioButton * mElectricalLayerVisualizationNoneModeButton;
+    BitmapRadioButton * mElectricalLayerVisualizationPixelModeButton;
+    BitmapRadioButton * mRopesLayerVisualizationNoneModeButton;
+    BitmapRadioButton * mRopesLayerVisualizationLinesModeButton;
+    BitmapRadioButton * mTextureLayerVisualizationNoneModeButton;
+    BitmapRadioButton * mTextureLayerVisualizationMatteModeButton;
     wxBitmapToggleButton * mViewGridButton;
 
     // Toolbar panel
     wxSizer * mToolbarPanelsSizer;
     std::array<wxPanel *, LayerCount> mToolbarPanels;
-    std::array<BitmapToggleButton *, static_cast<size_t>(ToolType::_Last) + 1> mToolButtons;
+    std::array<BitmapRadioButton *, static_cast<size_t>(ToolType::_Last) + 1> mToolButtons;
     wxStaticBitmap * mStructuralForegroundMaterialSelector;
     wxStaticBitmap * mStructuralBackgroundMaterialSelector;
     wxStaticBitmap * mElectricalForegroundMaterialSelector;

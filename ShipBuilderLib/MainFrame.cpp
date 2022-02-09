@@ -1572,7 +1572,7 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
                 }
             }
 
-            auto * selectorButton = new BitmapToggleButton(
+            auto * selectorButton = new BitmapRadioButton(
                 panel,
                 mResourceLocator.GetBitmapFilePath(buttonBitmapName),
                 [this, visualization]()
@@ -1617,7 +1617,7 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
 
         // Button
         {
-            auto * selectorButton = new BitmapToggleButton(
+            auto * selectorButton = new BitmapRadioButton(
                 panel,
                 mResourceLocator.GetBitmapFilePath("game_visualization"),
                 [this]()
@@ -2066,7 +2066,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
 
             // None mode
             {
-                mGameVisualizationNoneModeButton = new BitmapToggleButton(
+                mGameVisualizationNoneModeButton = new BitmapRadioButton(
                     gameVisualizationModesPanel,
                     mResourceLocator.GetBitmapFilePath("x_small"),
                     [this]()
@@ -2089,7 +2089,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
 
             // Auto-texturization mode
             {
-                mGameVisualizationAutoTexturizationModeButton = new BitmapToggleButton(
+                mGameVisualizationAutoTexturizationModeButton = new BitmapRadioButton(
                     gameVisualizationModesPanel,
                     mResourceLocator.GetBitmapFilePath("autotexturization_mode_icon_small"),
                     [this]()
@@ -2112,7 +2112,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
 
             // Texture mode
             {
-                mGameVisualizationTextureModeButton = new BitmapToggleButton(
+                mGameVisualizationTextureModeButton = new BitmapRadioButton(
                     gameVisualizationModesPanel,
                     mResourceLocator.GetBitmapFilePath("structural_texture_mode_icon_small"),
                     [this]()
@@ -2150,7 +2150,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
 
             // None mode
             {
-                mStructuralLayerVisualizationNoneModeButton = new BitmapToggleButton(
+                mStructuralLayerVisualizationNoneModeButton = new BitmapRadioButton(
                     structuralLayerVisualizationModesPanel,
                     mResourceLocator.GetBitmapFilePath("x_small"),
                     [this]()
@@ -2173,7 +2173,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
 
             // Mesh mode
             {
-                mStructuralLayerVisualizationMeshModeButton = new BitmapToggleButton(
+                mStructuralLayerVisualizationMeshModeButton = new BitmapRadioButton(
                     structuralLayerVisualizationModesPanel,
                     mResourceLocator.GetBitmapFilePath("mesh_mode_icon_small"),
                     [this]()
@@ -2196,7 +2196,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
 
             // Pixel mode
             {
-                mStructuralLayerVisualizationPixelModeButton = new BitmapToggleButton(
+                mStructuralLayerVisualizationPixelModeButton = new BitmapRadioButton(
                     structuralLayerVisualizationModesPanel,
                     mResourceLocator.GetBitmapFilePath("pixel_mode_icon_small"),
                     [this]()
@@ -2234,7 +2234,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
 
             // None mode
             {
-                mElectricalLayerVisualizationNoneModeButton = new BitmapToggleButton(
+                mElectricalLayerVisualizationNoneModeButton = new BitmapRadioButton(
                     electricalLayerVisualizationModesPanel,
                     mResourceLocator.GetBitmapFilePath("x_small"),
                     [this]()
@@ -2257,7 +2257,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
 
             // Pixel mode
             {
-                mElectricalLayerVisualizationPixelModeButton = new BitmapToggleButton(
+                mElectricalLayerVisualizationPixelModeButton = new BitmapRadioButton(
                     electricalLayerVisualizationModesPanel,
                     mResourceLocator.GetBitmapFilePath("pixel_mode_icon_small"),
                     [this]()
@@ -2295,7 +2295,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
 
             // None mode
             {
-                mRopesLayerVisualizationNoneModeButton = new BitmapToggleButton(
+                mRopesLayerVisualizationNoneModeButton = new BitmapRadioButton(
                     ropesLayerVisualizationModesPanel,
                     mResourceLocator.GetBitmapFilePath("x_small"),
                     [this]()
@@ -2318,7 +2318,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
 
             // Lines mode
             {
-                mRopesLayerVisualizationLinesModeButton = new BitmapToggleButton(
+                mRopesLayerVisualizationLinesModeButton = new BitmapRadioButton(
                     ropesLayerVisualizationModesPanel,
                     mResourceLocator.GetBitmapFilePath("lines_mode_icon_small"),
                     [this]()
@@ -2356,7 +2356,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
 
             // None mode
             {
-                mTextureLayerVisualizationNoneModeButton = new BitmapToggleButton(
+                mTextureLayerVisualizationNoneModeButton = new BitmapRadioButton(
                     textureLayerVisualizationModesPanel,
                     mResourceLocator.GetBitmapFilePath("x_small"),
                     [this]()
@@ -2379,7 +2379,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
 
             // Matte mode
             {
-                mTextureLayerVisualizationMatteModeButton = new BitmapToggleButton(
+                mTextureLayerVisualizationMatteModeButton = new BitmapRadioButton(
                     textureLayerVisualizationModesPanel,
                     mResourceLocator.GetBitmapFilePath("texture_mode_icon_small"),
                     [this]()
@@ -2466,9 +2466,9 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
         ToolType tool,
         wxPanel * toolbarPanel,
         std::string iconName,
-        wxString tooltip) -> BitmapToggleButton *
+        wxString tooltip) -> BitmapRadioButton *
     {
-        auto button = new BitmapToggleButton(
+        auto button = new BitmapRadioButton(
             toolbarPanel,
             mResourceLocator.GetIconFilePath(iconName),
             [this, tool]()

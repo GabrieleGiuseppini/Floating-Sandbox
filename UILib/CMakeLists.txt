@@ -7,6 +7,7 @@ set  (UI_LIB_SOURCES
 	BitmapButton.h
 	BitmappedCheckbox.h
 	BitmapPopupButton.h
+	BitmapRadioButton.h
 	BitmapToggleButton.h
 	EditSpinBox.h
 	ElectricalElementControl.cpp
