@@ -10,6 +10,15 @@ https://gamejolt.com/x/permalink/comment/11730705
 
 + Test Titanic's alignments
 - Test on old Dell
+	- UIRearc
+		= DO
+			- Move GameViz selector to StructuralLayer
+		- Follow-ups
+			- Fixup col0
+				- H margins,col 
+				- Separator(s)
+				- ...
+			- Color of labels @ tool settings
 
 - Release
 

@@ -41,6 +41,7 @@
 namespace ShipBuilder {
 
 int constexpr ButtonMargin = 4;
+int constexpr LabelMargin = 3;
 
 static std::string const ClearMaterialName = "Clear";
 ImageSize constexpr MaterialSwathSize(80, 100);
@@ -96,8 +97,8 @@ MainFrame::MainFrame(
     // Setup main frame
     //
     // Row 0: [Ribbon] [Tool Settings]
-    // Row 1: [Layers Panel]  |  [Work Canvas]
-    //        [Toolbar Panel] |
+    // Row 1: [Viz Details Panel] |  [Work Canvas]
+    //          [Toolbar Panel]   |
     // Row 2: [           Status Bar                  ]
 
     mMainPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
@@ -110,17 +111,18 @@ MainFrame::MainFrame(
 
         // Ribbon
         {
-            wxRibbonBar * ribbon = new wxRibbonBar(mMainPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 
+            mMainRibbonBar = new wxRibbonBar(mMainPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                 wxRIBBON_BAR_FLOW_HORIZONTAL | wxRIBBON_BAR_SHOW_PAGE_LABELS);
 
             // Configure look'n'feel
             {
-                auto * artProvider = ribbon->GetArtProvider();
+                auto * artProvider = mMainRibbonBar->GetArtProvider();
 
                 auto const backgroundColor = GetBackgroundColour();
                 auto const borderColor = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWFRAME);
 
-                artProvider->SetColor(wxRIBBON_ART_PAGE_BORDER_COLOUR, backgroundColor);
+                // TODO:CLEANUP
+                ////artProvider->SetColor(wxRIBBON_ART_PAGE_BORDER_COLOUR, backgroundColor);
 
                 artProvider->SetColor(wxRIBBON_ART_PAGE_BACKGROUND_COLOUR, backgroundColor);
                 artProvider->SetColor(wxRIBBON_ART_PAGE_BACKGROUND_GRADIENT_COLOUR, backgroundColor);
@@ -132,47 +134,45 @@ MainFrame::MainFrame(
                 artProvider->SetColor(wxRIBBON_ART_PAGE_HOVER_BACKGROUND_TOP_COLOUR, backgroundColor);
                 artProvider->SetColor(wxRIBBON_ART_PAGE_HOVER_BACKGROUND_TOP_GRADIENT_COLOUR, backgroundColor);
 
-                artProvider->SetColor(wxRIBBON_ART_TAB_ACTIVE_BACKGROUND_COLOUR, backgroundColor);
-                artProvider->SetColor(wxRIBBON_ART_TAB_ACTIVE_BACKGROUND_GRADIENT_COLOUR, backgroundColor);
-                artProvider->SetColor(wxRIBBON_ART_TAB_ACTIVE_BACKGROUND_TOP_COLOUR, backgroundColor);
-                artProvider->SetColor(wxRIBBON_ART_TAB_ACTIVE_BACKGROUND_TOP_GRADIENT_COLOUR, backgroundColor);
+                ////artProvider->SetColor(wxRIBBON_ART_TAB_ACTIVE_BACKGROUND_COLOUR, backgroundColor);
+                ////artProvider->SetColor(wxRIBBON_ART_TAB_ACTIVE_BACKGROUND_GRADIENT_COLOUR, backgroundColor);
+                ////artProvider->SetColor(wxRIBBON_ART_TAB_ACTIVE_BACKGROUND_TOP_COLOUR, backgroundColor);
+                ////artProvider->SetColor(wxRIBBON_ART_TAB_ACTIVE_BACKGROUND_TOP_GRADIENT_COLOUR, backgroundColor);
 
                 artProvider->SetColor(wxRIBBON_ART_TAB_CTRL_BACKGROUND_COLOUR, backgroundColor);
                 artProvider->SetColor(wxRIBBON_ART_TAB_CTRL_BACKGROUND_GRADIENT_COLOUR, backgroundColor);
 
-                artProvider->SetColor(wxRIBBON_ART_BUTTON_BAR_LABEL_COLOUR, *wxBLACK);
-                artProvider->SetColor(wxRIBBON_ART_PANEL_LABEL_COLOUR, *wxBLACK);
-                /*
-                wxRIBBON_ART_TAB_LABEL_COLOUR,
-                    wxRIBBON_ART_TAB_ACTIVE_LABEL_COLOUR,
-                    wxRIBBON_ART_TAB_HOVER_LABEL_COLOUR,
-                    wxRIBBON_ART_PANEL_LABEL_BACKGROUND_COLOUR,
-                    wxRIBBON_ART_PANEL_LABEL_BACKGROUND_GRADIENT_COLOUR,
-                    wxRIBBON_ART_PANEL_LABEL_COLOUR,
-                    wxRIBBON_ART_PANEL_HOVER_LABEL_BACKGROUND_COLOUR,
-                    wxRIBBON_ART_PANEL_HOVER_LABEL_BACKGROUND_GRADIENT_COLOUR,
-                    wxRIBBON_ART_PANEL_HOVER_LABEL_COLOUR,
-                    */
-                artProvider->SetColor(wxRIBBON_ART_PANEL_LABEL_BACKGROUND_COLOUR, backgroundColor);
-                artProvider->SetColor(wxRIBBON_ART_PANEL_LABEL_BACKGROUND_GRADIENT_COLOUR, backgroundColor);
-                artProvider->SetColor(wxRIBBON_ART_PANEL_HOVER_LABEL_BACKGROUND_COLOUR, backgroundColor);
-                artProvider->SetColor(wxRIBBON_ART_PANEL_HOVER_LABEL_BACKGROUND_GRADIENT_COLOUR, backgroundColor);
-                
-                artProvider->SetColor(wxRIBBON_ART_TAB_BORDER_COLOUR , borderColor);
-                artProvider->SetColor(wxRIBBON_ART_PAGE_BORDER_COLOUR, borderColor);
-                artProvider->SetColor(wxRIBBON_ART_PANEL_BORDER_COLOUR, borderColor);
-                artProvider->SetColor(wxRIBBON_ART_PANEL_BORDER_GRADIENT_COLOUR, borderColor);
+                ////artProvider->SetColor(wxRIBBON_ART_PANEL_LABEL_BACKGROUND_COLOUR, *wxBLACK);
+                ////artProvider->SetColor(wxRIBBON_ART_PANEL_LABEL_BACKGROUND_GRADIENT_COLOUR, *wxBLACK);
+                ////artProvider->SetColor(wxRIBBON_ART_PANEL_LABEL_COLOUR, *wxBLACK);
+                ////artProvider->SetColor(wxRIBBON_ART_PANEL_HOVER_LABEL_BACKGROUND_COLOUR, *wxBLACK);
+                ////artProvider->SetColor(wxRIBBON_ART_PANEL_HOVER_LABEL_BACKGROUND_GRADIENT_COLOUR, *wxBLACK);
+                ////artProvider->SetColor(wxRIBBON_ART_PANEL_HOVER_LABEL_COLOUR, *wxBLACK);
+
+                ////artProvider->SetColor(wxRIBBON_ART_TAB_ACTIVE_LABEL_COLOUR, *wxBLACK);
+                ////artProvider->SetColor(wxRIBBON_ART_TAB_HOVER_LABEL_COLOUR, *wxBLACK);
+                ////
+                ////artProvider->SetColor(wxRIBBON_ART_PANEL_LABEL_BACKGROUND_COLOUR, backgroundColor);
+                ////artProvider->SetColor(wxRIBBON_ART_PANEL_LABEL_BACKGROUND_GRADIENT_COLOUR, backgroundColor);
+                ////artProvider->SetColor(wxRIBBON_ART_PANEL_HOVER_LABEL_BACKGROUND_COLOUR, backgroundColor);
+                ////artProvider->SetColor(wxRIBBON_ART_PANEL_HOVER_LABEL_BACKGROUND_GRADIENT_COLOUR, backgroundColor);
+                ////
+                ////artProvider->SetColor(wxRIBBON_ART_TAB_BORDER_COLOUR , borderColor);
+                ////artProvider->SetColor(wxRIBBON_ART_PAGE_BORDER_COLOUR, borderColor);
+                ////artProvider->SetColor(wxRIBBON_ART_PANEL_BORDER_COLOUR, borderColor);
+                ////artProvider->SetColor(wxRIBBON_ART_PANEL_BORDER_GRADIENT_COLOUR, borderColor);
             }
 
-            CreateFileRibbonPage(ribbon);
-            CreateShipSettingsRibbonPage(ribbon);
-            CreateLayersAndVisualizationsRibbonPage(ribbon);
+            CreateFileRibbonPage(mMainRibbonBar);
+            CreateShipSettingsRibbonPage(mMainRibbonBar);
+            CreateLayersAndVisualizationsRibbonPage(mMainRibbonBar);
 
-            ribbon->Realize();
+            mMainRibbonBar->SetActivePage(2); // We start with the widest of the pages
+            mMainRibbonBar->Realize();
 
             row0HSizer->Add(
-                ribbon,
-                1, // Expand Width - will expand to largest ribbon tab
+                mMainRibbonBar,
+                0, // Expand Width - will expand to largest ribbon tab
                 0, // Maintain H
                 0);
         }
@@ -981,9 +981,6 @@ wxRibbonPage * MainFrame::CreateFileRibbonPage(wxRibbonBar * parent)
 
     panel->SetSizerAndFit(sizer);
 
-    // TODO?
-    page->Realize();
-
     return page;
 }
 
@@ -1041,9 +1038,6 @@ wxRibbonPage * MainFrame::CreateShipSettingsRibbonPage(wxRibbonBar * parent)
     }
 
     panel->SetSizerAndFit(sizer);
-
-    // TODO?
-    page->Realize();
 
     return page;
 }
@@ -1245,15 +1239,13 @@ wxRibbonPage * MainFrame::CreateLayersAndVisualizationsRibbonPage(wxRibbonBar * 
         CreateLayerAndVisualizationRibbonPanel(page, VisualizationType::Game);
     }
 
-    // TODO?
-    page->Realize();
-
     return page;
 }
 
 wxRibbonPanel * MainFrame::CreateLayerAndVisualizationRibbonPanel(wxRibbonPage * parent, VisualizationType visualization)
 {
     wxString const sureQuestion = _("The current changes to the layer will be lost; are you sure you want to continue?");
+    wxColor labelColor = parent->GetArtProvider()->GetColor(wxRIBBON_ART_BUTTON_BAR_LABEL_COLOUR);
 
     std::string panelLabel;
     switch (visualization)
@@ -1292,86 +1284,115 @@ wxRibbonPanel * MainFrame::CreateLayerAndVisualizationRibbonPanel(wxRibbonPage *
     wxRibbonPanel * panel = new wxRibbonPanel(parent, wxID_ANY, panelLabel, wxNullBitmap, wxDefaultPosition, wxDefaultSize,
         wxRIBBON_PANEL_NO_AUTO_MINIMISE);
 
-    wxRibbonButtonBar * buttonBar = new wxRibbonButtonBar(panel);
+    wxGridBagSizer * panelGridSizer = new wxGridBagSizer(ButtonMargin, ButtonMargin + ButtonMargin);
 
     // Selector
     {
-        std::string buttonBitmapName;
-        switch (visualization)
+        wxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
+
+        // Button
         {
-            case VisualizationType::Game:
+            std::string buttonBitmapName;
+            switch (visualization)
             {
-                buttonBitmapName = "game_visualization";
-                break;
+                case VisualizationType::Game:
+                {
+                    buttonBitmapName = "game_visualization";
+                    break;
+                }
+
+                case VisualizationType::ElectricalLayer:
+                {
+                    buttonBitmapName = "electrical_layer";
+                    break;
+                }
+
+                case VisualizationType::RopesLayer:
+                {
+                    buttonBitmapName = "ropes_layer";
+                    break;
+                }
+
+                case VisualizationType::StructuralLayer:
+                {
+                    buttonBitmapName = "structural_layer";
+                    break;
+                }
+
+                case VisualizationType::TextureLayer:
+                {
+                    buttonBitmapName = "texture_layer";
+                    break;
+                }
             }
 
-            case VisualizationType::ElectricalLayer:
-            {
-                buttonBitmapName = "electrical_layer";
-                break;
-            }
+            auto * selectorButton = new BitmapToggleButton(
+                panel,
+                mResourceLocator.GetBitmapFilePath(buttonBitmapName),
+                [this, visualization]()
+                {
+                    mController->SelectPrimaryVisualization(visualization);
+                },
+                _("Select this layer as the primary layer."));
 
-            case VisualizationType::RopesLayer:
-            {
-                buttonBitmapName = "ropes_layer";
-                break;
-            }
+            vSizer->Add(
+                selectorButton,
+                0,
+                wxALIGN_CENTER_HORIZONTAL,
+                0);
 
-            case VisualizationType::StructuralLayer:
-            {
-                buttonBitmapName = "structural_layer";
-                break;
-            }
-
-            case VisualizationType::TextureLayer:
-            {
-                buttonBitmapName = "texture_layer";
-                break;
-            }
+            mVisualizationSelectButtons[static_cast<size_t>(visualization)] = selectorButton;
         }
 
-        buttonBar->AddToggleButton(LayersAndVisualizationsButtons_Select, _("Select"), WxHelpers::LoadBitmap(buttonBitmapName, mResourceLocator), _("Select this layer as the primary layer"));
+        // Label
+        {
+            auto * staticText = new wxStaticText(panel, wxID_ANY, _T("Select"));
+            staticText->SetForegroundColour(labelColor);
 
-        buttonBar->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED,
-            [this](wxRibbonButtonBarEvent & /*event*/)
-            {
-                mController->SelectPrimaryVisualization(VisualizationType::StructuralLayer);
-            },
-            LayersAndVisualizationsButtons_Select);
+            vSizer->Add(
+                staticText,
+                0,
+                wxALIGN_CENTER_HORIZONTAL,
+                0);
+        }
+
+        panelGridSizer->Add(
+            vSizer,
+            wxGBPosition(0, 0),
+            wxGBSpan(2, 1),
+            0,
+            0);
     }
+
+    int iCurrentButton = 0;
 
     // New/Open
     if (visualization != VisualizationType::Game)
     {
-        if (visualization != VisualizationType::TextureLayer)
-        {
-            buttonBar->AddButton(LayersAndVisualizationsButtons_NewOpen, _("New"), WxHelpers::LoadBitmap("new_layer_button", mResourceLocator), _("Add or clean this layer."), wxRIBBON_BUTTON_NORMAL);
-        }
-        else
-        {
-            buttonBar->AddButton(LayersAndVisualizationsButtons_NewOpen, _("From Image"), WxHelpers::LoadBitmap("open_image_button", mResourceLocator), _("Import this layer from an image file."), wxRIBBON_BUTTON_NORMAL);
-        }
+        wxSizer * hSizer = new wxBoxSizer(wxHORIZONTAL);
 
-        buttonBar->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED,
-            [this, visualization, sureQuestion](wxRibbonButtonBarEvent & /*event*/)
+        // Button
+        wxString labelText;
+        {
+            auto const clickHandler = [this, visualization, sureQuestion]()
             {
                 switch (visualization)
                 {
                     case VisualizationType::ElectricalLayer:
                     {
-                        if (mController->HasModelLayer(LayerType::Electrical)
-                            && mController->IsModelDirty(LayerType::Electrical))
+                    if (mController->HasModelLayer(LayerType::Electrical)
+                        && mController->IsModelDirty(LayerType::Electrical))
+                    {
+                        if (!AskUserIfSure(sureQuestion))
                         {
-                            if (!AskUserIfSure(sureQuestion))
-                            {
-                                // Changed their mind
-                                return;
-                            }
+                            // Changed their mind
+                            return;
                         }
+                    }
 
-                        mController->NewElectricalLayer();
+                    mController->NewElectricalLayer();
 
-                        break;
+                    break;
                     }
 
                     case VisualizationType::RopesLayer:
@@ -1429,121 +1450,295 @@ wxRibbonPanel * MainFrame::CreateLayerAndVisualizationRibbonPanel(wxRibbonPage *
                         break;
                     }
                 }
-            },
-            LayersAndVisualizationsButtons_NewOpen);
+            };
+
+            BitmapButton * newButton;
+
+            if (visualization != VisualizationType::TextureLayer)
+            {
+                newButton = new BitmapButton(
+                    panel,
+                    mResourceLocator.GetBitmapFilePath("new_layer_button"),
+                    clickHandler,
+                    _("Add or clean this layer."));
+
+                labelText = _("Add/Clear");
+            }
+            else
+            {
+                newButton = new BitmapButton(
+                    panel,
+                    mResourceLocator.GetBitmapFilePath("open_image_button"),
+                    clickHandler,
+                    _("Import this layer from an image file."));
+
+                labelText = _("From Image");
+            }
+
+            hSizer->Add(
+                newButton,
+                0,
+                wxALIGN_CENTER_VERTICAL,
+                0);
+        }
+
+        // Label
+        {
+            auto * staticText = new wxStaticText(panel, wxID_ANY, labelText);
+            staticText->SetForegroundColour(labelColor);
+
+            hSizer->Add(
+                staticText,
+                0,
+                wxALIGN_CENTER_VERTICAL | wxLEFT,
+                LabelMargin);
+        }
+
+        panelGridSizer->Add(
+            hSizer,
+            wxGBPosition(iCurrentButton % 2, 1 + iCurrentButton / 2),
+            wxGBSpan(1, 1),
+            0,
+            0);
+
+        ++iCurrentButton;
     }
 
     // Import
     if (visualization != VisualizationType::Game)
     {
-        buttonBar->AddButton(LayersAndVisualizationsButtons_Import, _("Import"), WxHelpers::LoadBitmap("open_layer_button", mResourceLocator), _("Import this layer from another ship."), wxRIBBON_BUTTON_NORMAL);
+        wxSizer * hSizer = new wxBoxSizer(wxHORIZONTAL);
 
-        buttonBar->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED,
-            [this](wxRibbonButtonBarEvent & /*event*/)
-            {
-                // TODO
-                // TODO: also here ask user if sure when the layer is dirty
-                UnderConstructionDialog::Show(this, mResourceLocator);
-            },
-            LayersAndVisualizationsButtons_Import);
+        // Button
+        {
+            auto * importButton = new BitmapButton(
+                panel,
+                mResourceLocator.GetBitmapFilePath("open_layer_button"),
+                [this, visualization]()
+                {
+                    // TODO
+                    // TODO: also here ask user if sure when the layer is dirty
+                    UnderConstructionDialog::Show(this, mResourceLocator);
+                },
+                _("Import this layer from another ship."));
+
+            hSizer->Add(
+                importButton,
+                0,
+                wxALIGN_CENTER_VERTICAL,
+                0);
+        }
+
+        // Label
+        {
+            auto * staticText = new wxStaticText(panel, wxID_ANY, _T("Import"));
+            staticText->SetForegroundColour(labelColor);
+
+            hSizer->Add(
+                staticText,
+                0,
+                wxALIGN_CENTER_VERTICAL | wxLEFT,
+                LabelMargin);
+        }
+
+        panelGridSizer->Add(
+            hSizer,
+            wxGBPosition(iCurrentButton % 2, 1 + iCurrentButton / 2),
+            wxGBSpan(1, 1),
+            0,
+            0);
+
+        ++iCurrentButton;
     }
 
     // Delete
-    if (visualization != VisualizationType::Game
-        && visualization != VisualizationType::StructuralLayer)
+    if (visualization != VisualizationType::Game)
     {
-        buttonBar->AddButton(LayersAndVisualizationsButtons_Delete, _("Remove"), WxHelpers::LoadBitmap("delete_layer_button", mResourceLocator), _("Remove this layer from the ship."), wxRIBBON_BUTTON_NORMAL);
+        BitmapButton * deleteButton;
 
-        buttonBar->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED,
-            [this, visualization, sureQuestion](wxRibbonButtonBarEvent & /*event*/)
+        if (visualization != VisualizationType::StructuralLayer)
+        {
+            wxSizer * hSizer = new wxBoxSizer(wxHORIZONTAL);
+
+            // Button
             {
-                switch (visualization)
-                {
-                    case VisualizationType::ElectricalLayer:
+                deleteButton = new BitmapButton(
+                    panel,
+                    mResourceLocator.GetBitmapFilePath("delete_layer_button"),
+                    [this, visualization, sureQuestion]()
                     {
-                        assert(mController->HasModelLayer(LayerType::Electrical));
-
-                        if (mController->IsModelDirty(LayerType::Electrical))
+                        switch (visualization)
                         {
-                            if (!AskUserIfSure(sureQuestion))
+                            case VisualizationType::ElectricalLayer:
                             {
-                                // Changed their mind
-                                return;
+                                assert(mController->HasModelLayer(LayerType::Electrical));
+
+                                if (mController->IsModelDirty(LayerType::Electrical))
+                                {
+                                    if (!AskUserIfSure(sureQuestion))
+                                    {
+                                        // Changed their mind
+                                        return;
+                                    }
+                                }
+
+                                mController->RemoveElectricalLayer();
+
+                                break;
+                            }
+
+                            case VisualizationType::RopesLayer:
+                            {
+                                assert(mController->HasModelLayer(LayerType::Ropes));
+
+                                if (mController->IsModelDirty(LayerType::Ropes))
+                                {
+                                    if (!AskUserIfSure(sureQuestion))
+                                    {
+                                        // Changed their mind
+                                        return;
+                                    }
+                                }
+
+                                mController->RemoveRopesLayer();
+
+                                break;
+                            }
+
+                            case VisualizationType::TextureLayer:
+                            {
+                                assert(mController->HasModelLayer(LayerType::Texture));
+
+                                if (mController->IsModelDirty(LayerType::Texture))
+                                {
+                                    if (!AskUserIfSure(sureQuestion))
+                                    {
+                                        // Changed their mind
+                                        return;
+                                    }
+                                }
+
+                                mController->RemoveTextureLayer();
+
+                                break;
+                            }
+
+                            case VisualizationType::Game:
+                            case VisualizationType::StructuralLayer:
+                            {
+                                assert(false);
+                                break;
                             }
                         }
+                    },
+                    _("Remove this layer from the ship."));
 
-                        mController->RemoveElectricalLayer();
+                hSizer->Add(
+                    deleteButton,
+                    0,
+                    wxALIGN_CENTER_VERTICAL,
+                    0);
+            }
 
-                        break;
-                    }
+            // Label
+            {
+                auto * staticText = new wxStaticText(panel, wxID_ANY, _T("Remove"));
+                staticText->SetForegroundColour(labelColor);
 
-                    case VisualizationType::RopesLayer:
-                    {
-                        assert(mController->HasModelLayer(LayerType::Ropes));
+                hSizer->Add(
+                    staticText,
+                    0,
+                    wxALIGN_CENTER_VERTICAL | wxLEFT,
+                    LabelMargin);
+            }
 
-                        if (mController->IsModelDirty(LayerType::Ropes))
-                        {
-                            if (!AskUserIfSure(sureQuestion))
-                            {
-                                // Changed their mind
-                                return;
-                            }
-                        }
+            panelGridSizer->Add(
+                hSizer,
+                wxGBPosition(iCurrentButton % 2, 1 + iCurrentButton / 2),
+                wxGBSpan(1, 1),
+                0,
+                0);
 
-                        mController->RemoveRopesLayer();
+            ++iCurrentButton;
+        }
+        else
+        {
+            deleteButton = nullptr;
+        }
 
-                        break;
-                    }
-
-                    case VisualizationType::TextureLayer:
-                    {
-                        assert(mController->HasModelLayer(LayerType::Texture));
-
-                        if (mController->IsModelDirty(LayerType::Texture))
-                        {
-                            if (!AskUserIfSure(sureQuestion))
-                            {
-                                // Changed their mind
-                                return;
-                            }
-                        }
-
-                        mController->RemoveTextureLayer();
-
-                        break;
-                    }
-
-                    case VisualizationType::Game:
-                    case VisualizationType::StructuralLayer:
-                    {
-                        assert(false);
-                        break;
-                    }
-                }
-            },
-            LayersAndVisualizationsButtons_Delete);
+        mLayerDeleteButtons[static_cast<size_t>(VisualizationToLayer(visualization))] = deleteButton;
     }
 
     // Export
-    if (visualization == VisualizationType::StructuralLayer
-        || visualization == VisualizationType::TextureLayer)
+    if (visualization != VisualizationType::Game)
     {
-        buttonBar->AddButton(LayersAndVisualizationsButtons_Export, _("Export"), WxHelpers::LoadBitmap("save_layer_button", mResourceLocator), _("Export this layer to a file."), wxRIBBON_BUTTON_NORMAL);
+        BitmapButton * exportButton;
 
-        buttonBar->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED,
-            [this](wxRibbonButtonBarEvent & /*event*/)
+        if (visualization == VisualizationType::StructuralLayer
+            || visualization == VisualizationType::TextureLayer)
+        {
+            wxSizer * hSizer = new wxBoxSizer(wxHORIZONTAL);
+
+            // Button
             {
-                // TODO
-                // TODO: also here ask user if sure when the layer is dirty
-                UnderConstructionDialog::Show(this, mResourceLocator);
-            },
-            LayersAndVisualizationsButtons_Export);
+                exportButton = new BitmapButton(
+                    panel,
+                    mResourceLocator.GetBitmapFilePath("save_layer_button"),
+                    [this, visualization]()
+                    {
+                        // TODO
+                        // TODO: also here ask user if sure when the layer is dirty
+                        UnderConstructionDialog::Show(this, mResourceLocator);
+                    },
+                    _("Export this layer to a file."));
+
+                hSizer->Add(
+                    exportButton,
+                    0,
+                    wxALIGN_CENTER_VERTICAL,
+                    0);
+            }
+
+            // Label
+            {
+                auto * staticText = new wxStaticText(panel, wxID_ANY, _T("Export"));
+                staticText->SetForegroundColour(labelColor);
+
+                hSizer->Add(
+                    staticText,
+                    0,
+                    wxALIGN_CENTER_VERTICAL | wxLEFT,
+                    LabelMargin);
+            }
+
+            panelGridSizer->Add(
+                hSizer,
+                wxGBPosition(iCurrentButton % 2, 1 + iCurrentButton / 2),
+                wxGBSpan(1, 1),
+                0,
+                0);
+
+            ++iCurrentButton;
+        }
+        else
+        {
+            exportButton = nullptr;
+        }
+
+        mLayerExportButtons[static_cast<size_t>(VisualizationToLayer(visualization))] = exportButton;
     }
 
-    mLayersAndVisualizationsRibbonButtonBars[static_cast<size_t>(visualization)] = buttonBar;
+    // Wrap in a sizer just for margins
+    {
+        wxSizer * tmpSizer = new wxBoxSizer(wxVERTICAL); // Arbitrary
+        tmpSizer->Add(
+            panelGridSizer,
+            0,
+            wxALL,
+            ButtonMargin);
 
-    // TODO?
-    buttonBar->Realize();
+        panel->SetSizerAndFit(tmpSizer);
+    }
 
     return panel;
 }
@@ -4093,23 +4288,20 @@ void MainFrame::ReconciliateUIWithLayerPresence(Model const & model)
 
     for (uint32_t iLayer = 0; iLayer < LayerCount; ++iLayer)
     {
-        auto const vizIndex = LayerToVisualizationIndex(static_cast<LayerType>(iLayer));
-
         bool const hasLayer = model.HasLayer(static_cast<LayerType>(iLayer));
 
-        // Select
-        mLayersAndVisualizationsRibbonButtonBars[vizIndex]->EnableButton(LayersAndVisualizationsButtons_Select, hasLayer);
+        mVisualizationSelectButtons[LayerToVisualizationIndex(static_cast<LayerType>(iLayer))]->Enable(hasLayer);
 
-        // Export
-        if (mLayersAndVisualizationsRibbonButtonBars[vizIndex]->GetItemById(LayersAndVisualizationsButtons_Export) != nullptr)
+        if (mLayerExportButtons[iLayer] != nullptr
+            && mLayerExportButtons[iLayer]->IsEnabled() != hasLayer)
         {
-            mLayersAndVisualizationsRibbonButtonBars[vizIndex]->EnableButton(LayersAndVisualizationsButtons_Export, hasLayer);
+            mLayerExportButtons[iLayer]->Enable(hasLayer);
         }
-        
-        // Delete
-        if (mLayersAndVisualizationsRibbonButtonBars[vizIndex]->GetItemById(LayersAndVisualizationsButtons_Delete) != nullptr)
+
+        if (mLayerDeleteButtons[iLayer] != nullptr
+            && mLayerDeleteButtons[iLayer]->IsEnabled() != hasLayer)
         {
-            mLayersAndVisualizationsRibbonButtonBars[vizIndex]->EnableButton(LayersAndVisualizationsButtons_Delete, hasLayer);
+            mLayerDeleteButtons[iLayer]->Enable(hasLayer);
         }
     }
 
@@ -4336,8 +4528,6 @@ void MainFrame::ReconciliateUIWithPrimaryVisualizationSelection(VisualizationTyp
         bool const isVisualizationSelected = (iVisualization == iPrimaryVisualization);
 
         // Visualization selection buttons
-        mLayersAndVisualizationsRibbonButtonBars[iVisualization]->ToggleButton(LayersAndVisualizationsButtons_Select, isVisualizationSelected);
-        /* TODOOLD
         if (mVisualizationSelectButtons[iVisualization]->GetValue() != isVisualizationSelected)
         {
             mVisualizationSelectButtons[iVisualization]->SetValue(isVisualizationSelected);
@@ -4347,7 +4537,6 @@ void MainFrame::ReconciliateUIWithPrimaryVisualizationSelection(VisualizationTyp
                 mVisualizationSelectButtons[iVisualization]->SetFocus(); // Prevent other random buttons for getting focus
             }
         }
-        */
 
         // Layer visualization mode panels
         if (mVisualizationModePanelsSizer->IsShown(mVisualizationModePanels[iVisualization]) != isVisualizationSelected)

@@ -33,7 +33,6 @@
 #include <wx/menu.h>
 #include <wx/panel.h>
 #include <wx/ribbon/bar.h>
-#include <wx/ribbon/buttonbar.h>
 #include <wx/ribbon/page.h>
 #include <wx/scrolbar.h>
 #include <wx/scrolwin.h>
@@ -344,30 +343,20 @@ private:
     wxMenuItem * mSaveAndGoBackMenuItem;
     wxMenuItem * mUndoMenuItem;
 
+    // Ribbon bar
+    wxRibbonBar * mMainRibbonBar;
+
     // File panel
     BitmapButton * mSaveShipButton;
 
     // Layers and Visualizations ribbon
-    enum LayersAndVisualizationsButtons
-    {
-        LayersAndVisualizationsButtons_Select,
-        LayersAndVisualizationsButtons_NewOpen,
-        LayersAndVisualizationsButtons_Import,
-        LayersAndVisualizationsButtons_Delete,
-        LayersAndVisualizationsButtons_Export
-    };
-    std::array<wxRibbonButtonBar *, VisualizationCount> mLayersAndVisualizationsRibbonButtonBars;
+    std::array<BitmapToggleButton *, VisualizationCount> mVisualizationSelectButtons;
+    std::array<BitmapButton *, LayerCount> mLayerExportButtons;
+    std::array<BitmapButton *, LayerCount> mLayerDeleteButtons;
 
     // Tool settings panel
     wxSizer * mToolSettingsPanelsSizer;
     std::vector<std::tuple<ToolType, wxPanel *>> mToolSettingsPanels;
-
-    /* TODOOLD
-    // Visualization panel
-    std::array<BitmapToggleButton *, VisualizationCount> mVisualizationSelectButtons;
-    std::array<BitmapButton *, LayerCount> mLayerExportButtons;
-    std::array<BitmapButton *, LayerCount> mLayerDeleteButtons;
-    */
 
     // Visualization details panel
     wxSlider * mOtherVisualizationsOpacitySlider;
