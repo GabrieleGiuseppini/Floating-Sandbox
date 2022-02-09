@@ -9,16 +9,28 @@ https://gamejolt.com/x/permalink/comment/11730705
 	+ Test again
 
 + Test Titanic's alignments
-- Test on old Dell
-	- UIRearc
-		= DO
-			- Move GameViz selector to StructuralLayer
-		- Follow-ups
-			- Fixup col0
-				- H margins,col 
-				- Separator(s)
-				- ...
-			- Color of labels @ tool settings
++ Test on old Dell
+
+= UIRearc
+	= DO
+		= Move GameViz selector to StructuralLayer
+			- Fix
+		+ File "toolbar"
+			+ Quit button
+		+ Ship "toolbar"
+		+ File icons: same size as layer
+		+ Ship icons: same size as layer
+		- All other menu items: move to toolbar
+		- Tool settings to toolbar
+	- Copy all useful PSDs to Authoring
+		- Nuke useless PSDs from Authoring
+	- Follow-ups
+		- Fixup col0
+			- H margins,col 
+			- Separator(s)
+			- Undo stack width
+		- Color of labels @ tool settings
+	- Re-test UI on old Dell
 
 - Release
 

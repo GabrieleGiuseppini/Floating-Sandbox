@@ -138,14 +138,12 @@ public:
 private:
 
     wxAcceleratorEntry MakePlainAcceleratorKey(int key, wxMenuItem * menuItem);
-    wxRibbonPage * CreateFileRibbonPage(wxRibbonBar * parent);
-    wxRibbonPage * CreateShipSettingsRibbonPage(wxRibbonBar * parent);
+    wxRibbonPage * CreateFileAndShipRibbonPage(wxRibbonBar * parent);
+    wxRibbonPanel * CreateFileRibbonPanel(wxRibbonPage * parent);
+    wxRibbonPanel * CreateShipRibbonPanel(wxRibbonPage * parent);
     wxRibbonPage * CreateLayersAndVisualizationsRibbonPage(wxRibbonBar * parent);
-    wxRibbonPanel * CreateLayerAndVisualizationRibbonPanel(wxRibbonPage * parent, VisualizationType visualization);
+    wxRibbonPanel * CreateLayerRibbonPanel(wxRibbonPage * parent, LayerType layer);
     wxPanel * CreateToolSettingsPanel(wxWindow * parent);
-    /* TODOOLD
-    wxPanel * CreateVisualizationsPanel(wxWindow * parent);
-    */
     wxPanel * CreateVisualizationDetailsPanel(wxWindow * parent);
     wxPanel * CreateToolbarPanel(wxWindow * parent);
     wxPanel * CreateUndoPanel(wxWindow * parent);
@@ -221,6 +219,8 @@ private:
     void SaveAndSwitchBackToGame();
 
     void QuitAndSwitchBackToGame();
+
+    void Quit();
 
     void SwitchBackToGame(std::optional<std::filesystem::path> shipFilePath);
 
