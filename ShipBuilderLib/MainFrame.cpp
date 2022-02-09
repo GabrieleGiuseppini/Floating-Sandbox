@@ -44,7 +44,7 @@ int constexpr ButtonMargin = 4;
 int constexpr LabelMargin = 3;
 
 static std::string const ClearMaterialName = "Clear";
-ImageSize constexpr MaterialSwathSize(80, 100);
+ImageSize constexpr MaterialSwathSize(50, 65);
 
 int constexpr MaxVisualizationTransparency = 128;
 
@@ -2575,7 +2575,9 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
         // Swaths
 
         {
-            wxBoxSizer * paletteSizer = new wxBoxSizer(wxVERTICAL);
+            wxBoxSizer * paletteSizer = new wxBoxSizer(wxHORIZONTAL);
+
+            paletteSizer->AddSpacer(ButtonMargin);
 
             // Foreground
             {
@@ -2601,7 +2603,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     0);
             }
 
-            paletteSizer->AddSpacer(8);
+            paletteSizer->AddSpacer(ButtonMargin);
 
             // Background
             {
@@ -2626,6 +2628,8 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     0,
                     0);
             }
+
+            paletteSizer->AddSpacer(ButtonMargin);
 
             structuralToolbarSizer->Add(
                 paletteSizer,
@@ -2722,7 +2726,9 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
         // Swaths
 
         {
-            wxBoxSizer * paletteSizer = new wxBoxSizer(wxVERTICAL);
+            wxBoxSizer * paletteSizer = new wxBoxSizer(wxHORIZONTAL);
+
+            paletteSizer->AddSpacer(ButtonMargin);
 
             // Foreground
             {
@@ -2748,7 +2754,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     0);
             }
 
-            paletteSizer->AddSpacer(8);
+            paletteSizer->AddSpacer(ButtonMargin);
 
             // Background
             {
@@ -2773,6 +2779,8 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     0,
                     0);
             }
+
+            paletteSizer->AddSpacer(ButtonMargin);
 
             electricalToolbarSizer->Add(
                 paletteSizer,
@@ -2853,7 +2861,9 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
         // Swaths
 
         {
-            wxBoxSizer * paletteSizer = new wxBoxSizer(wxVERTICAL);
+            wxBoxSizer * paletteSizer = new wxBoxSizer(wxHORIZONTAL);
+
+            paletteSizer->AddSpacer(ButtonMargin);
 
             // Foreground
             {
@@ -2879,7 +2889,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     0);
             }
 
-            paletteSizer->AddSpacer(8);
+            paletteSizer->AddSpacer(ButtonMargin);
 
             // Background
             {
@@ -2904,6 +2914,8 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     0,
                     0);
             }
+
+            paletteSizer->AddSpacer(ButtonMargin);
 
             ropesToolbarSizer->Add(
                 paletteSizer,
