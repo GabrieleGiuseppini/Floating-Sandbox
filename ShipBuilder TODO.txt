@@ -21,8 +21,25 @@ https://gamejolt.com/x/permalink/comment/11730705
 		+ Ship "toolbar"
 		+ File icons: same size as layer
 		+ Ship icons: same size as layer
+		+ Do control for button with label in ribbon toolbar
+			+ Disable also label
+				+ Get colors from parent ribbon in cctor
+			+ Cleanup old code
+
+		- Possible reorg:
+			- Main
+				- File
+				- View
+			- Edit
+				- Ship
+				- Tool Settings
+			- Layers
+		- Labels:
+			- "Edit Layers"
+			+ "Activate"
 		- All other menu items: move to toolbar
 		- Tool settings to toolbar
+			- Disable group (if possible) when current tool has no settings
 	- Copy all useful PSDs to Authoring
 		- Nuke useless PSDs from Authoring
 	- Follow-ups

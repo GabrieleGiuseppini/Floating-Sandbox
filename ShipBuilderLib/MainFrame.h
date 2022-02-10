@@ -13,6 +13,7 @@
 #include "ResizeDialog.h"
 #include "ShipPropertiesEditDialog.h"
 #include "StatusBar.h"
+#include "ToolbarButton.h"
 #include "WorkbenchState.h"
 
 #include <UILib/BitmapButton.h>
@@ -351,9 +352,9 @@ private:
     BitmapButton * mSaveShipButton;
 
     // Layers and Visualizations ribbon
-    std::array<BitmapRadioButton *, VisualizationCount> mVisualizationSelectButtons;
-    std::array<BitmapButton *, LayerCount> mLayerExportButtons;
-    std::array<BitmapButton *, LayerCount> mLayerDeleteButtons;
+    std::array<ToolbarButton<BitmapRadioButton> *, VisualizationCount> mVisualizationSelectButtons;
+    std::array<ToolbarButton<BitmapButton> *, LayerCount> mLayerExportButtons;
+    std::array<ToolbarButton<BitmapButton> *, LayerCount> mLayerDeleteButtons;
 
     // Tool settings panel
     wxSizer * mToolSettingsPanelsSizer;

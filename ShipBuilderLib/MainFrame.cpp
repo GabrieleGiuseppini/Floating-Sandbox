@@ -1535,297 +1535,209 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
 
     // Selector
     {
-        wxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
-
-        // Button
+        VisualizationType visualization{ 0 };
+        std::string buttonBitmapName;
+        switch (layer)
         {
-            VisualizationType visualization;
-            std::string buttonBitmapName;
-            switch (layer)
+            case LayerType::Electrical:
             {
-                case LayerType::Electrical:
-                {
-                    visualization = VisualizationType::ElectricalLayer;
-                    buttonBitmapName = "electrical_layer";
-                    break;
-                }
-
-                case LayerType::Ropes:
-                {
-                    visualization = VisualizationType::RopesLayer;
-                    buttonBitmapName = "ropes_layer";
-                    break;
-                }
-
-                case LayerType::Structural:
-                {
-                    visualization = VisualizationType::StructuralLayer;
-                    buttonBitmapName = "structural_layer";
-                    break;
-                }
-
-                case LayerType::Texture:
-                {
-                    visualization = VisualizationType::TextureLayer;
-                    buttonBitmapName = "texture_layer";
-                    break;
-                }
+                visualization = VisualizationType::ElectricalLayer;
+                buttonBitmapName = "electrical_layer";
+                break;
             }
 
-            auto * selectorButton = new BitmapRadioButton(
-                panel,
-                mResourceLocator.GetBitmapFilePath(buttonBitmapName),
-                [this, visualization]()
-                {
-                    mController->SelectPrimaryVisualization(visualization);
-                },
-                _("Select this layer as the primary layer."));
+            case LayerType::Ropes:
+            {
+                visualization = VisualizationType::RopesLayer;
+                buttonBitmapName = "ropes_layer";
+                break;
+            }
 
-            vSizer->Add(
-                selectorButton,
-                0,
-                wxALIGN_CENTER_HORIZONTAL,
-                0);
+            case LayerType::Structural:
+            {
+                visualization = VisualizationType::StructuralLayer;
+                buttonBitmapName = "structural_layer";
+                break;
+            }
 
-            mVisualizationSelectButtons[static_cast<size_t>(visualization)] = selectorButton;
+            case LayerType::Texture:
+            {
+                visualization = VisualizationType::TextureLayer;
+                buttonBitmapName = "texture_layer";
+                break;
+            }
         }
 
-        // Label
-        {
-            auto * staticText = new wxStaticText(panel, wxID_ANY, _T("Select"));
-            staticText->SetForegroundColour(labelColor);
-
-            vSizer->Add(
-                staticText,
-                0,
-                wxALIGN_CENTER_HORIZONTAL,
-                0);
-        }
+        auto * button = new ToolbarButton<BitmapRadioButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetBitmapFilePath(buttonBitmapName),
+            _T("Activate"),
+            [this, visualization]()
+            {
+                mController->SelectPrimaryVisualization(visualization);
+            },
+            _("Select this layer as the primary layer."));
 
         panelGridSizer->Add(
-            vSizer,
+            button,
             wxGBPosition(0, iColumn++),
             wxGBSpan(2, 1),
             0,
             0);
+
+        mVisualizationSelectButtons[static_cast<size_t>(visualization)] = button;
     }
 
     // Game mode viz
     if (layer == LayerType::Structural)
     {
-        wxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
-
-        // Button
-        {
-            auto * selectorButton = new BitmapRadioButton(
-                panel,
-                mResourceLocator.GetBitmapFilePath("game_visualization"),
-                [this]()
-                {
-                    mController->SelectPrimaryVisualization(VisualizationType::Game);
-                },
-                _("View the structure as it is rendered by the simulator."));
-
-            vSizer->Add(
-                selectorButton,
-                0,
-                wxALIGN_CENTER_HORIZONTAL,
-                0);
-
-            mVisualizationSelectButtons[static_cast<size_t>(VisualizationType::Game)] = selectorButton;
-        }
-
-        // Label
-        {
-            auto * staticText = new wxStaticText(panel, wxID_ANY, _T("Game Mode"));
-            staticText->SetForegroundColour(labelColor);
-
-            vSizer->Add(
-                staticText,
-                0,
-                wxALIGN_CENTER_HORIZONTAL,
-                0);
-        }
+        auto * button = new ToolbarButton<BitmapRadioButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetBitmapFilePath("game_visualization"),
+            _T("Game Mode"),
+            [this]()
+            {
+                mController->SelectPrimaryVisualization(VisualizationType::Game);
+            },
+            _("View the structure as it is rendered by the simulator."));
 
         panelGridSizer->Add(
-            vSizer,
+            button,
             wxGBPosition(0, iColumn++),
             wxGBSpan(2, 1),
             0,
             0);
+
+        mVisualizationSelectButtons[static_cast<size_t>(VisualizationType::Game)] = button;
     }
 
     int iCurrentButton = 0;
 
     // New/Open
     {
-        wxSizer * hSizer = new wxBoxSizer(wxHORIZONTAL);
-
-        // Button
-        wxString labelText;
+        auto const clickHandler = [this, layer, sureQuestion]()
         {
-            auto const clickHandler = [this, layer, sureQuestion]()
+            switch (layer)
             {
-                switch (layer)
+                case LayerType::Electrical:
                 {
-                    case LayerType::Electrical:
+                    if (mController->HasModelLayer(LayerType::Electrical)
+                        && mController->IsModelDirty(LayerType::Electrical))
                     {
-                        if (mController->HasModelLayer(LayerType::Electrical)
-                            && mController->IsModelDirty(LayerType::Electrical))
+                        if (!AskUserIfSure(sureQuestion))
                         {
-                            if (!AskUserIfSure(sureQuestion))
-                            {
-                                // Changed their mind
-                                return;
-                            }
+                            // Changed their mind
+                            return;
                         }
-
-                        mController->NewElectricalLayer();
-
-                        break;
                     }
 
-                    case LayerType::Ropes:
-                    {
-                        if (mController->HasModelLayer(LayerType::Ropes)
-                            && mController->IsModelDirty(LayerType::Ropes))
-                        {
-                            if (!AskUserIfSure(sureQuestion))
-                            {
-                                // Changed their mind
-                                return;
-                            }
-                        }
+                    mController->NewElectricalLayer();
 
-                        mController->NewRopesLayer();
-
-                        break;
-                    }
-
-                    case LayerType::Structural:
-                    {
-                        if (mController->HasModelLayer(LayerType::Structural)
-                            && mController->IsModelDirty(LayerType::Structural))
-                        {
-                            if (!AskUserIfSure(sureQuestion))
-                            {
-                                // Changed their mind
-                                return;
-                            }
-                        }
-
-                        mController->NewStructuralLayer();
-
-                        break;
-                    }
-
-                    case LayerType::Texture:
-                    {
-                        if (mController->HasModelLayer(LayerType::Texture)
-                            && mController->IsModelDirty(LayerType::Texture))
-                        {
-                            if (!AskUserIfSure(sureQuestion))
-                            {
-                                // Changed their mind
-                                return;
-                            }
-                        }
-
-                        ImportTextureLayerFromImage();
-                    }
+                    break;
                 }
-            };
 
-            BitmapButton * newButton;
+                case LayerType::Ropes:
+                {
+                    if (mController->HasModelLayer(LayerType::Ropes)
+                        && mController->IsModelDirty(LayerType::Ropes))
+                    {
+                        if (!AskUserIfSure(sureQuestion))
+                        {
+                            // Changed their mind
+                            return;
+                        }
+                    }
 
-            if (layer != LayerType::Texture)
-            {
-                newButton = new BitmapButton(
-                    panel,
-                    mResourceLocator.GetBitmapFilePath("new_layer_button"),
-                    clickHandler,
-                    _("Add or clean this layer."));
+                    mController->NewRopesLayer();
 
-                labelText = _("Add/Clear");
+                    break;
+                }
+
+                case LayerType::Structural:
+                {
+                    if (mController->HasModelLayer(LayerType::Structural)
+                        && mController->IsModelDirty(LayerType::Structural))
+                    {
+                        if (!AskUserIfSure(sureQuestion))
+                        {
+                            // Changed their mind
+                            return;
+                        }
+                    }
+
+                    mController->NewStructuralLayer();
+
+                    break;
+                }
+
+                case LayerType::Texture:
+                {
+                    if (mController->HasModelLayer(LayerType::Texture)
+                        && mController->IsModelDirty(LayerType::Texture))
+                    {
+                        if (!AskUserIfSure(sureQuestion))
+                        {
+                            // Changed their mind
+                            return;
+                        }
+                    }
+
+                    ImportTextureLayerFromImage();
+                }
             }
-            else
-            {
-                newButton = new BitmapButton(
-                    panel,
-                    mResourceLocator.GetBitmapFilePath("open_image_button"),
-                    clickHandler,
-                    _("Import this layer from an image file."));
+        };
 
-                labelText = _("From Image");
-            }
-
-            hSizer->Add(
-                newButton,
-                0,
-                wxALIGN_CENTER_VERTICAL,
-                0);
-        }
-
-        // Label
+        ToolbarButton<BitmapButton> * newButton;
+        if (layer != LayerType::Texture)
         {
-            auto * staticText = new wxStaticText(panel, wxID_ANY, labelText);
-            staticText->SetForegroundColour(labelColor);
-
-            hSizer->Add(
-                staticText,
-                0,
-                wxALIGN_CENTER_VERTICAL | wxLEFT,
-                LabelMargin);
+            newButton = new ToolbarButton<BitmapButton>(
+                panel,
+                wxHORIZONTAL,
+                mResourceLocator.GetBitmapFilePath("new_layer_button"),
+                _("Add/Clear"),
+                clickHandler,
+                _("Add or clean this layer."));
+        }
+        else
+        {
+            newButton = new ToolbarButton<BitmapButton>(
+                panel,
+                wxHORIZONTAL,
+                mResourceLocator.GetBitmapFilePath("open_image_button"),
+                _("From Image"),
+                clickHandler,
+                _("Import this layer from an image file."));
         }
 
         panelGridSizer->Add(
-            hSizer,
+            newButton,
             wxGBPosition(iCurrentButton % 2, iColumn + iCurrentButton / 2),
             wxGBSpan(1, 1),
             0,
             0);
-
+        
         ++iCurrentButton;
     }
 
     // Import
     {
-        wxSizer * hSizer = new wxBoxSizer(wxHORIZONTAL);
-
-        // Button
-        {
-            auto * importButton = new BitmapButton(
-                panel,
-                mResourceLocator.GetBitmapFilePath("open_layer_button"),
-                [this]()
-                {
-                    // TODO
-                    // TODO: also here ask user if sure when the layer is dirty
-                    UnderConstructionDialog::Show(this, mResourceLocator);
-                },
-                _("Import this layer from another ship."));
-
-            hSizer->Add(
-                importButton,
-                0,
-                wxALIGN_CENTER_VERTICAL,
-                0);
-        }
-
-        // Label
-        {
-            auto * staticText = new wxStaticText(panel, wxID_ANY, _T("Import"));
-            staticText->SetForegroundColour(labelColor);
-
-            hSizer->Add(
-                staticText,
-                0,
-                wxALIGN_CENTER_VERTICAL | wxLEFT,
-                LabelMargin);
-        }
+        auto * importButton = new ToolbarButton<BitmapButton>(
+            panel,
+            wxHORIZONTAL,
+            mResourceLocator.GetBitmapFilePath("open_layer_button"),
+            _T("Import"),
+            [this]()
+            {
+                // TODO
+                // TODO: also here ask user if sure when the layer is dirty
+                UnderConstructionDialog::Show(this, mResourceLocator);
+            },
+            _("Import this layer from another ship."));
 
         panelGridSizer->Add(
-            hSizer,
+            importButton,
             wxGBPosition(iCurrentButton % 2, iColumn + iCurrentButton / 2),
             wxGBSpan(1, 1),
             0,
@@ -1836,105 +1748,84 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
 
     // Delete
     {
-        BitmapButton * deleteButton;
+        ToolbarButton<BitmapButton> * deleteButton;
 
         if (layer != LayerType::Structural)
         {
-            wxSizer * hSizer = new wxBoxSizer(wxHORIZONTAL);
-
-            // Button
-            {
-                deleteButton = new BitmapButton(
-                    panel,
-                    mResourceLocator.GetBitmapFilePath("delete_layer_button"),
-                    [this, layer, sureQuestion]()
+            deleteButton = new ToolbarButton<BitmapButton>(
+                panel,
+                wxHORIZONTAL,
+                mResourceLocator.GetBitmapFilePath("delete_layer_button"),
+                _T("Remove"),
+                [this, layer, sureQuestion]()
+                {
+                    switch (layer)
                     {
-                        switch (layer)
+                        case LayerType::Electrical:
                         {
-                            case LayerType::Electrical:
-                            {
-                                assert(mController->HasModelLayer(LayerType::Electrical));
+                            assert(mController->HasModelLayer(LayerType::Electrical));
 
-                                if (mController->IsModelDirty(LayerType::Electrical))
+                            if (mController->IsModelDirty(LayerType::Electrical))
+                            {
+                                if (!AskUserIfSure(sureQuestion))
                                 {
-                                    if (!AskUserIfSure(sureQuestion))
-                                    {
-                                        // Changed their mind
-                                        return;
-                                    }
+                                    // Changed their mind
+                                    return;
                                 }
-
-                                mController->RemoveElectricalLayer();
-
-                                break;
                             }
 
-                            case LayerType::Ropes:
-                            {
-                                assert(mController->HasModelLayer(LayerType::Ropes));
+                            mController->RemoveElectricalLayer();
 
-                                if (mController->IsModelDirty(LayerType::Ropes))
-                                {
-                                    if (!AskUserIfSure(sureQuestion))
-                                    {
-                                        // Changed their mind
-                                        return;
-                                    }
-                                }
-
-                                mController->RemoveRopesLayer();
-
-                                break;
-                            }
-
-                            case LayerType::Texture:
-                            {
-                                assert(mController->HasModelLayer(LayerType::Texture));
-
-                                if (mController->IsModelDirty(LayerType::Texture))
-                                {
-                                    if (!AskUserIfSure(sureQuestion))
-                                    {
-                                        // Changed their mind
-                                        return;
-                                    }
-                                }
-
-                                mController->RemoveTextureLayer();
-
-                                break;
-                            }
-
-                            case LayerType::Structural:
-                            {
-                                assert(false);
-                                break;
-                            }
+                            break;
                         }
-                    },
-                    _("Remove this layer from the ship."));
 
-                hSizer->Add(
-                    deleteButton,
-                    0,
-                    wxALIGN_CENTER_VERTICAL,
-                    0);
-            }
+                        case LayerType::Ropes:
+                        {
+                            assert(mController->HasModelLayer(LayerType::Ropes));
 
-            // Label
-            {
-                auto * staticText = new wxStaticText(panel, wxID_ANY, _T("Remove"));
-                staticText->SetForegroundColour(labelColor);
+                            if (mController->IsModelDirty(LayerType::Ropes))
+                            {
+                                if (!AskUserIfSure(sureQuestion))
+                                {
+                                    // Changed their mind
+                                    return;
+                                }
+                            }
 
-                hSizer->Add(
-                    staticText,
-                    0,
-                    wxALIGN_CENTER_VERTICAL | wxLEFT,
-                    LabelMargin);
-            }
+                            mController->RemoveRopesLayer();
+
+                            break;
+                        }
+
+                        case LayerType::Texture:
+                        {
+                            assert(mController->HasModelLayer(LayerType::Texture));
+
+                            if (mController->IsModelDirty(LayerType::Texture))
+                            {
+                                if (!AskUserIfSure(sureQuestion))
+                                {
+                                    // Changed their mind
+                                    return;
+                                }
+                            }
+
+                            mController->RemoveTextureLayer();
+
+                            break;
+                        }
+
+                        case LayerType::Structural:
+                        {
+                            assert(false);
+                            break;
+                        }
+                    }
+                },
+                _("Remove this layer from the ship."));
 
             panelGridSizer->Add(
-                hSizer,
+                deleteButton,
                 wxGBPosition(iCurrentButton % 2, iColumn + iCurrentButton / 2),
                 wxGBSpan(1, 1),
                 0,
@@ -1952,47 +1843,26 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
 
     // Export
     {
-        BitmapButton * exportButton;
+        ToolbarButton<BitmapButton> * exportButton;
 
         if (layer == LayerType::Structural
             || layer == LayerType::Texture)
         {
-            wxSizer * hSizer = new wxBoxSizer(wxHORIZONTAL);
-
-            // Button
-            {
-                exportButton = new BitmapButton(
-                    panel,
-                    mResourceLocator.GetBitmapFilePath("save_layer_button"),
-                    [this]()
-                    {
-                        // TODO
-                        // TODO: also here ask user if sure when the layer is dirty
-                        UnderConstructionDialog::Show(this, mResourceLocator);
-                    },
-                    _("Export this layer to a file."));
-
-                hSizer->Add(
-                    exportButton,
-                    0,
-                    wxALIGN_CENTER_VERTICAL,
-                    0);
-            }
-
-            // Label
-            {
-                auto * staticText = new wxStaticText(panel, wxID_ANY, _T("Export"));
-                staticText->SetForegroundColour(labelColor);
-
-                hSizer->Add(
-                    staticText,
-                    0,
-                    wxALIGN_CENTER_VERTICAL | wxLEFT,
-                    LabelMargin);
-            }
-
+            exportButton = new ToolbarButton<BitmapButton>(
+                panel,
+                wxHORIZONTAL,
+                mResourceLocator.GetBitmapFilePath("save_layer_button"),
+                _T("Export"),
+                [this]()
+                {
+                    // TODO
+                    // TODO: also here ask user if sure when the layer is dirty
+                    UnderConstructionDialog::Show(this, mResourceLocator);
+                },
+                _("Export this layer to a file."));
+            
             panelGridSizer->Add(
-                hSizer,
+                exportButton,
                 wxGBPosition(iCurrentButton % 2, iColumn + iCurrentButton / 2),
                 wxGBSpan(1, 1),
                 0,

@@ -49,6 +49,7 @@ set (UI_SOURCES
 	ShipResizeVisualizationControl.h
 	StatusBar.cpp
 	StatusBar.h
+	ToolbarButton.h
 )
 
 set (TOOLS_SOURCES
