@@ -827,318 +827,158 @@ wxRibbonPanel * MainFrame::CreateMainFileRibbonPanel(wxRibbonPage * parent)
     wxRibbonPanel * panel = new wxRibbonPanel(parent, wxID_ANY, _T("File"), wxNullBitmap, wxDefaultPosition, wxDefaultSize,
         wxRIBBON_PANEL_NO_AUTO_MINIMISE);
 
-    wxGridBagSizer * panelGridSizer = new wxGridBagSizer(ButtonMargin, ButtonMargin + ButtonMargin);
+    wxSizer * hSizer = new wxBoxSizer(wxHORIZONTAL);
 
     // New ship
     {
-        wxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
+        auto * button = new ToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetIconFilePath("new_ship_button"),
+            _T("New Ship"),
+            [this]()
+            {
+                NewShip();
+            },
+            _("Create a new empty ship."));
 
-        // Button
-        {
-            auto button = new BitmapButton(
-                panel,
-                mResourceLocator.GetIconFilePath("new_ship_button"),
-                [this]()
-                {
-                    NewShip();
-                },
-                _("Create a new empty ship."));
-
-            vSizer->Add(
-                button,
-                0,
-                wxALIGN_CENTER_HORIZONTAL,
-                0);
-        }
-
-        // Label
-        {
-            auto * staticText = new wxStaticText(panel, wxID_ANY, _T("New Ship"));
-            staticText->SetForegroundColour(labelColor);
-
-            vSizer->Add(
-                staticText,
-                0,
-                wxALIGN_CENTER_HORIZONTAL,
-                0);
-        }
-
-        panelGridSizer->Add(
-            vSizer,
-            wxGBPosition(0, 0),
-            wxGBSpan(1, 1),
+        hSizer->Add(
+            button,
             0,
-            0);
+            wxALL,
+            ButtonMargin);
     }
 
     // Load ship
     {
-        wxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
+        auto * button = new ToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetIconFilePath("load_ship_button"),
+            _T("Load Ship"),
+            [this]()
+            {
+                LoadShip();
+            },
+            _("Load a ship."));
 
-        // Button
-        {
-            auto button = new BitmapButton(
-                panel,
-                mResourceLocator.GetIconFilePath("load_ship_button"),
-                [this]()
-                {
-                    LoadShip();
-                },
-                _("Load a ship."));
-
-            vSizer->Add(
-                button,
-                0,
-                wxALIGN_CENTER_HORIZONTAL,
-                0);
-        }
-
-        // Label
-        {
-            auto * staticText = new wxStaticText(panel, wxID_ANY, _T("Load Ship"));
-            staticText->SetForegroundColour(labelColor);
-
-            vSizer->Add(
-                staticText,
-                0,
-                wxALIGN_CENTER_HORIZONTAL,
-                0);
-        }
-
-        panelGridSizer->Add(
-            vSizer,
-            wxGBPosition(0, 1),
-            wxGBSpan(1, 1),
+        hSizer->Add(
+            button,
             0,
-            0);
+            wxALL,
+            ButtonMargin);
     }
 
     // Save ship
     {
-        wxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
+        mSaveShipButton = new ToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetIconFilePath("save_ship_button"),
+            _T("Save Ship"),
+            [this]()
+            {
+                OnSaveShip();
+            },
+            _("Save the current ship."));
 
-        // Button
-        {
-            mSaveShipButton = new BitmapButton(
-                panel,
-                mResourceLocator.GetIconFilePath("save_ship_button"),
-                [this]()
-                {
-                    OnSaveShip();
-                },
-                _("Save the current ship."));
-
-            vSizer->Add(
-                mSaveShipButton,
-                0,
-                wxALIGN_CENTER_HORIZONTAL,
-                0);
-        }
-
-        // Label
-        {
-            auto * staticText = new wxStaticText(panel, wxID_ANY, _T("Save Ship"));
-            staticText->SetForegroundColour(labelColor);
-
-            vSizer->Add(
-                staticText,
-                0,
-                wxALIGN_CENTER_HORIZONTAL,
-                0);
-        }
-
-        panelGridSizer->Add(
-            vSizer,
-            wxGBPosition(0, 2),
-            wxGBSpan(1, 1),
+        hSizer->Add(
+            mSaveShipButton,
             0,
-            0);
+            wxALL,
+            ButtonMargin);
+
+        wxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
     }
 
     // Save As ship
     {
-        wxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
+        auto * button = new ToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetIconFilePath("save_ship_as_button"),
+            _T("Save Ship As"),
+            [this]()
+            {
+                OnSaveShipAs();
+            },
+            _("Save the current ship to a different file."));
 
-        // Button
-        {
-            auto button = new BitmapButton(
-                panel,
-                mResourceLocator.GetIconFilePath("save_ship_as_button"),
-                [this]()
-                {
-                    OnSaveShipAs();
-                },
-                _("Save the current ship to a different file."));
-
-            vSizer->Add(
-                button,
-                0,
-                wxALIGN_CENTER_HORIZONTAL,
-                0);
-        }
-
-        // Label
-        {
-            auto * staticText = new wxStaticText(panel, wxID_ANY, _T("Save Ship As"));
-            staticText->SetForegroundColour(labelColor);
-
-            vSizer->Add(
-                staticText,
-                0,
-                wxALIGN_CENTER_HORIZONTAL,
-                0);
-        }
-
-        panelGridSizer->Add(
-            vSizer,
-            wxGBPosition(0, 3),
-            wxGBSpan(1, 1),
+        hSizer->Add(
+            button,
             0,
-            0);
+            wxALL,
+            ButtonMargin);
     }
-
-    int iExtraColumn = 0;
 
     // Save and return to game
     if (!IsStandAlone())
     {
-        wxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
+        auto * button = new ToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetIconFilePath("save_and_return_to_game_button"),
+            _T("Save And Return"),
+            [this]()
+            {
+                OnSaveAndGoBack();
+            },
+            _("Save the current ship and return to the simulator."));
 
-        // Button
-        {
-            auto button = new BitmapButton(
-                panel,
-                mResourceLocator.GetIconFilePath("save_and_return_to_game_button"),
-                [this]()
-                {
-                    OnSaveAndGoBack();
-                },
-                _("Save the current ship and return to the simulator."));
-
-            vSizer->Add(
-                button,
-                0,
-                wxALIGN_CENTER_HORIZONTAL,
-                0);
-        }
-
-        // Label
-        {
-            auto * staticText = new wxStaticText(panel, wxID_ANY, _T("Save And Return"));
-            staticText->SetForegroundColour(labelColor);
-
-            vSizer->Add(
-                staticText,
-                0,
-                wxALIGN_CENTER_HORIZONTAL,
-                0);
-        }
-
-        panelGridSizer->Add(
-            vSizer,
-            wxGBPosition(0, 4 + iExtraColumn),
-            wxGBSpan(1, 1),
+        hSizer->Add(
+            button,
             0,
-            0);
-
-        ++iExtraColumn;
+            wxALL,
+            ButtonMargin);
     }
 
     // Quit and return to game
     if (!IsStandAlone())
     {
-        wxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
+        auto * button = new ToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetIconFilePath("quit_and_return_to_game_button"),
+            _T("Abandon And Return"),
+            [this]()
+            {
+                QuitAndSwitchBackToGame();
+            },
+            _("Discard the current ship and return to the simulator."));
 
-        // Button
-        {
-            auto button = new BitmapButton(
-                panel,
-                mResourceLocator.GetIconFilePath("quit_and_return_to_game_button"),
-                [this]()
-                {
-                    QuitAndSwitchBackToGame();
-                },
-                _("Discard the current ship and return to the simulator."));
-
-            vSizer->Add(
-                button,
-                0,
-                wxALIGN_CENTER_HORIZONTAL,
-                0);
-        }
-
-        // Label
-        {
-            auto * staticText = new wxStaticText(panel, wxID_ANY, _T("Abandon And Return"));
-            staticText->SetForegroundColour(labelColor);
-
-            vSizer->Add(
-                staticText,
-                0,
-                wxALIGN_CENTER_HORIZONTAL,
-                0);
-        }
-
-        panelGridSizer->Add(
-            vSizer,
-            wxGBPosition(0, 4 + iExtraColumn),
-            wxGBSpan(1, 1),
+        hSizer->Add(
+            button,
             0,
-            0);
-
-        ++iExtraColumn;
+            wxALL,
+            ButtonMargin);
     }
 
     // Quit
     if (IsStandAlone())
     {
-        wxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
+        auto * button = new ToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetIconFilePath("quit_button"),
+            _T("Quit"),
+            [this]()
+            {
+                Quit();
+            },
+            _("Quit and leave the program."));
 
-        // Button
-        {
-            auto button = new BitmapButton(
-                panel,
-                mResourceLocator.GetIconFilePath("quit_button"),
-                [this]()
-                {
-                    Quit();
-                },
-                _("Quite and leave the program."));
-
-            vSizer->Add(
-                button,
-                0,
-                wxALIGN_CENTER_HORIZONTAL,
-                0);
-        }
-
-        // Label
-        {
-            auto * staticText = new wxStaticText(panel, wxID_ANY, _T("Quit"));
-            staticText->SetForegroundColour(labelColor);
-
-            vSizer->Add(
-                staticText,
-                0,
-                wxALIGN_CENTER_HORIZONTAL,
-                0);
-        }
-
-        panelGridSizer->Add(
-            vSizer,
-            wxGBPosition(0, 4 + iExtraColumn),
-            wxGBSpan(1, 1),
+        hSizer->Add(
+            button,
             0,
-            0);
-
-        ++iExtraColumn;
+            wxALL,
+            ButtonMargin);
     }
 
     // Wrap in a sizer just for margins
     {
         wxSizer * tmpSizer = new wxBoxSizer(wxVERTICAL); // Arbitrary
         tmpSizer->Add(
-            panelGridSizer,
+            hSizer,
             0,
             wxALL,
             ButtonMargin);

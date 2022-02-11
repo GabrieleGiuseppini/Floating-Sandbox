@@ -62,7 +62,7 @@ public:
                 mLabel,
                 0,
                 direction == wxVERTICAL ? (wxALIGN_CENTER_HORIZONTAL | wxTOP) : (wxALIGN_CENTER_VERTICAL | wxLEFT),
-                3);
+                2);
         }
 
         this->SetSizerAndFit(sizer);

@@ -350,11 +350,7 @@ private:
 
     // Ribbon bar
     wxRibbonBar * mMainRibbonBar;
-
-    // File panel
-    BitmapButton * mSaveShipButton;
-
-    // Layers and Visualizations ribbon
+    ToolbarButton<BitmapButton> * mSaveShipButton;
     std::array<ToolbarButton<BitmapRadioButton> *, VisualizationCount> mVisualizationSelectButtons;
     std::array<ToolbarButton<BitmapButton> *, LayerCount> mLayerExportButtons;
     std::array<ToolbarButton<BitmapButton> *, LayerCount> mLayerDeleteButtons;
