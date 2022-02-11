@@ -140,11 +140,14 @@ public:
 private:
 
     wxAcceleratorEntry MakePlainAcceleratorKey(int key, wxMenuItem * menuItem);
-    wxRibbonPage * CreateFileAndShipRibbonPage(wxRibbonBar * parent);
-    wxRibbonPanel * CreateFileRibbonPanel(wxRibbonPage * parent);
-    wxRibbonPanel * CreateShipRibbonPanel(wxRibbonPage * parent);
-    wxRibbonPage * CreateLayersAndVisualizationsRibbonPage(wxRibbonBar * parent);
+    wxRibbonPage * CreateMainRibbonPage(wxRibbonBar * parent);
+    wxRibbonPanel * CreateMainFileRibbonPanel(wxRibbonPage * parent);
+    wxRibbonPanel * CreateMainViewRibbonPanel(wxRibbonPage * parent);
+    wxRibbonPage * CreateLayersRibbonPage(wxRibbonBar * parent);
     wxRibbonPanel * CreateLayerRibbonPanel(wxRibbonPage * parent, LayerType layer);
+    wxRibbonPage * CreateEditRibbonPage(wxRibbonBar * parent);
+    wxRibbonPanel * CreateEditShipRibbonPanel(wxRibbonPage * parent);
+    wxRibbonPanel * CreateEditToolSettingsRibbonPanel(wxRibbonPage * parent);
     wxPanel * CreateToolSettingsPanel(wxWindow * parent);
     wxPanel * CreateVisualizationDetailsPanel(wxWindow * parent);
     wxPanel * CreateToolbarPanel(wxWindow * parent);

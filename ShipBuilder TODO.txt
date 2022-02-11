@@ -26,14 +26,19 @@ https://gamejolt.com/x/permalink/comment/11730705
 				+ Get colors from parent ribbon in cctor
 			+ Cleanup old code
 		+ Test ribbon on Ubuntu			
-		- Possible reorg:
-			- Main
-				- File
+		= Possible reorg:
+			= Main
+				= File
+					- Use toolbar button
+					- See if panelGridSizer still needed
 				- View
-			- Layers
-				- "Edit"
-			- Edit
-				- Ship
+			+ Layers
+				+ "Edit"
+			= Edit
+				= Ship
+					- Separate "Analysis" into own panel
+					- Use toolbar button
+					- See if panelGridSizer still needed
 				- Tool Settings
 		- Labels:
 			- "Edit Layers"
