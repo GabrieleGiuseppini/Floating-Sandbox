@@ -40,6 +40,7 @@
 
 namespace ShipBuilder {
 
+int const RibbonToolbarButtonMargin = 6;
 int constexpr ButtonMargin = 4;
 int constexpr LabelMargin = 3;
 
@@ -827,11 +828,11 @@ wxRibbonPanel * MainFrame::CreateMainFileRibbonPanel(wxRibbonPage * parent)
     wxRibbonPanel * panel = new wxRibbonPanel(parent, wxID_ANY, _T("File"), wxNullBitmap, wxDefaultPosition, wxDefaultSize,
         wxRIBBON_PANEL_NO_AUTO_MINIMISE);
 
-    wxSizer * hSizer = new wxBoxSizer(wxHORIZONTAL);
+    wxGridBagSizer * panelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
 
     // New ship
     {
-        auto * button = new ToolbarButton<BitmapButton>(
+        auto * button = new RibbonToolbarButton<BitmapButton>(
             panel,
             wxVERTICAL,
             mResourceLocator.GetIconFilePath("new_ship_button"),
@@ -842,16 +843,12 @@ wxRibbonPanel * MainFrame::CreateMainFileRibbonPanel(wxRibbonPage * parent)
             },
             _("Create a new empty ship."));
 
-        hSizer->Add(
-            button,
-            0,
-            wxALL,
-            ButtonMargin);
+        panelGridSizer->Add(button);
     }
 
     // Load ship
     {
-        auto * button = new ToolbarButton<BitmapButton>(
+        auto * button = new RibbonToolbarButton<BitmapButton>(
             panel,
             wxVERTICAL,
             mResourceLocator.GetIconFilePath("load_ship_button"),
@@ -862,16 +859,12 @@ wxRibbonPanel * MainFrame::CreateMainFileRibbonPanel(wxRibbonPage * parent)
             },
             _("Load a ship."));
 
-        hSizer->Add(
-            button,
-            0,
-            wxALL,
-            ButtonMargin);
+        panelGridSizer->Add(button);
     }
 
     // Save ship
     {
-        mSaveShipButton = new ToolbarButton<BitmapButton>(
+        mSaveShipButton = new RibbonToolbarButton<BitmapButton>(
             panel,
             wxVERTICAL,
             mResourceLocator.GetIconFilePath("save_ship_button"),
@@ -882,18 +875,12 @@ wxRibbonPanel * MainFrame::CreateMainFileRibbonPanel(wxRibbonPage * parent)
             },
             _("Save the current ship."));
 
-        hSizer->Add(
-            mSaveShipButton,
-            0,
-            wxALL,
-            ButtonMargin);
-
-        wxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
+        panelGridSizer->Add(mSaveShipButton);
     }
 
     // Save As ship
     {
-        auto * button = new ToolbarButton<BitmapButton>(
+        auto * button = new RibbonToolbarButton<BitmapButton>(
             panel,
             wxVERTICAL,
             mResourceLocator.GetIconFilePath("save_ship_as_button"),
@@ -904,17 +891,13 @@ wxRibbonPanel * MainFrame::CreateMainFileRibbonPanel(wxRibbonPage * parent)
             },
             _("Save the current ship to a different file."));
 
-        hSizer->Add(
-            button,
-            0,
-            wxALL,
-            ButtonMargin);
+        panelGridSizer->Add(button);
     }
 
     // Save and return to game
     if (!IsStandAlone())
     {
-        auto * button = new ToolbarButton<BitmapButton>(
+        auto * button = new RibbonToolbarButton<BitmapButton>(
             panel,
             wxVERTICAL,
             mResourceLocator.GetIconFilePath("save_and_return_to_game_button"),
@@ -925,17 +908,13 @@ wxRibbonPanel * MainFrame::CreateMainFileRibbonPanel(wxRibbonPage * parent)
             },
             _("Save the current ship and return to the simulator."));
 
-        hSizer->Add(
-            button,
-            0,
-            wxALL,
-            ButtonMargin);
+        panelGridSizer->Add(button);
     }
 
     // Quit and return to game
     if (!IsStandAlone())
     {
-        auto * button = new ToolbarButton<BitmapButton>(
+        auto * button = new RibbonToolbarButton<BitmapButton>(
             panel,
             wxVERTICAL,
             mResourceLocator.GetIconFilePath("quit_and_return_to_game_button"),
@@ -946,17 +925,13 @@ wxRibbonPanel * MainFrame::CreateMainFileRibbonPanel(wxRibbonPage * parent)
             },
             _("Discard the current ship and return to the simulator."));
 
-        hSizer->Add(
-            button,
-            0,
-            wxALL,
-            ButtonMargin);
+        panelGridSizer->Add(button);
     }
 
     // Quit
     if (IsStandAlone())
     {
-        auto * button = new ToolbarButton<BitmapButton>(
+        auto * button = new RibbonToolbarButton<BitmapButton>(
             panel,
             wxVERTICAL,
             mResourceLocator.GetIconFilePath("quit_button"),
@@ -967,21 +942,18 @@ wxRibbonPanel * MainFrame::CreateMainFileRibbonPanel(wxRibbonPage * parent)
             },
             _("Quit and leave the program."));
 
-        hSizer->Add(
-            button,
-            0,
-            wxALL,
-            ButtonMargin);
+        panelGridSizer->Add(button);
     }
 
     // Wrap in a sizer just for margins
     {
         wxSizer * tmpSizer = new wxBoxSizer(wxVERTICAL); // Arbitrary
+
         tmpSizer->Add(
-            hSizer,
+            panelGridSizer,
             0,
             wxALL,
-            ButtonMargin);
+            RibbonToolbarButtonMargin);
 
         panel->SetSizerAndFit(tmpSizer);
     }
@@ -996,18 +968,19 @@ wxRibbonPanel * MainFrame::CreateMainViewRibbonPanel(wxRibbonPage * parent)
     wxRibbonPanel * panel = new wxRibbonPanel(parent, wxID_ANY, _T("View"), wxNullBitmap, wxDefaultPosition, wxDefaultSize,
         wxRIBBON_PANEL_NO_AUTO_MINIMISE);
 
-    wxGridBagSizer * panelGridSizer = new wxGridBagSizer(ButtonMargin, ButtonMargin + ButtonMargin);
+    wxGridBagSizer * panelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
 
     // TODOHERE
 
     // Wrap in a sizer just for margins
     {
         wxSizer * tmpSizer = new wxBoxSizer(wxVERTICAL); // Arbitrary
+
         tmpSizer->Add(
             panelGridSizer,
             0,
             wxALL,
-            ButtonMargin);
+            RibbonToolbarButtonMargin);
 
         panel->SetSizerAndFit(tmpSizer);
     }
@@ -1078,7 +1051,7 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
     wxRibbonPanel * panel = new wxRibbonPanel(parent, wxID_ANY, panelLabel, wxNullBitmap, wxDefaultPosition, wxDefaultSize,
         wxRIBBON_PANEL_NO_AUTO_MINIMISE);
 
-    wxGridBagSizer * panelGridSizer = new wxGridBagSizer(ButtonMargin, ButtonMargin + ButtonMargin);
+    wxGridBagSizer * panelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
 
     int iColumn = 0;
 
@@ -1117,7 +1090,7 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
             }
         }
 
-        auto * button = new ToolbarButton<BitmapRadioButton>(
+        auto * button = new RibbonToolbarButton<BitmapRadioButton>(
             panel,
             wxVERTICAL,
             mResourceLocator.GetBitmapFilePath(buttonBitmapName),
@@ -1141,7 +1114,7 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
     // Game mode viz
     if (layer == LayerType::Structural)
     {
-        auto * button = new ToolbarButton<BitmapRadioButton>(
+        auto * button = new RibbonToolbarButton<BitmapRadioButton>(
             panel,
             wxVERTICAL,
             mResourceLocator.GetBitmapFilePath("game_visualization"),
@@ -1238,10 +1211,10 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
             }
         };
 
-        ToolbarButton<BitmapButton> * newButton;
+        RibbonToolbarButton<BitmapButton> * newButton;
         if (layer != LayerType::Texture)
         {
-            newButton = new ToolbarButton<BitmapButton>(
+            newButton = new RibbonToolbarButton<BitmapButton>(
                 panel,
                 wxHORIZONTAL,
                 mResourceLocator.GetBitmapFilePath("new_layer_button"),
@@ -1251,7 +1224,7 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
         }
         else
         {
-            newButton = new ToolbarButton<BitmapButton>(
+            newButton = new RibbonToolbarButton<BitmapButton>(
                 panel,
                 wxHORIZONTAL,
                 mResourceLocator.GetBitmapFilePath("open_image_button"),
@@ -1272,7 +1245,7 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
 
     // Import
     {
-        auto * importButton = new ToolbarButton<BitmapButton>(
+        auto * importButton = new RibbonToolbarButton<BitmapButton>(
             panel,
             wxHORIZONTAL,
             mResourceLocator.GetBitmapFilePath("open_layer_button"),
@@ -1297,11 +1270,11 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
 
     // Delete
     {
-        ToolbarButton<BitmapButton> * deleteButton;
+        RibbonToolbarButton<BitmapButton> * deleteButton;
 
         if (layer != LayerType::Structural)
         {
-            deleteButton = new ToolbarButton<BitmapButton>(
+            deleteButton = new RibbonToolbarButton<BitmapButton>(
                 panel,
                 wxHORIZONTAL,
                 mResourceLocator.GetBitmapFilePath("delete_layer_button"),
@@ -1392,12 +1365,12 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
 
     // Export
     {
-        ToolbarButton<BitmapButton> * exportButton;
+        RibbonToolbarButton<BitmapButton> * exportButton;
 
         if (layer == LayerType::Structural
             || layer == LayerType::Texture)
         {
-            exportButton = new ToolbarButton<BitmapButton>(
+            exportButton = new RibbonToolbarButton<BitmapButton>(
                 panel,
                 wxHORIZONTAL,
                 mResourceLocator.GetBitmapFilePath("save_layer_button"),
@@ -1430,11 +1403,12 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
     // Wrap in a sizer just for margins
     {
         wxSizer * tmpSizer = new wxBoxSizer(wxVERTICAL); // Arbitrary
+
         tmpSizer->Add(
             panelGridSizer,
             0,
             wxALL,
-            ButtonMargin);
+            RibbonToolbarButtonMargin);
 
         panel->SetSizerAndFit(tmpSizer);
     }
@@ -1446,11 +1420,57 @@ wxRibbonPage * MainFrame::CreateEditRibbonPage(wxRibbonBar * parent)
 {
     wxRibbonPage * page = new wxRibbonPage(parent, wxID_ANY, _("Edit"));
 
+    CreateEditUndoRibbonPanel(page);
     CreateEditShipRibbonPanel(page);
+    CreateEditAnalysisRibbonPanel(page);
     CreateEditToolSettingsRibbonPanel(page);
 
     return page;
 }
+
+wxRibbonPanel * MainFrame::CreateEditUndoRibbonPanel(wxRibbonPage * parent)
+{
+    wxColor labelColor = parent->GetArtProvider()->GetColor(wxRIBBON_ART_BUTTON_BAR_LABEL_COLOUR);
+
+    wxRibbonPanel * panel = new wxRibbonPanel(parent, wxID_ANY, _T("Undo"), wxNullBitmap, wxDefaultPosition, wxDefaultSize,
+        wxRIBBON_PANEL_NO_AUTO_MINIMISE);
+
+    wxGridBagSizer * panelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
+
+    // Undo
+    {
+        /* TODOHERE
+        auto button = new RibbonToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetIconFilePath("resize_button"),
+            _T("Size"),
+            [this]()
+            {
+                OpenShipCanvasResize();
+            },
+            _("Resize the ship."));
+
+        panelGridSizer->Add(button);
+        */
+    }
+
+    // Wrap in a sizer just for margins
+    {
+        wxSizer * tmpSizer = new wxBoxSizer(wxVERTICAL); // Arbitrary
+
+        tmpSizer->Add(
+            panelGridSizer,
+            0,
+            wxALL,
+            RibbonToolbarButtonMargin);
+
+        panel->SetSizerAndFit(tmpSizer);
+    }
+
+    return panel;
+}
+
 
 wxRibbonPanel * MainFrame::CreateEditShipRibbonPanel(wxRibbonPage * parent)
 {
@@ -1459,142 +1479,90 @@ wxRibbonPanel * MainFrame::CreateEditShipRibbonPanel(wxRibbonPage * parent)
     wxRibbonPanel * panel = new wxRibbonPanel(parent, wxID_ANY, _T("Ship"), wxNullBitmap, wxDefaultPosition, wxDefaultSize,
         wxRIBBON_PANEL_NO_AUTO_MINIMISE);
 
-    wxGridBagSizer * panelGridSizer = new wxGridBagSizer(ButtonMargin, ButtonMargin + ButtonMargin);
+    wxGridBagSizer * panelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
 
     // Resize
     {
-        wxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
+        auto button = new RibbonToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetIconFilePath("resize_button"),
+            _T("Size"),
+            [this]()
+            {
+                OpenShipCanvasResize();
+            },
+            _("Resize the ship."));
 
-        // Button
-        {
-            auto button = new BitmapButton(
-                panel,
-                mResourceLocator.GetIconFilePath("resize_button"),
-                [this]()
-                {
-                    OpenShipCanvasResize();
-                },
-                _("Resize the ship."));
-
-            vSizer->Add(
-                button,
-                0,
-                wxALIGN_CENTER_HORIZONTAL,
-                0);
-        }
-
-        // Label
-        {
-            auto * staticText = new wxStaticText(panel, wxID_ANY, _T("Size"));
-            staticText->SetForegroundColour(labelColor);
-
-            vSizer->Add(
-                staticText,
-                0,
-                wxALIGN_CENTER_HORIZONTAL,
-                0);
-        }
-
-        panelGridSizer->Add(
-            vSizer,
-            wxGBPosition(0, 0),
-            wxGBSpan(1, 1),
-            0,
-            0);
+        panelGridSizer->Add(button);
     }
 
     // Metadata
     {
-        wxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
+        auto button = new RibbonToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetIconFilePath("metadata_button"),
+            _T("Properties"),
+            [this]()
+            {
+                OpenShipProperties();
+            },
+            _("Edit the ship properties."));
 
-        // Button
-        {
-            auto button = new BitmapButton(
-                panel,
-                mResourceLocator.GetIconFilePath("metadata_button"),
-                [this]()
-                {
-                    OpenShipProperties();
-                },
-                _("Edit the ship properties."));
-
-            vSizer->Add(
-                button,
-                0,
-                wxALIGN_CENTER_HORIZONTAL,
-                0);
-        }
-
-        // Label
-        {
-            auto * staticText = new wxStaticText(panel, wxID_ANY, _T("Properties"));
-            staticText->SetForegroundColour(labelColor);
-
-            vSizer->Add(
-                staticText,
-                0,
-                wxALIGN_CENTER_HORIZONTAL,
-                0);
-        }
-
-        panelGridSizer->Add(
-            vSizer,
-            wxGBPosition(0, 1),
-            wxGBSpan(1, 1),
-            0,
-            0);
-    }
-
-    // Validation
-    {
-        wxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
-
-        // Button
-        {
-            auto button = new BitmapButton(
-                panel,
-                mResourceLocator.GetIconFilePath("validate_ship_button"),
-                [this]()
-                {
-                    ValidateShip();
-                },
-                _("Check the ship for issues."));
-
-            vSizer->Add(
-                button,
-                0,
-                wxALIGN_CENTER_HORIZONTAL,
-                0);
-        }
-
-        // Label
-        {
-            auto * staticText = new wxStaticText(panel, wxID_ANY, _T("Validation"));
-            staticText->SetForegroundColour(labelColor);
-
-            vSizer->Add(
-                staticText,
-                0,
-                wxALIGN_CENTER_HORIZONTAL,
-                0);
-        }
-
-        panelGridSizer->Add(
-            vSizer,
-            wxGBPosition(0, 2),
-            wxGBSpan(1, 1),
-            0,
-            0);
+        panelGridSizer->Add(button);
     }
 
     // Wrap in a sizer just for margins
     {
         wxSizer * tmpSizer = new wxBoxSizer(wxVERTICAL); // Arbitrary
+
         tmpSizer->Add(
             panelGridSizer,
             0,
             wxALL,
-            ButtonMargin);
+            RibbonToolbarButtonMargin);
+
+        panel->SetSizerAndFit(tmpSizer);
+    }
+
+    return panel;
+}
+
+wxRibbonPanel * MainFrame::CreateEditAnalysisRibbonPanel(wxRibbonPage * parent)
+{
+    wxColor labelColor = parent->GetArtProvider()->GetColor(wxRIBBON_ART_BUTTON_BAR_LABEL_COLOUR);
+
+    wxRibbonPanel * panel = new wxRibbonPanel(parent, wxID_ANY, _T("Analysis"), wxNullBitmap, wxDefaultPosition, wxDefaultSize,
+        wxRIBBON_PANEL_NO_AUTO_MINIMISE);
+
+    wxGridBagSizer * panelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
+
+    // Validation
+    {
+        auto button = new RibbonToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetIconFilePath("validate_ship_button"),
+            _T("Validation"),
+            [this]()
+            {
+                ValidateShip();
+            },
+            _("Check the ship for issues."));
+
+        panelGridSizer->Add(button);
+    }
+
+    // Wrap in a sizer just for margins
+    {
+        wxSizer * tmpSizer = new wxBoxSizer(wxVERTICAL); // Arbitrary
+
+        tmpSizer->Add(
+            panelGridSizer,
+            0,
+            wxALL,
+            RibbonToolbarButtonMargin);
 
         panel->SetSizerAndFit(tmpSizer);
     }
@@ -1609,7 +1577,7 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
     wxRibbonPanel * panel = new wxRibbonPanel(parent, wxID_ANY, _T("Tool Settings"), wxNullBitmap, wxDefaultPosition, wxDefaultSize,
         wxRIBBON_PANEL_NO_AUTO_MINIMISE);
 
-    wxGridBagSizer * panelGridSizer = new wxGridBagSizer(ButtonMargin, ButtonMargin + ButtonMargin);
+    wxGridBagSizer * panelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
 
     // TODOHERE
 
@@ -1620,7 +1588,7 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
             panelGridSizer,
             0,
             wxALL,
-            ButtonMargin);
+            RibbonToolbarButtonMargin);
 
         panel->SetSizerAndFit(tmpSizer);
     }
@@ -3336,6 +3304,9 @@ void MainFrame::OnRopeMaterialSelected(fsStructuralMaterialSelectedEvent & event
 void MainFrame::Open()
 {
     LogMessage("MainFrame::Open()");
+
+    // Select "Main" ribbon page
+    mMainRibbonBar->SetActivePage(size_t(0));
 
     // Show us
     Show(true);

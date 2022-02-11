@@ -11,9 +11,9 @@
 #include "ModelValidationDialog.h"
 #include "OpenGLManager.h"
 #include "ResizeDialog.h"
+#include "RibbonToolbarButton.h"
 #include "ShipPropertiesEditDialog.h"
 #include "StatusBar.h"
-#include "ToolbarButton.h"
 #include "WorkbenchState.h"
 
 #include <UILib/BitmapButton.h>
@@ -146,7 +146,9 @@ private:
     wxRibbonPage * CreateLayersRibbonPage(wxRibbonBar * parent);
     wxRibbonPanel * CreateLayerRibbonPanel(wxRibbonPage * parent, LayerType layer);
     wxRibbonPage * CreateEditRibbonPage(wxRibbonBar * parent);
+    wxRibbonPanel * CreateEditUndoRibbonPanel(wxRibbonPage * parent);
     wxRibbonPanel * CreateEditShipRibbonPanel(wxRibbonPage * parent);
+    wxRibbonPanel * CreateEditAnalysisRibbonPanel(wxRibbonPage * parent);
     wxRibbonPanel * CreateEditToolSettingsRibbonPanel(wxRibbonPage * parent);
     wxPanel * CreateToolSettingsPanel(wxWindow * parent);
     wxPanel * CreateVisualizationDetailsPanel(wxWindow * parent);
@@ -350,10 +352,10 @@ private:
 
     // Ribbon bar
     wxRibbonBar * mMainRibbonBar;
-    ToolbarButton<BitmapButton> * mSaveShipButton;
-    std::array<ToolbarButton<BitmapRadioButton> *, VisualizationCount> mVisualizationSelectButtons;
-    std::array<ToolbarButton<BitmapButton> *, LayerCount> mLayerExportButtons;
-    std::array<ToolbarButton<BitmapButton> *, LayerCount> mLayerDeleteButtons;
+    RibbonToolbarButton<BitmapButton> * mSaveShipButton;
+    std::array<RibbonToolbarButton<BitmapRadioButton> *, VisualizationCount> mVisualizationSelectButtons;
+    std::array<RibbonToolbarButton<BitmapButton> *, LayerCount> mLayerExportButtons;
+    std::array<RibbonToolbarButton<BitmapButton> *, LayerCount> mLayerDeleteButtons;
 
     // Tool settings panel
     wxSizer * mToolSettingsPanelsSizer;

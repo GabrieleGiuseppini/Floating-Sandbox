@@ -16,11 +16,11 @@
 namespace ShipBuilder {
 
 template<typename TButton>
-class ToolbarButton : public wxPanel
+class RibbonToolbarButton : public wxPanel
 {
 public:
 
-    ToolbarButton(
+    RibbonToolbarButton(
         wxRibbonPanel * parent,
         int direction,
         std::filesystem::path const & bitmapFilePath,

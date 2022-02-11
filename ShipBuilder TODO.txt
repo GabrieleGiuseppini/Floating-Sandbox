@@ -28,21 +28,26 @@ https://gamejolt.com/x/permalink/comment/11730705
 		+ Test ribbon on Ubuntu			
 		= Possible reorg:
 			= Main
-				= File
+				+ File
 					+ Use toolbar button
-					+ See if panelGridSizer still needed
 				- View
+					- Zoom In
+					- Zoom Out
+					- Reset View
 			+ Layers
 				+ "Edit"
 			= Edit
+				- Undo
+					- Undo
 				= Ship
-					- Separate "Analysis" into own panel
-					- Use toolbar button
-					- See if panelGridSizer still needed
+					- Auto-Trim
+					- Flip Ship H
+					- Flip Ship V
+					- Size
+					- Properties
+				+ Analysis
+					+ Use toolbar button
 				- Tool Settings
-		- Labels:
-			- "Edit Layers"
-			+ "Activate"
 		- All other menu items: move to toolbar
 			- Create accelerator table
 		- Tool settings to toolbar
@@ -55,6 +60,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 			+ Separator(s)
 			+ Undo stack width
 		- Color of labels @ tool settings
+		+ Select Main page at Open
 	- Re-test UI on old Dell
 	- Re-test UI on Ubuntu
 		- See if need to change style, see https://imron02.wordpress.com/2014/12/11/wxwidgets-simple-application-using-wxribbon-and-wxauinotebook/
