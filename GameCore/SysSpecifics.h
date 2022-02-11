@@ -85,10 +85,6 @@ using register_int = register_int_64;
 
 #define restrict __restrict
 
-#ifdef __GNUC__
-#define [[maybe_unused]]
-#endif
-
 template<typename T>
 inline constexpr T ceil_power_of_two(T value)
 {

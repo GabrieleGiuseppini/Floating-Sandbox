@@ -25,15 +25,17 @@ https://gamejolt.com/x/permalink/comment/11730705
 			+ Disable also label
 				+ Get colors from parent ribbon in cctor
 			+ Cleanup old code
-
+		- Test ribbon on Ubuntu
+			- See if need to change style, see https://imron02.wordpress.com/2014/12/11/wxwidgets-simple-application-using-wxribbon-and-wxauinotebook/
 		- Possible reorg:
 			- Main
 				- File
 				- View
+			- Layers
+				- "Edit"
 			- Edit
 				- Ship
 				- Tool Settings
-			- Layers
 		- Labels:
 			- "Edit Layers"
 			+ "Activate"
@@ -49,6 +51,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 			+ Undo stack width
 		- Color of labels @ tool settings
 	- Re-test UI on old Dell
+	- Re-test UI on Ubuntu
 
 - Release
 
