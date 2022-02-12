@@ -1488,20 +1488,19 @@ wxRibbonPanel * MainFrame::CreateEditUndoRibbonPanel(wxRibbonPage * parent)
 
     // Undo
     {
-        /* TODOHERE
-        auto button = new RibbonToolbarButton<BitmapButton>(
+        mUndoButton = new RibbonToolbarButton<BitmapButton>(
             panel,
             wxVERTICAL,
-            mResourceLocator.GetIconFilePath("resize_button"),
-            _T("Size"),
+            mResourceLocator.GetIconFilePath("undo_medium"),
+            _T("Undo"),
             [this]()
             {
-                OpenShipCanvasResize();
+                assert(mController);
+                mController->UndoLast();
             },
-            _("Resize the ship."));
+            _("Undo the last edit operation"));
 
-        panelGridSizer->Add(button);
-        */
+        panelGridSizer->Add(mUndoButton);
     }
 
     // Wrap in a sizer just for margins
@@ -4345,10 +4344,16 @@ void MainFrame::ReconciliateUIWithVisualGridEnablement(bool isEnabled)
 void MainFrame::ReconciliateUIWithUndoStackState(UndoStack & undoStack)
 {
     //
-    // Menu item
+    // Undo button
     //
 
     bool const canUndo = !undoStack.IsEmpty();
+    if (mUndoButton->IsEnabled() != canUndo)
+    {
+        mUndoButton->Enable(canUndo);
+    }
+
+    // TODOOLD: NUKE
     if (mUndoMenuItem->IsEnabled() != canUndo)
     {
         mUndoMenuItem->Enable(canUndo);

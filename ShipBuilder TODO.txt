@@ -37,8 +37,8 @@ https://gamejolt.com/x/permalink/comment/11730705
 			+ Layers
 				+ "Edit"
 			= Edit
-				- Undo
-					- Undo
+				+ Undo
+					+ Undo
 				= Ship
 					- Auto-Trim
 					- Flip Ship H

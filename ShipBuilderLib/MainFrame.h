@@ -345,7 +345,7 @@ private:
 
     wxPanel * mMainPanel;
 
-    // Menu
+    // Menu - TODO: nuke all
     wxMenuItem * mSaveShipMenuItem;
     wxMenuItem * mSaveAndGoBackMenuItem;
     wxMenuItem * mUndoMenuItem;
@@ -355,6 +355,7 @@ private:
     RibbonToolbarButton<BitmapButton> * mSaveShipButton;
     RibbonToolbarButton<BitmapButton> * mZoomInButton;
     RibbonToolbarButton<BitmapButton> * mZoomOutButton;
+    RibbonToolbarButton<BitmapButton> * mUndoButton;
     std::array<RibbonToolbarButton<BitmapRadioButton> *, VisualizationCount> mVisualizationSelectButtons;
     std::array<RibbonToolbarButton<BitmapButton> *, LayerCount> mLayerExportButtons;
     std::array<RibbonToolbarButton<BitmapButton> *, LayerCount> mLayerDeleteButtons;
