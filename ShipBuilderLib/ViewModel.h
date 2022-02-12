@@ -29,6 +29,9 @@ public:
 
     using ProjectionMatrix = float[4][4];
 
+    static int constexpr MaxZoom = 6;
+    static int constexpr MinZoom = -2;
+
 public:
 
     ViewModel(
@@ -285,8 +288,6 @@ private:
 private:
 
     // Constants
-    static int constexpr MaxZoom = 6;
-    static int constexpr MinZoom = -2;
     static int constexpr MarginDisplayShipSize = 1;
 
     // Primary inputs

@@ -27,13 +27,13 @@ https://gamejolt.com/x/permalink/comment/11730705
 			+ Cleanup old code
 		+ Test ribbon on Ubuntu			
 		= Possible reorg:
-			= Main
+			+ Main
 				+ File
 					+ Use toolbar button
-				- View
-					- Zoom In
-					- Zoom Out
-					- Reset View
+				+ View
+					+ Zoom In
+					+ Zoom Out
+					+ Reset View
 			+ Layers
 				+ "Edit"
 			= Edit

@@ -972,7 +972,7 @@ wxRibbonPanel * MainFrame::CreateMainViewRibbonPanel(wxRibbonPage * parent)
 
     // Zoom In
     {
-        auto * button = new RibbonToolbarButton<BitmapButton>(
+        mZoomInButton = new RibbonToolbarButton<BitmapButton>(
             panel,
             wxVERTICAL,
             mResourceLocator.GetIconFilePath("zoom_in_medium"),
@@ -984,12 +984,12 @@ wxRibbonPanel * MainFrame::CreateMainViewRibbonPanel(wxRibbonPage * parent)
             },
             wxEmptyString);
 
-        panelGridSizer->Add(button);
+        panelGridSizer->Add(mZoomInButton);
     }
 
     // Zoom Out
     {
-        auto * button = new RibbonToolbarButton<BitmapButton>(
+        mZoomOutButton = new RibbonToolbarButton<BitmapButton>(
             panel,
             wxVERTICAL,
             mResourceLocator.GetIconFilePath("zoom_out_medium"),
@@ -1001,7 +1001,7 @@ wxRibbonPanel * MainFrame::CreateMainViewRibbonPanel(wxRibbonPage * parent)
             },
             wxEmptyString);
 
-        panelGridSizer->Add(button);
+        panelGridSizer->Add(mZoomOutButton);
     }
 
     // Reset View
@@ -3979,7 +3979,12 @@ void MainFrame::ReconciliateUIWithWorkbenchState()
 
 void MainFrame::ReconciliateUIWithViewModel(ViewModel const & viewModel)
 {
+    // Panning
     RecalculateWorkCanvasPanning(viewModel);
+
+    // Zoom buttons
+    mZoomInButton->Enable(viewModel.GetZoom() < ViewModel::MaxZoom);
+    mZoomOutButton->Enable(viewModel.GetZoom() > ViewModel::MinZoom);
 
     // TODO: set zoom in StatusBar
 }

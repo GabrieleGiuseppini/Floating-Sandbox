@@ -353,6 +353,8 @@ private:
     // Ribbon bar
     wxRibbonBar * mMainRibbonBar;
     RibbonToolbarButton<BitmapButton> * mSaveShipButton;
+    RibbonToolbarButton<BitmapButton> * mZoomInButton;
+    RibbonToolbarButton<BitmapButton> * mZoomOutButton;
     std::array<RibbonToolbarButton<BitmapRadioButton> *, VisualizationCount> mVisualizationSelectButtons;
     std::array<RibbonToolbarButton<BitmapButton> *, LayerCount> mLayerExportButtons;
     std::array<RibbonToolbarButton<BitmapButton> *, LayerCount> mLayerDeleteButtons;
