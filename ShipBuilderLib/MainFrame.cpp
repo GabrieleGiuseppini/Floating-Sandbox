@@ -1529,6 +1529,57 @@ wxRibbonPanel * MainFrame::CreateEditShipRibbonPanel(wxRibbonPage * parent)
 
     wxGridBagSizer * panelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
 
+    // Auto-Trim
+    {
+        auto button = new RibbonToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetIconFilePath("trim_medium"),
+            _T("Auto-Trim"),
+            [this]()
+            {
+                assert(mController);
+                mController->AutoTrim();
+            },
+            _("Remove empty space around the ship."));
+
+        panelGridSizer->Add(button);
+    }
+
+    // Flip H
+    {
+        auto button = new RibbonToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetIconFilePath("flip_h_medium"),
+            _T("Flip H"),
+            [this]()
+            {
+                assert(mController);
+                mController->Flip(DirectionType::Horizontal);
+            },
+            _("Flip the ship horizontally."));
+
+        panelGridSizer->Add(button);
+    }
+
+    // Flip V
+    {
+        auto button = new RibbonToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetIconFilePath("flip_v_medium"),
+            _T("Flip V"),
+            [this]()
+            {
+                assert(mController);
+                mController->Flip(DirectionType::Vertical);
+            },
+            _("Flip the ship vertically."));
+
+        panelGridSizer->Add(button);
+    }
+
     // Resize
     {
         auto button = new RibbonToolbarButton<BitmapButton>(
@@ -1628,18 +1679,6 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
     wxGridBagSizer * panelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
 
     // TODOHERE
-
-    // Wrap in a sizer just for margins
-    {
-        wxSizer * tmpSizer = new wxBoxSizer(wxVERTICAL); // Arbitrary
-        tmpSizer->Add(
-            panelGridSizer,
-            0,
-            wxALL,
-            RibbonToolbarButtonMargin);
-
-        panel->SetSizerAndFit(tmpSizer);
-    }
 
     return panel;
 }

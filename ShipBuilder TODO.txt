@@ -39,12 +39,12 @@ https://gamejolt.com/x/permalink/comment/11730705
 			= Edit
 				+ Undo
 					+ Undo
-				= Ship
-					- Auto-Trim
-					- Flip Ship H
-					- Flip Ship V
-					- Size
-					- Properties
+				+ Ship
+					+ Auto-Trim
+					+ Flip Ship H
+					+ Flip Ship V
+					+ Size
+					+ Properties
 				+ Analysis
 					+ Use toolbar button
 				- Tool Settings
@@ -52,8 +52,8 @@ https://gamejolt.com/x/permalink/comment/11730705
 			- Create accelerator table for most common ones, plus Log Window
 		- Tool settings to toolbar
 			- Disable group (if possible) when current tool has no settings
-	- Copy all useful PSDs to Authoring
-		- Nuke useless PSDs from Authoring
+	+ Copy all useful PSDs to Authoring
+		+ Nuke useless PSDs from Authoring
 	- Follow-ups
 		+ Fixup col0
 			+ H margins,col 
