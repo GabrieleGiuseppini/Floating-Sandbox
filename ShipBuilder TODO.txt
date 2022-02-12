@@ -49,7 +49,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 					+ Use toolbar button
 				- Tool Settings
 		- All other menu items: move to toolbar
-			- Create accelerator table
+			- Create accelerator table for most common ones, plus Log Window
 		- Tool settings to toolbar
 			- Disable group (if possible) when current tool has no settings
 	- Copy all useful PSDs to Authoring

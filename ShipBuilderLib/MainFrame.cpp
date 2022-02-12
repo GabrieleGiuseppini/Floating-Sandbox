@@ -795,17 +795,17 @@ wxAcceleratorEntry MainFrame::MakePlainAcceleratorKey(int key, wxMenuItem * menu
     this->Bind(
         wxEVT_MENU,
         [menuItem, this](wxCommandEvent &)
-    {
-        // Toggle menu - if it's checkable
-        if (menuItem->IsCheckable())
         {
-            menuItem->Check(!menuItem->IsChecked());
-        }
+            // Toggle menu - if it's checkable
+            if (menuItem->IsCheckable())
+            {
+                menuItem->Check(!menuItem->IsChecked());
+            }
 
-        // Fire menu event handler
-        wxCommandEvent evt(wxEVT_COMMAND_MENU_SELECTED, menuItem->GetId());
-        ::wxPostEvent(this, evt);
-    },
+            // Fire menu event handler
+            wxCommandEvent evt(wxEVT_COMMAND_MENU_SELECTED, menuItem->GetId());
+            ::wxPostEvent(this, evt);
+        },
         keyId);
 
     return entry;
@@ -970,7 +970,56 @@ wxRibbonPanel * MainFrame::CreateMainViewRibbonPanel(wxRibbonPage * parent)
 
     wxGridBagSizer * panelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
 
-    // TODOHERE
+    // Zoom In
+    {
+        auto * button = new RibbonToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetIconFilePath("zoom_in_medium"),
+            _T("Zoom In"),
+            [this]()
+            {
+                assert(!!mController);
+                mController->AddZoom(1);
+            },
+            wxEmptyString);
+
+        panelGridSizer->Add(button);
+    }
+
+    // Zoom Out
+    {
+        auto * button = new RibbonToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetIconFilePath("zoom_out_medium"),
+            _T("Zoom Out"),
+            [this]()
+            {
+                assert(!!mController);
+                mController->AddZoom(-1);
+            },
+            wxEmptyString);
+
+        panelGridSizer->Add(button);
+    }
+
+    // Reset View
+    {
+        auto * button = new RibbonToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetIconFilePath("zoom_reset_medium"),
+            _T("Reset View"),
+            [this]()
+            {
+                assert(!!mController);
+                mController->ResetView();
+            },
+            _("Restore view settings to their defaults."));
+
+        panelGridSizer->Add(button);
+    }
 
     // Wrap in a sizer just for margins
     {
