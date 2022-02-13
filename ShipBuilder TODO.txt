@@ -26,7 +26,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 				+ Get colors from parent ribbon in cctor
 			+ Cleanup old code
 		+ Test ribbon on Ubuntu			
-		= Possible reorg:
+		+ Possible reorg:
 			+ Main
 				+ File
 					+ Use toolbar button
@@ -36,7 +36,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 					+ Reset View
 			+ Layers
 				+ "Edit"
-			= Edit
+			+ Edit
 				+ Undo
 					+ Undo
 				+ Ship
@@ -47,13 +47,12 @@ https://gamejolt.com/x/permalink/comment/11730705
 					+ Properties
 				+ Analysis
 					+ Use toolbar button
-				= Tool Settings
+				+ Tool Settings
 					+ Split checkboxes into label and checkbox
-					- Fix when tool has no settings
+					+ Fix when tool has no settings
+		+ Tool settings to toolbar
 		- All other menu items: move to toolbar
 			- Create accelerator table for most common ones, plus Log Window
-		- Tool settings to toolbar
-			- Disable group (if possible) when current tool has no settings
 	+ Copy all useful PSDs to Authoring
 		+ Nuke useless PSDs from Authoring
 	- Follow-ups
@@ -63,6 +62,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 			+ Undo stack width
 		- Color of labels @ tool settings
 		+ Select Main page at Open
+		- Cleanup all TODOs
 	- Re-test UI on old Dell
 	- Re-test UI on Ubuntu
 		- See if need to change style, see https://imron02.wordpress.com/2014/12/11/wxwidgets-simple-application-using-wxribbon-and-wxauinotebook/

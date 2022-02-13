@@ -123,9 +123,6 @@ MainFrame::MainFrame(
                 auto const backgroundColor = GetBackgroundColour();
                 auto const borderColor = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWFRAME);
 
-                // TODO:CLEANUP
-                ////artProvider->SetColor(wxRIBBON_ART_PAGE_BORDER_COLOUR, backgroundColor);
-
                 artProvider->SetColor(wxRIBBON_ART_PAGE_BACKGROUND_COLOUR, backgroundColor);
                 artProvider->SetColor(wxRIBBON_ART_PAGE_BACKGROUND_GRADIENT_COLOUR, backgroundColor);
                 artProvider->SetColor(wxRIBBON_ART_PAGE_BACKGROUND_TOP_COLOUR, backgroundColor);
@@ -136,33 +133,8 @@ MainFrame::MainFrame(
                 artProvider->SetColor(wxRIBBON_ART_PAGE_HOVER_BACKGROUND_TOP_COLOUR, backgroundColor);
                 artProvider->SetColor(wxRIBBON_ART_PAGE_HOVER_BACKGROUND_TOP_GRADIENT_COLOUR, backgroundColor);
 
-                ////artProvider->SetColor(wxRIBBON_ART_TAB_ACTIVE_BACKGROUND_COLOUR, backgroundColor);
-                ////artProvider->SetColor(wxRIBBON_ART_TAB_ACTIVE_BACKGROUND_GRADIENT_COLOUR, backgroundColor);
-                ////artProvider->SetColor(wxRIBBON_ART_TAB_ACTIVE_BACKGROUND_TOP_COLOUR, backgroundColor);
-                ////artProvider->SetColor(wxRIBBON_ART_TAB_ACTIVE_BACKGROUND_TOP_GRADIENT_COLOUR, backgroundColor);
-
                 artProvider->SetColor(wxRIBBON_ART_TAB_CTRL_BACKGROUND_COLOUR, backgroundColor);
                 artProvider->SetColor(wxRIBBON_ART_TAB_CTRL_BACKGROUND_GRADIENT_COLOUR, backgroundColor);
-
-                ////artProvider->SetColor(wxRIBBON_ART_PANEL_LABEL_BACKGROUND_COLOUR, *wxBLACK);
-                ////artProvider->SetColor(wxRIBBON_ART_PANEL_LABEL_BACKGROUND_GRADIENT_COLOUR, *wxBLACK);
-                ////artProvider->SetColor(wxRIBBON_ART_PANEL_LABEL_COLOUR, *wxBLACK);
-                ////artProvider->SetColor(wxRIBBON_ART_PANEL_HOVER_LABEL_BACKGROUND_COLOUR, *wxBLACK);
-                ////artProvider->SetColor(wxRIBBON_ART_PANEL_HOVER_LABEL_BACKGROUND_GRADIENT_COLOUR, *wxBLACK);
-                ////artProvider->SetColor(wxRIBBON_ART_PANEL_HOVER_LABEL_COLOUR, *wxBLACK);
-
-                ////artProvider->SetColor(wxRIBBON_ART_TAB_ACTIVE_LABEL_COLOUR, *wxBLACK);
-                ////artProvider->SetColor(wxRIBBON_ART_TAB_HOVER_LABEL_COLOUR, *wxBLACK);
-                ////
-                ////artProvider->SetColor(wxRIBBON_ART_PANEL_LABEL_BACKGROUND_COLOUR, backgroundColor);
-                ////artProvider->SetColor(wxRIBBON_ART_PANEL_LABEL_BACKGROUND_GRADIENT_COLOUR, backgroundColor);
-                ////artProvider->SetColor(wxRIBBON_ART_PANEL_HOVER_LABEL_BACKGROUND_COLOUR, backgroundColor);
-                ////artProvider->SetColor(wxRIBBON_ART_PANEL_HOVER_LABEL_BACKGROUND_GRADIENT_COLOUR, backgroundColor);
-                ////
-                ////artProvider->SetColor(wxRIBBON_ART_TAB_BORDER_COLOUR , borderColor);
-                ////artProvider->SetColor(wxRIBBON_ART_PAGE_BORDER_COLOUR, borderColor);
-                ////artProvider->SetColor(wxRIBBON_ART_PANEL_BORDER_COLOUR, borderColor);
-                ////artProvider->SetColor(wxRIBBON_ART_PANEL_BORDER_GRADIENT_COLOUR, borderColor);
             }
 
             CreateMainRibbonPage(mMainRibbonBar);
@@ -1694,8 +1666,6 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
                 wxALIGN_CENTER_VERTICAL,
                 0);
 
-            mToolSettingsPanelsSizer->Hide(dynamicPanel);
-
             mToolSettingsPanels.emplace_back(
                 ToolType::StructuralPencil,
                 dynamicPanel);
@@ -1749,8 +1719,6 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
                 0,
                 wxALIGN_CENTER_VERTICAL,
                 0);
-
-            mToolSettingsPanelsSizer->Hide(dynamicPanel);
 
             mToolSettingsPanels.emplace_back(
                 ToolType::StructuralEraser,
@@ -1840,8 +1808,6 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
                 wxALIGN_CENTER_VERTICAL,
                 0);
 
-            mToolSettingsPanelsSizer->Hide(dynamicPanel);
-
             mToolSettingsPanels.emplace_back(
                 ToolType::StructuralLine,
                 dynamicPanel);
@@ -1897,12 +1863,30 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
                 wxALIGN_CENTER_VERTICAL,
                 0);
 
-            mToolSettingsPanelsSizer->Hide(dynamicPanel);
-
             mToolSettingsPanels.emplace_back(
                 ToolType::StructuralFlood,
                 dynamicPanel);
         }
+    }
+
+    // Find widest panel
+    wxPanel const * widestPanel = nullptr;
+    for (auto const & entry : mToolSettingsPanels)
+    {
+        int const width = std::get<1>(entry)->GetSize().GetWidth();
+        if (widestPanel == nullptr || width > widestPanel->GetSize().GetWidth())
+        {
+            widestPanel = std::get<1>(entry);
+        }
+    }
+
+    // Show widest panel only
+    for (auto const & entry : mToolSettingsPanels)
+    {
+        mToolSettingsPanelsSizer->Show(
+            std::get<1>(entry),
+            (widestPanel == nullptr && std::get<0>(entry) == ToolType::StructuralLine)
+            || (widestPanel != nullptr && std::get<1>(entry) == widestPanel));
     }
     
     // Wrap in a sizer just for margins
@@ -4299,8 +4283,8 @@ void MainFrame::ReconciliateUIWithSelectedTool(std::optional<ToolType> tool)
         hasPanel |= isSelected;
     }
 
-    // Refresh ribbon bar to pickup the new layout
-    mMainRibbonBar->Realise();
+    // Pickup new layout
+    mToolSettingsPanelsSizer->Layout();
 }
 
 void MainFrame::ReconciliateUIWithPrimaryVisualizationSelection(VisualizationType primaryVisualization)
