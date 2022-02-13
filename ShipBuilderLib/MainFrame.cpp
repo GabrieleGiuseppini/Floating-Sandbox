@@ -1725,6 +1725,19 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
         }
     }
 
+    // Wrap in a sizer just for margins
+    {
+        wxSizer * tmpSizer = new wxBoxSizer(wxVERTICAL); // Arbitrary
+
+        tmpSizer->Add(
+            mToolSettingsPanelsSizer,
+            1, // Stretch vertically so single-row panels have a chance of being able to be at V center
+            wxALL,
+            RibbonToolbarButtonMargin);
+
+        ribbonPanel->SetSizerAndFit(tmpSizer);
+    }
+
     // Find widest panel
     wxPanel const * widestPanel = nullptr;
     for (auto const & entry : mToolSettingsPanels)
@@ -1743,19 +1756,6 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
             std::get<1>(entry),
             (widestPanel == nullptr && std::get<0>(entry) == ToolType::StructuralLine)
             || (widestPanel != nullptr && std::get<1>(entry) == widestPanel));
-    }
-    
-    // Wrap in a sizer just for margins
-    {
-        wxSizer * tmpSizer = new wxBoxSizer(wxVERTICAL); // Arbitrary
-
-        tmpSizer->Add(
-            mToolSettingsPanelsSizer,
-            1, // Stretch vertically so single-line tool settings have a chace of being able to be at V center
-            wxALL,
-            RibbonToolbarButtonMargin);
-
-        ribbonPanel->SetSizerAndFit(tmpSizer);
     }
 
     return ribbonPanel;
@@ -3157,11 +3157,11 @@ void MainFrame::Open()
 {
     LogMessage("MainFrame::Open()");
 
-    // Select "Main" ribbon page
-    mMainRibbonBar->SetActivePage(size_t(0));
-
     // Show us
     Show(true);
+
+    // Select "Main" ribbon page
+    mMainRibbonBar->SetActivePage(size_t(0));
 
     // Make ourselves the topmost frame
     mMainApp->SetTopWindow(this);
@@ -4088,7 +4088,15 @@ void MainFrame::ReconciliateUIWithSelectedTool(std::optional<ToolType> tool)
     }
 
     // Pickup new layout
-    mToolSettingsPanelsSizer->Layout();
+    if (hasPanel)
+    {
+        mMainRibbonBar->Realize();
+    }
+    else
+    {
+        // Do not re-realize main ribbon bar, or else the panel becomes tiny
+        mToolSettingsPanelsSizer->Layout();
+    }
 }
 
 void MainFrame::ReconciliateUIWithPrimaryVisualizationSelection(VisualizationType primaryVisualization)

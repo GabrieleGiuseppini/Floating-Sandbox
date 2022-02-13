@@ -12,7 +12,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 + Test on old Dell
 
 = UIRearc
-	= DO
+	+ DO
 		+ Move GameViz selector to StructuralLayer
 			+ Fix
 			+ Fix radio behavior of select button
@@ -26,7 +26,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 				+ Get colors from parent ribbon in cctor
 			+ Cleanup old code
 		+ Test ribbon on Ubuntu			
-		= Possible reorg:
+		+ Possible reorg:
 			+ Main
 				+ File
 					+ Use toolbar button
@@ -36,7 +36,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 					+ Reset View
 			+ Layers
 				+ "Edit"
-			= Edit
+			+ Edit
 				+ Undo
 					+ Undo
 				+ Ship
@@ -47,10 +47,10 @@ https://gamejolt.com/x/permalink/comment/11730705
 					+ Properties
 				+ Analysis
 					+ Use toolbar button
-				= Tool Settings
+				+ Tool Settings
 					+ Split checkboxes into label and checkbox
 					+ Fix when tool has no settings
-					- Initial layout is broken
+					+ Initial layout is broken
 		+ Tool settings to toolbar
 		+ All other menu items: move to toolbar
 			+ Create accelerator table for most common ones, plus Log Window
@@ -146,14 +146,15 @@ https://gamejolt.com/x/permalink/comment/11730705
 				+ Populate accelerator over there, via private helper method
 	+ Copy all useful PSDs to Authoring
 		+ Nuke useless PSDs from Authoring
-	- Follow-ups
+	= Follow-ups
 		+ Fixup col0
 			+ H margins,col 
 			+ Separator(s)
 			+ Undo stack width
-		- Color of labels @ tool settings
+		- Layer name @ left panel
+		+ Color of labels @ tool settings
 		+ Select Main page at Open
-		- Cleanup all TODOs
+		+ Cleanup all TODOs
 	- Test in FloatingSandbox mode
 	- Re-test UI on old Dell
 	- Re-test UI on Ubuntu
