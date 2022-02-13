@@ -26,7 +26,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 				+ Get colors from parent ribbon in cctor
 			+ Cleanup old code
 		+ Test ribbon on Ubuntu			
-		+ Possible reorg:
+		= Possible reorg:
 			+ Main
 				+ File
 					+ Use toolbar button
@@ -36,7 +36,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 					+ Reset View
 			+ Layers
 				+ "Edit"
-			+ Edit
+			= Edit
 				+ Undo
 					+ Undo
 				+ Ship
@@ -47,12 +47,103 @@ https://gamejolt.com/x/permalink/comment/11730705
 					+ Properties
 				+ Analysis
 					+ Use toolbar button
-				+ Tool Settings
+				= Tool Settings
 					+ Split checkboxes into label and checkbox
 					+ Fix when tool has no settings
+					- Initial layout is broken
 		+ Tool settings to toolbar
-		- All other menu items: move to toolbar
-			- Create accelerator table for most common ones, plus Log Window
+		+ All other menu items: move to toolbar
+			+ Create accelerator table for most common ones, plus Log Window
+				+ Ctrl+N
+				+ Ctrl+O
+				+ Ctrl+S (Save)
+				+ Alt+F4
+				+ Ctrl+Z
+				+ +
+				+ -
+				+ Home
+				+ Ctrl+L
+			+ Fix save:
+				- OLD:
+					- Save Button, Key: 
+						- OnSaveShip
+							- PreSaveShipCheck
+							- SaveShip
+					- SaveAs Button, Key: 
+						- OnSaveShipAs
+							- PreSaveShipCheck
+							- SaveShipAs
+					- Close:
+						- Dirty && User Wants:
+							- SaveShip
+					- New:
+						- Dirty && UserWants:
+							- SaveShip
+					- Load:
+						- Dirty && UserWants:
+							- SaveShip
+					- SaveAndSwitchBackToGame:
+						- SaveShip()
+					- QuitAndSwitchBackToGame:
+						- Dirty && User Wants:
+							- SaveShip					
+					------------------------
+					- SaveShip:
+						- If no path: SaveShipAs
+						- Else: DoSaveShip
+					- SaveShipAs:
+						- Dialog
+						- If OK: DoSaveShip
+				+ NEW:
+					! Tenet:
+						! PreSaveShipValidation is at very bottom, DoSaveShip(filename)
+					+ Save Button, Key: SaveShip()
+						- DoSaveShipOrSaveShipAsWithValidation()
+					+ Save As Button: SaveShipAs()
+						- DoSaveShipAsWithValidation()
+					+ Close:
+						- Dirty && User Wants:
+							- DoSaveShipOrSaveShipAsWithValidation()
+							- If false: veto
+					+ New:
+						- Dirty && UserWants:
+							- DoSaveShipOrSaveShipAsWithValidation()
+							- If false: return
+					+ Load:
+						- Dirty && UserWants:
+							- DoSaveShipOrSaveShipAsWithValidation()
+							- If false: return
+					+ SaveAndSwitchBackToGame:
+						- DoSaveShipOrSaveShipAsWithValidation()
+						- If false: return
+					+ QuitAndSwitchBackToGame:
+						- Dirty && User Wants:
+							- DoSaveShipOrSaveShipAsWithValidation()
+							- If false: return
+					------------------------
+					+ DoSaveShipOrSaveShipAsWithValidation() -> bool
+						- If has path: return DoSaveShipWithValidation(path)
+						- Else: return DoSaveShipAsWithValidation()
+					+ DoSaveShipAsWithValidation() -> bool
+						- If Precheck OK:
+							- Dialog
+							- If OK:
+								- DoSaveShipWithoutValidation(filename)
+								- Return true
+							- Else:
+								- Return false
+						- Else:
+							- Return false
+					+ DoSaveShipWithValidation(filename) -> bool
+						- If Precheck OK:
+							- DoSaveShipWithoutValidation(filename)
+							- Return true
+						- Else:
+							- Return false
+					+ DoSaveShipWithoutValidation(filename)
+						- ...Save...			
+			+ Display shortcuts at affected tooltips
+				+ Populate accelerator over there, via private helper method
 	+ Copy all useful PSDs to Authoring
 		+ Nuke useless PSDs from Authoring
 	- Follow-ups
@@ -63,6 +154,7 @@ https://gamejolt.com/x/permalink/comment/11730705
 		- Color of labels @ tool settings
 		+ Select Main page at Open
 		- Cleanup all TODOs
+	- Test in FloatingSandbox mode
 	- Re-test UI on old Dell
 	- Re-test UI on Ubuntu
 		- See if need to change style, see https://imron02.wordpress.com/2014/12/11/wxwidgets-simple-application-using-wxribbon-and-wxauinotebook/

@@ -266,166 +266,23 @@ MainFrame::MainFrame(
     mMainPanel->SetSizer(mainVSizer);
 
     //
-    // Setup menu
+    // Initialize accelerator
     //
 
-    wxMenuBar * mainMenuBar = new wxMenuBar();
-
-#ifdef __WXGTK__
-    // Note: on GTK we build an accelerator table for plain keys because of https://trac.wxwidgets.org/ticket/17611
-    std::vector<wxAcceleratorEntry> acceleratorEntries;
-#define ADD_PLAIN_ACCELERATOR_KEY(key, menuItem) \
-        acceleratorEntries.push_back(MakePlainAcceleratorKey(int((key)), (menuItem)));
-#else
-#define ADD_PLAIN_ACCELERATOR_KEY(key, menuItem) \
-        (void)menuItem;
-#endif
-
-    // File
-    {
-        wxMenu * fileMenu = new wxMenu();
-
+    // Add Open Log Window
+    AddAcceleratorKey(wxACCEL_CTRL, (int)'L',
+        [this]()
         {
-            wxMenuItem * newShipMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("New Ship") + wxS("\tCtrl+N"), _("Create a new empty ship"), wxITEM_NORMAL);
-            fileMenu->Append(newShipMenuItem);
-            Connect(newShipMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnNewShip);
-        }
+            if (!mLoggingDialog)
+            {
+                mLoggingDialog = std::make_unique<LoggingDialog>(this);
+            }
 
-        {
-            wxMenuItem * loadShipMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("Load Ship...") + wxS("\tCtrl+O"), _("Load a ship"), wxITEM_NORMAL);
-            fileMenu->Append(loadShipMenuItem);
-            Connect(loadShipMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnLoadShip);
-        }
+            mLoggingDialog->Open();
+        });
 
-        {
-            mSaveShipMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("Save Ship") + wxS("\tCtrl+S"), _("Save the current ship"), wxITEM_NORMAL);
-            fileMenu->Append(mSaveShipMenuItem);
-            Connect(mSaveShipMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnSaveShipMenuItem);
-        }
-
-        if (!IsStandAlone())
-        {
-            mSaveAndGoBackMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("Save Ship and Return to Game"), _("Save the current ship and return to the simulator"), wxITEM_NORMAL);
-            fileMenu->Append(mSaveAndGoBackMenuItem);
-            Connect(mSaveAndGoBackMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnSaveAndGoBackMenuItem);
-        }
-        else
-        {
-            mSaveAndGoBackMenuItem = nullptr;
-        }
-
-        {
-            wxMenuItem * saveShipAsMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("Save Ship As..."), _("Save the current ship to a different file"), wxITEM_NORMAL);
-            fileMenu->Append(saveShipAsMenuItem);
-            Connect(saveShipAsMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnSaveShipAsMenuItem);
-        }
-
-        if (!IsStandAlone())
-        {
-            wxMenuItem * quitAndGoBackMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("Quit and Return to Game"), _("Discard the current ship and return to the simulator"), wxITEM_NORMAL);
-            fileMenu->Append(quitAndGoBackMenuItem);
-            Connect(quitAndGoBackMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnQuitAndGoBack);
-        }
-
-        if (IsStandAlone())
-        {
-            wxMenuItem * quitMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("Quit") + wxS("\tAlt+F4"), _("Quit the builder"), wxITEM_NORMAL);
-            fileMenu->Append(quitMenuItem);
-            Connect(quitMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnQuit);
-        }
-
-        mainMenuBar->Append(fileMenu, _("&File"));
-    }
-
-    // Edit
-    {
-        wxMenu * editMenu = new wxMenu();
-
-        {
-            mUndoMenuItem = new wxMenuItem(editMenu, wxID_ANY, _("Undo") + wxS("\tCtrl+Z"), _("Undo the last edit operation"), wxITEM_NORMAL);
-            editMenu->Append(mUndoMenuItem);
-            Connect(mUndoMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnEditUndoMenuItem);
-        }
-
-        editMenu->Append(new wxMenuItem(editMenu, wxID_SEPARATOR));
-
-        {
-            wxMenuItem * menuItem = new wxMenuItem(editMenu, wxID_ANY, _("Auto-Trim"), _("Removes empty space around the ship"), wxITEM_NORMAL);
-            editMenu->Append(menuItem);
-            Connect(menuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnEditAutoTrimMenuItem);
-        }
-
-        {
-            wxMenuItem * menuItem = new wxMenuItem(editMenu, wxID_ANY, _("Flip Ship Horizontally"), _("Flip the ship horizontally"), wxITEM_NORMAL);
-            editMenu->Append(menuItem);
-            Connect(menuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnEditFlipHorizontallyMenuItem);
-        }
-
-        {
-            wxMenuItem * menuItem = new wxMenuItem(editMenu, wxID_ANY, _("Flip Ship Vertically"), _("Flip the ship vertically"), wxITEM_NORMAL);
-            editMenu->Append(menuItem);
-            Connect(menuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnEditFlipVerticallyMenuItem);
-        }
-
-        {
-            wxMenuItem * menuItem = new wxMenuItem(editMenu, wxID_ANY, _("Resize Ship...") + wxS("\tCtrl+R"), _("Resize the ship"), wxITEM_NORMAL);
-            editMenu->Append(menuItem);
-            Connect(menuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnEditResizeShipMenuItem);
-        }
-
-        {
-            wxMenuItem * menuItem = new wxMenuItem(editMenu, wxID_ANY, _("Ship Properties...") + wxS("\tCtrl+P"), _("Edit the ship properties"), wxITEM_NORMAL);
-            editMenu->Append(menuItem);
-            Connect(menuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnEditShipPropertiesMenuItem);
-        }
-
-        mainMenuBar->Append(editMenu, _("&Edit"));
-    }
-
-    // View
-    {
-        wxMenu * viewMenu = new wxMenu();
-
-        wxMenuItem * zoomInMenuItem = new wxMenuItem(viewMenu, wxID_ANY, _("Zoom In") + wxS("\t+"), wxEmptyString, wxITEM_NORMAL);
-        viewMenu->Append(zoomInMenuItem);
-        Connect(zoomInMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnZoomIn);
-        ADD_PLAIN_ACCELERATOR_KEY('+', zoomInMenuItem);
-        ADD_PLAIN_ACCELERATOR_KEY(WXK_NUMPAD_ADD, zoomInMenuItem);
-
-        wxMenuItem * zoomOutMenuItem = new wxMenuItem(viewMenu, wxID_ANY, _("Zoom Out") + wxS("\t-"), wxEmptyString, wxITEM_NORMAL);
-        viewMenu->Append(zoomOutMenuItem);
-        Connect(zoomOutMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnZoomOut);
-        ADD_PLAIN_ACCELERATOR_KEY('-', zoomOutMenuItem);
-        ADD_PLAIN_ACCELERATOR_KEY(WXK_NUMPAD_SUBTRACT, zoomOutMenuItem);
-
-        viewMenu->Append(new wxMenuItem(viewMenu, wxID_SEPARATOR));
-
-        wxMenuItem * resetViewMenuItem = new wxMenuItem(viewMenu, wxID_ANY, _("Reset View") + wxS("\tHOME"), wxEmptyString, wxITEM_NORMAL);
-        viewMenu->Append(resetViewMenuItem);
-        Connect(resetViewMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnResetView);
-        ADD_PLAIN_ACCELERATOR_KEY(WXK_HOME, resetViewMenuItem);
-
-        mainMenuBar->Append(viewMenu, _("&View"));
-    }
-
-    // Options
-    {
-        wxMenu * optionsMenu = new wxMenu();
-
-        wxMenuItem * openLogWindowMenuItem = new wxMenuItem(optionsMenu, wxID_ANY, _("Open Log Window") + wxS("\tCtrl+L"), wxEmptyString, wxITEM_NORMAL);
-        optionsMenu->Append(openLogWindowMenuItem);
-        Connect(openLogWindowMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnOpenLogWindowMenuItemSelected);
-
-        mainMenuBar->Append(optionsMenu, _("&Options"));
-    }
-
-    SetMenuBar(mainMenuBar);
-
-#ifdef __WXGTK__
-    // Set accelerator
-    wxAcceleratorTable accel(acceleratorEntries.size(), acceleratorEntries.data());
-    SetAcceleratorTable(accel);
-#endif
+    wxAcceleratorTable acceleratorTable(mAcceleratorEntries.size(), mAcceleratorEntries.data());
+    SetAcceleratorTable(acceleratorTable);
 
     //
     // Setup material palettes
@@ -739,29 +596,6 @@ void MainFrame::ResetToolCursor()
 
 /////////////////////////////////////////////////////////////////////
 
-wxAcceleratorEntry MainFrame::MakePlainAcceleratorKey(int key, wxMenuItem * menuItem)
-{
-    auto const keyId = wxNewId();
-    wxAcceleratorEntry entry(wxACCEL_NORMAL, key, keyId);
-    this->Bind(
-        wxEVT_MENU,
-        [menuItem, this](wxCommandEvent &)
-        {
-            // Toggle menu - if it's checkable
-            if (menuItem->IsCheckable())
-            {
-                menuItem->Check(!menuItem->IsChecked());
-            }
-
-            // Fire menu event handler
-            wxCommandEvent evt(wxEVT_COMMAND_MENU_SELECTED, menuItem->GetId());
-            ::wxPostEvent(this, evt);
-        },
-        keyId);
-
-    return entry;
-}
-
 wxRibbonPage * MainFrame::CreateMainRibbonPage(wxRibbonBar * parent)
 {
     wxRibbonPage * page = new wxRibbonPage(parent, wxID_ANY, _("File"));
@@ -790,9 +624,11 @@ wxRibbonPanel * MainFrame::CreateMainFileRibbonPanel(wxRibbonPage * parent)
             {
                 NewShip();
             },
-            _("Create a new empty ship."));
+            _("Create a new empty ship (Ctrl+N)."));
 
         panelGridSizer->Add(button);
+
+        AddAcceleratorKey(wxACCEL_CTRL, (int)'N', [this]() { NewShip(); });
     }
 
     // Load ship
@@ -806,9 +642,11 @@ wxRibbonPanel * MainFrame::CreateMainFileRibbonPanel(wxRibbonPage * parent)
             {
                 LoadShip();
             },
-            _("Load a ship."));
+            _("Load a ship (Ctrl+O)."));
 
         panelGridSizer->Add(button);
+
+        AddAcceleratorKey(wxACCEL_CTRL, (int)'O', [this]() { LoadShip(); });
     }
 
     // Save ship
@@ -820,44 +658,50 @@ wxRibbonPanel * MainFrame::CreateMainFileRibbonPanel(wxRibbonPage * parent)
             _T("Save Ship"),
             [this]()
             {
-                OnSaveShip();
+                SaveShip();
             },
             _("Save the current ship."));
 
         panelGridSizer->Add(mSaveShipButton);
+
+        AddAcceleratorKey(wxACCEL_CTRL, (int)'S', [this]() { SaveShip(); });
     }
 
     // Save As ship
     {
-        auto * button = new RibbonToolbarButton<BitmapButton>(
+        mSaveShipAsButton = new RibbonToolbarButton<BitmapButton>(
             panel,
             wxVERTICAL,
             mResourceLocator.GetIconFilePath("save_ship_as_button"),
             _T("Save Ship As"),
             [this]()
             {
-                OnSaveShipAs();
+                SaveShipAs();
             },
             _("Save the current ship to a different file."));
 
-        panelGridSizer->Add(button);
+        panelGridSizer->Add(mSaveShipAsButton);
     }
 
     // Save and return to game
     if (!IsStandAlone())
     {
-        auto * button = new RibbonToolbarButton<BitmapButton>(
+        mSaveShipAndGoBackButton = new RibbonToolbarButton<BitmapButton>(
             panel,
             wxVERTICAL,
             mResourceLocator.GetIconFilePath("save_and_return_to_game_button"),
             _T("Save And Return"),
             [this]()
             {
-                OnSaveAndGoBack();
+                SaveAndSwitchBackToGame();
             },
             _("Save the current ship and return to the simulator."));
 
-        panelGridSizer->Add(button);
+        panelGridSizer->Add(mSaveShipAndGoBackButton);
+    }
+    else
+    {
+        mSaveShipAndGoBackButton = nullptr;
     }
 
     // Quit and return to game
@@ -875,6 +719,8 @@ wxRibbonPanel * MainFrame::CreateMainFileRibbonPanel(wxRibbonPage * parent)
             _("Discard the current ship and return to the simulator."));
 
         panelGridSizer->Add(button);
+
+        AddAcceleratorKey(wxACCEL_ALT, (int)WXK_F4, [this]() { Quit(); });
     }
 
     // Quit
@@ -889,7 +735,7 @@ wxRibbonPanel * MainFrame::CreateMainFileRibbonPanel(wxRibbonPage * parent)
             {
                 Quit();
             },
-            _("Quit and leave the program."));
+            _("Quit and leave the program (ALT+F4)."));
 
         panelGridSizer->Add(button);
     }
@@ -926,12 +772,13 @@ wxRibbonPanel * MainFrame::CreateMainViewRibbonPanel(wxRibbonPage * parent)
             _T("Zoom In"),
             [this]()
             {
-                assert(!!mController);
-                mController->AddZoom(1);
+                ZoomIn();
             },
-            wxEmptyString);
+            _T("Magnify the view (+)."));
 
         panelGridSizer->Add(mZoomInButton);
+
+        AddAcceleratorKey(wxACCEL_NORMAL, (int)'+', [this]() { ZoomIn(); });
     }
 
     // Zoom Out
@@ -943,12 +790,13 @@ wxRibbonPanel * MainFrame::CreateMainViewRibbonPanel(wxRibbonPage * parent)
             _T("Zoom Out"),
             [this]()
             {
-                assert(!!mController);
-                mController->AddZoom(-1);
+                ZoomOut();
             },
-            wxEmptyString);
+            _T("Reduce the view (-)."));
 
         panelGridSizer->Add(mZoomOutButton);
+
+        AddAcceleratorKey(wxACCEL_NORMAL, (int)'-', [this]() { ZoomOut(); });
     }
 
     // Reset View
@@ -960,12 +808,13 @@ wxRibbonPanel * MainFrame::CreateMainViewRibbonPanel(wxRibbonPage * parent)
             _T("Reset View"),
             [this]()
             {
-                assert(!!mController);
-                mController->ResetView();
+                ResetView();
             },
-            _("Restore view settings to their defaults."));
+            _("Restore view settings to their defaults (HOME)."));
 
         panelGridSizer->Add(button);
+
+        AddAcceleratorKey(wxACCEL_NORMAL, (int)WXK_HOME, [this]() { ResetView(); });
     }
 
     // Wrap in a sizer just for margins
@@ -1442,9 +1291,16 @@ wxRibbonPanel * MainFrame::CreateEditUndoRibbonPanel(wxRibbonPage * parent)
                 assert(mController);
                 mController->UndoLast();
             },
-            _("Undo the last edit operation"));
+            _("Undo the last edit operation (Ctrl+Z)."));
 
         panelGridSizer->Add(mUndoButton);
+
+        AddAcceleratorKey(wxACCEL_CTRL, (int)'Z', 
+            [this]() 
+            { 
+                assert(mController);
+                mController->UndoLast();
+            });
     }
 
     // Wrap in a sizer just for margins
@@ -2995,6 +2851,21 @@ wxPanel * MainFrame::CreateWorkPanel(wxWindow * parent)
     return panel;
 }
 
+void MainFrame::AddAcceleratorKey(int flags, int keyCode, std::function<void()> handler)
+{
+    auto const commandId = wxNewId();
+
+    mAcceleratorEntries.emplace_back(flags, keyCode, commandId);
+
+    this->Bind(
+        wxEVT_MENU,
+        [handler](wxCommandEvent &)
+        {
+            handler();
+        },
+        commandId);
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 void MainFrame::OnWorkCanvasPaint(wxPaintEvent & /*event*/)
@@ -3209,8 +3080,11 @@ void MainFrame::OnWorkCanvasKeyDown(wxKeyEvent & event)
         if (event.GetKeyCode() == WXK_SHIFT)
         {
             mController->OnShiftKeyDown();
+            return; // Eaten
         }
     }
+    
+    event.Skip();
 }
 
 void MainFrame::OnWorkCanvasKeyUp(wxKeyEvent & event)
@@ -3224,65 +3098,6 @@ void MainFrame::OnWorkCanvasKeyUp(wxKeyEvent & event)
     }
 }
 
-void MainFrame::OnNewShip(wxCommandEvent & /*event*/)
-{
-    NewShip();
-}
-
-void MainFrame::OnLoadShip(wxCommandEvent & /*event*/)
-{
-    LoadShip();
-}
-
-void MainFrame::OnSaveShipMenuItem(wxCommandEvent & /*event*/)
-{
-    OnSaveShip();
-}
-
-void MainFrame::OnSaveShip()
-{
-    if (PreSaveShipCheck())
-    {
-        SaveShip();
-    }
-}
-
-void MainFrame::OnSaveShipAsMenuItem(wxCommandEvent & /*event*/)
-{
-    OnSaveShipAs();
-}
-
-void MainFrame::OnSaveShipAs()
-{
-    if (PreSaveShipCheck())
-    {
-        SaveShipAs();
-    }
-}
-
-void MainFrame::OnSaveAndGoBackMenuItem(wxCommandEvent & /*event*/)
-{
-    OnSaveAndGoBack();
-}
-
-void MainFrame::OnSaveAndGoBack()
-{
-    if (PreSaveShipCheck())
-    {
-        SaveAndSwitchBackToGame();
-    }
-}
-
-void MainFrame::OnQuitAndGoBack(wxCommandEvent & /*event*/)
-{
-    QuitAndSwitchBackToGame();
-}
-
-void MainFrame::OnQuit(wxCommandEvent & /*event*/)
-{
-    Quit();
-}
-
 void MainFrame::OnClose(wxCloseEvent & event)
 {
     if (mController)
@@ -3293,9 +3108,9 @@ void MainFrame::OnClose(wxCloseEvent & event)
             int result = AskUserIfSave();
             if (result == wxYES)
             {
-                if (!SaveShip())
+                if (!DoSaveShipOrSaveShipAsWithValidation())
                 {
-                    // Changed their mind
+                    // Didn't end up saving
                     result = wxCANCEL;
                 }
             }
@@ -3313,64 +3128,6 @@ void MainFrame::OnClose(wxCloseEvent & event)
     }
 
     event.Skip();
-}
-
-void MainFrame::OnEditUndoMenuItem(wxCommandEvent & /*event*/)
-{
-    mController->UndoLast();
-}
-
-void MainFrame::OnEditAutoTrimMenuItem(wxCommandEvent & /*event*/)
-{
-    mController->AutoTrim();
-}
-
-void MainFrame::OnEditFlipHorizontallyMenuItem(wxCommandEvent & /*event*/)
-{
-    mController->Flip(DirectionType::Horizontal);
-}
-
-void MainFrame::OnEditFlipVerticallyMenuItem(wxCommandEvent & /*event*/)
-{
-    mController->Flip(DirectionType::Vertical);
-}
-
-void MainFrame::OnEditResizeShipMenuItem(wxCommandEvent & /*event*/)
-{
-    OpenShipCanvasResize();
-}
-
-void MainFrame::OnEditShipPropertiesMenuItem(wxCommandEvent & /*event*/)
-{
-    OpenShipProperties();
-}
-
-void MainFrame::OnZoomIn(wxCommandEvent & /*event*/)
-{
-    assert(!!mController);
-    mController->AddZoom(1);
-}
-
-void MainFrame::OnZoomOut(wxCommandEvent & /*event*/)
-{
-    assert(!!mController);
-    mController->AddZoom(-1);
-}
-
-void MainFrame::OnResetView(wxCommandEvent & /*event*/)
-{
-    assert(!!mController);
-    mController->ResetView();
-}
-
-void MainFrame::OnOpenLogWindowMenuItemSelected(wxCommandEvent & /*event*/)
-{
-    if (!mLoggingDialog)
-    {
-        mLoggingDialog = std::make_unique<LoggingDialog>(this);
-    }
-
-    mLoggingDialog->Open();
 }
 
 void MainFrame::OnStructuralMaterialSelected(fsStructuralMaterialSelectedEvent & event)
@@ -3418,9 +3175,9 @@ void MainFrame::NewShip()
         int result = AskUserIfSave();
         if (result == wxYES)
         {
-            if (!SaveShip())
+            if (!DoSaveShipOrSaveShipAsWithValidation())
             {
-                // Changed their mind
+                // Didn't end up saving
                 result = wxCANCEL;
             }
         }
@@ -3443,9 +3200,9 @@ void MainFrame::LoadShip()
         int result = AskUserIfSave();
         if (result == wxYES)
         {
-            if (!SaveShip())
+            if (!DoSaveShipOrSaveShipAsWithValidation())
             {
-                // Changed their mind
+                // Didn't end up saving
                 result = wxCANCEL;
             }
         }
@@ -3476,63 +3233,20 @@ void MainFrame::LoadShip()
     }
 }
 
-bool MainFrame::PreSaveShipCheck()
+void MainFrame::SaveShip()
 {
-    assert(mController);
-
-    // Validate ship in dialog, and allow user to continue or cancel the save
-
-    if (!mModelValidationDialog)
-    {
-        mModelValidationDialog = std::make_unique<ModelValidationDialog>(this, mResourceLocator);
-    }
-
-    return mModelValidationDialog->ShowModalForSaveShipValidation(*mController);
+    DoSaveShipOrSaveShipAsWithValidation();
 }
 
-bool MainFrame::SaveShip()
+void MainFrame::SaveShipAs()
 {
-    if (!mCurrentShipFilePath.has_value())
-    {
-        return SaveShipAs();
-    }
-    else
-    {
-        DoSaveShip(*mCurrentShipFilePath);
-        return true;
-    }
-}
-
-bool MainFrame::SaveShipAs()
-{
-    // Open ship save dialog
-
-    if (!mShipSaveDialog)
-    {
-        mShipSaveDialog = std::make_unique<ShipSaveDialog>(this);
-    }
-
-    auto const res = mShipSaveDialog->ShowModal(
-        Utils::MakeFilenameSafeString(mController->GetShipMetadata().ShipName),
-        ShipSaveDialog::GoalType::FullShip);
-
-    if (res == wxID_OK)
-    {
-        // Save ship
-        auto const shipFilePath = mShipSaveDialog->GetChosenShipFilepath();
-        DoSaveShip(shipFilePath);
-        return true;
-    }
-    else
-    {
-        return false;
-    }
+    DoSaveShipAsWithValidation();
 }
 
 void MainFrame::SaveAndSwitchBackToGame()
 {
     // Save/SaveAs
-    if (SaveShip())
+    if (DoSaveShipOrSaveShipAsWithValidation())
     {
         // Return
         assert(mCurrentShipFilePath.has_value());
@@ -3549,7 +3263,7 @@ void MainFrame::QuitAndSwitchBackToGame()
         int result = AskUserIfSave();
         if (result == wxYES)
         {
-            if (!SaveShip())
+            if (!DoSaveShipOrSaveShipAsWithValidation())
             {
                 // Changed their mind
                 result = wxCANCEL;
@@ -3866,7 +3580,65 @@ bool MainFrame::DoLoadShip(std::filesystem::path const & shipFilePath)
     return true;
 }
 
-void MainFrame::DoSaveShip(std::filesystem::path const & shipFilePath)
+bool MainFrame::DoSaveShipOrSaveShipAsWithValidation()
+{
+    if (!mCurrentShipFilePath.has_value())
+    {
+        return DoSaveShipAsWithValidation();
+    }
+    else
+    {
+        return DoSaveShipWithValidation(*mCurrentShipFilePath);
+    }
+}
+
+bool MainFrame::DoSaveShipAsWithValidation()
+{
+    if (DoPreSaveShipValidation())
+    {
+        // Open ship save dialog
+
+        if (!mShipSaveDialog)
+        {
+            mShipSaveDialog = std::make_unique<ShipSaveDialog>(this);
+        }
+
+        auto const res = mShipSaveDialog->ShowModal(
+            Utils::MakeFilenameSafeString(mController->GetShipMetadata().ShipName),
+            ShipSaveDialog::GoalType::FullShip);
+
+        if (res == wxID_OK)
+        {
+            // Save ship
+            auto const shipFilePath = mShipSaveDialog->GetChosenShipFilepath();
+            DoSaveShipWithoutValidation(shipFilePath);
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool MainFrame::DoSaveShipWithValidation(std::filesystem::path const & shipFilePath)
+{
+    if (DoPreSaveShipValidation())
+    {
+        DoSaveShipWithoutValidation(shipFilePath);
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+void MainFrame::DoSaveShipWithoutValidation(std::filesystem::path const & shipFilePath)
 {
     assert(mController);
 
@@ -3885,6 +3657,20 @@ void MainFrame::DoSaveShip(std::filesystem::path const & shipFilePath)
 
     // Clear dirtyness
     mController->ClearModelDirty();
+}
+
+bool MainFrame::DoPreSaveShipValidation()
+{
+    assert(mController);
+
+    // Validate ship in dialog, and allow user to continue or cancel the save
+
+    if (!mModelValidationDialog)
+    {
+        mModelValidationDialog = std::make_unique<ModelValidationDialog>(this, mResourceLocator);
+    }
+
+    return mModelValidationDialog->ShowModalForSaveShipValidation(*mController);
 }
 
 void MainFrame::BailOut()
@@ -3911,6 +3697,24 @@ DisplayLogicalSize MainFrame::GetWorkCanvasSize() const
     return DisplayLogicalSize(
         mWorkCanvas->GetSize().GetWidth(),
         mWorkCanvas->GetSize().GetHeight());
+}
+
+void MainFrame::ZoomIn()
+{
+    assert(!!mController);
+    mController->AddZoom(1);
+}
+
+void MainFrame::ZoomOut()
+{
+    assert(!!mController);
+    mController->AddZoom(-1);
+}
+
+void MainFrame::ResetView()
+{
+    assert(!!mController);
+    mController->ResetView();
 }
 
 void MainFrame::RecalculateWorkCanvasPanning(ViewModel const & viewModel)
@@ -4094,20 +3898,20 @@ void MainFrame::ReconciliateUIWithModelDirtiness(Model const & model)
 {
     bool const isDirty = model.GetIsDirty();
 
-    if (mSaveShipMenuItem->IsEnabled() != isDirty)
-    {
-        mSaveShipMenuItem->Enable(isDirty);
-    }
-
-    if (mSaveAndGoBackMenuItem != nullptr
-        && mSaveAndGoBackMenuItem->IsEnabled() != isDirty)
-    {
-        mSaveAndGoBackMenuItem->Enable(false);
-    }
-
     if (mSaveShipButton->IsEnabled() != isDirty)
     {
         mSaveShipButton->Enable(isDirty);
+    }
+
+    if (mSaveShipAsButton->IsEnabled() != isDirty)
+    {
+        mSaveShipAsButton->Enable(isDirty);
+    }
+
+    if (mSaveShipAndGoBackButton != nullptr
+        && mSaveShipAndGoBackButton->IsEnabled() != isDirty)
+    {
+        mSaveShipAndGoBackButton->Enable(isDirty);
     }
 
     SetFrameTitle(model.GetShipMetadata().ShipName, isDirty);
@@ -4402,12 +4206,6 @@ void MainFrame::ReconciliateUIWithUndoStackState(UndoStack & undoStack)
     if (mUndoButton->IsEnabled() != canUndo)
     {
         mUndoButton->Enable(canUndo);
-    }
-
-    // TODOOLD: NUKE
-    if (mUndoMenuItem->IsEnabled() != canUndo)
-    {
-        mUndoMenuItem->Enable(canUndo);
     }
 
     //

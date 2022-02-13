@@ -28,11 +28,11 @@
 #include <Game/ResourceLocator.h>
 #include <Game/ShipTexturizer.h>
 
+#include <wx/accel.h>
 #include <wx/app.h>
 #include <wx/frame.h>
 #include <wx/glcanvas.h> // Need to include this *after* our glad.h has been included (from OpenGLManager.h)
 #include <wx/icon.h>
-#include <wx/menu.h>
 #include <wx/panel.h>
 #include <wx/ribbon/bar.h>
 #include <wx/ribbon/page.h>
@@ -139,7 +139,6 @@ public:
 
 private:
 
-    wxAcceleratorEntry MakePlainAcceleratorKey(int key, wxMenuItem * menuItem);
     wxRibbonPage * CreateMainRibbonPage(wxRibbonBar * parent);
     wxRibbonPanel * CreateMainFileRibbonPanel(wxRibbonPage * parent);
     wxRibbonPanel * CreateMainViewRibbonPanel(wxRibbonPage * parent);
@@ -154,6 +153,7 @@ private:
     wxPanel * CreateToolbarPanel(wxWindow * parent);
     wxPanel * CreateUndoPanel(wxWindow * parent);
     wxPanel * CreateWorkPanel(wxWindow * parent);
+    void AddAcceleratorKey(int flags, int keyCode, std::function<void()> handler);
 
     void OnWorkCanvasPaint(wxPaintEvent & event);
     void OnWorkCanvasResize(wxSizeEvent & event);
@@ -169,27 +169,7 @@ private:
     void OnWorkCanvasKeyDown(wxKeyEvent & event);
     void OnWorkCanvasKeyUp(wxKeyEvent & event);
 
-    void OnNewShip(wxCommandEvent & event);
-    void OnLoadShip(wxCommandEvent & event);
-    void OnSaveShipMenuItem(wxCommandEvent & event);
-    void OnSaveShip();
-    void OnSaveShipAsMenuItem(wxCommandEvent & event);
-    void OnSaveShipAs();
-    void OnSaveAndGoBackMenuItem(wxCommandEvent & event);
-    void OnSaveAndGoBack();
-    void OnQuitAndGoBack(wxCommandEvent & event);
-    void OnQuit(wxCommandEvent & event);
     void OnClose(wxCloseEvent & event);
-    void OnEditUndoMenuItem(wxCommandEvent & event);
-    void OnEditAutoTrimMenuItem(wxCommandEvent & event);
-    void OnEditFlipHorizontallyMenuItem(wxCommandEvent & event);
-    void OnEditFlipVerticallyMenuItem(wxCommandEvent & event);
-    void OnEditResizeShipMenuItem(wxCommandEvent & event);
-    void OnEditShipPropertiesMenuItem(wxCommandEvent & event);
-    void OnZoomIn(wxCommandEvent & event);
-    void OnZoomOut(wxCommandEvent & event);
-    void OnResetView(wxCommandEvent & event);
-    void OnOpenLogWindowMenuItemSelected(wxCommandEvent & event);
     void OnStructuralMaterialSelected(fsStructuralMaterialSelectedEvent & event);
     void OnElectricalMaterialSelected(fsElectricalMaterialSelectedEvent & event);
     void OnRopeMaterialSelected(fsStructuralMaterialSelectedEvent & event);
@@ -207,11 +187,9 @@ private:
 
     void LoadShip();
 
-    bool PreSaveShipCheck();
+    void SaveShip();
 
-    bool SaveShip();
-
-    bool SaveShipAs();
+    void SaveShipAs();
 
     void SaveAndSwitchBackToGame();
 
@@ -246,13 +224,27 @@ private:
 
     bool DoLoadShip(std::filesystem::path const & shipFilePath);
 
-    void DoSaveShip(std::filesystem::path const & shipFilePath);
+    bool DoSaveShipOrSaveShipAsWithValidation();
+
+    bool DoSaveShipAsWithValidation();
+
+    bool DoSaveShipWithValidation(std::filesystem::path const & shipFilePath);
+
+    void DoSaveShipWithoutValidation(std::filesystem::path const & shipFilePath);
+
+    bool DoPreSaveShipValidation();
 
     void BailOut();
 
     bool IsLogicallyInWorkCanvas(DisplayLogicalCoordinates const & coords) const;
 
     DisplayLogicalSize GetWorkCanvasSize() const;
+
+    void ZoomIn();
+
+    void ZoomOut();
+
+    void ResetView();
 
     void RecalculateWorkCanvasPanning(ViewModel const & viewModel);
 
@@ -334,15 +326,13 @@ private:
     //
 
     wxPanel * mMainPanel;
-
-    // Menu - TODO: nuke all
-    wxMenuItem * mSaveShipMenuItem;
-    wxMenuItem * mSaveAndGoBackMenuItem;
-    wxMenuItem * mUndoMenuItem;
+    std::vector<wxAcceleratorEntry> mAcceleratorEntries;
 
     // Ribbon bar
     wxRibbonBar * mMainRibbonBar;
     RibbonToolbarButton<BitmapButton> * mSaveShipButton;
+    RibbonToolbarButton<BitmapButton> * mSaveShipAsButton;
+    RibbonToolbarButton<BitmapButton> * mSaveShipAndGoBackButton;
     RibbonToolbarButton<BitmapButton> * mZoomInButton;
     RibbonToolbarButton<BitmapButton> * mZoomOutButton;
     RibbonToolbarButton<BitmapButton> * mUndoButton;
