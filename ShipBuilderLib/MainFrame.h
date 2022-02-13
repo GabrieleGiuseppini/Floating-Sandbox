@@ -150,20 +150,19 @@ private:
     wxRibbonPanel * CreateEditShipRibbonPanel(wxRibbonPage * parent);
     wxRibbonPanel * CreateEditAnalysisRibbonPanel(wxRibbonPage * parent);
     wxRibbonPanel * CreateEditToolSettingsRibbonPanel(wxRibbonPage * parent);
-    wxPanel * CreateToolSettingsPanel(wxWindow * parent);
-    wxPanel * CreateVisualizationDetailsPanel(wxWindow * parent);
-    wxPanel * CreateToolbarPanel(wxWindow * parent);
-    wxPanel * CreateUndoPanel(wxWindow * parent);
-    wxPanel * CreateWorkPanel(wxWindow * parent);
-
-    std::tuple<wxPanel *, wxSizer *> CreateToolSettingsToolSizePanel(
-        wxWindow * parent,
+    template<typename TParent>
+    wxPanel * CreateToolSettingsToolSizePanel(
+        TParent * parent,
         wxString const & label,
         wxString const & tooltip,
         std::uint32_t minValue,
         std::uint32_t maxValue,
         std::uint32_t currentValue,
         std::function<void(std::uint32_t)> onValue);
+    wxPanel * CreateVisualizationDetailsPanel(wxWindow * parent);
+    wxPanel * CreateToolbarPanel(wxWindow * parent);
+    wxPanel * CreateUndoPanel(wxWindow * parent);
+    wxPanel * CreateWorkPanel(wxWindow * parent);
 
     void OnWorkCanvasPaint(wxPaintEvent & event);
     void OnWorkCanvasResize(wxSizeEvent & event);

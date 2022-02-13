@@ -97,10 +97,11 @@ MainFrame::MainFrame(
     //
     // Setup main frame
     //
-    // Row 0: [Ribbon] [Tool Settings]
+    // Row 0: [                Ribbon                 ]
     // Row 1: [Viz Details Panel] |  [Work Canvas]
     //          [Toolbar Panel]   |
-    // Row 2: [           Status Bar                  ]
+    // Row 2: [              Status Bar               ]
+    //
 
     mMainPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 
@@ -173,30 +174,8 @@ MainFrame::MainFrame(
 
             row0HSizer->Add(
                 mMainRibbonBar,
-                0, // Expand Width - will expand to largest ribbon tab
+                0, // Maintain Width (that of the widest tab)
                 0, // Maintain H
-                0);
-        }
-
-        // Spacer
-        {
-            wxStaticLine * vLine = new wxStaticLine(mMainPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_VERTICAL);
-
-            row0HSizer->Add(
-                vLine,
-                0,
-                wxEXPAND | wxLEFT | wxRIGHT,
-                4 * ButtonMargin);
-        }
-
-        // Tool settings panel
-        {
-            wxPanel * toolSettingsPanel = CreateToolSettingsPanel(mMainPanel);
-
-            row0HSizer->Add(
-                toolSettingsPanel,
-                1, // Expand horizontally
-                wxALIGN_CENTER_VERTICAL,
                 0);
         }
 
@@ -823,8 +802,6 @@ wxRibbonPage * MainFrame::CreateMainRibbonPage(wxRibbonBar * parent)
 
 wxRibbonPanel * MainFrame::CreateMainFileRibbonPanel(wxRibbonPage * parent)
 {
-    wxColor labelColor = parent->GetArtProvider()->GetColor(wxRIBBON_ART_BUTTON_BAR_LABEL_COLOUR);
-
     wxRibbonPanel * panel = new wxRibbonPanel(parent, wxID_ANY, _T("File"), wxNullBitmap, wxDefaultPosition, wxDefaultSize,
         wxRIBBON_PANEL_NO_AUTO_MINIMISE);
 
@@ -963,8 +940,6 @@ wxRibbonPanel * MainFrame::CreateMainFileRibbonPanel(wxRibbonPage * parent)
 
 wxRibbonPanel * MainFrame::CreateMainViewRibbonPanel(wxRibbonPage * parent)
 {
-    wxColor labelColor = parent->GetArtProvider()->GetColor(wxRIBBON_ART_BUTTON_BAR_LABEL_COLOUR);
-
     wxRibbonPanel * panel = new wxRibbonPanel(parent, wxID_ANY, _T("View"), wxNullBitmap, wxDefaultPosition, wxDefaultSize,
         wxRIBBON_PANEL_NO_AUTO_MINIMISE);
 
@@ -1067,7 +1042,6 @@ wxRibbonPage * MainFrame::CreateLayersRibbonPage(wxRibbonBar * parent)
 wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerType layer)
 {
     wxString const sureQuestion = _("The current changes to the layer will be lost; are you sure you want to continue?");
-    wxColor labelColor = parent->GetArtProvider()->GetColor(wxRIBBON_ART_BUTTON_BAR_LABEL_COLOUR);
 
     std::string panelLabel;
     switch (layer)
@@ -1479,8 +1453,6 @@ wxRibbonPage * MainFrame::CreateEditRibbonPage(wxRibbonBar * parent)
 
 wxRibbonPanel * MainFrame::CreateEditUndoRibbonPanel(wxRibbonPage * parent)
 {
-    wxColor labelColor = parent->GetArtProvider()->GetColor(wxRIBBON_ART_BUTTON_BAR_LABEL_COLOUR);
-
     wxRibbonPanel * panel = new wxRibbonPanel(parent, wxID_ANY, _T("Undo"), wxNullBitmap, wxDefaultPosition, wxDefaultSize,
         wxRIBBON_PANEL_NO_AUTO_MINIMISE);
 
@@ -1519,11 +1491,8 @@ wxRibbonPanel * MainFrame::CreateEditUndoRibbonPanel(wxRibbonPage * parent)
     return panel;
 }
 
-
 wxRibbonPanel * MainFrame::CreateEditShipRibbonPanel(wxRibbonPage * parent)
 {
-    wxColor labelColor = parent->GetArtProvider()->GetColor(wxRIBBON_ART_BUTTON_BAR_LABEL_COLOUR);
-
     wxRibbonPanel * panel = new wxRibbonPanel(parent, wxID_ANY, _T("Ship"), wxNullBitmap, wxDefaultPosition, wxDefaultSize,
         wxRIBBON_PANEL_NO_AUTO_MINIMISE);
 
@@ -1630,8 +1599,6 @@ wxRibbonPanel * MainFrame::CreateEditShipRibbonPanel(wxRibbonPage * parent)
 
 wxRibbonPanel * MainFrame::CreateEditAnalysisRibbonPanel(wxRibbonPage * parent)
 {
-    wxColor labelColor = parent->GetArtProvider()->GetColor(wxRIBBON_ART_BUTTON_BAR_LABEL_COLOUR);
-
     wxRibbonPanel * panel = new wxRibbonPanel(parent, wxID_ANY, _T("Analysis"), wxNullBitmap, wxDefaultPosition, wxDefaultSize,
         wxRIBBON_PANEL_NO_AUTO_MINIMISE);
 
@@ -1671,183 +1638,311 @@ wxRibbonPanel * MainFrame::CreateEditAnalysisRibbonPanel(wxRibbonPage * parent)
 
 wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * parent)
 {
-    wxColor labelColor = parent->GetArtProvider()->GetColor(wxRIBBON_ART_BUTTON_BAR_LABEL_COLOUR);
+    std::uint32_t constexpr MaxPencilSize = 8;
+    wxColor const labelColor = parent->GetArtProvider()->GetColor(wxRIBBON_ART_BUTTON_BAR_LABEL_COLOUR);
 
-    wxRibbonPanel * panel = new wxRibbonPanel(parent, wxID_ANY, _T("Tool Settings"), wxNullBitmap, wxDefaultPosition, wxDefaultSize,
+    wxRibbonPanel * ribbonPanel = new wxRibbonPanel(parent, wxID_ANY, _T("Tool Settings"), wxNullBitmap, wxDefaultPosition, wxDefaultSize,
         wxRIBBON_PANEL_NO_AUTO_MINIMISE);
-
-    wxGridBagSizer * panelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
-
-    // TODOHERE
-
-    return panel;
-}
-
-// TODO: nuke and move into CreateEditToolSettingsRibbonPanel above
-wxPanel * MainFrame::CreateToolSettingsPanel(wxWindow * parent)
-{
-    std::uint32_t MaxPencilSize = 8;
-
-    wxPanel * panel = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 
     mToolSettingsPanelsSizer = new wxBoxSizer(wxHORIZONTAL);
 
+    // Structural pencil
     {
-        // Structural pencil
+        wxPanel * dynamicPanel = new wxPanel(ribbonPanel);
+        wxGridBagSizer * dynamicPanelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
+
+        // Label
         {
-            auto [tsPanel, sizer] = CreateToolSettingsToolSizePanel(
-                panel,
-                _("Pencil size:"),
-                _("The size of the pencil tool."),
+            auto * staticText = new wxStaticText(dynamicPanel, wxID_ANY, _("Pencil size:"));
+            staticText->SetForegroundColour(labelColor);
+
+            dynamicPanelGridSizer->Add(
+                staticText,
+                wxGBPosition(0, 0),
+                wxGBSpan(1, 1),
+                wxALIGN_CENTER_VERTICAL);
+        }
+
+        // Edit spin box
+        {
+            EditSpinBox<std::uint32_t> * editSpinBox = new EditSpinBox<std::uint32_t>(
+                dynamicPanel,
+                40,
                 1,
                 MaxPencilSize,
                 mWorkbenchState.GetStructuralPencilToolSize(),
+                _("The size of the pencil tool."),
                 [this](std::uint32_t value)
                 {
                     mWorkbenchState.SetStructuralPencilToolSize(value);
                 });
 
-            tsPanel->SetSizerAndFit(sizer);
+            dynamicPanelGridSizer->Add(
+                editSpinBox,
+                wxGBPosition(0, 1),
+                wxGBSpan(1, 1),
+                wxALIGN_CENTER_VERTICAL);
+        }
 
+        dynamicPanel->SetSizerAndFit(dynamicPanelGridSizer);
+
+        // Insert in dynamic panel
+        {
             mToolSettingsPanelsSizer->Add(
-                tsPanel,
+                dynamicPanel,
                 0,
                 wxALIGN_CENTER_VERTICAL,
                 0);
 
-            mToolSettingsPanelsSizer->Hide(tsPanel);
+            mToolSettingsPanelsSizer->Hide(dynamicPanel);
 
             mToolSettingsPanels.emplace_back(
                 ToolType::StructuralPencil,
-                tsPanel);
+                dynamicPanel);
+        }
+    }
+
+    // Structural eraser
+    {
+        wxPanel * dynamicPanel = new wxPanel(ribbonPanel);
+        wxGridBagSizer * dynamicPanelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
+
+        // Label
+        {
+            auto * staticText = new wxStaticText(dynamicPanel, wxID_ANY, _("Eraser size:"));
+            staticText->SetForegroundColour(labelColor);
+
+            dynamicPanelGridSizer->Add(
+                staticText,
+                wxGBPosition(0, 0),
+                wxGBSpan(1, 1),
+                wxALIGN_CENTER_VERTICAL);
         }
 
-        // Structural eraser
+        // Edit spin box
         {
-            auto [tsPanel, sizer] = CreateToolSettingsToolSizePanel(
-                panel,
-                _("Eraser size:"),
-                _("The size of the eraser tool."),
+            EditSpinBox<std::uint32_t> * editSpinBox = new EditSpinBox<std::uint32_t>(
+                dynamicPanel,
+                40,
                 1,
                 MaxPencilSize,
                 mWorkbenchState.GetStructuralEraserToolSize(),
+                _("The size of the eraser tool."),
                 [this](std::uint32_t value)
                 {
                     mWorkbenchState.SetStructuralEraserToolSize(value);
                 });
 
-            tsPanel->SetSizerAndFit(sizer);
+            dynamicPanelGridSizer->Add(
+                editSpinBox,
+                wxGBPosition(0, 1),
+                wxGBSpan(1, 1),
+                wxALIGN_CENTER_VERTICAL);
+        }
 
+        dynamicPanel->SetSizerAndFit(dynamicPanelGridSizer);
+
+        // Insert in dynamic panel
+        {
             mToolSettingsPanelsSizer->Add(
-                tsPanel,
+                dynamicPanel,
                 0,
                 wxALIGN_CENTER_VERTICAL,
                 0);
 
-            mToolSettingsPanelsSizer->Hide(tsPanel);
+            mToolSettingsPanelsSizer->Hide(dynamicPanel);
 
             mToolSettingsPanels.emplace_back(
                 ToolType::StructuralEraser,
-                tsPanel);
+                dynamicPanel);
+        }
+    }
+
+    // Structural line
+    {
+        wxPanel * dynamicPanel = new wxPanel(ribbonPanel);
+        wxGridBagSizer * dynamicPanelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
+
+        // Line Size Label
+        {
+            auto * staticText = new wxStaticText(dynamicPanel, wxID_ANY, _("Line size:"));
+            staticText->SetForegroundColour(labelColor);
+
+            dynamicPanelGridSizer->Add(
+                staticText,
+                wxGBPosition(0, 0),
+                wxGBSpan(1, 1),
+                wxALIGN_CENTER_VERTICAL);
         }
 
-        // Structural line
+        // Line Size Edit spin box
         {
-            auto [tsPanel, sizer] = CreateToolSettingsToolSizePanel(
-                panel,
-                _("Line size:"),
-                _("The size of the line tool."),
+            EditSpinBox<std::uint32_t> * editSpinBox = new EditSpinBox<std::uint32_t>(
+                dynamicPanel,
+                40,
                 1,
                 MaxPencilSize,
                 mWorkbenchState.GetStructuralLineToolSize(),
+                _("The size of the line tool."),
                 [this](std::uint32_t value)
                 {
                     mWorkbenchState.SetStructuralLineToolSize(value);
                 });
 
-            // Contiguity
-            {
-                wxCheckBox * chkBox = new wxCheckBox(tsPanel, wxID_ANY, _T("Hull mode"));
+            dynamicPanelGridSizer->Add(
+                editSpinBox,
+                wxGBPosition(0, 1),
+                wxGBSpan(1, 1),
+                wxALIGN_CENTER_VERTICAL);
+        }
 
-                chkBox->SetToolTip(_("When enabled, draw lines with pixel edges touching each other"));
+        // Contiguity Checkbox
+        {
+            wxCheckBox * chkBox = new wxCheckBox(dynamicPanel, wxID_ANY, _T("Hull mode"));
 
-                chkBox->SetValue(mWorkbenchState.GetStructuralLineToolIsHullMode());
+            chkBox->SetToolTip(_("When enabled, draw lines with pixel edges touching each other"));
 
-                chkBox->Bind(
-                    wxEVT_CHECKBOX,
-                    [this](wxCommandEvent & event)
-                    {
-                        mWorkbenchState.SetStructuralLineToolIsHullMode(event.IsChecked());
-                    });
+            chkBox->SetValue(mWorkbenchState.GetStructuralLineToolIsHullMode());
 
-                sizer->Add(
-                    chkBox,
-                    0,
-                    wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT,
-                    4);
-            }
+            chkBox->Bind(
+                wxEVT_CHECKBOX,
+                [this](wxCommandEvent & event)
+                {
+                    mWorkbenchState.SetStructuralLineToolIsHullMode(event.IsChecked());
+                });
 
-            tsPanel->SetSizerAndFit(sizer);
+            dynamicPanelGridSizer->Add(
+                chkBox,
+                wxGBPosition(1, 0),
+                wxGBSpan(1, 2),
+                wxALIGN_CENTER_VERTICAL);
+        }
 
+        dynamicPanel->SetSizerAndFit(dynamicPanelGridSizer);
+
+        // Insert in dynamic panel
+        {
             mToolSettingsPanelsSizer->Add(
-                tsPanel,
+                dynamicPanel,
                 0,
                 wxALIGN_CENTER_VERTICAL,
                 0);
 
-            mToolSettingsPanelsSizer->Hide(tsPanel);
+            mToolSettingsPanelsSizer->Hide(dynamicPanel);
 
             mToolSettingsPanels.emplace_back(
                 ToolType::StructuralLine,
-                tsPanel);
+                dynamicPanel);
+        }
+    }
+
+    // Structural flood
+    {
+        wxPanel * dynamicPanel = new wxPanel(ribbonPanel);
+        wxGridBagSizer * dynamicPanelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
+
+        // Contiguous checkbox
+        {
+            wxCheckBox * chkBox = new wxCheckBox(dynamicPanel, wxID_ANY, _("Contiguous only"));
+
+            chkBox->SetToolTip(_("Flood only particles touching each other. When not checked, the flood tool effectively replaces a material with another."));
+
+            chkBox->SetValue(mWorkbenchState.GetStructuralFloodToolIsContiguous());
+
+            chkBox->Bind(
+                wxEVT_CHECKBOX,
+                [this](wxCommandEvent & event)
+                {
+                    mWorkbenchState.SetStructuralFloodToolIsContiguous(event.IsChecked());
+                });
+
+            dynamicPanelGridSizer->Add(
+                chkBox,
+                wxGBPosition(0, 0),
+                wxGBSpan(1, 2),
+                wxALIGN_CENTER_VERTICAL);
         }
 
-        // Structural flood
+        dynamicPanel->SetSizerAndFit(dynamicPanelGridSizer);
+
+        // Insert in dynamic panel
         {
-            wxPanel * tsPanel = new wxPanel(panel, wxID_ANY, wxDefaultPosition, wxDefaultSize);
-
-            wxBoxSizer * sizer = new wxBoxSizer(wxHORIZONTAL);
-
-            {
-                wxCheckBox * chkBox = new wxCheckBox(tsPanel, wxID_ANY, _("Contiguous only"));
-
-                chkBox->SetToolTip(_("Flood only particles touching each other. When not checked, the flood tool effectively replaces a material with another."));
-
-                chkBox->SetValue(mWorkbenchState.GetStructuralFloodToolIsContiguous());
-
-                chkBox->Bind(
-                    wxEVT_CHECKBOX,
-                    [this](wxCommandEvent & event)
-                    {
-                        mWorkbenchState.SetStructuralFloodToolIsContiguous(event.IsChecked());
-                    });
-
-                sizer->Add(
-                    chkBox,
-                    0,
-                    wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT,
-                    4);
-            }
-
-            tsPanel->SetSizerAndFit(sizer);
-
             mToolSettingsPanelsSizer->Add(
-                tsPanel,
+                dynamicPanel,
                 0,
                 wxALIGN_CENTER_VERTICAL,
                 0);
 
-            mToolSettingsPanelsSizer->Hide(tsPanel);
+            mToolSettingsPanelsSizer->Hide(dynamicPanel);
 
             mToolSettingsPanels.emplace_back(
                 ToolType::StructuralFlood,
-                tsPanel);
+                dynamicPanel);
         }
     }
+    
+    // Wrap in a sizer just for margins
+    {
+        wxSizer * tmpSizer = new wxBoxSizer(wxVERTICAL); // Arbitrary
 
-    mToolSettingsPanelsSizer->AddStretchSpacer(1);
+        tmpSizer->Add(
+            mToolSettingsPanelsSizer,
+            1, // Stretch vertically so single-line tool settings have a chace of being able to be at V center
+            wxALL,
+            RibbonToolbarButtonMargin);
 
-    panel->SetSizer(mToolSettingsPanelsSizer);
+        ribbonPanel->SetSizerAndFit(tmpSizer);
+    }
+
+    return ribbonPanel;
+}
+
+template<typename TParent>
+wxPanel * MainFrame::CreateToolSettingsToolSizePanel(
+    TParent * parent,
+    wxString const & label,
+    wxString const & tooltip,
+    std::uint32_t minValue,
+    std::uint32_t maxValue,
+    std::uint32_t currentValue,
+    std::function<void(std::uint32_t)> onValue)
+{
+    wxPanel * panel = new wxPanel(parent);
+
+    wxBoxSizer * sizer = new wxBoxSizer(wxHORIZONTAL);
+
+    // Label
+    {
+        auto * staticText = new wxStaticText(panel, wxID_ANY, label);
+
+        //staticText->SetForegroundColour(parent->GetArtProvider()->GetColor(wxRIBBON_ART_BUTTON_BAR_LABEL_COLOUR));
+
+        sizer->Add(
+            staticText,
+            0,
+            wxALIGN_CENTER_VERTICAL,
+            0);
+    }
+
+    // Edit spin box
+    {
+        EditSpinBox<std::uint32_t> * editSpinBox = new EditSpinBox<std::uint32_t>(
+            panel,
+            40,
+            minValue,
+            maxValue,
+            currentValue,
+            tooltip,
+            std::move(onValue));
+
+        sizer->Add(
+            editSpinBox,
+            0,
+            wxALIGN_CENTER_VERTICAL | wxLEFT,
+            4);
+    }
+
+    panel->SetSizerAndFit(sizer);
 
     return panel;
 }
@@ -2940,51 +3035,6 @@ wxPanel * MainFrame::CreateWorkPanel(wxWindow * parent)
     panel->SetSizer(sizer);
 
     return panel;
-}
-
-std::tuple<wxPanel *, wxSizer *> MainFrame::CreateToolSettingsToolSizePanel(
-    wxWindow * parent,
-    wxString const & label,
-    wxString const & tooltip,
-    std::uint32_t minValue,
-    std::uint32_t maxValue,
-    std::uint32_t currentValue,
-    std::function<void(std::uint32_t)> onValue)
-{
-    wxPanel * panel = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize);
-
-    wxBoxSizer * sizer = new wxBoxSizer(wxHORIZONTAL);
-
-    // Label
-    {
-        auto * staticText = new wxStaticText(panel, wxID_ANY, label);
-
-        sizer->Add(
-            staticText,
-            0,
-            wxALIGN_CENTER_VERTICAL,
-            4);
-    }
-
-    // Edit spin box
-    {
-        EditSpinBox<std::uint32_t> * editSpinBox = new EditSpinBox<std::uint32_t>(
-            panel,
-            40,
-            minValue,
-            maxValue,
-            currentValue,
-            tooltip,
-            std::move(onValue));
-
-        sizer->Add(
-            editSpinBox,
-            0,
-            wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT,
-            4);
-    }
-
-    return std::tuple(panel, sizer);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -4272,7 +4322,8 @@ void MainFrame::ReconciliateUIWithSelectedTool(std::optional<ToolType> tool)
         mToolSettingsPanelsSizer->Show(std::get<1>(entry), isSelected);
     }
 
-    mToolSettingsPanelsSizer->Layout();
+    // Refresh ribbon bar to pickup the new layout
+    mMainRibbonBar->Realise();
 }
 
 void MainFrame::ReconciliateUIWithPrimaryVisualizationSelection(VisualizationType primaryVisualization)
