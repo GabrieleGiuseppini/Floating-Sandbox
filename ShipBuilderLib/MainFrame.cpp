@@ -1653,7 +1653,7 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
 
         // Label
         {
-            auto * staticText = new wxStaticText(dynamicPanel, wxID_ANY, _("Pencil size:"));
+            auto * staticText = new wxStaticText(dynamicPanel, wxID_ANY, _("Pencil Size:"));
             staticText->SetForegroundColour(labelColor);
 
             dynamicPanelGridSizer->Add(
@@ -1709,7 +1709,7 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
 
         // Label
         {
-            auto * staticText = new wxStaticText(dynamicPanel, wxID_ANY, _("Eraser size:"));
+            auto * staticText = new wxStaticText(dynamicPanel, wxID_ANY, _("Eraser Size:"));
             staticText->SetForegroundColour(labelColor);
 
             dynamicPanelGridSizer->Add(
@@ -1765,7 +1765,7 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
 
         // Line Size Label
         {
-            auto * staticText = new wxStaticText(dynamicPanel, wxID_ANY, _("Line size:"));
+            auto * staticText = new wxStaticText(dynamicPanel, wxID_ANY, _("Line Size:"));
             staticText->SetForegroundColour(labelColor);
 
             dynamicPanelGridSizer->Add(
@@ -1796,11 +1796,23 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
                 wxALIGN_CENTER_VERTICAL);
         }
 
+        // Contiguity Label
+        {
+            auto * staticText = new wxStaticText(dynamicPanel, wxID_ANY, _("Hull Mode:"));
+            staticText->SetForegroundColour(labelColor);
+
+            dynamicPanelGridSizer->Add(
+                staticText,
+                wxGBPosition(1, 0),
+                wxGBSpan(1, 1),
+                wxALIGN_CENTER_VERTICAL);
+        }
+
         // Contiguity Checkbox
         {
-            wxCheckBox * chkBox = new wxCheckBox(dynamicPanel, wxID_ANY, _T("Hull mode"));
+            wxCheckBox * chkBox = new wxCheckBox(dynamicPanel, wxID_ANY, wxEmptyString);
 
-            chkBox->SetToolTip(_("When enabled, draw lines with pixel edges touching each other"));
+            chkBox->SetToolTip(_("When enabled, draw lines with pixel edges touching each other."));
 
             chkBox->SetValue(mWorkbenchState.GetStructuralLineToolIsHullMode());
 
@@ -1813,8 +1825,8 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
 
             dynamicPanelGridSizer->Add(
                 chkBox,
-                wxGBPosition(1, 0),
-                wxGBSpan(1, 2),
+                wxGBPosition(1, 1),
+                wxGBSpan(1, 1),
                 wxALIGN_CENTER_VERTICAL);
         }
 
@@ -1841,9 +1853,21 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
         wxPanel * dynamicPanel = new wxPanel(ribbonPanel);
         wxGridBagSizer * dynamicPanelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
 
-        // Contiguous checkbox
+        // Contiguous Label
         {
-            wxCheckBox * chkBox = new wxCheckBox(dynamicPanel, wxID_ANY, _("Contiguous only"));
+            auto * staticText = new wxStaticText(dynamicPanel, wxID_ANY, _("Contiguous Only:"));
+            staticText->SetForegroundColour(labelColor);
+
+            dynamicPanelGridSizer->Add(
+                staticText,
+                wxGBPosition(0, 0),
+                wxGBSpan(1, 1),
+                wxALIGN_CENTER_VERTICAL);
+        }
+
+        // Contiguous Checkbox
+        {
+            wxCheckBox * chkBox = new wxCheckBox(dynamicPanel, wxID_ANY, wxEmptyString);
 
             chkBox->SetToolTip(_("Flood only particles touching each other. When not checked, the flood tool effectively replaces a material with another."));
 
@@ -1858,8 +1882,8 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
 
             dynamicPanelGridSizer->Add(
                 chkBox,
-                wxGBPosition(0, 0),
-                wxGBSpan(1, 2),
+                wxGBPosition(0, 1),
+                wxGBSpan(1, 1),
                 wxALIGN_CENTER_VERTICAL);
         }
 
@@ -1895,56 +1919,6 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
     }
 
     return ribbonPanel;
-}
-
-template<typename TParent>
-wxPanel * MainFrame::CreateToolSettingsToolSizePanel(
-    TParent * parent,
-    wxString const & label,
-    wxString const & tooltip,
-    std::uint32_t minValue,
-    std::uint32_t maxValue,
-    std::uint32_t currentValue,
-    std::function<void(std::uint32_t)> onValue)
-{
-    wxPanel * panel = new wxPanel(parent);
-
-    wxBoxSizer * sizer = new wxBoxSizer(wxHORIZONTAL);
-
-    // Label
-    {
-        auto * staticText = new wxStaticText(panel, wxID_ANY, label);
-
-        //staticText->SetForegroundColour(parent->GetArtProvider()->GetColor(wxRIBBON_ART_BUTTON_BAR_LABEL_COLOUR));
-
-        sizer->Add(
-            staticText,
-            0,
-            wxALIGN_CENTER_VERTICAL,
-            0);
-    }
-
-    // Edit spin box
-    {
-        EditSpinBox<std::uint32_t> * editSpinBox = new EditSpinBox<std::uint32_t>(
-            panel,
-            40,
-            minValue,
-            maxValue,
-            currentValue,
-            tooltip,
-            std::move(onValue));
-
-        sizer->Add(
-            editSpinBox,
-            0,
-            wxALIGN_CENTER_VERTICAL | wxLEFT,
-            4);
-    }
-
-    panel->SetSizerAndFit(sizer);
-
-    return panel;
 }
 
 wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
@@ -4315,11 +4289,14 @@ void MainFrame::ReconciliateUIWithSelectedTool(std::optional<ToolType> tool)
     }
 
     // Show this tool's settings panel and hide the others
+    bool hasPanel = false;
     for (auto const & entry : mToolSettingsPanels)
     {
         bool const isSelected = (tool.has_value() && std::get<0>(entry) == *tool);
 
         mToolSettingsPanelsSizer->Show(std::get<1>(entry), isSelected);
+
+        hasPanel |= isSelected;
     }
 
     // Refresh ribbon bar to pickup the new layout

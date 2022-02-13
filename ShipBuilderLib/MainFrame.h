@@ -150,15 +150,6 @@ private:
     wxRibbonPanel * CreateEditShipRibbonPanel(wxRibbonPage * parent);
     wxRibbonPanel * CreateEditAnalysisRibbonPanel(wxRibbonPage * parent);
     wxRibbonPanel * CreateEditToolSettingsRibbonPanel(wxRibbonPage * parent);
-    template<typename TParent>
-    wxPanel * CreateToolSettingsToolSizePanel(
-        TParent * parent,
-        wxString const & label,
-        wxString const & tooltip,
-        std::uint32_t minValue,
-        std::uint32_t maxValue,
-        std::uint32_t currentValue,
-        std::function<void(std::uint32_t)> onValue);
     wxPanel * CreateVisualizationDetailsPanel(wxWindow * parent);
     wxPanel * CreateToolbarPanel(wxWindow * parent);
     wxPanel * CreateUndoPanel(wxWindow * parent);
@@ -358,8 +349,6 @@ private:
     std::array<RibbonToolbarButton<BitmapRadioButton> *, VisualizationCount> mVisualizationSelectButtons;
     std::array<RibbonToolbarButton<BitmapButton> *, LayerCount> mLayerExportButtons;
     std::array<RibbonToolbarButton<BitmapButton> *, LayerCount> mLayerDeleteButtons;
-
-    // Tool settings panel
     wxSizer * mToolSettingsPanelsSizer;
     std::vector<std::tuple<ToolType, wxPanel *>> mToolSettingsPanels;
 
