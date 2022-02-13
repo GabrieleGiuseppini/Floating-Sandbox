@@ -97,10 +97,11 @@ MainFrame::MainFrame(
     //
     // Setup main frame
     //
-    // Row 0: [                Ribbon                 ]
-    // Row 1: [Viz Details Panel] |  [Work Canvas]
-    //          [Toolbar Panel]   |
-    // Row 2: [              Status Bar               ]
+    // Row 0: [                    Ribbon                 ]
+    // Row 1: [Viz Mode Header Panel] |    [Work Canvas]
+    //          [Viz Details Panel]   |
+    //            [Toolbar Panel]     |
+    // Row 2: [                   Status Bar               ]
     //
 
     mMainPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
@@ -165,6 +166,22 @@ MainFrame::MainFrame(
         // Col 0
         {
             wxBoxSizer * row1Col0VSizer = new wxBoxSizer(wxVERTICAL);
+
+            // Visualization Mode Header panel
+            {
+                wxPanel * panel = CreateVisualizationModeHeaderPanel(mMainPanel);
+
+                row1Col0VSizer->Add(
+                    panel,
+                    0, // Maintain own height
+                    wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxRIGHT | wxTOP,
+                    ButtonMargin + ButtonMargin); // This is the widest panel, hence we set a border only around it
+            }
+
+            // Spacer
+            {
+                row1Col0VSizer->AddSpacer(8);
+            }
 
             // Visualizations panel
             {
@@ -962,7 +979,7 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
             panel,
             wxVERTICAL,
             mResourceLocator.GetBitmapFilePath("game_visualization"),
-            _T("Game Mode"),
+            _T("Game View"),
             [this]()
             {
                 mController->SelectPrimaryVisualization(VisualizationType::Game);
@@ -1761,6 +1778,269 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
     return ribbonPanel;
 }
 
+wxPanel * MainFrame::CreateVisualizationModeHeaderPanel(wxWindow * parent)
+{
+    wxPanel * panel = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+
+    mVisualizationModeHeaderPanelsSizer = new wxBoxSizer(wxVERTICAL);
+
+    // Game viz mode
+    {
+        wxPanel * modePanel = new wxPanel(panel);
+
+        auto * sizer = new wxGridBagSizer(0, 0);
+
+        // Icon
+        {
+            auto * staticBitmap = new wxStaticBitmap(
+                modePanel,
+                wxID_ANY,
+                WxHelpers::LoadBitmap("game_visualization", mResourceLocator));
+
+            sizer->Add(
+                staticBitmap,
+                wxGBPosition(0, 0),
+                wxGBSpan(2, 1),
+                wxRIGHT,
+                ButtonMargin);
+        }
+
+        // Label 1
+        {
+            auto * staticText = new wxStaticText(modePanel, wxID_ANY, _("Structural Layer"));
+
+            sizer->Add(
+                staticText,
+                wxGBPosition(0, 1),
+                wxGBSpan(1, 1),
+                wxALIGN_TOP | wxALIGN_CENTER_HORIZONTAL,
+                0);
+        }
+
+        // Label 2
+        {
+            auto * staticText = new wxStaticText(modePanel, wxID_ANY, _("(Game View)"));
+
+            sizer->Add(
+                staticText,
+                wxGBPosition(1, 1),
+                wxGBSpan(1, 1),
+                wxALIGN_BOTTOM | wxALIGN_CENTER_HORIZONTAL,
+                0);
+        }
+
+        modePanel->SetSizerAndFit(sizer);
+
+        mVisualizationModeHeaderPanelsSizer->Add(
+            modePanel,
+            0,
+            wxALIGN_CENTER_HORIZONTAL,
+            0);
+
+        mVisualizationModeHeaderPanelsSizer->Hide(modePanel);
+
+        mVisualizationModeHeaderPanels[static_cast<size_t>(VisualizationType::Game)] = modePanel;
+    }
+
+    // Structural layer mode
+    {
+        wxPanel * modePanel = new wxPanel(panel);
+
+        auto * sizer = new wxGridBagSizer(0, 0);
+
+        // Icon
+        {
+            auto * staticBitmap = new wxStaticBitmap(
+                modePanel,
+                wxID_ANY,
+                WxHelpers::LoadBitmap("structural_layer", mResourceLocator));
+
+            sizer->Add(
+                staticBitmap,
+                wxGBPosition(0, 0),
+                wxGBSpan(2, 1),
+                wxRIGHT,
+                ButtonMargin);
+        }
+
+        // Label 1
+        {
+            auto * staticText = new wxStaticText(modePanel, wxID_ANY, _("Structural Layer"));
+
+            sizer->Add(
+                staticText,
+                wxGBPosition(0, 1),
+                wxGBSpan(1, 1),
+                wxALIGN_TOP | wxALIGN_CENTER_HORIZONTAL,
+                0);
+        }
+
+        // Label 2
+        {
+            auto * staticText = new wxStaticText(modePanel, wxID_ANY, _("(Structure View)"));
+
+            sizer->Add(
+                staticText,
+                wxGBPosition(1, 1),
+                wxGBSpan(1, 1),
+                wxALIGN_BOTTOM | wxALIGN_CENTER_HORIZONTAL,
+                0);
+        }
+
+        modePanel->SetSizerAndFit(sizer);
+
+        mVisualizationModeHeaderPanelsSizer->Add(
+            modePanel,
+            0,
+            wxALIGN_CENTER_HORIZONTAL,
+            0);        
+
+        mVisualizationModeHeaderPanels[static_cast<size_t>(VisualizationType::StructuralLayer)] = modePanel;
+    }
+
+    // Electrical layer mode
+    {
+        wxPanel * modePanel = new wxPanel(panel);
+
+        auto * sizer = new wxGridBagSizer(0, 0);
+
+        // Icon
+        {
+            auto * staticBitmap = new wxStaticBitmap(
+                modePanel,
+                wxID_ANY,
+                WxHelpers::LoadBitmap("electrical_layer", mResourceLocator));
+
+            sizer->Add(
+                staticBitmap,
+                wxGBPosition(0, 0),
+                wxGBSpan(2, 1),
+                wxRIGHT,
+                ButtonMargin);
+        }
+
+        // Label
+        {
+            auto * staticText = new wxStaticText(modePanel, wxID_ANY, _("Electrical Layer"));
+
+            sizer->Add(
+                staticText,
+                wxGBPosition(0, 1),
+                wxGBSpan(2, 1),
+                wxALIGN_CENTER_VERTICAL | wxALIGN_CENTER_HORIZONTAL,
+                0);
+        }
+
+        modePanel->SetSizerAndFit(sizer);
+
+        mVisualizationModeHeaderPanelsSizer->Add(
+            modePanel,
+            0,
+            wxALIGN_CENTER_HORIZONTAL,
+            0);
+
+        mVisualizationModeHeaderPanelsSizer->Hide(modePanel);
+
+        mVisualizationModeHeaderPanels[static_cast<size_t>(VisualizationType::ElectricalLayer)] = modePanel;
+    }
+
+    // Ropes layer mode
+    {
+        wxPanel * modePanel = new wxPanel(panel);
+
+        auto * sizer = new wxGridBagSizer(0, 0);
+
+        // Icon
+        {
+            auto * staticBitmap = new wxStaticBitmap(
+                modePanel,
+                wxID_ANY,
+                WxHelpers::LoadBitmap("ropes_layer", mResourceLocator));
+
+            sizer->Add(
+                staticBitmap,
+                wxGBPosition(0, 0),
+                wxGBSpan(2, 1),
+                wxRIGHT,
+                ButtonMargin);
+        }
+
+        // Label
+        {
+            auto * staticText = new wxStaticText(modePanel, wxID_ANY, _("Ropes Layer"));
+
+            sizer->Add(
+                staticText,
+                wxGBPosition(0, 1),
+                wxGBSpan(2, 1),
+                wxALIGN_CENTER_VERTICAL | wxALIGN_CENTER_HORIZONTAL,
+                0);
+        }
+
+        modePanel->SetSizerAndFit(sizer);
+
+        mVisualizationModeHeaderPanelsSizer->Add(
+            modePanel,
+            0,
+            wxALIGN_CENTER_HORIZONTAL,
+            0);
+
+        mVisualizationModeHeaderPanelsSizer->Hide(modePanel);
+
+        mVisualizationModeHeaderPanels[static_cast<size_t>(VisualizationType::RopesLayer)] = modePanel;
+    }
+
+    // Texture layer mode
+    {
+        wxPanel * modePanel = new wxPanel(panel);
+
+        auto * sizer = new wxGridBagSizer(0, 0);
+
+        // Icon
+        {
+            auto * staticBitmap = new wxStaticBitmap(
+                modePanel,
+                wxID_ANY,
+                WxHelpers::LoadBitmap("texture_layer", mResourceLocator));
+
+            sizer->Add(
+                staticBitmap,
+                wxGBPosition(0, 0),
+                wxGBSpan(2, 1),
+                wxRIGHT,
+                ButtonMargin);
+        }
+
+        // Label
+        {
+            auto * staticText = new wxStaticText(modePanel, wxID_ANY, _("Texture Layer"));
+
+            sizer->Add(
+                staticText,
+                wxGBPosition(0, 1),
+                wxGBSpan(2, 1),
+                wxALIGN_CENTER_VERTICAL | wxALIGN_CENTER_HORIZONTAL,
+                0);
+        }
+
+        modePanel->SetSizerAndFit(sizer);
+
+        mVisualizationModeHeaderPanelsSizer->Add(
+            modePanel,
+            0,
+            wxALIGN_CENTER_HORIZONTAL,
+            0);
+
+        mVisualizationModeHeaderPanelsSizer->Hide(modePanel);
+
+        mVisualizationModeHeaderPanels[static_cast<size_t>(VisualizationType::TextureLayer)] = modePanel;
+    }
+
+    panel->SetSizerAndFit(mVisualizationModeHeaderPanelsSizer);
+
+    return panel;
+}
+
 wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
 {
     wxPanel * panel = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize);
@@ -2227,7 +2507,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
     {
         wxPanel * structuralToolbarPanel = new wxPanel(panel, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 
-        wxBoxSizer * structuralToolbarSizer = new wxBoxSizer(wxVERTICAL);
+        wxBoxSizer * structuralToolbarVSizer = new wxBoxSizer(wxVERTICAL);
 
         // Tools
 
@@ -2298,21 +2578,19 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     0);
             }
 
-            structuralToolbarSizer->Add(
+            structuralToolbarVSizer->Add(
                 toolsSizer,
                 0,
                 wxALIGN_CENTER_HORIZONTAL,
                 0);
         }
 
-        structuralToolbarSizer->AddSpacer(15);
+        structuralToolbarVSizer->AddSpacer(15);
 
         // Swaths
 
         {
             wxBoxSizer * paletteSizer = new wxBoxSizer(wxHORIZONTAL);
-
-            paletteSizer->AddSpacer(ButtonMargin);
 
             // Foreground
             {
@@ -2364,16 +2642,14 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     0);
             }
 
-            paletteSizer->AddSpacer(ButtonMargin);
-
-            structuralToolbarSizer->Add(
+            structuralToolbarVSizer->Add(
                 paletteSizer,
                 0,
                 wxALIGN_CENTER_HORIZONTAL,
                 0);
         }
 
-        structuralToolbarPanel->SetSizerAndFit(structuralToolbarSizer);
+        structuralToolbarPanel->SetSizerAndFit(structuralToolbarVSizer);
 
         mToolbarPanelsSizer->Add(
             structuralToolbarPanel,
@@ -4105,6 +4381,7 @@ void MainFrame::ReconciliateUIWithPrimaryVisualizationSelection(VisualizationTyp
     // Toggle various UI elements <-> primary viz
     //
 
+    bool hasToggledVisualizationModeHeaderPanel = false;
     bool hasToggledToolPanel = false;
     bool hasToggledLayerVisualizationModePanel = false;
 
@@ -4112,6 +4389,13 @@ void MainFrame::ReconciliateUIWithPrimaryVisualizationSelection(VisualizationTyp
     for (uint32_t iVisualization = 0; iVisualization < VisualizationCount; ++iVisualization)
     {
         bool const isVisualizationSelected = (iVisualization == iPrimaryVisualization);
+
+        // Visualization mode header panels
+        if (mVisualizationModeHeaderPanelsSizer->IsShown(mVisualizationModeHeaderPanels[iVisualization]) != isVisualizationSelected)
+        {
+            mVisualizationModeHeaderPanelsSizer->Show(mVisualizationModeHeaderPanels[iVisualization], isVisualizationSelected);
+            hasToggledVisualizationModeHeaderPanel = true;
+        }
 
         // Visualization selection buttons
         if (mVisualizationSelectButtons[iVisualization]->GetValue() != isVisualizationSelected)

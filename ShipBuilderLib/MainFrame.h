@@ -149,6 +149,7 @@ private:
     wxRibbonPanel * CreateEditShipRibbonPanel(wxRibbonPage * parent);
     wxRibbonPanel * CreateEditAnalysisRibbonPanel(wxRibbonPage * parent);
     wxRibbonPanel * CreateEditToolSettingsRibbonPanel(wxRibbonPage * parent);
+    wxPanel * CreateVisualizationModeHeaderPanel(wxWindow * parent);
     wxPanel * CreateVisualizationDetailsPanel(wxWindow * parent);
     wxPanel * CreateToolbarPanel(wxWindow * parent);
     wxPanel * CreateUndoPanel(wxWindow * parent);
@@ -343,6 +344,8 @@ private:
     std::vector<std::tuple<ToolType, wxPanel *>> mToolSettingsPanels;
 
     // Visualization details panel
+    wxSizer * mVisualizationModeHeaderPanelsSizer;
+    std::array<wxPanel *, VisualizationCount> mVisualizationModeHeaderPanels;
     wxSlider * mOtherVisualizationsOpacitySlider;
     wxSizer * mVisualizationModePanelsSizer;
     std::array<wxPanel *, VisualizationCount> mVisualizationModePanels;

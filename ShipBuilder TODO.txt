@@ -146,12 +146,12 @@ https://gamejolt.com/x/permalink/comment/11730705
 				+ Populate accelerator over there, via private helper method
 	+ Copy all useful PSDs to Authoring
 		+ Nuke useless PSDs from Authoring
-	= Follow-ups
+	+ Follow-ups
 		+ Fixup col0
 			+ H margins,col 
 			+ Separator(s)
 			+ Undo stack width
-		- Layer name @ left panel
+		+ Layer name @ left panel
 		+ Color of labels @ tool settings
 		+ Select Main page at Open
 		+ Cleanup all TODOs
