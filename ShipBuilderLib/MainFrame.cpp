@@ -122,7 +122,6 @@ MainFrame::MainFrame(
                 auto * artProvider = mMainRibbonBar->GetArtProvider();
 
                 auto const backgroundColor = GetBackgroundColour();
-                auto const borderColor = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWFRAME);
 
                 artProvider->SetColor(wxRIBBON_ART_PAGE_BACKGROUND_COLOUR, backgroundColor);
                 artProvider->SetColor(wxRIBBON_ART_PAGE_BACKGROUND_GRADIENT_COLOUR, backgroundColor);
