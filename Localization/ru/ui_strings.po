@@ -2,14 +2,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Floating Sandbox\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-02-06 17:21+0100\n"
+"PO-Revision-Date: 2022-02-11 22:50+0300\n"
 "Last-Translator: Gabriele Giuseppini <gabrielegiuseppini@gmail.com>\n"
 "Language-Team: Ilya Voloshin; Roman Shavernew (DioxCode)\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.4\n"
+"X-Generator: Poedit 3.0\n"
 "X-Poedit-Basepath: .\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
@@ -103,10 +103,10 @@ msgid "Adjusts how much the ocean floor rolls up and down."
 msgstr "Регулирует, неровность океанского дна."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2474
-#, fuzzy
-#| msgid "Adjusts how wide light emitted by luminiscent materials spreads out."
 msgid "Adjusts how wide light emitted by luminescent materials spreads out."
-msgstr "Регулирует, насколько широко распространяется люминесцентный свет."
+msgstr ""
+"Регулирует, насколько широко распространяется свет, излучаемый "
+"люминесцентными материалами."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1056
 msgid ""
@@ -268,8 +268,6 @@ msgid ""
 "Adjusts the number of atmospheres that are injected or drained by the inject "
 "pressure tool (atm)."
 msgstr ""
-"97 / 5000\n"
-"Результаты перевода\n"
 "Регулирует количество атмосфер, нагнетаемых или откачиваемых инструментом "
 "давления нагнетания (атм)."
 
@@ -294,8 +292,6 @@ msgstr ""
 "оказываемое морской водой на физические тела."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2447
-#, fuzzy
-#| msgid "Adjusts the quantity of light emitted by luminiscent materials."
 msgid "Adjusts the quantity of light emitted by luminescent materials."
 msgstr "Регулирует количество света, излучаемого люминесцентными материалами."
 
@@ -1050,10 +1046,8 @@ msgid "Enable Shoaling"
 msgstr "Включить обмеление"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1892
-#, fuzzy
-#| msgid "Enable/Disable the visual guides."
 msgid "Enable/disable the visual guides."
-msgstr "Включение/выключение визуальных направляющих."
+msgstr "Включите/выключите визуальные подсказки."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:734
 msgid "Enables or disables amplification of tool forces and inflicted damages."
@@ -1492,10 +1486,8 @@ msgid "Go to the next search result"
 msgstr "Перейти к следующему результату поиска"
 
 #: ..\UILib\ShipLoadDialog.cpp:176
-#, fuzzy
-#| msgid "Go to the default Ships folder"
 msgid "Go to your Ships folder"
-msgstr "Перейдите в папку кораблей по умолчанию"
+msgstr "Перейдите в папку \"Корабли\""
 
 #: ..\FloatingSandbox\MainFrame.cpp:563
 msgid "Guide"
@@ -1596,7 +1588,7 @@ msgstr "Температура воспламенения (K)"
 
 #: ..\UILib\ImageLoadDialog.cpp:23
 msgid "Image files"
-msgstr ""
+msgstr "Файлы изображений"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1028
 msgid "Impact Force Adjust"
@@ -1716,10 +1708,8 @@ msgid "Load Settings"
 msgstr "Загрузить настройки"
 
 #: ..\UILib\ShipLoadDialog.cpp:31
-#, fuzzy
-#| msgid "Load Ship..."
 msgid "Load Ship"
-msgstr "Загрузить корабль..."
+msgstr "Загрузить корабль"
 
 #: ..\FloatingSandbox\MainFrame.cpp:201 ..\ShipBuilderLib\MainFrame.cpp:335
 msgid "Load Ship..."
@@ -1727,11 +1717,11 @@ msgstr "Загрузить корабль..."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:335 ..\ShipBuilderLib\MainFrame.cpp:837
 msgid "Load a ship"
-msgstr "Загрузить корабль"
+msgstr "Загрузить в корабль"
 
 #: ..\UILib\ImageLoadDialog.cpp:21
 msgid "Load an Image"
-msgstr ""
+msgstr "Загрузить изображение"
 
 #: ..\FloatingSandbox\SplashScreenDialog.cpp:119
 msgid "Loading cloud texture atlas..."
@@ -1796,10 +1786,8 @@ msgid "Luminescence"
 msgstr "Люминесценция"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2446
-#, fuzzy
-#| msgid "Luminiscence Adjust"
 msgid "Luminescence Adjust"
-msgstr "Свечение"
+msgstr "Регулировка люминесценции"
 
 #: ..\FloatingSandbox\CreditsPanel.cpp:126
 msgid "MUSIC"
@@ -2449,16 +2437,12 @@ msgid "Save the current ship to a different file"
 msgstr "Сохранить текущий корабль в другой файл"
 
 #: ..\UILib\ShipSaveDialog.cpp:50
-#, fuzzy
-#| msgid "Structural layer"
 msgid "Save the structural layer"
-msgstr "Структурный слой"
+msgstr "Сохраните структурный слой"
 
 #: ..\UILib\ShipSaveDialog.cpp:40
-#, fuzzy
-#| msgid "Save Ship"
 msgid "Save this ship"
-msgstr "Сохранить корабль"
+msgstr "Сохранить этот корабль"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:5136
 msgid "Saves the current settings using the specified name."
@@ -2504,6 +2488,8 @@ msgstr "Выбирает способ отвода тепла на корабл�
 msgid ""
 "Selects whether the game starts in full-screen mode or as a normal window."
 msgstr ""
+"Выбирает, будет ли игра запускаться в полноэкранном режиме или в виде "
+"обычного окна."
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:591
 msgid "Self-Powered"
@@ -2622,10 +2608,8 @@ msgid "Ship Properties..."
 msgstr "Свойства корабля..."
 
 #: ..\UILib\ShipSaveDialog.cpp:43
-#, fuzzy
-#| msgid "Ship Issues"
 msgid "Ship files"
-msgstr "Судовые вопросы"
+msgstr "Файлы корабля"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:85
 msgid "Ships"
@@ -2786,10 +2770,8 @@ msgid "Spring Stiffness Adjust"
 msgstr "Жесткость пружинности"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:395
-#, fuzzy
-#| msgid "Full Screen"
 msgid "Start in Full Screen"
-msgstr "Полный Экран"
+msgstr "Запуск в полноэкранном режиме"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4728
 msgid "Static Forces"
@@ -2846,7 +2828,7 @@ msgstr "Структурный слой"
 
 #: ..\UILib\ShipSaveDialog.cpp:53
 msgid "Structure-only image files"
-msgstr ""
+msgstr "Файлы изображений только со структурой"
 
 #: ..\ShipBuilderLib\ModelValidationDialog.cpp:282
 msgid "Success"
@@ -3126,11 +3108,13 @@ msgstr "Термодинамика"
 
 #: ..\UILib\LocalizationManager.cpp:135
 msgid "This file is not a Floating Sandbox ship file."
-msgstr ""
+msgstr "Этот файл не является файлом корабля Floating Sandbox."
 
 #: ..\UILib\LocalizationManager.cpp:141
 msgid "This file is not a valid ship file - it may be corrupted or damaged."
 msgstr ""
+"Этот файл не является действительным файлом корабля - он может быть "
+"поврежден или испорчен."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4524
 msgid ""
@@ -3157,12 +3141,18 @@ msgid ""
 "This ship cannot be loaded because it has unrecognized materials - it was "
 "likely created with a non-standard release of Floating Sandbox."
 msgstr ""
+"Этот корабль не может быть загружен, потому что он имеет нераспознанные "
+"материалы - вероятно, он был создан с помощью нестандартного выпуска "
+"Floating Sandbox."
 
 #: ..\UILib\LocalizationManager.cpp:153
 msgid ""
 "This ship cannot be loaded because it has unrecognized materials from a "
 "newer release. Upgrade Floating Sandbox to at least Floating Sandbox %1."
 msgstr ""
+"Этот корабль не может быть загружен, потому что он содержит нераспознанные "
+"материалы из более нового выпуска. Обновите Floating Sandbox до версии не "
+"ниже Floating Sandbox %1."
 
 #: ..\UILib\LocalizationManager.cpp:147
 msgid ""
@@ -3170,6 +3160,8 @@ msgid ""
 "cannot be loaded with this version. Upgrade Floating Sandbox to the newest "
 "release."
 msgstr ""
+"Этот корабль был создан в более новой версии Floating Sandbox, и он не может "
+"быть загружен в этой версии. Обновите Floating Sandbox до новейшей версии."
 
 #: ..\FloatingSandbox\CreditsPanel.cpp:74
 msgid ""
@@ -3215,7 +3207,7 @@ msgstr "Объем инструментов"
 
 #: ..\FloatingSandbox\ProbePanel.cpp:44
 msgid "Total Damage"
-msgstr ""
+msgstr "Общий ущерб"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3797
 msgid "Transparency"
@@ -3276,7 +3268,7 @@ msgstr "Ультра-жестокий режим"
 
 #: ..\UILib\UnderConstructionDialog.cpp:20
 msgid "Under Construction"
-msgstr ""
+msgstr "В процессе строительства"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:294
 #: ..\ShipBuilderLib\MainFrame.cpp:385
@@ -3439,16 +3431,15 @@ msgstr "Ветер и волны"
 #: ..\FloatingSandbox\SettingsDialog.cpp:3592
 msgid "Wind speed conjured by the WindMaker tool (Km/h)."
 msgstr ""
+"Скорость ветра, рассчитанная инструментом Виндмейкер(Поток Воздуха) (км/ч)."
 
 #: ..\FloatingSandbox\MainFrame.cpp:414
-#, fuzzy
-#| msgid "WaveMaker"
 msgid "WindMaker"
-msgstr "Создатель волн"
+msgstr "Виндмейкер"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3563
 msgid "WindMaker Tool"
-msgstr ""
+msgstr "Инструмент Виндмейкер"
 
 #: ..\ShipBuilderLib\ShipPropertiesEditDialog.cpp:319
 msgid "Year Built"

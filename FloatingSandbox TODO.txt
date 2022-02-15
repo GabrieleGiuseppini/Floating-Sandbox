@@ -168,18 +168,21 @@
 				+ Update (probe panel)
 				+ Test
 					+ Including error ship
+				- Send final po
 			= RU
 				+ Take first
 				+ Update & send second + initial tips
-				- Get back po file
-				- Get back initial tip line
+				+ Get back po file
+				+ Get back initial tip line
+				- Send final po
 				- Test
 					- Including error ship
 			= ES
 				+ Take first
 				+ Update & send second + initial tips
-				- Get back po file
+				+ Get back po file
 				+ Get back initial tip line
+				- Send final po
 				- Test
 					- Including error ship
 
@@ -189,7 +192,7 @@
 				+ A-320 update
 				+ BAE					
 				- Skoda
-					- Tell him has holes				
+					+ Tell him has holes - by design
 			+ Pocketwatch ships
 				+ SS Belgenland 1914
 			+ 4 Tanks
@@ -231,15 +234,29 @@
 
 		- New sounds from TimCan
 
+		- Materials: check if can undo BuoyancyVolumeFill:
+			- Replace with "destructured_volume": volume that is only used when particle has zero attached triangles
+				- Points has a buffer for it, updated @ Add() and @ triangle create/destroy
+			- Materials like hull and chains have it ~zero, ropes a bit more
+			- The biggest test is whether current ships start flying or not
+
 		- Make "Internal Watertight" version of hull/non-hull materials
 			- Watertight (i.e. hull) but lighter than hull
 			- Rename materials (json and code): "Hull" -> "?"
 			- May be: larger materials rearc:
 				- XYZ Hull
-				- XYZ I-Beam
-				- XYZ Thin Wall
-				- XYZ Thick Wall
-				- Names: bulkhead, deck
+				- XYZ Thin I-Beam
+				- XYZ Thick I-Beam
+				- XYZ Thin Bulkhead
+				- XYZ Thick Bulkhead
+			- See also to have "structural icons" in MaterialsPalette for each of these shapes
+				- By means of an enum in the materials json
+					- https://www.vectorstock.com/royalty-free-vector/industrial-icons-set-of-metallurgic-production-vector-17951471
+					- https://www.vectorstock.com/royalty-free-vector/metallurgy-products-icon-set-vector-32840974
+					- https://engineering-database.com/structural-members?heightMin=0&heightMax=37&widthMin=0&widthMax=18&areaMin=0&areaMax=215&sectionModulusXMin=0&sectionModulusXMax=1280&momentOfInertiaXMin=0&momentOfInertiaXMax=20300&yieldStrengthMin=0&yieldStrengthMax=50000&page=1&sortBy=name&sortOrder=asc&sectionCategories=beams
+					- https://www.vectorstock.com/royalty-free-vector/set-line-icon-steel-pipe-and-beam-product-vector-19648818
+
+		- New materials (*)
 
 		- Test material textures for chains: transparent chain texture
 			- Change texturizer so that we load alpha from image
@@ -1200,6 +1217,9 @@
 		- Material textures have to become procedurally-generated
 
 - Dynamics:
+
+	- New materials (*)
+		- More glass colors
 
 	- "Soft" setting for ocean floors
 		- Just less impact
