@@ -2738,8 +2738,6 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
         {
             wxBoxSizer * paletteSizer = new wxBoxSizer(wxHORIZONTAL);
 
-            paletteSizer->AddSpacer(ButtonMargin);
-
             // Foreground
             {
                 mElectricalForegroundMaterialSelector = new wxStaticBitmap(
@@ -2789,8 +2787,6 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     0,
                     0);
             }
-
-            paletteSizer->AddSpacer(ButtonMargin);
 
             electricalToolbarSizer->Add(
                 paletteSizer,
@@ -2873,8 +2869,6 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
         {
             wxBoxSizer * paletteSizer = new wxBoxSizer(wxHORIZONTAL);
 
-            paletteSizer->AddSpacer(ButtonMargin);
-
             // Foreground
             {
                 mRopesForegroundMaterialSelector = new wxStaticBitmap(
@@ -2924,8 +2918,6 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     0,
                     0);
             }
-
-            paletteSizer->AddSpacer(ButtonMargin);
 
             ropesToolbarSizer->Add(
                 paletteSizer,
