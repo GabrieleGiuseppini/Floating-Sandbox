@@ -4437,6 +4437,11 @@ void MainFrame::ReconciliateUIWithPrimaryVisualizationSelection(VisualizationTyp
         }
     }
 
+    if (hasToggledVisualizationModeHeaderPanel)
+    {
+        mVisualizationModeHeaderPanelsSizer->Layout();
+    }
+
     if (hasToggledLayerVisualizationModePanel)
     {
         mVisualizationModePanelsSizer->Layout();
