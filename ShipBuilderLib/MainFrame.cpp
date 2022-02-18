@@ -78,7 +78,7 @@ MainFrame::MainFrame(
         std::string(APPLICATION_NAME " ShipBuilder " APPLICATION_VERSION_SHORT_STR),
         wxDefaultPosition,
         wxDefaultSize,
-        wxMINIMIZE_BOX | wxMAXIMIZE_BOX | wxRESIZE_BORDER | wxSYSTEM_MENU | wxCAPTION | wxCLIP_CHILDREN | wxMAXIMIZE
+        wxMINIMIZE_BOX | wxMAXIMIZE_BOX | wxRESIZE_BORDER | wxCAPTION | wxCLIP_CHILDREN | wxMAXIMIZE
         | (IsStandAlone() ? wxCLOSE_BOX : 0));
 
     Bind(wxEVT_CLOSE_WINDOW, &MainFrame::OnClose, this);
@@ -735,8 +735,6 @@ wxRibbonPanel * MainFrame::CreateMainFileRibbonPanel(wxRibbonPage * parent)
             _("Discard the current ship and return to the simulator."));
 
         panelGridSizer->Add(button);
-
-        AddAcceleratorKey(wxACCEL_ALT, (int)WXK_F4, [this]() { Quit(); });
     }
 
     // Quit
@@ -754,6 +752,8 @@ wxRibbonPanel * MainFrame::CreateMainFileRibbonPanel(wxRibbonPage * parent)
             _("Quit and leave the program (ALT+F4)."));
 
         panelGridSizer->Add(button);
+
+        AddAcceleratorKey(wxACCEL_ALT, (int)WXK_F4, [this]() { Quit(); });
     }
 
     // Wrap in a sizer just for margins
@@ -3375,6 +3375,15 @@ void MainFrame::OnWorkCanvasKeyUp(wxKeyEvent & event)
 
 void MainFrame::OnClose(wxCloseEvent & event)
 {
+    if (event.CanVeto() && !IsStandAlone())
+    {
+        // User pressed ALT+F4 in simulator mode...
+        // ...do not allow close(), as we only allow
+        // to exit with a switch *back*
+        event.Veto();
+        return;
+    }
+
     if (mController)
     {
         if (event.CanVeto() && mController->IsModelDirty())
@@ -3434,6 +3443,7 @@ void MainFrame::Open()
 
     // Show us
     Show(true);
+    Layout();
 
     // Select "Main" ribbon page
     mMainRibbonBar->SetActivePage(size_t(0));

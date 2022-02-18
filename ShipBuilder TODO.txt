@@ -156,8 +156,8 @@ https://gamejolt.com/x/permalink/comment/11730705
 		+ Select Main page at Open
 		+ Cleanup all TODOs
 	+ Test in FloatingSandbox mode
-	- See if should Realize() ribbon bar at each page change
-	- Re-test UI on old Dell
+	X See if should Realize() ribbon bar at each page change
+	+ Re-test UI on old Dell
 	- Re-test UI on Ubuntu
 		- See if need to change style, see https://imron02.wordpress.com/2014/12/11/wxwidgets-simple-application-using-wxribbon-and-wxauinotebook/
 

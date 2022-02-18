@@ -255,6 +255,7 @@
 					- https://www.vectorstock.com/royalty-free-vector/metallurgy-products-icon-set-vector-32840974
 					- https://engineering-database.com/structural-members?heightMin=0&heightMax=37&widthMin=0&widthMax=18&areaMin=0&areaMax=215&sectionModulusXMin=0&sectionModulusXMax=1280&momentOfInertiaXMin=0&momentOfInertiaXMax=20300&yieldStrengthMin=0&yieldStrengthMax=50000&page=1&sortBy=name&sortOrder=asc&sectionCategories=beams
 					- https://www.vectorstock.com/royalty-free-vector/set-line-icon-steel-pipe-and-beam-product-vector-19648818
+					- Consider making own icons with FreeCAD
 
 		- New materials (*)
 
@@ -268,6 +269,7 @@
 		- See windows timer/50fps thing
 			! http://mirrors.arcadecontrols.com/www.sysinternals.com/Information/HighResolutionTimers.html
 			+ @ 50fps: Windows timer resolution (min/max/cur): 15.625 / 0.500 / 15.621 ms
+				   Windows timer resolution (min/max/cur): 15.625 / 0.500 / 15.620 ms
 			+ @ 64fps: Windows timer resolution (min/max/cur): 15.625 / 0.500 / 0.997 ms
 				   Windows timer resolution (min/max/cur): 15.625 / 0.500 / 0.997 ms
 
