@@ -298,7 +298,6 @@ void ModelController::ResizeShip(
         staticShipRect->origin.y = std::max(0, -originOffset.y);
     }
 
-
     //
     // Resize model
     //
