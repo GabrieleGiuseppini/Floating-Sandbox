@@ -161,7 +161,9 @@
 		+ See rogue waves
 		+ Do final ShipBuilder tasks (*<--)
 
-		- Train issue w/ocean floor
+		+ Train issue w/ocean floor
+
+		- Merge back into master
 
 		= Localization
 			+ IT
