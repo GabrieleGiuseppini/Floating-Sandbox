@@ -1512,7 +1512,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
 
             // Zero wind
             {
-                wxButton * zeroWindButton = new wxButton(windBoxSizer->GetStaticBox(), wxID_ANY, _T("Zero"));
+                wxButton * zeroWindButton = new wxButton(windBoxSizer->GetStaticBox(), wxID_ANY, _("Zero"));
                 zeroWindButton->SetToolTip(_("Sets wind speed to zero."));
                 zeroWindButton->Bind(
                     wxEVT_BUTTON,

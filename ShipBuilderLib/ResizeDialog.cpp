@@ -49,7 +49,7 @@ ResizeDialog::ResizeDialog(
             {
                 // Label
                 {
-                    auto label = new wxStaticText(this, wxID_ANY, _T("Original Size"));
+                    auto label = new wxStaticText(this, wxID_ANY, _("Original Size"));
 
                     sizer->Add(
                         label,
@@ -132,7 +132,7 @@ ResizeDialog::ResizeDialog(
             {
                 // Label
                 {
-                    auto label = new wxStaticText(this, wxID_ANY, _T("New Size"));
+                    auto label = new wxStaticText(this, wxID_ANY, _("New Size"));
 
                     sizer->Add(
                         label,

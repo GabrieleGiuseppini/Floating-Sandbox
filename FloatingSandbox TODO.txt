@@ -160,10 +160,8 @@
 			+ Min delay for WaterDisplacementWave sound
 		+ See rogue waves
 		+ Do final ShipBuilder tasks (*<--)
-
 		+ Train issue w/ocean floor
-
-		- Merge back into master
+		+ Merge back into master
 
 		= Localization
 			+ IT
@@ -171,14 +169,13 @@
 				+ Update (probe panel)
 				+ Test
 					+ Including error ship
-				- Update po
-				- Send final po
+				+ Update po
 			= RU
 				+ Take first
 				+ Update & send second + initial tips
 				+ Get back po file
 				+ Get back initial tip line
-				- Update po
+				+ Update po
 				- Send final po
 				- Test
 					- Including error ship
@@ -187,8 +184,8 @@
 				+ Update & send second + initial tips
 				+ Get back po file
 				+ Get back initial tip line
-				- Update po
-				- Send final po
+				+ Update po
+				= Send final po
 				- Test
 					- Including error ship
 

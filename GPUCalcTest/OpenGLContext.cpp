@@ -44,8 +44,7 @@ OpenGLContext::OpenGLContext()
         glCanvasAttributes,
         wxDefaultPosition,
         wxSize(100, 100),
-        0L,
-        _T("Main GL Canvas"));
+        0L);
 
     // Take context for this canvas
     mGLContext = std::make_unique<wxGLContext>(mGLCanvas.get());

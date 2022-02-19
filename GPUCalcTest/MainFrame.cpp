@@ -41,8 +41,7 @@ MainFrame::MainFrame(wxApp * mainApp)
         "GPUCalc Test",
         wxDefaultPosition,
         wxDefaultSize,
-        wxDEFAULT_FRAME_STYLE,
-        _T("Main Frame"));
+        wxDEFAULT_FRAME_STYLE);
 
     SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
     Maximize();
@@ -207,8 +206,7 @@ MainFrame::MainFrame(wxApp * mainApp)
         glCanvasAttributes,
         wxDefaultPosition,
         wxSize(1, 1),
-        0L,
-        _T("Dummy GL Canvas"));
+        0L);
 
     mDummyGLContext = std::make_unique<wxGLContext>(mDummyGLCanvas.get());
 

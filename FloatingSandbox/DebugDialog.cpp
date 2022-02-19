@@ -228,7 +228,7 @@ void DebugDialog::PopulateEventRecordingPanel(wxPanel * panel)
     //
 
     {
-        mRecordEventPlayButton = new wxButton(panel, wxID_ANY, _T("Start"));
+        mRecordEventPlayButton = new wxButton(panel, wxID_ANY, _("Start"));
 
         mRecordEventPlayButton->Bind(
             wxEVT_BUTTON,
@@ -258,7 +258,7 @@ void DebugDialog::PopulateEventRecordingPanel(wxPanel * panel)
     }
 
     {
-        mRecordEventStopButton = new wxButton(panel, wxID_ANY, _T("Stop"));
+        mRecordEventStopButton = new wxButton(panel, wxID_ANY, _("Stop"));
 
         mRecordEventStopButton->Enable(false);
 
@@ -313,7 +313,7 @@ void DebugDialog::PopulateEventRecordingPanel(wxPanel * panel)
     }
 
     {
-        mRecordEventStepButton = new wxButton(panel, wxID_ANY, _T("Step"));
+        mRecordEventStepButton = new wxButton(panel, wxID_ANY, _("Step"));
 
         mRecordEventStepButton->Enable(false);
 
@@ -347,7 +347,7 @@ void DebugDialog::PopulateEventRecordingPanel(wxPanel * panel)
     }
 
     {
-        mRecordEventRewindButton = new wxButton(panel, wxID_ANY, _T("Rewind"));
+        mRecordEventRewindButton = new wxButton(panel, wxID_ANY, _("Rewind"));
 
         mRecordEventRewindButton->Enable(false);
 

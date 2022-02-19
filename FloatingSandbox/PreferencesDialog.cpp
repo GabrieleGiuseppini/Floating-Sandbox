@@ -252,7 +252,7 @@ void PreferencesDialog::OnLanguagesListBoxSelected(wxCommandEvent & /*event*/)
         {
             wxMessageBox(
                 _("Please note that a restart is required for language changes to take effect."),
-                _T("Restart Required"),
+                _("Restart Required"),
                 wxOK | wxICON_INFORMATION | wxCENTRE);
 
             mHasWarnedAboutLanguageSettingChanges = true;
@@ -579,9 +579,9 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
 
             {
                 wxString choices[3] = {
-                    _T("SI (Kelvin)"),
-                    _T("SI (Celsius)"),
-                    _T("USCS")
+                    _("SI (Kelvin)"),
+                    _("SI (Celsius)"),
+                    _("USCS")
                 };
 
                 mDisplayUnitsSettingsComboBox = new wxComboBox(

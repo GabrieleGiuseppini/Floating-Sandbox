@@ -23,7 +23,7 @@ SplashScreenDialog::SplashScreenDialog(ResourceLocator const & resourceLocator)
 		wxDefaultPosition,
 		wxSize(800, 400),
         wxSTAY_ON_TOP | wxFRAME_NO_TASKBAR,
-		_T("Splash Screen"));
+		"Splash Screen");
 
 	SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
 
