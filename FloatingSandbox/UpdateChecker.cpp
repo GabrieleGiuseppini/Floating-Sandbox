@@ -16,7 +16,9 @@
 #include <sstream>
 
 std::string const UpdateHost = "http://floatingsandbox.com";
-std::string const UpdateUrl = "/changes.txt";
+// Changed in 1.17.0
+//std::string const UpdateUrl = "/changes.txt";
+std::string const UpdateUrl = "/changes2.txt";
 
 UpdateChecker::UpdateChecker()
     : mOutcome()
