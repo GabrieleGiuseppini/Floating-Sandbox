@@ -1532,7 +1532,6 @@ void View::UploadTextureVertices(
     glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size() * sizeof(TextureVertex), vertexBuffer.data(), GL_STATIC_DRAW);
     CheckOpenGLError();
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-
 }
 
 void View::RenderGameVisualization()
