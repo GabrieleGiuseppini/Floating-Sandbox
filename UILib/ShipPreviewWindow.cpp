@@ -543,7 +543,7 @@ void ShipPreviewWindow::Choose(size_t infoTileIndex)
 
 void ShipPreviewWindow::ResetInfoTiles(DirectorySnapshot const & directorySnapshot)
 {
-    LogMessage("TODOTEST: ShipPreviewPanel::ResetInfoTiles start...");
+    LogMessage("ShipPreviewPanel::ResetInfoTiles start...");
 
     mInfoTiles.clear();
     mInfoTiles.reserve(directorySnapshot.Files.size());
@@ -563,7 +563,7 @@ void ShipPreviewWindow::ResetInfoTiles(DirectorySnapshot const & directorySnapsh
     // Recalculate geometry
     RecalculateGeometry(mClientSize, static_cast<int>(mInfoTiles.size()));
 
-    LogMessage("TODOTEST: ShipPreviewPanel::ResetInfoTiles ...end.");
+    LogMessage("ShipPreviewPanel::ResetInfoTiles ...end.");
 
     Refresh();
 }

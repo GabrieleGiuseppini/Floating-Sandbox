@@ -37,7 +37,7 @@ public:
 
         Bind(
             wxEVT_TOGGLEBUTTON,
-            [onClickHandler](wxCommandEvent & /*event*/)
+            [onClickHandler, this](wxCommandEvent & /*event*/)
             {
                 onClickHandler();
             });

@@ -103,7 +103,7 @@ endif()
 
 message(STATUS "wxWidgets_ROOT:" ${wxWidgets_ROOT})
 
-find_package(wxWidgets REQUIRED base gl core html propgrid)
+find_package(wxWidgets REQUIRED base core gl html propgrid ribbon)
 
 #
 # DevIL

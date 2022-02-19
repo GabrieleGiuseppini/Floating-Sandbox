@@ -306,11 +306,18 @@ public:
             // Tell IGameController
             if (!mCurrentTrajectory->RotationCenter)
             {
+                // Calculate offset
+                vec2f const fractionalOffset = newCurrentPosition - mCurrentTrajectory->CurrentPosition + mCurrentTrajectory->CumulativeUnconsumedMoveOffset;
+                DisplayLogicalSize const integralOffset = DisplayLogicalSize::FromFloatRound(fractionalOffset);
+
                 // Move
                 mGameController->MoveBy(
                     mCurrentTrajectory->EngagedMovableObjectId,
-                    DisplayLogicalSize::FromFloatRound(newCurrentPosition - mCurrentTrajectory->CurrentPosition),
-                    DisplayLogicalSize::FromFloatRound(newCurrentPosition - mCurrentTrajectory->CurrentPosition));
+                    integralOffset,
+                    integralOffset);
+
+                // Accumulate debt
+                mCurrentTrajectory->CumulativeUnconsumedMoveOffset = fractionalOffset - integralOffset.ToFloat();
             }
             else
             {
@@ -393,6 +400,7 @@ public:
                 mCurrentTrajectory->RotationCenter = mRotationCenter;
                 mCurrentTrajectory->StartPosition = inputState.PreviousMousePosition.ToFloat();
                 mCurrentTrajectory->CurrentPosition = mCurrentTrajectory->StartPosition;
+                mCurrentTrajectory->CumulativeUnconsumedMoveOffset = vec2f::zero();
                 mCurrentTrajectory->StartTimestamp = now;
                 mCurrentTrajectory->EndTimestamp = mCurrentTrajectory->StartTimestamp + TrajectoryLag;
             }
@@ -606,6 +614,8 @@ private:
         vec2f StartPosition;
         vec2f CurrentPosition;
         vec2f EndPosition;
+
+        vec2f CumulativeUnconsumedMoveOffset; // We only offset by integral steps, and here we cumulate our rounding debt
 
         std::chrono::steady_clock::time_point StartTimestamp;
         std::chrono::steady_clock::time_point EndTimestamp;

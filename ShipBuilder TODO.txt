@@ -9,9 +9,165 @@ https://gamejolt.com/x/permalink/comment/11730705
 	+ Test again
 
 + Test Titanic's alignments
-- Test on old Dell
++ Test on old Dell
 
-- Release
+= UIRearc
+	+ DO
+		+ Move GameViz selector to StructuralLayer
+			+ Fix
+			+ Fix radio behavior of select button
+		+ File "toolbar"
+			+ Quit button
+		+ Ship "toolbar"
+		+ File icons: same size as layer
+		+ Ship icons: same size as layer
+		+ Do control for button with label in ribbon toolbar
+			+ Disable also label
+				+ Get colors from parent ribbon in cctor
+			+ Cleanup old code
+		+ Test ribbon on Ubuntu			
+		+ Possible reorg:
+			+ Main
+				+ File
+					+ Use toolbar button
+				+ View
+					+ Zoom In
+					+ Zoom Out
+					+ Reset View
+			+ Layers
+				+ "Edit"
+			+ Edit
+				+ Undo
+					+ Undo
+				+ Ship
+					+ Auto-Trim
+					+ Flip Ship H
+					+ Flip Ship V
+					+ Size
+					+ Properties
+				+ Analysis
+					+ Use toolbar button
+				+ Tool Settings
+					+ Split checkboxes into label and checkbox
+					+ Fix when tool has no settings
+					+ Initial layout is broken
+		+ Tool settings to toolbar
+		+ All other menu items: move to toolbar
+			+ Create accelerator table for most common ones, plus Log Window
+				+ Ctrl+N
+				+ Ctrl+O
+				+ Ctrl+S (Save)
+				+ Alt+F4
+				+ Ctrl+Z
+				+ +
+				+ -
+				+ Home
+				+ Ctrl+L
+			+ Fix save:
+				- OLD:
+					- Save Button, Key: 
+						- OnSaveShip
+							- PreSaveShipCheck
+							- SaveShip
+					- SaveAs Button, Key: 
+						- OnSaveShipAs
+							- PreSaveShipCheck
+							- SaveShipAs
+					- Close:
+						- Dirty && User Wants:
+							- SaveShip
+					- New:
+						- Dirty && UserWants:
+							- SaveShip
+					- Load:
+						- Dirty && UserWants:
+							- SaveShip
+					- SaveAndSwitchBackToGame:
+						- SaveShip()
+					- QuitAndSwitchBackToGame:
+						- Dirty && User Wants:
+							- SaveShip					
+					------------------------
+					- SaveShip:
+						- If no path: SaveShipAs
+						- Else: DoSaveShip
+					- SaveShipAs:
+						- Dialog
+						- If OK: DoSaveShip
+				+ NEW:
+					! Tenet:
+						! PreSaveShipValidation is at very bottom, DoSaveShip(filename)
+					+ Save Button, Key: SaveShip()
+						- DoSaveShipOrSaveShipAsWithValidation()
+					+ Save As Button: SaveShipAs()
+						- DoSaveShipAsWithValidation()
+					+ Close:
+						- Dirty && User Wants:
+							- DoSaveShipOrSaveShipAsWithValidation()
+							- If false: veto
+					+ New:
+						- Dirty && UserWants:
+							- DoSaveShipOrSaveShipAsWithValidation()
+							- If false: return
+					+ Load:
+						- Dirty && UserWants:
+							- DoSaveShipOrSaveShipAsWithValidation()
+							- If false: return
+					+ SaveAndSwitchBackToGame:
+						- DoSaveShipOrSaveShipAsWithValidation()
+						- If false: return
+					+ QuitAndSwitchBackToGame:
+						- Dirty && User Wants:
+							- DoSaveShipOrSaveShipAsWithValidation()
+							- If false: return
+					------------------------
+					+ DoSaveShipOrSaveShipAsWithValidation() -> bool
+						- If has path: return DoSaveShipWithValidation(path)
+						- Else: return DoSaveShipAsWithValidation()
+					+ DoSaveShipAsWithValidation() -> bool
+						- If Precheck OK:
+							- Dialog
+							- If OK:
+								- DoSaveShipWithoutValidation(filename)
+								- Return true
+							- Else:
+								- Return false
+						- Else:
+							- Return false
+					+ DoSaveShipWithValidation(filename) -> bool
+						- If Precheck OK:
+							- DoSaveShipWithoutValidation(filename)
+							- Return true
+						- Else:
+							- Return false
+					+ DoSaveShipWithoutValidation(filename)
+						- ...Save...			
+			+ Display shortcuts at affected tooltips
+				+ Populate accelerator over there, via private helper method
+	+ Copy all useful PSDs to Authoring
+		+ Nuke useless PSDs from Authoring
+	+ Follow-ups
+		+ Fixup col0
+			+ H margins,col 
+			+ Separator(s)
+			+ Undo stack width
+		+ Layer name @ left panel
+		+ Color of labels @ tool settings
+		+ Select Main page at Open
+		+ Cleanup all TODOs
+	+ Test in FloatingSandbox mode
+	X See if should Realize() ribbon bar at each page change
+	+ Re-test UI on old Dell
+	+ Re-test UI on Ubuntu
+		+ See if need to change style, see https://imron02.wordpress.com/2014/12/11/wxwidgets-simple-application-using-wxribbon-and-wxauinotebook/
+		+ ShipBuilder Auto-Trim:
+			+ Bug when also zoom changes afterwards
+				+ First off: is the zoom really changing?
+			+ Texture seems to be trimmed "wrong"
+
+= Release
+
+- Test with huge size: lag should only be proportional to edit region
 
 - New/Set/Remove layers:
 	- New:
@@ -129,6 +285,9 @@ https://gamejolt.com/x/permalink/comment/11730705
 	- Notes:
 		- Any import from .shp2 requires password
 		- All imports push an undo
+
+- Waterline analysis
+	- https://www.britannica.com/science/fluid-mechanics/Hydrostatics#ref611691
 
 - MainFrame: Game viz: add "export to image" button
 	- Rearc icons now:

@@ -11,11 +11,13 @@
 #include "ModelValidationDialog.h"
 #include "OpenGLManager.h"
 #include "ResizeDialog.h"
+#include "RibbonToolbarButton.h"
 #include "ShipPropertiesEditDialog.h"
 #include "StatusBar.h"
 #include "WorkbenchState.h"
 
 #include <UILib/BitmapButton.h>
+#include <UILib/BitmapRadioButton.h>
 #include <UILib/BitmapToggleButton.h>
 #include <UILib/LocalizationManager.h>
 #include <UILib/LoggingDialog.h>
@@ -26,12 +28,14 @@
 #include <Game/ResourceLocator.h>
 #include <Game/ShipTexturizer.h>
 
+#include <wx/accel.h>
 #include <wx/app.h>
 #include <wx/frame.h>
 #include <wx/glcanvas.h> // Need to include this *after* our glad.h has been included (from OpenGLManager.h)
 #include <wx/icon.h>
-#include <wx/menu.h>
 #include <wx/panel.h>
+#include <wx/ribbon/bar.h>
+#include <wx/ribbon/page.h>
 #include <wx/scrolbar.h>
 #include <wx/scrolwin.h>
 #include <wx/slider.h>
@@ -135,24 +139,22 @@ public:
 
 private:
 
-    wxAcceleratorEntry MakePlainAcceleratorKey(int key, wxMenuItem * menuItem);
-    wxPanel * CreateFilePanel(wxWindow * parent);
-    wxPanel * CreateShipSettingsPanel(wxWindow * parent);
-    wxPanel * CreateToolSettingsPanel(wxWindow * parent);
-    wxPanel * CreateVisualizationsPanel(wxWindow * parent);
+    wxRibbonPage * CreateMainRibbonPage(wxRibbonBar * parent);
+    wxRibbonPanel * CreateMainFileRibbonPanel(wxRibbonPage * parent);
+    wxRibbonPanel * CreateMainViewRibbonPanel(wxRibbonPage * parent);
+    wxRibbonPage * CreateLayersRibbonPage(wxRibbonBar * parent);
+    wxRibbonPanel * CreateLayerRibbonPanel(wxRibbonPage * parent, LayerType layer);
+    wxRibbonPage * CreateEditRibbonPage(wxRibbonBar * parent);
+    wxRibbonPanel * CreateEditUndoRibbonPanel(wxRibbonPage * parent);
+    wxRibbonPanel * CreateEditShipRibbonPanel(wxRibbonPage * parent);
+    wxRibbonPanel * CreateEditAnalysisRibbonPanel(wxRibbonPage * parent);
+    wxRibbonPanel * CreateEditToolSettingsRibbonPanel(wxRibbonPage * parent);
+    wxPanel * CreateVisualizationModeHeaderPanel(wxWindow * parent);
     wxPanel * CreateVisualizationDetailsPanel(wxWindow * parent);
     wxPanel * CreateToolbarPanel(wxWindow * parent);
     wxPanel * CreateUndoPanel(wxWindow * parent);
     wxPanel * CreateWorkPanel(wxWindow * parent);
-
-    std::tuple<wxPanel *, wxSizer *> CreateToolSettingsToolSizePanel(
-        wxWindow * parent,
-        wxString const & label,
-        wxString const & tooltip,
-        std::uint32_t minValue,
-        std::uint32_t maxValue,
-        std::uint32_t currentValue,
-        std::function<void(std::uint32_t)> onValue);
+    void AddAcceleratorKey(int flags, int keyCode, std::function<void()> handler);
 
     void OnWorkCanvasPaint(wxPaintEvent & event);
     void OnWorkCanvasResize(wxSizeEvent & event);
@@ -168,27 +170,7 @@ private:
     void OnWorkCanvasKeyDown(wxKeyEvent & event);
     void OnWorkCanvasKeyUp(wxKeyEvent & event);
 
-    void OnNewShip(wxCommandEvent & event);
-    void OnLoadShip(wxCommandEvent & event);
-    void OnSaveShipMenuItem(wxCommandEvent & event);
-    void OnSaveShip();
-    void OnSaveShipAsMenuItem(wxCommandEvent & event);
-    void OnSaveShipAs();
-    void OnSaveAndGoBackMenuItem(wxCommandEvent & event);
-    void OnSaveAndGoBack();
-    void OnQuitAndGoBack(wxCommandEvent & event);
-    void OnQuit(wxCommandEvent & event);
     void OnClose(wxCloseEvent & event);
-    void OnEditUndoMenuItem(wxCommandEvent & event);
-    void OnEditAutoTrimMenuItem(wxCommandEvent & event);
-    void OnEditFlipHorizontallyMenuItem(wxCommandEvent & event);
-    void OnEditFlipVerticallyMenuItem(wxCommandEvent & event);
-    void OnEditResizeShipMenuItem(wxCommandEvent & event);
-    void OnEditShipPropertiesMenuItem(wxCommandEvent & event);
-    void OnZoomIn(wxCommandEvent & event);
-    void OnZoomOut(wxCommandEvent & event);
-    void OnResetView(wxCommandEvent & event);
-    void OnOpenLogWindowMenuItemSelected(wxCommandEvent & event);
     void OnStructuralMaterialSelected(fsStructuralMaterialSelectedEvent & event);
     void OnElectricalMaterialSelected(fsElectricalMaterialSelectedEvent & event);
     void OnRopeMaterialSelected(fsStructuralMaterialSelectedEvent & event);
@@ -206,15 +188,15 @@ private:
 
     void LoadShip();
 
-    bool PreSaveShipCheck();
+    void SaveShip();
 
-    bool SaveShip();
-
-    bool SaveShipAs();
+    void SaveShipAs();
 
     void SaveAndSwitchBackToGame();
 
     void QuitAndSwitchBackToGame();
+
+    void Quit();
 
     void SwitchBackToGame(std::optional<std::filesystem::path> shipFilePath);
 
@@ -243,13 +225,27 @@ private:
 
     bool DoLoadShip(std::filesystem::path const & shipFilePath);
 
-    void DoSaveShip(std::filesystem::path const & shipFilePath);
+    bool DoSaveShipOrSaveShipAsWithValidation();
+
+    bool DoSaveShipAsWithValidation();
+
+    bool DoSaveShipWithValidation(std::filesystem::path const & shipFilePath);
+
+    void DoSaveShipWithoutValidation(std::filesystem::path const & shipFilePath);
+
+    bool DoPreSaveShipValidation();
 
     void BailOut();
 
     bool IsLogicallyInWorkCanvas(DisplayLogicalCoordinates const & coords) const;
 
     DisplayLogicalSize GetWorkCanvasSize() const;
+
+    void ZoomIn();
+
+    void ZoomOut();
+
+    void ResetView();
 
     void RecalculateWorkCanvasPanning(ViewModel const & viewModel);
 
@@ -331,46 +327,46 @@ private:
     //
 
     wxPanel * mMainPanel;
+    std::vector<wxAcceleratorEntry> mAcceleratorEntries;
 
-    // Menu
-    wxMenuItem * mSaveShipMenuItem;
-    wxMenuItem * mSaveAndGoBackMenuItem;
-    wxMenuItem * mUndoMenuItem;
-
-    // File panel
-    BitmapButton * mSaveShipButton;
-
-    // Tool settings panel
+    // Ribbon bar
+    wxRibbonBar * mMainRibbonBar;
+    RibbonToolbarButton<BitmapButton> * mSaveShipButton;
+    RibbonToolbarButton<BitmapButton> * mSaveShipAsButton;
+    RibbonToolbarButton<BitmapButton> * mSaveShipAndGoBackButton;
+    RibbonToolbarButton<BitmapButton> * mZoomInButton;
+    RibbonToolbarButton<BitmapButton> * mZoomOutButton;
+    RibbonToolbarButton<BitmapButton> * mUndoButton;
+    std::array<RibbonToolbarButton<BitmapRadioButton> *, VisualizationCount> mVisualizationSelectButtons;
+    std::array<RibbonToolbarButton<BitmapButton> *, LayerCount> mLayerExportButtons;
+    std::array<RibbonToolbarButton<BitmapButton> *, LayerCount> mLayerDeleteButtons;
     wxSizer * mToolSettingsPanelsSizer;
     std::vector<std::tuple<ToolType, wxPanel *>> mToolSettingsPanels;
 
-    // Visualization panel
-    std::array<BitmapToggleButton *, VisualizationCount> mVisualizationSelectButtons;
-    std::array<BitmapButton *, LayerCount> mLayerExportButtons;
-    std::array<BitmapButton *, LayerCount> mLayerDeleteButtons;
-
     // Visualization details panel
+    wxSizer * mVisualizationModeHeaderPanelsSizer;
+    std::array<wxPanel *, VisualizationCount> mVisualizationModeHeaderPanels;
     wxSlider * mOtherVisualizationsOpacitySlider;
     wxSizer * mVisualizationModePanelsSizer;
     std::array<wxPanel *, VisualizationCount> mVisualizationModePanels;
-    BitmapToggleButton * mGameVisualizationNoneModeButton;
-    BitmapToggleButton * mGameVisualizationAutoTexturizationModeButton;
-    BitmapToggleButton * mGameVisualizationTextureModeButton;
-    BitmapToggleButton * mStructuralLayerVisualizationNoneModeButton;
-    BitmapToggleButton * mStructuralLayerVisualizationMeshModeButton;
-    BitmapToggleButton * mStructuralLayerVisualizationPixelModeButton;
-    BitmapToggleButton * mElectricalLayerVisualizationNoneModeButton;
-    BitmapToggleButton * mElectricalLayerVisualizationPixelModeButton;
-    BitmapToggleButton * mRopesLayerVisualizationNoneModeButton;
-    BitmapToggleButton * mRopesLayerVisualizationLinesModeButton;
-    BitmapToggleButton * mTextureLayerVisualizationNoneModeButton;
-    BitmapToggleButton * mTextureLayerVisualizationMatteModeButton;
+    BitmapRadioButton * mGameVisualizationNoneModeButton;
+    BitmapRadioButton * mGameVisualizationAutoTexturizationModeButton;
+    BitmapRadioButton * mGameVisualizationTextureModeButton;
+    BitmapRadioButton * mStructuralLayerVisualizationNoneModeButton;
+    BitmapRadioButton * mStructuralLayerVisualizationMeshModeButton;
+    BitmapRadioButton * mStructuralLayerVisualizationPixelModeButton;
+    BitmapRadioButton * mElectricalLayerVisualizationNoneModeButton;
+    BitmapRadioButton * mElectricalLayerVisualizationPixelModeButton;
+    BitmapRadioButton * mRopesLayerVisualizationNoneModeButton;
+    BitmapRadioButton * mRopesLayerVisualizationLinesModeButton;
+    BitmapRadioButton * mTextureLayerVisualizationNoneModeButton;
+    BitmapRadioButton * mTextureLayerVisualizationMatteModeButton;
     wxBitmapToggleButton * mViewGridButton;
 
     // Toolbar panel
     wxSizer * mToolbarPanelsSizer;
     std::array<wxPanel *, LayerCount> mToolbarPanels;
-    std::array<BitmapToggleButton *, static_cast<size_t>(ToolType::_Last) + 1> mToolButtons;
+    std::array<BitmapRadioButton *, static_cast<size_t>(ToolType::_Last) + 1> mToolButtons;
     wxStaticBitmap * mStructuralForegroundMaterialSelector;
     wxStaticBitmap * mStructuralBackgroundMaterialSelector;
     wxStaticBitmap * mElectricalForegroundMaterialSelector;

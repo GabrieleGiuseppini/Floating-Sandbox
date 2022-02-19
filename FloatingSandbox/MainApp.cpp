@@ -246,6 +246,9 @@ void MainApp::OnInitCmdLine(wxCmdLineParser & parser)
 {
     // Allow just one argument
     parser.AddParam(wxEmptyString, wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL);
+
+    // Put back the base "verbose" or else we get asserts in debug
+    parser.AddSwitch("v", "verbose");
 }
 
 int MainApp::FilterEvent(wxEvent & event)

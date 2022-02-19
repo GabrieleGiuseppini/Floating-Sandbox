@@ -141,7 +141,7 @@ TEST(EndianTests, uint16_t_Write_Little)
 
 TEST(EndianTests, var_uint16_t_WriteRead_Big)
 {
-    unsigned char buffer[2];
+    unsigned char buffer[2]{ 0x00, 0x00 };;
 
     for (std::uint16_t sourceValue = 0; sourceValue <= std::numeric_limits<var_uint16_t>::max().value(); ++sourceValue)
     {
@@ -164,7 +164,7 @@ TEST(EndianTests, var_uint16_t_WriteRead_Big)
 
 TEST(EndianTests, var_uint16_t_WriteRead_Little)
 {
-    unsigned char buffer[2];
+    unsigned char buffer[2]{ 0x00, 0x00 };;
 
     for (std::uint16_t sourceValue = 0; sourceValue <= std::numeric_limits<var_uint16_t>::max().value(); ++sourceValue)
     {

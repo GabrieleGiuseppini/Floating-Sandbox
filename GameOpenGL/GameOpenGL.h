@@ -28,7 +28,8 @@ public:
         : mValue(T())
     {}
 
-    GameOpenGLObject(T value)
+    // Takes ownership of object
+    explicit GameOpenGLObject(T value)
         : mValue(value)
     {}
 
@@ -43,6 +44,14 @@ public:
     {
         mValue = other.mValue;
         other.mValue = T();
+    }
+
+    // Takes ownership of object
+    GameOpenGLObject & operator=(T value)
+    {
+        mValue = value;
+
+        return *this;
     }
 
     GameOpenGLObject & operator=(GameOpenGLObject const & other) = delete;

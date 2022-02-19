@@ -298,7 +298,6 @@ void ModelController::ResizeShip(
         staticShipRect->origin.y = std::max(0, -originOffset.y);
     }
 
-
     //
     // Resize model
     //
@@ -386,15 +385,12 @@ void ModelController::ResizeShip(
     // Texture layer
     if (mModel.HasLayer(LayerType::Texture))
     {
-        // Calc rect in texture coordinates space, assuming the original ratio matches
-#ifdef _DEBUG
-        float const textureRatio = static_cast<float>(mModel.GetTextureLayer().Buffer.Size.width) / static_cast<float>(mModel.GetTextureLayer().Buffer.Size.height);
-        float const shipRatio = static_cast<float>(originalShipRect.size.width) / static_cast<float>(originalShipRect.size.height);
-#endif
-        assert(std::abs(1.0f - textureRatio / shipRatio) < 0.1f);
-        float const shipToImage = static_cast<float>(mModel.GetTextureLayer().Buffer.Size.width) / static_cast<float>(originalShipRect.size.width);
-        ImageSize const imageNewSize = ImageSize::FromFloatRound(newSize.ToFloat() * shipToImage);
-        ImageCoordinates imageOriginOffset = ImageCoordinates::FromFloatRound(originOffset.ToFloat() * shipToImage);
+        // Convert (scale) rect to texture coordinates space
+        vec2f const shipToImage(
+            static_cast<float>(mModel.GetTextureLayer().Buffer.Size.width) / static_cast<float>(originalShipRect.size.width),
+            static_cast<float>(mModel.GetTextureLayer().Buffer.Size.height) / static_cast<float>(originalShipRect.size.height));
+        ImageSize const imageNewSize = ImageSize::FromFloatRound(newSize.ToFloat().scale(shipToImage));
+        ImageCoordinates imageOriginOffset = ImageCoordinates::FromFloatRound(originOffset.ToFloat().scale(shipToImage));
 
         mModel.GetTextureLayer().Buffer = mModel.GetTextureLayer().Buffer.MakeReframed(
             imageNewSize,

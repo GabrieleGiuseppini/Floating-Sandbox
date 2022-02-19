@@ -29,6 +29,7 @@
 #include <wx/cursor.h>
 #include <wx/gbsizer.h>
 #include <wx/msgdlg.h>
+#include <wx/ribbon/art.h>
 #include <wx/sizer.h>
 #include <wx/statline.h>
 #include <wx/tglbtn.h>
@@ -39,10 +40,12 @@
 
 namespace ShipBuilder {
 
+int const RibbonToolbarButtonMargin = 6;
 int constexpr ButtonMargin = 4;
+int constexpr LabelMargin = 3;
 
 static std::string const ClearMaterialName = "Clear";
-ImageSize constexpr MaterialSwathSize(80, 100);
+ImageSize constexpr MaterialSwathSize(50, 65);
 
 int constexpr MaxVisualizationTransparency = 128;
 
@@ -75,7 +78,7 @@ MainFrame::MainFrame(
         std::string(APPLICATION_NAME " ShipBuilder " APPLICATION_VERSION_SHORT_STR),
         wxDefaultPosition,
         wxDefaultSize,
-        wxMINIMIZE_BOX | wxMAXIMIZE_BOX | wxRESIZE_BORDER | wxSYSTEM_MENU | wxCAPTION | wxCLIP_CHILDREN | wxMAXIMIZE
+        wxMINIMIZE_BOX | wxMAXIMIZE_BOX | wxRESIZE_BORDER | wxCAPTION | wxCLIP_CHILDREN | wxMAXIMIZE
         | (IsStandAlone() ? wxCLOSE_BOX : 0));
 
     Bind(wxEVT_CLOSE_WINDOW, &MainFrame::OnClose, this);
@@ -94,10 +97,12 @@ MainFrame::MainFrame(
     //
     // Setup main frame
     //
-    // Row 0: [File Panel] [Ship Settings] [Tool Settings]
-    // Row 1: [Layers Panel]  |  [Work Canvas]
-    //        [Toolbar Panel] |
-    // Row 2: [           Status Bar                  ]
+    // Row 0: [                    Ribbon                 ]
+    // Row 1: [Viz Mode Header Panel] |    [Work Canvas]
+    //          [Viz Details Panel]   |
+    //            [Toolbar Panel]     |
+    // Row 2: [                   Status Bar               ]
+    //
 
     mMainPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 
@@ -107,58 +112,42 @@ MainFrame::MainFrame(
     {
         wxBoxSizer * row0HSizer = new wxBoxSizer(wxHORIZONTAL);
 
-        // File panel
+        // Ribbon
         {
-            wxPanel * filePanel = CreateFilePanel(mMainPanel);
+            mMainRibbonBar = new wxRibbonBar(mMainPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+                wxRIBBON_BAR_FLOW_HORIZONTAL | wxRIBBON_BAR_SHOW_PAGE_LABELS);
+
+            // Configure look'n'feel
+            {
+                auto * artProvider = mMainRibbonBar->GetArtProvider();
+
+                auto const backgroundColor = GetBackgroundColour();
+
+                artProvider->SetColor(wxRIBBON_ART_PAGE_BACKGROUND_COLOUR, backgroundColor);
+                artProvider->SetColor(wxRIBBON_ART_PAGE_BACKGROUND_GRADIENT_COLOUR, backgroundColor);
+                artProvider->SetColor(wxRIBBON_ART_PAGE_BACKGROUND_TOP_COLOUR, backgroundColor);
+                artProvider->SetColor(wxRIBBON_ART_PAGE_BACKGROUND_TOP_GRADIENT_COLOUR, backgroundColor);
+                
+                artProvider->SetColor(wxRIBBON_ART_PAGE_HOVER_BACKGROUND_COLOUR, backgroundColor);
+                artProvider->SetColor(wxRIBBON_ART_PAGE_HOVER_BACKGROUND_GRADIENT_COLOUR, backgroundColor);
+                artProvider->SetColor(wxRIBBON_ART_PAGE_HOVER_BACKGROUND_TOP_COLOUR, backgroundColor);
+                artProvider->SetColor(wxRIBBON_ART_PAGE_HOVER_BACKGROUND_TOP_GRADIENT_COLOUR, backgroundColor);
+
+                artProvider->SetColor(wxRIBBON_ART_TAB_CTRL_BACKGROUND_COLOUR, backgroundColor);
+                artProvider->SetColor(wxRIBBON_ART_TAB_CTRL_BACKGROUND_GRADIENT_COLOUR, backgroundColor);
+            }
+
+            CreateMainRibbonPage(mMainRibbonBar);
+            CreateLayersRibbonPage(mMainRibbonBar);
+            CreateEditRibbonPage(mMainRibbonBar);
+
+            mMainRibbonBar->SetActivePage(1); // We start with the widest of the pages
+            mMainRibbonBar->Realize();
 
             row0HSizer->Add(
-                filePanel,
-                0,
-                wxALIGN_CENTER_VERTICAL,
-                0);
-        }
-
-        // Spacer
-        {
-            wxStaticLine * vLine = new wxStaticLine(mMainPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_VERTICAL);
-
-            row0HSizer->Add(
-                vLine,
-                0,
-                wxEXPAND | wxLEFT | wxRIGHT,
-                4 * ButtonMargin);
-        }
-
-        // Ship settings panel
-        {
-            wxPanel * shipSettingsPanel = CreateShipSettingsPanel(mMainPanel);
-
-            row0HSizer->Add(
-                shipSettingsPanel,
-                0,
-                wxALIGN_CENTER_VERTICAL,
-                0);
-        }
-
-        // Spacer
-        {
-            wxStaticLine * vLine = new wxStaticLine(mMainPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_VERTICAL);
-
-            row0HSizer->Add(
-                vLine,
-                0,
-                wxEXPAND | wxLEFT | wxRIGHT,
-                4 * ButtonMargin);
-        }
-
-        // Tool settings panel
-        {
-            wxPanel * toolSettingsPanel = CreateToolSettingsPanel(mMainPanel);
-
-            row0HSizer->Add(
-                toolSettingsPanel,
-                1, // Expand horizontally
-                wxALIGN_CENTER_VERTICAL,
+                mMainRibbonBar,
+                0, // Maintain Width (that of the widest tab)
+                0, // Maintain H
                 0);
         }
 
@@ -177,55 +166,42 @@ MainFrame::MainFrame(
         {
             wxBoxSizer * row1Col0VSizer = new wxBoxSizer(wxVERTICAL);
 
-            // Visualizations panel
+            // Visualization Mode Header panel
             {
-                wxSizer * tmpVSizer = new wxBoxSizer(wxVERTICAL);
-
-                {
-                    wxStaticLine * line = new wxStaticLine(mMainPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL);
-
-                    tmpVSizer->Add(
-                        line,
-                        0,
-                        wxEXPAND,
-                        0);
-                }
-
-                {
-                    wxPanel * panel = CreateVisualizationsPanel(mMainPanel);
-
-                    tmpVSizer->Add(
-                        panel,
-                        0,
-                        wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxRIGHT,
-                        4);
-                }
-
-                {
-                    wxPanel * panel = CreateVisualizationDetailsPanel(mMainPanel);
-
-                    tmpVSizer->Add(
-                        panel,
-                        0,
-                        wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxRIGHT,
-                        4);
-                }
-
-                {
-                    wxStaticLine * line = new wxStaticLine(mMainPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL);
-
-                    tmpVSizer->Add(
-                        line,
-                        0,
-                        wxEXPAND,
-                        0);
-                }
+                wxPanel * panel = CreateVisualizationModeHeaderPanel(mMainPanel);
 
                 row1Col0VSizer->Add(
-                    tmpVSizer,
-                    0,
-                    0,
+                    panel,
+                    0, // Maintain own height
+                    wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxRIGHT | wxTOP,
+                    ButtonMargin + ButtonMargin); // This is the widest panel, hence we set a border only around it
+            }
+
+            // Spacer
+            {
+                row1Col0VSizer->AddSpacer(8);
+            }
+
+            // Visualizations panel
+            {
+                wxPanel * panel = CreateVisualizationDetailsPanel(mMainPanel);
+
+                row1Col0VSizer->Add(
+                    panel,
+                    1, // Expand vertically, a little
+                    wxALIGN_CENTER_HORIZONTAL,
                     0);
+            }
+
+            // Separator
+            {
+                wxStaticLine * line = new wxStaticLine(mMainPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL);
+
+                row1Col0VSizer->Add(
+                    line,
+                    0,
+                    wxEXPAND | wxTOP | wxBOTTOM,
+                    8);
             }
 
             // Toolbar panel
@@ -246,8 +222,8 @@ MainFrame::MainFrame(
                 row1Col0VSizer->Add(
                     line,
                     0,
-                    wxTOP | wxBOTTOM | wxEXPAND,
-                    2);
+                    wxEXPAND | wxTOP | wxBOTTOM,
+                    8);
             }
 
             // Undo panel
@@ -256,15 +232,15 @@ MainFrame::MainFrame(
 
                 row1Col0VSizer->Add(
                     undoPanel,
-                    1, // Expand vertically
-                    wxLEFT | wxRIGHT | wxEXPAND, // Expand horizontally
-                    4);
+                    2, // Expand vertically
+                    wxEXPAND, // Expand horizontally
+                    0);
             }
 
             row1HSizer->Add(
                 row1Col0VSizer,
-                0,
-                wxEXPAND,
+                0, // Maintain own width
+                wxEXPAND, // Expand vertically
                 0);
         }
 
@@ -306,166 +282,23 @@ MainFrame::MainFrame(
     mMainPanel->SetSizer(mainVSizer);
 
     //
-    // Setup menu
+    // Initialize accelerator
     //
 
-    wxMenuBar * mainMenuBar = new wxMenuBar();
-
-#ifdef __WXGTK__
-    // Note: on GTK we build an accelerator table for plain keys because of https://trac.wxwidgets.org/ticket/17611
-    std::vector<wxAcceleratorEntry> acceleratorEntries;
-#define ADD_PLAIN_ACCELERATOR_KEY(key, menuItem) \
-        acceleratorEntries.push_back(MakePlainAcceleratorKey(int((key)), (menuItem)));
-#else
-#define ADD_PLAIN_ACCELERATOR_KEY(key, menuItem) \
-        (void)menuItem;
-#endif
-
-    // File
-    {
-        wxMenu * fileMenu = new wxMenu();
-
+    // Add Open Log Window
+    AddAcceleratorKey(wxACCEL_CTRL, (int)'L',
+        [this]()
         {
-            wxMenuItem * newShipMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("New Ship") + wxS("\tCtrl+N"), _("Create a new empty ship"), wxITEM_NORMAL);
-            fileMenu->Append(newShipMenuItem);
-            Connect(newShipMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnNewShip);
-        }
+            if (!mLoggingDialog)
+            {
+                mLoggingDialog = std::make_unique<LoggingDialog>(this);
+            }
 
-        {
-            wxMenuItem * loadShipMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("Load Ship...") + wxS("\tCtrl+O"), _("Load a ship"), wxITEM_NORMAL);
-            fileMenu->Append(loadShipMenuItem);
-            Connect(loadShipMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnLoadShip);
-        }
+            mLoggingDialog->Open();
+        });
 
-        {
-            mSaveShipMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("Save Ship") + wxS("\tCtrl+S"), _("Save the current ship"), wxITEM_NORMAL);
-            fileMenu->Append(mSaveShipMenuItem);
-            Connect(mSaveShipMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnSaveShipMenuItem);
-        }
-
-        if (!IsStandAlone())
-        {
-            mSaveAndGoBackMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("Save Ship and Return to Game"), _("Save the current ship and return to the simulator"), wxITEM_NORMAL);
-            fileMenu->Append(mSaveAndGoBackMenuItem);
-            Connect(mSaveAndGoBackMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnSaveAndGoBackMenuItem);
-        }
-        else
-        {
-            mSaveAndGoBackMenuItem = nullptr;
-        }
-
-        {
-            wxMenuItem * saveShipAsMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("Save Ship As..."), _("Save the current ship to a different file"), wxITEM_NORMAL);
-            fileMenu->Append(saveShipAsMenuItem);
-            Connect(saveShipAsMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnSaveShipAsMenuItem);
-        }
-
-        if (!IsStandAlone())
-        {
-            wxMenuItem * quitAndGoBackMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("Quit and Return to Game"), _("Discard the current ship and return to the simulator"), wxITEM_NORMAL);
-            fileMenu->Append(quitAndGoBackMenuItem);
-            Connect(quitAndGoBackMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnQuitAndGoBack);
-        }
-
-        if (IsStandAlone())
-        {
-            wxMenuItem * quitMenuItem = new wxMenuItem(fileMenu, wxID_ANY, _("Quit") + wxS("\tAlt+F4"), _("Quit the builder"), wxITEM_NORMAL);
-            fileMenu->Append(quitMenuItem);
-            Connect(quitMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnQuit);
-        }
-
-        mainMenuBar->Append(fileMenu, _("&File"));
-    }
-
-    // Edit
-    {
-        wxMenu * editMenu = new wxMenu();
-
-        {
-            mUndoMenuItem = new wxMenuItem(editMenu, wxID_ANY, _("Undo") + wxS("\tCtrl+Z"), _("Undo the last edit operation"), wxITEM_NORMAL);
-            editMenu->Append(mUndoMenuItem);
-            Connect(mUndoMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnEditUndoMenuItem);
-        }
-
-        editMenu->Append(new wxMenuItem(editMenu, wxID_SEPARATOR));
-
-        {
-            wxMenuItem * menuItem = new wxMenuItem(editMenu, wxID_ANY, _("Auto-Trim"), _("Removes empty space around the ship"), wxITEM_NORMAL);
-            editMenu->Append(menuItem);
-            Connect(menuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnEditAutoTrimMenuItem);
-        }
-
-        {
-            wxMenuItem * menuItem = new wxMenuItem(editMenu, wxID_ANY, _("Flip Ship Horizontally"), _("Flip the ship horizontally"), wxITEM_NORMAL);
-            editMenu->Append(menuItem);
-            Connect(menuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnEditFlipHorizontallyMenuItem);
-        }
-
-        {
-            wxMenuItem * menuItem = new wxMenuItem(editMenu, wxID_ANY, _("Flip Ship Vertically"), _("Flip the ship vertically"), wxITEM_NORMAL);
-            editMenu->Append(menuItem);
-            Connect(menuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnEditFlipVerticallyMenuItem);
-        }
-
-        {
-            wxMenuItem * menuItem = new wxMenuItem(editMenu, wxID_ANY, _("Resize Ship...") + wxS("\tCtrl+R"), _("Resize the ship"), wxITEM_NORMAL);
-            editMenu->Append(menuItem);
-            Connect(menuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnEditResizeShipMenuItem);
-        }
-
-        {
-            wxMenuItem * menuItem = new wxMenuItem(editMenu, wxID_ANY, _("Ship Properties...") + wxS("\tCtrl+P"), _("Edit the ship properties"), wxITEM_NORMAL);
-            editMenu->Append(menuItem);
-            Connect(menuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnEditShipPropertiesMenuItem);
-        }
-
-        mainMenuBar->Append(editMenu, _("&Edit"));
-    }
-
-    // View
-    {
-        wxMenu * viewMenu = new wxMenu();
-
-        wxMenuItem * zoomInMenuItem = new wxMenuItem(viewMenu, wxID_ANY, _("Zoom In") + wxS("\t+"), wxEmptyString, wxITEM_NORMAL);
-        viewMenu->Append(zoomInMenuItem);
-        Connect(zoomInMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnZoomIn);
-        ADD_PLAIN_ACCELERATOR_KEY('+', zoomInMenuItem);
-        ADD_PLAIN_ACCELERATOR_KEY(WXK_NUMPAD_ADD, zoomInMenuItem);
-
-        wxMenuItem * zoomOutMenuItem = new wxMenuItem(viewMenu, wxID_ANY, _("Zoom Out") + wxS("\t-"), wxEmptyString, wxITEM_NORMAL);
-        viewMenu->Append(zoomOutMenuItem);
-        Connect(zoomOutMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnZoomOut);
-        ADD_PLAIN_ACCELERATOR_KEY('-', zoomOutMenuItem);
-        ADD_PLAIN_ACCELERATOR_KEY(WXK_NUMPAD_SUBTRACT, zoomOutMenuItem);
-
-        viewMenu->Append(new wxMenuItem(viewMenu, wxID_SEPARATOR));
-
-        wxMenuItem * resetViewMenuItem = new wxMenuItem(viewMenu, wxID_ANY, _("Reset View") + wxS("\tHOME"), wxEmptyString, wxITEM_NORMAL);
-        viewMenu->Append(resetViewMenuItem);
-        Connect(resetViewMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnResetView);
-        ADD_PLAIN_ACCELERATOR_KEY(WXK_HOME, resetViewMenuItem);
-
-        mainMenuBar->Append(viewMenu, _("&View"));
-    }
-
-    // Options
-    {
-        wxMenu * optionsMenu = new wxMenu();
-
-        wxMenuItem * openLogWindowMenuItem = new wxMenuItem(optionsMenu, wxID_ANY, _("Open Log Window") + wxS("\tCtrl+L"), wxEmptyString, wxITEM_NORMAL);
-        optionsMenu->Append(openLogWindowMenuItem);
-        Connect(openLogWindowMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnOpenLogWindowMenuItemSelected);
-
-        mainMenuBar->Append(optionsMenu, _("&Options"));
-    }
-
-    SetMenuBar(mainMenuBar);
-
-#ifdef __WXGTK__
-    // Set accelerator
-    wxAcceleratorTable accel(acceleratorEntries.size(), acceleratorEntries.data());
-    SetAcceleratorTable(accel);
-#endif
+    wxAcceleratorTable acceleratorTable(mAcceleratorEntries.size(), mAcceleratorEntries.data());
+    SetAcceleratorTable(acceleratorTable);
 
     //
     // Setup material palettes
@@ -779,717 +612,1430 @@ void MainFrame::ResetToolCursor()
 
 /////////////////////////////////////////////////////////////////////
 
-wxAcceleratorEntry MainFrame::MakePlainAcceleratorKey(int key, wxMenuItem * menuItem)
+wxRibbonPage * MainFrame::CreateMainRibbonPage(wxRibbonBar * parent)
 {
-    auto const keyId = wxNewId();
-    wxAcceleratorEntry entry(wxACCEL_NORMAL, key, keyId);
-    this->Bind(
-        wxEVT_MENU,
-        [menuItem, this](wxCommandEvent &)
-    {
-        // Toggle menu - if it's checkable
-        if (menuItem->IsCheckable())
-        {
-            menuItem->Check(!menuItem->IsChecked());
-        }
+    wxRibbonPage * page = new wxRibbonPage(parent, wxID_ANY, _("File"));
 
-        // Fire menu event handler
-        wxCommandEvent evt(wxEVT_COMMAND_MENU_SELECTED, menuItem->GetId());
-        ::wxPostEvent(this, evt);
-    },
-        keyId);
+    CreateMainFileRibbonPanel(page);
+    CreateMainViewRibbonPanel(page);
 
-    return entry;
+    return page;
 }
 
-wxPanel * MainFrame::CreateFilePanel(wxWindow * parent)
+wxRibbonPanel * MainFrame::CreateMainFileRibbonPanel(wxRibbonPage * parent)
 {
-    wxPanel * panel = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+    wxRibbonPanel * panel = new wxRibbonPanel(parent, wxID_ANY, _T("File"), wxNullBitmap, wxDefaultPosition, wxDefaultSize,
+        wxRIBBON_PANEL_NO_AUTO_MINIMISE);
 
-    wxBoxSizer * sizer = new wxBoxSizer(wxHORIZONTAL);
+    wxGridBagSizer * panelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
 
+    // New ship
     {
-        // New ship
-        {
-            auto button = new BitmapButton(
-                panel,
-                mResourceLocator.GetIconFilePath("new_ship_button"),
-                [this]()
-                {
-                    NewShip();
-                },
-                _("Create a new empty ship"));
+        auto * button = new RibbonToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetIconFilePath("new_ship_button"),
+            _T("New Ship"),
+            [this]()
+            {
+                NewShip();
+            },
+            _("Create a new empty ship (Ctrl+N)."));
 
-            sizer->Add(button, 0, wxALL, ButtonMargin);
-        }
+        panelGridSizer->Add(button);
 
-        sizer->AddStretchSpacer();
-
-        // Load ship
-        {
-            auto button = new BitmapButton(
-                panel,
-                mResourceLocator.GetIconFilePath("load_ship_button"),
-                [this]()
-                {
-                    LoadShip();
-                },
-                _("Load a ship"));
-
-            sizer->Add(button, 0, wxALL, ButtonMargin);
-        }
-
-        sizer->AddStretchSpacer();
-
-        // Save ship
-        {
-            mSaveShipButton = new BitmapButton(
-                panel,
-                mResourceLocator.GetIconFilePath("save_ship_button"),
-                [this]()
-                {
-                    OnSaveShip();
-                },
-                _("Save the current ship"));
-
-            sizer->Add(mSaveShipButton, 0, wxALL, ButtonMargin);
-        }
-
-        sizer->AddStretchSpacer();
-
-        // Save As ship
-        {
-            auto button = new BitmapButton(
-                panel,
-                mResourceLocator.GetIconFilePath("save_ship_as_button"),
-                [this]()
-                {
-                    OnSaveShipAs();
-                },
-                _("Save the current ship to a different file"));
-
-            sizer->Add(button, 0, wxALL, ButtonMargin);
-        }
-
-        // Save and return to game
-        if (!IsStandAlone())
-        {
-            auto saveAndReturnToGameButton = new BitmapButton(
-                panel,
-                mResourceLocator.GetIconFilePath("save_and_return_to_game_button"),
-                [this]()
-                {
-                    OnSaveAndGoBack();
-                },
-                _("Save the current ship and return to the simulator"));
-
-            sizer->Add(saveAndReturnToGameButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, ButtonMargin);
-        }
-
-        // Quit and return to game
-        if (!IsStandAlone())
-        {
-            auto quitAndReturnToGameButton = new BitmapButton(
-                panel,
-                mResourceLocator.GetIconFilePath("quit_and_return_to_game_button"),
-                [this]()
-                {
-                    QuitAndSwitchBackToGame();
-                },
-                _("Discard the current ship and return to the simulator"));
-
-            sizer->Add(quitAndReturnToGameButton, 0, wxALL | wxALIGN_CENTER_VERTICAL, ButtonMargin);
-        }
+        AddAcceleratorKey(wxACCEL_CTRL, (int)'N', [this]() { NewShip(); });
     }
 
-    panel->SetSizerAndFit(sizer);
+    // Load ship
+    {
+        auto * button = new RibbonToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetIconFilePath("load_ship_button"),
+            _T("Load Ship"),
+            [this]()
+            {
+                LoadShip();
+            },
+            _("Load a ship (Ctrl+O)."));
+
+        panelGridSizer->Add(button);
+
+        AddAcceleratorKey(wxACCEL_CTRL, (int)'O', [this]() { LoadShip(); });
+    }
+
+    // Save ship
+    {
+        mSaveShipButton = new RibbonToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetIconFilePath("save_ship_button"),
+            _T("Save Ship"),
+            [this]()
+            {
+                SaveShip();
+            },
+            _("Save the current ship."));
+
+        panelGridSizer->Add(mSaveShipButton);
+
+        AddAcceleratorKey(wxACCEL_CTRL, (int)'S', [this]() { SaveShip(); });
+    }
+
+    // Save As ship
+    {
+        mSaveShipAsButton = new RibbonToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetIconFilePath("save_ship_as_button"),
+            _T("Save Ship As"),
+            [this]()
+            {
+                SaveShipAs();
+            },
+            _("Save the current ship to a different file."));
+
+        panelGridSizer->Add(mSaveShipAsButton);
+    }
+
+    // Save and return to game
+    if (!IsStandAlone())
+    {
+        mSaveShipAndGoBackButton = new RibbonToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetIconFilePath("save_and_return_to_game_button"),
+            _T("Save And Return"),
+            [this]()
+            {
+                SaveAndSwitchBackToGame();
+            },
+            _("Save the current ship and return to the simulator."));
+
+        panelGridSizer->Add(mSaveShipAndGoBackButton);
+    }
+    else
+    {
+        mSaveShipAndGoBackButton = nullptr;
+    }
+
+    // Quit and return to game
+    if (!IsStandAlone())
+    {
+        auto * button = new RibbonToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetIconFilePath("quit_and_return_to_game_button"),
+            _T("Abandon And Return"),
+            [this]()
+            {
+                QuitAndSwitchBackToGame();
+            },
+            _("Discard the current ship and return to the simulator."));
+
+        panelGridSizer->Add(button);
+    }
+
+    // Quit
+    if (IsStandAlone())
+    {
+        auto * button = new RibbonToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetIconFilePath("quit_button"),
+            _T("Quit"),
+            [this]()
+            {
+                Quit();
+            },
+            _("Quit and leave the program (ALT+F4)."));
+
+        panelGridSizer->Add(button);
+
+        AddAcceleratorKey(wxACCEL_ALT, (int)WXK_F4, [this]() { Quit(); });
+    }
+
+    // Wrap in a sizer just for margins
+    {
+        wxSizer * tmpSizer = new wxBoxSizer(wxVERTICAL); // Arbitrary
+
+        tmpSizer->Add(
+            panelGridSizer,
+            0,
+            wxALL,
+            RibbonToolbarButtonMargin);
+
+        panel->SetSizerAndFit(tmpSizer);
+    }
 
     return panel;
 }
 
-wxPanel * MainFrame::CreateShipSettingsPanel(wxWindow * parent)
+wxRibbonPanel * MainFrame::CreateMainViewRibbonPanel(wxRibbonPage * parent)
 {
-    wxPanel * panel = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+    wxRibbonPanel * panel = new wxRibbonPanel(parent, wxID_ANY, _T("View"), wxNullBitmap, wxDefaultPosition, wxDefaultSize,
+        wxRIBBON_PANEL_NO_AUTO_MINIMISE);
 
-    wxBoxSizer * sizer = new wxBoxSizer(wxHORIZONTAL);
+    wxGridBagSizer * panelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
 
+    // Zoom In
     {
-        // Resize button
-        {
-            auto button = new BitmapButton(
-                panel,
-                mResourceLocator.GetIconFilePath("resize_button"),
-                [this]()
-                {
-                    OpenShipCanvasResize();
-                },
-                _("Resize the ship"));
+        mZoomInButton = new RibbonToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetIconFilePath("zoom_in_medium"),
+            _T("Zoom In"),
+            [this]()
+            {
+                ZoomIn();
+            },
+            _T("Magnify the view (+)."));
 
-            sizer->Add(button, 0, wxALL, ButtonMargin);
-        }
+        panelGridSizer->Add(mZoomInButton);
 
-        // Metadata button
-        {
-            auto button = new BitmapButton(
-                panel,
-                mResourceLocator.GetIconFilePath("metadata_button"),
-                [this]()
-                {
-                    OpenShipProperties();
-                },
-                _("Edit the ship properties"));
-
-            sizer->Add(button, 0, wxALL, ButtonMargin);
-        }
-
-        // Validate button
-        {
-            auto button = new BitmapButton(
-                panel,
-                mResourceLocator.GetIconFilePath("validate_ship_button"),
-                [this]()
-                {
-                    ValidateShip();
-                },
-                _("Check the ship for issues"));
-
-            sizer->Add(button, 0, wxALL, ButtonMargin);
-        }
+        AddAcceleratorKey(wxACCEL_NORMAL, (int)'+', [this]() { ZoomIn(); });
     }
 
-    panel->SetSizerAndFit(sizer);
+    // Zoom Out
+    {
+        mZoomOutButton = new RibbonToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetIconFilePath("zoom_out_medium"),
+            _T("Zoom Out"),
+            [this]()
+            {
+                ZoomOut();
+            },
+            _T("Reduce the view (-)."));
+
+        panelGridSizer->Add(mZoomOutButton);
+
+        AddAcceleratorKey(wxACCEL_NORMAL, (int)'-', [this]() { ZoomOut(); });
+    }
+
+    // Reset View
+    {
+        auto * button = new RibbonToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetIconFilePath("zoom_reset_medium"),
+            _T("Reset View"),
+            [this]()
+            {
+                ResetView();
+            },
+            _("Restore view settings to their defaults (HOME)."));
+
+        panelGridSizer->Add(button);
+
+        AddAcceleratorKey(wxACCEL_NORMAL, (int)WXK_HOME, [this]() { ResetView(); });
+    }
+
+    // Wrap in a sizer just for margins
+    {
+        wxSizer * tmpSizer = new wxBoxSizer(wxVERTICAL); // Arbitrary
+
+        tmpSizer->Add(
+            panelGridSizer,
+            0,
+            wxALL,
+            RibbonToolbarButtonMargin);
+
+        panel->SetSizerAndFit(tmpSizer);
+    }
 
     return panel;
 }
 
-wxPanel * MainFrame::CreateToolSettingsPanel(wxWindow * parent)
+wxRibbonPage * MainFrame::CreateLayersRibbonPage(wxRibbonBar * parent)
 {
-    std::uint32_t MaxPencilSize = 8;
+    wxRibbonPage * page = new wxRibbonPage(parent, wxID_ANY, _("Layers"));
 
-    wxPanel * panel = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+    // Structural
+    {
+        CreateLayerRibbonPanel(page, LayerType::Structural);
+    }
+
+    // Electrical
+    {
+        CreateLayerRibbonPanel(page, LayerType::Electrical);
+    }
+
+    // Ropes
+    {
+        CreateLayerRibbonPanel(page, LayerType::Ropes);
+    }
+
+    // Texture
+    {
+        CreateLayerRibbonPanel(page, LayerType::Texture);
+    }
+
+    return page;
+}
+
+wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerType layer)
+{
+    wxString const sureQuestion = _("The current changes to the layer will be lost; are you sure you want to continue?");
+
+    std::string panelLabel;
+    switch (layer)
+    {
+        case LayerType::Electrical:
+        {
+            panelLabel = _("Electrical Layer");
+            break;
+        }
+
+        case LayerType::Ropes:
+        {
+            panelLabel = _("Ropes Layer");
+            break;
+        }
+
+        case LayerType::Structural:
+        {
+            panelLabel = _("Structural Layer");
+            break;
+        }
+
+        case LayerType::Texture:
+        {
+            panelLabel = _("Texture Layer");
+            break;
+        }
+    }
+
+    wxRibbonPanel * panel = new wxRibbonPanel(parent, wxID_ANY, panelLabel, wxNullBitmap, wxDefaultPosition, wxDefaultSize,
+        wxRIBBON_PANEL_NO_AUTO_MINIMISE);
+
+    wxGridBagSizer * panelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
+
+    int iColumn = 0;
+
+    // Selector
+    {
+        VisualizationType visualization{ 0 };
+        std::string buttonBitmapName;
+        switch (layer)
+        {
+            case LayerType::Electrical:
+            {
+                visualization = VisualizationType::ElectricalLayer;
+                buttonBitmapName = "electrical_layer";
+                break;
+            }
+
+            case LayerType::Ropes:
+            {
+                visualization = VisualizationType::RopesLayer;
+                buttonBitmapName = "ropes_layer";
+                break;
+            }
+
+            case LayerType::Structural:
+            {
+                visualization = VisualizationType::StructuralLayer;
+                buttonBitmapName = "structural_layer";
+                break;
+            }
+
+            case LayerType::Texture:
+            {
+                visualization = VisualizationType::TextureLayer;
+                buttonBitmapName = "texture_layer";
+                break;
+            }
+        }
+
+        auto * button = new RibbonToolbarButton<BitmapRadioButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetBitmapFilePath(buttonBitmapName),
+            _T("Edit"),
+            [this, visualization]()
+            {
+                mController->SelectPrimaryVisualization(visualization);
+            },
+            _("Select this layer as the primary layer."));
+
+        panelGridSizer->Add(
+            button,
+            wxGBPosition(0, iColumn++),
+            wxGBSpan(2, 1),
+            0,
+            0);
+
+        mVisualizationSelectButtons[static_cast<size_t>(visualization)] = button;
+    }
+
+    // Game mode viz
+    if (layer == LayerType::Structural)
+    {
+        auto * button = new RibbonToolbarButton<BitmapRadioButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetBitmapFilePath("game_visualization"),
+            _T("Game View"),
+            [this]()
+            {
+                mController->SelectPrimaryVisualization(VisualizationType::Game);
+            },
+            _("View the structure as it is rendered by the simulator."));
+
+        panelGridSizer->Add(
+            button,
+            wxGBPosition(0, iColumn++),
+            wxGBSpan(2, 1),
+            0,
+            0);
+
+        mVisualizationSelectButtons[static_cast<size_t>(VisualizationType::Game)] = button;
+    }
+
+    int iCurrentButton = 0;
+
+    // New/Open
+    {
+        auto const clickHandler = [this, layer, sureQuestion]()
+        {
+            switch (layer)
+            {
+                case LayerType::Electrical:
+                {
+                    if (mController->HasModelLayer(LayerType::Electrical)
+                        && mController->IsModelDirty(LayerType::Electrical))
+                    {
+                        if (!AskUserIfSure(sureQuestion))
+                        {
+                            // Changed their mind
+                            return;
+                        }
+                    }
+
+                    mController->NewElectricalLayer();
+
+                    break;
+                }
+
+                case LayerType::Ropes:
+                {
+                    if (mController->HasModelLayer(LayerType::Ropes)
+                        && mController->IsModelDirty(LayerType::Ropes))
+                    {
+                        if (!AskUserIfSure(sureQuestion))
+                        {
+                            // Changed their mind
+                            return;
+                        }
+                    }
+
+                    mController->NewRopesLayer();
+
+                    break;
+                }
+
+                case LayerType::Structural:
+                {
+                    if (mController->HasModelLayer(LayerType::Structural)
+                        && mController->IsModelDirty(LayerType::Structural))
+                    {
+                        if (!AskUserIfSure(sureQuestion))
+                        {
+                            // Changed their mind
+                            return;
+                        }
+                    }
+
+                    mController->NewStructuralLayer();
+
+                    break;
+                }
+
+                case LayerType::Texture:
+                {
+                    if (mController->HasModelLayer(LayerType::Texture)
+                        && mController->IsModelDirty(LayerType::Texture))
+                    {
+                        if (!AskUserIfSure(sureQuestion))
+                        {
+                            // Changed their mind
+                            return;
+                        }
+                    }
+
+                    ImportTextureLayerFromImage();
+                }
+            }
+        };
+
+        RibbonToolbarButton<BitmapButton> * newButton;
+        if (layer != LayerType::Texture)
+        {
+            newButton = new RibbonToolbarButton<BitmapButton>(
+                panel,
+                wxHORIZONTAL,
+                mResourceLocator.GetBitmapFilePath("new_layer_button"),
+                _("Add/Clear"),
+                clickHandler,
+                _("Add or clean this layer."));
+        }
+        else
+        {
+            newButton = new RibbonToolbarButton<BitmapButton>(
+                panel,
+                wxHORIZONTAL,
+                mResourceLocator.GetBitmapFilePath("open_image_button"),
+                _("From Image"),
+                clickHandler,
+                _("Import this layer from an image file."));
+        }
+
+        panelGridSizer->Add(
+            newButton,
+            wxGBPosition(iCurrentButton % 2, iColumn + iCurrentButton / 2),
+            wxGBSpan(1, 1),
+            0,
+            0);
+
+        ++iCurrentButton;
+    }
+
+    // Import
+    {
+        auto * importButton = new RibbonToolbarButton<BitmapButton>(
+            panel,
+            wxHORIZONTAL,
+            mResourceLocator.GetBitmapFilePath("open_layer_button"),
+            _T("Import"),
+            [this]()
+            {
+                // TODO
+                // TODO: also here ask user if sure when the layer is dirty
+                UnderConstructionDialog::Show(this, mResourceLocator);
+            },
+            _("Import this layer from another ship."));
+
+        panelGridSizer->Add(
+            importButton,
+            wxGBPosition(iCurrentButton % 2, iColumn + iCurrentButton / 2),
+            wxGBSpan(1, 1),
+            0,
+            0);
+
+        ++iCurrentButton;
+    }
+
+    // Delete
+    {
+        RibbonToolbarButton<BitmapButton> * deleteButton;
+
+        if (layer != LayerType::Structural)
+        {
+            deleteButton = new RibbonToolbarButton<BitmapButton>(
+                panel,
+                wxHORIZONTAL,
+                mResourceLocator.GetBitmapFilePath("delete_layer_button"),
+                _T("Remove"),
+                [this, layer, sureQuestion]()
+                {
+                    switch (layer)
+                    {
+                        case LayerType::Electrical:
+                        {
+                            assert(mController->HasModelLayer(LayerType::Electrical));
+
+                            if (mController->IsModelDirty(LayerType::Electrical))
+                            {
+                                if (!AskUserIfSure(sureQuestion))
+                                {
+                                    // Changed their mind
+                                    return;
+                                }
+                            }
+
+                            mController->RemoveElectricalLayer();
+
+                            break;
+                        }
+
+                        case LayerType::Ropes:
+                        {
+                            assert(mController->HasModelLayer(LayerType::Ropes));
+
+                            if (mController->IsModelDirty(LayerType::Ropes))
+                            {
+                                if (!AskUserIfSure(sureQuestion))
+                                {
+                                    // Changed their mind
+                                    return;
+                                }
+                            }
+
+                            mController->RemoveRopesLayer();
+
+                            break;
+                        }
+
+                        case LayerType::Texture:
+                        {
+                            assert(mController->HasModelLayer(LayerType::Texture));
+
+                            if (mController->IsModelDirty(LayerType::Texture))
+                            {
+                                if (!AskUserIfSure(sureQuestion))
+                                {
+                                    // Changed their mind
+                                    return;
+                                }
+                            }
+
+                            mController->RemoveTextureLayer();
+
+                            break;
+                        }
+
+                        case LayerType::Structural:
+                        {
+                            assert(false);
+                            break;
+                        }
+                    }
+                },
+                _("Remove this layer from the ship."));
+
+            panelGridSizer->Add(
+                deleteButton,
+                wxGBPosition(iCurrentButton % 2, iColumn + iCurrentButton / 2),
+                wxGBSpan(1, 1),
+                0,
+                0);
+
+            ++iCurrentButton;
+        }
+        else
+        {
+            deleteButton = nullptr;
+        }
+
+        mLayerDeleteButtons[static_cast<size_t>(layer)] = deleteButton;
+    }
+
+    // Export
+    {
+        RibbonToolbarButton<BitmapButton> * exportButton;
+
+        if (layer == LayerType::Structural
+            || layer == LayerType::Texture)
+        {
+            exportButton = new RibbonToolbarButton<BitmapButton>(
+                panel,
+                wxHORIZONTAL,
+                mResourceLocator.GetBitmapFilePath("save_layer_button"),
+                _T("Export"),
+                [this]()
+                {
+                    // TODO
+                    // TODO: also here ask user if sure when the layer is dirty
+                    UnderConstructionDialog::Show(this, mResourceLocator);
+                },
+                _("Export this layer to a file."));
+
+            panelGridSizer->Add(
+                exportButton,
+                wxGBPosition(iCurrentButton % 2, iColumn + iCurrentButton / 2),
+                wxGBSpan(1, 1),
+                0,
+                0);
+
+            ++iCurrentButton;
+        }
+        else
+        {
+            exportButton = nullptr;
+        }
+
+        mLayerExportButtons[static_cast<size_t>(layer)] = exportButton;
+    }
+
+    // Wrap in a sizer just for margins
+    {
+        wxSizer * tmpSizer = new wxBoxSizer(wxVERTICAL); // Arbitrary
+
+        tmpSizer->Add(
+            panelGridSizer,
+            0,
+            wxALL,
+            RibbonToolbarButtonMargin);
+
+        panel->SetSizerAndFit(tmpSizer);
+    }
+
+    return panel;
+}
+
+wxRibbonPage * MainFrame::CreateEditRibbonPage(wxRibbonBar * parent)
+{
+    wxRibbonPage * page = new wxRibbonPage(parent, wxID_ANY, _("Edit"));
+
+    CreateEditUndoRibbonPanel(page);
+    CreateEditShipRibbonPanel(page);
+    CreateEditAnalysisRibbonPanel(page);
+    CreateEditToolSettingsRibbonPanel(page);
+
+    return page;
+}
+
+wxRibbonPanel * MainFrame::CreateEditUndoRibbonPanel(wxRibbonPage * parent)
+{
+    wxRibbonPanel * panel = new wxRibbonPanel(parent, wxID_ANY, _T("Undo"), wxNullBitmap, wxDefaultPosition, wxDefaultSize,
+        wxRIBBON_PANEL_NO_AUTO_MINIMISE);
+
+    wxGridBagSizer * panelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
+
+    // Undo
+    {
+        mUndoButton = new RibbonToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetIconFilePath("undo_medium"),
+            _T("Undo"),
+            [this]()
+            {
+                assert(mController);
+                mController->UndoLast();
+            },
+            _("Undo the last edit operation (Ctrl+Z)."));
+
+        panelGridSizer->Add(mUndoButton);
+
+        AddAcceleratorKey(wxACCEL_CTRL, (int)'Z', 
+            [this]() 
+            { 
+                assert(mController);
+                mController->UndoLast();
+            });
+    }
+
+    // Wrap in a sizer just for margins
+    {
+        wxSizer * tmpSizer = new wxBoxSizer(wxVERTICAL); // Arbitrary
+
+        tmpSizer->Add(
+            panelGridSizer,
+            0,
+            wxALL,
+            RibbonToolbarButtonMargin);
+
+        panel->SetSizerAndFit(tmpSizer);
+    }
+
+    return panel;
+}
+
+wxRibbonPanel * MainFrame::CreateEditShipRibbonPanel(wxRibbonPage * parent)
+{
+    wxRibbonPanel * panel = new wxRibbonPanel(parent, wxID_ANY, _T("Ship"), wxNullBitmap, wxDefaultPosition, wxDefaultSize,
+        wxRIBBON_PANEL_NO_AUTO_MINIMISE);
+
+    wxGridBagSizer * panelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
+
+    // Auto-Trim
+    {
+        auto button = new RibbonToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetIconFilePath("trim_medium"),
+            _T("Auto-Trim"),
+            [this]()
+            {
+                assert(mController);
+                mController->AutoTrim();
+            },
+            _("Remove empty space around the ship."));
+
+        panelGridSizer->Add(button);
+    }
+
+    // Flip H
+    {
+        auto button = new RibbonToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetIconFilePath("flip_h_medium"),
+            _T("Flip H"),
+            [this]()
+            {
+                assert(mController);
+                mController->Flip(DirectionType::Horizontal);
+            },
+            _("Flip the ship horizontally."));
+
+        panelGridSizer->Add(button);
+    }
+
+    // Flip V
+    {
+        auto button = new RibbonToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetIconFilePath("flip_v_medium"),
+            _T("Flip V"),
+            [this]()
+            {
+                assert(mController);
+                mController->Flip(DirectionType::Vertical);
+            },
+            _("Flip the ship vertically."));
+
+        panelGridSizer->Add(button);
+    }
+
+    // Resize
+    {
+        auto button = new RibbonToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetIconFilePath("resize_button"),
+            _T("Size"),
+            [this]()
+            {
+                OpenShipCanvasResize();
+            },
+            _("Resize the ship."));
+
+        panelGridSizer->Add(button);
+    }
+
+    // Metadata
+    {
+        auto button = new RibbonToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetIconFilePath("metadata_button"),
+            _T("Properties"),
+            [this]()
+            {
+                OpenShipProperties();
+            },
+            _("Edit the ship properties."));
+
+        panelGridSizer->Add(button);
+    }
+
+    // Wrap in a sizer just for margins
+    {
+        wxSizer * tmpSizer = new wxBoxSizer(wxVERTICAL); // Arbitrary
+
+        tmpSizer->Add(
+            panelGridSizer,
+            0,
+            wxALL,
+            RibbonToolbarButtonMargin);
+
+        panel->SetSizerAndFit(tmpSizer);
+    }
+
+    return panel;
+}
+
+wxRibbonPanel * MainFrame::CreateEditAnalysisRibbonPanel(wxRibbonPage * parent)
+{
+    wxRibbonPanel * panel = new wxRibbonPanel(parent, wxID_ANY, _T("Analysis"), wxNullBitmap, wxDefaultPosition, wxDefaultSize,
+        wxRIBBON_PANEL_NO_AUTO_MINIMISE);
+
+    wxGridBagSizer * panelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
+
+    // Validation
+    {
+        auto button = new RibbonToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetIconFilePath("validate_ship_button"),
+            _T("Validation"),
+            [this]()
+            {
+                ValidateShip();
+            },
+            _("Check the ship for issues."));
+
+        panelGridSizer->Add(button);
+    }
+
+    // Wrap in a sizer just for margins
+    {
+        wxSizer * tmpSizer = new wxBoxSizer(wxVERTICAL); // Arbitrary
+
+        tmpSizer->Add(
+            panelGridSizer,
+            0,
+            wxALL,
+            RibbonToolbarButtonMargin);
+
+        panel->SetSizerAndFit(tmpSizer);
+    }
+
+    return panel;
+}
+
+wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * parent)
+{
+    std::uint32_t constexpr MaxPencilSize = 8;
+    wxColor const labelColor = parent->GetArtProvider()->GetColor(wxRIBBON_ART_BUTTON_BAR_LABEL_COLOUR);
+
+    wxRibbonPanel * ribbonPanel = new wxRibbonPanel(parent, wxID_ANY, _T("Tool Settings"), wxNullBitmap, wxDefaultPosition, wxDefaultSize,
+        wxRIBBON_PANEL_NO_AUTO_MINIMISE);
 
     mToolSettingsPanelsSizer = new wxBoxSizer(wxHORIZONTAL);
 
+    // Structural pencil
     {
-        // Structural pencil
+        wxPanel * dynamicPanel = new wxPanel(ribbonPanel);
+        wxGridBagSizer * dynamicPanelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
+
+        // Label
         {
-            auto [tsPanel, sizer] = CreateToolSettingsToolSizePanel(
-                panel,
-                _("Pencil size:"),
-                _("The size of the pencil tool."),
+            auto * staticText = new wxStaticText(dynamicPanel, wxID_ANY, _("Pencil Size:"));
+            staticText->SetForegroundColour(labelColor);
+
+            dynamicPanelGridSizer->Add(
+                staticText,
+                wxGBPosition(0, 0),
+                wxGBSpan(1, 1),
+                wxALIGN_CENTER_VERTICAL);
+        }
+
+        // Edit spin box
+        {
+            EditSpinBox<std::uint32_t> * editSpinBox = new EditSpinBox<std::uint32_t>(
+                dynamicPanel,
+                40,
                 1,
                 MaxPencilSize,
                 mWorkbenchState.GetStructuralPencilToolSize(),
+                _("The size of the pencil tool."),
                 [this](std::uint32_t value)
                 {
                     mWorkbenchState.SetStructuralPencilToolSize(value);
                 });
 
-            tsPanel->SetSizerAndFit(sizer);
+            dynamicPanelGridSizer->Add(
+                editSpinBox,
+                wxGBPosition(0, 1),
+                wxGBSpan(1, 1),
+                wxALIGN_CENTER_VERTICAL);
+        }
 
+        dynamicPanel->SetSizerAndFit(dynamicPanelGridSizer);
+
+        // Insert in dynamic panel
+        {
             mToolSettingsPanelsSizer->Add(
-                tsPanel,
+                dynamicPanel,
                 0,
                 wxALIGN_CENTER_VERTICAL,
                 0);
 
-            mToolSettingsPanelsSizer->Hide(tsPanel);
-
             mToolSettingsPanels.emplace_back(
                 ToolType::StructuralPencil,
-                tsPanel);
+                dynamicPanel);
+        }
+    }
+
+    // Structural eraser
+    {
+        wxPanel * dynamicPanel = new wxPanel(ribbonPanel);
+        wxGridBagSizer * dynamicPanelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
+
+        // Label
+        {
+            auto * staticText = new wxStaticText(dynamicPanel, wxID_ANY, _("Eraser Size:"));
+            staticText->SetForegroundColour(labelColor);
+
+            dynamicPanelGridSizer->Add(
+                staticText,
+                wxGBPosition(0, 0),
+                wxGBSpan(1, 1),
+                wxALIGN_CENTER_VERTICAL);
         }
 
-        // Structural eraser
+        // Edit spin box
         {
-            auto [tsPanel, sizer] = CreateToolSettingsToolSizePanel(
-                panel,
-                _("Eraser size:"),
-                _("The size of the eraser tool."),
+            EditSpinBox<std::uint32_t> * editSpinBox = new EditSpinBox<std::uint32_t>(
+                dynamicPanel,
+                40,
                 1,
                 MaxPencilSize,
                 mWorkbenchState.GetStructuralEraserToolSize(),
+                _("The size of the eraser tool."),
                 [this](std::uint32_t value)
                 {
                     mWorkbenchState.SetStructuralEraserToolSize(value);
                 });
 
-            tsPanel->SetSizerAndFit(sizer);
+            dynamicPanelGridSizer->Add(
+                editSpinBox,
+                wxGBPosition(0, 1),
+                wxGBSpan(1, 1),
+                wxALIGN_CENTER_VERTICAL);
+        }
 
+        dynamicPanel->SetSizerAndFit(dynamicPanelGridSizer);
+
+        // Insert in dynamic panel
+        {
             mToolSettingsPanelsSizer->Add(
-                tsPanel,
+                dynamicPanel,
                 0,
                 wxALIGN_CENTER_VERTICAL,
                 0);
 
-            mToolSettingsPanelsSizer->Hide(tsPanel);
-
             mToolSettingsPanels.emplace_back(
                 ToolType::StructuralEraser,
-                tsPanel);
+                dynamicPanel);
+        }
+    }
+
+    // Structural line
+    {
+        wxPanel * dynamicPanel = new wxPanel(ribbonPanel);
+        wxGridBagSizer * dynamicPanelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
+
+        // Line Size Label
+        {
+            auto * staticText = new wxStaticText(dynamicPanel, wxID_ANY, _("Line Size:"));
+            staticText->SetForegroundColour(labelColor);
+
+            dynamicPanelGridSizer->Add(
+                staticText,
+                wxGBPosition(0, 0),
+                wxGBSpan(1, 1),
+                wxALIGN_CENTER_VERTICAL);
         }
 
-        // Structural line
+        // Line Size Edit spin box
         {
-            auto [tsPanel, sizer] = CreateToolSettingsToolSizePanel(
-                panel,
-                _("Line size:"),
-                _("The size of the line tool."),
+            EditSpinBox<std::uint32_t> * editSpinBox = new EditSpinBox<std::uint32_t>(
+                dynamicPanel,
+                40,
                 1,
                 MaxPencilSize,
                 mWorkbenchState.GetStructuralLineToolSize(),
+                _("The size of the line tool."),
                 [this](std::uint32_t value)
                 {
                     mWorkbenchState.SetStructuralLineToolSize(value);
                 });
 
-            // Contiguity
-            {
-                wxCheckBox * chkBox = new wxCheckBox(tsPanel, wxID_ANY, _T("Hull mode"));
+            dynamicPanelGridSizer->Add(
+                editSpinBox,
+                wxGBPosition(0, 1),
+                wxGBSpan(1, 1),
+                wxALIGN_CENTER_VERTICAL);
+        }
 
-                chkBox->SetToolTip(_("When enabled, draw lines with pixel edges touching each other"));
+        // Contiguity Label
+        {
+            auto * staticText = new wxStaticText(dynamicPanel, wxID_ANY, _("Hull Mode:"));
+            staticText->SetForegroundColour(labelColor);
 
-                chkBox->SetValue(mWorkbenchState.GetStructuralLineToolIsHullMode());
+            dynamicPanelGridSizer->Add(
+                staticText,
+                wxGBPosition(1, 0),
+                wxGBSpan(1, 1),
+                wxALIGN_CENTER_VERTICAL);
+        }
 
-                chkBox->Bind(
-                    wxEVT_CHECKBOX,
-                    [this](wxCommandEvent & event)
-                    {
-                        mWorkbenchState.SetStructuralLineToolIsHullMode(event.IsChecked());
-                    });
+        // Contiguity Checkbox
+        {
+            wxCheckBox * chkBox = new wxCheckBox(dynamicPanel, wxID_ANY, wxEmptyString);
 
-                sizer->Add(
-                    chkBox,
-                    0,
-                    wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT,
-                    4);
-            }
+            chkBox->SetToolTip(_("When enabled, draw lines with pixel edges touching each other."));
 
-            tsPanel->SetSizerAndFit(sizer);
+            chkBox->SetValue(mWorkbenchState.GetStructuralLineToolIsHullMode());
 
+            chkBox->Bind(
+                wxEVT_CHECKBOX,
+                [this](wxCommandEvent & event)
+                {
+                    mWorkbenchState.SetStructuralLineToolIsHullMode(event.IsChecked());
+                });
+
+            dynamicPanelGridSizer->Add(
+                chkBox,
+                wxGBPosition(1, 1),
+                wxGBSpan(1, 1),
+                wxALIGN_CENTER_VERTICAL);
+        }
+
+        dynamicPanel->SetSizerAndFit(dynamicPanelGridSizer);
+
+        // Insert in dynamic panel
+        {
             mToolSettingsPanelsSizer->Add(
-                tsPanel,
+                dynamicPanel,
                 0,
                 wxALIGN_CENTER_VERTICAL,
                 0);
-
-            mToolSettingsPanelsSizer->Hide(tsPanel);
 
             mToolSettingsPanels.emplace_back(
                 ToolType::StructuralLine,
-                tsPanel);
+                dynamicPanel);
+        }
+    }
+
+    // Structural flood
+    {
+        wxPanel * dynamicPanel = new wxPanel(ribbonPanel);
+        wxGridBagSizer * dynamicPanelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
+
+        // Contiguous Label
+        {
+            auto * staticText = new wxStaticText(dynamicPanel, wxID_ANY, _("Contiguous Only:"));
+            staticText->SetForegroundColour(labelColor);
+
+            dynamicPanelGridSizer->Add(
+                staticText,
+                wxGBPosition(0, 0),
+                wxGBSpan(1, 1),
+                wxALIGN_CENTER_VERTICAL);
         }
 
-        // Structural flood
+        // Contiguous Checkbox
         {
-            wxPanel * tsPanel = new wxPanel(panel, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+            wxCheckBox * chkBox = new wxCheckBox(dynamicPanel, wxID_ANY, wxEmptyString);
 
-            wxBoxSizer * sizer = new wxBoxSizer(wxHORIZONTAL);
+            chkBox->SetToolTip(_("Flood only particles touching each other. When not checked, the flood tool effectively replaces a material with another."));
 
-            {
-                wxCheckBox * chkBox = new wxCheckBox(tsPanel, wxID_ANY, _("Contiguous only"));
+            chkBox->SetValue(mWorkbenchState.GetStructuralFloodToolIsContiguous());
 
-                chkBox->SetToolTip(_("Flood only particles touching each other. When not checked, the flood tool effectively replaces a material with another."));
+            chkBox->Bind(
+                wxEVT_CHECKBOX,
+                [this](wxCommandEvent & event)
+                {
+                    mWorkbenchState.SetStructuralFloodToolIsContiguous(event.IsChecked());
+                });
 
-                chkBox->SetValue(mWorkbenchState.GetStructuralFloodToolIsContiguous());
+            dynamicPanelGridSizer->Add(
+                chkBox,
+                wxGBPosition(0, 1),
+                wxGBSpan(1, 1),
+                wxALIGN_CENTER_VERTICAL);
+        }
 
-                chkBox->Bind(
-                    wxEVT_CHECKBOX,
-                    [this](wxCommandEvent & event)
-                    {
-                        mWorkbenchState.SetStructuralFloodToolIsContiguous(event.IsChecked());
-                    });
+        dynamicPanel->SetSizerAndFit(dynamicPanelGridSizer);
 
-                sizer->Add(
-                    chkBox,
-                    0,
-                    wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT,
-                    4);
-            }
-
-            tsPanel->SetSizerAndFit(sizer);
-
+        // Insert in dynamic panel
+        {
             mToolSettingsPanelsSizer->Add(
-                tsPanel,
+                dynamicPanel,
                 0,
                 wxALIGN_CENTER_VERTICAL,
                 0);
 
-            mToolSettingsPanelsSizer->Hide(tsPanel);
-
             mToolSettingsPanels.emplace_back(
                 ToolType::StructuralFlood,
-                tsPanel);
+                dynamicPanel);
         }
     }
 
-    mToolSettingsPanelsSizer->AddStretchSpacer(1);
+    // Wrap in a sizer just for margins
+    {
+        wxSizer * tmpSizer = new wxBoxSizer(wxVERTICAL); // Arbitrary
 
-    panel->SetSizer(mToolSettingsPanelsSizer);
+        tmpSizer->Add(
+            mToolSettingsPanelsSizer,
+            1, // Stretch vertically so single-row panels have a chance of being able to be at V center
+            wxALL,
+            RibbonToolbarButtonMargin);
 
-    return panel;
+        ribbonPanel->SetSizerAndFit(tmpSizer);
+    }
+
+    // Find widest panel
+    wxPanel const * widestPanel = nullptr;
+    for (auto const & entry : mToolSettingsPanels)
+    {
+        int const width = std::get<1>(entry)->GetSize().GetWidth();
+        if (widestPanel == nullptr || width > widestPanel->GetSize().GetWidth())
+        {
+            widestPanel = std::get<1>(entry);
+        }
+    }
+
+    // Show widest panel only
+    for (auto const & entry : mToolSettingsPanels)
+    {
+        mToolSettingsPanelsSizer->Show(
+            std::get<1>(entry),
+            (widestPanel == nullptr && std::get<0>(entry) == ToolType::StructuralLine)
+            || (widestPanel != nullptr && std::get<1>(entry) == widestPanel));
+    }
+
+    return ribbonPanel;
 }
 
-wxPanel * MainFrame::CreateVisualizationsPanel(wxWindow * parent)
+wxPanel * MainFrame::CreateVisualizationModeHeaderPanel(wxWindow * parent)
 {
     wxPanel * panel = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 
-    wxBoxSizer * rootVSizer = new wxBoxSizer(wxVERTICAL);
+    mVisualizationModeHeaderPanelsSizer = new wxBoxSizer(wxVERTICAL);
 
-    rootVSizer->AddSpacer(10);
-
-    // Visualizations management
+    // Game viz mode
     {
-        wxGridBagSizer * visualizationManagerSizer = new wxGridBagSizer(0, 0);
+        wxPanel * modePanel = new wxPanel(panel);
 
+        auto * sizer = new wxGridBagSizer(0, 0);
+
+        // Icon
         {
-            auto const createButtonRow = [&](VisualizationType visualization, int iRow)
-            {
-                wxString const sureQuestion = _("The current changes to the layer will be lost; are you sure you want to continue?");
+            auto * staticBitmap = new wxStaticBitmap(
+                modePanel,
+                wxID_ANY,
+                WxHelpers::LoadBitmap("game_visualization", mResourceLocator));
 
-                // Selector
-                {
-                    std::string buttonBitmapName;
-                    wxString buttonTooltip;
-                    switch (visualization)
-                    {
-                        case VisualizationType::Game:
-                        {
-                            buttonBitmapName = "game_visualization";
-                            buttonTooltip = _("Game view");
-                            break;
-                        }
-
-                        case VisualizationType::ElectricalLayer:
-                        {
-                            buttonBitmapName = "electrical_layer";
-                            buttonTooltip = _("Electrical layer");
-                            break;
-                        }
-
-                        case VisualizationType::RopesLayer:
-                        {
-                            buttonBitmapName = "ropes_layer";
-                            buttonTooltip = _("Ropes layer");
-                            break;
-                        }
-
-                        case VisualizationType::StructuralLayer:
-                        {
-                            buttonBitmapName = "structural_layer";
-                            buttonTooltip = _("Structural layer");
-                            break;
-                        }
-
-                        case VisualizationType::TextureLayer:
-                        {
-                            buttonBitmapName = "texture_layer";
-                            buttonTooltip = _("Texture layer");
-                            break;
-                        }
-                    }
-
-                    auto * selectorButton = new BitmapToggleButton(
-                        panel,
-                        mResourceLocator.GetBitmapFilePath(buttonBitmapName),
-                        [this, visualization]()
-                        {
-                            mController->SelectPrimaryVisualization(visualization);
-                        },
-                        buttonTooltip);
-
-                    visualizationManagerSizer->Add(
-                        selectorButton,
-                        wxGBPosition(iRow * 3, 0),
-                        wxGBSpan(2, 1),
-                        wxALIGN_CENTER_VERTICAL,
-                        0);
-
-                    mVisualizationSelectButtons[static_cast<size_t>(visualization)] = selectorButton;
-                }
-
-                // New
-                if (visualization != VisualizationType::Game)
-                {
-                    BitmapButton * newButton;
-
-                    if (visualization != VisualizationType::TextureLayer)
-                    {
-                        newButton = new BitmapButton(
-                            panel,
-                            mResourceLocator.GetBitmapFilePath("new_layer_button"),
-                            [this, visualization, sureQuestion]()
-                            {
-                                switch (visualization)
-                                {
-                                    case VisualizationType::ElectricalLayer:
-                                    {
-                                        if (mController->HasModelLayer(LayerType::Electrical)
-                                            && mController->IsModelDirty(LayerType::Electrical))
-                                        {
-                                            if (!AskUserIfSure(sureQuestion))
-                                            {
-                                                // Changed their mind
-                                                return;
-                                            }
-                                        }
-
-                                        mController->NewElectricalLayer();
-
-                                        break;
-                                    }
-
-                                    case VisualizationType::RopesLayer:
-                                    {
-                                        if (mController->HasModelLayer(LayerType::Ropes)
-                                            && mController->IsModelDirty(LayerType::Ropes))
-                                        {
-                                            if (!AskUserIfSure(sureQuestion))
-                                            {
-                                                // Changed their mind
-                                                return;
-                                            }
-                                        }
-
-                                        mController->NewRopesLayer();
-
-                                        break;
-                                    }
-
-                                    case VisualizationType::StructuralLayer:
-                                    {
-                                        if (mController->HasModelLayer(LayerType::Structural)
-                                            && mController->IsModelDirty(LayerType::Structural))
-                                        {
-                                            if (!AskUserIfSure(sureQuestion))
-                                            {
-                                                // Changed their mind
-                                                return;
-                                            }
-                                        }
-
-                                        mController->NewStructuralLayer();
-
-                                        break;
-                                    }
-
-                                    case VisualizationType::Game:
-                                    case VisualizationType::TextureLayer:
-                                    {
-                                        assert(false);
-                                        break;
-                                    }
-                                }
-                            },
-                            _("Add or clean the layer."));
-                    }
-                    else
-                    {
-                        newButton = new BitmapButton(
-                            panel,
-                            mResourceLocator.GetBitmapFilePath("open_image_button"),
-                            [this, sureQuestion]()
-                            {
-                                if (mController->HasModelLayer(LayerType::Texture)
-                                    && mController->IsModelDirty(LayerType::Texture))
-                                {
-                                    if (!AskUserIfSure(sureQuestion))
-                                    {
-                                        // Changed their mind
-                                        return;
-                                    }
-                                }
-
-                                ImportTextureLayerFromImage();
-                            },
-                            _("Import this layer from an image file."));
-                    }
-
-                    visualizationManagerSizer->Add(
-                        newButton,
-                        wxGBPosition(iRow * 3, 1),
-                        wxGBSpan(1, 1),
-                        wxLEFT | wxRIGHT,
-                        10);
-                }
-
-                // Import
-                if (visualization != VisualizationType::Game)
-                {
-                    // TODO: also here ask user if sure when the layer is dirty
-
-                    auto * importButton = new BitmapButton(
-                        panel,
-                        mResourceLocator.GetBitmapFilePath("open_layer_button"),
-                        [this, visualization]()
-                        {
-                            // TODO
-                            UnderConstructionDialog::Show(this, mResourceLocator);
-                        },
-                        _("Import this layer from another ship."));
-
-                    visualizationManagerSizer->Add(
-                        importButton,
-                        wxGBPosition(iRow * 3 + 1, 1),
-                        wxGBSpan(1, 1),
-                        wxLEFT | wxRIGHT,
-                        10);
-                }
-
-                // Delete
-                if (visualization != VisualizationType::Game)
-                {
-                    BitmapButton * deleteButton;
-
-                    if (visualization != VisualizationType::StructuralLayer)
-                    {
-                        deleteButton = new BitmapButton(
-                            panel,
-                            mResourceLocator.GetBitmapFilePath("delete_layer_button"),
-                            [this, visualization, sureQuestion]()
-                            {
-                                switch (visualization)
-                                {
-                                    case VisualizationType::ElectricalLayer:
-                                    {
-                                        assert(mController->HasModelLayer(LayerType::Electrical));
-
-                                        if (mController->IsModelDirty(LayerType::Electrical))
-                                        {
-                                            if (!AskUserIfSure(sureQuestion))
-                                            {
-                                                // Changed their mind
-                                                return;
-                                            }
-                                        }
-
-                                        mController->RemoveElectricalLayer();
-
-                                        break;
-                                    }
-
-                                    case VisualizationType::RopesLayer:
-                                    {
-                                        assert(mController->HasModelLayer(LayerType::Ropes));
-
-                                        if (mController->IsModelDirty(LayerType::Ropes))
-                                        {
-                                            if (!AskUserIfSure(sureQuestion))
-                                            {
-                                                // Changed their mind
-                                                return;
-                                            }
-                                        }
-
-                                        mController->RemoveRopesLayer();
-
-                                        break;
-                                    }
-
-                                    case VisualizationType::TextureLayer:
-                                    {
-                                        assert(mController->HasModelLayer(LayerType::Texture));
-
-                                        if (mController->IsModelDirty(LayerType::Texture))
-                                        {
-                                            if (!AskUserIfSure(sureQuestion))
-                                            {
-                                                // Changed their mind
-                                                return;
-                                            }
-                                        }
-
-                                        mController->RemoveTextureLayer();
-
-                                        break;
-                                    }
-
-                                    case VisualizationType::Game:
-                                    case VisualizationType::StructuralLayer:
-                                    {
-                                        assert(false);
-                                        break;
-                                    }
-                                }
-                            },
-                            _("Remove this layer."));
-
-                        visualizationManagerSizer->Add(
-                            deleteButton,
-                            wxGBPosition(iRow * 3, 2),
-                            wxGBSpan(1, 1),
-                            0,
-                            0);
-                    }
-                    else
-                    {
-                        deleteButton = nullptr;
-                    }
-
-                    mLayerDeleteButtons[static_cast<size_t>(VisualizationToLayer(visualization))] = deleteButton;
-                }
-
-                // Export
-                if (visualization != VisualizationType::Game)
-                {
-                    BitmapButton * exportButton;
-
-                    if (visualization == VisualizationType::StructuralLayer
-                        || visualization == VisualizationType::TextureLayer)
-                    {
-                        exportButton = new BitmapButton(
-                            panel,
-                            mResourceLocator.GetBitmapFilePath("save_layer_button"),
-                            [this, visualization]()
-                            {
-                                // TODO
-                                UnderConstructionDialog::Show(this, mResourceLocator);
-                            },
-                            _("Export this layer to a file."));
-
-                        visualizationManagerSizer->Add(
-                            exportButton,
-                            wxGBPosition(iRow * 3 + 1, 2),
-                            wxGBSpan(1, 1),
-                            0,
-                            0);
-                    }
-                    else
-                    {
-                        exportButton = nullptr;
-                    }
-
-                    mLayerExportButtons[static_cast<size_t>(VisualizationToLayer(visualization))] = exportButton;
-                }
-
-                // Spacer
-                visualizationManagerSizer->Add(
-                    new wxGBSizerItem(
-                        -1,
-                        12,
-                        wxGBPosition(iRow * 3 + 2, 0),
-                        wxGBSpan(1, LayerCount)));
-            };
-
-            createButtonRow(VisualizationType::Game, 0);
-
-            createButtonRow(VisualizationType::StructuralLayer, 1);
-
-            createButtonRow(VisualizationType::ElectricalLayer, 2);
-
-            createButtonRow(VisualizationType::RopesLayer, 3);
-
-            createButtonRow(VisualizationType::TextureLayer, 4);
+            sizer->Add(
+                staticBitmap,
+                wxGBPosition(0, 0),
+                wxGBSpan(2, 1),
+                wxRIGHT,
+                ButtonMargin);
         }
 
-        rootVSizer->Add(
-            visualizationManagerSizer,
+        // Label 1
+        {
+            auto * staticText = new wxStaticText(modePanel, wxID_ANY, _("Structural Layer"));
+
+            sizer->Add(
+                staticText,
+                wxGBPosition(0, 1),
+                wxGBSpan(1, 1),
+                wxALIGN_TOP | wxALIGN_CENTER_HORIZONTAL,
+                0);
+        }
+
+        // Label 2
+        {
+            auto * staticText = new wxStaticText(modePanel, wxID_ANY, _("(Game View)"));
+
+            sizer->Add(
+                staticText,
+                wxGBPosition(1, 1),
+                wxGBSpan(1, 1),
+                wxALIGN_BOTTOM | wxALIGN_CENTER_HORIZONTAL,
+                0);
+        }
+
+        modePanel->SetSizerAndFit(sizer);
+
+        mVisualizationModeHeaderPanelsSizer->Add(
+            modePanel,
             0,
             wxALIGN_CENTER_HORIZONTAL,
             0);
+
+        mVisualizationModeHeaderPanelsSizer->Hide(modePanel);
+
+        mVisualizationModeHeaderPanels[static_cast<size_t>(VisualizationType::Game)] = modePanel;
     }
 
-    panel->SetSizerAndFit(rootVSizer);
+    // Structural layer mode
+    {
+        wxPanel * modePanel = new wxPanel(panel);
+
+        auto * sizer = new wxGridBagSizer(0, 0);
+
+        // Icon
+        {
+            auto * staticBitmap = new wxStaticBitmap(
+                modePanel,
+                wxID_ANY,
+                WxHelpers::LoadBitmap("structural_layer", mResourceLocator));
+
+            sizer->Add(
+                staticBitmap,
+                wxGBPosition(0, 0),
+                wxGBSpan(2, 1),
+                wxRIGHT,
+                ButtonMargin);
+        }
+
+        // Label 1
+        {
+            auto * staticText = new wxStaticText(modePanel, wxID_ANY, _("Structural Layer"));
+
+            sizer->Add(
+                staticText,
+                wxGBPosition(0, 1),
+                wxGBSpan(1, 1),
+                wxALIGN_TOP | wxALIGN_CENTER_HORIZONTAL,
+                0);
+        }
+
+        // Label 2
+        {
+            auto * staticText = new wxStaticText(modePanel, wxID_ANY, _("(Structure View)"));
+
+            sizer->Add(
+                staticText,
+                wxGBPosition(1, 1),
+                wxGBSpan(1, 1),
+                wxALIGN_BOTTOM | wxALIGN_CENTER_HORIZONTAL,
+                0);
+        }
+
+        modePanel->SetSizerAndFit(sizer);
+
+        mVisualizationModeHeaderPanelsSizer->Add(
+            modePanel,
+            0,
+            wxALIGN_CENTER_HORIZONTAL,
+            0);        
+
+        mVisualizationModeHeaderPanels[static_cast<size_t>(VisualizationType::StructuralLayer)] = modePanel;
+    }
+
+    // Electrical layer mode
+    {
+        wxPanel * modePanel = new wxPanel(panel);
+
+        auto * sizer = new wxGridBagSizer(0, 0);
+
+        // Icon
+        {
+            auto * staticBitmap = new wxStaticBitmap(
+                modePanel,
+                wxID_ANY,
+                WxHelpers::LoadBitmap("electrical_layer", mResourceLocator));
+
+            sizer->Add(
+                staticBitmap,
+                wxGBPosition(0, 0),
+                wxGBSpan(2, 1),
+                wxRIGHT,
+                ButtonMargin);
+        }
+
+        // Label
+        {
+            auto * staticText = new wxStaticText(modePanel, wxID_ANY, _("Electrical Layer"));
+
+            sizer->Add(
+                staticText,
+                wxGBPosition(0, 1),
+                wxGBSpan(2, 1),
+                wxALIGN_CENTER_VERTICAL | wxALIGN_CENTER_HORIZONTAL,
+                0);
+        }
+
+        modePanel->SetSizerAndFit(sizer);
+
+        mVisualizationModeHeaderPanelsSizer->Add(
+            modePanel,
+            0,
+            wxALIGN_CENTER_HORIZONTAL,
+            0);
+
+        mVisualizationModeHeaderPanelsSizer->Hide(modePanel);
+
+        mVisualizationModeHeaderPanels[static_cast<size_t>(VisualizationType::ElectricalLayer)] = modePanel;
+    }
+
+    // Ropes layer mode
+    {
+        wxPanel * modePanel = new wxPanel(panel);
+
+        auto * sizer = new wxGridBagSizer(0, 0);
+
+        // Icon
+        {
+            auto * staticBitmap = new wxStaticBitmap(
+                modePanel,
+                wxID_ANY,
+                WxHelpers::LoadBitmap("ropes_layer", mResourceLocator));
+
+            sizer->Add(
+                staticBitmap,
+                wxGBPosition(0, 0),
+                wxGBSpan(2, 1),
+                wxRIGHT,
+                ButtonMargin);
+        }
+
+        // Label
+        {
+            auto * staticText = new wxStaticText(modePanel, wxID_ANY, _("Ropes Layer"));
+
+            sizer->Add(
+                staticText,
+                wxGBPosition(0, 1),
+                wxGBSpan(2, 1),
+                wxALIGN_CENTER_VERTICAL | wxALIGN_CENTER_HORIZONTAL,
+                0);
+        }
+
+        modePanel->SetSizerAndFit(sizer);
+
+        mVisualizationModeHeaderPanelsSizer->Add(
+            modePanel,
+            0,
+            wxALIGN_CENTER_HORIZONTAL,
+            0);
+
+        mVisualizationModeHeaderPanelsSizer->Hide(modePanel);
+
+        mVisualizationModeHeaderPanels[static_cast<size_t>(VisualizationType::RopesLayer)] = modePanel;
+    }
+
+    // Texture layer mode
+    {
+        wxPanel * modePanel = new wxPanel(panel);
+
+        auto * sizer = new wxGridBagSizer(0, 0);
+
+        // Icon
+        {
+            auto * staticBitmap = new wxStaticBitmap(
+                modePanel,
+                wxID_ANY,
+                WxHelpers::LoadBitmap("texture_layer", mResourceLocator));
+
+            sizer->Add(
+                staticBitmap,
+                wxGBPosition(0, 0),
+                wxGBSpan(2, 1),
+                wxRIGHT,
+                ButtonMargin);
+        }
+
+        // Label
+        {
+            auto * staticText = new wxStaticText(modePanel, wxID_ANY, _("Texture Layer"));
+
+            sizer->Add(
+                staticText,
+                wxGBPosition(0, 1),
+                wxGBSpan(2, 1),
+                wxALIGN_CENTER_VERTICAL | wxALIGN_CENTER_HORIZONTAL,
+                0);
+        }
+
+        modePanel->SetSizerAndFit(sizer);
+
+        mVisualizationModeHeaderPanelsSizer->Add(
+            modePanel,
+            0,
+            wxALIGN_CENTER_HORIZONTAL,
+            0);
+
+        mVisualizationModeHeaderPanelsSizer->Hide(modePanel);
+
+        mVisualizationModeHeaderPanels[static_cast<size_t>(VisualizationType::TextureLayer)] = modePanel;
+    }
+
+    panel->SetSizerAndFit(mVisualizationModeHeaderPanelsSizer);
 
     return panel;
 }
@@ -1537,7 +2083,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
 
             // None mode
             {
-                mGameVisualizationNoneModeButton = new BitmapToggleButton(
+                mGameVisualizationNoneModeButton = new BitmapRadioButton(
                     gameVisualizationModesPanel,
                     mResourceLocator.GetBitmapFilePath("x_small"),
                     [this]()
@@ -1556,12 +2102,11 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
                     0);
             }
 
-
             vSizer->AddSpacer(5);
 
             // Auto-texturization mode
             {
-                mGameVisualizationAutoTexturizationModeButton = new BitmapToggleButton(
+                mGameVisualizationAutoTexturizationModeButton = new BitmapRadioButton(
                     gameVisualizationModesPanel,
                     mResourceLocator.GetBitmapFilePath("autotexturization_mode_icon_small"),
                     [this]()
@@ -1584,7 +2129,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
 
             // Texture mode
             {
-                mGameVisualizationTextureModeButton = new BitmapToggleButton(
+                mGameVisualizationTextureModeButton = new BitmapRadioButton(
                     gameVisualizationModesPanel,
                     mResourceLocator.GetBitmapFilePath("structural_texture_mode_icon_small"),
                     [this]()
@@ -1622,7 +2167,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
 
             // None mode
             {
-                mStructuralLayerVisualizationNoneModeButton = new BitmapToggleButton(
+                mStructuralLayerVisualizationNoneModeButton = new BitmapRadioButton(
                     structuralLayerVisualizationModesPanel,
                     mResourceLocator.GetBitmapFilePath("x_small"),
                     [this]()
@@ -1645,7 +2190,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
 
             // Mesh mode
             {
-                mStructuralLayerVisualizationMeshModeButton = new BitmapToggleButton(
+                mStructuralLayerVisualizationMeshModeButton = new BitmapRadioButton(
                     structuralLayerVisualizationModesPanel,
                     mResourceLocator.GetBitmapFilePath("mesh_mode_icon_small"),
                     [this]()
@@ -1668,7 +2213,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
 
             // Pixel mode
             {
-                mStructuralLayerVisualizationPixelModeButton = new BitmapToggleButton(
+                mStructuralLayerVisualizationPixelModeButton = new BitmapRadioButton(
                     structuralLayerVisualizationModesPanel,
                     mResourceLocator.GetBitmapFilePath("pixel_mode_icon_small"),
                     [this]()
@@ -1706,7 +2251,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
 
             // None mode
             {
-                mElectricalLayerVisualizationNoneModeButton = new BitmapToggleButton(
+                mElectricalLayerVisualizationNoneModeButton = new BitmapRadioButton(
                     electricalLayerVisualizationModesPanel,
                     mResourceLocator.GetBitmapFilePath("x_small"),
                     [this]()
@@ -1729,7 +2274,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
 
             // Pixel mode
             {
-                mElectricalLayerVisualizationPixelModeButton = new BitmapToggleButton(
+                mElectricalLayerVisualizationPixelModeButton = new BitmapRadioButton(
                     electricalLayerVisualizationModesPanel,
                     mResourceLocator.GetBitmapFilePath("pixel_mode_icon_small"),
                     [this]()
@@ -1767,7 +2312,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
 
             // None mode
             {
-                mRopesLayerVisualizationNoneModeButton = new BitmapToggleButton(
+                mRopesLayerVisualizationNoneModeButton = new BitmapRadioButton(
                     ropesLayerVisualizationModesPanel,
                     mResourceLocator.GetBitmapFilePath("x_small"),
                     [this]()
@@ -1790,7 +2335,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
 
             // Lines mode
             {
-                mRopesLayerVisualizationLinesModeButton = new BitmapToggleButton(
+                mRopesLayerVisualizationLinesModeButton = new BitmapRadioButton(
                     ropesLayerVisualizationModesPanel,
                     mResourceLocator.GetBitmapFilePath("lines_mode_icon_small"),
                     [this]()
@@ -1828,7 +2373,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
 
             // None mode
             {
-                mTextureLayerVisualizationNoneModeButton = new BitmapToggleButton(
+                mTextureLayerVisualizationNoneModeButton = new BitmapRadioButton(
                     textureLayerVisualizationModesPanel,
                     mResourceLocator.GetBitmapFilePath("x_small"),
                     [this]()
@@ -1851,7 +2396,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
 
             // Matte mode
             {
-                mTextureLayerVisualizationMatteModeButton = new BitmapToggleButton(
+                mTextureLayerVisualizationMatteModeButton = new BitmapRadioButton(
                     textureLayerVisualizationModesPanel,
                     mResourceLocator.GetBitmapFilePath("texture_mode_icon_small"),
                     [this]()
@@ -1934,15 +2479,13 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
     mToolbarPanelsSizer = new wxBoxSizer(wxVERTICAL);
 
-    mToolbarPanelsSizer->AddSpacer(6);
-
     auto const makeToolButton = [this](
         ToolType tool,
         wxPanel * toolbarPanel,
         std::string iconName,
-        wxString tooltip) -> BitmapToggleButton *
+        wxString tooltip) -> BitmapRadioButton *
     {
-        auto button = new BitmapToggleButton(
+        auto button = new BitmapRadioButton(
             toolbarPanel,
             mResourceLocator.GetIconFilePath(iconName),
             [this, tool]()
@@ -1963,7 +2506,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
     {
         wxPanel * structuralToolbarPanel = new wxPanel(panel, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 
-        wxBoxSizer * structuralToolbarSizer = new wxBoxSizer(wxVERTICAL);
+        wxBoxSizer * structuralToolbarVSizer = new wxBoxSizer(wxVERTICAL);
 
         // Tools
 
@@ -2034,19 +2577,19 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     0);
             }
 
-            structuralToolbarSizer->Add(
+            structuralToolbarVSizer->Add(
                 toolsSizer,
                 0,
                 wxALIGN_CENTER_HORIZONTAL,
                 0);
         }
 
-        structuralToolbarSizer->AddSpacer(15);
+        structuralToolbarVSizer->AddSpacer(15);
 
         // Swaths
 
         {
-            wxBoxSizer * paletteSizer = new wxBoxSizer(wxVERTICAL);
+            wxBoxSizer * paletteSizer = new wxBoxSizer(wxHORIZONTAL);
 
             // Foreground
             {
@@ -2072,7 +2615,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     0);
             }
 
-            paletteSizer->AddSpacer(8);
+            paletteSizer->AddSpacer(ButtonMargin);
 
             // Background
             {
@@ -2098,14 +2641,14 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     0);
             }
 
-            structuralToolbarSizer->Add(
+            structuralToolbarVSizer->Add(
                 paletteSizer,
                 0,
                 wxALIGN_CENTER_HORIZONTAL,
                 0);
         }
 
-        structuralToolbarPanel->SetSizerAndFit(structuralToolbarSizer);
+        structuralToolbarPanel->SetSizerAndFit(structuralToolbarVSizer);
 
         mToolbarPanelsSizer->Add(
             structuralToolbarPanel,
@@ -2193,7 +2736,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
         // Swaths
 
         {
-            wxBoxSizer * paletteSizer = new wxBoxSizer(wxVERTICAL);
+            wxBoxSizer * paletteSizer = new wxBoxSizer(wxHORIZONTAL);
 
             // Foreground
             {
@@ -2219,7 +2762,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     0);
             }
 
-            paletteSizer->AddSpacer(8);
+            paletteSizer->AddSpacer(ButtonMargin);
 
             // Background
             {
@@ -2324,7 +2867,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
         // Swaths
 
         {
-            wxBoxSizer * paletteSizer = new wxBoxSizer(wxVERTICAL);
+            wxBoxSizer * paletteSizer = new wxBoxSizer(wxHORIZONTAL);
 
             // Foreground
             {
@@ -2350,7 +2893,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     0);
             }
 
-            paletteSizer->AddSpacer(8);
+            paletteSizer->AddSpacer(ButtonMargin);
 
             // Background
             {
@@ -2575,49 +3118,19 @@ wxPanel * MainFrame::CreateWorkPanel(wxWindow * parent)
     return panel;
 }
 
-std::tuple<wxPanel *, wxSizer *> MainFrame::CreateToolSettingsToolSizePanel(
-    wxWindow * parent,
-    wxString const & label,
-    wxString const & tooltip,
-    std::uint32_t minValue,
-    std::uint32_t maxValue,
-    std::uint32_t currentValue,
-    std::function<void(std::uint32_t)> onValue)
+void MainFrame::AddAcceleratorKey(int flags, int keyCode, std::function<void()> handler)
 {
-    wxPanel * panel = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+    auto const commandId = wxNewId();
 
-    wxBoxSizer * sizer = new wxBoxSizer(wxHORIZONTAL);
+    mAcceleratorEntries.emplace_back(flags, keyCode, commandId);
 
-    // Label
-    {
-        auto * staticText = new wxStaticText(panel, wxID_ANY, label);
-
-        sizer->Add(
-            staticText,
-            0,
-            wxALIGN_CENTER_VERTICAL,
-            4);
-    }
-
-    // Edit spin box
-    {
-        EditSpinBox<std::uint32_t> * editSpinBox = new EditSpinBox<std::uint32_t>(
-            panel,
-            40,
-            minValue,
-            maxValue,
-            currentValue,
-            tooltip,
-            std::move(onValue));
-
-        sizer->Add(
-            editSpinBox,
-            0,
-            wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT,
-            4);
-    }
-
-    return std::tuple(panel, sizer);
+    this->Bind(
+        wxEVT_MENU,
+        [handler](wxCommandEvent &)
+        {
+            handler();
+        },
+        commandId);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2834,8 +3347,11 @@ void MainFrame::OnWorkCanvasKeyDown(wxKeyEvent & event)
         if (event.GetKeyCode() == WXK_SHIFT)
         {
             mController->OnShiftKeyDown();
+            return; // Eaten
         }
     }
+    
+    event.Skip();
 }
 
 void MainFrame::OnWorkCanvasKeyUp(wxKeyEvent & event)
@@ -2849,68 +3365,17 @@ void MainFrame::OnWorkCanvasKeyUp(wxKeyEvent & event)
     }
 }
 
-void MainFrame::OnNewShip(wxCommandEvent & /*event*/)
-{
-    NewShip();
-}
-
-void MainFrame::OnLoadShip(wxCommandEvent & /*event*/)
-{
-    LoadShip();
-}
-
-void MainFrame::OnSaveShipMenuItem(wxCommandEvent & /*event*/)
-{
-    OnSaveShip();
-}
-
-void MainFrame::OnSaveShip()
-{
-    if (PreSaveShipCheck())
-    {
-        SaveShip();
-    }
-}
-
-void MainFrame::OnSaveShipAsMenuItem(wxCommandEvent & /*event*/)
-{
-    OnSaveShipAs();
-}
-
-void MainFrame::OnSaveShipAs()
-{
-    if (PreSaveShipCheck())
-    {
-        SaveShipAs();
-    }
-}
-
-void MainFrame::OnSaveAndGoBackMenuItem(wxCommandEvent & /*event*/)
-{
-    OnSaveAndGoBack();
-}
-
-void MainFrame::OnSaveAndGoBack()
-{
-    if (PreSaveShipCheck())
-    {
-        SaveAndSwitchBackToGame();
-    }
-}
-
-void MainFrame::OnQuitAndGoBack(wxCommandEvent & /*event*/)
-{
-    QuitAndSwitchBackToGame();
-}
-
-void MainFrame::OnQuit(wxCommandEvent & /*event*/)
-{
-    // Close frame
-    Close();
-}
-
 void MainFrame::OnClose(wxCloseEvent & event)
 {
+    if (event.CanVeto() && !IsStandAlone())
+    {
+        // User pressed ALT+F4 in simulator mode...
+        // ...do not allow close(), as we only allow
+        // to exit with a switch *back*
+        event.Veto();
+        return;
+    }
+
     if (mController)
     {
         if (event.CanVeto() && mController->IsModelDirty())
@@ -2919,9 +3384,9 @@ void MainFrame::OnClose(wxCloseEvent & event)
             int result = AskUserIfSave();
             if (result == wxYES)
             {
-                if (!SaveShip())
+                if (!DoSaveShipOrSaveShipAsWithValidation())
                 {
-                    // Changed their mind
+                    // Didn't end up saving
                     result = wxCANCEL;
                 }
             }
@@ -2939,64 +3404,6 @@ void MainFrame::OnClose(wxCloseEvent & event)
     }
 
     event.Skip();
-}
-
-void MainFrame::OnEditUndoMenuItem(wxCommandEvent & /*event*/)
-{
-    mController->UndoLast();
-}
-
-void MainFrame::OnEditAutoTrimMenuItem(wxCommandEvent & /*event*/)
-{
-    mController->AutoTrim();
-}
-
-void MainFrame::OnEditFlipHorizontallyMenuItem(wxCommandEvent & /*event*/)
-{
-    mController->Flip(DirectionType::Horizontal);
-}
-
-void MainFrame::OnEditFlipVerticallyMenuItem(wxCommandEvent & /*event*/)
-{
-    mController->Flip(DirectionType::Vertical);
-}
-
-void MainFrame::OnEditResizeShipMenuItem(wxCommandEvent & /*event*/)
-{
-    OpenShipCanvasResize();
-}
-
-void MainFrame::OnEditShipPropertiesMenuItem(wxCommandEvent & /*event*/)
-{
-    OpenShipProperties();
-}
-
-void MainFrame::OnZoomIn(wxCommandEvent & /*event*/)
-{
-    assert(!!mController);
-    mController->AddZoom(1);
-}
-
-void MainFrame::OnZoomOut(wxCommandEvent & /*event*/)
-{
-    assert(!!mController);
-    mController->AddZoom(-1);
-}
-
-void MainFrame::OnResetView(wxCommandEvent & /*event*/)
-{
-    assert(!!mController);
-    mController->ResetView();
-}
-
-void MainFrame::OnOpenLogWindowMenuItemSelected(wxCommandEvent & /*event*/)
-{
-    if (!mLoggingDialog)
-    {
-        mLoggingDialog = std::make_unique<LoggingDialog>(this);
-    }
-
-    mLoggingDialog->Open();
 }
 
 void MainFrame::OnStructuralMaterialSelected(fsStructuralMaterialSelectedEvent & event)
@@ -3028,6 +3435,10 @@ void MainFrame::Open()
 
     // Show us
     Show(true);
+    Layout();
+
+    // Select "Main" ribbon page
+    mMainRibbonBar->SetActivePage(size_t(0));
 
     // Make ourselves the topmost frame
     mMainApp->SetTopWindow(this);
@@ -3041,9 +3452,9 @@ void MainFrame::NewShip()
         int result = AskUserIfSave();
         if (result == wxYES)
         {
-            if (!SaveShip())
+            if (!DoSaveShipOrSaveShipAsWithValidation())
             {
-                // Changed their mind
+                // Didn't end up saving
                 result = wxCANCEL;
             }
         }
@@ -3066,9 +3477,9 @@ void MainFrame::LoadShip()
         int result = AskUserIfSave();
         if (result == wxYES)
         {
-            if (!SaveShip())
+            if (!DoSaveShipOrSaveShipAsWithValidation())
             {
-                // Changed their mind
+                // Didn't end up saving
                 result = wxCANCEL;
             }
         }
@@ -3099,63 +3510,20 @@ void MainFrame::LoadShip()
     }
 }
 
-bool MainFrame::PreSaveShipCheck()
+void MainFrame::SaveShip()
 {
-    assert(mController);
-
-    // Validate ship in dialog, and allow user to continue or cancel the save
-
-    if (!mModelValidationDialog)
-    {
-        mModelValidationDialog = std::make_unique<ModelValidationDialog>(this, mResourceLocator);
-    }
-
-    return mModelValidationDialog->ShowModalForSaveShipValidation(*mController);
+    DoSaveShipOrSaveShipAsWithValidation();
 }
 
-bool MainFrame::SaveShip()
+void MainFrame::SaveShipAs()
 {
-    if (!mCurrentShipFilePath.has_value())
-    {
-        return SaveShipAs();
-    }
-    else
-    {
-        DoSaveShip(*mCurrentShipFilePath);
-        return true;
-    }
-}
-
-bool MainFrame::SaveShipAs()
-{
-    // Open ship save dialog
-
-    if (!mShipSaveDialog)
-    {
-        mShipSaveDialog = std::make_unique<ShipSaveDialog>(this);
-    }
-
-    auto const res = mShipSaveDialog->ShowModal(
-        Utils::MakeFilenameSafeString(mController->GetShipMetadata().ShipName),
-        ShipSaveDialog::GoalType::FullShip);
-
-    if (res == wxID_OK)
-    {
-        // Save ship
-        auto const shipFilePath = mShipSaveDialog->GetChosenShipFilepath();
-        DoSaveShip(shipFilePath);
-        return true;
-    }
-    else
-    {
-        return false;
-    }
+    DoSaveShipAsWithValidation();
 }
 
 void MainFrame::SaveAndSwitchBackToGame()
 {
     // Save/SaveAs
-    if (SaveShip())
+    if (DoSaveShipOrSaveShipAsWithValidation())
     {
         // Return
         assert(mCurrentShipFilePath.has_value());
@@ -3172,7 +3540,7 @@ void MainFrame::QuitAndSwitchBackToGame()
         int result = AskUserIfSave();
         if (result == wxYES)
         {
-            if (!SaveShip())
+            if (!DoSaveShipOrSaveShipAsWithValidation())
             {
                 // Changed their mind
                 result = wxCANCEL;
@@ -3187,6 +3555,12 @@ void MainFrame::QuitAndSwitchBackToGame()
     }
 
     SwitchBackToGame(std::nullopt);
+}
+
+void MainFrame::Quit()
+{
+    // Close frame
+    Close();
 }
 
 void MainFrame::SwitchBackToGame(std::optional<std::filesystem::path> shipFilePath)
@@ -3483,7 +3857,65 @@ bool MainFrame::DoLoadShip(std::filesystem::path const & shipFilePath)
     return true;
 }
 
-void MainFrame::DoSaveShip(std::filesystem::path const & shipFilePath)
+bool MainFrame::DoSaveShipOrSaveShipAsWithValidation()
+{
+    if (!mCurrentShipFilePath.has_value())
+    {
+        return DoSaveShipAsWithValidation();
+    }
+    else
+    {
+        return DoSaveShipWithValidation(*mCurrentShipFilePath);
+    }
+}
+
+bool MainFrame::DoSaveShipAsWithValidation()
+{
+    if (DoPreSaveShipValidation())
+    {
+        // Open ship save dialog
+
+        if (!mShipSaveDialog)
+        {
+            mShipSaveDialog = std::make_unique<ShipSaveDialog>(this);
+        }
+
+        auto const res = mShipSaveDialog->ShowModal(
+            Utils::MakeFilenameSafeString(mController->GetShipMetadata().ShipName),
+            ShipSaveDialog::GoalType::FullShip);
+
+        if (res == wxID_OK)
+        {
+            // Save ship
+            auto const shipFilePath = mShipSaveDialog->GetChosenShipFilepath();
+            DoSaveShipWithoutValidation(shipFilePath);
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool MainFrame::DoSaveShipWithValidation(std::filesystem::path const & shipFilePath)
+{
+    if (DoPreSaveShipValidation())
+    {
+        DoSaveShipWithoutValidation(shipFilePath);
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+void MainFrame::DoSaveShipWithoutValidation(std::filesystem::path const & shipFilePath)
 {
     assert(mController);
 
@@ -3502,6 +3934,20 @@ void MainFrame::DoSaveShip(std::filesystem::path const & shipFilePath)
 
     // Clear dirtyness
     mController->ClearModelDirty();
+}
+
+bool MainFrame::DoPreSaveShipValidation()
+{
+    assert(mController);
+
+    // Validate ship in dialog, and allow user to continue or cancel the save
+
+    if (!mModelValidationDialog)
+    {
+        mModelValidationDialog = std::make_unique<ModelValidationDialog>(this, mResourceLocator);
+    }
+
+    return mModelValidationDialog->ShowModalForSaveShipValidation(*mController);
 }
 
 void MainFrame::BailOut()
@@ -3530,6 +3976,24 @@ DisplayLogicalSize MainFrame::GetWorkCanvasSize() const
         mWorkCanvas->GetSize().GetHeight());
 }
 
+void MainFrame::ZoomIn()
+{
+    assert(!!mController);
+    mController->AddZoom(1);
+}
+
+void MainFrame::ZoomOut()
+{
+    assert(!!mController);
+    mController->AddZoom(-1);
+}
+
+void MainFrame::ResetView()
+{
+    assert(!!mController);
+    mController->ResetView();
+}
+
 void MainFrame::RecalculateWorkCanvasPanning(ViewModel const & viewModel)
 {
     //
@@ -3539,7 +4003,6 @@ void MainFrame::RecalculateWorkCanvasPanning(ViewModel const & viewModel)
     ShipSpaceCoordinates const cameraPos = viewModel.GetCameraShipSpacePosition();
     ShipSpaceSize const cameraRange = viewModel.GetCameraRange();
     ShipSpaceSize const cameraThumbSize = viewModel.GetCameraThumbSize();
-        
 
     mWorkCanvasHScrollBar->SetScrollbar(
         cameraPos.x,
@@ -3642,7 +4105,12 @@ void MainFrame::ReconciliateUIWithWorkbenchState()
 
 void MainFrame::ReconciliateUIWithViewModel(ViewModel const & viewModel)
 {
+    // Panning
     RecalculateWorkCanvasPanning(viewModel);
+
+    // Zoom buttons
+    mZoomInButton->Enable(viewModel.GetZoom() < ViewModel::MaxZoom);
+    mZoomOutButton->Enable(viewModel.GetZoom() > ViewModel::MinZoom);
 
     // TODO: set zoom in StatusBar
 }
@@ -3706,20 +4174,20 @@ void MainFrame::ReconciliateUIWithModelDirtiness(Model const & model)
 {
     bool const isDirty = model.GetIsDirty();
 
-    if (mSaveShipMenuItem->IsEnabled() != isDirty)
-    {
-        mSaveShipMenuItem->Enable(isDirty);
-    }
-
-    if (mSaveAndGoBackMenuItem != nullptr
-        && mSaveAndGoBackMenuItem->IsEnabled() != isDirty)
-    {
-        mSaveAndGoBackMenuItem->Enable(false);
-    }
-
     if (mSaveShipButton->IsEnabled() != isDirty)
     {
         mSaveShipButton->Enable(isDirty);
+    }
+
+    if (mSaveShipAsButton->IsEnabled() != isDirty)
+    {
+        mSaveShipAsButton->Enable(isDirty);
+    }
+
+    if (mSaveShipAndGoBackButton != nullptr
+        && mSaveShipAndGoBackButton->IsEnabled() != isDirty)
+    {
+        mSaveShipAndGoBackButton->Enable(isDirty);
     }
 
     SetFrameTitle(model.GetShipMetadata().ShipName, isDirty);
@@ -3885,14 +4353,26 @@ void MainFrame::ReconciliateUIWithSelectedTool(std::optional<ToolType> tool)
     }
 
     // Show this tool's settings panel and hide the others
+    bool hasPanel = false;
     for (auto const & entry : mToolSettingsPanels)
     {
         bool const isSelected = (tool.has_value() && std::get<0>(entry) == *tool);
 
         mToolSettingsPanelsSizer->Show(std::get<1>(entry), isSelected);
+
+        hasPanel |= isSelected;
     }
 
-    mToolSettingsPanelsSizer->Layout();
+    // Pickup new layout
+    if (hasPanel)
+    {
+        mMainRibbonBar->Realize();
+    }
+    else
+    {
+        // Do not re-realize main ribbon bar, or else the panel becomes tiny
+        mToolSettingsPanelsSizer->Layout();
+    }
 }
 
 void MainFrame::ReconciliateUIWithPrimaryVisualizationSelection(VisualizationType primaryVisualization)
@@ -3901,6 +4381,7 @@ void MainFrame::ReconciliateUIWithPrimaryVisualizationSelection(VisualizationTyp
     // Toggle various UI elements <-> primary viz
     //
 
+    bool hasToggledVisualizationModeHeaderPanel = false;
     bool hasToggledToolPanel = false;
     bool hasToggledLayerVisualizationModePanel = false;
 
@@ -3908,6 +4389,13 @@ void MainFrame::ReconciliateUIWithPrimaryVisualizationSelection(VisualizationTyp
     for (uint32_t iVisualization = 0; iVisualization < VisualizationCount; ++iVisualization)
     {
         bool const isVisualizationSelected = (iVisualization == iPrimaryVisualization);
+
+        // Visualization mode header panels
+        if (mVisualizationModeHeaderPanelsSizer->IsShown(mVisualizationModeHeaderPanels[iVisualization]) != isVisualizationSelected)
+        {
+            mVisualizationModeHeaderPanelsSizer->Show(mVisualizationModeHeaderPanels[iVisualization], isVisualizationSelected);
+            hasToggledVisualizationModeHeaderPanel = true;
+        }
 
         // Visualization selection buttons
         if (mVisualizationSelectButtons[iVisualization]->GetValue() != isVisualizationSelected)
@@ -3938,6 +4426,11 @@ void MainFrame::ReconciliateUIWithPrimaryVisualizationSelection(VisualizationTyp
             mToolbarPanelsSizer->Show(mToolbarPanels[iLayer], isLayerSelected);
             hasToggledToolPanel = true;
         }
+    }
+
+    if (hasToggledVisualizationModeHeaderPanel)
+    {
+        mVisualizationModeHeaderPanelsSizer->Layout();
     }
 
     if (hasToggledLayerVisualizationModePanel)
@@ -4003,13 +4496,13 @@ void MainFrame::ReconciliateUIWithVisualGridEnablement(bool isEnabled)
 void MainFrame::ReconciliateUIWithUndoStackState(UndoStack & undoStack)
 {
     //
-    // Menu item
+    // Undo button
     //
 
     bool const canUndo = !undoStack.IsEmpty();
-    if (mUndoMenuItem->IsEnabled() != canUndo)
+    if (mUndoButton->IsEnabled() != canUndo)
     {
-        mUndoMenuItem->Enable(canUndo);
+        mUndoButton->Enable(canUndo);
     }
 
     //

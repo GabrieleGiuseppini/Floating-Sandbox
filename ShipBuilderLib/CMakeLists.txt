@@ -41,6 +41,7 @@ set (UI_SOURCES
 	NewPasswordDialog.h
 	ResizeDialog.cpp
 	ResizeDialog.h
+	RibbonToolbarButton.h
 	ShipOffsetVisualizationControl.cpp
 	ShipOffsetVisualizationControl.h
 	ShipPropertiesEditDialog.cpp

@@ -3,14 +3,14 @@ msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: \n"
 "PO-Revision-Date: \n"
-"Last-Translator: Gabriele Giuseppini <gabrielegiuseppini@gmail.com>\n"
+"Last-Translator: Joaquin Olivera <joaquinolivera1912@gmail.com>\n"
 "Language-Team: \n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 2.4\n"
+"X-Generator: Poedit 3.0.1\n"
 
 #: ..\FloatingSandbox\MainFrame.cpp:279
 msgid "&Controls"
@@ -98,11 +98,9 @@ msgid "Adjusts how much the ocean floor rolls up and down."
 msgstr "Ajusta cuanto se mueve el océano hacia arriba y hacia abajo."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2474
-#, fuzzy
-#| msgid "Adjusts how wide light emitted by luminiscent materials spreads out."
 msgid "Adjusts how wide light emitted by luminescent materials spreads out."
 msgstr ""
-"Ajusta que tanto se dispersa es la luz emitida por materiales luminiscentes."
+"Ajusta que tanto se dispersa la luz emitida por materiales luminiscentes."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1056
 msgid ""
@@ -291,8 +289,6 @@ msgstr ""
 "de mar sobre cuerpos físicos."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2447
-#, fuzzy
-#| msgid "Adjusts the quantity of light emitted by luminiscent materials."
 msgid "Adjusts the quantity of light emitted by luminescent materials."
 msgstr "Ajusta la cantidad de luz emitida por materiales luminiscentes."
 
@@ -1047,8 +1043,6 @@ msgid "Enable Shoaling"
 msgstr "Habilitar Cardumenes"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1892
-#, fuzzy
-#| msgid "Enable/Disable the visual guides."
 msgid "Enable/disable the visual guides."
 msgstr "Habilitar/Deshabilitar las guías visuales."
 
@@ -1501,10 +1495,8 @@ msgid "Go to the next search result"
 msgstr "Ir al siguiente resultado de busqueda"
 
 #: ..\UILib\ShipLoadDialog.cpp:176
-#, fuzzy
-#| msgid "Go to the default Ships folder"
 msgid "Go to your Ships folder"
-msgstr "Ir a la carpeta de barcos por defecto"
+msgstr "Ir a tu carpeta de Barcos"
 
 #: ..\FloatingSandbox\MainFrame.cpp:563
 msgid "Guide"
@@ -1605,7 +1597,7 @@ msgstr "Temperatura de ignición (K)"
 
 #: ..\UILib\ImageLoadDialog.cpp:23
 msgid "Image files"
-msgstr ""
+msgstr "Archivos de Imagen"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1028
 msgid "Impact Force Adjust"
@@ -1724,10 +1716,8 @@ msgid "Load Settings"
 msgstr "Cargar configuraciones"
 
 #: ..\UILib\ShipLoadDialog.cpp:31
-#, fuzzy
-#| msgid "Load Ship..."
 msgid "Load Ship"
-msgstr "Cargar Barco..."
+msgstr "Cargar Barco"
 
 #: ..\FloatingSandbox\MainFrame.cpp:201 ..\ShipBuilderLib\MainFrame.cpp:335
 msgid "Load Ship..."
@@ -1739,7 +1729,7 @@ msgstr "Cargar un Barco"
 
 #: ..\UILib\ImageLoadDialog.cpp:21
 msgid "Load an Image"
-msgstr ""
+msgstr "Cargar una Imagen"
 
 #: ..\FloatingSandbox\SplashScreenDialog.cpp:119
 msgid "Loading cloud texture atlas..."
@@ -1805,8 +1795,6 @@ msgid "Luminescence"
 msgstr "Luminiscencia"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2446
-#, fuzzy
-#| msgid "Luminiscence Adjust"
 msgid "Luminescence Adjust"
 msgstr "Ajuste de luminiscencia"
 
@@ -2461,16 +2449,12 @@ msgid "Save the current ship to a different file"
 msgstr "Guardar el barco actual a un archivo diferente"
 
 #: ..\UILib\ShipSaveDialog.cpp:50
-#, fuzzy
-#| msgid "Structural layer"
 msgid "Save the structural layer"
-msgstr "Capa Estructural"
+msgstr "Guardar la capa estructural"
 
 #: ..\UILib\ShipSaveDialog.cpp:40
-#, fuzzy
-#| msgid "Save Ship"
 msgid "Save this ship"
-msgstr "Guardar Barco"
+msgstr "Guardar este Barco"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:5136
 msgid "Saves the current settings using the specified name."
@@ -2517,6 +2501,7 @@ msgstr "Selecciona como el calor es renderizado en el barco."
 msgid ""
 "Selects whether the game starts in full-screen mode or as a normal window."
 msgstr ""
+"Selecciona si el juego inicia en modo de ventana o en pantalla completa."
 
 #: ..\ShipBuilderLib\MaterialPalette.cpp:591
 msgid "Self-Powered"
@@ -2636,10 +2621,8 @@ msgid "Ship Properties..."
 msgstr "Propiedades del barco..."
 
 #: ..\UILib\ShipSaveDialog.cpp:43
-#, fuzzy
-#| msgid "Ship Issues"
 msgid "Ship files"
-msgstr "Problemas del barco"
+msgstr "Archivos de barco"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:85
 msgid "Ships"
@@ -2800,10 +2783,8 @@ msgid "Spring Stiffness Adjust"
 msgstr "Ajuste de la rigidez del resorte"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:395
-#, fuzzy
-#| msgid "Full Screen"
 msgid "Start in Full Screen"
-msgstr "Pantalla completa"
+msgstr "Iniciar en Pantalla completa"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4728
 msgid "Static Forces"
@@ -2860,7 +2841,7 @@ msgstr "Capa Estructural"
 
 #: ..\UILib\ShipSaveDialog.cpp:53
 msgid "Structure-only image files"
-msgstr ""
+msgstr "Archivos de imagen solamente estructurales"
 
 #: ..\ShipBuilderLib\ModelValidationDialog.cpp:282
 msgid "Success"
@@ -3145,11 +3126,13 @@ msgstr "Termodinamicas"
 
 #: ..\UILib\LocalizationManager.cpp:135
 msgid "This file is not a Floating Sandbox ship file."
-msgstr ""
+msgstr "Al archivo no esta en el formato de Floating Sandbox."
 
 #: ..\UILib\LocalizationManager.cpp:141
 msgid "This file is not a valid ship file - it may be corrupted or damaged."
 msgstr ""
+"Este archivo no es un archivo valido de barco - Puede estar corrupto o "
+"dañado."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4524
 msgid ""
@@ -3176,12 +3159,16 @@ msgid ""
 "This ship cannot be loaded because it has unrecognized materials - it was "
 "likely created with a non-standard release of Floating Sandbox."
 msgstr ""
+"El barco no puede ser cargado porque tiene materiales irreconocibles - "
+"seguramente fue creado con una edición modificada de Floating Sandbox."
 
 #: ..\UILib\LocalizationManager.cpp:153
 msgid ""
 "This ship cannot be loaded because it has unrecognized materials from a "
 "newer release. Upgrade Floating Sandbox to at least Floating Sandbox %1."
 msgstr ""
+"El barco no puede ser cargado porque tiene materiales de una versión mas "
+"nueva. Actualiza a Floating Sandbox a la versión %1."
 
 #: ..\UILib\LocalizationManager.cpp:147
 msgid ""
@@ -3189,6 +3176,9 @@ msgid ""
 "cannot be loaded with this version. Upgrade Floating Sandbox to the newest "
 "release."
 msgstr ""
+"Este barco ha sido creado con una versión mas nueva de Floating Sandbox y no "
+"puede ser cargado en esta versión. Actualiza a la ultima versión de Floating "
+"Sandbox."
 
 #: ..\FloatingSandbox\CreditsPanel.cpp:74
 msgid ""
@@ -3236,7 +3226,7 @@ msgstr "Volumen de las Herramientas"
 
 #: ..\FloatingSandbox\ProbePanel.cpp:44
 msgid "Total Damage"
-msgstr ""
+msgstr "Daño total"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3797
 msgid "Transparency"
@@ -3297,7 +3287,7 @@ msgstr "Modo ultra violento"
 
 #: ..\UILib\UnderConstructionDialog.cpp:20
 msgid "Under Construction"
-msgstr ""
+msgstr "En construcción"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:294
 #: ..\ShipBuilderLib\MainFrame.cpp:385
@@ -3459,17 +3449,15 @@ msgstr "Viento y olas"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3592
 msgid "Wind speed conjured by the WindMaker tool (Km/h)."
-msgstr ""
+msgstr "Velocidad del viento conjurada por la herramienta de viento (Km/h)."
 
 #: ..\FloatingSandbox\MainFrame.cpp:414
-#, fuzzy
-#| msgid "WaveMaker"
 msgid "WindMaker"
-msgstr "Generador de olas"
+msgstr "Generador de viento"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3563
 msgid "WindMaker Tool"
-msgstr ""
+msgstr "Herramienta generadora de Viento"
 
 #: ..\ShipBuilderLib\ShipPropertiesEditDialog.cpp:319
 msgid "Year Built"

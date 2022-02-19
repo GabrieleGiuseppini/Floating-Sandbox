@@ -1581,7 +1581,7 @@ void Controller::InternalResizeShip(
     mModelController->ResizeShip(newSize, originOffset);
 
     // Update dirtyness
-    mModelController->SetAllLayersDirty();
+    mModelController->SetAllPresentLayersDirty();
     mUserInterface.OnModelDirtyChanged(mModelController->GetModel());
 
     // Notify view of new size
@@ -1635,7 +1635,7 @@ void Controller::InternalFlip(DirectionType direction)
     if constexpr (!IsForUndo)
     {
         // Update dirtyness
-        mModelController->SetAllLayersDirty();
+        mModelController->SetAllPresentLayersDirty();
         mUserInterface.OnModelDirtyChanged(mModelController->GetModel());
     }
 
