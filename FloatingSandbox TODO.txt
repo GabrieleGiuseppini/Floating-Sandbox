@@ -161,11 +161,10 @@
 		+ See rogue waves
 		+ Do final ShipBuilder tasks (*<--)
 
-		- ShipBuilder Auto-Trim:
-			- Bug when also zoom changes afterwards
-				- First off: is the zoom really changing?
+		+ ShipBuilder Auto-Trim:
+			+ Bug when also zoom changes afterwards
+				+ First off: is the zoom really changing?
 			- Texture seems to be trimmed "wrong"
-				- Though might be a side-effect of the above
 				- Or simply a bad rounding, see whether should always use floor or ceil
 					- May be depending on whether or not we're growing or shrinking?
 

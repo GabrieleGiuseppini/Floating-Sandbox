@@ -570,7 +570,7 @@ void View::UploadGameVisualization(RgbaImageData const & texture)
         shipWidth + QuadOffsetX, 1.0f,
         QuadOffsetY, 0.0f,
         shipHeight + QuadOffsetY, 1.0f,
-        *mGameVisualizationVBO);
+        mGameVisualizationVBO);
     
     //
     // Remember we have this visualization
