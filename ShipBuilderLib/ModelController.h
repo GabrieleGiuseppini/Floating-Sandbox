@@ -65,9 +65,9 @@ public:
         mModel.SetIsDirty(layer);
     }
 
-    void SetAllLayersDirty()
+    void SetAllPresentLayersDirty()
     {
-        mModel.SetAllLayersDirty();
+        mModel.SetAllPresentLayersDirty();
     }
 
     void RestoreDirtyState(Model::DirtyState const & dirtyState)

@@ -159,8 +159,17 @@
 			! It's the WaterDisplacementWave sound, not the Splash sound
 			+ Min delay for WaterDisplacementWave sound
 		+ See rogue waves
+		+ Do final ShipBuilder tasks (*<--)
 
-		- Do final ShipBuilder tasks (*<--)
+		- ShipBuilder Auto-Trim:
+			- Bug when also zoom changes afterwards
+				- First off: is the zoom really changing?
+			- Texture seems to be trimmed "wrong"
+				- Though might be a side-effect of the above
+				- Or simply a bad rounding, see whether should always use floor or ceil
+					- May be depending on whether or not we're growing or shrinking?
+
+		- Train issue w/ocean floor
 
 		= Localization
 			+ IT
@@ -168,12 +177,14 @@
 				+ Update (probe panel)
 				+ Test
 					+ Including error ship
+				- Update po
 				- Send final po
 			= RU
 				+ Take first
 				+ Update & send second + initial tips
 				+ Get back po file
 				+ Get back initial tip line
+				- Update po
 				- Send final po
 				- Test
 					- Including error ship
@@ -182,6 +193,7 @@
 				+ Update & send second + initial tips
 				+ Get back po file
 				+ Get back initial tip line
+				- Update po
 				- Send final po
 				- Test
 					- Including error ship
@@ -219,7 +231,9 @@
 			
 		- Tests:
 			- New changes.txt found (aka old bug)
-				- Check how many older FS's exist, to see if can enable/upload changes.txt again
+				- Verify doesn't happen again
+				= Check how many older FS's exist, to see if can enable/upload changes.txt again
+					+ Jan, Feb: 70% 1.16.7, 30% 1.16.4
 
 		- Do Mattia's video and post together with https://www.youtube.com/watch?v=X2n4Q25Ld34
 
@@ -1220,8 +1234,10 @@
 
 - Dynamics:
 
-	- New materials (*)
+	- Material system improvements (*)
 		- More glass colors
+		- Friction (moving from "global" ocean floor settings)
+			- So for example could have tires, etc.
 
 	- "Soft" setting for ocean floors
 		- Just less impact

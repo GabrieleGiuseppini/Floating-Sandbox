@@ -118,7 +118,7 @@ void UIPreferencesManager::LoadPreferences()
         // Load version
         //
 
-        Version settingsVersion(1, 16, 7, 0);
+        Version settingsVersion(1, 16, 7, 0); // Last version _without_ a "version" field
         if (auto versionIt = preferencesRootObject->find("version");
             versionIt != preferencesRootObject->end() && versionIt->second.is<std::string>())
         {

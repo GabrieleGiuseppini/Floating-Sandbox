@@ -4003,7 +4003,6 @@ void MainFrame::RecalculateWorkCanvasPanning(ViewModel const & viewModel)
     ShipSpaceCoordinates const cameraPos = viewModel.GetCameraShipSpacePosition();
     ShipSpaceSize const cameraRange = viewModel.GetCameraRange();
     ShipSpaceSize const cameraThumbSize = viewModel.GetCameraThumbSize();
-        
 
     mWorkCanvasHScrollBar->SetScrollbar(
         cameraPos.x,

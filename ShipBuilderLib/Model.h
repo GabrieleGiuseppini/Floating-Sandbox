@@ -165,9 +165,13 @@ public:
         mDirtyState.GlobalIsDirty = true;
     }
 
-    void SetAllLayersDirty()
+    void SetAllPresentLayersDirty()
     {
-        mDirtyState.IsLayerDirtyMap.fill(true);
+        for (size_t l = 0; l < LayerCount; ++l)
+        {
+            mDirtyState.IsLayerDirtyMap[l] |= mLayerPresenceMap[l];
+        }
+
         mDirtyState.GlobalIsDirty = true;
     }
 
