@@ -40,6 +40,16 @@ TEST(VectorsTests, Sum_2i)
     EXPECT_EQ(c.y, 9);
 }
 
+TEST(VectorsTests, Scale_2f)
+{
+    vec2f a(1.0f, 5.0f);
+    vec2f b(2.0f, 4.0f);
+    vec2f c = a.scale(b);
+
+    EXPECT_EQ(c.x, 2.0f);
+    EXPECT_EQ(c.y, 20.0f);
+}
+
 TEST(VectorsTests, Float_to_Integral_Round_2f)
 {
     vec2f a(1.4f, 5.8f);

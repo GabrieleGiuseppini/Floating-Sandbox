@@ -293,6 +293,13 @@ public:
             x * sinAngle + y * cosAngle);
     }
 
+    inline vec2f scale(vec2f const & multiplier) const noexcept
+    {
+        return vec2f(
+            x * multiplier.x,
+            y * multiplier.y);
+    }
+
     std::string toString() const;
 
     vec2i to_vec2i_round() const;

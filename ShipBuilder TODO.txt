@@ -160,6 +160,10 @@ https://gamejolt.com/x/permalink/comment/11730705
 	+ Re-test UI on old Dell
 	+ Re-test UI on Ubuntu
 		+ See if need to change style, see https://imron02.wordpress.com/2014/12/11/wxwidgets-simple-application-using-wxribbon-and-wxauinotebook/
+		+ ShipBuilder Auto-Trim:
+			+ Bug when also zoom changes afterwards
+				+ First off: is the zoom really changing?
+			+ Texture seems to be trimmed "wrong"
 
 = Release
 
