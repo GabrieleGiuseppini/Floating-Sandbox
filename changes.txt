@@ -19,6 +19,7 @@
 - Lowered HeatBlaster radius when in ultra-violent mode
 - Added "Preferences" setting for starting the game in full-screen mode or as a normal window
 - Moved Strength Randomization settings from the "Preferences" window to the "Settings" window
+- Improved precision of "Move" tool for tiny movements
 - Added 1 new ship
 
 1.16.7
