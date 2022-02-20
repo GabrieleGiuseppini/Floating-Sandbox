@@ -162,6 +162,11 @@
 		+ Do final ShipBuilder tasks (*<--)
 		+ Train issue w/ocean floor
 		+ Merge back into master
+		+ Tests:
+			+ New changes.txt found (aka old bug)
+				+ Verify doesn't happen again
+				+ Check how many older FS's exist, to see if can enable/upload changes.txt again
+					+ Jan, Feb: 70% 1.16.7, 30% 1.16.4
 
 		= Localization
 			+ IT
@@ -209,22 +214,19 @@
 				= Make all .shp2
 					- Fixup names
 				- changes.txt
-				- Move to Ships/
-			
-		- Tests:
-			+ New changes.txt found (aka old bug)
-				+ Verify doesn't happen again
-				+ Check how many older FS's exist, to see if can enable/upload changes.txt again
-					+ Jan, Feb: 70% 1.16.7, 30% 1.16.4
+				- Move to Ships/			
 
-
-		- MSI Installer:
-			- Also install ShipBuilder.exe
-			- Set shell handler for .shp2 files
-				- See https://stackoverflow.com/questions/138550/how-to-register-file-types-extensions-with-a-wix-installer
-				- Invoke main exe with command-line arg
-				- Also file icon
-					- See https://www.firegiant.com/wix/tutorial/getting-started/beyond-files/
+		= MSI Installer:
+			= Also install ShipBuilder.exe
+				- Test clean install
+				- Test upgrade
+			+ Set shell handler for .shp2 files
+				+ See https://stackoverflow.com/questions/138550/how-to-register-file-types-extensions-with-a-wix-installer
+				+ Invoke main exe with command-line arg
+				+ Also file icon
+					+ See https://www.firegiant.com/wix/tutorial/getting-started/beyond-files/
+				+ Test clean install
+				+ Test upgrade
 
 		- Send for final testing
 

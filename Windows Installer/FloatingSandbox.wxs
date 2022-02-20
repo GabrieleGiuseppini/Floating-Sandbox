@@ -43,6 +43,16 @@
                     <Component Id="FloatingSandboxExe_comp" Guid="861CEF76-5773-4736-A6D4-C6CB50112C3A" Win64="$(var.IsWin64)">
                         <File Id="FloatingSandboxExe" Source="$(var.SourceInstallFolderPath)\FloatingSandbox.exe" KeyPath="no" />
                         <RegistryValue Root="HKCU" Key="$(var.ProductRegistryKey)" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
+                        <ProgId Id='FloatingSandbox.shp2file' Description='Floating Sandbox Ship' Icon='FloatingSandboxExe' IconIndex='1'>
+                          <Extension Id='shp2' ContentType='application/x-floatingsandbox'>
+                            <Verb Id='open' Command='Open' TargetFile='FloatingSandboxExe' Argument='"%1"' />
+                          </Extension>
+                        </ProgId>
+                    </Component>
+
+                    <Component Id="ShipBuilderExe_comp" Guid="86F1FADB-D666-41B0-839B-033BACD782C0" Win64="$(var.IsWin64)">
+                      <File Id="ShipBuilderExe" Source="$(var.SourceInstallFolderPath)\ShipBuilder.exe" KeyPath="no" />
+                      <RegistryValue Root="HKCU" Key="$(var.ProductRegistryKey)" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
                     </Component>
 
                     <Component Id="RuntimeBinaries_comp" Guid="E6862ECF-0527-478C-B756-E66E2B493474" Win64="$(var.IsWin64)">
@@ -122,6 +132,7 @@
         <Feature Id="ProductFeature" Title="FloatingSandbox" Level="1">
             <ComponentRef Id="RootDir_comp" />
             <ComponentRef Id="FloatingSandboxExe_comp" />
+            <ComponentRef Id="ShipBuilderExe_comp" />
             <ComponentRef Id="RuntimeBinaries_comp" />
             <ComponentRef Id="MiscFiles_comp" />
 
