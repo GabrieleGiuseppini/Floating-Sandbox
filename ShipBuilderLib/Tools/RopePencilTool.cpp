@@ -16,7 +16,7 @@ namespace ShipBuilder {
 RopePencilTool::RopePencilTool(
     ModelController & modelController,
     UndoStack & undoStack,
-    WorkbenchState const & workbenchState,
+    WorkbenchState & workbenchState,
     IUserInterface & userInterface,
     View & view,
     ResourceLocator const & resourceLocator)

@@ -18,7 +18,7 @@ namespace ShipBuilder {
 StructuralPencilTool::StructuralPencilTool(
     ModelController & modelController,
     UndoStack & undoStack,
-    WorkbenchState const & workbenchState,
+    WorkbenchState & workbenchState,
     IUserInterface & userInterface,
     View & view,
     ResourceLocator const & resourceLocator)
@@ -35,7 +35,7 @@ StructuralPencilTool::StructuralPencilTool(
 ElectricalPencilTool::ElectricalPencilTool(
     ModelController & modelController,
     UndoStack & undoStack,
-    WorkbenchState const & workbenchState,
+    WorkbenchState & workbenchState,
     IUserInterface & userInterface,
     View & view,
     ResourceLocator const & resourceLocator)
@@ -52,7 +52,7 @@ ElectricalPencilTool::ElectricalPencilTool(
 StructuralEraserTool::StructuralEraserTool(
     ModelController & modelController,
     UndoStack & undoStack,
-    WorkbenchState const & workbenchState,
+    WorkbenchState & workbenchState,
     IUserInterface & userInterface,
     View & view,
     ResourceLocator const & resourceLocator)
@@ -69,7 +69,7 @@ StructuralEraserTool::StructuralEraserTool(
 ElectricalEraserTool::ElectricalEraserTool(
     ModelController & modelController,
     UndoStack & undoStack,
-    WorkbenchState const & workbenchState,
+    WorkbenchState & workbenchState,
     IUserInterface & userInterface,
     View & view,
     ResourceLocator const & resourceLocator)
@@ -88,7 +88,7 @@ PencilTool<TLayer, IsEraser>::PencilTool(
     ToolType toolType,
     ModelController & modelController,
     UndoStack & undoStack,
-    WorkbenchState const & workbenchState,
+    WorkbenchState & workbenchState,
     IUserInterface & userInterface,
     View & view,
     ResourceLocator const & resourceLocator)

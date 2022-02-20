@@ -94,6 +94,13 @@ StatusBar::StatusBar(
 
     hSizer->AddStretchSpacer(1);
 
+    // Sampled material name
+    {
+        mSampledMaterialNameStaticText = new wxStaticText(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
+        mSampledMaterialNameStaticText->SetMinSize(wxSize(200, -1));
+        hSizer->Add(mSampledMaterialNameStaticText, 0, wxALIGN_CENTRE_VERTICAL, 0);
+    }
+
     SetSizer(hSizer);
 }
 
@@ -113,6 +120,12 @@ void StatusBar::SetZoom(std::optional<float> zoom)
 {
     mZoom = zoom;
     RefreshZoom();
+}
+
+void StatusBar::SetSampledMaterial(std::optional<std::string> materialName)
+{
+    mSampledMaterialName = materialName;
+    RefreshSampledMaterial();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -159,6 +172,11 @@ void StatusBar::RefreshZoom()
     }
 
     mZoomStaticText->SetLabel(ss.str());
+}
+
+void StatusBar::RefreshSampledMaterial()
+{
+    mSampledMaterialNameStaticText->SetLabel(mSampledMaterialName.value_or(""));
 }
 
 }

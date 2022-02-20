@@ -453,19 +453,19 @@ void MainFrame::OnModelDirtyChanged(Model const & model)
     ReconciliateUIWithModelDirtiness(model);
 }
 
-void MainFrame::OnStructuralMaterialChanged(MaterialPlaneType plane, StructuralMaterial const * material)
+void MainFrame::OnStructuralMaterialChanged(StructuralMaterial const * material, MaterialPlaneType plane)
 {
-    ReconciliateUIWithStructuralMaterial(plane, material);
+    ReconciliateUIWithStructuralMaterial(material, plane);
 }
 
-void MainFrame::OnElectricalMaterialChanged(MaterialPlaneType plane, ElectricalMaterial const * material)
+void MainFrame::OnElectricalMaterialChanged(ElectricalMaterial const * material, MaterialPlaneType plane)
 {
-    ReconciliateUIWithElectricalMaterial(plane, material);
+    ReconciliateUIWithElectricalMaterial(material, plane);
 }
 
-void MainFrame::OnRopesMaterialChanged(MaterialPlaneType plane, StructuralMaterial const * material)
+void MainFrame::OnRopesMaterialChanged(StructuralMaterial const * material, MaterialPlaneType plane)
 {
-    ReconciliateUIWithRopesMaterial(plane, material);
+    ReconciliateUIWithRopesMaterial(material, plane);
 }
 
 void MainFrame::OnCurrentToolChanged(std::optional<ToolType> tool)
@@ -527,6 +527,11 @@ void MainFrame::OnToolCoordinatesChanged(std::optional<ShipSpaceCoordinates> coo
     }
 
     mStatusBar->SetToolCoordinates(coordinates);
+}
+
+void MainFrame::OnSampledMaterialChanged(std::optional<std::string> materialName)
+{
+    mStatusBar->SetSampledMaterial(materialName);
 }
 
 void MainFrame::OnError(wxString const & errorMessage) const
@@ -2512,7 +2517,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     ToolType::StructuralPencil,
                     structuralToolbarPanel,
                     "pencil_icon",
-                    _("Draw individual structure particles"));
+                    _("Draw individual structure particles."));
 
                 toolsSizer->Add(
                     button,
@@ -2528,7 +2533,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     ToolType::StructuralEraser,
                     structuralToolbarPanel,
                     "eraser_icon",
-                    _("Erase individual structure particles"));
+                    _("Erase individual structure particles."));
 
                 toolsSizer->Add(
                     button,
@@ -2544,7 +2549,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     ToolType::StructuralLine,
                     structuralToolbarPanel,
                     "line_icon",
-                    _("Draw particles in lines"));
+                    _("Draw particles in lines."));
 
                 toolsSizer->Add(
                     button,
@@ -2560,11 +2565,27 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     ToolType::StructuralFlood,
                     structuralToolbarPanel,
                     "flood_tool_icon",
-                    _("Fill an area with structure particles"));
+                    _("Fill an area with structure particles."));
 
                 toolsSizer->Add(
                     button,
                     wxGBPosition(1, 1),
+                    wxGBSpan(1, 1),
+                    0,
+                    0);
+            }
+
+            // Sampler
+            {
+                auto button = makeToolButton(
+                    ToolType::StructuralSampler,
+                    structuralToolbarPanel,
+                    "sampler_icon",
+                    _("Sample the material under the cursor."));
+
+                toolsSizer->Add(
+                    button,
+                    wxGBPosition(2, 0),
                     wxGBSpan(1, 1),
                     0,
                     0);
@@ -2675,7 +2696,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     ToolType::ElectricalPencil,
                     electricalToolbarPanel,
                     "pencil_icon",
-                    _("Draw individual electrical elements"));
+                    _("Draw individual electrical elements."));
 
                 toolsSizer->Add(
                     button,
@@ -2691,7 +2712,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     ToolType::ElectricalEraser,
                     electricalToolbarPanel,
                     "eraser_icon",
-                    _("Erase individual electrical elements"));
+                    _("Erase individual electrical elements."));
 
                 toolsSizer->Add(
                     button,
@@ -2707,11 +2728,27 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     ToolType::ElectricalLine,
                     electricalToolbarPanel,
                     "line_icon",
-                    _("Draw electrical elements in lines"));
+                    _("Draw electrical elements in lines."));
 
                 toolsSizer->Add(
                     button,
                     wxGBPosition(1, 0),
+                    wxGBSpan(1, 1),
+                    0,
+                    0);
+            }
+
+            // Sampler
+            {
+                auto button = makeToolButton(
+                    ToolType::ElectricalSampler,
+                    electricalToolbarPanel,
+                    "sampler_icon",
+                    _("Sample the material under the cursor."));
+
+                toolsSizer->Add(
+                    button,
+                    wxGBPosition(1, 1),
                     wxGBSpan(1, 1),
                     0,
                     0);
@@ -2822,7 +2859,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     ToolType::RopePencil,
                     ropesToolbarPanel,
                     "pencil_icon",
-                    _("Draw a rope between two endpoints"));
+                    _("Draw a rope between two endpoints."));
 
                 toolsSizer->Add(
                     button,
@@ -2838,11 +2875,27 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     ToolType::RopeEraser,
                     ropesToolbarPanel,
                     "eraser_icon",
-                    _("Erase rope endpoints"));
+                    _("Erase rope endpoints."));
 
                 toolsSizer->Add(
                     button,
                     wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    0,
+                    0);
+            }
+
+            // Sampler
+            {
+                auto button = makeToolButton(
+                    ToolType::RopeSampler,
+                    ropesToolbarPanel,
+                    "sampler_icon",
+                    _("Sample the material under the cursor."));
+
+                toolsSizer->Add(
+                    button,
+                    wxGBPosition(1, 0),
                     wxGBSpan(1, 1),
                     0,
                     0);
@@ -3403,21 +3456,21 @@ void MainFrame::OnStructuralMaterialSelected(fsStructuralMaterialSelectedEvent &
 {
     assert(mController);
 
-    mController->SetStructuralMaterial(event.GetMaterialPlane(), event.GetMaterial());
+    mController->SetStructuralMaterial(event.GetMaterial(), event.GetMaterialPlane());
 }
 
 void MainFrame::OnElectricalMaterialSelected(fsElectricalMaterialSelectedEvent & event)
 {
     assert(mController);
 
-    mController->SetElectricalMaterial(event.GetMaterialPlane(), event.GetMaterial());
+    mController->SetElectricalMaterial(event.GetMaterial(), event.GetMaterialPlane());
 }
 
 void MainFrame::OnRopeMaterialSelected(fsStructuralMaterialSelectedEvent & event)
 {
     assert(mController);
 
-    mController->SetRopeMaterial(event.GetMaterialPlane(), event.GetMaterial());
+    mController->SetRopeMaterial(event.GetMaterial(), event.GetMaterialPlane());
 }
 
 //////////////////////////////////////////////////////////////////
@@ -4082,12 +4135,12 @@ size_t MainFrame::LayerToVisualizationIndex(LayerType layer) const
 
 void MainFrame::ReconciliateUIWithWorkbenchState()
 {
-    ReconciliateUIWithStructuralMaterial(MaterialPlaneType::Foreground, mWorkbenchState.GetStructuralForegroundMaterial());
-    ReconciliateUIWithStructuralMaterial(MaterialPlaneType::Background, mWorkbenchState.GetStructuralBackgroundMaterial());
-    ReconciliateUIWithElectricalMaterial(MaterialPlaneType::Foreground, mWorkbenchState.GetElectricalForegroundMaterial());
-    ReconciliateUIWithElectricalMaterial(MaterialPlaneType::Background, mWorkbenchState.GetElectricalBackgroundMaterial());
-    ReconciliateUIWithRopesMaterial(MaterialPlaneType::Foreground, mWorkbenchState.GetRopesForegroundMaterial());
-    ReconciliateUIWithRopesMaterial(MaterialPlaneType::Background, mWorkbenchState.GetRopesBackgroundMaterial());
+    ReconciliateUIWithStructuralMaterial(mWorkbenchState.GetStructuralForegroundMaterial(), MaterialPlaneType::Foreground);
+    ReconciliateUIWithStructuralMaterial(mWorkbenchState.GetStructuralBackgroundMaterial(), MaterialPlaneType::Background);
+    ReconciliateUIWithElectricalMaterial(mWorkbenchState.GetElectricalForegroundMaterial(), MaterialPlaneType::Foreground);
+    ReconciliateUIWithElectricalMaterial(mWorkbenchState.GetElectricalBackgroundMaterial(), MaterialPlaneType::Background);
+    ReconciliateUIWithRopesMaterial(mWorkbenchState.GetRopesForegroundMaterial(), MaterialPlaneType::Foreground);
+    ReconciliateUIWithRopesMaterial(mWorkbenchState.GetRopesBackgroundMaterial(), MaterialPlaneType::Background);
 
     ReconciliateUIWithSelectedTool(mWorkbenchState.GetCurrentToolType());
 
@@ -4190,7 +4243,7 @@ void MainFrame::ReconciliateUIWithModelDirtiness(Model const & model)
     SetFrameTitle(model.GetShipMetadata().ShipName, isDirty);
 }
 
-void MainFrame::ReconciliateUIWithStructuralMaterial(MaterialPlaneType plane, StructuralMaterial const * material)
+void MainFrame::ReconciliateUIWithStructuralMaterial(StructuralMaterial const * material, MaterialPlaneType plane)
 {
     switch (plane)
     {
@@ -4240,7 +4293,7 @@ void MainFrame::ReconciliateUIWithStructuralMaterial(MaterialPlaneType plane, St
     }
 }
 
-void MainFrame::ReconciliateUIWithElectricalMaterial(MaterialPlaneType plane, ElectricalMaterial const * material)
+void MainFrame::ReconciliateUIWithElectricalMaterial(ElectricalMaterial const * material, MaterialPlaneType plane)
 {
     switch (plane)
     {
@@ -4286,7 +4339,7 @@ void MainFrame::ReconciliateUIWithElectricalMaterial(MaterialPlaneType plane, El
     }
 }
 
-void MainFrame::ReconciliateUIWithRopesMaterial(MaterialPlaneType plane, StructuralMaterial const * material)
+void MainFrame::ReconciliateUIWithRopesMaterial(StructuralMaterial const * material, MaterialPlaneType plane)
 {
     switch (plane)
     {

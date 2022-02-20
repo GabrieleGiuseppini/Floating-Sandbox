@@ -1,3 +1,5 @@
+#include <Game/Materials.h>
+
 #include <GameCore/FileSystem.h>
 #include <GameCore/MemoryStreams.h>
 
@@ -181,3 +183,6 @@ public:
 };
 
 float DivideByTwo(float value);
+
+StructuralMaterial MakeTestStructuralMaterial(std::string name);
+ElectricalMaterial MakeTestElectricalMaterial(std::string name);

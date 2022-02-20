@@ -1,5 +1,7 @@
 #include <Game/GameEventDispatcher.h>
 
+#include "Utils.h"
+
 #include "gmock/gmock.h"
 
 class _MockGameEventHandler
@@ -17,43 +19,6 @@ using namespace ::testing;
 
 using MockHandler = StrictMock<_MockGameEventHandler>;
 
-StructuralMaterial MakeStructuralMaterial(std::string name)
-{
-    return StructuralMaterial(
-        rgbColor(1, 2, 3),
-        name,
-        rgbColor::zero(),
-        1.0f,
-        1.0f,
-        1.0f,
-        1.0f,
-        1.0f,
-        0.5f, // StrainThresholdFraction
-        std::nullopt, // Unique type
-        std::nullopt, // Sound
-        "TestMaterial",
-        // Water
-        false,
-        1.0f,
-        1.0f,
-        1.0f,
-        1.0f,
-        // Heat
-        1.0f,
-        1.0f,
-        1.0f,
-        1.0f,
-        1.0f,
-        StructuralMaterial::MaterialCombustionType::Combustion,
-        0.0f, // Radius
-        0.0f, // Strength
-        // Misc
-        1.0f,
-        false,
-        // Palette
-        std::nullopt);
-}
-
 /////////////////////////////////////////////////////////////////
 
 TEST(GameEventDispatcherTests, Aggregates_OnStress)
@@ -63,7 +28,7 @@ TEST(GameEventDispatcherTests, Aggregates_OnStress)
     GameEventDispatcher dispatcher;
     dispatcher.RegisterStructuralEventHandler(&handler);
 
-    StructuralMaterial sm = MakeStructuralMaterial("Foo");
+    StructuralMaterial sm = MakeTestStructuralMaterial("Foo");
 
     EXPECT_CALL(handler, OnStress(_, _, _)).Times(0);
 
@@ -86,9 +51,9 @@ TEST(GameEventDispatcherTests, Aggregates_OnStress_MultipleKeys)
     GameEventDispatcher dispatcher;
     dispatcher.RegisterStructuralEventHandler(&handler);
 
-    StructuralMaterial sm1 = MakeStructuralMaterial("Foo1");
+    StructuralMaterial sm1 = MakeTestStructuralMaterial("Foo1");
 
-    StructuralMaterial sm2 = MakeStructuralMaterial("Foo2");
+    StructuralMaterial sm2 = MakeTestStructuralMaterial("Foo2");
 
     EXPECT_CALL(handler, OnStress(_, _, _)).Times(0);
 
@@ -148,7 +113,7 @@ TEST(GameEventDispatcherTests, ClearsStateAtUpdate)
     GameEventDispatcher dispatcher;
     dispatcher.RegisterStructuralEventHandler(&handler);
 
-    StructuralMaterial sm = MakeStructuralMaterial("Foo");
+    StructuralMaterial sm = MakeTestStructuralMaterial("Foo");
 
     EXPECT_CALL(handler, OnStress(_, _, _)).Times(0);
 

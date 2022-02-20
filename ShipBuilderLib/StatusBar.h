@@ -27,28 +27,28 @@ public:
     void SetCanvasSize(std::optional<ShipSpaceSize> canvasSize);
     void SetToolCoordinates(std::optional<ShipSpaceCoordinates> coordinates);
     void SetZoom(std::optional<float> zoom);
+    void SetSampledMaterial(std::optional<std::string> materialName);
 
 private:
 
     void RefreshCanvasSize();
     void RefreshToolCoordinates();
     void RefreshZoom();
+    void RefreshSampledMaterial();
 
 private:
-
-    //
-    // Canvas area
-    //
 
     // UI
     wxStaticText * mCanvasSizeStaticText;
     wxStaticText * mToolCoordinatesStaticText;
     wxStaticText * mZoomStaticText;
+    wxStaticText * mSampledMaterialNameStaticText;
 
     // State
     std::optional<ShipSpaceSize> mCanvasSize;
     std::optional<ShipSpaceCoordinates> mToolCoordinates;
     std::optional<float> mZoom;
+    std::optional<std::string> mSampledMaterialName;
 };
 
 }

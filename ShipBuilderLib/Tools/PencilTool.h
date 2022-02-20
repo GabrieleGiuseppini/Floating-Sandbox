@@ -24,7 +24,7 @@ class PencilTool : public Tool
 {
 public:
 
-    ~PencilTool();
+    virtual ~PencilTool();
 
     void OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates) override;
     void OnLeftMouseDown() override;
@@ -40,7 +40,7 @@ protected:
         ToolType toolType,
         ModelController & modelController,
         UndoStack & undoStack,
-        WorkbenchState const & workbenchState,
+        WorkbenchState & workbenchState,
         IUserInterface & userInterface,
         View & view,
         ResourceLocator const & resourceLocator);
@@ -110,7 +110,7 @@ public:
     StructuralPencilTool(
         ModelController & modelController,
         UndoStack & undoStack,
-        WorkbenchState const & workbenchState,
+        WorkbenchState & workbenchState,
         IUserInterface & userInterface,
         View & view,
         ResourceLocator const & resourceLocator);
@@ -123,7 +123,7 @@ public:
     ElectricalPencilTool(
         ModelController & modelController,
         UndoStack & undoStack,
-        WorkbenchState const & workbenchState,
+        WorkbenchState & workbenchState,
         IUserInterface & userInterface,
         View & view,
         ResourceLocator const & resourceLocator);
@@ -136,7 +136,7 @@ public:
     StructuralEraserTool(
         ModelController & modelController,
         UndoStack & undoStack,
-        WorkbenchState const & workbenchState,
+        WorkbenchState & workbenchState,
         IUserInterface & userInterface,
         View & view,
         ResourceLocator const & resourceLocator);
@@ -149,7 +149,7 @@ public:
     ElectricalEraserTool(
         ModelController & modelController,
         UndoStack & undoStack,
-        WorkbenchState const & workbenchState,
+        WorkbenchState & workbenchState,
         IUserInterface & userInterface,
         View & view,
         ResourceLocator const & resourceLocator);

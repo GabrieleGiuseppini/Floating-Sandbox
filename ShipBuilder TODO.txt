@@ -236,13 +236,11 @@
 - UI Controls:
 	+ Button to save and go back to game (!StandaloneMode)
 	+ Button to quit and go back to game (!StandaloneMode)
-	- Button to Save (acts also as SaveAs for first save; menu however has also separate SaveAs)
-	- Undo stack
-	- Error (message) notification(s)
-		- StatusBar w/tooltip?
+	+ Button to Save (acts also as SaveAs for first save; menu however has also separate SaveAs)
+	+ Undo stack
 	+ Add electrical/texture/ropes layer
-	- Button to open ShipMetadata dialog
-	- Resize button (canvas resize)
+	+ Button to open ShipMetadata dialog
+	+ Resize button (canvas resize)
 
 
 = StatusBar:
@@ -274,7 +272,28 @@
 		+ Eraser (S, E)
 			+ Settings: Size
 		+ Flood (S, E)
-		- Sample
+		= Sampler tool (*)
+			= Icon and cursor
+			+ Structural, Electrical, and Ropes
+			+ Need StatusBar "Current Material" first
+			= Tool:
+				= LeftMouseDown, RightMouseDown: selection
+					+ Change WorkbenchState fg or bg
+					= Notify MainFrame of WorkbenchState change
+						- Test that it refreshes
+				= MouseMove: change status bar
+					! Regardless of mouse being down or up
+					= Notify MainFrame of material
+						+ IUserInterface notification, with name of material
+				- TODO: should revert to previous tool after clicking?
+				= Zero-out material at:
+					= Tool destructor
+					- Anything else?
+			- Test:
+				- Structural (sample + select)
+				- Electrical (sample + select)
+				- Ropes (sample + select)
+
 		+ Line
 		- Rectangle
 			- Settings: FillWithFore|FillWithBack|NoFill; Size
