@@ -117,7 +117,7 @@ public:
 
     void OnUndoStackStateChanged(UndoStack & undoStack) override;
 
-    void OnToolCoordinatesChanged(std::optional<ShipSpaceCoordinates> coordinates) override;
+    void OnToolCoordinatesChanged(std::optional<ShipSpaceCoordinates> coordinates, ShipSpaceSize const & shipSize) override;
 
     void OnError(wxString const & errorMessage) const override;
 

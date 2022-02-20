@@ -245,23 +245,22 @@
 	- Resize button (canvas resize)
 
 
-- StatusBar:
+= StatusBar:
 	+ Own class
-	- Try making it a wxPanel rather than a wxStatusBar
+	+ Try making it a wxPanel rather than a wxStatusBar
 	- Cctor and Set(.) for UnitsSystem
 		- From SB::MainFrame cctor
 		- And store tools coords, ship size, etc. for re-populating on change	
 	- Areas:
 		- Canvas:
-			- Coords and icon (x,y), w/meters/feet as well
-			- WorkSpace size and icon (wxh), w/meters/feet as well
+			= WorkSpace size and icon (wxh), w/meters/feet as well
+			= Coords and icon (x,y), w/meters/feet as well			
 			- Selection/line/rect/etc. size and icon (wxh), w/meters/feet as well
-			- Zoom (%)
+			+ Zoom (%)
 				+ MainFrame: OnViewModelChanged calls a new ReconciliateUIWithViewModel(), which does:
 					+ StatusBar: set zoom
 					+ RecalculateWorkCanvasPanning
 			- Material under cursor (for drop tool)
-			- Warning icon (w/tooltip)
 
 - Tools:
 	! Most tools should pan when the (captured) mouse is outside of the canvas

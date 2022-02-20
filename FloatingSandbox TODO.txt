@@ -31,6 +31,8 @@
 		- Add test target to UnitTests's CMakeLists.txt (for Ubuntu)
 			- Verify on Ubuntu
 
+		- Update Visual Studio
+
 		- New sounds from TimCan
 
 		- Material system improvements (*)

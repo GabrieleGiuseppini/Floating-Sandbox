@@ -9,14 +9,14 @@
 
 #include <GameCore/GameTypes.h>
 
-#include <wx/statbmp.h>
-#include <wx/statusbr.h>
+#include <wx/panel.h>
+#include <wx/stattext.h>
 
 #include <optional>
 
 namespace ShipBuilder {
 
-class StatusBar : public wxStatusBar
+class StatusBar : public wxPanel
 {
 public:
 
@@ -24,15 +24,31 @@ public:
         wxWindow * parent,
         ResourceLocator const & resourceLocator);
 
+    void SetCanvasSize(std::optional<ShipSpaceSize> canvasSize);
     void SetToolCoordinates(std::optional<ShipSpaceCoordinates> coordinates);
+    void SetZoom(std::optional<float> zoom);
 
 private:
 
-    void OnResize(wxSizeEvent & event);
+    void RefreshCanvasSize();
+    void RefreshToolCoordinates();
+    void RefreshZoom();
 
 private:
 
-    // TODO: static bitmaps
+    //
+    // Canvas area
+    //
+
+    // UI
+    wxStaticText * mCanvasSizeStaticText;
+    wxStaticText * mToolCoordinatesStaticText;
+    wxStaticText * mZoomStaticText;
+
+    // State
+    std::optional<ShipSpaceSize> mCanvasSize;
+    std::optional<ShipSpaceCoordinates> mToolCoordinates;
+    std::optional<float> mZoom;
 };
 
 }
