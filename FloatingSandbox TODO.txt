@@ -199,11 +199,11 @@
 					+ Tell him has holes - by design
 			+ Pocketwatch ships
 				+ SS Belgenland 1914
-			= Tank from AvSimplified
+			+ Tank from AvSimplified
 				+ Pick
-				- Asked for credits
-					- CreditPanel
-					- Tank itself
+				+ Asked for credits + AvSimplified
+					+ CreditPanel
+					+ Tank itself
 			+ R.M.S. Atlantic's ships
 				+ I'll take the S.Stephen
 				+ Add to credits: "R.M.S. Atlantic"
@@ -214,9 +214,9 @@
 				- Move to Ships/
 			
 		- Tests:
-			- New changes.txt found (aka old bug)
-				- Verify doesn't happen again
-				= Check how many older FS's exist, to see if can enable/upload changes.txt again
+			+ New changes.txt found (aka old bug)
+				+ Verify doesn't happen again
+				+ Check how many older FS's exist, to see if can enable/upload changes.txt again
 					+ Jan, Feb: 70% 1.16.7, 30% 1.16.4
 
 
@@ -226,6 +226,7 @@
 				- See https://stackoverflow.com/questions/138550/how-to-register-file-types-extensions-with-a-wix-installer
 				- Invoke main exe with command-line arg
 				- Also file icon
+					- See https://www.firegiant.com/wix/tutorial/getting-started/beyond-files/
 
 		- Send for final testing
 
@@ -673,6 +674,8 @@
 		- Embed GameJolt Widget
 
 - Suggestions to spec:
+	- Heat bomb
+		- Just heat
 	- Fishing log
 		- Players can collect different kinds of fish; click on one they don't have and it goes into like a collectors book
 		- Could have a "fishing rod" tool
