@@ -189,8 +189,6 @@
 				- Test
 					- Including error ship
 
-		- Paco's water doors volume issue
-
 		= Ships:
 			+ Raynair updates
 				+ A-320 update
@@ -207,8 +205,8 @@
 			+ R.M.S. Atlantic's ships
 				+ I'll take the S.Stephen
 				+ Add to credits: "R.M.S. Atlantic"
-			+ Finalize those in _TO_TAKE
-				+ Make all .shp2
+			= Finalize those in _TO_TAKE
+				= Make all .shp2
 					- Fixup names
 				- changes.txt
 				- Move to Ships/
@@ -233,6 +231,11 @@
 		- Release
 
 	- 1.17.1:
+
+		- Paco's water doors dance
+			- ElectricalElements: have state also for switches, and set a countdown (in sim time) before next transition
+				- Add state for them
+			- High/Low watermark
 
 		- New sounds from TimCan
 
