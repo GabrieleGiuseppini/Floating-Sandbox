@@ -25,7 +25,7 @@ StatusBar::StatusBar(
     //
 
     int constexpr SpacerSizeMinor = 5;
-    int constexpr SpacerSizeMajor = 20;
+    int constexpr SpacerSizeMajor = 10;
 
     wxBoxSizer * hSizer = new wxBoxSizer(wxHORIZONTAL);
 
@@ -45,7 +45,8 @@ StatusBar::StatusBar(
 
             // Label
             {
-                mCanvasSizeStaticText = new wxStaticText(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
+                mCanvasSizeStaticText = new wxStaticText(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
+                mCanvasSizeStaticText->SetMinSize(wxSize(65, -1));
                 hSizer->Add(mCanvasSizeStaticText, 0, wxALIGN_CENTRE_VERTICAL, 0);
             }
         }
@@ -64,7 +65,8 @@ StatusBar::StatusBar(
 
             // Label
             {
-                mToolCoordinatesStaticText = new wxStaticText(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
+                mToolCoordinatesStaticText = new wxStaticText(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
+                mToolCoordinatesStaticText->SetMinSize(wxSize(65, -1));
                 hSizer->Add(mToolCoordinatesStaticText, 0, wxALIGN_CENTRE_VERTICAL, 0);
             }
         }
@@ -83,7 +85,8 @@ StatusBar::StatusBar(
 
             // Label
             {
-                mZoomStaticText = new wxStaticText(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
+                mZoomStaticText = new wxStaticText(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
+                mZoomStaticText->SetMinSize(wxSize(40, -1));
                 hSizer->Add(mZoomStaticText, 0, wxALIGN_CENTRE_VERTICAL, 0);
             }
         }
@@ -124,8 +127,6 @@ void StatusBar::RefreshCanvasSize()
     }
 
     mCanvasSizeStaticText->SetLabel(ss.str());
-
-    Layout();
 }
 
 void StatusBar::RefreshToolCoordinates()
@@ -138,8 +139,6 @@ void StatusBar::RefreshToolCoordinates()
     }
 
     mToolCoordinatesStaticText->SetLabel(ss.str());
-
-    Layout();
 }
 
 void StatusBar::RefreshZoom()
@@ -160,8 +159,6 @@ void StatusBar::RefreshZoom()
     }
 
     mZoomStaticText->SetLabel(ss.str());
-
-    Layout();
 }
 
 }
