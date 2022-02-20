@@ -167,8 +167,7 @@
 				+ Verify doesn't happen again
 				+ Check how many older FS's exist, to see if can enable/upload changes.txt again
 					+ Jan, Feb: 70% 1.16.7, 30% 1.16.4
-
-		= Localization
+		+ Localization
 			+ IT
 				+ Do first & second
 				+ Update (probe panel)
@@ -184,15 +183,15 @@
 				+ Send final po
 				+ Test
 					+ Including error ship
-			= ES
+			+ ES
 				+ Take first
 				+ Update & send second + initial tips
 				+ Get back po file
 				+ Get back initial tip line
 				+ Update po
-				= Send final po
-				- Test
-					- Including error ship
+				+ Send final po
+				+ Test
+					+ Including error ship
 
 		= Ships:
 			+ Raynair updates
@@ -218,7 +217,7 @@
 
 		= MSI Installer:
 			= Also install ShipBuilder.exe
-				- Test clean install
+				+ Test clean install
 				- Test upgrade
 			+ Set shell handler for .shp2 files
 				+ See https://stackoverflow.com/questions/138550/how-to-register-file-types-extensions-with-a-wix-installer
