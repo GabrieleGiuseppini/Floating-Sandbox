@@ -234,6 +234,8 @@
 
 	- 1.17.1:
 
+		- Update Visual Studio
+
 		- New sounds from TimCan
 
 		- Material system improvements (*)

@@ -144,6 +144,8 @@ Controller::Controller(
             mCurrentTool = MakeTool(*mWorkbenchState.GetCurrentToolType());
         }
     }
+
+    RefreshToolCoordinatesDisplay();
 }
 
 ShipDefinition Controller::MakeShipDefinition()
@@ -1212,7 +1214,7 @@ void Controller::OnUncapturedMouseOut()
     InternalSuspendTool();
 
     // Tell UI
-    mUserInterface.OnToolCoordinatesChanged(std::nullopt);
+    mUserInterface.OnToolCoordinatesChanged(std::nullopt, GetShipSize());
 }
 
 void Controller::OnMouseCaptureLost()
@@ -1650,13 +1652,14 @@ void Controller::RefreshToolCoordinatesDisplay()
     ShipSpaceCoordinates mouseShipSpaceCoordinates = mView->ScreenToShipSpace(mUserInterface.GetMouseCoordinates());
 
     // Check if within ship canvas
-    if (mouseShipSpaceCoordinates.IsInSize(mModelController->GetModel().GetShipSize()))
+    auto const & shipSize = GetShipSize();
+    if (mouseShipSpaceCoordinates.IsInSize(shipSize))
     {
-        mUserInterface.OnToolCoordinatesChanged(mouseShipSpaceCoordinates);
+        mUserInterface.OnToolCoordinatesChanged(mouseShipSpaceCoordinates, shipSize);
     }
     else
     {
-        mUserInterface.OnToolCoordinatesChanged(std::nullopt);
+        mUserInterface.OnToolCoordinatesChanged(std::nullopt, shipSize);
     }
 }
 

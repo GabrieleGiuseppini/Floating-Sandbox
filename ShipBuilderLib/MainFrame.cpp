@@ -518,19 +518,12 @@ void MainFrame::OnUndoStackStateChanged(UndoStack & undoStack)
     ReconciliateUIWithUndoStackState(undoStack);
 }
 
-void MainFrame::OnToolCoordinatesChanged(std::optional<ShipSpaceCoordinates> coordinates)
+void MainFrame::OnToolCoordinatesChanged(std::optional<ShipSpaceCoordinates> coordinates, ShipSpaceSize const & shipSize)
 {
     if (coordinates.has_value())
     {
-        if (mController)
-        {
-            // Flip coordinates: we show zero at top, just to be consistent with drawing software
-            coordinates->FlipY(mController->GetShipSize().height);
-        }
-        else
-        {
-            coordinates.reset();
-        }
+        // Flip coordinates: we show zero at top, just to be consistent with drawing software
+        coordinates->FlipY(shipSize.height);
     }
 
     mStatusBar->SetToolCoordinates(coordinates);
@@ -4120,12 +4113,13 @@ void MainFrame::ReconciliateUIWithViewModel(ViewModel const & viewModel)
     mZoomInButton->Enable(viewModel.GetZoom() < ViewModel::MaxZoom);
     mZoomOutButton->Enable(viewModel.GetZoom() > ViewModel::MinZoom);
 
-    // TODO: set zoom in StatusBar
+    // StatusBar
+    mStatusBar->SetZoom(viewModel.GetZoom());
 }
 
 void MainFrame::ReconciliateUIWithShipSize(ShipSpaceSize const & shipSize)
 {
-    // TODO: status bar
+    mStatusBar->SetCanvasSize(shipSize);
 }
 
 void MainFrame::ReconciliateUIWithShipTitle(std::string const & shipName, bool isShipDirty)
