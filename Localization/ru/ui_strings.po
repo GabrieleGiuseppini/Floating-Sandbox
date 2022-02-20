@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Floating Sandbox\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-02-19 19:06+0100\n"
+"PO-Revision-Date: 2022-02-20 11:10+0100\n"
 "Last-Translator: Gabriele Giuseppini <gabrielegiuseppini@gmail.com>\n"
 "Language-Team: Ilya Voloshin; Roman Shavernew (DioxCode)\n"
 "Language: ru\n"
@@ -39,20 +39,16 @@ msgid "&Tools"
 msgstr "&Инструменты"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1821
-#, fuzzy
-#| msgid "Game view"
 msgid "(Game View)"
-msgstr "Вид игры"
+msgstr "(Вид игры)"
 
 #: ..\ShipBuilderLib\NewPasswordDialog.cpp:57
 msgid "(Min 5 characters, at least one digit or punctuation character)"
 msgstr "(Не менее 5 знаков, по крайней мере одна цифра или знак препинания)"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1879
-#, fuzzy
-#| msgid "Structural layer"
 msgid "(Structure View)"
-msgstr "Структурный слой"
+msgstr "(Вид структуры)"
 
 #: ..\FloatingSandbox\CreditsPanel.cpp:71
 msgid "(c) Gabriele Giuseppini 2018-2022"
@@ -72,7 +68,7 @@ msgstr "Сила взрыва Анти-Материальной Бомбы"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:730
 msgid "Abandon And Return"
-msgstr ""
+msgstr "Отменить и вернуться"
 
 #: ..\FloatingSandbox\AboutDialog.cpp:24
 #, c-format
@@ -84,14 +80,12 @@ msgid "About and Credits"
 msgstr "Об игре и Благодарности"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1083
-#, fuzzy
-#| msgid "Add or clean the layer."
 msgid "Add or clean this layer."
-msgstr "Добавьте или очистите слой."
+msgstr "Добавьте или очистите данный слой."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1081
 msgid "Add/Clear"
-msgstr ""
+msgstr "Добавить/очистить"
 
 #: ..\FloatingSandbox\MainFrame.cpp:419
 msgid "Adjust Terrain"
@@ -471,7 +465,7 @@ msgstr ""
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1446
 msgid "Analysis"
-msgstr ""
+msgstr "Анализ"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4924
 msgid "Apply Saved Settings"
@@ -1295,7 +1289,7 @@ msgstr "Взрыв"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1237
 msgid "Export"
-msgstr ""
+msgstr "Экспортировать"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1244
 msgid "Export this layer to a file."
@@ -1444,8 +1438,6 @@ msgid "Friction Drag Adjust"
 msgstr "Регулировка сопротивления к трению"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1091
-#, fuzzy
-#| msgid "Load an Image"
 msgid "From Image"
 msgstr "Загрузить изображение"
 
@@ -1466,8 +1458,6 @@ msgid "Game Preferences..."
 msgstr "Игровые Предпочтения..."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:981
-#, fuzzy
-#| msgid "Game view"
 msgid "Game View"
 msgstr "Вид игры"
 
@@ -1574,7 +1564,7 @@ msgstr "Помощь"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3754
 msgid "High-Quality Rendering"
-msgstr "Качественный рендеринг"
+msgstr "Рендеринг в высоком разрешении"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:526
 msgid ""
@@ -1610,7 +1600,7 @@ msgstr "Корпус"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1641
 msgid "Hull Mode:"
-msgstr ""
+msgstr "Режим корпуса:"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1055
 msgid "Hydrostatic Pressure Adjust"
@@ -1630,7 +1620,7 @@ msgstr "Регулировка силы удара"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1112
 msgid "Import"
-msgstr ""
+msgstr "Импортировать"
 
 #: ..\ShipBuilderLib\Controller.cpp:634
 msgid "Import Texture Layer"
@@ -1712,7 +1702,7 @@ msgstr "Язык"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:854
 msgid "Layers"
-msgstr ""
+msgstr "Слои"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4230
 msgid "Level of Detail"
@@ -1841,7 +1831,7 @@ msgstr "Увеличивает или уменьшает физический р
 
 #: ..\ShipBuilderLib\MainFrame.cpp:793
 msgid "Magnify the view (+)."
-msgstr ""
+msgstr "Приблизить вид (+)"
 
 #: ..\FloatingSandbox\MainFrame.cpp:2260 ..\ShipBuilderLib\MainFrame.cpp:3768
 msgid "Maritime Disaster"
@@ -1948,10 +1938,8 @@ msgid "New Ship"
 msgstr "Новый корабль"
 
 #: ..\ShipBuilderLib\ResizeDialog.cpp:135
-#, fuzzy
-#| msgid "New Ship"
 msgid "New Size"
-msgstr "Новый корабль"
+msgstr "Новый размер"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4109
 msgid "Night Vision"
@@ -2075,10 +2063,8 @@ msgstr ""
 "корабля"
 
 #: ..\ShipBuilderLib\ResizeDialog.cpp:52
-#, fuzzy
-#| msgid "Line Size:"
 msgid "Original Size"
-msgstr "Размер линии:"
+msgstr "Оригинальный размер"
 
 #: ..\FloatingSandbox\CreditsPanel.cpp:72
 msgid "Original concept (c) Luke Wren, Francis Racicot (Pac0master) 2013"
@@ -2248,7 +2234,7 @@ msgstr "Выйти"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:752
 msgid "Quit and leave the program (ALT+F4)."
-msgstr ""
+msgstr "Выйти из программы (ALT+F4)"
 
 #: ..\FloatingSandbox\MainFrame.cpp:228
 msgid "Quit the game"
@@ -2280,7 +2266,7 @@ msgstr "Последние каталоги:"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:811
 msgid "Reduce the view (-)."
-msgstr ""
+msgstr "Уменьшить вид (-)"
 
 #: ..\FloatingSandbox\MainFrame.cpp:205
 msgid "Reload Current Ship"
@@ -2300,7 +2286,7 @@ msgstr "Перезагрузить предыдущий корабль при з
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1141
 msgid "Remove"
-msgstr ""
+msgstr "Удалить"
 
 #: ..\ShipBuilderLib\Controller.cpp:688
 msgid "Remove Texture Layer"
@@ -2315,10 +2301,8 @@ msgid "Remove the password lock."
 msgstr "Снимите блокировку пароля."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1207
-#, fuzzy
-#| msgid "Import this layer from another ship."
 msgid "Remove this layer from the ship."
-msgstr "Импортируйте этот слой из другого корабля."
+msgstr "Удалить данный слой у корабля."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:234
 msgid "Rendering"
@@ -2370,7 +2354,7 @@ msgstr "Устранение следующего(их) предупрежден
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:255
 msgid "Restart Required"
-msgstr ""
+msgstr "Необходим перезапуск игры"
 
 #: ..\FloatingSandbox\DebugDialog.cpp:164
 msgid "Restore"
@@ -2426,7 +2410,7 @@ msgstr ""
 
 #: ..\FloatingSandbox\DebugDialog.cpp:350
 msgid "Rewind"
-msgstr ""
+msgstr "Перемотать"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1867
 msgid "Rogue Wave Rate"
@@ -2458,11 +2442,11 @@ msgstr "КОРАБЕЛЬНАЯ ЛИТЕРАТУРА"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:583
 msgid "SI (Celsius)"
-msgstr ""
+msgstr "СИ (Цельсий)"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:582
 msgid "SI (Kelvin)"
-msgstr ""
+msgstr "СИ (Кельвин)"
 
 #: ..\FloatingSandbox\CreditsPanel.cpp:170
 msgid "SPECIAL THANKS"
@@ -2473,10 +2457,8 @@ msgid "Save"
 msgstr "Сохранить"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:709
-#, fuzzy
-#| msgid "Save Ship and Return to Game"
 msgid "Save And Return"
-msgstr "Сохранить корабль и вернуться в игру"
+msgstr "Сохранить и вернуться в игру"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:5135
 msgid "Save Current Settings"
@@ -2499,10 +2481,8 @@ msgid "Save Ship"
 msgstr "Сохранить корабль"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:692
-#, fuzzy
-#| msgid "Save Ship As..."
 msgid "Save Ship As"
-msgstr "Сохранить корабль как..."
+msgstr "Сохранить корабль как"
 
 #: ..\FloatingSandbox\BootSettingsDialog.cpp:151
 msgid "Save and Quit"
@@ -2566,7 +2546,7 @@ msgstr "Выберите каталог, в который будут сохра
 
 #: ..\ShipBuilderLib\MainFrame.cpp:962
 msgid "Select this layer as the primary layer."
-msgstr ""
+msgstr "Выбрать данный слой как первичный."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4043
 msgid "Selects how heat is rendered on the ship."
@@ -2780,7 +2760,7 @@ msgstr "Параметры Моделирования..."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1402
 msgid "Size"
-msgstr ""
+msgstr "Размер"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2670
 msgid "Size Multiplier"
@@ -2860,7 +2840,7 @@ msgstr "Жесткость пружинности"
 
 #: ..\FloatingSandbox\DebugDialog.cpp:231
 msgid "Start"
-msgstr ""
+msgstr "Начать"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:395
 msgid "Start in Full Screen"
@@ -2900,7 +2880,7 @@ msgstr "Жесткость"
 
 #: ..\FloatingSandbox\DebugDialog.cpp:261
 msgid "Stop"
-msgstr ""
+msgstr "Остановить"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1902
 msgid "Storms"
@@ -3300,10 +3280,8 @@ msgid "Too many attempts, aborting."
 msgstr "Слишком много попыток, прерывание."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1488
-#, fuzzy
-#| msgid "Boot Settings"
 msgid "Tool Settings"
-msgstr "Настройки Загрузки"
+msgstr "Настройки инструментов"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4312
 msgid "Tools Volume"
@@ -3368,7 +3346,7 @@ msgstr "Введите свой новый пароль:"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:584
 msgid "USCS"
-msgstr ""
+msgstr "Имперская СИ"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:716
 msgid "Ultra-Violent Mode"
@@ -3409,7 +3387,7 @@ msgstr "Пользовательский интерфейс"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1457
 msgid "Validation"
-msgstr ""
+msgstr "Валидация"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4734
 msgid "Vector Field Draw Options"
@@ -3421,20 +3399,12 @@ msgid "Velocities"
 msgstr "Точечная скорость"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:777
-#, fuzzy
-#| msgid "&View"
 msgid "View"
-msgstr "&Просмотр"
+msgstr "Просмотр"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:986
-#, fuzzy
-#| msgid ""
-#| "Mesh mode: view the structural mesh as it is induced by the structure "
-#| "particles."
 msgid "View the structure as it is rendered by the simulator."
-msgstr ""
-"Режим сетки: просмотр структурной сетки в том виде, в котором она "
-"индуцируется частицами структуры."
+msgstr "Просмотр стркутуры в режиме симуляции."
 
 #: ..\FloatingSandbox\BootSettingsDialog.cpp:32
 msgid ""
@@ -3579,7 +3549,7 @@ msgstr "Год постройки судна, например, \"1911\"."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1515
 msgid "Zero"
-msgstr ""
+msgstr "Ноль"
 
 #: ..\FloatingSandbox\MainFrame.cpp:241 ..\ShipBuilderLib\MainFrame.cpp:788
 msgid "Zoom In"
