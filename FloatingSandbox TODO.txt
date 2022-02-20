@@ -170,15 +170,15 @@
 				+ Test
 					+ Including error ship
 				+ Update po
-			= RU
+			+ RU
 				+ Take first
 				+ Update & send second + initial tips
 				+ Get back po file
 				+ Get back initial tip line
 				+ Update po
-				- Send final po
-				- Test
-					- Including error ship
+				+ Send final po
+				+ Test
+					+ Including error ship
 			= ES
 				+ Take first
 				+ Update & send second + initial tips
@@ -188,6 +188,8 @@
 				= Send final po
 				- Test
 					- Including error ship
+
+		- Paco's water doors volume issue
 
 		= Ships:
 			- TimCan pack
@@ -206,19 +208,6 @@
 				- Make all .shp2
 					- Fixup names
 				- changes.txt
-
-		- Send for final testing
-
-		= Mac/Sam
-			+ FS build cannot find wxWidgets
-				+ Issue is due to pthread and iconv libs not found; added FIND_PACKAGE for APPLE in CMakeFiles
-			= Linker issue: DevIL references but can't find jpeg, png, jas, tiff
-				- Add png, jpg to shiptools, unittests
-					- ADDITIONAL_LIBRARIES is empty
-						= Find correct IF to detect - asked to try again
-						- See if FIND_PACKAGE for pthread and iconv is still needed after that
-				- See if need to rebuild DevIL without JAS, TIFF
-					- -DIL_NO_TIF=1 -DIL_NO_JP2=1
 			
 		- Tests:
 			- New changes.txt found (aka old bug)
@@ -226,7 +215,6 @@
 				= Check how many older FS's exist, to see if can enable/upload changes.txt again
 					+ Jan, Feb: 70% 1.16.7, 30% 1.16.4
 
-		- Do Mattia's video and post together with https://www.youtube.com/watch?v=X2n4Q25Ld34
 
 		- MSI Installer:
 			- Also install ShipBuilder.exe
@@ -235,37 +223,18 @@
 				- Invoke main exe with command-line arg
 				- Also file icon
 
+		- Send for final testing
+
 		- Release
+
+	- 1.17.1:
 
 		- New sounds from TimCan
 
-		- Materials: check if can undo BuoyancyVolumeFill:
-			- Replace with "destructured_volume": volume that is only used when particle has zero attached triangles
-				- Points has a buffer for it, updated @ Add() and @ triangle create/destroy
-			- Materials like hull and chains have it ~zero, ropes a bit more
-			- The biggest test is whether current ships start flying or not
+		- Material system improvements (*)
 
-		- Make "Internal Watertight" version of hull/non-hull materials
-			- Watertight (i.e. hull) but lighter than hull
-			- Rename materials (json and code): "Hull" -> "?"
-			- May be: larger materials rearc:
-				- XYZ Hull
-				- XYZ Thin I-Beam
-				- XYZ Thick I-Beam
-				- XYZ Thin Bulkhead
-				- XYZ Thick Bulkhead
-			- See also to have "structural icons" in MaterialsPalette for each of these shapes
-				- By means of an enum in the materials json
-					- https://www.vectorstock.com/royalty-free-vector/industrial-icons-set-of-metallurgic-production-vector-17951471
-					- https://www.vectorstock.com/royalty-free-vector/metallurgy-products-icon-set-vector-32840974
-					- https://engineering-database.com/structural-members?heightMin=0&heightMax=37&widthMin=0&widthMax=18&areaMin=0&areaMax=215&sectionModulusXMin=0&sectionModulusXMax=1280&momentOfInertiaXMin=0&momentOfInertiaXMax=20300&yieldStrengthMin=0&yieldStrengthMax=50000&page=1&sortBy=name&sortOrder=asc&sectionCategories=beams
-					- https://www.vectorstock.com/royalty-free-vector/set-line-icon-steel-pipe-and-beam-product-vector-19648818
-					- Consider making own icons with FreeCAD
-
-		- New materials (*)
-
-		- Test material textures for chains: transparent chain texture
-			- Change texturizer so that we load alpha from image
+		- At lights going off, before flickering: flash w/spread and luminiscence
+			- See 1:53 at https://www.youtube.com/watch?v=yg9rkceLOzA
 
 		- Bubbles issue (that "old" issue)
 			- Add temp code to calc total internal water, and see if it's true that it keeps increasing
@@ -283,8 +252,6 @@
 			- Task threads (@ThreadPool)
 			- Rendering thread (@TaskThread)
 
-		- More parallelism at Ship::Update
-
 		- Spread out rotting:
 			! Now: at step 20/49
 			- Next: TODOHERE - and fix also combustion - spread evenly!
@@ -296,12 +263,14 @@
 				static constexpr int CombustionStateMachineSlowPeriodStep3 = 41;
 				static constexpr int CombustionStateMachineSlowPeriodStep4 = 48;
 
+		- More parallelism at Ship::Update
+
 		- Continuous Auto-focus (*)
 
 		- Test using normalize_approx in spring loop
 			- Verify gain on Dell
 
-		- Test bubble rendering with indices
+		- Quad rendering with indices
 			- Sharing VBOs in VAOs: 
 				- https://computergraphics.stackexchange.com/questions/4623/multiple-vao-share-a-vbo
 				- https://stackoverflow.com/questions/23542355/using-a-vertex-buffer-in-two-different-vertex-array-objects
@@ -338,15 +307,6 @@
 
 		- ShipLoadDialog Toolbar (*)		
 
-		- New tool 2: Punch
-			- Spec:
-				- Works only on frontier from outside->in
-					- Might want to try, at end, also from inside->out
-			- Impl:
-				- TODOHERE
-
-		- Sound space (*)
-
 		- Light improvements (*)
 
 		- Sources of Light
@@ -368,6 +328,15 @@
 						- LightSource::Add/RemoveDynamicSource
 						- Ephemeral particle state @ Point stores the index in LightSource, which is needed for setting params, removing, etc.
 				- Used by lighting algorithm AND by shader (after Lights Improvements work (*))
+
+		- New tool 2: Punch
+			- Spec:
+				- Works only on frontier from outside->in
+					- Might want to try, at end, also from inside->out
+			- Impl:
+				- TODOHERE
+
+		- Sound space (*)
 
 		- ShipRenderContext: see if may turn off Z-depth check @ triangles
 			- Check first on Dell if doing so would improve perf
@@ -479,35 +448,19 @@
 	- www.floatingsandbox.com:
 		- Update current version in FAQ
 		- Wait a day or two
-		- Upload changes.txt
+		- Upload changes2.txt
 			- Test w/old FS
 
 - Localization:
-	- Italian:
-		+ 1.15.2
-		+ 1.16.0
-		+ 1.16.1
-	- Russian: DioxCode
-		+ 1.15.2
-		+ 1.16.0
-		+ 1.16.1
+	- Italian: Gabriele Giuseppini
+	- Russian: DioxCode (Fallback: Ilya_Voloshin, Faulttix#8691)
 	- Spanish (Latin American): Joadix (Fallback: The G a z e r W o l f)
-		+ 1.15.2
-		+ 1.16.0
-		+ 1.16.1
 
 	- Portuguese: Kiko
 		- Add to credits: "Kiko", and change in other sections as well, and also in .shp files
 		- Fallback: The G a z e r W o l f
-	- Indonesian: Adli/Nobodyree
-		= Doing HTMLs
-		- Add to credits:
-		- Invite to server
 	- Hungarian: S.S. Atlantic
 		= Doing HTMLs
-		- Add to credits:
-		- Invite to server
-	- Polish: MemeMachine
 		- Add to credits:
 		- Invite to server
 
@@ -587,7 +540,6 @@
 				+ Asked latest SpaceX and airplanes packs
 				- Credits: "Kazindel"
 
-
 - Ubuntu:
 	+ Event polling issue:
 		+ Try: on Linux: 
@@ -625,6 +577,15 @@
 		+ Inflatable balloon popping
 	
 - MAC:
+	+ FS build cannot find wxWidgets
+		+ Issue is due to pthread and iconv libs not found; added FIND_PACKAGE for APPLE in CMakeFiles
+	= Linker issue: DevIL references but can't find jpeg, png, jas, tiff
+		- Add png, jpg to shiptools, unittests
+			- ADDITIONAL_LIBRARIES is empty
+				= Find correct IF to detect - asked to try again
+				- See if FIND_PACKAGE for pthread and iconv is still needed after that
+		- See if need to rebuild DevIL without JAS, TIFF
+			- -DIL_NO_TIF=1 -DIL_NO_JP2=1
 	= Full high-DPI path:
 		! a) Window scaling: on a 2X DPI, a wxWindow of size (500, 500) would be (1000, 1000) on Mac and (500, 500) on Windows. To overcome this, use wxFrame->FromDIP:
 			  myFrame->SetClientSize(wxSize(400, 300));   -->   myFrame->SetClientSize(myFrame->FromDIP(wxSize(400, 300)));
@@ -782,10 +743,10 @@
 		-splashes from the water when a steamer's funnel buckles and falls
 		-pipeworks
 		-sunsets
-		-surface wake
+		+surface wake
 		-spring optimizations
 		-mist for a ship's final plunge
-		-day/night cycle
+		+day/night cycle
 		-change gravity
 		-tides
 		-background layers
@@ -861,7 +822,6 @@
 - Known issues:
 	- After many many hours, rain looks aweful - very likely due to timer values being high
 		- Storm: store timestamp of rain start, and pass (now-start)::to_float() to shader
-
 	- After many hours, zoom stutters
 		- Can test both with faking RealTimeClock start time?
 		- Solutions for long-running clock: https://randomascii.wordpress.com/2012/02/13/dont-store-that-in-a-float/
@@ -874,55 +834,47 @@
 - Simulation Optimizations:
 
 	= Computer calibration
-		= Executed by GameController
+		+ Executed by GameController
 			+ After RenderingContext initialized (for OpenGL capabilities)
-			= OpenGL: based off capabilities
-			= CPU: based off loops
-			= Ask testers for help
-				- Me: TODO
+			+ OpenGL: based off capabilities
+			+ CPU: based off loops
+			+ Ask testers for help
 				- DKuz: i7-9750H, (12 HW threads), 2.60 GHz, Intel(R) UHD Graphics 630, FPS 64 | CPU Calibration: iterationCount=124 score=1; Graphics Calibration: score=1
 				- Oxurus: i5-6400 (4 HW threads), 2.70 GHz, NVIDIA GeForce GTX 960/PCIe/SSE2, FPS 55-57 | CPU Calibration: iterationCount=96 score=0.995328; Graphics Calibration: score=1
 				- DioxCode:  i7-870 (8 HW threads), 2.93 GHz, NVIDIA GeForce GTX 1650/PCIe/SSE2, FPS 60 | CPU Calibration: iterationCount=89 score=0.966362; Graphics Calibration: score=1
 					- Bad upload perf?
 				- m2: i7-4790k (8 HW threads), 4 GHz, NVIDIA GeForce GTX 960, FPS 58 | CPU Calibration: iterationCount=114 score=1; Graphics Calibration: score=1
 				- Joadix's brother: AMD A6 3400M with Ryzen HD 6520G
-				- Dell: Celeron 900 (1 HW threads), 2.2 GHz, Mobile Intel 4 Series Express Chipset Family, FPS 29.5 | CPU Calibration: iterationCount=54 score=0.559872; Graphics Calibration: score=0.0429688
-				- HP:
-				- Samsung:
-				- Get all other testers' responses
-
+				- Old Dell: Celeron 900 (1 HW threads), 2.2 GHz, Mobile Intel 4 Series Express Chipset Family, FPS 29.5 | CPU Calibration: iterationCount=54 score=0.559872; Graphics Calibration: score=0.0429688
 		= Produces CalibrationScore and calibrates
 			= ComputerCalibrator::TuneParameters(CalibrationScore const &, GameParameters &, RenderContext &)
 				- Sets GameParameters and RenderContext's parameters
 					- Max # burning particles
 					- Max #Explosions
-				= Happens before SettingsManager samples defaults, so these are the new defaults
-					- Verify this is indeed the case
+				+ Happens before SettingsManager samples defaults, so these are the new defaults
+					+ Verify this is indeed the case
 
 
 	- See if additional springs (e.g. between i and i+2) help
 
 	= Cached spring lengths (*)
-		! Ship::Update: cache quantities that are currently re-calculated multiple times
-		! Identify streak of calculations that need a quantity more than once, and during which the quantity never changes
-			- e.g. spring lengths between water update and heat update
-		- Cache quantities in Update loop that comes first or last
-			- Make it clear that the Update function calculates them: TBD in name
-			- Alternatively, use lambda
-				- Verify with assembly that there's no overhead with empty lambda
-			- Alternatively use Algorithms::CalculateSpringDirAndReciprocalLengths
-		= Candidates:
-			- Spring length, spring dir
-				+ Valid as long as points don't move
-					+ In DEBUG, mark mPoints.mDiagnostic_ArePositionsDirty on each position change, and expose mPoints.Diagnostic_ClearDirtyPositions() which is
-					  invoked after Springs' cached lengths are re-calculated
-						+ Force position changes to go through setters
-							+ Except for buffered ones, follow these manually and invoke mPoints.Diagnostic_MarkPositionsAsDirty()
-							+ Verify assembly for SetPosition(GetPosition.x, GetPosition.y + foo)
-				- Used by: water update, heat update, Springs::UpdateStrains
-					- Also use instead of factory rest lengths at:
-						- Water
-						- Heat
+		! Spring lengths are reused between water update and heat update, and don't change again
+			- Cache quantities in Update loop that comes first or last
+				- Make it clear that the Update function calculates them: TBD in name
+				- Alternatively, use lambda
+					- Verify with assembly that there's no overhead with empty lambda
+				- Alternatively use Algorithms::CalculateSpringDirAndReciprocalLengths
+		- Cache spring length, spring dir
+			+ Valid as long as points don't move
+				+ In DEBUG, mark mPoints.mDiagnostic_ArePositionsDirty on each position change, and expose mPoints.Diagnostic_ClearDirtyPositions() which is
+				  invoked after Springs' cached lengths are re-calculated
+					+ Force position changes to go through setters
+						+ Except for buffered ones, follow these manually and invoke mPoints.Diagnostic_MarkPositionsAsDirty()
+						+ Verify assembly for SetPosition(GetPosition.x, GetPosition.y + foo)
+			- Used by: water update, heat update, Springs::UpdateStrains
+				- Also use instead of factory rest lengths at:
+					- Water
+					- Heat
 
 	- 2** Try with SpringRelaxation updating only positions **2 (*)
 		- RelaxSprings() updates position directly, no forces involved
@@ -1226,8 +1178,56 @@
 - Dynamics:
 
 	- Material system improvements (*)
+
+		- Check if can undo BuoyancyVolumeFill:
+			- Replace with "destructured_volume": volume that is only used when particle has zero attached triangles
+				- Points has a buffer for it, updated @ Add() and @ triangle create/destroy
+			- Materials like hull and chains have it ~zero, ropes a bit more
+			- The biggest test is whether current ships start flying or not
+				+ Preliminary checks indicate it might be ok!
+
+		- Make "Internal Watertight" version of hull/non-hull materials
+			- Watertight (i.e. hull) but lighter than hull
+			- Rename materials (json and code): "Hull" -> "?"
+			- May be: larger materials rearc:
+				- XYZ Hull
+				- XYZ Thin I-Beam
+				- XYZ Thick I-Beam
+				- XYZ Thin Bulkhead
+				- XYZ Thick Bulkhead
+			- See also to have "structural icons" in MaterialsPalette for each of these shapes
+				- By means of an enum in the materials json
+					- https://www.vectorstock.com/royalty-free-vector/industrial-icons-set-of-metallurgic-production-vector-17951471
+					- https://www.vectorstock.com/royalty-free-vector/metallurgy-products-icon-set-vector-32840974
+					- https://engineering-database.com/structural-members?heightMin=0&heightMax=37&widthMin=0&widthMax=18&areaMin=0&areaMax=215&sectionModulusXMin=0&sectionModulusXMax=1280&momentOfInertiaXMin=0&momentOfInertiaXMax=20300&yieldStrengthMin=0&yieldStrengthMax=50000&page=1&sortBy=name&sortOrder=asc&sectionCategories=beams
+					- https://www.vectorstock.com/royalty-free-vector/set-line-icon-steel-pipe-and-beam-product-vector-19648818
+					- Consider making own icons with FreeCAD
+		- New materials:
+			- Structural materials:
+				- Helium: ~like Hydrogen, but not combusting
+				- Sodium: explodes when particle's water > threshold
+					- At points' low-freq combustion update
+				- "Lightning rod" material
+					- Has precedence when looking for candidates @ Lightning strike
+			- Electrical materials:
+				- Non-Instanced Water Tight Doors (see if possible)
+				- Non-Instanced Water In/Out Pumps (see if possible)
+				- Clamp
+					- When powered, destroys point (and of course its springs)
+					- Make ship with lifeboats, using multiple clamps to keep it
+				- Flickering lights
+					- Lights that flicker forever
+				- Logic Gates
+					- ...to be worked on...
+				- Delayed switch
+					- Different durations
+					- Simple state machine @ UpdateAutomaticConductivity
+					- Gfx: Clock dial (normalized on duration), new ElectricalControl
+					- Sound: clock
+		- Test material textures for chains: transparent chain texture
+			- Change texturizer so that we load alpha from image
 		- More glass colors
-		- Friction (moving from "global" ocean floor settings)
+		- Friction property (replacing or adding to "global" ocean floor settings)
 			- So for example could have tires, etc.
 
 	- "Soft" setting for ocean floors
@@ -1271,19 +1271,9 @@
 			- First off, need "Material Type" rearc (*) just for helping a script that populates electrical conductivity automatically in material json
 		- New springs ranking: f(direction + conductivity)
 
-
 	- Air bubbles with proper vortices, due to water moving fast around it
 		- Like at https://youtu.be/KPsnUPIHZuM
 		- Kinda as if the originating ship particle's velocity at the moment of generation has a (decaying) impact on the air bubble particle, making it move like an orbit
-
-	- "Ropes 2" layer with different rope materials
-		- json only allows one ropes layer
-		- With this key name, the rope pixels' blue component is the index of a Rope element
-			- Material: new 'rope_index' optional attrib
-			- MaterialsDB has rope material getter by index
-			- New rope materials:
-				- Strong, very strong
-				- Elastic
 
 	- Generalized light emission
 		- TODO: obsolete due to "Light Sources" work above
@@ -1316,29 +1306,6 @@
 				- ElectricalElements::Lamps (like now)
 				- Points::LightEmittingParticles
 					- The latter builds vector of indices at its various Update()'s that contribute to lights, e.g. combustion low freq and/or ephemeral update
-
-	- New structural materials:
-		- Helium: ~like Hydrogen, but not combusting
-		- Sodium: explodes when particle's water > threshold
-			- At points' low-freq combustion update
-		- "Lightning rod" material
-			- Has precedence when looking for candidates @ Lightning strike
-
-	- New electrical materials:
-		- Non-Instanced Water Tight Doors (see if possible)
-		- Non-Instanced Water In/Out Pumps (see if possible)
-		- Clamp
-			- When powered, destroys point (and of course its springs)
-			- Make ship with lifeboats, using multiple clamps to keep it
-		- Flickering lights
-			- Lights that flicker forever
-		- Logic Gates
-			- ...to be worked on...
-		- Delayed switch
-			- Different durations
-			- Simple state machine @ UpdateAutomaticConductivity
-			- Gfx: Clock dial (normalized on duration), new ElectricalControl
-			- Sound: clock
 
 	- Fireworks (*)
 		- Spec:
