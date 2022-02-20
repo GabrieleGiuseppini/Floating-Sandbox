@@ -332,7 +332,6 @@ private:
     // Ribbon bar
     wxRibbonBar * mMainRibbonBar;
     RibbonToolbarButton<BitmapButton> * mSaveShipButton;
-    RibbonToolbarButton<BitmapButton> * mSaveShipAsButton;
     RibbonToolbarButton<BitmapButton> * mSaveShipAndGoBackButton;
     RibbonToolbarButton<BitmapButton> * mZoomInButton;
     RibbonToolbarButton<BitmapButton> * mZoomOutButton;

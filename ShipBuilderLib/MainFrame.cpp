@@ -685,7 +685,7 @@ wxRibbonPanel * MainFrame::CreateMainFileRibbonPanel(wxRibbonPage * parent)
 
     // Save As ship
     {
-        mSaveShipAsButton = new RibbonToolbarButton<BitmapButton>(
+        auto * button = new RibbonToolbarButton<BitmapButton>(
             panel,
             wxVERTICAL,
             mResourceLocator.GetIconFilePath("save_ship_as_button"),
@@ -696,7 +696,7 @@ wxRibbonPanel * MainFrame::CreateMainFileRibbonPanel(wxRibbonPage * parent)
             },
             _("Save the current ship to a different file."));
 
-        panelGridSizer->Add(mSaveShipAsButton);
+        panelGridSizer->Add(button);
     }
 
     // Save and return to game
@@ -3507,6 +3507,14 @@ void MainFrame::LoadShip()
         // Load ship
         auto const shipFilePath = mShipLoadDialog->GetChosenShipFilepath();
         DoLoadShip(shipFilePath); // Ignore eventual failure
+
+        // Update directories
+        auto const shipLoadDirectory = shipFilePath.parent_path();
+        if (std::find(mShipLoadDirectories.cbegin(), mShipLoadDirectories.cend(), shipLoadDirectory) == mShipLoadDirectories.cend())
+        {
+            // Add in front
+            mShipLoadDirectories.insert(mShipLoadDirectories.cbegin(), shipLoadDirectory);
+        }
     }
 }
 
@@ -4177,11 +4185,6 @@ void MainFrame::ReconciliateUIWithModelDirtiness(Model const & model)
     if (mSaveShipButton->IsEnabled() != isDirty)
     {
         mSaveShipButton->Enable(isDirty);
-    }
-
-    if (mSaveShipAsButton->IsEnabled() != isDirty)
-    {
-        mSaveShipAsButton->Enable(isDirty);
     }
 
     if (mSaveShipAndGoBackButton != nullptr

@@ -192,22 +192,26 @@
 		- Paco's water doors volume issue
 
 		= Ships:
-			- TimCan pack
-			= Raynair updates
+			+ Raynair updates
 				+ A-320 update
 				+ BAE					
-				- Skoda
+				+ Skoda
 					+ Tell him has holes - by design
 			+ Pocketwatch ships
 				+ SS Belgenland 1914
-			+ 4 Tanks
+			= Tank from AvSimplified
+				+ Pick
+				- Asked for credits
+					- CreditPanel
+					- Tank itself
 			+ R.M.S. Atlantic's ships
 				+ I'll take the S.Stephen
 				+ Add to credits: "R.M.S. Atlantic"
 			+ Finalize those in _TO_TAKE
-				- Make all .shp2
+				+ Make all .shp2
 					- Fixup names
 				- changes.txt
+				- Move to Ships/
 			
 		- Tests:
 			- New changes.txt found (aka old bug)
