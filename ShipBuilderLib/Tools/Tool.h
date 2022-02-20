@@ -59,7 +59,7 @@ protected:
         ToolType toolType,
         ModelController & modelController,
         UndoStack & undoStack,
-        WorkbenchState const & workbenchState,
+        WorkbenchState & workbenchState,
         IUserInterface & userInterface,
         View & view)
         : mToolType(toolType)
@@ -104,7 +104,7 @@ protected:
 
     ModelController & mModelController;
     UndoStack & mUndoStack;
-    WorkbenchState const & mWorkbenchState;
+    WorkbenchState & mWorkbenchState;
     IUserInterface & mUserInterface;
     View & mView;
 };

@@ -10,6 +10,7 @@
 #include "Tools/PencilTool.h"
 #include "Tools/RopeEraserTool.h"
 #include "Tools/RopePencilTool.h"
+#include "Tools/SamplerTool.h"
 
 #include <Game/ImageFileTools.h>
 
@@ -980,64 +981,22 @@ void Controller::SetCurrentTool(std::optional<ToolType> tool)
     }
 }
 
-void Controller::SetStructuralMaterial(MaterialPlaneType plane, StructuralMaterial const * material)
+void Controller::SetStructuralMaterial(StructuralMaterial const * material, MaterialPlaneType plane)
 {
-    switch (plane)
-    {
-        case MaterialPlaneType::Foreground:
-        {
-            mWorkbenchState.SetStructuralForegroundMaterial(material);
-            break;
-        }
-
-        case MaterialPlaneType::Background:
-        {
-            mWorkbenchState.SetStructuralBackgroundMaterial(material);
-            break;
-        }
-    }
-
-    mUserInterface.OnStructuralMaterialChanged(plane, material);
+    mWorkbenchState.SetStructuralMaterial(material, plane);
+    mUserInterface.OnStructuralMaterialChanged(material, plane);
 }
 
-void Controller::SetElectricalMaterial(MaterialPlaneType plane, ElectricalMaterial const * material)
+void Controller::SetElectricalMaterial(ElectricalMaterial const * material, MaterialPlaneType plane)
 {
-    switch (plane)
-    {
-        case MaterialPlaneType::Foreground:
-        {
-            mWorkbenchState.SetElectricalForegroundMaterial(material);
-            break;
-        }
-
-        case MaterialPlaneType::Background:
-        {
-            mWorkbenchState.SetElectricalBackgroundMaterial(material);
-            break;
-        }
-    }
-
-    mUserInterface.OnElectricalMaterialChanged(plane, material);
+    mWorkbenchState.SetElectricalMaterial(material, plane);
+    mUserInterface.OnElectricalMaterialChanged(material, plane);
 }
 
-void Controller::SetRopeMaterial(MaterialPlaneType plane, StructuralMaterial const * material)
+void Controller::SetRopeMaterial(StructuralMaterial const * material, MaterialPlaneType plane)
 {
-    switch (plane)
-    {
-        case MaterialPlaneType::Foreground:
-        {
-            mWorkbenchState.SetRopesForegroundMaterial(material);
-            break;
-        }
-
-        case MaterialPlaneType::Background:
-        {
-            mWorkbenchState.SetRopesBackgroundMaterial(material);
-            break;
-        }
-    }
-
-    mUserInterface.OnRopesMaterialChanged(plane, material);
+    mWorkbenchState.SetRopesMaterial(material, plane);
+    mUserInterface.OnRopesMaterialChanged(material, plane);
 }
 
 void Controller::UndoLast()
@@ -1459,6 +1418,17 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
                 mResourceLocator);
         }
 
+        case ToolType::ElectricalSampler:
+        {
+            return std::make_unique<ElectricalSamplerTool>(
+                *mModelController,
+                mUndoStack,
+                mWorkbenchState,
+                mUserInterface,
+                *mView,
+                mResourceLocator);
+        }
+
         case ToolType::StructuralEraser:
         {
             return std::make_unique<StructuralEraserTool>(
@@ -1503,6 +1473,17 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
                 mResourceLocator);
         }
 
+        case ToolType::StructuralSampler:
+        {
+            return std::make_unique<StructuralSamplerTool>(
+                *mModelController,
+                mUndoStack,
+                mWorkbenchState,
+                mUserInterface,
+                *mView,
+                mResourceLocator);
+        }
+
         case ToolType::RopePencil:
         {
             return std::make_unique<RopePencilTool>(
@@ -1517,6 +1498,17 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
         case ToolType::RopeEraser:
         {
             return std::make_unique<RopeEraserTool>(
+                *mModelController,
+                mUndoStack,
+                mWorkbenchState,
+                mUserInterface,
+                *mView,
+                mResourceLocator);
+        }
+
+        case ToolType::RopeSampler:
+        {
+            return std::make_unique<RopeSamplerTool>(
                 *mModelController,
                 mUndoStack,
                 mWorkbenchState,

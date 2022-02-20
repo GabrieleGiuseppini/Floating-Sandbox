@@ -26,7 +26,7 @@ class LineTool : public Tool
 {
 public:
 
-    ~LineTool();
+    virtual ~LineTool();
 
     void OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates) override;
     void OnLeftMouseDown() override;
@@ -42,7 +42,7 @@ protected:
         ToolType toolType,
         ModelController & modelController,
         UndoStack & undoStack,
-        WorkbenchState const & workbenchState,
+        WorkbenchState & workbenchState,
         IUserInterface & userInterface,
         View & view,
         ResourceLocator const & resourceLocator);
@@ -123,7 +123,7 @@ public:
     StructuralLineTool(
         ModelController & modelController,
         UndoStack & undoStack,
-        WorkbenchState const & workbenchState,
+        WorkbenchState & workbenchState,
         IUserInterface & userInterface,
         View & view,
         ResourceLocator const & resourceLocator);
@@ -136,7 +136,7 @@ public:
     ElectricalLineTool(
         ModelController & modelController,
         UndoStack & undoStack,
-        WorkbenchState const & workbenchState,
+        WorkbenchState & workbenchState,
         IUserInterface & userInterface,
         View & view,
         ResourceLocator const & resourceLocator);

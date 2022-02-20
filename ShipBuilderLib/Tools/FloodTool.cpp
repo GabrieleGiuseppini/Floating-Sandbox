@@ -14,7 +14,7 @@ namespace ShipBuilder {
 StructuralFloodTool::StructuralFloodTool(
     ModelController & modelController,
     UndoStack & undoStack,
-    WorkbenchState const & workbenchState,
+    WorkbenchState & workbenchState,
     IUserInterface & userInterface,
     View & view,
     ResourceLocator const & resourceLocator)
@@ -33,7 +33,7 @@ FloodTool<TLayerType>::FloodTool(
     ToolType toolType,
     ModelController & modelController,
     UndoStack & undoStack,
-    WorkbenchState const & workbenchState,
+    WorkbenchState & workbenchState,
     IUserInterface & userInterface,
     View & view,
     ResourceLocator const & resourceLocator)

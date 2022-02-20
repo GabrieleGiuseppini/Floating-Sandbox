@@ -16,7 +16,7 @@ namespace ShipBuilder {
 StructuralLineTool::StructuralLineTool(
     ModelController & modelController,
     UndoStack & undoStack,
-    WorkbenchState const & workbenchState,
+    WorkbenchState & workbenchState,
     IUserInterface & userInterface,
     View & view,
     ResourceLocator const & resourceLocator)
@@ -33,7 +33,7 @@ StructuralLineTool::StructuralLineTool(
 ElectricalLineTool::ElectricalLineTool(
     ModelController & modelController,
     UndoStack & undoStack,
-    WorkbenchState const & workbenchState,
+    WorkbenchState & workbenchState,
     IUserInterface & userInterface,
     View & view,
     ResourceLocator const & resourceLocator)
@@ -52,7 +52,7 @@ LineTool<TLayer>::LineTool(
     ToolType toolType,
     ModelController & modelController,
     UndoStack & undoStack,
-    WorkbenchState const & workbenchState,
+    WorkbenchState & workbenchState,
     IUserInterface & userInterface,
     View & view,
     ResourceLocator const & resourceLocator)

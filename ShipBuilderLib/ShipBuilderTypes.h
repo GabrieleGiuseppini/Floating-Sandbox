@@ -21,13 +21,16 @@ enum class ToolType : std::uint32_t
     StructuralEraser,
     StructuralLine,
     StructuralFlood,
+    StructuralSampler,
     ElectricalPencil,
     ElectricalEraser,
     ElectricalLine,
+    ElectricalSampler,
     RopePencil,
     RopeEraser,
+    RopeSampler,
 
-    _Last = RopeEraser
+    _Last = RopeSampler
 };
 
 size_t constexpr LayerCount = static_cast<size_t>(LayerType::Texture) + 1;

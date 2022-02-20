@@ -446,6 +446,12 @@ StructuralLayerData ModelController::CloneStructuralLayer() const
     return mModel.CloneStructuralLayer();
 }
 
+StructuralMaterial const * ModelController::SampleStructuralMaterialAt(ShipSpaceCoordinates const & coords) const
+{
+    assert(coords.IsInSize(mModel.GetShipSize()));
+    return mModel.GetStructuralLayer().Buffer[coords].Material;
+}
+
 void ModelController::StructuralRegionFill(
     ShipSpaceRect const & region,
     StructuralMaterial const * material)
@@ -667,6 +673,12 @@ void ModelController::RemoveElectricalLayer()
 std::unique_ptr<ElectricalLayerData> ModelController::CloneElectricalLayer() const
 {
     return mModel.CloneElectricalLayer();
+}
+
+ElectricalMaterial const * ModelController::SampleElectricalMaterialAt(ShipSpaceCoordinates const & coords) const
+{
+    assert(coords.IsInSize(mModel.GetShipSize()));
+    return mModel.GetElectricalLayer().Buffer[coords].Material;
 }
 
 bool ModelController::IsElectricalParticleAllowedAt(ShipSpaceCoordinates const & coords) const
@@ -915,6 +927,12 @@ void ModelController::RemoveRopesLayer()
 std::unique_ptr<RopesLayerData> ModelController::CloneRopesLayer() const
 {
     return mModel.CloneRopesLayer();
+}
+
+StructuralMaterial const * ModelController::SampleRopesMaterialAt(ShipSpaceCoordinates const & coords) const
+{
+    assert(coords.IsInSize(mModel.GetShipSize()));
+    return mModel.GetRopesLayer().Buffer.SampleMaterialEndpointAt(coords);
 }
 
 std::optional<size_t> ModelController::GetRopeElementIndexAt(ShipSpaceCoordinates const & coords) const

@@ -63,6 +63,8 @@ set (TOOLS_SOURCES
 	Tools/RopeEraserTool.h
 	Tools/RopePencilTool.cpp
 	Tools/RopePencilTool.h
+	Tools/SamplerTool.cpp
+	Tools/SamplerTool.h
 	Tools/Tool.cpp
 	Tools/Tool.h
 )
