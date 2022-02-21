@@ -1086,11 +1086,15 @@
 			- New spec:
 				- Turned off at view changes
 				- Orchestrated by ViewManager, member of GameController
-					- Contains RenderContext&, view parameter smoothers, and NotificationLayer&, managing all communication to these wrt view params
+					- Is given (externally-owned) references to RenderContext& and NotificationLayer&, managing all communication to these wrt view params
+					- Owns view parameter smoothers
+					- GameController forwards view parameter changes to it
+						- And ViewManager orchestrates talk with its own smoothers
 				- Given resulting AABBs by GameController at own Update(), called after World::Update
-				- Communicates activation and (also unsolicited) de-activation via two new event handlers, subscribed by:
-					- MainFrame for option - or not, read at window opening? but won't catch changes
+				- Communicates activation and (also unsolicited) de-activation via new event handler, subscribed by:
+					- MainFrame for option
 					- GameController for notification texture
+						- Can't do it itself via own NofificationLayer?
 		- Algo:
 			- Option 1:
 				- "Optimal" AABB is union of all AABBs
