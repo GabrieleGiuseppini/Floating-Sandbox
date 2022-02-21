@@ -192,8 +192,8 @@
 				+ Send final po
 				+ Test
 					+ Including error ship
-
-		= Ships:
+		+ Test on NVidia
+		+ Ships:
 			+ Raynair updates
 				+ A-320 update
 				+ BAE					
@@ -209,16 +209,16 @@
 			+ R.M.S. Atlantic's ships
 				+ I'll take the S.Stephen
 				+ Add to credits: "R.M.S. Atlantic"
-			= Finalize those in _TO_TAKE
-				= Make all .shp2
-					- Fixup names
-				- changes.txt
-				- Move to Ships/			
-
-		= MSI Installer:
+			+ Finalize those in _TO_TAKE
+				+ Make all .shp2
+					+ Fixup names
+				+ changes.txt
+				+ Move to Ships/
+				+ Verify fresh game can list them in LoadDialog
+		+ MSI Installer:
 			= Also install ShipBuilder.exe
 				+ Test clean install
-				- Test upgrade
+				+ Test upgrade
 			+ Set shell handler for .shp2 files
 				+ See https://stackoverflow.com/questions/138550/how-to-register-file-types-extensions-with-a-wix-installer
 				+ Invoke main exe with command-line arg
@@ -227,9 +227,40 @@
 				+ Test clean install
 				+ Test upgrade
 
-		- Send for final testing
-
 		- Release
+			- Windows
+				- MSI variable
+				- Commit & push
+				- 64-bit MSI
+					- Cleanup Install
+					- Build Install
+					- Make MSI
+					- Rename MSI
+					- Test upgrade from previous version
+				- 32-bit MSI
+					- Cleanup Install
+					- Build Install
+					- Make MSI
+					- Rename MSI
+					- Test clean install
+				- Get both installers tested on dev server
+			- Ubuntu
+				- Pull 
+				- Build clean
+				- Make tar ("cd floating-sandbox && tar -cvf ../Floating-Sandbox-1.16.5-x64.tar . && cd -")
+				- Zip tar
+				- Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
+				- Get tar tested on dev server
+			- Wait for test results
+			- Cut tag on github
+			- Upload packages to GameJolt
+				- Report file as safe (https://gamejolt.com/privacy)
+				- Post
+			- www.floatingsandbox.com:
+				- Update current version in FAQ
+				- Wait a day or two
+				- Upload changes2.txt
+					- Test w/old FS
 
 	- 1.17.1:
 
