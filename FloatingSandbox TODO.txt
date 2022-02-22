@@ -5,269 +5,31 @@
 ====================================================
 
 - Roadmap:
-	= 1.17.0:
-		+ Change version minor
-		+ Nuke Ship Editor request for help from Readme
-		+ FindSFML
-			+ Windows
-			+ Ubuntu
+	= 1.17.1:
+		+ Update plan
+		- Commit & push
+		- Switch branch
+		- Merge from master
 
-		+ Fix slice tool + SHIFT (no locking at all)		
-		+ Lower heat radius in Ultra-Violent mode
-		+ Preferences flag for starting full-screen
-		+ See if can avoid "splash/flood" sound when just ropes are flooded
-		+ https://www.reddit.com/r/FloatingSandbox/comments/riq290/found_an_interesting_bug/
-			+ Can repro
-			! It's due to multiple particles insisting on same depression
-			+ OceanSurface::DisplaceAt: set to value that's larger (abs'ly) between current and new
-				+ Test all callers of OceanSurface::DisplaceAt:
-					+ Air bubbles
-						+ Make more incisive
-					+ Water displacement
-						+ Make more incisive
-						+ Compare with old
-					+ Fishes up
-					+ Fishes down
-					+ Blast Tool
-					+ Explosion blast
-					+ Engine
-						+ Try different depth curve
-							+ Half-smoothstep
-							X Try linear
-				+ Cleanup OceanSurface.h::DisplaceAt()
-					+ See assembly
-		+ Wind tool
-			+ Need non-zero wind receptivity for all materials
-				+ Test first with hacking WindReceptivity in interaction
-					+ Test 0.1
-				+ Then, test normal wind with hacking WindReceptivity in materials, 0.1
-					! Goal: use a single WindReceptivity for both normal Wind and for WindTool
-					+ Test look'n'feel of various ships under wind, and then under storm
-						+ Storm
-						+ Fallback ship
-						+ Blimps move a lot with default wind
-					+ If can go ahead with this:
-						+ Remove cheating at ShipInteractions
-						+ Remove cheating at Material
-						+ Update json
-							+ Check cardboard and paper
-						+ Mention in changes.txt
-			+ Visual feedback (shader)
-				+ Move radii calcn to GameController
-				+ Invoke notification from GameController
-				+ NotificationRenderContext
-				+ Shader
-					+ Finalize blending
-			+ Sounds
-				+ Make new "sudden wind gust" sounds
-				+ Gust at left down, iff shift
-				+ Gust at shift down, iff engaged
-				+ Background wind
-					+ New sound member of SoundController: WindMakerWindSound
-					+ And stop at Deinitialize()
-			+ World:
-				+ Velocity used for radius should also depend on intensity
-				+ Ocean surface
-					+ Use pre-front, its radius and intensity
-			+ Flames:
-				+ Flame shader's FlameWindRotationAngle parameter must become vertex attribute
-					= New step at Points::UpdateCombustionHighFrequency, populating new CombustionState member: rotation angle (or whatever it is we do now)
-						+ Step 1: use global wind like now
-							! But without smoothing wind speed
-							+ Populate CombustionState
-							+ Upload it from CombustionState to ShipRenderContext
-								+ Remove old from ShipRenderContext
-							+ Compare with previous
-								+ See if need again smoothed wind speed: it does need it
-								+ If so, see if can do it with convergence rate
-						+ Step 2: global wind wrt flame vector
-							+ Add temporary debug code to make flames at an auto-rotating angle
-						+ Step 3: own velocity added to global wind
-						+ Step 4: add interactive wind
-							+ Wind interaction: store temporary wind @ Ship (WindField) (pre-front radius & main velocity, or TODO: both?)
-								+ Reset it at end of Ship::Update
-					+ Uploaded to ShipRenderContext when we upload flames at Points
-					+ Taken by shader in VertexAttribute instead of uniform
-				+ See if ShipRenderContext still needs wind afterwards
-					+ Note: WorldRenderContext would still need it
-			+ Tool:
-				+ Tool should be reset at ship reset/load
-					+ @ MainFrame::LoadShip(...)
-				+ Problem with shift boost/main front intensity is not 1
-				+ State machine:
-					+ Remove zero front - after all intensity is going down anyway
-				+ Lock position at TearDown
-				+ Change cursor
-					+ Molen
-					+ Shift modifier
-			+ Finalize:
-				+ Check tool wind speed setting range in SettingsDialog
-				+ Merge into master
-				+ Changes.txt
-		+ Fix OceanSurface/WaveMaker bug
-			! It's due to interactive state machine populating DeltaBuffer, which then gets added to main buffer
-			+ Fix
-				+ Load only target-cur in delta (rather than target, like now)
-			+ Test tsunami and rogue waves
-			+ changes.txt
-		+ Test Titanic sinking to floor and see what really happens
-			+ 1: add count of spring breakages (temporarily) - as CustomProbe
-				+ Test 1:
-					- Concrete ball: 0 -> 435-442
-					- R.M.S. Titanic: initial hole 45-50 -> 670 (split) -> 735 (sinking) -> 4373
-					- R.M.S. Titanic: V-cut in half + hole 88 -> 3920
-			+ 2: backup exe
-			+ Test separately the impact of:
-				+ Velocity change (w/no position): cb: 228, tit: 2750
-					X BUT: fast things penetrate floor
-				+ Position change (w/velocity zero'd): cb: 508, tit: 3760
-			+ Test how it goes with doing (again) impact calc'n for each cycle: cb: 361, tit: 4100
-			+ Test how it goes with no weakening: cb: 243, tit: 2830
-			+ Test look'n'feel with previous version of FS - the one before static pressure but after hydrodynamics (i.e. after right speed)
-			+ Fix StrengthRandomizer: instead of making weaker, make both weaker and stronger (i.e. center)
-				+ Constraint to satisfy: total sum of point.Strength stays the same
-				+ Calc number of particles first which will be weakened
-				+ Result: cb: 235, tit: 3000-3300
-				+ Lower weakening: 0.5
-					+ Result: cb: 271, tit: 3000
-				+ Lower weakening: 0.453
-					+ Result: cb: 229, tit: 2700
-				+ Test:
-					+ Triton
-					+ Sub
-				+ Do not load from usersettings for lower versions
-					+ Add version, default is previous one
-				+ Finalize weakening setting
-			+ Cleanup ProbePabel, leaving breakage count
-			+ Send for opinion
-			+ changes.txt
-		+ Check WaterPump power adjust
-		+ Lower volume of pump sound when many pumps are playing
-			! We are lucky that we know # of pumps in advance; copy code from engines then
-		+ Fix problem with strength randomization preferences screwing up game because they are persistent
-			+ Move strength rnd settings to SettingsDialog
-				+ Remove from preferences
-				+ Fix Preferences dialog height: GamePanel
-				+ Fix layout of SettingsDialog page
-					+ Tighter H
-			+ Test values
-			+ changes.txt
-		+ Make command-line arg for main exe
-			+ MainFrame cctor takes opt<fs::path> for ship
-		+ Re-make material templates
-		+ Fix splash sound flanger
-			! It's the WaterDisplacementWave sound, not the Splash sound
-			+ Min delay for WaterDisplacementWave sound
-		+ See rogue waves
-		+ Do final ShipBuilder tasks (*<--)
-		+ Train issue w/ocean floor
-		+ Merge back into master
-		+ Tests:
-			+ New changes.txt found (aka old bug)
-				+ Verify doesn't happen again
-				+ Check how many older FS's exist, to see if can enable/upload changes.txt again
-					+ Jan, Feb: 70% 1.16.7, 30% 1.16.4
-		+ Localization
-			+ IT
-				+ Do first & second
-				+ Update (probe panel)
-				+ Test
-					+ Including error ship
-				+ Update po
-			+ RU
-				+ Take first
-				+ Update & send second + initial tips
-				+ Get back po file
-				+ Get back initial tip line
-				+ Update po
-				+ Send final po
-				+ Test
-					+ Including error ship
-			+ ES
-				+ Take first
-				+ Update & send second + initial tips
-				+ Get back po file
-				+ Get back initial tip line
-				+ Update po
-				+ Send final po
-				+ Test
-					+ Including error ship
-		+ Test on NVidia
-		+ Ships:
-			+ Raynair updates
-				+ A-320 update
-				+ BAE					
-				+ Skoda
-					+ Tell him has holes - by design
-			+ Pocketwatch ships
-				+ SS Belgenland 1914
-			+ Tank from AvSimplified
-				+ Pick
-				+ Asked for credits + AvSimplified
-					+ CreditPanel
-					+ Tank itself
-			+ R.M.S. Atlantic's ships
-				+ I'll take the S.Stephen
-				+ Add to credits: "R.M.S. Atlantic"
-			+ Finalize those in _TO_TAKE
-				+ Make all .shp2
-					+ Fixup names
-				+ changes.txt
-				+ Move to Ships/
-				+ Verify fresh game can list them in LoadDialog
-		+ MSI Installer:
-			= Also install ShipBuilder.exe
-				+ Test clean install
-				+ Test upgrade
-			+ Set shell handler for .shp2 files
-				+ See https://stackoverflow.com/questions/138550/how-to-register-file-types-extensions-with-a-wix-installer
-				+ Invoke main exe with command-line arg
-				+ Also file icon
-					+ See https://www.firegiant.com/wix/tutorial/getting-started/beyond-files/
-				+ Test clean install
-				+ Test upgrade
-
-		- Release
-			- Windows
-				- MSI variable
-				- Commit & push
-				- 64-bit MSI
-					- Cleanup Install
-					- Build Install
-					- Make MSI
-					- Rename MSI
-					- Test upgrade from previous version
-				- 32-bit MSI
-					- Cleanup Install
-					- Build Install
-					- Make MSI
-					- Rename MSI
-					- Test clean install
-				- Get both installers tested on dev server
-			- Ubuntu
-				- Pull 
-				- Build clean
-				- Make tar ("cd floating-sandbox && tar -cvf ../Floating-Sandbox-1.16.5-x64.tar . && cd -")
-				- Zip tar
-				- Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
-				- Get tar tested on dev server
-			- Wait for test results
-			- Cut tag on github
-			- Upload packages to GameJolt
-				- Report file as safe (https://gamejolt.com/privacy)
-				- Post
-			- www.floatingsandbox.com:
-				- Update current version in FAQ
-				- Wait a day or two
-				- Upload changes2.txt
-					- Test w/old FS
-
-	- 1.17.1:
-
+		- Take Joadix's change
+		- Take Russian
+			- check
+		- Update version
+		- Fix: CTRL^Z crashes ShipBuilder
+		- Fix: max wind with Utltra vilance + shift key + toppling the crane + some how moving the thing that's attach to the crane up and down into the water = instate crash
+			- Repro? See video
+			- the fan at max speed + ultra voliance mode + the shift = some crashes for me
+		- See rope alignment thing
+		- Spark tool cursor anchor?
 		- Paco's water doors dance
 			- ElectricalElements: have state also for switches, and set a countdown (in sim time) before next transition
 				- Add state for them
-			- High/Low watermark
+		- SHIFT at pencil tool for H or V
+
+		- Sampler tool (*) and status bar (*)
+
+		- Add test target to UnitTests's CMakeLists.txt (for Ubuntu)
+			- Verify on Ubuntu
 
 		- New sounds from TimCan
 
@@ -462,24 +224,24 @@
 		- Commit & push
 		- 64-bit MSI
 			- Cleanup Install
-			- Build Install
+			- Build Release Install
 			- Make MSI
 			- Rename MSI
 			- Test upgrade from previous version
 		- 32-bit MSI
 			- Cleanup Install
-			- Build Install
+			- Build Release Install
 			- Make MSI
 			- Rename MSI
 			- Test clean install
-		- Get both installers tested on dev server
 	- Ubuntu
+		- rm -rf floating-sandbox
 		- Pull 
-		- Build clean
+		- Make clean, make install
 		- Make tar ("cd floating-sandbox && tar -cvf ../Floating-Sandbox-1.16.5-x64.tar . && cd -")
 		- Zip tar
 		- Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
-		- Get tar tested on dev server
+	- Get 3 installers tested on dev server
 	- Wait for test results
 	- Cut tag on github
 	- Upload packages to GameJolt
@@ -707,6 +469,7 @@
 		- Use new video as preview
 	- www.floatingsandbox.com:
 		- Embed GameJolt Widget
+		- Talk about builder (w/screenshot) on main page
 
 - Suggestions to spec:
 	- Heat bomb
@@ -13548,3 +13311,261 @@ IF WX:
 				+ Update current version in FAQ
 			+ Announce on Discord server
 
+	+ 1.17.0:
+		+ Change version minor
+		+ Nuke Ship Editor request for help from Readme
+		+ FindSFML
+			+ Windows
+			+ Ubuntu
+
+		+ Fix slice tool + SHIFT (no locking at all)		
+		+ Lower heat radius in Ultra-Violent mode
+		+ Preferences flag for starting full-screen
+		+ See if can avoid "splash/flood" sound when just ropes are flooded
+		+ https://www.reddit.com/r/FloatingSandbox/comments/riq290/found_an_interesting_bug/
+			+ Can repro
+			! It's due to multiple particles insisting on same depression
+			+ OceanSurface::DisplaceAt: set to value that's larger (abs'ly) between current and new
+				+ Test all callers of OceanSurface::DisplaceAt:
+					+ Air bubbles
+						+ Make more incisive
+					+ Water displacement
+						+ Make more incisive
+						+ Compare with old
+					+ Fishes up
+					+ Fishes down
+					+ Blast Tool
+					+ Explosion blast
+					+ Engine
+						+ Try different depth curve
+							+ Half-smoothstep
+							X Try linear
+				+ Cleanup OceanSurface.h::DisplaceAt()
+					+ See assembly
+		+ Wind tool
+			+ Need non-zero wind receptivity for all materials
+				+ Test first with hacking WindReceptivity in interaction
+					+ Test 0.1
+				+ Then, test normal wind with hacking WindReceptivity in materials, 0.1
+					! Goal: use a single WindReceptivity for both normal Wind and for WindTool
+					+ Test look'n'feel of various ships under wind, and then under storm
+						+ Storm
+						+ Fallback ship
+						+ Blimps move a lot with default wind
+					+ If can go ahead with this:
+						+ Remove cheating at ShipInteractions
+						+ Remove cheating at Material
+						+ Update json
+							+ Check cardboard and paper
+						+ Mention in changes.txt
+			+ Visual feedback (shader)
+				+ Move radii calcn to GameController
+				+ Invoke notification from GameController
+				+ NotificationRenderContext
+				+ Shader
+					+ Finalize blending
+			+ Sounds
+				+ Make new "sudden wind gust" sounds
+				+ Gust at left down, iff shift
+				+ Gust at shift down, iff engaged
+				+ Background wind
+					+ New sound member of SoundController: WindMakerWindSound
+					+ And stop at Deinitialize()
+			+ World:
+				+ Velocity used for radius should also depend on intensity
+				+ Ocean surface
+					+ Use pre-front, its radius and intensity
+			+ Flames:
+				+ Flame shader's FlameWindRotationAngle parameter must become vertex attribute
+					= New step at Points::UpdateCombustionHighFrequency, populating new CombustionState member: rotation angle (or whatever it is we do now)
+						+ Step 1: use global wind like now
+							! But without smoothing wind speed
+							+ Populate CombustionState
+							+ Upload it from CombustionState to ShipRenderContext
+								+ Remove old from ShipRenderContext
+							+ Compare with previous
+								+ See if need again smoothed wind speed: it does need it
+								+ If so, see if can do it with convergence rate
+						+ Step 2: global wind wrt flame vector
+							+ Add temporary debug code to make flames at an auto-rotating angle
+						+ Step 3: own velocity added to global wind
+						+ Step 4: add interactive wind
+							+ Wind interaction: store temporary wind @ Ship (WindField) (pre-front radius & main velocity, or TODO: both?)
+								+ Reset it at end of Ship::Update
+					+ Uploaded to ShipRenderContext when we upload flames at Points
+					+ Taken by shader in VertexAttribute instead of uniform
+				+ See if ShipRenderContext still needs wind afterwards
+					+ Note: WorldRenderContext would still need it
+			+ Tool:
+				+ Tool should be reset at ship reset/load
+					+ @ MainFrame::LoadShip(...)
+				+ Problem with shift boost/main front intensity is not 1
+				+ State machine:
+					+ Remove zero front - after all intensity is going down anyway
+				+ Lock position at TearDown
+				+ Change cursor
+					+ Molen
+					+ Shift modifier
+			+ Finalize:
+				+ Check tool wind speed setting range in SettingsDialog
+				+ Merge into master
+				+ Changes.txt
+		+ Fix OceanSurface/WaveMaker bug
+			! It's due to interactive state machine populating DeltaBuffer, which then gets added to main buffer
+			+ Fix
+				+ Load only target-cur in delta (rather than target, like now)
+			+ Test tsunami and rogue waves
+			+ changes.txt
+		+ Test Titanic sinking to floor and see what really happens
+			+ 1: add count of spring breakages (temporarily) - as CustomProbe
+				+ Test 1:
+					- Concrete ball: 0 -> 435-442
+					- R.M.S. Titanic: initial hole 45-50 -> 670 (split) -> 735 (sinking) -> 4373
+					- R.M.S. Titanic: V-cut in half + hole 88 -> 3920
+			+ 2: backup exe
+			+ Test separately the impact of:
+				+ Velocity change (w/no position): cb: 228, tit: 2750
+					X BUT: fast things penetrate floor
+				+ Position change (w/velocity zero'd): cb: 508, tit: 3760
+			+ Test how it goes with doing (again) impact calc'n for each cycle: cb: 361, tit: 4100
+			+ Test how it goes with no weakening: cb: 243, tit: 2830
+			+ Test look'n'feel with previous version of FS - the one before static pressure but after hydrodynamics (i.e. after right speed)
+			+ Fix StrengthRandomizer: instead of making weaker, make both weaker and stronger (i.e. center)
+				+ Constraint to satisfy: total sum of point.Strength stays the same
+				+ Calc number of particles first which will be weakened
+				+ Result: cb: 235, tit: 3000-3300
+				+ Lower weakening: 0.5
+					+ Result: cb: 271, tit: 3000
+				+ Lower weakening: 0.453
+					+ Result: cb: 229, tit: 2700
+				+ Test:
+					+ Triton
+					+ Sub
+				+ Do not load from usersettings for lower versions
+					+ Add version, default is previous one
+				+ Finalize weakening setting
+			+ Cleanup ProbePabel, leaving breakage count
+			+ Send for opinion
+			+ changes.txt
+		+ Check WaterPump power adjust
+		+ Lower volume of pump sound when many pumps are playing
+			! We are lucky that we know # of pumps in advance; copy code from engines then
+		+ Fix problem with strength randomization preferences screwing up game because they are persistent
+			+ Move strength rnd settings to SettingsDialog
+				+ Remove from preferences
+				+ Fix Preferences dialog height: GamePanel
+				+ Fix layout of SettingsDialog page
+					+ Tighter H
+			+ Test values
+			+ changes.txt
+		+ Make command-line arg for main exe
+			+ MainFrame cctor takes opt<fs::path> for ship
+		+ Re-make material templates
+		+ Fix splash sound flanger
+			! It's the WaterDisplacementWave sound, not the Splash sound
+			+ Min delay for WaterDisplacementWave sound
+		+ See rogue waves
+		+ Do final ShipBuilder tasks (*<--)
+		+ Train issue w/ocean floor
+		+ Merge back into master
+		+ Tests:
+			+ New changes.txt found (aka old bug)
+				+ Verify doesn't happen again
+				+ Check how many older FS's exist, to see if can enable/upload changes.txt again
+					+ Jan, Feb: 70% 1.16.7, 30% 1.16.4
+		+ Localization
+			+ IT
+				+ Do first & second
+				+ Update (probe panel)
+				+ Test
+					+ Including error ship
+				+ Update po
+			+ RU
+				+ Take first
+				+ Update & send second + initial tips
+				+ Get back po file
+				+ Get back initial tip line
+				+ Update po
+				+ Send final po
+				+ Test
+					+ Including error ship
+			+ ES
+				+ Take first
+				+ Update & send second + initial tips
+				+ Get back po file
+				+ Get back initial tip line
+				+ Update po
+				+ Send final po
+				+ Test
+					+ Including error ship
+		+ Test on NVidia
+		+ Ships:
+			+ Raynair updates
+				+ A-320 update
+				+ BAE					
+				+ Skoda
+					+ Tell him has holes - by design
+			+ Pocketwatch ships
+				+ SS Belgenland 1914
+			+ Tank from AvSimplified
+				+ Pick
+				+ Asked for credits + AvSimplified
+					+ CreditPanel
+					+ Tank itself
+			+ R.M.S. Atlantic's ships
+				+ I'll take the S.Stephen
+				+ Add to credits: "R.M.S. Atlantic"
+			+ Finalize those in _TO_TAKE
+				+ Make all .shp2
+					+ Fixup names
+				+ changes.txt
+				+ Move to Ships/
+				+ Verify fresh game can list them in LoadDialog
+		+ MSI Installer:
+			= Also install ShipBuilder.exe
+				+ Test clean install
+				+ Test upgrade
+			+ Set shell handler for .shp2 files
+				+ See https://stackoverflow.com/questions/138550/how-to-register-file-types-extensions-with-a-wix-installer
+				+ Invoke main exe with command-line arg
+				+ Also file icon
+					+ See https://www.firegiant.com/wix/tutorial/getting-started/beyond-files/
+				+ Test clean install
+				+ Test upgrade
+
+		+ Release
+			+ Windows
+				+ MSI variable
+				+ Commit & push
+				+ 64-bit MSI
+					+ Cleanup Install
+					+ Build Release Install
+					+ Make MSI
+					+ Rename MSI
+					+ Test upgrade from previous version
+				+ 32-bit MSI
+					+ Cleanup Install
+					+ Build Release Install
+					+ Make MSI
+					+ Rename MSI
+					+ Test clean install
+						+ Also do some random 32-bit testing
+			+ Ubuntu
+				+ rm -rf
+				+ Pull 
+				+ Make clean, make install
+				+ Make tar ("cd floating-sandbox && tar -cvf ../Floating-Sandbox-1.17.0-x64.tar . && cd -")
+				+ Zip tar
+				+ Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
+			+ Get 3 installers tested on dev server
+			+ Wait for test results
+			+ Cut tag on github
+			+ Upload packages to GameJolt
+				X Report file as safe (https://gamejolt.com/privacy)
+				+ Post
+				+ Tear down GoogleDrive links
+			+ www.floatingsandbox.com:
+				+ Update current version in FAQ
+				+ Upload changes2.txt
+					+ Test w/old FS
+					+ Test w/new FS
