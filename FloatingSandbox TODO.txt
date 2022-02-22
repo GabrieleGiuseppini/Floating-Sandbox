@@ -15,15 +15,16 @@
 
 		+ Update version
 		+ Fix: CTRL^Z crashes ShipBuilder
+		+ Sampler tool (*)
+		+ Paco's water doors dance
+			+ ElectricalElements: have state also for switches, and set a countdown (in sim time) before next transition
+				+ Add state for them
+
 		- Fix: max wind with Utltra vilance + shift key + toppling the crane + some how moving the thing that's attach to the crane up and down into the water = instate crash
 			- Repro? See video
 			- the fan at max speed + ultra violence mode + the shift
-		- Paco's water doors dance
-			- ElectricalElements: have state also for switches, and set a countdown (in sim time) before next transition
-				- Add state for them
-
-
-		- Sampler tool (*) and status bar (*)
+		
+		- Status bar (*)
 
 		- Add test target to UnitTests's CMakeLists.txt (for Ubuntu)
 			- Verify on Ubuntu

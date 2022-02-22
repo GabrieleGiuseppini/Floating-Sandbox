@@ -174,7 +174,7 @@ void ElectricalElements::Add(
         case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
         {
             // State
-            mElementStateBuffer.emplace_back(ElementState::DummyState());
+            mElementStateBuffer.emplace_back(ElementState::WaterSensingSwitchState());
 
             // Indices
             mAutomaticConductivityTogglingElements.emplace_back(elementIndex);
@@ -899,6 +899,7 @@ void ElectricalElements::UpdateForGameParameters(GameParameters const & gamePara
 }
 
 void ElectricalElements::UpdateAutomaticConductivityToggles(
+    float currentSimulationTime,
     Points & points,
     GameParameters const & gameParameters)
 {
@@ -916,29 +917,45 @@ void ElectricalElements::UpdateAutomaticConductivityToggles(
             {
                 case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
                 {
-                    // When higher than watermark: conductivity state toggles to opposite than material's
-                    // When lower than watermark: conductivity state toggles to same as material's
+                    auto & waterSensingSwitchState = mElementStateBuffer[elementIndex].WaterSensingSwitch;
 
-                    float constexpr WaterLowWatermark = 0.05f;
-                    float constexpr WaterHighWatermark = 0.45f;
+                    // No transitions if in grace period
+                    if (currentSimulationTime >= waterSensingSwitchState.GracePeriodEndSimulationTime)
+                    {
+                        // When higher than watermark: conductivity state toggles to opposite than material's
+                        // When lower than watermark: conductivity state toggles to same as material's
 
-                    if (mConductivityBuffer[elementIndex].ConductsElectricity == mConductivityBuffer[elementIndex].MaterialConductsElectricity
-                        && points.GetWater(GetPointIndex(elementIndex)) >= WaterHighWatermark)
-                    {
-                        InternalSetSwitchState(
-                            elementIndex,
-                            static_cast<ElectricalState>(!mConductivityBuffer[elementIndex].MaterialConductsElectricity),
-                            points,
-                            gameParameters);
-                    }
-                    else if (mConductivityBuffer[elementIndex].ConductsElectricity != mConductivityBuffer[elementIndex].MaterialConductsElectricity
-                        && points.GetWater(GetPointIndex(elementIndex)) <= WaterLowWatermark)
-                    {
-                        InternalSetSwitchState(
-                            elementIndex,
-                            static_cast<ElectricalState>(mConductivityBuffer[elementIndex].MaterialConductsElectricity),
-                            points,
-                            gameParameters);
+                        float constexpr WaterLowWatermark = 0.05f;
+                        float constexpr WaterHighWatermark = 0.45f;
+
+                        float constexpr GracePeriodInterval = 3.0f;
+
+                        if (mConductivityBuffer[elementIndex].ConductsElectricity == mConductivityBuffer[elementIndex].MaterialConductsElectricity
+                            && points.GetWater(GetPointIndex(elementIndex)) >= WaterHighWatermark)
+                        {
+                            // Toggle to opposite of material
+                            InternalSetSwitchState(
+                                elementIndex,
+                                static_cast<ElectricalState>(!mConductivityBuffer[elementIndex].MaterialConductsElectricity),
+                                points,
+                                gameParameters);
+
+                            // Start grace period
+                            waterSensingSwitchState.GracePeriodEndSimulationTime = currentSimulationTime + GracePeriodInterval;
+                        }
+                        else if (mConductivityBuffer[elementIndex].ConductsElectricity != mConductivityBuffer[elementIndex].MaterialConductsElectricity
+                            && points.GetWater(GetPointIndex(elementIndex)) <= WaterLowWatermark)
+                        {
+                            // Toggle to material's
+                            InternalSetSwitchState(
+                                elementIndex,
+                                static_cast<ElectricalState>(mConductivityBuffer[elementIndex].MaterialConductsElectricity),
+                                points,
+                                gameParameters);
+
+                            // Start grace period
+                            waterSensingSwitchState.GracePeriodEndSimulationTime = currentSimulationTime + GracePeriodInterval;
+                        }
                     }
 
                     break;
