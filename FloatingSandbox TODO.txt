@@ -10,10 +10,9 @@
 		+ Commit & push
 		+ Switch branch
 		+ Rebase onto master
-
 		+ Take Joadix's change
-		- Take DIOX
-			- check
+		+ Take DIOX's
+
 		- Update version
 		- Fix: CTRL^Z crashes ShipBuilder
 		- Fix: max wind with Utltra vilance + shift key + toppling the crane + some how moving the thing that's attach to the crane up and down into the water = instate crash
