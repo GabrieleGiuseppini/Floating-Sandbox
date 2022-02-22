@@ -1,6 +1,9 @@
 
-= Sampler tool (*)
++ Sampler tool (*)
 = StatusBar (*)
+
+- SHIFT at pencil tool for H or V
+	- TODO
 
 - Design preferences
 	- Completely independent "Preferences" class, does 3 things:
@@ -270,7 +273,7 @@
 				+ MainFrame: OnViewModelChanged calls a new ReconciliateUIWithViewModel(), which does:
 					+ StatusBar: set zoom
 					+ RecalculateWorkCanvasPanning
-			- Material under cursor (for drop tool)
+			= Material under cursor (for drop tool)
 
 - Tools:
 	! Most tools should pan when the (captured) mouse is outside of the canvas
@@ -284,27 +287,26 @@
 		+ Eraser (S, E)
 			+ Settings: Size
 		+ Flood (S, E)
-		= Sampler tool (*)
-			= Icon and cursor
+		+ Sampler tool (*)
+			+ Icon and cursor
+				+ Anchor
 			+ Structural, Electrical, and Ropes
 			+ Need StatusBar "Current Material" first
-			= Tool:
-				= LeftMouseDown, RightMouseDown: selection
+			+ Tool:
+				+ LeftMouseDown, RightMouseDown: selection
 					+ Change WorkbenchState fg or bg
-					= Notify MainFrame of WorkbenchState change
-						- Test that it refreshes
-				= MouseMove: change status bar
+					+ Notify MainFrame of WorkbenchState change
+						+ Test that it refreshes
+				+ MouseMove: change status bar
 					! Regardless of mouse being down or up
-					= Notify MainFrame of material
+					+ Notify MainFrame of material
 						+ IUserInterface notification, with name of material
-				- TODO: should revert to previous tool after clicking?
-				= Zero-out material at:
-					= Tool destructor
-					- Anything else?
-			- Test:
-				- Structural (sample + select)
-				- Electrical (sample + select)
-				- Ropes (sample + select)
+				+ Zero-out material at:
+					+ Tool destructor
+			+ Test:
+				+ Structural (sample + select)
+				+ Electrical (sample + select)
+				+ Ropes (sample + select)
 
 		+ Line
 		- Rectangle
