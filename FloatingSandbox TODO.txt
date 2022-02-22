@@ -32,6 +32,8 @@
 
 		- Update Visual Studio
 
+		- Update Visual Studio
+
 		- New sounds from TimCan
 
 		- Material system improvements (*)
