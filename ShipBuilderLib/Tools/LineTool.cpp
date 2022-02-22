@@ -464,6 +464,7 @@ void LineTool<TLayer>::DoLine(
     ShipSpaceCoordinates const & endPoint,
     TVisitor && visitor)
 {
+    // Apply SHIFT lock
     ShipSpaceCoordinates actualEndPoint = endPoint;
     if (mIsShiftDown)
     {
@@ -480,6 +481,7 @@ void LineTool<TLayer>::DoLine(
         }
     }
 
+    // Generate line
     if (TLayer == LayerType::Structural && mWorkbenchState.GetStructuralLineToolIsHullMode())
     {
         GenerateIntegralLinePath<IntegralLineType::WithAdjacentSteps>(startPoint, actualEndPoint, std::forward<TVisitor>(visitor));

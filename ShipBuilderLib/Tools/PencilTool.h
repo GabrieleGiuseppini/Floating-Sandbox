@@ -31,8 +31,8 @@ public:
     void OnLeftMouseUp() override;
     void OnRightMouseDown() override;
     void OnRightMouseUp() override;
-    void OnShiftKeyDown() override {}
-    void OnShiftKeyUp() override {}
+    void OnShiftKeyDown() override;
+    void OnShiftKeyUp() override;
 
 protected:
 
@@ -51,7 +51,9 @@ private:
 
 private:
 
-    void StartEngagement(StrongTypedBool<struct IsRightMouseButton> isRightButton);
+    void StartEngagement(
+        ShipSpaceCoordinates const & mouseCoordinates,
+        StrongTypedBool<struct IsRightMouseButton> isRightButton);
 
     void DoEdit(ShipSpaceCoordinates const & mouseCoordinates);
 
@@ -89,18 +91,30 @@ private:
         // Position of previous engagement (when this is second, third, etc.)
         std::optional<ShipSpaceCoordinates> PreviousEngagementPosition;
 
+        // Position of SHIFT lock start (when exists)
+        std::optional<ShipSpaceCoordinates> ShiftLockInitialPosition;
+
+        // Direction of SHIFT lock (when exists)
+        std::optional<bool> ShiftLockIsVertical;
+
         EngagementData(
             MaterialPlaneType plane,
-            Model::DirtyState const & dirtyState)
+            Model::DirtyState const & dirtyState,
+            std::optional<ShipSpaceCoordinates> shiftLockInitialPosition)
             : Plane(plane)
             , EditRegion()
             , OriginalDirtyState(dirtyState)
             , PreviousEngagementPosition()
+            , ShiftLockInitialPosition(shiftLockInitialPosition)
+            , ShiftLockIsVertical()
         {}
     };
 
     // Engagement data - when set, it means we're engaged
     std::optional<EngagementData> mEngagementData;
+
+    // Whether SHIFT is currently down or not
+    bool mIsShiftDown;
 };
 
 class StructuralPencilTool : public PencilTool<LayerType::Structural, false>

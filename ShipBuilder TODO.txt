@@ -1,8 +1,13 @@
 
 + Sampler tool (*)
 
-- SHIFT at pencil tool for H or V
-	- TODO
++ SHIFT at pencil tool for H or V
+	+ Test:
+		+ Structural pencil
+		+ Structural eraser
+		+ Electrical pencil
+		+ Electrical eraser
+	+ changes.txt
 
 - Design preferences
 	- Completely independent "Preferences" class, does 3 things:

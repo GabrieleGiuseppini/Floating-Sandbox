@@ -1,6 +1,7 @@
 1.17.1
 - ShipBuilder:
 	- Added "Sampler" tool, to inspect and select materials from existing particles
+	- Added "SHIFT lock" to "Pencil" and "Eraser" tools
 	- Fixed crash when using CTRL^Z keyboard shortcut (for Undo) when undo is not possible
 - Added a small "grace period" before allowing water-sensing switches to flip again
 

@@ -70,6 +70,7 @@ MainFrame::MainFrame(
     // State
     , mIsMouseInWorkCanvas(false)
     , mIsMouseCapturedByWorkCanvas(false)
+    , mIsShiftKeyDown(false)
     , mWorkbenchState(materialDatabase)
 {
     Create(
@@ -3447,8 +3448,13 @@ void MainFrame::OnWorkCanvasKeyDown(wxKeyEvent & event)
     {
         if (event.GetKeyCode() == WXK_SHIFT)
         {
-            mController->OnShiftKeyDown();
-            return; // Eaten
+            if (!mIsShiftKeyDown) // Suppress repetitions
+            {
+                mIsShiftKeyDown = true;
+
+                mController->OnShiftKeyDown();
+                return; // Eaten
+            }
         }
     }
     
@@ -3461,7 +3467,12 @@ void MainFrame::OnWorkCanvasKeyUp(wxKeyEvent & event)
     {
         if (event.GetKeyCode() == WXK_SHIFT)
         {
-            mController->OnShiftKeyUp();
+            if (mIsShiftKeyDown) // Suppress repetitions
+            {
+                mIsShiftKeyDown = false;
+
+                mController->OnShiftKeyUp();
+            }
         }
     }
 }

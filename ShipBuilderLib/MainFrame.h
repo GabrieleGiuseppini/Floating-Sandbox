@@ -407,6 +407,7 @@ private:
 
     bool mutable mIsMouseInWorkCanvas;
     bool mutable mIsMouseCapturedByWorkCanvas;
+    bool mutable mIsShiftKeyDown;
 
     //
     // Open action
