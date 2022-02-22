@@ -18,12 +18,10 @@
 		- Fix: max wind with Utltra vilance + shift key + toppling the crane + some how moving the thing that's attach to the crane up and down into the water = instate crash
 			- Repro? See video
 			- the fan at max speed + ultra violence mode + the shift
-		- See rope alignment thing
-		- Spark tool cursor anchor?
 		- Paco's water doors dance
 			- ElectricalElements: have state also for switches, and set a countdown (in sim time) before next transition
 				- Add state for them
-		- SHIFT at pencil tool for H or V
+
 
 		- Sampler tool (*) and status bar (*)
 
