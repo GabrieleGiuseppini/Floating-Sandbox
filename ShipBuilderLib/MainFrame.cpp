@@ -642,7 +642,15 @@ wxRibbonPanel * MainFrame::CreateMainFileRibbonPanel(wxRibbonPage * parent)
 
         panelGridSizer->Add(button);
 
-        AddAcceleratorKey(wxACCEL_CTRL, (int)'N', [this]() { NewShip(); });
+        AddAcceleratorKey(wxACCEL_CTRL, (int)'N', 
+            [this]() 
+            { 
+                // With keys we have no insurance of a controller
+                if (mController)
+                {
+                    NewShip();
+                }
+            });
     }
 
     // Load ship
@@ -660,7 +668,15 @@ wxRibbonPanel * MainFrame::CreateMainFileRibbonPanel(wxRibbonPage * parent)
 
         panelGridSizer->Add(button);
 
-        AddAcceleratorKey(wxACCEL_CTRL, (int)'O', [this]() { LoadShip(); });
+        AddAcceleratorKey(wxACCEL_CTRL, (int)'O', 
+            [this]() 
+            { 
+                // With keys we have no insurance of a controller
+                if (mController)
+                {
+                    LoadShip();
+                }
+            });
     }
 
     // Save ship
@@ -678,7 +694,15 @@ wxRibbonPanel * MainFrame::CreateMainFileRibbonPanel(wxRibbonPage * parent)
 
         panelGridSizer->Add(mSaveShipButton);
 
-        AddAcceleratorKey(wxACCEL_CTRL, (int)'S', [this]() { SaveShip(); });
+        AddAcceleratorKey(wxACCEL_CTRL, (int)'S', 
+            [this]() 
+            { 
+                // With keys we have no insurance of a controller
+                if (mController)
+                {
+                    SaveShip();
+                }
+            });
     }
 
     // Save As ship
@@ -751,7 +775,11 @@ wxRibbonPanel * MainFrame::CreateMainFileRibbonPanel(wxRibbonPage * parent)
 
         panelGridSizer->Add(button);
 
-        AddAcceleratorKey(wxACCEL_ALT, (int)WXK_F4, [this]() { Quit(); });
+        AddAcceleratorKey(wxACCEL_ALT, (int)WXK_F4, 
+            [this]() 
+            { 
+                Quit();
+            });
     }
 
     // Wrap in a sizer just for margins
@@ -792,7 +820,15 @@ wxRibbonPanel * MainFrame::CreateMainViewRibbonPanel(wxRibbonPage * parent)
 
         panelGridSizer->Add(mZoomInButton);
 
-        AddAcceleratorKey(wxACCEL_NORMAL, (int)'+', [this]() { ZoomIn(); });
+        AddAcceleratorKey(wxACCEL_NORMAL, (int)'+', 
+            [this]() 
+            { 
+                // With keys we have no insurance of a controller
+                if (mController)
+                {
+                    ZoomIn();
+                }
+            });
     }
 
     // Zoom Out
@@ -810,7 +846,15 @@ wxRibbonPanel * MainFrame::CreateMainViewRibbonPanel(wxRibbonPage * parent)
 
         panelGridSizer->Add(mZoomOutButton);
 
-        AddAcceleratorKey(wxACCEL_NORMAL, (int)'-', [this]() { ZoomOut(); });
+        AddAcceleratorKey(wxACCEL_NORMAL, (int)'-', 
+            [this]() 
+            { 
+                // With keys we have no insurance of a controller
+                if (mController)
+                {
+                    ZoomOut();
+                }
+            });
     }
 
     // Reset View
@@ -828,7 +872,15 @@ wxRibbonPanel * MainFrame::CreateMainViewRibbonPanel(wxRibbonPage * parent)
 
         panelGridSizer->Add(button);
 
-        AddAcceleratorKey(wxACCEL_NORMAL, (int)WXK_HOME, [this]() { ResetView(); });
+        AddAcceleratorKey(wxACCEL_NORMAL, (int)WXK_HOME, 
+            [this]() 
+            { 
+                // With keys we have no insurance of a controller
+                if (mController)
+                {
+                    ResetView();
+                }
+            });
     }
 
     // Wrap in a sizer just for margins
@@ -1312,8 +1364,11 @@ wxRibbonPanel * MainFrame::CreateEditUndoRibbonPanel(wxRibbonPage * parent)
         AddAcceleratorKey(wxACCEL_CTRL, (int)'Z', 
             [this]() 
             { 
-                assert(mController);
-                mController->UndoLast();
+                // With keys we have no insurance of either a controller or a stack
+                if (mController)
+                {
+                    mController->TryUndoLast(); 
+                }
             });
     }
 

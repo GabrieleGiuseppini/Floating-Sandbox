@@ -999,6 +999,14 @@ void Controller::SetRopeMaterial(StructuralMaterial const * material, MaterialPl
     mUserInterface.OnRopesMaterialChanged(material, plane);
 }
 
+void Controller::TryUndoLast()
+{
+    if (!mUndoStack.IsEmpty())
+    {
+        UndoLast();
+    }
+}
+
 void Controller::UndoLast()
 {
     auto const scopedToolResumeState = SuspendTool();

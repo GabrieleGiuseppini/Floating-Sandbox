@@ -13,11 +13,11 @@
 		+ Take Joadix's change
 		+ Take DIOX's
 
-		- Update version
-		- Fix: CTRL^Z crashes ShipBuilder
+		+ Update version
+		+ Fix: CTRL^Z crashes ShipBuilder
 		- Fix: max wind with Utltra vilance + shift key + toppling the crane + some how moving the thing that's attach to the crane up and down into the water = instate crash
 			- Repro? See video
-			- the fan at max speed + ultra voliance mode + the shift = some crashes for me
+			- the fan at max speed + ultra violence mode + the shift
 		- See rope alignment thing
 		- Spark tool cursor anchor?
 		- Paco's water doors dance

@@ -193,6 +193,7 @@ public:
     void SetElectricalMaterial(ElectricalMaterial const * material, MaterialPlaneType plane);
     void SetRopeMaterial(StructuralMaterial const * material, MaterialPlaneType plane);
 
+    void TryUndoLast();
     void UndoLast();
     void UndoUntil(size_t index);
 
