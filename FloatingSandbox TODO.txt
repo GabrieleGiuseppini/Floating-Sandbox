@@ -7,12 +7,12 @@
 - Roadmap:
 	= 1.17.1:
 		+ Update plan
-		- Commit & push
-		- Switch branch
-		- Merge from master
+		+ Commit & push
+		+ Switch branch
+		+ Rebase onto master
 
-		- Take Joadix's change
-		- Take Russian
+		+ Take Joadix's change
+		- Take DIOX
 			- check
 		- Update version
 		- Fix: CTRL^Z crashes ShipBuilder
