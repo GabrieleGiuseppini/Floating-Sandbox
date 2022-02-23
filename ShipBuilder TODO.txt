@@ -10,6 +10,10 @@
 	+ changes.txt
 
 - Design preferences
+	- Class takes UnitsSystem as optional
+		- Standalone is null, in-game has from UIPrefMgr
+	- If specified overrides own storage, else is loaded (and if not loaded, is default)
+	- TODOOLD
 	- Completely independent "Preferences" class, does 3 things:
 		- De-serialize
 		- Serve as storage
@@ -44,6 +48,7 @@
 - MaterialsPalette: make flag for making it its own wxFrame, so one can use it in a second monitor
 
 - Rotate 90 (CW and CCW)
+	- Also changes ship size, do notifications
 
 = Import/Export:
 	- Structural:

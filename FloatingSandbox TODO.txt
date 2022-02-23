@@ -23,13 +23,9 @@
 		- Fix: max wind with Utltra vilance + shift key + toppling the crane + some how moving the thing that's attach to the crane up and down into the water = instate crash
 			- Repro? See video
 			- the fan at max speed + ultra violence mode + the shift
-		
-		- Status bar (*)
 
-		- Add test target to UnitTests's CMakeLists.txt (for Ubuntu)
+		= Add test target to UnitTests's CMakeLists.txt (for Ubuntu)
 			- Verify on Ubuntu
-
-		- Update Visual Studio
 
 		- Update Visual Studio
 
