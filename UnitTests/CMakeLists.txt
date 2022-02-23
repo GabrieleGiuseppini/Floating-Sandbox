@@ -82,6 +82,14 @@ target_link_libraries (UnitTests
 	${ADDITIONAL_LIBRARIES})
 
 #
+# Setup test
+#
+
+if (NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+	add_test(NAME UnitTests COMMAND $<TARGET_FILE:UnitTests>)
+endif ()
+
+#
 # Set VS properties
 #
 
