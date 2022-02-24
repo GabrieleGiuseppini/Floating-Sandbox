@@ -12,7 +12,6 @@
 		+ Rebase onto master
 		+ Take Joadix's change
 		+ Take DIOX's
-
 		+ Update version
 		+ Fix: CTRL^Z crashes ShipBuilder
 		+ Sampler tool (*)
@@ -27,12 +26,10 @@
 		+ Test:
 			+ Sampler tool
 			+ SHIFT lock
-		= Add test target to UnitTests's CMakeLists.txt (for Ubuntu)
+		+ Add test target to UnitTests's CMakeLists.txt (for Ubuntu)
 			+ Verify on Ubuntu
-
-		- See other crash with loading ship
-
-		- Check discord
+		+ Check discord
+			+ See other crash with loading ship
 
 		- Release:
 			- Branch is merged into master (if applicable)
@@ -418,7 +415,7 @@
 		+ Send him new beta
 	+ Test new feautures:
 		+ Inflatable balloon popping
-	- Fix unit tests
+	+ Fix unit tests
 	
 - MAC:
 	+ FS build cannot find wxWidgets
