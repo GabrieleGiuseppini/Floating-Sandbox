@@ -31,10 +31,10 @@
 		+ Check discord
 			+ See other crash with loading ship
 
-		- Release:
-			- Branch is merged into master (if applicable)
-			- Windows
-				- MSI variable
+		= Release:
+			+ Branch is merged into master (if applicable)
+			= Windows
+				+ MSI variable
 				- Commit & push
 				- 64-bit MSI
 					- Cleanup Install
