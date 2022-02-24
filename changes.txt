@@ -4,6 +4,7 @@
 	- Added "SHIFT lock" to "Pencil" and "Eraser" tools
 	- Fixed crash when using CTRL^Z keyboard shortcut (for Undo) when undo is not possible
 - Added a small "grace period" before allowing water-sensing switches to flip again
+- Fixed sporadic crash when activating the WindMaker tool underwater
 
 1.17.0
 - First release with "Ship Builder" - the integrated ship editor which allows players to create and edit ships from within the game
