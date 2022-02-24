@@ -18,7 +18,7 @@ namespace ShipBuilder {
 StructuralPencilTool::StructuralPencilTool(
     ModelController & modelController,
     UndoStack & undoStack,
-    WorkbenchState const & workbenchState,
+    WorkbenchState & workbenchState,
     IUserInterface & userInterface,
     View & view,
     ResourceLocator const & resourceLocator)
@@ -35,7 +35,7 @@ StructuralPencilTool::StructuralPencilTool(
 ElectricalPencilTool::ElectricalPencilTool(
     ModelController & modelController,
     UndoStack & undoStack,
-    WorkbenchState const & workbenchState,
+    WorkbenchState & workbenchState,
     IUserInterface & userInterface,
     View & view,
     ResourceLocator const & resourceLocator)
@@ -52,7 +52,7 @@ ElectricalPencilTool::ElectricalPencilTool(
 StructuralEraserTool::StructuralEraserTool(
     ModelController & modelController,
     UndoStack & undoStack,
-    WorkbenchState const & workbenchState,
+    WorkbenchState & workbenchState,
     IUserInterface & userInterface,
     View & view,
     ResourceLocator const & resourceLocator)
@@ -69,7 +69,7 @@ StructuralEraserTool::StructuralEraserTool(
 ElectricalEraserTool::ElectricalEraserTool(
     ModelController & modelController,
     UndoStack & undoStack,
-    WorkbenchState const & workbenchState,
+    WorkbenchState & workbenchState,
     IUserInterface & userInterface,
     View & view,
     ResourceLocator const & resourceLocator)
@@ -88,7 +88,7 @@ PencilTool<TLayer, IsEraser>::PencilTool(
     ToolType toolType,
     ModelController & modelController,
     UndoStack & undoStack,
-    WorkbenchState const & workbenchState,
+    WorkbenchState & workbenchState,
     IUserInterface & userInterface,
     View & view,
     ResourceLocator const & resourceLocator)
@@ -102,6 +102,7 @@ PencilTool<TLayer, IsEraser>::PencilTool(
     , mOriginalLayerClone(modelController.GetModel().CloneExistingLayer<TLayer>())
     , mTempVisualizationDirtyShipRegion()
     , mEngagementData()
+    , mIsShiftDown(false)
 {
     wxImage cursorImage;
     if constexpr (IsEraser)
@@ -208,14 +209,16 @@ void PencilTool<TLayer, IsEraser>::OnLeftMouseDown()
         assert(!mTempVisualizationDirtyShipRegion);
     }
 
+    auto const mouseShipSpaceCoords = GetCurrentMouseCoordinatesInShipSpace();
+
     if (!mEngagementData)
     {
-        StartEngagement(StrongTypedFalse<IsRightMouseButton>);
+        StartEngagement(mouseShipSpaceCoords, StrongTypedFalse<IsRightMouseButton>);
 
         assert(mEngagementData);
     }
 
-    DoEdit(GetCurrentMouseCoordinatesInShipSpace());
+    DoEdit(mouseShipSpaceCoords);
 }
 
 template<LayerType TLayer, bool IsEraser>
@@ -243,14 +246,16 @@ void PencilTool<TLayer, IsEraser>::OnRightMouseDown()
         assert(!mTempVisualizationDirtyShipRegion);
     }
 
+    auto const mouseShipSpaceCoords = GetCurrentMouseCoordinatesInShipSpace();
+
     if (!mEngagementData)
     {
-        StartEngagement(StrongTypedTrue<IsRightMouseButton>);
+        StartEngagement(mouseShipSpaceCoords, StrongTypedTrue<IsRightMouseButton>);
 
         assert(mEngagementData);
     }
 
-    DoEdit(GetCurrentMouseCoordinatesInShipSpace());
+    DoEdit(mouseShipSpaceCoords);
 }
 
 template<LayerType TLayer, bool IsEraser>
@@ -267,16 +272,46 @@ void PencilTool<TLayer, IsEraser>::OnRightMouseUp()
     // already has the edit (as permanent)
 }
 
+template<LayerType TLayer, bool IsEraser>
+void PencilTool<TLayer, IsEraser>::OnShiftKeyDown()
+{
+    mIsShiftDown = true;
+
+    if (mEngagementData)
+    {
+        // Remember initial engagement
+        assert(!mEngagementData->ShiftLockInitialPosition.has_value());
+        mEngagementData->ShiftLockInitialPosition = GetCurrentMouseCoordinatesInShipSpace();
+    }
+}
+
+template<LayerType TLayer, bool IsEraser>
+void PencilTool<TLayer, IsEraser>::OnShiftKeyUp()
+{
+    mIsShiftDown = false;
+
+    if (mEngagementData)
+    {
+        // Forget engagement
+        assert(mEngagementData->ShiftLockInitialPosition.has_value());
+        mEngagementData->ShiftLockInitialPosition.reset();
+        mEngagementData->ShiftLockIsVertical.reset();
+    }
+}
+
 //////////////////////////////////////////////////////////////////////////////
 
 template<LayerType TLayer, bool IsEraser>
-void PencilTool<TLayer, IsEraser>::StartEngagement(StrongTypedBool<struct IsRightMouseButton> isRightButton)
+void PencilTool<TLayer, IsEraser>::StartEngagement(
+    ShipSpaceCoordinates const & mouseCoordinates,
+    StrongTypedBool<struct IsRightMouseButton> isRightButton)
 {
     assert(!mEngagementData);
 
     mEngagementData.emplace(
         isRightButton ? MaterialPlaneType::Background : MaterialPlaneType::Foreground,
-        mModelController.GetModel().GetDirtyState());
+        mModelController.GetModel().GetDirtyState(),
+        mIsShiftDown ? mouseCoordinates : std::optional<ShipSpaceCoordinates>());
 }
 
 template<LayerType TLayer, bool IsEraser>
@@ -288,11 +323,53 @@ void PencilTool<TLayer, IsEraser>::DoEdit(ShipSpaceCoordinates const & mouseCoor
 
     bool hasEdited = false;
 
+    // Calculate SHIFT lock direction, if needed
+    if (mEngagementData->ShiftLockInitialPosition.has_value() && !mEngagementData->ShiftLockIsVertical.has_value())
+    {
+        if (mouseCoordinates != *(mEngagementData->ShiftLockInitialPosition))
+        {
+            // Constrain to either horizontally or vertically, wrt SHIFT lock's initial position
+            if (std::abs(mouseCoordinates.x - mEngagementData->ShiftLockInitialPosition->x) > std::abs(mouseCoordinates.y - mEngagementData->ShiftLockInitialPosition->y))
+            {
+                // X is larger
+                mEngagementData->ShiftLockIsVertical = false;
+            }
+            else
+            {
+                // Y is larger
+                mEngagementData->ShiftLockIsVertical = true;
+            }
+        }
+    }
+
+    // Calculate actual mouse coordinates - adjusted for SHIFT lock
+    ShipSpaceCoordinates actualMouseCoordinates = mouseCoordinates;
+    if (mEngagementData->ShiftLockIsVertical.has_value())
+    {
+        assert(mEngagementData->ShiftLockInitialPosition.has_value());
+
+        if (*(mEngagementData->ShiftLockIsVertical))
+        {
+            actualMouseCoordinates.x = mEngagementData->ShiftLockInitialPosition->x;
+        }
+        else
+        {
+            actualMouseCoordinates.y = mEngagementData->ShiftLockInitialPosition->y;
+        }
+    }
+
+    // Calculate start point
+    ShipSpaceCoordinates const startPoint = (TLayer == LayerType::Structural && mEngagementData->PreviousEngagementPosition.has_value()) // // Pencil wakes exist only in structural layer, not in the others
+        ? *mEngagementData->PreviousEngagementPosition
+        : actualMouseCoordinates;
+
+    // Calculate end point
+    ShipSpaceCoordinates const endPoint = actualMouseCoordinates;
+
+    // Generate line
     GenerateIntegralLinePath<IntegralLineType::Minimal>(
-        (TLayer == LayerType::Structural) && mEngagementData->PreviousEngagementPosition.has_value()
-            ? *mEngagementData->PreviousEngagementPosition
-            : mouseCoordinates,
-        mouseCoordinates,
+        startPoint,
+        endPoint,
         [&](ShipSpaceCoordinates const & pos)
         {
             // Calc applicable rect intersecting pencil with workspace size
@@ -348,7 +425,7 @@ void PencilTool<TLayer, IsEraser>::DoEdit(ShipSpaceCoordinates const & mouseCoor
     }
 
     // Update previous engagement
-    mEngagementData->PreviousEngagementPosition = mouseCoordinates;
+    mEngagementData->PreviousEngagementPosition = endPoint;
 
     // Refresh model visualizations
     mModelController.UpdateVisualizations(mView);

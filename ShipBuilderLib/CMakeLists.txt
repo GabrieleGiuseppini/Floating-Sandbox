@@ -16,6 +16,8 @@ set (SHIPBUILDER_LIB_SOURCES
 	ModelController.h
 	ModelValidationResults.h
 	OpenGLManager.h
+	Preferences.cpp
+	Preferences.h
 	SelectionManager.cpp	
 	SelectionManager.h
 	ShaderTypes.cpp
@@ -63,6 +65,8 @@ set (TOOLS_SOURCES
 	Tools/RopeEraserTool.h
 	Tools/RopePencilTool.cpp
 	Tools/RopePencilTool.h
+	Tools/SamplerTool.cpp
+	Tools/SamplerTool.h
 	Tools/Tool.cpp
 	Tools/Tool.h
 )

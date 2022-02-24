@@ -7,29 +7,69 @@
 - Roadmap:
 	= 1.17.1:
 		+ Update plan
-		- Commit & push
-		- Switch branch
-		- Merge from master
+		+ Commit & push
+		+ Switch branch
+		+ Rebase onto master
+		+ Take Joadix's change
+		+ Take DIOX's
 
-		- Take Joadix's change
-		- Take Russian
-			- check
-		- Update version
-		- Fix: CTRL^Z crashes ShipBuilder
-		- Fix: max wind with Utltra vilance + shift key + toppling the crane + some how moving the thing that's attach to the crane up and down into the water = instate crash
-			- Repro? See video
-			- the fan at max speed + ultra voliance mode + the shift = some crashes for me
-		- See rope alignment thing
-		- Spark tool cursor anchor?
-		- Paco's water doors dance
-			- ElectricalElements: have state also for switches, and set a countdown (in sim time) before next transition
-				- Add state for them
-		- SHIFT at pencil tool for H or V
+		+ Update version
+		+ Fix: CTRL^Z crashes ShipBuilder
+		+ Sampler tool (*)
+		+ Paco's water doors dance
+			+ ElectricalElements: have state also for switches, and set a countdown (in sim time) before next transition
+				+ Add state for them
 
-		- Sampler tool (*) and status bar (*)
+		+ Fix: max wind with Ultra violence + shift key + toppling the crane + some how moving the thing that's attach to the crane up and down into the water = instate crash
+			+ Repro? See video
+			+ the fan at max speed + ultra violence mode + the shift
+			+ Do fix
+			+ changes.txt
 
-		- Add test target to UnitTests's CMakeLists.txt (for Ubuntu)
+		= Add test target to UnitTests's CMakeLists.txt (for Ubuntu)
 			- Verify on Ubuntu
+
+		- Test:
+			- Sampler tool
+			- SHIFT lock
+
+		- Release:
+			- Branch is merged into master (if applicable)
+			- Windows
+				- MSI variable
+				- Commit & push
+				- 64-bit MSI
+					- Cleanup Install
+					- Build Release Install
+					- Make MSI
+					- Rename MSI
+					- Test upgrade from previous version
+				- 32-bit MSI
+					- Cleanup Install
+					- Build Release Install
+					- Make MSI
+					- Rename MSI
+					- Test clean install
+			- Ubuntu
+				- rm -rf floating-sandbox
+				- Pull 
+				- Make clean, make install
+				- Make tar ("cd floating-sandbox && tar -cvf ../Floating-Sandbox-1.16.5-x64.tar . && cd -")
+				- Zip tar
+				- Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
+			- Get 3 installers tested on dev server
+			- Wait for test results
+			- Cut tag on github
+			- Upload packages to GameJolt
+				- Report file as safe (https://gamejolt.com/privacy)
+				- Post
+			- www.floatingsandbox.com:
+				- Update current version in FAQ
+				- Wait a day or two
+				- Upload changes2.txt
+					- Test w/old FS
+
+		- Update Visual Studio
 
 		- New sounds from TimCan
 

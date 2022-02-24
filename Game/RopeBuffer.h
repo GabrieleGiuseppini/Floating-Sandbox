@@ -51,6 +51,19 @@ struct RopeBuffer
         return mBuffer[index];
     }
 
+    StructuralMaterial const * SampleMaterialEndpointAt(ShipSpaceCoordinates const & endpointCoords) const noexcept
+    {
+        for (auto const & ropeElement : mBuffer)
+        {
+            if (ropeElement.StartCoords == endpointCoords || ropeElement.EndCoords == endpointCoords)
+            {
+                return ropeElement.Material;
+            }
+        }
+
+        return nullptr;
+    }
+
     template<typename ... TArgs>
     void EmplaceBack(TArgs ... args)
     {

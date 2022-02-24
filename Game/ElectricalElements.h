@@ -291,6 +291,15 @@ private:
             {}
         };
 
+        struct WaterSensingSwitchState
+        {
+            float GracePeriodEndSimulationTime;
+
+            WaterSensingSwitchState()
+                : GracePeriodEndSimulationTime(0.0f)
+            {}
+        };
+
         struct WatertightDoorState
         {
             bool IsActivated; // Current state: operating when true, not operating when false
@@ -324,6 +333,7 @@ private:
         ShipSoundState ShipSound;
         SmokeEmitterState SmokeEmitter;
         WaterPumpState WaterPump;
+        WaterSensingSwitchState WaterSensingSwitch;
         WatertightDoorState WatertightDoor;
         DummyState Dummy;
 
@@ -365,6 +375,10 @@ private:
 
         ElementState(WaterPumpState waterPump)
             : WaterPump(waterPump)
+        {}
+
+        ElementState(WaterSensingSwitchState waterSensingSwitch)
+            : WaterSensingSwitch(waterSensingSwitch)
         {}
 
         ElementState(WatertightDoorState watertightDoor)
@@ -494,6 +508,7 @@ public:
     void UpdateForGameParameters(GameParameters const & gameParameters);
 
     void UpdateAutomaticConductivityToggles(
+        float currentSimulationTime,
         Points & points,
         GameParameters const & gameParameters);
 

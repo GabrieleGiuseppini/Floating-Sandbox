@@ -1,5 +1,17 @@
 
-- Sampler tool (*)
+- Design preferences
+	= Completely independent "Preferences" class, does 3 things:
+		- De-serialize
+		- Serve as storage
+			- And thus as defaults
+		- Serialize
+			- See when this is done @ FS, do the same
+	= Class takes UnitsSystem as optional
+		- Standalone is null, in-game has from UIPrefMgr
+	+ If specified overrides own storage, else is loaded (and if not loaded, is default)
+
+= StatusBar (*)
+- Measuring Tape tool (*)
 
 - Test with huge size: lag should only be proportional to edit region
 
@@ -23,6 +35,7 @@
 - MaterialsPalette: make flag for making it its own wxFrame, so one can use it in a second monitor
 
 - Rotate 90 (CW and CCW)
+	- Also changes ship size, do notifications
 
 = Import/Export:
 	- Structural:
@@ -236,33 +249,33 @@
 - UI Controls:
 	+ Button to save and go back to game (!StandaloneMode)
 	+ Button to quit and go back to game (!StandaloneMode)
-	- Button to Save (acts also as SaveAs for first save; menu however has also separate SaveAs)
-	- Undo stack
-	- Error (message) notification(s)
-		- StatusBar w/tooltip?
+	+ Button to Save (acts also as SaveAs for first save; menu however has also separate SaveAs)
+	+ Undo stack
 	+ Add electrical/texture/ropes layer
-	- Button to open ShipMetadata dialog
-	- Resize button (canvas resize)
+	+ Button to open ShipMetadata dialog
+	+ Resize button (canvas resize)
 
 
-- StatusBar:
+= StatusBar:
 	+ Own class
-	- Try making it a wxPanel rather than a wxStatusBar
-	- Cctor and Set(.) for UnitsSystem
-		- From SB::MainFrame cctor
-		- And store tools coords, ship size, etc. for re-populating on change	
+	+ Try making it a wxPanel rather than a wxStatusBar
+	- Cctor w/UnitsSystem
+		- From Preferences
 	- Areas:
 		- Canvas:
-			- Coords and icon (x,y), w/meters/feet as well
-			- WorkSpace size and icon (wxh), w/meters/feet as well
+			= WorkSpace size and icon (wxh), w/meters/feet as well
+			= Coords and icon (x,y), w/meters/feet as well			
 			- Selection/line/rect/etc. size and icon (wxh), w/meters/feet as well
-			- Zoom (%)
+			+ Zoom (%)
 				+ MainFrame: OnViewModelChanged calls a new ReconciliateUIWithViewModel(), which does:
 					+ StatusBar: set zoom
 					+ RecalculateWorkCanvasPanning
-			- Material under cursor (for drop tool)
-			- Warning icon (w/tooltip)
-
+			= InteractiveTool (for Material, MeasuringTape, etc.)
+				- Icon (store images/bitmaps as members)
+				- MeasuringTape
+				= Material under cursor (for drop tool)
+	- Cleanup:
+		- See without storage - RefreshXXX(.) takes directly value
 - Tools:
 	! Most tools should pan when the (captured) mouse is outside of the canvas
 		- Via BaseTool::ScrollIntoViewIfNeeded, which simply forwards to IUserInterface::ScrollIntoViewIfNeeded(display logical)
@@ -275,8 +288,29 @@
 		+ Eraser (S, E)
 			+ Settings: Size
 		+ Flood (S, E)
-		- Sample
+		+ Sampler tool (*)
+			+ Icon and cursor
+				+ Anchor
+			+ Structural, Electrical, and Ropes
+			+ Need StatusBar "Current Material" first
+			+ Tool:
+				+ LeftMouseDown, RightMouseDown: selection
+					+ Change WorkbenchState fg or bg
+					+ Notify MainFrame of WorkbenchState change
+						+ Test that it refreshes
+				+ MouseMove: change status bar
+					! Regardless of mouse being down or up
+					+ Notify MainFrame of material
+						+ IUserInterface notification, with name of material
+				+ Zero-out material at:
+					+ Tool destructor
+			+ Test:
+				+ Structural (sample + select)
+				+ Electrical (sample + select)
+				+ Ropes (sample + select)
+
 		+ Line
+		- Measuring Tape (*)
 		- Rectangle
 			- Settings: FillWithFore|FillWithBack|NoFill; Size
 		- Selection
@@ -1931,4 +1965,16 @@ DONE
 			+ Bug when also zoom changes afterwards
 				+ First off: is the zoom really changing?
 			+ Texture seems to be trimmed "wrong"
++ Release
+
++ Sampler tool (*)
+
++ SHIFT at pencil tool for H or V
+	+ Test:
+		+ Structural pencil
+		+ Structural eraser
+		+ Electrical pencil
+		+ Electrical eraser
+	+ changes.txt
+
 + Release

@@ -18,3 +18,20 @@ float DivideByTwo(float value)
 {
     return value / 2.0f;
 }
+
+StructuralMaterial MakeTestStructuralMaterial(std::string name)
+{
+    return StructuralMaterial(
+        rgbColor(1, 2, 3),
+        name,
+        rgbColor::zero());
+}
+
+ElectricalMaterial MakeTestElectricalMaterial(std::string name)
+{
+    return ElectricalMaterial(
+        rgbColor(1, 2, 3), // ColorKey
+        name,
+        rgbColor::zero(),
+        false);
+}

@@ -45,9 +45,9 @@ public:
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    virtual void OnStructuralMaterialChanged(MaterialPlaneType plane, StructuralMaterial const * material) = 0;
-    virtual void OnElectricalMaterialChanged(MaterialPlaneType plane, ElectricalMaterial const * material) = 0;
-    virtual void OnRopesMaterialChanged(MaterialPlaneType plane, StructuralMaterial const * material) = 0;
+    virtual void OnStructuralMaterialChanged(StructuralMaterial const * material, MaterialPlaneType plane) = 0;
+    virtual void OnElectricalMaterialChanged(ElectricalMaterial const * material, MaterialPlaneType plane) = 0;
+    virtual void OnRopesMaterialChanged(StructuralMaterial const * material, MaterialPlaneType plane) = 0;
 
     virtual void OnCurrentToolChanged(std::optional<ToolType> tool) = 0;
 
@@ -69,7 +69,10 @@ public:
     virtual void OnUndoStackStateChanged(UndoStack & undoStack) = 0;
 
     // Notifies of a change in the tool coordinates to display
-    virtual void OnToolCoordinatesChanged(std::optional<ShipSpaceCoordinates> coordinates) = 0;
+    virtual void OnToolCoordinatesChanged(std::optional<ShipSpaceCoordinates> coordinates, ShipSpaceSize const & shipSize) = 0;
+
+    // Notifies of a change in the currently-sampled material
+    virtual void OnSampledMaterialChanged(std::optional<std::string> materialName) = 0;
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

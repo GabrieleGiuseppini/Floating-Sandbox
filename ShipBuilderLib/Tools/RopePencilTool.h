@@ -25,12 +25,12 @@ public:
     RopePencilTool(
         ModelController & modelController,
         UndoStack & undoStack,
-        WorkbenchState const & workbenchState,
+        WorkbenchState & workbenchState,
         IUserInterface & userInterface,
         View & view,
         ResourceLocator const & resourceLocator);
 
-    ~RopePencilTool();
+    virtual ~RopePencilTool();
 
     void OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates) override;
     void OnLeftMouseDown() override;

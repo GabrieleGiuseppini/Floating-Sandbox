@@ -136,6 +136,8 @@ public:
 
     StructuralLayerData CloneStructuralLayer() const;
 
+    StructuralMaterial const * SampleStructuralMaterialAt(ShipSpaceCoordinates const & coords) const;
+
     void StructuralRegionFill(
         ShipSpaceRect const & region,
         StructuralMaterial const * material);
@@ -171,6 +173,8 @@ public:
 
     std::unique_ptr<ElectricalLayerData> CloneElectricalLayer() const;
 
+    ElectricalMaterial const * SampleElectricalMaterialAt(ShipSpaceCoordinates const & coords) const;
+
     bool IsElectricalParticleAllowedAt(ShipSpaceCoordinates const & coords) const;
 
     std::optional<ShipSpaceRect> TrimElectricalParticlesWithoutSubstratum();
@@ -204,6 +208,8 @@ public:
     void RemoveRopesLayer();
 
     std::unique_ptr<RopesLayerData> CloneRopesLayer() const;
+
+    StructuralMaterial const * SampleRopesMaterialAt(ShipSpaceCoordinates const & coords) const;
 
     std::optional<size_t> GetRopeElementIndexAt(ShipSpaceCoordinates const & coords) const;
 

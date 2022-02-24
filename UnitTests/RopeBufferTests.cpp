@@ -1,6 +1,37 @@
 #include <Game/RopeBuffer.h>
 
+#include "Utils.h"
+
 #include "gtest/gtest.h"
+
+TEST(RopeBufferTests, SampleAt)
+{
+    auto const material1 = MakeTestStructuralMaterial("mat1");
+    auto const material2 = MakeTestStructuralMaterial("mat2");
+
+    RopeBuffer buffer;
+
+    buffer.EmplaceBack(
+        ShipSpaceCoordinates(4, 5),
+        ShipSpaceCoordinates(10, 10),
+        &material1,
+        rgbaColor(1, 2, 3, 4));
+
+    buffer.EmplaceBack(
+        ShipSpaceCoordinates(5, 7),
+        ShipSpaceCoordinates(11, 11),
+        &material2,
+        rgbaColor(1, 2, 3, 4));
+
+    auto const * material = buffer.SampleMaterialEndpointAt({ 4, 5 });
+    EXPECT_EQ(material, &material1);
+
+    material = buffer.SampleMaterialEndpointAt({ 11, 11 });
+    EXPECT_EQ(material, &material2);
+
+    material = buffer.SampleMaterialEndpointAt({ 4, 4 });
+    EXPECT_EQ(material, nullptr);
+}
 
 TEST(RopeBufferTests, Clone)
 {

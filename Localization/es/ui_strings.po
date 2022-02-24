@@ -30,7 +30,7 @@ msgstr "&Opciones"
 
 #: ..\FloatingSandbox\MainFrame.cpp:555
 msgid "&ShipBuilder"
-msgstr "&ContructorDeBarcos"
+msgstr "&Constructor De Barcos"
 
 #: ..\FloatingSandbox\MainFrame.cpp:477
 msgid "&Tools"
@@ -71,11 +71,11 @@ msgstr "Abandonar y regresar"
 #: ..\FloatingSandbox\AboutDialog.cpp:24
 #, c-format
 msgid "About %s"
-msgstr "Sobre %s"
+msgstr "Acerca de %s"
 
 #: ..\FloatingSandbox\MainFrame.cpp:567
 msgid "About and Credits"
-msgstr "Sobre y creditos"
+msgstr "Acerca de y créditos"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1083
 msgid "Add or clean this layer."
@@ -760,7 +760,7 @@ msgstr "Copyright (c) Laurent Gomila"
 
 #: ..\FloatingSandbox\MainFrame.cpp:547
 msgid "Create New Ship..."
-msgstr "Crear el barco nuevo..."
+msgstr "Crear un barco nuevo..."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:643
 msgid "Create a new empty ship (Ctrl+N)."
@@ -1993,7 +1993,7 @@ msgstr "Ninguno"
 
 #: ..\FloatingSandbox\MainFrame.cpp:528
 msgid "Normal Screen"
-msgstr "Pantalla normal"
+msgstr "Modo Ventana"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2335
 msgid "Number of Clouds"
@@ -2426,7 +2426,7 @@ msgstr "Retroceder"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1867
 msgid "Rogue Wave Rate"
-msgstr "Frecuencia de la ola rebelde"
+msgstr "Frecuencia de la ola gigante"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:894 ..\ShipBuilderLib\MainFrame.cpp:1969
 msgid "Ropes Layer"
@@ -2526,7 +2526,7 @@ msgstr "Guarda las configuraciones actuales usando el nombre especifico."
 
 #: ..\FloatingSandbox\MainFrame.cpp:434
 msgid "Scare/Allure Fishes"
-msgstr "Asustar/Seducir peces"
+msgstr "Alejar/Atraer peces"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:652
 msgid "Screenshot directory:"
@@ -3320,19 +3320,19 @@ msgstr "Triangulos"
 
 #: ..\FloatingSandbox\MainFrame.cpp:473
 msgid "Trigger Lightning"
-msgstr "Generar Rayo"
+msgstr "Desencadenar Rayo"
 
 #: ..\FloatingSandbox\MainFrame.cpp:464
 msgid "Trigger Rogue Wave"
-msgstr "Generar ola Rebelde"
+msgstr "Desencadenar ola gigante"
 
 #: ..\FloatingSandbox\MainFrame.cpp:468
 msgid "Trigger Storm"
-msgstr "Generar tormenta"
+msgstr "Desencadenar tormenta"
 
 #: ..\FloatingSandbox\MainFrame.cpp:460
 msgid "Trigger Tsunami"
-msgstr "Generar Tsunami"
+msgstr "Desencadenar Tsunami"
 
 #: ..\ShipBuilderLib\Controller.cpp:815
 msgid "Trim"

@@ -50,6 +50,19 @@ public:
         mStructuralBackgroundMaterial = material;
     }
 
+    void SetStructuralMaterial(StructuralMaterial const * material, MaterialPlaneType plane)
+    {
+        if (plane == MaterialPlaneType::Foreground)
+        {
+            SetStructuralForegroundMaterial(material);
+        }
+        else
+        {
+            assert(plane == MaterialPlaneType::Background);
+            SetStructuralBackgroundMaterial(material);
+        }
+    }
+
     ElectricalMaterial const * GetElectricalForegroundMaterial() const
     {
         return mElectricalForegroundMaterial;
@@ -70,6 +83,19 @@ public:
         mElectricalBackgroundMaterial = material;
     }
 
+    void SetElectricalMaterial(ElectricalMaterial const * material, MaterialPlaneType plane)
+    {
+        if (plane == MaterialPlaneType::Foreground)
+        {
+            SetElectricalForegroundMaterial(material);
+        }
+        else
+        {
+            assert(plane == MaterialPlaneType::Background);
+            SetElectricalBackgroundMaterial(material);
+        }
+    }
+
     StructuralMaterial const * GetRopesForegroundMaterial() const
     {
         return mRopesForegroundMaterial;
@@ -88,6 +114,19 @@ public:
     void SetRopesBackgroundMaterial(StructuralMaterial const * material)
     {
         mRopesBackgroundMaterial = material;
+    }
+
+    void SetRopesMaterial(StructuralMaterial const * material, MaterialPlaneType plane)
+    {
+        if (plane == MaterialPlaneType::Foreground)
+        {
+            SetRopesForegroundMaterial(material);
+        }
+        else
+        {
+            assert(plane == MaterialPlaneType::Background);
+            SetRopesBackgroundMaterial(material);
+        }
     }
 
     //

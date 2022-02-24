@@ -10,7 +10,6 @@
 #include <Game/ResourceLocator.h>
 
 #include <GameCore/Utils.h>
-#include <GameCore/Version.h>
 
 UIPreferencesManager::UIPreferencesManager(
     std::shared_ptr<IGameController> gameController,

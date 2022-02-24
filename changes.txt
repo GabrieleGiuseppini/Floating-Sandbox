@@ -1,3 +1,11 @@
+1.17.1
+- ShipBuilder:
+	- Added "Sampler" tool, to inspect and select materials from existing particles
+	- Added "SHIFT lock" to "Pencil" and "Eraser" tools
+	- Fixed crash when using CTRL^Z keyboard shortcut (Undo) when undo is not possible
+- Added a small "grace period" before allowing water-sensing switches to flip again
+- Fixed sporadic crash when activating the WindMaker tool underwater
+
 1.17.0
 - First release with "Ship Builder" - the integrated ship editor which allows players to create and edit ships from within the game
 	- This first version already allows for creating ships with all layers (structural, electrical, ropes, and texture)

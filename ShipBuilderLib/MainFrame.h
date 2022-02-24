@@ -95,9 +95,9 @@ public:
 
     //
 
-    void OnStructuralMaterialChanged(MaterialPlaneType plane, StructuralMaterial const * material) override;
-    void OnElectricalMaterialChanged(MaterialPlaneType plane, ElectricalMaterial const * material) override;
-    void OnRopesMaterialChanged(MaterialPlaneType plane, StructuralMaterial const * material) override;
+    void OnStructuralMaterialChanged(StructuralMaterial const * material, MaterialPlaneType plane) override;
+    void OnElectricalMaterialChanged(ElectricalMaterial const * material, MaterialPlaneType plane) override;
+    void OnRopesMaterialChanged(StructuralMaterial const * material, MaterialPlaneType plane) override;
 
     void OnCurrentToolChanged(std::optional<ToolType> tool) override;
 
@@ -117,7 +117,9 @@ public:
 
     void OnUndoStackStateChanged(UndoStack & undoStack) override;
 
-    void OnToolCoordinatesChanged(std::optional<ShipSpaceCoordinates> coordinates) override;
+    void OnToolCoordinatesChanged(std::optional<ShipSpaceCoordinates> coordinates, ShipSpaceSize const & shipSize) override;
+
+    void OnSampledMaterialChanged(std::optional<std::string> materialName) override;
 
     void OnError(wxString const & errorMessage) const override;
 
@@ -277,9 +279,9 @@ private:
 
     //
 
-    void ReconciliateUIWithStructuralMaterial(MaterialPlaneType plane, StructuralMaterial const * material);
-    void ReconciliateUIWithElectricalMaterial(MaterialPlaneType plane, ElectricalMaterial const * material);
-    void ReconciliateUIWithRopesMaterial(MaterialPlaneType plane, StructuralMaterial const * material);
+    void ReconciliateUIWithStructuralMaterial(StructuralMaterial const * material, MaterialPlaneType plane);
+    void ReconciliateUIWithElectricalMaterial(ElectricalMaterial const * material, MaterialPlaneType plane);
+    void ReconciliateUIWithRopesMaterial(StructuralMaterial const * material, MaterialPlaneType plane);
 
     void ReconciliateUIWithSelectedTool(std::optional<ToolType> tool);
 
@@ -405,6 +407,7 @@ private:
 
     bool mutable mIsMouseInWorkCanvas;
     bool mutable mIsMouseCapturedByWorkCanvas;
+    bool mutable mIsShiftKeyDown;
 
     //
     // Open action

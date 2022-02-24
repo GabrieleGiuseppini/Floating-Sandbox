@@ -442,6 +442,7 @@ void Ship::Update(
     //
 
     mElectricalElements.UpdateAutomaticConductivityToggles(
+        currentSimulationTime,
         mPoints,
         gameParameters);
 

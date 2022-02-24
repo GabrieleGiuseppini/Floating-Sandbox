@@ -1,6 +1,6 @@
 /***************************************************************************************
 * Original Author:		Gabriele Giuseppini
-* Created:				2021-10-31
+* Created:				2022-02-20
 * Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
 #pragma once
@@ -14,7 +14,6 @@
 #include <UILib/WxHelpers.h>
 
 #include <GameCore/GameTypes.h>
-#include <GameCore/StrongTypeDef.h>
 
 #include <memory>
 #include <optional>
@@ -22,13 +21,13 @@
 namespace ShipBuilder {
 
 template<LayerType TLayer>
-class FloodTool : public Tool
+class SamplerTool : public Tool
 {
 public:
 
-    virtual ~FloodTool() = default;
+    virtual ~SamplerTool();
 
-    void OnMouseMove(DisplayLogicalCoordinates const & /*mouseCoordinates*/) override {};
+    void OnMouseMove(DisplayLogicalCoordinates const & /*mouseCoordinates*/) override;
     void OnLeftMouseDown() override;
     void OnLeftMouseUp() override {};
     void OnRightMouseDown() override;
@@ -38,7 +37,7 @@ public:
 
 protected:
 
-    FloodTool(
+    SamplerTool(
         ToolType toolType,
         ModelController & modelController,
         UndoStack & undoStack,
@@ -53,22 +52,48 @@ private:
 
 private:
 
-    void DoEdit(
+    void DoSelectMaterial(
         ShipSpaceCoordinates const & mouseCoordinates,
-        StrongTypedBool<struct IsRightMouseButton> isRightButton);
+        MaterialPlaneType plane);
 
-    inline LayerMaterialType const * GetFloodMaterial(MaterialPlaneType plane) const;
+    inline LayerMaterialType const * SampleMaterial(ShipSpaceCoordinates const & mouseCoordinates);
 
 private:
 
     wxImage mCursorImage;
 };
 
-class StructuralFloodTool : public FloodTool<LayerType::Structural>
+class StructuralSamplerTool : public SamplerTool<LayerType::Structural>
 {
 public:
 
-    StructuralFloodTool(
+    StructuralSamplerTool(
+        ModelController & modelController,
+        UndoStack & undoStack,
+        WorkbenchState & workbenchState,
+        IUserInterface & userInterface,
+        View & view,
+        ResourceLocator const & resourceLocator);
+};
+
+class ElectricalSamplerTool : public SamplerTool<LayerType::Electrical>
+{
+public:
+
+    ElectricalSamplerTool(
+        ModelController & modelController,
+        UndoStack & undoStack,
+        WorkbenchState & workbenchState,
+        IUserInterface & userInterface,
+        View & view,
+        ResourceLocator const & resourceLocator);
+};
+
+class RopeSamplerTool : public SamplerTool<LayerType::Ropes>
+{
+public:
+
+    RopeSamplerTool(
         ModelController & modelController,
         UndoStack & undoStack,
         WorkbenchState & workbenchState,

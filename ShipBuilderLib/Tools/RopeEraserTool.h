@@ -24,12 +24,12 @@ public:
     RopeEraserTool(
         ModelController & modelController,
         UndoStack & undoStack,
-        WorkbenchState const & workbenchState,
+        WorkbenchState & workbenchState,
         IUserInterface & userInterface,
         View & view,
         ResourceLocator const & resourceLocator);
 
-    ~RopeEraserTool();
+    virtual ~RopeEraserTool();
 
     void OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates) override;
     void OnLeftMouseDown() override;

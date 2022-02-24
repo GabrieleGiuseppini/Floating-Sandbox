@@ -460,6 +460,13 @@ struct _IntegralCoordinates
             this->y - offset.height);
     }
 
+    inline _IntegralCoordinates<TIntegralTag> scale(_IntegralCoordinates<TIntegralTag> const & multiplier) const
+    {
+        return _IntegralCoordinates<TIntegralTag>(
+            this->x * multiplier.x,
+            this->y * multiplier.y);
+    }
+
     template<typename TSize>
     bool IsInSize(TSize const & size) const
     {

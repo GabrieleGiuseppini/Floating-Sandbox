@@ -189,10 +189,11 @@ public:
     std::optional<ToolType> GetCurrentTool() const;
     void SetCurrentTool(std::optional<ToolType> tool);
 
-    void SetStructuralMaterial(MaterialPlaneType plane, StructuralMaterial const * material);
-    void SetElectricalMaterial(MaterialPlaneType plane, ElectricalMaterial const * material);
-    void SetRopeMaterial(MaterialPlaneType plane, StructuralMaterial const * material);
+    void SetStructuralMaterial(StructuralMaterial const * material, MaterialPlaneType plane);
+    void SetElectricalMaterial(ElectricalMaterial const * material, MaterialPlaneType plane);
+    void SetRopeMaterial(StructuralMaterial const * material, MaterialPlaneType plane);
 
+    void TryUndoLast();
     void UndoLast();
     void UndoUntil(size_t index);
 

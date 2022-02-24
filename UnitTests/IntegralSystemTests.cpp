@@ -11,6 +11,15 @@ TEST(IntegralSystemTests, Algebra_CoordsMinusSize)
     EXPECT_EQ(result, IntegralCoordinates(8, 12));
 }
 
+TEST(IntegralSystemTests, Scale)
+{
+    IntegralCoordinates coords = { 10, 15 };
+    IntegralCoordinates scaler = { 2, 3 };
+
+    IntegralCoordinates result = coords.scale(scaler);
+    EXPECT_EQ(result, IntegralCoordinates(20, 45));
+}
+
 class IntegralRect_IsContainedInRect : public testing::TestWithParam<std::tuple<IntegralRect, IntegralRect, bool>>
 {
 };
