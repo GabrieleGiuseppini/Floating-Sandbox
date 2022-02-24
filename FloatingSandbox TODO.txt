@@ -19,19 +19,18 @@
 		+ Paco's water doors dance
 			+ ElectricalElements: have state also for switches, and set a countdown (in sim time) before next transition
 				+ Add state for them
-
 		+ Fix: max wind with Ultra violence + shift key + toppling the crane + some how moving the thing that's attach to the crane up and down into the water = instate crash
 			+ Repro? See video
 			+ the fan at max speed + ultra violence mode + the shift
 			+ Do fix
 			+ changes.txt
-
+		+ Test:
+			+ Sampler tool
+			+ SHIFT lock
 		= Add test target to UnitTests's CMakeLists.txt (for Ubuntu)
-			- Verify on Ubuntu
+			+ Verify on Ubuntu
 
-		- Test:
-			- Sampler tool
-			- SHIFT lock
+		- Check discord
 
 		- Release:
 			- Branch is merged into master (if applicable)
@@ -417,6 +416,7 @@
 		+ Send him new beta
 	+ Test new feautures:
 		+ Inflatable balloon popping
+	- Fix unit tests
 	
 - MAC:
 	+ FS build cannot find wxWidgets

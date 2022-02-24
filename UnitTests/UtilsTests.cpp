@@ -1,5 +1,7 @@
 #include <GameCore/Utils.h>
 
+#include <GameCore/SysSpecifics.h>
+
 #include <unordered_map>
 
 #include "gtest/gtest.h"
@@ -52,6 +54,39 @@ TEST(UtilsTests, MakeFilenameSafeString_AlreadySafe)
     EXPECT_EQ(safeFilename, std::string(str));
 }
 
+#if FS_IS_OS_WINDOWS()
+class IsFileUnderDirectoryTest_WindowsOnly : public testing::TestWithParam<std::tuple<std::string, std::string, bool>>
+{
+public:
+    virtual void SetUp() {}
+    virtual void TearDown() {}
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    IsFileUnderDirectoryTests,
+    IsFileUnderDirectoryTest_WindowsOnly,
+    ::testing::Values( // Dir, File, Result
+        std::make_tuple("C:\\", "C:\\foo\\zorro\\blah", true),
+        std::make_tuple("C:\\foo", "C:\\foo\\zorro\\blah", true),
+        std::make_tuple("C:\\foo\\zorro", "C:\\foo\\zorro\\blah", true),
+        std::make_tuple("C:\\foo\\zorro\\blah", "C:\\foo\\zorro\\blah", true),
+
+        std::make_tuple("C:\\foo\\zorro\\blah\\krok", "C:\\", false),
+        std::make_tuple("C:\\foo\\zorro\\blah\\krok", "C:\\foo", false),
+        std::make_tuple("C:\\foo\\zorro\\blah\\krok", "C:\\foo\\zorro", false),
+        std::make_tuple("C:\\foo\\zorro\\blah\\krok", "C:\\foo\\zorro\\blah", false)
+    ));
+
+TEST_P(IsFileUnderDirectoryTest_WindowsOnly, BasicCases)
+{
+    auto const directoryPath = std::filesystem::path(std::get<0>(GetParam()));
+    auto const filePath = std::filesystem::path(std::get<1>(GetParam()));
+
+    bool const result = Utils::IsFileUnderDirectory(filePath, directoryPath);
+    EXPECT_EQ(result, std::get<2>(GetParam()));
+}
+#endif
+
 class IsFileUnderDirectoryTest : public testing::TestWithParam<std::tuple<std::string, std::string, bool>>
 {
 public:
@@ -63,16 +98,6 @@ INSTANTIATE_TEST_SUITE_P(
     IsFileUnderDirectoryTests,
     IsFileUnderDirectoryTest,
     ::testing::Values( // Dir, File, Result
-        std::make_tuple("C:\\", "C:\\foo\\zorro\\blah", true),
-        std::make_tuple("C:\\foo", "C:\\foo\\zorro\\blah", true),
-        std::make_tuple("C:\\foo\\zorro", "C:\\foo\\zorro\\blah", true),
-        std::make_tuple("C:\\foo\\zorro\\blah", "C:\\foo\\zorro\\blah", true),
-
-        std::make_tuple("C:\\foo\\zorro\\blah\\krok", "C:\\", false),
-        std::make_tuple("C:\\foo\\zorro\\blah\\krok", "C:\\foo", false),
-        std::make_tuple("C:\\foo\\zorro\\blah\\krok", "C:\\foo\\zorro", false),
-        std::make_tuple("C:\\foo\\zorro\\blah\\krok", "C:\\foo\\zorro\\blah", false),
-
         std::make_tuple("/", "/foo/zorro/blah", true),
         std::make_tuple("/foo", "/foo/zorro/blah", true),
         std::make_tuple("/foo/zorro", "/foo/zorro/blah", true),
