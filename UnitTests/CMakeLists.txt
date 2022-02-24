@@ -86,7 +86,7 @@ target_link_libraries (UnitTests
 #
 
 if (NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-	add_test(NAME UnitTests COMMAND $<TARGET_FILE:UnitTests>)
+	add_test(NAME RunUnitTests COMMAND $<TARGET_FILE:UnitTests>)
 endif ()
 
 #
