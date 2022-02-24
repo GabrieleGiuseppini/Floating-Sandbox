@@ -1,14 +1,4 @@
 
-+ Sampler tool (*)
-
-+ SHIFT at pencil tool for H or V
-	+ Test:
-		+ Structural pencil
-		+ Structural eraser
-		+ Electrical pencil
-		+ Electrical eraser
-	+ changes.txt
-
 - Design preferences
 	= Completely independent "Preferences" class, does 3 things:
 		- De-serialize
@@ -1975,4 +1965,16 @@ DONE
 			+ Bug when also zoom changes afterwards
 				+ First off: is the zoom really changing?
 			+ Texture seems to be trimmed "wrong"
++ Release
+
++ Sampler tool (*)
+
++ SHIFT at pencil tool for H or V
+	+ Test:
+		+ Structural pencil
+		+ Structural eraser
+		+ Electrical pencil
+		+ Electrical eraser
+	+ changes.txt
+
 + Release

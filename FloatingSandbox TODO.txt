@@ -29,6 +29,10 @@
 		= Add test target to UnitTests's CMakeLists.txt (for Ubuntu)
 			- Verify on Ubuntu
 
+		- Test:
+			- Sampler tool
+			- SHIFT lock
+
 		- Release:
 			- Branch is merged into master (if applicable)
 			- Windows
