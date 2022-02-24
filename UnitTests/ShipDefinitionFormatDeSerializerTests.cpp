@@ -209,12 +209,14 @@ protected:
 
         EXPECT_EQ(targetStructuralLayer->Buffer.Size, sourceStructuralLayer.Buffer.Size);
         ASSERT_EQ(targetStructuralLayer->Buffer.GetByteSize(), sourceStructuralLayer.Buffer.GetByteSize());
-        EXPECT_EQ(
-            std::memcmp(
-                targetStructuralLayer->Buffer.Data.get(),
-                sourceStructuralLayer.Buffer.Data.get(),
-                targetStructuralLayer->Buffer.GetByteSize()),
-            0);
+        for (int y = 0; y < targetStructuralLayer->Buffer.Size.height; ++y)
+        {
+            for (int x = 0; x < targetStructuralLayer->Buffer.Size.width; ++x)
+            {
+                ShipSpaceCoordinates const coords{ x, y };
+                EXPECT_EQ(sourceStructuralLayer.Buffer[coords], targetStructuralLayer->Buffer[coords]);
+            }
+        }
     }
 
     std::map<MaterialColorKey, StructuralMaterial> TestMaterialMap;
@@ -550,12 +552,14 @@ protected:
         // Buffer
         EXPECT_EQ(targetElectricalLayer->Buffer.Size, sourceElectricalLayer.Buffer.Size);
         ASSERT_EQ(targetElectricalLayer->Buffer.GetByteSize(), sourceElectricalLayer.Buffer.GetByteSize());
-        EXPECT_EQ(
-            std::memcmp(
-                targetElectricalLayer->Buffer.Data.get(),
-                sourceElectricalLayer.Buffer.Data.get(),
-                targetElectricalLayer->Buffer.GetByteSize()),
-            0);
+        for (int y = 0; y < targetElectricalLayer->Buffer.Size.height; ++y)
+        {
+            for (int x = 0; x < targetElectricalLayer->Buffer.Size.width; ++x)
+            {
+                ShipSpaceCoordinates const coords{ x, y };
+                EXPECT_EQ(sourceElectricalLayer.Buffer[coords], targetElectricalLayer->Buffer[coords]);
+            }
+        }
 
         // Panel
         ASSERT_EQ(targetElectricalLayer->Panel.size(), sourceElectricalLayer.Panel.size());

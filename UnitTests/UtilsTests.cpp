@@ -11,7 +11,11 @@ TEST(UtilsTests, MakeFilenameSafeString_Beginning)
     char str[] = "\xec\xf5\xe8\xf1\xf8WOOZBAR";
 
     std::string const safeFilename = Utils::MakeFilenameSafeString(std::string(str));
+#if FS_IS_OS_WINDOWS()
     EXPECT_EQ(safeFilename, "WOOZBAR");
+#else
+    EXPECT_EQ(safeFilename, "\xEC\xF5\xE8\xF1\xF8WOOZBAR");
+#endif
 }
 
 TEST(UtilsTests, MakeFilenameSafeString_Middle)
@@ -19,7 +23,11 @@ TEST(UtilsTests, MakeFilenameSafeString_Middle)
     char str[] = "FOO\xec\xf5\xe8\xf1\xf8ZBAR";
 
     std::string const safeFilename = Utils::MakeFilenameSafeString(std::string(str));
+#if FS_IS_OS_WINDOWS()
     EXPECT_EQ(safeFilename, "FOOZBAR");
+#else
+    EXPECT_EQ(safeFilename, "FOO\xEC\xF5\xE8\xF1\xF8ZBAR");
+#endif
 }
 
 TEST(UtilsTests, MakeFilenameSafeString_End)
@@ -27,7 +35,11 @@ TEST(UtilsTests, MakeFilenameSafeString_End)
     char str[] = "FOOZBAR\xec\xf5\xe8\xf1\xf8";
 
     std::string const safeFilename = Utils::MakeFilenameSafeString(std::string(str));
+#if FS_IS_OS_WINDOWS()
     EXPECT_EQ(safeFilename, "FOOZBAR");
+#else
+    EXPECT_EQ(safeFilename, "FOOZBAR\xEC\xF5\xE8\xF1\xF8");
+#endif
 }
 
 TEST(UtilsTests, MakeFilenameSafeString_FilenameChars)
@@ -43,7 +55,11 @@ TEST(UtilsTests, MakeFilenameSafeString_BecomesEmpty)
     char str[] = "\xec\xf5\xe8\xf1\xf8";
 
     std::string const safeFilename = Utils::MakeFilenameSafeString(std::string(str));
+#if FS_IS_OS_WINDOWS()
     EXPECT_EQ(safeFilename, "");
+#else
+    EXPECT_EQ(safeFilename, "\xEC\xF5\xE8\xF1\xF8");
+#endif    
 }
 
 TEST(UtilsTests, MakeFilenameSafeString_AlreadySafe)
