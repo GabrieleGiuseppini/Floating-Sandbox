@@ -476,7 +476,7 @@ namespace Utils
     {
         std::filesystem::path const normalizedFilePath = filePath.lexically_normal();
         std::filesystem::path const normalizedDirectoryPath = directoryPath.lexically_normal();
-        auto const [dirEnd, _] = std::mismatch(normalizedDirectoryPath.begin(), normalizedDirectoryPath.end(), normalizedFilePath.begin());
+        auto const [dirEnd, _] = std::mismatch(normalizedDirectoryPath.begin(), normalizedDirectoryPath.end(), normalizedFilePath.begin(), normalizedFilePath.end());
         return dirEnd == normalizedDirectoryPath.end();
     }
 

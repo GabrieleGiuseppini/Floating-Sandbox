@@ -30,6 +30,8 @@
 		= Add test target to UnitTests's CMakeLists.txt (for Ubuntu)
 			+ Verify on Ubuntu
 
+		- See other crash with loading ship
+
 		- Check discord
 
 		- Release:
