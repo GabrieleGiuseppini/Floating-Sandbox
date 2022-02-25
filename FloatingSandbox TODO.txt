@@ -5,71 +5,9 @@
 ====================================================
 
 - Roadmap:
-	= 1.17.1:
-		+ Update plan
-		+ Commit & push
-		+ Switch branch
-		+ Rebase onto master
-		+ Take Joadix's change
-		+ Take DIOX's
-		+ Update version
-		+ Fix: CTRL^Z crashes ShipBuilder
-		+ Sampler tool (*)
-		+ Paco's water doors dance
-			+ ElectricalElements: have state also for switches, and set a countdown (in sim time) before next transition
-				+ Add state for them
-		+ Fix: max wind with Ultra violence + shift key + toppling the crane + some how moving the thing that's attach to the crane up and down into the water = instate crash
-			+ Repro? See video
-			+ the fan at max speed + ultra violence mode + the shift
-			+ Do fix
-			+ changes.txt
-		+ Test:
-			+ Sampler tool
-			+ SHIFT lock
-		+ Add test target to UnitTests's CMakeLists.txt (for Ubuntu)
-			+ Verify on Ubuntu
-		+ Check discord
-			+ See other crash with loading ship
+	= 1.17.2:
 
-		= Release:
-			- Branch is merged into master (if applicable)
-			- Windows
-				- MSI variable
-				- Commit & push
-				- 64-bit MSI
-					- Cleanup Install
-					- Build Release Install
-					- Make MSI
-					- Rename MSI
-					- Test upgrade from previous version
-				- 32-bit MSI
-					- Cleanup Install
-					- Build Release Install
-					- Make MSI
-					- Rename MSI
-					- Test clean install
-			- Ubuntu
-				- rm -rf floating-sandbox
-				- pull 
-				- rm -rf build; mkdir build
-				- cd build
-				- cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
-				- make install
-				- Make tar ("cd floating-sandbox && tar -cvf ../Floating-Sandbox-1.16.5-x64.tar . && cd -")
-				- Zip tar
-				- Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
-			- Get 3 installers tested on dev server
-			- Wait for test results
-			- Cut tag on github
-			- Upload packages to GameJolt
-				- Report file as safe (https://gamejolt.com/privacy)
-				- Post
-					- Thank Chris
-			- www.floatingsandbox.com:
-				- Update current version in FAQ
-				- Wait a day or two
-				- Upload changes2.txt
-					- Test w/old FS
+		+ Update version, commit, & push
 
 		- Make branch
 
@@ -268,13 +206,13 @@
 		- Commit & push
 		- 64-bit MSI
 			- Cleanup Install
-			- Build Release Install
+			- Build Release Install (after clean)
 			- Make MSI
 			- Rename MSI
 			- Test upgrade from previous version
 		- 32-bit MSI
 			- Cleanup Install
-			- Build Release Install
+			- Build Release Install (after clean)
 			- Make MSI
 			- Rename MSI
 			- Test clean install
@@ -13621,3 +13559,67 @@ IF WX:
 				+ Upload changes2.txt
 					+ Test w/old FS
 					+ Test w/new FS
+	+ 1.17.1:
+		+ Update plan
+		+ Commit & push
+		+ Switch branch
+		+ Rebase onto master
+		+ Take Joadix's change
+		+ Take DIOX's
+		+ Update version
+		+ Fix: CTRL^Z crashes ShipBuilder
+		+ Sampler tool (*)
+		+ Paco's water doors dance
+			+ ElectricalElements: have state also for switches, and set a countdown (in sim time) before next transition
+				+ Add state for them
+		+ Fix: max wind with Ultra violence + shift key + toppling the crane + some how moving the thing that's attach to the crane up and down into the water = instate crash
+			+ Repro? See video
+			+ the fan at max speed + ultra violence mode + the shift
+			+ Do fix
+			+ changes.txt
+		+ Test:
+			+ Sampler tool
+			+ SHIFT lock
+		+ Add test target to UnitTests's CMakeLists.txt (for Ubuntu)
+			+ Verify on Ubuntu
+		+ Check discord
+			+ See other crash with loading ship
+		+ Release:
+			+ Branch is merged into master (if applicable)
+			+ Windows
+				+ MSI variable
+				+ Commit & push
+				+ 64-bit MSI
+					+ Cleanup Install
+					+ Build Release Install
+					+ Make MSI
+					+ Rename MSI
+					+ Test upgrade from previous version
+					+ Send to testers
+				+ 32-bit MSI
+					+ Cleanup Install
+					+ Build Release Install
+					+ Make MSI
+					+ Rename MSI
+					+ Test clean install
+			+ Ubuntu
+				+ rm -rf floating-sandbox
+				+ pull 
+				+ rm -rf build; mkdir build
+				+ cd build
+				+ cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
+				+ make install
+				+ Cleanup tar
+				+ Make tar ("cd floating-sandbox && tar -cvf ../Floating-Sandbox-1.17.1-x64.tar . && cd -")
+				+ Zip tar
+				+ Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
+			+ Get 3 installers tested on dev server
+			+ Wait for test results
+			+ Cut tag on github
+			+ Upload packages to GameJolt
+				X Report file as safe (https://gamejolt.com/privacy)
+				+ Post
+			+ www.floatingsandbox.com:
+				+ Update current version in FAQ
+				+ Upload changes2.txt
+					+ Test w/old FS
