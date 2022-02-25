@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #include "NotificationLayer.h"
 
+#include <GameCore/Conversions.h>
 #include <GameCore/GameWallClock.h>
 
 #include <cassert>
@@ -726,10 +727,10 @@ void NotificationLayer::RegeneratePhysicsProbeReadingStrings()
 
 			case UnitsSystem::USCS:
 			{
-				v = mPhysicsProbeReading.Speed * 3.28084f;
-				t = (mPhysicsProbeReading.Temperature - 273.15f) * 9.0f / 5.0f + 32.0f;
-				d = mPhysicsProbeReading.Depth * 3.28084f;
-				p = mPhysicsProbeReading.Pressure * 0.0001450377f;
+				v = MetersToFeet(mPhysicsProbeReading.Speed);
+				t = CelsiusToFahrenheit(mPhysicsProbeReading.Temperature);
+				d = MetersToFeet(mPhysicsProbeReading.Depth);
+				p = PascalToPsi(mPhysicsProbeReading.Pressure);
 				break;
 			}
 		}

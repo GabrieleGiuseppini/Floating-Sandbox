@@ -19,7 +19,7 @@ class Preferences
 {
 public:
 
-    Preferences(std::optional<UnitsSystem> displayUnitsSystem);
+    Preferences();
 
     ~Preferences();
 
@@ -28,6 +28,11 @@ public:
     UnitsSystem GetDisplayUnitsSystem() const
     {
         return mDisplayUnitsSystem;
+    }
+
+    void SetDisplayUnitsSystem(UnitsSystem value)
+    {
+        mDisplayUnitsSystem = value;
     }
 
 private:

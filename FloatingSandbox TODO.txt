@@ -8,8 +8,9 @@
 	= 1.17.2:
 
 		+ Update version, commit, & push
+		+ Make branch
 
-		- Make branch
+		= -> ShipBuilder
 
 		- Update Visual Studio
 

@@ -67,11 +67,13 @@ MainFrame::MainFrame(
     , mShipTexturizer(shipTexturizer)
     , mWorkCanvasHScrollBar(nullptr)
     , mWorkCanvasVScrollBar(nullptr)
-    // State
+    // UI State
     , mIsMouseInWorkCanvas(false)
     , mIsMouseCapturedByWorkCanvas(false)
     , mIsShiftKeyDown(false)
+    // State
     , mWorkbenchState(materialDatabase)
+    , mPreferences()
 {
     Create(
         nullptr,
@@ -270,7 +272,7 @@ MainFrame::MainFrame(
     {
         // Status bar
         {
-            mStatusBar = new StatusBar(mMainPanel, mResourceLocator);
+            mStatusBar = new StatusBar(mMainPanel, mPreferences.GetDisplayUnitsSystem(), mResourceLocator);
 
             mainVSizer->Add(
                 mStatusBar,
@@ -346,8 +348,15 @@ MainFrame::MainFrame(
     ReconciliateUIWithWorkbenchState();
 }
 
-void MainFrame::OpenForNewShip()
+void MainFrame::OpenForNewShip(std::optional<UnitsSystem> displayUnitsSystem)
 {
+    // Set units system
+    if (displayUnitsSystem.has_value())
+    {
+        mPreferences.SetDisplayUnitsSystem(*displayUnitsSystem);
+        ReconciliateUIWithDisplayUnitsSystem(*displayUnitsSystem);
+    }
+
     // Enqueue deferred action: New ship
     assert(!mInitialAction.has_value());
     mInitialAction.emplace(
@@ -360,8 +369,17 @@ void MainFrame::OpenForNewShip()
     Open();
 }
 
-void MainFrame::OpenForLoadShip(std::filesystem::path const & shipFilePath)
+void MainFrame::OpenForLoadShip(
+    std::filesystem::path const & shipFilePath,
+    std::optional<UnitsSystem> displayUnitsSystem)
 {
+    // Set units system
+    if (displayUnitsSystem.has_value())
+    {
+        mPreferences.SetDisplayUnitsSystem(*displayUnitsSystem);
+        ReconciliateUIWithDisplayUnitsSystem(*displayUnitsSystem);
+    }
+
     // Enqueue deferred action: Load ship
     assert(!mInitialAction.has_value());
     mInitialAction.emplace(
@@ -4221,6 +4239,8 @@ void MainFrame::ReconciliateUIWithWorkbenchState()
     ReconciliateUIWithOtherVisualizationsOpacity(mWorkbenchState.GetOtherVisualizationsOpacity());
 
     ReconciliateUIWithVisualGridEnablement(mWorkbenchState.IsGridEnabled());
+
+    ReconciliateUIWithDisplayUnitsSystem(mPreferences.GetDisplayUnitsSystem());
 }
 
 void MainFrame::ReconciliateUIWithViewModel(ViewModel const & viewModel)
@@ -4656,6 +4676,11 @@ void MainFrame::ReconciliateUIWithUndoStackState(UndoStack & undoStack)
 
     // Scroll to bottom
     mUndoStackPanel->Scroll(wxDefaultCoord, mUndoStackPanel->GetScrollRange(wxVERTICAL));
+}
+
+void MainFrame::ReconciliateUIWithDisplayUnitsSystem(UnitsSystem displayUnitsSystem)
+{
+    mStatusBar->SetDisplayUnitsSystem(displayUnitsSystem);
 }
 
 }

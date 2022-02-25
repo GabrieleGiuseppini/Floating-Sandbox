@@ -12,7 +12,7 @@
 
 namespace ShipBuilder {
 
-Preferences::Preferences(std::optional<UnitsSystem> displayUnitsSystem)
+Preferences::Preferences()
 {
     //
     // Set defaults for our preferences
@@ -33,13 +33,6 @@ Preferences::Preferences(std::optional<UnitsSystem> displayUnitsSystem)
     {
         // Ignore
     }
-
-    // If we're given a units system, then it rules
-    if (displayUnitsSystem.has_value())
-    {
-        mDisplayUnitsSystem = *displayUnitsSystem;
-    }
-
 }
 
 Preferences::~Preferences()

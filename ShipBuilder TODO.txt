@@ -1,17 +1,15 @@
+= 1.17.2:
+	+ Preferences
+		+ Completely independent "Preferences" class, does 3 things:
+			+ De-serialize
+			+ Serve as storage
+			+ Serialize
+		+ Move UnitsSsytem from ShipBuilder MainFrame's cctor to OpenForXXX()
+		+ If specified overrides own storage, else is loaded (and if not loaded, is default)
 
-- Design preferences
-	= Completely independent "Preferences" class, does 3 things:
-		- De-serialize
-		- Serve as storage
-			- And thus as defaults
-		- Serialize
-			- See when this is done @ FS, do the same
-	= Class takes UnitsSystem as optional
-		- Standalone is null, in-game has from UIPrefMgr
-	+ If specified overrides own storage, else is loaded (and if not loaded, is default)
+	= StatusBar (*)
 
-= StatusBar (*)
-- Measuring Tape tool (*)
+	- Measuring Tape tool (*)
 
 - Test with huge size: lag should only be proportional to edit region
 
@@ -259,12 +257,13 @@
 = StatusBar:
 	+ Own class
 	+ Try making it a wxPanel rather than a wxStatusBar
-	- Cctor w/UnitsSystem
-		- From Preferences
+	= Cctor w/UnitsSystem
+		= From Preferences
 	- Areas:
 		- Canvas:
-			= WorkSpace size and icon (wxh), w/meters/feet as well
-			= Coords and icon (x,y), w/meters/feet as well			
+			+ WorkSpace size and icon (wxh), w/meters/feet as well
+				+ GameCore::Conversions.h: MetersToFeet, etc.
+			+ Coords and icon (x,y), w/meters/feet as well			
 			- Selection/line/rect/etc. size and icon (wxh), w/meters/feet as well
 			+ Zoom (%)
 				+ MainFrame: OnViewModelChanged calls a new ReconciliateUIWithViewModel(), which does:
@@ -274,8 +273,7 @@
 				- Icon (store images/bitmaps as members)
 				- MeasuringTape
 				= Material under cursor (for drop tool)
-	- Cleanup:
-		- See without storage - RefreshXXX(.) takes directly value
+		- Test physics probe w/both systems
 - Tools:
 	! Most tools should pan when the (captured) mouse is outside of the canvas
 		- Via BaseTool::ScrollIntoViewIfNeeded, which simply forwards to IUserInterface::ScrollIntoViewIfNeeded(display logical)

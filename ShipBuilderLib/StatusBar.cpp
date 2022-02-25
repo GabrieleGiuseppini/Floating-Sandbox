@@ -7,6 +7,8 @@
 
 #include <UILib/WxHelpers.h>
 
+#include <GameCore/Conversions.h>
+
 #include <wx/sizer.h>
 #include <wx/statbmp.h>
 
@@ -17,15 +19,17 @@ namespace ShipBuilder {
 
 StatusBar::StatusBar(
     wxWindow * parent,
+    UnitsSystem displayUnitsSystem,
     ResourceLocator const & resourceLocator)
     : wxPanel(parent)
+    , mDisplayUnitsSystem(displayUnitsSystem)
 {
     //
     // Create controls
     //
 
     int constexpr SpacerSizeMinor = 5;
-    int constexpr SpacerSizeMajor = 10;
+    int constexpr SpacerSizeMajor = 15;
 
     wxBoxSizer * hSizer = new wxBoxSizer(wxHORIZONTAL);
 
@@ -46,7 +50,7 @@ StatusBar::StatusBar(
             // Label
             {
                 mCanvasSizeStaticText = new wxStaticText(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
-                mCanvasSizeStaticText->SetMinSize(wxSize(65, -1));
+                mCanvasSizeStaticText->SetMinSize(wxSize(160, -1));
                 hSizer->Add(mCanvasSizeStaticText, 0, wxALIGN_CENTRE_VERTICAL, 0);
             }
         }
@@ -66,7 +70,7 @@ StatusBar::StatusBar(
             // Label
             {
                 mToolCoordinatesStaticText = new wxStaticText(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
-                mToolCoordinatesStaticText->SetMinSize(wxSize(65, -1));
+                mToolCoordinatesStaticText->SetMinSize(wxSize(140, -1));
                 hSizer->Add(mToolCoordinatesStaticText, 0, wxALIGN_CENTRE_VERTICAL, 0);
             }
         }
@@ -104,28 +108,50 @@ StatusBar::StatusBar(
     SetSizer(hSizer);
 }
 
+void StatusBar::SetDisplayUnitsSystem(UnitsSystem displayUnitsSystem)
+{
+    if (displayUnitsSystem != mDisplayUnitsSystem)
+    {
+        mDisplayUnitsSystem = displayUnitsSystem;
+
+        // Refresh all labels affected by units system
+        RefreshCanvasSize();
+    }
+}
 void StatusBar::SetCanvasSize(std::optional<ShipSpaceSize> canvasSize)
 {
-    mCanvasSize = canvasSize;
-    RefreshCanvasSize();
+    if (canvasSize != mCanvasSize)
+    {
+        mCanvasSize = canvasSize;
+        RefreshCanvasSize();
+    }
 }
 
 void StatusBar::SetToolCoordinates(std::optional<ShipSpaceCoordinates> coordinates)
 {
-    mToolCoordinates = coordinates;
-    RefreshToolCoordinates();
+    if (coordinates != mToolCoordinates)
+    {
+        mToolCoordinates = coordinates;
+        RefreshToolCoordinates();
+    }
 }
 
 void StatusBar::SetZoom(std::optional<float> zoom)
 {
-    mZoom = zoom;
-    RefreshZoom();
+    if (zoom != mZoom)
+    {
+        mZoom = zoom;
+        RefreshZoom();
+    }
 }
 
 void StatusBar::SetSampledMaterial(std::optional<std::string> materialName)
 {
-    mSampledMaterialName = materialName;
-    RefreshSampledMaterial();
+    if (materialName != mSampledMaterialName)
+    {
+        mSampledMaterialName = materialName;
+        RefreshSampledMaterial();
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -136,7 +162,28 @@ void StatusBar::RefreshCanvasSize()
 
     if (mCanvasSize.has_value())
     {
-        ss << mCanvasSize->width << " x " << mCanvasSize->height;
+        ss << mCanvasSize->width << " x " << mCanvasSize->height
+            << " (";
+
+        switch (mDisplayUnitsSystem)
+        {
+            case UnitsSystem::SI_Celsius:
+            case UnitsSystem::SI_Kelvin:
+            {
+                ss << mCanvasSize->width << " x " << mCanvasSize->height
+                    << " m";
+                break;
+            }
+
+            case UnitsSystem::USCS:
+            {
+                ss << std::round(MetersToFeet(mCanvasSize->width)) << " x " << std::round(MetersToFeet(mCanvasSize->height))
+                    << " ft";
+                break;
+            }
+        }
+
+        ss << ")";
     }
 
     mCanvasSizeStaticText->SetLabel(ss.str());
@@ -148,7 +195,28 @@ void StatusBar::RefreshToolCoordinates()
 
     if (mToolCoordinates.has_value())
     {
-        ss << mToolCoordinates->x << ", " << mToolCoordinates->y;
+        ss << mToolCoordinates->x << ", " << mToolCoordinates->y
+            << " (";
+
+        switch (mDisplayUnitsSystem)
+        {
+            case UnitsSystem::SI_Celsius:
+            case UnitsSystem::SI_Kelvin:
+            {
+                ss << mToolCoordinates->x << ", " << mToolCoordinates->y
+                    << " m";
+                break;
+            }
+
+            case UnitsSystem::USCS:
+            {
+                ss << std::round(MetersToFeet(mToolCoordinates->x)) << ", " << std::round(MetersToFeet(mToolCoordinates->y))
+                    << " ft";
+                break;
+            }
+        }
+
+        ss << ")";
     }
 
     mToolCoordinatesStaticText->SetLabel(ss.str());

@@ -17,6 +17,7 @@ set  (SOURCES
 	CircularList.h
 	Colors.cpp
 	Colors.h
+	Conversions.h
 	DeSerializationBuffer.h
 	ElementContainer.h
 	ElementIndexRangeIterator.h

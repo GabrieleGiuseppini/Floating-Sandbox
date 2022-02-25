@@ -22,8 +22,10 @@ public:
 
     StatusBar(
         wxWindow * parent,
+        UnitsSystem displayUnitsSystem,
         ResourceLocator const & resourceLocator);
 
+    void SetDisplayUnitsSystem(UnitsSystem displayUnitsSystem);
     void SetCanvasSize(std::optional<ShipSpaceSize> canvasSize);
     void SetToolCoordinates(std::optional<ShipSpaceCoordinates> coordinates);
     void SetZoom(std::optional<float> zoom);
@@ -45,6 +47,7 @@ private:
     wxStaticText * mSampledMaterialNameStaticText;
 
     // State
+    UnitsSystem mDisplayUnitsSystem;
     std::optional<ShipSpaceSize> mCanvasSize;
     std::optional<ShipSpaceCoordinates> mToolCoordinates;
     std::optional<float> mZoom;

@@ -10,6 +10,7 @@
 #include "MaterialPalette.h"
 #include "ModelValidationDialog.h"
 #include "OpenGLManager.h"
+#include "Preferences.h"
 #include "ResizeDialog.h"
 #include "RibbonToolbarButton.h"
 #include "ShipPropertiesEditDialog.h"
@@ -28,6 +29,8 @@
 #include <Game/ResourceLocator.h>
 #include <Game/ShipTexturizer.h>
 
+#include <GameCore/GameTypes.h>
+
 #include <wx/accel.h>
 #include <wx/app.h>
 #include <wx/frame.h>
@@ -45,6 +48,7 @@
 #include <filesystem>
 #include <functional>
 #include <memory>
+#include <optional>
 #include <vector>
 
 namespace ShipBuilder {
@@ -71,9 +75,11 @@ public:
         ShipTexturizer const & shipTexturizer,
         std::function<void(std::optional<std::filesystem::path>)> returnToGameFunctor);
 
-    void OpenForNewShip();
+    void OpenForNewShip(std::optional<UnitsSystem> displayUnitsSystem);
 
-    void OpenForLoadShip(std::filesystem::path const & shipFilePath);
+    void OpenForLoadShip(
+        std::filesystem::path const & shipFilePath,
+        std::optional<UnitsSystem> displayUnitsSystem);
 
 public:
 
@@ -301,6 +307,8 @@ private:
 
     void ReconciliateUIWithUndoStackState(UndoStack & undoStack);
 
+    void ReconciliateUIWithDisplayUnitsSystem(UnitsSystem displayUnitsSystem);
+
 private:
 
     wxApp * const mMainApp;
@@ -425,6 +433,7 @@ private:
     //
 
     WorkbenchState mWorkbenchState;
+    Preferences mPreferences;
 
     std::optional<std::filesystem::path> mCurrentShipFilePath;
     std::vector<std::filesystem::path> mShipLoadDirectories;
