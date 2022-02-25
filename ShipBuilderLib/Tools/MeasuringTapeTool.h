@@ -61,12 +61,8 @@ private:
         // Start position
         ShipSpaceCoordinates StartCoords;
 
-        // V or H lock
-        bool IsLocked;
-
         EngagementData(ShipSpaceCoordinates const & startCoords)
             : StartCoords(startCoords)
-            , IsLocked(false)
         {}
     };
 

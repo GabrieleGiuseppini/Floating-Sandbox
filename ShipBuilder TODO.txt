@@ -311,11 +311,11 @@
 
 		+ Line
 		= Measuring Tape (*)
+			+ Shift lock
 			= Notification
 				- SetToolType
-					- Invoke from MainFrame
+					- Invoke from MainFrame's OnToolChange onto StatusBar
 				- Status bar
-			= Shift lock
 			- Commit & push
 			- Test with titled icon
 		- Rectangle

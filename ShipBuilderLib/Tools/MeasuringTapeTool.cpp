@@ -27,6 +27,7 @@ MeasuringTapeTool::MeasuringTapeTool(
         workbenchState,
         userInterface,
         view)
+    , mIsShiftDown(false)
     , mHasOverlay(false)
     , mEngagementData()
 {
@@ -95,10 +96,10 @@ void MeasuringTapeTool::OnLeftMouseUp()
 
 void MeasuringTapeTool::OnShiftKeyDown()
 {
+    mIsShiftDown = true;
+
     if (mEngagementData.has_value())
     {
-        mEngagementData->IsLocked = true;
-
         DoAction(GetCurrentMouseCoordinatesInShipSpace());
 
         mUserInterface.RefreshView();
@@ -107,10 +108,10 @@ void MeasuringTapeTool::OnShiftKeyDown()
 
 void MeasuringTapeTool::OnShiftKeyUp()
 {
+    mIsShiftDown = false;
+
     if (mEngagementData.has_value())
     {
-        mEngagementData->IsLocked = false;
-
         DoAction(GetCurrentMouseCoordinatesInShipSpace());
 
         mUserInterface.RefreshView();
@@ -132,7 +133,7 @@ void MeasuringTapeTool::DoAction(ShipSpaceCoordinates const & coords)
 
     // Apply SHIFT lock
     ShipSpaceCoordinates endPoint = coords;
-    if (mEngagementData->IsLocked)
+    if (mIsShiftDown)
     {
         // Constrain to either horizontally or vertically
         if (std::abs(endPoint.x - mEngagementData->StartCoords.x) > std::abs(endPoint.y - mEngagementData->StartCoords.y))
