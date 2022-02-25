@@ -32,9 +32,9 @@
 			+ See other crash with loading ship
 
 		= Release:
-			+ Branch is merged into master (if applicable)
-			= Windows
-				+ MSI variable
+			- Branch is merged into master (if applicable)
+			- Windows
+				- MSI variable
 				- Commit & push
 				- 64-bit MSI
 					- Cleanup Install
@@ -50,8 +50,11 @@
 					- Test clean install
 			- Ubuntu
 				- rm -rf floating-sandbox
-				- Pull 
-				- Make clean, make install
+				- pull 
+				- rm -rf build; mkdir build
+				- cd build
+				- cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
+				- make install
 				- Make tar ("cd floating-sandbox && tar -cvf ../Floating-Sandbox-1.16.5-x64.tar . && cd -")
 				- Zip tar
 				- Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
@@ -61,11 +64,14 @@
 			- Upload packages to GameJolt
 				- Report file as safe (https://gamejolt.com/privacy)
 				- Post
+					- Thank Chris
 			- www.floatingsandbox.com:
 				- Update current version in FAQ
 				- Wait a day or two
 				- Upload changes2.txt
 					- Test w/old FS
+
+		- Make branch
 
 		- Update Visual Studio
 
@@ -274,8 +280,11 @@
 			- Test clean install
 	- Ubuntu
 		- rm -rf floating-sandbox
-		- Pull 
-		- Make clean, make install
+		- pull 
+		- rm -rf build; mkdir build
+		- cd build
+		- cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
+		- make install
 		- Make tar ("cd floating-sandbox && tar -cvf ../Floating-Sandbox-1.16.5-x64.tar . && cd -")
 		- Zip tar
 		- Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
@@ -1498,6 +1507,10 @@
 		- 1) Volume of effects should depend on distance/zoom
 			- "Sounds' volumes that depend on the distance of their source from the visible field"
 		- 2) Position of effects (L/R) should depend on world position re: camera
+		- Tracking positions:
+			- Events take global object ID
+			- SoundController can access Position() buffer of each ship, and thus access positions at Update() and update
+			  sound position
 
 	- Voices
 

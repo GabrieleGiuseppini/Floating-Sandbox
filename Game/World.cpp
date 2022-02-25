@@ -468,8 +468,8 @@ void World::ApplyRadialWindFrom(
             preFrontWindSpeed / 10.0f // Magic number
             * SignStep(0.0f, -sourcePos.y);
 
-        mOceanSurface.DisplaceAt(sourcePos.x - horizontalDistance, displacementMagnitude);
-        mOceanSurface.DisplaceAt(sourcePos.x + horizontalDistance, displacementMagnitude);
+        mOceanSurface.DisplaceAt(std::max(sourcePos.x - horizontalDistance, -GameParameters::HalfMaxWorldWidth), displacementMagnitude);
+        mOceanSurface.DisplaceAt(std::min(sourcePos.x + horizontalDistance, GameParameters::HalfMaxWorldWidth), displacementMagnitude);
     }
 }
 
