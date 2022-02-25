@@ -4530,6 +4530,9 @@ void MainFrame::ReconciliateUIWithSelectedTool(std::optional<ToolType> tool)
         // Do not re-realize main ribbon bar, or else the panel becomes tiny
         mToolSettingsPanelsSizer->Layout();
     }
+
+    // Tell status bar
+    mStatusBar->SetCurrentToolType(tool);
 }
 
 void MainFrame::ReconciliateUIWithPrimaryVisualizationSelection(VisualizationType primaryVisualization)

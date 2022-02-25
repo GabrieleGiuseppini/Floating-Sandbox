@@ -10,7 +10,7 @@
 #include <GameCore/Conversions.h>
 
 #include <wx/sizer.h>
-#include <wx/statbmp.h>
+#include <wx/statline.h>
 
 #include <cmath>
 #include <sstream>
@@ -98,6 +98,23 @@ StatusBar::StatusBar(
 
     hSizer->AddStretchSpacer(1);
 
+    // Separator
+    {
+        auto * line = new wxStaticLine(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_VERTICAL);
+        hSizer->Add(line, 0, wxEXPAND, 0);
+    }
+
+    hSizer->AddSpacer(SpacerSizeMinor);
+
+    // Current tool
+    {
+        mCurrentToolStaticBitmap = new wxStaticBitmap(this, wxID_ANY, wxNullBitmap);
+        mCurrentToolStaticBitmap->SetMinSize(wxSize(16, 16));
+        hSizer->Add(mCurrentToolStaticBitmap, 0, wxALIGN_CENTRE_VERTICAL, 0);
+    }
+
+    hSizer->AddSpacer(SpacerSizeMinor);
+
     // Sampled material name
     {
         mSampledMaterialNameStaticText = new wxStaticText(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
@@ -106,6 +123,13 @@ StatusBar::StatusBar(
     }
 
     SetSizer(hSizer);
+
+    //
+    // Load bitmaps
+    //
+
+    mSamplerToolBitmap = WxHelpers::LoadBitmap("sampler_icon_small", resourceLocator);
+    mMeasuringTapeToolBitmap = WxHelpers::LoadBitmap("measuring_tape_icon_small", resourceLocator);
 }
 
 void StatusBar::SetDisplayUnitsSystem(UnitsSystem displayUnitsSystem)
@@ -118,6 +142,7 @@ void StatusBar::SetDisplayUnitsSystem(UnitsSystem displayUnitsSystem)
         RefreshCanvasSize();
     }
 }
+
 void StatusBar::SetCanvasSize(std::optional<ShipSpaceSize> canvasSize)
 {
     if (canvasSize != mCanvasSize)
@@ -142,6 +167,15 @@ void StatusBar::SetZoom(std::optional<float> zoom)
     {
         mZoom = zoom;
         RefreshZoom();
+    }
+}
+
+void StatusBar::SetCurrentToolType(std::optional<ToolType> toolType)
+{
+    if (toolType != mCurrentToolType)
+    {
+        mCurrentToolType = toolType;
+        RefreshCurrentToolType();
     }
 }
 
@@ -250,6 +284,40 @@ void StatusBar::RefreshZoom()
     }
 
     mZoomStaticText->SetLabel(ss.str());
+}
+
+void StatusBar::RefreshCurrentToolType()
+{
+    wxBitmap bitmap = wxNullBitmap;
+
+    if (mCurrentToolType.has_value())
+    {
+        switch (*mCurrentToolType)
+        {
+            case ToolType::ElectricalSampler:
+            case ToolType::RopeSampler:
+            case ToolType::StructuralSampler:
+            {
+                bitmap = mSamplerToolBitmap;
+                break;
+            }
+
+            case ToolType::StructuralMeasuringTapeTool:
+            {
+                bitmap = mMeasuringTapeToolBitmap;
+                break;
+            }
+            
+            default:
+            {
+                // No icon
+                break;
+            }
+            
+        }
+    }
+
+    mCurrentToolStaticBitmap->SetBitmap(bitmap);
 }
 
 void StatusBar::RefreshSampledMaterial()

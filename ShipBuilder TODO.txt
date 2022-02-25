@@ -313,9 +313,11 @@
 		= Measuring Tape (*)
 			+ Shift lock
 			= Notification
-				- SetToolType
-					- Invoke from MainFrame's OnToolChange onto StatusBar
+				+ SetToolType
+					+ Invoke from MainFrame's OnToolChange onto StatusBar
+					+ Icon w/2 images
 				- Status bar
+					- TODO: how to unify SampledMaterial & Length ?
 			- Commit & push
 			- Test with titled icon
 		- Rectangle
