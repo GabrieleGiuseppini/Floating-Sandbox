@@ -127,6 +127,8 @@ public:
 
     void OnSampledMaterialChanged(std::optional<std::string> materialName) override;
 
+    void OnMeasuredLengthChanged(std::optional<int> length) override;
+
     void OnError(wxString const & errorMessage) const override;
 
     DisplayLogicalSize GetDisplaySize() const override;

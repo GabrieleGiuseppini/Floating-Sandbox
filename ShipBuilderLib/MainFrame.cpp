@@ -553,6 +553,11 @@ void MainFrame::OnSampledMaterialChanged(std::optional<std::string> materialName
     mStatusBar->SetSampledMaterial(materialName);
 }
 
+void MainFrame::OnMeasuredLengthChanged(std::optional<int> length)
+{
+    mStatusBar->SetMeasuredLength(length);
+}
+
 void MainFrame::OnError(wxString const & errorMessage) const
 {
     wxMessageBox(errorMessage, _("Error"), wxICON_ERROR);
@@ -2660,6 +2665,22 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                 toolsSizer->Add(
                     button,
                     wxGBPosition(2, 0),
+                    wxGBSpan(1, 1),
+                    0,
+                    0);
+            }
+
+            // MeasuringTape
+            {
+                auto button = makeToolButton(
+                    ToolType::StructuralMeasuringTapeTool,
+                    structuralToolbarPanel,
+                    "measuring_tape_icon",
+                    _("Measure lengths."));
+
+                toolsSizer->Add(
+                    button,
+                    wxGBPosition(2, 1),
                     wxGBSpan(1, 1),
                     0,
                     0);

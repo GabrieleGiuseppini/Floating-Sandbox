@@ -7,6 +7,7 @@
 
 #include "Tools/FloodTool.h"
 #include "Tools/LineTool.h"
+#include "Tools/MeasuringTapeTool.h"
 #include "Tools/PencilTool.h"
 #include "Tools/RopeEraserTool.h"
 #include "Tools/RopePencilTool.h"
@@ -1462,6 +1463,17 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
         case ToolType::StructuralLine:
         {
             return std::make_unique<StructuralLineTool>(
+                *mModelController,
+                mUndoStack,
+                mWorkbenchState,
+                mUserInterface,
+                *mView,
+                mResourceLocator);
+        }
+
+        case ToolType::StructuralMeasuringTapeTool:
+        {
+            return std::make_unique<MeasuringTapeTool>(
                 *mModelController,
                 mUndoStack,
                 mWorkbenchState,

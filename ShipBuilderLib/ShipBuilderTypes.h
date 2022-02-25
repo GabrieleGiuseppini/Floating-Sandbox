@@ -22,6 +22,7 @@ enum class ToolType : std::uint32_t
     StructuralLine,
     StructuralFlood,
     StructuralSampler,
+    StructuralMeasuringTapeTool,
     ElectricalPencil,
     ElectricalEraser,
     ElectricalLine,

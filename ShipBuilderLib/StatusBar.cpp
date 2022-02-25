@@ -150,7 +150,17 @@ void StatusBar::SetSampledMaterial(std::optional<std::string> materialName)
     if (materialName != mSampledMaterialName)
     {
         mSampledMaterialName = materialName;
+        // TODOHERE
         RefreshSampledMaterial();
+    }
+}
+
+void StatusBar::SetMeasuredLength(std::optional<int> measuredLength)
+{
+    if (measuredLength != mMeasuredLength)
+    {
+        mMeasuredLength = measuredLength;
+        // TODOHERE
     }
 }
 

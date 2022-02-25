@@ -30,6 +30,7 @@ public:
     void SetToolCoordinates(std::optional<ShipSpaceCoordinates> coordinates);
     void SetZoom(std::optional<float> zoom);
     void SetSampledMaterial(std::optional<std::string> materialName);
+    void SetMeasuredLength(std::optional<int> measuredLength);
 
 private:
 
@@ -52,6 +53,7 @@ private:
     std::optional<ShipSpaceCoordinates> mToolCoordinates;
     std::optional<float> mZoom;
     std::optional<std::string> mSampledMaterialName;
+    std::optional<int> mMeasuredLength;
 };
 
 }

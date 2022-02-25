@@ -59,6 +59,8 @@ set (TOOLS_SOURCES
 	Tools/FloodTool.h
 	Tools/LineTool.cpp
 	Tools/LineTool.h
+	Tools/MeasuringTapeTool.cpp
+	Tools/MeasuringTapeTool.h
 	Tools/PencilTool.cpp
 	Tools/PencilTool.h
 	Tools/RopeEraserTool.cpp

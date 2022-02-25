@@ -74,6 +74,9 @@ public:
     // Notifies of a change in the currently-sampled material
     virtual void OnSampledMaterialChanged(std::optional<std::string> materialName) = 0;
 
+    // Notifies of a change in the currently-measured length
+    virtual void OnMeasuredLengthChanged(std::optional<int> length) = 0;
+
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     virtual void OnError(wxString const & errorMessage) const = 0;
