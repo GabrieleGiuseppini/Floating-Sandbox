@@ -132,6 +132,18 @@ StatusBar::StatusBar(
     mMeasuringTapeToolBitmap = WxHelpers::LoadBitmap("measuring_tape_icon_small", resourceLocator);
 }
 
+void StatusBar::SetShipScale(ShipSpaceToWorldSpaceCoordsRatio scale)
+{
+    if (!mShipScale.has_value() || scale != *mShipScale)
+    {
+        mShipScale = scale;
+
+        // Refresh all labels affected by scale
+        RefreshCanvasSize();
+        RefreshToolOutput();
+    }
+}
+
 void StatusBar::SetDisplayUnitsSystem(UnitsSystem displayUnitsSystem)
 {
     if (displayUnitsSystem != mDisplayUnitsSystem)
@@ -189,11 +201,11 @@ void StatusBar::SetSampledMaterial(std::optional<std::string> materialName)
     }
 }
 
-void StatusBar::SetMeasuredLength(std::optional<int> measuredLength)
+void StatusBar::SetMeasuredWorldLength(std::optional<int> measuredWorldLength)
 {
-    if (measuredLength != mMeasuredLength)
+    if (measuredWorldLength != mMeasuredWorldLength)
     {
-        mMeasuredLength = measuredLength;
+        mMeasuredWorldLength = measuredWorldLength;
         RefreshToolOutput();
     }
 }
@@ -206,28 +218,34 @@ void StatusBar::RefreshCanvasSize()
 
     if (mCanvasSize.has_value())
     {
-        ss << mCanvasSize->width << " x " << mCanvasSize->height
-            << " (";
+        ss << mCanvasSize->width << " x " << mCanvasSize->height;
 
-        switch (mDisplayUnitsSystem)
+        if (mShipScale.has_value())
         {
-            case UnitsSystem::SI_Celsius:
-            case UnitsSystem::SI_Kelvin:
+            auto const worldCoords = mCanvasSize->ToFractionalCoords(*mShipScale);
+
+            ss << " (";
+
+            switch (mDisplayUnitsSystem)
             {
-                ss << mCanvasSize->width << " x " << mCanvasSize->height
-                    << " m";
-                break;
+                case UnitsSystem::SI_Celsius:
+                case UnitsSystem::SI_Kelvin:
+                {
+                    ss << worldCoords.x << " x " << worldCoords.y
+                        << " m";
+                    break;
+                }
+
+                case UnitsSystem::USCS:
+                {
+                    ss << std::round(MetersToFeet(worldCoords.x)) << " x " << std::round(MetersToFeet(worldCoords.y))
+                        << " ft";
+                    break;
+                }
             }
 
-            case UnitsSystem::USCS:
-            {
-                ss << std::round(MetersToFeet(mCanvasSize->width)) << " x " << std::round(MetersToFeet(mCanvasSize->height))
-                    << " ft";
-                break;
-            }
+            ss << ")";
         }
-
-        ss << ")";
     }
 
     mCanvasSizeStaticText->SetLabel(ss.str());
@@ -239,28 +257,34 @@ void StatusBar::RefreshToolCoordinates()
 
     if (mToolCoordinates.has_value())
     {
-        ss << mToolCoordinates->x << ", " << mToolCoordinates->y
-            << " (";
+        ss << mToolCoordinates->x << ", " << mToolCoordinates->y;
 
-        switch (mDisplayUnitsSystem)
+        if (mShipScale.has_value())
         {
-            case UnitsSystem::SI_Celsius:
-            case UnitsSystem::SI_Kelvin:
+            auto const worldCoords = mToolCoordinates->ToFractionalCoords(*mShipScale);
+
+            ss << " (";
+
+            switch (mDisplayUnitsSystem)
             {
-                ss << mToolCoordinates->x << ", " << mToolCoordinates->y
-                    << " m";
-                break;
+                case UnitsSystem::SI_Celsius:
+                case UnitsSystem::SI_Kelvin:
+                {
+                    ss << worldCoords.x << ", " << worldCoords.y
+                        << " m";
+                    break;
+                }
+
+                case UnitsSystem::USCS:
+                {
+                    ss << std::round(MetersToFeet(worldCoords.x)) << ", " << std::round(MetersToFeet(worldCoords.y))
+                        << " ft";
+                    break;
+                }
             }
 
-            case UnitsSystem::USCS:
-            {
-                ss << std::round(MetersToFeet(mToolCoordinates->x)) << ", " << std::round(MetersToFeet(mToolCoordinates->y))
-                    << " ft";
-                break;
-            }
+            ss << ")";
         }
-
-        ss << ")";
     }
 
     mToolCoordinatesStaticText->SetLabel(ss.str());
@@ -313,7 +337,6 @@ void StatusBar::RefreshCurrentToolType()
                 // No icon
                 break;
             }
-            
         }
     }
 
@@ -338,9 +361,9 @@ void StatusBar::RefreshToolOutput()
 
             case ToolType::StructuralMeasuringTapeTool:
             {
-                if (mMeasuredLength.has_value())
+                if (mMeasuredWorldLength.has_value())
                 {
-                    ss << *mMeasuredLength
+                    ss << *mMeasuredWorldLength
                         << " (";
 
                     switch (mDisplayUnitsSystem)
@@ -348,14 +371,14 @@ void StatusBar::RefreshToolOutput()
                         case UnitsSystem::SI_Celsius:
                         case UnitsSystem::SI_Kelvin:
                         {
-                            ss << *mMeasuredLength
+                            ss << *mMeasuredWorldLength
                                 << " m";
                             break;
                         }
 
                         case UnitsSystem::USCS:
                         {
-                            ss << std::round(MetersToFeet(*mMeasuredLength))
+                            ss << std::round(MetersToFeet(*mMeasuredWorldLength))
                                 << " ft";
                             break;
                         }

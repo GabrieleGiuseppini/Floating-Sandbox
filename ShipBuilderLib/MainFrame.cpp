@@ -418,6 +418,11 @@ void MainFrame::OnShipSizeChanged(ShipSpaceSize const & shipSize)
     ReconciliateUIWithShipSize(shipSize);
 }
 
+void MainFrame::OnShipScaleChanged(ShipSpaceToWorldSpaceCoordsRatio const & scale)
+{
+    ReconciliateUIWithShipScale(scale);
+}
+
 void MainFrame::OnShipNameChanged(Model const & model)
 {
     //
@@ -553,9 +558,9 @@ void MainFrame::OnSampledMaterialChanged(std::optional<std::string> materialName
     mStatusBar->SetSampledMaterial(materialName);
 }
 
-void MainFrame::OnMeasuredLengthChanged(std::optional<int> length)
+void MainFrame::OnMeasuredWorldLengthChanged(std::optional<int> length)
 {
-    mStatusBar->SetMeasuredLength(length);
+    mStatusBar->SetMeasuredWorldLength(length);
 }
 
 void MainFrame::OnError(wxString const & errorMessage) const
@@ -4280,6 +4285,11 @@ void MainFrame::ReconciliateUIWithViewModel(ViewModel const & viewModel)
 void MainFrame::ReconciliateUIWithShipSize(ShipSpaceSize const & shipSize)
 {
     mStatusBar->SetCanvasSize(shipSize);
+}
+
+void MainFrame::ReconciliateUIWithShipScale(ShipSpaceToWorldSpaceCoordsRatio const & scale)
+{
+    mStatusBar->SetShipScale(scale);
 }
 
 void MainFrame::ReconciliateUIWithShipTitle(std::string const & shipName, bool isShipDirty)

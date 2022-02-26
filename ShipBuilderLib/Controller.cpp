@@ -116,6 +116,7 @@ Controller::Controller(
 
     mUserInterface.OnViewModelChanged(mView->GetViewModel());
     mUserInterface.OnShipNameChanged(mModelController->GetModel());
+    mUserInterface.OnShipScaleChanged(mModelController->GetShipMetadata().Scale);
     mUserInterface.OnShipSizeChanged(GetShipSize());
     mUserInterface.OnLayerPresenceChanged(mModelController->GetModel());
     mUserInterface.OnModelDirtyChanged(mModelController->GetModel());
@@ -1205,11 +1206,19 @@ void Controller::InternalSetShipProperties(
         bool const hasShipNameChanged =
             mModelController->GetShipMetadata().ShipName != metadata->ShipName;
 
+        bool const hasShipScaleChanged =
+            mModelController->GetShipMetadata().Scale != metadata->Scale;
+
         mModelController->SetShipMetadata(std::move(*metadata));
 
         if (hasShipNameChanged)
         {
             mUserInterface.OnShipNameChanged(mModelController->GetModel());
+        }
+
+        if (hasShipScaleChanged)
+        {
+            mUserInterface.OnShipScaleChanged(mModelController->GetShipMetadata().Scale);
         }
     }
 

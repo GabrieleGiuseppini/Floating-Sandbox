@@ -160,7 +160,7 @@ void MeasuringTapeTool::DoAction(ShipSpaceCoordinates const & coords)
     // Calculate length
     auto const ratio = mModelController.GetModel().GetShipMetadata().Scale;
     vec2f const v(endPoint.ToFractionalCoords(ratio) - mEngagementData->StartCoords.ToFractionalCoords(ratio));
-    mUserInterface.OnMeasuredLengthChanged(static_cast<int>(std::round(v.length())) + 1);
+    mUserInterface.OnMeasuredWorldLengthChanged(static_cast<int>(std::round(v.length())) + 1);
 }
 
 void MeasuringTapeTool::StopEngagement()
@@ -169,7 +169,7 @@ void MeasuringTapeTool::StopEngagement()
 
     mView.RemoveDashedLineOverlay();
 
-    mUserInterface.OnMeasuredLengthChanged(std::nullopt);
+    mUserInterface.OnMeasuredWorldLengthChanged(std::nullopt);
 
     mEngagementData.reset();
 }

@@ -93,6 +93,8 @@ public:
 
     void OnShipSizeChanged(ShipSpaceSize const & shipSize) override;
 
+    void OnShipScaleChanged(ShipSpaceToWorldSpaceCoordsRatio const & scale) override;
+
     void OnShipNameChanged(Model const & model) override;
 
     void OnLayerPresenceChanged(Model const & model) override;
@@ -127,7 +129,7 @@ public:
 
     void OnSampledMaterialChanged(std::optional<std::string> materialName) override;
 
-    void OnMeasuredLengthChanged(std::optional<int> length) override;
+    void OnMeasuredWorldLengthChanged(std::optional<int> length) override;
 
     void OnError(wxString const & errorMessage) const override;
 
@@ -278,6 +280,8 @@ private:
     void ReconciliateUIWithViewModel(ViewModel const & viewModel);
 
     void ReconciliateUIWithShipSize(ShipSpaceSize const & shipSize);
+
+    void ReconciliateUIWithShipScale(ShipSpaceToWorldSpaceCoordsRatio const & scale);
 
     void ReconciliateUIWithShipTitle(std::string const & shipName, bool isShipDirty);
 

@@ -34,6 +34,9 @@ public:
     // Notifies of a change in the size of the model
     virtual void OnShipSizeChanged(ShipSpaceSize const & shipSpaceSize) = 0;
 
+    // Notifies of a change in the scale of the ship
+    virtual void OnShipScaleChanged(ShipSpaceToWorldSpaceCoordsRatio const & scale) = 0;
+
     // Notifies of a change in the name of the ship
     virtual void OnShipNameChanged(Model const & model) = 0;
 
@@ -75,7 +78,7 @@ public:
     virtual void OnSampledMaterialChanged(std::optional<std::string> materialName) = 0;
 
     // Notifies of a change in the currently-measured length
-    virtual void OnMeasuredLengthChanged(std::optional<int> length) = 0;
+    virtual void OnMeasuredWorldLengthChanged(std::optional<int> length) = 0;
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

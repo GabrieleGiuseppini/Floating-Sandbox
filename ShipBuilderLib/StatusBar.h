@@ -28,6 +28,7 @@ public:
         UnitsSystem displayUnitsSystem,
         ResourceLocator const & resourceLocator);
 
+    void SetShipScale(ShipSpaceToWorldSpaceCoordsRatio scale);
     void SetDisplayUnitsSystem(UnitsSystem displayUnitsSystem);
 
     void SetCanvasSize(std::optional<ShipSpaceSize> canvasSize);
@@ -35,7 +36,7 @@ public:
     void SetZoom(std::optional<float> zoom);
     void SetCurrentToolType(std::optional<ToolType> toolType);
     void SetSampledMaterial(std::optional<std::string> materialName);
-    void SetMeasuredLength(std::optional<int> measuredLength);
+    void SetMeasuredWorldLength(std::optional<int> measuredWorldLength);
 
 private:
 
@@ -57,13 +58,14 @@ private:
     wxStaticText * mToolOutputStaticText;
 
     // State
+    std::optional<ShipSpaceToWorldSpaceCoordsRatio> mShipScale;
     UnitsSystem mDisplayUnitsSystem;
     std::optional<ShipSpaceSize> mCanvasSize;
     std::optional<ShipSpaceCoordinates> mToolCoordinates;
     std::optional<float> mZoom;
     std::optional<ToolType> mCurrentToolType;
     std::optional<std::string> mSampledMaterialName;
-    std::optional<int> mMeasuredLength;
+    std::optional<int> mMeasuredWorldLength;
 };
 
 }

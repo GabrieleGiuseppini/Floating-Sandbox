@@ -668,6 +668,11 @@ struct _IntegralCoordsRatio
         return inputUnits == other.inputUnits
             && outputUnits == other.outputUnits;
     }
+
+    inline bool operator!=(_IntegralCoordsRatio<TIntegralTag> const & other) const
+    {
+        return !(*this == other);
+    }
 };
 
 using ShipSpaceToWorldSpaceCoordsRatio = _IntegralCoordsRatio<struct ShipSpaceTag>;
