@@ -10,8 +10,6 @@
 + StatusBar (*)
 + Measuring Tape tool (*)
 
-- Test with huge size: lag should only be proportional to edit region
-
 - New/Set/Remove layers:
 	- New:
 		- Make internal helper templated on LayerType, with all code
@@ -28,8 +26,6 @@
 		- Additions:
 			= Undo
 				= Note: texture layer removal should also remember metadata (art credits)
-
-- MaterialsPalette: make flag for making it its own wxFrame, so one can use it in a second monitor
 
 - Rotate 90 (CW and CCW)
 	- Also changes ship size, do notifications
@@ -130,6 +126,10 @@
 
 - Waterline analysis
 	- https://www.britannica.com/science/fluid-mechanics/Hydrostatics#ref611691
+
+- MaterialsPalette: make flag for making it its own wxFrame, so one can use it in a second monitor
+
+- Test with huge size: lag should only be proportional to edit region
 
 - MainFrame: Game viz: add "export to image" button
 	- Rearc icons now:
