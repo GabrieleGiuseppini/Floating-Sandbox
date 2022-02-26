@@ -9,7 +9,7 @@
 
 	= StatusBar (*)
 
-	= Measuring Tape tool (*)
+	+ Measuring Tape tool (*)
 
 - Test with huge size: lag should only be proportional to edit region
 
@@ -310,18 +310,19 @@
 				+ Ropes (sample + select)
 
 		+ Line
-		= Measuring Tape (*)
+		+ Measuring Tape
 			+ Shift lock
 			+ Notification
 				+ SetToolType
 					+ Invoke from MainFrame's OnToolChange onto StatusBar
 					+ Icon w/2 images
 				+ Status bar
-			- Start- and End-points being in window
-				- @ down: do not allow
+			+ Start- and End-points being in window
+				+ @ down: clip
 				+ @ up: fix bug that shows line staying behind
-				- @ move: clip length 
-			- Test with titled icon
+				+ @ move: 
+					+ Clip overlay 
+					+ Clip length 
 		- Rectangle
 			- Settings: FillWithFore|FillWithBack|NoFill; Size
 		- Selection

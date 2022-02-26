@@ -9,7 +9,7 @@
 
 #include <UILib/WxHelpers.h>
 
-#include <type_traits>
+#include <GameCore/GameMath.h>
 
 namespace ShipBuilder {
 
@@ -37,7 +37,7 @@ MeasuringTapeTool::MeasuringTapeTool(
     auto const mouseCoordinates = mUserInterface.GetMouseCoordinatesIfInWorkCanvas();
     if (mouseCoordinates)
     {
-        DrawOverlay(ScreenToShipSpace(*mouseCoordinates));
+        DrawOverlay(ClipToWorkCanvas(ScreenToShipSpace(*mouseCoordinates)));
         mUserInterface.RefreshView();
     }
 }
@@ -59,7 +59,7 @@ MeasuringTapeTool::~MeasuringTapeTool()
 
 void MeasuringTapeTool::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates)
 {
-    auto const mouseShipSpaceCoords = ScreenToShipSpace(mouseCoordinates);
+    auto const mouseShipSpaceCoords = ClipToWorkCanvas(ScreenToShipSpace(mouseCoordinates));
 
     if (mEngagementData.has_value())
     {
@@ -75,7 +75,7 @@ void MeasuringTapeTool::OnMouseMove(DisplayLogicalCoordinates const & mouseCoord
 
 void MeasuringTapeTool::OnLeftMouseDown()
 {
-    auto const shipSpaceMouseCoords = GetCurrentMouseCoordinatesInShipSpace();
+    auto const shipSpaceMouseCoords = ClipToWorkCanvas(GetCurrentMouseCoordinatesInShipSpace());
 
     // Engage
     StartEngagement(shipSpaceMouseCoords);
@@ -104,7 +104,7 @@ void MeasuringTapeTool::OnShiftKeyDown()
 
     if (mEngagementData.has_value())
     {
-        DoAction(GetCurrentMouseCoordinatesInShipSpace());
+        DoAction(ClipToWorkCanvas(GetCurrentMouseCoordinatesInShipSpace()));
 
         mUserInterface.RefreshView();
     }
@@ -116,7 +116,7 @@ void MeasuringTapeTool::OnShiftKeyUp()
 
     if (mEngagementData.has_value())
     {
-        DoAction(GetCurrentMouseCoordinatesInShipSpace());
+        DoAction(ClipToWorkCanvas(GetCurrentMouseCoordinatesInShipSpace()));
 
         mUserInterface.RefreshView();
     }
@@ -160,7 +160,7 @@ void MeasuringTapeTool::DoAction(ShipSpaceCoordinates const & coords)
     // Calculate length
     auto const ratio = mModelController.GetModel().GetShipMetadata().Scale;
     vec2f const v(endPoint.ToFractionalCoords(ratio) - mEngagementData->StartCoords.ToFractionalCoords(ratio));
-    mUserInterface.OnMeasuredLengthChanged(static_cast<int>(std::round(v.length())));
+    mUserInterface.OnMeasuredLengthChanged(static_cast<int>(std::round(v.length())) + 1);
 }
 
 void MeasuringTapeTool::StopEngagement()
@@ -190,6 +190,13 @@ void MeasuringTapeTool::HideOverlay()
     mView.RemoveCircleOverlay();
 
     mHasOverlay = false;
+}
+
+ShipSpaceCoordinates MeasuringTapeTool::ClipToWorkCanvas(ShipSpaceCoordinates const & coords) const
+{
+    return ShipSpaceCoordinates(
+        Clamp(coords.x, 0, mModelController.GetModel().GetShipSize().width - 1),
+        Clamp(coords.y, 0, mModelController.GetModel().GetShipSize().height - 1));
 }
 
 }

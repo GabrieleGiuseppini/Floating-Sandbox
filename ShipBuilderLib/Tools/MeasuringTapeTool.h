@@ -49,6 +49,8 @@ private:
 
     void HideOverlay();
 
+    ShipSpaceCoordinates ClipToWorkCanvas(ShipSpaceCoordinates const & coords) const;
+
 private:
 
     bool mIsShiftDown;
