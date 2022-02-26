@@ -106,7 +106,7 @@ StatusBar::StatusBar(
 
     hSizer->AddSpacer(SpacerSizeMinor);
 
-    // Current tool
+    // Current tool icon
     {
         mCurrentToolStaticBitmap = new wxStaticBitmap(this, wxID_ANY, wxNullBitmap);
         mCurrentToolStaticBitmap->SetMinSize(wxSize(16, 16));
@@ -115,11 +115,11 @@ StatusBar::StatusBar(
 
     hSizer->AddSpacer(SpacerSizeMinor);
 
-    // Sampled material name
+    // Tool output label
     {
-        mSampledMaterialNameStaticText = new wxStaticText(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
-        mSampledMaterialNameStaticText->SetMinSize(wxSize(200, -1));
-        hSizer->Add(mSampledMaterialNameStaticText, 0, wxALIGN_CENTRE_VERTICAL, 0);
+        mToolOutputStaticText = new wxStaticText(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
+        mToolOutputStaticText->SetMinSize(wxSize(200, -1)); // TODO?
+        hSizer->Add(mToolOutputStaticText, 0, wxALIGN_CENTRE_VERTICAL, 0);
     }
 
     SetSizer(hSizer);
@@ -140,6 +140,7 @@ void StatusBar::SetDisplayUnitsSystem(UnitsSystem displayUnitsSystem)
 
         // Refresh all labels affected by units system
         RefreshCanvasSize();
+        RefreshToolOutput();
     }
 }
 
@@ -184,8 +185,7 @@ void StatusBar::SetSampledMaterial(std::optional<std::string> materialName)
     if (materialName != mSampledMaterialName)
     {
         mSampledMaterialName = materialName;
-        // TODOHERE
-        RefreshSampledMaterial();
+        RefreshToolOutput();
     }
 }
 
@@ -194,7 +194,7 @@ void StatusBar::SetMeasuredLength(std::optional<int> measuredLength)
     if (measuredLength != mMeasuredLength)
     {
         mMeasuredLength = measuredLength;
-        // TODOHERE
+        RefreshToolOutput();
     }
 }
 
@@ -320,9 +320,61 @@ void StatusBar::RefreshCurrentToolType()
     mCurrentToolStaticBitmap->SetBitmap(bitmap);
 }
 
-void StatusBar::RefreshSampledMaterial()
+void StatusBar::RefreshToolOutput()
 {
-    mSampledMaterialNameStaticText->SetLabel(mSampledMaterialName.value_or(""));
+    std::stringstream ss;
+
+    if (mCurrentToolType.has_value())
+    {
+        switch (*mCurrentToolType)
+        {
+            case ToolType::ElectricalSampler:
+            case ToolType::RopeSampler:
+            case ToolType::StructuralSampler:
+            {
+                ss << mSampledMaterialName.value_or("");
+                break;
+            }
+
+            case ToolType::StructuralMeasuringTapeTool:
+            {
+                if (mMeasuredLength.has_value())
+                {
+                    ss << *mMeasuredLength
+                        << " (";
+
+                    switch (mDisplayUnitsSystem)
+                    {
+                        case UnitsSystem::SI_Celsius:
+                        case UnitsSystem::SI_Kelvin:
+                        {
+                            ss << *mMeasuredLength
+                                << " m";
+                            break;
+                        }
+
+                        case UnitsSystem::USCS:
+                        {
+                            ss << std::round(MetersToFeet(*mMeasuredLength))
+                                << " ft";
+                            break;
+                        }
+                    }
+
+                    ss << ")";
+                }
+
+                break;
+            }
+
+            default:
+            {
+                break;
+            }
+        }
+    }
+
+    mToolOutputStaticText->SetLabel(ss.str());
 }
 
 }

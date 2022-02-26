@@ -272,7 +272,7 @@
 					+ StatusBar: set zoom
 					+ RecalculateWorkCanvasPanning
 			= InteractiveTool (for Material, MeasuringTape, etc.)
-				- Icon (store images/bitmaps as members)
+				+ Icon (store images/bitmaps as members)
 				- MeasuringTape
 				= Material under cursor (for drop tool)
 		- Test physics probe w/both systems
@@ -312,13 +312,15 @@
 		+ Line
 		= Measuring Tape (*)
 			+ Shift lock
-			= Notification
+			+ Notification
 				+ SetToolType
 					+ Invoke from MainFrame's OnToolChange onto StatusBar
 					+ Icon w/2 images
-				- Status bar
-					- TODO: how to unify SampledMaterial & Length ?
-			- Commit & push
+				+ Status bar
+			- Start- and End-points being in window
+				- @ down: do not allow
+				+ @ up: fix bug that shows line staying behind
+				- @ move: clip length 
 			- Test with titled icon
 		- Rectangle
 			- Settings: FillWithFore|FillWithBack|NoFill; Size

@@ -43,7 +43,7 @@ private:
     void RefreshToolCoordinates();
     void RefreshZoom();
     void RefreshCurrentToolType();
-    void RefreshSampledMaterial();
+    void RefreshToolOutput();
 
 private:
 
@@ -54,7 +54,7 @@ private:
     wxStaticBitmap * mCurrentToolStaticBitmap;
     wxBitmap mSamplerToolBitmap;
     wxBitmap mMeasuringTapeToolBitmap;
-    wxStaticText * mSampledMaterialNameStaticText;
+    wxStaticText * mToolOutputStaticText;
 
     // State
     UnitsSystem mDisplayUnitsSystem;

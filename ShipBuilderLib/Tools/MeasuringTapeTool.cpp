@@ -47,10 +47,14 @@ MeasuringTapeTool::~MeasuringTapeTool()
     if (mHasOverlay)
     {
         HideOverlay();
-        mUserInterface.RefreshView();
     }
 
-    mUserInterface.OnMeasuredLengthChanged(std::nullopt); // Just in case
+    if (mEngagementData.has_value())
+    {
+        StopEngagement();
+    }
+
+    mUserInterface.RefreshView();
 }
 
 void MeasuringTapeTool::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates)
