@@ -11,7 +11,7 @@
 + Measuring Tape tool (*)
 
 = New/Set/Remove layers:
-	= New:
+	+ New:
 		+ Make internal helper templated on LayerType, with all code
 			+ Add new templated helper to make undo entry with whole layer
 		+ Additions:
@@ -35,24 +35,35 @@
 					+ Use @ all other layer-presence-changing operations
 						+ Also @ NewLayer helper itself
 						! And later, @ RemoveLayer, SetLayer helpers
-		- Use new "PushUndoForWholeLayer" everywhere else
+		+ Test (basic; undo):
+			+ S
+			+ E
+			+ R
+		+ Cleanup old code
+			+ Verify really ok
+	+ Remove:
+		+ Make internal helper templated on LayerType, with all code
+			+ Use WrapLikelyPresenceChangingOperation
+			+ Use PushUndoForWholeLayer
+		+ Additions:
+			+ Undo
+				+ Note: texture layer removal should also remember metadata (art credits)
+		+ Test (basic; undo):
+			+ S
+			+ E
+			+ R
+		+ Cleanup old code
+	- Set: - NEED TO WAIT UNTIL Import/Export is done, otherwise we have no Set calls to test with
+		- Make internal helper templated on LayerType, with all code
+			- Use WrapLikelyPresenceChangingOperation
+			- Use PushUndoForWholeLayer
+		- Additions:
+			- Undo
+				- Note: texture layer change should also remember metadata (art credits)
 		- Test (basic; undo):
 			- S
 			- E
 			- R
-		- Cleanup old code
-	- Set:
-		- Make internal helper templated on LayerType, with all code
-			- Use WrapLikelyPresenceChangingOperation
-		- Additions:
-			- Undo
-				- Note: texture layer change should also remember metadata (art credits)
-	- Remove:
-		- Make internal helper templated on LayerType, with all code
-			- Use WrapLikelyPresenceChangingOperation
-		- Additions:
-			= Undo
-				= Note: texture layer removal should also remember metadata (art credits)
 
 = Import/Export:
 	- Structural:
@@ -146,7 +157,7 @@
 			- Ad-hoc code using ImageFileTools
 	- Notes:
 		- Any import from .shp2 requires password
-		- All imports push an undo
+		- All imports push an undo (via Controller::SetXYZLayer())
 
 - Rotate 90 (CW and CCW)
 	- Also changes ship size, do notifications

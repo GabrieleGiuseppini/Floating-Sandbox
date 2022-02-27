@@ -261,6 +261,9 @@ private:
     void InternalNewLayer();
 
     template<LayerType TLayerType>
+    void InternalRemoveLayer();
+
+    template<LayerType TLayerType>
     void InternalPushUndoForWholeLayer(wxString const & title);
 
     template<LayerType TLayerType, typename TFunctor>
