@@ -49,40 +49,68 @@
 			+ Undo
 				+ Note: texture layer removal should also remember metadata (art credits)
 		+ Test (basic; undo):
-			+ S
 			+ E
 			+ R
+			+ T
 		+ Cleanup old code
-	- Set: - NEED TO WAIT UNTIL Import/Export is done, otherwise we have no Set calls to test with
-		- Make internal helper templated on LayerType, with all code
-			- Use WrapLikelyPresenceChangingOperation
-			- Use PushUndoForWholeLayer
-		- Additions:
-			- Undo
-				- Note: texture layer change should also remember metadata (art credits)
+	= Set:
+		= Make internal helper templated on LayerType, with all code
+			+ Use WrapLikelyPresenceChangingOperation
+			+ Use PushUndoForWholeLayer
+		= Additions:
+			+ Undo
+				+ Note: texture layer change should also remember metadata (art credits)
 		- Test (basic; undo):
 			- S
 			- E
 			- R
+			- T
 
 = Import/Export:
-	- Structural:
-		- Import from:
-			- .png, .shp, .shp2 (load whole and throw away)
+	= Structural:
+		= Import from:
+			= .png, .shp, .shp2 (load whole and throw away)
+			- Resize
+				- TODOHERE
+			- Test:
+				- .shp2, password-protected
+				- .shp
+				- .png
+				- Resize larger
+				- Resize smaller
+				- One from Simulator
 		- Export to .png
 			- ShipDeSerializer:
 				- SaveStructuralLayerImage(StructuralLayerBuffer const &, ...)
-	- Electrical:
-		- Import:
-			- .shp, .shp2 (load whole and throw away)
-				- Might as well allow user to select .png's (for simplicity in ShipLoadDialog), will be discared afterwards anyway
-			- Show error if no layer exists in definition
-		+ No export (can save .shp2 and import from there)
+	= Electrical:
+		= Import:
+			= .shp, .shp2 (load whole and throw away)
+				+ Might as well allow user to select .png's (for simplicity in ShipLoadDialog), will be discared afterwards anyway
+			+ Show error if no layer exists in definition
+			- Resize
+			- Test:
+				- .shp2, password-protected
+				- .shp
+				- .png (expect error)
+				- Ship with no such layer
+				- Resize larger
+				- Resize smaller
+				- One from Simulator
+		! No export (can save .shp2 and import from there)
 	- Ropes:
 		- Import:
 			- .shp, .shp2 (load whole and throw away)
 				- Might as well allow user to select .png's (for simplicity in ShipLoadDialog), will be discared afterwards anyway
 			- Show error if no layer exists in definition
+			- Resize
+			- Test:
+				- .shp2, password-protected
+				- .shp
+				- .png (expect error)
+				- Ship with no such layer
+				- Resize larger
+				- Resize smaller
+				- One from Simulator
 		+ No export (can save .shp2 and import from there)
 	= Texture:
 		= Import: two separate import buttons
@@ -150,8 +178,17 @@
 									  new Controller::RestoreAllLayersForUndo
 			- .shp, .shp2 (load whole and throw away)
 				- Might as well allow user to select also .png's (for simplicity in ShipLoadDialog), will be discarded (errored) afterwards anyway - see next line
-				- Show error if no layer exists in definition
-			= After import, also replace art credits
+			- Show error if no layer exists in definition
+			- Resize
+			- Test:
+				- .shp2, password-protected
+				- .shp
+				- .png (expect error)
+				- Ship with no such layer
+				- Resize larger
+				- Resize smaller
+				- One from Simulator
+			= With import, also replace art credits
 				= Empty if from image, from imported ship otherwise (even if empty)
 		- Export to .png (though quite useless at this moment)
 			- Ad-hoc code using ImageFileTools

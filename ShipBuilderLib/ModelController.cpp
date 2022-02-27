@@ -427,11 +427,11 @@ void ModelController::NewStructuralLayer()
     mIsStructuralLayerInEphemeralVisualization = false;
 }
 
-void ModelController::SetStructuralLayer(/*TODO*/)
+void ModelController::SetStructuralLayer(StructuralLayerData && structuralLayer)
 {
     assert(mModel.HasLayer(LayerType::Structural));
 
-    mModel.SetStructuralLayer(/*TODO*/);
+    mModel.SetStructuralLayer(std::move(structuralLayer));
 
     InitializeStructuralLayerAnalysis();
 
@@ -646,9 +646,9 @@ void ModelController::NewElectricalLayer()
     mIsElectricalLayerInEphemeralVisualization = false;
 }
 
-void ModelController::SetElectricalLayer(/*TODO*/)
+void ModelController::SetElectricalLayer(ElectricalLayerData && electricalLayer)
 {
-    mModel.SetElectricalLayer(/*TODO*/);
+    mModel.SetElectricalLayer(std::move(electricalLayer));
 
     InitializeElectricalLayerAnalysis();
 

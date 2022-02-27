@@ -68,9 +68,15 @@ void Model::NewStructuralLayer()
     mLayerPresenceMap[static_cast<size_t>(LayerType::Structural)] = true;
 }
 
-void Model::SetStructuralLayer(/*TODO*/)
+void Model::SetStructuralLayer(StructuralLayerData && structuralLayer)
 {
-    // TODO
+    assert(structuralLayer.Buffer.Size == GetShipSize());
+
+    // Update layer
+    mStructuralLayer.reset(new StructuralLayerData(std::move(structuralLayer)));
+
+    // Update presence map
+    mLayerPresenceMap[static_cast<size_t>(LayerType::Structural)] = true;
 }
 
 StructuralLayerData Model::CloneStructuralLayer() const
@@ -98,10 +104,12 @@ void Model::NewElectricalLayer()
     mLayerPresenceMap[static_cast<size_t>(LayerType::Electrical)] = true;
 }
 
-void Model::SetElectricalLayer(/*TODO*/)
+void Model::SetElectricalLayer(ElectricalLayerData && electricalLayer)
 {
-    // TODO
-    // TODO: make sure also electrical panel is copied (moved) with LayerData
+    assert(electricalLayer.Buffer.Size == GetShipSize());
+
+    // Update layer
+    mElectricalLayer.reset(new ElectricalLayerData(std::move(electricalLayer)));
 
     // Update presence map
     mLayerPresenceMap[static_cast<size_t>(LayerType::Electrical)] = true;
@@ -149,6 +157,15 @@ void Model::NewRopesLayer()
 void Model::SetRopesLayer(/*TODO*/)
 {
     // TODO
+    ////assert(structuralLayer.Buffer.Size == GetShipSize());
+
+    ////// Update layer
+    ////mStructuralLayer.reset(new StructuralLayerData(std::move(structuralLayer)));
+
+    // TODO: make sure also electrical panel is copied (moved) with LayerData
+
+    // Update presence map
+    mLayerPresenceMap[static_cast<size_t>(LayerType::Ropes)] = true;
 }
 
 void Model::RemoveRopesLayer()

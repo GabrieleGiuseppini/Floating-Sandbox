@@ -226,7 +226,7 @@ public:
     }
 
     void NewStructuralLayer();
-    void SetStructuralLayer(/*TODO*/);
+    void SetStructuralLayer(StructuralLayerData && structuralLayer);
 
     StructuralLayerData CloneStructuralLayer() const;
     void RestoreStructuralLayer(StructuralLayerData && structuralLayer);
@@ -244,7 +244,7 @@ public:
     }
 
     void NewElectricalLayer();
-    void SetElectricalLayer(/*TODO*/);
+    void SetElectricalLayer(ElectricalLayerData && electricalLayer);
     void RemoveElectricalLayer();
 
     std::unique_ptr<ElectricalLayerData> CloneElectricalLayer() const;

@@ -272,13 +272,20 @@ void Controller::NewStructuralLayer()
     InternalNewLayer<LayerType::Structural>();
 }
 
-void Controller::SetStructuralLayer(/*TODO*/)
+void Controller::SetStructuralLayer(
+    wxString actionTitle,
+    StructuralLayerData && structuralLayer)
 {
+    InternalSetLayer<LayerType::Structural>(
+        actionTitle,
+        std::move(structuralLayer));
+
+    /* TODOOLD
     auto const scopedToolResumeState = SuspendTool();
 
     // TODO: undo, copy from texture
     // Update layer
-    mModelController->SetStructuralLayer(/*TODO*/);
+    mModelController->SetStructuralLayer(//TODO//);
     mUserInterface.OnLayerPresenceChanged(mModelController->GetModel());
 
     // Switch primary viz to this one
@@ -297,6 +304,7 @@ void Controller::SetStructuralLayer(/*TODO*/)
     // Refresh model visualizations
     mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
+    */
 }
 
 void Controller::RestoreStructuralLayerRegionForUndo(
@@ -337,31 +345,13 @@ void Controller::NewElectricalLayer()
     InternalNewLayer<LayerType::Electrical>();
 }
 
-void Controller::SetElectricalLayer(/*TODO*/)
+void Controller::SetElectricalLayer(
+    wxString actionTitle,
+    ElectricalLayerData && electricalLayer)
 {
-    auto const scopedToolResumeState = SuspendTool();
-
-    // TODO: undo, copy from texture
-    // Update layer
-    mModelController->SetElectricalLayer(/*TODO*/);
-    mUserInterface.OnLayerPresenceChanged(mModelController->GetModel());
-
-    // Switch primary layer to this one
-    if (mWorkbenchState.GetPrimaryVisualization() != VisualizationType::ElectricalLayer)
-    {
-        InternalSelectPrimaryVisualization(VisualizationType::ElectricalLayer);
-    }
-
-    // Update dirtyness
-    mModelController->SetLayerDirty(LayerType::Electrical);
-    mUserInterface.OnModelDirtyChanged(mModelController->GetModel());
-
-    // Update visualization modes
-    InternalUpdateModelControllerVisualizationModes();
-
-    // Refresh model visualizations
-    mModelController->UpdateVisualizations(*mView);
-    mUserInterface.RefreshView();
+    InternalSetLayer<LayerType::Electrical>(
+        actionTitle,
+        std::move(electricalLayer));
 }
 
 void Controller::RemoveElectricalLayer()
@@ -534,9 +524,16 @@ void Controller::RestoreRopesLayerForUndo(std::unique_ptr<RopesLayerData> ropesL
 }
 
 void Controller::SetTextureLayer(
+    wxString actionTitle,
     TextureLayerData && textureLayer,
     std::optional<std::string> textureArtCredits)
 {
+    InternalSetLayer<LayerType::Texture>(
+        actionTitle,
+        std::move(textureLayer),
+        std::move(textureArtCredits));
+
+    /* TODOOLD
     auto const scopedToolResumeState = SuspendTool();
 
     // Update layer
@@ -589,6 +586,7 @@ void Controller::SetTextureLayer(
     // Refresh model visualizations
     mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
+    */
 }
 
 void Controller::RemoveTextureLayer()
@@ -1138,6 +1136,132 @@ void Controller::InternalNewLayer()
     {
         static_assert(TLayerType == LayerType::Texture);
         static_assert(false); // No "new" layer for texture
+    }
+
+    // Switch primary viz
+    if (newVisualizationType.has_value())
+    {
+        InternalSelectPrimaryVisualization(*newVisualizationType);
+    }
+
+    // Update dirtyness
+    mModelController->SetLayerDirty(TLayerType);
+    mUserInterface.OnModelDirtyChanged(mModelController->GetModel());
+
+    // Update visualization modes
+    InternalUpdateModelControllerVisualizationModes();
+
+    // Refresh model visualizations
+    mModelController->UpdateVisualizations(*mView);
+    mUserInterface.RefreshView();
+}
+
+template<LayerType TLayerType, typename ... TArgs>
+void Controller::InternalSetLayer(wxString actionTitle, TArgs&& ... args)
+{
+    auto const scopedToolResumeState = SuspendTool();
+
+    //
+    // Do layer-specific work
+    //
+
+    std::optional<VisualizationType> newVisualizationType;
+
+    if constexpr (TLayerType == LayerType::Electrical)
+    {
+        // Create undo action
+        InternalPushUndoForWholeLayer<LayerType::Electrical>(actionTitle);
+        
+        // Switch visualization mode to this new one, if needed
+        if (mWorkbenchState.GetPrimaryVisualization() != VisualizationType::ElectricalLayer)
+        {
+            newVisualizationType = VisualizationType::ElectricalLayer;
+        }
+
+        // Set layer
+        WrapLikelyLayerPresenceChangingOperation<TLayerType>(
+            [this, args = std::make_tuple(std::forward<TArgs>(args)...)]() mutable
+            {
+                std::apply(
+                    [this](auto&& ... args) 
+                    {
+                        mModelController->SetElectricalLayer(std::forward<TArgs>(args)...);
+                    }, 
+                    std::move(args));
+            });
+    }
+    else if constexpr (TLayerType == LayerType::Ropes)
+    {
+        // Create undo action
+        InternalPushUndoForWholeLayer<LayerType::Ropes>(actionTitle);
+
+        // Switch visualization mode to this new one, if needed
+        if (mWorkbenchState.GetPrimaryVisualization() != VisualizationType::RopesLayer)
+        {
+            newVisualizationType = VisualizationType::RopesLayer;
+        }
+
+        // Set layer
+        WrapLikelyLayerPresenceChangingOperation<TLayerType>(
+            [this, args = std::make_tuple(std::forward<TArgs>(args)...)]() mutable
+            {
+                std::apply(
+                    [this](auto&& ... args)
+                    {
+                        mModelController->SetRopesLayer(std::forward<TArgs>(args)...);
+                    },
+                    std::move(args));
+            });
+    }
+    else if constexpr (TLayerType == LayerType::Structural)
+    {
+        // Create undo action
+        InternalPushUndoForWholeLayer<LayerType::Structural>(actionTitle);
+
+        // Switch visualization mode to this new one, if needed
+        if (mWorkbenchState.GetPrimaryVisualization() != VisualizationType::StructuralLayer)
+        {
+            newVisualizationType = VisualizationType::StructuralLayer;
+        }
+
+        // Set layer
+        WrapLikelyLayerPresenceChangingOperation<TLayerType>(
+            [this, args = std::make_tuple(std::forward<TArgs>(args)...)]() mutable
+            {
+                std::apply(
+                    [this](auto&& ... args)
+                    {
+                        mModelController->SetStructuralLayer(std::forward<TArgs>(args)...);
+                    },
+                    std::move(args));
+            });
+    }
+    else
+    {
+        static_assert(TLayerType == LayerType::Texture);
+
+        // Create undo action
+        InternalPushUndoForWholeLayer<LayerType::Texture>(actionTitle);
+
+        // FUTUREWORK: disabled primary layer switch for this release, as there are no tools
+        // and thus it's pointless
+        ////// Switch visualization mode to this new one, if needed
+        ////if (mWorkbenchState.GetPrimaryVisualization() != VisualizationType::StructuralLayer)
+        ////{
+        ////    newVisualizationType = VisualizationType::StructuralLayer;
+        ////}
+
+        // Set layer
+        WrapLikelyLayerPresenceChangingOperation<TLayerType>(
+            [this, args = std::make_tuple(std::forward<TArgs>(args)...)]() mutable
+            {
+                std::apply(
+                    [this](auto&& ... args)
+                    {
+                        mModelController->SetTextureLayer(std::forward<TArgs>(args)...);
+                    },
+                    std::move(args));
+            });
     }
 
     // Switch primary viz

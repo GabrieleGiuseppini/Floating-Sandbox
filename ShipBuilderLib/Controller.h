@@ -125,14 +125,18 @@ public:
     ModelValidationResults ValidateModel();
 
     void NewStructuralLayer();
-    void SetStructuralLayer(/*TODO*/);
+    void SetStructuralLayer(
+        wxString actionTitle, 
+        StructuralLayerData && structuralLayer);
     void RestoreStructuralLayerRegionForUndo(
         StructuralLayerData && layerRegion,
         ShipSpaceCoordinates const & origin);
     void RestoreStructuralLayerForUndo(StructuralLayerData && structuralLayer);
 
     void NewElectricalLayer();
-    void SetElectricalLayer(/*TODO*/);
+    void SetElectricalLayer(
+        wxString actionTitle,
+        ElectricalLayerData && electricalLayer);
     void RemoveElectricalLayer();
     void RestoreElectricalLayerRegionForUndo(
         ElectricalLayerData && layerRegion,
@@ -146,6 +150,7 @@ public:
     void RestoreRopesLayerForUndo(std::unique_ptr<RopesLayerData> ropesLayer);
 
     void SetTextureLayer(
+        wxString actionTitle,
         TextureLayerData && textureLayer,
         std::optional<std::string> textureArtCredits);
     void RemoveTextureLayer();
@@ -259,6 +264,9 @@ private:
 
     template<LayerType TLayerType>
     void InternalNewLayer();
+
+    template<LayerType TLayerType, typename ... TArgs>
+    void InternalSetLayer(wxString actionTitle, TArgs&& ... args);
 
     template<LayerType TLayerType>
     void InternalRemoveLayer();

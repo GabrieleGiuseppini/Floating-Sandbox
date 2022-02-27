@@ -19,7 +19,6 @@
 
 #include <UILib/BitmapButton.h>
 #include <UILib/BitmapRadioButton.h>
-#include <UILib/BitmapToggleButton.h>
 #include <UILib/LocalizationManager.h>
 #include <UILib/LoggingDialog.h>
 #include <UILib/ShipLoadDialog.h>
@@ -212,6 +211,8 @@ private:
 
     void SwitchBackToGame(std::optional<std::filesystem::path> shipFilePath);
 
+    void ImportLayerFromShip(LayerType layer);
+
     void ImportTextureLayerFromImage();
 
     void OpenShipCanvasResize();
@@ -231,11 +232,13 @@ private:
 
     bool AskUserIfRename(std::string const & newFilename);
 
-    void ShowError(wxString const & message);
+    void ShowError(wxString const & message) const;
 
     void DoNewShip();
 
     bool DoLoadShip(std::filesystem::path const & shipFilePath);
+
+    std::optional<ShipDefinition> DoLoadShipDefinitionAndCheckPassword(std::filesystem::path const & shipFilePath);
 
     bool DoSaveShipOrSaveShipAsWithValidation();
 

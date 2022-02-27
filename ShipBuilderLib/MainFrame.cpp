@@ -7,23 +7,21 @@
 
 #include "AskPasswordDialog.h"
 
-#include <GameCore/Log.h>
-#include <GameCore/UserGameException.h>
-#include <GameCore/Utils.h>
-#include <GameCore/Version.h>
-
-#include <GameOpenGL/GameOpenGL.h>
-
-#include <Game/ImageFileTools.h>
-#include <Game/ShipDeSerializer.h>
-
-#include <UILib/BitmapButton.h>
-#include <UILib/BitmapToggleButton.h>
 #include <UILib/HighlightableTextButton.h>
 #include <UILib/EditSpinBox.h>
 #include <UILib/ImageLoadDialog.h>
 #include <UILib/UnderConstructionDialog.h>
 #include <UILib/WxHelpers.h>
+
+#include <Game/ImageFileTools.h>
+#include <Game/ShipDeSerializer.h>
+
+#include <GameOpenGL/GameOpenGL.h>
+
+#include <GameCore/Log.h>
+#include <GameCore/UserGameException.h>
+#include <GameCore/Utils.h>
+#include <GameCore/Version.h>
 
 #include <wx/button.h>
 #include <wx/cursor.h>
@@ -346,6 +344,14 @@ MainFrame::MainFrame(
     //
 
     ReconciliateUIWithWorkbenchState();
+
+    //
+    // Create dialogs
+    //
+
+    mShipLoadDialog = std::make_unique<ShipLoadDialog>(
+        this,
+        mResourceLocator);
 }
 
 void MainFrame::OpenForNewShip(std::optional<UnitsSystem> displayUnitsSystem)
@@ -1080,20 +1086,20 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
     {
         auto const clickHandler = [this, layer, sureQuestion]()
         {
+            if (mController->HasModelLayer(layer)
+                && mController->IsModelDirty(layer))
+            {
+                if (!AskUserIfSure(sureQuestion))
+                {
+                    // Changed their mind
+                    return;
+                }
+            }
+
             switch (layer)
             {
                 case LayerType::Electrical:
                 {
-                    if (mController->HasModelLayer(LayerType::Electrical)
-                        && mController->IsModelDirty(LayerType::Electrical))
-                    {
-                        if (!AskUserIfSure(sureQuestion))
-                        {
-                            // Changed their mind
-                            return;
-                        }
-                    }
-
                     mController->NewElectricalLayer();
 
                     break;
@@ -1101,16 +1107,6 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
 
                 case LayerType::Ropes:
                 {
-                    if (mController->HasModelLayer(LayerType::Ropes)
-                        && mController->IsModelDirty(LayerType::Ropes))
-                    {
-                        if (!AskUserIfSure(sureQuestion))
-                        {
-                            // Changed their mind
-                            return;
-                        }
-                    }
-
                     mController->NewRopesLayer();
 
                     break;
@@ -1118,16 +1114,6 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
 
                 case LayerType::Structural:
                 {
-                    if (mController->HasModelLayer(LayerType::Structural)
-                        && mController->IsModelDirty(LayerType::Structural))
-                    {
-                        if (!AskUserIfSure(sureQuestion))
-                        {
-                            // Changed their mind
-                            return;
-                        }
-                    }
-
                     mController->NewStructuralLayer();
 
                     break;
@@ -1135,17 +1121,9 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
 
                 case LayerType::Texture:
                 {
-                    if (mController->HasModelLayer(LayerType::Texture)
-                        && mController->IsModelDirty(LayerType::Texture))
-                    {
-                        if (!AskUserIfSure(sureQuestion))
-                        {
-                            // Changed their mind
-                            return;
-                        }
-                    }
-
                     ImportTextureLayerFromImage();
+
+                    break;
                 }
             }
         };
@@ -1189,11 +1167,19 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
             wxHORIZONTAL,
             mResourceLocator.GetBitmapFilePath("open_layer_button"),
             _("Import"),
-            [this]()
+            [this, layer, sureQuestion]()
             {
-                // TODO
-                // TODO: also here ask user if sure when the layer is dirty
-                UnderConstructionDialog::Show(this, mResourceLocator);
+                if (mController->HasModelLayer(layer)
+                    && mController->IsModelDirty(layer))
+                {
+                    if (!AskUserIfSure(sureQuestion))
+                    {
+                        // Changed their mind
+                        return;
+                    }
+                }
+
+                ImportLayerFromShip(layer);
             },
             _("Import this layer from another ship."));
 
@@ -3648,16 +3634,7 @@ void MainFrame::LoadShip()
     }
 
     // Open ship load dialog
-
-    if (!mShipLoadDialog)
-    {
-        mShipLoadDialog = std::make_unique<ShipLoadDialog>(
-            this,
-            mResourceLocator);
-    }
-
     auto const res = mShipLoadDialog->ShowModal(mShipLoadDirectories);
-
     if (res == wxID_OK)
     {
         // Load ship
@@ -3740,6 +3717,72 @@ void MainFrame::SwitchBackToGame(std::optional<std::filesystem::path> shipFilePa
     mReturnToGameFunctor(std::move(shipFilePath));
 }
 
+void MainFrame::ImportLayerFromShip(LayerType layer)
+{
+    // Open ship load dialog
+    auto const res = mShipLoadDialog->ShowModal(mShipLoadDirectories);
+    if (res == wxID_OK)
+    {
+        auto const shipFilePath = mShipLoadDialog->GetChosenShipFilepath();
+
+        std::optional<ShipDefinition> shipDefinition = DoLoadShipDefinitionAndCheckPassword(shipFilePath);
+        if (!shipDefinition.has_value())
+        {
+            // No luck
+            return;
+        }
+
+        // TODOHERE:
+        // - If ship definition doesn't have this layer, error out
+        // - Resize layer
+        // - Invoke Controller::SetXYZLayer(...)
+        //      - If texture, also import ArtCredits
+
+        switch (layer)
+        {
+            case LayerType::Electrical:
+            {
+                if (!shipDefinition->ElectricalLayer)
+                {
+                    ShowError(_("The selected ship does not have an electrical layer"));
+                    return;
+                }
+
+                // TODO: resize layer
+
+                mController->SetElectricalLayer(
+                    _("Import Electrical Layer"),
+                    std::move(*(shipDefinition->ElectricalLayer.release())));
+
+                break;
+            }
+
+            case LayerType::Ropes:
+            {
+                // TODO
+                break;
+            }
+
+            case LayerType::Structural:
+            {
+                // TODO: resize layer
+
+                mController->SetStructuralLayer(
+                    _("Import Structural Layer"),
+                    std::move(shipDefinition->StructuralLayer));
+
+                break;
+            }
+
+            case LayerType::Texture:
+            {
+                // TODO
+                break;
+            }
+        }
+    }
+}
+
 void MainFrame::ImportTextureLayerFromImage()
 {
     ImageLoadDialog dlg(this);
@@ -3752,7 +3795,8 @@ void MainFrame::ImportTextureLayerFromImage()
 
             if (image.Size.width == 0 || image.Size.height == 0)
             {
-                throw GameException("The specified texture image is empty, and thus it may not be used for this ship.");
+                ShowError(_("The specified texture image is empty, and thus it may not be used for this ship."));
+                return;
             }
 
             // Calculate target size == size of texture when maintaining same aspect ratio as ship's,
@@ -3795,6 +3839,7 @@ void MainFrame::ImportTextureLayerFromImage()
 
             // Set texture
             mController->SetTextureLayer(
+                _("Import Texture Layer"),
                 TextureLayerData(std::move(image)),
                 std::nullopt);
         }
@@ -3927,7 +3972,7 @@ bool MainFrame::AskUserIfRename(std::string const & newFilename)
     return (result == wxYES);
 }
 
-void MainFrame::ShowError(wxString const & message)
+void MainFrame::ShowError(wxString const & message) const
 {
     wxMessageBox(message, _("Maritime Disaster"), wxICON_ERROR);
 }
@@ -3959,29 +4004,9 @@ bool MainFrame::DoLoadShip(std::filesystem::path const & shipFilePath)
     // Load definition
     //
 
-    std::optional<ShipDefinition> shipDefinition;
-    try
-    {
-        shipDefinition.emplace(ShipDeSerializer::LoadShip(shipFilePath, mMaterialDatabase));
-    }
-    catch (UserGameException const & exc)
-    {
-        ShowError(mLocalizationManager.MakeErrorMessage(exc));
-        return false;
-    }
-    catch (std::runtime_error const & exc)
-    {
-        ShowError(exc.what());
-        return false;
-    }
+    std::optional<ShipDefinition> shipDefinition = DoLoadShipDefinitionAndCheckPassword(shipFilePath);
 
-    assert(shipDefinition.has_value());
-
-    //
-    // Check password
-    //
-
-    if (!AskPasswordDialog::CheckPasswordProtectedEdit(*shipDefinition, this, mResourceLocator))
+    if (!shipDefinition.has_value())
     {
         return false;
     }
@@ -4019,6 +4044,42 @@ bool MainFrame::DoLoadShip(std::filesystem::path const & shipFilePath)
 
     // Success
     return true;
+}
+
+std::optional<ShipDefinition> MainFrame::DoLoadShipDefinitionAndCheckPassword(std::filesystem::path const & shipFilePath)
+{
+    //
+    // Load definition
+    //
+
+    std::optional<ShipDefinition> shipDefinition;
+    try
+    {
+        shipDefinition.emplace(ShipDeSerializer::LoadShip(shipFilePath, mMaterialDatabase));
+    }
+    catch (UserGameException const & exc)
+    {
+        ShowError(mLocalizationManager.MakeErrorMessage(exc));
+        return std::nullopt;
+    }
+    catch (std::runtime_error const & exc)
+    {
+        ShowError(exc.what());
+        return std::nullopt;
+    }
+
+    assert(shipDefinition.has_value());
+
+    //
+    // Check password
+    //
+
+    if (!AskPasswordDialog::CheckPasswordProtectedEdit(*shipDefinition, this, mResourceLocator))
+    {
+        return std::nullopt;
+    }
+
+    return shipDefinition;
 }
 
 bool MainFrame::DoSaveShipOrSaveShipAsWithValidation()
