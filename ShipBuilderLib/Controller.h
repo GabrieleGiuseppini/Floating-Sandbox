@@ -258,10 +258,15 @@ private:
         ResourceLocator const & resourceLocator);
 
     template<LayerType TLayerType>
-    void InternalPushUndoForWholeLayer(wxString const & title);
+    void InternalNewLayer();
 
     template<LayerType TLayerType>
-    void InternalNewLayer();
+    void InternalPushUndoForWholeLayer(wxString const & title);
+
+    template<LayerType TLayerType, typename TFunctor>
+    void WrapLikelyLayerPresenceChangingOperation(TFunctor operation);
+
+    //
 
     void InternalSetShipProperties(
         std::optional<ShipMetadata> && metadata,

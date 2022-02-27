@@ -1234,7 +1234,6 @@ void ModelController::SetGameVisualizationMode(GameVisualizationModeType mode)
         // Shutdown game visualization
         mGameVisualizationMode = GameVisualizationModeType::None;
         mGameVisualizationAutoTexturizationTexture.reset();
-        assert(mGameVisualizationTexture);
         mGameVisualizationTexture.reset();
     }
 }
@@ -1265,7 +1264,6 @@ void ModelController::SetStructuralLayerVisualizationMode(StructuralLayerVisuali
     {
         // Shutdown structural visualization
         mStructuralLayerVisualizationMode = StructuralLayerVisualizationModeType::None;
-        assert(mStructuralLayerVisualizationTexture);
         mStructuralLayerVisualizationTexture.reset();
     }
 }
@@ -1288,7 +1286,6 @@ void ModelController::SetElectricalLayerVisualizationMode(ElectricalLayerVisuali
     {
         // Shutdown electrical visualization
         mElectricalLayerVisualizationMode = ElectricalLayerVisualizationModeType::None;
-        assert(mElectricalLayerVisualizationTexture);
         mElectricalLayerVisualizationTexture.reset();
     }
 }

@@ -463,12 +463,11 @@ void Controller::RestoreElectricalLayerForUndo(std::unique_ptr<ElectricalLayerDa
 {
     auto const scopedToolResumeState = SuspendTool();
 
-    mModelController->RestoreElectricalLayer(std::move(electricalLayer));
-
-    // Presence might have changed
-    mUserInterface.OnLayerPresenceChanged(mModelController->GetModel());
-
-    // TODOHERE: deal with tool, which might have to change due to presence changes
+    WrapLikelyLayerPresenceChangingOperation<LayerType::Electrical>(
+        [this, electricalLayer = std::move(electricalLayer)]() mutable
+        { 
+            mModelController->RestoreElectricalLayer(std::move(electricalLayer)); 
+        });
 
     // No need to update dirtyness, this is for undo
 
@@ -612,12 +611,11 @@ void Controller::RestoreRopesLayerForUndo(std::unique_ptr<RopesLayerData> ropesL
 {
     auto const scopedToolResumeState = SuspendTool();
 
-    mModelController->RestoreRopesLayer(std::move(ropesLayer));
-
-    // Layer presence might have changed
-    mUserInterface.OnLayerPresenceChanged(mModelController->GetModel());
-
-    // TODOHERE: deal with tool, which might have to change due to presence changes
+    WrapLikelyLayerPresenceChangingOperation<LayerType::Ropes>(
+        [this, ropesLayer = std::move(ropesLayer)]() mutable
+        {
+            mModelController->RestoreRopesLayer(std::move(ropesLayer));
+        });
 
     // No need to update dirtyness, this is for undo
 
@@ -753,14 +751,13 @@ void Controller::RestoreTextureLayerForUndo(
 {
     auto const scopedToolResumeState = SuspendTool();
 
-    mModelController->RestoreTextureLayer(
-        std::move(textureLayer), 
-        std::move(originalTextureArtCredits));
-
-    // Layer presence might have changed
-    mUserInterface.OnLayerPresenceChanged(mModelController->GetModel());
-
-    // TODOHERE: deal with tool, which might have to change due to presence changes
+    WrapLikelyLayerPresenceChangingOperation<LayerType::Texture>(
+        [this, textureLayer = std::move(textureLayer), originalTextureArtCredits = std::move(originalTextureArtCredits)]() mutable
+        {
+            mModelController->RestoreTextureLayer(
+                std::move(textureLayer),
+                std::move(originalTextureArtCredits));
+        });
 
     // No need to update dirtyness, this is for undo
 
@@ -791,20 +788,29 @@ void Controller::RestoreAllLayersForUndo(
 
     mModelController->RestoreStructuralLayer(std::move(structuralLayer));
 
-    mModelController->RestoreElectricalLayer(std::move(electricalLayer));
+    WrapLikelyLayerPresenceChangingOperation<LayerType::Electrical>(
+        [this, electricalLayer = std::move(electricalLayer)]() mutable
+        {
+            mModelController->RestoreElectricalLayer(std::move(electricalLayer));
+        });
 
-    mModelController->RestoreRopesLayer(std::move(ropesLayer));
+    WrapLikelyLayerPresenceChangingOperation<LayerType::Ropes>(
+        [this, ropesLayer = std::move(ropesLayer)]() mutable
+        {
+            mModelController->RestoreRopesLayer(std::move(ropesLayer));
+        });
 
-    mModelController->RestoreTextureLayer(
-        std::move(textureLayer),
-        std::move(originalTextureArtCredits));
+    WrapLikelyLayerPresenceChangingOperation<LayerType::Texture>(
+        [this, textureLayer = std::move(textureLayer), originalTextureArtCredits = std::move(originalTextureArtCredits)]() mutable
+        {
+            mModelController->RestoreTextureLayer(
+                std::move(textureLayer),
+                std::move(originalTextureArtCredits));
+        });
 
     //
     // Finalize
     //
-
-    // We (might) have changed the presence of layers
-    mUserInterface.OnLayerPresenceChanged(mModelController->GetModel());
 
     // No need to update dirtyness, this is for undo
 
@@ -1215,81 +1221,6 @@ void Controller::OnMouseCaptureLost()
 ///////////////////////////////////////////////////////////////////////////////
 
 template<LayerType TLayerType>
-void Controller::InternalPushUndoForWholeLayer(wxString const & title)
-{
-    assert(!mCurrentTool); // Tools are suspended
-
-    // Get dirty state snapshot
-    auto originalDirtyStateClone = mModelController->GetModel().GetDirtyState();
-
-    // Create undo action
-    if constexpr (TLayerType == LayerType::Electrical)
-    {
-        auto originalLayerClone = mModelController->GetModel().CloneElectricalLayer();
-        
-        mUndoStack.Push(
-            title,
-            originalLayerClone ? originalLayerClone->Buffer.GetByteSize() : 0,
-            originalDirtyStateClone,
-            [originalLayerClone = std::move(originalLayerClone)](Controller & controller) mutable
-            {
-                controller.RestoreElectricalLayerForUndo(
-                    std::move(originalLayerClone));
-            });
-    }
-    else if constexpr (TLayerType == LayerType::Ropes)
-    {
-        auto originalLayerClone = mModelController->GetModel().CloneRopesLayer();
-
-        // Create undo action
-        mUndoStack.Push(
-            title,
-            originalLayerClone ? originalLayerClone->Buffer.GetSize() * sizeof(RopeElement) : 0,
-            originalDirtyStateClone,
-            [originalLayerClone = std::move(originalLayerClone)](Controller & controller) mutable
-            {
-                controller.RestoreRopesLayerForUndo(
-                    std::move(originalLayerClone));
-            });
-    }
-    else if constexpr (TLayerType == LayerType::Structural)
-    {
-        auto originalLayerClone = mModelController->GetModel().CloneStructuralLayer();
-
-        // Create undo action
-        mUndoStack.Push(
-            title,
-            originalLayerClone.Buffer.GetByteSize(),
-            originalDirtyStateClone,
-            [originalLayerClone = std::move(originalLayerClone)](Controller & controller) mutable
-            {
-                controller.RestoreStructuralLayerForUndo(
-                    std::move(originalLayerClone));
-            });
-    }
-    else
-    {
-        auto originalLayerClone = mModelController->GetModel().CloneTextureLayer();
-        auto originalTextureArtCredits = mModelController->GetShipMetadata().ArtCredits;
-
-        // Create undo action
-        mUndoStack.Push(
-            title,
-            originalLayerClone ? originalLayerClone->Buffer.GetByteSize() : 0,
-            originalDirtyStateClone,
-            [originalLayerClone = std::move(originalLayerClone), originalTextureArtCredits = std::move(originalTextureArtCredits)](Controller & controller) mutable
-            {
-                controller.RestoreTextureLayerForUndo(
-                    std::move(originalLayerClone),
-                    std::move(originalTextureArtCredits));
-            });
-    }
-
-    // Notify undo stack
-    mUserInterface.OnUndoStackStateChanged(mUndoStack);
-}
-
-template<LayerType TLayerType>
 void Controller::InternalNewLayer()
 {    
     auto const scopedToolResumeState = SuspendTool();
@@ -1366,6 +1297,105 @@ void Controller::InternalNewLayer()
     // Refresh model visualizations
     mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
+}
+
+template<LayerType TLayerType>
+void Controller::InternalPushUndoForWholeLayer(wxString const & title)
+{
+    assert(!mCurrentTool); // Tools are suspended
+
+    // Get dirty state snapshot
+    auto originalDirtyStateClone = mModelController->GetModel().GetDirtyState();
+
+    // Create undo action
+    if constexpr (TLayerType == LayerType::Electrical)
+    {
+        auto originalLayerClone = mModelController->GetModel().CloneElectricalLayer();
+
+        mUndoStack.Push(
+            title,
+            originalLayerClone ? originalLayerClone->Buffer.GetByteSize() : 0,
+            originalDirtyStateClone,
+            [originalLayerClone = std::move(originalLayerClone)](Controller & controller) mutable
+            {
+                controller.RestoreElectricalLayerForUndo(
+                    std::move(originalLayerClone));
+            });
+    }
+    else if constexpr (TLayerType == LayerType::Ropes)
+    {
+        auto originalLayerClone = mModelController->GetModel().CloneRopesLayer();
+
+        // Create undo action
+        mUndoStack.Push(
+            title,
+            originalLayerClone ? originalLayerClone->Buffer.GetSize() * sizeof(RopeElement) : 0,
+            originalDirtyStateClone,
+            [originalLayerClone = std::move(originalLayerClone)](Controller & controller) mutable
+        {
+            controller.RestoreRopesLayerForUndo(
+                std::move(originalLayerClone));
+        });
+    }
+    else if constexpr (TLayerType == LayerType::Structural)
+    {
+        auto originalLayerClone = mModelController->GetModel().CloneStructuralLayer();
+
+        // Create undo action
+        mUndoStack.Push(
+            title,
+            originalLayerClone.Buffer.GetByteSize(),
+            originalDirtyStateClone,
+            [originalLayerClone = std::move(originalLayerClone)](Controller & controller) mutable
+        {
+            controller.RestoreStructuralLayerForUndo(
+                std::move(originalLayerClone));
+        });
+    }
+    else
+    {
+        auto originalLayerClone = mModelController->GetModel().CloneTextureLayer();
+        auto originalTextureArtCredits = mModelController->GetShipMetadata().ArtCredits;
+
+        // Create undo action
+        mUndoStack.Push(
+            title,
+            originalLayerClone ? originalLayerClone->Buffer.GetByteSize() : 0,
+            originalDirtyStateClone,
+            [originalLayerClone = std::move(originalLayerClone), originalTextureArtCredits = std::move(originalTextureArtCredits)](Controller & controller) mutable
+            {
+                controller.RestoreTextureLayerForUndo(
+                    std::move(originalLayerClone),
+                    std::move(originalTextureArtCredits));
+            });
+    }
+
+    // Notify undo stack
+    mUserInterface.OnUndoStackStateChanged(mUndoStack);
+}
+
+template<LayerType TLayerType, typename TFunctor>
+void Controller::WrapLikelyLayerPresenceChangingOperation(TFunctor operation)
+{
+    assert(!mCurrentTool); // Tools are suspended
+
+    bool const oldIsLayerPresent = mModelController->GetModel().HasLayer(TLayerType);
+
+    operation();
+
+    bool const newIsLayerPresent = mModelController->GetModel().HasLayer(TLayerType);
+
+    if (oldIsLayerPresent != newIsLayerPresent)
+    {
+        // Notify layer presence changed
+        mUserInterface.OnLayerPresenceChanged(mModelController->GetModel());
+
+        // Switch primary viz to default if it was about this layer
+        if (VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization()) == TLayerType)
+        {
+            InternalSelectPrimaryVisualization(VisualizationType::Game); // Will also change tool
+        }
+    }
 }
 
 void Controller::InternalSetShipProperties(
