@@ -673,7 +673,7 @@ void Controller::SetTextureLayer(
     ////}
 
     // Update visualization modes
-    InternalReconciliateTextureVisualizationMode();
+    InternalReconciliateTextureVisualizationMode(); // TODO: taken care of by WrapLayerChangingOp
     InternalUpdateModelControllerVisualizationModes();
 
     // Update dirtyness
@@ -737,7 +737,7 @@ void Controller::RemoveTextureLayer()
     mUserInterface.OnModelDirtyChanged(mModelController->GetModel());
 
     // Update visualization modes
-    InternalReconciliateTextureVisualizationMode();
+    InternalReconciliateTextureVisualizationMode(); // TODO: taken care of by WrapLayerPresenceChanging
     InternalUpdateModelControllerVisualizationModes();
 
     // Refresh model visualizations
@@ -762,7 +762,6 @@ void Controller::RestoreTextureLayerForUndo(
     // No need to update dirtyness, this is for undo
 
     // Update visualization modes
-    InternalReconciliateTextureVisualizationMode();
     InternalUpdateModelControllerVisualizationModes();
 
     // Refresh model visualizations
@@ -822,7 +821,6 @@ void Controller::RestoreAllLayersForUndo(
     mUserInterface.OnShipSizeChanged(shipSize);
 
     // Update visualization modes
-    InternalReconciliateTextureVisualizationMode();
     InternalUpdateModelControllerVisualizationModes();
 
     // Refresh model visualizations
@@ -1236,52 +1234,61 @@ void Controller::InternalNewLayer()
         // Create undo action
         InternalPushUndoForWholeLayer<LayerType::Electrical>(_("New Electrical Layer"));
 
-        // Update visualization mode, if needed
+        // Switch visualization mode to this new one, if needed
         if (mWorkbenchState.GetPrimaryVisualization() != VisualizationType::ElectricalLayer)
         {
             newVisualizationType = VisualizationType::ElectricalLayer;
         }
 
         // Make new layer
-        mModelController->NewElectricalLayer();
+        WrapLikelyLayerPresenceChangingOperation<TLayerType>(
+            [this]()
+            {
+                mModelController->NewElectricalLayer();
+            });
     }
     else if constexpr (TLayerType == LayerType::Ropes)
     {
         // Create undo action
         InternalPushUndoForWholeLayer<LayerType::Ropes>(_("New Ropes Layer"));
 
-        // Update visualization mode, if needed
+        // Switch visualization mode to this new one, if needed
         if (mWorkbenchState.GetPrimaryVisualization() != VisualizationType::RopesLayer)
         {
             newVisualizationType = VisualizationType::RopesLayer;
         }
 
         // Make new layer
-        mModelController->NewRopesLayer();
+        WrapLikelyLayerPresenceChangingOperation<TLayerType>(
+            [this]()
+            {
+                mModelController->NewRopesLayer();
+            });
     }
     else if constexpr (TLayerType == LayerType::Structural)
     {
         // Create undo action
         InternalPushUndoForWholeLayer<LayerType::Structural>(_("New Structural Layer"));
 
-        // Update visualization mode, if needed
+        // Switch visualization mode to this new one, if needed
         if (mWorkbenchState.GetPrimaryVisualization() != VisualizationType::StructuralLayer)
         {
             newVisualizationType = VisualizationType::StructuralLayer;
         }
 
         // Make new layer
-        mModelController->NewStructuralLayer();
+        WrapLikelyLayerPresenceChangingOperation<TLayerType>(
+            [this]()
+            {
+                mModelController->NewStructuralLayer();
+            });
     }
     else
     {
         static_assert(false); // No "new" layer for texture
     }
 
-    // Notify layer presence
-    mUserInterface.OnLayerPresenceChanged(mModelController->GetModel());
-
-    // Switch primary viz to this one
+    // Switch primary viz
     if (newVisualizationType.has_value())
     {
         InternalSelectPrimaryVisualization(*newVisualizationType);
@@ -1332,10 +1339,10 @@ void Controller::InternalPushUndoForWholeLayer(wxString const & title)
             originalLayerClone ? originalLayerClone->Buffer.GetSize() * sizeof(RopeElement) : 0,
             originalDirtyStateClone,
             [originalLayerClone = std::move(originalLayerClone)](Controller & controller) mutable
-        {
-            controller.RestoreRopesLayerForUndo(
-                std::move(originalLayerClone));
-        });
+            {
+                controller.RestoreRopesLayerForUndo(
+                    std::move(originalLayerClone));
+            });
     }
     else if constexpr (TLayerType == LayerType::Structural)
     {
@@ -1347,10 +1354,10 @@ void Controller::InternalPushUndoForWholeLayer(wxString const & title)
             originalLayerClone.Buffer.GetByteSize(),
             originalDirtyStateClone,
             [originalLayerClone = std::move(originalLayerClone)](Controller & controller) mutable
-        {
-            controller.RestoreStructuralLayerForUndo(
-                std::move(originalLayerClone));
-        });
+            {
+                controller.RestoreStructuralLayerForUndo(
+                    std::move(originalLayerClone));
+            });
     }
     else
     {
@@ -1390,10 +1397,39 @@ void Controller::WrapLikelyLayerPresenceChangingOperation(TFunctor operation)
         // Notify layer presence changed
         mUserInterface.OnLayerPresenceChanged(mModelController->GetModel());
 
-        // Switch primary viz to default if it was about this layer
-        if (VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization()) == TLayerType)
+        if constexpr (TLayerType == LayerType::Texture)
         {
-            InternalSelectPrimaryVisualization(VisualizationType::Game); // Will also change tool
+            // Make sure current game viz mode is consistent with presence of texture layer
+            InternalReconciliateTextureVisualizationMode();
+        }
+
+        if (!newIsLayerPresent)
+        {
+            //
+            // Deal with layer removal - need to ensure consistency
+            //
+
+            // Switch primary viz to default if it was about this layer
+            if (VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization()) == TLayerType)
+            {
+                InternalSelectPrimaryVisualization(VisualizationType::Game); // Will also change tool
+            }
+
+            if constexpr (TLayerType == LayerType::Texture)
+            {
+                // Change texture visualization mode if it's currently "None", so that next time a texture
+                // layer is present, we don't start in "none" mode
+                if (mWorkbenchState.GetTextureLayerVisualizationMode() == TextureLayerVisualizationModeType::None)
+                {
+                    mWorkbenchState.SetTextureLayerVisualizationMode(TextureLayerVisualizationModeType::MatteMode); // New default for next layer
+                    mUserInterface.OnTextureLayerVisualizationModeChanged(TextureLayerVisualizationModeType::MatteMode);
+                }
+            }
+        }
+        else
+        {
+            // Note: we do nothing if, instead, we've just *added* the layer - we let the caller decide
+            // what to do on that, as it's not about consistency
         }
     }
 }
@@ -1498,7 +1534,7 @@ void Controller::InternalReconciliateTextureVisualizationMode()
 void Controller::InternalUpdateModelControllerVisualizationModes()
 {
     //
-    // Here we orchestrate the viz mode that we want for the ModelController
+    // Here we orchestrate the viz modes that we want for the ModelController
     //
 
     // Game

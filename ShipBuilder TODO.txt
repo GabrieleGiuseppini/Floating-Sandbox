@@ -16,27 +16,26 @@
 			+ Add new templated helper to make undo entry with whole layer
 		+ Additions:
 			+ Undo
-		= Restore problem: could cause presence to change, hence impacting:
+		+ Restore problem: could cause presence to change, hence impacting:
 			! Problem descr: restore could cause presence to change, hence impacting:
 				! Current tool
 					! Changed because primary viz has changed, via InternalSelectPrimaryVisualization() called currently by ::RemoveXYZLayer()
 				! Current viz 
 					! Via InternalUpdateModelControllerVisualizationModes() called currently by ::RemoveXYZLayer()
-				- ...anything else?
-			= Fix:
+			+ Fix:
 				+ Wrap operations with private templated WrapLikelyPresenceChangingOperation
 					+ Does the above - might only need InternalSelectPrimaryVisualization() though, as that one changes tool
 				+ @ Electrical
 				+ Test 
-				- If Ok:
+				+ If Ok:
 					+ Use @ all other Controller::RestoreXYZLayerForUndo()
-					- Use @ all other layer-presence-changing operations
-						- Including @ NewLayer helper itself
-					- See if should also do:
-						- InternalUpdateModelControllerVizModes()
-						- InternalReconciliateTextureVisualizationMode()
-						- If so, go again through Controller and remove those calls
-		- Use new "PushUndoFoWholeLayer" everywhere else
+					+ See if should also do:
+						+ InternalReconciliateTextureVisualizationMode()
+						+ If so, go again through Controller and remove those calls
+					+ Use @ all other layer-presence-changing operations
+						+ Also @ NewLayer helper itself
+						! And later, @ RemoveLayer, SetLayer helpers
+		- Use new "PushUndoForWholeLayer" everywhere else
 		- Test (basic; undo):
 			- S
 			- E
@@ -44,11 +43,13 @@
 		- Cleanup old code
 	- Set:
 		- Make internal helper templated on LayerType, with all code
+			- Use WrapLikelyPresenceChangingOperation
 		- Additions:
 			- Undo
 				- Note: texture layer change should also remember metadata (art credits)
 	- Remove:
 		- Make internal helper templated on LayerType, with all code
+			- Use WrapLikelyPresenceChangingOperation
 		- Additions:
 			= Undo
 				= Note: texture layer removal should also remember metadata (art credits)
