@@ -257,6 +257,12 @@ private:
         IUserInterface & userInterface,
         ResourceLocator const & resourceLocator);
 
+    template<LayerType TLayerType>
+    void InternalPushUndoForWholeLayer(wxString const & title);
+
+    template<LayerType TLayerType>
+    void InternalNewLayer();
+
     void InternalSetShipProperties(
         std::optional<ShipMetadata> && metadata,
         std::optional<ShipPhysicsData> && physicsData,

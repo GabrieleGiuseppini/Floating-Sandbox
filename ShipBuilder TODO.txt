@@ -10,12 +10,28 @@
 + StatusBar (*)
 + Measuring Tape tool (*)
 
-- New/Set/Remove layers:
-	- New:
-		- Make internal helper templated on LayerType, with all code
-		- Additions:
-			- Undo
-				- Note: texture layer clear should also remember metadata (art credits)
+= New/Set/Remove layers:
+	= New:
+		+ Make internal helper templated on LayerType, with all code
+			+ Add new templated helper to make undo entry with whole layer
+		+ Additions:
+			+ Undo
+		- Restore problem: could cause presence to change, hance impacting:
+			- Current tool
+				- Changed because primary viz has changed, via InternalSelectPrimaryVisualization() called currently by ::RemoveXYZLayer()
+			- Current viz 
+				- Via InternalUpdateModelControllerVisualizationModes() called currently by ::RemoveXYZLayer()
+			- ...anything else?
+			- Fix:
+				- Wrap operations with private templated WrapLikelyPresenceChangingOperation
+					- Does the above
+				- Also use @ NewLayer helper itself
+		- Use new "PushUndoFoWholeLayer" everywhere else
+		- Test (basic; undo):
+			- S
+			- E
+			- R
+		- Cleanup old code
 	- Set:
 		- Make internal helper templated on LayerType, with all code
 		- Additions:
@@ -26,9 +42,6 @@
 		- Additions:
 			= Undo
 				= Note: texture layer removal should also remember metadata (art credits)
-
-- Rotate 90 (CW and CCW)
-	- Also changes ship size, do notifications
 
 = Import/Export:
 	- Structural:
@@ -124,8 +137,17 @@
 		- Any import from .shp2 requires password
 		- All imports push an undo
 
+- Rotate 90 (CW and CCW)
+	- Also changes ship size, do notifications
+
 - Waterline analysis
 	- https://www.britannica.com/science/fluid-mechanics/Hydrostatics#ref611691
+	- https://www.engineeringtoolbox.com/centre-gravity-buoyancy-d_1286.html
+	- Gist:
+		- At equlibrium the hull is stable, hence the center of gravity and center of buoyancy are on the same vertical line
+			- For most hulls the center of buoyancy is below the center of gravity and the hull is said to be meta-stable
+		- Metacenter is the theoretical point at which the B-G vertical line intersects the vertical line through the new centre of buoyancy created when the body is tilted
+		- When at rest on even keel, the vessel’s centre of buoyancy is directly below the centre of gravity as well as below the metacentre
 
 - MaterialsPalette: make flag for making it its own wxFrame, so one can use it in a second monitor
 
