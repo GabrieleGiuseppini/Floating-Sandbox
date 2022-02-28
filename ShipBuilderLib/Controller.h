@@ -145,7 +145,9 @@ public:
     void TrimElectricalParticlesWithoutSubstratum();
 
     void NewRopesLayer();
-    void SetRopesLayer(/*TODO*/);
+    void SetRopesLayer(
+        wxString actionTitle,
+        RopesLayerData && ropesLayer);
     void RemoveRopesLayer();
     void RestoreRopesLayerForUndo(std::unique_ptr<RopesLayerData> ropesLayer);
 
@@ -261,9 +263,6 @@ private:
         WorkbenchState & workbenchState,
         IUserInterface & userInterface,
         ResourceLocator const & resourceLocator);
-
-    template<LayerType TLayerType>
-    void InternalNewLayer();
 
     template<LayerType TLayerType, typename ... TArgs>
     void InternalSetLayer(wxString actionTitle, TArgs&& ... args);

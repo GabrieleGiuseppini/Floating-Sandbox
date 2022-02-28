@@ -225,7 +225,6 @@ public:
         return *mStructuralLayer;
     }
 
-    void NewStructuralLayer();
     void SetStructuralLayer(StructuralLayerData && structuralLayer);
 
     StructuralLayerData CloneStructuralLayer() const;
@@ -243,7 +242,6 @@ public:
         return *mElectricalLayer;
     }
 
-    void NewElectricalLayer();
     void SetElectricalLayer(ElectricalLayerData && electricalLayer);
     void RemoveElectricalLayer();
 
@@ -262,8 +260,7 @@ public:
         return *mRopesLayer;
     }
 
-    void NewRopesLayer();
-    void SetRopesLayer(/*TODO*/);
+    void SetRopesLayer(RopesLayerData && ropesLayer);
     void RemoveRopesLayer();
 
     std::unique_ptr<RopesLayerData> CloneRopesLayer() const;
@@ -281,7 +278,6 @@ public:
         return *mTextureLayer;
     }
 
-    void NewTextureLayer();
     void SetTextureLayer(TextureLayerData && textureLayer);
     void RemoveTextureLayer();
 
@@ -291,10 +287,6 @@ public:
 private:
 
     static std::unique_ptr<StructuralLayerData> MakeNewEmptyStructuralLayer(ShipSpaceSize const & shipSize);
-
-    static std::unique_ptr<ElectricalLayerData> MakeNewEmptyElectricalLayer(ShipSpaceSize const & shipSize);
-
-    static std::unique_ptr<RopesLayerData> MakeNewEmptyRopesLayer();
 
 private:
 

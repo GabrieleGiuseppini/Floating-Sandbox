@@ -131,7 +131,6 @@ public:
     // Structural
     //
 
-    void NewStructuralLayer();
     void SetStructuralLayer(StructuralLayerData && structuralLayer);
 
     StructuralLayerData CloneStructuralLayer() const;
@@ -167,7 +166,6 @@ public:
     // Electrical
     //
 
-    void NewElectricalLayer();
     void SetElectricalLayer(ElectricalLayerData && electricalLayer);
     void RemoveElectricalLayer();
 
@@ -203,8 +201,7 @@ public:
     // Ropes
     //
 
-    void NewRopesLayer();
-    void SetRopesLayer(/*TODO*/);
+    void SetRopesLayer(RopesLayerData && ropesLayer);
     void RemoveRopesLayer();
 
     std::unique_ptr<RopesLayerData> CloneRopesLayer() const;
@@ -243,7 +240,6 @@ public:
     // Texture
     //
 
-    void NewTextureLayer();
     void SetTextureLayer(
         TextureLayerData && textureLayer,
         std::optional<std::string> originalTextureArtCredits);

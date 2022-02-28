@@ -59,15 +59,6 @@ ShipDefinition Model::MakeShipDefinition() const
         GetShipAutoTexturizationSettings());
 }
 
-void Model::NewStructuralLayer()
-{
-    // Reset layer
-    mStructuralLayer = MakeNewEmptyStructuralLayer(mShipSize);
-
-    // Update presence map
-    mLayerPresenceMap[static_cast<size_t>(LayerType::Structural)] = true;
-}
-
 void Model::SetStructuralLayer(StructuralLayerData && structuralLayer)
 {
     assert(structuralLayer.Buffer.Size == GetShipSize());
@@ -93,15 +84,6 @@ void Model::RestoreStructuralLayer(StructuralLayerData && structuralLayer)
 
     // Update presence map
     mLayerPresenceMap[static_cast<size_t>(LayerType::Structural)] = true;
-}
-
-void Model::NewElectricalLayer()
-{
-    // Reset layer
-    mElectricalLayer = MakeNewEmptyElectricalLayer(mShipSize);
-
-    // Update presence map
-    mLayerPresenceMap[static_cast<size_t>(LayerType::Electrical)] = true;
 }
 
 void Model::SetElectricalLayer(ElectricalLayerData && electricalLayer)
@@ -145,24 +127,10 @@ void Model::RestoreElectricalLayer(std::unique_ptr<ElectricalLayerData> electric
     mLayerPresenceMap[static_cast<size_t>(LayerType::Electrical)] = (bool)mElectricalLayer;
 }
 
-void Model::NewRopesLayer()
+void Model::SetRopesLayer(RopesLayerData && ropesLayer)
 {
-    // Reset layer
-    mRopesLayer = MakeNewEmptyRopesLayer();
-
-    // Update presence map
-    mLayerPresenceMap[static_cast<size_t>(LayerType::Ropes)] = true;
-}
-
-void Model::SetRopesLayer(/*TODO*/)
-{
-    // TODO
-    ////assert(structuralLayer.Buffer.Size == GetShipSize());
-
-    ////// Update layer
-    ////mStructuralLayer.reset(new StructuralLayerData(std::move(structuralLayer)));
-
-    // TODO: make sure also electrical panel is copied (moved) with LayerData
+    // Update layer
+    mRopesLayer.reset(new RopesLayerData(std::move(ropesLayer)));
 
     // Update presence map
     mLayerPresenceMap[static_cast<size_t>(LayerType::Ropes)] = true;
@@ -196,14 +164,6 @@ void Model::RestoreRopesLayer(std::unique_ptr<RopesLayerData> ropesLayer)
 
     // Update presence map
     mLayerPresenceMap[static_cast<size_t>(LayerType::Ropes)] = (bool)mRopesLayer;
-}
-
-void Model::NewTextureLayer()
-{
-    // TODO
-
-    // Update presence map
-    mLayerPresenceMap[static_cast<size_t>(LayerType::Texture)] = true;
 }
 
 void Model::SetTextureLayer(TextureLayerData && textureLayer)
@@ -252,18 +212,6 @@ std::unique_ptr<StructuralLayerData> Model::MakeNewEmptyStructuralLayer(ShipSpac
     return std::make_unique<StructuralLayerData>(
         shipSize,
         StructuralElement(nullptr)); // No material
-}
-
-std::unique_ptr<ElectricalLayerData> Model::MakeNewEmptyElectricalLayer(ShipSpaceSize const & shipSize)
-{
-    return std::make_unique<ElectricalLayerData>(
-        shipSize,
-        ElectricalElement(nullptr, NoneElectricalElementInstanceIndex)); // No material
-}
-
-std::unique_ptr<RopesLayerData> Model::MakeNewEmptyRopesLayer()
-{
-    return std::make_unique<RopesLayerData>();
 }
 
 }

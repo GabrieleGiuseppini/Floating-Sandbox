@@ -415,18 +415,6 @@ void ModelController::ResizeShip(
 // Structural
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void ModelController::NewStructuralLayer()
-{
-    mModel.NewStructuralLayer();
-
-    InitializeStructuralLayerAnalysis();
-
-    RegisterDirtyVisualization<VisualizationType::Game>(GetWholeShipRect());
-    RegisterDirtyVisualization<VisualizationType::StructuralLayer>(GetWholeShipRect());
-
-    mIsStructuralLayerInEphemeralVisualization = false;
-}
-
 void ModelController::SetStructuralLayer(StructuralLayerData && structuralLayer)
 {
     assert(mModel.HasLayer(LayerType::Structural));
@@ -634,17 +622,6 @@ void ModelController::RestoreStructuralLayerRegionForEphemeralVisualization(
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Electrical
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-void ModelController::NewElectricalLayer()
-{
-    mModel.NewElectricalLayer();
-
-    InitializeElectricalLayerAnalysis();
-
-    RegisterDirtyVisualization<VisualizationType::ElectricalLayer>(GetWholeShipRect());
-
-    mIsElectricalLayerInEphemeralVisualization = false;
-}
 
 void ModelController::SetElectricalLayer(ElectricalLayerData && electricalLayer)
 {
@@ -889,20 +866,9 @@ void ModelController::RestoreElectricalLayerRegionForEphemeralVisualization(
 // Ropes
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void ModelController::NewRopesLayer()
+void ModelController::SetRopesLayer(RopesLayerData && ropesLayer)
 {
-    mModel.NewRopesLayer();
-
-    InitializeRopesLayerAnalysis();
-
-    RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
-
-    mIsRopesLayerInEphemeralVisualization = false;
-}
-
-void ModelController::SetRopesLayer(/*TODO*/)
-{
-    mModel.SetRopesLayer(/*TODO*/);
+    mModel.SetRopesLayer(std::move(ropesLayer));
 
     InitializeRopesLayerAnalysis();
 
@@ -1149,14 +1115,6 @@ void ModelController::RestoreRopesLayerForEphemeralVisualization(RopesLayerData 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Texture
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-void ModelController::NewTextureLayer()
-{
-    mModel.NewTextureLayer();
-
-    RegisterDirtyVisualization<VisualizationType::Game>(GetWholeShipRect());
-    RegisterDirtyVisualization<VisualizationType::TextureLayer>(GetWholeShipRect());
-}
 
 void ModelController::SetTextureLayer(
     TextureLayerData && textureLayer,
