@@ -35,6 +35,7 @@ set (UNIT_TEST_SOURCES
 	GameGeometryTests.cpp
 	GameMathTests.cpp
 	IntegralSystemTests.cpp
+	LayerTests.cpp
 	LayoutHelperTests.cpp
 	main.cpp
 	Matrix2Tests.cpp

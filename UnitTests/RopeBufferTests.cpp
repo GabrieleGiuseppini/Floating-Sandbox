@@ -6,8 +6,8 @@
 
 TEST(RopeBufferTests, SampleAt)
 {
-    auto const material1 = MakeTestStructuralMaterial("mat1");
-    auto const material2 = MakeTestStructuralMaterial("mat2");
+    auto const material1 = MakeTestStructuralMaterial("mat1", rgbColor(1, 2, 3));
+    auto const material2 = MakeTestStructuralMaterial("mat2", rgbColor(1, 2, 3));
 
     RopeBuffer buffer;
 

@@ -51,6 +51,11 @@ struct StructuralLayerData
     {
         return StructuralLayerData(Buffer.CloneRegion(region));
     }
+
+    StructuralLayerData MakeReframed(
+        ShipSpaceSize const & newSize, // Final size
+        ShipSpaceCoordinates const & originOffset, // Position in final buffer of original {0, 0}
+        StructuralElement const & fillerValue) const;
 };
 
 template <>
@@ -114,6 +119,11 @@ struct ElectricalLayerData
             Buffer.CloneRegion(region),
             std::move(panelClone));
     }
+
+    ElectricalLayerData MakeReframed(
+        ShipSpaceSize const & newSize, // Final size
+        ShipSpaceCoordinates const & originOffset, // Position in final buffer of original {0, 0}
+        ElectricalElement const & fillerValue) const;
 };
 
 template <>
@@ -143,6 +153,10 @@ struct RopesLayerData
     {
         return RopesLayerData(Buffer.Clone());
     }
+
+    RopesLayerData MakeReframed(
+        ShipSpaceSize const & newSize, // Final size
+        ShipSpaceCoordinates const & originOffset) const; // Position in final buffer of original {0, 0}
 };
 
 template <>

@@ -22,6 +22,7 @@ set  (GAME_SOURCES
 	ImageFileTools.cpp
 	ImageFileTools.h
 	LayerElements.h
+	Layers.cpp
 	Layers.h
 	Materials.cpp
 	Materials.h

@@ -57,6 +57,9 @@
 		= Make internal helper templated on LayerType, with all code
 			+ Use WrapLikelyPresenceChangingOperation
 			+ Use PushUndoForWholeLayer
+		- See if can remove all that dance with uq_ptr and without
+			- Controller: SetStructuralLayer takes LayerData&&, everything else takes uq_ptr
+			- After that, everything's uq_ptr
 		= Additions:
 			+ Undo
 				+ Note: texture layer change should also remember metadata (art credits)
@@ -71,7 +74,14 @@
 		= Import from:
 			= .png, .shp, .shp2 (load whole and throw away)
 			- Resize
-				- TODOHERE
+				+ Can move MakeReframed() up to XYZLayerData()?
+					+ Structural: just buffer
+					+ Electrical: buffer + panel
+						+ Do also staticShipRect calc's (intersection of old rect w/ (newOffset, newSize), then shifted to old coords)
+						+ Fix panel
+					+ Ropes: buffer
+					+ Unit tests
+				- Rewrite ModelController::ResizeShip in terms of LayerData::Reframe()
 			- Test:
 				- .shp2, password-protected
 				- .shp

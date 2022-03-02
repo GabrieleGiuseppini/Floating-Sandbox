@@ -19,19 +19,19 @@ float DivideByTwo(float value)
     return value / 2.0f;
 }
 
-StructuralMaterial MakeTestStructuralMaterial(std::string name)
+StructuralMaterial MakeTestStructuralMaterial(std::string name, rgbColor colorKey)
 {
     return StructuralMaterial(
-        rgbColor(1, 2, 3),
+        colorKey,
         name,
         rgbColor::zero());
 }
 
-ElectricalMaterial MakeTestElectricalMaterial(std::string name)
+ElectricalMaterial MakeTestElectricalMaterial(std::string name, rgbColor colorKey, bool isInstanced)
 {
     return ElectricalMaterial(
-        rgbColor(1, 2, 3), // ColorKey
+        colorKey,
         name,
         rgbColor::zero(),
-        false);
+        isInstanced);
 }
