@@ -182,6 +182,11 @@ struct TextureLayerData
     {
         return TextureLayerData(Buffer.Clone());
     }
+
+    TextureLayerData MakeReframed(
+        ImageSize const & newSize, // Final size
+        ImageCoordinates const & originOffset, // Position in final buffer of original {0, 0}
+        rgbaColor const & fillerValue) const;
 };
 
 template <>

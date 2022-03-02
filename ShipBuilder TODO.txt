@@ -72,8 +72,8 @@
 = Import/Export:
 	= Structural:
 		= Import from:
-			= .png, .shp, .shp2 (load whole and throw away)
-			- Resize
+			+ .png, .shp, .shp2 (load whole and throw away)
+			+ Resize
 				+ Can move MakeReframed() up to XYZLayerData()?
 					+ Structural: just buffer
 					+ Electrical: buffer + panel
@@ -81,7 +81,8 @@
 						+ Fix panel
 					+ Ropes: buffer
 					+ Unit tests
-				- Rewrite ModelController::ResizeShip in terms of LayerData::Reframe()
+				+ Rewrite ModelController::ResizeShip in terms of LayerData::Reframe()
+				+ Do resize @ import
 			- Test:
 				- .shp2, password-protected
 				- .shp

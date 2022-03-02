@@ -283,6 +283,94 @@ void ModelController::ResizeShip(
     ShipSpaceSize const & newSize,
     ShipSpaceCoordinates const & originOffset)
 {
+    auto const originalShipSize = mModel.GetShipSize();
+
+    ShipSpaceRect newWholeShipRect({ 0, 0 }, newSize);
+
+    mModel.SetShipSize(newSize);
+
+    // Structural layer
+    {
+        assert(mModel.HasLayer(LayerType::Structural));
+
+        assert(!mIsStructuralLayerInEphemeralVisualization);
+
+        mModel.SetStructuralLayer(
+            mModel.GetStructuralLayer().MakeReframed(
+                newSize,
+                originOffset,
+                StructuralElement(nullptr)));
+
+        InitializeStructuralLayerAnalysis();
+
+        // Initialize visualization
+        mStructuralLayerVisualizationTexture.reset();
+        RegisterDirtyVisualization<VisualizationType::StructuralLayer>(newWholeShipRect);
+    }
+
+    // Electrical layer
+    if (mModel.HasLayer(LayerType::Electrical))
+    {
+        assert(!mIsElectricalLayerInEphemeralVisualization);
+
+        mModel.SetElectricalLayer(
+            mModel.GetElectricalLayer().MakeReframed(
+                newSize,
+                originOffset,
+                ElectricalElement(nullptr, NoneElectricalElementInstanceIndex)));
+
+        InitializeElectricalLayerAnalysis();
+
+        // Initialize visualization
+        mElectricalLayerVisualizationTexture.reset();
+        RegisterDirtyVisualization<VisualizationType::ElectricalLayer>(newWholeShipRect);
+    }
+
+    // Ropes layer
+    if (mModel.HasLayer(LayerType::Ropes))
+    {
+        assert(!mIsRopesLayerInEphemeralVisualization);
+
+        mModel.SetRopesLayer(
+            mModel.GetRopesLayer().MakeReframed(
+                newSize,
+                originOffset));
+
+        InitializeRopesLayerAnalysis();
+
+        RegisterDirtyVisualization<VisualizationType::RopesLayer>(newWholeShipRect);
+    }
+
+    // Texture layer
+    if (mModel.HasLayer(LayerType::Texture))
+    {
+        // Convert (scale) rect to texture coordinates space
+        vec2f const shipToImage(
+            static_cast<float>(mModel.GetTextureLayer().Buffer.Size.width) / static_cast<float>(originalShipSize.width),
+            static_cast<float>(mModel.GetTextureLayer().Buffer.Size.height) / static_cast<float>(originalShipSize.height));
+        ImageSize const imageNewSize = ImageSize::FromFloatRound(newSize.ToFloat().scale(shipToImage));
+        ImageCoordinates imageOriginOffset = ImageCoordinates::FromFloatRound(originOffset.ToFloat().scale(shipToImage));
+
+        mModel.SetTextureLayer(
+            mModel.GetTextureLayer().MakeReframed(
+                imageNewSize,
+                imageOriginOffset,
+                rgbaColor(0, 0, 0, 0)));
+
+        RegisterDirtyVisualization<VisualizationType::TextureLayer>(newWholeShipRect);
+    }
+
+    // Initialize game visualizations
+    {
+        mGameVisualizationTexture.reset();
+        mGameVisualizationAutoTexturizationTexture.reset();
+        RegisterDirtyVisualization<VisualizationType::Game>(newWholeShipRect);
+    }
+
+    assert(mModel.GetShipSize() == newSize);
+    assert(GetWholeShipRect() == newWholeShipRect);
+
+    /* TODOOLD
     //
     // Calculate "static" (remaining) rect - wrt old coordinates 
     //
@@ -409,6 +497,7 @@ void ModelController::ResizeShip(
 
     assert(mModel.GetShipSize() == newSize);
     assert(GetWholeShipRect() == newWholeShipRect);
+    */
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

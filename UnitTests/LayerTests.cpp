@@ -580,3 +580,148 @@ TEST(LayerTests, RopesLayer_Reframe_Same)
     EXPECT_EQ(targetLayer.Buffer[2].EndCoords, ShipSpaceCoordinates(10, 10));
 }
 
+TEST(LayerTests, TextureLayer_Reframe_Smaller)
+{
+    //
+    // Create source layer
+    //
+
+    Buffer2D<rgbaColor, struct ImageTag> sourceBuffer(8, 6);
+
+    uint8_t iVal = 2;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[ImageCoordinates(x, y)] = rgbaColor(iVal, iVal, iVal, iVal);
+        }
+    }
+
+    TextureLayerData sourceLayer(std::move(sourceBuffer));
+
+    //
+    // Reframe layer
+    //
+
+    TextureLayerData targetLayer = sourceLayer.MakeReframed(
+        { 4, 3 },
+        { -2, -1 },
+        rgbaColor(0, 0, 0, 255));
+
+    //
+    // Verify
+    //
+
+    ASSERT_EQ(targetLayer.Buffer.Size, ImageSize(4, 3));
+
+    for (int y = 0; y < 3; ++y)
+    {
+        for (int x = 0; x < 4; ++x)
+        {
+            auto const coords = ImageCoordinates(x, y);
+            if (x >= 4 || y >= 3)
+            {
+                EXPECT_EQ(targetLayer.Buffer[coords], rgbaColor(0, 0, 0, 255));
+            }
+            else
+            {
+                EXPECT_EQ(targetLayer.Buffer[coords], sourceLayer.Buffer[coords + ImageSize(2, 1)]);
+            }
+        }
+    }
+}
+
+TEST(LayerTests, TextureLayer_Reframe_Larger)
+{
+    //
+    // Create source layer
+    //
+
+    Buffer2D<rgbaColor, struct ImageTag> sourceBuffer(4, 4);
+
+    uint8_t iVal = 2;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[ImageCoordinates(x, y)] = rgbaColor(iVal, iVal, iVal, iVal);
+        }
+    }
+
+    TextureLayerData sourceLayer(std::move(sourceBuffer));
+
+    //
+    // Reframe layer
+    //
+
+    TextureLayerData targetLayer = sourceLayer.MakeReframed(
+        { 8, 6 },
+        { 1, 2 },
+        rgbaColor(0, 0, 0, 255));
+
+    //
+    // Verify
+    //
+
+    ASSERT_EQ(targetLayer.Buffer.Size, ImageSize(8, 6));
+
+    for (int y = 0; y < 6; ++y)
+    {
+        for (int x = 0; x < 8; ++x)
+        {
+            auto const coords = ImageCoordinates(x, y);
+            if (x >= 1 && x < 1 + 4 && y >= 2 && y < 2 + 4)
+            {
+                EXPECT_EQ(targetLayer.Buffer[coords], sourceLayer.Buffer[coords - ImageSize(1, 2)]);
+            }
+            else
+            {
+                EXPECT_EQ(targetLayer.Buffer[coords], rgbaColor(0, 0, 0, 255));
+            }
+        }
+    }
+}
+
+TEST(LayerTests, TextureLayer_Reframe_Same)
+{
+    //
+    // Create source layer
+    //
+
+    Buffer2D<rgbaColor, struct ImageTag> sourceBuffer(8, 8);
+
+    uint8_t iVal = 2;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[ImageCoordinates(x, y)] = rgbaColor(iVal, iVal, iVal, iVal);
+        }
+    }
+
+    TextureLayerData sourceLayer(std::move(sourceBuffer));
+
+    //
+    // Reframe layer
+    //
+
+    TextureLayerData targetLayer = sourceLayer.MakeReframed(
+        sourceLayer.Buffer.Size,
+        { 0, 0 },
+        rgbaColor(0, 0, 0, 255));
+
+    //
+    // Verify
+    //
+
+    ASSERT_EQ(targetLayer.Buffer.Size, sourceLayer.Buffer.Size);
+
+    for (int y = 0; y < sourceLayer.Buffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceLayer.Buffer.Size.width; ++x)
+        {
+            auto const coords = ImageCoordinates(x, y);
+            EXPECT_EQ(targetLayer.Buffer[coords], sourceLayer.Buffer[coords]);
+        }
+    }
+}

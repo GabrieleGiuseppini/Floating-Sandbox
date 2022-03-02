@@ -3732,12 +3732,6 @@ void MainFrame::ImportLayerFromShip(LayerType layer)
             return;
         }
 
-        // TODOHERE:
-        // - If ship definition doesn't have this layer, error out
-        // - Resize layer
-        // - Invoke Controller::SetXYZLayer(...)
-        //      - If texture, also import ArtCredits
-
         switch (layer)
         {
             case LayerType::Electrical:
@@ -3748,35 +3742,69 @@ void MainFrame::ImportLayerFromShip(LayerType layer)
                     return;
                 }
 
-                // TODO: resize layer
+                // Reframe loaded layer to fit our model's size
+                ElectricalLayerData newElectricalLayer = shipDefinition->ElectricalLayer->MakeReframed(
+                    mController->GetShipSize(),
+                    ShipSpaceCoordinates(0, 0),
+                    ElectricalElement(nullptr, NoneElectricalElementInstanceIndex));
 
                 mController->SetElectricalLayer(
                     _("Import Electrical Layer"),
-                    std::move(*(shipDefinition->ElectricalLayer.release())));
+                    std::move(newElectricalLayer));
 
                 break;
             }
 
             case LayerType::Ropes:
             {
-                // TODO
+                if (!shipDefinition->RopesLayer)
+                {
+                    ShowError(_("The selected ship does not have a ropes layer"));
+                    return;
+                }
+
+                // Reframe loaded layer to fit our model's size
+                RopesLayerData newRopesLayer = shipDefinition->RopesLayer->MakeReframed(
+                    mController->GetShipSize(),
+                    ShipSpaceCoordinates(0, 0));
+
+                mController->SetRopesLayer(
+                    _("Import Ropes Layer"),
+                    std::move(newRopesLayer));
+
                 break;
             }
 
             case LayerType::Structural:
             {
-                // TODO: resize layer
+                // Reframe loaded layer to fit our model's size
+                StructuralLayerData newStructuralLayer = shipDefinition->StructuralLayer.MakeReframed(
+                    mController->GetShipSize(),
+                    ShipSpaceCoordinates(0, 0),
+                    StructuralElement(nullptr));
 
                 mController->SetStructuralLayer(
                     _("Import Structural Layer"),
-                    std::move(shipDefinition->StructuralLayer));
+                    std::move(newStructuralLayer));
 
                 break;
             }
 
             case LayerType::Texture:
             {
-                // TODO
+                if (!shipDefinition->TextureLayer)
+                {
+                    ShowError(_("The selected ship does not have a texture layer"));
+                    return;
+                }
+
+                // No need to resize, as texture image doesn't have to match;
+                // we'll leave it to the user, though, to ensure the *ratio* matches
+                mController->SetTextureLayer(
+                    _("Import Texture Layer"),
+                    std::move(*(shipDefinition->TextureLayer.release())),
+                    shipDefinition->Metadata.ArtCredits); // Import also art credits
+
                 break;
             }
         }

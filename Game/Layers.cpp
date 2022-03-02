@@ -92,3 +92,15 @@ RopesLayerData RopesLayerData::MakeReframed(
 
     return RopesLayerData(std::move(newBuffer));
 }
+
+TextureLayerData TextureLayerData::MakeReframed(
+    ImageSize const & newSize, // Final size
+    ImageCoordinates const & originOffset, // Position in final buffer of original {0, 0}
+    rgbaColor const & fillerValue) const
+{
+    return TextureLayerData(
+        Buffer.MakeReframed(
+            newSize,
+            originOffset,
+            fillerValue));
+}
