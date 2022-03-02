@@ -98,6 +98,35 @@ void Preferences::LoadPreferences()
         {
             mDisplayUnitsSystem = static_cast<UnitsSystem>(displayUnitsSystemIt->second.get<std::int64_t>());
         }
+
+        //
+        // Ship load directories
+        //
+
+        if (auto shipLoadDirectoriesIt = preferencesRootObject->find("ship_load_directories");
+            shipLoadDirectoriesIt != preferencesRootObject->end() && shipLoadDirectoriesIt->second.is<picojson::array>())
+        {
+            mShipLoadDirectories.clear();
+
+            auto shipLoadDirectories = shipLoadDirectoriesIt->second.get<picojson::array>();
+            for (auto const shipLoadDirectory : shipLoadDirectories)
+            {
+                if (shipLoadDirectory.is<std::string>())
+                {
+                    auto shipLoadDirectoryPath = std::filesystem::path(shipLoadDirectory.get<std::string>());
+
+                    // Make sure dir still exists, and it's not in the vector already
+                    if (std::filesystem::exists(shipLoadDirectoryPath)
+                        && std::find(
+                            mShipLoadDirectories.cbegin(),
+                            mShipLoadDirectories.cend(),
+                            shipLoadDirectoryPath) == mShipLoadDirectories.cend())
+                    {
+                        mShipLoadDirectories.push_back(shipLoadDirectoryPath);
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -110,6 +139,17 @@ void Preferences::SavePreferences() const
 
     // Add display units system
     preferencesRootObject["display_units_system"] = picojson::value(static_cast<std::int64_t>(mDisplayUnitsSystem));
+
+    // Add ship load directories
+    {
+        picojson::array shipLoadDirectories;
+        for (auto shipDir : mShipLoadDirectories)
+        {
+            shipLoadDirectories.push_back(picojson::value(shipDir.string()));
+        }
+
+        preferencesRootObject["ship_load_directories"] = picojson::value(shipLoadDirectories);
+    }
 
     // Save
     Utils::SaveJSONFile(

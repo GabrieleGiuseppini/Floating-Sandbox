@@ -35,6 +35,21 @@ public:
         mDisplayUnitsSystem = value;
     }
 
+    std::vector<std::filesystem::path> const & GetShipLoadDirectories() const
+    {
+        return mShipLoadDirectories;
+    }
+
+    void AddShipLoadDirectory(std::filesystem::path shipLoadDirectory)
+    {
+        // Check if it's in already
+        if (std::find(mShipLoadDirectories.cbegin(), mShipLoadDirectories.cend(), shipLoadDirectory) == mShipLoadDirectories.cend())
+        {
+            // Add in front
+            mShipLoadDirectories.insert(mShipLoadDirectories.cbegin(), shipLoadDirectory);
+        }
+    }
+
 private:
 
     static std::filesystem::path GetPreferencesFilePath();
@@ -48,6 +63,7 @@ private:
 private:
 
     UnitsSystem mDisplayUnitsSystem;
+    std::vector<std::filesystem::path> mShipLoadDirectories;
 };
 
 }

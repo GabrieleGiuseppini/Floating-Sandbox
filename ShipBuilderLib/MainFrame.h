@@ -445,7 +445,6 @@ private:
     Preferences mPreferences;
 
     std::optional<std::filesystem::path> mCurrentShipFilePath;
-    std::vector<std::filesystem::path> mShipLoadDirectories;
 };
 
 }

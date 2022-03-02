@@ -3634,20 +3634,15 @@ void MainFrame::LoadShip()
     }
 
     // Open ship load dialog
-    auto const res = mShipLoadDialog->ShowModal(mShipLoadDirectories);
+    auto const res = mShipLoadDialog->ShowModal(mPreferences.GetShipLoadDirectories());
     if (res == wxID_OK)
     {
         // Load ship
         auto const shipFilePath = mShipLoadDialog->GetChosenShipFilepath();
         DoLoadShip(shipFilePath); // Ignore eventual failure
 
-        // Update directories
-        auto const shipLoadDirectory = shipFilePath.parent_path();
-        if (std::find(mShipLoadDirectories.cbegin(), mShipLoadDirectories.cend(), shipLoadDirectory) == mShipLoadDirectories.cend())
-        {
-            // Add in front
-            mShipLoadDirectories.insert(mShipLoadDirectories.cbegin(), shipLoadDirectory);
-        }
+        // Store directory in preferences
+        mPreferences.AddShipLoadDirectory(shipFilePath.parent_path());
     }
 }
 
@@ -3720,7 +3715,7 @@ void MainFrame::SwitchBackToGame(std::optional<std::filesystem::path> shipFilePa
 void MainFrame::ImportLayerFromShip(LayerType layer)
 {
     // Open ship load dialog
-    auto const res = mShipLoadDialog->ShowModal(mShipLoadDirectories);
+    auto const res = mShipLoadDialog->ShowModal(mPreferences.GetShipLoadDirectories());
     if (res == wxID_OK)
     {
         auto const shipFilePath = mShipLoadDialog->GetChosenShipFilepath();
@@ -3808,6 +3803,9 @@ void MainFrame::ImportLayerFromShip(LayerType layer)
                 break;
             }
         }
+    
+        // Store directory in preferences
+        mPreferences.AddShipLoadDirectory(shipFilePath.parent_path());
     }
 }
 

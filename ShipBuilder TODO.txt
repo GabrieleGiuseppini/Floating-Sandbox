@@ -54,7 +54,7 @@
 			+ T
 		+ Cleanup old code
 	= Set:
-		= Make internal helper templated on LayerType, with all code
+		+ Make internal helper templated on LayerType, with all code
 			+ Use WrapLikelyPresenceChangingOperation
 			+ Use PushUndoForWholeLayer
 		- See if can remove all that dance with uq_ptr and without
@@ -205,7 +205,7 @@
 		+ Any import from .shp2 requires password
 		+ All imports push an undo (via Controller::SetXYZLayer())
 
-- Preferences: load directories
++ Preferences: load directories
 
 - Send for testing
 
