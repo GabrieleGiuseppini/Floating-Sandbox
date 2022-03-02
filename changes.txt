@@ -3,6 +3,7 @@
 	- Added "Measuring Tape" tool, which allows to measure lengths of structures
 	- Added ability to import layers from other ships
 	- Adding and removing layers can now be undone via "Undo"
+	- Added ability to export structural and texture layers to image files
 
 1.17.1
 - ShipBuilder:

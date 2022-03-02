@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "Layers.h"
 #include "MaterialDatabase.h"
 #include "ShipDefinition.h"
 #include "ShipPreviewData.h"
@@ -58,6 +59,10 @@ public:
 
     static void SaveShip(
         ShipDefinition const & shipDefinition,
+        std::filesystem::path const & shipFilePath);
+
+    static void SaveStructuralLayerImage(
+        StructuralLayerData const & structuralLayer,
         std::filesystem::path const & shipFilePath);
 
 private:

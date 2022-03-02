@@ -15,6 +15,8 @@ set  (UI_LIB_SOURCES
 	HighlightableTextButton.h
 	ImageLoadDialog.cpp
 	ImageLoadDialog.h
+	ImageSaveDialog.cpp
+	ImageSaveDialog.h
 	LayoutHelper.h
 	LocalizationManager.cpp
 	LocalizationManager.h

@@ -124,6 +124,12 @@ public:
 
     ModelValidationResults ValidateModel();
 
+    StructuralLayerData const & GetStructuralLayer() const
+    {
+        assert(mModelController);
+        return mModelController->GetModel().GetStructuralLayer();
+    }
+
     void NewStructuralLayer();
     void SetStructuralLayer(
         wxString actionTitle, 
@@ -150,6 +156,13 @@ public:
         RopesLayerData && ropesLayer);
     void RemoveRopesLayer();
     void RestoreRopesLayerForUndo(std::unique_ptr<RopesLayerData> ropesLayer);
+
+    TextureLayerData const & GetTextureLayer() const
+    {
+        assert(mModelController);
+        assert(mModelController->GetModel().HasLayer(LayerType::Texture));
+        return mModelController->GetModel().GetTextureLayer();
+    }
 
     void SetTextureLayer(
         wxString actionTitle,

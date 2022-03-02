@@ -10,6 +10,7 @@
 #include <UILib/HighlightableTextButton.h>
 #include <UILib/EditSpinBox.h>
 #include <UILib/ImageLoadDialog.h>
+#include <UILib/ImageSaveDialog.h>
 #include <UILib/UnderConstructionDialog.h>
 #include <UILib/WxHelpers.h>
 
@@ -1300,11 +1301,27 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
                 wxHORIZONTAL,
                 mResourceLocator.GetBitmapFilePath("save_layer_button"),
                 _("Export"),
-                [this]()
+                [this, layer]()
                 {
-                    // TODO
-                    // TODO: also here ask user if sure when the layer is dirty
-                    UnderConstructionDialog::Show(this, mResourceLocator);
+                    ImageSaveDialog dlg(this);
+                    auto const ret = dlg.ShowModal();
+                    if (ret == wxID_OK)
+                    {
+                        if (layer == LayerType::Structural)
+                        {
+                            ShipDeSerializer::SaveStructuralLayerImage(
+                                mController->GetStructuralLayer(),
+                                dlg.GetChosenFilepath());
+                        }
+                        else
+                        {
+                            assert(layer == LayerType::Texture);
+
+                            ImageFileTools::SavePngImage(
+                                mController->GetTextureLayer().Buffer,
+                                dlg.GetChosenFilepath());
+                        }
+                    }
                 },
                 _("Export this layer to a file."));
 

@@ -9,8 +9,7 @@
 	+ If specified overrides own storage, else is loaded (and if not loaded, is default)
 + StatusBar (*)
 + Measuring Tape tool (*)
-
-= New/Set/Remove layers:
++ New/Set/Remove layers:
 	+ New:
 		+ Make internal helper templated on LayerType, with all code
 			+ Add new templated helper to make undo entry with whole layer
@@ -53,13 +52,10 @@
 			+ R
 			+ T
 		+ Cleanup old code
-	= Set:
+	+ Set:
 		+ Make internal helper templated on LayerType, with all code
 			+ Use WrapLikelyPresenceChangingOperation
 			+ Use PushUndoForWholeLayer
-		- See if can remove all that dance with uq_ptr and without
-			- Controller: SetStructuralLayer takes LayerData&&, everything else takes uq_ptr
-			- After that, everything's uq_ptr
 		+ Additions:
 			+ Undo
 				+ Note: texture layer change should also remember metadata (art credits)
@@ -68,9 +64,8 @@
 			+ E
 			+ R
 			+ T
-
-= Import/Export:
-	= Structural:
++ Import/Export:
+	+ Structural:
 		+ Import from:
 			+ .png, .shp, .shp2 (load whole and throw away)
 			+ Resize
@@ -90,9 +85,9 @@
 				+ Resize larger
 				+ Resize smaller
 				+ One from Simulator
-		- Export to .png
-			- ShipDeSerializer:
-				- SaveStructuralLayerImage(StructuralLayerBuffer const &, ...)
+		+ Export to .png
+			+ ShipDeSerializer:
+				+ SaveStructuralLayerImage(StructuralLayerData const &, ...)
 	+ Electrical:
 		+ Import:
 			+ .shp, .shp2 (load whole and throw away)
@@ -123,8 +118,8 @@
 				+ Resize smaller
 				+ One from Simulator
 		+ No export (can save .shp2 and import from there)
-	= Texture:
-		= Import: two separate import buttons
+	+ Texture:
+		+ Import: two separate import buttons
 			+ .png
 				+ New ImageLoadDialog
 				+ Load file and pass to Controller
@@ -199,13 +194,15 @@
 					+ One from Simulator
 				+ With import, also replace art credits
 					+ Empty if from image, from imported ship otherwise (even if empty)
-		- Export to .png (though quite useless at this moment)
-			- Ad-hoc code using ImageFileTools
+		+ Export to .png (though quite useless at this moment)
+			+ Ad-hoc code using ImageFileTools
 	+ Notes:
 		+ Any import from .shp2 requires password
 		+ All imports push an undo (via Controller::SetXYZLayer())
 
 + Preferences: load directories
+
+- Do Texture resource directory rearc
 
 - Send for testing
 

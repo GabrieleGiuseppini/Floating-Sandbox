@@ -78,6 +78,31 @@ void ShipDeSerializer::SaveShip(
         shipFilePath);
 }
 
+void ShipDeSerializer::SaveStructuralLayerImage(
+    StructuralLayerData const & structuralLayer,
+    std::filesystem::path const & shipFilePath)
+{
+    RgbaImageData structuralLayerImage = RgbaImageData(
+        ImageSize(
+            structuralLayer.Buffer.Size.width,
+            structuralLayer.Buffer.Size.height));
+
+    for (int y = 0; y < structuralLayer.Buffer.Size.height; ++y)
+    {
+        for (int x = 0; x < structuralLayer.Buffer.Size.width; ++x)
+        {
+            StructuralElement const & element = structuralLayer.Buffer[{x, y}];
+            structuralLayerImage[{x, y}] = element.Material != nullptr
+                ? rgbaColor(element.Material->RenderColor, 255)
+                : rgbaColor(EmptyMaterialColorKey, 255);
+        }
+    }
+
+    ImageFileTools::SavePngImage(
+        structuralLayerImage,
+        shipFilePath);
+}
+
 ///////////////////////////////////////////////////////
 
 bool ShipDeSerializer::IsImageDefinitionFile(std::filesystem::path const & shipFilePath)
