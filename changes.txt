@@ -1,3 +1,9 @@
+1.17.2
+- ShipBuilder:
+	- Added "Measuring Tape" tool, which allows to measure lengths of structures
+	- Added ability to import layers from other ships
+	- Adding and removing layers can now be undone via "Undo"
+
 1.17.1
 - ShipBuilder:
 	- Added "Sampler" tool, to inspect and select materials from existing particles

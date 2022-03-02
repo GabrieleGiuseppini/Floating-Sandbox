@@ -60,18 +60,18 @@
 		- See if can remove all that dance with uq_ptr and without
 			- Controller: SetStructuralLayer takes LayerData&&, everything else takes uq_ptr
 			- After that, everything's uq_ptr
-		= Additions:
+		+ Additions:
 			+ Undo
 				+ Note: texture layer change should also remember metadata (art credits)
-		- Test (basic; undo):
-			- S
-			- E
-			- R
-			- T
+		+ Test (basic; undo):
+			+ S
+			+ E
+			+ R
+			+ T
 
 = Import/Export:
 	= Structural:
-		= Import from:
+		+ Import from:
 			+ .png, .shp, .shp2 (load whole and throw away)
 			+ Resize
 				+ Can move MakeReframed() up to XYZLayerData()?
@@ -83,45 +83,45 @@
 					+ Unit tests
 				+ Rewrite ModelController::ResizeShip in terms of LayerData::Reframe()
 				+ Do resize @ import
-			- Test:
-				- .shp2, password-protected
-				- .shp
-				- .png
-				- Resize larger
-				- Resize smaller
-				- One from Simulator
+			+ Test:
+				+ .shp2, password-protected
+				+ .shp
+				+ .png
+				+ Resize larger
+				+ Resize smaller
+				+ One from Simulator
 		- Export to .png
 			- ShipDeSerializer:
 				- SaveStructuralLayerImage(StructuralLayerBuffer const &, ...)
-	= Electrical:
-		= Import:
-			= .shp, .shp2 (load whole and throw away)
+	+ Electrical:
+		+ Import:
+			+ .shp, .shp2 (load whole and throw away)
 				+ Might as well allow user to select .png's (for simplicity in ShipLoadDialog), will be discared afterwards anyway
 			+ Show error if no layer exists in definition
-			- Resize
-			- Test:
-				- .shp2, password-protected
-				- .shp
-				- .png (expect error)
-				- Ship with no such layer
-				- Resize larger
-				- Resize smaller
-				- One from Simulator
+			+ Resize
+			+ Test:
+				+ .shp2, password-protected
+				+ .shp
+				+ .png (w/error and w/out error)
+				+ Ship with no such layer
+				+ Resize larger
+				+ Resize smaller
+				+ One from Simulator
 		! No export (can save .shp2 and import from there)
-	- Ropes:
-		- Import:
-			- .shp, .shp2 (load whole and throw away)
-				- Might as well allow user to select .png's (for simplicity in ShipLoadDialog), will be discared afterwards anyway
-			- Show error if no layer exists in definition
-			- Resize
-			- Test:
-				- .shp2, password-protected
-				- .shp
-				- .png (expect error)
-				- Ship with no such layer
-				- Resize larger
-				- Resize smaller
-				- One from Simulator
+	+ Ropes:
+		+ Import:
+			+ .shp, .shp2 (load whole and throw away)
+				+ Might as well allow user to select .png's (for simplicity in ShipLoadDialog), will be discared afterwards anyway
+			+ Show error if no layer exists in definition
+			+ Resize
+			+ Test:
+				+ .shp2, password-protected
+				+ .shp
+				+ .png (w/error and w/out error)
+				+ Ship with no such layer
+				+ Resize larger
+				+ Resize smaller
+				+ One from Simulator
 		+ No export (can save .shp2 and import from there)
 	= Texture:
 		= Import: two separate import buttons
@@ -187,28 +187,27 @@
 								+ Undo
 									+ Instead of executing undo via 4 calls to Controller::RestoreXXXLayerForUndo, do one single call to
 									  new Controller::RestoreAllLayersForUndo
-			- .shp, .shp2 (load whole and throw away)
-				- Might as well allow user to select also .png's (for simplicity in ShipLoadDialog), will be discarded (errored) afterwards anyway - see next line
-			- Show error if no layer exists in definition
-			- Resize
-			- Test:
-				- .shp2, password-protected
-				- .shp
-				- .png (expect error)
-				- Ship with no such layer
-				- Resize larger
-				- Resize smaller
-				- One from Simulator
-			= With import, also replace art credits
-				= Empty if from image, from imported ship otherwise (even if empty)
+			+ .shp, .shp2 (load whole and throw away)
+					+ Might as well allow user to select also .png's (for simplicity in ShipLoadDialog), will be discarded (errored) afterwards anyway - see next line
+				+ Show error if no layer exists in definition
+				! No need to resize
+				+ Test:
+					+ .shp2, password-protected
+					+ .shp
+					+ .png (expect error)
+					+ Ship with no such layer
+					+ One from Simulator
+				+ With import, also replace art credits
+					+ Empty if from image, from imported ship otherwise (even if empty)
 		- Export to .png (though quite useless at this moment)
 			- Ad-hoc code using ImageFileTools
-	- Notes:
-		- Any import from .shp2 requires password
-		- All imports push an undo (via Controller::SetXYZLayer())
+	+ Notes:
+		+ Any import from .shp2 requires password
+		+ All imports push an undo (via Controller::SetXYZLayer())
 
-- Rotate 90 (CW and CCW)
-	- Also changes ship size, do notifications
+- Preferences: load directories
+
+- Send for testing
 
 - Waterline analysis
 	- https://www.britannica.com/science/fluid-mechanics/Hydrostatics#ref611691
@@ -218,6 +217,9 @@
 			- For most hulls the center of buoyancy is below the center of gravity and the hull is said to be meta-stable
 		- Metacenter is the theoretical point at which the B-G vertical line intersects the vertical line through the new centre of buoyancy created when the body is tilted
 		- When at rest on even keel, the vessel’s centre of buoyancy is directly below the centre of gravity as well as below the metacentre
+
+- Rotate 90 (CW and CCW)
+	- Also changes ship size, do notifications
 
 - MaterialsPalette: make flag for making it its own wxFrame, so one can use it in a second monitor
 
