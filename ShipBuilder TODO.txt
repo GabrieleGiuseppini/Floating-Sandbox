@@ -202,8 +202,6 @@
 
 + Preferences: load directories
 
-- Do Texture resource directory rearc
-
 - Send for testing
 
 - Waterline analysis

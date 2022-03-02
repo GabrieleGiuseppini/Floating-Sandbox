@@ -1596,8 +1596,8 @@ void MainFrame::OnSaveScreenshotMenuItemSelected(wxCommandEvent & /*event*/)
         try
         {
             ImageFileTools::SavePngImage(
-                screenshotFilePath,
-                screenshotImage);
+                screenshotImage,
+                screenshotFilePath);
         }
         catch (std::filesystem::filesystem_error const & fex)
         {
