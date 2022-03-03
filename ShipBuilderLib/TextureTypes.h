@@ -17,27 +17,27 @@ namespace ShipBuilder {
 // Texture databases
 //
 
-// Generic Linear
+// Linear
 
-enum class GenericLinearTextureGroups : uint16_t
+enum class LinearTextureGroups : uint16_t
 {
     WaterlineMarker,
 
     _Last = WaterlineMarker
 };
 
-struct GenericLinearTextureTextureDatabaseTraits
+struct LinearTextureTextureDatabaseTraits
 {
-    static inline std::string DatabaseName = "ShipBuilderGenericLinearTexture";
+    static inline std::string DatabaseName = "ShipBuilderLinearTexture";
 
-    using TextureGroups = GenericLinearTextureGroups;
+    using TextureGroups = LinearTextureGroups;
 
     static TextureGroups StrToTextureGroup(std::string const & str)
     {
         if (Utils::CaseInsensitiveEquals(str, "WaterlineMarker"))
             return TextureGroups::WaterlineMarker;
         else
-            throw GameException("Unrecognized GenericLinearTexture texture group \"" + str + "\"");
+            throw GameException("Unrecognized LinearTexture texture group \"" + str + "\"");
     }
 };
 

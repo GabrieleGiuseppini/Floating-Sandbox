@@ -453,3 +453,5 @@ private:
 }
 
 template <> struct is_flag<Render::AtlasOptions> : std::true_type {};
+
+#include "TextureAtlas-inl.h"

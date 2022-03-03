@@ -45,8 +45,8 @@ View::View(
     , mHasRectOverlay(false)
     , mDashedLineOverlayColor(vec3f::zero()) // Will be overwritten
     //////////////////////////////////
-    , mGenericLinearTextureAtlasOpenGLHandle()
-    , mGenericLinearTextureAtlasMetadata()
+    , mLinearTextureAtlasOpenGLHandle()
+    , mLinearTextureAtlasMetadata()
     //////////////////////////////////
     , mPrimaryVisualization(primaryVisualization)
     , mOtherVisualizationsOpacity(otherVisualizationsOpacity)
@@ -91,36 +91,36 @@ View::View(
     mShaderManager->SetTextureParameters<ProgramType::TextureNdc>();
 
     //
-    // Create generic linear texture atlas
+    // Create linear texture atlas
     //
 
     {
         // Load texture database
-        auto genericLinearTextureDatabase = Render::TextureDatabase<GenericLinearTextureTextureDatabaseTraits>::Load(
+        auto linearTextureDatabase = Render::TextureDatabase<LinearTextureTextureDatabaseTraits>::Load(
             resourceLocator.GetTexturesRootFolderPath());
 
         // Create atlas
-        auto genericLinearTextureAtlas = Render::TextureAtlasBuilder<GenericLinearTextureGroups>::BuildAtlas(
-            genericLinearTextureDatabase,
+        auto linearTextureAtlas = Render::TextureAtlasBuilder<LinearTextureGroups>::BuildAtlas(
+            linearTextureDatabase,
             Render::AtlasOptions::None,
             [](float, ProgressMessageType) {});
 
-        LogMessage("ShipBuilder generic linear texture atlas size: ", genericLinearTextureAtlas.AtlasData.Size.ToString());
+        LogMessage("ShipBuilder linear texture atlas size: ", linearTextureAtlas.AtlasData.Size.ToString());
 
         // Activate texture
-        mShaderManager->ActivateTexture<ProgramParameterType::GenericLinearTexturesAtlasTexture>();
+        mShaderManager->ActivateTexture<ProgramParameterType::LinearTexturesAtlasTexture>();
 
         // Create texture OpenGL handle
         GLuint tmpGLuint;
         glGenTextures(1, &tmpGLuint);
-        mGenericLinearTextureAtlasOpenGLHandle = tmpGLuint;
+        mLinearTextureAtlasOpenGLHandle = tmpGLuint;
 
         // Bind texture
-        glBindTexture(GL_TEXTURE_2D, *mGenericLinearTextureAtlasOpenGLHandle);
+        glBindTexture(GL_TEXTURE_2D, *mLinearTextureAtlasOpenGLHandle);
         CheckOpenGLError();
 
         // Upload atlas texture
-        GameOpenGL::UploadTexture(std::move(genericLinearTextureAtlas.AtlasData));
+        GameOpenGL::UploadTexture(std::move(linearTextureAtlas.AtlasData));
 
         // Set repeat mode
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -133,8 +133,8 @@ View::View(
         CheckOpenGLError();
 
         // Store metadata
-        mGenericLinearTextureAtlasMetadata = std::make_unique<Render::TextureAtlasMetadata<GenericLinearTextureGroups>>(
-            genericLinearTextureAtlas.Metadata);
+        mLinearTextureAtlasMetadata = std::make_unique<Render::TextureAtlasMetadata<LinearTextureGroups>>(
+            linearTextureAtlas.Metadata);
     }
 
     //
@@ -1709,13 +1709,3 @@ vec3f View::GetOverlayColor(OverlayMode mode) const
 }
 
 }
-
-//
-// Explicit specializations for all texture groups
-//
-
-#include "TextureTypes.h"
-
-template struct Render::TextureFrameMetadata<ShipBuilder::GenericLinearTextureGroups>;
-
-template class Render::TextureDatabase<ShipBuilder::GenericLinearTextureTextureDatabaseTraits>;

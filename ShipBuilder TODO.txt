@@ -223,7 +223,7 @@
 		- class WaterlineAnalyzer
 			- TODO
 
-
+- Cleanup all build/Data folders
 
 - Rotate 90 (CW and CCW)
 	- Also changes ship size, do notifications

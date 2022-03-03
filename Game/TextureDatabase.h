@@ -217,3 +217,5 @@ private:
 };
 
 }
+
+#include "TextureDatabase-inl.h"

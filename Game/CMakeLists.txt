@@ -137,9 +137,9 @@ set  (RENDER_SOURCES
 	ShipRenderContext.cpp
 	ShipRenderContext.h
 	TextureTypes.h
-	TextureAtlas.cpp
+	TextureAtlas-inl.h
 	TextureAtlas.h
-	TextureDatabase.cpp
+	TextureDatabase-inl.h
 	TextureDatabase.h
 	UploadedTextureManager.h
 	UploadedTextureManager-inl.h
