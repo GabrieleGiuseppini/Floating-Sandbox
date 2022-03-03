@@ -23,6 +23,7 @@ set (SHIPBUILDER_LIB_SOURCES
 	ShaderTypes.cpp
 	ShaderTypes.h
 	ShipBuilderTypes.h
+	TextureTypes.h
 	UndoStack.cpp
 	UndoStack.h
 	View.cpp
@@ -52,6 +53,8 @@ set (UI_SOURCES
 	ShipResizeVisualizationControl.h
 	StatusBar.cpp
 	StatusBar.h
+	WaterlineAnalyzerDialog.cpp
+	WaterlineAnalyzerDialog.h
 )
 
 set (TOOLS_SOURCES

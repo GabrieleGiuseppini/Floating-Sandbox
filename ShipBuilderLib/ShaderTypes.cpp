@@ -81,6 +81,8 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::ShipParticleTextureSize;
     else if (str == "BackgroundTextureUnit")
         return ProgramParameterType::BackgroundTextureUnit;
+    else if (str == "GenericLinearTexturesAtlasTexture")
+        return ProgramParameterType::GenericLinearTexturesAtlasTexture;
     else if (str == "TextureUnit1")
         return ProgramParameterType::TextureUnit1;
     else
@@ -105,6 +107,8 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
             return "ShipParticleTextureSize";
         case ProgramParameterType::BackgroundTextureUnit:
             return "BackgroundTextureUnit";
+        case ProgramParameterType::GenericLinearTexturesAtlasTexture:
+            return "GenericLinearTexturesAtlasTexture";
         case ProgramParameterType::TextureUnit1:
             return "TextureUnit1";
     }

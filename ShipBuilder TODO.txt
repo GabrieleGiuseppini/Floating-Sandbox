@@ -199,10 +199,8 @@
 	+ Notes:
 		+ Any import from .shp2 requires password
 		+ All imports push an undo (via Controller::SetXYZLayer())
-
 + Preferences: load directories
-
-- Send for testing
++ Send for testing
 
 - Waterline analysis
 	- https://www.britannica.com/science/fluid-mechanics/Hydrostatics#ref611691
@@ -212,6 +210,20 @@
 			- For most hulls the center of buoyancy is below the center of gravity and the hull is said to be meta-stable
 		- Metacenter is the theoretical point at which the B-G vertical line intersects the vertical line through the new centre of buoyancy created when the body is tilted
 		- When at rest on even keel, the vessel’s centre of buoyancy is directly below the centre of gravity as well as below the metacentre
+	- Impl:
+		= View:
+			- UploadWaterlineMarker
+				= Requires View to make a texture atlas at startup
+					- See if can remove explicit specialization of TextureDatabases/etc. from TextureDatabase.cpp, by moving all methods from .cpp to -inl.h
+				- Shader - generic_linear_textures.glsl
+			- UploadWaterline
+				- TODO
+		- ShipBuilder/UI/WaterlineAnalyzerDialog
+			- TODO
+		- class WaterlineAnalyzer
+			- TODO
+
+
 
 - Rotate 90 (CW and CCW)
 	- Also changes ship size, do notifications

@@ -45,6 +45,9 @@ View::View(
     , mHasRectOverlay(false)
     , mDashedLineOverlayColor(vec3f::zero()) // Will be overwritten
     //////////////////////////////////
+    , mGenericLinearTextureAtlasOpenGLHandle()
+    , mGenericLinearTextureAtlasMetadata()
+    //////////////////////////////////
     , mPrimaryVisualization(primaryVisualization)
     , mOtherVisualizationsOpacity(otherVisualizationsOpacity)
 {
@@ -86,6 +89,53 @@ View::View(
     mShaderManager->SetTextureParameters<ProgramType::Texture>();
     mShaderManager->ActivateProgram<ProgramType::TextureNdc>();
     mShaderManager->SetTextureParameters<ProgramType::TextureNdc>();
+
+    //
+    // Create generic linear texture atlas
+    //
+
+    {
+        // Load texture database
+        auto genericLinearTextureDatabase = Render::TextureDatabase<GenericLinearTextureTextureDatabaseTraits>::Load(
+            resourceLocator.GetTexturesRootFolderPath());
+
+        // Create atlas
+        auto genericLinearTextureAtlas = Render::TextureAtlasBuilder<GenericLinearTextureGroups>::BuildAtlas(
+            genericLinearTextureDatabase,
+            Render::AtlasOptions::None,
+            [](float, ProgressMessageType) {});
+
+        LogMessage("ShipBuilder generic linear texture atlas size: ", genericLinearTextureAtlas.AtlasData.Size.ToString());
+
+        // Activate texture
+        mShaderManager->ActivateTexture<ProgramParameterType::GenericLinearTexturesAtlasTexture>();
+
+        // Create texture OpenGL handle
+        GLuint tmpGLuint;
+        glGenTextures(1, &tmpGLuint);
+        mGenericLinearTextureAtlasOpenGLHandle = tmpGLuint;
+
+        // Bind texture
+        glBindTexture(GL_TEXTURE_2D, *mGenericLinearTextureAtlasOpenGLHandle);
+        CheckOpenGLError();
+
+        // Upload atlas texture
+        GameOpenGL::UploadTexture(std::move(genericLinearTextureAtlas.AtlasData));
+
+        // Set repeat mode
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        CheckOpenGLError();
+
+        // Set texture filtering parameters
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        CheckOpenGLError();
+
+        // Store metadata
+        mGenericLinearTextureAtlasMetadata = std::make_unique<Render::TextureAtlasMetadata<GenericLinearTextureGroups>>(
+            genericLinearTextureAtlas.Metadata);
+    }
 
     //
     // Initialize Background texture and VAO
@@ -551,15 +601,15 @@ void View::UploadGameVisualization(RgbaImageData const & texture)
     //
     //
     // We assume that the *content* of this texture is already offseted (on both sides)
-    // by half of a "ship pixel" (which is multiple texture pixels) in the same way as 
+    // by half of a "ship pixel" (which is multiple texture pixels) in the same way as
     // we do when we build the ship at simulation time.
-    // We do this so that the texture for a particle at ship coords (x, y) is sampled at the center of the 
+    // We do this so that the texture for a particle at ship coords (x, y) is sampled at the center of the
     // texture's quad for that particle.
     //
     // Here, we only shift the *quad* itself by half of a ship particle square,
     // as particles are taken to exist at the *center* of each square.
     //
-    
+
     float const shipWidth = static_cast<float>(mViewModel.GetShipSize().width);
     float const shipHeight = static_cast<float>(mViewModel.GetShipSize().height);
     float constexpr QuadOffsetX = 0.5f;
@@ -571,7 +621,7 @@ void View::UploadGameVisualization(RgbaImageData const & texture)
         QuadOffsetY, 0.0f,
         shipHeight + QuadOffsetY, 1.0f,
         mGameVisualizationVBO);
-    
+
     //
     // Remember we have this visualization
     //
@@ -1135,9 +1185,9 @@ void View::OnViewModelUpdated()
 
     auto const physicalCanvasRect = mViewModel.GetPhysicalVisibleShipRegion();
     glScissor(
-        physicalCanvasRect.origin.x, 
+        physicalCanvasRect.origin.x,
         mViewModel.GetDisplayPhysicalSize().height - 1 - (physicalCanvasRect.origin.y + physicalCanvasRect.size.height), // Origin is bottom
-        physicalCanvasRect.size.width, 
+        physicalCanvasRect.size.width,
         physicalCanvasRect.size.height);
     CheckOpenGLError();
 }
@@ -1659,3 +1709,13 @@ vec3f View::GetOverlayColor(OverlayMode mode) const
 }
 
 }
+
+//
+// Explicit specializations for all texture groups
+//
+
+#include "TextureTypes.h"
+
+template struct Render::TextureFrameMetadata<ShipBuilder::GenericLinearTextureGroups>;
+
+template class Render::TextureDatabase<ShipBuilder::GenericLinearTextureTextureDatabaseTraits>;

@@ -46,6 +46,7 @@ enum class ProgramParameterType : uint8_t
 
     // Texture units
     BackgroundTextureUnit,
+    GenericLinearTexturesAtlasTexture,
     TextureUnit1,
 
     _FirstTexture = BackgroundTextureUnit,

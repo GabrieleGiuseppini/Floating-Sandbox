@@ -8,10 +8,12 @@
 #include "OpenGLManager.h"
 #include "ShaderTypes.h"
 #include "ShipBuilderTypes.h"
+#include "TextureTypes.h"
 #include "ViewModel.h"
 
 #include <Game/Layers.h>
 #include <Game/ResourceLocator.h>
+#include <Game/TextureAtlas.h>
 
 #include <GameCore/Colors.h>
 #include <GameCore/ImageData.h>
@@ -37,7 +39,7 @@ class View
 {
 public:
 
-    View(        
+    View(
         ShipSpaceSize shipSpaceSize,
         VisualizationType primaryVisualization,
         float otherVisualizationsOpacity,
@@ -495,6 +497,13 @@ private:
     GameOpenGLVBO mDashedLineOverlayVBO;
     std::vector<std::pair<ShipSpaceCoordinates, ShipSpaceCoordinates>> mDashedLineOverlaySet;
     vec3f mDashedLineOverlayColor;
+
+    //
+    // Textures
+    //
+
+    GameOpenGLTexture mGenericLinearTextureAtlasOpenGLHandle;
+    std::unique_ptr<Render::TextureAtlasMetadata<GenericLinearTextureGroups>> mGenericLinearTextureAtlasMetadata;
 
     //
     // Settings from outside
