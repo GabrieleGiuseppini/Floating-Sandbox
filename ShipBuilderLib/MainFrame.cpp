@@ -6,6 +6,7 @@
 #include "MainFrame.h"
 
 #include "AskPasswordDialog.h"
+#include "WaterlineAnalyzerDialog.h"
 
 #include <UILib/HighlightableTextButton.h>
 #include <UILib/EditSpinBox.h>
@@ -129,7 +130,7 @@ MainFrame::MainFrame(
                 artProvider->SetColor(wxRIBBON_ART_PAGE_BACKGROUND_GRADIENT_COLOUR, backgroundColor);
                 artProvider->SetColor(wxRIBBON_ART_PAGE_BACKGROUND_TOP_COLOUR, backgroundColor);
                 artProvider->SetColor(wxRIBBON_ART_PAGE_BACKGROUND_TOP_GRADIENT_COLOUR, backgroundColor);
-                
+
                 artProvider->SetColor(wxRIBBON_ART_PAGE_HOVER_BACKGROUND_COLOUR, backgroundColor);
                 artProvider->SetColor(wxRIBBON_ART_PAGE_HOVER_BACKGROUND_GRADIENT_COLOUR, backgroundColor);
                 artProvider->SetColor(wxRIBBON_ART_PAGE_HOVER_BACKGROUND_TOP_COLOUR, backgroundColor);
@@ -439,7 +440,7 @@ void MainFrame::OnShipNameChanged(Model const & model)
     // - And the file exists,
     // - And its filename is different than the filename that comes from the new ship name,
     // - And this new filename does not exist:
-    // 
+    //
     // - Ask user if wants to rename file
     //
 
@@ -623,7 +624,7 @@ std::optional<DisplayLogicalCoordinates> MainFrame::GetMouseCoordinatesIfInWorkC
     // coordinates only if the work canvas would legitimately receive a mouse event
     //
 
-    DisplayLogicalCoordinates const mouseCoords = GetMouseCoordinates();    
+    DisplayLogicalCoordinates const mouseCoords = GetMouseCoordinates();
     if (IsLogicallyInWorkCanvas(mouseCoords))
     {
         return mouseCoords;
@@ -678,9 +679,9 @@ wxRibbonPanel * MainFrame::CreateMainFileRibbonPanel(wxRibbonPage * parent)
 
         panelGridSizer->Add(button);
 
-        AddAcceleratorKey(wxACCEL_CTRL, (int)'N', 
-            [this]() 
-            { 
+        AddAcceleratorKey(wxACCEL_CTRL, (int)'N',
+            [this]()
+            {
                 // With keys we have no insurance of a controller
                 if (mController)
                 {
@@ -704,9 +705,9 @@ wxRibbonPanel * MainFrame::CreateMainFileRibbonPanel(wxRibbonPage * parent)
 
         panelGridSizer->Add(button);
 
-        AddAcceleratorKey(wxACCEL_CTRL, (int)'O', 
-            [this]() 
-            { 
+        AddAcceleratorKey(wxACCEL_CTRL, (int)'O',
+            [this]()
+            {
                 // With keys we have no insurance of a controller
                 if (mController)
                 {
@@ -730,9 +731,9 @@ wxRibbonPanel * MainFrame::CreateMainFileRibbonPanel(wxRibbonPage * parent)
 
         panelGridSizer->Add(mSaveShipButton);
 
-        AddAcceleratorKey(wxACCEL_CTRL, (int)'S', 
-            [this]() 
-            { 
+        AddAcceleratorKey(wxACCEL_CTRL, (int)'S',
+            [this]()
+            {
                 // With keys we have no insurance of a controller
                 if (mController)
                 {
@@ -811,9 +812,9 @@ wxRibbonPanel * MainFrame::CreateMainFileRibbonPanel(wxRibbonPage * parent)
 
         panelGridSizer->Add(button);
 
-        AddAcceleratorKey(wxACCEL_ALT, (int)WXK_F4, 
-            [this]() 
-            { 
+        AddAcceleratorKey(wxACCEL_ALT, (int)WXK_F4,
+            [this]()
+            {
                 Quit();
             });
     }
@@ -856,9 +857,9 @@ wxRibbonPanel * MainFrame::CreateMainViewRibbonPanel(wxRibbonPage * parent)
 
         panelGridSizer->Add(mZoomInButton);
 
-        AddAcceleratorKey(wxACCEL_NORMAL, (int)'+', 
-            [this]() 
-            { 
+        AddAcceleratorKey(wxACCEL_NORMAL, (int)'+',
+            [this]()
+            {
                 // With keys we have no insurance of a controller
                 if (mController)
                 {
@@ -882,9 +883,9 @@ wxRibbonPanel * MainFrame::CreateMainViewRibbonPanel(wxRibbonPage * parent)
 
         panelGridSizer->Add(mZoomOutButton);
 
-        AddAcceleratorKey(wxACCEL_NORMAL, (int)'-', 
-            [this]() 
-            { 
+        AddAcceleratorKey(wxACCEL_NORMAL, (int)'-',
+            [this]()
+            {
                 // With keys we have no insurance of a controller
                 if (mController)
                 {
@@ -908,9 +909,9 @@ wxRibbonPanel * MainFrame::CreateMainViewRibbonPanel(wxRibbonPage * parent)
 
         panelGridSizer->Add(button);
 
-        AddAcceleratorKey(wxACCEL_NORMAL, (int)WXK_HOME, 
-            [this]() 
-            { 
+        AddAcceleratorKey(wxACCEL_NORMAL, (int)WXK_HOME,
+            [this]()
+            {
                 // With keys we have no insurance of a controller
                 if (mController)
                 {
@@ -1393,13 +1394,13 @@ wxRibbonPanel * MainFrame::CreateEditUndoRibbonPanel(wxRibbonPage * parent)
 
         panelGridSizer->Add(mUndoButton);
 
-        AddAcceleratorKey(wxACCEL_CTRL, (int)'Z', 
-            [this]() 
-            { 
+        AddAcceleratorKey(wxACCEL_CTRL, (int)'Z',
+            [this]()
+            {
                 // With keys we have no insurance of either a controller or a stack
                 if (mController)
                 {
-                    mController->TryUndoLast(); 
+                    mController->TryUndoLast();
                 }
             });
     }
@@ -1532,6 +1533,23 @@ wxRibbonPanel * MainFrame::CreateEditAnalysisRibbonPanel(wxRibbonPage * parent)
         wxRIBBON_PANEL_NO_AUTO_MINIMISE);
 
     wxGridBagSizer * panelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
+
+    // Waterline analysis
+    {
+        auto button = new RibbonToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetIconFilePath("waterline_analysis_icon_medium"),
+            _("Waterline Analysis"),
+            [this]()
+            {
+                WaterlineAnalyzerDialog dlg(this, mResourceLocator);
+                dlg.ShowModal();
+            },
+            _("TODOHERE the ship's waterline."));
+
+        panelGridSizer->Add(button);
+    }
 
     // Validation
     {
@@ -1977,7 +1995,7 @@ wxPanel * MainFrame::CreateVisualizationModeHeaderPanel(wxWindow * parent)
             modePanel,
             0,
             wxALIGN_CENTER_HORIZONTAL,
-            0);        
+            0);
 
         mVisualizationModeHeaderPanels[static_cast<size_t>(VisualizationType::StructuralLayer)] = modePanel;
     }
@@ -2552,7 +2570,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
             wxEXPAND, // Expand vertically
             0);
     }
-    
+
     panel->SetSizerAndFit(rootHSizer);
 
     return panel;
@@ -3504,7 +3522,7 @@ void MainFrame::OnWorkCanvasKeyDown(wxKeyEvent & event)
             }
         }
     }
-    
+
     event.Skip();
 }
 
@@ -3820,7 +3838,7 @@ void MainFrame::ImportLayerFromShip(LayerType layer)
                 break;
             }
         }
-    
+
         // Store directory in preferences
         mPreferences.AddShipLoadDirectory(shipFilePath.parent_path());
     }
@@ -3848,7 +3866,7 @@ void MainFrame::ImportTextureLayerFromImage()
             IntegralRectSize targetSize = (image.Size.width * shipSize.height >= image.Size.height * shipSize.width)
                 ? IntegralRectSize(image.Size.width, image.Size.width * shipSize.height / shipSize.width) // Keeping this width would require greater height (no clipping), and thus we want to keep this width
                 : IntegralRectSize(image.Size.height * shipSize.width / shipSize.height, image.Size.height); // Keeping this width would require smaller height (hence clipping), and thus we want to keep the height instead
-            
+
             // Check if the target size does not match the current texture size
             if (targetSize.width != image.Size.width
                 || targetSize.height != image.Size.height)
@@ -4003,7 +4021,7 @@ bool MainFrame::AskUserIfSure(wxString caption)
 
 int MainFrame::AskUserIfSave()
 {
-    int result = wxMessageBox(_("Do you want to save your changes before continuing?"), ApplicationName, 
+    int result = wxMessageBox(_("Do you want to save your changes before continuing?"), ApplicationName,
         wxICON_EXCLAMATION | wxYES_NO | wxCANCEL | wxCENTRE);
     return result;
 }

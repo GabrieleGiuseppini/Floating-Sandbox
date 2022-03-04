@@ -44,6 +44,9 @@ View::View(
     , mRectOverlayColor(vec3f::zero()) // Will be overwritten
     , mHasRectOverlay(false)
     , mDashedLineOverlayColor(vec3f::zero()) // Will be overwritten
+    , mHasCenterOfBuoyancyWaterlineMarker(false)
+    , mHasCenterOfMassWaterlineMarker(false)
+    , mHasWaterline(false)
     //////////////////////////////////
     , mLinearTextureAtlasOpenGLHandle()
     , mLinearTextureAtlasMetadata()
@@ -83,6 +86,8 @@ View::View(
     mShaderManager = ShaderManager<ShaderManagerTraits>::CreateInstance(resourceLocator.GetShipBuilderShadersRootPath());
 
     // Set texture samplers in programs
+    mShaderManager->ActivateProgram<ProgramType::LinearTextureQuad>();
+    mShaderManager->SetTextureParameters<ProgramType::LinearTextureQuad>();
     mShaderManager->ActivateProgram<ProgramType::StructureMesh>();
     mShaderManager->SetTextureParameters<ProgramType::StructureMesh>();
     mShaderManager->ActivateProgram<ProgramType::Texture>();
@@ -250,6 +255,7 @@ View::View(
 
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mGameVisualizationVBO);
+        static_assert(sizeof(TextureVertex) == (4) * sizeof(float));
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Texture));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Texture), 4, GL_FLOAT, GL_FALSE, sizeof(TextureVertex), (void *)0);
         CheckOpenGLError();
@@ -542,6 +548,61 @@ View::View(
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::DashedLineOverlay1), 3, GL_FLOAT, GL_FALSE, sizeof(DashedLineOverlayVertex), (void *)0);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::DashedLineOverlay2));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::DashedLineOverlay2), 3, GL_FLOAT, GL_FALSE, sizeof(DashedLineOverlayVertex), (void *)(3 * sizeof(float)));
+        CheckOpenGLError();
+
+        glBindVertexArray(0);
+    }
+
+    //
+    // Initialize waterline markers VAO
+    //
+
+    {
+        GLuint tmpGLuint;
+
+        // Create VAO
+        glGenVertexArrays(1, &tmpGLuint);
+        mWaterlineMarkersVAO = tmpGLuint;
+        glBindVertexArray(*mWaterlineMarkersVAO);
+        CheckOpenGLError();
+
+        // Create VBO
+        glGenBuffers(1, &tmpGLuint);
+        mWaterlineMarkersVBO = tmpGLuint;
+
+        // Describe vertex attributes
+        glBindBuffer(GL_ARRAY_BUFFER, *mWaterlineMarkersVBO);
+        static_assert(sizeof(TextureVertex) == (4) * sizeof(float));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Texture));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Texture), 4, GL_FLOAT, GL_FALSE, sizeof(TextureVertex), (void *)0);
+        CheckOpenGLError();
+
+        // Allocate buffer for both markers
+        // TODOHERE
+    }
+
+    //
+    // Initialize waterline VAO
+    //
+
+    {
+        GLuint tmpGLuint;
+
+        // Create VAO
+        glGenVertexArrays(1, &tmpGLuint);
+        mWaterlineVAO = tmpGLuint;
+        glBindVertexArray(*mWaterlineVAO);
+        CheckOpenGLError();
+
+        // Create VBO
+        glGenBuffers(1, &tmpGLuint);
+        mWaterlineVBO = tmpGLuint;
+
+        // Describe vertex attributes
+        glBindBuffer(GL_ARRAY_BUFFER, *mWaterlineVBO);
+        static_assert(sizeof(WaterlineVertex) == (2) * sizeof(float));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Waterline1));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Waterline1), 2, GL_FLOAT, GL_FALSE, sizeof(WaterlineVertex), (void *)0);
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -912,6 +973,29 @@ void View::RemoveDashedLineOverlay()
     mDashedLineOverlaySet.clear();
 }
 
+void View::UploadWaterlineMarker(
+    ShipSpaceCoordinates const & center,
+    WaterlineMarkerType type)
+{
+    // TODO
+}
+
+void View::RemoveWaterlineMarkers()
+{
+    mHasCenterOfBuoyancyWaterlineMarker = false;
+    mHasCenterOfMassWaterlineMarker = false;
+}
+
+void View::UploadWaterline(/*TODO*/)
+{
+    // TODO
+}
+
+void View::RemoveWaterline()
+{
+    mHasWaterline = false;
+}
+
 void View::Render()
 {
     //
@@ -1081,6 +1165,18 @@ void View::Render()
         CheckOpenGLError();
     }
 
+    // Waterline
+    if (mHasWaterline)
+    {
+        // TODOHERE
+    }
+
+    // Waterline marker
+    if (mHasCenterOfBuoyancyWaterlineMarker || mHasCenterOfMassWaterlineMarker)
+    {
+        // TODOHERE
+    }
+
     //
     // Following is with scissor test enabled
     //
@@ -1163,6 +1259,10 @@ void View::OnViewModelUpdated()
     mShaderManager->SetProgramParameter<ProgramType::Grid, ProgramParameterType::OrthoMatrix>(
         orthoMatrix);
 
+    mShaderManager->ActivateProgram<ProgramType::LinearTextureQuad>();
+    mShaderManager->SetProgramParameter<ProgramType::LinearTextureQuad, ProgramParameterType::OrthoMatrix>(
+        orthoMatrix);
+
     mShaderManager->ActivateProgram<ProgramType::RectOverlay>();
     mShaderManager->SetProgramParameter<ProgramType::RectOverlay, ProgramParameterType::OrthoMatrix>(
         orthoMatrix);
@@ -1177,6 +1277,10 @@ void View::OnViewModelUpdated()
 
     mShaderManager->ActivateProgram<ProgramType::Texture>();
     mShaderManager->SetProgramParameter<ProgramType::Texture, ProgramParameterType::OrthoMatrix>(
+        orthoMatrix);
+
+    mShaderManager->ActivateProgram<ProgramType::Waterline>();
+    mShaderManager->SetProgramParameter<ProgramType::Waterline, ProgramParameterType::OrthoMatrix>(
         orthoMatrix);
 
     //

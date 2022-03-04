@@ -250,6 +250,26 @@ public:
 
     void RemoveDashedLineOverlay();
 
+    //
+    // Misc
+    //
+
+    enum class WaterlineMarkerType
+    {
+        CenterOfBuoyancy,
+        CenterOfMass
+    };
+
+    void UploadWaterlineMarker(
+        ShipSpaceCoordinates const & center,
+        WaterlineMarkerType type);
+
+    void RemoveWaterlineMarkers();
+
+    void UploadWaterline(/*TODO*/);
+
+    void RemoveWaterline();
+
 public:
 
     void Render();
@@ -427,6 +447,19 @@ private:
         {}
     };
 
+    struct WaterlineVertex
+    {
+        vec2f positionShip; // Ship space
+        // TODOHERE
+
+        WaterlineVertex() = default;
+
+        WaterlineVertex(
+            vec2f _positionShip)
+            : positionShip(_positionShip)
+        {}
+    };
+
 #pragma pack(pop)
 
     //
@@ -497,6 +530,17 @@ private:
     GameOpenGLVBO mDashedLineOverlayVBO;
     std::vector<std::pair<ShipSpaceCoordinates, ShipSpaceCoordinates>> mDashedLineOverlaySet;
     vec3f mDashedLineOverlayColor;
+
+    // Waterline markers
+    GameOpenGLVAO mWaterlineMarkersVAO;
+    GameOpenGLVBO mWaterlineMarkersVBO;
+    bool mHasCenterOfBuoyancyWaterlineMarker;
+    bool mHasCenterOfMassWaterlineMarker;
+
+    // Waterline
+    GameOpenGLVAO mWaterlineVAO;
+    GameOpenGLVBO mWaterlineVBO;
+    bool mHasWaterline;
 
     //
     // Textures

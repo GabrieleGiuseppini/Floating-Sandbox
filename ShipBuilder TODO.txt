@@ -211,15 +211,29 @@
 		- Metacenter is the theoretical point at which the B-G vertical line intersects the vertical line through the new centre of buoyancy created when the body is tilted
 		- When at rest on even keel, the vessel’s centre of buoyancy is directly below the centre of gravity as well as below the metacentre
 	- Impl:
+		= Button at ribbon, under Analysis
+			+ Icon
+			- Shorter label
 		= View:
 			- UploadWaterlineMarker
-				= Requires View to make a texture atlas at startup
-					- See if can remove explicit specialization of TextureDatabases/etc. from TextureDatabase.cpp, by moving all methods from .cpp to -inl.h
-				- Shader - generic_linear_textures.glsl
+				+ Requires View to make a texture atlas at startup
+					+ See if can remove explicit specialization of TextureDatabases/etc. from TextureDatabase.cpp, by moving all methods from .cpp to -inl.h
+				+ Shader
+				- Upload
+				- Render
 			- UploadWaterline
-				- TODO
+				- Shader
+				- Upload
+				- Render
 		- ShipBuilder/UI/WaterlineAnalyzerDialog
-			- TODO
+			- Close button
+			- Border around content
+			- Center upon opening
+				- Cctor takes wxRect
+			+ Icons x 3
+			= Buttons x 3				
+				- Callbacks
+			- Timer callback
 		- class WaterlineAnalyzer
 			- TODO
 

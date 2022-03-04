@@ -23,6 +23,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::DashedLineOverlay;
     else if (lstr == "grid")
         return ProgramType::Grid;
+    else if (lstr == "linear_texture_quad")
+        return ProgramType::LinearTextureQuad;
     else if (lstr == "rect_overlay")
         return ProgramType::RectOverlay;
     else if (lstr == "rope")
@@ -33,6 +35,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::Texture;
     else if (lstr == "texture_ndc")
         return ProgramType::TextureNdc;
+    else if (lstr == "waterline")
+        return ProgramType::Waterline;
     else
         throw GameException("Unrecognized program \"" + str + "\"");
 }
@@ -49,6 +53,8 @@ std::string ProgramTypeToStr(ProgramType program)
             return "CircleOverlay";
         case ProgramType::Grid:
             return "Grid";
+        case ProgramType::LinearTextureQuad:
+            return "LinearTextureQuad";
         case ProgramType::RectOverlay:
             return "RectOverlay";
         case ProgramType::Rope:
@@ -59,6 +65,8 @@ std::string ProgramTypeToStr(ProgramType program)
             return "Texture";
         case ProgramType::TextureNdc:
             return "TextureNdc";
+        case ProgramType::Waterline:
+            return "Waterline";
     }
 
     assert(false);
@@ -145,6 +153,8 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::Texture;
     else if (Utils::CaseInsensitiveEquals(str, "TextureNdc"))
         return VertexAttributeType::TextureNdc;
+    else if (Utils::CaseInsensitiveEquals(str, "Waterline1"))
+        return VertexAttributeType::Waterline1;
     else
         throw GameException("Unrecognized vertex attribute \"" + str + "\"");
 }
