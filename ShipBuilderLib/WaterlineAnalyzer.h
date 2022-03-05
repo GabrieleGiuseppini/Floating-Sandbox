@@ -46,7 +46,7 @@ public:
 
 private:
 
-    std::optional<StaticResults> CalculateStaticResults();
+    StaticResults CalculateStaticResults();
 
 private:
 

@@ -228,9 +228,13 @@
 		= ShipBuilder/UI/WaterlineAnalyzerDialog
 			+ Icons x 3
 			+ Buttons x 3
-			- DoStep: visualize analysis results
+			= DoStep: visualize analysis results
 				= Static analysis
-					- TODO: also label when no particles, need to differentiate between static-analysis-not-yet-run and run-but-no-particles
+					+ Have also label when no particles, need to differentiate between static-analysis-not-yet-run and run-but-no-particles
+					- Style:
+						= TextCtrl:
+							- Font
+						- Try PropGrid
 		- class WaterlineAnalyzer
 			- TODO
 

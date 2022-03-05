@@ -16,7 +16,7 @@
 
 #include <wx/bmpbuttn.h>
 #include <wx/dialog.h>
-#include <wx/stattext.h>
+#include <wx/textctrl.h>
 #include <wx/timer.h>
 
 #include <memory>
@@ -62,7 +62,7 @@ private:
     wxBitmapButton * mPlayContinuouslyButton;
     wxBitmapButton * mPlayStepByStepButton;
     wxBitmapButton * mRewindButton;
-    wxStaticText * mStaticAnalysisText;
+    wxTextCtrl * mStaticAnalysisTextCtrl;
     std::unique_ptr<wxTimer> mRefreshTimer;
 
     //

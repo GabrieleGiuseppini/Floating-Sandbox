@@ -23,15 +23,16 @@ bool WaterlineAnalyzer::Update()
         {
             mStaticResults = CalculateStaticResults();
 
-            if (mStaticResults.has_value())
+            if (mStaticResults->TotalMass == 0.0f)
             {
-                // TODOTEST
+                // No particles, we're done
                 mCurrentState = StateType::Completed;
                 return true;
             }
             else
             {
-                // No particles, we're done
+                // Continue to next state
+                // TODOTEST
                 mCurrentState = StateType::Completed;
                 return true;
             }
@@ -45,7 +46,7 @@ bool WaterlineAnalyzer::Update()
     }
 }
 
-std::optional<WaterlineAnalyzer::StaticResults> WaterlineAnalyzer::CalculateStaticResults()
+WaterlineAnalyzer::StaticResults WaterlineAnalyzer::CalculateStaticResults()
 {
     float totalMass = 0.0f;
     vec2f centerOfMass = vec2f::zero();
@@ -65,15 +66,9 @@ std::optional<WaterlineAnalyzer::StaticResults> WaterlineAnalyzer::CalculateStat
         }
     }
 
-    if (totalMass == 0.0f)
-    {
-        // No particles
-        return std::nullopt;
-    }
-
     return StaticResults(
         totalMass,
-        centerOfMass / totalMass);
+        centerOfMass / (totalMass != 0.0f ? totalMass : 1.0f));
 }
 
 }

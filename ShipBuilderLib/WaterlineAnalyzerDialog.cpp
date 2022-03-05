@@ -8,6 +8,7 @@
 #include <UILib/WxHelpers.h>
 
 #include <GameCore/Conversions.h>
+#include <GameCore/SysSpecifics.h>
 
 #include <wx/sizer.h>
 #include <wx/statline.h>
@@ -136,18 +137,16 @@ WaterlineAnalyzerDialog::WaterlineAnalyzerDialog(
 
         // Static analysis
         {
-            mStaticAnalysisText = new wxStaticText(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT | wxBORDER_SIMPLE | wxST_NO_AUTORESIZE);
-
-            mStaticAnalysisText->SetMinSize(wxSize(200, 40));
+            mStaticAnalysisTextCtrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(200, -1), wxTE_READONLY | wxTE_MULTILINE | wxTE_LEFT | wxTE_RICH);
 
             {
-                auto font = GetFont();
-                font.SetFamily(wxFONTFAMILY_TELETYPE);
-                mStaticAnalysisText->SetFont(font);
+                wxTextAttr textAttr;
+                textAttr.SetFontFamily(wxFONTFAMILY_TELETYPE);
+                mStaticAnalysisTextCtrl->SetDefaultStyle(textAttr);
             }
 
             mainHSizer->Add(
-                mStaticAnalysisText,
+                mStaticAnalysisTextCtrl,
                 0,
                 wxEXPAND | wxLEFT | wxRIGHT,
                 InterButtonMargin);
@@ -252,26 +251,37 @@ void WaterlineAnalyzerDialog::PopulateStaticAnalysisText(std::optional<Waterline
 
     if (staticResults.has_value())
     {
-        ss << "Total mass: ";
-
-        switch (mDisplayUnitsSystem)
+        if (staticResults->TotalMass != 0.0f)
         {
-            case UnitsSystem::SI_Celsius:
-            case UnitsSystem::SI_Kelvin:
-            {
-                ss << KilogramToMetricTon(staticResults->TotalMass) << " tons";
-                break;
-            }
+            ss << _("Total mass: ");
 
-            case UnitsSystem::USCS:
+            switch (mDisplayUnitsSystem)
             {
-                ss << KilogramToUscsTon(staticResults->TotalMass) << " tons";
-                break;
+                case UnitsSystem::SI_Celsius:
+                case UnitsSystem::SI_Kelvin:
+                {
+                    ss << KilogramToMetricTon(staticResults->TotalMass) << _(" tons");
+                    break;
+                }
+
+                case UnitsSystem::USCS:
+                {
+                    ss << KilogramToUscsTon(staticResults->TotalMass) << _(" tons");
+                    break;
+                }
             }
+        }
+        else
+        {
+            ss << _("No particles");
         }
     }
 
-    mStaticAnalysisText->SetLabel(ss.str());
+    mStaticAnalysisTextCtrl->SetValue(ss.str());
+
+#if FS_IS_OS_WINDOWS()
+    mStaticAnalysisTextCtrl->HideNativeCaret();
+#endif
 }
 
 void WaterlineAnalyzerDialog::DoStep()
