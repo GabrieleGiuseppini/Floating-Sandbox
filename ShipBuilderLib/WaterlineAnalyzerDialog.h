@@ -5,6 +5,9 @@
  ***************************************************************************************/
 #pragma once
 
+#include "IUserInterface.h"
+#include "Model.h"
+#include "View.h"
 #include "WaterlineAnalyzer.h"
 
 #include <Game/ResourceLocator.h>
@@ -24,6 +27,9 @@ public:
     WaterlineAnalyzerDialog(
         wxWindow * parent,
         wxPoint const & centerScreen,
+        Model const & model,
+        View & view,
+        IUserInterface & userInterface,
         ResourceLocator const & resourceLocator);
 
 private:
@@ -36,6 +42,10 @@ private:
     void DoStep();
 
 private:
+
+    Model const & mModel;
+    View & mView;
+    IUserInterface & mUserInterface;
 
     //
     // UI

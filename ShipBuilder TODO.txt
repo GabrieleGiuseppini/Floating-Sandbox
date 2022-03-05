@@ -226,11 +226,9 @@
 				- Upload
 				- Render
 		= ShipBuilder/UI/WaterlineAnalyzerDialog
-			- TODO: create timer only when needed?
 			+ Icons x 3
-			= Buttons x 3				
-				- Callbacks
-			- Timer callback
+			+ Buttons x 3
+			- DoStep: visualize analysis results
 		- class WaterlineAnalyzer
 			- TODO
 

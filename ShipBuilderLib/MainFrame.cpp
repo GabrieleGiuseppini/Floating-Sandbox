@@ -1548,7 +1548,13 @@ wxRibbonPanel * MainFrame::CreateEditAnalysisRibbonPanel(wxRibbonPage * parent)
                     ribbonScreenRect.x + this->GetScreenRect().width / 2,
                     ribbonScreenRect.y + ribbonScreenRect.height / 2);
 
-                WaterlineAnalyzerDialog dlg(this, centerScreen, mResourceLocator);
+                WaterlineAnalyzerDialog dlg(
+                    this,
+                    centerScreen,
+                    mController->GetModel(),
+                    mController->GetView(),
+                    *this,
+                    mResourceLocator);
                 dlg.ShowModal();
             },
             _("Forecast where the ship's waterline will be once the ship is in the water."));

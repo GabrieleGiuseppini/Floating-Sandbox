@@ -96,6 +96,12 @@ public:
         std::optional<ShipPhysicsData> && physicsData,
         std::optional<std::optional<ShipAutoTexturizationSettings>> && autoTexturizationSettings);
 
+    Model const & GetModel() const
+    {
+        assert(mModelController);
+        return mModelController->GetModel();
+    }
+
     bool HasModelLayer(LayerType layer) const
     {
         assert(mModelController);
@@ -132,7 +138,7 @@ public:
 
     void NewStructuralLayer();
     void SetStructuralLayer(
-        wxString actionTitle, 
+        wxString actionTitle,
         StructuralLayerData && structuralLayer);
     void RestoreStructuralLayerRegionForUndo(
         StructuralLayerData && layerRegion,
@@ -216,6 +222,12 @@ public:
     void TryUndoLast();
     void UndoLast();
     void UndoUntil(size_t index);
+
+    View & GetView()
+    {
+        assert(mView);
+        return *mView;
+    }
 
     void Render();
 

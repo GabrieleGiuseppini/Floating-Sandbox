@@ -10,11 +10,16 @@
 #include <wx/sizer.h>
 #include <wx/statline.h>
 
+#include <cassert>
+
 namespace ShipBuilder {
 
 WaterlineAnalyzerDialog::WaterlineAnalyzerDialog(
     wxWindow * parent,
     wxPoint const & centerScreen,
+    Model const & model,
+    View & view,
+    IUserInterface & userInterface,
     ResourceLocator const & resourceLocator)
     : wxDialog(
         parent,
@@ -23,6 +28,9 @@ WaterlineAnalyzerDialog::WaterlineAnalyzerDialog(
         wxDefaultPosition,
         wxDefaultSize,
         wxCLOSE_BOX | wxCAPTION | wxSTAY_ON_TOP)
+    , mModel(model)
+    , mView(view)
+    , mUserInterface(userInterface)
 {
     //
     // Layout controls
@@ -44,7 +52,6 @@ WaterlineAnalyzerDialog::WaterlineAnalyzerDialog(
                 wxEVT_BUTTON,
                 [this](wxCommandEvent &)
                 {
-                    // TODO: start timer here?
                     mCurrentState = StateType::Playing;
                     ReconcileUIWithState();
                 });
@@ -142,19 +149,18 @@ WaterlineAnalyzerDialog::WaterlineAnalyzerDialog(
 
     mRefreshTimer = std::make_unique<wxTimer>(this, wxID_ANY);
     Connect(mRefreshTimer->GetId(), wxEVT_TIMER, (wxObjectEventFunction)&WaterlineAnalyzerDialog::OnRefreshTimer);
-    mRefreshTimer->Start(
-        100,
-        false); // Continuous
 }
 
 void WaterlineAnalyzerDialog::OnRefreshTimer(wxTimerEvent & /*event*/)
 {
-    // TODOHERE
+    assert(mCurrentState == StateType::Playing);
+
+    DoStep();
 }
 
 void WaterlineAnalyzerDialog::InitializeAnalysis()
 {
-    mWaterAnalyzer = std::make_unique<WaterlineAnalyzer>();
+    mWaterAnalyzer = std::make_unique<WaterlineAnalyzer>(mModel);
 
     mCurrentState = StateType::Paused;
 }
@@ -165,6 +171,8 @@ void WaterlineAnalyzerDialog::ReconcileUIWithState()
     {
         case StateType::Completed:
         {
+            mRefreshTimer->Stop();
+
             mPlayContinuouslyButton->Enable(false);
             mPlayStepByStepButton->Enable(false);
             mRewindButton->Enable(true);
@@ -183,6 +191,8 @@ void WaterlineAnalyzerDialog::ReconcileUIWithState()
 
         case StateType::Playing:
         {
+            mRefreshTimer->Start(100, false);
+
             mPlayContinuouslyButton->Enable(false);
             mPlayStepByStepButton->Enable(false);
             mRewindButton->Enable(false);
@@ -194,7 +204,31 @@ void WaterlineAnalyzerDialog::ReconcileUIWithState()
 
 void WaterlineAnalyzerDialog::DoStep()
 {
-    // TODOHERE
+    assert(mWaterAnalyzer);
+
+    auto const isCompleted = mWaterAnalyzer->Update();
+
+    // Update visualizations
+    {
+        if (mWaterAnalyzer->GetStaticResults().has_value())
+        {
+            // TODOHERE
+        }
+
+        // TODOHERE: others
+
+        mUserInterface.RefreshView();
+    }
+
+    // Check if we need to change state
+    if (isCompleted)
+    {
+        // We're done
+        mWaterAnalyzer.reset();
+        mCurrentState = StateType::Completed;
+
+        ReconcileUIWithState();
+    }
 }
 
 }
