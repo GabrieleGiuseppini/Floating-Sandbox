@@ -1540,13 +1540,18 @@ wxRibbonPanel * MainFrame::CreateEditAnalysisRibbonPanel(wxRibbonPage * parent)
             panel,
             wxVERTICAL,
             mResourceLocator.GetIconFilePath("waterline_analysis_icon_medium"),
-            _("Waterline Analysis"),
+            _("Waterline"),
             [this]()
             {
-                WaterlineAnalyzerDialog dlg(this, mResourceLocator);
+                auto const ribbonScreenRect = mMainRibbonBar->GetScreenRect();
+                wxPoint const centerScreen = wxPoint(
+                    ribbonScreenRect.x + this->GetScreenRect().width / 2,
+                    ribbonScreenRect.y + ribbonScreenRect.height / 2);
+
+                WaterlineAnalyzerDialog dlg(this, centerScreen, mResourceLocator);
                 dlg.ShowModal();
             },
-            _("TODOHERE the ship's waterline."));
+            _("Forecast where the ship's waterline will be once the ship is in the water."));
 
         panelGridSizer->Add(button);
     }

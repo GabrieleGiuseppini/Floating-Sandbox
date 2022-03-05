@@ -14,6 +14,7 @@ namespace ShipBuilder {
 
 WaterlineAnalyzerDialog::WaterlineAnalyzerDialog(
     wxWindow * parent,
+    wxPoint const & centerScreen,
     ResourceLocator const & resourceLocator)
     : wxDialog(
         parent,
@@ -21,8 +22,7 @@ WaterlineAnalyzerDialog::WaterlineAnalyzerDialog(
         _("Waterline Analysis"),
         wxDefaultPosition,
         wxDefaultSize,
-        wxSTAY_ON_TOP)
-    , mIsPlayingContinuously(false)
+        wxCLOSE_BOX | wxCAPTION | wxSTAY_ON_TOP)
 {
     //
     // Layout controls
@@ -31,6 +31,8 @@ WaterlineAnalyzerDialog::WaterlineAnalyzerDialog(
     wxSizer * mainHSizer = new wxBoxSizer(wxHORIZONTAL);
 
     {
+        int constexpr InterButtonMargin = 5;
+
         // Play continuously button
         {
             mPlayContinuouslyButton = new wxBitmapButton(
@@ -42,14 +44,16 @@ WaterlineAnalyzerDialog::WaterlineAnalyzerDialog(
                 wxEVT_BUTTON,
                 [this](wxCommandEvent &)
                 {
-                    // TODOHERE
+                    // TODO: start timer here?
+                    mCurrentState = StateType::Playing;
+                    ReconcileUIWithState();
                 });
 
             mainHSizer->Add(
                 mPlayContinuouslyButton,
                 0,
-                wxALIGN_CENTER_VERTICAL,
-                0);
+                wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT,
+                InterButtonMargin);
         }
 
         // Separator
@@ -74,14 +78,15 @@ WaterlineAnalyzerDialog::WaterlineAnalyzerDialog(
                 wxEVT_BUTTON,
                 [this](wxCommandEvent &)
                 {
-                    // TODOHERE
+                    DoStep();
+                    ReconcileUIWithState();
                 });
 
             mainHSizer->Add(
                 mPlayStepByStepButton,
                 0,
-                wxALIGN_CENTER_VERTICAL,
-                0);
+                wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT,
+                InterButtonMargin);
         }
 
         // Rewind button
@@ -95,24 +100,41 @@ WaterlineAnalyzerDialog::WaterlineAnalyzerDialog(
                 wxEVT_BUTTON,
                 [this](wxCommandEvent &)
                 {
-                    // TODOHERE
+                    InitializeAnalysis();
+                    ReconcileUIWithState();
                 });
 
             mainHSizer->Add(
                 mRewindButton,
                 0,
-                wxALIGN_CENTER_VERTICAL,
-                0);
+                wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT,
+                InterButtonMargin);
         }
     }
 
-    SetSizerAndFit(mainHSizer);
+    // Wrap for margins
+    {
+        wxSizer * marginSizer = new wxBoxSizer(wxHORIZONTAL);
+
+        marginSizer->Add(mainHSizer, 0, wxALL, 20);
+
+        SetSizerAndFit(marginSizer);
+    }
+
+    // Center in parent rect
+    Layout();
+    SetPosition(
+        wxPoint(
+            centerScreen.x - GetSize().x / 2,
+            centerScreen.y - GetSize().y / 2));
 
     //
     // Initialize analysis
     //
 
     InitializeAnalysis();
+
+    ReconcileUIWithState();
 
     //
     // Setup timer
@@ -131,6 +153,46 @@ void WaterlineAnalyzerDialog::OnRefreshTimer(wxTimerEvent & /*event*/)
 }
 
 void WaterlineAnalyzerDialog::InitializeAnalysis()
+{
+    mWaterAnalyzer = std::make_unique<WaterlineAnalyzer>();
+
+    mCurrentState = StateType::Paused;
+}
+
+void WaterlineAnalyzerDialog::ReconcileUIWithState()
+{
+    switch (mCurrentState)
+    {
+        case StateType::Completed:
+        {
+            mPlayContinuouslyButton->Enable(false);
+            mPlayStepByStepButton->Enable(false);
+            mRewindButton->Enable(true);
+
+            break;
+        }
+
+        case StateType::Paused:
+        {
+            mPlayContinuouslyButton->Enable(true);
+            mPlayStepByStepButton->Enable(true);
+            mRewindButton->Enable(false);
+
+            break;
+        }
+
+        case StateType::Playing:
+        {
+            mPlayContinuouslyButton->Enable(false);
+            mPlayStepByStepButton->Enable(false);
+            mRewindButton->Enable(false);
+
+            break;
+        }
+    }
+}
+
+void WaterlineAnalyzerDialog::DoStep()
 {
     // TODOHERE
 }

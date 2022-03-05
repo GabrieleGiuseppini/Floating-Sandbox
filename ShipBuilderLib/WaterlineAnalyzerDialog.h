@@ -23,6 +23,7 @@ public:
 
     WaterlineAnalyzerDialog(
         wxWindow * parent,
+        wxPoint const & centerScreen,
         ResourceLocator const & resourceLocator);
 
 private:
@@ -30,6 +31,9 @@ private:
     void OnRefreshTimer(wxTimerEvent & event);
 
     void InitializeAnalysis();
+    void ReconcileUIWithState();
+
+    void DoStep();
 
 private:
 
@@ -46,8 +50,16 @@ private:
     // State
     //
 
-    bool mIsPlayingContinuously;
     std::unique_ptr<WaterlineAnalyzer> mWaterAnalyzer;
+
+    enum class StateType
+    {
+        Paused,
+        Playing,
+        Completed
+    };
+
+    StateType mCurrentState;
 };
 
 }
