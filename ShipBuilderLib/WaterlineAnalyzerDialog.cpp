@@ -137,18 +137,18 @@ WaterlineAnalyzerDialog::WaterlineAnalyzerDialog(
                 8);
         }
 
-        // Static analysis
+        // Analysis text
         {
-            mStaticAnalysisTextCtrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(300, -1), wxTE_READONLY | wxTE_MULTILINE | wxTE_LEFT | wxTE_RICH);
+            mAnalysisTextCtrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(300, -1), wxTE_READONLY | wxTE_MULTILINE | wxTE_LEFT | wxTE_RICH);
 
             {
                 auto font = GetFont();
                 font.SetFamily(wxFONTFAMILY_TELETYPE);
-                mStaticAnalysisTextCtrl->SetFont(font);
+                mAnalysisTextCtrl->SetFont(font);
             }
 
             mainHSizer->Add(
-                mStaticAnalysisTextCtrl,
+                mAnalysisTextCtrl,
                 0,
                 wxEXPAND | wxLEFT | wxRIGHT,
                 InterButtonMargin);
@@ -253,10 +253,12 @@ void WaterlineAnalyzerDialog::ReconcileUIWithState()
     // Visualizations
     //
 
-    // Static analysis
-    PopulateStaticAnalysisText(mWaterlineAnalyzer->GetStaticResults());
+    // Analysis text
+    PopulateAnalysisText(
+        mWaterlineAnalyzer->GetStaticResults(),
+        mWaterlineAnalyzer->GetTotalBuoyantForce());
 
-    // Center of mass
+    // Center of mass marker
     if (mWaterlineAnalyzer->GetStaticResults().has_value() && mWaterlineAnalyzer->GetStaticResults()->TotalMass != 0.0f)
     {
         mView.UploadWaterlineMarker(
@@ -268,7 +270,7 @@ void WaterlineAnalyzerDialog::ReconcileUIWithState()
         mView.RemoveWaterlineMarker(View::WaterlineMarkerType::CenterOfMass);
     }
 
-    // Center of buoyancy
+    // Center of buoyancy marker
     if (mWaterlineAnalyzer->GetCenterOfBuoyancy().has_value())
     {
         mView.UploadWaterlineMarker(
@@ -295,7 +297,9 @@ void WaterlineAnalyzerDialog::ReconcileUIWithState()
     mUserInterface.RefreshView();
 }
 
-void WaterlineAnalyzerDialog::PopulateStaticAnalysisText(std::optional<WaterlineAnalyzer::StaticResults> const & staticResults)
+void WaterlineAnalyzerDialog::PopulateAnalysisText(
+    std::optional<WaterlineAnalyzer::StaticResults> const & staticResults,
+    std::optional<float> totalBuoyantForce)
 {
     std::stringstream ss;
 
@@ -327,13 +331,36 @@ void WaterlineAnalyzerDialog::PopulateStaticAnalysisText(std::optional<Waterline
         }
     }
 
-    mStaticAnalysisTextCtrl->SetValue(ss.str());
+    if (totalBuoyantForce.has_value())
+    {
+        ss << std::endl;
+
+        ss << _("Buoyant force: ");
+
+        switch (mDisplayUnitsSystem)
+        {
+            case UnitsSystem::SI_Celsius:
+            case UnitsSystem::SI_Kelvin:
+            {
+                ss << KilogramToMetricTon(*totalBuoyantForce) << _(" tons");
+                break;
+            }
+
+            case UnitsSystem::USCS:
+            {
+                ss << KilogramToUscsTon(*totalBuoyantForce) << _(" tons");
+                break;
+            }
+        }
+    }
+
+    mAnalysisTextCtrl->SetValue(ss.str());
 
     // Move focus away
     mPlayContinuouslyButton->SetFocus();
 
 #if FS_IS_OS_WINDOWS()
-    mStaticAnalysisTextCtrl->HideNativeCaret();
+    mAnalysisTextCtrl->HideNativeCaret();
 #endif
 }
 

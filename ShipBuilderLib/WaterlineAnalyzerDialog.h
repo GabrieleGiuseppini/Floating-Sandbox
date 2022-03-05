@@ -44,7 +44,9 @@ private:
 
     void InitializeAnalysis();
     void ReconcileUIWithState();
-    void PopulateStaticAnalysisText(std::optional<WaterlineAnalyzer::StaticResults> const & staticResults);
+    void PopulateAnalysisText(
+        std::optional<WaterlineAnalyzer::StaticResults> const & staticResults,
+        std::optional<float> totalBuoyantForce);
 
     void DoStep();
 
@@ -63,7 +65,7 @@ private:
     wxBitmapButton * mPlayContinuouslyButton;
     wxBitmapButton * mPlayStepByStepButton;
     wxBitmapButton * mRewindButton;
-    wxTextCtrl * mStaticAnalysisTextCtrl;
+    wxTextCtrl * mAnalysisTextCtrl;
     std::unique_ptr<wxTimer> mRefreshTimer;
 
     //

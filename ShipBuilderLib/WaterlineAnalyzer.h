@@ -52,6 +52,11 @@ public:
         return mStaticResults;
     }
 
+    std::optional<float> const & GetTotalBuoyantForce() const
+    {
+        return mTotalBuoyantForce;
+    }
+
     std::optional<vec2f> const & GetCenterOfBuoyancy() const
     {
         return mCenterOfBuoyancy;
@@ -71,6 +76,16 @@ private:
 
     StaticResults CalculateStaticResults();
 
+    std::tuple<float, float> CalculateLevelSearchLimits(
+        vec2f const & center,
+        vec2f const & direction);
+
+    // Total buoyance force, center of buoyancy
+    std::tuple<float, vec2f> CalculateBuoyancy(
+        vec2f const & center,
+        vec2f const & direction,
+        float level);
+
 private:
 
     Model const & mModel;
@@ -81,15 +96,27 @@ private:
 
     enum class StateType
     {
-        GetStaticResults,
+        CalculateStaticResults,
+        FindLevel,
         Completed
     };
 
     StateType mCurrentState;
 
     std::optional<StaticResults> mStaticResults;
+    std::optional<float> mTotalBuoyantForce;
     std::optional<vec2f> mCenterOfBuoyancy;
     std::optional<Waterline> mWaterline;
+
+    //
+    // Search state
+    //
+
+    vec2f mLevelSearchDirection; // Positive towards "bottom"
+
+    float mLevelSearchLowest; // Same heading as direction, grows the further in same heading
+    float mLevelSearchHighest; // Less in numerical value than lowest
+    float mLevelSearchCurrent;
 };
 
 }
