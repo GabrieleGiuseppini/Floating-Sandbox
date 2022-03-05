@@ -85,7 +85,8 @@ enum class VertexAttributeType : GLuint
 
     TextureNdc = 0,
 
-    Waterline1 = 0
+    Waterline1 = 0,
+    Waterline2 = 1
 };
 
 VertexAttributeType StrToVertexAttributeType(std::string const & str);

@@ -70,7 +70,7 @@ private:
     // State
     //
 
-    std::unique_ptr<WaterlineAnalyzer> mWaterAnalyzer;
+    std::unique_ptr<WaterlineAnalyzer> mWaterlineAnalyzer;
 
     enum class StateType
     {

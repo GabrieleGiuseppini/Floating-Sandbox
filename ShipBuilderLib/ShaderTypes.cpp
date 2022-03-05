@@ -155,6 +155,8 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::TextureNdc;
     else if (Utils::CaseInsensitiveEquals(str, "Waterline1"))
         return VertexAttributeType::Waterline1;
+    else if (Utils::CaseInsensitiveEquals(str, "Waterline2"))
+        return VertexAttributeType::Waterline2;
     else
         throw GameException("Unrecognized vertex attribute \"" + str + "\"");
 }

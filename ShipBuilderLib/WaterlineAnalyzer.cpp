@@ -32,8 +32,14 @@ bool WaterlineAnalyzer::Update()
             else
             {
                 // Continue to next state
+
                 // TODOTEST
                 mCurrentState = StateType::Completed;
+                mWaterline.emplace(
+                    vec2f(float(mModel.GetShipSize().width) / 2.0f, float(mModel.GetShipSize().height) / 2.0f),
+                    vec2f(0.0f, -1.0f));
+
+
                 return true;
             }
         }

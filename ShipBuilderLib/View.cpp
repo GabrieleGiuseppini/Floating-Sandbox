@@ -601,9 +601,11 @@ View::View(
 
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mWaterlineVBO);
-        static_assert(sizeof(WaterlineVertex) == (2) * sizeof(float));
+        static_assert(sizeof(WaterlineVertex) == (2 + 2 + 2) * sizeof(float));
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Waterline1));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Waterline1), 2, GL_FLOAT, GL_FALSE, sizeof(WaterlineVertex), (void *)0);
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Waterline1), 4, GL_FLOAT, GL_FALSE, sizeof(WaterlineVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Waterline2));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Waterline2), 2, GL_FLOAT, GL_FALSE, sizeof(WaterlineVertex), (void *)(4 * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -1084,9 +1086,53 @@ void View::RemoveWaterlineMarkers()
     mHasCenterOfMassWaterlineMarker = false;
 }
 
-void View::UploadWaterline(/*TODO*/)
+void View::UploadWaterline(
+    vec2f const & center, // Ship space coords
+    vec2f const & waterDirection)
 {
-    // TODO
+    //
+    // Upload vertices
+    //
+
+    float const shipWidth = static_cast<float>(mViewModel.GetShipSize().width);
+    float const shipHeight = static_cast<float>(mViewModel.GetShipSize().height);
+
+    std::array<WaterlineVertex, 4> vertexBuffer;
+
+    // Bottom-left
+    vertexBuffer[0] = WaterlineVertex(
+        vec2f(0.0f, 0.0f),
+        center,
+        waterDirection);
+
+    // Top-left
+    vertexBuffer[1] = WaterlineVertex(
+        vec2f(0.0f, shipHeight),
+        center,
+        waterDirection);
+
+    // Bottom-right
+    vertexBuffer[2] = WaterlineVertex(
+        vec2f(shipWidth, 0.0f),
+        center,
+        waterDirection);
+
+    // Top-right
+    vertexBuffer[3] = WaterlineVertex(
+        vec2f(shipWidth, shipHeight),
+        center,
+        waterDirection);
+
+    glBindBuffer(GL_ARRAY_BUFFER, *mWaterlineVBO);
+    glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size() * sizeof(WaterlineVertex), vertexBuffer.data(), GL_STATIC_DRAW);
+    CheckOpenGLError();
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    //
+    // Remember we have a waterline
+    //
+
+    mHasWaterline = true;
 }
 
 void View::RemoveWaterline()
@@ -1266,7 +1312,15 @@ void View::Render()
     // Waterline
     if (mHasWaterline)
     {
-        // TODOHERE
+        // Bind VAO
+        glBindVertexArray(*mWaterlineVAO);
+
+        // Activate program
+        mShaderManager->ActivateProgram<ProgramType::Waterline>();
+
+        // Draw
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        CheckOpenGLError();
     }
 
     // Waterline marker

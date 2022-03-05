@@ -205,7 +205,7 @@ void WaterlineAnalyzerDialog::OnClose(wxCloseEvent & event)
 
 void WaterlineAnalyzerDialog::InitializeAnalysis()
 {
-    mWaterAnalyzer = std::make_unique<WaterlineAnalyzer>(mModel);
+    mWaterlineAnalyzer = std::make_unique<WaterlineAnalyzer>(mModel);
 
     mCurrentState = StateType::Paused;
 }
@@ -247,20 +247,20 @@ void WaterlineAnalyzerDialog::ReconcileUIWithState()
         }
     }
 
-    assert(mWaterAnalyzer);
+    assert(mWaterlineAnalyzer);
 
     //
     // Visualizations
     //
 
     // Static analysis
-    PopulateStaticAnalysisText(mWaterAnalyzer->GetStaticResults());
+    PopulateStaticAnalysisText(mWaterlineAnalyzer->GetStaticResults());
 
     // Center of mass
-    if (mWaterAnalyzer->GetStaticResults().has_value() && mWaterAnalyzer->GetStaticResults()->TotalMass != 0.0f)
+    if (mWaterlineAnalyzer->GetStaticResults().has_value() && mWaterlineAnalyzer->GetStaticResults()->TotalMass != 0.0f)
     {
         mView.UploadWaterlineMarker(
-            mWaterAnalyzer->GetStaticResults()->CenterOfMass,
+            mWaterlineAnalyzer->GetStaticResults()->CenterOfMass,
             View::WaterlineMarkerType::CenterOfMass);
     }
     else
@@ -269,15 +269,27 @@ void WaterlineAnalyzerDialog::ReconcileUIWithState()
     }
 
     // Center of buoyancy
-    if (mWaterAnalyzer->GetCenterOfBuoyancy().has_value())
+    if (mWaterlineAnalyzer->GetCenterOfBuoyancy().has_value())
     {
         mView.UploadWaterlineMarker(
-            *mWaterAnalyzer->GetCenterOfBuoyancy(),
+            *mWaterlineAnalyzer->GetCenterOfBuoyancy(),
             View::WaterlineMarkerType::CenterOfBuoyancy);
     }
     else
     {
         mView.RemoveWaterlineMarker(View::WaterlineMarkerType::CenterOfBuoyancy);
+    }
+
+    // Waterline
+    if (mWaterlineAnalyzer->GetWaterline().has_value())
+    {
+        mView.UploadWaterline(
+            mWaterlineAnalyzer->GetWaterline()->Center,
+            mWaterlineAnalyzer->GetWaterline()->WaterDirection);
+    }
+    else
+    {
+        mView.RemoveWaterline();
     }
 
     mUserInterface.RefreshView();
@@ -327,9 +339,9 @@ void WaterlineAnalyzerDialog::PopulateStaticAnalysisText(std::optional<Waterline
 
 void WaterlineAnalyzerDialog::DoStep()
 {
-    assert(mWaterAnalyzer);
+    assert(mWaterlineAnalyzer);
 
-    auto const isCompleted = mWaterAnalyzer->Update();
+    auto const isCompleted = mWaterlineAnalyzer->Update();
 
     // Check if we need to change state
     if (isCompleted)

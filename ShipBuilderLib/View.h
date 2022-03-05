@@ -267,7 +267,9 @@ public:
     void RemoveWaterlineMarker(WaterlineMarkerType type);
     void RemoveWaterlineMarkers();
 
-    void UploadWaterline(/*TODO*/);
+    void UploadWaterline(
+        vec2f const & center, // Ship space coords
+        vec2f const & waterDirection);
 
     void RemoveWaterline();
 
@@ -451,13 +453,18 @@ private:
     struct WaterlineVertex
     {
         vec2f positionShip; // Ship space
-        // TODOHERE
+        vec2f centerShip; // Ship space
+        vec2f direction;
 
         WaterlineVertex() = default;
 
         WaterlineVertex(
-            vec2f _positionShip)
+            vec2f _positionShip,
+            vec2f _centerShip,
+            vec2f _direction)
             : positionShip(_positionShip)
+            , centerShip(_centerShip)
+            , direction(_direction)
         {}
     };
 

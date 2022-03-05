@@ -20,13 +20,26 @@ public:
     struct StaticResults
     {
         float TotalMass;
-        vec2f CenterOfMass; // In ship coordinates
+        vec2f CenterOfMass; // Ship coordinates
 
         StaticResults(
             float totalMass,
             vec2f centerOfMass)
             : TotalMass(totalMass)
             , CenterOfMass(centerOfMass)
+        {}
+    };
+
+    struct Waterline
+    {
+        vec2f Center; // Ship coordinates
+        vec2f WaterDirection; // Normalized, pointing "down" into water
+
+        Waterline(
+            vec2f center,
+            vec2f waterDirection)
+            : Center(center)
+            , WaterDirection(waterDirection)
         {}
     };
 
@@ -42,6 +55,11 @@ public:
     std::optional<vec2f> const & GetCenterOfBuoyancy() const
     {
         return mCenterOfBuoyancy;
+    }
+
+    std::optional<Waterline> const & GetWaterline() const
+    {
+        return mWaterline;
     }
 
     /*
@@ -71,6 +89,7 @@ private:
 
     std::optional<StaticResults> mStaticResults;
     std::optional<vec2f> mCenterOfBuoyancy;
+    std::optional<Waterline> mWaterline;
 };
 
 }
