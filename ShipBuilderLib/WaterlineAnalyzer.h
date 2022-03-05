@@ -39,6 +39,11 @@ public:
         return mStaticResults;
     }
 
+    std::optional<vec2f> const & GetCenterOfBuoyancy() const
+    {
+        return mCenterOfBuoyancy;
+    }
+
     /*
      * Runs a step of the analysis. Returns true if the analysis is complete.
      */
@@ -52,8 +57,6 @@ private:
 
     Model const & mModel;
 
-    std::optional<StaticResults> mStaticResults;
-
     //
     // State
     //
@@ -65,6 +68,9 @@ private:
     };
 
     StateType mCurrentState;
+
+    std::optional<StaticResults> mStaticResults;
+    std::optional<vec2f> mCenterOfBuoyancy;
 };
 
 }

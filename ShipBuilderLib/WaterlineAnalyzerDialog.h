@@ -40,6 +40,7 @@ public:
 private:
 
     void OnRefreshTimer(wxTimerEvent & event);
+    void OnClose(wxCloseEvent & event);
 
     void InitializeAnalysis();
     void ReconcileUIWithState();

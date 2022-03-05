@@ -38,6 +38,8 @@ WaterlineAnalyzerDialog::WaterlineAnalyzerDialog(
     , mUserInterface(userInterface)
     , mDisplayUnitsSystem(displayUnitsSystem)
 {
+    Bind(wxEVT_CLOSE_WINDOW, &WaterlineAnalyzerDialog::OnClose, this);
+
     //
     // Layout controls
     //
@@ -137,12 +139,12 @@ WaterlineAnalyzerDialog::WaterlineAnalyzerDialog(
 
         // Static analysis
         {
-            mStaticAnalysisTextCtrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(200, -1), wxTE_READONLY | wxTE_MULTILINE | wxTE_LEFT | wxTE_RICH);
+            mStaticAnalysisTextCtrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(300, -1), wxTE_READONLY | wxTE_MULTILINE | wxTE_LEFT | wxTE_RICH);
 
             {
-                wxTextAttr textAttr;
-                textAttr.SetFontFamily(wxFONTFAMILY_TELETYPE);
-                mStaticAnalysisTextCtrl->SetDefaultStyle(textAttr);
+                auto font = GetFont();
+                font.SetFamily(wxFONTFAMILY_TELETYPE);
+                mStaticAnalysisTextCtrl->SetFont(font);
             }
 
             mainHSizer->Add(
@@ -192,6 +194,15 @@ void WaterlineAnalyzerDialog::OnRefreshTimer(wxTimerEvent & /*event*/)
     DoStep();
 }
 
+void WaterlineAnalyzerDialog::OnClose(wxCloseEvent & event)
+{
+    mView.RemoveWaterlineMarkers();
+    mView.RemoveWaterline();
+    mUserInterface.RefreshView();
+
+    event.Skip();
+}
+
 void WaterlineAnalyzerDialog::InitializeAnalysis()
 {
     mWaterAnalyzer = std::make_unique<WaterlineAnalyzer>(mModel);
@@ -236,11 +247,38 @@ void WaterlineAnalyzerDialog::ReconcileUIWithState()
         }
     }
 
-    // Static analysis
-    PopulateStaticAnalysisText(mWaterAnalyzer ? mWaterAnalyzer->GetStaticResults() : std::nullopt);
+    assert(mWaterAnalyzer);
 
+    //
     // Visualizations
-    // TODOHERE
+    //
+
+    // Static analysis
+    PopulateStaticAnalysisText(mWaterAnalyzer->GetStaticResults());
+
+    // Center of mass
+    if (mWaterAnalyzer->GetStaticResults().has_value() && mWaterAnalyzer->GetStaticResults()->TotalMass != 0.0f)
+    {
+        mView.UploadWaterlineMarker(
+            mWaterAnalyzer->GetStaticResults()->CenterOfMass,
+            View::WaterlineMarkerType::CenterOfMass);
+    }
+    else
+    {
+        mView.RemoveWaterlineMarker(View::WaterlineMarkerType::CenterOfMass);
+    }
+
+    // Center of buoyancy
+    if (mWaterAnalyzer->GetCenterOfBuoyancy().has_value())
+    {
+        mView.UploadWaterlineMarker(
+            *mWaterAnalyzer->GetCenterOfBuoyancy(),
+            View::WaterlineMarkerType::CenterOfBuoyancy);
+    }
+    else
+    {
+        mView.RemoveWaterlineMarker(View::WaterlineMarkerType::CenterOfBuoyancy);
+    }
 
     mUserInterface.RefreshView();
 }
@@ -278,6 +316,9 @@ void WaterlineAnalyzerDialog::PopulateStaticAnalysisText(std::optional<Waterline
     }
 
     mStaticAnalysisTextCtrl->SetValue(ss.str());
+
+    // Move focus away
+    mPlayContinuouslyButton->SetFocus();
 
 #if FS_IS_OS_WINDOWS()
     mStaticAnalysisTextCtrl->HideNativeCaret();

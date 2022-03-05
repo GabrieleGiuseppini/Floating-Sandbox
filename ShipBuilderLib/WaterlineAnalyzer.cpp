@@ -44,6 +44,9 @@ bool WaterlineAnalyzer::Update()
             return true;
         }
     }
+
+    assert(false);
+    return false;
 }
 
 WaterlineAnalyzer::StaticResults WaterlineAnalyzer::CalculateStaticResults()

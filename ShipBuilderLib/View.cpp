@@ -578,7 +578,8 @@ View::View(
         CheckOpenGLError();
 
         // Allocate buffer for both markers
-        // TODOHERE
+        glBufferData(GL_ARRAY_BUFFER, 2 * 6 * sizeof(TextureVertex), nullptr, GL_STATIC_DRAW);
+        CheckOpenGLError();
     }
 
     //
@@ -676,7 +677,7 @@ void View::UploadGameVisualization(RgbaImageData const & texture)
     float constexpr QuadOffsetX = 0.5f;
     float constexpr QuadOffsetY = 0.5f;
 
-    UploadTextureVertices(
+    UploadTextureVerticesTriangleStripQuad(
         QuadOffsetX, 0.0f,
         shipWidth + QuadOffsetX, 1.0f,
         QuadOffsetY, 0.0f,
@@ -752,7 +753,7 @@ void View::UploadStructuralLayerVisualization(RgbaImageData const & texture)
     float const shipWidth = static_cast<float>(mViewModel.GetShipSize().width);
     float const shipHeight = static_cast<float>(mViewModel.GetShipSize().height);
 
-    UploadTextureVertices(
+    UploadTextureVerticesTriangleStripQuad(
         0.0f, 0.0f,
         shipWidth, 1.0f,
         0.0f, 0.0f,
@@ -791,7 +792,7 @@ void View::UploadElectricalLayerVisualization(RgbaImageData const & texture)
     float const shipWidth = static_cast<float>(mViewModel.GetShipSize().width);
     float const shipHeight = static_cast<float>(mViewModel.GetShipSize().height);
 
-    UploadTextureVertices(
+    UploadTextureVerticesTriangleStripQuad(
         0.0f, 0.0f,
         shipWidth, 1.0f,
         0.0f, 0.0f,
@@ -885,7 +886,7 @@ void View::UploadTextureLayerVisualization(RgbaImageData const & texture)
     float const texOffsetX = 0.5f / shipWidth;
     float const texOffsetY = 0.5f / shipHeight;
 
-    UploadTextureVertices(
+    UploadTextureVerticesTriangleStripQuad(
         QuadOffsetX, texOffsetX,
         shipWidth - QuadOffsetX, 1.0f - texOffsetX,
         QuadOffsetY, texOffsetY,
@@ -974,10 +975,107 @@ void View::RemoveDashedLineOverlay()
 }
 
 void View::UploadWaterlineMarker(
-    ShipSpaceCoordinates const & center,
+    vec2f const & center,
     WaterlineMarkerType type)
 {
-    // TODO
+    TextureFrameIndex textureFrameIndex = 0;
+    GLintptr bufferOffset = 0;
+    GLsizeiptr constexpr bufferSize = 6 * sizeof(TextureVertex);
+
+    switch (type)
+    {
+        case WaterlineMarkerType::CenterOfBuoyancy:
+        {
+            textureFrameIndex = 0;
+            bufferOffset = 0;
+            mHasCenterOfBuoyancyWaterlineMarker = true;
+
+            break;
+        }
+
+        case WaterlineMarkerType::CenterOfMass:
+        {
+            textureFrameIndex = 1;
+            bufferOffset = bufferSize;
+            mHasCenterOfMassWaterlineMarker = true;
+
+            break;
+        }
+    }
+
+    //
+    // Upload quad
+    //
+
+    auto const & atlasFrameMetadata = mLinearTextureAtlasMetadata->GetFrameMetadata(LinearTextureGroups::WaterlineMarker, textureFrameIndex);
+
+    float const leftX = center.x - atlasFrameMetadata.FrameMetadata.AnchorCenterWorld.x + 0.5f;
+    float const leftXTexture = atlasFrameMetadata.TextureCoordinatesBottomLeft.x;
+
+    float const rightX = leftX + atlasFrameMetadata.FrameMetadata.WorldWidth;
+    float const rightXTexture = atlasFrameMetadata.TextureCoordinatesTopRight.x;
+
+    float const bottomY = center.y - atlasFrameMetadata.FrameMetadata.AnchorCenterWorld.y + 0.5f;
+    float const bottomYTexture = atlasFrameMetadata.TextureCoordinatesBottomLeft.y;
+
+    float const topY = bottomY + atlasFrameMetadata.FrameMetadata.WorldHeight;
+    float const topYTexture = atlasFrameMetadata.TextureCoordinatesTopRight.y;
+
+    std::array<TextureVertex, 6> vertexBuffer;
+
+    // Bottom-left
+    vertexBuffer[0] = TextureVertex(
+        vec2f(leftX, bottomY),
+        vec2f(leftXTexture, bottomYTexture));
+
+    // Top-left
+    vertexBuffer[1] = TextureVertex(
+        vec2f(leftX, topY),
+        vec2f(leftXTexture, topYTexture));
+
+    // Bottom-right
+    vertexBuffer[2] = TextureVertex(
+        vec2f(rightX, bottomY),
+        vec2f(rightXTexture, bottomYTexture));
+
+    // Top-left
+    vertexBuffer[3] = TextureVertex(
+        vec2f(leftX, topY),
+        vec2f(leftXTexture, topYTexture));
+
+    // Bottom-right
+    vertexBuffer[4] = TextureVertex(
+        vec2f(rightX, bottomY),
+        vec2f(rightXTexture, bottomYTexture));
+
+    // Top-right
+    vertexBuffer[5] = TextureVertex(
+        vec2f(rightX, topY),
+        vec2f(rightXTexture, topYTexture));
+
+    // Upload vertices
+    glBindBuffer(GL_ARRAY_BUFFER, *mWaterlineMarkersVBO);
+    glBufferSubData(GL_ARRAY_BUFFER, bufferOffset, bufferSize, vertexBuffer.data());
+    CheckOpenGLError();
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void View::RemoveWaterlineMarker(WaterlineMarkerType type)
+{
+    switch (type)
+    {
+        case WaterlineMarkerType::CenterOfBuoyancy:
+        {
+            mHasCenterOfBuoyancyWaterlineMarker = false;
+            break;
+        }
+
+        case WaterlineMarkerType::CenterOfMass:
+        {
+            mHasCenterOfMassWaterlineMarker = false;
+            break;
+        }
+    }
 }
 
 void View::RemoveWaterlineMarkers()
@@ -1174,7 +1272,26 @@ void View::Render()
     // Waterline marker
     if (mHasCenterOfBuoyancyWaterlineMarker || mHasCenterOfMassWaterlineMarker)
     {
-        // TODOHERE
+        // Bind VAO
+        glBindVertexArray(*mWaterlineMarkersVAO);
+
+        // Activate program
+        mShaderManager->ActivateProgram<ProgramType::LinearTextureQuad>();
+
+        int const first = mHasCenterOfBuoyancyWaterlineMarker ? 0 : 6;
+        int count = 0;
+        if (mHasCenterOfBuoyancyWaterlineMarker)
+        {
+            count += 6;
+        }
+        if (mHasCenterOfMassWaterlineMarker)
+        {
+            count += 6;
+        }
+
+        // Draw
+        glDrawArrays(GL_TRIANGLES, first, count);
+        CheckOpenGLError();
     }
 
     //
@@ -1649,7 +1766,7 @@ void View::UpdateDashedLineOverlay()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void View::UploadTextureVertices(
+void View::UploadTextureVerticesTriangleStripQuad(
     float leftXShip, float leftXTex,
     float rightXShip, float rightTex,
     float bottomYShip, float bottomYTex,

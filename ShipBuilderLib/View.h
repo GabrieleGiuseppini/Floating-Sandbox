@@ -261,9 +261,10 @@ public:
     };
 
     void UploadWaterlineMarker(
-        ShipSpaceCoordinates const & center,
+        vec2f const & center, // Ship space coords
         WaterlineMarkerType type);
 
+    void RemoveWaterlineMarker(WaterlineMarkerType type);
     void RemoveWaterlineMarkers();
 
     void UploadWaterline(/*TODO*/);
@@ -287,7 +288,7 @@ private:
     void UpdateRectOverlay();
     void UpdateDashedLineOverlay();
 
-    inline void UploadTextureVertices(
+    inline void UploadTextureVerticesTriangleStripQuad(
         float leftXShip, float leftXTex,
         float rightXShip, float rightTex,
         float bottomYShip, float bottomYTex,

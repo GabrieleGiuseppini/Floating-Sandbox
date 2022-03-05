@@ -248,42 +248,42 @@ TextureDatabase<TextureDatabaseTraits> TextureDatabase<TextureDatabaseTraits>::L
 
                     float worldWidth;
                     float worldHeight;
-                    if (!!frameWorldWidth || !!frameWorldHeight)
+                    if (frameWorldWidth || frameWorldHeight)
                     {
                         if (!frameWorldWidth)
                         {
-                            throw GameException("Texture database: frame \"" + frameFilename + "\" has worldHeight but no worldWidth");
+                            frameWorldWidth = *frameWorldHeight / static_cast<float>(textureSize.height) * static_cast<float>(textureSize.width);
                         }
 
                         if (!frameWorldHeight)
                         {
-                            throw GameException("Texture database: frame \"" + frameFilename + "\" has worldWidth but no worldHeight");
+                            frameWorldHeight = *frameWorldWidth / static_cast<float>(textureSize.width) * static_cast<float>(textureSize.height);
                         }
 
                         worldWidth = *frameWorldWidth;
                         worldHeight = *frameWorldHeight;
                     }
-                    else if (!!frameWorldScaling)
+                    else if (frameWorldScaling)
                     {
                         worldWidth = static_cast<float>(textureSize.width) * (*frameWorldScaling);
                         worldHeight = static_cast<float>(textureSize.height) * (*frameWorldScaling);
                     }
-                    else if (!!groupWorldWidth || !!groupWorldHeight)
+                    else if (groupWorldWidth || groupWorldHeight)
                     {
                         if (!groupWorldWidth)
                         {
-                            throw GameException("Texture database: group \"" + groupName + "\" has worldHeight but no worldWidth");
+                            groupWorldWidth = *groupWorldHeight / static_cast<float>(textureSize.height) * static_cast<float>(textureSize.width);
                         }
 
                         if (!groupWorldHeight)
                         {
-                            throw GameException("Texture database: group \"" + groupName + "\" has worldWidth but no worldHeight");
+                            groupWorldHeight = *groupWorldWidth / static_cast<float>(textureSize.width) * static_cast<float>(textureSize.height);
                         }
 
                         worldWidth = *groupWorldWidth;
                         worldHeight = *groupWorldHeight;
                     }
-                    else if (!!groupWorldScaling)
+                    else if (groupWorldScaling)
                     {
                         worldWidth = static_cast<float>(textureSize.width) * (*groupWorldScaling);
                         worldHeight = static_cast<float>(textureSize.height) * (*groupWorldScaling);
@@ -293,16 +293,16 @@ TextureDatabase<TextureDatabaseTraits> TextureDatabase<TextureDatabaseTraits>::L
                         throw GameException("Texture database: cannot find world dimensions for frame \"" + frameFilename + "\"");
                     }
 
-                    bool hasOwnAmbientLight = !!frameHasOwnAmbientLight ? *frameHasOwnAmbientLight : groupHasOwnAmbientLight;
+                    bool hasOwnAmbientLight = frameHasOwnAmbientLight.has_value() ? *frameHasOwnAmbientLight : groupHasOwnAmbientLight;
 
-                    int anchorX = (textureSize.width / 2) + (!!frameAnchorOffsetX ? *frameAnchorOffsetX : groupAnchorOffsetX);
-                    int anchorY = (textureSize.height / 2) + (!!frameAnchorOffsetY ? *frameAnchorOffsetY : groupAnchorOffsetY);
+                    int anchorX = (textureSize.width / 2) + (frameAnchorOffsetX ? *frameAnchorOffsetX : groupAnchorOffsetX);
+                    int anchorY = (textureSize.height / 2) + (frameAnchorOffsetY ? *frameAnchorOffsetY : groupAnchorOffsetY);
 
                     // Transform to world
                     float anchorWorldX = static_cast<float>(anchorX) * worldWidth / static_cast<float>(textureSize.width);
                     float anchorWorldY = static_cast<float>(textureSize.height - anchorY) * worldHeight / static_cast<float>(textureSize.height);
 
-                    std::string name = !!frameName ? *frameName : std::to_string(frameIndex);
+                    std::string name = frameName.has_value() ? *frameName : std::to_string(frameIndex);
 
 
                     //
