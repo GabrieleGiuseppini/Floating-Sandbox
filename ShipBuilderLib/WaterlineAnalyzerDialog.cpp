@@ -7,10 +7,13 @@
 
 #include <UILib/WxHelpers.h>
 
+#include <GameCore/Conversions.h>
+
 #include <wx/sizer.h>
 #include <wx/statline.h>
 
 #include <cassert>
+#include <sstream>
 
 namespace ShipBuilder {
 
@@ -20,6 +23,7 @@ WaterlineAnalyzerDialog::WaterlineAnalyzerDialog(
     Model const & model,
     View & view,
     IUserInterface & userInterface,
+    UnitsSystem displayUnitsSystem,
     ResourceLocator const & resourceLocator)
     : wxDialog(
         parent,
@@ -31,6 +35,7 @@ WaterlineAnalyzerDialog::WaterlineAnalyzerDialog(
     , mModel(model)
     , mView(view)
     , mUserInterface(userInterface)
+    , mDisplayUnitsSystem(displayUnitsSystem)
 {
     //
     // Layout controls
@@ -113,6 +118,34 @@ WaterlineAnalyzerDialog::WaterlineAnalyzerDialog(
 
             mainHSizer->Add(
                 mRewindButton,
+                0,
+                wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT,
+                InterButtonMargin);
+        }
+
+        // Separator
+        {
+            wxStaticLine * line = new wxStaticLine(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_VERTICAL);
+
+            mainHSizer->Add(
+                line,
+                0,
+                wxEXPAND | wxLEFT | wxRIGHT,
+                8);
+        }
+
+        // Static analysis
+        {
+            mStaticAnalysisTextCtrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(200, -1), wxTE_READONLY | wxTE_MULTILINE | wxTE_LEFT);
+
+            wxTextAttr textAttrs;
+            // TODOTEST
+            //textAttrs.SetFontFamily(wxFONTFAMILY_TELETYPE);
+            textAttrs.SetFontSize(40);
+            mStaticAnalysisTextCtrl->SetDefaultStyle(textAttrs);
+
+            mainHSizer->Add(
+                mStaticAnalysisTextCtrl,
                 0,
                 wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT,
                 InterButtonMargin);
@@ -210,9 +243,39 @@ void WaterlineAnalyzerDialog::DoStep()
 
     // Update visualizations
     {
+        // Static analysis
         if (mWaterAnalyzer->GetStaticResults().has_value())
         {
-            // TODOHERE
+            std::stringstream ss;
+
+            ss << "Total mass: ";
+
+            switch (mDisplayUnitsSystem)
+            {
+                case UnitsSystem::SI_Celsius:
+                case UnitsSystem::SI_Kelvin:
+                {
+                    ss << KilogramToMetricTon(mWaterAnalyzer->GetStaticResults()->TotalMass) << " tons";
+                    break;
+                }
+
+                case UnitsSystem::USCS:
+                {
+                    ss << KilogramToUscsTon(mWaterAnalyzer->GetStaticResults()->TotalMass) << " tons";
+                    break;
+                }
+            }
+
+            mStaticAnalysisTextCtrl->SetValue(ss.str());
+
+            // TODOTEST
+            wxTextAttr textAttrs;
+            // TODOTEST
+            //textAttrs.SetFontFamily(wxFONTFAMILY_TELETYPE);
+            textAttrs.SetFontSize(40);
+            mStaticAnalysisTextCtrl->SetDefaultStyle(textAttrs);
+
+            mPlayContinuouslyButton->SetFocus(); // Move focus away
         }
 
         // TODOHERE: others

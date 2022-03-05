@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-inline float MetersToFeet(float metersValue) noexcept
+inline float MeterToFoot(float metersValue) noexcept
 {
     return metersValue * 3.28084f;
 }
@@ -18,4 +18,19 @@ inline float CelsiusToFahrenheit(float celsiusValue) noexcept
 inline float PascalToPsi(float pascalValue) noexcept
 {
     return pascalValue * 0.0001450377f;
+}
+
+inline float KilogramToPound(float kilogramValue) noexcept
+{
+    return kilogramValue * 2.20462f;
+}
+
+inline float KilogramToMetricTon(float kilogramValue) noexcept
+{
+    return kilogramValue / 1000.0f;
+}
+
+inline float KilogramToUscsTon(float kilogramValue) noexcept
+{
+    return kilogramValue * 2.20462f / 2000.0f;
 }

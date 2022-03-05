@@ -727,9 +727,9 @@ void NotificationLayer::RegeneratePhysicsProbeReadingStrings()
 
 			case UnitsSystem::USCS:
 			{
-				v = MetersToFeet(mPhysicsProbeReading.Speed);
+				v = MeterToFoot(mPhysicsProbeReading.Speed);
 				t = CelsiusToFahrenheit(mPhysicsProbeReading.Temperature);
-				d = MetersToFeet(mPhysicsProbeReading.Depth);
+				d = MeterToFoot(mPhysicsProbeReading.Depth);
 				p = PascalToPsi(mPhysicsProbeReading.Pressure);
 				break;
 			}

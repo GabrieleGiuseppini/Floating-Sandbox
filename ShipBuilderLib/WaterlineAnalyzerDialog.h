@@ -12,8 +12,11 @@
 
 #include <Game/ResourceLocator.h>
 
+#include <GameCore/GameTypes.h>
+
 #include <wx/bmpbuttn.h>
 #include <wx/dialog.h>
+#include <wx/textctrl.h>
 #include <wx/timer.h>
 
 #include <memory>
@@ -30,6 +33,7 @@ public:
         Model const & model,
         View & view,
         IUserInterface & userInterface,
+        UnitsSystem displayUnitsSystem,
         ResourceLocator const & resourceLocator);
 
 private:
@@ -47,6 +51,8 @@ private:
     View & mView;
     IUserInterface & mUserInterface;
 
+    UnitsSystem const mDisplayUnitsSystem;
+
     //
     // UI
     //
@@ -54,6 +60,7 @@ private:
     wxBitmapButton * mPlayContinuouslyButton;
     wxBitmapButton * mPlayStepByStepButton;
     wxBitmapButton * mRewindButton;
+    wxTextCtrl * mStaticAnalysisTextCtrl;
     std::unique_ptr<wxTimer> mRefreshTimer;
 
     //

@@ -20,7 +20,14 @@ public:
     struct StaticResults
     {
         float TotalMass;
-        vec2f CenterOfMass;
+        vec2f CenterOfMass; // In ship coordinates
+
+        StaticResults(
+            float totalMass,
+            vec2f centerOfMass)
+            : TotalMass(totalMass)
+            , CenterOfMass(centerOfMass)
+        {}
     };
 
 public:

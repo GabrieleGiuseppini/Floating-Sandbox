@@ -1554,7 +1554,9 @@ wxRibbonPanel * MainFrame::CreateEditAnalysisRibbonPanel(wxRibbonPage * parent)
                     mController->GetModel(),
                     mController->GetView(),
                     *this,
+                    mPreferences.GetDisplayUnitsSystem(),
                     mResourceLocator);
+
                 dlg.ShowModal();
             },
             _("Forecast where the ship's waterline will be once the ship is in the water."));

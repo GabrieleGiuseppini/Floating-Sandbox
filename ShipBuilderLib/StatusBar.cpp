@@ -238,7 +238,7 @@ void StatusBar::RefreshCanvasSize()
 
                 case UnitsSystem::USCS:
                 {
-                    ss << std::round(MetersToFeet(worldCoords.x)) << " x " << std::round(MetersToFeet(worldCoords.y))
+                    ss << std::round(MeterToFoot(worldCoords.x)) << " x " << std::round(MeterToFoot(worldCoords.y))
                         << " ft";
                     break;
                 }
@@ -277,7 +277,7 @@ void StatusBar::RefreshToolCoordinates()
 
                 case UnitsSystem::USCS:
                 {
-                    ss << std::round(MetersToFeet(worldCoords.x)) << ", " << std::round(MetersToFeet(worldCoords.y))
+                    ss << std::round(MeterToFoot(worldCoords.x)) << ", " << std::round(MeterToFoot(worldCoords.y))
                         << " ft";
                     break;
                 }
@@ -331,7 +331,7 @@ void StatusBar::RefreshCurrentToolType()
                 bitmap = mMeasuringTapeToolBitmap;
                 break;
             }
-            
+
             default:
             {
                 // No icon
@@ -378,7 +378,7 @@ void StatusBar::RefreshToolOutput()
 
                         case UnitsSystem::USCS:
                         {
-                            ss << std::round(MetersToFeet(*mMeasuredWorldLength))
+                            ss << std::round(MeterToFoot(*mMeasuredWorldLength))
                                 << " ft";
                             break;
                         }
