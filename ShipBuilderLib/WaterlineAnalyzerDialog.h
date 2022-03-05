@@ -16,10 +16,11 @@
 
 #include <wx/bmpbuttn.h>
 #include <wx/dialog.h>
-#include <wx/textctrl.h>
+#include <wx/stattext.h>
 #include <wx/timer.h>
 
 #include <memory>
+#include <optional>
 
 namespace ShipBuilder {
 
@@ -42,6 +43,7 @@ private:
 
     void InitializeAnalysis();
     void ReconcileUIWithState();
+    void PopulateStaticAnalysisText(std::optional<WaterlineAnalyzer::StaticResults> const & staticResults);
 
     void DoStep();
 
@@ -60,7 +62,7 @@ private:
     wxBitmapButton * mPlayContinuouslyButton;
     wxBitmapButton * mPlayStepByStepButton;
     wxBitmapButton * mRewindButton;
-    wxTextCtrl * mStaticAnalysisTextCtrl;
+    wxStaticText * mStaticAnalysisText;
     std::unique_ptr<wxTimer> mRefreshTimer;
 
     //

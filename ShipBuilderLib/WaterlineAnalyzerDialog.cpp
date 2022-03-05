@@ -136,18 +136,20 @@ WaterlineAnalyzerDialog::WaterlineAnalyzerDialog(
 
         // Static analysis
         {
-            mStaticAnalysisTextCtrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(200, -1), wxTE_READONLY | wxTE_MULTILINE | wxTE_LEFT);
+            mStaticAnalysisText = new wxStaticText(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT | wxBORDER_SIMPLE | wxST_NO_AUTORESIZE);
 
-            wxTextAttr textAttrs;
-            // TODOTEST
-            //textAttrs.SetFontFamily(wxFONTFAMILY_TELETYPE);
-            textAttrs.SetFontSize(40);
-            mStaticAnalysisTextCtrl->SetDefaultStyle(textAttrs);
+            mStaticAnalysisText->SetMinSize(wxSize(200, 40));
+
+            {
+                auto font = GetFont();
+                font.SetFamily(wxFONTFAMILY_TELETYPE);
+                mStaticAnalysisText->SetFont(font);
+            }
 
             mainHSizer->Add(
-                mStaticAnalysisTextCtrl,
+                mStaticAnalysisText,
                 0,
-                wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT,
+                wxEXPAND | wxLEFT | wxRIGHT,
                 InterButtonMargin);
         }
     }
@@ -200,6 +202,7 @@ void WaterlineAnalyzerDialog::InitializeAnalysis()
 
 void WaterlineAnalyzerDialog::ReconcileUIWithState()
 {
+    // Buttons
     switch (mCurrentState)
     {
         case StateType::Completed:
@@ -233,6 +236,42 @@ void WaterlineAnalyzerDialog::ReconcileUIWithState()
             break;
         }
     }
+
+    // Static analysis
+    PopulateStaticAnalysisText(mWaterAnalyzer ? mWaterAnalyzer->GetStaticResults() : std::nullopt);
+
+    // Visualizations
+    // TODOHERE
+
+    mUserInterface.RefreshView();
+}
+
+void WaterlineAnalyzerDialog::PopulateStaticAnalysisText(std::optional<WaterlineAnalyzer::StaticResults> const & staticResults)
+{
+    std::stringstream ss;
+
+    if (staticResults.has_value())
+    {
+        ss << "Total mass: ";
+
+        switch (mDisplayUnitsSystem)
+        {
+            case UnitsSystem::SI_Celsius:
+            case UnitsSystem::SI_Kelvin:
+            {
+                ss << KilogramToMetricTon(staticResults->TotalMass) << " tons";
+                break;
+            }
+
+            case UnitsSystem::USCS:
+            {
+                ss << KilogramToUscsTon(staticResults->TotalMass) << " tons";
+                break;
+            }
+        }
+    }
+
+    mStaticAnalysisText->SetLabel(ss.str());
 }
 
 void WaterlineAnalyzerDialog::DoStep()
@@ -241,57 +280,14 @@ void WaterlineAnalyzerDialog::DoStep()
 
     auto const isCompleted = mWaterAnalyzer->Update();
 
-    // Update visualizations
-    {
-        // Static analysis
-        if (mWaterAnalyzer->GetStaticResults().has_value())
-        {
-            std::stringstream ss;
-
-            ss << "Total mass: ";
-
-            switch (mDisplayUnitsSystem)
-            {
-                case UnitsSystem::SI_Celsius:
-                case UnitsSystem::SI_Kelvin:
-                {
-                    ss << KilogramToMetricTon(mWaterAnalyzer->GetStaticResults()->TotalMass) << " tons";
-                    break;
-                }
-
-                case UnitsSystem::USCS:
-                {
-                    ss << KilogramToUscsTon(mWaterAnalyzer->GetStaticResults()->TotalMass) << " tons";
-                    break;
-                }
-            }
-
-            mStaticAnalysisTextCtrl->SetValue(ss.str());
-
-            // TODOTEST
-            wxTextAttr textAttrs;
-            // TODOTEST
-            //textAttrs.SetFontFamily(wxFONTFAMILY_TELETYPE);
-            textAttrs.SetFontSize(40);
-            mStaticAnalysisTextCtrl->SetDefaultStyle(textAttrs);
-
-            mPlayContinuouslyButton->SetFocus(); // Move focus away
-        }
-
-        // TODOHERE: others
-
-        mUserInterface.RefreshView();
-    }
-
     // Check if we need to change state
     if (isCompleted)
     {
         // We're done
-        mWaterAnalyzer.reset();
         mCurrentState = StateType::Completed;
-
-        ReconcileUIWithState();
     }
+
+    ReconcileUIWithState();
 }
 
 }

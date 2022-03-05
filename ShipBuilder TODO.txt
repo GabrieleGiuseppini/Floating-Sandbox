@@ -229,6 +229,8 @@
 			+ Icons x 3
 			+ Buttons x 3
 			- DoStep: visualize analysis results
+				= Static analysis
+					- TODO: also label when no particles, need to differentiate between static-analysis-not-yet-run and run-but-no-particles
 		- class WaterlineAnalyzer
 			- TODO
 
