@@ -81,10 +81,7 @@ private:
         vec2f const & direction);
 
     // Total buoyance force, center of buoyancy
-    std::tuple<float, vec2f> CalculateBuoyancy(
-        vec2f const & center,
-        vec2f const & direction,
-        float level);
+    std::tuple<float, vec2f> CalculateBuoyancy(Waterline const & waterline);
 
 private:
 
@@ -114,7 +111,7 @@ private:
 
     vec2f mLevelSearchDirection; // Positive towards "bottom"
 
-    float mLevelSearchLowest; // Same heading as direction, grows the further in same heading
+    float mLevelSearchLowest; // Same heading as direction, grows the further in same heading; "bottom"
     float mLevelSearchHighest; // Less in numerical value than lowest
     float mLevelSearchCurrent;
 };

@@ -214,27 +214,27 @@
 		+ Button at ribbon, under Analysis
 			+ Icon
 			+ Shorter label
-		= View:
-			- UploadWaterlineMarker
-				+ Requires View to make a texture atlas at startup
-					+ See if can remove explicit specialization of TextureDatabases/etc. from TextureDatabase.cpp, by moving all methods from .cpp to -inl.h
-				+ Shader
-				- Upload
-				- Render
-			- UploadWaterline
-				- Shader
-				- Upload
-				- Render
-		= ShipBuilder/UI/WaterlineAnalyzerDialog
+		+ View:
+			+ UploadWaterlineMarker
+			+ UploadWaterline
+		+ ShipBuilder/UI/WaterlineAnalyzerDialog
 			+ Icons x 3
 			+ Buttons x 3
 			+ DoStep: visualize analysis results
 				+ Static analysis
 					+ Have also label when no particles, need to differentiate between static-analysis-not-yet-run and run-but-no-particles
 		- class WaterlineAnalyzer
-			- TODO
+			- TODO: Integral vs. Float
+				- Float allows for limits
+			- Direction search
+				- Implement CalculateSearchLimit
+				- Implement search
+	- Finalizations:
+		- Analysis starts in continuous play
+		- Want a mode where center of mass is displayed continuously?
+			- Requires IUserInterface::OnEdit invoked everywhere (tools, undo, etc.) for triggering rendering of new CoM
 
-- Cleanup all build/Data folders
+- Cleanup all builds' Data folders
 
 - Rotate 90 (CW and CCW)
 	- Also changes ship size, do notifications

@@ -38,7 +38,7 @@ in vec2 direction;
 void main()
 {
     // TODO: make it a param
-    vec4 waterColor = vec4(0.49, 0.89, 0.93, 1.0);
+    vec4 waterColor = vec4(0.49, 0.89, 0.93, 0.6);
 
     // Calculate alignment towards direction
     float alignment = dot(vertexCoordinates - centerCoordinates, direction);
