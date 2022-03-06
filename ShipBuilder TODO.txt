@@ -232,6 +232,7 @@
 				+ Inline
 				+ Do check with alignment of new dir with vertical
 				= Find next dir
+					- Do half of the rotation
 	- Finalizations:
 		- See if can get rid of state machine in WaterlineAnalyzer and do all with state instead
 		- Analysis starts in continuous play

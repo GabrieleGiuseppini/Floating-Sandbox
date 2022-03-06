@@ -7,7 +7,7 @@
 in vec4 inWaterline1; // Vertex position (ship space), Center coords (ship space)
 in vec2 inWaterline2; // Direction
 
-// Outputs
+// Outputs (ship space)
 out vec2 vertexCoordinates;
 out vec2 centerCoordinates;
 out vec2 direction;
@@ -17,20 +17,18 @@ uniform mat4 paramOrthoMatrix;
 
 void main()
 {
-    vec4 position = paramOrthoMatrix * vec4(inWaterline1.xy, 0.0, 1.0);
-
-    vertexCoordinates = position.xy;
-    centerCoordinates = (paramOrthoMatrix * vec4(inWaterline1.zw, 0.0, 1.0)).xy;
+    vertexCoordinates = inWaterline1.xy;
+    centerCoordinates = inWaterline1.zw;
     direction = inWaterline2;
-    
-    gl_Position = position;
+
+    gl_Position = paramOrthoMatrix * vec4(inWaterline1.xy, 0.0, 1.0);
 }
 
 ###FRAGMENT-120
 
 #define in varying
 
-// Inputs from previous shader
+// Inputs from previous shader (ship space)
 in vec2 vertexCoordinates;
 in vec2 centerCoordinates;
 in vec2 direction;

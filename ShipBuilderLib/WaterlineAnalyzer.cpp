@@ -8,6 +8,7 @@
 #include <GameCore/Log.h>
 
 #include <cassert>
+#include <limits>
 
 namespace ShipBuilder {
 
@@ -105,9 +106,7 @@ bool WaterlineAnalyzer::Update()
                 vec2f const mbDirection = (*mCenterOfBuoyancy - mStaticResults->CenterOfMass).normalise();
 
                 // Check if "vertical enough"
-                //float constexpr VerticalTolerance = 0.002f;
-                float constexpr VerticalTolerance = 0.0001f;
-                LogMessage("TODOTEST: mbDirection=", mbDirection.toString(), " searchDir=", mLevelSearchDirection.toString(), " alignment=", std::abs(mbDirection.dot(mLevelSearchDirection)));
+                float constexpr VerticalTolerance = 0.001f;
                 if (std::abs(mbDirection.dot(mLevelSearchDirection)) >= 1.0f - VerticalTolerance)
                 {
                     //
@@ -195,10 +194,30 @@ std::tuple<float, float> WaterlineAnalyzer::CalculateLevelSearchLimits(
     vec2f const & center,
     vec2f const & direction)
 {
-    // TODOTEST
-    return std::make_tuple(
-        center.y,
-        -(static_cast<float>(mModel.GetShipSize().height) - center.y));
+    float const canvasWidth = static_cast<float>(mModel.GetShipSize().width);
+    float const canvasHeight = static_cast<float>(mModel.GetShipSize().height);
+
+    std::array<vec2f, 4> corners = {
+        vec2f{0.0f, 0.0f},
+        vec2f{0.0f, canvasHeight},
+        vec2f{canvasWidth, 0.0f},
+        vec2f{canvasWidth, canvasHeight}
+    };
+
+    float tLowest = std::numeric_limits<float>::lowest(); // This will have the highest numerical value (positive "below")
+    float tHighest = std::numeric_limits<float>::max(); // This will have the lowest numerical value (negative "above")
+    for (size_t i = 0; i < corners.size(); ++i)
+    {
+        // Calculate t along <center, direction> vector V such that the vector
+        // from this corner to V * t is perpendicular to V
+
+        float const t = direction.dot(corners[i] - center);
+
+        tLowest = std::max(tLowest, t);
+        tHighest = std::min(tHighest, t);
+    }
+
+    return std::make_tuple(tLowest, tHighest);
 }
 
 std::tuple<float, vec2f> WaterlineAnalyzer::CalculateBuoyancy(Waterline const & waterline)

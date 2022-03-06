@@ -988,8 +988,6 @@ void View::UploadWaterlineMarker(
     {
         case WaterlineMarkerType::CenterOfBuoyancy:
         {
-            LogMessage("TODOTEST: View::UploadWaterlineMarker(B): pos=", center.toString());
-
             textureFrameIndex = 0;
             bufferOffset = 0;
             mHasCenterOfBuoyancyWaterlineMarker = true;
@@ -999,8 +997,6 @@ void View::UploadWaterlineMarker(
 
         case WaterlineMarkerType::CenterOfMass:
         {
-            LogMessage("TODOTEST: View::UploadWaterlineMarker(M): pos=", center.toString());
-
             textureFrameIndex = 1;
             bufferOffset = bufferSize;
             mHasCenterOfMassWaterlineMarker = true;
@@ -1094,8 +1090,6 @@ void View::UploadWaterline(
     vec2f const & center, // Ship space coords
     vec2f const & waterDirection)
 {
-    LogMessage("TODOTEST: View::UploadWaterline: waterDirection=", waterDirection.toString());
-
     //
     // Upload vertices
     //
