@@ -17,6 +17,8 @@ WaterlineAnalyzer::WaterlineAnalyzer(Model const & model)
 
 bool WaterlineAnalyzer::Update()
 {
+    vec2f constexpr Vertical = vec2f(0.0f, -1.0f); // Vertical down
+
     switch (mCurrentState)
     {
         case StateType::CalculateStaticResults:
@@ -37,7 +39,7 @@ bool WaterlineAnalyzer::Update()
 
                 // Initialize level search
 
-                mLevelSearchDirection = vec2f(0.0f, -1.0f); // Vertical down
+                mLevelSearchDirection = Vertical;
 
                 std::tie(mLevelSearchLowest, mLevelSearchHighest) = CalculateLevelSearchLimits(
                     mStaticResults->CenterOfMass,
@@ -115,11 +117,18 @@ bool WaterlineAnalyzer::Update()
                 }
                 else
                 {
-                    // Calculate new search direction: simulate torque
-                    // TODOHERE
+                    //
+                    // Calculate next search direction: apply torque to current direction
+                    //
+
+                    // alpha = mirror of angle between CoM->CoB and vertical, around vertical
+                    float const cosAlpha = mbDirection.dot(Vertical);
+                    float const sinAlpha = mbDirection.cross(Vertical);
+
+                    // Rotate current search direction by alpha
                     mLevelSearchDirection = vec2f(
-                        -mbDirection.x,
-                        mbDirection.y);
+                        mLevelSearchDirection.x * cosAlpha - mLevelSearchDirection.y * sinAlpha,
+                        mLevelSearchDirection.x * sinAlpha + mLevelSearchDirection.y * cosAlpha);
 
                     // Restart search from here
                     std::tie(mLevelSearchLowest, mLevelSearchHighest) = CalculateLevelSearchLimits(
