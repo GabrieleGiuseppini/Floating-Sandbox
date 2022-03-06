@@ -88,7 +88,7 @@ private:
     Model const & mModel;
 
     //
-    // State
+    // Search state
     //
 
     enum class StateType
@@ -101,16 +101,13 @@ private:
     StateType mCurrentState;
 
     std::optional<StaticResults> mStaticResults;
+
     std::optional<float> mTotalBuoyantForce;
     std::optional<vec2f> mCenterOfBuoyancy;
+
     std::optional<Waterline> mWaterline;
 
-    //
-    // Search state
-    //
-
     vec2f mLevelSearchDirection; // Positive towards "bottom"
-
     float mLevelSearchLowest; // Same heading as direction, grows the further in same heading; "bottom"
     float mLevelSearchHighest; // Less in numerical value than lowest
     float mLevelSearchCurrent;

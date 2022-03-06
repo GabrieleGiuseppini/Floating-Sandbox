@@ -69,10 +69,29 @@ bool WaterlineAnalyzer::Update()
             // Calculate buoyancy at this waterline
             std::tie(mTotalBuoyantForce, mCenterOfBuoyancy) = CalculateBuoyancy(*mWaterline);
 
-            // Check if close enough to floating
-            // TODO: it's integral!!! Won't ever be subject to tolerance this easily
-            float constexpr BuoyantForceTolerance = 500.0f; // Magic number
-            if (std::abs(*mTotalBuoyantForce - mStaticResults->TotalMass) < BuoyantForceTolerance)
+            // Calculate next level
+
+            if (*mTotalBuoyantForce > mStaticResults->TotalMass)
+            {
+                // Floating too much => it's too submersed;
+                // this level is thus the new highest
+                mLevelSearchHighest = mLevelSearchCurrent;
+            }
+            else
+            {
+                // Floating too little => needs to be more submersed;
+                // this level is thus the new lowest
+                mLevelSearchLowest = mLevelSearchCurrent;
+            }
+
+            assert(mLevelSearchLowest >= mLevelSearchHighest);
+            float const newLevelSearchCurrent = mLevelSearchHighest + (mLevelSearchLowest - mLevelSearchHighest) / 2.0f;
+
+            // TODO: check if close to limit?
+
+            // Check if we haven't moved much from previous
+            float constexpr LevelChangeTolerance = 1.0f;
+            if (std::abs(newLevelSearchCurrent - mLevelSearchCurrent) < LevelChangeTolerance)
             {
                 // We have found the level
 
@@ -83,27 +102,8 @@ bool WaterlineAnalyzer::Update()
             }
             else
             {
-                // Need to change level
-
-                if (*mTotalBuoyantForce > mStaticResults->TotalMass)
-                {
-                    // Floating too much => it's too submersed;
-                    // this level is thus the new highest
-                    mLevelSearchHighest = mLevelSearchCurrent;
-                }
-                else
-                {
-                    // Floating too little => needs to be more submersed;
-                    // this level is thus the new lowest
-                    mLevelSearchLowest = mLevelSearchCurrent;
-                }
-
-                // Check if any is close to a limit now
-                // TODO: really needed? Can't piggyback on "other" tolerance check?
-                // TODOHERE
-
-                assert(mLevelSearchLowest >= mLevelSearchHighest);
-                mLevelSearchCurrent = mLevelSearchHighest + (mLevelSearchLowest - mLevelSearchHighest) / 2.0f;
+                // Continue searching from here
+                mLevelSearchCurrent = newLevelSearchCurrent;
 
                 // Continue
                 return false;
@@ -173,7 +173,8 @@ std::tuple<float, vec2f> WaterlineAnalyzer::CalculateBuoyancy(Waterline const & 
 
     float totalBuoyantForce = 0.0f;
     vec2f centerOfBuoyancySum = vec2f::zero();
-    size_t underwaterParticleCount = 0;
+    // TODOHACK: see below
+    //size_t underwaterParticleCount = 0;
 
     auto const & structuralLayerBuffer = mModel.GetStructuralLayer().Buffer;
     for (int y = 0; y < structuralLayerBuffer.Size.height; ++y)
@@ -194,9 +195,15 @@ std::tuple<float, vec2f> WaterlineAnalyzer::CalculateBuoyancy(Waterline const & 
                 {
                     // This point is on the "underwater" side of the center, along the direction
 
-                    totalBuoyantForce += WaterDensity;
-                    centerOfBuoyancySum += coordsF;
-                    ++underwaterParticleCount;
+                    // TODOHACK: here we do the same as the simulator currently does, wrt "buoyancy volume fill".
+                    // This needs to be removed once we have changed "buoyancy volume fill"
+                    totalBuoyantForce += WaterDensity * material->BuoyancyVolumeFill;
+                    centerOfBuoyancySum += coordsF * WaterDensity * material->BuoyancyVolumeFill;
+
+                    // TODOHACK: THIS IS GOOD:
+                    ////totalBuoyantForce += WaterDensity;
+                    ////centerOfBuoyancySum += coordsF;
+                    ////++underwaterParticleCount;
                 }
             }
         }
@@ -204,7 +211,9 @@ std::tuple<float, vec2f> WaterlineAnalyzer::CalculateBuoyancy(Waterline const & 
 
     return std::make_tuple(
         totalBuoyantForce,
-        centerOfBuoyancySum / (underwaterParticleCount > 0 ? static_cast<float>(underwaterParticleCount) : 1.0f));
+        // TODOHACK: see above
+        //centerOfBuoyancySum / (underwaterParticleCount > 0 ? static_cast<float>(underwaterParticleCount) : 1.0f));
+        centerOfBuoyancySum / (totalBuoyantForce != 0.0f ? totalBuoyantForce : 1.0f));
 }
 
 }

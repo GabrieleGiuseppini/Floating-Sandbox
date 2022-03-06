@@ -985,6 +985,7 @@
 			- Materials like hull and chains have it ~zero, ropes a bit more
 			- The biggest test is whether current ships start flying or not
 				+ Preliminary checks indicate it might be ok!
+			- Remove hack from ShipBuilder::WaterlineAnalyzer
 
 		- Make "Internal Watertight" version of hull/non-hull materials
 			- Watertight (i.e. hull) but lighter than hull
