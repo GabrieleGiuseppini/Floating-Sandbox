@@ -5,6 +5,8 @@
  ***************************************************************************************/
 #include "WaterlineAnalyzer.h"
 
+#include <GameCore/Log.h>
+
 #include <cassert>
 
 namespace ShipBuilder {
@@ -103,8 +105,10 @@ bool WaterlineAnalyzer::Update()
                 vec2f const mbDirection = (*mCenterOfBuoyancy - mStaticResults->CenterOfMass).normalise();
 
                 // Check if "vertical enough"
-                float constexpr VerticalTolerance = 0.01f;
-                if (std::abs(mbDirection.x) < VerticalTolerance)
+                //float constexpr VerticalTolerance = 0.002f;
+                float constexpr VerticalTolerance = 0.0001f;
+                LogMessage("TODOTEST: mbDirection=", mbDirection.toString(), " searchDir=", mLevelSearchDirection.toString(), " alignment=", std::abs(mbDirection.dot(mLevelSearchDirection)));
+                if (std::abs(mbDirection.dot(mLevelSearchDirection)) >= 1.0f - VerticalTolerance)
                 {
                     //
                     // We're done
@@ -122,8 +126,8 @@ bool WaterlineAnalyzer::Update()
                     //
 
                     // alpha = mirror of angle between CoM->CoB and vertical, around vertical
-                    float const cosAlpha = mbDirection.dot(Vertical);
-                    float const sinAlpha = mbDirection.cross(Vertical);
+                    float const cosAlpha = mbDirection.dot(mLevelSearchDirection);
+                    float const sinAlpha = mbDirection.cross(mLevelSearchDirection);
 
                     // Rotate current search direction by alpha
                     mLevelSearchDirection = vec2f(
