@@ -232,7 +232,11 @@
 				+ Inline
 				+ Do check with alignment of new dir with vertical
 				= Find next dir
-					- Do half of the rotation
+					X Do half of the rotation
+					- Rather than having rotation's magnitude be based on CoM-CoB angle magnitude, do directional search with small, fixed-size rotations, depending simply
+					  on orientation (left or right) of CoM-CoB wrt "vertical"
+						- If CoM-CoB is to the right of "vertical": rotate direction by negative step
+						- Else, rotate direction by positive step
 	- Finalizations:
 		- See if can get rid of state machine in WaterlineAnalyzer and do all with state instead
 		- Analysis starts in continuous play

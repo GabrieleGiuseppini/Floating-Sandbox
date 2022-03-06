@@ -121,17 +121,28 @@ bool WaterlineAnalyzer::Update()
                 else
                 {
                     //
-                    // Calculate next search direction: apply torque to current direction
+                    // Calculate next search direction
                     //
 
-                    // alpha = mirror of angle between CoM->CoB and vertical, around vertical
-                    float const cosAlpha = mbDirection.dot(mLevelSearchDirection);
-                    float const sinAlpha = mbDirection.cross(mLevelSearchDirection);
+                    // alpha = angle between CoM->CoB and "vertical"; positive when mbDirection
+                    // is to the right (i.e. CW) of mLevelSearchDirection (when seen from CoM)
+                    float const mbAlphaCW = mLevelSearchDirection.angleCw(mbDirection);
 
-                    // Rotate current search direction by alpha
-                    mLevelSearchDirection = vec2f(
-                        mLevelSearchDirection.x * cosAlpha - mLevelSearchDirection.y * sinAlpha,
-                        mLevelSearchDirection.x * sinAlpha + mLevelSearchDirection.y * cosAlpha);
+                    // Next direction is a tiny little step towards opposite of mbDirection wrt
+                    // mLevelSearchDirection, but no more than half of that angle
+                    float constexpr DirectionAngleStep = 0.05f; // Magic number
+                    float alphaCcw;
+                    if (mbAlphaCW >= 0.0f)
+                    {
+                        alphaCcw = std::min(DirectionAngleStep, mbAlphaCW / 2.0f);
+                    }
+                    else
+                    {
+                        alphaCcw = std::max(-DirectionAngleStep, mbAlphaCW / 2.0f);
+                    }
+
+                    // Rotate current search direction
+                    mLevelSearchDirection = mLevelSearchDirection.rotate(alphaCcw);
 
                     // Restart search from here
                     std::tie(mLevelSearchLowest, mLevelSearchHighest) = CalculateLevelSearchLimits(

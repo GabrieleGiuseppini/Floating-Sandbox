@@ -32,7 +32,7 @@ WaterlineAnalyzerDialog::WaterlineAnalyzerDialog(
         _("Waterline Analysis"),
         wxDefaultPosition,
         wxDefaultSize,
-        wxCLOSE_BOX | wxCAPTION | wxSTAY_ON_TOP)
+        wxCLOSE_BOX | wxCAPTION)
     , mModel(model)
     , mView(view)
     , mUserInterface(userInterface)
