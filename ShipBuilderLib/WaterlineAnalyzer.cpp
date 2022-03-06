@@ -87,18 +87,50 @@ bool WaterlineAnalyzer::Update()
             assert(mLevelSearchLowest >= mLevelSearchHighest);
             float const newLevelSearchCurrent = mLevelSearchHighest + (mLevelSearchLowest - mLevelSearchHighest) / 2.0f;
 
-            // TODO: check if close to limit?
+            // TODO: check if close to a limit? Or may be this is taken care of by tolerance check below? Test w/floating object and w/submarine
 
             // Check if we haven't moved much from previous
             float constexpr LevelChangeTolerance = 1.0f;
             if (std::abs(newLevelSearchCurrent - mLevelSearchCurrent) < LevelChangeTolerance)
             {
+                //
                 // We have found the level
+                //
 
-                // TODOHERE: and so we now need to find a direction;
-                // If new one is near the previous, we're done
+                // Calculate CoM->CoB direction
+                vec2f const mbDirection = (*mCenterOfBuoyancy - mStaticResults->CenterOfMass).normalise();
 
-                // TODOTEST: simulating done now
+                // Check if "vertical enough"
+                float constexpr VerticalTolerance = 0.01f;
+                if (std::abs(mbDirection.x) < VerticalTolerance)
+                {
+                    //
+                    // We're done
+                    //
+
+                    // Transition state
+                    mCurrentState = StateType::Completed;
+
+                    return true;
+                }
+                else
+                {
+                    // Calculate new search direction: simulate torque
+                    // TODOHERE
+                    mLevelSearchDirection = vec2f(
+                        -mbDirection.x,
+                        mbDirection.y);
+
+                    // Restart search from here
+                    std::tie(mLevelSearchLowest, mLevelSearchHighest) = CalculateLevelSearchLimits(
+                        mStaticResults->CenterOfMass,
+                        mLevelSearchDirection);
+
+                    mLevelSearchCurrent = 0.0f;
+
+                    // Continue
+                    return false;
+                }
             }
             else
             {
@@ -108,17 +140,6 @@ bool WaterlineAnalyzer::Update()
                 // Continue
                 return false;
             }
-
-            // TODOTEST: simulating done now
-
-            //
-            // Done
-            //
-
-            // Transition state
-            mCurrentState = StateType::Completed;
-
-            return true;
         }
 
         case StateType::Completed:
@@ -164,7 +185,7 @@ std::tuple<float, float> WaterlineAnalyzer::CalculateLevelSearchLimits(
     // TODOTEST
     return std::make_tuple(
         center.y,
-        static_cast<float>(mModel.GetShipSize().height) - center.y);
+        -(static_cast<float>(mModel.GetShipSize().height) - center.y));
 }
 
 std::tuple<float, vec2f> WaterlineAnalyzer::CalculateBuoyancy(Waterline const & waterline)

@@ -228,16 +228,17 @@
 			+ Order of privates: move the old "published" ones to search state
 				+ They are just state observables
 			+ Do level check w/delta from previous
-			- Direction search
-				- Inline
-				- Do check with alignment of new dir with vertical
-					- TODO: tolerance? it's discrete after all
-		- Outcome in dialog
+			= Direction search
+				+ Inline
+				+ Do check with alignment of new dir with vertical
+				= Find next dir
 	- Finalizations:
 		- See if can get rid of state machine in WaterlineAnalyzer and do all with state instead
 		- Analysis starts in continuous play
-		- Want a mode where center of mass is displayed continuously?
+		- Want a UI mode where center of mass is displayed continuously?
+			- ModelController maintains structural analysis
 			- Requires IUserInterface::OnEdit invoked everywhere (tools, undo, etc.) for triggering rendering of new CoM
+
 
 - Cleanup all builds' Data folders
 
