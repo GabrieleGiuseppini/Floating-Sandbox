@@ -5,6 +5,7 @@
  ***************************************************************************************/
 #include "WaterlineAnalyzer.h"
 
+#include <GameCore/GameMath.h>
 #include <GameCore/Log.h>
 
 #include <cassert>
@@ -42,7 +43,8 @@ bool WaterlineAnalyzer::Update()
 
                 // Initialize level search
 
-                // TODOHERE
+                mDirectionSearchNegativeTorqueVerticalAngleCWLowest = Pi<float>;
+                mDirectionSearchPositiveTorqueVerticalAngleCWHighest = -Pi<float>;
                 mDirectionSearchCurrent = Vertical;
 
                 std::tie(mLevelSearchLowest, mLevelSearchHighest) = CalculateLevelSearchLimits(
@@ -137,21 +139,32 @@ bool WaterlineAnalyzer::Update()
                     // is to the right (i.e. CW) of mLevelSearchDirection (when seen from CoM)
                     float const mbAlphaCW = mDirectionSearchCurrent.angleCw(mbDirection);
 
-                    // Next direction is a tiny little step towards opposite of mbDirection wrt
-                    // mLevelSearchDirection, but no more than half of that angle
-                    float constexpr DirectionAngleStep = 0.05f; // Magic number
-                    float alphaCcw;
-                    if (mbAlphaCW >= 0.0f)
+                    // Update limits
+                    if (torque <= 0.0f)
                     {
-                        // TODOTEST
-                        //alphaCcw = std::min(DirectionAngleStep, mbAlphaCW / 2.0f);
-                        alphaCcw = mbAlphaCW / 2.0f;
+                        mDirectionSearchNegativeTorqueVerticalAngleCWLowest = std::min(
+                            mDirectionSearchNegativeTorqueVerticalAngleCWLowest,
+                            mbAlphaCW);
                     }
                     else
                     {
-                        // TODOTEST
-                        //alphaCcw = std::max(-DirectionAngleStep, mbAlphaCW / 2.0f);
-                        alphaCcw = mbAlphaCW / 2.0f;
+                        mDirectionSearchPositiveTorqueVerticalAngleCWHighest = std::max(
+                            mDirectionSearchPositiveTorqueVerticalAngleCWHighest,
+                            mbAlphaCW);
+                    }
+
+                    LogMessage("TODOHERE: alphaInterval=[", mDirectionSearchNegativeTorqueVerticalAngleCWLowest, ", ", mDirectionSearchPositiveTorqueVerticalAngleCWHighest, "]");
+
+                    float alphaCcw;
+                    float constexpr TorqueToAngleFactor = 0.05f;
+                    float constexpr MaxAngle = 0.2f;
+                    if (torque >= 0.0f)
+                    {
+                        alphaCcw = -std::min(MaxAngle, torque * TorqueToAngleFactor);
+                    }
+                    else
+                    {
+                        alphaCcw = -std::max(-MaxAngle, torque * TorqueToAngleFactor);
                     }
 
                     LogMessage("TODOTEST: alphaCW=", mbAlphaCW, " => rotation=", alphaCcw);
