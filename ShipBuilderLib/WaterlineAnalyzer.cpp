@@ -43,8 +43,11 @@ bool WaterlineAnalyzer::Update()
 
                 // Initialize level search
 
-                mDirectionSearchNegativeTorqueVerticalAngleCWLowest = Pi<float>;
-                mDirectionSearchPositiveTorqueVerticalAngleCWHighest = -Pi<float>;
+                mNegativeTorqueVerticalAngleCWMin = Pi<float>;
+                mNegativeTorqueVerticalAngleCWMax = -Pi<float>;
+                mPositiveTorqueVerticalAngleCWMin = Pi<float>;
+                mPositiveTorqueVerticalAngleCWMax = -Pi<float>;
+
                 mDirectionSearchCurrent = Vertical;
 
                 std::tie(mLevelSearchLowest, mLevelSearchHighest) = CalculateLevelSearchLimits(
@@ -76,6 +79,9 @@ bool WaterlineAnalyzer::Update()
             // Calculate buoyancy at this waterline
             std::tie(mTotalBuoyantForce, mCenterOfBuoyancy) = CalculateBuoyancy(*mWaterline);
 
+            assert(mTotalBuoyantForce.has_value());
+            assert(mCenterOfBuoyancy.has_value());
+
             // Calculate next level
 
             if (*mTotalBuoyantForce > mStaticResults->TotalMass)
@@ -97,7 +103,7 @@ bool WaterlineAnalyzer::Update()
             // TODO: check if close to a limit? Or may be this is taken care of by tolerance check below? Test w/floating object and w/submarine
 
             // Check if we haven't moved much from previous
-            float constexpr LevelChangeTolerance = 1.0f;
+            float constexpr LevelChangeTolerance = 0.5f;
             if (std::abs(newLevelSearchCurrent - mLevelSearchCurrent) < LevelChangeTolerance)
             {
                 //
@@ -140,37 +146,54 @@ bool WaterlineAnalyzer::Update()
                     float const mbAlphaCW = mDirectionSearchCurrent.angleCw(mbDirection);
 
                     // Update limits
+                    float const verticalAngleCW = mDirectionSearchCurrent.angleCw(Vertical);
                     if (torque <= 0.0f)
                     {
-                        mDirectionSearchNegativeTorqueVerticalAngleCWLowest = std::min(
-                            mDirectionSearchNegativeTorqueVerticalAngleCWLowest,
-                            mbAlphaCW);
+                        mNegativeTorqueVerticalAngleCWMin = std::min(mNegativeTorqueVerticalAngleCWMin, verticalAngleCW);
+                        mNegativeTorqueVerticalAngleCWMax = std::max(mNegativeTorqueVerticalAngleCWMax, verticalAngleCW);
                     }
                     else
                     {
-                        mDirectionSearchPositiveTorqueVerticalAngleCWHighest = std::max(
-                            mDirectionSearchPositiveTorqueVerticalAngleCWHighest,
-                            mbAlphaCW);
+                        mPositiveTorqueVerticalAngleCWMin = std::min(mPositiveTorqueVerticalAngleCWMin, verticalAngleCW);
+                        mPositiveTorqueVerticalAngleCWMax = std::max(mPositiveTorqueVerticalAngleCWMax, verticalAngleCW);
                     }
 
-                    LogMessage("TODOHERE: alphaInterval=[", mDirectionSearchNegativeTorqueVerticalAngleCWLowest, ", ", mDirectionSearchPositiveTorqueVerticalAngleCWHighest, "]");
+                    //LogMessage("TODOHERE: posTorqueAlphaInterval=[", mPositiveTorqueVerticalAngleCWMax, ", ", mPositiveTorqueVerticalAngleCWMin, "]");
+                    //LogMessage("TODOHERE: negTorqueAlphaInterval=[", mNegativeTorqueVerticalAngleCWMax, ", ", mNegativeTorqueVerticalAngleCWMin, "]");
+                    LogMessage("TODOHERE: negTorqueVerticalAlphaMin=", mNegativeTorqueVerticalAngleCWMin, " posTorqueVerticalAlphaMin=", mPositiveTorqueVerticalAngleCWMin);
 
                     float alphaCcw;
-                    float constexpr TorqueToAngleFactor = 0.05f;
+                    float constexpr TorqueToAngleFactor = 0.0025f; // 0.005f was faster
                     float constexpr MaxAngle = 0.2f;
                     if (torque >= 0.0f)
                     {
-                        alphaCcw = -std::min(MaxAngle, torque * TorqueToAngleFactor);
+                        // TODOTEST
+                        //alphaCcw = -std::min(MaxAngle, torque * TorqueToAngleFactor);
+                        alphaCcw = -torque * TorqueToAngleFactor;
                     }
                     else
                     {
-                        alphaCcw = -std::max(-MaxAngle, torque * TorqueToAngleFactor);
+                        // TODOTEST
+                        //alphaCcw = -std::max(-MaxAngle, torque * TorqueToAngleFactor);
+                        alphaCcw = -torque * TorqueToAngleFactor;
                     }
-
-                    LogMessage("TODOTEST: alphaCW=", mbAlphaCW, " => rotation=", alphaCcw);
 
                     // Rotate current search direction
                     mDirectionSearchCurrent = mDirectionSearchCurrent.rotate(alphaCcw);
+
+                    LogMessage("TODOTEST: alphaCW=", mbAlphaCW, " => rotation=", alphaCcw, " newDir=", mDirectionSearchCurrent.toString(), " newVerticalAlpha=", mDirectionSearchCurrent.angleCw(Vertical));
+
+                    // TODOHERE: limit angle
+                    ////if (torque >= 0.0f && mDirectionSearchCurrent.angleCw(Vertical) > mNegativeTorqueVerticalAngleCWMin)
+                    ////{
+                    ////    mDirectionSearchCurrent = Vertical.rotate(-mNegativeTorqueVerticalAngleCWMin);
+                    ////}
+                    ////else if (torque < 0.0f && mDirectionSearchCurrent.angleCw(Vertical) > mPositiveTorqueVerticalAngleCWMin)
+                    ////{
+                    ////    mDirectionSearchCurrent = Vertical.rotate(-mPositiveTorqueVerticalAngleCWMin);
+                    ////}
+
+                    ////LogMessage("TODOTEST: clipped verticalAlpha=", mDirectionSearchCurrent.angleCw(Vertical));
 
                     // Restart search from here
                     std::tie(mLevelSearchLowest, mLevelSearchHighest) = CalculateLevelSearchLimits(

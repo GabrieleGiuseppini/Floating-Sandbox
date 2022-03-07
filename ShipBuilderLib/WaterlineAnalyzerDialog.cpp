@@ -172,19 +172,19 @@ WaterlineAnalyzerDialog::WaterlineAnalyzerDialog(
             centerScreen.y - GetSize().y / 2));
 
     //
+    // Setup timer
+    //
+
+    mRefreshTimer = std::make_unique<wxTimer>(this, wxID_ANY);
+    Connect(mRefreshTimer->GetId(), wxEVT_TIMER, (wxObjectEventFunction)&WaterlineAnalyzerDialog::OnRefreshTimer);
+
+    //
     // Initialize analysis
     //
 
     InitializeAnalysis();
 
     ReconcileUIWithState();
-
-    //
-    // Setup timer
-    //
-
-    mRefreshTimer = std::make_unique<wxTimer>(this, wxID_ANY);
-    Connect(mRefreshTimer->GetId(), wxEVT_TIMER, (wxObjectEventFunction)&WaterlineAnalyzerDialog::OnRefreshTimer);
 }
 
 void WaterlineAnalyzerDialog::OnRefreshTimer(wxTimerEvent & /*event*/)
@@ -228,9 +228,11 @@ void WaterlineAnalyzerDialog::ReconcileUIWithState()
 
         case StateType::Paused:
         {
+            mRefreshTimer->Stop();
+
             mPlayContinuouslyButton->Enable(true);
             mPlayStepByStepButton->Enable(true);
-            mRewindButton->Enable(false);
+            mRewindButton->Enable(true);
 
             break;
         }
@@ -241,7 +243,7 @@ void WaterlineAnalyzerDialog::ReconcileUIWithState()
 
             mPlayContinuouslyButton->Enable(false);
             mPlayStepByStepButton->Enable(false);
-            mRewindButton->Enable(false);
+            mRewindButton->Enable(true);
 
             break;
         }

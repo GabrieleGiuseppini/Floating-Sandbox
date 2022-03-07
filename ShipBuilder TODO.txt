@@ -243,6 +243,8 @@
 					- Problem 2: direction search end condition: at the moment ignores distance between CoM and CoB; but when they're really 
 					  on each other, direction change should be negligible. Find another metric for the end condition
 						- Torque (again)
+					- Facts:
+						- Ark: at equlibrium, right side is slightly lower
 	- Finalizations:
 		- See if can get rid of state machine in WaterlineAnalyzer and do all with state instead
 		- Analysis starts in continuous play
