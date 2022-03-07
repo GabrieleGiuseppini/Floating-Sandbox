@@ -42,12 +42,12 @@ bool WaterlineAnalyzer::Update()
 
                 // Initialize level search
 
-                mLevelSearchDirection = Vertical;
+                // TODOHERE
+                mDirectionSearchCurrent = Vertical;
 
                 std::tie(mLevelSearchLowest, mLevelSearchHighest) = CalculateLevelSearchLimits(
                     mStaticResults->CenterOfMass,
-                    mLevelSearchDirection);
-
+                    mDirectionSearchCurrent);
                 mLevelSearchCurrent = 0.0f;
 
                 // Transition state
@@ -64,12 +64,12 @@ bool WaterlineAnalyzer::Update()
             // Calculate waterline center - along <center of mass -> direction> vector, at current level
             vec2f const waterlineCenter =
                 mStaticResults->CenterOfMass
-                + mLevelSearchDirection * mLevelSearchCurrent;
+                + mDirectionSearchCurrent * mLevelSearchCurrent;
 
             // Store this waterline
             mWaterline.emplace(
                 waterlineCenter,
-                mLevelSearchDirection);
+                mDirectionSearchCurrent);
 
             // Calculate buoyancy at this waterline
             std::tie(mTotalBuoyantForce, mCenterOfBuoyancy) = CalculateBuoyancy(*mWaterline);
@@ -103,11 +103,20 @@ bool WaterlineAnalyzer::Update()
                 //
 
                 // Calculate CoM->CoB direction
-                vec2f const mbDirection = (*mCenterOfBuoyancy - mStaticResults->CenterOfMass).normalise();
+                vec2f const mb = (*mCenterOfBuoyancy - mStaticResults->CenterOfMass);
+                vec2f const mbDirection = mb.normalise();
+
+                //
+                // Calculate "torque" of weight/buoyancy on CoM->CoB direction
+                //
+
+                float const torque = mDirectionSearchCurrent.cross(mb);
+
+                LogMessage("TODOTEST: mb=", mb.toString(), " dir=", mbDirection.toString(), " torque=", torque);
 
                 // Check if "vertical enough"
-                float constexpr VerticalTolerance = 0.001f;
-                if (std::abs(mbDirection.dot(mLevelSearchDirection)) >= 1.0f - VerticalTolerance)
+                float constexpr VerticalTolerance = 1.0f;
+                if (std::abs(torque) <= VerticalTolerance)
                 {
                     //
                     // We're done
@@ -126,7 +135,7 @@ bool WaterlineAnalyzer::Update()
 
                     // alpha = angle between CoM->CoB and "vertical"; positive when mbDirection
                     // is to the right (i.e. CW) of mLevelSearchDirection (when seen from CoM)
-                    float const mbAlphaCW = mLevelSearchDirection.angleCw(mbDirection);
+                    float const mbAlphaCW = mDirectionSearchCurrent.angleCw(mbDirection);
 
                     // Next direction is a tiny little step towards opposite of mbDirection wrt
                     // mLevelSearchDirection, but no more than half of that angle
@@ -134,20 +143,26 @@ bool WaterlineAnalyzer::Update()
                     float alphaCcw;
                     if (mbAlphaCW >= 0.0f)
                     {
-                        alphaCcw = std::min(DirectionAngleStep, mbAlphaCW / 2.0f);
+                        // TODOTEST
+                        //alphaCcw = std::min(DirectionAngleStep, mbAlphaCW / 2.0f);
+                        alphaCcw = mbAlphaCW / 2.0f;
                     }
                     else
                     {
-                        alphaCcw = std::max(-DirectionAngleStep, mbAlphaCW / 2.0f);
+                        // TODOTEST
+                        //alphaCcw = std::max(-DirectionAngleStep, mbAlphaCW / 2.0f);
+                        alphaCcw = mbAlphaCW / 2.0f;
                     }
 
+                    LogMessage("TODOTEST: alphaCW=", mbAlphaCW, " => rotation=", alphaCcw);
+
                     // Rotate current search direction
-                    mLevelSearchDirection = mLevelSearchDirection.rotate(alphaCcw);
+                    mDirectionSearchCurrent = mDirectionSearchCurrent.rotate(alphaCcw);
 
                     // Restart search from here
                     std::tie(mLevelSearchLowest, mLevelSearchHighest) = CalculateLevelSearchLimits(
                         mStaticResults->CenterOfMass,
-                        mLevelSearchDirection);
+                        mDirectionSearchCurrent);
 
                     mLevelSearchCurrent = 0.0f;
 

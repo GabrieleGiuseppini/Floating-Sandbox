@@ -233,10 +233,16 @@
 				+ Do check with alignment of new dir with vertical
 				= Find next dir
 					X Do half of the rotation
-					- Rather than having rotation's magnitude be based on CoM-CoB angle magnitude, do directional search with small, fixed-size rotations, depending simply
+					+ Rather than having rotation's magnitude be based on CoM-CoB angle magnitude, do directional search with small, fixed-size rotations, depending simply
 					  on orientation (left or right) of CoM-CoB wrt "vertical"
-						- If CoM-CoB is to the right of "vertical": rotate direction by negative step
-						- Else, rotate direction by positive step
+						+ If CoM-CoB is to the right of "vertical": rotate direction by negative step
+						+ Else, rotate direction by positive step
+						+ Cap by CoM-CoB ^ direction angle
+					- Problem: can dance back and forth - oscillates around minimum
+						- Make rotation dependent on torque
+					- Problem 2: direction search end condition: at the moment ignores distance between CoM and CoB; but when they're really 
+					  on each other, direction change should be negligible. Find another metric for the end condition
+						- Torque (again)
 	- Finalizations:
 		- See if can get rid of state machine in WaterlineAnalyzer and do all with state instead
 		- Analysis starts in continuous play

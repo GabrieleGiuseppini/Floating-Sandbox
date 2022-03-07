@@ -107,7 +107,10 @@ private:
 
     std::optional<Waterline> mWaterline;
 
-    vec2f mLevelSearchDirection; // Positive towards "bottom"
+    float mDirectionSearchVerticalAngleCWLowest; // Lowest (closer to zero) CW angle of search direction from real vertical, at which we have observed negative torque
+    float mDirectionSearchVerticalAngleCWHighest;
+    vec2f mDirectionSearchCurrent; // Positive towards "bottom"
+
     float mLevelSearchLowest; // Same heading as direction, grows the further in same heading; "bottom"
     float mLevelSearchHighest; // Less in numerical value than lowest
     float mLevelSearchCurrent;
