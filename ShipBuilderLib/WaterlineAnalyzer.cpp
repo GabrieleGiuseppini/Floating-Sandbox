@@ -26,6 +26,7 @@ bool WaterlineAnalyzer::Update()
     float constexpr LevelSearchStride = 2.0f;
     float constexpr LevelSearchChangeTolerance = 0.5f;
     float constexpr TorqueToDirectionRotationAngleFactor = 0.05f;
+    float constexpr DirectionRotationAngleStrideMax = 0.2f;
 
     if (!mStaticResults.has_value())
     {
@@ -162,10 +163,13 @@ bool WaterlineAnalyzer::Update()
         LogMessage("TODOTEST: torque=", torque);
 
         // Calculate (delta-) rotation we want to rotate direction for
-        float directionRotationCW = torque * TorqueToDirectionRotationAngleFactor; // Negative torque is ship CW rotation, hence a CCW rotation of the direction
+        float directionRotationCW;
         if (torque <= 0.0f)
         {
-            // Torque rotates ship CW, hence generates a CCW rotation of the direction
+            // Torque rotates ship CW, hence generates a CCW rotation of the direction - i.e. a negative CW rotation
+            directionRotationCW = std::max(
+                torque * TorqueToDirectionRotationAngleFactor, // Negative torque is ship CW rotation, hence a CCW rotation of the direction
+                -DirectionRotationAngleStrideMax);
 
             // Current angle is the new maximum
             mDirectionSearchCWAngleMax = directionVerticalAlphaCW;
@@ -179,7 +183,10 @@ bool WaterlineAnalyzer::Update()
         }
         else
         {
-            // Torque rotates ship CCW, hence generates a CW rotation of the direction
+            // Torque rotates ship CCW, hence generates a CW rotation of the direction - i.e. a positive CW rotation
+            directionRotationCW = std::min(
+                torque * TorqueToDirectionRotationAngleFactor, // Negative torque is ship CW rotation, hence a CCW rotation of the direction
+                DirectionRotationAngleStrideMax);
 
             // Current angle is the new minimum
             mDirectionSearchCWAngleMin = directionVerticalAlphaCW;
@@ -239,6 +246,9 @@ bool WaterlineAnalyzer::Update()
         std::tie(mLevelSearchLowest, mLevelSearchHighest) = CalculateLevelSearchLimits(
             mStaticResults->CenterOfMass,
             mDirectionSearchCurrent);
+
+        // Clamp direction, in case rotation has restricted legal range for current level
+        mLevelSearchCurrent = Clamp(mLevelSearchCurrent, mLevelSearchHighest, mLevelSearchLowest);
 
         assert(mLevelSearchHighest <= mLevelSearchCurrent && mLevelSearchCurrent <= mLevelSearchLowest);
 

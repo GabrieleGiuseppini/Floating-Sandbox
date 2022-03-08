@@ -258,40 +258,34 @@
 							+ Remove buoyancy center if buoyant force is zero
 	= Finalizations:
 		+ See if can get rid of state machine in WaterlineAnalyzer and do all with state instead
-		- Fix Blimp break
-			- Due to levelSearchCurrent not being correct anymore after rotation of direction; need to update it as well
+		+ Fix Blimp break
+			+ Due to levelSearchCurrent not being correct anymore after rotation of direction; need to update it as well
+		+ Cap rotation due to torque
 		= Outcome in dialog (populated at completion)
-			- Trim (angle as absolute degrees)
-			- Floating/Sinking statement?
-				- Total buoyant force==0 => above water
-				- ??? => stable
-					- level=1.5 min=1.5 max=2.0
-					- level=14 min=14 max=14.5
-					- 17 17 17.5
-					- -17 -17 -16.5
-				- ??? => sinks
-					- level=-16 min=-16.5 max=-16 (real min/max)
-					- level=-32 min=-32.5 max=-32
-			- Test:
-				- Submarine, Triton, Ship
-				- Blimp, Cardboard
-				- Concrete ball
-				- No particles
+			+ Trim (angle as absolute degrees)
+			+ Floating/Sinking statement
+			+ Test:
+				+ Submarine, Triton, Ship
+				+ Blimp, Cardboard
+				+ Concrete ball
+				+ No particles
+				+ One particle
 			- Dialog: Gfx
 		- Faster animation
 		- Cleanup logging
+		- Shader: line on waterline interface
 		- Analysis starts in continuous play
-		- Want a UI mode where center of mass is displayed continuously?
-			- ModelController maintains structural analysis, like now
-			- Simply:
-				- Total Mass, Center of Mass
-				- Total submerged buoyancy, Center of Buoyancy (when totally submerged)
-				- Display:
-					- Total mass
-					- Whether sinks or floats
-					- Direction of CoM->CoB
-						- TODO: makes sense, given that CoB is for fully submerged?
-			- Requires IUserInterface::OnEdit invoked everywhere (tools, undo, etc.) for triggering rendering of new CoM
+	- Want a UI mode where center of mass is displayed continuously?
+		- ModelController maintains structural analysis, like now
+		- Simply:
+			- Total Mass, Center of Mass
+			- Total submerged buoyancy, Center of Buoyancy (when totally submerged)
+			- Display:
+				- Total mass
+				- Whether sinks or floats
+				- Direction of CoM->CoB
+					- TODO: does it make sense, given that CoB is for fully submerged?
+		- Requires IUserInterface::OnEdit invoked everywhere (tools, undo, etc.) for triggering rendering of new CoM
 
 
 - Cleanup all builds' Data folders
