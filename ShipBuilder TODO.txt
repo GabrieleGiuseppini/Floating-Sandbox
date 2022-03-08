@@ -203,14 +203,14 @@
 + Send for testing
 
 = Waterline analysis
-	- https://www.britannica.com/science/fluid-mechanics/Hydrostatics#ref611691
-	- https://www.engineeringtoolbox.com/centre-gravity-buoyancy-d_1286.html
-	- Gist:
+	! https://www.britannica.com/science/fluid-mechanics/Hydrostatics#ref611691
+	! https://www.engineeringtoolbox.com/centre-gravity-buoyancy-d_1286.html
+	! Gist:
 		- At equlibrium the hull is stable, hence the center of gravity and center of buoyancy are on the same vertical line
 			- For most hulls the center of buoyancy is below the center of gravity and the hull is said to be meta-stable
 		- Metacenter is the theoretical point at which the B-G vertical line intersects the vertical line through the new centre of buoyancy created when the body is tilted
 		- When at rest on even keel, the vessel’s centre of buoyancy is directly below the centre of gravity as well as below the metacentre
-	= Impl:
+	+ Impl:
 		+ Button at ribbon, under Analysis
 			+ Icon
 			+ Shorter label
@@ -223,15 +223,15 @@
 			+ DoStep: visualize analysis results
 				+ Static analysis
 					+ Have also label when no particles, need to differentiate between static-analysis-not-yet-run and run-but-no-particles
-		= class WaterlineAnalyzer
+		+ class WaterlineAnalyzer
 			X No float coords - simulator is integral for buoyancy after all
 			+ Order of privates: move the old "published" ones to search state
 				+ They are just state observables
 			+ Do level check w/delta from previous
-			= Direction search
+			+ Direction search
 				+ Inline
 				+ Do check with alignment of new dir with vertical
-				= Find next dir
+				+ Find next dir
 					X Do half of the rotation
 					+ Rather than having rotation's magnitude be based on CoM-CoB angle magnitude, do directional search with small, fixed-size rotations, depending simply
 					  on orientation (left or right) of CoM-CoB wrt "vertical"
@@ -251,13 +251,16 @@
 					+ 2: direction search: use the fact that a change in torque sign indicates passed a minimum
 					+ Cleanup
 					+ Larger direction search stride
-					- Test corner cases:
+					+ Test corner cases:
 						+ Submarine
-						- ~180degrees ball
+						+ ~180degrees ball
 						+ Cardboard skyscraper
 							+ Remove buoyancy center if buoyant force is zero
-	- Finalizations:
-		- See if can get rid of state machine in WaterlineAnalyzer and do all with state instead
+	= Finalizations:
+		+ See if can get rid of state machine in WaterlineAnalyzer and do all with state instead
+		- Refactor members
+			- Nuke static results, have two members
+			- Nuke waterline, have two members
 		- Outcome in dialog (populated at completion)
 			- Tilt (angle as absolute degrees)
 			- Floating/Sinking statement?
@@ -265,6 +268,7 @@
 				- ??? => stable
 				- ??? => sinks
 		- Cleanup logging
+		- Test w/no particles
 		- Analysis starts in continuous play
 		- Want a UI mode where center of mass is displayed continuously?
 			- ModelController maintains structural analysis

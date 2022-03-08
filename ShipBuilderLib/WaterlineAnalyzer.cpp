@@ -15,233 +15,221 @@ namespace ShipBuilder {
 
 WaterlineAnalyzer::WaterlineAnalyzer(Model const & model)
     : mModel(model)
-    , mCurrentState(StateType::CalculateStaticResults)
 {
 }
 
 bool WaterlineAnalyzer::Update()
 {
     vec2f constexpr Vertical = vec2f(0.0f, -1.0f); // Vertical down
+    float constexpr LevelSearchStride = 2.0f;
+    float constexpr LevelSearchChangeTolerance = 0.5f;
+    float constexpr TorqueToDirectionRotationAngleFactor = 0.05f;
 
-    switch (mCurrentState)
+    if (!mStaticResults.has_value())
     {
-        case StateType::CalculateStaticResults:
+        //
+        // Need to perform static analysis
+        //
+
+        mStaticResults = CalculateStaticResults();
+
+        assert(mStaticResults.has_value());
+
+        if (mStaticResults->TotalMass == 0.0f)
         {
-            mStaticResults = CalculateStaticResults();
-
-            assert(mStaticResults.has_value());
-
-            if (mStaticResults->TotalMass == 0.0f)
-            {
-                // No particles, we're done
-                mCurrentState = StateType::Completed;
-                return true;
-            }
-            else
-            {
-                // Start search
-
-                // Initialize level search
-
-                mDirectionSearchCWAngleMax = Pi<float>;
-                mDirectionSearchCWAngleMin = -Pi<float>;
-                mDirectionSearchCurrent = Vertical;
-
-                std::tie(mLevelSearchLowest, mLevelSearchHighest) = CalculateLevelSearchLimits(
-                    mStaticResults->CenterOfMass,
-                    mDirectionSearchCurrent);
-                mLevelSearchCurrent = 0.0f;
-
-                // Transition state
-                mCurrentState = StateType::FindLevel;
-
-                return false;
-            }
-        }
-
-        case StateType::FindLevel:
-        {
-            LogMessage("TODOTEST: ---------------------------");
-            LogMessage("TODOTEST: dir=", mDirectionSearchCurrent.toString(), " level=", mLevelSearchCurrent);
-
-            assert(mStaticResults.has_value());
-
-            // Calculate waterline center - along <center of mass -> direction> vector, at current level
-            vec2f const waterlineCenter =
-                mStaticResults->CenterOfMass
-                + mDirectionSearchCurrent * mLevelSearchCurrent;
-
-            // Store this waterline
-            mWaterline.emplace(
-                waterlineCenter,
-                mDirectionSearchCurrent);
-
-            // Calculate buoyancy at this waterline
-            vec2f newCenterOfBuoyancy;
-            std::tie(mTotalBuoyantForce, newCenterOfBuoyancy) = CalculateBuoyancy(
-                mWaterline->Center,
-                mWaterline->WaterDirection);
-
-            assert(mTotalBuoyantForce.has_value());
-
-            //
-            // Calculate next level
-            //
-
-            assert(mLevelSearchHighest <= mLevelSearchCurrent && mLevelSearchCurrent <= mLevelSearchLowest);
-
-            float constexpr LevelSearchStepSize = 2.0f; // TODO: make dependant on ship (canvas) size
-
-            float newLevelSearchCurrent;
-            if (*mTotalBuoyantForce > mStaticResults->TotalMass)
-            {
-                // Floating too much => it's too submersed;
-                // this level is thus the new highest (i.e. limit at the top)
-                mLevelSearchHighest = mLevelSearchCurrent;
-
-                // Move search down
-                newLevelSearchCurrent = mLevelSearchCurrent + LevelSearchStepSize;
-                if (newLevelSearchCurrent >= mLevelSearchLowest)
-                {
-                    // Too much, bisect available room
-                    newLevelSearchCurrent = mLevelSearchCurrent + (mLevelSearchLowest - mLevelSearchCurrent) / 2.0f;
-                }
-            }
-            else
-            {
-                // Floating too little => needs to be more submersed;
-                // this level is thus the new lowest (i.e. limit at the bottom)
-                mLevelSearchLowest = mLevelSearchCurrent;
-
-                // Move search up
-                newLevelSearchCurrent = mLevelSearchCurrent - LevelSearchStepSize;
-                if (newLevelSearchCurrent <= mLevelSearchHighest)
-                {
-                    // Too much, bisect available room
-                    newLevelSearchCurrent = mLevelSearchCurrent - (mLevelSearchCurrent - mLevelSearchHighest) / 2.0f;
-                }
-            }
-
-            LogMessage("TODOTEST: new level=", newLevelSearchCurrent);
-
-            // TODO: check if close to a limit? Or may be this is taken care of by tolerance check below? Test w/floating object and w/submarine
-
-            // Check if we haven't moved much from previous
-            float constexpr LevelChangeTolerance = 0.5f;
-            if (std::abs(newLevelSearchCurrent - mLevelSearchCurrent) < LevelChangeTolerance)
-            {
-                //
-                // We have found the level
-                //
-
-                // Finalize center of buoyancy
-                if (mTotalBuoyantForce != 0.0f)
-                {
-                    mCenterOfBuoyancy = newCenterOfBuoyancy;
-                }
-                else
-                {
-                    mCenterOfBuoyancy.reset();
-                }
-
-                //
-                // Calculate next search direction
-                //
-
-                // Calculate CW angle of search direction wrt real vertical
-                // (positive when search direction is CW wrt vertical)
-                float const directionVerticalAlphaCW = Vertical.angleCw(mDirectionSearchCurrent);
-
-                // Calculate "torque" (massless) of weight/buoyancy on CoM->CoB direction
-                float const torque = mDirectionSearchCurrent.cross(newCenterOfBuoyancy - mStaticResults->CenterOfMass);
-
-                LogMessage("TODOTEST: torque=", torque);
-
-                // Calculate (delta-) rotation we want to rotate direction for
-                float constexpr TorqueToAngleFactor = 0.05f;
-                float directionRotationCW = torque * TorqueToAngleFactor; // Negative torque is ship CW rotation, hence a CCW rotation of the direction
-                if (torque <= 0.0f)
-                {
-                    // Torque rotates ship CW, hence generates a CCW rotation of the direction
-
-                    // Current angle is the new maximum
-                    mDirectionSearchCWAngleMax = directionVerticalAlphaCW;
-
-                    // Check if we'd overshoot limits after this rotation
-                    if (directionVerticalAlphaCW + directionRotationCW <= mDirectionSearchCWAngleMin)
-                    {
-                        // Too much, bisect available room
-                        directionRotationCW = (mDirectionSearchCWAngleMin - directionVerticalAlphaCW) / 2.0f;
-                    }
-                }
-                else
-                {
-                    // Torque rotates ship CCW, hence generates a CW rotation of the direction
-
-                    // Current angle is the new minimum
-                    mDirectionSearchCWAngleMin = directionVerticalAlphaCW;
-
-                    // Check if we'd overshoot limits after this rotation
-                    if (directionVerticalAlphaCW + directionRotationCW >= mDirectionSearchCWAngleMax)
-                    {
-                        // Too much, bisect available room
-                        directionRotationCW = (mDirectionSearchCWAngleMax - directionVerticalAlphaCW) / 2.0f;
-                    }
-                }
-
-                // Check if too small a rotation
-                float constexpr RotationTolerance = 0.001f;
-                if (std::abs(directionRotationCW) <= RotationTolerance)
-                {
-                    //
-                    // We're done
-                    //
-
-                    // Transition state
-                    mCurrentState = StateType::Completed;
-
-                    return true;
-                }
-                else
-                {
-                    // Rotate current search direction
-                    mDirectionSearchCurrent = mDirectionSearchCurrent.rotate(-directionRotationCW);
-
-                    LogMessage("TODOTEST: directionRotationCW = ", directionRotationCW, " newDir = ", mDirectionSearchCurrent.toString(), " oldVerticalAlpha=", directionVerticalAlphaCW, " newVerticalAlpha = ", mDirectionSearchCurrent.angleCw(Vertical));
-                }
-
-                //
-                // Restart search from here
-                //
-
-                // Calculate new limits
-                std::tie(mLevelSearchLowest, mLevelSearchHighest) = CalculateLevelSearchLimits(
-                    mStaticResults->CenterOfMass,
-                    mDirectionSearchCurrent);
-                assert(mLevelSearchHighest <= mLevelSearchCurrent && mLevelSearchCurrent <= mLevelSearchLowest);
-
-                // Continue
-                return false;
-            }
-            else
-            {
-                // Continue searching from here
-                mLevelSearchCurrent = newLevelSearchCurrent;
-
-                // Continue
-                return false;
-            }
-        }
-
-        case StateType::Completed:
-        {
-            assert(false);
+            // No particles, we're done
             return true;
+        }
+
+        //
+        // Start search
+        //
+
+        // Initialize level search
+
+        mDirectionSearchCWAngleMax = Pi<float>;
+        mDirectionSearchCWAngleMin = -Pi<float>;
+        mDirectionSearchCurrent = Vertical;
+
+        std::tie(mLevelSearchLowest, mLevelSearchHighest) = CalculateLevelSearchLimits(
+            mStaticResults->CenterOfMass,
+            mDirectionSearchCurrent);
+        mLevelSearchCurrent = 0.0f;
+
+        // Continue
+        return false;
+    }
+
+    //
+    // Static analysis has been performed
+    //
+
+    assert(mStaticResults.has_value());
+
+    LogMessage("TODOTEST: ---------------------------");
+    LogMessage("TODOTEST: dir=", mDirectionSearchCurrent.toString(), " level=", mLevelSearchCurrent);
+
+    //
+    // Calculate buoyancy at current waterline
+    //
+
+    // Calculate waterline center - along <center of mass -> direction> vector, at current level
+    vec2f const waterlineCenter =
+        mStaticResults->CenterOfMass
+        + mDirectionSearchCurrent * mLevelSearchCurrent;
+
+    // Store this waterline
+    mWaterline.emplace(
+        waterlineCenter,
+        mDirectionSearchCurrent);
+
+    // Calculate buoyancy at this waterline
+    vec2f newCenterOfBuoyancy;
+    std::tie(mTotalBuoyantForce, newCenterOfBuoyancy) = CalculateBuoyancy(
+        mWaterline->Center,
+        mWaterline->WaterDirection);
+
+    assert(mTotalBuoyantForce.has_value());
+
+    //
+    // Calculate next level
+    //
+
+    assert(mLevelSearchHighest <= mLevelSearchCurrent && mLevelSearchCurrent <= mLevelSearchLowest);
+
+    float newLevelSearchCurrent;
+    if (*mTotalBuoyantForce > mStaticResults->TotalMass)
+    {
+        // Floating too much => it's too submersed;
+        // this level is thus the new highest (i.e. limit at the top)
+        mLevelSearchHighest = mLevelSearchCurrent;
+
+        // Move search down
+        newLevelSearchCurrent = mLevelSearchCurrent + LevelSearchStride;
+        if (newLevelSearchCurrent >= mLevelSearchLowest)
+        {
+            // Too much, bisect available room
+            newLevelSearchCurrent = mLevelSearchCurrent + (mLevelSearchLowest - mLevelSearchCurrent) / 2.0f;
+        }
+    }
+    else
+    {
+        // Floating too little => needs to be more submersed;
+        // this level is thus the new lowest (i.e. limit at the bottom)
+        mLevelSearchLowest = mLevelSearchCurrent;
+
+        // Move search up
+        newLevelSearchCurrent = mLevelSearchCurrent - LevelSearchStride;
+        if (newLevelSearchCurrent <= mLevelSearchHighest)
+        {
+            // Too much, bisect available room
+            newLevelSearchCurrent = mLevelSearchCurrent - (mLevelSearchCurrent - mLevelSearchHighest) / 2.0f;
         }
     }
 
-    assert(false);
-    return false;
+    LogMessage("TODOTEST: new level=", newLevelSearchCurrent);
+
+    // Check if we haven't moved much from previous
+    if (std::abs(newLevelSearchCurrent - mLevelSearchCurrent) < LevelSearchChangeTolerance)
+    {
+        //
+        // We have found the level
+        //
+
+        // Finalize center of buoyancy
+        if (mTotalBuoyantForce != 0.0f)
+        {
+            mCenterOfBuoyancy = newCenterOfBuoyancy;
+        }
+        else
+        {
+            mCenterOfBuoyancy.reset();
+        }
+
+        //
+        // Calculate next search direction
+        //
+
+        // Calculate CW angle of search direction wrt real vertical
+        // (positive when search direction is CW wrt vertical)
+        float const directionVerticalAlphaCW = Vertical.angleCw(mDirectionSearchCurrent);
+
+        // Calculate "torque" (massless) of weight/buoyancy on CoM->CoB direction
+        float const torque = mDirectionSearchCurrent.cross(newCenterOfBuoyancy - mStaticResults->CenterOfMass);
+
+        LogMessage("TODOTEST: torque=", torque);
+
+        // Calculate (delta-) rotation we want to rotate direction for
+        float directionRotationCW = torque * TorqueToDirectionRotationAngleFactor; // Negative torque is ship CW rotation, hence a CCW rotation of the direction
+        if (torque <= 0.0f)
+        {
+            // Torque rotates ship CW, hence generates a CCW rotation of the direction
+
+            // Current angle is the new maximum
+            mDirectionSearchCWAngleMax = directionVerticalAlphaCW;
+
+            // Check if we'd overshoot limits after this rotation
+            if (directionVerticalAlphaCW + directionRotationCW <= mDirectionSearchCWAngleMin)
+            {
+                // Too much, bisect available room
+                directionRotationCW = (mDirectionSearchCWAngleMin - directionVerticalAlphaCW) / 2.0f;
+            }
+        }
+        else
+        {
+            // Torque rotates ship CCW, hence generates a CW rotation of the direction
+
+            // Current angle is the new minimum
+            mDirectionSearchCWAngleMin = directionVerticalAlphaCW;
+
+            // Check if we'd overshoot limits after this rotation
+            if (directionVerticalAlphaCW + directionRotationCW >= mDirectionSearchCWAngleMax)
+            {
+                // Too much, bisect available room
+                directionRotationCW = (mDirectionSearchCWAngleMax - directionVerticalAlphaCW) / 2.0f;
+            }
+        }
+
+        // Check if too small a rotation
+        float constexpr RotationTolerance = 0.001f;
+        if (std::abs(directionRotationCW) <= RotationTolerance)
+        {
+            //
+            // We're done
+            //
+
+            return true;
+        }
+        else
+        {
+            // Rotate current search direction
+            mDirectionSearchCurrent = mDirectionSearchCurrent.rotate(-directionRotationCW);
+
+            LogMessage("TODOTEST: directionRotationCW = ", directionRotationCW, " newDir = ", mDirectionSearchCurrent.toString(), " oldVerticalAlpha=", directionVerticalAlphaCW, " newVerticalAlpha = ", mDirectionSearchCurrent.angleCw(Vertical));
+        }
+
+        //
+        // Restart search from here
+        //
+
+        // Calculate new limits
+        std::tie(mLevelSearchLowest, mLevelSearchHighest) = CalculateLevelSearchLimits(
+            mStaticResults->CenterOfMass,
+            mDirectionSearchCurrent);
+
+        assert(mLevelSearchHighest <= mLevelSearchCurrent && mLevelSearchCurrent <= mLevelSearchLowest);
+
+        // Continue
+        return false;
+    }
+    else
+    {
+        // Continue searching from here
+        mLevelSearchCurrent = newLevelSearchCurrent;
+
+        // Continue
+        return false;
+    }
 }
 
 WaterlineAnalyzer::StaticResults WaterlineAnalyzer::CalculateStaticResults()

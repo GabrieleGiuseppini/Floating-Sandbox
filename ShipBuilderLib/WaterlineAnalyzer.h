@@ -93,15 +93,6 @@ private:
     // Search state
     //
 
-    enum class StateType
-    {
-        CalculateStaticResults,
-        FindLevel,
-        Completed
-    };
-
-    StateType mCurrentState;
-
     std::optional<StaticResults> mStaticResults;
 
     std::optional<float> mTotalBuoyantForce;
