@@ -135,7 +135,14 @@ bool WaterlineAnalyzer::Update()
                 //
 
                 // Finalize center of buoyancy
-                mCenterOfBuoyancy = newCenterOfBuoyancy;
+                if (mTotalBuoyantForce != 0.0f)
+                {
+                    mCenterOfBuoyancy = newCenterOfBuoyancy;
+                }
+                else
+                {
+                    mCenterOfBuoyancy.reset();
+                }
 
                 //
                 // Calculate next search direction
@@ -146,12 +153,12 @@ bool WaterlineAnalyzer::Update()
                 float const directionVerticalAlphaCW = Vertical.angleCw(mDirectionSearchCurrent);
 
                 // Calculate "torque" (massless) of weight/buoyancy on CoM->CoB direction
-                float const torque = mDirectionSearchCurrent.cross(*mCenterOfBuoyancy - mStaticResults->CenterOfMass);
+                float const torque = mDirectionSearchCurrent.cross(newCenterOfBuoyancy - mStaticResults->CenterOfMass);
 
                 LogMessage("TODOTEST: torque=", torque);
 
                 // Calculate (delta-) rotation we want to rotate direction for
-                float constexpr TorqueToAngleFactor = 0.05f; // 0.01f;
+                float constexpr TorqueToAngleFactor = 0.05f;
                 float directionRotationCW = torque * TorqueToAngleFactor; // Negative torque is ship CW rotation, hence a CCW rotation of the direction
                 if (torque <= 0.0f)
                 {

@@ -252,14 +252,18 @@
 					+ Cleanup
 					+ Larger direction search stride
 					- Test corner cases:
-						- Submarine
+						+ Submarine
 						- ~180degrees ball
-						- Cardboard skyscraper
+						+ Cardboard skyscraper
+							+ Remove buoyancy center if buoyant force is zero
 	- Finalizations:
 		- See if can get rid of state machine in WaterlineAnalyzer and do all with state instead
 		- Outcome in dialog (populated at completion)
 			- Tilt (angle as absolute degrees)
 			- Floating/Sinking statement?
+				- Total buoyant force==0 => above water
+				- ??? => stable
+				- ??? => sinks
 		- Cleanup logging
 		- Analysis starts in continuous play
 		- Want a UI mode where center of mass is displayed continuously?
