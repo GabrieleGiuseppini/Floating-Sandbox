@@ -109,6 +109,8 @@ private:
 
     std::optional<Waterline> mWaterline;
 
+    float mDirectionSearchCWAngleMax; // The maximum (most positive) CW direction (wrt Vertical) we're willing to go when following a negative (CW) torque
+    float mDirectionSearchCWAngleMin; // The minimum (most negative) CW direction (wrt Vertical) we're willing to go when following a positive (CCW) torque
     vec2f mDirectionSearchCurrent; // Positive towards "bottom"
 
     float mLevelSearchLowest; // Same heading as direction, grows the further in same heading; "bottom"

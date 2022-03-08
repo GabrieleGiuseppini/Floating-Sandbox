@@ -43,6 +43,8 @@ bool WaterlineAnalyzer::Update()
 
                 // Initialize level search
 
+                mDirectionSearchCWAngleMax = Pi<float>;
+                mDirectionSearchCWAngleMin = -Pi<float>;
                 mDirectionSearchCurrent = Vertical;
 
                 std::tie(mLevelSearchLowest, mLevelSearchHighest) = CalculateLevelSearchLimits(
@@ -59,6 +61,9 @@ bool WaterlineAnalyzer::Update()
 
         case StateType::FindLevel:
         {
+            LogMessage("TODOTEST: ---------------------------");
+            LogMessage("TODOTEST: dir=", mDirectionSearchCurrent.toString(), " level=", mLevelSearchCurrent);
+
             assert(mStaticResults.has_value());
 
             // Calculate waterline center - along <center of mass -> direction> vector, at current level
@@ -119,6 +124,8 @@ bool WaterlineAnalyzer::Update()
                 }
             }
 
+            LogMessage("TODOTEST: new level=", newLevelSearchCurrent);
+
             // TODO: check if close to a limit? Or may be this is taken care of by tolerance check below? Test w/floating object and w/submarine
 
             // Check if we haven't moved much from previous
@@ -142,67 +149,130 @@ bool WaterlineAnalyzer::Update()
 
                 float const torque = mDirectionSearchCurrent.cross(mb);
 
-                LogMessage("TODOTEST: mb=", mb.toString(), " dir=", mbDirection.toString(), " torque=", torque);
+                LogMessage("TODOTEST: mb=", mb.toString(), " mbDir=", mbDirection.toString(), " torque=", torque);
 
-                // Check if "vertical enough"
-                float constexpr VerticalTolerance = 1.0f;
-                if (std::abs(torque) <= VerticalTolerance)
-                {
-                    //
-                    // We're done
-                    //
+                // TODOTEST
+                ////// Check if "vertical enough"
+                ////float constexpr VerticalTolerance = 1.0f;
+                ////if (std::abs(torque) <= VerticalTolerance)
+                ////{
+                ////    //
+                ////    // We're done
+                ////    //
 
-                    // Transition state
-                    mCurrentState = StateType::Completed;
+                ////    // Transition state
+                ////    mCurrentState = StateType::Completed;
 
-                    return true;
-                }
-                else
+                ////    return true;
+                ////}
+                ////else
                 {
                     //
                     // Calculate next search direction
                     //
 
-                    // TODOTEST
-                    // Torque-based, single step
+                    // TODOTEST: fixed-size step binsearch
                     {
-                        // alpha = angle between CoM->CoB and "vertical"; positive when mbDirection
-                        // is to the right (i.e. CW) of mLevelSearchDirection (when seen from CoM)
-                        float const mbAlphaCW = mDirectionSearchCurrent.angleCw(mbDirection);
+                        // Calculate CW angle of search direction wrt real vertical
+                        // (positive when search direction is CW wrt vertical)
+                        float const directionVerticalAlphaCW = Vertical.angleCw(mDirectionSearchCurrent);
 
-                        float alphaCcw;
-                        float constexpr TorqueToAngleFactor = 0.0025f; // 0.005f was faster
-                        float constexpr MaxAngle = 0.2f;
-                        if (torque >= 0.0f)
+                        // Calculate (delta-) rotation we want to rotate direction for
+                        float constexpr TorqueToAngleFactor = 0.005f;
+                        float directionRotationCW = torque * TorqueToAngleFactor; // Negative torque is ship CW rotation, hence a CCW rotation of the direction
+
+                        if (torque <= 0.0f)
                         {
-                            // TODOTEST
-                            //alphaCcw = -std::min(MaxAngle, torque * TorqueToAngleFactor);
-                            alphaCcw = -torque * TorqueToAngleFactor;
+                            // Torque rotates ship CW, hence generates a CCW rotation of the direction
+
+                            // Current angle is the new maximum
+                            mDirectionSearchCWAngleMax = directionVerticalAlphaCW;
+
+                            if (directionVerticalAlphaCW + directionRotationCW <= mDirectionSearchCWAngleMin)
+                            {
+                                // Too much, bisect available room
+                                directionRotationCW = (directionVerticalAlphaCW - (directionVerticalAlphaCW - mDirectionSearchCWAngleMin) / 2.0f) - directionVerticalAlphaCW;
+                            }
                         }
                         else
                         {
-                            // TODOTEST
-                            //alphaCcw = -std::max(-MaxAngle, torque * TorqueToAngleFactor);
-                            alphaCcw = -torque * TorqueToAngleFactor;
+                            // Torque rotates ship CCW, hence generates a CW rotation of the direction
+
+                            // Current angle is the new minimum
+                            mDirectionSearchCWAngleMin = directionVerticalAlphaCW;
+
+                            if (directionVerticalAlphaCW + directionRotationCW >= mDirectionSearchCWAngleMax)
+                            {
+                                // Too much, bisect available room
+                                directionRotationCW = (directionVerticalAlphaCW + (mDirectionSearchCWAngleMax - directionVerticalAlphaCW) / 2.0f) - directionVerticalAlphaCW;
+                            }
                         }
 
-                        // Rotate current search direction
-                        mDirectionSearchCurrent = mDirectionSearchCurrent.rotate(alphaCcw);
+                        // TODO: additional (safety) end condition for direction rotation being almost nihil?
 
-                        LogMessage("TODOTEST: alphaCW=", mbAlphaCW, " => rotation=", alphaCcw, " newDir=", mDirectionSearchCurrent.toString(), " newVerticalAlpha=", mDirectionSearchCurrent.angleCw(Vertical));
+                        // TODOTEST
+                        // Check if too close to previous
+                        float constexpr RotationTolerance = 0.0001f;
+                        if (std::abs(directionRotationCW) <= RotationTolerance)
+                        {
+                            //
+                            // We're done
+                            //
 
-                        // TODOHERE: limit angle
-                        ////if (torque >= 0.0f && mDirectionSearchCurrent.angleCw(Vertical) > mNegativeTorqueVerticalAngleCWMin)
-                        ////{
-                        ////    mDirectionSearchCurrent = Vertical.rotate(-mNegativeTorqueVerticalAngleCWMin);
-                        ////}
-                        ////else if (torque < 0.0f && mDirectionSearchCurrent.angleCw(Vertical) > mPositiveTorqueVerticalAngleCWMin)
-                        ////{
-                        ////    mDirectionSearchCurrent = Vertical.rotate(-mPositiveTorqueVerticalAngleCWMin);
-                        ////}
+                            // Transition state
+                            mCurrentState = StateType::Completed;
 
-                        ////LogMessage("TODOTEST: clipped verticalAlpha=", mDirectionSearchCurrent.angleCw(Vertical));
+                            return true;
+                        }
+                        else
+                        {
+                            // Rotate current search direction
+                            mDirectionSearchCurrent = mDirectionSearchCurrent.rotate(-directionRotationCW);
+
+                            LogMessage("TODOTEST: directionRotationCW = ", directionRotationCW, " newDir = ", mDirectionSearchCurrent.toString(), " oldVerticalAlpha=", directionVerticalAlphaCW, " newVerticalAlpha = ", mDirectionSearchCurrent.angleCw(Vertical));
+                        }
                     }
+
+                    // TODOTEST
+                    ////// Torque-based, single step
+                    ////{
+                    ////    // alpha = angle between CoM->CoB and "vertical"; positive when mbDirection
+                    ////    // is to the right (i.e. CW) of mLevelSearchDirection (when seen from CoM)
+                    ////    float const mbAlphaCW = mDirectionSearchCurrent.angleCw(mbDirection);
+
+                    ////    float alphaCcw;
+                    ////    float constexpr TorqueToAngleFactor = 0.0025f; // 0.005f was faster
+                    ////    float constexpr MaxAngle = 0.2f;
+                    ////    if (torque >= 0.0f)
+                    ////    {
+                    ////        // TODOTEST
+                    ////        //alphaCcw = -std::min(MaxAngle, torque * TorqueToAngleFactor);
+                    ////        alphaCcw = -torque * TorqueToAngleFactor;
+                    ////    }
+                    ////    else
+                    ////    {
+                    ////        // TODOTEST
+                    ////        //alphaCcw = -std::max(-MaxAngle, torque * TorqueToAngleFactor);
+                    ////        alphaCcw = -torque * TorqueToAngleFactor;
+                    ////    }
+
+                    ////    // Rotate current search direction
+                    ////    mDirectionSearchCurrent = mDirectionSearchCurrent.rotate(alphaCcw);
+
+                    ////    LogMessage("TODOTEST: alphaCW=", mbAlphaCW, " => rotation=", alphaCcw, " newDir=", mDirectionSearchCurrent.toString(), " newVerticalAlpha=", mDirectionSearchCurrent.angleCw(Vertical));
+
+                    ////    // TODOHERE: limit angle
+                    ////    ////if (torque >= 0.0f && mDirectionSearchCurrent.angleCw(Vertical) > mNegativeTorqueVerticalAngleCWMin)
+                    ////    ////{
+                    ////    ////    mDirectionSearchCurrent = Vertical.rotate(-mNegativeTorqueVerticalAngleCWMin);
+                    ////    ////}
+                    ////    ////else if (torque < 0.0f && mDirectionSearchCurrent.angleCw(Vertical) > mPositiveTorqueVerticalAngleCWMin)
+                    ////    ////{
+                    ////    ////    mDirectionSearchCurrent = Vertical.rotate(-mPositiveTorqueVerticalAngleCWMin);
+                    ////    ////}
+
+                    ////    ////LogMessage("TODOTEST: clipped verticalAlpha=", mDirectionSearchCurrent.angleCw(Vertical));
+                    ////}
 
 
 
