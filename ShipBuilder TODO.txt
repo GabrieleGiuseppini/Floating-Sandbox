@@ -278,10 +278,19 @@
 				- Concrete ball
 				- No particles
 			- Dialog: Gfx
+		- Faster animation
 		- Cleanup logging
 		- Analysis starts in continuous play
 		- Want a UI mode where center of mass is displayed continuously?
-			- ModelController maintains structural analysis
+			- ModelController maintains structural analysis, like now
+			- Simply:
+				- Total Mass, Center of Mass
+				- Total submerged buoyancy, Center of Buoyancy (when totally submerged)
+				- Display:
+					- Total mass
+					- Whether sinks or floats
+					- Direction of CoM->CoB
+						- TODO: makes sense, given that CoB is for fully submerged?
 			- Requires IUserInterface::OnEdit invoked everywhere (tools, undo, etc.) for triggering rendering of new CoM
 
 

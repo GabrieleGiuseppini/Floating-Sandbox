@@ -130,9 +130,23 @@ private:
 
     std::optional<FinalOutcome> mFinalOutcome;
 
+    //
+    // Direction: normalized vector that is normal to waterline
+    //
+    // Heading towards water
+    //
+
     float mDirectionSearchCWAngleMax; // The maximum (most positive) CW direction (wrt Vertical) we're willing to go when following a negative (CW) torque
     float mDirectionSearchCWAngleMin; // The minimum (most negative) CW direction (wrt Vertical) we're willing to go when following a positive (CCW) torque
     vec2f mDirectionSearchCurrent; // Positive towards "bottom"
+
+    //
+    // Level: place along the CoM->Direction vector where the waterline meets the vector
+    //
+    // - opposite to direction
+    // 0 at CoM
+    // + along direction
+    //
 
     float mLevelSearchLowest; // Same heading as direction, grows the further in same heading; "bottom"
     float mLevelSearchHighest; // Less in numerical value than lowest
