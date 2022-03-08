@@ -88,13 +88,11 @@ bool WaterlineAnalyzer::Update()
             // Calculate next level
             //
 
-            assert(mLevelSearchLowest >= mLevelSearchHighest);
-            assert(mLevelSearchCurrent <= mLevelSearchLowest && mLevelSearchCurrent  >= mLevelSearchHighest);
+            assert(mLevelSearchHighest <= mLevelSearchCurrent && mLevelSearchCurrent <= mLevelSearchLowest);
 
             float constexpr LevelSearchStepSize = 2.0f; // TODO: make dependant on ship (canvas) size
 
             float newLevelSearchCurrent;
-
             if (*mTotalBuoyantForce > mStaticResults->TotalMass)
             {
                 // Floating too much => it's too submersed;
@@ -139,196 +137,84 @@ bool WaterlineAnalyzer::Update()
                 // Finalize center of buoyancy
                 mCenterOfBuoyancy = newCenterOfBuoyancy;
 
-                // Calculate CoM->CoB direction
-                vec2f const mb = (*mCenterOfBuoyancy - mStaticResults->CenterOfMass);
-                vec2f const mbDirection = mb.normalise();
-
                 //
-                // Calculate "torque" of weight/buoyancy on CoM->CoB direction
+                // Calculate next search direction
                 //
 
-                float const torque = mDirectionSearchCurrent.cross(mb);
+                // Calculate CW angle of search direction wrt real vertical
+                // (positive when search direction is CW wrt vertical)
+                float const directionVerticalAlphaCW = Vertical.angleCw(mDirectionSearchCurrent);
 
-                LogMessage("TODOTEST: mb=", mb.toString(), " mbDir=", mbDirection.toString(), " torque=", torque);
+                // Calculate "torque" (massless) of weight/buoyancy on CoM->CoB direction
+                float const torque = mDirectionSearchCurrent.cross(*mCenterOfBuoyancy - mStaticResults->CenterOfMass);
 
-                // TODOTEST
-                ////// Check if "vertical enough"
-                ////float constexpr VerticalTolerance = 1.0f;
-                ////if (std::abs(torque) <= VerticalTolerance)
-                ////{
-                ////    //
-                ////    // We're done
-                ////    //
+                LogMessage("TODOTEST: torque=", torque);
 
-                ////    // Transition state
-                ////    mCurrentState = StateType::Completed;
+                // Calculate (delta-) rotation we want to rotate direction for
+                float constexpr TorqueToAngleFactor = 0.005f;
+                float directionRotationCW = torque * TorqueToAngleFactor; // Negative torque is ship CW rotation, hence a CCW rotation of the direction
+                if (torque <= 0.0f)
+                {
+                    // Torque rotates ship CW, hence generates a CCW rotation of the direction
 
-                ////    return true;
-                ////}
-                ////else
+                    // Current angle is the new maximum
+                    mDirectionSearchCWAngleMax = directionVerticalAlphaCW;
+
+                    // Check if we'd overshoot limits after this rotation
+                    if (directionVerticalAlphaCW + directionRotationCW <= mDirectionSearchCWAngleMin)
+                    {
+                        // Too much, bisect available room
+                        directionRotationCW = (mDirectionSearchCWAngleMin - directionVerticalAlphaCW) / 2.0f;
+                    }
+                }
+                else
+                {
+                    // Torque rotates ship CCW, hence generates a CW rotation of the direction
+
+                    // Current angle is the new minimum
+                    mDirectionSearchCWAngleMin = directionVerticalAlphaCW;
+
+                    // Check if we'd overshoot limits after this rotation
+                    if (directionVerticalAlphaCW + directionRotationCW >= mDirectionSearchCWAngleMax)
+                    {
+                        // Too much, bisect available room
+                        directionRotationCW = (mDirectionSearchCWAngleMax - directionVerticalAlphaCW) / 2.0f;
+                    }
+                }
+
+                // Check if too small a rotation
+                float constexpr RotationTolerance = 0.0001f;
+                if (std::abs(directionRotationCW) <= RotationTolerance)
                 {
                     //
-                    // Calculate next search direction
+                    // We're done
                     //
 
-                    // TODOTEST: fixed-size step binsearch
-                    {
-                        // Calculate CW angle of search direction wrt real vertical
-                        // (positive when search direction is CW wrt vertical)
-                        float const directionVerticalAlphaCW = Vertical.angleCw(mDirectionSearchCurrent);
+                    // Transition state
+                    mCurrentState = StateType::Completed;
 
-                        // Calculate (delta-) rotation we want to rotate direction for
-                        float constexpr TorqueToAngleFactor = 0.005f;
-                        float directionRotationCW = torque * TorqueToAngleFactor; // Negative torque is ship CW rotation, hence a CCW rotation of the direction
-
-                        if (torque <= 0.0f)
-                        {
-                            // Torque rotates ship CW, hence generates a CCW rotation of the direction
-
-                            // Current angle is the new maximum
-                            mDirectionSearchCWAngleMax = directionVerticalAlphaCW;
-
-                            if (directionVerticalAlphaCW + directionRotationCW <= mDirectionSearchCWAngleMin)
-                            {
-                                // Too much, bisect available room
-                                directionRotationCW = (directionVerticalAlphaCW - (directionVerticalAlphaCW - mDirectionSearchCWAngleMin) / 2.0f) - directionVerticalAlphaCW;
-                            }
-                        }
-                        else
-                        {
-                            // Torque rotates ship CCW, hence generates a CW rotation of the direction
-
-                            // Current angle is the new minimum
-                            mDirectionSearchCWAngleMin = directionVerticalAlphaCW;
-
-                            if (directionVerticalAlphaCW + directionRotationCW >= mDirectionSearchCWAngleMax)
-                            {
-                                // Too much, bisect available room
-                                directionRotationCW = (directionVerticalAlphaCW + (mDirectionSearchCWAngleMax - directionVerticalAlphaCW) / 2.0f) - directionVerticalAlphaCW;
-                            }
-                        }
-
-                        // TODO: additional (safety) end condition for direction rotation being almost nihil?
-
-                        // TODOTEST
-                        // Check if too close to previous
-                        float constexpr RotationTolerance = 0.0001f;
-                        if (std::abs(directionRotationCW) <= RotationTolerance)
-                        {
-                            //
-                            // We're done
-                            //
-
-                            // Transition state
-                            mCurrentState = StateType::Completed;
-
-                            return true;
-                        }
-                        else
-                        {
-                            // Rotate current search direction
-                            mDirectionSearchCurrent = mDirectionSearchCurrent.rotate(-directionRotationCW);
-
-                            LogMessage("TODOTEST: directionRotationCW = ", directionRotationCW, " newDir = ", mDirectionSearchCurrent.toString(), " oldVerticalAlpha=", directionVerticalAlphaCW, " newVerticalAlpha = ", mDirectionSearchCurrent.angleCw(Vertical));
-                        }
-                    }
-
-                    // TODOTEST
-                    ////// Torque-based, single step
-                    ////{
-                    ////    // alpha = angle between CoM->CoB and "vertical"; positive when mbDirection
-                    ////    // is to the right (i.e. CW) of mLevelSearchDirection (when seen from CoM)
-                    ////    float const mbAlphaCW = mDirectionSearchCurrent.angleCw(mbDirection);
-
-                    ////    float alphaCcw;
-                    ////    float constexpr TorqueToAngleFactor = 0.0025f; // 0.005f was faster
-                    ////    float constexpr MaxAngle = 0.2f;
-                    ////    if (torque >= 0.0f)
-                    ////    {
-                    ////        // TODOTEST
-                    ////        //alphaCcw = -std::min(MaxAngle, torque * TorqueToAngleFactor);
-                    ////        alphaCcw = -torque * TorqueToAngleFactor;
-                    ////    }
-                    ////    else
-                    ////    {
-                    ////        // TODOTEST
-                    ////        //alphaCcw = -std::max(-MaxAngle, torque * TorqueToAngleFactor);
-                    ////        alphaCcw = -torque * TorqueToAngleFactor;
-                    ////    }
-
-                    ////    // Rotate current search direction
-                    ////    mDirectionSearchCurrent = mDirectionSearchCurrent.rotate(alphaCcw);
-
-                    ////    LogMessage("TODOTEST: alphaCW=", mbAlphaCW, " => rotation=", alphaCcw, " newDir=", mDirectionSearchCurrent.toString(), " newVerticalAlpha=", mDirectionSearchCurrent.angleCw(Vertical));
-
-                    ////    // TODOHERE: limit angle
-                    ////    ////if (torque >= 0.0f && mDirectionSearchCurrent.angleCw(Vertical) > mNegativeTorqueVerticalAngleCWMin)
-                    ////    ////{
-                    ////    ////    mDirectionSearchCurrent = Vertical.rotate(-mNegativeTorqueVerticalAngleCWMin);
-                    ////    ////}
-                    ////    ////else if (torque < 0.0f && mDirectionSearchCurrent.angleCw(Vertical) > mPositiveTorqueVerticalAngleCWMin)
-                    ////    ////{
-                    ////    ////    mDirectionSearchCurrent = Vertical.rotate(-mPositiveTorqueVerticalAngleCWMin);
-                    ////    ////}
-
-                    ////    ////LogMessage("TODOTEST: clipped verticalAlpha=", mDirectionSearchCurrent.angleCw(Vertical));
-                    ////}
-
-
-
-                    // TODOTEST: Gradient descent
-                    ////{
-                    ////    //
-                    ////    // Gradient descent, minimizing torque
-                    ////    //
-
-                    ////    float constexpr DAlpha = 0.005f;
-
-                    ////    ////// Positive
-                    ////    ////vec2f const positiveStepDirection = mDirectionSearchCurrent.rotate(DAlpha);
-                    ////    ////auto [positiveStepTotalBuoyantForce, positiveStepCoB] = CalculateBuoyancy(mWaterline->Center, positiveStepDirection);
-                    ////    ////float const positiveStepTorque = positiveStepDirection.cross((positiveStepCoB - mStaticResults->CenterOfMass));
-
-                    ////    ////// Negative
-                    ////    ////vec2f const negativeStepDirection = mDirectionSearchCurrent.rotate(-DAlpha);
-                    ////    ////auto [negativeStepTotalBuoyantForce, negativeStepCoB] = CalculateBuoyancy(mWaterline->Center, negativeStepDirection);
-                    ////    ////float const negativeStepTorque = negativeStepDirection.cross((negativeStepCoB - mStaticResults->CenterOfMass));
-
-                    ////    ////// Choose step that minimizes torque the most
-                    ////    ////if ((torque - positiveStepTorque) > (torque - negativeStepTorque)
-
-                    ////    vec2f const stepDirection = mDirectionSearchCurrent.rotate(DAlpha);
-                    ////    auto [_, stepCoB] = CalculateBuoyancy(mWaterline->Center, stepDirection);
-                    ////    float const stepTorque = stepDirection.cross((stepCoB - mStaticResults->CenterOfMass));
-
-                    ////    // Get closer to zero
-                    ////    if (std::abs(stepTorque) <= std::abs(torque))
-                    ////    {
-                    ////        // Direction of step minimizes (absolute value of) torque
-                    ////        mDirectionSearchCurrent = mDirectionSearchCurrent.rotate(DAlpha);
-                    ////    }
-                    ////    else
-                    ////    {
-                    ////        // Direction of step gives larger (absolute) value
-                    ////        mDirectionSearchCurrent = mDirectionSearchCurrent.rotate(-DAlpha);
-                    ////    }
-                    ////}
-
-                    //
-                    // Restart search from here
-                    //
-
-                    std::tie(mLevelSearchLowest, mLevelSearchHighest) = CalculateLevelSearchLimits(
-                        mStaticResults->CenterOfMass,
-                        mDirectionSearchCurrent);
-
-                    // TODOTEST: restart from here
-                    //mLevelSearchCurrent = 0.0f;
-                    assert(mLevelSearchCurrent <= mLevelSearchLowest && mLevelSearchCurrent >= mLevelSearchHighest);
-
-                    // Continue
-                    return false;
+                    return true;
                 }
+                else
+                {
+                    // Rotate current search direction
+                    mDirectionSearchCurrent = mDirectionSearchCurrent.rotate(-directionRotationCW);
+
+                    LogMessage("TODOTEST: directionRotationCW = ", directionRotationCW, " newDir = ", mDirectionSearchCurrent.toString(), " oldVerticalAlpha=", directionVerticalAlphaCW, " newVerticalAlpha = ", mDirectionSearchCurrent.angleCw(Vertical));
+                }
+
+                //
+                // Restart search from here
+                //
+
+                // Calculate new limits
+                std::tie(mLevelSearchLowest, mLevelSearchHighest) = CalculateLevelSearchLimits(
+                    mStaticResults->CenterOfMass,
+                    mDirectionSearchCurrent);
+                assert(mLevelSearchHighest <= mLevelSearchCurrent && mLevelSearchCurrent <= mLevelSearchLowest);
+
+                // Continue
+                return false;
             }
             else
             {
