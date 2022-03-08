@@ -81,7 +81,9 @@ private:
         vec2f const & direction);
 
     // Total buoyance force, center of buoyancy
-    std::tuple<float, vec2f> CalculateBuoyancy(Waterline const & waterline);
+    std::tuple<float, vec2f> CalculateBuoyancy(
+        vec2f const & waterlineCenter, // Ship coordinates
+        vec2f const & waterlineDirection);
 
 private:
 
@@ -106,11 +108,6 @@ private:
     std::optional<vec2f> mCenterOfBuoyancy;
 
     std::optional<Waterline> mWaterline;
-
-    float mNegativeTorqueVerticalAngleCWMin; // Min CW angle of search direction from real vertical, at which we have observed negative torque
-    float mNegativeTorqueVerticalAngleCWMax; // Max CW angle of search direction from real vertical, at which we have observed negative torque
-    float mPositiveTorqueVerticalAngleCWMin; // Min CW angle of search direction from real vertical, at which we have observed positive torque
-    float mPositiveTorqueVerticalAngleCWMax; // Max CW angle of search direction from real vertical, at which we have observed positive torque
 
     vec2f mDirectionSearchCurrent; // Positive towards "bottom"
 

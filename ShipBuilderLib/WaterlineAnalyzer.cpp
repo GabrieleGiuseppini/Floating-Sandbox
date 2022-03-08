@@ -43,11 +43,6 @@ bool WaterlineAnalyzer::Update()
 
                 // Initialize level search
 
-                mNegativeTorqueVerticalAngleCWMin = Pi<float>;
-                mNegativeTorqueVerticalAngleCWMax = -Pi<float>;
-                mPositiveTorqueVerticalAngleCWMin = Pi<float>;
-                mPositiveTorqueVerticalAngleCWMax = -Pi<float>;
-
                 mDirectionSearchCurrent = Vertical;
 
                 std::tie(mLevelSearchLowest, mLevelSearchHighest) = CalculateLevelSearchLimits(
@@ -77,28 +72,52 @@ bool WaterlineAnalyzer::Update()
                 mDirectionSearchCurrent);
 
             // Calculate buoyancy at this waterline
-            std::tie(mTotalBuoyantForce, mCenterOfBuoyancy) = CalculateBuoyancy(*mWaterline);
+            vec2f newCenterOfBuoyancy;
+            std::tie(mTotalBuoyantForce, newCenterOfBuoyancy) = CalculateBuoyancy(
+                mWaterline->Center,
+                mWaterline->WaterDirection);
 
             assert(mTotalBuoyantForce.has_value());
-            assert(mCenterOfBuoyancy.has_value());
 
+            //
             // Calculate next level
+            //
+
+            assert(mLevelSearchLowest >= mLevelSearchHighest);
+            assert(mLevelSearchCurrent <= mLevelSearchLowest && mLevelSearchCurrent  >= mLevelSearchHighest);
+
+            float constexpr LevelSearchStepSize = 2.0f; // TODO: make dependant on ship (canvas) size
+
+            float newLevelSearchCurrent;
 
             if (*mTotalBuoyantForce > mStaticResults->TotalMass)
             {
                 // Floating too much => it's too submersed;
-                // this level is thus the new highest
+                // this level is thus the new highest (i.e. limit at the top)
                 mLevelSearchHighest = mLevelSearchCurrent;
+
+                // Move search down
+                newLevelSearchCurrent = mLevelSearchCurrent + LevelSearchStepSize;
+                if (newLevelSearchCurrent >= mLevelSearchLowest)
+                {
+                    // Too much, bisect available room
+                    newLevelSearchCurrent = mLevelSearchCurrent + (mLevelSearchLowest - mLevelSearchCurrent) / 2.0f;
+                }
             }
             else
             {
                 // Floating too little => needs to be more submersed;
-                // this level is thus the new lowest
+                // this level is thus the new lowest (i.e. limit at the bottom)
                 mLevelSearchLowest = mLevelSearchCurrent;
-            }
 
-            assert(mLevelSearchLowest >= mLevelSearchHighest);
-            float const newLevelSearchCurrent = mLevelSearchHighest + (mLevelSearchLowest - mLevelSearchHighest) / 2.0f;
+                // Move search up
+                newLevelSearchCurrent = mLevelSearchCurrent - LevelSearchStepSize;
+                if (newLevelSearchCurrent <= mLevelSearchHighest)
+                {
+                    // Too much, bisect available room
+                    newLevelSearchCurrent = mLevelSearchCurrent - (mLevelSearchCurrent - mLevelSearchHighest) / 2.0f;
+                }
+            }
 
             // TODO: check if close to a limit? Or may be this is taken care of by tolerance check below? Test w/floating object and w/submarine
 
@@ -109,6 +128,9 @@ bool WaterlineAnalyzer::Update()
                 //
                 // We have found the level
                 //
+
+                // Finalize center of buoyancy
+                mCenterOfBuoyancy = newCenterOfBuoyancy;
 
                 // Calculate CoM->CoB direction
                 vec2f const mb = (*mCenterOfBuoyancy - mStaticResults->CenterOfMass);
@@ -141,66 +163,98 @@ bool WaterlineAnalyzer::Update()
                     // Calculate next search direction
                     //
 
-                    // alpha = angle between CoM->CoB and "vertical"; positive when mbDirection
-                    // is to the right (i.e. CW) of mLevelSearchDirection (when seen from CoM)
-                    float const mbAlphaCW = mDirectionSearchCurrent.angleCw(mbDirection);
-
-                    // Update limits
-                    float const verticalAngleCW = mDirectionSearchCurrent.angleCw(Vertical);
-                    if (torque <= 0.0f)
+                    // TODOTEST
+                    // Torque-based, single step
                     {
-                        mNegativeTorqueVerticalAngleCWMin = std::min(mNegativeTorqueVerticalAngleCWMin, verticalAngleCW);
-                        mNegativeTorqueVerticalAngleCWMax = std::max(mNegativeTorqueVerticalAngleCWMax, verticalAngleCW);
+                        // alpha = angle between CoM->CoB and "vertical"; positive when mbDirection
+                        // is to the right (i.e. CW) of mLevelSearchDirection (when seen from CoM)
+                        float const mbAlphaCW = mDirectionSearchCurrent.angleCw(mbDirection);
+
+                        float alphaCcw;
+                        float constexpr TorqueToAngleFactor = 0.0025f; // 0.005f was faster
+                        float constexpr MaxAngle = 0.2f;
+                        if (torque >= 0.0f)
+                        {
+                            // TODOTEST
+                            //alphaCcw = -std::min(MaxAngle, torque * TorqueToAngleFactor);
+                            alphaCcw = -torque * TorqueToAngleFactor;
+                        }
+                        else
+                        {
+                            // TODOTEST
+                            //alphaCcw = -std::max(-MaxAngle, torque * TorqueToAngleFactor);
+                            alphaCcw = -torque * TorqueToAngleFactor;
+                        }
+
+                        // Rotate current search direction
+                        mDirectionSearchCurrent = mDirectionSearchCurrent.rotate(alphaCcw);
+
+                        LogMessage("TODOTEST: alphaCW=", mbAlphaCW, " => rotation=", alphaCcw, " newDir=", mDirectionSearchCurrent.toString(), " newVerticalAlpha=", mDirectionSearchCurrent.angleCw(Vertical));
+
+                        // TODOHERE: limit angle
+                        ////if (torque >= 0.0f && mDirectionSearchCurrent.angleCw(Vertical) > mNegativeTorqueVerticalAngleCWMin)
+                        ////{
+                        ////    mDirectionSearchCurrent = Vertical.rotate(-mNegativeTorqueVerticalAngleCWMin);
+                        ////}
+                        ////else if (torque < 0.0f && mDirectionSearchCurrent.angleCw(Vertical) > mPositiveTorqueVerticalAngleCWMin)
+                        ////{
+                        ////    mDirectionSearchCurrent = Vertical.rotate(-mPositiveTorqueVerticalAngleCWMin);
+                        ////}
+
+                        ////LogMessage("TODOTEST: clipped verticalAlpha=", mDirectionSearchCurrent.angleCw(Vertical));
                     }
-                    else
-                    {
-                        mPositiveTorqueVerticalAngleCWMin = std::min(mPositiveTorqueVerticalAngleCWMin, verticalAngleCW);
-                        mPositiveTorqueVerticalAngleCWMax = std::max(mPositiveTorqueVerticalAngleCWMax, verticalAngleCW);
-                    }
 
-                    //LogMessage("TODOHERE: posTorqueAlphaInterval=[", mPositiveTorqueVerticalAngleCWMax, ", ", mPositiveTorqueVerticalAngleCWMin, "]");
-                    //LogMessage("TODOHERE: negTorqueAlphaInterval=[", mNegativeTorqueVerticalAngleCWMax, ", ", mNegativeTorqueVerticalAngleCWMin, "]");
-                    LogMessage("TODOHERE: negTorqueVerticalAlphaMin=", mNegativeTorqueVerticalAngleCWMin, " posTorqueVerticalAlphaMin=", mPositiveTorqueVerticalAngleCWMin);
 
-                    float alphaCcw;
-                    float constexpr TorqueToAngleFactor = 0.0025f; // 0.005f was faster
-                    float constexpr MaxAngle = 0.2f;
-                    if (torque >= 0.0f)
-                    {
-                        // TODOTEST
-                        //alphaCcw = -std::min(MaxAngle, torque * TorqueToAngleFactor);
-                        alphaCcw = -torque * TorqueToAngleFactor;
-                    }
-                    else
-                    {
-                        // TODOTEST
-                        //alphaCcw = -std::max(-MaxAngle, torque * TorqueToAngleFactor);
-                        alphaCcw = -torque * TorqueToAngleFactor;
-                    }
 
-                    // Rotate current search direction
-                    mDirectionSearchCurrent = mDirectionSearchCurrent.rotate(alphaCcw);
-
-                    LogMessage("TODOTEST: alphaCW=", mbAlphaCW, " => rotation=", alphaCcw, " newDir=", mDirectionSearchCurrent.toString(), " newVerticalAlpha=", mDirectionSearchCurrent.angleCw(Vertical));
-
-                    // TODOHERE: limit angle
-                    ////if (torque >= 0.0f && mDirectionSearchCurrent.angleCw(Vertical) > mNegativeTorqueVerticalAngleCWMin)
+                    // TODOTEST: Gradient descent
                     ////{
-                    ////    mDirectionSearchCurrent = Vertical.rotate(-mNegativeTorqueVerticalAngleCWMin);
-                    ////}
-                    ////else if (torque < 0.0f && mDirectionSearchCurrent.angleCw(Vertical) > mPositiveTorqueVerticalAngleCWMin)
-                    ////{
-                    ////    mDirectionSearchCurrent = Vertical.rotate(-mPositiveTorqueVerticalAngleCWMin);
+                    ////    //
+                    ////    // Gradient descent, minimizing torque
+                    ////    //
+
+                    ////    float constexpr DAlpha = 0.005f;
+
+                    ////    ////// Positive
+                    ////    ////vec2f const positiveStepDirection = mDirectionSearchCurrent.rotate(DAlpha);
+                    ////    ////auto [positiveStepTotalBuoyantForce, positiveStepCoB] = CalculateBuoyancy(mWaterline->Center, positiveStepDirection);
+                    ////    ////float const positiveStepTorque = positiveStepDirection.cross((positiveStepCoB - mStaticResults->CenterOfMass));
+
+                    ////    ////// Negative
+                    ////    ////vec2f const negativeStepDirection = mDirectionSearchCurrent.rotate(-DAlpha);
+                    ////    ////auto [negativeStepTotalBuoyantForce, negativeStepCoB] = CalculateBuoyancy(mWaterline->Center, negativeStepDirection);
+                    ////    ////float const negativeStepTorque = negativeStepDirection.cross((negativeStepCoB - mStaticResults->CenterOfMass));
+
+                    ////    ////// Choose step that minimizes torque the most
+                    ////    ////if ((torque - positiveStepTorque) > (torque - negativeStepTorque)
+
+                    ////    vec2f const stepDirection = mDirectionSearchCurrent.rotate(DAlpha);
+                    ////    auto [_, stepCoB] = CalculateBuoyancy(mWaterline->Center, stepDirection);
+                    ////    float const stepTorque = stepDirection.cross((stepCoB - mStaticResults->CenterOfMass));
+
+                    ////    // Get closer to zero
+                    ////    if (std::abs(stepTorque) <= std::abs(torque))
+                    ////    {
+                    ////        // Direction of step minimizes (absolute value of) torque
+                    ////        mDirectionSearchCurrent = mDirectionSearchCurrent.rotate(DAlpha);
+                    ////    }
+                    ////    else
+                    ////    {
+                    ////        // Direction of step gives larger (absolute) value
+                    ////        mDirectionSearchCurrent = mDirectionSearchCurrent.rotate(-DAlpha);
+                    ////    }
                     ////}
 
-                    ////LogMessage("TODOTEST: clipped verticalAlpha=", mDirectionSearchCurrent.angleCw(Vertical));
-
+                    //
                     // Restart search from here
+                    //
+
                     std::tie(mLevelSearchLowest, mLevelSearchHighest) = CalculateLevelSearchLimits(
                         mStaticResults->CenterOfMass,
                         mDirectionSearchCurrent);
 
-                    mLevelSearchCurrent = 0.0f;
+                    // TODOTEST: restart from here
+                    //mLevelSearchCurrent = 0.0f;
+                    assert(mLevelSearchCurrent <= mLevelSearchLowest && mLevelSearchCurrent >= mLevelSearchHighest);
 
                     // Continue
                     return false;
@@ -282,7 +336,9 @@ std::tuple<float, float> WaterlineAnalyzer::CalculateLevelSearchLimits(
     return std::make_tuple(tLowest, tHighest);
 }
 
-std::tuple<float, vec2f> WaterlineAnalyzer::CalculateBuoyancy(Waterline const & waterline)
+std::tuple<float, vec2f> WaterlineAnalyzer::CalculateBuoyancy(
+    vec2f const & waterlineCenter,
+    vec2f const & waterlineDirection)
 {
     float constexpr WaterDensity = 1000.0f;
 
@@ -305,7 +361,7 @@ std::tuple<float, vec2f> WaterlineAnalyzer::CalculateBuoyancy(Waterline const & 
                 // Note: here we take a particle's bottom-left corner as the point for which
                 // we check its direction
                 auto const coordsF = coords.ToFloat();
-                float const alignment = (coordsF - waterline.Center).dot(waterline.WaterDirection);
+                float const alignment = (coordsF - waterlineCenter).dot(waterlineDirection);
                 if (alignment >= 0.0f)
                 {
                     // This point is on the "underwater" side of the center, along the direction
