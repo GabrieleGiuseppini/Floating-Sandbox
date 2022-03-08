@@ -13,6 +13,8 @@
 
 namespace ShipBuilder {
 
+float constexpr WaterDensity = 1000.0f;
+
 WaterlineAnalyzer::WaterlineAnalyzer(Model const & model)
     : mModel(model)
 {
@@ -85,7 +87,7 @@ bool WaterlineAnalyzer::Update()
 
     // Calculate buoyancy at this waterline
     vec2f newCenterOfBuoyancy;
-    std::tie(mTotalBuoyantForce, newCenterOfBuoyancy) = CalculateBuoyancy(
+    std::tie(mTotalBuoyantForce, newCenterOfBuoyancy) = CalculateBuoyancyWithWaterline(
         mWaterline->Center,
         mWaterline->WaterDirection);
 
@@ -198,15 +200,36 @@ bool WaterlineAnalyzer::Update()
             // We're done
             //
 
+            // Calculate final outcome
+
+            float const trim = std::abs(directionVerticalAlphaCW) / Pi<float> *180.0f;
+
+            std::optional<FinalOutcome::FloatingStateType> floatingState;
+            if (mStaticResults.has_value() && mTotalBuoyantForce.has_value())
+            {
+                if (*mTotalBuoyantForce == 0.0f)
+                {
+                    floatingState = FinalOutcome::FloatingStateType::Flying;
+                }
+                else if (mStaticResults->TotalBuoyantForceWhenSubmersed < mStaticResults->TotalMass * 0.99f)
+                {
+                    floatingState = FinalOutcome::FloatingStateType::Sinking;
+                }
+                else
+                {
+                    floatingState = FinalOutcome::FloatingStateType::Stable;
+                }
+            }
+
+            mFinalOutcome.emplace(trim, floatingState);
+
             return true;
         }
-        else
-        {
-            // Rotate current search direction
-            mDirectionSearchCurrent = mDirectionSearchCurrent.rotate(-directionRotationCW);
 
-            LogMessage("TODOTEST: directionRotationCW = ", directionRotationCW, " newDir = ", mDirectionSearchCurrent.toString(), " oldVerticalAlpha=", directionVerticalAlphaCW, " newVerticalAlpha = ", mDirectionSearchCurrent.angleCw(Vertical));
-        }
+        // Rotate current search direction
+        mDirectionSearchCurrent = mDirectionSearchCurrent.rotate(-directionRotationCW);
+
+        LogMessage("TODOTEST: directionRotationCW = ", directionRotationCW, " newDir = ", mDirectionSearchCurrent.toString(), " oldVerticalAlpha=", directionVerticalAlphaCW, " newVerticalAlpha = ", mDirectionSearchCurrent.angleCw(Vertical));
 
         //
         // Restart search from here
@@ -235,6 +258,7 @@ bool WaterlineAnalyzer::Update()
 WaterlineAnalyzer::StaticResults WaterlineAnalyzer::CalculateStaticResults()
 {
     float totalMass = 0.0f;
+    float totalBuoyantForceWhenSubmersed = 0.0f;
     vec2f centerOfMass = vec2f::zero();
 
     auto const & structuralLayerBuffer = mModel.GetStructuralLayer().Buffer;
@@ -247,6 +271,11 @@ WaterlineAnalyzer::StaticResults WaterlineAnalyzer::CalculateStaticResults()
             if (material != nullptr)
             {
                 totalMass += material->GetMass();
+
+                // TODOHACK: here we do the same as the simulator currently does, wrt "buoyancy volume fill".
+                // This needs to be removed once we have changed "buoyancy volume fill"
+                totalBuoyantForceWhenSubmersed += WaterDensity * material->BuoyancyVolumeFill;
+
                 centerOfMass += coords.ToFloat() * material->GetMass();
             }
         }
@@ -254,6 +283,7 @@ WaterlineAnalyzer::StaticResults WaterlineAnalyzer::CalculateStaticResults()
 
     return StaticResults(
         totalMass,
+        totalBuoyantForceWhenSubmersed,
         centerOfMass / (totalMass != 0.0f ? totalMass : 1.0f));
 }
 
@@ -287,12 +317,10 @@ std::tuple<float, float> WaterlineAnalyzer::CalculateLevelSearchLimits(
     return std::make_tuple(tLowest, tHighest);
 }
 
-std::tuple<float, vec2f> WaterlineAnalyzer::CalculateBuoyancy(
+std::tuple<float, vec2f> WaterlineAnalyzer::CalculateBuoyancyWithWaterline(
     vec2f const & waterlineCenter,
     vec2f const & waterlineDirection)
 {
-    float constexpr WaterDensity = 1000.0f;
-
     float totalBuoyantForce = 0.0f;
     vec2f centerOfBuoyancySum = vec2f::zero();
     // TODOHACK: see below

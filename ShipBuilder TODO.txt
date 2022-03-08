@@ -258,17 +258,27 @@
 							+ Remove buoyancy center if buoyant force is zero
 	= Finalizations:
 		+ See if can get rid of state machine in WaterlineAnalyzer and do all with state instead
-		- Refactor members
-			- Nuke static results, have two members
-			- Nuke waterline, have two members
-		- Outcome in dialog (populated at completion)
-			- Tilt (angle as absolute degrees)
+		- Fix Blimp break
+			- Due to levelSearchCurrent not being correct anymore after rotation of direction; need to update it as well
+		= Outcome in dialog (populated at completion)
+			- Trim (angle as absolute degrees)
 			- Floating/Sinking statement?
 				- Total buoyant force==0 => above water
 				- ??? => stable
+					- level=1.5 min=1.5 max=2.0
+					- level=14 min=14 max=14.5
+					- 17 17 17.5
+					- -17 -17 -16.5
 				- ??? => sinks
+					- level=-16 min=-16.5 max=-16 (real min/max)
+					- level=-32 min=-32.5 max=-32
+			- Test:
+				- Submarine, Triton, Ship
+				- Blimp, Cardboard
+				- Concrete ball
+				- No particles
+			- Dialog: Gfx
 		- Cleanup logging
-		- Test w/no particles
 		- Analysis starts in continuous play
 		- Want a UI mode where center of mass is displayed continuously?
 			- ModelController maintains structural analysis

@@ -20,12 +20,15 @@ public:
     struct StaticResults
     {
         float TotalMass;
+        float TotalBuoyantForceWhenSubmersed;
         vec2f CenterOfMass; // Ship coordinates
 
         StaticResults(
             float totalMass,
+            float totalBuoyantForceWhenSubmersed,
             vec2f centerOfMass)
             : TotalMass(totalMass)
+            , TotalBuoyantForceWhenSubmersed(totalBuoyantForceWhenSubmersed)
             , CenterOfMass(centerOfMass)
         {}
     };
@@ -40,6 +43,26 @@ public:
             vec2f waterDirection)
             : Center(center)
             , WaterDirection(waterDirection)
+        {}
+    };
+
+    struct FinalOutcome
+    {
+        enum class FloatingStateType
+        {
+            Sinking,
+            Stable,
+            Flying
+        };
+
+        float Trim; // Absolute degrees
+        std::optional<FloatingStateType> FloatingState;
+
+        FinalOutcome(
+            float trim,
+            std::optional<FloatingStateType> floatingState)
+            : Trim(trim)
+            , FloatingState(floatingState)
         {}
     };
 
@@ -67,6 +90,11 @@ public:
         return mWaterline;
     }
 
+    std::optional<FinalOutcome> const & GetFinalOutcome() const
+    {
+        return mFinalOutcome;
+    }
+
     /*
      * Runs a step of the analysis. Returns true if the analysis is complete.
      */
@@ -81,7 +109,7 @@ private:
         vec2f const & direction);
 
     // Total buoyance force, center of buoyancy
-    std::tuple<float, vec2f> CalculateBuoyancy(
+    std::tuple<float, vec2f> CalculateBuoyancyWithWaterline(
         vec2f const & waterlineCenter, // Ship coordinates
         vec2f const & waterlineDirection);
 
@@ -99,6 +127,8 @@ private:
     std::optional<vec2f> mCenterOfBuoyancy;
 
     std::optional<Waterline> mWaterline;
+
+    std::optional<FinalOutcome> mFinalOutcome;
 
     float mDirectionSearchCWAngleMax; // The maximum (most positive) CW direction (wrt Vertical) we're willing to go when following a negative (CW) torque
     float mDirectionSearchCWAngleMin; // The minimum (most negative) CW direction (wrt Vertical) we're willing to go when following a positive (CCW) torque
