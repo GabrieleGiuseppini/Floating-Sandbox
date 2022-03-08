@@ -102,6 +102,10 @@ void SamplerTool<TLayer>::OnMouseMove(DisplayLogicalCoordinates const & mouseCoo
         // Notify about material
         mUserInterface.OnSampledMaterialChanged(material ? material->Name : std::optional<std::string>());
     }
+    else
+    {
+        mUserInterface.OnSampledMaterialChanged(std::nullopt);
+    }
 }
 
 template<LayerType TLayer>
@@ -135,25 +139,28 @@ void SamplerTool<TLayer>::DoSelectMaterial(
     ShipSpaceCoordinates const & mouseCoordinates,
     MaterialPlaneType plane)
 {
-    // Get material
-    auto const * material = SampleMaterial(mouseCoordinates);
+    if (mouseCoordinates.IsInSize(mModelController.GetModel().GetShipSize()))
+    {
+        // Get material
+        auto const * material = SampleMaterial(mouseCoordinates);
 
-    // Select material
-    if constexpr (TLayer == LayerType::Structural)
-    {
-        mWorkbenchState.SetStructuralMaterial(material, plane);
-        mUserInterface.OnStructuralMaterialChanged(material, plane);
-    }
-    else if constexpr (TLayer == LayerType::Electrical)
-    {
-        mWorkbenchState.SetElectricalMaterial(material, plane);
-        mUserInterface.OnElectricalMaterialChanged(material, plane);
-    }
-    else
-    {
-        static_assert(TLayer == LayerType::Ropes);
-        mWorkbenchState.SetRopesMaterial(material, plane);
-        mUserInterface.OnRopesMaterialChanged(material, plane);
+        // Select material
+        if constexpr (TLayer == LayerType::Structural)
+        {
+            mWorkbenchState.SetStructuralMaterial(material, plane);
+            mUserInterface.OnStructuralMaterialChanged(material, plane);
+        }
+        else if constexpr (TLayer == LayerType::Electrical)
+        {
+            mWorkbenchState.SetElectricalMaterial(material, plane);
+            mUserInterface.OnElectricalMaterialChanged(material, plane);
+        }
+        else
+        {
+            static_assert(TLayer == LayerType::Ropes);
+            mWorkbenchState.SetRopesMaterial(material, plane);
+            mUserInterface.OnRopesMaterialChanged(material, plane);
+        }
     }
 }
 
