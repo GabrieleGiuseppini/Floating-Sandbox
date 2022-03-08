@@ -151,7 +151,7 @@ bool WaterlineAnalyzer::Update()
                 LogMessage("TODOTEST: torque=", torque);
 
                 // Calculate (delta-) rotation we want to rotate direction for
-                float constexpr TorqueToAngleFactor = 0.005f;
+                float constexpr TorqueToAngleFactor = 0.05f; // 0.01f;
                 float directionRotationCW = torque * TorqueToAngleFactor; // Negative torque is ship CW rotation, hence a CCW rotation of the direction
                 if (torque <= 0.0f)
                 {
@@ -183,7 +183,7 @@ bool WaterlineAnalyzer::Update()
                 }
 
                 // Check if too small a rotation
-                float constexpr RotationTolerance = 0.0001f;
+                float constexpr RotationTolerance = 0.001f;
                 if (std::abs(directionRotationCW) <= RotationTolerance)
                 {
                     //
