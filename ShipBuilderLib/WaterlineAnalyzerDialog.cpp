@@ -309,7 +309,7 @@ void WaterlineAnalyzerDialog::ReconcileUIWithState()
 
         case StateType::Playing:
         {
-            mRefreshTimer->Start(100, false);
+            mRefreshTimer->Start(33, false);
 
             mPlayContinuouslyButton->Enable(false);
             mPlayStepByStepButton->Enable(false);
@@ -333,6 +333,7 @@ void WaterlineAnalyzerDialog::ReconcileUIWithState()
         wxColor const Red = wxColor(237, 28, 36);
 
         float const trim = -vec2f(0.0, -1.0f).angleCw(mWaterlineAnalyzer->GetWaterline()->WaterDirection);
+        float visualizationControlExaggeratedTrim = trim;
         bool const isFloating = mWaterlineAnalyzer->GetStaticResults()->TotalBuoyantForceWhenSubmersed > mWaterlineAnalyzer->GetStaticResults()->TotalMass * 1.01f;
 
         // Trim
@@ -345,11 +346,25 @@ void WaterlineAnalyzerDialog::ReconcileUIWithState()
             {
                 ss << "~0°";
                 mTrimLabel->SetBackgroundColour(Green);
+                visualizationControlExaggeratedTrim = 0.0f;
             }
             else
             {
                 ss << trimDegrees << "°";
                 mTrimLabel->SetBackgroundColour(Red);
+
+                float constexpr MinDegrees = 15.0f;
+                if (trimDegrees < MinDegrees)
+                {
+                    if (trim >= 0.0f)
+                    {
+                        visualizationControlExaggeratedTrim = 0.0174533f * MinDegrees;
+                    }
+                    else
+                    {
+                        visualizationControlExaggeratedTrim = -0.0174533f * MinDegrees;
+                    }
+                }
             }
 
             mTrimLabel->SetForegroundColour(*wxWHITE);
@@ -378,7 +393,7 @@ void WaterlineAnalyzerDialog::ReconcileUIWithState()
         // Outcome
         {
             mOutcomeControl->SetValue(
-                trim,
+                visualizationControlExaggeratedTrim,
                 isFloating);
         }
     }

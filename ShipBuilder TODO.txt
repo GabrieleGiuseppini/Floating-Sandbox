@@ -261,7 +261,7 @@
 		+ Fix Blimp break
 			+ Due to levelSearchCurrent not being correct anymore after rotation of direction; need to update it as well
 		+ Cap rotation due to torque
-		= Outcome in dialog (populated at completion)
+		+ Outcome in dialog (populated at completion)
 			+ Trim (angle as absolute degrees)
 			+ Floating/Sinking statement
 			+ Test:
@@ -270,14 +270,15 @@
 				+ Concrete ball
 				+ No particles
 				+ One particle
-			= Dialog: Gfx
-				= Outcome control
-					- Double-check heading by testing with a slightly tilting ship
+			+ Dialog: Gfx
+				+ Outcome control
+					+ Double-check heading by testing with a slightly tilting ship
 					+ Top arrow in image
 					+ Vertical dashed line as a guide
-				= Replace static analysis text with "Trim" and "Floats" labels, with colored backgrounds
-		- Faster animation
+				+ Replace static analysis text with "Trim" and "Floats" labels, with colored backgrounds
+		+ Faster animation
 		+ Cleanup logging
+		- Kursk
 		- Shader: line on waterline interface
 		- Analysis starts in continuous play
 	- Want a UI mode where center of mass is displayed continuously?
