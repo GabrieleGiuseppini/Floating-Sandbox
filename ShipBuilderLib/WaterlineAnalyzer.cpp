@@ -6,7 +6,6 @@
 #include "WaterlineAnalyzer.h"
 
 #include <GameCore/GameMath.h>
-#include <GameCore/Log.h>
 
 #include <cassert>
 #include <limits>
@@ -69,9 +68,6 @@ bool WaterlineAnalyzer::Update()
 
     assert(mStaticResults.has_value());
 
-    LogMessage("TODOTEST: ---------------------------");
-    LogMessage("TODOTEST: dir=", mDirectionSearchCurrent.toString(), " level=", mLevelSearchCurrent);
-
     //
     // Calculate buoyancy at current waterline
     //
@@ -130,8 +126,6 @@ bool WaterlineAnalyzer::Update()
         }
     }
 
-    LogMessage("TODOTEST: new level=", newLevelSearchCurrent);
-
     // Check if we haven't moved much from previous
     if (std::abs(newLevelSearchCurrent - mLevelSearchCurrent) < LevelSearchChangeTolerance)
     {
@@ -159,8 +153,6 @@ bool WaterlineAnalyzer::Update()
 
         // Calculate "torque" (massless) of weight/buoyancy on CoM->CoB direction
         float const torque = mDirectionSearchCurrent.cross(newCenterOfBuoyancy - mStaticResults->CenterOfMass);
-
-        LogMessage("TODOTEST: torque=", torque);
 
         // Calculate (delta-) rotation we want to rotate direction for
         float directionRotationCW;
@@ -207,38 +199,11 @@ bool WaterlineAnalyzer::Update()
             // We're done
             //
 
-            /* TODOOLD
-            // Calculate final outcome
-
-            float const trim = std::abs(directionVerticalAlphaCW) / Pi<float> *180.0f;
-
-            std::optional<FinalOutcome::FloatingStateType> floatingState;
-            if (mStaticResults.has_value() && mTotalBuoyantForce.has_value())
-            {
-                if (*mTotalBuoyantForce == 0.0f)
-                {
-                    floatingState = FinalOutcome::FloatingStateType::Flying;
-                }
-                else if (mStaticResults->TotalBuoyantForceWhenSubmersed < mStaticResults->TotalMass * 0.99f)
-                {
-                    floatingState = FinalOutcome::FloatingStateType::Sinking;
-                }
-                else
-                {
-                    floatingState = FinalOutcome::FloatingStateType::Stable;
-                }
-            }
-
-            mFinalOutcome.emplace(trim, floatingState);
-            */
-
             return true;
         }
 
         // Rotate current search direction
         mDirectionSearchCurrent = mDirectionSearchCurrent.rotate(-directionRotationCW);
-
-        LogMessage("TODOTEST: directionRotationCW = ", directionRotationCW, " newDir = ", mDirectionSearchCurrent.toString(), " oldVerticalAlpha=", directionVerticalAlphaCW, " newVerticalAlpha = ", mDirectionSearchCurrent.angleCw(Vertical));
 
         //
         // Restart search from here

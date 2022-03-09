@@ -11,12 +11,16 @@
 #include <GameCore/SysSpecifics.h>
 
 #include <wx/sizer.h>
+#include <wx/sizer.h>
 #include <wx/statline.h>
 
 #include <cassert>
 #include <sstream>
 
 namespace ShipBuilder {
+
+#define TrimLabelMask "---°"
+#define IsFloatingLabelMask "---"
 
 WaterlineAnalyzerDialog::WaterlineAnalyzerDialog(
     wxWindow * parent,
@@ -137,24 +141,79 @@ WaterlineAnalyzerDialog::WaterlineAnalyzerDialog(
                 8);
         }
 
-        // Analysis text
+        // Outcome labels
         {
-            mAnalysisTextCtrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(300, -1), wxTE_READONLY | wxTE_MULTILINE | wxTE_LEFT | wxTE_RICH);
+            int constexpr OutcomeLabelWidth = 50;
+
+            auto * gridSizer = new wxFlexGridSizer(2, 2, 0, InterButtonMargin);
+
+            gridSizer->AddGrowableRow(0, 1);
+            gridSizer->AddGrowableRow(1, 1);
 
             {
-                auto font = GetFont();
-                font.SetFamily(wxFONTFAMILY_TELETYPE);
-                mAnalysisTextCtrl->SetFont(font);
+                auto * label = new wxStaticText(this, wxID_ANY, _("Trim:"));
+
+                gridSizer->Add(
+                    label,
+                    0,
+                    wxALIGN_CENTRE_VERTICAL,
+                    0);
+
+            }
+
+            {
+                mTrimLabel = new wxStaticText(this, wxID_ANY, TrimLabelMask, wxDefaultPosition, wxSize(OutcomeLabelWidth, -1), wxALIGN_RIGHT | wxBORDER_SIMPLE);
+
+                {
+                    auto font = GetFont();
+                    font.SetFamily(wxFONTFAMILY_TELETYPE);
+                    mTrimLabel->SetFont(font);
+                }
+
+                gridSizer->Add(
+                    mTrimLabel,
+                    0,
+                    wxALIGN_CENTRE_VERTICAL,
+                    0);
+
+            }
+
+            {
+                auto * label = new wxStaticText(this, wxID_ANY, _("Floats:"));
+
+                gridSizer->Add(
+                    label,
+                    0,
+                    wxALIGN_CENTRE_VERTICAL,
+                    0);
+
+            }
+
+            {
+                mIsFloatingLabel = new wxStaticText(this, wxID_ANY, IsFloatingLabelMask, wxDefaultPosition, wxSize(OutcomeLabelWidth, -1), wxALIGN_CENTER_HORIZONTAL | wxBORDER_SIMPLE);
+
+                {
+                    auto font = GetFont();
+                    font.SetFamily(wxFONTFAMILY_TELETYPE);
+                    mIsFloatingLabel->SetFont(font);
+                }
+
+                gridSizer->Add(
+                    mIsFloatingLabel,
+                    0,
+                    wxALIGN_CENTRE_VERTICAL,
+                    0);
+
             }
 
             mainHSizer->Add(
-                mAnalysisTextCtrl,
+                gridSizer,
                 0,
                 wxEXPAND | wxLEFT | wxRIGHT,
                 InterButtonMargin);
         }
 
-        // Final outcome
+        // Outcome control
         {
             mOutcomeControl = new WaterlineAnalysisOutcomeVisualizationControl(this, resourceLocator);
 
@@ -266,22 +325,56 @@ void WaterlineAnalyzerDialog::ReconcileUIWithState()
     // Visualizations
     //
 
-    // Analysis text
-    PopulateAnalysisText(
-        mWaterlineAnalyzer->GetStaticResults(),
-        mWaterlineAnalyzer->GetTotalBuoyantForce());
-
-    // Outcome
     if (mCurrentState == StateType::Completed && mWaterlineAnalyzer->GetStaticResults()->TotalMass != 0.0f)
     {
         assert(mWaterlineAnalyzer->GetWaterline().has_value());
 
-        mOutcomeControl->SetValue(
-            -vec2f(0.0, -1.0f).angleCw(mWaterlineAnalyzer->GetWaterline()->WaterDirection),
-            mWaterlineAnalyzer->GetStaticResults()->TotalBuoyantForceWhenSubmersed > mWaterlineAnalyzer->GetStaticResults()->TotalMass * 1.01f);
+        float const trim = -vec2f(0.0, -1.0f).angleCw(mWaterlineAnalyzer->GetWaterline()->WaterDirection);
+        bool const isFloating = mWaterlineAnalyzer->GetStaticResults()->TotalBuoyantForceWhenSubmersed > mWaterlineAnalyzer->GetStaticResults()->TotalMass * 1.01f;
+
+        // Trim
+        {
+            // TODO: BG
+            int const trimDegrees = static_cast<int>(std::abs(std::round(RadiansCWToDegrees(trim))));
+
+            std::stringstream ss;
+
+            if (trimDegrees < 1)
+            {
+                ss << "~0°";
+            }
+            else
+            {
+                ss << trimDegrees << "°";
+            }
+
+            mTrimLabel->SetLabel(ss.str());
+        }
+
+        // IsFloating
+        {
+            // TODO: BG
+            if (isFloating)
+            {
+                mIsFloatingLabel->SetLabel(_("Yes"));
+            }
+            else
+            {
+                mIsFloatingLabel->SetLabel(_("No"));
+            }
+        }
+
+        // Outcome
+        {
+            mOutcomeControl->SetValue(
+                trim,
+                isFloating);
+        }
     }
     else
     {
+        mTrimLabel->SetLabel(TrimLabelMask);
+        mIsFloatingLabel->SetLabel(IsFloatingLabelMask);
         mOutcomeControl->Clear();
     }
 
@@ -322,73 +415,6 @@ void WaterlineAnalyzerDialog::ReconcileUIWithState()
     }
 
     mUserInterface.RefreshView();
-}
-
-void WaterlineAnalyzerDialog::PopulateAnalysisText(
-    std::optional<WaterlineAnalyzer::StaticResults> const & staticResults,
-    std::optional<float> totalBuoyantForce)
-{
-    std::stringstream ss;
-
-    if (staticResults.has_value())
-    {
-        if (staticResults->TotalMass != 0.0f)
-        {
-            ss << _("Total mass: ");
-
-            switch (mDisplayUnitsSystem)
-            {
-                case UnitsSystem::SI_Celsius:
-                case UnitsSystem::SI_Kelvin:
-                {
-                    ss << KilogramToMetricTon(staticResults->TotalMass) << _(" tons");
-                    break;
-                }
-
-                case UnitsSystem::USCS:
-                {
-                    ss << KilogramToUscsTon(staticResults->TotalMass) << _(" tons");
-                    break;
-                }
-            }
-        }
-        else
-        {
-            ss << _("No particles");
-        }
-    }
-
-    if (totalBuoyantForce.has_value())
-    {
-        ss << std::endl;
-
-        ss << _("Buoyant force: ");
-
-        switch (mDisplayUnitsSystem)
-        {
-            case UnitsSystem::SI_Celsius:
-            case UnitsSystem::SI_Kelvin:
-            {
-                ss << KilogramToMetricTon(*totalBuoyantForce) << _(" tons");
-                break;
-            }
-
-            case UnitsSystem::USCS:
-            {
-                ss << KilogramToUscsTon(*totalBuoyantForce) << _(" tons");
-                break;
-            }
-        }
-    }
-
-    mAnalysisTextCtrl->SetValue(ss.str());
-
-    // Move focus away
-    mPlayContinuouslyButton->SetFocus();
-
-#if FS_IS_OS_WINDOWS()
-    mAnalysisTextCtrl->HideNativeCaret();
-#endif
 }
 
 void WaterlineAnalyzerDialog::DoStep()

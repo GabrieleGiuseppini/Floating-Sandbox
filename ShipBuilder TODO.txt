@@ -283,7 +283,7 @@
 						- Trim text is red or green
 							- Green only if "~0"
 		- Faster animation
-		- Cleanup logging
+		+ Cleanup logging
 		- Shader: line on waterline interface
 		- Analysis starts in continuous play
 	- Want a UI mode where center of mass is displayed continuously?

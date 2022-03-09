@@ -17,7 +17,7 @@
 
 #include <wx/bmpbuttn.h>
 #include <wx/dialog.h>
-#include <wx/textctrl.h>
+#include <wx/stattext.h>
 #include <wx/timer.h>
 
 #include <memory>
@@ -45,9 +45,6 @@ private:
 
     void InitializeAnalysis();
     void ReconcileUIWithState();
-    void PopulateAnalysisText(
-        std::optional<WaterlineAnalyzer::StaticResults> const & staticResults,
-        std::optional<float> totalBuoyantForce);
 
     void DoStep();
 
@@ -66,7 +63,8 @@ private:
     wxBitmapButton * mPlayContinuouslyButton;
     wxBitmapButton * mPlayStepByStepButton;
     wxBitmapButton * mRewindButton;
-    wxTextCtrl * mAnalysisTextCtrl;
+    wxStaticText * mTrimLabel;
+    wxStaticText * mIsFloatingLabel;
     WaterlineAnalysisOutcomeVisualizationControl * mOutcomeControl;
     std::unique_ptr<wxTimer> mRefreshTimer;
 
