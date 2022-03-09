@@ -48,7 +48,7 @@ public:
 
 public:
 
-    WaterlineAnalyzer(Model const & model);
+    explicit WaterlineAnalyzer(Model const & model);
 
     std::optional<StaticResults> const & GetStaticResults() const
     {

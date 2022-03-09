@@ -291,21 +291,10 @@
 					- TODO: does it make sense, given that CoB is for fully submerged?
 		- Requires IUserInterface::OnEdit invoked everywhere (tools, undo, etc.) for triggering rendering of new CoM
 
-
 - Cleanup all builds' Data folders
 
 - Rotate 90 (CW and CCW)
 	- Also changes ship size, do notifications
-
-- MaterialsPalette: make flag for making it its own wxFrame, so one can use it in a second monitor
-
-- Test with huge size: lag should only be proportional to edit region
-
-- MainFrame: Game viz: add "export to image" button
-	- Rearc icons now:
-		- Export: above=<file==folder|image==photo> below=<arrow pointing up>
-		- Import: above=<file==folder|image==photo> below=<arrow pointing down>
-	- TODO: ropes are missing...
 
 - Texture flood tool
 	+ First off: mouse coordinates from MainFrame to Controller becomes LogicalDisplayCoords, and they're converted to ShipSpace coords where needed
@@ -320,6 +309,16 @@
 			- No need to do at removal...
 	- Tolerance, etc.
 
+- MaterialsPalette: make flag for making it its own wxFrame, so one can use it in a second monitor
+
+- Test with huge size: lag should only be proportional to edit region
+
+- MainFrame: Game viz: add "export to image" button
+	- Rearc icons now:
+		- Export: above=<file==folder|image==photo> below=<arrow pointing up>
+		- Import: above=<file==folder|image==photo> below=<arrow pointing down>
+	- TODO: ropes are missing...
+
 - ShipPropertiesEditDialog: ship prefix normalizer
 	+ Make text file out of https://en.wikipedia.org/wiki/Ship_prefix, with just list of prefixes
 	- Usage:
@@ -329,8 +328,6 @@
 			- TODO: when to stop
 		- Take list, reduce to contiguous (remove ./\<space>)
 		- If the two match, use original from list
-			
-- App icons (whole "Resources" folder)
 
 ================================================================================================================================================================================
 
