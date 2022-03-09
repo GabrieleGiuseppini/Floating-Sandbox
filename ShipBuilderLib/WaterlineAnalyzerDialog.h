@@ -40,10 +40,11 @@ public:
 
 private:
 
+    enum class StateType;
+
     void OnRefreshTimer(wxTimerEvent & event);
     void OnClose(wxCloseEvent & event);
-
-    void InitializeAnalysis();
+    void InitializeAnalysis(StateType initialState);
     void ReconcileUIWithState();
 
     void DoStep();

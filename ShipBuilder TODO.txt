@@ -256,7 +256,7 @@
 						+ ~180degrees ball
 						+ Cardboard skyscraper
 							+ Remove buoyancy center if buoyant force is zero
-	= Finalizations:
+	+ Finalizations:
 		+ See if can get rid of state machine in WaterlineAnalyzer and do all with state instead
 		+ Fix Blimp break
 			+ Due to levelSearchCurrent not being correct anymore after rotation of direction; need to update it as well
@@ -278,9 +278,7 @@
 				+ Replace static analysis text with "Trim" and "Floats" labels, with colored backgrounds
 		+ Faster animation
 		+ Cleanup logging
-		- Kursk
-		- Shader: line on waterline interface
-		- Analysis starts in continuous play
+		+ Analysis starts in continuous play
 	- Want a UI mode where center of mass is displayed continuously?
 		- ModelController maintains structural analysis, like now
 		- Simply:

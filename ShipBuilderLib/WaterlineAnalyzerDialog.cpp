@@ -119,7 +119,7 @@ WaterlineAnalyzerDialog::WaterlineAnalyzerDialog(
                 wxEVT_BUTTON,
                 [this](wxCommandEvent &)
                 {
-                    InitializeAnalysis();
+                    InitializeAnalysis(StateType::Paused);
                     ReconcileUIWithState();
                 });
 
@@ -252,7 +252,7 @@ WaterlineAnalyzerDialog::WaterlineAnalyzerDialog(
     // Initialize analysis
     //
 
-    InitializeAnalysis();
+    InitializeAnalysis(StateType::Playing);
 
     ReconcileUIWithState();
 }
@@ -273,11 +273,11 @@ void WaterlineAnalyzerDialog::OnClose(wxCloseEvent & event)
     event.Skip();
 }
 
-void WaterlineAnalyzerDialog::InitializeAnalysis()
+void WaterlineAnalyzerDialog::InitializeAnalysis(StateType initialState)
 {
     mWaterlineAnalyzer = std::make_unique<WaterlineAnalyzer>(mModel);
 
-    mCurrentState = StateType::Paused;
+    mCurrentState = initialState;
 }
 
 void WaterlineAnalyzerDialog::ReconcileUIWithState()
