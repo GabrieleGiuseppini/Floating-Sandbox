@@ -329,12 +329,14 @@ void WaterlineAnalyzerDialog::ReconcileUIWithState()
     {
         assert(mWaterlineAnalyzer->GetWaterline().has_value());
 
+        wxColor const Green = wxColor(0, 166, 81);
+        wxColor const Red = wxColor(237, 28, 36);
+
         float const trim = -vec2f(0.0, -1.0f).angleCw(mWaterlineAnalyzer->GetWaterline()->WaterDirection);
         bool const isFloating = mWaterlineAnalyzer->GetStaticResults()->TotalBuoyantForceWhenSubmersed > mWaterlineAnalyzer->GetStaticResults()->TotalMass * 1.01f;
 
         // Trim
         {
-            // TODO: BG
             int const trimDegrees = static_cast<int>(std::abs(std::round(RadiansCWToDegrees(trim))));
 
             std::stringstream ss;
@@ -342,26 +344,35 @@ void WaterlineAnalyzerDialog::ReconcileUIWithState()
             if (trimDegrees < 1)
             {
                 ss << "~0°";
+                mTrimLabel->SetBackgroundColour(Green);
             }
             else
             {
                 ss << trimDegrees << "°";
+                mTrimLabel->SetBackgroundColour(Red);
             }
 
+            mTrimLabel->SetForegroundColour(*wxWHITE);
             mTrimLabel->SetLabel(ss.str());
         }
 
         // IsFloating
         {
-            // TODO: BG
+            std::stringstream ss;
+
             if (isFloating)
             {
-                mIsFloatingLabel->SetLabel(_("Yes"));
+                ss << _("Yes");
+                mIsFloatingLabel->SetBackgroundColour(Green);
             }
             else
             {
-                mIsFloatingLabel->SetLabel(_("No"));
+                ss << _("No");
+                mIsFloatingLabel->SetBackgroundColour(Red);
             }
+
+            mIsFloatingLabel->SetForegroundColour(*wxWHITE);
+            mIsFloatingLabel->SetLabel(ss.str());
         }
 
         // Outcome
@@ -373,8 +384,14 @@ void WaterlineAnalyzerDialog::ReconcileUIWithState()
     }
     else
     {
+        mTrimLabel->SetBackgroundColour(GetBackgroundColour());
+        mTrimLabel->SetForegroundColour(*wxBLACK);
         mTrimLabel->SetLabel(TrimLabelMask);
+
+        mIsFloatingLabel->SetBackgroundColour(GetBackgroundColour());
+        mIsFloatingLabel->SetForegroundColour(*wxBLACK);
         mIsFloatingLabel->SetLabel(IsFloatingLabelMask);
+
         mOutcomeControl->Clear();
     }
 
