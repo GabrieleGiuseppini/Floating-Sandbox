@@ -37,6 +37,7 @@ private:
 
 private:
 
+    wxPen mGuidePen;
     wxPen mWaterlinePen;
     wxPen mWaterPen;
     wxBrush mWaterBrush;

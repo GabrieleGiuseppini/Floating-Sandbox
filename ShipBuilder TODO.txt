@@ -273,11 +273,15 @@
 			= Dialog: Gfx
 				= Outcome control
 					- Double-check heading by testing with a slightly tilting ship
-					- Top indicator in image?
+					= Top arrow in image
+					= Vertical dashed line as a guide
 				- Do we need static analysis text? How to improve it?
-					- Remove buyant force
-					- Put back trim, in degrees, but only when at end
-						- Separate moments for text ? i.e. separate controls?
+					- Row 1: "Total mass:", static text with border, "tons"
+					- Row 2: "Trim:", static text with border, "degrees"
+						- Populated with "---" when not available
+						- "000034.7" for mass
+						- Trim text is red or green
+							- Green only if "~0"
 		- Faster animation
 		- Cleanup logging
 		- Shader: line on waterline interface

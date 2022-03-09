@@ -42,6 +42,7 @@ WaterlineAnalysisOutcomeVisualizationControl::WaterlineAnalysisOutcomeVisualizat
 #endif
 
     // Create drawing tools
+    mGuidePen = wxPen(wxColor(0, 0, 0), 1, wxPENSTYLE_SHORT_DASH);
     mWaterlinePen = wxPen(wxColor(57, 127, 189), 1, wxPENSTYLE_SOLID);
     mWaterPen = wxPen(wxColor(77, 172, 255), 1, wxPENSTYLE_SOLID);
     mWaterBrush = wxBrush(mWaterPen.GetColour(), wxBRUSHSTYLE_SOLID);
@@ -96,6 +97,7 @@ void WaterlineAnalysisOutcomeVisualizationControl::Render(wxDC & dc)
             waterlineY,
             size.GetWidth() - 1,
             size.GetHeight() - 1 - waterlineY);
+
         //
         // Draw waterline
         //
@@ -107,6 +109,16 @@ void WaterlineAnalysisOutcomeVisualizationControl::Render(wxDC & dc)
             size.GetWidth() - 1,
             waterlineY);
 
+        //
+        // Dra vertical guide
+        //
+
+        dc.SetPen(mGuidePen);
+        dc.DrawLine(
+            size.GetWidth() / 2,
+            0,
+            size.GetWidth() / 2,
+            size.GetHeight() - 1);
 
         //
         // Draw ship

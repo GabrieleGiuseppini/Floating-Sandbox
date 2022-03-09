@@ -277,7 +277,7 @@ void WaterlineAnalyzerDialog::ReconcileUIWithState()
         assert(mWaterlineAnalyzer->GetWaterline().has_value());
 
         mOutcomeControl->SetValue(
-            vec2f(0.0, -1.0f).angleCw(mWaterlineAnalyzer->GetWaterline()->WaterDirection), // TODO: heading
+            -vec2f(0.0, -1.0f).angleCw(mWaterlineAnalyzer->GetWaterline()->WaterDirection),
             mWaterlineAnalyzer->GetStaticResults()->TotalBuoyantForceWhenSubmersed > mWaterlineAnalyzer->GetStaticResults()->TotalMass * 1.01f);
     }
     else
