@@ -1,6 +1,7 @@
 1.17.2
 - ShipBuilder:
 	- Added "Measuring Tape" tool, which allows to measure lengths of structures
+	- Added "Waterline Analysis", predicting whether a ship will float or sink, and where the waterline is going to be
 	- Added ability to import layers from other ships
 	- Adding and removing layers can now be undone via "Undo"
 	- Added ability to export structural and texture layers to image files
