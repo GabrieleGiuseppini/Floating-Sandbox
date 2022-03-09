@@ -46,6 +46,9 @@ public:
     // Notifies of a (possible) change in the dirtiness of the model
     virtual void OnModelDirtyChanged(Model const & model) = 0;
 
+    // Notifies of a (possible) change in the model's macro properties analysis
+    virtual void OnModelMacroPropertiesUpdated(ModelMacroProperties const & properties) = 0;
+
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     virtual void OnStructuralMaterialChanged(StructuralMaterial const * material, MaterialPlaneType plane) = 0;

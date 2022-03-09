@@ -34,6 +34,7 @@ public:
     void SetCanvasSize(std::optional<ShipSpaceSize> canvasSize);
     void SetToolCoordinates(std::optional<ShipSpaceCoordinates> coordinates);
     void SetZoom(std::optional<float> zoom);
+    void SetShipMass(std::optional<float> shipMass);
     void SetCurrentToolType(std::optional<ToolType> toolType);
     void SetSampledMaterial(std::optional<std::string> materialName);
     void SetMeasuredWorldLength(std::optional<int> measuredWorldLength);
@@ -43,6 +44,7 @@ private:
     void RefreshCanvasSize();
     void RefreshToolCoordinates();
     void RefreshZoom();
+    void RefreshShipMass();
     void RefreshCurrentToolType();
     void RefreshToolOutput();
 
@@ -52,6 +54,7 @@ private:
     wxStaticText * mCanvasSizeStaticText;
     wxStaticText * mToolCoordinatesStaticText;
     wxStaticText * mZoomStaticText;
+    wxStaticText * mShipMassStaticText;
     wxStaticBitmap * mCurrentToolStaticBitmap;
     wxBitmap mSamplerToolBitmap;
     wxBitmap mMeasuringTapeToolBitmap;
@@ -63,6 +66,7 @@ private:
     std::optional<ShipSpaceSize> mCanvasSize;
     std::optional<ShipSpaceCoordinates> mToolCoordinates;
     std::optional<float> mZoom;
+    std::optional<float> mShipMass;
     std::optional<ToolType> mCurrentToolType;
     std::optional<std::string> mSampledMaterialName;
     std::optional<int> mMeasuredWorldLength;

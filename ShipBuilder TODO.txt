@@ -285,12 +285,12 @@
 
 + Cleanup all builds' Data folders
 
-- UI: total mass and center of mass
-	- ModelController maintains structural analysis, like now
-		- Structural analysis: total mass, sum of CoM
-	- ModelController has "OnAnalysisUpdated" callback, goes straight to IUserInterface
-	- Display:
-		- Total mass (in StatusBar)
+= UI: total mass and center of mass
+	+ ModelController maintains structural analysis, like now
+		+ Structural analysis: total mass, sum of CoM
+	+ ModelController has "OnAnalysisUpdated" callback, goes straight to IUserInterface
+	= Display:
+		+ Total mass (in StatusBar)
 		- Center of Mass (toggled via toolbar)	
 
 - Rotate 90 (CW and CCW)

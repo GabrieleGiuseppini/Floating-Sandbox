@@ -96,6 +96,37 @@ StatusBar::StatusBar(
         }
     }
 
+    hSizer->AddSpacer(SpacerSizeMinor);
+
+    // Separator
+    {
+        auto * line = new wxStaticLine(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_VERTICAL);
+        hSizer->Add(line, 0, wxEXPAND, 0);
+    }
+
+    hSizer->AddSpacer(SpacerSizeMinor);
+
+    // Ship
+    {
+        // Mass
+        {
+            // Icon
+            {
+                auto * staticBitmap = new wxStaticBitmap(this, wxID_ANY, WxHelpers::LoadBitmap("weight_icon_small", resourceLocator));
+                hSizer->Add(staticBitmap, 0, wxALIGN_CENTRE_VERTICAL, 0);
+            }
+
+            hSizer->AddSpacer(SpacerSizeMinor);
+
+            // Label
+            {
+                mShipMassStaticText = new wxStaticText(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
+                mShipMassStaticText->SetMinSize(wxSize(60, -1));
+                hSizer->Add(mShipMassStaticText, 0, wxALIGN_CENTRE_VERTICAL, 0);
+            }
+        }
+    }
+
     hSizer->AddStretchSpacer(1);
 
     // Separator
@@ -152,6 +183,7 @@ void StatusBar::SetDisplayUnitsSystem(UnitsSystem displayUnitsSystem)
 
         // Refresh all labels affected by units system
         RefreshCanvasSize();
+        RefreshShipMass();
         RefreshToolOutput();
     }
 }
@@ -183,6 +215,14 @@ void StatusBar::SetZoom(std::optional<float> zoom)
     }
 }
 
+void StatusBar::SetShipMass(std::optional<float> shipMass)
+{
+    if (shipMass != mShipMass)
+    {
+        mShipMass = shipMass;
+        RefreshShipMass();
+    }
+}
 void StatusBar::SetCurrentToolType(std::optional<ToolType> toolType)
 {
     if (toolType != mCurrentToolType)
@@ -308,6 +348,35 @@ void StatusBar::RefreshZoom()
     }
 
     mZoomStaticText->SetLabel(ss.str());
+}
+
+void StatusBar::RefreshShipMass()
+{
+    std::stringstream ss;
+
+    ss << std::fixed << std::setprecision(1);
+
+    float mass = mShipMass.value_or(0.0f);
+
+    switch (mDisplayUnitsSystem)
+    {
+        case UnitsSystem::SI_Celsius:
+        case UnitsSystem::SI_Kelvin:
+        {
+            ss << KilogramToMetricTon(mass)
+                << " t";
+            break;
+        }
+
+        case UnitsSystem::USCS:
+        {
+            ss << KilogramToUscsTon(mass)
+                << " tn";
+            break;
+        }
+    }
+
+    mShipMassStaticText->SetLabel(ss.str());
 }
 
 void StatusBar::RefreshCurrentToolType()

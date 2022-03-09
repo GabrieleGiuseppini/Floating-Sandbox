@@ -30,7 +30,11 @@ std::unique_ptr<Controller> Controller::CreateNew(
     auto modelController = ModelController::CreateNew(
         ShipSpaceSize(200, 100), // TODO: from preferences
         shipName,
-        shipTexturizer);
+        shipTexturizer,
+        [&userInterface](ModelMacroProperties const & properties)
+        {
+            userInterface.OnModelMacroPropertiesUpdated(properties);
+        });
 
     std::unique_ptr<Controller> controller = std::unique_ptr<Controller>(
         new Controller(
@@ -53,7 +57,11 @@ std::unique_ptr<Controller> Controller::CreateForShip(
 {
     auto modelController = ModelController::CreateForShip(
         std::move(shipDefinition),
-        shipTexturizer);
+        shipTexturizer,
+        [&userInterface](ModelMacroProperties const & properties)
+        {
+            userInterface.OnModelMacroPropertiesUpdated(properties);
+        });
 
     std::unique_ptr<Controller> controller = std::unique_ptr<Controller>(
         new Controller(
@@ -121,7 +129,7 @@ Controller::Controller(
     mUserInterface.OnLayerPresenceChanged(mModelController->GetModel());
     mUserInterface.OnModelDirtyChanged(mModelController->GetModel());
     mUserInterface.OnUndoStackStateChanged(mUndoStack);
-    
+
     //
     // Initialize visualization
     //
@@ -175,7 +183,7 @@ void Controller::SetShipProperties(
     // Prepare undo entry
     //
 
-    auto f = 
+    auto f =
         [oldMetadata = mModelController->GetShipMetadata()
         , oldPhysicsData = mModelController->GetShipPhysicsData()
         , oldAutoTexturizationSettings = mModelController->GetShipAutoTexturizationSettings()]
@@ -395,8 +403,8 @@ void Controller::RestoreElectricalLayerForUndo(std::unique_ptr<ElectricalLayerDa
 
     WrapLikelyLayerPresenceChangingOperation<LayerType::Electrical>(
         [this, electricalLayer = std::move(electricalLayer)]() mutable
-        { 
-            mModelController->RestoreElectricalLayer(std::move(electricalLayer)); 
+        {
+            mModelController->RestoreElectricalLayer(std::move(electricalLayer));
         });
 
     // No need to update dirtyness, this is for undo
@@ -439,7 +447,7 @@ void Controller::TrimElectricalParticlesWithoutSubstratum()
                 {
                     controller.RestoreElectricalLayerRegionForUndo(std::move(clippedRegionClone), origin);
                 });
-            
+
             mUserInterface.OnUndoStackStateChanged(mUndoStack);
         }
     }
@@ -558,7 +566,7 @@ void Controller::SetTextureLayer(
             [originalLayerClone = std::move(originalLayerClone), originalTextureArtCredits = std::move(originalTextureArtCredits)](Controller & controller) mutable
             {
                 controller.RestoreTextureLayerForUndo(
-                    std::move(originalLayerClone), 
+                    std::move(originalLayerClone),
                     std::move(originalTextureArtCredits));
             });
 
@@ -1080,7 +1088,7 @@ void Controller::InternalSetLayer(wxString actionTitle, TArgs&& ... args)
     {
         // Create undo action
         InternalPushUndoForWholeLayer<LayerType::Electrical>(actionTitle);
-        
+
         // Switch visualization mode to this new one, if needed
         if (mWorkbenchState.GetPrimaryVisualization() != VisualizationType::ElectricalLayer)
         {
@@ -1092,10 +1100,10 @@ void Controller::InternalSetLayer(wxString actionTitle, TArgs&& ... args)
             [this, args = std::make_tuple(std::forward<TArgs>(args)...)]() mutable
             {
                 std::apply(
-                    [this](auto&& ... args) 
+                    [this](auto&& ... args)
                     {
                         mModelController->SetElectricalLayer(std::forward<TArgs>(args)...);
-                    }, 
+                    },
                     std::move(args));
             });
     }
@@ -1216,7 +1224,7 @@ void Controller::InternalRemoveLayer()
     {
         // Create undo action
         InternalPushUndoForWholeLayer<LayerType::Ropes>(_("Remove Ropes Layer"));
-        
+
         // Remove layer
         WrapLikelyLayerPresenceChangingOperation<TLayerType>(
             [this]()
@@ -1460,7 +1468,7 @@ void Controller::InternalReconciliateTextureVisualizationMode()
 {
     if (!mModelController->GetModel().HasLayer(LayerType::Texture))
     {
-        // If game visualization mode is the one only allowed with texture, 
+        // If game visualization mode is the one only allowed with texture,
         // change it to auto-texturization
         if (mWorkbenchState.GetGameVisualizationMode() == GameVisualizationModeType::TextureMode)
         {
@@ -1470,7 +1478,7 @@ void Controller::InternalReconciliateTextureVisualizationMode()
     }
     else
     {
-        // If game visualization mode is the one only allowed without texture, 
+        // If game visualization mode is the one only allowed without texture,
         // change it to texture
         if (mWorkbenchState.GetGameVisualizationMode() == GameVisualizationModeType::AutoTexturizationMode)
         {

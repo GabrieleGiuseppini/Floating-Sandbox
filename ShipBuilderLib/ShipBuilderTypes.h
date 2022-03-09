@@ -120,4 +120,17 @@ enum class TextureLayerVisualizationModeType
     MatteMode
 };
 
+struct ModelMacroProperties
+{
+    float TotalMass;
+    vec2f CenterOfMass;
+
+    ModelMacroProperties(
+        float totalMass,
+        vec2f centerOfMass)
+        : TotalMass(totalMass)
+        , CenterOfMass(centerOfMass)
+    {}
+};
+
 }

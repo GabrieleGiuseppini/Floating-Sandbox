@@ -20,6 +20,7 @@
 #include <GameCore/ImageData.h>
 
 #include <array>
+#include <functional>
 #include <memory>
 #include <optional>
 #include <vector>
@@ -38,11 +39,13 @@ public:
     static std::unique_ptr<ModelController> CreateNew(
         ShipSpaceSize const & shipSpaceSize,
         std::string const & shipName,
-        ShipTexturizer const & shipTexturizer);
+        ShipTexturizer const & shipTexturizer,
+        std::function<void(ModelMacroProperties const &)> && onModelMacroPropertiesUpdatedCallback);
 
     static std::unique_ptr<ModelController> CreateForShip(
         ShipDefinition && shipDefinition,
-        ShipTexturizer const & shipTexturizer);
+        ShipTexturizer const & shipTexturizer,
+        std::function<void(ModelMacroProperties const &)> && onModelMacroPropertiesUpdatedCallback);
 
     ShipDefinition MakeShipDefinition() const;
 
@@ -272,7 +275,8 @@ private:
 
     ModelController(
         Model && model,
-        ShipTexturizer const & shipTexturizer);
+        ShipTexturizer const & shipTexturizer,
+        std::function<void(ModelMacroProperties const &)> && onModelMacroPropertiesUpdatedCallback);
 
     inline ShipSpaceRect GetWholeShipRect() const
     {
@@ -284,6 +288,8 @@ private:
     void InitializeElectricalLayerAnalysis();
 
     void InitializeRopesLayerAnalysis();
+
+    void NotifyMacroPropertiesUpdate();
 
     inline void WriteParticle(
         ShipSpaceCoordinates const & coords,
@@ -302,6 +308,8 @@ private:
         RopeElement & ropeElement,
         ShipSpaceCoordinates const & oldCoords,
         ShipSpaceCoordinates const & newCoords);
+
+    bool InternalEraseRopeAt(ShipSpaceCoordinates const & coords);
 
     template<LayerType TLayer>
     std::optional<ShipSpaceRect> Flood(
@@ -339,6 +347,10 @@ private:
     // Auxiliary layers' members
     //
 
+    std::function<void(ModelMacroProperties const &)> mOnModelMacroPropertiesUpdatedCallback;
+
+    float mTotalMass;
+    vec2f mCenterOfMassSum;
 
     ElectricalElementInstanceIndexFactory mElectricalElementInstanceIndexFactory;
     size_t mElectricalParticleCount;

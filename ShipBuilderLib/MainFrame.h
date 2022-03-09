@@ -100,6 +100,8 @@ public:
 
     void OnModelDirtyChanged(Model const & model) override;
 
+    void OnModelMacroPropertiesUpdated(ModelMacroProperties const & properties) override;
+
     //
 
     void OnStructuralMaterialChanged(StructuralMaterial const * material, MaterialPlaneType plane) override;
@@ -289,8 +291,10 @@ private:
     void ReconciliateUIWithShipTitle(std::string const & shipName, bool isShipDirty);
 
     void ReconciliateUIWithLayerPresence(Model const & model);
-    
+
     void ReconciliateUIWithModelDirtiness(Model const & model);
+
+    void ReconciliateUIWithModelMacroProperties(ModelMacroProperties const & properties);
 
     //
 

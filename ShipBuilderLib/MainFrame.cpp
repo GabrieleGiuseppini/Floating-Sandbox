@@ -485,6 +485,11 @@ void MainFrame::OnModelDirtyChanged(Model const & model)
     ReconciliateUIWithModelDirtiness(model);
 }
 
+void MainFrame::OnModelMacroPropertiesUpdated(ModelMacroProperties const & properties)
+{
+    ReconciliateUIWithModelMacroProperties(properties);
+}
+
 void MainFrame::OnStructuralMaterialChanged(StructuralMaterial const * material, MaterialPlaneType plane)
 {
     ReconciliateUIWithStructuralMaterial(material, plane);
@@ -4493,6 +4498,13 @@ void MainFrame::ReconciliateUIWithModelDirtiness(Model const & model)
     }
 
     SetFrameTitle(model.GetShipMetadata().ShipName, isDirty);
+}
+
+void MainFrame::ReconciliateUIWithModelMacroProperties(ModelMacroProperties const & properties)
+{
+    mStatusBar->SetShipMass(properties.TotalMass);
+
+    // TODOHERE: center of mass marker
 }
 
 void MainFrame::ReconciliateUIWithStructuralMaterial(StructuralMaterial const * material, MaterialPlaneType plane)
