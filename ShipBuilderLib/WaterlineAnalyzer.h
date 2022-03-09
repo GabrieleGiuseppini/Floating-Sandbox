@@ -20,15 +20,12 @@ public:
     struct StaticResults
     {
         float TotalMass;
-        float TotalBuoyantForceWhenSubmersed;
         vec2f CenterOfMass; // Ship coordinates
 
         StaticResults(
             float totalMass,
-            float totalBuoyantForceWhenSubmersed,
             vec2f centerOfMass)
             : TotalMass(totalMass)
-            , TotalBuoyantForceWhenSubmersed(totalBuoyantForceWhenSubmersed)
             , CenterOfMass(centerOfMass)
         {}
     };
@@ -53,6 +50,11 @@ public:
     std::optional<StaticResults> const & GetStaticResults() const
     {
         return mStaticResults;
+    }
+
+    std::optional<float> const & GetTotalBuoyantForceWhenFullySubmerged() const
+    {
+        return mTotalBuoyantForceWhenFullySubmerged;
     }
 
     std::optional<float> const & GetTotalBuoyantForce() const
@@ -97,6 +99,7 @@ private:
     //
 
     std::optional<StaticResults> mStaticResults;
+    std::optional<float> mTotalBuoyantForceWhenFullySubmerged;
 
     std::optional<float> mTotalBuoyantForce;
     std::optional<vec2f> mCenterOfBuoyancy;

@@ -13,6 +13,7 @@
 namespace ShipBuilder {
 
 float constexpr WaterDensity = 1000.0f;
+vec2f constexpr Vertical2f = vec2f(0.0f, -1.0f); // Vertical down
 
 WaterlineAnalyzer::WaterlineAnalyzer(Model const & model)
     : mModel(model)
@@ -21,7 +22,6 @@ WaterlineAnalyzer::WaterlineAnalyzer(Model const & model)
 
 bool WaterlineAnalyzer::Update()
 {
-    vec2f constexpr Vertical = vec2f(0.0f, -1.0f); // Vertical down
     float constexpr LevelSearchStride = 2.0f;
     float constexpr LevelSearchChangeTolerance = 0.5f;
     float constexpr TorqueToDirectionRotationAngleFactor = 0.05f;
@@ -44,19 +44,49 @@ bool WaterlineAnalyzer::Update()
         }
 
         //
-        // Start search
+        // Do a first calculation of buoyancy assuming the ship is fully submersed
         //
 
-        // Initialize level search
+        vec2f centerOfBuoyancyWhenSubmersed;
+        std::tie(mTotalBuoyantForceWhenFullySubmerged, centerOfBuoyancyWhenSubmersed) = CalculateBuoyancyWithWaterline(
+            vec2f(static_cast<float>(mModel.GetShipSize().width) / 2.0f, static_cast<float>(mModel.GetShipSize().height)),
+            Vertical2f);
+
+        //
+        // Initialize search
+        //
 
         mDirectionSearchCWAngleMax = Pi<float>;
         mDirectionSearchCWAngleMin = -Pi<float>;
-        mDirectionSearchCurrent = Vertical;
 
-        std::tie(mLevelSearchLowest, mLevelSearchHighest) = CalculateLevelSearchLimits(
-            mStaticResults->CenterOfMass,
-            mDirectionSearchCurrent);
-        mLevelSearchCurrent = 0.0f;
+        if (*mTotalBuoyantForceWhenFullySubmerged < mStaticResults->TotalMass * 0.98f)
+        {
+            // This ship is sinking; we can jumpstart search by:
+            // - Initializing level search to "fully submerged"
+            // - Initializing direction as perpendicular to CoM->CoB
+
+            mDirectionSearchCurrent = (centerOfBuoyancyWhenSubmersed - mStaticResults->CenterOfMass).normalise();
+
+            std::tie(mLevelSearchLowest, mLevelSearchHighest) = CalculateLevelSearchLimits(
+                mStaticResults->CenterOfMass,
+                mDirectionSearchCurrent);
+
+            mLevelSearchCurrent = mLevelSearchHighest;
+        }
+        else
+        {
+            // This ship is (in all likelihood) floating; we then start search normally, i.e.:
+            // - Initializing level search at zero, i.e. at center of mass (likely place_
+            // - Initializing direction as fully vertical
+
+            mDirectionSearchCurrent = Vertical2f;
+
+            std::tie(mLevelSearchLowest, mLevelSearchHighest) = CalculateLevelSearchLimits(
+                mStaticResults->CenterOfMass,
+                mDirectionSearchCurrent);
+
+            mLevelSearchCurrent = 0.0f;
+        }
 
         // Continue
         return false;
@@ -149,7 +179,7 @@ bool WaterlineAnalyzer::Update()
 
         // Calculate CW angle of search direction wrt real vertical
         // (positive when search direction is CW wrt vertical)
-        float const directionVerticalAlphaCW = Vertical.angleCw(mDirectionSearchCurrent);
+        float const directionVerticalAlphaCW = Vertical2f.angleCw(mDirectionSearchCurrent);
 
         // Calculate "torque" (massless) of weight/buoyancy on CoM->CoB direction
         float const torque = mDirectionSearchCurrent.cross(newCenterOfBuoyancy - mStaticResults->CenterOfMass);
@@ -235,7 +265,6 @@ bool WaterlineAnalyzer::Update()
 WaterlineAnalyzer::StaticResults WaterlineAnalyzer::CalculateStaticResults()
 {
     float totalMass = 0.0f;
-    float totalBuoyantForceWhenSubmersed = 0.0f;
     vec2f centerOfMass = vec2f::zero();
 
     auto const & structuralLayerBuffer = mModel.GetStructuralLayer().Buffer;
@@ -248,11 +277,6 @@ WaterlineAnalyzer::StaticResults WaterlineAnalyzer::CalculateStaticResults()
             if (material != nullptr)
             {
                 totalMass += material->GetMass();
-
-                // TODOHACK: here we do the same as the simulator currently does, wrt "buoyancy volume fill".
-                // This needs to be removed once we have changed "buoyancy volume fill"
-                totalBuoyantForceWhenSubmersed += WaterDensity * material->BuoyancyVolumeFill;
-
                 centerOfMass += coords.ToFloat() * material->GetMass();
             }
         }
@@ -260,7 +284,6 @@ WaterlineAnalyzer::StaticResults WaterlineAnalyzer::CalculateStaticResults()
 
     return StaticResults(
         totalMass,
-        totalBuoyantForceWhenSubmersed,
         centerOfMass / (totalMass != 0.0f ? totalMass : 1.0f));
 }
 

@@ -279,9 +279,11 @@
 		+ Faster animation
 		+ Cleanup logging
 		+ Analysis starts in continuous play
+	+ Jumpstart waterline analyzer when sinking
+		+ Dir = normal to M->B
+		+ Test with Colored Kursks
 
 + Cleanup all builds' Data folders
-
 
 - UI: total mass and center of mass
 	- ModelController maintains structural analysis, like now

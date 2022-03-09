@@ -19,7 +19,7 @@
 
 namespace ShipBuilder {
 
-#define TrimLabelMask "---°"
+#define TrimLabelMask "---"
 #define IsFloatingLabelMask "---"
 
 WaterlineAnalyzerDialog::WaterlineAnalyzerDialog(
@@ -162,7 +162,7 @@ WaterlineAnalyzerDialog::WaterlineAnalyzerDialog(
             }
 
             {
-                mTrimLabel = new wxStaticText(this, wxID_ANY, TrimLabelMask, wxDefaultPosition, wxSize(OutcomeLabelWidth, -1), wxALIGN_RIGHT | wxBORDER_SIMPLE);
+                mTrimLabel = new wxStaticText(this, wxID_ANY, TrimLabelMask, wxDefaultPosition, wxSize(OutcomeLabelWidth, -1), wxALIGN_CENTER_HORIZONTAL | wxBORDER_SIMPLE);
 
                 {
                     auto font = GetFont();
@@ -327,6 +327,7 @@ void WaterlineAnalyzerDialog::ReconcileUIWithState()
 
     if (mCurrentState == StateType::Completed && mWaterlineAnalyzer->GetStaticResults()->TotalMass != 0.0f)
     {
+        assert(mWaterlineAnalyzer->GetTotalBuoyantForceWhenFullySubmerged().has_value());
         assert(mWaterlineAnalyzer->GetWaterline().has_value());
 
         wxColor const Green = wxColor(0, 166, 81);
@@ -334,7 +335,7 @@ void WaterlineAnalyzerDialog::ReconcileUIWithState()
 
         float const trim = -vec2f(0.0, -1.0f).angleCw(mWaterlineAnalyzer->GetWaterline()->WaterDirection);
         float visualizationControlExaggeratedTrim = trim;
-        bool const isFloating = mWaterlineAnalyzer->GetStaticResults()->TotalBuoyantForceWhenSubmersed > mWaterlineAnalyzer->GetStaticResults()->TotalMass * 1.01f;
+        bool const isFloating = mWaterlineAnalyzer->GetTotalBuoyantForceWhenFullySubmerged() > mWaterlineAnalyzer->GetStaticResults()->TotalMass * 1.01f;
 
         // Trim
         {
