@@ -55,6 +55,8 @@ set (UI_SOURCES
 	ShipResizeVisualizationControl.h
 	StatusBar.cpp
 	StatusBar.h
+	WaterlineAnalysisOutcomeVisualizationControl.cpp
+	WaterlineAnalysisOutcomeVisualizationControl.h
 	WaterlineAnalyzerDialog.cpp
 	WaterlineAnalyzerDialog.h
 )

@@ -8,6 +8,7 @@
 #include "IUserInterface.h"
 #include "Model.h"
 #include "View.h"
+#include "WaterlineAnalysisOutcomeVisualizationControl.h"
 #include "WaterlineAnalyzer.h"
 
 #include <Game/ResourceLocator.h>
@@ -47,7 +48,6 @@ private:
     void PopulateAnalysisText(
         std::optional<WaterlineAnalyzer::StaticResults> const & staticResults,
         std::optional<float> totalBuoyantForce);
-    void PopulateFinalOutcome(std::optional<WaterlineAnalyzer::FinalOutcome> const & finalOutcome);
 
     void DoStep();
 
@@ -67,7 +67,7 @@ private:
     wxBitmapButton * mPlayStepByStepButton;
     wxBitmapButton * mRewindButton;
     wxTextCtrl * mAnalysisTextCtrl;
-    wxTextCtrl * mOutcomeTextCtrl;
+    WaterlineAnalysisOutcomeVisualizationControl * mOutcomeControl;
     std::unique_ptr<wxTimer> mRefreshTimer;
 
     //

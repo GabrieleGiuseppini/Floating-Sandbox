@@ -207,6 +207,7 @@ bool WaterlineAnalyzer::Update()
             // We're done
             //
 
+            /* TODOOLD
             // Calculate final outcome
 
             float const trim = std::abs(directionVerticalAlphaCW) / Pi<float> *180.0f;
@@ -229,6 +230,7 @@ bool WaterlineAnalyzer::Update()
             }
 
             mFinalOutcome.emplace(trim, floatingState);
+            */
 
             return true;
         }

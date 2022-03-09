@@ -156,16 +156,10 @@ WaterlineAnalyzerDialog::WaterlineAnalyzerDialog(
 
         // Final outcome
         {
-            mOutcomeTextCtrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(300, -1), wxTE_READONLY | wxTE_MULTILINE | wxTE_LEFT | wxTE_RICH);
-
-            {
-                auto font = GetFont();
-                font.SetFamily(wxFONTFAMILY_TELETYPE);
-                mOutcomeTextCtrl->SetFont(font);
-            }
+            mOutcomeControl = new WaterlineAnalysisOutcomeVisualizationControl(this, resourceLocator);
 
             mainHSizer->Add(
-                mOutcomeTextCtrl,
+                mOutcomeControl,
                 0,
                 wxEXPAND | wxLEFT | wxRIGHT,
                 InterButtonMargin);
@@ -277,8 +271,19 @@ void WaterlineAnalyzerDialog::ReconcileUIWithState()
         mWaterlineAnalyzer->GetStaticResults(),
         mWaterlineAnalyzer->GetTotalBuoyantForce());
 
-    // Outcome text
-    PopulateFinalOutcome(mWaterlineAnalyzer->GetFinalOutcome());
+    // Outcome
+    if (mCurrentState == StateType::Completed && mWaterlineAnalyzer->GetStaticResults()->TotalMass != 0.0f)
+    {
+        assert(mWaterlineAnalyzer->GetWaterline().has_value());
+
+        mOutcomeControl->SetValue(
+            vec2f(0.0, -1.0f).angleCw(mWaterlineAnalyzer->GetWaterline()->WaterDirection), // TODO: heading
+            mWaterlineAnalyzer->GetStaticResults()->TotalBuoyantForceWhenSubmersed > mWaterlineAnalyzer->GetStaticResults()->TotalMass * 1.01f);
+    }
+    else
+    {
+        mOutcomeControl->Clear();
+    }
 
     // Center of mass marker
     if (mWaterlineAnalyzer->GetStaticResults().has_value() && mWaterlineAnalyzer->GetStaticResults()->TotalMass != 0.0f)
@@ -383,60 +388,6 @@ void WaterlineAnalyzerDialog::PopulateAnalysisText(
 
 #if FS_IS_OS_WINDOWS()
     mAnalysisTextCtrl->HideNativeCaret();
-#endif
-}
-
-void WaterlineAnalyzerDialog::PopulateFinalOutcome(std::optional<WaterlineAnalyzer::FinalOutcome> const & finalOutcome)
-{
-    std::stringstream ss;
-
-    if (finalOutcome.has_value())
-    {
-        if (finalOutcome->FloatingState.has_value())
-        {
-            switch (*(finalOutcome->FloatingState))
-            {
-                case WaterlineAnalyzer::FinalOutcome::FloatingStateType::Flying:
-                {
-                    ss << _("Hovering");
-                    break;
-                }
-
-                case WaterlineAnalyzer::FinalOutcome::FloatingStateType::Sinking:
-                {
-                    ss << _("Sinking");
-                    break;
-                }
-
-                case WaterlineAnalyzer::FinalOutcome::FloatingStateType::Stable:
-                {
-                    ss << _("Floating Stable");
-                    break;
-                }
-            }
-
-            ss << std::endl;
-        }
-
-        ss << _("Trim: ");
-
-        if (finalOutcome->Trim < 1.0f)
-        {
-            ss << "~0°";
-        }
-        else
-        {
-            ss << static_cast<int>(finalOutcome->Trim) << "°";
-        }
-    }
-
-    mOutcomeTextCtrl->SetValue(ss.str());
-
-    // Move focus away
-    mPlayContinuouslyButton->SetFocus();
-
-#if FS_IS_OS_WINDOWS()
-    mOutcomeTextCtrl->HideNativeCaret();
 #endif
 }
 

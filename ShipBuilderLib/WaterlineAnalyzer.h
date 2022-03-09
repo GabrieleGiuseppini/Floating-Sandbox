@@ -46,26 +46,6 @@ public:
         {}
     };
 
-    struct FinalOutcome
-    {
-        enum class FloatingStateType
-        {
-            Sinking,
-            Stable,
-            Flying
-        };
-
-        float Trim; // Absolute degrees
-        std::optional<FloatingStateType> FloatingState;
-
-        FinalOutcome(
-            float trim,
-            std::optional<FloatingStateType> floatingState)
-            : Trim(trim)
-            , FloatingState(floatingState)
-        {}
-    };
-
 public:
 
     WaterlineAnalyzer(Model const & model);
@@ -88,11 +68,6 @@ public:
     std::optional<Waterline> const & GetWaterline() const
     {
         return mWaterline;
-    }
-
-    std::optional<FinalOutcome> const & GetFinalOutcome() const
-    {
-        return mFinalOutcome;
     }
 
     /*
@@ -127,8 +102,6 @@ private:
     std::optional<vec2f> mCenterOfBuoyancy;
 
     std::optional<Waterline> mWaterline;
-
-    std::optional<FinalOutcome> mFinalOutcome;
 
     //
     // Direction: normalized vector that is normal to waterline

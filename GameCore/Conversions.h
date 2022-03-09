@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
+#include "GameMath.h"
+
 inline float MeterToFoot(float metersValue) noexcept
 {
     return metersValue * 3.28084f;
@@ -33,4 +35,9 @@ inline float KilogramToMetricTon(float kilogramValue) noexcept
 inline float KilogramToUscsTon(float kilogramValue) noexcept
 {
     return kilogramValue * 2.20462f / 2000.0f;
+}
+
+inline float RadiansCWToDegrees(float angleValue) noexcept
+{
+    return -angleValue / Pi<float> * 180.0f;
 }

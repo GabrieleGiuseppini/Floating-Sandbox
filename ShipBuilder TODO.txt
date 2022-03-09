@@ -270,7 +270,14 @@
 				+ Concrete ball
 				+ No particles
 				+ One particle
-			- Dialog: Gfx
+			= Dialog: Gfx
+				= Outcome control
+					- Double-check heading by testing with a slightly tilting ship
+					- Top indicator in image?
+				- Do we need static analysis text? How to improve it?
+					- Remove buyant force
+					- Put back trim, in degrees, but only when at end
+						- Separate moments for text ? i.e. separate controls?
 		- Faster animation
 		- Cleanup logging
 		- Shader: line on waterline interface
