@@ -66,7 +66,7 @@ void MeasuringTapeTool::OnMouseMove(DisplayLogicalCoordinates const & mouseCoord
         // Do action
         DoAction(mouseShipSpaceCoords);
     }
-    
+
     // Draw overlay
     DrawOverlay(mouseShipSpaceCoords);
 
@@ -93,7 +93,7 @@ void MeasuringTapeTool::OnLeftMouseUp()
     {
         // Disengage
         StopEngagement();
-        
+
         mUserInterface.RefreshView();
     }
 }
@@ -160,7 +160,7 @@ void MeasuringTapeTool::DoAction(ShipSpaceCoordinates const & coords)
     // Calculate length
     auto const ratio = mModelController.GetModel().GetShipMetadata().Scale;
     vec2f const v(endPoint.ToFractionalCoords(ratio) - mEngagementData->StartCoords.ToFractionalCoords(ratio));
-    mUserInterface.OnMeasuredWorldLengthChanged(static_cast<int>(std::round(v.length())) + 1);
+    mUserInterface.OnMeasuredWorldLengthChanged(static_cast<int>(std::round(v.length())));
 }
 
 void MeasuringTapeTool::StopEngagement()
