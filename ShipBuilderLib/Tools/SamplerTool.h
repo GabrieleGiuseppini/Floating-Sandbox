@@ -39,11 +39,7 @@ protected:
 
     SamplerTool(
         ToolType toolType,
-        ModelController & modelController,
-        UndoStack & undoStack,
-        WorkbenchState & workbenchState,
-        IUserInterface & userInterface,
-        View & view,
+        Controller & controller,
         ResourceLocator const & resourceLocator);
 
 private:
@@ -68,11 +64,7 @@ class StructuralSamplerTool : public SamplerTool<LayerType::Structural>
 public:
 
     StructuralSamplerTool(
-        ModelController & modelController,
-        UndoStack & undoStack,
-        WorkbenchState & workbenchState,
-        IUserInterface & userInterface,
-        View & view,
+        Controller & controller,
         ResourceLocator const & resourceLocator);
 };
 
@@ -81,11 +73,7 @@ class ElectricalSamplerTool : public SamplerTool<LayerType::Electrical>
 public:
 
     ElectricalSamplerTool(
-        ModelController & modelController,
-        UndoStack & undoStack,
-        WorkbenchState & workbenchState,
-        IUserInterface & userInterface,
-        View & view,
+        Controller & controller,
         ResourceLocator const & resourceLocator);
 };
 
@@ -94,11 +82,7 @@ class RopeSamplerTool : public SamplerTool<LayerType::Ropes>
 public:
 
     RopeSamplerTool(
-        ModelController & modelController,
-        UndoStack & undoStack,
-        WorkbenchState & workbenchState,
-        IUserInterface & userInterface,
-        View & view,
+        Controller & controller,
         ResourceLocator const & resourceLocator);
 };
 

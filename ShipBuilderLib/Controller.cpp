@@ -726,6 +726,38 @@ void Controller::ResizeShip(
         _("Resize Ship"));
 }
 
+void Controller::LayerChangeEpilog(std::optional<LayerType> dirtyLayer)
+{
+    if (dirtyLayer.has_value())
+    {
+        // Mark layer as dirty
+        mModelController->SetLayerDirty(*dirtyLayer);
+        mUserInterface.OnModelDirtyChanged(mModelController->GetModel());
+
+        // Refresh macro properties
+        auto const & modelMacroProperties = mModelController->GetModelMacroProperties();
+        mUserInterface.OnModelMacroPropertiesUpdated(modelMacroProperties);
+        if (mWorkbenchState.IsWaterlineMarkersEnabled())
+        {
+            if (modelMacroProperties.CenterOfMass.has_value())
+            {
+                mView->UploadWaterlineMarker(
+                    *modelMacroProperties.CenterOfMass,
+                    View::WaterlineMarkerType::CenterOfMass);
+            }
+            else
+            {
+                mView->RemoveWaterlineMarker(View::WaterlineMarkerType::CenterOfMass);
+            }
+        }
+    }
+
+    // Refresh visualization
+    assert(mView);
+    mModelController->UpdateVisualizations(*mView);
+    mUserInterface.RefreshView();
+}
+
 void Controller::SelectPrimaryVisualization(VisualizationType primaryVisualization)
 {
     if (primaryVisualization != mWorkbenchState.GetPrimaryVisualization())
@@ -864,46 +896,6 @@ void Controller::EnableVisualGrid(bool doEnable)
     mUserInterface.RefreshView();
 }
 
-void Controller::SetCurrentTool(std::optional<ToolType> tool)
-{
-    if (tool != mWorkbenchState.GetCurrentToolType())
-    {
-        bool const hadTool = (mCurrentTool != nullptr);
-
-        // Nuke current tool
-        mWorkbenchState.SetCurrentToolType(std::nullopt);
-        mCurrentTool.reset();
-
-        InternalSetCurrentTool(tool);
-
-        // Make new tool - unless we are suspended
-        assert(mWorkbenchState.GetCurrentToolType() == tool);
-        if (mWorkbenchState.GetCurrentToolType().has_value()
-            && hadTool)
-        {
-            mCurrentTool = MakeTool(*mWorkbenchState.GetCurrentToolType());
-        }
-    }
-}
-
-void Controller::SetStructuralMaterial(StructuralMaterial const * material, MaterialPlaneType plane)
-{
-    mWorkbenchState.SetStructuralMaterial(material, plane);
-    mUserInterface.OnStructuralMaterialChanged(material, plane);
-}
-
-void Controller::SetElectricalMaterial(ElectricalMaterial const * material, MaterialPlaneType plane)
-{
-    mWorkbenchState.SetElectricalMaterial(material, plane);
-    mUserInterface.OnElectricalMaterialChanged(material, plane);
-}
-
-void Controller::SetRopeMaterial(StructuralMaterial const * material, MaterialPlaneType plane)
-{
-    mWorkbenchState.SetRopesMaterial(material, plane);
-    mUserInterface.OnRopesMaterialChanged(material, plane);
-}
-
 void Controller::TryUndoLast()
 {
     if (!mUndoStack.IsEmpty())
@@ -1009,6 +1001,46 @@ void Controller::OnWorkCanvasResized(DisplayLogicalSize const & newSize)
 
     // Tell UI
     mUserInterface.OnViewModelChanged(mView->GetViewModel());
+}
+
+void Controller::SetCurrentTool(std::optional<ToolType> tool)
+{
+    if (tool != mWorkbenchState.GetCurrentToolType())
+    {
+        bool const hadTool = (mCurrentTool != nullptr);
+
+        // Nuke current tool
+        mWorkbenchState.SetCurrentToolType(std::nullopt);
+        mCurrentTool.reset();
+
+        InternalSetCurrentTool(tool);
+
+        // Make new tool - unless we are suspended
+        assert(mWorkbenchState.GetCurrentToolType() == tool);
+        if (mWorkbenchState.GetCurrentToolType().has_value()
+            && hadTool)
+        {
+            mCurrentTool = MakeTool(*mWorkbenchState.GetCurrentToolType());
+        }
+    }
+}
+
+void Controller::SetStructuralMaterial(StructuralMaterial const * material, MaterialPlaneType plane)
+{
+    mWorkbenchState.SetStructuralMaterial(material, plane);
+    mUserInterface.OnStructuralMaterialChanged(material, plane);
+}
+
+void Controller::SetElectricalMaterial(ElectricalMaterial const * material, MaterialPlaneType plane)
+{
+    mWorkbenchState.SetElectricalMaterial(material, plane);
+    mUserInterface.OnElectricalMaterialChanged(material, plane);
+}
+
+void Controller::SetRopeMaterial(StructuralMaterial const * material, MaterialPlaneType plane)
+{
+    mWorkbenchState.SetRopesMaterial(material, plane);
+    mUserInterface.OnRopesMaterialChanged(material, plane);
 }
 
 void Controller::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates)
@@ -1627,143 +1659,91 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
         case ToolType::ElectricalEraser:
         {
             return std::make_unique<ElectricalEraserTool>(
-                *mModelController,
-                mUndoStack,
-                mWorkbenchState,
-                mUserInterface,
-                *mView,
+                *this,
                 mResourceLocator);
         }
 
         case ToolType::ElectricalLine:
         {
             return std::make_unique<ElectricalLineTool>(
-                *mModelController,
-                mUndoStack,
-                mWorkbenchState,
-                mUserInterface,
-                *mView,
+                *this,
                 mResourceLocator);
         }
 
         case ToolType::ElectricalPencil:
         {
             return std::make_unique<ElectricalPencilTool>(
-                *mModelController,
-                mUndoStack,
-                mWorkbenchState,
-                mUserInterface,
-                *mView,
+                *this,
                 mResourceLocator);
         }
 
         case ToolType::ElectricalSampler:
         {
             return std::make_unique<ElectricalSamplerTool>(
-                *mModelController,
-                mUndoStack,
-                mWorkbenchState,
-                mUserInterface,
-                *mView,
+                *this,
                 mResourceLocator);
         }
 
         case ToolType::StructuralEraser:
         {
             return std::make_unique<StructuralEraserTool>(
-                *mModelController,
-                mUndoStack,
-                mWorkbenchState,
-                mUserInterface,
-                *mView,
+                *this,
                 mResourceLocator);
         }
 
         case ToolType::StructuralFlood:
         {
             return std::make_unique<StructuralFloodTool>(
-                *mModelController,
-                mUndoStack,
-                mWorkbenchState,
-                mUserInterface,
-                *mView,
+                *this,
                 mResourceLocator);
         }
 
         case ToolType::StructuralLine:
         {
             return std::make_unique<StructuralLineTool>(
-                *mModelController,
-                mUndoStack,
-                mWorkbenchState,
-                mUserInterface,
-                *mView,
+                *this,
                 mResourceLocator);
         }
 
         case ToolType::StructuralMeasuringTapeTool:
         {
             return std::make_unique<MeasuringTapeTool>(
-                *mModelController,
-                mUndoStack,
-                mWorkbenchState,
-                mUserInterface,
-                *mView,
+                *this,
                 mResourceLocator);
         }
 
         case ToolType::StructuralPencil:
         {
             return std::make_unique<StructuralPencilTool>(
-                *mModelController,
-                mUndoStack,
-                mWorkbenchState,
-                mUserInterface,
-                *mView,
+                *this,
                 mResourceLocator);
         }
 
         case ToolType::StructuralSampler:
         {
             return std::make_unique<StructuralSamplerTool>(
-                *mModelController,
-                mUndoStack,
-                mWorkbenchState,
-                mUserInterface,
-                *mView,
+                *this,
                 mResourceLocator);
         }
 
         case ToolType::RopePencil:
         {
             return std::make_unique<RopePencilTool>(
-                *mModelController,
-                mUndoStack,
-                mWorkbenchState,
-                mUserInterface,
-                *mView,
+                *this,
                 mResourceLocator);
         }
 
         case ToolType::RopeEraser:
         {
             return std::make_unique<RopeEraserTool>(
-                *mModelController,
-                mUndoStack,
-                mWorkbenchState,
-                mUserInterface,
-                *mView,
+                *this,
                 mResourceLocator);
         }
 
         case ToolType::RopeSampler:
         {
             return std::make_unique<RopeSamplerTool>(
-                *mModelController,
-                mUndoStack,
-                mWorkbenchState,
-                mUserInterface,
-                *mView,
+                *this,
                 mResourceLocator);
         }
     }

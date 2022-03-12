@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "Model.h"
 #include "Tool.h"
 
 #include <Game/Layers.h>
@@ -38,11 +39,7 @@ protected:
 
     PencilTool(
         ToolType toolType,
-        ModelController & modelController,
-        UndoStack & undoStack,
-        WorkbenchState & workbenchState,
-        IUserInterface & userInterface,
-        View & view,
+        Controller & controller,
         ResourceLocator const & resourceLocator);
 
 private:
@@ -122,11 +119,7 @@ class StructuralPencilTool : public PencilTool<LayerType::Structural, false>
 public:
 
     StructuralPencilTool(
-        ModelController & modelController,
-        UndoStack & undoStack,
-        WorkbenchState & workbenchState,
-        IUserInterface & userInterface,
-        View & view,
+        Controller & controller,
         ResourceLocator const & resourceLocator);
 };
 
@@ -135,11 +128,7 @@ class ElectricalPencilTool : public PencilTool<LayerType::Electrical, false>
 public:
 
     ElectricalPencilTool(
-        ModelController & modelController,
-        UndoStack & undoStack,
-        WorkbenchState & workbenchState,
-        IUserInterface & userInterface,
-        View & view,
+        Controller & controller,
         ResourceLocator const & resourceLocator);
 };
 
@@ -148,11 +137,7 @@ class StructuralEraserTool : public PencilTool<LayerType::Structural, true>
 public:
 
     StructuralEraserTool(
-        ModelController & modelController,
-        UndoStack & undoStack,
-        WorkbenchState & workbenchState,
-        IUserInterface & userInterface,
-        View & view,
+        Controller & controller,
         ResourceLocator const & resourceLocator);
 };
 
@@ -161,11 +146,7 @@ class ElectricalEraserTool : public PencilTool<LayerType::Electrical, true>
 public:
 
     ElectricalEraserTool(
-        ModelController & modelController,
-        UndoStack & undoStack,
-        WorkbenchState & workbenchState,
-        IUserInterface & userInterface,
-        View & view,
+        Controller & controller,
         ResourceLocator const & resourceLocator);
 };
 

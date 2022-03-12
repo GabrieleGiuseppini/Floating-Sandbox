@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "Model.h"
 #include "Tool.h"
 
 #include <Game/Layers.h>
@@ -40,11 +41,7 @@ protected:
 
     LineTool(
         ToolType toolType,
-        ModelController & modelController,
-        UndoStack & undoStack,
-        WorkbenchState & workbenchState,
-        IUserInterface & userInterface,
-        View & view,
+        Controller & controller,
         ResourceLocator const & resourceLocator);
 
 private:
@@ -121,11 +118,7 @@ class StructuralLineTool : public LineTool<LayerType::Structural>
 public:
 
     StructuralLineTool(
-        ModelController & modelController,
-        UndoStack & undoStack,
-        WorkbenchState & workbenchState,
-        IUserInterface & userInterface,
-        View & view,
+        Controller & controller,
         ResourceLocator const & resourceLocator);
 };
 
@@ -134,11 +127,7 @@ class ElectricalLineTool : public LineTool<LayerType::Electrical>
 public:
 
     ElectricalLineTool(
-        ModelController & modelController,
-        UndoStack & undoStack,
-        WorkbenchState & workbenchState,
-        IUserInterface & userInterface,
-        View & view,
+        Controller & controller,
         ResourceLocator const & resourceLocator);
 };
 

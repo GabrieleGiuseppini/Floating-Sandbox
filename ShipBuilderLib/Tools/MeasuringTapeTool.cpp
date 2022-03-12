@@ -14,19 +14,11 @@
 namespace ShipBuilder {
 
 MeasuringTapeTool::MeasuringTapeTool(
-    ModelController & modelController,
-    UndoStack & undoStack,
-    WorkbenchState & workbenchState,
-    IUserInterface & userInterface,
-    View & view,
+    Controller & controller,
     ResourceLocator const & resourceLocator)
     : Tool(
         ToolType::StructuralMeasuringTapeTool,
-        modelController,
-        undoStack,
-        workbenchState,
-        userInterface,
-        view)
+        controller)
     , mIsShiftDown(false)
     , mHasOverlay(false)
     , mEngagementData()
@@ -34,11 +26,11 @@ MeasuringTapeTool::MeasuringTapeTool(
     SetCursor(WxHelpers::LoadCursorImage("measuring_tape_cursor", 0, 25, resourceLocator));
 
     // Check if we draw the overlay right away
-    auto const mouseCoordinates = mUserInterface.GetMouseCoordinatesIfInWorkCanvas();
+    auto const mouseCoordinates = GetMouseCoordinatesIfInWorkCanvas();
     if (mouseCoordinates)
     {
         DrawOverlay(ClipToWorkCanvas(ScreenToShipSpace(*mouseCoordinates)));
-        mUserInterface.RefreshView();
+        mController.GetUserInterface().RefreshView();
     }
 }
 
@@ -54,7 +46,7 @@ MeasuringTapeTool::~MeasuringTapeTool()
         StopEngagement();
     }
 
-    mUserInterface.RefreshView();
+    mController.GetUserInterface().RefreshView();
 }
 
 void MeasuringTapeTool::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates)
@@ -70,7 +62,7 @@ void MeasuringTapeTool::OnMouseMove(DisplayLogicalCoordinates const & mouseCoord
     // Draw overlay
     DrawOverlay(mouseShipSpaceCoords);
 
-    mUserInterface.RefreshView();
+    mController.GetUserInterface().RefreshView();
 }
 
 void MeasuringTapeTool::OnLeftMouseDown()
@@ -83,7 +75,7 @@ void MeasuringTapeTool::OnLeftMouseDown()
     // Do action
     DoAction(shipSpaceMouseCoords);
 
-    mUserInterface.RefreshView();
+    mController.GetUserInterface().RefreshView();
 }
 
 void MeasuringTapeTool::OnLeftMouseUp()
@@ -94,7 +86,7 @@ void MeasuringTapeTool::OnLeftMouseUp()
         // Disengage
         StopEngagement();
 
-        mUserInterface.RefreshView();
+        mController.GetUserInterface().RefreshView();
     }
 }
 
@@ -106,7 +98,7 @@ void MeasuringTapeTool::OnShiftKeyDown()
     {
         DoAction(ClipToWorkCanvas(GetCurrentMouseCoordinatesInShipSpace()));
 
-        mUserInterface.RefreshView();
+        mController.GetUserInterface().RefreshView();
     }
 }
 
@@ -118,7 +110,7 @@ void MeasuringTapeTool::OnShiftKeyUp()
     {
         DoAction(ClipToWorkCanvas(GetCurrentMouseCoordinatesInShipSpace()));
 
-        mUserInterface.RefreshView();
+        mController.GetUserInterface().RefreshView();
     }
 }
 
@@ -152,31 +144,31 @@ void MeasuringTapeTool::DoAction(ShipSpaceCoordinates const & coords)
         }
     }
 
-    mView.UploadDashedLineOverlay(
+    mController.GetView().UploadDashedLineOverlay(
         mEngagementData->StartCoords,
         endPoint,
         View::OverlayMode::Default);
 
     // Calculate length
-    auto const ratio = mModelController.GetModel().GetShipMetadata().Scale;
+    auto const ratio = mController.GetModel().GetShipMetadata().Scale;
     vec2f const v(endPoint.ToFractionalCoords(ratio) - mEngagementData->StartCoords.ToFractionalCoords(ratio));
-    mUserInterface.OnMeasuredWorldLengthChanged(static_cast<int>(std::round(v.length())));
+    mController.GetUserInterface().OnMeasuredWorldLengthChanged(static_cast<int>(std::round(v.length())));
 }
 
 void MeasuringTapeTool::StopEngagement()
 {
     assert(mEngagementData.has_value());
 
-    mView.RemoveDashedLineOverlay();
+    mController.GetView().RemoveDashedLineOverlay();
 
-    mUserInterface.OnMeasuredWorldLengthChanged(std::nullopt);
+    mController.GetUserInterface().OnMeasuredWorldLengthChanged(std::nullopt);
 
     mEngagementData.reset();
 }
 
 void MeasuringTapeTool::DrawOverlay(ShipSpaceCoordinates const & coords)
 {
-    mView.UploadCircleOverlay(
+    mController.GetView().UploadCircleOverlay(
         coords,
         View::OverlayMode::Default);
 
@@ -187,7 +179,7 @@ void MeasuringTapeTool::HideOverlay()
 {
     assert(mHasOverlay);
 
-    mView.RemoveCircleOverlay();
+    mController.GetView().RemoveCircleOverlay();
 
     mHasOverlay = false;
 }
@@ -195,8 +187,8 @@ void MeasuringTapeTool::HideOverlay()
 ShipSpaceCoordinates MeasuringTapeTool::ClipToWorkCanvas(ShipSpaceCoordinates const & coords) const
 {
     return ShipSpaceCoordinates(
-        Clamp(coords.x, 0, mModelController.GetModel().GetShipSize().width - 1),
-        Clamp(coords.y, 0, mModelController.GetModel().GetShipSize().height - 1));
+        Clamp(coords.x, 0, mController.GetModel().GetShipSize().width - 1),
+        Clamp(coords.y, 0, mController.GetModel().GetShipSize().height - 1));
 }
 
 }

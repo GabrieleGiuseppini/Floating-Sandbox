@@ -14,19 +14,11 @@
 namespace ShipBuilder {
 
 RopePencilTool::RopePencilTool(
-    ModelController & modelController,
-    UndoStack & undoStack,
-    WorkbenchState & workbenchState,
-    IUserInterface & userInterface,
-    View & view,
+    Controller & controller,
     ResourceLocator const & resourceLocator)
     : Tool(
         ToolType::RopePencil,
-        modelController,
-        undoStack,
-        workbenchState,
-        userInterface,
-        view)
+        controller)
     , mHasTempVisualization(false)
     , mHasOverlay(false)
     , mEngagementData()
@@ -34,12 +26,12 @@ RopePencilTool::RopePencilTool(
     SetCursor(WxHelpers::LoadCursorImage("pencil_cursor", 2, 22, resourceLocator));
 
     // Check overlay
-    auto const mouseCoordinates = mUserInterface.GetMouseCoordinatesIfInWorkCanvas();
+    auto const mouseCoordinates = GetMouseCoordinatesIfInWorkCanvas();
     if (mouseCoordinates)
     {
         DrawOverlay(ScreenToShipSpace(*mouseCoordinates));
 
-        mUserInterface.RefreshView();
+        mController.GetUserInterface().RefreshView();
     }
 }
 
@@ -59,8 +51,7 @@ RopePencilTool::~RopePencilTool()
         HideOverlay();
     }
 
-    mModelController.UpdateVisualizations(mView);
-    mUserInterface.RefreshView();
+    mController.LayerChangeEpilog();
 }
 
 void RopePencilTool::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates)
@@ -84,8 +75,7 @@ void RopePencilTool::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordina
         DoTempVisualization(mouseShipSpaceCoords);
     }
 
-    mModelController.UpdateVisualizations(mView);
-    mUserInterface.RefreshView();
+    mController.LayerChangeEpilog();
 }
 
 void RopePencilTool::OnLeftMouseDown()
@@ -114,8 +104,7 @@ void RopePencilTool::OnLeftMouseDown()
 
     // Leave overlay
 
-    mModelController.UpdateVisualizations(mView);
-    mUserInterface.RefreshView();
+    mController.LayerChangeEpilog();
 }
 
 void RopePencilTool::OnLeftMouseUp()
@@ -131,9 +120,10 @@ void RopePencilTool::OnLeftMouseUp()
     ShipSpaceCoordinates const mouseCoordinates = GetCurrentMouseCoordinatesInShipSpace();
 
     // Check if should stop engagement
+    bool hasEdited = false;
     if (mEngagementData.has_value())
     {
-        CommmitAndStopEngagement(mouseCoordinates);
+        hasEdited = CommmitAndStopEngagement(mouseCoordinates);
     }
 
     // No ephemeral visualization
@@ -141,8 +131,7 @@ void RopePencilTool::OnLeftMouseUp()
 
     // Leave overlay
 
-    mModelController.UpdateVisualizations(mView);
-    mUserInterface.RefreshView();
+    mController.LayerChangeEpilog(hasEdited ? LayerType::Ropes : std::optional<LayerType>());
 }
 
 void RopePencilTool::OnRightMouseDown()
@@ -171,8 +160,7 @@ void RopePencilTool::OnRightMouseDown()
 
     // Leave overlay
 
-    mModelController.UpdateVisualizations(mView);
-    mUserInterface.RefreshView();
+    mController.LayerChangeEpilog();
 }
 
 void RopePencilTool::OnRightMouseUp()
@@ -188,9 +176,10 @@ void RopePencilTool::OnRightMouseUp()
     ShipSpaceCoordinates const mouseCoordinates = GetCurrentMouseCoordinatesInShipSpace();
 
     // Check if should stop engagement
+    bool hasEdited = false;
     if (mEngagementData.has_value())
     {
-        CommmitAndStopEngagement(mouseCoordinates);
+        hasEdited = CommmitAndStopEngagement(mouseCoordinates);
     }
 
     // No ephemeral visualization
@@ -198,8 +187,7 @@ void RopePencilTool::OnRightMouseUp()
 
     // Leave overlay
 
-    mModelController.UpdateVisualizations(mView);
-    mUserInterface.RefreshView();
+    mController.LayerChangeEpilog(hasEdited ? LayerType::Ropes : std::optional<LayerType>());
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -213,17 +201,17 @@ void RopePencilTool::CheckEngagement(
     //  - If outside ship rect : No engagement
     //  - Else: always OK to engage - either for new rope or for moving
 
-    if (coords.IsInSize(mModelController.GetModel().GetShipSize()))
+    if (coords.IsInSize(mController.GetShipSize()))
     {
         //
         // OK to engage
         //
 
         mEngagementData.emplace(
-            mModelController.GetModel().CloneExistingLayer<LayerType::Ropes>(),
-            mModelController.GetModel().GetDirtyState(),
+            mController.GetModel().CloneExistingLayer<LayerType::Ropes>(),
+            mController.GetDirtyState(),
             coords,
-            mModelController.GetRopeElementIndexAt(coords),
+            mController.GetModelController().GetRopeElementIndexAt(coords),
             materialPlane);
     }
 }
@@ -238,21 +226,21 @@ void RopePencilTool::DoTempVisualization(ShipSpaceCoordinates const & coords)
     // Check conditions for doing action:
     //  - If outside ship rect : NO
     //  - Else: may release only if there's no other rope endpoint at that position
-    // 
+    //
 
-    if (coords.IsInSize(mModelController.GetModel().GetShipSize())
-        && !mModelController.GetRopeElementIndexAt(coords).has_value())
+    if (coords.IsInSize(mController.GetShipSize())
+        && !mController.GetModelController().GetRopeElementIndexAt(coords).has_value())
     {
         if (!mEngagementData->ExistingRopeElementIndex.has_value())
         {
-            mModelController.AddRopeForEphemeralVisualization(
+            mController.GetModelController().AddRopeForEphemeralVisualization(
                 mEngagementData->StartCoords,
                 coords,
                 GetMaterial(mEngagementData->Plane));
         }
         else
         {
-            mModelController.MoveRopeEndpointForEphemeralVisualization(
+            mController.GetModelController().MoveRopeEndpointForEphemeralVisualization(
                 *mEngagementData->ExistingRopeElementIndex,
                 mEngagementData->StartCoords,
                 coords);
@@ -268,12 +256,12 @@ void RopePencilTool::MendTempVisualization()
 
     assert(mEngagementData.has_value());
 
-    mModelController.RestoreRopesLayerForEphemeralVisualization(mEngagementData->OriginalLayerClone);
+    mController.GetModelController().RestoreRopesLayerForEphemeralVisualization(mEngagementData->OriginalLayerClone);
 
     mHasTempVisualization = false;
 }
 
-void RopePencilTool::CommmitAndStopEngagement(ShipSpaceCoordinates const & coords)
+bool RopePencilTool::CommmitAndStopEngagement(ShipSpaceCoordinates const & coords)
 {
     assert(mEngagementData.has_value());
 
@@ -284,10 +272,12 @@ void RopePencilTool::CommmitAndStopEngagement(ShipSpaceCoordinates const & coord
     //  - If same coords as startL NO
     //  - If outside ship rect : NO
     //  - Else: may release only if there's no other rope endpoint at that position
-    // 
+    //
 
-    if (coords.IsInSize(mModelController.GetModel().GetShipSize())
-        && !mModelController.GetRopeElementIndexAt(coords).has_value()
+    bool hasEdited = false;
+
+    if (coords.IsInSize(mController.GetShipSize())
+        && !mController.GetModelController().GetRopeElementIndexAt(coords).has_value()
         && coords != mEngagementData->StartCoords)
     {
         //
@@ -298,26 +288,23 @@ void RopePencilTool::CommmitAndStopEngagement(ShipSpaceCoordinates const & coord
         {
             if (!mEngagementData->ExistingRopeElementIndex.has_value())
             {
-                mModelController.AddRope(
+                mController.GetModelController().AddRope(
                     mEngagementData->StartCoords,
                     coords,
                     GetMaterial(mEngagementData->Plane));
             }
             else
             {
-                mModelController.MoveRopeEndpoint(
+                mController.GetModelController().MoveRopeEndpoint(
                     *mEngagementData->ExistingRopeElementIndex,
                     mEngagementData->StartCoords,
                     coords);
             }
         }
 
-        // Mark layer as dirty
-        SetLayerDirty(LayerType::Ropes);
-
         // Create undo action
         {
-            PushUndoAction(
+            mController.StoreUndoAction(
                 _("Pencil Ropes"),
                 mEngagementData->OriginalLayerClone.Buffer.GetSize() * sizeof(RopeElement),
                 mEngagementData->OriginalDirtyState,
@@ -326,6 +313,8 @@ void RopePencilTool::CommmitAndStopEngagement(ShipSpaceCoordinates const & coord
                     controller.RestoreRopesLayerForUndo(std::make_unique<RopesLayerData>(std::move(originalLayerClone)));
                 });
         }
+
+        hasEdited = true;
     }
 
     //
@@ -333,6 +322,8 @@ void RopePencilTool::CommmitAndStopEngagement(ShipSpaceCoordinates const & coord
     //
 
     mEngagementData.reset();
+
+    return hasEdited;
 }
 
 void RopePencilTool::DrawOverlay(ShipSpaceCoordinates const & coords)
@@ -342,8 +333,8 @@ void RopePencilTool::DrawOverlay(ShipSpaceCoordinates const & coords)
     //      - May release only if there's no other rope endpoint at that position
     //  - Else(!engaged) : check if OK to engage
     //      - Always
-    
-    if (!coords.IsInSize(mModelController.GetModel().GetShipSize()))
+
+    if (!coords.IsInSize(mController.GetShipSize()))
     {
         if (mHasOverlay)
         {
@@ -356,7 +347,7 @@ void RopePencilTool::DrawOverlay(ShipSpaceCoordinates const & coords)
         if (mEngagementData.has_value())
         {
             // May release only if there's no other rope endpoint at that position
-            auto const existingRopeElementIndex = mModelController.GetRopeElementIndexAt(coords);
+            auto const existingRopeElementIndex = mController.GetModelController().GetRopeElementIndexAt(coords);
             if (!existingRopeElementIndex.has_value()
                 || existingRopeElementIndex == mEngagementData->ExistingRopeElementIndex)
             {
@@ -373,7 +364,7 @@ void RopePencilTool::DrawOverlay(ShipSpaceCoordinates const & coords)
             overlayMode = View::OverlayMode::Default;
         }
 
-        mView.UploadCircleOverlay(
+        mController.GetView().UploadCircleOverlay(
             coords,
             overlayMode);
 
@@ -383,7 +374,7 @@ void RopePencilTool::DrawOverlay(ShipSpaceCoordinates const & coords)
 
 void RopePencilTool::HideOverlay()
 {
-    mView.RemoveCircleOverlay();
+    mController.GetView().RemoveCircleOverlay();
 
     mHasOverlay = false;
 }
@@ -392,13 +383,13 @@ inline StructuralMaterial const * RopePencilTool::GetMaterial(MaterialPlaneType 
 {
     if (plane == MaterialPlaneType::Foreground)
     {
-        return mWorkbenchState.GetRopesForegroundMaterial();
+        return mController.GetWorkbenchState().GetRopesForegroundMaterial();
     }
     else
     {
         assert(plane == MaterialPlaneType::Background);
 
-        return mWorkbenchState.GetRopesBackgroundMaterial();
+        return mController.GetWorkbenchState().GetRopesBackgroundMaterial();
     }
 }
 

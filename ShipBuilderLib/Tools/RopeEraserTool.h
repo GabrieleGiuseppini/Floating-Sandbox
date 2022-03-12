@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "Model.h"
 #include "Tool.h"
 
 #include <Game/Layers.h>
@@ -22,11 +23,7 @@ class RopeEraserTool : public Tool
 public:
 
     RopeEraserTool(
-        ModelController & modelController,
-        UndoStack & undoStack,
-        WorkbenchState & workbenchState,
-        IUserInterface & userInterface,
-        View & view,
+        Controller & controller,
         ResourceLocator const & resourceLocator);
 
     virtual ~RopeEraserTool();

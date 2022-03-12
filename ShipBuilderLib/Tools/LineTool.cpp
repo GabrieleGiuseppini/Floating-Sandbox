@@ -14,56 +14,32 @@
 namespace ShipBuilder {
 
 StructuralLineTool::StructuralLineTool(
-    ModelController & modelController,
-    UndoStack & undoStack,
-    WorkbenchState & workbenchState,
-    IUserInterface & userInterface,
-    View & view,
+    Controller & controller,
     ResourceLocator const & resourceLocator)
     : LineTool(
         ToolType::StructuralLine,
-        modelController,
-        undoStack,
-        workbenchState,
-        userInterface,
-        view,
+        controller,
         resourceLocator)
 {}
 
 ElectricalLineTool::ElectricalLineTool(
-    ModelController & modelController,
-    UndoStack & undoStack,
-    WorkbenchState & workbenchState,
-    IUserInterface & userInterface,
-    View & view,
+    Controller & controller,
     ResourceLocator const & resourceLocator)
     : LineTool(
         ToolType::ElectricalLine,
-        modelController,
-        undoStack,
-        workbenchState,
-        userInterface,
-        view,
+        controller,
         resourceLocator)
 {}
 
 template<LayerType TLayer>
 LineTool<TLayer>::LineTool(
     ToolType toolType,
-    ModelController & modelController,
-    UndoStack & undoStack,
-    WorkbenchState & workbenchState,
-    IUserInterface & userInterface,
-    View & view,
+    Controller & controller,
     ResourceLocator const & resourceLocator)
     : Tool(
         toolType,
-        modelController,
-        undoStack,
-        workbenchState,
-        userInterface,
-        view)
-    , mOriginalLayerClone(modelController.GetModel().CloneExistingLayer<TLayer>())
+        controller)
+    , mOriginalLayerClone(mController.GetModel().CloneExistingLayer<TLayer>())
     , mEphemeralVisualization()
     , mEngagementData()
     , mIsShiftDown(false)
@@ -72,14 +48,12 @@ LineTool<TLayer>::LineTool(
     SetCursor(cursorImage);
 
     // Check if we need to immediately do an ephemeral visualization
-    auto const mouseCoordinates = mUserInterface.GetMouseCoordinatesIfInWorkCanvas();
+    auto const mouseCoordinates = GetMouseCoordinatesIfInWorkCanvas();
     if (mouseCoordinates)
     {
         DoEphemeralVisualization(ScreenToShipSpace(*mouseCoordinates));
 
-        // Visualize
-        mModelController.UpdateVisualizations(mView);
-        mUserInterface.RefreshView();
+        mController.LayerChangeEpilog();
     }
 }
 
@@ -91,9 +65,7 @@ LineTool<TLayer>::~LineTool()
     {
         mEphemeralVisualization.reset();
 
-        // Visualize
-        mModelController.UpdateVisualizations(mView);
-        mUserInterface.RefreshView();
+        mController.LayerChangeEpilog();
     }
 }
 
@@ -108,9 +80,7 @@ void LineTool<TLayer>::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordi
     // Do ephemeral visualization
     DoEphemeralVisualization(ScreenToShipSpace(mouseCoordinates));
 
-    // Visualize
-    mModelController.UpdateVisualizations(mView);
-    mUserInterface.RefreshView();
+    mController.LayerChangeEpilog();
 }
 
 template<LayerType TLayer>
@@ -132,9 +102,7 @@ void LineTool<TLayer>::OnLeftMouseDown()
     // Do ephemeral visualization
     DoEphemeralVisualization(mouseCoordinates);
 
-    // Visualize
-    mModelController.UpdateVisualizations(mView);
-    mUserInterface.RefreshView();
+    mController.LayerChangeEpilog();
 }
 
 template<LayerType TLayer>
@@ -156,9 +124,7 @@ void LineTool<TLayer>::OnLeftMouseUp()
     // Do ephemeral visualization
     DoEphemeralVisualization(mouseCoordinates);
 
-    // Visualize
-    mModelController.UpdateVisualizations(mView);
-    mUserInterface.RefreshView();
+    mController.LayerChangeEpilog();
 }
 
 template<LayerType TLayer>
@@ -180,9 +146,7 @@ void LineTool<TLayer>::OnRightMouseDown()
     // Do ephemeral visualization
     DoEphemeralVisualization(mouseCoordinates);
 
-    // Visualize
-    mModelController.UpdateVisualizations(mView);
-    mUserInterface.RefreshView();
+    mController.LayerChangeEpilog();
 }
 
 template<LayerType TLayer>
@@ -204,9 +168,7 @@ void LineTool<TLayer>::OnRightMouseUp()
     // Do ephemeral visualization
     DoEphemeralVisualization(mouseCoordinates);
 
-    // Visualize
-    mModelController.UpdateVisualizations(mView);
-    mUserInterface.RefreshView();
+    mController.LayerChangeEpilog();
 }
 
 template<LayerType TLayer>
@@ -220,9 +182,7 @@ void LineTool<TLayer>::OnShiftKeyDown()
     // Do ephemeral visualization
     DoEphemeralVisualization(GetCurrentMouseCoordinatesInShipSpace());
 
-    // Visualize
-    mModelController.UpdateVisualizations(mView);
-    mUserInterface.RefreshView();
+    mController.LayerChangeEpilog();
 }
 
 template<LayerType TLayer>
@@ -236,9 +196,7 @@ void LineTool<TLayer>::OnShiftKeyUp()
     // Do ephemeral visualization
     DoEphemeralVisualization(GetCurrentMouseCoordinatesInShipSpace());
 
-    // Visualize
-    mModelController.UpdateVisualizations(mView);
-    mUserInterface.RefreshView();
+    mController.LayerChangeEpilog();
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -251,7 +209,7 @@ void LineTool<TLayer>::StartEngagement(
     assert(!mEngagementData);
 
     mEngagementData.emplace(
-        mModelController.GetModel().GetDirtyState(),
+        mController.GetDirtyState(),
         mouseCoordinates,
         plane);
 }
@@ -293,18 +251,12 @@ void LineTool<TLayer>::EndEngagement(ShipSpaceCoordinates const & mouseCoordinat
     if (resultantEffectiveRect.has_value())
     {
         //
-        // Mark layer as dirty
-        //
-
-        SetLayerDirty(TLayer);
-
-        //
         // Create undo action
         //
 
         auto clippedLayerClone = mOriginalLayerClone.Clone(*resultantEffectiveRect);
 
-        PushUndoAction(
+        mController.StoreUndoAction(
             TLayer == LayerType::Structural ? _("Line Structural") : _("Line Electrical"),
             clippedLayerClone.Buffer.GetByteSize(),
             mEngagementData->OriginalDirtyState,
@@ -321,6 +273,9 @@ void LineTool<TLayer>::EndEngagement(ShipSpaceCoordinates const & mouseCoordinat
                     controller.RestoreElectricalLayerRegionForUndo(std::move(clippedLayerClone), origin);
                 }
             });
+
+        // Epilog (if no applicable rect then we haven't changed anything, not even eph viz)
+        mController.LayerChangeEpilog(TLayer);
     }
 
     //
@@ -333,7 +288,7 @@ void LineTool<TLayer>::EndEngagement(ShipSpaceCoordinates const & mouseCoordinat
     // Re-take original layer clone
     //
 
-    mOriginalLayerClone = mModelController.GetModel().CloneExistingLayer<TLayer>();
+    mOriginalLayerClone = mController.GetModel().CloneExistingLayer<TLayer>();
 }
 
 template<LayerType TLayer>
@@ -377,7 +332,7 @@ void LineTool<TLayer>::DoEphemeralVisualization(ShipSpaceCoordinates const & mou
                 }
             });
 
-        mView.UploadDashedLineOverlay(
+        mController.GetView().UploadDashedLineOverlay(
             mEngagementData->StartCoords,
             mouseCoordinates,
             resultantOverlayMode);
@@ -390,7 +345,7 @@ void LineTool<TLayer>::DoEphemeralVisualization(ShipSpaceCoordinates const & mou
                 {
                     if constexpr (TLayer == LayerType::Structural)
                     {
-                        mModelController.RestoreStructuralLayerRegionForEphemeralVisualization(
+                        mController.GetModelController().RestoreStructuralLayerRegionForEphemeralVisualization(
                             mOriginalLayerClone,
                             *resultantEffectiveRect,
                             resultantEffectiveRect->origin);
@@ -399,20 +354,20 @@ void LineTool<TLayer>::DoEphemeralVisualization(ShipSpaceCoordinates const & mou
                     {
                         static_assert(TLayer == LayerType::Electrical);
 
-                        mModelController.RestoreElectricalLayerRegionForEphemeralVisualization(
+                        mController.GetModelController().RestoreElectricalLayerRegionForEphemeralVisualization(
                             mOriginalLayerClone,
                             *resultantEffectiveRect,
                             resultantEffectiveRect->origin);
                     }
                 }
 
-                mView.RemoveDashedLineOverlay();
+                mController.GetView().RemoveDashedLineOverlay();
             });
     }
     else
     {
         //
-        // Temp viz with block fill + rect overlay 
+        // Temp viz with block fill + rect overlay
         //
 
         // No mouse button information, hence choosing foreground plane arbitrarily
@@ -422,7 +377,7 @@ void LineTool<TLayer>::DoEphemeralVisualization(ShipSpaceCoordinates const & mou
 
         if (effectiveRect.has_value())
         {
-            mView.UploadRectOverlay(
+            mController.GetView().UploadRectOverlay(
                 *effectiveRect,
                 hasEdited ? View::OverlayMode::Default : View::OverlayMode::Error);
 
@@ -434,7 +389,7 @@ void LineTool<TLayer>::DoEphemeralVisualization(ShipSpaceCoordinates const & mou
                     {
                         if constexpr (TLayer == LayerType::Structural)
                         {
-                            mModelController.RestoreStructuralLayerRegionForEphemeralVisualization(
+                            mController.GetModelController().RestoreStructuralLayerRegionForEphemeralVisualization(
                                 mOriginalLayerClone,
                                 *effectiveRect,
                                 effectiveRect->origin);
@@ -443,16 +398,15 @@ void LineTool<TLayer>::DoEphemeralVisualization(ShipSpaceCoordinates const & mou
                         {
                             static_assert(TLayer == LayerType::Electrical);
 
-                            mModelController.RestoreElectricalLayerRegionForEphemeralVisualization(
+                            mController.GetModelController().RestoreElectricalLayerRegionForEphemeralVisualization(
                                 mOriginalLayerClone,
                                 *effectiveRect,
                                 effectiveRect->origin);
                         }
                     }
 
-                    mView.RemoveRectOverlay();
+                    mController.GetView().RemoveRectOverlay();
                 });
-
         }
     }
 }
@@ -482,7 +436,7 @@ void LineTool<TLayer>::DoLine(
     }
 
     // Generate line
-    if (TLayer == LayerType::Structural && mWorkbenchState.GetStructuralLineToolIsHullMode())
+    if (TLayer == LayerType::Structural && mController.GetWorkbenchState().GetStructuralLineToolIsHullMode())
     {
         GenerateIntegralLinePath<IntegralLineType::WithAdjacentSteps>(startPoint, actualEndPoint, std::forward<TVisitor>(visitor));
     }
@@ -505,13 +459,13 @@ std::pair<std::optional<ShipSpaceRect>, typename LineTool<TLayer>::HasEdited> Li
         {
             if constexpr (TIsForEphemeralVisualization)
             {
-                mModelController.StructuralRegionFillForEphemeralVisualization(
+                mController.GetModelController().StructuralRegionFillForEphemeralVisualization(
                     *affectedRect,
                     fillMaterial);
             }
             else
             {
-                mModelController.StructuralRegionFill(
+                mController.GetModelController().StructuralRegionFill(
                     *affectedRect,
                     fillMaterial);
             }
@@ -523,17 +477,17 @@ std::pair<std::optional<ShipSpaceRect>, typename LineTool<TLayer>::HasEdited> Li
             static_assert(TLayer == LayerType::Electrical);
 
             assert(affectedRect->size == ShipSpaceSize(1, 1));
-            if (mModelController.IsElectricalParticleAllowedAt(affectedRect->origin))
+            if (mController.GetModelController().IsElectricalParticleAllowedAt(affectedRect->origin))
             {
                 if constexpr (TIsForEphemeralVisualization)
                 {
-                    mModelController.ElectricalRegionFillForEphemeralVisualization(
+                    mController.GetModelController().ElectricalRegionFillForEphemeralVisualization(
                         *affectedRect,
                         fillMaterial);
                 }
                 else
                 {
-                    mModelController.ElectricalRegionFill(
+                    mController.GetModelController().ElectricalRegionFill(
                         *affectedRect,
                         fillMaterial);
                 }
@@ -558,7 +512,7 @@ std::optional<ShipSpaceRect> LineTool<TLayer>::CalculateApplicableRect(ShipSpace
     ShipSpaceCoordinates const origin = ShipSpaceCoordinates(coords.x, coords.y - (lineSize - 1));
 
     return ShipSpaceRect(origin - ShipSpaceSize(topLeftLineSize, -topLeftLineSize), { lineSize, lineSize })
-        .MakeIntersectionWith({ { 0, 0 }, mModelController.GetModel().GetShipSize() });
+        .MakeIntersectionWith({ { 0, 0 }, mController.GetModel().GetShipSize() });
 }
 
 template<LayerType TLayer>
@@ -566,7 +520,7 @@ int LineTool<TLayer>::GetLineSize() const
 {
     if constexpr (TLayer == LayerType::Structural)
     {
-        return static_cast<int>(mWorkbenchState.GetStructuralLineToolSize());
+        return static_cast<int>(mController.GetWorkbenchState().GetStructuralLineToolSize());
     }
     else
     {
@@ -583,13 +537,13 @@ typename LineTool<TLayer>::LayerMaterialType const * LineTool<TLayer>::GetFillMa
     {
         if (plane == MaterialPlaneType::Foreground)
         {
-            return mWorkbenchState.GetStructuralForegroundMaterial();
+            return mController.GetWorkbenchState().GetStructuralForegroundMaterial();
         }
         else
         {
             assert(plane == MaterialPlaneType::Background);
 
-            return mWorkbenchState.GetStructuralBackgroundMaterial();
+            return mController.GetWorkbenchState().GetStructuralBackgroundMaterial();
         }
 
     }
@@ -599,13 +553,13 @@ typename LineTool<TLayer>::LayerMaterialType const * LineTool<TLayer>::GetFillMa
 
         if (plane == MaterialPlaneType::Foreground)
         {
-            return mWorkbenchState.GetElectricalForegroundMaterial();
+            return mController.GetWorkbenchState().GetElectricalForegroundMaterial();
         }
         else
         {
             assert(plane == MaterialPlaneType::Background);
 
-            return mWorkbenchState.GetElectricalBackgroundMaterial();
+            return mController.GetWorkbenchState().GetElectricalBackgroundMaterial();
         }
     }
 }

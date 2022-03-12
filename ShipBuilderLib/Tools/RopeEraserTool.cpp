@@ -14,33 +14,22 @@
 namespace ShipBuilder {
 
 RopeEraserTool::RopeEraserTool(
-    ModelController & modelController,
-    UndoStack & undoStack,
-    WorkbenchState & workbenchState,
-    IUserInterface & userInterface,
-    View & view,
+    Controller & controller,
     ResourceLocator const & resourceLocator)
     : Tool(
         ToolType::RopeEraser,
-        modelController,
-        undoStack,
-        workbenchState,
-        userInterface,
-        view)
-    , mOriginalLayerClone(modelController.GetModel().CloneExistingLayer<LayerType::Ropes>())
+        controller)
+    , mOriginalLayerClone(mController.GetModel().CloneExistingLayer<LayerType::Ropes>())
     , mHasOverlay(false)
     , mEngagementData()
 {
     SetCursor(WxHelpers::LoadCursorImage("eraser_cursor", 8, 27, resourceLocator));
 
     // Check if we draw the overlay right away
-    auto const mouseCoordinates = mUserInterface.GetMouseCoordinatesIfInWorkCanvas();
+    auto const mouseCoordinates = GetMouseCoordinatesIfInWorkCanvas();
     if (mouseCoordinates)
     {
         DrawOverlay(ScreenToShipSpace(*mouseCoordinates));
-
-        mModelController.UpdateVisualizations(mView);
-        mUserInterface.RefreshView();
     }
 }
 
@@ -50,9 +39,6 @@ RopeEraserTool::~RopeEraserTool()
     if (mHasOverlay)
     {
         HideOverlay();
-
-        mModelController.UpdateVisualizations(mView);
-        mUserInterface.RefreshView();
     }
 }
 
@@ -69,12 +55,9 @@ void RopeEraserTool::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordina
     }
     else
     {
-        // Draw overlay
+        // Just draw overlay
         DrawOverlay(mouseShipSpaceCoords);
     }
-
-    mModelController.UpdateVisualizations(mView);
-    mUserInterface.RefreshView();
 }
 
 void RopeEraserTool::OnLeftMouseDown()
@@ -116,9 +99,6 @@ void RopeEraserTool::OnMouseDown()
     DoAction(GetCurrentMouseCoordinatesInShipSpace());
 
     // No need to do eph viz when engaged
-
-    mModelController.UpdateVisualizations(mView);
-    mUserInterface.RefreshView();
 }
 
 void RopeEraserTool::OnMouseUp()
@@ -135,9 +115,6 @@ void RopeEraserTool::OnMouseUp()
         DrawOverlay(GetCurrentMouseCoordinatesInShipSpace());
 
         assert(mHasOverlay);
-
-        mModelController.UpdateVisualizations(mView);
-        mUserInterface.RefreshView();
     }
 }
 
@@ -147,7 +124,7 @@ void RopeEraserTool::StartEngagement()
 
     assert(!mEngagementData.has_value());
 
-    mEngagementData.emplace(mModelController.GetModel().GetDirtyState());
+    mEngagementData.emplace(mController.GetDirtyState());
 }
 
 void RopeEraserTool::DoAction(ShipSpaceCoordinates const & coords)
@@ -156,11 +133,13 @@ void RopeEraserTool::DoAction(ShipSpaceCoordinates const & coords)
 
     assert(mEngagementData.has_value());
 
-    bool const hasErased = mModelController.EraseRopeAt(coords);
+    bool const hasErased = mController.GetModelController().EraseRopeAt(coords);
     if (hasErased)
     {
         mEngagementData->HasEdited = true;
     }
+
+    mController.LayerChangeEpilog(hasErased ? LayerType::Ropes : std::optional<LayerType>());
 }
 
 void RopeEraserTool::StopEngagement()
@@ -175,7 +154,7 @@ void RopeEraserTool::StopEngagement()
         // Create undo action
         //
 
-        PushUndoAction(
+        mController.StoreUndoAction(
             _("Eraser Ropes"),
             mOriginalLayerClone.Buffer.GetSize() * sizeof(RopeElement),
             mEngagementData->OriginalDirtyState,
@@ -185,7 +164,7 @@ void RopeEraserTool::StopEngagement()
             });
 
         // Take new orig clone
-        mOriginalLayerClone = mModelController.GetModel().CloneExistingLayer<LayerType::Ropes>();
+        mOriginalLayerClone = mController.GetModel().CloneExistingLayer<LayerType::Ropes>();
     }
 
     // Stop engagement
@@ -194,11 +173,13 @@ void RopeEraserTool::StopEngagement()
 
 void RopeEraserTool::DrawOverlay(ShipSpaceCoordinates const & coords)
 {
-    mView.UploadCircleOverlay(
+    mController.GetView().UploadCircleOverlay(
         coords,
-        mModelController.GetRopeElementIndexAt(coords).has_value()
+        mController.GetModelController().GetRopeElementIndexAt(coords).has_value()
         ? View::OverlayMode::Default
         : View::OverlayMode::Error);
+
+    mController.GetUserInterface().RefreshView();
 
     mHasOverlay = true;
 }
@@ -207,7 +188,9 @@ void RopeEraserTool::HideOverlay()
 {
     assert(mHasOverlay);
 
-    mView.RemoveCircleOverlay();
+    mController.GetView().RemoveCircleOverlay();
+
+    mController.GetUserInterface().RefreshView();
 
     mHasOverlay = false;
 }

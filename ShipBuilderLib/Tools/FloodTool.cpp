@@ -12,38 +12,22 @@
 namespace ShipBuilder {
 
 StructuralFloodTool::StructuralFloodTool(
-    ModelController & modelController,
-    UndoStack & undoStack,
-    WorkbenchState & workbenchState,
-    IUserInterface & userInterface,
-    View & view,
+    Controller & controller,
     ResourceLocator const & resourceLocator)
     : FloodTool(
         ToolType::StructuralFlood,
-        modelController,
-        undoStack,
-        workbenchState,
-        userInterface,
-        view,
+        controller,
         resourceLocator)
 {}
 
 template<LayerType TLayerType>
 FloodTool<TLayerType>::FloodTool(
     ToolType toolType,
-    ModelController & modelController,
-    UndoStack & undoStack,
-    WorkbenchState & workbenchState,
-    IUserInterface & userInterface,
-    View & view,
+    Controller & controller,
     ResourceLocator const & resourceLocator)
     : Tool(
         toolType,
-        modelController,
-        undoStack,
-        workbenchState,
-        userInterface,
-        view)
+        controller)
     , mCursorImage(WxHelpers::LoadCursorImage("flood_tool_cursor", 12, 29, resourceLocator))
 {
     SetCursor(mCursorImage);
@@ -73,16 +57,16 @@ void FloodTool<TLayer>::DoEdit(
     StrongTypedBool<struct IsRightMouseButton> isRightButton)
 {
     // Take clone of current layer
-    auto layerDirtyStateClone = mModelController.GetModel().GetDirtyState();
-    auto layerClone = mModelController.GetModel().CloneExistingLayer<TLayer>();
+    auto layerDirtyStateClone = mController.GetDirtyState();
+    auto layerClone = mController.GetModel().CloneExistingLayer<TLayer>();
 
     // Do edit
     LayerMaterialType const * const floodMaterial = GetFloodMaterial(isRightButton ? MaterialPlaneType::Background : MaterialPlaneType::Foreground);
     static_assert(TLayer == LayerType::Structural);
-    std::optional<ShipSpaceRect> affectedRegion = mModelController.StructuralFlood(
+    std::optional<ShipSpaceRect> affectedRegion = mController.GetModelController().StructuralFlood(
         mouseCoordinates,
         floodMaterial,
-        mWorkbenchState.GetStructuralFloodToolIsContiguous());
+        mController.GetWorkbenchState().GetStructuralFloodToolIsContiguous());
 
     if (affectedRegion.has_value())
     {
@@ -91,7 +75,7 @@ void FloodTool<TLayer>::DoEdit(
         // FUTUREWORK: instead of cloning here, might have a Layer method to "trim" its buffer in-place
         auto clippedLayerClone = layerClone.Clone(*affectedRegion);
 
-        PushUndoAction(
+        mController.StoreUndoAction(
             TLayer == LayerType::Structural ? _("Flood Structural") : _("Flood Electrical"),
             clippedLayerClone.Buffer.GetByteSize(),
             layerDirtyStateClone,
@@ -101,12 +85,8 @@ void FloodTool<TLayer>::DoEdit(
                 controller.RestoreStructuralLayerRegionForUndo(std::move(clippedLayerClone), origin);
             });
 
-        // Mark layer as dirty
-        SetLayerDirty(TLayer);
-
-        // Refresh model visualizations
-        mModelController.UpdateVisualizations(mView);
-        mUserInterface.RefreshView();
+        // Epilog
+        mController.LayerChangeEpilog(TLayer);
     }
 }
 
@@ -116,8 +96,8 @@ typename FloodTool<TLayer>::LayerMaterialType const * FloodTool<TLayer>::GetFloo
     static_assert(TLayer == LayerType::Structural);
 
     return plane == MaterialPlaneType::Foreground
-        ? mWorkbenchState.GetStructuralForegroundMaterial()
-        : mWorkbenchState.GetStructuralBackgroundMaterial();
+        ? mController.GetWorkbenchState().GetStructuralForegroundMaterial()
+        : mController.GetWorkbenchState().GetStructuralBackgroundMaterial();
 }
 
 }

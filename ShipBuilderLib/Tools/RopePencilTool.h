@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "Model.h"
 #include "Tool.h"
 
 #include <Game/Layers.h>
@@ -23,11 +24,7 @@ class RopePencilTool : public Tool
 public:
 
     RopePencilTool(
-        ModelController & modelController,
-        UndoStack & undoStack,
-        WorkbenchState & workbenchState,
-        IUserInterface & userInterface,
-        View & view,
+        Controller & controller,
         ResourceLocator const & resourceLocator);
 
     virtual ~RopePencilTool();
@@ -50,7 +47,7 @@ private:
 
     void MendTempVisualization();
 
-    void CommmitAndStopEngagement(ShipSpaceCoordinates const & coords);
+    bool CommmitAndStopEngagement(ShipSpaceCoordinates const & coords);
 
     void DrawOverlay(ShipSpaceCoordinates const & coords);
 

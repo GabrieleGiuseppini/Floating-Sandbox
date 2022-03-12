@@ -421,7 +421,11 @@ StructuralLayerData ModelController::CloneStructuralLayer() const
 
 StructuralMaterial const * ModelController::SampleStructuralMaterialAt(ShipSpaceCoordinates const & coords) const
 {
+    assert(mModel.HasLayer(LayerType::Structural));
+    assert(!mIsStructuralLayerInEphemeralVisualization);
+
     assert(coords.IsInSize(mModel.GetShipSize()));
+
     return mModel.GetStructuralLayer().Buffer[coords].Material;
 }
 
@@ -651,14 +655,17 @@ std::unique_ptr<ElectricalLayerData> ModelController::CloneElectricalLayer() con
 
 ElectricalMaterial const * ModelController::SampleElectricalMaterialAt(ShipSpaceCoordinates const & coords) const
 {
+    assert(mModel.HasLayer(LayerType::Electrical));
+    assert(!mIsElectricalLayerInEphemeralVisualization);
+
     assert(coords.IsInSize(mModel.GetShipSize()));
+
     return mModel.GetElectricalLayer().Buffer[coords].Material;
 }
 
 bool ModelController::IsElectricalParticleAllowedAt(ShipSpaceCoordinates const & coords) const
 {
     assert(mModel.HasLayer(LayerType::Structural));
-
     assert(!mIsStructuralLayerInEphemeralVisualization);
 
     return mModel.GetStructuralLayer().Buffer[coords].Material != nullptr;
@@ -906,7 +913,11 @@ std::unique_ptr<RopesLayerData> ModelController::CloneRopesLayer() const
 
 StructuralMaterial const * ModelController::SampleRopesMaterialAt(ShipSpaceCoordinates const & coords) const
 {
+    assert(mModel.HasLayer(LayerType::Ropes));
+    assert(!mIsRopesLayerInEphemeralVisualization);
+
     assert(coords.IsInSize(mModel.GetShipSize()));
+
     return mModel.GetRopesLayer().Buffer.SampleMaterialEndpointAt(coords);
 }
 

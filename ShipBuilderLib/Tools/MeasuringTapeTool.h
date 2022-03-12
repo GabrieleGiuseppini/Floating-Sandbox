@@ -20,11 +20,7 @@ class MeasuringTapeTool : public Tool
 public:
 
     MeasuringTapeTool(
-        ModelController & modelController,
-        UndoStack & undoStack,
-        WorkbenchState & workbenchState,
-        IUserInterface & userInterface,
-        View & view,
+        Controller & controller,
         ResourceLocator const & resourceLocator);
 
     virtual ~MeasuringTapeTool();

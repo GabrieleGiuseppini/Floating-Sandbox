@@ -17,10 +17,8 @@
 
 namespace ShipBuilder {
 
-class Controller;
-
 /*
- * Interface of MainFrame that is seen by Controller and underneath.
+ * Interface of MainFrame to Controller and underneath.
  */
 struct IUserInterface
 {

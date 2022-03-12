@@ -40,11 +40,7 @@ protected:
 
     FloodTool(
         ToolType toolType,
-        ModelController & modelController,
-        UndoStack & undoStack,
-        WorkbenchState & workbenchState,
-        IUserInterface & userInterface,
-        View & view,
+        Controller & controller,
         ResourceLocator const & resourceLocator);
 
 private:
@@ -69,11 +65,7 @@ class StructuralFloodTool : public FloodTool<LayerType::Structural>
 public:
 
     StructuralFloodTool(
-        ModelController & modelController,
-        UndoStack & undoStack,
-        WorkbenchState & workbenchState,
-        IUserInterface & userInterface,
-        View & view,
+        Controller & controller,
         ResourceLocator const & resourceLocator);
 };
 

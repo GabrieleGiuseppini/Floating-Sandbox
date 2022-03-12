@@ -60,6 +60,38 @@ public:
         ShipTexturizer const & shipTexturizer,
         ResourceLocator const & resourceLocator);
 
+    Model const & GetModel() const
+    {
+        assert(mModelController);
+        return mModelController->GetModel();
+    }
+
+    ModelController & GetModelController() const
+    {
+        assert(mModelController);
+        return *mModelController;
+    }
+
+    IUserInterface & GetUserInterface()
+    {
+        return mUserInterface;
+    }
+
+    View & GetView()
+    {
+        assert(mView);
+        return *mView;
+    }
+
+    WorkbenchState & GetWorkbenchState()
+    {
+        return mWorkbenchState;
+    }
+
+    //
+    // Ship
+    //
+
     ShipDefinition MakeShipDefinition();
 
     ShipSpaceSize const & GetShipSize() const
@@ -96,12 +128,6 @@ public:
         std::optional<ShipPhysicsData> && physicsData,
         std::optional<std::optional<ShipAutoTexturizationSettings>> && autoTexturizationSettings);
 
-    Model const & GetModel() const
-    {
-        assert(mModelController);
-        return mModelController->GetModel();
-    }
-
     bool HasModelLayer(LayerType layer) const
     {
         assert(mModelController);
@@ -122,6 +148,12 @@ public:
 
     void ClearModelDirty();
 
+    Model::DirtyState const & GetDirtyState() const
+    {
+        assert(mModelController);
+        return mModelController->GetModel().GetDirtyState();
+    }
+
     void RestoreDirtyState(Model::DirtyState && dirtyState);
 
     std::unique_ptr<RgbaImageData> MakePreview() const;
@@ -129,6 +161,12 @@ public:
     std::optional<ShipSpaceRect> CalculateBoundingBox() const;
 
     ModelValidationResults ValidateModel();
+
+    //
+    // Layer editing
+    //
+
+    // Structural layer
 
     StructuralLayerData const & GetStructuralLayer() const
     {
@@ -145,6 +183,8 @@ public:
         ShipSpaceCoordinates const & origin);
     void RestoreStructuralLayerForUndo(StructuralLayerData && structuralLayer);
 
+    // Electrical layer
+
     void NewElectricalLayer();
     void SetElectricalLayer(
         wxString actionTitle,
@@ -156,12 +196,16 @@ public:
     void RestoreElectricalLayerForUndo(std::unique_ptr<ElectricalLayerData> electricalLayer);
     void TrimElectricalParticlesWithoutSubstratum();
 
+    // Ropes layer
+
     void NewRopesLayer();
     void SetRopesLayer(
         wxString actionTitle,
         RopesLayerData && ropesLayer);
     void RemoveRopesLayer();
     void RestoreRopesLayerForUndo(std::unique_ptr<RopesLayerData> ropesLayer);
+
+    // Texture layer
 
     TextureLayerData const & GetTextureLayer() const
     {
@@ -178,6 +222,10 @@ public:
     void RestoreTextureLayerForUndo(
         std::unique_ptr<TextureLayerData> textureLayer,
         std::optional<std::string> originalTextureArtCredits);
+
+    //
+    // Misc editing
+    //
 
     void RestoreAllLayersForUndo(
         ShipSpaceSize const & shipSize,
@@ -196,6 +244,14 @@ public:
         ShipSpaceSize const & newSize,
         ShipSpaceCoordinates const & originOffset);
 
+    // Invoked for changes to any layer, including ephemeral viz changes (in which case
+    // no layer gets dirty)
+    void LayerChangeEpilog(std::optional<LayerType> dirtyLayer = std::nullopt);
+
+    //
+    // Visualization management
+    //
+
     void SelectPrimaryVisualization(VisualizationType primaryVisualization);
 
     void SetGameVisualizationMode(GameVisualizationModeType mode);
@@ -210,21 +266,24 @@ public:
     void EnableWaterlineMarkers(bool doEnable);
     void EnableVisualGrid(bool doEnable);
 
-    void SetCurrentTool(std::optional<ToolType> tool);
+    //
+    // Undo
+    //
 
-    void SetStructuralMaterial(StructuralMaterial const * material, MaterialPlaneType plane);
-    void SetElectricalMaterial(ElectricalMaterial const * material, MaterialPlaneType plane);
-    void SetRopeMaterial(StructuralMaterial const * material, MaterialPlaneType plane);
+    template<typename ... TArgs>
+    void StoreUndoAction(TArgs&& ... args)
+    {
+        mUndoStack.Push(std::forward<TArgs>(args)...);
+        mUserInterface.OnUndoStackStateChanged(mUndoStack);
+    }
 
     void TryUndoLast();
     void UndoLast();
     void UndoUntil(size_t index);
 
-    View & GetView()
-    {
-        assert(mView);
-        return *mView;
-    }
+    //
+    // View
+    //
 
     void Render();
 
@@ -233,6 +292,16 @@ public:
     void ResetView();
 
     void OnWorkCanvasResized(DisplayLogicalSize const & newSize);
+
+    //
+    // Misc
+    //
+
+    void SetCurrentTool(std::optional<ToolType> tool);
+
+    void SetStructuralMaterial(StructuralMaterial const * material, MaterialPlaneType plane);
+    void SetElectricalMaterial(ElectricalMaterial const * material, MaterialPlaneType plane);
+    void SetRopeMaterial(StructuralMaterial const * material, MaterialPlaneType plane);
 
     void OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates);
     void OnLeftMouseDown();

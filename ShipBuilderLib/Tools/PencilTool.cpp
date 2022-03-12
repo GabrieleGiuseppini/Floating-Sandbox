@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #include "PencilTool.h"
 
-#include <Controller.h>
+#include "Controller.h"
 
 #include <GameCore/GameGeometry.h>
 
@@ -16,90 +16,50 @@
 namespace ShipBuilder {
 
 StructuralPencilTool::StructuralPencilTool(
-    ModelController & modelController,
-    UndoStack & undoStack,
-    WorkbenchState & workbenchState,
-    IUserInterface & userInterface,
-    View & view,
+    Controller & controller,
     ResourceLocator const & resourceLocator)
     : PencilTool(
         ToolType::StructuralPencil,
-        modelController,
-        undoStack,
-        workbenchState,
-        userInterface,
-        view,
+        controller,
         resourceLocator)
 {}
 
 ElectricalPencilTool::ElectricalPencilTool(
-    ModelController & modelController,
-    UndoStack & undoStack,
-    WorkbenchState & workbenchState,
-    IUserInterface & userInterface,
-    View & view,
+    Controller & controller,
     ResourceLocator const & resourceLocator)
     : PencilTool(
         ToolType::ElectricalPencil,
-        modelController,
-        undoStack,
-        workbenchState,
-        userInterface,
-        view,
+        controller,
         resourceLocator)
 {}
 
 StructuralEraserTool::StructuralEraserTool(
-    ModelController & modelController,
-    UndoStack & undoStack,
-    WorkbenchState & workbenchState,
-    IUserInterface & userInterface,
-    View & view,
+    Controller & controller,
     ResourceLocator const & resourceLocator)
     : PencilTool(
         ToolType::StructuralEraser,
-        modelController,
-        undoStack,
-        workbenchState,
-        userInterface,
-        view,
+        controller,
         resourceLocator)
 {}
 
 ElectricalEraserTool::ElectricalEraserTool(
-    ModelController & modelController,
-    UndoStack & undoStack,
-    WorkbenchState & workbenchState,
-    IUserInterface & userInterface,
-    View & view,
+    Controller & controller,
     ResourceLocator const & resourceLocator)
     : PencilTool(
         ToolType::ElectricalEraser,
-        modelController,
-        undoStack,
-        workbenchState,
-        userInterface,
-        view,
+        controller,
         resourceLocator)
 {}
 
 template<LayerType TLayer, bool IsEraser>
 PencilTool<TLayer, IsEraser>::PencilTool(
     ToolType toolType,
-    ModelController & modelController,
-    UndoStack & undoStack,
-    WorkbenchState & workbenchState,
-    IUserInterface & userInterface,
-    View & view,
+    Controller & controller,
     ResourceLocator const & resourceLocator)
     : Tool(
         toolType,
-        modelController,
-        undoStack,
-        workbenchState,
-        userInterface,
-        view)
-    , mOriginalLayerClone(modelController.GetModel().CloneExistingLayer<TLayer>())
+        controller)
+    , mOriginalLayerClone(mController.GetModel().CloneExistingLayer<TLayer>())
     , mTempVisualizationDirtyShipRegion()
     , mEngagementData()
     , mIsShiftDown(false)
@@ -117,7 +77,7 @@ PencilTool<TLayer, IsEraser>::PencilTool(
     SetCursor(cursorImage);
 
     // Check if we need to immediately do a visualization
-    auto const mouseCoordinates = mUserInterface.GetMouseCoordinatesIfInWorkCanvas();
+    auto const mouseCoordinates = GetMouseCoordinatesIfInWorkCanvas();
     if (mouseCoordinates)
     {
         // Calculate affected rect
@@ -130,9 +90,7 @@ PencilTool<TLayer, IsEraser>::PencilTool(
 
             assert(mTempVisualizationDirtyShipRegion);
 
-            // Visualize
-            mModelController.UpdateVisualizations(mView);
-            mUserInterface.RefreshView();
+            mController.LayerChangeEpilog();
         }
     }
 }
@@ -147,9 +105,7 @@ PencilTool<TLayer, IsEraser>::~PencilTool()
 
         assert(!mTempVisualizationDirtyShipRegion);
 
-        // Visualize
-        mModelController.UpdateVisualizations(mView);
-        mUserInterface.RefreshView();
+        mController.LayerChangeEpilog();
     }
 }
 
@@ -187,9 +143,7 @@ void PencilTool<TLayer, IsEraser>::OnMouseMove(DisplayLogicalCoordinates const &
                 assert(mTempVisualizationDirtyShipRegion);
             }
 
-            // Visualize
-            mModelController.UpdateVisualizations(mView);
-            mUserInterface.RefreshView();
+            mController.LayerChangeEpilog();
         }
     }
     else
@@ -310,7 +264,7 @@ void PencilTool<TLayer, IsEraser>::StartEngagement(
 
     mEngagementData.emplace(
         isRightButton ? MaterialPlaneType::Background : MaterialPlaneType::Foreground,
-        mModelController.GetModel().GetDirtyState(),
+        mController.GetDirtyState(),
         mIsShiftDown ? mouseCoordinates : std::optional<ShipSpaceCoordinates>());
 }
 
@@ -382,7 +336,7 @@ void PencilTool<TLayer, IsEraser>::DoEdit(ShipSpaceCoordinates const & mouseCoor
                 {
                     isAllowed = true;
 
-                    mModelController.StructuralRegionFill(
+                    mController.GetModelController().StructuralRegionFill(
                         *applicableRect,
                         fillMaterial);
                 }
@@ -391,11 +345,11 @@ void PencilTool<TLayer, IsEraser>::DoEdit(ShipSpaceCoordinates const & mouseCoor
                     static_assert(TLayer == LayerType::Electrical);
 
                     assert(applicableRect->size == ShipSpaceSize(1, 1));
-                    isAllowed = mModelController.IsElectricalParticleAllowedAt(applicableRect->origin);
+                    isAllowed = mController.GetModelController().IsElectricalParticleAllowedAt(applicableRect->origin);
 
                     if (isAllowed)
                     {
-                        mModelController.ElectricalRegionFill(
+                        mController.GetModelController().ElectricalRegionFill(
                             *applicableRect,
                             fillMaterial);
                     }
@@ -418,18 +372,11 @@ void PencilTool<TLayer, IsEraser>::DoEdit(ShipSpaceCoordinates const & mouseCoor
             }
         });
 
-    if (hasEdited)
-    {
-        // Mark layer as dirty
-        SetLayerDirty(TLayer);
-    }
-
     // Update previous engagement
     mEngagementData->PreviousEngagementPosition = endPoint;
 
-    // Refresh model visualizations
-    mModelController.UpdateVisualizations(mView);
-    mUserInterface.RefreshView();
+    // Epilog
+    mController.LayerChangeEpilog(hasEdited ? TLayer : std::optional<LayerType>());
 }
 
 template<LayerType TLayer, bool IsEraser>
@@ -445,8 +392,8 @@ void PencilTool<TLayer, IsEraser>::EndEngagement()
 
         auto clippedLayerClone = mOriginalLayerClone.Clone(*mEngagementData->EditRegion);
 
-        PushUndoAction(
-            IsEraser 
+        mController.StoreUndoAction(
+            IsEraser
             ? (TLayer == LayerType::Structural ? _("Eraser Structural") : _("Eraser Electrical"))
             : (TLayer == LayerType::Structural ? _("Pencil Structural") : _("Pencil Electrical")),
             clippedLayerClone.Buffer.GetByteSize(),
@@ -476,10 +423,10 @@ void PencilTool<TLayer, IsEraser>::EndEngagement()
     // Restart temp visualization
     //
 
-    // Re-take original layer clone
-    mOriginalLayerClone = mModelController.GetModel().CloneExistingLayer<TLayer>();
-
     assert(!mTempVisualizationDirtyShipRegion);
+
+    // Re-take original layer clone
+    mOriginalLayerClone = mController.GetModel().CloneExistingLayer<TLayer>();
 }
 
 template<LayerType TLayer, bool IsEraser>
@@ -492,7 +439,7 @@ void PencilTool<TLayer, IsEraser>::DoTempVisualization(ShipSpaceRect const & aff
 
     if constexpr (TLayer == LayerType::Structural)
     {
-        mModelController.StructuralRegionFillForEphemeralVisualization(
+        mController.GetModelController().StructuralRegionFillForEphemeralVisualization(
             affectedRect,
             fillMaterial);
     }
@@ -502,17 +449,17 @@ void PencilTool<TLayer, IsEraser>::DoTempVisualization(ShipSpaceRect const & aff
 
         assert(affectedRect.size == ShipSpaceSize(1, 1));
         if (!IsEraser
-            && !mModelController.IsElectricalParticleAllowedAt(affectedRect.origin))
+            && !mController.GetModelController().IsElectricalParticleAllowedAt(affectedRect.origin))
         {
             overlayMode = View::OverlayMode::Error;
         }
 
-        mModelController.ElectricalRegionFillForEphemeralVisualization(
+        mController.GetModelController().ElectricalRegionFillForEphemeralVisualization(
             affectedRect,
             fillMaterial);
     }
 
-    mView.UploadRectOverlay(
+    mController.GetView().UploadRectOverlay(
         affectedRect,
         overlayMode);
 
@@ -526,7 +473,7 @@ void PencilTool<TLayer, IsEraser>::MendTempVisualization()
 
     if constexpr (TLayer == LayerType::Structural)
     {
-        mModelController.RestoreStructuralLayerRegionForEphemeralVisualization(
+        mController.GetModelController().RestoreStructuralLayerRegionForEphemeralVisualization(
             mOriginalLayerClone,
             *mTempVisualizationDirtyShipRegion,
             mTempVisualizationDirtyShipRegion->origin);
@@ -535,13 +482,13 @@ void PencilTool<TLayer, IsEraser>::MendTempVisualization()
     {
         static_assert(TLayer == LayerType::Electrical);
 
-        mModelController.RestoreElectricalLayerRegionForEphemeralVisualization(
+        mController.GetModelController().RestoreElectricalLayerRegionForEphemeralVisualization(
             mOriginalLayerClone,
             *mTempVisualizationDirtyShipRegion,
             mTempVisualizationDirtyShipRegion->origin);
     }
 
-    mView.RemoveRectOverlay();
+    mController.GetView().RemoveRectOverlay();
 
     mTempVisualizationDirtyShipRegion.reset();
 }
@@ -557,7 +504,7 @@ std::optional<ShipSpaceRect> PencilTool<TLayer, IsEraser>::CalculateApplicableRe
     ShipSpaceCoordinates const origin = ShipSpaceCoordinates(coords.x, coords.y - (pencilSize - 1));
 
     return ShipSpaceRect(origin - ShipSpaceSize(topLeftPencilSize, -topLeftPencilSize), { pencilSize, pencilSize })
-        .MakeIntersectionWith({ { 0, 0 }, mModelController.GetModel().GetShipSize() });
+        .MakeIntersectionWith({ { 0, 0 }, mController.GetModel().GetShipSize() });
 }
 
 template<LayerType TLayer, bool IsEraser>
@@ -567,7 +514,7 @@ int PencilTool<TLayer, IsEraser>::GetPencilSize() const
     {
         if constexpr (TLayer == LayerType::Structural)
         {
-            return static_cast<int>(mWorkbenchState.GetStructuralPencilToolSize());
+            return static_cast<int>(mController.GetWorkbenchState().GetStructuralPencilToolSize());
         }
         else
         {
@@ -580,7 +527,7 @@ int PencilTool<TLayer, IsEraser>::GetPencilSize() const
     {
         if constexpr (TLayer == LayerType::Structural)
         {
-            return static_cast<int>(mWorkbenchState.GetStructuralEraserToolSize());
+            return static_cast<int>(mController.GetWorkbenchState().GetStructuralEraserToolSize());
         }
         else
         {
@@ -600,13 +547,13 @@ typename PencilTool<TLayer, IsEraser>::LayerMaterialType const * PencilTool<TLay
         {
             if (plane == MaterialPlaneType::Foreground)
             {
-                return mWorkbenchState.GetStructuralForegroundMaterial();
+                return mController.GetWorkbenchState().GetStructuralForegroundMaterial();
             }
             else
             {
                 assert(plane == MaterialPlaneType::Background);
 
-                return mWorkbenchState.GetStructuralBackgroundMaterial();
+                return mController.GetWorkbenchState().GetStructuralBackgroundMaterial();
             }
 
         }
@@ -616,13 +563,13 @@ typename PencilTool<TLayer, IsEraser>::LayerMaterialType const * PencilTool<TLay
 
             if (plane == MaterialPlaneType::Foreground)
             {
-                return mWorkbenchState.GetElectricalForegroundMaterial();
+                return mController.GetWorkbenchState().GetElectricalForegroundMaterial();
             }
             else
             {
                 assert(plane == MaterialPlaneType::Background);
 
-                return mWorkbenchState.GetElectricalBackgroundMaterial();
+                return mController.GetWorkbenchState().GetElectricalBackgroundMaterial();
             }
         }
     }

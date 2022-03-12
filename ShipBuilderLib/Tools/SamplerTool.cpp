@@ -12,72 +12,40 @@
 namespace ShipBuilder {
 
 StructuralSamplerTool::StructuralSamplerTool(
-    ModelController & modelController,
-    UndoStack & undoStack,
-    WorkbenchState & workbenchState,
-    IUserInterface & userInterface,
-    View & view,
+    Controller & controller,
     ResourceLocator const & resourceLocator)
     : SamplerTool(
         ToolType::StructuralSampler,
-        modelController,
-        undoStack,
-        workbenchState,
-        userInterface,
-        view,
+        controller,
         resourceLocator)
 {}
 
 ElectricalSamplerTool::ElectricalSamplerTool(
-    ModelController & modelController,
-    UndoStack & undoStack,
-    WorkbenchState & workbenchState,
-    IUserInterface & userInterface,
-    View & view,
+    Controller & controller,
     ResourceLocator const & resourceLocator)
     : SamplerTool(
         ToolType::ElectricalSampler,
-        modelController,
-        undoStack,
-        workbenchState,
-        userInterface,
-        view,
+        controller,
         resourceLocator)
 {}
 
 RopeSamplerTool::RopeSamplerTool(
-    ModelController & modelController,
-    UndoStack & undoStack,
-    WorkbenchState & workbenchState,
-    IUserInterface & userInterface,
-    View & view,
+    Controller & controller,
     ResourceLocator const & resourceLocator)
     : SamplerTool(
         ToolType::RopeSampler,
-        modelController,
-        undoStack,
-        workbenchState,
-        userInterface,
-        view,
+        controller,
         resourceLocator)
 {}
 
 template<LayerType TLayerType>
 SamplerTool<TLayerType>::SamplerTool(
     ToolType toolType,
-    ModelController & modelController,
-    UndoStack & undoStack,
-    WorkbenchState & workbenchState,
-    IUserInterface & userInterface,
-    View & view,
+    Controller & controller,
     ResourceLocator const & resourceLocator)
     : Tool(
         toolType,
-        modelController,
-        undoStack,
-        workbenchState,
-        userInterface,
-        view)
+        controller)
     , mCursorImage(WxHelpers::LoadCursorImage("sampler_cursor", 1, 30, resourceLocator))
 {
     SetCursor(mCursorImage);
@@ -87,31 +55,31 @@ template<LayerType TLayerType>
 SamplerTool<TLayerType>::~SamplerTool()
 {
     // Notify about material
-    mUserInterface.OnSampledMaterialChanged(std::nullopt);
+    mController.GetUserInterface().OnSampledMaterialChanged(std::nullopt);
 }
 
 template<LayerType TLayer>
 void SamplerTool<TLayer>::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates)
 {
     auto const coords = ScreenToShipSpace(mouseCoordinates);
-    if (coords.IsInSize(mModelController.GetModel().GetShipSize()))
+    if (coords.IsInSize(mController.GetShipSize()))
     {
         // Get material
         auto const * material = SampleMaterial(coords);
 
         // Notify about material
-        mUserInterface.OnSampledMaterialChanged(material ? material->Name : std::optional<std::string>());
+        mController.GetUserInterface().OnSampledMaterialChanged(material ? material->Name : std::optional<std::string>());
     }
     else
     {
-        mUserInterface.OnSampledMaterialChanged(std::nullopt);
+        mController.GetUserInterface().OnSampledMaterialChanged(std::nullopt);
     }
 }
 
 template<LayerType TLayer>
 void SamplerTool<TLayer>::OnLeftMouseDown()
 {
-    auto const coords = mUserInterface.GetMouseCoordinatesIfInWorkCanvas();
+    auto const coords = GetMouseCoordinatesIfInWorkCanvas();
     if (coords)
     {
         DoSelectMaterial(
@@ -123,7 +91,7 @@ void SamplerTool<TLayer>::OnLeftMouseDown()
 template<LayerType TLayer>
 void SamplerTool<TLayer>::OnRightMouseDown()
 {
-    auto const coords = mUserInterface.GetMouseCoordinatesIfInWorkCanvas();
+    auto const coords = GetMouseCoordinatesIfInWorkCanvas();
     if (coords)
     {
         DoSelectMaterial(
@@ -139,7 +107,7 @@ void SamplerTool<TLayer>::DoSelectMaterial(
     ShipSpaceCoordinates const & mouseCoordinates,
     MaterialPlaneType plane)
 {
-    if (mouseCoordinates.IsInSize(mModelController.GetModel().GetShipSize()))
+    if (mouseCoordinates.IsInSize(mController.GetShipSize()))
     {
         // Get material
         auto const * material = SampleMaterial(mouseCoordinates);
@@ -147,19 +115,19 @@ void SamplerTool<TLayer>::DoSelectMaterial(
         // Select material
         if constexpr (TLayer == LayerType::Structural)
         {
-            mWorkbenchState.SetStructuralMaterial(material, plane);
-            mUserInterface.OnStructuralMaterialChanged(material, plane);
+            mController.GetWorkbenchState().SetStructuralMaterial(material, plane);
+            mController.GetUserInterface().OnStructuralMaterialChanged(material, plane);
         }
         else if constexpr (TLayer == LayerType::Electrical)
         {
-            mWorkbenchState.SetElectricalMaterial(material, plane);
-            mUserInterface.OnElectricalMaterialChanged(material, plane);
+            mController.GetWorkbenchState().SetElectricalMaterial(material, plane);
+            mController.GetUserInterface().OnElectricalMaterialChanged(material, plane);
         }
         else
         {
             static_assert(TLayer == LayerType::Ropes);
-            mWorkbenchState.SetRopesMaterial(material, plane);
-            mUserInterface.OnRopesMaterialChanged(material, plane);
+            mController.GetWorkbenchState().SetRopesMaterial(material, plane);
+            mController.GetUserInterface().OnRopesMaterialChanged(material, plane);
         }
     }
 }
@@ -167,19 +135,19 @@ void SamplerTool<TLayer>::DoSelectMaterial(
 template<LayerType TLayer>
 typename SamplerTool<TLayer>::LayerMaterialType const * SamplerTool<TLayer>::SampleMaterial(ShipSpaceCoordinates const & mouseCoordinates)
 {
-    assert(mouseCoordinates.IsInSize(mModelController.GetModel().GetShipSize()));
+    assert(mouseCoordinates.IsInSize(mController.GetShipSize()));
 
     if constexpr (TLayer == LayerType::Structural)
     {
-        return mModelController.SampleStructuralMaterialAt(mouseCoordinates);
+        return mController.GetModelController().SampleStructuralMaterialAt(mouseCoordinates);
     }
     else if constexpr (TLayer == LayerType::Electrical)
     {
-        return mModelController.SampleElectricalMaterialAt(mouseCoordinates);
+        return mController.GetModelController().SampleElectricalMaterialAt(mouseCoordinates);
     }
     else
     {
-        return mModelController.SampleRopesMaterialAt(mouseCoordinates);
+        return mController.GetModelController().SampleRopesMaterialAt(mouseCoordinates);
     }
 }
 
