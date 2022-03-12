@@ -5,7 +5,6 @@
 ***************************************************************************************/
 #pragma once
 
-#include "Model.h"
 #include "Tool.h"
 
 #include <Game/Layers.h>
@@ -69,7 +68,7 @@ private:
         RopesLayerData OriginalLayerClone;
 
         // Original dirty state
-        Model::DirtyState OriginalDirtyState;
+        ModelDirtyState OriginalDirtyState;
 
         // Rope start position
         ShipSpaceCoordinates StartCoords;
@@ -82,7 +81,7 @@ private:
 
         EngagementData(
             RopesLayerData && originalLayerClone,
-            Model::DirtyState const & dirtyState,
+            ModelDirtyState const & dirtyState,
             ShipSpaceCoordinates const & startCoords,
             std::optional<size_t> const & existingRopeElementIndex,
             MaterialPlaneType plane)

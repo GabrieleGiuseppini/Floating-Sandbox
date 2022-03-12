@@ -5,7 +5,6 @@
 ***************************************************************************************/
 #pragma once
 
-#include "Model.h"
 #include "Tool.h"
 
 #include <Game/Layers.h>
@@ -83,7 +82,7 @@ private:
         std::optional<ShipSpaceRect> EditRegion;
 
         // Dirty state
-        Model::DirtyState OriginalDirtyState;
+        ModelDirtyState OriginalDirtyState;
 
         // Position of previous engagement (when this is second, third, etc.)
         std::optional<ShipSpaceCoordinates> PreviousEngagementPosition;
@@ -96,7 +95,7 @@ private:
 
         EngagementData(
             MaterialPlaneType plane,
-            Model::DirtyState const & dirtyState,
+            ModelDirtyState const & dirtyState,
             std::optional<ShipSpaceCoordinates> shiftLockInitialPosition)
             : Plane(plane)
             , EditRegion()

@@ -59,7 +59,7 @@ PencilTool<TLayer, IsEraser>::PencilTool(
     : Tool(
         toolType,
         controller)
-    , mOriginalLayerClone(mController.GetModel().CloneExistingLayer<TLayer>())
+    , mOriginalLayerClone(mController.GetModelController().CloneExistingLayer<TLayer>())
     , mTempVisualizationDirtyShipRegion()
     , mEngagementData()
     , mIsShiftDown(false)
@@ -264,7 +264,7 @@ void PencilTool<TLayer, IsEraser>::StartEngagement(
 
     mEngagementData.emplace(
         isRightButton ? MaterialPlaneType::Background : MaterialPlaneType::Foreground,
-        mController.GetDirtyState(),
+        mController.GetModelController().GetDirtyState(),
         mIsShiftDown ? mouseCoordinates : std::optional<ShipSpaceCoordinates>());
 }
 
@@ -426,7 +426,7 @@ void PencilTool<TLayer, IsEraser>::EndEngagement()
     assert(!mTempVisualizationDirtyShipRegion);
 
     // Re-take original layer clone
-    mOriginalLayerClone = mController.GetModel().CloneExistingLayer<TLayer>();
+    mOriginalLayerClone = mController.GetModelController().CloneExistingLayer<TLayer>();
 }
 
 template<LayerType TLayer, bool IsEraser>
@@ -504,7 +504,7 @@ std::optional<ShipSpaceRect> PencilTool<TLayer, IsEraser>::CalculateApplicableRe
     ShipSpaceCoordinates const origin = ShipSpaceCoordinates(coords.x, coords.y - (pencilSize - 1));
 
     return ShipSpaceRect(origin - ShipSpaceSize(topLeftPencilSize, -topLeftPencilSize), { pencilSize, pencilSize })
-        .MakeIntersectionWith({ { 0, 0 }, mController.GetModel().GetShipSize() });
+        .MakeIntersectionWith({ { 0, 0 }, mController.GetModelController().GetShipSize() });
 }
 
 template<LayerType TLayer, bool IsEraser>

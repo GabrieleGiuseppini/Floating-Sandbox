@@ -39,7 +39,7 @@ LineTool<TLayer>::LineTool(
     : Tool(
         toolType,
         controller)
-    , mOriginalLayerClone(mController.GetModel().CloneExistingLayer<TLayer>())
+    , mOriginalLayerClone(mController.GetModelController().CloneExistingLayer<TLayer>())
     , mEphemeralVisualization()
     , mEngagementData()
     , mIsShiftDown(false)
@@ -209,7 +209,7 @@ void LineTool<TLayer>::StartEngagement(
     assert(!mEngagementData);
 
     mEngagementData.emplace(
-        mController.GetDirtyState(),
+        mController.GetModelController().GetDirtyState(),
         mouseCoordinates,
         plane);
 }
@@ -288,7 +288,7 @@ void LineTool<TLayer>::EndEngagement(ShipSpaceCoordinates const & mouseCoordinat
     // Re-take original layer clone
     //
 
-    mOriginalLayerClone = mController.GetModel().CloneExistingLayer<TLayer>();
+    mOriginalLayerClone = mController.GetModelController().CloneExistingLayer<TLayer>();
 }
 
 template<LayerType TLayer>
@@ -512,7 +512,7 @@ std::optional<ShipSpaceRect> LineTool<TLayer>::CalculateApplicableRect(ShipSpace
     ShipSpaceCoordinates const origin = ShipSpaceCoordinates(coords.x, coords.y - (lineSize - 1));
 
     return ShipSpaceRect(origin - ShipSpaceSize(topLeftLineSize, -topLeftLineSize), { lineSize, lineSize })
-        .MakeIntersectionWith({ { 0, 0 }, mController.GetModel().GetShipSize() });
+        .MakeIntersectionWith({ { 0, 0 }, mController.GetModelController().GetShipSize() });
 }
 
 template<LayerType TLayer>

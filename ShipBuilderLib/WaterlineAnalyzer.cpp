@@ -15,7 +15,7 @@ namespace ShipBuilder {
 float constexpr WaterDensity = 1000.0f;
 vec2f constexpr Vertical2f = vec2f(0.0f, -1.0f); // Vertical down
 
-WaterlineAnalyzer::WaterlineAnalyzer(Model const & model)
+WaterlineAnalyzer::WaterlineAnalyzer(ModelController const & model)
     : mModel(model)
 {
 }

@@ -60,13 +60,7 @@ public:
         ShipTexturizer const & shipTexturizer,
         ResourceLocator const & resourceLocator);
 
-    Model const & GetModel() const
-    {
-        assert(mModelController);
-        return mModelController->GetModel();
-    }
-
-    ModelController & GetModelController() const
+    ModelController & GetModelController()
     {
         assert(mModelController);
         return *mModelController;
@@ -94,30 +88,6 @@ public:
 
     ShipDefinition MakeShipDefinition();
 
-    ShipSpaceSize const & GetShipSize() const
-    {
-        assert(mModelController);
-        return mModelController->GetModel().GetShipSize();
-    }
-
-    ShipMetadata const & GetShipMetadata() const
-    {
-        assert(mModelController);
-        return mModelController->GetModel().GetShipMetadata();
-    }
-
-    ShipPhysicsData const & GetShipPhysicsData() const
-    {
-        assert(mModelController);
-        return mModelController->GetModel().GetShipPhysicsData();
-    }
-
-    std::optional<ShipAutoTexturizationSettings> const & GetShipAutoTexturizationSettings() const
-    {
-        assert(mModelController);
-        return mModelController->GetModel().GetShipAutoTexturizationSettings();
-    }
-
     void SetShipProperties(
         std::optional<ShipMetadata> && metadata,
         std::optional<ShipPhysicsData> && physicsData,
@@ -128,33 +98,9 @@ public:
         std::optional<ShipPhysicsData> && physicsData,
         std::optional<std::optional<ShipAutoTexturizationSettings>> && autoTexturizationSettings);
 
-    bool HasModelLayer(LayerType layer) const
-    {
-        assert(mModelController);
-        return mModelController->GetModel().HasLayer(layer);
-    }
-
-    bool IsModelDirty() const
-    {
-        assert(mModelController);
-        return mModelController->GetModel().GetIsDirty();
-    }
-
-    bool IsModelDirty(LayerType layer) const
-    {
-        assert(mModelController);
-        return mModelController->GetModel().GetIsDirty(layer);
-    }
-
     void ClearModelDirty();
 
-    Model::DirtyState const & GetDirtyState() const
-    {
-        assert(mModelController);
-        return mModelController->GetModel().GetDirtyState();
-    }
-
-    void RestoreDirtyState(Model::DirtyState && dirtyState);
+    void RestoreDirtyState(ModelDirtyState && dirtyState);
 
     std::unique_ptr<RgbaImageData> MakePreview() const;
 
@@ -167,12 +113,6 @@ public:
     //
 
     // Structural layer
-
-    StructuralLayerData const & GetStructuralLayer() const
-    {
-        assert(mModelController);
-        return mModelController->GetModel().GetStructuralLayer();
-    }
 
     void NewStructuralLayer();
     void SetStructuralLayer(
@@ -206,13 +146,6 @@ public:
     void RestoreRopesLayerForUndo(std::unique_ptr<RopesLayerData> ropesLayer);
 
     // Texture layer
-
-    TextureLayerData const & GetTextureLayer() const
-    {
-        assert(mModelController);
-        assert(mModelController->GetModel().HasLayer(LayerType::Texture));
-        return mModelController->GetModel().GetTextureLayer();
-    }
 
     void SetTextureLayer(
         wxString actionTitle,

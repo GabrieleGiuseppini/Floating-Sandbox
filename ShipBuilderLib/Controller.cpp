@@ -91,14 +91,14 @@ Controller::Controller(
     , mLastToolTypePerLayer({ToolType::StructuralPencil, ToolType::ElectricalPencil, ToolType::RopePencil, std::nullopt})
 {
     // We assume we start with at least a structural layer
-    assert(mModelController->GetModel().HasLayer(LayerType::Structural));
+    assert(mModelController->HasLayer(LayerType::Structural));
 
     //
     // Create view
     //
 
     mView = std::make_unique<View>(
-        mModelController->GetModel().GetShipSize(),
+        mModelController->GetShipSize(),
         mWorkbenchState.GetPrimaryVisualization(),
         mWorkbenchState.GetOtherVisualizationsOpacity(),
         mWorkbenchState.IsGridEnabled(),
@@ -123,11 +123,11 @@ Controller::Controller(
     //
 
     mUserInterface.OnViewModelChanged(mView->GetViewModel());
-    mUserInterface.OnShipNameChanged(mModelController->GetModel());
+    mUserInterface.OnShipNameChanged(*mModelController);
     mUserInterface.OnShipScaleChanged(mModelController->GetShipMetadata().Scale);
-    mUserInterface.OnShipSizeChanged(GetShipSize());
-    mUserInterface.OnLayerPresenceChanged(mModelController->GetModel());
-    mUserInterface.OnModelDirtyChanged(mModelController->GetModel());
+    mUserInterface.OnShipSizeChanged(mModelController->GetShipSize());
+    mUserInterface.OnLayerPresenceChanged(*mModelController);
+    mUserInterface.OnModelDirtyChanged(*mModelController);
     mUserInterface.OnUndoStackStateChanged(mUndoStack);
 
     //
@@ -195,7 +195,7 @@ void Controller::SetShipProperties(
                 std::move(oldAutoTexturizationSettings));
         };
 
-    auto originalDirtyState = mModelController->GetModel().GetDirtyState();
+    auto originalDirtyState = mModelController->GetDirtyState();
 
     //
     // Set new properties
@@ -207,7 +207,7 @@ void Controller::SetShipProperties(
         std::move(autoTexturizationSettings));
 
     // At least one of the three was changed
-    mUserInterface.OnModelDirtyChanged(mModelController->GetModel());
+    mUserInterface.OnModelDirtyChanged(*mModelController);
 
     //
     // Store undo action
@@ -235,20 +235,20 @@ void Controller::RestoreShipPropertiesForUndo(
         std::move(autoTexturizationSettings));
 
     // At least one of the three was changed
-    mUserInterface.OnModelDirtyChanged(mModelController->GetModel());
+    mUserInterface.OnModelDirtyChanged(*mModelController);
 }
 
 void Controller::ClearModelDirty()
 {
     mModelController->ClearIsDirty();
-    mUserInterface.OnModelDirtyChanged(mModelController->GetModel());
+    mUserInterface.OnModelDirtyChanged(*mModelController);
 }
 
-void Controller::RestoreDirtyState(Model::DirtyState && dirtyState)
+void Controller::RestoreDirtyState(ModelDirtyState && dirtyState)
 {
     // Restore dirtyness
     mModelController->RestoreDirtyState(dirtyState);
-    mUserInterface.OnModelDirtyChanged(mModelController->GetModel());
+    mUserInterface.OnModelDirtyChanged(*mModelController);
 }
 
 ModelValidationResults Controller::ValidateModel()
@@ -278,7 +278,7 @@ std::optional<ShipSpaceRect> Controller::CalculateBoundingBox() const
 void Controller::NewStructuralLayer()
 {
     StructuralLayerData newStructuralLayer(
-        GetShipSize(),
+        mModelController->GetShipSize(),
         StructuralElement(nullptr)); // No material
 
     InternalSetLayer<LayerType::Structural>(
@@ -357,7 +357,7 @@ void Controller::RestoreStructuralLayerForUndo(StructuralLayerData && structural
 void Controller::NewElectricalLayer()
 {
     ElectricalLayerData newElectricalLayer(
-        GetShipSize(),
+        mModelController->GetShipSize(),
         ElectricalElement(nullptr, NoneElectricalElementInstanceIndex)); // No material
 
     InternalSetLayer<LayerType::Electrical>(
@@ -424,8 +424,8 @@ void Controller::TrimElectricalParticlesWithoutSubstratum()
     // Trim
     {
         // Save state
-        auto originalDirtyStateClone = mModelController->GetModel().GetDirtyState();
-        auto originalLayerClone = mModelController->GetModel().CloneExistingLayer<LayerType::Electrical>();
+        auto originalDirtyStateClone = mModelController->GetDirtyState();
+        auto originalLayerClone = mModelController->CloneExistingLayer<LayerType::Electrical>();
 
         // Trim
         auto const affectedRect = mModelController->TrimElectricalParticlesWithoutSubstratum();
@@ -454,7 +454,7 @@ void Controller::TrimElectricalParticlesWithoutSubstratum()
 
     // Update dirtyness
     mModelController->SetLayerDirty(LayerType::Electrical);
-    mUserInterface.OnModelDirtyChanged(mModelController->GetModel());
+    mUserInterface.OnModelDirtyChanged(*mModelController);
 
     // Refresh model visualizations
     mModelController->UpdateVisualizations(*mView);
@@ -732,7 +732,7 @@ void Controller::LayerChangeEpilog(std::optional<LayerType> dirtyLayer)
     {
         // Mark layer as dirty
         mModelController->SetLayerDirty(*dirtyLayer);
-        mUserInterface.OnModelDirtyChanged(mModelController->GetModel());
+        mUserInterface.OnModelDirtyChanged(*mModelController);
 
         // Refresh macro properties
         auto const & modelMacroProperties = mModelController->GetModelMacroProperties();
@@ -1118,7 +1118,7 @@ void Controller::OnUncapturedMouseOut()
     InternalSuspendTool();
 
     // Tell UI
-    mUserInterface.OnToolCoordinatesChanged(std::nullopt, GetShipSize());
+    mUserInterface.OnToolCoordinatesChanged(std::nullopt, mModelController->GetShipSize());
 }
 
 void Controller::OnMouseCaptureLost()
@@ -1245,7 +1245,7 @@ void Controller::InternalSetLayer(wxString actionTitle, TArgs&& ... args)
 
     // Update dirtyness
     mModelController->SetLayerDirty(TLayerType);
-    mUserInterface.OnModelDirtyChanged(mModelController->GetModel());
+    mUserInterface.OnModelDirtyChanged(*mModelController);
 
     // Update visualization modes
     InternalUpdateModelControllerVisualizationModes();
@@ -1309,7 +1309,7 @@ void Controller::InternalRemoveLayer()
 
     // Update dirtyness
     mModelController->SetLayerDirty(TLayerType);
-    mUserInterface.OnModelDirtyChanged(mModelController->GetModel());
+    mUserInterface.OnModelDirtyChanged(*mModelController);
 
     // Update visualization modes
     InternalUpdateModelControllerVisualizationModes();
@@ -1325,12 +1325,12 @@ void Controller::InternalPushUndoForWholeLayer(wxString const & title)
     assert(!mCurrentTool); // Tools are suspended
 
     // Get dirty state snapshot
-    auto originalDirtyStateClone = mModelController->GetModel().GetDirtyState();
+    auto originalDirtyStateClone = mModelController->GetDirtyState();
 
     // Create undo action
     if constexpr (TLayerType == LayerType::Electrical)
     {
-        auto originalLayerClone = mModelController->GetModel().CloneElectricalLayer();
+        auto originalLayerClone = mModelController->CloneElectricalLayer();
 
         mUndoStack.Push(
             title,
@@ -1344,7 +1344,7 @@ void Controller::InternalPushUndoForWholeLayer(wxString const & title)
     }
     else if constexpr (TLayerType == LayerType::Ropes)
     {
-        auto originalLayerClone = mModelController->GetModel().CloneRopesLayer();
+        auto originalLayerClone = mModelController->CloneRopesLayer();
 
         // Create undo action
         mUndoStack.Push(
@@ -1359,7 +1359,7 @@ void Controller::InternalPushUndoForWholeLayer(wxString const & title)
     }
     else if constexpr (TLayerType == LayerType::Structural)
     {
-        auto originalLayerClone = mModelController->GetModel().CloneStructuralLayer();
+        auto originalLayerClone = mModelController->CloneStructuralLayer();
 
         // Create undo action
         mUndoStack.Push(
@@ -1374,7 +1374,7 @@ void Controller::InternalPushUndoForWholeLayer(wxString const & title)
     }
     else
     {
-        auto originalLayerClone = mModelController->GetModel().CloneTextureLayer();
+        auto originalLayerClone = mModelController->CloneTextureLayer();
         auto originalTextureArtCredits = mModelController->GetShipMetadata().ArtCredits;
 
         // Create undo action
@@ -1399,16 +1399,16 @@ void Controller::WrapLikelyLayerPresenceChangingOperation(TFunctor operation)
 {
     assert(!mCurrentTool); // Tools are suspended
 
-    bool const oldIsLayerPresent = mModelController->GetModel().HasLayer(TLayerType);
+    bool const oldIsLayerPresent = mModelController->HasLayer(TLayerType);
 
     operation();
 
-    bool const newIsLayerPresent = mModelController->GetModel().HasLayer(TLayerType);
+    bool const newIsLayerPresent = mModelController->HasLayer(TLayerType);
 
     if (oldIsLayerPresent != newIsLayerPresent)
     {
         // Notify layer presence changed
-        mUserInterface.OnLayerPresenceChanged(mModelController->GetModel());
+        mUserInterface.OnLayerPresenceChanged(*mModelController);
 
         if constexpr (TLayerType == LayerType::Texture)
         {
@@ -1466,7 +1466,7 @@ void Controller::InternalSetShipProperties(
 
         if (hasShipNameChanged)
         {
-            mUserInterface.OnShipNameChanged(mModelController->GetModel());
+            mUserInterface.OnShipNameChanged(*mModelController);
         }
 
         if (hasShipScaleChanged)
@@ -1522,7 +1522,7 @@ void Controller::InternalSelectPrimaryVisualization(VisualizationType primaryVis
 
 void Controller::InternalReconciliateTextureVisualizationMode()
 {
-    if (!mModelController->GetModel().HasLayer(LayerType::Texture))
+    if (!mModelController->HasLayer(LayerType::Texture))
     {
         // If game visualization mode is the one only allowed with texture,
         // change it to auto-texturization
@@ -1556,13 +1556,13 @@ void Controller::InternalUpdateModelControllerVisualizationModes()
 
     // Structural
 
-    assert(mModelController->GetModel().HasLayer(LayerType::Structural));
+    assert(mModelController->HasLayer(LayerType::Structural));
 
     mModelController->SetStructuralLayerVisualizationMode(mWorkbenchState.GetStructuralLayerVisualizationMode());
 
     // Electrical
 
-    if (mModelController->GetModel().HasLayer(LayerType::Electrical))
+    if (mModelController->HasLayer(LayerType::Electrical))
     {
         mModelController->SetElectricalLayerVisualizationMode(mWorkbenchState.GetElectricalLayerVisualizationMode());
     }
@@ -1573,7 +1573,7 @@ void Controller::InternalUpdateModelControllerVisualizationModes()
 
     // Ropes
 
-    if (mModelController->GetModel().HasLayer(LayerType::Ropes))
+    if (mModelController->HasLayer(LayerType::Ropes))
     {
         mModelController->SetRopesLayerVisualizationMode(mWorkbenchState.GetRopesLayerVisualizationMode());
     }
@@ -1584,7 +1584,7 @@ void Controller::InternalUpdateModelControllerVisualizationModes()
 
     // Texture
 
-    if (mModelController->GetModel().HasLayer(LayerType::Texture))
+    if (mModelController->HasLayer(LayerType::Texture))
     {
         mModelController->SetTextureLayerVisualizationMode(mWorkbenchState.GetTextureLayerVisualizationMode());
     }
@@ -1760,7 +1760,7 @@ void Controller::InternalResizeShip(
     // Store undo
     {
         // Get dirty state
-        Model::DirtyState const originalDirtyState = mModelController->GetModel().GetDirtyState();
+        ModelDirtyState const originalDirtyState = mModelController->GetDirtyState();
 
         // Clone all layers
         auto structuralLayerClone = mModelController->CloneStructuralLayer();
@@ -1782,7 +1782,7 @@ void Controller::InternalResizeShip(
             actionName,
             totalCost,
             originalDirtyState,
-            [shipSize = mModelController->GetModel().GetShipSize()
+            [shipSize = mModelController->GetShipSize()
             , structuralLayerClone = std::move(structuralLayerClone)
             , electricalLayerClone = std::move(electricalLayerClone)
             , ropesLayerClone = std::move(ropesLayerClone)
@@ -1806,7 +1806,7 @@ void Controller::InternalResizeShip(
 
     // Update dirtyness
     mModelController->SetAllPresentLayersDirty();
-    mUserInterface.OnModelDirtyChanged(mModelController->GetModel());
+    mUserInterface.OnModelDirtyChanged(*mModelController);
 
     // Notify view of new size
     mView->SetShipSize(newSize);
@@ -1826,7 +1826,7 @@ void Controller::InternalFlip(DirectionType direction)
     if constexpr (!IsForUndo)
     {
         // Get dirty state
-        Model::DirtyState const originalDirtyState = mModelController->GetModel().GetDirtyState();
+        ModelDirtyState const originalDirtyState = mModelController->GetDirtyState();
 
         // Calculate undo title
         wxString undoTitle;
@@ -1860,7 +1860,7 @@ void Controller::InternalFlip(DirectionType direction)
     {
         // Update dirtyness
         mModelController->SetAllPresentLayersDirty();
-        mUserInterface.OnModelDirtyChanged(mModelController->GetModel());
+        mUserInterface.OnModelDirtyChanged(*mModelController);
     }
 
     // Refresh model visualizations
@@ -1874,7 +1874,7 @@ void Controller::RefreshToolCoordinatesDisplay()
     ShipSpaceCoordinates mouseShipSpaceCoordinates = mView->ScreenToShipSpace(mUserInterface.GetMouseCoordinates());
 
     // Check if within ship canvas
-    auto const & shipSize = GetShipSize();
+    auto const & shipSize = mModelController->GetShipSize();
     if (mouseShipSpaceCoordinates.IsInSize(shipSize))
     {
         mUserInterface.OnToolCoordinatesChanged(mouseShipSpaceCoordinates, shipSize);

@@ -62,7 +62,7 @@ template<LayerType TLayer>
 void SamplerTool<TLayer>::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates)
 {
     auto const coords = ScreenToShipSpace(mouseCoordinates);
-    if (coords.IsInSize(mController.GetShipSize()))
+    if (coords.IsInSize(mController.GetModelController().GetShipSize()))
     {
         // Get material
         auto const * material = SampleMaterial(coords);
@@ -107,7 +107,7 @@ void SamplerTool<TLayer>::DoSelectMaterial(
     ShipSpaceCoordinates const & mouseCoordinates,
     MaterialPlaneType plane)
 {
-    if (mouseCoordinates.IsInSize(mController.GetShipSize()))
+    if (mouseCoordinates.IsInSize(mController.GetModelController().GetShipSize()))
     {
         // Get material
         auto const * material = SampleMaterial(mouseCoordinates);
@@ -135,7 +135,7 @@ void SamplerTool<TLayer>::DoSelectMaterial(
 template<LayerType TLayer>
 typename SamplerTool<TLayer>::LayerMaterialType const * SamplerTool<TLayer>::SampleMaterial(ShipSpaceCoordinates const & mouseCoordinates)
 {
-    assert(mouseCoordinates.IsInSize(mController.GetShipSize()));
+    assert(mouseCoordinates.IsInSize(mController.GetModelController().GetShipSize()));
 
     if constexpr (TLayer == LayerType::Structural)
     {

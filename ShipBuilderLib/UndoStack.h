@@ -5,7 +5,6 @@
 ***************************************************************************************/
 #pragma once
 
-#include "Model.h"
 #include "ShipBuilderTypes.h"
 
 #include <Game/Layers.h>
@@ -48,7 +47,7 @@ public:
     void Push(
         wxString const & title,
         size_t cost,
-        Model::DirtyState const & originalDirtyState,
+        ModelDirtyState const & originalDirtyState,
         F && undoFunction)
     {
         auto undoAction = std::make_unique<UndoActionLambda<F>>(
@@ -56,7 +55,7 @@ public:
             cost,
             originalDirtyState,
             std::move(undoFunction));
-        
+
         // Update total cost
         mTotalCost += cost;
 
@@ -84,7 +83,7 @@ private:
     {
         wxString Title;
         size_t Cost;
-        Model::DirtyState OriginalDirtyState; // The model's dirty state that was in effect when the edit action being undode was applied
+        ModelDirtyState OriginalDirtyState; // The model's dirty state that was in effect when the edit action being undode was applied
 
         virtual ~UndoAction() = default;
 
@@ -95,7 +94,7 @@ private:
         UndoAction(
             wxString const & title,
             size_t cost,
-            Model::DirtyState const & originalDirtyState)
+            ModelDirtyState const & originalDirtyState)
             : Title(title)
             , Cost(cost)
             , OriginalDirtyState(originalDirtyState)
@@ -110,7 +109,7 @@ private:
         UndoActionLambda(
             wxString const & title,
             size_t cost,
-            Model::DirtyState const & originalDirtyState,
+            ModelDirtyState const & originalDirtyState,
             F && undoFunction)
             : UndoAction(
                 title,

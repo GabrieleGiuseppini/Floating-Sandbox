@@ -320,13 +320,26 @@
 	- See if still need View::RemoveAllMarkers
 
 - Decide whether we still want Controller to both expose Model and wrappers for it
-	- Ideally Controller does not expose Model directly, only wrappers - so it can enforce eph viz checks, like in CloneExistingLayer()
-	- List all reasons for exposing Model now
-	- Do something about GetDirtyState() anyway
+	= Philosophy:
+		+ Controller does not expose getters, but exposes ModelController const & for observers
+			+ Ideally Controller does not expose Model directly, only ModelController wrappers - so it can enforce eph viz checks, like we do now in CloneExistingLayer()
+		+ ModelController does not expose Model, and completely wraps Model
+			
+	- See what to do with ModelController being passed around as Model
+		- Problem statement:
+			- Some model observables should only be accessed after ModelController assert on eph viz; others instead are fine
+		- Option 1:
+			- IModelObservable
+		- Option 2:
+			- Do pass model, but it's obtained from ModelController via const & getter, which checks for ephemeral and all
+		- Option 3:
+			- Just pass model!
+		- IUserInterface
+		- WaterlineAnalyzer, WaterlineAnalyzerDialog
+
+	- See if can make Controller::GetModelController() return a const
 
 - Cleanup TODOOLD's in Controller
-
-- 
 
 - Fix auto zoom
 

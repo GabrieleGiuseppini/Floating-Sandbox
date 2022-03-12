@@ -150,7 +150,7 @@ void MeasuringTapeTool::DoAction(ShipSpaceCoordinates const & coords)
         View::OverlayMode::Default);
 
     // Calculate length
-    auto const ratio = mController.GetModel().GetShipMetadata().Scale;
+    auto const ratio = mController.GetModelController().GetShipMetadata().Scale;
     vec2f const v(endPoint.ToFractionalCoords(ratio) - mEngagementData->StartCoords.ToFractionalCoords(ratio));
     mController.GetUserInterface().OnMeasuredWorldLengthChanged(static_cast<int>(std::round(v.length())));
 }
@@ -187,8 +187,8 @@ void MeasuringTapeTool::HideOverlay()
 ShipSpaceCoordinates MeasuringTapeTool::ClipToWorkCanvas(ShipSpaceCoordinates const & coords) const
 {
     return ShipSpaceCoordinates(
-        Clamp(coords.x, 0, mController.GetModel().GetShipSize().width - 1),
-        Clamp(coords.y, 0, mController.GetModel().GetShipSize().height - 1));
+        Clamp(coords.x, 0, mController.GetModelController().GetShipSize().width - 1),
+        Clamp(coords.y, 0, mController.GetModelController().GetShipSize().height - 1));
 }
 
 }

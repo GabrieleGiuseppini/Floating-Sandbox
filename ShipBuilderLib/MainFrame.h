@@ -94,11 +94,11 @@ public:
 
     void OnShipScaleChanged(ShipSpaceToWorldSpaceCoordsRatio const & scale) override;
 
-    void OnShipNameChanged(Model const & model) override;
+    void OnShipNameChanged(ModelController const & model) override;
 
-    void OnLayerPresenceChanged(Model const & model) override;
+    void OnLayerPresenceChanged(ModelController const & model) override;
 
-    void OnModelDirtyChanged(Model const & model) override;
+    void OnModelDirtyChanged(ModelController const & model) override;
 
     void OnModelMacroPropertiesUpdated(ModelMacroProperties const & properties) override;
 
@@ -291,9 +291,9 @@ private:
 
     void ReconciliateUIWithShipTitle(std::string const & shipName, bool isShipDirty);
 
-    void ReconciliateUIWithLayerPresence(Model const & model);
+    void ReconciliateUIWithLayerPresence(ModelController const & model);
 
-    void ReconciliateUIWithModelDirtiness(Model const & model);
+    void ReconciliateUIWithModelDirtiness(ModelController const & model);
 
     void ReconciliateUIWithModelMacroProperties(ModelMacroProperties const & properties);
 

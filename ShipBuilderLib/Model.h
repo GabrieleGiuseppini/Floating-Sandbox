@@ -33,45 +33,6 @@ class Model
 {
 public:
 
-    struct DirtyState
-    {
-        std::array<bool, LayerCount> IsLayerDirtyMap;
-        bool IsMetadataDirty;
-        bool IsPhysicsDataDirty;
-        bool IsAutoTexturizationSettingsDirty;
-
-        bool GlobalIsDirty;
-
-        DirtyState()
-            : IsLayerDirtyMap()
-            , IsMetadataDirty(false)
-            , IsPhysicsDataDirty(false)
-            , IsAutoTexturizationSettingsDirty(false)
-            , GlobalIsDirty(false)
-        {
-            IsLayerDirtyMap.fill(false);
-        }
-
-        DirtyState & operator=(DirtyState const & other) = default;
-
-        void RecalculateGlobalIsDirty()
-        {
-            GlobalIsDirty = std::find(
-                IsLayerDirtyMap.cbegin(),
-                IsLayerDirtyMap.cend(),
-                true) != IsLayerDirtyMap.cend()
-                ? true
-                : false;
-
-            GlobalIsDirty |=
-                IsMetadataDirty
-                | IsPhysicsDataDirty
-                | IsAutoTexturizationSettingsDirty;
-        }
-    };
-
-public:
-
     explicit Model(
         ShipSpaceSize const & shipSize,
         std::string const & shipName);
@@ -139,12 +100,12 @@ public:
         return mLayerPresenceMap[static_cast<size_t>(layer)];
     }
 
-    DirtyState const & GetDirtyState() const
+    ModelDirtyState const & GetDirtyState() const
     {
         return mDirtyState;
     }
 
-    void SetDirtyState(DirtyState const & dirtyState)
+    void SetDirtyState(ModelDirtyState const & dirtyState)
     {
         mDirtyState = dirtyState;
     }
@@ -177,7 +138,7 @@ public:
 
     void ClearIsDirty()
     {
-        mDirtyState = DirtyState();
+        mDirtyState = ModelDirtyState();
     }
 
     void ClearIsDirty(LayerType layer)
@@ -185,7 +146,7 @@ public:
         mDirtyState.IsLayerDirtyMap[static_cast<size_t>(layer)] = false;
         mDirtyState.RecalculateGlobalIsDirty();
     }
-    
+
     template<LayerType TLayer>
     typename LayerTypeTraits<TLayer>::layer_data_type CloneExistingLayer() const
     {
@@ -316,7 +277,7 @@ private:
     std::array<bool, LayerCount> mLayerPresenceMap;
 
     // Dirty state
-    DirtyState mDirtyState;
+    ModelDirtyState mDirtyState;
 };
 
 }

@@ -5,10 +5,11 @@
 ***************************************************************************************/
 #pragma once
 
-#include <GameCore/Buffer2D.h>
 #include <GameCore/GameTypes.h>
 #include <GameCore/Vectors.h>
 
+#include <array>
+#include <algorithm>
 #include <cmath>
 #include <cstdint>
 #include <optional>
@@ -132,6 +133,43 @@ struct ModelMacroProperties
         : TotalMass(totalMass)
         , CenterOfMass(centerOfMass)
     {}
+};
+
+struct ModelDirtyState
+{
+    std::array<bool, LayerCount> IsLayerDirtyMap;
+    bool IsMetadataDirty;
+    bool IsPhysicsDataDirty;
+    bool IsAutoTexturizationSettingsDirty;
+
+    bool GlobalIsDirty;
+
+    ModelDirtyState()
+        : IsLayerDirtyMap()
+        , IsMetadataDirty(false)
+        , IsPhysicsDataDirty(false)
+        , IsAutoTexturizationSettingsDirty(false)
+        , GlobalIsDirty(false)
+    {
+        IsLayerDirtyMap.fill(false);
+    }
+
+    ModelDirtyState & operator=(ModelDirtyState const & other) = default;
+
+    void RecalculateGlobalIsDirty()
+    {
+        GlobalIsDirty = std::find(
+            IsLayerDirtyMap.cbegin(),
+            IsLayerDirtyMap.cend(),
+            true) != IsLayerDirtyMap.cend()
+            ? true
+            : false;
+
+        GlobalIsDirty |=
+            IsMetadataDirty
+            | IsPhysicsDataDirty
+            | IsAutoTexturizationSettingsDirty;
+    }
 };
 
 }

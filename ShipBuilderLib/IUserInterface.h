@@ -5,7 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
-#include "Model.h"
+#include "ModelController.h"
 #include "ShipBuilderTypes.h"
 #include "UndoStack.h"
 #include "ViewModel.h"
@@ -36,13 +36,13 @@ public:
     virtual void OnShipScaleChanged(ShipSpaceToWorldSpaceCoordsRatio const & scale) = 0;
 
     // Notifies of a change in the name of the ship
-    virtual void OnShipNameChanged(Model const & model) = 0;
+    virtual void OnShipNameChanged(ModelController const & model) = 0;
 
     // Notifies of a (possible) change in the presence of a layer
-    virtual void OnLayerPresenceChanged(Model const & model) = 0;
+    virtual void OnLayerPresenceChanged(ModelController const & model) = 0;
 
     // Notifies of a (possible) change in the dirtiness of the model
-    virtual void OnModelDirtyChanged(Model const & model) = 0;
+    virtual void OnModelDirtyChanged(ModelController const & model) = 0;
 
     // Notifies of a (possible) change in the model's macro properties analysis
     virtual void OnModelMacroPropertiesUpdated(ModelMacroProperties const & properties) = 0;

@@ -19,7 +19,7 @@ RopeEraserTool::RopeEraserTool(
     : Tool(
         ToolType::RopeEraser,
         controller)
-    , mOriginalLayerClone(mController.GetModel().CloneExistingLayer<LayerType::Ropes>())
+    , mOriginalLayerClone(mController.GetModelController().CloneExistingLayer<LayerType::Ropes>())
     , mHasOverlay(false)
     , mEngagementData()
 {
@@ -124,7 +124,7 @@ void RopeEraserTool::StartEngagement()
 
     assert(!mEngagementData.has_value());
 
-    mEngagementData.emplace(mController.GetDirtyState());
+    mEngagementData.emplace(mController.GetModelController().GetDirtyState());
 }
 
 void RopeEraserTool::DoAction(ShipSpaceCoordinates const & coords)
@@ -164,7 +164,7 @@ void RopeEraserTool::StopEngagement()
             });
 
         // Take new orig clone
-        mOriginalLayerClone = mController.GetModel().CloneExistingLayer<LayerType::Ropes>();
+        mOriginalLayerClone = mController.GetModelController().CloneExistingLayer<LayerType::Ropes>();
     }
 
     // Stop engagement

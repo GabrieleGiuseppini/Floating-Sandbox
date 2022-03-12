@@ -5,7 +5,6 @@
 ***************************************************************************************/
 #pragma once
 
-#include "Model.h"
 #include "Tool.h"
 
 #include <Game/Layers.h>
@@ -88,7 +87,7 @@ private:
     struct EngagementData
     {
         // Dirty state
-        Model::DirtyState OriginalDirtyState;
+        ModelDirtyState OriginalDirtyState;
 
         // Start point
         ShipSpaceCoordinates StartCoords;
@@ -97,7 +96,7 @@ private:
         MaterialPlaneType Plane;
 
         EngagementData(
-            Model::DirtyState const & dirtyState,
+            ModelDirtyState const & dirtyState,
             ShipSpaceCoordinates const & startCoords,
             MaterialPlaneType plane)
             : OriginalDirtyState(dirtyState)

@@ -201,15 +201,15 @@ void RopePencilTool::CheckEngagement(
     //  - If outside ship rect : No engagement
     //  - Else: always OK to engage - either for new rope or for moving
 
-    if (coords.IsInSize(mController.GetShipSize()))
+    if (coords.IsInSize(mController.GetModelController().GetShipSize()))
     {
         //
         // OK to engage
         //
 
         mEngagementData.emplace(
-            mController.GetModel().CloneExistingLayer<LayerType::Ropes>(),
-            mController.GetDirtyState(),
+            mController.GetModelController().CloneExistingLayer<LayerType::Ropes>(),
+            mController.GetModelController().GetDirtyState(),
             coords,
             mController.GetModelController().GetRopeElementIndexAt(coords),
             materialPlane);
@@ -228,7 +228,7 @@ void RopePencilTool::DoTempVisualization(ShipSpaceCoordinates const & coords)
     //  - Else: may release only if there's no other rope endpoint at that position
     //
 
-    if (coords.IsInSize(mController.GetShipSize())
+    if (coords.IsInSize(mController.GetModelController().GetShipSize())
         && !mController.GetModelController().GetRopeElementIndexAt(coords).has_value())
     {
         if (!mEngagementData->ExistingRopeElementIndex.has_value())
@@ -276,7 +276,7 @@ bool RopePencilTool::CommmitAndStopEngagement(ShipSpaceCoordinates const & coord
 
     bool hasEdited = false;
 
-    if (coords.IsInSize(mController.GetShipSize())
+    if (coords.IsInSize(mController.GetModelController().GetShipSize())
         && !mController.GetModelController().GetRopeElementIndexAt(coords).has_value()
         && coords != mEngagementData->StartCoords)
     {
@@ -334,7 +334,7 @@ void RopePencilTool::DrawOverlay(ShipSpaceCoordinates const & coords)
     //  - Else(!engaged) : check if OK to engage
     //      - Always
 
-    if (!coords.IsInSize(mController.GetShipSize()))
+    if (!coords.IsInSize(mController.GetModelController().GetShipSize()))
     {
         if (mHasOverlay)
         {

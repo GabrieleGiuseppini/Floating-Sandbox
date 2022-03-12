@@ -398,6 +398,14 @@ void ModelController::ResizeShip(
 // Structural
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+StructuralLayerData const & ModelController::GetStructuralLayer() const
+{
+    assert(mModel.HasLayer(LayerType::Structural));
+    assert(!mIsElectricalLayerInEphemeralVisualization);
+
+    return mModel.GetStructuralLayer();
+}
+
 void ModelController::SetStructuralLayer(StructuralLayerData && structuralLayer)
 {
     assert(mModel.HasLayer(LayerType::Structural));
@@ -434,7 +442,6 @@ void ModelController::StructuralRegionFill(
     StructuralMaterial const * material)
 {
     assert(mModel.HasLayer(LayerType::Structural));
-
     assert(!mIsStructuralLayerInEphemeralVisualization);
 
     //
@@ -1133,6 +1140,13 @@ void ModelController::RestoreRopesLayerForEphemeralVisualization(RopesLayerData 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Texture
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+TextureLayerData const & ModelController::GetTextureLayer() const
+{
+    assert(mModel.HasLayer(LayerType::Texture));
+
+    return mModel.GetTextureLayer();
+}
 
 void ModelController::SetTextureLayer(
     TextureLayerData && textureLayer,

@@ -49,9 +49,14 @@ public:
 
     ShipDefinition MakeShipDefinition() const;
 
-    Model const & GetModel() const
+    ShipSpaceSize const & GetShipSize() const
     {
-        return mModel;
+        return mModel.GetShipSize();
+    }
+
+    void SetShipSize(ShipSpaceSize const & shipSize)
+    {
+        mModel.SetShipSize(shipSize);
     }
 
     ModelMacroProperties GetModelMacroProperties() const
@@ -61,14 +66,29 @@ public:
             mTotalMass != 0.0f ? mCenterOfMassSum / mTotalMass : std::optional<vec2f>());
     }
 
-    void SetShipSize(ShipSpaceSize const & shipSize)
-    {
-        mModel.SetShipSize(shipSize);
-    }
-
     std::unique_ptr<RgbaImageData> MakePreview() const;
 
     std::optional<ShipSpaceRect> CalculateBoundingBox() const;
+
+    bool HasLayer(LayerType layer) const
+    {
+        return mModel.HasLayer(layer);
+    }
+
+    bool IsDirty() const
+    {
+        return mModel.GetIsDirty();
+    }
+
+    bool IsLayerDirty(LayerType layer) const
+    {
+        return mModel.GetIsDirty(layer);
+    }
+
+    ModelDirtyState GetDirtyState() const
+    {
+        return mModel.GetDirtyState();
+    }
 
     void SetLayerDirty(LayerType layer)
     {
@@ -80,7 +100,7 @@ public:
         mModel.SetAllPresentLayersDirty();
     }
 
-    void RestoreDirtyState(Model::DirtyState const & dirtyState)
+    void RestoreDirtyState(ModelDirtyState const & dirtyState)
     {
         mModel.SetDirtyState(dirtyState);
     }
@@ -137,9 +157,44 @@ public:
         ShipSpaceSize const & newSize,
         ShipSpaceCoordinates const & originOffset);
 
+    template<LayerType TLayer>
+    typename LayerTypeTraits<TLayer>::layer_data_type CloneExistingLayer() const
+    {
+        switch (TLayer)
+        {
+            case LayerType::Electrical:
+            {
+                assert(!mIsElectricalLayerInEphemeralVisualization);
+                break;
+            }
+
+            case LayerType::Ropes:
+            {
+                assert(!mIsRopesLayerInEphemeralVisualization);
+                break;
+            }
+
+            case LayerType::Structural:
+            {
+                assert(!mIsStructuralLayerInEphemeralVisualization);
+                break;
+            }
+
+            case LayerType::Texture:
+            {
+                // Nop
+                break;
+            }
+        }
+
+        return mModel.CloneExistingLayer<TLayer>();
+    }
+
     //
     // Structural
     //
+
+    StructuralLayerData const & GetStructuralLayer() const;
 
     void SetStructuralLayer(StructuralLayerData && structuralLayer);
 
@@ -177,6 +232,7 @@ public:
     //
 
     void SetElectricalLayer(ElectricalLayerData && electricalLayer);
+
     void RemoveElectricalLayer();
 
     std::unique_ptr<ElectricalLayerData> CloneElectricalLayer() const;
@@ -212,6 +268,7 @@ public:
     //
 
     void SetRopesLayer(RopesLayerData && ropesLayer);
+
     void RemoveRopesLayer();
 
     std::unique_ptr<RopesLayerData> CloneRopesLayer() const;
@@ -249,6 +306,8 @@ public:
     //
     // Texture
     //
+
+    TextureLayerData const & GetTextureLayer() const;
 
     void SetTextureLayer(
         TextureLayerData && textureLayer,

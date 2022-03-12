@@ -5,7 +5,6 @@
 ***************************************************************************************/
 #pragma once
 
-#include "Model.h"
 #include "Tool.h"
 
 #include <Game/Layers.h>
@@ -63,12 +62,12 @@ private:
     struct EngagementData
     {
         // Dirty state
-        Model::DirtyState OriginalDirtyState;
+        ModelDirtyState OriginalDirtyState;
 
         // Set to true if we've really edited anything
         bool HasEdited;
 
-        EngagementData(Model::DirtyState const & dirtyState)
+        EngagementData(ModelDirtyState const & dirtyState)
             : OriginalDirtyState(dirtyState)
             , HasEdited(false)
         {}

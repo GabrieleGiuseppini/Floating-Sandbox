@@ -25,7 +25,7 @@ namespace ShipBuilder {
 WaterlineAnalyzerDialog::WaterlineAnalyzerDialog(
     wxWindow * parent,
     wxPoint const & centerScreen,
-    Model const & model,
+    ModelController const & model,
     View & view,
     IUserInterface & userInterface,
     UnitsSystem displayUnitsSystem,

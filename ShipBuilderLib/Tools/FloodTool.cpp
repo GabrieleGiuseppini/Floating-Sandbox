@@ -57,8 +57,8 @@ void FloodTool<TLayer>::DoEdit(
     StrongTypedBool<struct IsRightMouseButton> isRightButton)
 {
     // Take clone of current layer
-    auto layerDirtyStateClone = mController.GetDirtyState();
-    auto layerClone = mController.GetModel().CloneExistingLayer<TLayer>();
+    auto layerDirtyStateClone = mController.GetModelController().GetDirtyState();
+    auto layerClone = mController.GetModelController().CloneExistingLayer<TLayer>();
 
     // Do edit
     LayerMaterialType const * const floodMaterial = GetFloodMaterial(isRightButton ? MaterialPlaneType::Background : MaterialPlaneType::Foreground);

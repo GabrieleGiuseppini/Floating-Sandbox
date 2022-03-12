@@ -431,7 +431,7 @@ void MainFrame::OnShipScaleChanged(ShipSpaceToWorldSpaceCoordsRatio const & scal
     ReconciliateUIWithShipScale(scale);
 }
 
-void MainFrame::OnShipNameChanged(Model const & model)
+void MainFrame::OnShipNameChanged(ModelController const & model)
 {
     //
     // Ship filename workflow
@@ -472,15 +472,15 @@ void MainFrame::OnShipNameChanged(Model const & model)
     // Reconciliate UI
     //
 
-    ReconciliateUIWithShipTitle(newName, model.GetIsDirty());
+    ReconciliateUIWithShipTitle(newName, model.IsDirty());
 }
 
-void MainFrame::OnLayerPresenceChanged(Model const & model)
+void MainFrame::OnLayerPresenceChanged(ModelController const & model)
 {
     ReconciliateUIWithLayerPresence(model);
 }
 
-void MainFrame::OnModelDirtyChanged(Model const & model)
+void MainFrame::OnModelDirtyChanged(ModelController const & model)
 {
     ReconciliateUIWithModelDirtiness(model);
 }
@@ -1098,8 +1098,8 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
     {
         auto const clickHandler = [this, layer, sureQuestion]()
         {
-            if (mController->HasModelLayer(layer)
-                && mController->IsModelDirty(layer))
+            if (mController->GetModelController().HasLayer(layer)
+                && mController->GetModelController().IsLayerDirty(layer))
             {
                 if (!AskUserIfSure(sureQuestion))
                 {
@@ -1181,8 +1181,8 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
             _("Import"),
             [this, layer, sureQuestion]()
             {
-                if (mController->HasModelLayer(layer)
-                    && mController->IsModelDirty(layer))
+                if (mController->GetModelController().HasLayer(layer)
+                    && mController->GetModelController().IsLayerDirty(layer))
                 {
                     if (!AskUserIfSure(sureQuestion))
                     {
@@ -1222,9 +1222,9 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
                     {
                         case LayerType::Electrical:
                         {
-                            assert(mController->HasModelLayer(LayerType::Electrical));
+                            assert(mController->GetModelController().HasLayer(LayerType::Electrical));
 
-                            if (mController->IsModelDirty(LayerType::Electrical))
+                            if (mController->GetModelController().IsLayerDirty(LayerType::Electrical))
                             {
                                 if (!AskUserIfSure(sureQuestion))
                                 {
@@ -1240,9 +1240,9 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
 
                         case LayerType::Ropes:
                         {
-                            assert(mController->HasModelLayer(LayerType::Ropes));
+                            assert(mController->GetModelController().HasLayer(LayerType::Ropes));
 
-                            if (mController->IsModelDirty(LayerType::Ropes))
+                            if (mController->GetModelController().IsLayerDirty(LayerType::Ropes))
                             {
                                 if (!AskUserIfSure(sureQuestion))
                                 {
@@ -1258,9 +1258,9 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
 
                         case LayerType::Texture:
                         {
-                            assert(mController->HasModelLayer(LayerType::Texture));
+                            assert(mController->GetModelController().HasLayer(LayerType::Texture));
 
-                            if (mController->IsModelDirty(LayerType::Texture))
+                            if (mController->GetModelController().IsLayerDirty(LayerType::Texture))
                             {
                                 if (!AskUserIfSure(sureQuestion))
                                 {
@@ -1321,7 +1321,7 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
                         if (layer == LayerType::Structural)
                         {
                             ShipDeSerializer::SaveStructuralLayerImage(
-                                mController->GetStructuralLayer(),
+                                mController->GetModelController().GetStructuralLayer(),
                                 dlg.GetChosenFilepath());
                         }
                         else
@@ -1329,7 +1329,7 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
                             assert(layer == LayerType::Texture);
 
                             ImageFileTools::SavePngImage(
-                                mController->GetTextureLayer().Buffer,
+                                mController->GetModelController().GetTextureLayer().Buffer,
                                 dlg.GetChosenFilepath());
                         }
                     }
@@ -1561,7 +1561,7 @@ wxRibbonPanel * MainFrame::CreateEditAnalysisRibbonPanel(wxRibbonPage * parent)
                 WaterlineAnalyzerDialog dlg(
                     this,
                     centerScreen,
-                    mController->GetModel(),
+                    mController->GetModelController(),
                     mController->GetView(),
                     *this,
                     mPreferences.GetDisplayUnitsSystem(),
@@ -3602,7 +3602,7 @@ void MainFrame::OnClose(wxCloseEvent & event)
 
     if (mController)
     {
-        if (event.CanVeto() && mController->IsModelDirty())
+        if (event.CanVeto() && mController->GetModelController().IsDirty())
         {
             // Ask user if they really want
             int result = AskUserIfSave();
@@ -3670,7 +3670,7 @@ void MainFrame::Open()
 
 void MainFrame::NewShip()
 {
-    if (mController->IsModelDirty())
+    if (mController->GetModelController().IsDirty())
     {
         // Ask user if they really want
         int result = AskUserIfSave();
@@ -3695,7 +3695,7 @@ void MainFrame::NewShip()
 
 void MainFrame::LoadShip()
 {
-    if (mController->IsModelDirty())
+    if (mController->GetModelController().IsDirty())
     {
         // Ask user if they really want
         int result = AskUserIfSave();
@@ -3752,7 +3752,7 @@ void MainFrame::SaveAndSwitchBackToGame()
 
 void MainFrame::QuitAndSwitchBackToGame()
 {
-    if (mController->IsModelDirty())
+    if (mController->GetModelController().IsDirty())
     {
         // Ask user if they really want
         int result = AskUserIfSave();
@@ -3821,7 +3821,7 @@ void MainFrame::ImportLayerFromShip(LayerType layer)
 
                 // Reframe loaded layer to fit our model's size
                 ElectricalLayerData newElectricalLayer = shipDefinition->ElectricalLayer->MakeReframed(
-                    mController->GetShipSize(),
+                    mController->GetModelController().GetShipSize(),
                     ShipSpaceCoordinates(0, 0),
                     ElectricalElement(nullptr, NoneElectricalElementInstanceIndex));
 
@@ -3842,7 +3842,7 @@ void MainFrame::ImportLayerFromShip(LayerType layer)
 
                 // Reframe loaded layer to fit our model's size
                 RopesLayerData newRopesLayer = shipDefinition->RopesLayer->MakeReframed(
-                    mController->GetShipSize(),
+                    mController->GetModelController().GetShipSize(),
                     ShipSpaceCoordinates(0, 0));
 
                 mController->SetRopesLayer(
@@ -3856,7 +3856,7 @@ void MainFrame::ImportLayerFromShip(LayerType layer)
             {
                 // Reframe loaded layer to fit our model's size
                 StructuralLayerData newStructuralLayer = shipDefinition->StructuralLayer.MakeReframed(
-                    mController->GetShipSize(),
+                    mController->GetModelController().GetShipSize(),
                     ShipSpaceCoordinates(0, 0),
                     StructuralElement(nullptr));
 
@@ -3909,7 +3909,7 @@ void MainFrame::ImportTextureLayerFromImage()
 
             // Calculate target size == size of texture when maintaining same aspect ratio as ship's,
             // preferring to not cut
-            ShipSpaceSize const & shipSize = mController->GetShipSize();
+            ShipSpaceSize const & shipSize = mController->GetModelController().GetShipSize();
             IntegralRectSize targetSize = (image.Size.width * shipSize.height >= image.Size.height * shipSize.width)
                 ? IntegralRectSize(image.Size.width, image.Size.width * shipSize.height / shipSize.width) // Keeping this width would require greater height (no clipping), and thus we want to keep this width
                 : IntegralRectSize(image.Size.height * shipSize.width / shipSize.height, image.Size.height); // Keeping this width would require smaller height (hence clipping), and thus we want to keep the height instead
@@ -3969,7 +3969,8 @@ void MainFrame::OpenShipCanvasResize()
     auto const shipPreviewImage = mController->MakePreview();
 
     // Start with target size == current ship size
-    IntegralRectSize const initialTargetSize(mController->GetShipSize().width, mController->GetShipSize().height);
+    auto const shipSize = mController->GetModelController().GetShipSize();
+    IntegralRectSize const initialTargetSize(shipSize.width, shipSize.height);
 
     if (!mResizeDialog->ShowModalForResize(*shipPreviewImage, initialTargetSize))
     {
@@ -4001,11 +4002,11 @@ void MainFrame::OpenShipProperties()
 
     mShipPropertiesEditDialog->ShowModal(
         *mController,
-        mController->GetShipMetadata(),
-        mController->GetShipPhysicsData(),
-        mController->GetShipAutoTexturizationSettings(),
+        mController->GetModelController().GetShipMetadata(),
+        mController->GetModelController().GetShipPhysicsData(),
+        mController->GetModelController().GetShipAutoTexturizationSettings(),
         *shipPreviewImage,
-        mController->HasModelLayer(LayerType::Texture));
+        mController->GetModelController().HasLayer(LayerType::Texture));
 }
 
 void MainFrame::ValidateShip()
@@ -4214,7 +4215,7 @@ bool MainFrame::DoSaveShipAsWithValidation()
         }
 
         auto const res = mShipSaveDialog->ShowModal(
-            Utils::MakeFilenameSafeString(mController->GetShipMetadata().ShipName),
+            Utils::MakeFilenameSafeString(mController->GetModelController().GetShipMetadata().ShipName),
             ShipSaveDialog::GoalType::FullShip);
 
         if (res == wxID_OK)
@@ -4467,7 +4468,7 @@ void MainFrame::ReconciliateUIWithShipTitle(std::string const & shipName, bool i
     SetFrameTitle(shipName, isShipDirty);
 }
 
-void MainFrame::ReconciliateUIWithLayerPresence(Model const & model)
+void MainFrame::ReconciliateUIWithLayerPresence(ModelController const & model)
 {
     //
     // Rules
@@ -4512,9 +4513,9 @@ void MainFrame::ReconciliateUIWithLayerPresence(Model const & model)
     mVisualizationSelectButtons[static_cast<size_t>(mWorkbenchState.GetPrimaryVisualization())]->SetFocus(); // Prevent other random buttons from getting focus
 }
 
-void MainFrame::ReconciliateUIWithModelDirtiness(Model const & model)
+void MainFrame::ReconciliateUIWithModelDirtiness(ModelController const & model)
 {
-    bool const isDirty = model.GetIsDirty();
+    bool const isDirty = model.IsDirty();
 
     if (mSaveShipButton->IsEnabled() != isDirty)
     {
