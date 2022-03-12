@@ -73,7 +73,6 @@ MainFrame::MainFrame(
     , mIsShiftKeyDown(false)
     // State
     , mWorkbenchState(materialDatabase)
-    , mPreferences()
 {
     Create(
         nullptr,
@@ -272,7 +271,7 @@ MainFrame::MainFrame(
     {
         // Status bar
         {
-            mStatusBar = new StatusBar(mMainPanel, mPreferences.GetDisplayUnitsSystem(), mResourceLocator);
+            mStatusBar = new StatusBar(mMainPanel, mWorkbenchState.GetDisplayUnitsSystem(), mResourceLocator);
 
             mainVSizer->Add(
                 mStatusBar,
@@ -361,7 +360,7 @@ void MainFrame::OpenForNewShip(std::optional<UnitsSystem> displayUnitsSystem)
     // Set units system
     if (displayUnitsSystem.has_value())
     {
-        mPreferences.SetDisplayUnitsSystem(*displayUnitsSystem);
+        mWorkbenchState.SetDisplayUnitsSystem(*displayUnitsSystem);
         ReconciliateUIWithDisplayUnitsSystem(*displayUnitsSystem);
     }
 
@@ -384,7 +383,7 @@ void MainFrame::OpenForLoadShip(
     // Set units system
     if (displayUnitsSystem.has_value())
     {
-        mPreferences.SetDisplayUnitsSystem(*displayUnitsSystem);
+        mWorkbenchState.SetDisplayUnitsSystem(*displayUnitsSystem);
         ReconciliateUIWithDisplayUnitsSystem(*displayUnitsSystem);
     }
 
@@ -1565,7 +1564,7 @@ wxRibbonPanel * MainFrame::CreateEditAnalysisRibbonPanel(wxRibbonPage * parent)
                     mController->GetView(),
                     *this,
                     mWorkbenchState.IsWaterlineMarkersEnabled(),
-                    mPreferences.GetDisplayUnitsSystem(),
+                    mWorkbenchState.GetDisplayUnitsSystem(),
                     mResourceLocator);
 
                 dlg.ShowModal();
@@ -3717,7 +3716,7 @@ void MainFrame::LoadShip()
     }
 
     // Open ship load dialog
-    auto const res = mShipLoadDialog->ShowModal(mPreferences.GetShipLoadDirectories());
+    auto const res = mShipLoadDialog->ShowModal(mWorkbenchState.GetShipLoadDirectories());
     if (res == wxID_OK)
     {
         // Load ship
@@ -3725,7 +3724,7 @@ void MainFrame::LoadShip()
         DoLoadShip(shipFilePath); // Ignore eventual failure
 
         // Store directory in preferences
-        mPreferences.AddShipLoadDirectory(shipFilePath.parent_path());
+        mWorkbenchState.AddShipLoadDirectory(shipFilePath.parent_path());
     }
 }
 
@@ -3798,7 +3797,7 @@ void MainFrame::SwitchBackToGame(std::optional<std::filesystem::path> shipFilePa
 void MainFrame::ImportLayerFromShip(LayerType layer)
 {
     // Open ship load dialog
-    auto const res = mShipLoadDialog->ShowModal(mPreferences.GetShipLoadDirectories());
+    auto const res = mShipLoadDialog->ShowModal(mWorkbenchState.GetShipLoadDirectories());
     if (res == wxID_OK)
     {
         auto const shipFilePath = mShipLoadDialog->GetChosenShipFilepath();
@@ -3888,7 +3887,7 @@ void MainFrame::ImportLayerFromShip(LayerType layer)
         }
 
         // Store directory in preferences
-        mPreferences.AddShipLoadDirectory(shipFilePath.parent_path());
+        mWorkbenchState.AddShipLoadDirectory(shipFilePath.parent_path());
     }
 }
 
@@ -4438,7 +4437,7 @@ void MainFrame::ReconciliateUIWithWorkbenchState()
     ReconciliateUIWithVisualWaterlineMarkersEnablement(mWorkbenchState.IsWaterlineMarkersEnabled());
     ReconciliateUIWithVisualGridEnablement(mWorkbenchState.IsGridEnabled());
 
-    ReconciliateUIWithDisplayUnitsSystem(mPreferences.GetDisplayUnitsSystem());
+    ReconciliateUIWithDisplayUnitsSystem(mWorkbenchState.GetDisplayUnitsSystem());
 }
 
 void MainFrame::ReconciliateUIWithViewModel(ViewModel const & viewModel)

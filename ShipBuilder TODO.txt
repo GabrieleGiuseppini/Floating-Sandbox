@@ -283,8 +283,6 @@
 		+ Dir = normal to M->B
 		+ Test with Colored Kursks
 
-+ Cleanup all builds' Data folders
-
 + UI: total mass and center of mass
 	+ ModelController maintains structural analysis, like now
 		+ Structural analysis: total mass, sum of CoM
@@ -324,20 +322,26 @@
 			+ Ideally Controller does not expose Model directly, only ModelController wrappers - so it can enforce eph viz checks, like we do now in CloneExistingLayer()
 		+ ModelController does not expose Model, and completely wraps Model
 
-+ Cleanup TODOOLD's in Controller
-
 + Fix auto zoom
 
 + Use epilog also at Controller itself
 
-- Merge Preferences into Workbench
-	- And use NewShipSize at Controller
+= Merge Preferences into Workbench
+	+ Nuke Preferences
+	+ Use NewShipSize at Controller
+	- Test 
+		- Creates json
+		- Loads json
+
+- Try mipmap for markers
 
 - See why we weren't asked to rename 3 balls after chaning name in metadata
 	- Because it was .shp?
 
-- Test with huge size: lag should only be proportional to edit region
-- See bitblt into mapped buffer when uploading region of texture
+- Perf:
+	- Do perf analysis of long diagonal line
+	- Test with huge size: lag should only be proportional to edit region
+	- See bitblt into mapped buffer when uploading region of texture
 
 - Rotate 90 (CW and CCW)
 	- Also changes ship size, do notifications
@@ -587,12 +591,10 @@
 			+ One of many types; removed with a single call
 
 
-- WorkbenchState
++ WorkbenchState
 	+ Independent from model - exclusively tools-related settings
 		+ So no need to reset/change/update at new model creation
-	= cctor: (MaterialsDB, SB::PreferencesManager)
-		+ FW and BG materials: always "defaults" from MaterialsDB
-		- other settings: loaded from SB::PreferencesManager
+	+ Saves and loads (some of) its settings from json
 
 - Validations:
 	- Move validations to own class - ModelValidator
@@ -632,10 +634,8 @@
 			- Ain't that what we've got already for the auto-texturizer?
 	- Selectable backgrounds		
 	- See if it takes so long to initialize SB::MainFrame that we need IProgress
-	- Preferences:
+	- Preferences dialog (to/from WorkbenchState):
 		- New ship size
-		- ...all tools' settings...
-		- TODO: spec
 	- Inherits FullScreen state and shares state changes (so, for example, if exits full screen in ShipBuilder, also Game has exited full screen)
 		- How to share state changes? 
 			- FullScreenManager class, shared_ptr in both

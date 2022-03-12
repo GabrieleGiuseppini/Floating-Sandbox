@@ -28,7 +28,7 @@ std::unique_ptr<Controller> Controller::CreateNew(
     ResourceLocator const & resourceLocator)
 {
     auto modelController = ModelController::CreateNew(
-        ShipSpaceSize(200, 100), // TODO: from preferences
+        workbenchState.GetNewShipSize(),
         shipName,
         shipTexturizer);
 

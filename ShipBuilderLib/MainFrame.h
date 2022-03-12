@@ -10,7 +10,6 @@
 #include "MaterialPalette.h"
 #include "ModelValidationDialog.h"
 #include "OpenGLManager.h"
-#include "Preferences.h"
 #include "ResizeDialog.h"
 #include "RibbonToolbarButton.h"
 #include "ShipPropertiesEditDialog.h"
@@ -449,7 +448,6 @@ private:
     //
 
     WorkbenchState mWorkbenchState;
-    Preferences mPreferences;
 
     std::optional<std::filesystem::path> mCurrentShipFilePath;
 };

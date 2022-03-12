@@ -10,7 +10,15 @@
 #include <Game/Materials.h>
 #include <Game/MaterialDatabase.h>
 
+#include <GameCore/GameTypes.h>
+
+#include <picojson.h>
+
+#include <algorithm>
 #include <cstdint>
+#include <filesystem>
+#include <optional>
+#include <vector>
 
 namespace ShipBuilder {
 
@@ -25,6 +33,8 @@ class WorkbenchState
 public:
 
     WorkbenchState(MaterialDatabase const & materialDatabase);
+
+    ~WorkbenchState();
 
     //
     // Materials
@@ -287,6 +297,55 @@ public:
         mIsGridEnabled = value;
     }
 
+    //
+    // Misc
+    //
+
+    ShipSpaceSize GetNewShipSize() const
+    {
+        return mNewShipSize;
+    }
+
+    void SetNewShipSize(ShipSpaceSize value)
+    {
+        mNewShipSize = value;
+    }
+
+    UnitsSystem GetDisplayUnitsSystem() const
+    {
+        return mDisplayUnitsSystem;
+    }
+
+    void SetDisplayUnitsSystem(UnitsSystem value)
+    {
+        mDisplayUnitsSystem = value;
+    }
+
+    std::vector<std::filesystem::path> const & GetShipLoadDirectories() const
+    {
+        return mShipLoadDirectories;
+    }
+
+    void AddShipLoadDirectory(std::filesystem::path shipLoadDirectory)
+    {
+        // Check if it's in already
+        if (std::find(mShipLoadDirectories.cbegin(), mShipLoadDirectories.cend(), shipLoadDirectory) == mShipLoadDirectories.cend())
+        {
+            // Add in front
+            mShipLoadDirectories.insert(mShipLoadDirectories.cbegin(), shipLoadDirectory);
+        }
+    }
+
+private:
+
+    static std::filesystem::path GetPreferencesFilePath();
+
+    static std::optional<picojson::object> LoadPreferencesRootObject();
+
+    void LoadPreferences();
+
+    void SavePreferences() const;
+
 private:
 
     // Materials
@@ -315,6 +374,11 @@ private:
     float mOtherVisualizationsOpacity;
     bool mIsWaterlineMarkersEnabled;
     bool mIsGridEnabled;
+
+    // Misc
+    ShipSpaceSize mNewShipSize;
+    UnitsSystem mDisplayUnitsSystem;
+    std::vector<std::filesystem::path> mShipLoadDirectories;
 };
 
 }
