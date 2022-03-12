@@ -6,6 +6,7 @@
 #pragma once
 
 #include "ElectricalElementInstanceIndexFactory.h"
+#include "IModelObservable.h"
 #include "Model.h"
 #include "ModelValidationResults.h"
 #include "ShipBuilderTypes.h"
@@ -31,7 +32,7 @@ namespace ShipBuilder {
  *
  * The ModelController does not maintain the model's dirtyness; that is managed by the Controller.
  */
-class ModelController
+class ModelController : public IModelObservable
 {
 public:
 
@@ -46,7 +47,7 @@ public:
 
     ShipDefinition MakeShipDefinition() const;
 
-    ShipSpaceSize const & GetShipSize() const
+    ShipSpaceSize const & GetShipSize() const override
     {
         return mModel.GetShipSize();
     }
@@ -67,17 +68,17 @@ public:
 
     std::optional<ShipSpaceRect> CalculateBoundingBox() const;
 
-    bool HasLayer(LayerType layer) const
+    bool HasLayer(LayerType layer) const override
     {
         return mModel.HasLayer(layer);
     }
 
-    bool IsDirty() const
+    bool IsDirty() const override
     {
         return mModel.GetIsDirty();
     }
 
-    bool IsLayerDirty(LayerType layer) const
+    bool IsLayerDirty(LayerType layer) const override
     {
         return mModel.GetIsDirty(layer);
     }
@@ -118,7 +119,7 @@ public:
     }
 #endif
 
-    ShipMetadata const & GetShipMetadata() const
+    ShipMetadata const & GetShipMetadata() const override
     {
         return mModel.GetShipMetadata();
     }
@@ -128,7 +129,7 @@ public:
         mModel.SetShipMetadata(std::move(shipMetadata));
     }
 
-    ShipPhysicsData const & GetShipPhysicsData() const
+    ShipPhysicsData const & GetShipPhysicsData() const override
     {
         return mModel.GetShipPhysicsData();
     }
@@ -138,7 +139,7 @@ public:
         mModel.SetShipPhysicsData(std::move(shipPhysicsData));
     }
 
-    std::optional<ShipAutoTexturizationSettings> const & GetShipAutoTexturizationSettings() const
+    std::optional<ShipAutoTexturizationSettings> const & GetShipAutoTexturizationSettings() const override
     {
         return mModel.GetShipAutoTexturizationSettings();
     }
@@ -191,7 +192,7 @@ public:
     // Structural
     //
 
-    StructuralLayerData const & GetStructuralLayer() const;
+    StructuralLayerData const & GetStructuralLayer() const override;
 
     void SetStructuralLayer(StructuralLayerData && structuralLayer);
 

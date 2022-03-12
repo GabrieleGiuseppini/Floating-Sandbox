@@ -7,6 +7,7 @@ set (SHIPBUILDER_LIB_SOURCES
 	Controller.cpp
 	Controller.h
 	ElectricalElementInstanceIndexFactory.h
+	IModelObservable.h
 	IUserInterface.h
 	MainFrame.cpp
 	MainFrame.h

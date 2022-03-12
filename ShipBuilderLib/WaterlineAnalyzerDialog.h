@@ -5,8 +5,8 @@
  ***************************************************************************************/
 #pragma once
 
+#include "IModelObservable.h"
 #include "IUserInterface.h"
-#include "ModelController.h"
 #include "View.h"
 #include "WaterlineAnalysisOutcomeVisualizationControl.h"
 #include "WaterlineAnalyzer.h"
@@ -32,7 +32,7 @@ public:
     WaterlineAnalyzerDialog(
         wxWindow * parent,
         wxPoint const & centerScreen,
-        ModelController const & model,
+        IModelObservable const & model,
         View & view,
         IUserInterface & userInterface,
         UnitsSystem displayUnitsSystem,
@@ -51,7 +51,7 @@ private:
 
 private:
 
-    ModelController const & mModel;
+    IModelObservable const & mModel;
     View & mView;
     IUserInterface & mUserInterface;
 

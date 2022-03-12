@@ -431,7 +431,7 @@ void MainFrame::OnShipScaleChanged(ShipSpaceToWorldSpaceCoordsRatio const & scal
     ReconciliateUIWithShipScale(scale);
 }
 
-void MainFrame::OnShipNameChanged(ModelController const & model)
+void MainFrame::OnShipNameChanged(IModelObservable const & model)
 {
     //
     // Ship filename workflow
@@ -475,12 +475,12 @@ void MainFrame::OnShipNameChanged(ModelController const & model)
     ReconciliateUIWithShipTitle(newName, model.IsDirty());
 }
 
-void MainFrame::OnLayerPresenceChanged(ModelController const & model)
+void MainFrame::OnLayerPresenceChanged(IModelObservable const & model)
 {
     ReconciliateUIWithLayerPresence(model);
 }
 
-void MainFrame::OnModelDirtyChanged(ModelController const & model)
+void MainFrame::OnModelDirtyChanged(IModelObservable const & model)
 {
     ReconciliateUIWithModelDirtiness(model);
 }
@@ -1561,7 +1561,7 @@ wxRibbonPanel * MainFrame::CreateEditAnalysisRibbonPanel(wxRibbonPage * parent)
                 WaterlineAnalyzerDialog dlg(
                     this,
                     centerScreen,
-                    mController->GetModelController(),
+                    mController->GetModelObservable(),
                     mController->GetView(),
                     *this,
                     mPreferences.GetDisplayUnitsSystem(),
@@ -4468,7 +4468,7 @@ void MainFrame::ReconciliateUIWithShipTitle(std::string const & shipName, bool i
     SetFrameTitle(shipName, isShipDirty);
 }
 
-void MainFrame::ReconciliateUIWithLayerPresence(ModelController const & model)
+void MainFrame::ReconciliateUIWithLayerPresence(IModelObservable const & model)
 {
     //
     // Rules
@@ -4513,7 +4513,7 @@ void MainFrame::ReconciliateUIWithLayerPresence(ModelController const & model)
     mVisualizationSelectButtons[static_cast<size_t>(mWorkbenchState.GetPrimaryVisualization())]->SetFocus(); // Prevent other random buttons from getting focus
 }
 
-void MainFrame::ReconciliateUIWithModelDirtiness(ModelController const & model)
+void MainFrame::ReconciliateUIWithModelDirtiness(IModelObservable const & model)
 {
     bool const isDirty = model.IsDirty();
 

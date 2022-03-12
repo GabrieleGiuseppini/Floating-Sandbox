@@ -5,7 +5,7 @@
  ***************************************************************************************/
 #pragma once
 
-#include "ModelController.h"
+#include "IModelObservable.h"
 
 #include <GameCore/Vectors.h>
 
@@ -45,7 +45,7 @@ public:
 
 public:
 
-    explicit WaterlineAnalyzer(ModelController const & model);
+    explicit WaterlineAnalyzer(IModelObservable const & model);
 
     std::optional<StaticResults> const & GetStaticResults() const
     {
@@ -92,7 +92,7 @@ private:
 
 private:
 
-    ModelController const & mModel;
+    IModelObservable const & mModel;
 
     //
     // Search state

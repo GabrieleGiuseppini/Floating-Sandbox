@@ -60,6 +60,12 @@ public:
         ShipTexturizer const & shipTexturizer,
         ResourceLocator const & resourceLocator);
 
+    IModelObservable const & GetModelObservable() const
+    {
+        assert(mModelController);
+        return *mModelController;
+    }
+
     ModelController & GetModelController()
     {
         assert(mModelController);

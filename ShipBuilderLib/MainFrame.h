@@ -59,7 +59,7 @@ namespace ShipBuilder {
  * - Very thin, calls into Controller for each high-level interaction (e.g. new tool selected, tool setting changed) and for each mouse event
  * - Implements IUserInterface with interface needed by Controller, e.g. to make UI state changes, to capture the mouse, to update visualization of undo stack
  * - Owns WorkbenchState
- * - Implements ship load/save, giving/getting whole ShipDefinition to/from ModelController
+ * - Implements ship load/save, giving/getting whole ShipDefinition to/from Controller
  */
 class MainFrame final : public wxFrame, public IUserInterface
 {
@@ -94,11 +94,11 @@ public:
 
     void OnShipScaleChanged(ShipSpaceToWorldSpaceCoordsRatio const & scale) override;
 
-    void OnShipNameChanged(ModelController const & model) override;
+    void OnShipNameChanged(IModelObservable const & model) override;
 
-    void OnLayerPresenceChanged(ModelController const & model) override;
+    void OnLayerPresenceChanged(IModelObservable const & model) override;
 
-    void OnModelDirtyChanged(ModelController const & model) override;
+    void OnModelDirtyChanged(IModelObservable const & model) override;
 
     void OnModelMacroPropertiesUpdated(ModelMacroProperties const & properties) override;
 
@@ -291,9 +291,9 @@ private:
 
     void ReconciliateUIWithShipTitle(std::string const & shipName, bool isShipDirty);
 
-    void ReconciliateUIWithLayerPresence(ModelController const & model);
+    void ReconciliateUIWithLayerPresence(IModelObservable const & model);
 
-    void ReconciliateUIWithModelDirtiness(ModelController const & model);
+    void ReconciliateUIWithModelDirtiness(IModelObservable const & model);
 
     void ReconciliateUIWithModelMacroProperties(ModelMacroProperties const & properties);
 
