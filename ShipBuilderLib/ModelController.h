@@ -57,11 +57,12 @@ public:
         mModel.SetShipSize(shipSize);
     }
 
-    ModelMacroProperties GetModelMacroProperties() const
+    ModelMacroProperties GetModelMacroProperties() const override
     {
         assert(mMassParticleCount == 0 || mTotalMass != 0.0f);
 
         return ModelMacroProperties(
+            mMassParticleCount,
             mTotalMass,
             mMassParticleCount != 0 ? mCenterOfMassSum / mTotalMass : std::optional<vec2f>());
     }

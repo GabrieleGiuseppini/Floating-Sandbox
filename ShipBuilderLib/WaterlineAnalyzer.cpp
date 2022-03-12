@@ -17,6 +17,7 @@ vec2f constexpr Vertical2f = vec2f(0.0f, -1.0f); // Vertical down
 
 WaterlineAnalyzer::WaterlineAnalyzer(IModelObservable const & model)
     : mModel(model)
+    , mModelMacroProperties(mModel.GetModelMacroProperties())
 {
 }
 
@@ -27,22 +28,16 @@ bool WaterlineAnalyzer::Update()
     float constexpr TorqueToDirectionRotationAngleFactor = 0.05f;
     float constexpr DirectionRotationAngleStrideMax = 0.2f;
 
-    if (!mStaticResults.has_value())
+    if (mModelMacroProperties.MassParticleCount == 0)
     {
-        //
-        // Need to perform static analysis
-        //
+        // No particles, we're done
+        return true;
+    }
 
-        mStaticResults = CalculateStaticResults();
+    assert(mModelMacroProperties.CenterOfMass.has_value());
 
-        assert(mStaticResults.has_value());
-
-        if (mStaticResults->TotalMass == 0.0f)
-        {
-            // No particles, we're done
-            return true;
-        }
-
+    if (!mTotalBuoyantForceWhenFullySubmerged.has_value())
+    {
         //
         // Do a first calculation of buoyancy assuming the ship is fully submersed
         //
@@ -59,16 +54,16 @@ bool WaterlineAnalyzer::Update()
         mDirectionSearchCWAngleMax = Pi<float>;
         mDirectionSearchCWAngleMin = -Pi<float>;
 
-        if (*mTotalBuoyantForceWhenFullySubmerged < mStaticResults->TotalMass * 0.98f)
+        if (*mTotalBuoyantForceWhenFullySubmerged < mModelMacroProperties.TotalMass * 0.98f)
         {
             // This ship is sinking; we can jumpstart search by:
             // - Initializing level search to "fully submerged"
             // - Initializing direction as perpendicular to CoM->CoB
 
-            mDirectionSearchCurrent = (centerOfBuoyancyWhenSubmersed - mStaticResults->CenterOfMass).normalise();
+            mDirectionSearchCurrent = (centerOfBuoyancyWhenSubmersed - *(mModelMacroProperties.CenterOfMass)).normalise();
 
             std::tie(mLevelSearchLowest, mLevelSearchHighest) = CalculateLevelSearchLimits(
-                mStaticResults->CenterOfMass,
+                *(mModelMacroProperties.CenterOfMass),
                 mDirectionSearchCurrent);
 
             mLevelSearchCurrent = mLevelSearchHighest;
@@ -82,7 +77,7 @@ bool WaterlineAnalyzer::Update()
             mDirectionSearchCurrent = Vertical2f;
 
             std::tie(mLevelSearchLowest, mLevelSearchHighest) = CalculateLevelSearchLimits(
-                mStaticResults->CenterOfMass,
+                *(mModelMacroProperties.CenterOfMass),
                 mDirectionSearchCurrent);
 
             mLevelSearchCurrent = 0.0f;
@@ -93,18 +88,12 @@ bool WaterlineAnalyzer::Update()
     }
 
     //
-    // Static analysis has been performed
-    //
-
-    assert(mStaticResults.has_value());
-
-    //
     // Calculate buoyancy at current waterline
     //
 
     // Calculate waterline center - along <center of mass -> direction> vector, at current level
     vec2f const waterlineCenter =
-        mStaticResults->CenterOfMass
+        *(mModelMacroProperties.CenterOfMass)
         + mDirectionSearchCurrent * mLevelSearchCurrent;
 
     // Store this waterline
@@ -127,7 +116,7 @@ bool WaterlineAnalyzer::Update()
     assert(mLevelSearchHighest <= mLevelSearchCurrent && mLevelSearchCurrent <= mLevelSearchLowest);
 
     float newLevelSearchCurrent;
-    if (*mTotalBuoyantForce > mStaticResults->TotalMass)
+    if (*mTotalBuoyantForce > mModelMacroProperties.TotalMass)
     {
         // Floating too much => it's too submersed;
         // this level is thus the new highest (i.e. limit at the top)
@@ -182,7 +171,7 @@ bool WaterlineAnalyzer::Update()
         float const directionVerticalAlphaCW = Vertical2f.angleCw(mDirectionSearchCurrent);
 
         // Calculate "torque" (massless) of weight/buoyancy on CoM->CoB direction
-        float const torque = mDirectionSearchCurrent.cross(newCenterOfBuoyancy - mStaticResults->CenterOfMass);
+        float const torque = mDirectionSearchCurrent.cross(newCenterOfBuoyancy - *(mModelMacroProperties.CenterOfMass));
 
         // Calculate (delta-) rotation we want to rotate direction for
         float directionRotationCW;
@@ -241,7 +230,7 @@ bool WaterlineAnalyzer::Update()
 
         // Calculate new limits
         std::tie(mLevelSearchLowest, mLevelSearchHighest) = CalculateLevelSearchLimits(
-            mStaticResults->CenterOfMass,
+            *(mModelMacroProperties.CenterOfMass),
             mDirectionSearchCurrent);
 
         // Clamp direction, in case rotation has restricted legal range for current level
@@ -260,31 +249,6 @@ bool WaterlineAnalyzer::Update()
         // Continue
         return false;
     }
-}
-
-WaterlineAnalyzer::StaticResults WaterlineAnalyzer::CalculateStaticResults()
-{
-    float totalMass = 0.0f;
-    vec2f centerOfMass = vec2f::zero();
-
-    auto const & structuralLayerBuffer = mModel.GetStructuralLayer().Buffer;
-    for (int y = 0; y < structuralLayerBuffer.Size.height; ++y)
-    {
-        for (int x = 0; x < structuralLayerBuffer.Size.width; ++x)
-        {
-            auto const coords = ShipSpaceCoordinates(x, y);
-            auto const * material = structuralLayerBuffer[coords].Material;
-            if (material != nullptr)
-            {
-                totalMass += material->GetMass();
-                centerOfMass += coords.ToFloat() * material->GetMass();
-            }
-        }
-    }
-
-    return StaticResults(
-        totalMass,
-        centerOfMass / (totalMass != 0.0f ? totalMass : 1.0f));
 }
 
 std::tuple<float, float> WaterlineAnalyzer::CalculateLevelSearchLimits(

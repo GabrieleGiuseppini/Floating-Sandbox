@@ -285,13 +285,13 @@
 
 + Cleanup all builds' Data folders
 
-= UI: total mass and center of mass
++ UI: total mass and center of mass
 	+ ModelController maintains structural analysis, like now
 		+ Structural analysis: total mass, sum of CoM
 	+ ModelController has "OnAnalysisUpdated" callback, goes straight to IUserInterface
-	= Display:
+	+ Display:
 		+ Total mass (in StatusBar)
-		= Center of Mass (toggled via toolbar)
+		+ Center of Mass (toggled via toolbar)
 			+ Enabling/disabling CoM view
 				+ MainFrame UI
 				+ MacroProperties: center of mass must be optional (nullopt when no particles)
@@ -301,7 +301,7 @@
 			+ Implement analysis via count of "mass" particles
 				+ So to zero out total mass when zero
 				+ Also can assert, nice
-			= Controller/Tool rearc
+			+ Controller/Tool rearc
 				+ Tool: take Controller and nothing of others
 				+ PencilTool
 					+ Implement LayerModificationEpilog in Controller
@@ -313,10 +313,10 @@
 					+ All tools
 			+ Callback: 
 				+ On top of calling IUserInterface, also inspect whether CoM viz is enabled and talk to view depending on that
-			= Interaction with WaterlineAnalyzer
+			+ Interaction with WaterlineAnalyzer
 				+ Needs to remember if it's the one that uploaded marker (which he does only if ! enabled) and undo @ destructor based on that memory
 					+ See if still need View::RemoveAllMarkers afterwards
-	- See if can piggyback on MacroProperties in WaterlineAnalyzer, rather than calculating them again
+	+ See if can piggyback on MacroProperties in WaterlineAnalyzer, rather than calculating them again
 
 
 + Decide whether we still want Controller to both expose Model and wrappers for it

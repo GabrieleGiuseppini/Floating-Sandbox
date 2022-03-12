@@ -37,6 +37,8 @@ struct IModelObservable
 
     virtual std::optional<ShipAutoTexturizationSettings> const & GetShipAutoTexturizationSettings() const = 0;
 
+    virtual ModelMacroProperties GetModelMacroProperties() const = 0;
+
     // Layers
 
     virtual StructuralLayerData const & GetStructuralLayer() const = 0;

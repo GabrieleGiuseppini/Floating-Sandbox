@@ -334,7 +334,7 @@ void WaterlineAnalyzerDialog::ReconcileUIWithState()
     // Visualizations
     //
 
-    if (mCurrentState == StateType::Completed && mWaterlineAnalyzer->GetStaticResults()->TotalMass != 0.0f)
+    if (mCurrentState == StateType::Completed && mWaterlineAnalyzer->GetModelMacroProperties().MassParticleCount != 0)
     {
         assert(mWaterlineAnalyzer->GetTotalBuoyantForceWhenFullySubmerged().has_value());
         assert(mWaterlineAnalyzer->GetWaterline().has_value());
@@ -344,7 +344,7 @@ void WaterlineAnalyzerDialog::ReconcileUIWithState()
 
         float const trim = -vec2f(0.0, -1.0f).angleCw(mWaterlineAnalyzer->GetWaterline()->WaterDirection);
         float visualizationControlExaggeratedTrim = trim;
-        bool const isFloating = mWaterlineAnalyzer->GetTotalBuoyantForceWhenFullySubmerged() > mWaterlineAnalyzer->GetStaticResults()->TotalMass * 1.01f;
+        bool const isFloating = mWaterlineAnalyzer->GetTotalBuoyantForceWhenFullySubmerged() > mWaterlineAnalyzer->GetModelMacroProperties().TotalMass * 1.01f;
 
         // Trim
         {
@@ -423,10 +423,10 @@ void WaterlineAnalyzerDialog::ReconcileUIWithState()
     // Center of mass marker
     if (mOwnsCenterOfMassMarker)
     {
-        if (mWaterlineAnalyzer->GetStaticResults().has_value() && mWaterlineAnalyzer->GetStaticResults()->TotalMass != 0.0f)
+        if (mWaterlineAnalyzer->GetModelMacroProperties().CenterOfMass.has_value())
         {
             mView.UploadWaterlineMarker(
-                mWaterlineAnalyzer->GetStaticResults()->CenterOfMass,
+                *(mWaterlineAnalyzer->GetModelMacroProperties().CenterOfMass),
                 View::WaterlineMarkerType::CenterOfMass);
         }
         else
@@ -439,7 +439,7 @@ void WaterlineAnalyzerDialog::ReconcileUIWithState()
     if (mWaterlineAnalyzer->GetCenterOfBuoyancy().has_value())
     {
         mView.UploadWaterlineMarker(
-            *mWaterlineAnalyzer->GetCenterOfBuoyancy(),
+            *(mWaterlineAnalyzer->GetCenterOfBuoyancy()),
             View::WaterlineMarkerType::CenterOfBuoyancy);
     }
     else

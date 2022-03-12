@@ -47,9 +47,9 @@ public:
 
     explicit WaterlineAnalyzer(IModelObservable const & model);
 
-    std::optional<StaticResults> const & GetStaticResults() const
+    ModelMacroProperties const & GetModelMacroProperties() const
     {
-        return mStaticResults;
+        return mModelMacroProperties;
     }
 
     std::optional<float> const & GetTotalBuoyantForceWhenFullySubmerged() const
@@ -79,8 +79,6 @@ public:
 
 private:
 
-    StaticResults CalculateStaticResults();
-
     std::tuple<float, float> CalculateLevelSearchLimits(
         vec2f const & center,
         vec2f const & direction);
@@ -93,12 +91,12 @@ private:
 private:
 
     IModelObservable const & mModel;
+    ModelMacroProperties const mModelMacroProperties;
 
     //
     // Search state
     //
 
-    std::optional<StaticResults> mStaticResults;
     std::optional<float> mTotalBuoyantForceWhenFullySubmerged;
 
     std::optional<float> mTotalBuoyantForce;

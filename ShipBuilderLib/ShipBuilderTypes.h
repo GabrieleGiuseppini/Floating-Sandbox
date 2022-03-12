@@ -124,13 +124,16 @@ enum class TextureLayerVisualizationModeType
 
 struct ModelMacroProperties
 {
+    size_t MassParticleCount;
     float TotalMass;
     std::optional<vec2f> CenterOfMass;
 
     ModelMacroProperties(
+        size_t massParticleCount,
         float totalMass,
         std::optional<vec2f> centerOfMass)
-        : TotalMass(totalMass)
+        : MassParticleCount(massParticleCount)
+        , TotalMass(totalMass)
         , CenterOfMass(centerOfMass)
     {}
 };
