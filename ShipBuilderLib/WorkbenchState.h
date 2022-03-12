@@ -266,7 +266,17 @@ public:
     {
         mOtherVisualizationsOpacity = value;
     }
-    
+
+    bool IsWaterlineMarkersEnabled() const
+    {
+        return mIsWaterlineMarkersEnabled;
+    }
+
+    void EnableWaterlineMarkers(bool value)
+    {
+        mIsWaterlineMarkersEnabled = value;
+    }
+
     bool IsGridEnabled() const
     {
         return mIsGridEnabled;
@@ -303,6 +313,7 @@ private:
     RopesLayerVisualizationModeType mRopesLayerVisualizationMode;
     TextureLayerVisualizationModeType mTextureLayerVisualizationMode;
     float mOtherVisualizationsOpacity;
+    bool mIsWaterlineMarkersEnabled;
     bool mIsGridEnabled;
 };
 

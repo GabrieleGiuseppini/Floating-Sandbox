@@ -120,6 +120,7 @@ public:
 
     void OnOtherVisualizationsOpacityChanged(float opacity) override;
 
+    void OnVisualWaterlineMarkersEnablementChanged(bool isEnabled) override;
     void OnVisualGridEnablementChanged(bool isEnabled) override;
 
     //
@@ -314,6 +315,7 @@ private:
 
     void ReconciliateUIWithOtherVisualizationsOpacity(float opacity);
 
+    void ReconciliateUIWithVisualWaterlineMarkersEnablement(bool isEnabled);
     void ReconciliateUIWithVisualGridEnablement(bool isEnabled);
 
     //
@@ -383,6 +385,7 @@ private:
     BitmapRadioButton * mRopesLayerVisualizationLinesModeButton;
     BitmapRadioButton * mTextureLayerVisualizationNoneModeButton;
     BitmapRadioButton * mTextureLayerVisualizationMatteModeButton;
+    wxBitmapToggleButton * mViewWaterlineMarkersButton;
     wxBitmapToggleButton * mViewGridButton;
 
     // Toolbar panel

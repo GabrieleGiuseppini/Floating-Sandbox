@@ -545,6 +545,11 @@ void MainFrame::OnOtherVisualizationsOpacityChanged(float opacity)
     ReconciliateUIWithOtherVisualizationsOpacity(opacity);
 }
 
+void MainFrame::OnVisualWaterlineMarkersEnablementChanged(bool isEnabled)
+{
+    ReconciliateUIWithVisualWaterlineMarkersEnablement(isEnabled);
+}
+
 void MainFrame::OnVisualGridEnablementChanged(bool isEnabled)
 {
     ReconciliateUIWithVisualGridEnablement(isEnabled);
@@ -2551,6 +2556,30 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
 
         mVisualizationModePanelsSizer->AddStretchSpacer(1);
 
+        // View waterline markers button
+        {
+            auto bitmap = WxHelpers::LoadBitmap("view_waterline_markers_button", mResourceLocator);
+            mViewWaterlineMarkersButton = new wxBitmapToggleButton(panel, wxID_ANY, bitmap, wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
+            mViewWaterlineMarkersButton->SetToolTip(_("Enable/disable visualization of the ship's center of mass."));
+            mViewWaterlineMarkersButton->Bind(
+                wxEVT_TOGGLEBUTTON,
+                [this](wxCommandEvent & event)
+                {
+                    assert(mController);
+                    mController->EnableWaterlineMarkers(event.IsChecked());
+
+                    DeviateFocus();
+                });
+
+            mVisualizationModePanelsSizer->Add(
+                mViewWaterlineMarkersButton,
+                0, // Retain vertical width
+                wxALIGN_CENTER_HORIZONTAL, // Do not expand vertically
+                0);
+        }
+
+        mVisualizationModePanelsSizer->AddSpacer(ButtonMargin);
+
         // View grid button
         {
             auto bitmap = WxHelpers::LoadBitmap("view_grid_button", mResourceLocator);
@@ -4404,6 +4433,7 @@ void MainFrame::ReconciliateUIWithWorkbenchState()
 
     ReconciliateUIWithOtherVisualizationsOpacity(mWorkbenchState.GetOtherVisualizationsOpacity());
 
+    ReconciliateUIWithVisualWaterlineMarkersEnablement(mWorkbenchState.IsWaterlineMarkersEnabled());
     ReconciliateUIWithVisualGridEnablement(mWorkbenchState.IsGridEnabled());
 
     ReconciliateUIWithDisplayUnitsSystem(mPreferences.GetDisplayUnitsSystem());
@@ -4503,8 +4533,6 @@ void MainFrame::ReconciliateUIWithModelDirtiness(Model const & model)
 void MainFrame::ReconciliateUIWithModelMacroProperties(ModelMacroProperties const & properties)
 {
     mStatusBar->SetShipMass(properties.TotalMass);
-
-    // TODOHERE: center of mass marker
 }
 
 void MainFrame::ReconciliateUIWithStructuralMaterial(StructuralMaterial const * material, MaterialPlaneType plane)
@@ -4799,6 +4827,14 @@ void MainFrame::ReconciliateUIWithOtherVisualizationsOpacity(float opacity)
     if (sliderValue != mOtherVisualizationsOpacitySlider->GetValue())
     {
         mOtherVisualizationsOpacitySlider->SetValue(sliderValue);
+    }
+}
+
+void MainFrame::ReconciliateUIWithVisualWaterlineMarkersEnablement(bool isEnabled)
+{
+    if (mViewWaterlineMarkersButton->GetValue() != isEnabled)
+    {
+        mViewWaterlineMarkersButton->SetValue(isEnabled);
     }
 }
 

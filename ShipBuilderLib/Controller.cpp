@@ -828,6 +828,30 @@ void Controller::SetOtherVisualizationsOpacity(float opacity)
     mUserInterface.RefreshView();
 }
 
+void Controller::EnableWaterlineMarkers(bool doEnable)
+{
+    // Storage
+    mWorkbenchState.EnableWaterlineMarkers(doEnable);
+
+    // Notify UI
+    mUserInterface.OnVisualWaterlineMarkersEnablementChanged(doEnable);
+
+    // Upload markers
+    auto const modelMacroProperties = mModelController->GetModelMacroProperties();
+    if (mWorkbenchState.IsWaterlineMarkersEnabled() && modelMacroProperties.CenterOfMass.has_value())
+    {
+        mView->UploadWaterlineMarker(
+            *modelMacroProperties.CenterOfMass,
+            View::WaterlineMarkerType::CenterOfMass);
+    }
+    else
+    {
+        mView->RemoveWaterlineMarker(View::WaterlineMarkerType::CenterOfMass);
+    }
+
+    mUserInterface.RefreshView();
+}
+
 void Controller::EnableVisualGrid(bool doEnable)
 {
     mWorkbenchState.EnableGrid(doEnable);

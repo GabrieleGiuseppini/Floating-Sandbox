@@ -203,16 +203,13 @@ public:
     void SetElectricalLayerVisualizationMode(ElectricalLayerVisualizationModeType mode);
     void SetRopesLayerVisualizationMode(RopesLayerVisualizationModeType mode);
 
-    TextureLayerVisualizationModeType GetTextureLayerVisualizationMode() const;
     void SetTextureLayerVisualizationMode(TextureLayerVisualizationModeType mode);
 
-    float GetOtherVisualizationsOpacity() const;
     void SetOtherVisualizationsOpacity(float opacity);
 
-    bool IsVisualGridEnabled() const;
+    void EnableWaterlineMarkers(bool doEnable);
     void EnableVisualGrid(bool doEnable);
 
-    std::optional<ToolType> GetCurrentTool() const;
     void SetCurrentTool(std::optional<ToolType> tool);
 
     void SetStructuralMaterial(StructuralMaterial const * material, MaterialPlaneType plane);

@@ -63,6 +63,7 @@ WorkbenchState::WorkbenchState(MaterialDatabase const & materialDatabase)
     mRopesLayerVisualizationMode = RopesLayerVisualizationModeType::LinesMode;
     mTextureLayerVisualizationMode = TextureLayerVisualizationModeType::MatteMode;
     mOtherVisualizationsOpacity = 0.75f;
+    mIsWaterlineMarkersEnabled = false;
     mIsGridEnabled = false;
 }
 

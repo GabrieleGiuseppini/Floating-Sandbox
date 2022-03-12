@@ -291,7 +291,38 @@
 	+ ModelController has "OnAnalysisUpdated" callback, goes straight to IUserInterface
 	= Display:
 		+ Total mass (in StatusBar)
-		- Center of Mass (toggled via toolbar)	
+		= Center of Mass (toggled via toolbar)
+			+ Enabling/disabling CoM view
+				+ MainFrame UI
+				+ MacroProperties: center of mass must be optional (nullopt when no particles)
+				+ Via Controller
+					+ When enabled: asks ModelController and uploads to View
+					+ When disabled: removes from View - assuming we're the only ones (Waterline dialog may not be open)
+			- Implement analysis via count of "mass" particles
+				- So to zero out total mass when zero
+				- Also can assert, nice
+			- Controller/Tool rearc
+			- Callback: 
+				- On top of calling IUserInterface, also inspect whether CoM viz is enabled and talk to view depending on that
+			- Interaction with WaterlineAnalyzer
+				- Needs to remember if it's the one that uploaded marker (which he does only if ! enabled) and undo @ destructor based on that memory
+				- TODO - also connected with below
+	- See if can piggyback on MacroProperties in WaterlineAnalyzer
+
+- Cleanup TODOOLD's in Controller
+
+- 
+
+- Fix auto zoom
+
+- Merge Preferences into Workbench
+	- And use NewShipSize at Controller
+
+- See why we weren't asked to rename 3 balls after chaning name in metadata
+	- Because it was .shp?
+
+- Test with huge size: lag should only be proportional to edit region
+- See bitblt into mapped buffer when uploading region of texture
 
 - Rotate 90 (CW and CCW)
 	- Also changes ship size, do notifications
@@ -312,8 +343,6 @@
 	- Tolerance, etc.
 
 - MaterialsPalette: make flag for making it its own wxFrame, so one can use it in a second monitor
-
-- Test with huge size: lag should only be proportional to edit region
 
 - MainFrame: Game viz: add "export to image" button
 	- Rearc icons now:

@@ -11,6 +11,7 @@
 
 #include <cmath>
 #include <cstdint>
+#include <optional>
 #include <sstream>
 
 namespace ShipBuilder {
@@ -123,11 +124,11 @@ enum class TextureLayerVisualizationModeType
 struct ModelMacroProperties
 {
     float TotalMass;
-    vec2f CenterOfMass;
+    std::optional<vec2f> CenterOfMass;
 
     ModelMacroProperties(
         float totalMass,
-        vec2f centerOfMass)
+        std::optional<vec2f> centerOfMass)
         : TotalMass(totalMass)
         , CenterOfMass(centerOfMass)
     {}

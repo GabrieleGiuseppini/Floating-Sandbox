@@ -54,6 +54,13 @@ public:
         return mModel;
     }
 
+    ModelMacroProperties GetModelMacroProperties() const
+    {
+        return ModelMacroProperties(
+            mTotalMass,
+            mTotalMass != 0.0f ? mCenterOfMassSum / mTotalMass : std::optional<vec2f>());
+    }
+
     void SetShipSize(ShipSpaceSize const & shipSize)
     {
         mModel.SetShipSize(shipSize);

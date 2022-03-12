@@ -67,6 +67,7 @@ public:
 
     virtual void OnOtherVisualizationsOpacityChanged(float opacity) = 0;
 
+    virtual void OnVisualWaterlineMarkersEnablementChanged(bool isEnabled) = 0;
     virtual void OnVisualGridEnablementChanged(bool isEnabled) = 0;
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -1554,10 +1554,7 @@ void ModelController::InitializeRopesLayerAnalysis()
 
 void ModelController::NotifyMacroPropertiesUpdate()
 {
-    mOnModelMacroPropertiesUpdatedCallback(
-        ModelMacroProperties(
-            mTotalMass,
-            mCenterOfMassSum / (mTotalMass != 0.0f ? mTotalMass : 1.0f)));
+    mOnModelMacroPropertiesUpdatedCallback(GetModelMacroProperties());
 }
 
 void ModelController::WriteParticle(
