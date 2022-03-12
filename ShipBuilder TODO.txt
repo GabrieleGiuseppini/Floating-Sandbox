@@ -314,10 +314,9 @@
 			+ Callback: 
 				+ On top of calling IUserInterface, also inspect whether CoM viz is enabled and talk to view depending on that
 			= Interaction with WaterlineAnalyzer
-				- Needs to remember if it's the one that uploaded marker (which he does only if ! enabled) and undo @ destructor based on that memory
-					- See if still need View::RemoveAllMarkers afterwards
-				- TODO - also connected with below
-	- See if can piggyback on MacroProperties in WaterlineAnalyzer
+				+ Needs to remember if it's the one that uploaded marker (which he does only if ! enabled) and undo @ destructor based on that memory
+					+ See if still need View::RemoveAllMarkers afterwards
+	- See if can piggyback on MacroProperties in WaterlineAnalyzer, rather than calculating them again
 
 
 + Decide whether we still want Controller to both expose Model and wrappers for it

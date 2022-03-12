@@ -28,6 +28,7 @@ WaterlineAnalyzerDialog::WaterlineAnalyzerDialog(
     IModelObservable const & model,
     View & view,
     IUserInterface & userInterface,
+    bool isWaterMarkerDisplayed,
     UnitsSystem displayUnitsSystem,
     ResourceLocator const & resourceLocator)
     : wxDialog(
@@ -40,6 +41,7 @@ WaterlineAnalyzerDialog::WaterlineAnalyzerDialog(
     , mModel(model)
     , mView(view)
     , mUserInterface(userInterface)
+    , mOwnsCenterOfMassMarker(!isWaterMarkerDisplayed)
     , mDisplayUnitsSystem(displayUnitsSystem)
 {
     Bind(wxEVT_CLOSE_WINDOW, &WaterlineAnalyzerDialog::OnClose, this);
@@ -266,8 +268,15 @@ void WaterlineAnalyzerDialog::OnRefreshTimer(wxTimerEvent & /*event*/)
 
 void WaterlineAnalyzerDialog::OnClose(wxCloseEvent & event)
 {
-    mView.RemoveWaterlineMarkers();
+    if (mOwnsCenterOfMassMarker)
+    {
+        mView.RemoveWaterlineMarker(View::WaterlineMarkerType::CenterOfMass);
+    }
+
+    mView.RemoveWaterlineMarker(View::WaterlineMarkerType::CenterOfBuoyancy);
+
     mView.RemoveWaterline();
+
     mUserInterface.RefreshView();
 
     event.Skip();
@@ -412,15 +421,18 @@ void WaterlineAnalyzerDialog::ReconcileUIWithState()
     }
 
     // Center of mass marker
-    if (mWaterlineAnalyzer->GetStaticResults().has_value() && mWaterlineAnalyzer->GetStaticResults()->TotalMass != 0.0f)
+    if (mOwnsCenterOfMassMarker)
     {
-        mView.UploadWaterlineMarker(
-            mWaterlineAnalyzer->GetStaticResults()->CenterOfMass,
-            View::WaterlineMarkerType::CenterOfMass);
-    }
-    else
-    {
-        mView.RemoveWaterlineMarker(View::WaterlineMarkerType::CenterOfMass);
+        if (mWaterlineAnalyzer->GetStaticResults().has_value() && mWaterlineAnalyzer->GetStaticResults()->TotalMass != 0.0f)
+        {
+            mView.UploadWaterlineMarker(
+                mWaterlineAnalyzer->GetStaticResults()->CenterOfMass,
+                View::WaterlineMarkerType::CenterOfMass);
+        }
+        else
+        {
+            mView.RemoveWaterlineMarker(View::WaterlineMarkerType::CenterOfMass);
+        }
     }
 
     // Center of buoyancy marker

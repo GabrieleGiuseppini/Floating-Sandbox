@@ -1080,12 +1080,6 @@ void View::RemoveWaterlineMarker(WaterlineMarkerType type)
     }
 }
 
-void View::RemoveWaterlineMarkers()
-{
-    mHasCenterOfBuoyancyWaterlineMarker = false;
-    mHasCenterOfMassWaterlineMarker = false;
-}
-
 void View::UploadWaterline(
     vec2f const & center, // Ship space coords
     vec2f const & waterDirection)

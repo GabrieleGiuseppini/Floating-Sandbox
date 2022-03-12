@@ -1564,6 +1564,7 @@ wxRibbonPanel * MainFrame::CreateEditAnalysisRibbonPanel(wxRibbonPage * parent)
                     mController->GetModelObservable(),
                     mController->GetView(),
                     *this,
+                    mWorkbenchState.IsWaterlineMarkersEnabled(),
                     mPreferences.GetDisplayUnitsSystem(),
                     mResourceLocator);
 

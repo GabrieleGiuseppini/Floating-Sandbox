@@ -35,6 +35,7 @@ public:
         IModelObservable const & model,
         View & view,
         IUserInterface & userInterface,
+        bool isWaterMarkerDisplayed,
         UnitsSystem displayUnitsSystem,
         ResourceLocator const & resourceLocator);
 
@@ -55,6 +56,7 @@ private:
     View & mView;
     IUserInterface & mUserInterface;
 
+    bool const mOwnsCenterOfMassMarker;
     UnitsSystem const mDisplayUnitsSystem;
 
     //

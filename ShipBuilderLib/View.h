@@ -265,7 +265,6 @@ public:
         WaterlineMarkerType type);
 
     void RemoveWaterlineMarker(WaterlineMarkerType type);
-    void RemoveWaterlineMarkers();
 
     void UploadWaterline(
         vec2f const & center, // Ship space coords
