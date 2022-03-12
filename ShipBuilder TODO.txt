@@ -298,9 +298,9 @@
 				+ Via Controller
 					+ When enabled: asks ModelController and uploads to View
 					+ When disabled: removes from View - assuming we're the only ones (Waterline dialog may not be open)
-			- Implement analysis via count of "mass" particles
-				- So to zero out total mass when zero
-				- Also can assert, nice
+			+ Implement analysis via count of "mass" particles
+				+ So to zero out total mass when zero
+				+ Also can assert, nice
 			= Controller/Tool rearc
 				+ Tool: take Controller and nothing of others
 				+ PencilTool
@@ -309,11 +309,11 @@
 				+ Other tools
 				+ Nuke ModelController callback for macro-properties
 					+ Move one-by-one to Controller (cctor, editing primitives, undo, etc.)
-				- Test:
-					- All tools
+				+ Test:
+					+ All tools
 			+ Callback: 
 				+ On top of calling IUserInterface, also inspect whether CoM viz is enabled and talk to view depending on that
-			- Interaction with WaterlineAnalyzer
+			= Interaction with WaterlineAnalyzer
 				- Needs to remember if it's the one that uploaded marker (which he does only if ! enabled) and undo @ destructor based on that memory
 					- See if still need View::RemoveAllMarkers afterwards
 				- TODO - also connected with below

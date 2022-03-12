@@ -40,6 +40,7 @@ ModelController::ModelController(
     ShipTexturizer const & shipTexturizer)
     : mModel(std::move(model))
     , mShipTexturizer(shipTexturizer)
+    , mMassParticleCount(0)
     , mTotalMass(0.0f)
     , mCenterOfMassSum(vec2f::zero())
     , mElectricalElementInstanceIndexFactory()
@@ -1474,6 +1475,7 @@ void ModelController::UpdateVisualizations(View & view)
 
 void ModelController::InitializeStructuralLayerAnalysis()
 {
+    mMassParticleCount = 0;
     mTotalMass = 0.0f;
     mCenterOfMassSum = vec2f::zero();
 
@@ -1488,6 +1490,7 @@ void ModelController::InitializeStructuralLayerAnalysis()
             {
                 auto const mass = structuralLayerBuffer[coords].Material->GetMass();
 
+                ++mMassParticleCount;
                 mTotalMass += mass;
                 mCenterOfMassSum += coords.ToFloat() * mass;
             }
@@ -1540,7 +1543,16 @@ void ModelController::WriteParticle(
     {
         auto const mass = structuralLayerBuffer[coords].Material->GetMass();
 
-        mTotalMass -= mass;
+        assert(mMassParticleCount > 0);
+        --mMassParticleCount;
+        if (mMassParticleCount == 0)
+        {
+            mTotalMass = 0.0f;
+        }
+        else
+        {
+            mTotalMass -= mass;
+        }
         mCenterOfMassSum -= coords.ToFloat() * mass;
     }
 
@@ -1550,6 +1562,7 @@ void ModelController::WriteParticle(
     {
         auto const mass = material->GetMass();
 
+        ++mMassParticleCount;
         mTotalMass += mass;
         mCenterOfMassSum += coords.ToFloat() * mass;
     }

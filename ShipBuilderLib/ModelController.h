@@ -59,9 +59,11 @@ public:
 
     ModelMacroProperties GetModelMacroProperties() const
     {
+        assert(mMassParticleCount == 0 || mTotalMass != 0.0f);
+
         return ModelMacroProperties(
             mTotalMass,
-            mTotalMass != 0.0f ? mCenterOfMassSum / mTotalMass : std::optional<vec2f>());
+            mMassParticleCount != 0 ? mCenterOfMassSum / mTotalMass : std::optional<vec2f>());
     }
 
     std::unique_ptr<RgbaImageData> MakePreview() const;
@@ -408,6 +410,7 @@ private:
     // Auxiliary layers' members
     //
 
+    size_t mMassParticleCount;
     float mTotalMass;
     vec2f mCenterOfMassSum;
 
