@@ -88,9 +88,16 @@ public:
         for (int candidateZoom = 1; candidateZoom <= MaxZoom; ++candidateZoom)
         {
             // Check if ship size fits with this zoom
-            float const physicalWidth = static_cast<float>(mShipSize.width + MarginDisplayShipSize * 2) / CalculateDisplayPhysicalToShipSpaceFactor(candidateZoom);
-            if (physicalWidth > mDisplayPhysicalSize.width)
+
+            vec2f const physicalDimensionsAtThisZoom = vec2f(
+                static_cast<float>(mShipSize.width + MarginDisplayShipSize * 2),
+                static_cast<float>(mShipSize.height + MarginDisplayShipSize * 2))
+                / CalculateDisplayPhysicalToShipSpaceFactor(candidateZoom);
+
+            if (physicalDimensionsAtThisZoom.x > mDisplayPhysicalSize.width
+                || physicalDimensionsAtThisZoom.y > mDisplayPhysicalSize.height)
             {
+                // Too big
                 break;
             }
 
@@ -263,7 +270,7 @@ private:
         mOrthoMatrix[3][1] = 1.0f - 2.0f * static_cast<float>(mShipSize.height - mCam.y + MarginDisplayShipSize) / sDspH;
 
         // Phyisical display rect of visible ship space (canvas)
-        mShipDisplayPhysicalRect = 
+        mShipDisplayPhysicalRect =
             DisplayPhysicalRect(ShipSpaceToPhysicalDisplaySpace({ 0, mShipSize.height - 1 }), ShipSpaceSizeToPhysicalDisplaySize(mShipSize))
             .MakeIntersectionWith(DisplayPhysicalRect(mDisplayPhysicalSize))
             .value_or(DisplayPhysicalRect({ 0, 0 }, { 0, 0 }));

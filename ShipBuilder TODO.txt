@@ -327,7 +327,7 @@
 
 + Cleanup TODOOLD's in Controller
 
-- Fix auto zoom
++ Fix auto zoom
 
 - Merge Preferences into Workbench
 	- And use NewShipSize at Controller
