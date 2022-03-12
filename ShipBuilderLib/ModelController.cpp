@@ -387,7 +387,7 @@ void ModelController::ResizeShip(
 StructuralLayerData const & ModelController::GetStructuralLayer() const
 {
     assert(mModel.HasLayer(LayerType::Structural));
-    assert(!mIsElectricalLayerInEphemeralVisualization);
+    assert(!mIsStructuralLayerInEphemeralVisualization);
 
     return mModel.GetStructuralLayer();
 }

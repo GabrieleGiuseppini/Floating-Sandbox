@@ -328,6 +328,8 @@
 
 + Fix auto zoom
 
++ Use epilog also at Controller itself
+
 - Merge Preferences into Workbench
 	- And use NewShipSize at Controller
 

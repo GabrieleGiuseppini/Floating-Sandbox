@@ -428,16 +428,7 @@ void Controller::TrimElectricalParticlesWithoutSubstratum()
 
             mUserInterface.OnUndoStackStateChanged(mUndoStack);
 
-            // Update dirtyness
-            mModelController->SetLayerDirty(LayerType::Electrical);
-            mUserInterface.OnModelDirtyChanged(*mModelController);
-
-            // Notify macro properties
-            NotifyModelMacroPropertiesUpdated();
-
-            // Refresh model visualizations
-            mModelController->UpdateVisualizations(*mView);
-            mUserInterface.RefreshView();
+            LayerChangeEpilog(LayerType::Electrical);
         }
     }
 }
@@ -1136,19 +1127,10 @@ void Controller::InternalSetLayer(wxString actionTitle, TArgs&& ... args)
         InternalSelectPrimaryVisualization(*newVisualizationType);
     }
 
-    // Update dirtyness
-    mModelController->SetLayerDirty(TLayerType);
-    mUserInterface.OnModelDirtyChanged(*mModelController);
-
     // Update visualization modes
     InternalUpdateModelControllerVisualizationModes();
 
-    // Notify macro properties
-    NotifyModelMacroPropertiesUpdated();
-
-    // Refresh model visualizations
-    mModelController->UpdateVisualizations(*mView);
-    mUserInterface.RefreshView();
+    LayerChangeEpilog(TLayerType);
 }
 
 template<LayerType TLayerType>
@@ -1203,19 +1185,10 @@ void Controller::InternalRemoveLayer()
             });
     }
 
-    // Update dirtyness
-    mModelController->SetLayerDirty(TLayerType);
-    mUserInterface.OnModelDirtyChanged(*mModelController);
-
     // Update visualization modes
     InternalUpdateModelControllerVisualizationModes();
 
-    // Notify macro properties
-    NotifyModelMacroPropertiesUpdated();
-
-    // Refresh model visualizations
-    mModelController->UpdateVisualizations(*mView);
-    mUserInterface.RefreshView();
+    LayerChangeEpilog(TLayerType);
 }
 
 template<LayerType TLayerType>

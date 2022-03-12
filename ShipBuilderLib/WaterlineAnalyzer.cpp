@@ -23,7 +23,7 @@ WaterlineAnalyzer::WaterlineAnalyzer(IModelObservable const & model)
 
 bool WaterlineAnalyzer::Update()
 {
-    float constexpr LevelSearchStride = 2.0f;
+    float constexpr LevelSearchStride = 1.5f;
     float constexpr LevelSearchChangeTolerance = 0.5f;
     float constexpr TorqueToDirectionRotationAngleFactor = 0.05f;
     float constexpr DirectionRotationAngleStrideMax = 0.2f;

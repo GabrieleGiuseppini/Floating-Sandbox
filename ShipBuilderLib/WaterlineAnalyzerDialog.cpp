@@ -318,7 +318,7 @@ void WaterlineAnalyzerDialog::ReconcileUIWithState()
 
         case StateType::Playing:
         {
-            mRefreshTimer->Start(33, false);
+            mRefreshTimer->Start(25, false);
 
             mPlayContinuouslyButton->Enable(false);
             mPlayStepByStepButton->Enable(false);
