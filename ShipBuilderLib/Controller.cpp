@@ -288,32 +288,6 @@ void Controller::SetStructuralLayer(
     InternalSetLayer<LayerType::Structural>(
         actionTitle,
         std::move(structuralLayer));
-
-    /* TODOOLD
-    auto const scopedToolResumeState = SuspendTool();
-
-    // TODO: undo, copy from texture
-    // Update layer
-    mModelController->SetStructuralLayer(//TODO//);
-    mUserInterface.OnLayerPresenceChanged(mModelController->GetModel());
-
-    // Switch primary viz to this one
-    if (mWorkbenchState.GetPrimaryVisualization() != VisualizationType::StructuralLayer)
-    {
-        InternalSelectPrimaryVisualization(VisualizationType::StructuralLayer);
-    }
-
-    // Update dirtyness
-    mModelController->SetLayerDirty(LayerType::Structural);
-    mUserInterface.OnModelDirtyChanged(mModelController->GetModel());
-
-    // Update visualization modes
-    InternalUpdateModelControllerVisualizationModes();
-
-    // Refresh model visualizations
-    mModelController->UpdateVisualizations(*mView);
-    mUserInterface.RefreshView();
-    */
 }
 
 void Controller::RestoreStructuralLayerRegionForUndo(
@@ -489,31 +463,6 @@ void Controller::SetRopesLayer(
 void Controller::RemoveRopesLayer()
 {
     InternalRemoveLayer<LayerType::Ropes>();
-    /*
-    auto const scopedToolResumeState = SuspendTool();
-
-    // TODO: do undo, copy from texture
-    // Remove layer
-    mModelController->RemoveRopesLayer();
-    mUserInterface.OnLayerPresenceChanged(mModelController->GetModel());
-
-    // Switch primary viz if it was this one
-    if (mWorkbenchState.GetPrimaryVisualization() == VisualizationType::RopesLayer)
-    {
-        InternalSelectPrimaryVisualization(VisualizationType::Game);
-    }
-
-    // Update dirtyness
-    mModelController->SetLayerDirty(LayerType::Ropes);
-    mUserInterface.OnModelDirtyChanged(mModelController->GetModel());
-
-    // Update visualization modes
-    InternalUpdateModelControllerVisualizationModes();
-
-    // Refresh model visualizations
-    mModelController->UpdateVisualizations(*mView);
-    mUserInterface.RefreshView();
-    */
 }
 
 void Controller::RestoreRopesLayerForUndo(std::unique_ptr<RopesLayerData> ropesLayer)
@@ -548,61 +497,6 @@ void Controller::SetTextureLayer(
         actionTitle,
         std::move(textureLayer),
         std::move(textureArtCredits));
-
-    /* TODOOLD
-    auto const scopedToolResumeState = SuspendTool();
-
-    // Update layer
-    {
-        // TODO: use new "WholeLayer" helper
-
-        // Get state snapshot
-        auto originalDirtyStateClone = mModelController->GetModel().GetDirtyState();
-        auto originalLayerClone = mModelController->GetModel().CloneTextureLayer();
-        auto originalTextureArtCredits = mModelController->GetShipMetadata().ArtCredits;
-
-        // Update layer
-        mModelController->SetTextureLayer(std::move(textureLayer), std::move(textureArtCredits));
-        mUserInterface.OnLayerPresenceChanged(mModelController->GetModel());
-
-        //
-        // Create undo action
-        //
-
-        mUndoStack.Push(
-            _("Import Texture Layer"),
-            originalLayerClone ? originalLayerClone->Buffer.GetByteSize() : 0,
-            originalDirtyStateClone,
-            [originalLayerClone = std::move(originalLayerClone), originalTextureArtCredits = std::move(originalTextureArtCredits)](Controller & controller) mutable
-            {
-                controller.RestoreTextureLayerForUndo(
-                    std::move(originalLayerClone),
-                    std::move(originalTextureArtCredits));
-            });
-
-        mUserInterface.OnUndoStackStateChanged(mUndoStack);
-    }
-
-    // FUTUREWORK: disabled primary layer switch for this release, as there are no tools
-    // and thus it's pointless
-    ////// Switch primary viz to this one
-    ////if (mPrimaryVisualization != VisualizationType::TextureLayer)
-    ////{
-    ////    InternalSelectPrimaryVisualization(VisualizationType::TextureLayer);
-    ////}
-
-    // Update visualization modes
-    InternalReconciliateTextureVisualizationMode(); // TODO: taken care of by WrapLayerChangingOp
-    InternalUpdateModelControllerVisualizationModes();
-
-    // Update dirtyness
-    mModelController->SetLayerDirty(LayerType::Texture);
-    mUserInterface.OnModelDirtyChanged(mModelController->GetModel());
-
-    // Refresh model visualizations
-    mModelController->UpdateVisualizations(*mView);
-    mUserInterface.RefreshView();
-    */
 }
 
 void Controller::RemoveTextureLayer()

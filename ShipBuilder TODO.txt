@@ -325,7 +325,7 @@
 			+ Ideally Controller does not expose Model directly, only ModelController wrappers - so it can enforce eph viz checks, like we do now in CloneExistingLayer()
 		+ ModelController does not expose Model, and completely wraps Model
 
-- Cleanup TODOOLD's in Controller
++ Cleanup TODOOLD's in Controller
 
 - Fix auto zoom
 
