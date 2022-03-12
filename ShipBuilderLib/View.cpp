@@ -1011,13 +1011,13 @@ void View::UploadWaterlineMarker(
 
     auto const & atlasFrameMetadata = mLinearTextureAtlasMetadata->GetFrameMetadata(LinearTextureGroups::WaterlineMarker, textureFrameIndex);
 
-    float const leftX = center.x - atlasFrameMetadata.FrameMetadata.AnchorCenterWorld.x + 0.5f;
+    float const leftX = center.x - atlasFrameMetadata.FrameMetadata.AnchorCenterWorld.x + 0.5f; // At center of ship coord's square
     float const leftXTexture = atlasFrameMetadata.TextureCoordinatesBottomLeft.x;
 
     float const rightX = leftX + atlasFrameMetadata.FrameMetadata.WorldWidth;
     float const rightXTexture = atlasFrameMetadata.TextureCoordinatesTopRight.x;
 
-    float const bottomY = center.y - atlasFrameMetadata.FrameMetadata.AnchorCenterWorld.y + 0.5f;
+    float const bottomY = center.y - atlasFrameMetadata.FrameMetadata.AnchorCenterWorld.y + 0.5f; // At center of ship coord's square
     float const bottomYTexture = atlasFrameMetadata.TextureCoordinatesBottomLeft.y;
 
     float const topY = bottomY + atlasFrameMetadata.FrameMetadata.WorldHeight;

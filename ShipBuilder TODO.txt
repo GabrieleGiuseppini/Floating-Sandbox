@@ -318,7 +318,6 @@
 					+ See if still need View::RemoveAllMarkers afterwards
 	+ See if can piggyback on MacroProperties in WaterlineAnalyzer, rather than calculating them again
 
-
 + Decide whether we still want Controller to both expose Model and wrappers for it
 	+ Philosophy:
 		+ Controller does not expose getters, but exposes ModelController const & for observers
