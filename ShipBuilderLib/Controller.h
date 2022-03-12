@@ -330,6 +330,8 @@ private:
     template<bool IsForUndo>
     void InternalFlip(DirectionType direction);
 
+    void NotifyModelMacroPropertiesUpdated();
+
     void RefreshToolCoordinatesDisplay();
 
 private:

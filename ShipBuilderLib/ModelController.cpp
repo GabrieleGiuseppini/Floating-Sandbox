@@ -13,39 +13,33 @@ namespace ShipBuilder {
 std::unique_ptr<ModelController> ModelController::CreateNew(
     ShipSpaceSize const & shipSpaceSize,
     std::string const & shipName,
-    ShipTexturizer const & shipTexturizer,
-    std::function<void(ModelMacroProperties const &)> && onModelMacroPropertiesUpdatedCallback)
+    ShipTexturizer const & shipTexturizer)
 {
     Model model = Model(shipSpaceSize, shipName);
 
     return std::unique_ptr<ModelController>(
         new ModelController(
             std::move(model),
-            shipTexturizer,
-            std::move(onModelMacroPropertiesUpdatedCallback)));
+            shipTexturizer));
 }
 
 std::unique_ptr<ModelController> ModelController::CreateForShip(
     ShipDefinition && shipDefinition,
-    ShipTexturizer const & shipTexturizer,
-    std::function<void(ModelMacroProperties const &)> && onModelMacroPropertiesUpdatedCallback)
+    ShipTexturizer const & shipTexturizer)
 {
     Model model = Model(std::move(shipDefinition));
 
     return std::unique_ptr<ModelController>(
         new ModelController(
             std::move(model),
-            shipTexturizer,
-            std::move(onModelMacroPropertiesUpdatedCallback)));
+            shipTexturizer));
 }
 
 ModelController::ModelController(
     Model && model,
-    ShipTexturizer const & shipTexturizer,
-    std::function<void(ModelMacroProperties const &)> && onModelMacroPropertiesUpdatedCallback)
+    ShipTexturizer const & shipTexturizer)
     : mModel(std::move(model))
     , mShipTexturizer(shipTexturizer)
-    , mOnModelMacroPropertiesUpdatedCallback(std::move(onModelMacroPropertiesUpdatedCallback))
     , mTotalMass(0.0f)
     , mCenterOfMassSum(vec2f::zero())
     , mElectricalElementInstanceIndexFactory()
@@ -75,9 +69,6 @@ ModelController::ModelController(
     InitializeStructuralLayerAnalysis();
     InitializeElectricalLayerAnalysis();
     InitializeRopesLayerAnalysis();
-
-    // Notify macro properties' update
-    NotifyMacroPropertiesUpdate();
 }
 
 ShipDefinition ModelController::MakeShipDefinition() const
@@ -292,9 +283,6 @@ void ModelController::Flip(DirectionType direction)
         RegisterDirtyVisualization<VisualizationType::TextureLayer>(GetWholeShipRect());
     }
 
-    // Notify macro properties' update
-    NotifyMacroPropertiesUpdate();
-
     //...and Game we do regardless, as there's always a structural layer at least
     RegisterDirtyVisualization<VisualizationType::Game>(GetWholeShipRect());
 }
@@ -380,9 +368,6 @@ void ModelController::ResizeShip(
         RegisterDirtyVisualization<VisualizationType::TextureLayer>(newWholeShipRect);
     }
 
-    // Notify macro properties' update
-    NotifyMacroPropertiesUpdate();
-
     // Initialize game visualizations
     {
         mGameVisualizationTexture.reset();
@@ -413,8 +398,6 @@ void ModelController::SetStructuralLayer(StructuralLayerData && structuralLayer)
     mModel.SetStructuralLayer(std::move(structuralLayer));
 
     InitializeStructuralLayerAnalysis();
-
-    NotifyMacroPropertiesUpdate();
 
     RegisterDirtyVisualization<VisualizationType::Game>(GetWholeShipRect());
     RegisterDirtyVisualization<VisualizationType::StructuralLayer>(GetWholeShipRect());
@@ -456,8 +439,6 @@ void ModelController::StructuralRegionFill(
         }
     }
 
-    NotifyMacroPropertiesUpdate();
-
     //
     // Update visualization
     //
@@ -484,8 +465,6 @@ std::optional<ShipSpaceRect> ModelController::StructuralFlood(
         material,
         doContiguousOnly,
         mModel.GetStructuralLayer());
-
-    NotifyMacroPropertiesUpdate();
 
     if (affectedRect.has_value())
     {
@@ -524,8 +503,6 @@ void ModelController::RestoreStructuralLayerRegion(
 
     InitializeStructuralLayerAnalysis();
 
-    NotifyMacroPropertiesUpdate();
-
     //
     // Update visualization
     //
@@ -549,8 +526,6 @@ void ModelController::RestoreStructuralLayer(StructuralLayerData && sourceLayer)
     //
 
     InitializeStructuralLayerAnalysis();
-
-    NotifyMacroPropertiesUpdate();
 
     //
     // Update visualization
@@ -633,8 +608,6 @@ void ModelController::SetElectricalLayer(ElectricalLayerData && electricalLayer)
 
     InitializeElectricalLayerAnalysis();
 
-    NotifyMacroPropertiesUpdate();
-
     RegisterDirtyVisualization<VisualizationType::ElectricalLayer>(GetWholeShipRect());
 
     mIsElectricalLayerInEphemeralVisualization = false;
@@ -647,8 +620,6 @@ void ModelController::RemoveElectricalLayer()
     mModel.RemoveElectricalLayer();
 
     InitializeElectricalLayerAnalysis();
-
-    NotifyMacroPropertiesUpdate();
 
     RegisterDirtyVisualization<VisualizationType::ElectricalLayer>(GetWholeShipRect());
 
@@ -719,8 +690,6 @@ std::optional<ShipSpaceRect> ModelController::TrimElectricalParticlesWithoutSubs
         }
     }
 
-    NotifyMacroPropertiesUpdate();
-
     //
     // Update visualization
     //
@@ -752,8 +721,6 @@ void ModelController::ElectricalRegionFill(
             WriteParticle(ShipSpaceCoordinates(x, y), material);
         }
     }
-
-    NotifyMacroPropertiesUpdate();
 
     //
     // Update visualization
@@ -788,8 +755,6 @@ void ModelController::RestoreElectricalLayerRegion(
 
     InitializeElectricalLayerAnalysis();
 
-    NotifyMacroPropertiesUpdate();
-
     //
     // Update visualization
     //
@@ -812,8 +777,6 @@ void ModelController::RestoreElectricalLayer(std::unique_ptr<ElectricalLayerData
     //
 
     InitializeElectricalLayerAnalysis();
-
-    NotifyMacroPropertiesUpdate();
 
     //
     // Update visualization
@@ -891,8 +854,6 @@ void ModelController::SetRopesLayer(RopesLayerData && ropesLayer)
 
     InitializeRopesLayerAnalysis();
 
-    NotifyMacroPropertiesUpdate();
-
     RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
 
     mIsRopesLayerInEphemeralVisualization = false;
@@ -905,8 +866,6 @@ void ModelController::RemoveRopesLayer()
     mModel.RemoveRopesLayer();
 
     InitializeRopesLayerAnalysis();
-
-    NotifyMacroPropertiesUpdate();
 
     RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
 
@@ -971,8 +930,6 @@ void ModelController::AddRope(
         endCoords,
         material);
 
-    NotifyMacroPropertiesUpdate();
-
     //
     // Update visualization
     //
@@ -1000,8 +957,6 @@ void ModelController::MoveRopeEndpoint(
         oldCoords,
         newCoords);
 
-    NotifyMacroPropertiesUpdate();
-
     //
     // Update visualization
     //
@@ -1023,8 +978,6 @@ bool ModelController::EraseRopeAt(ShipSpaceCoordinates const & coords)
 
     if (hasRemoved)
     {
-        NotifyMacroPropertiesUpdate();
-
         // Update visualization
         RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
 
@@ -1051,8 +1004,6 @@ void ModelController::RestoreRopesLayer(std::unique_ptr<RopesLayerData> sourceLa
     //
 
     InitializeRopesLayerAnalysis();
-
-    NotifyMacroPropertiesUpdate();
 
     //
     // Update visualization
@@ -1575,11 +1526,6 @@ void ModelController::InitializeElectricalLayerAnalysis()
 void ModelController::InitializeRopesLayerAnalysis()
 {
     // Nop
-}
-
-void ModelController::NotifyMacroPropertiesUpdate()
-{
-    mOnModelMacroPropertiesUpdatedCallback(GetModelMacroProperties());
 }
 
 void ModelController::WriteParticle(

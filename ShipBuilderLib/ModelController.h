@@ -20,7 +20,6 @@
 #include <GameCore/ImageData.h>
 
 #include <array>
-#include <functional>
 #include <memory>
 #include <optional>
 #include <vector>
@@ -39,13 +38,11 @@ public:
     static std::unique_ptr<ModelController> CreateNew(
         ShipSpaceSize const & shipSpaceSize,
         std::string const & shipName,
-        ShipTexturizer const & shipTexturizer,
-        std::function<void(ModelMacroProperties const &)> && onModelMacroPropertiesUpdatedCallback);
+        ShipTexturizer const & shipTexturizer);
 
     static std::unique_ptr<ModelController> CreateForShip(
         ShipDefinition && shipDefinition,
-        ShipTexturizer const & shipTexturizer,
-        std::function<void(ModelMacroProperties const &)> && onModelMacroPropertiesUpdatedCallback);
+        ShipTexturizer const & shipTexturizer);
 
     ShipDefinition MakeShipDefinition() const;
 
@@ -341,8 +338,7 @@ private:
 
     ModelController(
         Model && model,
-        ShipTexturizer const & shipTexturizer,
-        std::function<void(ModelMacroProperties const &)> && onModelMacroPropertiesUpdatedCallback);
+        ShipTexturizer const & shipTexturizer);
 
     inline ShipSpaceRect GetWholeShipRect() const
     {
@@ -354,8 +350,6 @@ private:
     void InitializeElectricalLayerAnalysis();
 
     void InitializeRopesLayerAnalysis();
-
-    void NotifyMacroPropertiesUpdate();
 
     inline void WriteParticle(
         ShipSpaceCoordinates const & coords,
@@ -412,8 +406,6 @@ private:
     //
     // Auxiliary layers' members
     //
-
-    std::function<void(ModelMacroProperties const &)> mOnModelMacroPropertiesUpdatedCallback;
 
     float mTotalMass;
     vec2f mCenterOfMassSum;

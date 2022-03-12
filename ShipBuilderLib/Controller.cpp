@@ -30,11 +30,7 @@ std::unique_ptr<Controller> Controller::CreateNew(
     auto modelController = ModelController::CreateNew(
         ShipSpaceSize(200, 100), // TODO: from preferences
         shipName,
-        shipTexturizer,
-        [&userInterface](ModelMacroProperties const & properties)
-        {
-            userInterface.OnModelMacroPropertiesUpdated(properties);
-        });
+        shipTexturizer);
 
     std::unique_ptr<Controller> controller = std::unique_ptr<Controller>(
         new Controller(
@@ -57,11 +53,7 @@ std::unique_ptr<Controller> Controller::CreateForShip(
 {
     auto modelController = ModelController::CreateForShip(
         std::move(shipDefinition),
-        shipTexturizer,
-        [&userInterface](ModelMacroProperties const & properties)
-        {
-            userInterface.OnModelMacroPropertiesUpdated(properties);
-        });
+        shipTexturizer);
 
     std::unique_ptr<Controller> controller = std::unique_ptr<Controller>(
         new Controller(
@@ -140,6 +132,9 @@ Controller::Controller(
 
     // Upload layers' visualizations
     mModelController->UpdateVisualizations(*mView);
+
+    // Notify macro properties
+    NotifyModelMacroPropertiesUpdated();
 
     // Refresh view
     mUserInterface.RefreshView();
@@ -336,6 +331,9 @@ void Controller::RestoreStructuralLayerRegionForUndo(
 
     // No need to update dirtyness, this is for undo
 
+    // Notify macro properties
+    NotifyModelMacroPropertiesUpdated();
+
     // Refresh model visualization
     mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
@@ -348,6 +346,9 @@ void Controller::RestoreStructuralLayerForUndo(StructuralLayerData && structural
     mModelController->RestoreStructuralLayer(std::move(structuralLayer));
 
     // No need to update dirtyness, this is for undo
+
+    // Notify macro properties
+    NotifyModelMacroPropertiesUpdated();
 
     // Refresh model visualizations
     mModelController->UpdateVisualizations(*mView);
@@ -392,6 +393,9 @@ void Controller::RestoreElectricalLayerRegionForUndo(
 
     // No need to update dirtyness, this is for undo
 
+    // Notify macro properties
+    NotifyModelMacroPropertiesUpdated();
+
     // Refresh model visualizations
     mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
@@ -412,6 +416,9 @@ void Controller::RestoreElectricalLayerForUndo(std::unique_ptr<ElectricalLayerDa
     // Update visualization modes
     InternalUpdateModelControllerVisualizationModes();
 
+    // Notify macro properties
+    NotifyModelMacroPropertiesUpdated();
+
     // Refresh model visualizations
     mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
@@ -430,12 +437,9 @@ void Controller::TrimElectricalParticlesWithoutSubstratum()
         // Trim
         auto const affectedRect = mModelController->TrimElectricalParticlesWithoutSubstratum();
 
-        // Create undo action, if needed
         if (affectedRect.has_value())
         {
-            //
             // Create undo action
-            //
 
             ElectricalLayerData clippedRegionClone = originalLayerClone.Clone(*affectedRect);
 
@@ -449,16 +453,19 @@ void Controller::TrimElectricalParticlesWithoutSubstratum()
                 });
 
             mUserInterface.OnUndoStackStateChanged(mUndoStack);
+
+            // Update dirtyness
+            mModelController->SetLayerDirty(LayerType::Electrical);
+            mUserInterface.OnModelDirtyChanged(*mModelController);
+
+            // Notify macro properties
+            NotifyModelMacroPropertiesUpdated();
+
+            // Refresh model visualizations
+            mModelController->UpdateVisualizations(*mView);
+            mUserInterface.RefreshView();
         }
     }
-
-    // Update dirtyness
-    mModelController->SetLayerDirty(LayerType::Electrical);
-    mUserInterface.OnModelDirtyChanged(*mModelController);
-
-    // Refresh model visualizations
-    mModelController->UpdateVisualizations(*mView);
-    mUserInterface.RefreshView();
 }
 
 void Controller::NewRopesLayer()
@@ -523,6 +530,9 @@ void Controller::RestoreRopesLayerForUndo(std::unique_ptr<RopesLayerData> ropesL
 
     // Update visualization modes
     InternalUpdateModelControllerVisualizationModes();
+
+    // Notify macro properties
+    NotifyModelMacroPropertiesUpdated();
 
     // Refresh model visualizations
     mModelController->UpdateVisualizations(*mView);
@@ -678,6 +688,9 @@ void Controller::RestoreAllLayersForUndo(
     // Update visualization modes
     InternalUpdateModelControllerVisualizationModes();
 
+    // Notify macro properties
+    NotifyModelMacroPropertiesUpdated();
+
     // Refresh model visualizations
     mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
@@ -734,22 +747,8 @@ void Controller::LayerChangeEpilog(std::optional<LayerType> dirtyLayer)
         mModelController->SetLayerDirty(*dirtyLayer);
         mUserInterface.OnModelDirtyChanged(*mModelController);
 
-        // Refresh macro properties
-        auto const & modelMacroProperties = mModelController->GetModelMacroProperties();
-        mUserInterface.OnModelMacroPropertiesUpdated(modelMacroProperties);
-        if (mWorkbenchState.IsWaterlineMarkersEnabled())
-        {
-            if (modelMacroProperties.CenterOfMass.has_value())
-            {
-                mView->UploadWaterlineMarker(
-                    *modelMacroProperties.CenterOfMass,
-                    View::WaterlineMarkerType::CenterOfMass);
-            }
-            else
-            {
-                mView->RemoveWaterlineMarker(View::WaterlineMarkerType::CenterOfMass);
-            }
-        }
+        // Notify macro properties
+        NotifyModelMacroPropertiesUpdated();
     }
 
     // Refresh visualization
@@ -1250,6 +1249,9 @@ void Controller::InternalSetLayer(wxString actionTitle, TArgs&& ... args)
     // Update visualization modes
     InternalUpdateModelControllerVisualizationModes();
 
+    // Notify macro properties
+    NotifyModelMacroPropertiesUpdated();
+
     // Refresh model visualizations
     mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
@@ -1313,6 +1315,9 @@ void Controller::InternalRemoveLayer()
 
     // Update visualization modes
     InternalUpdateModelControllerVisualizationModes();
+
+    // Notify macro properties
+    NotifyModelMacroPropertiesUpdated();
 
     // Refresh model visualizations
     mModelController->UpdateVisualizations(*mView);
@@ -1815,6 +1820,9 @@ void Controller::InternalResizeShip(
     // Notify UI of new ship size
     mUserInterface.OnShipSizeChanged(newSize);
 
+    // Notify macro properties
+    NotifyModelMacroPropertiesUpdated();
+
     // Refresh model visualizations
     mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
@@ -1863,9 +1871,35 @@ void Controller::InternalFlip(DirectionType direction)
         mUserInterface.OnModelDirtyChanged(*mModelController);
     }
 
+    // Update macro properties
+    NotifyModelMacroPropertiesUpdated();
+
     // Refresh model visualizations
     mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
+}
+
+void Controller::NotifyModelMacroPropertiesUpdated()
+{
+    auto const & modelMacroProperties = mModelController->GetModelMacroProperties();
+
+    // Notify UI
+    mUserInterface.OnModelMacroPropertiesUpdated(modelMacroProperties);
+
+    // Upload marker - if applicable
+    if (mWorkbenchState.IsWaterlineMarkersEnabled())
+    {
+        if (modelMacroProperties.CenterOfMass.has_value())
+        {
+            mView->UploadWaterlineMarker(
+                *modelMacroProperties.CenterOfMass,
+                View::WaterlineMarkerType::CenterOfMass);
+        }
+        else
+        {
+            mView->RemoveWaterlineMarker(View::WaterlineMarkerType::CenterOfMass);
+        }
+    }
 }
 
 void Controller::RefreshToolCoordinatesDisplay()
