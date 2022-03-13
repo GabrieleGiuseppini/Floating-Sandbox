@@ -41,7 +41,7 @@ ResizeDialog::ResizeDialog(
         // Size boxes
         {
             int constexpr TextCtrlWidth = 60;
-            int const MaxDimension = 10000;
+            int const MaxDimension = 2000;
 
             wxGridBagSizer * sizer = new wxGridBagSizer(5, 5);
 
@@ -329,8 +329,8 @@ ResizeDialog::ResizeDialog(
     // Visualization
     {
         mShipResizeVisualizationControl = new ShipResizeVisualizationControl(
-            this, 
-            400, 
+            this,
+            400,
             200,
             [this]()
             {
@@ -338,8 +338,8 @@ ResizeDialog::ResizeDialog(
             });
 
         dialogVSizer->Add(
-            mShipResizeVisualizationControl, 
-            0, 
+            mShipResizeVisualizationControl,
+            0,
             wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxRIGHT,
             10);
     }
