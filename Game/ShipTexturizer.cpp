@@ -20,7 +20,7 @@ size_t constexpr MaterialTextureCacheSizeLowWatermark = 25;
 std::string const MaterialTextureNameNone = "none";
 
 namespace /*anonymous*/ {
-    
+
     inline vec3f BidirMultiplyBlend(
         vec3f const & inputColor,
         vec2f const & bumpMapSample)
@@ -118,11 +118,13 @@ void ShipTexturizer::AutoTexturizeInto(
     //
     // Prepare constants
     //
-    
+
     assert((targetTextureImage.Size.width % structuralLayer.Buffer.Size.width) == 0
         && (targetTextureImage.Size.height % structuralLayer.Buffer.Size.height) == 0);
     assert(magnificationFactor == targetTextureImage.Size.width / structuralLayer.Buffer.Size.width);
     assert(magnificationFactor == targetTextureImage.Size.height / structuralLayer.Buffer.Size.height);
+
+    int const targetTextureWidth = targetTextureImage.Size.width;
 
     float const magnificationFactorInvF = 1.0f / static_cast<float>(magnificationFactor);
 
@@ -170,7 +172,7 @@ void ShipTexturizer::AutoTexturizeInto(
                 || structuralMaterial == nullptr)
             {
                 //
-                // Flat structure
+                // Flat structure/transparent
                 //
 
                 // Fill quad with color
@@ -178,7 +180,7 @@ void ShipTexturizer::AutoTexturizeInto(
                 {
                     int const quadOffset =
                         x * magnificationFactor
-                        + (y * magnificationFactor + yy) * targetTextureImage.Size.width;
+                        + (y * magnificationFactor + yy) * targetTextureWidth;
 
                     for (int xx = 0; xx < magnificationFactor; ++xx)
                     {
@@ -228,12 +230,12 @@ void ShipTexturizer::AutoTexturizeInto(
                 // Fill quad with color multiply-blended with "bump map" texture
                 //
 
-                int const baseTargetQuadOffset = (x + y * targetTextureImage.Size.width) * magnificationFactor;
+                int const baseTargetQuadOffset = (x + y * targetTextureWidth) * magnificationFactor;
 
                 float worldY = static_cast<float>(y);
                 for (int yy = 0; yy < magnificationFactor; ++yy, worldY += magnificationFactorInvF)
                 {
-                    int const targetQuadOffset = baseTargetQuadOffset + yy * targetTextureImage.Size.width;
+                    int const targetQuadOffset = baseTargetQuadOffset + yy * targetTextureWidth;
 
                     //
                     // Prepare bilinear interpolation for Y
@@ -345,13 +347,15 @@ void ShipTexturizer::RenderShipInto(
     assert(magnificationFactor == targetTextureImage.Size.width / structuralLayer.Buffer.Size.width);
     assert(magnificationFactor == targetTextureImage.Size.height / structuralLayer.Buffer.Size.height);
 
+    int const targetTextureWidth = targetTextureImage.Size.width;
+
     float const sourcePixelsPerShipParticleX = static_cast<float>(sourceTextureImage.Size.width) / static_cast<float>(structuralLayer.Buffer.Size.width);
     float const sourcePixelsPerShipParticleY = static_cast<float>(sourceTextureImage.Size.height) / static_cast<float>(structuralLayer.Buffer.Size.height);
 
     //
     // Here we sample the texture with an offset of half of a "ship pixel" (which is multiple texture pixels) on both sides,
     // in the same way as we do when we build the ship at simulation time.
-    // We do this so that the texture for a particle at ship coords (x, y) is sampled at the center of the 
+    // We do this so that the texture for a particle at ship coords (x, y) is sampled at the center of the
     // texture's quad for that particle.
     //
 
@@ -500,12 +504,12 @@ void ShipTexturizer::RenderShipInto(
             //
 
             int targetQuadOffset =
-                (y * magnificationFactor) * targetTextureImage.Size.width
+                (y * magnificationFactor) * targetTextureWidth
                 + x * magnificationFactor;
 
-            for (int yy = 0; 
-                yy < magnificationFactor; 
-                ++yy, xxStart += xxStartIncr, xxEnd += xxEndIncr, targetQuadOffset += targetTextureImage.Size.width)
+            for (int yy = 0;
+                yy < magnificationFactor;
+                ++yy, xxStart += xxStartIncr, xxEnd += xxEndIncr, targetQuadOffset += targetTextureWidth)
             {
                 // Prefix - fill with empty
                 assert(0 <= xxStart && xxStart <= magnificationFactor);

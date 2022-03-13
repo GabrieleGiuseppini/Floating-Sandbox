@@ -1309,26 +1309,7 @@ void ModelController::UpdateVisualizations(View & view)
             ImageRect const dirtyTextureRegion = UpdateGameVisualization(*dirtyShipRegion);
 
             // Upload visualization
-            if (dirtyTextureRegion != mGameVisualizationTexture->Size)
-            {
-                //
-                // For better performance, we only upload the dirty sub-texture
-                //
-
-                auto subTexture = RgbaImageData(dirtyTextureRegion.size);
-                subTexture.BlitFromRegion(
-                    *mGameVisualizationTexture,
-                    dirtyTextureRegion,
-                    { 0, 0 });
-
-                view.UpdateGameVisualizationTexture(
-                    subTexture,
-                    dirtyTextureRegion.origin);
-            }
-            else
-            {
-                view.UploadGameVisualization(*mGameVisualizationTexture);
-            }
+            view.UploadGameVisualization(*mGameVisualizationTexture);
         }
     }
     else
