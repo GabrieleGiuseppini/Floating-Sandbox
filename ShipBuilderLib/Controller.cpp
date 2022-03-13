@@ -612,6 +612,20 @@ void Controller::FlipForUndo(DirectionType direction)
     InternalFlip<true>(direction);
 }
 
+void Controller::Rotate90(RotationDirectionType direction)
+{
+    auto const scopedToolResumeState = SuspendTool();
+
+    InternalRotate90<false>(direction);
+}
+
+void Controller::Rotate90ForUndo(RotationDirectionType direction)
+{
+    auto const scopedToolResumeState = SuspendTool();
+
+    InternalRotate90<true>(direction);
+}
+
 void Controller::ResizeShip(
     ShipSpaceSize const & newSize,
     ShipSpaceCoordinates const & originOffset)
@@ -1737,6 +1751,69 @@ void Controller::InternalFlip(DirectionType direction)
         mModelController->SetAllPresentLayersDirty();
         mUserInterface.OnModelDirtyChanged(*mModelController);
     }
+
+    // Update macro properties
+    NotifyModelMacroPropertiesUpdated();
+
+    // Refresh model visualizations
+    mModelController->UpdateVisualizations(*mView);
+    mUserInterface.RefreshView();
+}
+
+template<bool IsForUndo>
+void Controller::InternalRotate90(RotationDirectionType direction)
+{
+    if constexpr (!IsForUndo)
+    {
+        // Get dirty state
+        ModelDirtyState const originalDirtyState = mModelController->GetDirtyState();
+
+        // Calculate undo title and anti-rotation
+        wxString undoTitle;
+        RotationDirectionType antiRotation;
+        if (direction == RotationDirectionType::Clockwise)
+        {
+            undoTitle = _("Rotate CW");
+            antiRotation = RotationDirectionType::AntiClockwise;
+        }
+        else
+        {
+            assert(direction == RotationDirectionType::AntiClockwise);
+
+            undoTitle = _("Rotate CCW");
+            antiRotation = RotationDirectionType::Clockwise;
+        }
+
+        // Create undo
+
+        mUndoStack.Push(
+            undoTitle,
+            1, // Arbitrary
+            originalDirtyState,
+            [antiRotation](Controller & controller) mutable
+            {
+                controller.Rotate90ForUndo(antiRotation);
+            });
+
+        mUserInterface.OnUndoStackStateChanged(mUndoStack);
+    }
+
+    // Rotate
+    mModelController->Rotate90(direction);
+
+    if constexpr (!IsForUndo)
+    {
+        // Update dirtyness
+        mModelController->SetAllPresentLayersDirty();
+        mUserInterface.OnModelDirtyChanged(*mModelController);
+    }
+
+    // Notify view of new size
+    mView->SetShipSize(mModelController->GetShipSize());
+    mUserInterface.OnViewModelChanged(mView->GetViewModel());
+
+    // Notify UI of new ship size
+    mUserInterface.OnShipSizeChanged(mModelController->GetShipSize());
 
     // Update macro properties
     NotifyModelMacroPropertiesUpdated();

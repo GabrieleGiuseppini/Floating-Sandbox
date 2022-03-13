@@ -1454,6 +1454,40 @@ wxRibbonPanel * MainFrame::CreateEditShipRibbonPanel(wxRibbonPage * parent)
         panelGridSizer->Add(button);
     }
 
+    // Rotate 90 CW
+    {
+        auto button = new RibbonToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetIconFilePath("rotate_90_cw_medium"),
+            _("90° CW"),
+            [this]()
+            {
+                assert(mController);
+                mController->Rotate90(RotationDirectionType::Clockwise);
+            },
+            _("Rotate the ship 90° clockwise."));
+
+        panelGridSizer->Add(button);
+    }
+
+    // Rotate 90 CCW
+    {
+        auto button = new RibbonToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetIconFilePath("rotate_90_ccw_medium"),
+            _("90° CCW"),
+            [this]()
+            {
+                assert(mController);
+                mController->Rotate90(RotationDirectionType::AntiClockwise);
+            },
+            _("Rotate the ship 90° anti-clockwise."));
+
+        panelGridSizer->Add(button);
+    }
+
     // Flip H
     {
         auto button = new RibbonToolbarButton<BitmapButton>(

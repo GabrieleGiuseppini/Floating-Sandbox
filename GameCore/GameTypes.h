@@ -293,7 +293,7 @@ namespace std {
 // Geometry
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-/* 
+/*
  * Integral system
  */
 
@@ -483,7 +483,7 @@ struct _IntegralCoordinates
     template<typename TRect>
     bool IsInRect(TRect const & rect) const
     {
-        return x >= rect.origin.x && x < rect.origin.x + rect.size.width 
+        return x >= rect.origin.x && x < rect.origin.x + rect.size.width
             && y >= rect.origin.y && y < rect.origin.y + rect.size.height;
     }
 
@@ -786,6 +786,15 @@ enum class DirectionType
 };
 
 template <> struct is_flag<DirectionType> : std::true_type {};
+
+/*
+ * Generic rotation directions.
+ */
+enum class RotationDirectionType
+{
+    Clockwise,
+    AntiClockwise
+};
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // Game

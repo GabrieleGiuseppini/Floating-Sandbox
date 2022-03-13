@@ -154,6 +154,8 @@ public:
 
     void Flip(DirectionType direction);
 
+    void Rotate90(RotationDirectionType direction);
+
     void ResizeShip(
         ShipSpaceSize const & newSize,
         ShipSpaceCoordinates const & originOffset);

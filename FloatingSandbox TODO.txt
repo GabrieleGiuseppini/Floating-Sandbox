@@ -135,6 +135,8 @@
 		- Spring relaxation with intrinsics
 
 		- Investigate perf hit of rendering to buffer and directly drawing the buffer afterwards
+			- OpenGL Frame Buffer Object 101: https://www.gamedev.net/reference/articles/article2331.asp
+			- http://www.mathematik.tu-dortmund.de/~goeddeke/gpgpu/tutorial3.html
 			- If it works: do "reshader" type of work (*)
 
 		- See if may put smoke emitters behind triangles and springs

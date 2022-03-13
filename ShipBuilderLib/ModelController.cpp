@@ -288,6 +288,61 @@ void ModelController::Flip(DirectionType direction)
     RegisterDirtyVisualization<VisualizationType::Game>(GetWholeShipRect());
 }
 
+void ModelController::Rotate90(RotationDirectionType direction)
+{
+    // Structural layer
+    {
+        assert(mModel.HasLayer(LayerType::Structural));
+
+        assert(!mIsStructuralLayerInEphemeralVisualization);
+
+        // TODOHERE
+        //mModel.GetStructuralLayer().Buffer.Rotate90(direction);
+
+        RegisterDirtyVisualization<VisualizationType::StructuralLayer>(GetWholeShipRect());
+
+        InitializeStructuralLayerAnalysis();
+    }
+
+    // Electrical layer
+    if (mModel.HasLayer(LayerType::Electrical))
+    {
+        assert(!mIsElectricalLayerInEphemeralVisualization);
+
+        // TODOHERE
+        //mModel.GetElectricalLayer().Buffer.Rotate90(direction);
+
+        RegisterDirtyVisualization<VisualizationType::ElectricalLayer>(GetWholeShipRect());
+
+        InitializeElectricalLayerAnalysis();
+    }
+
+    // Ropes layer
+    if (mModel.HasLayer(LayerType::Ropes))
+    {
+        assert(!mIsRopesLayerInEphemeralVisualization);
+
+        // TODOHERE
+        //mModel.GetRopesLayer().Buffer.Rotate90(direction);
+
+        RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
+
+        InitializeRopesLayerAnalysis();
+    }
+
+    // Texture layer
+    if (mModel.HasLayer(LayerType::Texture))
+    {
+        // TODOHERE
+        //mModel.GetTextureLayer().Buffer.Rotate90(direction);
+
+        RegisterDirtyVisualization<VisualizationType::TextureLayer>(GetWholeShipRect());
+    }
+
+    //...and Game we do regardless, as there's always a structural layer at least
+    RegisterDirtyVisualization<VisualizationType::Game>(GetWholeShipRect());
+}
+
 void ModelController::ResizeShip(
     ShipSpaceSize const & newSize,
     ShipSpaceCoordinates const & originOffset)

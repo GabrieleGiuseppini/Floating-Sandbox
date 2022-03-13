@@ -341,18 +341,41 @@
 		+ Fix anchor
 	+ View: upload mipmapped
 
-- See why we weren't asked to rename 3 balls after chaning name in metadata
-	- Because it was .shp?
++ See why we weren't asked to rename 3 balls after chaning name in metadata
+	+ Because it was .shp?
 
-- Perf:
-	- Do perf analysis of long diagonal line
-	- Test with huge size: lag should only be proportional to edit region
-	- See bitblt into mapped buffer when uploading region of texture
++ Perf:
+	+ Do perf analysis of long diagonal line
+		+ ShipBuilder::ModelController::UpdateVisualizations	6489 (95.24%)
+			+ ShipBuilder::ModelController::UpdateGameVisualization	3841 (65.67%)
+				+ RenderShipInto: 33
+				+ AutoTextureInto: 32
+			+ ShipBuilder::View::UploadGameVisualization	2600 (28.95%)
+	X Try using glTexSubImage2D at View::UploadGameVisualization
+	X Test with huge size: lag should only be proportional to edit region
 
-- Rotate 90 (CW and CCW) (full ship)
-	- Ribbon, "Edit"
-		- 2 icons
-	- Also changes ship size, do notifications
+= Rotate 90 (CW and CCW) (full ship)
+	= Ribbon, "Edit"
+		= 2 icons
+			- Redo using style of Flip
+				- Same arrow
+				- Same thickness
+	- Buffer2D
+		- In-place?
+		- Unit tests
+	- RopeBuffer
+		- Unit tests
+	= Controller->ModelController
+		= Also changes ship size, so do notifications
+	- Test:
+		- Structural
+		- Electrical
+		- Ropes
+		- Texture
+		- Undo
+		- Ship size notif at rotate
+		- Ship size notif at undo
+		- CoM
 
 - Send for testing
 

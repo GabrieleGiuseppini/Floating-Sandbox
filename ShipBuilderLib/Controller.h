@@ -179,6 +179,9 @@ public:
     void Flip(DirectionType direction);
     void FlipForUndo(DirectionType direction);
 
+    void Rotate90(RotationDirectionType direction);
+    void Rotate90ForUndo(RotationDirectionType direction);
+
     void ResizeShip(
         ShipSpaceSize const & newSize,
         ShipSpaceCoordinates const & originOffset);
@@ -335,6 +338,9 @@ private:
 
     template<bool IsForUndo>
     void InternalFlip(DirectionType direction);
+
+    template<bool IsForUndo>
+    void InternalRotate90(RotationDirectionType direction);
 
     void NotifyModelMacroPropertiesUpdated();
 
