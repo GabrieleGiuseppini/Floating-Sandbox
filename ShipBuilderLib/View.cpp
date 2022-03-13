@@ -48,8 +48,8 @@ View::View(
     , mHasCenterOfMassWaterlineMarker(false)
     , mHasWaterline(false)
     //////////////////////////////////
-    , mLinearTextureAtlasOpenGLHandle()
-    , mLinearTextureAtlasMetadata()
+    , mMipMappedTextureAtlasOpenGLHandle()
+    , mMipMappedTextureAtlasMetadata()
     //////////////////////////////////
     , mPrimaryVisualization(primaryVisualization)
     , mOtherVisualizationsOpacity(otherVisualizationsOpacity)
@@ -86,8 +86,8 @@ View::View(
     mShaderManager = ShaderManager<ShaderManagerTraits>::CreateInstance(resourceLocator.GetShipBuilderShadersRootPath());
 
     // Set texture samplers in programs
-    mShaderManager->ActivateProgram<ProgramType::LinearTextureQuad>();
-    mShaderManager->SetTextureParameters<ProgramType::LinearTextureQuad>();
+    mShaderManager->ActivateProgram<ProgramType::MipMappedTextureQuad>();
+    mShaderManager->SetTextureParameters<ProgramType::MipMappedTextureQuad>();
     mShaderManager->ActivateProgram<ProgramType::StructureMesh>();
     mShaderManager->SetTextureParameters<ProgramType::StructureMesh>();
     mShaderManager->ActivateProgram<ProgramType::Texture>();
@@ -96,36 +96,38 @@ View::View(
     mShaderManager->SetTextureParameters<ProgramType::TextureNdc>();
 
     //
-    // Create linear texture atlas
+    // Create mipmapped texture atlas
     //
 
     {
         // Load texture database
-        auto linearTextureDatabase = Render::TextureDatabase<LinearTextureTextureDatabaseTraits>::Load(
+        auto mipmappedTextureDatabase = Render::TextureDatabase<MipMappedTextureTextureDatabaseTraits>::Load(
             resourceLocator.GetTexturesRootFolderPath());
 
         // Create atlas
-        auto linearTextureAtlas = Render::TextureAtlasBuilder<LinearTextureGroups>::BuildAtlas(
-            linearTextureDatabase,
+        auto mipmappedTextureAtlas = Render::TextureAtlasBuilder<MipMappedTextureGroups>::BuildAtlas(
+            mipmappedTextureDatabase,
             Render::AtlasOptions::None,
             [](float, ProgressMessageType) {});
 
-        LogMessage("ShipBuilder linear texture atlas size: ", linearTextureAtlas.AtlasData.Size.ToString());
+        LogMessage("ShipBuilder mipmapped texture atlas size: ", mipmappedTextureAtlas.AtlasData.Size.ToString());
 
         // Activate texture
-        mShaderManager->ActivateTexture<ProgramParameterType::LinearTexturesAtlasTexture>();
+        mShaderManager->ActivateTexture<ProgramParameterType::MipMappedTexturesAtlasTexture>();
 
         // Create texture OpenGL handle
         GLuint tmpGLuint;
         glGenTextures(1, &tmpGLuint);
-        mLinearTextureAtlasOpenGLHandle = tmpGLuint;
+        mMipMappedTextureAtlasOpenGLHandle = tmpGLuint;
 
         // Bind texture
-        glBindTexture(GL_TEXTURE_2D, *mLinearTextureAtlasOpenGLHandle);
+        glBindTexture(GL_TEXTURE_2D, *mMipMappedTextureAtlasOpenGLHandle);
         CheckOpenGLError();
 
         // Upload atlas texture
-        GameOpenGL::UploadTexture(std::move(linearTextureAtlas.AtlasData));
+        GameOpenGL::UploadMipmappedPowerOfTwoTexture(
+            std::move(mipmappedTextureAtlas.AtlasData),
+            mipmappedTextureAtlas.Metadata.GetMaxDimension());
 
         // Set repeat mode
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -133,13 +135,13 @@ View::View(
         CheckOpenGLError();
 
         // Set texture filtering parameters
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         CheckOpenGLError();
 
         // Store metadata
-        mLinearTextureAtlasMetadata = std::make_unique<Render::TextureAtlasMetadata<LinearTextureGroups>>(
-            linearTextureAtlas.Metadata);
+        mMipMappedTextureAtlasMetadata = std::make_unique<Render::TextureAtlasMetadata<MipMappedTextureGroups>>(
+            mipmappedTextureAtlas.Metadata);
     }
 
     //
@@ -1009,7 +1011,7 @@ void View::UploadWaterlineMarker(
     // Upload quad
     //
 
-    auto const & atlasFrameMetadata = mLinearTextureAtlasMetadata->GetFrameMetadata(LinearTextureGroups::WaterlineMarker, textureFrameIndex);
+    auto const & atlasFrameMetadata = mMipMappedTextureAtlasMetadata->GetFrameMetadata(MipMappedTextureGroups::WaterlineMarker, textureFrameIndex);
 
     float const leftX = center.x - atlasFrameMetadata.FrameMetadata.AnchorCenterWorld.x + 0.5f; // At center of ship coord's square
     float const leftXTexture = atlasFrameMetadata.TextureCoordinatesBottomLeft.x;
@@ -1324,7 +1326,7 @@ void View::Render()
         glBindVertexArray(*mWaterlineMarkersVAO);
 
         // Activate program
-        mShaderManager->ActivateProgram<ProgramType::LinearTextureQuad>();
+        mShaderManager->ActivateProgram<ProgramType::MipMappedTextureQuad>();
 
         int const first = mHasCenterOfBuoyancyWaterlineMarker ? 0 : 6;
         int count = 0;
@@ -1424,8 +1426,8 @@ void View::OnViewModelUpdated()
     mShaderManager->SetProgramParameter<ProgramType::Grid, ProgramParameterType::OrthoMatrix>(
         orthoMatrix);
 
-    mShaderManager->ActivateProgram<ProgramType::LinearTextureQuad>();
-    mShaderManager->SetProgramParameter<ProgramType::LinearTextureQuad, ProgramParameterType::OrthoMatrix>(
+    mShaderManager->ActivateProgram<ProgramType::MipMappedTextureQuad>();
+    mShaderManager->SetProgramParameter<ProgramType::MipMappedTextureQuad, ProgramParameterType::OrthoMatrix>(
         orthoMatrix);
 
     mShaderManager->ActivateProgram<ProgramType::RectOverlay>();

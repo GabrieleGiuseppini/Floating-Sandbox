@@ -22,7 +22,7 @@ enum class ProgramType
     CircleOverlay,
     DashedLineOverlay,
     Grid,
-    LinearTextureQuad,
+    MipMappedTextureQuad,
     RectOverlay,
     Rope,
     StructureMesh,
@@ -48,7 +48,7 @@ enum class ProgramParameterType : uint8_t
 
     // Texture units
     BackgroundTextureUnit,
-    LinearTexturesAtlasTexture,
+    MipMappedTexturesAtlasTexture,
     TextureUnit1,
 
     _FirstTexture = BackgroundTextureUnit,

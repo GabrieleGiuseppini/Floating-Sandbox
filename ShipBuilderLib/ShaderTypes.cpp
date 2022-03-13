@@ -23,8 +23,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::DashedLineOverlay;
     else if (lstr == "grid")
         return ProgramType::Grid;
-    else if (lstr == "linear_texture_quad")
-        return ProgramType::LinearTextureQuad;
+    else if (lstr == "mipmapped_texture_quad")
+        return ProgramType::MipMappedTextureQuad;
     else if (lstr == "rect_overlay")
         return ProgramType::RectOverlay;
     else if (lstr == "rope")
@@ -53,8 +53,8 @@ std::string ProgramTypeToStr(ProgramType program)
             return "CircleOverlay";
         case ProgramType::Grid:
             return "Grid";
-        case ProgramType::LinearTextureQuad:
-            return "LinearTextureQuad";
+        case ProgramType::MipMappedTextureQuad:
+            return "MipMappedTextureQuad";
         case ProgramType::RectOverlay:
             return "RectOverlay";
         case ProgramType::Rope:
@@ -89,8 +89,8 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::ShipParticleTextureSize;
     else if (str == "BackgroundTextureUnit")
         return ProgramParameterType::BackgroundTextureUnit;
-    else if (str == "LinearTexturesAtlasTexture")
-        return ProgramParameterType::LinearTexturesAtlasTexture;
+    else if (str == "MipMappedTexturesAtlasTexture")
+        return ProgramParameterType::MipMappedTexturesAtlasTexture;
     else if (str == "TextureUnit1")
         return ProgramParameterType::TextureUnit1;
     else
@@ -115,8 +115,8 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
             return "ShipParticleTextureSize";
         case ProgramParameterType::BackgroundTextureUnit:
             return "BackgroundTextureUnit";
-        case ProgramParameterType::LinearTexturesAtlasTexture:
-            return "LinearTexturesAtlasTexture";
+        case ProgramParameterType::MipMappedTexturesAtlasTexture:
+            return "MipMappedTexturesAtlasTexture";
         case ProgramParameterType::TextureUnit1:
             return "TextureUnit1";
     }

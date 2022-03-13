@@ -15,7 +15,7 @@
 namespace ShipBuilder {
 
 WorkbenchState::WorkbenchState(MaterialDatabase const & materialDatabase)
-    : mNewShipSize(200, 100)
+    : mNewShipSize(0, 0) // Set later
 {
     // Default structural foreground material: first structural material
     assert(!materialDatabase.GetStructuralMaterialPalette().Categories.empty()
@@ -77,6 +77,7 @@ WorkbenchState::WorkbenchState(MaterialDatabase const & materialDatabase)
     //
 
     mDisplayUnitsSystem = UnitsSystem::SI_Celsius;
+    mNewShipSize = ShipSpaceSize(200, 100);
 
     //
     // Load preferences

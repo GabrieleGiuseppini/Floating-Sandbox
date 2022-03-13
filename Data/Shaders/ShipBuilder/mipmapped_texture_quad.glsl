@@ -27,9 +27,9 @@ void main()
 in vec2 vertexTextureCoordinates;
 
 // The texture
-uniform sampler2D paramLinearTexturesAtlasTexture;
+uniform sampler2D paramMipMappedTexturesAtlasTexture;
 
 void main()
 {
-    gl_FragColor = texture2D(paramLinearTexturesAtlasTexture, vertexTextureCoordinates);
+    gl_FragColor = texture2D(paramMipMappedTexturesAtlasTexture, vertexTextureCoordinates);
 } 

@@ -326,14 +326,20 @@
 
 + Use epilog also at Controller itself
 
-= Merge Preferences into Workbench
++ Merge Preferences into Workbench
 	+ Nuke Preferences
 	+ Use NewShipSize at Controller
-	- Test 
-		- Creates json
-		- Loads json
+	+ Test 
+		+ Creates json
+		+ Loads json
 
-- Try mipmap for markers
++ Make mipmap for markers
+	+ Rename folders and groups
+		+ Clean build/data folders
+	+ Redo icons
+		+ 64x128
+		+ Fix anchor
+	+ View: upload mipmapped
 
 - See why we weren't asked to rename 3 balls after chaning name in metadata
 	- Because it was .shp?
@@ -343,7 +349,9 @@
 	- Test with huge size: lag should only be proportional to edit region
 	- See bitblt into mapped buffer when uploading region of texture
 
-- Rotate 90 (CW and CCW)
+- Rotate 90 (CW and CCW) (full ship)
+	- Ribbon, "Edit"
+		- 2 icons
 	- Also changes ship size, do notifications
 
 - Send for testing

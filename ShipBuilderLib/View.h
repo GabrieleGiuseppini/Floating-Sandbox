@@ -553,8 +553,8 @@ private:
     // Textures
     //
 
-    GameOpenGLTexture mLinearTextureAtlasOpenGLHandle;
-    std::unique_ptr<Render::TextureAtlasMetadata<LinearTextureGroups>> mLinearTextureAtlasMetadata;
+    GameOpenGLTexture mMipMappedTextureAtlasOpenGLHandle;
+    std::unique_ptr<Render::TextureAtlasMetadata<MipMappedTextureGroups>> mMipMappedTextureAtlasMetadata;
 
     //
     // Settings from outside
