@@ -323,7 +323,7 @@ void ModelController::Rotate90(RotationDirectionType direction)
         assert(!mIsRopesLayerInEphemeralVisualization);
 
         // TODOHERE
-        //mModel.GetRopesLayer().Buffer.Rotate90(direction);
+        //mModel.GetRopesLayer().Buffer.Rotate90(direction, mModel.GetShipSize());
 
         RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
 

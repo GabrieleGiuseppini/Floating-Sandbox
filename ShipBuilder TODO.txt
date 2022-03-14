@@ -355,15 +355,13 @@
 	X Test with huge size: lag should only be proportional to edit region
 
 = Rotate 90 (CW and CCW) (full ship)
-	= Ribbon, "Edit"
-		= 2 icons
-			- Redo using style of Flip
-				- Same arrow
-				- Same thickness
+	+ Ribbon, "Edit"
+		+ 2 icons
 	- Buffer2D
-		- In-place?
+		- In-place
 		- Unit tests
 	- RopeBuffer
+		- In-place
 		- Unit tests
 	= Controller->ModelController
 		= Also changes ship size, so do notifications
