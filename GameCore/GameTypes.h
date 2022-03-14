@@ -793,7 +793,7 @@ template <> struct is_flag<DirectionType> : std::true_type {};
 enum class RotationDirectionType
 {
     Clockwise,
-    AntiClockwise
+    CounterClockwise
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////

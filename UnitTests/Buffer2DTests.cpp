@@ -235,7 +235,7 @@ TEST(Buffer2DTests, Flip_Horizontal)
     }
 
     buffer.Flip(DirectionType::Horizontal);
-    
+
     iVal = 100;
     for (int y = 0; y < buffer.Size.height; ++y)
     {
@@ -621,6 +621,144 @@ TEST(Buffer2DTests, MakeReframed_BecomesEmpty)
         {
             auto const coords = IntegralCoordinates(x, y);
             EXPECT_EQ(targetBuffer[coords], 999999);
+        }
+    }
+}
+
+class Rotate90CWTest : public testing::TestWithParam<std::tuple<int, int>>
+{
+public:
+    virtual void SetUp() {}
+    virtual void TearDown() {}
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    Buffer2DTests,
+    Rotate90CWTest,
+    ::testing::Values(
+        std::make_tuple(1, 1),
+        std::make_tuple(1, 2),
+        std::make_tuple(2, 1),
+        std::make_tuple(2, 2),
+        std::make_tuple(3, 2),
+        std::make_tuple(2, 3),
+        std::make_tuple(3, 3)
+    ));
+
+TEST_P(Rotate90CWTest, Rotate90CWTest)
+{
+    int const originalWidth = std::get<0>(GetParam());
+    int const originalHeight = std::get<1>(GetParam());
+
+    //
+    // Prepare source buffer
+    //
+
+    Buffer2D<int, struct IntegralTag> buffer(originalWidth, originalHeight);
+
+    int iVal = 0;
+    for (int y = 0; y < originalHeight; ++y)
+    {
+        for (int x = 0; x < originalWidth; ++x)
+        {
+            buffer[{x, y}] = iVal++;
+        }
+    }
+
+    //
+    // Rotate
+    //
+
+    buffer.Rotate90(RotationDirectionType::Clockwise);
+
+    //
+    // Verify
+    //
+
+    int const newWidth = originalHeight;
+    int const newHeight = originalWidth;
+
+    ASSERT_EQ(buffer.Size.width, newWidth);
+    ASSERT_EQ(buffer.Size.height, newHeight);
+
+    iVal = 0;
+    for (int x = 0; x < newWidth; ++x)
+    {
+        for (int y = newHeight - 1; y >= 0; --y)
+        {
+            auto const coords = IntegralCoordinates(x, y);
+            EXPECT_EQ(buffer[coords], iVal);
+
+            ++iVal;
+        }
+    }
+}
+
+class Rotate90CCWTest : public testing::TestWithParam<std::tuple<int, int>>
+{
+public:
+    virtual void SetUp() {}
+    virtual void TearDown() {}
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    Buffer2DTests,
+    Rotate90CCWTest,
+    ::testing::Values(
+        std::make_tuple(1, 1),
+        std::make_tuple(1, 2),
+        std::make_tuple(2, 1),
+        std::make_tuple(2, 2),
+        std::make_tuple(3, 2),
+        std::make_tuple(2, 3),
+        std::make_tuple(3, 3)
+    ));
+
+TEST_P(Rotate90CCWTest, Rotate90CCWTest)
+{
+    int const originalWidth = std::get<0>(GetParam());
+    int const originalHeight = std::get<1>(GetParam());
+
+    //
+    // Prepare source buffer
+    //
+
+    Buffer2D<int, struct IntegralTag> buffer(originalWidth, originalHeight);
+
+    int iVal = 0;
+    for (int y = 0; y < originalHeight; ++y)
+    {
+        for (int x = 0; x < originalWidth; ++x)
+        {
+            buffer[{x, y}] = iVal++;
+        }
+    }
+
+    //
+    // Rotate
+    //
+
+    buffer.Rotate90(RotationDirectionType::CounterClockwise);
+
+    //
+    // Verify
+    //
+
+    int const newWidth = originalHeight;
+    int const newHeight = originalWidth;
+
+    ASSERT_EQ(buffer.Size.width, newWidth);
+    ASSERT_EQ(buffer.Size.height, newHeight);
+
+    iVal = 0;
+    for (int x = newWidth - 1; x >= 0; --x)
+    {
+        for (int y = 0; y < newHeight; ++y)
+        {
+            auto const coords = IntegralCoordinates(x, y);
+            EXPECT_EQ(buffer[coords], iVal);
+
+            ++iVal;
         }
     }
 }

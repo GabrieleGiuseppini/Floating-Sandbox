@@ -1481,7 +1481,7 @@ wxRibbonPanel * MainFrame::CreateEditShipRibbonPanel(wxRibbonPage * parent)
             [this]()
             {
                 assert(mController);
-                mController->Rotate90(RotationDirectionType::AntiClockwise);
+                mController->Rotate90(RotationDirectionType::CounterClockwise);
             },
             _("Rotate the ship 90° anti-clockwise."));
 

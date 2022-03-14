@@ -1774,11 +1774,11 @@ void Controller::InternalRotate90(RotationDirectionType direction)
         if (direction == RotationDirectionType::Clockwise)
         {
             undoTitle = _("Rotate CW");
-            antiRotation = RotationDirectionType::AntiClockwise;
+            antiRotation = RotationDirectionType::CounterClockwise;
         }
         else
         {
-            assert(direction == RotationDirectionType::AntiClockwise);
+            assert(direction == RotationDirectionType::CounterClockwise);
 
             undoTitle = _("Rotate CCW");
             antiRotation = RotationDirectionType::Clockwise;

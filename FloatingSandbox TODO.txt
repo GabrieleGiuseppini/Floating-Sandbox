@@ -13,9 +13,12 @@
 
 		= -> ShipBuilder
 
+		- Cleanup shiptools
+
 		- Fix from Chris:
-			What happened on my screen was I have just done a whole auto trim and added a bit of size just to give it some margin, anyway, save it the abandon it, goes and dose the thing where it spawns it, but It spawned in under the water (fixed that first thing after I saw the bug) so while it was still flooding I quickly either hit edit build or new build and it crashed
-			will attempt to recreate later if nessary
+			What happened on my screen was I have just done a whole auto trim and added a bit of size just to give it some margin, anyway, save it the abandon it, 
+			goes and dose the thing where it spawns it, but it spawned in under the water (fixed that first thing after I saw the bug) so while it was still flooding 
+			I quickly either hit edit build or new build and it crashed; will attempt to recreate later if nessary
 
 		- New sounds from TimCan
 

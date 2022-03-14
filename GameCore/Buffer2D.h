@@ -228,6 +228,24 @@ public:
         }
     }
 
+    void Rotate90(RotationDirectionType direction)
+    {
+        switch (direction)
+        {
+            case RotationDirectionType::Clockwise:
+            {
+                Rotate90<RotationDirectionType::Clockwise>();
+                break;
+            }
+
+            case RotationDirectionType::CounterClockwise:
+            {
+                Rotate90<RotationDirectionType::CounterClockwise>();
+                break;
+            }
+        }
+    }
+
 private:
 
     template<bool H, bool V>
@@ -251,6 +269,31 @@ private:
                 std::swap(this->operator[](srcCoords), this->operator[](dstCoords));
             }
         }
+    }
+
+    template<RotationDirectionType direction>
+    void Rotate90()
+    {
+        int const newWidth = Size.height;
+        int const newHeight = Size.width;
+
+        auto newData = std::make_unique<TElement[]>(mLinearSize);
+
+        for (int ny = 0; ny < newHeight; ++ny)
+        {
+            int const newYOffset = ny * newWidth;
+            for (int nx = 0; nx < newWidth; ++nx)
+            {
+                coordinates_type const srcCoords = (direction == RotationDirectionType::Clockwise)
+                    ? coordinates_type(newHeight - 1 - ny, nx)
+                    : coordinates_type(ny, newWidth - 1 - nx);
+
+                newData[newYOffset + nx] = this->operator[](srcCoords);
+            }
+        }
+
+        Size = size_type(newWidth, newHeight);
+        Data = std::move(newData);
     }
 
     size_t mLinearSize;

@@ -357,9 +357,8 @@
 = Rotate 90 (CW and CCW) (full ship)
 	+ Ribbon, "Edit"
 		+ 2 icons
-	- Buffer2D
-		- In-place
-		- Unit tests
+	+ Buffer2D
+		+ Unit tests
 	- RopeBuffer
 		- In-place
 		- Unit tests
