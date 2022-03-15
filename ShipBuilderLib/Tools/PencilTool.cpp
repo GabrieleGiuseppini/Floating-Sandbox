@@ -345,7 +345,15 @@ void PencilTool<TLayer, IsEraser>::DoEdit(ShipSpaceCoordinates const & mouseCoor
                     static_assert(TLayer == LayerType::Electrical);
 
                     assert(applicableRect->size == ShipSpaceSize(1, 1));
-                    isAllowed = mController.GetModelController().IsElectricalParticleAllowedAt(applicableRect->origin);
+
+                    if constexpr (IsEraser)
+                    {
+                        isAllowed = true;
+                    }
+                    else
+                    {
+                        isAllowed = mController.GetModelController().IsElectricalParticleAllowedAt(applicableRect->origin);
+                    }
 
                     if (isAllowed)
                     {

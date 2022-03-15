@@ -99,6 +99,21 @@ struct RopeBuffer
         }
     }
 
+    void Rotate90(
+        RotationDirectionType direction,
+        ShipSpaceSize const & size)
+    {
+        if (direction == RotationDirectionType::Clockwise)
+        {
+            Rotate90<RotationDirectionType::Clockwise>(size);
+        }
+        else
+        {
+            assert(direction == RotationDirectionType::CounterClockwise);
+            Rotate90<RotationDirectionType::CounterClockwise>(size);
+        }
+    }
+
     void Trim(
         ShipSpaceCoordinates const & origin,
         ShipSpaceSize const & size)
@@ -174,6 +189,16 @@ private:
             if constexpr (V)
                 endCoords = endCoords.FlipY(size.height);
             element.EndCoords = endCoords;
+        }
+    }
+
+    template<RotationDirectionType TDirection>
+    inline void Rotate90(ShipSpaceSize const & size)
+    {
+        for (auto & element : mBuffer)
+        {
+            element.StartCoords = element.StartCoords.Rotate90<TDirection>(size);
+            element.EndCoords = element.EndCoords.Rotate90<TDirection>(size);
         }
     }
 

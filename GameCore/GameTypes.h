@@ -294,6 +294,33 @@ namespace std {
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 /*
+ * Octants, i.e. the direction of a spring connecting two neighbors.
+ *
+ * Octant 0 is E, octant 1 is SE, ..., Octant 7 is NE.
+ */
+using Octant = std::int32_t;
+
+/*
+ * Generic directions.
+ */
+enum class DirectionType
+{
+    Horizontal = 1,
+    Vertical = 2
+};
+
+template <> struct is_flag<DirectionType> : std::true_type {};
+
+/*
+ * Generic rotation directions.
+ */
+enum class RotationDirectionType
+{
+    Clockwise,
+    CounterClockwise
+};
+
+/*
  * Integral system
  */
 
@@ -497,6 +524,27 @@ struct _IntegralCoordinates
     {
         assert(height > y);
         return _IntegralCoordinates<TIntegralTag>(x, height - 1 - y);
+    }
+
+    // Returns coords of this point after being rotated (and assuming
+    // the size will also get rotated).
+    template<RotationDirectionType TDirection>
+    _IntegralCoordinates<TIntegralTag> Rotate90(_IntegralSize<TIntegralTag> const & sz) const
+    {
+        if constexpr (TDirection == RotationDirectionType::Clockwise)
+        {
+            return _IntegralCoordinates<TIntegralTag>(
+                this->y,
+                sz.width - 1 - this->x);
+        }
+        else
+        {
+            static_assert(TDirection == RotationDirectionType::CounterClockwise);
+
+            return _IntegralCoordinates<TIntegralTag>(
+                sz.height - 1 - this->y,
+                this->x);
+        }
     }
 
     vec2f ToFloat() const
@@ -768,33 +816,6 @@ struct FloatRect
 };
 
 #pragma pack(pop)
-
-/*
- * Octants, i.e. the direction of a spring connecting two neighbors.
- *
- * Octant 0 is E, octant 1 is SE, ..., Octant 7 is NE.
- */
-using Octant = std::int32_t;
-
-/*
- * Generic directions.
- */
-enum class DirectionType
-{
-    Horizontal = 1,
-    Vertical = 2
-};
-
-template <> struct is_flag<DirectionType> : std::true_type {};
-
-/*
- * Generic rotation directions.
- */
-enum class RotationDirectionType
-{
-    Clockwise,
-    CounterClockwise
-};
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // Game

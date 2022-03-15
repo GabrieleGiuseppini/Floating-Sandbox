@@ -271,28 +271,24 @@ private:
         }
     }
 
-    template<RotationDirectionType direction>
+    template<RotationDirectionType TDirection>
     void Rotate90()
     {
-        int const newWidth = Size.height;
-        int const newHeight = Size.width;
+        size_type const newSize(Size.height, Size.width);
 
         auto newData = std::make_unique<TElement[]>(mLinearSize);
 
-        for (int ny = 0; ny < newHeight; ++ny)
+        for (int srcY = 0; srcY < Size.height; ++srcY)
         {
-            int const newYOffset = ny * newWidth;
-            for (int nx = 0; nx < newWidth; ++nx)
+            int const srcYOffset = srcY * Size.width;
+            for (int srcX = 0; srcX < Size.width; ++srcX)
             {
-                coordinates_type const srcCoords = (direction == RotationDirectionType::Clockwise)
-                    ? coordinates_type(newHeight - 1 - ny, nx)
-                    : coordinates_type(ny, newWidth - 1 - nx);
-
-                newData[newYOffset + nx] = this->operator[](srcCoords);
+                auto const dstCoords = coordinates_type(srcX, srcY).Rotate90<TDirection>(Size);
+                newData[dstCoords.y * newSize.width + dstCoords.x] = Data[srcYOffset + srcX];
             }
         }
 
-        Size = size_type(newWidth, newHeight);
+        Size = newSize;
         Data = std::move(newData);
     }
 

@@ -291,7 +291,8 @@ void ModelController::Flip(DirectionType direction)
 void ModelController::Rotate90(RotationDirectionType direction)
 {
     // Rotate size
-    mModel.SetShipSize(ShipSpaceSize(mModel.GetShipSize().height, mModel.GetShipSize().width));
+    auto const originalSize = mModel.GetShipSize();
+    mModel.SetShipSize(ShipSpaceSize(originalSize.height, originalSize.width));
 
     // Structural layer
     {
@@ -325,8 +326,7 @@ void ModelController::Rotate90(RotationDirectionType direction)
     {
         assert(!mIsRopesLayerInEphemeralVisualization);
 
-        // TODOHERE
-        //mModel.GetRopesLayer().Buffer.Rotate90(direction, mModel.GetShipSize());
+        mModel.GetRopesLayer().Buffer.Rotate90(direction, originalSize);
 
         RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
 

@@ -40,7 +40,7 @@ TEST(RopeBufferTests, Clone)
     buffer.EmplaceBack(
         ShipSpaceCoordinates(4, 5),
         ShipSpaceCoordinates(10, 10),
-        nullptr, 
+        nullptr,
         rgbaColor(1, 2, 3, 4));
 
     RopeBuffer clone = buffer.Clone();
@@ -125,6 +125,56 @@ TEST(RopeBufferTests, Flip_HorizontalAndVertical)
 
     EXPECT_EQ(ShipSpaceCoordinates(0, 0), buffer[1].StartCoords);
     EXPECT_EQ(ShipSpaceCoordinates(11, 19), buffer[1].EndCoords);
+}
+
+TEST(RopeBufferTests, Rotate90_Clockwise)
+{
+    RopeBuffer buffer;
+
+    buffer.EmplaceBack(
+        ShipSpaceCoordinates(4, 5),
+        ShipSpaceCoordinates(10, 10),
+        nullptr,
+        rgbaColor(1, 2, 3, 4));
+
+    buffer.EmplaceBack(
+        ShipSpaceCoordinates(11, 19),
+        ShipSpaceCoordinates(0, 4),
+        nullptr,
+        rgbaColor(1, 2, 3, 4));
+
+    buffer.Rotate90(RotationDirectionType::Clockwise, ShipSpaceSize(12, 20));
+
+    EXPECT_EQ(ShipSpaceCoordinates(5, 7), buffer[0].StartCoords);
+    EXPECT_EQ(ShipSpaceCoordinates(10, 1), buffer[0].EndCoords);
+
+    EXPECT_EQ(ShipSpaceCoordinates(19, 0), buffer[1].StartCoords);
+    EXPECT_EQ(ShipSpaceCoordinates(4, 11), buffer[1].EndCoords);
+}
+
+TEST(RopeBufferTests, Rotate90_CounterClockwise)
+{
+    RopeBuffer buffer;
+
+    buffer.EmplaceBack(
+        ShipSpaceCoordinates(4, 5),
+        ShipSpaceCoordinates(10, 10),
+        nullptr,
+        rgbaColor(1, 2, 3, 4));
+
+    buffer.EmplaceBack(
+        ShipSpaceCoordinates(11, 19),
+        ShipSpaceCoordinates(0, 4),
+        nullptr,
+        rgbaColor(1, 2, 3, 4));
+
+    buffer.Rotate90(RotationDirectionType::CounterClockwise, ShipSpaceSize(12, 20));
+
+    EXPECT_EQ(ShipSpaceCoordinates(14, 4), buffer[0].StartCoords);
+    EXPECT_EQ(ShipSpaceCoordinates(9, 10), buffer[0].EndCoords);
+
+    EXPECT_EQ(ShipSpaceCoordinates(0, 11), buffer[1].StartCoords);
+    EXPECT_EQ(ShipSpaceCoordinates(15, 0), buffer[1].EndCoords);
 }
 
 TEST(RopeBufferTests, Trim)
@@ -263,4 +313,3 @@ TEST(RopeBufferTests, Reframe_BecomesEmpty)
 
     ASSERT_EQ(buffer.GetSize(), 0u);
 }
-
