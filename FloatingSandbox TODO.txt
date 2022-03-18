@@ -11,9 +11,9 @@
 		+ Make branch
 		+ Update Visual Studio
 
-		= -> ShipBuilder
+		+ -> ShipBuilder
 
-		- Cleanup shiptools
+		- Material system improvements (*)
 
 		- Fix from Chris:
 			What happened on my screen was I have just done a whole auto trim and added a bit of size just to give it some margin, anyway, save it the abandon it, 
@@ -21,8 +21,6 @@
 			I quickly either hit edit build or new build and it crashed; will attempt to recreate later if nessary
 
 		- New sounds from TimCan
-
-		- Material system improvements (*)
 
 		- At lights going off, before flickering: flash w/spread and luminiscence
 			- See 1:53 at https://www.youtube.com/watch?v=yg9rkceLOzA
@@ -981,7 +979,7 @@
 
 - Dynamics:
 
-	- Material system improvements (*)
+	= Material system improvements (*)
 
 		- Check if can undo BuoyancyVolumeFill:
 			- Replace with "destructured_volume": volume that is only used when particle has zero attached triangles
@@ -995,13 +993,16 @@
 			- Watertight (i.e. hull) but lighter than hull
 			- Rename materials (json and code): "Hull" -> "?"
 			- May be: larger materials rearc:
-				- XYZ Hull
-				- XYZ Thin I-Beam
-				- XYZ Thick I-Beam
-				- XYZ Thin Bulkhead
-				- XYZ Thick Bulkhead
+				- XYZ Hull (density 10) (impermeable)
+				- XYZ Thin I-Beam (density 1) (normal)
+				- XYZ Thick I-Beam (density 10)
+				- XYZ Thin Bulkhead (density 1) (impermeable)
+				- XYZ Thick Bulkhead (density ~5) (impermeable)
+				- XYZ Cheap (like normal but weaker) (density 1)
+				- TODO: XYZ Chain?
 			- See also to have "structural icons" in MaterialsPalette for each of these shapes
 				- By means of an enum in the materials json
+					- ~"Structure" "Form/Variant/Kind/Genre/Class"
 					- https://www.vectorstock.com/royalty-free-vector/industrial-icons-set-of-metallurgic-production-vector-17951471
 					- https://www.vectorstock.com/royalty-free-vector/metallurgy-products-icon-set-vector-32840974
 					- https://engineering-database.com/structural-members?heightMin=0&heightMax=37&widthMin=0&widthMax=18&areaMin=0&areaMax=215&sectionModulusXMin=0&sectionModulusXMax=1280&momentOfInertiaXMin=0&momentOfInertiaXMax=20300&yieldStrengthMin=0&yieldStrengthMax=50000&page=1&sortBy=name&sortOrder=asc&sectionCategories=beams

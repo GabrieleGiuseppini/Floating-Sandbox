@@ -7,6 +7,24 @@ MANDATORY_JSON_FIELD_NAMES = [
     "name",
     ]
 
+class VariantConstants:
+    HULL_KEY = "Hull"
+    # TODO
+    THIN_IBEAM_KEY = "Thin I-Beam" # Base
+    THICK_IBEAM_KEY = "Thick I-Beam"
+    THIN_BULKHEAD_KEY = "Thin Bulkhead"
+    THICK_BULKHEAD_KEY = "Thick Bulkhead"
+    CHEAP_KEY = "Cheap"
+
+    names = {
+        HULL_KEY: "Hull",
+        THIN_IBEAM_KEY: "Thin I-Beam",
+        THICK_IBEAM_KEY: "Thick I-Beam",
+        THIN_BULKHEAD_KEY: "Thin Bulkhead",
+        THICK_BULKHEAD_KEY: "Thick Bulkhead",
+        CHEAP_KEY: "Cheap"
+    }
+
 
 def load_json(filename):
     with open(filename, "r") as in_file:
@@ -61,22 +79,107 @@ def verify(filename):
                     print("ERROR: {}: missing '{}' field".format(material_name, f))
 
 
+def add_variant_material(material, variant_key, variants):
+    if variant_key in variants:
+        print("ERROR: variant '{}' already found for material '{}'".format(VariantConstants.names[variant_key], material["name"]))
+        sys.exit(-1)
+    variants[variant_key] = material
+
+
 def add_variants(material_name_stem, input_filename, output_filename):
     json_obj = load_json(input_filename)
 
     # Scoop up variants
-    existing_variants = []
-    for material in json_obj["materials"]:
+    variants = {} # {Key, Material}
+    first_existing_material_index = None
+    im = 0
+    while im < len(json_obj["materials"]):
+        material = json_obj["materials"][im]
         material_name_parts = material["name"].split(' ')
         assert(len(material_name_parts) >= 1)
         if material_name_parts[0] == material_name_stem:
-            existing_variants.append(material)
+            # Determine variant
+            if len(material_name_parts) == 2 and material_name_parts[1] == VariantConstants.names[VariantConstants.HULL_KEY]:
+                add_variant_material(material, VariantConstants.HULL_KEY, variants)
+                if first_existing_material_index is None:
+                    first_existing_material_index = im
+            # Default
+            elif len(material_name_parts) == 1 or (len(material_name_parts) == 2 and material_name_parts[1] == VariantConstants.names[VariantConstants.THIN_IBEAM_KEY]):
+                add_variant_material(material, VariantConstants.THIN_IBEAM_KEY, variants)
+                if first_existing_material_index is None:
+                    first_existing_material_index = im
+            elif len(material_name_parts) == 2 and material_name_parts[1] == VariantConstants.names[VariantConstants.THICK_IBEAM_KEY]:
+                add_variant_material(material, VariantConstants.THICK_IBEAM_KEY, variants)
+                if first_existing_material_index is None:
+                    first_existing_material_index = im
+            elif len(material_name_parts) == 2 and material_name_parts[1] == VariantConstants.names[VariantConstants.THIN_BULKHEAD_KEY]:
+                add_variant_material(material, VariantConstants.THIN_BULKHEAD_KEY, variants)
+                if first_existing_material_index is None:
+                    first_existing_material_index = im
+            elif len(material_name_parts) == 2 and material_name_parts[1] == VariantConstants.names[VariantConstants.THICK_BULKHEAD_KEY]:
+                add_variant_material(material, VariantConstants.THICK_BULKHEAD_KEY, variants)
+                if first_existing_material_index is None:
+                    first_existing_material_index = im
+            elif len(material_name_parts) == 2 and material_name_parts[1] == VariantConstants.names[VariantConstants.CHEAP_KEY]:
+                add_variant_material(material, VariantConstants.CHEAP_KEY, variants)
+                if first_existing_material_index is None:
+                    first_existing_material_index = im
+            else:
+                print("WARNING: found unrecognized variant at material '{}'".format(material["name"]))
+        im = im + 1
 
-    if len(existing_variants) == 0:
+    if len(variants) == 0:
         print("ERROR: cannot find any variants for material stem '{}'".format(material_name_stem))
         sys.exit(-1)
 
-    print("Found {} variants: {}".format(len(existing_variants), ", ".join(m["name"] for m in existing_variants)))
+    print("Found {} variants: {}".format(len(variants), ", ".join(m["name"] for m in variants.values())))
+
+    # Pre-process existing variants
+    # TODOHERE: : need to remember also others
+    variant_densities = {} # {variant_key, density}
+    for variant_key, material in variants.items():
+
+        material_name = material["name"]
+        variant_name = VariantConstants.names[variant_key]
+
+        print("  {} ({}):".format(material_name, variant_name))
+
+        # Normalize name
+        expected_name = "{} {}".format(material_name_stem, variant_name)
+        if material_name != expected_name:
+            print("    Rename: '{}' -> '{}'".format(material_name, expected_name))
+            material["name"] = expected_name
+
+        # Extract density
+        assert(variant_key not in variant_densities)
+        variant_densities[variant_key] = material["mass"]["density"]
+        print("    {} density: {}".format(variant_name, variant_densities[variant_key]))
+
+
+    # Calculate densities for all missing variants
+
+    if VariantConstants.THIN_IBEAM_KEY not in variant_densities:
+        print("ERROR: cannot find base material for material stem '{}'".format(material_name_stem))
+        sys.exit(-1)
+
+    if VariantConstants.HULL_KEY not in variant_densities:
+        variant_densities[VariantConstants.HULL_KEY] = variant_densities[VariantConstants.THIN_IBEAM_KEY] * 10.0
+
+    if VariantConstants.THICK_IBEAM_KEY not in variant_densities:
+        variant_densities[VariantConstants.THICK_IBEAM_KEY] = variant_densities[VariantConstants.THIN_IBEAM_KEY] * 10.0
+
+    if VariantConstants.THIN_BULKHEAD_KEY not in variant_densities:
+        variant_densities[VariantConstants.THIN_BULKHEAD_KEY] = variant_densities[VariantConstants.THIN_IBEAM_KEY]
+
+    if VariantConstants.THICK_BULKHEAD_KEY not in variant_densities:
+        variant_densities[VariantConstants.THICK_BULKHEAD_KEY] = variant_densities[VariantConstants.THIN_IBEAM_KEY] * 4.0
+
+    if VariantConstants.CHEAP_KEY not in variant_densities:
+        variant_densities[VariantConstants.CHEAP_KEY] = variant_densities[VariantConstants.THIN_IBEAM_KEY]
+
+    print("Densities:")
+    for variant_key, density in variant_densities.items():
+        print("  {}: {}".format(VariantConstants.names[variant_key],density))
 
     # TODOHERE
 
