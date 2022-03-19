@@ -993,9 +993,9 @@
 			- Watertight (i.e. hull) but lighter than hull
 			- Rename materials (json and code): "Hull" -> "?"
 			- May be: larger materials rearc:
-				- XYZ Hull (density 10) (impermeable)
-				- XYZ Thin I-Beam (density 1) (normal)
-				- XYZ Thick I-Beam (density 10)
+				- XYZ Hull (density 10) (impermeable) (was: hull)
+				- XYZ Thin I-Beam (density 1) (was: normal)
+				- XYZ Thick I-Beam (density 10) (was: structural)
 				- XYZ Thin Bulkhead (density 1) (impermeable)
 				- XYZ Thick Bulkhead (density ~5) (impermeable)
 				- XYZ Cheap (like normal but weaker) (density 1)
