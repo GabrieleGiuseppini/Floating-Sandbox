@@ -1003,12 +1003,15 @@
 				- XYZ Cheap (like normal but weaker) (density 1)
 			= Write script to generate
 				- Decide final names of variants
+					- Thin: Light+
+					- Thick: Heavy, Solid+
+					- Cheap: Inferior, Common, Low-Grade+
+				+ Also mass: Hull and Structural are +100Kg wrt base
 			- Do for:
 				- All metals
 				- Wood
 				- TODO: others?
 			- TODO's:
-				- Fix that material which has different nominal mass
 				- MaterialPalette: H separator between groups
 			- See also to have "structural icons" in MaterialsPalette for each of these shapes
 				- By means of an enum in the materials json

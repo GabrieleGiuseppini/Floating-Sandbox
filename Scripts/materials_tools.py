@@ -127,7 +127,7 @@ def make_color_keys(base_color_keys, rgb_offset, color_set):
     return new_colors
 
 
-def make_variant_material(material_name_stem, variant_key, ideal_density_multiplier, ideal_is_impermeable, ideal_rgb_offset_over_base, variants, color_set):
+def make_variant_material(material_name_stem, variant_key, ideal_mass_offset, ideal_density_multiplier, ideal_is_impermeable, ideal_rgb_offset_over_base, variants, color_set):
     variant_name = VariantConstants.names[variant_key]
     
     # Get base material
@@ -138,7 +138,8 @@ def make_variant_material(material_name_stem, variant_key, ideal_density_multipl
 
     # Calculate targets
     ideal_name = "{} {}".format(material_name_stem, variant_name)
-    ideal_density = base_material["mass"]["density"] * ideal_density_multiplier
+    ideal_mass = float(base_material["mass"]["nominal_mass"] + ideal_mass_offset)
+    ideal_density = float(base_material["mass"]["density"] * ideal_density_multiplier)
     if ideal_is_impermeable:
         ideal_buoyancy_volume_fill = 0.0
     else:
@@ -154,7 +155,8 @@ def make_variant_material(material_name_stem, variant_key, ideal_density_multipl
         # Name
         material["name"] = ideal_name
 
-        # Density
+        # Mass and Density
+        material["mass"]["nominal_mass"] = ideal_mass
         material["mass"]["density"] = ideal_density
 
         # Color keys
@@ -179,9 +181,10 @@ def make_variant_material(material_name_stem, variant_key, ideal_density_multipl
 
 def dump_variant(variant_key, variants):
     material = variants[variant_key]
-    print("  {}: '{}' density={} is_hull={} buoyancy_volume_fill={} color_keys=[{}]".format(
+    print("  {}: '{}' n_mass={} density={} is_hull={} buoyancy_volume_fill={} color_keys=[{}]".format(
         VariantConstants.names[variant_key], 
         material["name"], 
+        material["mass"]["nominal_mass"],
         material["mass"]["density"], 
         material["is_hull"], 
         material["buoyancy_volume_fill"],
@@ -241,24 +244,24 @@ def add_variants(material_name_stem, input_filename, output_filename):
 
     color_set = make_color_set(json_obj)
 
-    make_variant_material(material_name_stem, VariantConstants.HULL_KEY, 10.0, True, [-64, -64, -64], variants, color_set)
-    make_variant_material(material_name_stem, VariantConstants.THIN_IBEAM_KEY, 1.0, False, [0, 0, 0], variants, color_set)
+    make_variant_material(material_name_stem, VariantConstants.HULL_KEY, 100.0, 10.0, True, [-64, -64, -64], variants, color_set)
+    make_variant_material(material_name_stem, VariantConstants.THIN_IBEAM_KEY, 0.0, 1.0, False, [0, 0, 0], variants, color_set)
 
     # Calculate actual range between hull and base
     base_rgb = hex_to_rgb(get_normalized_color_keys(variants[VariantConstants.THIN_IBEAM_KEY])[0])
     hull_rgb = hex_to_rgb(get_normalized_color_keys(variants[VariantConstants.HULL_KEY])[0])
     color_key_range = tuple(h - b for b, h in zip(base_rgb, hull_rgb))
 
-    make_variant_material(material_name_stem, VariantConstants.THICK_IBEAM_KEY, 10.0, False,
+    make_variant_material(material_name_stem, VariantConstants.THICK_IBEAM_KEY, 100.0, 10.0, False,
         tuple(int(r * 2.0 / 5.0) for r in color_key_range),
         variants, color_set)
-    make_variant_material(material_name_stem, VariantConstants.THIN_BULKHEAD_KEY, 1.0, True,
+    make_variant_material(material_name_stem, VariantConstants.THIN_BULKHEAD_KEY, 0.0, 1.0, True,
         tuple(int(r * 3.0 / 5.0) for r in color_key_range),
         variants, color_set)
-    make_variant_material(material_name_stem, VariantConstants.THICK_BULKHEAD_KEY, 4.0, True, 
+    make_variant_material(material_name_stem, VariantConstants.THICK_BULKHEAD_KEY, 0.0, 4.0, True, 
         tuple(int(r * 4.0 / 5.0) for r in color_key_range),
         variants, color_set)
-    make_variant_material(material_name_stem, VariantConstants.CHEAP_KEY, 1.0, False, 
+    make_variant_material(material_name_stem, VariantConstants.CHEAP_KEY, 0.0, 1.0, False, 
         tuple(int(r * 1.0 / 5.0) for r in color_key_range),
         variants, color_set)
 
