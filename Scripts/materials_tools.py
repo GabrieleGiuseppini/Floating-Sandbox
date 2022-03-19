@@ -10,20 +10,19 @@ MANDATORY_JSON_FIELD_NAMES = [
 
 class VariantConstants:
     HULL_KEY = "Hull"
-    # TODO
-    THIN_IBEAM_KEY = "Thin I-Beam" # was: Base
-    THICK_IBEAM_KEY = "Thick I-Beam" # was: Structural
-    THIN_BULKHEAD_KEY = "Thin Bulkhead"
-    THICK_BULKHEAD_KEY = "Thick Bulkhead"
-    CHEAP_KEY = "Cheap"
+    LIGHT_IBEAM_KEY = "Light I-Beam" # was: Base
+    SOLID_IBEAM_KEY = "Solid I-Beam" # was: Structural
+    LIGHT_BULKHEAD_KEY = "Light Bulkhead"
+    SOLID_BULKHEAD_KEY = "Solid Bulkhead"
+    LOWGRADE_KEY = "Low-Grade"
 
     names = {
         HULL_KEY: "Hull",
-        THIN_IBEAM_KEY: "Thin I-Beam",
-        THICK_IBEAM_KEY: "Thick I-Beam",
-        THIN_BULKHEAD_KEY: "Thin Bulkhead",
-        THICK_BULKHEAD_KEY: "Thick Bulkhead",
-        CHEAP_KEY: "Cheap"
+        LIGHT_IBEAM_KEY: "Light I-Beam",
+        SOLID_IBEAM_KEY: "Solid I-Beam",
+        LIGHT_BULKHEAD_KEY: "Light Bulkhead",
+        SOLID_BULKHEAD_KEY: "Solid Bulkhead",
+        LOWGRADE_KEY: "Low-Grade"
     }
 
 
@@ -131,10 +130,10 @@ def make_variant_material(material_name_stem, variant_key, ideal_mass_offset, id
     variant_name = VariantConstants.names[variant_key]
     
     # Get base material
-    if VariantConstants.THIN_IBEAM_KEY not in variants:
+    if VariantConstants.LIGHT_IBEAM_KEY not in variants:
         print("ERROR: cannot find base material for material stem '{}'".format(material_name_stem))
         sys.exit(-1)
-    base_material = variants[VariantConstants.THIN_IBEAM_KEY]
+    base_material = variants[VariantConstants.LIGHT_IBEAM_KEY]
 
     # Calculate targets
     ideal_name = "{} {}".format(material_name_stem, variant_name)
@@ -208,24 +207,24 @@ def add_variants(material_name_stem, input_filename, output_filename):
                 add_variant_material(material, VariantConstants.HULL_KEY, variants)
                 if first_existing_material_index is None:
                     first_existing_material_index = im            
-            elif len(material_name_parts) == 1 or (len(material_name_parts) == 2 and material_name_parts[1] == VariantConstants.names[VariantConstants.THIN_IBEAM_KEY]): # Default
-                add_variant_material(material, VariantConstants.THIN_IBEAM_KEY, variants)
+            elif len(material_name_parts) == 1 or (len(material_name_parts) == 2 and material_name_parts[1] == VariantConstants.names[VariantConstants.LIGHT_IBEAM_KEY]): # Default
+                add_variant_material(material, VariantConstants.LIGHT_IBEAM_KEY, variants)
                 if first_existing_material_index is None:
                     first_existing_material_index = im
-            elif len(material_name_parts) == 2 and (material_name_parts[1] == VariantConstants.names[VariantConstants.THICK_IBEAM_KEY] or "Structural" in material_name_parts):
-                add_variant_material(material, VariantConstants.THICK_IBEAM_KEY, variants)
+            elif len(material_name_parts) == 2 and (material_name_parts[1] == VariantConstants.names[VariantConstants.SOLID_IBEAM_KEY] or "Structural" in material_name_parts):
+                add_variant_material(material, VariantConstants.SOLID_IBEAM_KEY, variants)
                 if first_existing_material_index is None:
                     first_existing_material_index = im
-            elif len(material_name_parts) == 2 and material_name_parts[1] == VariantConstants.names[VariantConstants.THIN_BULKHEAD_KEY]:
-                add_variant_material(material, VariantConstants.THIN_BULKHEAD_KEY, variants)
+            elif len(material_name_parts) == 2 and material_name_parts[1] == VariantConstants.names[VariantConstants.LIGHT_BULKHEAD_KEY]:
+                add_variant_material(material, VariantConstants.LIGHT_BULKHEAD_KEY, variants)
                 if first_existing_material_index is None:
                     first_existing_material_index = im
-            elif len(material_name_parts) == 2 and material_name_parts[1] == VariantConstants.names[VariantConstants.THICK_BULKHEAD_KEY]:
-                add_variant_material(material, VariantConstants.THICK_BULKHEAD_KEY, variants)
+            elif len(material_name_parts) == 2 and material_name_parts[1] == VariantConstants.names[VariantConstants.SOLID_BULKHEAD_KEY]:
+                add_variant_material(material, VariantConstants.SOLID_BULKHEAD_KEY, variants)
                 if first_existing_material_index is None:
                     first_existing_material_index = im
-            elif len(material_name_parts) == 2 and material_name_parts[1] == VariantConstants.names[VariantConstants.CHEAP_KEY]:
-                add_variant_material(material, VariantConstants.CHEAP_KEY, variants)
+            elif len(material_name_parts) == 2 and (material_name_parts[1] == VariantConstants.names[VariantConstants.LOWGRADE_KEY] or "Cheap" in material_name_parts):
+                add_variant_material(material, VariantConstants.LOWGRADE_KEY, variants)
                 if first_existing_material_index is None:
                     first_existing_material_index = im
             else:
@@ -245,34 +244,34 @@ def add_variants(material_name_stem, input_filename, output_filename):
     color_set = make_color_set(json_obj)
 
     make_variant_material(material_name_stem, VariantConstants.HULL_KEY, 100.0, 10.0, True, [-64, -64, -64], variants, color_set)
-    make_variant_material(material_name_stem, VariantConstants.THIN_IBEAM_KEY, 0.0, 1.0, False, [0, 0, 0], variants, color_set)
+    make_variant_material(material_name_stem, VariantConstants.LIGHT_IBEAM_KEY, 0.0, 1.0, False, [0, 0, 0], variants, color_set)
 
     # Calculate actual range between hull and base
-    base_rgb = hex_to_rgb(get_normalized_color_keys(variants[VariantConstants.THIN_IBEAM_KEY])[0])
+    base_rgb = hex_to_rgb(get_normalized_color_keys(variants[VariantConstants.LIGHT_IBEAM_KEY])[0])
     hull_rgb = hex_to_rgb(get_normalized_color_keys(variants[VariantConstants.HULL_KEY])[0])
     color_key_range = tuple(h - b for b, h in zip(base_rgb, hull_rgb))
 
-    make_variant_material(material_name_stem, VariantConstants.THICK_IBEAM_KEY, 100.0, 10.0, False,
+    make_variant_material(material_name_stem, VariantConstants.SOLID_IBEAM_KEY, 100.0, 10.0, False,
         tuple(int(r * 2.0 / 5.0) for r in color_key_range),
         variants, color_set)
-    make_variant_material(material_name_stem, VariantConstants.THIN_BULKHEAD_KEY, 0.0, 1.0, True,
+    make_variant_material(material_name_stem, VariantConstants.LIGHT_BULKHEAD_KEY, 0.0, 1.0, True,
         tuple(int(r * 3.0 / 5.0) for r in color_key_range),
         variants, color_set)
-    make_variant_material(material_name_stem, VariantConstants.THICK_BULKHEAD_KEY, 0.0, 4.0, True, 
+    make_variant_material(material_name_stem, VariantConstants.SOLID_BULKHEAD_KEY, 0.0, 4.0, True, 
         tuple(int(r * 4.0 / 5.0) for r in color_key_range),
         variants, color_set)
-    make_variant_material(material_name_stem, VariantConstants.CHEAP_KEY, 0.0, 1.0, False, 
+    make_variant_material(material_name_stem, VariantConstants.LOWGRADE_KEY, 0.0, 1.0, False, 
         tuple(int(r * 1.0 / 5.0) for r in color_key_range),
         variants, color_set)
 
     # Dump all variants
     print("All variants:")
     dump_variant(VariantConstants.HULL_KEY, variants)
-    dump_variant(VariantConstants.THIN_IBEAM_KEY, variants)
-    dump_variant(VariantConstants.THICK_IBEAM_KEY, variants)
-    dump_variant(VariantConstants.THIN_BULKHEAD_KEY, variants)
-    dump_variant(VariantConstants.THICK_BULKHEAD_KEY, variants)
-    dump_variant(VariantConstants.CHEAP_KEY, variants)
+    dump_variant(VariantConstants.LIGHT_IBEAM_KEY, variants)
+    dump_variant(VariantConstants.SOLID_IBEAM_KEY, variants)
+    dump_variant(VariantConstants.LIGHT_BULKHEAD_KEY, variants)
+    dump_variant(VariantConstants.SOLID_BULKHEAD_KEY, variants)
+    dump_variant(VariantConstants.LOWGRADE_KEY, variants)
 
 
 def print_usage():

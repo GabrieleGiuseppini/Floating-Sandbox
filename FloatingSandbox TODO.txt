@@ -990,11 +990,11 @@
 				+ Preliminary checks indicate it might be ok!
 			- Remove hack from ShipBuilder::WaterlineAnalyzer
 
-		- Make "Internal Watertight" (and other) versions of hull/non-hull materials
+		= Make "Internal Watertight" (and other) versions of hull/non-hull materials
 			! Spec:
 				! Watertight (i.e. hull) but lighter than hull
 				! Rename materials (json and code): "Hull" -> "?"
-			- Variants:
+			! Variants:
 				- XYZ Hull (density 10) (impermeable) (was: hull)
 				- XYZ Thin I-Beam (density 1) (was: normal)
 				- XYZ Thick I-Beam (density 10) (was: structural)
@@ -1002,10 +1002,15 @@
 				- XYZ Thick Bulkhead (density ~5) (impermeable)
 				- XYZ Cheap (like normal but weaker) (density 1)
 			= Write script to generate
-				- Decide final names of variants
-					- Thin: Light+
-					- Thick: Heavy, Solid+
-					- Cheap: Inferior, Common, Low-Grade+
+				= Decide final names of variants
+					+ Thin: Light+
+					+ Thick: Heavy, Solid+
+					+ Cheap: Inferior, Common, Low-Grade+
+					- Decide order of words
+						- Related to how we'll do palette
+						- Option 1:
+							- Sub-category for structural: "Iron", "Titanium", etc.
+							- Display sub-category name in main palette canvas
 				+ Also mass: Hull and Structural are +100Kg wrt base
 			- Do for:
 				- All metals
