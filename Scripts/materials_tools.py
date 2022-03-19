@@ -87,7 +87,7 @@ def add_variant_material(material, variant_key, variants):
     variants[variant_key] = material
 
 
-def make_variant_material(material_name_stem, variant_key, ideal_density_multiplier, variants):
+def make_variant_material(material_name_stem, variant_key, ideal_density_multiplier, ideal_is_impermeable, variants):
     variant_name = VariantConstants.names[variant_key]
     
     # Get base material
@@ -99,6 +99,10 @@ def make_variant_material(material_name_stem, variant_key, ideal_density_multipl
     # Calculate targets
     ideal_name = "{} {}".format(material_name_stem, variant_name)
     ideal_density = base_material["mass"]["density"] * ideal_density_multiplier
+    if ideal_is_impermeable:
+        ideal_buoyancy_volume_fill = 0.0
+    else:
+        ideal_buoyancy_volume_fill = 1.0
 
     # Check if variant exists
     if variant_key not in variants:
@@ -108,17 +112,17 @@ def make_variant_material(material_name_stem, variant_key, ideal_density_multipl
         material = deepcopy(base_material)
 
         # Name
-        material["name"] = ideal_density
+        material["name"] = ideal_name
 
         # Density
-        # TODOHERE
-        # TODO: ensure mass is same
+        material["mass"]["density"] = ideal_density
 
         # Color keys
         # TODOHERE
 
         # Hullness
-        # TODOHERE
+        material["is_hull"] = ideal_is_impermeable
+        material["buoyancy_volume_fill"] = ideal_buoyancy_volume_fill
 
         variants[variant_key] = material
     else:
@@ -185,11 +189,12 @@ def add_variants(material_name_stem, input_filename, output_filename):
     print("Found {} variants: {}".format(len(variants), ", ".join(m["name"] for m in variants.values())))
 
     # Make variants
-    make_variant_material(material_name_stem, VariantConstants.HULL_KEY, 10.0, variants)
-    make_variant_material(material_name_stem, VariantConstants.THICK_IBEAM_KEY, 10.0, variants)
-    make_variant_material(material_name_stem, VariantConstants.THIN_BULKHEAD_KEY, 1.0, variants)
-    make_variant_material(material_name_stem, VariantConstants.THICK_BULKHEAD_KEY, 4.0, variants)
-    make_variant_material(material_name_stem, VariantConstants.CHEAP_KEY, 1.0, variants)
+    make_variant_material(material_name_stem, VariantConstants.HULL_KEY, 10.0, True, variants)
+    make_variant_material(material_name_stem, VariantConstants.THIN_IBEAM_KEY, 1.0, False, variants)
+    make_variant_material(material_name_stem, VariantConstants.THICK_IBEAM_KEY, 10.0, False, variants)
+    make_variant_material(material_name_stem, VariantConstants.THIN_BULKHEAD_KEY, 1.0, True, variants)
+    make_variant_material(material_name_stem, VariantConstants.THICK_BULKHEAD_KEY, 4.0, True, variants)
+    make_variant_material(material_name_stem, VariantConstants.CHEAP_KEY, 1.0, False, variants)
 
     # Dump all variants
     print("All variants:")

@@ -1000,6 +1000,8 @@
 				- XYZ Thick Bulkhead (density ~5) (impermeable)
 				- XYZ Cheap (like normal but weaker) (density 1)
 				- TODO: XYZ Chain?
+			- TODO's:
+				- Fix that material that has different nominal mass
 			- See also to have "structural icons" in MaterialsPalette for each of these shapes
 				- By means of an enum in the materials json
 					- ~"Structure" "Form/Variant/Kind/Genre/Class"
