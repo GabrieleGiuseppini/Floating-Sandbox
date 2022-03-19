@@ -983,25 +983,33 @@
 
 		- Check if can undo BuoyancyVolumeFill:
 			- Replace with "destructured_volume": volume that is only used when particle has zero attached triangles
+				- Adjust structural template
 				- Points has a buffer for it, updated @ Add() and @ triangle create/destroy
 			- Materials like hull and chains have it ~zero, ropes a bit more
 			- The biggest test is whether current ships start flying or not
 				+ Preliminary checks indicate it might be ok!
 			- Remove hack from ShipBuilder::WaterlineAnalyzer
 
-		- Make "Internal Watertight" version of hull/non-hull materials
-			- Watertight (i.e. hull) but lighter than hull
-			- Rename materials (json and code): "Hull" -> "?"
-			- May be: larger materials rearc:
+		- Make "Internal Watertight" (and other) versions of hull/non-hull materials
+			! Spec:
+				! Watertight (i.e. hull) but lighter than hull
+				! Rename materials (json and code): "Hull" -> "?"
+			- Variants:
 				- XYZ Hull (density 10) (impermeable) (was: hull)
 				- XYZ Thin I-Beam (density 1) (was: normal)
 				- XYZ Thick I-Beam (density 10) (was: structural)
 				- XYZ Thin Bulkhead (density 1) (impermeable)
 				- XYZ Thick Bulkhead (density ~5) (impermeable)
 				- XYZ Cheap (like normal but weaker) (density 1)
-				- TODO: XYZ Chain?
+			= Write script to generate
+				- Decide final names of variants
+			- Do for:
+				- All metals
+				- Wood
+				- TODO: others?
 			- TODO's:
-				- Fix that material that has different nominal mass
+				- Fix that material which has different nominal mass
+				- MaterialPalette: H separator between groups
 			- See also to have "structural icons" in MaterialsPalette for each of these shapes
 				- By means of an enum in the materials json
 					- ~"Structure" "Form/Variant/Kind/Genre/Class"

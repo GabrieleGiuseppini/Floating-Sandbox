@@ -41,22 +41,35 @@ def save_json(json_obj, filename):
         out_file.write(json.dumps(json_obj, indent=4, sort_keys=True))
 
 
-def get_color_set(json_obj):
+def get_normalized_color_keys(material):
+    color_keys = material["color_key"]
+    if not isinstance(color_keys, list):
+        color_keys = [color_keys]
+    return color_keys
+
+
+def hex_to_rgb(hex_value):
+    if len(hex_value) == 0 or hex_value[0] != "#":
+        print("ERROR: invalid color '{};".format(hex_value))
+        sys.exit(-1)
+    hex_value = hex_value.lstrip("#")
+    lv = len(hex_value)
+    return tuple(int(hex_value[i:i + lv // 3], 16) for i in range(0, lv, lv // 3))
+
+
+def rgb_to_hex(rgb_tuple):
+    return ("#%02x%02x%02x" % rgb_tuple).upper()
+
+
+def make_color_set(json_obj):
     colors = set()
     for material in json_obj["materials"]:
-
-        # Normalize colors
-        color_keys = material["color_key"]
-        if not isinstance(color_keys, list):
-            color_keys = [color_keys]
-
-        # Build set
+        color_keys = get_normalized_color_keys(material)
         for color in color_keys:
             if color in colors:
                 print("ERROR: material '{}' has color '{}' which is a duplicate".format(material["name"], color))
             else:
                 colors.add(color)
-
     return colors
 
 
@@ -64,7 +77,7 @@ def verify(filename):
     json_obj = load_json(filename)
 
     # Verify colors
-    get_color_set(json_obj)
+    make_color_set(json_obj)
 
     for material in json_obj["materials"]:
         if not 'name' in material:
@@ -87,7 +100,34 @@ def add_variant_material(material, variant_key, variants):
     variants[variant_key] = material
 
 
-def make_variant_material(material_name_stem, variant_key, ideal_density_multiplier, ideal_is_impermeable, variants):
+def make_color(base_rgb, rgb_offset, color_set):
+    extra_offset = 0
+    while True:
+        new_color = tuple(b + o + extra_offset for b, o in zip(base_rgb, rgb_offset))
+        new_color = tuple(c + 256 if c < 0 else c for c in new_color)
+        #print("make_color: " + str(base_rgb) + " + " + str(rgb_offset) + " = " + str(new_color))
+        new_color_str = rgb_to_hex(new_color)
+        if new_color_str not in color_set:
+            color_set.add(new_color_str)
+            return new_color
+        else:
+            extra_offset = extra_offset + 1
+
+
+def make_color_keys(base_color_keys, rgb_offset, color_set):
+    # Normalize colors
+    if not isinstance(base_color_keys, list):
+        base_color_keys = [base_color_keys]
+    # Process colors
+    new_colors = []
+    for base_color_key_str in base_color_keys:
+        base_rgb = hex_to_rgb(base_color_key_str)
+        new_rgb = make_color(base_rgb, rgb_offset, color_set)
+        new_colors.append(rgb_to_hex(new_rgb))
+    return new_colors
+
+
+def make_variant_material(material_name_stem, variant_key, ideal_density_multiplier, ideal_is_impermeable, ideal_rgb_offset_over_base, variants, color_set):
     variant_name = VariantConstants.names[variant_key]
     
     # Get base material
@@ -118,13 +158,14 @@ def make_variant_material(material_name_stem, variant_key, ideal_density_multipl
         material["mass"]["density"] = ideal_density
 
         # Color keys
-        # TODOHERE
+        material["color_key"] = make_color_keys(base_material["color_key"], ideal_rgb_offset_over_base, color_set)
 
         # Hullness
         material["is_hull"] = ideal_is_impermeable
         material["buoyancy_volume_fill"] = ideal_buoyancy_volume_fill
 
         variants[variant_key] = material
+
     else:
 
         # Variant exists
@@ -132,13 +173,19 @@ def make_variant_material(material_name_stem, variant_key, ideal_density_multipl
 
         # Normalize name
         if material["name"] != ideal_name:
-            print("    Rename: '{}' -> '{}'".format(material["name"], ideal_name))
+            print("    Rename: {} ('{}' -> '{}')".format(VariantConstants.names[variant_key], material["name"], ideal_name))
             material["name"] = ideal_name
 
 
 def dump_variant(variant_key, variants):
     material = variants[variant_key]
-    print("  {}: '{}' density={} is_hull={} buoyancy_volume_fill={}".format(VariantConstants.names[variant_key], material["name"], material["mass"]["density"], material["is_hull"], material["buoyancy_volume_fill"]))
+    print("  {}: '{}' density={} is_hull={} buoyancy_volume_fill={} color_keys=[{}]".format(
+        VariantConstants.names[variant_key], 
+        material["name"], 
+        material["mass"]["density"], 
+        material["is_hull"], 
+        material["buoyancy_volume_fill"],
+        ", ".join(c for c in material["color_key"])))
 
 
 def add_variants(material_name_stem, input_filename, output_filename):
@@ -188,13 +235,32 @@ def add_variants(material_name_stem, input_filename, output_filename):
 
     print("Found {} variants: {}".format(len(variants), ", ".join(m["name"] for m in variants.values())))
 
+    #
     # Make variants
-    make_variant_material(material_name_stem, VariantConstants.HULL_KEY, 10.0, True, variants)
-    make_variant_material(material_name_stem, VariantConstants.THIN_IBEAM_KEY, 1.0, False, variants)
-    make_variant_material(material_name_stem, VariantConstants.THICK_IBEAM_KEY, 10.0, False, variants)
-    make_variant_material(material_name_stem, VariantConstants.THIN_BULKHEAD_KEY, 1.0, True, variants)
-    make_variant_material(material_name_stem, VariantConstants.THICK_BULKHEAD_KEY, 4.0, True, variants)
-    make_variant_material(material_name_stem, VariantConstants.CHEAP_KEY, 1.0, False, variants)
+    #
+
+    color_set = make_color_set(json_obj)
+
+    make_variant_material(material_name_stem, VariantConstants.HULL_KEY, 10.0, True, [-64, -64, -64], variants, color_set)
+    make_variant_material(material_name_stem, VariantConstants.THIN_IBEAM_KEY, 1.0, False, [0, 0, 0], variants, color_set)
+
+    # Calculate actual range between hull and base
+    base_rgb = hex_to_rgb(get_normalized_color_keys(variants[VariantConstants.THIN_IBEAM_KEY])[0])
+    hull_rgb = hex_to_rgb(get_normalized_color_keys(variants[VariantConstants.HULL_KEY])[0])
+    color_key_range = tuple(h - b for b, h in zip(base_rgb, hull_rgb))
+
+    make_variant_material(material_name_stem, VariantConstants.THICK_IBEAM_KEY, 10.0, False,
+        tuple(int(r * 2.0 / 5.0) for r in color_key_range),
+        variants, color_set)
+    make_variant_material(material_name_stem, VariantConstants.THIN_BULKHEAD_KEY, 1.0, True,
+        tuple(int(r * 3.0 / 5.0) for r in color_key_range),
+        variants, color_set)
+    make_variant_material(material_name_stem, VariantConstants.THICK_BULKHEAD_KEY, 4.0, True, 
+        tuple(int(r * 4.0 / 5.0) for r in color_key_range),
+        variants, color_set)
+    make_variant_material(material_name_stem, VariantConstants.CHEAP_KEY, 1.0, False, 
+        tuple(int(r * 1.0 / 5.0) for r in color_key_range),
+        variants, color_set)
 
     # Dump all variants
     print("All variants:")
@@ -205,60 +271,6 @@ def add_variants(material_name_stem, input_filename, output_filename):
     dump_variant(VariantConstants.THICK_BULKHEAD_KEY, variants)
     dump_variant(VariantConstants.CHEAP_KEY, variants)
 
-
-    # TODOOLD
-    '''
-    # Pre-process existing variants
-    variant_densities = {} # {variant_key, density}
-    for variant_key, material in variants.items():
-
-        material_name = material["name"]
-        variant_name = VariantConstants.names[variant_key]
-
-        print("  {} ({}):".format(material_name, variant_name))
-
-        # Normalize name
-        # TODO: move into make_variant_material
-        expected_name = "{} {}".format(material_name_stem, variant_name)
-        if material_name != expected_name:
-            print("    Rename: '{}' -> '{}'".format(material_name, expected_name))
-            material["name"] = expected_name
-
-        # Extract density
-        # TODO: move into make_variant_material
-        assert(variant_key not in variant_densities)
-        variant_densities[variant_key] = material["mass"]["density"]
-        print("    {} density: {}".format(variant_name, variant_densities[variant_key]))
-
-    # TODOHERE: do densities as part of making up missing variants
-
-    # Calculate densities for all missing variants
-
-    if VariantConstants.THIN_IBEAM_KEY not in variant_densities:
-        print("ERROR: cannot find base material for material stem '{}'".format(material_name_stem))
-        sys.exit(-1)
-
-    if VariantConstants.HULL_KEY not in variant_densities:
-        variant_densities[VariantConstants.HULL_KEY] = variant_densities[VariantConstants.THIN_IBEAM_KEY] * 10.0
-
-    if VariantConstants.THICK_IBEAM_KEY not in variant_densities:
-        variant_densities[VariantConstants.THICK_IBEAM_KEY] = variant_densities[VariantConstants.THIN_IBEAM_KEY] * 10.0
-
-    if VariantConstants.THIN_BULKHEAD_KEY not in variant_densities:
-        variant_densities[VariantConstants.THIN_BULKHEAD_KEY] = variant_densities[VariantConstants.THIN_IBEAM_KEY]
-
-    if VariantConstants.THICK_BULKHEAD_KEY not in variant_densities:
-        variant_densities[VariantConstants.THICK_BULKHEAD_KEY] = variant_densities[VariantConstants.THIN_IBEAM_KEY] * 4.0
-
-    if VariantConstants.CHEAP_KEY not in variant_densities:
-        variant_densities[VariantConstants.CHEAP_KEY] = variant_densities[VariantConstants.THIN_IBEAM_KEY]
-
-    print("Densities:")
-    for variant_key, density in variant_densities.items():
-        print("  {}: {}".format(VariantConstants.names[variant_key],density))
-
-    # TODOHERE
-    '''
 
 def print_usage():
     print("Usage: materials_tools.py verify <input_json>")
