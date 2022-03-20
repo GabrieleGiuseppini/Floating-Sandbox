@@ -14,6 +14,7 @@
 		+ -> ShipBuilder
 
 		- Material system improvements (*)
+			- changes.txt 
 
 		- Fix from Chris:
 			What happened on my screen was I have just done a whole auto trim and added a bit of size just to give it some margin, anyway, save it the abandon it, 
@@ -1001,7 +1002,7 @@
 				- XYZ Thin Bulkhead (density 1) (impermeable)
 				- XYZ Thick Bulkhead (density ~5) (impermeable)
 				- XYZ Cheap (like normal but weaker) (density 1)
-			= Write script to generate
+			+ Write script to generate
 				+ Decide final names of variants
 					+ Thin: Light+
 					+ Thick: Heavy, Solid+
@@ -1015,28 +1016,31 @@
 					+ Format string @ VariantConstants
 				+ Also set subcategory in PaletteCoords - to new name of material
 					+ Assume group name matches stem; if not found, abort
+				+ Better algo for colors
 			- Do for:
 				- All metals
-					+ Iron
+					= Iron
+						+ Lower double-bottom strength
 					- Steel & Stainless Steel
+						- Script: deal with extra color - take min of base and, if exists, hull
 						- Separate palette groups
 					- Aluminium
-						- Separate Aluminium Sheet into its own group first, which won't get variants
+						- Separate Aluminium Sheet into its own group first, which later won't get variants
 				- All woods
+					- Do wood thing below first
 				- TODO: others?
-			- See also to have "structural icons" in MaterialsPalette for each of these shapes
-				- By means of an enum in the materials json
-					- ~"Structure" "Form/Variant/Kind/Genre/Class"
-					- https://www.vectorstock.com/royalty-free-vector/industrial-icons-set-of-metallurgic-production-vector-17951471
-					- https://www.vectorstock.com/royalty-free-vector/metallurgy-products-icon-set-vector-32840974
-					- https://engineering-database.com/structural-members?heightMin=0&heightMax=37&widthMin=0&widthMax=18&areaMin=0&areaMax=215&sectionModulusXMin=0&sectionModulusXMax=1280&momentOfInertiaXMin=0&momentOfInertiaXMax=20300&yieldStrengthMin=0&yieldStrengthMax=50000&page=1&sortBy=name&sortOrder=asc&sectionCategories=beams
-					- https://www.vectorstock.com/royalty-free-vector/set-line-icon-steel-pipe-and-beam-product-vector-19648818
-					- Consider making own icons with FreeCAD
+			- Description of variant in palette?
+				- By means of a variant enum in the materials json
+					- ~"Structure"+"Form/Variant/Kind/Genre/Class"
 		- New materials:
 			- Structural materials:
 				- Another wood variant
-					- Names: Oak (heavier), Pine (lighter)
-						- Check densities and see which one is current
+					- Names: Oak (600-900, heavier - current), Pine (350-850, lighter)
+						+ Check densities and see which one is current
+						- Rename old
+							- Fix mass of hull: nominal_mass=1000->800 density=0.0935->0.116875
+						- Make Pine
+							- Mass = 400
 						- New materials texture
 				- Helium: ~like Hydrogen, but not combusting
 				- Sodium: explodes when particle's water > threshold

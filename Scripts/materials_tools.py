@@ -135,20 +135,21 @@ def make_color(base_rgb, rgb_offset, color_set):
             extra_offset = extra_offset + 1
 
 
-def make_color_keys(base_color_keys, rgb_offset, color_set):
+def make_color_keys(base_color_keys, rgb_offsets, color_set):
     # Normalize colors
     if not isinstance(base_color_keys, list):
         base_color_keys = [base_color_keys]
     # Process colors
     new_colors = []
-    for base_color_key_str in base_color_keys:
+    assert(len(base_color_keys) == len(rgb_offsets))
+    for base_color_key_str, rgb_offset in zip(base_color_keys, rgb_offsets):
         base_rgb = hex_to_rgb(base_color_key_str)
         new_rgb = make_color(base_rgb, rgb_offset, color_set)
         new_colors.append(rgb_to_hex(new_rgb))
     return new_colors
 
 
-def make_variant_material(material_group_name, variant_key, ideal_mass_offset, ideal_density_multiplier, ideal_is_impermeable, ideal_rgb_offset_over_base, variants, color_set):
+def make_variant_material(material_group_name, variant_key, ideal_mass_offset, ideal_density_multiplier, ideal_is_impermeable, ideal_rgb_offsets_over_base, variants, color_set):
     variant_name = VariantConstants.names[variant_key]
     
     # Get base material
@@ -176,12 +177,15 @@ def make_variant_material(material_group_name, variant_key, ideal_mass_offset, i
         # Name
         material["name"] = ideal_name
 
+        # Palette sub-category
+        material["palette_coordinates"]["sub_category"] = ideal_name
+
         # Mass and Density
         material["mass"]["nominal_mass"] = ideal_mass
         material["mass"]["density"] = ideal_density
 
         # Color keys
-        material["color_key"] = make_color_keys(base_material["color_key"], ideal_rgb_offset_over_base, color_set)
+        material["color_key"] = make_color_keys(base_material["color_key"], ideal_rgb_offsets_over_base, color_set)
 
         # Hullness
         material["is_hull"] = ideal_is_impermeable
@@ -198,12 +202,12 @@ def make_variant_material(material_group_name, variant_key, ideal_mass_offset, i
         if material["name"] != ideal_name:
             print("    Rename: {} ('{}' -> '{}')".format(VariantConstants.names[variant_key], material["name"], ideal_name))
             material["name"] = ideal_name
+        material["palette_coordinates"]["sub_category"] = ideal_name
 
 
 def dump_variant(variant_key, variants):
     material = variants[variant_key]
-    print("  {}: '{}' n_mass={} density={} is_hull={} buoyancy_volume_fill={} color_keys=[{}]".format(
-        VariantConstants.names[variant_key], 
+    print("  {}: n_mass={} density={} is_hull={} buoyancy_volume_fill={} color_keys=[{}]".format(
         material["name"], 
         material["mass"]["nominal_mass"],
         material["mass"]["density"], 
@@ -271,25 +275,32 @@ def add_variants(material_group_name, input_filename, output_filename):
 
     color_set = make_color_set(json_obj)
 
-    make_variant_material(material_group_name, VariantConstants.HULL_KEY, 100.0, 10.0, True, [-64, -64, -64], variants, color_set)
-    make_variant_material(material_group_name, VariantConstants.LIGHT_IBEAM_KEY, 0.0, 1.0, False, [0, 0, 0], variants, color_set)
+    # Get number of colors in base
+    base_color_keys = get_normalized_color_keys(variants[VariantConstants.LIGHT_IBEAM_KEY])
+    base_color_key_counts = len(base_color_keys)
 
-    # Calculate actual range between hull and base
-    base_rgb = hex_to_rgb(get_normalized_color_keys(variants[VariantConstants.LIGHT_IBEAM_KEY])[0])
-    hull_rgb = hex_to_rgb(get_normalized_color_keys(variants[VariantConstants.HULL_KEY])[0])
-    color_key_range = tuple(h - b for b, h in zip(base_rgb, hull_rgb))
+    # First pass on base and hull (eventually creating it)
+    make_variant_material(material_group_name, VariantConstants.HULL_KEY, 100.0, 10.0, True, [-64, -64, -64] * base_color_key_counts, variants, color_set)
+    make_variant_material(material_group_name, VariantConstants.LIGHT_IBEAM_KEY, 0.0, 1.0, False, [0, 0, 0] * base_color_key_counts, variants, color_set)
+
+    # Calculate actual range between hull and base    
+    base_rgbs = [hex_to_rgb(base_color_keys[i]) for i in range(0, len(base_color_keys))]
+    hull_color_keys = get_normalized_color_keys(variants[VariantConstants.HULL_KEY])
+    hull_rgbs = [hex_to_rgb(hull_color_keys[i]) for i in range(0, len(hull_color_keys))]
+    assert(len(base_rgbs) == len(hull_rgbs))
+    color_key_ranges = [tuple(h - b for b, h in zip(base_rgbs[i], hull_rgbs[i])) for i in range(0, base_color_key_counts)]
 
     make_variant_material(material_group_name, VariantConstants.SOLID_IBEAM_KEY, 100.0, 10.0, False,
-        tuple(int(r * 2.0 / 5.0) for r in color_key_range),
+        [tuple(int(r * 2.0 / 5.0) for r in color_key_ranges[i]) for i in range(0, base_color_key_counts)],
         variants, color_set)
     make_variant_material(material_group_name, VariantConstants.LIGHT_BULKHEAD_KEY, 0.0, 1.0, True,
-        tuple(int(r * 3.0 / 5.0) for r in color_key_range),
+        [tuple(int(r * 3.0 / 5.0) for r in color_key_ranges[i]) for i in range(0, base_color_key_counts)],
         variants, color_set)
     make_variant_material(material_group_name, VariantConstants.SOLID_BULKHEAD_KEY, 0.0, 4.0, True, 
-        tuple(int(r * 4.0 / 5.0) for r in color_key_range),
+        [tuple(int(r * 4.0 / 5.0) for r in color_key_ranges[i]) for i in range(0, base_color_key_counts)],
         variants, color_set)
     make_variant_material(material_group_name, VariantConstants.LOWGRADE_KEY, 0.0, 1.0, False, 
-        tuple(int(r * 1.0 / 5.0) for r in color_key_range),
+        [tuple(int(r * 1.0 / 5.0) for r in color_key_ranges[i]) for i in range(0, base_color_key_counts)],
         variants, color_set)
 
     # Dump all variants
