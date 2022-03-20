@@ -14,11 +14,13 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
     //
 
     MaterialMap<StructuralMaterial> structuralMaterialMap;
-    UniqueStructuralMaterialsArray uniqueStructuralMaterials;
 
+    // Prepare unique structural materials
+    UniqueStructuralMaterialsArray uniqueStructuralMaterials;
     for (size_t i = 0; i < uniqueStructuralMaterials.size(); ++i)
         uniqueStructuralMaterials[i].second = nullptr;
 
+    // Load file
     picojson::value const structuralMaterialsRoot = Utils::ParseJSONFile(
         materialsRootDirectory / "materials_structural.json");
 
