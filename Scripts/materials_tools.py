@@ -81,6 +81,19 @@ def make_color_set(json_obj):
     return colors
 
 
+def find_palette_group(json_obj, material_group_name):
+    for palette_name in ["structural_palette", "ropes_palette", "electrical_palette"]:
+        palettes_obj = json_obj["palettes"]
+        if palette_name in palettes_obj:
+            categories_obj = palettes_obj[palette_name]
+            for category_obj in categories_obj:
+                for group_obj in category_obj["groups"]:
+                    if group_obj["name"] == material_group_name:
+                        return group_obj
+    print("ERROR: cannot find group '{}' among palettes".format(material_group_name))
+    sys.exit(-1)
+
+
 def verify(filename):
     json_obj = load_json(filename)
 
@@ -135,17 +148,17 @@ def make_color_keys(base_color_keys, rgb_offset, color_set):
     return new_colors
 
 
-def make_variant_material(material_name_stem, variant_key, ideal_mass_offset, ideal_density_multiplier, ideal_is_impermeable, ideal_rgb_offset_over_base, variants, color_set):
+def make_variant_material(material_group_name, variant_key, ideal_mass_offset, ideal_density_multiplier, ideal_is_impermeable, ideal_rgb_offset_over_base, variants, color_set):
     variant_name = VariantConstants.names[variant_key]
     
     # Get base material
     if VariantConstants.LIGHT_IBEAM_KEY not in variants:
-        print("ERROR: cannot find base material for material stem '{}'".format(material_name_stem))
+        print("ERROR: cannot find base material for material group '{}'".format(material_group_name))
         sys.exit(-1)
     base_material = variants[VariantConstants.LIGHT_IBEAM_KEY]
 
     # Calculate targets
-    ideal_name = VariantConstants.material_names[variant_key].format(material_name_stem)
+    ideal_name = VariantConstants.material_names[variant_key].format(material_group_name)
     ideal_mass = float(base_material["mass"]["nominal_mass"] + ideal_mass_offset)
     ideal_density = float(base_material["mass"]["density"] * ideal_density_multiplier)
     if ideal_is_impermeable:
@@ -199,8 +212,11 @@ def dump_variant(variant_key, variants):
         ", ".join(c for c in material["color_key"])))
 
 
-def add_variants(material_name_stem, input_filename, output_filename):
+def add_variants(material_group_name, input_filename, output_filename):
     json_obj = load_json(input_filename)
+
+    # Find group in palette
+    palette_group = find_palette_group(json_obj, material_group_name)
 
     # Scoop up variants
     variants = {} # {Key, Material}
@@ -211,24 +227,24 @@ def add_variants(material_name_stem, input_filename, output_filename):
         material_name_parts = material["name"].split(' ')
         assert(len(material_name_parts) >= 1)
         has_taken_material = False
-        if material_name_stem in material_name_parts:
+        if material_group_name in material_name_parts:
             # Determine variant
             if len(material_name_parts) == 2 and material_name_parts[1] == VariantConstants.names[VariantConstants.HULL_KEY]:
                 add_variant_material(material, VariantConstants.HULL_KEY, variants)
                 has_taken_material = True            
-            elif len(material_name_parts) == 1 or material["name"] == VariantConstants.material_names[VariantConstants.LIGHT_IBEAM_KEY].format(material_name_stem): # Default
+            elif len(material_name_parts) == 1 or material["name"] == VariantConstants.material_names[VariantConstants.LIGHT_IBEAM_KEY].format(material_group_name): # Default
                 add_variant_material(material, VariantConstants.LIGHT_IBEAM_KEY, variants)
                 has_taken_material = True
-            elif material["name"] == VariantConstants.material_names[VariantConstants.SOLID_IBEAM_KEY].format(material_name_stem) or "Structural" in material_name_parts:
+            elif material["name"] == VariantConstants.material_names[VariantConstants.SOLID_IBEAM_KEY].format(material_group_name) or "Structural" in material_name_parts:
                 add_variant_material(material, VariantConstants.SOLID_IBEAM_KEY, variants)
                 has_taken_material = True
-            elif material["name"] == VariantConstants.material_names[VariantConstants.LIGHT_BULKHEAD_KEY].format(material_name_stem):
+            elif material["name"] == VariantConstants.material_names[VariantConstants.LIGHT_BULKHEAD_KEY].format(material_group_name):
                 add_variant_material(material, VariantConstants.LIGHT_BULKHEAD_KEY, variants)
                 has_taken_material = True
-            elif material["name"] == VariantConstants.material_names[VariantConstants.SOLID_BULKHEAD_KEY].format(material_name_stem):
+            elif material["name"] == VariantConstants.material_names[VariantConstants.SOLID_BULKHEAD_KEY].format(material_group_name):
                 add_variant_material(material, VariantConstants.SOLID_BULKHEAD_KEY, variants)
                 has_taken_material = True
-            elif material["name"] == VariantConstants.material_names[VariantConstants.LOWGRADE_KEY].format(material_name_stem) or "Cheap" in material_name_parts:
+            elif material["name"] == VariantConstants.material_names[VariantConstants.LOWGRADE_KEY].format(material_group_name) or "Cheap" in material_name_parts:
                 add_variant_material(material, VariantConstants.LOWGRADE_KEY, variants)
                 has_taken_material = True
             else:
@@ -236,12 +252,15 @@ def add_variants(material_name_stem, input_filename, output_filename):
         if has_taken_material:
             if first_existing_material_index is None:
                     first_existing_material_index = im
+            # Remove material
             del json_obj["materials"][im]
+            # Remove sub-category
+            palette_group["sub_categories"].remove(material["name"])
         else:
             im = im + 1
 
     if len(variants) == 0:
-        print("ERROR: cannot find any variants for material stem '{}'".format(material_name_stem))
+        print("ERROR: cannot find any variants for material group '{}'".format(material_group_name))
         sys.exit(-1)
 
     print("Found {} variants: {}".format(len(variants), ", ".join(m["name"] for m in variants.values())))
@@ -252,24 +271,24 @@ def add_variants(material_name_stem, input_filename, output_filename):
 
     color_set = make_color_set(json_obj)
 
-    make_variant_material(material_name_stem, VariantConstants.HULL_KEY, 100.0, 10.0, True, [-64, -64, -64], variants, color_set)
-    make_variant_material(material_name_stem, VariantConstants.LIGHT_IBEAM_KEY, 0.0, 1.0, False, [0, 0, 0], variants, color_set)
+    make_variant_material(material_group_name, VariantConstants.HULL_KEY, 100.0, 10.0, True, [-64, -64, -64], variants, color_set)
+    make_variant_material(material_group_name, VariantConstants.LIGHT_IBEAM_KEY, 0.0, 1.0, False, [0, 0, 0], variants, color_set)
 
     # Calculate actual range between hull and base
     base_rgb = hex_to_rgb(get_normalized_color_keys(variants[VariantConstants.LIGHT_IBEAM_KEY])[0])
     hull_rgb = hex_to_rgb(get_normalized_color_keys(variants[VariantConstants.HULL_KEY])[0])
     color_key_range = tuple(h - b for b, h in zip(base_rgb, hull_rgb))
 
-    make_variant_material(material_name_stem, VariantConstants.SOLID_IBEAM_KEY, 100.0, 10.0, False,
+    make_variant_material(material_group_name, VariantConstants.SOLID_IBEAM_KEY, 100.0, 10.0, False,
         tuple(int(r * 2.0 / 5.0) for r in color_key_range),
         variants, color_set)
-    make_variant_material(material_name_stem, VariantConstants.LIGHT_BULKHEAD_KEY, 0.0, 1.0, True,
+    make_variant_material(material_group_name, VariantConstants.LIGHT_BULKHEAD_KEY, 0.0, 1.0, True,
         tuple(int(r * 3.0 / 5.0) for r in color_key_range),
         variants, color_set)
-    make_variant_material(material_name_stem, VariantConstants.SOLID_BULKHEAD_KEY, 0.0, 4.0, True, 
+    make_variant_material(material_group_name, VariantConstants.SOLID_BULKHEAD_KEY, 0.0, 4.0, True, 
         tuple(int(r * 4.0 / 5.0) for r in color_key_range),
         variants, color_set)
-    make_variant_material(material_name_stem, VariantConstants.LOWGRADE_KEY, 0.0, 1.0, False, 
+    make_variant_material(material_group_name, VariantConstants.LOWGRADE_KEY, 0.0, 1.0, False, 
         tuple(int(r * 1.0 / 5.0) for r in color_key_range),
         variants, color_set)
 
@@ -286,7 +305,7 @@ def add_variants(material_name_stem, input_filename, output_filename):
     # Produce json
     #
 
-    # Insert elements
+    # Insert materials
     assert(first_existing_material_index is not None)
     json_obj["materials"].insert(first_existing_material_index, variants[VariantConstants.HULL_KEY])
     json_obj["materials"].insert(first_existing_material_index + 1, variants[VariantConstants.SOLID_BULKHEAD_KEY])
@@ -294,6 +313,14 @@ def add_variants(material_name_stem, input_filename, output_filename):
     json_obj["materials"].insert(first_existing_material_index + 3, variants[VariantConstants.SOLID_IBEAM_KEY])
     json_obj["materials"].insert(first_existing_material_index + 4, variants[VariantConstants.LIGHT_IBEAM_KEY])
     json_obj["materials"].insert(first_existing_material_index + 5, variants[VariantConstants.LOWGRADE_KEY])
+
+    # Insert palette sub-categories
+    palette_group["sub_categories"].insert(0, variants[VariantConstants.HULL_KEY]["name"])
+    palette_group["sub_categories"].insert(1, variants[VariantConstants.SOLID_BULKHEAD_KEY]["name"])
+    palette_group["sub_categories"].insert(2, variants[VariantConstants.LIGHT_BULKHEAD_KEY]["name"])
+    palette_group["sub_categories"].insert(3, variants[VariantConstants.SOLID_IBEAM_KEY]["name"])
+    palette_group["sub_categories"].insert(4, variants[VariantConstants.LIGHT_IBEAM_KEY]["name"])
+    palette_group["sub_categories"].insert(5, variants[VariantConstants.LOWGRADE_KEY]["name"])
     
     # Write
     save_json(json_obj, output_filename)

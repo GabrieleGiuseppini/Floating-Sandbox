@@ -1011,13 +1011,17 @@
 					+ Palette in json
 					+ MaterialDatabase
 					+ H separator between categories in main palette canvas
-				- Fix order of words for names
-					- Format string @ VariantConstants
-				- Also set subcategory in PaletteCoords - to new name of material
-					- Also edit palette accordingly
+				+ Fix order of words for names
+					+ Format string @ VariantConstants
+				+ Also set subcategory in PaletteCoords - to new name of material
+					+ Assume group name matches stem; if not found, abort
 			- Do for:
 				- All metals
 					+ Iron
+					- Steel & Stainless Steel
+						- Separate palette groups
+					- Aluminium
+						- Separate Aluminium Sheet into its own group first, which won't get variants
 				- All woods
 				- TODO: others?
 			- See also to have "structural icons" in MaterialsPalette for each of these shapes
