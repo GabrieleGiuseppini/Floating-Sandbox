@@ -25,6 +25,15 @@ class VariantConstants:
         LOWGRADE_KEY: "Low-Grade"
     }
 
+    material_names = {
+        HULL_KEY: "{} Hull",
+        LIGHT_IBEAM_KEY: "Light {} I-Beam",
+        SOLID_IBEAM_KEY: "Solid {} I-Beam",
+        LIGHT_BULKHEAD_KEY: "Light {} Bulkhead",
+        SOLID_BULKHEAD_KEY: "Solid {} Bulkhead",
+        LOWGRADE_KEY: "Low-Grade {}"
+    }
+
 
 def load_json(filename):
     with open(filename, "r") as in_file:
@@ -136,7 +145,7 @@ def make_variant_material(material_name_stem, variant_key, ideal_mass_offset, id
     base_material = variants[VariantConstants.LIGHT_IBEAM_KEY]
 
     # Calculate targets
-    ideal_name = "{} {}".format(material_name_stem, variant_name)
+    ideal_name = VariantConstants.material_names[variant_key].format(material_name_stem)
     ideal_mass = float(base_material["mass"]["nominal_mass"] + ideal_mass_offset)
     ideal_density = float(base_material["mass"]["density"] * ideal_density_multiplier)
     if ideal_is_impermeable:
@@ -207,19 +216,19 @@ def add_variants(material_name_stem, input_filename, output_filename):
             if len(material_name_parts) == 2 and material_name_parts[1] == VariantConstants.names[VariantConstants.HULL_KEY]:
                 add_variant_material(material, VariantConstants.HULL_KEY, variants)
                 has_taken_material = True            
-            elif len(material_name_parts) == 1 or (len(material_name_parts) == 2 and material_name_parts[1] == VariantConstants.names[VariantConstants.LIGHT_IBEAM_KEY]): # Default
+            elif len(material_name_parts) == 1 or material["name"] == VariantConstants.material_names[VariantConstants.LIGHT_IBEAM_KEY].format(material_name_stem): # Default
                 add_variant_material(material, VariantConstants.LIGHT_IBEAM_KEY, variants)
                 has_taken_material = True
-            elif len(material_name_parts) == 2 and (material_name_parts[1] == VariantConstants.names[VariantConstants.SOLID_IBEAM_KEY] or "Structural" in material_name_parts):
+            elif material["name"] == VariantConstants.material_names[VariantConstants.SOLID_IBEAM_KEY].format(material_name_stem) or "Structural" in material_name_parts:
                 add_variant_material(material, VariantConstants.SOLID_IBEAM_KEY, variants)
                 has_taken_material = True
-            elif len(material_name_parts) == 2 and material_name_parts[1] == VariantConstants.names[VariantConstants.LIGHT_BULKHEAD_KEY]:
+            elif material["name"] == VariantConstants.material_names[VariantConstants.LIGHT_BULKHEAD_KEY].format(material_name_stem):
                 add_variant_material(material, VariantConstants.LIGHT_BULKHEAD_KEY, variants)
                 has_taken_material = True
-            elif len(material_name_parts) == 2 and material_name_parts[1] == VariantConstants.names[VariantConstants.SOLID_BULKHEAD_KEY]:
+            elif material["name"] == VariantConstants.material_names[VariantConstants.SOLID_BULKHEAD_KEY].format(material_name_stem):
                 add_variant_material(material, VariantConstants.SOLID_BULKHEAD_KEY, variants)
                 has_taken_material = True
-            elif len(material_name_parts) == 2 and (material_name_parts[1] == VariantConstants.names[VariantConstants.LOWGRADE_KEY] or "Cheap" in material_name_parts):
+            elif material["name"] == VariantConstants.material_names[VariantConstants.LOWGRADE_KEY].format(material_name_stem) or "Cheap" in material_name_parts:
                 add_variant_material(material, VariantConstants.LOWGRADE_KEY, variants)
                 has_taken_material = True
             else:
