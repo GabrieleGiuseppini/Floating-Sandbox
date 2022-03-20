@@ -34,11 +34,28 @@ public:
         {
             struct SubCategory
             {
+                struct Group
+                {
+                    std::string Name;
+                    size_t UniqueId;
+
+                    Group(
+                        std::string const & name,
+                        size_t uniqueId)
+                        : Name(name)
+                        , UniqueId(uniqueId)
+                    {}
+                };
+
                 std::string Name;
+                Group ParentGroup;
                 std::vector<std::reference_wrapper<TMaterial const>> Materials;
 
-                SubCategory(std::string const & name)
+                SubCategory(
+                    std::string const & name,
+                    Group const & parentGroup)
                     : Name(name)
+                    , ParentGroup(parentGroup)
                     , Materials()
                 {}
             };
@@ -50,6 +67,20 @@ public:
                 : Name(name)
                 , SubCategories()
             {}
+
+            size_t GetMaxWidth() const
+            {
+                size_t count = 0;
+                for (auto const & sc : SubCategories)
+                {
+                    if (sc.Materials.size() > count)
+                    {
+                        count = sc.Materials.size();
+                    }
+                }
+
+                return count;
+            }
         };
 
         std::vector<Category> Categories;

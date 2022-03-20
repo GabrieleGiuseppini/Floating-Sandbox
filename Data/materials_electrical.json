@@ -1033,59 +1033,92 @@
 	"electrical_palette": [
 	    {
 		"category": "Generators",
-		"sub_categories": [
-		  "Generators"
+		"groups":[
+			{
+				"name": "Generators",
+				"sub_categories": [
+					"Generators"]
+			}
 		]
 	    },
 	    {
 		"category": "Cables",
-		"sub_categories": [
-		  "Cables"
+		"groups":[
+			{
+				"name": "Cables",
+				"sub_categories": [
+					"Cables"]
+			}
 		]
+
 	    },
 	    {
 		"category": "Switches",
-		"sub_categories": [
-		  "Interactive Switches",
-		  "Push Switches",
-		  "Water Switches"
+		"groups":[
+			{
+				"name": "Switches",
+				"sub_categories": [
+					"Interactive Switches",
+					"Push Switches",
+					"Water Switches"]
+			}
 		]
 	    },
 	    {
 		"category": "Lamps",
-		"sub_categories": [
-		  "Lamps",
-		  "Self-Powered Lamps",
-		  "Portholes",
-		  "Self-Powered Portholes"
+		"groups":[
+			{
+				"name": "Lamps",
+				"sub_categories": [
+					"Lamps",
+					"Self-Powered Lamps"]
+			},
+			{
+				"name": "Portholes",
+				"sub_categories": [
+					"Portholes",
+					"Self-Powered Portholes"]
+			}
 		]
 	    },
 	    {
 		"category": "Engines",
-		"sub_categories": [
-		  "Outboard Engines",
-		  "Diesel Engines",
-		  "Steam Engines",
-		  "Engine Controllers"
+		"groups":[
+			{
+				"name": "Engines",
+				"sub_categories": [
+					"Outboard Engines",
+					"Diesel Engines",
+					"Steam Engines",
+					"Engine Controllers"]
+			}
 		]
 	    },
 	    {
 		"category": "Sounds",
-		"sub_categories": [
-		  "Horns",
-		  "Bells",
-		  "Klaxons",
-		  "Nuclear Alarms"
+		"groups":[
+			{
+				"name": "Sounds",
+				"sub_categories": [
+					"Horns",
+					"Bells",
+					"Klaxons",
+					"Nuclear Alarms"]
+			}
 		]
 	    },
 	    {
 		"category": "Other Elements",
-		"sub_categories": [
-		  "Heating Elements",
-		  "Smoke Emitters",
-		  "Power Monitors",
-		  "Water Pumps",
-		  "Watertight Doors"
+		"groups":[
+			{
+				"name": "Other Elements",
+				"sub_categories": [
+					"Heating Elements",
+					"Smoke Emitters",
+					"Power Monitors",
+					"Water Pumps",
+					"Watertight Doors"]
+			}
 		]
 	    }	 
 	]

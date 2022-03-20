@@ -1947,121 +1947,197 @@
 	"structural_palette": [
 	    {
 		"category": "Metals",
-		"sub_categories": [
-		  "Iron",
-		  "Iron Hull",
-		  "Double-Bottom Iron",
-		  "Structural Iron",
-		  "Iron Cheap",
-		  "Steel",
-		  "Steel Hull",
-		  "Stainless Steel",
-		  "Stainless Steel Hull",
-		  "Double-Bottom Steel",
-		  "Structural Steel",
-		  "Steel Cheap",
-		  "Titanium",
-		  "Titanium Hull",
-		  "Double-Bottom Titanium",
-		  "Aluminium",
-		  "Aluminium Hull",
-		  "Structural Aluminium",
-		  "Aluminium Sheet",
-		  "Aluminium Sheet Hull",
-		  "Aluminium Cheap",
-		  "Nails"
+		"groups":[
+			{
+				"name": "Iron",
+				"sub_categories": [
+					"Iron",
+					"Iron Hull",
+					"Double-Bottom Iron",
+					"Structural Iron",
+					"Iron Cheap"]
+			},
+			{
+				"name": "Steel",
+				"sub_categories": [
+					"Steel",
+					"Steel Hull",
+					"Stainless Steel",
+					"Stainless Steel Hull",
+					"Double-Bottom Steel",
+					"Structural Steel",
+					"Steel Cheap"]
+			},
+			{
+				"name": "Titanium",
+				"sub_categories": [
+					"Titanium",
+					"Titanium Hull",
+					"Double-Bottom Titanium"]
+			},
+			{
+				"name": "Aluminium",
+				"sub_categories": [
+					"Aluminium",
+					"Aluminium Hull",
+					"Structural Aluminium",
+					"Aluminium Sheet",
+					"Aluminium Sheet Hull",
+					"Aluminium Cheap"]
+			},
+			{
+				"name": "Misc",
+				"sub_categories": [
+					"Nails"]
+			}
 		]
 	    },
 
 	    {
 		"category": "Wood",
-		"sub_categories": [
-		  "Wood",
-		  "Wood Hull",
-		  "Double-Bottom Wood"
+		"groups":[
+			{
+				"name": "Wood",
+				"sub_categories": [
+					"Wood",
+					"Wood Hull",
+					"Double-Bottom Wood"]
+			}
 		]
 	    },
 
 	    {
 		"category": "Plastic",
-		"sub_categories": [
-		  "Fiberglass",
-		  "Fiberglass Hull",
-		  "LEGO (ABS)",
-		  "LEGO Hull (ABS)",
-		  "Mylar",
-		  "Mylar Hull",
-		  "Styrofoam",
-		  "Styrofoam Hull"
+		"groups":[
+			{
+				"name": "Fiberglass",
+				"sub_categories": [
+					"Fiberglass",
+					"Fiberglass Hull"]
+			},
+			{
+				"name": "LEGO (ABS)",
+				"sub_categories": [
+					"LEGO (ABS)",
+					"LEGO Hull (ABS)"]
+			},
+			{
+				"name": "Mylar",
+				"sub_categories": [
+					"Mylar",
+					"Mylar Hull"]
+			},
+			{
+				"name": "Styrofoam",
+				"sub_categories": [
+					"Styrofoam",
+					"Styrofoam Hull"]
+			}
 		]
 	    },
 
 	    {
 		"category": "Rubber",
-		"sub_categories": [
-		  "Rubber Soft",
-		  "Rubber Hard",
-		  "Rubber Hull Soft",
-		  "Rubber Hull Hard"
+		"groups":[
+			{
+				"name": "Rubber",
+				"sub_categories": [
+					"Rubber Soft",
+					"Rubber Hard",
+					"Rubber Hull Soft",
+					"Rubber Hull Hard"]
+			}
 		]
 	    },
 
 	    {
 		"category": "Glass",
-		"sub_categories": [
-		  "Glass",
-		  "Glass Hull"
+		"groups":[
+			{
+				"name": "Glass",
+				"sub_categories": [
+					"Glass",
+					"Glass Hull"]
+			}
 		]
 	    },
 
 	    {
 		"category": "Carbon",
-		"sub_categories": [
-		  "Carbon",
-		  "Carbon Hull"
+		"groups":[
+			{
+				"name": "Carbon",
+				"sub_categories": [
+					"Carbon",
+					"Carbon Hull"]
+			}
 		]
 	    },
 
 	    {
 		"category": "Concrete",
-		"sub_categories": [
-		  "Concrete",
-		  "Concrete Hull"
+		"groups":[
+			{
+				"name": "Concrete",
+				"sub_categories": [
+					"Concrete",
+					"Concrete Hull"]
+			}
 		]
 	    },
 
 	    {
 		"category": "Cloth",
-		"sub_categories": [
-		  "Cloth"
+		"groups":[
+			{
+				"name": "Cloth",
+				"sub_categories": [
+					"Cloth"]
+			}
 		]
 	    },
 
 	    {
 		"category": "Cardboard and Paper",
-		"sub_categories": [
-		  "Cardboard",
-		  "Cardboard Hull",
-		  "Paper",
-		  "Paper Hull"
+		"groups":[
+			{
+				"name": "Cardboard",
+				"sub_categories": [
+					"Cardboard",
+					"Cardboard Hull"]
+			},
+			{
+				"name": "Paper",
+				"sub_categories": [
+					"Paper",
+					"Paper Hull"]
+			}
 		]
 	    },
 
 	    {
 		"category": "Elements",
-		"sub_categories": [
-		  "Air",
-		  "Hydrogen",
-		  "Water"
+		"groups":[
+			{
+				"name": "Elements",
+				"sub_categories": [
+					"Air",
+					"Hydrogen",
+					"Water"]
+			}
 		]
 	    },
 
 	    {
 		"category": "Other Materials",
-		"sub_categories": [
-		  "Diesel",
-		  "Gunpowder Light",
-		  "Gunpowder Strong"
+		"groups":[
+			{
+				"name": "Other Materials",
+				"sub_categories": [
+					"Diesel",
+					"Gunpowder Light",
+					"Gunpowder Strong"]
+			}
 		]
 	    }	 
 	],
@@ -2069,26 +2145,38 @@
 	"ropes_palette": [
 	    {
 		"category": "Ropes",
-		"sub_categories": [
-		  "Ropes",
-		  "Strong Ropes"
+		"groups":[
+			{
+				"name": "Ropes",
+				"sub_categories": [
+					"Ropes",
+					"Strong Ropes"]
+			}
 		]
 	    },
 
 	    {
 		"category": "Chains",
-		"sub_categories": [
-		  "Iron Chains",
-		  "Strong Iron Chains",
-		  "Aluminium Chains"
+		"groups":[
+			{
+				"name": "Chains",
+				"sub_categories": [
+					"Iron Chains",
+					"Strong Iron Chains",
+					"Aluminium Chains"]
+			}
 		]
 	    },
 
 	    {
 		"category": "Rubber Bands",
-		"sub_categories": [
-		  "Rubber Bands",
-		  "Strong Rubber Bands"
+		"groups":[
+			{
+				"name": "Rubber Bands",
+				"sub_categories": [
+					"Rubber Bands",
+					"Strong Rubber Bands"]
+			}
 		]
 	    }
 	]

@@ -330,8 +330,6 @@ wxPanel * MaterialPalette<TLayer>::CreateCategoryPanel(
     // Create panel
     MaterialCategoryPanel * categoryPanel = new MaterialCategoryPanel(parent);
 
-    int constexpr RowsPerSubcategory = (TMaterial::MaterialLayer == MaterialLayerType::Structural ? 3 : 2);
-
     wxSizer * sizer = new wxBoxSizer(wxHORIZONTAL); // Just to add a margin
 
     {
@@ -340,12 +338,32 @@ wxPanel * MaterialPalette<TLayer>::CreateCategoryPanel(
         gridSizer->SetFlexibleDirection(wxVERTICAL);
         gridSizer->SetNonFlexibleGrowMode(wxFLEX_GROWMODE_ALL);
 
-        for (size_t iSubCategory = 0; iSubCategory < materialCategory.SubCategories.size(); ++iSubCategory)
+        std::optional<typename MaterialDatabase::Palette<TMaterial>::Category::SubCategory::Group> currentGroup;
+
+        int iCurrentRow = 0;
+
+        for (size_t iSubCategory = 0; iSubCategory < materialCategory.SubCategories.size(); ++iSubCategory) // Rows
         {
             auto const & subCategory = materialCategory.SubCategories[iSubCategory];
 
+            // Check if a group change
+            if (currentGroup.has_value() && subCategory.ParentGroup.UniqueId != currentGroup->UniqueId)
+            {
+                auto * line = new wxStaticLine(categoryPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL);
+
+                gridSizer->Add(
+                    line,
+                    wxGBPosition(iCurrentRow++, 0),
+                    wxGBSpan(1, materialCategory.GetMaxWidth()),
+                    wxEXPAND | wxTOP | wxBOTTOM,
+                    8);
+            }
+
+            // Remember this group
+            currentGroup = subCategory.ParentGroup;
+
             // Materials
-            for (size_t iMaterial = 0; iMaterial < subCategory.Materials.size(); ++iMaterial)
+            for (size_t iMaterial = 0; iMaterial < subCategory.Materials.size(); ++iMaterial) // Cols
             {
                 TMaterial const * material = (&subCategory.Materials[iMaterial].get());
 
@@ -384,7 +402,7 @@ wxPanel * MaterialPalette<TLayer>::CreateCategoryPanel(
 
                     gridSizer->Add(
                         materialButton,
-                        wxGBPosition(iSubCategory * RowsPerSubcategory, iMaterial),
+                        wxGBPosition(iCurrentRow, iMaterial),
                         wxGBSpan(1, 1),
                         wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL,
                         0);
@@ -402,7 +420,7 @@ wxPanel * MaterialPalette<TLayer>::CreateCategoryPanel(
 
                     gridSizer->Add(
                         nameLabel,
-                        wxGBPosition(iSubCategory * RowsPerSubcategory + 1, iMaterial),
+                        wxGBPosition(iCurrentRow + 1, iMaterial),
                         wxGBSpan(1, 1),
                         wxALIGN_CENTER_HORIZONTAL | wxALIGN_TOP,
                         0);
@@ -424,16 +442,18 @@ wxPanel * MaterialPalette<TLayer>::CreateCategoryPanel(
 
                     gridSizer->Add(
                         dataLabel,
-                        wxGBPosition(iSubCategory * RowsPerSubcategory + 2, iMaterial),
+                        wxGBPosition(iCurrentRow + 2, iMaterial),
                         wxGBSpan(1, 1),
                         wxALIGN_CENTER_HORIZONTAL | wxALIGN_TOP | wxBOTTOM,
                         8);
                 }
             }
+
+            iCurrentRow += (TMaterial::MaterialLayer == MaterialLayerType::Structural ? 3 : 2);
         }
 
         sizer->Add(gridSizer, 0, wxALL, 4);
-    }    
+    }
 
     categoryPanel->SetSizerAndFit(sizer);
 

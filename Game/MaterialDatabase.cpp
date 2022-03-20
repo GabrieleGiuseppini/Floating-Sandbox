@@ -341,18 +341,30 @@ MaterialDatabase::Palette<TMaterial> MaterialDatabase::Palette<TMaterial>::Parse
     picojson::object const & palettesRoot,
     std::string const & paletteName)
 {
-    picojson::array const & paletteCategoriesJson = Utils::GetMandatoryJsonMember<picojson::array>(palettesRoot, paletteName);
-
     Palette<TMaterial> palette;
 
+    size_t uniqueGroupId = 0;
+
+    picojson::array const & paletteCategoriesJson = Utils::GetMandatoryJsonMember<picojson::array>(palettesRoot, paletteName);
     for (auto const & categoryJson : paletteCategoriesJson)
     {
         picojson::object const & categoryObj = Utils::GetJsonValueAs<picojson::object>(categoryJson, "palette_category");
 
         Category category(Utils::GetMandatoryJsonMember<std::string>(categoryObj, "category"));
-        for (auto const & subCategoryJson : Utils::GetMandatoryJsonArray(categoryObj, "sub_categories"))
+        for (auto const & groupJson : Utils::GetMandatoryJsonArray(categoryObj, "groups"))
         {
-            category.SubCategories.emplace_back(Utils::GetJsonValueAs<std::string>(subCategoryJson, "sub_category"));
+            picojson::object const & groupObj = Utils::GetJsonValueAs<picojson::object>(groupJson, "group");
+
+            auto const parentGroup = Category::SubCategory::Group(
+                Utils::GetMandatoryJsonMember<std::string>(groupObj, "name"),
+                uniqueGroupId++);
+
+            for (auto const & subCategoryJson : Utils::GetMandatoryJsonArray(groupObj, "sub_categories"))
+            {
+                category.SubCategories.emplace_back(
+                    Utils::GetJsonValueAs<std::string>(subCategoryJson, "sub_category"),
+                    parentGroup);
+            }
         }
 
         palette.Categories.emplace_back(std::move(category));

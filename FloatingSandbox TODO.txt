@@ -1002,22 +1002,24 @@
 				- XYZ Thick Bulkhead (density ~5) (impermeable)
 				- XYZ Cheap (like normal but weaker) (density 1)
 			= Write script to generate
-				= Decide final names of variants
+				+ Decide final names of variants
 					+ Thin: Light+
 					+ Thick: Heavy, Solid+
 					+ Cheap: Inferior, Common, Low-Grade+
-					- Decide order of words
-						- Related to how we'll do palette
-						- Option 1:
-							- Sub-category for structural: "Iron", "Titanium", etc.
-							- Display sub-category name in main palette canvas
 				+ Also mass: Hull and Structural are +100Kg wrt base
+				+ Group
+					+ Palette in json
+					+ MaterialDatabase
+					+ H separator between categories in main palette canvas
+				- Fix order of words for names
+					- Format string @ VariantConstants
+				- Also set subcategory in PaletteCoords - to new name of material
+					- Also edit palette accordingly
 			- Do for:
 				- All metals
-				- Wood
+					+ Iron
+				- All woods
 				- TODO: others?
-			- TODO's:
-				- MaterialPalette: H separator between groups
 			- See also to have "structural icons" in MaterialsPalette for each of these shapes
 				- By means of an enum in the materials json
 					- ~"Structure" "Form/Variant/Kind/Genre/Class"
@@ -1028,11 +1030,17 @@
 					- Consider making own icons with FreeCAD
 		- New materials:
 			- Structural materials:
+				- Another wood variant
+					- Names: Oak (heavier), Pine (lighter)
+						- Check densities and see which one is current
+						- New materials texture
 				- Helium: ~like Hydrogen, but not combusting
 				- Sodium: explodes when particle's water > threshold
 					- At points' low-freq combustion update
 				- "Lightning rod" material
 					- Has precedence when looking for candidates @ Lightning strike
+				- More glass colors
+				- More concrete colors
 			- Electrical materials:
 				- Non-Instanced Water Tight Doors (see if possible)
 				- Non-Instanced Water In/Out Pumps (see if possible)
@@ -1049,8 +1057,7 @@
 					- Gfx: Clock dial (normalized on duration), new ElectricalControl
 					- Sound: clock
 		- Test material textures for chains: transparent chain texture
-			- Change texturizer so that we load alpha from image
-		- More glass colors
+			- Change texturizer so that we load alpha from image		
 		- Friction property (replacing or adding to "global" ocean floor settings)
 			- So for example could have tires, etc.
 
