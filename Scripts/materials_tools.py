@@ -1,8 +1,8 @@
 from copy import deepcopy
 import json
 import sys
- 
 
+ 
 MANDATORY_JSON_FIELD_NAMES = [
     "color_key",
     "name",
@@ -201,35 +201,35 @@ def add_variants(material_name_stem, input_filename, output_filename):
         material = json_obj["materials"][im]
         material_name_parts = material["name"].split(' ')
         assert(len(material_name_parts) >= 1)
+        has_taken_material = False
         if material_name_stem in material_name_parts:
             # Determine variant
             if len(material_name_parts) == 2 and material_name_parts[1] == VariantConstants.names[VariantConstants.HULL_KEY]:
                 add_variant_material(material, VariantConstants.HULL_KEY, variants)
-                if first_existing_material_index is None:
-                    first_existing_material_index = im            
+                has_taken_material = True            
             elif len(material_name_parts) == 1 or (len(material_name_parts) == 2 and material_name_parts[1] == VariantConstants.names[VariantConstants.LIGHT_IBEAM_KEY]): # Default
                 add_variant_material(material, VariantConstants.LIGHT_IBEAM_KEY, variants)
-                if first_existing_material_index is None:
-                    first_existing_material_index = im
+                has_taken_material = True
             elif len(material_name_parts) == 2 and (material_name_parts[1] == VariantConstants.names[VariantConstants.SOLID_IBEAM_KEY] or "Structural" in material_name_parts):
                 add_variant_material(material, VariantConstants.SOLID_IBEAM_KEY, variants)
-                if first_existing_material_index is None:
-                    first_existing_material_index = im
+                has_taken_material = True
             elif len(material_name_parts) == 2 and material_name_parts[1] == VariantConstants.names[VariantConstants.LIGHT_BULKHEAD_KEY]:
                 add_variant_material(material, VariantConstants.LIGHT_BULKHEAD_KEY, variants)
-                if first_existing_material_index is None:
-                    first_existing_material_index = im
+                has_taken_material = True
             elif len(material_name_parts) == 2 and material_name_parts[1] == VariantConstants.names[VariantConstants.SOLID_BULKHEAD_KEY]:
                 add_variant_material(material, VariantConstants.SOLID_BULKHEAD_KEY, variants)
-                if first_existing_material_index is None:
-                    first_existing_material_index = im
+                has_taken_material = True
             elif len(material_name_parts) == 2 and (material_name_parts[1] == VariantConstants.names[VariantConstants.LOWGRADE_KEY] or "Cheap" in material_name_parts):
                 add_variant_material(material, VariantConstants.LOWGRADE_KEY, variants)
-                if first_existing_material_index is None:
-                    first_existing_material_index = im
+                has_taken_material = True
             else:
                 print("WARNING: found unrecognized variant at material '{}'".format(material["name"]))
-        im = im + 1
+        if has_taken_material:
+            if first_existing_material_index is None:
+                    first_existing_material_index = im
+            del json_obj["materials"][im]
+        else:
+            im = im + 1
 
     if len(variants) == 0:
         print("ERROR: cannot find any variants for material stem '{}'".format(material_name_stem))
@@ -272,6 +272,22 @@ def add_variants(material_name_stem, input_filename, output_filename):
     dump_variant(VariantConstants.LIGHT_BULKHEAD_KEY, variants)
     dump_variant(VariantConstants.SOLID_BULKHEAD_KEY, variants)
     dump_variant(VariantConstants.LOWGRADE_KEY, variants)
+
+    #
+    # Produce json
+    #
+
+    # Insert elements
+    assert(first_existing_material_index is not None)
+    json_obj["materials"].insert(first_existing_material_index, variants[VariantConstants.HULL_KEY])
+    json_obj["materials"].insert(first_existing_material_index + 1, variants[VariantConstants.SOLID_BULKHEAD_KEY])
+    json_obj["materials"].insert(first_existing_material_index + 2, variants[VariantConstants.LIGHT_BULKHEAD_KEY])
+    json_obj["materials"].insert(first_existing_material_index + 3, variants[VariantConstants.SOLID_IBEAM_KEY])
+    json_obj["materials"].insert(first_existing_material_index + 4, variants[VariantConstants.LIGHT_IBEAM_KEY])
+    json_obj["materials"].insert(first_existing_material_index + 5, variants[VariantConstants.LOWGRADE_KEY])
+    
+    # Write
+    save_json(json_obj, output_filename)
 
 
 def print_usage():
