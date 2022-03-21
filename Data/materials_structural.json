@@ -943,7 +943,7 @@
         "sound_type": "Metal",
         "specific_heat": 449.0,
         "stiffness": 1.0,
-        "strength": 0.6,
+        "strength": 0.5,
 	"texture_name": "metal_bulkheads_1",
         "thermal_conductivity": 79.5,
 	"thermal_expansion_coefficient": 0.0000106,

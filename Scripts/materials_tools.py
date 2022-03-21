@@ -337,10 +337,17 @@ def add_variants(material_group_name, input_filename, output_filename):
     save_json(json_obj, output_filename)
 
 
+def dump_materials(filename, field_names):
+    json_obj = load_json(filename)
+    for m in json_obj["materials"]:
+        print("{}:".format(m["name"]))
+        print("   " + " ".join("{}={}".format(n, m[n]) for n in field_names))
+
+
 def print_usage():
     print("Usage: materials_tools.py verify <input_json>")
     print("Usage: materials_tools.py add_variants <material_name> <input_json> <output_json>")
-
+    print("Usage: materials_tools.py dump_materials <input_json> field1 field2 ...")
 
 def main():
     
@@ -359,6 +366,12 @@ def main():
             print_usage()
             sys.exit(-1)
         add_variants(sys.argv[2], sys.argv[3], sys.argv[4])
+    elif verb == 'dump_materials':
+        if len(sys.argv) < 4:
+            print_usage()
+            sys.exit(-1)
+        fields = sys.argv[3:]
+        dump_materials(sys.argv[2], fields)
     else:
         print("ERROR: Unrecognized verb '{}'".format(verb))
         print_usage()

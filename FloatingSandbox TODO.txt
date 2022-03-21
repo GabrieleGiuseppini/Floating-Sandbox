@@ -983,11 +983,28 @@
 	= Material system improvements (*)
 
 		- Check if can undo BuoyancyVolumeFill:
-			- Replace with "destructured_volume": volume that is only used when particle has zero attached triangles
-				- Adjust structural template
-				- Points has a buffer for it, updated @ Add() and @ triangle create/destroy
+			- Replace with "volume_naked": volume that is only used when particle has zero attached triangles
+				- Adjust structural palette json for new name
+				- Then also add "volume_clad", "just in case" - should always be 1.0
+
+				- TODOPLAN:
+					- Use volume_clad when adding structural material w/triangles, or volume_naked otherwise
+						- ShipBuilder specifies if has triangles attached
+						- See in json if can safely use 1.0 for clad though
+							+ Write helper that takes list of fields (used @ level 1)
+							- e.g. are water and air and smoke different?
+								- Air has 1.0, uses special only for bubbles
+								- Smoke is Air, with buoyancy _volume_fill overwritten as 1.0
+								- Water has 0.0, why?
+									- Water material - should become air anyway?
+									- Engine wake - water is hull, hence it takes water and it would sink
+										- See if can have buoyancy as 1 but also spawn with 1.0 water
+						
+				- TODO: finalize how to plug it in Points::CalculateBuoyancyCoefficients
+				- Points has a buffer for it ("BuoyancyVolumeFill"), updated @ Add() and @ triangle create/destroy
+				- Points::CalculateBuoyancyCoefficients uses correct buoyancy volume fill - either the hardcoded one, or the one from the buffer
 			- Materials like hull and chains have it ~zero, ropes a bit more
-			- The biggest test is whether current ships start flying or not
+			+ The biggest test is whether current ships start flying or not
 				+ Preliminary checks indicate it might be ok!
 			- Remove hack from ShipBuilder::WaterlineAnalyzer
 
@@ -1019,7 +1036,7 @@
 				+ Better algo for colors
 			- Do for:
 				- All metals
-					= Iron
+					- Iron
 						+ Lower double-bottom strength
 					- Steel & Stainless Steel
 						- Script: deal with extra color - take min of base and, if exists, hull
@@ -1033,6 +1050,7 @@
 				- By means of a variant enum in the materials json
 					- ~"Structure"+"Form/Variant/Kind/Genre/Class"
 		- New materials:
+			- Add helper for adding colors: base base_reference target_reference
 			- Structural materials:
 				- Another wood variant
 					- Names: Oak (600-900, heavier - current), Pine (350-850, lighter)
