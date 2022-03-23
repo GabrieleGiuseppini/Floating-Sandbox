@@ -1093,8 +1093,9 @@
 					- At points' low-freq combustion update
 				- "Lightning rod" material
 					- Has precedence when looking for candidates @ Lightning strike
-				- More glass colors
+				+ More glass colors
 				+ More concrete colors
+				- More fiberglass colors
 			- Electrical materials:
 				- Non-Instanced Water Tight Doors (see if possible)
 				- Non-Instanced Water In/Out Pumps (see if possible)

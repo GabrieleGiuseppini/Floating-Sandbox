@@ -1293,7 +1293,7 @@
         },
         {
             "buoyancy_volume_fill": 0.0,
-            "color_key": "#C1FFFF",
+            "color_key": ["#BFBEBD", "#F58076", "#FFF86E", "#A87E00", "#6BFF7C", "#C1FFFF", "#3963FA", "#CF24FF", "#F5AE51"],
             "combustion_type": "Combustion",
             "ignition_temperature": 1000000.0,
             "is_hull": true,
@@ -1308,7 +1308,6 @@
                 "sub_category": "Glass Hull",
                 "sub_category_ordinal": 0
             },
-            "render_color": "#C1FFFF",
             "sound_type": "Glass",
             "specific_heat": 700.0,
             "stiffness": 1.0,
@@ -1322,7 +1321,7 @@
         },
         {
             "buoyancy_volume_fill": 1.0,
-            "color_key": "#E5FFFF",
+            "color_key": ["#EDEFEC", "#FFBFBF", "#FFFDBF", "#B8A35F", "DDFAB9", "#E5FFFF", "#A6C2FF", "#FCC9FF", "#FFBE54"],
             "combustion_type": "Combustion",
             "ignition_temperature": 1000000.0,
             "is_hull": false,
@@ -1337,7 +1336,6 @@
                 "sub_category": "Glass",
                 "sub_category_ordinal": 0
             },
-            "render_color": "#E5FFFF",
             "sound_type": "Glass",
             "specific_heat": 700.0,
             "stiffness": 1.0,
