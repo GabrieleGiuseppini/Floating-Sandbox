@@ -586,6 +586,100 @@
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
+
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": [
+		"#C49B6A"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 453.0,
+            "is_hull": true,
+            "mass": {
+                "density": 0.116875,
+                "nominal_mass": 500
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Pine Wood Hull",
+            "palette_coordinates": {
+                "category": "Wood",
+                "sub_category": "Pine Wood Hull",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Wood",
+            "specific_heat": 300.0,
+            "stiffness": 1.0,
+            "strength": 0.2,
+            "texture_name": "wood_studded_2",
+            "thermal_conductivity": 0.1,
+            "thermal_expansion_coefficient": 0.00015,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": [
+                "#DBB991"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 453.0,
+            "is_hull": false,
+            "mass": {
+                "density": 0.022935,
+                "nominal_mass": 500
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Pine Wood",
+            "palette_coordinates": {
+                "category": "Wood",
+                "sub_category": "Pine Wood",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Wood",
+            "specific_heat": 300.0,
+            "stiffness": 1.0,
+            "strength": 0.15,
+            "texture_name": "wood_planks_3",
+            "thermal_conductivity": 0.1,
+            "thermal_expansion_coefficient": 0.00015,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": [
+		"#946228"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 453.0,
+            "is_hull": true,
+            "mass": {
+                "density": 0.17,
+                "nominal_mass": 1000
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Double-Bottom Pine Wood",
+            "palette_coordinates": {
+                "category": "Wood",
+                "sub_category": "Double-Bottom Pine Wood",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Wood",
+            "specific_heat": 300.0,
+            "stiffness": 1.0,
+            "strength": 0.5,
+            "texture_name": "wood_planks_3",
+            "thermal_conductivity": 0.1,
+            "thermal_expansion_coefficient": 0.00015,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+
+
+
         {
             "buoyancy_volume_fill": 0.05,
             "color_key": [
@@ -2452,11 +2546,19 @@
                 "category": "Wood",
                 "groups": [
                     {
-                        "name": "Wood",
+                        "name": "Oak Wood",
                         "sub_categories": [
                             "Oak Wood",
                             "Oak Wood Hull",
                             "Double-Bottom Oak Wood"
+                        ]
+                    },
+                    {
+                        "name": "Pine Wood",
+                        "sub_categories": [
+                            "Pine Wood",
+                            "Pine Wood Hull",
+                            "Double-Bottom Pine Wood"
                         ]
                     }
                 ]
