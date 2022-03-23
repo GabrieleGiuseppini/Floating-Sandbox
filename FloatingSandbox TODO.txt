@@ -988,11 +988,9 @@
 			- Replace with "buoyant_volume_naked" (now one) and "buoyant_volume_clad" (old one)
 				! Physical interpretation: the volume occupied by the particles, for the purpose of both buoyancy calculations *and* water taken mass calculations
 					! Naked: when particle has zero attached triangles; clad: when has at least one triangle
-					! Buoyancy:
-						! TODO
-					! Taken water mass:
-						! TODO
-				+ Material
+					! Buoyancy: volume of water displaced
+					! Taken water mass: high cap on water taken mass (should be 1.0-volume though)
+				- Material (in git stash)
 				- Adjust structural palette json; guidelines:
 					- Every hull material: C=1.0 N=0.0
 						! C: because (hull) structures should feel buoyancy (NEW)
@@ -1003,42 +1001,19 @@
 					- Ropes: C=N
 						! Because even when they form a triangle, we want same bouyancy (OLD)
 					- Materials like hull and chains have it ~zero, ropes a bit more
-			- TODO: the below's update mBuoyantVolumeBuffer (renamed from mMaterialBuoyancyVolumeFillBuffer) and call CalculateBuoyancyCoeffs
 			- Points::Add:
 				- ShipBuilder specifies if has triangles attached, and populates mBuoyantVolumeBuffer accordingly (and then calculates buoyancy coeffs)
 			- @Points' Triangle Destroy/Restore: populates mBuoyantVolumeBuffer accordingly (and then calculates buoyancy coeffs)
 			- @ Points::CreateXYZEphParticle: populates mBuoyantVolumeBuffer accordingly (and then calculates buoyancy coeffs)
-				- Air: TODO
-				- Smoke: TODO
-				- Water: TODO
-
-				- TODOOLD:
-					- Use volume_clad when adding structural material w/triangles, or volume_naked otherwise
-						- ShipBuilder specifies if has triangles attached
-						- See in json if can safely use 1.0 for clad though
-							+ Write helper that takes list of fields (used @ level 1)
-							- e.g. are water and air and smoke different?
-								- Air has 1.0, uses special only for bubbles
-								- Smoke is Air, with buoyancy _volume_fill overwritten as 1.0
-								- Water has 0.0, why?
-									- Water material - should become air anyway?
-									- Engine wake - water is hull, hence it takes water and it would sink
-										- See if can have buoyancy as 1 but also spawn with 1.0 water
-									
+				- Air (has 1.0, uses special only for bubbles): TODO
+				- Smoke (Air material but with buoyancy_volume_fill overwritten as 1.0): TODO
+				- Water (has 0.0): TODO									
 			- Remove hacks from ShipBuilder (WaterlineAnalyzer; others?)
-			- Final: see if should rethink buoyancy: 
-				- Non-hull:
-					- Clad materials: 1m3 displaces 1m3 of water; when underwater, takes (really) up to 1-density water
-					- Naked particles: 1m3 displaces 1m3 of water; when underwater, takes (really) up to 1-density water
-				- Hull:
-					- Clad materials: 1m3 displaces 1m3 of water; when underwater, takes (really) up to 0 water
-					- Naked particles: 1m3 displaces 1m3 of water; when underwater, takes (virtually) up to 1-density water
-						- But then, TODO: how to know how much water has taken between 0 and 1-density?
 
 		= Make "Internal Watertight" (and other) versions of hull/non-hull materials
 			! Spec:
 				! Watertight (i.e. hull) but lighter than hull
-				! Rename materials (json and code): "Hull" -> "?"
+				! Rename materials (json and code): "Hull" -> "..."
 			! Variants:
 				- XYZ Hull (density 10) (impermeable) (was: hull)
 				- XYZ Thin I-Beam (density 1) (was: normal)
@@ -1071,21 +1046,22 @@
 					- Aluminium
 						- Separate Aluminium Sheet into its own group first, which later won't get variants
 				- All woods
-					- Do wood thing below first
+					+ Do wood thing below first
 				- TODO: others?
 			- Description of variant in ShipBuilder palette?
 				- By means of a variant enum in the materials json, and therefore localizable strings
 					- ~"Structure"+"Form/Variant/Kind/Genre/Class"
 		- New materials:
-			= Add helper for adding colors: base base_reference target_reference
+			+ Add helper for adding colors: base base_reference target_reference
 			- Structural materials:
 				- Another wood variant
 					- Names: Oak (600-900, heavier - current), Pine (350-850, lighter)
 						+ Check densities and see which one is current
-						- Rename old
-							- Fix mass of hull: nominal_mass=1000->800 density=0.0935->0.116875
+						+ Rename old
+							+ Fix mass of hull: nominal_mass=1000->800 density=0.0935->0.116875
 						- Make Pine
 							- nominal_mass=400
+							- three variants
 						- New materials texture
 							- One of the three "wood planks"
 				- Helium: ~like Hydrogen, but not combusting
@@ -1096,8 +1072,11 @@
 				+ More glass colors
 				+ More concrete colors
 				+ More fiberglass colors
+				- Redo structural template
+				- changes.txt
 			- Electrical materials:
-				- Non-Instanced Water Tight Doors (see if possible)
+				- Non-Instanced Watertight Doors (see if possible)
+				- Jet engine				
 				- Non-Instanced Water In/Out Pumps (see if possible)
 				- Clamp
 					- When powered, destroys point (and of course its springs)
@@ -1110,8 +1089,7 @@
 					- Different durations
 					- Simple state machine @ UpdateAutomaticConductivity
 					- Gfx: Clock dial (normalized on duration), new ElectricalControl
-					- Sound: clock
-		- Redo template
+					- Sound: clock		
 		- Test material textures for chains: transparent chain texture
 			- Change texturizer so that we load alpha from image		
 		- Friction property (replacing or adding to "global" ocean floor settings)

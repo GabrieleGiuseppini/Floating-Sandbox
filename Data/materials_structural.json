@@ -487,14 +487,14 @@
             "ignition_temperature": 453.0,
             "is_hull": true,
             "mass": {
-                "density": 0.0935,
-                "nominal_mass": 1000
+                "density": 0.116875,
+                "nominal_mass": 800
             },
             "melting_temperature": 1000000.0,
-            "name": "Wood Hull",
+            "name": "Oak Wood Hull",
             "palette_coordinates": {
                 "category": "Wood",
-                "sub_category": "Wood Hull",
+                "sub_category": "Oak Wood Hull",
                 "sub_category_ordinal": 0
             },
             "sound_type": "Wood",
@@ -530,10 +530,10 @@
                 "nominal_mass": 800
             },
             "melting_temperature": 1000000.0,
-            "name": "Wood",
+            "name": "Oak Wood",
             "palette_coordinates": {
                 "category": "Wood",
-                "sub_category": "Wood",
+                "sub_category": "Oak Wood",
                 "sub_category_ordinal": 0
             },
             "sound_type": "Wood",
@@ -541,6 +541,45 @@
             "stiffness": 1.0,
             "strength": 0.15,
             "texture_name": "wood_planks_1",
+            "thermal_conductivity": 0.1,
+            "thermal_expansion_coefficient": 0.00015,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": [
+                "#0A0C0F",
+                "#9B3012",
+                "#a0a62b",
+                "#753c13",
+                "#15520b",
+                "#17a8ad",
+                "#180ea1",
+                "#6318a1",
+                "#ad6632",
+                "#140024"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 453.0,
+            "is_hull": true,
+            "mass": {
+                "density": 0.17,
+                "nominal_mass": 1600
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Double-Bottom Oak Wood",
+            "palette_coordinates": {
+                "category": "Wood",
+                "sub_category": "Double-Bottom Oak Wood",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Wood",
+            "specific_heat": 300.0,
+            "stiffness": 1.0,
+            "strength": 0.5,
+            "texture_name": "wood_planks_2",
             "thermal_conductivity": 0.1,
             "thermal_expansion_coefficient": 0.00015,
             "water_diffusion_speed": 0.5,
@@ -1219,45 +1258,6 @@
             "texture_name": "metal_bulkheads_1",
             "thermal_conductivity": 79.5,
             "thermal_expansion_coefficient": 1.06e-05,
-            "water_diffusion_speed": 0.5,
-            "water_retention": 0.05,
-            "wind_receptivity": 0.1
-        },
-        {
-            "buoyancy_volume_fill": 0.0,
-            "color_key": [
-                "#0A0C0F",
-                "#9B3012",
-                "#a0a62b",
-                "#753c13",
-                "#15520b",
-                "#17a8ad",
-                "#180ea1",
-                "#6318a1",
-                "#ad6632",
-                "#140024"
-            ],
-            "combustion_type": "Combustion",
-            "ignition_temperature": 453.0,
-            "is_hull": true,
-            "mass": {
-                "density": 0.17,
-                "nominal_mass": 1600
-            },
-            "melting_temperature": 1000000.0,
-            "name": "Double-Bottom Wood",
-            "palette_coordinates": {
-                "category": "Wood",
-                "sub_category": "Double-Bottom Wood",
-                "sub_category_ordinal": 0
-            },
-            "sound_type": "Wood",
-            "specific_heat": 300.0,
-            "stiffness": 1.0,
-            "strength": 0.5,
-            "texture_name": "wood_planks_2",
-            "thermal_conductivity": 0.1,
-            "thermal_expansion_coefficient": 0.00015,
             "water_diffusion_speed": 0.5,
             "water_retention": 0.05,
             "wind_receptivity": 0.1
@@ -2454,9 +2454,9 @@
                     {
                         "name": "Wood",
                         "sub_categories": [
-                            "Wood",
-                            "Wood Hull",
-                            "Double-Bottom Wood"
+                            "Oak Wood",
+                            "Oak Wood Hull",
+                            "Double-Bottom Oak Wood"
                         ]
                     }
                 ]
