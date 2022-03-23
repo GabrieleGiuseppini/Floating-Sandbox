@@ -1,2184 +1,2573 @@
 {
-  "materials": [
-    {
-        "color_key": ["#404050", "#840E00", "#DBCF4D", "#806200", "#467B00", "#006A76", "#1B3261", "#860080", "#A84F00", "#111111"],
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1783.15,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 7950
-        },
-        "melting_temperature": 1588.15,
-        "name": "Iron Hull",
-	"palette_coordinates": {
-		"category": "Metals",
-		"sub_category": "Iron Hull",
-		"sub_category_ordinal": 0
-	},
-        "sound_type": "Metal",
-        "specific_heat": 449.0,
-        "stiffness": 1.0,
-        "strength": 0.055,
-	"texture_name": "metal_riveted_1_small",
-        "thermal_conductivity": 79.5,
-	"thermal_expansion_coefficient": 0.0000106,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 0.0
-    },
-    {
-        "color_key": ["#303040", "#740200", "#FAEC57", "#705200", "#0BB02C", "#2798E3", "#030A8A", "#AD1DAB", "#AD5E1D", "#101112"],
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1783.15,
-        "is_hull": false,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 7950
-        },
-        "melting_temperature": 1588.15,
-        "name": "Structural Iron",
-	"palette_coordinates": {
-		"category": "Metals",
-		"sub_category": "Structural Iron",
-		"sub_category_ordinal": 0
-	},
-        "sound_type": "Metal",
-        "specific_heat": 449.0,
-        "stiffness": 1.0,
-        "strength": 0.055,
-	"texture_name": "metal_riveted_1",
-        "thermal_conductivity": 79.5,
-	"thermal_expansion_coefficient": 0.0000106,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 1.0
-    },
-    {
-        "color_key": ["#808090", "#9E0F00", "#CFC344", "#997200", "#569200", "#00818C", "#203E74", "#9F009C", "#C85800", "#222222"],
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1783.15,
-        "is_hull": false,
-        "mass": {
-            "density": 0.00935,
-            "nominal_mass": 7850
-        },
-        "melting_temperature": 1588.15,
-        "name": "Iron",
-	"palette_coordinates": {
-		"category": "Metals",
-		"sub_category": "Iron",
-		"sub_category_ordinal": 0
-	},
-        "sound_type": "Metal",
-        "specific_heat": 449.0,
-        "stiffness": 1.0,
-        "strength": 0.051,
-	"texture_name": "metal_riveted_1",
-        "thermal_conductivity": 79.5,
-	"thermal_expansion_coefficient": 0.0000106,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 1.0
-    },
-    {
-        "color_key": ["#A0A0A0", "#A71000", "#D9CE30", "#A27A00", "#5A9B00", "#008A95", "#22437B", "#A900A7", "#D45B00", "#333333"],
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1643.15,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 7580
-        },
-        "melting_temperature": 1089.15,
-        "name": "Steel Hull",
-	"palette_coordinates": {
-		"category": "Metals",
-		"sub_category": "Steel Hull",
-		"sub_category_ordinal": 0
-	},
-        "sound_type": "Metal",
-        "specific_heat": 490.0,
-        "stiffness": 1.0,
-        "strength": 0.092,
-	"texture_name": "metal_riveted_1_small",
-        "thermal_conductivity": 50.2,
-	"thermal_expansion_coefficient": 0.0000115,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 0.0
-    },
-    {
-        "color_key": ["#909090", "#950000", "#C9BC2C", "#926A00", "#15BF5C", "#1597BF", "#020E57", "#5F0161", "#A6682B", "#121212"],
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1643.15,
-        "is_hull": false,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 7580
-        },
-        "melting_temperature": 1089.15,
-        "name": "Structural Steel",
-	"palette_coordinates": {
-		"category": "Metals",
-		"sub_category": "Structural Steel",
-		"sub_category_ordinal": 0
-	},
-        "sound_type": "Metal",
-        "specific_heat": 490.0,
-        "stiffness": 1.0,
-        "strength": 0.092,
-	"texture_name": "metal_riveted_1",
-        "thermal_conductivity": 50.2,
-	"thermal_expansion_coefficient": 0.0000115,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 1.0
-    },
-    {
-        "color_key": ["#D8D8D8", "#D80E00", "#EDDE34", "#D29800", "#7BC800", "#00B6BF", "#2D58A0", "#D100D6", "#F26500", "#444444", "#262626"],
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1643.15,
-        "is_hull": false,
-        "mass": {
-            "density": 0.00935,
-            "nominal_mass": 7480
-        },
-        "melting_temperature": 1089.15,
-        "name": "Steel",
-	"palette_coordinates": {
-		"category": "Metals",
-		"sub_category": "Steel",
-		"sub_category_ordinal": 0
-	},
-        "sound_type": "Metal",
-        "specific_heat": 490.0,
-        "stiffness": 1.0,
-        "strength": 0.0856,
-	"texture_name": "metal_riveted_1",
-        "thermal_conductivity": 50.2,
-	"thermal_expansion_coefficient": 0.0000115,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 1.0
-    },
-    {
-        "color_key": ["#565663", "#8F1F00", "#D4C520", "#8B7A00", "#3C8400", "#00657E", "#1A2C66", "#93007B", "#BA7100", "#555555"],
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1473.15,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 4600
-        },
-        "melting_temperature": 1941.15,
-        "name": "Titanium Hull",
-	"palette_coordinates": {
-		"category": "Metals",
-		"sub_category": "Titanium Hull",
-		"sub_category_ordinal": 0
-	},
-        "sound_type": "Metal",
-        "specific_heat": 523.0,
-        "stiffness": 1.0,
-        "strength": 0.13,
-	"texture_name": "metal_plates_1_small",
-        "thermal_conductivity": 17.0,
-	"thermal_expansion_coefficient": 0.0000087,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 0.0
-    },
-    {
-        "color_key": ["#787896", "#BE1400", "#F5E325", "#B88D00", "#66B100", "#009BA9", "#26498C", "#BF00BA", "#EF6B00", "#666666"],
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1473.15,
-        "is_hull": false,
-        "mass": {
-            "density": 0.00935,
-            "nominal_mass": 4500
-        },
-        "melting_temperature": 1941.15,
-        "name": "Titanium",
-	"palette_coordinates": {
-		"category": "Metals",
-		"sub_category": "Titanium",
-		"sub_category_ordinal": 0
-	},
-        "sound_type": "Metal",
-        "specific_heat": 523.0,
-        "stiffness": 1.0,
-        "strength": 0.125,
-	"texture_name": "metal_plates_1",
-        "thermal_conductivity": 17.0,
-	"thermal_expansion_coefficient": 0.0000087,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 1.0
-    },
-    {
-        "color_key": ["#E0E0E0", "#A42E10", "#DECC10", "#A29A10", "#76B210", "#10A29A", "#204060", "#972ea3", "#d97a1c", "#757575"],
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1000000.0,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 2710
-        },
-        "melting_temperature": 933.45,
-        "name": "Aluminium Hull",
-	"palette_coordinates": {
-		"category": "Metals",
-		"sub_category": "Aluminium Hull",
-		"sub_category_ordinal": 0
-	},
-        "sound_type": "Metal",
-        "specific_heat": 897.0,
-        "stiffness": 1.0,
-        "strength": 0.1,
-	"texture_name": "metal_riveted_2_small",
-        "thermal_conductivity": 205.0,
-	"thermal_expansion_coefficient": 0.000022,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 0.0
-    },
-    {
-        "color_key": ["#C8C8C8", "#A12A08", "#DACA08", "#A09817", "#71B008", "#08A093", "#1B3E5A", "#922AA1", "#D47818", "#717171"],
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1000000.0,
-        "is_hull": false,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 2710
-        },
-        "melting_temperature": 933.45,
-        "name": "Structural Aluminium",
-	"palette_coordinates": {
-		"category": "Metals",
-		"sub_category": "Structural Aluminium",
-		"sub_category_ordinal": 0
-	},
-        "sound_type": "Metal",
-        "specific_heat": 897.0,
-        "stiffness": 1.0,
-        "strength": 0.1,
-	"texture_name": "metal_riveted_2",
-        "thermal_conductivity": 205.0,
-	"thermal_expansion_coefficient": 0.000022,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 1.0
-    },
-    {
-        "color_key": ["#EFEFEF", "#B22212", "#FFEA12", "#B2A012", "#88B810", "#10B2A0", "#305878", "#8A1988", "#C96D12", "#989898"],
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1000000.0,
-        "is_hull": false,
-        "mass": {
-            "density": 0.00935,
-            "nominal_mass": 2710
-        },
-        "melting_temperature": 933.45,
-        "name": "Aluminium",
-	"palette_coordinates": {
-		"category": "Metals",
-		"sub_category": "Aluminium",
-		"sub_category_ordinal": 0
-	},
-        "sound_type": "Metal",
-        "specific_heat": 897.0,
-        "stiffness": 1.0,
-        "strength": 0.09,
-	"texture_name": "metal_riveted_2",
-        "thermal_conductivity": 205.0,
-	"thermal_expansion_coefficient": 0.000022,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 1.0
-    },
-    {
-        "color_key": ["#EEEEEE", "#ff8940", "#fff454", "#cfb891", "#58cc56", "#3bf2ff", "#2617ff", "#dc14ff", "#ff8214", "#525252"],
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1000000.0,
-        "is_hull": false,
-        "mass": {
-            "density": 0.00935,
-            "nominal_mass": 2710
-        },
-        "melting_temperature": 933.45,
-        "name": "Aluminium Cheap",
-	"palette_coordinates": {
-		"category": "Metals",
-		"sub_category": "Aluminium Cheap",
-		"sub_category_ordinal": 0
-	},
-        "sound_type": "Metal",
-        "specific_heat": 897.0,
-        "stiffness": 1.0,
-        "strength": 0.027,
-	"texture_name": "metal_riveted_2",
-        "thermal_conductivity": 205.0,
-	"thermal_expansion_coefficient": 0.000022,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 1.0
-    },    
-
-    {
-        "color_key": ["#905020", "#9E2E0C", "#998B0A", "#439206", "#036E8C", "#1E3070", "#A30085", "#CE8100", "#777777", "#070707"],
-        "combustion_type": "Combustion",
-        "ignition_temperature": 453.0,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 1000
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Wood Hull",
-	"palette_coordinates": {
-		"category": "Wood",
-		"sub_category": "Wood Hull",
-		"sub_category_ordinal": 0
-	},
-        "sound_type": "Wood",
-        "specific_heat": 300.0,
-        "stiffness": 1.0,
-        "strength": 0.2,
-	"texture_name": "wood_studded_1",
-        "thermal_conductivity": 0.1,
-	"thermal_expansion_coefficient": 0.00015,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 0.0
-    },
-    {
-        "color_key": ["#E0D8C0", "#B51B1B", "#AF7C18", "#78A814", "#10A19D", "#325989", "#9B00AF", "#DE4000", "#888888", "#090909"],
-        "combustion_type": "Combustion",
-        "ignition_temperature": 453.0,
-        "is_hull": false,
-        "mass": {
-            "density": 0.022935,
-            "nominal_mass": 800
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Wood",
-	"palette_coordinates": {
-		"category": "Wood",
-		"sub_category": "Wood",
-		"sub_category_ordinal": 0
-	},
-        "sound_type": "Wood",
-        "specific_heat": 300.0,
-        "stiffness": 1.0,
-        "strength": 0.15,
-	"texture_name": "wood_planks_1",
-        "thermal_conductivity": 0.1,
-	"thermal_expansion_coefficient": 0.00015,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 1.0
-    },
-    {
-        "color_key": ["#D2D2D2", "#DD4523", "#FFE680", "#7d5333", "#054C00", "#1d6f82", "#0C20D1", "#530a7d", "#FF8000", "#060606"],
-        "combustion_type": "Combustion",
-        "ignition_temperature": 393.15,
-        "is_hull": false,
-        "mass": {
-            "density": 0.0215,
-            "nominal_mass": 30
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Cloth",
-	"palette_coordinates": {
-		"category": "Cloth",
-		"sub_category": "Cloth",
-		"sub_category_ordinal": 0
-	},
-        "sound_type": "Cloth",
-        "specific_heat": 1400.0,
-        "stiffness": 0.012,
-        "strength": 3.8,
-	"texture_name": "cloth_1",
-        "thermal_conductivity": 0.04,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.5,
-        "buoyancy_volume_fill": 0.05,
-        "wind_receptivity": 0.5
-    },
-    
-    {
-        "color_key": ["#1A1A1A", "#540000", "#918f00", "#692a00", "#004215", "#003b3b", "#0c005c", "#3c0059", "#c74900"],
-        "combustion_type": "Combustion",
-        "ignition_temperature": 973.15,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 758
-        },
-        "melting_temperature": 3823.15,
-        "name": "Carbon Hull",
-	"palette_coordinates": {
-		"category": "Carbon",
-		"sub_category": "Carbon Hull",
-		"sub_category_ordinal": 0
-	},
-        "sound_type": "Wood",
-        "specific_heat": 717.0,
-        "stiffness": 1.0,
-        "strength": 3.166,
-	"texture_name":"carbon_1",
-        "thermal_conductivity": 1.7,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 0.0
-    },
-    {
-        "color_key": ["#232323", "#d4262c", "#d6cf00", "#ad8a66", "#50d14b", "#49d1cf", "#3732d1", "#9d12c7", "#e3721b"],
-        "combustion_type": "Combustion",
-        "ignition_temperature": 973.15,
-        "is_hull": false,
-        "mass": {
-            "density": 0.022935,
-            "nominal_mass": 758
-        },
-        "melting_temperature": 3823.15,
-        "name": "Carbon",
-	"palette_coordinates": {
-		"category": "Carbon",
-		"sub_category": "Carbon",
-		"sub_category_ordinal": 0
-	},
-        "sound_type": "Wood",
-        "specific_heat": 717.0,
-        "stiffness": 1.0,
-        "strength": 3.166,
-	"texture_name":"carbon_1",
-        "thermal_conductivity": 1.7,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 1.0
-    },
-
-    {
-        "color_key": "#1E1E1E",
-        "combustion_type": "Explosion",
-	"explosive_combustion_radius": 1.15,
-	"explosive_combustion_strength": 50.0,
-        "ignition_temperature": 483.15,
-        "is_hull": true,
-        "mass": {
-            "density": 1.0,
-            "nominal_mass": 820.0
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Diesel",
-	"palette_coordinates": {
-		"category": "Other Materials",
-		"sub_category": "Diesel",
-		"sub_category_ordinal": 0
-	},
-        "render_color": "#1E1E1E",
-        "sound_type": "Wood",
-        "specific_heat": 16.0,
-        "stiffness": 1.0,
-        "strength": 3.166,
-	"texture_name":"wood_studded_1",
-        "thermal_conductivity": 0.13,
-        "water_diffusion_speed": 0.0,
-	"water_intake": 0.0,
-        "water_retention": 0.00,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 1.0
-    },
-
-    {
-        "color_key": "#2E1E1E",
-        "combustion_type": "Explosion",
-	"explosive_combustion_radius": 7.0,
-	"explosive_combustion_strength": 95.0,
-        "ignition_temperature": 693.15,
-        "is_hull": false,
-        "mass": {
-            "density": 0.8,
-            "nominal_mass": 801.0
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Gunpowder Light",
-	"palette_coordinates": {
-		"category": "Other Materials",
-		"sub_category": "Gunpowder Light",
-		"sub_category_ordinal": 0
-	},
-        "render_color": "#2E1E1E",
-        "sound_type": "Rubber",
-        "specific_heat": 21.0,
-        "stiffness": 1.0,
-        "strength": 0.42,
-	"texture_name": "rubber_1",
-        "thermal_conductivity": 0.25,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 1.0
-    },
-
-    {
-        "color_key": "#2F1F1F",
-        "combustion_type": "Explosion",
-	"explosive_combustion_radius": 8.0,
-	"explosive_combustion_strength": 100.0,
-        "ignition_temperature": 693.15,
-        "is_hull": false,
-        "mass": {
-            "density": 0.8,
-            "nominal_mass": 801.0
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Gunpowder Strong",
-	"palette_coordinates": {
-		"category": "Other Materials",
-		"sub_category": "Gunpowder Strong",
-		"sub_category_ordinal": 0
-	},
-        "render_color": "#2F1F1F",
-        "sound_type": "Rubber",
-        "specific_heat": 21.0,
-        "stiffness": 1.0,
-        "strength": 0.42,
-	"texture_name": "rubber_1",
-        "thermal_conductivity": 0.25,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 1.0
-    },
-
-    {
-        "color_key": ["#C0C0C0", "#e03636", "#e7eb81", "#c49300", "#30cf00", "#81f8fc", "#2130ff", "#c61bfa", "#f78543", "#383432"],
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1000000.0,
-        "is_hull": true,
-        "mass": {
-            "density": 0.01045,
-            "nominal_mass": 2710
-        },
-        "melting_temperature": 933.45,
-        "name": "Aluminium Sheet Hull",
-	"palette_coordinates": {
-		"category": "Metals",
-		"sub_category": "Aluminium Sheet Hull",
-		"sub_category_ordinal": 0
-	},
-        "sound_type": "Metal",
-        "specific_heat": 897.0,
-        "stiffness": 0.5,
-        "strength": 0.53,
-	"texture_name": "metal_riveted_2_small",
-        "thermal_conductivity": 205.0,
-	"thermal_expansion_coefficient": 0.000022,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.2,
-        "buoyancy_volume_fill": 0.0
-    },
-    {
-        "color_key": ["#D0D0D0", "#ff5340", "#f5f752", "#ffa200", "#76ff61", "#94fff4", "#2469ff", "#bd35fc", "#ff8a24", "#525150"],
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1000000.0,
-        "is_hull": false,
-        "mass": {
-            "density": 0.001045,
-            "nominal_mass": 2710
-        },
-        "melting_temperature": 933.45,
-        "name": "Aluminium Sheet",
-	"palette_coordinates": {
-		"category": "Metals",
-		"sub_category": "Aluminium Sheet",
-		"sub_category_ordinal": 0
-	},
-        "sound_type": "Metal",
-        "specific_heat": 897.0,
-        "stiffness": 0.5,
-        "strength": 0.267,
-	"texture_name": "metal_riveted_2",
-        "thermal_conductivity": 205.0,
-	"thermal_expansion_coefficient": 0.000022,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.2,
-        "buoyancy_volume_fill": 1.0
-    },
-    {
-        "color_key": ["#5e5d5e", "#6e2820", "#e5e81c", "#A88848", "#0cc21e", "#16a4ba", "#010596", "#760094", "#944000", "#1c1612"],
-        "combustion_type": "Combustion",
-        "ignition_temperature": 491.15,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 50
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Cardboard Hull",
-	"palette_coordinates": {
-		"category": "Cardboard and Paper",
-		"sub_category": "Cardboard Hull",
-		"sub_category_ordinal": 0
-	},
-	"rust_receptivity": 10.0,
-        "sound_type": "Wood",
-        "specific_heat": 1336.0,
-        "stiffness": 1.0,
-        "strength": 0.67,
-	"texture_name":"cardboard_1",
-        "thermal_conductivity": 0.05,
-	"thermal_expansion_coefficient": 0.0043,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.2,
-	"wind_receptivity": 0.15,
-        "buoyancy_volume_fill": 0.0
-    },
-    {
-        "color_key": ["#878686", "#e02f2f", "#e6e20e", "#C1A46A", "#19e60e", "#0ee2e6", "#1b13f0", "#772f94", "#d66b1a", "#423b36"],
-        "combustion_type": "Combustion",
-        "ignition_temperature": 491.15,
-        "is_hull": false,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 25
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Cardboard",
-	"palette_coordinates": {
-		"category": "Cardboard and Paper",
-		"sub_category": "Cardboard",
-		"sub_category_ordinal": 0
-	},
-	"rust_receptivity": 10.0,
-        "sound_type": "Wood",
-        "specific_heat": 1336.0,
-        "stiffness": 1.0,
-        "strength": 0.6,
-	"texture_name":"cardboard_1",
-        "thermal_conductivity": 0.05,
-	"thermal_expansion_coefficient": 0.00434,
-        "water_diffusion_speed": 0.55,
-        "water_retention": 0.75,
-	"wind_receptivity": 0.15,
-        "buoyancy_volume_fill": 0.9
-    },
-
-
-    {
-        "color_key": "#F2F5F5",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 450.15,
-        "is_hull": true,
-        "mass": {
-            "density": 0.045,
-            "nominal_mass": 20
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Paper Hull",
-	"palette_coordinates": {
-		"category": "Cardboard and Paper",
-		"sub_category": "Paper Hull",
-		"sub_category_ordinal": 0
-	},
-        "render_color": "#F2F5F5",
-	"rust_receptivity": 10.0,
-        "sound_type": "Cloth",
-        "specific_heat": 1400.0,
-        "stiffness": 1.0,
-        "strength": 0.5,
-	"texture_name":"paper_2",
-        "thermal_conductivity": 0.05,
-	"thermal_expansion_coefficient": 0.0035,
-        "water_diffusion_speed": 0.65,
-        "water_retention": 0.85,
-        "buoyancy_volume_fill": 0.0,
-	"wind_receptivity": 0.15
-    },
-
-    {
-        "color_key": "#FCFAFA",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 450.15,
-        "is_hull": false,
-        "mass": {
-            "density": 0.022935,
-            "nominal_mass": 20
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Paper",
-	"palette_coordinates": {
-		"category": "Cardboard and Paper",
-		"sub_category": "Paper",
-		"sub_category_ordinal": 0
-	},
-        "render_color": "#FCFAFA",
-	"rust_receptivity": 10.0,
-        "sound_type": "Cloth",
-        "specific_heat": 1400.0,
-        "stiffness": 1.0,
-        "strength": 0.5,
-	"texture_name":"paper_1",
-        "thermal_conductivity": 0.05,
-	"thermal_expansion_coefficient": 0.0035,
-        "water_diffusion_speed": 0.65,
-        "water_retention": 0.85,
-        "buoyancy_volume_fill": 0.3,
-	"wind_receptivity": 0.15
-    },
-
-    {
-        "color_key": ["#72797f", "#D80E02", "#b8b809", "#5c4000", "#77d93f", "#6ef0eb", "#2432ff", "#bd00fc", "#ffa724", "#141516"],
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1643.15,
-        "is_hull": false,
-        "mass": {
-            "density": 0.00935,
-            "nominal_mass": 7480
-        },
-        "melting_temperature": 1089.15,
-        "name": "Steel Cheap",
-	"palette_coordinates": {
-		"category": "Metals",
-		"sub_category": "Steel Cheap",
-		"sub_category_ordinal": 0
-	},
-        "sound_type": "Metal",
-        "specific_heat": 490.0,
-        "stiffness": 1.0,
-        "strength": 0.05,
-	"texture_name": "metal_riveted_1",
-        "thermal_conductivity": 50.2,
-	"thermal_expansion_coefficient": 0.0000115,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 1.0
-    },
-
-    {
-        "color_key": ["#1F1F1F", "#f52c36", "#e6da3c", "#4a2e31", "#0b4728", "#379299", "#0f0187", "#54076e", "#bf4204", "#211f1e"],
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1783.15,
-        "is_hull": false,
-        "mass": {
-            "density": 0.00935,
-            "nominal_mass": 7850
-        },
-        "melting_temperature": 1588.15,
-        "name": "Iron Cheap",
-	"palette_coordinates": {
-		"category": "Metals",
-		"sub_category": "Iron Cheap",
-		"sub_category_ordinal": 0
-	},
-        "sound_type": "Metal",
-        "specific_heat": 449.0,
-        "stiffness": 1.0,
-        "strength": 0.02,
-	"texture_name": "metal_riveted_1",
-        "thermal_conductivity": 79.5,
-	"thermal_expansion_coefficient": 0.0000106,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 1.0
-    },
-
-    {
-        "color_key": "#A2A2A2",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1643.15,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 7580
-        },
-        "melting_temperature": 1089.15,
-        "name": "Stainless Steel Hull",
-	"palette_coordinates": {
-		"category": "Metals",
-		"sub_category": "Stainless Steel Hull",
-		"sub_category_ordinal": 0
-	},
-        "render_color": "#A2A2A2",
-        "rust_receptivity": 0,
-        "sound_type": "Metal",
-        "specific_heat": 490.0,
-        "stiffness": 1.0,
-        "strength": 0.092,
-	"texture_name": "metal_riveted_1_small",
-        "thermal_conductivity": 50.2,
-	"thermal_expansion_coefficient": 0.0000115,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 0.0
-    },
-
-    {
-        "color_key": "#E8E8E8",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1643.15,
-        "is_hull": false,
-        "mass": {
-            "density": 0.00935,
-            "nominal_mass": 7480
-        },
-        "melting_temperature": 1089.15,
-        "name": "Stainless Steel",
-	"palette_coordinates": {
-		"category": "Metals",
-		"sub_category": "Stainless Steel",
-		"sub_category_ordinal": 0
-	},
-        "render_color": "#E8E8E8",
-        "rust_receptivity": 0,
-        "sound_type": "Metal",
-        "specific_heat": 490.0,
-        "stiffness": 1.0,
-        "strength": 0.0856,
-	"texture_name": "metal_riveted_1",
-        "thermal_conductivity": 50.2,
-	"thermal_expansion_coefficient": 0.0000115,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 1.0
-    },
-    
-    {
-        "color_key": ["#7d7d7d", "#A21000", "#d9c73d", "#6b635a", "#039118", "#3dd4ca", "#1c0396", "#460569", "#f79a0f", "#0d0903"],
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1643.15,
-        "is_hull": true,
-        "mass": {
-            "density": 0.17,
-            "nominal_mass": 6500
-        },
-        "melting_temperature": 1089.15,
-        "name": "Double-Bottom Steel",
-	"palette_coordinates": {
-		"category": "Metals",
-		"sub_category": "Double-Bottom Steel",
-		"sub_category_ordinal": 0
-	},
-        "sound_type": "Metal",
-        "specific_heat": 490.0,
-        "stiffness": 1.0,
-        "strength": 0.05,
-	"texture_name": "metal_bulkheads_1",
-        "thermal_conductivity": 50.2,
-	"thermal_expansion_coefficient": 0.0000115,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 0.0
-    },
-    {
-        "color_key": ["#797877", "#842005", "#cccf3c", "#755331", "#06731d", "#1bc4c4", "#02099e", "#500a6e", "#c97916", "#30302f"],
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1473.15,
-        "is_hull": true,
-        "mass": {
-            "density": 0.17,
-            "nominal_mass": 5000
-        },
-        "melting_temperature": 1941.15,
-        "name": "Double-Bottom Titanium",
-	"palette_coordinates": {
-		"category": "Metals",
-		"sub_category": "Double-Bottom Titanium",
-		"sub_category_ordinal": 0
-	},
-        "sound_type": "Metal",
-        "specific_heat": 523.0,
-        "stiffness": 1.0,
-        "strength": 0.1,
-	"texture_name": "metal_plates_1_small",
-        "thermal_conductivity": 17.0,
-	"thermal_expansion_coefficient": 0.0000087,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 0.0
-    },
-    {
-        "color_key": ["#090B0E", "#7E0C00", "#ADA010", "#422d13", "#0f4519", "#5084ab", "#04385e", "#5f1075", "#ff945e", "#1c0b02"],
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1783.15,
-        "is_hull": true,
-        "mass": {
-            "density": 0.17,
-            "nominal_mass": 7500
-        },
-        "melting_temperature": 1588.15,
-        "name": "Double-Bottom Iron",
-	"palette_coordinates": {
-		"category": "Metals",
-		"sub_category": "Double-Bottom Iron",
-		"sub_category_ordinal": 0
-	},
-        "sound_type": "Metal",
-        "specific_heat": 449.0,
-        "stiffness": 1.0,
-        "strength": 0.5,
-	"texture_name": "metal_bulkheads_1",
-        "thermal_conductivity": 79.5,
-	"thermal_expansion_coefficient": 0.0000106,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 0.0
-    },
-    {
-        "color_key": ["#0A0C0F", "#9B3012", "#a0a62b", "#753c13", "#15520b", "#17a8ad", "#180ea1", "#6318a1", "#ad6632", "#140024"],
-        "combustion_type": "Combustion",
-        "ignition_temperature": 453.0,
-        "is_hull": true,
-        "mass": {
-            "density": 0.17,
-            "nominal_mass": 1600
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Double-Bottom Wood",
-	"palette_coordinates": {
-		"category": "Wood",
-		"sub_category": "Double-Bottom Wood",
-		"sub_category_ordinal": 0
-	},
-        "sound_type": "Wood",
-        "specific_heat": 300.0,
-        "stiffness": 1.0,
-        "strength": 0.5,
-	"texture_name":"wood_planks_2",
-        "thermal_conductivity": 0.1,
-	"thermal_expansion_coefficient": 0.00015,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 0.0
-    },
-    {
-        "color_key": "#545454",
-        "combustion_type": "Combustion",
-        "description": "The most fragile material of them all.",
-        "ignition_temperature": 1213.0,
-        "is_hull": false,
-        "mass": {
-            "density": 0.0417,
-            "nominal_mass": 50
-        },
-        "melting_temperature": 505.05,
-        "name": "Nails",
-	"palette_coordinates": {
-		"category": "Metals",
-		"sub_category": "Nails",
-		"sub_category_ordinal": 0
-	},
-        "render_color": "#545454",
-        "sound_type": "Metal",
-        "specific_heat": 228.0,
-        "stiffness": 1.0,
-        "strength": 0.08,
-	"texture_name": "metal_plates_1_small",
-        "thermal_conductivity": 66.8,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.05,
-        "buoyancy_volume_fill": 1.0
-    },
-    {
-        "color_key": "#C1FFFF",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1000000.0,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 1000
-        },
-        "melting_temperature": 1773.15,
-        "name": "Glass Hull",
-	"palette_coordinates": {
-		"category": "Glass",
-		"sub_category": "Glass Hull",
-		"sub_category_ordinal": 0
-	},
-        "render_color": "#C1FFFF",
-        "sound_type": "Glass",
-        "specific_heat": 700.0,
-        "stiffness": 1.0,
-        "strength": 0.1,
-	"texture_name":"glass_1",
-        "thermal_conductivity": 0.8,
-	"thermal_expansion_coefficient": 0.000005,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.0,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 0.0
-    },
-    {
-        "color_key": "#E5FFFF",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1000000.0,
-        "is_hull": false,
-        "mass": {
-            "density": 0.022935,
-            "nominal_mass": 1000
-        },
-        "melting_temperature": 1773.15,
-        "name": "Glass",
-	"palette_coordinates": {
-		"category": "Glass",
-		"sub_category": "Glass",
-		"sub_category_ordinal": 0
-	},
-        "render_color": "#E5FFFF",
-        "sound_type": "Glass",
-        "specific_heat": 700.0,
-        "stiffness": 1.0,
-        "strength": 0.1,
-	"texture_name":"glass_1",
-        "thermal_conductivity": 0.8,
-	"thermal_expansion_coefficient": 0.000005,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.0,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 1.0
-    },
-    {
-        "color_key": ["#BFBFBF", "#E1BFBF", "#BFBFE1"],
-        "combustion_type": "Combustion",
-        "ignition_temperature": 553.15,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 1522
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Rubber Hull Soft",
-	"palette_coordinates": {
-		"category": "Rubber",
-		"sub_category": "Rubber Hull Soft",
-		"sub_category_ordinal": 0
-	},
-        "rust_receptivity": 0,
-        "sound_type": "Rubber",
-        "specific_heat": 1250.0,
-        "stiffness": 0.5,
-        "strength": 2.5,
-	"texture_name": "rubber_1",
-        "thermal_conductivity": 0.1,
-	"thermal_expansion_coefficient": 0.00008,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 0.0
-    },
-        
-    {
-        "color_key": ["#CFCFCF", "#E1CFCF", "#CFCFE1"],
-        "combustion_type": "Combustion",
-        "ignition_temperature": 553.15,
-        "is_hull": false,
-        "mass": {
-            "density": 0.02,
-            "nominal_mass": 1522
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Rubber Soft",
-	"palette_coordinates": {
-		"category": "Rubber",
-		"sub_category": "Rubber Soft",
-		"sub_category_ordinal": 0
-	},
-        "rust_receptivity": 0,
-        "sound_type": "Rubber",
-        "specific_heat": 1250.0,
-        "stiffness": 0.5,
-        "strength": 2.5,
-	"texture_name": "rubber_1",
-        "thermal_conductivity": 0.1,
-	"thermal_expansion_coefficient": 0.00008,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 1.0
-    },
-
-    {
-        "color_key": ["#B8B8B8", "#E1B8B8", "#B8B8E1"],
-        "combustion_type": "Combustion",
-        "ignition_temperature": 553.15,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 1522
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Rubber Hull Hard",
-	"palette_coordinates": {
-		"category": "Rubber",
-		"sub_category": "Rubber Hull Hard",
-		"sub_category_ordinal": 0
-	},
-        "rust_receptivity": 0,
-        "sound_type": "Rubber",
-        "specific_heat": 1250.0,
-        "stiffness": 1.0,
-        "strength": 2.5,
-	"texture_name": "rubber_1",
-        "thermal_conductivity": 0.1,
-	"thermal_expansion_coefficient": 0.00008,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 0.0
-    },
-    {
-        "color_key": ["#C7C7C7", "#E1C7C7", "#C7C7E1"],
-        "combustion_type": "Combustion",
-        "ignition_temperature": 553.15,
-        "is_hull": false,
-        "mass": {
-            "density": 0.02,
-            "nominal_mass": 1522
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Rubber Hard",
-	"palette_coordinates": {
-		"category": "Rubber",
-		"sub_category": "Rubber Hard",
-		"sub_category_ordinal": 0
-	},
-        "rust_receptivity": 0,
-        "sound_type": "Rubber",
-        "specific_heat": 1250.0,
-        "stiffness": 1.0,
-        "strength": 2.5,
-	"texture_name": "rubber_1",
-        "thermal_conductivity": 0.1,
-	"thermal_expansion_coefficient": 0.00008,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 1.0
-    },
-
-    {
-        "color_key": ["#C4C4C4", "#E1C4C4", "#C4C4E1"],
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1000000.0,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 1522
-        },
-        "melting_temperature": 1394.15,
-        "name": "Fiberglass Hull",
-	"palette_coordinates": {
-		"category": "Plastic",
-		"sub_category": "Fiberglass Hull",
-		"sub_category_ordinal": 0
-	},
-        "rust_receptivity": 0,
-        "sound_type": "Plastic",
-        "specific_heat": 700.0,
-        "stiffness": 1.1,
-        "strength": 0.05,
-	"texture_name":"fiberglass_1",
-        "thermal_conductivity": 0.04,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 0.0
-    },
-
-    {
-        "color_key": ["#D4D4D4", "#E1D4D4", "#D4D4E1"],
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1000000.0,
-        "is_hull": false,
-        "mass": {
-            "density": 0.00935,
-            "nominal_mass": 1522
-        },
-        "melting_temperature": 1394.15,
-        "name": "Fiberglass",
-	"palette_coordinates": {
-		"category": "Plastic",
-		"sub_category": "Fiberglass",
-		"sub_category_ordinal": 0
-	},
-        "rust_receptivity": 0,
-        "sound_type": "Plastic",
-        "specific_heat": 700.0,
-        "stiffness": 1.1,
-        "strength": 0.05,
-	"texture_name":"fiberglass_1",
-        "thermal_conductivity": 0.04,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 1.0
-    },
-
-    {
-        "color_key": ["#E4E4E4", "#B3000B", "#EFED00", "#186F36", "#13377B", "#050505"],
-        "combustion_type": "Combustion",
-        "ignition_temperature": 689.15,
-        "is_hull": true,
-        "mass": {
-            "density": 0.38,
-            "nominal_mass": 1060
-        },
-        "melting_temperature": 393.15,
-        "name": "LEGO Hull (ABS)",
-	"palette_coordinates": {
-		"category": "Plastic",
-		"sub_category": "LEGO Hull (ABS)",
-		"sub_category_ordinal": 0
-	},
-        "rust_receptivity": 0,
-        "sound_type": "Lego",
-        "specific_heat": 523.512,
-        "stiffness": 1.1,
-        "strength": 0.06,
-	"texture_name":"lego_1",
-        "thermal_conductivity": 0.15,
-	"thermal_expansion_coefficient": 0.000031,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 0.0
-    },
-
-    {
-        "color_key": ["#F4F4F4", "#E3000B", "#FFED00", "#287F46", "#23478B", "#080808"],
-        "combustion_type": "Combustion",
-        "ignition_temperature": 689.15,
-        "is_hull": false,
-        "mass": {
-            "density": 0.38,
-            "nominal_mass": 1060
-        },
-        "melting_temperature": 393.15,
-        "name": "LEGO (ABS)",
-	"palette_coordinates": {
-		"category": "Plastic",
-		"sub_category": "LEGO (ABS)",
-		"sub_category_ordinal": 0
-	},
-        "rust_receptivity": 0,
-        "sound_type": "Lego",
-        "specific_heat": 523.512,
-        "stiffness": 1.1,
-        "strength": 0.06,
-	"texture_name":"lego_1",
-        "thermal_conductivity": 0.15,
-	"thermal_expansion_coefficient": 0.000031,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 1.0
-    },
-
-    {
-        "color_key": "#0101C0",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1000000.0,
-        "is_hull": true,
-        "mass": {
-            "density": 1.0,
-            "nominal_mass": 1000
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Water",
-	"palette_coordinates": {
-		"category": "Elements",
-		"sub_category": "Water",
-		"sub_category_ordinal": 0
-	},
-        "render_color": "#F0F0F0",
-        "sound_type": "AirBubble",
-        "specific_heat": 4182.0,
-        "stiffness": 1.0,
-        "strength": 1.0,
-        "thermal_conductivity": 0.6,
-	"thermal_expansion_coefficient": 0.00021,
-        "water_diffusion_speed": 0.5,
-        "water_intake": 0.0,
-        "water_retention": 0.0,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 0.0
-    },
-
-    {
-        "color_key": "#F0F0F0",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1000000.0,
-        "is_hull": false,
-        "mass": {
-            "density": 1.0,
-            "nominal_mass": 1.2754
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Air",
-	"palette_coordinates": {
-		"category": "Elements",
-		"sub_category": "Air",
-		"sub_category_ordinal": 0
-	},
-        "render_color": "#F0F0F0",
-        "sound_type": "AirBubble",
-        "specific_heat": 1005.0,
-        "stiffness": 1.0,
-        "strength": 1.0,
-        "thermal_conductivity": 0.0262,
-	"thermal_expansion_coefficient": 0.0034,
-        "water_diffusion_speed": 0.5,
-        "water_intake": 1.0,
-        "water_retention": 0.0,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 1.0
-    },
-
-    {
-        "color_key": "#CECECE",
-        "combustion_type": "Explosion",
-	"explosive_combustion_radius": 1.0,
-	"explosive_combustion_strength": 100.0,
-        "ignition_temperature": 773.15,
-        "is_hull": false,
-        "mass": {
-            "density": 1.0,
-            "nominal_mass": 0.0813
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Hydrogen",
-	"palette_coordinates": {
-		"category": "Elements",
-		"sub_category": "Hydrogen",
-		"sub_category_ordinal": 0
-	},
-	"rust_receptivity": 0.0,
-	"sound_type": "Gas",
-        "specific_heat": 14310.0,
-        "stiffness": 1.0,
-        "strength": 1.0,
-        "thermal_conductivity": 0.182,
-	"thermal_expansion_coefficient": 0.0036,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 1.0
-    },
-
-    {
-        "color_key": "#909190",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1000000.0,
-        "is_hull": true,
-        "mass": {
-            "density": 1.0,
-            "nominal_mass": 2400.0
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Concrete Hull",
-	"palette_coordinates": {
-		"category": "Concrete",
-		"sub_category": "Concrete Hull",
-		"sub_category_ordinal": 0
-	},
-        "render_color": "#909190",
-	"rust_receptivity": 0.2,
-	"sound_type": "Wood",
-        "specific_heat": 0.75,
-        "stiffness": 1.0,
-        "strength": 0.05,
-	"texture_name":"concrete_2",
-        "thermal_conductivity": 1.7,
-	"thermal_expansion_coefficient": 0.00008,
-        "water_diffusion_speed": 0.0,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 0.0
-    },
-
-    {
-        "color_key": "#BDBEBD",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1000000.0,
-        "is_hull": false,
-        "mass": {
-            "density": 0.6,
-            "nominal_mass": 2400.0
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Concrete",
-	"palette_coordinates": {
-		"category": "Concrete",
-		"sub_category": "Concrete",
-		"sub_category_ordinal": 0
-	},
-        "render_color": "#BDBEBD",
-	"rust_receptivity": 0.3,
-	"sound_type": "Wood",
-        "specific_heat": 0.96,
-        "stiffness": 1.0,
-        "strength": 0.06,
-	"texture_name":"concrete_1",
-        "thermal_conductivity": 0.3,
-	"thermal_expansion_coefficient": 0.00008,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 1.0
-    },
-
-    {
-        "color_key": "#E6E6E6",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1000000.0,
-        "is_hull": true,
-        "mass": {
-            "density": 1.0,
-            "nominal_mass": 50
-        },
-        "melting_temperature": 513.0,
-        "name": "Styrofoam Hull White",
-	"palette_coordinates": {
-		"category": "Plastic",
-		"sub_category": "Styrofoam Hull",
-		"sub_category_ordinal": 0
-	},
-        "render_color": "#E6E6E6",
-	"rust_receptivity": 0.0,
-        "sound_type": "Wood",
-        "specific_heat": 1131.0,
-        "stiffness": 1.0,
-        "strength": 0.05,
-	"texture_name":"styrofoam_1",
-        "thermal_conductivity": 0.033,
-	"thermal_expansion_coefficient": 0.00001,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.1,
-	"wind_receptivity": 0.5,
-        "buoyancy_volume_fill": 0.0
-    },
-
-    {
-        "color_key": "#EDEDED",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1000000.0,
-        "is_hull": false,
-        "mass": {
-            "density": 0.25,
-            "nominal_mass": 50
-        },
-        "melting_temperature": 513.0,
-        "name": "Styrofoam White",
-	"palette_coordinates": {
-		"category": "Plastic",
-		"sub_category": "Styrofoam",
-		"sub_category_ordinal": 0
-	},
-        "render_color": "#EDEDED",
-	"rust_receptivity": 0.0,
-        "sound_type": "Wood",
-        "specific_heat": 1131.0,
-        "stiffness": 1.0,
-        "strength": 0.05,
-	"texture_name":"styrofoam_1",
-        "thermal_conductivity": 0.033,
-	"thermal_expansion_coefficient": 0.00001,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.1,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 1.0
-    },
-
-    {
-        "color_key": "#14CEE3",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1000000.0,
-        "is_hull": true,
-        "mass": {
-            "density": 0.0033633,
-            "nominal_mass": 1390
-        },
-        "melting_temperature": 527.15,
-        "name": "Mylar Hull",
-	"palette_coordinates": {
-		"category": "Plastic",
-		"sub_category": "Mylar Hull",
-		"sub_category_ordinal": 0
-	},
-	"rust_receptivity": 0.0,
-        "sound_type": "Cloth",
-        "specific_heat": 1172.304,
-        "stiffness": 0.05,
-        "strength": 4.0,
-	"texture_name":"carbon_1",
-        "thermal_conductivity": 0.05,
-	"thermal_expansion_coefficient": 0.0043,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.2,
-	"wind_receptivity": 0.5,
-        "buoyancy_volume_fill": 0.0
-    },
-    {
-        "color_key": "#19E1F7",
-        "combustion_type": "Combustion",
-        "ignition_temperature": 1000000.0,
-        "is_hull": false,
-        "mass": {
-            "density": 0.003,
-            "nominal_mass": 1390
-        },
-        "melting_temperature": 527.15,
-        "name": "Mylar",
-	"palette_coordinates": {
-		"category": "Plastic",
-		"sub_category": "Mylar",
-		"sub_category_ordinal": 0
-	},
-	"rust_receptivity": 0.0,
-        "sound_type": "Cloth",
-        "specific_heat": 1172.304,
-        "stiffness": 0.0002,
-        "strength": 6.0,
-	"texture_name":"carbon_1",
-        "thermal_conductivity": 0.05,
-	"thermal_expansion_coefficient": 0.0043,
-        "water_diffusion_speed": 0.5,
-	"water_intake": 0.05,
-        "water_retention": 0.2,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 1.0
-    },
-
-
-    {
-        "color_key": "#FFFF00",
-        "combustion_type": "Combustion",
-        "description": "This material is here exclusively to ease development of one-layer ships; the proper way to make circuits is to develop a separate electrical layer. Choosing this material for a point in the structural layer will automatically make the point inherit the electrical properties from the same material that is found in the materials_electrical json file.",
-        "ignition_temperature": 1000000.0,
-        "is_hull": false,
-	"is_legacy_electrical": true,
-        "mass": {
-            "density": 0.275,
-            "nominal_mass": 30
-        },
-        "melting_temperature": 1773.15,
-        "name": "Self-Powered Lamp",
-        "render_color": "#404040",
-        "sound_type": "Glass",
-        "specific_heat": 700.0,
-        "stiffness": 1.0,
-        "strength": 0.1,
-        "thermal_conductivity": 0.8,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.0,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 1.0
-    },
-    {
-        "color_key": "#FFE010",
-        "combustion_type": "Combustion",
-        "description": "This material is here exclusively to ease development of one-layer ships; the proper way to make circuits is to develop a separate electrical layer. Choosing this material for a point in the structural layer will automatically make the point inherit the electrical properties from the same material that is found in the materials_electrical json file.",
-        "ignition_temperature": 1000000.0,
-        "is_hull": false,
-	"is_legacy_electrical": true,
-        "mass": {
-            "density": 0.275,
-            "nominal_mass": 30
-        },
-        "melting_temperature": 1773.15,
-        "name": "High Lamp",
-        "render_color": "#404040",
-        "sound_type": "Glass",
-        "specific_heat": 700.0,
-        "stiffness": 1.0,
-        "strength": 0.1,
-        "thermal_conductivity": 0.8,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.0,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 1.0
-    },
-    {
-        "color_key": "#FC0808",
-        "combustion_type": "Combustion",
-        "description": "This material is here exclusively to ease development of one-layer ships; the proper way to make circuits is to develop a separate electrical layer. Choosing this material for a point in the structural layer will automatically make the point inherit the electrical properties from the same material that is found in the materials_electrical json file.",
-        "ignition_temperature": 1000000.0,
-        "is_hull": false,
-	"is_legacy_electrical": true,
-        "mass": {
-            "density": 0.275,
-            "nominal_mass": 900
-        },
-        "melting_temperature": 933.45,
-        "name": "Generator",
-        "render_color": "#FC0808",
-        "sound_type": "Metal",
-        "specific_heat": 897.0,
-        "stiffness": 1.0,
-        "strength": 0.089,
-        "thermal_conductivity": 205.0,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 1.0
-    },
-    {
-        "color_key": "#4C0000",
-        "combustion_type": "Combustion",
-        "description": "This material is here exclusively to ease development of one-layer ships; the proper way to make circuits is to develop a separate electrical layer. Choosing this material for a point in the structural layer will automatically make the point inherit the electrical properties from the same material that is found in the materials_electrical json file.",
-        "ignition_temperature": 689.15,
-        "is_hull": true,
-	"is_legacy_electrical": true,
-        "mass": {
-            "density": 0.275,
-            "nominal_mass": 30
-        },
-        "melting_temperature": 393.15,
-        "name": "Electrical Cable Hull",
-        "render_color": "#4C0000",
-        "sound_type": "Cable",
-        "specific_heat": 1400.0,
-        "stiffness": 1.0,
-        "strength": 0.092,
-        "thermal_conductivity": 0.25,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 0.0
-    },
-    {
-        "color_key": "#700000",
-        "combustion_type": "Combustion",
-        "description": "This material is here exclusively to ease development of one-layer ships; the proper way to make circuits is to develop a separate electrical layer. Choosing this material for a point in the structural layer will automatically make the point inherit the electrical properties from the same material that is found in the materials_electrical json file.",
-        "ignition_temperature": 689.15,
-        "is_hull": false,
-	"is_legacy_electrical": true,
-        "mass": {
-            "density": 0.275,
-            "nominal_mass": 30
-        },
-        "melting_temperature": 393.15,
-        "name": "Electrical Cable",
-        "render_color": "#700000",
-        "sound_type": "Cable",
-        "specific_heat": 1400.0,
-        "stiffness": 1.0,
-        "strength": 0.09,
-        "thermal_conductivity": 0.25,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 1.0
-    },
-
-    {
-        "color_key": "#FC2020",
-        "combustion_type": "Combustion",
-        "description": "This material is here exclusively to ease development of one-layer ships; the proper way to make circuits is to develop a separate electrical layer. Choosing this material for a point in the structural layer will automatically make the point inherit the electrical properties from the same material that is found in the materials_electrical json file.",
-        "ignition_temperature": 353.0,
-        "is_hull": false,
-	"is_legacy_electrical": true,
-        "mass": {
-            "density": 0.022935,
-            "nominal_mass": 800
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Heating Element 100KW",
-        "render_color": "#FC2020",
-        "sound_type": "Wood",
-        "specific_heat": 100.0,
-        "stiffness": 1.0,
-        "strength": 0.15,
-        "thermal_conductivity": 0.1,
-	"thermal_expansion_coefficient": 0.00015,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 1.0
-    },
-
-    {
-        "color_key": ["#000000", "#de4635", "#c7c05a", "#025e03", "#74c9d6", "#050180", "#6d0191", "#ed8728", "#260200"],
-        "combustion_type": "Combustion",
-        "ignition_temperature": 393.15,
-        "is_hull": false,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 180
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Rope",
-	"palette_coordinates": {
-		"category": "Ropes",
-		"sub_category": "Ropes",
-		"sub_category_ordinal": 0
-	},
-	"rust_receptivity": 1.0,
-        "sound_type": "Cable",
-        "specific_heat": 1400.0,
-        "stiffness": 1.84,
-        "strength": 0.075,
-        "thermal_conductivity": 0.04,
-        "water_diffusion_speed": 0.015,
-        "water_intake": 0.05,
-        "water_retention": 0.5,
-        "buoyancy_volume_fill": 0.3,
-        "wind_receptivity": 0.2
-    },
-
-    {
-        "color_key": ["#031924", "#b30e02", "#cfcc48", "#46c773", "#1c9e9a", "#0c035c", "#4a0148", "#f08c22", "#757779"],
-        "combustion_type": "Combustion",
-        "ignition_temperature": 393.15,
-        "is_hull": false,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 180
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Strong Rope",
-	"palette_coordinates": {
-		"category": "Ropes",
-		"sub_category": "Strong Ropes",
-		"sub_category_ordinal": 0
-	},
-	"rust_receptivity": 1.0,
-        "sound_type": "Cable",
-        "specific_heat": 1400.0,
-        "stiffness": 1.84,
-        "strength": 0.5,
-        "thermal_conductivity": 0.04,
-        "water_diffusion_speed": 0.015,
-        "water_intake": 0.05,
-        "water_retention": 0.5,
-        "buoyancy_volume_fill": 0.3,
-        "wind_receptivity": 0.2
-    },
-
-    {
-	
-        "color_key": ["#3b3a39", "#540a06", "#5c5939", "#145228", "#2e676e", "#0d055c", "#541853", "#944b13", "#241616"],
-        "combustion_type": "Combustion",
-	"ignition_temperature": 1000000.0,
-        "is_hull": false,
-        "mass": {
-            "density": 0.00935,
-            "nominal_mass": 7850
-        },
-        "melting_temperature": 1588.15,
-        "name": "Iron Chain",
-	"palette_coordinates": {
-		"category": "Chains",
-		"sub_category": "Iron Chains",
-		"sub_category_ordinal": 0
-	},
-	"rust_receptivity": 1.0,
-        "sound_type": "Chain",
-        "specific_heat": 449.0,
-        "stiffness": 1.85,
-	"strain_threshold_fraction": 0.1,
-        "strength": 0.09,
-        "thermal_conductivity": 79.5,
-	"thermal_expansion_coefficient": 0.0000106,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 0.0
-    },
-
-    {
-	
-        "color_key": ["#0a1b04", "#5e0101", "#474627", "#446b33", "#79dbdb", "#05055e", "#5e0458", "#964e00", "#706f6e"],
-        "combustion_type": "Combustion",
-	"ignition_temperature": 1000000.0,
-        "is_hull": false,
-        "mass": {
-            "density": 0.00935,
-            "nominal_mass": 7850
-        },
-        "melting_temperature": 1588.15,
-        "name": "Strong Iron Chain",
-	"palette_coordinates": {
-		"category": "Chains",
-		"sub_category": "Strong Iron Chains",
-		"sub_category_ordinal": 0
-	},
-	"rust_receptivity": 1.0,
-        "sound_type": "Chain",
-        "specific_heat": 449.0,
-        "stiffness": 1.85,
-	"strain_threshold_fraction": 0.1,
-        "strength": 0.75,
-        "thermal_conductivity": 79.5,
-	"thermal_expansion_coefficient": 0.0000106,
-        "water_diffusion_speed": 0.5,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 0.0
-    },
-
-    {
-	
-        "color_key": ["#c4c5c6", "#ff6854", "#d9b500", "#9cff5e", "#8ff2ed", "#402fd6", "#b92ed1", "#ff9a2e", "#3b3c3d"],
-        "combustion_type": "Combustion",
-	"ignition_temperature": 1000000.0,
-        "is_hull": false,
-        "mass": {
-            "density": 0.00935,
-            "nominal_mass": 2710
-        },
-        "melting_temperature": 933.45,
-        "name": "Aluminium Chain",
-	"palette_coordinates": {
-		"category": "Chains",
-		"sub_category": "Aluminium Chains",
-		"sub_category_ordinal": 0
-	},
-	"rust_receptivity": 1.0,
-        "sound_type": "Chain",
-        "specific_heat": 897.0,
-        "stiffness": 1.85,
-	"strain_threshold_fraction": 0.1,
-        "strength": 0.09,
-        "thermal_conductivity": 205.0,
-	"thermal_expansion_coefficient": 0.000022,
-        "water_diffusion_speed": 0.0,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 0.0
-    },
-
-    {
-	
-        "color_key": ["#babbbc", "#ba1509", "#9e9913", "#38e625", "#4fc2c0", "#0e0999", "#5c0061", "#e3a86d", "#54504c"],
-	"combustion_type": "Combustion",
-        "ignition_temperature": 553.15,
-        "is_hull": false,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 1522
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Rubber Band",
-	"palette_coordinates": {
-		"category": "Rubber Bands",
-		"sub_category": "Rubber Bands",
-		"sub_category_ordinal": 0
-	},
-        "rust_receptivity": 0,
-        "sound_type": "RubberBand",
-        "specific_heat": 1250.0,
-        "stiffness": 0.05,
-	"strain_threshold_fraction": 0.3,
-        "strength": 4.5,
-	"texture_name": "rubber_1",
-        "thermal_conductivity": 0.1,
-	"thermal_expansion_coefficient": 0.00008,
-        "water_diffusion_speed": 0.0,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 0.0
-    },
-
-    {
-	
-        "color_key": ["#3d3e31", "#781e1e", "#b8b211", "#336e03", "#72b6b8", "#0f32bf", "#92089c", "#b0730b", "#041220"],
-	"combustion_type": "Combustion",
-        "ignition_temperature": 553.15,
-        "is_hull": false,
-        "mass": {
-            "density": 0.0935,
-            "nominal_mass": 1522
-        },
-        "melting_temperature": 1000000.0,
-        "name": "Strong Rubber Band",
-	"palette_coordinates": {
-		"category": "Rubber Bands",
-		"sub_category": "Strong Rubber Bands",
-		"sub_category_ordinal": 0
-	},
-        "rust_receptivity": 0,
-        "sound_type": "RubberBand",
-        "specific_heat": 1250.0,
-        "stiffness": 0.05,
-	"strain_threshold_fraction": 0.3,
-        "strength": 7.0,
-	"texture_name": "rubber_1",
-        "thermal_conductivity": 0.1,
-	"thermal_expansion_coefficient": 0.00008,
-        "water_diffusion_speed": 0.0,
-        "water_retention": 0.05,
-	"wind_receptivity": 0.1,
-        "buoyancy_volume_fill": 0.0
+    "materials": [
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": [
+                "#404050",
+                "#840E00",
+                "#DBCF4D",
+                "#806200",
+                "#467B00",
+                "#006A76",
+                "#1B3261",
+                "#860080",
+                "#A84F00",
+                "#111111"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1783.15,
+            "is_hull": true,
+            "mass": {
+                "density": 0.0935,
+                "nominal_mass": 7950
+            },
+            "melting_temperature": 1588.15,
+            "name": "Iron Hull",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Iron Hull",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Metal",
+            "specific_heat": 449.0,
+            "stiffness": 1.0,
+            "strength": 0.055,
+            "texture_name": "metal_riveted_1_small",
+            "thermal_conductivity": 79.5,
+            "thermal_expansion_coefficient": 1.06e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": [
+                "#303040",
+                "#740200",
+                "#FAEC57",
+                "#705200",
+                "#0BB02C",
+                "#2798E3",
+                "#030A8A",
+                "#AD1DAB",
+                "#AD5E1D",
+                "#101112"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1783.15,
+            "is_hull": false,
+            "mass": {
+                "density": 0.0935,
+                "nominal_mass": 7950
+            },
+            "melting_temperature": 1588.15,
+            "name": "Structural Iron",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Structural Iron",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Metal",
+            "specific_heat": 449.0,
+            "stiffness": 1.0,
+            "strength": 0.055,
+            "texture_name": "metal_riveted_1",
+            "thermal_conductivity": 79.5,
+            "thermal_expansion_coefficient": 1.06e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": [
+                "#808090",
+                "#9E0F00",
+                "#CFC344",
+                "#997200",
+                "#569200",
+                "#00818C",
+                "#203E74",
+                "#9F009C",
+                "#C85800",
+                "#222222"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1783.15,
+            "is_hull": false,
+            "mass": {
+                "density": 0.00935,
+                "nominal_mass": 7850
+            },
+            "melting_temperature": 1588.15,
+            "name": "Iron",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Iron",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Metal",
+            "specific_heat": 449.0,
+            "stiffness": 1.0,
+            "strength": 0.051,
+            "texture_name": "metal_riveted_1",
+            "thermal_conductivity": 79.5,
+            "thermal_expansion_coefficient": 1.06e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": [
+                "#A0A0A0",
+                "#A71000",
+                "#D9CE30",
+                "#A27A00",
+                "#5A9B00",
+                "#008A95",
+                "#22437B",
+                "#A900A7",
+                "#D45B00",
+                "#333333"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1643.15,
+            "is_hull": true,
+            "mass": {
+                "density": 0.0935,
+                "nominal_mass": 7580
+            },
+            "melting_temperature": 1089.15,
+            "name": "Steel Hull",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Steel Hull",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Metal",
+            "specific_heat": 490.0,
+            "stiffness": 1.0,
+            "strength": 0.092,
+            "texture_name": "metal_riveted_1_small",
+            "thermal_conductivity": 50.2,
+            "thermal_expansion_coefficient": 1.15e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": [
+                "#909090",
+                "#950000",
+                "#C9BC2C",
+                "#926A00",
+                "#15BF5C",
+                "#1597BF",
+                "#020E57",
+                "#5F0161",
+                "#A6682B",
+                "#121212"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1643.15,
+            "is_hull": false,
+            "mass": {
+                "density": 0.0935,
+                "nominal_mass": 7580
+            },
+            "melting_temperature": 1089.15,
+            "name": "Structural Steel",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Structural Steel",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Metal",
+            "specific_heat": 490.0,
+            "stiffness": 1.0,
+            "strength": 0.092,
+            "texture_name": "metal_riveted_1",
+            "thermal_conductivity": 50.2,
+            "thermal_expansion_coefficient": 1.15e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": [
+                "#D8D8D8",
+                "#D80E00",
+                "#EDDE34",
+                "#D29800",
+                "#7BC800",
+                "#00B6BF",
+                "#2D58A0",
+                "#D100D6",
+                "#F26500",
+                "#444444",
+                "#262626"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1643.15,
+            "is_hull": false,
+            "mass": {
+                "density": 0.00935,
+                "nominal_mass": 7480
+            },
+            "melting_temperature": 1089.15,
+            "name": "Steel",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Steel",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Metal",
+            "specific_heat": 490.0,
+            "stiffness": 1.0,
+            "strength": 0.0856,
+            "texture_name": "metal_riveted_1",
+            "thermal_conductivity": 50.2,
+            "thermal_expansion_coefficient": 1.15e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": [
+                "#565663",
+                "#8F1F00",
+                "#D4C520",
+                "#8B7A00",
+                "#3C8400",
+                "#00657E",
+                "#1A2C66",
+                "#93007B",
+                "#BA7100",
+                "#555555"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1473.15,
+            "is_hull": true,
+            "mass": {
+                "density": 0.0935,
+                "nominal_mass": 4600
+            },
+            "melting_temperature": 1941.15,
+            "name": "Titanium Hull",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Titanium Hull",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Metal",
+            "specific_heat": 523.0,
+            "stiffness": 1.0,
+            "strength": 0.13,
+            "texture_name": "metal_plates_1_small",
+            "thermal_conductivity": 17.0,
+            "thermal_expansion_coefficient": 8.7e-06,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": [
+                "#787896",
+                "#BE1400",
+                "#F5E325",
+                "#B88D00",
+                "#66B100",
+                "#009BA9",
+                "#26498C",
+                "#BF00BA",
+                "#EF6B00",
+                "#666666"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1473.15,
+            "is_hull": false,
+            "mass": {
+                "density": 0.00935,
+                "nominal_mass": 4500
+            },
+            "melting_temperature": 1941.15,
+            "name": "Titanium",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Titanium",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Metal",
+            "specific_heat": 523.0,
+            "stiffness": 1.0,
+            "strength": 0.125,
+            "texture_name": "metal_plates_1",
+            "thermal_conductivity": 17.0,
+            "thermal_expansion_coefficient": 8.7e-06,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": [
+                "#E0E0E0",
+                "#A42E10",
+                "#DECC10",
+                "#A29A10",
+                "#76B210",
+                "#10A29A",
+                "#204060",
+                "#972ea3",
+                "#d97a1c",
+                "#757575"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1000000.0,
+            "is_hull": true,
+            "mass": {
+                "density": 0.0935,
+                "nominal_mass": 2710
+            },
+            "melting_temperature": 933.45,
+            "name": "Aluminium Hull",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Aluminium Hull",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Metal",
+            "specific_heat": 897.0,
+            "stiffness": 1.0,
+            "strength": 0.1,
+            "texture_name": "metal_riveted_2_small",
+            "thermal_conductivity": 205.0,
+            "thermal_expansion_coefficient": 2.2e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": [
+                "#C8C8C8",
+                "#A12A08",
+                "#DACA08",
+                "#A09817",
+                "#71B008",
+                "#08A093",
+                "#1B3E5A",
+                "#922AA1",
+                "#D47818",
+                "#717171"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1000000.0,
+            "is_hull": false,
+            "mass": {
+                "density": 0.0935,
+                "nominal_mass": 2710
+            },
+            "melting_temperature": 933.45,
+            "name": "Structural Aluminium",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Structural Aluminium",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Metal",
+            "specific_heat": 897.0,
+            "stiffness": 1.0,
+            "strength": 0.1,
+            "texture_name": "metal_riveted_2",
+            "thermal_conductivity": 205.0,
+            "thermal_expansion_coefficient": 2.2e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": [
+                "#EFEFEF",
+                "#B22212",
+                "#FFEA12",
+                "#B2A012",
+                "#88B810",
+                "#10B2A0",
+                "#305878",
+                "#8A1988",
+                "#C96D12",
+                "#989898"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1000000.0,
+            "is_hull": false,
+            "mass": {
+                "density": 0.00935,
+                "nominal_mass": 2710
+            },
+            "melting_temperature": 933.45,
+            "name": "Aluminium",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Aluminium",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Metal",
+            "specific_heat": 897.0,
+            "stiffness": 1.0,
+            "strength": 0.09,
+            "texture_name": "metal_riveted_2",
+            "thermal_conductivity": 205.0,
+            "thermal_expansion_coefficient": 2.2e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": [
+                "#EEEEEE",
+                "#ff8940",
+                "#fff454",
+                "#cfb891",
+                "#58cc56",
+                "#3bf2ff",
+                "#2617ff",
+                "#dc14ff",
+                "#ff8214",
+                "#525252"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1000000.0,
+            "is_hull": false,
+            "mass": {
+                "density": 0.00935,
+                "nominal_mass": 2710
+            },
+            "melting_temperature": 933.45,
+            "name": "Aluminium Cheap",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Aluminium Cheap",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Metal",
+            "specific_heat": 897.0,
+            "stiffness": 1.0,
+            "strength": 0.027,
+            "texture_name": "metal_riveted_2",
+            "thermal_conductivity": 205.0,
+            "thermal_expansion_coefficient": 2.2e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": [
+                "#905020",
+                "#9E2E0C",
+                "#998B0A",
+                "#439206",
+                "#036E8C",
+                "#1E3070",
+                "#A30085",
+                "#CE8100",
+                "#777777",
+                "#070707"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 453.0,
+            "is_hull": true,
+            "mass": {
+                "density": 0.0935,
+                "nominal_mass": 1000
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Wood Hull",
+            "palette_coordinates": {
+                "category": "Wood",
+                "sub_category": "Wood Hull",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Wood",
+            "specific_heat": 300.0,
+            "stiffness": 1.0,
+            "strength": 0.2,
+            "texture_name": "wood_studded_1",
+            "thermal_conductivity": 0.1,
+            "thermal_expansion_coefficient": 0.00015,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": [
+                "#E0D8C0",
+                "#B51B1B",
+                "#AF7C18",
+                "#78A814",
+                "#10A19D",
+                "#325989",
+                "#9B00AF",
+                "#DE4000",
+                "#888888",
+                "#090909"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 453.0,
+            "is_hull": false,
+            "mass": {
+                "density": 0.022935,
+                "nominal_mass": 800
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Wood",
+            "palette_coordinates": {
+                "category": "Wood",
+                "sub_category": "Wood",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Wood",
+            "specific_heat": 300.0,
+            "stiffness": 1.0,
+            "strength": 0.15,
+            "texture_name": "wood_planks_1",
+            "thermal_conductivity": 0.1,
+            "thermal_expansion_coefficient": 0.00015,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 0.05,
+            "color_key": [
+                "#D2D2D2",
+                "#DD4523",
+                "#FFE680",
+                "#7d5333",
+                "#054C00",
+                "#1d6f82",
+                "#0C20D1",
+                "#530a7d",
+                "#FF8000",
+                "#060606"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 393.15,
+            "is_hull": false,
+            "mass": {
+                "density": 0.0215,
+                "nominal_mass": 30
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Cloth",
+            "palette_coordinates": {
+                "category": "Cloth",
+                "sub_category": "Cloth",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Cloth",
+            "specific_heat": 1400.0,
+            "stiffness": 0.012,
+            "strength": 3.8,
+            "texture_name": "cloth_1",
+            "thermal_conductivity": 0.04,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.5,
+            "wind_receptivity": 0.5
+        },
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": [
+                "#1A1A1A",
+                "#540000",
+                "#918f00",
+                "#692a00",
+                "#004215",
+                "#003b3b",
+                "#0c005c",
+                "#3c0059",
+                "#c74900"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 973.15,
+            "is_hull": true,
+            "mass": {
+                "density": 0.0935,
+                "nominal_mass": 758
+            },
+            "melting_temperature": 3823.15,
+            "name": "Carbon Hull",
+            "palette_coordinates": {
+                "category": "Carbon",
+                "sub_category": "Carbon Hull",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Wood",
+            "specific_heat": 717.0,
+            "stiffness": 1.0,
+            "strength": 3.166,
+            "texture_name": "carbon_1",
+            "thermal_conductivity": 1.7,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": [
+                "#232323",
+                "#d4262c",
+                "#d6cf00",
+                "#ad8a66",
+                "#50d14b",
+                "#49d1cf",
+                "#3732d1",
+                "#9d12c7",
+                "#e3721b"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 973.15,
+            "is_hull": false,
+            "mass": {
+                "density": 0.022935,
+                "nominal_mass": 758
+            },
+            "melting_temperature": 3823.15,
+            "name": "Carbon",
+            "palette_coordinates": {
+                "category": "Carbon",
+                "sub_category": "Carbon",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Wood",
+            "specific_heat": 717.0,
+            "stiffness": 1.0,
+            "strength": 3.166,
+            "texture_name": "carbon_1",
+            "thermal_conductivity": 1.7,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": "#1E1E1E",
+            "combustion_type": "Explosion",
+            "explosive_combustion_radius": 1.15,
+            "explosive_combustion_strength": 50.0,
+            "ignition_temperature": 483.15,
+            "is_hull": true,
+            "mass": {
+                "density": 1.0,
+                "nominal_mass": 820.0
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Diesel",
+            "palette_coordinates": {
+                "category": "Other Materials",
+                "sub_category": "Diesel",
+                "sub_category_ordinal": 0
+            },
+            "render_color": "#1E1E1E",
+            "sound_type": "Wood",
+            "specific_heat": 16.0,
+            "stiffness": 1.0,
+            "strength": 3.166,
+            "texture_name": "wood_studded_1",
+            "thermal_conductivity": 0.13,
+            "water_diffusion_speed": 0.0,
+            "water_intake": 0.0,
+            "water_retention": 0.0,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": "#2E1E1E",
+            "combustion_type": "Explosion",
+            "explosive_combustion_radius": 7.0,
+            "explosive_combustion_strength": 95.0,
+            "ignition_temperature": 693.15,
+            "is_hull": false,
+            "mass": {
+                "density": 0.8,
+                "nominal_mass": 801.0
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Gunpowder Light",
+            "palette_coordinates": {
+                "category": "Other Materials",
+                "sub_category": "Gunpowder Light",
+                "sub_category_ordinal": 0
+            },
+            "render_color": "#2E1E1E",
+            "sound_type": "Rubber",
+            "specific_heat": 21.0,
+            "stiffness": 1.0,
+            "strength": 0.42,
+            "texture_name": "rubber_1",
+            "thermal_conductivity": 0.25,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": "#2F1F1F",
+            "combustion_type": "Explosion",
+            "explosive_combustion_radius": 8.0,
+            "explosive_combustion_strength": 100.0,
+            "ignition_temperature": 693.15,
+            "is_hull": false,
+            "mass": {
+                "density": 0.8,
+                "nominal_mass": 801.0
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Gunpowder Strong",
+            "palette_coordinates": {
+                "category": "Other Materials",
+                "sub_category": "Gunpowder Strong",
+                "sub_category_ordinal": 0
+            },
+            "render_color": "#2F1F1F",
+            "sound_type": "Rubber",
+            "specific_heat": 21.0,
+            "stiffness": 1.0,
+            "strength": 0.42,
+            "texture_name": "rubber_1",
+            "thermal_conductivity": 0.25,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": [
+                "#C0C0C0",
+                "#e03636",
+                "#e7eb81",
+                "#c49300",
+                "#30cf00",
+                "#81f8fc",
+                "#2130ff",
+                "#c61bfa",
+                "#f78543",
+                "#383432"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1000000.0,
+            "is_hull": true,
+            "mass": {
+                "density": 0.01045,
+                "nominal_mass": 2710
+            },
+            "melting_temperature": 933.45,
+            "name": "Aluminium Sheet Hull",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Aluminium Sheet Hull",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Metal",
+            "specific_heat": 897.0,
+            "stiffness": 0.5,
+            "strength": 0.53,
+            "texture_name": "metal_riveted_2_small",
+            "thermal_conductivity": 205.0,
+            "thermal_expansion_coefficient": 2.2e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.2
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": [
+                "#D0D0D0",
+                "#ff5340",
+                "#f5f752",
+                "#ffa200",
+                "#76ff61",
+                "#94fff4",
+                "#2469ff",
+                "#bd35fc",
+                "#ff8a24",
+                "#525150"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1000000.0,
+            "is_hull": false,
+            "mass": {
+                "density": 0.001045,
+                "nominal_mass": 2710
+            },
+            "melting_temperature": 933.45,
+            "name": "Aluminium Sheet",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Aluminium Sheet",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Metal",
+            "specific_heat": 897.0,
+            "stiffness": 0.5,
+            "strength": 0.267,
+            "texture_name": "metal_riveted_2",
+            "thermal_conductivity": 205.0,
+            "thermal_expansion_coefficient": 2.2e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.2
+        },
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": [
+                "#5e5d5e",
+                "#6e2820",
+                "#e5e81c",
+                "#A88848",
+                "#0cc21e",
+                "#16a4ba",
+                "#010596",
+                "#760094",
+                "#944000",
+                "#1c1612"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 491.15,
+            "is_hull": true,
+            "mass": {
+                "density": 0.0935,
+                "nominal_mass": 50
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Cardboard Hull",
+            "palette_coordinates": {
+                "category": "Cardboard and Paper",
+                "sub_category": "Cardboard Hull",
+                "sub_category_ordinal": 0
+            },
+            "rust_receptivity": 10.0,
+            "sound_type": "Wood",
+            "specific_heat": 1336.0,
+            "stiffness": 1.0,
+            "strength": 0.67,
+            "texture_name": "cardboard_1",
+            "thermal_conductivity": 0.05,
+            "thermal_expansion_coefficient": 0.0043,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.2,
+            "wind_receptivity": 0.15
+        },
+        {
+            "buoyancy_volume_fill": 0.9,
+            "color_key": [
+                "#878686",
+                "#e02f2f",
+                "#e6e20e",
+                "#C1A46A",
+                "#19e60e",
+                "#0ee2e6",
+                "#1b13f0",
+                "#772f94",
+                "#d66b1a",
+                "#423b36"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 491.15,
+            "is_hull": false,
+            "mass": {
+                "density": 0.0935,
+                "nominal_mass": 25
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Cardboard",
+            "palette_coordinates": {
+                "category": "Cardboard and Paper",
+                "sub_category": "Cardboard",
+                "sub_category_ordinal": 0
+            },
+            "rust_receptivity": 10.0,
+            "sound_type": "Wood",
+            "specific_heat": 1336.0,
+            "stiffness": 1.0,
+            "strength": 0.6,
+            "texture_name": "cardboard_1",
+            "thermal_conductivity": 0.05,
+            "thermal_expansion_coefficient": 0.00434,
+            "water_diffusion_speed": 0.55,
+            "water_retention": 0.75,
+            "wind_receptivity": 0.15
+        },
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": "#F2F5F5",
+            "combustion_type": "Combustion",
+            "ignition_temperature": 450.15,
+            "is_hull": true,
+            "mass": {
+                "density": 0.045,
+                "nominal_mass": 20
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Paper Hull",
+            "palette_coordinates": {
+                "category": "Cardboard and Paper",
+                "sub_category": "Paper Hull",
+                "sub_category_ordinal": 0
+            },
+            "render_color": "#F2F5F5",
+            "rust_receptivity": 10.0,
+            "sound_type": "Cloth",
+            "specific_heat": 1400.0,
+            "stiffness": 1.0,
+            "strength": 0.5,
+            "texture_name": "paper_2",
+            "thermal_conductivity": 0.05,
+            "thermal_expansion_coefficient": 0.0035,
+            "water_diffusion_speed": 0.65,
+            "water_retention": 0.85,
+            "wind_receptivity": 0.15
+        },
+        {
+            "buoyancy_volume_fill": 0.3,
+            "color_key": "#FCFAFA",
+            "combustion_type": "Combustion",
+            "ignition_temperature": 450.15,
+            "is_hull": false,
+            "mass": {
+                "density": 0.022935,
+                "nominal_mass": 20
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Paper",
+            "palette_coordinates": {
+                "category": "Cardboard and Paper",
+                "sub_category": "Paper",
+                "sub_category_ordinal": 0
+            },
+            "render_color": "#FCFAFA",
+            "rust_receptivity": 10.0,
+            "sound_type": "Cloth",
+            "specific_heat": 1400.0,
+            "stiffness": 1.0,
+            "strength": 0.5,
+            "texture_name": "paper_1",
+            "thermal_conductivity": 0.05,
+            "thermal_expansion_coefficient": 0.0035,
+            "water_diffusion_speed": 0.65,
+            "water_retention": 0.85,
+            "wind_receptivity": 0.15
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": [
+                "#72797f",
+                "#D80E02",
+                "#b8b809",
+                "#5c4000",
+                "#77d93f",
+                "#6ef0eb",
+                "#2432ff",
+                "#bd00fc",
+                "#ffa724",
+                "#141516"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1643.15,
+            "is_hull": false,
+            "mass": {
+                "density": 0.00935,
+                "nominal_mass": 7480
+            },
+            "melting_temperature": 1089.15,
+            "name": "Steel Cheap",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Steel Cheap",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Metal",
+            "specific_heat": 490.0,
+            "stiffness": 1.0,
+            "strength": 0.05,
+            "texture_name": "metal_riveted_1",
+            "thermal_conductivity": 50.2,
+            "thermal_expansion_coefficient": 1.15e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": [
+                "#1F1F1F",
+                "#f52c36",
+                "#e6da3c",
+                "#4a2e31",
+                "#0b4728",
+                "#379299",
+                "#0f0187",
+                "#54076e",
+                "#bf4204",
+                "#211f1e"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1783.15,
+            "is_hull": false,
+            "mass": {
+                "density": 0.00935,
+                "nominal_mass": 7850
+            },
+            "melting_temperature": 1588.15,
+            "name": "Iron Cheap",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Iron Cheap",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Metal",
+            "specific_heat": 449.0,
+            "stiffness": 1.0,
+            "strength": 0.02,
+            "texture_name": "metal_riveted_1",
+            "thermal_conductivity": 79.5,
+            "thermal_expansion_coefficient": 1.06e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": "#A2A2A2",
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1643.15,
+            "is_hull": true,
+            "mass": {
+                "density": 0.0935,
+                "nominal_mass": 7580
+            },
+            "melting_temperature": 1089.15,
+            "name": "Stainless Steel Hull",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Stainless Steel Hull",
+                "sub_category_ordinal": 0
+            },
+            "render_color": "#A2A2A2",
+            "rust_receptivity": 0,
+            "sound_type": "Metal",
+            "specific_heat": 490.0,
+            "stiffness": 1.0,
+            "strength": 0.092,
+            "texture_name": "metal_riveted_1_small",
+            "thermal_conductivity": 50.2,
+            "thermal_expansion_coefficient": 1.15e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": "#E8E8E8",
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1643.15,
+            "is_hull": false,
+            "mass": {
+                "density": 0.00935,
+                "nominal_mass": 7480
+            },
+            "melting_temperature": 1089.15,
+            "name": "Stainless Steel",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Stainless Steel",
+                "sub_category_ordinal": 0
+            },
+            "render_color": "#E8E8E8",
+            "rust_receptivity": 0,
+            "sound_type": "Metal",
+            "specific_heat": 490.0,
+            "stiffness": 1.0,
+            "strength": 0.0856,
+            "texture_name": "metal_riveted_1",
+            "thermal_conductivity": 50.2,
+            "thermal_expansion_coefficient": 1.15e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": [
+                "#7d7d7d",
+                "#A21000",
+                "#d9c73d",
+                "#6b635a",
+                "#039118",
+                "#3dd4ca",
+                "#1c0396",
+                "#460569",
+                "#f79a0f",
+                "#0d0903"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1643.15,
+            "is_hull": true,
+            "mass": {
+                "density": 0.17,
+                "nominal_mass": 6500
+            },
+            "melting_temperature": 1089.15,
+            "name": "Double-Bottom Steel",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Double-Bottom Steel",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Metal",
+            "specific_heat": 490.0,
+            "stiffness": 1.0,
+            "strength": 0.05,
+            "texture_name": "metal_bulkheads_1",
+            "thermal_conductivity": 50.2,
+            "thermal_expansion_coefficient": 1.15e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": [
+                "#797877",
+                "#842005",
+                "#cccf3c",
+                "#755331",
+                "#06731d",
+                "#1bc4c4",
+                "#02099e",
+                "#500a6e",
+                "#c97916",
+                "#30302f"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1473.15,
+            "is_hull": true,
+            "mass": {
+                "density": 0.17,
+                "nominal_mass": 5000
+            },
+            "melting_temperature": 1941.15,
+            "name": "Double-Bottom Titanium",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Double-Bottom Titanium",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Metal",
+            "specific_heat": 523.0,
+            "stiffness": 1.0,
+            "strength": 0.1,
+            "texture_name": "metal_plates_1_small",
+            "thermal_conductivity": 17.0,
+            "thermal_expansion_coefficient": 8.7e-06,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": [
+                "#090B0E",
+                "#7E0C00",
+                "#ADA010",
+                "#422d13",
+                "#0f4519",
+                "#5084ab",
+                "#04385e",
+                "#5f1075",
+                "#ff945e",
+                "#1c0b02"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1783.15,
+            "is_hull": true,
+            "mass": {
+                "density": 0.17,
+                "nominal_mass": 7500
+            },
+            "melting_temperature": 1588.15,
+            "name": "Double-Bottom Iron",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Double-Bottom Iron",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Metal",
+            "specific_heat": 449.0,
+            "stiffness": 1.0,
+            "strength": 0.5,
+            "texture_name": "metal_bulkheads_1",
+            "thermal_conductivity": 79.5,
+            "thermal_expansion_coefficient": 1.06e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": [
+                "#0A0C0F",
+                "#9B3012",
+                "#a0a62b",
+                "#753c13",
+                "#15520b",
+                "#17a8ad",
+                "#180ea1",
+                "#6318a1",
+                "#ad6632",
+                "#140024"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 453.0,
+            "is_hull": true,
+            "mass": {
+                "density": 0.17,
+                "nominal_mass": 1600
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Double-Bottom Wood",
+            "palette_coordinates": {
+                "category": "Wood",
+                "sub_category": "Double-Bottom Wood",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Wood",
+            "specific_heat": 300.0,
+            "stiffness": 1.0,
+            "strength": 0.5,
+            "texture_name": "wood_planks_2",
+            "thermal_conductivity": 0.1,
+            "thermal_expansion_coefficient": 0.00015,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": "#545454",
+            "combustion_type": "Combustion",
+            "description": "The most fragile material of them all.",
+            "ignition_temperature": 1213.0,
+            "is_hull": false,
+            "mass": {
+                "density": 0.0417,
+                "nominal_mass": 50
+            },
+            "melting_temperature": 505.05,
+            "name": "Nails",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Nails",
+                "sub_category_ordinal": 0
+            },
+            "render_color": "#545454",
+            "sound_type": "Metal",
+            "specific_heat": 228.0,
+            "stiffness": 1.0,
+            "strength": 0.08,
+            "texture_name": "metal_plates_1_small",
+            "thermal_conductivity": 66.8,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.05
+        },
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": "#C1FFFF",
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1000000.0,
+            "is_hull": true,
+            "mass": {
+                "density": 0.0935,
+                "nominal_mass": 1000
+            },
+            "melting_temperature": 1773.15,
+            "name": "Glass Hull",
+            "palette_coordinates": {
+                "category": "Glass",
+                "sub_category": "Glass Hull",
+                "sub_category_ordinal": 0
+            },
+            "render_color": "#C1FFFF",
+            "sound_type": "Glass",
+            "specific_heat": 700.0,
+            "stiffness": 1.0,
+            "strength": 0.1,
+            "texture_name": "glass_1",
+            "thermal_conductivity": 0.8,
+            "thermal_expansion_coefficient": 5e-06,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.0,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": "#E5FFFF",
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1000000.0,
+            "is_hull": false,
+            "mass": {
+                "density": 0.022935,
+                "nominal_mass": 1000
+            },
+            "melting_temperature": 1773.15,
+            "name": "Glass",
+            "palette_coordinates": {
+                "category": "Glass",
+                "sub_category": "Glass",
+                "sub_category_ordinal": 0
+            },
+            "render_color": "#E5FFFF",
+            "sound_type": "Glass",
+            "specific_heat": 700.0,
+            "stiffness": 1.0,
+            "strength": 0.1,
+            "texture_name": "glass_1",
+            "thermal_conductivity": 0.8,
+            "thermal_expansion_coefficient": 5e-06,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.0,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": [
+                "#BFBFBF",
+                "#E1BFBF",
+                "#BFBFE1"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 553.15,
+            "is_hull": true,
+            "mass": {
+                "density": 0.0935,
+                "nominal_mass": 1522
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Rubber Hull Soft",
+            "palette_coordinates": {
+                "category": "Rubber",
+                "sub_category": "Rubber Hull Soft",
+                "sub_category_ordinal": 0
+            },
+            "rust_receptivity": 0,
+            "sound_type": "Rubber",
+            "specific_heat": 1250.0,
+            "stiffness": 0.5,
+            "strength": 2.5,
+            "texture_name": "rubber_1",
+            "thermal_conductivity": 0.1,
+            "thermal_expansion_coefficient": 8e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": [
+                "#CFCFCF",
+                "#E1CFCF",
+                "#CFCFE1"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 553.15,
+            "is_hull": false,
+            "mass": {
+                "density": 0.02,
+                "nominal_mass": 1522
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Rubber Soft",
+            "palette_coordinates": {
+                "category": "Rubber",
+                "sub_category": "Rubber Soft",
+                "sub_category_ordinal": 0
+            },
+            "rust_receptivity": 0,
+            "sound_type": "Rubber",
+            "specific_heat": 1250.0,
+            "stiffness": 0.5,
+            "strength": 2.5,
+            "texture_name": "rubber_1",
+            "thermal_conductivity": 0.1,
+            "thermal_expansion_coefficient": 8e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": [
+                "#B8B8B8",
+                "#E1B8B8",
+                "#B8B8E1"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 553.15,
+            "is_hull": true,
+            "mass": {
+                "density": 0.0935,
+                "nominal_mass": 1522
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Rubber Hull Hard",
+            "palette_coordinates": {
+                "category": "Rubber",
+                "sub_category": "Rubber Hull Hard",
+                "sub_category_ordinal": 0
+            },
+            "rust_receptivity": 0,
+            "sound_type": "Rubber",
+            "specific_heat": 1250.0,
+            "stiffness": 1.0,
+            "strength": 2.5,
+            "texture_name": "rubber_1",
+            "thermal_conductivity": 0.1,
+            "thermal_expansion_coefficient": 8e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": [
+                "#C7C7C7",
+                "#E1C7C7",
+                "#C7C7E1"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 553.15,
+            "is_hull": false,
+            "mass": {
+                "density": 0.02,
+                "nominal_mass": 1522
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Rubber Hard",
+            "palette_coordinates": {
+                "category": "Rubber",
+                "sub_category": "Rubber Hard",
+                "sub_category_ordinal": 0
+            },
+            "rust_receptivity": 0,
+            "sound_type": "Rubber",
+            "specific_heat": 1250.0,
+            "stiffness": 1.0,
+            "strength": 2.5,
+            "texture_name": "rubber_1",
+            "thermal_conductivity": 0.1,
+            "thermal_expansion_coefficient": 8e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": [
+                "#C4C4C4",
+                "#E1C4C4",
+                "#C4C4E1"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1000000.0,
+            "is_hull": true,
+            "mass": {
+                "density": 0.0935,
+                "nominal_mass": 1522
+            },
+            "melting_temperature": 1394.15,
+            "name": "Fiberglass Hull",
+            "palette_coordinates": {
+                "category": "Plastic",
+                "sub_category": "Fiberglass Hull",
+                "sub_category_ordinal": 0
+            },
+            "rust_receptivity": 0,
+            "sound_type": "Plastic",
+            "specific_heat": 700.0,
+            "stiffness": 1.1,
+            "strength": 0.05,
+            "texture_name": "fiberglass_1",
+            "thermal_conductivity": 0.04,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": [
+                "#D4D4D4",
+                "#E1D4D4",
+                "#D4D4E1"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1000000.0,
+            "is_hull": false,
+            "mass": {
+                "density": 0.00935,
+                "nominal_mass": 1522
+            },
+            "melting_temperature": 1394.15,
+            "name": "Fiberglass",
+            "palette_coordinates": {
+                "category": "Plastic",
+                "sub_category": "Fiberglass",
+                "sub_category_ordinal": 0
+            },
+            "rust_receptivity": 0,
+            "sound_type": "Plastic",
+            "specific_heat": 700.0,
+            "stiffness": 1.1,
+            "strength": 0.05,
+            "texture_name": "fiberglass_1",
+            "thermal_conductivity": 0.04,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": [
+                "#E4E4E4",
+                "#B3000B",
+                "#EFED00",
+                "#186F36",
+                "#13377B",
+                "#050505"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 689.15,
+            "is_hull": true,
+            "mass": {
+                "density": 0.38,
+                "nominal_mass": 1060
+            },
+            "melting_temperature": 393.15,
+            "name": "LEGO Hull (ABS)",
+            "palette_coordinates": {
+                "category": "Plastic",
+                "sub_category": "LEGO Hull (ABS)",
+                "sub_category_ordinal": 0
+            },
+            "rust_receptivity": 0,
+            "sound_type": "Lego",
+            "specific_heat": 523.512,
+            "stiffness": 1.1,
+            "strength": 0.06,
+            "texture_name": "lego_1",
+            "thermal_conductivity": 0.15,
+            "thermal_expansion_coefficient": 3.1e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": [
+                "#F4F4F4",
+                "#E3000B",
+                "#FFED00",
+                "#287F46",
+                "#23478B",
+                "#080808"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 689.15,
+            "is_hull": false,
+            "mass": {
+                "density": 0.38,
+                "nominal_mass": 1060
+            },
+            "melting_temperature": 393.15,
+            "name": "LEGO (ABS)",
+            "palette_coordinates": {
+                "category": "Plastic",
+                "sub_category": "LEGO (ABS)",
+                "sub_category_ordinal": 0
+            },
+            "rust_receptivity": 0,
+            "sound_type": "Lego",
+            "specific_heat": 523.512,
+            "stiffness": 1.1,
+            "strength": 0.06,
+            "texture_name": "lego_1",
+            "thermal_conductivity": 0.15,
+            "thermal_expansion_coefficient": 3.1e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": "#0101C0",
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1000000.0,
+            "is_hull": true,
+            "mass": {
+                "density": 1.0,
+                "nominal_mass": 1000
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Water",
+            "palette_coordinates": {
+                "category": "Elements",
+                "sub_category": "Water",
+                "sub_category_ordinal": 0
+            },
+            "render_color": "#F0F0F0",
+            "sound_type": "AirBubble",
+            "specific_heat": 4182.0,
+            "stiffness": 1.0,
+            "strength": 1.0,
+            "thermal_conductivity": 0.6,
+            "thermal_expansion_coefficient": 0.00021,
+            "water_diffusion_speed": 0.5,
+            "water_intake": 0.0,
+            "water_retention": 0.0,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": "#F0F0F0",
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1000000.0,
+            "is_hull": false,
+            "mass": {
+                "density": 1.0,
+                "nominal_mass": 1.2754
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Air",
+            "palette_coordinates": {
+                "category": "Elements",
+                "sub_category": "Air",
+                "sub_category_ordinal": 0
+            },
+            "render_color": "#F0F0F0",
+            "sound_type": "AirBubble",
+            "specific_heat": 1005.0,
+            "stiffness": 1.0,
+            "strength": 1.0,
+            "thermal_conductivity": 0.0262,
+            "thermal_expansion_coefficient": 0.0034,
+            "water_diffusion_speed": 0.5,
+            "water_intake": 1.0,
+            "water_retention": 0.0,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": "#CECECE",
+            "combustion_type": "Explosion",
+            "explosive_combustion_radius": 1.0,
+            "explosive_combustion_strength": 100.0,
+            "ignition_temperature": 773.15,
+            "is_hull": false,
+            "mass": {
+                "density": 1.0,
+                "nominal_mass": 0.0813
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Hydrogen",
+            "palette_coordinates": {
+                "category": "Elements",
+                "sub_category": "Hydrogen",
+                "sub_category_ordinal": 0
+            },
+            "rust_receptivity": 0.0,
+            "sound_type": "Gas",
+            "specific_heat": 14310.0,
+            "stiffness": 1.0,
+            "strength": 1.0,
+            "thermal_conductivity": 0.182,
+            "thermal_expansion_coefficient": 0.0036,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": [
+                "#909190",
+                "#D45F40",
+                "#FFFF8D",
+                "#D0B340",
+                "#96CC40",
+                "#50BBB6",
+                "#6B83A1",
+                "#D651C0",
+                "#F8A040",
+                "#616251"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1000000.0,
+            "is_hull": true,
+            "mass": {
+                "density": 1.0,
+                "nominal_mass": 2400.0
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Concrete Hull",
+            "palette_coordinates": {
+                "category": "Concrete",
+                "sub_category": "Concrete Hull",
+                "sub_category_ordinal": 0
+            },
+            "rust_receptivity": 0.2,
+            "sound_type": "Wood",
+            "specific_heat": 0.75,
+            "stiffness": 1.0,
+            "strength": 0.05,
+            "texture_name": "concrete_2",
+            "thermal_conductivity": 1.7,
+            "thermal_expansion_coefficient": 8e-05,
+            "water_diffusion_speed": 0.0,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": [
+                "#BDBEBD",
+                "#FF8C6D",
+                "#FFFFBA",
+                "#FDE06D",
+                "#C3F96D",
+                "#7DE8E3",
+                "#98B0CE",
+                "#FF7EED",
+                "#FFCD6D",
+                "#8E8F7E"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1000000.0,
+            "is_hull": false,
+            "mass": {
+                "density": 0.6,
+                "nominal_mass": 2400.0
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Concrete",
+            "palette_coordinates": {
+                "category": "Concrete",
+                "sub_category": "Concrete",
+                "sub_category_ordinal": 0
+            },
+            "rust_receptivity": 0.3,
+            "sound_type": "Wood",
+            "specific_heat": 0.96,
+            "stiffness": 1.0,
+            "strength": 0.06,
+            "texture_name": "concrete_1",
+            "thermal_conductivity": 0.3,
+            "thermal_expansion_coefficient": 8e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": "#E6E6E6",
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1000000.0,
+            "is_hull": true,
+            "mass": {
+                "density": 1.0,
+                "nominal_mass": 50
+            },
+            "melting_temperature": 513.0,
+            "name": "Styrofoam Hull White",
+            "palette_coordinates": {
+                "category": "Plastic",
+                "sub_category": "Styrofoam Hull",
+                "sub_category_ordinal": 0
+            },
+            "render_color": "#E6E6E6",
+            "rust_receptivity": 0.0,
+            "sound_type": "Wood",
+            "specific_heat": 1131.0,
+            "stiffness": 1.0,
+            "strength": 0.05,
+            "texture_name": "styrofoam_1",
+            "thermal_conductivity": 0.033,
+            "thermal_expansion_coefficient": 1e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.1,
+            "wind_receptivity": 0.5
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": "#EDEDED",
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1000000.0,
+            "is_hull": false,
+            "mass": {
+                "density": 0.25,
+                "nominal_mass": 50
+            },
+            "melting_temperature": 513.0,
+            "name": "Styrofoam White",
+            "palette_coordinates": {
+                "category": "Plastic",
+                "sub_category": "Styrofoam",
+                "sub_category_ordinal": 0
+            },
+            "render_color": "#EDEDED",
+            "rust_receptivity": 0.0,
+            "sound_type": "Wood",
+            "specific_heat": 1131.0,
+            "stiffness": 1.0,
+            "strength": 0.05,
+            "texture_name": "styrofoam_1",
+            "thermal_conductivity": 0.033,
+            "thermal_expansion_coefficient": 1e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.1,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": "#14CEE3",
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1000000.0,
+            "is_hull": true,
+            "mass": {
+                "density": 0.0033633,
+                "nominal_mass": 1390
+            },
+            "melting_temperature": 527.15,
+            "name": "Mylar Hull",
+            "palette_coordinates": {
+                "category": "Plastic",
+                "sub_category": "Mylar Hull",
+                "sub_category_ordinal": 0
+            },
+            "rust_receptivity": 0.0,
+            "sound_type": "Cloth",
+            "specific_heat": 1172.304,
+            "stiffness": 0.05,
+            "strength": 4.0,
+            "texture_name": "carbon_1",
+            "thermal_conductivity": 0.05,
+            "thermal_expansion_coefficient": 0.0043,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.2,
+            "wind_receptivity": 0.5
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": "#19E1F7",
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1000000.0,
+            "is_hull": false,
+            "mass": {
+                "density": 0.003,
+                "nominal_mass": 1390
+            },
+            "melting_temperature": 527.15,
+            "name": "Mylar",
+            "palette_coordinates": {
+                "category": "Plastic",
+                "sub_category": "Mylar",
+                "sub_category_ordinal": 0
+            },
+            "rust_receptivity": 0.0,
+            "sound_type": "Cloth",
+            "specific_heat": 1172.304,
+            "stiffness": 0.0002,
+            "strength": 6.0,
+            "texture_name": "carbon_1",
+            "thermal_conductivity": 0.05,
+            "thermal_expansion_coefficient": 0.0043,
+            "water_diffusion_speed": 0.5,
+            "water_intake": 0.05,
+            "water_retention": 0.2,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": "#FFFF00",
+            "combustion_type": "Combustion",
+            "description": "This material is here exclusively to ease development of one-layer ships; the proper way to make circuits is to develop a separate electrical layer. Choosing this material for a point in the structural layer will automatically make the point inherit the electrical properties from the same material that is found in the materials_electrical json file.",
+            "ignition_temperature": 1000000.0,
+            "is_hull": false,
+            "is_legacy_electrical": true,
+            "mass": {
+                "density": 0.275,
+                "nominal_mass": 30
+            },
+            "melting_temperature": 1773.15,
+            "name": "Self-Powered Lamp",
+            "render_color": "#404040",
+            "sound_type": "Glass",
+            "specific_heat": 700.0,
+            "stiffness": 1.0,
+            "strength": 0.1,
+            "thermal_conductivity": 0.8,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.0,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": "#FFE010",
+            "combustion_type": "Combustion",
+            "description": "This material is here exclusively to ease development of one-layer ships; the proper way to make circuits is to develop a separate electrical layer. Choosing this material for a point in the structural layer will automatically make the point inherit the electrical properties from the same material that is found in the materials_electrical json file.",
+            "ignition_temperature": 1000000.0,
+            "is_hull": false,
+            "is_legacy_electrical": true,
+            "mass": {
+                "density": 0.275,
+                "nominal_mass": 30
+            },
+            "melting_temperature": 1773.15,
+            "name": "High Lamp",
+            "render_color": "#404040",
+            "sound_type": "Glass",
+            "specific_heat": 700.0,
+            "stiffness": 1.0,
+            "strength": 0.1,
+            "thermal_conductivity": 0.8,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.0,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": "#FC0808",
+            "combustion_type": "Combustion",
+            "description": "This material is here exclusively to ease development of one-layer ships; the proper way to make circuits is to develop a separate electrical layer. Choosing this material for a point in the structural layer will automatically make the point inherit the electrical properties from the same material that is found in the materials_electrical json file.",
+            "ignition_temperature": 1000000.0,
+            "is_hull": false,
+            "is_legacy_electrical": true,
+            "mass": {
+                "density": 0.275,
+                "nominal_mass": 900
+            },
+            "melting_temperature": 933.45,
+            "name": "Generator",
+            "render_color": "#FC0808",
+            "sound_type": "Metal",
+            "specific_heat": 897.0,
+            "stiffness": 1.0,
+            "strength": 0.089,
+            "thermal_conductivity": 205.0,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": "#4C0000",
+            "combustion_type": "Combustion",
+            "description": "This material is here exclusively to ease development of one-layer ships; the proper way to make circuits is to develop a separate electrical layer. Choosing this material for a point in the structural layer will automatically make the point inherit the electrical properties from the same material that is found in the materials_electrical json file.",
+            "ignition_temperature": 689.15,
+            "is_hull": true,
+            "is_legacy_electrical": true,
+            "mass": {
+                "density": 0.275,
+                "nominal_mass": 30
+            },
+            "melting_temperature": 393.15,
+            "name": "Electrical Cable Hull",
+            "render_color": "#4C0000",
+            "sound_type": "Cable",
+            "specific_heat": 1400.0,
+            "stiffness": 1.0,
+            "strength": 0.092,
+            "thermal_conductivity": 0.25,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": "#700000",
+            "combustion_type": "Combustion",
+            "description": "This material is here exclusively to ease development of one-layer ships; the proper way to make circuits is to develop a separate electrical layer. Choosing this material for a point in the structural layer will automatically make the point inherit the electrical properties from the same material that is found in the materials_electrical json file.",
+            "ignition_temperature": 689.15,
+            "is_hull": false,
+            "is_legacy_electrical": true,
+            "mass": {
+                "density": 0.275,
+                "nominal_mass": 30
+            },
+            "melting_temperature": 393.15,
+            "name": "Electrical Cable",
+            "render_color": "#700000",
+            "sound_type": "Cable",
+            "specific_heat": 1400.0,
+            "stiffness": 1.0,
+            "strength": 0.09,
+            "thermal_conductivity": 0.25,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": "#FC2020",
+            "combustion_type": "Combustion",
+            "description": "This material is here exclusively to ease development of one-layer ships; the proper way to make circuits is to develop a separate electrical layer. Choosing this material for a point in the structural layer will automatically make the point inherit the electrical properties from the same material that is found in the materials_electrical json file.",
+            "ignition_temperature": 353.0,
+            "is_hull": false,
+            "is_legacy_electrical": true,
+            "mass": {
+                "density": 0.022935,
+                "nominal_mass": 800
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Heating Element 100KW",
+            "render_color": "#FC2020",
+            "sound_type": "Wood",
+            "specific_heat": 100.0,
+            "stiffness": 1.0,
+            "strength": 0.15,
+            "thermal_conductivity": 0.1,
+            "thermal_expansion_coefficient": 0.00015,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 0.3,
+            "color_key": [
+                "#000000",
+                "#de4635",
+                "#c7c05a",
+                "#025e03",
+                "#74c9d6",
+                "#050180",
+                "#6d0191",
+                "#ed8728",
+                "#260200"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 393.15,
+            "is_hull": false,
+            "mass": {
+                "density": 0.0935,
+                "nominal_mass": 180
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Rope",
+            "palette_coordinates": {
+                "category": "Ropes",
+                "sub_category": "Ropes",
+                "sub_category_ordinal": 0
+            },
+            "rust_receptivity": 1.0,
+            "sound_type": "Cable",
+            "specific_heat": 1400.0,
+            "stiffness": 1.84,
+            "strength": 0.075,
+            "thermal_conductivity": 0.04,
+            "water_diffusion_speed": 0.015,
+            "water_intake": 0.05,
+            "water_retention": 0.5,
+            "wind_receptivity": 0.2
+        },
+        {
+            "buoyancy_volume_fill": 0.3,
+            "color_key": [
+                "#031924",
+                "#b30e02",
+                "#cfcc48",
+                "#46c773",
+                "#1c9e9a",
+                "#0c035c",
+                "#4a0148",
+                "#f08c22",
+                "#757779"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 393.15,
+            "is_hull": false,
+            "mass": {
+                "density": 0.0935,
+                "nominal_mass": 180
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Strong Rope",
+            "palette_coordinates": {
+                "category": "Ropes",
+                "sub_category": "Strong Ropes",
+                "sub_category_ordinal": 0
+            },
+            "rust_receptivity": 1.0,
+            "sound_type": "Cable",
+            "specific_heat": 1400.0,
+            "stiffness": 1.84,
+            "strength": 0.5,
+            "thermal_conductivity": 0.04,
+            "water_diffusion_speed": 0.015,
+            "water_intake": 0.05,
+            "water_retention": 0.5,
+            "wind_receptivity": 0.2
+        },
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": [
+                "#3b3a39",
+                "#540a06",
+                "#5c5939",
+                "#145228",
+                "#2e676e",
+                "#0d055c",
+                "#541853",
+                "#944b13",
+                "#241616"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1000000.0,
+            "is_hull": false,
+            "mass": {
+                "density": 0.00935,
+                "nominal_mass": 7850
+            },
+            "melting_temperature": 1588.15,
+            "name": "Iron Chain",
+            "palette_coordinates": {
+                "category": "Chains",
+                "sub_category": "Iron Chains",
+                "sub_category_ordinal": 0
+            },
+            "rust_receptivity": 1.0,
+            "sound_type": "Chain",
+            "specific_heat": 449.0,
+            "stiffness": 1.85,
+            "strain_threshold_fraction": 0.1,
+            "strength": 0.09,
+            "thermal_conductivity": 79.5,
+            "thermal_expansion_coefficient": 1.06e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": [
+                "#0a1b04",
+                "#5e0101",
+                "#474627",
+                "#446b33",
+                "#79dbdb",
+                "#05055e",
+                "#5e0458",
+                "#964e00",
+                "#706f6e"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1000000.0,
+            "is_hull": false,
+            "mass": {
+                "density": 0.00935,
+                "nominal_mass": 7850
+            },
+            "melting_temperature": 1588.15,
+            "name": "Strong Iron Chain",
+            "palette_coordinates": {
+                "category": "Chains",
+                "sub_category": "Strong Iron Chains",
+                "sub_category_ordinal": 0
+            },
+            "rust_receptivity": 1.0,
+            "sound_type": "Chain",
+            "specific_heat": 449.0,
+            "stiffness": 1.85,
+            "strain_threshold_fraction": 0.1,
+            "strength": 0.75,
+            "thermal_conductivity": 79.5,
+            "thermal_expansion_coefficient": 1.06e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": [
+                "#c4c5c6",
+                "#ff6854",
+                "#d9b500",
+                "#9cff5e",
+                "#8ff2ed",
+                "#402fd6",
+                "#b92ed1",
+                "#ff9a2e",
+                "#3b3c3d"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1000000.0,
+            "is_hull": false,
+            "mass": {
+                "density": 0.00935,
+                "nominal_mass": 2710
+            },
+            "melting_temperature": 933.45,
+            "name": "Aluminium Chain",
+            "palette_coordinates": {
+                "category": "Chains",
+                "sub_category": "Aluminium Chains",
+                "sub_category_ordinal": 0
+            },
+            "rust_receptivity": 1.0,
+            "sound_type": "Chain",
+            "specific_heat": 897.0,
+            "stiffness": 1.85,
+            "strain_threshold_fraction": 0.1,
+            "strength": 0.09,
+            "thermal_conductivity": 205.0,
+            "thermal_expansion_coefficient": 2.2e-05,
+            "water_diffusion_speed": 0.0,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": [
+                "#babbbc",
+                "#ba1509",
+                "#9e9913",
+                "#38e625",
+                "#4fc2c0",
+                "#0e0999",
+                "#5c0061",
+                "#e3a86d",
+                "#54504c"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 553.15,
+            "is_hull": false,
+            "mass": {
+                "density": 0.0935,
+                "nominal_mass": 1522
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Rubber Band",
+            "palette_coordinates": {
+                "category": "Rubber Bands",
+                "sub_category": "Rubber Bands",
+                "sub_category_ordinal": 0
+            },
+            "rust_receptivity": 0,
+            "sound_type": "RubberBand",
+            "specific_heat": 1250.0,
+            "stiffness": 0.05,
+            "strain_threshold_fraction": 0.3,
+            "strength": 4.5,
+            "texture_name": "rubber_1",
+            "thermal_conductivity": 0.1,
+            "thermal_expansion_coefficient": 8e-05,
+            "water_diffusion_speed": 0.0,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": [
+                "#3d3e31",
+                "#781e1e",
+                "#b8b211",
+                "#336e03",
+                "#72b6b8",
+                "#0f32bf",
+                "#92089c",
+                "#b0730b",
+                "#041220"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 553.15,
+            "is_hull": false,
+            "mass": {
+                "density": 0.0935,
+                "nominal_mass": 1522
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Strong Rubber Band",
+            "palette_coordinates": {
+                "category": "Rubber Bands",
+                "sub_category": "Strong Rubber Bands",
+                "sub_category_ordinal": 0
+            },
+            "rust_receptivity": 0,
+            "sound_type": "RubberBand",
+            "specific_heat": 1250.0,
+            "stiffness": 0.05,
+            "strain_threshold_fraction": 0.3,
+            "strength": 7.0,
+            "texture_name": "rubber_1",
+            "thermal_conductivity": 0.1,
+            "thermal_expansion_coefficient": 8e-05,
+            "water_diffusion_speed": 0.0,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        }
+    ],
+    "palettes": {
+        "ropes_palette": [
+            {
+                "category": "Ropes",
+                "groups": [
+                    {
+                        "name": "Ropes",
+                        "sub_categories": [
+                            "Ropes",
+                            "Strong Ropes"
+                        ]
+                    }
+                ]
+            },
+            {
+                "category": "Chains",
+                "groups": [
+                    {
+                        "name": "Chains",
+                        "sub_categories": [
+                            "Iron Chains",
+                            "Strong Iron Chains",
+                            "Aluminium Chains"
+                        ]
+                    }
+                ]
+            },
+            {
+                "category": "Rubber Bands",
+                "groups": [
+                    {
+                        "name": "Rubber Bands",
+                        "sub_categories": [
+                            "Rubber Bands",
+                            "Strong Rubber Bands"
+                        ]
+                    }
+                ]
+            }
+        ],
+        "structural_palette": [
+            {
+                "category": "Metals",
+                "groups": [
+                    {
+                        "name": "Iron",
+                        "sub_categories": [
+                            "Iron",
+                            "Iron Hull",
+                            "Double-Bottom Iron",
+                            "Structural Iron",
+                            "Iron Cheap"
+                        ]
+                    },
+                    {
+                        "name": "Steel",
+                        "sub_categories": [
+                            "Steel",
+                            "Steel Hull",
+                            "Stainless Steel",
+                            "Stainless Steel Hull",
+                            "Double-Bottom Steel",
+                            "Structural Steel",
+                            "Steel Cheap"
+                        ]
+                    },
+                    {
+                        "name": "Titanium",
+                        "sub_categories": [
+                            "Titanium",
+                            "Titanium Hull",
+                            "Double-Bottom Titanium"
+                        ]
+                    },
+                    {
+                        "name": "Aluminium",
+                        "sub_categories": [
+                            "Aluminium",
+                            "Aluminium Hull",
+                            "Structural Aluminium",
+                            "Aluminium Sheet",
+                            "Aluminium Sheet Hull",
+                            "Aluminium Cheap"
+                        ]
+                    },
+                    {
+                        "name": "Misc",
+                        "sub_categories": [
+                            "Nails"
+                        ]
+                    }
+                ]
+            },
+            {
+                "category": "Wood",
+                "groups": [
+                    {
+                        "name": "Wood",
+                        "sub_categories": [
+                            "Wood",
+                            "Wood Hull",
+                            "Double-Bottom Wood"
+                        ]
+                    }
+                ]
+            },
+            {
+                "category": "Plastic",
+                "groups": [
+                    {
+                        "name": "Fiberglass",
+                        "sub_categories": [
+                            "Fiberglass",
+                            "Fiberglass Hull"
+                        ]
+                    },
+                    {
+                        "name": "LEGO (ABS)",
+                        "sub_categories": [
+                            "LEGO (ABS)",
+                            "LEGO Hull (ABS)"
+                        ]
+                    },
+                    {
+                        "name": "Mylar",
+                        "sub_categories": [
+                            "Mylar",
+                            "Mylar Hull"
+                        ]
+                    },
+                    {
+                        "name": "Styrofoam",
+                        "sub_categories": [
+                            "Styrofoam",
+                            "Styrofoam Hull"
+                        ]
+                    }
+                ]
+            },
+            {
+                "category": "Rubber",
+                "groups": [
+                    {
+                        "name": "Rubber",
+                        "sub_categories": [
+                            "Rubber Soft",
+                            "Rubber Hard",
+                            "Rubber Hull Soft",
+                            "Rubber Hull Hard"
+                        ]
+                    }
+                ]
+            },
+            {
+                "category": "Glass",
+                "groups": [
+                    {
+                        "name": "Glass",
+                        "sub_categories": [
+                            "Glass",
+                            "Glass Hull"
+                        ]
+                    }
+                ]
+            },
+            {
+                "category": "Carbon",
+                "groups": [
+                    {
+                        "name": "Carbon",
+                        "sub_categories": [
+                            "Carbon",
+                            "Carbon Hull"
+                        ]
+                    }
+                ]
+            },
+            {
+                "category": "Concrete",
+                "groups": [
+                    {
+                        "name": "Concrete",
+                        "sub_categories": [
+                            "Concrete",
+                            "Concrete Hull"
+                        ]
+                    }
+                ]
+            },
+            {
+                "category": "Cloth",
+                "groups": [
+                    {
+                        "name": "Cloth",
+                        "sub_categories": [
+                            "Cloth"
+                        ]
+                    }
+                ]
+            },
+            {
+                "category": "Cardboard and Paper",
+                "groups": [
+                    {
+                        "name": "Cardboard",
+                        "sub_categories": [
+                            "Cardboard",
+                            "Cardboard Hull"
+                        ]
+                    },
+                    {
+                        "name": "Paper",
+                        "sub_categories": [
+                            "Paper",
+                            "Paper Hull"
+                        ]
+                    }
+                ]
+            },
+            {
+                "category": "Elements",
+                "groups": [
+                    {
+                        "name": "Elements",
+                        "sub_categories": [
+                            "Air",
+                            "Hydrogen",
+                            "Water"
+                        ]
+                    }
+                ]
+            },
+            {
+                "category": "Other Materials",
+                "groups": [
+                    {
+                        "name": "Other Materials",
+                        "sub_categories": [
+                            "Diesel",
+                            "Gunpowder Light",
+                            "Gunpowder Strong"
+                        ]
+                    }
+                ]
+            }
+        ]
     }
-  ],
-
-  "palettes": {
-	"structural_palette": [
-	    {
-		"category": "Metals",
-		"groups":[
-			{
-				"name": "Iron",
-				"sub_categories": [
-					"Iron",
-					"Iron Hull",
-					"Double-Bottom Iron",
-					"Structural Iron",
-					"Iron Cheap"]
-			},
-			{
-				"name": "Steel",
-				"sub_categories": [
-					"Steel",
-					"Steel Hull",
-					"Stainless Steel",
-					"Stainless Steel Hull",
-					"Double-Bottom Steel",
-					"Structural Steel",
-					"Steel Cheap"]
-			},
-			{
-				"name": "Titanium",
-				"sub_categories": [
-					"Titanium",
-					"Titanium Hull",
-					"Double-Bottom Titanium"]
-			},
-			{
-				"name": "Aluminium",
-				"sub_categories": [
-					"Aluminium",
-					"Aluminium Hull",
-					"Structural Aluminium",
-					"Aluminium Sheet",
-					"Aluminium Sheet Hull",
-					"Aluminium Cheap"]
-			},
-			{
-				"name": "Misc",
-				"sub_categories": [
-					"Nails"]
-			}
-		]
-	    },
-
-	    {
-		"category": "Wood",
-		"groups":[
-			{
-				"name": "Wood",
-				"sub_categories": [
-					"Wood",
-					"Wood Hull",
-					"Double-Bottom Wood"]
-			}
-		]
-	    },
-
-	    {
-		"category": "Plastic",
-		"groups":[
-			{
-				"name": "Fiberglass",
-				"sub_categories": [
-					"Fiberglass",
-					"Fiberglass Hull"]
-			},
-			{
-				"name": "LEGO (ABS)",
-				"sub_categories": [
-					"LEGO (ABS)",
-					"LEGO Hull (ABS)"]
-			},
-			{
-				"name": "Mylar",
-				"sub_categories": [
-					"Mylar",
-					"Mylar Hull"]
-			},
-			{
-				"name": "Styrofoam",
-				"sub_categories": [
-					"Styrofoam",
-					"Styrofoam Hull"]
-			}
-		]
-	    },
-
-	    {
-		"category": "Rubber",
-		"groups":[
-			{
-				"name": "Rubber",
-				"sub_categories": [
-					"Rubber Soft",
-					"Rubber Hard",
-					"Rubber Hull Soft",
-					"Rubber Hull Hard"]
-			}
-		]
-	    },
-
-	    {
-		"category": "Glass",
-		"groups":[
-			{
-				"name": "Glass",
-				"sub_categories": [
-					"Glass",
-					"Glass Hull"]
-			}
-		]
-	    },
-
-	    {
-		"category": "Carbon",
-		"groups":[
-			{
-				"name": "Carbon",
-				"sub_categories": [
-					"Carbon",
-					"Carbon Hull"]
-			}
-		]
-	    },
-
-	    {
-		"category": "Concrete",
-		"groups":[
-			{
-				"name": "Concrete",
-				"sub_categories": [
-					"Concrete",
-					"Concrete Hull"]
-			}
-		]
-	    },
-
-	    {
-		"category": "Cloth",
-		"groups":[
-			{
-				"name": "Cloth",
-				"sub_categories": [
-					"Cloth"]
-			}
-		]
-	    },
-
-	    {
-		"category": "Cardboard and Paper",
-		"groups":[
-			{
-				"name": "Cardboard",
-				"sub_categories": [
-					"Cardboard",
-					"Cardboard Hull"]
-			},
-			{
-				"name": "Paper",
-				"sub_categories": [
-					"Paper",
-					"Paper Hull"]
-			}
-		]
-	    },
-
-	    {
-		"category": "Elements",
-		"groups":[
-			{
-				"name": "Elements",
-				"sub_categories": [
-					"Air",
-					"Hydrogen",
-					"Water"]
-			}
-		]
-	    },
-
-	    {
-		"category": "Other Materials",
-		"groups":[
-			{
-				"name": "Other Materials",
-				"sub_categories": [
-					"Diesel",
-					"Gunpowder Light",
-					"Gunpowder Strong"]
-			}
-		]
-	    }	 
-	],
-
-	"ropes_palette": [
-	    {
-		"category": "Ropes",
-		"groups":[
-			{
-				"name": "Ropes",
-				"sub_categories": [
-					"Ropes",
-					"Strong Ropes"]
-			}
-		]
-	    },
-
-	    {
-		"category": "Chains",
-		"groups":[
-			{
-				"name": "Chains",
-				"sub_categories": [
-					"Iron Chains",
-					"Strong Iron Chains",
-					"Aluminium Chains"]
-			}
-		]
-	    },
-
-	    {
-		"category": "Rubber Bands",
-		"groups":[
-			{
-				"name": "Rubber Bands",
-				"sub_categories": [
-					"Rubber Bands",
-					"Strong Rubber Bands"]
-			}
-		]
-	    }
-	]
-  }
 }
