@@ -981,13 +981,38 @@
 - Dynamics:
 
 	= Material system improvements (*)
-
 		- Check if can undo BuoyancyVolumeFill:
-			- Replace with "volume_naked": volume that is only used when particle has zero attached triangles
-				- Adjust structural palette json for new name
-				- Then also add "volume_clad", "just in case" - should always be 1.0
+			+ The biggest test is whether current ships start flying or not
+				+ Preliminary checks indicate it might be ok!
+				X Argh, no - ships don't sink anymore
+			- Replace with "buoyant_volume_naked" (now one) and "buoyant_volume_clad" (old one)
+				! Physical interpretation: the volume occupied by the particles, for the purpose of both buoyancy calculations *and* water taken mass calculations
+					! Naked: when particle has zero attached triangles; clad: when has at least one triangle
+					! Buoyancy:
+						! TODO
+					! Taken water mass:
+						! TODO
+				+ Material
+				- Adjust structural palette json; guidelines:
+					- Every hull material: C=1.0 N=0.0
+						! C: because (hull) structures should feel buoyancy (NEW)
+						! N: because naked particles won't take water, hence would float forever if they were buoyant (OLD)
+					- Every non-hull material: C=1.0 N=1.0
+						! C: because structures should feel buoyancy (OLD)
+						! N: because naked particles will take water, and hence have to counterbalance taken water weight with own buoyancy (OLD)
+					- Ropes: C=N
+						! Because even when they form a triangle, we want same bouyancy (OLD)
+					- Materials like hull and chains have it ~zero, ropes a bit more
+			- TODO: the below's update mBuoyantVolumeBuffer (renamed from mMaterialBuoyancyVolumeFillBuffer) and call CalculateBuoyancyCoeffs
+			- Points::Add:
+				- ShipBuilder specifies if has triangles attached, and populates mBuoyantVolumeBuffer accordingly (and then calculates buoyancy coeffs)
+			- @Points' Triangle Destroy/Restore: populates mBuoyantVolumeBuffer accordingly (and then calculates buoyancy coeffs)
+			- @ Points::CreateXYZEphParticle: populates mBuoyantVolumeBuffer accordingly (and then calculates buoyancy coeffs)
+				- Air: TODO
+				- Smoke: TODO
+				- Water: TODO
 
-				- TODOPLAN:
+				- TODOOLD:
 					- Use volume_clad when adding structural material w/triangles, or volume_naked otherwise
 						- ShipBuilder specifies if has triangles attached
 						- See in json if can safely use 1.0 for clad though
@@ -999,14 +1024,16 @@
 									- Water material - should become air anyway?
 									- Engine wake - water is hull, hence it takes water and it would sink
 										- See if can have buoyancy as 1 but also spawn with 1.0 water
-						
-				- TODO: finalize how to plug it in Points::CalculateBuoyancyCoefficients
-				- Points has a buffer for it ("BuoyancyVolumeFill"), updated @ Add() and @ triangle create/destroy
-				- Points::CalculateBuoyancyCoefficients uses correct buoyancy volume fill - either the hardcoded one, or the one from the buffer
-			- Materials like hull and chains have it ~zero, ropes a bit more
-			+ The biggest test is whether current ships start flying or not
-				+ Preliminary checks indicate it might be ok!
-			- Remove hack from ShipBuilder::WaterlineAnalyzer
+									
+			- Remove hacks from ShipBuilder (WaterlineAnalyzer; others?)
+			- Final: see if should rethink buoyancy: 
+				- Non-hull:
+					- Clad materials: 1m3 displaces 1m3 of water; when underwater, takes (really) up to 1-density water
+					- Naked particles: 1m3 displaces 1m3 of water; when underwater, takes (really) up to 1-density water
+				- Hull:
+					- Clad materials: 1m3 displaces 1m3 of water; when underwater, takes (really) up to 0 water
+					- Naked particles: 1m3 displaces 1m3 of water; when underwater, takes (virtually) up to 1-density water
+						- But then, TODO: how to know how much water has taken between 0 and 1-density?
 
 		= Make "Internal Watertight" (and other) versions of hull/non-hull materials
 			! Spec:
@@ -1046,11 +1073,11 @@
 				- All woods
 					- Do wood thing below first
 				- TODO: others?
-			- Description of variant in palette?
-				- By means of a variant enum in the materials json
+			- Description of variant in ShipBuilder palette?
+				- By means of a variant enum in the materials json, and therefore localizable strings
 					- ~"Structure"+"Form/Variant/Kind/Genre/Class"
 		- New materials:
-			- Add helper for adding colors: base base_reference target_reference
+			= Add helper for adding colors: base base_reference target_reference
 			- Structural materials:
 				- Another wood variant
 					- Names: Oak (600-900, heavier - current), Pine (350-850, lighter)
@@ -1058,15 +1085,16 @@
 						- Rename old
 							- Fix mass of hull: nominal_mass=1000->800 density=0.0935->0.116875
 						- Make Pine
-							- Mass = 400
+							- nominal_mass=400
 						- New materials texture
+							- One of the three "wood planks"
 				- Helium: ~like Hydrogen, but not combusting
 				- Sodium: explodes when particle's water > threshold
 					- At points' low-freq combustion update
 				- "Lightning rod" material
 					- Has precedence when looking for candidates @ Lightning strike
 				- More glass colors
-				- More concrete colors
+				+ More concrete colors
 			- Electrical materials:
 				- Non-Instanced Water Tight Doors (see if possible)
 				- Non-Instanced Water In/Out Pumps (see if possible)
