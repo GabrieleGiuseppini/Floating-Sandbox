@@ -66,7 +66,12 @@ def hex_to_rgb(hex_value):
 
 
 def rgb_to_hex(rgb_tuple):
+    #print(str(rgb_tuple) + ": " + ("%02x %02x %02x" % rgb_tuple))
     return ("#%02x%02x%02x" % rgb_tuple).upper()
+
+
+def clamp(num, min_value, max_value):
+   return max(min(num, max_value), min_value)
 
 
 def make_color_set(json_obj):
@@ -121,12 +126,10 @@ def add_variant_material(material, variant_key, variants):
     variants[variant_key] = material
 
 
-def make_color(base_rgb, rgb_offset, color_set):
+def make_color(base_rgb, offset_rgb, color_set):
     extra_offset = 0
     while True:
-        new_color = tuple(b + o + extra_offset for b, o in zip(base_rgb, rgb_offset))
-        new_color = tuple(c + 256 if c < 0 else c for c in new_color)
-        #print("make_color: " + str(base_rgb) + " + " + str(rgb_offset) + " = " + str(new_color))
+        new_color = tuple(clamp(b + o + extra_offset, 0, 255) for b, o in zip(base_rgb, offset_rgb))
         new_color_str = rgb_to_hex(new_color)
         if new_color_str not in color_set:
             color_set.add(new_color_str)
@@ -214,6 +217,33 @@ def dump_variant(variant_key, variants):
         material["is_hull"], 
         material["buoyancy_volume_fill"],
         ", ".join(c for c in material["color_key"])))
+
+
+def add_color(material_name, input_filename, output_filename, base_reference_color, target_reference_color, base_colors):    
+    base_reference_rgb = hex_to_rgb(base_reference_color) # From reference material
+    target_reference_rgb = hex_to_rgb(target_reference_color) # From material
+    base_rgbs = list(hex_to_rgb(bc) for bc in base_colors) # Target, from reference
+
+    json_obj = load_json(input_filename)
+    color_set = make_color_set(json_obj)
+
+    material = list(filter(lambda m : m["name"] == material_name, json_obj["materials"]))
+    if not material or len(material) > 1:
+        print("ERROR: cannot find material '{}', or too many matching materials found".format(material_name))
+        sys.exit(-1)
+    material = material[0]
+
+    offset_rgb = tuple(tr - br for tr, br in zip(target_reference_rgb, base_reference_rgb))
+    new_color_rgbs = list(make_color(base_rgb, offset_rgb, color_set) for base_rgb in base_rgbs)
+    new_colors = list(rgb_to_hex(new_color_rgb) for new_color_rgb in new_color_rgbs)
+
+    # Add
+    color_keys = get_normalized_color_keys(material)
+    color_keys.extend(new_colors)
+    material["color_key"] = color_keys
+
+    # Write
+    save_json(json_obj, output_filename)
 
 
 def add_variants(material_group_name, input_filename, output_filename):
@@ -345,9 +375,11 @@ def dump_materials(filename, field_names):
 
 
 def print_usage():
-    print("Usage: materials_tools.py verify <input_json>")
+    print("Usage: materials_tools.py add_color <material_name> <input_json> <output_json> <base_reference_color> <target_reference_color> <base_color_1> <base_color_2> ...")
     print("Usage: materials_tools.py add_variants <material_name> <input_json> <output_json>")
-    print("Usage: materials_tools.py dump_materials <input_json> field1 field2 ...")
+    print("Usage: materials_tools.py dump_materials <input_json> <field_1> <field_2> ...")
+    print("Usage: materials_tools.py verify <input_json>")
+
 
 def main():
     
@@ -361,6 +393,12 @@ def main():
             print_usage()
             sys.exit(-1)
         verify(sys.argv[2])
+    elif verb == 'add_color':
+        if len(sys.argv) < 8:
+            print_usage()
+            sys.exit(-1)
+        base_colors = sys.argv[7:]
+        add_color(material_name=sys.argv[2], input_filename=sys.argv[3], output_filename=sys.argv[4], base_reference_color=sys.argv[5], target_reference_color=sys.argv[6], base_colors=base_colors)
     elif verb == 'add_variants':
         if len(sys.argv) != 5:
             print_usage()
