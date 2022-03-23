@@ -1293,7 +1293,17 @@
         },
         {
             "buoyancy_volume_fill": 0.0,
-            "color_key": ["#BFBEBD", "#F58076", "#FFF86E", "#A87E00", "#6BFF7C", "#C1FFFF", "#3963FA", "#CF24FF", "#F5AE51"],
+            "color_key": [
+                "#BFBEBD",
+                "#F58076",
+                "#FFF86E",
+                "#A87E00",
+                "#6BFF7C",
+                "#C1FFFF",
+                "#3963FA",
+                "#CF24FF",
+                "#F5AE51"
+            ],
             "combustion_type": "Combustion",
             "ignition_temperature": 1000000.0,
             "is_hull": true,
@@ -1321,7 +1331,17 @@
         },
         {
             "buoyancy_volume_fill": 1.0,
-            "color_key": ["#EDEFEC", "#FFBFBF", "#FFFDBF", "#B8A35F", "DDFAB9", "#E5FFFF", "#A6C2FF", "#FCC9FF", "#FFBE54"],
+            "color_key": [
+                "#EDEFEC",
+                "#FFBFBF",
+                "#FFFDBF",
+                "#B8A35F",
+                "DDFAB9",
+                "#E5FFFF",
+                "#A6C2FF",
+                "#FCC9FF",
+                "#FFBE54"
+            ],
             "combustion_type": "Combustion",
             "ignition_temperature": 1000000.0,
             "is_hull": false,
@@ -1516,7 +1536,14 @@
             "color_key": [
                 "#D4D4D4",
                 "#E1D4D4",
-                "#D4D4E1"
+                "#FFFFD1",
+                "#FFF684",
+                "#DAFF84",
+                "#D4D4E1",
+                "#AFC6E5",
+                "#FF94FF",
+                "#FFE384",
+                "#A5A595"
             ],
             "combustion_type": "Combustion",
             "ignition_temperature": 1000000.0,
