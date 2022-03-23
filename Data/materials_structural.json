@@ -1503,8 +1503,15 @@
             "buoyancy_volume_fill": 0.0,
             "color_key": [
                 "#C4C4C4",
-                "#E1C4C4",
-                "#C4C4E1"
+                "#E1C4C4",                
+                "#FFFFC1",
+                "#FFE674",
+                "#CAFF74",
+		"#C4C4E1",
+                "#9FB6D5",
+                "#FF84F4",
+                "#FFD374",
+                "#959585"
             ],
             "combustion_type": "Combustion",
             "ignition_temperature": 1000000.0,
