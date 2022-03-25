@@ -1049,7 +1049,12 @@
 					+ Destroy
 				- If goes through:
 					+ Make branch and commit to it
+					- Remove hacks from ShipBuilder (WaterlineAnalyzer; others?)
+					- Do materials' variants below
+						- Re-visit mass/density/buoyancy_vol_fill constants
 					- Adjust ships (and make them .shp2 while you're at it):
+						- Preparation:
+							- (temporarily) backup my own Ships folder, as it'll become _the_ Ships folder
 						- default ship
 						- All titanics
 						- A.R.C.C. ...del Sol
@@ -1057,6 +1062,7 @@
 						- Red October
 							- & other subs...
 						- Triton
+						- All others
 			- Regardless of option chosen: see if still need Points buffer for buoyancy_volume_fill
 
 		= Make "Internal Watertight" (and other) versions of hull/non-hull materials
