@@ -9,12 +9,12 @@ MANDATORY_JSON_FIELD_NAMES = [
     ]
 
 class VariantConstants:
-    HULL_KEY = "Hull"
-    LIGHT_IBEAM_KEY = "Light I-Beam" # was: Base
-    SOLID_IBEAM_KEY = "Solid I-Beam" # was: Structural
-    LIGHT_BULKHEAD_KEY = "Light Bulkhead"
-    SOLID_BULKHEAD_KEY = "Solid Bulkhead"
-    LOWGRADE_KEY = "Low-Grade"
+    HULL_KEY = "Hull"                       # Hull
+    LIGHT_IBEAM_KEY = "Light I-Beam"        # base
+    SOLID_IBEAM_KEY = "Solid I-Beam"        # Non-hull (permeable) with twice the density of base; was: Structural
+    LIGHT_BULKHEAD_KEY = "Light Bulkhead"   # Hull (impermeable), with a few times the density as base (thus most likely floating)
+    SOLID_BULKHEAD_KEY = "Solid Bulkhead"   # Hull (impermeable), with a smaller fraction of the over-water mass as hull
+    LOWGRADE_KEY = "Low-Grade"              # base, but weak; was: Cheap
 
     names = {
         HULL_KEY: "Hull",
@@ -152,7 +152,7 @@ def make_color_keys(base_color_keys, rgb_offsets, color_set):
     return new_colors
 
 
-def make_variant_material(material_group_name, variant_key, ideal_mass_offset, ideal_density_multiplier, ideal_is_impermeable, ideal_rgb_offsets_over_base, variants, color_set):
+def make_variant_material(material_group_name, variant_key, ideal_nominal_mass_offset, ideal_density_multiplier, ideal_is_impermeable, ideal_strength_multiplier, ideal_rgb_offsets_over_base, variants, color_set):
     variant_name = VariantConstants.names[variant_key]
     
     # Get base material
@@ -163,12 +163,10 @@ def make_variant_material(material_group_name, variant_key, ideal_mass_offset, i
 
     # Calculate targets
     ideal_name = VariantConstants.material_names[variant_key].format(material_group_name)
-    ideal_mass = float(base_material["mass"]["nominal_mass"] + ideal_mass_offset)
+    ideal_mass = float(base_material["mass"]["nominal_mass"] + ideal_nominal_mass_offset)
     ideal_density = float(base_material["mass"]["density"] * ideal_density_multiplier)
-    if ideal_is_impermeable:
-        ideal_buoyancy_volume_fill = 0.0
-    else:
-        ideal_buoyancy_volume_fill = 1.0
+    ideal_buoyancy_volume_fill = 1.0
+    ideal_strength = float(base_material["strength"] * ideal_strength_multiplier)
 
     # Check if variant exists
     if variant_key not in variants:
@@ -192,7 +190,12 @@ def make_variant_material(material_group_name, variant_key, ideal_mass_offset, i
 
         # Hullness
         material["is_hull"] = ideal_is_impermeable
+
+        # Buoyancy volume fill
         material["buoyancy_volume_fill"] = ideal_buoyancy_volume_fill
+
+        # Strength
+        material["strength"] = ideal_strength
 
         variants[variant_key] = material
 
@@ -201,7 +204,7 @@ def make_variant_material(material_group_name, variant_key, ideal_mass_offset, i
         # Variant exists
         material = variants[variant_key]
 
-        # Normalize name
+        # ...just normalize name in this case
         if material["name"] != ideal_name:
             print("    Rename: {} ('{}' -> '{}')".format(VariantConstants.names[variant_key], material["name"], ideal_name))
             material["name"] = ideal_name
@@ -210,13 +213,13 @@ def make_variant_material(material_group_name, variant_key, ideal_mass_offset, i
 
 def dump_variant(variant_key, variants):
     material = variants[variant_key]
-    print("  {}: n_mass={} density={} is_hull={} buoyancy_volume_fill={} color_keys=[{}]".format(
+    print("  {}: n_mass={} density={} mass={} is_hull={} strength={}".format(
         material["name"], 
         material["mass"]["nominal_mass"],
         material["mass"]["density"], 
-        material["is_hull"], 
-        material["buoyancy_volume_fill"],
-        ", ".join(c for c in material["color_key"])))
+        material["mass"]["nominal_mass"] * material["mass"]["density"],
+        material["is_hull"],
+        material["strength"]))
 
 
 def add_color(material_name, input_filename, output_filename, base_reference_color, target_reference_color, base_colors):    
@@ -309,29 +312,87 @@ def add_variants(material_group_name, input_filename, output_filename):
     base_color_keys = get_normalized_color_keys(variants[VariantConstants.LIGHT_IBEAM_KEY])
     base_color_key_counts = len(base_color_keys)
 
-    # First pass on base and hull (eventually creating it)
-    make_variant_material(material_group_name, VariantConstants.HULL_KEY, 100.0, 10.0, True, [-64, -64, -64] * base_color_key_counts, variants, color_set)
-    make_variant_material(material_group_name, VariantConstants.LIGHT_IBEAM_KEY, 0.0, 1.0, False, [0, 0, 0] * base_color_key_counts, variants, color_set)
+    #
+    # First pass on hull and base (eventually creating hull)
+    #
 
-    # Calculate actual range between hull and base    
+    # Hull
+    make_variant_material(material_group_name, VariantConstants.HULL_KEY, 
+        ideal_nominal_mass_offset = 100.0,  # Hull nominal mass is 100Kg more than non-hull
+        ideal_density_multiplier = 20.0,    # Hull density is 20 times non-hull
+        ideal_is_impermeable = True,
+        ideal_strength_multiplier = 1.0,
+        ideal_rgb_offsets_over_base = [-64, -64, -64] * base_color_key_counts, 
+        variants = variants, 
+        color_set = color_set)
+
+    # base
+    make_variant_material(material_group_name, VariantConstants.LIGHT_IBEAM_KEY, 
+        ideal_nominal_mass_offset = 0.0, 
+        ideal_density_multiplier = 1.0, 
+        ideal_is_impermeable = False, 
+        ideal_strength_multiplier = 1.0,
+        ideal_rgb_offsets_over_base = [0, 0, 0] * base_color_key_counts, 
+        variants = variants, 
+        color_set = color_set)
+
+    # Calculate ranges between Hull and base   
+
+    # Colors
     base_rgbs = [hex_to_rgb(base_color_keys[i]) for i in range(0, len(base_color_keys))]
     hull_color_keys = get_normalized_color_keys(variants[VariantConstants.HULL_KEY])
     hull_rgbs = [hex_to_rgb(hull_color_keys[i]) for i in range(0, len(hull_color_keys))]
     assert(len(base_rgbs) == len(hull_rgbs))
     color_key_ranges = [tuple(h - b for b, h in zip(base_rgbs[i], hull_rgbs[i])) for i in range(0, base_color_key_counts)]
 
-    make_variant_material(material_group_name, VariantConstants.SOLID_IBEAM_KEY, 100.0, 10.0, False,
-        [tuple(int(r * 2.0 / 5.0) for r in color_key_ranges[i]) for i in range(0, base_color_key_counts)],
-        variants, color_set)
-    make_variant_material(material_group_name, VariantConstants.LIGHT_BULKHEAD_KEY, 0.0, 1.0, True,
-        [tuple(int(r * 3.0 / 5.0) for r in color_key_ranges[i]) for i in range(0, base_color_key_counts)],
-        variants, color_set)
-    make_variant_material(material_group_name, VariantConstants.SOLID_BULKHEAD_KEY, 0.0, 4.0, True, 
-        [tuple(int(r * 4.0 / 5.0) for r in color_key_ranges[i]) for i in range(0, base_color_key_counts)],
-        variants, color_set)
-    make_variant_material(material_group_name, VariantConstants.LOWGRADE_KEY, 0.0, 1.0, False, 
-        [tuple(int(r * 1.0 / 5.0) for r in color_key_ranges[i]) for i in range(0, base_color_key_counts)],
-        variants, color_set)
+    # Over-water mass
+    base_mass = variants[VariantConstants.LIGHT_IBEAM_KEY]["mass"]["nominal_mass"] * variants[VariantConstants.LIGHT_IBEAM_KEY]["mass"]["density"]
+    hull_mass = variants[VariantConstants.HULL_KEY]["mass"]["nominal_mass"] * variants[VariantConstants.HULL_KEY]["mass"]["density"]
+    assert(hull_mass > 1000.0)
+
+    #
+    # All other variants
+    #
+
+    # Non-hull (permeable) with twice the density of base; was: Structural
+    make_variant_material(material_group_name, VariantConstants.SOLID_IBEAM_KEY, 
+        ideal_nominal_mass_offset = 0.0,
+        ideal_density_multiplier = 2.0, 
+        ideal_is_impermeable = False,
+        ideal_strength_multiplier = 1.07,
+        ideal_rgb_offsets_over_base = [tuple(int(r * 2.0 / 5.0) for r in color_key_ranges[i]) for i in range(0, base_color_key_counts)],
+        variants = variants, 
+        color_set = color_set)
+
+    # Hull (impermeable), with a few times the density as base (floating)
+    make_variant_material(material_group_name, VariantConstants.LIGHT_BULKHEAD_KEY, 
+        ideal_nominal_mass_offset = 0.0, 
+        ideal_density_multiplier = 5.0, 
+        ideal_is_impermeable = True,
+        ideal_strength_multiplier = 1.0,
+        ideal_rgb_offsets_over_base = [tuple(int(r * 3.0 / 5.0) for r in color_key_ranges[i]) for i in range(0, base_color_key_counts)],
+        variants = variants, 
+        color_set = color_set)
+
+    # Hull (impermeable), with a smaller fraction of the over-water mass as hull
+    make_variant_material(material_group_name, VariantConstants.SOLID_BULKHEAD_KEY, 
+        ideal_nominal_mass_offset = 0.0, 
+        ideal_density_multiplier = (1000.0 + (hull_mass - 1000.0) * 0.333) / base_mass, 
+        ideal_is_impermeable = True,
+        ideal_strength_multiplier = 1.07,
+        ideal_rgb_offsets_over_base = [tuple(int(r * 4.0 / 5.0) for r in color_key_ranges[i]) for i in range(0, base_color_key_counts)],
+        variants = variants, 
+        color_set = color_set)
+
+    # base, but weak; was: Cheap
+    make_variant_material(material_group_name, VariantConstants.LOWGRADE_KEY, 
+        ideal_nominal_mass_offset = 0.0, 
+        ideal_density_multiplier = 1.0, 
+        ideal_is_impermeable = False,
+        ideal_strength_multiplier = 0.3,
+        ideal_rgb_offsets_over_base = [tuple(int(r * 1.0 / 5.0) for r in color_key_ranges[i]) for i in range(0, base_color_key_counts)],
+        variants = variants, 
+        color_set = color_set)
 
     # Dump all variants
     print("All variants:")

@@ -1050,7 +1050,7 @@
 				- If goes through:
 					+ Make branch and commit to it
 					- Do materials' variants below
-						- Re-visit mass/density/buoyancy_vol_fill constants
+						+ Re-visit mass/density/buoyancy_vol_fill constants
 					- Adjust ships (and make them .shp2 while you're at it):
 						- Preparation:
 							- (temporarily) backup my own Ships folder, as it'll become _the_ Ships folder
@@ -1070,12 +1070,12 @@
 				! Watertight (i.e. hull) but lighter than hull
 				! Rename materials (json and code): "Hull" -> "..."
 			! Variants:
-				- XYZ Hull (density 10) (impermeable) (was: hull)
-				- XYZ Thin I-Beam (density 1) (was: normal)
-				- XYZ Thick I-Beam (density 10) (was: structural)
-				- XYZ Thin Bulkhead (density 1) (impermeable)
-				- XYZ Thick Bulkhead (density ~5) (impermeable)
-				- XYZ Cheap (like normal but weaker) (density 1)
+				- XYZ Hull                                       	# Hull
+				- XYZ Light I-Beam					# base
+				- XYZ Solid I-Beam					# Non-hull (permeable) with twice the density of base; was: Structural
+				- XYZ Light Bulkhead					# Hull (impermeable), with a few times the density as base (floating)
+				- XYZ Solid Bulkhead					# Hull (impermeable), with a smaller fraction of the over-water mass as hull
+				- XYZ Brittle (like normal but weaker) (density 1)	# base, but weak; was: Cheap
 			+ Write script to generate
 				+ Decide final names of variants
 					+ Thin: Light+
@@ -1101,7 +1101,7 @@
 					- Aluminium
 						- Separate Aluminium Sheet into its own group first, which later won't get variants
 				- All woods
-					+ Do wood thing below first
+					= Do new wood type below first
 				- TODO: others?
 			- Description of variant in ShipBuilder palette?
 				- By means of a variant enum in the materials json, and therefore localizable strings
