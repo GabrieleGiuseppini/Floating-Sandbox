@@ -2252,7 +2252,7 @@
             "wind_receptivity": 0.2
         },
         {
-            "buoyancy_volume_fill": 0.0,
+            "buoyancy_volume_fill": 0.3,
             "color_key": [
                 "#3b3a39",
                 "#540a06",
@@ -2291,7 +2291,7 @@
             "wind_receptivity": 0.1
         },
         {
-            "buoyancy_volume_fill": 0.0,
+            "buoyancy_volume_fill": 0.3,
             "color_key": [
                 "#0a1b04",
                 "#5e0101",
@@ -2330,7 +2330,7 @@
             "wind_receptivity": 0.1
         },
         {
-            "buoyancy_volume_fill": 0.0,
+            "buoyancy_volume_fill": 0.3,
             "color_key": [
                 "#c4c5c6",
                 "#ff6854",
@@ -2369,7 +2369,7 @@
             "wind_receptivity": 0.1
         },
         {
-            "buoyancy_volume_fill": 0.0,
+            "buoyancy_volume_fill": 0.8,
             "color_key": [
                 "#babbbc",
                 "#ba1509",
@@ -2385,8 +2385,8 @@
             "ignition_temperature": 553.15,
             "is_hull": false,
             "mass": {
-                "density": 0.0935,
-                "nominal_mass": 1522
+                "density": 0.03,
+                "nominal_mass": 1100
             },
             "melting_temperature": 1000000.0,
             "name": "Rubber Band",
@@ -2400,7 +2400,7 @@
             "specific_heat": 1250.0,
             "stiffness": 0.05,
             "strain_threshold_fraction": 0.3,
-            "strength": 4.5,
+            "strength": 4.0,
             "texture_name": "rubber_1",
             "thermal_conductivity": 0.1,
             "thermal_expansion_coefficient": 8e-05,
@@ -2409,7 +2409,7 @@
             "wind_receptivity": 0.1
         },
         {
-            "buoyancy_volume_fill": 0.0,
+            "buoyancy_volume_fill": 0.8,
             "color_key": [
                 "#3d3e31",
                 "#781e1e",
@@ -2425,8 +2425,8 @@
             "ignition_temperature": 553.15,
             "is_hull": false,
             "mass": {
-                "density": 0.0935,
-                "nominal_mass": 1522
+                "density": 0.03,
+                "nominal_mass": 1100
             },
             "melting_temperature": 1000000.0,
             "name": "Strong Rubber Band",

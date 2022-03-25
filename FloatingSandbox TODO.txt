@@ -1040,13 +1040,15 @@
 					+ Concrete Hull
 					+ Styrofoam Hull
 					+ Mylar Hull
-					- Chains
-				= Special tests:
+					+ Iron Chains: b=0.3
+					+ Aluminium Chains: b=0.3
+					+ Rubber Bands
+				+ Special tests:
 					+ Smoke
 					+ Engine wake
 					+ Destroy
 				- If goes through:
-					= Make branch and commit to it
+					+ Make branch and commit to it
 					- Adjust ships (and make them .shp2 while you're at it):
 						- default ship
 						- All titanics
@@ -1119,7 +1121,8 @@
 					- ship_explosion shader: new "boolean" param to make it yellow (sample.r = sample.g = (sample.r + sample.g) / 2);
 				- "Lightning rod" material
 					- Has precedence when looking for candidates @ Lightning strike
-				+ More glass colors
+				= More glass colors
+					- Make current "pale" and add "dark" variant (or "opaque")
 				+ More concrete colors
 				+ More fiberglass colors
 				- Redo structural template
