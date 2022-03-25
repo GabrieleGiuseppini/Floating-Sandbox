@@ -588,7 +588,7 @@
         },
 
         {
-            "buoyancy_volume_fill": 0.0,
+            "buoyancy_volume_fill": 1.0,
             "color_key": [
 		"#C49B6A"
             ],
@@ -596,7 +596,7 @@
             "ignition_temperature": 453.0,
             "is_hull": true,
             "mass": {
-                "density": 0.116875,
+                "density": 2.04,
                 "nominal_mass": 500
             },
             "melting_temperature": 1000000.0,
@@ -648,7 +648,7 @@
             "wind_receptivity": 0.1
         },
         {
-            "buoyancy_volume_fill": 0.0,
+            "buoyancy_volume_fill": 1.0,
             "color_key": [
 		"#946228"
             ],
@@ -656,7 +656,7 @@
             "ignition_temperature": 453.0,
             "is_hull": true,
             "mass": {
-                "density": 0.17,
+                "density": 1.12,
                 "nominal_mass": 1000
             },
             "melting_temperature": 1000000.0,
@@ -962,7 +962,7 @@
             "wind_receptivity": 0.2
         },
         {
-            "buoyancy_volume_fill": 0.0,
+            "buoyancy_volume_fill": 0.2,
             "color_key": [
                 "#5e5d5e",
                 "#6e2820",
@@ -979,7 +979,7 @@
             "ignition_temperature": 491.15,
             "is_hull": true,
             "mass": {
-                "density": 0.0935,
+                "density": 0.1,
                 "nominal_mass": 50
             },
             "melting_temperature": 1000000.0,
@@ -1042,14 +1042,14 @@
             "wind_receptivity": 0.15
         },
         {
-            "buoyancy_volume_fill": 0.0,
+            "buoyancy_volume_fill": 0.15,
             "color_key": "#F2F5F5",
             "combustion_type": "Combustion",
             "ignition_temperature": 450.15,
             "is_hull": true,
             "mass": {
-                "density": 0.045,
-                "nominal_mass": 20
+                "density": 0.1,
+                "nominal_mass": 40
             },
             "melting_temperature": 1000000.0,
             "name": "Paper Hull",
@@ -1386,7 +1386,7 @@
             "wind_receptivity": 0.05
         },
         {
-            "buoyancy_volume_fill": 0.0,
+            "buoyancy_volume_fill": 1.0,
             "color_key": [
                 "#BFBEBD",
                 "#F58076",
@@ -1402,8 +1402,8 @@
             "ignition_temperature": 1000000.0,
             "is_hull": true,
             "mass": {
-                "density": 0.0935,
-                "nominal_mass": 1000
+                "density": 0.48,
+                "nominal_mass": 2500
             },
             "melting_temperature": 1773.15,
             "name": "Glass Hull",
@@ -1440,8 +1440,8 @@
             "ignition_temperature": 1000000.0,
             "is_hull": false,
             "mass": {
-                "density": 0.022935,
-                "nominal_mass": 1000
+                "density": 0.009174,
+                "nominal_mass": 2500
             },
             "melting_temperature": 1773.15,
             "name": "Glass",
@@ -1462,7 +1462,7 @@
             "wind_receptivity": 0.1
         },
         {
-            "buoyancy_volume_fill": 0.0,
+            "buoyancy_volume_fill": 1.0,
             "color_key": [
                 "#BFBFBF",
                 "#E1BFBF",
@@ -1472,7 +1472,7 @@
             "ignition_temperature": 553.15,
             "is_hull": true,
             "mass": {
-                "density": 0.0935,
+                "density": 0.749,
                 "nominal_mass": 1522
             },
             "melting_temperature": 1000000.0,
@@ -1528,7 +1528,7 @@
             "wind_receptivity": 0.1
         },
         {
-            "buoyancy_volume_fill": 0.0,
+            "buoyancy_volume_fill": 1.0,
             "color_key": [
                 "#B8B8B8",
                 "#E1B8B8",
@@ -1538,7 +1538,7 @@
             "ignition_temperature": 553.15,
             "is_hull": true,
             "mass": {
-                "density": 0.0935,
+                "density": 0.749,
                 "nominal_mass": 1522
             },
             "melting_temperature": 1000000.0,
@@ -1672,7 +1672,7 @@
             "wind_receptivity": 0.1
         },
         {
-            "buoyancy_volume_fill": 0.0,
+            "buoyancy_volume_fill": 1.0,
             "color_key": [
                 "#E4E4E4",
                 "#B3000B",
@@ -1685,7 +1685,7 @@
             "ignition_temperature": 689.15,
             "is_hull": true,
             "mass": {
-                "density": 0.38,
+                "density": 1.038,
                 "nominal_mass": 1060
             },
             "melting_temperature": 393.15,
@@ -1744,7 +1744,7 @@
             "wind_receptivity": 0.1
         },
         {
-            "buoyancy_volume_fill": 0.0,
+            "buoyancy_volume_fill": 1.0,
             "color_key": "#0101C0",
             "combustion_type": "Combustion",
             "ignition_temperature": 1000000.0,
@@ -1832,7 +1832,7 @@
             "wind_receptivity": 0.1
         },
         {
-            "buoyancy_volume_fill": 0.0,
+            "buoyancy_volume_fill": 1.0,
             "color_key": [
                 "#909190",
                 "#D45F40",
@@ -1912,7 +1912,7 @@
             "wind_receptivity": 0.1
         },
         {
-            "buoyancy_volume_fill": 0.0,
+            "buoyancy_volume_fill": 1.0,
             "color_key": "#E6E6E6",
             "combustion_type": "Combustion",
             "ignition_temperature": 1000000.0,
@@ -1972,13 +1972,13 @@
             "wind_receptivity": 0.1
         },
         {
-            "buoyancy_volume_fill": 0.0,
+            "buoyancy_volume_fill": 0.1,
             "color_key": "#14CEE3",
             "combustion_type": "Combustion",
             "ignition_temperature": 1000000.0,
             "is_hull": true,
             "mass": {
-                "density": 0.0033633,
+                "density": 0.004,
                 "nominal_mass": 1390
             },
             "melting_temperature": 527.15,

@@ -1012,38 +1012,43 @@
 				- Remove hacks from ShipBuilder (WaterlineAnalyzer; others?)
 			= Option 2: mass of hull is > 1000, and buoyancy_volume_fill is 1
 				= Adjust materials' json:
-					+ Iron hull: old mass is 743.325 (note: non-hull Iron mass is 73.3975)
+					= Iron hull: old mass is 743.325 (note: non-hull Iron mass is 73.3975)
 						= Test 1: 1500 => density=0.189
 						= Test 2: 1700 => density=0.214
-					= Double-bottom Iron: 1700
-					+ Steel hull: old mass is 708.73 (note: non-hull Steel mass is 69.938)
+					+ Double-bottom Iron: 1700
+					= Steel hull: old mass is 708.73 (note: non-hull Steel mass is 69.938)
 						= Test 1: 1600 => density=0.211
 						= Test 2: 1400 => density=0.185
-					= Stainless Steel Hull: (like Steel Hull)
-					= Double-Bottom Steel: 1400
+					+ Stainless Steel Hull: (like Steel Hull)
+					+ Double-Bottom Steel: 1400
 					= Titanium Hull: 1300
-					= Double-Bottom Titanium: 1300
-					= Aluminium Hull: 1150
-					= Oak Wood Hull: 1075
-					= Oak Double-Bottom Wood: 1175
-					- Pine Wood Hull
-					- Pine Double-Bottom Wood
-					= Carbon Hull: 1200
-					= Aluminium Sheet Hull: 1020
-					- Cardboard Hull
-					- Paper Hull
-					- Glass Hull
-					- Rubber Hull Soft
-					- Rubber Hull Hard
-					= Fiberglass Hull: 1100
-					- LEGO Hull (ABS)
-					- Water
-					- Concrete Hull
-					- Styrofoam Hull
-					- Mylar Hull
+					+ Double-Bottom Titanium: 1300
+					+ Aluminium Hull: 1150
+					+ Oak Wood Hull: 1075
+					+ Oak Double-Bottom Wood: 1175
+					+ Pine Wood Hull: 1020
+					+ Pine Double-Bottom Wood: 1120
+					+ Carbon Hull: 1200
+					+ Aluminium Sheet Hull: 1020
+					+ Cardboard Hull: 1005
+					+ Paper Hull
+					+ Glass Hull: 1200
+					+ Rubber Hull Soft, Hard: 1140
+					+ Fiberglass Hull: 1100
+					+ LEGO Hull (ABS): 1100
+					+ Water: buoyancy_volume_fill=1.0 (was 0.0)
+					+ Concrete Hull
+					+ Styrofoam Hull
+					+ Mylar Hull
+					- Chains
+				= Special tests:
+					+ Smoke
+					+ Engine wake
+					+ Destroy
 				- If goes through:
-					- Make branch and commit to it
+					= Make branch and commit to it
 					- Adjust ships (and make them .shp2 while you're at it):
+						- default ship
 						- All titanics
 						- A.R.C.C. ...del Sol
 						- S.S. Blue Lady
