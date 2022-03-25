@@ -1012,16 +1012,16 @@
 				- Remove hacks from ShipBuilder (WaterlineAnalyzer; others?)
 			= Option 2: mass of hull is > 1000, and buoyancy_volume_fill is 1
 				= Adjust materials' json:
-					= Iron hull: old mass is 743.325 (note: non-hull Iron mass is 73.3975)
-						= Test 1: 1500 => density=0.189
-						= Test 2: 1700 => density=0.214
+					+ Iron hull: old mass is 743.325 (note: non-hull Iron mass is 73.3975)
+						+ Test 1: 1500 => density=0.189
+						X Test 2: 1700 => density=0.214
 					+ Double-bottom Iron: 1700
-					= Steel hull: old mass is 708.73 (note: non-hull Steel mass is 69.938)
-						= Test 1: 1600 => density=0.211
-						= Test 2: 1400 => density=0.185
+					+ Steel hull: old mass is 708.73 (note: non-hull Steel mass is 69.938)
+						X Test 1: 1600 => density=0.211
+						+ Test 2: 1400 => density=0.185
 					+ Stainless Steel Hull: (like Steel Hull)
 					+ Double-Bottom Steel: 1400
-					= Titanium Hull: 1300
+					+ Titanium Hull: 1200
 					+ Double-Bottom Titanium: 1300
 					+ Aluminium Hull: 1150
 					+ Oak Wood Hull: 1075
