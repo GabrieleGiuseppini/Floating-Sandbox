@@ -982,33 +982,75 @@
 
 	= Material system improvements (*)
 		- Check if can undo BuoyancyVolumeFill:
-			+ The biggest test is whether current ships start flying or not
-				+ Preliminary checks indicate it might be ok!
-				X Argh, no - ships don't sink anymore
-			- Replace with "buoyant_volume_naked" (now one) and "buoyant_volume_clad" (old one)
-				! Physical interpretation: the volume occupied by the particles, for the purpose of both buoyancy calculations *and* water taken mass calculations
-					! Naked: when particle has zero attached triangles; clad: when has at least one triangle
-					! Buoyancy: volume of water displaced
-					! Taken water mass: high cap on water taken mass (should be 1.0-volume though)
-				- Material (in git stash)
-				- Adjust structural palette json; guidelines:
-					- Every hull material: C=1.0 N=0.0
-						! C: because (hull) structures should feel buoyancy (NEW)
-						! N: because naked particles won't take water, hence would float forever if they were buoyant (OLD)
-					- Every non-hull material: C=1.0 N=1.0
-						! C: because structures should feel buoyancy (OLD)
-						! N: because naked particles will take water, and hence have to counterbalance taken water weight with own buoyancy (OLD)
-					- Ropes: C=N
-						! Because even when they form a triangle, we want same bouyancy (OLD)
-					- Materials like hull and chains have it ~zero, ropes a bit more
-			- Points::Add:
-				- ShipBuilder specifies if has triangles attached, and populates mBuoyantVolumeBuffer accordingly (and then calculates buoyancy coeffs)
-			- @Points' Triangle Destroy/Restore: populates mBuoyantVolumeBuffer accordingly (and then calculates buoyancy coeffs)
-			- @ Points::CreateXYZEphParticle: populates mBuoyantVolumeBuffer accordingly (and then calculates buoyancy coeffs)
-				- Air (has 1.0, uses special only for bubbles): TODO
-				- Smoke (Air material but with buoyancy_volume_fill overwritten as 1.0): TODO
-				- Water (has 0.0): TODO									
-			- Remove hacks from ShipBuilder (WaterlineAnalyzer; others?)
+			X Option 1:
+				+ The biggest test is whether current ships start flying or not
+					+ Preliminary checks indicate it might be ok!
+					X Argh, no - ships don't sink anymore
+				- Replace with "buoyant_volume_naked" (now one) and "buoyant_volume_clad" (old one)
+					! Physical interpretation: the volume occupied by the particles, for the purpose of both buoyancy calculations *and* water taken mass calculations
+						! Naked: when particle has zero attached triangles; clad: when has at least one triangle
+						! Buoyancy: volume of water displaced
+						! Taken water mass: high cap on water taken mass (should be 1.0-volume though)
+					- Material (in git stash)
+					- Adjust structural palette json; guidelines:
+						- Every hull material: C=1.0 N=0.0
+							! C: because (hull) structures should feel buoyancy (NEW)
+							! N: because naked particles won't take water, hence would float forever if they were buoyant (OLD)
+						- Every non-hull material: C=1.0 N=1.0
+							! C: because structures should feel buoyancy (OLD)
+							! N: because naked particles will take water, and hence have to counterbalance taken water weight with own buoyancy (OLD)
+						- Ropes: C=N
+							! Because even when they form a triangle, we want same bouyancy (OLD)
+						- Materials like hull and chains have it ~zero, ropes a bit more
+				- Points::Add:
+					- ShipBuilder specifies if has triangles attached, and populates mBuoyantVolumeBuffer accordingly (and then calculates buoyancy coeffs)
+				- @Points' Triangle Destroy/Restore: populates mBuoyantVolumeBuffer accordingly (and then calculates buoyancy coeffs)
+				- @ Points::CreateXYZEphParticle: populates mBuoyantVolumeBuffer accordingly (and then calculates buoyancy coeffs)
+					- Air (has 1.0, uses special only for bubbles): TODO
+					- Smoke (Air material but with buoyancy_volume_fill overwritten as 1.0): TODO
+					- Water (has 0.0): TODO									
+				- Remove hacks from ShipBuilder (WaterlineAnalyzer; others?)
+			= Option 2: mass of hull is > 1000, and buoyancy_volume_fill is 1
+				= Adjust materials' json:
+					+ Iron hull: old mass is 743.325 (note: non-hull Iron mass is 73.3975)
+						= Test 1: 1500 => density=0.189
+						= Test 2: 1700 => density=0.214
+					= Double-bottom Iron: 1700
+					+ Steel hull: old mass is 708.73 (note: non-hull Steel mass is 69.938)
+						= Test 1: 1600 => density=0.211
+						= Test 2: 1400 => density=0.185
+					= Stainless Steel Hull: (like Steel Hull)
+					= Double-Bottom Steel: 1400
+					= Titanium Hull: 1300
+					= Double-Bottom Titanium: 1300
+					= Aluminium Hull: 1150
+					= Oak Wood Hull: 1075
+					= Oak Double-Bottom Wood: 1175
+					- Pine Wood Hull
+					- Pine Double-Bottom Wood
+					= Carbon Hull: 1200
+					= Aluminium Sheet Hull: 1020
+					- Cardboard Hull
+					- Paper Hull
+					- Glass Hull
+					- Rubber Hull Soft
+					- Rubber Hull Hard
+					= Fiberglass Hull: 1100
+					- LEGO Hull (ABS)
+					- Water
+					- Concrete Hull
+					- Styrofoam Hull
+					- Mylar Hull
+				- If goes through:
+					- Make branch and commit to it
+					- Adjust ships (and make them .shp2 while you're at it):
+						- All titanics
+						- A.R.C.C. ...del Sol
+						- S.S. Blue Lady
+						- Red October
+							- & other subs...
+						- Triton
+			- Regardless of option chosen: see if still need Points buffer for buoyancy_volume_fill
 
 		= Make "Internal Watertight" (and other) versions of hull/non-hull materials
 			! Spec:
