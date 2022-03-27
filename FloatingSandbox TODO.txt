@@ -1091,17 +1091,18 @@
 				+ Also set subcategory in PaletteCoords - to new name of material
 					+ Assume group name matches stem; if not found, abort
 				+ Better algo for colors
-			- Do for:
-				- All metals
-					- Iron
+			= Do for:
+				= All metals
+					= Iron
 						+ Lower double-bottom strength
 					- Steel & Stainless Steel
 						- Script: deal with extra color - take min of base and, if exists, hull
 						- Separate palette groups
 					- Aluminium
 						- Separate Aluminium Sheet into its own group first, which later won't get variants
+					- Titanium
 				- All woods
-					= Do new wood type below first
+					= Do new wood type and its colors below first
 				- TODO: others?
 			- Description of variant in ShipBuilder palette?
 				- By means of a variant enum in the materials json, and therefore localizable strings
