@@ -139,7 +139,7 @@ void Points::CreateEphemeralParticleAirBubble(
     StructuralMaterial const & airStructuralMaterial = mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Air);
 
     // We want to limit the buoyancy applied to air - using 1.0 makes an air particle boost up too quickly
-    float constexpr AirBuoyancyVolumeFill = 0.003f;
+    float constexpr AirBubbleBuoyancyVolumeFill = 0.003f;
 
     assert(mIsDamagedBuffer[pointIndex] == false); // Ephemeral points are never damaged
     mMaterialsBuffer[pointIndex] = Materials(&airStructuralMaterial, nullptr);
@@ -149,13 +149,13 @@ void Points::CreateEphemeralParticleAirBubble(
     mStaticForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
     mMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
-    mMaterialBuoyancyVolumeFillBuffer[pointIndex] = AirBuoyancyVolumeFill;
+    mMaterialBuoyancyVolumeFillBuffer[pointIndex] = AirBubbleBuoyancyVolumeFill;
     assert(mDecayBuffer[pointIndex] == 1.0f);
     //mDecayBuffer[pointIndex] = 1.0f;
     mFrozenCoefficientBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
     mBuoyancyCoefficientsBuffer[pointIndex] = CalculateBuoyancyCoefficients(
-        AirBuoyancyVolumeFill,
+        AirBubbleBuoyancyVolumeFill,
         airStructuralMaterial.ThermalExpansionCoefficient);
     mCachedDepthBuffer[pointIndex] = depth;
 
@@ -303,8 +303,6 @@ void Points::CreateEphemeralParticleSmoke(
 
     StructuralMaterial const & airStructuralMaterial = mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Air);
 
-    float constexpr SmokeBuoyancyVolumeFill = 1.0f;
-
     assert(mIsDamagedBuffer[pointIndex] == false); // Ephemeral points are never damaged
     mMaterialsBuffer[pointIndex] = Materials(&airStructuralMaterial, nullptr);
     mPositionBuffer[pointIndex] = position;
@@ -313,13 +311,13 @@ void Points::CreateEphemeralParticleSmoke(
     mStaticForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
     mMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
-    mMaterialBuoyancyVolumeFillBuffer[pointIndex] = SmokeBuoyancyVolumeFill;
+    mMaterialBuoyancyVolumeFillBuffer[pointIndex] = airStructuralMaterial.BuoyancyVolumeFill;
     assert(mDecayBuffer[pointIndex] == 1.0f);
     //mDecayBuffer[pointIndex] = 1.0f;
     mFrozenCoefficientBuffer[pointIndex] = 1.0f;
     mIntegrationFactorTimeCoefficientBuffer[pointIndex] = CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f);
     mBuoyancyCoefficientsBuffer[pointIndex] = CalculateBuoyancyCoefficients(
-        SmokeBuoyancyVolumeFill,
+        airStructuralMaterial.BuoyancyVolumeFill,
         airStructuralMaterial.ThermalExpansionCoefficient);
     mCachedDepthBuffer[pointIndex] = depth;
 
@@ -1215,8 +1213,8 @@ void Points::UpdateCombustionHighFrequency(
             MinFlameVectorConvergenceRate
             + (MaxFlameVectorConvergenceRate - MinFlameVectorConvergenceRate) * (1.0f - LinearStep(0.0f, Pi<float>, flameVectorChangeMagnitude));
 
-        pointCombustionState.FlameVector += 
-            (Q - pointCombustionState.FlameVector) 
+        pointCombustionState.FlameVector +=
+            (Q - pointCombustionState.FlameVector)
             * flameVectorConvergenceRate;
 
         //
@@ -1245,7 +1243,7 @@ void Points::UpdateCombustionHighFrequency(
                     * windField->WindSpeed;
             }
         }
-        
+
         // Projection of wind speed vector along flame
         vec2f const flameDir = pointCombustionState.FlameVector.normalise();
         float const windSpeedMagnitudeAlongFlame = resultantWindSpeedVector.dot(flameDir);
@@ -2166,7 +2164,7 @@ vec2f Points::CalculateIdealFlameVector(
     // Magnitude of vector is capped
     float constexpr Qlmax = 1.8f; // Magic number
     float const Ql = Q.length();
-    vec2f const Qn = Q.normalise(Ql);    
+    vec2f const Qn = Q.normalise(Ql);
     Q = Qn * std::min(Ql, Qlmax);
 
     return Q;
