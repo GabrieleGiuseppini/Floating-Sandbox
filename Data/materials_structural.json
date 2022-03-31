@@ -743,6 +743,84 @@
             "wind_receptivity": 0.1
         },
         {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": [
+                "#E3E3E3",
+                "#A72B11",
+                "#E5D211",
+                "#A69C11",
+                "#7AB410",
+                "#10A69C",
+                "#244565",
+                "#94299D",
+                "#D5771A",
+                "#7C7C7C"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1000000.0,
+            "is_hull": true,
+            "mass": {
+                "density": 0.0374,
+                "nominal_mass": 2710.0
+            },
+            "melting_temperature": 933.45,
+            "name": "Solid Aluminium Bulkhead",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Solid Aluminium Bulkhead",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Metal",
+            "specific_heat": 897.0,
+            "stiffness": 1.0,
+            "strength": 0.0963,
+            "texture_name": "metal_riveted_2",
+            "thermal_conductivity": 205.0,
+            "thermal_expansion_coefficient": 2.2e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": [
+                "#E7E7E7",
+                "#AA2911",
+                "#ECD811",
+                "#A99D11",
+                "#7EB510",
+                "#10A99D",
+                "#274A6A",
+                "#912598",
+                "#D27418",
+                "#838383"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1000000.0,
+            "is_hull": true,
+            "mass": {
+                "density": 0.00935,
+                "nominal_mass": 2710.0
+            },
+            "melting_temperature": 933.45,
+            "name": "Light Aluminium Bulkhead",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Light Aluminium Bulkhead",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Metal",
+            "specific_heat": 897.0,
+            "stiffness": 1.0,
+            "strength": 0.09,
+            "texture_name": "metal_riveted_2",
+            "thermal_conductivity": 205.0,
+            "thermal_expansion_coefficient": 2.2e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
             "buoyancy_volume_fill": 1.0,
             "color_key": [
                 "#C8C8C8",
@@ -764,10 +842,10 @@
                 "nominal_mass": 2710
             },
             "melting_temperature": 933.45,
-            "name": "Structural Aluminium",
+            "name": "Solid Aluminium I-Beam",
             "palette_coordinates": {
                 "category": "Metals",
-                "sub_category": "Structural Aluminium",
+                "sub_category": "Solid Aluminium I-Beam",
                 "sub_category_ordinal": 0
             },
             "sound_type": "Metal",
@@ -803,10 +881,10 @@
                 "nominal_mass": 2710
             },
             "melting_temperature": 933.45,
-            "name": "Aluminium",
+            "name": "Light Aluminium I-Beam",
             "palette_coordinates": {
                 "category": "Metals",
-                "sub_category": "Aluminium",
+                "sub_category": "Light Aluminium I-Beam",
                 "sub_category_ordinal": 0
             },
             "sound_type": "Metal",
@@ -842,10 +920,10 @@
                 "nominal_mass": 2710
             },
             "melting_temperature": 933.45,
-            "name": "Aluminium Cheap",
+            "name": "Low-Grade Aluminium",
             "palette_coordinates": {
                 "category": "Metals",
-                "sub_category": "Aluminium Cheap",
+                "sub_category": "Low-Grade Aluminium",
                 "sub_category_ordinal": 0
             },
             "sound_type": "Metal",
@@ -2867,12 +2945,19 @@
                     {
                         "name": "Aluminium",
                         "sub_categories": [
-                            "Aluminium",
                             "Aluminium Hull",
-                            "Structural Aluminium",
-                            "Aluminium Sheet",
+                            "Solid Aluminium Bulkhead",
+                            "Light Aluminium Bulkhead",
+                            "Solid Aluminium I-Beam",
+                            "Light Aluminium I-Beam",
+                            "Low-Grade Aluminium"
+                        ]
+                    },
+                    {
+                        "name": "Aluminium Sheet",
+                        "sub_categories": [
                             "Aluminium Sheet Hull",
-                            "Aluminium Cheap"
+                            "Aluminium Sheet"
                         ]
                     },
                     {

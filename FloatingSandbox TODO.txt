@@ -1053,8 +1053,8 @@
 						+ Script: deal with extra color - take min of base and, if exists, hull
 						+ Separate palette groups
 					+ Titanium
-					- Aluminium
-						- Separate Aluminium Sheet into its own group first, which later won't get variants but only colors
+					+ Aluminium
+						+ Separate Aluminium Sheet into its own group first, which later won't get variants but only colors
 					- Nails
 						- Colors only
 				- All woods
