@@ -40,6 +40,84 @@
             "wind_receptivity": 0.1
         },
         {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": [
+                "#4D4D5D",
+                "#8A0F00",
+                "#D8CC4B",
+                "#856600",
+                "#4A8000",
+                "#006F7B",
+                "#1C3565",
+                "#8B0086",
+                "#AF5100",
+                "#151515"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1783.15,
+            "is_hull": true,
+            "mass": {
+                "density": 0.0374,
+                "nominal_mass": 7850.0
+            },
+            "melting_temperature": 1588.15,
+            "name": "Solid Iron Bulkhead",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Solid Iron Bulkhead",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Metal",
+            "specific_heat": 449.0,
+            "stiffness": 1.0,
+            "strength": 0.05457,
+            "texture_name": "metal_riveted_1",
+            "thermal_conductivity": 79.5,
+            "thermal_expansion_coefficient": 1.06e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": [
+                "#5A5A6A",
+                "#8F0F00",
+                "#D6CA49",
+                "#8A6900",
+                "#4D8500",
+                "#00747F",
+                "#1D3769",
+                "#90008C",
+                "#B55300",
+                "#181818"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1783.15,
+            "is_hull": true,
+            "mass": {
+                "density": 0.00935,
+                "nominal_mass": 7850.0
+            },
+            "melting_temperature": 1588.15,
+            "name": "Light Iron Bulkhead",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Light Iron Bulkhead",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Metal",
+            "specific_heat": 449.0,
+            "stiffness": 1.0,
+            "strength": 0.051,
+            "texture_name": "metal_riveted_1",
+            "thermal_conductivity": 79.5,
+            "thermal_expansion_coefficient": 1.06e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
             "buoyancy_volume_fill": 1.0,
             "color_key": [
                 "#303040",
@@ -61,10 +139,10 @@
                 "nominal_mass": 7950
             },
             "melting_temperature": 1588.15,
-            "name": "Structural Iron",
+            "name": "Solid Iron I-Beam",
             "palette_coordinates": {
                 "category": "Metals",
-                "sub_category": "Structural Iron",
+                "sub_category": "Solid Iron I-Beam",
                 "sub_category_ordinal": 0
             },
             "sound_type": "Metal",
@@ -100,16 +178,55 @@
                 "nominal_mass": 7850
             },
             "melting_temperature": 1588.15,
-            "name": "Iron",
+            "name": "Light Iron I-Beam",
             "palette_coordinates": {
                 "category": "Metals",
-                "sub_category": "Iron",
+                "sub_category": "Light Iron I-Beam",
                 "sub_category_ordinal": 0
             },
             "sound_type": "Metal",
             "specific_heat": 449.0,
             "stiffness": 1.0,
             "strength": 0.051,
+            "texture_name": "metal_riveted_1",
+            "thermal_conductivity": 79.5,
+            "thermal_expansion_coefficient": 1.06e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": [
+                "#1F1F1F",
+                "#f52c36",
+                "#e6da3c",
+                "#4a2e31",
+                "#0b4728",
+                "#379299",
+                "#0f0187",
+                "#54076e",
+                "#bf4204",
+                "#211f1e"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1783.15,
+            "is_hull": false,
+            "mass": {
+                "density": 0.00935,
+                "nominal_mass": 7850
+            },
+            "melting_temperature": 1588.15,
+            "name": "Low-Grade Iron",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Low-Grade Iron",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Metal",
+            "specific_heat": 449.0,
+            "stiffness": 1.0,
+            "strength": 0.02,
             "texture_name": "metal_riveted_1",
             "thermal_conductivity": 79.5,
             "thermal_expansion_coefficient": 1.06e-05,
@@ -586,11 +703,10 @@
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
-
         {
             "buoyancy_volume_fill": 0.0,
             "color_key": [
-		"#C49B6A"
+                "#C49B6A"
             ],
             "combustion_type": "Combustion",
             "ignition_temperature": 453.0,
@@ -650,7 +766,7 @@
         {
             "buoyancy_volume_fill": 0.0,
             "color_key": [
-		"#946228"
+                "#946228"
             ],
             "combustion_type": "Combustion",
             "ignition_temperature": 453.0,
@@ -677,9 +793,6 @@
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
-
-
-
         {
             "buoyancy_volume_fill": 0.05,
             "color_key": [
@@ -1141,45 +1254,6 @@
             "wind_receptivity": 0.1
         },
         {
-            "buoyancy_volume_fill": 1.0,
-            "color_key": [
-                "#1F1F1F",
-                "#f52c36",
-                "#e6da3c",
-                "#4a2e31",
-                "#0b4728",
-                "#379299",
-                "#0f0187",
-                "#54076e",
-                "#bf4204",
-                "#211f1e"
-            ],
-            "combustion_type": "Combustion",
-            "ignition_temperature": 1783.15,
-            "is_hull": false,
-            "mass": {
-                "density": 0.00935,
-                "nominal_mass": 7850
-            },
-            "melting_temperature": 1588.15,
-            "name": "Iron Cheap",
-            "palette_coordinates": {
-                "category": "Metals",
-                "sub_category": "Iron Cheap",
-                "sub_category_ordinal": 0
-            },
-            "sound_type": "Metal",
-            "specific_heat": 449.0,
-            "stiffness": 1.0,
-            "strength": 0.02,
-            "texture_name": "metal_riveted_1",
-            "thermal_conductivity": 79.5,
-            "thermal_expansion_coefficient": 1.06e-05,
-            "water_diffusion_speed": 0.5,
-            "water_retention": 0.05,
-            "wind_receptivity": 0.1
-        },
-        {
             "buoyancy_volume_fill": 0.0,
             "color_key": "#A2A2A2",
             "combustion_type": "Combustion",
@@ -1597,11 +1671,11 @@
             "buoyancy_volume_fill": 0.0,
             "color_key": [
                 "#C4C4C4",
-                "#E1C4C4",                
+                "#E1C4C4",
                 "#FFFFC1",
                 "#FFE674",
                 "#CAFF74",
-		"#C4C4E1",
+                "#C4C4E1",
                 "#9FB6D5",
                 "#FF84F4",
                 "#FFD374",
@@ -2496,11 +2570,13 @@
                     {
                         "name": "Iron",
                         "sub_categories": [
-                            "Iron",
                             "Iron Hull",
-                            "Double-Bottom Iron",
-                            "Structural Iron",
-                            "Iron Cheap"
+                            "Solid Iron Bulkhead",
+                            "Light Iron Bulkhead",
+                            "Solid Iron I-Beam",
+                            "Light Iron I-Beam",
+                            "Low-Grade Iron",
+                            "Double-Bottom Iron"
                         ]
                     },
                     {
