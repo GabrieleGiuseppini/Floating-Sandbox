@@ -13,8 +13,10 @@
 
 		+ -> ShipBuilder
 
-		- Material system improvements (*)
+		= Material system improvements (*)
 			- changes.txt 
+
+		- Test with SpringReductionFraction = 0.6 (@GameParameters)
 
 		- Fix from Chris:
 			What happened on my screen was I have just done a whole auto trim and added a bit of size just to give it some margin, anyway, save it the abandon it, 
@@ -1057,12 +1059,12 @@
 						+ Separate Aluminium Sheet into its own group first, which later won't get variants but only colors
 					+ Nails
 						+ Colors only
-				= All woods
+				+ All woods
 					+ Complete pine below, first
 					+ Oak wood
-					- Pine wood
+					+ Pine wood
 				- TODO: others?
-				- Reorder all categories: hull first
+				= Reorder all categories: hull first
 			- Description of variant in ShipBuilder palette?
 				- By means of a variant enum in the materials json, and therefore localizable strings
 					- ~"Structure"+"Form/Variant/Kind/Genre/Class"

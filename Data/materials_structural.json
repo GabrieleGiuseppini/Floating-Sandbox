@@ -1250,6 +1250,123 @@
             "wind_receptivity": 0.1
         },
         {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": [
+                "#C9A172",
+                "#D77F5E",
+                "#D2DC5C",
+                "#7CE358",
+                "#3CBFDE",
+                "#5781C2",
+                "#DC51D7",
+                "#FFD252",
+                "#B0C8C9",
+                "#405859"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 453.0,
+            "is_hull": true,
+            "mass": {
+                "density": 0.100112,
+                "nominal_mass": 500.0
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Solid Pine Wood Bulkhead",
+            "palette_coordinates": {
+                "category": "Wood",
+                "sub_category": "Solid Pine Wood Bulkhead",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Wood",
+            "specific_heat": 300.0,
+            "stiffness": 1.0,
+            "strength": 0.1605,
+            "texture_name": "wood_planks_3",
+            "thermal_conductivity": 0.1,
+            "thermal_expansion_coefficient": 0.00015,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": [
+                "#CEA77A",
+                "#DC8566",
+                "#D7E264",
+                "#81E960",
+                "#41C5E6",
+                "#5C87CA",
+                "#E157DF",
+                "#FFD85A",
+                "#B5CED1",
+                "#455E61"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 453.0,
+            "is_hull": true,
+            "mass": {
+                "density": 0.022935,
+                "nominal_mass": 500.0
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Light Pine Wood Bulkhead",
+            "palette_coordinates": {
+                "category": "Wood",
+                "sub_category": "Light Pine Wood Bulkhead",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Wood",
+            "specific_heat": 300.0,
+            "stiffness": 1.0,
+            "strength": 0.15,
+            "texture_name": "wood_planks_3",
+            "thermal_conductivity": 0.1,
+            "thermal_expansion_coefficient": 0.00015,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": [
+                "#D2AD82",
+                "#E08B6E",
+                "#DBE86C",
+                "#85EF68",
+                "#45CBEE",
+                "#608DD2",
+                "#E55DE7",
+                "#FFDE62",
+                "#B9D4D9",
+                "#496469"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 453.0,
+            "is_hull": false,
+            "mass": {
+                "density": 0.116875,
+                "nominal_mass": 500
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Solid Pine Wood I-Beam",
+            "palette_coordinates": {
+                "category": "Wood",
+                "sub_category": "Solid Pine Wood I-Beam",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Wood",
+            "specific_heat": 300.0,
+            "stiffness": 1.0,
+            "strength": 0.1605,
+            "texture_name": "wood_planks_3",
+            "thermal_conductivity": 0.1,
+            "thermal_expansion_coefficient": 0.00015,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
             "buoyancy_volume_fill": 1.0,
             "color_key": [
                 "#DBB991",
@@ -1271,16 +1388,55 @@
                 "nominal_mass": 500
             },
             "melting_temperature": 1000000.0,
-            "name": "Pine Wood",
+            "name": "Light Pine Wood I-Beam",
             "palette_coordinates": {
                 "category": "Wood",
-                "sub_category": "Pine Wood",
+                "sub_category": "Light Pine Wood I-Beam",
                 "sub_category_ordinal": 0
             },
             "sound_type": "Wood",
             "specific_heat": 300.0,
             "stiffness": 1.0,
             "strength": 0.15,
+            "texture_name": "wood_planks_3",
+            "thermal_conductivity": 0.1,
+            "thermal_expansion_coefficient": 0.00015,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": [
+                "#D7B38A",
+                "#E59176",
+                "#E0EE74",
+                "#8AF570",
+                "#4AD1F6",
+                "#6593DA",
+                "#EA63EF",
+                "#FFE46A",
+                "#BEDAE1",
+                "#4E6A71"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 453.0,
+            "is_hull": false,
+            "mass": {
+                "density": 0.022935,
+                "nominal_mass": 500.0
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Low-Grade Pine Wood",
+            "palette_coordinates": {
+                "category": "Wood",
+                "sub_category": "Low-Grade Pine Wood",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Wood",
+            "specific_heat": 300.0,
+            "stiffness": 1.0,
+            "strength": 0.045,
             "texture_name": "wood_planks_3",
             "thermal_conductivity": 0.1,
             "thermal_expansion_coefficient": 0.00015,
@@ -3180,7 +3336,11 @@
                         "name": "Pine Wood",
                         "sub_categories": [
                             "Pine Wood Hull",
-                            "Pine Wood",
+                            "Solid Pine Wood Bulkhead",
+                            "Light Pine Wood Bulkhead",
+                            "Solid Pine Wood I-Beam",
+                            "Light Pine Wood I-Beam",
+                            "Low-Grade Pine Wood",
                             "Double-Bottom Pine Wood"
                         ]
                     }
