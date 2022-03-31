@@ -1372,7 +1372,18 @@
         },
         {
             "buoyancy_volume_fill": 0.0,
-            "color_key": "#A2A2A2",
+            "color_key": [
+                "#A2A2A2",
+                "#E67052",
+                "#FFFF9F",
+                "#E2C452",
+                "#A8DD52",
+                "#62CCC8",
+                "#7D94B3",
+                "#E862D2",
+                "#FFB152",
+                "#737363"
+            ],
             "combustion_type": "Combustion",
             "ignition_temperature": 1643.15,
             "is_hull": true,
@@ -1387,7 +1398,6 @@
                 "sub_category": "Stainless Steel Hull",
                 "sub_category_ordinal": 0
             },
-            "render_color": "#A2A2A2",
             "rust_receptivity": 0,
             "sound_type": "Metal",
             "specific_heat": 490.0,
@@ -1402,7 +1412,18 @@
         },
         {
             "buoyancy_volume_fill": 1.0,
-            "color_key": "#E8E8E8",
+            "color_key": [
+                "#E8E8E8",
+                "#FFB698",
+                "#FFFFE5",
+                "#FFFF98",
+                "#EEFF98",
+                "#A8FFFF",
+                "#C3DAF9",
+                "#FFA8FF",
+                "#FFF798",
+                "#B9B9A9"
+            ],
             "combustion_type": "Combustion",
             "ignition_temperature": 1643.15,
             "is_hull": false,
@@ -1417,7 +1438,6 @@
                 "sub_category": "Stainless Steel",
                 "sub_category_ordinal": 0
             },
-            "render_color": "#E8E8E8",
             "rust_receptivity": 0,
             "sound_type": "Metal",
             "specific_heat": 490.0,
@@ -2669,7 +2689,7 @@
                             "Double-Bottom Steel"
                         ]
                     },
-		    {
+                    {
                         "name": "Stainless Steel",
                         "sub_categories": [
                             "Stainless Steel Hull",
