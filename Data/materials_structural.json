@@ -1057,7 +1057,16 @@
         {
             "buoyancy_volume_fill": 0.0,
             "color_key": [
-                "#C49B6A"
+                "#C49B6A",
+                "#D27956",
+                "#CDD654",
+                "#77DD50",
+                "#37B9D6",
+                "#527BBA",
+                "#D74BCF",
+                "#FFCC4A",
+                "#ABC2C1",
+                "#3B5251"
             ],
             "combustion_type": "Combustion",
             "ignition_temperature": 453.0,
@@ -1087,7 +1096,16 @@
         {
             "buoyancy_volume_fill": 1.0,
             "color_key": [
-                "#DBB991"
+                "#DBB991",
+                "#E9977D",
+                "#E4F47B",
+                "#8EFB77",
+                "#4ED7FD",
+                "#6999E1",
+                "#EE69F6",
+                "#FFEA71",
+                "#C2E0E8",
+                "#527078"
             ],
             "combustion_type": "Combustion",
             "ignition_temperature": 453.0,
@@ -1117,7 +1135,16 @@
         {
             "buoyancy_volume_fill": 0.0,
             "color_key": [
-                "#946228"
+                "#946228",
+                "#A24014",
+                "#9D9D12",
+                "#47A40E",
+                "#078094",
+                "#224278",
+                "#A7128D",
+                "#D29308",
+                "#7B897F",
+                "#0B190F"
             ],
             "combustion_type": "Combustion",
             "ignition_temperature": 453.0,
@@ -2338,7 +2365,7 @@
                 "nominal_mass": 50
             },
             "melting_temperature": 513.0,
-            "name": "Styrofoam Hull White",
+            "name": "Styrofoam Hull",
             "palette_coordinates": {
                 "category": "Plastic",
                 "sub_category": "Styrofoam Hull",
@@ -2368,7 +2395,7 @@
                 "nominal_mass": 50
             },
             "melting_temperature": 513.0,
-            "name": "Styrofoam White",
+            "name": "Styrofoam",
             "palette_coordinates": {
                 "category": "Plastic",
                 "sub_category": "Styrofoam",
@@ -2984,16 +3011,16 @@
                     {
                         "name": "Oak Wood",
                         "sub_categories": [
-                            "Oak Wood",
                             "Oak Wood Hull",
+                            "Oak Wood",
                             "Double-Bottom Oak Wood"
                         ]
                     },
                     {
                         "name": "Pine Wood",
                         "sub_categories": [
-                            "Pine Wood",
                             "Pine Wood Hull",
+                            "Pine Wood",
                             "Double-Bottom Pine Wood"
                         ]
                     }

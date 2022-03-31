@@ -1058,23 +1058,24 @@
 					+ Nails
 						+ Colors only
 				- All woods
-					- Complete pine below, first
+					+ Complete pine below, first
 				- TODO: others?
+				- Reorder all categories: hull first, 
 			- Description of variant in ShipBuilder palette?
 				- By means of a variant enum in the materials json, and therefore localizable strings
 					- ~"Structure"+"Form/Variant/Kind/Genre/Class"
 		- New materials:
 			+ Add helper for adding colors: base base_reference target_reference
 			- Structural materials:
-				= Another wood variant
-					= Names: Oak (600-900, heavier - current), Pine (350-850, lighter)
+				+ Another wood variant
+					+ Names: Oak (600-900, heavier - current), Pine (350-850, lighter)
 						+ Check densities and see which one is current
 						+ Rename old
 							+ Fix mass of hull: nominal_mass=1000->800 density=0.0935->0.116875
-						= Make Pine
+						+ Make Pine
 							+ nominal_mass=400
 							+ Three variants, one color
-							- Add colors to three variants
+							+ Add colors to three variants
 						+ New materials textures
 							+ wood_planks_3: One of the three "wood planks"
 							+ wood_studded_2
