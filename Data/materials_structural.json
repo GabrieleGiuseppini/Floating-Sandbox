@@ -274,6 +274,84 @@
             "wind_receptivity": 0.1
         },
         {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": [
+                "#ACACAC",
+                "#B10F00",
+                "#DDD231",
+                "#AC8000",
+                "#61A400",
+                "#00939E",
+                "#254883",
+                "#B100B1",
+                "#DA5D00",
+                "#373737"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1643.15,
+            "is_hull": true,
+            "mass": {
+                "density": 0.0374,
+                "nominal_mass": 7480.0
+            },
+            "melting_temperature": 1089.15,
+            "name": "Solid Steel Bulkhead",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Solid Steel Bulkhead",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Metal",
+            "specific_heat": 490.0,
+            "stiffness": 1.0,
+            "strength": 0.091592,
+            "texture_name": "metal_riveted_1",
+            "thermal_conductivity": 50.2,
+            "thermal_expansion_coefficient": 1.15e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": [
+                "#B7B7B7",
+                "#BB0F00",
+                "#E1D532",
+                "#B68600",
+                "#68AD00",
+                "#009CA6",
+                "#274C8A",
+                "#B900BA",
+                "#E05F00",
+                "#3A3A3A"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1643.15,
+            "is_hull": true,
+            "mass": {
+                "density": 0.00935,
+                "nominal_mass": 7480.0
+            },
+            "melting_temperature": 1089.15,
+            "name": "Light Steel Bulkhead",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Light Steel Bulkhead",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Metal",
+            "specific_heat": 490.0,
+            "stiffness": 1.0,
+            "strength": 0.0856,
+            "texture_name": "metal_riveted_1",
+            "thermal_conductivity": 50.2,
+            "thermal_expansion_coefficient": 1.15e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
             "buoyancy_volume_fill": 1.0,
             "color_key": [
                 "#909090",
@@ -295,10 +373,10 @@
                 "nominal_mass": 7580
             },
             "melting_temperature": 1089.15,
-            "name": "Structural Steel",
+            "name": "Solid Steel I-Beam",
             "palette_coordinates": {
                 "category": "Metals",
-                "sub_category": "Structural Steel",
+                "sub_category": "Solid Steel I-Beam",
                 "sub_category_ordinal": 0
             },
             "sound_type": "Metal",
@@ -335,16 +413,55 @@
                 "nominal_mass": 7480
             },
             "melting_temperature": 1089.15,
-            "name": "Steel",
+            "name": "Light Steel I-Beam",
             "palette_coordinates": {
                 "category": "Metals",
-                "sub_category": "Steel",
+                "sub_category": "Light Steel I-Beam",
                 "sub_category_ordinal": 0
             },
             "sound_type": "Metal",
             "specific_heat": 490.0,
             "stiffness": 1.0,
             "strength": 0.0856,
+            "texture_name": "metal_riveted_1",
+            "thermal_conductivity": 50.2,
+            "thermal_expansion_coefficient": 1.15e-05,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": [
+                "#72797f",
+                "#D80E02",
+                "#b8b809",
+                "#5c4000",
+                "#77d93f",
+                "#6ef0eb",
+                "#2432ff",
+                "#bd00fc",
+                "#ffa724",
+                "#141516"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1643.15,
+            "is_hull": false,
+            "mass": {
+                "density": 0.00935,
+                "nominal_mass": 7480
+            },
+            "melting_temperature": 1089.15,
+            "name": "Low-Grade Steel",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Low-Grade Steel",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Metal",
+            "specific_heat": 490.0,
+            "stiffness": 1.0,
+            "strength": 0.05,
             "texture_name": "metal_riveted_1",
             "thermal_conductivity": 50.2,
             "thermal_expansion_coefficient": 1.15e-05,
@@ -1215,38 +1332,38 @@
             "wind_receptivity": 0.15
         },
         {
-            "buoyancy_volume_fill": 1.0,
+            "buoyancy_volume_fill": 0.0,
             "color_key": [
-                "#72797f",
-                "#D80E02",
-                "#b8b809",
-                "#5c4000",
-                "#77d93f",
-                "#6ef0eb",
-                "#2432ff",
-                "#bd00fc",
-                "#ffa724",
-                "#141516"
+                "#7d7d7d",
+                "#A21000",
+                "#d9c73d",
+                "#6b635a",
+                "#039118",
+                "#3dd4ca",
+                "#1c0396",
+                "#460569",
+                "#f79a0f",
+                "#0d0903"
             ],
             "combustion_type": "Combustion",
             "ignition_temperature": 1643.15,
-            "is_hull": false,
+            "is_hull": true,
             "mass": {
-                "density": 0.00935,
-                "nominal_mass": 7480
+                "density": 0.17,
+                "nominal_mass": 6500
             },
             "melting_temperature": 1089.15,
-            "name": "Steel Cheap",
+            "name": "Double-Bottom Steel",
             "palette_coordinates": {
                 "category": "Metals",
-                "sub_category": "Steel Cheap",
+                "sub_category": "Double-Bottom Steel",
                 "sub_category_ordinal": 0
             },
             "sound_type": "Metal",
             "specific_heat": 490.0,
             "stiffness": 1.0,
             "strength": 0.05,
-            "texture_name": "metal_riveted_1",
+            "texture_name": "metal_bulkheads_1",
             "thermal_conductivity": 50.2,
             "thermal_expansion_coefficient": 1.15e-05,
             "water_diffusion_speed": 0.5,
@@ -1307,45 +1424,6 @@
             "stiffness": 1.0,
             "strength": 0.0856,
             "texture_name": "metal_riveted_1",
-            "thermal_conductivity": 50.2,
-            "thermal_expansion_coefficient": 1.15e-05,
-            "water_diffusion_speed": 0.5,
-            "water_retention": 0.05,
-            "wind_receptivity": 0.1
-        },
-        {
-            "buoyancy_volume_fill": 0.0,
-            "color_key": [
-                "#7d7d7d",
-                "#A21000",
-                "#d9c73d",
-                "#6b635a",
-                "#039118",
-                "#3dd4ca",
-                "#1c0396",
-                "#460569",
-                "#f79a0f",
-                "#0d0903"
-            ],
-            "combustion_type": "Combustion",
-            "ignition_temperature": 1643.15,
-            "is_hull": true,
-            "mass": {
-                "density": 0.17,
-                "nominal_mass": 6500
-            },
-            "melting_temperature": 1089.15,
-            "name": "Double-Bottom Steel",
-            "palette_coordinates": {
-                "category": "Metals",
-                "sub_category": "Double-Bottom Steel",
-                "sub_category_ordinal": 0
-            },
-            "sound_type": "Metal",
-            "specific_heat": 490.0,
-            "stiffness": 1.0,
-            "strength": 0.05,
-            "texture_name": "metal_bulkheads_1",
             "thermal_conductivity": 50.2,
             "thermal_expansion_coefficient": 1.15e-05,
             "water_diffusion_speed": 0.5,
@@ -2582,13 +2660,20 @@
                     {
                         "name": "Steel",
                         "sub_categories": [
-                            "Steel",
                             "Steel Hull",
-                            "Stainless Steel",
+                            "Solid Steel Bulkhead",
+                            "Light Steel Bulkhead",
+                            "Solid Steel I-Beam",
+                            "Light Steel I-Beam",
+                            "Low-Grade Steel",
+                            "Double-Bottom Steel"
+                        ]
+                    },
+		    {
+                        "name": "Stainless Steel",
+                        "sub_categories": [
                             "Stainless Steel Hull",
-                            "Double-Bottom Steel",
-                            "Structural Steel",
-                            "Steel Cheap"
+                            "Stainless Steel"
                         ]
                     },
                     {
