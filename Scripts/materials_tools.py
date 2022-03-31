@@ -214,10 +214,11 @@ def make_variant_material(material_group_name, variant_key, ideal_nominal_mass_o
 
 def dump_variant(variant_key, variants):
     material = variants[variant_key]
-    print("  {}: n_mass={} density={} is_hull={} buoyancy_volume_fill={} strength={}".format(
+    print("  {}: n_mass={} density={} mass={} is_hull={} buoyancy_volume_fill={} strength={}".format(
         material["name"], 
         material["mass"]["nominal_mass"],
         material["mass"]["density"], 
+        material["mass"]["nominal_mass"] * material["mass"]["density"],
         material["is_hull"], 
         material["buoyancy_volume_fill"],
         material["strength"]))

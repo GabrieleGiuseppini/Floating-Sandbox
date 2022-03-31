@@ -1018,7 +1018,7 @@
 			+ Test ball of air and water
 			+ Test engine wake
 			+ Test chains
-		- See if still need Points buffer for buoyancy_volume_fill
+		X See if still need Points buffer for buoyancy_volume_fill
 		= Make "Internal Watertight" (and other) versions of hull/non-hull materials
 			! Spec:
 				! Watertight (i.e. hull) but lighter than hull
@@ -1045,9 +1045,9 @@
 				+ Also set subcategory in PaletteCoords - to new name of material
 					+ Assume group name matches stem; if not found, abort
 				+ Better algo for colors
-			- Do for:
-				- All metals
-					- Iron
+			= Do for:
+				= All metals
+					+ Iron
 						+ Lower double-bottom strength
 					- Steel & Stainless Steel
 						- Script: deal with extra color - take min of base and, if exists, hull
