@@ -1049,11 +1049,14 @@
 				= All metals
 					+ Iron
 						+ Lower double-bottom strength
-					- Steel & Stainless Steel
-						- Script: deal with extra color - take min of base and, if exists, hull
-						- Separate palette groups
+					+ Steel & Stainless Steel
+						+ Script: deal with extra color - take min of base and, if exists, hull
+						+ Separate palette groups
+					+ Titanium
 					- Aluminium
-						- Separate Aluminium Sheet into its own group first, which later won't get variants
+						- Separate Aluminium Sheet into its own group first, which later won't get variants but only colors
+					- Nails
+						- Colors only
 				- All woods
 					- Complete pine below, first
 				- TODO: others?
@@ -1077,6 +1080,7 @@
 							+ wood_studded_2
 				- Helium: ~like Hydrogen, but not combusting
 				- Sodium: explodes when particle's water > threshold
+					- New enum value: SodiumExplosion (Google for better name)
 					- At points' low-freq combustion update
 					- ship_explosion shader: new "boolean" param to make it yellow (sample.r = sample.g = (sample.r + sample.g) / 2);
 				- "Lightning rod" material
@@ -1084,6 +1088,7 @@
 				+ More glass colors
 				+ More concrete colors
 				+ More fiberglass colors
+				- Try to make glass transparent
 				- Redo structural template
 				- changes.txt
 			- Electrical materials:

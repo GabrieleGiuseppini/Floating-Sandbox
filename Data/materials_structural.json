@@ -509,6 +509,123 @@
             "wind_receptivity": 0.1
         },
         {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": [
+                "#5D5D6E",
+                "#991C00",
+                "#DBCB21",
+                "#947E00",
+                "#458D00",
+                "#007087",
+                "#1D326E",
+                "#9C0088",
+                "#C56F00",
+                "#595959"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1473.15,
+            "is_hull": true,
+            "mass": {
+                "density": 0.0374,
+                "nominal_mass": 4500.0
+            },
+            "melting_temperature": 1941.15,
+            "name": "Solid Titanium Bulkhead",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Solid Titanium Bulkhead",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Metal",
+            "specific_heat": 523.0,
+            "stiffness": 1.0,
+            "strength": 0.13375,
+            "texture_name": "metal_plates_1",
+            "thermal_conductivity": 17.0,
+            "thermal_expansion_coefficient": 8.7e-06,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": [
+                "#646478",
+                "#A21A00",
+                "#E2D122",
+                "#9D8200",
+                "#4D9600",
+                "#007B90",
+                "#1F3876",
+                "#A50095",
+                "#D06E00",
+                "#5C5C5C"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1473.15,
+            "is_hull": true,
+            "mass": {
+                "density": 0.00935,
+                "nominal_mass": 4500.0
+            },
+            "melting_temperature": 1941.15,
+            "name": "Light Titanium Bulkhead",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Light Titanium Bulkhead",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Metal",
+            "specific_heat": 523.0,
+            "stiffness": 1.0,
+            "strength": 0.125,
+            "texture_name": "metal_plates_1",
+            "thermal_conductivity": 17.0,
+            "thermal_expansion_coefficient": 8.7e-06,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": [
+                "#6B6B82",
+                "#AC1800",
+                "#E8D723",
+                "#A68600",
+                "#569F00",
+                "#008698",
+                "#223E7D",
+                "#AE00A1",
+                "#DA6D00",
+                "#606060"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1473.15,
+            "is_hull": false,
+            "mass": {
+                "density": 0.0935,
+                "nominal_mass": 4600.0
+            },
+            "melting_temperature": 1941.15,
+            "name": "Solid Titanium I-Beam",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Solid Titanium I-Beam",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Metal",
+            "specific_heat": 523.0,
+            "stiffness": 1.0,
+            "strength": 0.13375,
+            "texture_name": "metal_plates_1",
+            "thermal_conductivity": 17.0,
+            "thermal_expansion_coefficient": 8.7e-06,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
             "buoyancy_volume_fill": 1.0,
             "color_key": [
                 "#787896",
@@ -530,16 +647,55 @@
                 "nominal_mass": 4500
             },
             "melting_temperature": 1941.15,
-            "name": "Titanium",
+            "name": "Light Titanium I-Beam",
             "palette_coordinates": {
                 "category": "Metals",
-                "sub_category": "Titanium",
+                "sub_category": "Light Titanium I-Beam",
                 "sub_category_ordinal": 0
             },
             "sound_type": "Metal",
             "specific_heat": 523.0,
             "stiffness": 1.0,
             "strength": 0.125,
+            "texture_name": "metal_plates_1",
+            "thermal_conductivity": 17.0,
+            "thermal_expansion_coefficient": 8.7e-06,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": [
+                "#72728C",
+                "#B51600",
+                "#EFDD24",
+                "#AF8A00",
+                "#5EA800",
+                "#0091A1",
+                "#244485",
+                "#B700AE",
+                "#E56C00",
+                "#636363"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1473.15,
+            "is_hull": false,
+            "mass": {
+                "density": 0.00935,
+                "nominal_mass": 4500.0
+            },
+            "melting_temperature": 1941.15,
+            "name": "Low-Grade Titanium",
+            "palette_coordinates": {
+                "category": "Metals",
+                "sub_category": "Low-Grade Titanium",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Metal",
+            "specific_heat": 523.0,
+            "stiffness": 1.0,
+            "strength": 0.0375,
             "texture_name": "metal_plates_1",
             "thermal_conductivity": 17.0,
             "thermal_expansion_coefficient": 8.7e-06,
@@ -2699,8 +2855,12 @@
                     {
                         "name": "Titanium",
                         "sub_categories": [
-                            "Titanium",
                             "Titanium Hull",
+                            "Solid Titanium Bulkhead",
+                            "Light Titanium Bulkhead",
+                            "Solid Titanium I-Beam",
+                            "Light Titanium I-Beam",
+                            "Low-Grade Titanium",
                             "Double-Bottom Titanium"
                         ]
                     },
