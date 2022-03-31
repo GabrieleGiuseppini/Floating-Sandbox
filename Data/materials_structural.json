@@ -977,6 +977,123 @@
             "wind_receptivity": 0.1
         },
         {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": [
+                "#A06C40",
+                "#A32A0F",
+                "#9E880D",
+                "#4E9709",
+                "#067990",
+                "#223975",
+                "#A1008E",
+                "#D27400",
+                "#7B7B7B",
+                "#0B0B0B"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 453.0,
+            "is_hull": true,
+            "mass": {
+                "density": 0.03131,
+                "nominal_mass": 800.0
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Solid Oak Wood Bulkhead",
+            "palette_coordinates": {
+                "category": "Wood",
+                "sub_category": "Solid Oak Wood Bulkhead",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Wood",
+            "specific_heat": 300.0,
+            "stiffness": 1.0,
+            "strength": 0.1605,
+            "texture_name": "wood_planks_1",
+            "thermal_conductivity": 0.1,
+            "thermal_expansion_coefficient": 0.00015,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": [
+                "#B08760",
+                "#A82612",
+                "#A28510",
+                "#599B0C",
+                "#098393",
+                "#26417A",
+                "#9F0096",
+                "#D56700",
+                "#7E7E7E",
+                "#0A0A0A"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 453.0,
+            "is_hull": true,
+            "mass": {
+                "density": 0.022935,
+                "nominal_mass": 800.0
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Light Oak Wood Bulkhead",
+            "palette_coordinates": {
+                "category": "Wood",
+                "sub_category": "Light Oak Wood Bulkhead",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Wood",
+            "specific_heat": 300.0,
+            "stiffness": 1.0,
+            "strength": 0.15,
+            "texture_name": "wood_planks_1",
+            "thermal_conductivity": 0.1,
+            "thermal_expansion_coefficient": 0.00015,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": [
+                "#C0A280",
+                "#AC2215",
+                "#A78213",
+                "#63A00F",
+                "#0B8D97",
+                "#2A497F",
+                "#9E009F",
+                "#D85A00",
+                "#828282",
+                "#090909"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 453.0,
+            "is_hull": false,
+            "mass": {
+                "density": 0.116875,
+                "nominal_mass": 800.0
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Solid Oak Wood I-Beam",
+            "palette_coordinates": {
+                "category": "Wood",
+                "sub_category": "Solid Oak Wood I-Beam",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Wood",
+            "specific_heat": 300.0,
+            "stiffness": 1.0,
+            "strength": 0.1605,
+            "texture_name": "wood_planks_1",
+            "thermal_conductivity": 0.1,
+            "thermal_expansion_coefficient": 0.00015,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
             "buoyancy_volume_fill": 1.0,
             "color_key": [
                 "#E0D8C0",
@@ -988,7 +1105,7 @@
                 "#9B00AF",
                 "#DE4000",
                 "#888888",
-                "#090909"
+                "#080908"
             ],
             "combustion_type": "Combustion",
             "ignition_temperature": 453.0,
@@ -998,16 +1115,55 @@
                 "nominal_mass": 800
             },
             "melting_temperature": 1000000.0,
-            "name": "Oak Wood",
+            "name": "Light Oak Wood I-Beam",
             "palette_coordinates": {
                 "category": "Wood",
-                "sub_category": "Oak Wood",
+                "sub_category": "Light Oak Wood I-Beam",
                 "sub_category_ordinal": 0
             },
             "sound_type": "Wood",
             "specific_heat": 300.0,
             "stiffness": 1.0,
             "strength": 0.15,
+            "texture_name": "wood_planks_1",
+            "thermal_conductivity": 0.1,
+            "thermal_expansion_coefficient": 0.00015,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": [
+                "#D0BDA0",
+                "#B11E18",
+                "#AB7F16",
+                "#6EA412",
+                "#0E979A",
+                "#2E5184",
+                "#9C00A7",
+                "#DB4D00",
+                "#858585",
+                "#0C0C0C"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 453.0,
+            "is_hull": false,
+            "mass": {
+                "density": 0.022935,
+                "nominal_mass": 800.0
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Low-Grade Oak Wood",
+            "palette_coordinates": {
+                "category": "Wood",
+                "sub_category": "Low-Grade Oak Wood",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Wood",
+            "specific_heat": 300.0,
+            "stiffness": 1.0,
+            "strength": 0.045,
             "texture_name": "wood_planks_1",
             "thermal_conductivity": 0.1,
             "thermal_expansion_coefficient": 0.00015,
@@ -3012,7 +3168,11 @@
                         "name": "Oak Wood",
                         "sub_categories": [
                             "Oak Wood Hull",
-                            "Oak Wood",
+                            "Solid Oak Wood Bulkhead",
+                            "Light Oak Wood Bulkhead",
+                            "Solid Oak Wood I-Beam",
+                            "Light Oak Wood I-Beam",
+                            "Low-Grade Oak Wood",
                             "Double-Bottom Oak Wood"
                         ]
                     },
@@ -3032,29 +3192,29 @@
                     {
                         "name": "Fiberglass",
                         "sub_categories": [
-                            "Fiberglass",
-                            "Fiberglass Hull"
+                            "Fiberglass Hull",
+                            "Fiberglass"
                         ]
                     },
                     {
                         "name": "LEGO (ABS)",
                         "sub_categories": [
-                            "LEGO (ABS)",
-                            "LEGO Hull (ABS)"
+                            "LEGO Hull (ABS)",
+                            "LEGO (ABS)"
                         ]
                     },
                     {
                         "name": "Mylar",
                         "sub_categories": [
-                            "Mylar",
-                            "Mylar Hull"
+                            "Mylar Hull",
+                            "Mylar"
                         ]
                     },
                     {
                         "name": "Styrofoam",
                         "sub_categories": [
-                            "Styrofoam",
-                            "Styrofoam Hull"
+                            "Styrofoam Hull",
+                            "Styrofoam"
                         ]
                     }
                 ]
@@ -3065,10 +3225,10 @@
                     {
                         "name": "Rubber",
                         "sub_categories": [
-                            "Rubber Soft",
-                            "Rubber Hard",
                             "Rubber Hull Soft",
-                            "Rubber Hull Hard"
+                            "Rubber Hull Hard",
+                            "Rubber Soft",
+                            "Rubber Hard"
                         ]
                     }
                 ]
@@ -3079,8 +3239,8 @@
                     {
                         "name": "Glass",
                         "sub_categories": [
-                            "Glass",
-                            "Glass Hull"
+                            "Glass Hull",
+                            "Glass"
                         ]
                     }
                 ]
@@ -3091,8 +3251,8 @@
                     {
                         "name": "Carbon",
                         "sub_categories": [
-                            "Carbon",
-                            "Carbon Hull"
+                            "Carbon Hull",
+                            "Carbon"
                         ]
                     }
                 ]
@@ -3103,8 +3263,8 @@
                     {
                         "name": "Concrete",
                         "sub_categories": [
-                            "Concrete",
-                            "Concrete Hull"
+                            "Concrete Hull",
+                            "Concrete"
                         ]
                     }
                 ]
@@ -3126,15 +3286,15 @@
                     {
                         "name": "Cardboard",
                         "sub_categories": [
-                            "Cardboard",
-                            "Cardboard Hull"
+                            "Cardboard Hull",
+                            "Cardboard"
                         ]
                     },
                     {
                         "name": "Paper",
                         "sub_categories": [
-                            "Paper",
-                            "Paper Hull"
+                            "Paper Hull",
+                            "Paper"
                         ]
                     }
                 ]

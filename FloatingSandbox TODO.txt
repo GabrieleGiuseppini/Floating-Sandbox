@@ -1057,10 +1057,12 @@
 						+ Separate Aluminium Sheet into its own group first, which later won't get variants but only colors
 					+ Nails
 						+ Colors only
-				- All woods
+				= All woods
 					+ Complete pine below, first
+					+ Oak wood
+					- Pine wood
 				- TODO: others?
-				- Reorder all categories: hull first, 
+				- Reorder all categories: hull first
 			- Description of variant in ShipBuilder palette?
 				- By means of a variant enum in the materials json, and therefore localizable strings
 					- ~"Structure"+"Form/Variant/Kind/Genre/Class"
