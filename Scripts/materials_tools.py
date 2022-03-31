@@ -144,7 +144,6 @@ def make_color_keys(base_color_keys, rgb_offsets, color_set):
         base_color_keys = [base_color_keys]
     # Process colors
     new_colors = []
-    assert(len(base_color_keys) == len(rgb_offsets))
     for base_color_key_str, rgb_offset in zip(base_color_keys, rgb_offsets):
         base_rgb = hex_to_rgb(base_color_key_str)
         new_rgb = make_color(base_rgb, rgb_offset, color_set)
@@ -310,7 +309,7 @@ def add_variants(material_group_name, input_filename, output_filename):
 
     color_set = make_color_set(json_obj)
 
-    # Get number of colors in base
+    # Get number of colors in base and hull
     base_color_keys = get_normalized_color_keys(variants[VariantConstants.LIGHT_IBEAM_KEY])
     base_color_key_counts = len(base_color_keys)
 
@@ -344,7 +343,7 @@ def add_variants(material_group_name, input_filename, output_filename):
     base_rgbs = [hex_to_rgb(base_color_keys[i]) for i in range(0, len(base_color_keys))]
     hull_color_keys = get_normalized_color_keys(variants[VariantConstants.HULL_KEY])
     hull_rgbs = [hex_to_rgb(hull_color_keys[i]) for i in range(0, len(hull_color_keys))]
-    assert(len(base_rgbs) == len(hull_rgbs))
+    base_color_key_counts = min(len(base_color_keys), len(hull_color_keys))
     color_key_ranges = [tuple(h - b for b, h in zip(base_rgbs[i], hull_rgbs[i])) for i in range(0, base_color_key_counts)]
 
     #
