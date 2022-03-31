@@ -1046,7 +1046,7 @@
 					+ Assume group name matches stem; if not found, abort
 				+ Better algo for colors
 			= Do for:
-				= All metals
+				+ All metals
 					+ Iron
 						+ Lower double-bottom strength
 					+ Steel & Stainless Steel
@@ -1055,8 +1055,8 @@
 					+ Titanium
 					+ Aluminium
 						+ Separate Aluminium Sheet into its own group first, which later won't get variants but only colors
-					- Nails
-						- Colors only
+					+ Nails
+						+ Colors only
 				- All woods
 					- Complete pine below, first
 				- TODO: others?

@@ -1764,7 +1764,18 @@
         },
         {
             "buoyancy_volume_fill": 1.0,
-            "color_key": "#545454",
+            "color_key": [
+                "#545454",
+                "#982204",
+                "#EFE351",
+                "#947604",
+                "#5A8F04",
+                "#147E7A",
+                "#2F4665",
+                "#9A1484",
+                "#BC6304",
+                "#252515"
+            ],
             "combustion_type": "Combustion",
             "description": "The most fragile material of them all.",
             "ignition_temperature": 1213.0,
@@ -1780,7 +1791,6 @@
                 "sub_category": "Nails",
                 "sub_category_ordinal": 0
             },
-            "render_color": "#545454",
             "sound_type": "Metal",
             "specific_heat": 228.0,
             "stiffness": 1.0,
