@@ -162,13 +162,13 @@ AskPasswordDialog::AskPasswordDialog(
 
 void AskPasswordDialog::OnPasswordKey()
 {
-    mOkButton->Enable(!mPasswordTextCtrl->GetValue().Trim().IsEmpty());
+    mOkButton->Enable(!mPasswordTextCtrl->GetValue().Trim(true).Trim(false).IsEmpty());
 }
 
 void AskPasswordDialog::OnOkButton()
 {
     // Check if password hash matches
-    std::string const passwordValue = mPasswordTextCtrl->GetValue().Trim().ToStdString();
+    std::string const passwordValue = mPasswordTextCtrl->GetValue().Trim(true).Trim(false).ToStdString();
     if (ShipDefinitionFormatDeSerializer::CalculatePasswordHash(passwordValue) == mPasswordHash)
     {
         //
@@ -299,7 +299,7 @@ AskPasswordDialog::WaitDialog::WaitDialog(
          mTimer->Start(2500, true);
     }
 
-    
+
 }
 
 void AskPasswordDialog::WaitDialog::SetLabel(bool isForFinal)

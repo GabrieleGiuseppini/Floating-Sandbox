@@ -22,7 +22,7 @@
 #include <wx/sizer.h>
 #include <wx/statbmp.h>
 #include <wx/stattext.h>
-#include <wx/utils.h> 
+#include <wx/utils.h>
 
 #include <cassert>
 
@@ -265,7 +265,7 @@ void ShipPropertiesEditDialog::PopulateMetadataPanel(wxPanel * panel)
 
     vSizer->AddSpacer(VerticalSeparatorSize);
 
-    // Art Credits    
+    // Art Credits
     {
         {
             auto label = new wxStaticText(panel, wxID_ANY, _("Texture Credits"), wxDefaultPosition, wxDefaultSize,
@@ -274,7 +274,7 @@ void ShipPropertiesEditDialog::PopulateMetadataPanel(wxPanel * panel)
             vSizer->Add(label, 0, wxALIGN_CENTER_HORIZONTAL, 0);
         }
 
-        {            
+        {
             mArtCreditsTextCtrl = new wxTextCtrl(
                 panel,
                 wxID_ANY,
@@ -767,7 +767,7 @@ void ShipPropertiesEditDialog::PopulateAutoTexturizationPanel(wxPanel * panel)
 
                             mMaterialTextureMagnificationSlider->Enable(false);
                             mMaterialTextureTransparencySlider->Enable(false);
-                            
+
                             mIsAutoTexturizationSettingsDirty = true;
 
                             OnDirty();
@@ -783,7 +783,7 @@ void ShipPropertiesEditDialog::PopulateAutoTexturizationPanel(wxPanel * panel)
                 }
 
                 {
-                    auto label = new wxStaticText(texturizationModeBoxSizer->GetStaticBox(), wxID_ANY, _("Flat Structure mode: generates a texture using the particles' matte colors."), 
+                    auto label = new wxStaticText(texturizationModeBoxSizer->GetStaticBox(), wxID_ANY, _("Flat Structure mode: generates a texture using the particles' matte colors."),
                         wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
 
                     label->SetFont(explanationFont);
@@ -822,7 +822,7 @@ void ShipPropertiesEditDialog::PopulateAutoTexturizationPanel(wxPanel * panel)
                 }
 
                 {
-                    auto label = new wxStaticText(texturizationModeBoxSizer->GetStaticBox(), wxID_ANY, _("Material Textures mode: generates a texture using material-specific textures."), 
+                    auto label = new wxStaticText(texturizationModeBoxSizer->GetStaticBox(), wxID_ANY, _("Material Textures mode: generates a texture using material-specific textures."),
                         wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
 
                     label->SetFont(explanationFont);
@@ -1032,7 +1032,7 @@ void ShipPropertiesEditDialog::OnSetPassword()
 
 void ShipPropertiesEditDialog::OnClearPassword()
 {
-    auto const result = wxMessageBox(_("Are you sure you want to remove password protection for this ship, allowing everyone to make changes to it?"), ApplicationName, 
+    auto const result = wxMessageBox(_("Are you sure you want to remove password protection for this ship, allowing everyone to make changes to it?"), ApplicationName,
         wxICON_EXCLAMATION | wxYES_NO | wxCENTRE);
 
     if (result == wxYES)
@@ -1143,7 +1143,7 @@ void ShipPropertiesEditDialog::OnDirty()
 {
     // We assume at least one of the controls is dirty
 
-    auto doEnable = MakeString(mShipNameTextCtrl->GetValue()).has_value();
+    auto const doEnable = MakeString(mShipNameTextCtrl->GetValue()).has_value();
     if (mOkButton->IsEnabled() != doEnable)
     {
         mOkButton->Enable(doEnable);
@@ -1187,7 +1187,7 @@ void ShipPropertiesEditDialog::ReconciliateUI()
 
     mOffsetXEditSpinBox->SetValue(mSessionData->PhysicsData.Offset.x);
     mOffsetYEditSpinBox->SetValue(mSessionData->PhysicsData.Offset.y);
-    
+
     mShipOffsetVisualizationControl->Initialize(
         mSessionData->ShipVisualization,
         mSessionData->Metadata.Scale,
@@ -1230,7 +1230,7 @@ void ShipPropertiesEditDialog::ReconciliateUI()
 
             mMaterialTextureMagnificationSlider->Enable(false);
             mMaterialTextureTransparencySlider->Enable(false);
-            
+
             break;
         }
 
@@ -1301,7 +1301,7 @@ bool ShipPropertiesEditDialog::IsAutoTexturizationSettingsDirty() const
 
 std::optional<std::string> ShipPropertiesEditDialog::MakeString(wxString && value)
 {
-    std::string trimmedValue = value.Trim().ToStdString();
+    std::string trimmedValue = value.Trim(true).Trim(false).ToStdString();
     if (trimmedValue.empty())
         return std::nullopt;
     else
