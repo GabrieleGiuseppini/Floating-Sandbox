@@ -46,6 +46,7 @@ set (UNIT_TEST_SOURCES
 	SettingsTests.cpp
 	ShaderManagerTests.cpp
 	ShipDefinitionFormatDeSerializerTests.cpp
+	ShipNameNormalizerTests.cpp
 	ShipPreviewDirectoryManagerTests.cpp
 	SliderCoreTests.cpp
 	StrongTypeDefTests.cpp

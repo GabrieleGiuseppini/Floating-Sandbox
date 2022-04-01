@@ -22,6 +22,8 @@ set (SHIPBUILDER_LIB_SOURCES
 	ShaderTypes.cpp
 	ShaderTypes.h
 	ShipBuilderTypes.h
+	ShipNameNormalizer.cpp
+	ShipNameNormalizer.h
 	TextureTypes.h
 	UndoStack.cpp
 	UndoStack.h
@@ -43,6 +45,8 @@ set (UI_SOURCES
 	ModelValidationDialog.h
 	NewPasswordDialog.cpp
 	NewPasswordDialog.h
+	NewShipNameDialog.cpp
+	NewShipNameDialog.h
 	ResizeDialog.cpp
 	ResizeDialog.h
 	RibbonToolbarButton.h
