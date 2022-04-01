@@ -69,3 +69,64 @@ TEST_P(ShipNameNormalizer_NormalizePrefixTest, PrefixTests)
 
     EXPECT_EQ(actual, expected);
 }
+
+class ShipNameNormalizer_NormalizeYearTest : public testing::TestWithParam<std::tuple<std::string, std::string>>
+{
+public:
+    virtual void SetUp() {}
+    virtual void TearDown() {}
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    ShipNameNormalizer_NormalizeYearTest_Tests,
+    ShipNameNormalizer_NormalizeYearTest,
+    ::testing::Values(
+        // Idempotent
+        std::make_tuple("Titanic (1912)", "Titanic (1912)"),
+
+        // Idempotent with trimming
+        std::make_tuple("Titanic (1912) ", "Titanic (1912)"),
+        std::make_tuple("Titanic   (1912)  ", "Titanic (1912)"),
+
+        // Year fixing
+
+        std::make_tuple("Titanic 1912", "Titanic (1912)"),
+        std::make_tuple("Titanic 1912 ", "Titanic (1912)"),
+        std::make_tuple("Titanic 1912  ", "Titanic (1912)"),
+
+        std::make_tuple("Titanic - 1912", "Titanic (1912)"),
+        std::make_tuple("Titanic - 1912 ", "Titanic (1912)"),
+        std::make_tuple("Titanic - 1912  ", "Titanic (1912)"),
+        std::make_tuple("Titanic  -  1912  ", "Titanic (1912)"),
+
+        std::make_tuple("Titanic ( 1912 )", "Titanic (1912)"),
+        std::make_tuple("Titanic ( 1912 ) ", "Titanic (1912)"),
+        std::make_tuple("Titanic ( 1912 )  ", "Titanic (1912)"),
+        std::make_tuple("Titanic  ( 1912 )  ", "Titanic (1912)"),
+
+        std::make_tuple("Titanic (   1912   )", "Titanic (1912)"),
+        std::make_tuple("Titanic (   1912   ) ", "Titanic (1912)"),
+
+        std::make_tuple("Titanic 1912 ", "Titanic (1912)"),
+        std::make_tuple("Titanic   1912   ", "Titanic (1912)"),
+
+        // Unmatched
+        std::make_tuple("Titanic 191g", "Titanic 191g")
+    ));
+
+TEST_P(ShipNameNormalizer_NormalizeYearTest, YearTests)
+{
+    ShipBuilder::ShipNameNormalizer normalizer(
+        {
+            "R.M.S.",
+            "R.Smg.",
+            "Tr.S.M.V."
+        });
+
+    std::string const & source = std::get<0>(GetParam());
+    std::string const & expected = std::get<1>(GetParam());
+
+    std::string actual = normalizer.NormalizeName(source);
+
+    EXPECT_EQ(actual, expected);
+}

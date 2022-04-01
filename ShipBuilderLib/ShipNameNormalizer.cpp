@@ -10,6 +10,7 @@
 
 #include <cassert>
 #include <cctype>
+#include <regex>
 
 namespace ShipBuilder {
 
@@ -132,11 +133,39 @@ std::string ShipNameNormalizer::NormalizeName(std::string const & shipName) cons
         if (!result.empty())
         {
             result += " ";
-
         }
 
         result += shipName.substr(iBestPrefixRestStart, iRestEnd - iBestPrefixRestStart);
     }
+
+    //
+    // Normalize year
+    //
+
+    static std::regex const YearRegex(R"(^.*?\w(\s*[-\(]?\s*(\d{4})\s*[\)]?)\s*$)");
+
+    std::smatch yearMatch;
+    if (std::regex_match(result, yearMatch, YearRegex))
+    {
+        assert(yearMatch.size() == 1 + 2); // @1: ugly, @2: year
+
+        // Build result
+
+        // Prefix
+        assert(yearMatch[1].matched);
+        std::string yearResult = result.substr(0, yearMatch.position(1));
+
+        // Year
+        assert(yearMatch[2].matched);
+        if (!yearResult.empty())
+        {
+            yearResult += " ";
+        }
+        yearResult += "(" + yearMatch.str(2) + ")";
+
+        result = yearResult;
+    }
+
 
     return result;
 }
