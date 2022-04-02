@@ -4559,11 +4559,12 @@ void MainFrame::ReconciliateUIWithModelDirtiness(IModelObservable const & model)
         mSaveShipButton->Enable(isDirty);
     }
 
-    if (mSaveShipAndGoBackButton != nullptr
-        && mSaveShipAndGoBackButton->IsEnabled() != isDirty)
-    {
-        mSaveShipAndGoBackButton->Enable(isDirty);
-    }
+    // 1.17.2: leving button always enabled
+    ////if (mSaveShipAndGoBackButton != nullptr
+    ////    && mSaveShipAndGoBackButton->IsEnabled() != isDirty)
+    ////{
+    ////    mSaveShipAndGoBackButton->Enable(isDirty);
+    ////}
 
     SetFrameTitle(model.GetShipMetadata().ShipName, isDirty);
 }
