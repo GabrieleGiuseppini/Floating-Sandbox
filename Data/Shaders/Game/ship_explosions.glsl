@@ -6,11 +6,12 @@
 // Inputs
 in vec4 inExplosion1; // CenterPosition, VertexOffset
 in vec4 inExplosion2; // TextureCoordinates, PlaneId, Angle
-in vec2 inExplosion3; // ExplosionIndex, Progress
+in vec3 inExplosion3; // ExplosionIndex, Yellowing, Progress
 
 // Outputs
 out vec2 vertexTextureCoordinates;
 out float vertexExplosionIndex;
+out float vertexYellowing;
 out float vertexProgress;
 
 // Params
@@ -20,7 +21,8 @@ void main()
 {
     vertexTextureCoordinates = inExplosion2.xy; 
     vertexExplosionIndex = inExplosion3.x;
-    vertexProgress = inExplosion3.y;
+    vertexYellowing = inExplosion3.y;
+    vertexProgress = inExplosion3.z;
 
     float angle = inExplosion2.w;
 
@@ -42,6 +44,7 @@ void main()
 // Inputs from previous shader
 in vec2 vertexTextureCoordinates; // (0.0, 0.0) (bottom-left) -> (1.0, 1.0)
 in float vertexExplosionIndex;
+in float vertexYellowing;
 in float vertexProgress; // 0.0 -> 1.0
 
 // The texture
@@ -111,5 +114,11 @@ void main()
     vec2 centeredSpacePosition = vertexTextureCoordinates - vec2(.5);
     vec4 c1 = SampleColor(bucket - 1., centeredSpacePosition / scale1 + vec2(.5));
     vec4 c2 = SampleColor(bucket, centeredSpacePosition / scale2 + vec2(.5));
-    gl_FragColor = mix(c1, c2, inBucket);
+
+    vec4 c = mix(c1, c2, inBucket);
+
+    gl_FragColor = mix(
+        c,
+        vec4((c.r + c.g) / 2., (c.r + c.g) / 2., c.b, c.a),
+        vertexYellowing);
 } 

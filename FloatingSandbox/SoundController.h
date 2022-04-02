@@ -262,6 +262,14 @@ public:
 
     void OnAirBubbleSurfaced(unsigned int size) override;
 
+    void OnWaterReaction(
+        bool isUnderwater,
+        unsigned int size) override;
+
+    void OnWaterReactionExplosion(
+        bool isUnderwater,
+        unsigned int size) override;
+
     void OnWindSpeedUpdated(
         float const zeroSpeedMagnitude,
         float const baseSpeedMagnitude,

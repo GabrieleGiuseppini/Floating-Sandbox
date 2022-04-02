@@ -86,6 +86,7 @@ enum class SoundType : uint32_t
     FireBurning,
     FireSizzling,
     CombustionExplosion,
+    WaterReactionExplosion,
     TsunamiTriggered,
     BombAttached,
     BombDetached,

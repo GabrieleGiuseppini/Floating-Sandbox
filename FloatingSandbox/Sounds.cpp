@@ -123,6 +123,8 @@ SoundType StrToSoundType(std::string const & str)
         return SoundType::FireSizzling;
     else if (Utils::CaseInsensitiveEquals(str, "CombustionExplosion"))
         return SoundType::CombustionExplosion;
+    else if (Utils::CaseInsensitiveEquals(str, "WaterReactionExplosion"))
+        return SoundType::WaterReactionExplosion;
     else if (Utils::CaseInsensitiveEquals(str, "TsunamiTriggered"))
         return SoundType::TsunamiTriggered;
     else if (Utils::CaseInsensitiveEquals(str, "BombAttached"))

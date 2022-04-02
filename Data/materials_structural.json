@@ -1687,6 +1687,35 @@
             "wind_receptivity": 0.1
         },
         {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": "#F5F5E9",
+            "combustion_type": "Combustion",
+            "ignition_temperature": 388.15,
+            "is_hull": false,
+            "mass": {
+                "density": 1.0,
+                "nominal_mass": 968.0
+            },
+            "melting_temperature": 370.96,
+            "name": "Sodium",
+            "palette_coordinates": {
+                "category": "Elements",
+                "sub_category": "Sodium",
+                "sub_category_ordinal": 0
+            },
+            "render_color": "#F5F5E9",
+            "sound_type": "Plastic",
+            "specific_heat": 1230.0,
+            "stiffness": 1.0,
+            "strength": 0.42,
+            "texture_name": "concrete_2",
+            "thermal_conductivity": 140.0,
+            "water_diffusion_speed": 0.5,
+	    "water_reactivity": 1.0,
+            "water_retention": 0.25,
+            "wind_receptivity": 0.1
+        },
+        {
             "buoyancy_volume_fill": 0.0,
             "color_key": [
                 "#C0C0C0",
@@ -3467,7 +3496,8 @@
                         "sub_categories": [
                             "Air",
                             "Hydrogen",
-                            "Water"
+                            "Water",
+			    "Sodium"
                         ]
                     }
                 ]
@@ -3480,7 +3510,7 @@
                         "sub_categories": [
                             "Diesel",
                             "Gunpowder Light",
-                            "Gunpowder Strong"
+                            "Gunpowder Strong"                            
                         ]
                     }
                 ]

@@ -589,6 +589,26 @@ public:
         mAirBubbleSurfacedEvents += size;
     }
 
+    void OnWaterReaction(
+        bool isUnderwater,
+        unsigned int size) override
+    {
+        for (auto sink : mGenericSinks)
+        {
+            sink->OnWaterReaction(isUnderwater, size);
+        }
+    }
+
+    void OnWaterReactionExplosion(
+        bool isUnderwater,
+        unsigned int size) override
+    {
+        for (auto sink : mGenericSinks)
+        {
+            sink->OnWaterReactionExplosion(isUnderwater, size);
+        }
+    }
+
     void OnSilenceStarted() override
     {
         for (auto sink : mGenericSinks)

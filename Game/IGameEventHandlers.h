@@ -400,6 +400,20 @@ struct IGenericGameEventHandler
         // Default-implemented
     }
 
+    virtual void OnWaterReaction(
+        bool /*isUnderwater*/,
+        unsigned int /*size*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnWaterReactionExplosion(
+        bool /*isUnderwater*/,
+        unsigned int /*size*/)
+    {
+        // Default-implemented
+    }
+
     virtual void OnSilenceStarted()
     {
         // Default-implemented

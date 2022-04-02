@@ -78,6 +78,9 @@ void Points::Add(
     mMaterialCombustionTypeBuffer.emplace_back(structuralMaterial.CombustionType);
     mCombustionStateBuffer.emplace_back(CombustionState());
 
+    // Water raction dynamics
+    mWaterReactionStateBuffer.emplace_back(structuralMaterial.WaterReactivity);
+
     // Electrical dynamics
     mElectricalElementBuffer.emplace_back(electricalElementIndex);
     mLightBuffer.emplace_back(0.0f);
@@ -175,6 +178,8 @@ void Points::CreateEphemeralParticleAirBubble(
     //mMaterialCombustionTypeBuffer[pointIndex] = airStructuralMaterial.CombustionType;
     //mCombustionStateBuffer[pointIndex] = CombustionState();
 
+    //mWaterReactionStateBuffer.emplace_back(0.0f);
+
     assert(mLightBuffer[pointIndex] == 0.0f);
     //mLightBuffer[pointIndex] = 0.0f;
 
@@ -249,6 +254,8 @@ void Points::CreateEphemeralParticleDebris(
     //mMaterialIgnitionTemperatureBuffer[pointIndex] = structuralMaterial.IgnitionTemperature;
     //mMaterialCombustionTypeBuffer[pointIndex] = structuralMaterial.CombustionType;
     //mCombustionStateBuffer[pointIndex] = CombustionState();
+
+    //mWaterReactionStateBuffer.emplace_back(0.0f);
 
     assert(mLightBuffer[pointIndex] == 0.0f);
     //mLightBuffer[pointIndex] = 0.0f;
@@ -337,6 +344,8 @@ void Points::CreateEphemeralParticleSmoke(
     //mMaterialCombustionTypeBuffer[pointIndex] = airStructuralMaterial.CombustionType;
     //mCombustionStateBuffer[pointIndex] = CombustionState();
 
+    //mWaterReactionStateBuffer.emplace_back(0.0f);
+
     assert(mLightBuffer[pointIndex] == 0.0f);
     //mLightBuffer[pointIndex] = 0.0f;
 
@@ -412,6 +421,8 @@ void Points::CreateEphemeralParticleSparkle(
     //mMaterialCombustionTypeBuffer[pointIndex] = structuralMaterial.CombustionType;
     //mCombustionStateBuffer[pointIndex] = CombustionState();
 
+    //mWaterReactionStateBuffer.emplace_back(0.0f);
+
     assert(mLightBuffer[pointIndex] == 0.0f);
     //mLightBuffer[pointIndex] = 0.0f;
 
@@ -484,6 +495,8 @@ void Points::CreateEphemeralParticleWakeBubble(
     //mMaterialIgnitionTemperatureBuffer[pointIndex] = waterStructuralMaterial.IgnitionTemperature;
     //mMaterialCombustionTypeBuffer[pointIndex] = waterStructuralMaterial.CombustionType;
     //mCombustionStateBuffer[pointIndex] = CombustionState();
+
+    //mWaterReactionStateBuffer.emplace_back(0.0f);
 
     assert(mLightBuffer[pointIndex] == 0.0f);
     //mLightBuffer[pointIndex] = 0.0f;
@@ -568,6 +581,9 @@ void Points::Restore(ElementIndex pointElementIndex)
         // Restore combustion state
         mCombustionStateBuffer[pointElementIndex].Reset();
     }
+
+    // Reset water reaction state
+    mWaterReactionStateBuffer[pointElementIndex].Reset();
 
     // Invoke ship handler
     assert(nullptr != mShipPhysicsHandler);
@@ -659,20 +675,25 @@ void Points::UpdateForGameParameters(GameParameters const & gameParameters)
 void Points::UpdateCombustionLowFrequency(
     ElementIndex pointOffset,
     ElementIndex pointStride,
+    GameWallClock::float_time currentWallClockTime,
     float currentSimulationTime,
     Storm::Parameters const & stormParameters,
     GameParameters const & gameParameters)
 {
     /////////////////////////////////////////////////////////////////////////////
     // Take care of following:
-    // - NotBurning->Developing transition (Ignition)
-    // - Burning->Decay, Extinguishing transition
+    // - Combustion:
+    //      - NotBurning->Developing transition (Ignition)
+    //      - Burning->Decay, Extinguishing transition
+    // - Water ractivity:
+    //      - all transitions
     /////////////////////////////////////////////////////////////////////////////
 
-    // Prepare candidates for ignition and explosion; we'll pick the top N ones
-    // based on the ignition temperature delta
+    // Prepare candidate buffer; we'll pick the top N ones
+    // based on "priority" (e.g. the ignition temperature delta)
     mCombustionIgnitionCandidates.clear();
     mCombustionExplosionCandidates.clear();
+    mWaterReactionExplosionCandidates.clear();
 
     // The cdf for rain: we stop burning with a probability equal to this
     float const rainExtinguishCdf = FastPow(stormParameters.RainDensity, 0.5f);
@@ -686,8 +707,13 @@ void Points::UpdateCombustionLowFrequency(
 
     for (ElementIndex pointIndex = pointOffset; pointIndex < mRawShipPointCount; pointIndex += pointStride)
     {
-        auto const currentState = mCombustionStateBuffer[pointIndex].State;
-        if (currentState == CombustionState::StateType::NotBurning)
+        //
+        // Combustion
+        //
+
+        auto const currentCombustionState = mCombustionStateBuffer[pointIndex].State;
+
+        if (currentCombustionState == CombustionState::StateType::NotBurning)
         {
             //
             // See if this point should start burning
@@ -721,7 +747,7 @@ void Points::UpdateCombustionLowFrequency(
                 }
             }
         }
-        else if (currentState == CombustionState::StateType::Burning)
+        else if (currentCombustionState == CombustionState::StateType::Burning)
         {
             //
             // See if this point should start extinguishing...
@@ -783,8 +809,41 @@ void Points::UpdateCombustionLowFrequency(
                 }
             }
         }
-    }
 
+        //
+        // Water reactivity
+        //
+
+        auto & waterReactivityState = mWaterReactionStateBuffer[pointIndex];
+
+        if (waterReactivityState.State == WaterReactionState::StateType::Unreacted)
+        {
+            // See if should react
+            float const waterReactionThreshold = 0.5f * waterReactivityState.Reactivity;
+            if (GetWater(pointIndex) >= waterReactionThreshold)
+            {
+                // Switch state
+                waterReactivityState.State = WaterReactionState::StateType::ReactionTriggered;
+                waterReactivityState.ExplosionTimestamp = currentWallClockTime + 2.0f;
+
+                // Notify water reaction
+                mGameEventHandler->OnWaterReaction(
+                    IsCachedUnderwater(pointIndex),
+                    1);
+            }
+        }
+        else if (waterReactivityState.State == WaterReactionState::StateType::ReactionTriggered)
+        {
+            // See if should explode
+            if (currentWallClockTime >= waterReactivityState.ExplosionTimestamp)
+            {
+                // Store point as explosion candidate
+                mWaterReactionExplosionCandidates.emplace_back(
+                    pointIndex,
+                    currentWallClockTime - waterReactivityState.ExplosionTimestamp);
+            }
+        }
+    }
 
     //
     // Pick candidates for ignition
@@ -863,7 +922,6 @@ void Points::UpdateCombustionLowFrequency(
         }
     }
 
-
     //
     // Pick candidates for explosion
     //
@@ -871,7 +929,7 @@ void Points::UpdateCombustionLowFrequency(
     if (!mCombustionExplosionCandidates.empty())
     {
         size_t const maxExplosionPoints = std::min(
-            size_t(10), // Magic number
+            size_t(15), // Magic number
             mCombustionExplosionCandidates.size());
 
         // Sort top N candidates by ignition temperature delta
@@ -898,7 +956,6 @@ void Points::UpdateCombustionLowFrequency(
             assert(i < mCombustionExplosionCandidates.size());
 
             auto const pointIndex = std::get<0>(mCombustionExplosionCandidates[i]);
-            auto const pointPosition = GetPosition(pointIndex);
 
             //
             // Explode!
@@ -916,7 +973,7 @@ void Points::UpdateCombustionLowFrequency(
             mShipPhysicsHandler->StartExplosion(
                 currentSimulationTime,
                 GetPlaneId(pointIndex),
-                pointPosition,
+                GetPosition(pointIndex),
                 blastRadius,
                 blastForce,
                 blastHeat,
@@ -930,6 +987,70 @@ void Points::UpdateCombustionLowFrequency(
 
             // Transition state
             mCombustionStateBuffer[pointIndex].State = CombustionState::StateType::Exploded;
+        }
+    }
+
+    //
+    // Pick candidates for water reaction explosion
+    //
+
+    if (!mWaterReactionExplosionCandidates.empty())
+    {
+        size_t const maxExplosionPoints = std::min(
+            size_t(25), // Magic number
+            mWaterReactionExplosionCandidates.size());
+
+        // Sort top N candidates by wetness
+        std::nth_element(
+            mWaterReactionExplosionCandidates.data(),
+            mWaterReactionExplosionCandidates.data() + maxExplosionPoints,
+            mWaterReactionExplosionCandidates.data() + mWaterReactionExplosionCandidates.size(),
+            [](auto const & t1, auto const & t2)
+            {
+                return std::get<1>(t1) > std::get<1>(t2);
+            });
+
+        // Calculate explosion parameters
+
+        float const blastHeat =
+            GameParameters::WaterReactionHeat
+            * GameParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>
+            * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
+
+        float const blastRadius =
+            5.0f // Magic number
+            * (gameParameters.IsUltraViolentMode ? 4.0f : 1.0f);
+
+        float const blastForce = 3000000.0f; // Magic number
+
+        // Explode these points
+        for (size_t i = 0; i < maxExplosionPoints; ++i)
+        {
+            assert(i < mWaterReactionExplosionCandidates.size());
+
+            auto const pointIndex = std::get<0>(mWaterReactionExplosionCandidates[i]);
+
+            //
+            // Explode!
+            //
+
+            mShipPhysicsHandler->StartExplosion(
+                currentSimulationTime,
+                GetPlaneId(pointIndex),
+                GetPosition(pointIndex),
+                blastRadius,
+                blastForce,
+                blastHeat,
+                ExplosionType::Sodium,
+                gameParameters);
+
+            // Notify explosion
+            mGameEventHandler->OnWaterReactionExplosion(
+                IsCachedUnderwater(pointIndex),
+                1);
+
+            // Transition state
+            mWaterReactionStateBuffer[pointIndex].State = WaterReactionState::StateType::Consumed;
         }
     }
 }

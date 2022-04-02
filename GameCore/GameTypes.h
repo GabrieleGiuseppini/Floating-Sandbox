@@ -875,7 +875,8 @@ enum class GadgetType
 enum class ExplosionType
 {
     Combustion,
-    Deflagration
+    Deflagration,
+    Sodium
 };
 
 /*

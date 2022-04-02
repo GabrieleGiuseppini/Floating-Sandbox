@@ -97,6 +97,7 @@ public:
 
     // Misc
     float WindReceptivity;
+    float WaterReactivity;
     bool IsLegacyElectrical;
 
     // Palette
@@ -166,6 +167,7 @@ public:
         float explosiveCombustionStrength,
         // Misc
         float windReceptivity,
+        float waterReactivity,
         bool isLegacyElectrical,
         // Palette
         std::optional<MaterialPaletteCoordinatesType> paletteCoordinates)
@@ -195,6 +197,7 @@ public:
         , ExplosiveCombustionRadius(explosiveCombustionRadius)
         , ExplosiveCombustionStrength(explosiveCombustionStrength)
         , WindReceptivity(windReceptivity)
+        , WaterReactivity(waterReactivity)
         , IsLegacyElectrical(isLegacyElectrical)
         , PaletteCoordinates(paletteCoordinates)
     {}
@@ -230,6 +233,7 @@ public:
         , ExplosiveCombustionRadius(1.0f)
         , ExplosiveCombustionStrength(1.0f)
         , WindReceptivity(1.0f)
+        , WaterReactivity(0.0f)
         , IsLegacyElectrical(false)
         , PaletteCoordinates(std::nullopt)
     {}

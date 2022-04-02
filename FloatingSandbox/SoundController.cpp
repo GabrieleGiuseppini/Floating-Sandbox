@@ -1737,6 +1737,35 @@ void SoundController::OnAirBubbleSurfaced(unsigned int size)
     mAirBubblesSurfacingSound.Pulse(volume);
 }
 
+void SoundController::OnWaterReaction(
+    bool isUnderwater,
+    unsigned int /*size*/)
+{
+    float const volume = 100.0f;
+
+    // TODOHERE
+    ////PlayUOneShotMultipleChoiceSound(
+    ////    SoundType::SodiumExplosion,
+    ////    SoundGroupType::Effects,
+    ////    isUnderwater,
+    ////    volume,
+    ////    false);
+}
+
+void SoundController::OnWaterReactionExplosion(
+    bool isUnderwater,
+    unsigned int /*size*/)
+{
+    float const volume = 100.0f;
+
+    PlayUOneShotMultipleChoiceSound(
+        SoundType::WaterReactionExplosion,
+        SoundGroupType::Effects,
+        isUnderwater,
+        volume,
+        false);
+}
+
 void SoundController::OnWindSpeedUpdated(
     float const /*zeroSpeedMagnitude*/,
     float const baseSpeedMagnitude,

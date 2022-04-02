@@ -503,6 +503,7 @@ void Ship::Update(
                 mPoints.UpdateCombustionLowFrequency(
                     0,
                     4,
+                    currentWallClockTimeFloat,
                     currentSimulationTime,
                     stormParameters,
                     gameParameters);
@@ -512,6 +513,7 @@ void Ship::Update(
                 mPoints.UpdateCombustionLowFrequency(
                     1,
                     4,
+                    currentWallClockTimeFloat,
                     currentSimulationTime,
                     stormParameters,
                     gameParameters);
@@ -521,6 +523,7 @@ void Ship::Update(
                 mPoints.UpdateCombustionLowFrequency(
                     2,
                     4,
+                    currentWallClockTimeFloat,
                     currentSimulationTime,
                     stormParameters,
                     gameParameters);
@@ -530,6 +533,7 @@ void Ship::Update(
                 mPoints.UpdateCombustionLowFrequency(
                     3,
                     4,
+                    currentWallClockTimeFloat,
                     currentSimulationTime,
                     stormParameters,
                     gameParameters);
