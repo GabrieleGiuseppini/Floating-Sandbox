@@ -505,6 +505,24 @@ namespace Utils
         return content;
     }
 
+    inline std::vector<std::string> LoadTextFileLines(std::filesystem::path const & filepath)
+    {
+        std::ifstream file(filepath.string(), std::ios::in);
+        if (!file.is_open())
+        {
+            throw GameException("Cannot open file \"" + filepath.string() + "\"");
+        }
+
+        std::string line;
+        std::vector<std::string> lines;
+        while (std::getline(file, line))
+        {
+            lines.emplace_back(line);
+        }
+
+        return lines;
+    }
+
     inline std::string LoadTextStream(std::istream const & stream)
     {
         std::stringstream ss;

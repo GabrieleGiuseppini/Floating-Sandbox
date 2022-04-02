@@ -62,8 +62,7 @@ std::string ShipNameNormalizer::NormalizeName(std::string const & shipName) cons
 
     std::string currentStem;
     bool isInWord = false; // Used to detect word boundaries
-    size_t i = 0;
-    for (; ; ++i)
+    for (size_t i = 0; ; ++i)
     {
         if (i < shipName.length())
         {
@@ -94,7 +93,7 @@ std::string ShipNameNormalizer::NormalizeName(std::string const & shipName) cons
         {
             // We are at a word boundary (evt. including EOS)
 
-            // See if can get a match so far
+            // See if can get a match with the stem we've been ccumulating so far
             auto const it = mPrefixMap.find(currentStem);
             if (it != mPrefixMap.end())
             {
@@ -115,27 +114,29 @@ std::string ShipNameNormalizer::NormalizeName(std::string const & shipName) cons
         isInWord = true;
     }
 
-    // Consume trailing spaces before rest
-    for (;
-        iBestPrefixRestStart < shipName.length() && std::isspace(shipName[iBestPrefixRestStart]);
-        ++iBestPrefixRestStart);
-
-    // Consume trailing spaces after rest
-    size_t iRestEnd = shipName.length();
-    for (;
-        iRestEnd > iBestPrefixRestStart && std::isspace(shipName[iRestEnd - 1]);
-        --iRestEnd);
-
     // Build result
-    std::string result = bestPrefix;
-    if (iBestPrefixRestStart < iRestEnd)
-    {
-        if (!result.empty())
-        {
-            result += " ";
-        }
 
-        result += shipName.substr(iBestPrefixRestStart, iRestEnd - iBestPrefixRestStart);
+    std::string result = bestPrefix;
+
+    bool hasAccumulatedSpaces = !(result.empty());
+    for (size_t i = iBestPrefixRestStart; i < shipName.length(); ++i)
+    {
+        char const ch = shipName[i];
+
+        if (std::isspace(ch))
+        {
+            hasAccumulatedSpaces = true;
+        }
+        else
+        {
+            if (hasAccumulatedSpaces)
+            {
+                result += " ";
+                hasAccumulatedSpaces = false;
+            }
+
+            result += ch;
+        }
     }
 
     //
@@ -165,7 +166,6 @@ std::string ShipNameNormalizer::NormalizeName(std::string const & shipName) cons
 
         result = yearResult;
     }
-
 
     return result;
 }
