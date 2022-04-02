@@ -7,14 +7,16 @@
 
 #include "Controller.h"
 #include "IUserInterface.h"
-#include "MaterialPalette.h"
-#include "ModelValidationDialog.h"
 #include "OpenGLManager.h"
-#include "ResizeDialog.h"
-#include "RibbonToolbarButton.h"
-#include "ShipPropertiesEditDialog.h"
-#include "StatusBar.h"
+#include "ShipNameNormalizer.h"
 #include "WorkbenchState.h"
+
+#include "UI/MaterialPalette.h"
+#include "UI/ModelValidationDialog.h"
+#include "UI/ResizeDialog.h"
+#include "UI/RibbonToolbarButton.h"
+#include "UI/ShipPropertiesEditDialog.h"
+#include "UI/StatusBar.h"
 
 #include <UILib/BitmapButton.h>
 #include <UILib/BitmapRadioButton.h>
@@ -334,6 +336,7 @@ private:
     //
 
     std::unique_ptr<OpenGLManager> mOpenGLManager;
+    std::unique_ptr<ShipNameNormalizer> mShipNameNormalizer;
 
     std::unique_ptr<Controller> mController; // Comes and goes as we are opened/close
 

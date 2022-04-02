@@ -375,6 +375,20 @@
 		+ Ship size notif at undo
 		+ CoM
 
++ ShipNameNormalizer
+	+ Use at:
+		+ NewShipNameDialog
+		+ ShipPropertiesEditDialog (only when name is dirty)
+		+ Messages:
+			+ "It seems that a better name for this ship might be:"
+			+ "Yes, I want to use the suggested name"
+			+ "No, I want to keep my name"
+
++ Ask user for new ship name
+	+ @ FS->SB via New Ship
+	+ @ SB open
+	+ @ SB::NewShip
+
 - Send for testing
 
 - Texture flood tool

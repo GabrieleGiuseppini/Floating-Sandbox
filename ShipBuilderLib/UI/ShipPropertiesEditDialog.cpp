@@ -3,9 +3,10 @@
  * Created:             2021-10-20
  * Copyright:           Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
  ***************************************************************************************/
-#include "ShipPropertiesEditDialog.h"
+#include "UI/ShipPropertiesEditDialog.h"
 
-#include "NewPasswordDialog.h"
+#include "UI/NewPasswordDialog.h"
+#include "UI/ShipNameSuggestionDialog.h"
 
 #include <UILib/WxHelpers.h>
 
@@ -34,8 +35,11 @@ int const NumericEditBoxWidth = 100;
 
 ShipPropertiesEditDialog::ShipPropertiesEditDialog(
     wxWindow * parent,
+    ShipNameNormalizer const & shipNameNormalizer,
     ResourceLocator const & resourceLocator)
-    : mResourceLocator(resourceLocator)
+    : mParent(parent)
+    , mShipNameNormalizer(shipNameNormalizer)
+    , mResourceLocator(resourceLocator)
 {
     Create(
         parent,
@@ -1063,8 +1067,22 @@ void ShipPropertiesEditDialog::OnOkButton(wxCommandEvent & /*event*/)
         // Populate new
         //
 
-        auto const shipName = MakeString(mShipNameTextCtrl->GetValue());
+        auto shipName = MakeString(mShipNameTextCtrl->GetValue());
         assert(shipName.has_value() && shipName->length() > 0);
+
+        // Normalize ship name, if user has changed it
+        if (mShipNameTextCtrl->IsModified())
+        {
+            auto const normalizedShipName = mShipNameNormalizer.NormalizeName(*shipName);
+            if (normalizedShipName != *shipName)
+            {
+                ShipNameSuggestionDialog dlg(mParent, mResourceLocator);
+                if (dlg.AskUserIfAcceptsSuggestedName(normalizedShipName))
+                {
+                    shipName = normalizedShipName;
+                }
+            }
+        }
 
         metadata = ShipMetadata(
             *shipName,

@@ -6,6 +6,7 @@
 #pragma once
 
 #include "Controller.h"
+#include "ShipNameNormalizer.h"
 #include "ShipOffsetVisualizationControl.h"
 
 #include <UILib/BitmapToggleButton.h>
@@ -36,6 +37,7 @@ public:
 
     ShipPropertiesEditDialog(
         wxWindow * parent,
+        ShipNameNormalizer const & shipNameNormalizer,
         ResourceLocator const & resourceLocator);
 
     void ShowModal(
@@ -72,6 +74,8 @@ private:
 
 private:
 
+    wxWindow * const mParent;
+    ShipNameNormalizer const & mShipNameNormalizer;
     ResourceLocator const & mResourceLocator;
 
     //

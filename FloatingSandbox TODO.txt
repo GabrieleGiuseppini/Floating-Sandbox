@@ -1047,7 +1047,7 @@
 				+ Also set subcategory in PaletteCoords - to new name of material
 					+ Assume group name matches stem; if not found, abort
 				+ Better algo for colors
-			= Do for:
+			+ Do for:
 				+ All metals
 					+ Iron
 						+ Lower double-bottom strength
@@ -1063,8 +1063,6 @@
 					+ Complete pine below, first
 					+ Oak wood
 					+ Pine wood
-				- TODO: others?
-				= Reorder all categories: hull first
 			- Description of variant in ShipBuilder palette?
 				- By means of a variant enum in the materials json, and therefore localizable strings
 					- ~"Structure"+"Form/Variant/Kind/Genre/Class"
@@ -1083,22 +1081,28 @@
 						+ New materials textures
 							+ wood_planks_3: One of the three "wood planks"
 							+ wood_studded_2
-				- Helium: ~like Hydrogen, but not combusting
 				- Sodium: explodes when particle's water > threshold
-					- New enum value: SodiumExplosion (Google for better name)
-					- At points' low-freq combustion update
+					- New enum value: SodiumExplosion (or ChemicalExplosion)
+					- Deal with combustion updates, exactly like other explosion type
+						- At points' low-freq combustion update
 					- ship_explosion shader: new "boolean" param to make it yellow (sample.r = sample.g = (sample.r + sample.g) / 2);
+				- Try to make glass transparent
+					- If ok: make "Opaque" and "Transparent" variants for:
+						- Glass (re-use existing "dark")
+						- Gases
+						- Water
+				- Redo structural template
+				- changes.txt
+
+				- Helium: ~like Hydrogen, but not combusting
 				- "Lightning rod" material
 					- Has precedence when looking for candidates @ Lightning strike
 				+ More glass colors
 				+ More concrete colors
 				+ More fiberglass colors
-				- Try to make glass transparent
-				- Redo structural template
-				- changes.txt
 			- Electrical materials:
 				- Non-Instanced Watertight Doors (see if possible)
-				- Jet engine				
+				- Jet engine
 				- Non-Instanced Water In/Out Pumps (see if possible)
 				- Clamp
 					- When powered, destroys point (and of course its springs)

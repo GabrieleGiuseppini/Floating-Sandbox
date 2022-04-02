@@ -119,6 +119,8 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple("Titanic   1912   ", "Titanic (1912)"),
 
         // Unmatched
+        std::make_tuple("Titanic 191", "Titanic 191"),
+        std::make_tuple("Titanic 19123", "Titanic 19123"),
         std::make_tuple("Titanic 191g", "Titanic 191g")
     ));
 

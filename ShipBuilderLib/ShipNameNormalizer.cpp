@@ -31,7 +31,7 @@ ShipNameNormalizer::ShipNameNormalizer(std::vector<std::string> && prefixes)
         std::string stemPrefix;
         for (auto const ch : normalPrefix)
         {
-            if (std::isalpha(ch))
+            if (!std::isspace(ch) && !std::ispunct(ch))
             {
                 stemPrefix.append(1, static_cast<typename std::string::value_type>(std::toupper(ch)));
             }
@@ -74,12 +74,6 @@ std::string ShipNameNormalizer::NormalizeName(std::string const & shipName) cons
 
                 // Eat it
                 continue;
-            }
-
-            if (!std::isalpha(ch))
-            {
-                // We're done
-                break;
             }
         }
         else
@@ -143,7 +137,7 @@ std::string ShipNameNormalizer::NormalizeName(std::string const & shipName) cons
     // Normalize year
     //
 
-    static std::regex const YearRegex(R"(^.*?\w(\s*[-\(]?\s*(\d{4})\s*[\)]?)\s*$)");
+    static std::regex const YearRegex(R"(^.*?\b(\s*[-\(]?\s*(\d{4})\s*[\)]?)\s*$)");
 
     std::smatch yearMatch;
     if (std::regex_match(result, yearMatch, YearRegex))

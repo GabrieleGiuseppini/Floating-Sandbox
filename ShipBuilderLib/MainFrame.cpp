@@ -5,8 +5,9 @@
  ***************************************************************************************/
 #include "MainFrame.h"
 
-#include "AskPasswordDialog.h"
-#include "WaterlineAnalyzerDialog.h"
+#include "UI/AskPasswordDialog.h"
+#include "UI/NewShipNameDialog.h"
+#include "UI/WaterlineAnalyzerDialog.h"
 
 #include <UILib/HighlightableTextButton.h>
 #include <UILib/EditSpinBox.h>
@@ -60,6 +61,7 @@ MainFrame::MainFrame(
     : mMainApp(mainApp)
     , mReturnToGameFunctor(std::move(returnToGameFunctor))
     , mOpenGLManager()
+    , mShipNameNormalizer(new ShipNameNormalizer(resourceLocator))
     , mController()
     , mResourceLocator(resourceLocator)
     , mLocalizationManager(localizationManager)
@@ -395,7 +397,7 @@ void MainFrame::OpenForLoadShip(
             if (!DoLoadShip(shipFilePath))
             {
                 // No luck loading ship...
-                // ...just create new ship
+                // ...just create a new ship
                 DoNewShip();
             }
         });
@@ -4028,7 +4030,7 @@ void MainFrame::OpenShipProperties()
 {
     if (!mShipPropertiesEditDialog)
     {
-        mShipPropertiesEditDialog = std::make_unique<ShipPropertiesEditDialog>(this, mResourceLocator);
+        mShipPropertiesEditDialog = std::make_unique<ShipPropertiesEditDialog>(this, *mShipNameNormalizer, mResourceLocator);
     }
 
     // Make ship preview
@@ -4122,14 +4124,15 @@ void MainFrame::ShowError(wxString const & message) const
 
 void MainFrame::DoNewShip()
 {
-    // Make name
-    std::string const shipName = "MyShip-" + Utils::MakeNowDateAndTimeString();
-
     // Dispose of current controller - including its OpenGL machinery
     mController.reset();
 
     // Reset current ship filename
     mCurrentShipFilePath.reset();
+
+    // Ask user for ship name
+    NewShipNameDialog dlg(this, *mShipNameNormalizer, mResourceLocator);
+    std::string const shipName = dlg.AskName();
 
     // Create new controller with empty ship
     mController = Controller::CreateNew(
