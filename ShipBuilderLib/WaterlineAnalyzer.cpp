@@ -287,8 +287,6 @@ std::tuple<float, vec2f> WaterlineAnalyzer::CalculateBuoyancyWithWaterline(
 {
     float totalBuoyantForce = 0.0f;
     vec2f centerOfBuoyancySum = vec2f::zero();
-    // TODOHACK: see below
-    //size_t underwaterParticleCount = 0;
 
     auto const & structuralLayerBuffer = mModel.GetStructuralLayer().Buffer;
     for (int y = 0; y < structuralLayerBuffer.Size.height; ++y)
@@ -309,15 +307,9 @@ std::tuple<float, vec2f> WaterlineAnalyzer::CalculateBuoyancyWithWaterline(
                 {
                     // This point is on the "underwater" side of the center, along the direction
 
-                    // TODOHACK: here we do the same as the simulator currently does, wrt "buoyancy volume fill".
-                    // This needs to be removed once we have changed "buoyancy volume fill"
+                    // Note: here we do the same as the simulator currently does wrt "buoyancy volume fill"
                     totalBuoyantForce += WaterDensity * material->BuoyancyVolumeFill;
                     centerOfBuoyancySum += coordsF * WaterDensity * material->BuoyancyVolumeFill;
-
-                    // TODOHACK: THIS IS GOOD:
-                    ////totalBuoyantForce += WaterDensity;
-                    ////centerOfBuoyancySum += coordsF;
-                    ////++underwaterParticleCount;
                 }
             }
         }
@@ -325,8 +317,6 @@ std::tuple<float, vec2f> WaterlineAnalyzer::CalculateBuoyancyWithWaterline(
 
     return std::make_tuple(
         totalBuoyantForce,
-        // TODOHACK: see above
-        //centerOfBuoyancySum / (underwaterParticleCount > 0 ? static_cast<float>(underwaterParticleCount) : 1.0f));
         centerOfBuoyancySum / (totalBuoyantForce != 0.0f ? totalBuoyantForce : 1.0f));
 }
 
