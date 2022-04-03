@@ -1114,8 +1114,8 @@
 							+ Do WaterReactionExplosion
 					= Make test ship for game
 						- Then move it to game's Ships folder
-					= Test:
-						- Run in Debug
+					+ Test:
+						+ Run in Debug
 						+ Thing itself
 							+ Flooded
 							+ Rain
@@ -1136,10 +1136,12 @@
 						+ Ship (w/no texture layer)
 						+ Material Palette
 						+ Builder
-					- If ok: make "Opaque" and "Transparent" variants for:
-						- Glass & Glass Hull
-						- Gases
+					= If ok: make "Opaque" and "Transparent" variants for:
+						+ Glass & Glass Hull
+						- Air
+						- Hydrogen
 						- Water
+						- Test all of them (with a single ship)
 				- Redo structural template
 				- changes.txt
 

@@ -2190,11 +2190,11 @@
                 "nominal_mass": 2500
             },
             "melting_temperature": 1773.15,
-            "name": "Glass Hull",
+            "name": "Transparent Glass Hull",
 	    "opacity": 0.8,
             "palette_coordinates": {
                 "category": "Glass",
-                "sub_category": "Glass Hull",
+                "sub_category": "Transparent Glass Hull",
                 "sub_category_ordinal": 0
             },
             "sound_type": "Glass",
@@ -2229,11 +2229,11 @@
                 "nominal_mass": 2500
             },
             "melting_temperature": 1773.15,
-            "name": "Glass",
+            "name": "Transparent Glass",
 	    "opacity": 0.6,
             "palette_coordinates": {
                 "category": "Glass",
-                "sub_category": "Glass",
+                "sub_category": "Transparent Glass",
                 "sub_category_ordinal": 0
             },
             "sound_type": "Glass",
@@ -2248,6 +2248,85 @@
             "wind_receptivity": 0.1
         },
         {
+            "buoyancy_volume_fill": 0.0,
+            "color_key": [
+                "#BFBEBE",
+                "#F58077",
+                "#FFF86F",
+                "#A87E01",
+                "#6BFF7D",
+                "#C1FFFE",
+                "#3963FB",
+                "#CF24FB",
+                "#F5AE52"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1000000.0,
+            "is_hull": true,
+            "mass": {
+                "density": 0.0374,
+                "nominal_mass": 2500
+            },
+            "melting_temperature": 1773.15,
+            "name": "Opaque Glass Hull",
+	    "opacity": 1.0,
+            "palette_coordinates": {
+                "category": "Glass",
+                "sub_category": "Opaque Glass Hull",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Glass",
+            "specific_heat": 700.0,
+            "stiffness": 1.0,
+            "strength": 0.1,
+            "texture_name": "glass_1",
+            "thermal_conductivity": 0.8,
+            "thermal_expansion_coefficient": 5e-06,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.0,
+            "wind_receptivity": 0.1
+        },
+        {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": [
+                "#EDEFED",
+                "#FFBFBE",
+                "#FFFDBE",
+                "#B8A35E",
+                "DDFAB8",
+                "#E5FFFE",
+                "#A6C2FE",
+                "#FCC9FE",
+                "#FFBE53"
+            ],
+            "combustion_type": "Combustion",
+            "ignition_temperature": 1000000.0,
+            "is_hull": false,
+            "mass": {
+                "density": 0.00917,
+                "nominal_mass": 2500
+            },
+            "melting_temperature": 1773.15,
+            "name": "Opaque Glass",
+	    "opacity": 1.0,
+            "palette_coordinates": {
+                "category": "Glass",
+                "sub_category": "Opaque Glass",
+                "sub_category_ordinal": 0
+            },
+            "sound_type": "Glass",
+            "specific_heat": 700.0,
+            "stiffness": 1.0,
+            "strength": 0.1,
+            "texture_name": "glass_1",
+            "thermal_conductivity": 0.8,
+            "thermal_expansion_coefficient": 5e-06,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.0,
+            "wind_receptivity": 0.1
+        },
+
+	{
             "buoyancy_volume_fill": 0.0,
             "color_key": [
                 "#BFBFBF",
@@ -3430,9 +3509,11 @@
                     {
                         "name": "Glass",
                         "sub_categories": [
-                            "Glass Hull",
-                            "Glass"
-                        ]
+                            "Opaque Glass Hull",
+                            "Opaque Glass",
+                            "Transparent Glass Hull",
+                            "Transparent Glass"
+			]
                     }
                 ]
             },

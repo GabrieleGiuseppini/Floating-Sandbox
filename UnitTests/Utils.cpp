@@ -24,7 +24,7 @@ StructuralMaterial MakeTestStructuralMaterial(std::string name, rgbColor colorKe
     return StructuralMaterial(
         colorKey,
         name,
-        rgbColor::zero());
+        rgbaColor::zero());
 }
 
 ElectricalMaterial MakeTestElectricalMaterial(std::string name, rgbColor colorKey, bool isInstanced)
