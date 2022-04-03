@@ -1708,7 +1708,7 @@
             "specific_heat": 1230.0,
             "stiffness": 1.0,
             "strength": 0.42,
-            "texture_name": "concrete_2",
+            "texture_name": "concrete_1",
             "thermal_conductivity": 140.0,
             "water_diffusion_speed": 0.5,
 	    "water_reactivity": 1.0,

@@ -588,6 +588,7 @@
 		- Selection
 			- Implements selection interaction and rendering of visual feedback *during the interaction only*
 			- Takes SelectionManager ref in its cctor, and populates it upon confirmation of selection made
+			- Selection spec (*)
 		- Ellipses
 		- Traslate (aka move)
 		- Magic Eraser (for texture layer only)
@@ -599,15 +600,25 @@
 		- Takes View so that it can instruct it to render marching ants
 			- Is not responsible for drawing of temporary selection while the user is making it, that is the Selection tool
 		- Read by ClipboardManager pseudo-tool to make clip
-		- TODO: templated on layer type?
+		- Selection spec (*)
 	- ClipboardManager pseudo-tool:
 		- Maintains clip
 		- Implements operations: Copy, Cut, Paste
 			- TODO: who should be responsible for the interactions during Paste? See Photoshop and Paint
 				- A different, unselectable tool?
-		- Talks with IUserInterface to enable/disable menus
+		- Talks with IUserInterface to enable/disable ribbon toolbar buttons
 	- Other edit operations, not via tools - via menu (and buttons?)
-		- Auto-trim (on bounding box)
+		+ Auto-trim (on bounding box)
+
+- Selection Spec (*):
+	- Selection is created by tool (@ each layer); selection pseudo-tool populates SelectionManager with quad and layer
+	- Once SelectionManager has a selection, new Selection ribbon becomes enabled
+		- Ribbon has selection edit tools (flip, rotate, clear, etc.) and radio for layer-only or all layers (@ WorkbenchState)
+			- Edits go to Controller, who inspects SelectionManager and WorkbenchState for applicable layers
+	- Once SelectionManager has a selection, toolbars for all layers get enablements for selection-specific tools
+		- OR TODO: still in ribbon, but work as normal tools (of non-layer-specific types, will have to act on one or all layers)
+		- Move
+		- TODO: others?
 
 = RenderContext:
 	+ Single-threaded

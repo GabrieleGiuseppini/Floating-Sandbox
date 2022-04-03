@@ -1104,17 +1104,15 @@
 							+ Follow CombustionState for everything else to do here, including but not limited to:
 								+ When to call Sate::Reset()
 					+ ship_explosion shader: new "boolean" param to make it yellow (sample.r = sample.g = (sample.r + sample.g) / 2);				
-					- Make test ship for game
-					= Sounds
-						= Explosion
+					+ Sounds
+						+ Explosion
 							+ Normal
-							- Underwater
-						- Sizzling
-							- Normal
-							- Underwater
-						- SoundController
-							- Do WaterReaction
+						+ Sizzling
+							+ Normal
+						+ SoundController
+							+ Do WaterReaction
 							+ Do WaterReactionExplosion
+					- Make test ship for game
 					- Test:
 						- Thing itself
 							+ Flooded

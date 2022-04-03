@@ -1743,13 +1743,12 @@ void SoundController::OnWaterReaction(
 {
     float const volume = 100.0f;
 
-    // TODOHERE
-    ////PlayUOneShotMultipleChoiceSound(
-    ////    SoundType::SodiumExplosion,
-    ////    SoundGroupType::Effects,
-    ////    isUnderwater,
-    ////    volume,
-    ////    false);
+    PlayUOneShotMultipleChoiceSound(
+        SoundType::WaterReactionTriggered,
+        SoundGroupType::Effects,
+        isUnderwater,
+        volume,
+        false);
 }
 
 void SoundController::OnWaterReactionExplosion(
