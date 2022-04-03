@@ -1127,7 +1127,7 @@
 							+ Transmission
 						+ Repair
 							+ Explodes again afterwards
-				= Try to make glass transparent
+				+ Try to make glass transparent
 					+ Material: optional "opacity", default = 1.0
 						+ StructuralMaterial::RenderColor becomes full rgba, taking into account Opacity
 						+ Auto-texturization uses alpha of structural material's render color
@@ -1136,12 +1136,12 @@
 						+ Ship (w/no texture layer)
 						+ Material Palette
 						+ Builder
-					= If ok: make "Opaque" and "Transparent" variants for:
+					+ If ok: make "Opaque" and "Transparent" variants for:
 						+ Glass & Glass Hull
-						- Air
-						- Hydrogen
-						- Water
-						- Test all of them (with a single ship)
+						+ Do uniqueness of materials via new json property
+						+ Air
+						+ Hydrogen
+						+ Test all of them (with a single ship)
 				- Redo structural template
 				- changes.txt
 

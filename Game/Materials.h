@@ -112,8 +112,9 @@ public:
         rgbColor const & baseRenderColor,
         picojson::object const & structuralMaterialJson);
 
-    static MaterialSoundType StrToMaterialSoundType(std::string const & str);
     static MaterialCombustionType StrToMaterialCombustionType(std::string const & str);
+    static MaterialUniqueType StrToMaterialUniqueType(std::string const & str);
+    static MaterialSoundType StrToMaterialSoundType(std::string const & str);
 
     bool IsUniqueType(MaterialUniqueType uniqueType) const
     {

@@ -40,19 +40,23 @@ StructuralMaterial StructuralMaterial::Create(
         float const stiffness = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "stiffness", 1.0);
         float const strainThresholdFraction = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "strain_threshold_fraction", 0.5f);
 
-        // Assign unique type - arbitrarily to first of series of colors
         std::optional<MaterialUniqueType> uniqueType;
-        if (name == "Air" && ordinal == 0)
-            uniqueType = MaterialUniqueType::Air;
-        else if (name == "Rope" && ordinal == 0)
-            uniqueType = MaterialUniqueType::Rope;
-        else if (name == "Water" && ordinal == 0)
-            uniqueType = MaterialUniqueType::Water;
+        {
+            std::optional<std::string> const uniqueTypeStr = Utils::GetOptionalJsonMember<std::string>(structuralMaterialJson, "unique_type");
+            if (uniqueTypeStr.has_value() && ordinal == 0) // Assign unique type arbitrarily to first of series of colors
+            {
+                uniqueType = StrToMaterialUniqueType(*uniqueTypeStr);
+            }
+        }
 
-        std::optional<std::string> const materialSoundStr = Utils::GetOptionalJsonMember<std::string>(structuralMaterialJson, "sound_type");
         std::optional<MaterialSoundType> materialSound;
-        if (!!materialSoundStr)
-            materialSound = StrToMaterialSoundType(*materialSoundStr);
+        {
+            std::optional<std::string> const materialSoundStr = Utils::GetOptionalJsonMember<std::string>(structuralMaterialJson, "sound_type");
+            if (materialSoundStr.has_value())
+            {
+                materialSound = StrToMaterialSoundType(*materialSoundStr);
+            }
+        }
 
         std::optional<std::string> const materialTextureName = Utils::GetOptionalJsonMember<std::string>(structuralMaterialJson, "texture_name");
         float const opacity = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "opacity", 1.0f);
@@ -138,6 +142,28 @@ StructuralMaterial StructuralMaterial::Create(
     }
 }
 
+StructuralMaterial::MaterialCombustionType StructuralMaterial::StrToMaterialCombustionType(std::string const & str)
+{
+    if (Utils::CaseInsensitiveEquals(str, "Combustion"))
+        return MaterialCombustionType::Combustion;
+    else if (Utils::CaseInsensitiveEquals(str, "Explosion"))
+        return MaterialCombustionType::Explosion;
+    else
+        throw GameException("Unrecognized MaterialCombustionType \"" + str + "\"");
+}
+
+StructuralMaterial::MaterialUniqueType StructuralMaterial::StrToMaterialUniqueType(std::string const & str)
+{
+    if (Utils::CaseInsensitiveEquals(str, "Air"))
+        return MaterialUniqueType::Air;
+    else if (Utils::CaseInsensitiveEquals(str, "Rope"))
+        return MaterialUniqueType::Rope;
+    else if (Utils::CaseInsensitiveEquals(str, "Water"))
+        return MaterialUniqueType::Water;
+    else
+        throw GameException("Unrecognized MaterialUniqueType \"" + str + "\"");
+}
+
 StructuralMaterial::MaterialSoundType StructuralMaterial::StrToMaterialSoundType(std::string const & str)
 {
     if (Utils::CaseInsensitiveEquals(str, "AirBubble"))
@@ -166,16 +192,6 @@ StructuralMaterial::MaterialSoundType StructuralMaterial::StrToMaterialSoundType
         return MaterialSoundType::Wood;
     else
         throw GameException("Unrecognized MaterialSoundType \"" + str + "\"");
-}
-
-StructuralMaterial::MaterialCombustionType StructuralMaterial::StrToMaterialCombustionType(std::string const & str)
-{
-    if (Utils::CaseInsensitiveEquals(str, "Combustion"))
-        return MaterialCombustionType::Combustion;
-    else if (Utils::CaseInsensitiveEquals(str, "Explosion"))
-        return MaterialCombustionType::Explosion;
-    else
-        throw GameException("Unrecognized MaterialCombustionType \"" + str + "\"");
 }
 
 ElectricalMaterial ElectricalMaterial::Create(
