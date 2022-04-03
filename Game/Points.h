@@ -875,7 +875,7 @@ public:
     void Query(ElementIndex pointElementIndex) const;
 
     // For debugging
-    void ColorPoint(
+    void ColorPointForDebugging(
         ElementIndex pointIndex,
         rgbaColor const & color);
 

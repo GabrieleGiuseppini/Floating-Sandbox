@@ -1701,7 +1701,7 @@ void Points::Query(ElementIndex pointElementIndex) const
     LogMessage("PlaneID: ", mPlaneIdBuffer[pointElementIndex], " ConnectedComponentID: ", mConnectedComponentIdBuffer[pointElementIndex]);
 }
 
-void Points::ColorPoint(
+void Points::ColorPointForDebugging(
     ElementIndex pointIndex,
     rgbaColor const & color)
 {
