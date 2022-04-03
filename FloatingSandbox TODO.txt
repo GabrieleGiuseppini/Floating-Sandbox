@@ -1112,20 +1112,20 @@
 						+ SoundController
 							+ Do WaterReaction
 							+ Do WaterReactionExplosion
-					- Make test ship for game
-					- Test:
-						- Thing itself
+					= Make test ship for game
+						- Then move it to game's Ships folder
+					+ Test:
+						+ Thing itself
 							+ Flooded
-							- Rain
-						- Normal explosions
-							- Bombs
-							- Gunpowder							
-						- Sodium thermal properties
-							- Burning
-							- Melting
-							- Transmission
-						- Repair
-							- Explodes again afterwards
+							+ Rain
+						+ Normal explosions
+							+ Bombs
+							+ Gunpowder							
+						+ Sodium thermal properties
+							+ Burning
+							+ Transmission
+						+ Repair
+							+ Explodes again afterwards
 				- Try to make glass transparent
 					- Material: optional "opacity", default = 1.0
 						- Test now setting it to ~0.4 just for glass

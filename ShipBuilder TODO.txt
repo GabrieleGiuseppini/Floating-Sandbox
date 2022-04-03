@@ -391,6 +391,9 @@
 
 - Send for testing
 
+- Electrical panel authoring
+	- TODO: see if can come up with a simple way first, e.g. just for labels and showing/hiding
+
 - Texture flood tool
 	+ First off: mouse coordinates from MainFrame to Controller becomes LogicalDisplayCoords, and they're converted to ShipSpace coords where needed
 	- Conversion to texture coords: done by View & ViewModel, exactly like conversion to ShipSpaceCoords, and invoked by texture tool(s)
@@ -411,16 +414,6 @@
 		- Export: above=<file==folder|image==photo> below=<arrow pointing up>
 		- Import: above=<file==folder|image==photo> below=<arrow pointing down>
 	- TODO: ropes are missing...
-
-- ShipPropertiesEditDialog: ship prefix normalizer
-	+ Make text file out of https://en.wikipedia.org/wiki/Ship_prefix, with just list of prefixes
-	- Usage:
-		- Choose: at OK button, or at focus leaving from edit box
-	- Algo:
-		- Take user-provided, reduce to contiguous (remove ./\<space>)
-			- TODO: when to stop
-		- Take list, reduce to contiguous (remove ./\<space>)
-		- If the two match, use original from list
 
 ================================================================================================================================================================================
 
