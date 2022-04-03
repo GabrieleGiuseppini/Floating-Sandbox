@@ -64,7 +64,7 @@ public:
     MaterialColorKey ColorKey;
 
     std::string Name;
-    rgbColor RenderColor;
+    rgbaColor RenderColor;
     float Strength;
     float NominalMass;
     float Density;
@@ -77,6 +77,7 @@ public:
     std::optional<MaterialSoundType> MaterialSound;
 
     std::optional<std::string> MaterialTextureName;
+    float Opacity;
 
     // Water
     bool IsHull;
@@ -108,7 +109,7 @@ public:
     static StructuralMaterial Create(
         MaterialColorKey const & colorKey,
         unsigned int ordinal,
-        rgbColor const & renderColor,
+        rgbColor const & baseRenderColor,
         picojson::object const & structuralMaterialJson);
 
     static MaterialSoundType StrToMaterialSoundType(std::string const & str);
@@ -140,7 +141,7 @@ public:
     StructuralMaterial(
         MaterialColorKey const & colorKey,
         std::string name,
-        rgbColor const & renderColor,
+        rgbaColor const & renderColor,
         float strength,
         float nominalMass,
         float density,
@@ -150,6 +151,7 @@ public:
         std::optional<MaterialUniqueType> uniqueType,
         std::optional<MaterialSoundType> materialSound,
         std::optional<std::string> materialTextureName,
+        float opacity,
         // Water
         bool isHull,
         float waterIntake,
@@ -183,6 +185,7 @@ public:
         , UniqueType(uniqueType)
         , MaterialSound(materialSound)
         , MaterialTextureName(materialTextureName)
+        , Opacity(opacity)
         , IsHull(isHull)
         , WaterIntake(waterIntake)
         , WaterDiffusionSpeed(waterDiffusionSpeed)
@@ -206,7 +209,7 @@ public:
     StructuralMaterial(
         MaterialColorKey const & colorKey,
         std::string name,
-        rgbColor const & renderColor)
+        rgbaColor const & renderColor)
         : ColorKey(colorKey)
         , Name(name)
         , RenderColor(renderColor)
@@ -219,6 +222,7 @@ public:
         , UniqueType(std::nullopt)
         , MaterialSound(std::nullopt)
         , MaterialTextureName(std::nullopt)
+        , Opacity(1.0f)
         , IsHull(false)
         , WaterIntake(1.0f)
         , WaterDiffusionSpeed(1.0f)

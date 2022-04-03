@@ -24,7 +24,7 @@ namespace /* anonymous */ {
 StructuralMaterial StructuralMaterial::Create(
     MaterialColorKey const & colorKey,
     unsigned int ordinal,
-    rgbColor const & renderColor,
+    rgbColor const & baseRenderColor,
     picojson::object const & structuralMaterialJson)
 {
     std::string const name = Utils::GetMandatoryJsonMember<std::string>(structuralMaterialJson, "name");
@@ -55,6 +55,7 @@ StructuralMaterial StructuralMaterial::Create(
             materialSound = StrToMaterialSoundType(*materialSoundStr);
 
         std::optional<std::string> const materialTextureName = Utils::GetOptionalJsonMember<std::string>(structuralMaterialJson, "texture_name");
+        float const opacity = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "opacity", 1.0f);
 
         // Water
 
@@ -99,7 +100,7 @@ StructuralMaterial StructuralMaterial::Create(
         return StructuralMaterial(
             colorKey,
             name,
-            renderColor,
+            rgbaColor(baseRenderColor, static_cast<rgbaColor::data_type>(255.0f * opacity)), // renderColor
             strength,
             nominalMass,
             density,
@@ -109,6 +110,7 @@ StructuralMaterial StructuralMaterial::Create(
             uniqueType,
             materialSound,
             materialTextureName,
+            opacity,
             isHull,
             waterIntake,
             waterDiffusionSpeed,

@@ -201,7 +201,7 @@ void Points::CreateEphemeralParticleAirBubble(
     mPlaneIdFloatBuffer[pointIndex] = static_cast<float>(planeId);
     mIsPlaneIdBufferEphemeralDirty = true;
 
-    mColorBuffer[pointIndex] = airStructuralMaterial.RenderColor.toVec4f(1.0f);
+    mColorBuffer[pointIndex] = airStructuralMaterial.RenderColor.toVec4f();
     mIsEphemeralColorBufferDirty = true;
 }
 
@@ -276,7 +276,7 @@ void Points::CreateEphemeralParticleDebris(
     mPlaneIdFloatBuffer[pointIndex] = static_cast<float>(planeId);
     mIsPlaneIdBufferEphemeralDirty = true;
 
-    mColorBuffer[pointIndex] = structuralMaterial.RenderColor.toVec4f(1.0f);
+    mColorBuffer[pointIndex] = structuralMaterial.RenderColor.toVec4f();
     mIsEphemeralColorBufferDirty = true;
 
     // Remember that ephemeral points are dirty now
@@ -368,7 +368,7 @@ void Points::CreateEphemeralParticleSmoke(
     mPlaneIdFloatBuffer[pointIndex] = static_cast<float>(planeId);
     mIsPlaneIdBufferEphemeralDirty = true;
 
-    mColorBuffer[pointIndex] = airStructuralMaterial.RenderColor.toVec4f(1.0f);
+    mColorBuffer[pointIndex] = airStructuralMaterial.RenderColor.toVec4f();
     mIsEphemeralColorBufferDirty = true;
 }
 
@@ -517,7 +517,7 @@ void Points::CreateEphemeralParticleWakeBubble(
     mPlaneIdFloatBuffer[pointIndex] = static_cast<float>(planeId);
     mIsPlaneIdBufferEphemeralDirty = true;
 
-    mColorBuffer[pointIndex] = waterStructuralMaterial.RenderColor.toVec4f(1.0f);
+    mColorBuffer[pointIndex] = waterStructuralMaterial.RenderColor.toVec4f();
     mIsEphemeralColorBufferDirty = true;
 }
 

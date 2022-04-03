@@ -2191,6 +2191,7 @@
             },
             "melting_temperature": 1773.15,
             "name": "Glass Hull",
+	    "opacity": 0.8,
             "palette_coordinates": {
                 "category": "Glass",
                 "sub_category": "Glass Hull",
@@ -2229,6 +2230,7 @@
             },
             "melting_temperature": 1773.15,
             "name": "Glass",
+	    "opacity": 0.6,
             "palette_coordinates": {
                 "category": "Glass",
                 "sub_category": "Glass",

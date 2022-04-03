@@ -93,7 +93,7 @@ void ShipDeSerializer::SaveStructuralLayerImage(
         {
             StructuralElement const & element = structuralLayer.Buffer[{x, y}];
             structuralLayerImage[{x, y}] = element.Material != nullptr
-                ? rgbaColor(element.Material->RenderColor, 255)
+                ? element.Material->RenderColor
                 : rgbaColor(EmptyMaterialColorKey, 255);
         }
     }

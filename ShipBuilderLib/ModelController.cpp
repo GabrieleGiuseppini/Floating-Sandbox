@@ -1698,7 +1698,7 @@ void ModelController::AppendRope(
         startCoords,
         endCoords,
         material,
-        rgbaColor(material->RenderColor, 255));
+        material->RenderColor);
 }
 
 void ModelController::MoveRopeEndpoint(
@@ -1972,7 +1972,7 @@ void ModelController::RenderStructureInto(
             auto const structuralMaterial = structuralLayerBuffer[{x, y}].Material;
 
             texture[{x, y}] = (structuralMaterial != nullptr)
-                ? rgbaColor(structuralMaterial->RenderColor, 255)
+                ? structuralMaterial->RenderColor
                 : emptyColor;
         }
     }

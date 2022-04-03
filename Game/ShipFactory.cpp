@@ -83,11 +83,21 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
         {
             ShipSpaceCoordinates const coords = ShipSpaceCoordinates(x, y);
 
-            // Get structural material - and render color
+            // Get structural material properties
+
             StructuralMaterial const * structuralMaterial = shipDefinition.StructuralLayer.Buffer[coords].Material;
-            rgbaColor structuralMaterialRenderColor = (structuralMaterial != nullptr) ? rgbaColor(structuralMaterial->RenderColor, 255) : rgbaColor::zero();
-            bool isStructuralMaterialRope = (structuralMaterial != nullptr) ? structuralMaterial->IsUniqueType(StructuralMaterial::MaterialUniqueType::Rope) : false;
-            bool isStructuralMaterialLeaking = (structuralMaterial != nullptr) ? structuralMaterial->IsUniqueType(StructuralMaterial::MaterialUniqueType::Rope) : false;
+
+            rgbaColor structuralMaterialRenderColor = (structuralMaterial != nullptr)
+                ? structuralMaterial->RenderColor
+                : rgbaColor::zero();
+
+            bool isStructuralMaterialRope = (structuralMaterial != nullptr)
+                ? structuralMaterial->IsUniqueType(StructuralMaterial::MaterialUniqueType::Rope)
+                : false;
+
+            bool isStructuralMaterialLeaking = (structuralMaterial != nullptr)
+                ? structuralMaterial->IsUniqueType(StructuralMaterial::MaterialUniqueType::Rope)
+                : false;
 
             // Check if there's a rope endpoint here
             if (shipDefinition.RopesLayer)
