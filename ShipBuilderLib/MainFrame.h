@@ -11,6 +11,7 @@
 #include "ShipNameNormalizer.h"
 #include "WorkbenchState.h"
 
+#include "UI/ElectricalPanelEditDialog.h"
 #include "UI/MaterialPalette.h"
 #include "UI/ModelValidationDialog.h"
 #include "UI/ResizeDialog.h"
@@ -219,9 +220,11 @@ private:
 
     void ImportTextureLayerFromImage();
 
-    void OpenShipCanvasResize();
+    void OnShipCanvasResize();
 
-    void OpenShipProperties();
+    void OnShipPropertiesEdit();
+
+    void OnElectricalPanelEdit();
 
     void ValidateShip();
 
@@ -366,6 +369,7 @@ private:
     std::array<RibbonToolbarButton<BitmapRadioButton> *, VisualizationCount> mVisualizationSelectButtons;
     std::array<RibbonToolbarButton<BitmapButton> *, LayerCount> mLayerExportButtons;
     std::array<RibbonToolbarButton<BitmapButton> *, LayerCount> mLayerDeleteButtons;
+    RibbonToolbarButton<BitmapButton> * mElectricalPanelEditButton;
     wxSizer * mToolSettingsPanelsSizer;
     std::vector<std::tuple<ToolType, wxPanel *>> mToolSettingsPanels;
 
@@ -426,6 +430,7 @@ private:
     std::unique_ptr<ResizeDialog> mResizeDialog;
     std::unique_ptr<ShipPropertiesEditDialog> mShipPropertiesEditDialog;
     std::unique_ptr<ModelValidationDialog> mModelValidationDialog;
+    std::unique_ptr<ElectricalPanelEditDialog> mElectricalPanelEditDialog;
 
     //
     // UI state

@@ -1354,6 +1354,30 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
         mLayerExportButtons[static_cast<size_t>(layer)] = exportButton;
     }
 
+    iColumn += 2;
+
+    // ElectricalPanel
+    if (layer == LayerType::Electrical)
+    {
+        mElectricalPanelEditButton = new RibbonToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetBitmapFilePath("electrical_panel_edit_medium"),
+            _("Edit Panel"),
+            [this]()
+            {
+                OnElectricalPanelEdit();
+            },
+            _("Edit the electrical panel that is visualized in the game when this ship is loaded."));
+
+        panelGridSizer->Add(
+            mElectricalPanelEditButton,
+            wxGBPosition(0, iColumn++),
+            wxGBSpan(2, 1),
+            0,
+            0);
+    }
+
     // Wrap in a sizer just for margins
     {
         wxSizer * tmpSizer = new wxBoxSizer(wxVERTICAL); // Arbitrary
@@ -1533,7 +1557,7 @@ wxRibbonPanel * MainFrame::CreateEditShipRibbonPanel(wxRibbonPage * parent)
             _("Size"),
             [this]()
             {
-                OpenShipCanvasResize();
+                OnShipCanvasResize();
             },
             _("Resize the ship."));
 
@@ -1549,7 +1573,7 @@ wxRibbonPanel * MainFrame::CreateEditShipRibbonPanel(wxRibbonPage * parent)
             _("Properties"),
             [this]()
             {
-                OpenShipProperties();
+                OnShipPropertiesEdit();
             },
             _("Edit the ship properties."));
 
@@ -3994,7 +4018,7 @@ void MainFrame::ImportTextureLayerFromImage()
     }
 }
 
-void MainFrame::OpenShipCanvasResize()
+void MainFrame::OnShipCanvasResize()
 {
     if (!mResizeDialog)
     {
@@ -4026,7 +4050,7 @@ void MainFrame::OpenShipCanvasResize()
         ShipSpaceCoordinates(originOffset.x, originOffset.y));
 }
 
-void MainFrame::OpenShipProperties()
+void MainFrame::OnShipPropertiesEdit()
 {
     if (!mShipPropertiesEditDialog)
     {
@@ -4043,6 +4067,16 @@ void MainFrame::OpenShipProperties()
         mController->GetModelController().GetShipAutoTexturizationSettings(),
         *shipPreviewImage,
         mController->GetModelController().HasLayer(LayerType::Texture));
+}
+
+void MainFrame::OnElectricalPanelEdit()
+{
+    if (!mElectricalPanelEditDialog)
+    {
+        mElectricalPanelEditDialog = std::make_unique<ElectricalPanelEditDialog>(this, mResourceLocator);
+    }
+
+    // TODOHERE
 }
 
 void MainFrame::ValidateShip()

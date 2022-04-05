@@ -389,10 +389,21 @@
 	+ @ SB open
 	+ @ SB::NewShip
 
-- Send for testing
++ Send for testing
 
-- Electrical panel authoring
-	- TODO: see if can come up with a simple way first, e.g. just for labels and showing/hiding
+- Using shift to create a horizontal line doesn't work with M2/alternate color 
+
+= Electrical panel authoring
+	+ Ribbon button
+		+ Icon
+		- Only enabled iff (model has ElectricalLayer &&) ElectricalLayer has one instanced element
+	- ModelController: need to export <InstanceID, ElectricalMaterial *> pairs
+	- Dialog
+		- Propview: cols are:
+			- Label: <instance ID> <material name>
+			- Checkbox (for visibility)
+			- Label
+		- ElectricalPanelLayoutControl
 
 - Texture flood tool
 	+ First off: mouse coordinates from MainFrame to Controller becomes LogicalDisplayCoords, and they're converted to ShipSpace coords where needed
