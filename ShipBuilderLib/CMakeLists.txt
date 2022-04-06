@@ -41,6 +41,8 @@ set (UI_SOURCES
 	UI/AskPasswordDialog.h
 	UI/ElectricalPanelEditDialog.cpp
 	UI/ElectricalPanelEditDialog.h
+	UI/ElectricalPanelLayoutControl.cpp
+	UI/ElectricalPanelLayoutControl.h
 	UI/MaterialPalette.cpp
 	UI/MaterialPalette.h
 	UI/ModelValidationDialog.cpp

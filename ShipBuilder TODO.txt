@@ -408,6 +408,8 @@
 			+ Checkbox (for visibility)
 			- Label
 				- TODO: where to store code that makes labels given instance index and ElectricalMaterial?
+					- ElectricalMaterial?
+						- Then would need electrical material at announcement events that SwitchboardPanel currently creates labels in
 		- ElectricalPanelLayoutControl
 		- Hook events between List and ElectricalPanelLayoutControl:
 			- Click on list element -> highlight in LayoutControl (and list element)

@@ -52,12 +52,10 @@ ElectricalPanelEditDialog::ElectricalPanelEditDialog(
 
     // Element layout control
     {
-        // TODOTEST
-        auto todotestpanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(-1, 100));
-        todotestpanel->SetBackgroundColour(wxColor(200, 200, 200));
+        mElectricalPanel = new ElectricalPanelLayoutControl(this, resourceLocator);
 
         dialogVSizer->Add(
-            todotestpanel,
+            mElectricalPanel,
             1,
             wxEXPAND | wxLEFT | wxRIGHT,
             Margin);
@@ -257,6 +255,8 @@ void ElectricalPanelEditDialog::ReconciliateUI()
     //
     // Populate layout control
     //
+
+    mElectricalPanel->Clear();
 
     // TODOHERE
 

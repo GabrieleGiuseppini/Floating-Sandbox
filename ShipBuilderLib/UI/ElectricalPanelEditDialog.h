@@ -5,6 +5,8 @@
  ***************************************************************************************/
 #pragma once
 
+#include "UI/ElectricalPanelLayoutControl.h"
+
 #include "Controller.h"
 #include "InstancedElectricalElementSet.h"
 
@@ -41,6 +43,7 @@ private:
 private:
 
     wxScrolled<wxPanel> * mListPanel;
+    ElectricalPanelLayoutControl * mElectricalPanel;
 
     struct SessionData
     {
