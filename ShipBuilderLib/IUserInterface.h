@@ -6,6 +6,7 @@
 #pragma once
 
 #include "IModelObservable.h"
+#include "InstancedElectricalElementSet.h"
 #include "ShipBuilderTypes.h"
 #include "UndoStack.h"
 #include "ViewModel.h"
@@ -44,6 +45,9 @@ struct IUserInterface
 
     // Notifies of a (possible) change in the model's macro properties analysis
     virtual void OnModelMacroPropertiesUpdated(ModelMacroProperties const & properties) = 0;
+
+    // Notifies of a (possible) change in the set of instanced elements in the electrical layer
+    virtual void OnElectricalLayerInstancedElementSetChanged(InstancedElectricalElementSet const & instancedElectricalElementSet) = 0;
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -43,7 +43,7 @@ ModelController::ModelController(
     , mMassParticleCount(0)
     , mTotalMass(0.0f)
     , mCenterOfMassSum(vec2f::zero())
-    , mElectricalElementInstanceIndexFactory()
+    , mInstancedElectricalElementSet()
     , mElectricalParticleCount(0)
     /////
     , mGameVisualizationMode(GameVisualizationModeType::None)
@@ -1541,7 +1541,7 @@ void ModelController::InitializeStructuralLayerAnalysis()
 void ModelController::InitializeElectricalLayerAnalysis()
 {
     // Reset factory
-    mElectricalElementInstanceIndexFactory.Reset();
+    mInstancedElectricalElementSet.Reset();
 
     // Reset particle count
     mElectricalParticleCount = 0;
@@ -1559,7 +1559,7 @@ void ModelController::InitializeElectricalLayerAnalysis()
                 if (electricalLayerBuffer.Data[i].Material->IsInstanced)
                 {
                     assert(electricalLayerBuffer.Data[i].InstanceIndex != NoneElectricalElementInstanceIndex);
-                    mElectricalElementInstanceIndexFactory.RegisterIndex(electricalLayerBuffer.Data[i].InstanceIndex);
+                    mInstancedElectricalElementSet.Register(electricalLayerBuffer.Data[i].InstanceIndex, electricalLayerBuffer.Data[i].Material);
                 }
             }
         }
@@ -1633,7 +1633,7 @@ void ModelController::WriteParticle(
             // New instanced element...
 
             // ...new instance index
-            instanceIndex = mElectricalElementInstanceIndexFactory.MakeNewIndex();
+            instanceIndex = mInstancedElectricalElementSet.Add(material);
         }
         else
         {
@@ -1654,7 +1654,7 @@ void ModelController::WriteParticle(
             // Old instanced, new one not...
 
             // ...disappeared instance index
-            mElectricalElementInstanceIndexFactory.DisposeIndex(oldElement.InstanceIndex);
+            mInstancedElectricalElementSet.Remove(oldElement.InstanceIndex);
             instanceIndex = NoneElectricalElementInstanceIndex;
         }
         else

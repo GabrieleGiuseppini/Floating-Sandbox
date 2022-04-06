@@ -491,6 +491,11 @@ void MainFrame::OnModelMacroPropertiesUpdated(ModelMacroProperties const & prope
     ReconciliateUIWithModelMacroProperties(properties);
 }
 
+void MainFrame::OnElectricalLayerInstancedElementSetChanged(InstancedElectricalElementSet const & instancedElectricalElementSet)
+{
+    ReconciliateUIWithElectricalLayerInstancedElementSet(instancedElectricalElementSet);
+}
+
 void MainFrame::OnStructuralMaterialChanged(StructuralMaterial const * material, MaterialPlaneType plane)
 {
     ReconciliateUIWithStructuralMaterial(material, plane);
@@ -4601,6 +4606,15 @@ void MainFrame::ReconciliateUIWithModelDirtiness(IModelObservable const & model)
     ////}
 
     SetFrameTitle(model.GetShipMetadata().ShipName, isDirty);
+}
+
+void MainFrame::ReconciliateUIWithElectricalLayerInstancedElementSet(InstancedElectricalElementSet const & instancedElectricalElementSet)
+{
+    bool const newIsButtonEnabled = !instancedElectricalElementSet.GetElements().empty();
+    if (mElectricalPanelEditButton->IsEnabled() != newIsButtonEnabled)
+    {
+        mElectricalPanelEditButton->Enable(newIsButtonEnabled);
+    }
 }
 
 void MainFrame::ReconciliateUIWithModelMacroProperties(ModelMacroProperties const & properties)

@@ -104,6 +104,8 @@ public:
 
     void OnModelMacroPropertiesUpdated(ModelMacroProperties const & properties) override;
 
+    void OnElectricalLayerInstancedElementSetChanged(InstancedElectricalElementSet const & instancedElectricalElementSet) override;
+
     //
 
     void OnStructuralMaterialChanged(StructuralMaterial const * material, MaterialPlaneType plane) override;
@@ -300,6 +302,8 @@ private:
     void ReconciliateUIWithModelDirtiness(IModelObservable const & model);
 
     void ReconciliateUIWithModelMacroProperties(ModelMacroProperties const & properties);
+
+    void ReconciliateUIWithElectricalLayerInstancedElementSet(InstancedElectricalElementSet const & instancedElectricalElementSet);
 
     //
 

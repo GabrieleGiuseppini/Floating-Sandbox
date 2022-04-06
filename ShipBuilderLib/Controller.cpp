@@ -120,6 +120,7 @@ Controller::Controller(
     mUserInterface.OnShipSizeChanged(mModelController->GetShipSize());
     mUserInterface.OnLayerPresenceChanged(*mModelController);
     mUserInterface.OnModelDirtyChanged(*mModelController);
+    mUserInterface.OnElectricalLayerInstancedElementSetChanged(mModelController->GetInstancedElectricalElementSet());
     mUserInterface.OnUndoStackStateChanged(mUndoStack);
 
     //
@@ -370,6 +371,9 @@ void Controller::RestoreElectricalLayerRegionForUndo(
     // Notify macro properties
     NotifyModelMacroPropertiesUpdated();
 
+    // Notify of (possible) change in electrical panel
+    mUserInterface.OnElectricalLayerInstancedElementSetChanged(mModelController->GetInstancedElectricalElementSet());
+
     // Refresh model visualizations
     mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
@@ -392,6 +396,9 @@ void Controller::RestoreElectricalLayerForUndo(std::unique_ptr<ElectricalLayerDa
 
     // Notify macro properties
     NotifyModelMacroPropertiesUpdated();
+
+    // Notify of (possible) change in electrical panel
+    mUserInterface.OnElectricalLayerInstancedElementSetChanged(mModelController->GetInstancedElectricalElementSet());
 
     // Refresh model visualizations
     mModelController->UpdateVisualizations(*mView);
@@ -645,6 +652,12 @@ void Controller::LayerChangeEpilog(std::optional<LayerType> dirtyLayer)
         // Mark layer as dirty
         mModelController->SetLayerDirty(*dirtyLayer);
         mUserInterface.OnModelDirtyChanged(*mModelController);
+
+        if (*dirtyLayer == LayerType::Electrical)
+        {
+            // Notify of (possible) change in electrical panel
+            mUserInterface.OnElectricalLayerInstancedElementSetChanged(mModelController->GetInstancedElectricalElementSet());
+        }
 
         // Notify macro properties
         NotifyModelMacroPropertiesUpdated();

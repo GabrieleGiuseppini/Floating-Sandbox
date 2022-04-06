@@ -5,8 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
-#include "ElectricalElementInstanceIndexFactory.h"
 #include "IModelObservable.h"
+#include "InstancedElectricalElementSet.h"
 #include "Model.h"
 #include "ModelValidationResults.h"
 #include "ShipBuilderTypes.h"
@@ -150,6 +150,11 @@ public:
     void SetShipAutoTexturizationSettings(std::optional<ShipAutoTexturizationSettings> && shipAutoTexturizationSettings)
     {
         mModel.SetShipAutoTexturizationSettings(std::move(shipAutoTexturizationSettings));
+    }
+
+    InstancedElectricalElementSet const & GetInstancedElectricalElementSet() const
+    {
+        return mInstancedElectricalElementSet;
     }
 
     void Flip(DirectionType direction);
@@ -417,7 +422,7 @@ private:
     float mTotalMass;
     vec2f mCenterOfMassSum;
 
-    ElectricalElementInstanceIndexFactory mElectricalElementInstanceIndexFactory;
+    InstancedElectricalElementSet mInstancedElectricalElementSet;
     size_t mElectricalParticleCount;
 
     //

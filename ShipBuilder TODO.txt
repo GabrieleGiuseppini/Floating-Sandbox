@@ -394,11 +394,15 @@
 - Using shift to create a horizontal line doesn't work with M2/alternate color 
 
 = Electrical panel authoring
+	+ ModelController: need to export <InstanceID, ElectricalMaterial *> pairs
+		+ InstancedElectricalElementSet:
+			+ Add/Remove (w/generation of instance ID)
+			+ Getters
 	+ Ribbon button
 		+ Icon
-		- Only enabled iff (model has ElectricalLayer &&) ElectricalLayer has one instanced element
-	- ModelController: need to export <InstanceID, ElectricalMaterial *> pairs
+		+ Only enabled iff (model has ElectricalLayer &&) ElectricalLayer has one instanced element
 	- Dialog
+		- Open() takes InstancedElectricalElementSet and ElectricalPanelMetadata
 		- Propview: cols are:
 			- Label: <instance ID> <material name>
 			- Checkbox (for visibility)

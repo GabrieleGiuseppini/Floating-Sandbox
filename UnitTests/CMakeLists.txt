@@ -24,8 +24,7 @@ set (UNIT_TEST_SOURCES
 	Buffer2DTests.cpp
 	CircularListTests.cpp
 	ColorsTests.cpp
-	DeSerializationBufferTests.cpp
-	ElectricalElementInstanceIndexFactoryTests.cpp
+	DeSerializationBufferTests.cpp	
 	EndianTests.cpp
 	EnumFlagsTests.cpp
 	FinalizerTests.cpp
@@ -34,6 +33,7 @@ set (UNIT_TEST_SOURCES
 	GameEventDispatcherTests.cpp
 	GameGeometryTests.cpp
 	GameMathTests.cpp
+	InstancedElectricalElementSetTests.cpp
 	IntegralSystemTests.cpp
 	LayerTests.cpp
 	LayoutHelperTests.cpp
