@@ -4081,7 +4081,10 @@ void MainFrame::OnElectricalPanelEdit()
         mElectricalPanelEditDialog = std::make_unique<ElectricalPanelEditDialog>(this, mResourceLocator);
     }
 
-    // TODOHERE
+    mElectricalPanelEditDialog->ShowModal(
+        *mController,
+        mController->GetModelController().GetInstancedElectricalElementSet(),
+        mController->GetModelController().GetElectricalPanelMetadata());
 }
 
 void MainFrame::ValidateShip()

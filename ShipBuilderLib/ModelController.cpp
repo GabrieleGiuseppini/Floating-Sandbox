@@ -662,6 +662,13 @@ void ModelController::RestoreStructuralLayerRegionForEphemeralVisualization(
 // Electrical
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+ElectricalPanelMetadata const & ModelController::GetElectricalPanelMetadata() const
+{
+    assert(mModel.HasLayer(LayerType::Electrical));
+
+    return mModel.GetElectricalLayer().Panel;
+}
+
 void ModelController::SetElectricalLayer(ElectricalLayerData && electricalLayer)
 {
     mModel.SetElectricalLayer(std::move(electricalLayer));

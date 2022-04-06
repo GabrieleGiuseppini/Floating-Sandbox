@@ -401,13 +401,17 @@
 	+ Ribbon button
 		+ Icon
 		+ Only enabled iff (model has ElectricalLayer &&) ElectricalLayer has one instanced element
-	- Dialog
-		- Open() takes InstancedElectricalElementSet and ElectricalPanelMetadata
-		- Propview: cols are:
-			- Label: <instance ID> <material name>
-			- Checkbox (for visibility)
+	= Dialog
+		+ Open() takes InstancedElectricalElementSet and ElectricalPanelMetadata
+		= List: cols are:
+			+ Label: <instance ID> <material name>
+			+ Checkbox (for visibility)
 			- Label
+				- TODO: where to store code that makes labels given instance index and ElectricalMaterial?
 		- ElectricalPanelLayoutControl
+		- Hook events between List and ElectricalPanelLayoutControl:
+			- Click on list element -> highlight in LayoutControl (and list element)
+			- Click on LayoutControl -> highlight in list element (and list element, and scroll to it)
 
 - Texture flood tool
 	+ First off: mouse coordinates from MainFrame to Controller becomes LogicalDisplayCoords, and they're converted to ShipSpace coords where needed

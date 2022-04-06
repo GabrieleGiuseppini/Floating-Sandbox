@@ -239,6 +239,8 @@ public:
     // Electrical
     //
 
+    ElectricalPanelMetadata const & GetElectricalPanelMetadata() const;
+
     void SetElectricalLayer(ElectricalLayerData && electricalLayer);
 
     void RemoveElectricalLayer();
