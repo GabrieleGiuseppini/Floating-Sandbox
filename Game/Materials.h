@@ -438,4 +438,6 @@ public:
         , PaletteCoordinates(std::nullopt)
     {
     }
+
+    std::string MakeInstancedElementLabel(ElectricalElementInstanceIndex instanceIndex) const;
 };

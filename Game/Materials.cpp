@@ -7,6 +7,8 @@
 
 #include <GameCore/Utils.h>
 
+#include <sstream>
+
 namespace /* anonymous */ {
 
     MaterialPaletteCoordinatesType DeserializePaletteCoordinates(picojson::object const & paletteCoordinatesJson)
@@ -411,4 +413,99 @@ ElectricalMaterial::ShipSoundElementType ElectricalMaterial::StrToShipSoundEleme
         return ShipSoundElementType::NuclearAlarm1;
     else
         throw GameException("Unrecognized ShipSoundElementType \"" + str + "\"");
+}
+
+std::string ElectricalMaterial::MakeInstancedElementLabel(ElectricalElementInstanceIndex instanceIndex) const
+{
+    assert(IsInstanced);
+
+    std::stringstream ss;
+
+    switch (ElectricalType)
+    {
+        case ElectricalElementType::Engine:
+        {
+            ss << "Engine #" << static_cast<int>(instanceIndex);
+            break;
+        }
+
+        case ElectricalElementType::EngineController:
+        {
+            ss << "EngineControl #" << static_cast<int>(instanceIndex);
+            break;
+        }
+
+        case ElectricalElementType::Generator:
+        {
+            ss << "Generator #" << static_cast<int>(instanceIndex);
+            break;
+        }
+
+        case ElectricalElementType::InteractiveSwitch:
+        {
+            ss << "Switch " << " #" << static_cast<int>(instanceIndex);
+            break;
+        }
+
+        case ElectricalElementType::PowerMonitor:
+        {
+            ss << "Monitor #" << static_cast<int>(instanceIndex);
+            break;
+        }
+
+        case ElectricalElementType::ShipSound:
+        {
+            switch (ShipSoundType)
+            {
+                case ShipSoundElementType::Bell1:
+                case ShipSoundElementType::Bell2:
+                {
+                    ss << "Bell #" << static_cast<int>(instanceIndex);
+                    break;
+                }
+
+                case ShipSoundElementType::Horn1:
+                case ShipSoundElementType::Horn2:
+                case ShipSoundElementType::Horn3:
+                case ShipSoundElementType::Horn4:
+                case ShipSoundElementType::Klaxon1:
+                case ShipSoundElementType::NuclearAlarm1:
+                {
+                    ss << "Horn #" << static_cast<int>(instanceIndex);
+                    break;
+                }
+            }
+
+            break;
+        }
+
+        case ElectricalElementType::WaterPump:
+        {
+            ss << "Pump #" << static_cast<int>(instanceIndex);
+            break;
+        }
+
+        case ElectricalElementType::WaterSensingSwitch:
+        {
+            ss << "WaterSwitch " << " #" << static_cast<int>(instanceIndex);
+            break;
+        }
+
+        case ElectricalElementType::WatertightDoor:
+        {
+            ss << "WaterDoor " << " #" << static_cast<int>(instanceIndex);
+            break;
+        }
+
+        case ElectricalElementType::Cable:
+        case ElectricalElementType::Lamp:
+        case ElectricalElementType::OtherSink:
+        case ElectricalElementType::SmokeEmitter:
+        {
+            // These are never instanced
+            assert(false);
+        }
+    }
+
+    return ss.str();
 }

@@ -18,6 +18,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <sstream>
 #include <utility>
 
 static constexpr int MaxElementsPerRow = 11;
@@ -457,6 +458,7 @@ void SwitchboardPanel::OnSwitchCreated(
     ElectricalElementInstanceIndex instanceIndex,
     SwitchType type,
     ElectricalState state,
+    ElectricalMaterial const & electricalMaterial,
     std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata)
 {
     //
@@ -474,10 +476,7 @@ void SwitchboardPanel::OnSwitchCreated(
 
     if (!label.has_value())
     {
-        // Make label
-        std::stringstream ss;
-        ss << "Switch " << " #" << static_cast<int>(instanceIndex);
-        label = ss.str();
+        label = electricalMaterial.MakeInstancedElementLabel(instanceIndex);
     }
 
     //
@@ -599,6 +598,7 @@ void SwitchboardPanel::OnPowerProbeCreated(
     ElectricalElementInstanceIndex instanceIndex,
     PowerProbeType type,
     ElectricalState state,
+    ElectricalMaterial const & electricalMaterial,
     std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata)
 {
     //
@@ -624,10 +624,7 @@ void SwitchboardPanel::OnPowerProbeCreated(
             {
                 if (!label.has_value())
                 {
-                    // Make label
-                    std::stringstream ss;
-                    ss << "Generator #" << static_cast<int>(instanceIndex);
-                    label = ss.str();
+                    label = electricalMaterial.MakeInstancedElementLabel(instanceIndex);
                 }
 
                 // Voltage Gauge
@@ -658,10 +655,7 @@ void SwitchboardPanel::OnPowerProbeCreated(
             {
                 if (!label.has_value())
                 {
-                    // Make label
-                    std::stringstream ss;
-                    ss << "Monitor #" << static_cast<int>(instanceIndex);
-                    label = ss.str();
+                    label = electricalMaterial.MakeInstancedElementLabel(instanceIndex);
                 }
 
                 ctrl = new PowerMonitorElectricalElementControl(
@@ -703,6 +697,7 @@ void SwitchboardPanel::OnPowerProbeCreated(
 void SwitchboardPanel::OnEngineControllerCreated(
     ElectricalElementId electricalElementId,
     ElectricalElementInstanceIndex instanceIndex,
+    ElectricalMaterial const & electricalMaterial,
     std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata)
 {
     //
@@ -720,10 +715,7 @@ void SwitchboardPanel::OnEngineControllerCreated(
 
     if (!label.has_value())
     {
-        // Make label
-        std::stringstream ss;
-        ss << "EngineControl #" << static_cast<int>(instanceIndex);
-        label = ss.str();
+        label = electricalMaterial.MakeInstancedElementLabel(instanceIndex);
     }
 
     //
@@ -767,9 +759,9 @@ void SwitchboardPanel::OnEngineControllerCreated(
 void SwitchboardPanel::OnEngineMonitorCreated(
     ElectricalElementId electricalElementId,
     ElectricalElementInstanceIndex instanceIndex,
-    ElectricalMaterial const & /*electricalMaterial*/,
     float /*thrustMagnitude*/,
     float rpm,
+    ElectricalMaterial const & electricalMaterial,
     std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata)
 {
     //
@@ -787,10 +779,7 @@ void SwitchboardPanel::OnEngineMonitorCreated(
 
     if (!label.has_value())
     {
-        // Make label
-        std::stringstream ss;
-        ss << "Engine #" << static_cast<int>(instanceIndex);
-        label = ss.str();
+        label = electricalMaterial.MakeInstancedElementLabel(instanceIndex);
     }
 
     //
@@ -834,8 +823,8 @@ void SwitchboardPanel::OnEngineMonitorCreated(
 void SwitchboardPanel::OnWaterPumpCreated(
     ElectricalElementId electricalElementId,
     ElectricalElementInstanceIndex instanceIndex,
-    ElectricalMaterial const & /*electricalMaterial*/,
     float normalizedForce,
+    ElectricalMaterial const & electricalMaterial,
     std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata)
 {
     //
@@ -853,10 +842,7 @@ void SwitchboardPanel::OnWaterPumpCreated(
 
     if (!label.has_value())
     {
-        // Make label
-        std::stringstream ss;
-        ss << "Pump #" << static_cast<int>(instanceIndex);
-        label = ss.str();
+        label = electricalMaterial.MakeInstancedElementLabel(instanceIndex);
     }
 
     //
@@ -900,8 +886,8 @@ void SwitchboardPanel::OnWaterPumpCreated(
 void SwitchboardPanel::OnWatertightDoorCreated(
     ElectricalElementId electricalElementId,
     ElectricalElementInstanceIndex instanceIndex,
-    ElectricalMaterial const & /*electricalMaterial*/,
     bool isOpen,
+    ElectricalMaterial const & electricalMaterial,
     std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata)
 {
     //
@@ -919,10 +905,7 @@ void SwitchboardPanel::OnWatertightDoorCreated(
 
     if (!label.has_value())
     {
-        // Make label
-        std::stringstream ss;
-        ss << "WaterDoor #" << static_cast<int>(instanceIndex);
-        label = ss.str();
+        label = electricalMaterial.MakeInstancedElementLabel(instanceIndex);
     }
 
     //

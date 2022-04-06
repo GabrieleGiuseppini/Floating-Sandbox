@@ -292,16 +292,16 @@ public:
     void OnEngineMonitorCreated(
         ElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
-        ElectricalMaterial const & electricalMaterial,
         float thrustMagnitude,
         float rpm,
+        ElectricalMaterial const & electricalMaterial,
         std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override;
 
     void OnWaterPumpCreated(
         ElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
-        ElectricalMaterial const & electricalMaterial,
         float normalizedForce,
+        ElectricalMaterial const & electricalMaterial,
         std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override;
 
     void OnSwitchToggled(

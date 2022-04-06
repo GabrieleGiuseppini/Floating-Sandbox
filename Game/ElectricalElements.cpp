@@ -227,9 +227,9 @@ void ElectricalElements::AnnounceInstancedElements()
                 mGameEventHandler->OnEngineMonitorCreated(
                     ElectricalElementId(mShipId, elementIndex),
                     mInstanceInfos[elementIndex].InstanceIndex,
-                    *mMaterialBuffer[elementIndex],
                     mElementStateBuffer[elementIndex].Engine.CurrentThrustMagnitude,
                     mElementStateBuffer[elementIndex].Engine.CurrentRpm,
+                    *mMaterialBuffer[elementIndex],
                     mInstanceInfos[elementIndex].PanelElementMetadata);
 
                 break;
@@ -240,6 +240,7 @@ void ElectricalElements::AnnounceInstancedElements()
                 mGameEventHandler->OnEngineControllerCreated(
                     ElectricalElementId(mShipId, elementIndex),
                     mInstanceInfos[elementIndex].InstanceIndex,
+                    *mMaterialBuffer[elementIndex],
                     mInstanceInfos[elementIndex].PanelElementMetadata);
 
                 break;
@@ -255,6 +256,7 @@ void ElectricalElements::AnnounceInstancedElements()
                         mInstanceInfos[elementIndex].InstanceIndex,
                         PowerProbeType::Generator,
                         static_cast<ElectricalState>(mElementStateBuffer[elementIndex].Generator.IsProducingCurrent),
+                        *mMaterialBuffer[elementIndex],
                         mInstanceInfos[elementIndex].PanelElementMetadata);
                 }
 
@@ -284,6 +286,7 @@ void ElectricalElements::AnnounceInstancedElements()
                     mInstanceInfos[elementIndex].InstanceIndex,
                     switchType,
                     static_cast<ElectricalState>(mConductivityBuffer[elementIndex].ConductsElectricity),
+                    *mMaterialBuffer[elementIndex],
                     mInstanceInfos[elementIndex].PanelElementMetadata);
 
                 break;
@@ -296,6 +299,7 @@ void ElectricalElements::AnnounceInstancedElements()
                     mInstanceInfos[elementIndex].InstanceIndex,
                     PowerProbeType::PowerMonitor,
                     static_cast<ElectricalState>(mElementStateBuffer[elementIndex].PowerMonitor.IsPowered),
+                    *mMaterialBuffer[elementIndex],
                     mInstanceInfos[elementIndex].PanelElementMetadata);
 
                 break;
@@ -309,6 +313,7 @@ void ElectricalElements::AnnounceInstancedElements()
                     mInstanceInfos[elementIndex].InstanceIndex,
                     SwitchType::ShipSoundSwitch,
                     static_cast<ElectricalState>(mConductivityBuffer[elementIndex].ConductsElectricity),
+                    *mMaterialBuffer[elementIndex],
                     mInstanceInfos[elementIndex].PanelElementMetadata);
 
                 break;
@@ -319,8 +324,8 @@ void ElectricalElements::AnnounceInstancedElements()
                 mGameEventHandler->OnWaterPumpCreated(
                     ElectricalElementId(mShipId, elementIndex),
                     mInstanceInfos[elementIndex].InstanceIndex,
-                    *mMaterialBuffer[elementIndex],
                     mElementStateBuffer[elementIndex].WaterPump.CurrentNormalizedForce,
+                    * mMaterialBuffer[elementIndex],
                     mInstanceInfos[elementIndex].PanelElementMetadata);
 
                 break;
@@ -336,6 +341,7 @@ void ElectricalElements::AnnounceInstancedElements()
                         mInstanceInfos[elementIndex].InstanceIndex,
                         SwitchType::AutomaticSwitch,
                         static_cast<ElectricalState>(mConductivityBuffer[elementIndex].ConductsElectricity),
+                        *mMaterialBuffer[elementIndex],
                         mInstanceInfos[elementIndex].PanelElementMetadata);
                 }
 
@@ -349,8 +355,8 @@ void ElectricalElements::AnnounceInstancedElements()
                 mGameEventHandler->OnWatertightDoorCreated(
                     ElectricalElementId(mShipId, elementIndex),
                     mInstanceInfos[elementIndex].InstanceIndex,
-                    *mMaterialBuffer[elementIndex],
                     mElementStateBuffer[elementIndex].WatertightDoor.DefaultIsOpen,
+                    *mMaterialBuffer[elementIndex],
                     mInstanceInfos[elementIndex].PanelElementMetadata);
 
                 break;

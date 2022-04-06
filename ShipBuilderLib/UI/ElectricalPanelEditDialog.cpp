@@ -174,6 +174,7 @@ void ElectricalPanelEditDialog::ReconciliateUI()
         // Instance ID
         {
             auto label = new wxStaticText(elementPanel, wxID_ANY, std::to_string(instancedElement.first), wxDefaultPosition, wxSize(20, -1), wxALIGN_RIGHT);
+
             label->SetFont(instanceIndexFont);
 
             listElementHSizer->Add(label, 0, wxALIGN_CENTER_VERTICAL, 0);
@@ -184,6 +185,7 @@ void ElectricalPanelEditDialog::ReconciliateUI()
         // Material name
         {
             auto label = new wxStaticText(elementPanel, wxID_ANY, instancedElement.second->Name, wxDefaultPosition, wxSize(240, -1), wxALIGN_LEFT);
+
             label->SetFont(instanceIndexFont);
 
             listElementHSizer->Add(label, 0, wxALIGN_CENTER_VERTICAL, 0);
@@ -225,7 +227,21 @@ void ElectricalPanelEditDialog::ReconciliateUI()
 
         // Label
         {
-            auto textCtrl = new wxTextCtrl(elementPanel, wxID_ANY, "TODOTEST", wxDefaultPosition, wxSize(240, -1), wxTE_CENTRE);
+            std::optional<std::string> labelText;
+            if (auto const srchIt = mSessionData->PanelMetadata.find(instancedElement.first);
+                srchIt != mSessionData->PanelMetadata.end())
+            {
+                labelText = srchIt->second.Label;
+            }
+
+            if (!labelText.has_value())
+            {
+                labelText = instancedElement.second->MakeInstancedElementLabel(instancedElement.first);
+            }
+
+            auto textCtrl = new wxTextCtrl(elementPanel, wxID_ANY, *labelText,
+                wxDefaultPosition, wxSize(240, -1), wxTE_CENTRE);
+
             textCtrl->SetFont(instanceIndexFont);
 
             textCtrl->Bind(

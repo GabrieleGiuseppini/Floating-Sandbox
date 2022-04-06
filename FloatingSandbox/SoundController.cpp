@@ -1866,9 +1866,9 @@ void SoundController::OnLightFlicker(
 void SoundController::OnEngineMonitorCreated(
     ElectricalElementId electricalElementId,
     ElectricalElementInstanceIndex /*instanceIndex*/,
-    ElectricalMaterial const & electricalMaterial,
     float /*thrustMagnitude*/,
     float /*rpm*/,
+    ElectricalMaterial const & electricalMaterial,
     std::optional<ElectricalPanelElementMetadata> const & /*panelElementMetadata*/)
 {
     // Associate sound type with this element
@@ -1896,8 +1896,8 @@ void SoundController::OnEngineMonitorCreated(
 void SoundController::OnWaterPumpCreated(
     ElectricalElementId electricalElementId,
     ElectricalElementInstanceIndex /*instanceIndex*/,
-    ElectricalMaterial const & /*electricalMaterial*/,
     float /*normalizedForce*/,
+    ElectricalMaterial const & /*electricalMaterial*/,
     std::optional<ElectricalPanelElementMetadata> const & /*panelElementMetadata*/)
 {
     // Associate sound type with this element

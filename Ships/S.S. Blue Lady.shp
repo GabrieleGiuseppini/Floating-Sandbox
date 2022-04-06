@@ -11,12 +11,12 @@
 	"description":"S.S. Blue Lady was the third incarnation of the original, 1960-built 'S.S. France' which, after being renamed 'S.S. Norway' in 1980, acquired its final name in 2006, shortly before being scrapped.<br/><br/>The electrical wiring in this ship makes it unsinkable; to see how, punch a hole right underneath the bow anchor, below the water line, then sit back and relax. You'll see this lady take in water and get dangerously tilted, until the safety mechanisms kick in and make it float again.<br/><br/>Demonstrates the use of:<br/><ol><li>Water pumps</li><li>Watertight doors</li><li>Automatic water-sensing switches</li></ol>",
 	"electrical_panel":{
 
-		"0": {"panel_x":-10, "panel_y":0, "label":"Main water-sending switch", "is_hidden":true },
-		"1": {"panel_x":-10, "panel_y":0, "label":"Water-sending switch", "is_hidden":true },
-		"2": {"panel_x":-10, "panel_y":0, "label":"Water-sending switch", "is_hidden":true },
-		"3": {"panel_x":-10, "panel_y":0, "label":"Water-sending switch", "is_hidden":true },
-		"4": {"panel_x":-10, "panel_y":0, "label":"Water-sending switch", "is_hidden":true },
-		"5": {"panel_x":-10, "panel_y":0, "label":"Water-sending switch", "is_hidden":true },
+		"0": {"panel_x":-10, "panel_y":0, "label":"Main water-sensing switch", "is_hidden":true },
+		"1": {"panel_x":-10, "panel_y":0, "label":"Water-sensing switch", "is_hidden":true },
+		"2": {"panel_x":-10, "panel_y":0, "label":"Water-sensing switch", "is_hidden":true },
+		"3": {"panel_x":-10, "panel_y":0, "label":"Water-sensing switch", "is_hidden":true },
+		"4": {"panel_x":-10, "panel_y":0, "label":"Water-sensing switch", "is_hidden":true },
+		"5": {"panel_x":-10, "panel_y":0, "label":"Water-sensing switch", "is_hidden":true },
 		"6": {"panel_x":-10, "panel_y":0, "label":"Pump", "is_hidden":true },
 		"7": {"panel_x":-10, "panel_y":0, "label":"Pump", "is_hidden":true },
 		"8": {"panel_x":-10, "panel_y":0, "label":"Pump", "is_hidden":true },
