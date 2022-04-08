@@ -410,6 +410,10 @@
 				+ Move code that makes labels given instance index and ElectricalMaterial at ElectricalMaterial
 					+ Then would need electrical material at announcement events that SwitchboardPanel currently creates labels in
 		- ElectricalPanelLayoutControl
+			- Make wxScrolled and resize internals to virtual size
+			- Actual element drawing
+			- Mouse capture
+			- Do something for duplication of layout code between switchboard panel and this control
 			- First selected element? None would be better
 		- Hook events between List and ElectricalPanelLayoutControl:
 			- Click on list element -> highlight in LayoutControl (and list element)

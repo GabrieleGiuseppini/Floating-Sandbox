@@ -138,6 +138,25 @@ void ElectricalPanelLayoutControl::SelectElement(ElectricalElementInstanceIndex 
     Refresh(false);
 }
 
+void ElectricalPanelLayoutControl::SetElementVisible(
+    ElectricalElementInstanceIndex instanceIndex,
+    ElectricalPanelElementMetadata const & panelMetadata,
+    bool isVisible)
+{
+    if (isVisible)
+    {
+        // TODO: add element to map, and re-layout
+    }
+    else
+    {
+        assert(mElements.count(instanceIndex) == 1);
+        mElements.erase(instanceIndex);
+    }
+
+    // Render
+    Refresh(false);
+}
+
 void ElectricalPanelLayoutControl::OnLeftMouseDown(wxMouseEvent & event)
 {
     wxPoint const mouseCoords = event.GetPosition();
@@ -207,72 +226,20 @@ void ElectricalPanelLayoutControl::Render(wxDC & dc)
 
     for (auto const & element : mElements)
     {
-        RenderElement(element.second.DcRect, dc);
+        if (mCurrentlyMovableElement.has_value()
+            && mCurrentlyMovableElement->InstanceIndex == element.first)
+        {
+            RenderElement(
+                wxRect(
+                    mCurrentlyMovableElement->CurrentMouseCoords - mCurrentlyMovableElement->InRectAnchorMouseCoords,
+                    wxSize(ElementWidth, ElementHeight)),
+                dc);
+        }
+        else
+        {
+            RenderElement(element.second.DcRect, dc);
+        }
     }
-
-    // TODOHERE
-
-    ////if (mOutcome.has_value())
-    ////{
-    ////    // 0 is at top
-    ////    float const waterlineY = mOutcome->Floats ? size.GetHeight() / 2 : 2;
-
-    ////    //
-    ////    // Draw water
-    ////    //
-
-    ////    dc.SetPen(mWaterPen);
-    ////    dc.SetBrush(mWaterBrush);
-    ////    dc.DrawRectangle(
-    ////        // Top-left, also origin
-    ////        0,
-    ////        waterlineY,
-    ////        size.GetWidth() - 1,
-    ////        size.GetHeight() - 1 - waterlineY);
-
-    ////    //
-    ////    // Draw waterline
-    ////    //
-
-    ////    dc.SetPen(mWaterlinePen);
-    ////    dc.DrawLine(
-    ////        0,
-    ////        waterlineY,
-    ////        size.GetWidth() - 1,
-    ////        waterlineY);
-
-    ////    //
-    ////    // Dra vertical guide
-    ////    //
-
-    ////    dc.SetPen(mGuidePen);
-    ////    dc.DrawLine(
-    ////        size.GetWidth() / 2,
-    ////        0,
-    ////        size.GetWidth() / 2,
-    ////        size.GetHeight() - 1);
-
-    ////    //
-    ////    // Draw ship
-    ////    //
-
-    ////    // Rotate bitmap
-    ////    wxImage rotatedShip = mShipImage.Rotate(
-    ////        -mOutcome->TrimCW,
-    ////        wxPoint(
-    ////            mShipImage.GetWidth() / 2,
-    ////            mShipImage.GetHeight() / 2));
-
-    ////    // Make bitmap
-    ////    auto shipBitmap = wxBitmap(rotatedShip);
-
-    ////    // Draw bitmap
-    ////    dc.DrawBitmap(
-    ////        shipBitmap,
-    ////        wxPoint(
-    ////            size.GetWidth() / 2 - rotatedShip.GetWidth() / 2,
-    ////            size.GetHeight() / 2 - rotatedShip.GetHeight() / 2));
-    ////}
 }
 
 void ElectricalPanelLayoutControl::RenderElement(
@@ -293,8 +260,8 @@ wxRect ElectricalPanelLayoutControl::MakeDcRect(IntegralCoordinates const & layo
     return wxRect(
         centerOfElementCoords.x - ElementWidth / 2,
         centerOfElementCoords.y - ElementHeight / 2,
-        centerOfElementCoords.x + ElementWidth / 2,
-        centerOfElementCoords.y + ElementHeight / 2);
+        ElementWidth,
+        ElementHeight);
 }
 
 }

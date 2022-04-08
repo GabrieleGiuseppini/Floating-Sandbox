@@ -222,10 +222,12 @@ void ElectricalPanelEditDialog::ReconciliateUI()
 
             checkbox->Bind(
                 wxEVT_CHECKBOX,
-                [](wxCommandEvent & event)
+                [this, instancedElementIndex = instancedElement.first](wxCommandEvent & event)
                 {
-                    // TODOHERE: communicate to layout control
-                    event.Skip();
+                    mElectricalPanel->SetElementVisible(
+                        instancedElementIndex,
+                        mSessionData->PanelMetadata.at(instancedElementIndex),
+                        event.IsChecked());
                 });
 
             listElementHSizer->Add(checkbox, 0, wxALIGN_CENTER_VERTICAL, 0);

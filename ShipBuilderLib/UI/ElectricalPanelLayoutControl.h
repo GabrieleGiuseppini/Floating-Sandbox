@@ -32,6 +32,7 @@ public:
     void SetPanel(ElectricalPanelMetadata const & electricalPanelMetadata);
 
     void SelectElement(ElectricalElementInstanceIndex instanceIndex);
+    void SetElementVisible(ElectricalElementInstanceIndex instanceIndex, ElectricalPanelElementMetadata const & panelMetadata, bool isVisible);
 
 private:
 
