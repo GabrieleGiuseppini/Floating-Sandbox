@@ -5,12 +5,17 @@
  ***************************************************************************************/
 #pragma once
 
+#include <Game/Layers.h>
 #include <Game/ResourceLocator.h>
+
+#include <GameCore/GameTypes.h>
 
 #include <wx/dc.h>
 #include <wx/image.h>
 #include <wx/panel.h>
 
+#include <functional>
+#include <map>
 #include <optional>
 
 namespace ShipBuilder {
@@ -21,20 +26,28 @@ public:
 
     ElectricalPanelLayoutControl(
         wxWindow * parent,
+        std::function<void(ElectricalElementInstanceIndex instanceIndex)> onElementSelected,
         ResourceLocator const & resourceLocator);
 
-    // TODOHERE
-    ////void SetValue(
-    ////    float trimCW, // radians, 0 vertical
-    ////    bool floats);
+    void SetPanel(ElectricalPanelMetadata const & electricalPanelMetadata);
 
-    void Clear();
+    void SelectElement(ElectricalElementInstanceIndex instanceIndex);
 
 private:
+
+    void OnLeftMouseDown(wxMouseEvent & event);
+    void OnLeftMouseUp(wxMouseEvent & event);
+    void OnMouseMove(wxMouseEvent & event);
 
     void OnPaint(wxPaintEvent & event);
 
     void Render(wxDC & dc);
+
+    void RenderElement(
+        wxRect const & rect,
+        wxDC & dc);
+
+    wxRect MakeDcRect(IntegralCoordinates const & layoutCoordinates);
 
 private:
 
@@ -45,22 +58,46 @@ private:
     wxBrush mWaterBrush;
     wxImage mShipImage;
 
-    // State
+private:
 
-    struct Outcome
+    std::function<void(ElectricalElementInstanceIndex instanceIndex)> const mOnElementSelected;
+
+    struct Element
     {
-        float TrimCW;
-        bool Floats;
+        IntegralCoordinates LayoutCoordinates;
+        wxRect DcRect;
 
-        Outcome(
-            float trimCW,
-            bool floats)
-            : TrimCW(trimCW)
-            , Floats(floats)
+        Element(
+            IntegralCoordinates layoutCoordinates,
+            wxRect const & dcRect)
+            : LayoutCoordinates(layoutCoordinates)
+            , DcRect(dcRect)
         {}
     };
 
-    std::optional<Outcome> mOutcome;
+    std::map<ElectricalElementInstanceIndex, Element> mElements;
+
+    struct MovableElement
+    {
+        ElectricalElementInstanceIndex const InstanceIndex;
+        wxPoint const InRectAnchorMouseCoords;
+        wxPoint CurrentMouseCoords;
+
+        MovableElement(
+            ElectricalElementInstanceIndex instanceIndex,
+            wxPoint const & inRectAnchorMouseCoords,
+            wxPoint const & currentMouseCoords)
+            : InstanceIndex(instanceIndex)
+            , InRectAnchorMouseCoords(inRectAnchorMouseCoords)
+            , CurrentMouseCoords(currentMouseCoords)
+        {}
+    };
+
+    std::optional<MovableElement> mCurrentlyMovableElement; // When set, L mouse is down
+
+    std::optional<ElectricalElementInstanceIndex> mCurrentlySelectedElementInstanceIndex;
+
+    wxSize mVirtualPanelSize;
 };
 
 }

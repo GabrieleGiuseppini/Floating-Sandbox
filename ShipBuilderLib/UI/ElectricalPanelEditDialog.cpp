@@ -52,7 +52,15 @@ ElectricalPanelEditDialog::ElectricalPanelEditDialog(
 
     // Element layout control
     {
-        mElectricalPanel = new ElectricalPanelLayoutControl(this, resourceLocator);
+        mElectricalPanel = new ElectricalPanelLayoutControl(
+            this,
+            [this](ElectricalElementInstanceIndex instanceIndex)
+            {
+                assert(mListPanelPanelsByInstanceIndex.count(instanceIndex) != 0);
+                mListPanelPanelsByInstanceIndex[instanceIndex]->SetFocus();
+                // TODO: anything else for selecting?
+            },
+            resourceLocator);
 
         dialogVSizer->Add(
             mElectricalPanel,
@@ -152,6 +160,7 @@ void ElectricalPanelEditDialog::ReconciliateUI()
     int constexpr ElementHeight = 40;
 
     mListPanel->DestroyChildren();
+    mListPanelPanelsByInstanceIndex.clear();
 
     wxBoxSizer * listVSizer = new wxBoxSizer(wxVERTICAL);
 
@@ -161,10 +170,9 @@ void ElectricalPanelEditDialog::ReconciliateUI()
 
         elementPanel->Bind(
             wxEVT_SET_FOCUS,
-            [instancedElementIndex = instancedElement.first](wxFocusEvent &)
+            [this, instancedElementIndex = instancedElement.first](wxFocusEvent &)
             {
-                // TODOHERE
-                LogMessage("TODOTEST: FOCUS@", instancedElementIndex);
+                mElectricalPanel->SelectElement(instancedElementIndex);
             });
 
         wxBoxSizer * listElementHSizer = new wxBoxSizer(wxHORIZONTAL);
@@ -264,6 +272,8 @@ void ElectricalPanelEditDialog::ReconciliateUI()
             0,
             wxEXPAND,
             0);
+
+        mListPanelPanelsByInstanceIndex[instancedElement.first] = elementPanel;
     }
 
     mListPanel->SetSizer(listVSizer);
@@ -272,9 +282,7 @@ void ElectricalPanelEditDialog::ReconciliateUI()
     // Populate layout control
     //
 
-    mElectricalPanel->Clear();
-
-    // TODOHERE
+    mElectricalPanel->SetPanel(mSessionData->PanelMetadata);
 
     //
     // Finalize

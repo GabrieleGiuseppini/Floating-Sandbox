@@ -956,13 +956,17 @@ void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
         if (nullptr != entry.second.Control)
         {
             if (entry.second.PanelElementMetadata.has_value())
+            {
                 layoutElements.emplace_back(
                     entry.first,
                     entry.second.PanelElementMetadata->PanelCoordinates);
+            }
             else
+            {
                 layoutElements.emplace_back(
                     entry.first,
                     std::nullopt);
+            }
         }
     }
 
@@ -975,17 +979,16 @@ void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
             return mElementMap.at(lhs.Element).InstanceIndex < mElementMap.at(rhs.Element).InstanceIndex;
         });
 
-
     // Layout
     LayoutHelper::Layout<ElectricalElementId>(
         layoutElements,
         MaxElementsPerRow,
-        [this](int width, int height)
+        [this](IntegralRectSize const & rectSize)
         {
-            mSwitchPanelElementSizer->SetCols(width);
-            mSwitchPanelElementSizer->SetRows(height);
+            mSwitchPanelElementSizer->SetCols(rectSize.width);
+            mSwitchPanelElementSizer->SetRows(rectSize.height);
         },
-        [this](std::optional<ElectricalElementId> elementId, int x, int y)
+        [this](std::optional<ElectricalElementId> elementId, IntegralCoordinates const & coords)
         {
             if (!!elementId)
             {
@@ -996,7 +999,7 @@ void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
                 // Add control to sizer
                 mSwitchPanelElementSizer->Add(
                     it->second.Control,
-                    wxGBPosition(y, x + (mSwitchPanelElementSizer->GetCols() / 2)),
+                    wxGBPosition(coords.y, coords.x + (mSwitchPanelElementSizer->GetCols() / 2)),
                     wxGBSpan(1, 1),
                     wxTOP | wxBOTTOM | wxALIGN_CENTER_HORIZONTAL | wxALIGN_BOTTOM,
                     8);

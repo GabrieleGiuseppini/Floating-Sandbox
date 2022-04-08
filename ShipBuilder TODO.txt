@@ -410,6 +410,7 @@
 				+ Move code that makes labels given instance index and ElectricalMaterial at ElectricalMaterial
 					+ Then would need electrical material at announcement events that SwitchboardPanel currently creates labels in
 		- ElectricalPanelLayoutControl
+			- First selected element? None would be better
 		- Hook events between List and ElectricalPanelLayoutControl:
 			- Click on list element -> highlight in LayoutControl (and list element)
 			- Click on LayoutControl -> highlight in list element (and list element, and scroll to it)

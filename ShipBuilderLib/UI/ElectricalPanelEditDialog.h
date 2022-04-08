@@ -16,6 +16,7 @@
 #include <wx/dialog.h>
 #include <wx/scrolwin.h>
 
+#include <map>
 #include <optional>
 
 namespace ShipBuilder {
@@ -43,6 +44,7 @@ private:
 private:
 
     wxScrolled<wxPanel> * mListPanel;
+    std::map<ElectricalElementInstanceIndex, wxPanel *> mListPanelPanelsByInstanceIndex;
     ElectricalPanelLayoutControl * mElectricalPanel;
 
     struct SessionData

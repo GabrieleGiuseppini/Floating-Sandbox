@@ -43,8 +43,8 @@ public:
     static void Layout(
         std::vector<LayoutElement<TElement>> layoutElements,
         int maxElementsPerRow,
-        std::function<void(int width, int height)> const & onBegin,
-        std::function<void(std::optional<TElement> element, int x, int y)> const & onPosition)
+        std::function<void(IntegralRectSize const & rectSize)> const & onBegin,
+        std::function<void(std::optional<TElement> element, IntegralCoordinates const & coords)> const & onPosition)
     {
         assert(maxElementsPerRow > 0);
 
@@ -86,17 +86,15 @@ public:
         // Distribute surplus elements
         //
 
-        int width = decoratedWidth;
-        int height = decoratedHeight;
+        IntegralRectSize rectSize{ decoratedWidth, decoratedHeight };
 
-        int surplusCells = std::max(0, allElementsCount - width * height);
+        int surplusCells = std::max(0, allElementsCount - rectSize.width * rectSize.height);
 
         // 1: Make sure there's at least room for one element
         if (surplusCells > 0
-            && (width == 0 && height == 0))
+            && (rectSize.width == 0 && rectSize.height == 0))
         {
-            width = 1;
-            height = 1;
+            rectSize = { 1, 1 };
 
             // Distribute this one out
             surplusCells -= 1;
@@ -105,10 +103,10 @@ public:
         // 2: Make wider up to max width
         //  - As long as we don't have more than one row
         if (surplusCells > 0
-            && (height == 0 || height == 1))
+            && (rectSize.height == 0 || rectSize.height == 1))
         {
             // Calculate number of cells we may grow horizontally on row 1
-            int availableCells = std::max(0, maxElementsPerRow - width);
+            int availableCells = std::max(0, maxElementsPerRow - rectSize.width);
             int extraCols = std::min(surplusCells, availableCells);
 
             // Calculate additional number of columns now, making
@@ -116,46 +114,46 @@ public:
             int extraWidth = extraCols + (extraCols % 2);
 
             // Adjust width and surplus cell
-            width += extraWidth;
+            rectSize.width += extraWidth;
             surplusCells = std::max(0, surplusCells - extraWidth);
         }
 
         // 3: Add a second row
         //  - As long as we have only one row
         if (surplusCells > 0
-            && height == 1)
+            && rectSize.height == 1)
         {
             // Grow by one row
-            height = 2;
-            surplusCells = std::max(0, surplusCells - width);
+            rectSize.height = 2;
+            surplusCells = std::max(0, surplusCells - rectSize.width);
         }
 
         // 4: Distribute vertically first, then horizontally
         if (surplusCells > 0)
         {
-            assert(height > 0); // By now...
+            assert(rectSize.height > 0); // By now...
 
             // Distribute all remaining cells vertically, then horizontally
-            int extraCols = surplusCells / height + ((surplusCells % height) != 0 ? 1 : 0);
+            int extraCols = surplusCells / rectSize.height + ((surplusCells % rectSize.height) != 0 ? 1 : 0);
 
             // Calculate additional number of columns now, making
             // sure we're symmetric wrt x=0
             int extraWidth = extraCols + (extraCols % 2);
 
             // Adjust width and surplus cell
-            width += extraWidth;
-            surplusCells = std::max(0, surplusCells - extraWidth * height);
+            rectSize.width += extraWidth;
+            surplusCells = std::max(0, surplusCells - extraWidth * rectSize.height);
         }
 
         assert(surplusCells == 0);
 
-        LogMessage("Layout: decoratedW=", decoratedWidth, ", decoratedH=", decoratedHeight, ", W=", width, ", H=", height);
+        LogMessage("Layout: decoratedW=", decoratedWidth, ", decoratedH=", decoratedHeight, ", W,H=", rectSize);
 
         //
         // Announce bounding box
         //
 
-        onBegin(width, height);
+        onBegin(rectSize);
 
         //
         // Sort decorated elements by y, x
@@ -178,11 +176,11 @@ public:
         auto decoratedIt = decoratedElements.cbegin();
         auto undecoratedIt = undecoratedElements.cbegin();
 
-        for (int h = 0; h < height; ++h)
+        for (int h = 0; h < rectSize.height; ++h)
         {
-            for (int w = 0; w < width; ++w)
+            for (int w = 0; w < rectSize.width; ++w)
             {
-                int const col = w - width / 2;
+                int const col = w - rectSize.width / 2;
 
                 std::optional<TElement> positionElement;
                 if (decoratedIt != decoratedElements.cend()
@@ -207,8 +205,7 @@ public:
 
                 onPosition(
                     positionElement,
-                    col,
-                    h);
+                    IntegralCoordinates(col, h));
             }
         }
 
