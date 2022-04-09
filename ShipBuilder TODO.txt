@@ -422,8 +422,7 @@
 					+ Find new image
 				+ Instance index
 				- Label
-				= Shadow
-					- Move shadow drawing to RenderElement, with boolean arg
+				+ Shadow
 			- Label changes
 			- Visibility changes
 			- Mouse workflow

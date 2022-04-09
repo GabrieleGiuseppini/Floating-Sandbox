@@ -52,9 +52,10 @@ private:
     void Render(wxDC & dc);
 
     void RenderSlot(
-        wxPen const & pen,
         wxRect const & rect,
         int virtualOriginX,
+        wxPen const & pen,
+        wxBrush const & brush,
         wxDC & dc);
 
     void RenderElement(
@@ -76,6 +77,7 @@ private:
     wxPen mFreeUnselectedSlotBorderPen;
     wxPen mOccupiedUnselectedSlotBorderPen;
     wxPen mOccupiedSelectedSlotBorderPen;
+    wxBrush mOccupiedSelectedSlotBorderBrush;
     wxPen mDropSlotBorderPen;
     wxPen mShadowPen;
     wxBrush mShadowBrush;

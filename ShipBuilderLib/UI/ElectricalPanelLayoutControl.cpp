@@ -19,7 +19,7 @@ namespace ShipBuilder {
 int constexpr ElementHGap = 15;
 int constexpr ElementVGap = 16;
 int constexpr ElementBorderThickness = 3;
-int constexpr ElementBorderThickness2 = 6;
+int constexpr SelectedSlotOffset = 6;
 int constexpr ShadowOffset = 9;
 
 int constexpr ScrollbarHeight = 20;
@@ -63,7 +63,8 @@ ElectricalPanelLayoutControl::ElectricalPanelLayoutControl(
     mGuidePen = wxPen(wxColor(10, 10, 10), 1, wxPENSTYLE_SHORT_DASH);
     mFreeUnselectedSlotBorderPen = wxPen(wxColor(180, 180, 180), ElementBorderThickness, wxPENSTYLE_SOLID);
     mOccupiedUnselectedSlotBorderPen = wxPen(wxColor(180, 180, 180), ElementBorderThickness, wxPENSTYLE_SOLID);
-    mOccupiedSelectedSlotBorderPen = wxPen(wxColor(214, 254, 255), ElementBorderThickness2, wxPENSTYLE_SOLID);
+    mOccupiedSelectedSlotBorderPen = wxPen(wxColor(0, 0, 0), 1, wxPENSTYLE_SOLID);
+    mOccupiedSelectedSlotBorderBrush = wxBrush(wxColor(214, 254, 255), wxBRUSHSTYLE_SOLID);
     mDropSlotBorderPen = wxPen(wxColor(230, 18, 39), ElementBorderThickness, wxPENSTYLE_SOLID);
     mShadowPen = wxPen(wxColor(156, 156, 156), 1, wxPENSTYLE_SOLID);
     mShadowBrush = wxBrush(wxColor(70, 70, 70, 80), wxBRUSHSTYLE_SOLID);
@@ -328,18 +329,20 @@ void ElectricalPanelLayoutControl::Render(wxDC & dc)
                 {
                     // Selected
                     RenderSlot(
-                        mOccupiedSelectedSlotBorderPen,
-                        slotRect,
+                        slotRect.Inflate(SelectedSlotOffset, SelectedSlotOffset),
                         virtualOriginX,
+                        mOccupiedSelectedSlotBorderPen,
+                        mOccupiedSelectedSlotBorderBrush,
                         dc);
                 }
                 else
                 {
                     // Unselected
                     RenderSlot(
-                        mOccupiedUnselectedSlotBorderPen,
                         slotRect,
                         virtualOriginX,
+                        mOccupiedUnselectedSlotBorderPen,
+                        mTransparentBrush,
                         dc);
                 }
             }
@@ -347,9 +350,10 @@ void ElectricalPanelLayoutControl::Render(wxDC & dc)
             {
                 // Free
                 RenderSlot(
-                    mFreeUnselectedSlotBorderPen,
                     slotRect,
                     virtualOriginX,
+                    mFreeUnselectedSlotBorderPen,
+                    mTransparentBrush,
                     dc);
             }
         }
@@ -391,16 +395,17 @@ void ElectricalPanelLayoutControl::Render(wxDC & dc)
 }
 
 void ElectricalPanelLayoutControl::RenderSlot(
-    wxPen const & pen,
     wxRect const & rect,
     int virtualOriginX,
+    wxPen const & pen,
+    wxBrush const & brush,
     wxDC & dc)
 {
     wxRect borderRect = rect.Inflate(1, 1);
     borderRect.Offset(-virtualOriginX, 0);
 
     dc.SetPen(pen);
-    dc.SetBrush(mTransparentBrush);
+    dc.SetBrush(brush);
     dc.DrawRectangle(borderRect);
 }
 
