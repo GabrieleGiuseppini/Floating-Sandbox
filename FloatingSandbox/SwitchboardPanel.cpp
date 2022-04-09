@@ -983,10 +983,10 @@ void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
     LayoutHelper::Layout<ElectricalElementId>(
         layoutElements,
         MaxElementsPerRow,
-        [this](IntegralRectSize const & rectSize)
+        [this](int nCols, int nRows)
         {
-            mSwitchPanelElementSizer->SetCols(rectSize.width);
-            mSwitchPanelElementSizer->SetRows(rectSize.height);
+            mSwitchPanelElementSizer->SetCols(nCols);
+            mSwitchPanelElementSizer->SetRows(nRows);
         },
         [this](std::optional<ElectricalElementId> elementId, IntegralCoordinates const & coords)
         {

@@ -13,6 +13,7 @@
 #include <wx/dc.h>
 #include <wx/image.h>
 #include <wx/panel.h>
+#include <wx/scrolwin.h>
 
 #include <functional>
 #include <map>
@@ -20,7 +21,7 @@
 
 namespace ShipBuilder {
 
-class ElectricalPanelLayoutControl : public wxPanel
+class ElectricalPanelLayoutControl : public wxScrolled<wxPanel>
 {
 public:
 
@@ -36,43 +37,63 @@ public:
 
 private:
 
+    void OnCloseWindow(wxCloseEvent & event);
     void OnLeftMouseDown(wxMouseEvent & event);
     void OnLeftMouseUp(wxMouseEvent & event);
     void OnMouseMove(wxMouseEvent & event);
+    void OnResized(wxSizeEvent & event);
 
     void OnPaint(wxPaintEvent & event);
 
     void Render(wxDC & dc);
 
+    void RenderSlot(
+        wxPen const & pen,
+        wxRect && rect,
+        wxDC & dc);
+
     void RenderElement(
         wxRect const & rect,
         wxDC & dc);
 
-    wxRect MakeDcRect(IntegralCoordinates const & layoutCoordinates);
+    void RecalculateGeometry();
+
+    static wxRect MakeDcRect(
+        IntegralCoordinates const & layoutCoordinates,
+        int virtualAreaWidth);
 
 private:
 
+    wxPen mFreeUnselectedSlotBorderPen;
+    wxPen mOccupiedUnselectedSlotBorderPen;
+    wxPen mOccupiedSelectedSlotBorderPen;
+    wxPen mDropSlotBorderPen;
+
+    wxBrush mTransparentBrush;
+
     // TODOHERE
-    wxPen mGuidePen;
-    wxPen mWaterlinePen;
-    wxPen mWaterPen;
     wxBrush mWaterBrush;
     wxImage mShipImage;
 
 private:
 
+    bool mIsMouseCaptured;
+
     std::function<void(ElectricalElementInstanceIndex instanceIndex)> const mOnElementSelected;
+
+private:
+
+    int mLayoutCols;
+    int mLayoutRows;
 
     struct Element
     {
         IntegralCoordinates LayoutCoordinates;
-        wxRect DcRect;
+        std::optional<wxRect> DcRect;
 
-        Element(
-            IntegralCoordinates layoutCoordinates,
-            wxRect const & dcRect)
+        Element(IntegralCoordinates layoutCoordinates)
             : LayoutCoordinates(layoutCoordinates)
-            , DcRect(dcRect)
+            , DcRect() // Populated at RecalculateGeometry()
         {}
     };
 
@@ -98,7 +119,9 @@ private:
 
     std::optional<ElectricalElementInstanceIndex> mCurrentlySelectedElementInstanceIndex;
 
-    wxSize mVirtualPanelSize;
+    // Calculated
+    int mNElementsOnEitherSide; // Not including center element
+    int mVirtualAreaWidth;
 };
 
 }
