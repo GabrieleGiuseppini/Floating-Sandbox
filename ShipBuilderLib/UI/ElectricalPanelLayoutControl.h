@@ -5,6 +5,8 @@
  ***************************************************************************************/
 #pragma once
 
+#include "InstancedElectricalElementSet.h"
+
 #include <Game/Layers.h>
 #include <Game/ResourceLocator.h>
 
@@ -30,7 +32,9 @@ public:
         std::function<void(ElectricalElementInstanceIndex instanceIndex)> onElementSelected,
         ResourceLocator const & resourceLocator);
 
-    void SetPanel(ElectricalPanelMetadata const & electricalPanelMetadata);
+    void SetPanel(
+        InstancedElectricalElementSet const & instancedElectricalElementSet,
+        ElectricalPanelMetadata const & electricalPanelMetadata);
 
     void SelectElement(ElectricalElementInstanceIndex instanceIndex);
     void SetElementVisible(ElectricalElementInstanceIndex instanceIndex, ElectricalPanelElementMetadata const & panelMetadata, bool isVisible);

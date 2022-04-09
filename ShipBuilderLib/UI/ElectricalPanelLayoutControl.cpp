@@ -74,7 +74,9 @@ ElectricalPanelLayoutControl::ElectricalPanelLayoutControl(
     Bind(wxEVT_SIZE, &ElectricalPanelLayoutControl::OnResized, this);
 }
 
-void ElectricalPanelLayoutControl::SetPanel(ElectricalPanelMetadata const & electricalPanelMetadata)
+void ElectricalPanelLayoutControl::SetPanel(
+    InstancedElectricalElementSet const & instancedElectricalElementSet,
+    ElectricalPanelMetadata const & electricalPanelMetadata)
 {
     // Reset state
     mIsMouseCaptured = false;
@@ -87,23 +89,35 @@ void ElectricalPanelLayoutControl::SetPanel(ElectricalPanelMetadata const & elec
         // Prepare elements for layout helper
 
         std::vector<LayoutHelper::LayoutElement<ElectricalElementInstanceIndex>> layoutElements;
-        for (auto const & entry : electricalPanelMetadata)
+        for (auto const & element : instancedElectricalElementSet.GetElements())
         {
-            // Ignore if hidden
-            if (!entry.second.IsHidden)
+            auto const instanceIndex = element.first;
+
+            // See if we have panel metadata for it
+            auto const panelIt = electricalPanelMetadata.find(instanceIndex);
+            if (panelIt != electricalPanelMetadata.cend())
             {
-                if (entry.second.PanelCoordinates.has_value())
+                if (!panelIt->second.IsHidden)
                 {
-                    layoutElements.emplace_back(
-                        entry.first,
-                        *(entry.second.PanelCoordinates));
+                    if (panelIt->second.PanelCoordinates.has_value())
+                    {
+                        layoutElements.emplace_back(
+                            instanceIndex,
+                            *(panelIt->second.PanelCoordinates));
+                    }
+                    else
+                    {
+                        layoutElements.emplace_back(
+                            instanceIndex,
+                            std::nullopt);
+                    }
                 }
-                else
-                {
-                    layoutElements.emplace_back(
-                        entry.first,
-                        std::nullopt);
-                }
+            }
+            else
+            {
+                layoutElements.emplace_back(
+                    instanceIndex,
+                    std::nullopt);
             }
         }
 

@@ -348,7 +348,7 @@ void ElectricalPanelEditDialog::ReconciliateUI()
     // Populate layout control
     //
 
-    mElectricalPanel->SetPanel(mSessionData->PanelMetadata);
+    mElectricalPanel->SetPanel(mSessionData->ElementSet, mSessionData->PanelMetadata);
 
     //
     // Finalize

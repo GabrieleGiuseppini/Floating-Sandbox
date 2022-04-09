@@ -409,13 +409,14 @@
 			+ Label
 				+ Move code that makes labels given instance index and ElectricalMaterial at ElectricalMaterial
 					+ Then would need electrical material at announcement events that SwitchboardPanel currently creates labels in
-		- ElectricalPanelLayoutControl
+		= ElectricalPanelLayoutControl
 			+ Make wxScrolled, and resize internals to virtual size
 				+ Min size still is own size though (GetSize() at time of need)
 			+ Crystallize element DcRect calculations in RecalculateGeometry()
 				+ Invoked by: OnResized, SetPanel
-			= List auto-scroll
-			- SetPanel should also take "master list" (element set)
+			+ List auto-scroll
+				+ SetPanel should also take "master list" (element set)
+			- Fix H scrolling
 			- Label changes
 			- Visibility changes
 			- Actual element drawing
