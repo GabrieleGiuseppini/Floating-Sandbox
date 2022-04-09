@@ -420,7 +420,7 @@
 			- Actual element drawing
 				+ Image
 					+ Find new image
-				- Number
+				+ Instance index
 				- Label
 				- Shadow
 			- Label changes

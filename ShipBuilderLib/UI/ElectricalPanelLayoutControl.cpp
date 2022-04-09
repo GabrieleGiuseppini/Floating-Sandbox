@@ -65,6 +65,7 @@ ElectricalPanelLayoutControl::ElectricalPanelLayoutControl(
     mOccupiedSelectedSlotBorderPen = wxPen(wxColor(70, 206, 224), ElementBorderThickness, wxPENSTYLE_SOLID);
     mDropSlotBorderPen = wxPen(wxColor(230, 18, 39), ElementBorderThickness, wxPENSTYLE_SOLID);
     mTransparentBrush = wxBrush(wxColor(0, 0, 0), wxBRUSHSTYLE_TRANSPARENT);
+    mInstanceIndexFont = wxFont(wxFontInfo(7));
 
     // Bind events
     Bind(wxEVT_CLOSE_WINDOW, &ElectricalPanelLayoutControl::OnCloseWindow, this);
@@ -186,7 +187,7 @@ void ElectricalPanelLayoutControl::SetElementVisible(
     Refresh(false);
 }
 
-void ElectricalPanelLayoutControl::OnCloseWindow(wxCloseEvent & event)
+void ElectricalPanelLayoutControl::OnCloseWindow(wxCloseEvent & /*event*/)
 {
     if (mIsMouseCaptured)
     {
@@ -265,7 +266,7 @@ void ElectricalPanelLayoutControl::OnMouseMove(wxMouseEvent & event)
     }
 }
 
-void ElectricalPanelLayoutControl::OnResized(wxSizeEvent & event)
+void ElectricalPanelLayoutControl::OnResized(wxSizeEvent & /*event*/)
 {
     RecalculateGeometry();
 }
@@ -362,6 +363,7 @@ void ElectricalPanelLayoutControl::Render(wxDC & dc)
             assert(element.second.DcRect.has_value());
 
             RenderElement(
+                element.first,
                 *element.second.DcRect,
                 virtualOriginX,
                 dc);
@@ -371,6 +373,7 @@ void ElectricalPanelLayoutControl::Render(wxDC & dc)
     if (mCurrentlyMovableElement.has_value())
     {
         RenderElement(
+            mCurrentlyMovableElement->InstanceIndex,
             wxRect(
                 mCurrentlyMovableElement->CurrentMouseCoords - mCurrentlyMovableElement->InRectAnchorMouseCoords,
                 wxSize(mElementWidth, mElementHeight)),
@@ -385,7 +388,6 @@ void ElectricalPanelLayoutControl::RenderSlot(
     int virtualOriginX,
     wxDC & dc)
 {
-    //wxRect borderRect = rect.Inflate(ElementBorderThickness / 2, ElementBorderThickness / 2);
     wxRect borderRect = rect.Inflate(1, 1);
     borderRect.Offset(-virtualOriginX, 0);
 
@@ -395,6 +397,7 @@ void ElectricalPanelLayoutControl::RenderSlot(
 }
 
 void ElectricalPanelLayoutControl::RenderElement(
+    ElectricalElementInstanceIndex instanceIndex,
     wxRect const & rect,
     int virtualOriginX,
     wxDC & dc)
@@ -402,10 +405,23 @@ void ElectricalPanelLayoutControl::RenderElement(
     wxRect elementRect = rect;
     elementRect.Offset(-virtualOriginX, 0);
 
+    int const centerX = rect.GetLeft() + rect.GetWidth() / 2;
+
+    // Draw texture
     dc.DrawBitmap(
         mElementBitmap,
         elementRect.GetLeftTop(),
         true);
+
+    // Draw instance index
+    wxString const instanceIndexText(std::to_string(instanceIndex));
+    wxSize const instanceIndexTextSize = dc.GetTextExtent(instanceIndexText);
+    dc.SetFont(mInstanceIndexFont);
+    dc.SetTextForeground(wxColor(230, 230, 230));
+    dc.DrawText(
+        instanceIndexText,
+        centerX - instanceIndexTextSize.GetWidth() / 2,
+        rect.GetTop() + rect.GetHeight() / 2 - instanceIndexTextSize.GetHeight() / 2);
 }
 
 void ElectricalPanelLayoutControl::RecalculateGeometry()

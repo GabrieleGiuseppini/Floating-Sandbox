@@ -58,6 +58,7 @@ private:
         wxDC & dc);
 
     void RenderElement(
+        ElectricalElementInstanceIndex instanceIndex,
         wxRect const & rect,
         int virtualOriginX,
         wxDC & dc);
@@ -76,6 +77,7 @@ private:
     wxPen mOccupiedSelectedSlotBorderPen;
     wxPen mDropSlotBorderPen;
     wxBrush mTransparentBrush;
+    wxFont mInstanceIndexFont;
 
     wxBitmap mElementBitmap;
     int const mElementWidth;
