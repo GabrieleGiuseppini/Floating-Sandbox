@@ -414,13 +414,20 @@
 				+ Min size still is own size though (GetSize() at time of need)
 			+ Crystallize element DcRect calculations in RecalculateGeometry()
 				+ Invoked by: OnResized, SetPanel
+			= List auto-scroll
+			- SetPanel should also take "master list" (element set)
+			- Label changes
+			- Visibility changes
 			- Actual element drawing
+				- Image
+				- Label
+				- Shadow
 			- Mouse workflow
 				= Mouse capture
 				- Drop
 			- First selected element? None would be better
 		- Hook events between List and ElectricalPanelLayoutControl:
-			- Click on list element -> highlight in LayoutControl (and list element)
+			= Click on list element -> highlight in LayoutControl (and list element)
 			- Click on LayoutControl -> highlight in list element (and list element, and scroll to it)
 
 - Texture flood tool

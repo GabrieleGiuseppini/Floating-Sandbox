@@ -39,6 +39,8 @@ private:
     void OnOkButton(wxCommandEvent & event);
     void OnCancelButton(wxCommandEvent & event);
 
+    void SetListPanelSelected(ElectricalElementInstanceIndex selectedElement);
+
     void ReconciliateUI();
 
 private:
@@ -53,6 +55,8 @@ private:
         InstancedElectricalElementSet const & ElementSet;
         ElectricalPanelMetadata const & PanelMetadata;
 
+        std::optional<ElectricalElementInstanceIndex> CurrentlySelectedElement;
+
         SessionData(
             Controller & controller,
             InstancedElectricalElementSet const & elementSet,
@@ -60,10 +64,11 @@ private:
             : BuilderController(controller)
             , ElementSet(elementSet)
             , PanelMetadata(panelMetadata)
+            , CurrentlySelectedElement()
         {}
     };
 
-    std::optional<SessionData const> mSessionData;
+    std::optional<SessionData> mSessionData;
 };
 
 }

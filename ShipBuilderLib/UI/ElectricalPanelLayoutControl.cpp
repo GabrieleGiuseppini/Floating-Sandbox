@@ -375,7 +375,7 @@ void ElectricalPanelLayoutControl::RecalculateGeometry()
     mVirtualAreaWidth = std::max(requiredWidth, GetSize().GetWidth());
     SetVirtualSize(mVirtualAreaWidth, PanelHeight);
 
-    // Scroll to center
+    // Scroll to H center
     // TODOHERE
 
     // Calculate extent

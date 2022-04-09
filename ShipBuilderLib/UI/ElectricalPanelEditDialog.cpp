@@ -16,6 +16,8 @@
 
 namespace ShipBuilder {
 
+int constexpr ListPanelElementHeight = 40;
+
 ElectricalPanelEditDialog::ElectricalPanelEditDialog(
     wxWindow * parent,
     ResourceLocator const & resourceLocator)
@@ -54,11 +56,40 @@ ElectricalPanelEditDialog::ElectricalPanelEditDialog(
     {
         mElectricalPanel = new ElectricalPanelLayoutControl(
             this,
-            [this](ElectricalElementInstanceIndex instanceIndex)
+            [this](ElectricalElementInstanceIndex selectedInstanceIndex)
             {
-                assert(mListPanelPanelsByInstanceIndex.count(instanceIndex) != 0);
-                mListPanelPanelsByInstanceIndex[instanceIndex]->SetFocus();
-                // TODO: anything else for selecting?
+                SetListPanelSelected(selectedInstanceIndex);
+
+                // Scroll list panel to ensure element is visible at middle
+                int xUnit, yUnit;
+                mListPanel->GetScrollPixelsPerUnit(&xUnit, &yUnit);
+                if (yUnit != 0)
+                {
+                    // Calculate ordinal of this element in list
+                    int elementOrdinal = 0;
+                    for (auto const & instancedElement : mSessionData->ElementSet.GetElements())
+                    {
+                        if (instancedElement.first == selectedInstanceIndex)
+                        {
+                            break;
+                        }
+
+                        ++elementOrdinal;
+                    };
+
+                    // Calculate virtual Y of (center of) this element
+                    int const elementCenterVirtualY = elementOrdinal * ListPanelElementHeight + (ListPanelElementHeight / 2);
+
+                    // Scroll so that element's center is in center of view
+
+                    int topVirtual = std::max(
+                        elementCenterVirtualY - mListPanel->GetSize().GetHeight() / 2,
+                        0);
+
+                    mListPanel->Scroll(
+                        -1,
+                        topVirtual / yUnit);
+                }
             },
             resourceLocator);
 
@@ -144,6 +175,30 @@ void ElectricalPanelEditDialog::OnCancelButton(wxCommandEvent & /*event*/)
     EndModal(-1);
 }
 
+void ElectricalPanelEditDialog::SetListPanelSelected(ElectricalElementInstanceIndex selectedElement)
+{
+    // De-select previous
+
+    if (mSessionData->CurrentlySelectedElement.has_value())
+    {
+        assert(mListPanelPanelsByInstanceIndex.count(*mSessionData->CurrentlySelectedElement) != 0);
+
+        mListPanelPanelsByInstanceIndex[*mSessionData->CurrentlySelectedElement]->SetBackgroundColour(GetDefaultAttributes().colBg);
+        mListPanelPanelsByInstanceIndex[*mSessionData->CurrentlySelectedElement]->Refresh();
+    }
+
+    // Select new
+
+    assert(mListPanelPanelsByInstanceIndex.count(selectedElement) != 0);
+    auto * const panel = mListPanelPanelsByInstanceIndex[selectedElement];
+    panel->SetFocus();
+    panel->SetBackgroundColour(wxColour(214, 254, 255));
+
+    panel->Refresh();
+
+    mSessionData->CurrentlySelectedElement = selectedElement;
+}
+
 void ElectricalPanelEditDialog::ReconciliateUI()
 {
     assert(mSessionData);
@@ -157,8 +212,6 @@ void ElectricalPanelEditDialog::ReconciliateUI()
     // Populate list
     //
 
-    int constexpr ElementHeight = 40;
-
     mListPanel->DestroyChildren();
     mListPanelPanelsByInstanceIndex.clear();
 
@@ -166,12 +219,14 @@ void ElectricalPanelEditDialog::ReconciliateUI()
 
     for (auto const & instancedElement : mSessionData->ElementSet.GetElements())
     {
-        wxPanel * elementPanel = new wxPanel(mListPanel, wxID_ANY, wxDefaultPosition, wxSize(-1, ElementHeight), wxSIMPLE_BORDER);
+        wxPanel * elementPanel = new wxPanel(mListPanel, wxID_ANY, wxDefaultPosition, wxSize(-1, ListPanelElementHeight), wxSIMPLE_BORDER);
 
         elementPanel->Bind(
-            wxEVT_SET_FOCUS,
-            [this, instancedElementIndex = instancedElement.first](wxFocusEvent &)
+            wxEVT_LEFT_DOWN,
+            [this, instancedElementIndex = instancedElement.first](wxMouseEvent &)
             {
+                SetListPanelSelected(instancedElementIndex);
+
                 mElectricalPanel->SelectElement(instancedElementIndex);
             });
 
@@ -253,6 +308,15 @@ void ElectricalPanelEditDialog::ReconciliateUI()
                 wxDefaultPosition, wxSize(240, -1), wxTE_CENTRE);
 
             textCtrl->SetFont(instanceIndexFont);
+
+            textCtrl->Bind(
+                wxEVT_SET_FOCUS,
+                [this, instancedElementIndex = instancedElement.first](wxFocusEvent &)
+                {
+                    SetListPanelSelected(instancedElementIndex);
+
+                    mElectricalPanel->SelectElement(instancedElementIndex);
+                });
 
             textCtrl->Bind(
                 wxEVT_TEXT,
