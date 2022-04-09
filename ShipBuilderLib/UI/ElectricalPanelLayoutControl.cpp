@@ -18,7 +18,8 @@ namespace ShipBuilder {
 
 int constexpr ElementHGap = 15;
 int constexpr ElementVGap = 16;
-int constexpr ElementBorderThickness = 5;
+int constexpr ElementBorderThickness = 3;
+int constexpr ElementBorderThickness2 = 6;
 int constexpr ShadowOffset = 9;
 
 int constexpr ScrollbarHeight = 20;
@@ -60,12 +61,12 @@ ElectricalPanelLayoutControl::ElectricalPanelLayoutControl(
 
     // Create drawing tools
     mGuidePen = wxPen(wxColor(10, 10, 10), 1, wxPENSTYLE_SHORT_DASH);
-    mFreeUnselectedSlotBorderPen = wxPen(wxColor(140, 140, 140), ElementBorderThickness, wxPENSTYLE_SOLID);
-    mOccupiedUnselectedSlotBorderPen = wxPen(wxColor(0, 18, 150), ElementBorderThickness, wxPENSTYLE_SOLID);
-    mOccupiedSelectedSlotBorderPen = wxPen(wxColor(70, 206, 224), ElementBorderThickness, wxPENSTYLE_SOLID);
+    mFreeUnselectedSlotBorderPen = wxPen(wxColor(180, 180, 180), ElementBorderThickness, wxPENSTYLE_SOLID);
+    mOccupiedUnselectedSlotBorderPen = wxPen(wxColor(180, 180, 180), ElementBorderThickness, wxPENSTYLE_SOLID);
+    mOccupiedSelectedSlotBorderPen = wxPen(wxColor(214, 254, 255), ElementBorderThickness2, wxPENSTYLE_SOLID);
     mDropSlotBorderPen = wxPen(wxColor(230, 18, 39), ElementBorderThickness, wxPENSTYLE_SOLID);
     mShadowPen = wxPen(wxColor(156, 156, 156), 1, wxPENSTYLE_SOLID);
-    mShadowBrush = wxBrush(wxColor(60, 60, 60, 80), wxBRUSHSTYLE_SOLID);
+    mShadowBrush = wxBrush(wxColor(70, 70, 70, 80), wxBRUSHSTYLE_SOLID);
     mTransparentPen = wxPen(wxColor(0, 0, 0), 1, wxPENSTYLE_TRANSPARENT);
     mTransparentBrush = wxBrush(wxColor(0, 0, 0), wxBRUSHSTYLE_TRANSPARENT);
     mInstanceIndexFont = wxFont(wxFontInfo(7));
@@ -369,6 +370,7 @@ void ElectricalPanelLayoutControl::Render(wxDC & dc)
                 element.first,
                 *element.second.DcRect,
                 virtualOriginX,
+                false,
                 dc);
         }
     }
@@ -379,20 +381,11 @@ void ElectricalPanelLayoutControl::Render(wxDC & dc)
             mCurrentlyMovableElement->CurrentMouseCoords - mCurrentlyMovableElement->InRectAnchorMouseCoords,
             wxSize(mElementWidth, mElementHeight));
 
-        // Shadow
-        wxRect shadowRect = movableElementRect;
-        shadowRect.Offset(ShadowOffset/2 - virtualOriginX, ShadowOffset/2);
-        dc.SetPen(mShadowPen);
-        dc.SetBrush(mShadowBrush);
-        dc.DrawRectangle(shadowRect);
-
-        // Element
-        wxRect elementRect = movableElementRect;
-        elementRect.Offset(-ShadowOffset/2 - virtualOriginX, -ShadowOffset/2);
         RenderElement(
             mCurrentlyMovableElement->InstanceIndex,
-            elementRect,
-            0,
+            movableElementRect,
+            virtualOriginX,
+            true,
             dc);
     }
 }
@@ -415,10 +408,24 @@ void ElectricalPanelLayoutControl::RenderElement(
     ElectricalElementInstanceIndex instanceIndex,
     wxRect const & rect,
     int virtualOriginX,
+    bool isBeingMoved,
     wxDC & dc)
 {
     wxRect elementRect = rect;
     elementRect.Offset(-virtualOriginX, 0);
+
+    if (isBeingMoved)
+    {
+        // Shadow
+        wxRect shadowRect = elementRect;
+        shadowRect.Offset(ShadowOffset / 2, ShadowOffset / 2);
+        dc.SetPen(mShadowPen);
+        dc.SetBrush(mShadowBrush);
+        dc.DrawRectangle(shadowRect);
+
+        // Counter-offset element
+        elementRect.Offset(-ShadowOffset / 2, -ShadowOffset / 2);
+    }
 
     int const centerX = elementRect.GetLeft() + elementRect.GetWidth() / 2;
 
