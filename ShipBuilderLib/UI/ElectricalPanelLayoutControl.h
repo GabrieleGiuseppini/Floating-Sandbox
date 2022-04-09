@@ -12,8 +12,8 @@
 
 #include <GameCore/GameTypes.h>
 
+#include <wx/bitmap.h>
 #include <wx/dc.h>
-#include <wx/image.h>
 #include <wx/panel.h>
 #include <wx/scrolwin.h>
 
@@ -64,22 +64,23 @@ private:
 
     void RecalculateGeometry();
 
-    static wxRect MakeDcRect(
-        IntegralCoordinates const & layoutCoordinates,
-        int virtualAreaWidth);
+    wxRect MakeDcRect(IntegralCoordinates const & layoutCoordinates) const;
+
+    int GetOriginVirtualX() const;
 
 private:
 
+    wxPen mGuidePen;
     wxPen mFreeUnselectedSlotBorderPen;
     wxPen mOccupiedUnselectedSlotBorderPen;
     wxPen mOccupiedSelectedSlotBorderPen;
     wxPen mDropSlotBorderPen;
-
     wxBrush mTransparentBrush;
 
-    // TODOHERE
-    wxBrush mWaterBrush;
-    wxImage mShipImage;
+    wxBitmap mElementBitmap;
+    int const mElementWidth;
+    int const mElementHeight;
+    int const mPanelHeight;
 
 private:
 

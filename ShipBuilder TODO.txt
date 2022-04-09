@@ -418,15 +418,20 @@
 				+ SetPanel should also take "master list" (element set)
 			+ Fix H scrolling
 			- Actual element drawing
-				- Image
+				+ Image
+					+ Find new image
+				- Number
 				- Label
 				- Shadow
 			- Label changes
 			- Visibility changes
 			- Mouse workflow
 				= Mouse capture
+				- Movable element drawn last
+				- Drop candidate red
 				- Drop
 			- First selected element? None would be better
+			+ Vertical guide at x=0?
 		- Hook events between List and ElectricalPanelLayoutControl:
 			= Click on list element -> highlight in LayoutControl (and list element)
 			- Click on LayoutControl -> highlight in list element (and list element, and scroll to it)

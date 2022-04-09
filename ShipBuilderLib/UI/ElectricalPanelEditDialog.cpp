@@ -29,7 +29,7 @@ ElectricalPanelEditDialog::ElectricalPanelEditDialog(
         wxID_ANY,
         _("Electrical Panel Edit"),
         wxDefaultPosition,
-        wxSize(800, 600),
+        wxSize(880, 600),
         wxCAPTION | wxCLOSE_BOX | wxFRAME_SHAPED);
 
     SetBackgroundColour(GetDefaultAttributes().colBg);
@@ -354,11 +354,7 @@ void ElectricalPanelEditDialog::ReconciliateUI()
     // Finalize
     //
 
-    LogMessage("TODOTEST: PRE:  ListPanel height:", mListPanel->GetSize().GetHeight());
-
     Layout();
-
-    LogMessage("TODOTEST: POST: ListPanel height:", mListPanel->GetSize().GetHeight());
 }
 
 }

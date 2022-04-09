@@ -6,6 +6,7 @@
 #include "ElectricalPanelLayoutControl.h"
 
 #include <UILib/LayoutHelper.h>
+#include <UILib/WxHelpers.h>
 
 #include <wx/dcclient.h>
 
@@ -15,27 +16,27 @@
 
 namespace ShipBuilder {
 
-int constexpr ElementWidth = 44;
 int constexpr ElementHGap = 15;
-int constexpr ElementHeight = 88;
 int constexpr ElementVGap = 16;
 
 int constexpr ElementBorderThickness = 5;
 
 int constexpr ScrollbarHeight = 20;
 
-int constexpr PanelHeight = (ElementVGap) + (ElementHeight) + (ElementVGap) + (ElementHeight) + (ElementVGap) + ScrollbarHeight;
-
 ElectricalPanelLayoutControl::ElectricalPanelLayoutControl(
     wxWindow * parent,
     std::function<void(ElectricalElementInstanceIndex instanceIndex)> onElementSelected,
     ResourceLocator const & resourceLocator)
-    : mIsMouseCaptured(false)
+    : mElementBitmap(WxHelpers::LoadBitmap("electrical_panel_edit_element", resourceLocator))
+    , mElementWidth(mElementBitmap.GetWidth())
+    , mElementHeight(mElementBitmap.GetHeight())
+    , mPanelHeight((ElementVGap)+(mElementHeight)+(ElementVGap)+(mElementHeight)+(ElementVGap)+ScrollbarHeight)
+    , mIsMouseCaptured(false)
     , mOnElementSelected(std::move(onElementSelected))
     , mNElementsOnEitherSide(0)
 {
     // Calculate initial size
-    wxSize const size = wxSize(-1, PanelHeight);
+    wxSize const size = wxSize(-1, mPanelHeight);
 
     // Create panel
     Create(
@@ -58,13 +59,12 @@ ElectricalPanelLayoutControl::ElectricalPanelLayoutControl(
 #endif
 
     // Create drawing tools
+    mGuidePen = wxPen(wxColor(10, 10, 10), 1, wxPENSTYLE_SHORT_DASH);
     mFreeUnselectedSlotBorderPen = wxPen(wxColor(140, 140, 140), ElementBorderThickness, wxPENSTYLE_SOLID);
     mOccupiedUnselectedSlotBorderPen = wxPen(wxColor(0, 18, 150), ElementBorderThickness, wxPENSTYLE_SOLID);
     mOccupiedSelectedSlotBorderPen = wxPen(wxColor(70, 206, 224), ElementBorderThickness, wxPENSTYLE_SOLID);
     mDropSlotBorderPen = wxPen(wxColor(230, 18, 39), ElementBorderThickness, wxPENSTYLE_SOLID);
     mTransparentBrush = wxBrush(wxColor(0, 0, 0), wxBRUSHSTYLE_TRANSPARENT);
-    // TODOHERE
-    mWaterBrush = wxBrush(wxColor(120, 20, 0), wxBRUSHSTYLE_SOLID);
 
     // Bind events
     Bind(wxEVT_CLOSE_WINDOW, &ElectricalPanelLayoutControl::OnCloseWindow, this);
@@ -188,8 +188,6 @@ void ElectricalPanelLayoutControl::SetElementVisible(
 
 void ElectricalPanelLayoutControl::OnCloseWindow(wxCloseEvent & event)
 {
-    LogMessage("TODOHERE: OnCloseWindow");
-
     if (mIsMouseCaptured)
     {
         ReleaseMouse();
@@ -204,7 +202,8 @@ void ElectricalPanelLayoutControl::OnLeftMouseDown(wxMouseEvent & event)
         mIsMouseCaptured = true;
     }
 
-    wxPoint const mouseCoords = event.GetPosition();
+    wxPoint mouseCoords = event.GetPosition();
+    mouseCoords.x += GetOriginVirtualX();
 
     // Find instance index, if any
     for (auto const & element : mElements)
@@ -259,6 +258,7 @@ void ElectricalPanelLayoutControl::OnMouseMove(wxMouseEvent & event)
     {
         // Update mouse coords of currently-moving element
         mCurrentlyMovableElement->CurrentMouseCoords = event.GetPosition();
+        mCurrentlyMovableElement->CurrentMouseCoords.x += GetOriginVirtualX();
 
         // Render
         Refresh(false);
@@ -267,8 +267,6 @@ void ElectricalPanelLayoutControl::OnMouseMove(wxMouseEvent & event)
 
 void ElectricalPanelLayoutControl::OnResized(wxSizeEvent & event)
 {
-    LogMessage("TODOTEST: OnResized: ", event.GetSize().GetWidth(), ", ", event.GetSize().GetHeight());
-
     RecalculateGeometry();
 }
 
@@ -280,9 +278,19 @@ void ElectricalPanelLayoutControl::OnPaint(wxPaintEvent & /*event*/)
 
 void ElectricalPanelLayoutControl::Render(wxDC & dc)
 {
-    auto const virtualOriginX = CalcUnscrolledPosition(wxPoint(0, 0)).x;
+    auto const virtualOriginX = GetOriginVirtualX();
 
     dc.Clear();
+
+    //
+    // Draw guides
+    //
+
+    int const guideX = (mVirtualAreaWidth / 2) - virtualOriginX;
+    dc.SetPen(mGuidePen);
+    dc.DrawLine(
+        wxPoint(guideX, 0),
+        wxPoint(guideX, mPanelHeight));
 
     //
     // Draw slots
@@ -294,7 +302,7 @@ void ElectricalPanelLayoutControl::Render(wxDC & dc)
         {
             IntegralCoordinates const slotCoords{ x, y };
 
-            wxRect const slotRect = MakeDcRect(slotCoords, mVirtualAreaWidth);
+            wxRect const slotRect = MakeDcRect(slotCoords);
 
             // Check if this coord is occupied
 
@@ -348,17 +356,8 @@ void ElectricalPanelLayoutControl::Render(wxDC & dc)
 
     for (auto const & element : mElements)
     {
-        if (mCurrentlyMovableElement.has_value()
-            && mCurrentlyMovableElement->InstanceIndex == element.first)
-        {
-            RenderElement(
-                wxRect(
-                    mCurrentlyMovableElement->CurrentMouseCoords - mCurrentlyMovableElement->InRectAnchorMouseCoords,
-                    wxSize(ElementWidth, ElementHeight)),
-                virtualOriginX,
-                dc);
-        }
-        else
+        if (!mCurrentlyMovableElement.has_value()
+            || mCurrentlyMovableElement->InstanceIndex != element.first)
         {
             assert(element.second.DcRect.has_value());
 
@@ -368,6 +367,16 @@ void ElectricalPanelLayoutControl::Render(wxDC & dc)
                 dc);
         }
     }
+
+    if (mCurrentlyMovableElement.has_value())
+    {
+        RenderElement(
+            wxRect(
+                mCurrentlyMovableElement->CurrentMouseCoords - mCurrentlyMovableElement->InRectAnchorMouseCoords,
+                wxSize(mElementWidth, mElementHeight)),
+            virtualOriginX,
+            dc);
+    }
 }
 
 void ElectricalPanelLayoutControl::RenderSlot(
@@ -376,7 +385,8 @@ void ElectricalPanelLayoutControl::RenderSlot(
     int virtualOriginX,
     wxDC & dc)
 {
-    wxRect borderRect = rect.Inflate(ElementBorderThickness / 2, ElementBorderThickness / 2);
+    //wxRect borderRect = rect.Inflate(ElementBorderThickness / 2, ElementBorderThickness / 2);
+    wxRect borderRect = rect.Inflate(1, 1);
     borderRect.Offset(-virtualOriginX, 0);
 
     dc.SetPen(pen);
@@ -392,24 +402,38 @@ void ElectricalPanelLayoutControl::RenderElement(
     wxRect elementRect = rect;
     elementRect.Offset(-virtualOriginX, 0);
 
-    // TODOHERE
-    dc.SetPen(wxPen(mWaterBrush.GetColour(), 1));
-    dc.SetBrush(mWaterBrush);
-    dc.DrawRectangle(elementRect);
+    dc.DrawBitmap(
+        mElementBitmap,
+        elementRect.GetLeftTop(),
+        true);
 }
 
 void ElectricalPanelLayoutControl::RecalculateGeometry()
 {
     // Calculate virtual size
-    int const requiredWidth = mLayoutCols * ElementWidth + (mLayoutCols + 1) * ElementHGap;
-    mVirtualAreaWidth = std::max(requiredWidth, GetSize().GetWidth());
-    SetVirtualSize(mVirtualAreaWidth, PanelHeight);
+    int const requiredWidth = mLayoutCols * mElementWidth + (mLayoutCols + 1) * ElementHGap;
+    int const visibleWidth = GetSize().GetWidth();
+    mVirtualAreaWidth = std::max(requiredWidth, visibleWidth);
+    SetVirtualSize(mVirtualAreaWidth, mPanelHeight);
 
     // Scroll to H center
-    // TODOHERE
+    {
+        int xUnit, yUnit;
+        GetScrollPixelsPerUnit(&xUnit, &yUnit);
+        if (xUnit != 0)
+        {
+            int const amountToScroll = std::max(
+                mVirtualAreaWidth / 2 - visibleWidth / 2,
+                0);
+
+            Scroll(
+                amountToScroll / xUnit,
+                -1);
+        }
+    }
 
     // Calculate extent
-    mNElementsOnEitherSide = ((mVirtualAreaWidth / 2) - (ElementWidth / 2 + ElementHGap)) / (ElementWidth + ElementHGap);
+    mNElementsOnEitherSide = ((mVirtualAreaWidth / 2) - (mElementWidth / 2 + ElementHGap)) / (mElementWidth + ElementHGap);
 
     //
     // Calculate DC rects for all elements
@@ -417,25 +441,26 @@ void ElectricalPanelLayoutControl::RecalculateGeometry()
 
     for (auto & element : mElements)
     {
-        element.second.DcRect = MakeDcRect(
-            element.second.LayoutCoordinates,
-            mVirtualAreaWidth);
+        element.second.DcRect = MakeDcRect(element.second.LayoutCoordinates);
     }
 }
 
-wxRect ElectricalPanelLayoutControl::MakeDcRect(
-    IntegralCoordinates const & layoutCoordinates,
-    int virtualAreaWidth)
+wxRect ElectricalPanelLayoutControl::MakeDcRect(IntegralCoordinates const & layoutCoordinates) const
 {
     wxPoint const centerOfElementVirtualCoords = wxPoint(
-        (virtualAreaWidth / 2) + layoutCoordinates.x * ElementWidth + layoutCoordinates.x * ElementHGap,
-        ((PanelHeight - ScrollbarHeight) / 2) - (ElementHeight / 2 + ElementVGap / 2) + layoutCoordinates.y * (ElementHeight + ElementVGap));
+        (mVirtualAreaWidth / 2) + layoutCoordinates.x * mElementWidth + layoutCoordinates.x * ElementHGap,
+        ((mPanelHeight - ScrollbarHeight) / 2) - (mElementHeight / 2 + ElementVGap / 2) + layoutCoordinates.y * (mElementHeight + ElementVGap));
 
     return wxRect(
-        centerOfElementVirtualCoords.x - ElementWidth / 2,
-        centerOfElementVirtualCoords.y - ElementHeight / 2,
-        ElementWidth,
-        ElementHeight);
+        centerOfElementVirtualCoords.x - mElementWidth / 2,
+        centerOfElementVirtualCoords.y - mElementHeight / 2,
+        mElementWidth,
+        mElementHeight);
+}
+
+int ElectricalPanelLayoutControl::GetOriginVirtualX() const
+{
+    return CalcUnscrolledPosition(wxPoint(0, 0)).x;
 }
 
 }
