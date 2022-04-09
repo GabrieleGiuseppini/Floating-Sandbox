@@ -416,13 +416,13 @@
 				+ Invoked by: OnResized, SetPanel
 			+ List auto-scroll
 				+ SetPanel should also take "master list" (element set)
-			- Fix H scrolling
-			- Label changes
-			- Visibility changes
+			+ Fix H scrolling
 			- Actual element drawing
 				- Image
 				- Label
 				- Shadow
+			- Label changes
+			- Visibility changes
 			- Mouse workflow
 				= Mouse capture
 				- Drop

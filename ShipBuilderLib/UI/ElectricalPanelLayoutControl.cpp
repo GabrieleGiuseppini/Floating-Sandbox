@@ -47,7 +47,7 @@ ElectricalPanelLayoutControl::ElectricalPanelLayoutControl(
 
     SetMinSize(size);
 
-    SetScrollRate(5, 0);
+    SetScrollRate(1, 0);
 
     // Bind paint
     Bind(wxEVT_PAINT, &ElectricalPanelLayoutControl::OnPaint, this);
@@ -280,7 +280,7 @@ void ElectricalPanelLayoutControl::OnPaint(wxPaintEvent & /*event*/)
 
 void ElectricalPanelLayoutControl::Render(wxDC & dc)
 {
-    wxSize const size = GetSize();
+    auto const virtualOriginX = CalcUnscrolledPosition(wxPoint(0, 0)).x;
 
     dc.Clear();
 
@@ -293,6 +293,8 @@ void ElectricalPanelLayoutControl::Render(wxDC & dc)
         for (int y = 0; y <= 1; ++y)
         {
             IntegralCoordinates const slotCoords{ x, y };
+
+            wxRect const slotRect = MakeDcRect(slotCoords, mVirtualAreaWidth);
 
             // Check if this coord is occupied
 
@@ -314,7 +316,8 @@ void ElectricalPanelLayoutControl::Render(wxDC & dc)
                     // Selected
                     RenderSlot(
                         mOccupiedSelectedSlotBorderPen,
-                        MakeDcRect(slotCoords, mVirtualAreaWidth),
+                        slotRect,
+                        virtualOriginX,
                         dc);
                 }
                 else
@@ -322,7 +325,8 @@ void ElectricalPanelLayoutControl::Render(wxDC & dc)
                     // Unselected
                     RenderSlot(
                         mOccupiedUnselectedSlotBorderPen,
-                        MakeDcRect(slotCoords, mVirtualAreaWidth),
+                        slotRect,
+                        virtualOriginX,
                         dc);
                 }
             }
@@ -331,7 +335,8 @@ void ElectricalPanelLayoutControl::Render(wxDC & dc)
                 // Free
                 RenderSlot(
                     mFreeUnselectedSlotBorderPen,
-                    MakeDcRect(slotCoords, mVirtualAreaWidth),
+                    slotRect,
+                    virtualOriginX,
                     dc);
             }
         }
@@ -350,36 +355,47 @@ void ElectricalPanelLayoutControl::Render(wxDC & dc)
                 wxRect(
                     mCurrentlyMovableElement->CurrentMouseCoords - mCurrentlyMovableElement->InRectAnchorMouseCoords,
                     wxSize(ElementWidth, ElementHeight)),
+                virtualOriginX,
                 dc);
         }
         else
         {
             assert(element.second.DcRect.has_value());
-            RenderElement(*element.second.DcRect, dc);
+
+            RenderElement(
+                *element.second.DcRect,
+                virtualOriginX,
+                dc);
         }
     }
 }
 
 void ElectricalPanelLayoutControl::RenderSlot(
     wxPen const & pen,
-    wxRect && rect,
+    wxRect const & rect,
+    int virtualOriginX,
     wxDC & dc)
 {
-    rect.Inflate(ElementBorderThickness / 2, ElementBorderThickness / 2);
+    wxRect borderRect = rect.Inflate(ElementBorderThickness / 2, ElementBorderThickness / 2);
+    borderRect.Offset(-virtualOriginX, 0);
 
     dc.SetPen(pen);
     dc.SetBrush(mTransparentBrush);
-    dc.DrawRectangle(rect);
+    dc.DrawRectangle(borderRect);
 }
 
 void ElectricalPanelLayoutControl::RenderElement(
     wxRect const & rect,
+    int virtualOriginX,
     wxDC & dc)
 {
+    wxRect elementRect = rect;
+    elementRect.Offset(-virtualOriginX, 0);
+
     // TODOHERE
     dc.SetPen(wxPen(mWaterBrush.GetColour(), 1));
     dc.SetBrush(mWaterBrush);
-    dc.DrawRectangle(rect);
+    dc.DrawRectangle(elementRect);
 }
 
 void ElectricalPanelLayoutControl::RecalculateGeometry()

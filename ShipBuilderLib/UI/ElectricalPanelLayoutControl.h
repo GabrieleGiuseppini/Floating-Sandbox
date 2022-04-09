@@ -53,11 +53,13 @@ private:
 
     void RenderSlot(
         wxPen const & pen,
-        wxRect && rect,
+        wxRect const & rect,
+        int virtualOriginX,
         wxDC & dc);
 
     void RenderElement(
         wxRect const & rect,
+        int virtualOriginX,
         wxDC & dc);
 
     void RecalculateGeometry();
