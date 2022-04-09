@@ -1148,6 +1148,7 @@
 				- changes.txt
 
 				- Helium: ~like Hydrogen, but not combusting
+					- Make "Helium" variant of Goodyear
 				- "Lightning rod" material
 					- Has precedence when looking for candidates @ Lightning strike
 				+ More glass colors

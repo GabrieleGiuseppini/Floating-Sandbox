@@ -417,12 +417,13 @@
 			+ List auto-scroll
 				+ SetPanel should also take "master list" (element set)
 			+ Fix H scrolling
-			- Actual element drawing
+			= Actual element drawing
 				+ Image
 					+ Find new image
 				+ Instance index
 				- Label
-				- Shadow
+				= Shadow
+					- Move shadow drawing to RenderElement, with boolean arg
 			- Label changes
 			- Visibility changes
 			- Mouse workflow

@@ -18,8 +18,8 @@ namespace ShipBuilder {
 
 int constexpr ElementHGap = 15;
 int constexpr ElementVGap = 16;
-
 int constexpr ElementBorderThickness = 5;
+int constexpr ShadowOffset = 9;
 
 int constexpr ScrollbarHeight = 20;
 
@@ -64,6 +64,9 @@ ElectricalPanelLayoutControl::ElectricalPanelLayoutControl(
     mOccupiedUnselectedSlotBorderPen = wxPen(wxColor(0, 18, 150), ElementBorderThickness, wxPENSTYLE_SOLID);
     mOccupiedSelectedSlotBorderPen = wxPen(wxColor(70, 206, 224), ElementBorderThickness, wxPENSTYLE_SOLID);
     mDropSlotBorderPen = wxPen(wxColor(230, 18, 39), ElementBorderThickness, wxPENSTYLE_SOLID);
+    mShadowPen = wxPen(wxColor(156, 156, 156), 1, wxPENSTYLE_SOLID);
+    mShadowBrush = wxBrush(wxColor(60, 60, 60, 80), wxBRUSHSTYLE_SOLID);
+    mTransparentPen = wxPen(wxColor(0, 0, 0), 1, wxPENSTYLE_TRANSPARENT);
     mTransparentBrush = wxBrush(wxColor(0, 0, 0), wxBRUSHSTYLE_TRANSPARENT);
     mInstanceIndexFont = wxFont(wxFontInfo(7));
 
@@ -372,12 +375,24 @@ void ElectricalPanelLayoutControl::Render(wxDC & dc)
 
     if (mCurrentlyMovableElement.has_value())
     {
+        wxRect const movableElementRect = wxRect(
+            mCurrentlyMovableElement->CurrentMouseCoords - mCurrentlyMovableElement->InRectAnchorMouseCoords,
+            wxSize(mElementWidth, mElementHeight));
+
+        // Shadow
+        wxRect shadowRect = movableElementRect;
+        shadowRect.Offset(ShadowOffset/2 - virtualOriginX, ShadowOffset/2);
+        dc.SetPen(mShadowPen);
+        dc.SetBrush(mShadowBrush);
+        dc.DrawRectangle(shadowRect);
+
+        // Element
+        wxRect elementRect = movableElementRect;
+        elementRect.Offset(-ShadowOffset/2 - virtualOriginX, -ShadowOffset/2);
         RenderElement(
             mCurrentlyMovableElement->InstanceIndex,
-            wxRect(
-                mCurrentlyMovableElement->CurrentMouseCoords - mCurrentlyMovableElement->InRectAnchorMouseCoords,
-                wxSize(mElementWidth, mElementHeight)),
-            virtualOriginX,
+            elementRect,
+            0,
             dc);
     }
 }
@@ -405,7 +420,7 @@ void ElectricalPanelLayoutControl::RenderElement(
     wxRect elementRect = rect;
     elementRect.Offset(-virtualOriginX, 0);
 
-    int const centerX = rect.GetLeft() + rect.GetWidth() / 2;
+    int const centerX = elementRect.GetLeft() + elementRect.GetWidth() / 2;
 
     // Draw texture
     dc.DrawBitmap(
@@ -421,7 +436,7 @@ void ElectricalPanelLayoutControl::RenderElement(
     dc.DrawText(
         instanceIndexText,
         centerX - instanceIndexTextSize.GetWidth() / 2,
-        rect.GetTop() + rect.GetHeight() / 2 - instanceIndexTextSize.GetHeight() / 2);
+        elementRect.GetTop() + elementRect.GetHeight() / 2 - instanceIndexTextSize.GetHeight() / 2);
 }
 
 void ElectricalPanelLayoutControl::RecalculateGeometry()

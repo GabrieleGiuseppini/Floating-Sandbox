@@ -61,6 +61,7 @@ private:
         ElectricalElementInstanceIndex instanceIndex,
         wxRect const & rect,
         int virtualOriginX,
+        bool isBeingMoved,
         wxDC & dc);
 
     void RecalculateGeometry();
@@ -76,6 +77,9 @@ private:
     wxPen mOccupiedUnselectedSlotBorderPen;
     wxPen mOccupiedSelectedSlotBorderPen;
     wxPen mDropSlotBorderPen;
+    wxPen mShadowPen;
+    wxBrush mShadowBrush;
+    wxPen mTransparentPen;
     wxBrush mTransparentBrush;
     wxFont mInstanceIndexFont;
 
