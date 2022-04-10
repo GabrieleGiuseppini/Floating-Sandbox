@@ -423,20 +423,22 @@
 				+ Instance index
 				+ Shadow
 			= Visibility changes
+				- TODO: fix/decide what to do when dropping over empty slot that something is located on 
 			+ Mouse workflow
 				+ Mouse capture
 				+ Movable element drawn last
 				+ Drop candidate green
 				+ Drop (set / swap)
 			+ Vertical guide at x=0
-			= TODOTEST: rearc 1:
+			+ Rewrite:
 				+ ClientToVirtual(wxPoint) -> wxPoint
 				+ MakeSlotVirtualRect
 				+ Replace mElements with ElectricalPanelMetadata&
-				= Add map: LayoutCoords -> LayoutElement:
-					= opt<InstanceIndex>
-					= wxRect SlotVirtualRect
-			- Can now assume that electrical panel always contains elements
+				+ Add map: LayoutCoords -> LayoutElement:
+					+ opt<InstanceIndex>
+					+ wxRect SlotVirtualRect
+			+ Can now assume that electrical panel always contains elements
+			- Merge into 1.17.1.next
 		- List: reorder cols:
 			- Instance ID, label, "(material name)", visibility
 		- Hook events between List and ElectricalPanelLayoutControl:

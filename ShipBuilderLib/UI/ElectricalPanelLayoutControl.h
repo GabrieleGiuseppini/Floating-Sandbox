@@ -32,9 +32,7 @@ public:
         std::function<void(ElectricalElementInstanceIndex instanceIndex)> onElementSelected,
         ResourceLocator const & resourceLocator);
 
-    void SetPanel(
-        InstancedElectricalElementSet const & instancedElectricalElementSet,
-        ElectricalPanelMetadata & electricalPanelMetadata);
+    void SetPanel(ElectricalPanelMetadata & electricalPanelMetadata);
 
     void SelectElement(ElectricalElementInstanceIndex instanceIndex);
 
@@ -70,9 +68,6 @@ private:
 
     void RecalculateLayout();
 
-    // TODOOLD
-    //int GetOriginVirtualX() const;
-
     wxPoint ClientToVirtual(wxPoint const & clientCoords) const;
 
     wxRect ClientToVirtual(wxRect const & clientCoords) const;
@@ -82,12 +77,6 @@ private:
     std::optional<IntegralCoordinates> GetSlotCoordinatesAt(wxPoint const & virtualCoords) const;
 
     IntegralCoordinates const & GetLayoutCoordinatesOf(ElectricalElementInstanceIndex instanceIndex) const;
-
-    /* TODOOLD
-    std::optional<std::tuple<ElectricalElementInstanceIndex, Element const &>> GetExistingElementAt(wxPoint const & virtualCoords) const;
-
-    std::optional<std::tuple<ElectricalElementInstanceIndex, Element const &>> GetExistingElementAt(IntegralCoordinates const & layoutCoordinates) const;
-    */
 
 private:
 
@@ -119,35 +108,14 @@ private:
 
     struct SessionData
     {
-        InstancedElectricalElementSet const & ElementSet;
         ElectricalPanelMetadata & ElectricalPanel;
 
-        SessionData(
-            InstancedElectricalElementSet const & elementSet,
-            ElectricalPanelMetadata & electricalPanel)
-            : ElementSet(elementSet)
-            , ElectricalPanel(electricalPanel)
+        SessionData(ElectricalPanelMetadata & electricalPanel)
+            : ElectricalPanel(electricalPanel)
         {}
     };
 
     std::optional<SessionData> mSessionData;
-
-    // TODOOLD
-    /*
-
-    struct Element
-    {
-        IntegralCoordinates LayoutCoordinates;
-        std::optional<wxRect> DcRect; // Virtual coords
-
-        Element(IntegralCoordinates layoutCoordinates)
-            : LayoutCoordinates(layoutCoordinates)
-            , DcRect() // Populated at RecalculateGeometry()
-        {}
-    };
-
-    std::map<ElectricalElementInstanceIndex, Element> mElements;
-    */
 
     bool mIsMouseCaptured;
 

@@ -88,15 +88,11 @@ ElectricalPanelLayoutControl::ElectricalPanelLayoutControl(
     Bind(wxEVT_SIZE, &ElectricalPanelLayoutControl::OnResized, this);
 }
 
-void ElectricalPanelLayoutControl::SetPanel(
-    InstancedElectricalElementSet const & instancedElectricalElementSet,
-    ElectricalPanelMetadata & electricalPanelMetadata)
+void ElectricalPanelLayoutControl::SetPanel(ElectricalPanelMetadata & electricalPanelMetadata)
 {
     // Reset state
 
-    mSessionData.emplace(
-        instancedElectricalElementSet,
-        electricalPanelMetadata);
+    mSessionData.emplace(electricalPanelMetadata);
 
     mIsMouseCaptured = false;
     mCurrentlyMovableElement.reset();
@@ -172,7 +168,7 @@ void ElectricalPanelLayoutControl::OnLeftMouseDown(wxMouseEvent & event)
     }
 }
 
-void ElectricalPanelLayoutControl::OnLeftMouseUp(wxMouseEvent & event)
+void ElectricalPanelLayoutControl::OnLeftMouseUp(wxMouseEvent & /*event*/)
 {
     assert(mSessionData.has_value());
 
@@ -454,35 +450,24 @@ void ElectricalPanelLayoutControl::RecalculateLayout()
 
         std::vector<LayoutHelper::LayoutElement<ElectricalElementInstanceIndex>> layoutElements;
 
-        for (auto const & element : mSessionData->ElementSet.GetElements())
+        for (auto const & element : mSessionData->ElectricalPanel)
         {
             auto const instanceIndex = element.first;
 
-            // See if we have panel metadata for it
-            auto const panelIt = mSessionData->ElectricalPanel.find(instanceIndex);
-            if (panelIt != mSessionData->ElectricalPanel.cend())
+            if (!element.second.IsHidden)
             {
-                if (!panelIt->second.IsHidden)
+                if (element.second.PanelCoordinates.has_value())
                 {
-                    if (panelIt->second.PanelCoordinates.has_value())
-                    {
-                        layoutElements.emplace_back(
-                            instanceIndex,
-                            *(panelIt->second.PanelCoordinates));
-                    }
-                    else
-                    {
-                        layoutElements.emplace_back(
-                            instanceIndex,
-                            std::nullopt);
-                    }
+                    layoutElements.emplace_back(
+                        instanceIndex,
+                        *(element.second.PanelCoordinates));
                 }
-            }
-            else
-            {
-                layoutElements.emplace_back(
-                    instanceIndex,
-                    std::nullopt);
+                else
+                {
+                    layoutElements.emplace_back(
+                        instanceIndex,
+                        std::nullopt);
+                }
             }
         }
 
@@ -571,51 +556,6 @@ void ElectricalPanelLayoutControl::RecalculateLayout()
     }
 }
 
-/* TODOOLD
-void ElectricalPanelLayoutControl::RecalculateGeometry()
-{
-    // Calculate virtual size
-    int const requiredWidth = mLayoutCols * mElementWidth + (mLayoutCols + 1) * ElementHGap;
-    int const visibleWidth = GetSize().GetWidth();
-    mVirtualAreaWidth = std::max(requiredWidth, visibleWidth);
-    SetVirtualSize(mVirtualAreaWidth, mPanelHeight);
-
-    // Scroll to H center
-    {
-        int xUnit, yUnit;
-        GetScrollPixelsPerUnit(&xUnit, &yUnit);
-        if (xUnit != 0)
-        {
-            int const amountToScroll = std::max(
-                mVirtualAreaWidth / 2 - visibleWidth / 2,
-                0);
-
-            Scroll(
-                amountToScroll / xUnit,
-                -1);
-        }
-    }
-
-    // Calculate extent
-    mNElementsOnEitherSide = ((mVirtualAreaWidth / 2) - (mElementWidth / 2 + ElementHGap)) / (mElementWidth + ElementHGap);
-
-    //
-    // Calculate DC rects for all elements
-    //
-
-    for (auto & element : mElements)
-    {
-        element.second.DcRect = MakeSlotVirtualRect(element.second.LayoutCoordinates);
-    }
-}
-*/
-
-// TODOHERE: needed?
-////int ElectricalPanelLayoutControl::GetOriginVirtualX() const
-////{
-////    return CalcUnscrolledPosition(wxPoint(0, 0)).x;
-////}
-
 wxPoint ElectricalPanelLayoutControl::ClientToVirtual(wxPoint const & clientCoords) const
 {
     return CalcUnscrolledPosition(clientCoords);
@@ -677,48 +617,5 @@ IntegralCoordinates const & ElectricalPanelLayoutControl::GetLayoutCoordinatesOf
     assert(srchIt != mLayoutSlotsByLayoutCoordinates.cend());
     return srchIt->first;
 }
-
-// TODOOLD -----------------------------------------
-/*
-std::optional<std::tuple<ElectricalElementInstanceIndex, ElectricalPanelLayoutControl::Element const &>> ElectricalPanelLayoutControl::GetExistingElementAt(wxPoint const & virtualCoords) const
-{
-    auto const srchIt = std::find_if(
-        mElements.cbegin(),
-        mElements.cend(),
-        [this, &virtualCoords](auto const & entry) -> bool
-        {
-            return entry.second.DcRect.has_value() && entry.second.DcRect->Contains(virtualCoords);
-        });
-
-    if (srchIt != mElements.cend())
-    {
-        return *srchIt;
-    }
-    else
-    {
-        return std::nullopt;
-    }
-}
-
-std::optional<std::tuple<ElectricalElementInstanceIndex, ElectricalPanelLayoutControl::Element const &>> ElectricalPanelLayoutControl::GetExistingElementAt(IntegralCoordinates const & layoutCoordinates) const
-{
-    auto const srchIt = std::find_if(
-        mElements.cbegin(),
-        mElements.cend(),
-        [this, &layoutCoordinates](auto const & entry) -> bool
-        {
-            return entry.second.LayoutCoordinates == layoutCoordinates;
-        });
-
-    if (srchIt != mElements.cend())
-    {
-        return *srchIt;
-    }
-    else
-    {
-        return std::nullopt;
-    }
-}
-*/
 
 }

@@ -292,8 +292,20 @@ void ElectricalPanelEditDialog::ReconciliateUI()
 
             checkbox->Bind(
                 wxEVT_CHECKBOX,
-                [this](wxCommandEvent & /*event*/)
+                [this, instancedElementIndex = instancedElement.first](wxCommandEvent & event)
                 {
+                    bool const isHidden = !(event.IsChecked());
+
+                    assert(mSessionData.has_value());
+                    mSessionData->PanelMetadata.at(instancedElementIndex).IsHidden = isHidden;
+                    if (isHidden)
+                    {
+                        // Also clear position
+                        // TODOTEST
+                        //mSessionData->PanelMetadata.at(instancedElementIndex).PanelCoordinates.reset();
+                    }
+
+                    // Notify control
                     mElectricalPanel->OnPanelUpdated();
                 });
 
@@ -324,7 +336,8 @@ void ElectricalPanelEditDialog::ReconciliateUI()
                 wxEVT_TEXT,
                 [this](wxCommandEvent & event)
                 {
-                    // TODOHERE: communicate to layout control
+                    // TODOHERE: limit length
+                    // TODOHERE: update label
                     event.Skip();
                 });
 
@@ -350,7 +363,7 @@ void ElectricalPanelEditDialog::ReconciliateUI()
     // Populate layout control
     //
 
-    mElectricalPanel->SetPanel(mSessionData->ElementSet, mSessionData->PanelMetadata);
+    mElectricalPanel->SetPanel(mSessionData->PanelMetadata);
 
     //
     // Finalize
