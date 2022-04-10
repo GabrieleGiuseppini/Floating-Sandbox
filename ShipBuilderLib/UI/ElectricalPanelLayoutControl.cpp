@@ -216,29 +216,26 @@ void ElectricalPanelLayoutControl::OnLeftMouseDown(wxMouseEvent & event)
     mouseCoords.x += GetOriginVirtualX();
 
     // Find instance index, if any
-    for (auto const & element : mElements)
+    auto const existingElementEntry = GetExistingElementAt(mouseCoords);
+    if (existingElementEntry.has_value())
     {
-        assert(element.second.DcRect.has_value());
+        // Found!
 
-        if (element.second.DcRect->Contains(mouseCoords))
-        {
-            // Found!
-            mCurrentlyMovableElement.emplace(
-                element.first,
-                wxPoint(
-                    mouseCoords.x - element.second.DcRect->x,
-                    mouseCoords.y - element.second.DcRect->y),
-                mouseCoords);
+        auto const elementInstanceIndex = std::get<0>(*existingElementEntry);
 
-            // Select it
-            mCurrentlySelectedElementInstanceIndex = element.first;
-            mOnElementSelected(element.first);
+        mCurrentlyMovableElement.emplace(
+            elementInstanceIndex,
+            wxPoint(
+                mouseCoords.x - std::get<1>(*existingElementEntry).DcRect->x,
+                mouseCoords.y - std::get<1>(*existingElementEntry).DcRect->y),
+            mouseCoords);
 
-            // Render
-            Refresh(false);
+        // Select it
+        mCurrentlySelectedElementInstanceIndex = elementInstanceIndex;
+        mOnElementSelected(elementInstanceIndex);
 
-            return;
-        }
+        // Render
+        Refresh(false);
     }
 }
 
@@ -252,7 +249,29 @@ void ElectricalPanelLayoutControl::OnLeftMouseUp(wxMouseEvent & event)
 
     if (mCurrentlyMovableElement.has_value())
     {
-        // TODO: finalize move
+        assert(mElements.count(mCurrentlyMovableElement->InstanceIndex) == 1);
+
+        if (mCurrentDropCandidateSlotCoordinates.has_value())
+        {
+            // Move to drop slot (eventually swapping if occupied)
+            auto existingElementEntry = GetExistingElementAt(*mCurrentDropCandidateSlotCoordinates);
+            if (existingElementEntry.has_value())
+            {
+                // Swap
+
+                ElectricalElementInstanceIndex const otherElementInstanceIndex = std::get<0>(*existingElementEntry);
+                assert(mElements.count(otherElementInstanceIndex) == 1);
+                mElements.at(otherElementInstanceIndex).LayoutCoordinates = mElements.at(mCurrentlyMovableElement->InstanceIndex).LayoutCoordinates;
+                mElements.at(otherElementInstanceIndex).DcRect = mElements.at(mCurrentlyMovableElement->InstanceIndex).DcRect;
+            }
+            else
+            {
+                // Move
+            }
+
+            mElements.at(mCurrentlyMovableElement->InstanceIndex).LayoutCoordinates = *mCurrentDropCandidateSlotCoordinates;
+            mElements.at(mCurrentlyMovableElement->InstanceIndex).DcRect = MakeDcRect(*mCurrentDropCandidateSlotCoordinates);
+        }
 
         // No more movable element
         mCurrentlyMovableElement.reset();
@@ -353,21 +372,13 @@ void ElectricalPanelLayoutControl::Render(wxDC & dc)
             else
             {
                 // Check if this coord is occupied
-
-                auto const srchIt = std::find_if(
-                    mElements.cbegin(),
-                    mElements.cend(),
-                    [this, &slotCoords](auto const & entry) -> bool
-                    {
-                        return entry.second.LayoutCoordinates == slotCoords;
-                    });
-
-                if (srchIt != mElements.cend())
+                auto const existingElementEntry = GetExistingElementAt(slotCoords);
+                if (existingElementEntry.has_value())
                 {
                     // Occupied
 
                     if (mCurrentlySelectedElementInstanceIndex.has_value()
-                        && *mCurrentlySelectedElementInstanceIndex == srchIt->first)
+                        && *mCurrentlySelectedElementInstanceIndex == std::get<0>(*existingElementEntry))
                     {
                         // Selected
                         RenderSlot(
@@ -567,8 +578,7 @@ std::optional<IntegralCoordinates> ElectricalPanelLayoutControl::GetSlotCoordina
     }
 }
 
-// TODO: needed?
-std::optional<ElectricalElementInstanceIndex> ElectricalPanelLayoutControl::GetExistingElementAt(wxPoint const & virtualCoords) const
+std::optional<std::tuple<ElectricalElementInstanceIndex, ElectricalPanelLayoutControl::Element const &>> ElectricalPanelLayoutControl::GetExistingElementAt(wxPoint const & virtualCoords) const
 {
     auto const srchIt = std::find_if(
         mElements.cbegin(),
@@ -580,7 +590,27 @@ std::optional<ElectricalElementInstanceIndex> ElectricalPanelLayoutControl::GetE
 
     if (srchIt != mElements.cend())
     {
-        return srchIt->first;
+        return *srchIt;
+    }
+    else
+    {
+        return std::nullopt;
+    }
+}
+
+std::optional<std::tuple<ElectricalElementInstanceIndex, ElectricalPanelLayoutControl::Element const &>> ElectricalPanelLayoutControl::GetExistingElementAt(IntegralCoordinates const & layoutCoordinates) const
+{
+    auto const srchIt = std::find_if(
+        mElements.cbegin(),
+        mElements.cend(),
+        [this, &layoutCoordinates](auto const & entry) -> bool
+        {
+            return entry.second.LayoutCoordinates == layoutCoordinates;
+        });
+
+    if (srchIt != mElements.cend())
+    {
+        return *srchIt;
     }
     else
     {

@@ -41,6 +41,8 @@ public:
 
 private:
 
+    struct Element;
+
     void OnCloseWindow(wxCloseEvent & event);
     void OnLeftMouseDown(wxMouseEvent & event);
     void OnLeftMouseUp(wxMouseEvent & event);
@@ -71,7 +73,9 @@ private:
 
     std::optional<IntegralCoordinates> GetSlotCoordinatesAt(wxPoint const & virtualCoords) const;
 
-    std::optional<ElectricalElementInstanceIndex> GetExistingElementAt(wxPoint const & virtualCoords) const;
+    std::optional<std::tuple<ElectricalElementInstanceIndex, Element const &>> GetExistingElementAt(wxPoint const & virtualCoords) const;
+
+    std::optional<std::tuple<ElectricalElementInstanceIndex, Element const &>> GetExistingElementAt(IntegralCoordinates const & layoutCoordinates) const;
 
     int GetOriginVirtualX() const;
 

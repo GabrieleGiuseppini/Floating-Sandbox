@@ -425,11 +425,11 @@
 				+ Shadow
 			- Label changes
 			- Visibility changes
-			= Mouse workflow
-				= Mouse capture
+			+ Mouse workflow
+				+ Mouse capture
 				+ Movable element drawn last
 				+ Drop candidate green
-				- Drop
+				+ Drop (set / swap)
 			+ Vertical guide at x=0
 		- Hook events between List and ElectricalPanelLayoutControl:
 			= Click on list element -> highlight in LayoutControl (and list element)
