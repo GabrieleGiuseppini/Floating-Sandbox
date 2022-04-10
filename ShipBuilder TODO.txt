@@ -429,9 +429,9 @@
 				+ Drop candidate green
 				+ Drop (set / swap)
 			+ Vertical guide at x=0
-			- TODOTEST: rearc 1:
-				- ClientToVirtual(wxPoint) -> wxPoint
-				- MakeSlotVirtualRect
+			= TODOTEST: rearc 1:
+				+ ClientToVirtual(wxPoint) -> wxPoint
+				+ MakeSlotVirtualRect
 				- Replace mElements with ElectricalPanelMetadata&
 				- Add map: LayoutCoords -> LayoutElement:
 					- opt<InstanceIndex>

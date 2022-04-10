@@ -54,7 +54,7 @@ private:
     void Render(wxDC & dc);
 
     void RenderSlot(
-        wxRect const & rect,
+        wxRect const & virtualRect,
         int virtualOriginX,
         wxPen const & pen,
         wxBrush const & brush,
@@ -62,14 +62,24 @@ private:
 
     void RenderElement(
         ElectricalElementInstanceIndex instanceIndex,
-        wxRect const & rect,
+        wxRect const & virtualRect,
         int virtualOriginX,
         bool isBeingMoved,
         wxDC & dc);
 
     void RecalculateGeometry();
 
-    wxRect MakeDcRect(IntegralCoordinates const & layoutCoordinates) const;
+    int GetOriginVirtualX() const;
+
+    wxPoint ClientToVirtual(wxPoint const & clientCoords) const;
+
+    wxRect ClientToVirtual(wxRect const & clientCoords) const;
+
+    wxRect MakeSlotVirtualRect(IntegralCoordinates const & layoutCoordinates) const;
+
+    // TODOOLD
+
+
 
     std::optional<IntegralCoordinates> GetSlotCoordinatesAt(wxPoint const & virtualCoords) const;
 
@@ -77,7 +87,6 @@ private:
 
     std::optional<std::tuple<ElectricalElementInstanceIndex, Element const &>> GetExistingElementAt(IntegralCoordinates const & layoutCoordinates) const;
 
-    int GetOriginVirtualX() const;
 
 private:
 

@@ -212,11 +212,10 @@ void ElectricalPanelLayoutControl::OnLeftMouseDown(wxMouseEvent & event)
         mIsMouseCaptured = true;
     }
 
-    wxPoint mouseCoords = event.GetPosition();
-    mouseCoords.x += GetOriginVirtualX();
+    wxPoint const virtualCoords = ClientToVirtual(event.GetPosition());
 
     // Find instance index of element at this location, if any
-    auto const existingElementEntry = GetExistingElementAt(mouseCoords);
+    auto const existingElementEntry = GetExistingElementAt(virtualCoords);
     if (existingElementEntry.has_value())
     {
         // Found!
@@ -226,9 +225,9 @@ void ElectricalPanelLayoutControl::OnLeftMouseDown(wxMouseEvent & event)
         mCurrentlyMovableElement.emplace(
             elementInstanceIndex,
             wxPoint(
-                mouseCoords.x - std::get<1>(*existingElementEntry).DcRect->x,
-                mouseCoords.y - std::get<1>(*existingElementEntry).DcRect->y),
-            mouseCoords);
+                virtualCoords.x - std::get<1>(*existingElementEntry).DcRect->x,
+                virtualCoords.y - std::get<1>(*existingElementEntry).DcRect->y),
+            virtualCoords);
 
         // Select it
         mCurrentlySelectedElementInstanceIndex = elementInstanceIndex;
@@ -270,7 +269,7 @@ void ElectricalPanelLayoutControl::OnLeftMouseUp(wxMouseEvent & event)
             }
 
             mElements.at(mCurrentlyMovableElement->InstanceIndex).LayoutCoordinates = *mCurrentDropCandidateSlotCoordinates;
-            mElements.at(mCurrentlyMovableElement->InstanceIndex).DcRect = MakeDcRect(*mCurrentDropCandidateSlotCoordinates);
+            mElements.at(mCurrentlyMovableElement->InstanceIndex).DcRect = MakeSlotVirtualRect(*mCurrentDropCandidateSlotCoordinates);
         }
 
         // No more movable element
@@ -288,9 +287,10 @@ void ElectricalPanelLayoutControl::OnMouseMove(wxMouseEvent & event)
 {
     if (mCurrentlyMovableElement.has_value())
     {
+        wxPoint const virtualCoords = ClientToVirtual(event.GetPosition());
+
         // Update mouse coords of currently-moving element
-        mCurrentlyMovableElement->CurrentMouseCoords = event.GetPosition();
-        mCurrentlyMovableElement->CurrentMouseCoords.x += GetOriginVirtualX();
+        mCurrentlyMovableElement->CurrentMouseCoords = virtualCoords;
 
         // Deselect previous slot
         mCurrentDropCandidateSlotCoordinates.reset();
@@ -355,7 +355,7 @@ void ElectricalPanelLayoutControl::Render(wxDC & dc)
         {
             IntegralCoordinates const slotCoords{ x, y };
 
-            wxRect const slotRect = MakeDcRect(slotCoords);
+            wxRect const slotRect = MakeSlotVirtualRect(slotCoords);
 
             // Check if this slot is a drop candidate
             if (mCurrentDropCandidateSlotCoordinates.has_value()
@@ -449,49 +449,49 @@ void ElectricalPanelLayoutControl::Render(wxDC & dc)
 }
 
 void ElectricalPanelLayoutControl::RenderSlot(
-    wxRect const & rect,
+    wxRect const & virtualRect,
     int virtualOriginX,
     wxPen const & pen,
     wxBrush const & brush,
     wxDC & dc)
 {
-    wxRect borderRect = rect.Inflate(1, 1);
-    borderRect.Offset(-virtualOriginX, 0);
+    wxRect borderDcRect = virtualRect.Inflate(1, 1);
+    borderDcRect.Offset(-virtualOriginX, 0);
 
     dc.SetPen(pen);
     dc.SetBrush(brush);
-    dc.DrawRectangle(borderRect);
+    dc.DrawRectangle(borderDcRect);
 }
 
 void ElectricalPanelLayoutControl::RenderElement(
     ElectricalElementInstanceIndex instanceIndex,
-    wxRect const & rect,
+    wxRect const & virtualRect,
     int virtualOriginX,
     bool isBeingMoved,
     wxDC & dc)
 {
-    wxRect elementRect = rect;
-    elementRect.Offset(-virtualOriginX, 0);
+    wxRect elementDcRect = virtualRect;
+    elementDcRect.Offset(-virtualOriginX, 0);
 
     if (isBeingMoved)
     {
         // Shadow
-        wxRect shadowRect = elementRect;
+        wxRect shadowRect = elementDcRect;
         shadowRect.Offset(ShadowOffset / 2, ShadowOffset / 2);
         dc.SetPen(mShadowPen);
         dc.SetBrush(mShadowBrush);
         dc.DrawRectangle(shadowRect);
 
         // Counter-offset element
-        elementRect.Offset(-ShadowOffset / 2, -ShadowOffset / 2);
+        elementDcRect.Offset(-ShadowOffset / 2, -ShadowOffset / 2);
     }
 
-    int const centerX = elementRect.GetLeft() + elementRect.GetWidth() / 2;
+    int const centerX = elementDcRect.GetLeft() + elementDcRect.GetWidth() / 2;
 
     // Draw texture
     dc.DrawBitmap(
         mElementBitmap,
-        elementRect.GetLeftTop(),
+        elementDcRect.GetLeftTop(),
         true);
 
     // Draw instance index
@@ -502,7 +502,7 @@ void ElectricalPanelLayoutControl::RenderElement(
     dc.DrawText(
         instanceIndexText,
         centerX - instanceIndexTextSize.GetWidth() / 2,
-        elementRect.GetTop() + elementRect.GetHeight() / 2 - instanceIndexTextSize.GetHeight() / 2);
+        elementDcRect.GetTop() + elementDcRect.GetHeight() / 2 - instanceIndexTextSize.GetHeight() / 2);
 }
 
 void ElectricalPanelLayoutControl::RecalculateGeometry()
@@ -538,11 +538,29 @@ void ElectricalPanelLayoutControl::RecalculateGeometry()
 
     for (auto & element : mElements)
     {
-        element.second.DcRect = MakeDcRect(element.second.LayoutCoordinates);
+        element.second.DcRect = MakeSlotVirtualRect(element.second.LayoutCoordinates);
     }
 }
 
-wxRect ElectricalPanelLayoutControl::MakeDcRect(IntegralCoordinates const & layoutCoordinates) const
+// TODOHERE: needed?
+int ElectricalPanelLayoutControl::GetOriginVirtualX() const
+{
+    return CalcUnscrolledPosition(wxPoint(0, 0)).x;
+}
+
+wxPoint ElectricalPanelLayoutControl::ClientToVirtual(wxPoint const & clientCoords) const
+{
+    return CalcUnscrolledPosition(clientCoords);
+}
+
+wxRect ElectricalPanelLayoutControl::ClientToVirtual(wxRect const & clientCoords) const
+{
+    return wxRect(
+        ClientToVirtual(clientCoords.GetTopLeft()),
+        clientCoords.GetSize());
+}
+
+wxRect ElectricalPanelLayoutControl::MakeSlotVirtualRect(IntegralCoordinates const & layoutCoordinates) const
 {
     wxPoint const centerOfElementVirtualCoords = wxPoint(
         (mVirtualAreaWidth / 2) + layoutCoordinates.x * mElementWidth + layoutCoordinates.x * ElementHGap,
@@ -554,6 +572,8 @@ wxRect ElectricalPanelLayoutControl::MakeDcRect(IntegralCoordinates const & layo
         mElementWidth,
         mElementHeight);
 }
+
+// TODOOLD -----------------------------------------
 
 std::optional<IntegralCoordinates> ElectricalPanelLayoutControl::GetSlotCoordinatesAt(wxPoint const & virtualCoords) const
 {
@@ -568,7 +588,7 @@ std::optional<IntegralCoordinates> ElectricalPanelLayoutControl::GetSlotCoordina
         virtualCoords.y / (ElementVGap + mElementHeight + ElementVGap / 2));
 
     if (layoutCoords.x >= -mNElementsOnEitherSide && layoutCoords.x <= mNElementsOnEitherSide
-        && MakeDcRect(layoutCoords).Contains(virtualCoords))
+        && MakeSlotVirtualRect(layoutCoords).Contains(virtualCoords))
     {
         return layoutCoords;
     }
@@ -616,11 +636,6 @@ std::optional<std::tuple<ElectricalElementInstanceIndex, ElectricalPanelLayoutCo
     {
         return std::nullopt;
     }
-}
-
-int ElectricalPanelLayoutControl::GetOriginVirtualX() const
-{
-    return CalcUnscrolledPosition(wxPoint(0, 0)).x;
 }
 
 }
