@@ -1619,17 +1619,11 @@ void ModelController::WriteParticle(
     ShipSpaceCoordinates const & coords,
     ElectricalMaterial const * material)
 {
-    //
-    // FutureWork:
-    // - Here we will also implement running analyses, e.g. update the count of particles
-    // - Here we will also take care of electrical panel: new/removed/updated-type components
-    //
-
     auto & electricalLayerBuffer = mModel.GetElectricalLayer().Buffer;
 
     auto const & oldElement = electricalLayerBuffer[coords];
 
-    // Decide instance index
+    // Decide instance index and maintain panel
     ElectricalElementInstanceIndex instanceIndex;
     if (oldElement.Material == nullptr
         || !oldElement.Material->IsInstanced)
@@ -1663,6 +1657,9 @@ void ModelController::WriteParticle(
             // ...disappeared instance index
             mInstancedElectricalElementSet.Remove(oldElement.InstanceIndex);
             instanceIndex = NoneElectricalElementInstanceIndex;
+
+            // Remove from panel
+            mModel.GetElectricalLayer().Panel.erase(oldElement.InstanceIndex);
         }
         else
         {

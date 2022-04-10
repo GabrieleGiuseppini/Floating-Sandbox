@@ -104,6 +104,10 @@ public:
         std::optional<ShipPhysicsData> && physicsData,
         std::optional<std::optional<ShipAutoTexturizationSettings>> && autoTexturizationSettings);
 
+    void SetElectricalPanelMetadata(ElectricalPanelMetadata panelMetadata);
+
+    void RestoreElectricalPanelMetadataForUndo(ElectricalPanelMetadata && panelMetadata);
+
     void ClearModelDirty();
 
     void RestoreDirtyState(ModelDirtyState && dirtyState);
@@ -315,6 +319,8 @@ private:
         std::optional<ShipMetadata> && metadata,
         std::optional<ShipPhysicsData> && physicsData,
         std::optional<std::optional<ShipAutoTexturizationSettings>> && autoTexturizationSettings);
+
+    void InternalSetElectricalPanelMetadata(ElectricalPanelMetadata && panelMetadata);
 
     void InternalSelectPrimaryVisualization(VisualizationType primaryVisualization);
 

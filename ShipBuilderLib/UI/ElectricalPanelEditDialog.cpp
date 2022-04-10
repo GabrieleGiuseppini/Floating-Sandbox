@@ -181,11 +181,13 @@ void ElectricalPanelEditDialog::ShowModal(
 
 void ElectricalPanelEditDialog::OnOkButton(wxCommandEvent & /*event*/)
 {
+    assert(mSessionData.has_value());
+
     //
     // Set in controller
     //
 
-    // TODOHERE
+    mSessionData->BuilderController.SetElectricalPanelMetadata(mSessionData->PanelMetadata);
 
     //
     // Close dialog
@@ -244,13 +246,15 @@ void ElectricalPanelEditDialog::ReconciliateUI()
 
     for (auto const & instancedElement : mSessionData->ElementSet.GetElements())
     {
-        assert(mSessionData->PanelMetadata.count(instancedElement.first) == 1);
+        ElectricalElementInstanceIndex const instancedElementIndex = instancedElement.first;
+
+        assert(mSessionData->PanelMetadata.count(instancedElementIndex) == 1);
 
         wxPanel * elementPanel = new wxPanel(mListPanel, wxID_ANY, wxDefaultPosition, wxSize(-1, ListPanelElementHeight), wxSIMPLE_BORDER);
 
         elementPanel->Bind(
             wxEVT_LEFT_DOWN,
-            [this, instancedElementIndex = instancedElement.first](wxMouseEvent &)
+            [this, instancedElementIndex](wxMouseEvent &)
             {
                 SetListPanelSelected(instancedElementIndex);
                 mElectricalPanel->SelectElement(instancedElementIndex);
@@ -262,7 +266,7 @@ void ElectricalPanelEditDialog::ReconciliateUI()
 
         // Instance ID
         {
-            auto label = new wxStaticText(elementPanel, wxID_ANY, std::to_string(instancedElement.first), wxDefaultPosition, wxSize(20, -1), wxALIGN_RIGHT);
+            auto label = new wxStaticText(elementPanel, wxID_ANY, std::to_string(instancedElementIndex), wxDefaultPosition, wxSize(20, -1), wxALIGN_RIGHT);
 
             label->SetFont(instanceIndexFont);
 
@@ -286,11 +290,11 @@ void ElectricalPanelEditDialog::ReconciliateUI()
         {
             auto checkbox = new wxCheckBox(elementPanel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize);
 
-            checkbox->SetValue(!(mSessionData->PanelMetadata.at(instancedElement.first).IsHidden));
+            checkbox->SetValue(!(mSessionData->PanelMetadata.at(instancedElementIndex).IsHidden));
 
             checkbox->Bind(
                 wxEVT_SET_FOCUS,
-                [this, instancedElementIndex = instancedElement.first](wxFocusEvent & event)
+                [this, instancedElementIndex](wxFocusEvent & event)
                 {
                     SetListPanelSelected(instancedElementIndex);
                     mElectricalPanel->SelectElement(instancedElementIndex);
@@ -300,7 +304,7 @@ void ElectricalPanelEditDialog::ReconciliateUI()
 
             checkbox->Bind(
                 wxEVT_CHECKBOX,
-                [this, instancedElementIndex = instancedElement.first](wxCommandEvent & event)
+                [this, instancedElementIndex](wxCommandEvent & event)
                 {
                     bool const isVisible = event.IsChecked();
 
@@ -309,23 +313,6 @@ void ElectricalPanelEditDialog::ReconciliateUI()
                     ElectricalPanelElementMetadata & panelElement = mSessionData->PanelMetadata.at(instancedElementIndex);
 
                     panelElement.IsHidden = !isVisible;
-
-                    if (isVisible)
-                    {
-                        // This element just became visible, so check if its layout coordinates
-                        // conflict with another visible element
-                        for (auto const & otherElement : mSessionData->PanelMetadata)
-                        {
-                            if (otherElement.first != instancedElementIndex
-                                && otherElement.second.PanelCoordinates == panelElement.PanelCoordinates
-                                && !otherElement.second.IsHidden)
-                            {
-                                // Conflict...
-                                // ...zero out this element's layout coords
-                                panelElement.PanelCoordinates.reset();
-                            }
-                        }
-                    }
 
                     // Notify control
                     mElectricalPanel->OnPanelUpdated();
@@ -338,9 +325,9 @@ void ElectricalPanelEditDialog::ReconciliateUI()
 
         // Label
         {
-            assert(mSessionData->PanelMetadata.at(instancedElement.first).Label.has_value());
+            assert(mSessionData->PanelMetadata.at(instancedElementIndex).Label.has_value());
 
-            auto textCtrl = new wxTextCtrl(elementPanel, wxID_ANY, *mSessionData->PanelMetadata.at(instancedElement.first).Label,
+            auto textCtrl = new wxTextCtrl(elementPanel, wxID_ANY, *mSessionData->PanelMetadata.at(instancedElementIndex).Label,
                 wxDefaultPosition, wxSize(240, -1), wxTE_CENTRE);
 
             textCtrl->SetMaxLength(32);
@@ -348,7 +335,7 @@ void ElectricalPanelEditDialog::ReconciliateUI()
 
             textCtrl->Bind(
                 wxEVT_SET_FOCUS,
-                [this, instancedElementIndex = instancedElement.first](wxFocusEvent & event)
+                [this, instancedElementIndex](wxFocusEvent & event)
                 {
                     SetListPanelSelected(instancedElementIndex);
                     mElectricalPanel->SelectElement(instancedElementIndex);
@@ -358,9 +345,12 @@ void ElectricalPanelEditDialog::ReconciliateUI()
 
             textCtrl->Bind(
                 wxEVT_TEXT,
-                [this](wxCommandEvent & event)
+                [this, instancedElementIndex](wxCommandEvent & event)
                 {
-                    // TODOHERE: update label
+                    assert(mSessionData.has_value());
+                    assert(mSessionData->PanelMetadata.count(instancedElementIndex) == 1);
+                    mSessionData->PanelMetadata.at(instancedElementIndex).Label = event.GetString();
+
                     event.Skip();
                 });
 
@@ -377,7 +367,7 @@ void ElectricalPanelEditDialog::ReconciliateUI()
             wxEXPAND,
             0);
 
-        mListPanelPanelsByInstanceIndex[instancedElement.first] = elementPanel;
+        mListPanelPanelsByInstanceIndex[instancedElementIndex] = elementPanel;
     }
 
     mListPanel->SetSizer(listVSizer);

@@ -157,6 +157,11 @@ public:
         return mInstancedElectricalElementSet;
     }
 
+    void SetElectricalPanelMetadata(ElectricalPanelMetadata && panelMetadata)
+    {
+        mModel.SetElectricalPanelMetadata(std::move(panelMetadata));
+    }
+
     void Flip(DirectionType direction);
 
     void Rotate90(RotationDirectionType direction);

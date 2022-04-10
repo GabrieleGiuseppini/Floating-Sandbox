@@ -445,9 +445,20 @@
 			+ Click on list element -> highlight in LayoutControl (and list element)
 			+ Click on LayoutControl -> highlight in list element (and list element, and scroll to it)
 		+ Max length for label
-		- Final population of ElectricalPanel and delivery to Controller
-			- ElectricalPanelLayoutControl: takes ElectricalPanel& from outside and populates directly
-				- Outside makes own copy of ElectricalPanel
+		= Final population of ElectricalPanel and delivery to Controller
+			+ ElectricalPanelLayoutControl: takes ElectricalPanel& from outside and populates directly
+			- Dialog: populate only if dirty
+		+ ModelController: WriteParticle(electrical): take care of panel
+	- Tests:
+		- Saved and reloaded matches
+		- Matching and functional in game
+		+ Restore
+		- Saved after restore and reloaded matches
+		+ Deletion of instanced elements
+		+ Addition of instanced elements
+		- Buffer restore when panel has more elements before restore
+
+- Eraser electrical: own size
 
 - Normal flood tool: also display underneath element to StatusBar
 	- Also update after own edit

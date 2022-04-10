@@ -234,6 +234,51 @@ void Controller::RestoreShipPropertiesForUndo(
     mUserInterface.OnModelDirtyChanged(*mModelController);
 }
 
+void Controller::SetElectricalPanelMetadata(ElectricalPanelMetadata panelMetadata)
+{
+    assert(mModelController);
+
+    //
+    // Prepare undo entry
+    //
+
+    auto f = [oldPanelMetadata = mModelController->GetElectricalPanelMetadata()] (Controller & controller) mutable
+    {
+        controller.RestoreElectricalPanelMetadataForUndo(std::move(oldPanelMetadata));
+    };
+
+    auto originalDirtyState = mModelController->GetDirtyState();
+
+    //
+    // Set new panel
+    //
+
+    InternalSetElectricalPanelMetadata(std::move(panelMetadata));
+
+    mUserInterface.OnModelDirtyChanged(*mModelController);
+
+    //
+    // Store undo action
+    //
+
+    mUndoStack.Push(
+        _("Electrical Panel"),
+        256, // Arbitrary cost
+        originalDirtyState,
+        std::move(f));
+
+    mUserInterface.OnUndoStackStateChanged(mUndoStack);
+}
+
+void Controller::RestoreElectricalPanelMetadataForUndo(ElectricalPanelMetadata && panelMetadata)
+{
+    assert(mModelController);
+
+    InternalSetElectricalPanelMetadata(std::move(panelMetadata));
+
+    mUserInterface.OnModelDirtyChanged(*mModelController);
+}
+
 void Controller::ClearModelDirty()
 {
     mModelController->ClearIsDirty();
@@ -1393,6 +1438,13 @@ void Controller::InternalSetShipProperties(
             mUserInterface.RefreshView();
         }
     }
+}
+
+void Controller::InternalSetElectricalPanelMetadata(ElectricalPanelMetadata && panelMetadata)
+{
+    assert(mModelController);
+
+    mModelController->SetElectricalPanelMetadata(std::move(panelMetadata));
 }
 
 void Controller::InternalSelectPrimaryVisualization(VisualizationType primaryVisualization)

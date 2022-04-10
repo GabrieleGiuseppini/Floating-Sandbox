@@ -95,6 +95,12 @@ public:
         mDirtyState.GlobalIsDirty = true;
     }
 
+    void SetElectricalPanelMetadata(ElectricalPanelMetadata && panelMetadata)
+    {
+        assert(mElectricalLayer);
+        mElectricalLayer->Panel = panelMetadata;
+    }
+
     bool HasLayer(LayerType layer) const
     {
         return mLayerPresenceMap[static_cast<size_t>(layer)];
