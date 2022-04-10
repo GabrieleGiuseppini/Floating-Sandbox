@@ -16,10 +16,12 @@
 
 namespace ShipBuilder {
 
+int constexpr MaxElementsPerRow = 11;
+
 int constexpr ElementHGap = 15;
 int constexpr ElementVGap = 16;
 int constexpr ElementBorderThickness = 3;
-int constexpr SelectedSlotOffset = 6;
+int constexpr HighlightedSlotOffset = 6;
 int constexpr ShadowOffset = 9;
 
 int constexpr ScrollbarHeight = 20;
@@ -65,7 +67,8 @@ ElectricalPanelLayoutControl::ElectricalPanelLayoutControl(
     mOccupiedUnselectedSlotBorderPen = wxPen(wxColor(180, 180, 180), ElementBorderThickness, wxPENSTYLE_SOLID);
     mOccupiedSelectedSlotBorderPen = wxPen(wxColor(0, 0, 0), 1, wxPENSTYLE_SOLID);
     mOccupiedSelectedSlotBorderBrush = wxBrush(wxColor(214, 254, 255), wxBRUSHSTYLE_SOLID);
-    mDropSlotBorderPen = wxPen(wxColor(230, 18, 39), ElementBorderThickness, wxPENSTYLE_SOLID);
+    mDropSlotBorderPen = wxPen(wxColor(0, 0, 0), 1, wxPENSTYLE_SOLID);
+    mDropSlotBorderBrush = wxBrush(wxColor(36, 237, 69), wxBRUSHSTYLE_SOLID);
     mShadowPen = wxPen(wxColor(156, 156, 156), 1, wxPENSTYLE_SOLID);
     mShadowBrush = wxBrush(wxColor(70, 70, 70, 80), wxBRUSHSTYLE_SOLID);
     mTransparentPen = wxPen(wxColor(0, 0, 0), 1, wxPENSTYLE_TRANSPARENT);
@@ -89,6 +92,7 @@ void ElectricalPanelLayoutControl::SetPanel(
     mElements.clear();
     mCurrentlyMovableElement.reset();
     mCurrentlySelectedElementInstanceIndex.reset();
+    mCurrentDropCandidateSlotCoordinates.reset();
 
     // Layout and populate elements
     {
@@ -139,7 +143,7 @@ void ElectricalPanelLayoutControl::SetPanel(
         // Layout
         LayoutHelper::Layout<ElectricalElementInstanceIndex>(
             layoutElements,
-            11, // TODO
+            MaxElementsPerRow,
             [this](int nCols, int nRows)
             {
                 mLayoutCols = nCols;
@@ -253,6 +257,9 @@ void ElectricalPanelLayoutControl::OnLeftMouseUp(wxMouseEvent & event)
         // No more movable element
         mCurrentlyMovableElement.reset();
 
+        // No more drop candidates
+        mCurrentDropCandidateSlotCoordinates.reset();
+
         // Render
         Refresh(false);
     }
@@ -265,6 +272,27 @@ void ElectricalPanelLayoutControl::OnMouseMove(wxMouseEvent & event)
         // Update mouse coords of currently-moving element
         mCurrentlyMovableElement->CurrentMouseCoords = event.GetPosition();
         mCurrentlyMovableElement->CurrentMouseCoords.x += GetOriginVirtualX();
+
+        // Deselect previous slot
+        mCurrentDropCandidateSlotCoordinates.reset();
+
+        // Check if we've moved on a new candidate slot
+        {
+            wxPoint const movableElementCenterCoords =
+                (mCurrentlyMovableElement->CurrentMouseCoords - mCurrentlyMovableElement->InRectAnchorMouseCoords) // Top, Left
+                + wxSize(mElementWidth / 2, mElementHeight / 2);
+
+            auto const slotCoordinates = GetSlotCoordinatesAt(movableElementCenterCoords);
+            if (slotCoordinates.has_value())
+            {
+                // Select new slot, but only if it's not the origin one
+                assert(mElements.count(mCurrentlyMovableElement->InstanceIndex) == 1);
+                if (mElements.at(mCurrentlyMovableElement->InstanceIndex).LayoutCoordinates != slotCoordinates)
+                {
+                    mCurrentDropCandidateSlotCoordinates = slotCoordinates;
+                }
+            }
+        }
 
         // Render
         Refresh(false);
@@ -310,51 +338,66 @@ void ElectricalPanelLayoutControl::Render(wxDC & dc)
 
             wxRect const slotRect = MakeDcRect(slotCoords);
 
-            // Check if this coord is occupied
-
-            auto const srchIt = std::find_if(
-                mElements.cbegin(),
-                mElements.cend(),
-                [this, &slotCoords](auto const & entry) -> bool
-                {
-                    return entry.second.LayoutCoordinates == slotCoords;
-                });
-
-            if (srchIt != mElements.cend())
+            // Check if this slot is a drop candidate
+            if (mCurrentDropCandidateSlotCoordinates.has_value()
+                && *mCurrentDropCandidateSlotCoordinates == slotCoords)
             {
-                // Occupied
-
-                if (mCurrentlySelectedElementInstanceIndex.has_value()
-                    && *mCurrentlySelectedElementInstanceIndex == srchIt->first)
-                {
-                    // Selected
-                    RenderSlot(
-                        slotRect.Inflate(SelectedSlotOffset, SelectedSlotOffset),
-                        virtualOriginX,
-                        mOccupiedSelectedSlotBorderPen,
-                        mOccupiedSelectedSlotBorderBrush,
-                        dc);
-                }
-                else
-                {
-                    // Unselected
-                    RenderSlot(
-                        slotRect,
-                        virtualOriginX,
-                        mOccupiedUnselectedSlotBorderPen,
-                        mTransparentBrush,
-                        dc);
-                }
+                // Drop candidate
+                RenderSlot(
+                    slotRect.Inflate(HighlightedSlotOffset, HighlightedSlotOffset),
+                    virtualOriginX,
+                    mDropSlotBorderPen,
+                    mDropSlotBorderBrush,
+                    dc);
             }
             else
             {
-                // Free
-                RenderSlot(
-                    slotRect,
-                    virtualOriginX,
-                    mFreeUnselectedSlotBorderPen,
-                    mTransparentBrush,
-                    dc);
+                // Check if this coord is occupied
+
+                auto const srchIt = std::find_if(
+                    mElements.cbegin(),
+                    mElements.cend(),
+                    [this, &slotCoords](auto const & entry) -> bool
+                    {
+                        return entry.second.LayoutCoordinates == slotCoords;
+                    });
+
+                if (srchIt != mElements.cend())
+                {
+                    // Occupied
+
+                    if (mCurrentlySelectedElementInstanceIndex.has_value()
+                        && *mCurrentlySelectedElementInstanceIndex == srchIt->first)
+                    {
+                        // Selected
+                        RenderSlot(
+                            slotRect.Inflate(HighlightedSlotOffset, HighlightedSlotOffset),
+                            virtualOriginX,
+                            mOccupiedSelectedSlotBorderPen,
+                            mOccupiedSelectedSlotBorderBrush,
+                            dc);
+                    }
+                    else
+                    {
+                        // Unselected
+                        RenderSlot(
+                            slotRect,
+                            virtualOriginX,
+                            mOccupiedUnselectedSlotBorderPen,
+                            mTransparentBrush,
+                            dc);
+                    }
+                }
+                else
+                {
+                    // Free
+                    RenderSlot(
+                        slotRect,
+                        virtualOriginX,
+                        mFreeUnselectedSlotBorderPen,
+                        mTransparentBrush,
+                        dc);
+                }
             }
         }
     }
@@ -499,6 +542,50 @@ wxRect ElectricalPanelLayoutControl::MakeDcRect(IntegralCoordinates const & layo
         centerOfElementVirtualCoords.y - mElementHeight / 2,
         mElementWidth,
         mElementHeight);
+}
+
+std::optional<IntegralCoordinates> ElectricalPanelLayoutControl::GetSlotCoordinatesAt(wxPoint const & virtualCoords) const
+{
+    int const slotWidth = mElementWidth + ElementHGap;
+    int const relativeVirtualCoordsX = (virtualCoords.x - (mVirtualAreaWidth / 2));
+    int const adjustedVirtualCoordsX = relativeVirtualCoordsX >= 0
+        ? relativeVirtualCoordsX + slotWidth / 2
+        : relativeVirtualCoordsX - slotWidth / 2;
+
+    IntegralCoordinates layoutCoords = IntegralCoordinates(
+        adjustedVirtualCoordsX / (mElementWidth + ElementHGap),
+        virtualCoords.y / (ElementVGap + mElementHeight + ElementVGap / 2));
+
+    if (layoutCoords.x >= -mNElementsOnEitherSide && layoutCoords.x <= mNElementsOnEitherSide
+        && MakeDcRect(layoutCoords).Contains(virtualCoords))
+    {
+        return layoutCoords;
+    }
+    else
+    {
+        return std::nullopt;
+    }
+}
+
+// TODO: needed?
+std::optional<ElectricalElementInstanceIndex> ElectricalPanelLayoutControl::GetExistingElementAt(wxPoint const & virtualCoords) const
+{
+    auto const srchIt = std::find_if(
+        mElements.cbegin(),
+        mElements.cend(),
+        [this, &virtualCoords](auto const & entry) -> bool
+        {
+            return entry.second.DcRect.has_value() && entry.second.DcRect->Contains(virtualCoords);
+        });
+
+    if (srchIt != mElements.cend())
+    {
+        return srchIt->first;
+    }
+    else
+    {
+        return std::nullopt;
+    }
 }
 
 int ElectricalPanelLayoutControl::GetOriginVirtualX() const

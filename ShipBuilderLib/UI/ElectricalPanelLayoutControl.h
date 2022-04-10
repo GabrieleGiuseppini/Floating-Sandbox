@@ -69,6 +69,10 @@ private:
 
     wxRect MakeDcRect(IntegralCoordinates const & layoutCoordinates) const;
 
+    std::optional<IntegralCoordinates> GetSlotCoordinatesAt(wxPoint const & virtualCoords) const;
+
+    std::optional<ElectricalElementInstanceIndex> GetExistingElementAt(wxPoint const & virtualCoords) const;
+
     int GetOriginVirtualX() const;
 
 private:
@@ -79,6 +83,7 @@ private:
     wxPen mOccupiedSelectedSlotBorderPen;
     wxBrush mOccupiedSelectedSlotBorderBrush;
     wxPen mDropSlotBorderPen;
+    wxBrush mDropSlotBorderBrush;
     wxPen mShadowPen;
     wxBrush mShadowBrush;
     wxPen mTransparentPen;
@@ -104,7 +109,7 @@ private:
     struct Element
     {
         IntegralCoordinates LayoutCoordinates;
-        std::optional<wxRect> DcRect;
+        std::optional<wxRect> DcRect; // Virtual coords
 
         Element(IntegralCoordinates layoutCoordinates)
             : LayoutCoordinates(layoutCoordinates)
@@ -133,6 +138,8 @@ private:
     std::optional<MovableElement> mCurrentlyMovableElement; // When set, L mouse is down
 
     std::optional<ElectricalElementInstanceIndex> mCurrentlySelectedElementInstanceIndex;
+
+    std::optional<IntegralCoordinates> mCurrentDropCandidateSlotCoordinates;
 
     // Calculated
     int mNElementsOnEitherSide; // Not including center element
