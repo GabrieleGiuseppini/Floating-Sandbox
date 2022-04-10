@@ -458,7 +458,7 @@
 		+ Addition of instanced elements
 		- Buffer restore when panel has more elements before restore
 
-- Eraser electrical: own size
++ Eraser electrical: setting for size
 
 - Normal flood tool: also display underneath element to StatusBar
 	- Also update after own edit

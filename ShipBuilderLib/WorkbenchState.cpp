@@ -54,6 +54,7 @@ WorkbenchState::WorkbenchState(MaterialDatabase const & materialDatabase)
     mCurrentToolType = ToolType::StructuralPencil;
     mStructuralPencilToolSize = 1;
     mStructuralEraserToolSize = 4;
+    mElectricalEraserToolSize = 1;
     mStructuralLineToolSize = 1;
     mStructuralLineToolIsHullMode = false;
     mStructuralFloodToolIsContiguous = true;

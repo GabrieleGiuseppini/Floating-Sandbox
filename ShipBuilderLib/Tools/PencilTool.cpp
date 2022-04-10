@@ -344,14 +344,13 @@ void PencilTool<TLayer, IsEraser>::DoEdit(ShipSpaceCoordinates const & mouseCoor
                 {
                     static_assert(TLayer == LayerType::Electrical);
 
-                    assert(applicableRect->size == ShipSpaceSize(1, 1));
-
                     if constexpr (IsEraser)
                     {
                         isAllowed = true;
                     }
                     else
                     {
+                        assert(applicableRect->size == ShipSpaceSize(1, 1));
                         isAllowed = mController.GetModelController().IsElectricalParticleAllowedAt(applicableRect->origin);
                     }
 
@@ -455,7 +454,7 @@ void PencilTool<TLayer, IsEraser>::DoTempVisualization(ShipSpaceRect const & aff
     {
         static_assert(TLayer == LayerType::Electrical);
 
-        assert(affectedRect.size == ShipSpaceSize(1, 1));
+        assert(IsEraser || affectedRect.size == ShipSpaceSize(1, 1));
         if (!IsEraser
             && !mController.GetModelController().IsElectricalParticleAllowedAt(affectedRect.origin))
         {
@@ -541,7 +540,7 @@ int PencilTool<TLayer, IsEraser>::GetPencilSize() const
         {
             static_assert(TLayer == LayerType::Electrical);
 
-            return 1;
+            return static_cast<int>(mController.GetWorkbenchState().GetElectricalEraserToolSize());
         }
     }
 }

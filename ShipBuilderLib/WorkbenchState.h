@@ -173,6 +173,16 @@ public:
         mStructuralEraserToolSize = value;
     }
 
+    std::uint32_t GetElectricalEraserToolSize() const
+    {
+        return mElectricalEraserToolSize;
+    }
+
+    void SetElectricalEraserToolSize(std::uint32_t value)
+    {
+        mElectricalEraserToolSize = value;
+    }
+
     std::uint32_t GetStructuralLineToolSize() const
     {
         return mStructuralLineToolSize;
@@ -360,6 +370,7 @@ private:
     std::optional<ToolType> mCurrentToolType;
     std::uint32_t mStructuralPencilToolSize;
     std::uint32_t mStructuralEraserToolSize;
+    std::uint32_t mElectricalEraserToolSize;
     std::uint32_t mStructuralLineToolSize;
     bool mStructuralLineToolIsHullMode;
     bool mStructuralFloodToolIsContiguous;
