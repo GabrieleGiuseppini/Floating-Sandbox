@@ -29,7 +29,7 @@ ElectricalPanelEditDialog::ElectricalPanelEditDialog(
         wxID_ANY,
         _("Electrical Panel Edit"),
         wxDefaultPosition,
-        wxSize(880, 600),
+        wxSize(880, 700),
         wxCAPTION | wxCLOSE_BOX | wxFRAME_SHAPED);
 
     SetBackgroundColour(GetDefaultAttributes().colBg);
@@ -45,7 +45,7 @@ ElectricalPanelEditDialog::ElectricalPanelEditDialog(
 
         dialogVSizer->Add(
             mListPanel,
-            2,
+            3,
             wxEXPAND | wxLEFT | wxRIGHT,
             Margin);
     }
@@ -143,10 +143,36 @@ void ElectricalPanelEditDialog::ShowModal(
     InstancedElectricalElementSet const & instancedElectricalElementSet,
     ElectricalPanelMetadata const & electricalPanelMetadata)
 {
+    //
+    // Create own electrical panel, fully populated
+    //
+
+    ElectricalPanelMetadata electricalPanel = electricalPanelMetadata;
+
+    for (auto const & elementEntry : instancedElectricalElementSet.GetElements())
+    {
+        auto [it, isInserted] = electricalPanel.try_emplace(
+            elementEntry.first,
+            ElectricalPanelElementMetadata(
+                std::nullopt,
+                elementEntry.second->MakeInstancedElementLabel(elementEntry.first),
+                false)); // Not hidden by default
+
+        // Make sure there's a label
+        if (!isInserted && !it->second.Label.has_value())
+        {
+            it->second.Label = elementEntry.second->MakeInstancedElementLabel(elementEntry.first);
+        }
+    }
+
+    //
+    // Create session
+    //
+
     mSessionData.emplace(
         controller,
         instancedElectricalElementSet,
-        electricalPanelMetadata);
+        std::move(electricalPanel));
 
     ReconciliateUI();
 
@@ -219,6 +245,8 @@ void ElectricalPanelEditDialog::ReconciliateUI()
 
     for (auto const & instancedElement : mSessionData->ElementSet.GetElements())
     {
+        assert(mSessionData->PanelMetadata.count(instancedElement.first) == 1);
+
         wxPanel * elementPanel = new wxPanel(mListPanel, wxID_ANY, wxDefaultPosition, wxSize(-1, ListPanelElementHeight), wxSIMPLE_BORDER);
 
         elementPanel->Bind(
@@ -260,29 +288,13 @@ void ElectricalPanelEditDialog::ReconciliateUI()
         {
             auto checkbox = new wxCheckBox(elementPanel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize);
 
-            {
-                bool isVisible;
-                if (auto const srchIt = mSessionData->PanelMetadata.find(instancedElement.first);
-                    srchIt != mSessionData->PanelMetadata.end())
-                {
-                    isVisible = !srchIt->second.IsHidden;
-                }
-                else
-                {
-                    isVisible = true;
-                }
-
-                checkbox->SetValue(isVisible);
-            }
+            checkbox->SetValue(!(mSessionData->PanelMetadata.at(instancedElement.first).IsHidden));
 
             checkbox->Bind(
                 wxEVT_CHECKBOX,
-                [this, instancedElementIndex = instancedElement.first](wxCommandEvent & event)
+                [this](wxCommandEvent & /*event*/)
                 {
-                    mElectricalPanel->SetElementVisible(
-                        instancedElementIndex,
-                        mSessionData->PanelMetadata.at(instancedElementIndex),
-                        event.IsChecked());
+                    mElectricalPanel->OnPanelUpdated();
                 });
 
             listElementHSizer->Add(checkbox, 0, wxALIGN_CENTER_VERTICAL, 0);
@@ -292,19 +304,9 @@ void ElectricalPanelEditDialog::ReconciliateUI()
 
         // Label
         {
-            std::optional<std::string> labelText;
-            if (auto const srchIt = mSessionData->PanelMetadata.find(instancedElement.first);
-                srchIt != mSessionData->PanelMetadata.end())
-            {
-                labelText = srchIt->second.Label;
-            }
+            assert(mSessionData->PanelMetadata.at(instancedElement.first).Label.has_value());
 
-            if (!labelText.has_value())
-            {
-                labelText = instancedElement.second->MakeInstancedElementLabel(instancedElement.first);
-            }
-
-            auto textCtrl = new wxTextCtrl(elementPanel, wxID_ANY, *labelText,
+            auto textCtrl = new wxTextCtrl(elementPanel, wxID_ANY, *mSessionData->PanelMetadata.at(instancedElement.first).Label,
                 wxDefaultPosition, wxSize(240, -1), wxTE_CENTRE);
 
             textCtrl->SetFont(instanceIndexFont);

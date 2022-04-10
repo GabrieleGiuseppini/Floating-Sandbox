@@ -34,14 +34,15 @@ public:
 
     void SetPanel(
         InstancedElectricalElementSet const & instancedElectricalElementSet,
-        ElectricalPanelMetadata const & electricalPanelMetadata);
+        ElectricalPanelMetadata & electricalPanelMetadata);
 
     void SelectElement(ElectricalElementInstanceIndex instanceIndex);
-    void SetElementVisible(ElectricalElementInstanceIndex instanceIndex, ElectricalPanelElementMetadata const & panelMetadata, bool isVisible);
+
+    void OnPanelUpdated();
 
 private:
 
-    struct Element;
+    struct LayoutSlot;
 
     void OnCloseWindow(wxCloseEvent & event);
     void OnLeftMouseDown(wxMouseEvent & event);
@@ -67,9 +68,10 @@ private:
         bool isBeingMoved,
         wxDC & dc);
 
-    void RecalculateGeometry();
+    void RecalculateLayout();
 
-    int GetOriginVirtualX() const;
+    // TODOOLD
+    //int GetOriginVirtualX() const;
 
     wxPoint ClientToVirtual(wxPoint const & clientCoords) const;
 
@@ -77,16 +79,15 @@ private:
 
     wxRect MakeSlotVirtualRect(IntegralCoordinates const & layoutCoordinates) const;
 
-    // TODOOLD
-
-
-
     std::optional<IntegralCoordinates> GetSlotCoordinatesAt(wxPoint const & virtualCoords) const;
 
+    IntegralCoordinates const & GetLayoutCoordinatesOf(ElectricalElementInstanceIndex instanceIndex) const;
+
+    /* TODOOLD
     std::optional<std::tuple<ElectricalElementInstanceIndex, Element const &>> GetExistingElementAt(wxPoint const & virtualCoords) const;
 
     std::optional<std::tuple<ElectricalElementInstanceIndex, Element const &>> GetExistingElementAt(IntegralCoordinates const & layoutCoordinates) const;
-
+    */
 
 private:
 
@@ -110,14 +111,29 @@ private:
 
 private:
 
-    bool mIsMouseCaptured;
-
     std::function<void(ElectricalElementInstanceIndex instanceIndex)> const mOnElementSelected;
 
-private:
+    //
+    // State
+    //
 
-    int mLayoutCols;
-    int mLayoutRows;
+    struct SessionData
+    {
+        InstancedElectricalElementSet const & ElementSet;
+        ElectricalPanelMetadata & ElectricalPanel;
+
+        SessionData(
+            InstancedElectricalElementSet const & elementSet,
+            ElectricalPanelMetadata & electricalPanel)
+            : ElementSet(elementSet)
+            , ElectricalPanel(electricalPanel)
+        {}
+    };
+
+    std::optional<SessionData> mSessionData;
+
+    // TODOOLD
+    /*
 
     struct Element
     {
@@ -131,6 +147,9 @@ private:
     };
 
     std::map<ElectricalElementInstanceIndex, Element> mElements;
+    */
+
+    bool mIsMouseCaptured;
 
     struct MovableElement
     {
@@ -154,9 +173,30 @@ private:
 
     std::optional<IntegralCoordinates> mCurrentDropCandidateSlotCoordinates;
 
-    // Calculated
-    int mNElementsOnEitherSide; // Not including center element
+    //
+    // Layout
+    //
+
     int mVirtualAreaWidth;
+    int mNElementsOnEitherSide; // Not including center element
+
+    struct LayoutSlot
+    {
+        // When set, there's an element here
+        std::optional<ElectricalElementInstanceIndex> OccupyingInstanceIndex;
+
+        // Virtual rect of this slot
+        wxRect SlotVirtualRect;
+
+        LayoutSlot(
+            std::optional<ElectricalElementInstanceIndex> occupyingInstanceIndex,
+            wxRect const & slotVirtualRect)
+            : OccupyingInstanceIndex(occupyingInstanceIndex)
+            , SlotVirtualRect(slotVirtualRect)
+        {}
+    };
+
+    std::map<IntegralCoordinates, LayoutSlot> mLayoutSlotsByLayoutCoordinates;
 };
 
 }

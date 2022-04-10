@@ -53,17 +53,17 @@ private:
     {
         Controller & BuilderController;
         InstancedElectricalElementSet const & ElementSet;
-        ElectricalPanelMetadata const & PanelMetadata;
+        ElectricalPanelMetadata PanelMetadata; // Own copy
 
         std::optional<ElectricalElementInstanceIndex> CurrentlySelectedElement;
 
         SessionData(
             Controller & controller,
             InstancedElectricalElementSet const & elementSet,
-            ElectricalPanelMetadata const & panelMetadata)
+            ElectricalPanelMetadata && panelMetadata)
             : BuilderController(controller)
             , ElementSet(elementSet)
-            , PanelMetadata(panelMetadata)
+            , PanelMetadata(std::move(panelMetadata))
             , CurrentlySelectedElement()
         {}
     };

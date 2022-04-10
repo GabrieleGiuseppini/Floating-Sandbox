@@ -575,6 +575,13 @@ struct _IntegralCoordinates
 #pragma pack(pop)
 
 template<typename TTag>
+inline bool operator<(_IntegralCoordinates<TTag> const & l, _IntegralCoordinates<TTag> const & r)
+{
+    return l.x < r.x
+        || (l.x == r.x && l.y < r.y);
+}
+
+template<typename TTag>
 inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, _IntegralCoordinates<TTag> const & p)
 {
     os << p.ToString();
