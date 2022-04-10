@@ -441,15 +441,17 @@
 			+ Can now assume that electrical panel always contains elements	
 		- List: reorder cols:
 			- Instance ID, label, "(material name)", visibility
-		- Hook events between List and ElectricalPanelLayoutControl:
-			= Click on list element -> highlight in LayoutControl (and list element)
-			- Click on LayoutControl -> highlight in list element (and list element, and scroll to it)
-		- Max length for label
+		+ Hook events between List and ElectricalPanelLayoutControl:
+			+ Click on list element -> highlight in LayoutControl (and list element)
+			+ Click on LayoutControl -> highlight in list element (and list element, and scroll to it)
+		+ Max length for label
 		- Final population of ElectricalPanel and delivery to Controller
 			- ElectricalPanelLayoutControl: takes ElectricalPanel& from outside and populates directly
 				- Outside makes own copy of ElectricalPanel
 
 - Normal flood tool: also display underneath element to StatusBar
+	- Also update after own edit
+	- And instance number
 
 - Texture flood tool
 	+ First off: mouse coordinates from MainFrame to Controller becomes LogicalDisplayCoords, and they're converted to ShipSpace coords where needed

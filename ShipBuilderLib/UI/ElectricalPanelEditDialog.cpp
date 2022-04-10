@@ -217,7 +217,6 @@ void ElectricalPanelEditDialog::SetListPanelSelected(ElectricalElementInstanceIn
 
     assert(mListPanelPanelsByInstanceIndex.count(selectedElement) != 0);
     auto * const panel = mListPanelPanelsByInstanceIndex[selectedElement];
-    panel->SetFocus();
     panel->SetBackgroundColour(wxColour(214, 254, 255));
 
     panel->Refresh();
@@ -254,7 +253,6 @@ void ElectricalPanelEditDialog::ReconciliateUI()
             [this, instancedElementIndex = instancedElement.first](wxMouseEvent &)
             {
                 SetListPanelSelected(instancedElementIndex);
-
                 mElectricalPanel->SelectElement(instancedElementIndex);
             });
 
@@ -289,6 +287,16 @@ void ElectricalPanelEditDialog::ReconciliateUI()
             auto checkbox = new wxCheckBox(elementPanel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize);
 
             checkbox->SetValue(!(mSessionData->PanelMetadata.at(instancedElement.first).IsHidden));
+
+            checkbox->Bind(
+                wxEVT_SET_FOCUS,
+                [this, instancedElementIndex = instancedElement.first](wxFocusEvent & event)
+                {
+                    SetListPanelSelected(instancedElementIndex);
+                    mElectricalPanel->SelectElement(instancedElementIndex);
+
+                    event.Skip();
+                });
 
             checkbox->Bind(
                 wxEVT_CHECKBOX,
@@ -335,22 +343,23 @@ void ElectricalPanelEditDialog::ReconciliateUI()
             auto textCtrl = new wxTextCtrl(elementPanel, wxID_ANY, *mSessionData->PanelMetadata.at(instancedElement.first).Label,
                 wxDefaultPosition, wxSize(240, -1), wxTE_CENTRE);
 
+            textCtrl->SetMaxLength(32);
             textCtrl->SetFont(instanceIndexFont);
 
             textCtrl->Bind(
                 wxEVT_SET_FOCUS,
-                [this, instancedElementIndex = instancedElement.first](wxFocusEvent &)
+                [this, instancedElementIndex = instancedElement.first](wxFocusEvent & event)
                 {
                     SetListPanelSelected(instancedElementIndex);
-
                     mElectricalPanel->SelectElement(instancedElementIndex);
+
+                    event.Skip();
                 });
 
             textCtrl->Bind(
                 wxEVT_TEXT,
                 [this](wxCommandEvent & event)
                 {
-                    // TODOHERE: limit length
                     // TODOHERE: update label
                     event.Skip();
                 });

@@ -23,6 +23,7 @@ int constexpr ElementVGap = 16;
 int constexpr ElementBorderThickness = 3;
 int constexpr HighlightedSlotOffset = 5;
 int constexpr ShadowOffset = 9;
+double constexpr RoundedRectangleRadius = 9.0;
 
 int constexpr ScrollbarHeight = 20;
 
@@ -394,7 +395,7 @@ void ElectricalPanelLayoutControl::RenderSlot(
 
     dc.SetPen(pen);
     dc.SetBrush(brush);
-    dc.DrawRoundedRectangle(borderDcRect, 9.0);
+    dc.DrawRoundedRectangle(borderDcRect, RoundedRectangleRadius);
 }
 
 void ElectricalPanelLayoutControl::RenderElement(
