@@ -409,8 +409,8 @@
 			+ Label
 				+ Move code that makes labels given instance index and ElectricalMaterial at ElectricalMaterial
 					+ Then would need electrical material at announcement events that SwitchboardPanel currently creates labels in
-		- LayoutHelper: deal with repeated layout coords
-		= ElectricalPanelLayoutControl
+		+ LayoutHelper: deal with repeated layout coords
+		+ ElectricalPanelLayoutControl
 			+ Make wxScrolled, and resize internals to virtual size
 				+ Min size still is own size though (GetSize() at time of need)
 			+ Crystallize element DcRect calculations in RecalculateGeometry()
@@ -438,8 +438,7 @@
 				+ Add map: LayoutCoords -> LayoutElement:
 					+ opt<InstanceIndex>
 					+ wxRect SlotVirtualRect
-			+ Can now assume that electrical panel always contains elements
-			- Merge into 1.17.1.next		
+			+ Can now assume that electrical panel always contains elements	
 		- List: reorder cols:
 			- Instance ID, label, "(material name)", visibility
 		- Hook events between List and ElectricalPanelLayoutControl:

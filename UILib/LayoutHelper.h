@@ -12,6 +12,7 @@
 #include <cassert>
 #include <functional>
 #include <optional>
+#include <set>
 #include <utility>
 #include <vector>
 
@@ -51,7 +52,8 @@ public:
         int allElementsCount = static_cast<int>(layoutElements.size());
 
         //
-        // - Split elements;
+        // - Split elements between those with coordinates ("decorated") and those without ("undecorated")
+        //      - Consider elements with conflicting coordinates as undecorated
         // - Calculate max x and y among decorated elements
         //
 
@@ -61,13 +63,16 @@ public:
         int maxDecoratedX = 0;
         int maxDecoratedY = 0;
 
+        std::set<IntegralCoordinates> knownCoordinates;
         for (auto const & element : layoutElements)
         {
-            if (!!(element.Coordinates))
+            if (element.Coordinates.has_value() && knownCoordinates.count(*element.Coordinates) == 0)
             {
                 maxDecoratedX = std::max(maxDecoratedX, abs(element.Coordinates->x));
                 maxDecoratedY = std::max(maxDecoratedY, element.Coordinates->y);
                 decoratedElements.emplace_back(element);
+
+                knownCoordinates.insert(*element.Coordinates);
             }
             else
             {

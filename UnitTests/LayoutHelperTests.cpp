@@ -374,6 +374,108 @@ TEST(LayoutHelperTests, DecoratedOnlyLayout_One_PlusOnePlusOne)
     Mock::VerifyAndClear(&handler);
 }
 
+TEST(LayoutHelperTests, DecoratedConflict_FirstSlot)
+{
+    // Prepare data
+
+    std::vector<LayoutHelper::LayoutElement<int>> elements{
+        { 1, IntegralCoordinates(-1, 0) },
+        { 2, IntegralCoordinates(-1, 0) }
+    };
+
+    // Setup expectations
+
+    MockHandler handler;
+
+    InSequence s;
+
+    EXPECT_CALL(handler, OnBegin(3, 1)).Times(1);
+
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(1), IntegralCoordinates(-1, 0))).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(2), IntegralCoordinates(0, 0))).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), IntegralCoordinates(1, 0))).Times(1);
+
+    // Layout
+
+    LayoutHelper::Layout<int>(
+        elements,
+        11,
+        handler.onBegin,
+        handler.onLayout);
+
+    // Verify
+
+    Mock::VerifyAndClear(&handler);
+}
+
+TEST(LayoutHelperTests, DecoratedConflict_MiddleSlot)
+{
+    // Prepare data
+
+    std::vector<LayoutHelper::LayoutElement<int>> elements{
+        { 1, IntegralCoordinates(0, 0) },
+        { 2, IntegralCoordinates(0, 0) }
+    };
+
+    // Setup expectations
+
+    MockHandler handler;
+
+    InSequence s;
+
+    EXPECT_CALL(handler, OnBegin(3, 1)).Times(1);
+
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(2), IntegralCoordinates(-1, 0))).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(1), IntegralCoordinates(0, 0))).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), IntegralCoordinates(1, 0))).Times(1);
+
+    // Layout
+
+    LayoutHelper::Layout<int>(
+        elements,
+        11,
+        handler.onBegin,
+        handler.onLayout);
+
+    // Verify
+
+    Mock::VerifyAndClear(&handler);
+}
+
+TEST(LayoutHelperTests, DecoratedConflict_LastSlot)
+{
+    // Prepare data
+
+    std::vector<LayoutHelper::LayoutElement<int>> elements{
+        { 1, IntegralCoordinates(1, 0) },
+        { 2, IntegralCoordinates(1, 0) }
+    };
+
+    // Setup expectations
+
+    MockHandler handler;
+
+    InSequence s;
+
+    EXPECT_CALL(handler, OnBegin(3, 1)).Times(1);
+
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(2), IntegralCoordinates(-1, 0))).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), IntegralCoordinates(0, 0))).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(1), IntegralCoordinates(1, 0))).Times(1);
+
+    // Layout
+
+    LayoutHelper::Layout<int>(
+        elements,
+        11,
+        handler.onBegin,
+        handler.onLayout);
+
+    // Verify
+
+    Mock::VerifyAndClear(&handler);
+}
+
 // Decorated, Undecorated count (IDs will start from 1000), expected width, col start, expected height, expected opt<IDs>
 class DecoratedAndUndecoratedLayoutTest : public testing::TestWithParam<
     std::tuple<
