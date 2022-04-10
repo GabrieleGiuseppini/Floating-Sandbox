@@ -21,7 +21,7 @@ int constexpr MaxElementsPerRow = 11;
 int constexpr ElementHGap = 15;
 int constexpr ElementVGap = 16;
 int constexpr ElementBorderThickness = 3;
-int constexpr HighlightedSlotOffset = 6;
+int constexpr HighlightedSlotOffset = 5;
 int constexpr ShadowOffset = 9;
 
 int constexpr ScrollbarHeight = 20;
@@ -52,11 +52,11 @@ ElectricalPanelLayoutControl::ElectricalPanelLayoutControl(
         wxID_ANY,
         wxDefaultPosition,
         size,
-        wxBORDER_SIMPLE | wxHSCROLL | wxALWAYS_SHOW_SB);
+        wxBORDER_SIMPLE | wxHSCROLL);
 
     SetMinSize(size);
 
-    SetScrollRate(1, 0);
+    SetScrollRate(10, 0);
 
     // Bind paint
     Bind(wxEVT_PAINT, &ElectricalPanelLayoutControl::OnPaint, this);
@@ -100,6 +100,8 @@ void ElectricalPanelLayoutControl::SetPanel(ElectricalPanelMetadata & electrical
     mCurrentDropCandidateSlotCoordinates.reset();
 
     RecalculateLayout();
+
+    ScrollToCenter();
 
     // Render
     Refresh(false);
@@ -254,6 +256,8 @@ void ElectricalPanelLayoutControl::OnMouseMove(wxMouseEvent & event)
 void ElectricalPanelLayoutControl::OnResized(wxSizeEvent & /*event*/)
 {
     RecalculateLayout();
+
+    ScrollToCenter();
 }
 
 void ElectricalPanelLayoutControl::OnPaint(wxPaintEvent & /*event*/)
@@ -390,7 +394,7 @@ void ElectricalPanelLayoutControl::RenderSlot(
 
     dc.SetPen(pen);
     dc.SetBrush(brush);
-    dc.DrawRectangle(borderDcRect);
+    dc.DrawRoundedRectangle(borderDcRect, 9.0);
 }
 
 void ElectricalPanelLayoutControl::RenderElement(
@@ -433,6 +437,22 @@ void ElectricalPanelLayoutControl::RenderElement(
         instanceIndexText,
         centerX - instanceIndexTextSize.GetWidth() / 2,
         elementDcRect.GetTop() + elementDcRect.GetHeight() / 2 - instanceIndexTextSize.GetHeight() / 2);
+}
+
+void ElectricalPanelLayoutControl::ScrollToCenter()
+{
+    int xUnit, yUnit;
+    GetScrollPixelsPerUnit(&xUnit, &yUnit);
+    if (xUnit != 0)
+    {
+        int const amountToScroll = std::max(
+            mVirtualAreaWidth / 2 - GetSize().GetWidth() / 2,
+            0);
+
+        Scroll(
+            amountToScroll / xUnit,
+            -1);
+    }
 }
 
 void ElectricalPanelLayoutControl::RecalculateLayout()
@@ -491,7 +511,7 @@ void ElectricalPanelLayoutControl::RecalculateLayout()
             {
                 // Calculate virtual size
                 int const requiredWidth = nCols * mElementWidth + (nCols + 1) * ElementHGap;
-                mVirtualAreaWidth = std::max(requiredWidth, GetSize().GetWidth());
+                mVirtualAreaWidth = std::max(requiredWidth, GetSize().GetWidth() - 2);
                 SetVirtualSize(mVirtualAreaWidth, mPanelHeight);
 
                 // Calculate extent
@@ -535,25 +555,6 @@ void ElectricalPanelLayoutControl::RecalculateLayout()
                 }
             });
     }
-
-    //
-    // Scroll to H center
-    //
-
-    {
-        int xUnit, yUnit;
-        GetScrollPixelsPerUnit(&xUnit, &yUnit);
-        if (xUnit != 0)
-        {
-            int const amountToScroll = std::max(
-                mVirtualAreaWidth / 2 - GetSize().GetWidth() / 2,
-                0);
-
-            Scroll(
-                amountToScroll / xUnit,
-                -1);
-        }
-    }
 }
 
 wxPoint ElectricalPanelLayoutControl::ClientToVirtual(wxPoint const & clientCoords) const
@@ -594,6 +595,7 @@ std::optional<IntegralCoordinates> ElectricalPanelLayoutControl::GetSlotCoordina
         virtualCoords.y / (ElementVGap + mElementHeight + ElementVGap / 2));
 
     if (layoutCoords.x >= -mNElementsOnEitherSide && layoutCoords.x <= mNElementsOnEitherSide
+        && layoutCoords.y >= 0 && layoutCoords.y <= 1
         && MakeSlotVirtualRect(layoutCoords).Contains(virtualCoords))
     {
         return layoutCoords;

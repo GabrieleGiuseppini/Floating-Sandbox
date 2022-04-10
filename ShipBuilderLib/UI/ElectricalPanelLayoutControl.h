@@ -66,6 +66,8 @@ private:
         bool isBeingMoved,
         wxDC & dc);
 
+    void ScrollToCenter();
+
     void RecalculateLayout();
 
     wxPoint ClientToVirtual(wxPoint const & clientCoords) const;

@@ -449,6 +449,8 @@
 			- ElectricalPanelLayoutControl: takes ElectricalPanel& from outside and populates directly
 				- Outside makes own copy of ElectricalPanel
 
+- Normal flood tool: also display underneath element to StatusBar
+
 - Texture flood tool
 	+ First off: mouse coordinates from MainFrame to Controller becomes LogicalDisplayCoords, and they're converted to ShipSpace coords where needed
 	- Conversion to texture coords: done by View & ViewModel, exactly like conversion to ShipSpaceCoords, and invoked by texture tool(s)
