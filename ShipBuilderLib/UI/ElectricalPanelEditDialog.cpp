@@ -294,15 +294,29 @@ void ElectricalPanelEditDialog::ReconciliateUI()
                 wxEVT_CHECKBOX,
                 [this, instancedElementIndex = instancedElement.first](wxCommandEvent & event)
                 {
-                    bool const isHidden = !(event.IsChecked());
+                    bool const isVisible = event.IsChecked();
 
                     assert(mSessionData.has_value());
-                    mSessionData->PanelMetadata.at(instancedElementIndex).IsHidden = isHidden;
-                    if (isHidden)
+                    assert(mSessionData->PanelMetadata.count(instancedElementIndex) == 1);
+                    ElectricalPanelElementMetadata & panelElement = mSessionData->PanelMetadata.at(instancedElementIndex);
+
+                    panelElement.IsHidden = !isVisible;
+
+                    if (isVisible)
                     {
-                        // Also clear position
-                        // TODOTEST
-                        //mSessionData->PanelMetadata.at(instancedElementIndex).PanelCoordinates.reset();
+                        // This element just became visible, so check if its layout coordinates
+                        // conflict with another visible element
+                        for (auto const & otherElement : mSessionData->PanelMetadata)
+                        {
+                            if (otherElement.first != instancedElementIndex
+                                && otherElement.second.PanelCoordinates == panelElement.PanelCoordinates
+                                && !otherElement.second.IsHidden)
+                            {
+                                // Conflict...
+                                // ...zero out this element's layout coords
+                                panelElement.PanelCoordinates.reset();
+                            }
+                        }
                     }
 
                     // Notify control
