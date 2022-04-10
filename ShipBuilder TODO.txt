@@ -417,13 +417,11 @@
 			+ List auto-scroll
 				+ SetPanel should also take "master list" (element set)
 			+ Fix H scrolling
-			= Actual element drawing
+			+ Actual element drawing
 				+ Image
 					+ Find new image
 				+ Instance index
-				- Label
 				+ Shadow
-			- Label changes
 			- Visibility changes
 			+ Mouse workflow
 				+ Mouse capture
@@ -431,9 +429,18 @@
 				+ Drop candidate green
 				+ Drop (set / swap)
 			+ Vertical guide at x=0
+			- TODOTEST: rearc 1:
+				- ClientToVirtual(wxPoint) -> wxPoint
+				- MakeSlotVirtualRect
+				- Replace mElements with ElectricalPanelMetadata&
+				- Add map: LayoutCoords -> LayoutElement:
+					- opt<InstanceIndex>
+					- wxRect SlotVirtualRect
 		- Hook events between List and ElectricalPanelLayoutControl:
 			= Click on list element -> highlight in LayoutControl (and list element)
 			- Click on LayoutControl -> highlight in list element (and list element, and scroll to it)
+		- Final population of ElectricalPanel and delivery to Controller
+			- ElectricalPanelLayoutControl: takes ElectricalPanel& from outside and populates directly?
 
 - Texture flood tool
 	+ First off: mouse coordinates from MainFrame to Controller becomes LogicalDisplayCoords, and they're converted to ShipSpace coords where needed

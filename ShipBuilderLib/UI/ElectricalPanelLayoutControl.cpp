@@ -215,7 +215,7 @@ void ElectricalPanelLayoutControl::OnLeftMouseDown(wxMouseEvent & event)
     wxPoint mouseCoords = event.GetPosition();
     mouseCoords.x += GetOriginVirtualX();
 
-    // Find instance index, if any
+    // Find instance index of element at this location, if any
     auto const existingElementEntry = GetExistingElementAt(mouseCoords);
     if (existingElementEntry.has_value())
     {
