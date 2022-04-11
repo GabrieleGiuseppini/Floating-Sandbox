@@ -441,6 +441,9 @@
 			+ Can now assume that electrical panel always contains elements	
 		- List: reorder cols:
 			- Instance ID, label, "(material name)", visibility
+		- Replace visibility checkbox with wxBitmapToggleButton with eye/crossed eye icon
+		- Should be able to select empty slot
+		- Try shadow with bitmap
 		+ Hook events between List and ElectricalPanelLayoutControl:
 			+ Click on list element -> highlight in LayoutControl (and list element)
 			+ Click on LayoutControl -> highlight in list element (and list element, and scroll to it)
@@ -459,6 +462,7 @@
 		- Buffer restore when panel has more elements before restore
 
 + Eraser electrical: setting for size
+- Redo icon for CoM using new marker?
 
 - Normal flood tool: also display underneath element to StatusBar
 	- Also update after own edit

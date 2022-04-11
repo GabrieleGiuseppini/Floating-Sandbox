@@ -45,7 +45,7 @@ ElectricalPanelEditDialog::ElectricalPanelEditDialog(
 
         dialogVSizer->Add(
             mListPanel,
-            3,
+            1, // Occupy all available V space
             wxEXPAND | wxLEFT | wxRIGHT,
             Margin);
     }
@@ -95,7 +95,7 @@ ElectricalPanelEditDialog::ElectricalPanelEditDialog(
 
         dialogVSizer->Add(
             mElectricalPanel,
-            1,
+            0, // Maintain own height
             wxEXPAND | wxLEFT | wxRIGHT,
             Margin);
     }
