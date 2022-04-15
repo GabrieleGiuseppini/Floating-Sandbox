@@ -415,6 +415,7 @@ void ElectricalPanelLayoutControl::RenderElement(
     if (isBeingMoved)
     {
         // Shadow
+
         wxPoint const topLeftShadow =
             wxPoint(
                 elementDcRect.x + elementDcRect.width / 2 + ShadowOffset / 2,
@@ -422,12 +423,7 @@ void ElectricalPanelLayoutControl::RenderElement(
             - wxSize(
                 mElementShadowBitmap.GetWidth() / 2,
                 mElementShadowBitmap.GetHeight() / 2);
-        // TODOOLD
-        ////wxRect shadowRect = elementDcRect;
-        ////shadowRect.Offset(ShadowOffset / 2, ShadowOffset / 2);
-        ////dc.SetPen(mShadowPen);
-        ////dc.SetBrush(mShadowBrush);
-        ////dc.DrawRectangle(shadowRect);
+
         dc.DrawBitmap(
             mElementShadowBitmap,
             topLeftShadow,
