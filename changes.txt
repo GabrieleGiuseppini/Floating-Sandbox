@@ -14,6 +14,8 @@
 - ShipBuilder:
 	- Added "Measuring Tape" tool, which allows to measure lengths of structures
 	- Added "Waterline Analysis", predicting whether a ship will float or sink, and where the waterline is going to be
+	- Added electrical panel customization
+		- Can now position the interactive elements as will, change their labels, and decide whether they should be visible or not 
 	- Added ability to rotate ship by 90 degress
 	- Added ability to import layers from other ships
 	- Adding and removing layers can now be undone via "Undo"
