@@ -51,7 +51,7 @@ WorkbenchState::WorkbenchState(MaterialDatabase const & materialDatabase)
     // Default tool settings
     //
 
-    mCurrentToolType = ToolType::StructuralPencil;
+    mCurrentToolType = GetDefaultToolType();
     mStructuralPencilToolSize = 1;
     mStructuralEraserToolSize = 4;
     mElectricalEraserToolSize = 1;
@@ -63,7 +63,7 @@ WorkbenchState::WorkbenchState(MaterialDatabase const & materialDatabase)
     // Default visualization settings
     //
 
-    mPrimaryVisualization = VisualizationType::Game;
+    mPrimaryVisualization = GetDefaultPrimaryVisualization();
     mGameVisualizationMode = GameVisualizationModeType::AutoTexturizationMode; // Will be changed (by Controller) to Texture when loading a ship with texture
     mStructuralLayerVisualizationMode = StructuralLayerVisualizationModeType::PixelMode;
     mElectricalLayerVisualizationMode = ElectricalLayerVisualizationModeType::PixelMode;

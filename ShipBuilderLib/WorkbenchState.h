@@ -143,6 +143,11 @@ public:
     // Tools
     //
 
+    static ToolType constexpr GetDefaultToolType()
+    {
+        return ToolType::StructuralPencil;
+    }
+
     std::optional<ToolType> GetCurrentToolType() const
     {
         return mCurrentToolType;
@@ -216,6 +221,11 @@ public:
     //
     // Visualizations
     //
+
+    static VisualizationType constexpr GetDefaultPrimaryVisualization()
+    {
+        return VisualizationType::Game;
+    }
 
     VisualizationType GetPrimaryVisualization() const
     {

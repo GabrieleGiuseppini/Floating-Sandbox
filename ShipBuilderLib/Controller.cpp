@@ -127,6 +127,12 @@ Controller::Controller(
     // Initialize visualization
     //
 
+    // Switch primary viz to default if it's not compatible with current layer presence
+    if (!mModelController->HasLayer(VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization())))
+    {
+        InternalSelectPrimaryVisualization(WorkbenchState::GetDefaultPrimaryVisualization()); // Will also change tool
+    }
+
     // Initialize layer visualizations
     InternalReconciliateTextureVisualizationMode();
     InternalUpdateModelControllerVisualizationModes();
@@ -1370,7 +1376,7 @@ void Controller::WrapLikelyLayerPresenceChangingOperation(TFunctor operation)
             // Switch primary viz to default if it was about this layer
             if (VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization()) == TLayerType)
             {
-                InternalSelectPrimaryVisualization(VisualizationType::Game); // Will also change tool
+                InternalSelectPrimaryVisualization(WorkbenchState::GetDefaultPrimaryVisualization()); // Will also change tool
             }
 
             if constexpr (TLayerType == LayerType::Texture)
