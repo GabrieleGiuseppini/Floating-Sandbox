@@ -255,6 +255,7 @@ void Controller::SetElectricalPanelMetadata(ElectricalPanelMetadata panelMetadat
 
     InternalSetElectricalPanelMetadata(std::move(panelMetadata));
 
+    mModelController->SetLayerDirty(LayerType::Electrical);
     mUserInterface.OnModelDirtyChanged(*mModelController);
 
     //

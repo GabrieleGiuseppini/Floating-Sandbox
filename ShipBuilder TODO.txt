@@ -439,19 +439,17 @@
 					+ opt<InstanceIndex>
 					+ wxRect SlotVirtualRect
 			+ Can now assume that electrical panel always contains elements	
-		- List: reorder cols:
-			- Instance ID, label, "(material name)", visibility
+		+ List: reorder cols:
+			+ Instance ID, label, "(material name)", visibility
 		+ Replace visibility checkbox with wxBitmapToggleButton with eye/crossed eye icon
 		- Try shadow with bitmap
 		+ Hook events between List and ElectricalPanelLayoutControl:
 			+ Click on list element -> highlight in LayoutControl (and list element)
 			+ Click on LayoutControl -> highlight in list element (and list element, and scroll to it)
 		+ Max length for label
-		= Final population of ElectricalPanel and delivery to Controller
+		+ Final population of ElectricalPanel and delivery to Controller
 			+ ElectricalPanelLayoutControl: takes ElectricalPanel& from outside and populates directly
-			- Dialog: populate only if dirty
-				- See why we don't see it's dirty when leaving sb after changing panel
-		- Redo layout at each element being made invisible? In other words: fix thing when afte making things invisible, the panel reorders itself at a lyout (e.g. after moving an element)?
+			+ Dialog: populate only if dirty
 		+ ModelController: WriteParticle(electrical): take care of panel
 	- Tests:
 		- Saved and reloaded matches
@@ -463,7 +461,7 @@
 		- Buffer restore when panel has more elements before restore
 
 + Eraser electrical: setting for size
-- Redo icon for CoM using new marker
++ Redo icon for CoM using new marker
 
 - Normal flood tool: also display underneath element to StatusBar
 	- Also update after own edit

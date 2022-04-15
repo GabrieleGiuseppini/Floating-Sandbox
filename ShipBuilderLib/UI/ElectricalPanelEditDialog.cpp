@@ -268,7 +268,7 @@ void ElectricalPanelEditDialog::ReconciliateUI()
 
         wxBoxSizer * listElementHSizer = new wxBoxSizer(wxHORIZONTAL);
 
-        listElementHSizer->AddSpacer(10);
+        listElementHSizer->AddSpacer(30);
 
         // Instance ID
         {
@@ -279,11 +279,47 @@ void ElectricalPanelEditDialog::ReconciliateUI()
             listElementHSizer->Add(label, 0, wxALIGN_CENTER_VERTICAL, 0);
         }
 
-        listElementHSizer->AddSpacer(10);
+        listElementHSizer->AddStretchSpacer(1);
+
+        // Label
+        {
+            assert(mSessionData->PanelMetadata.at(instancedElementIndex).Label.has_value());
+
+            auto textCtrl = new wxTextCtrl(elementPanel, wxID_ANY, *mSessionData->PanelMetadata.at(instancedElementIndex).Label,
+                wxDefaultPosition, wxSize(240, -1), wxTE_CENTRE);
+
+            textCtrl->SetMaxLength(32);
+            textCtrl->SetFont(instanceIndexFont);
+
+            textCtrl->Bind(
+                wxEVT_SET_FOCUS,
+                [this, instancedElementIndex](wxFocusEvent & event)
+                {
+                    SetListPanelSelected(instancedElementIndex);
+                    mElectricalPanel->SelectElement(instancedElementIndex);
+
+                    event.Skip();
+                });
+
+            textCtrl->Bind(
+                wxEVT_TEXT,
+                [this, instancedElementIndex](wxCommandEvent & event)
+                {
+                    assert(mSessionData.has_value());
+                    assert(mSessionData->PanelMetadata.count(instancedElementIndex) == 1);
+                    mSessionData->PanelMetadata.at(instancedElementIndex).Label = event.GetString();
+
+                    event.Skip();
+                });
+
+            listElementHSizer->Add(textCtrl, 0, wxALIGN_CENTER_VERTICAL, 0);
+        }
+
+        listElementHSizer->AddSpacer(20);
 
         // Material name
         {
-            auto label = new wxStaticText(elementPanel, wxID_ANY, instancedElement.second->Name, wxDefaultPosition, wxSize(240, -1), wxALIGN_LEFT);
+            auto label = new wxStaticText(elementPanel, wxID_ANY, "(" + instancedElement.second->Name + ")", wxDefaultPosition, wxSize(240, -1), wxALIGN_LEFT);
 
             label->SetFont(instanceIndexFont);
 
@@ -324,43 +360,7 @@ void ElectricalPanelEditDialog::ReconciliateUI()
             listElementHSizer->Add(tglButton, 0, wxALIGN_CENTER_VERTICAL, 0);
         }
 
-        listElementHSizer->AddSpacer(20);
-
-        // Label
-        {
-            assert(mSessionData->PanelMetadata.at(instancedElementIndex).Label.has_value());
-
-            auto textCtrl = new wxTextCtrl(elementPanel, wxID_ANY, *mSessionData->PanelMetadata.at(instancedElementIndex).Label,
-                wxDefaultPosition, wxSize(240, -1), wxTE_CENTRE);
-
-            textCtrl->SetMaxLength(32);
-            textCtrl->SetFont(instanceIndexFont);
-
-            textCtrl->Bind(
-                wxEVT_SET_FOCUS,
-                [this, instancedElementIndex](wxFocusEvent & event)
-                {
-                    SetListPanelSelected(instancedElementIndex);
-                    mElectricalPanel->SelectElement(instancedElementIndex);
-
-                    event.Skip();
-                });
-
-            textCtrl->Bind(
-                wxEVT_TEXT,
-                [this, instancedElementIndex](wxCommandEvent & event)
-                {
-                    assert(mSessionData.has_value());
-                    assert(mSessionData->PanelMetadata.count(instancedElementIndex) == 1);
-                    mSessionData->PanelMetadata.at(instancedElementIndex).Label = event.GetString();
-
-                    event.Skip();
-                });
-
-            listElementHSizer->Add(textCtrl, 0, wxALIGN_CENTER_VERTICAL, 0);
-        }
-
-        listElementHSizer->AddSpacer(10);
+        listElementHSizer->AddSpacer(30);
 
         elementPanel->SetSizer(listElementHSizer);
 
@@ -384,6 +384,8 @@ void ElectricalPanelEditDialog::ReconciliateUI()
     //
     // Finalize
     //
+
+    mElectricalPanel->SetFocus(); // Move focus away from list panel
 
     Layout();
 }
