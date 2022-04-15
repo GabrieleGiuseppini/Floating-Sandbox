@@ -147,6 +147,7 @@ typename SamplerTool<TLayer>::LayerMaterialType const * SamplerTool<TLayer>::Sam
     }
     else
     {
+        static_assert(TLayer == LayerType::Ropes);
         return mController.GetModelController().SampleRopesMaterialAt(mouseCoordinates);
     }
 }
