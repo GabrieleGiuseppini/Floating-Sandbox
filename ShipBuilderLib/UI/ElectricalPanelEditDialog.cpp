@@ -5,6 +5,8 @@
  ***************************************************************************************/
 #include "UI/ElectricalPanelEditDialog.h"
 
+#include <UILib/WxHelpers.h>
+
 #include <GameCore/Log.h>
 
 #include <wx/button.h>
@@ -12,6 +14,7 @@
 #include <wx/sizer.h>
 #include <wx/stattext.h>
 #include <wx/textctrl.h>
+#include <wx/tglbtn.h>
 #include <wx/wupdlock.h>
 
 namespace ShipBuilder {
@@ -21,6 +24,8 @@ int constexpr ListPanelElementHeight = 40;
 ElectricalPanelEditDialog::ElectricalPanelEditDialog(
     wxWindow * parent,
     ResourceLocator const & resourceLocator)
+    : mVisibleBitmap(WxHelpers::LoadBitmap("visible_icon_medium", resourceLocator))
+    , mInvisibleBitmap(WxHelpers::LoadBitmap("invisible_icon_medium", resourceLocator))
 {
     int constexpr Margin = 20;
 
@@ -41,6 +46,7 @@ ElectricalPanelEditDialog::ElectricalPanelEditDialog(
     // List panel
     {
         mListPanel = new wxScrolled<wxPanel>(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_SIMPLE | wxVSCROLL);
+        mListPanel->SetBackgroundColour(*wxWHITE);
         mListPanel->SetScrollRate(0, 5);
 
         dialogVSizer->Add(
@@ -211,7 +217,7 @@ void ElectricalPanelEditDialog::SetListPanelSelected(ElectricalElementInstanceIn
     {
         assert(mListPanelPanelsByInstanceIndex.count(*mSessionData->CurrentlySelectedElement) != 0);
 
-        mListPanelPanelsByInstanceIndex[*mSessionData->CurrentlySelectedElement]->SetBackgroundColour(GetDefaultAttributes().colBg);
+        mListPanelPanelsByInstanceIndex[*mSessionData->CurrentlySelectedElement]->SetBackgroundColour(mListPanel->GetBackgroundColour());
         mListPanelPanelsByInstanceIndex[*mSessionData->CurrentlySelectedElement]->Refresh();
     }
 
@@ -219,7 +225,7 @@ void ElectricalPanelEditDialog::SetListPanelSelected(ElectricalElementInstanceIn
 
     assert(mListPanelPanelsByInstanceIndex.count(selectedElement) != 0);
     auto * const panel = mListPanelPanelsByInstanceIndex[selectedElement];
-    panel->SetBackgroundColour(wxColour(214, 254, 255));
+    panel->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_GRADIENTINACTIVECAPTION));
 
     panel->Refresh();
 
@@ -286,39 +292,36 @@ void ElectricalPanelEditDialog::ReconciliateUI()
 
         listElementHSizer->AddStretchSpacer(1);
 
-        // Visibility checkbox
+        // Visibility toggle
         {
-            auto checkbox = new wxCheckBox(elementPanel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize);
+            auto tglButton = new wxBitmapToggleButton(elementPanel, wxID_ANY, mInvisibleBitmap, wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
+            tglButton->SetBitmapPressed(mVisibleBitmap);
 
-            checkbox->SetValue(!(mSessionData->PanelMetadata.at(instancedElementIndex).IsHidden));
+            tglButton->SetValue(!(mSessionData->PanelMetadata.at(instancedElementIndex).IsHidden));
 
-            checkbox->Bind(
-                wxEVT_SET_FOCUS,
-                [this, instancedElementIndex](wxFocusEvent & event)
-                {
-                    SetListPanelSelected(instancedElementIndex);
-                    mElectricalPanel->SelectElement(instancedElementIndex);
-
-                    event.Skip();
-                });
-
-            checkbox->Bind(
-                wxEVT_CHECKBOX,
+            tglButton->Bind(
+                wxEVT_TOGGLEBUTTON,
                 [this, instancedElementIndex](wxCommandEvent & event)
                 {
                     bool const isVisible = event.IsChecked();
 
+                    if (isVisible)
+                    {
+                        SetListPanelSelected(instancedElementIndex);
+                        mElectricalPanel->SelectElement(instancedElementIndex);
+                    }
+
+                    // Update visibility
                     assert(mSessionData.has_value());
                     assert(mSessionData->PanelMetadata.count(instancedElementIndex) == 1);
                     ElectricalPanelElementMetadata & panelElement = mSessionData->PanelMetadata.at(instancedElementIndex);
-
                     panelElement.IsHidden = !isVisible;
 
-                    // Notify control
+                    // Notify control of visibility change
                     mElectricalPanel->OnPanelUpdated();
                 });
 
-            listElementHSizer->Add(checkbox, 0, wxALIGN_CENTER_VERTICAL, 0);
+            listElementHSizer->Add(tglButton, 0, wxALIGN_CENTER_VERTICAL, 0);
         }
 
         listElementHSizer->AddSpacer(20);

@@ -55,6 +55,8 @@ ElectricalPanelLayoutControl::ElectricalPanelLayoutControl(
         size,
         wxBORDER_SIMPLE | wxHSCROLL);
 
+    SetBackgroundColour(*wxWHITE);
+
     SetMinSize(size);
 
     SetScrollRate(10, 0);
@@ -72,9 +74,10 @@ ElectricalPanelLayoutControl::ElectricalPanelLayoutControl(
     mFreeUnselectedSlotBorderPen = wxPen(wxColor(180, 180, 180), ElementBorderThickness, wxPENSTYLE_SOLID);
     mOccupiedUnselectedSlotBorderPen = wxPen(wxColor(180, 180, 180), ElementBorderThickness, wxPENSTYLE_SOLID);
     mOccupiedSelectedSlotBorderPen = wxPen(wxColor(0, 0, 0), 1, wxPENSTYLE_SOLID);
-    mOccupiedSelectedSlotBorderBrush = wxBrush(wxColor(214, 254, 255), wxBRUSHSTYLE_SOLID);
+    mOccupiedSelectedSlotBorderBrush = wxBrush(wxSystemSettings::GetColour(wxSYS_COLOUR_GRADIENTINACTIVECAPTION), wxBRUSHSTYLE_SOLID);
     mDropSlotBorderPen = wxPen(wxColor(0, 0, 0), 1, wxPENSTYLE_SOLID);
-    mDropSlotBorderBrush = wxBrush(wxColor(36, 237, 69), wxBRUSHSTYLE_SOLID);
+    mDropSlotBorderBrush = wxBrush(wxColor(138, 235, 145), wxBRUSHSTYLE_SOLID);
+
     mShadowPen = wxPen(wxColor(156, 156, 156), 1, wxPENSTYLE_SOLID);
     mShadowBrush = wxBrush(wxColor(70, 70, 70, 80), wxBRUSHSTYLE_SOLID);
     mTransparentPen = wxPen(wxColor(0, 0, 0), 1, wxPENSTYLE_TRANSPARENT);

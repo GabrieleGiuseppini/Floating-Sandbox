@@ -13,6 +13,7 @@
 #include <Game/Layers.h>
 #include <Game/ResourceLocator.h>
 
+#include <wx/bitmap.h>
 #include <wx/dialog.h>
 #include <wx/scrolwin.h>
 
@@ -45,6 +46,8 @@ private:
 
 private:
 
+    wxBitmap mVisibleBitmap;
+    wxBitmap mInvisibleBitmap;
     wxScrolled<wxPanel> * mListPanel;
     std::map<ElectricalElementInstanceIndex, wxPanel *> mListPanelPanelsByInstanceIndex;
     ElectricalPanelLayoutControl * mElectricalPanel;
