@@ -279,6 +279,16 @@ void ElectricalPanelEditDialog::ReconciliateUI()
 
             label->SetFont(instanceIndexFont);
 
+            label->Bind(
+                wxEVT_LEFT_DOWN,
+                [this, instancedElementIndex](wxMouseEvent & event)
+                {
+                    SetListPanelSelected(instancedElementIndex);
+                    mElectricalPanel->SelectElement(instancedElementIndex);
+
+                    event.Skip();
+                });
+
             listElementHSizer->Add(label, 0, wxALIGN_CENTER_VERTICAL, 0);
         }
 
@@ -328,6 +338,16 @@ void ElectricalPanelEditDialog::ReconciliateUI()
             auto label = new wxStaticText(elementPanel, wxID_ANY, "(" + instancedElement.second->Name + ")", wxDefaultPosition, wxSize(240, -1), wxALIGN_LEFT);
 
             label->SetFont(instanceIndexFont);
+
+            label->Bind(
+                wxEVT_LEFT_DOWN,
+                [this, instancedElementIndex](wxMouseEvent & event)
+                {
+                    SetListPanelSelected(instancedElementIndex);
+                    mElectricalPanel->SelectElement(instancedElementIndex);
+
+                    event.Skip();
+                });
 
             listElementHSizer->Add(label, 0, wxALIGN_CENTER_VERTICAL, 0);
         }
