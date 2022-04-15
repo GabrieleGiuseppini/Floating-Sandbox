@@ -32,6 +32,7 @@ ElectricalPanelLayoutControl::ElectricalPanelLayoutControl(
     std::function<void(ElectricalElementInstanceIndex instanceIndex)> onElementSelected,
     ResourceLocator const & resourceLocator)
     : mElementBitmap(WxHelpers::LoadBitmap("electrical_panel_edit_element", resourceLocator))
+    , mElementShadowBitmap(WxHelpers::LoadBitmap("electrical_panel_edit_element_shadow", resourceLocator))
     , mElementWidth(mElementBitmap.GetWidth())
     , mElementHeight(mElementBitmap.GetHeight())
     , mPanelHeight((ElementVGap)+(mElementHeight)+(ElementVGap)+(mElementHeight)+(ElementVGap)+ScrollbarHeight)
@@ -77,9 +78,6 @@ ElectricalPanelLayoutControl::ElectricalPanelLayoutControl(
     mOccupiedSelectedSlotBorderBrush = wxBrush(wxSystemSettings::GetColour(wxSYS_COLOUR_GRADIENTINACTIVECAPTION), wxBRUSHSTYLE_SOLID);
     mDropSlotBorderPen = wxPen(wxColor(0, 0, 0), 1, wxPENSTYLE_SOLID);
     mDropSlotBorderBrush = wxBrush(wxColor(138, 235, 145), wxBRUSHSTYLE_SOLID);
-
-    mShadowPen = wxPen(wxColor(156, 156, 156), 1, wxPENSTYLE_SOLID);
-    mShadowBrush = wxBrush(wxColor(70, 70, 70, 80), wxBRUSHSTYLE_SOLID);
     mTransparentPen = wxPen(wxColor(0, 0, 0), 1, wxPENSTYLE_TRANSPARENT);
     mTransparentBrush = wxBrush(wxColor(0, 0, 0), wxBRUSHSTYLE_TRANSPARENT);
     mInstanceIndexFont = wxFont(wxFontInfo(7));
@@ -209,6 +207,9 @@ void ElectricalPanelLayoutControl::OnLeftMouseUp(wxMouseEvent & /*event*/)
             mLayoutSlotsByLayoutCoordinates.at(*mCurrentDropCandidateSlotCoordinates).OccupyingInstanceIndex = mCurrentlyMovableElement->InstanceIndex;
 
             RecalculateLayout();
+
+            // Remember we're dirty
+            mSessionData->IsDirty = true;
         }
 
         // No more movable element
@@ -414,11 +415,23 @@ void ElectricalPanelLayoutControl::RenderElement(
     if (isBeingMoved)
     {
         // Shadow
-        wxRect shadowRect = elementDcRect;
-        shadowRect.Offset(ShadowOffset / 2, ShadowOffset / 2);
-        dc.SetPen(mShadowPen);
-        dc.SetBrush(mShadowBrush);
-        dc.DrawRectangle(shadowRect);
+        wxPoint const topLeftShadow =
+            wxPoint(
+                elementDcRect.x + elementDcRect.width / 2 + ShadowOffset / 2,
+                elementDcRect.y + elementDcRect.height / 2 + ShadowOffset / 2) // Center
+            - wxSize(
+                mElementShadowBitmap.GetWidth() / 2,
+                mElementShadowBitmap.GetHeight() / 2);
+        // TODOOLD
+        ////wxRect shadowRect = elementDcRect;
+        ////shadowRect.Offset(ShadowOffset / 2, ShadowOffset / 2);
+        ////dc.SetPen(mShadowPen);
+        ////dc.SetBrush(mShadowBrush);
+        ////dc.DrawRectangle(shadowRect);
+        dc.DrawBitmap(
+            mElementShadowBitmap,
+            topLeftShadow,
+            true);
 
         // Counter-offset element
         elementDcRect.Offset(-ShadowOffset / 2, -ShadowOffset / 2);

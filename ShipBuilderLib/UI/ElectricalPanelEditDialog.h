@@ -59,6 +59,7 @@ private:
         ElectricalPanelMetadata PanelMetadata; // Own copy
 
         std::optional<ElectricalElementInstanceIndex> CurrentlySelectedElement;
+        bool IsListPanelDirty;
 
         SessionData(
             Controller & controller,
@@ -68,6 +69,7 @@ private:
             , ElementSet(elementSet)
             , PanelMetadata(std::move(panelMetadata))
             , CurrentlySelectedElement()
+            , IsListPanelDirty(false)
         {}
     };
 

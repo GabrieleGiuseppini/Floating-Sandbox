@@ -32,6 +32,12 @@ public:
         std::function<void(ElectricalElementInstanceIndex instanceIndex)> onElementSelected,
         ResourceLocator const & resourceLocator);
 
+    bool IsDirty() const
+    {
+        assert(mSessionData.has_value());
+        return mSessionData->IsDirty;
+    }
+
     void SetPanel(ElectricalPanelMetadata & electricalPanelMetadata);
 
     void SelectElement(ElectricalElementInstanceIndex instanceIndex);
@@ -89,13 +95,12 @@ private:
     wxBrush mOccupiedSelectedSlotBorderBrush;
     wxPen mDropSlotBorderPen;
     wxBrush mDropSlotBorderBrush;
-    wxPen mShadowPen;
-    wxBrush mShadowBrush;
     wxPen mTransparentPen;
     wxBrush mTransparentBrush;
     wxFont mInstanceIndexFont;
 
     wxBitmap mElementBitmap;
+    wxBitmap mElementShadowBitmap;
     int const mElementWidth;
     int const mElementHeight;
     int const mPanelHeight;
@@ -111,9 +116,11 @@ private:
     struct SessionData
     {
         ElectricalPanelMetadata & ElectricalPanel;
+        bool IsDirty;
 
         SessionData(ElectricalPanelMetadata & electricalPanel)
             : ElectricalPanel(electricalPanel)
+            , IsDirty(false)
         {}
     };
 

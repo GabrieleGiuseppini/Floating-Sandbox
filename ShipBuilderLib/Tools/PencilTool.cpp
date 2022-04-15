@@ -313,7 +313,7 @@ void PencilTool<TLayer, IsEraser>::DoEdit(ShipSpaceCoordinates const & mouseCoor
     }
 
     // Calculate start point
-    ShipSpaceCoordinates const startPoint = (TLayer == LayerType::Structural && mEngagementData->PreviousEngagementPosition.has_value()) // // Pencil wakes exist only in structural layer, not in the others
+    ShipSpaceCoordinates const startPoint = (TLayer == LayerType::Structural && mEngagementData->PreviousEngagementPosition.has_value()) // Pencil wakes exist only in structural layer, not in the others
         ? *mEngagementData->PreviousEngagementPosition
         : actualMouseCoordinates;
 

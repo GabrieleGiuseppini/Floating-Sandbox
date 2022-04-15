@@ -189,11 +189,14 @@ void ElectricalPanelEditDialog::OnOkButton(wxCommandEvent & /*event*/)
 {
     assert(mSessionData.has_value());
 
-    //
-    // Set in controller
-    //
+    if (mSessionData->IsListPanelDirty || mElectricalPanel->IsDirty())
+    {
+        //
+        // Set in controller
+        //
 
-    mSessionData->BuilderController.SetElectricalPanelMetadata(mSessionData->PanelMetadata);
+        mSessionData->BuilderController.SetElectricalPanelMetadata(mSessionData->PanelMetadata);
+    }
 
     //
     // Close dialog
@@ -242,7 +245,7 @@ void ElectricalPanelEditDialog::ReconciliateUI()
     instanceIndexFont.SetPointSize(instanceIndexFont.GetPointSize() + 2);
 
     //
-    // Populate list
+    // Populate list panel
     //
 
     mListPanel->DestroyChildren();
@@ -309,6 +312,9 @@ void ElectricalPanelEditDialog::ReconciliateUI()
                     assert(mSessionData->PanelMetadata.count(instancedElementIndex) == 1);
                     mSessionData->PanelMetadata.at(instancedElementIndex).Label = event.GetString();
 
+                    // Remember we're dirty
+                    mSessionData->IsListPanelDirty = true;
+
                     event.Skip();
                 });
 
@@ -355,6 +361,9 @@ void ElectricalPanelEditDialog::ReconciliateUI()
 
                     // Notify control of visibility change
                     mElectricalPanel->OnPanelUpdated();
+
+                    // Remember we're dirty
+                    mSessionData->IsListPanelDirty = true;
                 });
 
             listElementHSizer->Add(tglButton, 0, wxALIGN_CENTER_VERTICAL, 0);
