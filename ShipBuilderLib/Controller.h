@@ -240,6 +240,13 @@ public:
     void OnWorkCanvasResized(DisplayLogicalSize const & newSize);
 
     //
+    // Services to tools
+    //
+
+    void BroadcastSampledInformationUpdatedAt(std::optional<ShipSpaceCoordinates> const & coordinates, LayerType layer) const;
+    void BroadcastSampledInformationUpdatedNone() const;
+
+    //
     // Misc
     //
 

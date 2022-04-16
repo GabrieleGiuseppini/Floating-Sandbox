@@ -77,6 +77,26 @@ StatusBar::StatusBar(
 
         hSizer->AddSpacer(SpacerSizeMajor);
 
+        // Sampled data
+        {
+            // Icon
+            {
+                auto * staticBitmap = new wxStaticBitmap(this, wxID_ANY, WxHelpers::LoadBitmap("sampler_icon_small", resourceLocator));
+                hSizer->Add(staticBitmap, 0, wxALIGN_CENTRE_VERTICAL, 0);
+            }
+
+            hSizer->AddSpacer(SpacerSizeMinor);
+
+            // Label
+            {
+                mSampledInformationStaticText = new wxStaticText(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
+                mSampledInformationStaticText->SetMinSize(wxSize(200, -1));
+                hSizer->Add(mSampledInformationStaticText, 0, wxALIGN_CENTRE_VERTICAL, 0);
+            }
+        }
+
+        hSizer->AddSpacer(SpacerSizeMajor);
+
         // Zoom
         {
             // Icon
@@ -159,7 +179,6 @@ StatusBar::StatusBar(
     // Load bitmaps
     //
 
-    mSamplerToolBitmap = WxHelpers::LoadBitmap("sampler_icon_small", resourceLocator);
     mMeasuringTapeToolBitmap = WxHelpers::LoadBitmap("measuring_tape_icon_small", resourceLocator);
 }
 
@@ -206,6 +225,15 @@ void StatusBar::SetToolCoordinates(std::optional<ShipSpaceCoordinates> coordinat
     }
 }
 
+void StatusBar::SetSampledInformation(std::optional<SampledInformation> sampledInformation)
+{
+    if (!(sampledInformation == mSampledInformation))
+    {
+        mSampledInformation = sampledInformation;
+        RefreshSampledInformation();
+    }
+}
+
 void StatusBar::SetZoom(std::optional<float> zoom)
 {
     if (zoom != mZoom)
@@ -229,15 +257,6 @@ void StatusBar::SetCurrentToolType(std::optional<ToolType> toolType)
     {
         mCurrentToolType = toolType;
         RefreshCurrentToolType();
-    }
-}
-
-void StatusBar::SetSampledMaterial(std::optional<std::string> materialName)
-{
-    if (materialName != mSampledMaterialName)
-    {
-        mSampledMaterialName = materialName;
-        RefreshToolOutput();
     }
 }
 
@@ -330,6 +349,23 @@ void StatusBar::RefreshToolCoordinates()
     mToolCoordinatesStaticText->SetLabel(ss.str());
 }
 
+void StatusBar::RefreshSampledInformation()
+{
+    std::stringstream ss;
+
+    if (mSampledInformation.has_value())
+    {
+        ss << mSampledInformation->MaterialName;
+
+        if (mSampledInformation->InstanceIndex.has_value())
+        {
+            ss << " (" << *(mSampledInformation->InstanceIndex) << ")";
+        }
+    }
+
+    mSampledInformationStaticText->SetLabel(ss.str());
+}
+
 void StatusBar::RefreshZoom()
 {
     std::stringstream ss;
@@ -387,14 +423,6 @@ void StatusBar::RefreshCurrentToolType()
     {
         switch (*mCurrentToolType)
         {
-            case ToolType::ElectricalSampler:
-            case ToolType::RopeSampler:
-            case ToolType::StructuralSampler:
-            {
-                bitmap = mSamplerToolBitmap;
-                break;
-            }
-
             case ToolType::StructuralMeasuringTapeTool:
             {
                 bitmap = mMeasuringTapeToolBitmap;
@@ -420,14 +448,6 @@ void StatusBar::RefreshToolOutput()
     {
         switch (*mCurrentToolType)
         {
-            case ToolType::ElectricalSampler:
-            case ToolType::RopeSampler:
-            case ToolType::StructuralSampler:
-            {
-                ss << mSampledMaterialName.value_or("");
-                break;
-            }
-
             case ToolType::StructuralMeasuringTapeTool:
             {
                 if (mMeasuredWorldLength.has_value())

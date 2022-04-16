@@ -13,6 +13,7 @@
 #include <cmath>
 #include <cstdint>
 #include <optional>
+#include <string>
 #include <sstream>
 
 namespace ShipBuilder {
@@ -136,6 +137,25 @@ struct ModelMacroProperties
         , TotalMass(totalMass)
         , CenterOfMass(centerOfMass)
     {}
+};
+
+struct SampledInformation
+{
+    std::string MaterialName;
+    std::optional<ElectricalElementInstanceIndex> InstanceIndex;
+
+    SampledInformation(
+        std::string materialName,
+        std::optional<ElectricalElementInstanceIndex> instanceIndex)
+        : MaterialName(materialName)
+        , InstanceIndex(instanceIndex)
+    {}
+
+    bool operator==(SampledInformation const & other) const
+    {
+        return MaterialName == other.MaterialName
+            && InstanceIndex == other.InstanceIndex;
+    }
 };
 
 struct ModelDirtyState

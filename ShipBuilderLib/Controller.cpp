@@ -966,6 +966,26 @@ void Controller::OnWorkCanvasResized(DisplayLogicalSize const & newSize)
     mUserInterface.OnViewModelChanged(mView->GetViewModel());
 }
 
+void Controller::BroadcastSampledInformationUpdatedAt(std::optional<ShipSpaceCoordinates> const & coordinates, LayerType layer) const
+{
+    assert(mModelController);
+
+    std::optional<SampledInformation> sampledInformation;
+
+    if (coordinates.has_value()
+        && coordinates->IsInSize(mModelController->GetShipSize()))
+    {
+        sampledInformation = mModelController->SampleInformationAt(*coordinates, layer);
+    }
+
+    mUserInterface.OnSampledInformationUpdated(sampledInformation);
+}
+
+void Controller::BroadcastSampledInformationUpdatedNone() const
+{
+    mUserInterface.OnSampledInformationUpdated(std::nullopt);
+}
+
 void Controller::SetCurrentTool(std::optional<ToolType> tool)
 {
     if (tool != mWorkbenchState.GetCurrentToolType())

@@ -133,7 +133,7 @@ public:
 
     void OnToolCoordinatesChanged(std::optional<ShipSpaceCoordinates> coordinates, ShipSpaceSize const & shipSize) override;
 
-    void OnSampledMaterialChanged(std::optional<std::string> materialName) override;
+    void OnSampledInformationUpdated(std::optional<SampledInformation> sampledInformation) override;
 
     void OnMeasuredWorldLengthChanged(std::optional<int> length) override;
 

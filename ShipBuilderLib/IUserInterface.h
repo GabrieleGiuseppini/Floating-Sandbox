@@ -78,8 +78,8 @@ struct IUserInterface
     // Notifies of a change in the tool coordinates to display
     virtual void OnToolCoordinatesChanged(std::optional<ShipSpaceCoordinates> coordinates, ShipSpaceSize const & shipSize) = 0;
 
-    // Notifies of a change in the currently-sampled material
-    virtual void OnSampledMaterialChanged(std::optional<std::string> materialName) = 0;
+    // Notifies of a change in the currently-sampled information
+    virtual void OnSampledInformationUpdated(std::optional<SampledInformation> sampledInformation) = 0;
 
     // Notifies of a change in the currently-measured length
     virtual void OnMeasuredWorldLengthChanged(std::optional<int> length) = 0;

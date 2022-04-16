@@ -8,7 +8,7 @@
 		- "Light I-Beam": permeable, light 
 		- "Low-Grade": brittle (breaks easily)		
 	- Added a new type of lighter wood ("Pine Wood", and renamed older wood as "Oak Wood")
-	- Added Sodium material - if you don't know what sodium does when immersed in water, check it out!
+	- Added Sodium material - if you don't know what sodium does when immersed in water, check it out! [https://www.youtube.com/watch?v=YiCnUkCCsMw]
 	- Added tTransparent variants to Glass and gaseous materials
 	- The new materials database contains now 693 materials!
 - ShipBuilder:

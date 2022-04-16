@@ -1070,7 +1070,7 @@
 					- ~"Structure"+"Form/Variant/Kind/Genre/Class"
 		- New materials:
 			+ Add helper for adding colors: base base_reference target_reference
-			- Structural materials:
+			= Structural materials:
 				+ Another wood variant
 					+ Names: Oak (600-900, heavier - current), Pine (350-850, lighter)
 						+ Check densities and see which one is current
@@ -1088,6 +1088,7 @@
 					= Material
 						+ New property for water-based reaction - WaterReactivity - float
 						- Fine-tune:
+							- "And sodium is not great at  killing ships that are mostely steel"
 							- density
 							- strength
 							- etc.
@@ -1149,17 +1150,22 @@
 
 				- Helium: ~like Hydrogen, but not combusting
 					- Make "Helium" variant of Goodyear
+					- changes.txt
 				- "Lightning rod" material
 					- Has precedence when looking for candidates @ Lightning strike
 				+ More glass colors
 				+ More concrete colors
 				+ More fiberglass colors
 			- Electrical materials:
+				- Timcan's sounds
+				- Rename horns
 				- Non-Instanced Watertight Doors (see if possible)
 				- Jet engine
+					- Engine rearc
 				- Non-Instanced Water In/Out Pumps (see if possible)
 				- Clamp
-					- When powered, destroys point (and of course its springs)
+					- A and B types
+					- When powered, destroys all springs between each pair of powered A and B points
 					- Make ship with lifeboats, using multiple clamps to keep it
 				- Flickering lights
 					- Lights that flicker forever
@@ -1169,7 +1175,8 @@
 					- Different durations
 					- Simple state machine @ UpdateAutomaticConductivity
 					- Gfx: Clock dial (normalized on duration), new ElectricalControl
-					- Sound: clock		
+					- Sound: clock
+				- Cranes?
 		- Test material textures for chains: transparent chain texture
 			- Change texturizer so that we load alpha from image		
 		- Friction property (replacing or adding to "global" ocean floor settings)

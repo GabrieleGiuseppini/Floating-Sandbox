@@ -49,31 +49,24 @@ SamplerTool<TLayerType>::SamplerTool(
     , mCursorImage(WxHelpers::LoadCursorImage("sampler_cursor", 1, 30, resourceLocator))
 {
     SetCursor(mCursorImage);
+
+    auto const mouseCoordinates = GetMouseCoordinatesIfInWorkCanvas();
+    if (mouseCoordinates)
+    {
+        mController.BroadcastSampledInformationUpdatedAt(ScreenToShipSpace(*mouseCoordinates), TLayerType);
+    }
 }
 
 template<LayerType TLayerType>
 SamplerTool<TLayerType>::~SamplerTool()
 {
-    // Notify about material
-    mController.GetUserInterface().OnSampledMaterialChanged(std::nullopt);
+    mController.BroadcastSampledInformationUpdatedNone();
 }
 
 template<LayerType TLayer>
 void SamplerTool<TLayer>::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates)
 {
-    auto const coords = ScreenToShipSpace(mouseCoordinates);
-    if (coords.IsInSize(mController.GetModelController().GetShipSize()))
-    {
-        // Get material
-        auto const * material = SampleMaterial(coords);
-
-        // Notify about material
-        mController.GetUserInterface().OnSampledMaterialChanged(material ? material->Name : std::optional<std::string>());
-    }
-    else
-    {
-        mController.GetUserInterface().OnSampledMaterialChanged(std::nullopt);
-    }
+    mController.BroadcastSampledInformationUpdatedAt(ScreenToShipSpace(mouseCoordinates), TLayer);
 }
 
 template<LayerType TLayer>

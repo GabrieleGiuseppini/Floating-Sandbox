@@ -237,6 +237,77 @@ ModelValidationResults ModelController::ValidateModel() const
     return ModelValidationResults(std::move(issues));
 }
 
+std::optional<SampledInformation> ModelController::SampleInformationAt(ShipSpaceCoordinates const & coordinates, LayerType layer) const
+{
+    switch (layer)
+    {
+        case LayerType::Electrical:
+        {
+            assert(mModel.HasLayer(LayerType::Electrical));
+            assert(!mIsElectricalLayerInEphemeralVisualization);
+            assert(coordinates.IsInSize(GetShipSize()));
+
+            ElectricalElement const & element = mModel.GetElectricalLayer().Buffer[coordinates];
+            if (element.Material != nullptr)
+            {
+                assert((element.InstanceIndex != NoneElectricalElementInstanceIndex && element.Material->IsInstanced)
+                    || (element.InstanceIndex == NoneElectricalElementInstanceIndex && !element.Material->IsInstanced));
+
+                return SampledInformation(
+                    element.Material->Name,
+                    element.Material->IsInstanced ? element.InstanceIndex : std::optional<ElectricalElementInstanceIndex>());
+            }
+            else
+            {
+                return std::nullopt;
+            }
+        }
+
+        case LayerType::Ropes:
+        {
+            assert(mModel.HasLayer(LayerType::Ropes));
+            assert(!mIsRopesLayerInEphemeralVisualization);
+            assert(coordinates.IsInSize(mModel.GetShipSize()));
+
+            auto const * material = mModel.GetRopesLayer().Buffer.SampleMaterialEndpointAt(coordinates);
+            if (material != nullptr)
+            {
+                return SampledInformation(material->Name, std::nullopt);
+            }
+            else
+            {
+                return std::nullopt;
+            }
+        }
+
+        case LayerType::Structural:
+        {
+            assert(mModel.HasLayer(LayerType::Structural));
+            assert(!mIsStructuralLayerInEphemeralVisualization);
+            assert(coordinates.IsInSize(GetShipSize()));
+
+            auto const * material = mModel.GetStructuralLayer().Buffer[coordinates].Material;
+            if (material != nullptr)
+            {
+                return SampledInformation(material->Name, std::nullopt);
+            }
+            else
+            {
+                return std::nullopt;
+            }
+        }
+
+        case LayerType::Texture:
+        {
+            // Nothing to do
+            return std::nullopt;
+        }
+    }
+
+    assert(false);
+    return std::nullopt;
+}
+
 void ModelController::Flip(DirectionType direction)
 {
     // Structural layer

@@ -162,6 +162,8 @@ public:
         mModel.SetElectricalPanelMetadata(std::move(panelMetadata));
     }
 
+    std::optional<SampledInformation> SampleInformationAt(ShipSpaceCoordinates const & coordinates, LayerType layer) const;
+
     void Flip(DirectionType direction);
 
     void Rotate90(RotationDirectionType direction);

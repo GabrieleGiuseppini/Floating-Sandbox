@@ -577,9 +577,9 @@ void MainFrame::OnToolCoordinatesChanged(std::optional<ShipSpaceCoordinates> coo
     mStatusBar->SetToolCoordinates(coordinates);
 }
 
-void MainFrame::OnSampledMaterialChanged(std::optional<std::string> materialName)
+void MainFrame::OnSampledInformationUpdated(std::optional<SampledInformation> sampledInformation)
 {
-    mStatusBar->SetSampledMaterial(materialName);
+    mStatusBar->SetSampledInformation(sampledInformation);
 }
 
 void MainFrame::OnMeasuredWorldLengthChanged(std::optional<int> length)
