@@ -118,20 +118,9 @@ struct RopeBuffer
         ShipSpaceCoordinates const & origin,
         ShipSpaceSize const & size)
     {
-        ShipSpaceRect const rect(origin, size);
-
-        for (auto it = mBuffer.begin(); it != mBuffer.end(); /* incremented in loop */)
-        {
-            if (!it->StartCoords.IsInRect(rect)
-                || !it->EndCoords.IsInRect(rect))
-            {
-                it = mBuffer.erase(it);
-            }
-            else
-            {
-                ++it;
-            }
-        }
+        Reframe(
+            size,
+            ShipSpaceCoordinates(-origin.x, -origin.y));
     }
 
     void Reframe(

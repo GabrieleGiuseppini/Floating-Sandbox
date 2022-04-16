@@ -52,6 +52,11 @@ struct StructuralLayerData
         return StructuralLayerData(Buffer.CloneRegion(region));
     }
 
+    void Trim(ShipSpaceRect const & rect)
+    {
+        Buffer.Trim(rect);
+    }
+
     StructuralLayerData MakeReframed(
         ShipSpaceSize const & newSize, // Final size
         ShipSpaceCoordinates const & originOffset, // Position in final buffer of original {0, 0}
@@ -113,17 +118,27 @@ struct ElectricalLayerData
 
     ElectricalLayerData Clone(ShipSpaceRect const & region) const
     {
-        ElectricalPanelMetadata panelClone = Panel;
-
         return ElectricalLayerData(
             Buffer.CloneRegion(region),
-            std::move(panelClone));
+            MakedTrimmedPanel(Panel, region));
+    }
+
+    void Trim(ShipSpaceRect const & rect)
+    {
+        Panel = MakedTrimmedPanel(Panel, rect);
+        Buffer.Trim(rect);
     }
 
     ElectricalLayerData MakeReframed(
         ShipSpaceSize const & newSize, // Final size
         ShipSpaceCoordinates const & originOffset, // Position in final buffer of original {0, 0}
         ElectricalElement const & fillerValue) const;
+
+private:
+
+    ElectricalPanelMetadata MakedTrimmedPanel(
+        ElectricalPanelMetadata const & panel,
+        ShipSpaceRect const & rect) const;
 };
 
 template <>
@@ -152,6 +167,11 @@ struct RopesLayerData
     RopesLayerData Clone() const
     {
         return RopesLayerData(Buffer.Clone());
+    }
+
+    void Trim(ShipSpaceRect const & rect)
+    {
+        Buffer.Trim(rect.origin, rect.size);
     }
 
     RopesLayerData MakeReframed(

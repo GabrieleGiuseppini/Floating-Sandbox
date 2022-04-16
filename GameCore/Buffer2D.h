@@ -151,6 +151,30 @@ public:
             std::move(newData));
     }
 
+    void Trim(_IntegralRect<TIntegralTag> const & rect)
+    {
+        // The new rect is smaller than the previous
+        assert(rect.origin.x + rect.size.width <= Size.width);
+        assert(rect.origin.y + rect.size.height <= Size.height);
+
+        if (rect.size != Size)
+        {
+            // In-place shrinking
+            for (int targetY = 0; targetY < rect.size.height; ++targetY)
+            {
+                int const sourceLinearIndex = (targetY + rect.origin.y) * Size.width + rect.origin.x;
+                int const targetLinearIndex = targetY * rect.size.width;
+
+                std::memmove(
+                    Data.get() + targetLinearIndex,
+                    Data.get() + sourceLinearIndex,
+                    rect.size.width * sizeof(TElement));
+            }
+
+            Size = rect.size;
+        }
+    }
+
     void BlitFromRegion(
         Buffer2D const & source,
         _IntegralRect<TIntegralTag> const & sourceRegion,

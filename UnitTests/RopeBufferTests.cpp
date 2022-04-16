@@ -205,8 +205,8 @@ TEST(RopeBufferTests, Trim)
 
     ASSERT_EQ(buffer.GetSize(), 1u);
 
-    EXPECT_EQ(ShipSpaceCoordinates(7, 19), buffer[0].StartCoords);
-    EXPECT_EQ(ShipSpaceCoordinates(6, 15), buffer[0].EndCoords);
+    EXPECT_EQ(ShipSpaceCoordinates(7 - 5, 19 - 6), buffer[0].StartCoords);
+    EXPECT_EQ(ShipSpaceCoordinates(6 - 5, 15 - 6), buffer[0].EndCoords);
 }
 
 TEST(RopeBufferTests, Trim_BecomesEmpty)

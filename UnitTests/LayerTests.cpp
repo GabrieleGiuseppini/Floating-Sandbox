@@ -4,6 +4,61 @@
 
 #include "gtest/gtest.h"
 
+TEST(LayerTests, StructuralLayer_Trim)
+{
+    //
+    // Create source layer
+    //
+
+    Buffer2D<StructuralElement, struct ShipSpaceTag> sourceBuffer(8, 6);
+
+    std::vector<StructuralMaterial> materials;
+
+    uint8_t iVal = 2;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            materials.emplace_back(MakeTestStructuralMaterial("Foo", rgbColor(iVal, iVal + 1, iVal + 2)));
+            sourceBuffer[ShipSpaceCoordinates(x, y)] = StructuralElement(&(materials.back()));
+        }
+    }
+
+    StructuralLayerData sourceLayer(std::move(sourceBuffer));
+
+    //
+    // Trim layer
+    //
+
+    StructuralLayerData targetLayer = sourceLayer.Clone();
+
+    targetLayer.Trim({
+        { 2, 1},
+        { 4, 3 } });
+
+    //
+    // Verify
+    //
+
+    ASSERT_EQ(targetLayer.Buffer.Size, ShipSpaceSize(4, 3));
+
+    for (int y = 0; y < 3; ++y)
+    {
+        for (int x = 0; x < 4; ++x)
+        {
+            auto const coords = ShipSpaceCoordinates(x, y);
+            if (x >= 4 || y >= 3)
+            {
+                EXPECT_EQ(targetLayer.Buffer[coords], StructuralElement(nullptr));
+            }
+            else
+            {
+                EXPECT_EQ(targetLayer.Buffer[coords], sourceLayer.Buffer[coords + ShipSpaceSize(2, 1)]);
+            }
+        }
+    }
+}
+
 TEST(LayerTests, StructuralLayer_Reframe_Smaller)
 {
     //
@@ -148,13 +203,174 @@ TEST(LayerTests, StructuralLayer_Reframe_Same)
     //
 
     ASSERT_EQ(targetLayer.Buffer.Size, sourceLayer.Buffer.Size);
-    
+
     for (int y = 0; y < sourceLayer.Buffer.Size.height; ++y)
     {
         for (int x = 0; x < sourceLayer.Buffer.Size.width; ++x)
         {
             auto const coords = ShipSpaceCoordinates(x, y);
             EXPECT_EQ(targetLayer.Buffer[coords], sourceLayer.Buffer[coords]);
+        }
+    }
+}
+
+TEST(LayerTests, ElectricalLayer_Clone_Smaller)
+{
+    //
+    // Create source layer
+    //
+
+    Buffer2D<ElectricalElement, struct ShipSpaceTag> sourceBuffer(8, 6);
+    ElectricalPanelMetadata sourcePanel;
+
+    std::vector<ElectricalMaterial> materials;
+
+    uint8_t iVal = 2;
+    ElectricalElementInstanceIndex curIdx = 0;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            auto const coords = ShipSpaceCoordinates(x, y);
+
+            ElectricalElementInstanceIndex idx = curIdx++;
+
+            sourcePanel.try_emplace(
+                idx,
+                IntegralCoordinates(idx + 5, idx + 7),
+                "Foo",
+                false);
+
+            materials.emplace_back(MakeTestElectricalMaterial("Foo", rgbColor(iVal, iVal + 1, iVal + 2), idx != NoneElectricalElementInstanceIndex));
+
+            sourceBuffer[ShipSpaceCoordinates(x, y)] = ElectricalElement(&(materials.back()), idx);
+        }
+    }
+
+    ElectricalLayerData sourceLayer(std::move(sourceBuffer), std::move(sourcePanel));
+
+    ASSERT_EQ(sourceLayer.Panel.size(), sourceBuffer.Size.height * sourceBuffer.Size.width);
+
+    //
+    // Clone layer
+    //
+
+    ElectricalLayerData targetLayer = sourceLayer.Clone({ {2, 1}, {4, 3} });
+
+    //
+    // Verify
+    //
+
+    // Buffer
+
+    ASSERT_EQ(targetLayer.Buffer.Size, ShipSpaceSize(4, 3));
+    for (int y = 0; y < 3; ++y)
+    {
+        for (int x = 0; x < 4; ++x)
+        {
+            auto const coords = ShipSpaceCoordinates(x, y);
+            EXPECT_EQ(targetLayer.Buffer[coords], sourceLayer.Buffer[coords + ShipSpaceSize(2, 1)]);
+        }
+    }
+
+    // Panel
+
+    EXPECT_EQ(targetLayer.Panel.size(), targetLayer.Buffer.Size.height * targetLayer.Buffer.Size.width);
+
+    for (int y = 0; y < 3; ++y)
+    {
+        for (int x = 0; x < 4; ++x)
+        {
+            auto const coords = ShipSpaceCoordinates(x, y);
+
+            ElectricalElementInstanceIndex const actualTargetIdx = targetLayer.Buffer[coords].InstanceIndex;
+            ElectricalElementInstanceIndex const expectedTargetIdx = static_cast<ElectricalElementInstanceIndex>(1 * sourceBuffer.Size.width + (y * sourceBuffer.Size.width) + 2 + x);
+            EXPECT_EQ(actualTargetIdx, expectedTargetIdx);
+
+            auto const it = targetLayer.Panel.find(expectedTargetIdx);
+            ASSERT_NE(it, targetLayer.Panel.end());
+            EXPECT_EQ(it->second.PanelCoordinates, IntegralCoordinates(expectedTargetIdx + 5, expectedTargetIdx + 7));
+        }
+    }
+}
+
+TEST(LayerTests, ElectricalLayer_Trim)
+{
+    //
+    // Create source layer
+    //
+
+    Buffer2D<ElectricalElement, struct ShipSpaceTag> sourceBuffer(8, 6);
+    ElectricalPanelMetadata sourcePanel;
+
+    std::vector<ElectricalMaterial> materials;
+
+    uint8_t iVal = 2;
+    ElectricalElementInstanceIndex curIdx = 0;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            auto const coords = ShipSpaceCoordinates(x, y);
+
+            ElectricalElementInstanceIndex idx = curIdx++;
+
+            sourcePanel.try_emplace(
+                idx,
+                IntegralCoordinates(idx + 5, idx + 7),
+                "Foo",
+                false);
+
+            materials.emplace_back(MakeTestElectricalMaterial("Foo", rgbColor(iVal, iVal + 1, iVal + 2), idx != NoneElectricalElementInstanceIndex));
+
+            sourceBuffer[ShipSpaceCoordinates(x, y)] = ElectricalElement(&(materials.back()), idx);
+        }
+    }
+
+    ElectricalLayerData sourceLayer(std::move(sourceBuffer), std::move(sourcePanel));
+
+    ASSERT_EQ(sourceLayer.Panel.size(), sourceBuffer.Size.height * sourceBuffer.Size.width);
+
+    //
+    // Trim layer
+    //
+
+    ElectricalLayerData targetLayer = sourceLayer.Clone();
+    targetLayer.Trim({ {2, 1}, { 4, 3 } });
+
+    //
+    // Verify
+    //
+
+    // Buffer
+
+    ASSERT_EQ(targetLayer.Buffer.Size, ShipSpaceSize(4, 3));
+    for (int y = 0; y < 3; ++y)
+    {
+        for (int x = 0; x < 4; ++x)
+        {
+            auto const coords = ShipSpaceCoordinates(x, y);
+            EXPECT_EQ(targetLayer.Buffer[coords], sourceLayer.Buffer[coords + ShipSpaceSize(2, 1)]);
+        }
+    }
+
+    // Panel
+
+    EXPECT_EQ(targetLayer.Panel.size(), targetLayer.Buffer.Size.height * targetLayer.Buffer.Size.width);
+
+    for (int y = 0; y < 3; ++y)
+    {
+        for (int x = 0; x < 4; ++x)
+        {
+            auto const coords = ShipSpaceCoordinates(x, y);
+
+            ElectricalElementInstanceIndex const actualTargetIdx = targetLayer.Buffer[coords].InstanceIndex;
+            ElectricalElementInstanceIndex const expectedTargetIdx = static_cast<ElectricalElementInstanceIndex>(1 * sourceBuffer.Size.width + (y * sourceBuffer.Size.width) + 2 + x);
+            EXPECT_EQ(actualTargetIdx, expectedTargetIdx);
+
+            auto const it = targetLayer.Panel.find(expectedTargetIdx);
+            ASSERT_NE(it, targetLayer.Panel.end());
+            EXPECT_EQ(it->second.PanelCoordinates, IntegralCoordinates(expectedTargetIdx + 5, expectedTargetIdx + 7));
         }
     }
 }
@@ -198,7 +414,7 @@ TEST(LayerTests, ElectricalLayer_Reframe_Smaller)
             }
 
             materials.emplace_back(MakeTestElectricalMaterial("Foo", rgbColor(iVal, iVal + 1, iVal + 2), idx != NoneElectricalElementInstanceIndex));
-            
+
             sourceBuffer[ShipSpaceCoordinates(x, y)] = ElectricalElement(&(materials.back()), idx);
         }
     }
@@ -425,6 +641,53 @@ TEST(LayerTests, ElectricalLayer_Reframe_Same)
     // Panel
 
     EXPECT_EQ(targetLayer.Panel.size(), 4u);
+}
+
+TEST(LayerTests, RopesLayer_Trim)
+{
+    //
+    // Create source layer
+    //
+    // Size= (12, 12)
+
+    RopeBuffer buffer;
+
+    buffer.EmplaceBack(
+        ShipSpaceCoordinates(4, 5), // In
+        ShipSpaceCoordinates(10, 10),
+        nullptr,
+        rgbaColor(1, 2, 3, 4));
+
+    buffer.EmplaceBack(
+        ShipSpaceCoordinates(4, 5), // Out
+        ShipSpaceCoordinates(11, 11),
+        nullptr,
+        rgbaColor(1, 2, 3, 4));
+
+    buffer.EmplaceBack(
+        ShipSpaceCoordinates(2, 4), // Out
+        ShipSpaceCoordinates(10, 10),
+        nullptr,
+        rgbaColor(1, 2, 3, 4));
+
+    RopesLayerData sourceLayer(std::move(buffer));
+
+    //
+    // Trim layer
+    //
+
+    RopesLayerData targetLayer = sourceLayer.Clone();
+
+    targetLayer.Trim({ {3, 3}, {8, 9} });
+
+    //
+    // Verify
+    //
+
+    ASSERT_EQ(targetLayer.Buffer.GetSize(), 1);
+
+    EXPECT_EQ(targetLayer.Buffer[0].StartCoords, ShipSpaceCoordinates(1, 2));
+    EXPECT_EQ(targetLayer.Buffer[0].EndCoords, ShipSpaceCoordinates(7, 7));
 }
 
 TEST(LayerTests, RopesLayer_Reframe_Smaller)

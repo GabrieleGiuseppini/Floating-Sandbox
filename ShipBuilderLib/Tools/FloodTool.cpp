@@ -90,17 +90,17 @@ void FloodTool<TLayer>::DoEdit(
     {
         // Create undo action
 
-        // FUTUREWORK: instead of cloning here, might have a Layer method to "trim" its buffer in-place
-        auto clippedLayerClone = layerClone.Clone(*affectedRegion);
+        // Trim clone
+        layerClone.Trim(*affectedRegion);
 
         mController.StoreUndoAction(
             TLayer == LayerType::Structural ? _("Flood Structural") : _("Flood Electrical"),
-            clippedLayerClone.Buffer.GetByteSize(),
+            layerClone.Buffer.GetByteSize(),
             layerDirtyStateClone,
-            [clippedLayerClone = std::move(clippedLayerClone), origin = affectedRegion->origin](Controller & controller) mutable
+            [layerClone = std::move(layerClone), origin = affectedRegion->origin](Controller & controller) mutable
             {
                 static_assert(TLayer == LayerType::Structural);
-                controller.RestoreStructuralLayerRegionForUndo(std::move(clippedLayerClone), origin);
+                controller.RestoreStructuralLayerRegionForUndo(std::move(layerClone), origin);
             });
 
         // Epilog

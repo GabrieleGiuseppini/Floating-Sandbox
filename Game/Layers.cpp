@@ -22,63 +22,51 @@ ElectricalLayerData ElectricalLayerData::MakeReframed(
     ShipSpaceCoordinates const & originOffset, // Position in final buffer of original {0, 0}
     ElectricalElement const & fillerValue) const
 {
-    //
     // Trim panel
-    //
-
-    // Calculate "static" (remaining) rect - wrt old coordinates 
-
-    auto const originalShipRect = ShipSpaceRect(
-        ShipSpaceCoordinates(0, 0),
-        Buffer.Size);
-
-    std::optional<ShipSpaceRect> staticShipRect = originalShipRect.MakeIntersectionWith(
+    ElectricalPanelMetadata newPanel = MakedTrimmedPanel(
+        Panel,
         ShipSpaceRect(
-            -originOffset, 
+            -originOffset,
             newSize));
 
-    // Trim panel elements
-
-    ElectricalPanelMetadata newPanel = Panel;
-
-    if (staticShipRect.has_value())
-    {
-        for (int y = 0; y < Buffer.Size.height; ++y)
-        {
-            for (int x = 0; x < Buffer.Size.width; ++x)
-            {
-                auto const coords = ShipSpaceCoordinates({ x, y });
-
-                auto const instanceIndex = Buffer[coords].InstanceIndex;
-                if (instanceIndex != NoneElectricalElementInstanceIndex
-                    && !coords.IsInRect(*staticShipRect))
-                {
-                    // This instanced element will be gone
-                    auto searchIt = newPanel.find(instanceIndex);
-                    if (searchIt != newPanel.end())
-                    {
-                        newPanel.erase(searchIt);
-                    }
-                }
-            }
-        }
-    }
-    else
-    {
-        // None of the current elements will survive
-        newPanel.clear();
-    }
-
-    //
     // Trim buffer
-    //
-
     return ElectricalLayerData(
         Buffer.MakeReframed(
             newSize,
             originOffset,
             fillerValue),
         std::move(newPanel));
+}
+
+ElectricalPanelMetadata ElectricalLayerData::MakedTrimmedPanel(
+    ElectricalPanelMetadata const & panel,
+    ShipSpaceRect const & rect) const
+{
+    ElectricalPanelMetadata newPanel;
+
+    for (int y = 0; y < Buffer.Size.height; ++y)
+    {
+        for (int x = 0; x < Buffer.Size.width; ++x)
+        {
+            auto const coords = ShipSpaceCoordinates({ x, y });
+
+            auto const instanceIndex = Buffer[coords].InstanceIndex;
+            if (instanceIndex != NoneElectricalElementInstanceIndex
+                && coords.IsInRect(rect))
+            {
+                // This instanced element remains
+                auto searchIt = panel.find(instanceIndex);
+                if (searchIt != panel.end())
+                {
+                    auto const [_, isInserted] = newPanel.emplace(instanceIndex, searchIt->second);
+                    assert(isInserted);
+                    (void)isInserted;
+                }
+            }
+        }
+    }
+
+    return newPanel;
 }
 
 RopesLayerData RopesLayerData::MakeReframed(

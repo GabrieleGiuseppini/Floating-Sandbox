@@ -91,6 +91,130 @@ TEST(Buffer2DTests, Clone_Region)
     }
 }
 
+TEST(Buffer2DTests, Trim_Equal)
+{
+    Buffer2D<int, struct IntegralTag> buffer(4, 4, 0);
+
+    int iVal = 100;
+    for (int y = 0; y < 4; ++y)
+    {
+        for (int x = 0; x < 4; ++x)
+        {
+            buffer[IntegralCoordinates(x, y)] = iVal++;
+        }
+    }
+
+    buffer.Trim(
+        IntegralRect(
+            { 0, 0 },
+            { 4, 4 }));
+
+    ASSERT_EQ(IntegralRectSize(4, 4), buffer.Size);
+
+    iVal = 100;
+    for (int y = 0; y < 4; ++y)
+    {
+        for (int x = 0; x < 4; ++x)
+        {
+            EXPECT_EQ(buffer[IntegralCoordinates(x, y)], iVal);
+            ++iVal;
+        }
+    }
+}
+
+TEST(Buffer2DTests, Trim_Smaller_SameOrigin)
+{
+    Buffer2D<int, struct IntegralTag> buffer(4, 4, 0);
+
+    int iVal = 100;
+    for (int y = 0; y < 4; ++y)
+    {
+        for (int x = 0; x < 4; ++x)
+        {
+            buffer[IntegralCoordinates(x, y)] = iVal++;
+        }
+    }
+
+    buffer.Trim(
+        IntegralRect(
+            { 0, 0 },
+            { 2, 2 }));
+
+    ASSERT_EQ(IntegralRectSize(2, 2), buffer.Size);
+
+    for (int y = 0; y < 2; ++y)
+    {
+        iVal = 100 + y * 4;
+        for (int x = 0; x < 2; ++x)
+        {
+            EXPECT_EQ(buffer[IntegralCoordinates(x, y)], iVal);
+            ++iVal;
+        }
+    }
+}
+
+TEST(Buffer2DTests, Trim_Smaller_SameSize)
+{
+    Buffer2D<int, struct IntegralTag> buffer(4, 4, 0);
+
+    int iVal = 100;
+    for (int y = 0; y < 4; ++y)
+    {
+        for (int x = 0; x < 4; ++x)
+        {
+            buffer[IntegralCoordinates(x, y)] = iVal++;
+        }
+    }
+
+    buffer.Trim(
+        IntegralRect(
+            { 2, 2 },
+            { 2, 2 }));
+
+    ASSERT_EQ(IntegralRectSize(2, 2), buffer.Size);
+
+    for (int y = 0; y < 2; ++y)
+    {
+        iVal = 100 + (y + 2) * 4 + 2;
+        for (int x = 0; x < 2; ++x)
+        {
+            EXPECT_EQ(buffer[IntegralCoordinates(x, y)], iVal);
+            ++iVal;
+        }
+    }
+}
+
+TEST(Buffer2DTests, Trim_ProperInside)
+{
+    Buffer2D<int, struct IntegralTag> buffer(4, 4, 0);
+
+    int iVal = 100;
+    for (int y = 0; y < 4; ++y)
+    {
+        for (int x = 0; x < 4; ++x)
+        {
+            buffer[IntegralCoordinates(x, y)] = iVal++;
+        }
+    }
+
+    buffer.Trim(
+        IntegralRect(
+            { 1, 1 },
+            { 2, 2 }));
+
+    ASSERT_EQ(IntegralRectSize(2, 2), buffer.Size);
+
+    for (int y = 0; y < 2; ++y)
+    {
+        iVal = 100 + (y + 1) * 4 + 1;
+        for (int x = 0; x < 2; ++x)
+        {
+            EXPECT_EQ(buffer[IntegralCoordinates(x, y)], iVal);
+            ++iVal;
+        }
+    }
+}
+
 TEST(Buffer2DTests, BlitFromRegion_WholeSource_ToOrigin)
 {
     // Prepare source

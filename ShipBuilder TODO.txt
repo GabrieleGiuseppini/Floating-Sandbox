@@ -490,7 +490,15 @@
 			+ Sampler
 			+ Pencil/Eraser S/E
 			+ Flood S
-				- Do clone "futurework"
+				+ Do clone "futurework"
+					+ Buffer2D::Trim, including unit tests
+					+ Layers::Trim, including unit tests
+						+ Structural layer
+						+ Electrical layer
+							+ Do trim panel at all places
+								+ Verify at existing unit tests
+						+ Ropes layer					
+				+ Test ropebuffer trim (via ship resize)
 			- Line S/E
 			- Rope pencil
 			- Rope Eraser
