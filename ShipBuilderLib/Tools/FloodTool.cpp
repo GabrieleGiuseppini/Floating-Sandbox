@@ -31,6 +31,24 @@ FloodTool<TLayerType>::FloodTool(
     , mCursorImage(WxHelpers::LoadCursorImage("flood_tool_cursor", 12, 29, resourceLocator))
 {
     SetCursor(mCursorImage);
+
+    auto const mouseCoordinates = GetMouseCoordinatesIfInWorkCanvas();
+    if (mouseCoordinates)
+    {
+        mController.BroadcastSampledInformationUpdatedAt(ScreenToShipSpace(*mouseCoordinates), TLayerType);
+    }
+}
+
+template<LayerType TLayerType>
+FloodTool<TLayerType>::~FloodTool()
+{
+    mController.BroadcastSampledInformationUpdatedNone();
+}
+
+template<LayerType TLayerType>
+void FloodTool<TLayerType>::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates)
+{
+    mController.BroadcastSampledInformationUpdatedAt(ScreenToShipSpace(mouseCoordinates), TLayerType);
 }
 
 template<LayerType TLayer>

@@ -80,6 +80,9 @@ PencilTool<TLayer, IsEraser>::PencilTool(
     auto const mouseCoordinates = GetMouseCoordinatesIfInWorkCanvas();
     if (mouseCoordinates)
     {
+        // Display sampled material
+        mController.BroadcastSampledInformationUpdatedAt(ScreenToShipSpace(*mouseCoordinates), TLayer);
+
         // Calculate affected rect
         std::optional<ShipSpaceRect> const affectedRect = CalculateApplicableRect(ScreenToShipSpace(*mouseCoordinates));
 
@@ -107,6 +110,9 @@ PencilTool<TLayer, IsEraser>::~PencilTool()
 
         mController.LayerChangeEpilog();
     }
+
+    // Reset sampled material
+    mController.BroadcastSampledInformationUpdatedNone();
 }
 
 template<LayerType TLayer, bool IsEraser>
@@ -135,6 +141,9 @@ void PencilTool<TLayer, IsEraser>::OnMouseMove(DisplayLogicalCoordinates const &
                 assert(!mTempVisualizationDirtyShipRegion);
             }
 
+            // Display sampled material
+            mController.BroadcastSampledInformationUpdatedAt(mouseShipSpaceCoords, TLayer);
+
             // Apply (temporary) change
             if (affectedRect)
             {
@@ -149,6 +158,9 @@ void PencilTool<TLayer, IsEraser>::OnMouseMove(DisplayLogicalCoordinates const &
     else
     {
         DoEdit(mouseShipSpaceCoords);
+
+        // Display sampled material
+        mController.BroadcastSampledInformationUpdatedAt(mouseShipSpaceCoords, TLayer);
     }
 }
 

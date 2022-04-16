@@ -488,15 +488,13 @@
 				- At mouse move
 					- Must include result of edit
 			+ Sampler
-			- Pencil S/E
-			- Flood S
-			- Eraser S/E
+			+ Pencil/Eraser S/E
+			+ Flood S
+				- Do clone "futurework"
+			- Line S/E
+			- Rope pencil
+			- Rope Eraser
 			- TODO: others?
-		- Remove old ModelController::SampleStructural/../MaterialAt
-		- TODOOLD
-		- Controller::OnMouseMove
-			- Look at primary viz layer for layer to sample
-		- SamplerTool: don't do anything other than buttons
 
 - Send for testing
 

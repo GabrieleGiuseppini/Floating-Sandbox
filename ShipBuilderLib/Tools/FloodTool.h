@@ -26,9 +26,9 @@ class FloodTool : public Tool
 {
 public:
 
-    virtual ~FloodTool() = default;
+    virtual ~FloodTool();
 
-    void OnMouseMove(DisplayLogicalCoordinates const & /*mouseCoordinates*/) override {};
+    void OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates) override;
     void OnLeftMouseDown() override;
     void OnLeftMouseUp() override {};
     void OnRightMouseDown() override;
