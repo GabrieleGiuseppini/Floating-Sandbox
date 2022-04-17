@@ -55,9 +55,10 @@ RopePencilTool::~RopePencilTool()
         HideOverlay();
     }
 
-    mController.LayerChangeEpilog();
-
+    // Reset sampled information
     mController.BroadcastSampledInformationUpdatedNone();
+
+    mController.LayerChangeEpilog();
 }
 
 void RopePencilTool::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates)
@@ -322,6 +323,9 @@ bool RopePencilTool::CommmitAndStopEngagement(ShipSpaceCoordinates const & coord
                     controller.RestoreRopesLayerForUndo(std::make_unique<RopesLayerData>(std::move(originalLayerClone)));
                 });
         }
+
+        // Show sampled information
+        mController.BroadcastSampledInformationUpdatedAt(coords, LayerType::Ropes);
 
         hasEdited = true;
     }

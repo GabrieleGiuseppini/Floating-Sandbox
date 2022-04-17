@@ -92,7 +92,6 @@ void FloodTool<TLayer>::DoEdit(
     {
         // Create undo action
 
-        // Trim clone
         layerClone.Trim(*affectedRegion);
 
         mController.StoreUndoAction(
@@ -104,6 +103,9 @@ void FloodTool<TLayer>::DoEdit(
                 static_assert(TLayer == LayerType::Structural);
                 controller.RestoreStructuralLayerRegionForUndo(std::move(layerClone), origin);
             });
+
+        // Display sampled material
+        mController.BroadcastSampledInformationUpdatedAt(mouseCoordinates, TLayer);
 
         // Epilog
         mController.LayerChangeEpilog(TLayer);

@@ -160,9 +160,6 @@ void PencilTool<TLayer, IsEraser>::OnMouseMove(DisplayLogicalCoordinates const &
     else
     {
         DoEdit(mouseShipSpaceCoords);
-
-        // Display sampled material
-        mController.BroadcastSampledInformationUpdatedAt(mouseShipSpaceCoords, TLayer);
     }
 }
 
@@ -395,6 +392,9 @@ void PencilTool<TLayer, IsEraser>::DoEdit(ShipSpaceCoordinates const & mouseCoor
 
     // Update previous engagement
     mEngagementData->PreviousEngagementPosition = endPoint;
+
+    // Display sampled material
+    mController.BroadcastSampledInformationUpdatedAt(mouseCoordinates, TLayer);
 
     // Epilog
     mController.LayerChangeEpilog(hasEdited ? TLayer : std::optional<LayerType>());

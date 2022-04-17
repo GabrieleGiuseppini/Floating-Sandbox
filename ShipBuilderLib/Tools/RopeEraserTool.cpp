@@ -45,6 +45,7 @@ RopeEraserTool::~RopeEraserTool()
         HideOverlay();
     }
 
+    // Reset sampled information
     mController.BroadcastSampledInformationUpdatedNone();
 }
 
@@ -63,10 +64,10 @@ void RopeEraserTool::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordina
     {
         // Just draw overlay
         DrawOverlay(mouseShipSpaceCoords);
-    }
 
-    // Show sampled information
-    mController.BroadcastSampledInformationUpdatedAt(mouseShipSpaceCoords, LayerType::Ropes);
+        // Show sampled information
+        mController.BroadcastSampledInformationUpdatedAt(mouseShipSpaceCoords, LayerType::Ropes);
+    }
 }
 
 void RopeEraserTool::OnLeftMouseDown()
@@ -146,6 +147,9 @@ void RopeEraserTool::DoAction(ShipSpaceCoordinates const & coords)
     if (hasErased)
     {
         mEngagementData->HasEdited = true;
+
+        // Show sampled information
+        mController.BroadcastSampledInformationUpdatedAt(coords, LayerType::Ropes);
     }
 
     mController.LayerChangeEpilog(hasErased ? LayerType::Ropes : std::optional<LayerType>());
