@@ -62,9 +62,10 @@ def main():
         palette_root = root_obj["palettes"]["electrical_palette"]
     for category_obj in palette_root:
         category_name = category_obj["category"]
-        for sub_category_name in category_obj["sub_categories"]:
-            sub_category = get_subcategory(category_name, sub_category_name, root_obj)
-            palette.append(sub_category)
+        for group_obj in category_obj["groups"]:
+            for sub_category_name in group_obj["sub_categories"]:
+                sub_category = get_subcategory(category_name, sub_category_name, root_obj)
+                palette.append(sub_category)
             
     #
     # Generate HTML

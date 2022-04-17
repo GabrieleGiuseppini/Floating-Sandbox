@@ -9,7 +9,7 @@
 		- "Low-Grade": brittle (breaks easily)		
 	- Added a new type of lighter wood ("Pine Wood", and renamed older wood as "Oak Wood")
 	- Added Sodium material - if you don't know what sodium does when immersed in water, check it out! [https://www.youtube.com/watch?v=YiCnUkCCsMw]
-	- Added Helium - very similar to Hydrogen, but not explosive
+	- Added Helium - similar to Hydrogen, but not explosive
 	- Added transparent variants to glass and gaseous materials
 	- The new materials database now contains 694 materials!
 - ShipBuilder:
