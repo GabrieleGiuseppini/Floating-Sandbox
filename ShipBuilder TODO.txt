@@ -500,11 +500,20 @@
 				+ Test ropebuffer trim (via ship resize)
 			+ Line S/E
 			+ Rope pencil
-			+ Rope Eraser
+			+ Rope eraser
 		- Who's doing it at left up (edit end)?
-			- Left up generates mouse move, seems @ Windows
-			- TODO: do we want to rely on that?
+			! Left up generates mouse move, seems @ Windows
+			- Do it yourself, after each edit - ideally @ DoEdit itself (and remove redundant's after DoEdit invocation)
+				- Pencil/Eraser S/E
+				- Flood S
+				- Line S/E
+				- Rope pencil
+				- Rope eraser
 		- Merge into 1.17.1.next
+
++ Pencil: shift-lock with right-button material
+	! Due to focus not being on canvas at shift down
+	+ Remove logs
 
 - Send for testing
 

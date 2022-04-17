@@ -3664,6 +3664,9 @@ void MainFrame::OnWorkCanvasMouseEnteredWindow(wxMouseEvent & /*event*/)
     assert(!mIsMouseInWorkCanvas);
     mIsMouseInWorkCanvas = true;
 
+    // Set focus as well, so for example SHIFT presses start getting caught
+    mWorkCanvas->SetFocus();
+
     if (!mIsMouseCapturedByWorkCanvas)
     {
         if (mController)
