@@ -1085,13 +1085,8 @@
 							+ wood_studded_2
 				= Sodium: explodes when particle's water > threshold
 					+ New enum value: SodiumExplosion (or ChemicalExplosion)
-					= Material
+					+ Material
 						+ New property for water-based reaction - WaterReactivity - float
-						- Fine-tune:
-							- "And sodium is not great at  killing ships that are mostely steel"
-							- density
-							- strength
-							- etc.
 					+ Ignition:
 						+ Points: we piggy-back on low-frequency loop
 							! We still do normal combustion/ignition state machine, as sodium can also burn
@@ -1116,6 +1111,7 @@
 							+ Do WaterReaction
 							+ Do WaterReactionExplosion
 					= Make test ship for game
+						- Add more electricals
 						- Then move it to game's Ships folder
 					+ Test:
 						+ Run in Debug
@@ -1145,12 +1141,11 @@
 						+ Air
 						+ Hydrogen
 						+ Test all of them (with a single ship)
+				+ Helium: ~like Hydrogen, but not combusting
+					+ Make "Helium" variant of Goodyear
+					+ changes.txt
 				- Redo structural template
 				- changes.txt
-
-				- Helium: ~like Hydrogen, but not combusting
-					- Make "Helium" variant of Goodyear
-					- changes.txt
 				- "Lightning rod" material
 					- Has precedence when looking for candidates @ Lightning strike
 				+ More glass colors
@@ -1177,6 +1172,8 @@
 					- Gfx: Clock dial (normalized on duration), new ElectricalControl
 					- Sound: clock
 				- Cranes?
+				- Redo structural template
+				- changes.txt
 		- Test material textures for chains: transparent chain texture
 			- Change texturizer so that we load alpha from image		
 		- Friction property (replacing or adding to "global" ocean floor settings)

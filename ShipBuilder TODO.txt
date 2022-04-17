@@ -514,7 +514,7 @@
 	! Due to focus not being on canvas at shift down
 	+ Remove logs
 
-- Merge into 1.17.1.next
++ Merge into 1.17.1.next
 
 - Send for testing
 

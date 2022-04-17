@@ -2763,6 +2763,68 @@
             "wind_receptivity": 0.1
         },
         {
+            "buoyancy_volume_fill": 1.0,
+            "color_key": "#BEBEBE",
+            "combustion_type": "Explosion",
+            "explosive_combustion_radius": 1.0,
+            "explosive_combustion_strength": 100.0,
+            "ignition_temperature": 1000000.0,
+            "is_hull": false,
+            "mass": {
+                "density": 1.0,
+                "nominal_mass": 0.1645
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Helium (Opaque)",
+            "opacity": 1.0,
+            "palette_coordinates": {
+                "category": "Elements",
+                "sub_category": "Helium",
+                "sub_category_ordinal": 0
+            },
+            "rust_receptivity": 0.0,
+            "sound_type": "Gas",
+            "specific_heat": 5193.0,
+            "stiffness": 1.0,
+            "strength": 1.0,
+            "thermal_conductivity": 0.156,
+            "thermal_expansion_coefficient": 0.0036,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+	{
+            "buoyancy_volume_fill": 1.0,
+            "color_key": "#BEBECE",
+            "combustion_type": "Explosion",
+            "explosive_combustion_radius": 1.0,
+            "explosive_combustion_strength": 100.0,
+            "ignition_temperature": 1000000.0,
+            "is_hull": false,
+            "mass": {
+                "density": 1.0,
+                "nominal_mass": 0.1645
+            },
+            "melting_temperature": 1000000.0,
+            "name": "Helium (Transparent)",
+            "opacity": 0.4,
+            "palette_coordinates": {
+                "category": "Elements",
+                "sub_category": "Helium",
+                "sub_category_ordinal": 1
+            },
+            "rust_receptivity": 0.0,
+            "sound_type": "Gas",
+            "specific_heat": 5193.0,
+            "stiffness": 1.0,
+            "strength": 1.0,
+            "thermal_conductivity": 0.156,
+            "thermal_expansion_coefficient": 0.0036,
+            "water_diffusion_speed": 0.5,
+            "water_retention": 0.05,
+            "wind_receptivity": 0.1
+        },
+        {
             "buoyancy_volume_fill": 0.0,
             "color_key": [
                 "#909190",
@@ -3645,9 +3707,10 @@
                         "name": "Elements",
                         "sub_categories": [
                             "Air",
+			    "Helium",
                             "Hydrogen",
-                            "Water",
-			    "Sodium"
+			    "Sodium",
+			    "Water"
                         ]
                     }
                 ]
