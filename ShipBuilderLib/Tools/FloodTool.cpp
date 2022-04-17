@@ -79,7 +79,9 @@ void FloodTool<TLayer>::DoEdit(
     auto layerClone = mController.GetModelController().CloneExistingLayer<TLayer>();
 
     // Do edit
+
     LayerMaterialType const * const floodMaterial = GetFloodMaterial(isRightButton ? MaterialPlaneType::Background : MaterialPlaneType::Foreground);
+
     static_assert(TLayer == LayerType::Structural);
     std::optional<ShipSpaceRect> affectedRegion = mController.GetModelController().StructuralFlood(
         mouseCoordinates,

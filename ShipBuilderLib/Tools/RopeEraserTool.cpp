@@ -29,7 +29,11 @@ RopeEraserTool::RopeEraserTool(
     auto const mouseCoordinates = GetMouseCoordinatesIfInWorkCanvas();
     if (mouseCoordinates)
     {
-        DrawOverlay(ScreenToShipSpace(*mouseCoordinates));
+        auto const mouseShipSpaceCoords = ScreenToShipSpace(*mouseCoordinates);
+
+        DrawOverlay(mouseShipSpaceCoords);
+
+        mController.BroadcastSampledInformationUpdatedAt(mouseShipSpaceCoords, LayerType::Ropes);
     }
 }
 
@@ -40,6 +44,8 @@ RopeEraserTool::~RopeEraserTool()
     {
         HideOverlay();
     }
+
+    mController.BroadcastSampledInformationUpdatedNone();
 }
 
 void RopeEraserTool::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates)
@@ -58,6 +64,9 @@ void RopeEraserTool::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordina
         // Just draw overlay
         DrawOverlay(mouseShipSpaceCoords);
     }
+
+    // Show sampled information
+    mController.BroadcastSampledInformationUpdatedAt(mouseShipSpaceCoords, LayerType::Ropes);
 }
 
 void RopeEraserTool::OnLeftMouseDown()

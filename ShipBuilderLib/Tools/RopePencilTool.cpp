@@ -29,9 +29,13 @@ RopePencilTool::RopePencilTool(
     auto const mouseCoordinates = GetMouseCoordinatesIfInWorkCanvas();
     if (mouseCoordinates)
     {
-        DrawOverlay(ScreenToShipSpace(*mouseCoordinates));
+        auto const mouseShipSpaceCoords = ScreenToShipSpace(*mouseCoordinates);
+
+        DrawOverlay(mouseShipSpaceCoords);
 
         mController.GetUserInterface().RefreshView();
+
+        mController.BroadcastSampledInformationUpdatedAt(mouseShipSpaceCoords, LayerType::Ropes);
     }
 }
 
@@ -52,6 +56,8 @@ RopePencilTool::~RopePencilTool()
     }
 
     mController.LayerChangeEpilog();
+
+    mController.BroadcastSampledInformationUpdatedNone();
 }
 
 void RopePencilTool::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates)
@@ -65,6 +71,9 @@ void RopePencilTool::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordina
 
         assert(!mHasTempVisualization);
     }
+
+    // Show sampled information
+    mController.BroadcastSampledInformationUpdatedAt(mouseShipSpaceCoords, LayerType::Ropes);
 
     // Do overlay
     DrawOverlay(mouseShipSpaceCoords);

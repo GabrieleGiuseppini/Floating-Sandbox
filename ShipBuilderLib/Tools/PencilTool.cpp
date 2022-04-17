@@ -80,11 +80,13 @@ PencilTool<TLayer, IsEraser>::PencilTool(
     auto const mouseCoordinates = GetMouseCoordinatesIfInWorkCanvas();
     if (mouseCoordinates)
     {
+        auto const mouseShipSpaceCoords = ScreenToShipSpace(*mouseCoordinates);
+
         // Display sampled material
-        mController.BroadcastSampledInformationUpdatedAt(ScreenToShipSpace(*mouseCoordinates), TLayer);
+        mController.BroadcastSampledInformationUpdatedAt(mouseShipSpaceCoords, TLayer);
 
         // Calculate affected rect
-        std::optional<ShipSpaceRect> const affectedRect = CalculateApplicableRect(ScreenToShipSpace(*mouseCoordinates));
+        std::optional<ShipSpaceRect> const affectedRect = CalculateApplicableRect(mouseShipSpaceCoords);
 
         // Apply (temporary) change
         if (affectedRect)

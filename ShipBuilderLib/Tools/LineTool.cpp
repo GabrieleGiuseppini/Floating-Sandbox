@@ -51,8 +51,13 @@ LineTool<TLayer>::LineTool(
     auto const mouseCoordinates = GetMouseCoordinatesIfInWorkCanvas();
     if (mouseCoordinates)
     {
-        DoEphemeralVisualization(ScreenToShipSpace(*mouseCoordinates));
+        auto const mouseShipSpaceCoords = ScreenToShipSpace(*mouseCoordinates);
 
+        // Display sampled material
+        mController.BroadcastSampledInformationUpdatedAt(mouseShipSpaceCoords, TLayer);
+
+        // Ephemeral viz
+        DoEphemeralVisualization(mouseShipSpaceCoords);
         mController.LayerChangeEpilog();
     }
 }
@@ -67,6 +72,9 @@ LineTool<TLayer>::~LineTool()
 
         mController.LayerChangeEpilog();
     }
+
+    // Reset sampled material
+    mController.BroadcastSampledInformationUpdatedNone();
 }
 
 template<LayerType TLayer>
@@ -74,8 +82,13 @@ void LineTool<TLayer>::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordi
 {
     // Assuming L/R button transitions already communicated
 
+    auto const mouseShipSpaceCoords = ScreenToShipSpace(mouseCoordinates);
+
     // Restore ephemeral visualization (if any)
     mEphemeralVisualization.reset();
+
+    // Display sampled material
+    mController.BroadcastSampledInformationUpdatedAt(mouseShipSpaceCoords, TLayer);
 
     // Do ephemeral visualization
     DoEphemeralVisualization(ScreenToShipSpace(mouseCoordinates));
