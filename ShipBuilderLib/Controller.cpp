@@ -1265,13 +1265,9 @@ void Controller::InternalRemoveLayer()
                 mModelController->RemoveRopesLayer();
             });
     }
-    else if constexpr (TLayerType == LayerType::Structural)
-    {
-        static_assert(false); // No "remove" layer for structural
-    }
     else
     {
-        static_assert(TLayerType == LayerType::Texture);
+        static_assert(TLayerType == LayerType::Texture); // No "remove" layer for structural
 
         // Create undo action
         InternalPushUndoForWholeLayer<LayerType::Texture>(_("Remove Texture Layer"));
