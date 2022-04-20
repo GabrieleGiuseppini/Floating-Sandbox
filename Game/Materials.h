@@ -288,6 +288,7 @@ public:
         FourFunnelLinerWhistle,
         TripodHorn,
         PipeWhistle,
+        LakeFreighterHorn,
         Klaxon1,
         NuclearAlarm1
     };

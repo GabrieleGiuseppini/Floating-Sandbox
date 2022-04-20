@@ -407,6 +407,8 @@ ElectricalMaterial::ShipSoundElementType ElectricalMaterial::StrToShipSoundEleme
         return ShipSoundElementType::TripodHorn;
     else if (Utils::CaseInsensitiveEquals(str, "PipeWhistle"))
         return ShipSoundElementType::PipeWhistle;
+    else if (Utils::CaseInsensitiveEquals(str, "LakeFreighterHorn"))
+        return ShipSoundElementType::LakeFreighterHorn;
     else if (Utils::CaseInsensitiveEquals(str, "Klaxon1"))
         return ShipSoundElementType::Klaxon1;
     else if (Utils::CaseInsensitiveEquals(str, "NuclearAlarm1"))
@@ -468,6 +470,7 @@ std::string ElectricalMaterial::MakeInstancedElementLabel(ElectricalElementInsta
                 case ShipSoundElementType::FourFunnelLinerWhistle:
                 case ShipSoundElementType::TripodHorn:
                 case ShipSoundElementType::PipeWhistle:
+                case ShipSoundElementType::LakeFreighterHorn:
                 case ShipSoundElementType::Klaxon1:
                 case ShipSoundElementType::NuclearAlarm1:
                 {

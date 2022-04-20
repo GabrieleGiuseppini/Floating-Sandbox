@@ -841,6 +841,24 @@
     },
 
     {
+        "color_key": "#409400",
+	"conducts_electricity": false,
+        "electrical_type": "ShipSound", 
+        "heat_generated": 0.0, 
+	"is_instanced": true,
+        "is_self_powered": false, 
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0, 
+        "name": "Lake Freighter Horn", 
+	"ship_sound_type": "LakeFreighterHorn",
+        "palette_coordinates": {
+		"category": "Sounds",
+		"sub_category": "Horns",
+		"sub_category_ordinal": 4
+	}
+    },
+
+    {
         "color_key": "#40A000",
 	"conducts_electricity": false,
         "electrical_type": "ShipSound", 
@@ -903,7 +921,7 @@
         "is_self_powered": false, 
         "maximum_operating_temperature": 1000000.0,
         "minimum_operating_temperature": 0.0, 
-        "name": "Klaxon 1", 
+        "name": "Nuclear Alarm", 
 	"ship_sound_type": "NuclearAlarm1",
         "palette_coordinates": {
 		"category": "Sounds",

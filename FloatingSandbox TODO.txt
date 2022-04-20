@@ -1157,8 +1157,12 @@
 					+ Horn 2: Four Funnel Liner Whistle
 					+ Horn 3: Tripod Horn
 					+ Horn 4: Pipe Whistle
-				- Timcan's sounds
-				- Ocean disturb at other sound types as well?
+				= Timcan's sounds
+					+ Lake freighter horn
+					- 
+				= Ocean disturb at other sound types as well
+					+ Klaxon1
+					+ Nuclear alarm
 				- Non-Instanced Watertight Doors (see if possible)
 				- Non-Instanced Water In/Out Pumps (see if possible)
 				- Jet engine

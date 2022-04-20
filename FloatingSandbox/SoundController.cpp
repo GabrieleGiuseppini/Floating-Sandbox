@@ -589,6 +589,7 @@ SoundController::SoundController(
                 || soundType == SoundType::ShipFourFunnelLinerWhistle
                 || soundType == SoundType::ShipTripodHorn
                 || soundType == SoundType::ShipPipeWhistle
+                || soundType == SoundType::ShipLakeFreighterHorn
                 || soundType == SoundType::ShipKlaxon1
                 || soundType == SoundType::ShipNuclearAlarm1)
         {
@@ -717,6 +718,22 @@ SoundController::SoundController(
                     {
                         loopStartSample = 2.37601f;
                         loopEndSample = loopStartSample + 1.3156f;
+                    }
+
+                    break;
+                }
+
+                case SoundType::ShipLakeFreighterHorn:
+                {
+                    if (!isUnderwater)
+                    {
+                        loopStartSample = 4.46073;
+                        loopEndSample = 10.5897;
+                    }
+                    else
+                    {
+                        loopStartSample = 4.46073;
+                        loopEndSample = 10.5897;
                     }
 
                     break;
@@ -2036,6 +2053,12 @@ void SoundController::OnShipSoundUpdated(
             case ElectricalMaterial::ShipSoundElementType::PipeWhistle:
             {
                 soundType = SoundType::ShipPipeWhistle;
+                break;
+            }
+
+            case ElectricalMaterial::ShipSoundElementType::LakeFreighterHorn:
+            {
+                soundType = SoundType::ShipLakeFreighterHorn;
                 break;
             }
 

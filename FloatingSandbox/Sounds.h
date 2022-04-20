@@ -69,6 +69,7 @@ enum class SoundType : uint32_t
     ShipFourFunnelLinerWhistle,
     ShipTripodHorn,
     ShipPipeWhistle,
+    ShipLakeFreighterHorn,
     ShipKlaxon1,
     ShipNuclearAlarm1,
     WaterRush,

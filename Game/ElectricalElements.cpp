@@ -1453,7 +1453,7 @@ void ElectricalElements::UpdateSinks(
                             {
                                 case ElectricalMaterial::ShipSoundElementType::QueenMaryHorn:
                                 {
-                                    mParentWorld.DisturbOcean(std::chrono::milliseconds(50));
+                                    mParentWorld.DisturbOcean(std::chrono::milliseconds(250));
                                     break;
                                 }
 
@@ -1469,9 +1469,21 @@ void ElectricalElements::UpdateSinks(
                                     break;
                                 }
 
-                                case ElectricalMaterial::ShipSoundElementType::PipeWhistle:
+                                case ElectricalMaterial::ShipSoundElementType::LakeFreighterHorn:
                                 {
-                                    mParentWorld.DisturbOcean(std::chrono::milliseconds(80));
+                                    mParentWorld.DisturbOcean(std::chrono::milliseconds(150));
+                                    break;
+                                }
+
+                                case ElectricalMaterial::ShipSoundElementType::Klaxon1:
+                                {
+                                    mParentWorld.DisturbOcean(std::chrono::milliseconds(100));
+                                    break;
+                                }
+
+                                case ElectricalMaterial::ShipSoundElementType::NuclearAlarm1:
+                                {
+                                    mParentWorld.DisturbOcean(std::chrono::milliseconds(500));
                                     break;
                                 }
 
