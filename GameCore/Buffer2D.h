@@ -35,7 +35,7 @@ public:
         int width,
         int height)
         : Size(width, height)
-        , mLinearSize(width * height)
+        , mLinearSize(static_cast<size_t>(width) * static_cast<size_t>(height))
     {
         Data = std::make_unique<TElement[]>(mLinearSize);
     }

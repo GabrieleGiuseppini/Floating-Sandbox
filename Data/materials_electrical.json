@@ -777,8 +777,8 @@
         "is_self_powered": false, 
         "maximum_operating_temperature": 1000000.0,
         "minimum_operating_temperature": 0.0, 
-        "name": "Horn 1", 
-	"ship_sound_type": "Horn1",
+        "name": "Queen Mary Horn", 
+	"ship_sound_type": "QueenMaryHorn",
         "palette_coordinates": {
 		"category": "Sounds",
 		"sub_category": "Horns",
@@ -795,8 +795,8 @@
         "is_self_powered": false, 
         "maximum_operating_temperature": 1000000.0,
         "minimum_operating_temperature": 0.0, 
-        "name": "Horn 2", 
-	"ship_sound_type": "Horn2",
+        "name": "Four Funnel Liner Whistle", 
+	"ship_sound_type": "FourFunnelLinerWhistle",
         "palette_coordinates": {
 		"category": "Sounds",
 		"sub_category": "Horns",
@@ -813,8 +813,8 @@
         "is_self_powered": false, 
         "maximum_operating_temperature": 1000000.0,
         "minimum_operating_temperature": 0.0, 
-        "name": "Horn 3", 
-	"ship_sound_type": "Horn3",
+        "name": "Tripod Horn", 
+	"ship_sound_type": "TripodHorn",
         "palette_coordinates": {
 		"category": "Sounds",
 		"sub_category": "Horns",
@@ -831,8 +831,8 @@
         "is_self_powered": false, 
         "maximum_operating_temperature": 1000000.0,
         "minimum_operating_temperature": 0.0, 
-        "name": "Horn 4", 
-	"ship_sound_type": "Horn4",
+        "name": "Pipe Whistle", 
+	"ship_sound_type": "PipeWhistle",
         "palette_coordinates": {
 		"category": "Sounds",
 		"sub_category": "Horns",

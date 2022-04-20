@@ -585,10 +585,10 @@ SoundController::SoundController(
         }
         else if (soundType == SoundType::ShipBell1
                 || soundType == SoundType::ShipBell2
-                || soundType == SoundType::ShipHorn1
-                || soundType == SoundType::ShipHorn2
-                || soundType == SoundType::ShipHorn3
-                || soundType == SoundType::ShipHorn4
+                || soundType == SoundType::ShipQueenMaryHorn
+                || soundType == SoundType::ShipFourFunnelLinerWhistle
+                || soundType == SoundType::ShipTripodHorn
+                || soundType == SoundType::ShipPipeWhistle
                 || soundType == SoundType::ShipKlaxon1
                 || soundType == SoundType::ShipNuclearAlarm1)
         {
@@ -658,7 +658,7 @@ SoundController::SoundController(
                     break;
                 }
 
-                case SoundType::ShipHorn1:
+                case SoundType::ShipQueenMaryHorn:
                 {
                     if (!isUnderwater)
                     {
@@ -674,7 +674,7 @@ SoundController::SoundController(
                     break;
                 }
 
-                case SoundType::ShipHorn2:
+                case SoundType::ShipFourFunnelLinerWhistle:
                 {
                     if (!isUnderwater)
                     {
@@ -690,7 +690,7 @@ SoundController::SoundController(
                     break;
                 }
 
-                case SoundType::ShipHorn3:
+                case SoundType::ShipTripodHorn:
                 {
                     if (!isUnderwater)
                     {
@@ -706,7 +706,7 @@ SoundController::SoundController(
                     break;
                 }
 
-                case SoundType::ShipHorn4:
+                case SoundType::ShipPipeWhistle:
                 {
                     if (!isUnderwater)
                     {
@@ -2015,27 +2015,27 @@ void SoundController::OnShipSoundUpdated(
                 break;
             }
 
-            case ElectricalMaterial::ShipSoundElementType::Horn1:
+            case ElectricalMaterial::ShipSoundElementType::QueenMaryHorn:
             {
-                soundType = SoundType::ShipHorn1;
+                soundType = SoundType::ShipQueenMaryHorn;
                 break;
             }
 
-            case ElectricalMaterial::ShipSoundElementType::Horn2:
+            case ElectricalMaterial::ShipSoundElementType::FourFunnelLinerWhistle:
             {
-                soundType = SoundType::ShipHorn2;
+                soundType = SoundType::ShipFourFunnelLinerWhistle;
                 break;
             }
 
-            case ElectricalMaterial::ShipSoundElementType::Horn3:
+            case ElectricalMaterial::ShipSoundElementType::TripodHorn:
             {
-                soundType = SoundType::ShipHorn3;
+                soundType = SoundType::ShipTripodHorn;
                 break;
             }
 
-            case ElectricalMaterial::ShipSoundElementType::Horn4:
+            case ElectricalMaterial::ShipSoundElementType::PipeWhistle:
             {
-                soundType = SoundType::ShipHorn4;
+                soundType = SoundType::ShipPipeWhistle;
                 break;
             }
 

@@ -399,14 +399,14 @@ ElectricalMaterial::ShipSoundElementType ElectricalMaterial::StrToShipSoundEleme
         return ShipSoundElementType::Bell1;
     else if (Utils::CaseInsensitiveEquals(str, "Bell2"))
         return ShipSoundElementType::Bell2;
-    else if (Utils::CaseInsensitiveEquals(str, "Horn1"))
-        return ShipSoundElementType::Horn1;
-    else if (Utils::CaseInsensitiveEquals(str, "Horn2"))
-        return ShipSoundElementType::Horn2;
-    else if (Utils::CaseInsensitiveEquals(str, "Horn3"))
-        return ShipSoundElementType::Horn3;
-    else if (Utils::CaseInsensitiveEquals(str, "Horn4"))
-        return ShipSoundElementType::Horn4;
+    else if (Utils::CaseInsensitiveEquals(str, "QueenMaryHorn"))
+        return ShipSoundElementType::QueenMaryHorn;
+    else if (Utils::CaseInsensitiveEquals(str, "FourFunnelLinerWhistle"))
+        return ShipSoundElementType::FourFunnelLinerWhistle;
+    else if (Utils::CaseInsensitiveEquals(str, "TripodHorn"))
+        return ShipSoundElementType::TripodHorn;
+    else if (Utils::CaseInsensitiveEquals(str, "PipeWhistle"))
+        return ShipSoundElementType::PipeWhistle;
     else if (Utils::CaseInsensitiveEquals(str, "Klaxon1"))
         return ShipSoundElementType::Klaxon1;
     else if (Utils::CaseInsensitiveEquals(str, "NuclearAlarm1"))
@@ -464,10 +464,10 @@ std::string ElectricalMaterial::MakeInstancedElementLabel(ElectricalElementInsta
                     break;
                 }
 
-                case ShipSoundElementType::Horn1:
-                case ShipSoundElementType::Horn2:
-                case ShipSoundElementType::Horn3:
-                case ShipSoundElementType::Horn4:
+                case ShipSoundElementType::QueenMaryHorn:
+                case ShipSoundElementType::FourFunnelLinerWhistle:
+                case ShipSoundElementType::TripodHorn:
+                case ShipSoundElementType::PipeWhistle:
                 case ShipSoundElementType::Klaxon1:
                 case ShipSoundElementType::NuclearAlarm1:
                 {

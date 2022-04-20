@@ -284,10 +284,10 @@ public:
     {
         Bell1,
         Bell2,
-        Horn1,
-        Horn2,
-        Horn3,
-        Horn4,
+        QueenMaryHorn,
+        FourFunnelLinerWhistle,
+        TripodHorn,
+        PipeWhistle,
         Klaxon1,
         NuclearAlarm1
     };

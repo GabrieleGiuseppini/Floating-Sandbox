@@ -18,12 +18,15 @@
 
 		- Test with SpringReductionFraction = 0.6 (@GameParameters)
 
-		- Fix from Chris:
-			What happened on my screen was I have just done a whole auto trim and added a bit of size just to give it some margin, anyway, save it the abandon it, 
-			goes and dose the thing where it spawns it, but it spawned in under the water (fixed that first thing after I saw the bug) so while it was still flooding 
-			I quickly either hit edit build or new build and it crashed; will attempt to recreate later if nessary
-
 		- New sounds from TimCan
+
+		---------
+
+		- Continuous Auto-focus (*)
+
+		- Jet engines @ Material system improvements (*)
+
+		- ShipLoadDialog Toolbar (*)
 
 		- At lights going off, before flickering: flash w/spread and luminiscence
 			- See 1:53 at https://www.youtube.com/watch?v=yg9rkceLOzA
@@ -56,8 +59,6 @@
 				static constexpr int CombustionStateMachineSlowPeriodStep4 = 48;
 
 		- More parallelism at Ship::Update
-
-		- Continuous Auto-focus (*)
 
 		- Test using normalize_approx in spring loop
 			- Verify gain on Dell
@@ -96,8 +97,6 @@
 				- Generic textures
 				- Fonts
 				- Fishes
-
-		- ShipLoadDialog Toolbar (*)		
 
 		- Light improvements (*)
 
@@ -1113,6 +1112,7 @@
 					= Make test ship for game
 						- Add more electricals
 						- Then move it to game's Ships folder
+						- Do also 1 cargo container
 					+ Test:
 						+ Run in Debug
 						+ Thing itself
@@ -1151,13 +1151,18 @@
 				+ More glass colors
 				+ More concrete colors
 				+ More fiberglass colors
-			- Electrical materials:
+			= Electrical materials:
+				+ Rename horns, @ electrical template, filename, sound enum, etc.
+					+ Horn 1: Queen Mary Horn
+					+ Horn 2: Four Funnel Liner Whistle
+					+ Horn 3: Tripod Horn
+					+ Horn 4: Pipe Whistle
 				- Timcan's sounds
-				- Rename horns
+				- Ocean disturb at other sound types as well?
 				- Non-Instanced Watertight Doors (see if possible)
-				- Jet engine
-					- Engine rearc
 				- Non-Instanced Water In/Out Pumps (see if possible)
+				- Jet engine
+					- Engine rearc				
 				- Clamp
 					- A and B types
 					- When powered, destroys all springs between each pair of powered A and B points

@@ -1175,7 +1175,7 @@ void ElectricalElements::UpdateSinks(
         //
 
         bool const isConnectedToPower =
-            (currentConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[sinkElementIndex]);
+            (mCurrentConnectivityVisitSequenceNumberBuffer[sinkElementIndex] == currentConnectivityVisitSequenceNumber);
 
         bool isProducingHeat = false;
 
@@ -1451,25 +1451,25 @@ void ElectricalElements::UpdateSinks(
                             // Disturb ocean, with delays depending on sound
                             switch (mMaterialBuffer[sinkElementIndex]->ShipSoundType)
                             {
-                                case ElectricalMaterial::ShipSoundElementType::Horn1:
+                                case ElectricalMaterial::ShipSoundElementType::QueenMaryHorn:
                                 {
                                     mParentWorld.DisturbOcean(std::chrono::milliseconds(50));
                                     break;
                                 }
 
-                                case ElectricalMaterial::ShipSoundElementType::Horn2:
+                                case ElectricalMaterial::ShipSoundElementType::FourFunnelLinerWhistle:
                                 {
                                     mParentWorld.DisturbOcean(std::chrono::milliseconds(600));
                                     break;
                                 }
 
-                                case ElectricalMaterial::ShipSoundElementType::Horn3:
+                                case ElectricalMaterial::ShipSoundElementType::TripodHorn:
                                 {
                                     mParentWorld.DisturbOcean(std::chrono::milliseconds(500));
                                     break;
                                 }
 
-                                case ElectricalMaterial::ShipSoundElementType::Klaxon1:
+                                case ElectricalMaterial::ShipSoundElementType::PipeWhistle:
                                 {
                                     mParentWorld.DisturbOcean(std::chrono::milliseconds(80));
                                     break;
