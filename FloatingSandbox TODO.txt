@@ -1160,12 +1160,13 @@
 				= Timcan's sounds
 					+ Lake freighter horn
 					+ Shieldhall steam siren
-					- Queen Elizabeth 2 Horn
-					- SS Rex ???
+					+ Queen Elizabeth 2 Horn
+					- SS Rex ...
 				= Ocean disturb at other sound types as well
 					+ Klaxon1
 					+ Nuclear alarm
 				- Test all sounds underwater
+				- changes.txt
 				- Non-Instanced Watertight Doors (see if possible)
 				- Non-Instanced Water In/Out Pumps (see if possible)
 				- Jet engine

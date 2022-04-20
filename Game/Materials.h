@@ -290,6 +290,7 @@ public:
         PipeWhistle,
         LakeFreighterHorn,
         ShieldhallSteamSiren,
+        QueenElizabeth2Horn,
         Klaxon1,
         NuclearAlarm1
     };
