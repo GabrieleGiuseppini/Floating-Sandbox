@@ -590,6 +590,7 @@ SoundController::SoundController(
                 || soundType == SoundType::ShipTripodHorn
                 || soundType == SoundType::ShipPipeWhistle
                 || soundType == SoundType::ShipLakeFreighterHorn
+                || soundType == SoundType::ShipShieldhallSteamSiren
                 || soundType == SoundType::ShipKlaxon1
                 || soundType == SoundType::ShipNuclearAlarm1)
         {
@@ -727,13 +728,29 @@ SoundController::SoundController(
                 {
                     if (!isUnderwater)
                     {
-                        loopStartSample = 4.46073;
-                        loopEndSample = 10.5897;
+                        loopStartSample = 4.46073f;
+                        loopEndSample = 10.5897f;
                     }
                     else
                     {
-                        loopStartSample = 4.46073;
-                        loopEndSample = 10.5897;
+                        loopStartSample = 4.46073f;
+                        loopEndSample = 10.5897f;
+                    }
+
+                    break;
+                }
+
+                case SoundType::ShipShieldhallSteamSiren:
+                {
+                    if (!isUnderwater)
+                    {
+                        loopStartSample = 4.56406f;
+                        loopEndSample = 9.51304f;
+                    }
+                    else
+                    {
+                        loopStartSample = 4.68839f;
+                        loopEndSample = 9.81619f;
                     }
 
                     break;
@@ -2059,6 +2076,12 @@ void SoundController::OnShipSoundUpdated(
             case ElectricalMaterial::ShipSoundElementType::LakeFreighterHorn:
             {
                 soundType = SoundType::ShipLakeFreighterHorn;
+                break;
+            }
+
+            case ElectricalMaterial::ShipSoundElementType::ShieldhallSteamSiren:
+            {
+                soundType = SoundType::ShipShieldhallSteamSiren;
                 break;
             }
 

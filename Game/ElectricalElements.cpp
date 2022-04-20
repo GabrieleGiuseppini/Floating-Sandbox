@@ -1475,6 +1475,12 @@ void ElectricalElements::UpdateSinks(
                                     break;
                                 }
 
+                                case ElectricalMaterial::ShipSoundElementType::ShieldhallSteamSiren:
+                                {
+                                    mParentWorld.DisturbOcean(std::chrono::milliseconds(150));
+                                    break;
+                                }
+
                                 case ElectricalMaterial::ShipSoundElementType::Klaxon1:
                                 {
                                     mParentWorld.DisturbOcean(std::chrono::milliseconds(100));

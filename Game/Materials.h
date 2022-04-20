@@ -289,6 +289,7 @@ public:
         TripodHorn,
         PipeWhistle,
         LakeFreighterHorn,
+        ShieldhallSteamSiren,
         Klaxon1,
         NuclearAlarm1
     };
