@@ -291,6 +291,7 @@ public:
         LakeFreighterHorn,
         ShieldhallSteamSiren,
         QueenElizabeth2Horn,
+        SSRexWhistle,
         Klaxon1,
         NuclearAlarm1
     };

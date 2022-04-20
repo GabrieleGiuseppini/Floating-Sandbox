@@ -895,6 +895,24 @@
     },
 
     {
+        "color_key": "#409700",
+	"conducts_electricity": false,
+        "electrical_type": "ShipSound", 
+        "heat_generated": 0.0, 
+	"is_instanced": true,
+        "is_self_powered": false, 
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0, 
+        "name": "S.S. Rex Whistle", 
+	"ship_sound_type": "SSRexWhistle",
+        "palette_coordinates": {
+		"category": "Sounds",
+		"sub_category": "Horns",
+		"sub_category_ordinal": 7
+	}
+    },
+
+    {
         "color_key": "#40A000",
 	"conducts_electricity": false,
         "electrical_type": "ShipSound", 
