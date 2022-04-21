@@ -1477,7 +1477,7 @@ void ElectricalElements::UpdateSinks(
 
                                 case ElectricalMaterial::ShipSoundElementType::ShieldhallSteamSiren:
                                 {
-                                    mParentWorld.DisturbOcean(std::chrono::milliseconds(150));
+                                    mParentWorld.DisturbOcean(std::chrono::milliseconds(550));
                                     break;
                                 }
 
@@ -1502,6 +1502,18 @@ void ElectricalElements::UpdateSinks(
                                 case ElectricalMaterial::ShipSoundElementType::NuclearAlarm1:
                                 {
                                     mParentWorld.DisturbOcean(std::chrono::milliseconds(500));
+                                    break;
+                                }
+
+                                case ElectricalMaterial::ShipSoundElementType::EvacuationAlarm1:
+                                {
+                                    mParentWorld.DisturbOcean(std::chrono::milliseconds(100));
+                                    break;
+                                }
+
+                                case ElectricalMaterial::ShipSoundElementType::EvacuationAlarm2:
+                                {
+                                    mParentWorld.DisturbOcean(std::chrono::milliseconds(100));
                                     break;
                                 }
 

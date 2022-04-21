@@ -293,7 +293,9 @@ public:
         QueenElizabeth2Horn,
         SSRexWhistle,
         Klaxon1,
-        NuclearAlarm1
+        NuclearAlarm1,
+        EvacuationAlarm1,
+        EvacuationAlarm2
     };
 
 public:

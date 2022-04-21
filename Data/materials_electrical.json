@@ -966,7 +966,7 @@
 	}
     },
 
-	{
+    {
         "color_key": "#40C000",
 	"conducts_electricity": false,
         "electrical_type": "ShipSound", 
@@ -979,8 +979,44 @@
 	"ship_sound_type": "NuclearAlarm1",
         "palette_coordinates": {
 		"category": "Sounds",
-		"sub_category": "Nuclear Alarms",
+		"sub_category": "Alarms",
 		"sub_category_ordinal": 0
+	}
+    },
+
+    {
+        "color_key": "#40C100",
+	"conducts_electricity": false,
+        "electrical_type": "ShipSound", 
+        "heat_generated": 0.0, 
+	"is_instanced": true,
+        "is_self_powered": false, 
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0, 
+        "name": "Evacuation Alarm 1", 
+	"ship_sound_type": "EvacuationAlarm1",
+        "palette_coordinates": {
+		"category": "Sounds",
+		"sub_category": "Alarms",
+		"sub_category_ordinal": 1
+	}
+    },
+
+    {
+        "color_key": "#40C200",
+	"conducts_electricity": false,
+        "electrical_type": "ShipSound", 
+        "heat_generated": 0.0, 
+	"is_instanced": true,
+        "is_self_powered": false, 
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0, 
+        "name": "Evacuation Alarm 2", 
+	"ship_sound_type": "EvacuationAlarm2",
+        "palette_coordinates": {
+		"category": "Sounds",
+		"sub_category": "Alarms",
+		"sub_category_ordinal": 2
 	}
     },
 
@@ -1175,7 +1211,7 @@
 					"Horns",
 					"Bells",
 					"Klaxons",
-					"Nuclear Alarms"]
+					"Alarms"]
 			}
 		]
 	    },

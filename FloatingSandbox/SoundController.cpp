@@ -594,7 +594,9 @@ SoundController::SoundController(
                 || soundType == SoundType::ShipQueenElizabeth2Horn
                 || soundType == SoundType::ShipSSRexWhistle
                 || soundType == SoundType::ShipKlaxon1
-                || soundType == SoundType::ShipNuclearAlarm1)
+                || soundType == SoundType::ShipNuclearAlarm1
+                || soundType == SoundType::ShipEvacuationAlarm1
+                || soundType == SoundType::ShipEvacuationAlarm2)
         {
             //
             // Looped U sound
@@ -817,6 +819,38 @@ SoundController::SoundController(
                     {
                         loopStartSample = 3.6507f;
                         loopEndSample = loopStartSample + 1.27698f;
+                    }
+
+                    break;
+                }
+
+                case SoundType::ShipEvacuationAlarm1:
+                {
+                    if (!isUnderwater)
+                    {
+                        loopStartSample = 0.0f;
+                        loopEndSample = 2.1254f;
+                    }
+                    else
+                    {
+                        loopStartSample = 0.0f;
+                        loopEndSample = 2.1254f;
+                    }
+
+                    break;
+                }
+
+                case SoundType::ShipEvacuationAlarm2:
+                {
+                    if (!isUnderwater)
+                    {
+                        loopStartSample = 1.37234f;
+                        loopEndSample = 2.74776f;
+                    }
+                    else
+                    {
+                        loopStartSample = 1.32662f;
+                        loopEndSample = 2.74667f;
                     }
 
                     break;
@@ -2140,6 +2174,18 @@ void SoundController::OnShipSoundUpdated(
             case ElectricalMaterial::ShipSoundElementType::NuclearAlarm1:
             {
                 soundType = SoundType::ShipNuclearAlarm1;
+                break;
+            }
+
+            case ElectricalMaterial::ShipSoundElementType::EvacuationAlarm1:
+            {
+                soundType = SoundType::ShipEvacuationAlarm1;
+                break;
+            }
+
+            case ElectricalMaterial::ShipSoundElementType::EvacuationAlarm2:
+            {
+                soundType = SoundType::ShipEvacuationAlarm2;
                 break;
             }
         }

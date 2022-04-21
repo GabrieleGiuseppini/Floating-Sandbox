@@ -419,6 +419,10 @@ ElectricalMaterial::ShipSoundElementType ElectricalMaterial::StrToShipSoundEleme
         return ShipSoundElementType::Klaxon1;
     else if (Utils::CaseInsensitiveEquals(str, "NuclearAlarm1"))
         return ShipSoundElementType::NuclearAlarm1;
+    else if (Utils::CaseInsensitiveEquals(str, "EvacuationAlarm1"))
+        return ShipSoundElementType::EvacuationAlarm1;
+    else if (Utils::CaseInsensitiveEquals(str, "EvacuationAlarm2"))
+        return ShipSoundElementType::EvacuationAlarm2;
     else
         throw GameException("Unrecognized ShipSoundElementType \"" + str + "\"");
 }
@@ -480,10 +484,17 @@ std::string ElectricalMaterial::MakeInstancedElementLabel(ElectricalElementInsta
                 case ShipSoundElementType::ShieldhallSteamSiren:
                 case ShipSoundElementType::QueenElizabeth2Horn:
                 case ShipSoundElementType::SSRexWhistle:
-                case ShipSoundElementType::Klaxon1:
-                case ShipSoundElementType::NuclearAlarm1:
                 {
                     ss << "Horn #" << static_cast<int>(instanceIndex);
+                    break;
+                }
+
+                case ShipSoundElementType::Klaxon1:
+                case ShipSoundElementType::NuclearAlarm1:
+                case ShipSoundElementType::EvacuationAlarm1:
+                case ShipSoundElementType::EvacuationAlarm2:
+                {
+                    ss << "Alarm #" << static_cast<int>(instanceIndex);
                     break;
                 }
             }

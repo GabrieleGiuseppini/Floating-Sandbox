@@ -11,7 +11,8 @@
 	- Added Sodium material - if you don't know what sodium does when immersed in water, check it out! [https://www.youtube.com/watch?v=YiCnUkCCsMw]
 	- Added Helium - similar to Hydrogen, but not explosive
 	- Added transparent variants to glass and gaseous materials
-	- The new materials database now contains 694 materials!
+	- The new structural materials database contains now 694 materials!
+	- Added a few more ship sounds - thanks to Officer TimCan!
 - ShipBuilder:
 	- Added "Measuring Tape" tool, which allows to measure lengths of structures
 	- Added "Waterline Analysis", predicting whether a ship will float or sink, and where the waterline is going to be
