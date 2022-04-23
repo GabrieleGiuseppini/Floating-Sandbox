@@ -8,10 +8,12 @@
 #include "OpenGLManager.h"
 #include "ShaderTypes.h"
 #include "ShipBuilderTypes.h"
+#include "TextureTypes.h"
 #include "ViewModel.h"
 
 #include <Game/Layers.h>
 #include <Game/ResourceLocator.h>
+#include <Game/TextureAtlas.h>
 
 #include <GameCore/Colors.h>
 #include <GameCore/ImageData.h>
@@ -37,7 +39,7 @@ class View
 {
 public:
 
-    View(        
+    View(
         ShipSpaceSize shipSpaceSize,
         VisualizationType primaryVisualization,
         float otherVisualizationsOpacity,
@@ -148,10 +150,6 @@ public:
 
     void UploadGameVisualization(RgbaImageData const & texture);
 
-    void UpdateGameVisualizationTexture(
-        RgbaImageData const & subTexture,
-        ImageCoordinates const & origin);
-
     void RemoveGameVisualization();
 
     bool HasGameVisualization() const
@@ -248,6 +246,28 @@ public:
 
     void RemoveDashedLineOverlay();
 
+    //
+    // Misc
+    //
+
+    enum class WaterlineMarkerType
+    {
+        CenterOfBuoyancy,
+        CenterOfMass
+    };
+
+    void UploadWaterlineMarker(
+        vec2f const & center, // Ship space coords
+        WaterlineMarkerType type);
+
+    void RemoveWaterlineMarker(WaterlineMarkerType type);
+
+    void UploadWaterline(
+        vec2f const & center, // Ship space coords
+        vec2f const & waterDirection);
+
+    void RemoveWaterline();
+
 public:
 
     void Render();
@@ -265,7 +285,7 @@ private:
     void UpdateRectOverlay();
     void UpdateDashedLineOverlay();
 
-    inline void UploadTextureVertices(
+    inline void UploadTextureVerticesTriangleStripQuad(
         float leftXShip, float leftXTex,
         float rightXShip, float rightTex,
         float bottomYShip, float bottomYTex,
@@ -425,6 +445,24 @@ private:
         {}
     };
 
+    struct WaterlineVertex
+    {
+        vec2f positionShip; // Ship space
+        vec2f centerShip; // Ship space
+        vec2f direction;
+
+        WaterlineVertex() = default;
+
+        WaterlineVertex(
+            vec2f _positionShip,
+            vec2f _centerShip,
+            vec2f _direction)
+            : positionShip(_positionShip)
+            , centerShip(_centerShip)
+            , direction(_direction)
+        {}
+    };
+
 #pragma pack(pop)
 
     //
@@ -495,6 +533,24 @@ private:
     GameOpenGLVBO mDashedLineOverlayVBO;
     std::vector<std::pair<ShipSpaceCoordinates, ShipSpaceCoordinates>> mDashedLineOverlaySet;
     vec3f mDashedLineOverlayColor;
+
+    // Waterline markers
+    GameOpenGLVAO mWaterlineMarkersVAO;
+    GameOpenGLVBO mWaterlineMarkersVBO;
+    bool mHasCenterOfBuoyancyWaterlineMarker;
+    bool mHasCenterOfMassWaterlineMarker;
+
+    // Waterline
+    GameOpenGLVAO mWaterlineVAO;
+    GameOpenGLVBO mWaterlineVBO;
+    bool mHasWaterline;
+
+    //
+    // Textures
+    //
+
+    GameOpenGLTexture mMipMappedTextureAtlasOpenGLHandle;
+    std::unique_ptr<Render::TextureAtlasMetadata<MipMappedTextureGroups>> mMipMappedTextureAtlasMetadata;
 
     //
     // Settings from outside

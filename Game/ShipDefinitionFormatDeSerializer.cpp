@@ -1236,7 +1236,7 @@ size_t ShipDefinitionFormatDeSerializer::AppendPngPreview(
         {
             StructuralElement const & element = structuralLayer.Buffer[{x + minX, y + minY}];
             previewRawData[{x, y}] = element.Material != nullptr
-                ? rgbaColor(element.Material->RenderColor, 255)
+                ? element.Material->RenderColor
                 : rgbaColor(EmptyMaterialColorKey, 255);
         }
     }
@@ -1553,7 +1553,7 @@ ShipMetadata ShipDefinitionFormatDeSerializer::ReadMetadata(DeSerializationBuffe
 
                 float outputUnits;
                 buffer.ReadAt<float>(offset + readOffset, outputUnits);
-                
+
                 metadata.Scale = ShipSpaceToWorldSpaceCoordsRatio(inputUnits, outputUnits);
 
                 break;

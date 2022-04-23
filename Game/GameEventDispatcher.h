@@ -310,13 +310,14 @@ public:
         ElectricalElementInstanceIndex instanceIndex,
         SwitchType type,
         ElectricalState state,
+        ElectricalMaterial const & electricalMaterial,
         std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override
     {
         LogMessage("OnSwitchCreated(EEID=", electricalElementId, " IID=", int(instanceIndex), "): State=", static_cast<bool>(state));
 
         for (auto sink : mElectricalElementSinks)
         {
-            sink->OnSwitchCreated(electricalElementId, instanceIndex, type, state, panelElementMetadata);
+            sink->OnSwitchCreated(electricalElementId, instanceIndex, type, state, electricalMaterial, panelElementMetadata);
         }
     }
 
@@ -325,72 +326,74 @@ public:
         ElectricalElementInstanceIndex instanceIndex,
         PowerProbeType type,
         ElectricalState state,
+        ElectricalMaterial const & electricalMaterial,
         std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override
     {
         LogMessage("OnPowerProbeCreated(EEID=", electricalElementId, " IID=", int(instanceIndex), "): State=", static_cast<bool>(state));
 
         for (auto sink : mElectricalElementSinks)
         {
-            sink->OnPowerProbeCreated(electricalElementId, instanceIndex, type, state, panelElementMetadata);
+            sink->OnPowerProbeCreated(electricalElementId, instanceIndex, type, state, electricalMaterial, panelElementMetadata);
         }
     }
 
     void OnEngineControllerCreated(
         ElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
+        ElectricalMaterial const & electricalMaterial,
         std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override
     {
         LogMessage("OnEngineControllerCreated(EEID=", electricalElementId, " IID=", int(instanceIndex), ")");
 
         for (auto sink : mElectricalElementSinks)
         {
-            sink->OnEngineControllerCreated(electricalElementId, instanceIndex, panelElementMetadata);
+            sink->OnEngineControllerCreated(electricalElementId, instanceIndex, electricalMaterial, panelElementMetadata);
         }
     }
 
     void OnEngineMonitorCreated(
         ElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
-        ElectricalMaterial const & electricalMaterial,
         float thrustMagnitude,
         float rpm,
+        ElectricalMaterial const & electricalMaterial,
         std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override
     {
         LogMessage("OnEngineMonitorCreated(EEID=", electricalElementId, " IID=", int(instanceIndex), "): Thrust=", thrustMagnitude, " RPM=", rpm);
 
         for (auto sink : mElectricalElementSinks)
         {
-            sink->OnEngineMonitorCreated(electricalElementId, instanceIndex, electricalMaterial, thrustMagnitude, rpm, panelElementMetadata);
+            sink->OnEngineMonitorCreated(electricalElementId, instanceIndex, thrustMagnitude, rpm, electricalMaterial, panelElementMetadata);
         }
     }
 
     void OnWaterPumpCreated(
         ElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
-        ElectricalMaterial const & electricalMaterial,
         float normalizedForce,
+        ElectricalMaterial const & electricalMaterial,
         std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override
     {
         LogMessage("OnWaterPumpCreated(EEID=", electricalElementId, " IID=", int(instanceIndex), ")");
 
         for (auto sink : mElectricalElementSinks)
         {
-            sink->OnWaterPumpCreated(electricalElementId, instanceIndex, electricalMaterial, normalizedForce, panelElementMetadata);
+            sink->OnWaterPumpCreated(electricalElementId, instanceIndex, normalizedForce, electricalMaterial, panelElementMetadata);
         }
     }
 
     void OnWatertightDoorCreated(
         ElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
-        ElectricalMaterial const & electricalMaterial,
         bool isOpen,
+        ElectricalMaterial const & electricalMaterial,
         std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override
     {
         LogMessage("OnWatertightDoorCreated(EEID=", electricalElementId, " IID=", int(instanceIndex), ")");
 
         for (auto sink : mElectricalElementSinks)
         {
-            sink->OnWatertightDoorCreated(electricalElementId, instanceIndex, electricalMaterial, isOpen, panelElementMetadata);
+            sink->OnWatertightDoorCreated(electricalElementId, instanceIndex, isOpen, electricalMaterial, panelElementMetadata);
         }
     }
 
@@ -587,6 +590,26 @@ public:
     void OnAirBubbleSurfaced(unsigned int size) override
     {
         mAirBubbleSurfacedEvents += size;
+    }
+
+    void OnWaterReaction(
+        bool isUnderwater,
+        unsigned int size) override
+    {
+        for (auto sink : mGenericSinks)
+        {
+            sink->OnWaterReaction(isUnderwater, size);
+        }
+    }
+
+    void OnWaterReactionExplosion(
+        bool isUnderwater,
+        unsigned int size) override
+    {
+        for (auto sink : mGenericSinks)
+        {
+            sink->OnWaterReactionExplosion(isUnderwater, size);
+        }
     }
 
     void OnSilenceStarted() override

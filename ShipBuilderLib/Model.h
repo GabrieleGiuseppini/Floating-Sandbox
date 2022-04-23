@@ -33,45 +33,6 @@ class Model
 {
 public:
 
-    struct DirtyState
-    {
-        std::array<bool, LayerCount> IsLayerDirtyMap;
-        bool IsMetadataDirty;
-        bool IsPhysicsDataDirty;
-        bool IsAutoTexturizationSettingsDirty;
-
-        bool GlobalIsDirty;
-
-        DirtyState()
-            : IsLayerDirtyMap()
-            , IsMetadataDirty(false)
-            , IsPhysicsDataDirty(false)
-            , IsAutoTexturizationSettingsDirty(false)
-            , GlobalIsDirty(false)
-        {
-            IsLayerDirtyMap.fill(false);
-        }
-
-        DirtyState & operator=(DirtyState const & other) = default;
-
-        void RecalculateGlobalIsDirty()
-        {
-            GlobalIsDirty = std::find(
-                IsLayerDirtyMap.cbegin(),
-                IsLayerDirtyMap.cend(),
-                true) != IsLayerDirtyMap.cend()
-                ? true
-                : false;
-
-            GlobalIsDirty |=
-                IsMetadataDirty
-                | IsPhysicsDataDirty
-                | IsAutoTexturizationSettingsDirty;
-        }
-    };
-
-public:
-
     explicit Model(
         ShipSpaceSize const & shipSize,
         std::string const & shipName);
@@ -134,17 +95,23 @@ public:
         mDirtyState.GlobalIsDirty = true;
     }
 
+    void SetElectricalPanelMetadata(ElectricalPanelMetadata && panelMetadata)
+    {
+        assert(mElectricalLayer);
+        mElectricalLayer->Panel = panelMetadata;
+    }
+
     bool HasLayer(LayerType layer) const
     {
         return mLayerPresenceMap[static_cast<size_t>(layer)];
     }
 
-    DirtyState const & GetDirtyState() const
+    ModelDirtyState const & GetDirtyState() const
     {
         return mDirtyState;
     }
 
-    void SetDirtyState(DirtyState const & dirtyState)
+    void SetDirtyState(ModelDirtyState const & dirtyState)
     {
         mDirtyState = dirtyState;
     }
@@ -177,7 +144,7 @@ public:
 
     void ClearIsDirty()
     {
-        mDirtyState = DirtyState();
+        mDirtyState = ModelDirtyState();
     }
 
     void ClearIsDirty(LayerType layer)
@@ -185,7 +152,7 @@ public:
         mDirtyState.IsLayerDirtyMap[static_cast<size_t>(layer)] = false;
         mDirtyState.RecalculateGlobalIsDirty();
     }
-    
+
     template<LayerType TLayer>
     typename LayerTypeTraits<TLayer>::layer_data_type CloneExistingLayer() const
     {
@@ -225,8 +192,7 @@ public:
         return *mStructuralLayer;
     }
 
-    void NewStructuralLayer();
-    void SetStructuralLayer(/*TODO*/);
+    void SetStructuralLayer(StructuralLayerData && structuralLayer);
 
     StructuralLayerData CloneStructuralLayer() const;
     void RestoreStructuralLayer(StructuralLayerData && structuralLayer);
@@ -243,8 +209,7 @@ public:
         return *mElectricalLayer;
     }
 
-    void NewElectricalLayer();
-    void SetElectricalLayer(/*TODO*/);
+    void SetElectricalLayer(ElectricalLayerData && electricalLayer);
     void RemoveElectricalLayer();
 
     std::unique_ptr<ElectricalLayerData> CloneElectricalLayer() const;
@@ -262,8 +227,7 @@ public:
         return *mRopesLayer;
     }
 
-    void NewRopesLayer();
-    void SetRopesLayer(/*TODO*/);
+    void SetRopesLayer(RopesLayerData && ropesLayer);
     void RemoveRopesLayer();
 
     std::unique_ptr<RopesLayerData> CloneRopesLayer() const;
@@ -281,7 +245,6 @@ public:
         return *mTextureLayer;
     }
 
-    void NewTextureLayer();
     void SetTextureLayer(TextureLayerData && textureLayer);
     void RemoveTextureLayer();
 
@@ -291,10 +254,6 @@ public:
 private:
 
     static std::unique_ptr<StructuralLayerData> MakeNewEmptyStructuralLayer(ShipSpaceSize const & shipSize);
-
-    static std::unique_ptr<ElectricalLayerData> MakeNewEmptyElectricalLayer(ShipSpaceSize const & shipSize);
-
-    static std::unique_ptr<RopesLayerData> MakeNewEmptyRopesLayer();
 
 private:
 
@@ -324,7 +283,7 @@ private:
     std::array<bool, LayerCount> mLayerPresenceMap;
 
     // Dirty state
-    DirtyState mDirtyState;
+    ModelDirtyState mDirtyState;
 };
 
 }

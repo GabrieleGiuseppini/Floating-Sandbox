@@ -52,7 +52,7 @@ struct TextureFrameMetadata
     // world coordinate, that is the coordinate of this point, in frame (pixel) coordinates
     ImageCoordinates AnchorCenter;
 
-    // Anchor point in in texture frame coordinates scaled to world coordinates
+    // Anchor point in texture frame coordinates scaled to world coordinates
     // (i.e. [0.0, 1.0] * WorldWidth/Height)
     vec2f AnchorCenterWorld;
 
@@ -217,3 +217,5 @@ private:
 };
 
 }
+
+#include "TextureDatabase-inl.h"

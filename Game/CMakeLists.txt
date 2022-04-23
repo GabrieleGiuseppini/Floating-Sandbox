@@ -22,6 +22,7 @@ set  (GAME_SOURCES
 	ImageFileTools.cpp
 	ImageFileTools.h
 	LayerElements.h
+	Layers.cpp
 	Layers.h
 	Materials.cpp
 	Materials.h
@@ -136,9 +137,9 @@ set  (RENDER_SOURCES
 	ShipRenderContext.cpp
 	ShipRenderContext.h
 	TextureTypes.h
-	TextureAtlas.cpp
+	TextureAtlas-inl.h
 	TextureAtlas.h
-	TextureDatabase.cpp
+	TextureDatabase-inl.h
 	TextureDatabase.h
 	UploadedTextureManager.h
 	UploadedTextureManager-inl.h

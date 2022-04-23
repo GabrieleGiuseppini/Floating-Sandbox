@@ -415,18 +415,32 @@ public:
         // empty outskirts of frames
         float const renderHalfQuadSize = halfQuadSize + 13.0f;
 
-        // Calculate explosion index based off explosion type
+        // Calculate explosion index and yellowing based off explosion type
         float explosionIndex;
-        if (ExplosionType::Deflagration == explosionType)
+        float yellowing;
+        switch (explosionType)
         {
-            // 0..2, randomly
-            explosionIndex = std::min(2.0f, std::floor(personalitySeed * 3.0f));
-        }
-        else
-        {
-            assert(ExplosionType::Combustion == explosionType);
+            case ExplosionType::Combustion:
+            {
+                explosionIndex = 3.0f;
+                yellowing = 0.0f;
+                break;
+            }
 
-            explosionIndex = 3.0f;
+            case ExplosionType::Deflagration:
+            {
+                // 0..2, randomly
+                explosionIndex = std::min(2.0f, std::floor(personalitySeed * 3.0f));
+                yellowing = 0.0f;
+                break;
+            }
+
+            case ExplosionType::Sodium:
+            {
+                explosionIndex = 3.0f;
+                yellowing = 1.0f;
+                break;
+            }
         }
 
         // Calculate rotation based off personality seed
@@ -444,6 +458,7 @@ public:
             static_cast<float>(planeId),
             angleCcw,
             explosionIndex,
+            yellowing,
             progress);
 
         // Top-Right
@@ -454,6 +469,7 @@ public:
             static_cast<float>(planeId),
             angleCcw,
             explosionIndex,
+            yellowing,
             progress);
 
         // Bottom-left
@@ -464,6 +480,7 @@ public:
             static_cast<float>(planeId),
             angleCcw,
             explosionIndex,
+            yellowing,
             progress);
 
         // Triangle 2
@@ -476,6 +493,7 @@ public:
             static_cast<float>(planeId),
             angleCcw,
             explosionIndex,
+            yellowing,
             progress);
 
         // Bottom-left
@@ -486,6 +504,7 @@ public:
             static_cast<float>(planeId),
             angleCcw,
             explosionIndex,
+            yellowing,
             progress);
 
         // Bottom-right
@@ -496,6 +515,7 @@ public:
             static_cast<float>(planeId),
             angleCcw,
             explosionIndex,
+            yellowing,
             progress);
     }
 
@@ -1288,6 +1308,7 @@ private:
 
         float angle;
         float explosionIndex;
+        float yellowing;
         float progress;
 
         ExplosionVertex(
@@ -1297,6 +1318,7 @@ private:
             float _planeId,
             float _angle,
             float _explosionIndex,
+            float _yellowing,
             float _progress)
             : centerPosition(_centerPosition)
             , vertexOffset(_vertexOffset)
@@ -1304,6 +1326,7 @@ private:
             , planeId(_planeId)
             , angle(_angle)
             , explosionIndex(_explosionIndex)
+            , yellowing(_yellowing)
             , progress(_progress)
         {}
     };

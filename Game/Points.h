@@ -231,9 +231,9 @@ private:
         //float NextSmokeEmissionSimulationTimestamp;
 
         // The current flame vector, which provides direction and magnitude
-        // of the flame quad. 
-        // Slowly converges to the target vector, which is the resultant of 
-        // (air) buoyancy making the flame upwards, added to the particle's 
+        // of the flame quad.
+        // Slowly converges to the target vector, which is the resultant of
+        // (air) buoyancy making the flame upwards, added to the particle's
         // current velocity
         vec2f FlameVector;
 
@@ -256,6 +256,40 @@ private:
             //NextSmokeEmissionSimulationTimestamp = 0.0f;
             FlameVector = vec2f(0.0f, 1.0f);
             FlameWindRotationAngle = 0.0f;
+        }
+    };
+
+    /*
+     * The state of water reactions.
+     */
+    struct WaterReactionState
+    {
+    public:
+
+        enum class StateType
+        {
+            Inert, // Material will never react to water
+            Unreacted, // Material is reactive, but reaction hasn't triggered yet
+            ReactionTriggered, // Reaction has triggered, waiting to explode
+            Consumed // Exploded, won't react anymore
+        };
+
+    public:
+
+        StateType State;
+        float Reactivity;
+        GameWallClock::float_time ExplosionTimestamp; // Only valid in ReactionTriggered state
+
+        WaterReactionState(float materialWaterReactivity)
+        {
+            Reactivity = materialWaterReactivity;
+            Reset();
+        }
+
+        inline void Reset()
+        {
+            State = (Reactivity == 0.0f) ? StateType::Inert : StateType::Unreacted;
+            ExplosionTimestamp = std::numeric_limits<GameWallClock::float_time>::min();
         }
     };
 
@@ -573,6 +607,8 @@ public:
         , mMaterialIgnitionTemperatureBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mMaterialCombustionTypeBuffer(mBufferElementCount, shipPointCount, StructuralMaterial::MaterialCombustionType::Combustion) // Arbitrary
         , mCombustionStateBuffer(mBufferElementCount, shipPointCount, CombustionState())
+        // Water reaction dynamics
+        , mWaterReactionStateBuffer(mBufferElementCount, shipPointCount, WaterReactionState(0.0f))
         // Electrical dynamics
         , mElectricalElementBuffer(mBufferElementCount, shipPointCount, NoneElementIndex)
         , mLightBuffer(mBufferElementCount, shipPointCount, 0.0f)
@@ -630,6 +666,7 @@ public:
         , mVec2fBufferAllocator(mBufferElementCount)
         , mCombustionIgnitionCandidates(mRawShipPointCount)
         , mCombustionExplosionCandidates(mRawShipPointCount)
+        , mWaterReactionExplosionCandidates(mRawShipPointCount)
         , mBurningPoints()
         , mStoppedBurningPoints()
         , mFreeEphemeralParticleSearchStartIndex(mAlignedShipPointCount)
@@ -815,6 +852,7 @@ public:
     void UpdateCombustionLowFrequency(
         ElementIndex pointOffset,
         ElementIndex pointStride,
+        GameWallClock::float_time currentWallClockTime,
         float currentSimulationTime,
         Storm::Parameters const & stormParameters,
         GameParameters const & gameParameters);
@@ -837,7 +875,7 @@ public:
     void Query(ElementIndex pointElementIndex) const;
 
     // For debugging
-    void ColorPoint(
+    void ColorPointForDebugging(
         ElementIndex pointIndex,
         rgbaColor const & color);
 
@@ -2013,6 +2051,12 @@ private:
     Buffer<CombustionState> mCombustionStateBuffer;
 
     //
+    // Water reaction dynamics
+    //
+
+    Buffer<WaterReactionState> mWaterReactionStateBuffer;
+
+    //
     // Electrical dynamics
     //
 
@@ -2131,10 +2175,12 @@ private:
     BufferAllocator<float> mFloatBufferAllocator;
     BufferAllocator<vec2f> mVec2fBufferAllocator;
 
-    // The list of candidates for burning and exploding during combustion;
+    // The list of candidates for burning and exploding during combustion,
+    // and for exploding during a reaction with water;
     // member only to save allocations at use time
     BoundedVector<std::tuple<ElementIndex, float>> mCombustionIgnitionCandidates;
     BoundedVector<std::tuple<ElementIndex, float>> mCombustionExplosionCandidates;
+    BoundedVector<std::tuple<ElementIndex, float>> mWaterReactionExplosionCandidates;
 
     // The indices of the points that are currently burning
     std::vector<ElementIndex> mBurningPoints;

@@ -29,13 +29,13 @@ public:
     static RgbaImageData LoadImageRgbaAndResize(std::filesystem::path const & filepath, ImageSize const & maxSize);
     static RgbImageData LoadImageRgbAndResize(std::filesystem::path const & filepath, ImageSize const & maxSize);
 
-    static void SavePngImage(
-        std::filesystem::path filepath,
-        RgbaImageData const & image);
+    static void SavePngImage(        
+        RgbaImageData const & image,
+        std::filesystem::path filepath);
 
     static void SavePngImage(
-        std::filesystem::path filepath,
-        RgbImageData const & image);
+        RgbImageData const & image,
+        std::filesystem::path filepath);
 
     static RgbaImageData DecodePngImage(DeSerializationBuffer<BigEndianess> const & buffer);
 

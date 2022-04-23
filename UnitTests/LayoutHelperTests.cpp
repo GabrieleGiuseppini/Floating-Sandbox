@@ -6,16 +6,16 @@ class _MockLayoutHelperHandler
 {
 public:
 
-    MOCK_METHOD2(OnBegin, void(int width, int height));
-    MOCK_METHOD3(OnLayout, void(std::optional<int> element, int x, int y));
+    MOCK_METHOD2(OnBegin, void(int nCols, int nRows));
+    MOCK_METHOD2(OnLayout, void(std::optional<int> element, IntegralCoordinates const & coords));
 
     _MockLayoutHelperHandler()
-        : onBegin([this](int width, int height) { this->OnBegin(width, height); })
-        , onLayout([this](std::optional<int> element, int x, int y) { this->OnLayout(element, x, y); })
+        : onBegin([this](int nCols, int nRows) { this->OnBegin(nCols, nRows); })
+        , onLayout([this](std::optional<int> element, IntegralCoordinates const & coords) { this->OnLayout(element, coords); })
     {}
 
-    std::function<void(int width, int height)> onBegin;
-    std::function<void(std::optional<int> element, int x, int y)> onLayout;
+    std::function<void(int nCols, int nRows)> onBegin;
+    std::function<void(std::optional<int> element, IntegralCoordinates const & coords)> onLayout;
 };
 
 using namespace ::testing;
@@ -34,7 +34,7 @@ TEST(LayoutHelperTests, Empty)
     MockHandler handler;
 
     EXPECT_CALL(handler, OnBegin(0, 0)).Times(1);
-    EXPECT_CALL(handler, OnLayout(_, _, _)).Times(0);
+    EXPECT_CALL(handler, OnLayout(_, _)).Times(0);
 
     // Layout
 
@@ -84,9 +84,9 @@ INSTANTIATE_TEST_SUITE_P(
 TEST_P(UndecoratedOnlyLayoutTest, UndecoratedOnlyLayoutTest)
 {
     size_t const nElements = std::get<0>(GetParam());
-    int const expectedWidth = std::get<1>(GetParam());
+    int const expectedNCols = std::get<1>(GetParam());
     int const expectedColStart = std::get<2>(GetParam());
-    int const expectedHeight = std::get<3>(GetParam());
+    int const expectedNRows = std::get<3>(GetParam());
 
     // Prepare data
 
@@ -101,20 +101,20 @@ TEST_P(UndecoratedOnlyLayoutTest, UndecoratedOnlyLayoutTest)
 
     InSequence s;
 
-    EXPECT_CALL(handler, OnBegin(expectedWidth, expectedHeight)).Times(1);
+    EXPECT_CALL(handler, OnBegin(expectedNCols, expectedNRows)).Times(1);
 
     size_t iElement = 0;
-    for (int row = 0; row < expectedHeight; ++row)
+    for (int row = 0; row < expectedNRows; ++row)
     {
-        for (int col = expectedColStart, w = 0; w < expectedWidth; ++col, ++w)
+        for (int col = expectedColStart, w = 0; w < expectedNCols; ++col, ++w)
         {
             if (iElement < nElements)
             {
-                EXPECT_CALL(handler, OnLayout(std::optional<int>(int(iElement)), col, row)).Times(1);
+                EXPECT_CALL(handler, OnLayout(std::optional<int>(int(iElement)), IntegralCoordinates(col, row))).Times(1);
                 ++iElement;
             }
             else
-                EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), col, row)).Times(1);
+                EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), IntegralCoordinates(col, row))).Times(1);
         }
     }
 
@@ -149,7 +149,7 @@ TEST(LayoutHelperTests, DecoratedOnlyLayout_One_Zero)
 
     EXPECT_CALL(handler, OnBegin(1, 1)).Times(1);
 
-    EXPECT_CALL(handler, OnLayout(std::optional<int>(45), 0, 0)).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(45), IntegralCoordinates(0, 0))).Times(1);
 
     // Layout
 
@@ -180,9 +180,9 @@ TEST(LayoutHelperTests, DecoratedOnlyLayout_One_MinusOne)
 
     EXPECT_CALL(handler, OnBegin(3, 1)).Times(1);
 
-    EXPECT_CALL(handler, OnLayout(std::optional<int>(45), -1, 0)).Times(1);
-    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), 0, 0)).Times(1);
-    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), 1, 0)).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(45), IntegralCoordinates(-1, 0))).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), IntegralCoordinates(0, 0))).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), IntegralCoordinates(1, 0))).Times(1);
 
     // Layout
 
@@ -213,9 +213,9 @@ TEST(LayoutHelperTests, DecoratedOnlyLayout_One_PlusOne)
 
     EXPECT_CALL(handler, OnBegin(3, 1)).Times(1);
 
-    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), -1, 0)).Times(1);
-    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), 0, 0)).Times(1);
-    EXPECT_CALL(handler, OnLayout(std::optional<int>(45), 1, 0)).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), IntegralCoordinates(-1, 0))).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), IntegralCoordinates(0, 0))).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(45), IntegralCoordinates(1, 0))).Times(1);
 
     // Layout
 
@@ -246,11 +246,11 @@ TEST(LayoutHelperTests, DecoratedOnlyLayout_One_MinusTwo)
 
     EXPECT_CALL(handler, OnBegin(5, 1)).Times(1);
 
-    EXPECT_CALL(handler, OnLayout(std::optional<int>(45), -2, 0)).Times(1);
-    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), -1, 0)).Times(1);
-    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), 0, 0)).Times(1);
-    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), 1, 0)).Times(1);
-    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), 2, 0)).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(45), IntegralCoordinates(-2, 0))).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), IntegralCoordinates(-1, 0))).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), IntegralCoordinates(0, 0))).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), IntegralCoordinates(1, 0))).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), IntegralCoordinates(2, 0))).Times(1);
 
     // Layout
 
@@ -281,11 +281,11 @@ TEST(LayoutHelperTests, DecoratedOnlyLayout_One_PlusTwo)
 
     EXPECT_CALL(handler, OnBegin(5, 1)).Times(1);
 
-    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), -2, 0)).Times(1);
-    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), -1, 0)).Times(1);
-    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), 0, 0)).Times(1);
-    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), 1, 0)).Times(1);
-    EXPECT_CALL(handler, OnLayout(std::optional<int>(45), 2, 0)).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), IntegralCoordinates(-2, 0))).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), IntegralCoordinates(-1, 0))).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), IntegralCoordinates(0, 0))).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), IntegralCoordinates(1, 0))).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(45), IntegralCoordinates(2, 0))).Times(1);
 
     // Layout
 
@@ -316,13 +316,13 @@ TEST(LayoutHelperTests, DecoratedOnlyLayout_One_MinusThree)
 
     EXPECT_CALL(handler, OnBegin(7, 1)).Times(1);
 
-    EXPECT_CALL(handler, OnLayout(std::optional<int>(45), -3, 0)).Times(1);
-    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), -2, 0)).Times(1);
-    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), -1, 0)).Times(1);
-    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), 0, 0)).Times(1);
-    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), 1, 0)).Times(1);
-    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), 2, 0)).Times(1);
-    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), 3, 0)).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(45), IntegralCoordinates(-3, 0))).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), IntegralCoordinates(-2, 0))).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), IntegralCoordinates(-1, 0))).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), IntegralCoordinates(0, 0))).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), IntegralCoordinates(1, 0))).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), IntegralCoordinates(2, 0))).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), IntegralCoordinates(3, 0))).Times(1);
 
     // Layout
 
@@ -353,13 +353,115 @@ TEST(LayoutHelperTests, DecoratedOnlyLayout_One_PlusOnePlusOne)
 
     EXPECT_CALL(handler, OnBegin(3, 2)).Times(1);
 
-    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), -1, 0)).Times(1);
-    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), 0, 0)).Times(1);
-    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), 1, 0)).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), IntegralCoordinates(-1, 0))).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), IntegralCoordinates(0, 0))).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), IntegralCoordinates(1, 0))).Times(1);
 
-    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), -1, 1)).Times(1);
-    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), 0, 1)).Times(1);
-    EXPECT_CALL(handler, OnLayout(std::optional<int>(45), 1, 1)).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), IntegralCoordinates(-1, 1))).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), IntegralCoordinates(0, 1))).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(45), IntegralCoordinates(1, 1))).Times(1);
+
+    // Layout
+
+    LayoutHelper::Layout<int>(
+        elements,
+        11,
+        handler.onBegin,
+        handler.onLayout);
+
+    // Verify
+
+    Mock::VerifyAndClear(&handler);
+}
+
+TEST(LayoutHelperTests, DecoratedConflict_FirstSlot)
+{
+    // Prepare data
+
+    std::vector<LayoutHelper::LayoutElement<int>> elements{
+        { 1, IntegralCoordinates(-1, 0) },
+        { 2, IntegralCoordinates(-1, 0) }
+    };
+
+    // Setup expectations
+
+    MockHandler handler;
+
+    InSequence s;
+
+    EXPECT_CALL(handler, OnBegin(3, 1)).Times(1);
+
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(1), IntegralCoordinates(-1, 0))).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(2), IntegralCoordinates(0, 0))).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), IntegralCoordinates(1, 0))).Times(1);
+
+    // Layout
+
+    LayoutHelper::Layout<int>(
+        elements,
+        11,
+        handler.onBegin,
+        handler.onLayout);
+
+    // Verify
+
+    Mock::VerifyAndClear(&handler);
+}
+
+TEST(LayoutHelperTests, DecoratedConflict_MiddleSlot)
+{
+    // Prepare data
+
+    std::vector<LayoutHelper::LayoutElement<int>> elements{
+        { 1, IntegralCoordinates(0, 0) },
+        { 2, IntegralCoordinates(0, 0) }
+    };
+
+    // Setup expectations
+
+    MockHandler handler;
+
+    InSequence s;
+
+    EXPECT_CALL(handler, OnBegin(3, 1)).Times(1);
+
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(2), IntegralCoordinates(-1, 0))).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(1), IntegralCoordinates(0, 0))).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), IntegralCoordinates(1, 0))).Times(1);
+
+    // Layout
+
+    LayoutHelper::Layout<int>(
+        elements,
+        11,
+        handler.onBegin,
+        handler.onLayout);
+
+    // Verify
+
+    Mock::VerifyAndClear(&handler);
+}
+
+TEST(LayoutHelperTests, DecoratedConflict_LastSlot)
+{
+    // Prepare data
+
+    std::vector<LayoutHelper::LayoutElement<int>> elements{
+        { 1, IntegralCoordinates(1, 0) },
+        { 2, IntegralCoordinates(1, 0) }
+    };
+
+    // Setup expectations
+
+    MockHandler handler;
+
+    InSequence s;
+
+    EXPECT_CALL(handler, OnBegin(3, 1)).Times(1);
+
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(2), IntegralCoordinates(-1, 0))).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(std::nullopt), IntegralCoordinates(0, 0))).Times(1);
+    EXPECT_CALL(handler, OnLayout(std::optional<int>(1), IntegralCoordinates(1, 0))).Times(1);
 
     // Layout
 
@@ -614,7 +716,7 @@ TEST_P(DecoratedAndUndecoratedLayoutTest, DecoratedAndUndecoratedLayoutTest)
         for (int col = expectedColStart, w = 0; w < expectedWidth; ++col, ++w)
         {
             EXPECT_LT(iElement, expectedIds.size());
-            EXPECT_CALL(handler, OnLayout(expectedIds[iElement], col, row)).Times(1);
+            EXPECT_CALL(handler, OnLayout(expectedIds[iElement], IntegralCoordinates(col, row))).Times(1);
             ++iElement;
         }
     }

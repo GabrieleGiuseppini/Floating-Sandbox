@@ -7,6 +7,7 @@
 
 #include "Tools/FloodTool.h"
 #include "Tools/LineTool.h"
+#include "Tools/MeasuringTapeTool.h"
 #include "Tools/PencilTool.h"
 #include "Tools/RopeEraserTool.h"
 #include "Tools/RopePencilTool.h"
@@ -27,7 +28,7 @@ std::unique_ptr<Controller> Controller::CreateNew(
     ResourceLocator const & resourceLocator)
 {
     auto modelController = ModelController::CreateNew(
-        ShipSpaceSize(200, 100), // TODO: from preferences
+        workbenchState.GetNewShipSize(),
         shipName,
         shipTexturizer);
 
@@ -82,14 +83,14 @@ Controller::Controller(
     , mLastToolTypePerLayer({ToolType::StructuralPencil, ToolType::ElectricalPencil, ToolType::RopePencil, std::nullopt})
 {
     // We assume we start with at least a structural layer
-    assert(mModelController->GetModel().HasLayer(LayerType::Structural));
+    assert(mModelController->HasLayer(LayerType::Structural));
 
     //
     // Create view
     //
 
     mView = std::make_unique<View>(
-        mModelController->GetModel().GetShipSize(),
+        mModelController->GetShipSize(),
         mWorkbenchState.GetPrimaryVisualization(),
         mWorkbenchState.GetOtherVisualizationsOpacity(),
         mWorkbenchState.IsGridEnabled(),
@@ -114,15 +115,23 @@ Controller::Controller(
     //
 
     mUserInterface.OnViewModelChanged(mView->GetViewModel());
-    mUserInterface.OnShipNameChanged(mModelController->GetModel());
-    mUserInterface.OnShipSizeChanged(GetShipSize());
-    mUserInterface.OnLayerPresenceChanged(mModelController->GetModel());
-    mUserInterface.OnModelDirtyChanged(mModelController->GetModel());
+    mUserInterface.OnShipNameChanged(*mModelController);
+    mUserInterface.OnShipScaleChanged(mModelController->GetShipMetadata().Scale);
+    mUserInterface.OnShipSizeChanged(mModelController->GetShipSize());
+    mUserInterface.OnLayerPresenceChanged(*mModelController);
+    mUserInterface.OnModelDirtyChanged(*mModelController);
+    mUserInterface.OnElectricalLayerInstancedElementSetChanged(mModelController->GetInstancedElectricalElementSet());
     mUserInterface.OnUndoStackStateChanged(mUndoStack);
-    
+
     //
     // Initialize visualization
     //
+
+    // Switch primary viz to default if it's not compatible with current layer presence
+    if (!mModelController->HasLayer(VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization())))
+    {
+        InternalSelectPrimaryVisualization(WorkbenchState::GetDefaultPrimaryVisualization()); // Will also change tool
+    }
 
     // Initialize layer visualizations
     InternalReconciliateTextureVisualizationMode();
@@ -130,6 +139,9 @@ Controller::Controller(
 
     // Upload layers' visualizations
     mModelController->UpdateVisualizations(*mView);
+
+    // Notify macro properties
+    NotifyModelMacroPropertiesUpdated();
 
     // Refresh view
     mUserInterface.RefreshView();
@@ -173,7 +185,7 @@ void Controller::SetShipProperties(
     // Prepare undo entry
     //
 
-    auto f = 
+    auto f =
         [oldMetadata = mModelController->GetShipMetadata()
         , oldPhysicsData = mModelController->GetShipPhysicsData()
         , oldAutoTexturizationSettings = mModelController->GetShipAutoTexturizationSettings()]
@@ -185,7 +197,7 @@ void Controller::SetShipProperties(
                 std::move(oldAutoTexturizationSettings));
         };
 
-    auto originalDirtyState = mModelController->GetModel().GetDirtyState();
+    auto originalDirtyState = mModelController->GetDirtyState();
 
     //
     // Set new properties
@@ -197,7 +209,7 @@ void Controller::SetShipProperties(
         std::move(autoTexturizationSettings));
 
     // At least one of the three was changed
-    mUserInterface.OnModelDirtyChanged(mModelController->GetModel());
+    mUserInterface.OnModelDirtyChanged(*mModelController);
 
     //
     // Store undo action
@@ -225,20 +237,66 @@ void Controller::RestoreShipPropertiesForUndo(
         std::move(autoTexturizationSettings));
 
     // At least one of the three was changed
-    mUserInterface.OnModelDirtyChanged(mModelController->GetModel());
+    mUserInterface.OnModelDirtyChanged(*mModelController);
+}
+
+void Controller::SetElectricalPanelMetadata(ElectricalPanelMetadata panelMetadata)
+{
+    assert(mModelController);
+
+    //
+    // Prepare undo entry
+    //
+
+    auto f = [oldPanelMetadata = mModelController->GetElectricalPanelMetadata()] (Controller & controller) mutable
+    {
+        controller.RestoreElectricalPanelMetadataForUndo(std::move(oldPanelMetadata));
+    };
+
+    auto originalDirtyState = mModelController->GetDirtyState();
+
+    //
+    // Set new panel
+    //
+
+    InternalSetElectricalPanelMetadata(std::move(panelMetadata));
+
+    mModelController->SetLayerDirty(LayerType::Electrical);
+    mUserInterface.OnModelDirtyChanged(*mModelController);
+
+    //
+    // Store undo action
+    //
+
+    mUndoStack.Push(
+        _("Electrical Panel"),
+        256, // Arbitrary cost
+        originalDirtyState,
+        std::move(f));
+
+    mUserInterface.OnUndoStackStateChanged(mUndoStack);
+}
+
+void Controller::RestoreElectricalPanelMetadataForUndo(ElectricalPanelMetadata && panelMetadata)
+{
+    assert(mModelController);
+
+    InternalSetElectricalPanelMetadata(std::move(panelMetadata));
+
+    mUserInterface.OnModelDirtyChanged(*mModelController);
 }
 
 void Controller::ClearModelDirty()
 {
     mModelController->ClearIsDirty();
-    mUserInterface.OnModelDirtyChanged(mModelController->GetModel());
+    mUserInterface.OnModelDirtyChanged(*mModelController);
 }
 
-void Controller::RestoreDirtyState(Model::DirtyState && dirtyState)
+void Controller::RestoreDirtyState(ModelDirtyState && dirtyState)
 {
     // Restore dirtyness
     mModelController->RestoreDirtyState(dirtyState);
-    mUserInterface.OnModelDirtyChanged(mModelController->GetModel());
+    mUserInterface.OnModelDirtyChanged(*mModelController);
 }
 
 ModelValidationResults Controller::ValidateModel()
@@ -267,56 +325,22 @@ std::optional<ShipSpaceRect> Controller::CalculateBoundingBox() const
 
 void Controller::NewStructuralLayer()
 {
-    auto const scopedToolResumeState = SuspendTool();
+    StructuralLayerData newStructuralLayer(
+        mModelController->GetShipSize(),
+        StructuralElement(nullptr)); // No material
 
-    // TODO: undo, copy from texture
-    // Make new layer
-    mModelController->NewStructuralLayer();
-    mUserInterface.OnLayerPresenceChanged(mModelController->GetModel());
-
-    // Switch primary viz to this one
-    if (mWorkbenchState.GetPrimaryVisualization() != VisualizationType::StructuralLayer)
-    {
-        InternalSelectPrimaryVisualization(VisualizationType::StructuralLayer);
-    }
-
-    // Update dirtyness
-    mModelController->SetLayerDirty(LayerType::Structural);
-    mUserInterface.OnModelDirtyChanged(mModelController->GetModel());
-
-    // Update visualization modes
-    InternalUpdateModelControllerVisualizationModes();
-
-    // Refresh model visualizations
-    mModelController->UpdateVisualizations(*mView);
-    mUserInterface.RefreshView();
+    InternalSetLayer<LayerType::Structural>(
+        _("New Structural Layer"),
+        std::move(newStructuralLayer));
 }
 
-void Controller::SetStructuralLayer(/*TODO*/)
+void Controller::SetStructuralLayer(
+    wxString actionTitle,
+    StructuralLayerData && structuralLayer)
 {
-    auto const scopedToolResumeState = SuspendTool();
-
-    // TODO: undo, copy from texture
-    // Update layer
-    mModelController->SetStructuralLayer(/*TODO*/);
-    mUserInterface.OnLayerPresenceChanged(mModelController->GetModel());
-
-    // Switch primary viz to this one
-    if (mWorkbenchState.GetPrimaryVisualization() != VisualizationType::StructuralLayer)
-    {
-        InternalSelectPrimaryVisualization(VisualizationType::StructuralLayer);
-    }
-
-    // Update dirtyness
-    mModelController->SetLayerDirty(LayerType::Structural);
-    mUserInterface.OnModelDirtyChanged(mModelController->GetModel());
-
-    // Update visualization modes
-    InternalUpdateModelControllerVisualizationModes();
-
-    // Refresh model visualizations
-    mModelController->UpdateVisualizations(*mView);
-    mUserInterface.RefreshView();
+    InternalSetLayer<LayerType::Structural>(
+        actionTitle,
+        std::move(structuralLayer));
 }
 
 void Controller::RestoreStructuralLayerRegionForUndo(
@@ -334,6 +358,9 @@ void Controller::RestoreStructuralLayerRegionForUndo(
 
     // No need to update dirtyness, this is for undo
 
+    // Notify macro properties
+    NotifyModelMacroPropertiesUpdated();
+
     // Refresh model visualization
     mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
@@ -347,6 +374,9 @@ void Controller::RestoreStructuralLayerForUndo(StructuralLayerData && structural
 
     // No need to update dirtyness, this is for undo
 
+    // Notify macro properties
+    NotifyModelMacroPropertiesUpdated();
+
     // Refresh model visualizations
     mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
@@ -354,83 +384,27 @@ void Controller::RestoreStructuralLayerForUndo(StructuralLayerData && structural
 
 void Controller::NewElectricalLayer()
 {
-    auto const scopedToolResumeState = SuspendTool();
+    ElectricalLayerData newElectricalLayer(
+        mModelController->GetShipSize(),
+        ElectricalElement(nullptr, NoneElectricalElementInstanceIndex)); // No material
 
-    // TODO: undo, copy from texture
-    // Make new layer
-    mModelController->NewElectricalLayer();
-    mUserInterface.OnLayerPresenceChanged(mModelController->GetModel());
-
-    // Switch primary viz to this one
-    if (mWorkbenchState.GetPrimaryVisualization() != VisualizationType::ElectricalLayer)
-    {
-        InternalSelectPrimaryVisualization(VisualizationType::ElectricalLayer);
-    }
-
-    // Update dirtyness
-    mModelController->SetLayerDirty(LayerType::Electrical);
-    mUserInterface.OnModelDirtyChanged(mModelController->GetModel());
-
-    // Update visualization modes
-    InternalUpdateModelControllerVisualizationModes();
-
-    // Refresh model visualization
-    mModelController->UpdateVisualizations(*mView);
-    mUserInterface.RefreshView();
+    InternalSetLayer<LayerType::Electrical>(
+        _("New Electrical Layer"),
+        std::move(newElectricalLayer));
 }
 
-void Controller::SetElectricalLayer(/*TODO*/)
+void Controller::SetElectricalLayer(
+    wxString actionTitle,
+    ElectricalLayerData && electricalLayer)
 {
-    auto const scopedToolResumeState = SuspendTool();
-
-    // TODO: undo, copy from texture
-    // Update layer
-    mModelController->SetElectricalLayer(/*TODO*/);
-    mUserInterface.OnLayerPresenceChanged(mModelController->GetModel());
-
-    // Switch primary layer to this one
-    if (mWorkbenchState.GetPrimaryVisualization() != VisualizationType::ElectricalLayer)
-    {
-        InternalSelectPrimaryVisualization(VisualizationType::ElectricalLayer);
-    }
-
-    // Update dirtyness
-    mModelController->SetLayerDirty(LayerType::Electrical);
-    mUserInterface.OnModelDirtyChanged(mModelController->GetModel());
-
-    // Update visualization modes
-    InternalUpdateModelControllerVisualizationModes();
-
-    // Refresh model visualizations
-    mModelController->UpdateVisualizations(*mView);
-    mUserInterface.RefreshView();
+    InternalSetLayer<LayerType::Electrical>(
+        actionTitle,
+        std::move(electricalLayer));
 }
 
 void Controller::RemoveElectricalLayer()
 {
-    auto const scopedToolResumeState = SuspendTool();
-
-    // TODO: undo, copy from texture
-    // Remove layer
-    mModelController->RemoveElectricalLayer();
-    mUserInterface.OnLayerPresenceChanged(mModelController->GetModel());
-
-    // Switch primary viz if it was this one
-    if (mWorkbenchState.GetPrimaryVisualization() == VisualizationType::ElectricalLayer)
-    {
-        InternalSelectPrimaryVisualization(VisualizationType::Game);
-    }
-
-    // Update dirtyness
-    mModelController->SetLayerDirty(LayerType::Electrical);
-    mUserInterface.OnModelDirtyChanged(mModelController->GetModel());
-
-    // Update visualization modes
-    InternalUpdateModelControllerVisualizationModes();
-
-    // Refresh model visualizations
-    mModelController->UpdateVisualizations(*mView);
-    mUserInterface.RefreshView();
+    InternalRemoveLayer<LayerType::Electrical>();
 }
 
 void Controller::RestoreElectricalLayerRegionForUndo(
@@ -446,6 +420,12 @@ void Controller::RestoreElectricalLayerRegionForUndo(
 
     // No need to update dirtyness, this is for undo
 
+    // Notify macro properties
+    NotifyModelMacroPropertiesUpdated();
+
+    // Notify of (possible) change in electrical panel
+    mUserInterface.OnElectricalLayerInstancedElementSetChanged(mModelController->GetInstancedElectricalElementSet());
+
     // Refresh model visualizations
     mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
@@ -455,14 +435,22 @@ void Controller::RestoreElectricalLayerForUndo(std::unique_ptr<ElectricalLayerDa
 {
     auto const scopedToolResumeState = SuspendTool();
 
-    mModelController->RestoreElectricalLayer(std::move(electricalLayer));
-
-    mUserInterface.OnLayerPresenceChanged(mModelController->GetModel());
+    WrapLikelyLayerPresenceChangingOperation<LayerType::Electrical>(
+        [this, electricalLayer = std::move(electricalLayer)]() mutable
+        {
+            mModelController->RestoreElectricalLayer(std::move(electricalLayer));
+        });
 
     // No need to update dirtyness, this is for undo
 
     // Update visualization modes
     InternalUpdateModelControllerVisualizationModes();
+
+    // Notify macro properties
+    NotifyModelMacroPropertiesUpdated();
+
+    // Notify of (possible) change in electrical panel
+    mUserInterface.OnElectricalLayerInstancedElementSetChanged(mModelController->GetInstancedElectricalElementSet());
 
     // Refresh model visualizations
     mModelController->UpdateVisualizations(*mView);
@@ -476,18 +464,15 @@ void Controller::TrimElectricalParticlesWithoutSubstratum()
     // Trim
     {
         // Save state
-        auto originalDirtyStateClone = mModelController->GetModel().GetDirtyState();
-        auto originalLayerClone = mModelController->GetModel().CloneExistingLayer<LayerType::Electrical>();
+        auto originalDirtyStateClone = mModelController->GetDirtyState();
+        auto originalLayerClone = mModelController->CloneExistingLayer<LayerType::Electrical>();
 
         // Trim
         auto const affectedRect = mModelController->TrimElectricalParticlesWithoutSubstratum();
 
-        // Create undo action, if needed
         if (affectedRect.has_value())
         {
-            //
             // Create undo action
-            //
 
             ElectricalLayerData clippedRegionClone = originalLayerClone.Clone(*affectedRect);
 
@@ -499,113 +484,54 @@ void Controller::TrimElectricalParticlesWithoutSubstratum()
                 {
                     controller.RestoreElectricalLayerRegionForUndo(std::move(clippedRegionClone), origin);
                 });
-            
+
             mUserInterface.OnUndoStackStateChanged(mUndoStack);
+
+            LayerChangeEpilog(LayerType::Electrical);
         }
     }
-
-    // Update dirtyness
-    mModelController->SetLayerDirty(LayerType::Electrical);
-    mUserInterface.OnModelDirtyChanged(mModelController->GetModel());
-
-    // Refresh model visualizations
-    mModelController->UpdateVisualizations(*mView);
-    mUserInterface.RefreshView();
 }
 
 void Controller::NewRopesLayer()
 {
-    auto const scopedToolResumeState = SuspendTool();
+    RopesLayerData newRopesLayer;
 
-    // TODO: undo, copy from texture
-    // Make new layer
-    mModelController->NewRopesLayer();
-    mUserInterface.OnLayerPresenceChanged(mModelController->GetModel());
-
-    // Switch primary viz to this one
-    if (mWorkbenchState.GetPrimaryVisualization() != VisualizationType::RopesLayer)
-    {
-        InternalSelectPrimaryVisualization(VisualizationType::RopesLayer);
-    }
-
-    // Update dirtyness
-    mModelController->SetLayerDirty(LayerType::Ropes);
-    mUserInterface.OnModelDirtyChanged(mModelController->GetModel());
-
-    // Update visualization modes
-    InternalUpdateModelControllerVisualizationModes();
-
-    // Refresh model visualizations
-    mModelController->UpdateVisualizations(*mView);
-    mUserInterface.RefreshView();
+    InternalSetLayer<LayerType::Ropes>(
+        _("New Ropes Layer"),
+        std::move(newRopesLayer));
 }
 
-void Controller::SetRopesLayer(/*TODO*/)
+void Controller::SetRopesLayer(
+    wxString actionTitle,
+    RopesLayerData && ropesLayer)
 {
-    auto const scopedToolResumeState = SuspendTool();
-
-    // TODO: undo, copy from texture
-    // Update layer
-    mModelController->SetRopesLayer(/*TODO*/);
-    mUserInterface.OnLayerPresenceChanged(mModelController->GetModel());
-
-    // Switch primary viz to this one
-    if (mWorkbenchState.GetPrimaryVisualization() != VisualizationType::RopesLayer)
-    {
-        InternalSelectPrimaryVisualization(VisualizationType::RopesLayer);
-    }
-
-    // Update dirtyness
-    mModelController->SetLayerDirty(LayerType::Ropes);
-    mUserInterface.OnModelDirtyChanged(mModelController->GetModel());
-
-    // Update visualization modes
-    InternalUpdateModelControllerVisualizationModes();
-
-    // Refresh model visualizations
-    mModelController->UpdateVisualizations(*mView);
-    mUserInterface.RefreshView();
+    InternalSetLayer<LayerType::Ropes>(
+        actionTitle,
+        std::move(ropesLayer));
 }
 
 void Controller::RemoveRopesLayer()
 {
-    auto const scopedToolResumeState = SuspendTool();
-
-    // TODO: do undo, copy from texture
-    // Remove layer
-    mModelController->RemoveRopesLayer();
-    mUserInterface.OnLayerPresenceChanged(mModelController->GetModel());
-
-    // Switch primary viz if it was this one
-    if (mWorkbenchState.GetPrimaryVisualization() == VisualizationType::RopesLayer)
-    {
-        InternalSelectPrimaryVisualization(VisualizationType::Game);
-    }
-
-    // Update dirtyness
-    mModelController->SetLayerDirty(LayerType::Ropes);
-    mUserInterface.OnModelDirtyChanged(mModelController->GetModel());
-
-    // Update visualization modes
-    InternalUpdateModelControllerVisualizationModes();
-
-    // Refresh model visualizations
-    mModelController->UpdateVisualizations(*mView);
-    mUserInterface.RefreshView();
+    InternalRemoveLayer<LayerType::Ropes>();
 }
 
 void Controller::RestoreRopesLayerForUndo(std::unique_ptr<RopesLayerData> ropesLayer)
 {
     auto const scopedToolResumeState = SuspendTool();
 
-    mModelController->RestoreRopesLayer(std::move(ropesLayer));
-
-    mUserInterface.OnLayerPresenceChanged(mModelController->GetModel());
+    WrapLikelyLayerPresenceChangingOperation<LayerType::Ropes>(
+        [this, ropesLayer = std::move(ropesLayer)]() mutable
+        {
+            mModelController->RestoreRopesLayer(std::move(ropesLayer));
+        });
 
     // No need to update dirtyness, this is for undo
 
     // Update visualization modes
     InternalUpdateModelControllerVisualizationModes();
+
+    // Notify macro properties
+    NotifyModelMacroPropertiesUpdated();
 
     // Refresh model visualizations
     mModelController->UpdateVisualizations(*mView);
@@ -613,119 +539,19 @@ void Controller::RestoreRopesLayerForUndo(std::unique_ptr<RopesLayerData> ropesL
 }
 
 void Controller::SetTextureLayer(
+    wxString actionTitle,
     TextureLayerData && textureLayer,
     std::optional<std::string> textureArtCredits)
 {
-    auto const scopedToolResumeState = SuspendTool();
-
-    // Update layer
-    {
-        // Get state snapshot
-        auto originalDirtyStateClone = mModelController->GetModel().GetDirtyState();
-        auto originalLayerClone = mModelController->GetModel().CloneTextureLayer();
-        auto originalTextureArtCredits = mModelController->GetShipMetadata().ArtCredits;
-
-        // Update layer
-        mModelController->SetTextureLayer(std::move(textureLayer), std::move(textureArtCredits));
-        mUserInterface.OnLayerPresenceChanged(mModelController->GetModel());
-
-        //
-        // Create undo action
-        //
-
-        mUndoStack.Push(
-            _("Import Texture Layer"),
-            originalLayerClone ? originalLayerClone->Buffer.GetByteSize() : 0,
-            originalDirtyStateClone,
-            [originalLayerClone = std::move(originalLayerClone), originalTextureArtCredits = std::move(originalTextureArtCredits)](Controller & controller) mutable
-            {
-                controller.RestoreTextureLayerForUndo(
-                    std::move(originalLayerClone), 
-                    std::move(originalTextureArtCredits));
-            });
-
-        mUserInterface.OnUndoStackStateChanged(mUndoStack);
-    }
-
-    // FUTUREWORK: disabled primary layer switch for this release, as there are no tools
-    // and thus it's pointless
-    ////// Switch primary viz to this one
-    ////if (mPrimaryVisualization != VisualizationType::TextureLayer)
-    ////{
-    ////    InternalSelectPrimaryVisualization(VisualizationType::TextureLayer);
-    ////}
-
-    // Update visualization modes
-    InternalReconciliateTextureVisualizationMode();
-    InternalUpdateModelControllerVisualizationModes();
-
-    // Update dirtyness
-    mModelController->SetLayerDirty(LayerType::Texture);
-    mUserInterface.OnModelDirtyChanged(mModelController->GetModel());
-
-    // Refresh model visualizations
-    mModelController->UpdateVisualizations(*mView);
-    mUserInterface.RefreshView();
+    InternalSetLayer<LayerType::Texture>(
+        actionTitle,
+        std::move(textureLayer),
+        std::move(textureArtCredits));
 }
 
 void Controller::RemoveTextureLayer()
 {
-    auto const scopedToolResumeState = SuspendTool();
-
-    // Update layer
-    {
-        // Save state
-        auto originalDirtyStateClone = mModelController->GetModel().GetDirtyState();
-        auto originalLayerClone = mModelController->CloneTextureLayer();
-        auto originalTextureArtCredits = mModelController->GetShipMetadata().ArtCredits;
-
-        // Remove layer
-        mModelController->RemoveTextureLayer();
-        mUserInterface.OnLayerPresenceChanged(mModelController->GetModel());
-
-        //
-        // Create undo action
-        //
-
-        mUndoStack.Push(
-            _("Remove Texture Layer"),
-            originalLayerClone ? originalLayerClone->Buffer.GetByteSize() : 0,
-            originalDirtyStateClone,
-            [originalLayerClone = std::move(originalLayerClone), originalTextureArtCredits = std::move(originalTextureArtCredits)](Controller & controller) mutable
-            {
-                controller.RestoreTextureLayerForUndo(
-                    std::move(originalLayerClone), 
-                    std::move(originalTextureArtCredits));
-            });
-
-        mUserInterface.OnUndoStackStateChanged(mUndoStack);
-    }
-
-    // Switch primary viz if it was this one
-    if (mWorkbenchState.GetPrimaryVisualization() == VisualizationType::TextureLayer)
-    {
-        InternalSelectPrimaryVisualization(VisualizationType::Game);
-    }
-
-    // Change texture visualization mode so that next time a texture
-    // layer is present, we don't start in "none" mode
-    if (mWorkbenchState.GetTextureLayerVisualizationMode() == TextureLayerVisualizationModeType::None)
-    {
-        mWorkbenchState.SetTextureLayerVisualizationMode(TextureLayerVisualizationModeType::MatteMode); // New default for next layer
-        mUserInterface.OnTextureLayerVisualizationModeChanged(TextureLayerVisualizationModeType::MatteMode);
-    }
-
-    // Update dirtyness
-    mModelController->SetLayerDirty(LayerType::Texture);
-    mUserInterface.OnModelDirtyChanged(mModelController->GetModel());
-
-    // Update visualization modes
-    InternalReconciliateTextureVisualizationMode();
-    InternalUpdateModelControllerVisualizationModes();
-
-    // Refresh model visualizations
-    mModelController->UpdateVisualizations(*mView);
-    mUserInterface.RefreshView();
+    InternalRemoveLayer<LayerType::Texture>();
 }
 
 void Controller::RestoreTextureLayerForUndo(
@@ -734,16 +560,17 @@ void Controller::RestoreTextureLayerForUndo(
 {
     auto const scopedToolResumeState = SuspendTool();
 
-    mModelController->RestoreTextureLayer(
-        std::move(textureLayer), 
-        std::move(originalTextureArtCredits));
-
-    mUserInterface.OnLayerPresenceChanged(mModelController->GetModel());
+    WrapLikelyLayerPresenceChangingOperation<LayerType::Texture>(
+        [this, textureLayer = std::move(textureLayer), originalTextureArtCredits = std::move(originalTextureArtCredits)]() mutable
+        {
+            mModelController->RestoreTextureLayer(
+                std::move(textureLayer),
+                std::move(originalTextureArtCredits));
+        });
 
     // No need to update dirtyness, this is for undo
 
     // Update visualization modes
-    InternalReconciliateTextureVisualizationMode();
     InternalUpdateModelControllerVisualizationModes();
 
     // Refresh model visualizations
@@ -769,20 +596,29 @@ void Controller::RestoreAllLayersForUndo(
 
     mModelController->RestoreStructuralLayer(std::move(structuralLayer));
 
-    mModelController->RestoreElectricalLayer(std::move(electricalLayer));
+    WrapLikelyLayerPresenceChangingOperation<LayerType::Electrical>(
+        [this, electricalLayer = std::move(electricalLayer)]() mutable
+        {
+            mModelController->RestoreElectricalLayer(std::move(electricalLayer));
+        });
 
-    mModelController->RestoreRopesLayer(std::move(ropesLayer));
+    WrapLikelyLayerPresenceChangingOperation<LayerType::Ropes>(
+        [this, ropesLayer = std::move(ropesLayer)]() mutable
+        {
+            mModelController->RestoreRopesLayer(std::move(ropesLayer));
+        });
 
-    mModelController->RestoreTextureLayer(
-        std::move(textureLayer),
-        std::move(originalTextureArtCredits));
+    WrapLikelyLayerPresenceChangingOperation<LayerType::Texture>(
+        [this, textureLayer = std::move(textureLayer), originalTextureArtCredits = std::move(originalTextureArtCredits)]() mutable
+        {
+            mModelController->RestoreTextureLayer(
+                std::move(textureLayer),
+                std::move(originalTextureArtCredits));
+        });
 
     //
     // Finalize
     //
-
-    // We (might) have changed the presence of layers
-    mUserInterface.OnLayerPresenceChanged(mModelController->GetModel());
 
     // No need to update dirtyness, this is for undo
 
@@ -794,8 +630,10 @@ void Controller::RestoreAllLayersForUndo(
     mUserInterface.OnShipSizeChanged(shipSize);
 
     // Update visualization modes
-    InternalReconciliateTextureVisualizationMode();
     InternalUpdateModelControllerVisualizationModes();
+
+    // Notify macro properties
+    NotifyModelMacroPropertiesUpdated();
 
     // Refresh model visualizations
     mModelController->UpdateVisualizations(*mView);
@@ -833,6 +671,20 @@ void Controller::FlipForUndo(DirectionType direction)
     InternalFlip<true>(direction);
 }
 
+void Controller::Rotate90(RotationDirectionType direction)
+{
+    auto const scopedToolResumeState = SuspendTool();
+
+    InternalRotate90<false>(direction);
+}
+
+void Controller::Rotate90ForUndo(RotationDirectionType direction)
+{
+    auto const scopedToolResumeState = SuspendTool();
+
+    InternalRotate90<true>(direction);
+}
+
 void Controller::ResizeShip(
     ShipSpaceSize const & newSize,
     ShipSpaceCoordinates const & originOffset)
@@ -843,6 +695,30 @@ void Controller::ResizeShip(
         newSize,
         originOffset,
         _("Resize Ship"));
+}
+
+void Controller::LayerChangeEpilog(std::optional<LayerType> dirtyLayer)
+{
+    if (dirtyLayer.has_value())
+    {
+        // Mark layer as dirty
+        mModelController->SetLayerDirty(*dirtyLayer);
+        mUserInterface.OnModelDirtyChanged(*mModelController);
+
+        if (*dirtyLayer == LayerType::Electrical)
+        {
+            // Notify of (possible) change in electrical panel
+            mUserInterface.OnElectricalLayerInstancedElementSetChanged(mModelController->GetInstancedElectricalElementSet());
+        }
+
+        // Notify macro properties
+        NotifyModelMacroPropertiesUpdated();
+    }
+
+    // Refresh visualization
+    assert(mView);
+    mModelController->UpdateVisualizations(*mView);
+    mUserInterface.RefreshView();
 }
 
 void Controller::SelectPrimaryVisualization(VisualizationType primaryVisualization)
@@ -947,6 +823,30 @@ void Controller::SetOtherVisualizationsOpacity(float opacity)
     mUserInterface.RefreshView();
 }
 
+void Controller::EnableWaterlineMarkers(bool doEnable)
+{
+    // Storage
+    mWorkbenchState.EnableWaterlineMarkers(doEnable);
+
+    // Notify UI
+    mUserInterface.OnVisualWaterlineMarkersEnablementChanged(doEnable);
+
+    // Upload markers
+    auto const modelMacroProperties = mModelController->GetModelMacroProperties();
+    if (mWorkbenchState.IsWaterlineMarkersEnabled() && modelMacroProperties.CenterOfMass.has_value())
+    {
+        mView->UploadWaterlineMarker(
+            *modelMacroProperties.CenterOfMass,
+            View::WaterlineMarkerType::CenterOfMass);
+    }
+    else
+    {
+        mView->RemoveWaterlineMarker(View::WaterlineMarkerType::CenterOfMass);
+    }
+
+    mUserInterface.RefreshView();
+}
+
 void Controller::EnableVisualGrid(bool doEnable)
 {
     mWorkbenchState.EnableGrid(doEnable);
@@ -957,46 +857,6 @@ void Controller::EnableVisualGrid(bool doEnable)
     // Update view
     mView->EnableVisualGrid(doEnable);
     mUserInterface.RefreshView();
-}
-
-void Controller::SetCurrentTool(std::optional<ToolType> tool)
-{
-    if (tool != mWorkbenchState.GetCurrentToolType())
-    {
-        bool const hadTool = (mCurrentTool != nullptr);
-
-        // Nuke current tool
-        mWorkbenchState.SetCurrentToolType(std::nullopt);
-        mCurrentTool.reset();
-
-        InternalSetCurrentTool(tool);
-
-        // Make new tool - unless we are suspended
-        assert(mWorkbenchState.GetCurrentToolType() == tool);
-        if (mWorkbenchState.GetCurrentToolType().has_value()
-            && hadTool)
-        {
-            mCurrentTool = MakeTool(*mWorkbenchState.GetCurrentToolType());
-        }
-    }
-}
-
-void Controller::SetStructuralMaterial(StructuralMaterial const * material, MaterialPlaneType plane)
-{
-    mWorkbenchState.SetStructuralMaterial(material, plane);
-    mUserInterface.OnStructuralMaterialChanged(material, plane);
-}
-
-void Controller::SetElectricalMaterial(ElectricalMaterial const * material, MaterialPlaneType plane)
-{
-    mWorkbenchState.SetElectricalMaterial(material, plane);
-    mUserInterface.OnElectricalMaterialChanged(material, plane);
-}
-
-void Controller::SetRopeMaterial(StructuralMaterial const * material, MaterialPlaneType plane)
-{
-    mWorkbenchState.SetRopesMaterial(material, plane);
-    mUserInterface.OnRopesMaterialChanged(material, plane);
 }
 
 void Controller::TryUndoLast()
@@ -1106,6 +966,66 @@ void Controller::OnWorkCanvasResized(DisplayLogicalSize const & newSize)
     mUserInterface.OnViewModelChanged(mView->GetViewModel());
 }
 
+void Controller::BroadcastSampledInformationUpdatedAt(std::optional<ShipSpaceCoordinates> const & coordinates, LayerType layer) const
+{
+    assert(mModelController);
+
+    std::optional<SampledInformation> sampledInformation;
+
+    if (coordinates.has_value()
+        && coordinates->IsInSize(mModelController->GetShipSize()))
+    {
+        sampledInformation = mModelController->SampleInformationAt(*coordinates, layer);
+    }
+
+    mUserInterface.OnSampledInformationUpdated(sampledInformation);
+}
+
+void Controller::BroadcastSampledInformationUpdatedNone() const
+{
+    mUserInterface.OnSampledInformationUpdated(std::nullopt);
+}
+
+void Controller::SetCurrentTool(std::optional<ToolType> tool)
+{
+    if (tool != mWorkbenchState.GetCurrentToolType())
+    {
+        bool const hadTool = (mCurrentTool != nullptr);
+
+        // Nuke current tool
+        mWorkbenchState.SetCurrentToolType(std::nullopt);
+        mCurrentTool.reset();
+
+        InternalSetCurrentTool(tool);
+
+        // Make new tool - unless we are suspended
+        assert(mWorkbenchState.GetCurrentToolType() == tool);
+        if (mWorkbenchState.GetCurrentToolType().has_value()
+            && hadTool)
+        {
+            mCurrentTool = MakeTool(*mWorkbenchState.GetCurrentToolType());
+        }
+    }
+}
+
+void Controller::SetStructuralMaterial(StructuralMaterial const * material, MaterialPlaneType plane)
+{
+    mWorkbenchState.SetStructuralMaterial(material, plane);
+    mUserInterface.OnStructuralMaterialChanged(material, plane);
+}
+
+void Controller::SetElectricalMaterial(ElectricalMaterial const * material, MaterialPlaneType plane)
+{
+    mWorkbenchState.SetElectricalMaterial(material, plane);
+    mUserInterface.OnElectricalMaterialChanged(material, plane);
+}
+
+void Controller::SetRopeMaterial(StructuralMaterial const * material, MaterialPlaneType plane)
+{
+    mWorkbenchState.SetRopesMaterial(material, plane);
+    mUserInterface.OnRopesMaterialChanged(material, plane);
+}
+
 void Controller::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates)
 {
     // Forward to tool
@@ -1181,7 +1101,7 @@ void Controller::OnUncapturedMouseOut()
     InternalSuspendTool();
 
     // Tell UI
-    mUserInterface.OnToolCoordinatesChanged(std::nullopt, GetShipSize());
+    mUserInterface.OnToolCoordinatesChanged(std::nullopt, mModelController->GetShipSize());
 }
 
 void Controller::OnMouseCaptureLost()
@@ -1191,6 +1111,308 @@ void Controller::OnMouseCaptureLost()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+template<LayerType TLayerType, typename ... TArgs>
+void Controller::InternalSetLayer(wxString actionTitle, TArgs&& ... args)
+{
+    auto const scopedToolResumeState = SuspendTool();
+
+    //
+    // Do layer-specific work
+    //
+
+    std::optional<VisualizationType> newVisualizationType;
+
+    if constexpr (TLayerType == LayerType::Electrical)
+    {
+        // Create undo action
+        InternalPushUndoForWholeLayer<LayerType::Electrical>(actionTitle);
+
+        // Switch visualization mode to this new one, if needed
+        if (mWorkbenchState.GetPrimaryVisualization() != VisualizationType::ElectricalLayer)
+        {
+            newVisualizationType = VisualizationType::ElectricalLayer;
+        }
+
+        // Set layer
+        WrapLikelyLayerPresenceChangingOperation<TLayerType>(
+            [this, args = std::make_tuple(std::forward<TArgs>(args)...)]() mutable
+            {
+                std::apply(
+                    [this](auto&& ... args)
+                    {
+                        mModelController->SetElectricalLayer(std::forward<TArgs>(args)...);
+                    },
+                    std::move(args));
+            });
+    }
+    else if constexpr (TLayerType == LayerType::Ropes)
+    {
+        // Create undo action
+        InternalPushUndoForWholeLayer<LayerType::Ropes>(actionTitle);
+
+        // Switch visualization mode to this new one, if needed
+        if (mWorkbenchState.GetPrimaryVisualization() != VisualizationType::RopesLayer)
+        {
+            newVisualizationType = VisualizationType::RopesLayer;
+        }
+
+        // Set layer
+        WrapLikelyLayerPresenceChangingOperation<TLayerType>(
+            [this, args = std::make_tuple(std::forward<TArgs>(args)...)]() mutable
+            {
+                std::apply(
+                    [this](auto&& ... args)
+                    {
+                        mModelController->SetRopesLayer(std::forward<TArgs>(args)...);
+                    },
+                    std::move(args));
+            });
+    }
+    else if constexpr (TLayerType == LayerType::Structural)
+    {
+        // Create undo action
+        InternalPushUndoForWholeLayer<LayerType::Structural>(actionTitle);
+
+        // Switch visualization mode to this new one, if needed
+        if (mWorkbenchState.GetPrimaryVisualization() != VisualizationType::StructuralLayer)
+        {
+            newVisualizationType = VisualizationType::StructuralLayer;
+        }
+
+        // Set layer
+        WrapLikelyLayerPresenceChangingOperation<TLayerType>(
+            [this, args = std::make_tuple(std::forward<TArgs>(args)...)]() mutable
+            {
+                std::apply(
+                    [this](auto&& ... args)
+                    {
+                        mModelController->SetStructuralLayer(std::forward<TArgs>(args)...);
+                    },
+                    std::move(args));
+            });
+    }
+    else
+    {
+        static_assert(TLayerType == LayerType::Texture);
+
+        // Create undo action
+        InternalPushUndoForWholeLayer<LayerType::Texture>(actionTitle);
+
+        // FUTUREWORK: disabled primary layer switch for this release, as there are no tools
+        // and thus it's pointless
+        ////// Switch visualization mode to this new one, if needed
+        ////if (mWorkbenchState.GetPrimaryVisualization() != VisualizationType::StructuralLayer)
+        ////{
+        ////    newVisualizationType = VisualizationType::StructuralLayer;
+        ////}
+
+        // Set layer
+        WrapLikelyLayerPresenceChangingOperation<TLayerType>(
+            [this, args = std::make_tuple(std::forward<TArgs>(args)...)]() mutable
+            {
+                std::apply(
+                    [this](auto&& ... args)
+                    {
+                        mModelController->SetTextureLayer(std::forward<TArgs>(args)...);
+                    },
+                    std::move(args));
+            });
+    }
+
+    // Switch primary viz
+    if (newVisualizationType.has_value())
+    {
+        InternalSelectPrimaryVisualization(*newVisualizationType);
+    }
+
+    // Update visualization modes
+    InternalUpdateModelControllerVisualizationModes();
+
+    LayerChangeEpilog(TLayerType);
+}
+
+template<LayerType TLayerType>
+void Controller::InternalRemoveLayer()
+{
+    auto const scopedToolResumeState = SuspendTool();
+
+    //
+    // Do layer-specific work
+    //
+
+    if constexpr (TLayerType == LayerType::Electrical)
+    {
+        // Create undo action
+        InternalPushUndoForWholeLayer<LayerType::Electrical>(_("Remove Electrical Layer"));
+
+        // Remove layer
+        WrapLikelyLayerPresenceChangingOperation<TLayerType>(
+            [this]()
+            {
+                mModelController->RemoveElectricalLayer();
+            });
+    }
+    else if constexpr (TLayerType == LayerType::Ropes)
+    {
+        // Create undo action
+        InternalPushUndoForWholeLayer<LayerType::Ropes>(_("Remove Ropes Layer"));
+
+        // Remove layer
+        WrapLikelyLayerPresenceChangingOperation<TLayerType>(
+            [this]()
+            {
+                mModelController->RemoveRopesLayer();
+            });
+    }
+    else
+    {
+        static_assert(TLayerType == LayerType::Texture); // No "remove" layer for structural
+
+        // Create undo action
+        InternalPushUndoForWholeLayer<LayerType::Texture>(_("Remove Texture Layer"));
+
+        // Remove layer
+        WrapLikelyLayerPresenceChangingOperation<TLayerType>(
+            [this]()
+            {
+                mModelController->RemoveTextureLayer();
+            });
+    }
+
+    // Update visualization modes
+    InternalUpdateModelControllerVisualizationModes();
+
+    LayerChangeEpilog(TLayerType);
+}
+
+template<LayerType TLayerType>
+void Controller::InternalPushUndoForWholeLayer(wxString const & title)
+{
+    assert(!mCurrentTool); // Tools are suspended
+
+    // Get dirty state snapshot
+    auto originalDirtyStateClone = mModelController->GetDirtyState();
+
+    // Create undo action
+    if constexpr (TLayerType == LayerType::Electrical)
+    {
+        auto originalLayerClone = mModelController->CloneElectricalLayer();
+
+        mUndoStack.Push(
+            title,
+            originalLayerClone ? originalLayerClone->Buffer.GetByteSize() : 0,
+            originalDirtyStateClone,
+            [originalLayerClone = std::move(originalLayerClone)](Controller & controller) mutable
+            {
+                controller.RestoreElectricalLayerForUndo(
+                    std::move(originalLayerClone));
+            });
+    }
+    else if constexpr (TLayerType == LayerType::Ropes)
+    {
+        auto originalLayerClone = mModelController->CloneRopesLayer();
+
+        // Create undo action
+        mUndoStack.Push(
+            title,
+            originalLayerClone ? originalLayerClone->Buffer.GetSize() * sizeof(RopeElement) : 0,
+            originalDirtyStateClone,
+            [originalLayerClone = std::move(originalLayerClone)](Controller & controller) mutable
+            {
+                controller.RestoreRopesLayerForUndo(
+                    std::move(originalLayerClone));
+            });
+    }
+    else if constexpr (TLayerType == LayerType::Structural)
+    {
+        auto originalLayerClone = mModelController->CloneStructuralLayer();
+
+        // Create undo action
+        mUndoStack.Push(
+            title,
+            originalLayerClone.Buffer.GetByteSize(),
+            originalDirtyStateClone,
+            [originalLayerClone = std::move(originalLayerClone)](Controller & controller) mutable
+            {
+                controller.RestoreStructuralLayerForUndo(
+                    std::move(originalLayerClone));
+            });
+    }
+    else
+    {
+        auto originalLayerClone = mModelController->CloneTextureLayer();
+        auto originalTextureArtCredits = mModelController->GetShipMetadata().ArtCredits;
+
+        // Create undo action
+        mUndoStack.Push(
+            title,
+            originalLayerClone ? originalLayerClone->Buffer.GetByteSize() : 0,
+            originalDirtyStateClone,
+            [originalLayerClone = std::move(originalLayerClone), originalTextureArtCredits = std::move(originalTextureArtCredits)](Controller & controller) mutable
+            {
+                controller.RestoreTextureLayerForUndo(
+                    std::move(originalLayerClone),
+                    std::move(originalTextureArtCredits));
+            });
+    }
+
+    // Notify undo stack
+    mUserInterface.OnUndoStackStateChanged(mUndoStack);
+}
+
+template<LayerType TLayerType, typename TFunctor>
+void Controller::WrapLikelyLayerPresenceChangingOperation(TFunctor operation)
+{
+    assert(!mCurrentTool); // Tools are suspended
+
+    bool const oldIsLayerPresent = mModelController->HasLayer(TLayerType);
+
+    operation();
+
+    bool const newIsLayerPresent = mModelController->HasLayer(TLayerType);
+
+    if (oldIsLayerPresent != newIsLayerPresent)
+    {
+        // Notify layer presence changed
+        mUserInterface.OnLayerPresenceChanged(*mModelController);
+
+        if constexpr (TLayerType == LayerType::Texture)
+        {
+            // Make sure current game viz mode is consistent with presence of texture layer
+            InternalReconciliateTextureVisualizationMode();
+        }
+
+        if (!newIsLayerPresent)
+        {
+            //
+            // Deal with layer removal - need to ensure consistency
+            //
+
+            // Switch primary viz to default if it was about this layer
+            if (VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization()) == TLayerType)
+            {
+                InternalSelectPrimaryVisualization(WorkbenchState::GetDefaultPrimaryVisualization()); // Will also change tool
+            }
+
+            if constexpr (TLayerType == LayerType::Texture)
+            {
+                // Change texture visualization mode if it's currently "None", so that next time a texture
+                // layer is present, we don't start in "none" mode
+                if (mWorkbenchState.GetTextureLayerVisualizationMode() == TextureLayerVisualizationModeType::None)
+                {
+                    mWorkbenchState.SetTextureLayerVisualizationMode(TextureLayerVisualizationModeType::MatteMode); // New default for next layer
+                    mUserInterface.OnTextureLayerVisualizationModeChanged(TextureLayerVisualizationModeType::MatteMode);
+                }
+            }
+        }
+        else
+        {
+            // Note: we do nothing if, instead, we've just *added* the layer - we let the caller decide
+            // what to do on that, as it's not about consistency
+        }
+    }
+}
 
 void Controller::InternalSetShipProperties(
     std::optional<ShipMetadata> && metadata,
@@ -1204,11 +1426,19 @@ void Controller::InternalSetShipProperties(
         bool const hasShipNameChanged =
             mModelController->GetShipMetadata().ShipName != metadata->ShipName;
 
+        bool const hasShipScaleChanged =
+            mModelController->GetShipMetadata().Scale != metadata->Scale;
+
         mModelController->SetShipMetadata(std::move(*metadata));
 
         if (hasShipNameChanged)
         {
-            mUserInterface.OnShipNameChanged(mModelController->GetModel());
+            mUserInterface.OnShipNameChanged(*mModelController);
+        }
+
+        if (hasShipScaleChanged)
+        {
+            mUserInterface.OnShipScaleChanged(mModelController->GetShipMetadata().Scale);
         }
     }
 
@@ -1231,6 +1461,13 @@ void Controller::InternalSetShipProperties(
             mUserInterface.RefreshView();
         }
     }
+}
+
+void Controller::InternalSetElectricalPanelMetadata(ElectricalPanelMetadata && panelMetadata)
+{
+    assert(mModelController);
+
+    mModelController->SetElectricalPanelMetadata(std::move(panelMetadata));
 }
 
 void Controller::InternalSelectPrimaryVisualization(VisualizationType primaryVisualization)
@@ -1259,9 +1496,9 @@ void Controller::InternalSelectPrimaryVisualization(VisualizationType primaryVis
 
 void Controller::InternalReconciliateTextureVisualizationMode()
 {
-    if (!mModelController->GetModel().HasLayer(LayerType::Texture))
+    if (!mModelController->HasLayer(LayerType::Texture))
     {
-        // If game visualization mode is the one only allowed with texture, 
+        // If game visualization mode is the one only allowed with texture,
         // change it to auto-texturization
         if (mWorkbenchState.GetGameVisualizationMode() == GameVisualizationModeType::TextureMode)
         {
@@ -1271,7 +1508,7 @@ void Controller::InternalReconciliateTextureVisualizationMode()
     }
     else
     {
-        // If game visualization mode is the one only allowed without texture, 
+        // If game visualization mode is the one only allowed without texture,
         // change it to texture
         if (mWorkbenchState.GetGameVisualizationMode() == GameVisualizationModeType::AutoTexturizationMode)
         {
@@ -1284,7 +1521,7 @@ void Controller::InternalReconciliateTextureVisualizationMode()
 void Controller::InternalUpdateModelControllerVisualizationModes()
 {
     //
-    // Here we orchestrate the viz mode that we want for the ModelController
+    // Here we orchestrate the viz modes that we want for the ModelController
     //
 
     // Game
@@ -1293,13 +1530,13 @@ void Controller::InternalUpdateModelControllerVisualizationModes()
 
     // Structural
 
-    assert(mModelController->GetModel().HasLayer(LayerType::Structural));
+    assert(mModelController->HasLayer(LayerType::Structural));
 
     mModelController->SetStructuralLayerVisualizationMode(mWorkbenchState.GetStructuralLayerVisualizationMode());
 
     // Electrical
 
-    if (mModelController->GetModel().HasLayer(LayerType::Electrical))
+    if (mModelController->HasLayer(LayerType::Electrical))
     {
         mModelController->SetElectricalLayerVisualizationMode(mWorkbenchState.GetElectricalLayerVisualizationMode());
     }
@@ -1310,7 +1547,7 @@ void Controller::InternalUpdateModelControllerVisualizationModes()
 
     // Ropes
 
-    if (mModelController->GetModel().HasLayer(LayerType::Ropes))
+    if (mModelController->HasLayer(LayerType::Ropes))
     {
         mModelController->SetRopesLayerVisualizationMode(mWorkbenchState.GetRopesLayerVisualizationMode());
     }
@@ -1321,7 +1558,7 @@ void Controller::InternalUpdateModelControllerVisualizationModes()
 
     // Texture
 
-    if (mModelController->GetModel().HasLayer(LayerType::Texture))
+    if (mModelController->HasLayer(LayerType::Texture))
     {
         mModelController->SetTextureLayerVisualizationMode(mWorkbenchState.GetTextureLayerVisualizationMode());
     }
@@ -1396,132 +1633,91 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
         case ToolType::ElectricalEraser:
         {
             return std::make_unique<ElectricalEraserTool>(
-                *mModelController,
-                mUndoStack,
-                mWorkbenchState,
-                mUserInterface,
-                *mView,
+                *this,
                 mResourceLocator);
         }
 
         case ToolType::ElectricalLine:
         {
             return std::make_unique<ElectricalLineTool>(
-                *mModelController,
-                mUndoStack,
-                mWorkbenchState,
-                mUserInterface,
-                *mView,
+                *this,
                 mResourceLocator);
         }
 
         case ToolType::ElectricalPencil:
         {
             return std::make_unique<ElectricalPencilTool>(
-                *mModelController,
-                mUndoStack,
-                mWorkbenchState,
-                mUserInterface,
-                *mView,
+                *this,
                 mResourceLocator);
         }
 
         case ToolType::ElectricalSampler:
         {
             return std::make_unique<ElectricalSamplerTool>(
-                *mModelController,
-                mUndoStack,
-                mWorkbenchState,
-                mUserInterface,
-                *mView,
+                *this,
                 mResourceLocator);
         }
 
         case ToolType::StructuralEraser:
         {
             return std::make_unique<StructuralEraserTool>(
-                *mModelController,
-                mUndoStack,
-                mWorkbenchState,
-                mUserInterface,
-                *mView,
+                *this,
                 mResourceLocator);
         }
 
         case ToolType::StructuralFlood:
         {
             return std::make_unique<StructuralFloodTool>(
-                *mModelController,
-                mUndoStack,
-                mWorkbenchState,
-                mUserInterface,
-                *mView,
+                *this,
                 mResourceLocator);
         }
 
         case ToolType::StructuralLine:
         {
             return std::make_unique<StructuralLineTool>(
-                *mModelController,
-                mUndoStack,
-                mWorkbenchState,
-                mUserInterface,
-                *mView,
+                *this,
+                mResourceLocator);
+        }
+
+        case ToolType::StructuralMeasuringTapeTool:
+        {
+            return std::make_unique<MeasuringTapeTool>(
+                *this,
                 mResourceLocator);
         }
 
         case ToolType::StructuralPencil:
         {
             return std::make_unique<StructuralPencilTool>(
-                *mModelController,
-                mUndoStack,
-                mWorkbenchState,
-                mUserInterface,
-                *mView,
+                *this,
                 mResourceLocator);
         }
 
         case ToolType::StructuralSampler:
         {
             return std::make_unique<StructuralSamplerTool>(
-                *mModelController,
-                mUndoStack,
-                mWorkbenchState,
-                mUserInterface,
-                *mView,
+                *this,
                 mResourceLocator);
         }
 
         case ToolType::RopePencil:
         {
             return std::make_unique<RopePencilTool>(
-                *mModelController,
-                mUndoStack,
-                mWorkbenchState,
-                mUserInterface,
-                *mView,
+                *this,
                 mResourceLocator);
         }
 
         case ToolType::RopeEraser:
         {
             return std::make_unique<RopeEraserTool>(
-                *mModelController,
-                mUndoStack,
-                mWorkbenchState,
-                mUserInterface,
-                *mView,
+                *this,
                 mResourceLocator);
         }
 
         case ToolType::RopeSampler:
         {
             return std::make_unique<RopeSamplerTool>(
-                *mModelController,
-                mUndoStack,
-                mWorkbenchState,
-                mUserInterface,
-                *mView,
+                *this,
                 mResourceLocator);
         }
     }
@@ -1538,7 +1734,7 @@ void Controller::InternalResizeShip(
     // Store undo
     {
         // Get dirty state
-        Model::DirtyState const originalDirtyState = mModelController->GetModel().GetDirtyState();
+        ModelDirtyState const originalDirtyState = mModelController->GetDirtyState();
 
         // Clone all layers
         auto structuralLayerClone = mModelController->CloneStructuralLayer();
@@ -1560,7 +1756,7 @@ void Controller::InternalResizeShip(
             actionName,
             totalCost,
             originalDirtyState,
-            [shipSize = mModelController->GetModel().GetShipSize()
+            [shipSize = mModelController->GetShipSize()
             , structuralLayerClone = std::move(structuralLayerClone)
             , electricalLayerClone = std::move(electricalLayerClone)
             , ropesLayerClone = std::move(ropesLayerClone)
@@ -1584,7 +1780,7 @@ void Controller::InternalResizeShip(
 
     // Update dirtyness
     mModelController->SetAllPresentLayersDirty();
-    mUserInterface.OnModelDirtyChanged(mModelController->GetModel());
+    mUserInterface.OnModelDirtyChanged(*mModelController);
 
     // Notify view of new size
     mView->SetShipSize(newSize);
@@ -1592,6 +1788,9 @@ void Controller::InternalResizeShip(
 
     // Notify UI of new ship size
     mUserInterface.OnShipSizeChanged(newSize);
+
+    // Notify macro properties
+    NotifyModelMacroPropertiesUpdated();
 
     // Refresh model visualizations
     mModelController->UpdateVisualizations(*mView);
@@ -1604,7 +1803,7 @@ void Controller::InternalFlip(DirectionType direction)
     if constexpr (!IsForUndo)
     {
         // Get dirty state
-        Model::DirtyState const originalDirtyState = mModelController->GetModel().GetDirtyState();
+        ModelDirtyState const originalDirtyState = mModelController->GetDirtyState();
 
         // Calculate undo title
         wxString undoTitle;
@@ -1638,12 +1837,101 @@ void Controller::InternalFlip(DirectionType direction)
     {
         // Update dirtyness
         mModelController->SetAllPresentLayersDirty();
-        mUserInterface.OnModelDirtyChanged(mModelController->GetModel());
+        mUserInterface.OnModelDirtyChanged(*mModelController);
     }
+
+    // Update macro properties
+    NotifyModelMacroPropertiesUpdated();
 
     // Refresh model visualizations
     mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
+}
+
+template<bool IsForUndo>
+void Controller::InternalRotate90(RotationDirectionType direction)
+{
+    if constexpr (!IsForUndo)
+    {
+        // Get dirty state
+        ModelDirtyState const originalDirtyState = mModelController->GetDirtyState();
+
+        // Calculate undo title and anti-rotation
+        wxString undoTitle;
+        RotationDirectionType antiRotation;
+        if (direction == RotationDirectionType::Clockwise)
+        {
+            undoTitle = _("Rotate CW");
+            antiRotation = RotationDirectionType::CounterClockwise;
+        }
+        else
+        {
+            assert(direction == RotationDirectionType::CounterClockwise);
+
+            undoTitle = _("Rotate CCW");
+            antiRotation = RotationDirectionType::Clockwise;
+        }
+
+        // Create undo
+
+        mUndoStack.Push(
+            undoTitle,
+            1, // Arbitrary
+            originalDirtyState,
+            [antiRotation](Controller & controller) mutable
+            {
+                controller.Rotate90ForUndo(antiRotation);
+            });
+
+        mUserInterface.OnUndoStackStateChanged(mUndoStack);
+    }
+
+    // Rotate
+    mModelController->Rotate90(direction);
+
+    if constexpr (!IsForUndo)
+    {
+        // Update dirtyness
+        mModelController->SetAllPresentLayersDirty();
+        mUserInterface.OnModelDirtyChanged(*mModelController);
+    }
+
+    // Notify view of new size
+    mView->SetShipSize(mModelController->GetShipSize());
+    mUserInterface.OnViewModelChanged(mView->GetViewModel());
+
+    // Notify UI of new ship size
+    mUserInterface.OnShipSizeChanged(mModelController->GetShipSize());
+
+    // Update macro properties
+    NotifyModelMacroPropertiesUpdated();
+
+    // Refresh model visualizations
+    mModelController->UpdateVisualizations(*mView);
+    mUserInterface.RefreshView();
+}
+
+void Controller::NotifyModelMacroPropertiesUpdated()
+{
+    auto const & modelMacroProperties = mModelController->GetModelMacroProperties();
+
+    // Notify UI
+    mUserInterface.OnModelMacroPropertiesUpdated(modelMacroProperties);
+
+    // Upload marker - if applicable
+    if (mWorkbenchState.IsWaterlineMarkersEnabled())
+    {
+        if (modelMacroProperties.CenterOfMass.has_value())
+        {
+            mView->UploadWaterlineMarker(
+                *modelMacroProperties.CenterOfMass,
+                View::WaterlineMarkerType::CenterOfMass);
+        }
+        else
+        {
+            mView->RemoveWaterlineMarker(View::WaterlineMarkerType::CenterOfMass);
+        }
+    }
 }
 
 void Controller::RefreshToolCoordinatesDisplay()
@@ -1652,7 +1940,7 @@ void Controller::RefreshToolCoordinatesDisplay()
     ShipSpaceCoordinates mouseShipSpaceCoordinates = mView->ScreenToShipSpace(mUserInterface.GetMouseCoordinates());
 
     // Check if within ship canvas
-    auto const & shipSize = GetShipSize();
+    auto const & shipSize = mModelController->GetShipSize();
     if (mouseShipSpaceCoordinates.IsInSize(shipSize))
     {
         mUserInterface.OnToolCoordinatesChanged(mouseShipSpaceCoordinates, shipSize);

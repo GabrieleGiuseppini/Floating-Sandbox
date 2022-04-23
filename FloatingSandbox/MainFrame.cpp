@@ -1050,7 +1050,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
                 mResourceLocator,
                 mLocalizationManager,
                 mGameController->GetMaterialDatabase(),
-                mGameController->GetShipTexturizer(),
+                mGameController->GetShipTexturizer(),                
                 [this](std::optional<std::filesystem::path> shipFilePath)
                 {
                     this->SwitchFromShipBuilder(shipFilePath);
@@ -1596,8 +1596,8 @@ void MainFrame::OnSaveScreenshotMenuItemSelected(wxCommandEvent & /*event*/)
         try
         {
             ImageFileTools::SavePngImage(
-                screenshotFilePath,
-                screenshotImage);
+                screenshotImage,
+                screenshotFilePath);
         }
         catch (std::filesystem::filesystem_error const & fex)
         {
@@ -2569,7 +2569,7 @@ void MainFrame::SwitchToShipBuilderForNewShip()
 
     // Open ShipBuilder frame for new ship
     assert(mShipBuilderMainFrame);
-    mShipBuilderMainFrame->OpenForNewShip();
+    mShipBuilderMainFrame->OpenForNewShip(mUIPreferencesManager->GetDisplayUnitsSystem());
 }
 
 void MainFrame::SwitchToShipBuilderForCurrentShip()
@@ -2582,7 +2582,7 @@ void MainFrame::SwitchToShipBuilderForCurrentShip()
 
     // Open ShipBuilder frame for editing current ship
     assert(mShipBuilderMainFrame);
-    mShipBuilderMainFrame->OpenForLoadShip(mCurrentShipFilePath);
+    mShipBuilderMainFrame->OpenForLoadShip(mCurrentShipFilePath, mUIPreferencesManager->GetDisplayUnitsSystem());
 }
 
 void MainFrame::SwitchFromShipBuilder(std::optional<std::filesystem::path> shipFilePath)

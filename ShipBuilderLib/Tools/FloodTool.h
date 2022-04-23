@@ -26,9 +26,9 @@ class FloodTool : public Tool
 {
 public:
 
-    virtual ~FloodTool() = default;
+    virtual ~FloodTool();
 
-    void OnMouseMove(DisplayLogicalCoordinates const & /*mouseCoordinates*/) override {};
+    void OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates) override;
     void OnLeftMouseDown() override;
     void OnLeftMouseUp() override {};
     void OnRightMouseDown() override;
@@ -40,11 +40,7 @@ protected:
 
     FloodTool(
         ToolType toolType,
-        ModelController & modelController,
-        UndoStack & undoStack,
-        WorkbenchState & workbenchState,
-        IUserInterface & userInterface,
-        View & view,
+        Controller & controller,
         ResourceLocator const & resourceLocator);
 
 private:
@@ -69,11 +65,7 @@ class StructuralFloodTool : public FloodTool<LayerType::Structural>
 public:
 
     StructuralFloodTool(
-        ModelController & modelController,
-        UndoStack & undoStack,
-        WorkbenchState & workbenchState,
-        IUserInterface & userInterface,
-        View & view,
+        Controller & controller,
         ResourceLocator const & resourceLocator);
 };
 

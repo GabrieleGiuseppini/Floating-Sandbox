@@ -1,3 +1,29 @@
+1.17.2
+- Expanded the materials database - building lighter ships has just become easier!
+	- Metals and Woods now have at least 6 different variants:
+		- "Hull": impermeable, heavy
+		- "Solid Bulkhead": impermeable, medium heavy
+		- "Light Bulkhead": impermeable, light
+		- "Solid I-Beam": permeable, heavy
+		- "Light I-Beam": permeable, light 
+		- "Low-Grade": brittle (breaks easily)		
+	- Added a new type of lighter wood ("Pine Wood", and renamed older wood as "Oak Wood")
+	- Added Sodium material - if you don't know what sodium does when immersed in water, check it out! [https://www.youtube.com/watch?v=YiCnUkCCsMw]
+	- Added Helium - similar to Hydrogen, but not explosive
+	- Added transparent variants to glass and gaseous materials
+	- The new structural materials database contains now 694 materials!
+	- Added a few more ship sounds - thanks to Officer TimCan!
+- ShipBuilder:
+	- Added "Measuring Tape" tool, which allows to measure lengths of structures
+	- Added "Waterline Analysis", predicting whether a ship will float or sink, and where the waterline is going to be
+	- Added electrical panel customization
+		- Can now position the interactive elements as will, change their labels, and decide whether they should be visible or not 
+	- Added ability to rotate ship by 90 degress
+	- Added ability to import layers from other ships
+	- Adding and removing layers can now be undone via "Undo"
+	- Added ability to export structural and texture layers to image files
+	- ...and a few more small improvements here and there!
+
 1.17.1
 - ShipBuilder:
 	- Added "Sampler" tool, to inspect and select materials from existing particles

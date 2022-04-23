@@ -7,6 +7,8 @@
 
 #include <GameCore/Utils.h>
 
+#include <sstream>
+
 namespace /* anonymous */ {
 
     MaterialPaletteCoordinatesType DeserializePaletteCoordinates(picojson::object const & paletteCoordinatesJson)
@@ -24,7 +26,7 @@ namespace /* anonymous */ {
 StructuralMaterial StructuralMaterial::Create(
     MaterialColorKey const & colorKey,
     unsigned int ordinal,
-    rgbColor const & renderColor,
+    rgbColor const & baseRenderColor,
     picojson::object const & structuralMaterialJson)
 {
     std::string const name = Utils::GetMandatoryJsonMember<std::string>(structuralMaterialJson, "name");
@@ -40,21 +42,26 @@ StructuralMaterial StructuralMaterial::Create(
         float const stiffness = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "stiffness", 1.0);
         float const strainThresholdFraction = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "strain_threshold_fraction", 0.5f);
 
-        // Assign unique type - arbitrarily to first of series of colors
         std::optional<MaterialUniqueType> uniqueType;
-        if (name == "Air" && ordinal == 0)
-            uniqueType = MaterialUniqueType::Air;
-        else if (name == "Rope" && ordinal == 0)
-            uniqueType = MaterialUniqueType::Rope;
-        else if (name == "Water" && ordinal == 0)
-            uniqueType = MaterialUniqueType::Water;
+        {
+            std::optional<std::string> const uniqueTypeStr = Utils::GetOptionalJsonMember<std::string>(structuralMaterialJson, "unique_type");
+            if (uniqueTypeStr.has_value() && ordinal == 0) // Assign unique type arbitrarily to first of series of colors
+            {
+                uniqueType = StrToMaterialUniqueType(*uniqueTypeStr);
+            }
+        }
 
-        std::optional<std::string> const materialSoundStr = Utils::GetOptionalJsonMember<std::string>(structuralMaterialJson, "sound_type");
         std::optional<MaterialSoundType> materialSound;
-        if (!!materialSoundStr)
-            materialSound = StrToMaterialSoundType(*materialSoundStr);
+        {
+            std::optional<std::string> const materialSoundStr = Utils::GetOptionalJsonMember<std::string>(structuralMaterialJson, "sound_type");
+            if (materialSoundStr.has_value())
+            {
+                materialSound = StrToMaterialSoundType(*materialSoundStr);
+            }
+        }
 
         std::optional<std::string> const materialTextureName = Utils::GetOptionalJsonMember<std::string>(structuralMaterialJson, "texture_name");
+        float const opacity = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "opacity", 1.0f);
 
         // Water
 
@@ -78,6 +85,7 @@ StructuralMaterial StructuralMaterial::Create(
         // Misc
 
         float const windReceptivity = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "wind_receptivity");
+        float const waterReactivity = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "water_reactivity", 0.0f);
         bool isLegacyElectrical = Utils::GetOptionalJsonMember<bool>(structuralMaterialJson, "is_legacy_electrical", false);
 
         // Palette coordinates
@@ -98,7 +106,7 @@ StructuralMaterial StructuralMaterial::Create(
         return StructuralMaterial(
             colorKey,
             name,
-            renderColor,
+            rgbaColor(baseRenderColor, static_cast<rgbaColor::data_type>(255.0f * opacity)), // renderColor
             strength,
             nominalMass,
             density,
@@ -108,6 +116,7 @@ StructuralMaterial StructuralMaterial::Create(
             uniqueType,
             materialSound,
             materialTextureName,
+            opacity,
             isHull,
             waterIntake,
             waterDiffusionSpeed,
@@ -124,6 +133,7 @@ StructuralMaterial StructuralMaterial::Create(
             explosiveCombustionStrength,
             // Misc
             windReceptivity,
+            waterReactivity,
             isLegacyElectrical,
             // Palette
             paletteCoordinates);
@@ -132,6 +142,28 @@ StructuralMaterial StructuralMaterial::Create(
     {
         throw GameException(std::string("Error parsing structural material \"") + name + "\": " + ex.what());
     }
+}
+
+StructuralMaterial::MaterialCombustionType StructuralMaterial::StrToMaterialCombustionType(std::string const & str)
+{
+    if (Utils::CaseInsensitiveEquals(str, "Combustion"))
+        return MaterialCombustionType::Combustion;
+    else if (Utils::CaseInsensitiveEquals(str, "Explosion"))
+        return MaterialCombustionType::Explosion;
+    else
+        throw GameException("Unrecognized MaterialCombustionType \"" + str + "\"");
+}
+
+StructuralMaterial::MaterialUniqueType StructuralMaterial::StrToMaterialUniqueType(std::string const & str)
+{
+    if (Utils::CaseInsensitiveEquals(str, "Air"))
+        return MaterialUniqueType::Air;
+    else if (Utils::CaseInsensitiveEquals(str, "Rope"))
+        return MaterialUniqueType::Rope;
+    else if (Utils::CaseInsensitiveEquals(str, "Water"))
+        return MaterialUniqueType::Water;
+    else
+        throw GameException("Unrecognized MaterialUniqueType \"" + str + "\"");
 }
 
 StructuralMaterial::MaterialSoundType StructuralMaterial::StrToMaterialSoundType(std::string const & str)
@@ -162,16 +194,6 @@ StructuralMaterial::MaterialSoundType StructuralMaterial::StrToMaterialSoundType
         return MaterialSoundType::Wood;
     else
         throw GameException("Unrecognized MaterialSoundType \"" + str + "\"");
-}
-
-StructuralMaterial::MaterialCombustionType StructuralMaterial::StrToMaterialCombustionType(std::string const & str)
-{
-    if (Utils::CaseInsensitiveEquals(str, "Combustion"))
-        return MaterialCombustionType::Combustion;
-    else if (Utils::CaseInsensitiveEquals(str, "Explosion"))
-        return MaterialCombustionType::Explosion;
-    else
-        throw GameException("Unrecognized MaterialCombustionType \"" + str + "\"");
 }
 
 ElectricalMaterial ElectricalMaterial::Create(
@@ -377,18 +399,136 @@ ElectricalMaterial::ShipSoundElementType ElectricalMaterial::StrToShipSoundEleme
         return ShipSoundElementType::Bell1;
     else if (Utils::CaseInsensitiveEquals(str, "Bell2"))
         return ShipSoundElementType::Bell2;
-    else if (Utils::CaseInsensitiveEquals(str, "Horn1"))
-        return ShipSoundElementType::Horn1;
-    else if (Utils::CaseInsensitiveEquals(str, "Horn2"))
-        return ShipSoundElementType::Horn2;
-    else if (Utils::CaseInsensitiveEquals(str, "Horn3"))
-        return ShipSoundElementType::Horn3;
-    else if (Utils::CaseInsensitiveEquals(str, "Horn4"))
-        return ShipSoundElementType::Horn4;
+    else if (Utils::CaseInsensitiveEquals(str, "QueenMaryHorn"))
+        return ShipSoundElementType::QueenMaryHorn;
+    else if (Utils::CaseInsensitiveEquals(str, "FourFunnelLinerWhistle"))
+        return ShipSoundElementType::FourFunnelLinerWhistle;
+    else if (Utils::CaseInsensitiveEquals(str, "TripodHorn"))
+        return ShipSoundElementType::TripodHorn;
+    else if (Utils::CaseInsensitiveEquals(str, "PipeWhistle"))
+        return ShipSoundElementType::PipeWhistle;
+    else if (Utils::CaseInsensitiveEquals(str, "LakeFreighterHorn"))
+        return ShipSoundElementType::LakeFreighterHorn;
+    else if (Utils::CaseInsensitiveEquals(str, "ShieldhallSteamSiren"))
+        return ShipSoundElementType::ShieldhallSteamSiren;
+    else if (Utils::CaseInsensitiveEquals(str, "QueenElizabeth2Horn"))
+        return ShipSoundElementType::QueenElizabeth2Horn;
+    else if (Utils::CaseInsensitiveEquals(str, "SSRexWhistle"))
+        return ShipSoundElementType::SSRexWhistle;
     else if (Utils::CaseInsensitiveEquals(str, "Klaxon1"))
         return ShipSoundElementType::Klaxon1;
     else if (Utils::CaseInsensitiveEquals(str, "NuclearAlarm1"))
         return ShipSoundElementType::NuclearAlarm1;
+    else if (Utils::CaseInsensitiveEquals(str, "EvacuationAlarm1"))
+        return ShipSoundElementType::EvacuationAlarm1;
+    else if (Utils::CaseInsensitiveEquals(str, "EvacuationAlarm2"))
+        return ShipSoundElementType::EvacuationAlarm2;
     else
         throw GameException("Unrecognized ShipSoundElementType \"" + str + "\"");
+}
+
+std::string ElectricalMaterial::MakeInstancedElementLabel(ElectricalElementInstanceIndex instanceIndex) const
+{
+    assert(IsInstanced);
+
+    std::stringstream ss;
+
+    switch (ElectricalType)
+    {
+        case ElectricalElementType::Engine:
+        {
+            ss << "Engine #" << static_cast<int>(instanceIndex);
+            break;
+        }
+
+        case ElectricalElementType::EngineController:
+        {
+            ss << "EngineControl #" << static_cast<int>(instanceIndex);
+            break;
+        }
+
+        case ElectricalElementType::Generator:
+        {
+            ss << "Generator #" << static_cast<int>(instanceIndex);
+            break;
+        }
+
+        case ElectricalElementType::InteractiveSwitch:
+        {
+            ss << "Switch " << " #" << static_cast<int>(instanceIndex);
+            break;
+        }
+
+        case ElectricalElementType::PowerMonitor:
+        {
+            ss << "Monitor #" << static_cast<int>(instanceIndex);
+            break;
+        }
+
+        case ElectricalElementType::ShipSound:
+        {
+            switch (ShipSoundType)
+            {
+                case ShipSoundElementType::Bell1:
+                case ShipSoundElementType::Bell2:
+                {
+                    ss << "Bell #" << static_cast<int>(instanceIndex);
+                    break;
+                }
+
+                case ShipSoundElementType::QueenMaryHorn:
+                case ShipSoundElementType::FourFunnelLinerWhistle:
+                case ShipSoundElementType::TripodHorn:
+                case ShipSoundElementType::PipeWhistle:
+                case ShipSoundElementType::LakeFreighterHorn:
+                case ShipSoundElementType::ShieldhallSteamSiren:
+                case ShipSoundElementType::QueenElizabeth2Horn:
+                case ShipSoundElementType::SSRexWhistle:
+                {
+                    ss << "Horn #" << static_cast<int>(instanceIndex);
+                    break;
+                }
+
+                case ShipSoundElementType::Klaxon1:
+                case ShipSoundElementType::NuclearAlarm1:
+                case ShipSoundElementType::EvacuationAlarm1:
+                case ShipSoundElementType::EvacuationAlarm2:
+                {
+                    ss << "Alarm #" << static_cast<int>(instanceIndex);
+                    break;
+                }
+            }
+
+            break;
+        }
+
+        case ElectricalElementType::WaterPump:
+        {
+            ss << "Pump #" << static_cast<int>(instanceIndex);
+            break;
+        }
+
+        case ElectricalElementType::WaterSensingSwitch:
+        {
+            ss << "WaterSwitch " << " #" << static_cast<int>(instanceIndex);
+            break;
+        }
+
+        case ElectricalElementType::WatertightDoor:
+        {
+            ss << "WaterDoor " << " #" << static_cast<int>(instanceIndex);
+            break;
+        }
+
+        case ElectricalElementType::Cable:
+        case ElectricalElementType::Lamp:
+        case ElectricalElementType::OtherSink:
+        case ElectricalElementType::SmokeEmitter:
+        {
+            // These are never instanced
+            assert(false);
+        }
+    }
+
+    return ss.str();
 }

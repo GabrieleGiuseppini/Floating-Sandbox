@@ -40,11 +40,7 @@ protected:
 
     LineTool(
         ToolType toolType,
-        ModelController & modelController,
-        UndoStack & undoStack,
-        WorkbenchState & workbenchState,
-        IUserInterface & userInterface,
-        View & view,
+        Controller & controller,
         ResourceLocator const & resourceLocator);
 
 private:
@@ -91,7 +87,7 @@ private:
     struct EngagementData
     {
         // Dirty state
-        Model::DirtyState OriginalDirtyState;
+        ModelDirtyState OriginalDirtyState;
 
         // Start point
         ShipSpaceCoordinates StartCoords;
@@ -100,7 +96,7 @@ private:
         MaterialPlaneType Plane;
 
         EngagementData(
-            Model::DirtyState const & dirtyState,
+            ModelDirtyState const & dirtyState,
             ShipSpaceCoordinates const & startCoords,
             MaterialPlaneType plane)
             : OriginalDirtyState(dirtyState)
@@ -121,11 +117,7 @@ class StructuralLineTool : public LineTool<LayerType::Structural>
 public:
 
     StructuralLineTool(
-        ModelController & modelController,
-        UndoStack & undoStack,
-        WorkbenchState & workbenchState,
-        IUserInterface & userInterface,
-        View & view,
+        Controller & controller,
         ResourceLocator const & resourceLocator);
 };
 
@@ -134,11 +126,7 @@ class ElectricalLineTool : public LineTool<LayerType::Electrical>
 public:
 
     ElectricalLineTool(
-        ModelController & modelController,
-        UndoStack & undoStack,
-        WorkbenchState & workbenchState,
-        IUserInterface & userInterface,
-        View & view,
+        Controller & controller,
         ResourceLocator const & resourceLocator);
 };
 

@@ -23,6 +23,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::DashedLineOverlay;
     else if (lstr == "grid")
         return ProgramType::Grid;
+    else if (lstr == "mipmapped_texture_quad")
+        return ProgramType::MipMappedTextureQuad;
     else if (lstr == "rect_overlay")
         return ProgramType::RectOverlay;
     else if (lstr == "rope")
@@ -33,6 +35,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::Texture;
     else if (lstr == "texture_ndc")
         return ProgramType::TextureNdc;
+    else if (lstr == "waterline")
+        return ProgramType::Waterline;
     else
         throw GameException("Unrecognized program \"" + str + "\"");
 }
@@ -49,6 +53,8 @@ std::string ProgramTypeToStr(ProgramType program)
             return "CircleOverlay";
         case ProgramType::Grid:
             return "Grid";
+        case ProgramType::MipMappedTextureQuad:
+            return "MipMappedTextureQuad";
         case ProgramType::RectOverlay:
             return "RectOverlay";
         case ProgramType::Rope:
@@ -59,6 +65,8 @@ std::string ProgramTypeToStr(ProgramType program)
             return "Texture";
         case ProgramType::TextureNdc:
             return "TextureNdc";
+        case ProgramType::Waterline:
+            return "Waterline";
     }
 
     assert(false);
@@ -81,6 +89,8 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::ShipParticleTextureSize;
     else if (str == "BackgroundTextureUnit")
         return ProgramParameterType::BackgroundTextureUnit;
+    else if (str == "MipMappedTexturesAtlasTexture")
+        return ProgramParameterType::MipMappedTexturesAtlasTexture;
     else if (str == "TextureUnit1")
         return ProgramParameterType::TextureUnit1;
     else
@@ -105,6 +115,8 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
             return "ShipParticleTextureSize";
         case ProgramParameterType::BackgroundTextureUnit:
             return "BackgroundTextureUnit";
+        case ProgramParameterType::MipMappedTexturesAtlasTexture:
+            return "MipMappedTexturesAtlasTexture";
         case ProgramParameterType::TextureUnit1:
             return "TextureUnit1";
     }
@@ -141,6 +153,10 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::Texture;
     else if (Utils::CaseInsensitiveEquals(str, "TextureNdc"))
         return VertexAttributeType::TextureNdc;
+    else if (Utils::CaseInsensitiveEquals(str, "Waterline1"))
+        return VertexAttributeType::Waterline1;
+    else if (Utils::CaseInsensitiveEquals(str, "Waterline2"))
+        return VertexAttributeType::Waterline2;
     else
         throw GameException("Unrecognized vertex attribute \"" + str + "\"");
 }

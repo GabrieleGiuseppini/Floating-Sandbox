@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #include "MaterialDatabase.h"
 
+#include <GameCore/Log.h>
+
 #include <algorithm>
 
 MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirectory)
@@ -14,11 +16,13 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
     //
 
     MaterialMap<StructuralMaterial> structuralMaterialMap;
-    UniqueStructuralMaterialsArray uniqueStructuralMaterials;
 
+    // Prepare unique structural materials
+    UniqueStructuralMaterialsArray uniqueStructuralMaterials;
     for (size_t i = 0; i < uniqueStructuralMaterials.size(); ++i)
         uniqueStructuralMaterials[i].second = nullptr;
 
+    // Load file
     picojson::value const structuralMaterialsRoot = Utils::ParseJSONFile(
         materialsRootDirectory / "materials_structural.json");
 
@@ -201,12 +205,14 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
     structuralMaterialPalette.CheckComplete();
     ropeMaterialPalette.CheckComplete();
 
+    LogMessage("Loaded " + std::to_string(structuralMaterialMap.size()) + " structural materials.");
+
     //
     // Electrical materials
     //
 
-    MaterialMap<ElectricalMaterial> electricalMaterialsMap;
-    std::map<MaterialColorKey, ElectricalMaterial const *, InstancedColorKeyComparer> instancedElectricalMaterialsMap;
+    MaterialMap<ElectricalMaterial> electricalMaterialMap;
+    std::map<MaterialColorKey, ElectricalMaterial const *, InstancedColorKeyComparer> instancedElectricalMaterialMap;
 
     picojson::value const electricalMaterialsRoot = Utils::ParseJSONFile(
         materialsRootDirectory / "materials_electrical.json");
@@ -265,14 +271,14 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
         }
 
         // Make sure there are no dupes
-        if (electricalMaterialsMap.count(colorKey) != 0
-            || instancedElectricalMaterialsMap.count(colorKey) != 0)
+        if (electricalMaterialMap.count(colorKey) != 0
+            || instancedElectricalMaterialMap.count(colorKey) != 0)
         {
             throw GameException("Electrical material \"" + material.Name + "\" has a duplicate color key");
         }
 
         // Store
-        auto const storedEntry = electricalMaterialsMap.emplace(
+        auto const storedEntry = electricalMaterialMap.emplace(
             std::make_pair(
                 colorKey,
                 material));
@@ -293,7 +299,7 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
         if (material.IsInstanced)
         {
             // Add also to instanced material map, for legacy r+g lookup
-            instancedElectricalMaterialsMap.emplace(
+            instancedElectricalMaterialMap.emplace(
                 std::make_pair(
                     colorKey,
                     &(storedEntry.first->second)));
@@ -303,6 +309,7 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
     // Make sure the palette is fully-populated
     electricalMaterialPalette.CheckComplete();
 
+    LogMessage("Loaded " + std::to_string(electricalMaterialMap.size()) + " electrical materials.");
 
     //
     // Make sure there are no structural materials whose key appears
@@ -313,8 +320,8 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
     for (auto const & kv : structuralMaterialMap)
     {
         if (!kv.second.IsLegacyElectrical
-            && (0 != electricalMaterialsMap.count(kv.first)
-                || 0 != instancedElectricalMaterialsMap.count(kv.first)))
+            && (0 != electricalMaterialMap.count(kv.first)
+                || 0 != instancedElectricalMaterialMap.count(kv.first)))
         {
             throw GameException("Color key of structural material \"" + kv.second.Name + "\" is also present among electrical materials");
         }
@@ -324,8 +331,8 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
         std::move(structuralMaterialMap),
         std::move(structuralMaterialPalette),
         std::move(ropeMaterialPalette),
-        std::move(electricalMaterialsMap),
-        std::move(instancedElectricalMaterialsMap),
+        std::move(electricalMaterialMap),
+        std::move(instancedElectricalMaterialMap),
         std::move(electricalMaterialPalette),
         uniqueStructuralMaterials,
         largestMass,
@@ -339,18 +346,30 @@ MaterialDatabase::Palette<TMaterial> MaterialDatabase::Palette<TMaterial>::Parse
     picojson::object const & palettesRoot,
     std::string const & paletteName)
 {
-    picojson::array const & paletteCategoriesJson = Utils::GetMandatoryJsonMember<picojson::array>(palettesRoot, paletteName);
-
     Palette<TMaterial> palette;
 
+    size_t uniqueGroupId = 0;
+
+    picojson::array const & paletteCategoriesJson = Utils::GetMandatoryJsonMember<picojson::array>(palettesRoot, paletteName);
     for (auto const & categoryJson : paletteCategoriesJson)
     {
         picojson::object const & categoryObj = Utils::GetJsonValueAs<picojson::object>(categoryJson, "palette_category");
 
         Category category(Utils::GetMandatoryJsonMember<std::string>(categoryObj, "category"));
-        for (auto const & subCategoryJson : Utils::GetMandatoryJsonArray(categoryObj, "sub_categories"))
+        for (auto const & groupJson : Utils::GetMandatoryJsonArray(categoryObj, "groups"))
         {
-            category.SubCategories.emplace_back(Utils::GetJsonValueAs<std::string>(subCategoryJson, "sub_category"));
+            picojson::object const & groupObj = Utils::GetJsonValueAs<picojson::object>(groupJson, "group");
+
+            auto const parentGroup = Category::SubCategory::Group(
+                Utils::GetMandatoryJsonMember<std::string>(groupObj, "name"),
+                uniqueGroupId++);
+
+            for (auto const & subCategoryJson : Utils::GetMandatoryJsonArray(groupObj, "sub_categories"))
+            {
+                category.SubCategories.emplace_back(
+                    Utils::GetJsonValueAs<std::string>(subCategoryJson, "sub_category"),
+                    parentGroup);
+            }
         }
 
         palette.Categories.emplace_back(std::move(category));

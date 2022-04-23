@@ -585,12 +585,18 @@ SoundController::SoundController(
         }
         else if (soundType == SoundType::ShipBell1
                 || soundType == SoundType::ShipBell2
-                || soundType == SoundType::ShipHorn1
-                || soundType == SoundType::ShipHorn2
-                || soundType == SoundType::ShipHorn3
-                || soundType == SoundType::ShipHorn4
+                || soundType == SoundType::ShipQueenMaryHorn
+                || soundType == SoundType::ShipFourFunnelLinerWhistle
+                || soundType == SoundType::ShipTripodHorn
+                || soundType == SoundType::ShipPipeWhistle
+                || soundType == SoundType::ShipLakeFreighterHorn
+                || soundType == SoundType::ShipShieldhallSteamSiren
+                || soundType == SoundType::ShipQueenElizabeth2Horn
+                || soundType == SoundType::ShipSSRexWhistle
                 || soundType == SoundType::ShipKlaxon1
-                || soundType == SoundType::ShipNuclearAlarm1)
+                || soundType == SoundType::ShipNuclearAlarm1
+                || soundType == SoundType::ShipEvacuationAlarm1
+                || soundType == SoundType::ShipEvacuationAlarm2)
         {
             //
             // Looped U sound
@@ -658,7 +664,7 @@ SoundController::SoundController(
                     break;
                 }
 
-                case SoundType::ShipHorn1:
+                case SoundType::ShipQueenMaryHorn:
                 {
                     if (!isUnderwater)
                     {
@@ -674,7 +680,7 @@ SoundController::SoundController(
                     break;
                 }
 
-                case SoundType::ShipHorn2:
+                case SoundType::ShipFourFunnelLinerWhistle:
                 {
                     if (!isUnderwater)
                     {
@@ -690,7 +696,7 @@ SoundController::SoundController(
                     break;
                 }
 
-                case SoundType::ShipHorn3:
+                case SoundType::ShipTripodHorn:
                 {
                     if (!isUnderwater)
                     {
@@ -706,7 +712,7 @@ SoundController::SoundController(
                     break;
                 }
 
-                case SoundType::ShipHorn4:
+                case SoundType::ShipPipeWhistle:
                 {
                     if (!isUnderwater)
                     {
@@ -717,6 +723,70 @@ SoundController::SoundController(
                     {
                         loopStartSample = 2.37601f;
                         loopEndSample = loopStartSample + 1.3156f;
+                    }
+
+                    break;
+                }
+
+                case SoundType::ShipLakeFreighterHorn:
+                {
+                    if (!isUnderwater)
+                    {
+                        loopStartSample = 4.46073f;
+                        loopEndSample = 10.5897f;
+                    }
+                    else
+                    {
+                        loopStartSample = 4.46073f;
+                        loopEndSample = 10.5897f;
+                    }
+
+                    break;
+                }
+
+                case SoundType::ShipShieldhallSteamSiren:
+                {
+                    if (!isUnderwater)
+                    {
+                        loopStartSample = 4.56406f;
+                        loopEndSample = 9.51304f;
+                    }
+                    else
+                    {
+                        loopStartSample = 4.68839f;
+                        loopEndSample = 9.81619f;
+                    }
+
+                    break;
+                }
+
+                case SoundType::ShipQueenElizabeth2Horn:
+                {
+                    if (!isUnderwater)
+                    {
+                        loopStartSample = 2.77712f;
+                        loopEndSample = 4.73236f;
+                    }
+                    else
+                    {
+                        loopStartSample = 2.77712f;
+                        loopEndSample = 4.73236f;
+                    }
+
+                    break;
+                }
+
+                case SoundType::ShipSSRexWhistle:
+                {
+                    if (!isUnderwater)
+                    {
+                        loopStartSample = 0.508844f;
+                        loopEndSample = 6.9068f;
+                    }
+                    else
+                    {
+                        loopStartSample = 0.837687f;
+                        loopEndSample = 6.90735f;
                     }
 
                     break;
@@ -749,6 +819,38 @@ SoundController::SoundController(
                     {
                         loopStartSample = 3.6507f;
                         loopEndSample = loopStartSample + 1.27698f;
+                    }
+
+                    break;
+                }
+
+                case SoundType::ShipEvacuationAlarm1:
+                {
+                    if (!isUnderwater)
+                    {
+                        loopStartSample = 0.0f;
+                        loopEndSample = 2.1254f;
+                    }
+                    else
+                    {
+                        loopStartSample = 0.0f;
+                        loopEndSample = 2.1254f;
+                    }
+
+                    break;
+                }
+
+                case SoundType::ShipEvacuationAlarm2:
+                {
+                    if (!isUnderwater)
+                    {
+                        loopStartSample = 1.37234f;
+                        loopEndSample = 2.74776f;
+                    }
+                    else
+                    {
+                        loopStartSample = 1.32662f;
+                        loopEndSample = 2.74667f;
                     }
 
                     break;
@@ -1737,6 +1839,34 @@ void SoundController::OnAirBubbleSurfaced(unsigned int size)
     mAirBubblesSurfacingSound.Pulse(volume);
 }
 
+void SoundController::OnWaterReaction(
+    bool isUnderwater,
+    unsigned int /*size*/)
+{
+    float const volume = 100.0f;
+
+    PlayUOneShotMultipleChoiceSound(
+        SoundType::WaterReactionTriggered,
+        SoundGroupType::Effects,
+        isUnderwater,
+        volume,
+        false);
+}
+
+void SoundController::OnWaterReactionExplosion(
+    bool isUnderwater,
+    unsigned int /*size*/)
+{
+    float const volume = 100.0f;
+
+    PlayUOneShotMultipleChoiceSound(
+        SoundType::WaterReactionExplosion,
+        SoundGroupType::Effects,
+        isUnderwater,
+        volume,
+        false);
+}
+
 void SoundController::OnWindSpeedUpdated(
     float const /*zeroSpeedMagnitude*/,
     float const baseSpeedMagnitude,
@@ -1838,9 +1968,9 @@ void SoundController::OnLightFlicker(
 void SoundController::OnEngineMonitorCreated(
     ElectricalElementId electricalElementId,
     ElectricalElementInstanceIndex /*instanceIndex*/,
-    ElectricalMaterial const & electricalMaterial,
     float /*thrustMagnitude*/,
     float /*rpm*/,
+    ElectricalMaterial const & electricalMaterial,
     std::optional<ElectricalPanelElementMetadata> const & /*panelElementMetadata*/)
 {
     // Associate sound type with this element
@@ -1868,8 +1998,8 @@ void SoundController::OnEngineMonitorCreated(
 void SoundController::OnWaterPumpCreated(
     ElectricalElementId electricalElementId,
     ElectricalElementInstanceIndex /*instanceIndex*/,
-    ElectricalMaterial const & /*electricalMaterial*/,
     float /*normalizedForce*/,
+    ElectricalMaterial const & /*electricalMaterial*/,
     std::optional<ElectricalPanelElementMetadata> const & /*panelElementMetadata*/)
 {
     // Associate sound type with this element
@@ -1987,27 +2117,51 @@ void SoundController::OnShipSoundUpdated(
                 break;
             }
 
-            case ElectricalMaterial::ShipSoundElementType::Horn1:
+            case ElectricalMaterial::ShipSoundElementType::QueenMaryHorn:
             {
-                soundType = SoundType::ShipHorn1;
+                soundType = SoundType::ShipQueenMaryHorn;
                 break;
             }
 
-            case ElectricalMaterial::ShipSoundElementType::Horn2:
+            case ElectricalMaterial::ShipSoundElementType::FourFunnelLinerWhistle:
             {
-                soundType = SoundType::ShipHorn2;
+                soundType = SoundType::ShipFourFunnelLinerWhistle;
                 break;
             }
 
-            case ElectricalMaterial::ShipSoundElementType::Horn3:
+            case ElectricalMaterial::ShipSoundElementType::TripodHorn:
             {
-                soundType = SoundType::ShipHorn3;
+                soundType = SoundType::ShipTripodHorn;
                 break;
             }
 
-            case ElectricalMaterial::ShipSoundElementType::Horn4:
+            case ElectricalMaterial::ShipSoundElementType::PipeWhistle:
             {
-                soundType = SoundType::ShipHorn4;
+                soundType = SoundType::ShipPipeWhistle;
+                break;
+            }
+
+            case ElectricalMaterial::ShipSoundElementType::LakeFreighterHorn:
+            {
+                soundType = SoundType::ShipLakeFreighterHorn;
+                break;
+            }
+
+            case ElectricalMaterial::ShipSoundElementType::ShieldhallSteamSiren:
+            {
+                soundType = SoundType::ShipShieldhallSteamSiren;
+                break;
+            }
+
+            case ElectricalMaterial::ShipSoundElementType::QueenElizabeth2Horn:
+            {
+                soundType = SoundType::ShipQueenElizabeth2Horn;
+                break;
+            }
+
+            case ElectricalMaterial::ShipSoundElementType::SSRexWhistle:
+            {
+                soundType = SoundType::ShipSSRexWhistle;
                 break;
             }
 
@@ -2020,6 +2174,18 @@ void SoundController::OnShipSoundUpdated(
             case ElectricalMaterial::ShipSoundElementType::NuclearAlarm1:
             {
                 soundType = SoundType::ShipNuclearAlarm1;
+                break;
+            }
+
+            case ElectricalMaterial::ShipSoundElementType::EvacuationAlarm1:
+            {
+                soundType = SoundType::ShipEvacuationAlarm1;
+                break;
+            }
+
+            case ElectricalMaterial::ShipSoundElementType::EvacuationAlarm2:
+            {
+                soundType = SoundType::ShipEvacuationAlarm2;
                 break;
             }
         }

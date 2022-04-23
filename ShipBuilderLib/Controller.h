@@ -60,31 +60,39 @@ public:
         ShipTexturizer const & shipTexturizer,
         ResourceLocator const & resourceLocator);
 
+    IModelObservable const & GetModelObservable() const
+    {
+        assert(mModelController);
+        return *mModelController;
+    }
+
+    ModelController & GetModelController()
+    {
+        assert(mModelController);
+        return *mModelController;
+    }
+
+    IUserInterface & GetUserInterface()
+    {
+        return mUserInterface;
+    }
+
+    View & GetView()
+    {
+        assert(mView);
+        return *mView;
+    }
+
+    WorkbenchState & GetWorkbenchState()
+    {
+        return mWorkbenchState;
+    }
+
+    //
+    // Ship
+    //
+
     ShipDefinition MakeShipDefinition();
-
-    ShipSpaceSize const & GetShipSize() const
-    {
-        assert(mModelController);
-        return mModelController->GetModel().GetShipSize();
-    }
-
-    ShipMetadata const & GetShipMetadata() const
-    {
-        assert(mModelController);
-        return mModelController->GetModel().GetShipMetadata();
-    }
-
-    ShipPhysicsData const & GetShipPhysicsData() const
-    {
-        assert(mModelController);
-        return mModelController->GetModel().GetShipPhysicsData();
-    }
-
-    std::optional<ShipAutoTexturizationSettings> const & GetShipAutoTexturizationSettings() const
-    {
-        assert(mModelController);
-        return mModelController->GetModel().GetShipAutoTexturizationSettings();
-    }
 
     void SetShipProperties(
         std::optional<ShipMetadata> && metadata,
@@ -96,27 +104,13 @@ public:
         std::optional<ShipPhysicsData> && physicsData,
         std::optional<std::optional<ShipAutoTexturizationSettings>> && autoTexturizationSettings);
 
-    bool HasModelLayer(LayerType layer) const
-    {
-        assert(mModelController);
-        return mModelController->GetModel().HasLayer(layer);
-    }
+    void SetElectricalPanelMetadata(ElectricalPanelMetadata panelMetadata);
 
-    bool IsModelDirty() const
-    {
-        assert(mModelController);
-        return mModelController->GetModel().GetIsDirty();
-    }
-
-    bool IsModelDirty(LayerType layer) const
-    {
-        assert(mModelController);
-        return mModelController->GetModel().GetIsDirty(layer);
-    }
+    void RestoreElectricalPanelMetadataForUndo(ElectricalPanelMetadata && panelMetadata);
 
     void ClearModelDirty();
 
-    void RestoreDirtyState(Model::DirtyState && dirtyState);
+    void RestoreDirtyState(ModelDirtyState && dirtyState);
 
     std::unique_ptr<RgbaImageData> MakePreview() const;
 
@@ -124,15 +118,27 @@ public:
 
     ModelValidationResults ValidateModel();
 
+    //
+    // Layer editing
+    //
+
+    // Structural layer
+
     void NewStructuralLayer();
-    void SetStructuralLayer(/*TODO*/);
+    void SetStructuralLayer(
+        wxString actionTitle,
+        StructuralLayerData && structuralLayer);
     void RestoreStructuralLayerRegionForUndo(
         StructuralLayerData && layerRegion,
         ShipSpaceCoordinates const & origin);
     void RestoreStructuralLayerForUndo(StructuralLayerData && structuralLayer);
 
+    // Electrical layer
+
     void NewElectricalLayer();
-    void SetElectricalLayer(/*TODO*/);
+    void SetElectricalLayer(
+        wxString actionTitle,
+        ElectricalLayerData && electricalLayer);
     void RemoveElectricalLayer();
     void RestoreElectricalLayerRegionForUndo(
         ElectricalLayerData && layerRegion,
@@ -140,18 +146,29 @@ public:
     void RestoreElectricalLayerForUndo(std::unique_ptr<ElectricalLayerData> electricalLayer);
     void TrimElectricalParticlesWithoutSubstratum();
 
+    // Ropes layer
+
     void NewRopesLayer();
-    void SetRopesLayer(/*TODO*/);
+    void SetRopesLayer(
+        wxString actionTitle,
+        RopesLayerData && ropesLayer);
     void RemoveRopesLayer();
     void RestoreRopesLayerForUndo(std::unique_ptr<RopesLayerData> ropesLayer);
 
+    // Texture layer
+
     void SetTextureLayer(
+        wxString actionTitle,
         TextureLayerData && textureLayer,
         std::optional<std::string> textureArtCredits);
     void RemoveTextureLayer();
     void RestoreTextureLayerForUndo(
         std::unique_ptr<TextureLayerData> textureLayer,
         std::optional<std::string> originalTextureArtCredits);
+
+    //
+    // Misc editing
+    //
 
     void RestoreAllLayersForUndo(
         ShipSpaceSize const & shipSize,
@@ -166,9 +183,20 @@ public:
     void Flip(DirectionType direction);
     void FlipForUndo(DirectionType direction);
 
+    void Rotate90(RotationDirectionType direction);
+    void Rotate90ForUndo(RotationDirectionType direction);
+
     void ResizeShip(
         ShipSpaceSize const & newSize,
         ShipSpaceCoordinates const & originOffset);
+
+    // Invoked for changes to any layer, including ephemeral viz changes (in which case
+    // no layer gets dirty)
+    void LayerChangeEpilog(std::optional<LayerType> dirtyLayer = std::nullopt);
+
+    //
+    // Visualization management
+    //
 
     void SelectPrimaryVisualization(VisualizationType primaryVisualization);
 
@@ -177,25 +205,31 @@ public:
     void SetElectricalLayerVisualizationMode(ElectricalLayerVisualizationModeType mode);
     void SetRopesLayerVisualizationMode(RopesLayerVisualizationModeType mode);
 
-    TextureLayerVisualizationModeType GetTextureLayerVisualizationMode() const;
     void SetTextureLayerVisualizationMode(TextureLayerVisualizationModeType mode);
 
-    float GetOtherVisualizationsOpacity() const;
     void SetOtherVisualizationsOpacity(float opacity);
 
-    bool IsVisualGridEnabled() const;
+    void EnableWaterlineMarkers(bool doEnable);
     void EnableVisualGrid(bool doEnable);
 
-    std::optional<ToolType> GetCurrentTool() const;
-    void SetCurrentTool(std::optional<ToolType> tool);
+    //
+    // Undo
+    //
 
-    void SetStructuralMaterial(StructuralMaterial const * material, MaterialPlaneType plane);
-    void SetElectricalMaterial(ElectricalMaterial const * material, MaterialPlaneType plane);
-    void SetRopeMaterial(StructuralMaterial const * material, MaterialPlaneType plane);
+    template<typename ... TArgs>
+    void StoreUndoAction(TArgs&& ... args)
+    {
+        mUndoStack.Push(std::forward<TArgs>(args)...);
+        mUserInterface.OnUndoStackStateChanged(mUndoStack);
+    }
 
     void TryUndoLast();
     void UndoLast();
     void UndoUntil(size_t index);
+
+    //
+    // View
+    //
 
     void Render();
 
@@ -204,6 +238,23 @@ public:
     void ResetView();
 
     void OnWorkCanvasResized(DisplayLogicalSize const & newSize);
+
+    //
+    // Services to tools
+    //
+
+    void BroadcastSampledInformationUpdatedAt(std::optional<ShipSpaceCoordinates> const & coordinates, LayerType layer) const;
+    void BroadcastSampledInformationUpdatedNone() const;
+
+    //
+    // Misc
+    //
+
+    void SetCurrentTool(std::optional<ToolType> tool);
+
+    void SetStructuralMaterial(StructuralMaterial const * material, MaterialPlaneType plane);
+    void SetElectricalMaterial(ElectricalMaterial const * material, MaterialPlaneType plane);
+    void SetRopeMaterial(StructuralMaterial const * material, MaterialPlaneType plane);
 
     void OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates);
     void OnLeftMouseDown();
@@ -257,10 +308,26 @@ private:
         IUserInterface & userInterface,
         ResourceLocator const & resourceLocator);
 
+    template<LayerType TLayerType, typename ... TArgs>
+    void InternalSetLayer(wxString actionTitle, TArgs&& ... args);
+
+    template<LayerType TLayerType>
+    void InternalRemoveLayer();
+
+    template<LayerType TLayerType>
+    void InternalPushUndoForWholeLayer(wxString const & title);
+
+    template<LayerType TLayerType, typename TFunctor>
+    void WrapLikelyLayerPresenceChangingOperation(TFunctor operation);
+
+    //
+
     void InternalSetShipProperties(
         std::optional<ShipMetadata> && metadata,
         std::optional<ShipPhysicsData> && physicsData,
         std::optional<std::optional<ShipAutoTexturizationSettings>> && autoTexturizationSettings);
+
+    void InternalSetElectricalPanelMetadata(ElectricalPanelMetadata && panelMetadata);
 
     void InternalSelectPrimaryVisualization(VisualizationType primaryVisualization);
 
@@ -284,6 +351,11 @@ private:
 
     template<bool IsForUndo>
     void InternalFlip(DirectionType direction);
+
+    template<bool IsForUndo>
+    void InternalRotate90(RotationDirectionType direction);
+
+    void NotifyModelMacroPropertiesUpdated();
 
     void RefreshToolCoordinatesDisplay();
 

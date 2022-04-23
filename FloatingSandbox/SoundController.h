@@ -262,6 +262,14 @@ public:
 
     void OnAirBubbleSurfaced(unsigned int size) override;
 
+    void OnWaterReaction(
+        bool isUnderwater,
+        unsigned int size) override;
+
+    void OnWaterReactionExplosion(
+        bool isUnderwater,
+        unsigned int size) override;
+
     void OnWindSpeedUpdated(
         float const zeroSpeedMagnitude,
         float const baseSpeedMagnitude,
@@ -284,16 +292,16 @@ public:
     void OnEngineMonitorCreated(
         ElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
-        ElectricalMaterial const & electricalMaterial,
         float thrustMagnitude,
         float rpm,
+        ElectricalMaterial const & electricalMaterial,
         std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override;
 
     void OnWaterPumpCreated(
         ElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
-        ElectricalMaterial const & electricalMaterial,
         float normalizedForce,
+        ElectricalMaterial const & electricalMaterial,
         std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override;
 
     void OnSwitchToggled(
@@ -545,6 +553,9 @@ private:
             case SoundType::RepairSpring:
             case SoundType::RepairTriangle:
                 return std::chrono::milliseconds(200);
+            case SoundType::WaterReactionTriggered:
+            case SoundType::WaterReactionExplosion:
+                return std::chrono::milliseconds(500);
             case SoundType::Stress:
             case SoundType::TerrainAdjust:
             case SoundType::WaterDisplacementSplash:

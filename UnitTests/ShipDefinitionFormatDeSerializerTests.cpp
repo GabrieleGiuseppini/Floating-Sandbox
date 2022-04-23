@@ -191,7 +191,7 @@ protected:
                 StructuralMaterial(
                     colorKey,
                     "Material " + std::to_string(i),
-                    colorKey));
+                    rgbaColor(colorKey, 255)));
         }
     }
 
@@ -430,7 +430,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerTests, UnrecognizedMateri
     StructuralMaterial unrecognizedMaterial = StructuralMaterial(
         rgbColor(0x12, 0x34, 0x56),
         "Unrecognized Material",
-        rgbColor(0x12, 0x34, 0x56));
+        rgbaColor(0x12, 0x34, 0x56, 0xff));
 
     // Populate structural layer
     StructuralLayerData sourceStructuralLayer(ShipSpaceSize(10, 12));
@@ -474,7 +474,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerTests, UnrecognizedMateri
     StructuralMaterial unrecognizedMaterial = StructuralMaterial(
         rgbColor(0x12, 0x34, 0x56),
         "Unrecognized Material",
-        rgbColor(0x12, 0x34, 0x56));
+        rgbaColor(0x12, 0x34, 0x56, 0xff));
 
     // Populate structural layer
     StructuralLayerData sourceStructuralLayer(ShipSpaceSize(10, 12));
@@ -929,7 +929,7 @@ protected:
                 StructuralMaterial(
                     colorKey,
                     "Material " + std::to_string(i),
-                    colorKey));
+                    rgbaColor(colorKey, 255)));
         }
     }
 
@@ -999,7 +999,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_RopesLayerTests, UnrecognizedMaterial_Sa
     StructuralMaterial unrecognizedMaterial = StructuralMaterial(
         rgbColor(0x12, 0x34, 0x56),
         "Unrecognized Material",
-        rgbColor(0x12, 0x34, 0x56));
+        rgbaColor(0x12, 0x34, 0x56, 0xff));
 
     // Populate ropes layer
     RopesLayerData sourceRopesLayer;
@@ -1044,7 +1044,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_RopesLayerTests, UnrecognizedMaterial_La
     StructuralMaterial unrecognizedMaterial = StructuralMaterial(
         rgbColor(0x12, 0x34, 0x56),
         "Unrecognized Material",
-        rgbColor(0x12, 0x34, 0x56));
+        rgbaColor(0x12, 0x34, 0x56, 0xff));
 
     // Populate ropes layer
     RopesLayerData sourceRopesLayer;

@@ -131,8 +131,8 @@ RgbImageData ImageFileTools::LoadImageRgbAndResize(
 }
 
 void ImageFileTools::SavePngImage(
-    std::filesystem::path filepath,
-    RgbaImageData const & image)
+    RgbaImageData const & image,
+    std::filesystem::path filepath)
 {
     InternalSavePngImage(
         image.Size,
@@ -143,8 +143,8 @@ void ImageFileTools::SavePngImage(
 }
 
 void ImageFileTools::SavePngImage(
-    std::filesystem::path filepath,
-    RgbImageData const & image)
+    RgbImageData const & image,
+    std::filesystem::path filepath)
 {
     InternalSavePngImage(
         image.Size,

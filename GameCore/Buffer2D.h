@@ -35,7 +35,7 @@ public:
         int width,
         int height)
         : Size(width, height)
-        , mLinearSize(width * height)
+        , mLinearSize(static_cast<size_t>(width) * static_cast<size_t>(height))
     {
         Data = std::make_unique<TElement[]>(mLinearSize);
     }
@@ -151,6 +151,30 @@ public:
             std::move(newData));
     }
 
+    void Trim(_IntegralRect<TIntegralTag> const & rect)
+    {
+        // The new rect is smaller than the previous
+        assert(rect.origin.x + rect.size.width <= Size.width);
+        assert(rect.origin.y + rect.size.height <= Size.height);
+
+        if (rect.size != Size)
+        {
+            // In-place shrinking
+            for (int targetY = 0; targetY < rect.size.height; ++targetY)
+            {
+                int const sourceLinearIndex = (targetY + rect.origin.y) * Size.width + rect.origin.x;
+                int const targetLinearIndex = targetY * rect.size.width;
+
+                std::memmove(
+                    Data.get() + targetLinearIndex,
+                    Data.get() + sourceLinearIndex,
+                    rect.size.width * sizeof(TElement));
+            }
+
+            Size = rect.size;
+        }
+    }
+
     void BlitFromRegion(
         Buffer2D const & source,
         _IntegralRect<TIntegralTag> const & sourceRegion,
@@ -228,6 +252,24 @@ public:
         }
     }
 
+    void Rotate90(RotationDirectionType direction)
+    {
+        switch (direction)
+        {
+            case RotationDirectionType::Clockwise:
+            {
+                Rotate90<RotationDirectionType::Clockwise>();
+                break;
+            }
+
+            case RotationDirectionType::CounterClockwise:
+            {
+                Rotate90<RotationDirectionType::CounterClockwise>();
+                break;
+            }
+        }
+    }
+
 private:
 
     template<bool H, bool V>
@@ -251,6 +293,27 @@ private:
                 std::swap(this->operator[](srcCoords), this->operator[](dstCoords));
             }
         }
+    }
+
+    template<RotationDirectionType TDirection>
+    void Rotate90()
+    {
+        size_type const newSize(Size.height, Size.width);
+
+        auto newData = std::make_unique<TElement[]>(mLinearSize);
+
+        for (int srcY = 0; srcY < Size.height; ++srcY)
+        {
+            int const srcYOffset = srcY * Size.width;
+            for (int srcX = 0; srcX < Size.width; ++srcX)
+            {
+                auto const dstCoords = coordinates_type(srcX, srcY).Rotate90<TDirection>(Size);
+                newData[dstCoords.y * newSize.width + dstCoords.x] = Data[srcYOffset + srcX];
+            }
+        }
+
+        Size = newSize;
+        Data = std::move(newData);
     }
 
     size_t mLinearSize;

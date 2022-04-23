@@ -184,5 +184,5 @@ public:
 
 float DivideByTwo(float value);
 
-StructuralMaterial MakeTestStructuralMaterial(std::string name);
-ElectricalMaterial MakeTestElectricalMaterial(std::string name);
+StructuralMaterial MakeTestStructuralMaterial(std::string name, rgbColor colorKey);
+ElectricalMaterial MakeTestElectricalMaterial(std::string name, rgbColor colorKey, bool isInstanced = false);

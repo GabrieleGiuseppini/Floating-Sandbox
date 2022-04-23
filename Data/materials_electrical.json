@@ -777,8 +777,8 @@
         "is_self_powered": false, 
         "maximum_operating_temperature": 1000000.0,
         "minimum_operating_temperature": 0.0, 
-        "name": "Horn 1", 
-	"ship_sound_type": "Horn1",
+        "name": "Queen Mary Horn", 
+	"ship_sound_type": "QueenMaryHorn",
         "palette_coordinates": {
 		"category": "Sounds",
 		"sub_category": "Horns",
@@ -795,8 +795,8 @@
         "is_self_powered": false, 
         "maximum_operating_temperature": 1000000.0,
         "minimum_operating_temperature": 0.0, 
-        "name": "Horn 2", 
-	"ship_sound_type": "Horn2",
+        "name": "Four Funnel Liner Whistle", 
+	"ship_sound_type": "FourFunnelLinerWhistle",
         "palette_coordinates": {
 		"category": "Sounds",
 		"sub_category": "Horns",
@@ -813,8 +813,8 @@
         "is_self_powered": false, 
         "maximum_operating_temperature": 1000000.0,
         "minimum_operating_temperature": 0.0, 
-        "name": "Horn 3", 
-	"ship_sound_type": "Horn3",
+        "name": "Tripod Horn", 
+	"ship_sound_type": "TripodHorn",
         "palette_coordinates": {
 		"category": "Sounds",
 		"sub_category": "Horns",
@@ -831,12 +831,84 @@
         "is_self_powered": false, 
         "maximum_operating_temperature": 1000000.0,
         "minimum_operating_temperature": 0.0, 
-        "name": "Horn 4", 
-	"ship_sound_type": "Horn4",
+        "name": "Pipe Whistle", 
+	"ship_sound_type": "PipeWhistle",
         "palette_coordinates": {
 		"category": "Sounds",
 		"sub_category": "Horns",
 		"sub_category_ordinal": 3
+	}
+    },
+
+    {
+        "color_key": "#409400",
+	"conducts_electricity": false,
+        "electrical_type": "ShipSound", 
+        "heat_generated": 0.0, 
+	"is_instanced": true,
+        "is_self_powered": false, 
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0, 
+        "name": "Lake Freighter Horn", 
+	"ship_sound_type": "LakeFreighterHorn",
+        "palette_coordinates": {
+		"category": "Sounds",
+		"sub_category": "Horns",
+		"sub_category_ordinal": 4
+	}
+    },
+
+    {
+        "color_key": "#409500",
+	"conducts_electricity": false,
+        "electrical_type": "ShipSound", 
+        "heat_generated": 0.0, 
+	"is_instanced": true,
+        "is_self_powered": false, 
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0, 
+        "name": "Shieldhall Steam Siren", 
+	"ship_sound_type": "ShieldhallSteamSiren",
+        "palette_coordinates": {
+		"category": "Sounds",
+		"sub_category": "Horns",
+		"sub_category_ordinal": 5
+	}
+    },
+
+    {
+        "color_key": "#409600",
+	"conducts_electricity": false,
+        "electrical_type": "ShipSound", 
+        "heat_generated": 0.0, 
+	"is_instanced": true,
+        "is_self_powered": false, 
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0, 
+        "name": "Queen Elizabeth 2 Horn", 
+	"ship_sound_type": "QueenElizabeth2Horn",
+        "palette_coordinates": {
+		"category": "Sounds",
+		"sub_category": "Horns",
+		"sub_category_ordinal": 6
+	}
+    },
+
+    {
+        "color_key": "#409700",
+	"conducts_electricity": false,
+        "electrical_type": "ShipSound", 
+        "heat_generated": 0.0, 
+	"is_instanced": true,
+        "is_self_powered": false, 
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0, 
+        "name": "S.S. Rex Whistle", 
+	"ship_sound_type": "SSRexWhistle",
+        "palette_coordinates": {
+		"category": "Sounds",
+		"sub_category": "Horns",
+		"sub_category_ordinal": 7
 	}
     },
 
@@ -894,7 +966,7 @@
 	}
     },
 
-	{
+    {
         "color_key": "#40C000",
 	"conducts_electricity": false,
         "electrical_type": "ShipSound", 
@@ -903,12 +975,48 @@
         "is_self_powered": false, 
         "maximum_operating_temperature": 1000000.0,
         "minimum_operating_temperature": 0.0, 
-        "name": "Klaxon 1", 
+        "name": "Nuclear Alarm", 
 	"ship_sound_type": "NuclearAlarm1",
         "palette_coordinates": {
 		"category": "Sounds",
-		"sub_category": "Nuclear Alarms",
+		"sub_category": "Alarms",
 		"sub_category_ordinal": 0
+	}
+    },
+
+    {
+        "color_key": "#40C100",
+	"conducts_electricity": false,
+        "electrical_type": "ShipSound", 
+        "heat_generated": 0.0, 
+	"is_instanced": true,
+        "is_self_powered": false, 
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0, 
+        "name": "Evacuation Alarm 1", 
+	"ship_sound_type": "EvacuationAlarm1",
+        "palette_coordinates": {
+		"category": "Sounds",
+		"sub_category": "Alarms",
+		"sub_category_ordinal": 1
+	}
+    },
+
+    {
+        "color_key": "#40C200",
+	"conducts_electricity": false,
+        "electrical_type": "ShipSound", 
+        "heat_generated": 0.0, 
+	"is_instanced": true,
+        "is_self_powered": false, 
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0, 
+        "name": "Evacuation Alarm 2", 
+	"ship_sound_type": "EvacuationAlarm2",
+        "palette_coordinates": {
+		"category": "Sounds",
+		"sub_category": "Alarms",
+		"sub_category_ordinal": 2
 	}
     },
 
@@ -1033,59 +1141,92 @@
 	"electrical_palette": [
 	    {
 		"category": "Generators",
-		"sub_categories": [
-		  "Generators"
+		"groups":[
+			{
+				"name": "Generators",
+				"sub_categories": [
+					"Generators"]
+			}
 		]
 	    },
 	    {
 		"category": "Cables",
-		"sub_categories": [
-		  "Cables"
+		"groups":[
+			{
+				"name": "Cables",
+				"sub_categories": [
+					"Cables"]
+			}
 		]
+
 	    },
 	    {
 		"category": "Switches",
-		"sub_categories": [
-		  "Interactive Switches",
-		  "Push Switches",
-		  "Water Switches"
+		"groups":[
+			{
+				"name": "Switches",
+				"sub_categories": [
+					"Interactive Switches",
+					"Push Switches",
+					"Water Switches"]
+			}
 		]
 	    },
 	    {
 		"category": "Lamps",
-		"sub_categories": [
-		  "Lamps",
-		  "Self-Powered Lamps",
-		  "Portholes",
-		  "Self-Powered Portholes"
+		"groups":[
+			{
+				"name": "Lamps",
+				"sub_categories": [
+					"Lamps",
+					"Self-Powered Lamps"]
+			},
+			{
+				"name": "Portholes",
+				"sub_categories": [
+					"Portholes",
+					"Self-Powered Portholes"]
+			}
 		]
 	    },
 	    {
 		"category": "Engines",
-		"sub_categories": [
-		  "Outboard Engines",
-		  "Diesel Engines",
-		  "Steam Engines",
-		  "Engine Controllers"
+		"groups":[
+			{
+				"name": "Engines",
+				"sub_categories": [
+					"Outboard Engines",
+					"Diesel Engines",
+					"Steam Engines",
+					"Engine Controllers"]
+			}
 		]
 	    },
 	    {
 		"category": "Sounds",
-		"sub_categories": [
-		  "Horns",
-		  "Bells",
-		  "Klaxons",
-		  "Nuclear Alarms"
+		"groups":[
+			{
+				"name": "Sounds",
+				"sub_categories": [
+					"Horns",
+					"Bells",
+					"Klaxons",
+					"Alarms"]
+			}
 		]
 	    },
 	    {
 		"category": "Other Elements",
-		"sub_categories": [
-		  "Heating Elements",
-		  "Smoke Emitters",
-		  "Power Monitors",
-		  "Water Pumps",
-		  "Watertight Doors"
+		"groups":[
+			{
+				"name": "Other Elements",
+				"sub_categories": [
+					"Heating Elements",
+					"Smoke Emitters",
+					"Power Monitors",
+					"Water Pumps",
+					"Watertight Doors"]
+			}
 		]
 	    }	 
 	]

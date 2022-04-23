@@ -51,6 +51,16 @@ struct StructuralLayerData
     {
         return StructuralLayerData(Buffer.CloneRegion(region));
     }
+
+    void Trim(ShipSpaceRect const & rect)
+    {
+        Buffer.Trim(rect);
+    }
+
+    StructuralLayerData MakeReframed(
+        ShipSpaceSize const & newSize, // Final size
+        ShipSpaceCoordinates const & originOffset, // Position in final buffer of original {0, 0}
+        StructuralElement const & fillerValue) const;
 };
 
 template <>
@@ -108,12 +118,27 @@ struct ElectricalLayerData
 
     ElectricalLayerData Clone(ShipSpaceRect const & region) const
     {
-        ElectricalPanelMetadata panelClone = Panel;
-
         return ElectricalLayerData(
             Buffer.CloneRegion(region),
-            std::move(panelClone));
+            MakedTrimmedPanel(Panel, region));
     }
+
+    void Trim(ShipSpaceRect const & rect)
+    {
+        Panel = MakedTrimmedPanel(Panel, rect);
+        Buffer.Trim(rect);
+    }
+
+    ElectricalLayerData MakeReframed(
+        ShipSpaceSize const & newSize, // Final size
+        ShipSpaceCoordinates const & originOffset, // Position in final buffer of original {0, 0}
+        ElectricalElement const & fillerValue) const;
+
+private:
+
+    ElectricalPanelMetadata MakedTrimmedPanel(
+        ElectricalPanelMetadata const & panel,
+        ShipSpaceRect const & rect) const;
 };
 
 template <>
@@ -143,6 +168,15 @@ struct RopesLayerData
     {
         return RopesLayerData(Buffer.Clone());
     }
+
+    void Trim(ShipSpaceRect const & rect)
+    {
+        Buffer.Trim(rect.origin, rect.size);
+    }
+
+    RopesLayerData MakeReframed(
+        ShipSpaceSize const & newSize, // Final size
+        ShipSpaceCoordinates const & originOffset) const; // Position in final buffer of original {0, 0}
 };
 
 template <>
@@ -168,6 +202,11 @@ struct TextureLayerData
     {
         return TextureLayerData(Buffer.Clone());
     }
+
+    TextureLayerData MakeReframed(
+        ImageSize const & newSize, // Final size
+        ImageCoordinates const & originOffset, // Position in final buffer of original {0, 0}
+        rgbaColor const & fillerValue) const;
 };
 
 template <>

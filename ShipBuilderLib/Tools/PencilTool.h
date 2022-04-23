@@ -38,11 +38,7 @@ protected:
 
     PencilTool(
         ToolType toolType,
-        ModelController & modelController,
-        UndoStack & undoStack,
-        WorkbenchState & workbenchState,
-        IUserInterface & userInterface,
-        View & view,
+        Controller & controller,
         ResourceLocator const & resourceLocator);
 
 private:
@@ -86,7 +82,7 @@ private:
         std::optional<ShipSpaceRect> EditRegion;
 
         // Dirty state
-        Model::DirtyState OriginalDirtyState;
+        ModelDirtyState OriginalDirtyState;
 
         // Position of previous engagement (when this is second, third, etc.)
         std::optional<ShipSpaceCoordinates> PreviousEngagementPosition;
@@ -99,7 +95,7 @@ private:
 
         EngagementData(
             MaterialPlaneType plane,
-            Model::DirtyState const & dirtyState,
+            ModelDirtyState const & dirtyState,
             std::optional<ShipSpaceCoordinates> shiftLockInitialPosition)
             : Plane(plane)
             , EditRegion()
@@ -122,11 +118,7 @@ class StructuralPencilTool : public PencilTool<LayerType::Structural, false>
 public:
 
     StructuralPencilTool(
-        ModelController & modelController,
-        UndoStack & undoStack,
-        WorkbenchState & workbenchState,
-        IUserInterface & userInterface,
-        View & view,
+        Controller & controller,
         ResourceLocator const & resourceLocator);
 };
 
@@ -135,11 +127,7 @@ class ElectricalPencilTool : public PencilTool<LayerType::Electrical, false>
 public:
 
     ElectricalPencilTool(
-        ModelController & modelController,
-        UndoStack & undoStack,
-        WorkbenchState & workbenchState,
-        IUserInterface & userInterface,
-        View & view,
+        Controller & controller,
         ResourceLocator const & resourceLocator);
 };
 
@@ -148,11 +136,7 @@ class StructuralEraserTool : public PencilTool<LayerType::Structural, true>
 public:
 
     StructuralEraserTool(
-        ModelController & modelController,
-        UndoStack & undoStack,
-        WorkbenchState & workbenchState,
-        IUserInterface & userInterface,
-        View & view,
+        Controller & controller,
         ResourceLocator const & resourceLocator);
 };
 
@@ -161,11 +145,7 @@ class ElectricalEraserTool : public PencilTool<LayerType::Electrical, true>
 public:
 
     ElectricalEraserTool(
-        ModelController & modelController,
-        UndoStack & undoStack,
-        WorkbenchState & workbenchState,
-        IUserInterface & userInterface,
-        View & view,
+        Controller & controller,
         ResourceLocator const & resourceLocator);
 };
 

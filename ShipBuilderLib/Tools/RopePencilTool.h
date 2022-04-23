@@ -23,11 +23,7 @@ class RopePencilTool : public Tool
 public:
 
     RopePencilTool(
-        ModelController & modelController,
-        UndoStack & undoStack,
-        WorkbenchState & workbenchState,
-        IUserInterface & userInterface,
-        View & view,
+        Controller & controller,
         ResourceLocator const & resourceLocator);
 
     virtual ~RopePencilTool();
@@ -50,7 +46,7 @@ private:
 
     void MendTempVisualization();
 
-    void CommmitAndStopEngagement(ShipSpaceCoordinates const & coords);
+    bool CommmitAndStopEngagement(ShipSpaceCoordinates const & coords);
 
     void DrawOverlay(ShipSpaceCoordinates const & coords);
 
@@ -72,7 +68,7 @@ private:
         RopesLayerData OriginalLayerClone;
 
         // Original dirty state
-        Model::DirtyState OriginalDirtyState;
+        ModelDirtyState OriginalDirtyState;
 
         // Rope start position
         ShipSpaceCoordinates StartCoords;
@@ -85,7 +81,7 @@ private:
 
         EngagementData(
             RopesLayerData && originalLayerClone,
-            Model::DirtyState const & dirtyState,
+            ModelDirtyState const & dirtyState,
             ShipSpaceCoordinates const & startCoords,
             std::optional<size_t> const & existingRopeElementIndex,
             MaterialPlaneType plane)

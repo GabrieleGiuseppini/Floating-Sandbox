@@ -81,18 +81,30 @@ SoundType StrToSoundType(std::string const & str)
         return SoundType::ShipBell1;
     else if (Utils::CaseInsensitiveEquals(str, "ShipBell2"))
         return SoundType::ShipBell2;
-    else if (Utils::CaseInsensitiveEquals(str, "ShipHorn1"))
-        return SoundType::ShipHorn1;
-    else if (Utils::CaseInsensitiveEquals(str, "ShipHorn2"))
-        return SoundType::ShipHorn2;
-    else if (Utils::CaseInsensitiveEquals(str, "ShipHorn3"))
-        return SoundType::ShipHorn3;
-    else if (Utils::CaseInsensitiveEquals(str, "ShipHorn4"))
-        return SoundType::ShipHorn4;
+    else if (Utils::CaseInsensitiveEquals(str, "ShipQueenMaryHorn"))
+        return SoundType::ShipQueenMaryHorn;
+    else if (Utils::CaseInsensitiveEquals(str, "ShipFourFunnelLinerWhistle"))
+        return SoundType::ShipFourFunnelLinerWhistle;
+    else if (Utils::CaseInsensitiveEquals(str, "ShipTripodHorn"))
+        return SoundType::ShipTripodHorn;
+    else if (Utils::CaseInsensitiveEquals(str, "ShipPipeWhistle"))
+        return SoundType::ShipPipeWhistle;
+    else if (Utils::CaseInsensitiveEquals(str, "ShipLakeFreighterHorn"))
+        return SoundType::ShipLakeFreighterHorn;
+    else if (Utils::CaseInsensitiveEquals(str, "ShipShieldhallSteamSiren"))
+        return SoundType::ShipShieldhallSteamSiren;
+    else if (Utils::CaseInsensitiveEquals(str, "ShipQueenElizabeth2Horn"))
+        return SoundType::ShipQueenElizabeth2Horn;
+    else if (Utils::CaseInsensitiveEquals(str, "ShipSSRexWhistle"))
+        return SoundType::ShipSSRexWhistle;
     else if (Utils::CaseInsensitiveEquals(str, "ShipKlaxon1"))
         return SoundType::ShipKlaxon1;
     else if (Utils::CaseInsensitiveEquals(str, "ShipNuclearAlarm1"))
         return SoundType::ShipNuclearAlarm1;
+    else if (Utils::CaseInsensitiveEquals(str, "ShipEvacuationAlarm1"))
+        return SoundType::ShipEvacuationAlarm1;
+    else if (Utils::CaseInsensitiveEquals(str, "ShipEvacuationAlarm2"))
+        return SoundType::ShipEvacuationAlarm2;
     else if (Utils::CaseInsensitiveEquals(str, "WaterRush"))
         return SoundType::WaterRush;
     else if (Utils::CaseInsensitiveEquals(str, "WaterSplash"))
@@ -123,6 +135,10 @@ SoundType StrToSoundType(std::string const & str)
         return SoundType::FireSizzling;
     else if (Utils::CaseInsensitiveEquals(str, "CombustionExplosion"))
         return SoundType::CombustionExplosion;
+    else if (Utils::CaseInsensitiveEquals(str, "WaterReactionExplosion"))
+        return SoundType::WaterReactionExplosion;
+    else if (Utils::CaseInsensitiveEquals(str, "WaterReactionTriggered"))
+    return SoundType::WaterReactionTriggered;
     else if (Utils::CaseInsensitiveEquals(str, "TsunamiTriggered"))
         return SoundType::TsunamiTriggered;
     else if (Utils::CaseInsensitiveEquals(str, "BombAttached"))

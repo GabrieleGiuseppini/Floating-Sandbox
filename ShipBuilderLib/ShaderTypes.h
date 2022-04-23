@@ -22,13 +22,15 @@ enum class ProgramType
     CircleOverlay,
     DashedLineOverlay,
     Grid,
+    MipMappedTextureQuad,
     RectOverlay,
     Rope,
     StructureMesh,
     Texture,
     TextureNdc,
+    Waterline,
 
-    _Last = TextureNdc
+    _Last = Waterline
 };
 
 ProgramType ShaderFilenameToProgramType(std::string const & str);
@@ -46,6 +48,7 @@ enum class ProgramParameterType : uint8_t
 
     // Texture units
     BackgroundTextureUnit,
+    MipMappedTexturesAtlasTexture,
     TextureUnit1,
 
     _FirstTexture = BackgroundTextureUnit,
@@ -80,7 +83,10 @@ enum class VertexAttributeType : GLuint
 
     Texture = 0,
 
-    TextureNdc = 0
+    TextureNdc = 0,
+
+    Waterline1 = 0,
+    Waterline2 = 1
 };
 
 VertexAttributeType StrToVertexAttributeType(std::string const & str);

@@ -227,9 +227,9 @@ void ElectricalElements::AnnounceInstancedElements()
                 mGameEventHandler->OnEngineMonitorCreated(
                     ElectricalElementId(mShipId, elementIndex),
                     mInstanceInfos[elementIndex].InstanceIndex,
-                    *mMaterialBuffer[elementIndex],
                     mElementStateBuffer[elementIndex].Engine.CurrentThrustMagnitude,
                     mElementStateBuffer[elementIndex].Engine.CurrentRpm,
+                    *mMaterialBuffer[elementIndex],
                     mInstanceInfos[elementIndex].PanelElementMetadata);
 
                 break;
@@ -240,6 +240,7 @@ void ElectricalElements::AnnounceInstancedElements()
                 mGameEventHandler->OnEngineControllerCreated(
                     ElectricalElementId(mShipId, elementIndex),
                     mInstanceInfos[elementIndex].InstanceIndex,
+                    *mMaterialBuffer[elementIndex],
                     mInstanceInfos[elementIndex].PanelElementMetadata);
 
                 break;
@@ -255,6 +256,7 @@ void ElectricalElements::AnnounceInstancedElements()
                         mInstanceInfos[elementIndex].InstanceIndex,
                         PowerProbeType::Generator,
                         static_cast<ElectricalState>(mElementStateBuffer[elementIndex].Generator.IsProducingCurrent),
+                        *mMaterialBuffer[elementIndex],
                         mInstanceInfos[elementIndex].PanelElementMetadata);
                 }
 
@@ -284,6 +286,7 @@ void ElectricalElements::AnnounceInstancedElements()
                     mInstanceInfos[elementIndex].InstanceIndex,
                     switchType,
                     static_cast<ElectricalState>(mConductivityBuffer[elementIndex].ConductsElectricity),
+                    *mMaterialBuffer[elementIndex],
                     mInstanceInfos[elementIndex].PanelElementMetadata);
 
                 break;
@@ -296,6 +299,7 @@ void ElectricalElements::AnnounceInstancedElements()
                     mInstanceInfos[elementIndex].InstanceIndex,
                     PowerProbeType::PowerMonitor,
                     static_cast<ElectricalState>(mElementStateBuffer[elementIndex].PowerMonitor.IsPowered),
+                    *mMaterialBuffer[elementIndex],
                     mInstanceInfos[elementIndex].PanelElementMetadata);
 
                 break;
@@ -309,6 +313,7 @@ void ElectricalElements::AnnounceInstancedElements()
                     mInstanceInfos[elementIndex].InstanceIndex,
                     SwitchType::ShipSoundSwitch,
                     static_cast<ElectricalState>(mConductivityBuffer[elementIndex].ConductsElectricity),
+                    *mMaterialBuffer[elementIndex],
                     mInstanceInfos[elementIndex].PanelElementMetadata);
 
                 break;
@@ -319,8 +324,8 @@ void ElectricalElements::AnnounceInstancedElements()
                 mGameEventHandler->OnWaterPumpCreated(
                     ElectricalElementId(mShipId, elementIndex),
                     mInstanceInfos[elementIndex].InstanceIndex,
-                    *mMaterialBuffer[elementIndex],
                     mElementStateBuffer[elementIndex].WaterPump.CurrentNormalizedForce,
+                    * mMaterialBuffer[elementIndex],
                     mInstanceInfos[elementIndex].PanelElementMetadata);
 
                 break;
@@ -336,6 +341,7 @@ void ElectricalElements::AnnounceInstancedElements()
                         mInstanceInfos[elementIndex].InstanceIndex,
                         SwitchType::AutomaticSwitch,
                         static_cast<ElectricalState>(mConductivityBuffer[elementIndex].ConductsElectricity),
+                        *mMaterialBuffer[elementIndex],
                         mInstanceInfos[elementIndex].PanelElementMetadata);
                 }
 
@@ -349,8 +355,8 @@ void ElectricalElements::AnnounceInstancedElements()
                 mGameEventHandler->OnWatertightDoorCreated(
                     ElectricalElementId(mShipId, elementIndex),
                     mInstanceInfos[elementIndex].InstanceIndex,
-                    *mMaterialBuffer[elementIndex],
                     mElementStateBuffer[elementIndex].WatertightDoor.DefaultIsOpen,
+                    *mMaterialBuffer[elementIndex],
                     mInstanceInfos[elementIndex].PanelElementMetadata);
 
                 break;
@@ -1169,7 +1175,7 @@ void ElectricalElements::UpdateSinks(
         //
 
         bool const isConnectedToPower =
-            (currentConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[sinkElementIndex]);
+            (mCurrentConnectivityVisitSequenceNumberBuffer[sinkElementIndex] == currentConnectivityVisitSequenceNumber);
 
         bool isProducingHeat = false;
 
@@ -1445,27 +1451,69 @@ void ElectricalElements::UpdateSinks(
                             // Disturb ocean, with delays depending on sound
                             switch (mMaterialBuffer[sinkElementIndex]->ShipSoundType)
                             {
-                                case ElectricalMaterial::ShipSoundElementType::Horn1:
+                                case ElectricalMaterial::ShipSoundElementType::QueenMaryHorn:
                                 {
-                                    mParentWorld.DisturbOcean(std::chrono::milliseconds(50));
+                                    mParentWorld.DisturbOcean(std::chrono::milliseconds(250));
                                     break;
                                 }
 
-                                case ElectricalMaterial::ShipSoundElementType::Horn2:
+                                case ElectricalMaterial::ShipSoundElementType::FourFunnelLinerWhistle:
                                 {
                                     mParentWorld.DisturbOcean(std::chrono::milliseconds(600));
                                     break;
                                 }
 
-                                case ElectricalMaterial::ShipSoundElementType::Horn3:
+                                case ElectricalMaterial::ShipSoundElementType::TripodHorn:
                                 {
                                     mParentWorld.DisturbOcean(std::chrono::milliseconds(500));
                                     break;
                                 }
 
+                                case ElectricalMaterial::ShipSoundElementType::LakeFreighterHorn:
+                                {
+                                    mParentWorld.DisturbOcean(std::chrono::milliseconds(150));
+                                    break;
+                                }
+
+                                case ElectricalMaterial::ShipSoundElementType::ShieldhallSteamSiren:
+                                {
+                                    mParentWorld.DisturbOcean(std::chrono::milliseconds(550));
+                                    break;
+                                }
+
+                                case ElectricalMaterial::ShipSoundElementType::QueenElizabeth2Horn:
+                                {
+                                    mParentWorld.DisturbOcean(std::chrono::milliseconds(250));
+                                    break;
+                                }
+
+                                case ElectricalMaterial::ShipSoundElementType::SSRexWhistle:
+                                {
+                                    mParentWorld.DisturbOcean(std::chrono::milliseconds(250));
+                                    break;
+                                }
+
                                 case ElectricalMaterial::ShipSoundElementType::Klaxon1:
                                 {
-                                    mParentWorld.DisturbOcean(std::chrono::milliseconds(80));
+                                    mParentWorld.DisturbOcean(std::chrono::milliseconds(100));
+                                    break;
+                                }
+
+                                case ElectricalMaterial::ShipSoundElementType::NuclearAlarm1:
+                                {
+                                    mParentWorld.DisturbOcean(std::chrono::milliseconds(500));
+                                    break;
+                                }
+
+                                case ElectricalMaterial::ShipSoundElementType::EvacuationAlarm1:
+                                {
+                                    mParentWorld.DisturbOcean(std::chrono::milliseconds(100));
+                                    break;
+                                }
+
+                                case ElectricalMaterial::ShipSoundElementType::EvacuationAlarm2:
+                                {
+                                    mParentWorld.DisturbOcean(std::chrono::milliseconds(100));
                                     break;
                                 }
 

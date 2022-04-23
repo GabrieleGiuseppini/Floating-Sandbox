@@ -5,30 +5,28 @@
 ***************************************************************************************/
 #pragma once
 
-#include <IUserInterface.h>
-#include <ModelController.h>
 #include <ShipBuilderTypes.h>
-#include <UndoStack.h>
-#include <WorkbenchState.h>
-#include <View.h>
 
 #include <GameCore/GameTypes.h>
 
+#include <wx/image.h>
+
+#include <optional>
+
 namespace ShipBuilder {
+
+class Controller;
 
 /*
  * Base class for all tools.
  *
  * Tools:
  * - "Extensions" of Controller
- * - Implement state machines for interactions, including visual notifications (marching ants, paste mask, etc.)
- * - Take references to WorkbenchState and SelectionManager (at tool initialization time)
- *     - SelectionManager so that Selection tool can save selection to it
+ * - Take a reference to Controller - entry point for almost anything, including model modification primitives
+ * - Implement state machines for interactions, including visual notifications (pseudo-cursor, marching ants, paste mask, etc.)
  * - Receive input state events from Controller, and notifications of WorkbenchState changed
- * - Take references to View and ModelController
- * - Modify Model via ModelController
  * - Instruct View for tool interactions, e.g. tool visualizations (lines, paste mask, etc.)
- * - Have also reference to IUserInterface, e.g. to capture/release mouse
+ * - Publish notifications to IUserInterface, e.g. to capture/release mouse
  */
 class Tool
 {
@@ -57,56 +55,26 @@ protected:
 
     Tool(
         ToolType toolType,
-        ModelController & modelController,
-        UndoStack & undoStack,
-        WorkbenchState & workbenchState,
-        IUserInterface & userInterface,
-        View & view)
+        Controller & controller)
         : mToolType(toolType)
-        , mModelController(modelController)
-        , mUndoStack(undoStack)
-        , mWorkbenchState(workbenchState)
-        , mUserInterface(userInterface)
-        , mView(view)
+        , mController(controller)
     {}
 
-    ShipSpaceCoordinates GetCurrentMouseCoordinatesInShipSpace()
-    {
-        return mView.ScreenToShipSpace(mUserInterface.GetMouseCoordinates());
-    }
+    // Helpers
 
-    ShipSpaceCoordinates ScreenToShipSpace(DisplayLogicalCoordinates const & displayCoordinates)
-    {
-        return mView.ScreenToShipSpace(displayCoordinates);
-    }
+    void SetCursor(wxImage const & cursorImage);
 
-    void SetCursor(wxImage const & cursorImage)
-    {
-        mUserInterface.SetToolCursor(cursorImage);
-    }
+    ShipSpaceCoordinates ScreenToShipSpace(DisplayLogicalCoordinates const & displayCoordinates) const;
 
-    void SetLayerDirty(LayerType layer)
-    {
-        mModelController.SetLayerDirty(layer);
-        mUserInterface.OnModelDirtyChanged(mModelController.GetModel());
-    }
+    std::optional<DisplayLogicalCoordinates> GetMouseCoordinatesIfInWorkCanvas() const;
 
-    template<typename ... TArgs>
-    void PushUndoAction(TArgs&& ... args)
-    {
-        mUndoStack.Push(std::forward<TArgs>(args)...);
-        mUserInterface.OnUndoStackStateChanged(mUndoStack);
-    }
+    ShipSpaceCoordinates GetCurrentMouseCoordinatesInShipSpace() const;
 
 protected:
 
     ToolType const mToolType;
 
-    ModelController & mModelController;
-    UndoStack & mUndoStack;
-    WorkbenchState & mWorkbenchState;
-    IUserInterface & mUserInterface;
-    View & mView;
+    Controller & mController;
 };
 
 }

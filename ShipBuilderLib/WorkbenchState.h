@@ -10,7 +10,15 @@
 #include <Game/Materials.h>
 #include <Game/MaterialDatabase.h>
 
+#include <GameCore/GameTypes.h>
+
+#include <picojson.h>
+
+#include <algorithm>
 #include <cstdint>
+#include <filesystem>
+#include <optional>
+#include <vector>
 
 namespace ShipBuilder {
 
@@ -25,6 +33,8 @@ class WorkbenchState
 public:
 
     WorkbenchState(MaterialDatabase const & materialDatabase);
+
+    ~WorkbenchState();
 
     //
     // Materials
@@ -133,6 +143,11 @@ public:
     // Tools
     //
 
+    static ToolType constexpr GetDefaultToolType()
+    {
+        return ToolType::StructuralPencil;
+    }
+
     std::optional<ToolType> GetCurrentToolType() const
     {
         return mCurrentToolType;
@@ -161,6 +176,16 @@ public:
     void SetStructuralEraserToolSize(std::uint32_t value)
     {
         mStructuralEraserToolSize = value;
+    }
+
+    std::uint32_t GetElectricalEraserToolSize() const
+    {
+        return mElectricalEraserToolSize;
+    }
+
+    void SetElectricalEraserToolSize(std::uint32_t value)
+    {
+        mElectricalEraserToolSize = value;
     }
 
     std::uint32_t GetStructuralLineToolSize() const
@@ -196,6 +221,11 @@ public:
     //
     // Visualizations
     //
+
+    static VisualizationType constexpr GetDefaultPrimaryVisualization()
+    {
+        return VisualizationType::Game;
+    }
 
     VisualizationType GetPrimaryVisualization() const
     {
@@ -266,7 +296,17 @@ public:
     {
         mOtherVisualizationsOpacity = value;
     }
-    
+
+    bool IsWaterlineMarkersEnabled() const
+    {
+        return mIsWaterlineMarkersEnabled;
+    }
+
+    void EnableWaterlineMarkers(bool value)
+    {
+        mIsWaterlineMarkersEnabled = value;
+    }
+
     bool IsGridEnabled() const
     {
         return mIsGridEnabled;
@@ -276,6 +316,55 @@ public:
     {
         mIsGridEnabled = value;
     }
+
+    //
+    // Misc
+    //
+
+    ShipSpaceSize GetNewShipSize() const
+    {
+        return mNewShipSize;
+    }
+
+    void SetNewShipSize(ShipSpaceSize value)
+    {
+        mNewShipSize = value;
+    }
+
+    UnitsSystem GetDisplayUnitsSystem() const
+    {
+        return mDisplayUnitsSystem;
+    }
+
+    void SetDisplayUnitsSystem(UnitsSystem value)
+    {
+        mDisplayUnitsSystem = value;
+    }
+
+    std::vector<std::filesystem::path> const & GetShipLoadDirectories() const
+    {
+        return mShipLoadDirectories;
+    }
+
+    void AddShipLoadDirectory(std::filesystem::path shipLoadDirectory)
+    {
+        // Check if it's in already
+        if (std::find(mShipLoadDirectories.cbegin(), mShipLoadDirectories.cend(), shipLoadDirectory) == mShipLoadDirectories.cend())
+        {
+            // Add in front
+            mShipLoadDirectories.insert(mShipLoadDirectories.cbegin(), shipLoadDirectory);
+        }
+    }
+
+private:
+
+    static std::filesystem::path GetPreferencesFilePath();
+
+    static std::optional<picojson::object> LoadPreferencesRootObject();
+
+    void LoadPreferences();
+
+    void SavePreferences() const;
 
 private:
 
@@ -291,6 +380,7 @@ private:
     std::optional<ToolType> mCurrentToolType;
     std::uint32_t mStructuralPencilToolSize;
     std::uint32_t mStructuralEraserToolSize;
+    std::uint32_t mElectricalEraserToolSize;
     std::uint32_t mStructuralLineToolSize;
     bool mStructuralLineToolIsHullMode;
     bool mStructuralFloodToolIsContiguous;
@@ -303,7 +393,13 @@ private:
     RopesLayerVisualizationModeType mRopesLayerVisualizationMode;
     TextureLayerVisualizationModeType mTextureLayerVisualizationMode;
     float mOtherVisualizationsOpacity;
+    bool mIsWaterlineMarkersEnabled;
     bool mIsGridEnabled;
+
+    // Misc
+    ShipSpaceSize mNewShipSize;
+    UnitsSystem mDisplayUnitsSystem;
+    std::vector<std::filesystem::path> mShipLoadDirectories;
 };
 
 }

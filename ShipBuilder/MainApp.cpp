@@ -140,7 +140,7 @@ bool MainApp::OnInit()
         // Run
         //
 
-        mMainFrame->OpenForNewShip();
+        mMainFrame->OpenForNewShip(std::optional<UnitsSystem>());
 
         return true;
 

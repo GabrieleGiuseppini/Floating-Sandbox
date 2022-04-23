@@ -293,7 +293,34 @@ namespace std {
 // Geometry
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-/* 
+/*
+ * Octants, i.e. the direction of a spring connecting two neighbors.
+ *
+ * Octant 0 is E, octant 1 is SE, ..., Octant 7 is NE.
+ */
+using Octant = std::int32_t;
+
+/*
+ * Generic directions.
+ */
+enum class DirectionType
+{
+    Horizontal = 1,
+    Vertical = 2
+};
+
+template <> struct is_flag<DirectionType> : std::true_type {};
+
+/*
+ * Generic rotation directions.
+ */
+enum class RotationDirectionType
+{
+    Clockwise,
+    CounterClockwise
+};
+
+/*
  * Integral system
  */
 
@@ -446,6 +473,13 @@ struct _IntegralCoordinates
         this->y += sz.height;
     }
 
+    inline _IntegralCoordinates<TIntegralTag> operator-() const
+    {
+        return _IntegralCoordinates<TIntegralTag>(
+            -this->x,
+            -this->y);
+    }
+
     inline _IntegralSize<TIntegralTag> operator-(_IntegralCoordinates<TIntegralTag> const & other) const
     {
         return _IntegralSize<TIntegralTag>(
@@ -476,7 +510,7 @@ struct _IntegralCoordinates
     template<typename TRect>
     bool IsInRect(TRect const & rect) const
     {
-        return x >= rect.origin.x && x < rect.origin.x + rect.size.width 
+        return x >= rect.origin.x && x < rect.origin.x + rect.size.width
             && y >= rect.origin.y && y < rect.origin.y + rect.size.height;
     }
 
@@ -490,6 +524,27 @@ struct _IntegralCoordinates
     {
         assert(height > y);
         return _IntegralCoordinates<TIntegralTag>(x, height - 1 - y);
+    }
+
+    // Returns coords of this point after being rotated (and assuming
+    // the size will also get rotated).
+    template<RotationDirectionType TDirection>
+    _IntegralCoordinates<TIntegralTag> Rotate90(_IntegralSize<TIntegralTag> const & sz) const
+    {
+        if constexpr (TDirection == RotationDirectionType::Clockwise)
+        {
+            return _IntegralCoordinates<TIntegralTag>(
+                this->y,
+                sz.width - 1 - this->x);
+        }
+        else
+        {
+            static_assert(TDirection == RotationDirectionType::CounterClockwise);
+
+            return _IntegralCoordinates<TIntegralTag>(
+                sz.height - 1 - this->y,
+                this->x);
+        }
     }
 
     vec2f ToFloat() const
@@ -518,6 +573,13 @@ struct _IntegralCoordinates
 };
 
 #pragma pack(pop)
+
+template<typename TTag>
+inline bool operator<(_IntegralCoordinates<TTag> const & l, _IntegralCoordinates<TTag> const & r)
+{
+    return l.x < r.x
+        || (l.x == r.x && l.y < r.y);
+}
 
 template<typename TTag>
 inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, _IntegralCoordinates<TTag> const & p)
@@ -668,6 +730,11 @@ struct _IntegralCoordsRatio
         return inputUnits == other.inputUnits
             && outputUnits == other.outputUnits;
     }
+
+    inline bool operator!=(_IntegralCoordsRatio<TIntegralTag> const & other) const
+    {
+        return !(*this == other);
+    }
 };
 
 using ShipSpaceToWorldSpaceCoordsRatio = _IntegralCoordsRatio<struct ShipSpaceTag>;
@@ -757,24 +824,6 @@ struct FloatRect
 
 #pragma pack(pop)
 
-/*
- * Octants, i.e. the direction of a spring connecting two neighbors.
- *
- * Octant 0 is E, octant 1 is SE, ..., Octant 7 is NE.
- */
-using Octant = std::int32_t;
-
-/*
- * Generic directions.
- */
-enum class DirectionType
-{
-    Horizontal = 1,
-    Vertical = 2
-};
-
-template <> struct is_flag<DirectionType> : std::true_type {};
-
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // Game
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -833,7 +882,8 @@ enum class GadgetType
 enum class ExplosionType
 {
     Combustion,
-    Deflagration
+    Deflagration,
+    Sodium
 };
 
 /*

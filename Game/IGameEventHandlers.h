@@ -196,6 +196,7 @@ struct IElectricalElementGameEventHandler
         ElectricalElementInstanceIndex /*instanceIndex*/,
         SwitchType /*type*/,
         ElectricalState /*state*/,
+        ElectricalMaterial const & /*electricalMaterial*/,
         std::optional<ElectricalPanelElementMetadata> const & /*panelElementMetadata*/)
     {
         // Default-implemented
@@ -206,6 +207,7 @@ struct IElectricalElementGameEventHandler
         ElectricalElementInstanceIndex /*instanceIndex*/,
         PowerProbeType /*type*/,
         ElectricalState /*state*/,
+        ElectricalMaterial const & /*electricalMaterial*/,
         std::optional<ElectricalPanelElementMetadata> const & /*panelElementMetadata*/)
     {
         // Default-implemented
@@ -214,6 +216,7 @@ struct IElectricalElementGameEventHandler
     virtual void OnEngineControllerCreated(
         ElectricalElementId /*electricalElementId*/,
         ElectricalElementInstanceIndex /*instanceIndex*/,
+        ElectricalMaterial const & /*electricalMaterial*/,
         std::optional<ElectricalPanelElementMetadata> const & /*panelElementMetadata*/)
     {
         // Default-implemented
@@ -222,9 +225,9 @@ struct IElectricalElementGameEventHandler
     virtual void OnEngineMonitorCreated(
         ElectricalElementId /*electricalElementId*/,
         ElectricalElementInstanceIndex /*instanceIndex*/,
-        ElectricalMaterial const & /*electricalMaterial*/,
         float /*thrustMagnitude*/,
         float /*rpm*/,
+        ElectricalMaterial const & /*electricalMaterial*/,
         std::optional<ElectricalPanelElementMetadata> const & /*panelElementMetadata*/)
     {
         // Default-implemented
@@ -233,8 +236,8 @@ struct IElectricalElementGameEventHandler
     virtual void OnWaterPumpCreated(
         ElectricalElementId /*electricalElementId*/,
         ElectricalElementInstanceIndex /*instanceIndex*/,
-        ElectricalMaterial const & /*electricalMaterial*/,
         float /*normalizedForce*/,
+        ElectricalMaterial const & /*electricalMaterial*/,
         std::optional<ElectricalPanelElementMetadata> const & /*panelElementMetadata*/)
     {
         // Default-implemented
@@ -243,8 +246,8 @@ struct IElectricalElementGameEventHandler
     virtual void OnWatertightDoorCreated(
         ElectricalElementId /*electricalElementId*/,
         ElectricalElementInstanceIndex /*instanceIndex*/,
-        ElectricalMaterial const & /*electricalMaterial*/,
         bool /*isOpen*/,
+        ElectricalMaterial const & /*electricalMaterial*/,
         std::optional<ElectricalPanelElementMetadata> const & /*panelElementMetadata*/)
     {
         // Default-implemented
@@ -396,6 +399,20 @@ struct IGenericGameEventHandler
     }
 
     virtual void OnAirBubbleSurfaced(unsigned int /*size*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnWaterReaction(
+        bool /*isUnderwater*/,
+        unsigned int /*size*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnWaterReactionExplosion(
+        bool /*isUnderwater*/,
+        unsigned int /*size*/)
     {
         // Default-implemented
     }

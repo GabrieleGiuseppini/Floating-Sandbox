@@ -22,11 +22,7 @@ class RopeEraserTool : public Tool
 public:
 
     RopeEraserTool(
-        ModelController & modelController,
-        UndoStack & undoStack,
-        WorkbenchState & workbenchState,
-        IUserInterface & userInterface,
-        View & view,
+        Controller & controller,
         ResourceLocator const & resourceLocator);
 
     virtual ~RopeEraserTool();
@@ -66,12 +62,12 @@ private:
     struct EngagementData
     {
         // Dirty state
-        Model::DirtyState OriginalDirtyState;
+        ModelDirtyState OriginalDirtyState;
 
         // Set to true if we've really edited anything
         bool HasEdited;
 
-        EngagementData(Model::DirtyState const & dirtyState)
+        EngagementData(ModelDirtyState const & dirtyState)
             : OriginalDirtyState(dirtyState)
             , HasEdited(false)
         {}

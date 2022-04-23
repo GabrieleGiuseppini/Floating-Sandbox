@@ -64,7 +64,7 @@ public:
     MaterialColorKey ColorKey;
 
     std::string Name;
-    rgbColor RenderColor;
+    rgbaColor RenderColor;
     float Strength;
     float NominalMass;
     float Density;
@@ -77,6 +77,7 @@ public:
     std::optional<MaterialSoundType> MaterialSound;
 
     std::optional<std::string> MaterialTextureName;
+    float Opacity;
 
     // Water
     bool IsHull;
@@ -97,6 +98,7 @@ public:
 
     // Misc
     float WindReceptivity;
+    float WaterReactivity;
     bool IsLegacyElectrical;
 
     // Palette
@@ -107,11 +109,12 @@ public:
     static StructuralMaterial Create(
         MaterialColorKey const & colorKey,
         unsigned int ordinal,
-        rgbColor const & renderColor,
+        rgbColor const & baseRenderColor,
         picojson::object const & structuralMaterialJson);
 
-    static MaterialSoundType StrToMaterialSoundType(std::string const & str);
     static MaterialCombustionType StrToMaterialCombustionType(std::string const & str);
+    static MaterialUniqueType StrToMaterialUniqueType(std::string const & str);
+    static MaterialSoundType StrToMaterialSoundType(std::string const & str);
 
     bool IsUniqueType(MaterialUniqueType uniqueType) const
     {
@@ -139,7 +142,7 @@ public:
     StructuralMaterial(
         MaterialColorKey const & colorKey,
         std::string name,
-        rgbColor const & renderColor,
+        rgbaColor const & renderColor,
         float strength,
         float nominalMass,
         float density,
@@ -149,6 +152,7 @@ public:
         std::optional<MaterialUniqueType> uniqueType,
         std::optional<MaterialSoundType> materialSound,
         std::optional<std::string> materialTextureName,
+        float opacity,
         // Water
         bool isHull,
         float waterIntake,
@@ -166,6 +170,7 @@ public:
         float explosiveCombustionStrength,
         // Misc
         float windReceptivity,
+        float waterReactivity,
         bool isLegacyElectrical,
         // Palette
         std::optional<MaterialPaletteCoordinatesType> paletteCoordinates)
@@ -181,6 +186,7 @@ public:
         , UniqueType(uniqueType)
         , MaterialSound(materialSound)
         , MaterialTextureName(materialTextureName)
+        , Opacity(opacity)
         , IsHull(isHull)
         , WaterIntake(waterIntake)
         , WaterDiffusionSpeed(waterDiffusionSpeed)
@@ -195,6 +201,7 @@ public:
         , ExplosiveCombustionRadius(explosiveCombustionRadius)
         , ExplosiveCombustionStrength(explosiveCombustionStrength)
         , WindReceptivity(windReceptivity)
+        , WaterReactivity(waterReactivity)
         , IsLegacyElectrical(isLegacyElectrical)
         , PaletteCoordinates(paletteCoordinates)
     {}
@@ -203,7 +210,7 @@ public:
     StructuralMaterial(
         MaterialColorKey const & colorKey,
         std::string name,
-        rgbColor const & renderColor)
+        rgbaColor const & renderColor)
         : ColorKey(colorKey)
         , Name(name)
         , RenderColor(renderColor)
@@ -216,6 +223,7 @@ public:
         , UniqueType(std::nullopt)
         , MaterialSound(std::nullopt)
         , MaterialTextureName(std::nullopt)
+        , Opacity(1.0f)
         , IsHull(false)
         , WaterIntake(1.0f)
         , WaterDiffusionSpeed(1.0f)
@@ -230,6 +238,7 @@ public:
         , ExplosiveCombustionRadius(1.0f)
         , ExplosiveCombustionStrength(1.0f)
         , WindReceptivity(1.0f)
+        , WaterReactivity(0.0f)
         , IsLegacyElectrical(false)
         , PaletteCoordinates(std::nullopt)
     {}
@@ -275,12 +284,18 @@ public:
     {
         Bell1,
         Bell2,
-        Horn1,
-        Horn2,
-        Horn3,
-        Horn4,
+        QueenMaryHorn,
+        FourFunnelLinerWhistle,
+        TripodHorn,
+        PipeWhistle,
+        LakeFreighterHorn,
+        ShieldhallSteamSiren,
+        QueenElizabeth2Horn,
+        SSRexWhistle,
         Klaxon1,
-        NuclearAlarm1
+        NuclearAlarm1,
+        EvacuationAlarm1,
+        EvacuationAlarm2
     };
 
 public:
@@ -429,4 +444,6 @@ public:
         , PaletteCoordinates(std::nullopt)
     {
     }
+
+    std::string MakeInstancedElementLabel(ElectricalElementInstanceIndex instanceIndex) const;
 };

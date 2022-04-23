@@ -7,18 +7,20 @@
 
 #include "Controller.h"
 #include "IUserInterface.h"
-#include "MaterialPalette.h"
-#include "ModelValidationDialog.h"
 #include "OpenGLManager.h"
-#include "ResizeDialog.h"
-#include "RibbonToolbarButton.h"
-#include "ShipPropertiesEditDialog.h"
-#include "StatusBar.h"
+#include "ShipNameNormalizer.h"
 #include "WorkbenchState.h"
+
+#include "UI/ElectricalPanelEditDialog.h"
+#include "UI/MaterialPalette.h"
+#include "UI/ModelValidationDialog.h"
+#include "UI/ResizeDialog.h"
+#include "UI/RibbonToolbarButton.h"
+#include "UI/ShipPropertiesEditDialog.h"
+#include "UI/StatusBar.h"
 
 #include <UILib/BitmapButton.h>
 #include <UILib/BitmapRadioButton.h>
-#include <UILib/BitmapToggleButton.h>
 #include <UILib/LocalizationManager.h>
 #include <UILib/LoggingDialog.h>
 #include <UILib/ShipLoadDialog.h>
@@ -27,6 +29,8 @@
 #include <Game/MaterialDatabase.h>
 #include <Game/ResourceLocator.h>
 #include <Game/ShipTexturizer.h>
+
+#include <GameCore/GameTypes.h>
 
 #include <wx/accel.h>
 #include <wx/app.h>
@@ -45,6 +49,7 @@
 #include <filesystem>
 #include <functional>
 #include <memory>
+#include <optional>
 #include <vector>
 
 namespace ShipBuilder {
@@ -56,7 +61,7 @@ namespace ShipBuilder {
  * - Very thin, calls into Controller for each high-level interaction (e.g. new tool selected, tool setting changed) and for each mouse event
  * - Implements IUserInterface with interface needed by Controller, e.g. to make UI state changes, to capture the mouse, to update visualization of undo stack
  * - Owns WorkbenchState
- * - Implements ship load/save, giving/getting whole ShipDefinition to/from ModelController
+ * - Implements ship load/save, giving/getting whole ShipDefinition to/from Controller
  */
 class MainFrame final : public wxFrame, public IUserInterface
 {
@@ -71,9 +76,11 @@ public:
         ShipTexturizer const & shipTexturizer,
         std::function<void(std::optional<std::filesystem::path>)> returnToGameFunctor);
 
-    void OpenForNewShip();
+    void OpenForNewShip(std::optional<UnitsSystem> displayUnitsSystem);
 
-    void OpenForLoadShip(std::filesystem::path const & shipFilePath);
+    void OpenForLoadShip(
+        std::filesystem::path const & shipFilePath,
+        std::optional<UnitsSystem> displayUnitsSystem);
 
 public:
 
@@ -87,11 +94,17 @@ public:
 
     void OnShipSizeChanged(ShipSpaceSize const & shipSize) override;
 
-    void OnShipNameChanged(Model const & model) override;
+    void OnShipScaleChanged(ShipSpaceToWorldSpaceCoordsRatio const & scale) override;
 
-    void OnLayerPresenceChanged(Model const & model) override;
+    void OnShipNameChanged(IModelObservable const & model) override;
 
-    void OnModelDirtyChanged(Model const & model) override;
+    void OnLayerPresenceChanged(IModelObservable const & model) override;
+
+    void OnModelDirtyChanged(IModelObservable const & model) override;
+
+    void OnModelMacroPropertiesUpdated(ModelMacroProperties const & properties) override;
+
+    void OnElectricalLayerInstancedElementSetChanged(InstancedElectricalElementSet const & instancedElectricalElementSet) override;
 
     //
 
@@ -111,6 +124,7 @@ public:
 
     void OnOtherVisualizationsOpacityChanged(float opacity) override;
 
+    void OnVisualWaterlineMarkersEnablementChanged(bool isEnabled) override;
     void OnVisualGridEnablementChanged(bool isEnabled) override;
 
     //
@@ -119,7 +133,9 @@ public:
 
     void OnToolCoordinatesChanged(std::optional<ShipSpaceCoordinates> coordinates, ShipSpaceSize const & shipSize) override;
 
-    void OnSampledMaterialChanged(std::optional<std::string> materialName) override;
+    void OnSampledInformationUpdated(std::optional<SampledInformation> sampledInformation) override;
+
+    void OnMeasuredWorldLengthChanged(std::optional<int> length) override;
 
     void OnError(wxString const & errorMessage) const override;
 
@@ -202,11 +218,15 @@ private:
 
     void SwitchBackToGame(std::optional<std::filesystem::path> shipFilePath);
 
+    void ImportLayerFromShip(LayerType layer);
+
     void ImportTextureLayerFromImage();
 
-    void OpenShipCanvasResize();
+    void OnShipCanvasResize();
 
-    void OpenShipProperties();
+    void OnShipPropertiesEdit();
+
+    void OnElectricalPanelEdit();
 
     void ValidateShip();
 
@@ -221,11 +241,13 @@ private:
 
     bool AskUserIfRename(std::string const & newFilename);
 
-    void ShowError(wxString const & message);
+    void ShowError(wxString const & message) const;
 
     void DoNewShip();
 
     bool DoLoadShip(std::filesystem::path const & shipFilePath);
+
+    std::optional<ShipDefinition> DoLoadShipDefinitionAndCheckPassword(std::filesystem::path const & shipFilePath);
 
     bool DoSaveShipOrSaveShipAsWithValidation();
 
@@ -271,11 +293,17 @@ private:
 
     void ReconciliateUIWithShipSize(ShipSpaceSize const & shipSize);
 
+    void ReconciliateUIWithShipScale(ShipSpaceToWorldSpaceCoordsRatio const & scale);
+
     void ReconciliateUIWithShipTitle(std::string const & shipName, bool isShipDirty);
 
-    void ReconciliateUIWithLayerPresence(Model const & model);
-    
-    void ReconciliateUIWithModelDirtiness(Model const & model);
+    void ReconciliateUIWithLayerPresence(IModelObservable const & model);
+
+    void ReconciliateUIWithModelDirtiness(IModelObservable const & model);
+
+    void ReconciliateUIWithModelMacroProperties(ModelMacroProperties const & properties);
+
+    void ReconciliateUIWithElectricalLayerInstancedElementSet(InstancedElectricalElementSet const & instancedElectricalElementSet);
 
     //
 
@@ -295,11 +323,14 @@ private:
 
     void ReconciliateUIWithOtherVisualizationsOpacity(float opacity);
 
+    void ReconciliateUIWithVisualWaterlineMarkersEnablement(bool isEnabled);
     void ReconciliateUIWithVisualGridEnablement(bool isEnabled);
 
     //
 
     void ReconciliateUIWithUndoStackState(UndoStack & undoStack);
+
+    void ReconciliateUIWithDisplayUnitsSystem(UnitsSystem displayUnitsSystem);
 
 private:
 
@@ -312,6 +343,7 @@ private:
     //
 
     std::unique_ptr<OpenGLManager> mOpenGLManager;
+    std::unique_ptr<ShipNameNormalizer> mShipNameNormalizer;
 
     std::unique_ptr<Controller> mController; // Comes and goes as we are opened/close
 
@@ -341,6 +373,7 @@ private:
     std::array<RibbonToolbarButton<BitmapRadioButton> *, VisualizationCount> mVisualizationSelectButtons;
     std::array<RibbonToolbarButton<BitmapButton> *, LayerCount> mLayerExportButtons;
     std::array<RibbonToolbarButton<BitmapButton> *, LayerCount> mLayerDeleteButtons;
+    RibbonToolbarButton<BitmapButton> * mElectricalPanelEditButton;
     wxSizer * mToolSettingsPanelsSizer;
     std::vector<std::tuple<ToolType, wxPanel *>> mToolSettingsPanels;
 
@@ -362,6 +395,7 @@ private:
     BitmapRadioButton * mRopesLayerVisualizationLinesModeButton;
     BitmapRadioButton * mTextureLayerVisualizationNoneModeButton;
     BitmapRadioButton * mTextureLayerVisualizationMatteModeButton;
+    wxBitmapToggleButton * mViewWaterlineMarkersButton;
     wxBitmapToggleButton * mViewGridButton;
 
     // Toolbar panel
@@ -400,6 +434,7 @@ private:
     std::unique_ptr<ResizeDialog> mResizeDialog;
     std::unique_ptr<ShipPropertiesEditDialog> mShipPropertiesEditDialog;
     std::unique_ptr<ModelValidationDialog> mModelValidationDialog;
+    std::unique_ptr<ElectricalPanelEditDialog> mElectricalPanelEditDialog;
 
     //
     // UI state
@@ -427,7 +462,6 @@ private:
     WorkbenchState mWorkbenchState;
 
     std::optional<std::filesystem::path> mCurrentShipFilePath;
-    std::vector<std::filesystem::path> mShipLoadDirectories;
 };
 
 }

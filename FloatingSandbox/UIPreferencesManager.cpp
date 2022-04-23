@@ -445,14 +445,15 @@ void UIPreferencesManager::SavePreferences() const
     preferencesRootObject["version"] = picojson::value(Version::CurrentVersion().ToString());
 
     // Add ship load directories
-
-    picojson::array shipLoadDirectories;
-    for (auto shipDir : mShipLoadDirectories)
     {
-        shipLoadDirectories.push_back(picojson::value(shipDir.string()));
-    }
+        picojson::array shipLoadDirectories;
+        for (auto shipDir : mShipLoadDirectories)
+        {
+            shipLoadDirectories.push_back(picojson::value(shipDir.string()));
+        }
 
-    preferencesRootObject["ship_load_directories"] = picojson::value(shipLoadDirectories);
+        preferencesRootObject["ship_load_directories"] = picojson::value(shipLoadDirectories);
+    }
 
     // Add last ship loaded file path
     if (!mLastShipLoadedFilePath.empty())

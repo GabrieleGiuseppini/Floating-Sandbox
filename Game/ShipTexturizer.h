@@ -56,7 +56,7 @@ public:
         return MakeTextureSample(
             settings,
             sampleSize,
-            rgbaColor(material.RenderColor, 255),
+            material.RenderColor,
             material.MaterialTextureName);
     }
 

@@ -28,7 +28,7 @@ TEST(GameEventDispatcherTests, Aggregates_OnStress)
     GameEventDispatcher dispatcher;
     dispatcher.RegisterStructuralEventHandler(&handler);
 
-    StructuralMaterial sm = MakeTestStructuralMaterial("Foo");
+    StructuralMaterial sm = MakeTestStructuralMaterial("Foo", rgbColor(1, 2, 3));
 
     EXPECT_CALL(handler, OnStress(_, _, _)).Times(0);
 
@@ -51,9 +51,9 @@ TEST(GameEventDispatcherTests, Aggregates_OnStress_MultipleKeys)
     GameEventDispatcher dispatcher;
     dispatcher.RegisterStructuralEventHandler(&handler);
 
-    StructuralMaterial sm1 = MakeTestStructuralMaterial("Foo1");
+    StructuralMaterial sm1 = MakeTestStructuralMaterial("Foo1", rgbColor(1, 2, 3));
 
-    StructuralMaterial sm2 = MakeTestStructuralMaterial("Foo2");
+    StructuralMaterial sm2 = MakeTestStructuralMaterial("Foo2", rgbColor(1, 2, 3));
 
     EXPECT_CALL(handler, OnStress(_, _, _)).Times(0);
 
@@ -113,7 +113,7 @@ TEST(GameEventDispatcherTests, ClearsStateAtUpdate)
     GameEventDispatcher dispatcher;
     dispatcher.RegisterStructuralEventHandler(&handler);
 
-    StructuralMaterial sm = MakeTestStructuralMaterial("Foo");
+    StructuralMaterial sm = MakeTestStructuralMaterial("Foo", rgbColor(1, 2, 3));
 
     EXPECT_CALL(handler, OnStress(_, _, _)).Times(0);
 

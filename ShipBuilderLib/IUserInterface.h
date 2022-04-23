@@ -5,7 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
-#include "Model.h"
+#include "IModelObservable.h"
+#include "InstancedElectricalElementSet.h"
 #include "ShipBuilderTypes.h"
 #include "UndoStack.h"
 #include "ViewModel.h"
@@ -17,15 +18,11 @@
 
 namespace ShipBuilder {
 
-class Controller;
-
 /*
- * Interface of MainFrame that is seen by Controller and underneath.
+ * Interface of MainFrame to Controller and underneath.
  */
 struct IUserInterface
 {
-public:
-
     virtual void RefreshView() = 0;
 
     // Notifies of a change in the view model geometry
@@ -34,14 +31,23 @@ public:
     // Notifies of a change in the size of the model
     virtual void OnShipSizeChanged(ShipSpaceSize const & shipSpaceSize) = 0;
 
+    // Notifies of a change in the scale of the ship
+    virtual void OnShipScaleChanged(ShipSpaceToWorldSpaceCoordsRatio const & scale) = 0;
+
     // Notifies of a change in the name of the ship
-    virtual void OnShipNameChanged(Model const & model) = 0;
+    virtual void OnShipNameChanged(IModelObservable const & model) = 0;
 
     // Notifies of a (possible) change in the presence of a layer
-    virtual void OnLayerPresenceChanged(Model const & model) = 0;
+    virtual void OnLayerPresenceChanged(IModelObservable const & model) = 0;
 
     // Notifies of a (possible) change in the dirtiness of the model
-    virtual void OnModelDirtyChanged(Model const & model) = 0;
+    virtual void OnModelDirtyChanged(IModelObservable const & model) = 0;
+
+    // Notifies of a (possible) change in the model's macro properties analysis
+    virtual void OnModelMacroPropertiesUpdated(ModelMacroProperties const & properties) = 0;
+
+    // Notifies of a (possible) change in the set of instanced elements in the electrical layer
+    virtual void OnElectricalLayerInstancedElementSetChanged(InstancedElectricalElementSet const & instancedElectricalElementSet) = 0;
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -61,6 +67,7 @@ public:
 
     virtual void OnOtherVisualizationsOpacityChanged(float opacity) = 0;
 
+    virtual void OnVisualWaterlineMarkersEnablementChanged(bool isEnabled) = 0;
     virtual void OnVisualGridEnablementChanged(bool isEnabled) = 0;
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -71,8 +78,11 @@ public:
     // Notifies of a change in the tool coordinates to display
     virtual void OnToolCoordinatesChanged(std::optional<ShipSpaceCoordinates> coordinates, ShipSpaceSize const & shipSize) = 0;
 
-    // Notifies of a change in the currently-sampled material
-    virtual void OnSampledMaterialChanged(std::optional<std::string> materialName) = 0;
+    // Notifies of a change in the currently-sampled information
+    virtual void OnSampledInformationUpdated(std::optional<SampledInformation> sampledInformation) = 0;
+
+    // Notifies of a change in the currently-measured length
+    virtual void OnMeasuredWorldLengthChanged(std::optional<int> length) = 0;
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

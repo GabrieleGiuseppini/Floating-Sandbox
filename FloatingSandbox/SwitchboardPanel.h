@@ -89,6 +89,7 @@ public:
         ElectricalElementInstanceIndex instanceIndex,
         SwitchType type,
         ElectricalState state,
+        ElectricalMaterial const & electricalMaterial,
         std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override;
 
     virtual void OnPowerProbeCreated(
@@ -96,33 +97,35 @@ public:
         ElectricalElementInstanceIndex instanceIndex,
         PowerProbeType type,
         ElectricalState state,
+        ElectricalMaterial const & electricalMaterial,
         std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override;
 
     virtual void OnEngineControllerCreated(
         ElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
+        ElectricalMaterial const & electricalMaterial,
         std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override;
 
     virtual void OnEngineMonitorCreated(
         ElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
-        ElectricalMaterial const & electricalMaterial,
         float thrustMagnitude,
         float rpm,
+        ElectricalMaterial const & electricalMaterial,
         std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override;
 
     virtual void OnWaterPumpCreated(
         ElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
-        ElectricalMaterial const & electricalMaterial,
         float normalizedForce,
+        ElectricalMaterial const & electricalMaterial,
         std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override;
 
     virtual void OnWatertightDoorCreated(
         ElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
-        ElectricalMaterial const & electricalMaterial,
         bool isOpen,
+        ElectricalMaterial const & electricalMaterial,
         std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override;
 
     virtual void OnElectricalElementAnnouncementsEnd() override;

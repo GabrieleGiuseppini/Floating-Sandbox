@@ -40,7 +40,10 @@ ModelController::ModelController(
     ShipTexturizer const & shipTexturizer)
     : mModel(std::move(model))
     , mShipTexturizer(shipTexturizer)
-    , mElectricalElementInstanceIndexFactory()
+    , mMassParticleCount(0)
+    , mTotalMass(0.0f)
+    , mCenterOfMassSum(vec2f::zero())
+    , mInstancedElectricalElementSet()
     , mElectricalParticleCount(0)
     /////
     , mGameVisualizationMode(GameVisualizationModeType::None)
@@ -234,6 +237,77 @@ ModelValidationResults ModelController::ValidateModel() const
     return ModelValidationResults(std::move(issues));
 }
 
+std::optional<SampledInformation> ModelController::SampleInformationAt(ShipSpaceCoordinates const & coordinates, LayerType layer) const
+{
+    switch (layer)
+    {
+        case LayerType::Electrical:
+        {
+            assert(mModel.HasLayer(LayerType::Electrical));
+            assert(!mIsElectricalLayerInEphemeralVisualization);
+            assert(coordinates.IsInSize(GetShipSize()));
+
+            ElectricalElement const & element = mModel.GetElectricalLayer().Buffer[coordinates];
+            if (element.Material != nullptr)
+            {
+                assert((element.InstanceIndex != NoneElectricalElementInstanceIndex && element.Material->IsInstanced)
+                    || (element.InstanceIndex == NoneElectricalElementInstanceIndex && !element.Material->IsInstanced));
+
+                return SampledInformation(
+                    element.Material->Name,
+                    element.Material->IsInstanced ? element.InstanceIndex : std::optional<ElectricalElementInstanceIndex>());
+            }
+            else
+            {
+                return std::nullopt;
+            }
+        }
+
+        case LayerType::Ropes:
+        {
+            assert(mModel.HasLayer(LayerType::Ropes));
+            assert(!mIsRopesLayerInEphemeralVisualization);
+            assert(coordinates.IsInSize(mModel.GetShipSize()));
+
+            auto const * material = mModel.GetRopesLayer().Buffer.SampleMaterialEndpointAt(coordinates);
+            if (material != nullptr)
+            {
+                return SampledInformation(material->Name, std::nullopt);
+            }
+            else
+            {
+                return std::nullopt;
+            }
+        }
+
+        case LayerType::Structural:
+        {
+            assert(mModel.HasLayer(LayerType::Structural));
+            assert(!mIsStructuralLayerInEphemeralVisualization);
+            assert(coordinates.IsInSize(GetShipSize()));
+
+            auto const * material = mModel.GetStructuralLayer().Buffer[coordinates].Material;
+            if (material != nullptr)
+            {
+                return SampledInformation(material->Name, std::nullopt);
+            }
+            else
+            {
+                return std::nullopt;
+            }
+        }
+
+        case LayerType::Texture:
+        {
+            // Nothing to do
+            return std::nullopt;
+        }
+    }
+
+    assert(false);
+    return std::nullopt;
+}
+
 void ModelController::Flip(DirectionType direction)
 {
     // Structural layer
@@ -245,6 +319,8 @@ void ModelController::Flip(DirectionType direction)
         mModel.GetStructuralLayer().Buffer.Flip(direction);
 
         RegisterDirtyVisualization<VisualizationType::StructuralLayer>(GetWholeShipRect());
+
+        InitializeStructuralLayerAnalysis();
     }
 
     // Electrical layer
@@ -255,6 +331,8 @@ void ModelController::Flip(DirectionType direction)
         mModel.GetElectricalLayer().Buffer.Flip(direction);
 
         RegisterDirtyVisualization<VisualizationType::ElectricalLayer>(GetWholeShipRect());
+
+        InitializeElectricalLayerAnalysis();
     }
 
     // Ropes layer
@@ -265,6 +343,8 @@ void ModelController::Flip(DirectionType direction)
         mModel.GetRopesLayer().Buffer.Flip(direction, mModel.GetShipSize());
 
         RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
+
+        InitializeRopesLayerAnalysis();
     }
 
     // Texture layer
@@ -279,28 +359,70 @@ void ModelController::Flip(DirectionType direction)
     RegisterDirtyVisualization<VisualizationType::Game>(GetWholeShipRect());
 }
 
+void ModelController::Rotate90(RotationDirectionType direction)
+{
+    // Rotate size
+    auto const originalSize = mModel.GetShipSize();
+    mModel.SetShipSize(ShipSpaceSize(originalSize.height, originalSize.width));
+
+    // Structural layer
+    {
+        assert(mModel.HasLayer(LayerType::Structural));
+
+        assert(!mIsStructuralLayerInEphemeralVisualization);
+
+        mModel.GetStructuralLayer().Buffer.Rotate90(direction);
+
+        mStructuralLayerVisualizationTexture.reset();
+        RegisterDirtyVisualization<VisualizationType::StructuralLayer>(GetWholeShipRect());
+
+        InitializeStructuralLayerAnalysis();
+    }
+
+    // Electrical layer
+    if (mModel.HasLayer(LayerType::Electrical))
+    {
+        assert(!mIsElectricalLayerInEphemeralVisualization);
+
+        mModel.GetElectricalLayer().Buffer.Rotate90(direction);
+
+        mElectricalLayerVisualizationTexture.reset();
+        RegisterDirtyVisualization<VisualizationType::ElectricalLayer>(GetWholeShipRect());
+
+        InitializeElectricalLayerAnalysis();
+    }
+
+    // Ropes layer
+    if (mModel.HasLayer(LayerType::Ropes))
+    {
+        assert(!mIsRopesLayerInEphemeralVisualization);
+
+        mModel.GetRopesLayer().Buffer.Rotate90(direction, originalSize);
+
+        RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
+
+        InitializeRopesLayerAnalysis();
+    }
+
+    // Texture layer
+    if (mModel.HasLayer(LayerType::Texture))
+    {
+        mModel.GetTextureLayer().Buffer.Rotate90(direction);
+
+        RegisterDirtyVisualization<VisualizationType::TextureLayer>(GetWholeShipRect());
+    }
+
+    //...and Game we do regardless, as there's always a structural layer at least
+    mGameVisualizationTexture.reset();
+    mGameVisualizationAutoTexturizationTexture.reset();
+    RegisterDirtyVisualization<VisualizationType::Game>(GetWholeShipRect());
+}
+
 void ModelController::ResizeShip(
     ShipSpaceSize const & newSize,
     ShipSpaceCoordinates const & originOffset)
 {
-    //
-    // Calculate "static" (remaining) rect - wrt old coordinates 
-    //
-
-    auto const originalShipRect = GetWholeShipRect();
-
-    std::optional<ShipSpaceRect> staticShipRect = originalShipRect.MakeIntersectionWith(ShipSpaceRect(originOffset, newSize));
-
-    if (staticShipRect.has_value())
-    {
-        // Make origin wrt old coords
-        staticShipRect->origin.x = std::max(0, -originOffset.x);
-        staticShipRect->origin.y = std::max(0, -originOffset.y);
-    }
-
-    //
-    // Resize model
-    //
+    auto const originalShipSize = mModel.GetShipSize();
 
     ShipSpaceRect newWholeShipRect({ 0, 0 }, newSize);
 
@@ -312,10 +434,11 @@ void ModelController::ResizeShip(
 
         assert(!mIsStructuralLayerInEphemeralVisualization);
 
-        mModel.GetStructuralLayer().Buffer = mModel.GetStructuralLayer().Buffer.MakeReframed(
-            newSize,
-            originOffset,
-            StructuralElement(nullptr));
+        mModel.SetStructuralLayer(
+            mModel.GetStructuralLayer().MakeReframed(
+                newSize,
+                originOffset,
+                StructuralElement(nullptr)));
 
         InitializeStructuralLayerAnalysis();
 
@@ -329,39 +452,11 @@ void ModelController::ResizeShip(
     {
         assert(!mIsElectricalLayerInEphemeralVisualization);
 
-        // Panel
-        if (staticShipRect.has_value())
-        {
-            for (int y = 0; y < mModel.GetElectricalLayer().Buffer.Size.height; ++y)
-            {
-                for (int x = 0; x < mModel.GetElectricalLayer().Buffer.Size.width; ++x)
-                {
-                    auto const coords = ShipSpaceCoordinates({ x, y });
-
-                    auto const instanceIndex = mModel.GetElectricalLayer().Buffer[coords].InstanceIndex;
-                    if (instanceIndex != NoneElectricalElementInstanceIndex
-                        && !coords.IsInRect(*staticShipRect))
-                    {
-                        // This instanced element will be gone
-                        auto searchIt = mModel.GetElectricalLayer().Panel.find(instanceIndex);
-                        if (searchIt != mModel.GetElectricalLayer().Panel.end())
-                        {
-                            mModel.GetElectricalLayer().Panel.erase(searchIt);
-                        }
-                    }
-                }
-            }
-        }
-        else
-        {
-            mModel.GetElectricalLayer().Panel.clear();
-        }
-
-        // Elements
-        mModel.GetElectricalLayer().Buffer = mModel.GetElectricalLayer().Buffer.MakeReframed(
-            newSize,
-            originOffset,
-            ElectricalElement(nullptr, NoneElectricalElementInstanceIndex));
+        mModel.SetElectricalLayer(
+            mModel.GetElectricalLayer().MakeReframed(
+                newSize,
+                originOffset,
+                ElectricalElement(nullptr, NoneElectricalElementInstanceIndex)));
 
         InitializeElectricalLayerAnalysis();
 
@@ -375,7 +470,10 @@ void ModelController::ResizeShip(
     {
         assert(!mIsRopesLayerInEphemeralVisualization);
 
-        mModel.GetRopesLayer().Buffer.Reframe(newSize, originOffset);
+        mModel.SetRopesLayer(
+            mModel.GetRopesLayer().MakeReframed(
+                newSize,
+                originOffset));
 
         InitializeRopesLayerAnalysis();
 
@@ -387,15 +485,16 @@ void ModelController::ResizeShip(
     {
         // Convert (scale) rect to texture coordinates space
         vec2f const shipToImage(
-            static_cast<float>(mModel.GetTextureLayer().Buffer.Size.width) / static_cast<float>(originalShipRect.size.width),
-            static_cast<float>(mModel.GetTextureLayer().Buffer.Size.height) / static_cast<float>(originalShipRect.size.height));
+            static_cast<float>(mModel.GetTextureLayer().Buffer.Size.width) / static_cast<float>(originalShipSize.width),
+            static_cast<float>(mModel.GetTextureLayer().Buffer.Size.height) / static_cast<float>(originalShipSize.height));
         ImageSize const imageNewSize = ImageSize::FromFloatRound(newSize.ToFloat().scale(shipToImage));
         ImageCoordinates imageOriginOffset = ImageCoordinates::FromFloatRound(originOffset.ToFloat().scale(shipToImage));
 
-        mModel.GetTextureLayer().Buffer = mModel.GetTextureLayer().Buffer.MakeReframed(
-            imageNewSize,
-            imageOriginOffset,
-            rgbaColor(0, 0, 0, 0));
+        mModel.SetTextureLayer(
+            mModel.GetTextureLayer().MakeReframed(
+                imageNewSize,
+                imageOriginOffset,
+                rgbaColor(0, 0, 0, 0)));
 
         RegisterDirtyVisualization<VisualizationType::TextureLayer>(newWholeShipRect);
     }
@@ -415,23 +514,19 @@ void ModelController::ResizeShip(
 // Structural
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void ModelController::NewStructuralLayer()
+StructuralLayerData const & ModelController::GetStructuralLayer() const
 {
-    mModel.NewStructuralLayer();
+    assert(mModel.HasLayer(LayerType::Structural));
+    assert(!mIsStructuralLayerInEphemeralVisualization);
 
-    InitializeStructuralLayerAnalysis();
-
-    RegisterDirtyVisualization<VisualizationType::Game>(GetWholeShipRect());
-    RegisterDirtyVisualization<VisualizationType::StructuralLayer>(GetWholeShipRect());
-
-    mIsStructuralLayerInEphemeralVisualization = false;
+    return mModel.GetStructuralLayer();
 }
 
-void ModelController::SetStructuralLayer(/*TODO*/)
+void ModelController::SetStructuralLayer(StructuralLayerData && structuralLayer)
 {
     assert(mModel.HasLayer(LayerType::Structural));
 
-    mModel.SetStructuralLayer(/*TODO*/);
+    mModel.SetStructuralLayer(std::move(structuralLayer));
 
     InitializeStructuralLayerAnalysis();
 
@@ -448,7 +543,11 @@ StructuralLayerData ModelController::CloneStructuralLayer() const
 
 StructuralMaterial const * ModelController::SampleStructuralMaterialAt(ShipSpaceCoordinates const & coords) const
 {
+    assert(mModel.HasLayer(LayerType::Structural));
+    assert(!mIsStructuralLayerInEphemeralVisualization);
+
     assert(coords.IsInSize(mModel.GetShipSize()));
+
     return mModel.GetStructuralLayer().Buffer[coords].Material;
 }
 
@@ -457,7 +556,6 @@ void ModelController::StructuralRegionFill(
     StructuralMaterial const * material)
 {
     assert(mModel.HasLayer(LayerType::Structural));
-
     assert(!mIsStructuralLayerInEphemeralVisualization);
 
     //
@@ -545,7 +643,7 @@ void ModelController::RestoreStructuralLayerRegion(
 }
 
 void ModelController::RestoreStructuralLayer(StructuralLayerData && sourceLayer)
-{    
+{
     assert(!mIsStructuralLayerInEphemeralVisualization);
 
     //
@@ -635,20 +733,16 @@ void ModelController::RestoreStructuralLayerRegionForEphemeralVisualization(
 // Electrical
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void ModelController::NewElectricalLayer()
+ElectricalPanelMetadata const & ModelController::GetElectricalPanelMetadata() const
 {
-    mModel.NewElectricalLayer();
+    assert(mModel.HasLayer(LayerType::Electrical));
 
-    InitializeElectricalLayerAnalysis();
-
-    RegisterDirtyVisualization<VisualizationType::ElectricalLayer>(GetWholeShipRect());
-
-    mIsElectricalLayerInEphemeralVisualization = false;
+    return mModel.GetElectricalLayer().Panel;
 }
 
-void ModelController::SetElectricalLayer(/*TODO*/)
+void ModelController::SetElectricalLayer(ElectricalLayerData && electricalLayer)
 {
-    mModel.SetElectricalLayer(/*TODO*/);
+    mModel.SetElectricalLayer(std::move(electricalLayer));
 
     InitializeElectricalLayerAnalysis();
 
@@ -677,14 +771,17 @@ std::unique_ptr<ElectricalLayerData> ModelController::CloneElectricalLayer() con
 
 ElectricalMaterial const * ModelController::SampleElectricalMaterialAt(ShipSpaceCoordinates const & coords) const
 {
+    assert(mModel.HasLayer(LayerType::Electrical));
+    assert(!mIsElectricalLayerInEphemeralVisualization);
+
     assert(coords.IsInSize(mModel.GetShipSize()));
+
     return mModel.GetElectricalLayer().Buffer[coords].Material;
 }
 
 bool ModelController::IsElectricalParticleAllowedAt(ShipSpaceCoordinates const & coords) const
 {
     assert(mModel.HasLayer(LayerType::Structural));
-
     assert(!mIsStructuralLayerInEphemeralVisualization);
 
     return mModel.GetStructuralLayer().Buffer[coords].Material != nullptr;
@@ -889,20 +986,9 @@ void ModelController::RestoreElectricalLayerRegionForEphemeralVisualization(
 // Ropes
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void ModelController::NewRopesLayer()
+void ModelController::SetRopesLayer(RopesLayerData && ropesLayer)
 {
-    mModel.NewRopesLayer();
-
-    InitializeRopesLayerAnalysis();
-
-    RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
-
-    mIsRopesLayerInEphemeralVisualization = false;
-}
-
-void ModelController::SetRopesLayer(/*TODO*/)
-{
-    mModel.SetRopesLayer(/*TODO*/);
+    mModel.SetRopesLayer(std::move(ropesLayer));
 
     InitializeRopesLayerAnalysis();
 
@@ -931,7 +1017,11 @@ std::unique_ptr<RopesLayerData> ModelController::CloneRopesLayer() const
 
 StructuralMaterial const * ModelController::SampleRopesMaterialAt(ShipSpaceCoordinates const & coords) const
 {
+    assert(mModel.HasLayer(LayerType::Ropes));
+    assert(!mIsRopesLayerInEphemeralVisualization);
+
     assert(coords.IsInSize(mModel.GetShipSize()));
+
     return mModel.GetRopesLayer().Buffer.SampleMaterialEndpointAt(coords);
 }
 
@@ -1022,20 +1112,10 @@ bool ModelController::EraseRopeAt(ShipSpaceCoordinates const & coords)
     // Update model
     //
 
-    auto const srchIt = std::find_if(
-        mModel.GetRopesLayer().Buffer.cbegin(),
-        mModel.GetRopesLayer().Buffer.cend(),
-        [&coords](auto const & e)
-        {
-            return e.StartCoords == coords
-                || e.EndCoords == coords;
-        });
+    bool const hasRemoved = InternalEraseRopeAt(coords);
 
-    if (srchIt != mModel.GetRopesLayer().Buffer.cend())
+    if (hasRemoved)
     {
-        // Remove
-        mModel.GetRopesLayer().Buffer.Erase(srchIt);
-
         // Update visualization
         RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
 
@@ -1150,12 +1230,11 @@ void ModelController::RestoreRopesLayerForEphemeralVisualization(RopesLayerData 
 // Texture
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void ModelController::NewTextureLayer()
+TextureLayerData const & ModelController::GetTextureLayer() const
 {
-    mModel.NewTextureLayer();
+    assert(mModel.HasLayer(LayerType::Texture));
 
-    RegisterDirtyVisualization<VisualizationType::Game>(GetWholeShipRect());
-    RegisterDirtyVisualization<VisualizationType::TextureLayer>(GetWholeShipRect());
+    return mModel.GetTextureLayer();
 }
 
 void ModelController::SetTextureLayer(
@@ -1192,7 +1271,7 @@ void ModelController::RestoreTextureLayer(
     //
     // Restore model
     //
-    
+
     mModel.RestoreTextureLayer(std::move(textureLayer));
     mModel.GetShipMetadata().ArtCredits = std::move(originalTextureArtCredits);
 
@@ -1234,7 +1313,6 @@ void ModelController::SetGameVisualizationMode(GameVisualizationModeType mode)
         // Shutdown game visualization
         mGameVisualizationMode = GameVisualizationModeType::None;
         mGameVisualizationAutoTexturizationTexture.reset();
-        assert(mGameVisualizationTexture);
         mGameVisualizationTexture.reset();
     }
 }
@@ -1265,7 +1343,6 @@ void ModelController::SetStructuralLayerVisualizationMode(StructuralLayerVisuali
     {
         // Shutdown structural visualization
         mStructuralLayerVisualizationMode = StructuralLayerVisualizationModeType::None;
-        assert(mStructuralLayerVisualizationTexture);
         mStructuralLayerVisualizationTexture.reset();
     }
 }
@@ -1288,7 +1365,6 @@ void ModelController::SetElectricalLayerVisualizationMode(ElectricalLayerVisuali
     {
         // Shutdown electrical visualization
         mElectricalLayerVisualizationMode = ElectricalLayerVisualizationModeType::None;
-        assert(mElectricalLayerVisualizationTexture);
         mElectricalLayerVisualizationTexture.reset();
     }
 }
@@ -1356,7 +1432,7 @@ void ModelController::UpdateVisualizations(View & view)
 
             mGameVisualizationTexture = std::make_unique<RgbaImageData>(textureSize);
         }
-        
+
         if (mGameVisualizationMode == GameVisualizationModeType::AutoTexturizationMode && !mGameVisualizationAutoTexturizationTexture)
         {
             // Initialize auto-texturization texture
@@ -1370,26 +1446,7 @@ void ModelController::UpdateVisualizations(View & view)
             ImageRect const dirtyTextureRegion = UpdateGameVisualization(*dirtyShipRegion);
 
             // Upload visualization
-            if (dirtyTextureRegion != mGameVisualizationTexture->Size)
-            {
-                //
-                // For better performance, we only upload the dirty sub-texture
-                //
-
-                auto subTexture = RgbaImageData(dirtyTextureRegion.size);
-                subTexture.BlitFromRegion(
-                    *mGameVisualizationTexture,
-                    dirtyTextureRegion,
-                    { 0, 0 });
-
-                view.UpdateGameVisualizationTexture(
-                    subTexture,
-                    dirtyTextureRegion.origin);
-            }
-            else
-            {
-                view.UploadGameVisualization(*mGameVisualizationTexture);
-            }
+            view.UploadGameVisualization(*mGameVisualizationTexture);
         }
     }
     else
@@ -1536,13 +1593,33 @@ void ModelController::UpdateVisualizations(View & view)
 
 void ModelController::InitializeStructuralLayerAnalysis()
 {
-    // FUTUREWORK - reset analysis
+    mMassParticleCount = 0;
+    mTotalMass = 0.0f;
+    mCenterOfMassSum = vec2f::zero();
+
+    auto const & structuralLayerBuffer = mModel.GetStructuralLayer().Buffer;
+
+    for (int y = 0; y < structuralLayerBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < structuralLayerBuffer.Size.width; ++x)
+        {
+            ShipSpaceCoordinates const coords{ x, y };
+            if (structuralLayerBuffer[coords].Material != nullptr)
+            {
+                auto const mass = structuralLayerBuffer[coords].Material->GetMass();
+
+                ++mMassParticleCount;
+                mTotalMass += mass;
+                mCenterOfMassSum += coords.ToFloat() * mass;
+            }
+        }
+    }
 }
 
 void ModelController::InitializeElectricalLayerAnalysis()
 {
     // Reset factory
-    mElectricalElementInstanceIndexFactory.Reset();
+    mInstancedElectricalElementSet.Reset();
 
     // Reset particle count
     mElectricalParticleCount = 0;
@@ -1560,7 +1637,7 @@ void ModelController::InitializeElectricalLayerAnalysis()
                 if (electricalLayerBuffer.Data[i].Material->IsInstanced)
                 {
                     assert(electricalLayerBuffer.Data[i].InstanceIndex != NoneElectricalElementInstanceIndex);
-                    mElectricalElementInstanceIndexFactory.RegisterIndex(electricalLayerBuffer.Data[i].InstanceIndex);
+                    mInstancedElectricalElementSet.Register(electricalLayerBuffer.Data[i].InstanceIndex, electricalLayerBuffer.Data[i].Material);
                 }
             }
         }
@@ -1576,30 +1653,48 @@ void ModelController::WriteParticle(
     ShipSpaceCoordinates const & coords,
     StructuralMaterial const * material)
 {
-    //
-    // FutureWork:
-    // - Here we will also implement running analyses
-    //
+    // Write particle and maintain analysis
 
     auto & structuralLayerBuffer = mModel.GetStructuralLayer().Buffer;
+
+    if (structuralLayerBuffer[coords].Material != nullptr)
+    {
+        auto const mass = structuralLayerBuffer[coords].Material->GetMass();
+
+        assert(mMassParticleCount > 0);
+        --mMassParticleCount;
+        if (mMassParticleCount == 0)
+        {
+            mTotalMass = 0.0f;
+        }
+        else
+        {
+            mTotalMass -= mass;
+        }
+        mCenterOfMassSum -= coords.ToFloat() * mass;
+    }
+
     structuralLayerBuffer[coords] = StructuralElement(material);
+
+    if (material != nullptr)
+    {
+        auto const mass = material->GetMass();
+
+        ++mMassParticleCount;
+        mTotalMass += mass;
+        mCenterOfMassSum += coords.ToFloat() * mass;
+    }
 }
 
 void ModelController::WriteParticle(
     ShipSpaceCoordinates const & coords,
     ElectricalMaterial const * material)
 {
-    //
-    // FutureWork:
-    // - Here we will also implement running analyses, e.g. update the count of particles
-    // - Here we will also take care of electrical panel: new/removed/updated-type components
-    //
-
     auto & electricalLayerBuffer = mModel.GetElectricalLayer().Buffer;
 
     auto const & oldElement = electricalLayerBuffer[coords];
 
-    // Decide instance index
+    // Decide instance index and maintain panel
     ElectricalElementInstanceIndex instanceIndex;
     if (oldElement.Material == nullptr
         || !oldElement.Material->IsInstanced)
@@ -1610,7 +1705,7 @@ void ModelController::WriteParticle(
             // New instanced element...
 
             // ...new instance index
-            instanceIndex = mElectricalElementInstanceIndexFactory.MakeNewIndex();
+            instanceIndex = mInstancedElectricalElementSet.Add(material);
         }
         else
         {
@@ -1631,8 +1726,11 @@ void ModelController::WriteParticle(
             // Old instanced, new one not...
 
             // ...disappeared instance index
-            mElectricalElementInstanceIndexFactory.DisposeIndex(oldElement.InstanceIndex);
+            mInstancedElectricalElementSet.Remove(oldElement.InstanceIndex);
             instanceIndex = NoneElectricalElementInstanceIndex;
+
+            // Remove from panel
+            mModel.GetElectricalLayer().Panel.erase(oldElement.InstanceIndex);
         }
         else
         {
@@ -1675,7 +1773,7 @@ void ModelController::AppendRope(
         startCoords,
         endCoords,
         material,
-        rgbaColor(material->RenderColor, 255));
+        material->RenderColor);
 }
 
 void ModelController::MoveRopeEndpoint(
@@ -1691,6 +1789,30 @@ void ModelController::MoveRopeEndpoint(
     {
         assert(ropeElement.EndCoords == oldCoords);
         ropeElement.EndCoords = newCoords;
+    }
+}
+
+bool ModelController::InternalEraseRopeAt(ShipSpaceCoordinates const & coords)
+{
+    auto const srchIt = std::find_if(
+        mModel.GetRopesLayer().Buffer.cbegin(),
+        mModel.GetRopesLayer().Buffer.cend(),
+        [&coords](auto const & e)
+        {
+            return e.StartCoords == coords
+                || e.EndCoords == coords;
+        });
+
+    if (srchIt != mModel.GetRopesLayer().Buffer.cend())
+    {
+        // Remove
+        mModel.GetRopesLayer().Buffer.Erase(srchIt);
+
+        return true;
+    }
+    else
+    {
+        return false;
     }
 }
 
@@ -1865,7 +1987,7 @@ ImageRect ModelController::UpdateGameVisualization(ShipSpaceRect const & region)
     }
 
     assert(mGameVisualizationTexture);
-    
+
     mShipTexturizer.RenderShipInto(
         mModel.GetStructuralLayer(),
         effectiveRegion,
@@ -1925,7 +2047,7 @@ void ModelController::RenderStructureInto(
             auto const structuralMaterial = structuralLayerBuffer[{x, y}].Material;
 
             texture[{x, y}] = (structuralMaterial != nullptr)
-                ? rgbaColor(structuralMaterial->RenderColor, 255)
+                ? structuralMaterial->RenderColor
                 : emptyColor;
         }
     }

@@ -5,7 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
-#include "ElectricalElementInstanceIndexFactory.h"
+#include "IModelObservable.h"
+#include "InstancedElectricalElementSet.h"
 #include "Model.h"
 #include "ModelValidationResults.h"
 #include "ShipBuilderTypes.h"
@@ -31,7 +32,7 @@ namespace ShipBuilder {
  *
  * The ModelController does not maintain the model's dirtyness; that is managed by the Controller.
  */
-class ModelController
+class ModelController : public IModelObservable
 {
 public:
 
@@ -46,9 +47,9 @@ public:
 
     ShipDefinition MakeShipDefinition() const;
 
-    Model const & GetModel() const
+    ShipSpaceSize const & GetShipSize() const override
     {
-        return mModel;
+        return mModel.GetShipSize();
     }
 
     void SetShipSize(ShipSpaceSize const & shipSize)
@@ -56,9 +57,39 @@ public:
         mModel.SetShipSize(shipSize);
     }
 
+    ModelMacroProperties GetModelMacroProperties() const override
+    {
+        assert(mMassParticleCount == 0 || mTotalMass != 0.0f);
+
+        return ModelMacroProperties(
+            mMassParticleCount,
+            mTotalMass,
+            mMassParticleCount != 0 ? mCenterOfMassSum / mTotalMass : std::optional<vec2f>());
+    }
+
     std::unique_ptr<RgbaImageData> MakePreview() const;
 
     std::optional<ShipSpaceRect> CalculateBoundingBox() const;
+
+    bool HasLayer(LayerType layer) const override
+    {
+        return mModel.HasLayer(layer);
+    }
+
+    bool IsDirty() const override
+    {
+        return mModel.GetIsDirty();
+    }
+
+    bool IsLayerDirty(LayerType layer) const override
+    {
+        return mModel.GetIsDirty(layer);
+    }
+
+    ModelDirtyState GetDirtyState() const
+    {
+        return mModel.GetDirtyState();
+    }
 
     void SetLayerDirty(LayerType layer)
     {
@@ -70,7 +101,7 @@ public:
         mModel.SetAllPresentLayersDirty();
     }
 
-    void RestoreDirtyState(Model::DirtyState const & dirtyState)
+    void RestoreDirtyState(ModelDirtyState const & dirtyState)
     {
         mModel.SetDirtyState(dirtyState);
     }
@@ -91,7 +122,7 @@ public:
     }
 #endif
 
-    ShipMetadata const & GetShipMetadata() const
+    ShipMetadata const & GetShipMetadata() const override
     {
         return mModel.GetShipMetadata();
     }
@@ -101,7 +132,7 @@ public:
         mModel.SetShipMetadata(std::move(shipMetadata));
     }
 
-    ShipPhysicsData const & GetShipPhysicsData() const
+    ShipPhysicsData const & GetShipPhysicsData() const override
     {
         return mModel.GetShipPhysicsData();
     }
@@ -111,7 +142,7 @@ public:
         mModel.SetShipPhysicsData(std::move(shipPhysicsData));
     }
 
-    std::optional<ShipAutoTexturizationSettings> const & GetShipAutoTexturizationSettings() const
+    std::optional<ShipAutoTexturizationSettings> const & GetShipAutoTexturizationSettings() const override
     {
         return mModel.GetShipAutoTexturizationSettings();
     }
@@ -121,18 +152,66 @@ public:
         mModel.SetShipAutoTexturizationSettings(std::move(shipAutoTexturizationSettings));
     }
 
+    InstancedElectricalElementSet const & GetInstancedElectricalElementSet() const
+    {
+        return mInstancedElectricalElementSet;
+    }
+
+    void SetElectricalPanelMetadata(ElectricalPanelMetadata && panelMetadata)
+    {
+        mModel.SetElectricalPanelMetadata(std::move(panelMetadata));
+    }
+
+    std::optional<SampledInformation> SampleInformationAt(ShipSpaceCoordinates const & coordinates, LayerType layer) const;
+
     void Flip(DirectionType direction);
+
+    void Rotate90(RotationDirectionType direction);
 
     void ResizeShip(
         ShipSpaceSize const & newSize,
         ShipSpaceCoordinates const & originOffset);
 
+    template<LayerType TLayer>
+    typename LayerTypeTraits<TLayer>::layer_data_type CloneExistingLayer() const
+    {
+        switch (TLayer)
+        {
+            case LayerType::Electrical:
+            {
+                assert(!mIsElectricalLayerInEphemeralVisualization);
+                break;
+            }
+
+            case LayerType::Ropes:
+            {
+                assert(!mIsRopesLayerInEphemeralVisualization);
+                break;
+            }
+
+            case LayerType::Structural:
+            {
+                assert(!mIsStructuralLayerInEphemeralVisualization);
+                break;
+            }
+
+            case LayerType::Texture:
+            {
+                // Nop
+                break;
+            }
+        }
+
+        return mModel.CloneExistingLayer<TLayer>();
+    }
+
     //
     // Structural
     //
 
-    void NewStructuralLayer();
-    void SetStructuralLayer(/*TODO*/);
+    StructuralLayerData const & GetStructuralLayer() const override;
+
+    void SetStructuralLayer(StructuralLayerData && structuralLayer);
 
     StructuralLayerData CloneStructuralLayer() const;
 
@@ -167,8 +246,10 @@ public:
     // Electrical
     //
 
-    void NewElectricalLayer();
-    void SetElectricalLayer(/*TODO*/);
+    ElectricalPanelMetadata const & GetElectricalPanelMetadata() const;
+
+    void SetElectricalLayer(ElectricalLayerData && electricalLayer);
+
     void RemoveElectricalLayer();
 
     std::unique_ptr<ElectricalLayerData> CloneElectricalLayer() const;
@@ -203,8 +284,8 @@ public:
     // Ropes
     //
 
-    void NewRopesLayer();
-    void SetRopesLayer(/*TODO*/);
+    void SetRopesLayer(RopesLayerData && ropesLayer);
+
     void RemoveRopesLayer();
 
     std::unique_ptr<RopesLayerData> CloneRopesLayer() const;
@@ -243,7 +324,8 @@ public:
     // Texture
     //
 
-    void NewTextureLayer();
+    TextureLayerData const & GetTextureLayer() const;
+
     void SetTextureLayer(
         TextureLayerData && textureLayer,
         std::optional<std::string> originalTextureArtCredits);
@@ -307,6 +389,8 @@ private:
         ShipSpaceCoordinates const & oldCoords,
         ShipSpaceCoordinates const & newCoords);
 
+    bool InternalEraseRopeAt(ShipSpaceCoordinates const & coords);
+
     template<LayerType TLayer>
     std::optional<ShipSpaceRect> Flood(
         ShipSpaceCoordinates const & start,
@@ -343,8 +427,11 @@ private:
     // Auxiliary layers' members
     //
 
+    size_t mMassParticleCount;
+    float mTotalMass;
+    vec2f mCenterOfMassSum;
 
-    ElectricalElementInstanceIndexFactory mElectricalElementInstanceIndexFactory;
+    InstancedElectricalElementSet mInstancedElectricalElementSet;
     size_t mElectricalParticleCount;
 
     //

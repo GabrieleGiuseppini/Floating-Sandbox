@@ -6,7 +6,8 @@
 set (SHIPBUILDER_LIB_SOURCES
 	Controller.cpp
 	Controller.h
-	ElectricalElementInstanceIndexFactory.h
+	IModelObservable.h
+	InstancedElectricalElementSet.h
 	IUserInterface.h
 	MainFrame.cpp
 	MainFrame.h
@@ -16,42 +17,57 @@ set (SHIPBUILDER_LIB_SOURCES
 	ModelController.h
 	ModelValidationResults.h
 	OpenGLManager.h
-	Preferences.cpp
-	Preferences.h
 	SelectionManager.cpp	
 	SelectionManager.h
 	ShaderTypes.cpp
 	ShaderTypes.h
 	ShipBuilderTypes.h
+	ShipNameNormalizer.cpp
+	ShipNameNormalizer.h
+	TextureTypes.h
 	UndoStack.cpp
 	UndoStack.h
 	View.cpp
 	View.h
 	ViewModel.h
+	WaterlineAnalyzer.cpp
+	WaterlineAnalyzer.h
 	WorkbenchState.cpp
 	WorkbenchState.h
 )
 
 set (UI_SOURCES
-	AskPasswordDialog.cpp
-	AskPasswordDialog.h
-	MaterialPalette.cpp
-	MaterialPalette.h
-	ModelValidationDialog.cpp
-	ModelValidationDialog.h
-	NewPasswordDialog.cpp
-	NewPasswordDialog.h
-	ResizeDialog.cpp
-	ResizeDialog.h
-	RibbonToolbarButton.h
-	ShipOffsetVisualizationControl.cpp
-	ShipOffsetVisualizationControl.h
-	ShipPropertiesEditDialog.cpp
-	ShipPropertiesEditDialog.h
-	ShipResizeVisualizationControl.cpp
-	ShipResizeVisualizationControl.h
-	StatusBar.cpp
-	StatusBar.h
+	UI/AskPasswordDialog.cpp
+	UI/AskPasswordDialog.h
+	UI/ElectricalPanelEditDialog.cpp
+	UI/ElectricalPanelEditDialog.h
+	UI/ElectricalPanelLayoutControl.cpp
+	UI/ElectricalPanelLayoutControl.h
+	UI/MaterialPalette.cpp
+	UI/MaterialPalette.h
+	UI/ModelValidationDialog.cpp
+	UI/ModelValidationDialog.h
+	UI/NewPasswordDialog.cpp
+	UI/NewPasswordDialog.h
+	UI/NewShipNameDialog.cpp
+	UI/NewShipNameDialog.h
+	UI/ResizeDialog.cpp
+	UI/ResizeDialog.h
+	UI/RibbonToolbarButton.h
+	UI/ShipNameSuggestionDialog.cpp
+	UI/ShipNameSuggestionDialog.h
+	UI/ShipOffsetVisualizationControl.cpp
+	UI/ShipOffsetVisualizationControl.h
+	UI/ShipPropertiesEditDialog.cpp
+	UI/ShipPropertiesEditDialog.h
+	UI/ShipResizeVisualizationControl.cpp
+	UI/ShipResizeVisualizationControl.h
+	UI/StatusBar.cpp
+	UI/StatusBar.h
+	UI/WaterlineAnalysisOutcomeVisualizationControl.cpp
+	UI/WaterlineAnalysisOutcomeVisualizationControl.h
+	UI/WaterlineAnalyzerDialog.cpp
+	UI/WaterlineAnalyzerDialog.h
 )
 
 set (TOOLS_SOURCES
@@ -59,6 +75,8 @@ set (TOOLS_SOURCES
 	Tools/FloodTool.h
 	Tools/LineTool.cpp
 	Tools/LineTool.h
+	Tools/MeasuringTapeTool.cpp
+	Tools/MeasuringTapeTool.h
 	Tools/PencilTool.cpp
 	Tools/PencilTool.h
 	Tools/RopeEraserTool.cpp

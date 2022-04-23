@@ -5,25 +5,26 @@
  ***************************************************************************************/
 #include "MainFrame.h"
 
-#include "AskPasswordDialog.h"
+#include "UI/AskPasswordDialog.h"
+#include "UI/NewShipNameDialog.h"
+#include "UI/WaterlineAnalyzerDialog.h"
+
+#include <UILib/HighlightableTextButton.h>
+#include <UILib/EditSpinBox.h>
+#include <UILib/ImageLoadDialog.h>
+#include <UILib/ImageSaveDialog.h>
+#include <UILib/UnderConstructionDialog.h>
+#include <UILib/WxHelpers.h>
+
+#include <Game/ImageFileTools.h>
+#include <Game/ShipDeSerializer.h>
+
+#include <GameOpenGL/GameOpenGL.h>
 
 #include <GameCore/Log.h>
 #include <GameCore/UserGameException.h>
 #include <GameCore/Utils.h>
 #include <GameCore/Version.h>
-
-#include <GameOpenGL/GameOpenGL.h>
-
-#include <Game/ImageFileTools.h>
-#include <Game/ShipDeSerializer.h>
-
-#include <UILib/BitmapButton.h>
-#include <UILib/BitmapToggleButton.h>
-#include <UILib/HighlightableTextButton.h>
-#include <UILib/EditSpinBox.h>
-#include <UILib/ImageLoadDialog.h>
-#include <UILib/UnderConstructionDialog.h>
-#include <UILib/WxHelpers.h>
 
 #include <wx/button.h>
 #include <wx/cursor.h>
@@ -60,6 +61,7 @@ MainFrame::MainFrame(
     : mMainApp(mainApp)
     , mReturnToGameFunctor(std::move(returnToGameFunctor))
     , mOpenGLManager()
+    , mShipNameNormalizer(new ShipNameNormalizer(resourceLocator))
     , mController()
     , mResourceLocator(resourceLocator)
     , mLocalizationManager(localizationManager)
@@ -67,10 +69,11 @@ MainFrame::MainFrame(
     , mShipTexturizer(shipTexturizer)
     , mWorkCanvasHScrollBar(nullptr)
     , mWorkCanvasVScrollBar(nullptr)
-    // State
+    // UI State
     , mIsMouseInWorkCanvas(false)
     , mIsMouseCapturedByWorkCanvas(false)
     , mIsShiftKeyDown(false)
+    // State
     , mWorkbenchState(materialDatabase)
 {
     Create(
@@ -128,7 +131,7 @@ MainFrame::MainFrame(
                 artProvider->SetColor(wxRIBBON_ART_PAGE_BACKGROUND_GRADIENT_COLOUR, backgroundColor);
                 artProvider->SetColor(wxRIBBON_ART_PAGE_BACKGROUND_TOP_COLOUR, backgroundColor);
                 artProvider->SetColor(wxRIBBON_ART_PAGE_BACKGROUND_TOP_GRADIENT_COLOUR, backgroundColor);
-                
+
                 artProvider->SetColor(wxRIBBON_ART_PAGE_HOVER_BACKGROUND_COLOUR, backgroundColor);
                 artProvider->SetColor(wxRIBBON_ART_PAGE_HOVER_BACKGROUND_GRADIENT_COLOUR, backgroundColor);
                 artProvider->SetColor(wxRIBBON_ART_PAGE_HOVER_BACKGROUND_TOP_COLOUR, backgroundColor);
@@ -270,7 +273,7 @@ MainFrame::MainFrame(
     {
         // Status bar
         {
-            mStatusBar = new StatusBar(mMainPanel, mResourceLocator);
+            mStatusBar = new StatusBar(mMainPanel, mWorkbenchState.GetDisplayUnitsSystem(), mResourceLocator);
 
             mainVSizer->Add(
                 mStatusBar,
@@ -344,10 +347,25 @@ MainFrame::MainFrame(
     //
 
     ReconciliateUIWithWorkbenchState();
+
+    //
+    // Create dialogs
+    //
+
+    mShipLoadDialog = std::make_unique<ShipLoadDialog>(
+        this,
+        mResourceLocator);
 }
 
-void MainFrame::OpenForNewShip()
+void MainFrame::OpenForNewShip(std::optional<UnitsSystem> displayUnitsSystem)
 {
+    // Set units system
+    if (displayUnitsSystem.has_value())
+    {
+        mWorkbenchState.SetDisplayUnitsSystem(*displayUnitsSystem);
+        ReconciliateUIWithDisplayUnitsSystem(*displayUnitsSystem);
+    }
+
     // Enqueue deferred action: New ship
     assert(!mInitialAction.has_value());
     mInitialAction.emplace(
@@ -360,8 +378,17 @@ void MainFrame::OpenForNewShip()
     Open();
 }
 
-void MainFrame::OpenForLoadShip(std::filesystem::path const & shipFilePath)
+void MainFrame::OpenForLoadShip(
+    std::filesystem::path const & shipFilePath,
+    std::optional<UnitsSystem> displayUnitsSystem)
 {
+    // Set units system
+    if (displayUnitsSystem.has_value())
+    {
+        mWorkbenchState.SetDisplayUnitsSystem(*displayUnitsSystem);
+        ReconciliateUIWithDisplayUnitsSystem(*displayUnitsSystem);
+    }
+
     // Enqueue deferred action: Load ship
     assert(!mInitialAction.has_value());
     mInitialAction.emplace(
@@ -370,7 +397,7 @@ void MainFrame::OpenForLoadShip(std::filesystem::path const & shipFilePath)
             if (!DoLoadShip(shipFilePath))
             {
                 // No luck loading ship...
-                // ...just create new ship
+                // ...just create a new ship
                 DoNewShip();
             }
         });
@@ -400,7 +427,12 @@ void MainFrame::OnShipSizeChanged(ShipSpaceSize const & shipSize)
     ReconciliateUIWithShipSize(shipSize);
 }
 
-void MainFrame::OnShipNameChanged(Model const & model)
+void MainFrame::OnShipScaleChanged(ShipSpaceToWorldSpaceCoordsRatio const & scale)
+{
+    ReconciliateUIWithShipScale(scale);
+}
+
+void MainFrame::OnShipNameChanged(IModelObservable const & model)
 {
     //
     // Ship filename workflow
@@ -409,7 +441,7 @@ void MainFrame::OnShipNameChanged(Model const & model)
     // - And the file exists,
     // - And its filename is different than the filename that comes from the new ship name,
     // - And this new filename does not exist:
-    // 
+    //
     // - Ask user if wants to rename file
     //
 
@@ -441,17 +473,27 @@ void MainFrame::OnShipNameChanged(Model const & model)
     // Reconciliate UI
     //
 
-    ReconciliateUIWithShipTitle(newName, model.GetIsDirty());
+    ReconciliateUIWithShipTitle(newName, model.IsDirty());
 }
 
-void MainFrame::OnLayerPresenceChanged(Model const & model)
+void MainFrame::OnLayerPresenceChanged(IModelObservable const & model)
 {
     ReconciliateUIWithLayerPresence(model);
 }
 
-void MainFrame::OnModelDirtyChanged(Model const & model)
+void MainFrame::OnModelDirtyChanged(IModelObservable const & model)
 {
     ReconciliateUIWithModelDirtiness(model);
+}
+
+void MainFrame::OnModelMacroPropertiesUpdated(ModelMacroProperties const & properties)
+{
+    ReconciliateUIWithModelMacroProperties(properties);
+}
+
+void MainFrame::OnElectricalLayerInstancedElementSetChanged(InstancedElectricalElementSet const & instancedElectricalElementSet)
+{
+    ReconciliateUIWithElectricalLayerInstancedElementSet(instancedElectricalElementSet);
 }
 
 void MainFrame::OnStructuralMaterialChanged(StructuralMaterial const * material, MaterialPlaneType plane)
@@ -509,6 +551,11 @@ void MainFrame::OnOtherVisualizationsOpacityChanged(float opacity)
     ReconciliateUIWithOtherVisualizationsOpacity(opacity);
 }
 
+void MainFrame::OnVisualWaterlineMarkersEnablementChanged(bool isEnabled)
+{
+    ReconciliateUIWithVisualWaterlineMarkersEnablement(isEnabled);
+}
+
 void MainFrame::OnVisualGridEnablementChanged(bool isEnabled)
 {
     ReconciliateUIWithVisualGridEnablement(isEnabled);
@@ -530,9 +577,14 @@ void MainFrame::OnToolCoordinatesChanged(std::optional<ShipSpaceCoordinates> coo
     mStatusBar->SetToolCoordinates(coordinates);
 }
 
-void MainFrame::OnSampledMaterialChanged(std::optional<std::string> materialName)
+void MainFrame::OnSampledInformationUpdated(std::optional<SampledInformation> sampledInformation)
 {
-    mStatusBar->SetSampledMaterial(materialName);
+    mStatusBar->SetSampledInformation(sampledInformation);
+}
+
+void MainFrame::OnMeasuredWorldLengthChanged(std::optional<int> length)
+{
+    mStatusBar->SetMeasuredWorldLength(length);
 }
 
 void MainFrame::OnError(wxString const & errorMessage) const
@@ -588,7 +640,7 @@ std::optional<DisplayLogicalCoordinates> MainFrame::GetMouseCoordinatesIfInWorkC
     // coordinates only if the work canvas would legitimately receive a mouse event
     //
 
-    DisplayLogicalCoordinates const mouseCoords = GetMouseCoordinates();    
+    DisplayLogicalCoordinates const mouseCoords = GetMouseCoordinates();
     if (IsLogicallyInWorkCanvas(mouseCoords))
     {
         return mouseCoords;
@@ -643,9 +695,9 @@ wxRibbonPanel * MainFrame::CreateMainFileRibbonPanel(wxRibbonPage * parent)
 
         panelGridSizer->Add(button);
 
-        AddAcceleratorKey(wxACCEL_CTRL, (int)'N', 
-            [this]() 
-            { 
+        AddAcceleratorKey(wxACCEL_CTRL, (int)'N',
+            [this]()
+            {
                 // With keys we have no insurance of a controller
                 if (mController)
                 {
@@ -669,9 +721,9 @@ wxRibbonPanel * MainFrame::CreateMainFileRibbonPanel(wxRibbonPage * parent)
 
         panelGridSizer->Add(button);
 
-        AddAcceleratorKey(wxACCEL_CTRL, (int)'O', 
-            [this]() 
-            { 
+        AddAcceleratorKey(wxACCEL_CTRL, (int)'O',
+            [this]()
+            {
                 // With keys we have no insurance of a controller
                 if (mController)
                 {
@@ -695,9 +747,9 @@ wxRibbonPanel * MainFrame::CreateMainFileRibbonPanel(wxRibbonPage * parent)
 
         panelGridSizer->Add(mSaveShipButton);
 
-        AddAcceleratorKey(wxACCEL_CTRL, (int)'S', 
-            [this]() 
-            { 
+        AddAcceleratorKey(wxACCEL_CTRL, (int)'S',
+            [this]()
+            {
                 // With keys we have no insurance of a controller
                 if (mController)
                 {
@@ -776,9 +828,9 @@ wxRibbonPanel * MainFrame::CreateMainFileRibbonPanel(wxRibbonPage * parent)
 
         panelGridSizer->Add(button);
 
-        AddAcceleratorKey(wxACCEL_ALT, (int)WXK_F4, 
-            [this]() 
-            { 
+        AddAcceleratorKey(wxACCEL_ALT, (int)WXK_F4,
+            [this]()
+            {
                 Quit();
             });
     }
@@ -821,9 +873,9 @@ wxRibbonPanel * MainFrame::CreateMainViewRibbonPanel(wxRibbonPage * parent)
 
         panelGridSizer->Add(mZoomInButton);
 
-        AddAcceleratorKey(wxACCEL_NORMAL, (int)'+', 
-            [this]() 
-            { 
+        AddAcceleratorKey(wxACCEL_NORMAL, (int)'+',
+            [this]()
+            {
                 // With keys we have no insurance of a controller
                 if (mController)
                 {
@@ -847,9 +899,9 @@ wxRibbonPanel * MainFrame::CreateMainViewRibbonPanel(wxRibbonPage * parent)
 
         panelGridSizer->Add(mZoomOutButton);
 
-        AddAcceleratorKey(wxACCEL_NORMAL, (int)'-', 
-            [this]() 
-            { 
+        AddAcceleratorKey(wxACCEL_NORMAL, (int)'-',
+            [this]()
+            {
                 // With keys we have no insurance of a controller
                 if (mController)
                 {
@@ -873,9 +925,9 @@ wxRibbonPanel * MainFrame::CreateMainViewRibbonPanel(wxRibbonPage * parent)
 
         panelGridSizer->Add(button);
 
-        AddAcceleratorKey(wxACCEL_NORMAL, (int)WXK_HOME, 
-            [this]() 
-            { 
+        AddAcceleratorKey(wxACCEL_NORMAL, (int)WXK_HOME,
+            [this]()
+            {
                 // With keys we have no insurance of a controller
                 if (mController)
                 {
@@ -1052,20 +1104,20 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
     {
         auto const clickHandler = [this, layer, sureQuestion]()
         {
+            if (mController->GetModelController().HasLayer(layer)
+                && mController->GetModelController().IsLayerDirty(layer))
+            {
+                if (!AskUserIfSure(sureQuestion))
+                {
+                    // Changed their mind
+                    return;
+                }
+            }
+
             switch (layer)
             {
                 case LayerType::Electrical:
                 {
-                    if (mController->HasModelLayer(LayerType::Electrical)
-                        && mController->IsModelDirty(LayerType::Electrical))
-                    {
-                        if (!AskUserIfSure(sureQuestion))
-                        {
-                            // Changed their mind
-                            return;
-                        }
-                    }
-
                     mController->NewElectricalLayer();
 
                     break;
@@ -1073,16 +1125,6 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
 
                 case LayerType::Ropes:
                 {
-                    if (mController->HasModelLayer(LayerType::Ropes)
-                        && mController->IsModelDirty(LayerType::Ropes))
-                    {
-                        if (!AskUserIfSure(sureQuestion))
-                        {
-                            // Changed their mind
-                            return;
-                        }
-                    }
-
                     mController->NewRopesLayer();
 
                     break;
@@ -1090,16 +1132,6 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
 
                 case LayerType::Structural:
                 {
-                    if (mController->HasModelLayer(LayerType::Structural)
-                        && mController->IsModelDirty(LayerType::Structural))
-                    {
-                        if (!AskUserIfSure(sureQuestion))
-                        {
-                            // Changed their mind
-                            return;
-                        }
-                    }
-
                     mController->NewStructuralLayer();
 
                     break;
@@ -1107,17 +1139,9 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
 
                 case LayerType::Texture:
                 {
-                    if (mController->HasModelLayer(LayerType::Texture)
-                        && mController->IsModelDirty(LayerType::Texture))
-                    {
-                        if (!AskUserIfSure(sureQuestion))
-                        {
-                            // Changed their mind
-                            return;
-                        }
-                    }
-
                     ImportTextureLayerFromImage();
+
+                    break;
                 }
             }
         };
@@ -1161,11 +1185,19 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
             wxHORIZONTAL,
             mResourceLocator.GetBitmapFilePath("open_layer_button"),
             _("Import"),
-            [this]()
+            [this, layer, sureQuestion]()
             {
-                // TODO
-                // TODO: also here ask user if sure when the layer is dirty
-                UnderConstructionDialog::Show(this, mResourceLocator);
+                if (mController->GetModelController().HasLayer(layer)
+                    && mController->GetModelController().IsLayerDirty(layer))
+                {
+                    if (!AskUserIfSure(sureQuestion))
+                    {
+                        // Changed their mind
+                        return;
+                    }
+                }
+
+                ImportLayerFromShip(layer);
             },
             _("Import this layer from another ship."));
 
@@ -1196,9 +1228,9 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
                     {
                         case LayerType::Electrical:
                         {
-                            assert(mController->HasModelLayer(LayerType::Electrical));
+                            assert(mController->GetModelController().HasLayer(LayerType::Electrical));
 
-                            if (mController->IsModelDirty(LayerType::Electrical))
+                            if (mController->GetModelController().IsLayerDirty(LayerType::Electrical))
                             {
                                 if (!AskUserIfSure(sureQuestion))
                                 {
@@ -1214,9 +1246,9 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
 
                         case LayerType::Ropes:
                         {
-                            assert(mController->HasModelLayer(LayerType::Ropes));
+                            assert(mController->GetModelController().HasLayer(LayerType::Ropes));
 
-                            if (mController->IsModelDirty(LayerType::Ropes))
+                            if (mController->GetModelController().IsLayerDirty(LayerType::Ropes))
                             {
                                 if (!AskUserIfSure(sureQuestion))
                                 {
@@ -1232,9 +1264,9 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
 
                         case LayerType::Texture:
                         {
-                            assert(mController->HasModelLayer(LayerType::Texture));
+                            assert(mController->GetModelController().HasLayer(LayerType::Texture));
 
-                            if (mController->IsModelDirty(LayerType::Texture))
+                            if (mController->GetModelController().IsLayerDirty(LayerType::Texture))
                             {
                                 if (!AskUserIfSure(sureQuestion))
                                 {
@@ -1286,11 +1318,27 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
                 wxHORIZONTAL,
                 mResourceLocator.GetBitmapFilePath("save_layer_button"),
                 _("Export"),
-                [this]()
+                [this, layer]()
                 {
-                    // TODO
-                    // TODO: also here ask user if sure when the layer is dirty
-                    UnderConstructionDialog::Show(this, mResourceLocator);
+                    ImageSaveDialog dlg(this);
+                    auto const ret = dlg.ShowModal();
+                    if (ret == wxID_OK)
+                    {
+                        if (layer == LayerType::Structural)
+                        {
+                            ShipDeSerializer::SaveStructuralLayerImage(
+                                mController->GetModelController().GetStructuralLayer(),
+                                dlg.GetChosenFilepath());
+                        }
+                        else
+                        {
+                            assert(layer == LayerType::Texture);
+
+                            ImageFileTools::SavePngImage(
+                                mController->GetModelController().GetTextureLayer().Buffer,
+                                dlg.GetChosenFilepath());
+                        }
+                    }
                 },
                 _("Export this layer to a file."));
 
@@ -1309,6 +1357,30 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
         }
 
         mLayerExportButtons[static_cast<size_t>(layer)] = exportButton;
+    }
+
+    iColumn += 2;
+
+    // ElectricalPanel
+    if (layer == LayerType::Electrical)
+    {
+        mElectricalPanelEditButton = new RibbonToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetBitmapFilePath("electrical_panel_edit_medium"),
+            _("Edit Panel"),
+            [this]()
+            {
+                OnElectricalPanelEdit();
+            },
+            _("Edit the electrical panel that is visualized in the game when this ship is loaded."));
+
+        panelGridSizer->Add(
+            mElectricalPanelEditButton,
+            wxGBPosition(0, iColumn++),
+            wxGBSpan(2, 1),
+            0,
+            0);
     }
 
     // Wrap in a sizer just for margins
@@ -1362,13 +1434,13 @@ wxRibbonPanel * MainFrame::CreateEditUndoRibbonPanel(wxRibbonPage * parent)
 
         panelGridSizer->Add(mUndoButton);
 
-        AddAcceleratorKey(wxACCEL_CTRL, (int)'Z', 
-            [this]() 
-            { 
+        AddAcceleratorKey(wxACCEL_CTRL, (int)'Z',
+            [this]()
+            {
                 // With keys we have no insurance of either a controller or a stack
                 if (mController)
                 {
-                    mController->TryUndoLast(); 
+                    mController->TryUndoLast();
                 }
             });
     }
@@ -1409,6 +1481,40 @@ wxRibbonPanel * MainFrame::CreateEditShipRibbonPanel(wxRibbonPage * parent)
                 mController->AutoTrim();
             },
             _("Remove empty space around the ship."));
+
+        panelGridSizer->Add(button);
+    }
+
+    // Rotate 90 CW
+    {
+        auto button = new RibbonToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetIconFilePath("rotate_90_cw_medium"),
+            _("90° CW"),
+            [this]()
+            {
+                assert(mController);
+                mController->Rotate90(RotationDirectionType::Clockwise);
+            },
+            _("Rotate the ship 90° clockwise."));
+
+        panelGridSizer->Add(button);
+    }
+
+    // Rotate 90 CCW
+    {
+        auto button = new RibbonToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetIconFilePath("rotate_90_ccw_medium"),
+            _("90° CCW"),
+            [this]()
+            {
+                assert(mController);
+                mController->Rotate90(RotationDirectionType::CounterClockwise);
+            },
+            _("Rotate the ship 90° anti-clockwise."));
 
         panelGridSizer->Add(button);
     }
@@ -1456,7 +1562,7 @@ wxRibbonPanel * MainFrame::CreateEditShipRibbonPanel(wxRibbonPage * parent)
             _("Size"),
             [this]()
             {
-                OpenShipCanvasResize();
+                OnShipCanvasResize();
             },
             _("Resize the ship."));
 
@@ -1472,7 +1578,7 @@ wxRibbonPanel * MainFrame::CreateEditShipRibbonPanel(wxRibbonPage * parent)
             _("Properties"),
             [this]()
             {
-                OpenShipProperties();
+                OnShipPropertiesEdit();
             },
             _("Edit the ship properties."));
 
@@ -1501,6 +1607,37 @@ wxRibbonPanel * MainFrame::CreateEditAnalysisRibbonPanel(wxRibbonPage * parent)
         wxRIBBON_PANEL_NO_AUTO_MINIMISE);
 
     wxGridBagSizer * panelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
+
+    // Waterline analysis
+    {
+        auto button = new RibbonToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetIconFilePath("waterline_analysis_icon_medium"),
+            _("Waterline"),
+            [this]()
+            {
+                auto const ribbonScreenRect = mMainRibbonBar->GetScreenRect();
+                wxPoint const centerScreen = wxPoint(
+                    ribbonScreenRect.x + this->GetScreenRect().width / 2,
+                    ribbonScreenRect.y + ribbonScreenRect.height / 2);
+
+                WaterlineAnalyzerDialog dlg(
+                    this,
+                    centerScreen,
+                    mController->GetModelObservable(),
+                    mController->GetView(),
+                    *this,
+                    mWorkbenchState.IsWaterlineMarkersEnabled(),
+                    mWorkbenchState.GetDisplayUnitsSystem(),
+                    mResourceLocator);
+
+                dlg.ShowModal();
+            },
+            _("Forecast where the ship's waterline will be once the ship is in the water."));
+
+        panelGridSizer->Add(button);
+    }
 
     // Validation
     {
@@ -1648,6 +1785,60 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
 
             mToolSettingsPanels.emplace_back(
                 ToolType::StructuralEraser,
+                dynamicPanel);
+        }
+    }
+
+    // Electrical eraser
+    {
+        wxPanel * dynamicPanel = new wxPanel(ribbonPanel);
+        wxGridBagSizer * dynamicPanelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
+
+        // Label
+        {
+            auto * staticText = new wxStaticText(dynamicPanel, wxID_ANY, _("Eraser Size:"));
+            staticText->SetForegroundColour(labelColor);
+
+            dynamicPanelGridSizer->Add(
+                staticText,
+                wxGBPosition(0, 0),
+                wxGBSpan(1, 1),
+                wxALIGN_CENTER_VERTICAL);
+        }
+
+        // Edit spin box
+        {
+            EditSpinBox<std::uint32_t> * editSpinBox = new EditSpinBox<std::uint32_t>(
+                dynamicPanel,
+                40,
+                1,
+                MaxPencilSize,
+                mWorkbenchState.GetElectricalEraserToolSize(),
+                _("The size of the eraser tool."),
+                [this](std::uint32_t value)
+                {
+                    mWorkbenchState.SetElectricalEraserToolSize(value);
+                });
+
+            dynamicPanelGridSizer->Add(
+                editSpinBox,
+                wxGBPosition(0, 1),
+                wxGBSpan(1, 1),
+                wxALIGN_CENTER_VERTICAL);
+        }
+
+        dynamicPanel->SetSizerAndFit(dynamicPanelGridSizer);
+
+        // Insert in dynamic panel
+        {
+            mToolSettingsPanelsSizer->Add(
+                dynamicPanel,
+                0,
+                wxALIGN_CENTER_VERTICAL,
+                0);
+
+            mToolSettingsPanels.emplace_back(
+                ToolType::ElectricalEraser,
                 dynamicPanel);
         }
     }
@@ -1946,7 +2137,7 @@ wxPanel * MainFrame::CreateVisualizationModeHeaderPanel(wxWindow * parent)
             modePanel,
             0,
             wxALIGN_CENTER_HORIZONTAL,
-            0);        
+            0);
 
         mVisualizationModeHeaderPanels[static_cast<size_t>(VisualizationType::StructuralLayer)] = modePanel;
     }
@@ -2484,6 +2675,30 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
 
         mVisualizationModePanelsSizer->AddStretchSpacer(1);
 
+        // View waterline markers button
+        {
+            auto bitmap = WxHelpers::LoadBitmap("view_waterline_markers_button", mResourceLocator);
+            mViewWaterlineMarkersButton = new wxBitmapToggleButton(panel, wxID_ANY, bitmap, wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
+            mViewWaterlineMarkersButton->SetToolTip(_("Enable/disable visualization of the ship's center of mass."));
+            mViewWaterlineMarkersButton->Bind(
+                wxEVT_TOGGLEBUTTON,
+                [this](wxCommandEvent & event)
+                {
+                    assert(mController);
+                    mController->EnableWaterlineMarkers(event.IsChecked());
+
+                    DeviateFocus();
+                });
+
+            mVisualizationModePanelsSizer->Add(
+                mViewWaterlineMarkersButton,
+                0, // Retain vertical width
+                wxALIGN_CENTER_HORIZONTAL, // Do not expand vertically
+                0);
+        }
+
+        mVisualizationModePanelsSizer->AddSpacer(ButtonMargin);
+
         // View grid button
         {
             auto bitmap = WxHelpers::LoadBitmap("view_grid_button", mResourceLocator);
@@ -2521,7 +2736,7 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
             wxEXPAND, // Expand vertically
             0);
     }
-    
+
     panel->SetSizerAndFit(rootHSizer);
 
     return panel;
@@ -2642,6 +2857,22 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                 toolsSizer->Add(
                     button,
                     wxGBPosition(2, 0),
+                    wxGBSpan(1, 1),
+                    0,
+                    0);
+            }
+
+            // MeasuringTape
+            {
+                auto button = makeToolButton(
+                    ToolType::StructuralMeasuringTapeTool,
+                    structuralToolbarPanel,
+                    "measuring_tape_icon",
+                    _("Measure lengths."));
+
+                toolsSizer->Add(
+                    button,
+                    wxGBPosition(2, 1),
                     wxGBSpan(1, 1),
                     0,
                     0);
@@ -3433,6 +3664,9 @@ void MainFrame::OnWorkCanvasMouseEnteredWindow(wxMouseEvent & /*event*/)
     assert(!mIsMouseInWorkCanvas);
     mIsMouseInWorkCanvas = true;
 
+    // Set focus as well, so for example SHIFT presses start getting caught
+    mWorkCanvas->SetFocus();
+
     if (!mIsMouseCapturedByWorkCanvas)
     {
         if (mController)
@@ -3457,7 +3691,7 @@ void MainFrame::OnWorkCanvasKeyDown(wxKeyEvent & event)
             }
         }
     }
-    
+
     event.Skip();
 }
 
@@ -3490,7 +3724,7 @@ void MainFrame::OnClose(wxCloseEvent & event)
 
     if (mController)
     {
-        if (event.CanVeto() && mController->IsModelDirty())
+        if (event.CanVeto() && mController->GetModelController().IsDirty())
         {
             // Ask user if they really want
             int result = AskUserIfSave();
@@ -3558,7 +3792,7 @@ void MainFrame::Open()
 
 void MainFrame::NewShip()
 {
-    if (mController->IsModelDirty())
+    if (mController->GetModelController().IsDirty())
     {
         // Ask user if they really want
         int result = AskUserIfSave();
@@ -3583,7 +3817,7 @@ void MainFrame::NewShip()
 
 void MainFrame::LoadShip()
 {
-    if (mController->IsModelDirty())
+    if (mController->GetModelController().IsDirty())
     {
         // Ask user if they really want
         int result = AskUserIfSave();
@@ -3604,29 +3838,15 @@ void MainFrame::LoadShip()
     }
 
     // Open ship load dialog
-
-    if (!mShipLoadDialog)
-    {
-        mShipLoadDialog = std::make_unique<ShipLoadDialog>(
-            this,
-            mResourceLocator);
-    }
-
-    auto const res = mShipLoadDialog->ShowModal(mShipLoadDirectories);
-
+    auto const res = mShipLoadDialog->ShowModal(mWorkbenchState.GetShipLoadDirectories());
     if (res == wxID_OK)
     {
         // Load ship
         auto const shipFilePath = mShipLoadDialog->GetChosenShipFilepath();
         DoLoadShip(shipFilePath); // Ignore eventual failure
 
-        // Update directories
-        auto const shipLoadDirectory = shipFilePath.parent_path();
-        if (std::find(mShipLoadDirectories.cbegin(), mShipLoadDirectories.cend(), shipLoadDirectory) == mShipLoadDirectories.cend())
-        {
-            // Add in front
-            mShipLoadDirectories.insert(mShipLoadDirectories.cbegin(), shipLoadDirectory);
-        }
+        // Store directory in preferences
+        mWorkbenchState.AddShipLoadDirectory(shipFilePath.parent_path());
     }
 }
 
@@ -3654,7 +3874,7 @@ void MainFrame::SaveAndSwitchBackToGame()
 
 void MainFrame::QuitAndSwitchBackToGame()
 {
-    if (mController->IsModelDirty())
+    if (mController->GetModelController().IsDirty())
     {
         // Ask user if they really want
         int result = AskUserIfSave();
@@ -3696,6 +3916,103 @@ void MainFrame::SwitchBackToGame(std::optional<std::filesystem::path> shipFilePa
     mReturnToGameFunctor(std::move(shipFilePath));
 }
 
+void MainFrame::ImportLayerFromShip(LayerType layer)
+{
+    // Open ship load dialog
+    auto const res = mShipLoadDialog->ShowModal(mWorkbenchState.GetShipLoadDirectories());
+    if (res == wxID_OK)
+    {
+        auto const shipFilePath = mShipLoadDialog->GetChosenShipFilepath();
+
+        std::optional<ShipDefinition> shipDefinition = DoLoadShipDefinitionAndCheckPassword(shipFilePath);
+        if (!shipDefinition.has_value())
+        {
+            // No luck
+            return;
+        }
+
+        switch (layer)
+        {
+            case LayerType::Electrical:
+            {
+                if (!shipDefinition->ElectricalLayer)
+                {
+                    ShowError(_("The selected ship does not have an electrical layer"));
+                    return;
+                }
+
+                // Reframe loaded layer to fit our model's size
+                ElectricalLayerData newElectricalLayer = shipDefinition->ElectricalLayer->MakeReframed(
+                    mController->GetModelController().GetShipSize(),
+                    ShipSpaceCoordinates(0, 0),
+                    ElectricalElement(nullptr, NoneElectricalElementInstanceIndex));
+
+                mController->SetElectricalLayer(
+                    _("Import Electrical Layer"),
+                    std::move(newElectricalLayer));
+
+                break;
+            }
+
+            case LayerType::Ropes:
+            {
+                if (!shipDefinition->RopesLayer)
+                {
+                    ShowError(_("The selected ship does not have a ropes layer"));
+                    return;
+                }
+
+                // Reframe loaded layer to fit our model's size
+                RopesLayerData newRopesLayer = shipDefinition->RopesLayer->MakeReframed(
+                    mController->GetModelController().GetShipSize(),
+                    ShipSpaceCoordinates(0, 0));
+
+                mController->SetRopesLayer(
+                    _("Import Ropes Layer"),
+                    std::move(newRopesLayer));
+
+                break;
+            }
+
+            case LayerType::Structural:
+            {
+                // Reframe loaded layer to fit our model's size
+                StructuralLayerData newStructuralLayer = shipDefinition->StructuralLayer.MakeReframed(
+                    mController->GetModelController().GetShipSize(),
+                    ShipSpaceCoordinates(0, 0),
+                    StructuralElement(nullptr));
+
+                mController->SetStructuralLayer(
+                    _("Import Structural Layer"),
+                    std::move(newStructuralLayer));
+
+                break;
+            }
+
+            case LayerType::Texture:
+            {
+                if (!shipDefinition->TextureLayer)
+                {
+                    ShowError(_("The selected ship does not have a texture layer"));
+                    return;
+                }
+
+                // No need to resize, as texture image doesn't have to match;
+                // we'll leave it to the user, though, to ensure the *ratio* matches
+                mController->SetTextureLayer(
+                    _("Import Texture Layer"),
+                    std::move(*(shipDefinition->TextureLayer.release())),
+                    shipDefinition->Metadata.ArtCredits); // Import also art credits
+
+                break;
+            }
+        }
+
+        // Store directory in preferences
+        mWorkbenchState.AddShipLoadDirectory(shipFilePath.parent_path());
+    }
+}
+
 void MainFrame::ImportTextureLayerFromImage()
 {
     ImageLoadDialog dlg(this);
@@ -3708,16 +4025,17 @@ void MainFrame::ImportTextureLayerFromImage()
 
             if (image.Size.width == 0 || image.Size.height == 0)
             {
-                throw GameException("The specified texture image is empty, and thus it may not be used for this ship.");
+                ShowError(_("The specified texture image is empty, and thus it may not be used for this ship."));
+                return;
             }
 
             // Calculate target size == size of texture when maintaining same aspect ratio as ship's,
             // preferring to not cut
-            ShipSpaceSize const & shipSize = mController->GetShipSize();
+            ShipSpaceSize const & shipSize = mController->GetModelController().GetShipSize();
             IntegralRectSize targetSize = (image.Size.width * shipSize.height >= image.Size.height * shipSize.width)
                 ? IntegralRectSize(image.Size.width, image.Size.width * shipSize.height / shipSize.width) // Keeping this width would require greater height (no clipping), and thus we want to keep this width
                 : IntegralRectSize(image.Size.height * shipSize.width / shipSize.height, image.Size.height); // Keeping this width would require smaller height (hence clipping), and thus we want to keep the height instead
-            
+
             // Check if the target size does not match the current texture size
             if (targetSize.width != image.Size.width
                 || targetSize.height != image.Size.height)
@@ -3751,6 +4069,7 @@ void MainFrame::ImportTextureLayerFromImage()
 
             // Set texture
             mController->SetTextureLayer(
+                _("Import Texture Layer"),
                 TextureLayerData(std::move(image)),
                 std::nullopt);
         }
@@ -3761,7 +4080,7 @@ void MainFrame::ImportTextureLayerFromImage()
     }
 }
 
-void MainFrame::OpenShipCanvasResize()
+void MainFrame::OnShipCanvasResize()
 {
     if (!mResizeDialog)
     {
@@ -3772,7 +4091,8 @@ void MainFrame::OpenShipCanvasResize()
     auto const shipPreviewImage = mController->MakePreview();
 
     // Start with target size == current ship size
-    IntegralRectSize const initialTargetSize(mController->GetShipSize().width, mController->GetShipSize().height);
+    auto const shipSize = mController->GetModelController().GetShipSize();
+    IntegralRectSize const initialTargetSize(shipSize.width, shipSize.height);
 
     if (!mResizeDialog->ShowModalForResize(*shipPreviewImage, initialTargetSize))
     {
@@ -3792,11 +4112,11 @@ void MainFrame::OpenShipCanvasResize()
         ShipSpaceCoordinates(originOffset.x, originOffset.y));
 }
 
-void MainFrame::OpenShipProperties()
+void MainFrame::OnShipPropertiesEdit()
 {
     if (!mShipPropertiesEditDialog)
     {
-        mShipPropertiesEditDialog = std::make_unique<ShipPropertiesEditDialog>(this, mResourceLocator);
+        mShipPropertiesEditDialog = std::make_unique<ShipPropertiesEditDialog>(this, *mShipNameNormalizer, mResourceLocator);
     }
 
     // Make ship preview
@@ -3804,11 +4124,24 @@ void MainFrame::OpenShipProperties()
 
     mShipPropertiesEditDialog->ShowModal(
         *mController,
-        mController->GetShipMetadata(),
-        mController->GetShipPhysicsData(),
-        mController->GetShipAutoTexturizationSettings(),
+        mController->GetModelController().GetShipMetadata(),
+        mController->GetModelController().GetShipPhysicsData(),
+        mController->GetModelController().GetShipAutoTexturizationSettings(),
         *shipPreviewImage,
-        mController->HasModelLayer(LayerType::Texture));
+        mController->GetModelController().HasLayer(LayerType::Texture));
+}
+
+void MainFrame::OnElectricalPanelEdit()
+{
+    if (!mElectricalPanelEditDialog)
+    {
+        mElectricalPanelEditDialog = std::make_unique<ElectricalPanelEditDialog>(this, mResourceLocator);
+    }
+
+    mElectricalPanelEditDialog->ShowModal(
+        *mController,
+        mController->GetModelController().GetInstancedElectricalElementSet(),
+        mController->GetModelController().GetElectricalPanelMetadata());
 }
 
 void MainFrame::ValidateShip()
@@ -3871,7 +4204,7 @@ bool MainFrame::AskUserIfSure(wxString caption)
 
 int MainFrame::AskUserIfSave()
 {
-    int result = wxMessageBox(_("Do you want to save your changes before continuing?"), ApplicationName, 
+    int result = wxMessageBox(_("Do you want to save your changes before continuing?"), ApplicationName,
         wxICON_EXCLAMATION | wxYES_NO | wxCANCEL | wxCENTRE);
     return result;
 }
@@ -3883,21 +4216,22 @@ bool MainFrame::AskUserIfRename(std::string const & newFilename)
     return (result == wxYES);
 }
 
-void MainFrame::ShowError(wxString const & message)
+void MainFrame::ShowError(wxString const & message) const
 {
     wxMessageBox(message, _("Maritime Disaster"), wxICON_ERROR);
 }
 
 void MainFrame::DoNewShip()
 {
-    // Make name
-    std::string const shipName = "MyShip-" + Utils::MakeNowDateAndTimeString();
-
     // Dispose of current controller - including its OpenGL machinery
     mController.reset();
 
     // Reset current ship filename
     mCurrentShipFilePath.reset();
+
+    // Ask user for ship name
+    NewShipNameDialog dlg(this, *mShipNameNormalizer, mResourceLocator);
+    std::string const shipName = dlg.AskName();
 
     // Create new controller with empty ship
     mController = Controller::CreateNew(
@@ -3915,29 +4249,9 @@ bool MainFrame::DoLoadShip(std::filesystem::path const & shipFilePath)
     // Load definition
     //
 
-    std::optional<ShipDefinition> shipDefinition;
-    try
-    {
-        shipDefinition.emplace(ShipDeSerializer::LoadShip(shipFilePath, mMaterialDatabase));
-    }
-    catch (UserGameException const & exc)
-    {
-        ShowError(mLocalizationManager.MakeErrorMessage(exc));
-        return false;
-    }
-    catch (std::runtime_error const & exc)
-    {
-        ShowError(exc.what());
-        return false;
-    }
+    std::optional<ShipDefinition> shipDefinition = DoLoadShipDefinitionAndCheckPassword(shipFilePath);
 
-    assert(shipDefinition.has_value());
-
-    //
-    // Check password
-    //
-
-    if (!AskPasswordDialog::CheckPasswordProtectedEdit(*shipDefinition, this, mResourceLocator))
+    if (!shipDefinition.has_value())
     {
         return false;
     }
@@ -3977,6 +4291,42 @@ bool MainFrame::DoLoadShip(std::filesystem::path const & shipFilePath)
     return true;
 }
 
+std::optional<ShipDefinition> MainFrame::DoLoadShipDefinitionAndCheckPassword(std::filesystem::path const & shipFilePath)
+{
+    //
+    // Load definition
+    //
+
+    std::optional<ShipDefinition> shipDefinition;
+    try
+    {
+        shipDefinition.emplace(ShipDeSerializer::LoadShip(shipFilePath, mMaterialDatabase));
+    }
+    catch (UserGameException const & exc)
+    {
+        ShowError(mLocalizationManager.MakeErrorMessage(exc));
+        return std::nullopt;
+    }
+    catch (std::runtime_error const & exc)
+    {
+        ShowError(exc.what());
+        return std::nullopt;
+    }
+
+    assert(shipDefinition.has_value());
+
+    //
+    // Check password
+    //
+
+    if (!AskPasswordDialog::CheckPasswordProtectedEdit(*shipDefinition, this, mResourceLocator))
+    {
+        return std::nullopt;
+    }
+
+    return shipDefinition;
+}
+
 bool MainFrame::DoSaveShipOrSaveShipAsWithValidation()
 {
     if (!mCurrentShipFilePath.has_value())
@@ -4001,7 +4351,7 @@ bool MainFrame::DoSaveShipAsWithValidation()
         }
 
         auto const res = mShipSaveDialog->ShowModal(
-            Utils::MakeFilenameSafeString(mController->GetShipMetadata().ShipName),
+            Utils::MakeFilenameSafeString(mController->GetModelController().GetShipMetadata().ShipName),
             ShipSaveDialog::GoalType::FullShip);
 
         if (res == wxID_OK)
@@ -4220,7 +4570,10 @@ void MainFrame::ReconciliateUIWithWorkbenchState()
 
     ReconciliateUIWithOtherVisualizationsOpacity(mWorkbenchState.GetOtherVisualizationsOpacity());
 
+    ReconciliateUIWithVisualWaterlineMarkersEnablement(mWorkbenchState.IsWaterlineMarkersEnabled());
     ReconciliateUIWithVisualGridEnablement(mWorkbenchState.IsGridEnabled());
+
+    ReconciliateUIWithDisplayUnitsSystem(mWorkbenchState.GetDisplayUnitsSystem());
 }
 
 void MainFrame::ReconciliateUIWithViewModel(ViewModel const & viewModel)
@@ -4241,12 +4594,17 @@ void MainFrame::ReconciliateUIWithShipSize(ShipSpaceSize const & shipSize)
     mStatusBar->SetCanvasSize(shipSize);
 }
 
+void MainFrame::ReconciliateUIWithShipScale(ShipSpaceToWorldSpaceCoordsRatio const & scale)
+{
+    mStatusBar->SetShipScale(scale);
+}
+
 void MainFrame::ReconciliateUIWithShipTitle(std::string const & shipName, bool isShipDirty)
 {
     SetFrameTitle(shipName, isShipDirty);
 }
 
-void MainFrame::ReconciliateUIWithLayerPresence(Model const & model)
+void MainFrame::ReconciliateUIWithLayerPresence(IModelObservable const & model)
 {
     //
     // Rules
@@ -4291,22 +4649,37 @@ void MainFrame::ReconciliateUIWithLayerPresence(Model const & model)
     mVisualizationSelectButtons[static_cast<size_t>(mWorkbenchState.GetPrimaryVisualization())]->SetFocus(); // Prevent other random buttons from getting focus
 }
 
-void MainFrame::ReconciliateUIWithModelDirtiness(Model const & model)
+void MainFrame::ReconciliateUIWithModelDirtiness(IModelObservable const & model)
 {
-    bool const isDirty = model.GetIsDirty();
+    bool const isDirty = model.IsDirty();
 
     if (mSaveShipButton->IsEnabled() != isDirty)
     {
         mSaveShipButton->Enable(isDirty);
     }
 
-    if (mSaveShipAndGoBackButton != nullptr
-        && mSaveShipAndGoBackButton->IsEnabled() != isDirty)
-    {
-        mSaveShipAndGoBackButton->Enable(isDirty);
-    }
+    // 1.17.2: leving button always enabled
+    ////if (mSaveShipAndGoBackButton != nullptr
+    ////    && mSaveShipAndGoBackButton->IsEnabled() != isDirty)
+    ////{
+    ////    mSaveShipAndGoBackButton->Enable(isDirty);
+    ////}
 
     SetFrameTitle(model.GetShipMetadata().ShipName, isDirty);
+}
+
+void MainFrame::ReconciliateUIWithElectricalLayerInstancedElementSet(InstancedElectricalElementSet const & instancedElectricalElementSet)
+{
+    bool const newIsButtonEnabled = !instancedElectricalElementSet.GetElements().empty();
+    if (mElectricalPanelEditButton->IsEnabled() != newIsButtonEnabled)
+    {
+        mElectricalPanelEditButton->Enable(newIsButtonEnabled);
+    }
+}
+
+void MainFrame::ReconciliateUIWithModelMacroProperties(ModelMacroProperties const & properties)
+{
+    mStatusBar->SetShipMass(properties.TotalMass);
 }
 
 void MainFrame::ReconciliateUIWithStructuralMaterial(StructuralMaterial const * material, MaterialPlaneType plane)
@@ -4489,6 +4862,9 @@ void MainFrame::ReconciliateUIWithSelectedTool(std::optional<ToolType> tool)
         // Do not re-realize main ribbon bar, or else the panel becomes tiny
         mToolSettingsPanelsSizer->Layout();
     }
+
+    // Tell status bar
+    mStatusBar->SetCurrentToolType(tool);
 }
 
 void MainFrame::ReconciliateUIWithPrimaryVisualizationSelection(VisualizationType primaryVisualization)
@@ -4601,6 +4977,14 @@ void MainFrame::ReconciliateUIWithOtherVisualizationsOpacity(float opacity)
     }
 }
 
+void MainFrame::ReconciliateUIWithVisualWaterlineMarkersEnablement(bool isEnabled)
+{
+    if (mViewWaterlineMarkersButton->GetValue() != isEnabled)
+    {
+        mViewWaterlineMarkersButton->SetValue(isEnabled);
+    }
+}
+
 void MainFrame::ReconciliateUIWithVisualGridEnablement(bool isEnabled)
 {
     if (mViewGridButton->GetValue() != isEnabled)
@@ -4656,6 +5040,11 @@ void MainFrame::ReconciliateUIWithUndoStackState(UndoStack & undoStack)
 
     // Scroll to bottom
     mUndoStackPanel->Scroll(wxDefaultCoord, mUndoStackPanel->GetScrollRange(wxVERTICAL));
+}
+
+void MainFrame::ReconciliateUIWithDisplayUnitsSystem(UnitsSystem displayUnitsSystem)
+{
+    mStatusBar->SetDisplayUnitsSystem(displayUnitsSystem);
 }
 
 }
