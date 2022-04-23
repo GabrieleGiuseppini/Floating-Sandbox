@@ -888,8 +888,7 @@
 			= Full spec:
 				= Orchestrated by ViewManager, member of GameController
 					- Is given (externally-owned) references to RenderContext& and NotificationLayer&, managing all communication to these wrt view params
-					- Owns view parameter smoothers
-						+ Parameter smoothers: simplify by simply using convergence algo, coeff between 0.05 and 0.1
+					- Owns view parameter smoothers						
 					- GameController forwards view parameter changes to it
 						- And ViewManager orchestrates talk with its own smoothers
 				- Given resulting AABBs by GameController at own Update(), called after World::Update
@@ -899,6 +898,15 @@
 						- Can't do it itself via own NofificationLayer?
 				- When user changes view params, we add offset to cumulative offset, which is then added to final result of auto-focus
 					- So if user e.g. zooms out, the whole auto-focus is zoomed out
+		= Impl:
+			+ Phase 1: ViewManager extraction
+				+ Parameter smoothers: simplify by simply using convergence algo, coeff between 0.05 and 0.1
+			- Phase 2: 
+
+			- TODO:
+				- Take care of initial auto-zoom
+
+		- TODOOLD
 		- Algo:
 			- Option 1:
 				- "Optimal" AABB is union of all AABBs

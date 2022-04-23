@@ -60,6 +60,8 @@ set  (GAME_SOURCES
 	ShipStrengthRandomizer.h
 	ShipTexturizer.cpp
 	ShipTexturizer.h
+	ViewManager.cpp
+	ViewManager.h
 	VisibleWorld.h)
 
 set  (PHYSICS_SOURCES

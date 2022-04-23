@@ -95,11 +95,10 @@ GameController::GameController(
         mGameParameters.DoDayLightCycle,
         mRenderContext->GetDisplayUnitsSystem(),
         mGameEventDispatcher)
+    , mViewManager(*mRenderContext)
     , mTaskThreadPool(std::make_shared<TaskThreadPool>())
     // Smoothing
     , mFloatParameterSmoothers()
-    , mZoomParameterSmoother()
-    , mCameraWorldPositionParameterSmoother()
     // Stats
     , mStatsOriginTimestampReal(std::chrono::steady_clock::time_point::min())
     , mStatsLastTimestampReal(std::chrono::steady_clock::time_point::min())
@@ -224,40 +223,6 @@ GameController::GameController(
             this->mGameParameters.FishSizeMultiplier = value;
         },
         GenericParameterConvergenceFactor);
-
-    // ---------------------------------
-
-    float constexpr ControlParameterConvergenceFactor = 0.05f;
-
-    mZoomParameterSmoother = std::make_unique<ParameterSmoother<float>>(
-        [this]() -> float const &
-        {
-            return this->mRenderContext->GetZoom();
-        },
-        [this](float const & value) -> float const &
-        {
-            return this->mRenderContext->SetZoom(value);
-        },
-        [this](float const & value)
-        {
-            return this->mRenderContext->ClampZoom(value);
-        },
-        ControlParameterConvergenceFactor);
-
-    mCameraWorldPositionParameterSmoother = std::make_unique<ParameterSmoother<vec2f>>(
-        [this]() -> vec2f const &
-        {
-            return this->mRenderContext->GetCameraWorldPosition();
-        },
-        [this](vec2f const & value) -> vec2f const &
-        {
-            return this->mRenderContext->SetCameraWorldPosition(value);
-        },
-        [this](vec2f const & value)
-        {
-            return this->mRenderContext->ClampCameraWorldPosition(value);
-        },
-        ControlParameterConvergenceFactor);
 
     //
     // Calibrate game
@@ -432,13 +397,10 @@ void GameController::RunGameIteration()
 
         auto const netStartTime = GameChronometer::now();
 
-        // Smooth render controls
+        // Update view manager
         // Note: some Upload()'s need to use ViewModel values, which have then to match the
         // ViewModel values used by the subsequent render
-        {
-            mZoomParameterSmoother->Update();
-            mCameraWorldPositionParameterSmoother->Update();
-        }
+        mViewManager.Update();
 
         //
         // Upload world
@@ -1302,63 +1264,41 @@ void GameController::SetCanvasSize(DisplayLogicalSize const & canvasSize)
     // Tell RenderContext
     mRenderContext->SetCanvasLogicalSize(canvasSize);
 
-    // Pickup eventual changes to view model properties
-    mZoomParameterSmoother->SetValueImmediate(mRenderContext->GetZoom());
-    mCameraWorldPositionParameterSmoother->SetValueImmediate(mRenderContext->GetCameraWorldPosition());
+    // Tell view manager
+    mViewManager.OnViewModelUpdated();
 }
 
 void GameController::Pan(DisplayLogicalSize const & screenOffset)
 {
-    vec2f const worldOffset = mRenderContext->ScreenOffsetToWorldOffset(screenOffset);
-
-    vec2f const newTargetCameraWorldPosition =
-        mCameraWorldPositionParameterSmoother->GetValue()
-        + worldOffset;
-
-    mCameraWorldPositionParameterSmoother->SetValue(newTargetCameraWorldPosition);
+    mViewManager.Pan(mRenderContext->ScreenOffsetToWorldOffset(screenOffset));
 }
 
 void GameController::PanImmediate(DisplayLogicalSize const & screenOffset)
 {
-    vec2f const worldOffset = mRenderContext->ScreenOffsetToWorldOffset(screenOffset);
-
-    vec2f const newTargetCameraWorldPosition =
-        mCameraWorldPositionParameterSmoother->GetValue()
-        + worldOffset;
-
-    mCameraWorldPositionParameterSmoother->SetValueImmediate(newTargetCameraWorldPosition);
+    mViewManager.PanImmediate(mRenderContext->ScreenOffsetToWorldOffset(screenOffset));
 }
 
 void GameController::PanToWorldEnd(int side)
 {
-    vec2f const newTargetCameraWorldPosition = vec2f(
+    mViewManager.PanToWorldX(
         side == 0
-            ? -GameParameters::HalfMaxWorldWidth
-            : GameParameters::HalfMaxWorldWidth,
-        mCameraWorldPositionParameterSmoother->GetValue().y);
-
-    mCameraWorldPositionParameterSmoother->SetValueImmediate(newTargetCameraWorldPosition);
+        ? -GameParameters::HalfMaxWorldWidth
+        : GameParameters::HalfMaxWorldWidth);
 }
 
 void GameController::ResetPan()
 {
-    vec2f const newTargetCameraWorldPosition = vec2f(0, 0);
-
-    mCameraWorldPositionParameterSmoother->SetValueImmediate(newTargetCameraWorldPosition);
+    mViewManager.ResetPan();
 }
 
 void GameController::AdjustZoom(float amount)
 {
-    float const newTargetZoom = mZoomParameterSmoother->GetValue() * amount;
-
-    mZoomParameterSmoother->SetValue(newTargetZoom);
+    mViewManager.AdjustZoom(amount);
 }
 
 void GameController::ResetZoom()
 {
-    float const newTargetZoom = 1.0f;
-
-    mZoomParameterSmoother->SetValueImmediate(newTargetZoom);
+    mViewManager.ResetZoom();
 }
 
 vec2f GameController::ScreenToWorld(DisplayLogicalCoordinates const & screenCoordinates) const
@@ -1498,24 +1438,11 @@ void GameController::OnShipCreated(
 
     // Auto-zoom (if requested)
     if (doAutoZoom && mDoAutoZoomOnShipLoad)
-    {
-        // Calculate zoom to fit width and height (plus a nicely-looking margin)
+    {   
+        // TODO
         vec2f const shipSize = mWorld->GetShipSize(shipId);
-        float const newZoom = std::min(
-            mRenderContext->CalculateZoomForWorldWidth(shipSize.x + 5.0f),
-            mRenderContext->CalculateZoomForWorldHeight(shipSize.y + 3.0f));
-
-        // If calculated zoom requires zoom out: use it
-        if (newZoom <= this->mRenderContext->GetZoom())
-        {
-            mZoomParameterSmoother->SetValueImmediate(newZoom);
-        }
-        else if (newZoom > 1.0f)
-        {
-            // Would need to zoom-in closer...
-            // ...let's stop at 1.0 then
-            mZoomParameterSmoother->SetValueImmediate(1.0f);
-        }
+        Geometry::AABB shipAABB(shipSize, vec2f::zero());
+        mViewManager.TODODoAutoZoom(shipAABB);
     }
 
     // Add ship to rendering engine

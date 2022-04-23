@@ -21,6 +21,7 @@
 #include "ResourceLocator.h"
 #include "ShipFactory.h"
 #include "ShipMetadata.h"
+#include "ViewManager.h"
 
 #include <GameCore/Colors.h>
 #include <GameCore/GameChronometer.h>
@@ -949,6 +950,7 @@ private:
     std::shared_ptr<Render::RenderContext> mRenderContext;
     std::shared_ptr<GameEventDispatcher> mGameEventDispatcher;
     NotificationLayer mNotificationLayer;
+    ViewManager mViewManager;
     std::unique_ptr<EventRecorder> mEventRecorder;
     std::shared_ptr<TaskThreadPool> mTaskThreadPool;
 
@@ -966,9 +968,6 @@ private:
     static constexpr size_t BasalWaveHeightAdjustmentParameterSmoother = 6;
     static constexpr size_t FishSizeMultiplierParameterSmoother = 7;
     std::vector<ParameterSmoother<float>> mFloatParameterSmoothers;
-
-    std::unique_ptr<ParameterSmoother<float>> mZoomParameterSmoother;
-    std::unique_ptr<ParameterSmoother<vec2f>> mCameraWorldPositionParameterSmoother;
 
 
     //
