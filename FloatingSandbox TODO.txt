@@ -15,7 +15,19 @@
 
 		+ Material system improvements (*)
 
-		- Release
+		- Release:
+			- Localization
+				+ Update pot
+				= Italian
+				- Spanish
+					- Incorporate 2.0
+					- Ask name of update
+					- Update
+					- Send
+				- Russian
+					- Update
+					- Send
+			- Send for testing
 
 		---------
 

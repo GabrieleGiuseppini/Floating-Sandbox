@@ -1491,13 +1491,13 @@ wxRibbonPanel * MainFrame::CreateEditShipRibbonPanel(wxRibbonPage * parent)
             panel,
             wxVERTICAL,
             mResourceLocator.GetIconFilePath("rotate_90_cw_medium"),
-            _("90° CW"),
+            _("90 CW"),
             [this]()
             {
                 assert(mController);
                 mController->Rotate90(RotationDirectionType::Clockwise);
             },
-            _("Rotate the ship 90° clockwise."));
+            _("Rotate the ship 90 degrees clockwise."));
 
         panelGridSizer->Add(button);
     }
@@ -1508,13 +1508,13 @@ wxRibbonPanel * MainFrame::CreateEditShipRibbonPanel(wxRibbonPage * parent)
             panel,
             wxVERTICAL,
             mResourceLocator.GetIconFilePath("rotate_90_ccw_medium"),
-            _("90° CCW"),
+            _("90 CCW"),
             [this]()
             {
                 assert(mController);
                 mController->Rotate90(RotationDirectionType::CounterClockwise);
             },
-            _("Rotate the ship 90° anti-clockwise."));
+            _("Rotate the ship 90 degrees anti-clockwise."));
 
         panelGridSizer->Add(button);
     }
