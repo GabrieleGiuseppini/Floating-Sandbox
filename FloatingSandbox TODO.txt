@@ -13,12 +13,13 @@
 
 		+ -> ShipBuilder
 
-		= Material system improvements (*)
-			- Move plan to Done section
+		+ Material system improvements (*)
 
-		- Test with SpringReductionFraction = 0.6 (@GameParameters)
+		- Release
 
 		---------
+
+		- Test with SpringReductionFraction = 0.6 (@GameParameters)
 
 		- Continuous Auto-focus (*)
 
@@ -981,191 +982,16 @@
 
 - Dynamics:
 
-	= Material system improvements (*)
-		X Check if can undo BuoyancyVolumeFill:
-			X Option 1: Replace with "buoyant_volume_naked" (now one) and "buoyant_volume_clad" (old one)
-				+ The biggest test is whether current ships start flying or not
-					+ Preliminary checks indicate it might be ok!
-					X Argh, no - ships don't sink anymore
-				- Replace with "buoyant_volume_naked" (now one) and "buoyant_volume_clad" (old one)
-					! Physical interpretation: the volume occupied by the particles, for the purpose of both buoyancy calculations *and* water taken mass calculations
-						! Naked: when particle has zero attached triangles; clad: when has at least one triangle
-						! Buoyancy: volume of water displaced
-						! Taken water mass: high cap on water taken mass (should be 1.0-volume though)
-					- Material (in git stash)
-					- Adjust structural palette json; guidelines:
-						- Every hull material: C=1.0 N=0.0
-							! C: because (hull) structures should feel buoyancy (NEW)
-							! N: because naked particles won't take water, hence would float forever if they were buoyant (OLD)
-						- Every non-hull material: C=1.0 N=1.0
-							! C: because structures should feel buoyancy (OLD)
-							! N: because naked particles will take water, and hence have to counterbalance taken water weight with own buoyancy (OLD)
-						- Ropes: C=N
-							! Because even when they form a triangle, we want same bouyancy (OLD)
-						- Materials like hull and chains have it ~zero, ropes a bit more
-				- Points::Add:
-					- ShipBuilder specifies if has triangles attached, and populates mBuoyantVolumeBuffer accordingly (and then calculates buoyancy coeffs)
-				- @Points' Triangle Destroy/Restore: populates mBuoyantVolumeBuffer accordingly (and then calculates buoyancy coeffs)
-				- @ Points::CreateXYZEphParticle: populates mBuoyantVolumeBuffer accordingly (and then calculates buoyancy coeffs)
-					- Air (has 1.0, uses special only for bubbles): TODO
-					- Smoke (Air material but with buoyancy_volume_fill overwritten as 1.0): TODO
-					- Water (has 0.0): TODO									
-				- Remove hacks from ShipBuilder (WaterlineAnalyzer; others?)
-			X Option 2: mass of hull is > 1000, and buoyancy_volume_fill is 1
-				X Too heavy
-		+ Take some of the changes from experiment
-			+ Test glass
-			+ Test smoke
-			+ Test ball of air and water
-			+ Test engine wake
-			+ Test chains
-		X See if still need Points buffer for buoyancy_volume_fill
-		= Make "Internal Watertight" (and other) versions of hull/non-hull materials
-			! Spec:
-				! Watertight (i.e. hull) but lighter than hull
-				! Rename materials (json and code): "Hull" -> "..."
-			! Variants:
-				- XYZ Hull						# Hull (most of the times, density being 10 times that of base)
-				- XYZ Light I-Beam					# base
-				- XYZ Solid I-Beam					# Non-hull (permeable) with 10 times the density of base; was: Structural
-				- XYZ Light Bulkhead					# Hull (impermeable), with same density as base
-				- XYZ Solid Bulkhead					# Hull (impermeable), with ~5 times the density of base
-				- XYZ Brittle						# base, but weak; was: Cheap
-			+ Write script to generate
-				+ Decide final names of variants
-					+ Thin: Light+
-					+ Thick: Heavy, Solid+
-					+ Cheap: Inferior, Common, Low-Grade+
-				+ Also mass: Hull and Structural are +100Kg wrt base
-				+ Group
-					+ Palette in json
-					+ MaterialDatabase
-					+ H separator between categories in main palette canvas
-				+ Fix order of words for names
-					+ Format string @ VariantConstants
-				+ Also set subcategory in PaletteCoords - to new name of material
-					+ Assume group name matches stem; if not found, abort
-				+ Better algo for colors
-			+ Do for:
-				+ All metals
-					+ Iron
-						+ Lower double-bottom strength
-					+ Steel & Stainless Steel
-						+ Script: deal with extra color - take min of base and, if exists, hull
-						+ Separate palette groups
-					+ Titanium
-					+ Aluminium
-						+ Separate Aluminium Sheet into its own group first, which later won't get variants but only colors
-					+ Nails
-						+ Colors only
-				+ All woods
-					+ Complete pine below, first
-					+ Oak wood
-					+ Pine wood
-			- Description of variant in ShipBuilder palette?
-				- By means of a variant enum in the materials json, and therefore localizable strings
-					- ~"Structure"+"Form/Variant/Kind/Genre/Class"
+	- Material system improvements (*)
+		- Descriptions in ShipBuilder palette
+			- Materials have optional description ID's (from enum)
+			- All strings in LocalizationManager
+				- ~"Structure"+"Form/Variant/Kind/Genre/Class"
 		- New materials:
-			+ Add helper for adding colors: base base_reference target_reference
-			= Structural materials:
-				+ Another wood variant
-					+ Names: Oak (600-900, heavier - current), Pine (350-850, lighter)
-						+ Check densities and see which one is current
-						+ Rename old
-							+ Fix mass of hull: nominal_mass=1000->800 density=0.0935->0.116875
-						+ Make Pine
-							+ nominal_mass=400
-							+ Three variants, one color
-							+ Add colors to three variants
-						+ New materials textures
-							+ wood_planks_3: One of the three "wood planks"
-							+ wood_studded_2
-				= Sodium: explodes when particle's water > threshold
-					+ New enum value: SodiumExplosion (or ChemicalExplosion)
-					+ Material
-						+ New property for water-based reaction - WaterReactivity - float
-					+ Ignition:
-						+ Points: we piggy-back on low-frequency loop
-							! We still do normal combustion/ignition state machine, as sodium can also burn
-							+ Then, sodium state machine follows:
-								+ WaterReactionState state:
-									+ StateMachine enum: Inert, Unreacted, ReactionTriggered, Consumed
-									+ ExplosionTimestamp
-								+ WaterReactionState buffer
-									+ Init'n: state depends on water_reactivity != 0.0f
-									+ At CreateEphXYZ: no need to change
-								+ State machine
-							+ Explosion: re-use same IShipPhyiscsHandler as explosion, including heat (it's an exothermic reaction)
-							+ Follow CombustionState for everything else to do here, including but not limited to:
-								+ When to call Sate::Reset()
-					+ ship_explosion shader: new "boolean" param to make it yellow (sample.r = sample.g = (sample.r + sample.g) / 2);				
-					+ Sounds
-						+ Explosion
-							+ Normal
-						+ Sizzling
-							+ Normal
-						+ SoundController
-							+ Do WaterReaction
-							+ Do WaterReactionExplosion
-					= Make test ship for game
-						- Add more electricals
-						- Then move it to game's Ships folder
-						- Do also 1 cargo container
-					+ Test:
-						+ Run in Debug
-						+ Thing itself
-							+ Flooded
-							+ Rain
-						+ Normal explosions
-							+ Bombs
-							+ Gunpowder							
-						+ Sodium thermal properties
-							+ Burning
-							+ Transmission
-						+ Repair
-							+ Explodes again afterwards
-				+ Try to make glass transparent
-					+ Material: optional "opacity", default = 1.0
-						+ StructuralMaterial::RenderColor becomes full rgba, taking into account Opacity
-						+ Auto-texturization uses alpha of structural material's render color
-						+ Test now setting it to ~0.4 just for glass
-					+ Test:
-						+ Ship (w/no texture layer)
-						+ Material Palette
-						+ Builder
-					+ If ok: make "Opaque" and "Transparent" variants for:
-						+ Glass & Glass Hull
-						+ Do uniqueness of materials via new json property
-						+ Air
-						+ Hydrogen
-						+ Test all of them (with a single ship)
-				+ Helium: ~like Hydrogen, but not combusting
-					+ Make "Helium" variant of Goodyear
-					+ changes.txt
-				+ Redo structural template
-				+ changes.txt
+			- Structural materials:
 				- "Lightning rod" material
 					- Has precedence when looking for candidates @ Lightning strike
-				+ More glass colors
-				+ More concrete colors
-				+ More fiberglass colors
-			= Electrical materials:
-				+ Rename horns, @ electrical template, filename, sound enum, etc.
-					+ Horn 1: Queen Mary Horn
-					+ Horn 2: Four Funnel Liner Whistle
-					+ Horn 3: Tripod Horn
-					+ Horn 4: Pipe Whistle
-				+ Timcan's sounds
-					+ Lake freighter horn
-					+ Shieldhall steam siren
-					+ Queen Elizabeth 2 Horn
-					+ SS Rex Whistle
-				+ Two new evac's
-				+ Ocean disturb at other sound types as well
-					+ Klaxon1
-					+ Nuclear alarm
-				+ Test all sounds underwater
-				+ changes.txt
+			- Electrical materials:
 				- Non-Instanced Watertight Doors (see if possible)
 				- Non-Instanced Water In/Out Pumps (see if possible)
 				- Jet engine
@@ -1184,12 +1010,6 @@
 					- Gfx: Clock dial (normalized on duration), new ElectricalControl
 					- Sound: clock
 				- Thermal switch
-				- Redo structural template
-				- changes.txt
-		- Test material textures for chains: transparent chain texture
-			- Change texturizer so that we load alpha from image		
-		- Friction property (replacing or adding to "global" ocean floor settings)
-			- So for example could have tires, etc.
 
 	- "Soft" setting for ocean floors
 		- Just less impact
@@ -8622,6 +8442,186 @@ IF WX:
 			+ Changing number of stars while moving star is running
 				+ Add LogMessage for trigger to verify
 			+ Remove LogMessage
+	+ Material system improvements
+		X Check if can undo BuoyancyVolumeFill:
+			X Option 1: Replace with "buoyant_volume_naked" (now one) and "buoyant_volume_clad" (old one)
+				+ The biggest test is whether current ships start flying or not
+					+ Preliminary checks indicate it might be ok!
+					X Argh, no - ships don't sink anymore
+				- Replace with "buoyant_volume_naked" (now one) and "buoyant_volume_clad" (old one)
+					! Physical interpretation: the volume occupied by the particles, for the purpose of both buoyancy calculations *and* water taken mass calculations
+						! Naked: when particle has zero attached triangles; clad: when has at least one triangle
+						! Buoyancy: volume of water displaced
+						! Taken water mass: high cap on water taken mass (should be 1.0-volume though)
+					- Material (in git stash)
+					- Adjust structural palette json; guidelines:
+						- Every hull material: C=1.0 N=0.0
+							! C: because (hull) structures should feel buoyancy (NEW)
+							! N: because naked particles won't take water, hence would float forever if they were buoyant (OLD)
+						- Every non-hull material: C=1.0 N=1.0
+							! C: because structures should feel buoyancy (OLD)
+							! N: because naked particles will take water, and hence have to counterbalance taken water weight with own buoyancy (OLD)
+						- Ropes: C=N
+							! Because even when they form a triangle, we want same bouyancy (OLD)
+						- Materials like hull and chains have it ~zero, ropes a bit more
+				- Points::Add:
+					- ShipBuilder specifies if has triangles attached, and populates mBuoyantVolumeBuffer accordingly (and then calculates buoyancy coeffs)
+				- @Points' Triangle Destroy/Restore: populates mBuoyantVolumeBuffer accordingly (and then calculates buoyancy coeffs)
+				- @ Points::CreateXYZEphParticle: populates mBuoyantVolumeBuffer accordingly (and then calculates buoyancy coeffs)
+					- Air (has 1.0, uses special only for bubbles): TODO
+					- Smoke (Air material but with buoyancy_volume_fill overwritten as 1.0): TODO
+					- Water (has 0.0): TODO									
+				- Remove hacks from ShipBuilder (WaterlineAnalyzer; others?)
+			X Option 2: mass of hull is > 1000, and buoyancy_volume_fill is 1
+				X Too heavy
+		+ Take some of the changes from experiment
+			+ Test glass
+			+ Test smoke
+			+ Test ball of air and water
+			+ Test engine wake
+			+ Test chains
+		X See if still need Points buffer for buoyancy_volume_fill
+		+ Make "Internal Watertight" (and other) versions of hull/non-hull materials
+			! Spec:
+				! Watertight (i.e. hull) but lighter than hull
+				! Rename materials (json and code): "Hull" -> "..."
+			! Variants:
+				- XYZ Hull						# Hull (most of the times, density being 10 times that of base)
+				- XYZ Light I-Beam					# base
+				- XYZ Solid I-Beam					# Non-hull (permeable) with 10 times the density of base; was: Structural
+				- XYZ Light Bulkhead					# Hull (impermeable), with same density as base
+				- XYZ Solid Bulkhead					# Hull (impermeable), with ~5 times the density of base
+				- XYZ Brittle						# base, but weak; was: Cheap
+			+ Write script to generate
+				+ Decide final names of variants
+					+ Thin: Light+
+					+ Thick: Heavy, Solid+
+					+ Cheap: Inferior, Common, Low-Grade+
+				+ Also mass: Hull and Structural are +100Kg wrt base
+				+ Group
+					+ Palette in json
+					+ MaterialDatabase
+					+ H separator between categories in main palette canvas
+				+ Fix order of words for names
+					+ Format string @ VariantConstants
+				+ Also set subcategory in PaletteCoords - to new name of material
+					+ Assume group name matches stem; if not found, abort
+				+ Better algo for colors
+			+ Do for:
+				+ All metals
+					+ Iron
+						+ Lower double-bottom strength
+					+ Steel & Stainless Steel
+						+ Script: deal with extra color - take min of base and, if exists, hull
+						+ Separate palette groups
+					+ Titanium
+					+ Aluminium
+						+ Separate Aluminium Sheet into its own group first, which later won't get variants but only colors
+					+ Nails
+						+ Colors only
+				+ All woods
+					+ Complete pine below, first
+					+ Oak wood
+					+ Pine wood
+		+ New materials:
+			+ Add helper for adding colors: base base_reference target_reference
+			+ Structural materials:
+				+ Another wood variant
+					+ Names: Oak (600-900, heavier - current), Pine (350-850, lighter)
+						+ Check densities and see which one is current
+						+ Rename old
+							+ Fix mass of hull: nominal_mass=1000->800 density=0.0935->0.116875
+						+ Make Pine
+							+ nominal_mass=400
+							+ Three variants, one color
+							+ Add colors to three variants
+						+ New materials textures
+							+ wood_planks_3: One of the three "wood planks"
+							+ wood_studded_2
+				+ Sodium: explodes when particle's water > threshold
+					+ New enum value: SodiumExplosion (or ChemicalExplosion)
+					+ Material
+						+ New property for water-based reaction - WaterReactivity - float
+					+ Ignition:
+						+ Points: we piggy-back on low-frequency loop
+							! We still do normal combustion/ignition state machine, as sodium can also burn
+							+ Then, sodium state machine follows:
+								+ WaterReactionState state:
+									+ StateMachine enum: Inert, Unreacted, ReactionTriggered, Consumed
+									+ ExplosionTimestamp
+								+ WaterReactionState buffer
+									+ Init'n: state depends on water_reactivity != 0.0f
+									+ At CreateEphXYZ: no need to change
+								+ State machine
+							+ Explosion: re-use same IShipPhyiscsHandler as explosion, including heat (it's an exothermic reaction)
+							+ Follow CombustionState for everything else to do here, including but not limited to:
+								+ When to call Sate::Reset()
+					+ ship_explosion shader: new "boolean" param to make it yellow (sample.r = sample.g = (sample.r + sample.g) / 2);				
+					+ Sounds
+						+ Explosion
+							+ Normal
+						+ Sizzling
+							+ Normal
+						+ SoundController
+							+ Do WaterReaction
+							+ Do WaterReactionExplosion
+					+ Make test ship for game
+						+ Add more electricals
+						+ Then move it to game's Ships folder
+						+ Do also 1 cargo container
+					+ Test:
+						+ Run in Debug
+						+ Thing itself
+							+ Flooded
+							+ Rain
+						+ Normal explosions
+							+ Bombs
+							+ Gunpowder							
+						+ Sodium thermal properties
+							+ Burning
+							+ Transmission
+						+ Repair
+							+ Explodes again afterwards
+				+ Try to make glass transparent
+					+ Material: optional "opacity", default = 1.0
+						+ StructuralMaterial::RenderColor becomes full rgba, taking into account Opacity
+						+ Auto-texturization uses alpha of structural material's render color
+						+ Test now setting it to ~0.4 just for glass
+					+ Test:
+						+ Ship (w/no texture layer)
+						+ Material Palette
+						+ Builder
+					+ If ok: make "Opaque" and "Transparent" variants for:
+						+ Glass & Glass Hull
+						+ Do uniqueness of materials via new json property
+						+ Air
+						+ Hydrogen
+						+ Test all of them (with a single ship)
+				+ Helium: ~like Hydrogen, but not combusting
+					+ Make "Helium" variant of Goodyear
+					+ changes.txt
+				+ Redo structural template
+				+ changes.txt
+				+ More glass colors
+				+ More concrete colors
+				+ More fiberglass colors
+			+ Electrical materials:
+				+ Rename horns, @ electrical template, filename, sound enum, etc.
+					+ Horn 1: Queen Mary Horn
+					+ Horn 2: Four Funnel Liner Whistle
+					+ Horn 3: Tripod Horn
+					+ Horn 4: Pipe Whistle
+				+ Timcan's sounds
+					+ Lake freighter horn
+					+ Shieldhall steam siren
+					+ Queen Elizabeth 2 Horn
+					+ SS Rex Whistle
+				+ Two new evac's
+				+ Ocean disturb at other sound types as well
+					+ Klaxon1
+					+ Nuclear alarm
+				+ Test all sounds underwater
+				+ changes.txt
 
 
 

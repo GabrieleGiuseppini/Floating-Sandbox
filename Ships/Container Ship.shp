@@ -1,9 +1,0 @@
-{
-	"structure_image":"container_ship_structure.png.dat",
-	"offset":{"x":0.0, "y":-16.0},
-	"ship_name":"Container Ship",
-	"created_by":"Gabriele Giuseppini",
-	"year_built":"2013",
-	"description":
-		"A 'Container ship' is just an ordinary container ship that contains containers to transport around harbours that hold many many containers to be transported to other areas that will hold containers and then be transported to the place that they needed to go to... I'm done speaking now."
-}

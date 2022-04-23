@@ -1,520 +1,4 @@
-====== 1.17.2
-
-+ Preferences
-	+ Completely independent "Preferences" class, does 3 things:
-		+ De-serialize
-		+ Serve as storage
-		+ Serialize
-	+ Move UnitsSsytem from ShipBuilder MainFrame's cctor to OpenForXXX()
-	+ If specified overrides own storage, else is loaded (and if not loaded, is default)
-+ StatusBar (*)
-+ Measuring Tape tool (*)
-+ New/Set/Remove layers:
-	+ New:
-		+ Make internal helper templated on LayerType, with all code
-			+ Add new templated helper to make undo entry with whole layer
-		+ Additions:
-			+ Undo
-		+ Restore problem: could cause presence to change, hence impacting:
-			! Problem descr: restore could cause presence to change, hence impacting:
-				! Current tool
-					! Changed because primary viz has changed, via InternalSelectPrimaryVisualization() called currently by ::RemoveXYZLayer()
-				! Current viz 
-					! Via InternalUpdateModelControllerVisualizationModes() called currently by ::RemoveXYZLayer()
-			+ Fix:
-				+ Wrap operations with private templated WrapLikelyPresenceChangingOperation
-					+ Does the above - might only need InternalSelectPrimaryVisualization() though, as that one changes tool
-				+ @ Electrical
-				+ Test 
-				+ If Ok:
-					+ Use @ all other Controller::RestoreXYZLayerForUndo()
-					+ See if should also do:
-						+ InternalReconciliateTextureVisualizationMode()
-						+ If so, go again through Controller and remove those calls
-					+ Use @ all other layer-presence-changing operations
-						+ Also @ NewLayer helper itself
-						! And later, @ RemoveLayer, SetLayer helpers
-		+ Test (basic; undo):
-			+ S
-			+ E
-			+ R
-		+ Cleanup old code
-			+ Verify really ok
-	+ Remove:
-		+ Make internal helper templated on LayerType, with all code
-			+ Use WrapLikelyPresenceChangingOperation
-			+ Use PushUndoForWholeLayer
-		+ Additions:
-			+ Undo
-				+ Note: texture layer removal should also remember metadata (art credits)
-		+ Test (basic; undo):
-			+ E
-			+ R
-			+ T
-		+ Cleanup old code
-	+ Set:
-		+ Make internal helper templated on LayerType, with all code
-			+ Use WrapLikelyPresenceChangingOperation
-			+ Use PushUndoForWholeLayer
-		+ Additions:
-			+ Undo
-				+ Note: texture layer change should also remember metadata (art credits)
-		+ Test (basic; undo):
-			+ S
-			+ E
-			+ R
-			+ T
-+ Import/Export:
-	+ Structural:
-		+ Import from:
-			+ .png, .shp, .shp2 (load whole and throw away)
-			+ Resize
-				+ Can move MakeReframed() up to XYZLayerData()?
-					+ Structural: just buffer
-					+ Electrical: buffer + panel
-						+ Do also staticShipRect calc's (intersection of old rect w/ (newOffset, newSize), then shifted to old coords)
-						+ Fix panel
-					+ Ropes: buffer
-					+ Unit tests
-				+ Rewrite ModelController::ResizeShip in terms of LayerData::Reframe()
-				+ Do resize @ import
-			+ Test:
-				+ .shp2, password-protected
-				+ .shp
-				+ .png
-				+ Resize larger
-				+ Resize smaller
-				+ One from Simulator
-		+ Export to .png
-			+ ShipDeSerializer:
-				+ SaveStructuralLayerImage(StructuralLayerData const &, ...)
-	+ Electrical:
-		+ Import:
-			+ .shp, .shp2 (load whole and throw away)
-				+ Might as well allow user to select .png's (for simplicity in ShipLoadDialog), will be discared afterwards anyway
-			+ Show error if no layer exists in definition
-			+ Resize
-			+ Test:
-				+ .shp2, password-protected
-				+ .shp
-				+ .png (w/error and w/out error)
-				+ Ship with no such layer
-				+ Resize larger
-				+ Resize smaller
-				+ One from Simulator
-		! No export (can save .shp2 and import from there)
-	+ Ropes:
-		+ Import:
-			+ .shp, .shp2 (load whole and throw away)
-				+ Might as well allow user to select .png's (for simplicity in ShipLoadDialog), will be discared afterwards anyway
-			+ Show error if no layer exists in definition
-			+ Resize
-			+ Test:
-				+ .shp2, password-protected
-				+ .shp
-				+ .png (w/error and w/out error)
-				+ Ship with no such layer
-				+ Resize larger
-				+ Resize smaller
-				+ One from Simulator
-		+ No export (can save .shp2 and import from there)
-	+ Texture:
-		+ Import: two separate import buttons
-			+ .png
-				+ New ImageLoadDialog
-				+ Load file and pass to Controller
-					+ Resize workflow
-						+ For texture
-							+ Dialog
-							+ Resize image								
-								+ Buffer2D::Reframe								
-									+ See broken Y
-							+ Controller::SetTextureLayer
-								+ Undo
-									+ Rearc: ModelController:
-										+ Dirty region to *update* and *upload*, one for each viz
-											+ Array member
-											+ Updated each time we currently invoke UpdateXXXViz
-											+ Also updated at New/Set/Remove/Restore layer
-										+ UpdateXXXViz(): they are all private, invoked *only* by single public UpdateVisualizations
-										+ ModelController::UpdateVisualizations(View)
-											+ Invokes all individual UpdateXXXViz()
-											+ Then uploads/removes from view
-										+ Controller: invoke UpdateVisualizations(View) at:
-											+ New
-											+ Set
-											+ Restore
-											+ Flip
-											+ Edits (tools)
-										+ Test:
-											+ Flood tool
-											+ Line tool
-											+ Pencil tool
-						+ For resize
-							+ Dialog
-								+ Dimensions lock button
-								+ When changing target size, need to honor anchor
-									+ Hence need to store anchor coords, rather than just offset, and calc offset at each OnChange
-									+ And if we store anchor coords, what do we do with mouse move?
-										+ Reset anchor coords
-										+ Should also communicate to dialog to reset anchor controls
-									+ Impl:
-										+ OnCustomOffset: invoke when mouse move
-											+ Dialog reactor: toggle all buttons off (via OnAnchor)
-										+ AnchorCoords:
-											+ Calc coords at OnChange iff mAnchorCoords.HasValue()
-								+ Fix the problem with super zoom
-								+ Capture mouse
-							+ Controller::ResizeShip
-								+ ModelController::ResizeShip
-									+ Do all layers like Flip()
-										+ Structural
-										+ Electrical
-										+ Ropes
-										+ Texture
-											+ Calc image size
-											+ FIX: also sizes of visualizations have to change
-												+ What if we alloc textures at MC::UpdateVisualizations() rather than at MC::SetXXXVizMode?
-												+ And then at MC::ResizeShip() we simply nuke textures
-										+ Test completely empty afterwards, all layers
-										+ Test actual resize
-									+ Electrical: remove panel elements that are gone
-								+ Undo
-									+ Instead of executing undo via 4 calls to Controller::RestoreXXXLayerForUndo, do one single call to
-									  new Controller::RestoreAllLayersForUndo
-			+ .shp, .shp2 (load whole and throw away)
-					+ Might as well allow user to select also .png's (for simplicity in ShipLoadDialog), will be discarded (errored) afterwards anyway - see next line
-				+ Show error if no layer exists in definition
-				! No need to resize
-				+ Test:
-					+ .shp2, password-protected
-					+ .shp
-					+ .png (expect error)
-					+ Ship with no such layer
-					+ One from Simulator
-				+ With import, also replace art credits
-					+ Empty if from image, from imported ship otherwise (even if empty)
-		+ Export to .png (though quite useless at this moment)
-			+ Ad-hoc code using ImageFileTools
-	+ Notes:
-		+ Any import from .shp2 requires password
-		+ All imports push an undo (via Controller::SetXYZLayer())
-+ Preferences: load directories
-+ Send for testing
-
-+ Waterline analysis
-	! https://www.britannica.com/science/fluid-mechanics/Hydrostatics#ref611691
-	! https://www.engineeringtoolbox.com/centre-gravity-buoyancy-d_1286.html
-	! Gist:
-		- At equlibrium the hull is stable, hence the center of gravity and center of buoyancy are on the same vertical line
-			- For most hulls the center of buoyancy is below the center of gravity and the hull is said to be meta-stable
-		- Metacenter is the theoretical point at which the B-G vertical line intersects the vertical line through the new centre of buoyancy created when the body is tilted
-		- When at rest on even keel, the vessel’s centre of buoyancy is directly below the centre of gravity as well as below the metacentre
-	+ Impl:
-		+ Button at ribbon, under Analysis
-			+ Icon
-			+ Shorter label
-		+ View:
-			+ UploadWaterlineMarker
-			+ UploadWaterline
-		+ ShipBuilder/UI/WaterlineAnalyzerDialog
-			+ Icons x 3
-			+ Buttons x 3
-			+ DoStep: visualize analysis results
-				+ Static analysis
-					+ Have also label when no particles, need to differentiate between static-analysis-not-yet-run and run-but-no-particles
-		+ class WaterlineAnalyzer
-			X No float coords - simulator is integral for buoyancy after all
-			+ Order of privates: move the old "published" ones to search state
-				+ They are just state observables
-			+ Do level check w/delta from previous
-			+ Direction search
-				+ Inline
-				+ Do check with alignment of new dir with vertical
-				+ Find next dir
-					X Do half of the rotation
-					+ Rather than having rotation's magnitude be based on CoM-CoB angle magnitude, do directional search with small, fixed-size rotations, depending simply
-					  on orientation (left or right) of CoM-CoB wrt "vertical"
-						+ If CoM-CoB is to the right of "vertical": rotate direction by negative step
-						+ Else, rotate direction by positive step
-						+ Cap by CoM-CoB ^ direction angle
-					+ Problem: can dance back and forth - oscillates around minimum
-						+ Make rotation dependent on torque
-					+ Problem 2: direction search end condition: at the moment ignores distance between CoM and CoB; but when they're really 
-					  on each other, direction change should be negligible. Find another metric for the end condition
-						+ Torque (again)
-					! Facts:
-						! Ark: at equlibrium, right side is slightly lower
-						! At: -3.52; step is -3.63, hence we go for other side, and get -3.41; but "other side" is wrong
-							- Matches observation with torque-based direction method: in that case we go from -3.52 to -3.63, so it's not really about minimizing
-					+ 1: binsearch: make it with fixed-size steps - only bin when changing direction
-					+ 2: direction search: use the fact that a change in torque sign indicates passed a minimum
-					+ Cleanup
-					+ Larger direction search stride
-					+ Test corner cases:
-						+ Submarine
-						+ ~180degrees ball
-						+ Cardboard skyscraper
-							+ Remove buoyancy center if buoyant force is zero
-	+ Finalizations:
-		+ See if can get rid of state machine in WaterlineAnalyzer and do all with state instead
-		+ Fix Blimp break
-			+ Due to levelSearchCurrent not being correct anymore after rotation of direction; need to update it as well
-		+ Cap rotation due to torque
-		+ Outcome in dialog (populated at completion)
-			+ Trim (angle as absolute degrees)
-			+ Floating/Sinking statement
-			+ Test:
-				+ Submarine, Triton, Ship
-				+ Blimp, Cardboard
-				+ Concrete ball
-				+ No particles
-				+ One particle
-			+ Dialog: Gfx
-				+ Outcome control
-					+ Double-check heading by testing with a slightly tilting ship
-					+ Top arrow in image
-					+ Vertical dashed line as a guide
-				+ Replace static analysis text with "Trim" and "Floats" labels, with colored backgrounds
-		+ Faster animation
-		+ Cleanup logging
-		+ Analysis starts in continuous play
-	+ Jumpstart waterline analyzer when sinking
-		+ Dir = normal to M->B
-		+ Test with Colored Kursks
-
-+ UI: total mass and center of mass
-	+ ModelController maintains structural analysis, like now
-		+ Structural analysis: total mass, sum of CoM
-	+ ModelController has "OnAnalysisUpdated" callback, goes straight to IUserInterface
-	+ Display:
-		+ Total mass (in StatusBar)
-		+ Center of Mass (toggled via toolbar)
-			+ Enabling/disabling CoM view
-				+ MainFrame UI
-				+ MacroProperties: center of mass must be optional (nullopt when no particles)
-				+ Via Controller
-					+ When enabled: asks ModelController and uploads to View
-					+ When disabled: removes from View - assuming we're the only ones (Waterline dialog may not be open)
-			+ Implement analysis via count of "mass" particles
-				+ So to zero out total mass when zero
-				+ Also can assert, nice
-			+ Controller/Tool rearc
-				+ Tool: take Controller and nothing of others
-				+ PencilTool
-					+ Implement LayerModificationEpilog in Controller
-					+ Controller: expose remaining members for tools to use
-				+ Other tools
-				+ Nuke ModelController callback for macro-properties
-					+ Move one-by-one to Controller (cctor, editing primitives, undo, etc.)
-				+ Test:
-					+ All tools
-			+ Callback: 
-				+ On top of calling IUserInterface, also inspect whether CoM viz is enabled and talk to view depending on that
-			+ Interaction with WaterlineAnalyzer
-				+ Needs to remember if it's the one that uploaded marker (which he does only if ! enabled) and undo @ destructor based on that memory
-					+ See if still need View::RemoveAllMarkers afterwards
-	+ See if can piggyback on MacroProperties in WaterlineAnalyzer, rather than calculating them again
-
-+ Decide whether we still want Controller to both expose Model and wrappers for it
-	+ Philosophy:
-		+ Controller does not expose getters, but exposes ModelController const & for observers
-			+ Ideally Controller does not expose Model directly, only ModelController wrappers - so it can enforce eph viz checks, like we do now in CloneExistingLayer()
-		+ ModelController does not expose Model, and completely wraps Model
-
-+ Fix auto zoom
-
-+ Use epilog also at Controller itself
-
-+ Merge Preferences into Workbench
-	+ Nuke Preferences
-	+ Use NewShipSize at Controller
-	+ Test 
-		+ Creates json
-		+ Loads json
-
-+ Make mipmap for markers
-	+ Rename folders and groups
-		+ Clean build/data folders
-	+ Redo icons
-		+ 64x128
-		+ Fix anchor
-	+ View: upload mipmapped
-
-+ See why we weren't asked to rename 3 balls after chaning name in metadata
-	+ Because it was .shp?
-
-+ Perf:
-	+ Do perf analysis of long diagonal line
-		+ ShipBuilder::ModelController::UpdateVisualizations	6489 (95.24%)
-			+ ShipBuilder::ModelController::UpdateGameVisualization	3841 (65.67%)
-				+ RenderShipInto: 33
-				+ AutoTextureInto: 32
-			+ ShipBuilder::View::UploadGameVisualization	2600 (28.95%)
-	X Try using glTexSubImage2D at View::UploadGameVisualization
-	X Test with huge size: lag should only be proportional to edit region
-
-+ Rotate 90 (CW and CCW) (full ship)
-	+ Ribbon, "Edit"
-		+ 2 icons
-	+ Buffer2D
-		+ Unit tests
-		+ Redo, using Coords.Rotate(direction, size)
-	+ RopeBuffer
-		+ In-place
-		+ Unit tests
-	+ Controller->ModelController
-		+ Also changes ship size, so do notifications
-	+ Test:
-		+ Structural
-		+ Electrical
-		+ Ropes
-		+ Texture
-		+ Undo
-		+ Ship size notif at rotate
-		+ Ship size notif at undo
-		+ CoM
-
-+ ShipNameNormalizer
-	+ Use at:
-		+ NewShipNameDialog
-		+ ShipPropertiesEditDialog (only when name is dirty)
-		+ Messages:
-			+ "It seems that a better name for this ship might be:"
-			+ "Yes, I want to use the suggested name"
-			+ "No, I want to keep my name"
-
-+ Ask user for new ship name
-	+ @ FS->SB via New Ship
-	+ @ SB open
-	+ @ SB::NewShip
-
-+ Send for testing
-
-+ Electrical panel authoring
-	+ ModelController: need to export <InstanceID, ElectricalMaterial *> pairs
-		+ InstancedElectricalElementSet:
-			+ Add/Remove (w/generation of instance ID)
-			+ Getters
-	+ Ribbon button
-		+ Icon
-		+ Only enabled iff (model has ElectricalLayer &&) ElectricalLayer has one instanced element
-	+ Dialog
-		+ Open() takes InstancedElectricalElementSet and ElectricalPanelMetadata
-		+ List: cols are:
-			+ Label: <instance ID> <material name>
-			+ Checkbox (for visibility)
-			+ Label
-				+ Move code that makes labels given instance index and ElectricalMaterial at ElectricalMaterial
-					+ Then would need electrical material at announcement events that SwitchboardPanel currently creates labels in
-		+ LayoutHelper: deal with repeated layout coords
-		+ ElectricalPanelLayoutControl
-			+ Make wxScrolled, and resize internals to virtual size
-				+ Min size still is own size though (GetSize() at time of need)
-			+ Crystallize element DcRect calculations in RecalculateGeometry()
-				+ Invoked by: OnResized, SetPanel
-			+ List auto-scroll
-				+ SetPanel should also take "master list" (element set)
-			+ Fix H scrolling
-			+ Actual element drawing
-				+ Image
-					+ Find new image
-				+ Instance index
-				+ Shadow
-			+ Visibility changes
-				+ Dialog: when making something visible: check if layout coords conflict with another visible one; if so, zero out
-			+ Mouse workflow
-				+ Mouse capture
-				+ Movable element drawn last
-				+ Drop candidate green
-				+ Drop (set / swap)
-			+ Vertical guide at x=0
-			+ Rewrite:
-				+ ClientToVirtual(wxPoint) -> wxPoint
-				+ MakeSlotVirtualRect
-				+ Replace mElements with ElectricalPanelMetadata&
-				+ Add map: LayoutCoords -> LayoutElement:
-					+ opt<InstanceIndex>
-					+ wxRect SlotVirtualRect
-			+ Can now assume that electrical panel always contains elements	
-		+ List: reorder cols:
-			+ Instance ID, label, "(material name)", visibility
-		+ Replace visibility checkbox with wxBitmapToggleButton with eye/crossed eye icon
-		+ Try shadow with bitmap
-		+ Hook events between List and ElectricalPanelLayoutControl:
-			+ Click on list element -> highlight in LayoutControl (and list element)
-			+ Click on LayoutControl -> highlight in list element (and list element, and scroll to it)
-		+ Max length for label
-		+ Final population of ElectricalPanel and delivery to Controller
-			+ ElectricalPanelLayoutControl: takes ElectricalPanel& from outside and populates directly
-			+ Dialog: populate only if dirty
-		+ ModelController: WriteParticle(electrical): take care of panel
-	+ Tests:
-		+ Saved and reloaded matches
-		+ Matching and functional in game
-		+ Restore
-		+ Saved after restore and reloaded matches
-		+ Deletion of instanced elements
-		+ Addition of instanced elements
-		+ Buffer restore when panel has more elements before restore
-
-+ Eraser electrical: setting for size
-+ Redo icon for CoM using new marker
-+ Crash @ new/load ship when current tool in Workbenchstate is for layer not present in new one
-
-+ Sampled material rearc:
-	! Spec:
-		! Motivation: these two once-separate work items:
-			- Sampler tool: also provide instance index
-			- Normal flood tool: also display underneath material to StatusBar
-		! Sampling is of both material and instance index
-			- Multiple tools do it
-				- So StatusBar needs to have separate section for measuring tool, and sampled material is not anymore mutex with measurement
-		! Tools need to update sampled material after each edit
-	+ Impl:
-		+ ShipBuilder: SampledInformation
-			+ string, opt<instance ID>
-		+ IUserInterface: OnToolCoords+OnSampled -> "OnSampledInformationUpdated"(SampledInformation)
-		+ StatusBar: 
-			+ Move material "area" next to coordinates "area", including its icon
-				+ Detach sampled material from "tool output"
-			+ Do ID
-		+ Controller::BroadcastSampledInformationUpdated(mouse coords)
-		+ Invoke at each tool that's worth doing it
-			! Via new Controller::BroadcastSampledInformationUpdated(mouse coords)
-				- At cctor
-				- At destructor
-				- At mouse move
-					- Must include result of edit
-			+ Sampler
-			+ Pencil/Eraser S/E
-			+ Flood S
-				+ Do clone "futurework"
-					+ Buffer2D::Trim, including unit tests
-					+ Layers::Trim, including unit tests
-						+ Structural layer
-						+ Electrical layer
-							+ Do trim panel at all places
-								+ Verify at existing unit tests
-						+ Ropes layer					
-				+ Test ropebuffer trim (via ship resize)
-			+ Line S/E
-			+ Rope pencil
-			+ Rope eraser
-		+ Who's doing it at left up (edit end)?
-			! Left up generates mouse move, seems @ Windows
-			+ Do it yourself, after each edit - ideally @ DoEdit itself (and remove redundant's after DoEdit invocation)
-				+ Pencil/Eraser S/E
-				+ Flood S
-				+ Line S/E
-				+ Rope pencil
-				+ Rope eraser	
-
-+ Pencil: shift-lock with right-button material
-	! Due to focus not being on canvas at shift down
-	+ Remove logs
-
-+ Merge into 1.17.1.next
+====== 1.17.3
 
 - Send for testing
 
@@ -537,7 +21,7 @@
 	- Rearc icons now:
 		- Export: above=<file==folder|image==photo> below=<arrow pointing up>
 		- Import: above=<file==folder|image==photo> below=<arrow pointing down>
-	- TODO: ropes are missing...
+	- TODO: ropes would be missing...
 
 ================================================================================================================================================================================
 
@@ -2368,3 +1852,521 @@ DONE
 	+ changes.txt
 
 + Release
+
+====== 1.17.2
+
++ Preferences
+	+ Completely independent "Preferences" class, does 3 things:
+		+ De-serialize
+		+ Serve as storage
+		+ Serialize
+	+ Move UnitsSsytem from ShipBuilder MainFrame's cctor to OpenForXXX()
+	+ If specified overrides own storage, else is loaded (and if not loaded, is default)
++ StatusBar (*)
++ Measuring Tape tool (*)
++ New/Set/Remove layers:
+	+ New:
+		+ Make internal helper templated on LayerType, with all code
+			+ Add new templated helper to make undo entry with whole layer
+		+ Additions:
+			+ Undo
+		+ Restore problem: could cause presence to change, hence impacting:
+			! Problem descr: restore could cause presence to change, hence impacting:
+				! Current tool
+					! Changed because primary viz has changed, via InternalSelectPrimaryVisualization() called currently by ::RemoveXYZLayer()
+				! Current viz 
+					! Via InternalUpdateModelControllerVisualizationModes() called currently by ::RemoveXYZLayer()
+			+ Fix:
+				+ Wrap operations with private templated WrapLikelyPresenceChangingOperation
+					+ Does the above - might only need InternalSelectPrimaryVisualization() though, as that one changes tool
+				+ @ Electrical
+				+ Test 
+				+ If Ok:
+					+ Use @ all other Controller::RestoreXYZLayerForUndo()
+					+ See if should also do:
+						+ InternalReconciliateTextureVisualizationMode()
+						+ If so, go again through Controller and remove those calls
+					+ Use @ all other layer-presence-changing operations
+						+ Also @ NewLayer helper itself
+						! And later, @ RemoveLayer, SetLayer helpers
+		+ Test (basic; undo):
+			+ S
+			+ E
+			+ R
+		+ Cleanup old code
+			+ Verify really ok
+	+ Remove:
+		+ Make internal helper templated on LayerType, with all code
+			+ Use WrapLikelyPresenceChangingOperation
+			+ Use PushUndoForWholeLayer
+		+ Additions:
+			+ Undo
+				+ Note: texture layer removal should also remember metadata (art credits)
+		+ Test (basic; undo):
+			+ E
+			+ R
+			+ T
+		+ Cleanup old code
+	+ Set:
+		+ Make internal helper templated on LayerType, with all code
+			+ Use WrapLikelyPresenceChangingOperation
+			+ Use PushUndoForWholeLayer
+		+ Additions:
+			+ Undo
+				+ Note: texture layer change should also remember metadata (art credits)
+		+ Test (basic; undo):
+			+ S
+			+ E
+			+ R
+			+ T
++ Import/Export:
+	+ Structural:
+		+ Import from:
+			+ .png, .shp, .shp2 (load whole and throw away)
+			+ Resize
+				+ Can move MakeReframed() up to XYZLayerData()?
+					+ Structural: just buffer
+					+ Electrical: buffer + panel
+						+ Do also staticShipRect calc's (intersection of old rect w/ (newOffset, newSize), then shifted to old coords)
+						+ Fix panel
+					+ Ropes: buffer
+					+ Unit tests
+				+ Rewrite ModelController::ResizeShip in terms of LayerData::Reframe()
+				+ Do resize @ import
+			+ Test:
+				+ .shp2, password-protected
+				+ .shp
+				+ .png
+				+ Resize larger
+				+ Resize smaller
+				+ One from Simulator
+		+ Export to .png
+			+ ShipDeSerializer:
+				+ SaveStructuralLayerImage(StructuralLayerData const &, ...)
+	+ Electrical:
+		+ Import:
+			+ .shp, .shp2 (load whole and throw away)
+				+ Might as well allow user to select .png's (for simplicity in ShipLoadDialog), will be discared afterwards anyway
+			+ Show error if no layer exists in definition
+			+ Resize
+			+ Test:
+				+ .shp2, password-protected
+				+ .shp
+				+ .png (w/error and w/out error)
+				+ Ship with no such layer
+				+ Resize larger
+				+ Resize smaller
+				+ One from Simulator
+		! No export (can save .shp2 and import from there)
+	+ Ropes:
+		+ Import:
+			+ .shp, .shp2 (load whole and throw away)
+				+ Might as well allow user to select .png's (for simplicity in ShipLoadDialog), will be discared afterwards anyway
+			+ Show error if no layer exists in definition
+			+ Resize
+			+ Test:
+				+ .shp2, password-protected
+				+ .shp
+				+ .png (w/error and w/out error)
+				+ Ship with no such layer
+				+ Resize larger
+				+ Resize smaller
+				+ One from Simulator
+		+ No export (can save .shp2 and import from there)
+	+ Texture:
+		+ Import: two separate import buttons
+			+ .png
+				+ New ImageLoadDialog
+				+ Load file and pass to Controller
+					+ Resize workflow
+						+ For texture
+							+ Dialog
+							+ Resize image								
+								+ Buffer2D::Reframe								
+									+ See broken Y
+							+ Controller::SetTextureLayer
+								+ Undo
+									+ Rearc: ModelController:
+										+ Dirty region to *update* and *upload*, one for each viz
+											+ Array member
+											+ Updated each time we currently invoke UpdateXXXViz
+											+ Also updated at New/Set/Remove/Restore layer
+										+ UpdateXXXViz(): they are all private, invoked *only* by single public UpdateVisualizations
+										+ ModelController::UpdateVisualizations(View)
+											+ Invokes all individual UpdateXXXViz()
+											+ Then uploads/removes from view
+										+ Controller: invoke UpdateVisualizations(View) at:
+											+ New
+											+ Set
+											+ Restore
+											+ Flip
+											+ Edits (tools)
+										+ Test:
+											+ Flood tool
+											+ Line tool
+											+ Pencil tool
+						+ For resize
+							+ Dialog
+								+ Dimensions lock button
+								+ When changing target size, need to honor anchor
+									+ Hence need to store anchor coords, rather than just offset, and calc offset at each OnChange
+									+ And if we store anchor coords, what do we do with mouse move?
+										+ Reset anchor coords
+										+ Should also communicate to dialog to reset anchor controls
+									+ Impl:
+										+ OnCustomOffset: invoke when mouse move
+											+ Dialog reactor: toggle all buttons off (via OnAnchor)
+										+ AnchorCoords:
+											+ Calc coords at OnChange iff mAnchorCoords.HasValue()
+								+ Fix the problem with super zoom
+								+ Capture mouse
+							+ Controller::ResizeShip
+								+ ModelController::ResizeShip
+									+ Do all layers like Flip()
+										+ Structural
+										+ Electrical
+										+ Ropes
+										+ Texture
+											+ Calc image size
+											+ FIX: also sizes of visualizations have to change
+												+ What if we alloc textures at MC::UpdateVisualizations() rather than at MC::SetXXXVizMode?
+												+ And then at MC::ResizeShip() we simply nuke textures
+										+ Test completely empty afterwards, all layers
+										+ Test actual resize
+									+ Electrical: remove panel elements that are gone
+								+ Undo
+									+ Instead of executing undo via 4 calls to Controller::RestoreXXXLayerForUndo, do one single call to
+									  new Controller::RestoreAllLayersForUndo
+			+ .shp, .shp2 (load whole and throw away)
+					+ Might as well allow user to select also .png's (for simplicity in ShipLoadDialog), will be discarded (errored) afterwards anyway - see next line
+				+ Show error if no layer exists in definition
+				! No need to resize
+				+ Test:
+					+ .shp2, password-protected
+					+ .shp
+					+ .png (expect error)
+					+ Ship with no such layer
+					+ One from Simulator
+				+ With import, also replace art credits
+					+ Empty if from image, from imported ship otherwise (even if empty)
+		+ Export to .png (though quite useless at this moment)
+			+ Ad-hoc code using ImageFileTools
+	+ Notes:
+		+ Any import from .shp2 requires password
+		+ All imports push an undo (via Controller::SetXYZLayer())
++ Preferences: load directories
++ Send for testing
+
++ Waterline analysis
+	! https://www.britannica.com/science/fluid-mechanics/Hydrostatics#ref611691
+	! https://www.engineeringtoolbox.com/centre-gravity-buoyancy-d_1286.html
+	! Gist:
+		- At equlibrium the hull is stable, hence the center of gravity and center of buoyancy are on the same vertical line
+			- For most hulls the center of buoyancy is below the center of gravity and the hull is said to be meta-stable
+		- Metacenter is the theoretical point at which the B-G vertical line intersects the vertical line through the new centre of buoyancy created when the body is tilted
+		- When at rest on even keel, the vessel’s centre of buoyancy is directly below the centre of gravity as well as below the metacentre
+	+ Impl:
+		+ Button at ribbon, under Analysis
+			+ Icon
+			+ Shorter label
+		+ View:
+			+ UploadWaterlineMarker
+			+ UploadWaterline
+		+ ShipBuilder/UI/WaterlineAnalyzerDialog
+			+ Icons x 3
+			+ Buttons x 3
+			+ DoStep: visualize analysis results
+				+ Static analysis
+					+ Have also label when no particles, need to differentiate between static-analysis-not-yet-run and run-but-no-particles
+		+ class WaterlineAnalyzer
+			X No float coords - simulator is integral for buoyancy after all
+			+ Order of privates: move the old "published" ones to search state
+				+ They are just state observables
+			+ Do level check w/delta from previous
+			+ Direction search
+				+ Inline
+				+ Do check with alignment of new dir with vertical
+				+ Find next dir
+					X Do half of the rotation
+					+ Rather than having rotation's magnitude be based on CoM-CoB angle magnitude, do directional search with small, fixed-size rotations, depending simply
+					  on orientation (left or right) of CoM-CoB wrt "vertical"
+						+ If CoM-CoB is to the right of "vertical": rotate direction by negative step
+						+ Else, rotate direction by positive step
+						+ Cap by CoM-CoB ^ direction angle
+					+ Problem: can dance back and forth - oscillates around minimum
+						+ Make rotation dependent on torque
+					+ Problem 2: direction search end condition: at the moment ignores distance between CoM and CoB; but when they're really 
+					  on each other, direction change should be negligible. Find another metric for the end condition
+						+ Torque (again)
+					! Facts:
+						! Ark: at equlibrium, right side is slightly lower
+						! At: -3.52; step is -3.63, hence we go for other side, and get -3.41; but "other side" is wrong
+							- Matches observation with torque-based direction method: in that case we go from -3.52 to -3.63, so it's not really about minimizing
+					+ 1: binsearch: make it with fixed-size steps - only bin when changing direction
+					+ 2: direction search: use the fact that a change in torque sign indicates passed a minimum
+					+ Cleanup
+					+ Larger direction search stride
+					+ Test corner cases:
+						+ Submarine
+						+ ~180degrees ball
+						+ Cardboard skyscraper
+							+ Remove buoyancy center if buoyant force is zero
+	+ Finalizations:
+		+ See if can get rid of state machine in WaterlineAnalyzer and do all with state instead
+		+ Fix Blimp break
+			+ Due to levelSearchCurrent not being correct anymore after rotation of direction; need to update it as well
+		+ Cap rotation due to torque
+		+ Outcome in dialog (populated at completion)
+			+ Trim (angle as absolute degrees)
+			+ Floating/Sinking statement
+			+ Test:
+				+ Submarine, Triton, Ship
+				+ Blimp, Cardboard
+				+ Concrete ball
+				+ No particles
+				+ One particle
+			+ Dialog: Gfx
+				+ Outcome control
+					+ Double-check heading by testing with a slightly tilting ship
+					+ Top arrow in image
+					+ Vertical dashed line as a guide
+				+ Replace static analysis text with "Trim" and "Floats" labels, with colored backgrounds
+		+ Faster animation
+		+ Cleanup logging
+		+ Analysis starts in continuous play
+	+ Jumpstart waterline analyzer when sinking
+		+ Dir = normal to M->B
+		+ Test with Colored Kursks
+
++ UI: total mass and center of mass
+	+ ModelController maintains structural analysis, like now
+		+ Structural analysis: total mass, sum of CoM
+	+ ModelController has "OnAnalysisUpdated" callback, goes straight to IUserInterface
+	+ Display:
+		+ Total mass (in StatusBar)
+		+ Center of Mass (toggled via toolbar)
+			+ Enabling/disabling CoM view
+				+ MainFrame UI
+				+ MacroProperties: center of mass must be optional (nullopt when no particles)
+				+ Via Controller
+					+ When enabled: asks ModelController and uploads to View
+					+ When disabled: removes from View - assuming we're the only ones (Waterline dialog may not be open)
+			+ Implement analysis via count of "mass" particles
+				+ So to zero out total mass when zero
+				+ Also can assert, nice
+			+ Controller/Tool rearc
+				+ Tool: take Controller and nothing of others
+				+ PencilTool
+					+ Implement LayerModificationEpilog in Controller
+					+ Controller: expose remaining members for tools to use
+				+ Other tools
+				+ Nuke ModelController callback for macro-properties
+					+ Move one-by-one to Controller (cctor, editing primitives, undo, etc.)
+				+ Test:
+					+ All tools
+			+ Callback: 
+				+ On top of calling IUserInterface, also inspect whether CoM viz is enabled and talk to view depending on that
+			+ Interaction with WaterlineAnalyzer
+				+ Needs to remember if it's the one that uploaded marker (which he does only if ! enabled) and undo @ destructor based on that memory
+					+ See if still need View::RemoveAllMarkers afterwards
+	+ See if can piggyback on MacroProperties in WaterlineAnalyzer, rather than calculating them again
+
++ Decide whether we still want Controller to both expose Model and wrappers for it
+	+ Philosophy:
+		+ Controller does not expose getters, but exposes ModelController const & for observers
+			+ Ideally Controller does not expose Model directly, only ModelController wrappers - so it can enforce eph viz checks, like we do now in CloneExistingLayer()
+		+ ModelController does not expose Model, and completely wraps Model
+
++ Fix auto zoom
+
++ Use epilog also at Controller itself
+
++ Merge Preferences into Workbench
+	+ Nuke Preferences
+	+ Use NewShipSize at Controller
+	+ Test 
+		+ Creates json
+		+ Loads json
+
++ Make mipmap for markers
+	+ Rename folders and groups
+		+ Clean build/data folders
+	+ Redo icons
+		+ 64x128
+		+ Fix anchor
+	+ View: upload mipmapped
+
++ See why we weren't asked to rename 3 balls after chaning name in metadata
+	+ Because it was .shp?
+
++ Perf:
+	+ Do perf analysis of long diagonal line
+		+ ShipBuilder::ModelController::UpdateVisualizations	6489 (95.24%)
+			+ ShipBuilder::ModelController::UpdateGameVisualization	3841 (65.67%)
+				+ RenderShipInto: 33
+				+ AutoTextureInto: 32
+			+ ShipBuilder::View::UploadGameVisualization	2600 (28.95%)
+	X Try using glTexSubImage2D at View::UploadGameVisualization
+	X Test with huge size: lag should only be proportional to edit region
+
++ Rotate 90 (CW and CCW) (full ship)
+	+ Ribbon, "Edit"
+		+ 2 icons
+	+ Buffer2D
+		+ Unit tests
+		+ Redo, using Coords.Rotate(direction, size)
+	+ RopeBuffer
+		+ In-place
+		+ Unit tests
+	+ Controller->ModelController
+		+ Also changes ship size, so do notifications
+	+ Test:
+		+ Structural
+		+ Electrical
+		+ Ropes
+		+ Texture
+		+ Undo
+		+ Ship size notif at rotate
+		+ Ship size notif at undo
+		+ CoM
+
++ ShipNameNormalizer
+	+ Use at:
+		+ NewShipNameDialog
+		+ ShipPropertiesEditDialog (only when name is dirty)
+		+ Messages:
+			+ "It seems that a better name for this ship might be:"
+			+ "Yes, I want to use the suggested name"
+			+ "No, I want to keep my name"
+
++ Ask user for new ship name
+	+ @ FS->SB via New Ship
+	+ @ SB open
+	+ @ SB::NewShip
+
++ Send for testing
+
++ Electrical panel authoring
+	+ ModelController: need to export <InstanceID, ElectricalMaterial *> pairs
+		+ InstancedElectricalElementSet:
+			+ Add/Remove (w/generation of instance ID)
+			+ Getters
+	+ Ribbon button
+		+ Icon
+		+ Only enabled iff (model has ElectricalLayer &&) ElectricalLayer has one instanced element
+	+ Dialog
+		+ Open() takes InstancedElectricalElementSet and ElectricalPanelMetadata
+		+ List: cols are:
+			+ Label: <instance ID> <material name>
+			+ Checkbox (for visibility)
+			+ Label
+				+ Move code that makes labels given instance index and ElectricalMaterial at ElectricalMaterial
+					+ Then would need electrical material at announcement events that SwitchboardPanel currently creates labels in
+		+ LayoutHelper: deal with repeated layout coords
+		+ ElectricalPanelLayoutControl
+			+ Make wxScrolled, and resize internals to virtual size
+				+ Min size still is own size though (GetSize() at time of need)
+			+ Crystallize element DcRect calculations in RecalculateGeometry()
+				+ Invoked by: OnResized, SetPanel
+			+ List auto-scroll
+				+ SetPanel should also take "master list" (element set)
+			+ Fix H scrolling
+			+ Actual element drawing
+				+ Image
+					+ Find new image
+				+ Instance index
+				+ Shadow
+			+ Visibility changes
+				+ Dialog: when making something visible: check if layout coords conflict with another visible one; if so, zero out
+			+ Mouse workflow
+				+ Mouse capture
+				+ Movable element drawn last
+				+ Drop candidate green
+				+ Drop (set / swap)
+			+ Vertical guide at x=0
+			+ Rewrite:
+				+ ClientToVirtual(wxPoint) -> wxPoint
+				+ MakeSlotVirtualRect
+				+ Replace mElements with ElectricalPanelMetadata&
+				+ Add map: LayoutCoords -> LayoutElement:
+					+ opt<InstanceIndex>
+					+ wxRect SlotVirtualRect
+			+ Can now assume that electrical panel always contains elements	
+		+ List: reorder cols:
+			+ Instance ID, label, "(material name)", visibility
+		+ Replace visibility checkbox with wxBitmapToggleButton with eye/crossed eye icon
+		+ Try shadow with bitmap
+		+ Hook events between List and ElectricalPanelLayoutControl:
+			+ Click on list element -> highlight in LayoutControl (and list element)
+			+ Click on LayoutControl -> highlight in list element (and list element, and scroll to it)
+		+ Max length for label
+		+ Final population of ElectricalPanel and delivery to Controller
+			+ ElectricalPanelLayoutControl: takes ElectricalPanel& from outside and populates directly
+			+ Dialog: populate only if dirty
+		+ ModelController: WriteParticle(electrical): take care of panel
+	+ Tests:
+		+ Saved and reloaded matches
+		+ Matching and functional in game
+		+ Restore
+		+ Saved after restore and reloaded matches
+		+ Deletion of instanced elements
+		+ Addition of instanced elements
+		+ Buffer restore when panel has more elements before restore
+
++ Eraser electrical: setting for size
++ Redo icon for CoM using new marker
++ Crash @ new/load ship when current tool in Workbenchstate is for layer not present in new one
+
++ Sampled material rearc:
+	! Spec:
+		! Motivation: these two once-separate work items:
+			- Sampler tool: also provide instance index
+			- Normal flood tool: also display underneath material to StatusBar
+		! Sampling is of both material and instance index
+			- Multiple tools do it
+				- So StatusBar needs to have separate section for measuring tool, and sampled material is not anymore mutex with measurement
+		! Tools need to update sampled material after each edit
+	+ Impl:
+		+ ShipBuilder: SampledInformation
+			+ string, opt<instance ID>
+		+ IUserInterface: OnToolCoords+OnSampled -> "OnSampledInformationUpdated"(SampledInformation)
+		+ StatusBar: 
+			+ Move material "area" next to coordinates "area", including its icon
+				+ Detach sampled material from "tool output"
+			+ Do ID
+		+ Controller::BroadcastSampledInformationUpdated(mouse coords)
+		+ Invoke at each tool that's worth doing it
+			! Via new Controller::BroadcastSampledInformationUpdated(mouse coords)
+				- At cctor
+				- At destructor
+				- At mouse move
+					- Must include result of edit
+			+ Sampler
+			+ Pencil/Eraser S/E
+			+ Flood S
+				+ Do clone "futurework"
+					+ Buffer2D::Trim, including unit tests
+					+ Layers::Trim, including unit tests
+						+ Structural layer
+						+ Electrical layer
+							+ Do trim panel at all places
+								+ Verify at existing unit tests
+						+ Ropes layer					
+				+ Test ropebuffer trim (via ship resize)
+			+ Line S/E
+			+ Rope pencil
+			+ Rope eraser
+		+ Who's doing it at left up (edit end)?
+			! Left up generates mouse move, seems @ Windows
+			+ Do it yourself, after each edit - ideally @ DoEdit itself (and remove redundant's after DoEdit invocation)
+				+ Pencil/Eraser S/E
+				+ Flood S
+				+ Line S/E
+				+ Rope pencil
+				+ Rope eraser	
+
++ Pencil: shift-lock with right-button material
+	! Due to focus not being on canvas at shift down
+	+ Remove logs
+
++ Merge into 1.17.1.next
