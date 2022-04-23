@@ -54,11 +54,11 @@ msgstr "Software de Terceros"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1511
 msgid "90 CCW"
-msgstr ""
+msgstr "90 en sentido Antihorario"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1494
 msgid "90 CW"
-msgstr ""
+msgstr "90 en sentido Horario"
 
 #: ..\FloatingSandbox\NewVersionDisplayDialog.cpp:19
 msgid "A New Version Is Available!"
@@ -863,38 +863,28 @@ msgid "Draw Structure"
 msgstr "Dibujar estructura"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:3149
-#, fuzzy
-#| msgid "Draw a rope between two endpoints"
 msgid "Draw a rope between two endpoints."
-msgstr "Dibujar una cuerda entre dos puntos"
+msgstr "Dibujar una cuerda entre dos puntos."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:3018
-#, fuzzy
-#| msgid "Draw electrical elements in lines"
 msgid "Draw electrical elements in lines."
-msgstr "Dibujar elementos eléctricos en líneas"
+msgstr "Dibujar elementos eléctricos en líneas."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4560
 msgid "Draw in Wireframe Mode"
 msgstr "Dibujar en modo estructura metalica"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2986
-#, fuzzy
-#| msgid "Draw individual electrical elements"
 msgid "Draw individual electrical elements."
-msgstr "Dibujar individualmente los elementos eléctricos"
+msgstr "Dibujar individualmente los elementos eléctricos."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2791
-#, fuzzy
-#| msgid "Draw individual structure particles"
 msgid "Draw individual structure particles."
-msgstr "Dibujar individualmente las partículas estructurales"
+msgstr "Dibujar individualmente las partículas estructurales."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2823
-#, fuzzy
-#| msgid "Draw particles in lines"
 msgid "Draw particles in lines."
-msgstr "Dibujar las partículas en líneas"
+msgstr "Dibujar las partículas en líneas."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3895
 msgid "Draws the ocean floor using a static color."
@@ -930,7 +920,7 @@ msgstr "Editar"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1371
 msgid "Edit Panel"
-msgstr ""
+msgstr "Editar Panel"
 
 #: ..\FloatingSandbox\MainFrame.cpp:551
 msgid "Edit This Ship..."
@@ -941,6 +931,8 @@ msgid ""
 "Edit the electrical panel that is visualized in the game when this ship is "
 "loaded."
 msgstr ""
+"Editar el panel eléctrico que es visualizado en el juego cuando este barco "
+"es cargado."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1583
 msgid "Edit the ship properties."
@@ -963,10 +955,8 @@ msgid "Electrical Layer"
 msgstr "Capa eléctrica"
 
 #: ..\ShipBuilderLib\Controller.cpp:272
-#, fuzzy
-#| msgid "Electrical Layer"
 msgid "Electrical Panel"
-msgstr "Capa eléctrica"
+msgstr "Panel eléctrico"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2508
 msgid "Electricals"
@@ -981,10 +971,8 @@ msgid "Enable/disable the visual guides."
 msgstr "Habilitar/Deshabilitar las guías visuales."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2682
-#, fuzzy
-#| msgid "Enables or disables visualization of the frontiers of the ship."
 msgid "Enable/disable visualization of the ship's center of mass."
-msgstr "Habilita o Deshabilita la virtualización de las bordes del barco."
+msgstr "Habilita o Deshabilita la visualización del centro de masa del barco."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:734
 msgid "Enables or disables amplification of tool forces and inflicted damages."
@@ -1177,22 +1165,16 @@ msgid "Engine Thrust Adjust"
 msgstr "Ajuste de potencia de los motores"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:3002
-#, fuzzy
-#| msgid "Erase individual electrical elements"
 msgid "Erase individual electrical elements."
-msgstr "Borrar individualmente los elementos eléctricos"
+msgstr "Borrar individualmente los elementos eléctricos."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2807
-#, fuzzy
-#| msgid "Erase individual structure particles"
 msgid "Erase individual structure particles."
-msgstr "Borrar individualmente las partículas estructurales"
+msgstr "Borrar individualmente las partículas estructurales."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:3165
-#, fuzzy
-#| msgid "Erase rope endpoints"
 msgid "Erase rope endpoints."
-msgstr "Borrar las puntas de las cuerdas"
+msgstr "Borrar las puntas de las cuerdas."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1745 ..\ShipBuilderLib\MainFrame.cpp:1799
 msgid "Eraser Size:"
@@ -1241,10 +1223,8 @@ msgid "File"
 msgstr "Archivo"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2839
-#, fuzzy
-#| msgid "Fill an area with structure particles"
 msgid "Fill an area with structure particles."
-msgstr "Llenar un área con partículas estructurales"
+msgstr "Llenar un área con partículas estructurales."
 
 #: ..\FloatingSandbox\MainFrame.cpp:344
 msgid "Fire Extinguisher"
@@ -1332,6 +1312,8 @@ msgstr "Forzar renderizado mononucleo"
 msgid ""
 "Forecast where the ship's waterline will be once the ship is in the water."
 msgstr ""
+"Predecir donde estará la linea de flotación del baro una vez que el barco "
+"este en el agua."
 
 #: ..\FloatingSandbox\ProbePanel.cpp:34
 msgid "Frame Rate"
@@ -1512,22 +1494,16 @@ msgid "Import"
 msgstr "Importar"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:3951
-#, fuzzy
-#| msgid "Electrical Layer"
 msgid "Import Electrical Layer"
-msgstr "Capa eléctrica"
+msgstr "Importar capa eléctrica"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:3971
-#, fuzzy
-#| msgid "Ropes Layer"
 msgid "Import Ropes Layer"
-msgstr "Capas de cuerda"
+msgstr "Importar capas de cuerda"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:3986
-#, fuzzy
-#| msgid "Structural Layer"
 msgid "Import Structural Layer"
-msgstr "Capa Estructural"
+msgstr "Importar capa Estructural"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:4003 ..\ShipBuilderLib\MainFrame.cpp:4072
 msgid "Import Texture Layer"
@@ -1725,7 +1701,7 @@ msgstr "Máximas partículas incendiadas"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2871
 msgid "Measure lengths."
-msgstr ""
+msgstr "Medir longitudes."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:513
 msgid "Mechanics"
@@ -1784,26 +1760,20 @@ msgid "Name:"
 msgstr "Nombre:"
 
 #: ..\ShipBuilderLib\Controller.cpp:392
-#, fuzzy
-#| msgid "Electrical Layer"
 msgid "New Electrical Layer"
-msgstr "Capa eléctrica"
+msgstr "Nueva capa eléctrica"
 
 #: ..\ShipBuilderLib\Controller.cpp:500
-#, fuzzy
-#| msgid "Ropes Layer"
 msgid "New Ropes Layer"
-msgstr "Capas de cuerda"
+msgstr "Nueva capa de cuerda"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:689
 msgid "New Ship"
 msgstr "Nuevo barco"
 
 #: ..\ShipBuilderLib\Controller.cpp:333
-#, fuzzy
-#| msgid "Structural Layer"
 msgid "New Structural Layer"
-msgstr "Capa Estructural"
+msgstr "Nueva capa Estructural"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4109
 msgid "Night Vision"
@@ -2098,16 +2068,12 @@ msgid "Remove"
 msgstr "Remover"
 
 #: ..\ShipBuilderLib\Controller.cpp:1247
-#, fuzzy
-#| msgid "Electrical Layer"
 msgid "Remove Electrical Layer"
-msgstr "Capa eléctrica"
+msgstr "Remover capa eléctrica"
 
 #: ..\ShipBuilderLib\Controller.cpp:1259
-#, fuzzy
-#| msgid "Ropes Layer"
 msgid "Remove Ropes Layer"
-msgstr "Capas de cuerda"
+msgstr "Remover capa de cuerda"
 
 #: ..\ShipBuilderLib\Controller.cpp:1273
 msgid "Remove Texture Layer"
@@ -2234,21 +2200,19 @@ msgstr "Aceleración de Oxidacion"
 
 #: ..\ShipBuilderLib\Controller.cpp:1871
 msgid "Rotate CCW"
-msgstr ""
+msgstr "Rotar AH"
 
 #: ..\ShipBuilderLib\Controller.cpp:1864
-#, fuzzy
-#| msgid "Move/Rotate"
 msgid "Rotate CW"
-msgstr "Mover/Rotar"
+msgstr "Rotar H"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1517
 msgid "Rotate the ship 90 degrees anti-clockwise."
-msgstr ""
+msgstr "Rotar el barco 90° en sentido antihorario."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1500
 msgid "Rotate the ship 90 degrees clockwise."
-msgstr ""
+msgstr "Rotar el barco 90° en sentido horario."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1117
 msgid "Rotting"
@@ -2277,7 +2241,7 @@ msgstr "AGRADECIMIENTOS ESPECIALES"
 #: ..\ShipBuilderLib\MainFrame.cpp:2855 ..\ShipBuilderLib\MainFrame.cpp:3034
 #: ..\ShipBuilderLib\MainFrame.cpp:3181
 msgid "Sample the material under the cursor."
-msgstr ""
+msgstr "Muestrear el material debajo del cursor."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:784
 msgid "Save And Return"
@@ -2308,10 +2272,8 @@ msgid "Save Ship As"
 msgstr "Guardar barco como"
 
 #: ..\UILib\ImageSaveDialog.cpp:21
-#, fuzzy
-#| msgid "Load an Image"
 msgid "Save an Image"
-msgstr "Cargar una Imagen"
+msgstr "Guardar una Imagen"
 
 #: ..\FloatingSandbox\BootSettingsDialog.cpp:151
 msgid "Save and Quit"
@@ -2843,15 +2805,15 @@ msgstr "Radio de la herramienta de explosiones (m)."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:3961
 msgid "The selected ship does not have a ropes layer"
-msgstr ""
+msgstr "El barco seleccionado no tiene una capa de cuerdas"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:3996
 msgid "The selected ship does not have a texture layer"
-msgstr ""
+msgstr "El barco seleccionado no tiene una capa de texturas"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:3940
 msgid "The selected ship does not have an electrical layer"
-msgstr ""
+msgstr "El barco seleccionado no tiene una capa electrica"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1763 ..\ShipBuilderLib\MainFrame.cpp:1817
 msgid "The size of the eraser tool."
@@ -2870,6 +2832,8 @@ msgid ""
 "The specified texture image is empty, and thus it may not be used for this "
 "ship."
 msgstr ""
+"La imagen de textura especificada esta vacía, y por lo tanto no puede ser "
+"usada para este barco."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3015
 msgid "The starting radius of the damage caused by destructive tools (m)."
@@ -3130,10 +3094,8 @@ msgid "Water and Ocean"
 msgstr "Agua y Oceano"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1617
-#, fuzzy
-#| msgid "Water"
 msgid "Waterline"
-msgstr "Agua"
+msgstr "Linea de flotación"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1829
 msgid "Wave Phenomena"

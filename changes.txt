@@ -23,6 +23,7 @@
 	- Adding and removing layers can now be undone via "Undo"
 	- Added ability to export structural and texture layers to image files
 	- ...and a few more small improvements here and there!
+- Reworked Spanish translation - "ahora hasta yo entiendo"
 
 1.17.1
 - ShipBuilder:

@@ -21,12 +21,14 @@
 				+ Italian
 				= Spanish
 					+ Incorporate 2.0
-					- Ask name of update
+					+ Ask name of update
 					+ Update
-					- Send
+					+ Send
+					= Receive back
 				= Russian
 					+ Update
-					- Send
+					+ Send
+					- Receive back
 			- Send for testing
 
 		---------
