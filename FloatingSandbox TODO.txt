@@ -876,8 +876,8 @@
 	- Fog
 		- Requires post-processing work
 
-	- Continuous auto-focus (*)
-		- Spec:
+	= Continuous auto-focus (*)
+		= Spec:
 			- Orchestrated by GameController's ViewManager by taking "optimal" AABB from World (which takes union of "optimal" AABB's from each ship)
 			  and giving it to RenderContext, which adjusts ViewModel based on it				
 				- At each simulation step
@@ -885,11 +885,11 @@
 				- Also toggable at "Controls" menu
 			- Also works as "auto-focus at load"
 				- Or at least, funcs that calc zoom and pan based on AABBs is reused (by same ViewManager) in order to calc auto-focus at load
-			- Full spec:
-				- Orchestrated by ViewManager, member of GameController
+			= Full spec:
+				= Orchestrated by ViewManager, member of GameController
 					- Is given (externally-owned) references to RenderContext& and NotificationLayer&, managing all communication to these wrt view params
 					- Owns view parameter smoothers
-						- Parameter smoothers: simplify by simply using convergence algo, coeff between 0.05 and 0.1
+						+ Parameter smoothers: simplify by simply using convergence algo, coeff between 0.05 and 0.1
 					- GameController forwards view parameter changes to it
 						- And ViewManager orchestrates talk with its own smoothers
 				- Given resulting AABBs by GameController at own Update(), called after World::Update

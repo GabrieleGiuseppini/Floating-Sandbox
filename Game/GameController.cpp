@@ -127,7 +127,7 @@ GameController::GameController(
     // Initialize parameter smoothers
     //
 
-    std::chrono::milliseconds constexpr ParameterSmoothingTrajectoryTime = std::chrono::milliseconds(1000);
+    float constexpr GenericParameterConvergenceFactor = 0.1f;
 
     assert(mFloatParameterSmoothers.size() == SpringStiffnessAdjustmentParameterSmoother);
     mFloatParameterSmoothers.emplace_back(
@@ -139,7 +139,7 @@ GameController::GameController(
         {
             this->mGameParameters.SpringStiffnessAdjustment = value;
         },
-        ParameterSmoothingTrajectoryTime);
+        GenericParameterConvergenceFactor);
 
     assert(mFloatParameterSmoothers.size() == SpringStrengthAdjustmentParameterSmoother);
     mFloatParameterSmoothers.emplace_back(
@@ -151,7 +151,7 @@ GameController::GameController(
         {
             this->mGameParameters.SpringStrengthAdjustment = value;
         },
-        ParameterSmoothingTrajectoryTime);
+        GenericParameterConvergenceFactor);
 
     assert(mFloatParameterSmoothers.size() == SeaDepthParameterSmoother);
     mFloatParameterSmoothers.emplace_back(
@@ -163,7 +163,7 @@ GameController::GameController(
         {
             this->mGameParameters.SeaDepth = value;
         },
-        ParameterSmoothingTrajectoryTime);
+        GenericParameterConvergenceFactor);
 
     assert(mFloatParameterSmoothers.size() == OceanFloorBumpinessParameterSmoother);
     mFloatParameterSmoothers.emplace_back(
@@ -175,7 +175,7 @@ GameController::GameController(
         {
             this->mGameParameters.OceanFloorBumpiness = value;
         },
-        ParameterSmoothingTrajectoryTime);
+        GenericParameterConvergenceFactor);
 
     assert(mFloatParameterSmoothers.size() == OceanFloorDetailAmplificationParameterSmoother);
     mFloatParameterSmoothers.emplace_back(
@@ -187,7 +187,7 @@ GameController::GameController(
         {
             this->mGameParameters.OceanFloorDetailAmplification = value;
         },
-        ParameterSmoothingTrajectoryTime);
+        GenericParameterConvergenceFactor);
 
     assert(mFloatParameterSmoothers.size() == FlameSizeAdjustmentParameterSmoother);
     mFloatParameterSmoothers.emplace_back(
@@ -199,7 +199,7 @@ GameController::GameController(
         {
             this->mRenderContext->SetShipFlameSizeAdjustment(value);
         },
-        ParameterSmoothingTrajectoryTime);
+        GenericParameterConvergenceFactor);
 
     assert(mFloatParameterSmoothers.size() == BasalWaveHeightAdjustmentParameterSmoother);
     mFloatParameterSmoothers.emplace_back(
@@ -211,7 +211,7 @@ GameController::GameController(
         {
             this->mGameParameters.BasalWaveHeightAdjustment = value;
         },
-        ParameterSmoothingTrajectoryTime);
+        GenericParameterConvergenceFactor);
 
     assert(mFloatParameterSmoothers.size() == FishSizeMultiplierParameterSmoother);
     mFloatParameterSmoothers.emplace_back(
@@ -223,11 +223,11 @@ GameController::GameController(
         {
             this->mGameParameters.FishSizeMultiplier = value;
         },
-        ParameterSmoothingTrajectoryTime);
+        GenericParameterConvergenceFactor);
 
     // ---------------------------------
 
-    std::chrono::milliseconds constexpr ControlParameterSmoothingTrajectoryTime = std::chrono::milliseconds(500);
+    float constexpr ControlParameterConvergenceFactor = 0.05f;
 
     mZoomParameterSmoother = std::make_unique<ParameterSmoother<float>>(
         [this]() -> float const &
@@ -242,7 +242,7 @@ GameController::GameController(
         {
             return this->mRenderContext->ClampZoom(value);
         },
-        ControlParameterSmoothingTrajectoryTime);
+        ControlParameterConvergenceFactor);
 
     mCameraWorldPositionParameterSmoother = std::make_unique<ParameterSmoother<vec2f>>(
         [this]() -> vec2f const &
@@ -257,7 +257,7 @@ GameController::GameController(
         {
             return this->mRenderContext->ClampCameraWorldPosition(value);
         },
-        ControlParameterSmoothingTrajectoryTime);
+        ControlParameterConvergenceFactor);
 
     //
     // Calibrate game
@@ -385,9 +385,9 @@ void GameController::RunGameIteration()
         std::for_each(
             mFloatParameterSmoothers.begin(),
             mFloatParameterSmoothers.end(),
-            [nowGame](auto & ps)
+            [](auto & ps)
             {
-                ps.Update(nowGame);
+                ps.Update();
             });
 
         //
@@ -436,9 +436,8 @@ void GameController::RunGameIteration()
         // Note: some Upload()'s need to use ViewModel values, which have then to match the
         // ViewModel values used by the subsequent render
         {
-            float const nowReal = GameWallClock::GetInstance().ContinuousNowAsFloat(); // Real wall clock, unpaused
-            mZoomParameterSmoother->Update(nowReal);
-            mCameraWorldPositionParameterSmoother->Update(nowReal);
+            mZoomParameterSmoother->Update();
+            mCameraWorldPositionParameterSmoother->Update();
         }
 
         //
@@ -1316,9 +1315,7 @@ void GameController::Pan(DisplayLogicalSize const & screenOffset)
         mCameraWorldPositionParameterSmoother->GetValue()
         + worldOffset;
 
-    mCameraWorldPositionParameterSmoother->SetValue(
-        newTargetCameraWorldPosition,
-        GameWallClock::GetInstance().ContinuousNowAsFloat());
+    mCameraWorldPositionParameterSmoother->SetValue(newTargetCameraWorldPosition);
 }
 
 void GameController::PanImmediate(DisplayLogicalSize const & screenOffset)
@@ -1354,9 +1351,7 @@ void GameController::AdjustZoom(float amount)
 {
     float const newTargetZoom = mZoomParameterSmoother->GetValue() * amount;
 
-    mZoomParameterSmoother->SetValue(
-        newTargetZoom,
-        GameWallClock::GetInstance().ContinuousNowAsFloat());
+    mZoomParameterSmoother->SetValue(newTargetZoom);
 }
 
 void GameController::ResetZoom()
