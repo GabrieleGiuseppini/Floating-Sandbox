@@ -19,13 +19,13 @@
 			- Localization
 				+ Update pot
 				= Italian
-				- Spanish
-					- Incorporate 2.0
+				= Spanish
+					+ Incorporate 2.0
 					- Ask name of update
-					- Update
+					+ Update
 					- Send
-				- Russian
-					- Update
+				= Russian
+					+ Update
 					- Send
 			- Send for testing
 
