@@ -54,11 +54,11 @@ msgstr "SOFTWARE AGGIUNTIVO"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1511
 msgid "90 CCW"
-msgstr "90 O"
+msgstr "90 AO"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1494
 msgid "90 CW"
-msgstr "90 AO"
+msgstr "90 O"
 
 #: ..\FloatingSandbox\NewVersionDisplayDialog.cpp:19
 msgid "A New Version Is Available!"

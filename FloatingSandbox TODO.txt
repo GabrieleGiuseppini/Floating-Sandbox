@@ -15,10 +15,10 @@
 
 		+ Material system improvements (*)
 
-		- Release:
-			- Localization
+		= Release:
+			= Localization
 				+ Update pot
-				= Italian
+				+ Italian
 				= Spanish
 					+ Incorporate 2.0
 					- Ask name of update
