@@ -208,30 +208,14 @@ void ViewManager::Update(Geometry::AABBSet const & allAABBs)
 
             // We assume the AABB fits in the window, so we now take care of imbalances
 
-            // TODO: should pan here take care of just moving center?
-
-            if (aabbNdcBottomLeft.x < -NdcLimitMax)
+            // X
+            if (aabbNdcBottomLeft.x < -NdcLimitMax
+                || aabbNdcTopRight.x > NdcLimitMax)
             {
-                LogMessage("  TODO: Offence: too much left");
+                LogMessage("  TODO: Offence: too much left/right");
 
-                float const xOffsetWorld =
-                    (-NdcLimitAvg - aabbNdcBottomLeft.x) / 2.0f
-                    * mRenderContext.GetVisibleWorld().Width;
-
-                // TODOHERE: incorporate user offset
-
-                vec2f const newTargetCameraWorldPosition =
-                    mCameraWorldPositionParameterSmoother->GetValue()
-                    + vec2f(-xOffsetWorld, 0.0f);
-
-                mCameraWorldPositionParameterSmoother->SetValue(newTargetCameraWorldPosition);
-            }
-            else if (aabbNdcTopRight.x > NdcLimitMax)
-            {
-                LogMessage("  TODO: Offence: too much right");
-
-                float const xOffsetWorld =
-                    (aabbNdcTopRight.x - NdcLimitAvg) / 2.0f
+                float const xOffsetWorld = 
+                    (aabbNdcBottomLeft.x + aabbNdcTopRight.x) / 2.0f
                     * mRenderContext.GetVisibleWorld().Width;
 
                 // TODOHERE: incorporate user offset
@@ -242,7 +226,25 @@ void ViewManager::Update(Geometry::AABBSet const & allAABBs)
 
                 mCameraWorldPositionParameterSmoother->SetValue(newTargetCameraWorldPosition);
             }
-            // TODOHERE: height
+
+            // Y
+            if (aabbNdcBottomLeft.y < -NdcLimitMax
+                || aabbNdcTopRight.y > NdcLimitMax)
+            {
+                LogMessage("  TODO: Offence: too much above/below");
+
+                float const yOffsetWorld =
+                    (aabbNdcBottomLeft.y + aabbNdcTopRight.y) / 2.0f
+                    * mRenderContext.GetVisibleWorld().Height;
+
+                // TODOHERE: incorporate user offset
+
+                vec2f const newTargetCameraWorldPosition =
+                    mCameraWorldPositionParameterSmoother->GetValue()
+                    + vec2f(0.0f, yOffsetWorld);
+
+                mCameraWorldPositionParameterSmoother->SetValue(newTargetCameraWorldPosition);
+            }
         }
     }
 
