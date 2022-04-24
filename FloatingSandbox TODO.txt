@@ -904,15 +904,17 @@
 			= Phase 2: rough auto-focus
 				+ Make it so that World may be asked for AABBSet right after adding ship
 				+ ViewManager::Update takes AABBSet
-				- AABBSet/visible world math
-				- Then rethink: does ship addition really need to maintain AABBSet up-to-date? We invoke ViewManager::Update() after world Update() after all
-					- Though world might have been paused
+				+ AABBSet/visible world math
+				- Fix issue: calculations by ViewModel are on view model params being smoothed towards target; may lead to ghost offenses
+					- Need to make calculations based on target values; may test with "Immediate"
 
 			- NotificationLayer
 			- TODO:
 				- Take care of initial auto-zoom
 				- See if still need ViewModel::CalculateZoomForWorldWidth/Height
 				- See if still need ViewModel::WorldOffsetToNdc
+				- Does ship addition to World really need to maintain AABBSet up-to-date? We invoke ViewManager::Update() after world Update() after all
+					- Though world might have been paused
 
 		- Tests:
 			- Loading ship which has no frontiers: check behavior for all combinations of autofocus/autozoom

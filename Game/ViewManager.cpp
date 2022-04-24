@@ -157,34 +157,92 @@ void ViewManager::Update(Geometry::AABBSet const & allAABBs)
             vec2f aabbNdcBottomLeft = mRenderContext.WorldToNdc(unionAABB->BottomLeft);
             vec2f aabbNdcTopRight = mRenderContext.WorldToNdc(unionAABB->TopRight);
 
+            //
+            // Zoom
+            //
+
             // Calculate NDC extent of AABB's extent at current ViewModel params (0,...,2)
             vec2f const aabbNdcExtent = vec2f(
                 aabbNdcTopRight.x - aabbNdcBottomLeft.x,
                 aabbNdcTopRight.y - aabbNdcBottomLeft.y);
 
-            // TODOHERE
-            static vec2f TODO = vec2f::zero();
-            if (aabbNdcExtent != TODO)
-            {
-                LogMessage("TODO: NDC Extent=", aabbNdcExtent.toString());
-                TODO = aabbNdcExtent;
-            }
+            // See if it falls out of our target quad; if it does, adjust zoom 
+            // so that the offending dimension lies exactly in-between the limits
 
-            // TODOHERE: need to calc zoom for combined dimensions
-            // See if it falls out of our target quad
-            if (aabbNdcExtent.x < 2.0f * NdcLimitMin
-                || aabbNdcExtent.x > 2.0f * NdcLimitMax
-                || aabbNdcExtent.y < 2.0f * NdcLimitMin
+            if (aabbNdcExtent.x > 2.0f * NdcLimitMax
                 || aabbNdcExtent.y > 2.0f * NdcLimitMax)
             {
-                // Adjust zoom so that largest dimension lies exactly in-between the limits
                 float const autoFocusZoom = (aabbNdcExtent.x >= aabbNdcExtent.y)
                     ? mRenderContext.CalculateZoomForNdcWidth(aabbNdcExtent.x / NdcLimitAvg)
                     : mRenderContext.CalculateZoomForNdcHeight(aabbNdcExtent.y / NdcLimitAvg);
 
+                LogMessage("  TODO: Offence: exceed");
+
                 // TODOHERE: incorporate user offset
                 mZoomParameterSmoother->SetValue(autoFocusZoom);
+
+                // Re-calculate AABB
+                aabbNdcBottomLeft = mRenderContext.WorldToNdc(unionAABB->BottomLeft);
+                aabbNdcTopRight = mRenderContext.WorldToNdc(unionAABB->TopRight);
             }
+            else if (aabbNdcExtent.x < 2.0f * NdcLimitMin
+                && aabbNdcExtent.y < 2.0f * NdcLimitMin)
+            {
+                float const autoFocusZoom = (aabbNdcExtent.x < aabbNdcExtent.y)
+                    ? mRenderContext.CalculateZoomForNdcWidth(aabbNdcExtent.x / NdcLimitAvg)
+                    : mRenderContext.CalculateZoomForNdcHeight(aabbNdcExtent.y / NdcLimitAvg);
+
+                LogMessage("  TODO: Offence: undertake");
+
+                // TODOHERE: incorporate user offset
+                mZoomParameterSmoother->SetValue(autoFocusZoom);
+
+                // Re-calculate AABB
+                aabbNdcBottomLeft = mRenderContext.WorldToNdc(unionAABB->BottomLeft);
+                aabbNdcTopRight = mRenderContext.WorldToNdc(unionAABB->TopRight);
+            }
+
+            //
+            // Pan
+            //
+
+            // We assume the AABB fits in the window, so we now take care of imbalances
+
+            // TODO: should pan here take care of just moving center?
+
+            if (aabbNdcBottomLeft.x < -NdcLimitMax)
+            {
+                LogMessage("  TODO: Offence: too much left");
+
+                float const xOffsetWorld =
+                    (-NdcLimitAvg - aabbNdcBottomLeft.x) / 2.0f
+                    * mRenderContext.GetVisibleWorld().Width;
+
+                // TODOHERE: incorporate user offset
+
+                vec2f const newTargetCameraWorldPosition =
+                    mCameraWorldPositionParameterSmoother->GetValue()
+                    + vec2f(-xOffsetWorld, 0.0f);
+
+                mCameraWorldPositionParameterSmoother->SetValue(newTargetCameraWorldPosition);
+            }
+            else if (aabbNdcTopRight.x > NdcLimitMax)
+            {
+                LogMessage("  TODO: Offence: too much right");
+
+                float const xOffsetWorld =
+                    (aabbNdcTopRight.x - NdcLimitAvg) / 2.0f
+                    * mRenderContext.GetVisibleWorld().Width;
+
+                // TODOHERE: incorporate user offset
+
+                vec2f const newTargetCameraWorldPosition =
+                    mCameraWorldPositionParameterSmoother->GetValue()
+                    + vec2f(xOffsetWorld, 0.0f);
+
+                mCameraWorldPositionParameterSmoother->SetValue(newTargetCameraWorldPosition);
+            }
+            // TODOHERE: height
         }
     }
 
