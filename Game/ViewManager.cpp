@@ -98,23 +98,27 @@ void ViewManager::ResetZoom()
     mZoomParameterSmoother->SetValueImmediate(newTargetZoom);
 }
 
-void ViewManager::TODODoAutoZoom(Geometry::AABB const & aabb)
+void ViewManager::TODODoAutoZoom(Geometry::AABBSet const & allAABBs)
 {
-    // Calculate zoom to fit width and height (plus a nicely-looking margin)
-    float const newZoom = std::min(
-        mRenderContext.CalculateZoomForWorldWidth(aabb.GetWidth() + 5.0f),
-        mRenderContext.CalculateZoomForWorldHeight(aabb.GetHeight() + 3.0f));
+    auto const unionAABB = allAABBs.MakeUnion();
+    if (unionAABB.has_value())
+    {
+        // Calculate zoom to fit width and height (plus a nicely-looking margin)
+        float const newZoom = std::min(
+            mRenderContext.CalculateZoomForWorldWidth(unionAABB->GetWidth() + 5.0f),
+            mRenderContext.CalculateZoomForWorldHeight(unionAABB->GetHeight() + 3.0f));
 
-    // If calculated zoom requires zoom out: use it
-    if (newZoom <= mZoomParameterSmoother->GetValue())
-    {
-        mZoomParameterSmoother->SetValueImmediate(newZoom);
-    }
-    else if (newZoom > 1.0f)
-    {
-        // Would need to zoom-in closer...
-        // ...let's stop at 1.0 then
-        mZoomParameterSmoother->SetValueImmediate(1.0f);
+        // If calculated zoom requires zoom out: use it
+        if (newZoom <= mZoomParameterSmoother->GetValue())
+        {
+            mZoomParameterSmoother->SetValueImmediate(newZoom);
+        }
+        else if (newZoom > 1.0f)
+        {
+            // Would need to zoom-in closer...
+            // ...let's stop at 1.0 then
+            mZoomParameterSmoother->SetValueImmediate(1.0f);
+        }
     }
 }
 

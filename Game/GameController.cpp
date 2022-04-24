@@ -1440,9 +1440,7 @@ void GameController::OnShipCreated(
     if (doAutoZoom && mDoAutoZoomOnShipLoad)
     {   
         // TODO
-        vec2f const shipSize = mWorld->GetShipSize(shipId);
-        Geometry::AABB shipAABB(shipSize, vec2f::zero());
-        mViewManager.TODODoAutoZoom(shipAABB);
+        mViewManager.TODODoAutoZoom(mWorld->GetAllAABBs());
     }
 
     // Add ship to rendering engine

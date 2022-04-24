@@ -52,8 +52,16 @@ ShipId World::GetNextShipId() const
 
 void World::AddShip(std::unique_ptr<Ship> ship)
 {
+    auto const shipAABBs = ship->CalculateAABBs();
+
     assert(ship->GetId() == static_cast<ShipId>(mAllShips.size()));
     mAllShips.push_back(std::move(ship));
+
+    // Update AABBSet
+    for (auto const & aabb : shipAABBs.GetItems())
+    {
+        mAllAABBs.Add(aabb);
+    }
 }
 
 void World::Announce()
@@ -100,13 +108,6 @@ size_t World::GetShipPointCount(ShipId shipId) const
     assert(shipId >= 0 && shipId < mAllShips.size());
 
     return mAllShips[shipId]->GetPointCount();
-}
-
-vec2f World::GetShipSize(ShipId shipId) const
-{
-    assert(shipId >= 0 && shipId < mAllShips.size());
-
-    return mAllShips[shipId]->GetSize();
 }
 
 bool World::IsUnderwater(ElementId elementId) const

@@ -9,6 +9,7 @@
 #include "Vectors.h"
 
 #include <algorithm>
+#include <optional>
 #include <vector>
 
 namespace Geometry {
@@ -50,6 +51,28 @@ public:
             {
                 return aabb.Contains(point, margin);
             });
+    }
+
+    inline std::optional<AABB> MakeUnion() const
+    {
+        if (mAABBs.empty())
+        {
+            return std::nullopt;
+        }
+        else
+        {
+            AABB result;
+
+            std::for_each(
+                mAABBs.cbegin(),
+                mAABBs.cend(),
+                [&result](AABB const & elem)
+                {
+                    result.ExtendTo(elem);
+                });
+
+            return result;
+        }
     }
 
     // Note: at this moment we assume that we don't need to track AABBs back to

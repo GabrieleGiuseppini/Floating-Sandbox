@@ -901,10 +901,16 @@
 		= Impl:
 			+ Phase 1: ViewManager extraction
 				+ Parameter smoothers: simplify by simply using convergence algo, coeff between 0.05 and 0.1
-			- Phase 2: 
+			= Phase 2: rough auto-focus
+				+ Make it so that World may be asked for AABBSet right after adding ship
+				- ViewManager::Update takes AABBSet
+				- AABBSet math
 
 			- TODO:
 				- Take care of initial auto-zoom
+
+		- Tests:
+			- Loading ship which has no frontiers: check behavior for all combinations of autofocus/autozoom
 
 		- TODOOLD
 		- Algo:

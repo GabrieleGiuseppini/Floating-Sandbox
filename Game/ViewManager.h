@@ -27,7 +27,7 @@ public:
     void ResetPan();
     void AdjustZoom(float amount);
     void ResetZoom();
-    void TODODoAutoZoom(Geometry::AABB const & aabb);
+    void TODODoAutoZoom(Geometry::AABBSet const & allAABBs);
 
     void Update();
 

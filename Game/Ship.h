@@ -53,9 +53,9 @@ public:
     inline World const & GetParentWorld() const { return mParentWorld; }
     inline World & GetParentWorld() { return mParentWorld; }
 
-    inline size_t GetPointCount() const { return mPoints.GetElementCount(); }
+    Geometry::AABBSet CalculateAABBs() const;
 
-    inline vec2f GetSize() const { return mSize; }
+    inline size_t GetPointCount() const { return mPoints.GetElementCount(); }
 
     inline auto const & GetPoints() const { return mPoints; }
     inline auto & GetPoints() { return mPoints; }
@@ -786,9 +786,6 @@ private:
     std::shared_ptr<GameEventDispatcher> mGameEventHandler;
     std::shared_ptr<TaskThreadPool> mTaskThreadPool;
     EventRecorder * mEventRecorder;
-
-    // The (initial) world size of  the ship
-    vec2f const mSize;
 
     // All the ship elements - never removed, the repositories maintain their own size forever
     Points mPoints;

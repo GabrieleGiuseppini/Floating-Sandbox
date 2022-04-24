@@ -74,7 +74,6 @@ Ship::Ship(
     , mGameEventHandler(std::move(gameEventDispatcher))
     , mTaskThreadPool(std::move(taskThreadPool))
     , mEventRecorder(nullptr)
-    , mSize(points.GetAABB().GetSize())
     , mPoints(std::move(points))
     , mSprings(std::move(springs))
     , mTriangles(std::move(triangles))
@@ -136,6 +135,38 @@ void Ship::Announce()
 {
     // Announce instanced electrical elements
     mElectricalElements.AnnounceInstancedElements();
+}
+
+Geometry::AABBSet Ship::CalculateAABBs() const
+{
+    Geometry::AABBSet allAABBs;
+
+    for (FrontierId frontierId : mFrontiers.GetFrontierIds())
+    {
+        auto & frontier = mFrontiers.GetFrontier(frontierId);
+        if (frontier.Type == FrontierType::External)
+        {
+            Geometry::AABB aabb;
+
+            ElementIndex const frontierStartEdge = frontier.StartingEdgeIndex;
+            for (ElementIndex edgeIndex = frontierStartEdge; /*checked in loop*/; /*advanced in loop*/)
+            {
+                auto const & frontierEdge = mFrontiers.GetFrontierEdge(edgeIndex);
+
+                auto const pointPosition = mPoints.GetPosition(frontierEdge.PointAIndex);
+                aabb.ExtendTo(pointPosition);
+
+                // Advance
+                edgeIndex = frontierEdge.NextEdgeIndex;
+                if (edgeIndex == frontierStartEdge)
+                    break;
+            }
+
+            allAABBs.Add(aabb);
+        }
+    }
+
+    return allAABBs;
 }
 
 void Ship::SetEventRecorder(EventRecorder * eventRecorder)

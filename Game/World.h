@@ -67,7 +67,10 @@ public:
 
     size_t GetShipPointCount(ShipId shipId) const;
 
-    vec2f GetShipSize(ShipId shipId) const;
+    Geometry::AABBSet GetAllAABBs() const
+    {
+        return mAllAABBs;
+    }
 
     inline void DisturbOceanAt(
         vec2f const & position,
@@ -376,7 +379,7 @@ private:
     Fishes mFishes;
 
     // The set of all AABB's in the world, updated at each
-    // simulation cycle
+    // simulation cycle and at each ship addition
     Geometry::AABBSet mAllAABBs;
 };
 
