@@ -172,14 +172,14 @@ void ViewManager::Update(Geometry::AABBSet const & allAABBs)
             if (aabbNdcExtent.x > 2.0f * NdcLimitMax
                 || aabbNdcExtent.y > 2.0f * NdcLimitMax)
             {
+                LogMessage("  TODO: Offence: zoom excedence");
+
                 float const autoFocusZoom = (aabbNdcExtent.x >= aabbNdcExtent.y)
                     ? mRenderContext.CalculateZoomForNdcWidth(aabbNdcExtent.x / NdcLimitAvg)
                     : mRenderContext.CalculateZoomForNdcHeight(aabbNdcExtent.y / NdcLimitAvg);
 
-                LogMessage("  TODO: Offence: exceed");
-
                 // TODOHERE: incorporate user offset
-                mZoomParameterSmoother->SetValue(autoFocusZoom);
+                mZoomParameterSmoother->SetValueImmediate(autoFocusZoom);
 
                 // Re-calculate AABB
                 aabbNdcBottomLeft = mRenderContext.WorldToNdc(unionAABB->BottomLeft);
@@ -188,14 +188,14 @@ void ViewManager::Update(Geometry::AABBSet const & allAABBs)
             else if (aabbNdcExtent.x < 2.0f * NdcLimitMin
                 && aabbNdcExtent.y < 2.0f * NdcLimitMin)
             {
+                LogMessage("  TODO: Offence: zoom underwhelming");
+
                 float const autoFocusZoom = (aabbNdcExtent.x < aabbNdcExtent.y)
                     ? mRenderContext.CalculateZoomForNdcWidth(aabbNdcExtent.x / NdcLimitAvg)
                     : mRenderContext.CalculateZoomForNdcHeight(aabbNdcExtent.y / NdcLimitAvg);
 
-                LogMessage("  TODO: Offence: undertake");
-
                 // TODOHERE: incorporate user offset
-                mZoomParameterSmoother->SetValue(autoFocusZoom);
+                mZoomParameterSmoother->SetValueImmediate(autoFocusZoom);
 
                 // Re-calculate AABB
                 aabbNdcBottomLeft = mRenderContext.WorldToNdc(unionAABB->BottomLeft);
@@ -212,10 +212,10 @@ void ViewManager::Update(Geometry::AABBSet const & allAABBs)
             if (aabbNdcBottomLeft.x < -NdcLimitMax
                 || aabbNdcTopRight.x > NdcLimitMax)
             {
-                LogMessage("  TODO: Offence: too much left/right");
+                LogMessage("  TODO: Pan offence: too much left/right (extent: ", aabbNdcExtent.x, " L:", aabbNdcBottomLeft.x, " R:", aabbNdcTopRight.x, " offset:", ((aabbNdcBottomLeft.x + aabbNdcTopRight.x) / 2.0f));
 
                 float const xOffsetWorld = 
-                    (aabbNdcBottomLeft.x + aabbNdcTopRight.x) / 2.0f
+                    (aabbNdcBottomLeft.x + aabbNdcTopRight.x) / 2.0f / 2.0f
                     * mRenderContext.GetVisibleWorld().Width;
 
                 // TODOHERE: incorporate user offset
@@ -224,7 +224,7 @@ void ViewManager::Update(Geometry::AABBSet const & allAABBs)
                     mCameraWorldPositionParameterSmoother->GetValue()
                     + vec2f(xOffsetWorld, 0.0f);
 
-                mCameraWorldPositionParameterSmoother->SetValue(newTargetCameraWorldPosition);
+                mCameraWorldPositionParameterSmoother->SetValueImmediate(newTargetCameraWorldPosition);
             }
 
             // Y
@@ -234,7 +234,7 @@ void ViewManager::Update(Geometry::AABBSet const & allAABBs)
                 LogMessage("  TODO: Offence: too much above/below");
 
                 float const yOffsetWorld =
-                    (aabbNdcBottomLeft.y + aabbNdcTopRight.y) / 2.0f
+                    (aabbNdcBottomLeft.y + aabbNdcTopRight.y) / 2.0f / 2.0f
                     * mRenderContext.GetVisibleWorld().Height;
 
                 // TODOHERE: incorporate user offset
@@ -243,7 +243,7 @@ void ViewManager::Update(Geometry::AABBSet const & allAABBs)
                     mCameraWorldPositionParameterSmoother->GetValue()
                     + vec2f(0.0f, yOffsetWorld);
 
-                mCameraWorldPositionParameterSmoother->SetValue(newTargetCameraWorldPosition);
+                mCameraWorldPositionParameterSmoother->SetValueImmediate(newTargetCameraWorldPosition);
             }
         }
     }

@@ -905,8 +905,9 @@
 				+ Make it so that World may be asked for AABBSet right after adding ship
 				+ ViewManager::Update takes AABBSet
 				+ AABBSet/visible world math
-				- Fix issue: calculations by ViewModel are on view model params being smoothed towards target; may lead to ghost offenses
-					- Need to make calculations based on target values; may test with "Immediate"
+				- Fix issues: 
+					- Calculations by ViewModel are on view model params being smoothed towards target; may lead to ghost offenses
+						- Need to make calculations based on target values; may test with "Immediate"
 
 			- NotificationLayer
 			- TODO:
