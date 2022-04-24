@@ -162,8 +162,9 @@ void ViewManager::Update(Geometry::AABBSet const & allAABBs)
                 aabbNdcTopRight.x - aabbNdcBottomLeft.x,
                 aabbNdcTopRight.y - aabbNdcBottomLeft.y);
 
-            // TODOTEST
+            // TODOTEST: continuous
 
+            // TODOHERE: see if should use min/max among both zooms
             float const autoFocusZoom = (aabbNdcExtent.x >= aabbNdcExtent.y)
                 ? mRenderContext.CalculateZoomForNdcWidth(aabbNdcExtent.x / NdcLimitAvg)
                 : mRenderContext.CalculateZoomForNdcHeight(aabbNdcExtent.y / NdcLimitAvg);
@@ -174,6 +175,7 @@ void ViewManager::Update(Geometry::AABBSet const & allAABBs)
             aabbNdcBottomLeft = mRenderContext.WorldToNdc(unionAABB->BottomLeft, mZoomParameterSmoother->GetValue(), mCameraWorldPositionParameterSmoother->GetValue());
             aabbNdcTopRight = mRenderContext.WorldToNdc(unionAABB->TopRight, mZoomParameterSmoother->GetValue(), mCameraWorldPositionParameterSmoother->GetValue());
 
+            // TODO: should calculate VisibleWorld based on target values
             vec2f const offsetWorld = vec2f(
                 (aabbNdcBottomLeft.x + aabbNdcTopRight.x) / 2.0f / 2.0f * mRenderContext.GetVisibleWorld().Width,
                 (aabbNdcBottomLeft.y + aabbNdcTopRight.y) / 2.0f / 2.0f * mRenderContext.GetVisibleWorld().Height);

@@ -122,6 +122,9 @@ public:
         return clampedZoom;
     }
 
+    /*
+     * Zoom is higher numerically when zooming in, and smaller (towards zero) when zooming out.
+     */
     float const & SetZoom(float zoom)
     {
         float newZoom = ClampZoom(zoom);
@@ -246,6 +249,7 @@ public:
     /*
      * Equivalent of the transformation we usually perform in vertex shaders.
      */
+    // TODONEW
     inline vec2f WorldToNdc(
         vec2f const & worldCoordinates,
         float zoom,
@@ -259,6 +263,7 @@ public:
             2.0f * (worldCoordinates.y - camWorld.y) / visibleWorldHeight);
     }
 
+    // TODONEW
     inline vec2f WorldOffsetToNdc(vec2f const & worldOffset) const
     {
         return vec2f(
@@ -330,6 +335,7 @@ public:
      * Calculates the zoom required to ensure that the specified NDC
      * width is fully visible in the canvas.
      */
+     // TODONEW
     inline float CalculateZoomForNdcWidth(float ndcWidth) const
     {
         return CalculateZoomForWorldWidth(ndcWidth * mVisibleWorld.Width / 2.0f);
@@ -339,6 +345,7 @@ public:
      * Calculates the zoom required to ensure that the specified NDC
      * height is fully visible in the canvas.
      */
+     // TODONEW
     inline float CalculateZoomForNdcHeight(float ndcHeight) const
     {
         return CalculateZoomForWorldHeight(ndcHeight * mVisibleWorld.Height / 2.0f);
