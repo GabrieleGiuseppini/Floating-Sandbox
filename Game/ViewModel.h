@@ -271,6 +271,19 @@ public:
             worldOffset.y * mKernelOrthoMatrix[1][1]);
     }
 
+    // TODONEW
+    inline vec2f WorldOffsetToNdc(
+        vec2f const & worldOffset,
+        float zoom) const
+    {
+        float const visibleWorldHeight = CalculateVisibleWorldHeight(zoom);
+        float const visibleWorldWidth = visibleWorldHeight * GetAspectRatio();
+
+        return vec2f(
+            worldOffset.x * 2.0f / visibleWorldWidth,
+            worldOffset.y * 2.0f / visibleWorldHeight);
+    }
+
     inline vec2f ScreenToWorld(DisplayLogicalCoordinates const & screenCoordinates) const
     {
         vec2f const worldCoordinates = vec2f(
@@ -351,6 +364,20 @@ public:
         return CalculateZoomForWorldHeight(ndcHeight * mVisibleWorld.Height / 2.0f);
     }
 
+    // TODONEW: was private
+    float CalculateVisibleWorldWidth(float zoom) const
+    {
+        return CalculateVisibleWorldHeight(zoom) * GetAspectRatio();
+    }
+
+    // TODONEW: was private
+    float CalculateVisibleWorldHeight(float zoom) const
+    {
+        assert(zoom != 0.0f);
+
+        return ZoomHeightConstant / zoom;
+    }
+
     //
     // Projection matrixes
     //
@@ -427,18 +454,6 @@ public:
     }
 
 private:
-
-    float CalculateVisibleWorldWidth(float zoom) const
-    {
-        return CalculateVisibleWorldHeight(zoom) * GetAspectRatio();
-    }
-
-    float CalculateVisibleWorldHeight(float zoom) const
-    {
-        assert(zoom != 0.0f);
-
-        return ZoomHeightConstant / zoom;
-    }
 
     void RecalculateAttributes()
     {

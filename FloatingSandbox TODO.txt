@@ -877,7 +877,7 @@
 		- Requires post-processing work
 
 	= Continuous auto-focus (*)
-		= Spec:
+		! Spec:
 			- Orchestrated by GameController's ViewManager by taking "optimal" AABB from World (which takes union of "optimal" AABB's from each ship)
 			  and giving it to RenderContext, which adjusts ViewModel based on it				
 				- At each simulation step
@@ -906,15 +906,21 @@
 				+ ViewManager::Update takes AABBSet
 				+ AABBSet/visible world math
 			= Phase 3: improve auto-focus
-				= Try with continuous adjustments
-				- Calculations by ViewModel are on view model params being smoothed towards target; may lead to ghost offenses
-					- Need to make calculations based on target values; may test with "Immediate"
-
-			- NotificationLayer
-			- TODO:
+				+ Try with continuous adjustments
+				+ Calculations by ViewModel are on view model params being smoothed towards target; may lead to ghost offenses
+					+ Need to make calculations based on target values; may test with "Immediate"
+				- See if can use tolerance to make adjustments less continuous
+			- Phase 4: user's offsets
+			- Phase 5: enabling/disabling
+				- Main UI
+				- NotificationLayer
+			- Cleanup:
+				- Electrical panel docking/undocking should change params immediately
 				- Take care of initial auto-zoom
 				- See if still need ViewModel::CalculateZoomForWorldWidth/Height
 				- See if still need ViewModel::WorldOffsetToNdc
+				- See if still need ViewModel::TODONEW's
+					- And all RenderContext forwarders
 				- Does ship addition to World really need to maintain AABBSet up-to-date? We invoke ViewManager::Update() after world Update() after all
 					- Though world might have been paused
 

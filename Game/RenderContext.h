@@ -163,6 +163,16 @@ public:
         return mRenderParameters.View.CalculateZoomForNdcHeight(ndcHeight);
     }
 
+    float CalculateVisibleWorldWidth(float zoom) const
+    {
+        return mRenderParameters.View.CalculateVisibleWorldWidth(zoom);
+    }
+
+    float CalculateVisibleWorldHeight(float zoom) const
+    {
+        return mRenderParameters.View.CalculateVisibleWorldHeight(zoom);
+    }
+
     ViewModel const & GetViewModel() const
     {
         return mRenderParameters.View;
@@ -593,6 +603,15 @@ public:
     inline vec2f WorldOffsetToNdc(vec2f const & worldOffset) const
     {
         return mRenderParameters.View.WorldOffsetToNdc(worldOffset);
+    }
+
+    inline vec2f WorldOffsetToNdc(
+        vec2f const & worldOffset,
+        float zoom) const
+    {
+        return mRenderParameters.View.WorldOffsetToNdc(
+            worldOffset,
+            zoom);
     }
 
     inline vec2f ScreenToWorld(DisplayLogicalCoordinates const & screenCoordinates) const
