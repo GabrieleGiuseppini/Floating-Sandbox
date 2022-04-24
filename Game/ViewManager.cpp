@@ -154,9 +154,38 @@ void ViewManager::Update(Geometry::AABBSet const & allAABBs)
             float constexpr NdcLimitAvg = (NdcLimitMin + NdcLimitMax) / 2.0f;
 
             // Calculate NDC coords of AABB (-1,...,+1)
-            vec2f aabbNdcBottomLeft = mRenderContext.WorldToNdc(unionAABB->BottomLeft);
-            vec2f aabbNdcTopRight = mRenderContext.WorldToNdc(unionAABB->TopRight);
+            vec2f aabbNdcBottomLeft = mRenderContext.WorldToNdc(unionAABB->BottomLeft, mZoomParameterSmoother->GetValue(), mCameraWorldPositionParameterSmoother->GetValue());
+            vec2f aabbNdcTopRight = mRenderContext.WorldToNdc(unionAABB->TopRight, mZoomParameterSmoother->GetValue(), mCameraWorldPositionParameterSmoother->GetValue());
 
+            // Calculate NDC extent of AABB's extent at current ViewModel params (0,...,2)
+            vec2f const aabbNdcExtent = vec2f(
+                aabbNdcTopRight.x - aabbNdcBottomLeft.x,
+                aabbNdcTopRight.y - aabbNdcBottomLeft.y);
+
+            // TODOTEST
+
+            float const autoFocusZoom = (aabbNdcExtent.x >= aabbNdcExtent.y)
+                ? mRenderContext.CalculateZoomForNdcWidth(aabbNdcExtent.x / NdcLimitAvg)
+                : mRenderContext.CalculateZoomForNdcHeight(aabbNdcExtent.y / NdcLimitAvg);
+
+            mZoomParameterSmoother->SetValue(autoFocusZoom);
+
+            // Re-calculate AABB
+            aabbNdcBottomLeft = mRenderContext.WorldToNdc(unionAABB->BottomLeft, mZoomParameterSmoother->GetValue(), mCameraWorldPositionParameterSmoother->GetValue());
+            aabbNdcTopRight = mRenderContext.WorldToNdc(unionAABB->TopRight, mZoomParameterSmoother->GetValue(), mCameraWorldPositionParameterSmoother->GetValue());
+
+            vec2f const offsetWorld = vec2f(
+                (aabbNdcBottomLeft.x + aabbNdcTopRight.x) / 2.0f / 2.0f * mRenderContext.GetVisibleWorld().Width,
+                (aabbNdcBottomLeft.y + aabbNdcTopRight.y) / 2.0f / 2.0f * mRenderContext.GetVisibleWorld().Height);
+
+            vec2f const newTargetCameraWorldPosition =
+                mCameraWorldPositionParameterSmoother->GetValue()
+                + offsetWorld;
+
+            mCameraWorldPositionParameterSmoother->SetValue(newTargetCameraWorldPosition);
+
+
+            /* TODOOLD
             //
             // Zoom
             //
@@ -245,6 +274,7 @@ void ViewManager::Update(Geometry::AABBSet const & allAABBs)
 
                 mCameraWorldPositionParameterSmoother->SetValue(newTargetCameraWorldPosition);
             }
+            */
         }
     }
 

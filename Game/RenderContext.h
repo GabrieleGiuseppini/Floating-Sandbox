@@ -579,6 +579,17 @@ public:
         return mRenderParameters.View.WorldToNdc(worldCoordinates);
     }
 
+    inline vec2f WorldToNdc(
+        vec2f const & worldCoordinates,
+        float zoom,
+        vec2f const & camWorld) const
+    {
+        return mRenderParameters.View.WorldToNdc(
+            worldCoordinates,
+            zoom,
+            camWorld);
+    }
+
     inline vec2f WorldOffsetToNdc(vec2f const & worldOffset) const
     {
         return mRenderParameters.View.WorldOffsetToNdc(worldOffset);

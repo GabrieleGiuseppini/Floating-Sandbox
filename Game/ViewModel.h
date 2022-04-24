@@ -243,6 +243,22 @@ public:
             worldCoordinates.y * mKernelOrthoMatrix[1][1] + mKernelOrthoMatrix[3][1]);
     }
 
+    /*
+     * Equivalent of the transformation we usually perform in vertex shaders.
+     */
+    inline vec2f WorldToNdc(
+        vec2f const & worldCoordinates,
+        float zoom,
+        vec2f const & camWorld) const
+    {
+        float const visibleWorldHeight = CalculateVisibleWorldHeight(zoom);
+        float const visibleWorldWidth = visibleWorldHeight * GetAspectRatio();
+
+        return vec2f(
+            2.0f * (worldCoordinates.x - camWorld.x) / visibleWorldWidth,
+            2.0f * (worldCoordinates.y - camWorld.y) / visibleWorldHeight);
+    }
+
     inline vec2f WorldOffsetToNdc(vec2f const & worldOffset) const
     {
         return vec2f(
