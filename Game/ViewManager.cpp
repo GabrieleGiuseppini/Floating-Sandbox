@@ -138,58 +138,56 @@ void ViewManager::Update(Geometry::AABBSet const & allAABBs)
             // Auto-focus algorithm:
             // - Zoom:
             //      - Auto-focus zoom is the zoom required to ensure that the AABB's width and height
-            //        fall in a specific sub-window of the physical display window - not too wide and 
-            //        not too narrow
+            //        fall in a specific sub-window of the physical display window
             //      - User zoom is the zoom offset exherted by the user
             //      - The final zoom is the sum of the two zooms
             // - Pan:
-            //      - Auto-focus pan is the pan required to ensure that the AABB is contained in a
-            //        specific sub-window of the physical display window, after zoom is calculated
+            //      - Auto-focus pan is the pan required to ensure that the center of the AABB is 
+            //        the center of the physical display window, after zoom is calculated
             //      - User pan is the pan offset exherted by the user
             //      - The final pan is the sum of the two pans
             //
 
-            float constexpr NdcLimitMax = 0.75f; // We want things to fit inside [-NdcLimitMax, +NdcLimitMax]
-            float constexpr NdcLimitMin = 0.25f; // We want things to fit outside [-NdcLimitMin, +NdcLimitMin]
-            float constexpr NdcLimitAvg = (NdcLimitMin + NdcLimitMax) / 2.0f;
+            //
+            // Zoom
+            //
 
-            ////// Calculate NDC coords of AABB (-1,...,+1)
-            ////// TODO: use WorldOffsetToNdc
-            ////vec2f aabbNdcBottomLeft = mRenderContext.WorldToNdc(unionAABB->BottomLeft, mZoomParameterSmoother->GetValue(), mCameraWorldPositionParameterSmoother->GetValue());
-            ////vec2f aabbNdcTopRight = mRenderContext.WorldToNdc(unionAABB->TopRight, mZoomParameterSmoother->GetValue(), mCameraWorldPositionParameterSmoother->GetValue());
+            float constexpr NdcFractionZoomTarget = 0.5f; // Fraction of the [0, 2] NDC space that needs to be occupied by AABB
 
-            ////// Calculate NDC extent of AABB's extent at current ViewModel params (0,...,2)
-            ////vec2f const aabbNdcExtent = vec2f(
-            ////    aabbNdcTopRight.x - aabbNdcBottomLeft.x,
-            ////    aabbNdcTopRight.y - aabbNdcBottomLeft.y);
-
-            // Calculate NDC extent of AABB's extent at current ViewModel params (0,...,2)
+            // Calculate NDC extent of AABB's extent at current ViewModel params [0, 2]
             vec2f const aabbNdcExtent = mRenderContext.WorldOffsetToNdc(
                 vec2f(unionAABB->GetWidth(), unionAABB->GetHeight()),
                 mZoomParameterSmoother->GetValue());
 
-            // TODOTEST: continuous
-
+            // Calculate needed zoom to fit in fraction of NDC space - choosing the furthest among the two dimensions
             float const autoFocusZoom = std::min(
-                mRenderContext.CalculateZoomForNdcWidth(aabbNdcExtent.x / NdcLimitAvg),
-                mRenderContext.CalculateZoomForNdcHeight(aabbNdcExtent.y / NdcLimitAvg));
+                mRenderContext.CalculateZoomForNdcWidth(aabbNdcExtent.x / NdcFractionZoomTarget),
+                mRenderContext.CalculateZoomForNdcHeight(aabbNdcExtent.y / NdcFractionZoomTarget));
 
+            // Set zoom
+            // TODOHERE: threshold check
             mZoomParameterSmoother->SetValue(autoFocusZoom);
 
-            // Re-calculate AABB
-            vec2f aabbNdcBottomLeft = mRenderContext.WorldToNdc(unionAABB->BottomLeft, mZoomParameterSmoother->GetValue(), mCameraWorldPositionParameterSmoother->GetValue());
-            vec2f aabbNdcTopRight = mRenderContext.WorldToNdc(unionAABB->TopRight, mZoomParameterSmoother->GetValue(), mCameraWorldPositionParameterSmoother->GetValue());
+            //
+            // Pan
+            //
+            
+            // Calculate AABB in NDC coordinates, using the target zoom
+            vec2f const aabbNdcBottomLeft = mRenderContext.WorldToNdc(unionAABB->BottomLeft, mZoomParameterSmoother->GetValue(), mCameraWorldPositionParameterSmoother->GetValue());
+            vec2f const aabbNdcTopRight = mRenderContext.WorldToNdc(unionAABB->TopRight, mZoomParameterSmoother->GetValue(), mCameraWorldPositionParameterSmoother->GetValue());
 
+            // Calculate world offset required to center view onto AABB's center
             vec2f const offsetWorld = vec2f(
-                (aabbNdcBottomLeft.x + aabbNdcTopRight.x) / 2.0f / 2.0f * mRenderContext.CalculateVisibleWorldWidth(mZoomParameterSmoother->GetValue()),
-                (aabbNdcBottomLeft.y + aabbNdcTopRight.y) / 2.0f / 2.0f * mRenderContext.CalculateVisibleWorldHeight(mZoomParameterSmoother->GetValue()));
+                (aabbNdcBottomLeft.x + aabbNdcTopRight.x) / 2.0f * mRenderContext.CalculateVisibleWorldWidth(mZoomParameterSmoother->GetValue()) / 2.0f,
+                (aabbNdcBottomLeft.y + aabbNdcTopRight.y) / 2.0f * mRenderContext.CalculateVisibleWorldHeight(mZoomParameterSmoother->GetValue()) / 2.0f);
 
+            // Set camera offset
+            // TODOHERE: threshold check
             vec2f const newTargetCameraWorldPosition =
                 mCameraWorldPositionParameterSmoother->GetValue()
                 + offsetWorld;
-
             mCameraWorldPositionParameterSmoother->SetValue(newTargetCameraWorldPosition);
-
+            
 
             /* TODOOLD
             //

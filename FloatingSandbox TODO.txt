@@ -914,6 +914,7 @@
 			- Phase 5: enabling/disabling
 				- Main UI
 				- NotificationLayer
+					- Texture
 			- Cleanup:
 				- Electrical panel docking/undocking should change params immediately
 				- Take care of initial auto-zoom
