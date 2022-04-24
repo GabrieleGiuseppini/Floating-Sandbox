@@ -179,7 +179,7 @@ void ViewManager::Update(Geometry::AABBSet const & allAABBs)
                     : mRenderContext.CalculateZoomForNdcHeight(aabbNdcExtent.y / NdcLimitAvg);
 
                 // TODOHERE: incorporate user offset
-                mZoomParameterSmoother->SetValueImmediate(autoFocusZoom);
+                mZoomParameterSmoother->SetValue(autoFocusZoom);
 
                 // Re-calculate AABB
                 aabbNdcBottomLeft = mRenderContext.WorldToNdc(unionAABB->BottomLeft);
@@ -195,7 +195,7 @@ void ViewManager::Update(Geometry::AABBSet const & allAABBs)
                     : mRenderContext.CalculateZoomForNdcHeight(aabbNdcExtent.y / NdcLimitAvg);
 
                 // TODOHERE: incorporate user offset
-                mZoomParameterSmoother->SetValueImmediate(autoFocusZoom);
+                mZoomParameterSmoother->SetValue(autoFocusZoom);
 
                 // Re-calculate AABB
                 aabbNdcBottomLeft = mRenderContext.WorldToNdc(unionAABB->BottomLeft);
@@ -224,7 +224,7 @@ void ViewManager::Update(Geometry::AABBSet const & allAABBs)
                     mCameraWorldPositionParameterSmoother->GetValue()
                     + vec2f(xOffsetWorld, 0.0f);
 
-                mCameraWorldPositionParameterSmoother->SetValueImmediate(newTargetCameraWorldPosition);
+                mCameraWorldPositionParameterSmoother->SetValue(newTargetCameraWorldPosition);
             }
 
             // Y
@@ -243,7 +243,7 @@ void ViewManager::Update(Geometry::AABBSet const & allAABBs)
                     mCameraWorldPositionParameterSmoother->GetValue()
                     + vec2f(0.0f, yOffsetWorld);
 
-                mCameraWorldPositionParameterSmoother->SetValueImmediate(newTargetCameraWorldPosition);
+                mCameraWorldPositionParameterSmoother->SetValue(newTargetCameraWorldPosition);
             }
         }
     }
