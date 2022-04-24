@@ -29,7 +29,7 @@ public:
     void ResetZoom();
     void TODODoAutoZoom(Geometry::AABBSet const & allAABBs);
 
-    void Update();
+    void Update(Geometry::AABBSet const & allAABBs);
 
 private:
 
@@ -37,4 +37,16 @@ private:
 
     std::unique_ptr<ParameterSmoother<float>> mZoomParameterSmoother;
     std::unique_ptr<ParameterSmoother<vec2f>> mCameraWorldPositionParameterSmoother;
+
+    //
+    // Auto-focus
+    //
+
+    struct AutoFocusSessionData
+    {
+        AutoFocusSessionData()
+        {}
+    };
+
+    std::optional<AutoFocusSessionData> mAutoFocus;
 };

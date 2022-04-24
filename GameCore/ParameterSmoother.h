@@ -54,7 +54,7 @@ public:
 
     void SetValue(TValue const & value)
     {
-        assert(mCurrentValue == mGetter(value));
+        assert(mCurrentValue == mGetter());
         mTargetValue = value;
     }
 

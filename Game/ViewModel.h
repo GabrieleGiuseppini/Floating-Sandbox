@@ -243,6 +243,13 @@ public:
             worldCoordinates.y * mKernelOrthoMatrix[1][1] + mKernelOrthoMatrix[3][1]);
     }
 
+    inline vec2f WorldOffsetToNdc(vec2f const & worldOffset) const
+    {
+        return vec2f(
+            worldOffset.x * mKernelOrthoMatrix[0][0],
+            worldOffset.y * mKernelOrthoMatrix[1][1]);
+    }
+
     inline vec2f ScreenToWorld(DisplayLogicalCoordinates const & screenCoordinates) const
     {
         vec2f const worldCoordinates = vec2f(
@@ -301,6 +308,24 @@ public:
     {
         assert(worldHeight > 0.0f);
         return ZoomHeightConstant / worldHeight;
+    }
+
+    /*
+     * Calculates the zoom required to ensure that the specified NDC
+     * width is fully visible in the canvas.
+     */
+    inline float CalculateZoomForNdcWidth(float ndcWidth) const
+    {
+        return CalculateZoomForWorldWidth(ndcWidth * mVisibleWorld.Width / 2.0f);
+    }
+
+    /*
+     * Calculates the zoom required to ensure that the specified NDC
+     * height is fully visible in the canvas.
+     */
+    inline float CalculateZoomForNdcHeight(float ndcHeight) const
+    {
+        return CalculateZoomForWorldHeight(ndcHeight * mVisibleWorld.Height / 2.0f);
     }
 
     //
@@ -409,7 +434,7 @@ private:
         mCanvasToVisibleWorldHeightRatio = static_cast<float>(mCanvasPhysicalSize.height) / mVisibleWorld.Height;
         mCanvasWidthToHeightRatio = static_cast<float>(mCanvasPhysicalSize.width) / static_cast<float>(mCanvasPhysicalSize.height);
 
-        // Ortho Matrix:
+        // Ortho Matrix: transforms world into NDC (-1, ..., +1)
         //
         //  2 / WrdW            0                   0                0
         //  0                   2 / WrdH            0                0

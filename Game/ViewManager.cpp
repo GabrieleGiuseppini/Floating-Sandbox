@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #include "ViewManager.h"
 
+#include <GameCore/Log.h>
+
 #include <cassert>
 
 ViewManager::ViewManager(Render::RenderContext & renderContext)
@@ -41,6 +43,9 @@ ViewManager::ViewManager(Render::RenderContext & renderContext)
             return mRenderContext.ClampCameraWorldPosition(value);
         },
         ControlParameterConvergenceFactor);
+
+    // TODOTEST
+    mAutoFocus.emplace();
 }
 
 void ViewManager::OnViewModelUpdated()
@@ -122,8 +127,67 @@ void ViewManager::TODODoAutoZoom(Geometry::AABBSet const & allAABBs)
     }
 }
 
-void ViewManager::Update()
+void ViewManager::Update(Geometry::AABBSet const & allAABBs)
 {
+    if (mAutoFocus.has_value())
+    {
+        auto const unionAABB = allAABBs.MakeUnion();
+        if (unionAABB.has_value())
+        {
+            //
+            // Auto-focus algorithm:
+            // - Zoom:
+            //      - Auto-focus zoom is the zoom required to ensure that the AABB's width and height
+            //        fall in a specific sub-window of the physical display window - not too wide and 
+            //        not too narrow
+            //      - User zoom is the zoom offset exherted by the user
+            //      - The final zoom is the sum of the two zooms
+            // - Pan:
+            //      - Auto-focus pan is the pan required to ensure that the AABB is contained in a
+            //        specific sub-window of the physical display window, after zoom is calculated
+            //      - User pan is the pan offset exherted by the user
+            //      - The final pan is the sum of the two pans
+            //
+
+            float constexpr NdcLimitMax = 0.75f; // We want things to fit inside [-NdcLimitMax, +NdcLimitMax]
+            float constexpr NdcLimitMin = 0.25f; // We want things to fit outside [-NdcLimitMin, +NdcLimitMin]
+            float constexpr NdcLimitAvg = (NdcLimitMin + NdcLimitMax) / 2.0f;
+
+            // Calculate NDC coords of AABB (-1,...,+1)
+            vec2f aabbNdcBottomLeft = mRenderContext.WorldToNdc(unionAABB->BottomLeft);
+            vec2f aabbNdcTopRight = mRenderContext.WorldToNdc(unionAABB->TopRight);
+
+            // Calculate NDC extent of AABB's extent at current ViewModel params (0,...,2)
+            vec2f const aabbNdcExtent = vec2f(
+                aabbNdcTopRight.x - aabbNdcBottomLeft.x,
+                aabbNdcTopRight.y - aabbNdcBottomLeft.y);
+
+            // TODOHERE
+            static vec2f TODO = vec2f::zero();
+            if (aabbNdcExtent != TODO)
+            {
+                LogMessage("TODO: NDC Extent=", aabbNdcExtent.toString());
+                TODO = aabbNdcExtent;
+            }
+
+            // TODOHERE: need to calc zoom for combined dimensions
+            // See if it falls out of our target quad
+            if (aabbNdcExtent.x < 2.0f * NdcLimitMin
+                || aabbNdcExtent.x > 2.0f * NdcLimitMax
+                || aabbNdcExtent.y < 2.0f * NdcLimitMin
+                || aabbNdcExtent.y > 2.0f * NdcLimitMax)
+            {
+                // Adjust zoom so that largest dimension lies exactly in-between the limits
+                float const autoFocusZoom = (aabbNdcExtent.x >= aabbNdcExtent.y)
+                    ? mRenderContext.CalculateZoomForNdcWidth(aabbNdcExtent.x / NdcLimitAvg)
+                    : mRenderContext.CalculateZoomForNdcHeight(aabbNdcExtent.y / NdcLimitAvg);
+
+                // TODOHERE: incorporate user offset
+                mZoomParameterSmoother->SetValue(autoFocusZoom);
+            }
+        }
+    }
+
     mZoomParameterSmoother->Update();
     mCameraWorldPositionParameterSmoother->Update();
 }

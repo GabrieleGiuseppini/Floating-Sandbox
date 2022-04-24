@@ -153,6 +153,16 @@ public:
         return mRenderParameters.View.CalculateZoomForWorldHeight(worldHeight);
     }
 
+    float CalculateZoomForNdcWidth(float ndcWidth) const
+    {
+        return mRenderParameters.View.CalculateZoomForNdcWidth(ndcWidth);
+    }
+
+    float CalculateZoomForNdcHeight(float ndcHeight) const
+    {
+        return mRenderParameters.View.CalculateZoomForNdcHeight(ndcHeight);
+    }
+
     ViewModel const & GetViewModel() const
     {
         return mRenderParameters.View;
@@ -561,8 +571,18 @@ public:
     }
 
     //
-    // Screen <-> World transformations
+    // Coordinate transformations
     //
+
+    inline vec2f WorldToNdc(vec2f const & worldCoordinates) const
+    {
+        return mRenderParameters.View.WorldToNdc(worldCoordinates);
+    }
+
+    inline vec2f WorldOffsetToNdc(vec2f const & worldOffset) const
+    {
+        return mRenderParameters.View.WorldOffsetToNdc(worldOffset);
+    }
 
     inline vec2f ScreenToWorld(DisplayLogicalCoordinates const & screenCoordinates) const
     {

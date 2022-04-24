@@ -400,7 +400,7 @@ void GameController::RunGameIteration()
         // Update view manager
         // Note: some Upload()'s need to use ViewModel values, which have then to match the
         // ViewModel values used by the subsequent render
-        mViewManager.Update();
+        mViewManager.Update(mWorld->GetAllAABBs());
 
         //
         // Upload world

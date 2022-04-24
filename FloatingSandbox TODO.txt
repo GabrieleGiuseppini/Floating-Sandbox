@@ -885,8 +885,8 @@
 				- Also toggable at "Controls" menu
 			- Also works as "auto-focus at load"
 				- Or at least, funcs that calc zoom and pan based on AABBs is reused (by same ViewManager) in order to calc auto-focus at load
-			= Full spec:
-				= Orchestrated by ViewManager, member of GameController
+			- Full spec:
+				- Orchestrated by ViewManager, member of GameController
 					- Is given (externally-owned) references to RenderContext& and NotificationLayer&, managing all communication to these wrt view params
 					- Owns view parameter smoothers						
 					- GameController forwards view parameter changes to it
@@ -903,14 +903,20 @@
 				+ Parameter smoothers: simplify by simply using convergence algo, coeff between 0.05 and 0.1
 			= Phase 2: rough auto-focus
 				+ Make it so that World may be asked for AABBSet right after adding ship
-				- ViewManager::Update takes AABBSet
-				- AABBSet math
+				+ ViewManager::Update takes AABBSet
+				- AABBSet/visible world math
+				- Then rethink: does ship addition really need to maintain AABBSet up-to-date? We invoke ViewManager::Update() after world Update() after all
+					- Though world might have been paused
 
+			- NotificationLayer
 			- TODO:
 				- Take care of initial auto-zoom
+				- See if still need ViewModel::CalculateZoomForWorldWidth/Height
+				- See if still need ViewModel::WorldOffsetToNdc
 
 		- Tests:
 			- Loading ship which has no frontiers: check behavior for all combinations of autofocus/autozoom
+			- Load under pause
 
 		- TODOOLD
 		- Algo:
