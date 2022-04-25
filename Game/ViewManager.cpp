@@ -157,17 +157,10 @@ void ViewManager::Update(Geometry::AABBSet const & allAABBs)
             //float constexpr ZoomThreshold = 0.1f;
             float constexpr ZoomThreshold = 0.0f;
 
-            // Calculate NDC extent of AABB's extent at current ViewModel params ([0, 2])
-            vec2f const aabbNdcExtent = mRenderContext.WorldOffsetToNdc(
-                vec2f(unionAABB->GetWidth(), unionAABB->GetHeight()),
-                mZoomParameterSmoother->GetValue());
-
             // Calculate needed zoom to fit in fraction of NDC space - choosing the furthest among the two dimensions
-            float const visibleWorldWidth = mRenderContext.CalculateVisibleWorldWidth(mZoomParameterSmoother->GetValue());
-            float const visibleWorldHeight = mRenderContext.CalculateVisibleWorldHeight(mZoomParameterSmoother->GetValue());
             float const autoFocusZoom = std::min(
-                mRenderContext.CalculateZoomForWorldWidth(aabbNdcExtent.x / NdcFractionZoomTarget * visibleWorldWidth / 2.0f),
-                mRenderContext.CalculateZoomForWorldHeight(aabbNdcExtent.y / NdcFractionZoomTarget * visibleWorldHeight / 2.0f));
+                mRenderContext.CalculateZoomForWorldWidth(unionAABB->GetWidth() / NdcFractionZoomTarget),
+                mRenderContext.CalculateZoomForWorldHeight(unionAABB->GetHeight() / NdcFractionZoomTarget));
 
             // Set zoom, with threshold check
 
