@@ -157,7 +157,7 @@ void ViewManager::Update(Geometry::AABBSet const & allAABBs)
             //float constexpr ZoomThreshold = 0.1f;
             float constexpr ZoomThreshold = 0.0f;
 
-            // Calculate NDC extent of AABB's extent at current ViewModel params [0, 2]
+            // Calculate NDC extent of AABB's extent at current ViewModel params ([0, 2])
             vec2f const aabbNdcExtent = mRenderContext.WorldOffsetToNdc(
                 vec2f(unionAABB->GetWidth(), unionAABB->GetHeight()),
                 mZoomParameterSmoother->GetValue());
