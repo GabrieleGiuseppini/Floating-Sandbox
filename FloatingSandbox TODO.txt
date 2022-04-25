@@ -905,13 +905,13 @@
 				+ Make it so that World may be asked for AABBSet right after adding ship
 				+ ViewManager::Update takes AABBSet
 				+ AABBSet/visible world math
-			= Phase 3: improve auto-focus
+			+ Phase 3: improve auto-focus
 				+ Try with continuous adjustments
 				+ Calculations by ViewModel are on view model params being smoothed towards target; may lead to ghost offenses
 					+ Need to make calculations based on target values; may test with "Immediate"
-				= See if can use tolerance to make adjustments less continuous
-					- Decide if user may select tolerance - MAY BE NOT
-				- Simplify auto-zoom calc's
+				+ See if can use tolerance to make adjustments less continuous
+					X Decide if user may select tolerance - MAY BE NOT
+				+ Simplify auto-zoom and pan calc's
 			- Phase 4: user's offsets
 				- Cannot user smoothers' values when calculating auto-focus, unless we downscale them by user's offsets - which could have changed
 					- This is because we want to calculate auto-focus and panning on the "screen" without user's offsets

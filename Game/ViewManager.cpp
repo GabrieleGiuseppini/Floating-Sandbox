@@ -185,15 +185,12 @@ void ViewManager::Update(Geometry::AABBSet const & allAABBs)
 
             //float constexpr CameraPositionThreshold = 30.0f; // Attempt to avoid panning with waves
             float constexpr CameraPositionThreshold = 0.0f;
-            
-            // Calculate AABB in NDC coordinates, using the target zoom
-            vec2f const aabbNdcBottomLeft = mRenderContext.WorldToNdc(unionAABB->BottomLeft, mZoomParameterSmoother->GetValue(), mCameraWorldPositionParameterSmoother->GetValue());
-            vec2f const aabbNdcTopRight = mRenderContext.WorldToNdc(unionAABB->TopRight, mZoomParameterSmoother->GetValue(), mCameraWorldPositionParameterSmoother->GetValue());
 
             // Calculate world offset required to center view onto AABB's center
+            vec2f const aabbCenterWorld = unionAABB->CalculateCenter();
             vec2f const autoFocusCameraWorldPositionOffset = vec2f(
-                (aabbNdcBottomLeft.x + aabbNdcTopRight.x) / 2.0f * mRenderContext.CalculateVisibleWorldWidth(mZoomParameterSmoother->GetValue()) / 2.0f,
-                (aabbNdcBottomLeft.y + aabbNdcTopRight.y) / 2.0f * mRenderContext.CalculateVisibleWorldHeight(mZoomParameterSmoother->GetValue()) / 2.0f);
+                (aabbCenterWorld.x - mCameraWorldPositionParameterSmoother->GetValue().x) / 2.0f,
+                (aabbCenterWorld.y - mCameraWorldPositionParameterSmoother->GetValue().y) / 2.0f);
 
             // Set camera position, with threshold check
 
