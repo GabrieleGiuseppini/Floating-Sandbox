@@ -334,7 +334,9 @@
 		- Ships to make:
 			- HMS Victoria: make yourself w/texture from ShipBucket or else
 				- Needs to sink vertically!
-			- Next ship made: "Turbentiy Banalniy"		
+			- http://www.shipbucket.com/drawings/1821
+			- http://www.shipbucket.com/drawings/6850
+
 		- To test and to choose from:
 			- Architect Creations
 			- mrpasta444_ship_pack
@@ -912,15 +914,20 @@
 				+ See if can use tolerance to make adjustments less continuous
 					X Decide if user may select tolerance - MAY BE NOT
 				+ Simplify auto-zoom and pan calc's
-			- Phase 4: user's offsets
-				- Cannot user smoothers' values when calculating auto-focus, unless we downscale them by user's offsets - which could have changed
-					- This is because we want to calculate auto-focus and panning on the "screen" without user's offsets
-				- Need to store auto-focus zoom and camera pos - without user's offsets - and use those for calculating auto-focus
-					- Need to initialize them at auto-focus enable - with current smoothers' values
+			= Phase 4: user's offsets
+				! Cannot user smoothers' values when calculating auto-focus, unless we downscale them by user's offsets - which could have changed
+					! This is because we want to calculate auto-focus and panning on the "screen" without user's offsets
+				= Need to store auto-focus zoom and camera pos - without user's offsets - and use those for calculating auto-focus
+					+ Need to initialize them at auto-focus enable - with current smoothers' values
+				- Double-check math
+				- Complete other ViewManager methods
 			- Phase 5: enabling/disabling
 				- Main UI
 				- NotificationLayer
 					- Texture
+			- Phase 6: tuning
+				- Test with auto-zoom filling-in larger sub-window
+				- Re-test with thresholds
 			- Cleanup:
 				- Electrical panel docking/undocking should change params immediately
 					- Unless it's an aspect thing - if aspect changes, auto-zoom changes?

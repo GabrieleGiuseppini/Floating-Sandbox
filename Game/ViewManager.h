@@ -24,9 +24,8 @@ public:
     void Pan(vec2f const & worldOffset);
     void PanImmediate(vec2f const & worldOffset);
     void PanToWorldX(float worldX);
-    void ResetPan();
     void AdjustZoom(float amount);
-    void ResetZoom();
+    void ResetView();
     void TODODoAutoZoom(Geometry::AABBSet const & allAABBs);
 
     void Update(Geometry::AABBSet const & allAABBs);
@@ -44,8 +43,26 @@ private:
 
     struct AutoFocusSessionData
     {
-        AutoFocusSessionData()
-        {}
+        float CurrentAutoFocusZoom;
+        vec2f CurrentAutoFocusCameraWorldPosition;
+
+        float UserZoomOffset;
+        vec2f UserCameraWorldPositionOffset;
+
+        AutoFocusSessionData(
+            float currentAutoFocusZoom,
+            vec2f const & currentAutoFocusCameraWorldPosition)
+            : CurrentAutoFocusZoom(currentAutoFocusZoom)
+            , CurrentAutoFocusCameraWorldPosition(currentAutoFocusCameraWorldPosition)
+        {
+            ResetUserOffsets();
+        }
+
+        void ResetUserOffsets()
+        {
+            UserZoomOffset = 1.0f;
+            UserCameraWorldPositionOffset = vec2f::zero();
+        }
     };
 
     std::optional<AutoFocusSessionData> mAutoFocus;

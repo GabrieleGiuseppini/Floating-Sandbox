@@ -247,9 +247,8 @@ public:
     void Pan(DisplayLogicalSize const & screenOffset) override;
     void PanImmediate(DisplayLogicalSize const & screenOffset) override;
     void PanToWorldEnd(int side) override;
-    void ResetPan() override;
     void AdjustZoom(float amount) override;
-    void ResetZoom() override;
+    void ResetView() override;
     vec2f ScreenToWorld(DisplayLogicalCoordinates const & screenCoordinates) const override;
     vec2f ScreenOffsetToWorldOffset(DisplayLogicalSize const & screenOffset) const override;
 

@@ -152,9 +152,8 @@ struct IGameController
     virtual void Pan(DisplayLogicalSize const & screenOffset) = 0;
     virtual void PanImmediate(DisplayLogicalSize const & screenOffset) = 0;
     virtual void PanToWorldEnd(int side) = 0;
-    virtual void ResetPan() = 0;
     virtual void AdjustZoom(float amount) = 0;
-    virtual void ResetZoom() = 0;
+    virtual void ResetView() = 0;
     virtual vec2f ScreenToWorld(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
     virtual vec2f ScreenOffsetToWorldOffset(DisplayLogicalSize const & screenOffset) const = 0;
 

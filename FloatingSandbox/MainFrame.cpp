@@ -1629,8 +1629,7 @@ void MainFrame::OnResetViewMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mGameController);
 
-    mGameController->ResetPan();
-    mGameController->ResetZoom();
+    mGameController->ResetView();
 }
 
 void MainFrame::OnZoomInMenuItemSelected(wxCommandEvent & /*event*/)

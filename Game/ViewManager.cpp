@@ -45,7 +45,9 @@ ViewManager::ViewManager(Render::RenderContext & renderContext)
         ControlParameterConvergenceFactor);
 
     // TODOTEST
-    mAutoFocus.emplace();
+    mAutoFocus.emplace(
+        mZoomParameterSmoother->GetValue(),
+        mCameraWorldPositionParameterSmoother->GetValue());
 }
 
 void ViewManager::OnViewModelUpdated()
@@ -57,15 +59,24 @@ void ViewManager::OnViewModelUpdated()
 
 void ViewManager::Pan(vec2f const & worldOffset)
 {
-    vec2f const newTargetCameraWorldPosition =
-        mCameraWorldPositionParameterSmoother->GetValue()
-        + worldOffset;
+    if (!mAutoFocus.has_value())
+    {
+        vec2f const newTargetCameraWorldPosition =
+            mCameraWorldPositionParameterSmoother->GetValue()
+            + worldOffset;
 
-    mCameraWorldPositionParameterSmoother->SetValue(newTargetCameraWorldPosition);
+        mCameraWorldPositionParameterSmoother->SetValue(newTargetCameraWorldPosition);
+    }
+    else
+    {
+        mAutoFocus->UserCameraWorldPositionOffset += worldOffset;
+    }
 }
 
 void ViewManager::PanImmediate(vec2f const & worldOffset)
 {
+    // TODOHERE: this is when user pans via mouse
+
     vec2f const newTargetCameraWorldPosition =
         mCameraWorldPositionParameterSmoother->GetValue()
         + worldOffset;
@@ -75,6 +86,8 @@ void ViewManager::PanImmediate(vec2f const & worldOffset)
 
 void ViewManager::PanToWorldX(float worldX)
 {
+    // TODOHERE: this is when panning to world ends
+
     vec2f const newTargetCameraWorldPosition = vec2f(
         worldX,
         mCameraWorldPositionParameterSmoother->GetValue().y);
@@ -82,29 +95,36 @@ void ViewManager::PanToWorldX(float worldX)
     mCameraWorldPositionParameterSmoother->SetValueImmediate(newTargetCameraWorldPosition);
 }
 
-void ViewManager::ResetPan()
-{
-    vec2f const newTargetCameraWorldPosition = vec2f(0, 0);
-
-    mCameraWorldPositionParameterSmoother->SetValueImmediate(newTargetCameraWorldPosition);
-}
-
 void ViewManager::AdjustZoom(float amount)
 {
-    float const newTargetZoom = mZoomParameterSmoother->GetValue() * amount;
+    if (!mAutoFocus.has_value())
+    {
+        float const newTargetZoom = mZoomParameterSmoother->GetValue() * amount;
 
-    mZoomParameterSmoother->SetValue(newTargetZoom);
+        mZoomParameterSmoother->SetValue(newTargetZoom);
+    }
+    else
+    {
+        mAutoFocus->UserZoomOffset *= amount;
+    }
 }
 
-void ViewManager::ResetZoom()
+void ViewManager::ResetView()
 {
-    float const newTargetZoom = 1.0f;
-
-    mZoomParameterSmoother->SetValueImmediate(newTargetZoom);
+    if (!mAutoFocus.has_value())
+    {
+        mCameraWorldPositionParameterSmoother->SetValueImmediate(vec2f::zero());
+        mZoomParameterSmoother->SetValueImmediate(1.0f);
+    }
+    else
+    {
+        mAutoFocus->ResetUserOffsets();
+    }
 }
 
 void ViewManager::TODODoAutoZoom(Geometry::AABBSet const & allAABBs)
 {
+    // TODO
     auto const unionAABB = allAABBs.MakeUnion();
     if (unionAABB.has_value())
     {
@@ -158,26 +178,24 @@ void ViewManager::Update(Geometry::AABBSet const & allAABBs)
             float constexpr ZoomThreshold = 0.0f;
 
             // Calculate needed zoom to fit in fraction of NDC space - choosing the furthest among the two dimensions
-            float const autoFocusZoom = std::min(
+            float newAutoFocusZoom = std::min(
                 mRenderContext.CalculateZoomForWorldWidth(unionAABB->GetWidth() / NdcFractionZoomTarget),
                 mRenderContext.CalculateZoomForWorldHeight(unionAABB->GetHeight() / NdcFractionZoomTarget));
 
-            // Set zoom, with threshold check
-
-            float newAutoFocusZoom;
-            float const oldZoom = mZoomParameterSmoother->GetValue();
-            if (std::abs(autoFocusZoom - oldZoom) > ZoomThreshold)
+            // Check change against threshold
+            if (std::abs(newAutoFocusZoom - mAutoFocus->CurrentAutoFocusZoom) > ZoomThreshold)
             {
                 // Apply auto-focus
-                newAutoFocusZoom = autoFocusZoom;
+                mAutoFocus->CurrentAutoFocusZoom = newAutoFocusZoom;
             }
             else
             {
                 // Stay
-                newAutoFocusZoom = oldZoom;
+                newAutoFocusZoom = mAutoFocus->CurrentAutoFocusZoom;
             }
             
-            mZoomParameterSmoother->SetValue(newAutoFocusZoom);
+            // Set zoom
+            mZoomParameterSmoother->SetValue(newAutoFocusZoom * mAutoFocus->UserZoomOffset);
 
             //
             // Pan
@@ -188,26 +206,25 @@ void ViewManager::Update(Geometry::AABBSet const & allAABBs)
 
             // Calculate world offset required to center view onto AABB's center
             vec2f const aabbCenterWorld = unionAABB->CalculateCenter();
-            vec2f const autoFocusCameraWorldPositionOffset = vec2f(
-                (aabbCenterWorld.x - mCameraWorldPositionParameterSmoother->GetValue().x) / 2.0f,
-                (aabbCenterWorld.y - mCameraWorldPositionParameterSmoother->GetValue().y) / 2.0f);
+            vec2f const newAutoFocusCameraWorldPositionOffset = (aabbCenterWorld - mAutoFocus->CurrentAutoFocusCameraWorldPosition) / 2.0f;
 
-            // Set camera position, with threshold check
-
+            // Check change against threshold
             vec2f newAutoFocusCameraWorldPosition;
-            if (std::abs(autoFocusCameraWorldPositionOffset.x) > CameraPositionThreshold
-                || std::abs(autoFocusCameraWorldPositionOffset.y) > CameraPositionThreshold)
+            if (std::abs(newAutoFocusCameraWorldPositionOffset.x) > CameraPositionThreshold
+                || std::abs(newAutoFocusCameraWorldPositionOffset.y) > CameraPositionThreshold)
             {
                 // Apply auto-focus
-                newAutoFocusCameraWorldPosition = mCameraWorldPositionParameterSmoother->GetValue() + autoFocusCameraWorldPositionOffset;
+                newAutoFocusCameraWorldPosition = mAutoFocus->CurrentAutoFocusCameraWorldPosition + newAutoFocusCameraWorldPositionOffset;
+                mAutoFocus->CurrentAutoFocusCameraWorldPosition = newAutoFocusCameraWorldPosition;
             }
             else
             {
                 // Stay
-                newAutoFocusCameraWorldPosition = mCameraWorldPositionParameterSmoother->GetValue();
+                newAutoFocusCameraWorldPosition = mAutoFocus->CurrentAutoFocusCameraWorldPosition;
             }
             
-            mCameraWorldPositionParameterSmoother->SetValue(newAutoFocusCameraWorldPosition);
+            // Set camera position
+            mCameraWorldPositionParameterSmoother->SetValue(newAutoFocusCameraWorldPosition + mAutoFocus->UserCameraWorldPositionOffset);
         }
     }
 

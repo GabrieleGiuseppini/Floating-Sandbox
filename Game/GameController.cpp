@@ -1286,19 +1286,14 @@ void GameController::PanToWorldEnd(int side)
         : GameParameters::HalfMaxWorldWidth);
 }
 
-void GameController::ResetPan()
-{
-    mViewManager.ResetPan();
-}
-
 void GameController::AdjustZoom(float amount)
 {
     mViewManager.AdjustZoom(amount);
 }
 
-void GameController::ResetZoom()
+void GameController::ResetView()
 {
-    mViewManager.ResetZoom();
+    mViewManager.ResetView();
 }
 
 vec2f GameController::ScreenToWorld(DisplayLogicalCoordinates const & screenCoordinates) const
