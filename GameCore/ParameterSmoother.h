@@ -55,7 +55,7 @@ public:
     void SetValue(TValue const & value)
     {
         assert(mCurrentValue == mGetter());
-        mTargetValue = value;
+        mTargetValue = mClamper(value);
     }
 
     void SetValueImmediate(TValue const & value)
