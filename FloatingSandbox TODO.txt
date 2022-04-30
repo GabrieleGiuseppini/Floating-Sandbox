@@ -920,13 +920,11 @@
 				+ Need to store auto-focus zoom and camera pos - without user's offsets - and use those for calculating auto-focus
 					+ Need to initialize them at auto-focus enable - with current smoothers' values
 				+ Double-check math
-				= Fix user offset pile-up issue everywhere
-					= Option 1: at Update: erode accumulated user focus - along direction
-						+ Undo ImmediateX2 change
-						= Do at update, eroding along direction, without crossing 1.0/origin
-							+ Pan
-								+ Erode x and y independently
-							- Zoom
+				+ Fix user offset pile-up issue everywhere
+					+ Do at update, eroding along direction, without crossing 1.0/origin
+						+ Pan
+							+ Erode x and y independently
+						+ Zoom
 				- Complete other ViewManager methods
 					- Initial auto-focus: in OnNewShip?
 			- Phase 5: enabling/disabling

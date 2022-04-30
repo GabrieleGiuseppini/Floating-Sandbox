@@ -209,6 +209,16 @@ void ViewManager::Update(Geometry::AABBSet const & allAABBs)
             // Set zoom
             mZoomParameterSmoother->SetValue(newAutoFocusZoom * mAutoFocus->UserZoomOffset);
 
+            // If we've clamped the zoom, erode lost zoom from user offset
+            {
+                float const impliedUserOffset = mZoomParameterSmoother->GetValue() / newAutoFocusZoom;
+
+                mAutoFocus->UserZoomOffset = Clamp(
+                    impliedUserOffset,
+                    std::min(mAutoFocus->UserZoomOffset, 1.0f),
+                    std::max(mAutoFocus->UserZoomOffset, 1.0f));
+            }
+
             //
             // Pan
             //
