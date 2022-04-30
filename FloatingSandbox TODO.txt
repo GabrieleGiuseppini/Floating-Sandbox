@@ -939,6 +939,7 @@
 				- Test with auto-zoom filling-in larger sub-window
 				- Re-test with thresholds
 				- Try stateful thresholds
+					- Based on whether or not smoother is smoothing or not
 			- Cleanup:
 				- See perf impact using 1.17.2
 				- Electrical panel docking/undocking should change params immediately
@@ -950,6 +951,8 @@
 					- And all RenderContext forwarders
 				- Does ship addition to World really need to maintain AABBSet up-to-date? We invoke ViewManager::Update() after world Update() after all
 					- Though world might have been paused
+				- See if also mouse-based panning should SetValue rather than SetValueImmediate
+					- If no immediate, see if Immediate still needed
 
 		- Tests:
 			- Loading ship which has no frontiers: check behavior for all combinations of autofocus/autozoom

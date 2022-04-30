@@ -76,24 +76,35 @@ void ViewManager::Pan(vec2f const & worldOffset)
 
 void ViewManager::PanImmediate(vec2f const & worldOffset)
 {
-    // TODOHERE: this is when user pans via mouse
+    if (!mAutoFocus.has_value())
+    {
+        vec2f const newTargetCameraWorldPosition =
+            mCameraWorldPositionParameterSmoother->GetValue()
+            + worldOffset;
 
-    vec2f const newTargetCameraWorldPosition =
-        mCameraWorldPositionParameterSmoother->GetValue()
-        + worldOffset;
-
-    mCameraWorldPositionParameterSmoother->SetValueImmediate(newTargetCameraWorldPosition);
+        mCameraWorldPositionParameterSmoother->SetValueImmediate(newTargetCameraWorldPosition);
+    }
+    else
+    {
+        // Note: not at all "immediate"
+        mAutoFocus->UserCameraWorldPositionOffset += worldOffset;
+    }
 }
 
 void ViewManager::PanToWorldX(float worldX)
 {
-    // TODOHERE: this is when panning to world ends
+    if (!mAutoFocus.has_value())
+    {
+        vec2f const newTargetCameraWorldPosition = vec2f(
+            worldX,
+            mCameraWorldPositionParameterSmoother->GetValue().y);
 
-    vec2f const newTargetCameraWorldPosition = vec2f(
-        worldX,
-        mCameraWorldPositionParameterSmoother->GetValue().y);
-
-    mCameraWorldPositionParameterSmoother->SetValueImmediate(newTargetCameraWorldPosition);
+        mCameraWorldPositionParameterSmoother->SetValue(newTargetCameraWorldPosition);
+    }
+    else
+    {
+        mAutoFocus->UserCameraWorldPositionOffset.x = worldX;
+    }
 }
 
 void ViewManager::AdjustZoom(float amount)
