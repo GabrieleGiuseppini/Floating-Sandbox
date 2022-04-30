@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #include "ViewManager.h"
 
+#include <GameCore/GameMath.h>
 #include <GameCore/Log.h>
 
 #include <cassert>
@@ -225,6 +226,21 @@ void ViewManager::Update(Geometry::AABBSet const & allAABBs)
             
             // Set camera position
             mCameraWorldPositionParameterSmoother->SetValue(newAutoFocusCameraWorldPosition + mAutoFocus->UserCameraWorldPositionOffset);
+
+            // If we've clamped the pan, erode lost panning from user offset
+            {
+                vec2f const impliedUserOffset = mCameraWorldPositionParameterSmoother->GetValue() - newAutoFocusCameraWorldPosition;
+
+                mAutoFocus->UserCameraWorldPositionOffset = vec2f(
+                    Clamp(
+                        impliedUserOffset.x, 
+                        std::min(0.0f, mAutoFocus->UserCameraWorldPositionOffset.x),
+                        std::max(0.0f, mAutoFocus->UserCameraWorldPositionOffset.x)),
+                    Clamp(
+                        impliedUserOffset.y,
+                        std::min(0.0f, mAutoFocus->UserCameraWorldPositionOffset.y),
+                        std::max(0.0f, mAutoFocus->UserCameraWorldPositionOffset.y)));
+            }
         }
     }
 

@@ -917,18 +917,30 @@
 			= Phase 4: user's offsets
 				! Cannot user smoothers' values when calculating auto-focus, unless we downscale them by user's offsets - which could have changed
 					! This is because we want to calculate auto-focus and panning on the "screen" without user's offsets
-				= Need to store auto-focus zoom and camera pos - without user's offsets - and use those for calculating auto-focus
+				+ Need to store auto-focus zoom and camera pos - without user's offsets - and use those for calculating auto-focus
 					+ Need to initialize them at auto-focus enable - with current smoothers' values
-				- Double-check math
+				+ Double-check math
+				= Fix user offset pile-up issue everywhere
+					= Option 1: at Update: erode accumulated user focus - along direction
+						+ Undo ImmediateX2 change
+						= Do at update, eroding along direction, without crossing 1.0/origin
+							+ Pan
+								+ Erode x and y independently
+							- Zoom
 				- Complete other ViewManager methods
+					- Initial auto-focus: in OnNewShip?
 			- Phase 5: enabling/disabling
 				- Main UI
+					- ESC to exit
+					- ...
 				- NotificationLayer
 					- Texture
 			- Phase 6: tuning
 				- Test with auto-zoom filling-in larger sub-window
 				- Re-test with thresholds
+				- Try stateful thresholds
 			- Cleanup:
+				- See perf impact using 1.17.2
 				- Electrical panel docking/undocking should change params immediately
 					- Unless it's an aspect thing - if aspect changes, auto-zoom changes?
 				- Take care of initial auto-zoom
