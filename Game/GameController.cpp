@@ -84,8 +84,7 @@ GameController::GameController(
     , mIsMoveToolEngaged(false)
     // Parameters that we own
     , mDoShowTsunamiNotifications(true)
-    , mDoDrawHeatBlasterFlame(true)
-    , mDoAutoZoomOnShipLoad(true)
+    , mDoDrawHeatBlasterFlame(true)    
     // Doers
     , mRenderContext(std::move(renderContext))
     , mGameEventDispatcher(std::move(gameEventDispatcher))
@@ -1431,18 +1430,16 @@ void GameController::OnShipCreated(
     // Add ship to our world
     mWorld->AddShip(std::move(ship));
 
-    // Auto-zoom (if requested)
-    if (doAutoZoom && mDoAutoZoomOnShipLoad)
-    {   
-        // TODO
-        mViewManager.TODODoAutoZoom(mWorld->GetAllAABBs());
-    }
-
     // Add ship to rendering engine
     mRenderContext->AddShip(
         shipId,
         mWorld->GetShipPointCount(shipId),
         std::move(textureImage));
+
+    // Tell view manager
+    // TODOHERE
+    if (doAutoZoom)
+        mViewManager.OnNewShip(mWorld->GetAllAABBs());
 
     // Notify ship load
     mGameEventDispatcher->OnShipLoaded(

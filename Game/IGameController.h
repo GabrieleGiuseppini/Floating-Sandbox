@@ -145,7 +145,7 @@ struct IGameController
     virtual bool RestoreTriangle(ElementId triangleId) = 0;
 
     //
-    // Rendering controls
+    // Rendering controls and parameters
     //
 
     virtual void SetCanvasSize(DisplayLogicalSize const & canvasSize) = 0;
@@ -157,6 +157,12 @@ struct IGameController
     virtual vec2f ScreenToWorld(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
     virtual vec2f ScreenOffsetToWorldOffset(DisplayLogicalSize const & screenOffset) const = 0;
 
+    virtual bool GetDoAutoZoomOnShipLoad() const = 0;
+    virtual void SetDoAutoZoomOnShipLoad(bool value) = 0;
+
+    virtual bool GetDoContinuousFocus() const = 0;
+    virtual void SetDoContinuousFocus(bool value) = 0;
+
     //
     // UI parameters
     //
@@ -166,9 +172,6 @@ struct IGameController
 
     virtual bool GetDoShowElectricalNotifications() const = 0;
     virtual void SetDoShowElectricalNotifications(bool value) = 0;
-
-    virtual bool GetDoAutoZoomOnShipLoad() const = 0;
-    virtual void SetDoAutoZoomOnShipLoad(bool value) = 0;
 
     virtual UnitsSystem GetDisplayUnitsSystem() const = 0;
     virtual void SetDisplayUnitsSystem(UnitsSystem value) = 0;

@@ -52,6 +52,7 @@
 			! http://mirrors.arcadecontrols.com/www.sysinternals.com/Information/HighResolutionTimers.html
 			+ @ 50fps: Windows timer resolution (min/max/cur): 15.625 / 0.500 / 15.621 ms
 				   Windows timer resolution (min/max/cur): 15.625 / 0.500 / 15.620 ms
+				   Windows timer resolution (min/max/cur): 15.625 / 0.500 / 15.621 ms
 			+ @ 64fps: Windows timer resolution (min/max/cur): 15.625 / 0.500 / 0.997 ms
 				   Windows timer resolution (min/max/cur): 15.625 / 0.500 / 0.997 ms
 
@@ -925,11 +926,24 @@
 						+ Pan
 							+ Erode x and y independently
 						+ Zoom
-				- Complete other ViewManager methods
-					- Initial auto-focus: in OnNewShip?
+				= Autozoom-on-load:
+					+ "Auto-zoom on load" setting moves to ViewManager
+					= ViewManager::OnNewShip(AABB...): if "auto-zoom on load" is on and no auto-focus: invoke AutoFocus(AABB...)
+						= Invoke from GameController
+							- Decide if we still want "ship reload" to NOT do auto-focus
+								- Fix GameController accordingly
+					+ ViewManager::AutoFocus: if auto-focus not set: invoke (private) DoAutoFocus() [; else: pointless as subsequent Update() will invoke DoAutoFocus()]
+						+ DoAutoFocus(AABB...) contains implementation of zoom+pan
+							+ Invoked also by Update()
+			- Do test w/goodyear
 			- Phase 5: enabling/disabling
 				- Main UI
-					- ESC to exit
+					- Engage/disable continuous auto-focus
+						- Preferences window
+						- Menu entry
+					- ESC to exit auto-focus
+					- One-time auto-focus
+						- Key shortcut: ?
 					- ...
 				- NotificationLayer
 					- Texture
@@ -946,6 +960,7 @@
 				- See if still need ViewModel::CalculateZoomForWorldWidth/Height
 				- Does ship addition to World really need to maintain AABBSet up-to-date? We invoke ViewManager::Update() after world Update() after all
 					- Though world might have been paused
+					- Though "auto-zoom on load" needs AABBs and no update has been invoked yet
 				- See if also mouse-based panning should SetValue rather than SetValueImmediate
 					- If no immediate, see if Immediate still needed
 

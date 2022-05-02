@@ -20,15 +20,26 @@ public:
 
     ViewManager(Render::RenderContext & renderContext);
 
+    bool GetDoAutoZoomOnShipLoad() const;
+    void SetDoAutoZoomOnShipLoad(bool value);
+
+    bool GetDoContinuousFocus() const;
+    void SetDoContinuousFocus(bool value);
+
     void OnViewModelUpdated();
+    void OnNewShip(Geometry::AABBSet const & allAABBs);
     void Pan(vec2f const & worldOffset);
     void PanImmediate(vec2f const & worldOffset);
     void PanToWorldX(float worldX);
     void AdjustZoom(float amount);
     void ResetView();
-    void TODODoAutoZoom(Geometry::AABBSet const & allAABBs);
+    void AutoFocus(Geometry::AABBSet const & allAABBs);
 
     void Update(Geometry::AABBSet const & allAABBs);
+
+private:
+
+    void DoAutoFocus(Geometry::AABBSet const & allAABBs);
 
 private:
 
@@ -38,8 +49,10 @@ private:
     std::unique_ptr<ParameterSmoother<vec2f>> mCameraWorldPositionParameterSmoother;
 
     //
-    // Auto-focus
+    // Auto-zoom and auto-focus
     //
+
+    float mDoAutoZoomOnShipLoad;
 
     struct AutoFocusSessionData
     {

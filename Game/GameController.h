@@ -252,6 +252,12 @@ public:
     vec2f ScreenToWorld(DisplayLogicalCoordinates const & screenCoordinates) const override;
     vec2f ScreenOffsetToWorldOffset(DisplayLogicalSize const & screenOffset) const override;
 
+    bool GetDoAutoZoomOnShipLoad() const override { return mViewManager.GetDoAutoZoomOnShipLoad(); }
+    void SetDoAutoZoomOnShipLoad(bool value) override { mViewManager.SetDoAutoZoomOnShipLoad(value); }
+
+    bool GetDoContinuousFocus() const override { return mViewManager.GetDoContinuousFocus(); }
+    void SetDoContinuousFocus(bool value) override { mViewManager.SetDoContinuousFocus(value); }
+
     //
     // UI parameters
     //
@@ -261,9 +267,6 @@ public:
 
     bool GetDoShowElectricalNotifications() const override { return mGameParameters.DoShowElectricalNotifications; }
     void SetDoShowElectricalNotifications(bool value) override { mGameParameters.DoShowElectricalNotifications = value; }
-
-    bool GetDoAutoZoomOnShipLoad() const override { return mDoAutoZoomOnShipLoad; }
-    void SetDoAutoZoomOnShipLoad(bool value) override { mDoAutoZoomOnShipLoad = value; }
 
     UnitsSystem GetDisplayUnitsSystem() const override { return mRenderContext->GetDisplayUnitsSystem(); }
     void SetDisplayUnitsSystem(UnitsSystem value) override { mRenderContext->SetDisplayUnitsSystem(value); mNotificationLayer.SetDisplayUnitsSystem(value); }
@@ -939,7 +942,6 @@ private:
 
     bool mDoShowTsunamiNotifications;
     bool mDoDrawHeatBlasterFlame;
-    bool mDoAutoZoomOnShipLoad;
 
 
     //
