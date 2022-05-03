@@ -33,13 +33,13 @@ public:
     void PanToWorldX(float worldX);
     void AdjustZoom(float amount);
     void ResetView();
-    void AutoFocus(Geometry::AABBSet const & allAABBs);
+    void FocusOnShip(Geometry::AABBSet const & allAABBs);
 
     void Update(Geometry::AABBSet const & allAABBs);
 
 private:
 
-    void DoAutoFocus(Geometry::AABBSet const & allAABBs);
+    void InternalFocusOnShip(Geometry::AABBSet const & allAABBs);
 
 private:
 

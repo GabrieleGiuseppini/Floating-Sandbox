@@ -929,12 +929,23 @@
 				= Autozoom-on-load:
 					+ "Auto-zoom on load" setting moves to ViewManager
 					= ViewManager::OnNewShip(AABB...): if "auto-zoom on load" is on and no auto-focus: invoke AutoFocus(AABB...)
+						+ Fix invocation without auto-focus session
+							+ Just plain calc zoom and pan
+							+ Fix issue: subsequent announcement generates resize hence OnViewModelUpdated() sets smoothers to current RenderContext values,
+							  which are still way before convergence
+								+ Used to work because of auto-focus doing SetValueImmediate()
+								+ Reclamp
+						+ Reset user offsets at FocusOnShip(), ResetView()
 						= Invoke from GameController
-							- Decide if we still want "ship reload" to NOT do auto-focus
+							+ See why first load doesn't focus
+							= Decide if we still want "ship reload" to NOT do auto-zoom
+								+ Also decide whether we still don't want first load to do auto-zoom
+								+ Test by turning off auto-focus
 								- Fix GameController accordingly
 					+ ViewManager::AutoFocus: if auto-focus not set: invoke (private) DoAutoFocus() [; else: pointless as subsequent Update() will invoke DoAutoFocus()]
 						+ DoAutoFocus(AABB...) contains implementation of zoom+pan
 							+ Invoked also by Update()
+			- Clouds: increase density of closer clouds?
 			- Do test w/goodyear
 			- Phase 5: enabling/disabling
 				- Main UI
@@ -943,12 +954,13 @@
 						- Menu entry
 					- ESC to exit auto-focus
 					- One-time auto-focus
-						- Key shortcut: ?
+						- Key shortcut: Ctrl^HOME
 					- ...
 				- NotificationLayer
 					- Texture
 			- Phase 6: tuning
 				- Test with auto-zoom filling-in larger sub-window
+				- Test faster convergence
 				- Re-test with thresholds
 				- Try stateful thresholds
 					- Based on whether or not smoother is smoothing or not

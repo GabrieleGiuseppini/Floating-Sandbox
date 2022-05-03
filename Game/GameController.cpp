@@ -247,7 +247,9 @@ ShipMetadata GameController::ResetAndLoadShip(std::filesystem::path const & ship
 
 ShipMetadata GameController::ResetAndReloadShip(std::filesystem::path const & shipDefinitionFilepath)
 {
-    return ResetAndLoadShip(shipDefinitionFilepath, StrongTypedFalse<DoAutoZoom>);
+    // TODOTEST
+    //return ResetAndLoadShip(shipDefinitionFilepath, StrongTypedFalse<DoAutoZoom>);
+    return ResetAndLoadShip(shipDefinitionFilepath, StrongTypedTrue<DoAutoZoom>);
 }
 
 ShipMetadata GameController::AddShip(std::filesystem::path const & shipDefinitionFilepath)
@@ -287,7 +289,9 @@ ShipMetadata GameController::AddShip(std::filesystem::path const & shipDefinitio
         std::move(ship),
         std::move(textureImage),
         shipMetadata,
-        StrongTypedFalse<struct DoAutoZoom>);
+        // TODOTEST
+        //StrongTypedFalse<struct DoAutoZoom>);
+        StrongTypedTrue<struct DoAutoZoom>);
 
     return shipMetadata;
 }

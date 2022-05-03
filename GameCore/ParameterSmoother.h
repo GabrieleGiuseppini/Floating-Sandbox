@@ -63,6 +63,11 @@ public:
         mCurrentValue = mTargetValue = mSetter(value);
     }
 
+    void ReClamp()
+    {
+        mTargetValue = mClamper(mTargetValue);
+    }
+
     void Update()
     {
         if (mCurrentValue != mTargetValue)
