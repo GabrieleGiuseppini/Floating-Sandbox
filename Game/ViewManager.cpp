@@ -103,14 +103,6 @@ void ViewManager::OnNewShip(Geometry::AABBSet const & allAABBs)
     if (mDoAutoZoomOnShipLoad)
     {
         FocusOnShip(allAABBs);
-        if (!mAutoFocus.has_value())
-        {
-            InternalFocusOnShip(allAABBs);
-        }
-        else
-        {
-            mAutoFocus->ResetUserOffsets();
-        }
     }
 
     // TODOOLD
