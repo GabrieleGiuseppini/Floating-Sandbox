@@ -15,7 +15,7 @@ ViewManager::ViewManager(Render::RenderContext & renderContext)
     , mZoomParameterSmoother()
     , mCameraWorldPositionParameterSmoother()
     // Defaults
-    , mDoAutoZoomOnShipLoad(false)
+    , mDoAutoZoomOnShipLoad(true)
     , mAutoFocus()
 {
     float constexpr ControlParameterConvergenceFactor = 0.05f;
@@ -51,9 +51,9 @@ ViewManager::ViewManager(Render::RenderContext & renderContext)
         ControlParameterConvergenceFactor);
 
     // TODOTEST
-    mAutoFocus.emplace(
-        mZoomParameterSmoother->GetValue(),
-        mCameraWorldPositionParameterSmoother->GetValue());
+    ////mAutoFocus.emplace(
+    ////    mZoomParameterSmoother->GetValue(),
+    ////    mCameraWorldPositionParameterSmoother->GetValue());
 }
 
 bool ViewManager::GetDoAutoZoomOnShipLoad() const 
@@ -325,13 +325,13 @@ void ViewManager::DoAutoFocus(Geometry::AABBSet const & allAABBs)
 
             mAutoFocus->UserCameraWorldPositionOffset = vec2f(
                 Clamp(
-                impliedUserOffset.x,
-                std::min(0.0f, mAutoFocus->UserCameraWorldPositionOffset.x),
-                std::max(0.0f, mAutoFocus->UserCameraWorldPositionOffset.x)),
+                    impliedUserOffset.x,
+                    std::min(0.0f, mAutoFocus->UserCameraWorldPositionOffset.x),
+                    std::max(0.0f, mAutoFocus->UserCameraWorldPositionOffset.x)),
                 Clamp(
-                impliedUserOffset.y,
-                std::min(0.0f, mAutoFocus->UserCameraWorldPositionOffset.y),
-                std::max(0.0f, mAutoFocus->UserCameraWorldPositionOffset.y)));
+                    impliedUserOffset.y,
+                    std::min(0.0f, mAutoFocus->UserCameraWorldPositionOffset.y),
+                    std::max(0.0f, mAutoFocus->UserCameraWorldPositionOffset.y)));
         }
     }
 }

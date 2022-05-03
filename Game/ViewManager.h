@@ -52,7 +52,7 @@ private:
     // Auto-zoom and auto-focus
     //
 
-    float mDoAutoZoomOnShipLoad;
+    bool mDoAutoZoomOnShipLoad;
 
     struct AutoFocusSessionData
     {
