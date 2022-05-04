@@ -34,10 +34,12 @@ void Clouds::Update(
     // Resize clouds vector
     if (mClouds.size() > gameParameters.NumberOfClouds)
     {
+        // Trim off some clouds
         mClouds.resize(gameParameters.NumberOfClouds);
     }
-    else
+    else if (mClouds.size() < gameParameters.NumberOfClouds)
     {
+        // Add some clouds
         for (size_t c = mClouds.size(); c < gameParameters.NumberOfClouds; ++c)
         {
             uint32_t const cloudId = mLastCloudId++;
@@ -63,14 +65,14 @@ void Clouds::Update(
 
             mClouds.emplace_back(
                 new Cloud(
-                    cloudId,
-                    GameRandomEngine::GetInstance().GenerateUniformReal(-MaxCloudSpaceX, MaxCloudSpaceX), // Initial X
-                    y,
-                    z2,
-                    scale,
-                    1.0f, // Darkening
-                    linearSpeedX,
-                    GameRandomEngine::GetInstance().GenerateNormalizedUniformReal())); // Initial growth phase
+                cloudId,
+                GameRandomEngine::GetInstance().GenerateUniformReal(-MaxCloudSpaceX, MaxCloudSpaceX), // Initial X
+                y,
+                z2,
+                scale,
+                1.0f, // Darkening
+                linearSpeedX,
+                GameRandomEngine::GetInstance().GenerateNormalizedUniformReal())); // Initial growth phase
         }
 
         // Sort by Z, so that we upload the furthest clouds first
