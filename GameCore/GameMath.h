@@ -210,6 +210,18 @@ inline float SmoothStep(
     return x * x * (3.0f - 2.0f * x); // 3x^2 -2x^3, Cubic Hermite
 }
 
+inline float SmootherStep(
+    float lEdge,
+    float rEdge,
+    float x) noexcept
+{
+    assert(lEdge <= rEdge);
+
+    x = Clamp((x - lEdge) / (rEdge - lEdge), 0.0f, 1.0f);
+
+    return x * x * x * (x * (x * 6.0f - 15.0f) + 10.0f); // 6x^5 - 15x^4 + 10x^3, fifth-order
+}
+
 inline float InverseSmoothStep(float x) noexcept
 {
     return 0.5f - std::sin(std::asin(1.0f - 2.0f * x) / 3.0f);

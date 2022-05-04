@@ -200,7 +200,7 @@ public:
         float constexpr ZMax = 20.0f * ZMin; // Magic number: so that at this (furthest) Z, denominator is so large that clouds at virtualY=1.0 appear slightly above the horizon
         float const normalizedCamY = 
             virtualY 
-            - 2.0f * SmoothStep(-1.0f, 1.0f, renderParameters.View.GetCameraWorldPosition().y / GameParameters::HalfMaxWorldHeight) + 1.0f; // More pronounced at lower y
+            - 2.0f * SmootherStep(-1.0f, 1.0f, renderParameters.View.GetCameraWorldPosition().y / GameParameters::HalfMaxWorldHeight) + 1.0f; // More pronounced at lower y
         float const ndcY = normalizedCamY / (ZMin + virtualZ * (ZMax - ZMin));
 
         //

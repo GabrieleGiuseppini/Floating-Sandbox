@@ -945,8 +945,12 @@
 					+ ViewManager::AutoFocus: if auto-focus not set: invoke (private) DoAutoFocus() [; else: pointless as subsequent Update() will invoke DoAutoFocus()]
 						+ DoAutoFocus(AABB...) contains implementation of zoom+pan
 							+ Invoked also by Update()
-			- Clouds: increase density of closer clouds?
+			+ Clouds: better effect: clouds' NDC y should flatten quicker for lower CAM y - now it flattens linearly 
 			- Do test w/goodyear
+			- Fix changing aspect ratio: it seems we don't catch a subsequent resize after we load the ship first
+				- We add ship at end of PostInitialize but resize hasn't happened yet
+			- Test with auto-zoom filling-in larger sub-window
+			- Test faster convergence
 			- Phase 5: enabling/disabling
 				- Main UI
 					- Engage/disable continuous auto-focus
@@ -959,8 +963,6 @@
 				- NotificationLayer
 					- Texture
 			- Phase 6: tuning
-				- Test with auto-zoom filling-in larger sub-window
-				- Test faster convergence
 				- Re-test with thresholds
 				- Try stateful thresholds
 					- Based on whether or not smoother is smoothing or not
