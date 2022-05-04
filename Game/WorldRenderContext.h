@@ -196,9 +196,12 @@ public:
         float const ndcX = virtualX * 2.0f;
 
         // Calculate NDC y: apply perspective transform
-        float constexpr zMin = GameParameters::HalfMaxWorldHeight;
-        float constexpr zMax = 20.0f * zMin; // Magic number: at this (furthest) Z, clouds at virtualY=1.0 appear slightly above the horizon
-        float const ndcY = (virtualY * GameParameters::HalfMaxWorldHeight - renderParameters.View.GetCameraWorldPosition().y) / (zMin + virtualZ * (zMax - zMin));
+        float constexpr ZMin = 1.0f;
+        float constexpr ZMax = 20.0f * ZMin; // Magic number: so that at this (furthest) Z, denominator is so large that clouds at virtualY=1.0 appear slightly above the horizon
+        float const normalizedCamY = 
+            virtualY 
+            - 2.0f * SmoothStep(-1.0f, 1.0f, renderParameters.View.GetCameraWorldPosition().y / GameParameters::HalfMaxWorldHeight) + 1.0f; // More pronounced at lower y
+        float const ndcY = normalizedCamY / (ZMin + virtualZ * (ZMax - ZMin));
 
         //
         // Populate quad in buffer
