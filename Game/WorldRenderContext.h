@@ -176,9 +176,7 @@ public:
 
     void UploadLightningsEnd();
 
-    void UploadCloudsStart(
-        size_t cloudCount,
-        RenderParameters const & renderParameters);
+    void UploadCloudsStart(size_t cloudCount);
 
     inline void UploadCloud(
         uint32_t cloudId,

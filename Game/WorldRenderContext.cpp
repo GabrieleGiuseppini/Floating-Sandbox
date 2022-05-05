@@ -628,18 +628,13 @@ void WorldRenderContext::UploadLightningsEnd()
     // Nop
 }
 
-void WorldRenderContext::UploadCloudsStart(
-    size_t cloudCount,
-    RenderParameters const & renderParameters)
+void WorldRenderContext::UploadCloudsStart(size_t cloudCount)
 {
     //
     // Clouds are not sticky: we upload them at each frame
     //
 
     mCloudVertexBuffer.reset(6 * cloudCount);
-
-    // Freeze here view cam's y - warped so perspective is more visible at lower y - as this is expensive
-    mCloudNormalizedViewCamY = 2.0f / (1.0f + std::exp(-12.0f * renderParameters.View.GetCameraWorldPosition().y / GameParameters::HalfMaxWorldHeight)) - 1.0f;
 }
 
 void WorldRenderContext::UploadCloudsEnd()
@@ -1458,6 +1453,13 @@ void WorldRenderContext::ApplyViewModelChanges(RenderParameters const & renderPa
     mShaderManager.ActivateProgram<ProgramType::WorldBorder>();
     mShaderManager.SetProgramParameter<ProgramType::WorldBorder, ProgramParameterType::OrthoMatrix>(
         globalOrthoMatrix);
+
+    //
+    // Freeze here view cam's y - warped so perspective is more visible at lower y
+    //
+
+    mCloudNormalizedViewCamY = 2.0f / (1.0f + std::exp(-12.0f * renderParameters.View.GetCameraWorldPosition().y / GameParameters::HalfMaxWorldHeight)) - 1.0f;
+
 
     //
     // Recalculate world border
