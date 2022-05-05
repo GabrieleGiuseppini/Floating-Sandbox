@@ -176,7 +176,9 @@ public:
 
     void UploadLightningsEnd();
 
-    void UploadCloudsStart(size_t cloudCount);
+    void UploadCloudsStart(
+        size_t cloudCount,
+        RenderParameters const & renderParameters);
 
     inline void UploadCloud(
         uint32_t cloudId,
@@ -198,10 +200,7 @@ public:
         // Calculate NDC y: apply perspective transform
         float constexpr ZMin = 1.0f;
         float constexpr ZMax = 20.0f * ZMin; // Magic number: so that at this (furthest) Z, denominator is so large that clouds at virtualY=1.0 appear slightly above the horizon
-        float const normalizedCamY = 
-            virtualY 
-            - 2.0f * SmootherStep(-1.0f, 1.0f, renderParameters.View.GetCameraWorldPosition().y / GameParameters::HalfMaxWorldHeight) + 1.0f; // More pronounced at lower y
-        float const ndcY = normalizedCamY / (ZMin + virtualZ * (ZMax - ZMin));
+        float const ndcY = (virtualY - mCloudNormalizedViewCamY) / (ZMin + virtualZ * (ZMax - ZMin));
 
         //
         // Populate quad in buffer
@@ -1034,6 +1033,7 @@ private:
     BoundedVector<CloudVertex> mCloudVertexBuffer;
     GameOpenGLVBO mCloudVBO;
     size_t mCloudVBOAllocatedVertexSize;
+    float mCloudNormalizedViewCamY;
 
     BoundedVector<LandSegment> mLandSegmentBuffer;
     GameOpenGLVBO mLandSegmentVBO;

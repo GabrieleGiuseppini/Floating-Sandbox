@@ -718,7 +718,9 @@ public:
 
     inline void UploadCloudsStart(size_t cloudCount)
     {
-        mWorldRenderContext->UploadCloudsStart(cloudCount);
+        mWorldRenderContext->UploadCloudsStart(
+            cloudCount,
+            mRenderParameters);
     }
 
     inline void UploadCloud(

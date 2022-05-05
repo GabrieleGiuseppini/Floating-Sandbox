@@ -35,6 +35,7 @@ WorldRenderContext::WorldRenderContext(
     , mCloudVertexBuffer()
     , mCloudVBO()
     , mCloudVBOAllocatedVertexSize(0u)
+    , mCloudNormalizedViewCamY(0.0f)
     , mLandSegmentBuffer()
     , mLandSegmentVBO()
     , mLandSegmentVBOAllocatedVertexSize(0u)
@@ -627,13 +628,18 @@ void WorldRenderContext::UploadLightningsEnd()
     // Nop
 }
 
-void WorldRenderContext::UploadCloudsStart(size_t cloudCount)
+void WorldRenderContext::UploadCloudsStart(
+    size_t cloudCount,
+    RenderParameters const & renderParameters)
 {
     //
     // Clouds are not sticky: we upload them at each frame
     //
 
     mCloudVertexBuffer.reset(6 * cloudCount);
+
+    // Freeze here view cam's y - warped so perspective is more visible at lower y - as this is expensive
+    mCloudNormalizedViewCamY = 2.0f / (1.0f + std::exp(-12.0f * renderParameters.View.GetCameraWorldPosition().y / GameParameters::HalfMaxWorldHeight)) - 1.0f;
 }
 
 void WorldRenderContext::UploadCloudsEnd()

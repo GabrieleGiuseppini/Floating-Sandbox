@@ -946,11 +946,14 @@
 						+ DoAutoFocus(AABB...) contains implementation of zoom+pan
 							+ Invoked also by Update()
 			+ Clouds: better effect: clouds' NDC y should flatten quicker for lower CAM y - now it flattens linearly 
+				+ Test storm
+				+ Exponential: ste precalc'd member(s) @ Clouds::UploadStart()
+			- Test with auto-zoom filling-in larger sub-window
+			- Test faster convergence
 			- Do test w/goodyear
 			- Fix changing aspect ratio: it seems we don't catch a subsequent resize after we load the ship first
 				- We add ship at end of PostInitialize but resize hasn't happened yet
-			- Test with auto-zoom filling-in larger sub-window
-			- Test faster convergence
+				- OR NO FIX?
 			- Phase 5: enabling/disabling
 				- Main UI
 					- Engage/disable continuous auto-focus
