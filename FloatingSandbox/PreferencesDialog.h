@@ -49,7 +49,7 @@ private:
 
     void OnReloadLastLoadedShipOnStartupCheckBoxClicked(wxCommandEvent & event);
     void OnShowShipDescriptionAtShipLoadCheckBoxClicked(wxCommandEvent & event);
-    void OnAutoZoomAtShipLoadCheckBoxClicked(wxCommandEvent & event);
+    void OnAutoFocusAtShipLoadCheckBoxClicked(wxCommandEvent & event);
     void OnAutoShowSwitchboardCheckBoxClicked(wxCommandEvent & event);
     void OnShowElectricalNotificationsCheckBoxClicked(wxCommandEvent & event);
     void OnAutoTexturizationModeRadioButtonClick(wxCommandEvent & event);
@@ -99,7 +99,7 @@ private:
     // Ships panel
     wxCheckBox * mReloadLastLoadedShipOnStartupCheckBox;
     wxCheckBox * mShowShipDescriptionAtShipLoadCheckBox;
-    wxCheckBox * mAutoZoomAtShipLoadCheckBox;
+    wxCheckBox * mAutoFocusAtShipLoadCheckBox;
     wxCheckBox * mAutoShowSwitchboardCheckBox;
     wxCheckBox * mShowElectricalNotificationsCheckBox;
     wxRadioButton * mFlatStructureAutoTexturizationModeRadioButton;

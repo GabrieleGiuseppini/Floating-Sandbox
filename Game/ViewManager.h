@@ -20,11 +20,11 @@ public:
 
     ViewManager(Render::RenderContext & renderContext);
 
-    bool GetDoAutoZoomOnShipLoad() const;
-    void SetDoAutoZoomOnShipLoad(bool value);
+    bool GetDoAutoFocusOnShipLoad() const;
+    void SetDoAutoFocusOnShipLoad(bool value);
 
-    bool GetDoContinuousFocus() const;
-    void SetDoContinuousFocus(bool value);
+    bool GetDoContinuousAutoFocus() const;
+    void SetDoContinuousAutoFocus(bool value);
 
     void OnViewModelUpdated();
     void OnNewShip(Geometry::AABBSet const & allAABBs);
@@ -52,7 +52,7 @@ private:
     // Auto-zoom and auto-focus
     //
 
-    bool mDoAutoZoomOnShipLoad;
+    bool mDoAutoFocusOnShipLoad;
 
     struct AutoFocusSessionData
     {

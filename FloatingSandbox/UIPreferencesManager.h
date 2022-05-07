@@ -195,14 +195,24 @@ public:
         mShowShipDescriptionsAtShipLoad = value;
     }
 
-    bool GetDoAutoZoomAtShipLoad() const
+    bool GetDoAutoFocusAtShipLoad() const
     {
-        return mGameController->GetDoAutoZoomOnShipLoad();
+        return mGameController->GetDoAutoFocusOnShipLoad();
     }
 
-    void SetDoAutoZoomAtShipLoad(bool value)
+    void SetDoAutoFocusAtShipLoad(bool value)
     {
-        mGameController->SetDoAutoZoomOnShipLoad(value);
+        mGameController->SetDoAutoFocusOnShipLoad(value);
+    }
+
+    bool GetDoContinuousAutoFocus() const
+    {
+        return mGameController->GetDoContinuousAutoFocus();
+    }
+
+    void SetDoContinuousAutoFocus(bool value)
+    {
+        mGameController->SetDoContinuousAutoFocus(value);
     }
 
     bool GetDoShowTsunamiNotifications() const

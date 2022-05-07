@@ -56,11 +56,14 @@ long const ID_QUIT_MENUITEM = wxNewId();
 
 long const ID_ZOOM_IN_MENUITEM = wxNewId();
 long const ID_ZOOM_OUT_MENUITEM = wxNewId();
+long const ID_FOCUS_ON_SHIP_MENUITEM = wxNewId();
+long const ID_AUTO_FOCUS_AT_SHIP_LOAD_MENUITEM = wxNewId();
+long const ID_CONTINUOUS_AUTO_FOCUS_MENUITEM = wxNewId();
+long const ID_RESET_VIEW_MENUITEM = wxNewId();
 long const ID_AMBIENT_LIGHT_UP_MENUITEM = wxNewId();
 long const ID_AMBIENT_LIGHT_DOWN_MENUITEM = wxNewId();
 long const ID_PAUSE_MENUITEM = wxNewId();
 long const ID_STEP_MENUITEM = wxNewId();
-long const ID_RESET_VIEW_MENUITEM = wxNewId();
 
 long const ID_RCBOMBDETONATE_MENUITEM = wxNewId();
 long const ID_ANTIMATTERBOMBDETONATE_MENUITEM = wxNewId();
@@ -250,6 +253,25 @@ MainFrame::MainFrame(
             ADD_PLAIN_ACCELERATOR_KEY('-', zoomOutMenuItem);
             ADD_PLAIN_ACCELERATOR_KEY(WXK_NUMPAD_SUBTRACT, zoomOutMenuItem);
 
+            mFocusOnShipMenuItem = new wxMenuItem(controlsMenu, ID_FOCUS_ON_SHIP_MENUITEM, _("Focus on Ship") + wxS("\tCtrl+HOME"), _("Focus view on the current ship"), wxITEM_NORMAL);
+            controlsMenu->Append(mFocusOnShipMenuItem);
+            Connect(ID_FOCUS_ON_SHIP_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnFocusOnShipMenuItemSelected);
+
+            mAutoFocusAtShipLoadMenuItem = new wxMenuItem(controlsMenu, ID_AUTO_FOCUS_AT_SHIP_LOAD_MENUITEM, _("Auto-Focus at Ship Load"), _("Enable or disable auto-focus when a ship is loaded."), wxITEM_CHECK);
+            controlsMenu->Append(mAutoFocusAtShipLoadMenuItem);
+            Connect(ID_AUTO_FOCUS_AT_SHIP_LOAD_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAutoFocusAtShipLoadMenuItemSelected);
+
+            mContinuousAutoFocusMenuItem = new wxMenuItem(controlsMenu, ID_CONTINUOUS_AUTO_FOCUS_MENUITEM, _("Continuous Auto-Focus"), _("Enable or disable continuous auto-focus."), wxITEM_CHECK);
+            controlsMenu->Append(mContinuousAutoFocusMenuItem);
+            Connect(ID_CONTINUOUS_AUTO_FOCUS_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnContinuousAutoFocusMenuItemSelected);
+
+            wxMenuItem * resetViewMenuItem = new wxMenuItem(controlsMenu, ID_RESET_VIEW_MENUITEM, _("Reset View") + wxS("\tHOME"), wxEmptyString, wxITEM_NORMAL);
+            controlsMenu->Append(resetViewMenuItem);
+            Connect(ID_RESET_VIEW_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnResetViewMenuItemSelected);
+            ADD_PLAIN_ACCELERATOR_KEY(WXK_HOME, resetViewMenuItem);
+
+            controlsMenu->Append(new wxMenuItem(controlsMenu, wxID_SEPARATOR));
+
             wxMenuItem * amblientLightUpMenuItem = new wxMenuItem(controlsMenu, ID_AMBIENT_LIGHT_UP_MENUITEM, _("Bright Ambient Light") + wxS("\tPgUp"), wxEmptyString, wxITEM_NORMAL);
             controlsMenu->Append(amblientLightUpMenuItem);
             Connect(ID_AMBIENT_LIGHT_UP_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAmbientLightUpMenuItemSelected);
@@ -257,6 +279,8 @@ MainFrame::MainFrame(
             wxMenuItem * ambientLightDownMenuItem = new wxMenuItem(controlsMenu, ID_AMBIENT_LIGHT_DOWN_MENUITEM, _("Dim Ambient Light") + wxS("\tPgDn"), wxEmptyString, wxITEM_NORMAL);
             controlsMenu->Append(ambientLightDownMenuItem);
             Connect(ID_AMBIENT_LIGHT_DOWN_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAmbientLightDownMenuItemSelected);
+
+            controlsMenu->Append(new wxMenuItem(controlsMenu, wxID_SEPARATOR));
 
             mPauseMenuItem = new wxMenuItem(controlsMenu, ID_PAUSE_MENUITEM, _("Pause") + wxS("\tSpace"), _("Pause the game"), wxITEM_CHECK);
             controlsMenu->Append(mPauseMenuItem);
@@ -268,13 +292,6 @@ MainFrame::MainFrame(
             controlsMenu->Append(mStepMenuItem);
             Connect(ID_STEP_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnStepMenuItemSelected);
             mStepMenuItem->Enable(false);
-
-            controlsMenu->Append(new wxMenuItem(controlsMenu, wxID_SEPARATOR));
-
-            wxMenuItem * resetViewMenuItem = new wxMenuItem(controlsMenu, ID_RESET_VIEW_MENUITEM, _("Reset View") + wxS("\tHOME"), wxEmptyString, wxITEM_NORMAL);
-            controlsMenu->Append(resetViewMenuItem);
-            Connect(ID_RESET_VIEW_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnResetViewMenuItemSelected);
-            ADD_PLAIN_ACCELERATOR_KEY(WXK_HOME, resetViewMenuItem);
 
             mainMenuBar->Append(controlsMenu, _("&Controls"));
         }
@@ -977,7 +994,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
         mLocalizationManager,
         mMusicController);
 
-    ReconcileWithUIPreferences();
+    ReconciliateUIWithUIPreferences();
 
 
     //
@@ -1613,25 +1630,6 @@ void MainFrame::OnSaveScreenshotMenuItemSelected(wxCommandEvent & /*event*/)
     }
 }
 
-void MainFrame::OnPauseMenuItemSelected(wxCommandEvent & /*event*/)
-{
-    SetPaused(mPauseMenuItem->IsChecked());
-}
-
-void MainFrame::OnStepMenuItemSelected(wxCommandEvent & /*event*/)
-{
-    assert(!!mGameController);
-
-    mGameController->PulseUpdateAtNextGameIteration();
-}
-
-void MainFrame::OnResetViewMenuItemSelected(wxCommandEvent & /*event*/)
-{
-    assert(!!mGameController);
-
-    mGameController->ResetView();
-}
-
 void MainFrame::OnZoomInMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mGameController);
@@ -1647,6 +1645,32 @@ void MainFrame::OnZoomOutMenuItemSelected(wxCommandEvent & /*event*/)
     mGameController->AdjustZoom(1.0f / mUIPreferencesManager->GetZoomIncrement());
 }
 
+void MainFrame::OnFocusOnShipMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mGameController);
+    mGameController->FocusOnShip();
+}
+
+void MainFrame::OnAutoFocusAtShipLoadMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mUIPreferencesManager);
+    mUIPreferencesManager->SetDoAutoFocusAtShipLoad(mAutoFocusAtShipLoadMenuItem->IsChecked());
+}
+
+void MainFrame::OnContinuousAutoFocusMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mUIPreferencesManager);
+    mUIPreferencesManager->SetDoContinuousAutoFocus(mContinuousAutoFocusMenuItem->IsChecked());
+    ReconciliateUIWithUIPreferences();
+}
+
+void MainFrame::OnResetViewMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mGameController);
+
+    mGameController->ResetView();
+}
+
 void MainFrame::OnAmbientLightUpMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mGameController);
@@ -1659,6 +1683,18 @@ void MainFrame::OnAmbientLightDownMenuItemSelected(wxCommandEvent & /*event*/)
     assert(!!mGameController);
     float newAmbientLight = mGameController->GetAmbientLightIntensity() / 1.02f;
     mGameController->SetAmbientLightIntensity(newAmbientLight);
+}
+
+void MainFrame::OnPauseMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    SetPaused(mPauseMenuItem->IsChecked());
+}
+
+void MainFrame::OnStepMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mGameController);
+
+    mGameController->PulseUpdateAtNextGameIteration();
 }
 
 void MainFrame::OnMoveMenuItemSelected(wxCommandEvent & /*event*/)
@@ -1903,7 +1939,7 @@ void MainFrame::OnOpenPreferencesWindowMenuItemSelected(wxCommandEvent & /*event
             mUIPreferencesManager,
             [this]()
             {
-                this->ReconcileWithUIPreferences();
+                this->ReconciliateUIWithUIPreferences();
             });
     }
 
@@ -2414,9 +2450,14 @@ void MainFrame::StartLowFrequencyTimer()
         false); // Continuous
 }
 
-void MainFrame::ReconcileWithUIPreferences()
+void MainFrame::ReconciliateUIWithUIPreferences()
 {
     assert(mUIPreferencesManager);
+
+    mAutoFocusAtShipLoadMenuItem->Check(mUIPreferencesManager->GetDoAutoFocusAtShipLoad());
+
+    mContinuousAutoFocusMenuItem->Check(mUIPreferencesManager->GetDoContinuousAutoFocus());
+    mFocusOnShipMenuItem->Enable(!mUIPreferencesManager->GetDoContinuousAutoFocus());
 
     mFullScreenMenuItem->Enable(!mUIPreferencesManager->GetStartInFullScreen());
     mNormalScreenMenuItem->Enable(mUIPreferencesManager->GetStartInFullScreen());

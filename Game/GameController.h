@@ -249,14 +249,15 @@ public:
     void PanToWorldEnd(int side) override;
     void AdjustZoom(float amount) override;
     void ResetView() override;
+    void FocusOnShip() override;
     vec2f ScreenToWorld(DisplayLogicalCoordinates const & screenCoordinates) const override;
     vec2f ScreenOffsetToWorldOffset(DisplayLogicalSize const & screenOffset) const override;
 
-    bool GetDoAutoZoomOnShipLoad() const override { return mViewManager.GetDoAutoZoomOnShipLoad(); }
-    void SetDoAutoZoomOnShipLoad(bool value) override { mViewManager.SetDoAutoZoomOnShipLoad(value); }
+    bool GetDoAutoFocusOnShipLoad() const override { return mViewManager.GetDoAutoFocusOnShipLoad(); }
+    void SetDoAutoFocusOnShipLoad(bool value) override { mViewManager.SetDoAutoFocusOnShipLoad(value); }
 
-    bool GetDoContinuousFocus() const override { return mViewManager.GetDoContinuousFocus(); }
-    void SetDoContinuousFocus(bool value) override { mViewManager.SetDoContinuousFocus(value); }
+    bool GetDoContinuousAutoFocus() const override { return mViewManager.GetDoContinuousAutoFocus(); }
+    void SetDoContinuousAutoFocus(bool value) override { mViewManager.SetDoContinuousAutoFocus(value); }
 
     //
     // UI parameters

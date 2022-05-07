@@ -17,7 +17,7 @@ ViewManager::ViewManager(Render::RenderContext & renderContext)
     , mZoomParameterSmoother()
     , mCameraWorldPositionParameterSmoother()
     // Defaults
-    , mDoAutoZoomOnShipLoad(true)
+    , mDoAutoFocusOnShipLoad(true)
     , mAutoFocus()
 {
     float constexpr ControlParameterConvergenceFactor = 0.05f;
@@ -58,22 +58,22 @@ ViewManager::ViewManager(Render::RenderContext & renderContext)
     ////    mCameraWorldPositionParameterSmoother->GetValue());
 }
 
-bool ViewManager::GetDoAutoZoomOnShipLoad() const 
+bool ViewManager::GetDoAutoFocusOnShipLoad() const
 { 
-    return mDoAutoZoomOnShipLoad; 
+    return mDoAutoFocusOnShipLoad;
 }
 
-void ViewManager::SetDoAutoZoomOnShipLoad(bool value) 
+void ViewManager::SetDoAutoFocusOnShipLoad(bool value)
 { 
-    mDoAutoZoomOnShipLoad = value; 
+    mDoAutoFocusOnShipLoad = value;
 }
 
-bool ViewManager::GetDoContinuousFocus() const 
+bool ViewManager::GetDoContinuousAutoFocus() const
 { 
     return mAutoFocus.has_value(); 
 }
 
-void ViewManager::SetDoContinuousFocus(bool value)
+void ViewManager::SetDoContinuousAutoFocus(bool value)
 {
     if (value)
     {
@@ -100,7 +100,7 @@ void ViewManager::OnViewModelUpdated()
 
 void ViewManager::OnNewShip(Geometry::AABBSet const & allAABBs)
 {
-    if (mDoAutoZoomOnShipLoad)
+    if (mDoAutoFocusOnShipLoad)
     {
         FocusOnShip(allAABBs);
     }

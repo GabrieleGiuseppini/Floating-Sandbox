@@ -1299,6 +1299,14 @@ void GameController::ResetView()
     mViewManager.ResetView();
 }
 
+void GameController::FocusOnShip()
+{
+    if (mWorld)
+    {
+        mViewManager.FocusOnShip(mWorld->GetAllAABBs());
+    }
+}
+
 vec2f GameController::ScreenToWorld(DisplayLogicalCoordinates const & screenCoordinates) const
 {
     return mRenderContext->ScreenToWorld(screenCoordinates);

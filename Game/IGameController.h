@@ -154,14 +154,15 @@ struct IGameController
     virtual void PanToWorldEnd(int side) = 0;
     virtual void AdjustZoom(float amount) = 0;
     virtual void ResetView() = 0;
+    virtual void FocusOnShip() = 0;
     virtual vec2f ScreenToWorld(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
     virtual vec2f ScreenOffsetToWorldOffset(DisplayLogicalSize const & screenOffset) const = 0;
 
-    virtual bool GetDoAutoZoomOnShipLoad() const = 0;
-    virtual void SetDoAutoZoomOnShipLoad(bool value) = 0;
+    virtual bool GetDoAutoFocusOnShipLoad() const = 0;
+    virtual void SetDoAutoFocusOnShipLoad(bool value) = 0;
 
-    virtual bool GetDoContinuousFocus() const = 0;
-    virtual void SetDoContinuousFocus(bool value) = 0;
+    virtual bool GetDoContinuousAutoFocus() const = 0;
+    virtual void SetDoContinuousAutoFocus(bool value) = 0;
 
     //
     // UI parameters

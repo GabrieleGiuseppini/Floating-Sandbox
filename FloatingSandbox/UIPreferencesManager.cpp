@@ -303,13 +303,23 @@ void UIPreferencesManager::LoadPreferences()
         ////}
 
         //
-        // Auto-zoom at ship load
+        // Auto-focus at ship load
         //
 
-        if (auto doAutoZoomAtShipLoadIt = preferencesRootObject->find("auto_zoom_at_ship_load");
-            doAutoZoomAtShipLoadIt != preferencesRootObject->end() && doAutoZoomAtShipLoadIt->second.is<bool>())
+        if (auto autoZoomAtShipLoadIt = preferencesRootObject->find("auto_zoom_at_ship_load");
+            autoZoomAtShipLoadIt != preferencesRootObject->end() && autoZoomAtShipLoadIt->second.is<bool>())
         {
-            mGameController->SetDoAutoZoomOnShipLoad(doAutoZoomAtShipLoadIt->second.get<bool>());
+            mGameController->SetDoAutoFocusOnShipLoad(autoZoomAtShipLoadIt->second.get<bool>());
+        }
+
+        //
+        // Continuous auto-focus
+        //
+
+        if (auto continuousAutoFocusIt = preferencesRootObject->find("continuous_auto_focus");
+            continuousAutoFocusIt != preferencesRootObject->end() && continuousAutoFocusIt->second.is<bool>())
+        {
+            mGameController->SetDoContinuousAutoFocus(continuousAutoFocusIt->second.get<bool>());
         }
 
         //
@@ -503,8 +513,11 @@ void UIPreferencesManager::SavePreferences() const
     ////// Add ship auto-texturization force shared settings onto ship
     ////preferencesRootObject["ship_auto_texturization_force_defaults_onto_ship"] = picojson::value(mGameController->GetShipAutoTexturizationDoForceSharedSettingsOntoShipSettings());
 
-    // Add auto zoom at ship load
-    preferencesRootObject["auto_zoom_at_ship_load"] = picojson::value(mGameController->GetDoAutoZoomOnShipLoad());
+    // Add auto focus at ship load
+    preferencesRootObject["auto_zoom_at_ship_load"] = picojson::value(mGameController->GetDoAutoFocusOnShipLoad());
+
+    // Add continuous auto focus
+    preferencesRootObject["continuous_auto_focus"] = picojson::value(mGameController->GetDoContinuousAutoFocus());
 
     // Add auto show switchboard
     preferencesRootObject["auto_show_switchboard"] = picojson::value(mAutoShowSwitchboard);

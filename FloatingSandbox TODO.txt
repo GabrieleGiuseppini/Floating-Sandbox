@@ -954,18 +954,45 @@
 			- Fix changing aspect ratio: it seems we don't catch a subsequent resize after we load the ship first
 				- We add ship at end of PostInitialize but resize hasn't happened yet
 				- OR NO FIX?
-			- Phase 5: enabling/disabling
-				- Main UI
-					- Engage/disable continuous auto-focus
-						- Preferences window
-						- Menu entry
-					- ESC to exit auto-focus
-					- One-time auto-focus
-						- Key shortcut: Ctrl^HOME
-					- ...
+			= Phase 5: enabling/disabling
+				= Main UI
+					= "Auto-Focus on Load"
+						+ UIPreferencesManager
+						+ Checkbox menu item 
+							+ Tells to UIPreferencesManager
+						- PreferencesDialog
+							- Tells to UIPreferencesManager
+						+ MainFrame::Reconciliate
+					= "Continuous Auto-Focus"
+						+ UIPreferencesManager
+						+ Checkbox menu item 
+							+ Tells to UIPreferencesManager
+							+ Then calls MainFrame::Reconciliate()
+						- PreferencesDialog
+							- Tells to UIPreferencesManager
+						+ MainFrame::Reconciliate
+						- ESC to exit it
+							- Invoke Reconciliate
+					+ "Reset View"
+					= "Focus on Ship"
+						= Menu item, key shortcut: Ctrl^HOME
+							+ Enabled only if continuous auto-focus is !enabled
+								+ @MainFrame::Reconciliate
+					- "Reset View" -> "Reset to Origin"
+						- Renaming everywhere
+						- Ctrl+HOME
+						- Done smoothly
+							- Search other usages
+					- Focus on Ship: HOME
+					- Move Full/Normal screen menu items?
+					- Test:
+						- Save of "Auto-Focus on Load"
+						- Save of "Continuous Auto-Focus"
+						- Keyboard shortcuts on Ubuntu
 				- NotificationLayer
 					- Texture
 			- Phase 6: tuning
+				- Immediate pan: done smoothly in all cases?
 				- Re-test with thresholds
 				- Try stateful thresholds
 					- Based on whether or not smoother is smoothing or not

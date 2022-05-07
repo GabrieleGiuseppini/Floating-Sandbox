@@ -96,6 +96,9 @@ private:
 
     wxBoxSizer * mMainPanelSizer;
     wxMenuItem * mReloadPreviousShipMenuItem;
+    wxMenuItem * mFocusOnShipMenuItem;
+    wxMenuItem * mAutoFocusAtShipLoadMenuItem;
+    wxMenuItem * mContinuousAutoFocusMenuItem;
     wxMenuItem * mPauseMenuItem;
     wxMenuItem * mStepMenuItem;
     wxMenu * mToolsMenu;
@@ -170,11 +173,14 @@ private:
     // Menu
     void OnZoomInMenuItemSelected(wxCommandEvent & event);
     void OnZoomOutMenuItemSelected(wxCommandEvent & event);
+    void OnFocusOnShipMenuItemSelected(wxCommandEvent & event);
+    void OnAutoFocusAtShipLoadMenuItemSelected(wxCommandEvent & event);
+    void OnContinuousAutoFocusMenuItemSelected(wxCommandEvent & event);
+    void OnResetViewMenuItemSelected(wxCommandEvent & event);
     void OnAmbientLightUpMenuItemSelected(wxCommandEvent & event);
     void OnAmbientLightDownMenuItemSelected(wxCommandEvent & event);
     void OnPauseMenuItemSelected(wxCommandEvent & event);
     void OnStepMenuItemSelected(wxCommandEvent & event);
-    void OnResetViewMenuItemSelected(wxCommandEvent & event);
     void OnLoadShipMenuItemSelected(wxCommandEvent & event);
     void OnReloadCurrentShipMenuItemSelected(wxCommandEvent & event);
     void OnReloadPreviousShipMenuItemSelected(wxCommandEvent & event);
@@ -368,7 +374,7 @@ private:
 
     void StartLowFrequencyTimer();
 
-    void ReconcileWithUIPreferences();
+    void ReconciliateUIWithUIPreferences();
 
     static std::filesystem::path ChooseDefaultShip(ResourceLocator const & resourceLocator);
 

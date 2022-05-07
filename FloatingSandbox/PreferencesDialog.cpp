@@ -280,10 +280,10 @@ void PreferencesDialog::OnShowShipDescriptionAtShipLoadCheckBoxClicked(wxCommand
     mOnChangeCallback();
 }
 
-void PreferencesDialog::OnAutoZoomAtShipLoadCheckBoxClicked(wxCommandEvent & /*event*/)
+void PreferencesDialog::OnAutoFocusAtShipLoadCheckBoxClicked(wxCommandEvent & /*event*/)
 {
     assert(!!mUIPreferencesManager);
-    mUIPreferencesManager->SetDoAutoZoomAtShipLoad(mAutoZoomAtShipLoadCheckBox->GetValue());
+    mUIPreferencesManager->SetDoAutoFocusAtShipLoad(mAutoFocusAtShipLoadCheckBox->GetValue());
 
     mOnChangeCallback();
 }
@@ -911,15 +911,15 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
-            // Auto-Zoom
+            // Auto-Focus
             {
-                mAutoZoomAtShipLoadCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY,
-                    _("Auto-Zoom at Ship Load"), wxDefaultPosition, wxDefaultSize, 0);
-                mAutoZoomAtShipLoadCheckBox->SetToolTip(_("Enables or disables auto-zooming when loading a new ship."));
-                mAutoZoomAtShipLoadCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnAutoZoomAtShipLoadCheckBoxClicked, this);
+                mAutoFocusAtShipLoadCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY,
+                    _("Auto-Focus at Ship Load"), wxDefaultPosition, wxDefaultSize, 0);
+                mAutoFocusAtShipLoadCheckBox->SetToolTip(_("Enables or disables auto-focus when a ship is loaded."));
+                mAutoFocusAtShipLoadCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnAutoFocusAtShipLoadCheckBoxClicked, this);
 
                 sizer->Add(
-                    mAutoZoomAtShipLoadCheckBox,
+                    mAutoFocusAtShipLoadCheckBox,
                     wxGBPosition(2, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -1182,7 +1182,7 @@ void PreferencesDialog::ReadSettings()
 
     mReloadLastLoadedShipOnStartupCheckBox->SetValue(mUIPreferencesManager->GetReloadLastLoadedShipOnStartup());
     mShowShipDescriptionAtShipLoadCheckBox->SetValue(mUIPreferencesManager->GetShowShipDescriptionsAtShipLoad());
-    mAutoZoomAtShipLoadCheckBox->SetValue(mUIPreferencesManager->GetDoAutoZoomAtShipLoad());
+    mAutoFocusAtShipLoadCheckBox->SetValue(mUIPreferencesManager->GetDoAutoFocusAtShipLoad());
     mAutoShowSwitchboardCheckBox->SetValue(mUIPreferencesManager->GetAutoShowSwitchboard());
     mShowElectricalNotificationsCheckBox->SetValue(mUIPreferencesManager->GetDoShowElectricalNotifications());
     switch (mUIPreferencesManager->GetShipAutoTexturizationSharedSettings().Mode)
