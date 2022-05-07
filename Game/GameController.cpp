@@ -90,11 +90,12 @@ GameController::GameController(
     , mGameEventDispatcher(std::move(gameEventDispatcher))
     , mNotificationLayer(
         mGameParameters.IsUltraViolentMode,
-        false /*loaded value will come later*/,
+        false /*isSoundMuted; loaded value will come later*/,
         mGameParameters.DoDayLightCycle,
+        false /*isAutoFocusOn; loaded value will come later*/,
         mRenderContext->GetDisplayUnitsSystem(),
         mGameEventDispatcher)
-    , mViewManager(*mRenderContext)
+    , mViewManager(*mRenderContext, mNotificationLayer)
     , mTaskThreadPool(std::make_shared<TaskThreadPool>())
     // Smoothing
     , mFloatParameterSmoothers()
@@ -242,14 +243,12 @@ void GameController::RebindOpenGLContext()
 
 ShipMetadata GameController::ResetAndLoadShip(std::filesystem::path const & shipDefinitionFilepath)
 {
-    return ResetAndLoadShip(shipDefinitionFilepath, StrongTypedTrue<DoAutoZoom>);
+    return InternalResetAndLoadShip(shipDefinitionFilepath);
 }
 
 ShipMetadata GameController::ResetAndReloadShip(std::filesystem::path const & shipDefinitionFilepath)
 {
-    // TODOTEST
-    //return ResetAndLoadShip(shipDefinitionFilepath, StrongTypedFalse<DoAutoZoom>);
-    return ResetAndLoadShip(shipDefinitionFilepath, StrongTypedTrue<DoAutoZoom>);
+    return InternalResetAndLoadShip(shipDefinitionFilepath);
 }
 
 ShipMetadata GameController::AddShip(std::filesystem::path const & shipDefinitionFilepath)
@@ -288,10 +287,7 @@ ShipMetadata GameController::AddShip(std::filesystem::path const & shipDefinitio
     OnShipCreated(
         std::move(ship),
         std::move(textureImage),
-        shipMetadata,
-        // TODOTEST
-        //StrongTypedFalse<struct DoAutoZoom>);
-        StrongTypedTrue<struct DoAutoZoom>);
+        shipMetadata);
 
     return shipMetadata;
 }
@@ -1355,9 +1351,7 @@ void GameController::OnShipRepaired(ShipId /*shipId*/)
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
-ShipMetadata GameController::ResetAndLoadShip(
-    std::filesystem::path const & shipDefinitionFilepath,
-    StrongTypedBool<struct DoAutoZoom> doAutoZoom)
+ShipMetadata GameController::InternalResetAndLoadShip(std::filesystem::path const & shipDefinitionFilepath)
 {
     assert(!!mWorld);
 
@@ -1402,8 +1396,7 @@ ShipMetadata GameController::ResetAndLoadShip(
     OnShipCreated(
         std::move(ship),
         std::move(textureImage),
-        shipMetadata,
-        doAutoZoom);
+        shipMetadata);
 
     return shipMetadata;
 }
@@ -1434,8 +1427,7 @@ void GameController::Reset(std::unique_ptr<Physics::World> newWorld)
 void GameController::OnShipCreated(
     std::unique_ptr<Physics::Ship> ship,
     RgbaImageData && textureImage,
-    ShipMetadata const & shipMetadata,
-    StrongTypedBool<struct DoAutoZoom> doAutoZoom)
+    ShipMetadata const & shipMetadata)
 {
     ShipId const shipId = ship->GetId();
 
@@ -1452,9 +1444,7 @@ void GameController::OnShipCreated(
         std::move(textureImage));
 
     // Tell view manager
-    // TODOHERE
-    if (doAutoZoom)
-        mViewManager.OnNewShip(mWorld->GetAllAABBs());
+    mViewManager.OnNewShip(mWorld->GetAllAABBs());
 
     // Notify ship load
     mGameEventDispatcher->OnShipLoaded(

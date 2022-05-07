@@ -18,6 +18,7 @@ NotificationLayer::NotificationLayer(
 	bool isUltraViolentMode,
 	bool isSoundMuted,
 	bool isDayLightCycleOn,
+	bool isAutoFocusOn,
 	UnitsSystem displayUnitsSystem,
 	std::shared_ptr<GameEventDispatcher> gameEventDispatcher)
     : mGameEventDispatcher(std::move(gameEventDispatcher))
@@ -33,6 +34,7 @@ NotificationLayer::NotificationLayer(
 	, mIsUltraViolentModeIndicatorOn(isUltraViolentMode)
 	, mIsSoundMuteIndicatorOn(isSoundMuted)
 	, mIsDayLightCycleOn(isDayLightCycleOn)
+	, mIsAutoFocusOn(isAutoFocusOn)
 	, mAreTextureNotificationsDirty(true)
 	// Physics probe
 	, mPhysicsProbePanelState()
@@ -223,6 +225,14 @@ void NotificationLayer::SetSoundMuteIndicator(bool isSoundMuted)
 void NotificationLayer::SetDayLightCycleIndicator(bool isDayLightCycleOn)
 {
 	mIsDayLightCycleOn = isDayLightCycleOn;
+
+	// Indicator needs to be re-uploaded
+	mAreTextureNotificationsDirty = true;
+}
+
+void NotificationLayer::SetAutoFocusIndicator(bool isAutoFocusOn)
+{
+	mIsAutoFocusOn = isAutoFocusOn;
 
 	// Indicator needs to be re-uploaded
 	mAreTextureNotificationsDirty = true;
@@ -556,6 +566,15 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 				TextureFrameId(Render::GenericLinearTextureGroups::DayLightCycleNotification, 0),
 				Render::AnchorPositionType::BottomRight,
 				vec2f(-3.0f, 0.0f),
+				1.0f);
+		}
+
+		if (mIsAutoFocusOn)
+		{
+			notificationRenderContext.UploadTextureNotification(
+				TextureFrameId(Render::GenericLinearTextureGroups::AutoFocusNotification, 0),
+				Render::AnchorPositionType::BottomRight,
+				vec2f(-4.5f, 0.0f),
 				1.0f);
 		}
 

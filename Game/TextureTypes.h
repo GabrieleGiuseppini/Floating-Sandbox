@@ -162,6 +162,7 @@ struct GenericMipMappedTextureTextureDatabaseTraits
 
 enum class GenericLinearTextureGroups : uint16_t
 {
+    AutoFocusNotification,
     DayLightCycleNotification,
     Fire,
     PhysicsProbePanel,
@@ -180,7 +181,9 @@ struct GenericLinearTextureTextureDatabaseTraits
 
     static TextureGroups StrToTextureGroup(std::string const & str)
     {
-        if (Utils::CaseInsensitiveEquals(str, "DayLightCycleNotification"))
+        if (Utils::CaseInsensitiveEquals(str, "AutoFocusNotification"))
+            return TextureGroups::AutoFocusNotification;
+        else if (Utils::CaseInsensitiveEquals(str, "DayLightCycleNotification"))
             return TextureGroups::DayLightCycleNotification;
         else if (Utils::CaseInsensitiveEquals(str, "Fire"))
             return TextureGroups::Fire;

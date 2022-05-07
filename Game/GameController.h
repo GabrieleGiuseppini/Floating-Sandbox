@@ -30,7 +30,6 @@
 #include <GameCore/ImageData.h>
 #include <GameCore/ParameterSmoother.h>
 #include <GameCore/ProgressCallback.h>
-#include <GameCore/StrongTypeDef.h>
 #include <GameCore/TaskThreadPool.h>
 #include <GameCore/Vectors.h>
 
@@ -857,17 +856,14 @@ private:
         ResourceLocator const & resourceLocator,
         ProgressCallback const & progressCallback);
 
-    ShipMetadata ResetAndLoadShip(
-        std::filesystem::path const & shipDefinitionFilepath,
-        StrongTypedBool<struct DoAutoZoom> doAutoZoom);
+    ShipMetadata InternalResetAndLoadShip(std::filesystem::path const & shipDefinitionFilepath);
 
     void Reset(std::unique_ptr<Physics::World> newWorld);
 
     void OnShipCreated(
         std::unique_ptr<Physics::Ship> ship,
         RgbaImageData && textureImage,
-        ShipMetadata const & shipMetadata,
-        StrongTypedBool<struct DoAutoZoom> doAutoZoom);
+        ShipMetadata const & shipMetadata);
 
     void PublishStats(std::chrono::steady_clock::time_point nowReal);
 

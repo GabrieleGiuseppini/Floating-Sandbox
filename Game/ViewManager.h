@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "NotificationLayer.h"
 #include "RenderContext.h"
 
 #include <GameCore/AABBSet.h>
@@ -18,7 +19,9 @@ class ViewManager
 {
 public:
 
-    ViewManager(Render::RenderContext & renderContext);
+    ViewManager(
+        Render::RenderContext & renderContext,
+        NotificationLayer & notificationLayer);
 
     bool GetDoAutoFocusOnShipLoad() const;
     void SetDoAutoFocusOnShipLoad(bool value);
@@ -44,6 +47,7 @@ private:
 private:
 
     Render::RenderContext & mRenderContext;
+    NotificationLayer & mNotificationLayer;
 
     std::unique_ptr<ParameterSmoother<float>> mZoomParameterSmoother;
     std::unique_ptr<ParameterSmoother<vec2f>> mCameraWorldPositionParameterSmoother;

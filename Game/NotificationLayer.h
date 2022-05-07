@@ -26,6 +26,7 @@ public:
 		bool isUltraViolentMode,
 		bool isSoundMuted,
 		bool isDayLightCycleOn,
+		bool isAutoFocusOn,
 		UnitsSystem displayUnitsSystem,
 		std::shared_ptr<GameEventDispatcher> gameEventDispatcher);
 
@@ -55,6 +56,8 @@ public:
 	void SetSoundMuteIndicator(bool isSoundMuted);
 
 	void SetDayLightCycleIndicator(bool isDayLightCycleOn);
+
+	void SetAutoFocusIndicator(bool isAutoFocusOn);
 
 	void SetPhysicsProbePanelState(float targetOpen);
 
@@ -210,6 +213,7 @@ private:
 	bool mIsUltraViolentModeIndicatorOn;
 	bool mIsSoundMuteIndicatorOn;
 	bool mIsDayLightCycleOn;
+	bool mIsAutoFocusOn;
 	bool mAreTextureNotificationsDirty;
 
 	//

@@ -12,8 +12,11 @@
 
 float constexpr NdcFractionZoomTarget = 0.5f; // Fraction of the [0, 2] NDC space that needs to be occupied by AABB
 
-ViewManager::ViewManager(Render::RenderContext & renderContext)
+ViewManager::ViewManager(
+    Render::RenderContext & renderContext,
+    NotificationLayer & notificationLayer)
     : mRenderContext(renderContext)
+    , mNotificationLayer(notificationLayer)
     , mZoomParameterSmoother()
     , mCameraWorldPositionParameterSmoother()
     // Defaults
@@ -51,11 +54,6 @@ ViewManager::ViewManager(Render::RenderContext & renderContext)
             return mRenderContext.ClampCameraWorldPosition(value);
         },
         ControlParameterConvergenceFactor);
-
-    // TODOTEST
-    ////mAutoFocus.emplace(
-    ////    mZoomParameterSmoother->GetValue(),
-    ////    mCameraWorldPositionParameterSmoother->GetValue());
 }
 
 bool ViewManager::GetDoAutoFocusOnShipLoad() const
@@ -89,6 +87,8 @@ void ViewManager::SetDoContinuousAutoFocus(bool value)
         assert(mAutoFocus.has_value());
         mAutoFocus.reset();
     }
+
+    mNotificationLayer.SetAutoFocusIndicator(mAutoFocus.has_value());
 }
 
 void ViewManager::OnViewModelUpdated()
@@ -104,28 +104,6 @@ void ViewManager::OnNewShip(Geometry::AABBSet const & allAABBs)
     {
         FocusOnShip(allAABBs);
     }
-
-    // TODOOLD
-    ////auto const unionAABB = allAABBs.MakeUnion();
-    ////if (unionAABB.has_value())
-    ////{
-    ////    // Calculate zoom to fit width and height (plus a nicely-looking margin)
-    ////    float const newZoom = std::min(
-    ////        mRenderContext.CalculateZoomForWorldWidth(unionAABB->GetWidth() + 5.0f),
-    ////        mRenderContext.CalculateZoomForWorldHeight(unionAABB->GetHeight() + 3.0f));
-
-    ////    // If calculated zoom requires zoom out: use it
-    ////    if (newZoom <= mZoomParameterSmoother->GetValue())
-    ////    {
-    ////        mZoomParameterSmoother->SetValueImmediate(newZoom);
-    ////    }
-    ////    else if (newZoom > 1.0f)
-    ////    {
-    ////        // Would need to zoom-in closer...
-    ////        // ...let's stop at 1.0 then
-    ////        mZoomParameterSmoother->SetValueImmediate(1.0f);
-    ////    }
-    ////}
 }
 
 void ViewManager::Pan(vec2f const & worldOffset)
@@ -193,12 +171,11 @@ void ViewManager::AdjustZoom(float amount)
 
 void ViewManager::ResetView(Geometry::AABBSet const & allAABBs)
 {
+    // When continuous auto-focus is off, "view reset" focuses on ship;
+    // When continuous auto-focus is on, "view reset" zeroes-out user offsets
     if (!mAutoFocus.has_value())
     {
-        // TODOTEST
         InternalFocusOnShip(allAABBs);
-        ////mCameraWorldPositionParameterSmoother->SetValueImmediate(vec2f::zero());
-        ////mZoomParameterSmoother->SetValueImmediate(1.0f);
     }
     else
     {

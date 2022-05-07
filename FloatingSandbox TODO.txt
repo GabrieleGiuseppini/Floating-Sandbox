@@ -915,7 +915,7 @@
 				+ See if can use tolerance to make adjustments less continuous
 					X Decide if user may select tolerance - MAY BE NOT
 				+ Simplify auto-zoom and pan calc's
-			= Phase 4: user's offsets
+			+ Phase 4: user's offsets
 				! Cannot user smoothers' values when calculating auto-focus, unless we downscale them by user's offsets - which could have changed
 					! This is because we want to calculate auto-focus and panning on the "screen" without user's offsets
 				+ Need to store auto-focus zoom and camera pos - without user's offsets - and use those for calculating auto-focus
@@ -926,9 +926,9 @@
 						+ Pan
 							+ Erode x and y independently
 						+ Zoom
-				= Autozoom-on-load:
+				+ Autozoom-on-load:
 					+ "Auto-zoom on load" setting moves to ViewManager
-					= ViewManager::OnNewShip(AABB...): if "auto-zoom on load" is on and no auto-focus: invoke AutoFocus(AABB...)
+					+ ViewManager::OnNewShip(AABB...): if "auto-zoom on load" is on and no auto-focus: invoke AutoFocus(AABB...)
 						+ Fix invocation without auto-focus session
 							+ Just plain calc zoom and pan
 							+ Fix issue: subsequent announcement generates resize hence OnViewModelUpdated() sets smoothers to current RenderContext values,
@@ -936,12 +936,12 @@
 								+ Used to work because of auto-focus doing SetValueImmediate()
 								+ Reclamp
 						+ Reset user offsets at FocusOnShip(), ResetView()
-						= Invoke from GameController
+						+ Invoke from GameController
 							+ See why first load doesn't focus
-							= Decide if we still want "ship reload" to NOT do auto-zoom
+							+ Decide if we still want "ship reload" to NOT do auto-zoom
 								+ Also decide whether we still don't want first load to do auto-zoom
 								+ Test by turning off auto-focus
-								- Fix GameController accordingly
+								+ Fix GameController accordingly
 					+ ViewManager::AutoFocus: if auto-focus not set: invoke (private) DoAutoFocus() [; else: pointless as subsequent Update() will invoke DoAutoFocus()]
 						+ DoAutoFocus(AABB...) contains implementation of zoom+pan
 							+ Invoked also by Update()
@@ -986,8 +986,14 @@
 					+ Test:
 						+ Save of "Auto-Focus on Load"
 						+ Save of "Continuous Auto-Focus"
-				- NotificationLayer
-					- Texture
+				= NotificationLayer
+					+ Texture
+					+ TextureLayer
+					+ Pass NotificationLayer& to ViewManager::cctor
+					+ ViewManager toggling it
+					- Test: at startup, honors saved value
+						- Off
+						- On
 			- Phase 6: tuning
 				- Immediate pan: done smoothly in all cases?
 				- See if need different zoom and pan speeds, for "focus on ship" case

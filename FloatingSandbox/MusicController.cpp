@@ -57,15 +57,15 @@ MusicController::MusicController(
         // Parse filename
         //
 
-		static std::regex const MusicNameRegex(R"(([^_]+)(?:_([^_]+))?(?:_\d+))");
+        static std::regex const MusicNameRegex(R"(([^_]+)(?:_([^_]+))?(?:_\d+))");
 
-		std::smatch musicNameMatch;
-		if (!std::regex_match(musicName, musicNameMatch, MusicNameRegex))
-		{
-			throw GameException("Music filename \"" + musicName + "\" is not recognized");
-		}
+        std::smatch musicNameMatch;
+        if (!std::regex_match(musicName, musicNameMatch, MusicNameRegex))
+        {
+            throw GameException("Music filename \"" + musicName + "\" is not recognized");
+        }
 
-		assert(musicNameMatch.size() == 1 + 2);
+        assert(musicNameMatch.size() == 1 + 2);
 
         if (musicNameMatch[1].str() == "background")
         {
@@ -81,7 +81,7 @@ MusicController::MusicController(
             // Game music
             //
 
-		    // Parse frequency
+            // Parse frequency
             bool isRare = (musicNameMatch[2].str() == "rare");
 
             mSinkingMusic.AddAlternative(resourceLocator.GetMusicFilePath(musicName), isRare);
