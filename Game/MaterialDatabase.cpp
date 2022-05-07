@@ -360,7 +360,7 @@ MaterialDatabase::Palette<TMaterial> MaterialDatabase::Palette<TMaterial>::Parse
         {
             picojson::object const & groupObj = Utils::GetJsonValueAs<picojson::object>(groupJson, "group");
 
-            auto const parentGroup = Category::SubCategory::Group(
+            typename Category::SubCategory::Group const parentGroup(
                 Utils::GetMandatoryJsonMember<std::string>(groupObj, "name"),
                 uniqueGroupId++);
 
