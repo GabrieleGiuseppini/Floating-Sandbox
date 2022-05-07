@@ -243,7 +243,7 @@ TEST(LayerTests, ElectricalLayer_Clone_Smaller)
 
             materials.emplace_back(MakeTestElectricalMaterial("Foo", rgbColor(iVal, iVal + 1, iVal + 2), idx != NoneElectricalElementInstanceIndex));
 
-            sourceBuffer[ShipSpaceCoordinates(x, y)] = ElectricalElement(&(materials.back()), idx);
+            sourceBuffer[coords] = ElectricalElement(&(materials.back()), idx);
         }
     }
 
@@ -323,7 +323,7 @@ TEST(LayerTests, ElectricalLayer_Trim)
 
             materials.emplace_back(MakeTestElectricalMaterial("Foo", rgbColor(iVal, iVal + 1, iVal + 2), idx != NoneElectricalElementInstanceIndex));
 
-            sourceBuffer[ShipSpaceCoordinates(x, y)] = ElectricalElement(&(materials.back()), idx);
+            sourceBuffer[coords] = ElectricalElement(&(materials.back()), idx);
         }
     }
 

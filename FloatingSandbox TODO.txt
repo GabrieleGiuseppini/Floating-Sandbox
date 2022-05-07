@@ -18,7 +18,8 @@
 		= Release:
 			= Localization
 				+ Update pot
-				+ Italian
+				= Italian
+					- check waterline dlg
 				= Spanish
 					+ Incorporate 2.0
 					+ Ask name of update
@@ -29,9 +30,11 @@
 					+ Update
 					+ Send
 					- Receive back
-			- Send for testing
+			- <do template>
 
 		---------
+
+		- Merge from master into 1.17.2.next
 
 		- Test with SpringReductionFraction = 0.6 (@GameParameters)
 
