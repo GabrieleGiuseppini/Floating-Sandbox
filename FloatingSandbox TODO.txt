@@ -30,10 +30,10 @@
 					+ Send
 					+ Receive back
 			- Windows
-				- MSI variable
+				+ MSI variable
 				- Commit & push
 				- 64-bit MSI
-					- Cleanup Install
+					+ Cleanup Install
 					- Build Release Install (after clean)
 					- Make MSI
 					- Rename MSI
@@ -46,7 +46,7 @@
 					- Test clean install
 			- Ubuntu
 				- rm -rf floating-sandbox
-				- pull 
+				- clean & pull 
 				- rm -rf build; mkdir build
 				- cd build
 				- cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
