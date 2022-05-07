@@ -19,11 +19,7 @@
 
 namespace ShipBuilder {
 
-#if __WXGTK__
-int constexpr ListPanelElementHeight = 50;
-#else
 int constexpr ListPanelElementHeight = 40;
-#endif
 
 ElectricalPanelEditDialog::ElectricalPanelEditDialog(
     wxWindow * parent,
@@ -261,7 +257,11 @@ void ElectricalPanelEditDialog::ReconciliateUI()
     wxWindowUpdateLocker scopedUpdateFreezer(this);
 
     auto instanceIndexFont = this->GetFont();
+#if __WXGTK__
+    instanceIndexFont.SetPointSize(instanceIndexFont.GetPointSize() + 1);
+#else
     instanceIndexFont.SetPointSize(instanceIndexFont.GetPointSize() + 2);
+#endif
 
     //
     // Populate list panel
