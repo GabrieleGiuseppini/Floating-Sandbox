@@ -14,6 +14,7 @@
 #include <wx/wupdlock.h>
 
 #include <cassert>
+#include <iomanip>
 #include <sstream>
 
 namespace ShipBuilder {

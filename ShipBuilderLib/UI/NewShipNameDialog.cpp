@@ -19,8 +19,8 @@ NewShipNameDialog::NewShipNameDialog(
     ShipNameNormalizer const & shipNameNormalizer,
     ResourceLocator const & resourceLocator)
     : mParent(parent)
-    , mResourceLocator(resourceLocator)
     , mShipNameNormalizer(shipNameNormalizer)
+    , mResourceLocator(resourceLocator)
 {
     Create(
         parent,
