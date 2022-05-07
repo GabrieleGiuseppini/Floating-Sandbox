@@ -87,6 +87,8 @@ MusicController::MusicController(
             mSinkingMusic.AddAlternative(resourceLocator.GetMusicFilePath(musicName), isRare);
         }
     }
+
+    SetPlayBackgroundMusic(mPlayBackgroundMusic);
 }
 
 MusicController::~MusicController()
