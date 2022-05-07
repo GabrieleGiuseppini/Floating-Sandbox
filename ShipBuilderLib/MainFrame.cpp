@@ -1618,6 +1618,7 @@ wxRibbonPanel * MainFrame::CreateEditAnalysisRibbonPanel(wxRibbonPage * parent)
             [this]()
             {
                 auto const ribbonScreenRect = mMainRibbonBar->GetScreenRect();
+                LogMessage("TODOTEST: ribbonScreenRect.y=", ribbonScreenRect.y, " ribbonScreenRect.height=", ribbonScreenRect.height);
                 wxPoint const centerScreen = wxPoint(
                     ribbonScreenRect.x + this->GetScreenRect().width / 2,
                     ribbonScreenRect.y + ribbonScreenRect.height / 2);
