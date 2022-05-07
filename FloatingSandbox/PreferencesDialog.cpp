@@ -280,6 +280,14 @@ void PreferencesDialog::OnShowShipDescriptionAtShipLoadCheckBoxClicked(wxCommand
     mOnChangeCallback();
 }
 
+void PreferencesDialog::OnContinuousAutoFocusCheckBoxClicked(wxCommandEvent & /*event*/)
+{
+    assert(!!mUIPreferencesManager);
+    mUIPreferencesManager->SetDoContinuousAutoFocus(mContinuousAutoFocusCheckBox->GetValue());
+
+    mOnChangeCallback();
+}
+
 void PreferencesDialog::OnAutoFocusAtShipLoadCheckBoxClicked(wxCommandEvent & /*event*/)
 {
     assert(!!mUIPreferencesManager);
@@ -911,6 +919,21 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
+            // Continous Auto-Focus
+            {
+                mContinuousAutoFocusCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY,
+                    _("Continuous Auto-Focus"), wxDefaultPosition, wxDefaultSize, 0);
+                mContinuousAutoFocusCheckBox->SetToolTip(_("Enables or disables automatic focus on the ship."));
+                mContinuousAutoFocusCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnContinuousAutoFocusCheckBoxClicked, this);
+
+                sizer->Add(
+                    mContinuousAutoFocusCheckBox,
+                    wxGBPosition(2, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
             // Auto-Focus
             {
                 mAutoFocusAtShipLoadCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY,
@@ -920,7 +943,7 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
 
                 sizer->Add(
                     mAutoFocusAtShipLoadCheckBox,
-                    wxGBPosition(2, 0),
+                    wxGBPosition(3, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
@@ -935,7 +958,7 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
 
                 sizer->Add(
                     mAutoShowSwitchboardCheckBox,
-                    wxGBPosition(3, 0),
+                    wxGBPosition(4, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
@@ -950,7 +973,7 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
 
                 sizer->Add(
                     mShowElectricalNotificationsCheckBox,
-                    wxGBPosition(4, 0),
+                    wxGBPosition(5, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
@@ -1182,6 +1205,7 @@ void PreferencesDialog::ReadSettings()
 
     mReloadLastLoadedShipOnStartupCheckBox->SetValue(mUIPreferencesManager->GetReloadLastLoadedShipOnStartup());
     mShowShipDescriptionAtShipLoadCheckBox->SetValue(mUIPreferencesManager->GetShowShipDescriptionsAtShipLoad());
+    mContinuousAutoFocusCheckBox->SetValue(mUIPreferencesManager->GetDoContinuousAutoFocus());
     mAutoFocusAtShipLoadCheckBox->SetValue(mUIPreferencesManager->GetDoAutoFocusAtShipLoad());
     mAutoShowSwitchboardCheckBox->SetValue(mUIPreferencesManager->GetAutoShowSwitchboard());
     mShowElectricalNotificationsCheckBox->SetValue(mUIPreferencesManager->GetDoShowElectricalNotifications());

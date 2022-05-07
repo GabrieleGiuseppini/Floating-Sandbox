@@ -1296,7 +1296,10 @@ void GameController::AdjustZoom(float amount)
 
 void GameController::ResetView()
 {
-    mViewManager.ResetView();
+    if (mWorld)
+    {
+        mViewManager.ResetView(mWorld->GetAllAABBs());
+    }
 }
 
 void GameController::FocusOnShip()

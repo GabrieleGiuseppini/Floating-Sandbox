@@ -951,48 +951,46 @@
 			- Test with auto-zoom filling-in larger sub-window
 			- Test faster convergence
 			- Do test w/goodyear
-			- Fix changing aspect ratio: it seems we don't catch a subsequent resize after we load the ship first
+			- Fix changing aspect ratio at first load: it seems we don't catch a subsequent resize after we load the ship first
 				- We add ship at end of PostInitialize but resize hasn't happened yet
 				- OR NO FIX?
 			= Phase 5: enabling/disabling
-				= Main UI
-					= "Auto-Focus on Load"
+				+ Main UI
+					+ "Auto-Focus on Load"
 						+ UIPreferencesManager
 						+ Checkbox menu item 
 							+ Tells to UIPreferencesManager
-						- PreferencesDialog
-							- Tells to UIPreferencesManager
+						+ PreferencesDialog
+							+ Tells to UIPreferencesManager
 						+ MainFrame::Reconciliate
-					= "Continuous Auto-Focus"
+					+ "Continuous Auto-Focus"
 						+ UIPreferencesManager
 						+ Checkbox menu item 
 							+ Tells to UIPreferencesManager
 							+ Then calls MainFrame::Reconciliate()
-						- PreferencesDialog
-							- Tells to UIPreferencesManager
+						+ PreferencesDialog
+							+ Tells to UIPreferencesManager
 						+ MainFrame::Reconciliate
-						- ESC to exit it
-							- Invoke Reconciliate
+						+ ESC to exit it
+							+ Invoke Reconciliate()
 					+ "Reset View"
-					= "Focus on Ship"
-						= Menu item, key shortcut: Ctrl^HOME
-							+ Enabled only if continuous auto-focus is !enabled
-								+ @MainFrame::Reconciliate
-					- "Reset View" -> "Reset to Origin"
-						- Renaming everywhere
-						- Ctrl+HOME
-						- Done smoothly
-							- Search other usages
-					- Focus on Ship: HOME
-					- Move Full/Normal screen menu items?
-					- Test:
-						- Save of "Auto-Focus on Load"
-						- Save of "Continuous Auto-Focus"
-						- Keyboard shortcuts on Ubuntu
+					+ Reset view:
+						+ Smooth
+						+ Nuke FocusOnShip
+						+ ResetView->...->ViewManager::ResetView
+							+ If !auto-focus:
+								FocusOnShip
+							+ Else:
+								zero offsets
+							+ Leave ViewManager::FocusOnShip
+					+ Test:
+						+ Save of "Auto-Focus on Load"
+						+ Save of "Continuous Auto-Focus"
 				- NotificationLayer
 					- Texture
 			- Phase 6: tuning
 				- Immediate pan: done smoothly in all cases?
+				- See if need different zoom and pan speeds, for "focus on ship" case
 				- Re-test with thresholds
 				- Try stateful thresholds
 					- Based on whether or not smoother is smoothing or not

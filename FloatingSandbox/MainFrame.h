@@ -96,7 +96,6 @@ private:
 
     wxBoxSizer * mMainPanelSizer;
     wxMenuItem * mReloadPreviousShipMenuItem;
-    wxMenuItem * mFocusOnShipMenuItem;
     wxMenuItem * mAutoFocusAtShipLoadMenuItem;
     wxMenuItem * mContinuousAutoFocusMenuItem;
     wxMenuItem * mPauseMenuItem;
@@ -173,7 +172,6 @@ private:
     // Menu
     void OnZoomInMenuItemSelected(wxCommandEvent & event);
     void OnZoomOutMenuItemSelected(wxCommandEvent & event);
-    void OnFocusOnShipMenuItemSelected(wxCommandEvent & event);
     void OnAutoFocusAtShipLoadMenuItemSelected(wxCommandEvent & event);
     void OnContinuousAutoFocusMenuItemSelected(wxCommandEvent & event);
     void OnResetViewMenuItemSelected(wxCommandEvent & event);

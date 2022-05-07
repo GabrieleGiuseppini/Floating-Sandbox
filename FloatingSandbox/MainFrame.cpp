@@ -56,7 +56,6 @@ long const ID_QUIT_MENUITEM = wxNewId();
 
 long const ID_ZOOM_IN_MENUITEM = wxNewId();
 long const ID_ZOOM_OUT_MENUITEM = wxNewId();
-long const ID_FOCUS_ON_SHIP_MENUITEM = wxNewId();
 long const ID_AUTO_FOCUS_AT_SHIP_LOAD_MENUITEM = wxNewId();
 long const ID_CONTINUOUS_AUTO_FOCUS_MENUITEM = wxNewId();
 long const ID_RESET_VIEW_MENUITEM = wxNewId();
@@ -252,10 +251,6 @@ MainFrame::MainFrame(
             Connect(ID_ZOOM_OUT_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnZoomOutMenuItemSelected);
             ADD_PLAIN_ACCELERATOR_KEY('-', zoomOutMenuItem);
             ADD_PLAIN_ACCELERATOR_KEY(WXK_NUMPAD_SUBTRACT, zoomOutMenuItem);
-
-            mFocusOnShipMenuItem = new wxMenuItem(controlsMenu, ID_FOCUS_ON_SHIP_MENUITEM, _("Focus on Ship") + wxS("\tCtrl+HOME"), _("Focus view on the current ship"), wxITEM_NORMAL);
-            controlsMenu->Append(mFocusOnShipMenuItem);
-            Connect(ID_FOCUS_ON_SHIP_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnFocusOnShipMenuItemSelected);
 
             mAutoFocusAtShipLoadMenuItem = new wxMenuItem(controlsMenu, ID_AUTO_FOCUS_AT_SHIP_LOAD_MENUITEM, _("Auto-Focus at Ship Load"), _("Enable or disable auto-focus when a ship is loaded."), wxITEM_CHECK);
             controlsMenu->Append(mAutoFocusAtShipLoadMenuItem);
@@ -1645,12 +1640,6 @@ void MainFrame::OnZoomOutMenuItemSelected(wxCommandEvent & /*event*/)
     mGameController->AdjustZoom(1.0f / mUIPreferencesManager->GetZoomIncrement());
 }
 
-void MainFrame::OnFocusOnShipMenuItemSelected(wxCommandEvent & /*event*/)
-{
-    assert(!!mGameController);
-    mGameController->FocusOnShip();
-}
-
 void MainFrame::OnAutoFocusAtShipLoadMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mUIPreferencesManager);
@@ -1661,7 +1650,6 @@ void MainFrame::OnContinuousAutoFocusMenuItemSelected(wxCommandEvent & /*event*/
 {
     assert(!!mUIPreferencesManager);
     mUIPreferencesManager->SetDoContinuousAutoFocus(mContinuousAutoFocusMenuItem->IsChecked());
-    ReconciliateUIWithUIPreferences();
 }
 
 void MainFrame::OnResetViewMenuItemSelected(wxCommandEvent & /*event*/)
@@ -2010,10 +1998,21 @@ void MainFrame::OnFullScreenMenuItemSelected(wxCommandEvent & /*event*/)
 
 void MainFrame::OnNormalScreenMenuItemSelected(wxCommandEvent & /*event*/)
 {
-    mFullScreenMenuItem->Enable(true);
-    mNormalScreenMenuItem->Enable(false);
+    assert(!!mUIPreferencesManager);
 
-    this->ShowFullScreen(false);
+    // ESC behavior depends on whether or not continuous auto-focus is enabled
+    if (mUIPreferencesManager->GetDoContinuousAutoFocus())
+    {
+        mUIPreferencesManager->SetDoContinuousAutoFocus(false);
+        ReconciliateUIWithUIPreferences();
+    }
+    else
+    {
+        mFullScreenMenuItem->Enable(true);
+        mNormalScreenMenuItem->Enable(false);
+
+        this->ShowFullScreen(false);
+    }
 }
 
 void MainFrame::OnMuteMenuItemSelected(wxCommandEvent & /*event*/)
@@ -2457,7 +2456,6 @@ void MainFrame::ReconciliateUIWithUIPreferences()
     mAutoFocusAtShipLoadMenuItem->Check(mUIPreferencesManager->GetDoAutoFocusAtShipLoad());
 
     mContinuousAutoFocusMenuItem->Check(mUIPreferencesManager->GetDoContinuousAutoFocus());
-    mFocusOnShipMenuItem->Enable(!mUIPreferencesManager->GetDoContinuousAutoFocus());
 
     mFullScreenMenuItem->Enable(!mUIPreferencesManager->GetStartInFullScreen());
     mNormalScreenMenuItem->Enable(mUIPreferencesManager->GetStartInFullScreen());

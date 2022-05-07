@@ -191,12 +191,14 @@ void ViewManager::AdjustZoom(float amount)
     }
 }
 
-void ViewManager::ResetView()
+void ViewManager::ResetView(Geometry::AABBSet const & allAABBs)
 {
     if (!mAutoFocus.has_value())
     {
-        mCameraWorldPositionParameterSmoother->SetValueImmediate(vec2f::zero());
-        mZoomParameterSmoother->SetValueImmediate(1.0f);
+        // TODOTEST
+        InternalFocusOnShip(allAABBs);
+        ////mCameraWorldPositionParameterSmoother->SetValueImmediate(vec2f::zero());
+        ////mZoomParameterSmoother->SetValueImmediate(1.0f);
     }
     else
     {

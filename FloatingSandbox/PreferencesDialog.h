@@ -49,6 +49,7 @@ private:
 
     void OnReloadLastLoadedShipOnStartupCheckBoxClicked(wxCommandEvent & event);
     void OnShowShipDescriptionAtShipLoadCheckBoxClicked(wxCommandEvent & event);
+    void OnContinuousAutoFocusCheckBoxClicked(wxCommandEvent & event);    
     void OnAutoFocusAtShipLoadCheckBoxClicked(wxCommandEvent & event);
     void OnAutoShowSwitchboardCheckBoxClicked(wxCommandEvent & event);
     void OnShowElectricalNotificationsCheckBoxClicked(wxCommandEvent & event);
@@ -99,6 +100,7 @@ private:
     // Ships panel
     wxCheckBox * mReloadLastLoadedShipOnStartupCheckBox;
     wxCheckBox * mShowShipDescriptionAtShipLoadCheckBox;
+    wxCheckBox * mContinuousAutoFocusCheckBox;
     wxCheckBox * mAutoFocusAtShipLoadCheckBox;
     wxCheckBox * mAutoShowSwitchboardCheckBox;
     wxCheckBox * mShowElectricalNotificationsCheckBox;
