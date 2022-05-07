@@ -470,6 +470,7 @@ void ElectricalPanelLayoutControl::ScrollToCenter()
 
 void ElectricalPanelLayoutControl::RecalculateLayout()
 {
+    LogMessage("TODOHERE: ElectricalPanelLayoutControl::RecalculateLayout(): mSessionData:", mSessionData.has_value());
     assert(mSessionData.has_value());
 
     //
