@@ -4133,8 +4133,6 @@ void MainFrame::OnShipPropertiesEdit()
 
 void MainFrame::OnElectricalPanelEdit()
 {
-    LogMessage("TODOTEST: PRE: ", mWorkbenchState.GetCurrentToolType().has_value() ? std::to_string(int(* mWorkbenchState.GetCurrentToolType())) : "N/A");
-
     if (!mElectricalPanelEditDialog)
     {
         mElectricalPanelEditDialog = std::make_unique<ElectricalPanelEditDialog>(this, mResourceLocator);
@@ -4144,8 +4142,6 @@ void MainFrame::OnElectricalPanelEdit()
         *mController,
         mController->GetModelController().GetInstancedElectricalElementSet(),
         mController->GetModelController().GetElectricalPanelMetadata());
-
-    LogMessage("TODOTEST: Post: ", mWorkbenchState.GetCurrentToolType().has_value() ? std::to_string(int(* mWorkbenchState.GetCurrentToolType())) : "N/A");
 }
 
 void MainFrame::ValidateShip()

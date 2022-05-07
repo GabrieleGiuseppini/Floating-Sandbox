@@ -38,7 +38,11 @@ public:
         return mSessionData->IsDirty;
     }
 
+    // Invoked to populate and start a new usage session
     void SetPanel(ElectricalPanelMetadata & electricalPanelMetadata);
+
+    // Invoked to un-populate and stop the current usage session
+    void ResetPanel();
 
     void SelectElement(ElectricalElementInstanceIndex instanceIndex);
 

@@ -92,14 +92,9 @@ ElectricalPanelLayoutControl::ElectricalPanelLayoutControl(
 
 void ElectricalPanelLayoutControl::SetPanel(ElectricalPanelMetadata & electricalPanelMetadata)
 {
-    // Reset state
+    ResetPanel();
 
     mSessionData.emplace(electricalPanelMetadata);
-
-    mIsMouseCaptured = false;
-    mCurrentlyMovableElement.reset();
-    mCurrentlySelectedElementInstanceIndex.reset();
-    mCurrentDropCandidateSlotCoordinates.reset();
 
     RecalculateLayout();
 
@@ -107,6 +102,15 @@ void ElectricalPanelLayoutControl::SetPanel(ElectricalPanelMetadata & electrical
 
     // Render
     Refresh(false);
+}
+
+void ElectricalPanelLayoutControl::ResetPanel()
+{
+    mSessionData.reset();
+    mIsMouseCaptured = false;
+    mCurrentlyMovableElement.reset();
+    mCurrentlySelectedElementInstanceIndex.reset();
+    mCurrentDropCandidateSlotCoordinates.reset();
 }
 
 void ElectricalPanelLayoutControl::SelectElement(ElectricalElementInstanceIndex instanceIndex)
@@ -470,7 +474,6 @@ void ElectricalPanelLayoutControl::ScrollToCenter()
 
 void ElectricalPanelLayoutControl::RecalculateLayout()
 {
-    LogMessage("TODOHERE: ElectricalPanelLayoutControl::RecalculateLayout(): mSessionData:", mSessionData.has_value());
     assert(mSessionData.has_value());
 
     //

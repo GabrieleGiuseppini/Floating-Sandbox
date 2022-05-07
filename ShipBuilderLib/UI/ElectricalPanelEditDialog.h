@@ -39,6 +39,7 @@ private:
 
     void OnOkButton(wxCommandEvent & event);
     void OnCancelButton(wxCommandEvent & event);
+    void OnCloseWindow(wxCloseEvent & event);
 
     void SetListPanelSelected(ElectricalElementInstanceIndex selectedElement);
 
