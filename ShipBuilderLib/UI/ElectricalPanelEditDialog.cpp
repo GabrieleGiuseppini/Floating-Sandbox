@@ -19,7 +19,11 @@
 
 namespace ShipBuilder {
 
+#if __WXGTK__
+int constexpr ListPanelElementHeight = 50;
+#else
 int constexpr ListPanelElementHeight = 40;
+#endif
 
 ElectricalPanelEditDialog::ElectricalPanelEditDialog(
     wxWindow * parent,
