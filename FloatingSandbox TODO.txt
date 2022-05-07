@@ -18,8 +18,7 @@
 		= Release:
 			= Localization
 				+ Update pot
-				= Italian
-					- check waterline dlg
+				+ Italian
 				= Spanish
 					+ Incorporate 2.0
 					+ Ask name of update
@@ -68,6 +67,9 @@
 					- Test w/old FS
 
 		---------
+
+		- Fix strings @ WaterlineAnalysisDialog
+			- Three strings (at least) are non-localizable
 
 		- Merge from master into 1.17.2.next
 
