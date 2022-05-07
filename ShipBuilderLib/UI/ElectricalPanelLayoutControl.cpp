@@ -264,7 +264,10 @@ void ElectricalPanelLayoutControl::OnMouseMove(wxMouseEvent & event)
 
 void ElectricalPanelLayoutControl::OnResized(wxSizeEvent & /*event*/)
 {
-    RecalculateLayout();
+    if (mSessionData.has_value())
+    {
+        RecalculateLayout();
+    }
 
     ScrollToCenter();
 }
