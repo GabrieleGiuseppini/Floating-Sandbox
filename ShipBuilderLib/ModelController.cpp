@@ -1443,7 +1443,7 @@ void ModelController::UpdateVisualizations(View & view)
         if (dirtyShipRegion.has_value())
         {
             // Update visualization
-            ImageRect const dirtyTextureRegion = UpdateGameVisualization(*dirtyShipRegion);
+            UpdateGameVisualization(*dirtyShipRegion);
 
             // Upload visualization
             view.UploadGameVisualization(*mGameVisualizationTexture);
