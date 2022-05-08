@@ -65,7 +65,7 @@ Rendering is a different story. At some point I've moved all the rendering code 
 Many Linux distributions now use Wayland for their desktop environments, and Floating Sandbox will encounter an error when launching. To rectify this, set the environment variable "GDK_BACKEND" to "x11".
 
 # Building the Game
-I build this game with Visual Studio 2019 (thus with full C++ 17 support) on Windows. From time to time I also build on Ubuntu to ensure the codebase is still portable.
+I build this game with Visual Studio 2022 (thus with full C++ 17 support) on Windows. From time to time I also build on Ubuntu to ensure the codebase is still portable.
 
 In order to build the game, you will need the following dependencies:
 - <a href="https://www.wxwidgets.org/">WxWidgets</a> v3.1.4 (cross-platform GUI library)
