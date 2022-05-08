@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Floating Sandbox\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-05-05 22:25+0300\n"
+"PO-Revision-Date: 2022-05-08 23:44+0300\n"
 "Last-Translator: Gabriele Giuseppini <gabrielegiuseppini@gmail.com>\n"
 "Language-Team: Ilya Voloshin; Roman Shavernew (DioxCode)\n"
 "Language: ru\n"
@@ -2555,7 +2555,7 @@ msgstr "Регулировка скорости"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2473
 msgid "Spread Adjust"
-msgstr "Регулировка спреда"
+msgstr "Регулировка Распространение"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4523
 msgid "Spring Damping Adjust"
@@ -2608,7 +2608,7 @@ msgstr "Шторм"
 #: ..\FloatingSandbox\SettingsDialog.cpp:553
 #: ..\FloatingSandbox\SettingsDialog.cpp:1914
 msgid "Strength Adjust"
-msgstr "Регулировка прочности"
+msgstr "Регулировка силы"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4412
 msgid "Strength Randomization"
@@ -2934,7 +2934,7 @@ msgstr "Настройки инструмента"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4312
 msgid "Tools Volume"
-msgstr "Объем инструментов"
+msgstr "Громкость инструментов"
 
 #: ..\FloatingSandbox\ProbePanel.cpp:44
 msgid "Total Damage"
@@ -3146,16 +3146,15 @@ msgstr "Ветер и волны"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3592
 msgid "Wind speed conjured by the WindMaker tool (Km/h)."
-msgstr ""
-"Скорость ветра, рассчитанная инструментом Виндмейкер(Поток Воздуха) (км/ч)."
+msgstr "Скорость ветра, рассчитанная инструментом Поток Воздуха (км/ч)."
 
 #: ..\FloatingSandbox\MainFrame.cpp:414
 msgid "WindMaker"
-msgstr "Виндмейкер"
+msgstr "Поток Воздуха"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3563
 msgid "WindMaker Tool"
-msgstr "Инструмент Виндмейкер"
+msgstr "Инструмент Поток Воздуха"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1515
 msgid "Zero"

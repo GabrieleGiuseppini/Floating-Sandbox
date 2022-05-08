@@ -249,7 +249,7 @@ TEST(LayerTests, ElectricalLayer_Clone_Smaller)
 
     ElectricalLayerData sourceLayer(std::move(sourceBuffer), std::move(sourcePanel));
 
-    ASSERT_EQ(sourceLayer.Panel.size(), sourceBuffer.Size.height * sourceBuffer.Size.width);
+    ASSERT_EQ(sourceLayer.Panel.size(), size_t(sourceBuffer.Size.height * sourceBuffer.Size.width));
 
     //
     // Clone layer

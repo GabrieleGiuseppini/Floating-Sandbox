@@ -1,6 +1,6 @@
 ====== 1.17.3
 
-- Send for testing
+- See if can make MaterialsPalette close only when mouse is *clicked* outside, not just when it's *moved* outside
 
 - Texture flood tool
 	+ First off: mouse coordinates from MainFrame to Controller becomes LogicalDisplayCoords, and they're converted to ShipSpace coords where needed
@@ -14,6 +14,7 @@
 			- Controller::ResizeShip
 			- No need to do at removal...
 	- Tolerance, etc.
+	- Test: Bdega on Discord
 
 - MaterialsPalette: make flag for making it its own wxFrame, so one can use it in a second monitor
 
