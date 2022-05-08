@@ -71,7 +71,7 @@
 
 		---------
 
-		- Commit and push
+		+ Commit and push
 
 		- Add ShipBuilder to github's ReadMe
 			- And to GameJolt's
