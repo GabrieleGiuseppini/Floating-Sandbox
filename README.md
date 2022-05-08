@@ -27,7 +27,6 @@ For the physics in the simulation I'm trying to shy away from tricks that exist 
 The game currently comes with a few example objects - mostly ships - and I'm always busy making new ships and objects. Anyone is encouraged to make their own objects, and if you'd like them to be included in the game, just get in touch with me - you'll get proper recognition in the About dialog, of course.
 
 There are lots of improvements that I'm currently working on; some of these are:
-- In-game Ship Builder
 - Improved rigid body simulation algorithm
 - Splashes originating from collisions with water
 - Smoke from fire

@@ -73,11 +73,13 @@
 
 		+ Commit and push
 
-		- Add ShipBuilder to github's ReadMe
-			- And to GameJolt's
+		+ Add ShipBuilder to github's ReadMe
+			+ And to GameJolt's
 
-		- Fix WIX onto Visual Studio 2022
-			- https://marketplace.visualstudio.com/items?itemName=WixToolset.WixToolsetVisualStudio2022Extension
+		= Fix WIX onto Visual Studio 2022
+			! https://marketplace.visualstudio.com/items?itemName=WixToolset.WixToolsetVisualStudio2022Extension
+			- Test clean install, upgrade, and removal
+				- With new FS version
 
 		- Fix strings @ WaterlineAnalysisDialog
 			- Three strings (at least) are non-localizable
@@ -85,6 +87,7 @@
 			- Also "Electrical Panel Edit"
 
 		- Try bubbles with randomized buoyancy
+			- Use counter - TODO: large numbers
 
 		- Merge from master into 1.17.2.next
 
