@@ -17,16 +17,16 @@ As of now the simulator implements the following aspects of physics:
 <img src="https://i.imgur.com/kovxCty.png">
 <img src="https://i.imgur.com/XHw3Jrl.png">
 
-You can create your own physical objects by drawing images using colors that correspond to materials in the game's library. Each material has its own physical properties, such as mass, strength, stiffness, water permeability, specific heat, sound properties, and so on. The game comes with a handy template image that you can use to quickly select the right materials for your object.
+The game comes with a built-in ShipBuilder that allows you to create ships by drawing individual particles drawn out of the materials in the game's library. Each material has its own physical properties, such as mass, strength, stiffness, water permeability, specific heat, sound properties, and so on. You can also create electrical layers with electrical materials (lamps, engines, generators, switches, etc.), layers with ropes, and texture layers for a final, high-definition look'n'feel of the ship.
 
-If you want, you can also apply a higher-resolution image to be used as a more realistic texture for the object. Once you load your object, watch it float and explore how it behaves under stress!
+<img src="https://i.imgur.com/lSUj90c.png">
+<img src="https://imgur.com/E0X3n93.png">
 
 For the physics in the simulation I'm trying to shy away from tricks that exist solely for the purpose of delivering an eye-candy; every bit is grounded as close as possible into real physics, and the material system has been put together using physical attributes of real-world materials. This makes it sometimes hard to build structures that sustain their own weight or float easily - as it is in reality, after all - but the reward is a realistic world-in-a-sandbox where every action and corresponding reaction are not pre-programmed but, rather, are generated automatically by the physics engine calculations.
 
 The game currently comes with a few example objects - mostly ships - and I'm always busy making new ships and objects. Anyone is encouraged to make their own objects, and if you'd like them to be included in the game, just get in touch with me - you'll get proper recognition in the About dialog, of course.
 
 There are lots of improvements that I'm currently working on; some of these are:
-- In-game Ship Builder
 - Improved rigid body simulation algorithm
 - Splashes originating from collisions with water
 - Smoke from fire
@@ -65,7 +65,7 @@ Rendering is a different story. At some point I've moved all the rendering code 
 Many Linux distributions now use Wayland for their desktop environments, and Floating Sandbox will encounter an error when launching. To rectify this, set the environment variable "GDK_BACKEND" to "x11".
 
 # Building the Game
-I build this game with Visual Studio 2019 (thus with full C++ 17 support) on Windows. From time to time I also build on Ubuntu to ensure the codebase is still portable.
+I build this game with Visual Studio 2022 (thus with full C++ 17 support) on Windows. From time to time I also build on Ubuntu to ensure the codebase is still portable.
 
 In order to build the game, you will need the following dependencies:
 - <a href="https://www.wxwidgets.org/">WxWidgets</a> v3.1.4 (cross-platform GUI library)

@@ -2,14 +2,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Floating Sandbox\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-04-23 10:44+0200\n"
+"PO-Revision-Date: 2022-05-08 23:44+0300\n"
 "Last-Translator: Gabriele Giuseppini <gabrielegiuseppini@gmail.com>\n"
 "Language-Team: Ilya Voloshin; Roman Shavernew (DioxCode)\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.4\n"
+"X-Generator: Poedit 3.0\n"
 "X-Poedit-Basepath: .\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
@@ -56,11 +56,11 @@ msgstr "ПРОГРАММНОЕ ОБЕСПЕЧЕНИЕ ТРЕТЬЕЙ СТОРО�
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1511
 msgid "90 CCW"
-msgstr ""
+msgstr "90º налево"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1494
 msgid "90 CW"
-msgstr ""
+msgstr "90º направо"
 
 #: ..\FloatingSandbox\NewVersionDisplayDialog.cpp:19
 msgid "A New Version Is Available!"
@@ -865,38 +865,28 @@ msgid "Draw Structure"
 msgstr "Показывать Структуру"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:3149
-#, fuzzy
-#| msgid "Draw a rope between two endpoints"
 msgid "Draw a rope between two endpoints."
-msgstr "Нарисуйте веревку между двумя конечными точками"
+msgstr "Нарисуйте веревку между двумя конечными точками."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:3018
-#, fuzzy
-#| msgid "Draw electrical elements in lines"
 msgid "Draw electrical elements in lines."
-msgstr "Нарисовать электрические элементы в виде линий"
+msgstr "Нарисуйте электрические элементы в виде линий."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4560
 msgid "Draw in Wireframe Mode"
 msgstr "Показывать в Каркасном Режиме"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2986
-#, fuzzy
-#| msgid "Draw individual electrical elements"
 msgid "Draw individual electrical elements."
-msgstr "Нарисовать отдельные электрические элементы"
+msgstr "Нарисуйте отдельные электрические элементы."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2791
-#, fuzzy
-#| msgid "Draw individual structure particles"
 msgid "Draw individual structure particles."
-msgstr "Нарисуйте отдельные частицы структуры"
+msgstr "Нарисуйте отдельные частицы структуры."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2823
-#, fuzzy
-#| msgid "Draw particles in lines"
 msgid "Draw particles in lines."
-msgstr "Рисуйте частицы линиями"
+msgstr "Рисуйте частицы линиями."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3895
 msgid "Draws the ocean floor using a static color."
@@ -932,7 +922,7 @@ msgstr "Редактировать"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1371
 msgid "Edit Panel"
-msgstr ""
+msgstr "Панель редактирования"
 
 #: ..\FloatingSandbox\MainFrame.cpp:551
 msgid "Edit This Ship..."
@@ -943,6 +933,8 @@ msgid ""
 "Edit the electrical panel that is visualized in the game when this ship is "
 "loaded."
 msgstr ""
+"Отредактируйте электрическую панель, которая отображается в игре при "
+"загрузке этого корабля."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1583
 msgid "Edit the ship properties."
@@ -965,10 +957,8 @@ msgid "Electrical Layer"
 msgstr "Слой Электрики"
 
 #: ..\ShipBuilderLib\Controller.cpp:272
-#, fuzzy
-#| msgid "Electrical Layer"
 msgid "Electrical Panel"
-msgstr "Слой Электрики"
+msgstr "Электрическая панель"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2508
 msgid "Electricals"
@@ -983,10 +973,8 @@ msgid "Enable/disable the visual guides."
 msgstr "Включите/выключите визуальные подсказки."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2682
-#, fuzzy
-#| msgid "Enables or disables visualization of the frontiers of the ship."
 msgid "Enable/disable visualization of the ship's center of mass."
-msgstr "Включает или отключает визуализацию границ корабля."
+msgstr "Включить/выключить визуализацию центра масс корабля."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:734
 msgid "Enables or disables amplification of tool forces and inflicted damages."
@@ -1170,22 +1158,16 @@ msgid "Engine Thrust Adjust"
 msgstr "Регулировка Тяги Двигателя"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:3002
-#, fuzzy
-#| msgid "Erase individual electrical elements"
 msgid "Erase individual electrical elements."
-msgstr "Стирание отдельных электрических элементов"
+msgstr "Стирание отдельных электрических элементов."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2807
-#, fuzzy
-#| msgid "Erase individual structure particles"
 msgid "Erase individual structure particles."
-msgstr "Стирание отдельных частиц структуры"
+msgstr "Стирание отдельных частиц структуры."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:3165
-#, fuzzy
-#| msgid "Erase rope endpoints"
 msgid "Erase rope endpoints."
-msgstr "Стереть конечные точки каната"
+msgstr "Стереть конечные точки каната."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1745 ..\ShipBuilderLib\MainFrame.cpp:1799
 msgid "Eraser Size:"
@@ -1234,10 +1216,8 @@ msgid "File"
 msgstr "Файл"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2839
-#, fuzzy
-#| msgid "Fill an area with structure particles"
 msgid "Fill an area with structure particles."
-msgstr "Заполните область частицами структуры"
+msgstr "Заполните область частицами структуры."
 
 #: ..\FloatingSandbox\MainFrame.cpp:344
 msgid "Fire Extinguisher"
@@ -1325,6 +1305,8 @@ msgstr "Запрещать многопоточный рендеринг"
 msgid ""
 "Forecast where the ship's waterline will be once the ship is in the water."
 msgstr ""
+"Прогнозирование того, где будет находиться ватерлиния судна, когда оно "
+"окажется на воде."
 
 #: ..\FloatingSandbox\ProbePanel.cpp:34
 msgid "Frame Rate"
@@ -1505,22 +1487,16 @@ msgid "Import"
 msgstr "Импорт"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:3951
-#, fuzzy
-#| msgid "Electrical Layer"
 msgid "Import Electrical Layer"
-msgstr "Слой Электрики"
+msgstr "Импортировать электрический слой"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:3971
-#, fuzzy
-#| msgid "Ropes Layer"
 msgid "Import Ropes Layer"
-msgstr "Слой канатов"
+msgstr "Импортировать слой канатов"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:3986
-#, fuzzy
-#| msgid "Structural Layer"
 msgid "Import Structural Layer"
-msgstr "Структурный слой"
+msgstr "Импорт структурного слоя"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:4003 ..\ShipBuilderLib\MainFrame.cpp:4072
 msgid "Import Texture Layer"
@@ -1717,7 +1693,7 @@ msgstr "Максимальное количество горящих части�
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2871
 msgid "Measure lengths."
-msgstr ""
+msgstr "Измерьте длину."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:513
 msgid "Mechanics"
@@ -1776,26 +1752,20 @@ msgid "Name:"
 msgstr "Имя:"
 
 #: ..\ShipBuilderLib\Controller.cpp:392
-#, fuzzy
-#| msgid "Electrical Layer"
 msgid "New Electrical Layer"
-msgstr "Слой Электрики"
+msgstr "Новый электрический слой"
 
 #: ..\ShipBuilderLib\Controller.cpp:500
-#, fuzzy
-#| msgid "Ropes Layer"
 msgid "New Ropes Layer"
-msgstr "Слой канатов"
+msgstr "Новый слой канатов"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:689
 msgid "New Ship"
 msgstr "Новый корабль"
 
 #: ..\ShipBuilderLib\Controller.cpp:333
-#, fuzzy
-#| msgid "Structural Layer"
 msgid "New Structural Layer"
-msgstr "Структурный слой"
+msgstr "Новый структурный слой"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4109
 msgid "Night Vision"
@@ -2086,16 +2056,12 @@ msgid "Remove"
 msgstr "Удалить"
 
 #: ..\ShipBuilderLib\Controller.cpp:1247
-#, fuzzy
-#| msgid "Electrical Layer"
 msgid "Remove Electrical Layer"
-msgstr "Слой Электрики"
+msgstr "Удалите электрический слой"
 
 #: ..\ShipBuilderLib\Controller.cpp:1259
-#, fuzzy
-#| msgid "Ropes Layer"
 msgid "Remove Ropes Layer"
-msgstr "Слой канатов"
+msgstr "Удалить слой канатов"
 
 #: ..\ShipBuilderLib\Controller.cpp:1273
 msgid "Remove Texture Layer"
@@ -2222,21 +2188,19 @@ msgstr "Ускоритель гниения"
 
 #: ..\ShipBuilderLib\Controller.cpp:1871
 msgid "Rotate CCW"
-msgstr ""
+msgstr "Вращать налево"
 
 #: ..\ShipBuilderLib\Controller.cpp:1864
-#, fuzzy
-#| msgid "Move/Rotate"
 msgid "Rotate CW"
-msgstr "Двигать/Поворачивать"
+msgstr "Вращать вправо"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1517
 msgid "Rotate the ship 90 degrees anti-clockwise."
-msgstr ""
+msgstr "Поверните корабль на 90 градусов налево."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1500
 msgid "Rotate the ship 90 degrees clockwise."
-msgstr ""
+msgstr "Поверните корабль на 90 градусов на право."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1117
 msgid "Rotting"
@@ -2265,7 +2229,7 @@ msgstr "ОТДЕЛЬНОЕ СПАСИБО"
 #: ..\ShipBuilderLib\MainFrame.cpp:2855 ..\ShipBuilderLib\MainFrame.cpp:3034
 #: ..\ShipBuilderLib\MainFrame.cpp:3181
 msgid "Sample the material under the cursor."
-msgstr ""
+msgstr "Возьмите образец материала под курсором."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:784
 msgid "Save And Return"
@@ -2296,10 +2260,8 @@ msgid "Save Ship As"
 msgstr "Сохранить корабль как"
 
 #: ..\UILib\ImageSaveDialog.cpp:21
-#, fuzzy
-#| msgid "Load an Image"
 msgid "Save an Image"
-msgstr "Загрузить изображение"
+msgstr "Сохранить изображение"
 
 #: ..\FloatingSandbox\BootSettingsDialog.cpp:151
 msgid "Save and Quit"
@@ -2593,7 +2555,7 @@ msgstr "Регулировка скорости"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2473
 msgid "Spread Adjust"
-msgstr "Регулировка спреда"
+msgstr "Регулировка Распространение"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4523
 msgid "Spring Damping Adjust"
@@ -2646,7 +2608,7 @@ msgstr "Шторм"
 #: ..\FloatingSandbox\SettingsDialog.cpp:553
 #: ..\FloatingSandbox\SettingsDialog.cpp:1914
 msgid "Strength Adjust"
-msgstr "Регулировка прочности"
+msgstr "Регулировка силы"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4412
 msgid "Strength Randomization"
@@ -2829,15 +2791,15 @@ msgstr "Радиус взрывного инструмента (метры)."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:3961
 msgid "The selected ship does not have a ropes layer"
-msgstr ""
+msgstr "Выбранное судно не имеет слоя канатов"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:3996
 msgid "The selected ship does not have a texture layer"
-msgstr ""
+msgstr "Выбранный корабль не имеет слоя текстуры"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:3940
 msgid "The selected ship does not have an electrical layer"
-msgstr ""
+msgstr "Выбранное судно не имеет электрического слоя"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1763 ..\ShipBuilderLib\MainFrame.cpp:1817
 msgid "The size of the eraser tool."
@@ -2856,6 +2818,8 @@ msgid ""
 "The specified texture image is empty, and thus it may not be used for this "
 "ship."
 msgstr ""
+"Указанное изображение текстуры пустое, поэтому оно не может быть "
+"использовано для этого корабля."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3015
 msgid "The starting radius of the damage caused by destructive tools (m)."
@@ -2970,7 +2934,7 @@ msgstr "Настройки инструмента"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4312
 msgid "Tools Volume"
-msgstr "Объем инструментов"
+msgstr "Громкость инструментов"
 
 #: ..\FloatingSandbox\ProbePanel.cpp:44
 msgid "Total Damage"
@@ -3116,10 +3080,8 @@ msgid "Water and Ocean"
 msgstr "Вода и океан"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1617
-#, fuzzy
-#| msgid "Water"
 msgid "Waterline"
-msgstr "Вода"
+msgstr "Ватерлиния"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1829
 msgid "Wave Phenomena"
@@ -3184,16 +3146,15 @@ msgstr "Ветер и волны"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3592
 msgid "Wind speed conjured by the WindMaker tool (Km/h)."
-msgstr ""
-"Скорость ветра, рассчитанная инструментом Виндмейкер(Поток Воздуха) (км/ч)."
+msgstr "Скорость ветра, рассчитанная инструментом Поток Воздуха (км/ч)."
 
 #: ..\FloatingSandbox\MainFrame.cpp:414
 msgid "WindMaker"
-msgstr "Виндмейкер"
+msgstr "Поток Воздуха"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3563
 msgid "WindMaker Tool"
-msgstr "Инструмент Виндмейкер"
+msgstr "Инструмент Поток Воздуха"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1515
 msgid "Zero"

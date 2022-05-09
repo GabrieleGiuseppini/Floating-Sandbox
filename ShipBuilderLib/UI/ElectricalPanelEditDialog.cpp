@@ -135,6 +135,9 @@ ElectricalPanelEditDialog::ElectricalPanelEditDialog(
 
     dialogVSizer->AddSpacer(Margin);
 
+    // Bind events
+    Bind(wxEVT_CLOSE_WINDOW, &ElectricalPanelEditDialog::OnCloseWindow, this);
+
     //
     // Finalize dialog
     //
@@ -202,14 +205,26 @@ void ElectricalPanelEditDialog::OnOkButton(wxCommandEvent & /*event*/)
     // Close dialog
     //
 
+    mElectricalPanel->ResetPanel();
     mSessionData.reset();
+
     EndModal(0);
 }
 
 void ElectricalPanelEditDialog::OnCancelButton(wxCommandEvent & /*event*/)
 {
+    mElectricalPanel->ResetPanel();
     mSessionData.reset();
+
     EndModal(-1);
+}
+
+void ElectricalPanelEditDialog::OnCloseWindow(wxCloseEvent & event)
+{
+    mElectricalPanel->ResetPanel();
+    mSessionData.reset();
+
+    event.Skip();
 }
 
 void ElectricalPanelEditDialog::SetListPanelSelected(ElectricalElementInstanceIndex selectedElement)
@@ -242,7 +257,11 @@ void ElectricalPanelEditDialog::ReconciliateUI()
     wxWindowUpdateLocker scopedUpdateFreezer(this);
 
     auto instanceIndexFont = this->GetFont();
+#if __WXGTK__
+    instanceIndexFont.SetPointSize(instanceIndexFont.GetPointSize() + 1);
+#else
     instanceIndexFont.SetPointSize(instanceIndexFont.GetPointSize() + 2);
+#endif
 
     //
     // Populate list panel

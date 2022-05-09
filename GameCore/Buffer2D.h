@@ -307,7 +307,7 @@ private:
             int const srcYOffset = srcY * Size.width;
             for (int srcX = 0; srcX < Size.width; ++srcX)
             {
-                auto const dstCoords = coordinates_type(srcX, srcY).Rotate90<TDirection>(Size);
+                auto const dstCoords = coordinates_type(srcX, srcY).template Rotate90<TDirection>(Size);
                 newData[dstCoords.y * newSize.width + dstCoords.x] = Data[srcYOffset + srcX];
             }
         }

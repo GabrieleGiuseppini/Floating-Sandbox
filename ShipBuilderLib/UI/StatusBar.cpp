@@ -13,6 +13,7 @@
 #include <wx/statline.h>
 
 #include <cmath>
+#include <iomanip>
 #include <sstream>
 
 namespace ShipBuilder {
