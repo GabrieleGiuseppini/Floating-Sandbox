@@ -753,6 +753,7 @@ public:
         vec2f const & position,
         float depth,
         float temperature,
+        float buoyancyVolumeFillAdjustment,
         float vortexAmplitude,
         float vortexPeriod,
         float currentSimulationTime,

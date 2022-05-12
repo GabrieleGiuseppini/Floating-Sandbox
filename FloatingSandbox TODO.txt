@@ -5,69 +5,11 @@
 ====================================================
 
 - Roadmap:
-	= 1.17.2:
 
-		+ Update version, commit, & push
-		+ Make branch
-		+ Update Visual Studio
+	= 1.17.3:
 
-		+ -> ShipBuilder
-
-		+ Material system improvements (*)
-
-		= Release:
-			+ Localization
-				+ Update pot
-				+ Italian
-				+ Spanish
-					+ Incorporate 2.0
-					+ Ask name of update
-					+ Update
-					+ Send
-					+ Receive back
-				+ Russian
-					+ Update
-					+ Send
-					+ Receive back
-			+ Dell test
-			+ Windows
-				+ MSI variable
-				+ Commit & push
-				+ 64-bit MSI
-					+ Cleanup Install
-					+ Build Release Install (after clean)
-					+ Make MSI
-					+ Rename MSI
-					+ Test upgrade from previous version
-					+ Test spanish
-					+ Test russian
-				+ 32-bit MSI
-					+ Cleanup Install
-					+ Build Release Install (after clean)
-					+ Make MSI
-					+ Rename MSI
-					+ Test clean install
-			+ Ubuntu
-				+ rm -rf floating-sandbox
-				+ clean & pull 
-				+ rm -rf build; mkdir build
-				+ cd build
-				+ cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
-				+ make install
-				+ Make tar ("cd floating-sandbox && tar -cvf ../Floating-Sandbox-1.17.2-x64.tar . && cd -")
-				+ Zip tar
-				+ Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
-			+ Get 3 installers tested on dev server
-			+ Wait for test results
-			+ Cut tag on github
-			+ Upload packages to GameJolt
-				X Report file as safe (https://gamejolt.com/privacy)
-				+ Post
-			= www.floatingsandbox.com:
-				+ Update current version in FAQ
-				- Wait a day or two
-				- Upload changes2.txt
-					- Test w/old FS
+		- 1.17.2 release: wait a day or two, then upload changes2.txt
+			- Test w/old FS
 
 		---------
 
@@ -81,16 +23,17 @@
 			+ Test clean install, upgrade, and removal
 				+ With new FS version
 
-		- Merge from master into 1.17.2.next
-		- Cleanup plan(s)
+		+ Merge from master into 1.17.2.next
+		+ Cleanup plan(s)
+
+		- Try bubbles with randomized buoyancy
+			= Use counter
+			- Try correlation with vortex
 
 		- Fix strings @ WaterlineAnalysisDialog
 			- Three strings (at least) are non-localizable
 			- Trim "~0^A0" on Dell
 			- Also "Electrical Panel Edit"
-
-		- Try bubbles with randomized buoyancy
-			- Use counter - TODO: large numbers
 
 		- Test with SpringReductionFraction = 0.6 (@GameParameters)
 
@@ -13991,3 +13934,12 @@ IF WX:
 				+ Update current version in FAQ
 				+ Upload changes2.txt
 					+ Test w/old FS
+	+ 1.17.2:
+
+		+ Update version, commit, & push
+		+ Make branch
+		+ Update Visual Studio
+
+		+ -> ShipBuilder
+
+		+ Material system improvements (*)

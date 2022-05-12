@@ -827,7 +827,7 @@ private:
     // to the rendering context
     bool mIsStructureDirty;
 
-    // Counts of elements currently broken - update each time an element is broken
+    // Counts of elements currently broken - updated each time an element is broken
     // or restored
     ElementCount mDamagedPointsCount;
     ElementCount mBrokenSpringsCount;
@@ -853,6 +853,9 @@ private:
 
     // Last-applied (interactive) wind field
     std::optional<WindField> mWindField;
+
+    // Counter of created bubble ephemeral particles
+    std::uint64_t mAirBubblesCreatedCount;
 
     //
     // Static pressure

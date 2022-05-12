@@ -109,6 +109,8 @@ Ship::Ship(
     , mLastLuminiscenceAdjustmentDiffused(-1.0f)
     , mRepairGracePeriodMultiplier(1.0f)
     , mLastQueriedPointIndex(NoneElementIndex)
+    , mWindField()
+    , mAirBubblesCreatedCount(0)
     // Static pressure
     , mStaticPressureBuffer(mPoints.GetAlignedShipPointCount())
     , mStaticPressureNetForceMagnitudeSum(0.0f)
@@ -3223,10 +3225,16 @@ void Ship::GenerateAirBubble(
         1.5f,  // seconds
         4.5f); // seconds
 
+    std::uint64_t constexpr BuoyancyAdjustPeriod = 10;
+    float const buoyancyVolumeFillAdjustment =
+        1.0f
+        + 0.25f * std::sin(static_cast<float>((mAirBubblesCreatedCount++) % BuoyancyAdjustPeriod) / static_cast<float>(BuoyancyAdjustPeriod) * 2.0f * Pi<float>);
+
     mPoints.CreateEphemeralParticleAirBubble(
         position,
         depth,
         temperature,
+        buoyancyVolumeFillAdjustment,
         vortexAmplitude,
         vortexPeriod,
         currentSimulationTime,
