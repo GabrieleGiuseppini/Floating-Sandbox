@@ -10,7 +10,7 @@
 
 #include <cassert>
 
-float constexpr NdcFractionZoomTarget = 0.5f; // Fraction of the [0, 2] NDC space that needs to be occupied by AABB
+float constexpr NdcFractionZoomTarget = 0.7f; // Fraction of the [0, 2] NDC space that needs to be occupied by AABB
 
 ViewManager::ViewManager(
     Render::RenderContext & renderContext,

@@ -26,8 +26,8 @@
 		+ Merge from master into 1.17.2.next
 		+ Cleanup plan(s)
 
-		- Try bubbles with randomized buoyancy
-			= Use counter
+		= Try bubbles with randomized buoyancy
+			+ Use counter
 			- Try correlation with vortex
 
 		- Fix strings @ WaterlineAnalysisDialog
@@ -38,8 +38,6 @@
 		- Test with SpringReductionFraction = 0.6 (@GameParameters)
 
 		- Continuous Auto-focus (*)
-			- Check if we were updating smoothers during pause
-			- Try other auto-focus algo
 
 		- Jet engines @ Material system improvements (*)
 
@@ -954,7 +952,10 @@
 			+ Clouds: better effect: clouds' NDC y should flatten quicker for lower CAM y - now it flattens linearly 
 				+ Test storm
 				+ Exponential: ste precalc'd member(s) @ Clouds::UploadStart()
-			- Test with auto-zoom filling-in larger sub-window
+			+ Test with auto-zoom filling-in larger sub-window
+			- Try other auto-focus algo
+				- 1: calc zoom as min zoom to ensure four quadrants
+				- 2: calc pan to center that
 			- Test faster convergence
 			- Do test w/goodyear
 			- Fix changing aspect ratio at first load: it seems we don't catch a subsequent resize after we load the ship first
@@ -1017,7 +1018,7 @@
 					- Though "auto-zoom on load" needs AABBs and no update has been invoked yet
 				- See if also mouse-based panning should SetValue rather than SetValueImmediate
 					- If no immediate, see if Immediate still needed
-
+		- Check if we were updating smoothers during pause
 		- Tests:
 			- Loading ship which has no frontiers: check behavior for all combinations of autofocus/autozoom
 			- Load under pause
