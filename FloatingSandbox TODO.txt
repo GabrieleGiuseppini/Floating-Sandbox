@@ -39,9 +39,8 @@
 			- Send for testing, w/auto-focus being on by default
 
 		- Fix strings @ WaterlineAnalysisDialog
-			- Three strings (at least) are non-localizable
-			- Trim "~0^A0" on Dell
-			- Also "Electrical Panel Edit"
+			= Trim "~0^A0" on old Dell
+				- Test on old Dell
 
 		- Jet engines @ Material system improvements (*)
 

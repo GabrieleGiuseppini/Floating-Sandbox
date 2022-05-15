@@ -354,13 +354,13 @@ void WaterlineAnalyzerDialog::ReconcileUIWithState()
 
             if (trimDegrees < 1)
             {
-                ss << "~0°";
+                ss << "~0\u00B0";
                 mTrimLabel->SetBackgroundColour(Green);
                 visualizationControlExaggeratedTrim = 0.0f;
             }
             else
             {
-                ss << trimDegrees << "°";
+                ss << trimDegrees << "\u00B0";
                 mTrimLabel->SetBackgroundColour(Red);
 
                 float constexpr MinDegrees = 15.0f;
