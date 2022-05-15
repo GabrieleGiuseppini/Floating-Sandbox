@@ -3215,20 +3215,23 @@ void Ship::GenerateAirBubble(
     PlaneId planeId,
     GameParameters const & /*gameParameters*/)
 {
+    std::uint64_t constexpr PhasePeriod = 10;
+    float const phase = static_cast<float>((mAirBubblesCreatedCount++) % PhasePeriod) / static_cast<float>(PhasePeriod);
+
+    float constexpr StartVortexAmplitude = 0.1f;
+    float constexpr EndVortexAmplitude = 4.0f;
     float const vortexAmplitude =
-        GameRandomEngine::GetInstance().GenerateUniformReal(
-            0.1f,
-            4.0f)
+        (StartVortexAmplitude + (EndVortexAmplitude - StartVortexAmplitude) * phase)
         * (GameRandomEngine::GetInstance().Choose(2) == 1 ? 1.0f : -1.0f);
 
     float const vortexPeriod = GameRandomEngine::GetInstance().GenerateUniformReal(
         1.5f,  // seconds
         4.5f); // seconds
-
-    std::uint64_t constexpr BuoyancyAdjustPeriod = 10;
+    
+    float constexpr StartBuoyancyVolumeFillAdjustment = 1.25f;
+    float constexpr EndBuoyancyVolumeFillAdjustment = 0.75f;
     float const buoyancyVolumeFillAdjustment =
-        1.0f
-        + 0.25f * std::sin(static_cast<float>((mAirBubblesCreatedCount++) % BuoyancyAdjustPeriod) / static_cast<float>(BuoyancyAdjustPeriod) * 2.0f * Pi<float>);
+        StartBuoyancyVolumeFillAdjustment + (EndBuoyancyVolumeFillAdjustment - StartBuoyancyVolumeFillAdjustment) * phase;
 
     mPoints.CreateEphemeralParticleAirBubble(
         position,
