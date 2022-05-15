@@ -50,7 +50,7 @@ void main()
     
     // Density: 1.0 at center, 0.0 at edge
     #define LineThickness 0.15
-    float d = 1.0 - vectorDistance/LineThickness;
+    float d = 1.0 - smoothstep(0.0, 1.0, vectorDistance/LineThickness);
     
     // Leave early outside of sparkle
     if (d < 0.01)
