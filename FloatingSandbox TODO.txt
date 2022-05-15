@@ -1006,7 +1006,7 @@
 						+ On
 			= Phase 6: tuning
 				+ Immediate pan: done smoothly in all cases?
-				- See if need different zoom and pan speeds, for "focus on ship" case
+				+ See if need different zoom and pan speeds, for "focus on ship" case
 				- Re-test with thresholds
 					- DO UPDATE SessionData::CurrentXXX!
 				- Try stateful thresholds
@@ -1015,50 +1015,10 @@
 				- See perf impact wrt 1.17.2
 					- Also see perf impact on old Dell
 				+ Take care of initial auto-zoom
-				- See if still need ViewModel::CalculateZoomForWorldWidth/Height
-				- Does ship addition to World really need to maintain AABBSet up-to-date? We invoke ViewManager::Update() after world Update() after all
-					- Though world might have been paused
-					- Though "auto-zoom on load" needs AABBs and no update has been invoked yet
-				- See if also mouse-based panning should SetValue rather than SetValueImmediate
-					- If no immediate, see if Immediate still needed
 		+ Check if we were updating smoothers during pause
-		- Tests:
-			- Loading ship which has no frontiers: check behavior for all combinations of autofocus/autozoom
-			- Load under pause
-
-		- TODOOLD
-		- Algo:
-			- Option 1:
-				- "Optimal" AABB is union of all AABBs
-				- ViewModel adjustment:
-					- First: position: adjust based on center of AABB, but only if it's off by more than 1/2th of screen W/H from center
-					- Second: zoom: TODO
-			- Option 2:
-				- Connected component i has AABBi
-				- Ship "optimal" AABB == Union(AABBi) for i belonging to B
-					- B is set of connected components such that sum(their #points) > 3/4 TotPoints, in optimal order (from larger to smaller)
-				- Maintaining AABBi:
-					- Option 1:
-						- Updated at each simulation step leveraging geometrical and temporal coherency:
-							- For each connected component we remember the 4 extreme points
-							- At each simulation step: UpdateConnectedComponentAABBs()
-								- For each connected component i:
-									- For each extreme point p:
-										- Visit p.neighbors as long as they're more extreme than p (i.e. follow gradient)
-										- Replace p with this new most extreme point
-						- Technically we don't even need to maintain AABB, we just need to maintain 4 ElementIndex for each connected component
-						  (the 4 extreme points)
-							- struct AABBPoints, w/Left,Right,etc. members
-					- Option 2:
-						- Recalculated at low-freq step
-				- Maintaining B:
-					- Option 1:
-						- Simply recalculated from scratch at each connectivity visit
-							- Use insertion sort to end up with list sorted by #points, desc
-					- Option 2:
-						- Recalculated at low-freq step (same as above)
-			- Option 3:
-				- Low-freq step calculates AABB
+		+ Tests:
+			+ Loading ship which has no frontiers: check behavior for all combinations of autofocus/autozoom
+			+ Load under pause
 
 	- Different backgrounds: use keys to switch between a dock, cliffs, open ocean, ice field, etc.
 
