@@ -59,6 +59,8 @@ public:
         // Recalculate calculated attributes
         //
 
+        RecalculateAspectRatio();
+
         RecalculateAttributes();
     }
 
@@ -189,7 +191,7 @@ public:
 
     float GetAspectRatio() const
     {
-        return static_cast<float>(mCanvasPhysicalSize.width) / static_cast<float>(mCanvasPhysicalSize.height);
+        return mAspectRatio;
     }
 
     void SetCanvasLogicalSize(DisplayLogicalSize const & canvasSize)
@@ -199,6 +201,8 @@ public:
         mCanvasPhysicalSize = DisplayPhysicalSize(
             canvasSize.width * mLogicalToPhysicalDisplayFactor,
             canvasSize.height * mLogicalToPhysicalDisplayFactor);
+
+        RecalculateAspectRatio();
 
         // Adjust zoom so that the new visible world dimensions are contained within the maximum
         SetZoom(mZoom);
@@ -311,7 +315,7 @@ public:
     inline float CalculateZoomForWorldWidth(float worldWidth) const
     {
         assert(worldWidth > 0.0f);
-        return ZoomHeightConstant * GetAspectRatio() / worldWidth;
+        return ZoomHeightConstant * mAspectRatio / worldWidth;
     }
 
     /*
@@ -403,7 +407,7 @@ private:
 
     float CalculateVisibleWorldWidth(float zoom) const
     {
-        return CalculateVisibleWorldHeight(zoom) * GetAspectRatio();
+        return CalculateVisibleWorldHeight(zoom) * mAspectRatio;
     }
 
     float CalculateVisibleWorldHeight(float zoom) const
@@ -416,7 +420,6 @@ private:
     void RecalculateAttributes()
     {
         mVisibleWorld.Center = mCam;
-
         mVisibleWorld.Width = CalculateVisibleWorldWidth(mZoom);
         mVisibleWorld.Height = CalculateVisibleWorldHeight(mZoom);
 
@@ -444,6 +447,11 @@ private:
         mKernelOrthoMatrix[3][1] = -2.0f * (mCam.y + PixelHeightToWorldHeight(mPixelOffsetY)) / mVisibleWorld.Height;
     }
 
+    void RecalculateAspectRatio()
+    {
+        mAspectRatio = static_cast<float>(mCanvasPhysicalSize.width) / static_cast<float>(mCanvasPhysicalSize.height);
+    }
+
 private:
 
     // Constants
@@ -454,12 +462,13 @@ private:
     float mZoom;
     vec2f mCam; // World coordinates
     DisplayLogicalSize mCanvasLogicalSize;
-    DisplayPhysicalSize mCanvasPhysicalSize;
+    DisplayPhysicalSize mCanvasPhysicalSize;    
     int mLogicalToPhysicalDisplayFactor;
     float mPixelOffsetX;
     float mPixelOffsetY;
 
     // Calculated attributes
+    float mAspectRatio;
     VisibleWorld mVisibleWorld;
     float mCanvasToVisibleWorldHeightRatio;
     float mCanvasWidthToHeightRatio;

@@ -958,17 +958,14 @@
 				+ 2: calc pan to center that
 				+ New current *targets* of user offsets
 					+ Or better: use SessionData->CurrentAutoFocusXXX
-				- Try using current *ephemeral value* instead of targets
-				- If OK:
-					- Cleanup
+				X Try using current *ephemeral value* instead of targets
+				= If OK:
+					= Cleanup
 					- Update explanation/comment
 					- Also use at InternalFocusOnShip
 						- Move out zoom calculation into own function
-			= Test faster convergence
+			X Test faster convergence
 			- Do test w/goodyear
-			- Fix changing aspect ratio at first load: it seems we don't catch a subsequent resize after we load the ship first
-				- We add ship at end of PostInitialize but resize hasn't happened yet
-				- OR NO FIX?
 			= Phase 5: enabling/disabling
 				+ Main UI
 					+ "Auto-Focus on Load"
@@ -1018,6 +1015,7 @@
 					- Based on whether or not smoother is smoothing or not
 			- Cleanup:
 				- See perf impact wrt 1.17.2
+					- Also see perf impact on old Dell
 				- Electrical panel docking/undocking should change params immediately
 					- Unless it's an aspect thing - if aspect changes, auto-zoom changes?
 				+ Take care of initial auto-zoom

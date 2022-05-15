@@ -24,8 +24,8 @@ ViewManager::ViewManager(
     , mAutoFocus()
 {
     // TODOTEST
-    //float constexpr ControlParameterConvergenceFactor = 0.05f;
-    float constexpr ControlParameterConvergenceFactor = 0.1f;
+    float constexpr ControlParameterConvergenceFactor = 0.05f;
+    //float constexpr ControlParameterConvergenceFactor = 0.1f;
 
     mZoomParameterSmoother = std::make_unique<ParameterSmoother<float>>(
         [this]() -> float const &
@@ -221,79 +221,6 @@ void ViewManager::Update(Geometry::AABBSet const & allAABBs)
             //
             // Zoom
             //
-
-            // TODOTEST
-            //////float constexpr ZoomThreshold = 0.1f;
-            ////float constexpr ZoomThreshold = 0.0f;
-
-            ////// Calculate needed zoom to fit in fraction of NDC space - choosing the furthest among the two dimensions
-            ////float newAutoFocusZoom = std::min(
-            ////    mRenderContext.CalculateZoomForWorldWidth(unionAABB->GetWidth() / NdcFractionZoomTarget),
-            ////    mRenderContext.CalculateZoomForWorldHeight(unionAABB->GetHeight() / NdcFractionZoomTarget));
-
-            ////// Check change against threshold
-            ////if (std::abs(newAutoFocusZoom - mAutoFocus->CurrentAutoFocusZoom) > ZoomThreshold)
-            ////{
-            ////    // Apply auto-focus
-            ////    mAutoFocus->CurrentAutoFocusZoom = newAutoFocusZoom;
-            ////}
-            ////else
-            ////{
-            ////    // Stay
-            ////    newAutoFocusZoom = mAutoFocus->CurrentAutoFocusZoom;
-            ////}
-            ////
-            ////// Set zoom
-            ////mZoomParameterSmoother->SetValue(newAutoFocusZoom * mAutoFocus->UserZoomOffset);
-
-            // TODOTEST 1
-            ////float newAutoFocusZoom = 0.0f;
-
-            ////float const autoFocusTargetZoom = mZoomParameterSmoother->GetValue() / mAutoFocus->UserZoomOffset;
-            ////vec2f const autoFocusTargetCameraWorldPosition = mCameraWorldPositionParameterSmoother->GetValue() - mAutoFocus->UserCameraWorldPositionOffset;
-            ////vec2f const ndcBottomLeft = mRenderContext.WorldToNdc(unionAABB->BottomLeft, autoFocusTargetZoom, autoFocusTargetCameraWorldPosition);
-            ////vec2f const ndcTopRight = mRenderContext.WorldToNdc(unionAABB->TopRight, autoFocusTargetZoom, autoFocusTargetCameraWorldPosition);
-
-            ////if (ndcBottomLeft.x < 0.0f)
-            ////{
-            ////    newAutoFocusZoom = NdcFractionZoomTarget / (-ndcBottomLeft.x);
-            ////}
-
-            ////if (ndcTopRight.x > 0.0f)
-            ////{
-            ////    if (newAutoFocusZoom == 0.0f)
-            ////        newAutoFocusZoom = NdcFractionZoomTarget / (ndcTopRight.x);
-            ////    else
-            ////        newAutoFocusZoom = std::min(NdcFractionZoomTarget / (ndcTopRight.x), newAutoFocusZoom);
-            ////}
-
-            ////if (ndcBottomLeft.y < 0.0f)
-            ////{
-            ////    if (newAutoFocusZoom == 0.0f)
-            ////        newAutoFocusZoom = NdcFractionZoomTarget / (-ndcBottomLeft.y);
-            ////    else
-            ////        newAutoFocusZoom = std::min(NdcFractionZoomTarget / (-ndcBottomLeft.y), newAutoFocusZoom);
-            ////}
-
-            ////if (ndcTopRight.y > 0.0f)
-            ////{
-            ////    if (newAutoFocusZoom == 0.0f)
-            ////        newAutoFocusZoom = NdcFractionZoomTarget / (ndcTopRight.y);
-            ////    else
-            ////        newAutoFocusZoom = std::min(NdcFractionZoomTarget / (ndcTopRight.y), newAutoFocusZoom);
-            ////}
-
-            ////if (newAutoFocusZoom == 0.0f)
-            ////    newAutoFocusZoom = 1.0f;
-
-            ////newAutoFocusZoom = newAutoFocusZoom * autoFocusTargetZoom;
-
-            ////// TODO: threshold
-
-            ////// Set zoom
-            ////mZoomParameterSmoother->SetValue(newAutoFocusZoom * mAutoFocus->UserZoomOffset);
-
-            // TODOTEST 2
             
             //float constexpr ZoomThreshold = 0.1f;
             float constexpr ZoomThreshold = 0.0f;
