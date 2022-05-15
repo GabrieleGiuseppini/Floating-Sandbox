@@ -26,18 +26,22 @@
 		+ Merge from master into 1.17.2.next
 		+ Cleanup plan(s)
 
-		= Try bubbles with randomized buoyancy
+		+ Try bubbles with different buoyancy
 			+ Use counter
-			- Try correlation with vortex
+			+ Try correlation with vortex
+
+		X Test with SpringReductionFraction = 0.6 (@GameParameters)
+
+		+ Better sparkles shader
+			+ Make more transparent @ tail
+
+		= Continuous Auto-focus (*)
+			- Send for testing, w/auto-focus being on by default
 
 		- Fix strings @ WaterlineAnalysisDialog
 			- Three strings (at least) are non-localizable
 			- Trim "~0^A0" on Dell
 			- Also "Electrical Panel Edit"
-
-		- Test with SpringReductionFraction = 0.6 (@GameParameters)
-
-		- Continuous Auto-focus (*)
 
 		- Jet engines @ Material system improvements (*)
 
@@ -1007,11 +1011,11 @@
 			= Phase 6: tuning
 				+ Immediate pan: done smoothly in all cases?
 				+ See if need different zoom and pan speeds, for "focus on ship" case
-				- Re-test with thresholds
-					- DO UPDATE SessionData::CurrentXXX!
 				- Try stateful thresholds
 					- Based on whether or not smoother is smoothing or not
-			- Cleanup:
+					- If not ok: nuke threshold code
+						- But do keep updating mAutoFocus->CurrentXXX
+			= Cleanup:
 				- See perf impact wrt 1.17.2
 					- Also see perf impact on old Dell
 				+ Take care of initial auto-zoom

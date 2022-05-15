@@ -533,15 +533,13 @@ public:
         // Calculate sparkle quad
         //
 
-        float const halfQuadSide =
-            1.5f
-            * (1.0f - SmoothStep(0.5f, 0.75f, progress)); // Shrinks as time goes
+        float constexpr HalfQuadSide = 1.5f;
 
         // Calculate quad coordinates
-        float const leftX = position.x - halfQuadSide;
-        float const rightX = position.x + halfQuadSide;
-        float const topY = position.y - halfQuadSide;
-        float const bottomY = position.y + halfQuadSide;
+        float const leftX = position.x - HalfQuadSide;
+        float const rightX = position.x + HalfQuadSide;
+        float const topY = position.y - HalfQuadSide;
+        float const bottomY = position.y + HalfQuadSide;
 
 
         //
