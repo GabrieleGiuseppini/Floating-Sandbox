@@ -122,23 +122,6 @@ void ViewManager::Pan(vec2f const & worldOffset)
     }
 }
 
-void ViewManager::PanImmediate(vec2f const & worldOffset)
-{
-    if (!mAutoFocus.has_value())
-    {
-        vec2f const newTargetCameraWorldPosition =
-            mCameraWorldPositionParameterSmoother->GetValue()
-            + worldOffset;
-
-        mCameraWorldPositionParameterSmoother->SetValueImmediate(newTargetCameraWorldPosition);
-    }
-    else
-    {
-        // Note: not at all "immediate"
-        mAutoFocus->UserCameraWorldPositionOffset += worldOffset;
-    }
-}
-
 void ViewManager::PanToWorldX(float worldX)
 {
     if (!mAutoFocus.has_value())

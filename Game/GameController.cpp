@@ -1272,11 +1272,6 @@ void GameController::Pan(DisplayLogicalSize const & screenOffset)
     mViewManager.Pan(mRenderContext->ScreenOffsetToWorldOffset(screenOffset));
 }
 
-void GameController::PanImmediate(DisplayLogicalSize const & screenOffset)
-{
-    mViewManager.PanImmediate(mRenderContext->ScreenOffsetToWorldOffset(screenOffset));
-}
-
 void GameController::PanToWorldEnd(int side)
 {
     mViewManager.PanToWorldX(

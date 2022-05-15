@@ -150,7 +150,6 @@ struct IGameController
 
     virtual void SetCanvasSize(DisplayLogicalSize const & canvasSize) = 0;
     virtual void Pan(DisplayLogicalSize const & screenOffset) = 0;
-    virtual void PanImmediate(DisplayLogicalSize const & screenOffset) = 0;
     virtual void PanToWorldEnd(int side) = 0;
     virtual void AdjustZoom(float amount) = 0;
     virtual void ResetView() = 0;

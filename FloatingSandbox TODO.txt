@@ -963,8 +963,8 @@
 					+ Cleanup
 					+ Update explanation/comment
 			X Test faster convergence
-			- Do test w/goodyear
-			= Phase 5: enabling/disabling
+			+ Do test w/goodyear
+			+ Phase 5: enabling/disabling
 				+ Main UI
 					+ "Auto-Focus on Load"
 						+ UIPreferencesManager
@@ -996,16 +996,16 @@
 					+ Test:
 						+ Save of "Auto-Focus on Load"
 						+ Save of "Continuous Auto-Focus"
-				= NotificationLayer
+				+ NotificationLayer
 					+ Texture
 					+ TextureLayer
 					+ Pass NotificationLayer& to ViewManager::cctor
 					+ ViewManager toggling it
-					- Test: at startup, honors saved value
-						- Off
-						- On
-			- Phase 6: tuning
-				- Immediate pan: done smoothly in all cases?
+					+ Test: at startup, honors saved value
+						+ Off
+						+ On
+			= Phase 6: tuning
+				+ Immediate pan: done smoothly in all cases?
 				- See if need different zoom and pan speeds, for "focus on ship" case
 				- Re-test with thresholds
 					- DO UPDATE SessionData::CurrentXXX!
@@ -1014,8 +1014,6 @@
 			- Cleanup:
 				- See perf impact wrt 1.17.2
 					- Also see perf impact on old Dell
-				- Electrical panel docking/undocking should change params immediately
-					- Unless it's an aspect thing - if aspect changes, auto-zoom changes?
 				+ Take care of initial auto-zoom
 				- See if still need ViewModel::CalculateZoomForWorldWidth/Height
 				- Does ship addition to World really need to maintain AABBSet up-to-date? We invoke ViewManager::Update() after world Update() after all
@@ -1023,7 +1021,7 @@
 					- Though "auto-zoom on load" needs AABBs and no update has been invoked yet
 				- See if also mouse-based panning should SetValue rather than SetValueImmediate
 					- If no immediate, see if Immediate still needed
-		- Check if we were updating smoothers during pause
+		+ Check if we were updating smoothers during pause
 		- Tests:
 			- Loading ship which has no frontiers: check behavior for all combinations of autofocus/autozoom
 			- Load under pause

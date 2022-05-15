@@ -236,7 +236,7 @@ void ToolController::OnMouseMove(DisplayLogicalCoordinates const & mouseScreenPo
 
         // Pan (opposite direction)
         DisplayLogicalSize screenOffset = mInputState.PreviousMousePosition - mInputState.MousePosition;
-        mGameController->PanImmediate(screenOffset);
+        mGameController->Pan(screenOffset);
     }
     else
     {

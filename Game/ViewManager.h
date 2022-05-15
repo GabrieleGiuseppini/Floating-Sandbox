@@ -32,7 +32,6 @@ public:
     void OnViewModelUpdated();
     void OnNewShip(Geometry::AABBSet const & allAABBs);
     void Pan(vec2f const & worldOffset);
-    void PanImmediate(vec2f const & worldOffset);
     void PanToWorldX(float worldX);
     void AdjustZoom(float amount);
     void ResetView(Geometry::AABBSet const & allAABBs);
