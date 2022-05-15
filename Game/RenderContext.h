@@ -569,6 +569,18 @@ public:
         return mRenderParameters.View.WorldToNdc(worldCoordinates);
     }
 
+    // TODOHERE
+    inline vec2f WorldToNdc(
+        vec2f const & worldCoordinates,
+        float zoom,
+        vec2f const & cameraWorldPosition) const
+    {
+        return mRenderParameters.View.WorldToNdc(
+            worldCoordinates,
+            zoom,
+            cameraWorldPosition);
+    }
+
     inline vec2f ScreenToWorld(DisplayLogicalCoordinates const & screenCoordinates) const
     {
         return mRenderParameters.View.ScreenToWorld(screenCoordinates);

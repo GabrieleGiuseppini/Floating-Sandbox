@@ -246,6 +246,24 @@ public:
             worldCoordinates.y * mKernelOrthoMatrix[1][1] + mKernelOrthoMatrix[3][1]);
     }
 
+    /*
+     * Equivalent of the transformation we usually perform in vertex shaders.
+     */
+    inline vec2f WorldToNdc(
+        vec2f const & worldCoordinates,
+        float zoom,
+        vec2f const & cameraWorldPosition) const
+    {
+        // TODOHERE
+        // TODO: check assembly and see if need to simplify
+        float const visibleWorldWidth = CalculateVisibleWorldWidth(zoom);
+        float const visibleWorldHeight = CalculateVisibleWorldHeight(zoom);
+        return vec2f(
+            worldCoordinates.x * 2.0f / visibleWorldWidth + -2.0f * cameraWorldPosition.x / visibleWorldWidth,
+            worldCoordinates.y * 2.0f / visibleWorldHeight + -2.0f * cameraWorldPosition.y / visibleWorldHeight);
+
+    }
+
     inline vec2f ScreenToWorld(DisplayLogicalCoordinates const & screenCoordinates) const
     {
         vec2f const worldCoordinates = vec2f(

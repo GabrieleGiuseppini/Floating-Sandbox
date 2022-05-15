@@ -14,6 +14,10 @@
 			- Controller::ResizeShip
 			- No need to do at removal...
 	- Tolerance, etc.
+		- Flood notes:
+			- For each new pixel, first check its alpha:
+				- If small (below threshold): follow
+				- Else: check color
 	- Test: Bdega on Discord
 
 - MaterialsPalette: make flag for making it its own wxFrame, so one can use it in a second monitor

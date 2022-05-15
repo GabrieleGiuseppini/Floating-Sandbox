@@ -953,10 +953,18 @@
 				+ Test storm
 				+ Exponential: ste precalc'd member(s) @ Clouds::UploadStart()
 			+ Test with auto-zoom filling-in larger sub-window
-			- Try other auto-focus algo
-				- 1: calc zoom as min zoom to ensure four quadrants
-				- 2: calc pan to center that
-			- Test faster convergence
+			= Try other auto-focus algo
+				+ 1: calc zoom as min zoom to ensure four quadrants
+				+ 2: calc pan to center that
+				+ New current *targets* of user offsets
+					+ Or better: use SessionData->CurrentAutoFocusXXX
+				- Try using current *ephemeral value* instead of targets
+				- If OK:
+					- Cleanup
+					- Update explanation/comment
+					- Also use at InternalFocusOnShip
+						- Move out zoom calculation into own function
+			= Test faster convergence
 			- Do test w/goodyear
 			- Fix changing aspect ratio at first load: it seems we don't catch a subsequent resize after we load the ship first
 				- We add ship at end of PostInitialize but resize hasn't happened yet
@@ -1005,13 +1013,14 @@
 				- Immediate pan: done smoothly in all cases?
 				- See if need different zoom and pan speeds, for "focus on ship" case
 				- Re-test with thresholds
+					- DO UPDATE SessionData::CurrentXXX!
 				- Try stateful thresholds
 					- Based on whether or not smoother is smoothing or not
 			- Cleanup:
 				- See perf impact wrt 1.17.2
 				- Electrical panel docking/undocking should change params immediately
 					- Unless it's an aspect thing - if aspect changes, auto-zoom changes?
-				- Take care of initial auto-zoom
+				+ Take care of initial auto-zoom
 				- See if still need ViewModel::CalculateZoomForWorldWidth/Height
 				- Does ship addition to World really need to maintain AABBSet up-to-date? We invoke ViewManager::Update() after world Update() after all
 					- Though world might have been paused
