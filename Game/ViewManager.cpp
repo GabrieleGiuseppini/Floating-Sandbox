@@ -23,9 +23,7 @@ ViewManager::ViewManager(
     , mDoAutoFocusOnShipLoad(true)
     , mAutoFocus()
 {
-    // TODOTEST
     float constexpr ControlParameterConvergenceFactor = 0.05f;
-    //float constexpr ControlParameterConvergenceFactor = 0.1f;
 
     mZoomParameterSmoother = std::make_unique<ParameterSmoother<float>>(
         [this]() -> float const &
@@ -207,8 +205,8 @@ void ViewManager::Update(Geometry::AABBSet const & allAABBs)
             //
             // Auto-focus algorithm:
             // - Zoom:
-            //      - Auto-focus zoom is the zoom required to ensure that the AABB's width and height
-            //        fall in a specific sub-window of the physical display window
+            //      - Auto-focus zoom is the *minimum* (closest to zero, i.e. furthest) zoom that ensures
+            //        the AABB's edges are within a specific sub-window of the physical display window
             //      - User zoom is the zoom offset exherted by the user
             //      - The final zoom is the sum of the two zooms
             // - Pan:
@@ -225,10 +223,11 @@ void ViewManager::Update(Geometry::AABBSet const & allAABBs)
             //float constexpr ZoomThreshold = 0.1f;
             float constexpr ZoomThreshold = 0.0f;
 
+            // Calculate NDC of AABB, using the current auto-focus params (net of user offsets)
             vec2f const ndcBottomLeft = mRenderContext.WorldToNdc(unionAABB->BottomLeft, mAutoFocus->CurrentAutoFocusZoom, mAutoFocus->CurrentAutoFocusCameraWorldPosition);
             vec2f const ndcTopRight = mRenderContext.WorldToNdc(unionAABB->TopRight, mAutoFocus->CurrentAutoFocusZoom, mAutoFocus->CurrentAutoFocusCameraWorldPosition);
 
-            // Calculate how to change current auto-focus zoom (thus _net_ of user offset) so that AABB is in view
+            // Calculate how to change current auto-focus zoom (thus _net_ of user offset) so that AABB is within view
             float autoFocusZoomAdjustment = 0.0f; // Value out of domain
 
             if (ndcBottomLeft.x < 0.0f)

@@ -569,7 +569,6 @@ public:
         return mRenderParameters.View.WorldToNdc(worldCoordinates);
     }
 
-    // TODOHERE
     inline vec2f WorldToNdc(
         vec2f const & worldCoordinates,
         float zoom,

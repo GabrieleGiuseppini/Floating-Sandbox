@@ -953,17 +953,15 @@
 				+ Test storm
 				+ Exponential: ste precalc'd member(s) @ Clouds::UploadStart()
 			+ Test with auto-zoom filling-in larger sub-window
-			= Try other auto-focus algo
+			+ Try other auto-focus algo
 				+ 1: calc zoom as min zoom to ensure four quadrants
 				+ 2: calc pan to center that
 				+ New current *targets* of user offsets
 					+ Or better: use SessionData->CurrentAutoFocusXXX
 				X Try using current *ephemeral value* instead of targets
-				= If OK:
-					= Cleanup
-					- Update explanation/comment
-					- Also use at InternalFocusOnShip
-						- Move out zoom calculation into own function
+				+ If OK:
+					+ Cleanup
+					+ Update explanation/comment
 			X Test faster convergence
 			- Do test w/goodyear
 			= Phase 5: enabling/disabling

@@ -258,14 +258,11 @@ public:
         float zoom,
         vec2f const & cameraWorldPosition) const
     {
-        // TODOHERE
-        // TODO: check assembly and see if need to simplify
         float const visibleWorldWidth = CalculateVisibleWorldWidth(zoom);
         float const visibleWorldHeight = CalculateVisibleWorldHeight(zoom);
         return vec2f(
-            worldCoordinates.x * 2.0f / visibleWorldWidth + -2.0f * cameraWorldPosition.x / visibleWorldWidth,
-            worldCoordinates.y * 2.0f / visibleWorldHeight + -2.0f * cameraWorldPosition.y / visibleWorldHeight);
-
+            (worldCoordinates.x - cameraWorldPosition.x) * 2.0f / visibleWorldWidth,
+            (worldCoordinates.y - cameraWorldPosition.y) * 2.0f / visibleWorldHeight);
     }
 
     inline vec2f ScreenToWorld(DisplayLogicalCoordinates const & screenCoordinates) const
