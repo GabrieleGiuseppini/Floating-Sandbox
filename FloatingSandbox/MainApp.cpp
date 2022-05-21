@@ -30,7 +30,7 @@
 #include <string>
 
 #ifdef _DEBUG
-#ifdef _MSC_VER
+#if FS_IS_OS_WINDOWS()
 #include <crtdbg.h>
 #include <signal.h>
 #include <stdlib.h>
@@ -44,8 +44,32 @@ void SignalHandler(int signal)
         RaiseException(0x40010005, 0, 0, 0);
     }
 }
-
 #endif
+#endif
+
+#if FS_IS_OS_WINDOWS()
+ULONG GetCurrentTimerResolution()
+{
+    HMODULE const hNtDll = ::GetModuleHandle(L"Ntdll");
+    if (hNtDll != NULL)
+    {
+        ULONG nMinRes, nMaxRes, nCurRes;
+        typedef NTSTATUS(CALLBACK * LPFN_NtQueryTimerResolution)(PULONG, PULONG, PULONG);
+        auto const pQueryTimerResolution = (LPFN_NtQueryTimerResolution)::GetProcAddress(hNtDll, "NtQueryTimerResolution");
+        if (pQueryTimerResolution != nullptr
+            && pQueryTimerResolution(&nMinRes, &nMaxRes, &nCurRes) == ERROR_SUCCESS)
+        {
+            LogMessage("Windows timer resolution (min/max/cur): ",
+                nMinRes / 10000, ".", (nMinRes % 10000) / 10, " / ",
+                nMaxRes / 10000, ".", (nMaxRes % 10000) / 10, " / ",
+                nCurRes / 10000, ".", (nCurRes % 10000) / 10, " ms");
+
+            return nCurRes;
+        }
+    }
+
+    return 0;
+}
 #endif
 
 class MainApp : public wxApp
@@ -115,8 +139,7 @@ bool MainApp::OnInit()
     //
 
 #ifdef _DEBUG
-#ifdef _MSC_VER
-
+#if FS_IS_OS_WINDOWS()
     //
     // We configure assertion failures to not show the assert window but rather
     // to write to stderr; they will then invoke abort(), which we hook to raise
@@ -127,7 +150,6 @@ bool MainApp::OnInit()
 
     _set_abort_behavior(0, _WRITE_ABORT_MSG);
     signal(SIGABRT, SignalHandler);
-
 #endif
 #endif
 
@@ -143,25 +165,24 @@ bool MainApp::OnInit()
     EnableFloatingPointExceptions();
 #endif
 
-
     //
-    // Dump system timer resolution
+    // Adjust system timer resolution
     //
 
-#ifdef _MSC_VER
-    HMODULE const hNtDll = ::GetModuleHandle(L"Ntdll");
-    if (hNtDll != NULL)
+#if FS_IS_OS_WINDOWS()
+    ULONG currentTimerResolution = GetCurrentTimerResolution();
+    if (currentTimerResolution > 9973)
     {
-        ULONG nMinRes, nMaxRes, nCurRes;
-        typedef NTSTATUS(CALLBACK * LPFN_NtQueryTimerResolution)(PULONG, PULONG, PULONG);
-        auto const pQueryResolution = (LPFN_NtQueryTimerResolution)::GetProcAddress(hNtDll, "NtQueryTimerResolution");
-        if (pQueryResolution != nullptr &&
-            pQueryResolution(&nMinRes, &nMaxRes, &nCurRes) == ERROR_SUCCESS)
+        HMODULE const hNtDll = ::GetModuleHandle(L"Ntdll");
+        assert(hNtDll != NULL);
+
+        typedef NTSTATUS(CALLBACK * LPFN_NtSetTimerResolution)(ULONG, BOOLEAN, PULONG);
+        auto const pSetTimerResolution = (LPFN_NtSetTimerResolution)::GetProcAddress(hNtDll, "NtSetTimerResolution");
+        if (pSetTimerResolution != nullptr
+            && pSetTimerResolution(9973, TRUE, &currentTimerResolution) == ERROR_SUCCESS)
         {
-            LogMessage("Windows timer resolution (min/max/cur): ",
-                nMinRes / 10000, ".", (nMinRes % 10000) / 10, " / ",
-                nMaxRes / 10000, ".", (nMaxRes % 10000) / 10, " / ",
-                nCurRes / 10000, ".", (nCurRes % 10000) / 10, " ms");
+            LogMessage("Adjusted timer resolution: returned current=", currentTimerResolution);
+            GetCurrentTimerResolution();
         }
     }
 #endif
@@ -269,7 +290,9 @@ int MainApp::FilterEvent(wxEvent & event)
                 keyEvent.GetModifiers());
 
             if (isProcessed)
+            {
                 return Event_Processed;
+            }
         }
         else if (event.GetEventType() == wxEVT_KEY_DOWN
             || event.GetEventType() == wxEVT_CHAR
