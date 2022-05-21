@@ -42,6 +42,8 @@
 			= Trim "~0^A0" on old Dell
 				- Test on old Dell
 
+		- Check if template png is ok
+
 		- Jet engines @ Material system improvements (*)
 
 		- Option to disable lightning making damage - people want to sail in the storm
@@ -55,7 +57,7 @@
 			- Add temp code to calc total internal water, and see if it's true that it keeps increasing
 			- Do same for "other internal pressure"
 
-		- See windows timer/50fps thing
+		= See windows timer/50fps thing
 			! http://mirrors.arcadecontrols.com/www.sysinternals.com/Information/HighResolutionTimers.html
 			+ @ 50fps: Windows timer resolution (min/max/cur): 15.625 / 0.500 / 15.621 ms
 				   Windows timer resolution (min/max/cur): 15.625 / 0.500 / 15.620 ms
@@ -1029,6 +1031,8 @@
 				+ Move focus and pan calc'n out so may be reused by CenterOnShip
 				+ See if can nuke local variables for "newAutoFocusXXX" and use mAutoFocus->CurrrentXXX instead
 				+ See if still need all ViewModel methods (World<->Ndc)
+				+ Icon
+				- User offset accumulation problem: it's due to calculated pan being "too much", so user offset has to first counterbalance that before being able to make a difference
 				- See perf impact wrt 1.17.2
 					- Also see perf impact on old Dell
 				+ Take care of initial auto-zoom
