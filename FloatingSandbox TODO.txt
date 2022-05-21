@@ -1032,7 +1032,7 @@
 				+ See if can nuke local variables for "newAutoFocusXXX" and use mAutoFocus->CurrrentXXX instead
 				+ See if still need all ViewModel methods (World<->Ndc)
 				+ Icon
-				- User offset accumulation problem: it's due to calculated pan being "too much", so user offset has to first counterbalance that before being able to make a difference
+				X User offset accumulation problem: it's due to calculated pan being "too much", so user offset has to first counterbalance that before being able to make a difference
 				- See perf impact wrt 1.17.2
 					- Also see perf impact on old Dell
 				+ Take care of initial auto-zoom

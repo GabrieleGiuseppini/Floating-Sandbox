@@ -67,8 +67,6 @@ private:
         float UserZoomOffset;
         vec2f UserCameraWorldPositionOffset;
 
-        float CameraYThreshold;
-
         AutoFocusSessionData(
             float currentAutoFocusZoom,
             vec2f const & currentAutoFocusCameraWorldPosition)
@@ -82,8 +80,6 @@ private:
         {            
             UserZoomOffset = 1.0f;
             UserCameraWorldPositionOffset = vec2f::zero();
-
-            CameraYThreshold = 30.0f;
         }
     };
 
