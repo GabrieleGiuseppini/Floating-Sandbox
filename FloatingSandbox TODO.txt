@@ -1008,10 +1008,11 @@
 						+ Off
 						+ On
 			= Fix "pulsating zoom" issue
-				- Do more tests and see if really perfection
-				- If perfection:
-					- Cleanaup
-					- Test with zoom first, like it used to be
+				+ Do more tests and see if really perfection
+				+ If perfection:
+					+ Cleanup
+					+ Test with zoom first, like it used to be
+			- Thanos fix
 			= Phase 6: tuning
 				+ Immediate pan: done smoothly in all cases?
 				+ See if need different zoom and pan speeds, for "focus on ship" case
