@@ -74,7 +74,6 @@ void ViewManager::SetDoContinuousAutoFocus(bool value)
     if (value)
     {
         // Start auto-focus
-        assert(!mAutoFocus.has_value());
         mAutoFocus.emplace(
             mZoomParameterSmoother->GetValue(),
             mCameraWorldPositionParameterSmoother->GetValue());
@@ -82,7 +81,6 @@ void ViewManager::SetDoContinuousAutoFocus(bool value)
     else
     {
         // Stop auto-focus
-        assert(mAutoFocus.has_value());
         mAutoFocus.reset();
     }
 
