@@ -1036,7 +1036,7 @@
 				- See perf impact wrt 1.17.2
 					- Also see perf impact on old Dell
 				+ Take care of initial auto-zoom
-			- See if can do AutoFocus once every N frames
+			+ See if can do AutoFocus once every N frames
 		+ Check if we were updating smoothers during pause
 		+ Tests:
 			+ Loading ship which has no frontiers: check behavior for all combinations of autofocus/autozoom

@@ -67,6 +67,8 @@ private:
         float UserZoomOffset;
         vec2f UserCameraWorldPositionOffset;
 
+        std::uint64_t StepCounter;
+
         AutoFocusSessionData(
             float currentAutoFocusZoom,
             vec2f const & currentAutoFocusCameraWorldPosition)
@@ -80,6 +82,8 @@ private:
         {            
             UserZoomOffset = 1.0f;
             UserCameraWorldPositionOffset = vec2f::zero();
+
+            StepCounter = 0;
         }
     };
 

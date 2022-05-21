@@ -179,7 +179,8 @@ void ViewManager::Update(Geometry::AABBSet const & allAABBs)
     if (mAutoFocus.has_value())
     {
         auto const unionAABB = allAABBs.MakeUnion();
-        if (unionAABB.has_value())
+        if (unionAABB.has_value()
+            && (mAutoFocus->StepCounter % 2 == 0))
         {
             //
             // Auto-focus algorithm:
@@ -255,6 +256,12 @@ void ViewManager::Update(Geometry::AABBSet const & allAABBs)
                     std::min(0.0f, mAutoFocus->UserCameraWorldPositionOffset.y),
                     std::max(0.0f, mAutoFocus->UserCameraWorldPositionOffset.y)));
         }
+
+        //
+        // Update step counter
+        //
+
+        ++mAutoFocus->StepCounter;
     }
 
     mZoomParameterSmoother->Update();
