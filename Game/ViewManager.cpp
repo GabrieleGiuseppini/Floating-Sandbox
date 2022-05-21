@@ -182,9 +182,6 @@ void ViewManager::Update(Geometry::AABBSet const & allAABBs)
 {
     if (mAutoFocus.has_value())
     {
-        float newAutoFocusZoom;
-        vec2f newAutoFocusCameraWorldPosition;
-
         auto const unionAABB = allAABBs.MakeUnion();
         if (unionAABB.has_value())
         {
@@ -206,10 +203,9 @@ void ViewManager::Update(Geometry::AABBSet const & allAABBs)
             // Zoom
             //
 
-            newAutoFocusZoom = std::min(
+            mAutoFocus->CurrentAutoFocusZoom = std::min(
                 mRenderContext.CalculateZoomForWorldWidth(unionAABB->GetWidth() / NdcFractionZoomTarget),
                 mRenderContext.CalculateZoomForWorldHeight(unionAABB->GetHeight() / NdcFractionZoomTarget));
-            mAutoFocus->CurrentAutoFocusZoom = newAutoFocusZoom;
 
             //
             // Pan
@@ -226,24 +222,18 @@ void ViewManager::Update(Geometry::AABBSet const & allAABBs)
                     newAutoFocusCameraPositionNdcOffset.y * SmoothStep(0.0f, 0.4f, std::abs(newAutoFocusCameraPositionNdcOffset.y))),
                 mAutoFocus->CurrentAutoFocusZoom);
 
-            newAutoFocusCameraWorldPosition = mAutoFocus->CurrentAutoFocusCameraWorldPosition + newAutoFocusCameraWorldPositionOffset;
-            mAutoFocus->CurrentAutoFocusCameraWorldPosition = newAutoFocusCameraWorldPosition;
-        }
-        else
-        {
-            newAutoFocusZoom = mAutoFocus->CurrentAutoFocusZoom;
-            newAutoFocusCameraWorldPosition = mAutoFocus->CurrentAutoFocusCameraWorldPosition;
+            mAutoFocus->CurrentAutoFocusCameraWorldPosition = mAutoFocus->CurrentAutoFocusCameraWorldPosition + newAutoFocusCameraWorldPositionOffset;
         }
 
         //
         // Set zoom
         //
 
-        mZoomParameterSmoother->SetValue(newAutoFocusZoom * mAutoFocus->UserZoomOffset);
+        mZoomParameterSmoother->SetValue(mAutoFocus->CurrentAutoFocusZoom * mAutoFocus->UserZoomOffset);
 
         // If we've clamped the zoom, erode lost zoom from user offset
         {
-            float const impliedUserOffset = mZoomParameterSmoother->GetValue() / newAutoFocusZoom;
+            float const impliedUserOffset = mZoomParameterSmoother->GetValue() / mAutoFocus->CurrentAutoFocusZoom;
 
             mAutoFocus->UserZoomOffset = Clamp(
                 impliedUserOffset,
@@ -255,21 +245,21 @@ void ViewManager::Update(Geometry::AABBSet const & allAABBs)
         // Set pan
         //
 
-        mCameraWorldPositionParameterSmoother->SetValue(newAutoFocusCameraWorldPosition + mAutoFocus->UserCameraWorldPositionOffset);
+        mCameraWorldPositionParameterSmoother->SetValue(mAutoFocus->CurrentAutoFocusCameraWorldPosition + mAutoFocus->UserCameraWorldPositionOffset);
 
         // If we've clamped the pan, erode lost panning from user offset
         {
-            vec2f const impliedUserOffset = mCameraWorldPositionParameterSmoother->GetValue() - newAutoFocusCameraWorldPosition;
+            vec2f const impliedUserOffset = mCameraWorldPositionParameterSmoother->GetValue() - mAutoFocus->CurrentAutoFocusCameraWorldPosition;
 
             mAutoFocus->UserCameraWorldPositionOffset = vec2f(
                 Clamp(
-                impliedUserOffset.x,
-                std::min(0.0f, mAutoFocus->UserCameraWorldPositionOffset.x),
-                std::max(0.0f, mAutoFocus->UserCameraWorldPositionOffset.x)),
+                    impliedUserOffset.x,
+                    std::min(0.0f, mAutoFocus->UserCameraWorldPositionOffset.x),
+                    std::max(0.0f, mAutoFocus->UserCameraWorldPositionOffset.x)),
                 Clamp(
-                impliedUserOffset.y,
-                std::min(0.0f, mAutoFocus->UserCameraWorldPositionOffset.y),
-                std::max(0.0f, mAutoFocus->UserCameraWorldPositionOffset.y)));
+                    impliedUserOffset.y,
+                    std::min(0.0f, mAutoFocus->UserCameraWorldPositionOffset.y),
+                    std::max(0.0f, mAutoFocus->UserCameraWorldPositionOffset.y)));
         }
     }
 
