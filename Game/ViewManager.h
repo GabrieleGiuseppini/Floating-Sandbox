@@ -43,6 +43,8 @@ private:
 
     void InternalFocusOnShip(Geometry::AABBSet const & allAABBs);
 
+    float InternalCalculateZoom(Geometry::AABB const & aabb);
+
 private:
 
     Render::RenderContext & mRenderContext;

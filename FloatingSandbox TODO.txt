@@ -1012,8 +1012,8 @@
 				+ If perfection:
 					+ Cleanup
 					+ Test with zoom first, like it used to be
-			- Thanos fix
-			= Phase 6: tuning
+			+ Thanos fix
+			+ Phase 6: tuning
 				+ Immediate pan: done smoothly in all cases?
 				+ See if need different zoom and pan speeds, for "focus on ship" case
 				X Try stateful threshold for cam Y; once through, no threshold
@@ -1022,18 +1022,17 @@
 					+ CameraY Smoothstep route
 						+ Test based on NDC (smoothstep on NDC fraction) rather than world
 							+ Commit first
-				- If not ok: nuke threshold code
-					- But do keep updating mAutoFocus->CurrentXXX
-				- Cleanup
-				- See if can do AutoFocus once every N frames
+				+ If not ok: nuke threshold code
+					+ But do keep updating mAutoFocus->CurrentXXX				
 			= Cleanup:
-				- See if can nuke ParameterSmoother::IsSmoothing
-				- Move focus and pan calc'n out so may be reused by CenterOnShip
+				+ See if can nuke ParameterSmoother::IsSmoothing
+				+ Move focus and pan calc'n out so may be reused by CenterOnShip
 				+ See if can nuke local variables for "newAutoFocusXXX" and use mAutoFocus->CurrrentXXX instead
-				- See if still need all ViewModel methods (World<->Ndc)
+				+ See if still need all ViewModel methods (World<->Ndc)
 				- See perf impact wrt 1.17.2
 					- Also see perf impact on old Dell
 				+ Take care of initial auto-zoom
+			- See if can do AutoFocus once every N frames
 		+ Check if we were updating smoothers during pause
 		+ Tests:
 			+ Loading ship which has no frontiers: check behavior for all combinations of autofocus/autozoom

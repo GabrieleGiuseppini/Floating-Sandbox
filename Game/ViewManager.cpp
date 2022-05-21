@@ -6,11 +6,11 @@
 #include "ViewManager.h"
 
 #include <GameCore/GameMath.h>
-#include <GameCore/Log.h>
 
 #include <cassert>
 
 float constexpr NdcFractionZoomTarget = 0.7f; // Fraction of the [0, 2] NDC space that needs to be occupied by AABB
+float constexpr MaxZoom = 5.0f; // Arbitrary max zoom, to avoid getting to atomic scale with e.g. Thanos
 
 ViewManager::ViewManager(
     Render::RenderContext & renderContext,
@@ -51,8 +51,6 @@ ViewManager::ViewManager(
         {
             return mRenderContext.ClampCameraWorldPosition(value);
         },
-        // TODOTEST
-        //0.18f);
         0.1f);
 }
 
@@ -203,9 +201,7 @@ void ViewManager::Update(Geometry::AABBSet const & allAABBs)
             // Zoom
             //
 
-            mAutoFocus->CurrentAutoFocusZoom = std::min(
-                mRenderContext.CalculateZoomForWorldWidth(unionAABB->GetWidth() / NdcFractionZoomTarget),
-                mRenderContext.CalculateZoomForWorldHeight(unionAABB->GetHeight() / NdcFractionZoomTarget));
+            mAutoFocus->CurrentAutoFocusZoom = InternalCalculateZoom(*unionAABB);
 
             //
             // Pan
@@ -272,14 +268,21 @@ void ViewManager::InternalFocusOnShip(Geometry::AABBSet const & allAABBs)
     auto const unionAABB = allAABBs.MakeUnion();
     if (unionAABB.has_value())
     {
-        float const newAutoFocusZoom = std::min(
-            mRenderContext.CalculateZoomForWorldWidth(unionAABB->GetWidth() / NdcFractionZoomTarget),
-            mRenderContext.CalculateZoomForWorldHeight(unionAABB->GetHeight() / NdcFractionZoomTarget));
-
+        // Zoom
+        float const newAutoFocusZoom = InternalCalculateZoom(*unionAABB);
         mZoomParameterSmoother->SetValue(newAutoFocusZoom);
 
+        // Pan
         vec2f const newWorldCenter = unionAABB->CalculateCenter();
-
         mCameraWorldPositionParameterSmoother->SetValue(newWorldCenter);
     }
+}
+
+float ViewManager::InternalCalculateZoom(Geometry::AABB const & aabb)
+{
+    return std::min(
+        std::min(
+            mRenderContext.CalculateZoomForWorldWidth(aabb.GetWidth() / NdcFractionZoomTarget),
+            mRenderContext.CalculateZoomForWorldHeight(aabb.GetHeight() / NdcFractionZoomTarget)),
+        MaxZoom);
 }
