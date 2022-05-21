@@ -70,7 +70,7 @@ public:
 
     void Update()
     {
-        if (mCurrentValue != mTargetValue)
+        if (IsSmoothing())
         {
             // Converge
             mCurrentValue += (mTargetValue - mCurrentValue) * mConvergenceFactor;
@@ -89,6 +89,11 @@ public:
             // and we will return the correct value
             mTargetValue = mClamper(mTargetValue);
         }
+    }
+
+    bool IsSmoothing() const
+    {
+        return mCurrentValue != mTargetValue;
     }
 
 private:

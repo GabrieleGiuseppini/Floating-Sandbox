@@ -1007,14 +1007,24 @@
 					+ Test: at startup, honors saved value
 						+ Off
 						+ On
+			- Fix "pulsating zoom" issue
 			= Phase 6: tuning
+				- See if can do AutoFocus once every N frames
 				+ Immediate pan: done smoothly in all cases?
 				+ See if need different zoom and pan speeds, for "focus on ship" case
-				- Try stateful thresholds
-					- Based on whether or not smoother is smoothing or not
-					- If not ok: nuke threshold code
-						- But do keep updating mAutoFocus->CurrentXXX
+				X Try stateful threshold for cam Y; once through, no threshold
+					X At least we damp initial waves
+				= Play with threshold algos
+					= CameraY Smoothstep route
+						- Test based on NDC (smoothstep on NDC fraction) rather than world
+							- Commit first
+				- If not ok: nuke threshold code
+					- But do keep updating mAutoFocus->CurrentXXX
+				- Cleanup
 			= Cleanup:
+				- See if can nuke ParameterSmoother::IsSmoothing
+				- See if can nuke local variables for "newAutoFocusXXX" and use mAutoFocus->CurrrentXXX instead
+				- See if still need new ViewModel method
 				- See perf impact wrt 1.17.2
 					- Also see perf impact on old Dell
 				+ Take care of initial auto-zoom

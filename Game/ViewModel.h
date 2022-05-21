@@ -265,6 +265,17 @@ public:
             (worldCoordinates.y - cameraWorldPosition.y) * 2.0f / visibleWorldHeight);
     }
 
+    inline vec2f NdcOffsetToWorldOffset(
+        vec2f const & ndcOffset,
+        float zoom) const
+    {
+        float const visibleWorldWidth = CalculateVisibleWorldWidth(zoom);
+        float const visibleWorldHeight = CalculateVisibleWorldHeight(zoom);
+        return vec2f(
+            ndcOffset.x / 2.0f * visibleWorldWidth,
+            ndcOffset.y / 2.0f * visibleWorldHeight);
+    }
+
     inline vec2f ScreenToWorld(DisplayLogicalCoordinates const & screenCoordinates) const
     {
         vec2f const worldCoordinates = vec2f(

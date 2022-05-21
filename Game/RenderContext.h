@@ -580,6 +580,15 @@ public:
             cameraWorldPosition);
     }
 
+    inline vec2f NdcOffsetToWorldOffset(
+        vec2f const & ndcOffset,
+        float zoom) const
+    {
+        return mRenderParameters.View.NdcOffsetToWorldOffset(
+            ndcOffset,
+            zoom);
+    }
+
     inline vec2f ScreenToWorld(DisplayLogicalCoordinates const & screenCoordinates) const
     {
         return mRenderParameters.View.ScreenToWorld(screenCoordinates);

@@ -51,7 +51,9 @@ ViewManager::ViewManager(
         {
             return mRenderContext.ClampCameraWorldPosition(value);
         },
-        0.18f);
+        // TODOTEST
+        //0.18f);
+        0.1f);
 }
 
 bool ViewManager::GetDoAutoFocusOnShipLoad() const
@@ -160,7 +162,7 @@ void ViewManager::ResetView(Geometry::AABBSet const & allAABBs)
     }
     else
     {
-        mAutoFocus->ResetUserOffsets();
+        mAutoFocus->Reset();
     }
 }
 
@@ -172,7 +174,7 @@ void ViewManager::FocusOnShip(Geometry::AABBSet const & allAABBs)
     }
     else
     {
-        mAutoFocus->ResetUserOffsets();
+        mAutoFocus->Reset();
     }
 }
 
@@ -200,13 +202,301 @@ void ViewManager::Update(Geometry::AABBSet const & allAABBs)
             //      - The final pan is the sum of the two pans
             //
 
+            // TODOTEST - orig
+            //////
+            ////// Zoom
+            //////
+            ////
+            //////float constexpr ZoomThreshold = 0.1f;
+            ////float constexpr ZoomThreshold = 0.0f;
+
+            ////// Calculate NDC of AABB, using the current auto-focus params (net of user offsets)
+            ////vec2f const ndcBottomLeft = mRenderContext.WorldToNdc(unionAABB->BottomLeft, mAutoFocus->CurrentAutoFocusZoom, mAutoFocus->CurrentAutoFocusCameraWorldPosition);
+            ////vec2f const ndcTopRight = mRenderContext.WorldToNdc(unionAABB->TopRight, mAutoFocus->CurrentAutoFocusZoom, mAutoFocus->CurrentAutoFocusCameraWorldPosition);
+
+            ////// Calculate how to change current auto-focus zoom (thus _net_ of user offset) so that AABB is within view
+            ////float autoFocusZoomAdjustment = 0.0f; // Value out of domain
+
+            ////if (ndcBottomLeft.x < 0.0f)
+            ////{
+            ////    autoFocusZoomAdjustment = NdcFractionZoomTarget / (-ndcBottomLeft.x);
+            ////}
+
+            ////if (ndcTopRight.x > 0.0f)
+            ////{
+            ////    if (autoFocusZoomAdjustment == 0.0f)
+            ////        autoFocusZoomAdjustment = NdcFractionZoomTarget / (ndcTopRight.x);
+            ////    else
+            ////        autoFocusZoomAdjustment = std::min(NdcFractionZoomTarget / (ndcTopRight.x), autoFocusZoomAdjustment);
+            ////}
+
+            ////if (ndcBottomLeft.y < 0.0f)
+            ////{
+            ////    if (autoFocusZoomAdjustment == 0.0f)
+            ////        autoFocusZoomAdjustment = NdcFractionZoomTarget / (-ndcBottomLeft.y);
+            ////    else
+            ////        autoFocusZoomAdjustment = std::min(NdcFractionZoomTarget / (-ndcBottomLeft.y), autoFocusZoomAdjustment);
+            ////}
+
+            ////if (ndcTopRight.y > 0.0f)
+            ////{
+            ////    if (autoFocusZoomAdjustment == 0.0f)
+            ////        autoFocusZoomAdjustment = NdcFractionZoomTarget / (ndcTopRight.y);
+            ////    else
+            ////        autoFocusZoomAdjustment = std::min(NdcFractionZoomTarget / (ndcTopRight.y), autoFocusZoomAdjustment);
+            ////}
+
+            ////if (autoFocusZoomAdjustment == 0.0f)
+            ////    autoFocusZoomAdjustment = 1.0f;
+
+            ////// Calculate new auto-focus zoom
+            ////newAutoFocusZoom = mAutoFocus->CurrentAutoFocusZoom * autoFocusZoomAdjustment;
+
+            ////// Check change against threshold
+            ////if (std::abs(newAutoFocusZoom - mAutoFocus->CurrentAutoFocusZoom) > ZoomThreshold)
+            ////{
+            ////    // Apply auto-focus
+            ////    mAutoFocus->CurrentAutoFocusZoom = newAutoFocusZoom;
+            ////}
+            ////else
+            ////{
+            ////    // Stay
+            ////    newAutoFocusZoom = mAutoFocus->CurrentAutoFocusZoom;
+            ////}
+
+            //////
+            ////// Pan
+            //////
+
+            //////float constexpr CameraPositionThreshold = 30.0f; // Attempt to avoid panning with waves
+            ////float constexpr CameraPositionThreshold = 0.0f;
+
+            ////// Calculate world offset required to center view onto AABB's center
+            ////vec2f const aabbCenterWorld = unionAABB->CalculateCenter();
+            ////vec2f const newAutoFocusCameraWorldPositionOffset = (aabbCenterWorld - mAutoFocus->CurrentAutoFocusCameraWorldPosition) / 2.0f;
+
+            ////// Check change against threshold
+            ////if (std::abs(newAutoFocusCameraWorldPositionOffset.x) > CameraPositionThreshold
+            ////    || std::abs(newAutoFocusCameraWorldPositionOffset.y) > CameraPositionThreshold)
+            ////{
+            ////    // Apply auto-focus
+            ////    newAutoFocusCameraWorldPosition = mAutoFocus->CurrentAutoFocusCameraWorldPosition + newAutoFocusCameraWorldPositionOffset;
+            ////    mAutoFocus->CurrentAutoFocusCameraWorldPosition = newAutoFocusCameraWorldPosition;
+            ////}
+            ////else
+            ////{
+            ////    // Stay
+            ////    newAutoFocusCameraWorldPosition = mAutoFocus->CurrentAutoFocusCameraWorldPosition;
+            ////}
+
+
+            // TODOTEST - 2
+            //////
+            ////// Calculate required zoom
+            //////
+            ////
+            ////// Calculate NDC of AABB, using the current auto-focus params (net of user offsets)
+            ////vec2f const ndcBottomLeft = mRenderContext.WorldToNdc(unionAABB->BottomLeft, mAutoFocus->CurrentAutoFocusZoom, mAutoFocus->CurrentAutoFocusCameraWorldPosition);
+            ////vec2f const ndcTopRight = mRenderContext.WorldToNdc(unionAABB->TopRight, mAutoFocus->CurrentAutoFocusZoom, mAutoFocus->CurrentAutoFocusCameraWorldPosition);
+
+            ////// Calculate how to change current auto-focus zoom (thus _net_ of user offset) so that AABB is within view
+            ////float autoFocusZoomAdjustment = 0.0f; // Value out of domain
+
+            ////if (ndcBottomLeft.x < 0.0f)
+            ////{
+            ////    autoFocusZoomAdjustment = NdcFractionZoomTarget / (-ndcBottomLeft.x);
+            ////}
+
+            ////if (ndcTopRight.x > 0.0f)
+            ////{
+            ////    if (autoFocusZoomAdjustment == 0.0f)
+            ////        autoFocusZoomAdjustment = NdcFractionZoomTarget / (ndcTopRight.x);
+            ////    else
+            ////        autoFocusZoomAdjustment = std::min(NdcFractionZoomTarget / (ndcTopRight.x), autoFocusZoomAdjustment);
+            ////}
+
+            ////if (ndcBottomLeft.y < 0.0f)
+            ////{
+            ////    if (autoFocusZoomAdjustment == 0.0f)
+            ////        autoFocusZoomAdjustment = NdcFractionZoomTarget / (-ndcBottomLeft.y);
+            ////    else
+            ////        autoFocusZoomAdjustment = std::min(NdcFractionZoomTarget / (-ndcBottomLeft.y), autoFocusZoomAdjustment);
+            ////}
+
+            ////if (ndcTopRight.y > 0.0f)
+            ////{
+            ////    if (autoFocusZoomAdjustment == 0.0f)
+            ////        autoFocusZoomAdjustment = NdcFractionZoomTarget / (ndcTopRight.y);
+            ////    else
+            ////        autoFocusZoomAdjustment = std::min(NdcFractionZoomTarget / (ndcTopRight.y), autoFocusZoomAdjustment);
+            ////}
+
+            ////if (autoFocusZoomAdjustment == 0.0f)
+            ////    autoFocusZoomAdjustment = 1.0f;
+
+            ////// Calculate new auto-focus zoom
+            ////newAutoFocusZoom = mAutoFocus->CurrentAutoFocusZoom * autoFocusZoomAdjustment;
+
+            //////
+            ////// Calculate required pan
+            //////
+
+            ////// Calculate world offset required to center view onto AABB's center
+            ////vec2f const aabbCenterWorld = unionAABB->CalculateCenter();
+            ////vec2f const newAutoFocusCameraWorldPositionAdjustment = (aabbCenterWorld - mAutoFocus->CurrentAutoFocusCameraWorldPosition) / 2.0f;
+
+            //////
+            ////// Check thresholds and decide whether to adjust or not
+            //////
+
+            ////float constexpr ZoomThreshold = 0.1f;
+            //////float constexpr ZoomThreshold = 0.0f;
+
+            ////float constexpr CameraPositionThreshold = 30.0f; // Attempt to avoid panning with waves
+            //////float constexpr CameraPositionThreshold = 0.0f;
+
+            ////////if (std::abs(newAutoFocusZoom - mAutoFocus->CurrentAutoFocusZoom) > ZoomThreshold
+            ////////    || std::abs(newAutoFocusCameraWorldPositionAdjustment.x) > CameraPositionThreshold
+            ////////    || std::abs(newAutoFocusCameraWorldPositionAdjustment.y) > CameraPositionThreshold
+            ////////    || mZoomParameterSmoother->IsSmoothing()
+            ////////    || mCameraWorldPositionParameterSmoother->IsSmoothing())
+            ////////{
+            ////////    // Apply auto-focus
+            ////////    mAutoFocus->CurrentAutoFocusZoom = newAutoFocusZoom;
+            ////////    newAutoFocusCameraWorldPosition = mAutoFocus->CurrentAutoFocusCameraWorldPosition + newAutoFocusCameraWorldPositionAdjustment;
+            ////////    mAutoFocus->CurrentAutoFocusCameraWorldPosition = newAutoFocusCameraWorldPosition;
+            ////////}
+            ////////else
+            ////////{
+            ////////    // Stay
+            ////////    newAutoFocusZoom = mAutoFocus->CurrentAutoFocusZoom;
+            ////////    newAutoFocusCameraWorldPosition = mAutoFocus->CurrentAutoFocusCameraWorldPosition;
+            ////////}
+
+            ////mAutoFocus->CurrentAutoFocusZoom = newAutoFocusZoom;
+
+            ////newAutoFocusCameraWorldPosition.x = mAutoFocus->CurrentAutoFocusCameraWorldPosition.x + newAutoFocusCameraWorldPositionAdjustment.x;
+
+            ////if (std::abs(newAutoFocusCameraWorldPositionAdjustment.y) > CameraPositionThreshold)
+            ////{
+            ////    // Apply auto-focus
+            ////    newAutoFocusCameraWorldPosition.y = mAutoFocus->CurrentAutoFocusCameraWorldPosition.y + newAutoFocusCameraWorldPositionAdjustment.y;
+            ////}
+            ////else
+            ////{
+            ////    // Stay
+            ////    newAutoFocusCameraWorldPosition.y = mAutoFocus->CurrentAutoFocusCameraWorldPosition.y;
+            ////}
+
+            ////mAutoFocus->CurrentAutoFocusCameraWorldPosition = newAutoFocusCameraWorldPosition;
+
+            ////// TODOTEST - 3 || Smoothstep, Pan based on World Center
+
+            //////
+            ////// Pan
+            //////
+
+            ////// Calculate world offset required to center view onto AABB's center
+            ////vec2f const aabbCenterWorld = unionAABB->CalculateCenter();
+            ////vec2f const newAutoFocusCameraWorldPositionOffset = (aabbCenterWorld - mAutoFocus->CurrentAutoFocusCameraWorldPosition) / 2.0f;
+
+            ////// X
+            ////newAutoFocusCameraWorldPosition.x = mAutoFocus->CurrentAutoFocusCameraWorldPosition.x + newAutoFocusCameraWorldPositionOffset.x;
+
+            ////// Y
+            ////newAutoFocusCameraWorldPosition.y = mAutoFocus->CurrentAutoFocusCameraWorldPosition.y + newAutoFocusCameraWorldPositionOffset.y * SmoothStep(0.0f, 30.0f, std::abs(newAutoFocusCameraWorldPositionOffset.y));
+
+            ////mAutoFocus->CurrentAutoFocusCameraWorldPosition = newAutoFocusCameraWorldPosition;
+
+
+            //////
+            ////// Zoom
+            //////
+            ////
+            //////float constexpr ZoomThreshold = 0.1f;
+            ////float constexpr ZoomThreshold = 0.0f;
+
+            ////// Calculate NDC of AABB, using the current auto-focus params (net of user offsets)
+            ////vec2f const ndcBottomLeft = mRenderContext.WorldToNdc(unionAABB->BottomLeft, mAutoFocus->CurrentAutoFocusZoom, mAutoFocus->CurrentAutoFocusCameraWorldPosition);
+            ////vec2f const ndcTopRight = mRenderContext.WorldToNdc(unionAABB->TopRight, mAutoFocus->CurrentAutoFocusZoom, mAutoFocus->CurrentAutoFocusCameraWorldPosition);
+
+            ////// Calculate how to change current auto-focus zoom (thus _net_ of user offset) so that AABB is within view
+            ////float autoFocusZoomAdjustment = 0.0f; // Value out of domain
+
+            ////if (ndcBottomLeft.x < 0.0f)
+            ////{
+            ////    autoFocusZoomAdjustment = NdcFractionZoomTarget / (-ndcBottomLeft.x);
+            ////}
+
+            ////if (ndcTopRight.x > 0.0f)
+            ////{
+            ////    if (autoFocusZoomAdjustment == 0.0f)
+            ////        autoFocusZoomAdjustment = NdcFractionZoomTarget / (ndcTopRight.x);
+            ////    else
+            ////        autoFocusZoomAdjustment = std::min(NdcFractionZoomTarget / (ndcTopRight.x), autoFocusZoomAdjustment);
+            ////}
+
+            ////if (ndcBottomLeft.y < 0.0f)
+            ////{
+            ////    if (autoFocusZoomAdjustment == 0.0f)
+            ////        autoFocusZoomAdjustment = NdcFractionZoomTarget / (-ndcBottomLeft.y);
+            ////    else
+            ////        autoFocusZoomAdjustment = std::min(NdcFractionZoomTarget / (-ndcBottomLeft.y), autoFocusZoomAdjustment);
+            ////}
+
+            ////if (ndcTopRight.y > 0.0f)
+            ////{
+            ////    if (autoFocusZoomAdjustment == 0.0f)
+            ////        autoFocusZoomAdjustment = NdcFractionZoomTarget / (ndcTopRight.y);
+            ////    else
+            ////        autoFocusZoomAdjustment = std::min(NdcFractionZoomTarget / (ndcTopRight.y), autoFocusZoomAdjustment);
+            ////}
+
+            ////if (autoFocusZoomAdjustment == 0.0f)
+            ////    autoFocusZoomAdjustment = 1.0f;
+
+            ////// Calculate new auto-focus zoom
+            ////newAutoFocusZoom = mAutoFocus->CurrentAutoFocusZoom * autoFocusZoomAdjustment;
+
+            ////// Check change against threshold
+            ////if (std::abs(newAutoFocusZoom - mAutoFocus->CurrentAutoFocusZoom) > ZoomThreshold)
+            ////{
+            ////    // Apply auto-focus
+            ////    mAutoFocus->CurrentAutoFocusZoom = newAutoFocusZoom;
+            ////}
+            ////else
+            ////{
+            ////    // Stay
+            ////    newAutoFocusZoom = mAutoFocus->CurrentAutoFocusZoom;
+            ////}
+
+
+
+            // TODOTEST - 4 || Smoothstep, Pan based on NDC
+
+            //
+            // Pan
+            //
+
+            // Calculate NDC offset required to center view onto AABB's center (net of user offsets)
+            vec2f const aabbCenterNdc = mRenderContext.WorldToNdc(unionAABB->CalculateCenter(), mAutoFocus->CurrentAutoFocusZoom, mAutoFocus->CurrentAutoFocusCameraWorldPosition);
+            vec2f const newAutoFocusCameraPositionNdcOffset = aabbCenterNdc / 2.0f;
+
+            // Convert back into world offset
+            vec2f const newAutoFocusCameraWorldPositionOffset = mRenderContext.NdcOffsetToWorldOffset(
+                vec2f(
+                    newAutoFocusCameraPositionNdcOffset.x,
+                    newAutoFocusCameraPositionNdcOffset.y * SmoothStep(0.0f, 0.4f, std::abs(newAutoFocusCameraPositionNdcOffset.y))),
+                mAutoFocus->CurrentAutoFocusZoom);
+
+            newAutoFocusCameraWorldPosition = mAutoFocus->CurrentAutoFocusCameraWorldPosition + newAutoFocusCameraWorldPositionOffset;
+            mAutoFocus->CurrentAutoFocusCameraWorldPosition = newAutoFocusCameraWorldPosition;
+
+
             //
             // Zoom
             //
             
-            //float constexpr ZoomThreshold = 0.1f;
-            float constexpr ZoomThreshold = 0.0f;
-
             // Calculate NDC of AABB, using the current auto-focus params (net of user offsets)
             vec2f const ndcBottomLeft = mRenderContext.WorldToNdc(unionAABB->BottomLeft, mAutoFocus->CurrentAutoFocusZoom, mAutoFocus->CurrentAutoFocusCameraWorldPosition);
             vec2f const ndcTopRight = mRenderContext.WorldToNdc(unionAABB->TopRight, mAutoFocus->CurrentAutoFocusZoom, mAutoFocus->CurrentAutoFocusCameraWorldPosition);
@@ -221,70 +511,47 @@ void ViewManager::Update(Geometry::AABBSet const & allAABBs)
 
             if (ndcTopRight.x > 0.0f)
             {
+                float const adj = NdcFractionZoomTarget / (ndcTopRight.x);
+
                 if (autoFocusZoomAdjustment == 0.0f)
-                    autoFocusZoomAdjustment = NdcFractionZoomTarget / (ndcTopRight.x);
+                    autoFocusZoomAdjustment = adj;
                 else
-                    autoFocusZoomAdjustment = std::min(NdcFractionZoomTarget / (ndcTopRight.x), autoFocusZoomAdjustment);
+                    autoFocusZoomAdjustment = std::min(adj, autoFocusZoomAdjustment);
             }
 
             if (ndcBottomLeft.y < 0.0f)
             {
+                float const adj = NdcFractionZoomTarget / (-ndcBottomLeft.y);
+
                 if (autoFocusZoomAdjustment == 0.0f)
-                    autoFocusZoomAdjustment = NdcFractionZoomTarget / (-ndcBottomLeft.y);
+                    autoFocusZoomAdjustment = adj;
                 else
-                    autoFocusZoomAdjustment = std::min(NdcFractionZoomTarget / (-ndcBottomLeft.y), autoFocusZoomAdjustment);
+                    autoFocusZoomAdjustment = std::min(adj, autoFocusZoomAdjustment);
             }
 
             if (ndcTopRight.y > 0.0f)
             {
+                float const adj = NdcFractionZoomTarget / (ndcTopRight.y);
+
                 if (autoFocusZoomAdjustment == 0.0f)
-                    autoFocusZoomAdjustment = NdcFractionZoomTarget / (ndcTopRight.y);
+                    autoFocusZoomAdjustment = adj;
                 else
-                    autoFocusZoomAdjustment = std::min(NdcFractionZoomTarget / (ndcTopRight.y), autoFocusZoomAdjustment);
+                    autoFocusZoomAdjustment = std::min(adj, autoFocusZoomAdjustment);
             }
+
+            // TODOTEST
+            //LogMessage("NDC: Horz=(", ndcBottomLeft.x, ", ", ndcTopRight.x, ") Vert=(", ndcBottomLeft.y, ", ", ndcTopRight.y, ") ZA=", autoFocusZoomAdjustment);
 
             if (autoFocusZoomAdjustment == 0.0f)
                 autoFocusZoomAdjustment = 1.0f;
 
             // Calculate new auto-focus zoom
             newAutoFocusZoom = mAutoFocus->CurrentAutoFocusZoom * autoFocusZoomAdjustment;
-
-            // Check change against threshold
-            if (std::abs(newAutoFocusZoom - mAutoFocus->CurrentAutoFocusZoom) > ZoomThreshold)
-            {
-                // Apply auto-focus
-                mAutoFocus->CurrentAutoFocusZoom = newAutoFocusZoom;
-            }
-            else
-            {
-                // Stay
-                newAutoFocusZoom = mAutoFocus->CurrentAutoFocusZoom;
-            }
-
-            //
-            // Pan
-            //
-
-            //float constexpr CameraPositionThreshold = 30.0f; // Attempt to avoid panning with waves
-            float constexpr CameraPositionThreshold = 0.0f;
-
-            // Calculate world offset required to center view onto AABB's center
-            vec2f const aabbCenterWorld = unionAABB->CalculateCenter();
-            vec2f const newAutoFocusCameraWorldPositionOffset = (aabbCenterWorld - mAutoFocus->CurrentAutoFocusCameraWorldPosition) / 2.0f;
-
-            // Check change against threshold
-            if (std::abs(newAutoFocusCameraWorldPositionOffset.x) > CameraPositionThreshold
-                || std::abs(newAutoFocusCameraWorldPositionOffset.y) > CameraPositionThreshold)
-            {
-                // Apply auto-focus
-                newAutoFocusCameraWorldPosition = mAutoFocus->CurrentAutoFocusCameraWorldPosition + newAutoFocusCameraWorldPositionOffset;
-                mAutoFocus->CurrentAutoFocusCameraWorldPosition = newAutoFocusCameraWorldPosition;
-            }
-            else
-            {
-                // Stay
-                newAutoFocusCameraWorldPosition = mAutoFocus->CurrentAutoFocusCameraWorldPosition;
-            }
+            // TODOTEST: TOTAL OVERRIDE with original algo
+            newAutoFocusZoom = std::min(
+                mRenderContext.CalculateZoomForWorldWidth(unionAABB->GetWidth() / NdcFractionZoomTarget),
+                mRenderContext.CalculateZoomForWorldHeight(unionAABB->GetHeight() / NdcFractionZoomTarget));
+            mAutoFocus->CurrentAutoFocusZoom = newAutoFocusZoom;
         }
         else
         {
