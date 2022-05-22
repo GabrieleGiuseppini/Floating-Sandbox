@@ -1101,51 +1101,62 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     // Load initial ship
     //
 
-    try
+    std::filesystem::path startupShipFilePath;
+
+    if (mInitialShipFilePath.has_value())
     {
-        std::filesystem::path startupShipFilePath;
+        // Use given
+        startupShipFilePath = *mInitialShipFilePath;
+    }
+    else
+    {
+        // See if the last loaded ship is applicable
+        if (mUIPreferencesManager->GetReloadLastLoadedShipOnStartup())
+        {
+            startupShipFilePath = mUIPreferencesManager->GetLastShipLoadedFilePath();
 
-        if (mInitialShipFilePath.has_value())
-        {
-            startupShipFilePath = *mInitialShipFilePath;
-        }
-        else
-        {
-            // See if the last loaded ship is applicable
-            if (mUIPreferencesManager->GetReloadLastLoadedShipOnStartup())
+            // Make sure it still exists
+            if (!startupShipFilePath.empty()
+                && !std::filesystem::exists(startupShipFilePath))
             {
-                startupShipFilePath = mUIPreferencesManager->GetLastShipLoadedFilePath();
-
-                // Make sure it still exists
-                if (!startupShipFilePath.empty()
-                    && !std::filesystem::exists(startupShipFilePath))
-                {
-                    startupShipFilePath.clear();
-                }
+                startupShipFilePath.clear();
             }
         }
+    }
 
-        if (startupShipFilePath.empty())
-        {
-            // Use default ship
-            startupShipFilePath = ChooseDefaultShip(mResourceLocator);
-        }
+    if (startupShipFilePath.empty())
+    {
+        // Use default ship
+        startupShipFilePath = ChooseDefaultShip(mResourceLocator);
+    }
 
+    if (!std::filesystem::exists(startupShipFilePath))
+    {
+        startupShipFilePath = mResourceLocator.GetFallbackShipDefinitionFilePath();
+    }
+
+    try
+    {
         mGameController->AddShip(startupShipFilePath);
 
         // Succeeded
         OnShipLoaded(startupShipFilePath);
     }
+    catch (UserGameException const & exc)
+    {
+        splash.reset();
+
+        OnError(mLocalizationManager.MakeErrorMessage(exc), true);
+
+        return;
+    }
     catch (std::exception const & exc)
     {
-        LogMessage("Error locating default ship: ", exc.what());
+        splash.reset();
 
-        // Try fallback ship now
-        auto const fallbackShipFilePath = mResourceLocator.GetFallbackShipDefinitionFilePath();
-        mGameController->AddShip(fallbackShipFilePath);
+        OnError("Error loading initial ship: " + std::string(exc.what()), true);
 
-        // Succeeded
-        OnShipLoaded(fallbackShipFilePath);
+        return;
     }
 
     splash->UpdateProgress(1.0f, ProgressMessageType::Ready);

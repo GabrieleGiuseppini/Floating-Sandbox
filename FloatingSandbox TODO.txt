@@ -49,13 +49,13 @@
 
 		+ Fix UpdateNotification while LoadShip is open
 
+		+ See if can display error message when user starts FS on an unloadable ship
+
 		= Continuous Auto-focus (*)
 			+ Send for testing, w/auto-focus being on by default
 			+ Re-send for testing, again - !!! WITH AUTO-FOCUS ON
 			+ Bump up build
 			- Decide whether auto-focus should be on by default
-
-		- See if can display error message when user starts FS on an unloadable ship
 
 		- Check if template png is ok
 			- Just load it and see holes
