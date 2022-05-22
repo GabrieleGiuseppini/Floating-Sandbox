@@ -239,11 +239,15 @@ void ViewManager::Update(Geometry::AABBSet const & allAABBs)
         // Set pan
         //
 
-        mCameraWorldPositionParameterSmoother->SetValue(mAutoFocus->CurrentAutoFocusCameraWorldPosition + mAutoFocus->UserCameraWorldPositionOffset);
+        // Clamp auto-focus pan
+        vec2f const clampedAutoFocusPan = mRenderContext.ClampCameraWorldPosition(mAutoFocus->CurrentAutoFocusCameraWorldPosition);
+
+        // Add user offset to clamped
+        mCameraWorldPositionParameterSmoother->SetValue(clampedAutoFocusPan + mAutoFocus->UserCameraWorldPositionOffset);
 
         // If we've clamped the pan, erode lost panning from user offset
         {
-            vec2f const impliedUserOffset = mCameraWorldPositionParameterSmoother->GetValue() - mAutoFocus->CurrentAutoFocusCameraWorldPosition;
+            vec2f const impliedUserOffset = mCameraWorldPositionParameterSmoother->GetValue() - clampedAutoFocusPan;
 
             mAutoFocus->UserCameraWorldPositionOffset = vec2f(
                 Clamp(

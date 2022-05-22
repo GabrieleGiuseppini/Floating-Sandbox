@@ -914,7 +914,7 @@
 						- Can't do it itself via own NofificationLayer?
 				- When user changes view params, we add offset to cumulative offset, which is then added to final result of auto-focus
 					- So if user e.g. zooms out, the whole auto-focus is zoomed out
-		= Impl:
+		+ Impl:
 			+ Phase 1: ViewManager extraction
 				+ Parameter smoothers: simplify by simply using convergence algo, coeff between 0.05 and 0.1
 			+ Phase 2: rough auto-focus
@@ -1030,23 +1030,23 @@
 							+ Commit first
 				+ If not ok: nuke threshold code
 					+ But do keep updating mAutoFocus->CurrentXXX
-			- Remove every-other-frame thing
-			- Test for user offset accumulation problem, which is due to calculated pan being "too much", so user offset has to first counterbalance that before being able to make a difference:
-				- Clamp auto-focus only, *then* continue
-			= Cleanup:
+			+ Remove every-other-frame thing
+			+ Test for user offset accumulation problem, which is due to calculated pan being "too much", so user offset has to first counterbalance that before being able to make a difference:
+				+ Clamp auto-focus only, *then* continue
+			+ Cleanup:
 				+ See if can nuke ParameterSmoother::IsSmoothing
 				+ Move focus and pan calc'n out so may be reused by CenterOnShip
 				+ See if can nuke local variables for "newAutoFocusXXX" and use mAutoFocus->CurrrentXXX instead
 				+ See if still need all ViewModel methods (World<->Ndc)
-				+ Icon
-				- See perf impact wrt 1.17.2
-					- Also see perf impact on old Dell
+				+ Icon				
 				+ Take care of initial auto-zoom
 			+ See if can do AutoFocus once every N frames
 		+ Check if we were updating smoothers during pause
 		+ Tests:
 			+ Loading ship which has no frontiers: check behavior for all combinations of autofocus/autozoom
 			+ Load under pause
+			- See perf impact wrt 1.17.2
+				- Also see perf impact on old Dell
 
 	- Different backgrounds: use keys to switch between a dock, cliffs, open ocean, ice field, etc.
 
