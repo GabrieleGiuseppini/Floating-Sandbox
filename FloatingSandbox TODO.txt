@@ -62,6 +62,8 @@
 			+ Bump up build
 			- Decide whether auto-focus should be on by default
 
+		= Engines rearc (*)
+
 		- Jet engines @ Material system improvements (*)
 
 		- Option to disable lightning making damage - people want to sail in the storm
@@ -972,6 +974,14 @@
 
 	- Sand particles when hitting ground
 
+	= Engines rearc (*)
+		! Goal: allow controllers to control engines at a distance
+		= Connectivity update: should we do it at each frame (because of autonomous state changes), or is it enough
+		  to only do it at structure changes
+		  + Doing at structure changes: at all places where we do structure changes:
+			+ Destroy/Restore
+			+ AddConnectedElectricalElement/RemoveConnectedElectricalElement
+
 	- Material system improvements (*)
 		- Descriptions in ShipBuilder palette
 			- Materials have optional description ID's (from enum)
@@ -985,7 +995,7 @@
 				- Non-Instanced Watertight Doors (see if possible)
 				- Non-Instanced Water In/Out Pumps (see if possible)
 				- Jet engine
-					- Requires Engine rearc				
+					- Requires Engines rearc (*)		
 				- Clamp
 					- A and B types
 					- When powered, destroys all springs between each pair of powered A and B points

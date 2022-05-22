@@ -35,7 +35,7 @@
  */
 using ElementCount = std::uint32_t;
 using ElementIndex = std::uint32_t;
-static constexpr ElementIndex NoneElementIndex = std::numeric_limits<ElementIndex>::max();
+static ElementIndex constexpr NoneElementIndex = std::numeric_limits<ElementIndex>::max();
 
 /*
  * Ship identifiers.
@@ -43,7 +43,7 @@ static constexpr ElementIndex NoneElementIndex = std::numeric_limits<ElementInde
  * Comparable and ordered. Start from 0.
  */
 using ShipId = std::uint32_t;
-static constexpr ShipId NoneShip = std::numeric_limits<ShipId>::max();
+static ShipId constexpr NoneShip = std::numeric_limits<ShipId>::max();
 
 /*
  * Connected component identifiers.
@@ -51,7 +51,7 @@ static constexpr ShipId NoneShip = std::numeric_limits<ShipId>::max();
  * Comparable and ordered. Start from 0.
  */
 using ConnectedComponentId = std::uint32_t;
-static constexpr ConnectedComponentId NoneConnectedComponentId = std::numeric_limits<ConnectedComponentId>::max();
+static ConnectedComponentId constexpr NoneConnectedComponentId = std::numeric_limits<ConnectedComponentId>::max();
 
 /*
  * Plane (depth) identifiers.
@@ -59,7 +59,7 @@ static constexpr ConnectedComponentId NoneConnectedComponentId = std::numeric_li
  * Comparable and ordered. Start from 0.
  */
 using PlaneId = std::uint32_t;
-static constexpr PlaneId NonePlaneId = std::numeric_limits<PlaneId>::max();
+static PlaneId constexpr NonePlaneId = std::numeric_limits<PlaneId>::max();
 
 /*
  * IDs (sequential) of electrical elements that have an identity.
@@ -67,7 +67,7 @@ static constexpr PlaneId NonePlaneId = std::numeric_limits<PlaneId>::max();
  * Comparable and ordered. Start from 0.
  */
 using ElectricalElementInstanceIndex = std::uint16_t;
-static constexpr ElectricalElementInstanceIndex NoneElectricalElementInstanceIndex = std::numeric_limits<ElectricalElementInstanceIndex>::max();
+static ElectricalElementInstanceIndex constexpr NoneElectricalElementInstanceIndex = std::numeric_limits<ElectricalElementInstanceIndex>::max();
 
 /*
  * Frontier identifiers.
@@ -75,7 +75,7 @@ static constexpr ElectricalElementInstanceIndex NoneElectricalElementInstanceInd
  * Comparable and ordered. Start from 0.
  */
 using FrontierId = std::uint32_t;
-static constexpr FrontierId NoneFrontierId = std::numeric_limits<FrontierId>::max();
+static FrontierId constexpr NoneFrontierId = std::numeric_limits<FrontierId>::max();
 
 /*
  * Various other identifiers.

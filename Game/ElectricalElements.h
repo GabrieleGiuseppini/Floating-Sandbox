@@ -16,6 +16,7 @@
 #include <chrono>
 #include <cmath>
 #include <functional>
+#include <limits>
 #include <memory>
 #include <optional>
 #include <vector>
@@ -28,6 +29,12 @@ namespace Physics
 class ElectricalElements : public ElementContainer
 {
 private:
+
+    /* "Engine groups" are sets of engines connected to each other
+     * (via engine transmissions, engines, and controllers)
+     */
+    using EngineGroupIndex = std::uint64_t;
+    static EngineGroupIndex constexpr NoneEngineGroupIndex = std::numeric_limits<EngineGroupIndex>::max();
 
     /*
      * The information we maintain with each instanced element.
@@ -106,6 +113,8 @@ private:
 
             std::optional<float> SuperElectrificationEndTimestamp;
 
+            EngineGroupIndex EngineGroup;
+
             EngineState(
                 float thrustCapacity,
                 float responsiveness)
@@ -128,6 +137,10 @@ private:
                 LastPublishedRpm = 0.0f;
                 LastPublishedThrustMagnitude = 0.0f;
                 LastHighlightedRpm = 0.0f;
+
+                SuperElectrificationEndTimestamp.reset();
+
+                EngineGroup = NoneEngineGroupIndex;
             }
 
             void ClearTargets()
@@ -141,6 +154,7 @@ private:
 
         struct EngineControllerState
         {
+            // TODOTEST : this should all go
             struct ConnectedEngine
             {
                 ElementIndex EngineElectricalElementIndex;
@@ -163,14 +177,17 @@ private:
             };
 
             FixedSizeVector<ConnectedEngine, GameParameters::MaxSpringsPerPoint> ConnectedEngines; // Immutable
+            // TODOTEST-END
 
             int CurrentTelegraphValue; // Between -Degrees/2 and +Degrees/2
             bool IsPowered;
 
+            EngineGroupIndex EngineGroup;
+
             EngineControllerState(int telegraphValue, bool isPowered)
-                : ConnectedEngines()
-                , CurrentTelegraphValue(telegraphValue)
+                : CurrentTelegraphValue(telegraphValue)
                 , IsPowered(isPowered)
+                , EngineGroup(NoneEngineGroupIndex)
             {}
         };
 
@@ -442,6 +459,7 @@ public:
         , mEngineSinks()
         , mCurrentLightSpreadAdjustment(gameParameters.LightSpreadAdjustment)
         , mCurrentLuminiscenceAdjustment(gameParameters.LuminiscenceAdjustment)
+        , mHasConnectivityStructureChangedInCurrentStep(true)
         , mHasPowerBeenSeveredInCurrentStep(false)
     {
         mInstanceInfos.reserve(mElementCount);
@@ -507,21 +525,10 @@ public:
 
     void UpdateForGameParameters(GameParameters const & gameParameters);
 
-    void UpdateAutomaticConductivityToggles(
-        float currentSimulationTime,
-        Points & points,
-        GameParameters const & gameParameters);
-
-    void UpdateSourcesAndPropagation(
+    void Update(
+        GameWallClock::time_point currentWallClockTime,
         float currentSimulationTime,
         SequenceNumber newConnectivityVisitSequenceNumber,
-        Points & points,
-        GameParameters const & gameParameters);
-
-    void UpdateSinks(
-        GameWallClock::time_point currentWallclockTime,
-        float currentSimulationTime,
-        SequenceNumber currentConnectivityVisitSequenceNumber,
         Points & points,
         Storm::Parameters const & stormParameters,
         GameParameters const & gameParameters);
@@ -589,6 +596,9 @@ public:
             mConductingConnectedElectricalElementsBuffer[electricalElementIndex].push_back(connectedElectricalElementIndex);
             // Other connection will be done when AddConnectedElectricalElement is invoked on the other
         }
+
+        // Remember that connectivity structure has changed during this step
+        mHasConnectivityStructureChangedInCurrentStep = true;
     }
 
     inline void RemoveConnectedElectricalElement(
@@ -607,6 +617,9 @@ public:
             || found);
 
         // Other connection will be severed when RemoveConnectedElectricalElement is invoked on the other
+
+        // Remember that connectivity structure has changed during this step
+        mHasConnectivityStructureChangedInCurrentStep = true;
 
         if (hasBeenSevered)
         {
@@ -715,17 +728,40 @@ private:
         ElementIndex elementIndex,
         bool value);
 
+    void UpdateEngineConductivity(
+        SequenceNumber newConnectivityVisitSequenceNumber,
+        Points & points);
+
+    void UpdateAutomaticConductivityToggles(
+        float currentSimulationTime,
+        Points & points,
+        GameParameters const & gameParameters);
+
+    void UpdateSourcesAndPropagation(
+        float currentSimulationTime,
+        SequenceNumber newConnectivityVisitSequenceNumber,
+        Points & points,
+        GameParameters const & gameParameters);
+
+    void UpdateSinks(
+        GameWallClock::time_point currentWallClockTime,
+        float currentSimulationTime,
+        SequenceNumber currentConnectivityVisitSequenceNumber,
+        Points & points,
+        Storm::Parameters const & stormParameters,
+        GameParameters const & gameParameters);
+
     void RunLampStateMachine(
         bool isConnectedToPower,
         ElementIndex elementLampIndex,
-        GameWallClock::time_point currentWallclockTime,
+        GameWallClock::time_point currentWallClockTime,
         float currentSimulationTime,
         Points & points,
         GameParameters const & gameParameters);
 
     bool CheckWetFailureTime(
         ElementState::LampState & lamp,
-        GameWallClock::time_point currentWallclockTime);
+        GameWallClock::time_point currentWallClockTime);
 
     static inline float CalculateLampLightSpreadMaxDistance(
         float materialLightSpread,
@@ -826,6 +862,11 @@ private:
     // of pre-calculated coefficients
     float mCurrentLightSpreadAdjustment;
     float mCurrentLuminiscenceAdjustment;
+
+    // Flag indicating that the connectivity structure has changed during
+    // the current simulation step; triggers re-calculations that only need
+    // to happen at these changes
+    bool mHasConnectivityStructureChangedInCurrentStep;
 
     // Flag indicating whether or not power has been 'violently' severed
     // during the current simulation step; cleared at the end of sinks' update.

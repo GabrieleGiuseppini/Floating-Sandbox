@@ -470,35 +470,7 @@ void Ship::Update(
     // Generate a new visit sequence number
     ++mCurrentElectricalVisitSequenceNumber;
 
-    //
-    // 1. Update automatic conductivity toggles (e.g. water-sensing switches)
-    //
-
-    mElectricalElements.UpdateAutomaticConductivityToggles(
-        currentSimulationTime,
-        mPoints,
-        gameParameters);
-
-    //
-    // 2. Update sources and connectivity
-    //
-    // We do this regardless of dirty elements, as elements might have changed their state
-    // (e.g. generators might have become wet, switches might have been toggled, etc.)
-    //
-
-    mElectricalElements.UpdateSourcesAndPropagation(
-        currentSimulationTime,
-        mCurrentElectricalVisitSequenceNumber,
-        mPoints,
-        gameParameters);
-
-    //
-    // 3. Update sinks
-    //
-    // - Applies static forces, will be integrated at next loop
-    //
-
-    mElectricalElements.UpdateSinks(
+    mElectricalElements.Update(
         currentWallClockTime,
         currentSimulationTime,
         mCurrentElectricalVisitSequenceNumber,
