@@ -37,6 +37,10 @@
 
 		= Continuous Auto-focus (*)
 			- Send for testing, w/auto-focus being on by default
+			- Decide whether auto-focus should be on by default
+
+		- Fix: load 1.17.2 ship in 1.17.1: "non-standard materials/non-release version"
+			- Need to also include path in check at ShipDefinitionFormatDeSerializer.cpp:1312
 
 		- Fix strings @ WaterlineAnalysisDialog
 			= Trim "~0^A0" on old Dell
@@ -1025,14 +1029,16 @@
 						+ Test based on NDC (smoothstep on NDC fraction) rather than world
 							+ Commit first
 				+ If not ok: nuke threshold code
-					+ But do keep updating mAutoFocus->CurrentXXX				
+					+ But do keep updating mAutoFocus->CurrentXXX
+			- Remove every-other-frame thing
+			- Test for user offset accumulation problem, which is due to calculated pan being "too much", so user offset has to first counterbalance that before being able to make a difference:
+				- Clamp auto-focus only, *then* continue
 			= Cleanup:
 				+ See if can nuke ParameterSmoother::IsSmoothing
 				+ Move focus and pan calc'n out so may be reused by CenterOnShip
 				+ See if can nuke local variables for "newAutoFocusXXX" and use mAutoFocus->CurrrentXXX instead
 				+ See if still need all ViewModel methods (World<->Ndc)
 				+ Icon
-				X User offset accumulation problem: it's due to calculated pan being "too much", so user offset has to first counterbalance that before being able to make a difference
 				- See perf impact wrt 1.17.2
 					- Also see perf impact on old Dell
 				+ Take care of initial auto-zoom
