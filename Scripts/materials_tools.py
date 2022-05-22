@@ -118,6 +118,13 @@ def verify(filename):
                 if f != "texture_name" or 'is_legacy_electrical' not in material or material['is_legacy_electrical'] == False:
                     print("ERROR: {}: missing '{}' field".format(material_name, f))
 
+        # Verify color keys
+        color_keys = get_normalized_color_keys(material)
+        for hex_color in color_keys:
+            rgb = hex_to_rgb(hex_color)
+            if (not "unique_type" in material or material["unique_type"] != "Rope") and rgb[0] == 0 and rgb[1] < 16:
+                print("ERROR: {}: color key clashes with legacy ropes's color keys".format(material_name))
+
 
 def add_variant_material(material, variant_key, variants):
     if variant_key in variants:

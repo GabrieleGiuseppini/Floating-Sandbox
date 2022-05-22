@@ -58,7 +58,10 @@
 			- Decide whether auto-focus should be on by default
 
 		- Check if template png is ok
-			- Just load it and see holes
+			+ Cardboard hull blue
+			- Add validation to script
+			- Fix cardboard
+			- Redo template
 
 		- Jet engines @ Material system improvements (*)
 
