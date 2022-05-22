@@ -2077,7 +2077,7 @@ void MainFrame::OnCheckForUpdatesMenuItemSelected(wxCommandEvent & /*event*/)
 
 void MainFrame::RunGameIteration()
 {
-    if (!!mUpdateChecker)
+    if (!!mUpdateChecker && !IsPaused()) // A bit of a hack: if the LoadShip dialog is open while we ShowModal() the NewVersion dialog, the UI loop freezes
     {
         // We are checking for updates...
         // ...check whether the...check has completed
@@ -2429,6 +2429,11 @@ void MainFrame::SetPaused(bool isPaused)
             mStepMenuItem->Enable(false);
         }
     }
+}
+
+bool MainFrame::IsPaused() const
+{
+    return mPauseCount > 0;
 }
 
 void MainFrame::PostGameStepTimer(std::chrono::milliseconds duration)

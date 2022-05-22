@@ -368,6 +368,8 @@ private:
 
     void SetPaused(bool isPaused);
 
+    bool IsPaused() const;
+
     void PostGameStepTimer(std::chrono::milliseconds duration);
 
     void StartLowFrequencyTimer();
