@@ -33,7 +33,7 @@ private:
     /* "Engine groups" are sets of engines connected to each other
      * (via engine transmissions, engines, and controllers)
      */
-    using EngineGroupIndex = std::uint64_t;
+    using EngineGroupIndex = std::uint32_t;
     static EngineGroupIndex constexpr NoneEngineGroupIndex = std::numeric_limits<EngineGroupIndex>::max();
 
     /*
@@ -113,6 +113,7 @@ private:
 
             std::optional<float> SuperElectrificationEndTimestamp;
 
+            SequenceNumber EngineConnectivityVisitSequenceNumber;
             EngineGroupIndex EngineGroup;
 
             EngineState(
@@ -123,6 +124,7 @@ private:
                 , LastPublishedRpm(0.0f)
                 , LastPublishedThrustMagnitude(0.0f)
                 , LastHighlightedRpm(0.0f)
+                , EngineConnectivityVisitSequenceNumber()
             {
                 Reset();
             }
@@ -182,11 +184,13 @@ private:
             int CurrentTelegraphValue; // Between -Degrees/2 and +Degrees/2
             bool IsPowered;
 
+            SequenceNumber EngineConnectivityVisitSequenceNumber;
             EngineGroupIndex EngineGroup;
 
             EngineControllerState(int telegraphValue, bool isPowered)
                 : CurrentTelegraphValue(telegraphValue)
                 , IsPowered(isPowered)
+                , EngineConnectivityVisitSequenceNumber()
                 , EngineGroup(NoneEngineGroupIndex)
             {}
         };
@@ -407,6 +411,17 @@ private:
         {}
     };
 
+    struct EngineGroupState
+    {
+        float GroupRpm;
+        float GroupThrustMagnitude;
+
+        EngineGroupState()
+            : GroupRpm(0.0f)
+            , GroupThrustMagnitude(0.0f)
+        {}
+    };
+
 public:
 
     ElectricalElements(
@@ -433,6 +448,7 @@ public:
         , mConnectedElectricalElementsBuffer(mBufferElementCount, mElementCount, FixedSizeVector<ElementIndex, GameParameters::MaxSpringsPerPoint>())
         , mConductingConnectedElectricalElementsBuffer(mBufferElementCount, mElementCount, FixedSizeVector<ElementIndex, GameParameters::MaxSpringsPerPoint>())
         , mElementStateBuffer(mBufferElementCount, mElementCount, ElementState::CableState())
+        , mEngineGroupStates()
         , mAvailableLightBuffer(mBufferElementCount, mElementCount, 0.0f)
         , mCurrentConnectivityVisitSequenceNumberBuffer(mBufferElementCount, mElementCount, SequenceNumber())
         , mInstanceInfos()
@@ -456,6 +472,7 @@ public:
         , mSources()
         , mSinks()
         , mLamps()
+        , mEngineControllers()
         , mEngineSinks()
         , mCurrentLightSpreadAdjustment(gameParameters.LightSpreadAdjustment)
         , mCurrentLuminiscenceAdjustment(gameParameters.LuminiscenceAdjustment)
@@ -503,6 +520,8 @@ public:
     void HighlightElectricalElement(
         ElementIndex elementIndex,
         Points & points);
+
+    void Query(ElementIndex electricalElementIndex) const;
 
     void SetSwitchState(
         ElectricalElementId electricalElementId,
@@ -728,9 +747,7 @@ private:
         ElementIndex elementIndex,
         bool value);
 
-    void UpdateEngineConductivity(
-        SequenceNumber newConnectivityVisitSequenceNumber,
-        Points & points);
+    void UpdateEngineConductivity(SequenceNumber newConnectivityVisitSequenceNumber);
 
     void UpdateAutomaticConductivityToggles(
         float currentSimulationTime,
@@ -820,6 +837,10 @@ private:
     // Element state
     Buffer<ElementState> mElementStateBuffer;
 
+    // Engine groups - member only for allocation efficiency;
+    // dimensioned at end of each engine connectivity update
+    std::vector<EngineGroupState> mEngineGroupStates;
+
     // Available light (from lamps)
     Buffer<float> mAvailableLightBuffer;
 
@@ -855,6 +876,7 @@ private:
     std::vector<ElementIndex> mSources;
     std::vector<ElementIndex> mSinks;
     std::vector<ElementIndex> mLamps;
+    std::vector<ElementIndex> mEngineControllers;
     std::vector<ElementIndex> mEngineSinks;
 
     // The game parameter values that we are current with; changes

@@ -191,12 +191,7 @@ public:
         : mValue(0)
     {}
 
-    inline SequenceNumber & operator=(SequenceNumber const & other)
-    {
-        mValue = other.mValue;
-
-        return *this;
-    }
+    inline SequenceNumber & operator=(SequenceNumber const & other) = default;
 
     SequenceNumber & operator++()
     {

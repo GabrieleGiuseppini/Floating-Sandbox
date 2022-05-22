@@ -1381,7 +1381,6 @@ bool Ship::QueryNearestPointAt(
 
     mLastQueriedPointIndex = bestPointIndex;
 
-
     //
     // Find triangle enclosing target - if any
     //
@@ -1406,6 +1405,19 @@ bool Ship::QueryNearestPointAt(
     if (NoneElementIndex != enclosingTriangleIndex)
     {
         LogMessage("TriangleIndex: ", enclosingTriangleIndex);
+    }
+
+    //
+    // Electrical details - if any
+    //
+
+    if (NoneElementIndex != bestPointIndex)
+    {
+        auto const electricalElementIndex = mPoints.GetElectricalElement(bestPointIndex);
+        if (NoneElementIndex != electricalElementIndex)
+        {
+            mElectricalElements.Query(electricalElementIndex);
+        }
     }
 
     return pointWasFound;

@@ -72,6 +72,7 @@ void ElectricalElements::Add(
 
             // Indices
             mSinks.emplace_back(elementIndex);
+            mEngineControllers.emplace_back(elementIndex);
 
             break;
         }
@@ -477,6 +478,19 @@ void ElectricalElements::HighlightElectricalElement(
             // Shouldn't be invoked for non-highlightable elements
             assert(false);
         }
+    }
+}
+
+void ElectricalElements::Query(ElementIndex elementIndex) const
+{
+    LogMessage("ElectricalElementIndex: ", elementIndex, (nullptr != mMaterialBuffer[elementIndex]) ? (" (" + mMaterialBuffer[elementIndex]->Name) + ")" : "");
+    if (mMaterialTypeBuffer[elementIndex] == ElectricalMaterial::ElectricalElementType::Engine)
+    {
+        LogMessage("EngineGroup=", mElementStateBuffer[elementIndex].Engine.EngineGroup != NoneEngineGroupIndex ? std::to_string(mElementStateBuffer[elementIndex].Engine.EngineGroup) : "N/A");
+    }
+    else if (mMaterialTypeBuffer[elementIndex] == ElectricalMaterial::ElectricalElementType::EngineController)
+    {
+        LogMessage("EngineGroup=", mElementStateBuffer[elementIndex].EngineController.EngineGroup != NoneEngineGroupIndex ? std::to_string(mElementStateBuffer[elementIndex].EngineController.EngineGroup) : "N/A");
     }
 }
 
@@ -924,9 +938,7 @@ void ElectricalElements::Update(
 
     if (mHasConnectivityStructureChangedInCurrentStep)
     {
-        UpdateEngineConductivity(
-            newConnectivityVisitSequenceNumber,
-            points);
+        UpdateEngineConductivity(newConnectivityVisitSequenceNumber);
     }
 
     //
@@ -1078,12 +1090,119 @@ void ElectricalElements::InternalChangeConductivity(
     mConductivityBuffer[elementIndex].ConductsElectricity = value;
 }
 
-void ElectricalElements::UpdateEngineConductivity(
-    SequenceNumber newConnectivityVisitSequenceNumber,
-    Points & points)
+void ElectricalElements::UpdateEngineConductivity(SequenceNumber newConnectivityVisitSequenceNumber)
 {
-    // TODOHERE
-    LogMessage("TODOTEST: UpdateEngineConductivity()");
+    //
+    // Starting from all engine controller, we follow engine-transmitting elements
+    // and create "engine groups" (connected components), each of which is
+    // assigned an Engine Group ID.
+    //
+    // This graph visit could leave out disconnected Engine's, hence
+    // we initialize all Engines' group ID's to the "None" group ID.
+    //
+
+    // Clear out engines
+    for (ElementIndex const engineElementIndex : mEngineSinks)
+    {
+        mElementStateBuffer[engineElementIndex].Engine.EngineGroup = NoneEngineGroupIndex;
+    }
+
+    // Visit non-deleted engine controllers
+    std::queue<ElementIndex> elementsToVisit;
+    EngineGroupIndex nextEngineGroupIndex = 0;
+    for (auto const engineControllerElementIndex : mEngineControllers)
+    {
+        if (!IsDeleted(engineControllerElementIndex))
+        {
+            // Check whether we've already visited this controller
+            if (mElementStateBuffer[engineControllerElementIndex].EngineController.EngineConnectivityVisitSequenceNumber != newConnectivityVisitSequenceNumber)
+            {
+                //
+                // Build engine group flooding graph from this engine controller
+                //
+
+                EngineGroupIndex const engineGroupIndex = nextEngineGroupIndex++;
+
+                // Visit controller
+                mElementStateBuffer[engineControllerElementIndex].EngineController.EngineGroup = engineGroupIndex;
+                mElementStateBuffer[engineControllerElementIndex].EngineController.EngineConnectivityVisitSequenceNumber = newConnectivityVisitSequenceNumber;
+
+                // Add to queue
+                assert(elementsToVisit.empty());
+                elementsToVisit.push(engineControllerElementIndex);
+                
+                while (!elementsToVisit.empty())
+                {
+                    auto const e = elementsToVisit.front();
+                    elementsToVisit.pop();
+
+                    // Already marked as visited
+
+                    for (auto const ce : mConnectedElectricalElementsBuffer[e])
+                    {
+                        assert(!IsDeleted(ce));
+
+                        switch (mMaterialTypeBuffer[ce])
+                        {
+                            case ElectricalMaterial::ElectricalElementType::Engine:
+                            {
+                                // Make sure not visited already
+                                if (mElementStateBuffer[ce].Engine.EngineConnectivityVisitSequenceNumber != newConnectivityVisitSequenceNumber)
+                                {
+                                    assert(mElementStateBuffer[ce].Engine.EngineGroup == NoneEngineGroupIndex);
+
+                                    // Visit element
+                                    mElementStateBuffer[ce].Engine.EngineGroup = engineGroupIndex;
+                                    mElementStateBuffer[ce].Engine.EngineConnectivityVisitSequenceNumber = newConnectivityVisitSequenceNumber;
+
+                                    // Store reference point
+                                    // TODOHERE:
+                                    // - Angle of thrust calculated taking into account ref pt.'s (factory) octant wrt this point, and engine direction
+
+                                    // Add to queue
+                                    elementsToVisit.push(ce);
+                                }
+
+                                break;
+                            }
+
+                            case ElectricalMaterial::ElectricalElementType::EngineController:
+                            {
+                                // Make sure not visited already
+                                if (mElementStateBuffer[ce].EngineController.EngineConnectivityVisitSequenceNumber != newConnectivityVisitSequenceNumber)
+                                {
+                                    // Visit element
+                                    mElementStateBuffer[ce].EngineController.EngineGroup = engineGroupIndex;
+                                    mElementStateBuffer[ce].EngineController.EngineConnectivityVisitSequenceNumber = newConnectivityVisitSequenceNumber;
+
+                                    // Add to queue
+                                    elementsToVisit.push(ce);
+                                }
+
+                                break;
+                            }
+
+                            // TODO: engine transmission
+
+                            default:
+                            {
+                                // Nothing to do
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    //
+    // Now we know how many engine groups we have - resize buffer for their state
+    //
+
+    size_t const engineGroupCount = static_cast<size_t>(nextEngineGroupIndex);
+    
+    mEngineGroupStates.resize(engineGroupCount);
 }
 
 void ElectricalElements::UpdateAutomaticConductivityToggles(
@@ -1187,105 +1306,105 @@ void ElectricalElements::UpdateSourcesAndPropagation(
 
             switch (GetMaterialType(sourceElementIndex))
             {
-            case ElectricalMaterial::ElectricalElementType::Generator:
-            {
-                //
-                // Preconditions to produce current:
-                // - Not too wet
-                // - Temperature within operating temperature
-                // - Not disabled
-                //
-
-                auto & generatorState = mElementStateBuffer[sourceElementIndex].Generator;
-
-                // Check if disable interval has elapsed
-                if (generatorState.DisabledEndSimulationTimestamp.has_value()
-                    && currentSimulationTime >= *generatorState.DisabledEndSimulationTimestamp)
+                case ElectricalMaterial::ElectricalElementType::Generator:
                 {
-                    generatorState.DisabledEndSimulationTimestamp.reset();
-                }
+                    //
+                    // Preconditions to produce current:
+                    // - Not too wet
+                    // - Temperature within operating temperature
+                    // - Not disabled
+                    //
 
-                bool isProducingCurrent;
-                if (generatorState.IsProducingCurrent)
-                {
-                    if (points.IsWet(sourcePointIndex, 0.55f)
-                        || !mMaterialOperatingTemperaturesBuffer[sourceElementIndex].IsInRange(points.GetTemperature(sourcePointIndex))
-                        || generatorState.DisabledEndSimulationTimestamp.has_value())
+                    auto & generatorState = mElementStateBuffer[sourceElementIndex].Generator;
+
+                    // Check if disable interval has elapsed
+                    if (generatorState.DisabledEndSimulationTimestamp.has_value()
+                        && currentSimulationTime >= *generatorState.DisabledEndSimulationTimestamp)
                     {
-                        isProducingCurrent = false;
+                        generatorState.DisabledEndSimulationTimestamp.reset();
                     }
-                    else
+
+                    bool isProducingCurrent;
+                    if (generatorState.IsProducingCurrent)
                     {
-                        isProducingCurrent = true;
-                    }
-                }
-                else
-                {
-                    if (!points.IsWet(sourcePointIndex, 0.15f)
-                        && mMaterialOperatingTemperaturesBuffer[sourceElementIndex].IsBackInRange(points.GetTemperature(sourcePointIndex))
-                        && !generatorState.DisabledEndSimulationTimestamp.has_value())
-                    {
-                        isProducingCurrent = true;
-                    }
-                    else
-                    {
-                        isProducingCurrent = false;
-                    }
-                }
-
-                preconditionsSatisfied = isProducingCurrent;
-
-                //
-                // Check if it's a state change
-                //
-
-                if (mElementStateBuffer[sourceElementIndex].Generator.IsProducingCurrent != isProducingCurrent)
-                {
-                    // Change state
-                    mElementStateBuffer[sourceElementIndex].Generator.IsProducingCurrent = isProducingCurrent;
-
-                    // See whether we need to publish a power probe change
-                    if (mInstanceInfos[sourceElementIndex].InstanceIndex != NoneElectricalElementInstanceIndex)
-                    {
-                        // Notify
-                        mGameEventHandler->OnPowerProbeToggled(
-                            ElectricalElementId(mShipId, sourceElementIndex),
-                            static_cast<ElectricalState>(isProducingCurrent));
-
-                        // Show notifications
-                        if (gameParameters.DoShowElectricalNotifications)
+                        if (points.IsWet(sourcePointIndex, 0.55f)
+                            || !mMaterialOperatingTemperaturesBuffer[sourceElementIndex].IsInRange(points.GetTemperature(sourcePointIndex))
+                            || generatorState.DisabledEndSimulationTimestamp.has_value())
                         {
-                            HighlightElectricalElement(sourceElementIndex, points);
+                            isProducingCurrent = false;
+                        }
+                        else
+                        {
+                            isProducingCurrent = true;
+                        }
+                    }
+                    else
+                    {
+                        if (!points.IsWet(sourcePointIndex, 0.15f)
+                            && mMaterialOperatingTemperaturesBuffer[sourceElementIndex].IsBackInRange(points.GetTemperature(sourcePointIndex))
+                            && !generatorState.DisabledEndSimulationTimestamp.has_value())
+                        {
+                            isProducingCurrent = true;
+                        }
+                        else
+                        {
+                            isProducingCurrent = false;
                         }
                     }
 
-                    // Remember that power has been severed, in case we're turning off
-                    if (!isProducingCurrent)
+                    preconditionsSatisfied = isProducingCurrent;
+
+                    //
+                    // Check if it's a state change
+                    //
+
+                    if (mElementStateBuffer[sourceElementIndex].Generator.IsProducingCurrent != isProducingCurrent)
                     {
-                        mHasPowerBeenSeveredInCurrentStep = true;
+                        // Change state
+                        mElementStateBuffer[sourceElementIndex].Generator.IsProducingCurrent = isProducingCurrent;
+
+                        // See whether we need to publish a power probe change
+                        if (mInstanceInfos[sourceElementIndex].InstanceIndex != NoneElectricalElementInstanceIndex)
+                        {
+                            // Notify
+                            mGameEventHandler->OnPowerProbeToggled(
+                                ElectricalElementId(mShipId, sourceElementIndex),
+                                static_cast<ElectricalState>(isProducingCurrent));
+
+                            // Show notifications
+                            if (gameParameters.DoShowElectricalNotifications)
+                            {
+                                HighlightElectricalElement(sourceElementIndex, points);
+                            }
+                        }
+
+                        // Remember that power has been severed, in case we're turning off
+                        if (!isProducingCurrent)
+                        {
+                            mHasPowerBeenSeveredInCurrentStep = true;
+                        }
                     }
+
+                    break;
                 }
 
-                break;
-            }
-
-            default:
-            {
-                assert(false); // At the moment our only sources are generators
-                break;
-            }
+                default:
+                {
+                    assert(false); // At the moment our only sources are generators
+                    break;
+                }
             }
 
             if (preconditionsSatisfied
                 // Make sure we haven't visited it already
                 && newConnectivityVisitSequenceNumber != mCurrentConnectivityVisitSequenceNumberBuffer[sourceElementIndex])
             {
-                // Mark it as visited
-                mCurrentConnectivityVisitSequenceNumberBuffer[sourceElementIndex] = newConnectivityVisitSequenceNumber;
-
                 //
                 // Flood graph
                 //
+
+                // Mark starting point as visited
+                mCurrentConnectivityVisitSequenceNumberBuffer[sourceElementIndex] = newConnectivityVisitSequenceNumber;
 
                 // Add source to queue
                 assert(electricalElementsToVisit.empty());
@@ -1300,18 +1419,18 @@ void ElectricalElements::UpdateSourcesAndPropagation(
                     // Already marked as visited
                     assert(newConnectivityVisitSequenceNumber == mCurrentConnectivityVisitSequenceNumberBuffer[e]);
 
-                    for (auto conductingConnectedElectricalElementIndex : mConductingConnectedElectricalElementsBuffer[e])
+                    for (auto const cce : mConductingConnectedElectricalElementsBuffer[e])
                     {
-                        assert(!IsDeleted(conductingConnectedElectricalElementIndex));
+                        assert(!IsDeleted(cce));
 
                         // Make sure not visited already
-                        if (newConnectivityVisitSequenceNumber != mCurrentConnectivityVisitSequenceNumberBuffer[conductingConnectedElectricalElementIndex])
+                        if (newConnectivityVisitSequenceNumber != mCurrentConnectivityVisitSequenceNumberBuffer[cce])
                         {
-                            // Add to queue
-                            electricalElementsToVisit.push(conductingConnectedElectricalElementIndex);
-
                             // Mark it as visited
-                            mCurrentConnectivityVisitSequenceNumberBuffer[conductingConnectedElectricalElementIndex] = newConnectivityVisitSequenceNumber;
+                            mCurrentConnectivityVisitSequenceNumberBuffer[cce] = newConnectivityVisitSequenceNumber;
+
+                            // Add to queue
+                            electricalElementsToVisit.push(cce);
                         }
                     }
                 }
@@ -1344,6 +1463,12 @@ void ElectricalElements::UpdateSinks(
     // post-deletion wind-down state machines
     //
 
+    // Reset engine group states
+    std::fill(
+        mEngineGroupStates.begin(),
+        mEngineGroupStates.end(),
+        EngineGroupState());
+
     // For smoke
     float const effectiveAugmentedAirTemperature =
         gameParameters.AirTemperature
@@ -1363,480 +1488,586 @@ void ElectricalElements::UpdateSinks(
 
         switch (GetMaterialType(sinkElementIndex))
         {
-        case ElectricalMaterial::ElectricalElementType::EngineController:
-        {
-            if (!IsDeleted(sinkElementIndex))
+            case ElectricalMaterial::ElectricalElementType::EngineController:
             {
-                auto & controllerState = mElementStateBuffer[sinkElementIndex].EngineController;
-
-                // Check whether it's powered
-                bool isPowered = false;
-                if (isConnectedToPower)
+                if (!IsDeleted(sinkElementIndex))
                 {
-                    if (controllerState.IsPowered
-                        && mMaterialOperatingTemperaturesBuffer[sinkElementIndex].IsInRange(points.GetTemperature(GetPointIndex(sinkElementIndex))))
-                    {
-                        isPowered = true;
-                    }
-                    else if (!controllerState.IsPowered
-                        && mMaterialOperatingTemperaturesBuffer[sinkElementIndex].IsBackInRange(points.GetTemperature(GetPointIndex(sinkElementIndex))))
-                    {
-                        isPowered = true;
-                    }
-                }
+                    auto & controllerState = mElementStateBuffer[sinkElementIndex].EngineController;
 
-                if (isPowered)
-                {
-                    //
-                    // Visit all (non-deleted) connected engines and add force to each
-                    //
-
-                    vec2f const & controllerPosition = points.GetPosition(GetPointIndex(sinkElementIndex));
-
-                    for (auto const & connectedEngine : controllerState.ConnectedEngines)
-                    {
-                        auto const engineElectricalElementIndex = connectedEngine.EngineElectricalElementIndex;
-                        if (!IsDeleted(engineElectricalElementIndex))
-                        {
-                            //
-                            // Calculate thrust dir, rpm, and thrust magnitude exherted by this controller
-                            //  - ThrustDir = f(controller->engine angle)
-                            //  - RPM = f(EngineControllerState::CurrentTelegraphValue)
-                            //  - ThrustMagnitude = f(EngineControllerState::CurrentTelegraphValue)
-                            //
-
-                            auto const enginePointIndex = GetPointIndex(engineElectricalElementIndex);
-
-                            // Thrust direction (normalized vector)
-
-                            vec2f const engineToControllerDir =
-                                (controllerPosition - points.GetPosition(enginePointIndex))
-                                .normalise();
-
-                            vec2f const controllerEngineThrustDir = vec2f(
-                                connectedEngine.CosEngineCWAngle * engineToControllerDir.x
-                                + connectedEngine.SinEngineCWAngle * engineToControllerDir.y
-                                ,
-                                -connectedEngine.SinEngineCWAngle * engineToControllerDir.x
-                                + connectedEngine.CosEngineCWAngle * engineToControllerDir.y
-                            );
-
-                            // RPM: 0, 1/N, 1/N->1
-
-                            float constexpr TelegraphCoeff =
-                                1.0f
-                                / static_cast<float>(GameParameters::EngineTelegraphDegreesOfFreedom / 2 - 1);
-
-                            int const absTelegraphValue = std::abs(controllerState.CurrentTelegraphValue);
-                            float controllerEngineRpm;
-                            if (absTelegraphValue == 0)
-                                controllerEngineRpm = 0.0f;
-                            else if (absTelegraphValue == 1)
-                                controllerEngineRpm = TelegraphCoeff;
-                            else
-                                controllerEngineRpm = static_cast<float>(absTelegraphValue - 1) * TelegraphCoeff;
-
-                            // Thrust magnitude: 0, 0, 1/N->1
-
-                            float controllerEngineThrustMagnitude;
-                            if (controllerState.CurrentTelegraphValue >= 0)
-                            {
-                                if (controllerState.CurrentTelegraphValue <= 1)
-                                    controllerEngineThrustMagnitude = 0.0f;
-                                else
-                                    controllerEngineThrustMagnitude = static_cast<float>(controllerState.CurrentTelegraphValue - 1) * TelegraphCoeff;
-                            }
-                            else
-                            {
-                                if (controllerState.CurrentTelegraphValue >= -1)
-                                    controllerEngineThrustMagnitude = 0.0f;
-                                else
-                                    controllerEngineThrustMagnitude = static_cast<float>(controllerState.CurrentTelegraphValue + 1) * TelegraphCoeff;
-                            }
-
-                            //
-                            // Add to engine
-                            //  - Engine has been reset at end of previous iteration
-                            //
-
-                            mElementStateBuffer[engineElectricalElementIndex].Engine.TargetThrustDir +=
-                                controllerEngineThrustDir;
-
-                            mElementStateBuffer[engineElectricalElementIndex].Engine.TargetRpm = std::max(
-                                mElementStateBuffer[engineElectricalElementIndex].Engine.TargetRpm,
-                                controllerEngineRpm);
-
-                            mElementStateBuffer[engineElectricalElementIndex].Engine.TargetThrustMagnitude +=
-                                controllerEngineThrustMagnitude;
-                        }
-                    }
-                }
-
-                // Remember state
-                mElementStateBuffer[sinkElementIndex].EngineController.IsPowered = isPowered;
-            }
-
-            break;
-        }
-
-        case ElectricalMaterial::ElectricalElementType::Lamp:
-        {
-            if (!IsDeleted(sinkElementIndex))
-            {
-                // Update state machine
-                RunLampStateMachine(
-                    isConnectedToPower,
-                    sinkElementIndex,
-                    currentWallClockTime,
-                    currentSimulationTime,
-                    points,
-                    gameParameters);
-
-                isProducingHeat = (GetAvailableLight(sinkElementIndex) > 0.0f);
-            }
-
-            break;
-        }
-
-        case ElectricalMaterial::ElectricalElementType::OtherSink:
-        {
-            if (!IsDeleted(sinkElementIndex))
-            {
-                // Update state machine
-                if (mElementStateBuffer[sinkElementIndex].OtherSink.IsPowered)
-                {
-                    if (!isConnectedToPower
-                        || !mMaterialOperatingTemperaturesBuffer[sinkElementIndex].IsInRange(points.GetTemperature(GetPointIndex(sinkElementIndex))))
-                    {
-                        mElementStateBuffer[sinkElementIndex].OtherSink.IsPowered = false;
-                    }
-                }
-                else
-                {
-                    if (isConnectedToPower
-                        && mMaterialOperatingTemperaturesBuffer[sinkElementIndex].IsBackInRange(points.GetTemperature(GetPointIndex(sinkElementIndex))))
-                    {
-                        mElementStateBuffer[sinkElementIndex].OtherSink.IsPowered = true;
-                    }
-                }
-
-                isProducingHeat = mElementStateBuffer[sinkElementIndex].OtherSink.IsPowered;
-            }
-
-            break;
-        }
-
-        case ElectricalMaterial::ElectricalElementType::PowerMonitor:
-        {
-            if (!IsDeleted(sinkElementIndex))
-            {
-                // Update state machine
-                if (mElementStateBuffer[sinkElementIndex].PowerMonitor.IsPowered)
-                {
-                    if (!isConnectedToPower)
-                    {
-                        //
-                        // Toggle state ON->OFF
-                        //
-
-                        mElementStateBuffer[sinkElementIndex].PowerMonitor.IsPowered = false;
-
-                        // Notify
-                        mGameEventHandler->OnPowerProbeToggled(
-                            ElectricalElementId(mShipId, sinkElementIndex),
-                            ElectricalState::Off);
-
-                        // Show notifications
-                        if (gameParameters.DoShowElectricalNotifications)
-                        {
-                            HighlightElectricalElement(sinkElementIndex, points);
-                        }
-                    }
-                }
-                else
-                {
+                    // Check whether it's powered
+                    bool isPowered = false;
                     if (isConnectedToPower)
                     {
-                        //
-                        // Toggle state OFF->ON
-                        //
-
-                        mElementStateBuffer[sinkElementIndex].PowerMonitor.IsPowered = true;
-
-                        // Notify
-                        mGameEventHandler->OnPowerProbeToggled(
-                            ElectricalElementId(mShipId, sinkElementIndex),
-                            ElectricalState::On);
-
-                        // Show notifications
-                        if (gameParameters.DoShowElectricalNotifications)
+                        if (controllerState.IsPowered
+                            && mMaterialOperatingTemperaturesBuffer[sinkElementIndex].IsInRange(points.GetTemperature(GetPointIndex(sinkElementIndex))))
                         {
-                            HighlightElectricalElement(sinkElementIndex, points);
+                            isPowered = true;
+                        }
+                        else if (!controllerState.IsPowered
+                            && mMaterialOperatingTemperaturesBuffer[sinkElementIndex].IsBackInRange(points.GetTemperature(GetPointIndex(sinkElementIndex))))
+                        {
+                            isPowered = true;
                         }
                     }
+
+                    if (isPowered)
+                    {
+                        //
+                        // Visit all (non-deleted) connected engines and add force to each
+                        //
+
+                        vec2f const & controllerPosition = points.GetPosition(GetPointIndex(sinkElementIndex));
+
+                        for (auto const & connectedEngine : controllerState.ConnectedEngines)
+                        {
+                            auto const engineElectricalElementIndex = connectedEngine.EngineElectricalElementIndex;
+                            if (!IsDeleted(engineElectricalElementIndex))
+                            {
+                                //
+                                // Calculate thrust dir, rpm, and thrust magnitude exherted by this controller
+                                //  - ThrustDir = f(controller->engine angle)
+                                //  - RPM = f(EngineControllerState::CurrentTelegraphValue)
+                                //  - ThrustMagnitude = f(EngineControllerState::CurrentTelegraphValue)
+                                //
+
+                                auto const enginePointIndex = GetPointIndex(engineElectricalElementIndex);
+
+                                // Thrust direction (normalized vector)
+
+                                vec2f const engineToControllerDir =
+                                    (controllerPosition - points.GetPosition(enginePointIndex))
+                                    .normalise();
+
+                                vec2f const controllerEngineThrustDir = vec2f(
+                                    connectedEngine.CosEngineCWAngle * engineToControllerDir.x
+                                    + connectedEngine.SinEngineCWAngle * engineToControllerDir.y
+                                    ,
+                                    -connectedEngine.SinEngineCWAngle * engineToControllerDir.x
+                                    + connectedEngine.CosEngineCWAngle * engineToControllerDir.y
+                                );
+
+                                // RPM: 0, 1/N, 1/N->1
+
+                                float constexpr TelegraphCoeff =
+                                    1.0f
+                                    / static_cast<float>(GameParameters::EngineTelegraphDegreesOfFreedom / 2 - 1);
+
+                                int const absTelegraphValue = std::abs(controllerState.CurrentTelegraphValue);
+                                float controllerEngineRpm;
+                                if (absTelegraphValue == 0)
+                                    controllerEngineRpm = 0.0f;
+                                else if (absTelegraphValue == 1)
+                                    controllerEngineRpm = TelegraphCoeff;
+                                else
+                                    controllerEngineRpm = static_cast<float>(absTelegraphValue - 1) * TelegraphCoeff;
+
+                                // Thrust magnitude: 0, 0, 1/N->1
+
+                                float controllerEngineThrustMagnitude;
+                                if (controllerState.CurrentTelegraphValue >= 0)
+                                {
+                                    if (controllerState.CurrentTelegraphValue <= 1)
+                                        controllerEngineThrustMagnitude = 0.0f;
+                                    else
+                                        controllerEngineThrustMagnitude = static_cast<float>(controllerState.CurrentTelegraphValue - 1) * TelegraphCoeff;
+                                }
+                                else
+                                {
+                                    if (controllerState.CurrentTelegraphValue >= -1)
+                                        controllerEngineThrustMagnitude = 0.0f;
+                                    else
+                                        controllerEngineThrustMagnitude = static_cast<float>(controllerState.CurrentTelegraphValue + 1) * TelegraphCoeff;
+                                }
+
+                                //
+                                // Add to engine
+                                //  - Engine has been reset at end of previous iteration
+                                //
+
+                                mElementStateBuffer[engineElectricalElementIndex].Engine.TargetThrustDir +=
+                                    controllerEngineThrustDir;
+
+                                mElementStateBuffer[engineElectricalElementIndex].Engine.TargetRpm = std::max(
+                                    mElementStateBuffer[engineElectricalElementIndex].Engine.TargetRpm,
+                                    controllerEngineRpm);
+
+                                mElementStateBuffer[engineElectricalElementIndex].Engine.TargetThrustMagnitude +=
+                                    controllerEngineThrustMagnitude;
+                            }
+                        }
+                    }
+
+                    // Remember state
+                    mElementStateBuffer[sinkElementIndex].EngineController.IsPowered = isPowered;
                 }
+
+                break;
             }
 
-            break;
-        }
-
-        case ElectricalMaterial::ElectricalElementType::ShipSound:
-        {
-            if (!IsDeleted(sinkElementIndex))
+            case ElectricalMaterial::ElectricalElementType::Lamp:
             {
-                auto & state = mElementStateBuffer[sinkElementIndex].ShipSound;
-
-                // Update state machine
-                if (state.IsPlaying)
+                if (!IsDeleted(sinkElementIndex))
                 {
-                    if ((!state.IsSelfPowered && !isConnectedToPower)
-                        || !mConductivityBuffer[sinkElementIndex].ConductsElectricity)
-                    {
-                        //
-                        // Toggle state ON->OFF
-                        //
+                    // Update state machine
+                    RunLampStateMachine(
+                        isConnectedToPower,
+                        sinkElementIndex,
+                        currentWallClockTime,
+                        currentSimulationTime,
+                        points,
+                        gameParameters);
 
-                        state.IsPlaying = false;
-
-                        // Notify sound
-                        mGameEventHandler->OnShipSoundUpdated(
-                            ElectricalElementId(mShipId, sinkElementIndex),
-                            *(mMaterialBuffer[sinkElementIndex]),
-                            false,
-                            false); // Irrelevant
-
-                        // Show notifications
-                        if (gameParameters.DoShowElectricalNotifications)
-                        {
-                            HighlightElectricalElement(sinkElementIndex, points);
-                        }
-                    }
+                    isProducingHeat = (GetAvailableLight(sinkElementIndex) > 0.0f);
                 }
-                else
-                {
-                    if ((state.IsSelfPowered || isConnectedToPower)
-                        && mConductivityBuffer[sinkElementIndex].ConductsElectricity)
-                    {
-                        //
-                        // Toggle state OFF->ON
-                        //
 
-                        state.IsPlaying = true;
-
-                        // Notify sound
-                        mGameEventHandler->OnShipSoundUpdated(
-                            ElectricalElementId(mShipId, sinkElementIndex),
-                            *(mMaterialBuffer[sinkElementIndex]),
-                            true,
-                            points.IsCachedUnderwater(GetPointIndex(sinkElementIndex)));
-
-                        // Disturb ocean, with delays depending on sound
-                        switch (mMaterialBuffer[sinkElementIndex]->ShipSoundType)
-                        {
-                        case ElectricalMaterial::ShipSoundElementType::QueenMaryHorn:
-                        {
-                            mParentWorld.DisturbOcean(std::chrono::milliseconds(250));
-                            break;
-                        }
-
-                        case ElectricalMaterial::ShipSoundElementType::FourFunnelLinerWhistle:
-                        {
-                            mParentWorld.DisturbOcean(std::chrono::milliseconds(600));
-                            break;
-                        }
-
-                        case ElectricalMaterial::ShipSoundElementType::TripodHorn:
-                        {
-                            mParentWorld.DisturbOcean(std::chrono::milliseconds(500));
-                            break;
-                        }
-
-                        case ElectricalMaterial::ShipSoundElementType::LakeFreighterHorn:
-                        {
-                            mParentWorld.DisturbOcean(std::chrono::milliseconds(150));
-                            break;
-                        }
-
-                        case ElectricalMaterial::ShipSoundElementType::ShieldhallSteamSiren:
-                        {
-                            mParentWorld.DisturbOcean(std::chrono::milliseconds(550));
-                            break;
-                        }
-
-                        case ElectricalMaterial::ShipSoundElementType::QueenElizabeth2Horn:
-                        {
-                            mParentWorld.DisturbOcean(std::chrono::milliseconds(250));
-                            break;
-                        }
-
-                        case ElectricalMaterial::ShipSoundElementType::SSRexWhistle:
-                        {
-                            mParentWorld.DisturbOcean(std::chrono::milliseconds(250));
-                            break;
-                        }
-
-                        case ElectricalMaterial::ShipSoundElementType::Klaxon1:
-                        {
-                            mParentWorld.DisturbOcean(std::chrono::milliseconds(100));
-                            break;
-                        }
-
-                        case ElectricalMaterial::ShipSoundElementType::NuclearAlarm1:
-                        {
-                            mParentWorld.DisturbOcean(std::chrono::milliseconds(500));
-                            break;
-                        }
-
-                        case ElectricalMaterial::ShipSoundElementType::EvacuationAlarm1:
-                        {
-                            mParentWorld.DisturbOcean(std::chrono::milliseconds(100));
-                            break;
-                        }
-
-                        case ElectricalMaterial::ShipSoundElementType::EvacuationAlarm2:
-                        {
-                            mParentWorld.DisturbOcean(std::chrono::milliseconds(100));
-                            break;
-                        }
-
-                        default:
-                        {
-                            // Do not disturb
-                            break;
-                        }
-                        }
-
-                        // Show notifications
-                        if (gameParameters.DoShowElectricalNotifications)
-                        {
-                            HighlightElectricalElement(sinkElementIndex, points);
-                        }
-                    }
-                }
+                break;
             }
 
-            break;
-        }
-
-        case ElectricalMaterial::ElectricalElementType::SmokeEmitter:
-        {
-            auto const emitterPointIndex = GetPointIndex(sinkElementIndex);
-            float const emitterDepth = points.GetCachedDepth(emitterPointIndex);
-
-            if (!IsDeleted(sinkElementIndex))
+            case ElectricalMaterial::ElectricalElementType::OtherSink:
             {
-                // Update state machine
-                if (mElementStateBuffer[sinkElementIndex].SmokeEmitter.IsOperating)
+                if (!IsDeleted(sinkElementIndex))
                 {
-                    if (!isConnectedToPower
-                        || emitterDepth > 0.0f)
+                    // Update state machine
+                    if (mElementStateBuffer[sinkElementIndex].OtherSink.IsPowered)
                     {
-                        // Stop operating
-                        mElementStateBuffer[sinkElementIndex].SmokeEmitter.IsOperating = false;
-                    }
-                }
-                else
-                {
-                    if (isConnectedToPower
-                        && emitterDepth <= 0.0f)
-                    {
-                        // Start operating
-                        mElementStateBuffer[sinkElementIndex].SmokeEmitter.IsOperating = true;
-
-                        // Make sure we calculate the next emission timestamp
-                        mElementStateBuffer[sinkElementIndex].SmokeEmitter.NextEmissionSimulationTimestamp = 0.0f;
-                    }
-                }
-
-                if (mElementStateBuffer[sinkElementIndex].SmokeEmitter.IsOperating)
-                {
-                    // See if we need to calculate the next emission timestamp
-                    if (mElementStateBuffer[sinkElementIndex].SmokeEmitter.NextEmissionSimulationTimestamp == 0.0f)
-                    {
-                        mElementStateBuffer[sinkElementIndex].SmokeEmitter.NextEmissionSimulationTimestamp =
-                            currentSimulationTime
-                            + GameRandomEngine::GetInstance().GenerateExponentialReal(
-                            gameParameters.SmokeEmissionDensityAdjustment
-                            / mElementStateBuffer[sinkElementIndex].SmokeEmitter.EmissionRate);
-                    }
-
-                    // See if it's time to emit smoke
-                    if (currentSimulationTime >= mElementStateBuffer[sinkElementIndex].SmokeEmitter.NextEmissionSimulationTimestamp)
-                    {
-                        //
-                        // Emit smoke
-                        //
-
-                        // Choose temperature: highest of emitter's and current air + something (to ensure buoyancy)
-                        float const smokeTemperature = std::max(
-                            points.GetTemperature(emitterPointIndex),
-                            effectiveAugmentedAirTemperature);
-
-                        // Generate particle
-                        points.CreateEphemeralParticleLightSmoke(
-                            points.GetPosition(emitterPointIndex),
-                            emitterDepth,
-                            smokeTemperature,
-                            currentSimulationTime,
-                            points.GetPlaneId(emitterPointIndex),
-                            gameParameters);
-
-                        // Make sure we re-calculate the next emission timestamp
-                        mElementStateBuffer[sinkElementIndex].SmokeEmitter.NextEmissionSimulationTimestamp = 0.0f;
-                    }
-                }
-            }
-
-            break;
-        }
-
-        case ElectricalMaterial::ElectricalElementType::WaterPump:
-        {
-            auto const pointIndex = GetPointIndex(sinkElementIndex);
-
-            auto & waterPumpState = mElementStateBuffer[sinkElementIndex].WaterPump;
-
-            //
-            // 1) If not deleted, run operating state machine (connectivity, operating temperature)
-            //    in order to come up with TargetForce
-            //
-
-            if (!IsDeleted(sinkElementIndex))
-            {
-                if (waterPumpState.TargetNormalizedForce != 0.0f)
-                {
-                    // Currently it's powered...
-                    // ...see if it stops being powered
-                    if (!isConnectedToPower
-                        || !mMaterialOperatingTemperaturesBuffer[sinkElementIndex].IsInRange(points.GetTemperature(pointIndex)))
-                    {
-                        // State change: stop operating
-                        waterPumpState.TargetNormalizedForce = 0.0f;
-
-                        // Show notifications
-                        if (gameParameters.DoShowElectricalNotifications)
+                        if (!isConnectedToPower
+                            || !mMaterialOperatingTemperaturesBuffer[sinkElementIndex].IsInRange(points.GetTemperature(GetPointIndex(sinkElementIndex))))
                         {
-                            HighlightElectricalElement(sinkElementIndex, points);
+                            mElementStateBuffer[sinkElementIndex].OtherSink.IsPowered = false;
                         }
                     }
                     else
                     {
-                        // Operating, thus producing heat
-                        isProducingHeat = true;
+                        if (isConnectedToPower
+                            && mMaterialOperatingTemperaturesBuffer[sinkElementIndex].IsBackInRange(points.GetTemperature(GetPointIndex(sinkElementIndex))))
+                        {
+                            mElementStateBuffer[sinkElementIndex].OtherSink.IsPowered = true;
+                        }
+                    }
+
+                    isProducingHeat = mElementStateBuffer[sinkElementIndex].OtherSink.IsPowered;
+                }
+
+                break;
+            }
+
+            case ElectricalMaterial::ElectricalElementType::PowerMonitor:
+            {
+                if (!IsDeleted(sinkElementIndex))
+                {
+                    // Update state machine
+                    if (mElementStateBuffer[sinkElementIndex].PowerMonitor.IsPowered)
+                    {
+                        if (!isConnectedToPower)
+                        {
+                            //
+                            // Toggle state ON->OFF
+                            //
+
+                            mElementStateBuffer[sinkElementIndex].PowerMonitor.IsPowered = false;
+
+                            // Notify
+                            mGameEventHandler->OnPowerProbeToggled(
+                                ElectricalElementId(mShipId, sinkElementIndex),
+                                ElectricalState::Off);
+
+                            // Show notifications
+                            if (gameParameters.DoShowElectricalNotifications)
+                            {
+                                HighlightElectricalElement(sinkElementIndex, points);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (isConnectedToPower)
+                        {
+                            //
+                            // Toggle state OFF->ON
+                            //
+
+                            mElementStateBuffer[sinkElementIndex].PowerMonitor.IsPowered = true;
+
+                            // Notify
+                            mGameEventHandler->OnPowerProbeToggled(
+                                ElectricalElementId(mShipId, sinkElementIndex),
+                                ElectricalState::On);
+
+                            // Show notifications
+                            if (gameParameters.DoShowElectricalNotifications)
+                            {
+                                HighlightElectricalElement(sinkElementIndex, points);
+                            }
+                        }
                     }
                 }
-                else
-                {
-                    // Currently it's not powered...
-                    // ...see if it becomes powered
-                    if (isConnectedToPower
-                        && mMaterialOperatingTemperaturesBuffer[sinkElementIndex].IsBackInRange(points.GetTemperature(pointIndex)))
-                    {
-                        // State change: start operating
-                        waterPumpState.TargetNormalizedForce = 1.0f;
 
-                        // Operating, thus producing heat
-                        isProducingHeat = true;
+                break;
+            }
+
+            case ElectricalMaterial::ElectricalElementType::ShipSound:
+            {
+                if (!IsDeleted(sinkElementIndex))
+                {
+                    auto & state = mElementStateBuffer[sinkElementIndex].ShipSound;
+
+                    // Update state machine
+                    if (state.IsPlaying)
+                    {
+                        if ((!state.IsSelfPowered && !isConnectedToPower)
+                            || !mConductivityBuffer[sinkElementIndex].ConductsElectricity)
+                        {
+                            //
+                            // Toggle state ON->OFF
+                            //
+
+                            state.IsPlaying = false;
+
+                            // Notify sound
+                            mGameEventHandler->OnShipSoundUpdated(
+                                ElectricalElementId(mShipId, sinkElementIndex),
+                                *(mMaterialBuffer[sinkElementIndex]),
+                                false,
+                                false); // Irrelevant
+
+                            // Show notifications
+                            if (gameParameters.DoShowElectricalNotifications)
+                            {
+                                HighlightElectricalElement(sinkElementIndex, points);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if ((state.IsSelfPowered || isConnectedToPower)
+                            && mConductivityBuffer[sinkElementIndex].ConductsElectricity)
+                        {
+                            //
+                            // Toggle state OFF->ON
+                            //
+
+                            state.IsPlaying = true;
+
+                            // Notify sound
+                            mGameEventHandler->OnShipSoundUpdated(
+                                ElectricalElementId(mShipId, sinkElementIndex),
+                                *(mMaterialBuffer[sinkElementIndex]),
+                                true,
+                                points.IsCachedUnderwater(GetPointIndex(sinkElementIndex)));
+
+                            // Disturb ocean, with delays depending on sound
+                            switch (mMaterialBuffer[sinkElementIndex]->ShipSoundType)
+                            {
+                            case ElectricalMaterial::ShipSoundElementType::QueenMaryHorn:
+                            {
+                                mParentWorld.DisturbOcean(std::chrono::milliseconds(250));
+                                break;
+                            }
+
+                            case ElectricalMaterial::ShipSoundElementType::FourFunnelLinerWhistle:
+                            {
+                                mParentWorld.DisturbOcean(std::chrono::milliseconds(600));
+                                break;
+                            }
+
+                            case ElectricalMaterial::ShipSoundElementType::TripodHorn:
+                            {
+                                mParentWorld.DisturbOcean(std::chrono::milliseconds(500));
+                                break;
+                            }
+
+                            case ElectricalMaterial::ShipSoundElementType::LakeFreighterHorn:
+                            {
+                                mParentWorld.DisturbOcean(std::chrono::milliseconds(150));
+                                break;
+                            }
+
+                            case ElectricalMaterial::ShipSoundElementType::ShieldhallSteamSiren:
+                            {
+                                mParentWorld.DisturbOcean(std::chrono::milliseconds(550));
+                                break;
+                            }
+
+                            case ElectricalMaterial::ShipSoundElementType::QueenElizabeth2Horn:
+                            {
+                                mParentWorld.DisturbOcean(std::chrono::milliseconds(250));
+                                break;
+                            }
+
+                            case ElectricalMaterial::ShipSoundElementType::SSRexWhistle:
+                            {
+                                mParentWorld.DisturbOcean(std::chrono::milliseconds(250));
+                                break;
+                            }
+
+                            case ElectricalMaterial::ShipSoundElementType::Klaxon1:
+                            {
+                                mParentWorld.DisturbOcean(std::chrono::milliseconds(100));
+                                break;
+                            }
+
+                            case ElectricalMaterial::ShipSoundElementType::NuclearAlarm1:
+                            {
+                                mParentWorld.DisturbOcean(std::chrono::milliseconds(500));
+                                break;
+                            }
+
+                            case ElectricalMaterial::ShipSoundElementType::EvacuationAlarm1:
+                            {
+                                mParentWorld.DisturbOcean(std::chrono::milliseconds(100));
+                                break;
+                            }
+
+                            case ElectricalMaterial::ShipSoundElementType::EvacuationAlarm2:
+                            {
+                                mParentWorld.DisturbOcean(std::chrono::milliseconds(100));
+                                break;
+                            }
+
+                            default:
+                            {
+                                // Do not disturb
+                                break;
+                            }
+                            }
+
+                            // Show notifications
+                            if (gameParameters.DoShowElectricalNotifications)
+                            {
+                                HighlightElectricalElement(sinkElementIndex, points);
+                            }
+                        }
+                    }
+                }
+
+                break;
+            }
+
+            case ElectricalMaterial::ElectricalElementType::SmokeEmitter:
+            {
+                auto const emitterPointIndex = GetPointIndex(sinkElementIndex);
+                float const emitterDepth = points.GetCachedDepth(emitterPointIndex);
+
+                if (!IsDeleted(sinkElementIndex))
+                {
+                    // Update state machine
+                    if (mElementStateBuffer[sinkElementIndex].SmokeEmitter.IsOperating)
+                    {
+                        if (!isConnectedToPower
+                            || emitterDepth > 0.0f)
+                        {
+                            // Stop operating
+                            mElementStateBuffer[sinkElementIndex].SmokeEmitter.IsOperating = false;
+                        }
+                    }
+                    else
+                    {
+                        if (isConnectedToPower
+                            && emitterDepth <= 0.0f)
+                        {
+                            // Start operating
+                            mElementStateBuffer[sinkElementIndex].SmokeEmitter.IsOperating = true;
+
+                            // Make sure we calculate the next emission timestamp
+                            mElementStateBuffer[sinkElementIndex].SmokeEmitter.NextEmissionSimulationTimestamp = 0.0f;
+                        }
+                    }
+
+                    if (mElementStateBuffer[sinkElementIndex].SmokeEmitter.IsOperating)
+                    {
+                        // See if we need to calculate the next emission timestamp
+                        if (mElementStateBuffer[sinkElementIndex].SmokeEmitter.NextEmissionSimulationTimestamp == 0.0f)
+                        {
+                            mElementStateBuffer[sinkElementIndex].SmokeEmitter.NextEmissionSimulationTimestamp =
+                                currentSimulationTime
+                                + GameRandomEngine::GetInstance().GenerateExponentialReal(
+                                gameParameters.SmokeEmissionDensityAdjustment
+                                / mElementStateBuffer[sinkElementIndex].SmokeEmitter.EmissionRate);
+                        }
+
+                        // See if it's time to emit smoke
+                        if (currentSimulationTime >= mElementStateBuffer[sinkElementIndex].SmokeEmitter.NextEmissionSimulationTimestamp)
+                        {
+                            //
+                            // Emit smoke
+                            //
+
+                            // Choose temperature: highest of emitter's and current air + something (to ensure buoyancy)
+                            float const smokeTemperature = std::max(
+                                points.GetTemperature(emitterPointIndex),
+                                effectiveAugmentedAirTemperature);
+
+                            // Generate particle
+                            points.CreateEphemeralParticleLightSmoke(
+                                points.GetPosition(emitterPointIndex),
+                                emitterDepth,
+                                smokeTemperature,
+                                currentSimulationTime,
+                                points.GetPlaneId(emitterPointIndex),
+                                gameParameters);
+
+                            // Make sure we re-calculate the next emission timestamp
+                            mElementStateBuffer[sinkElementIndex].SmokeEmitter.NextEmissionSimulationTimestamp = 0.0f;
+                        }
+                    }
+                }
+
+                break;
+            }
+
+            case ElectricalMaterial::ElectricalElementType::WaterPump:
+            {
+                auto const pointIndex = GetPointIndex(sinkElementIndex);
+
+                auto & waterPumpState = mElementStateBuffer[sinkElementIndex].WaterPump;
+
+                //
+                // 1) If not deleted, run operating state machine (connectivity, operating temperature)
+                //    in order to come up with TargetForce
+                //
+
+                if (!IsDeleted(sinkElementIndex))
+                {
+                    if (waterPumpState.TargetNormalizedForce != 0.0f)
+                    {
+                        // Currently it's powered...
+                        // ...see if it stops being powered
+                        if (!isConnectedToPower
+                            || !mMaterialOperatingTemperaturesBuffer[sinkElementIndex].IsInRange(points.GetTemperature(pointIndex)))
+                        {
+                            // State change: stop operating
+                            waterPumpState.TargetNormalizedForce = 0.0f;
+
+                            // Show notifications
+                            if (gameParameters.DoShowElectricalNotifications)
+                            {
+                                HighlightElectricalElement(sinkElementIndex, points);
+                            }
+                        }
+                        else
+                        {
+                            // Operating, thus producing heat
+                            isProducingHeat = true;
+                        }
+                    }
+                    else
+                    {
+                        // Currently it's not powered...
+                        // ...see if it becomes powered
+                        if (isConnectedToPower
+                            && mMaterialOperatingTemperaturesBuffer[sinkElementIndex].IsBackInRange(points.GetTemperature(pointIndex)))
+                        {
+                            // State change: start operating
+                            waterPumpState.TargetNormalizedForce = 1.0f;
+
+                            // Operating, thus producing heat
+                            isProducingHeat = true;
+
+                            // Show notifications
+                            if (gameParameters.DoShowElectricalNotifications)
+                            {
+                                HighlightElectricalElement(sinkElementIndex, points);
+                            }
+                        }
+                    }
+                }
+
+                //
+                // 2) Converge CurrentForce towards TargetForce and eventually act on particle
+                //
+                // We run this also when deleted, as it's part of our wind-down state machine
+                //
+
+                // Converge current force
+                waterPumpState.CurrentNormalizedForce +=
+                    (waterPumpState.TargetNormalizedForce - waterPumpState.CurrentNormalizedForce)
+                    * 0.03f; // Convergence rate, magic number
+                if (std::abs(waterPumpState.CurrentNormalizedForce - waterPumpState.TargetNormalizedForce) < 0.001f)
+                {
+                    waterPumpState.CurrentNormalizedForce = waterPumpState.TargetNormalizedForce;
+                }
+
+                // Calculate force
+                float waterPumpForce = waterPumpState.CurrentNormalizedForce * waterPumpState.NominalForce;
+                if (waterPumpForce == 0.0f) // Ensure -0.0 is +0.0, or else CompositeIsLeaking's union trick won't work
+                {
+                    waterPumpForce = 0.0f;
+                }
+
+                // Apply force to point
+                points.GetLeakingComposite(pointIndex).LeakingSources.WaterPumpForce = waterPumpForce;
+
+                // Eventually publish force change notification
+                if (waterPumpState.CurrentNormalizedForce != waterPumpState.LastPublishedNormalizedForce)
+                {
+                    // Notify
+                    mGameEventHandler->OnWaterPumpUpdated(
+                        ElectricalElementId(mShipId, sinkElementIndex),
+                        waterPumpState.CurrentNormalizedForce);
+
+                    // Remember last-published value
+                    waterPumpState.LastPublishedNormalizedForce = waterPumpState.CurrentNormalizedForce;
+                }
+
+                break;
+            }
+
+            case ElectricalMaterial::ElectricalElementType::WatertightDoor:
+            {
+                //
+                // Run operating state machine (connectivity, operating temperature)
+                //
+
+                if (!IsDeleted(sinkElementIndex))
+                {
+                    auto const pointIndex = GetPointIndex(sinkElementIndex);
+
+                    auto & watertightDoorState = mElementStateBuffer[sinkElementIndex].WatertightDoor;
+
+                    bool hasStateChanged = false;
+                    if (watertightDoorState.IsActivated)
+                    {
+                        // Currently it's activated...
+                        // ...see if it stops being activated
+                        if (!isConnectedToPower
+                            || !mMaterialOperatingTemperaturesBuffer[sinkElementIndex].IsInRange(points.GetTemperature(pointIndex)))
+                        {
+                            //
+                            // State change: stop operating
+                            //
+
+                            watertightDoorState.IsActivated = false;
+
+                            hasStateChanged = true;
+                        }
+                    }
+                    else
+                    {
+                        // Currently it's not activated...
+                        // ...see if it becomes activated
+                        if (isConnectedToPower
+                            && mMaterialOperatingTemperaturesBuffer[sinkElementIndex].IsBackInRange(points.GetTemperature(pointIndex)))
+                        {
+                            //
+                            // State change: start operating
+                            //
+
+                            watertightDoorState.IsActivated = true;
+
+                            hasStateChanged = true;
+                        }
+                    }
+
+                    if (hasStateChanged)
+                    {
+                        // Propagate structural effect
+                        assert(nullptr != mShipPhysicsHandler);
+                        mShipPhysicsHandler->HandleWatertightDoorUpdated(pointIndex, watertightDoorState.IsOpen());
+
+                        // Publish state change
+                        mGameEventHandler->OnWatertightDoorUpdated(
+                            ElectricalElementId(mShipId, sinkElementIndex),
+                            watertightDoorState.IsOpen());
 
                         // Show notifications
                         if (gameParameters.DoShowElectricalNotifications)
@@ -1845,121 +2076,15 @@ void ElectricalElements::UpdateSinks(
                         }
                     }
                 }
+
+                break;
             }
 
-            //
-            // 2) Converge CurrentForce towards TargetForce and eventually act on particle
-            //
-            // We run this also when deleted, as it's part of our wind-down state machine
-            //
-
-            // Converge current force
-            waterPumpState.CurrentNormalizedForce +=
-                (waterPumpState.TargetNormalizedForce - waterPumpState.CurrentNormalizedForce)
-                * 0.03f; // Convergence rate, magic number
-            if (std::abs(waterPumpState.CurrentNormalizedForce - waterPumpState.TargetNormalizedForce) < 0.001f)
+            default:
             {
-                waterPumpState.CurrentNormalizedForce = waterPumpState.TargetNormalizedForce;
+                assert(false);
+                break;
             }
-
-            // Calculate force
-            float waterPumpForce = waterPumpState.CurrentNormalizedForce * waterPumpState.NominalForce;
-            if (waterPumpForce == 0.0f) // Ensure -0.0 is +0.0, or else CompositeIsLeaking's union trick won't work
-            {
-                waterPumpForce = 0.0f;
-            }
-
-            // Apply force to point
-            points.GetLeakingComposite(pointIndex).LeakingSources.WaterPumpForce = waterPumpForce;
-
-            // Eventually publish force change notification
-            if (waterPumpState.CurrentNormalizedForce != waterPumpState.LastPublishedNormalizedForce)
-            {
-                // Notify
-                mGameEventHandler->OnWaterPumpUpdated(
-                    ElectricalElementId(mShipId, sinkElementIndex),
-                    waterPumpState.CurrentNormalizedForce);
-
-                // Remember last-published value
-                waterPumpState.LastPublishedNormalizedForce = waterPumpState.CurrentNormalizedForce;
-            }
-
-            break;
-        }
-
-        case ElectricalMaterial::ElectricalElementType::WatertightDoor:
-        {
-            //
-            // Run operating state machine (connectivity, operating temperature)
-            //
-
-            if (!IsDeleted(sinkElementIndex))
-            {
-                auto const pointIndex = GetPointIndex(sinkElementIndex);
-
-                auto & watertightDoorState = mElementStateBuffer[sinkElementIndex].WatertightDoor;
-
-                bool hasStateChanged = false;
-                if (watertightDoorState.IsActivated)
-                {
-                    // Currently it's activated...
-                    // ...see if it stops being activated
-                    if (!isConnectedToPower
-                        || !mMaterialOperatingTemperaturesBuffer[sinkElementIndex].IsInRange(points.GetTemperature(pointIndex)))
-                    {
-                        //
-                        // State change: stop operating
-                        //
-
-                        watertightDoorState.IsActivated = false;
-
-                        hasStateChanged = true;
-                    }
-                }
-                else
-                {
-                    // Currently it's not activated...
-                    // ...see if it becomes activated
-                    if (isConnectedToPower
-                        && mMaterialOperatingTemperaturesBuffer[sinkElementIndex].IsBackInRange(points.GetTemperature(pointIndex)))
-                    {
-                        //
-                        // State change: start operating
-                        //
-
-                        watertightDoorState.IsActivated = true;
-
-                        hasStateChanged = true;
-                    }
-                }
-
-                if (hasStateChanged)
-                {
-                    // Propagate structural effect
-                    assert(nullptr != mShipPhysicsHandler);
-                    mShipPhysicsHandler->HandleWatertightDoorUpdated(pointIndex, watertightDoorState.IsOpen());
-
-                    // Publish state change
-                    mGameEventHandler->OnWatertightDoorUpdated(
-                        ElectricalElementId(mShipId, sinkElementIndex),
-                        watertightDoorState.IsOpen());
-
-                    // Show notifications
-                    if (gameParameters.DoShowElectricalNotifications)
-                    {
-                        HighlightElectricalElement(sinkElementIndex, points);
-                    }
-                }
-            }
-
-            break;
-        }
-
-        default:
-        {
-            assert(false);
-            break;
-        }
         }
 
         //

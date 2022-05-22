@@ -61,6 +61,7 @@
 			+ Re-send for testing, again - !!! WITH AUTO-FOCUS ON
 			+ Bump up build
 			- Decide whether auto-focus should be on by default
+			- changelist
 
 		= Engines rearc (*)
 
@@ -976,11 +977,44 @@
 
 	= Engines rearc (*)
 		! Goal: allow controllers to control engines at a distance
-		= Connectivity update: should we do it at each frame (because of autonomous state changes), or is it enough
-		  to only do it at structure changes
-		  + Doing at structure changes: at all places where we do structure changes:
-			+ Destroy/Restore
-			+ AddConnectedElectricalElement/RemoveConnectedElectricalElement
+		+ EngineState: EngineGroup member
+		+ EngineController: EngineGroup member
+		= Connectivity update
+			= Should we do it at each frame (because of autonomous state changes), or is it enough to only do it at structure changes?
+				+ Doing at structure changes: at all places where we do structure changes:
+					+ Destroy/Restore
+					+ AddConnectedElectricalElement/RemoveConnectedElectricalElement
+			= Do UpdateEngineConductivity, populating Engine's and EngineController's group IDs
+				+ Store connectivity visit seq number in state, but clearly named
+				= For each engine_controller: if not deleted: if not visited:
+					+ Make new group ID
+					- TODO: reference point
+					+ Flood graph from this engine
+						+ Recongize elements by type
+				+ Resize member vector for groups
+					+ member vector for groups' "power", struct with RPM and ThrustMagnitude
+						+ member just to make allocation efficient
+			+ Test
+				+ QueryElement/log
+		= UpdateSinks():
+			+ Reset all groups
+				+ asm: make sure it's a fill
+			- Source loop: 
+				- Controllers update groups (maxING RPM and thrust)
+					- Move direction calculation to engine
+					- assert(have group ID)					
+			- Then, engine loop: engines update themselves, drawing from groups
+				- Update only if their engine group ID is not None
+				- Move direction calculation here				
+		- XXX transmission element
+			- Test - also exercising engine groups
+				- Make test ship
+				- QueryElement/log
+		- Cleanup:
+			- Nuke EngineController's connected engines
+				- And code that populates that at AddFactoryConnectedElectricalElement()
+			- See if it still makes sense to call Engines "EngineSink" - do they share any characteristics with sinks?
+				- Do they consume electricity?
 
 	- Material system improvements (*)
 		- Descriptions in ShipBuilder palette
