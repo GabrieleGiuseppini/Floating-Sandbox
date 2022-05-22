@@ -13,7 +13,7 @@
 
 /*
  * This class is exactly like a unique_ptr<TValue[]>, but it also
- * carries the size of the buffer.
+ * carries the size of the buffer, and implements some mathematical operators.
  */
 template<typename TValue>
 class unique_buffer
