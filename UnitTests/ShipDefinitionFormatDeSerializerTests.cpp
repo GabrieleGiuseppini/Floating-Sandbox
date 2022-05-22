@@ -62,8 +62,7 @@ TEST(ShipDefinitionFormatDeSerializerTests, ShipAttributes)
     // Write
 
     ShipDefinitionFormatDeSerializer::ShipAttributes sourceShipAttributes(
-        200,
-        14,
+        Version(200, 14, 54, 1),
         ShipSpaceSize(242, 409),
         true,
         false);
@@ -74,8 +73,10 @@ TEST(ShipDefinitionFormatDeSerializerTests, ShipAttributes)
 
     ShipDefinitionFormatDeSerializer::ShipAttributes const targetShipAttributes = ShipDefinitionFormatDeSerializer::ReadShipAttributes(buffer);
 
-    EXPECT_EQ(sourceShipAttributes.FileFSVersionMaj, targetShipAttributes.FileFSVersionMaj);
-    EXPECT_EQ(sourceShipAttributes.FileFSVersionMin, targetShipAttributes.FileFSVersionMin);
+    EXPECT_EQ(sourceShipAttributes.FileFSVersion.GetMajor(), targetShipAttributes.FileFSVersion.GetMajor());
+    EXPECT_EQ(sourceShipAttributes.FileFSVersion.GetMinor(), targetShipAttributes.FileFSVersion.GetMinor());
+    EXPECT_EQ(sourceShipAttributes.FileFSVersion.GetPatch(), targetShipAttributes.FileFSVersion.GetPatch());
+    EXPECT_EQ(sourceShipAttributes.FileFSVersion.GetBuild(), targetShipAttributes.FileFSVersion.GetBuild());
     EXPECT_EQ(sourceShipAttributes.ShipSize, targetShipAttributes.ShipSize);
     EXPECT_EQ(sourceShipAttributes.HasTextureLayer, targetShipAttributes.HasTextureLayer);
     EXPECT_EQ(sourceShipAttributes.HasElectricalLayer, targetShipAttributes.HasElectricalLayer);
@@ -200,7 +201,7 @@ protected:
         DeSerializationBuffer<BigEndianess> & buffer)
     {
         std::unique_ptr<StructuralLayerData> targetStructuralLayer;
-        ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(1, 16, sourceStructuralLayer.Buffer.Size, false, false);
+        ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(Version(1, 16, 200, 4), sourceStructuralLayer.Buffer.Size, false, false);
         ShipDefinitionFormatDeSerializer::ReadStructuralLayer(
             buffer,
             shipAttributes,
@@ -451,8 +452,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerTests, UnrecognizedMateri
     {
         std::unique_ptr<StructuralLayerData> targetStructuralLayer;
         ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(
-            Version::CurrentVersion().GetMajor(),
-            Version::CurrentVersion().GetMinor(),
+            Version::CurrentVersion(),
             sourceStructuralLayer.Buffer.Size, false, false);
         ShipDefinitionFormatDeSerializer::ReadStructuralLayer(
             buffer,
@@ -469,7 +469,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerTests, UnrecognizedMateri
     }
 }
 
-TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerTests, UnrecognizedMaterial_LaterVersion)
+TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerTests, UnrecognizedMaterial_LaterVersion_Major)
 {
     StructuralMaterial unrecognizedMaterial = StructuralMaterial(
         rgbColor(0x12, 0x34, 0x56),
@@ -491,13 +491,13 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerTests, UnrecognizedMateri
     // Verify exception
     //
 
+    Version const fileFSVersion(Version::CurrentVersion().GetMajor() + 1, 0, 0, 0);
+
     try
     {
         std::unique_ptr<StructuralLayerData> targetStructuralLayer;
         ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(
-            2999,
-            4,
-            sourceStructuralLayer.Buffer.Size, false, false);
+            fileFSVersion, sourceStructuralLayer.Buffer.Size, false, false);
         ShipDefinitionFormatDeSerializer::ReadStructuralLayer(
             buffer,
             shipAttributes,
@@ -510,7 +510,56 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerTests, UnrecognizedMateri
     {
         EXPECT_EQ(exc.MessageId, UserGameException::MessageIdType::LoadShipMaterialNotFoundLaterVersion);
         ASSERT_FALSE(exc.Parameters.empty());
-        EXPECT_EQ(exc.Parameters[0], "2999.4");
+        EXPECT_EQ(exc.Parameters[0], fileFSVersion.ToMajorMinorPatchString());
+    }
+}
+
+TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerTests, UnrecognizedMaterial_LaterVersion_Patch)
+{
+    StructuralMaterial unrecognizedMaterial = StructuralMaterial(
+        rgbColor(0x12, 0x34, 0x56),
+        "Unrecognized Material",
+        rgbaColor(0x12, 0x34, 0x56, 0xff));
+
+    // Populate structural layer
+    StructuralLayerData sourceStructuralLayer(ShipSpaceSize(10, 12));
+    for (size_t i = 0; i < sourceStructuralLayer.Buffer.Size.GetLinearSize(); ++i)
+    {
+        sourceStructuralLayer.Buffer.Data[i].Material = &unrecognizedMaterial;
+    }
+
+    // Serialize
+    DeSerializationBuffer<BigEndianess> buffer(256);
+    ShipDefinitionFormatDeSerializer::AppendStructuralLayer(sourceStructuralLayer, buffer);
+
+    //
+    // Verify exception
+    //
+
+    Version const fileFSVersion(
+        Version::CurrentVersion().GetMajor(), 
+        Version::CurrentVersion().GetMinor(), 
+        Version::CurrentVersion().GetPatch() + 1, 
+        Version::CurrentVersion().GetBuild());
+
+    try
+    {
+        std::unique_ptr<StructuralLayerData> targetStructuralLayer;
+        ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(
+            fileFSVersion, sourceStructuralLayer.Buffer.Size, false, false);
+        ShipDefinitionFormatDeSerializer::ReadStructuralLayer(
+            buffer,
+            shipAttributes,
+            TestMaterialMap,
+            targetStructuralLayer);
+
+        FAIL();
+    }
+    catch (UserGameException const & exc)
+    {
+        EXPECT_EQ(exc.MessageId, UserGameException::MessageIdType::LoadShipMaterialNotFoundLaterVersion);
+        ASSERT_FALSE(exc.Parameters.empty());
+        EXPECT_EQ(exc.Parameters[0], fileFSVersion.ToMajorMinorPatchString());
     }
 }
 
@@ -542,7 +591,7 @@ protected:
         DeSerializationBuffer<BigEndianess> & buffer)
     {
         std::unique_ptr<ElectricalLayerData> targetElectricalLayer;
-        ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(1, 16, sourceElectricalLayer.Buffer.Size, false, false);
+        ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(Version::CurrentVersion(), sourceElectricalLayer.Buffer.Size, false, false);
         ShipDefinitionFormatDeSerializer::ReadElectricalLayer(
             buffer,
             shipAttributes,
@@ -847,9 +896,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerTests, UnrecognizedMateri
     {
         std::unique_ptr<ElectricalLayerData> targetElectricalLayer;
         ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(
-            Version::CurrentVersion().GetMajor(),
-            Version::CurrentVersion().GetMinor(),
-            sourceElectricalLayer.Buffer.Size, false, false);
+            Version::CurrentVersion(), sourceElectricalLayer.Buffer.Size, false, false);
         ShipDefinitionFormatDeSerializer::ReadElectricalLayer(
             buffer,
             shipAttributes,
@@ -865,7 +912,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerTests, UnrecognizedMateri
     }
 }
 
-TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerTests, UnrecognizedMaterial_LaterVersion)
+TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerTests, UnrecognizedMaterial_LaterVersion_Major)
 {
     ElectricalMaterial unrecognizedMaterial = ElectricalMaterial(
         rgbColor(0x12, 0x34, 0x56),
@@ -888,13 +935,13 @@ TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerTests, UnrecognizedMateri
     // Verify exception
     //
 
+    Version const fileFSVersion(Version::CurrentVersion().GetMajor() + 1, 0, 0, 0);
+
     try
     {
         std::unique_ptr<ElectricalLayerData> targetElectricalLayer;
         ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(
-            2999,
-            4,
-            sourceElectricalLayer.Buffer.Size, false, false);
+            fileFSVersion, sourceElectricalLayer.Buffer.Size, false, false);
         ShipDefinitionFormatDeSerializer::ReadElectricalLayer(
             buffer,
             shipAttributes,
@@ -907,7 +954,57 @@ TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerTests, UnrecognizedMateri
     {
         EXPECT_EQ(exc.MessageId, UserGameException::MessageIdType::LoadShipMaterialNotFoundLaterVersion);
         ASSERT_FALSE(exc.Parameters.empty());
-        EXPECT_EQ(exc.Parameters[0], "2999.4");
+        EXPECT_EQ(exc.Parameters[0], fileFSVersion.ToMajorMinorPatchString());
+    }
+}
+
+TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerTests, UnrecognizedMaterial_LaterVersion_Patch)
+{
+    ElectricalMaterial unrecognizedMaterial = ElectricalMaterial(
+        rgbColor(0x12, 0x34, 0x56),
+        "Unrecognized Material",
+        rgbColor(0x12, 0x34, 0x56),
+        false);
+
+    // Populate electrical layer
+    ElectricalLayerData sourceElectricalLayer(ShipSpaceSize(10, 12));
+    for (size_t i = 0; i < sourceElectricalLayer.Buffer.Size.GetLinearSize(); ++i)
+    {
+        sourceElectricalLayer.Buffer.Data[i] = ElectricalElement(&unrecognizedMaterial, NoneElectricalElementInstanceIndex);
+    }
+
+    // Serialize
+    DeSerializationBuffer<BigEndianess> buffer(256);
+    ShipDefinitionFormatDeSerializer::AppendElectricalLayer(sourceElectricalLayer, buffer);
+
+    //
+    // Verify exception
+    //
+
+    Version const fileFSVersion(
+        Version::CurrentVersion().GetMajor(),
+        Version::CurrentVersion().GetMinor(),
+        Version::CurrentVersion().GetPatch() + 1,
+        Version::CurrentVersion().GetBuild());
+
+    try
+    {
+        std::unique_ptr<ElectricalLayerData> targetElectricalLayer;
+        ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(
+            fileFSVersion, sourceElectricalLayer.Buffer.Size, false, false);
+        ShipDefinitionFormatDeSerializer::ReadElectricalLayer(
+            buffer,
+            shipAttributes,
+            TestMaterialMap,
+            targetElectricalLayer);
+
+        FAIL();
+    }
+    catch (UserGameException const & exc)
+    {
+        EXPECT_EQ(exc.MessageId, UserGameException::MessageIdType::LoadShipMaterialNotFoundLaterVersion);
+        ASSERT_FALSE(exc.Parameters.empty());
+        EXPECT_EQ(exc.Parameters[0], fileFSVersion.ToMajorMinorPatchString());
     }
 }
 
@@ -938,7 +1035,7 @@ protected:
         DeSerializationBuffer<BigEndianess> & buffer)
     {
         std::unique_ptr<RopesLayerData> targetRopesLayer;
-        ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(1, 16, { 242, 242 }, false, false);
+        ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(Version::CurrentVersion(), {242, 242}, false, false);
         ShipDefinitionFormatDeSerializer::ReadRopesLayer(
             buffer,
             shipAttributes,
@@ -1021,9 +1118,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_RopesLayerTests, UnrecognizedMaterial_Sa
     {
         std::unique_ptr<RopesLayerData> targetRopesLayer;
         ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(
-            Version::CurrentVersion().GetMajor(),
-            Version::CurrentVersion().GetMinor(),
-            { 1, 1 }, false, false);
+            Version::CurrentVersion(), { 1, 1 }, false, false);
         ShipDefinitionFormatDeSerializer::ReadRopesLayer(
             buffer,
             shipAttributes,
@@ -1039,7 +1134,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_RopesLayerTests, UnrecognizedMaterial_Sa
     }
 }
 
-TEST_F(ShipDefinitionFormatDeSerializer_RopesLayerTests, UnrecognizedMaterial_LaterVersion)
+TEST_F(ShipDefinitionFormatDeSerializer_RopesLayerTests, UnrecognizedMaterial_LaterVersion_Major)
 {
     StructuralMaterial unrecognizedMaterial = StructuralMaterial(
         rgbColor(0x12, 0x34, 0x56),
@@ -1062,13 +1157,13 @@ TEST_F(ShipDefinitionFormatDeSerializer_RopesLayerTests, UnrecognizedMaterial_La
     // Verify exception
     //
 
+    Version const fileFSVersion(Version::CurrentVersion().GetMajor() + 1, 0, 0, 0);
+
     try
     {
         std::unique_ptr<RopesLayerData> targetRopesLayer;
         ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(
-            2999,
-            4,
-            { 1, 1 }, false, false);
+            fileFSVersion, { 1, 1 }, false, false);
         ShipDefinitionFormatDeSerializer::ReadRopesLayer(
             buffer,
             shipAttributes,
@@ -1081,6 +1176,56 @@ TEST_F(ShipDefinitionFormatDeSerializer_RopesLayerTests, UnrecognizedMaterial_La
     {
         EXPECT_EQ(exc.MessageId, UserGameException::MessageIdType::LoadShipMaterialNotFoundLaterVersion);
         ASSERT_FALSE(exc.Parameters.empty());
-        EXPECT_EQ(exc.Parameters[0], "2999.4");
+        EXPECT_EQ(exc.Parameters[0], fileFSVersion.ToMajorMinorPatchString());
+    }
+}
+
+TEST_F(ShipDefinitionFormatDeSerializer_RopesLayerTests, UnrecognizedMaterial_LaterVersion_Patch)
+{
+    StructuralMaterial unrecognizedMaterial = StructuralMaterial(
+        rgbColor(0x12, 0x34, 0x56),
+        "Unrecognized Material",
+        rgbaColor(0x12, 0x34, 0x56, 0xff));
+
+    // Populate ropes layer
+    RopesLayerData sourceRopesLayer;
+    sourceRopesLayer.Buffer.EmplaceBack(
+        ShipSpaceCoordinates(0, 1),
+        ShipSpaceCoordinates(90, 91),
+        &unrecognizedMaterial,
+        rgbaColor(0x02, 0x11, 0x90, 0xfe));
+
+    // Serialize
+    DeSerializationBuffer<BigEndianess> buffer(256);
+    ShipDefinitionFormatDeSerializer::AppendRopesLayer(sourceRopesLayer, buffer);
+
+    //
+    // Verify exception
+    //
+
+    Version const fileFSVersion(
+        Version::CurrentVersion().GetMajor(),
+        Version::CurrentVersion().GetMinor(),
+        Version::CurrentVersion().GetPatch() + 1,
+        Version::CurrentVersion().GetBuild());
+
+    try
+    {
+        std::unique_ptr<RopesLayerData> targetRopesLayer;
+        ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(
+            fileFSVersion, { 1, 1 }, false, false);
+        ShipDefinitionFormatDeSerializer::ReadRopesLayer(
+            buffer,
+            shipAttributes,
+            TestMaterialMap,
+            targetRopesLayer);
+
+        FAIL();
+    }
+    catch (UserGameException const & exc)
+    {
+        EXPECT_EQ(exc.MessageId, UserGameException::MessageIdType::LoadShipMaterialNotFoundLaterVersion);
+        ASSERT_FALSE(exc.Parameters.empty());
+        EXPECT_EQ(exc.Parameters[0], fileFSVersion.ToMajorMinorPatchString());
     }
 }

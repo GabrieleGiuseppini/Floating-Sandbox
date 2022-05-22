@@ -71,20 +71,17 @@ private:
 
     struct ShipAttributes
     {
-        int FileFSVersionMaj;
-        int FileFSVersionMin;
+        Version FileFSVersion;
         ShipSpaceSize ShipSize;
         bool HasTextureLayer;
         bool HasElectricalLayer;
 
         ShipAttributes(
-            int fileFSVersionMaj,
-            int fileFSVersionMin,
+            Version fileFSVersion,
             ShipSpaceSize shipSize,
             bool hasTextureLayer,
             bool hasElectricalLayer)
-            : FileFSVersionMaj(fileFSVersionMaj)
-            , FileFSVersionMin(fileFSVersionMin)
+            : FileFSVersion(fileFSVersion)
             , ShipSize(shipSize)
             , HasTextureLayer(hasTextureLayer)
             , HasElectricalLayer(hasElectricalLayer)
@@ -114,7 +111,8 @@ private:
         // Numeric values are serialized in ship files, changing them will result
         // in ship files being un-deserializable!
 
-        FSVersion = MAKE_TAG('F', 'S', 'V', '1'),
+        FSVersion1 = MAKE_TAG('F', 'S', 'V', '1'),
+        FSVersion2 = MAKE_TAG('F', 'S', 'V', '2'),
         ShipSize = MAKE_TAG('S', 'S', 'Z', '1'),
         HasTextureLayer = MAKE_TAG('H', 'T', 'X', '1'),
         HasElectricalLayer = MAKE_TAG('H', 'E', 'L', '1'),
@@ -365,16 +363,19 @@ private:
     friend class ShipDefinitionFormatDeSerializer_StructuralLayerTests_MidSize_Heterogeneous_Test;
     friend class ShipDefinitionFormatDeSerializer_StructuralLayerTests_Nulls_Test;
     friend class ShipDefinitionFormatDeSerializer_StructuralLayerTests_UnrecognizedMaterial_SameVersion_Test;
-    friend class ShipDefinitionFormatDeSerializer_StructuralLayerTests_UnrecognizedMaterial_LaterVersion_Test;
+    friend class ShipDefinitionFormatDeSerializer_StructuralLayerTests_UnrecognizedMaterial_LaterVersion_Major_Test;
+    friend class ShipDefinitionFormatDeSerializer_StructuralLayerTests_UnrecognizedMaterial_LaterVersion_Patch_Test;
     friend class ShipDefinitionFormatDeSerializer_ElectricalLayerTests;
     friend class ShipDefinitionFormatDeSerializer_ElectricalLayerTests_MidSize_NonInstanced_Test;
     friend class ShipDefinitionFormatDeSerializer_ElectricalLayerTests_MidSize_Instanced_Test;
     friend class ShipDefinitionFormatDeSerializer_ElectricalLayerTests_Nulls_Test;
     friend class ShipDefinitionFormatDeSerializer_ElectricalLayerTests_ElectricalPanel_Test;
     friend class ShipDefinitionFormatDeSerializer_ElectricalLayerTests_UnrecognizedMaterial_SameVersion_Test;
-    friend class ShipDefinitionFormatDeSerializer_ElectricalLayerTests_UnrecognizedMaterial_LaterVersion_Test;
+    friend class ShipDefinitionFormatDeSerializer_ElectricalLayerTests_UnrecognizedMaterial_LaterVersion_Major_Test;
+    friend class ShipDefinitionFormatDeSerializer_ElectricalLayerTests_UnrecognizedMaterial_LaterVersion_Patch_Test;
     friend class ShipDefinitionFormatDeSerializer_RopesLayerTests;
     friend class ShipDefinitionFormatDeSerializer_RopesLayerTests_TwoElements_Test;
     friend class ShipDefinitionFormatDeSerializer_RopesLayerTests_UnrecognizedMaterial_SameVersion_Test;
-    friend class ShipDefinitionFormatDeSerializer_RopesLayerTests_UnrecognizedMaterial_LaterVersion_Test;
+    friend class ShipDefinitionFormatDeSerializer_RopesLayerTests_UnrecognizedMaterial_LaterVersion_Major_Test;
+    friend class ShipDefinitionFormatDeSerializer_RopesLayerTests_UnrecognizedMaterial_LaterVersion_Patch_Test;
 };

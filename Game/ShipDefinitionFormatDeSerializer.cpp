@@ -344,8 +344,7 @@ void ShipDefinitionFormatDeSerializer::Save(
     //
 
     ShipAttributes const shipAttributes = ShipAttributes(
-        APPLICATION_VERSION_MAJOR,
-        APPLICATION_VERSION_MINOR,
+        Version::CurrentVersion(),
         shipDefinition.StructuralLayer.Buffer.Size,
         shipDefinition.TextureLayer != nullptr,
         shipDefinition.ElectricalLayer != nullptr);
@@ -551,13 +550,15 @@ size_t ShipDefinitionFormatDeSerializer::AppendShipAttributes(
     // FS version
     {
         // Tag and size
-        buffer.Append(static_cast<std::uint32_t>(ShipAttributesTagType::FSVersion));
+        buffer.Append(static_cast<std::uint32_t>(ShipAttributesTagType::FSVersion2));
         size_t const valueSizeIndex = buffer.ReserveAndAdvance<std::uint32_t>();
 
         size_t valueSize = 0;
 
-        valueSize += buffer.Append(static_cast<uint16_t>(shipAttributes.FileFSVersionMaj));
-        valueSize += buffer.Append(static_cast<uint16_t>(shipAttributes.FileFSVersionMin));
+        valueSize += buffer.Append(static_cast<uint16_t>(shipAttributes.FileFSVersion.GetMajor()));
+        valueSize += buffer.Append(static_cast<uint16_t>(shipAttributes.FileFSVersion.GetMinor()));
+        valueSize += buffer.Append(static_cast<uint16_t>(shipAttributes.FileFSVersion.GetPatch()));
+        valueSize += buffer.Append(static_cast<uint16_t>(shipAttributes.FileFSVersion.GetBuild()));
 
         // Store size
         buffer.WriteAt(static_cast<std::uint32_t>(valueSize), valueSizeIndex);
@@ -1309,12 +1310,12 @@ std::ifstream ShipDefinitionFormatDeSerializer::OpenFileForRead(std::filesystem:
 void ShipDefinitionFormatDeSerializer::ThrowMaterialNotFound(ShipAttributes const & shipAttributes)
 {
     auto const currentVersion = Version::CurrentVersion();
-    if (std::tuple(currentVersion.GetMajor(), currentVersion.GetMinor())
-        < std::tuple(shipAttributes.FileFSVersionMaj, shipAttributes.FileFSVersionMin))
+    if (currentVersion < shipAttributes.FileFSVersion)
     {
+        // File was created with newer version
         throw UserGameException(
             UserGameException::MessageIdType::LoadShipMaterialNotFoundLaterVersion,
-            { std::to_string(shipAttributes.FileFSVersionMaj) + "." + std::to_string(shipAttributes.FileFSVersionMin) });
+            { shipAttributes.FileFSVersion.ToMajorMinorPatchString() });
     }
     else
     {
@@ -1410,7 +1411,7 @@ void ShipDefinitionFormatDeSerializer::ReadFileHeader(DeSerializationBuffer<BigE
 
 ShipDefinitionFormatDeSerializer::ShipAttributes ShipDefinitionFormatDeSerializer::ReadShipAttributes(DeSerializationBuffer<BigEndianess> const & buffer)
 {
-    std::optional<std::tuple<std::uint16_t, std::uint16_t>> fsVersion;
+    std::optional<Version> fsVersion;
     std::optional<ShipSpaceSize> shipSize;
     std::optional<bool> hasTextureLayer;
     std::optional<bool> hasElectricalLayer;
@@ -1423,15 +1424,34 @@ ShipDefinitionFormatDeSerializer::ShipAttributes ShipDefinitionFormatDeSerialize
 
         switch (sectionHeader.Tag)
         {
-            case static_cast<uint32_t>(ShipAttributesTagType::FSVersion):
+            case static_cast<uint32_t>(ShipAttributesTagType::FSVersion1): // Obsolete
             {
-                std::uint16_t versionMaj;
-                offset += buffer.ReadAt<std::uint16_t>(offset, versionMaj);
+                std::uint16_t versionMajor;
+                offset += buffer.ReadAt<std::uint16_t>(offset, versionMajor);
 
-                std::uint16_t versionMin;
-                offset += buffer.ReadAt<std::uint16_t>(offset, versionMin);
+                std::uint16_t versionMinor;
+                offset += buffer.ReadAt<std::uint16_t>(offset, versionMinor);
 
-                fsVersion.emplace(std::make_tuple(versionMaj, versionMin));
+                fsVersion.emplace(versionMajor, versionMinor, 0, 0);
+
+                break;
+            }
+
+            case static_cast<uint32_t>(ShipAttributesTagType::FSVersion2):
+            {
+                std::uint16_t versionMajor;
+                offset += buffer.ReadAt<std::uint16_t>(offset, versionMajor);
+
+                std::uint16_t versionMinor;
+                offset += buffer.ReadAt<std::uint16_t>(offset, versionMinor);
+
+                std::uint16_t versionPatch;
+                offset += buffer.ReadAt<std::uint16_t>(offset, versionPatch);
+
+                std::uint16_t versionBuild;
+                offset += buffer.ReadAt<std::uint16_t>(offset, versionBuild);
+
+                fsVersion.emplace(versionMajor, versionMinor, versionPatch, versionBuild);
 
                 break;
             }
@@ -1500,8 +1520,7 @@ ShipDefinitionFormatDeSerializer::ShipAttributes ShipDefinitionFormatDeSerialize
     }
 
     return ShipAttributes(
-        std::get<0>(*fsVersion),
-        std::get<1>(*fsVersion),
+        *fsVersion,
         *shipSize,
         *hasTextureLayer,
         *hasElectricalLayer);

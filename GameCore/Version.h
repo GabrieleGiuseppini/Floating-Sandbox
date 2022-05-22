@@ -124,6 +124,16 @@ public:
         return mMinor;
     }
 
+    int GetPatch() const
+    {
+        return mPatch;
+    }
+
+    int GetBuild() const
+    {
+        return mBuild;
+    }
+
     static Version FromString(std::string const & str)
     {
         static std::regex VersionRegex(R"(^\s*(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?\s*$)");
