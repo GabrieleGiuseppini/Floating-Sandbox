@@ -35,18 +35,22 @@
 		+ Better sparkles shader
 			+ Make more transparent @ tail
 
+		+ Fix strings @ WaterlineAnalysisDialog
+			+ Trim "~0^A0" on old Dell
+				+ Test on old Dell
+
 		= Continuous Auto-focus (*)
-			- Send for testing, w/auto-focus being on by default
+			+ Send for testing, w/auto-focus being on by default
+			+ Re-send for testing, again - !!! WITH AUTO-FOCUS ON
+			+ Bump up build
 			- Decide whether auto-focus should be on by default
 
 		- Fix: load 1.17.2 ship in 1.17.1: "non-standard materials/non-release version"
-			- Need to also include path in check at ShipDefinitionFormatDeSerializer.cpp:1312
-
-		- Fix strings @ WaterlineAnalysisDialog
-			= Trim "~0^A0" on old Dell
-				- Test on old Dell
+			- Need to also include patch in check at ShipDefinitionFormatDeSerializer.cpp:1312
+				- Shouldn't we then include the entire version, given that we're at it?
 
 		- Check if template png is ok
+			- Just load it and see holes
 
 		- Jet engines @ Material system improvements (*)
 
@@ -891,162 +895,6 @@
 
 	- Fog
 		- Requires post-processing work
-
-	= Continuous auto-focus (*)
-		! Spec:
-			- Orchestrated by GameController's ViewManager by taking "optimal" AABB from World (which takes union of "optimal" AABB's from each ship)
-			  and giving it to RenderContext, which adjusts ViewModel based on it				
-				- At each simulation step
-			- Preferences setting for auto-focus (default is on)
-				- Also toggable at "Controls" menu
-			- Also works as "auto-focus at load"
-				- Or at least, funcs that calc zoom and pan based on AABBs is reused (by same ViewManager) in order to calc auto-focus at load
-			- Full spec:
-				- Orchestrated by ViewManager, member of GameController
-					- Is given (externally-owned) references to RenderContext& and NotificationLayer&, managing all communication to these wrt view params
-					- Owns view parameter smoothers						
-					- GameController forwards view parameter changes to it
-						- And ViewManager orchestrates talk with its own smoothers
-				- Given resulting AABBs by GameController at own Update(), called after World::Update
-				- Communicates activation and (also unsolicited) de-activation via new event handler, subscribed by:
-					- MainFrame for option
-					- GameController for notification texture
-						- Can't do it itself via own NofificationLayer?
-				- When user changes view params, we add offset to cumulative offset, which is then added to final result of auto-focus
-					- So if user e.g. zooms out, the whole auto-focus is zoomed out
-		+ Impl:
-			+ Phase 1: ViewManager extraction
-				+ Parameter smoothers: simplify by simply using convergence algo, coeff between 0.05 and 0.1
-			+ Phase 2: rough auto-focus
-				+ Make it so that World may be asked for AABBSet right after adding ship
-				+ ViewManager::Update takes AABBSet
-				+ AABBSet/visible world math
-			+ Phase 3: improve auto-focus
-				+ Try with continuous adjustments
-				+ Calculations by ViewModel are on view model params being smoothed towards target; may lead to ghost offenses
-					+ Need to make calculations based on target values; may test with "Immediate"
-				+ See if can use tolerance to make adjustments less continuous
-					X Decide if user may select tolerance - MAY BE NOT
-				+ Simplify auto-zoom and pan calc's
-			+ Phase 4: user's offsets
-				! Cannot user smoothers' values when calculating auto-focus, unless we downscale them by user's offsets - which could have changed
-					! This is because we want to calculate auto-focus and panning on the "screen" without user's offsets
-				+ Need to store auto-focus zoom and camera pos - without user's offsets - and use those for calculating auto-focus
-					+ Need to initialize them at auto-focus enable - with current smoothers' values
-				+ Double-check math
-				+ Fix user offset pile-up issue everywhere
-					+ Do at update, eroding along direction, without crossing 1.0/origin
-						+ Pan
-							+ Erode x and y independently
-						+ Zoom
-				+ Autozoom-on-load:
-					+ "Auto-zoom on load" setting moves to ViewManager
-					+ ViewManager::OnNewShip(AABB...): if "auto-zoom on load" is on and no auto-focus: invoke AutoFocus(AABB...)
-						+ Fix invocation without auto-focus session
-							+ Just plain calc zoom and pan
-							+ Fix issue: subsequent announcement generates resize hence OnViewModelUpdated() sets smoothers to current RenderContext values,
-							  which are still way before convergence
-								+ Used to work because of auto-focus doing SetValueImmediate()
-								+ Reclamp
-						+ Reset user offsets at FocusOnShip(), ResetView()
-						+ Invoke from GameController
-							+ See why first load doesn't focus
-							+ Decide if we still want "ship reload" to NOT do auto-zoom
-								+ Also decide whether we still don't want first load to do auto-zoom
-								+ Test by turning off auto-focus
-								+ Fix GameController accordingly
-					+ ViewManager::AutoFocus: if auto-focus not set: invoke (private) DoAutoFocus() [; else: pointless as subsequent Update() will invoke DoAutoFocus()]
-						+ DoAutoFocus(AABB...) contains implementation of zoom+pan
-							+ Invoked also by Update()
-			+ Clouds: better effect: clouds' NDC y should flatten quicker for lower CAM y - now it flattens linearly 
-				+ Test storm
-				+ Exponential: ste precalc'd member(s) @ Clouds::UploadStart()
-			+ Test with auto-zoom filling-in larger sub-window
-			+ Try other auto-focus algo
-				+ 1: calc zoom as min zoom to ensure four quadrants
-				+ 2: calc pan to center that
-				+ New current *targets* of user offsets
-					+ Or better: use SessionData->CurrentAutoFocusXXX
-				X Try using current *ephemeral value* instead of targets
-				+ If OK:
-					+ Cleanup
-					+ Update explanation/comment
-			X Test faster convergence
-			+ Do test w/goodyear
-			+ Phase 5: enabling/disabling
-				+ Main UI
-					+ "Auto-Focus on Load"
-						+ UIPreferencesManager
-						+ Checkbox menu item 
-							+ Tells to UIPreferencesManager
-						+ PreferencesDialog
-							+ Tells to UIPreferencesManager
-						+ MainFrame::Reconciliate
-					+ "Continuous Auto-Focus"
-						+ UIPreferencesManager
-						+ Checkbox menu item 
-							+ Tells to UIPreferencesManager
-							+ Then calls MainFrame::Reconciliate()
-						+ PreferencesDialog
-							+ Tells to UIPreferencesManager
-						+ MainFrame::Reconciliate
-						+ ESC to exit it
-							+ Invoke Reconciliate()
-					+ "Reset View"
-					+ Reset view:
-						+ Smooth
-						+ Nuke FocusOnShip
-						+ ResetView->...->ViewManager::ResetView
-							+ If !auto-focus:
-								FocusOnShip
-							+ Else:
-								zero offsets
-							+ Leave ViewManager::FocusOnShip
-					+ Test:
-						+ Save of "Auto-Focus on Load"
-						+ Save of "Continuous Auto-Focus"
-				+ NotificationLayer
-					+ Texture
-					+ TextureLayer
-					+ Pass NotificationLayer& to ViewManager::cctor
-					+ ViewManager toggling it
-					+ Test: at startup, honors saved value
-						+ Off
-						+ On
-			+ Fix "pulsating zoom" issue
-				+ Do more tests and see if really perfection
-				+ If perfection:
-					+ Cleanup
-					+ Test with zoom first, like it used to be
-			+ Thanos fix
-			+ Phase 6: tuning
-				+ Immediate pan: done smoothly in all cases?
-				+ See if need different zoom and pan speeds, for "focus on ship" case
-				X Try stateful threshold for cam Y; once through, no threshold
-					X At least we damp initial waves
-				+ Play with threshold algos
-					+ CameraY Smoothstep route
-						+ Test based on NDC (smoothstep on NDC fraction) rather than world
-							+ Commit first
-				+ If not ok: nuke threshold code
-					+ But do keep updating mAutoFocus->CurrentXXX
-			+ Remove every-other-frame thing
-			+ Test for user offset accumulation problem, which is due to calculated pan being "too much", so user offset has to first counterbalance that before being able to make a difference:
-				+ Clamp auto-focus only, *then* continue
-			+ Cleanup:
-				+ See if can nuke ParameterSmoother::IsSmoothing
-				+ Move focus and pan calc'n out so may be reused by CenterOnShip
-				+ See if can nuke local variables for "newAutoFocusXXX" and use mAutoFocus->CurrrentXXX instead
-				+ See if still need all ViewModel methods (World<->Ndc)
-				+ Icon				
-				+ Take care of initial auto-zoom
-			+ See if can do AutoFocus once every N frames
-		+ Check if we were updating smoothers during pause
-		+ Tests:
-			+ Loading ship which has no frontiers: check behavior for all combinations of autofocus/autozoom
-			+ Load under pause
-			- See perf impact wrt 1.17.2
-				- Also see perf impact on old Dell
 
 	- Different backgrounds: use keys to switch between a dock, cliffs, open ocean, ice field, etc.
 
@@ -3988,6 +3836,160 @@ IF WX:
 			+ Upon Effective?/AmbientLightIntensity change *AND* upon change of this new render setting: set effective ambient light intensity
 		+ Test
 		+ changelist
+	+ Continuous auto-focus (*)
+		! Spec:
+			- Orchestrated by GameController's ViewManager by taking "optimal" AABB from World (which takes union of "optimal" AABB's from each ship)
+			  and giving it to RenderContext, which adjusts ViewModel based on it				
+				- At each simulation step
+			- Preferences setting for auto-focus (default is on)
+				- Also toggable at "Controls" menu
+			- Also works as "auto-focus at load"
+				- Or at least, funcs that calc zoom and pan based on AABBs is reused (by same ViewManager) in order to calc auto-focus at load
+			- Full spec:
+				- Orchestrated by ViewManager, member of GameController
+					- Is given (externally-owned) references to RenderContext& and NotificationLayer&, managing all communication to these wrt view params
+					- Owns view parameter smoothers						
+					- GameController forwards view parameter changes to it
+						- And ViewManager orchestrates talk with its own smoothers
+				- Given resulting AABBs by GameController at own Update(), called after World::Update
+				- Communicates activation and (also unsolicited) de-activation via new event handler, subscribed by:
+					- MainFrame for option
+					- GameController for notification texture
+						- Can't do it itself via own NofificationLayer?
+				- When user changes view params, we add offset to cumulative offset, which is then added to final result of auto-focus
+					- So if user e.g. zooms out, the whole auto-focus is zoomed out
+		+ Impl:
+			+ Phase 1: ViewManager extraction
+				+ Parameter smoothers: simplify by simply using convergence algo, coeff between 0.05 and 0.1
+			+ Phase 2: rough auto-focus
+				+ Make it so that World may be asked for AABBSet right after adding ship
+				+ ViewManager::Update takes AABBSet
+				+ AABBSet/visible world math
+			+ Phase 3: improve auto-focus
+				+ Try with continuous adjustments
+				+ Calculations by ViewModel are on view model params being smoothed towards target; may lead to ghost offenses
+					+ Need to make calculations based on target values; may test with "Immediate"
+				+ See if can use tolerance to make adjustments less continuous
+					X Decide if user may select tolerance - MAY BE NOT
+				+ Simplify auto-zoom and pan calc's
+			+ Phase 4: user's offsets
+				! Cannot user smoothers' values when calculating auto-focus, unless we downscale them by user's offsets - which could have changed
+					! This is because we want to calculate auto-focus and panning on the "screen" without user's offsets
+				+ Need to store auto-focus zoom and camera pos - without user's offsets - and use those for calculating auto-focus
+					+ Need to initialize them at auto-focus enable - with current smoothers' values
+				+ Double-check math
+				+ Fix user offset pile-up issue everywhere
+					+ Do at update, eroding along direction, without crossing 1.0/origin
+						+ Pan
+							+ Erode x and y independently
+						+ Zoom
+				+ Autozoom-on-load:
+					+ "Auto-zoom on load" setting moves to ViewManager
+					+ ViewManager::OnNewShip(AABB...): if "auto-zoom on load" is on and no auto-focus: invoke AutoFocus(AABB...)
+						+ Fix invocation without auto-focus session
+							+ Just plain calc zoom and pan
+							+ Fix issue: subsequent announcement generates resize hence OnViewModelUpdated() sets smoothers to current RenderContext values,
+							  which are still way before convergence
+								+ Used to work because of auto-focus doing SetValueImmediate()
+								+ Reclamp
+						+ Reset user offsets at FocusOnShip(), ResetView()
+						+ Invoke from GameController
+							+ See why first load doesn't focus
+							+ Decide if we still want "ship reload" to NOT do auto-zoom
+								+ Also decide whether we still don't want first load to do auto-zoom
+								+ Test by turning off auto-focus
+								+ Fix GameController accordingly
+					+ ViewManager::AutoFocus: if auto-focus not set: invoke (private) DoAutoFocus() [; else: pointless as subsequent Update() will invoke DoAutoFocus()]
+						+ DoAutoFocus(AABB...) contains implementation of zoom+pan
+							+ Invoked also by Update()
+			+ Clouds: better effect: clouds' NDC y should flatten quicker for lower CAM y - now it flattens linearly 
+				+ Test storm
+				+ Exponential: ste precalc'd member(s) @ Clouds::UploadStart()
+			+ Test with auto-zoom filling-in larger sub-window
+			+ Try other auto-focus algo
+				+ 1: calc zoom as min zoom to ensure four quadrants
+				+ 2: calc pan to center that
+				+ New current *targets* of user offsets
+					+ Or better: use SessionData->CurrentAutoFocusXXX
+				X Try using current *ephemeral value* instead of targets
+				+ If OK:
+					+ Cleanup
+					+ Update explanation/comment
+			X Test faster convergence
+			+ Do test w/goodyear
+			+ Phase 5: enabling/disabling
+				+ Main UI
+					+ "Auto-Focus on Load"
+						+ UIPreferencesManager
+						+ Checkbox menu item 
+							+ Tells to UIPreferencesManager
+						+ PreferencesDialog
+							+ Tells to UIPreferencesManager
+						+ MainFrame::Reconciliate
+					+ "Continuous Auto-Focus"
+						+ UIPreferencesManager
+						+ Checkbox menu item 
+							+ Tells to UIPreferencesManager
+							+ Then calls MainFrame::Reconciliate()
+						+ PreferencesDialog
+							+ Tells to UIPreferencesManager
+						+ MainFrame::Reconciliate
+						+ ESC to exit it
+							+ Invoke Reconciliate()
+					+ "Reset View"
+					+ Reset view:
+						+ Smooth
+						+ Nuke FocusOnShip
+						+ ResetView->...->ViewManager::ResetView
+							+ If !auto-focus:
+								FocusOnShip
+							+ Else:
+								zero offsets
+							+ Leave ViewManager::FocusOnShip
+					+ Test:
+						+ Save of "Auto-Focus on Load"
+						+ Save of "Continuous Auto-Focus"
+				+ NotificationLayer
+					+ Texture
+					+ TextureLayer
+					+ Pass NotificationLayer& to ViewManager::cctor
+					+ ViewManager toggling it
+					+ Test: at startup, honors saved value
+						+ Off
+						+ On
+			+ Fix "pulsating zoom" issue
+				+ Do more tests and see if really perfection
+				+ If perfection:
+					+ Cleanup
+					+ Test with zoom first, like it used to be
+			+ Thanos fix
+			+ Phase 6: tuning
+				+ Immediate pan: done smoothly in all cases?
+				+ See if need different zoom and pan speeds, for "focus on ship" case
+				X Try stateful threshold for cam Y; once through, no threshold
+					X At least we damp initial waves
+				+ Play with threshold algos
+					+ CameraY Smoothstep route
+						+ Test based on NDC (smoothstep on NDC fraction) rather than world
+							+ Commit first
+				+ If not ok: nuke threshold code
+					+ But do keep updating mAutoFocus->CurrentXXX
+			+ Remove every-other-frame thing
+			+ Test for user offset accumulation problem, which is due to calculated pan being "too much", so user offset has to first counterbalance that before being able to make a difference:
+				+ Clamp auto-focus only, *then* continue
+			+ Cleanup:
+				+ See if can nuke ParameterSmoother::IsSmoothing
+				+ Move focus and pan calc'n out so may be reused by CenterOnShip
+				+ See if can nuke local variables for "newAutoFocusXXX" and use mAutoFocus->CurrrentXXX instead
+				+ See if still need all ViewModel methods (World<->Ndc)
+				+ Icon				
+				+ Take care of initial auto-zoom
+			+ See if can do AutoFocus once every N frames
+		+ Check if we were updating smoothers during pause
+		+ Tests:
+			+ Loading ship which has no frontiers: check behavior for all combinations of autofocus/autozoom
+			+ Load under pause
+			+ See perf impact on old Dell - UNNOTICEABLE!
 
 
 + Gfx Optimizations:

@@ -350,17 +350,17 @@ void WaterlineAnalyzerDialog::ReconcileUIWithState()
         {
             int const trimDegrees = static_cast<int>(std::abs(std::round(RadiansCWToDegrees(trim))));
 
-            std::stringstream ss;
+            wxString trimString;
 
             if (trimDegrees < 1)
             {
-                ss << "~0\u00B0";
+                trimString = L"~0°";
                 mTrimLabel->SetBackgroundColour(Green);
                 visualizationControlExaggeratedTrim = 0.0f;
             }
             else
             {
-                ss << trimDegrees << "\u00B0";
+                trimString = wxString(std::to_string(trimDegrees)) + wxString(L"°");
                 mTrimLabel->SetBackgroundColour(Red);
 
                 float constexpr MinDegrees = 15.0f;
@@ -378,7 +378,7 @@ void WaterlineAnalyzerDialog::ReconcileUIWithState()
             }
 
             mTrimLabel->SetForegroundColour(*wxWHITE);
-            mTrimLabel->SetLabel(ss.str());
+            mTrimLabel->SetLabel(trimString);
         }
 
         // IsFloating
