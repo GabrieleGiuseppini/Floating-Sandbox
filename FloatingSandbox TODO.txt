@@ -60,7 +60,10 @@
 			+ Send for testing, w/auto-focus being on by default
 			+ Re-send for testing, again - !!! WITH AUTO-FOCUS ON
 			+ Bump up build
-			- Decide whether auto-focus should be on by default
+			- Decide whether auto-focus should be on by default: YES, ON BY DEFAULT
+				- Do
+				- Ctrl+HOME to toggle
+					- No more ESC
 			- changelist
 
 		= Engines rearc (*)
@@ -984,11 +987,12 @@
 				+ Doing at structure changes: at all places where we do structure changes:
 					+ Destroy/Restore
 					+ AddConnectedElectricalElement/RemoveConnectedElectricalElement
-			= Do UpdateEngineConductivity, populating Engine's and EngineController's group IDs
+			+ Do UpdateEngineConductivity, populating Engine's and EngineController's group IDs
 				+ Store connectivity visit seq number in state, but clearly named
-				= For each engine_controller: if not deleted: if not visited:
+				+ For each engine_controller: if not deleted: if not visited:
 					+ Make new group ID
-					- TODO: reference point
+					+ Store reference point and angle
+						+ Should be able to copy most of the current code
 					+ Flood graph from this engine
 						+ Recongize elements by type
 				+ Resize member vector for groups
@@ -996,21 +1000,23 @@
 						+ member just to make allocation efficient
 			+ Test
 				+ QueryElement/log
-		= UpdateSinks():
+		+ UpdateSinks():
 			+ Reset all groups
 				+ asm: make sure it's a fill
-			- Source loop: 
-				- Controllers update groups (maxING RPM and thrust)
-					- Move direction calculation to engine
-					- assert(have group ID)					
-			- Then, engine loop: engines update themselves, drawing from groups
-				- Update only if their engine group ID is not None
-				- Move direction calculation here				
+			+ Source loop: 
+				+ Controllers update groups (current: RPM=max, ThrustMagnitude=SUM; new: TODO)
+					+ Move direction calculation to engine
+					+ assert(group ID not zero)
+			+ Then, engine loop: engines update themselves, drawing from groups
+				+ RPM and thrust are zero if their engine group ID is not the zero group, else the group's
+					+ Actually nuke "None" constant, and use "group zero"
+				+ Move direction calculation here
 		- XXX transmission element
 			- Test - also exercising engine groups
 				- Make test ship
 				- QueryElement/log
 		- Cleanup:
+			- See if still need EngineState's "current" values (rpm, thrust dir, thrust magnitude)
 			- Nuke EngineController's connected engines
 				- And code that populates that at AddFactoryConnectedElectricalElement()
 			- See if it still makes sense to call Engines "EngineSink" - do they share any characteristics with sinks?

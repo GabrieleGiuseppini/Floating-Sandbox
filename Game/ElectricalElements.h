@@ -14,7 +14,7 @@
 
 #include <cassert>
 #include <chrono>
-#include <cmath>
+#include <cmath> // TODO: move
 #include <functional>
 #include <limits>
 #include <memory>
@@ -34,7 +34,6 @@ private:
      * (via engine transmissions, engines, and controllers)
      */
     using EngineGroupIndex = std::uint32_t;
-    static EngineGroupIndex constexpr NoneEngineGroupIndex = std::numeric_limits<EngineGroupIndex>::max();
 
     /*
      * The information we maintain with each instanced element.
@@ -101,11 +100,13 @@ private:
             float ThrustCapacity;
             float Responsiveness;
 
-            vec2f TargetThrustDir; // Normalized, sum of normalized vectors
+            ElementIndex ReferencePointIndex;
+            // CW angle between engine direction and engine->reference_point vector
+            float ReferencePointCWAngleCos;
+            float ReferencePointCWAngleSin;
+
             float CurrentRpm;
-            float TargetRpm;
             float CurrentThrustMagnitude;
-            float TargetThrustMagnitude;
 
             float LastPublishedRpm;
             float LastPublishedThrustMagnitude;
@@ -121,9 +122,6 @@ private:
                 float responsiveness)
                 : ThrustCapacity(thrustCapacity)
                 , Responsiveness(responsiveness)
-                , LastPublishedRpm(0.0f)
-                , LastPublishedThrustMagnitude(0.0f)
-                , LastHighlightedRpm(0.0f)
                 , EngineConnectivityVisitSequenceNumber()
             {
                 Reset();
@@ -131,10 +129,12 @@ private:
 
             void Reset()
             {
-                ClearTargets();
-
                 CurrentRpm = 0.0f;
                 CurrentThrustMagnitude = 0.0f;
+
+                ReferencePointIndex = NoneElementIndex;
+                ReferencePointCWAngleCos = 0.0f;
+                ReferencePointCWAngleSin = 0.0f;
 
                 LastPublishedRpm = 0.0f;
                 LastPublishedThrustMagnitude = 0.0f;
@@ -142,15 +142,7 @@ private:
 
                 SuperElectrificationEndTimestamp.reset();
 
-                EngineGroup = NoneEngineGroupIndex;
-            }
-
-            void ClearTargets()
-            {
-                // Reset targets, we'll re-calc at next iteration
-                TargetThrustDir = vec2f::zero();
-                TargetRpm = 0.0f;
-                TargetThrustMagnitude = 0.0f;
+                EngineGroup = 0;
             }
         };
 
@@ -191,7 +183,7 @@ private:
                 : CurrentTelegraphValue(telegraphValue)
                 , IsPowered(isPowered)
                 , EngineConnectivityVisitSequenceNumber()
-                , EngineGroup(NoneEngineGroupIndex)
+                , EngineGroup(0)
             {}
         };
 
@@ -549,6 +541,7 @@ public:
         float currentSimulationTime,
         SequenceNumber newConnectivityVisitSequenceNumber,
         Points & points,
+        Springs const & springs,
         Storm::Parameters const & stormParameters,
         GameParameters const & gameParameters);
 
@@ -747,7 +740,10 @@ private:
         ElementIndex elementIndex,
         bool value);
 
-    void UpdateEngineConductivity(SequenceNumber newConnectivityVisitSequenceNumber);
+    void UpdateEngineConductivity(
+        SequenceNumber newConnectivityVisitSequenceNumber,
+        Points const & points,
+        Springs const & springs);
 
     void UpdateAutomaticConductivityToggles(
         float currentSimulationTime,
@@ -838,7 +834,8 @@ private:
     Buffer<ElementState> mElementStateBuffer;
 
     // Engine groups - member only for allocation efficiency;
-    // dimensioned at end of each engine connectivity update
+    // dimensioned at end of each engine connectivity update,
+    // as number of engine groups + 1
     std::vector<EngineGroupState> mEngineGroupStates;
 
     // Available light (from lamps)

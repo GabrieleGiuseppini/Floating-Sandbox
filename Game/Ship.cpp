@@ -475,6 +475,7 @@ void Ship::Update(
         currentSimulationTime,
         mCurrentElectricalVisitSequenceNumber,
         mPoints,
+        mSprings,
         stormParameters,
         gameParameters);
 
