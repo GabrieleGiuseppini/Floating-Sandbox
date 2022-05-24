@@ -1019,7 +1019,7 @@
 				+ Do they consume electricity?
 		= Test ships
 			= Red October
-				- Fix (making it shp2)
+				= Fix (making it shp2)
 			- Triton
 			- Blimps
 			- etc.
