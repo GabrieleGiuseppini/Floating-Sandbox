@@ -369,7 +369,6 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
 
     ElectricalElements electricalElements = CreateElectricalElements(
         points,
-        springs,
         electricalElementInstanceIndices,
         shipDefinition.ElectricalLayer != nullptr
             ? shipDefinition.ElectricalLayer->Panel
@@ -1420,7 +1419,6 @@ Physics::Triangles ShipFactory::CreateTriangles(
 
 ElectricalElements ShipFactory::CreateElectricalElements(
     Physics::Points const & points,
-    Physics::Springs const & springs,
     std::vector<ElectricalElementInstanceIndex> const & electricalElementInstanceIndices,
     ElectricalPanelMetadata const & panelMetadata,
     ShipId shipId,
@@ -1535,16 +1533,10 @@ ElectricalElements ShipFactory::CreateElectricalElements(
             auto const otherEndpointElectricalElementIndex = points.GetElectricalElement(cs.OtherEndpointIndex);
             if (NoneElementIndex != otherEndpointElectricalElementIndex)
             {
-                // Get octant between this element and the other element
-                Octant octant = springs.GetFactoryEndpointOctant(
-                    cs.SpringIndex,
-                    pointIndex);
-
                 // Add element
                 electricalElements.AddFactoryConnectedElectricalElement(
                     electricalElementIndex,
-                    otherEndpointElectricalElementIndex,
-                    octant);
+                    otherEndpointElectricalElementIndex);
             }
         }
     }

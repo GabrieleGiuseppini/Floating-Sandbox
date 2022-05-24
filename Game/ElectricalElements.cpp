@@ -8,6 +8,7 @@
 #include <GameCore/GameGeometry.h>
 #include <GameCore/GameRandomEngine.h>
 
+#include <cmath>
 #include <queue>
 
 namespace Physics {
@@ -60,7 +61,7 @@ void ElectricalElements::Add(
                     electricalMaterial.EngineResponsiveness));
 
             // Indices
-            mEngineSinks.emplace_back(elementIndex);
+            mEngines.emplace_back(elementIndex);
 
             break;
         }
@@ -861,7 +862,7 @@ void ElectricalElements::OnElectricSpark(
     {
         case ElectricalMaterial::ElectricalElementType::Engine:
         {
-            mElementStateBuffer[electricalElementIndex].Engine.SuperElectrificationEndTimestamp =
+            mElementStateBuffer[electricalElementIndex].Engine.SuperElectrificationSimulationTimestampEnd =
                 currentSimulationTime + GameRandomEngine::GetInstance().GenerateUniformReal(7.0f, 15.0f);
 
             break;
@@ -869,7 +870,7 @@ void ElectricalElements::OnElectricSpark(
 
         case ElectricalMaterial::ElectricalElementType::Generator:
         {
-            mElementStateBuffer[electricalElementIndex].Generator.DisabledEndSimulationTimestamp =
+            mElementStateBuffer[electricalElementIndex].Generator.DisabledSimulationTimestampEnd =
                 currentSimulationTime + GameRandomEngine::GetInstance().GenerateUniformReal(15.0f, 30.0f);
 
             break;
@@ -877,7 +878,7 @@ void ElectricalElements::OnElectricSpark(
 
         case ElectricalMaterial::ElectricalElementType::Lamp:
         {
-            mElementStateBuffer[electricalElementIndex].Lamp.DisabledEndSimulationTimestamp =
+            mElementStateBuffer[electricalElementIndex].Lamp.DisabledSimulationTimestampEnd =
                 currentSimulationTime + GameRandomEngine::GetInstance().GenerateUniformReal(4.0f, 8.0f);
 
             mHasPowerBeenSeveredInCurrentStep = true;
@@ -986,30 +987,12 @@ void ElectricalElements::Update(
 
 void ElectricalElements::AddFactoryConnectedElectricalElement(
     ElementIndex electricalElementIndex,
-    ElementIndex connectedElectricalElementIndex,
-    Octant octant)
+    ElementIndex connectedElectricalElementIndex)
 {
     // Add element
     AddConnectedElectricalElement(
         electricalElementIndex,
         connectedElectricalElementIndex);
-
-    // Store connected engine if this is an EngineController->Engine connection
-    if (GetMaterialType(electricalElementIndex) == ElectricalMaterial::ElectricalElementType::EngineController
-        && GetMaterialType(connectedElectricalElementIndex) == ElectricalMaterial::ElectricalElementType::Engine)
-    {
-        float engineCWAngle =
-            (2.0f * Pi<float> - mMaterialBuffer[connectedElectricalElementIndex]->EngineCCWDirection)
-            - OctantToCWAngle(OppositeOctant(octant));
-
-        // Normalize
-        if (engineCWAngle < 0.0f)
-            engineCWAngle += 2.0f * Pi<float>;
-
-        mElementStateBuffer[electricalElementIndex].EngineController.ConnectedEngines.emplace_back(
-            connectedElectricalElementIndex,
-            engineCWAngle);
-    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1109,7 +1092,7 @@ void ElectricalElements::UpdateEngineConductivity(
     //
 
     // Clear out engines - set their engine groups to group zero
-    for (ElementIndex const engineElementIndex : mEngineSinks)
+    for (ElementIndex const engineElementIndex : mEngines)
     {
         mElementStateBuffer[engineElementIndex].Engine.EngineGroup = 0;
     }
@@ -1359,10 +1342,10 @@ void ElectricalElements::UpdateSourcesAndPropagation(
                     auto & generatorState = mElementStateBuffer[sourceElementIndex].Generator;
 
                     // Check if disable interval has elapsed
-                    if (generatorState.DisabledEndSimulationTimestamp.has_value()
-                        && currentSimulationTime >= *generatorState.DisabledEndSimulationTimestamp)
+                    if (generatorState.DisabledSimulationTimestampEnd.has_value()
+                        && currentSimulationTime >= *generatorState.DisabledSimulationTimestampEnd)
                     {
-                        generatorState.DisabledEndSimulationTimestamp.reset();
+                        generatorState.DisabledSimulationTimestampEnd.reset();
                     }
 
                     bool isProducingCurrent;
@@ -1370,7 +1353,7 @@ void ElectricalElements::UpdateSourcesAndPropagation(
                     {
                         if (points.IsWet(sourcePointIndex, 0.55f)
                             || !mMaterialOperatingTemperaturesBuffer[sourceElementIndex].IsInRange(points.GetTemperature(sourcePointIndex))
-                            || generatorState.DisabledEndSimulationTimestamp.has_value())
+                            || generatorState.DisabledSimulationTimestampEnd.has_value())
                         {
                             isProducingCurrent = false;
                         }
@@ -1383,7 +1366,7 @@ void ElectricalElements::UpdateSourcesAndPropagation(
                     {
                         if (!points.IsWet(sourcePointIndex, 0.15f)
                             && mMaterialOperatingTemperaturesBuffer[sourceElementIndex].IsBackInRange(points.GetTemperature(sourcePointIndex))
-                            && !generatorState.DisabledEndSimulationTimestamp.has_value())
+                            && !generatorState.DisabledSimulationTimestampEnd.has_value())
                         {
                             isProducingCurrent = true;
                         }
@@ -1592,91 +1575,6 @@ void ElectricalElements::UpdateSinks(
 
                         // Group thrust magnitude = sum
                         mEngineGroupStates[controllerState.EngineGroup].GroupThrustMagnitude += controllerThrustMagnitude;
-
-                        ////// TODOOLD
-                        //////
-                        ////// Visit all (non-deleted) connected engines and add force to each
-                        //////
-
-                        ////vec2f const & controllerPosition = points.GetPosition(GetPointIndex(sinkElementIndex));
-
-                        ////for (auto const & connectedEngine : controllerState.ConnectedEngines)
-                        ////{
-                        ////    auto const engineElectricalElementIndex = connectedEngine.EngineElectricalElementIndex;
-                        ////    if (!IsDeleted(engineElectricalElementIndex))
-                        ////    {
-                        ////        //
-                        ////        // Calculate thrust dir, rpm, and thrust magnitude exherted by this controller
-                        ////        //  - ThrustDir = f(controller->engine angle)
-                        ////        //  - RPM = f(EngineControllerState::CurrentTelegraphValue)
-                        ////        //  - ThrustMagnitude = f(EngineControllerState::CurrentTelegraphValue)
-                        ////        //
-
-                        ////        auto const enginePointIndex = GetPointIndex(engineElectricalElementIndex);
-
-                        ////        // Thrust direction (normalized vector)
-
-                        ////        vec2f const engineToControllerDir =
-                        ////            (controllerPosition - points.GetPosition(enginePointIndex))
-                        ////            .normalise();
-
-                        ////        vec2f const controllerEngineThrustDir = vec2f(
-                        ////            connectedEngine.CosEngineCWAngle * engineToControllerDir.x
-                        ////            + connectedEngine.SinEngineCWAngle * engineToControllerDir.y
-                        ////            ,
-                        ////            -connectedEngine.SinEngineCWAngle * engineToControllerDir.x
-                        ////            + connectedEngine.CosEngineCWAngle * engineToControllerDir.y
-                        ////        );
-
-                        ////        // RPM: 0, 1/N, 1/N->1
-
-                        ////        float constexpr TelegraphCoeff =
-                        ////            1.0f
-                        ////            / static_cast<float>(GameParameters::EngineTelegraphDegreesOfFreedom / 2 - 1);
-
-                        ////        int const absTelegraphValue = std::abs(controllerState.CurrentTelegraphValue);
-                        ////        float controllerEngineRpm;
-                        ////        if (absTelegraphValue == 0)
-                        ////            controllerEngineRpm = 0.0f;
-                        ////        else if (absTelegraphValue == 1)
-                        ////            controllerEngineRpm = TelegraphCoeff;
-                        ////        else
-                        ////            controllerEngineRpm = static_cast<float>(absTelegraphValue - 1) * TelegraphCoeff;
-
-                        ////        // Thrust magnitude: 0, 0, 1/N->1
-
-                        ////        float controllerEngineThrustMagnitude;
-                        ////        if (controllerState.CurrentTelegraphValue >= 0)
-                        ////        {
-                        ////            if (controllerState.CurrentTelegraphValue <= 1)
-                        ////                controllerEngineThrustMagnitude = 0.0f;
-                        ////            else
-                        ////                controllerEngineThrustMagnitude = static_cast<float>(controllerState.CurrentTelegraphValue - 1) * TelegraphCoeff;
-                        ////        }
-                        ////        else
-                        ////        {
-                        ////            if (controllerState.CurrentTelegraphValue >= -1)
-                        ////                controllerEngineThrustMagnitude = 0.0f;
-                        ////            else
-                        ////                controllerEngineThrustMagnitude = static_cast<float>(controllerState.CurrentTelegraphValue + 1) * TelegraphCoeff;
-                        ////        }
-
-                        ////        //
-                        ////        // Add to engine
-                        ////        //  - Engine has been reset at end of previous iteration
-                        ////        //
-
-                        ////        mElementStateBuffer[engineElectricalElementIndex].Engine.TargetThrustDir +=
-                        ////            controllerEngineThrustDir;
-
-                        ////        mElementStateBuffer[engineElectricalElementIndex].Engine.TargetRpm = std::max(
-                        ////            mElementStateBuffer[engineElectricalElementIndex].Engine.TargetRpm,
-                        ////            controllerEngineRpm);
-
-                        ////        mElementStateBuffer[engineElectricalElementIndex].Engine.TargetThrustMagnitude +=
-                        ////            controllerEngineThrustMagnitude;
-                        ////    }
-                        ////}
                     }
 
                     // Remember controller state
@@ -2186,7 +2084,7 @@ void ElectricalElements::UpdateSinks(
     // Visit all engines and run their state machine
     //
 
-    for (auto const engineSinkElementIndex : mEngineSinks)
+    for (auto const engineSinkElementIndex : mEngines)
     {
         if (!IsDeleted(engineSinkElementIndex))
         {
@@ -2196,11 +2094,11 @@ void ElectricalElements::UpdateSinks(
             auto const enginePointIndex = GetPointIndex(engineSinkElementIndex);
 
             // Check first of all if super-electrification interval has elapsed
-            if (engineState.SuperElectrificationEndTimestamp.has_value()
-                && currentSimulationTime >= *engineState.SuperElectrificationEndTimestamp)
+            if (engineState.SuperElectrificationSimulationTimestampEnd.has_value()
+                && currentSimulationTime >= *engineState.SuperElectrificationSimulationTimestampEnd)
             {
                 // Elapsed
-                engineState.SuperElectrificationEndTimestamp.reset();
+                engineState.SuperElectrificationSimulationTimestampEnd.reset();
             }
 
             //
@@ -2220,7 +2118,7 @@ void ElectricalElements::UpdateSinks(
             //
 
             // Adjust targets based off super-electrification
-            float powerMultiplier = engineState.SuperElectrificationEndTimestamp.has_value()
+            float powerMultiplier = engineState.SuperElectrificationSimulationTimestampEnd.has_value()
                 ? 4.0f
                 : 1.0f;
 
@@ -2435,10 +2333,10 @@ void ElectricalElements::RunLampStateMachine(
     auto & lamp = mElementStateBuffer[elementLampIndex].Lamp;
 
     // First of all, check if disable interval has elapsed
-    if (lamp.DisabledEndSimulationTimestamp.has_value()
-        && currentSimulationTime >= *lamp.DisabledEndSimulationTimestamp)
+    if (lamp.DisabledSimulationTimestampEnd.has_value()
+        && currentSimulationTime >= *lamp.DisabledSimulationTimestampEnd)
     {
-        lamp.DisabledEndSimulationTimestamp.reset();
+        lamp.DisabledSimulationTimestampEnd.reset();
     }
 
     // Now run state machine
@@ -2449,7 +2347,7 @@ void ElectricalElements::RunLampStateMachine(
             // Transition to ON - if we have current or if we're self-powered AND if within operating temperature
             if ((isConnectedToPower || lamp.IsSelfPowered)
                 && mMaterialOperatingTemperaturesBuffer[elementLampIndex].IsInRange(points.GetTemperature(pointIndex))
-                && !lamp.DisabledEndSimulationTimestamp.has_value())
+                && !lamp.DisabledSimulationTimestampEnd.has_value())
             {
                 // Transition to ON
                 mAvailableLightBuffer[elementLampIndex] = 1.f;
@@ -2480,7 +2378,7 @@ void ElectricalElements::RunLampStateMachine(
                     !mMaterialOperatingTemperaturesBuffer[elementLampIndex].IsInRange(points.GetTemperature(pointIndex))
                 ) ||
                 (
-                    lamp.DisabledEndSimulationTimestamp.has_value()
+                    lamp.DisabledSimulationTimestampEnd.has_value()
                 ))
             {
                 //
@@ -2525,7 +2423,7 @@ void ElectricalElements::RunLampStateMachine(
             if ((isConnectedToPower || lamp.IsSelfPowered)
                 && !points.IsWet(GetPointIndex(elementLampIndex), LampWetFailureWaterLowWatermark)
                 && mMaterialOperatingTemperaturesBuffer[elementLampIndex].IsBackInRange(points.GetTemperature(pointIndex))
-                && !lamp.DisabledEndSimulationTimestamp.has_value())
+                && !lamp.DisabledSimulationTimestampEnd.has_value())
             {
                 mAvailableLightBuffer[elementLampIndex] = 1.f;
 
@@ -2579,7 +2477,7 @@ void ElectricalElements::RunLampStateMachine(
             if ((isConnectedToPower || lamp.IsSelfPowered)
                 && !points.IsWet(GetPointIndex(elementLampIndex), LampWetFailureWaterLowWatermark)
                 && mMaterialOperatingTemperaturesBuffer[elementLampIndex].IsBackInRange(points.GetTemperature(pointIndex))
-                && !lamp.DisabledEndSimulationTimestamp.has_value())
+                && !lamp.DisabledSimulationTimestampEnd.has_value())
             {
                 mAvailableLightBuffer[elementLampIndex] = 1.f;
 
@@ -2647,7 +2545,7 @@ void ElectricalElements::RunLampStateMachine(
             if ((isConnectedToPower || lamp.IsSelfPowered)
                 && !points.IsWet(GetPointIndex(elementLampIndex), LampWetFailureWaterLowWatermark)
                 && mMaterialOperatingTemperaturesBuffer[elementLampIndex].IsBackInRange(points.GetTemperature(pointIndex))
-                && !lamp.DisabledEndSimulationTimestamp.has_value())
+                && !lamp.DisabledSimulationTimestampEnd.has_value())
             {
                 mAvailableLightBuffer[elementLampIndex] = 1.f;
 

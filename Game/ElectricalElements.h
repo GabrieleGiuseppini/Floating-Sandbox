@@ -14,7 +14,6 @@
 
 #include <cassert>
 #include <chrono>
-#include <cmath> // TODO: move
 #include <functional>
 #include <limits>
 #include <memory>
@@ -112,7 +111,7 @@ private:
             float LastPublishedThrustMagnitude;
             float LastHighlightedRpm;
 
-            std::optional<float> SuperElectrificationEndTimestamp;
+            std::optional<float> SuperElectrificationSimulationTimestampEnd;
 
             SequenceNumber EngineConnectivityVisitSequenceNumber;
             EngineGroupIndex EngineGroup;
@@ -129,18 +128,18 @@ private:
 
             void Reset()
             {
-                CurrentRpm = 0.0f;
-                CurrentThrustMagnitude = 0.0f;
-
                 ReferencePointIndex = NoneElementIndex;
                 ReferencePointCWAngleCos = 0.0f;
                 ReferencePointCWAngleSin = 0.0f;
+
+                CurrentRpm = 0.0f;
+                CurrentThrustMagnitude = 0.0f;
 
                 LastPublishedRpm = 0.0f;
                 LastPublishedThrustMagnitude = 0.0f;
                 LastHighlightedRpm = 0.0f;
 
-                SuperElectrificationEndTimestamp.reset();
+                SuperElectrificationSimulationTimestampEnd.reset();
 
                 EngineGroup = 0;
             }
@@ -148,31 +147,6 @@ private:
 
         struct EngineControllerState
         {
-            // TODOTEST : this should all go
-            struct ConnectedEngine
-            {
-                ElementIndex EngineElectricalElementIndex;
-                float SinEngineCWAngle;
-                float CosEngineCWAngle;
-
-                ConnectedEngine()
-                    : EngineElectricalElementIndex(NoneElementIndex)
-                    , SinEngineCWAngle(0.0f)
-                    , CosEngineCWAngle(0.0f)
-                {}
-
-                ConnectedEngine(
-                    ElementIndex engineElectricalElementIndex,
-                    float engineCWAngle) // CW angle between engine direction and engine->controller vector
-                    : EngineElectricalElementIndex(engineElectricalElementIndex)
-                    , SinEngineCWAngle(std::sin(engineCWAngle))
-                    , CosEngineCWAngle(std::cos(engineCWAngle))
-                {}
-            };
-
-            FixedSizeVector<ConnectedEngine, GameParameters::MaxSpringsPerPoint> ConnectedEngines; // Immutable
-            // TODOTEST-END
-
             int CurrentTelegraphValue; // Between -Degrees/2 and +Degrees/2
             bool IsPowered;
 
@@ -190,7 +164,7 @@ private:
         struct GeneratorState
         {
             bool IsProducingCurrent;
-            std::optional<float> DisabledEndSimulationTimestamp;
+            std::optional<float> DisabledSimulationTimestampEnd;
 
             GeneratorState(bool isProducingCurrent)
                 : IsProducingCurrent(isProducingCurrent)
@@ -200,7 +174,7 @@ private:
         struct LampState
         {
             bool IsSelfPowered;
-            std::optional<float> DisabledEndSimulationTimestamp;
+            std::optional<float> DisabledSimulationTimestampEnd;
 
             // Probability that light fails within 1 second
             float WetFailureRateCdf;
@@ -465,7 +439,7 @@ public:
         , mSinks()
         , mLamps()
         , mEngineControllers()
-        , mEngineSinks()
+        , mEngines()
         , mCurrentLightSpreadAdjustment(gameParameters.LightSpreadAdjustment)
         , mCurrentLuminiscenceAdjustment(gameParameters.LuminiscenceAdjustment)
         , mHasConnectivityStructureChangedInCurrentStep(true)
@@ -644,8 +618,7 @@ public:
 
     void AddFactoryConnectedElectricalElement(
         ElementIndex electricalElementIndex,
-        ElementIndex connectedElectricalElementIndex,
-        Octant octant);
+        ElementIndex connectedElectricalElementIndex);
 
     //
     // Available Light
@@ -874,7 +847,7 @@ private:
     std::vector<ElementIndex> mSinks;
     std::vector<ElementIndex> mLamps;
     std::vector<ElementIndex> mEngineControllers;
-    std::vector<ElementIndex> mEngineSinks;
+    std::vector<ElementIndex> mEngines;
 
     // The game parameter values that we are current with; changes
     // in the values of these parameters will trigger a re-calculation

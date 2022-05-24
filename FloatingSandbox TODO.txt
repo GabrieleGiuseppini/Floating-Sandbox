@@ -1011,16 +1011,22 @@
 				+ RPM and thrust are zero if their engine group ID is not the zero group, else the group's
 					+ Actually nuke "None" constant, and use "group zero"
 				+ Move direction calculation here
+		+ Cleanup:
+			+ See if still need EngineState's "current" values (rpm, thrust dir, thrust magnitude)
+			+ Nuke EngineController's connected engines
+				+ And code that populates that at AddFactoryConnectedElectricalElement()
+			+ See if it still makes sense to call Engines "EngineSink" - do they share any characteristics with sinks?
+				+ Do they consume electricity?
+		= Test ships
+			= Red October
+				- Fix (making it shp2)
+			- Triton
+			- Blimps
+			- etc.
 		- XXX transmission element
 			- Test - also exercising engine groups
 				- Make test ship
 				- QueryElement/log
-		- Cleanup:
-			- See if still need EngineState's "current" values (rpm, thrust dir, thrust magnitude)
-			- Nuke EngineController's connected engines
-				- And code that populates that at AddFactoryConnectedElectricalElement()
-			- See if it still makes sense to call Engines "EngineSink" - do they share any characteristics with sinks?
-				- Do they consume electricity?
 
 	- Material system improvements (*)
 		- Descriptions in ShipBuilder palette
