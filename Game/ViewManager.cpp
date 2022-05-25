@@ -21,7 +21,7 @@ ViewManager::ViewManager(
     , mCameraWorldPositionParameterSmoother()
     // Defaults
     , mDoAutoFocusOnShipLoad(true)
-    , mAutoFocus()
+    , mAutoFocus() // Set later
 {
     mZoomParameterSmoother = std::make_unique<ParameterSmoother<float>>(
         [this]() -> float const &
@@ -52,6 +52,9 @@ ViewManager::ViewManager(
             return mRenderContext.ClampCameraWorldPosition(value);
         },
         0.1f);
+
+    // Default: continuous auto-focus is ON
+    SetDoContinuousAutoFocus(true);
 }
 
 bool ViewManager::GetDoAutoFocusOnShipLoad() const

@@ -256,7 +256,7 @@ MainFrame::MainFrame(
             controlsMenu->Append(mAutoFocusAtShipLoadMenuItem);
             Connect(ID_AUTO_FOCUS_AT_SHIP_LOAD_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAutoFocusAtShipLoadMenuItemSelected);
 
-            mContinuousAutoFocusMenuItem = new wxMenuItem(controlsMenu, ID_CONTINUOUS_AUTO_FOCUS_MENUITEM, _("Continuous Auto-Focus"), _("Enable or disable continuous auto-focus."), wxITEM_CHECK);
+            mContinuousAutoFocusMenuItem = new wxMenuItem(controlsMenu, ID_CONTINUOUS_AUTO_FOCUS_MENUITEM, _("Continuous Auto-Focus") + wxS("\tCtrl+HOME"), _("Enable or disable continuous auto-focus."), wxITEM_CHECK);
             controlsMenu->Append(mContinuousAutoFocusMenuItem);
             Connect(ID_CONTINUOUS_AUTO_FOCUS_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnContinuousAutoFocusMenuItemSelected);
 
@@ -2009,21 +2009,10 @@ void MainFrame::OnFullScreenMenuItemSelected(wxCommandEvent & /*event*/)
 
 void MainFrame::OnNormalScreenMenuItemSelected(wxCommandEvent & /*event*/)
 {
-    assert(!!mUIPreferencesManager);
+    mFullScreenMenuItem->Enable(true);
+    mNormalScreenMenuItem->Enable(false);
 
-    // ESC behavior depends on whether or not continuous auto-focus is enabled
-    if (mUIPreferencesManager->GetDoContinuousAutoFocus())
-    {
-        mUIPreferencesManager->SetDoContinuousAutoFocus(false);
-        ReconciliateUIWithUIPreferences();
-    }
-    else
-    {
-        mFullScreenMenuItem->Enable(true);
-        mNormalScreenMenuItem->Enable(false);
-
-        this->ShowFullScreen(false);
-    }
+    this->ShowFullScreen(false);
 }
 
 void MainFrame::OnMuteMenuItemSelected(wxCommandEvent & /*event*/)

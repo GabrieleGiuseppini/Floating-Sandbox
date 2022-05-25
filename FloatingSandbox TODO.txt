@@ -60,10 +60,10 @@
 			+ Send for testing, w/auto-focus being on by default
 			+ Re-send for testing, again - !!! WITH AUTO-FOCUS ON
 			+ Bump up build
-			- Decide whether auto-focus should be on by default: YES, ON BY DEFAULT
-				- Do
-				- Ctrl+HOME to toggle
-					- No more ESC
+			+ Decide whether auto-focus should be on by default: YES, ON BY DEFAULT
+				+ Do
+				+ Ctrl+HOME to toggle
+					+ No more ESC
 			- changelist
 
 		= Updating water velocities with blast
@@ -77,6 +77,7 @@
 			- Types
 
 		- Option to disable lightning making damage - people want to sail in the storm
+			- Lightning Hit Probability
 
 		- ShipLoadDialog Toolbar (*)
 
