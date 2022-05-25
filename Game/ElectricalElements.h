@@ -161,6 +161,15 @@ private:
             {}
         };
 
+        struct EngineTransmissionState
+        {
+            SequenceNumber EngineConnectivityVisitSequenceNumber;
+
+            EngineTransmissionState()
+                : EngineConnectivityVisitSequenceNumber()
+            {}
+        };
+
         struct GeneratorState
         {
             bool IsProducingCurrent;
@@ -313,6 +322,7 @@ private:
         CableState Cable;
         EngineState Engine;
         EngineControllerState EngineController;
+        EngineTransmissionState EngineTransmission;
         GeneratorState Generator;
         LampState Lamp;
         OtherSinkState OtherSink;
@@ -334,6 +344,10 @@ private:
 
         ElementState(EngineControllerState engineController)
             : EngineController(engineController)
+        {}
+
+        ElementState(EngineTransmissionState engineTransmissionState)
+            : EngineTransmission(engineTransmissionState)
         {}
 
         ElementState(GeneratorState generator)

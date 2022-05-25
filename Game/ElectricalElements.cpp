@@ -78,6 +78,14 @@ void ElectricalElements::Add(
             break;
         }
 
+        case ElectricalMaterial::ElectricalElementType::EngineTransmission:
+        {
+            // State
+            mElementStateBuffer.emplace_back(ElementState::EngineTransmissionState());
+
+            break;
+        }
+
         case ElectricalMaterial::ElectricalElementType::Generator:
         {
             // State
@@ -365,6 +373,7 @@ void ElectricalElements::AnnounceInstancedElements()
             }
 
             case ElectricalMaterial::ElectricalElementType::Cable:
+            case ElectricalMaterial::ElectricalElementType::EngineTransmission:
             case ElectricalMaterial::ElectricalElementType::Lamp:
             case ElectricalMaterial::ElectricalElementType::OtherSink:
             case ElectricalMaterial::ElectricalElementType::SmokeEmitter:
@@ -703,7 +712,11 @@ void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
             break;
         }
 
-        default:
+        case ElectricalMaterial::ElectricalElementType::Cable:
+        case ElectricalMaterial::ElectricalElementType::EngineTransmission:
+        case ElectricalMaterial::ElectricalElementType::Lamp:
+        case ElectricalMaterial::ElectricalElementType::OtherSink:
+        case ElectricalMaterial::ElectricalElementType::SmokeEmitter:
         {
             break;
         }
@@ -838,7 +851,10 @@ void ElectricalElements::Restore(ElementIndex electricalElementIndex)
             break;
         }
 
-        default:
+        case ElectricalMaterial::ElectricalElementType::Cable:
+        case ElectricalMaterial::ElectricalElementType::EngineTransmission:
+        case ElectricalMaterial::ElectricalElementType::OtherSink:
+        case ElectricalMaterial::ElectricalElementType::SmokeEmitter:
         {
             // These types do not have a state machine that needs to be reset
             break;
@@ -1206,7 +1222,20 @@ void ElectricalElements::UpdateEngineConductivity(
                                 break;
                             }
 
-                            // TODO: engine transmission
+                            case ElectricalMaterial::ElectricalElementType::EngineTransmission:
+                            {
+                                // Make sure not visited already
+                                if (mElementStateBuffer[ce].EngineTransmission.EngineConnectivityVisitSequenceNumber != newConnectivityVisitSequenceNumber)
+                                {
+                                    // Visit element
+                                    mElementStateBuffer[ce].EngineTransmission.EngineConnectivityVisitSequenceNumber = newConnectivityVisitSequenceNumber;
+
+                                    // Add to queue
+                                    elementsToVisit.push(ce);
+                                }
+
+                                break;
+                            }
 
                             default:
                             {

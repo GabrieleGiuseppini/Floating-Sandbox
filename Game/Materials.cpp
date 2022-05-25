@@ -347,6 +347,8 @@ ElectricalMaterial::ElectricalElementType ElectricalMaterial::StrToElectricalEle
         return ElectricalElementType::Engine;
     else if (Utils::CaseInsensitiveEquals(str, "EngineController"))
         return ElectricalElementType::EngineController;
+    else if (Utils::CaseInsensitiveEquals(str, "EngineTransmission"))
+        return ElectricalElementType::EngineTransmission;
     else if (Utils::CaseInsensitiveEquals(str, "Generator"))
         return ElectricalElementType::Generator;
     else if (Utils::CaseInsensitiveEquals(str, "InteractiveSwitch"))
@@ -521,6 +523,7 @@ std::string ElectricalMaterial::MakeInstancedElementLabel(ElectricalElementInsta
         }
 
         case ElectricalElementType::Cable:
+        case ElectricalElementType::EngineTransmission:
         case ElectricalElementType::Lamp:
         case ElectricalElementType::OtherSink:
         case ElectricalElementType::SmokeEmitter:

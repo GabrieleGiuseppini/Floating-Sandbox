@@ -1025,18 +1025,18 @@
 			- Triton
 			- Blimps
 			- etc.
-		- EngineTransmission material
-			- Material, new ElectricalElementType
-				- Yes electrically conductive
-			- ElectricalElements
-				- State
-					- VisitSeqNumber
-				- General support for new type
-				- Engine connectivity visit
-			- Test - also exercising engine groups
-				- Make test ship, and watch queryElement/log
-				- Circuits
-				- Destroy/Restore
+		+ EngineTransmission material
+			+ Material, new ElectricalElementType
+				+ Yes electrically conductive
+			+ ElectricalElements
+				+ State
+					+ VisitSeqNumber
+				+ General support for new type
+				+ Engine connectivity visit
+			+ Test - also exercising engine groups
+				+ Make test ship, and watch queryElement/log
+				+ Circuits
+				+ Destroy/Restore
 
 	- Material system improvements (*)
 		- Descriptions in ShipBuilder palette

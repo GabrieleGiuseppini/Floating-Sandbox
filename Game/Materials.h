@@ -255,6 +255,7 @@ public:
         Cable,
         Engine,
         EngineController,
+        EngineTransmission,
         Generator,
         InteractiveSwitch,
         Lamp,

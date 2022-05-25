@@ -766,6 +766,21 @@
     },
 
 
+    {
+        "color_key": "#00704e",
+	"conducts_electricity": true,
+        "electrical_type": "EngineTransmission", 
+        "heat_generated": 0.0, 
+        "maximum_operating_temperature": 1000000.0, 
+        "minimum_operating_temperature": 0.0, 
+        "name": "Engine Transmission", 
+        "palette_coordinates": {
+		"category": "Engines",
+		"sub_category": "Engine Transmissions",
+		"sub_category_ordinal": 0
+	}
+    },
+
 
 
     {
@@ -1198,7 +1213,8 @@
 					"Outboard Engines",
 					"Diesel Engines",
 					"Steam Engines",
-					"Engine Controllers"]
+					"Engine Controllers",
+					"Engine Transmissions"]
 			}
 		]
 	    },
