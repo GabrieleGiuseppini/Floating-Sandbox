@@ -87,9 +87,11 @@ bool Ship::UpdateExplosionStateMachine(
                 // (inversely proportional to square root of distance, not second power as one would expect though)
                 //
 
+                vec2f const blastDir = pointRadius.normalise_approx(pointRadiusLength);
+
                 mPoints.AddStaticForce(
                     pointIndex,
-                    pointRadius.normalise_approx(pointRadiusLength) / std::sqrt(std::max(pointRadiusLength, 1.0f)) * explosionStateMachine.BlastForce);
+                    blastDir / std::sqrt(std::max(pointRadiusLength, 1.0f)) * explosionStateMachine.BlastForce);
 
                 //
                 // Inject heat at this point
@@ -106,6 +108,14 @@ bool Ship::UpdateExplosionStateMachine(
                 mPoints.SetTemperature(
                     pointIndex,
                     mPoints.GetTemperature(pointIndex) + deltaT);
+
+                if (blastProgress < 0.15f) // Don't want to accelerate same water for too long
+                {
+                    // Update water velocity
+                    mPoints.SetWaterVelocity(
+                        pointIndex,
+                        mPoints.GetWaterVelocity(pointIndex) + blastDir * 100.0f); // Magic number
+                }
 
                 //
                 // Check whether this point is the closest point

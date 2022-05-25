@@ -66,7 +66,11 @@
 					- No more ESC
 			- changelist
 
-		= Engines rearc (*)
+		= Updating water velocities with blast
+			+ Adding velocities during blast
+			- Way to not grow velocities but align them
+
+		+ Engines rearc (*)
 		- Jet engines @ Material system improvements (*)
 		- Update Wordpress post w/new engine stuff
 			- Connectivity
@@ -980,64 +984,6 @@
 
 	- Sand particles when hitting ground
 
-	= Engines rearc (*)
-		! Goal: allow controllers to control engines at a distance
-		+ EngineState: EngineGroup member
-		+ EngineController: EngineGroup member
-		+ Connectivity update
-			+ Should we do it at each frame (because of autonomous state changes), or is it enough to only do it at structure changes?
-				+ Doing at structure changes: at all places where we do structure changes:
-					+ Destroy/Restore
-					+ AddConnectedElectricalElement/RemoveConnectedElectricalElement
-			+ Do UpdateEngineConductivity, populating Engine's and EngineController's group IDs
-				+ Store connectivity visit seq number in state, but clearly named
-				+ For each engine_controller: if not deleted: if not visited:
-					+ Make new group ID
-					+ Store reference point and angle
-						+ Should be able to copy most of the current code
-					+ Flood graph from this engine
-						+ Recongize elements by type
-				+ Resize member vector for groups
-					+ member vector for groups' "power", struct with RPM and ThrustMagnitude
-						+ member just to make allocation efficient
-			+ Test
-				+ QueryElement/log
-		+ UpdateSinks():
-			+ Reset all groups
-				+ asm: make sure it's a fill
-			+ Source loop: 
-				+ Controllers update groups (current: RPM=max, ThrustMagnitude=SUM; new: TODO)
-					+ Move direction calculation to engine
-					+ assert(group ID not zero)
-			+ Then, engine loop: engines update themselves, drawing from groups
-				+ RPM and thrust are zero if their engine group ID is not the zero group, else the group's
-					+ Actually nuke "None" constant, and use "group zero"
-				+ Move direction calculation here
-		+ Cleanup:
-			+ See if still need EngineState's "current" values (rpm, thrust dir, thrust magnitude)
-			+ Nuke EngineController's connected engines
-				+ And code that populates that at AddFactoryConnectedElectricalElement()
-			+ See if it still makes sense to call Engines "EngineSink" - do they share any characteristics with sinks?
-				+ Do they consume electricity?
-		= Test ships
-			= Red October
-				= Fix (making it shp2)
-			- Triton
-			- Blimps
-			- etc.
-		+ EngineTransmission material
-			+ Material, new ElectricalElementType
-				+ Yes electrically conductive
-			+ ElectricalElements
-				+ State
-					+ VisitSeqNumber
-				+ General support for new type
-				+ Engine connectivity visit
-			+ Test - also exercising engine groups
-				+ Make test ship, and watch queryElement/log
-				+ Circuits
-				+ Destroy/Restore
-
 	- Material system improvements (*)
 		- Descriptions in ShipBuilder palette
 			- Materials have optional description ID's (from enum)
@@ -1051,12 +997,13 @@
 				- Non-Instanced Watertight Doors (see if possible)
 				- Non-Instanced Water In/Out Pumps (see if possible)
 				- New Engine type: Jet
-					- Requires Engines rearc (*)
+					+ Requires Engines rearc (*)
 					- Make palette groups: Propeller Engines, Jet Engines
 					- Named variants for different powers x "Jet", "Thrust" (less power, less inertia)
 					- Displayed differently by ElectricalPanel
 						- Different sub-type of Engine RPM for different background
 					- Change Material::ToLabel to say "Engine" vs "Jet Engine"
+					- Shader
 				- Controllers:
 					- Engine Controller Telegraph (rename)
 						- Material::ToLabel
@@ -8851,6 +8798,64 @@ IF WX:
 					+ Nuclear alarm
 				+ Test all sounds underwater
 				+ changes.txt
+	+ Engines rearc (*)
+		! Goal: allow controllers to control engines at a distance
+		+ EngineState: EngineGroup member
+		+ EngineController: EngineGroup member
+		+ Connectivity update
+			+ Should we do it at each frame (because of autonomous state changes), or is it enough to only do it at structure changes?
+				+ Doing at structure changes: at all places where we do structure changes:
+					+ Destroy/Restore
+					+ AddConnectedElectricalElement/RemoveConnectedElectricalElement
+			+ Do UpdateEngineConductivity, populating Engine's and EngineController's group IDs
+				+ Store connectivity visit seq number in state, but clearly named
+				+ For each engine_controller: if not deleted: if not visited:
+					+ Make new group ID
+					+ Store reference point and angle
+						+ Should be able to copy most of the current code
+					+ Flood graph from this engine
+						+ Recongize elements by type
+				+ Resize member vector for groups
+					+ member vector for groups' "power", struct with RPM and ThrustMagnitude
+						+ member just to make allocation efficient
+			+ Test
+				+ QueryElement/log
+		+ UpdateSinks():
+			+ Reset all groups
+				+ asm: make sure it's a fill
+			+ Source loop: 
+				+ Controllers update groups (current: RPM=max, ThrustMagnitude=SUM; new: TODO)
+					+ Move direction calculation to engine
+					+ assert(group ID not zero)
+			+ Then, engine loop: engines update themselves, drawing from groups
+				+ RPM and thrust are zero if their engine group ID is not the zero group, else the group's
+					+ Actually nuke "None" constant, and use "group zero"
+				+ Move direction calculation here
+		+ Cleanup:
+			+ See if still need EngineState's "current" values (rpm, thrust dir, thrust magnitude)
+			+ Nuke EngineController's connected engines
+				+ And code that populates that at AddFactoryConnectedElectricalElement()
+			+ See if it still makes sense to call Engines "EngineSink" - do they share any characteristics with sinks?
+				+ Do they consume electricity?
+		+ Test ships
+			+ Red October
+				+ Fix (making it shp2)
+			+ Triton
+			+ Blimps
+			- etc.
+		+ EngineTransmission material
+			+ Material, new ElectricalElementType
+				+ Yes electrically conductive
+			+ ElectricalElements
+				+ State
+					+ VisitSeqNumber
+				+ General support for new type
+				+ Engine connectivity visit
+			+ Test - also exercising engine groups
+				+ Make test ship, and watch queryElement/log
+				+ Circuits
+				+ Destroy/Restore
+
 
 
 

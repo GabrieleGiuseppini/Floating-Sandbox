@@ -1326,6 +1326,18 @@ public:
         mWaterBuffer.copy_from(*newWaterBuffer);
     }
 
+    vec2f const & GetWaterVelocity(ElementIndex pointElementIndex) const
+    {
+        return mWaterVelocityBuffer[pointElementIndex];
+    }
+
+    void SetWaterVelocity(
+        ElementIndex pointElementIndex,
+        vec2f const & waterVelocity)
+    {
+        mWaterVelocityBuffer[pointElementIndex] = waterVelocity;
+    }
+
     vec2f * GetWaterVelocityBufferAsVec2()
     {
         return mWaterVelocityBuffer.data();
