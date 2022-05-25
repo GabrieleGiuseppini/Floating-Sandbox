@@ -67,8 +67,10 @@
 			- changelist
 
 		= Engines rearc (*)
-
 		- Jet engines @ Material system improvements (*)
+		- Update Wordpress post w/new engine stuff
+			- Connectivity
+			- Types
 
 		- Option to disable lightning making damage - people want to sail in the storm
 
@@ -982,8 +984,8 @@
 		! Goal: allow controllers to control engines at a distance
 		+ EngineState: EngineGroup member
 		+ EngineController: EngineGroup member
-		= Connectivity update
-			= Should we do it at each frame (because of autonomous state changes), or is it enough to only do it at structure changes?
+		+ Connectivity update
+			+ Should we do it at each frame (because of autonomous state changes), or is it enough to only do it at structure changes?
 				+ Doing at structure changes: at all places where we do structure changes:
 					+ Destroy/Restore
 					+ AddConnectedElectricalElement/RemoveConnectedElectricalElement
@@ -1023,10 +1025,18 @@
 			- Triton
 			- Blimps
 			- etc.
-		- XXX transmission element
+		- EngineTransmission material
+			- Material, new ElectricalElementType
+				- Yes electrically conductive
+			- ElectricalElements
+				- State
+					- VisitSeqNumber
+				- General support for new type
+				- Engine connectivity visit
 			- Test - also exercising engine groups
-				- Make test ship
-				- QueryElement/log
+				- Make test ship, and watch queryElement/log
+				- Circuits
+				- Destroy/Restore
 
 	- Material system improvements (*)
 		- Descriptions in ShipBuilder palette
@@ -1040,8 +1050,22 @@
 			- Electrical materials:
 				- Non-Instanced Watertight Doors (see if possible)
 				- Non-Instanced Water In/Out Pumps (see if possible)
-				- Jet engine
-					- Requires Engines rearc (*)		
+				- New Engine type: Jet
+					- Requires Engines rearc (*)
+					- Make palette groups: Propeller Engines, Jet Engines
+					- Named variants for different powers x "Jet", "Thrust" (less power, less inertia)
+					- Displayed differently by ElectricalPanel
+						- Different sub-type of Engine RPM for different background
+					- Change Material::ToLabel to say "Engine" vs "Jet Engine"
+				- Controllers:
+					- Engine Controller Telegraph (rename)
+						- Material::ToLabel
+					- Engine Controller "Jet"
+						- ElectricalPanel
+						- Material::ToLabel
+					- Engine Controller "Thrust"
+						- ElectricalPanel
+						- Material::ToLabel
 				- Clamp
 					- A and B types
 					- When powered, destroys all springs between each pair of powered A and B points
