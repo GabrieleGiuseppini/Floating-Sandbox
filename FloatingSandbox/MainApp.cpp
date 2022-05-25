@@ -171,7 +171,7 @@ bool MainApp::OnInit()
 
 #if FS_IS_OS_WINDOWS()
     ULONG currentTimerResolution = GetCurrentTimerResolution();
-    if (currentTimerResolution > 9973)
+    if (currentTimerResolution > 9974) // When 0.997ms, we get 64 calls/sec; when 15.621ms, we get 50 calls/sec
     {
         HMODULE const hNtDll = ::GetModuleHandle(L"Ntdll");
         assert(hNtDll != NULL);
@@ -179,7 +179,7 @@ bool MainApp::OnInit()
         typedef NTSTATUS(CALLBACK * LPFN_NtSetTimerResolution)(ULONG, BOOLEAN, PULONG);
         auto const pSetTimerResolution = (LPFN_NtSetTimerResolution)::GetProcAddress(hNtDll, "NtSetTimerResolution");
         if (pSetTimerResolution != nullptr
-            && pSetTimerResolution(9973, TRUE, &currentTimerResolution) == ERROR_SUCCESS)
+            && pSetTimerResolution(9974, TRUE, &currentTimerResolution) == ERROR_SUCCESS)
         {
             LogMessage("Adjusted timer resolution: returned current=", currentTimerResolution);
             GetCurrentTimerResolution();
