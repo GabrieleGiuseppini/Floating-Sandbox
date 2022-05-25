@@ -66,9 +66,8 @@
 					+ No more ESC
 			- changelist
 
-		= Updating water velocities with blast
+		+ Update water velocities with blast
 			+ Adding velocities during blast
-			- Way to not grow velocities but align them
 
 		+ Engines rearc (*)
 		- Jet engines @ Material system improvements (*)

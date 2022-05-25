@@ -109,13 +109,10 @@ bool Ship::UpdateExplosionStateMachine(
                     pointIndex,
                     mPoints.GetTemperature(pointIndex) + deltaT);
 
-                if (blastProgress < 0.15f) // Don't want to accelerate same water for too long
-                {
-                    // Update water velocity
-                    mPoints.SetWaterVelocity(
-                        pointIndex,
-                        mPoints.GetWaterVelocity(pointIndex) + blastDir * 100.0f); // Magic number
-                }
+                // Update water velocity
+                mPoints.SetWaterVelocity(
+                    pointIndex,
+                    mPoints.GetWaterVelocity(pointIndex) + blastDir * 100.0f * mPoints.GetWater(pointIndex)); // Magic number
 
                 //
                 // Check whether this point is the closest point
