@@ -1001,6 +1001,37 @@ void ElectricalElements::Update(
     mHasConnectivityStructureChangedInCurrentStep = false;
 }
 
+void ElectricalElements::Upload(
+    Render::ShipRenderContext & shipRenderContext,
+    Points const & points) const
+{
+    //
+    // Upload jet engine flames
+    //
+
+    shipRenderContext.UploadJetEngineFlamesStart();
+
+    for (auto const engineElementIndex : mEngines)
+    {
+        auto const & engineState = mElementStateBuffer[engineElementIndex].Engine;
+
+        if (mMaterialBuffer[engineElementIndex]->EngineType == ElectricalMaterial::EngineElementType::Jet
+            && engineState.CurrentThrustMagnitude != 0.0f)
+        {
+            auto const pointIndex = mPointIndexBuffer[engineElementIndex];
+
+            shipRenderContext.UploadJetEngineFlame(
+                points.GetPlaneId(pointIndex),
+                points.GetPosition(pointIndex),
+                -engineState.CurrentThrustDir,
+                engineState.CurrentThrustMagnitude,
+                points.GetRandomNormalizedUniformPersonalitySeed(pointIndex));
+        }
+    }
+
+    shipRenderContext.UploadJetEngineFlamesEnd();
+}
+
 void ElectricalElements::AddFactoryConnectedElectricalElement(
     ElementIndex electricalElementIndex,
     ElementIndex connectedElectricalElementIndex)
@@ -2134,13 +2165,15 @@ void ElectricalElements::UpdateSinks(
             // Calculate thrust direction based off reference point
             //
 
-            vec2f const engineToReferencePointDir =
-                (points.GetPosition(engineState.ReferencePointIndex) - points.GetPosition(enginePointIndex))
-                .normalise();
+            {
+                vec2f const engineToReferencePointDir =
+                    (points.GetPosition(engineState.ReferencePointIndex) - points.GetPosition(enginePointIndex))
+                    .normalise();
 
-            vec2f const thrustDir = vec2f(
-                engineState.ReferencePointCWAngleCos * engineToReferencePointDir.x + engineState.ReferencePointCWAngleSin * engineToReferencePointDir.y,
-                -engineState.ReferencePointCWAngleSin * engineToReferencePointDir.x + engineState.ReferencePointCWAngleCos * engineToReferencePointDir.y);
+                engineState.CurrentThrustDir = vec2f(
+                    engineState.ReferencePointCWAngleCos * engineToReferencePointDir.x + engineState.ReferencePointCWAngleSin * engineToReferencePointDir.y,
+                    -engineState.ReferencePointCWAngleSin * engineToReferencePointDir.x + engineState.ReferencePointCWAngleCos * engineToReferencePointDir.y);
+            }
 
             //
             // Calculate target RPM and thrust magnitude
@@ -2196,7 +2229,7 @@ void ElectricalElements::UpdateSinks(
 
             // Calculate force vector
             vec2f const thrustForce =
-                thrustDir
+                engineState.CurrentThrustDir
                 * engineState.CurrentThrustMagnitude
                 * engineState.ThrustCapacity
                 * gameParameters.EngineThrustAdjustment;
@@ -2246,9 +2279,10 @@ void ElectricalElements::UpdateSinks(
                 * GameParameters::SimulationStepTimeDuration<float>);
 
             //
-            // Generate wake - if running and underwater
+            // Generate wake - if running, underwater, and not jet
             //
 
+            if (mMaterialBuffer[engineSinkElementIndex]->EngineType != ElectricalMaterial::EngineElementType::Jet)
             {
                 vec2f const enginePosition = points.GetPosition(enginePointIndex);
 
@@ -2276,7 +2310,7 @@ void ElectricalElements::UpdateSinks(
 
                             // Calculate velocity
                             vec2f const wakeVelocity =
-                                -thrustDir.rotate(angle)
+                                -engineState.CurrentThrustDir.rotate(angle)
                                 * (engineState.CurrentThrustMagnitude < 0.0f ? -1.0f : 1.0f)
                                 * 20.0f; // Magic number
 

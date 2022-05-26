@@ -387,6 +387,8 @@ ElectricalMaterial::EngineElementType ElectricalMaterial::StrToEngineElementType
 {
     if (Utils::CaseInsensitiveEquals(str, "Diesel"))
         return EngineElementType::Diesel;
+    else if (Utils::CaseInsensitiveEquals(str, "Jet"))
+        return EngineElementType::Jet;
     else if (Utils::CaseInsensitiveEquals(str, "Outboard"))
         return EngineElementType::Outboard;
     else if (Utils::CaseInsensitiveEquals(str, "Steam"))
@@ -439,7 +441,21 @@ std::string ElectricalMaterial::MakeInstancedElementLabel(ElectricalElementInsta
     {
         case ElectricalElementType::Engine:
         {
-            ss << "Engine #" << static_cast<int>(instanceIndex);
+            switch(EngineType)
+            {
+                case EngineElementType::Jet:
+                {
+                    ss << "JetEngine #" << static_cast<int>(instanceIndex);
+                    break;
+                }
+
+                default:
+                {
+                    ss << "Engine #" << static_cast<int>(instanceIndex);
+                    break;
+                }
+            }
+
             break;
         }
 

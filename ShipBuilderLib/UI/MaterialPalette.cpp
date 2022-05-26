@@ -728,6 +728,12 @@ void MaterialPalette<TLayer>::PopulateMaterialProperties(TMaterial const * mater
                                 break;
                             }
 
+                            case ElectricalMaterial::EngineElementType::Jet:
+                            {
+                                prop->SetValue(_("Jet"));
+                                break;
+                            }
+
                             case ElectricalMaterial::EngineElementType::Outboard:
                             {
                                 prop->SetValue(_("Outboard"));
@@ -760,6 +766,12 @@ void MaterialPalette<TLayer>::PopulateMaterialProperties(TMaterial const * mater
                 case ElectricalMaterial::ElectricalElementType::EngineController:
                 {
                     typeProp->SetValue(_("Engine Controller"));
+                    break;
+                }
+
+                case ElectricalMaterial::ElectricalElementType::EngineTransmission:
+                {
+                    typeProp->SetValue(_("Engine Transmission"));
                     break;
                 }
 

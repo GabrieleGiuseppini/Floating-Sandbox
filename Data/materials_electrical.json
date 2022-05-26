@@ -598,6 +598,26 @@
 	}
     },
 
+    {
+        "color_key": "#26f0f0",
+	"conducts_electricity": false,
+        "electrical_type": "Engine", 
+	"engine_direction": 1.570796327,
+	"engine_power": 50.0,
+	"engine_responsiveness": 0.1,
+	"engine_type": "Jet",
+        "heat_generated": 1200.0, 
+	"is_instanced": true,
+        "is_self_powered": false, 
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0, 
+        "name": "50HP Jet Engine U", 
+	"palette_coordinates": {
+		"category": "Engines",
+		"sub_category": "Jet Engines",
+		"sub_category_ordinal": 0
+	}
+    },
 
 
 
@@ -615,7 +635,7 @@
         "name": "Engine Controller", 
         "palette_coordinates": {
 		"category": "Engines",
-		"sub_category": "Engine Controllers",
+		"sub_category": "Propeller Engine Controllers",
 		"sub_category_ordinal": 0
 	}
     },
@@ -1208,12 +1228,21 @@
 		"category": "Engines",
 		"groups":[
 			{
-				"name": "Engines",
+				"name": "Propeller Engines",
 				"sub_categories": [
 					"Outboard Engines",
 					"Diesel Engines",
 					"Steam Engines",
-					"Engine Controllers",
+					"Propeller Engine Controllers"]
+			},
+			{
+				"name": "Jet Engines",
+				"sub_categories": [
+					"Jet Engines"]
+			},
+			{
+				"name": "Misc",
+				"sub_categories": [
 					"Engine Transmissions"]
 			}
 		]

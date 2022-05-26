@@ -70,7 +70,7 @@
 			+ Adding velocities during blast
 
 		+ Engines rearc (*)
-		- Jet engines @ Material system improvements (*)
+		= Jet engines @ Material system improvements (*)
 		- Update Wordpress post w/new engine stuff
 			- Connectivity
 			- Types
@@ -996,14 +996,48 @@
 			- Electrical materials:
 				- Non-Instanced Watertight Doors (see if possible)
 				- Non-Instanced Water In/Out Pumps (see if possible)
-				- New Engine type: Jet
+				= New Engine type: Jet
 					+ Requires Engines rearc (*)
-					- Make palette groups: Propeller Engines, Jet Engines
-					- Named variants for different powers x "Jet", "Thrust" (less power, less inertia)
+					+ Enum
+					= Materials json:
+						= Named variants for  "Jet", "Thrust" (less power, less inertia) X "R/L, U/D" x different powers
+							="Jet"
+								= Base variant U
+									+ Fix direction
+									+ Check responsiveness
+									- Check power
+								- D, L, R
+								- More power 1, 2, 4
+								- Multiply by "U/D"
+							- "Thrust"
+								- Base variant L
+									- Check power
+									- Check responsiveness
+								- R, U, D
+						+ Make palette groups: Propeller Engines, Jet Engines
+					+ Change Material::ToLabel to say "Engine" vs "Jet Engine" depending on engine type
+					= ElectricalMaterials:
+						= @ engines update:
+							- Does not work underwater
+								- Zero targets (thrust and RPM)
+							+ No wake if jet
+					= ElectricalMaterials::Upload():
+						+ Invoke from ship
+						= Upload 
+							+ Only jet engines 
+							+ Iff state::thrust magnitude != 0.0f
+							+ Upload direction and magnitude
+							- TODO: figure out sort by depth
+					= ShipRenderContext:
+						- Shader
+						+ Set params like in others
+						= Upload
+							- Quad length and width both depend on thrust magnitude, but length depends more
+							+ Wind is zero (it won't be used anyway)
 					- Displayed differently by ElectricalPanel
-						- Different sub-type of Engine RPM for different background
-					- Change Material::ToLabel to say "Engine" vs "Jet Engine"
-					- Shader
+						- Different sub-type of Engine RPM UI control for different background: JetEngineGauge.png
+					- Sound
+						- TODO
 				- Controllers:
 					- Engine Controller Telegraph (rename)
 						- Material::ToLabel

@@ -724,6 +724,14 @@ void Ship::RenderUpload(Render::RenderContext & renderContext)
     shipRenderContext.UploadElementStressedSpringsEnd();
 
     //
+    // Upload electrical elements
+    //
+
+    mElectricalElements.Upload(
+        shipRenderContext,
+        mPoints);
+
+    //
     // Upload electric sparks
     //
 

@@ -381,6 +381,117 @@ public:
     void UploadFlamesEnd();
 
     //
+    // Jet Engines Flames
+    //
+
+    void UploadJetEngineFlamesStart();
+
+    /*
+     * Assumptions:
+     *  - TODO: upload happens in depth order (for depth sorting)
+     */
+    inline void UploadJetEngineFlame(
+        PlaneId planeId,
+        vec2f const & baseCenterPosition,
+        vec2f const & flameDir,
+        float flameMagnitude,
+        float flamePersonalitySeed)
+    {
+        //
+        // Calculate flame quad - encloses the flame vector
+        //
+
+        //
+        // C-------D
+        // |       |
+        // |       |
+        // |       |
+        // |       |
+        // |       |
+        // |---P---|
+        // |       |
+        // A-------B
+        //
+
+        // TODO: length should depend more on magnitude
+        float const flameQuadHeight = 7.5f * flameMagnitude;
+        float const flameQuadWidth = 10.5f * flameMagnitude;
+
+        // Y offset to focus bottom of flame at specified position; depends mostly on shader
+        float constexpr YOffset = 0.066666f;
+
+        vec2f const Fp = flameDir.to_perpendicular(); // rotated by PI/2, i.e. oriented to the left (wrt flame vector)
+
+        // P' = point P lowered by yOffset
+        vec2f const Pp = baseCenterPosition - flameDir * YOffset * flameQuadHeight;
+        // P'' = opposite of P' on top
+        vec2f const Ppp = Pp + flameDir * flameQuadHeight;
+
+        // Qhw = vector delineating one half of the quad width, the one to the left
+        vec2f const Qhw = Fp * flameQuadWidth / 2.0f;
+
+        // A, B = left-bottom, right-bottom
+        vec2f const A = Pp + Qhw;
+        vec2f const B = Pp - Qhw;
+        // C, D = left-top, right-top
+        vec2f const C = Ppp + Qhw;
+        vec2f const D = Ppp - Qhw;
+
+        //
+        // Store quad vertices
+        //
+
+        // Triangle 1
+
+        // Top-left
+        mJetEngineFlameVertexBuffer.emplace_back(
+            vec2f(C.x, C.y),
+            static_cast<float>(planeId),
+            flamePersonalitySeed,
+            vec2f(-1.0f, 1.0f));
+
+        // Top-right
+        mJetEngineFlameVertexBuffer.emplace_back(
+            vec2f(D.x, D.y),
+            static_cast<float>(planeId),
+            flamePersonalitySeed,
+            vec2f(1.0f, 1.0f));
+
+        // Bottom-left
+        mJetEngineFlameVertexBuffer.emplace_back(
+            vec2f(A.x, A.y),
+            static_cast<float>(planeId),
+            flamePersonalitySeed,
+            vec2f(-1.0f, 0.0f));
+
+        // Triangle 2
+
+        // Top-Right
+        mJetEngineFlameVertexBuffer.emplace_back(
+            vec2f(D.x, D.y),
+            static_cast<float>(planeId),
+            flamePersonalitySeed,
+            vec2f(1.0f, 1.0f));
+
+        // Bottom-left
+        mJetEngineFlameVertexBuffer.emplace_back(
+            vec2f(A.x, A.y),
+            static_cast<float>(planeId),
+            flamePersonalitySeed,
+            vec2f(-1.0f, 0.0f));
+
+        // Bottom-right
+        mJetEngineFlameVertexBuffer.emplace_back(
+            vec2f(B.x, B.y),
+            static_cast<float>(planeId),
+            flamePersonalitySeed,
+            vec2f(1.0f, 0.0f));
+    }
+
+    void UploadJetEngineFlamesEnd();
+
+
+    //
     // Explosions
     //
     // Explosions don't have a start/end as there are multiple
@@ -1175,12 +1286,14 @@ private:
     void RenderDrawElectricSparks(RenderParameters const & renderParameters);
 
     void RenderPrepareFlames();
-
     template<ProgramType FlameShaderType>
     void RenderDrawFlames(
         size_t startFlameIndex,
         size_t flameCount,
         RenderStatistics & renderStats);
+
+    void RenderPrepareJetEngineFlames();
+    void RenderDrawJetEngineFlames();
 
     void RenderPrepareSparkles(RenderParameters const & renderParameters);
     void RenderDrawSparkles(RenderParameters const & renderParameters);
@@ -1292,6 +1405,25 @@ private:
             , planeId(_planeId)
             , personalitySeed(_personalitySeed)
             , windRotationAngle(_windRotationAngle)
+            , flameSpacePosition(_flameSpacePosition)
+        {}
+    };
+
+    struct JetEngineFlameVertex
+    {
+        vec2f vertexPosition;
+        float planeId;
+        float personalitySeed;
+        vec2f flameSpacePosition;
+
+        JetEngineFlameVertex(
+            vec2f _vertexPosition,
+            float _planeId,
+            float _personalitySeed,
+            vec2f _flameSpacePosition)
+            : vertexPosition(_vertexPosition)
+            , planeId(_planeId)
+            , personalitySeed(_personalitySeed)
             , flameSpacePosition(_flameSpacePosition)
         {}
     };
@@ -1487,6 +1619,10 @@ private:
     GameOpenGLVBO mFlameVBO;
     size_t mFlameVBOAllocatedVertexSize;
 
+    std::vector<JetEngineFlameVertex> mJetEngineFlameVertexBuffer;
+    GameOpenGLVBO mJetEngineFlameVBO;
+    size_t mJetEngineFlameVBOAllocatedVertexSize;
+
     std::vector<ExplosionPlaneData> mExplosionPlaneVertexBuffers;
     size_t mExplosionTotalVertexCount; // Calculated at RenderPrepare and cached for convenience
     GameOpenGLVBO mExplosionVBO;
@@ -1552,6 +1688,7 @@ private:
     GameOpenGLVAO mShipVAO;
     GameOpenGLVAO mElectricSparkVAO;
     GameOpenGLVAO mFlameVAO;
+    GameOpenGLVAO mJetEngineFlameVAO;
     GameOpenGLVAO mExplosionVAO;
     GameOpenGLVAO mSparkleVAO;
     GameOpenGLVAO mGenericMipMappedTextureVAO;

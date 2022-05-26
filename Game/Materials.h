@@ -271,6 +271,7 @@ public:
     enum class EngineElementType
     {
         Diesel,
+        Jet,
         Outboard,
         Steam
     };

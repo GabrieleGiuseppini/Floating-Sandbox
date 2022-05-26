@@ -61,6 +61,10 @@ ShipRenderContext::ShipRenderContext(
     , mFlameVBO()
     , mFlameVBOAllocatedVertexSize(0u)
     //
+    , mJetEngineFlameVertexBuffer()
+    , mJetEngineFlameVBO()
+    , mJetEngineFlameVBOAllocatedVertexSize(0u)
+    //
     , mExplosionPlaneVertexBuffers()
     , mExplosionTotalVertexCount(0u)
     , mExplosionVBO()
@@ -113,6 +117,7 @@ ShipRenderContext::ShipRenderContext(
     , mShipVAO()
     , mElectricSparkVAO()
     , mFlameVAO()
+    , mJetEngineFlameVAO()
     , mExplosionVAO()
     , mSparkleVAO()
     , mGenericMipMappedTextureVAO()
@@ -147,8 +152,8 @@ ShipRenderContext::ShipRenderContext(
     // Initialize buffers
     //
 
-    GLuint vbos[17];
-    glGenBuffers(17, vbos);
+    GLuint vbos[18];
+    glGenBuffers(18, vbos);
     CheckOpenGLError();
 
     mPointAttributeGroup1VBO = vbos[0];
@@ -194,20 +199,22 @@ ShipRenderContext::ShipRenderContext(
 
     mFlameVBO = vbos[9];
 
-    mExplosionVBO = vbos[10];
+    mJetEngineFlameVBO = vbos[10];
 
-    mSparkleVBO = vbos[11];
+    mExplosionVBO = vbos[11];
+
+    mSparkleVBO = vbos[12];
     mSparkleVertexBuffer.reserve(256); // Arbitrary
 
-    mGenericMipMappedTextureVBO = vbos[12];
+    mGenericMipMappedTextureVBO = vbos[13];
 
-    mHighlightVBO = vbos[13];
+    mHighlightVBO = vbos[14];
 
-    mVectorArrowVBO = vbos[14];
+    mVectorArrowVBO = vbos[15];
 
-    mCenterVBO = vbos[15];
+    mCenterVBO = vbos[16];
 
-    mPointToPointArrowVBO = vbos[16];
+    mPointToPointArrowVBO = vbos[17];
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -325,6 +332,29 @@ ShipRenderContext::ShipRenderContext(
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Flame1), 4, GL_FLOAT, GL_FALSE, sizeof(FlameVertex), (void*)0);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Flame2));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Flame2), 3, GL_FLOAT, GL_FALSE, sizeof(FlameVertex), (void*)((4) * sizeof(float)));
+        CheckOpenGLError();
+
+        glBindVertexArray(0);
+    }
+
+
+    //
+    // Initialize Jet Engine Flame VAO's
+    //
+
+    {
+        glGenVertexArrays(1, &tmpGLuint);
+        mJetEngineFlameVAO = tmpGLuint;
+
+        glBindVertexArray(*mJetEngineFlameVAO);
+
+        // Describe vertex attributes
+        glBindBuffer(GL_ARRAY_BUFFER, *mJetEngineFlameVBO);
+        static_assert(sizeof(JetEngineFlameVertex) == (4 + 2) * sizeof(float));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::JetEngineFlame1));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::JetEngineFlame1), 4, GL_FLOAT, GL_FALSE, sizeof(JetEngineFlameVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::JetEngineFlame2));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::JetEngineFlame2), 2, GL_FLOAT, GL_FALSE, sizeof(JetEngineFlameVertex), (void *)((4) * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -925,6 +955,21 @@ void ShipRenderContext::UploadFlamesEnd()
     // Nop
 }
 
+void ShipRenderContext::UploadJetEngineFlamesStart()
+{
+    //
+    // Jet engine flames are not sticky: we upload them at each frame,
+    // though they will be empty most of the time
+    //
+
+    mJetEngineFlameVertexBuffer.clear();
+}
+
+void ShipRenderContext::UploadJetEngineFlamesEnd()
+{
+    // Nop
+}
+
 void ShipRenderContext::UploadElementEphemeralPointsStart()
 {
     // Client wants to upload a new set of ephemeral point elements
@@ -1150,6 +1195,12 @@ void ShipRenderContext::RenderPrepare(RenderParameters const & renderParameters)
     //
 
     RenderPrepareFlames();
+
+    //
+    // Prepare jet engine flames
+    //
+
+    RenderPrepareJetEngineFlames();
 
     //
     // Prepare stressed springs
@@ -1544,6 +1595,12 @@ void ShipRenderContext::RenderDraw(
     }
 
     //
+    // Render jet engine flames
+    //
+
+    RenderDrawJetEngineFlames();
+
+    //
     // Render sparkles
     //
 
@@ -1705,6 +1762,59 @@ void ShipRenderContext::RenderDrawFlames(
 
         // Update stats
         renderStats.LastRenderedShipFlames += flameCount; // # of quads
+    }
+}
+
+void ShipRenderContext::RenderPrepareJetEngineFlames()
+{
+    //
+    // Upload buffers, if needed
+    //
+
+    if (!mJetEngineFlameVertexBuffer.empty())
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, *mJetEngineFlameVBO);
+
+        if (mJetEngineFlameVertexBuffer.size() > mJetEngineFlameVBOAllocatedVertexSize)
+        {
+            // Re-allocate VBO buffer and upload
+            glBufferData(GL_ARRAY_BUFFER, mJetEngineFlameVertexBuffer.size() * sizeof(JetEngineFlameVertex), mJetEngineFlameVertexBuffer.data(), GL_STREAM_DRAW);
+            CheckOpenGLError();
+
+            mJetEngineFlameVBOAllocatedVertexSize = mJetEngineFlameVertexBuffer.size();
+        }
+        else
+        {
+            // No size change, just upload VBO buffer
+            glBufferSubData(GL_ARRAY_BUFFER, 0, mJetEngineFlameVertexBuffer.size() * sizeof(JetEngineFlameVertex), mJetEngineFlameVertexBuffer.data());
+            CheckOpenGLError();
+        }
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        //
+        // Set flame parameters
+        //
+
+        float const flameProgress = GameWallClock::GetInstance().NowAsFloat() * 0.345f;
+
+        mShaderManager.ActivateProgram<ProgramType::ShipJetEngineFlames>();
+        mShaderManager.SetProgramParameter<ProgramType::ShipJetEngineFlames, ProgramParameterType::FlameProgress>(flameProgress);
+    }
+}
+
+void ShipRenderContext::RenderDrawJetEngineFlames()
+{
+    if (!mJetEngineFlameVertexBuffer.empty())
+    {
+        glBindVertexArray(*mJetEngineFlameVAO);
+
+        mShaderManager.ActivateProgram<ProgramType::ShipJetEngineFlames>();
+
+        assert(0 == (mJetEngineFlameVertexBuffer.size() % 6));
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mJetEngineFlameVertexBuffer.size()));
+
+        glBindVertexArray(0);
     }
 }
 
@@ -2135,7 +2245,7 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
     //          - Triangles are always drawn temporally before ropes and springs though, to avoid anti-aliasing issues
     //      - 4: Stressed springs, Frontier edges (temporally after)
     //      - 5: Points
-    //      - 6: Electric sparks, Flames (foreground)
+    //      - 6: Electric sparks, Flames (foreground), Jet engine flames
     //      - 7: Sparkles
     //      - 8: Generic textures
     //      - 9: Explosions
@@ -2293,7 +2403,7 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
         shipOrthoMatrix);
 
     //
-    // Layer 6: Electric Sparks, Flames - foreground
+    // Layer 6: Electric Sparks, Flames - foreground, Jet engine flames
     //
 
     view.CalculateShipOrthoMatrix(
@@ -2312,6 +2422,10 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
 
     mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground>();
     mShaderManager.SetProgramParameter<ProgramType::ShipFlamesForeground, ProgramParameterType::OrthoMatrix>(
+        shipOrthoMatrix);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipJetEngineFlames>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipJetEngineFlames, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
 
     //

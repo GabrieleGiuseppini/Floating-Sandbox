@@ -106,6 +106,7 @@ private:
 
             float CurrentRpm;
             float CurrentThrustMagnitude;
+            vec2f CurrentThrustDir;
 
             float LastPublishedRpm;
             float LastPublishedThrustMagnitude;
@@ -134,6 +135,7 @@ private:
 
                 CurrentRpm = 0.0f;
                 CurrentThrustMagnitude = 0.0f;
+                CurrentThrustDir = vec2f::zero();
 
                 LastPublishedRpm = 0.0f;
                 LastPublishedThrustMagnitude = 0.0f;
@@ -532,6 +534,10 @@ public:
         Springs const & springs,
         Storm::Parameters const & stormParameters,
         GameParameters const & gameParameters);
+
+    void Upload(
+        Render::ShipRenderContext & shipRenderContext,
+        Points const & points) const;
 
 public:
 

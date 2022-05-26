@@ -81,6 +81,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::ShipFrontierEdges;
     else if (lstr == "ship_generic_mipmapped_textures")
         return ProgramType::ShipGenericMipMappedTextures;
+    else if (lstr == "ship_jet_engine_flames")
+        return ProgramType::ShipJetEngineFlames;
     else if (lstr == "ship_point_to_point_arrows")
         return ProgramType::ShipPointToPointArrows;
     else if (lstr == "ship_points_color")
@@ -221,6 +223,8 @@ std::string ProgramTypeToStr(ProgramType program)
         return "ShipFrontierEdges";
     case ProgramType::ShipGenericMipMappedTextures:
         return "ShipGenericMipMappedTextures";
+    case ProgramType::ShipJetEngineFlames:
+        return "ShipJetEngineFlames";
     case ProgramType::ShipPointToPointArrows:
         return "ShipPointToPointArrows";
     case ProgramType::ShipPointsColor:
@@ -539,6 +543,10 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::Flame1;
     else if (Utils::CaseInsensitiveEquals(str, "Flame2"))
         return VertexAttributeType::Flame2;
+    else if (Utils::CaseInsensitiveEquals(str, "JetEngineFlame1"))
+        return VertexAttributeType::JetEngineFlame1;
+    else if (Utils::CaseInsensitiveEquals(str, "JetEngineFlame2"))
+        return VertexAttributeType::JetEngineFlame2;
     else if (Utils::CaseInsensitiveEquals(str, "Highlight1"))
         return VertexAttributeType::Highlight1;
     else if (Utils::CaseInsensitiveEquals(str, "Highlight2"))
