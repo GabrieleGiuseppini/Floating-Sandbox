@@ -1027,17 +1027,27 @@
 							+ Only jet engines 
 							+ Iff state::thrust magnitude != 0.0f
 							+ Upload direction and magnitude
-							- TODO: figure out sort by depth
+							- Z-sort:
+								- mJetEnginesSortedByPlaneId
+								- Init'd at Add, random order
+								- OnStructureChanged~:
+									- Invoked by Ship when connected components change
+									- Sorts by point's PlaneId
+								- Upload runs on it
+									- So no "Jet" type check
 					= ShipRenderContext:
-						- Shader
+						= Shader
 						+ Set params like in others
 						= Upload
 							- Quad length and width both depend on thrust magnitude, but length depends more
+								- OR: width is fixed?
 							+ Wind is zero (it won't be used anyway)
 					- Displayed differently by ElectricalPanel
 						- Different sub-type of Engine RPM UI control for different background: JetEngineGauge.png
 					- Sound
 						- TODO
+					- Tests:
+						- Z depth
 				- Controllers:
 					- Engine Controller Telegraph (rename)
 						- Material::ToLabel

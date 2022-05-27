@@ -414,8 +414,9 @@ public:
         //
 
         // TODO: length should depend more on magnitude
-        float const flameQuadHeight = 7.5f * flameMagnitude;
-        float const flameQuadWidth = 10.5f * flameMagnitude;
+        float const flameQuadHeight = 13.0f * flameMagnitude;
+        //float const flameQuadWidth = 10.5f * flameMagnitude;
+        float const flameQuadWidth = 10.5f;
 
         // Y offset to focus bottom of flame at specified position; depends mostly on shader
         float constexpr YOffset = 0.066666f;

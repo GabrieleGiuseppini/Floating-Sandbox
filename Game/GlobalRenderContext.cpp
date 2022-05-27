@@ -56,6 +56,8 @@ void GlobalRenderContext::InitializeNoiseTextures(ResourceLocator const & resour
     mShaderManager.SetTextureParameters<ProgramType::ShipFlamesBackground>();
     mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground>();
     mShaderManager.SetTextureParameters<ProgramType::ShipFlamesForeground>();
+    mShaderManager.ActivateProgram<ProgramType::ShipJetEngineFlames>();
+    mShaderManager.SetTextureParameters<ProgramType::ShipJetEngineFlames>();
 
     //
     // Load noise 2
