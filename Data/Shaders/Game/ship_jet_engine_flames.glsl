@@ -16,9 +16,11 @@ uniform mat4 paramOrthoMatrix;
 uniform float paramFlameProgress;
 
 void main()
-{
+{   
     flameSpacePosition = inJetEngineFlame2.xy;
-    noiseOffset = vec2(inJetEngineFlame1.w, inJetEngineFlame1.w - paramFlameProgress);
+
+    #define FlameSpeed 1.2
+    noiseOffset = vec2(inJetEngineFlame1.w, inJetEngineFlame1.w - paramFlameProgress * FlameSpeed);
 
     gl_Position = paramOrthoMatrix * vec4(inJetEngineFlame1.xyz, 1.0);
 }
@@ -34,9 +36,6 @@ in vec2 noiseOffset;
 // The textures
 uniform sampler2D paramNoiseTexture1;
 uniform sampler2D paramGenericLinearTexturesAtlasTexture;
-
-// Params
-uniform float paramFlameProgress;
 
 //
 // Loosely based on "Flame in the Wind" by kuvkar (https://www.shadertoy.com/view/4tXXRn)
@@ -65,68 +64,46 @@ void main()
     // Fragments with alpha lower than this are discarded
     #define MinAlpha 0.2
 
-    vec2 uv = flameSpacePosition;
-    uv.x /= 2.0; // (x=[-0.5, 0.5], y=[0.0, 1.0])
+    vec2 uv = flameSpacePosition; // (x=[-1.0, 1.0], y=[0.0, 1.0])
         
     //
     // Get noise for this fragment and time
     //
     
-    #define NoiseResolution 1.0
+    #define NoiseResolution 0.9
     // (-0.375, 0.375)
     float fragmentNoise = GetNoise(uv * NoiseResolution + noiseOffset);
         
     //
-    // Rotate fragment based on noise and vertical extent
+    // Rotate fragment based on noise
     //
     
     float angle = fragmentNoise;
 
-    // Magnify rotation amount based on distance from bottom of quad
-    angle /= max(0.2, length(uv));
+    // Tune amount of chaos
+    //angle *= 0.45;
 
-    // Straighten the flame at the bottom and make full turbulence higher up
-    angle *= smoothstep(-0.1, 0.3, flameSpacePosition.y);
-
-    // Smooth the angle
-    angle *= 0.45;
-
-    // Rotate!
+    // Rotate (and add)
     uv += GetRotationMatrix(angle) * uv;
 
     //
     // Calculate flameness
     //
     
-    /*
-    // Flame width
-    float flameWidth = sqrt(flameSpacePosition.y); // Taper down 
-    flameWidth *= 1.0 - smoothstep(0.7, 1.0, flameSpacePosition.y); // Taper up
-    
-    // Calculate flameness
-    float flameness = 1.0 - smoothstep(0.0, flameWidth, abs(uv.x));
-    */
-    
-    float flameWidth = min(1.0, sqrt(flameSpacePosition.y / 0.4)); // Taper down 
+    float flameWidth = 0.1 + 0.4 * min(1.0, sqrt(flameSpacePosition.y / 0.4)); // Taper down  
     float flameness = 1.0 - abs(uv.x) / flameWidth;
     
     // Taper flame up depending on randomized height
     float variationH = (fragmentNoise + 0.5) * 1.4;
-    flameness *= smoothstep(1.2, variationH * 0.5, flameSpacePosition.y);
-    
-    // Focus (less halo)
-    #define FlameFocus 2.0
-    flameness = pow(clamp(flameness, 0.0, 3.0), FlameFocus);
-
+    flameness *= smoothstep(1.1, variationH * 0.5, flameSpacePosition.y);    
     
     //
     // Emit
     //
     
-    vec3 col1 = mix(vec3(1.0, 1.0, 0.6), vec3(1.0, 1.0, 1.0), flameness * 0.9);
-    col1 = mix(vec3(1.0, 0.4, 0.1), col1, smoothstep(0.3, 0.8, flameness));    
-
-    // Blend with background
+    vec3 col1 = mix(vec3(1.0, 1.0, 0.6), vec3(1.0, 1.0, 1.0), flameness);
+    col1 = mix(vec3(227.0/255.0, 69.0/255.0, 11.0/255.0), col1, smoothstep(0.3, 0.8, flameness));    
     float alpha = smoothstep(0.0, 0.5, flameness);
-    gl_FragColor = mix(vec4(0.0), vec4(col1, 1.0), alpha);
+    
+    gl_FragColor = vec4(col1, alpha);
 }

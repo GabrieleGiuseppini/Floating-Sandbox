@@ -415,11 +415,10 @@ public:
 
         // TODO: length should depend more on magnitude
         float const flameQuadHeight = 13.0f * flameMagnitude;
-        //float const flameQuadWidth = 10.5f * flameMagnitude;
-        float const flameQuadWidth = 10.5f;
+        float const flameQuadWidth = 18.5f * flameMagnitude;
 
         // Y offset to focus bottom of flame at specified position; depends mostly on shader
-        float constexpr YOffset = 0.1f; // 0.066666f; // TODO
+        float constexpr YOffset = 0.08f;
 
         vec2f const Fp = flameDir.to_perpendicular(); // rotated by PI/2, i.e. oriented to the left (wrt flame vector)
 
