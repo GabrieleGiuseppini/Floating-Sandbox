@@ -1045,6 +1045,7 @@
 							- Should take RPM instead of thrust, so flame is visible also at zero thrust but non-zero RPM
 					- Displayed differently by ElectricalPanel
 						- Different sub-type of Engine RPM UI control for different background: JetEngineGauge.png
+							+ Image
 					- Sound
 						- TODO
 					- Tests:
@@ -1054,6 +1055,7 @@
 						- Material::ToLabel
 					- Engine Controller "Jet"
 						- ElectricalPanel
+							= Image: background and handle
 						- Material::ToLabel
 					- Engine Controller "Thrust"
 						- ElectricalPanel
