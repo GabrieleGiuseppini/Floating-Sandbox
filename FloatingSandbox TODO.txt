@@ -1037,12 +1037,12 @@
 									- So no "Jet" type check
 					= ShipRenderContext:
 						= Shader
-							- Do early discard
+							- Do early discard - REALLY?
 						+ Set params like in others
 						= Upload
-							- Quad length and width both depend on thrust magnitude, but length depends more
-								- OR: width is fixed?
+							= Quad length and width both depend on thrust magnitude, but length depends more
 							+ Wind is zero (it won't be used anyway)
+							- Should take RPM instead of thrust, so flame is visible also at zero thrust but non-zero RPM
 					- Displayed differently by ElectricalPanel
 						- Different sub-type of Engine RPM UI control for different background: JetEngineGauge.png
 					- Sound

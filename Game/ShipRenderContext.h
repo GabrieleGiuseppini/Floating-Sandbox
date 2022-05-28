@@ -402,40 +402,36 @@ public:
         //
 
         //
-        // C-------D
+        // C---T---D
         // |       |
         // |       |
         // |       |
         // |       |
         // |       |
-        // |---P---|
         // |       |
-        // A-------B
+        // |       |
+        // A---B---B
         //
 
-        // TODO: length should depend more on magnitude
-        float const flameQuadHeight = 13.0f * flameMagnitude;
-        float const flameQuadWidth = 18.5f * flameMagnitude;
+        float constexpr FlameLengthBase = 15.0f;
 
-        // Y offset to focus bottom of flame at specified position; depends mostly on shader
-        float constexpr YOffset = 0.08f;
+        float const flameQuadLength = FlameLengthBase * flameMagnitude;
+        float const flameQuadWidth = 1.423f * FlameLengthBase * (1.0f - (flameMagnitude - 1) * (flameMagnitude - 1));
 
         vec2f const Fp = flameDir.to_perpendicular(); // rotated by PI/2, i.e. oriented to the left (wrt flame vector)
 
-        // P' = point P lowered by yOffset
-        vec2f const Pp = baseCenterPosition - flameDir * YOffset * flameQuadHeight;
-        // P'' = opposite of P' on top
-        vec2f const Ppp = Pp + flameDir * flameQuadHeight;
+        // T = opposite of baseCenterPosition on top
+        vec2f const T = baseCenterPosition + flameDir * flameQuadLength;
 
         // Qhw = vector delineating one half of the quad width, the one to the left
         vec2f const Qhw = Fp * flameQuadWidth / 2.0f;
 
         // A, B = left-bottom, right-bottom
-        vec2f const A = Pp + Qhw;
-        vec2f const B = Pp - Qhw;
+        vec2f const A = baseCenterPosition + Qhw;
+        vec2f const B = baseCenterPosition - Qhw;
         // C, D = left-top, right-top
-        vec2f const C = Ppp + Qhw;
-        vec2f const D = Ppp - Qhw;
+        vec2f const C = T + Qhw;
+        vec2f const D = T - Qhw;
 
         //
         // Store quad vertices
