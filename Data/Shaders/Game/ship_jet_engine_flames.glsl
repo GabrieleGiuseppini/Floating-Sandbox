@@ -67,19 +67,12 @@ void main()
 
     vec2 uv = flameSpacePosition;
     uv.x /= 2.0; // (x=[-0.5, 0.5], y=[0.0, 1.0])
-    
-    //
-    // Flame time
-    //
-    
-    #define FlameSpeed 0.6
-    float flameTime = paramFlameProgress * FlameSpeed;
         
     //
     // Get noise for this fragment and time
     //
     
-    #define NoiseResolution 0.4
+    #define NoiseResolution 1.0
     // (-0.375, 0.375)
     float fragmentNoise = GetNoise(uv * NoiseResolution + noiseOffset);
         
@@ -115,7 +108,7 @@ void main()
     */
     
     float flameWidth = min(1.0, sqrt(flameSpacePosition.y / 0.4)); // Taper down 
-    float flameness = 1.0 - smoothstep(0.0, flameWidth, abs(uv.x));
+    float flameness = 1.0 - abs(uv.x) / flameWidth;
     
     // Taper flame up depending on randomized height
     float variationH = (fragmentNoise + 0.5) * 1.4;

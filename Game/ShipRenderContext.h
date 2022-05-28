@@ -419,7 +419,7 @@ public:
         float const flameQuadWidth = 10.5f;
 
         // Y offset to focus bottom of flame at specified position; depends mostly on shader
-        float constexpr YOffset = 0.066666f; // TODO
+        float constexpr YOffset = 0.1f; // 0.066666f; // TODO
 
         vec2f const Fp = flameDir.to_perpendicular(); // rotated by PI/2, i.e. oriented to the left (wrt flame vector)
 

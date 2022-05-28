@@ -1796,7 +1796,7 @@ void ShipRenderContext::RenderPrepareJetEngineFlames()
         // Set flame parameters
         //
 
-        float const flameProgress = GameWallClock::GetInstance().NowAsFloat() * 0.345f;
+        float const flameProgress = GameWallClock::GetInstance().NowAsFloat() * 0.8f;
 
         mShaderManager.ActivateProgram<ProgramType::ShipJetEngineFlames>();
         mShaderManager.SetProgramParameter<ProgramType::ShipJetEngineFlames, ProgramParameterType::FlameProgress>(flameProgress);
