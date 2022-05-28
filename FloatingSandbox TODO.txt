@@ -1037,6 +1037,7 @@
 									- So no "Jet" type check
 					= ShipRenderContext:
 						= Shader
+							- Do early discard
 						+ Set params like in others
 						= Upload
 							- Quad length and width both depend on thrust magnitude, but length depends more

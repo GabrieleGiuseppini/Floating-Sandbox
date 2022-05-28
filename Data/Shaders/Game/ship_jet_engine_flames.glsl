@@ -72,7 +72,7 @@ void main()
     // Flame time
     //
     
-    #define FlameSpeed 0.55
+    #define FlameSpeed 0.6
     float flameTime = paramFlameProgress * FlameSpeed;
         
     //
@@ -80,6 +80,7 @@ void main()
     //
     
     #define NoiseResolution 0.4
+    // (-0.375, 0.375)
     float fragmentNoise = GetNoise(uv * NoiseResolution + noiseOffset);
         
     //
@@ -88,11 +89,11 @@ void main()
     
     float angle = fragmentNoise;
 
-    // Magnify rotation amount based on distance from center of quad
-    angle /= max(0.1, length(uv));
+    // Magnify rotation amount based on distance from bottom of quad
+    angle /= max(0.2, length(uv));
 
     // Straighten the flame at the bottom and make full turbulence higher up
-    angle *= smoothstep(-0.1, 0.5, flameSpacePosition.y);
+    angle *= smoothstep(-0.1, 0.3, flameSpacePosition.y);
 
     // Smooth the angle
     angle *= 0.45;
@@ -118,7 +119,7 @@ void main()
     
     // Taper flame up depending on randomized height
     float variationH = (fragmentNoise + 0.5) * 1.4;
-    flameness *= smoothstep(1.3, variationH * 0.5, flameSpacePosition.y);
+    flameness *= smoothstep(1.2, variationH * 0.5, flameSpacePosition.y);
     
     // Focus (less halo)
     #define FlameFocus 2.0
@@ -129,7 +130,7 @@ void main()
     // Emit
     //
     
-    vec3 col1 = mix(vec3(1.0, 1.0, 0.6), vec3(1.0, 1.0, 1.0), flameness);
+    vec3 col1 = mix(vec3(1.0, 1.0, 0.6), vec3(1.0, 1.0, 1.0), flameness * 0.9);
     col1 = mix(vec3(1.0, 0.4, 0.1), col1, smoothstep(0.3, 0.8, flameness));    
 
     // Blend with background
