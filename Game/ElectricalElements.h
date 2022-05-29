@@ -456,6 +456,7 @@ public:
         , mLamps()
         , mEngineControllers()
         , mEngines()
+        , mJetEnginesSortedByPlaneId()
         , mCurrentLightSpreadAdjustment(gameParameters.LightSpreadAdjustment)
         , mCurrentLuminiscenceAdjustment(gameParameters.LuminiscenceAdjustment)
         , mHasConnectivityStructureChangedInCurrentStep(true)
@@ -519,6 +520,8 @@ public:
     void Destroy(ElementIndex electricalElementIndex);
 
     void Restore(ElementIndex electricalElementIndex);
+
+    void OnPhysicalStructureChanged(Points const & points);
 
     void OnElectricSpark(
         ElementIndex electricalElementIndex,
@@ -868,6 +871,10 @@ private:
     std::vector<ElementIndex> mLamps;
     std::vector<ElementIndex> mEngineControllers;
     std::vector<ElementIndex> mEngines;
+
+    // Subset of mEngines index vector, only for jets *and* sorted by particle Plane ID;
+    // never changes size, only order
+    std::vector<ElementIndex> mJetEnginesSortedByPlaneId;
 
     // The game parameter values that we are current with; changes
     // in the values of these parameters will trigger a re-calculation

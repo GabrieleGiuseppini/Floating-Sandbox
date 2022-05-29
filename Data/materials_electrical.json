@@ -603,7 +603,7 @@
 	"conducts_electricity": false,
         "electrical_type": "Engine", 
 	"engine_direction": 1.570796327,
-	"engine_power": 500.0,
+	"engine_power": 8000.0,
 	"engine_responsiveness": 0.1,
 	"engine_type": "Jet",
         "heat_generated": 1200.0, 

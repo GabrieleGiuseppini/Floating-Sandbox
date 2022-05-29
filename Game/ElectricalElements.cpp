@@ -62,6 +62,10 @@ void ElectricalElements::Add(
 
             // Indices
             mEngines.emplace_back(elementIndex);
+            if (electricalMaterial.EngineType == ElectricalMaterial::EngineElementType::Jet)
+            {
+                mJetEnginesSortedByPlaneId.emplace_back(elementIndex);
+            }
 
             break;
         }
@@ -869,6 +873,17 @@ void ElectricalElements::Restore(ElementIndex electricalElementIndex)
     mHasConnectivityStructureChangedInCurrentStep = true;
 }
 
+void ElectricalElements::OnPhysicalStructureChanged(Points const & points)
+{
+    std::sort(
+        mJetEnginesSortedByPlaneId.begin(),
+        mJetEnginesSortedByPlaneId.end(),
+        [this, &points](ElementIndex const & idx1, ElementIndex const & idx2) -> bool
+        {
+            return points.GetPlaneId(mPointIndexBuffer[idx1]) < points.GetPlaneId(mPointIndexBuffer[idx2]);
+        });
+}
+
 void ElectricalElements::OnElectricSpark(
     ElementIndex electricalElementIndex,
     float currentSimulationTime)
@@ -1011,14 +1026,12 @@ void ElectricalElements::Upload(
 
     shipRenderContext.UploadJetEngineFlamesStart();
 
-    for (auto const engineElementIndex : mEngines)
+    for (auto const jetEngineElementIndex : mJetEnginesSortedByPlaneId)
     {
-        auto const & engineState = mElementStateBuffer[engineElementIndex].Engine;
-
-        if (mMaterialBuffer[engineElementIndex]->EngineType == ElectricalMaterial::EngineElementType::Jet
-            && engineState.CurrentRpm != 0.0f)
+        auto const & engineState = mElementStateBuffer[jetEngineElementIndex].Engine;
+        if (engineState.CurrentRpm != 0.0f)
         {
-            auto const pointIndex = mPointIndexBuffer[engineElementIndex];
+            auto const pointIndex = mPointIndexBuffer[jetEngineElementIndex];
 
             shipRenderContext.UploadJetEngineFlame(
                 points.GetPlaneId(pointIndex),

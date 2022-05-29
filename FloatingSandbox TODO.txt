@@ -1021,20 +1021,20 @@
 							- Does not work underwater
 								- Zero targets (thrust and RPM)
 							+ No wake if jet
-					= ElectricalMaterials::Upload():
+					+ ElectricalMaterials::Upload():
 						+ Invoke from ship
-						= Upload 
+						+ Upload 
 							+ Only jet engines 
 							+ Iff state::thrust magnitude != 0.0f
 							+ Upload direction and magnitude
-							- Z-sort:
-								- mJetEnginesSortedByPlaneId
-								- Init'd at Add, random order
-								- OnStructureChanged~:
-									- Invoked by Ship when connected components change
-									- Sorts by point's PlaneId
-								- Upload runs on it
-									- So no "Jet" type check
+							+ Z-sort:
+								+ mJetEnginesSortedByPlaneId
+								+ Init'd at Add, random order
+								+ OnStructureChanged~:
+									+ Invoked by Ship when connected components change
+									+ Sorts by point's PlaneId
+								+ Upload runs on it
+									+ So no "Jet" type check
 					= ShipRenderContext:
 						= Shader
 							- Do early discard - REALLY?

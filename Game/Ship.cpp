@@ -624,7 +624,9 @@ void Ship::Update(
 void Ship::RenderUpload(Render::RenderContext & renderContext)
 {
     //
-    // Run connectivity visit, if there have been any deletions
+    // Run all tasks that need to run when connectivity has changed
+    // (i.e. when the connected components have changed, e.g. because
+    // of particle or spring deletion)
     //
     // Note: we have to do this here, at render time rather than
     // at update time, because the structure might have been dirtied
@@ -633,7 +635,11 @@ void Ship::RenderUpload(Render::RenderContext & renderContext)
 
     if (mIsStructureDirty)
     {
+        // Re-calculate connected components
         RunConnectivityVisit();
+
+        // Notify electrical elements
+        mElectricalElements.OnPhysicalStructureChanged(mPoints);
     }
 
     //
