@@ -333,6 +333,7 @@ private:
     wxBitmap mGauge0100Bitmap;
     wxBitmap mGaugeRpmBitmap;
     wxBitmap mGaugeVoltsBitmap;
+    wxBitmap mGaugeJetEngineBitmap;
 
     wxBitmap mEngineControllerBackgroundEnabledBitmap;
     wxBitmap mEngineControllerBackgroundDisabledBitmap;

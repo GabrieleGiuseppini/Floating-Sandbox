@@ -223,6 +223,7 @@ SwitchboardPanel::SwitchboardPanel(
         mGauge0100Bitmap.LoadFile(resourceLocator.GetBitmapFilePath("gauge_0-100").string(), wxBITMAP_TYPE_PNG);
         mGaugeRpmBitmap.LoadFile(resourceLocator.GetBitmapFilePath("gauge_rpm").string(), wxBITMAP_TYPE_PNG);
         mGaugeVoltsBitmap.LoadFile(resourceLocator.GetBitmapFilePath("gauge_volts").string(), wxBITMAP_TYPE_PNG);
+        mGaugeJetEngineBitmap.LoadFile(resourceLocator.GetBitmapFilePath("gauge_jet").string(), wxBITMAP_TYPE_PNG);
         mMinBitmapSize.DecTo(mGaugeRpmBitmap.GetSize());
 
         ProgressSteps += 1.0f; // 8.0f
@@ -790,20 +791,48 @@ void SwitchboardPanel::OnEngineMonitorCreated(
 
     if (!isHidden)
     {
-        ggCtrl = new GaugeElectricalElementControl(
-            mSwitchPanel,
-            mGaugeRpmBitmap,
-            wxPoint(47, 47),
-            36.0f,
-            Pi<float> / 4.0f - 0.06f,
-            2.0f * Pi<float> -Pi<float> / 4.0f,
-            *label,
-            mPassiveCursor,
-            [this, electricalElementId]()
+        switch (electricalMaterial.EngineType)
+        {
+            case ElectricalMaterial::EngineElementType::Jet:
             {
-                this->OnTick(electricalElementId);
-            },
-            1.0f - rpm);
+                ggCtrl = new GaugeElectricalElementControl(
+                    mSwitchPanel,
+                    mGaugeJetEngineBitmap,
+                    wxPoint(49, 47),
+                    36.0f,
+                    Pi<float> / 4.0f - 0.061f,
+                    2.0f * Pi<float> -Pi<float> / 4.0f - 0.20f,
+                    *label,
+                    mPassiveCursor,
+                    [this, electricalElementId]()
+                    {
+                        this->OnTick(electricalElementId);
+                    },
+                    1.0f - rpm);
+
+                break;
+            }
+
+            default:
+            {
+                ggCtrl = new GaugeElectricalElementControl(
+                    mSwitchPanel,
+                    mGaugeRpmBitmap,
+                    wxPoint(47, 47),
+                    36.0f,
+                    Pi<float> / 4.0f - 0.06f,
+                    2.0f * Pi<float> -Pi<float> / 4.0f,
+                    *label,
+                    mPassiveCursor,
+                    [this, electricalElementId]()
+                    {
+                        this->OnTick(electricalElementId);
+                    },
+                    1.0f - rpm);
+
+                break;
+            }
+        }
 
         // Store as updateable element
         mUpdateableElements.emplace_back(ggCtrl);
