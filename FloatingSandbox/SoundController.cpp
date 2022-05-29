@@ -389,6 +389,7 @@ SoundController::SoundController(
                 mMasterEffectsMuted);
         }
         else if (soundType == SoundType::EngineDiesel1
+                || soundType == SoundType::EngineJet1
                 || soundType == SoundType::EngineOutboard1
                 || soundType == SoundType::EngineSteam1
                 || soundType == SoundType::EngineSteam2
@@ -1974,23 +1975,38 @@ void SoundController::OnEngineMonitorCreated(
     std::optional<ElectricalPanelElementMetadata> const & /*panelElementMetadata*/)
 {
     // Associate sound type with this element
-    if (electricalMaterial.EngineType == ElectricalMaterial::EngineElementType::Diesel)
+    switch (electricalMaterial.EngineType)
     {
-        mLoopedSounds.AddSoundTypeForInstanceId(electricalElementId, SoundType::EngineDiesel1);
-    }
-    else if (electricalMaterial.EngineType == ElectricalMaterial::EngineElementType::Outboard)
-    {
-        mLoopedSounds.AddSoundTypeForInstanceId(electricalElementId, SoundType::EngineOutboard1);
-    }
-    else if (electricalMaterial.EngineType == ElectricalMaterial::EngineElementType::Steam)
-    {
-        if (electricalMaterial.EnginePower < 2000.0f)
+        case ElectricalMaterial::EngineElementType::Diesel:
         {
-            mLoopedSounds.AddSoundTypeForInstanceId(electricalElementId, SoundType::EngineSteam1);
+            mLoopedSounds.AddSoundTypeForInstanceId(electricalElementId, SoundType::EngineDiesel1);
+            break;
         }
-        else
+
+        case ElectricalMaterial::EngineElementType::Jet:
         {
-            mLoopedSounds.AddSoundTypeForInstanceId(electricalElementId, SoundType::EngineSteam2);
+            mLoopedSounds.AddSoundTypeForInstanceId(electricalElementId, SoundType::EngineJet1);
+            break;
+        }
+
+        case ElectricalMaterial::EngineElementType::Outboard:
+        {
+            mLoopedSounds.AddSoundTypeForInstanceId(electricalElementId, SoundType::EngineOutboard1);
+            break;
+        }
+
+        case ElectricalMaterial::EngineElementType::Steam:
+        {
+            if (electricalMaterial.EnginePower < 2000.0f)
+            {
+                mLoopedSounds.AddSoundTypeForInstanceId(electricalElementId, SoundType::EngineSteam1);
+            }
+            else
+            {
+                mLoopedSounds.AddSoundTypeForInstanceId(electricalElementId, SoundType::EngineSteam2);
+            }
+
+            break;
         }
     }
 }
@@ -2043,6 +2059,14 @@ void SoundController::OnEngineMonitorUpdated(
             case SoundType::EngineDiesel1:
             {
                 volume = 40.0f;
+                pitch = rpm;
+                break;
+            }
+
+            case SoundType::EngineJet1:
+            {
+                // TODO
+                volume = 80.0f;
                 pitch = rpm;
                 break;
             }

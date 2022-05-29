@@ -413,7 +413,7 @@ public:
         // A---B---B
         //
 
-        float constexpr FlameLengthBase = 15.0f;
+        float constexpr FlameLengthBase = 17.0f;
 
         float const flameQuadLength = FlameLengthBase * flameMagnitude;
         float const flameQuadWidth = 1.423f * FlameLengthBase * (1.0f - (flameMagnitude - 1) * (flameMagnitude - 1));

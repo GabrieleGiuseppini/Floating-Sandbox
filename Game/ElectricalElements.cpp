@@ -975,6 +975,8 @@ void ElectricalElements::Update(
             newConnectivityVisitSequenceNumber,
             points,
             springs);
+
+        mHasConnectivityStructureChangedInCurrentStep = false;
     }
 
     //
@@ -1000,7 +1002,7 @@ void ElectricalElements::Update(
         gameParameters);
 
     //
-    // 4. Update sinks
+    // 4. Update sinks (including engines)
     //
     // - Applies static forces, will be integrated at next loop
     //
@@ -1012,8 +1014,6 @@ void ElectricalElements::Update(
         points,
         stormParameters,
         gameParameters);
-
-    mHasConnectivityStructureChangedInCurrentStep = false;
 }
 
 void ElectricalElements::Upload(
@@ -1566,8 +1566,8 @@ void ElectricalElements::UpdateSinks(
         mEngineGroupStates.end(),
         EngineGroupState());
 
-    // For smoke
-    float const effectiveAugmentedAirTemperature =
+    // Smoke temperature: same of air, plus extra
+    float const effectiveSmokeTemperature =
         gameParameters.AirTemperature
         + stormParameters.AirTemperatureDelta
         + 200.0f; // To ensure buoyancy
@@ -1948,7 +1948,7 @@ void ElectricalElements::UpdateSinks(
                             // Choose temperature: highest of emitter's and current air + something (to ensure buoyancy)
                             float const smokeTemperature = std::max(
                                 points.GetTemperature(emitterPointIndex),
-                                effectiveAugmentedAirTemperature);
+                                effectiveSmokeTemperature);
 
                             // Generate particle
                             points.CreateEphemeralParticleLightSmoke(
@@ -2162,6 +2162,7 @@ void ElectricalElements::UpdateSinks(
         if (!IsDeleted(engineSinkElementIndex))
         {
             assert(GetMaterialType(engineSinkElementIndex) == ElectricalMaterial::ElectricalElementType::Engine);
+            auto const engineType = mMaterialBuffer[engineSinkElementIndex]->EngineType;
             auto & engineState = mElementStateBuffer[engineSinkElementIndex].Engine;
 
             auto const enginePointIndex = GetPointIndex(engineSinkElementIndex);
@@ -2204,6 +2205,13 @@ void ElectricalElements::UpdateSinks(
                 //  e^(-0.5*x + 5)/(5 + e^(-0.5*x + 5))
                 float const expCoeff = std::exp(-engineWater * 0.5f + 5.0f);
                 powerMultiplier *= expCoeff / (5.0f + expCoeff);
+            }
+
+            // Adjust targets based off underwater (for *jet* types only)
+            if (engineType == ElectricalMaterial::EngineElementType::Jet
+                && points.IsCachedUnderwater(enginePointIndex))
+            {
+                powerMultiplier = 0.0f;
             }
 
             // Update current RPM to match group target (via responsiveness)
@@ -2295,7 +2303,7 @@ void ElectricalElements::UpdateSinks(
             // Generate wake - if running, underwater, and not jet
             //
 
-            if (mMaterialBuffer[engineSinkElementIndex]->EngineType != ElectricalMaterial::EngineElementType::Jet)
+            if (engineType != ElectricalMaterial::EngineElementType::Jet)
             {
                 vec2f const enginePosition = points.GetPosition(enginePointIndex);
 
