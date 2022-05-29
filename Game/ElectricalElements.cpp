@@ -1016,7 +1016,7 @@ void ElectricalElements::Upload(
         auto const & engineState = mElementStateBuffer[engineElementIndex].Engine;
 
         if (mMaterialBuffer[engineElementIndex]->EngineType == ElectricalMaterial::EngineElementType::Jet
-            && engineState.CurrentThrustMagnitude != 0.0f)
+            && engineState.CurrentRpm != 0.0f)
         {
             auto const pointIndex = mPointIndexBuffer[engineElementIndex];
 
@@ -1024,7 +1024,7 @@ void ElectricalElements::Upload(
                 points.GetPlaneId(pointIndex),
                 points.GetPosition(pointIndex),
                 -engineState.CurrentThrustDir,
-                engineState.CurrentThrustMagnitude,
+                engineState.CurrentRpm,
                 points.GetRandomNormalizedUniformPersonalitySeed(pointIndex));
         }
     }
