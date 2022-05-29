@@ -2065,8 +2065,7 @@ void SoundController::OnEngineMonitorUpdated(
 
             case SoundType::EngineJet1:
             {
-                // TODO
-                volume = 80.0f;
+                volume = 100.0f;
                 pitch = rpm;
                 break;
             }

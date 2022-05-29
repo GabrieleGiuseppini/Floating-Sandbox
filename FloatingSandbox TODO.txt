@@ -1001,7 +1001,7 @@
 					+ Enum
 					= Materials json:
 						= Named variants for  "Jet", "Thrust" (less power, less inertia) X "R/L, U/D" x different powers
-							="Jet"
+							= "Jet"
 								= Base variant U
 									+ Fix direction
 									+ Check responsiveness
@@ -1044,7 +1044,7 @@
 					+ Displayed differently by ElectricalPanel
 						+ Different sub-type of Engine RPM UI control for different background: JetEngineGauge.png
 							+ Image
-					= Sound
+					+ Sound
 					- Tests:
 						+ Z depth
 				- Controllers:
