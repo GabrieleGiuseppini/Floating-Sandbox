@@ -64,6 +64,17 @@
 				+ Do
 				+ Ctrl+HOME to toggle
 					+ No more ESC
+			= Problem with ocean floor moving line by line
+				+ Try first with alpha/anti-aliasing @ ocean floor
+					+ This fixes only horizontal: float alpha = mix(0.0, 1.0, textureCoord.z / 0.2);
+					+ This should be the winner; see if can do also for "vertical" edges
+				- Try with earlier threshold at ParameterSmoother: overshooting
+				X ViewManager:
+					+ Figure out first if due to zoom or pan only
+						+ Zoom does it (when no pan enabled)
+						+ Pan does it (when no pan enabled)
+					X World X/Y: no move if abs < 0.2
+					X Zoom: no move if abs/current < 0.01
 			- changelist
 
 		+ Update water velocities with blast
@@ -1016,10 +1027,15 @@
 								- R, U, D
 						+ Make palette groups: Propeller Engines, Jet Engines
 					+ Change Material::ToLabel to say "Engine" vs "Jet Engine" depending on engine type
-					+ ElectricalElements:
-						+ @ engines update:
+					= ElectricalElements:
+						= @ engines update:
 							+ Does not work underwater - zero targets (thrust and RPM)
 							+ No wake if jet
+							- Fix negative direction
+								- EngineState::RPM is positive or negative
+								- Use abs() wherever we use it, except when uploading JetEngine
+							- Flame size must depend on engine power
+								- Non-linear for engine power, linear for thrust adjustment
 					+ ElectricalElements::Upload():
 						+ Invoke from ship
 						+ Upload 
@@ -1047,6 +1063,7 @@
 					+ Sound
 					- Tests:
 						+ Z depth
+					- Merge into 1.17.2.next
 				- Controllers:
 					- Engine Controller Telegraph (rename)
 						- Material::ToLabel

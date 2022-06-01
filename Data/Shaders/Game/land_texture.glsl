@@ -46,5 +46,8 @@ void main()
         vec4(0,0,0,0), 
         pow(darkMix, 3.0));
 
-    gl_FragColor = vec4(textureColor.xyz * paramEffectiveAmbientLightIntensity, 1.0);
+    // Anti-aliasing
+    float alpha = textureCoord.z / (0.2 + abs(dFdx(textureCoord.z)));
+
+    gl_FragColor = vec4(textureColor.xyz * paramEffectiveAmbientLightIntensity, alpha);
 } 
