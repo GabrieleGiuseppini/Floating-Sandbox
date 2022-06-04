@@ -83,6 +83,8 @@
 
 		+ Engines rearc (*)
 		= Jet engines @ Material system improvements (*)
+			- Redo material template
+			- changelist
 		- Update Wordpress post w/new engine stuff
 			- Connectivity
 			- Types
@@ -1014,15 +1016,14 @@
 					= Materials json:
 						= Named variants for  "Jet", "Thrust" (less power, less inertia) X "R/L, U/D" x different powers
 							= "Jet"
-								= Base variant U
+								+ Base variant U
 									+ Fix direction
 									+ Check responsiveness
 									+ Check power - seems to be the max
-									- Cheak heat generated
-										- Do test on cardboard rocket
+									+ Cheak heat generated
+								+ Powers: 50, 200, 1000, 3000, 8000
+									+ Make test ship
 								- D, L, R
-								- More power 1, 2, 4
-								- Multiply by "U/D"
 							- "Thrust"
 								- Base variant L
 									- Check power
@@ -1046,7 +1047,7 @@
 									+ Engine in both directions
 									+ Gauge
 									+ Circle notification
-									- Different powers: same gauge, different flame size
+									+ Different powers: same gauge, different flame size
 					+ ElectricalElements::Upload():
 						+ Invoke from ship
 						+ Upload 

@@ -1614,7 +1614,7 @@ void ElectricalElements::UpdateSinks(
 
                         assert(controllerState.EngineGroup != 0);
                         
-                        // RPM: -1, ..., -1/N, 0, 1/N, ..., +1
+                        // RPM: 0, +/-1/N, ..., +/-1
 
                         float constexpr TelegraphCoeff1 =
                             1.0f
@@ -1628,7 +1628,7 @@ void ElectricalElements::UpdateSinks(
                             mEngineGroupStates[controllerState.EngineGroup].GroupRpm = controllerRpm;
                         }
 
-                        // Thrust magnitude: 0, 0, 1/N->1
+                        // Thrust magnitude: 0, 0, 1/N, ..., 1
 
                         float constexpr TelegraphCoeff2 =
                             1.0f
