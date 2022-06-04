@@ -104,11 +104,12 @@ private:
             float ReferencePointCWAngleCos;
             float ReferencePointCWAngleSin;
 
-            float CurrentRpm;
+            float CurrentAbsRpm;
             float CurrentThrustMagnitude;
             vec2f CurrentThrustDir;
+            vec2f CurrentJetEngineFlameVector;
 
-            float LastPublishedRpm;
+            float LastPublishedAbsRpm;
             float LastPublishedThrustMagnitude;
             float LastHighlightedRpm;
 
@@ -133,11 +134,12 @@ private:
                 ReferencePointCWAngleCos = 0.0f;
                 ReferencePointCWAngleSin = 0.0f;
 
-                CurrentRpm = 0.0f;
+                CurrentAbsRpm = 0.0f;
                 CurrentThrustMagnitude = 0.0f;
                 CurrentThrustDir = vec2f::zero();
+                CurrentJetEngineFlameVector = vec2f::zero();
 
-                LastPublishedRpm = 0.0f;
+                LastPublishedAbsRpm = 0.0f;
                 LastPublishedThrustMagnitude = 0.0f;
                 LastHighlightedRpm = 0.0f;
 
@@ -395,8 +397,8 @@ private:
 
     struct EngineGroupState
     {
-        float GroupRpm;
-        float GroupThrustMagnitude;
+        float GroupRpm; // Signed
+        float GroupThrustMagnitude; // Signed
 
         EngineGroupState()
             : GroupRpm(0.0f)

@@ -76,6 +76,7 @@
 					X World X/Y: no move if abs < 0.2
 					X Zoom: no move if abs/current < 0.01
 			- changelist
+			- Test land anti-aliasing on old Dell
 
 		+ Update water velocities with blast
 			+ Adding velocities during blast
@@ -1016,7 +1017,9 @@
 								= Base variant U
 									+ Fix direction
 									+ Check responsiveness
-									= Check power - seems to be the max
+									+ Check power - seems to be the max
+									- Cheak heat generated
+										- Do test on cardboard rocket
 								- D, L, R
 								- More power 1, 2, 4
 								- Multiply by "U/D"
@@ -1031,11 +1034,19 @@
 						= @ engines update:
 							+ Does not work underwater - zero targets (thrust and RPM)
 							+ No wake if jet
-							- Fix negative direction
-								- EngineState::RPM is positive or negative
-								- Use abs() wherever we use it, except when uploading JetEngine
-							- Flame size must depend on engine power
-								- Non-linear for engine power, linear for thrust adjustment
+							= Rendering with bidir flame and variable size flame:
+								+ EngineGroup: stores signed RPM
+								+ State::Engine: stores AbsRpm (just rename of current, but populated with abs(EngineGroup::RPM)) *and* JetEngineFlameVector
+									+ JetEngineFlameVector: 
+										+ Engine direction * group signed RPM * scale==(Non-linear for engine power, linear for thrust adjustment * super-electrification)
+											+ Engine power: thrust capacity = EnginePower * 746; EnginePowers: 50 -> 8000
+										+ Smoothed as well towards target
+									+ Uploaded instead of dir and RPM
+								= Test:
+									+ Engine in both directions
+									+ Gauge
+									+ Circle notification
+									- Different powers: same gauge, different flame size
 					+ ElectricalElements::Upload():
 						+ Invoke from ship
 						+ Upload 

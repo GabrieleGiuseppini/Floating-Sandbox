@@ -393,8 +393,7 @@ public:
     inline void UploadJetEngineFlame(
         PlaneId planeId,
         vec2f const & baseCenterPosition,
-        vec2f const & flameDir,
-        float flameMagnitude,
+        vec2f const & flameVector, // Scaled normalized direction
         float flamePersonalitySeed)
     {
         //
@@ -413,10 +412,16 @@ public:
         // A---B---B
         //
 
+        float const flameMagnitude = flameVector.length();
+        vec2f const flameDir = flameVector.normalise_approx(flameMagnitude);
+
         float constexpr FlameLengthBase = 17.0f;
+        float constexpr FlameWidthBase = 1.423f * FlameLengthBase; // Magic number based on shader
 
         float const flameQuadLength = FlameLengthBase * flameMagnitude;
-        float const flameQuadWidth = 1.423f * FlameLengthBase * (1.0f - (flameMagnitude - 1) * (flameMagnitude - 1));
+        // TODOHERE
+        //float const flameQuadWidth = FlameWidthBase * (1.0f - (flameMagnitude - 1) * (flameMagnitude - 1));
+        float const flameQuadWidth = FlameWidthBase * std::sqrt(flameMagnitude);
 
         vec2f const Fp = flameDir.to_perpendicular(); // rotated by PI/2, i.e. oriented to the left (wrt flame vector)
 

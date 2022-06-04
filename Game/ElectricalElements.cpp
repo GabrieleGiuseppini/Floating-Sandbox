@@ -242,7 +242,7 @@ void ElectricalElements::AnnounceInstancedElements()
                     ElectricalElementId(mShipId, elementIndex),
                     mInstanceInfos[elementIndex].InstanceIndex,
                     mElementStateBuffer[elementIndex].Engine.CurrentThrustMagnitude,
-                    mElementStateBuffer[elementIndex].Engine.CurrentRpm,
+                    mElementStateBuffer[elementIndex].Engine.CurrentAbsRpm,
                     *mMaterialBuffer[elementIndex],
                     mInstanceInfos[elementIndex].PanelElementMetadata);
 
@@ -565,7 +565,7 @@ void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
         case ElectricalMaterial::ElectricalElementType::Engine:
         {
             // Publish state change, if necessary
-            if (mElementStateBuffer[electricalElementIndex].Engine.LastPublishedRpm != 0.0f
+            if (mElementStateBuffer[electricalElementIndex].Engine.LastPublishedAbsRpm != 0.0f
                 || mElementStateBuffer[electricalElementIndex].Engine.LastPublishedThrustMagnitude != 0.0f)
             {
                 mGameEventHandler->OnEngineMonitorUpdated(
@@ -1029,15 +1029,14 @@ void ElectricalElements::Upload(
     for (auto const jetEngineElementIndex : mJetEnginesSortedByPlaneId)
     {
         auto const & engineState = mElementStateBuffer[jetEngineElementIndex].Engine;
-        if (engineState.CurrentRpm != 0.0f)
+        if (engineState.CurrentJetEngineFlameVector != vec2f::zero())
         {
             auto const pointIndex = mPointIndexBuffer[jetEngineElementIndex];
 
             shipRenderContext.UploadJetEngineFlame(
                 points.GetPlaneId(pointIndex),
                 points.GetPosition(pointIndex),
-                -engineState.CurrentThrustDir,
-                engineState.CurrentRpm,
+                engineState.CurrentJetEngineFlameVector,
                 points.GetRandomNormalizedUniformPersonalitySeed(pointIndex));
         }
     }
@@ -1614,36 +1613,35 @@ void ElectricalElements::UpdateSinks(
                         //                        
 
                         assert(controllerState.EngineGroup != 0);
+                        
+                        // RPM: -1, ..., -1/N, 0, 1/N, ..., +1
 
-                        // RPM: 0, 1/N, 1/N->1
-
-                        float constexpr TelegraphCoeff =
+                        float constexpr TelegraphCoeff1 =
                             1.0f
-                            / static_cast<float>(GameParameters::EngineTelegraphDegreesOfFreedom / 2 - 1);
+                            / static_cast<float>(GameParameters::EngineTelegraphDegreesOfFreedom / 2);
 
-                        int const absTelegraphValue = std::abs(controllerState.CurrentTelegraphValue);
+                        float const controllerRpm = static_cast<float>(controllerState.CurrentTelegraphValue) * TelegraphCoeff1;
 
-                        float controllerRpm;
-                        if (absTelegraphValue == 0)
-                            controllerRpm = 0.0f;
-                        else if (absTelegraphValue == 1)
-                            controllerRpm = TelegraphCoeff;
-                        else
-                            controllerRpm = static_cast<float>(absTelegraphValue - 1) * TelegraphCoeff;
-
-                        // Group RPM = max
-                        mEngineGroupStates[controllerState.EngineGroup].GroupRpm = std::max(mEngineGroupStates[controllerState.EngineGroup].GroupRpm, controllerRpm);
+                        // Group RPM = max (of absolute value)
+                        if (std::abs(controllerRpm) >= std::abs(mEngineGroupStates[controllerState.EngineGroup].GroupRpm))
+                        {
+                            mEngineGroupStates[controllerState.EngineGroup].GroupRpm = controllerRpm;
+                        }
 
                         // Thrust magnitude: 0, 0, 1/N->1
+
+                        float constexpr TelegraphCoeff2 =
+                            1.0f
+                            / static_cast<float>(GameParameters::EngineTelegraphDegreesOfFreedom / 2 - 1);
 
                         float controllerThrustMagnitude = 0.0f;
                         if (controllerState.CurrentTelegraphValue > 1)
                         {
-                            controllerThrustMagnitude = static_cast<float>(controllerState.CurrentTelegraphValue - 1) * TelegraphCoeff;
+                            controllerThrustMagnitude = static_cast<float>(controllerState.CurrentTelegraphValue - 1) * TelegraphCoeff2;
                         }
                         else if (controllerState.CurrentTelegraphValue < -1)
                         {
-                            controllerThrustMagnitude = static_cast<float>(controllerState.CurrentTelegraphValue + 1) * TelegraphCoeff;
+                            controllerThrustMagnitude = static_cast<float>(controllerState.CurrentTelegraphValue + 1) * TelegraphCoeff2;
                         }
 
                         // Group thrust magnitude = sum
@@ -2214,33 +2212,32 @@ void ElectricalElements::UpdateSinks(
                 powerMultiplier = 0.0f;
             }
 
-            // Update current RPM to match group target (via responsiveness)
-            float const targetRpm = mEngineGroupStates[engineState.EngineGroup].GroupRpm;
+            // Update current RPM to match group target (via responsiveness)            
+            float const targetRpm = mEngineGroupStates[engineState.EngineGroup].GroupRpm * powerMultiplier;
             {
-                float const effectiveTargetRpm = targetRpm * powerMultiplier;
+                float const targetAbsRpm = std::abs(targetRpm);
 
-                engineState.CurrentRpm =
-                    engineState.CurrentRpm
-                    + (effectiveTargetRpm - engineState.CurrentRpm) * engineState.Responsiveness;
+                engineState.CurrentAbsRpm =
+                    engineState.CurrentAbsRpm
+                    + (targetAbsRpm - engineState.CurrentAbsRpm) * engineState.Responsiveness;
 
-                if (std::abs(effectiveTargetRpm - engineState.CurrentRpm) < 0.001f)
+                if (std::abs(targetAbsRpm - engineState.CurrentAbsRpm) < 0.001f)
                 {
-                    engineState.CurrentRpm = effectiveTargetRpm;
+                    engineState.CurrentAbsRpm = targetAbsRpm;
                 }
             }
 
             // Update current thrust magnitude to match group target (via responsiveness)
-            float const targetThrustMagnitude = mEngineGroupStates[engineState.EngineGroup].GroupThrustMagnitude;
             {
-                float const effectiveTargetThrustMagnitude = targetThrustMagnitude * powerMultiplier;
+                float const targetThrustMagnitude = mEngineGroupStates[engineState.EngineGroup].GroupThrustMagnitude * powerMultiplier;
 
                 engineState.CurrentThrustMagnitude =
                     engineState.CurrentThrustMagnitude
-                    + (effectiveTargetThrustMagnitude - engineState.CurrentThrustMagnitude) * engineState.Responsiveness;
+                    + (targetThrustMagnitude - engineState.CurrentThrustMagnitude) * engineState.Responsiveness;
 
-                if (std::abs(effectiveTargetThrustMagnitude - engineState.CurrentThrustMagnitude) < 0.001f)
+                if (std::abs(targetThrustMagnitude - engineState.CurrentThrustMagnitude) < 0.001f)
                 {
-                    engineState.CurrentThrustMagnitude = effectiveTargetThrustMagnitude;
+                    engineState.CurrentThrustMagnitude = targetThrustMagnitude;
                 }
             }
 
@@ -2264,17 +2261,17 @@ void ElectricalElements::UpdateSinks(
 
             // Eventually publish power change notification
             if (engineState.CurrentThrustMagnitude != engineState.LastPublishedThrustMagnitude
-                || engineState.CurrentRpm != engineState.LastPublishedRpm)
+                || engineState.CurrentAbsRpm != engineState.LastPublishedAbsRpm)
             {
                 // Notify
                 mGameEventHandler->OnEngineMonitorUpdated(
                     ElectricalElementId(mShipId, engineSinkElementIndex),
                     engineState.CurrentThrustMagnitude,
-                    engineState.CurrentRpm);
+                    engineState.CurrentAbsRpm);
 
                 // Remember last-published values
                 engineState.LastPublishedThrustMagnitude = engineState.CurrentThrustMagnitude;
-                engineState.LastPublishedRpm = engineState.CurrentRpm;
+                engineState.LastPublishedAbsRpm = engineState.CurrentAbsRpm;
             }
 
             // Eventually show notifications - only if moving between zero and non-zero RPM
@@ -2295,16 +2292,56 @@ void ElectricalElements::UpdateSinks(
 
             points.AddHeat(enginePointIndex,
                 mMaterialHeatGeneratedBuffer[engineSinkElementIndex]
-                * engineState.CurrentRpm
+                * engineState.CurrentAbsRpm
                 * gameParameters.ElectricalElementHeatProducedAdjustment
                 * GameParameters::SimulationStepTimeDuration<float>);
 
             //
-            // Generate wake - if running, underwater, and not jet
+            // Update engine conductivity
             //
 
-            if (engineType != ElectricalMaterial::EngineElementType::Jet)
+            InternalChangeConductivity(
+                engineSinkElementIndex,
+                (engineState.CurrentAbsRpm > 0.15f)); // Magic number
+
+            //
+            // Do type-specific tasks
+            //
+
+            if (engineType == ElectricalMaterial::EngineElementType::Jet)
             {
+                //
+                // Update current jet engine flame vector
+                //
+
+                // Calculate scale factor for engine power:
+                //  - 50HP:     0.5
+                //  - 8000HP:   1.0
+                float const enginePowerScale =
+                    0.5f +
+                    0.5f * (engineState.ThrustCapacity / 746.0f - 50.0f) / (8000.0f - 50.0f);                
+
+                vec2f const targetJetEngineFlameVector = 
+                    -engineState.CurrentThrustDir
+                    * targetRpm
+                    * enginePowerScale
+                    * gameParameters.EngineThrustAdjustment;
+                
+                engineState.CurrentJetEngineFlameVector =
+                    engineState.CurrentJetEngineFlameVector
+                    + (targetJetEngineFlameVector - engineState.CurrentJetEngineFlameVector) * engineState.Responsiveness;
+
+                if ((targetJetEngineFlameVector - engineState.CurrentJetEngineFlameVector).length() < 0.001f)
+                {
+                    engineState.CurrentJetEngineFlameVector = targetJetEngineFlameVector;
+                }
+            }
+            else
+            {
+                //
+                // Generate wake - if running, underwater, and not jet
+                //
+
                 vec2f const enginePosition = points.GetPosition(enginePointIndex);
 
                 // Depth of engine, positive = underwater
@@ -2377,14 +2414,6 @@ void ElectricalElements::UpdateSinks(
                     }
                 }
             }
-
-            //
-            // Update engine conductivity
-            //
-
-            InternalChangeConductivity(
-                engineSinkElementIndex,
-                (engineState.CurrentRpm > 0.15f)); // Magic number
         }
     }
 
