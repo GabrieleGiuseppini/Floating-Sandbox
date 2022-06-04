@@ -706,7 +706,324 @@
     },
 
 
+    {
+        "color_key": "#27e0e0",
+	"conducts_electricity": false,
+        "electrical_type": "Engine",
+	"engine_direction": -1.570796327,
+	"engine_power": 50.0,
+	"engine_responsiveness": 0.1,
+	"engine_type": "Jet",
+        "heat_generated": 100000.0,
+	"is_instanced": true,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "50HP Jet Engine Down",
+	"palette_coordinates": {
+		"category": "Engines",
+		"sub_category": "Jet Engines D",
+		"sub_category_ordinal": 0
+	}
+    },
 
+    {
+        "color_key": "#27e1e1",
+	"conducts_electricity": false,
+        "electrical_type": "Engine",
+	"engine_direction": -1.570796327,
+	"engine_power": 200.0,
+	"engine_responsiveness": 0.1,
+	"engine_type": "Jet",
+        "heat_generated": 100000.0,
+	"is_instanced": true,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "200HP Jet Engine Down",
+	"palette_coordinates": {
+		"category": "Engines",
+		"sub_category": "Jet Engines D",
+		"sub_category_ordinal": 1
+	}
+    },
+
+    {
+        "color_key": "#27e2e2",
+	"conducts_electricity": false,
+        "electrical_type": "Engine",
+	"engine_direction": -1.570796327,
+	"engine_power": 1000.0,
+	"engine_responsiveness": 0.1,
+	"engine_type": "Jet",
+        "heat_generated": 100000.0,
+	"is_instanced": true,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "1000HP Jet Engine Down",
+	"palette_coordinates": {
+		"category": "Engines",
+		"sub_category": "Jet Engines D",
+		"sub_category_ordinal": 2
+	}
+    },
+
+    {
+        "color_key": "#27e3e3",
+	"conducts_electricity": false,
+        "electrical_type": "Engine",
+	"engine_direction": -1.570796327,
+	"engine_power": 3000.0,
+	"engine_responsiveness": 0.1,
+	"engine_type": "Jet",
+        "heat_generated": 100000.0,
+	"is_instanced": true,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "3000HP Jet Engine Down",
+	"palette_coordinates": {
+		"category": "Engines",
+		"sub_category": "Jet Engines D",
+		"sub_category_ordinal": 3
+	}
+    },
+
+    {
+        "color_key": "#27f0f0",
+	"conducts_electricity": false,
+        "electrical_type": "Engine",
+	"engine_direction": -1.570796327,
+	"engine_power": 8000.0,
+	"engine_responsiveness": 0.1,
+	"engine_type": "Jet",
+        "heat_generated": 100000.0,
+	"is_instanced": true,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "8000HP Jet Engine Down",
+	"palette_coordinates": {
+		"category": "Engines",
+		"sub_category": "Jet Engines D",
+		"sub_category_ordinal": 4
+	}
+    },
+
+
+
+
+    {
+        "color_key": "#28e0e0",
+	"conducts_electricity": false,
+        "electrical_type": "Engine",
+	"engine_direction": 3.141592653,
+	"engine_power": 50.0,
+	"engine_responsiveness": 0.1,
+	"engine_type": "Jet",
+        "heat_generated": 100000.0,
+	"is_instanced": true,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "50HP Jet Engine Left",
+	"palette_coordinates": {
+		"category": "Engines",
+		"sub_category": "Jet Engines L",
+		"sub_category_ordinal": 0
+	}
+    },
+
+    {
+        "color_key": "#28e1e1",
+	"conducts_electricity": false,
+        "electrical_type": "Engine",
+	"engine_direction": 3.141592653,
+	"engine_power": 200.0,
+	"engine_responsiveness": 0.1,
+	"engine_type": "Jet",
+        "heat_generated": 100000.0,
+	"is_instanced": true,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "200HP Jet Engine Left",
+	"palette_coordinates": {
+		"category": "Engines",
+		"sub_category": "Jet Engines L",
+		"sub_category_ordinal": 1
+	}
+    },
+
+    {
+        "color_key": "#28e2e2",
+	"conducts_electricity": false,
+        "electrical_type": "Engine",
+	"engine_direction": 3.141592653,
+	"engine_power": 1000.0,
+	"engine_responsiveness": 0.1,
+	"engine_type": "Jet",
+        "heat_generated": 100000.0,
+	"is_instanced": true,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "1000HP Jet Engine Left",
+	"palette_coordinates": {
+		"category": "Engines",
+		"sub_category": "Jet Engines L",
+		"sub_category_ordinal": 2
+	}
+    },
+
+    {
+        "color_key": "#28e3e3",
+	"conducts_electricity": false,
+        "electrical_type": "Engine",
+	"engine_direction": 3.141592653,
+	"engine_power": 3000.0,
+	"engine_responsiveness": 0.1,
+	"engine_type": "Jet",
+        "heat_generated": 100000.0,
+	"is_instanced": true,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "3000HP Jet Engine Left",
+	"palette_coordinates": {
+		"category": "Engines",
+		"sub_category": "Jet Engines L",
+		"sub_category_ordinal": 3
+	}
+    },
+
+    {
+        "color_key": "#28f0f0",
+	"conducts_electricity": false,
+        "electrical_type": "Engine",
+	"engine_direction": 3.141592653,
+	"engine_power": 8000.0,
+	"engine_responsiveness": 0.1,
+	"engine_type": "Jet",
+        "heat_generated": 100000.0,
+	"is_instanced": true,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "8000HP Jet Engine Left",
+	"palette_coordinates": {
+		"category": "Engines",
+		"sub_category": "Jet Engines L",
+		"sub_category_ordinal": 4
+	}
+    },
+
+
+    {
+        "color_key": "#29e0e0",
+	"conducts_electricity": false,
+        "electrical_type": "Engine",
+	"engine_direction": 0.0,
+	"engine_power": 50.0,
+	"engine_responsiveness": 0.1,
+	"engine_type": "Jet",
+        "heat_generated": 100000.0,
+	"is_instanced": true,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "50HP Jet Engine Right",
+	"palette_coordinates": {
+		"category": "Engines",
+		"sub_category": "Jet Engines R",
+		"sub_category_ordinal": 0
+	}
+    },
+
+    {
+        "color_key": "#29e1e1",
+	"conducts_electricity": false,
+        "electrical_type": "Engine",
+	"engine_direction": 0.0,
+	"engine_power": 200.0,
+	"engine_responsiveness": 0.1,
+	"engine_type": "Jet",
+        "heat_generated": 100000.0,
+	"is_instanced": true,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "200HP Jet Engine Right",
+	"palette_coordinates": {
+		"category": "Engines",
+		"sub_category": "Jet Engines R",
+		"sub_category_ordinal": 1
+	}
+    },
+
+    {
+        "color_key": "#29e2e2",
+	"conducts_electricity": false,
+        "electrical_type": "Engine",
+	"engine_direction": 0.0,
+	"engine_power": 1000.0,
+	"engine_responsiveness": 0.1,
+	"engine_type": "Jet",
+        "heat_generated": 100000.0,
+	"is_instanced": true,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "1000HP Jet Engine Right",
+	"palette_coordinates": {
+		"category": "Engines",
+		"sub_category": "Jet Engines R",
+		"sub_category_ordinal": 2
+	}
+    },
+
+    {
+        "color_key": "#29e3e3",
+	"conducts_electricity": false,
+        "electrical_type": "Engine",
+	"engine_direction": 0.0,
+	"engine_power": 3000.0,
+	"engine_responsiveness": 0.1,
+	"engine_type": "Jet",
+        "heat_generated": 100000.0,
+	"is_instanced": true,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "3000HP Jet Engine Right",
+	"palette_coordinates": {
+		"category": "Engines",
+		"sub_category": "Jet Engines R",
+		"sub_category_ordinal": 3
+	}
+    },
+
+    {
+        "color_key": "#29f0f0",
+	"conducts_electricity": false,
+        "electrical_type": "Engine",
+	"engine_direction": 0.0,
+	"engine_power": 8000.0,
+	"engine_responsiveness": 0.1,
+	"engine_type": "Jet",
+        "heat_generated": 100000.0,
+	"is_instanced": true,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "8000HP Jet Engine Right",
+	"palette_coordinates": {
+		"category": "Engines",
+		"sub_category": "Jet Engines R",
+		"sub_category_ordinal": 4
+	}
+    },
 
 
     {

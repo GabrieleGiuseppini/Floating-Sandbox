@@ -1015,7 +1015,7 @@
 					+ Enum
 					= Materials json:
 						= Named variants for  "Jet", "Thrust" (less power, less inertia) X "R/L, U/D" x different powers
-							= "Jet"
+							+ "Jet"
 								+ Base variant U
 									+ Fix direction
 									+ Check responsiveness
@@ -1023,7 +1023,7 @@
 									+ Cheak heat generated
 								+ Powers: 50, 200, 1000, 3000, 8000
 									+ Make test ship
-								- D, L, R
+								+ D, L, R
 							- "Thrust"
 								- Base variant L
 									- Check power
