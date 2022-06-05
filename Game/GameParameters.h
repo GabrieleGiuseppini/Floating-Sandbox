@@ -568,7 +568,7 @@ struct GameParameters
     static unsigned int constexpr EngineControllerTelegraphDegreesOfFreedom = 11;
     static_assert((EngineControllerTelegraphDegreesOfFreedom % 2) != 0); // Make sure there's room for central position, and it's symmetric
 
-    static float constexpr EngineControllerJetThrottleIdleFraction = 0.15f; // Fraction of 0.0->1.0 range occupied by "idle"
+    static float constexpr EngineControllerJetThrottleIdleFraction = 0.20f; // Fraction of 0.0->1.0 range occupied by "idle"
 
 private:
 

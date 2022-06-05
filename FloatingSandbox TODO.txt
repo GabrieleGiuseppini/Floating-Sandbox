@@ -1090,12 +1090,12 @@
 					= Materials:
 						+ Engine Telegraph (rename)
 							+ Material::ToLabel
-						= Engine Controller "Jet Throttle"
-							= ElectricalPanel
+						+ Engine Controller "Jet Throttle"
+							+ ElectricalPanel
 								+ Resources:
 									+ Image: background and handle
 									+ Image: disabled x 2
-								- ElectricalElementControl
+								+ ElectricalElementControl
 							+ Material::ToLabel
 						= Engine Controller "Jet Thrust"
 							= ElectricalPanel
@@ -1106,6 +1106,9 @@
 							+ Material::ToLabel
 					+ ElectricalElement handling of two new controllers
 					- Sounds
+						- EventHandler::OnEngineCtrlUpdated: take prev value (pop'd by ElectricalElements) and type
+						- Clutch sound for Throttle
+						- Existing button sound for Thrust
 					= Tests:
 						+ Telegraph:
 							+ Works between -1 and +1

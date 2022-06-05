@@ -829,7 +829,6 @@ public:
         , mEnabledHandleImage(enabledHandleImage)
         , mDisabledHandleImage(disabledHandleImage)
         , mCenterPoint(centerPoint)
-        , mTopY(topY)
         , mYExtent(static_cast<float>(centerPoint.y - topY + 1))
         , mOnControllerUpdated(std::move(onControllerUpdated))
         //
@@ -900,7 +899,8 @@ private:
 
 private:
 
-    float HandleStrideToControllerValueOffset(float handleStride) const;
+    inline float HandleStrideToControllerValueOffset(int handleStride) const;
+    inline int ControllerValueOffsetToHandleStride(float controllerValueOffset) const;
 
 private:
 
@@ -909,7 +909,6 @@ private:
     wxBitmap const mEnabledHandleImage;
     wxBitmap const mDisabledHandleImage;
     wxPoint const mCenterPoint;
-    int const mTopY; // TODO: see if needed
     float const mYExtent;
     
     std::function<void(float)> mOnControllerUpdated;

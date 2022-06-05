@@ -275,24 +275,36 @@ void EngineControllerTelegraphElectricalElementControl::MoveToPoint(wxPoint cons
 
 void EngineControllerJetEngineThrottleElectricalElementControl::OnKeyboardShortcutDown(bool isShift)
 {
+    float constexpr ControllerValueStep = 0.1f;
+
     if (mIsEnabled)
     {
-        // TODOHERE: another version of MouseMove state machine, with direct up/down transitions though (i.e. without thresholds)
+        if (!isShift)
+        {
+            // Up
+            if (mCurrentValue == 0.0f)
+            {
+                mCurrentValue = GameParameters::EngineControllerJetThrottleIdleFraction;
+            }
+            else
+            {
+                mCurrentValue = std::min(mCurrentValue + ControllerValueStep, 1.0f);
+            }
+        }
+        else
+        {
+            // Down
+            if (mCurrentValue > GameParameters::EngineControllerJetThrottleIdleFraction)
+            {
+                mCurrentValue = std::max(mCurrentValue - ControllerValueStep, GameParameters::EngineControllerJetThrottleIdleFraction);
+            }
+            else if (mCurrentValue == GameParameters::EngineControllerJetThrottleIdleFraction)
+            {
+                mCurrentValue = 0.0f;
+            }
+        }
 
-        ////if (!isShift)
-        ////{
-        ////    // Plus
-        ////    if (mCurrentValue < MaxTelegraphValue)
-        ////        ++mCurrentValue;
-        ////}
-        ////else
-        ////{
-        ////    // Minus
-        ////    if (mCurrentValue > 0)
-        ////        --mCurrentValue;
-        ////}
-
-        ////mOnControllerUpdated(mCurrentValue);
+        mOnControllerUpdated(mCurrentValue);
     }
 }
 
@@ -360,7 +372,9 @@ void EngineControllerJetEngineThrottleElectricalElementControl::OnLeftUp(wxMouse
 }
 
 void EngineControllerJetEngineThrottleElectricalElementControl::OnMouseMove(wxMouseEvent & event)
-{    
+{
+    int constexpr IdleThreshold = 18;
+
     if (mCurrentEngagementY.has_value())
     {
         // Calculate Y stride (positive up)
@@ -372,7 +386,7 @@ void EngineControllerJetEngineThrottleElectricalElementControl::OnMouseMove(wxMo
             // At zero
 
             // Go to Idle if more than magic stride
-            if (yStride > 15)
+            if (yStride > IdleThreshold)
             {
                 // Go to Idle
                 mCurrentValue = GameParameters::EngineControllerJetThrottleIdleFraction;
@@ -390,10 +404,10 @@ void EngineControllerJetEngineThrottleElectricalElementControl::OnMouseMove(wxMo
             // At Idle
 
             // Go to Free if can, and more than magic stride
-            if (!mIdleBlockHandleUp && yStride > 15)
+            if (!mIdleBlockHandleUp && yStride > IdleThreshold)
             {
                 // Go to Free
-                mCurrentValue = std::min(mCurrentValue + HandleStrideToControllerValueOffset(yStride - 15), 1.0f);
+                mCurrentValue = std::min(mCurrentValue + HandleStrideToControllerValueOffset(yStride - IdleThreshold), 1.0f);
                 mOnControllerUpdated(mCurrentValue);
 
                 // Transition state
@@ -402,7 +416,7 @@ void EngineControllerJetEngineThrottleElectricalElementControl::OnMouseMove(wxMo
                 Refresh();
             }
             // Go to Zero if can, and more than magic stide
-            else if (!mIdleBlockHandleDown && yStride < -15)
+            else if (!mIdleBlockHandleDown && yStride < -IdleThreshold)
             {
                 // Go to Zero
                 mCurrentValue = 0.0f;
@@ -426,25 +440,26 @@ void EngineControllerJetEngineThrottleElectricalElementControl::OnMouseMove(wxMo
                 mOnControllerUpdated(mCurrentValue);
 
                 // Transition state
-                mCurrentEngagementY = event.GetY(); // TODO: sure?
+                mCurrentEngagementY = event.GetY();
 
                 Refresh();
             }
             else if (yStride < 0)
             {
-                // TODOHERE: allow to go down and then eventually to Idle, if enough remaining stride
-            }
+                // Move down towards Idle
+                float const newValue = mCurrentValue + HandleStrideToControllerValueOffset(yStride);
+                mCurrentValue = std::max(newValue, GameParameters::EngineControllerJetThrottleIdleFraction);
+                if (mCurrentValue == GameParameters::EngineControllerJetThrottleIdleFraction)
+                {
+                    // Go to Idle...
 
-            // TODOOLD
-            // Go to Idle if can, and more than magic stide
-            else if (!mIdleBlockHandleDown && yStride < -15)
-            {
-                // Go to Idle
-                mCurrentValue = GameParameters::EngineControllerJetThrottleIdleFraction;
+                    // ...but not further down
+                    mIdleBlockHandleDown = true;
+                }
+
                 mOnControllerUpdated(mCurrentValue);
 
                 // Transition state
-                mIdleBlockHandleDown = true;
                 mCurrentEngagementY = event.GetY();
 
                 Refresh();
@@ -453,10 +468,16 @@ void EngineControllerJetEngineThrottleElectricalElementControl::OnMouseMove(wxMo
     }
 }
 
-float EngineControllerJetEngineThrottleElectricalElementControl::HandleStrideToControllerValueOffset(float handleStride) const
+float constexpr MagicResistance = 2.0f;
+
+float EngineControllerJetEngineThrottleElectricalElementControl::HandleStrideToControllerValueOffset(int handleStride) const
 {
-    // Magic resistance
-    return handleStride / 50.0f;
+    return static_cast<float>(handleStride) / (mYExtent * MagicResistance);
+}
+
+int EngineControllerJetEngineThrottleElectricalElementControl::ControllerValueOffsetToHandleStride(float controllerValueOffset) const
+{
+    return static_cast<int>(controllerValueOffset * (mYExtent * MagicResistance));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
