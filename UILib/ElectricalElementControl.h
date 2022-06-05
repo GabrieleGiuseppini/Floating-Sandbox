@@ -411,11 +411,6 @@ private:
         OnUp();
     }
 
-    void OnLeaveWindow(wxMouseEvent & /*event*/)
-    {
-        OnUp();
-    }
-
     void OnDown()
     {
         if (mIsEnabled && !mIsPushed)
@@ -920,4 +915,165 @@ private:
     bool mIdleBlockHandleDown;
     bool mIsMouseCaptured;
     bool mIsEnabled;
+};
+
+class EngineControllerJetEngineThrustElectricalElementControl
+    : public EngineControllerElectricalElementControl
+{
+public:
+
+    EngineControllerJetEngineThrustElectricalElementControl(
+        wxWindow * parent,
+        wxBitmap const & onEnabledImage,
+        wxBitmap const & offEnabledImage,
+        wxBitmap const & onDisabledImage,
+        wxBitmap const & offDisabledImage,
+        std::string const & label,
+        wxCursor const & cursor,
+        std::function<void(float)> onControllerUpdated,
+        float currentValue)
+        : EngineControllerElectricalElementControl(
+            parent,
+            onEnabledImage.GetSize(),
+            label)
+        , mOnEnabledImage(onEnabledImage)
+        , mOffEnabledImage(offEnabledImage)
+        , mOnDisabledImage(onDisabledImage)
+        , mOffDisabledImage(offDisabledImage)
+        , mOnControllerUpdated(std::move(onControllerUpdated))
+        //
+        , mCurrentValue(currentValue)
+        , mIsEnabled(true)
+    {
+        mImagePanel->SetCursor(cursor);
+
+        {
+            wxBoxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
+
+            mImageBitmap = new wxStaticBitmap(mImagePanel, wxID_ANY, GetImageForCurrentState(), wxDefaultPosition, wxDefaultSize, wxBORDER_NONE);
+            vSizer->Add(mImageBitmap, 0, wxALIGN_CENTRE_HORIZONTAL);
+
+            mImagePanel->SetSizerAndFit(vSizer);
+        }
+
+        mImageBitmap->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&EngineControllerJetEngineThrustElectricalElementControl::OnLeftDown, this);
+        mImageBitmap->Bind(wxEVT_LEFT_UP, (wxObjectEventFunction)&EngineControllerJetEngineThrustElectricalElementControl::OnLeftUp, this);
+        mImageBitmap->Bind(wxEVT_LEAVE_WINDOW, (wxObjectEventFunction)&EngineControllerJetEngineThrustElectricalElementControl::OnLeftUp, this);
+    }
+
+    void SetValue(float controllerValue) override
+    {
+        mCurrentValue = controllerValue;
+
+        mImageBitmap->SetBitmap(GetImageForCurrentState());
+
+        Refresh();
+    }
+
+    virtual bool IsEnabled() const override
+    {
+        return mIsEnabled;
+    }
+
+    virtual void SetEnabled(bool isEnabled) override
+    {
+        mIsEnabled = isEnabled;
+
+        mImageBitmap->SetBitmap(GetImageForCurrentState());
+
+        Refresh();
+    }
+
+    virtual void SetKeyboardShortcutLabel(std::string const & label) override
+    {
+        mImageBitmap->SetToolTip(label);
+    }
+
+    void OnKeyboardShortcutDown(bool /*isShift*/) override
+    {
+        OnDown();
+    }
+
+    void OnKeyboardShortcutUp() override
+    {
+        OnUp();
+    }
+
+private:
+
+    void OnLeftDown(wxMouseEvent & /*event*/)
+    {
+        OnDown();
+    }
+
+    void OnLeftUp(wxMouseEvent & /*event*/)
+    {
+        OnUp();
+    }
+
+    void OnDown()
+    {
+        if (mIsEnabled && mCurrentValue != 1.0f)
+        {
+            mCurrentValue = 1.0f;
+
+            // Just invoke the callback, we'll end up being toggled when the event travels back
+            mOnControllerUpdated(mCurrentValue);
+        }
+    }
+
+    void OnUp()
+    {
+        if (mCurrentValue == 1.0f)
+        {
+            mCurrentValue = 0.0f;
+
+            // Just invoke the callback, we'll end up being toggled when the event travels back
+            mOnControllerUpdated(mCurrentValue);
+        }
+    }
+
+    wxBitmap const & GetImageForCurrentState() const
+    {
+        if (mIsEnabled)
+        {
+            if (mCurrentValue == 1.0f)
+            {
+                return mOnEnabledImage;
+            }
+            else
+            {
+                assert(mCurrentValue == 0.0f);
+                return mOffEnabledImage;
+            }
+        }
+        else
+        {
+            if (mCurrentValue == 1.0f)
+            {
+                return mOnDisabledImage;
+            }
+            else
+            {
+                assert(mCurrentValue == 0.0f);
+                return mOffDisabledImage;
+            }
+        }
+    }
+
+private:
+
+    wxBitmap const mOnEnabledImage;
+    wxBitmap const mOffEnabledImage;
+    wxBitmap const mOnDisabledImage;
+    wxBitmap const mOffDisabledImage;
+
+    std::function<void(float)> mOnControllerUpdated;    
+
+    // Current state
+    float mCurrentValue;
+    bool mIsEnabled;
+
+    // UI
+    wxStaticBitmap * mImageBitmap;
 };

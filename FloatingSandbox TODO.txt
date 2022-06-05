@@ -1087,7 +1087,7 @@
 						+ Switchboard: creation of Telegraph: current value is 0.0
 						+ UILib/Telegraph controller: map to internal, at all places
 						+ All implementations of OnEngineControllerUpdated
-					= Materials:
+					+ Materials:
 						+ Engine Telegraph (rename)
 							+ Material::ToLabel
 						+ Engine Controller "Jet Throttle"
@@ -1097,30 +1097,28 @@
 									+ Image: disabled x 2
 								+ ElectricalElementControl
 							+ Material::ToLabel
-						= Engine Controller "Jet Thrust"
-							= ElectricalPanel
+						+ Engine Controller "Jet Thrust"
+							+ ElectricalPanel
 								+ Resources:
 									+ Image: On, Off
 									+ Image: disabled x 2
-								- ElectricalElementControl
+								+ ElectricalElementControl
 							+ Material::ToLabel
 					+ ElectricalElement handling of two new controllers
 					- Sounds
 						- EventHandler::OnEngineCtrlUpdated: take prev value (pop'd by ElectricalElements) and type
 						- Clutch sound for Throttle
 						- Existing button sound for Thrust
-					= Tests:
+					+ Tests:
 						+ Telegraph:
 							+ Works between -1 and +1
 							+ Switchboard: Disabled/Enabled, On/Off 
-						- Jet Throttle:
-							- Works between -1 and +1
-							- Switchboard: Disabled/Enabled, On/Off
-							- 
-						- Jet Thrust:
-							- Works between -1 and +1
-							- Switchboard: Disabled/Enabled, On/Off
-							- 
+						+ Jet Throttle:
+							+ Works between -1 and +1
+							+ Switchboard: Disabled/Enabled, On/Off 
+						+ Jet Thrust:
+							+ Works between -1 and +1
+							+ Switchboard: Disabled/Enabled, On/Off 
 				- Clamp
 					- A and B types
 					- When powered, destroys all springs between each pair of powered A and B points

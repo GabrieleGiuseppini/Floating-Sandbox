@@ -769,7 +769,22 @@ void SwitchboardPanel::OnEngineControllerCreated(
 
             case ElectricalMaterial::EngineControllerElementType::JetThrust:
             {
-                // TODO
+                ecCtrl = new EngineControllerJetEngineThrustElectricalElementControl(
+                    mSwitchPanel,
+                    mEngineControllerJetThrustOnEnabledBitmap,
+                    mEngineControllerJetThrustOffEnabledBitmap,
+                    mEngineControllerJetThrustOnDisabledBitmap,
+                    mEngineControllerJetThrustOffDisabledBitmap,
+                    *label,
+                    mInteractiveCursor,
+                    [this, electricalElementId](float controllerValue)
+                    {
+                        mGameController->SetEngineControllerState(
+                            electricalElementId,
+                            controllerValue);
+                    },
+                    0.0f); // Starting value
+
                 break;
             }
 
