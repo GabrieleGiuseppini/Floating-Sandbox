@@ -270,10 +270,194 @@ void EngineControllerTelegraphElectricalElementControl::MoveToPoint(wxPoint cons
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
-// EngineControllerJetThrottle
+// EngineControllerJetEngineThrottleElectricalElementControl
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// TODO
+void EngineControllerJetEngineThrottleElectricalElementControl::OnKeyboardShortcutDown(bool isShift)
+{
+    if (mIsEnabled)
+    {
+        // TODOHERE: another version of MouseMove state machine, with direct up/down transitions though (i.e. without thresholds)
+
+        ////if (!isShift)
+        ////{
+        ////    // Plus
+        ////    if (mCurrentValue < MaxTelegraphValue)
+        ////        ++mCurrentValue;
+        ////}
+        ////else
+        ////{
+        ////    // Minus
+        ////    if (mCurrentValue > 0)
+        ////        --mCurrentValue;
+        ////}
+
+        ////mOnControllerUpdated(mCurrentValue);
+    }
+}
+
+void EngineControllerJetEngineThrottleElectricalElementControl::OnPaint(wxPaintEvent & /*event*/)
+{
+    wxPaintDC dc(mImagePanel);
+    Render(dc);
+}
+
+void EngineControllerJetEngineThrottleElectricalElementControl::Render(wxDC & dc)
+{
+    //
+    // Draw background image
+    //
+
+    dc.DrawBitmap(
+        mIsEnabled ? mEnabledBackgroundImage : mDisabledBackgroundImage,
+        0,
+        0,
+        true);
+
+    //
+    // Draw handle
+    //
+
+    dc.DrawBitmap(
+        mIsEnabled ? mEnabledHandleImage: mDisabledHandleImage,
+        mCenterPoint.x - mEnabledHandleImage.GetWidth() / 2,
+        mCenterPoint.y - static_cast<int>(mCurrentValue * mYExtent) - mEnabledHandleImage.GetHeight() / 2,
+        true);
+}
+
+void EngineControllerJetEngineThrottleElectricalElementControl::OnLeftDown(wxMouseEvent & event)
+{
+    if (mIsEnabled)
+    {
+        // Capture mouse
+        if (!mIsMouseCaptured)
+        {
+            mImagePanel->CaptureMouse();
+            mIsMouseCaptured = true;
+        }
+
+        // Start engagement
+        mCurrentEngagementY.emplace(event.GetY());
+    }
+}
+
+void EngineControllerJetEngineThrottleElectricalElementControl::OnLeftUp(wxMouseEvent & /*event*/)
+{
+    // Release mouse capture
+    assert(mIsMouseCaptured || !mIsEnabled);
+    if (mIsMouseCaptured)
+    {
+        mImagePanel->ReleaseMouse();
+        mIsMouseCaptured = false;
+    }
+
+    // Reset engagement
+    mCurrentEngagementY.reset();
+
+    // Unblock up and down (in case we've just landed at idle)
+    mIdleBlockHandleUp = false;
+    mIdleBlockHandleDown = false;
+}
+
+void EngineControllerJetEngineThrottleElectricalElementControl::OnMouseMove(wxMouseEvent & event)
+{    
+    if (mCurrentEngagementY.has_value())
+    {
+        // Calculate Y stride (positive up)
+        int const yStride = -(event.GetY() - *mCurrentEngagementY);
+
+        // Process stride depending on current state
+        if (mCurrentValue == 0.0f)
+        {
+            // At zero
+
+            // Go to Idle if more than magic stride
+            if (yStride > 15)
+            {
+                // Go to Idle
+                mCurrentValue = GameParameters::EngineControllerJetThrottleIdleFraction;
+                mOnControllerUpdated(mCurrentValue);
+
+                // Transition state
+                mIdleBlockHandleUp = true;
+                mCurrentEngagementY = event.GetY();
+
+                Refresh();
+            }
+        }
+        else if (mCurrentValue == GameParameters::EngineControllerJetThrottleIdleFraction)
+        {
+            // At Idle
+
+            // Go to Free if can, and more than magic stride
+            if (!mIdleBlockHandleUp && yStride > 15)
+            {
+                // Go to Free
+                mCurrentValue = std::min(mCurrentValue + HandleStrideToControllerValueOffset(yStride - 15), 1.0f);
+                mOnControllerUpdated(mCurrentValue);
+
+                // Transition state
+                mCurrentEngagementY = event.GetY();
+
+                Refresh();
+            }
+            // Go to Zero if can, and more than magic stide
+            else if (!mIdleBlockHandleDown && yStride < -15)
+            {
+                // Go to Zero
+                mCurrentValue = 0.0f;
+                mOnControllerUpdated(mCurrentValue);
+
+                // Transition state
+                mCurrentEngagementY = event.GetY();
+
+                Refresh();
+            }
+        }
+        else
+        {
+            // Free
+            assert(mCurrentValue > GameParameters::EngineControllerJetThrottleIdleFraction);
+
+            if (yStride > 0)
+            {
+                // Move staying in Free
+                mCurrentValue = std::min(mCurrentValue + HandleStrideToControllerValueOffset(yStride), 1.0f);
+                mOnControllerUpdated(mCurrentValue);
+
+                // Transition state
+                mCurrentEngagementY = event.GetY(); // TODO: sure?
+
+                Refresh();
+            }
+            else if (yStride < 0)
+            {
+                // TODOHERE: allow to go down and then eventually to Idle, if enough remaining stride
+            }
+
+            // TODOOLD
+            // Go to Idle if can, and more than magic stide
+            else if (!mIdleBlockHandleDown && yStride < -15)
+            {
+                // Go to Idle
+                mCurrentValue = GameParameters::EngineControllerJetThrottleIdleFraction;
+                mOnControllerUpdated(mCurrentValue);
+
+                // Transition state
+                mIdleBlockHandleDown = true;
+                mCurrentEngagementY = event.GetY();
+
+                Refresh();
+            }
+        }
+    }
+}
+
+float EngineControllerJetEngineThrottleElectricalElementControl::HandleStrideToControllerValueOffset(float handleStride) const
+{
+    // Magic resistance
+    return handleStride / 50.0f;
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 // EngineControllerJetThrust

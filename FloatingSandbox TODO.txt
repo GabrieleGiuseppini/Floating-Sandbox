@@ -1075,6 +1075,7 @@
 					+ Sound
 					- Tests:
 						+ Z depth
+						- Row of engines - for flames
 					- Merge into 1.17.2.next
 				= Controllers:
 					+ New "EngineController" sub-type
@@ -1104,6 +1105,7 @@
 								- ElectricalElementControl
 							+ Material::ToLabel
 					+ ElectricalElement handling of two new controllers
+					- Sounds
 					= Tests:
 						+ Telegraph:
 							+ Works between -1 and +1

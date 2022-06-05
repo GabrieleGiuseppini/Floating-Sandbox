@@ -1628,7 +1628,7 @@ void ElectricalElements::UpdateSinks(
                                 {
                                     controllerThrustMagnitude = (controllerState.CurrentValue - ThrottleIdleFraction) / (1.0f - ThrottleIdleFraction);
                                 }
-                                else if (controllerState.CurrentValue < ThrottleIdleFraction)
+                                else if (controllerState.CurrentValue < -ThrottleIdleFraction)
                                 {
                                     controllerThrustMagnitude = (controllerState.CurrentValue + ThrottleIdleFraction) / (1.0f - ThrottleIdleFraction);
                                 }

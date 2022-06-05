@@ -746,7 +746,24 @@ void SwitchboardPanel::OnEngineControllerCreated(
         {
             case ElectricalMaterial::EngineControllerElementType::JetThrottle:
             {
-                // TODO
+                ecCtrl = new EngineControllerJetEngineThrottleElectricalElementControl(
+                    mSwitchPanel,
+                    mEngineControllerJetThrottleBackgroundEnabledBitmap,
+                    mEngineControllerJetThrottleBackgroundDisabledBitmap,
+                    mEngineControllerJetThrottleHandleEnabledBitmap,
+                    mEngineControllerJetThrottleHandleDisabledBitmap,
+                    wxPoint(48, 79),
+                    15,
+                    *label,
+                    mInteractiveCursor,
+                    [this, electricalElementId](float controllerValue)
+                    {
+                        mGameController->SetEngineControllerState(
+                            electricalElementId,
+                            controllerValue);
+                    },
+                    0.0f); // Starting value
+
                 break;
             }
 

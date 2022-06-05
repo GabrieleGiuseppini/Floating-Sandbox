@@ -802,3 +802,123 @@ private:
     bool mIsLeftMouseDown;
     bool mIsMouseCaptured;
 };
+
+class EngineControllerJetEngineThrottleElectricalElementControl
+    : public EngineControllerElectricalElementControl
+{
+public:
+
+    EngineControllerJetEngineThrottleElectricalElementControl(
+        wxWindow * parent,
+        wxBitmap const & enabledBackgroundImage,
+        wxBitmap const & disabledBackgroundImage,
+        wxBitmap const & enabledHandleImage,
+        wxBitmap const & disabledHandleImage,
+        wxPoint const & centerPoint,
+        int topY,
+        std::string const & label,
+        wxCursor const & cursor,
+        std::function<void(float)> onControllerUpdated,
+        float currentValue)
+        : EngineControllerElectricalElementControl(
+            parent,
+            enabledBackgroundImage.GetSize(),
+            label)
+        , mEnabledBackgroundImage(enabledBackgroundImage)
+        , mDisabledBackgroundImage(disabledBackgroundImage)
+        , mEnabledHandleImage(enabledHandleImage)
+        , mDisabledHandleImage(disabledHandleImage)
+        , mCenterPoint(centerPoint)
+        , mTopY(topY)
+        , mYExtent(static_cast<float>(centerPoint.y - topY + 1))
+        , mOnControllerUpdated(std::move(onControllerUpdated))
+        //
+        , mCurrentValue(currentValue)
+        , mCurrentEngagementY()
+        , mIdleBlockHandleUp(false) // Arbitrary, will be set at state transitions
+        , mIdleBlockHandleDown(false) // Arbitrary, will be set at state transitions
+        , mIsMouseCaptured(false)
+        , mIsEnabled(true)
+    {
+        assert(mEnabledHandleImage.GetSize() == mDisabledHandleImage.GetSize());
+
+        mImagePanel->SetCursor(cursor);
+
+#ifdef __WXMSW__
+        mImagePanel->SetDoubleBuffered(true);
+#endif
+
+        mImagePanel->Bind(wxEVT_PAINT, (wxObjectEventFunction)&EngineControllerJetEngineThrottleElectricalElementControl::OnPaint, this);
+
+        mImagePanel->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&EngineControllerJetEngineThrottleElectricalElementControl::OnLeftDown, this);
+        mImagePanel->Bind(wxEVT_LEFT_UP, (wxObjectEventFunction)&EngineControllerJetEngineThrottleElectricalElementControl::OnLeftUp, this);
+        mImagePanel->Bind(wxEVT_MOTION, (wxObjectEventFunction)&EngineControllerJetEngineThrottleElectricalElementControl::OnMouseMove, this);
+    }
+
+    void SetValue(float controllerValue) override
+    {
+        mCurrentValue = controllerValue;
+
+        Refresh();
+    }
+
+    virtual bool IsEnabled() const override
+    {
+        return mIsEnabled;
+    }
+
+    virtual void SetEnabled(bool isEnabled) override
+    {
+        mIsEnabled = isEnabled;
+
+        Refresh();
+    }
+
+    virtual void SetKeyboardShortcutLabel(std::string const & label) override
+    {
+        mImagePanel->SetToolTip(label);
+    }
+
+    void OnKeyboardShortcutDown(bool isShift) override;
+
+    void OnKeyboardShortcutUp() override
+    {
+        // Ignore
+    }
+
+private:
+
+    void OnPaint(wxPaintEvent & event);
+
+    void Render(wxDC & dc);
+
+    void OnLeftDown(wxMouseEvent & event);
+
+    void OnLeftUp(wxMouseEvent & event);
+
+    void OnMouseMove(wxMouseEvent & event);
+
+private:
+
+    float HandleStrideToControllerValueOffset(float handleStride) const;
+
+private:
+
+    wxBitmap const mEnabledBackgroundImage;
+    wxBitmap const mDisabledBackgroundImage;
+    wxBitmap const mEnabledHandleImage;
+    wxBitmap const mDisabledHandleImage;
+    wxPoint const mCenterPoint;
+    int const mTopY; // TODO: see if needed
+    float const mYExtent;
+    
+    std::function<void(float)> mOnControllerUpdated;
+
+    // Current state
+    float mCurrentValue; // The engine controller range (-1.0,...,1.0), but in practice only (0.0,...,1.0)
+    std::optional<int> mCurrentEngagementY;
+    bool mIdleBlockHandleUp;
+    bool mIdleBlockHandleDown;
+    bool mIsMouseCaptured;
+    bool mIsEnabled;
+};

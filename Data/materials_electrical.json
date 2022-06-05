@@ -1074,7 +1074,7 @@
         "is_self_powered": false,
         "maximum_operating_temperature": 1783.15,
         "minimum_operating_temperature": 173.15,
-        "name": "Engine Telegraph",
+        "name": "Engine Telegraph Controller",
         "palette_coordinates": {
 		"category": "Engines",
 		"sub_category": "Propeller Engine Controllers",
@@ -1092,7 +1092,7 @@
         "is_self_powered": false,
         "maximum_operating_temperature": 1783.15,
         "minimum_operating_temperature": 173.15,
-        "name": "Jet Engine Throttle",
+        "name": "Jet Engine Throttle Controller",
         "palette_coordinates": {
 		"category": "Engines",
 		"sub_category": "Jet Engine Controllers",
@@ -1110,7 +1110,7 @@
         "is_self_powered": false,
         "maximum_operating_temperature": 1783.15,
         "minimum_operating_temperature": 173.15,
-        "name": "Jet Engine Thrust",
+        "name": "Jet Engine Thrust Controller",
         "palette_coordinates": {
 		"category": "Engines",
 		"sub_category": "Jet Engine Controllers",
@@ -1713,8 +1713,7 @@
 					"Outboard Engines",
 					"Diesel Engines",
 					"Steam Engines",
-					"Propeller Engine Controllers",
-					"Jet Engine Controllers"]
+					"Propeller Engine Controllers"]
 			},
 			{
 				"name": "Jet Engines",
@@ -1723,7 +1722,8 @@
 					"Jet Engines D",
 					"Jet Engines L",
 					"Jet Engines R",
-					"Jet Thrust Engines U"]
+					"Jet Thrust Engines U",
+					"Jet Engine Controllers"]
 			},
 			{
 				"name": "Misc",
