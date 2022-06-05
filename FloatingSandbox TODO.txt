@@ -74,6 +74,8 @@
 						+ Pan does it (when no pan enabled)
 					X World X/Y: no move if abs < 0.2
 					X Zoom: no move if abs/current < 0.01
+			- Ignore AABBs that are "too small"
+				- TODO: define "too small"
 			- changelist
 			- Test land anti-aliasing on old Dell
 
@@ -90,6 +92,10 @@
 
 		- Option to disable lightning making damage - people want to sail in the storm
 			- Lightning Hit Probability
+
+		- Misc quick things:
+			- See if water entering via hole is faster than water entering natural non-hull ("cut funnel")
+			- Negative pressure
 
 		- ShipLoadDialog Toolbar (*)
 
@@ -535,6 +541,7 @@
 		- Talk about builder (w/screenshot) on main page
 
 - Suggestions to spec:
+	- Northern lights
 	- Heat bomb
 		- Just heat
 	- Fishing log
