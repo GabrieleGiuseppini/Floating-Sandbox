@@ -233,7 +233,7 @@ public:
 
     void SetEngineControllerState(
         ElectricalElementId electricalElementId,
-        int telegraphValue) override;
+        float controllerValue) override;
 
     bool DestroyTriangle(ElementId triangleId) override;
     bool RestoreTriangle(ElementId triangleId) override;

@@ -64,11 +64,10 @@
 				+ Do
 				+ Ctrl+HOME to toggle
 					+ No more ESC
-			= Problem with ocean floor moving line by line
+			+ Problem with ocean floor moving line by line
 				+ Try first with alpha/anti-aliasing @ ocean floor
 					+ This fixes only horizontal: float alpha = mix(0.0, 1.0, textureCoord.z / 0.2);
 					+ This should be the winner; see if can do also for "vertical" edges
-				- Try with earlier threshold at ParameterSmoother: overshooting
 				X ViewManager:
 					+ Figure out first if due to zoom or pan only
 						+ Zoom does it (when no pan enabled)
@@ -1024,18 +1023,18 @@
 								+ Powers: 50, 200, 1000, 3000, 8000
 									+ Make test ship
 								+ D, L, R
-							- "Thrust"
-								- Base variant L
+							= "Thrust"
+								= Base variant U; powers=100,1000,5000
 									- Check power
 									- Check responsiveness
 								- R, U, D
 						+ Make palette groups: Propeller Engines, Jet Engines
 					+ Change Material::ToLabel to say "Engine" vs "Jet Engine" depending on engine type
-					= ElectricalElements:
-						= @ engines update:
+					+ ElectricalElements:
+						+ @ engines update:
 							+ Does not work underwater - zero targets (thrust and RPM)
 							+ No wake if jet
-							= Rendering with bidir flame and variable size flame:
+							+ Rendering with bidir flame and variable size flame:
 								+ EngineGroup: stores signed RPM
 								+ State::Engine: stores AbsRpm (just rename of current, but populated with abs(EngineGroup::RPM)) *and* JetEngineFlameVector
 									+ JetEngineFlameVector: 
@@ -1043,11 +1042,11 @@
 											+ Engine power: thrust capacity = EnginePower * 746; EnginePowers: 50 -> 8000
 										+ Smoothed as well towards target
 									+ Uploaded instead of dir and RPM
-								= Test:
+								+ Test:
 									+ Engine in both directions
 									+ Gauge
 									+ Circle notification
-									+ Different powers: same gauge, different flame size
+									+ Different powers: same gauge, different flame size								
 					+ ElectricalElements::Upload():
 						+ Invoke from ship
 						+ Upload 
@@ -1062,13 +1061,14 @@
 									+ Sorts by point's PlaneId
 								+ Upload runs on it
 									+ So no "Jet" type check
-					+ ShipRenderContext:
+					= ShipRenderContext:
 						+ Shader
 						+ Set params like in others
 						+ Upload
 							+ Quad length and width both depend on thrust magnitude, but length depends more
 							+ Wind is zero (it won't be used anyway)
 							+ Should take RPM instead of thrust, so flame is visible also at zero thrust but non-zero RPM
+						- Nail down flame H/W proportions: sqrt definitely good?
 					+ Displayed differently by ElectricalPanel
 						+ Different sub-type of Engine RPM UI control for different background: JetEngineGauge.png
 							+ Image
@@ -1076,16 +1076,46 @@
 					- Tests:
 						+ Z depth
 					- Merge into 1.17.2.next
-				- Controllers:
-					- Engine Controller Telegraph (rename)
-						- Material::ToLabel
-					- Engine Controller "Jet"
-						- ElectricalPanel
-							= Image: background and handle
-						- Material::ToLabel
-					- Engine Controller "Thrust"
-						- ElectricalPanel
-						- Material::ToLabel
+				= Controllers:
+					+ New "EngineController" sub-type
+					+ Controller values are all float, between -1.0 and 1.0
+						! TelegraphValue was between -Degrees/2 and +Degrees/2
+						+ ElectricalElements::EngineControllerState:: Current"Telegraph"->Current"ControllerValue"
+						+ ElectricalElements::SetEngineControllerState
+						+ ElectricalElements::UpdateSinks: EngineController: map -1/1 to group RPM, etc.						
+						+ Switchboard: creation of Telegraph: current value is 0.0
+						+ UILib/Telegraph controller: map to internal, at all places
+						+ All implementations of OnEngineControllerUpdated
+					= Materials:
+						+ Engine Telegraph (rename)
+							+ Material::ToLabel
+						= Engine Controller "Jet Throttle"
+							= ElectricalPanel
+								+ Resources:
+									+ Image: background and handle
+									+ Image: disabled x 2
+								- ElectricalElementControl
+							+ Material::ToLabel
+						= Engine Controller "Jet Thrust"
+							= ElectricalPanel
+								+ Resources:
+									+ Image: On, Off
+									+ Image: disabled x 2
+								- ElectricalElementControl
+							+ Material::ToLabel
+					+ ElectricalElement handling of two new controllers
+					= Tests:
+						+ Telegraph:
+							+ Works between -1 and +1
+							+ Switchboard: Disabled/Enabled, On/Off 
+						- Jet Throttle:
+							- Works between -1 and +1
+							- Switchboard: Disabled/Enabled, On/Off
+							- 
+						- Jet Thrust:
+							- Works between -1 and +1
+							- Switchboard: Disabled/Enabled, On/Off
+							- 
 				- Clamp
 					- A and B types
 					- When powered, destroys all springs between each pair of powered A and B points

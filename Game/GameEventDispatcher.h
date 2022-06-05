@@ -447,11 +447,11 @@ public:
 
     void OnEngineControllerUpdated(
         ElectricalElementId electricalElementId,
-        int telegraphValue) override
+        float controllerValue) override
     {
         for (auto sink : mElectricalElementSinks)
         {
-            sink->OnEngineControllerUpdated(electricalElementId, telegraphValue);
+            sink->OnEngineControllerUpdated(electricalElementId, controllerValue);
         }
     }
 

@@ -8,10 +8,9 @@
 #include <UILib/LayoutHelper.h>
 #include <UILib/WxHelpers.h>
 
-#include <GameCore/ImageTools.h>
-
-#include <Game/GameParameters.h>
 #include <Game/ImageFileTools.h>
+
+#include <GameCore/ImageTools.h>
 
 #include <wx/clntdata.h>
 #include <wx/cursor.h>
@@ -69,7 +68,7 @@ SwitchboardPanel::SwitchboardPanel(
     //
     , mMinBitmapSize(std::numeric_limits<int>::max(), std::numeric_limits<int>::max())
 {
-    float constexpr TotalProgressSteps = 9.0f;
+    float constexpr TotalProgressSteps = 11.0f;
     float ProgressSteps = 0.0;
 
     UnFocusablePanel::Create(
@@ -229,21 +228,37 @@ SwitchboardPanel::SwitchboardPanel(
         ProgressSteps += 1.0f; // 8.0f
         progressCallback(ProgressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
 
-        mEngineControllerBackgroundEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("telegraph_background_enabled").string(), wxBITMAP_TYPE_PNG);
-        mEngineControllerBackgroundDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("telegraph_background_disabled").string(), wxBITMAP_TYPE_PNG);
-        mEngineControllerHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_0").string(), wxBITMAP_TYPE_PNG);
-        mEngineControllerHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_1").string(), wxBITMAP_TYPE_PNG);
-        mEngineControllerHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_2").string(), wxBITMAP_TYPE_PNG);
-        mEngineControllerHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_3").string(), wxBITMAP_TYPE_PNG);
-        mEngineControllerHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_4").string(), wxBITMAP_TYPE_PNG);
-        mEngineControllerHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_5").string(), wxBITMAP_TYPE_PNG);
-        mEngineControllerHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_6").string(), wxBITMAP_TYPE_PNG);
-        mEngineControllerHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_7").string(), wxBITMAP_TYPE_PNG);
-        mEngineControllerHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_8").string(), wxBITMAP_TYPE_PNG);
-        mEngineControllerHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_9").string(), wxBITMAP_TYPE_PNG);
-        mEngineControllerHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_10").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerTelegraphBackgroundEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("telegraph_background_enabled").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerTelegraphBackgroundDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("telegraph_background_disabled").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerTelegraphHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_0").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerTelegraphHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_1").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerTelegraphHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_2").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerTelegraphHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_3").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerTelegraphHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_4").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerTelegraphHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_5").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerTelegraphHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_6").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerTelegraphHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_7").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerTelegraphHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_8").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerTelegraphHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_9").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerTelegraphHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_10").string(), wxBITMAP_TYPE_PNG);
 
         ProgressSteps += 1.0f; // 9.0f
+        progressCallback(ProgressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
+
+        mEngineControllerJetThrottleBackgroundEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("jet_throttle_background_enabled").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerJetThrottleBackgroundDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("jet_throttle_background_disabled").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerJetThrottleHandleEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("jet_throttle_handle_enabled").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerJetThrottleHandleDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("jet_throttle_handle_disabled").string(), wxBITMAP_TYPE_PNG);
+
+        ProgressSteps += 1.0f; // 10.0f
+        progressCallback(ProgressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
+
+        mEngineControllerJetThrustOnEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("thrust_button_on_enabled").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerJetThrustOffEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("thrust_button_off_enabled").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerJetThrustOnDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("thrust_button_on_disabled").string(), wxBITMAP_TYPE_PNG);
+        mEngineControllerJetThrustOffDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("thrust_button_off_disabled").string(), wxBITMAP_TYPE_PNG);
+
+        ProgressSteps += 1.0f; // 11.0f
         progressCallback(ProgressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
 
         dockCheckboxCheckedBitmap.LoadFile(resourceLocator.GetBitmapFilePath("electrical_panel_dock_pin_down").string(), wxBITMAP_TYPE_PNG);
@@ -727,23 +742,43 @@ void SwitchboardPanel::OnEngineControllerCreated(
 
     if (!isHidden)
     {
-        ecCtrl = new EngineControllerElectricalElementControl(
-            mSwitchPanel,
-            mEngineControllerBackgroundEnabledBitmap,
-            mEngineControllerBackgroundDisabledBitmap,
-            mEngineControllerHandBitmaps,
-            wxPoint(47, 48),
-            3.90f,
-            -0.75f,
-            *label,
-            mInteractiveCursor,
-            [this, electricalElementId](unsigned int controllerValue)
+        switch (electricalMaterial.EngineControllerType)
+        {
+            case ElectricalMaterial::EngineControllerElementType::JetThrottle:
             {
-                mGameController->SetEngineControllerState(
-                    electricalElementId,
-                    controllerValue - static_cast<unsigned int>(mEngineControllerHandBitmaps.size() / 2));
-            },
-            mEngineControllerHandBitmaps.size() / 2); // Starting value = center
+                // TODO
+                break;
+            }
+
+            case ElectricalMaterial::EngineControllerElementType::JetThrust:
+            {
+                // TODO
+                break;
+            }
+
+            case ElectricalMaterial::EngineControllerElementType::Telegraph:
+            {
+                ecCtrl = new EngineControllerTelegraphElectricalElementControl(
+                    mSwitchPanel,
+                    mEngineControllerTelegraphBackgroundEnabledBitmap,
+                    mEngineControllerTelegraphBackgroundDisabledBitmap,
+                    mEngineControllerTelegraphHandBitmaps,
+                    wxPoint(47, 48),
+                    3.90f,
+                    -0.75f,
+                    *label,
+                    mInteractiveCursor,
+                    [this, electricalElementId](float controllerValue)
+                    {
+                        mGameController->SetEngineControllerState(
+                            electricalElementId,
+                            controllerValue);
+                    },
+                    0.0f); // Starting value = center
+
+                break;
+            }
+        }
     }
 
     //
@@ -1197,7 +1232,7 @@ void SwitchboardPanel::OnEngineControllerEnabled(
 
 void SwitchboardPanel::OnEngineControllerUpdated(
     ElectricalElementId electricalElementId,
-    int telegraphValue)
+    float controllerValue)
 {
     //
     // Toggle controller
@@ -1209,7 +1244,7 @@ void SwitchboardPanel::OnEngineControllerUpdated(
     EngineControllerElectricalElementControl * ecCtrl = dynamic_cast<EngineControllerElectricalElementControl *>(elementInfo.Control);
     if (ecCtrl != nullptr)
     {
-        ecCtrl->SetValue(telegraphValue + GameParameters::EngineTelegraphDegreesOfFreedom / 2);
+        ecCtrl->SetValue(controllerValue);
     }
 }
 

@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
+#include <Game/GameParameters.h>
+
 #include <GameCore/GameTypes.h>
 #include <GameCore/Log.h>
 #include <GameCore/Vectors.h>
@@ -648,10 +650,33 @@ class EngineControllerElectricalElementControl
 {
 public:
 
-    using ControllerValue = unsigned int;
-
-
     EngineControllerElectricalElementControl(
+        wxWindow * parent,
+        wxSize imageSize,
+        std::string const & label)
+        : ElectricalElementControl(
+            ControlType::EngineController,
+            parent,
+        imageSize,
+            label)
+    {}
+
+    virtual void SetValue(float controllerValue) = 0;
+};
+
+
+class EngineControllerTelegraphElectricalElementControl
+    : public EngineControllerElectricalElementControl
+{
+private:
+
+    using TelegraphValue = unsigned int; // Between 0 and EngineControllerTelegraphDegreesOfFreedom
+
+    static TelegraphValue constexpr MaxTelegraphValue = static_cast<TelegraphValue>(GameParameters::EngineControllerTelegraphDegreesOfFreedom - 1);
+
+public:
+
+    EngineControllerTelegraphElectricalElementControl(
         wxWindow * parent,
         wxBitmap const & enabledBackgroundImage,
         wxBitmap const & disabledBackgroundImage,
@@ -661,10 +686,9 @@ public:
         float handMaxCCWAngle,
         std::string const & label,
         wxCursor const & cursor,
-        std::function<void(ControllerValue)> onControllerUpdated,
-        ControllerValue currentValue) // Between 0 and handImages.length
-        : ElectricalElementControl(
-            ControlType::EngineController,
+        std::function<void(float)> onControllerUpdated,
+        float currentValue)
+        : EngineControllerElectricalElementControl(
             parent,
             enabledBackgroundImage.GetSize(),
             label)
@@ -672,32 +696,33 @@ public:
         , mDisabledBackgroundImage(disabledBackgroundImage)
         , mHandImages(handImages)
         , mCenterPoint(static_cast<float>(centerPoint.x), static_cast<float>(centerPoint.y))
-        , mMaxValue(static_cast<ControllerValue>(mHandImages.size() - 1))
         , mHand0CCWAngle(hand0CCWAngle)
         , mHandMaxCCWAngle(handMaxCCWAngle)
-        , mSectorAngle(std::abs(mHandMaxCCWAngle - mHand0CCWAngle) / static_cast<float>(mMaxValue + 1))
+        , mSectorAngle(std::abs(mHandMaxCCWAngle - mHand0CCWAngle) / static_cast<float>(GameParameters::EngineControllerTelegraphDegreesOfFreedom))
         , mOnControllerUpdated(std::move(onControllerUpdated))
         //
-        , mCurrentValue(currentValue)
+        , mCurrentValue(ControllerValueToTelegraphValue(currentValue))
         , mIsEnabled(true)
         , mIsLeftMouseDown(false)
         , mIsMouseCaptured(false)
     {
+        assert(mHandImages.size() == GameParameters::EngineControllerTelegraphDegreesOfFreedom);
+
         mImagePanel->SetCursor(cursor);
 
 #ifdef __WXMSW__
         mImagePanel->SetDoubleBuffered(true);
 #endif
 
-        mImagePanel->Bind(wxEVT_PAINT, (wxObjectEventFunction)&EngineControllerElectricalElementControl::OnPaint, this);
+        mImagePanel->Bind(wxEVT_PAINT, (wxObjectEventFunction)&EngineControllerTelegraphElectricalElementControl::OnPaint, this);
 
-        mImagePanel->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&EngineControllerElectricalElementControl::OnLeftDown, this);
-        mImagePanel->Bind(wxEVT_LEFT_UP, (wxObjectEventFunction)&EngineControllerElectricalElementControl::OnLeftUp, this);
+        mImagePanel->Bind(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&EngineControllerTelegraphElectricalElementControl::OnLeftDown, this);
+        mImagePanel->Bind(wxEVT_LEFT_UP, (wxObjectEventFunction)&EngineControllerTelegraphElectricalElementControl::OnLeftUp, this);
     }
 
-    void SetValue(int value) // Between 0 and handImages.length
+    void SetValue(float controllerValue) override
     {
-        mCurrentValue = value;
+        mCurrentValue = ControllerValueToTelegraphValue(controllerValue);
 
         Refresh();
     }
@@ -740,9 +765,25 @@ private:
 
 private:
 
-    std::optional<ControllerValue> PointToValue(wxPoint const & point) const;
+    std::optional<TelegraphValue> PointToValue(wxPoint const & point) const;
 
     void MoveToPoint(wxPoint const & point);
+
+    float TelegraphValueToControllerValue(TelegraphValue telegraphValue) const
+    {
+        // 0 -> -1.0
+        // EngineControllerTelegraphDegreesOfFreedom / 2 -> 0.0
+        // MaxValue (EngineControllerTelegraphDegreesOfFreedom - 1) -> 1.0
+        
+        return (static_cast<float>(telegraphValue) - static_cast<float>(GameParameters::EngineControllerTelegraphDegreesOfFreedom / 2))
+            / static_cast<float>(GameParameters::EngineControllerTelegraphDegreesOfFreedom / 2);
+    }
+
+    TelegraphValue ControllerValueToTelegraphValue(float controllerValue) const
+    {
+        return static_cast<TelegraphValue>(controllerValue * static_cast<float>(GameParameters::EngineControllerTelegraphDegreesOfFreedom / 2))
+            + static_cast<TelegraphValue>(GameParameters::EngineControllerTelegraphDegreesOfFreedom / 2);
+    }
 
 private:
 
@@ -750,14 +791,13 @@ private:
     wxBitmap const mDisabledBackgroundImage;
     std::vector<wxBitmap> const mHandImages;
     vec2f const mCenterPoint;
-    ControllerValue const mMaxValue;
     float const mHand0CCWAngle;
     float const mHandMaxCCWAngle;
     float const mSectorAngle;
-    std::function<void(ControllerValue)> mOnControllerUpdated;
+    std::function<void(float)> mOnControllerUpdated;
 
     // Current state
-    ControllerValue mCurrentValue;
+    TelegraphValue mCurrentValue; // Between 0 and EngineTelegraphDegreesOfFreedom - 1
     bool mIsEnabled;
     bool mIsLeftMouseDown;
     bool mIsMouseCaptured;

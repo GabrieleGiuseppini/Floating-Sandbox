@@ -276,6 +276,13 @@ public:
         Steam
     };
 
+    enum class EngineControllerElementType
+    {        
+        Telegraph,
+        JetThrottle,
+        JetThrust
+    };
+
     enum class InteractiveSwitchElementType
     {
         Push,
@@ -335,6 +342,9 @@ public:
     float EnginePower; // Thrust at max RPM, HP
     float EngineResponsiveness; // Coefficient for RPM recursive function
 
+    // Engine Controller
+    EngineControllerElementType EngineControllerType;
+
     // Interactive switch
     InteractiveSwitchElementType InteractiveSwitchType;
 
@@ -361,6 +371,8 @@ public:
 
     static EngineElementType StrToEngineElementType(std::string const & str);
 
+    static EngineControllerElementType StrToEngineControllerElementType(std::string const & str);
+
     static ShipSoundElementType StrToShipSoundElementType(std::string const & str);
 
     ElectricalMaterial(
@@ -383,6 +395,7 @@ public:
         float engineCCWDirection,
         float enginePower,
         float engineResponsiveness,
+        EngineControllerElementType engineControllerType,
         InteractiveSwitchElementType interactiveSwitchType,
         ShipSoundElementType shipSoundType,
         float waterPumpNominalForce,
@@ -407,6 +420,7 @@ public:
         , EngineCCWDirection(engineCCWDirection)
         , EnginePower(enginePower)
         , EngineResponsiveness(engineResponsiveness)
+        , EngineControllerType(engineControllerType)
         , InteractiveSwitchType(interactiveSwitchType)
         , ShipSoundType(shipSoundType)
         , WaterPumpNominalForce(waterPumpNominalForce)
@@ -440,6 +454,7 @@ public:
         , EngineCCWDirection(1.0f)
         , EnginePower(1.0f)
         , EngineResponsiveness(1.0f)
+        , EngineControllerType(EngineControllerElementType::Telegraph)
         , InteractiveSwitchType(InteractiveSwitchElementType::Push)
         , ShipSoundType(ShipSoundElementType::Bell1)
         , WaterPumpNominalForce(0.0f)

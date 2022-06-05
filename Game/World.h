@@ -333,7 +333,7 @@ public:
 
     void SetEngineControllerState(
         ElectricalElementId electricalElementId,
-        int telegraphValue,
+        float controllerValue,
         GameParameters const & gameParameters);
 
     void SetSilence(float silenceAmount);

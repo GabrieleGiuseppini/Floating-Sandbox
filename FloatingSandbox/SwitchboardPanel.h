@@ -148,7 +148,7 @@ public:
 
     virtual void OnEngineControllerUpdated(
         ElectricalElementId electricalElementId,
-        int telegraphValue) override;
+        float controllerValue) override;
 
     virtual void OnEngineMonitorUpdated(
         ElectricalElementId electricalElementId,
@@ -335,9 +335,19 @@ private:
     wxBitmap mGaugeVoltsBitmap;
     wxBitmap mGaugeJetEngineBitmap;
 
-    wxBitmap mEngineControllerBackgroundEnabledBitmap;
-    wxBitmap mEngineControllerBackgroundDisabledBitmap;
-    std::vector<wxBitmap> mEngineControllerHandBitmaps;
+    wxBitmap mEngineControllerTelegraphBackgroundEnabledBitmap;
+    wxBitmap mEngineControllerTelegraphBackgroundDisabledBitmap;
+    std::vector<wxBitmap> mEngineControllerTelegraphHandBitmaps;
+
+    wxBitmap mEngineControllerJetThrottleBackgroundEnabledBitmap;
+    wxBitmap mEngineControllerJetThrottleBackgroundDisabledBitmap;
+    wxBitmap mEngineControllerJetThrottleHandleEnabledBitmap;
+    wxBitmap mEngineControllerJetThrottleHandleDisabledBitmap;
+
+    wxBitmap mEngineControllerJetThrustOnEnabledBitmap;
+    wxBitmap mEngineControllerJetThrustOffEnabledBitmap;
+    wxBitmap mEngineControllerJetThrustOnDisabledBitmap;
+    wxBitmap mEngineControllerJetThrustOffDisabledBitmap;
 
     wxSize mMinBitmapSize;
 };

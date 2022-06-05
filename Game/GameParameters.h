@@ -565,8 +565,10 @@ struct GameParameters
     static size_t constexpr MaxSpringsPerPoint = 8u + 1u; // 8 neighbours and 1 rope spring, when this is a rope endpoint
     static size_t constexpr MaxTrianglesPerPoint = 8u;
 
-    static unsigned int constexpr EngineTelegraphDegreesOfFreedom = 11;
-    static_assert((EngineTelegraphDegreesOfFreedom % 2) != 0); // Make sure there's room for central position, and it's symmetric
+    static unsigned int constexpr EngineControllerTelegraphDegreesOfFreedom = 11;
+    static_assert((EngineControllerTelegraphDegreesOfFreedom % 2) != 0); // Make sure there's room for central position, and it's symmetric
+
+    static float constexpr EngineControllerJetThrottleIdleFraction = 0.15f; // Fraction of 0.0->1.0 range occupied by "idle"
 
 private:
 

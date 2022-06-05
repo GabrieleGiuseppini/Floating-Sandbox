@@ -927,7 +927,7 @@ void World::SetSwitchState(
 
 void World::SetEngineControllerState(
     ElectricalElementId electricalElementId,
-    int telegraphValue,
+    float controllerValue,
     GameParameters const & gameParameters)
 {
     auto const shipId = electricalElementId.GetShipId();
@@ -935,7 +935,7 @@ void World::SetEngineControllerState(
 
     mAllShips[shipId]->SetEngineControllerState(
         electricalElementId,
-        telegraphValue,
+        controllerValue,
         gameParameters);
 }
 

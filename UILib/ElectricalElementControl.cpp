@@ -112,17 +112,17 @@ void GaugeElectricalElementControl::Render(wxDC & dc)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
-// EngineControllerElectricalElementControl
+// EngineControllerTelegraphElectricalElementControl
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void EngineControllerElectricalElementControl::OnKeyboardShortcutDown(bool isShift)
+void EngineControllerTelegraphElectricalElementControl::OnKeyboardShortcutDown(bool isShift)
 {
     if (mIsEnabled)
     {
         if (!isShift)
         {
             // Plus
-            if (mCurrentValue < mMaxValue)
+            if (mCurrentValue < MaxTelegraphValue)
                 ++mCurrentValue;
         }
         else
@@ -136,13 +136,13 @@ void EngineControllerElectricalElementControl::OnKeyboardShortcutDown(bool isShi
     }
 }
 
-void EngineControllerElectricalElementControl::OnPaint(wxPaintEvent & /*event*/)
+void EngineControllerTelegraphElectricalElementControl::OnPaint(wxPaintEvent & /*event*/)
 {
     wxPaintDC dc(mImagePanel);
     Render(dc);
 }
 
-void EngineControllerElectricalElementControl::Render(wxDC & dc)
+void EngineControllerTelegraphElectricalElementControl::Render(wxDC & dc)
 {
     //
     // Draw background image
@@ -167,7 +167,7 @@ void EngineControllerElectricalElementControl::Render(wxDC & dc)
     // TEST: to draw sectors
     ////wxPen handPen(wxColor(0xd8, 0xd8, 0xd8), 1, wxPENSTYLE_SOLID);
     ////dc.SetPen(handPen);
-    ////for (ControllerValue i = 0; i <= mMaxValue + 1; ++i)
+    ////for (ControllerValue i = 0; i <= MaxTelegraphValue + 1; ++i)
     ////{
     ////    float angle = mHandMaxCCWAngle + mSectorAngle * static_cast<float>(i);
     ////    vec2f p(37.0f, 0.0f);
@@ -178,7 +178,7 @@ void EngineControllerElectricalElementControl::Render(wxDC & dc)
     ////}
 }
 
-void EngineControllerElectricalElementControl::OnLeftDown(wxMouseEvent & event)
+void EngineControllerTelegraphElectricalElementControl::OnLeftDown(wxMouseEvent & event)
 {
     if (mIsEnabled)
     {
@@ -190,8 +190,8 @@ void EngineControllerElectricalElementControl::OnLeftDown(wxMouseEvent & event)
         }
 
         // Register for mouse move events
-        mImagePanel->Unbind(wxEVT_MOTION, (wxObjectEventFunction)&EngineControllerElectricalElementControl::OnMouseMove, this);
-        mImagePanel->Bind(wxEVT_MOTION, (wxObjectEventFunction)&EngineControllerElectricalElementControl::OnMouseMove, this);
+        mImagePanel->Unbind(wxEVT_MOTION, (wxObjectEventFunction)&EngineControllerTelegraphElectricalElementControl::OnMouseMove, this);
+        mImagePanel->Bind(wxEVT_MOTION, (wxObjectEventFunction)&EngineControllerTelegraphElectricalElementControl::OnMouseMove, this);
 
         // Move to this point
         MoveToPoint(event.GetPosition());
@@ -201,21 +201,24 @@ void EngineControllerElectricalElementControl::OnLeftDown(wxMouseEvent & event)
     mIsLeftMouseDown = true;
 }
 
-void EngineControllerElectricalElementControl::OnLeftUp(wxMouseEvent & /*event*/)
+void EngineControllerTelegraphElectricalElementControl::OnLeftUp(wxMouseEvent & /*event*/)
 {
     // De-register for mouse move events
-    mImagePanel->Unbind(wxEVT_MOTION, (wxObjectEventFunction)&EngineControllerElectricalElementControl::OnMouseMove, this);
+    mImagePanel->Unbind(wxEVT_MOTION, (wxObjectEventFunction)&EngineControllerTelegraphElectricalElementControl::OnMouseMove, this);
 
     // Release mouse capture
-    assert(mIsMouseCaptured);
-    mImagePanel->ReleaseMouse();
-    mIsMouseCaptured = false;
+    assert(mIsMouseCaptured || !mIsEnabled);
+    if (mIsMouseCaptured)
+    {
+        mImagePanel->ReleaseMouse();
+        mIsMouseCaptured = false;
+    }
 
     // Remember state of left button
     mIsLeftMouseDown = false;
 }
 
-void EngineControllerElectricalElementControl::OnMouseMove(wxMouseEvent & event)
+void EngineControllerTelegraphElectricalElementControl::OnMouseMove(wxMouseEvent & event)
 {
     if (mIsEnabled && mIsLeftMouseDown)
     {
@@ -223,7 +226,7 @@ void EngineControllerElectricalElementControl::OnMouseMove(wxMouseEvent & event)
     }
 }
 
-std::optional<EngineControllerElectricalElementControl::ControllerValue> EngineControllerElectricalElementControl::PointToValue(wxPoint const & point) const
+std::optional<EngineControllerTelegraphElectricalElementControl::TelegraphValue> EngineControllerTelegraphElectricalElementControl::PointToValue(wxPoint const & point) const
 {
     // Center->Click (positive y down)
     vec2f const clickVector =
@@ -237,10 +240,10 @@ std::optional<EngineControllerElectricalElementControl::ControllerValue> EngineC
 
     // Value
     float const sector = (clickCCWAngle - mHandMaxCCWAngle) / mSectorAngle;
-    auto value = mMaxValue - static_cast<ControllerValue>(std::floor(sector));
+    auto value = MaxTelegraphValue - static_cast<TelegraphValue>(std::floor(sector));
 
     // Continue only if the click is in the telegraph range
-    if (value >= 0 && value <= mMaxValue)
+    if (value >= 0 && value <= MaxTelegraphValue)
     {
         return value;
     }
@@ -250,18 +253,30 @@ std::optional<EngineControllerElectricalElementControl::ControllerValue> EngineC
     }
 }
 
-void EngineControllerElectricalElementControl::MoveToPoint(wxPoint const & point)
+void EngineControllerTelegraphElectricalElementControl::MoveToPoint(wxPoint const & point)
 {
     // Map to value
-    std::optional<ControllerValue> value = PointToValue(point);
+    std::optional<TelegraphValue> value = PointToValue(point);
 
     // Move to value, if valid and different
-    if (!!value
+    if (value.has_value()
         && *value != mCurrentValue)
     {
         mCurrentValue = *value;
 
         // Notify
-        mOnControllerUpdated(mCurrentValue);
+        mOnControllerUpdated(TelegraphValueToControllerValue(mCurrentValue));
     }
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+// EngineControllerJetThrottle
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// TODO
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+// EngineControllerJetThrust
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// TODO

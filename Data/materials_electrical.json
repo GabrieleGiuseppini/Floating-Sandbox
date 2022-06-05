@@ -1026,22 +1026,99 @@
     },
 
 
+
+
+
+
+
+
+    {
+        "color_key": "#2ae0e0",
+	"conducts_electricity": false,
+        "electrical_type": "Engine",
+	"engine_direction": 1.570796327,
+	"engine_power": 100.0,
+	"engine_responsiveness": 0.17,
+	"engine_type": "Jet",
+        "heat_generated": 50000.0,
+	"is_instanced": true,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "1000HP Jet Thrust Up",
+	"palette_coordinates": {
+		"category": "Engines",
+		"sub_category": "Jet Thrust Engines U",
+		"sub_category_ordinal": 0
+	}
+    },
+
+
+
+
+
+
+
+
+
+
+
+
     {
         "color_key": "#30D000",
 	"conducts_electricity": true,
         "electrical_type": "EngineController",
+	"engine_controller_type": "Telegraph",
         "heat_generated": 0.0,
 	"is_instanced": true,
         "is_self_powered": false,
         "maximum_operating_temperature": 1783.15,
         "minimum_operating_temperature": 173.15,
-        "name": "Engine Controller",
+        "name": "Engine Telegraph",
         "palette_coordinates": {
 		"category": "Engines",
 		"sub_category": "Propeller Engine Controllers",
 		"sub_category_ordinal": 0
 	}
     },
+
+    {
+        "color_key": "#30C000",
+	"conducts_electricity": true,
+        "electrical_type": "EngineController",
+	"engine_controller_type": "JetThrottle",
+        "heat_generated": 0.0,
+	"is_instanced": true,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1783.15,
+        "minimum_operating_temperature": 173.15,
+        "name": "Jet Engine Throttle",
+        "palette_coordinates": {
+		"category": "Engines",
+		"sub_category": "Jet Engine Controllers",
+		"sub_category_ordinal": 0
+	}
+    },
+
+    {
+        "color_key": "#30F000",
+	"conducts_electricity": true,
+        "electrical_type": "EngineController",
+	"engine_controller_type": "JetThrust",
+        "heat_generated": 0.0,
+	"is_instanced": true,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1783.15,
+        "minimum_operating_temperature": 173.15,
+        "name": "Jet Engine Thrust",
+        "palette_coordinates": {
+		"category": "Engines",
+		"sub_category": "Jet Engine Controllers",
+		"sub_category_ordinal": 1
+	}
+    },
+
+
 
     {
         "color_key": "#30EB00",
@@ -1636,7 +1713,8 @@
 					"Outboard Engines",
 					"Diesel Engines",
 					"Steam Engines",
-					"Propeller Engine Controllers"]
+					"Propeller Engine Controllers",
+					"Jet Engine Controllers"]
 			},
 			{
 				"name": "Jet Engines",
@@ -1644,7 +1722,8 @@
 					"Jet Engines U",
 					"Jet Engines D",
 					"Jet Engines L",
-					"Jet Engines R"]
+					"Jet Engines R",
+					"Jet Thrust Engines U"]
 			},
 			{
 				"name": "Misc",

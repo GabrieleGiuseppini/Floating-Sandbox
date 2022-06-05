@@ -292,7 +292,7 @@ struct IElectricalElementGameEventHandler
 
     virtual void OnEngineControllerUpdated(
         ElectricalElementId /*electricalElementId*/,
-        int /*telegraphValue*/)
+        float /*controllerValue*/)
     {
         // Default-implemented
     }

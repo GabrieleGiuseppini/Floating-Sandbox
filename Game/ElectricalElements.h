@@ -151,14 +151,14 @@ private:
 
         struct EngineControllerState
         {
-            int CurrentTelegraphValue; // Between -Degrees/2 and +Degrees/2
+            float CurrentValue; // Between -1.0 and +1.0
             bool IsPowered;
 
             SequenceNumber EngineConnectivityVisitSequenceNumber;
             EngineGroupIndex EngineGroup;
 
-            EngineControllerState(int telegraphValue, bool isPowered)
-                : CurrentTelegraphValue(telegraphValue)
+            EngineControllerState(float currentValue, bool isPowered)
+                : CurrentValue(currentValue)
                 , IsPowered(isPowered)
                 , EngineConnectivityVisitSequenceNumber()
                 , EngineGroup(0)
@@ -516,7 +516,7 @@ public:
 
     void SetEngineControllerState(
         ElectricalElementId electricalElementId,
-        int telegraphValue,
+        float controllerValue,
         GameParameters const & gameParameters);
 
     void Destroy(ElementIndex electricalElementIndex);

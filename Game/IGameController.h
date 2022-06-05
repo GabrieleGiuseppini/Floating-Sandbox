@@ -139,7 +139,7 @@ struct IGameController
 
     virtual void SetEngineControllerState(
         ElectricalElementId electricalElementId,
-        int telegraphValue) = 0;
+        float controllerValue) = 0;
 
     virtual bool DestroyTriangle(ElementId triangleId) = 0;
     virtual bool RestoreTriangle(ElementId triangleId) = 0;

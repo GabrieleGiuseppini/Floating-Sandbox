@@ -276,6 +276,14 @@ ElectricalMaterial ElectricalMaterial::Create(
                 throw GameException("Error loading electrical material \"" + name + "\": the value of the \"engine_responsiveness\" parameter must be greater than 0.0 and lower than or equal 1.0");
         }
 
+        // Engine controller properties
+        EngineControllerElementType engineControllerType = EngineControllerElementType::Telegraph; // Arbitrary
+        if (ElectricalElementType::EngineController == electricalType)
+        {
+            std::string engineControllerTypeStr = Utils::GetMandatoryJsonMember<std::string>(electricalMaterialJson, "engine_controller_type");
+            engineControllerType = StrToEngineControllerElementType(engineControllerTypeStr);
+        }
+
         // Interactive Switch properties
         InteractiveSwitchElementType interactiveSwitchType = InteractiveSwitchElementType::Push; // Arbitrary
         if (ElectricalElementType::InteractiveSwitch == electricalType)
@@ -328,6 +336,7 @@ ElectricalMaterial ElectricalMaterial::Create(
             engineDirection,
             enginePower,
             engineResponsiveness,
+            engineControllerType,
             interactiveSwitchType,
             shipSoundType,
             waterPumpNominalForce,
@@ -397,6 +406,18 @@ ElectricalMaterial::EngineElementType ElectricalMaterial::StrToEngineElementType
         throw GameException("Unrecognized EngineElementType \"" + str + "\"");
 }
 
+ElectricalMaterial::EngineControllerElementType ElectricalMaterial::StrToEngineControllerElementType(std::string const & str)
+{
+    if (Utils::CaseInsensitiveEquals(str, "Telegraph"))
+        return EngineControllerElementType::Telegraph;
+    else if (Utils::CaseInsensitiveEquals(str, "JetThrottle"))
+        return EngineControllerElementType::JetThrottle;
+    else if (Utils::CaseInsensitiveEquals(str, "JetThrust"))
+        return EngineControllerElementType::JetThrust;
+    else
+        throw GameException("Unrecognized EngineElementType \"" + str + "\"");
+}
+
 ElectricalMaterial::ShipSoundElementType ElectricalMaterial::StrToShipSoundElementType(std::string const & str)
 {
     if (Utils::CaseInsensitiveEquals(str, "Bell1"))
@@ -461,7 +482,27 @@ std::string ElectricalMaterial::MakeInstancedElementLabel(ElectricalElementInsta
 
         case ElectricalElementType::EngineController:
         {
-            ss << "EngineControl #" << static_cast<int>(instanceIndex);
+            switch (EngineControllerType)
+            {
+                case EngineControllerElementType::JetThrottle:
+                {
+                    ss << "Jet Throttle #" << static_cast<int>(instanceIndex);
+                    break;
+                }
+
+                case EngineControllerElementType::JetThrust:
+                {
+                    ss << "Jet Thrust #" << static_cast<int>(instanceIndex);
+                    break;
+                }
+
+                case EngineControllerElementType::Telegraph:
+                {
+                    ss << "Engine Telegraph #" << static_cast<int>(instanceIndex);
+                    break;
+                }
+            }
+
             break;
         }
 

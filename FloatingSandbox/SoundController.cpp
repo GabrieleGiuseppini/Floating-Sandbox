@@ -2035,7 +2035,7 @@ void SoundController::OnSwitchToggled(
 
 void SoundController::OnEngineControllerUpdated(
     ElectricalElementId /*electricalElementId*/,
-    int /*telegraphValue*/)
+    float /*controllerValue*/)
 {
     PlayOneShotMultipleChoiceSound(
         SoundType::EngineTelegraph,

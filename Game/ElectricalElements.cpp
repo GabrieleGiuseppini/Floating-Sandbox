@@ -73,7 +73,7 @@ void ElectricalElements::Add(
         case ElectricalMaterial::ElectricalElementType::EngineController:
         {
             // State
-            mElementStateBuffer.emplace_back(ElementState::EngineControllerState(0, false));
+            mElementStateBuffer.emplace_back(ElementState::EngineControllerState(0.0f, false));
 
             // Indices
             mSinks.emplace_back(elementIndex);
@@ -525,28 +525,27 @@ void ElectricalElements::SetSwitchState(
 
 void ElectricalElements::SetEngineControllerState(
     ElectricalElementId electricalElementId,
-    int telegraphValue,
+    float controllerValue,
     GameParameters const & /*gameParameters*/)
 {
+    assert(controllerValue >= -1.0f && controllerValue <= 1.0f);
+
     assert(electricalElementId.GetShipId() == mShipId);
     auto const elementIndex = electricalElementId.GetLocalObjectId();
 
     assert(GetMaterialType(elementIndex) == ElectricalMaterial::ElectricalElementType::EngineController);
     auto & state = mElementStateBuffer[elementIndex].EngineController;
-
-    assert(telegraphValue >= -static_cast<int>(GameParameters::EngineTelegraphDegreesOfFreedom / 2)
-        && telegraphValue <= static_cast<int>(GameParameters::EngineTelegraphDegreesOfFreedom / 2));
-
+    
     // Make sure it's a state change
-    if (telegraphValue != state.CurrentTelegraphValue)
+    if (controllerValue != state.CurrentValue)
     {
         // Change current value
-        state.CurrentTelegraphValue = telegraphValue;
+        state.CurrentValue = controllerValue;
 
         // Notify
         mGameEventHandler->OnEngineControllerUpdated(
             electricalElementId,
-            telegraphValue);
+            controllerValue);
     }
 }
 
@@ -1613,35 +1612,73 @@ void ElectricalElements::UpdateSinks(
                         //                        
 
                         assert(controllerState.EngineGroup != 0);
-                        
-                        // RPM: 0, +/-1/N, ..., +/-1
 
-                        float constexpr TelegraphCoeff1 =
-                            1.0f
-                            / static_cast<float>(GameParameters::EngineTelegraphDegreesOfFreedom / 2);
+                        float controllerRpm = 0.0f;
+                        float controllerThrustMagnitude = 0.0f;
+                        switch (mMaterialBuffer[sinkElementIndex]->EngineControllerType)
+                        {
+                            case ElectricalMaterial::EngineControllerElementType::JetThrottle:
+                            {
+                                // RPM: 0, +/- 1/N, ..., +/- 1
+                                controllerRpm = controllerState.CurrentValue;
 
-                        float const controllerRpm = static_cast<float>(controllerState.CurrentTelegraphValue) * TelegraphCoeff1;
+                                // Thrust magnitude: 0, 0, 1/N, ..., 1
+                                float constexpr ThrottleIdleFraction = GameParameters::EngineControllerJetThrottleIdleFraction;
+                                if (controllerState.CurrentValue > ThrottleIdleFraction)
+                                {
+                                    controllerThrustMagnitude = (controllerState.CurrentValue - ThrottleIdleFraction) / (1.0f - ThrottleIdleFraction);
+                                }
+                                else if (controllerState.CurrentValue < ThrottleIdleFraction)
+                                {
+                                    controllerThrustMagnitude = (controllerState.CurrentValue + ThrottleIdleFraction) / (1.0f - ThrottleIdleFraction);
+                                }
+                                else
+                                {
+                                    controllerThrustMagnitude = 0.0f;
+                                }
+
+                                break;
+                            }
+
+                            case ElectricalMaterial::EngineControllerElementType::JetThrust:
+                            {
+                                // RPM: 0, +/- 1
+                                controllerRpm = controllerState.CurrentValue;
+
+                                // Thrust magnitude: 0, +/- 1
+                                controllerThrustMagnitude = controllerState.CurrentValue;
+                                
+                                break;
+                            }
+
+                            case ElectricalMaterial::EngineControllerElementType::Telegraph:
+                            {
+                                // RPM: 0, +/- 1/N, ..., +/- 1
+                                controllerRpm = controllerState.CurrentValue;
+
+                                // Thrust magnitude: 0, 0, 1/N, ..., 1
+                                float constexpr TelegraphIdleFraction = 1.0f / static_cast<float>(GameParameters::EngineControllerTelegraphDegreesOfFreedom / 2);
+                                if (controllerState.CurrentValue > TelegraphIdleFraction)
+                                {
+                                    controllerThrustMagnitude = (controllerState.CurrentValue - TelegraphIdleFraction) / (1.0f - TelegraphIdleFraction);
+                                }
+                                else if (controllerState.CurrentValue < TelegraphIdleFraction)
+                                {
+                                    controllerThrustMagnitude = (controllerState.CurrentValue + TelegraphIdleFraction) / (1.0f - TelegraphIdleFraction);
+                                }
+                                else
+                                {
+                                    controllerThrustMagnitude = 0.0f;
+                                }
+
+                                break;
+                            }
+                        }
 
                         // Group RPM = max (of absolute value)
                         if (std::abs(controllerRpm) >= std::abs(mEngineGroupStates[controllerState.EngineGroup].GroupRpm))
                         {
                             mEngineGroupStates[controllerState.EngineGroup].GroupRpm = controllerRpm;
-                        }
-
-                        // Thrust magnitude: 0, 0, 1/N, ..., 1
-
-                        float constexpr TelegraphCoeff2 =
-                            1.0f
-                            / static_cast<float>(GameParameters::EngineTelegraphDegreesOfFreedom / 2 - 1);
-
-                        float controllerThrustMagnitude = 0.0f;
-                        if (controllerState.CurrentTelegraphValue > 1)
-                        {
-                            controllerThrustMagnitude = static_cast<float>(controllerState.CurrentTelegraphValue - 1) * TelegraphCoeff2;
-                        }
-                        else if (controllerState.CurrentTelegraphValue < -1)
-                        {
-                            controllerThrustMagnitude = static_cast<float>(controllerState.CurrentTelegraphValue + 1) * TelegraphCoeff2;
                         }
 
                         // Group thrust magnitude = sum

@@ -310,7 +310,7 @@ public:
 
     void OnEngineControllerUpdated(
         ElectricalElementId electricalElementId,
-        int telegraphValue) override;
+        float controllerValue) override;
 
     void OnEngineMonitorUpdated(
         ElectricalElementId electricalElementId,

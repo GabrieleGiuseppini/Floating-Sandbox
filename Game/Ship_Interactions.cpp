@@ -1602,14 +1602,14 @@ void Ship::SetSwitchState(
 
 void Ship::SetEngineControllerState(
     ElectricalElementId electricalElementId,
-    int telegraphValue,
+    float controllerValue,
     GameParameters const & gameParameters)
 {
     assert(electricalElementId.GetShipId() == mId);
 
     mElectricalElements.SetEngineControllerState(
         electricalElementId,
-        telegraphValue,
+        controllerValue,
         gameParameters);
 }
 

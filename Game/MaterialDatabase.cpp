@@ -271,10 +271,15 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
         }
 
         // Make sure there are no dupes
-        if (electricalMaterialMap.count(colorKey) != 0
-            || instancedElectricalMaterialMap.count(colorKey) != 0)
+        if (auto const searchIt = electricalMaterialMap.find(colorKey);
+            searchIt != electricalMaterialMap.end())
         {
-            throw GameException("Electrical material \"" + material.Name + "\" has a duplicate color key");
+            throw GameException("Electrical material \"" + material.Name + "\" has a color key conflicting with the \"" + searchIt->second.Name+ "\" material.");
+        }
+        if (auto const searchIt = instancedElectricalMaterialMap.find(colorKey);
+            searchIt != instancedElectricalMaterialMap.end())
+        {
+            throw GameException("Electrical material \"" + material.Name + "\" has a color key conflicting with the \"" + searchIt->second->Name + "\" material.");
         }
 
         // Store

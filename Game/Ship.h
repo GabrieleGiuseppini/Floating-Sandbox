@@ -275,7 +275,7 @@ public:
 
     void SetEngineControllerState(
         ElectricalElementId electricalElementId,
-        int telegraphValue,
+        float controllerValue,
         GameParameters const & gameParameters);
 
     bool DestroyTriangle(ElementIndex triangleIndex);
