@@ -388,7 +388,7 @@ public:
 
     /*
      * Assumptions:
-     *  - TODO: upload happens in depth order (for depth sorting)
+     *  - Upload happens in depth order (for depth sorting)
      */
     inline void UploadJetEngineFlame(
         PlaneId planeId,
@@ -419,8 +419,6 @@ public:
         float constexpr FlameWidthBase = 1.423f * FlameLengthBase; // Magic number based on shader
 
         float const flameQuadLength = FlameLengthBase * flameMagnitude;
-        // TODOHERE
-        //float const flameQuadWidth = FlameWidthBase * (1.0f - (flameMagnitude - 1) * (flameMagnitude - 1));
         float const flameQuadWidth = FlameWidthBase * std::sqrt(flameMagnitude);
 
         vec2f const Fp = flameDir.to_perpendicular(); // rotated by PI/2, i.e. oriented to the left (wrt flame vector)

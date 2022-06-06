@@ -1,3 +1,7 @@
+1.17.3
+- Added auto-focus capability - for cinematic awesomeness
+	- May be turned off and on again via the Control menu or Ctrl+HOME
+
 1.17.2
 - Expanded the materials database - building lighter ships has just become easier!
 	- Metals and Woods now have at least 6 different variants:

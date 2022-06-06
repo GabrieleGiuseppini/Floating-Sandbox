@@ -77,7 +77,7 @@
 			- Ignore AABBs that are "too small"
 				- AABB::Add: Track largest area
 				- Ignore AABBs with area small than a fraction of that
-			- changelist
+			+ changelist
 			- Test land anti-aliasing on old Dell
 
 		+ Update water velocities with blast
@@ -93,6 +93,7 @@
 
 		- Option to disable lightning making damage - people want to sail in the storm
 			- Lightning Hit Probability
+			- changelist
 
 		- Misc quick things:
 			- ShipBuilder lag with pencil tool px-1 moving across the screen
@@ -1027,8 +1028,8 @@
 				= New Engine type: Jet
 					+ Requires Engines rearc (*)
 					+ Enum
-					= Materials json:
-						= Named variants for  "Jet", "Thrust" (less power, less inertia) X "R/L, U/D" x different powers
+					+ Materials json:
+						+ Named variants for  "Jet", "Thrust" (less power, less inertia) X "R/L, U/D" x different powers
 							+ "Jet"
 								+ Base variant U
 									+ Fix direction
@@ -1038,11 +1039,11 @@
 								+ Powers: 50, 200, 1000, 3000, 8000
 									+ Make test ship
 								+ D, L, R
-							= "Thrust"
-								= Base variant U; powers=100,1000,5000
-									- Check power
-									- Check responsiveness
-								- R, U, D
+							+ "Thrust"
+								+ Base variant U; powers=100,1000,5000
+									+ Check power
+									+ Check responsiveness
+								+ D, L, R
 						+ Make palette groups: Propeller Engines, Jet Engines
 					+ Change Material::ToLabel to say "Engine" vs "Jet Engine" depending on engine type
 					+ ElectricalElements:
@@ -1076,14 +1077,14 @@
 									+ Sorts by point's PlaneId
 								+ Upload runs on it
 									+ So no "Jet" type check
-					= ShipRenderContext:
+					+ ShipRenderContext:
 						+ Shader
 						+ Set params like in others
 						+ Upload
 							+ Quad length and width both depend on thrust magnitude, but length depends more
 							+ Wind is zero (it won't be used anyway)
 							+ Should take RPM instead of thrust, so flame is visible also at zero thrust but non-zero RPM
-						- Nail down flame H/W proportions: sqrt definitely good?
+						+ Nail down flame H/W proportions: sqrt definitely good?
 					+ Displayed differently by ElectricalPanel
 						+ Different sub-type of Engine RPM UI control for different background: JetEngineGauge.png
 							+ Image

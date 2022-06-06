@@ -1045,7 +1045,7 @@
         "is_self_powered": false,
         "maximum_operating_temperature": 1000000.0,
         "minimum_operating_temperature": 0.0,
-        "name": "1000HP Jet Thrust Up",
+        "name": "100HP Jet Thrust Up",
 	"palette_coordinates": {
 		"category": "Engines",
 		"sub_category": "Jet Thrust Engines U",
@@ -1053,10 +1053,236 @@
 	}
     },
 
+    {
+        "color_key": "#2ae1e0",
+	"conducts_electricity": false,
+        "electrical_type": "Engine",
+	"engine_direction": 1.570796327,
+	"engine_power": 1000.0,
+	"engine_responsiveness": 0.17,
+	"engine_type": "Jet",
+        "heat_generated": 50000.0,
+	"is_instanced": true,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "1000HP Jet Thrust Up",
+	"palette_coordinates": {
+		"category": "Engines",
+		"sub_category": "Jet Thrust Engines U",
+		"sub_category_ordinal": 1
+	}
+    },
 
+    {
+        "color_key": "#2ae2e0",
+	"conducts_electricity": false,
+        "electrical_type": "Engine",
+	"engine_direction": 1.570796327,
+	"engine_power": 5000.0,
+	"engine_responsiveness": 0.17,
+	"engine_type": "Jet",
+        "heat_generated": 50000.0,
+	"is_instanced": true,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "5000HP Jet Thrust Up",
+	"palette_coordinates": {
+		"category": "Engines",
+		"sub_category": "Jet Thrust Engines U",
+		"sub_category_ordinal": 2
+	}
+    },
 
+    {
+        "color_key": "#2ae4e0",
+	"conducts_electricity": false,
+        "electrical_type": "Engine",
+	"engine_direction": -1.570796327,
+	"engine_power": 100.0,
+	"engine_responsiveness": 0.17,
+	"engine_type": "Jet",
+        "heat_generated": 50000.0,
+	"is_instanced": true,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "100HP Jet Thrust Down",
+	"palette_coordinates": {
+		"category": "Engines",
+		"sub_category": "Jet Thrust Engines D",
+		"sub_category_ordinal": 0
+	}
+    },
 
+    {
+        "color_key": "#2ae5e0",
+	"conducts_electricity": false,
+        "electrical_type": "Engine",
+	"engine_direction": -1.570796327,
+	"engine_power": 1000.0,
+	"engine_responsiveness": 0.17,
+	"engine_type": "Jet",
+        "heat_generated": 50000.0,
+	"is_instanced": true,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "1000HP Jet Thrust Down",
+	"palette_coordinates": {
+		"category": "Engines",
+		"sub_category": "Jet Thrust Engines D",
+		"sub_category_ordinal": 1
+	}
+    },
 
+    {
+        "color_key": "#2ae6e0",
+	"conducts_electricity": false,
+        "electrical_type": "Engine",
+	"engine_direction": -1.570796327,
+	"engine_power": 5000.0,
+	"engine_responsiveness": 0.17,
+	"engine_type": "Jet",
+        "heat_generated": 50000.0,
+	"is_instanced": true,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "5000HP Jet Thrust Down",
+	"palette_coordinates": {
+		"category": "Engines",
+		"sub_category": "Jet Thrust Engines D",
+		"sub_category_ordinal": 2
+	}
+    },
+
+    {
+        "color_key": "#2ae8e0",
+	"conducts_electricity": false,
+        "electrical_type": "Engine",
+	"engine_direction": 3.141592653,
+	"engine_power": 100.0,
+	"engine_responsiveness": 0.17,
+	"engine_type": "Jet",
+        "heat_generated": 50000.0,
+	"is_instanced": true,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "100HP Jet Thrust Left",
+	"palette_coordinates": {
+		"category": "Engines",
+		"sub_category": "Jet Thrust Engines L",
+		"sub_category_ordinal": 0
+	}
+    },
+
+    {
+        "color_key": "#2ae9e0",
+	"conducts_electricity": false,
+        "electrical_type": "Engine",
+	"engine_direction": 3.141592653,
+	"engine_power": 1000.0,
+	"engine_responsiveness": 0.17,
+	"engine_type": "Jet",
+        "heat_generated": 50000.0,
+	"is_instanced": true,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "1000HP Jet Thrust Left",
+	"palette_coordinates": {
+		"category": "Engines",
+		"sub_category": "Jet Thrust Engines L",
+		"sub_category_ordinal": 1
+	}
+    },
+
+    {
+        "color_key": "#2aeae0",
+	"conducts_electricity": false,
+        "electrical_type": "Engine",
+	"engine_direction": 3.141592653,
+	"engine_power": 5000.0,
+	"engine_responsiveness": 0.17,
+	"engine_type": "Jet",
+        "heat_generated": 50000.0,
+	"is_instanced": true,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "5000HP Jet Thrust Left",
+	"palette_coordinates": {
+		"category": "Engines",
+		"sub_category": "Jet Thrust Engines L",
+		"sub_category_ordinal": 2
+	}
+    },
+
+    {
+        "color_key": "#2aece0",
+	"conducts_electricity": false,
+        "electrical_type": "Engine",
+	"engine_direction": 0.0,
+	"engine_power": 100.0,
+	"engine_responsiveness": 0.17,
+	"engine_type": "Jet",
+        "heat_generated": 50000.0,
+	"is_instanced": true,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "100HP Jet Thrust Right",
+	"palette_coordinates": {
+		"category": "Engines",
+		"sub_category": "Jet Thrust Engines R",
+		"sub_category_ordinal": 0
+	}
+    },
+
+    {
+        "color_key": "#2aede0",
+	"conducts_electricity": false,
+        "electrical_type": "Engine",
+	"engine_direction": 0.0,
+	"engine_power": 1000.0,
+	"engine_responsiveness": 0.17,
+	"engine_type": "Jet",
+        "heat_generated": 50000.0,
+	"is_instanced": true,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "1000HP Jet Thrust Right",
+	"palette_coordinates": {
+		"category": "Engines",
+		"sub_category": "Jet Thrust Engines R",
+		"sub_category_ordinal": 1
+	}
+    },
+
+    {
+        "color_key": "#2aeee0",
+	"conducts_electricity": false,
+        "electrical_type": "Engine",
+	"engine_direction": 0.0,
+	"engine_power": 5000.0,
+	"engine_responsiveness": 0.17,
+	"engine_type": "Jet",
+        "heat_generated": 50000.0,
+	"is_instanced": true,
+        "is_self_powered": false,
+        "maximum_operating_temperature": 1000000.0,
+        "minimum_operating_temperature": 0.0,
+        "name": "5000HP Jet Thrust Right",
+	"palette_coordinates": {
+		"category": "Engines",
+		"sub_category": "Jet Thrust Engines R",
+		"sub_category_ordinal": 2
+	}
+    },
 
 
 
@@ -1723,6 +1949,9 @@
 					"Jet Engines L",
 					"Jet Engines R",
 					"Jet Thrust Engines U",
+					"Jet Thrust Engines D",
+					"Jet Thrust Engines L",
+					"Jet Thrust Engines R",
 					"Jet Engine Controllers"]
 			},
 			{
