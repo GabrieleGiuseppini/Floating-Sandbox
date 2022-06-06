@@ -1,4 +1,14 @@
 1.17.3
+- Added Jet Engines
+	- Not really "ship" stuff, but essential to a physics simulator nonetheless :-)
+	- Two types of engines:
+		- Jet Engine: provides main propulsion
+		- Jet Thrust Engine: provides short bursts to correct small directional deviations
+	- ...and two engine controllers:
+		- Jet Engine Throttle Controller: best for controlling Jet Engines
+		- Jet Engine Thrust Controller: best for controlling Jet Thrust Engines
+- Re-designed interaction between engine controllers and engines, allowing a controller to run an unlimited number of engines
+	- Introduced new "Engine Transmission" electrical material that may be used to connect engine controllers with engines
 - Added auto-focus capability - for cinematic awesomeness
 	- May be turned off and on again via the Control menu or Ctrl+HOME
 
