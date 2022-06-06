@@ -73,6 +73,8 @@ SoundType StrToSoundType(std::string const & str)
         return SoundType::EngineSteam2;
     else if (Utils::CaseInsensitiveEquals(str, "EngineTelegraph"))
         return SoundType::EngineTelegraph;
+    else if (Utils::CaseInsensitiveEquals(str, "EngineThrottleIdle"))
+        return SoundType::EngineThrottleIdle;
     else if (Utils::CaseInsensitiveEquals(str, "WaterPump"))
         return SoundType::WaterPump;
     else if (Utils::CaseInsensitiveEquals(str, "WatertightDoorClosed"))

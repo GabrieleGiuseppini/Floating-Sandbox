@@ -292,7 +292,9 @@ struct IElectricalElementGameEventHandler
 
     virtual void OnEngineControllerUpdated(
         ElectricalElementId /*electricalElementId*/,
-        float /*controllerValue*/)
+        ElectricalMaterial const & /*electricalMaterial*/,
+        float /*oldControllerValue*/,
+        float /*newControllerValue*/)
     {
         // Default-implemented
     }

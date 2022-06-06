@@ -310,7 +310,9 @@ public:
 
     void OnEngineControllerUpdated(
         ElectricalElementId electricalElementId,
-        float controllerValue) override;
+        ElectricalMaterial const & electricalMaterial,
+        float oldControllerValue,
+        float newControllerValue) override;
 
     void OnEngineMonitorUpdated(
         ElectricalElementId electricalElementId,

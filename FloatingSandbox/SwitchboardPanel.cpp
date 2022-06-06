@@ -1264,7 +1264,9 @@ void SwitchboardPanel::OnEngineControllerEnabled(
 
 void SwitchboardPanel::OnEngineControllerUpdated(
     ElectricalElementId electricalElementId,
-    float controllerValue)
+    ElectricalMaterial const & /*electricalMaterial*/,
+    float /*oldControllerValue*/,
+    float newControllerValue)
 {
     //
     // Toggle controller
@@ -1276,7 +1278,7 @@ void SwitchboardPanel::OnEngineControllerUpdated(
     EngineControllerElectricalElementControl * ecCtrl = dynamic_cast<EngineControllerElectricalElementControl *>(elementInfo.Control);
     if (ecCtrl != nullptr)
     {
-        ecCtrl->SetValue(controllerValue);
+        ecCtrl->SetValue(newControllerValue);
     }
 }
 

@@ -447,11 +447,13 @@ public:
 
     void OnEngineControllerUpdated(
         ElectricalElementId electricalElementId,
-        float controllerValue) override
+        ElectricalMaterial const & electricalMaterial,
+        float oldControllerValue,
+        float newControllerValue) override
     {
         for (auto sink : mElectricalElementSinks)
         {
-            sink->OnEngineControllerUpdated(electricalElementId, controllerValue);
+            sink->OnEngineControllerUpdated(electricalElementId, electricalMaterial, oldControllerValue, newControllerValue);
         }
     }
 

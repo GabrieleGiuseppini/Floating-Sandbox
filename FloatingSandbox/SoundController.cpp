@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #include "SoundController.h"
 
+#include <Game/GameParameters.h>
 #include <Game/Materials.h>
 
 #include <GameCore/GameException.h>
@@ -531,6 +532,7 @@ SoundController::SoundController(
                 || soundType == SoundType::ElectricalPanelUndock
                 || soundType == SoundType::GlassTick
                 || soundType == SoundType::EngineTelegraph
+                || soundType == SoundType::EngineThrottleIdle
                 || soundType == SoundType::WatertightDoorClosed
                 || soundType == SoundType::WatertightDoorOpened
                 || soundType == SoundType::Error
@@ -2035,13 +2037,49 @@ void SoundController::OnSwitchToggled(
 
 void SoundController::OnEngineControllerUpdated(
     ElectricalElementId /*electricalElementId*/,
-    float /*controllerValue*/)
+    ElectricalMaterial const & electricalMaterial,
+    float oldControllerValue,
+    float newControllerValue)
 {
-    PlayOneShotMultipleChoiceSound(
-        SoundType::EngineTelegraph,
-        SoundGroupType::Effects,
-        100.0f,
-        false);
+    switch (electricalMaterial.EngineControllerType)
+    {
+        case ElectricalMaterial::EngineControllerElementType::JetThrottle:
+        {
+            if (oldControllerValue == GameParameters::EngineControllerJetThrottleIdleFraction
+                || newControllerValue == GameParameters::EngineControllerJetThrottleIdleFraction)
+            {
+                PlayOneShotMultipleChoiceSound(
+                    SoundType::EngineThrottleIdle,
+                    SoundGroupType::Effects,
+                    100.0f,
+                    false);
+            }
+
+            break;
+        }
+
+        case ElectricalMaterial::EngineControllerElementType::JetThrust:
+        {
+            PlayOneShotMultipleChoiceSound(
+                newControllerValue != 0.0f ? SoundType::InteractiveSwitchOn : SoundType::InteractiveSwitchOff,
+                SoundGroupType::Effects,
+                100.0f,
+                false);
+
+            break;
+        }
+
+        case ElectricalMaterial::EngineControllerElementType::Telegraph:
+        {
+            PlayOneShotMultipleChoiceSound(
+                SoundType::EngineTelegraph,
+                SoundGroupType::Effects,
+                100.0f,
+                false);
+
+            break;
+        }
+    }
 }
 
 void SoundController::OnEngineMonitorUpdated(

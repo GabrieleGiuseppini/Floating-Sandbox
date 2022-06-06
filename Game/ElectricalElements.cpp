@@ -539,12 +539,16 @@ void ElectricalElements::SetEngineControllerState(
     // Make sure it's a state change
     if (controllerValue != state.CurrentValue)
     {
+        auto const oldValue = state.CurrentValue;
+
         // Change current value
         state.CurrentValue = controllerValue;
 
         // Notify
         mGameEventHandler->OnEngineControllerUpdated(
             electricalElementId,
+            *mMaterialBuffer[elementIndex],
+            oldValue,
             controllerValue);
     }
 }

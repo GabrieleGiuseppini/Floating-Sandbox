@@ -148,7 +148,9 @@ public:
 
     virtual void OnEngineControllerUpdated(
         ElectricalElementId electricalElementId,
-        float controllerValue) override;
+        ElectricalMaterial const & electricalMaterial,
+        float oldControllerValue,
+        float newControllerValue) override;
 
     virtual void OnEngineMonitorUpdated(
         ElectricalElementId electricalElementId,
