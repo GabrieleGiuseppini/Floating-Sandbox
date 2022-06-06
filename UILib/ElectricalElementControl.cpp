@@ -356,7 +356,6 @@ void EngineControllerJetEngineThrottleElectricalElementControl::OnLeftDown(wxMou
 void EngineControllerJetEngineThrottleElectricalElementControl::OnLeftUp(wxMouseEvent & /*event*/)
 {
     // Release mouse capture
-    assert(mIsMouseCaptured || !mIsEnabled);
     if (mIsMouseCaptured)
     {
         mImagePanel->ReleaseMouse();

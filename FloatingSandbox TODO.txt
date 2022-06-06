@@ -87,8 +87,8 @@
 		= Jet engines @ Material system improvements (*)			
 			+ Redo material template
 			+ changelist (both rearc and jet engines)
+			- Promote rocket and air boat
 			- Merge into 1.17.2.next
-		- Do airboat
 		- Update Wordpress post w/new engine stuff
 			- Connectivity
 			- Types

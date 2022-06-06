@@ -1150,13 +1150,14 @@ void ElectricalElements::UpdateEngineConductivity(
     // assigned an Engine Group ID.
     //
     // This graph visit could leave out disconnected Engine's, hence
-    // we initialize all Engines' group ID's to the "None" group ID.
+    // we initialize all Engines' group ID's to the "Zero" group ID.
     //
 
-    // Clear out engines - set their engine groups to group zero
+    // Clear out engines - set their engine groups to group zero, and reference point to None
     for (ElementIndex const engineElementIndex : mEngines)
     {
         mElementStateBuffer[engineElementIndex].Engine.EngineGroup = 0;
+        mElementStateBuffer[engineElementIndex].Engine.ReferencePointIndex = NoneElementIndex;
     }
 
     // Visit non-deleted engine controllers
@@ -2215,9 +2216,11 @@ void ElectricalElements::UpdateSinks(
             }
 
             //
-            // Calculate thrust direction based off reference point
+            // Calculate thrust direction based off reference point - as long as this engine
+            // is connected (i.e. it does have a reference point)
             //
 
+            if (engineState.ReferencePointIndex != NoneElementIndex)
             {
                 vec2f const engineToReferencePointDir =
                     (points.GetPosition(engineState.ReferencePointIndex) - points.GetPosition(enginePointIndex))
@@ -2226,6 +2229,10 @@ void ElectricalElements::UpdateSinks(
                 engineState.CurrentThrustDir = vec2f(
                     engineState.ReferencePointCWAngleCos * engineToReferencePointDir.x + engineState.ReferencePointCWAngleSin * engineToReferencePointDir.y,
                     -engineState.ReferencePointCWAngleSin * engineToReferencePointDir.x + engineState.ReferencePointCWAngleCos * engineToReferencePointDir.y);
+            }
+            else
+            {
+                engineState.CurrentThrustDir = vec2f::zero();
             }
 
             //
