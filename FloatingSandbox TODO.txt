@@ -74,18 +74,16 @@
 						+ Pan does it (when no pan enabled)
 					X World X/Y: no move if abs < 0.2
 					X Zoom: no move if abs/current < 0.01
-			X Ignore AABBs that are "too small"
+			= Ignore AABBs that are "too small"
 				+ AABB::Add: Track largest area
 				+ AABBSet: MakeUnion templated overload taking predicate - other calls this one
 					+ Unit tests
-				+ Ignore AABBs with area smaller than a fraction of that
+				X Ignore AABBs with area smaller than a fraction of that
 					+ Internal (inline) helper
 					+ InternalFocusOnShip
 					+ Update
 			+ Ocean floor tool's SHIFT lock: stable w/camera moving
 				+ Convert from screen to world in tool
-			- Slice tool's SHIFT lock: stable w/camera moving
-				- Convert from screen to world in tool
 			+ changelist
 			- Test land anti-aliasing on old Dell
 

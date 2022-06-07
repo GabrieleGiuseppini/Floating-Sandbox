@@ -954,7 +954,7 @@ public:
             {
                 vec2f const lastDirection = (targetPosition.ToFloat() - mPreviousMousePos->ToFloat());
                 float const lastDirectionLength = lastDirection.length();
-                if (lastDirectionLength >= 1.5f) // Some tolerance -- TODO: remove if locking change is good
+                if (lastDirectionLength >= 1.5f) // Some tolerance
                 {
                     mCurrentLockedDirection = lastDirection.normalise(lastDirectionLength);
                 }
