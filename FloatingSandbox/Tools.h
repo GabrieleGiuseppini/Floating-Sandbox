@@ -1982,12 +1982,12 @@ public:
 
         if (inputState.IsLeftMouseDown)
         {
-            mCurrentTrajectoryPreviousPosition = inputState.MousePosition;
+            mCurrentTrajectoryPreviousWorldPosition = mGameController->ScreenToWorld(inputState.MousePosition);
             SetCurrentCursor(&mDownCursorImage);
         }
         else
         {
-            mCurrentTrajectoryPreviousPosition.reset();
+            mCurrentTrajectoryPreviousWorldPosition.reset();
             SetCurrentCursor(&mUpCursorImage);
         }
     }
@@ -2000,17 +2000,19 @@ public:
     {
         if (inputState.IsLeftMouseDown)
         {
-            if (!mCurrentTrajectoryPreviousPosition)
+            vec2f const mouseWorldPosition = mGameController->ScreenToWorld(inputState.MousePosition);
+
+            if (!mCurrentTrajectoryPreviousWorldPosition)
             {
-                mCurrentTrajectoryPreviousPosition = inputState.MousePosition;
+                mCurrentTrajectoryPreviousWorldPosition = mouseWorldPosition;
             }
 
-            auto const targetPosition = inputState.IsShiftKeyDown
-                ? DisplayLogicalCoordinates(inputState.MousePosition.x, mCurrentTrajectoryPreviousPosition->y)
-                : inputState.MousePosition;
+            vec2f const targetPosition = inputState.IsShiftKeyDown
+                ? vec2f(mouseWorldPosition.x, mCurrentTrajectoryPreviousWorldPosition->y)
+                : mouseWorldPosition;
 
             auto const isAdjusted = mGameController->AdjustOceanFloorTo(
-                *mCurrentTrajectoryPreviousPosition,
+                *mCurrentTrajectoryPreviousWorldPosition,
                 targetPosition);
 
             if (isAdjusted.has_value())
@@ -2032,11 +2034,11 @@ public:
 
             // Remember this coordinate as the starting point of the
             // next stride
-            mCurrentTrajectoryPreviousPosition = targetPosition;
+            mCurrentTrajectoryPreviousWorldPosition = targetPosition;
         }
         else
         {
-            mCurrentTrajectoryPreviousPosition.reset();
+            mCurrentTrajectoryPreviousWorldPosition.reset();
             SetCurrentCursor(&mUpCursorImage);
         }
     }
@@ -2059,7 +2061,7 @@ private:
     }
 
     // Our state
-    std::optional<DisplayLogicalCoordinates> mCurrentTrajectoryPreviousPosition; // When set, indicates it's engaged
+    std::optional<vec2f> mCurrentTrajectoryPreviousWorldPosition; // When set, indicates it's engaged
 
     // The cursors
     wxImage const * mCurrentCursor; // To track cursor changes

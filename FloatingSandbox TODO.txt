@@ -82,8 +82,10 @@
 					+ Internal (inline) helper
 					+ InternalFocusOnShip
 					+ Update
-			- Ocean floor tool's SHIFT lock: stable w/camera moving
+			+ Ocean floor tool's SHIFT lock: stable w/camera moving
+				+ Convert from screen to world in tool
 			- Slice tool's SHIFT lock: stable w/camera moving
+				- Convert from screen to world in tool
 			+ changelist
 			- Test land anti-aliasing on old Dell
 

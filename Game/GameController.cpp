@@ -1123,18 +1123,15 @@ void GameController::AdjustOceanSurfaceTo(std::optional<DisplayLogicalCoordinate
 }
 
 std::optional<bool> GameController::AdjustOceanFloorTo(
-    DisplayLogicalCoordinates const & startScreenCoordinates,
-    DisplayLogicalCoordinates const & endScreenCoordinates)
+    vec2f const & startWorldPosition, 
+    vec2f const & endWorldPosition)
 {
-    vec2f const startWorldCoordinates = mRenderContext->ScreenToWorld(startScreenCoordinates);
-    vec2f const endWorldCoordinates = mRenderContext->ScreenToWorld(endScreenCoordinates);
-
     assert(!!mWorld);
     return mWorld->AdjustOceanFloorTo(
-        startWorldCoordinates.x,
-        startWorldCoordinates.y,
-        endWorldCoordinates.x,
-        endWorldCoordinates.y);
+        startWorldPosition.x,
+        startWorldPosition.y,
+        endWorldPosition.x,
+        endWorldPosition.y);
 }
 
 bool GameController::ScrubThrough(

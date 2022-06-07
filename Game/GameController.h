@@ -213,7 +213,7 @@ public:
     void DetonateRCBombs() override;
     void DetonateAntiMatterBombs() override;
     void AdjustOceanSurfaceTo(std::optional<DisplayLogicalCoordinates> const & screenCoordinates) override;
-    std::optional<bool> AdjustOceanFloorTo(DisplayLogicalCoordinates const & startScreenCoordinates, DisplayLogicalCoordinates const & endScreenCoordinates) override;
+    std::optional<bool> AdjustOceanFloorTo(vec2f const & startWorldPosition, vec2f const & endWorldPosition) override;
     bool ScrubThrough(DisplayLogicalCoordinates const & startScreenCoordinates, DisplayLogicalCoordinates const & endScreenCoordinates) override;
     bool RotThrough(DisplayLogicalCoordinates const & startScreenCoordinates, DisplayLogicalCoordinates const & endScreenCoordinates) override;
     void ApplyThanosSnapAt(DisplayLogicalCoordinates const & screenCoordinates) override;
