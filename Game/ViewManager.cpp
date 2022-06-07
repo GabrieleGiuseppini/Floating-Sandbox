@@ -10,7 +10,7 @@
 #include <cassert>
 
 float constexpr NdcFractionZoomTarget = 0.7f; // Fraction of the [0, 2] NDC space that needs to be occupied by AABB
-float constexpr MaxZoom = 5.0f; // Arbitrary max zoom, to avoid getting to atomic scale with e.g. Thanos
+float constexpr MaxZoom = 1.5f; // Arbitrary max zoom, to avoid getting to atomic scale with e.g. Thanos
 
 ViewManager::ViewManager(
     Render::RenderContext & renderContext,
