@@ -35,3 +35,16 @@ TEST(AABBTests, AABBSet_Contains)
     EXPECT_TRUE(t.Contains(vec2f(15.0f, 95.0f)));
     EXPECT_TRUE(t.Contains(vec2f(1500.0f, 9500.0f)));
 }
+
+TEST(AABBTests, AABBSet_MakeUnion)
+{
+    Geometry::AABBSet t;
+    t.Add(Geometry::AABB(10.0f, 20.0f, 100.0f, 80.0f));
+    t.Add(Geometry::AABB(15.0f, 25.0f, 91.0f, 70.0f));
+
+    auto const res = t.MakeUnion();
+
+    ASSERT_TRUE(res.has_value());
+    EXPECT_EQ(res->TopRight, vec2f(25.0f, 100.0f));
+    EXPECT_EQ(res->BottomLeft, vec2f(10.0f, 70.0f));
+}

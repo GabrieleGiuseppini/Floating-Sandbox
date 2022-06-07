@@ -74,9 +74,16 @@
 						+ Pan does it (when no pan enabled)
 					X World X/Y: no move if abs < 0.2
 					X Zoom: no move if abs/current < 0.01
-			- Ignore AABBs that are "too small"
-				- AABB::Add: Track largest area
-				- Ignore AABBs with area small than a fraction of that
+			X Ignore AABBs that are "too small"
+				+ AABB::Add: Track largest area
+				+ AABBSet: MakeUnion templated overload taking predicate - other calls this one
+					+ Unit tests
+				+ Ignore AABBs with area smaller than a fraction of that
+					+ Internal (inline) helper
+					+ InternalFocusOnShip
+					+ Update
+			- Ocean floor tool's SHIFT lock: stable w/camera moving
+			- Slice tool's SHIFT lock: stable w/camera moving
 			+ changelist
 			- Test land anti-aliasing on old Dell
 
@@ -87,11 +94,9 @@
 		= Jet engines @ Material system improvements (*)			
 			+ Redo material template
 			+ changelist (both rearc and jet engines)
+			- Air boat: TODO
 			- Promote rocket and air boat
 			- Merge into 1.17.2.next
-		- Update Wordpress post w/new engine stuff
-			- Connectivity
-			- Types
 
 		- Option to disable lightning making damage - people want to sail in the storm
 			- Lightning Hit Probability
@@ -99,10 +104,21 @@
 
 		- Misc quick things:
 			- ShipBuilder lag with pencil tool px-1 moving across the screen
-				- See if texturization done for right area
-				- See if OpenGL uploads done for right area
+				- See if texturization is done for right area
+				- See if OpenGL uploads are done for right area
 			- See if water entering via hole is faster than water entering natural non-hull ("cut funnel")
-			- Negative pressure
+			- Negative pressure in Mylar bubble
+
+		- Spread out rotting:
+			! Now: at step 20/49
+			- Next: TODOHERE - and fix also combustion - spread evenly!
+				static constexpr int UpdateSinkingPeriodStep = 6;
+				static constexpr int CombustionStateMachineSlowPeriodStep1 = 13;
+				static constexpr int RotPointsPeriodStep = 20;
+				static constexpr int CombustionStateMachineSlowPeriodStep2 = 27;
+				static constexpr int SpringDecayAndTemperaturePeriodStep = 34; - Spread out spring coeffs' recalculations (*)
+				static constexpr int CombustionStateMachineSlowPeriodStep3 = 41;
+				static constexpr int CombustionStateMachineSlowPeriodStep4 = 48;
 
 		- ShipLoadDialog Toolbar (*)
 
@@ -130,16 +146,11 @@
 			- Task threads (@ThreadPool)
 			- Rendering thread (@TaskThread)
 
-		- Spread out rotting:
-			! Now: at step 20/49
-			- Next: TODOHERE - and fix also combustion - spread evenly!
-				static constexpr int UpdateSinkingPeriodStep = 6;
-				static constexpr int CombustionStateMachineSlowPeriodStep1 = 13;
-				static constexpr int RotPointsPeriodStep = 20;
-				static constexpr int CombustionStateMachineSlowPeriodStep2 = 27;
-				static constexpr int SpringDecayAndTemperaturePeriodStep = 34; - Spread out spring coeffs' recalculations (*)
-				static constexpr int CombustionStateMachineSlowPeriodStep3 = 41;
-				static constexpr int CombustionStateMachineSlowPeriodStep4 = 48;
+
+		- Release:
+			- Update Wordpress post w/new engine stuff
+				- Connectivity
+				- Types
 
 		- More parallelism at Ship::Update
 

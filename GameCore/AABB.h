@@ -62,6 +62,11 @@ public:
             (TopRight.y + BottomLeft.y) / 2.0f);
     }
 
+    inline float CalculateArea() const
+    {
+        return GetWidth() * GetHeight();
+    }
+
     inline void ExtendTo(vec2f const & point)
     {
         if (point.x > TopRight.x)
