@@ -11,8 +11,8 @@
 #include "ShipNameNormalizer.h"
 #include "WorkbenchState.h"
 
+#include "UI/CompositeMaterialPalette.h"
 #include "UI/ElectricalPanelEditDialog.h"
-#include "UI/MaterialPalette.h"
 #include "UI/ModelValidationDialog.h"
 #include "UI/ResizeDialog.h"
 #include "UI/RibbonToolbarButton.h"
@@ -189,9 +189,6 @@ private:
     void OnWorkCanvasKeyUp(wxKeyEvent & event);
 
     void OnClose(wxCloseEvent & event);
-    void OnStructuralMaterialSelected(fsStructuralMaterialSelectedEvent & event);
-    void OnElectricalMaterialSelected(fsElectricalMaterialSelectedEvent & event);
-    void OnRopeMaterialSelected(fsStructuralMaterialSelectedEvent & event);
 
 private:
 
@@ -419,9 +416,7 @@ private:
     wxScrollBar * mWorkCanvasVScrollBar;
 
     // Misc UI elements
-    std::unique_ptr<MaterialPalette<LayerType::Structural>> mStructuralMaterialPalette;
-    std::unique_ptr<MaterialPalette<LayerType::Electrical>> mElectricalMaterialPalette;
-    std::unique_ptr<MaterialPalette<LayerType::Ropes>> mRopesMaterialPalette;
+    std::unique_ptr<CompositeMaterialPalette> mCompositeMaterialPalette;
     StatusBar * mStatusBar;
 
     //

@@ -1,6 +1,13 @@
 ====== 1.17.3
 
-- See if can make MaterialsPalette close only when mouse is *clicked* outside, not just when it's *moved* outside
++ See if can make MaterialsPalette close only when mouse is *clicked* outside, not just when it's *moved* outside
+	X Option 1: derive from wxPopupWindow - replace Dismiss with Hide()
+	+ Option 2: OnWorkCanvasMouseEnteredWindow: do not catch focus if palette is open
+	+ changelist
+
+- "Backup Ship (As?)" - like SaveAs, but does not change current
+	- Also changes ship name adding " Backup" suffix
+	- changelist
 
 - Texture flood tool
 	+ First off: mouse coordinates from MainFrame to Controller becomes LogicalDisplayCoords, and they're converted to ShipSpace coords where needed
@@ -20,13 +27,13 @@
 				- Else: check color
 	- Test: Bdega on Discord
 
-- MaterialsPalette: make flag for making it its own wxFrame, so one can use it in a second monitor
-
 - MainFrame: Game viz: add "export to image" button
 	- Rearc icons now:
 		- Export: above=<file==folder|image==photo> below=<arrow pointing up>
 		- Import: above=<file==folder|image==photo> below=<arrow pointing down>
 	- TODO: ropes would be missing...
+
+- MaterialsPalette: make flag for making it its own wxFrame, so one can use it in a second monitor
 
 ================================================================================================================================================================================
 
@@ -217,6 +224,7 @@
 		+ Auto-trim (on bounding box)
 
 - Selection Spec (*):
+	- TODOOLD
 	- Selection is created by tool (@ each layer); selection pseudo-tool populates SelectionManager with quad and layer
 	- Once SelectionManager has a selection, new Selection ribbon becomes enabled
 		- Ribbon has selection edit tools (flip, rotate, clear, etc.) and radio for layer-only or all layers (@ WorkbenchState)
@@ -260,8 +268,12 @@
 	- Move validations to own class - ModelValidator
 	- Electrical connectivity validation
 		- Start visit from all sources
+			- Use bool constexpr ElectricalMaterial::IsSource/Sink(ElectricalElementType)
+				- re-used also for static_assert's @ ElectricalElements::Add(.)
 		- Assume all switches, etc. are conductive
 		- Make sure all sinks have been reached
+	- Also include electrical engines connected to controllers
+	- Electrical palette: not too many elements visible
 
 - Visualizations:
 	- Electrical layer's "circuit" visualization

@@ -83,8 +83,21 @@ using fsElectricalMaterialSelectedEvent = _fsMaterialSelectedEvent<ElectricalMat
 wxDECLARE_EVENT(fsEVT_STRUCTURAL_MATERIAL_SELECTED, fsStructuralMaterialSelectedEvent);
 wxDECLARE_EVENT(fsEVT_ELECTRICAL_MATERIAL_SELECTED, fsElectricalMaterialSelectedEvent);
 
+//////////////////////////////////////////////////////////////////////////////////////////
+
+struct IMaterialPalette
+{
+public:
+
+    virtual ~IMaterialPalette() = default;
+
+    virtual bool IsOpen() const = 0;
+};
+
 template<LayerType TLayer>
-class MaterialPalette : public wxPopupTransientWindow
+class MaterialPalette final : 
+    public wxPopupTransientWindow,
+    public IMaterialPalette
 {
 public:
 
@@ -102,6 +115,11 @@ public:
         TMaterial const * initialMaterial);
 
     void Close();
+
+    bool IsOpen() const override
+    {
+        return IsShown();
+    }
 
 private:
 

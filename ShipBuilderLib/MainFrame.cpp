@@ -309,29 +309,26 @@ MainFrame::MainFrame(
     //
 
     {
-        mStructuralMaterialPalette = std::make_unique<MaterialPalette<LayerType::Structural>>(
+        mCompositeMaterialPalette = std::make_unique<CompositeMaterialPalette>(
             this,
-            mMaterialDatabase.GetStructuralMaterialPalette(),
+            [this](fsStructuralMaterialSelectedEvent const & event)
+            {
+                assert(mController);
+                mController->SetStructuralMaterial(event.GetMaterial(), event.GetMaterialPlane());
+            },
+            [this](fsElectricalMaterialSelectedEvent const & event)
+            {
+                assert(mController);
+                mController->SetElectricalMaterial(event.GetMaterial(), event.GetMaterialPlane());
+            },
+            [this](fsStructuralMaterialSelectedEvent const & event)
+            {
+                assert(mController);
+                mController->SetRopeMaterial(event.GetMaterial(), event.GetMaterialPlane());
+            },
+            mMaterialDatabase,
             mShipTexturizer,
             mResourceLocator);
-
-        mStructuralMaterialPalette->Bind(fsEVT_STRUCTURAL_MATERIAL_SELECTED, &MainFrame::OnStructuralMaterialSelected, this);
-
-        mElectricalMaterialPalette = std::make_unique<MaterialPalette<LayerType::Electrical>>(
-            this,
-            mMaterialDatabase.GetElectricalMaterialPalette(),
-            mShipTexturizer,
-            mResourceLocator);
-
-        mElectricalMaterialPalette->Bind(fsEVT_ELECTRICAL_MATERIAL_SELECTED, &MainFrame::OnElectricalMaterialSelected, this);
-
-        mRopesMaterialPalette = std::make_unique<MaterialPalette<LayerType::Ropes>>(
-            this,
-            mMaterialDatabase.GetRopeMaterialPalette(),
-            mShipTexturizer,
-            mResourceLocator);
-
-        mRopesMaterialPalette->Bind(fsEVT_STRUCTURAL_MATERIAL_SELECTED, &MainFrame::OnRopeMaterialSelected, this);
     }
 
     //
@@ -3664,8 +3661,13 @@ void MainFrame::OnWorkCanvasMouseEnteredWindow(wxMouseEvent & /*event*/)
     assert(!mIsMouseInWorkCanvas);
     mIsMouseInWorkCanvas = true;
 
-    // Set focus as well, so for example SHIFT presses start getting caught
-    mWorkCanvas->SetFocus();
+    // Set focus as well, so for example SHIFT presses start getting caught,
+    // unless the palette is open - in which case we do not want to catch the focus
+    // (to not cause the palette to close)
+    if (!mCompositeMaterialPalette->IsOpen())
+    {
+        mWorkCanvas->SetFocus();
+    }
 
     if (!mIsMouseCapturedByWorkCanvas)
     {
@@ -3750,27 +3752,6 @@ void MainFrame::OnClose(wxCloseEvent & event)
     }
 
     event.Skip();
-}
-
-void MainFrame::OnStructuralMaterialSelected(fsStructuralMaterialSelectedEvent & event)
-{
-    assert(mController);
-
-    mController->SetStructuralMaterial(event.GetMaterial(), event.GetMaterialPlane());
-}
-
-void MainFrame::OnElectricalMaterialSelected(fsElectricalMaterialSelectedEvent & event)
-{
-    assert(mController);
-
-    mController->SetElectricalMaterial(event.GetMaterial(), event.GetMaterialPlane());
-}
-
-void MainFrame::OnRopeMaterialSelected(fsStructuralMaterialSelectedEvent & event)
-{
-    assert(mController);
-
-    mController->SetRopeMaterial(event.GetMaterial(), event.GetMaterialPlane());
 }
 
 //////////////////////////////////////////////////////////////////
@@ -4167,7 +4148,7 @@ void MainFrame::OpenMaterialPalette(
 
     if (layer == LayerType::Structural)
     {
-        mStructuralMaterialPalette->Open(
+        mCompositeMaterialPalette->Open<LayerType::Structural>(
             referenceRect,
             plane,
             plane == MaterialPlaneType::Foreground
@@ -4176,7 +4157,7 @@ void MainFrame::OpenMaterialPalette(
     }
     else if (layer == LayerType::Electrical)
     {
-        mElectricalMaterialPalette->Open(
+        mCompositeMaterialPalette->Open<LayerType::Electrical>(
             referenceRect,
             plane,
             plane == MaterialPlaneType::Foreground
@@ -4187,7 +4168,7 @@ void MainFrame::OpenMaterialPalette(
     {
         assert(layer == LayerType::Ropes);
 
-        mRopesMaterialPalette->Open(
+        mCompositeMaterialPalette->Open<LayerType::Ropes>(
             referenceRect,
             plane,
             plane == MaterialPlaneType::Foreground
