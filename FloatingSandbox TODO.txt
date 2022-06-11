@@ -8,8 +8,8 @@
 
 	= 1.17.3:
 
-		- 1.17.2 release: wait a day or two, then upload changes2.txt
-			- Test w/old FS
+		+ 1.17.2 release: wait a day or two, then upload changes2.txt
+			+ Test w/old FS
 
 		---------
 
@@ -102,11 +102,27 @@
 			+ changelist
 			+ Test land anti-aliasing on old Dell
 
-		- ShipBuilder lag with pencil tool px-1 moving across the screen
-			- See if texturization is done for right area
-			- See if OpenGL uploads are done for right area
-			- Test on old Dell:
+		= ShipBuilder lag with pencil tool px-1 moving across the screen
+			+ See if texturization is done for right area
+			= See if OpenGL uploads are done for right area: NO
+				+ Pre:
+					+ ShipBuilder::MainFrame::OnWorkCanvasMouseMove: 63.31%
+						...
+						+ ShipBuilder::View::UploadGameVisualization: 55.67%
+							+ GameOpenGL::UploadTexture: 55.61%
+						+ ShipTexturizer::AutoTexturizeInto: 0.36%
+						+ Controller::RefreshToolCoordinatesDisplay: 5.74%
+				+ Do region like we used to do
+				+ Post - also structural:
+					- ShipBuilder::MainFrame::OnWorkCanvasMouseMove: 23.47% - 23.29%
+						- ShipBuilder::View::UpdateGameVisualization: 3.16% - 5.22%
+							- GameOpenGL::UploadTextureRegion: 3.05%
+						- ShipBuilder::View::UploadStructuralLayerVisualization: 2.94% - 0.69%
+							- GameOpenGL::UploadTexture: 2.90%
+						- Controller::RefreshToolCoordinatesDisplay: 14.27% - 14.80%
+			+ Test on old Dell:
 				+ Save exe version without fix and use as benchmark
+			= Send to TimCan and WOLFF and other guy
 
 		+ Engines rearc (*)
 		= Jet engines @ Material system improvements (*)			
@@ -124,7 +140,7 @@
 
 		- Spread out rotting:
 			! Now: at step 20/49
-			- Next: TODOHERE - and fix also combustion - spread evenly!
+			- Next: TODOHERE - and fix also combustion slow period: spread evenly!
 				static constexpr int UpdateSinkingPeriodStep = 6;
 				static constexpr int CombustionStateMachineSlowPeriodStep1 = 13;
 				static constexpr int RotPointsPeriodStep = 20;

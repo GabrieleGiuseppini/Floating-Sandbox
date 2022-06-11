@@ -695,6 +695,25 @@ void View::UploadGameVisualization(RgbaImageData const & texture)
     mHasGameVisualization = true;
 }
 
+void View::UpdateGameVisualization(
+    RgbaImageData const & subTexture,
+    ImageCoordinates const & origin)
+{
+    assert(mHasGameVisualization);
+
+    // Bind texture
+    glBindTexture(GL_TEXTURE_2D, *mGameVisualizationTexture);
+    CheckOpenGLError();
+
+    // Upload texture region
+    GameOpenGL::UploadTextureRegion(
+        subTexture.Data.get(),
+        origin.x,
+        origin.y,
+        subTexture.Size.width,
+        subTexture.Size.height);
+}
+
 void View::RemoveGameVisualization()
 {
     mHasGameVisualization = false;
@@ -750,6 +769,25 @@ void View::UploadStructuralLayerVisualization(RgbaImageData const & texture)
     //
 
     mHasStructuralLayerVisualization = true;
+}
+
+void View::UpdateStructuralLayerVisualization(
+    RgbaImageData const & subTexture,
+    ImageCoordinates const & origin)
+{
+    assert(mHasStructuralLayerVisualization);
+
+    // Bind texture
+    glBindTexture(GL_TEXTURE_2D, *mStructuralLayerVisualizationTexture);
+    CheckOpenGLError();
+
+    // Upload texture region
+    GameOpenGL::UploadTextureRegion(
+        subTexture.Data.get(),
+        origin.x,
+        origin.y,
+        subTexture.Size.width,
+        subTexture.Size.height);
 }
 
 void View::RemoveStructuralLayerVisualization()

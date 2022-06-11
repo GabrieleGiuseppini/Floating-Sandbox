@@ -405,7 +405,7 @@ private:
 
     ImageRect UpdateGameVisualization(ShipSpaceRect const & region);
 
-    void UpdateStructuralLayerVisualization(ShipSpaceRect const & region);
+    ImageRect UpdateStructuralLayerVisualization(ShipSpaceRect const & region);
 
     void RenderStructureInto(
         ShipSpaceRect const & structureRegion,

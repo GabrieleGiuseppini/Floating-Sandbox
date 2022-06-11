@@ -1443,10 +1443,30 @@ void ModelController::UpdateVisualizations(View & view)
         if (dirtyShipRegion.has_value())
         {
             // Update visualization
-            UpdateGameVisualization(*dirtyShipRegion);
+            ImageRect const dirtyTextureRegion = UpdateGameVisualization(*dirtyShipRegion);
 
             // Upload visualization
-            view.UploadGameVisualization(*mGameVisualizationTexture);
+            if (dirtyTextureRegion != mGameVisualizationTexture->Size)
+            {
+                //
+                // For better performance, we only upload the dirty sub-texture
+                //
+
+                auto subTexture = RgbaImageData(dirtyTextureRegion.size);
+                subTexture.BlitFromRegion(
+                    *mGameVisualizationTexture,
+                    dirtyTextureRegion,
+                    { 0, 0 });
+
+                view.UpdateGameVisualization(
+                    subTexture,
+                    dirtyTextureRegion.origin);
+            }
+            else
+            {
+                // Upload whole texture
+                view.UploadGameVisualization(*mGameVisualizationTexture);
+            }
         }
     }
     else
@@ -1486,10 +1506,30 @@ void ModelController::UpdateVisualizations(View & view)
             }
 
             // Update visualization
-            UpdateStructuralLayerVisualization(*dirtyShipRegion);
+            ImageRect const dirtyTextureRegion = UpdateStructuralLayerVisualization(*dirtyShipRegion);
 
             // Upload visualization
-            view.UploadStructuralLayerVisualization(*mStructuralLayerVisualizationTexture);
+            if (dirtyTextureRegion != mStructuralLayerVisualizationTexture->Size)
+            {
+                //
+                // For better performance, we only upload the dirty sub-texture
+                //
+
+                auto subTexture = RgbaImageData(dirtyTextureRegion.size);
+                subTexture.BlitFromRegion(
+                    *mStructuralLayerVisualizationTexture,
+                    dirtyTextureRegion,
+                    { 0, 0 });
+
+                view.UpdateStructuralLayerVisualization(
+                    subTexture,
+                    dirtyTextureRegion.origin);
+            }
+            else
+            {
+                // Upload whole texture
+                view.UploadStructuralLayerVisualization(*mStructuralLayerVisualizationTexture);
+            }
         }
     }
     else
@@ -2004,7 +2044,7 @@ ImageRect ModelController::UpdateGameVisualization(ShipSpaceRect const & region)
         { effectiveRegion.size.width * mGameVisualizationTextureMagnificationFactor, effectiveRegion.size.height * mGameVisualizationTextureMagnificationFactor });
 }
 
-void ModelController::UpdateStructuralLayerVisualization(ShipSpaceRect const & region)
+ImageRect ModelController::UpdateStructuralLayerVisualization(ShipSpaceRect const & region)
 {
     switch (mStructuralLayerVisualizationMode)
     {
@@ -2022,9 +2062,14 @@ void ModelController::UpdateStructuralLayerVisualization(ShipSpaceRect const & r
 
         case StructuralLayerVisualizationModeType::None:
         {
-            return;
+            // Nop
+            break;
         }
     }
+
+    return ImageRect(
+        { region.origin.x, region.origin.y },
+        { region.size.width, region.size.height });
 }
 
 void ModelController::RenderStructureInto(

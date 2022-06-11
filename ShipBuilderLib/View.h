@@ -150,6 +150,10 @@ public:
 
     void UploadGameVisualization(RgbaImageData const & texture);
 
+    void UpdateGameVisualization(
+        RgbaImageData const & subTexture,
+        ImageCoordinates const & origin);
+
     void RemoveGameVisualization();
 
     bool HasGameVisualization() const
@@ -170,6 +174,10 @@ public:
     void SetStructuralLayerVisualizationDrawMode(StructuralLayerVisualizationDrawMode mode);
 
     void UploadStructuralLayerVisualization(RgbaImageData const & texture);
+
+    void UpdateStructuralLayerVisualization(
+        RgbaImageData const & subTexture,
+        ImageCoordinates const & origin);
 
     void RemoveStructuralLayerVisualization();
 
