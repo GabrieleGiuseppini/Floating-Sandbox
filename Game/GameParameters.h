@@ -296,6 +296,8 @@ struct GameParameters
     static float constexpr MinStormStrengthAdjustment = 0.1f;
     static float constexpr MaxStormStrengthAdjustment = 10.0f;
 
+    float LightningBlastProbability; // Probability of interactive lightning hitting ship; also scales storm's probability
+
     float LightningBlastRadius;
 
     float LightningBlastHeat; // KJoules/sec

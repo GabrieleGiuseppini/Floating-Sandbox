@@ -891,9 +891,9 @@ void World::TriggerStorm()
     mStorm.TriggerStorm();
 }
 
-void World::TriggerLightning()
+void World::TriggerLightning(GameParameters const & gameParameters)
 {
-    mStorm.TriggerLightning();
+    mStorm.TriggerLightning(gameParameters);
 }
 
 void World::TriggerRogueWave()

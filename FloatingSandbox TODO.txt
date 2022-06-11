@@ -56,6 +56,18 @@
 			+ Add validation to script
 			+ Redo template
 
+		+ Option to disable lightning making damage - people want to sail in the storm
+			+ Lightning Hit Probability
+			+ SettingsDialog
+			+ Test:
+				+ Manual: 0, 1
+				+ Storm: 0, 1
+				+ Verify setting saved and reloadable
+			+ changelist
+			+ Custom setting: strong and logn storm, zero lightnings
+				+ Test
+				+ Make production
+
 		= Continuous Auto-focus (*)
 			+ Send for testing, w/auto-focus being on by default
 			+ Re-send for testing, again - !!! WITH AUTO-FOCUS ON
@@ -94,18 +106,17 @@
 		= Jet engines @ Material system improvements (*)			
 			+ Redo material template
 			+ changelist (both rearc and jet engines)
-			- Air boat: TODO
+			- Air boat: 
+				- A bit less flexy
 			- Promote rocket and air boat
 			- Merge into 1.17.2.next
-
-		- Option to disable lightning making damage - people want to sail in the storm
-			- Lightning Hit Probability
-			- changelist
 
 		- Misc quick things:
 			- ShipBuilder lag with pencil tool px-1 moving across the screen
 				- See if texturization is done for right area
 				- See if OpenGL uploads are done for right area
+				- Test on old Dell:
+					- Save exe version without fix and use as benchmark
 			- See if water entering via hole is faster than water entering natural non-hull ("cut funnel")
 			- Negative pressure in Mylar bubble
 

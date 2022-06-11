@@ -471,6 +471,9 @@ public:
     float GetMinRainFloodAdjustment() const override { return GameParameters::MinRainFloodAdjustment; }
     float GetMaxRainFloodAdjustment() const override { return GameParameters::MaxRainFloodAdjustment; }
 
+    float GetLightningBlastProbability() const override { return mGameParameters.LightningBlastProbability; }
+    void SetLightningBlastProbability(float value) override { mGameParameters.LightningBlastProbability = value; }
+
     // Heat
 
     float GetAirTemperature() const override { return mGameParameters.AirTemperature; }

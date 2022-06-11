@@ -52,10 +52,11 @@ GameParameters::GameParameters()
     , StormRate(60)
     , StormDuration(60 * 4) // 4 minutes
     , StormStrengthAdjustment(1.0f)
+    , LightningBlastProbability(0.25f)
     , LightningBlastRadius(8.0f)
     , LightningBlastHeat(4000.0f)
     , DoRainWithStorm(true)
-    , RainFloodAdjustment(10000.0f) // Partially visible after 4 minutes
+    , RainFloodAdjustment(10000.0f) // Partially visible after ~1m
     // Heat and combustion
     , AirTemperature(298.15f) // 25C
     , WaterTemperature(288.15f) // 15C

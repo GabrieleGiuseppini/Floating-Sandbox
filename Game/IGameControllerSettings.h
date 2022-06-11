@@ -147,6 +147,9 @@ struct IGameControllerSettings
     virtual float GetRainFloodAdjustment() const = 0;
     virtual void SetRainFloodAdjustment(float value) = 0;
 
+    virtual float GetLightningBlastProbability() const = 0;
+    virtual void SetLightningBlastProbability(float value) = 0;
+
     // Heat
 
     virtual float GetAirTemperature() const = 0;

@@ -1208,7 +1208,7 @@ void GameController::TriggerStorm()
 void GameController::TriggerLightning()
 {
     assert(!!mWorld);
-    mWorld->TriggerLightning();
+    mWorld->TriggerLightning(mGameParameters);
 }
 
 void GameController::HighlightElectricalElement(ElectricalElementId electricalElementId)

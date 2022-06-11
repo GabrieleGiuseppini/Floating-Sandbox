@@ -82,6 +82,7 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(float, StormStrengthAdjustment);
     ADD_GC_SETTING(bool, DoRainWithStorm);
     ADD_GC_SETTING(float, RainFloodAdjustment);
+    ADD_GC_SETTING(float, LightningBlastProbability);
 
     // Heat
     ADD_GC_SETTING(float, AirTemperature);

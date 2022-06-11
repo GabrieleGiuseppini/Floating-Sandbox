@@ -1,0 +1,12 @@
+{
+  "description": "Sail through treacherous waves, but rest assured your ship will not be hit by a lightning!\n\nNote: it might take a while for the storm to build up once you load these settings; have patience.",
+  "settings": {
+    "lightning_blast_probability": 0,
+    "ocean_darkening_rate": 0.49255329370498657,
+    "storm_duration": 1200,
+    "storm_rate": 1,
+    "storm_strength_adjustment": 5.0,
+    "wind_speed_base": -10
+  },
+  "version": "1.17.3.3"
+}

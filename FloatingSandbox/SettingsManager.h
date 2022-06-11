@@ -55,6 +55,7 @@ enum class GameSettings : size_t
     StormStrengthAdjustment,
     DoRainWithStorm,
     RainFloodAdjustment,
+    LightningBlastProbability,
 
     // Heat
     AirTemperature,

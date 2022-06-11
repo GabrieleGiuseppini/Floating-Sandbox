@@ -46,6 +46,7 @@ Storm::Storm(
 	, mLightnings()
 	, mCurrentStormRate(std::chrono::minutes::max())
 	, mCurrentStormStrengthAdjustment(std::numeric_limits<float>::max())
+	, mCurrentLightningBlastProbability(std::numeric_limits<float>::max())
 {
 }
 
@@ -60,7 +61,8 @@ void Storm::Update(
 	//
 
 	if (mCurrentStormRate != gameParameters.StormRate
-		|| mCurrentStormStrengthAdjustment != gameParameters.StormStrengthAdjustment)
+		|| mCurrentStormStrengthAdjustment != gameParameters.StormStrengthAdjustment
+		|| mCurrentLightningBlastProbability != gameParameters.LightningBlastProbability)
 	{
 		RecalculateCoefficients(now, gameParameters);
 	}
@@ -77,7 +79,7 @@ void Storm::Update(
 	// Advance storm state machine
 	//
 
-    if (!!mNextStormTimestamp)
+    if (mNextStormTimestamp.has_value())
     {
         //
         // See if it's time to trigger a storm
@@ -147,7 +149,7 @@ void Storm::Update(
 
         // Wind
 		float const windSmoothProgress = LinearStep(WindUpStart, WindUpEnd, upProgress);
-        mParameters.WindSpeed = windSmoothProgress * mMaxWindSpeed;
+		mParameters.WindSpeed = windSmoothProgress * mMaxWindSpeed;
 
         // Clouds
         float const cloudsLinearProgress = Clamp((upProgress - CloudsUpStart) / (CloudsUpEnd - CloudsUpStart), 0.0f, 1.0f);
@@ -178,7 +180,7 @@ void Storm::Update(
 
         // Wind
         float const windSmoothProgress = 1.0f - LinearStep(WindDownStart, WindDownEnd, downProgress);
-        mParameters.WindSpeed = windSmoothProgress * mMaxWindSpeed;
+		mParameters.WindSpeed = windSmoothProgress * mMaxWindSpeed;
 
         // Clouds
         // from 1.0 to 0.0
@@ -238,8 +240,9 @@ void Storm::Update(
 	// Lightning stage
 	//
 
-	// See if should trigger a background lightning
 	bool hasTriggeredLightning = false;
+
+	// See if should trigger a background lightning
 	if (mCurrentStormProgress >= BackgroundLightningStart && mCurrentStormProgress <= BackgroundLightningEnd)
 	{
 		// Check if it's time to sample poisson
@@ -276,7 +279,7 @@ void Storm::Update(
 			{
 				// Check whether we do have a target
 				auto const target = mParentWorld.FindSuitableLightningTarget();
-				if (!!target)
+				if (target.has_value())
 				{
 					// Do foreground lightning!
 					DoTriggerForegroundLightning(now, *target);
@@ -348,10 +351,10 @@ void Storm::TriggerStorm()
     }
 }
 
-void Storm::TriggerLightning()
+void Storm::TriggerLightning(GameParameters const & gameParameters)
 {
 	// Do a foreground lightning if we have a target and if we feel like doing it
-	if (GameRandomEngine::GetInstance().GenerateUniformBoolean(0.2f))
+	if (GameRandomEngine::GetInstance().GenerateUniformBoolean(gameParameters.LightningBlastProbability))
 	{
 		auto target = mParentWorld.FindSuitableLightningTarget();
 		if (!!target)
@@ -371,7 +374,7 @@ void Storm::RecalculateCoefficients(
 	GameWallClock::time_point now,
 	GameParameters const & gameParameters)
 {
-	if (!!mNextStormTimestamp)
+	if (mNextStormTimestamp.has_value())
 	{
 		mNextStormTimestamp = CalculateNextStormTimestamp(now, gameParameters.StormRate);
 	}
@@ -399,8 +402,7 @@ void Storm::RecalculateCoefficients(
 	float const durationMultiplier =
 		std::min(
 			1.0f,
-			static_cast<float>(gameParameters.StormDuration.count())
-			/ 240.0f); // 4 minutes is the value we used when we fine-tuned all parameters here
+			static_cast<float>(gameParameters.StormDuration.count()) / 240.0f); // 4 minutes is the value we used when we fine-tuned all parameters here
 
 	mThunderCdf = MixPiecewiseLinear(
 		1.0f - exp(-(ThunderRate / (durationMultiplier * 2.0f)) / PoissonSampleRate),
@@ -431,7 +433,8 @@ void Storm::RecalculateCoefficients(
 			GameParameters::MinStormStrengthAdjustment,
 			GameParameters::MaxStormStrengthAdjustment,
 			gameParameters.StormStrengthAdjustment)
-		/ 1.8f;
+		/ 1.8f
+		* (gameParameters.LightningBlastProbability / 0.25f); // Nop @ 0.25, 0.0 @ 0.0
 
 
 	//
@@ -440,6 +443,7 @@ void Storm::RecalculateCoefficients(
 
 	mCurrentStormRate = gameParameters.StormRate;
 	mCurrentStormStrengthAdjustment = gameParameters.StormStrengthAdjustment;
+	mCurrentLightningBlastProbability = gameParameters.LightningBlastProbability;
 }
 
 GameWallClock::time_point Storm::CalculateNextStormTimestamp(
@@ -451,15 +455,35 @@ GameWallClock::time_point Storm::CalculateNextStormTimestamp(
 		float const rateSeconds = 60.0f * static_cast<float>(rate.count());
 
 		// Grace period between storms - depending on storm rate
-		float const gracePeriod = (rateSeconds >= 120.0f)
-			? 90.0f
-			: 20.0f;
+		float gracePeriod;
+		if (rateSeconds > 180.0f)
+		{
+			gracePeriod = 90.0f;
+		}
+		else if (rateSeconds > 60.0f)
+		{
+			gracePeriod = 20.0f;
+		}
+		else
+		{
+			gracePeriod = 5.0f;
+		}
 
-		return lastTimestamp
-			+ std::chrono::duration_cast<GameWallClock::duration>(
-				std::chrono::duration<float>(
-					gracePeriod
-					+ GameRandomEngine::GetInstance().GenerateExponentialReal(1.0f / rateSeconds)));
+		std::chrono::duration<float> interval;
+		if (rateSeconds > 60.0f)
+		{
+			interval = std::chrono::duration<float>(
+				GameRandomEngine::GetInstance().GenerateExponentialReal(1.0f / rateSeconds)
+				+ gracePeriod);
+		}
+		else
+		{
+			interval = std::chrono::duration<float>(rateSeconds + gracePeriod);
+		}
+
+		LogMessage("Next storm activating in ", interval.count(), " seconds.");
+
+		return lastTimestamp + std::chrono::duration_cast<GameWallClock::duration>(interval);
 	}
 	else
 	{

@@ -72,7 +72,7 @@ public:
 
     void TriggerStorm();
 
-	void TriggerLightning();
+	void TriggerLightning(GameParameters const & gameParameters);
 
 private:
 
@@ -181,6 +181,7 @@ private:
 	// Parameters that the calculated values are current with
 	std::chrono::minutes mCurrentStormRate;
 	float mCurrentStormStrengthAdjustment;
+	float mCurrentLightningBlastProbability;
 };
 
 }

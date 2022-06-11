@@ -1442,6 +1442,7 @@ std::optional<vec2f> Ship::FindSuitableLightningTarget() const
         {
             auto const & pos = mPoints.GetPosition(pointIndex);
 
+            // Above-water
             if (!mParentWorld.GetOceanSurface().IsUnderwater(pos))
             {
                 candidatePositions.insert(

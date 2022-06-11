@@ -322,7 +322,7 @@ public:
 
     void TriggerStorm();
 
-    void TriggerLightning();
+    void TriggerLightning(GameParameters const & gameParameters);
 
     void HighlightElectricalElement(ElectricalElementId electricalElementId);
 

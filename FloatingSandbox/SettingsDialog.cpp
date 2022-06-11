@@ -1617,7 +1617,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
         gridSizer->Add(
             windBoxSizer,
             wxGBPosition(0, 0),
-            wxGBSpan(1, 1),
+            wxGBSpan(1, 2),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
@@ -1716,8 +1716,8 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
 
         gridSizer->Add(
             wavesBoxSizer,
-            wxGBPosition(0, 1),
-            wxGBSpan(1, 2),
+            wxGBPosition(0, 2),
+            wxGBSpan(1, 3),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
@@ -1815,8 +1815,8 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
 
         gridSizer->Add(
             displacementWavesBoxSizer,
-            wxGBPosition(0, 3),
-            wxGBSpan(1, 1),
+            wxGBPosition(0, 5),
+            wxGBSpan(1, 2),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
@@ -1889,7 +1889,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
         gridSizer->Add(
             wavePhenomenaBoxSizer,
             wxGBPosition(1, 0),
-            wxGBSpan(1, 1),
+            wxGBSpan(1, 2),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
@@ -1982,6 +1982,32 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
+            // Lightning Blast Probability
+            {
+                mLightningBlastProbabilitySlider = new SliderControl<float>(
+                    stormsBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    -1,
+                    _("Lightning Hit Probability"),
+                    _("Adjusts the probability of a lightning hitting the ship. Set to zero to prevent altogether lightnings from hitting the ship."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::LightningBlastProbability, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        0.0f,
+                        1.0f));
+
+                stormsSizer->Add(
+                    mLightningBlastProbabilitySlider,
+                    wxGBPosition(0, 2),
+                    wxGBSpan(2, 1),
+                    wxEXPAND | wxLEFT | wxBOTTOM | wxRIGHT,
+                    CellBorderInner);
+            }
+
             // Storm Duration
             {
                 mStormDurationSlider = new SliderControl<std::chrono::seconds::rep>(
@@ -2002,7 +2028,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
 
                 stormsSizer->Add(
                     mStormDurationSlider,
-                    wxGBPosition(0, 2),
+                    wxGBPosition(0, 3),
                     wxGBSpan(2, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
@@ -2028,7 +2054,7 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
 
                 stormsSizer->Add(
                     mStormRateSlider,
-                    wxGBPosition(0, 3),
+                    wxGBPosition(0, 4),
                     wxGBSpan(2, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
@@ -2041,8 +2067,8 @@ void SettingsDialog::PopulateWindAndWavesPanel(wxPanel * panel)
 
         gridSizer->Add(
             stormsBoxSizer,
-            wxGBPosition(1, 1),
-            wxGBSpan(1, 3),
+            wxGBPosition(1, 2),
+            wxGBSpan(1, 5),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
@@ -5311,6 +5337,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mDoRainWithStormCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoRainWithStorm));
     mRainFloodAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::RainFloodAdjustment));
     mRainFloodAdjustmentSlider->Enable(settings.GetValue<bool>(GameSettings::DoRainWithStorm));
+    mLightningBlastProbabilitySlider->SetValue(settings.GetValue<float>(GameSettings::LightningBlastProbability));
     mStormDurationSlider->SetValue(settings.GetValue<std::chrono::seconds>(GameSettings::StormDuration).count());
     mStormRateSlider->SetValue(settings.GetValue<std::chrono::minutes>(GameSettings::StormRate).count());
 
