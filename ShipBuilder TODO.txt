@@ -5,8 +5,15 @@
 	+ Option 2: OnWorkCanvasMouseEnteredWindow: do not catch focus if palette is open
 	+ changelist
 
-- "Backup Ship (As?)" - like SaveAs, but does not change current
-	- Also changes ship name adding " Backup" suffix
+= "Backup Ship" - like SaveAs, but does not change current
+	+ Ribbon button
+		+ Always enabled
+	+ Requires ShipLoadDialog to show filename (incl. extension)
+	- Action:
+		- Appends "_backup" to filename (also if it has it already)
+		- Does *not* ask when overrides
+		- Shows dialog afterwards saying "Ship file has been backed up as "....""
+			- Check out wxNotificationMessage
 	- changelist
 
 - Texture flood tool
@@ -32,6 +39,8 @@
 		- Export: above=<file==folder|image==photo> below=<arrow pointing up>
 		- Import: above=<file==folder|image==photo> below=<arrow pointing down>
 	- TODO: ropes would be missing...
+		- Could just say that the screenshot is for the current visualization(s), i.e. the canvas render buffer as it is
+			- So it's more of a Screenshot tool, not specific to the Game viz layer
 
 - MaterialsPalette: make flag for making it its own wxFrame, so one can use it in a second monitor
 

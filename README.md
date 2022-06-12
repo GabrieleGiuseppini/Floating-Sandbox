@@ -1,15 +1,15 @@
 # Floating Sandbox
-A two-dimensional particle system in C++, simulating physical bodies floating in water and sinking.
+A two-dimensional physics simulation written in C++.
 
 # Overview
-This game is a realistic two-dimensional particle system, which uses mass-spring networks to simulate rigid bodies (such as ships) floating in water and exchanging heat with their surroundings. You can punch holes in an object, slice it, apply forces and heat to it, set it on fire, and smash it with bomb explosions. Once water starts rushing inside the object, it will start sinking and, if you're lucky enough, it will start breaking up!
+Floating Sandbox is a realistic 2D physics simulator. It is essentially a particle system that uses mass-spring networks to simulate rigid bodies, with added thermodynamics, fluid dynamics, and basic electrotechnics. The simulation is mostly focused around ships floating on water, but you can build any kind of object using the integrated ShipBuilder and a database of over 1,000 different materials. Once you build an object you can punch holes into it, slice it, apply forces and heat, set it on fire, smash it with bomb explosions - anything you want. And when it starts sinking, you can watch it slowly dive its way into the abyss, where it will rot for eternity!
 
 <img src="https://i.imgur.com/c8fTsgY.png">
 
 The game is really a generic physics simulator that can be used to simulate just about any 2D floating rigid body under stress.
 
 As of now the simulator implements the following aspects of physics:
-- Classical mechanics - Hookean laws for springs, impacts
+- Classical mechanics - Hooke's law of springs, impacts with rigid surfaces, thrust from engines
 - Thermodynamics - heat transfer, dissipation, combustion
 - Fluid dynamics - buoyancy, drag, hydrostatic and atmospheric pressure, wind
 - Basic electrotechnics - conductivity
@@ -17,12 +17,12 @@ As of now the simulator implements the following aspects of physics:
 <img src="https://i.imgur.com/kovxCty.png">
 <img src="https://i.imgur.com/XHw3Jrl.png">
 
-The game comes with a built-in ShipBuilder that allows you to create ships by drawing individual particles drawn out of the materials in the game's library. Each material has its own physical properties, such as mass, strength, stiffness, water permeability, specific heat, sound properties, and so on. You can also create electrical layers with electrical materials (lamps, engines, generators, switches, etc.), layers with ropes, and texture layers for a final, high-definition look'n'feel of the ship.
+The simulator comes with a built-in ShipBuilder that allows you to create ships by drawing individual particles drawn out of the materials in the game's library. Each material has its own physical properties, such as mass, strength, stiffness, water permeability, specific heat, sound properties, and so on. You can also create electrical layers with electrical materials (lamps, engines, generators, switches, etc.), layers with ropes, and texture layers for a final, high-definition look'n'feel of the ship.
 
 <img src="https://i.imgur.com/lSUj90c.png">
 <img src="https://imgur.com/E0X3n93.png">
 
-For the physics in the simulation I'm trying to shy away from tricks that exist solely for the purpose of delivering an eye-candy; every bit is grounded as close as possible into real physics, and the material system has been put together using physical attributes of real-world materials. This makes it sometimes hard to build structures that sustain their own weight or float easily - as it is in reality, after all - but the reward is a realistic world-in-a-sandbox where every action and corresponding reaction are not pre-programmed but, rather, are generated automatically by the physics engine calculations.
+In coding this game I'm trying to avoid as much as possible tricks that just please the eye; every bit of the simulation is instead grounded as close as possible into real physics. For example, the material system has been put together using physical attributes of real-world materials, and all of the interactions are based on the physical properties of the world being simulated. This makes it sometimes hard to build structures that sustain their own weight or float easily - as it is in reality, after all - but the reward is a realistic world-in-a-sandbox where every action and corresponding reaction are not pre-programmed, but rather are evolved naturally by the physics engine simulator.
 
 The game currently comes with a few example objects - mostly ships - and I'm always busy making new ships and objects. Anyone is encouraged to make their own objects, and if you'd like them to be included in the game, just get in touch with me - you'll get proper recognition in the About dialog, of course.
 
