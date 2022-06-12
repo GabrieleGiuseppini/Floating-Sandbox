@@ -65,7 +65,9 @@ ShipPreviewWindow::ShipPreviewWindow(
     SetBackgroundColour(wxColour("WHITE"));
     mSelectionPen = wxPen(wxColor(0x10, 0x10, 0x10), 1, wxPENSTYLE_SOLID);
     mDescriptionFont = wxFont(wxFontInfo(7));
-    mFilenameFont = wxFont(wxFontInfo(7).Italic());
+    mDescriptionColor = wxColor(0, 0, 0);
+    mFilenameFont = wxFont(wxFontInfo(6).Italic());
+    mFilenameColor = wxColor(40, 40, 40);
 
     // Ensure one tile always fits, accounting for the V scrollbar
     SetMinSize(wxSize(PanelWidthMin + 20, -1));
@@ -788,9 +790,9 @@ void ShipPreviewWindow::Render(wxDC & dc)
                         dc.DrawBitmap(
                             mPreviewRibbonBatteryAndHDBitmap,
                             infoTile.RectVirtual.GetLeft() + infoTileContentLeftMargin
-                            - originVirtual.x,
+                                - originVirtual.x,
                             infoTile.RectVirtual.GetTop() + InfoTileInset
-                            - originVirtual.y,
+                                - originVirtual.y,
                             true);
                     }
                     else
@@ -798,9 +800,9 @@ void ShipPreviewWindow::Render(wxDC & dc)
                         dc.DrawBitmap(
                             mPreviewRibbonHDBitmap,
                             infoTile.RectVirtual.GetLeft() + infoTileContentLeftMargin
-                            - originVirtual.x,
+                                - originVirtual.x,
                             infoTile.RectVirtual.GetTop() + InfoTileInset
-                            - originVirtual.y,
+                                - originVirtual.y,
                             true);
                     }
                 }
@@ -809,21 +811,24 @@ void ShipPreviewWindow::Render(wxDC & dc)
                     dc.DrawBitmap(
                         mPreviewRibbonBatteryBitmap,
                         infoTile.RectVirtual.GetLeft() + infoTileContentLeftMargin
-                        - originVirtual.x,
+                            - originVirtual.x,
                         infoTile.RectVirtual.GetTop() + InfoTileInset
-                        - originVirtual.y,
+                            - originVirtual.y,
                         true);
                 }
+
+                int nextLabelYoffset = 0;
 
                 //
                 // Description 1
                 //
 
+                dc.SetTextForeground(mDescriptionColor);
                 dc.SetFont(mDescriptionFont);
 
                 if (!infoTile.Description1Size)
                 {
-                    auto [descr, size] = CalculateTextSizeWithCurrentFont(dc, infoTile.OriginalDescription1);
+                    auto const [descr, size] = CalculateTextSizeWithCurrentFont(dc, infoTile.OriginalDescription1);
                     infoTile.Description1 = descr;
                     infoTile.Description1Size = size;
                 }
@@ -835,16 +840,47 @@ void ShipPreviewWindow::Render(wxDC & dc)
                         - originVirtual.x,
                     infoTile.RectVirtual.GetTop() + InfoTileInset
                         + PreviewImageHeight + PreviewImageBottomMargin
-                        + DescriptionLabel1Height - infoTile.Description1Size->GetHeight()
+                        + nextLabelYoffset
                         - originVirtual.y);
+
+                nextLabelYoffset += infoTile.Description1Size->GetHeight() + DescriptionLabel1BottomMargin;
+
+                //
+                // Filename
+                //
+
+                dc.SetTextForeground(mFilenameColor);
+                dc.SetFont(mFilenameFont);
+
+                if (!infoTile.FilenameSize)
+                {
+                    auto const [filename, size] = CalculateTextSizeWithCurrentFont(dc, "(" + infoTile.ShipFilepath.filename().string() + ")");
+                    infoTile.Filename = filename;
+                    infoTile.FilenameSize = size;
+                }
+
+                dc.DrawText(
+                    infoTile.Filename,
+                    infoTile.RectVirtual.GetLeft() + infoTileContentLeftMargin
+                        + PreviewImageWidth / 2 - infoTile.FilenameSize->GetWidth() / 2
+                        - originVirtual.x,
+                    infoTile.RectVirtual.GetTop() + InfoTileInset
+                        + PreviewImageHeight + PreviewImageBottomMargin
+                        + nextLabelYoffset
+                        - originVirtual.y);
+
+                nextLabelYoffset += infoTile.FilenameSize->GetHeight() + FilenameLabelBottomMargin;
 
                 //
                 // Description 2
                 //
 
+                dc.SetTextForeground(mDescriptionColor);
+                dc.SetFont(mDescriptionFont);
+
                 if (!infoTile.Description2Size)
                 {
-                    auto[descr, size] = CalculateTextSizeWithCurrentFont(dc, infoTile.OriginalDescription2);
+                    auto const [descr, size] = CalculateTextSizeWithCurrentFont(dc, infoTile.OriginalDescription2);
                     infoTile.Description2 = descr;
                     infoTile.Description2Size = size;
                 }
@@ -856,9 +892,10 @@ void ShipPreviewWindow::Render(wxDC & dc)
                         - originVirtual.x,
                     infoTile.RectVirtual.GetTop() + InfoTileInset
                         + PreviewImageHeight + PreviewImageBottomMargin
-                        + DescriptionLabel1Height + DescriptionLabel1BottomMargin
-                        + DescriptionLabel2Height - infoTile.Description2Size->GetHeight()
+                        + nextLabelYoffset
                         - originVirtual.y);
+
+                nextLabelYoffset += infoTile.Description2Size->GetHeight() + DescriptionLabel2BottomMargin;
 
                 //
                 // Description 3
@@ -866,7 +903,7 @@ void ShipPreviewWindow::Render(wxDC & dc)
 
                 if (!infoTile.Description3Size)
                 {
-                    auto [descr, size] = CalculateTextSizeWithCurrentFont(dc, infoTile.OriginalDescription3);
+                    auto const [descr, size] = CalculateTextSizeWithCurrentFont(dc, infoTile.OriginalDescription3);
                     infoTile.Description3 = descr;
                     infoTile.Description3Size = size;
                 }
@@ -878,39 +915,8 @@ void ShipPreviewWindow::Render(wxDC & dc)
                         - originVirtual.x,
                     infoTile.RectVirtual.GetTop() + InfoTileInset
                         + PreviewImageHeight + PreviewImageBottomMargin
-                        + DescriptionLabel1Height + DescriptionLabel1BottomMargin
-                        + DescriptionLabel2Height + DescriptionLabel2BottomMargin
-                        + DescriptionLabel3Height - infoTile.Description3Size->GetHeight()
+                        + nextLabelYoffset
                         - originVirtual.y);
-
-                //
-                // Filename
-                //
-
-                /* Removed in 1.16.2 for aestethic reasons, after adding description line 3 for art credits
-
-                dc.SetFont(mFilenameFont);
-
-                if (!infoTile.FilenameSize)
-                {
-                    auto[descr, size] = CalculateTextSizeWithCurrentFont(dc, infoTile.ShipFilepath.filename().string());
-                    infoTile.Filename = descr;
-                    infoTile.FilenameSize = size;
-                }
-
-                dc.DrawText(
-                    infoTile.Filename,
-                    infoTile.RectVirtual.GetLeft() + infoTileContentLeftMargin
-                        + PreviewImageWidth / 2 - infoTile.FilenameSize->GetWidth() / 2
-                        - originVirtual.x,
-                    infoTile.RectVirtual.GetTop() + InfoTileInset
-                        + PreviewImageHeight + PreviewImageBottomMargin
-                            + DescriptionLabel1Height + DescriptionLabel1BottomMargin
-                            + DescriptionLabel2Height + DescriptionLabel2BottomMargin
-                            + DescriptionLabel3Height + DescriptionLabel3BottomMargin
-                        + FilenameLabelHeight - infoTile.FilenameSize->GetHeight()
-                        - originVirtual.y);
-                */
 
                 //
                 // Selection

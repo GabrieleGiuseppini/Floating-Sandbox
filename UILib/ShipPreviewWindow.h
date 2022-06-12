@@ -143,16 +143,12 @@ public:
     static int constexpr PreviewImageHeight = 150;
     static ImageSize constexpr PreviewImageSize = ImageSize(PreviewImageWidth, PreviewImageHeight);
 
-    static int constexpr PreviewImageBottomMargin = 9;
+    static int constexpr PreviewImageBottomMargin = 7;
 
-    static int constexpr DescriptionLabel1Height = 7;
-    static int constexpr DescriptionLabel1BottomMargin = 6;
-    static int constexpr DescriptionLabel2Height = 7;
-    static int constexpr DescriptionLabel2BottomMargin = 6;
-    static int constexpr DescriptionLabel3Height = 7;
-    static int constexpr DescriptionLabel3BottomMargin = 12;
-    static int constexpr FilenameLabelHeight = 7;
+    static int constexpr DescriptionLabel1BottomMargin = 0;
     static int constexpr FilenameLabelBottomMargin = 0;
+    static int constexpr DescriptionLabel2BottomMargin = 0;
+    static int constexpr DescriptionLabel3BottomMargin = 12;
 
     //
     // InfoTile
@@ -163,14 +159,14 @@ public:
         InfoTileInset
         + PreviewImageHeight
         + PreviewImageBottomMargin
-        + DescriptionLabel1Height
+        + 7 // Description 1 height
         + DescriptionLabel1BottomMargin
-        + DescriptionLabel2Height
-        + DescriptionLabel2BottomMargin
-        + DescriptionLabel3Height
-        + DescriptionLabel3BottomMargin
-        + FilenameLabelHeight
+        + 5 // Filename height
         + FilenameLabelBottomMargin
+        + 7 // Description 2 height
+        + DescriptionLabel2BottomMargin
+        + 7 // Description 3 height
+        + DescriptionLabel3BottomMargin
         + InfoTileInset;
 
     static int constexpr HorizontalMarginMin = 4;
@@ -310,9 +306,11 @@ private:
     int mColumnWidth;
     int mExpandedHorizontalMargin;
 
-    wxPen mSelectionPen;
+    wxPen mSelectionPen;    
     wxFont mDescriptionFont;
+    wxColor mDescriptionColor;
     wxFont mFilenameFont;
+    wxColor mFilenameColor;
 
     wxBitmap const mWaitBitmap;
     wxBitmap const mErrorBitmap;
