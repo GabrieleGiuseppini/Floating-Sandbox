@@ -789,7 +789,7 @@ void ShipPreviewWindow::Render(wxDC & dc)
                     {
                         dc.DrawBitmap(
                             mPreviewRibbonBatteryAndHDBitmap,
-                            infoTile.RectVirtual.GetLeft() + infoTileContentLeftMargin
+                            infoTile.RectVirtual.GetLeft() + InfoTileInset
                                 - originVirtual.x,
                             infoTile.RectVirtual.GetTop() + InfoTileInset
                                 - originVirtual.y,
@@ -799,7 +799,7 @@ void ShipPreviewWindow::Render(wxDC & dc)
                     {
                         dc.DrawBitmap(
                             mPreviewRibbonHDBitmap,
-                            infoTile.RectVirtual.GetLeft() + infoTileContentLeftMargin
+                            infoTile.RectVirtual.GetLeft() + InfoTileInset
                                 - originVirtual.x,
                             infoTile.RectVirtual.GetTop() + InfoTileInset
                                 - originVirtual.y,
@@ -810,18 +810,28 @@ void ShipPreviewWindow::Render(wxDC & dc)
                 {
                     dc.DrawBitmap(
                         mPreviewRibbonBatteryBitmap,
-                        infoTile.RectVirtual.GetLeft() + infoTileContentLeftMargin
+                        infoTile.RectVirtual.GetLeft() + InfoTileInset
                             - originVirtual.x,
                         infoTile.RectVirtual.GetTop() + InfoTileInset
                             - originVirtual.y,
                         true);
                 }
 
-                int nextLabelYoffset = 0;
+                //
+                // Labels
+                //
 
-                //
+                int const labelCenterX =
+                    infoTile.RectVirtual.GetLeft() + infoTileContentLeftMargin
+                    + PreviewImageWidth / 2
+                    - originVirtual.x;
+
+                int nextLabelY =
+                    infoTile.RectVirtual.GetTop() + InfoTileInset
+                    + PreviewImageHeight + PreviewImageBottomMargin
+                    - originVirtual.y;
+
                 // Description 1
-                //
 
                 dc.SetTextForeground(mDescriptionColor);
                 dc.SetFont(mDescriptionFont);
@@ -835,19 +845,12 @@ void ShipPreviewWindow::Render(wxDC & dc)
 
                 dc.DrawText(
                     infoTile.Description1,
-                    infoTile.RectVirtual.GetLeft() + infoTileContentLeftMargin
-                        + PreviewImageWidth / 2 - infoTile.Description1Size->GetWidth() / 2
-                        - originVirtual.x,
-                    infoTile.RectVirtual.GetTop() + InfoTileInset
-                        + PreviewImageHeight + PreviewImageBottomMargin
-                        + nextLabelYoffset
-                        - originVirtual.y);
+                    labelCenterX - infoTile.Description1Size->GetWidth() / 2,
+                    nextLabelY);
 
-                nextLabelYoffset += infoTile.Description1Size->GetHeight() + DescriptionLabel1BottomMargin;
+                nextLabelY += infoTile.Description1Size->GetHeight() + DescriptionLabel1BottomMargin;
 
-                //
                 // Filename
-                //
 
                 dc.SetTextForeground(mFilenameColor);
                 dc.SetFont(mFilenameFont);
@@ -861,19 +864,12 @@ void ShipPreviewWindow::Render(wxDC & dc)
 
                 dc.DrawText(
                     infoTile.Filename,
-                    infoTile.RectVirtual.GetLeft() + infoTileContentLeftMargin
-                        + PreviewImageWidth / 2 - infoTile.FilenameSize->GetWidth() / 2
-                        - originVirtual.x,
-                    infoTile.RectVirtual.GetTop() + InfoTileInset
-                        + PreviewImageHeight + PreviewImageBottomMargin
-                        + nextLabelYoffset
-                        - originVirtual.y);
+                    labelCenterX - infoTile.FilenameSize->GetWidth() / 2,
+                    nextLabelY);
 
-                nextLabelYoffset += infoTile.FilenameSize->GetHeight() + FilenameLabelBottomMargin;
+                nextLabelY += infoTile.FilenameSize->GetHeight() + FilenameLabelBottomMargin;
 
-                //
                 // Description 2
-                //
 
                 dc.SetTextForeground(mDescriptionColor);
                 dc.SetFont(mDescriptionFont);
@@ -887,19 +883,12 @@ void ShipPreviewWindow::Render(wxDC & dc)
 
                 dc.DrawText(
                     infoTile.Description2,
-                    infoTile.RectVirtual.GetLeft() + infoTileContentLeftMargin
-                        + PreviewImageWidth / 2 - infoTile.Description2Size->GetWidth() / 2
-                        - originVirtual.x,
-                    infoTile.RectVirtual.GetTop() + InfoTileInset
-                        + PreviewImageHeight + PreviewImageBottomMargin
-                        + nextLabelYoffset
-                        - originVirtual.y);
+                    labelCenterX - infoTile.Description2Size->GetWidth() / 2,
+                    nextLabelY);
 
-                nextLabelYoffset += infoTile.Description2Size->GetHeight() + DescriptionLabel2BottomMargin;
+                nextLabelY += infoTile.Description2Size->GetHeight() + DescriptionLabel2BottomMargin;
 
-                //
                 // Description 3
-                //
 
                 if (!infoTile.Description3Size)
                 {
@@ -910,13 +899,8 @@ void ShipPreviewWindow::Render(wxDC & dc)
 
                 dc.DrawText(
                     infoTile.Description3,
-                    infoTile.RectVirtual.GetLeft() + infoTileContentLeftMargin
-                        + PreviewImageWidth / 2 - infoTile.Description3Size->GetWidth() / 2
-                        - originVirtual.x,
-                    infoTile.RectVirtual.GetTop() + InfoTileInset
-                        + PreviewImageHeight + PreviewImageBottomMargin
-                        + nextLabelYoffset
-                        - originVirtual.y);
+                    labelCenterX - infoTile.Description3Size->GetWidth() / 2,
+                    nextLabelY);
 
                 //
                 // Selection
