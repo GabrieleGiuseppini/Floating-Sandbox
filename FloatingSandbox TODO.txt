@@ -71,7 +71,7 @@
 		+ Update water velocities with blast
 			+ Adding velocities during blast
 
-		= Continuous Auto-focus (*)
+		+ Continuous Auto-focus (*)
 			+ Send for testing, w/auto-focus being on by default
 			+ Re-send for testing, again - !!! WITH AUTO-FOCUS ON
 			+ Bump up build
@@ -89,7 +89,7 @@
 						+ Pan does it (when no pan enabled)
 					X World X/Y: no move if abs < 0.2
 					X Zoom: no move if abs/current < 0.01
-			= Ignore AABBs that are "too small"
+			X Ignore AABBs that are "too small"
 				+ AABB::Add: Track largest area
 				+ AABBSet: MakeUnion templated overload taking predicate - other calls this one
 					+ Unit tests
@@ -102,9 +102,9 @@
 			+ changelist
 			+ Test land anti-aliasing on old Dell
 
-		= ShipBuilder lag with pencil tool px-1 moving across the screen
+		+ ShipBuilder lag with pencil tool px-1 moving across the screen
 			+ See if texturization is done for right area
-			= See if OpenGL uploads are done for right area: NO
+			+ See if OpenGL uploads are done for right area: NO
 				+ Pre:
 					+ ShipBuilder::MainFrame::OnWorkCanvasMouseMove: 63.31%
 						...
@@ -114,22 +114,25 @@
 						+ Controller::RefreshToolCoordinatesDisplay: 5.74%
 				+ Do region like we used to do
 				+ Post - also structural:
-					- ShipBuilder::MainFrame::OnWorkCanvasMouseMove: 23.47% - 23.29%
-						- ShipBuilder::View::UpdateGameVisualization: 3.16% - 5.22%
-							- GameOpenGL::UploadTextureRegion: 3.05%
-						- ShipBuilder::View::UploadStructuralLayerVisualization: 2.94% - 0.69%
-							- GameOpenGL::UploadTexture: 2.90%
-						- Controller::RefreshToolCoordinatesDisplay: 14.27% - 14.80%
+					+ ShipBuilder::MainFrame::OnWorkCanvasMouseMove: 23.47% - 23.29%
+						+ ShipBuilder::View::UpdateGameVisualization: 3.16% - 5.22%
+							+ GameOpenGL::UploadTextureRegion: 3.05%
+						+ ShipBuilder::View::UploadStructuralLayerVisualization: 2.94% - 0.69%
+							+ GameOpenGL::UploadTexture: 2.90%
+						+ Controller::RefreshToolCoordinatesDisplay: 14.27% - 14.80%
 			+ Test on old Dell:
 				+ Save exe version without fix and use as benchmark
-			= Send to TimCan and WOLFF and other guy
+			+ Send to TimCan and WOLFF and other guy
+			+ changelist
 
 		+ Engines rearc (*)
 		= Jet engines @ Material system improvements (*)			
 			+ Redo material template
 			+ changelist (both rearc and jet engines)
 			- Air boat: 
-				- A bit less flexy - try diagonal crosses
+				- A bit less flexy 
+					X Try diagonal crosses
+					- Try one large stiff H pile in the vertical middle
 				- See if trick works for rocket as well
 			- Promote rocket and air boat
 			- Merge into 1.17.2.next
@@ -148,6 +151,8 @@
 				static constexpr int SpringDecayAndTemperaturePeriodStep = 34; - Spread out spring coeffs' recalculations (*)
 				static constexpr int CombustionStateMachineSlowPeriodStep3 = 41;
 				static constexpr int CombustionStateMachineSlowPeriodStep4 = 48;
+
+		- Structural Tension View (*)
 
 		- ShipLoadDialog Toolbar (*)
 
@@ -1051,6 +1056,17 @@
 	- Less repetitive auto-texturization:
 		- Material textures have to become procedurally-generated
 
+	- Structural Tension View (*)		
+		- Spec:
+			- Another "advanced rendering" setting
+			- When enabled, every N steps we:
+				- Zero out Tension (new float) at each point
+				- Run a loop over springs:
+					- Calculate "tension" for spring and add to endpoints
+				- Average each point's tension across its own springs
+			- Alternatively, use existing UpdateStrains loop to kill two birds with one stone
+			- Shader "variants" of each of the ship drawing shaders, mapping this new Tension float to color from Pac0's tension color map
+			
 - Dynamics:
 
 	- Sand particles when hitting ground
