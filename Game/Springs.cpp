@@ -413,12 +413,10 @@ void Springs::inline_UpdateForDecayAndTemperatureAndGameParameters(
 
     float const dt = GameParameters::SimulationStepTimeDuration<float> / numMechanicalDynamicsIterations;
 
-    // Note: in 1.14, the spring temperature was the average of the two points.
+    // Note: in 1.14 the spring temperature was the average of the two points.
     // Differences in temperature between adjacent points made it so that springs'
     // melting was widely underestimated.
-    // In reality, a spring is as "soft" as its softness point.
-    ////float const springTemperature =
-    ////    (points.GetTemperature(endpointAIndex) + points.GetTemperature(endpointBIndex)) / 2.0f;
+    // In reality, a spring is as "soft" as its softest point.
     float const springTemperature = std::max(
         points.GetTemperature(endpointAIndex),
         points.GetTemperature(endpointBIndex));
