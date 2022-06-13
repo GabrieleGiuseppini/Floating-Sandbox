@@ -135,6 +135,7 @@
 					- Try one large stiff H pile in the vertical middle
 				- See if trick works for rocket as well
 			- Promote rocket and air boat
+			- Do some planes
 			- Merge into 1.17.2.next
 
 		- Misc quick things:
@@ -177,8 +178,9 @@
 
 		- Affinitize threads on Windows:
 			- Main thread (@GameController)
-			- Task threads (@ThreadPool)
+				- On same thread on which it's running
 			- Rendering thread (@TaskThread)
+			- Task threads (@ThreadPool)
 
 
 		- Release:

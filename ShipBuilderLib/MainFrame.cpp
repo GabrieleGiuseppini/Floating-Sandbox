@@ -349,6 +349,11 @@ MainFrame::MainFrame(
     // Create dialogs
     //
 
+    mNotificationMessage = std::make_unique<wxNotificationMessage>(
+        wxEmptyString,
+        wxEmptyString,
+        this);
+
     mShipLoadDialog = std::make_unique<ShipLoadDialog>(
         this,
         mResourceLocator);
@@ -463,6 +468,7 @@ void MainFrame::OnShipNameChanged(IModelObservable const & model)
             // Doesn't want to rename, hence at this moment the ship has no backing file anymore...
             // ...clear filename, so that Save will become SaveAs
             mCurrentShipFilePath.reset();
+            ReconciliateUIWithShipFilename();
         }
     }
 
@@ -742,6 +748,9 @@ wxRibbonPanel * MainFrame::CreateMainFileRibbonPanel(wxRibbonPage * parent)
             },
             _("Save the current ship."));
 
+        // Start disabled
+        mSaveShipButton->Enable(false);
+
         panelGridSizer->Add(mSaveShipButton);
 
         AddAcceleratorKey(wxACCEL_CTRL, (int)'S',
@@ -769,6 +778,25 @@ wxRibbonPanel * MainFrame::CreateMainFileRibbonPanel(wxRibbonPage * parent)
             _("Save the current ship to a different file."));
 
         panelGridSizer->Add(button);
+    }
+
+    // Backup ship
+    {
+        mBackupShipButton = new RibbonToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetIconFilePath("backup_ship_button"),
+            _("Backup Ship"),
+            [this]()
+            {
+                BackupShip();
+            },
+            _("Save the current ship file to a backup file."));
+
+        // Start disabled
+        mBackupShipButton->Enable(false);
+
+        panelGridSizer->Add(mBackupShipButton);
     }
 
     // Save and return to game
@@ -3841,6 +3869,23 @@ void MainFrame::SaveShipAs()
     DoSaveShipAsWithValidation();
 }
 
+void MainFrame::BackupShip()
+{
+    if (mCurrentShipFilePath.has_value()) // Should be true anyway as the button is only enabled when the ship has a filename 
+    {
+        // Make new filename up
+        auto const newShipFileName = mCurrentShipFilePath->stem().string() + "_backup" + mCurrentShipFilePath->extension().string();
+
+        // Save file - overwrite if necessary
+        auto const newShipFilePath = mCurrentShipFilePath->parent_path() / newShipFileName;
+        assert(mController);
+        DoSaveShipDefinition(*mController, newShipFilePath);
+
+        // Notify user
+        ShowNotification("Ship file has been backed up as \"" + newShipFileName + "\".");
+    }
+}
+
 void MainFrame::SaveAndSwitchBackToGame()
 {
     // Save/SaveAs
@@ -4202,13 +4247,19 @@ void MainFrame::ShowError(wxString const & message) const
     wxMessageBox(message, _("Maritime Disaster"), wxICON_ERROR);
 }
 
+void MainFrame::ShowNotification(wxString const & message) const
+{
+    mNotificationMessage->SetMessage(message);
+    mNotificationMessage->Show();
+}
+
 void MainFrame::DoNewShip()
 {
     // Dispose of current controller - including its OpenGL machinery
     mController.reset();
 
     // Reset current ship filename
-    mCurrentShipFilePath.reset();
+    mCurrentShipFilePath.reset();    
 
     // Ask user for ship name
     NewShipNameDialog dlg(this, *mShipNameNormalizer, mResourceLocator);
@@ -4222,6 +4273,8 @@ void MainFrame::DoNewShip()
         *this,
         mShipTexturizer,
         mResourceLocator);
+
+    ReconciliateUIWithShipFilename();
 }
 
 bool MainFrame::DoLoadShip(std::filesystem::path const & shipFilePath)
@@ -4267,6 +4320,8 @@ bool MainFrame::DoLoadShip(std::filesystem::path const & shipFilePath)
     {
         mCurrentShipFilePath.reset();
     }
+
+    ReconciliateUIWithShipFilename();
 
     // Success
     return true;
@@ -4368,10 +4423,22 @@ bool MainFrame::DoSaveShipWithValidation(std::filesystem::path const & shipFileP
 
 void MainFrame::DoSaveShipWithoutValidation(std::filesystem::path const & shipFilePath)
 {
+    // Save ship definition
     assert(mController);
+    DoSaveShipDefinition(*mController, shipFilePath);
 
+    // Reset current ship file path
+    mCurrentShipFilePath = shipFilePath;
+    ReconciliateUIWithShipFilename();
+
+    // Clear dirtyness
+    mController->ClearModelDirty();
+}
+
+void MainFrame::DoSaveShipDefinition(Controller const & controller, std::filesystem::path const & shipFilePath)
+{
     // Get ship definition
-    auto shipDefinition = mController->MakeShipDefinition();
+    auto shipDefinition = controller.MakeShipDefinition();
 
     assert(ShipDeSerializer::IsShipDefinitionFile(shipFilePath));
 
@@ -4379,12 +4446,6 @@ void MainFrame::DoSaveShipWithoutValidation(std::filesystem::path const & shipFi
     ShipDeSerializer::SaveShip(
         shipDefinition,
         shipFilePath);
-
-    // Reset current ship file path
-    mCurrentShipFilePath = shipFilePath;
-
-    // Clear dirtyness
-    mController->ClearModelDirty();
 }
 
 bool MainFrame::DoPreSaveShipValidation()
@@ -5026,6 +5087,11 @@ void MainFrame::ReconciliateUIWithUndoStackState(UndoStack & undoStack)
 void MainFrame::ReconciliateUIWithDisplayUnitsSystem(UnitsSystem displayUnitsSystem)
 {
     mStatusBar->SetDisplayUnitsSystem(displayUnitsSystem);
+}
+
+void MainFrame::ReconciliateUIWithShipFilename()
+{
+    mBackupShipButton->Enable(mCurrentShipFilePath.has_value());
 }
 
 }

@@ -5,18 +5,20 @@
 	+ Option 2: OnWorkCanvasMouseEnteredWindow: do not catch focus if palette is open
 	+ changelist
 
-= "Backup Ship" - like SaveAs, but does not change current
++ "Backup Ship" - like SaveAs, but does not change current
 	+ Ribbon button
-		+ Always enabled
+		+ Enabled only if the ship is "currently saved" (i.e. loaded or saved)
 	+ Requires ShipLoadDialog to show filename (incl. extension)
-	- Action:
-		- Appends "_backup" to filename (also if it has it already)
-		- Does *not* ask when overrides
-		- Shows dialog afterwards saying "Ship file has been backed up as "....""
-			- Check out wxNotificationMessage
-	- changelist
+	+ Action:
+		+ Appends "_backup" to filename (also if it has it already)
+		+ Saves
+			+ Make a static version of DoSaveShipWithoutValidation ("DoSaveShip(...)")
+		+ Does *not* ask when overrides
+		+ Shows dialog afterwards saying "Ship file has been backed up as "....""
+			+ Check out wxNotificationMessage
+	+ changelist
 
-- Texture flood tool
+- Texture flood tool ("Magic Eraser")
 	+ First off: mouse coordinates from MainFrame to Controller becomes LogicalDisplayCoords, and they're converted to ShipSpace coords where needed
 	- Conversion to texture coords: done by View & ViewModel, exactly like conversion to ShipSpaceCoords, and invoked by texture tool(s)
 		- ViewModel also stores texture layer size (as ImageSize), next to ShipSize; set into View 
@@ -27,6 +29,7 @@
 			- Controller::RestoreTextureLayerForUndo
 			- Controller::ResizeShip
 			- No need to do at removal...
+	- Icon: magic wand
 	- Tolerance, etc.
 		- Flood notes:
 			- For each new pixel, first check its alpha:

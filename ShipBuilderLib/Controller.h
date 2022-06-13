@@ -92,7 +92,7 @@ public:
     // Ship
     //
 
-    ShipDefinition MakeShipDefinition();
+    ShipDefinition MakeShipDefinition() const;
 
     void SetShipProperties(
         std::optional<ShipMetadata> && metadata,

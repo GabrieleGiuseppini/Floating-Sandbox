@@ -15,6 +15,8 @@
 	- Set to zero to prevent lightnings from hitting the ship altogether!
 - ShipBuilder:
 	- Fixed drawing lag that was occurring on low-bandwidth graphic cards
+	- Added "Backup Ship" button to save the current ship to a backup file 
+		- Useful when you're making experiments and you're not sure whether they'll work out!
 	- Fixed material palettes annoyingly closing when mouse moves out of the palette 
 
 1.17.2

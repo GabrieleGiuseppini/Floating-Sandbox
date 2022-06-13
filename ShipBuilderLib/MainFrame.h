@@ -37,6 +37,7 @@
 #include <wx/frame.h>
 #include <wx/glcanvas.h> // Need to include this *after* our glad.h has been included (from OpenGLManager.h)
 #include <wx/icon.h>
+#include <wx/notifmsg.h>
 #include <wx/panel.h>
 #include <wx/ribbon/bar.h>
 #include <wx/ribbon/page.h>
@@ -207,6 +208,8 @@ private:
 
     void SaveShipAs();
 
+    void BackupShip();
+
     void SaveAndSwitchBackToGame();
 
     void QuitAndSwitchBackToGame();
@@ -240,6 +243,8 @@ private:
 
     void ShowError(wxString const & message) const;
 
+    void ShowNotification(wxString const & message) const;
+
     void DoNewShip();
 
     bool DoLoadShip(std::filesystem::path const & shipFilePath);
@@ -253,6 +258,8 @@ private:
     bool DoSaveShipWithValidation(std::filesystem::path const & shipFilePath);
 
     void DoSaveShipWithoutValidation(std::filesystem::path const & shipFilePath);
+
+    static void DoSaveShipDefinition(Controller const & controller, std::filesystem::path const & shipFilePath);
 
     bool DoPreSaveShipValidation();
 
@@ -328,6 +335,7 @@ private:
     void ReconciliateUIWithUndoStackState(UndoStack & undoStack);
 
     void ReconciliateUIWithDisplayUnitsSystem(UnitsSystem displayUnitsSystem);
+    void ReconciliateUIWithShipFilename();
 
 private:
 
@@ -363,6 +371,7 @@ private:
     // Ribbon bar
     wxRibbonBar * mMainRibbonBar;
     RibbonToolbarButton<BitmapButton> * mSaveShipButton;
+    RibbonToolbarButton<BitmapButton> * mBackupShipButton;
     RibbonToolbarButton<BitmapButton> * mSaveShipAndGoBackButton;
     RibbonToolbarButton<BitmapButton> * mZoomInButton;
     RibbonToolbarButton<BitmapButton> * mZoomOutButton;
@@ -417,12 +426,13 @@ private:
 
     // Misc UI elements
     std::unique_ptr<CompositeMaterialPalette> mCompositeMaterialPalette;
-    StatusBar * mStatusBar;
+    StatusBar * mStatusBar;    
 
     //
     // Dialogs
     //
-
+    
+    std::unique_ptr<wxNotificationMessage> mNotificationMessage;
     std::unique_ptr<ShipLoadDialog> mShipLoadDialog;
     std::unique_ptr<ShipSaveDialog> mShipSaveDialog;
     std::unique_ptr<LoggingDialog> mLoggingDialog;

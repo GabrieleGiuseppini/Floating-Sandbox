@@ -161,7 +161,7 @@ Controller::Controller(
     RefreshToolCoordinatesDisplay();
 }
 
-ShipDefinition Controller::MakeShipDefinition()
+ShipDefinition Controller::MakeShipDefinition() const
 {
     auto const scopedToolResumeState = SuspendTool();
 
