@@ -30,6 +30,7 @@
 			- Controller::ResizeShip
 			- No need to do at removal...
 	- Icon: magic wand
+	- Cursor: magic wand
 	- Tolerance, etc.
 		- Flood notes:
 			- For each new pixel, first check its alpha:

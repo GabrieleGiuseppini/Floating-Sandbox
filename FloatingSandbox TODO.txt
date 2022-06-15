@@ -124,18 +124,12 @@
 				+ Save exe version without fix and use as benchmark
 			+ Send to TimCan and WOLFF and other guy
 			+ changelist
-
 		+ Engines rearc (*)
-		= Jet engines @ Material system improvements (*)			
+		+ Jet engines @ Material system improvements (*)			
 			+ Redo material template
 			+ changelist (both rearc and jet engines)
-			- Air boat: 
-				- A bit less flexy 
-					X Try diagonal crosses
-					- Try one large stiff H pile in the vertical middle
-				- See if trick works for rocket as well
-			- Promote rocket and air boat
-			- Do some planes
+			+ Air boat
+			+ Promote rocket and air boat
 			- Merge into 1.17.2.next
 
 		- Misc quick things:
