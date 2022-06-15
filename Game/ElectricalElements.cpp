@@ -1667,7 +1667,7 @@ void ElectricalElements::UpdateSinks(
                                 {
                                     controllerThrustMagnitude = (controllerState.CurrentValue - TelegraphIdleFraction) / (1.0f - TelegraphIdleFraction);
                                 }
-                                else if (controllerState.CurrentValue < TelegraphIdleFraction)
+                                else if (controllerState.CurrentValue < -TelegraphIdleFraction)
                                 {
                                     controllerThrustMagnitude = (controllerState.CurrentValue + TelegraphIdleFraction) / (1.0f - TelegraphIdleFraction);
                                 }
