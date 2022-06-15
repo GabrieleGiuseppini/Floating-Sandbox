@@ -130,7 +130,7 @@
 			+ changelist (both rearc and jet engines)
 			+ Air boat
 			+ Promote rocket and air boat
-			- Merge into 1.17.2.next
+			+ Merge into 1.17.2.next
 
 		- Misc quick things:
 			- See if water entering via hole is faster than water entering natural non-hull ("cut funnel")
