@@ -997,7 +997,8 @@ void World::Update(
             mCurrentSimulationTime,
             mStorm.GetParameters(),
             gameParameters,
-            mAllAABBs);
+            mAllAABBs,
+            perfStats);
     }
 
     {

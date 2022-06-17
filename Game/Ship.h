@@ -10,6 +10,7 @@
 #include "GameParameters.h"
 #include "MaterialDatabase.h"
 #include "Physics.h"
+#include "PerfStats.h"
 #include "RenderContext.h"
 #include "ShipDefinition.h"
 #include "ShipElectricSparks.h"
@@ -75,7 +76,8 @@ public:
         float currentSimulationTime,
 		Storm::Parameters const & stormParameters,
         GameParameters const & gameParameters,
-        Geometry::AABBSet & externalAabbSet);
+        Geometry::AABBSet & externalAabbSet,
+        PerfStats & perfStats);
 
     void RenderUpload(Render::RenderContext & renderContext);
 

@@ -209,7 +209,8 @@ void Ship::Update(
     float currentSimulationTime,
     Storm::Parameters const & stormParameters,
     GameParameters const & gameParameters,
-    Geometry::AABBSet & externalAabbSet)
+    Geometry::AABBSet & externalAabbSet,
+    PerfStats & perfStats)
 {
     /////////////////////////////////////////////////////////////////
     //         This is where most of the magic happens             //
@@ -273,6 +274,8 @@ void Ship::Update(
     // and ocean floor collision handling
     ///////////////////////////////////////////////////////////////////
 
+    auto const springsStartTime = std::chrono::steady_clock::now();
+
     int const numMechanicalDynamicsIterations = gameParameters.NumMechanicalDynamicsIterations<int>();
 
     // We run ocean floor collision handling every so often
@@ -303,6 +306,8 @@ void Ship::Update(
                 gameParameters);
         }
     }
+
+    perfStats.TotalShipsSpringsUpdateDuration.Update(std::chrono::steady_clock::now() - springsStartTime);
 
     ///////////////////////////////////////////////////////////////////
     // Trim for world bounds
