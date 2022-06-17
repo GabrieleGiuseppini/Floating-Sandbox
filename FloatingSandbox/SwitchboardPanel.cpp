@@ -68,8 +68,8 @@ SwitchboardPanel::SwitchboardPanel(
     //
     , mMinBitmapSize(std::numeric_limits<int>::max(), std::numeric_limits<int>::max())
 {
-    float constexpr TotalProgressSteps = 11.0f;
-    float ProgressSteps = 0.0;
+    float constexpr TotalProgressSteps = 12.0f;
+    float progressSteps = 0.0;
 
     UnFocusablePanel::Create(
         parent,
@@ -82,7 +82,7 @@ SwitchboardPanel::SwitchboardPanel(
     // Setup background selector popup
     //
 
-    progressCallback(ProgressSteps/TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
+    progressCallback(progressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
 
     auto backgroundBitmapFilepaths = resourceLocator.GetBitmapFilePaths("switchboard_background_*");
     if (backgroundBitmapFilepaths.empty())
@@ -164,8 +164,8 @@ SwitchboardPanel::SwitchboardPanel(
     wxBitmap dockCheckboxUncheckedBitmap;
 
     {
-        ProgressSteps += 1.0f; // 1.0f
-        progressCallback(ProgressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
+        progressSteps += 1.0f; // 1.0f
+        progressCallback(progressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
 
         mAutomaticSwitchOnEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("automatic_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
         mAutomaticSwitchOffEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("automatic_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
@@ -173,8 +173,8 @@ SwitchboardPanel::SwitchboardPanel(
         mAutomaticSwitchOffDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("automatic_switch_off_disabled").string(), wxBITMAP_TYPE_PNG);
         mMinBitmapSize.DecTo(mAutomaticSwitchOnEnabledBitmap.GetSize());
 
-        ProgressSteps += 1.0f; // 2.0f
-        progressCallback(ProgressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
+        progressSteps += 1.0f; // 2.0f
+        progressCallback(progressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
 
         mInteractivePushSwitchOnEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("interactive_push_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
         mInteractivePushSwitchOffEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("interactive_push_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
@@ -182,8 +182,8 @@ SwitchboardPanel::SwitchboardPanel(
         mInteractivePushSwitchOffDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("interactive_push_switch_off_disabled").string(), wxBITMAP_TYPE_PNG);
         mMinBitmapSize.DecTo(mInteractivePushSwitchOnEnabledBitmap.GetSize());
 
-        ProgressSteps += 1.0f; // 3.0f
-        progressCallback(ProgressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
+        progressSteps += 1.0f; // 3.0f
+        progressCallback(progressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
 
         mInteractiveToggleSwitchOnEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("interactive_toggle_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
         mInteractiveToggleSwitchOffEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("interactive_toggle_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
@@ -191,8 +191,8 @@ SwitchboardPanel::SwitchboardPanel(
         mInteractiveToggleSwitchOffDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("interactive_toggle_switch_off_disabled").string(), wxBITMAP_TYPE_PNG);
         mMinBitmapSize.DecTo(mInteractiveToggleSwitchOnEnabledBitmap.GetSize());
 
-        ProgressSteps += 1.0f; // 4.0f
-        progressCallback(ProgressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
+        progressSteps += 1.0f; // 4.0f
+        progressCallback(progressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
 
         mShipSoundSwitchOnEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("ship_sound_switch_on_enabled").string(), wxBITMAP_TYPE_PNG);
         mShipSoundSwitchOffEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("ship_sound_switch_off_enabled").string(), wxBITMAP_TYPE_PNG);
@@ -200,15 +200,15 @@ SwitchboardPanel::SwitchboardPanel(
         mShipSoundSwitchOffDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("ship_sound_switch_off_disabled").string(), wxBITMAP_TYPE_PNG);
         mMinBitmapSize.DecTo(mShipSoundSwitchOnEnabledBitmap.GetSize());
 
-        ProgressSteps += 1.0f; // 5.0f
-        progressCallback(ProgressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
+        progressSteps += 1.0f; // 5.0f
+        progressCallback(progressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
 
         mPowerMonitorOnBitmap.LoadFile(resourceLocator.GetBitmapFilePath("power_monitor_on").string(), wxBITMAP_TYPE_PNG);
         mPowerMonitorOffBitmap.LoadFile(resourceLocator.GetBitmapFilePath("power_monitor_off").string(), wxBITMAP_TYPE_PNG);
         mMinBitmapSize.DecTo(mPowerMonitorOnBitmap.GetSize());
 
-        ProgressSteps += 1.0f; // 6.0f
-        progressCallback(ProgressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
+        progressSteps += 1.0f; // 6.0f
+        progressCallback(progressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
 
         mWatertightDoorOpenEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("watertight_door_open_enabled").string(), wxBITMAP_TYPE_PNG);
         mWatertightDoorClosedEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("watertight_door_closed_enabled").string(), wxBITMAP_TYPE_PNG);
@@ -216,8 +216,8 @@ SwitchboardPanel::SwitchboardPanel(
         mWatertightDoorClosedDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("watertight_door_closed_disabled").string(), wxBITMAP_TYPE_PNG);
         mMinBitmapSize.DecTo(mWatertightDoorOpenEnabledBitmap.GetSize());
 
-        ProgressSteps += 1.0f; // 7.0f
-        progressCallback(ProgressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
+        progressSteps += 1.0f; // 7.0f
+        progressCallback(progressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
 
         mGauge0100Bitmap.LoadFile(resourceLocator.GetBitmapFilePath("gauge_0-100").string(), wxBITMAP_TYPE_PNG);
         mGaugeRpmBitmap.LoadFile(resourceLocator.GetBitmapFilePath("gauge_rpm").string(), wxBITMAP_TYPE_PNG);
@@ -225,8 +225,8 @@ SwitchboardPanel::SwitchboardPanel(
         mGaugeJetEngineBitmap.LoadFile(resourceLocator.GetBitmapFilePath("gauge_jet").string(), wxBITMAP_TYPE_PNG);
         mMinBitmapSize.DecTo(mGaugeRpmBitmap.GetSize());
 
-        ProgressSteps += 1.0f; // 8.0f
-        progressCallback(ProgressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
+        progressSteps += 1.0f; // 8.0f
+        progressCallback(progressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
 
         mEngineControllerTelegraphBackgroundEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("telegraph_background_enabled").string(), wxBITMAP_TYPE_PNG);
         mEngineControllerTelegraphBackgroundDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("telegraph_background_disabled").string(), wxBITMAP_TYPE_PNG);
@@ -242,27 +242,30 @@ SwitchboardPanel::SwitchboardPanel(
         mEngineControllerTelegraphHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_9").string(), wxBITMAP_TYPE_PNG);
         mEngineControllerTelegraphHandBitmaps.emplace_back(resourceLocator.GetBitmapFilePath("telegraph_hand_10").string(), wxBITMAP_TYPE_PNG);
 
-        ProgressSteps += 1.0f; // 9.0f
-        progressCallback(ProgressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
+        progressSteps += 1.0f; // 9.0f
+        progressCallback(progressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
 
         mEngineControllerJetThrottleBackgroundEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("jet_throttle_background_enabled").string(), wxBITMAP_TYPE_PNG);
         mEngineControllerJetThrottleBackgroundDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("jet_throttle_background_disabled").string(), wxBITMAP_TYPE_PNG);
         mEngineControllerJetThrottleHandleEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("jet_throttle_handle_enabled").string(), wxBITMAP_TYPE_PNG);
         mEngineControllerJetThrottleHandleDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("jet_throttle_handle_disabled").string(), wxBITMAP_TYPE_PNG);
 
-        ProgressSteps += 1.0f; // 10.0f
-        progressCallback(ProgressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
+        progressSteps += 1.0f; // 10.0f
+        progressCallback(progressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
 
         mEngineControllerJetThrustOnEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("thrust_button_on_enabled").string(), wxBITMAP_TYPE_PNG);
         mEngineControllerJetThrustOffEnabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("thrust_button_off_enabled").string(), wxBITMAP_TYPE_PNG);
         mEngineControllerJetThrustOnDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("thrust_button_on_disabled").string(), wxBITMAP_TYPE_PNG);
         mEngineControllerJetThrustOffDisabledBitmap.LoadFile(resourceLocator.GetBitmapFilePath("thrust_button_off_disabled").string(), wxBITMAP_TYPE_PNG);
 
-        ProgressSteps += 1.0f; // 11.0f
-        progressCallback(ProgressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
+        progressSteps += 1.0f; // 11.0f
+        progressCallback(progressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
 
         dockCheckboxCheckedBitmap.LoadFile(resourceLocator.GetBitmapFilePath("electrical_panel_dock_pin_down").string(), wxBITMAP_TYPE_PNG);
         dockCheckboxUncheckedBitmap.LoadFile(resourceLocator.GetBitmapFilePath("electrical_panel_dock_pin_up").string(), wxBITMAP_TYPE_PNG);
+
+        progressSteps += 1.0f; // 12.0f
+        progressCallback(progressSteps / TotalProgressSteps, ProgressMessageType::LoadingElectricalPanel);
     }
 
     //

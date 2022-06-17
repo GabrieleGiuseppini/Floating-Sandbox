@@ -31,7 +31,8 @@ MaterialPalette<TLayer>::MaterialPalette(
     wxWindow * parent,
     MaterialDatabase::Palette<TMaterial> const & materialPalette,
     ShipTexturizer const & shipTexturizer,
-    ResourceLocator const & resourceLocator)
+    ResourceLocator const & resourceLocator,
+    ProgressCallback const & progressCallback)
     : wxPopupTransientWindow(parent, wxPU_CONTAINS_CONTROLS | wxBORDER_SIMPLE)
     , mMaterialPalette(materialPalette)
     , mCurrentMaterialInPropertyGrid(nullptr)
@@ -175,8 +176,11 @@ MaterialPalette<TLayer>::MaterialPalette(
 
             mCategoryPanelsContainerSizer = new wxBoxSizer(wxHORIZONTAL);
 
-            for (auto const & category : materialPalette.Categories)
+            size_t const categoriesCount = materialPalette.Categories.size();
+            for (size_t c = 0; c < categoriesCount; ++c)
             {
+                auto const & category = materialPalette.Categories[c];
+
                 wxPanel * categoryPanel = CreateCategoryPanel(
                     mCategoryPanelsContainer,
                     category,
@@ -189,6 +193,8 @@ MaterialPalette<TLayer>::MaterialPalette(
                     0);
 
                 mCategoryPanels.push_back(categoryPanel);
+
+                progressCallback(static_cast<float>(c + 1) / static_cast<float>(categoriesCount), ProgressMessageType::LoadingMaterialPalette);
             }
 
             mCategoryPanelsContainer->SetSizer(mCategoryPanelsContainerSizer);

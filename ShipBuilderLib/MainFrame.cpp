@@ -57,7 +57,8 @@ MainFrame::MainFrame(
     LocalizationManager const & localizationManager,
     MaterialDatabase const & materialDatabase,
     ShipTexturizer const & shipTexturizer,
-    std::function<void(std::optional<std::filesystem::path>)> returnToGameFunctor)
+    std::function<void(std::optional<std::filesystem::path>)> returnToGameFunctor,
+    ProgressCallback const & progressCallback)
     : mMainApp(mainApp)
     , mReturnToGameFunctor(std::move(returnToGameFunctor))
     , mOpenGLManager()
@@ -76,6 +77,8 @@ MainFrame::MainFrame(
     // State
     , mWorkbenchState(materialDatabase)
 {
+    progressCallback(0.0f, ProgressMessageType::LoadingShipBuilder);
+
     Create(
         nullptr,
         wxID_ANY,
@@ -306,7 +309,7 @@ MainFrame::MainFrame(
 
     //
     // Setup material palettes
-    //
+    //    
 
     {
         mCompositeMaterialPalette = std::make_unique<CompositeMaterialPalette>(
@@ -328,12 +331,19 @@ MainFrame::MainFrame(
             },
             mMaterialDatabase,
             mShipTexturizer,
-            mResourceLocator);
+            mResourceLocator,
+            [&progressCallback](float progress, ProgressMessageType message)
+            {
+                // 0.0 -> 0.80
+                progressCallback(progress * 0.8f, message);
+            });
     }
 
     //
     // Initialize OpenGL manager
     //
+
+    progressCallback(0.85f, ProgressMessageType::LoadingShipBuilder);
 
     mOpenGLManager = std::make_unique<OpenGLManager>(
         *mWorkCanvas,
@@ -357,6 +367,8 @@ MainFrame::MainFrame(
     mShipLoadDialog = std::make_unique<ShipLoadDialog>(
         this,
         mResourceLocator);
+
+    progressCallback(1.0f, ProgressMessageType::LoadingShipBuilder);
 }
 
 void MainFrame::OpenForNewShip(std::optional<UnitsSystem> displayUnitsSystem)

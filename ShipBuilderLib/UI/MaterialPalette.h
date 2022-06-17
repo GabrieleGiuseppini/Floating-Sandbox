@@ -7,13 +7,14 @@
 
 #include "ShipBuilderTypes.h"
 
-#include <GameCore/GameTypes.h>
-
 #include <Game/Layers.h>
 #include <Game/Materials.h>
 #include <Game/MaterialDatabase.h>
 #include <Game/ResourceLocator.h>
 #include <Game/ShipTexturizer.h>
+
+#include <GameCore/GameTypes.h>
+#include <GameCore/ProgressCallback.h>
 
 #include <wx/wx.h>
 #include <wx/popupwin.h>
@@ -107,7 +108,8 @@ public:
         wxWindow * parent,
         MaterialDatabase::Palette<TMaterial> const & materialPalette,
         ShipTexturizer const & shipTexturizer,
-        ResourceLocator const & resourceLocator);
+        ResourceLocator const & resourceLocator,
+        ProgressCallback const & progressCallback);
 
     void Open(
         wxRect const & referenceArea,

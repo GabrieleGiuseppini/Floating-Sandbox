@@ -25,6 +25,8 @@ enum class ProgressMessageType : std::size_t
 	LoadingSounds,					// "Loading sounds..."
 	LoadingMusic,					// "Loading music..."
 	LoadingElectricalPanel,			// "Loading electrical panel..."
+	LoadingShipBuilder,				// "Loading ShipBuilder..."
+	LoadingMaterialPalette,			// "Loading materials palette..."
 	Calibrating,					// "Calibrating game on the computer..."
 	Ready,							// "Ready!"
 

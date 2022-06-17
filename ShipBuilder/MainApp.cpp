@@ -132,7 +132,8 @@ bool MainApp::OnInit()
             *mLocalizationManager,
             *mMaterialDatabase,
             *mShipTexturizer,
-            {});
+            {},
+            [](float, ProgressMessageType){});
 
         SetTopWindow(mMainFrame);
 

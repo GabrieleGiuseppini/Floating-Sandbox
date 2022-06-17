@@ -75,10 +75,10 @@ SplashScreenDialog::SplashScreenDialog(ResourceLocator const & resourceLocator)
         mGauge = new wxGauge(
             this,
             wxID_ANY,
-            101,
+            100,
             wxDefaultPosition,
             wxSize(bmp->GetWidth() - 20, 30),
-            wxGA_HORIZONTAL);
+            wxGA_HORIZONTAL | wxGA_PROGRESS);
 
         mainSizer->Add(mGauge, 1, wxALIGN_CENTER_HORIZONTAL);
     }
@@ -123,6 +123,8 @@ SplashScreenDialog::SplashScreenDialog(ResourceLocator const & resourceLocator)
         mProgressStrings.Add(_("Loading sounds..."));
         mProgressStrings.Add(_("Loading music..."));
         mProgressStrings.Add(_("Loading electrical panel..."));
+        mProgressStrings.Add(_("Loading ShipBuilder..."));
+        mProgressStrings.Add(_("Loading materials palette..."));
         mProgressStrings.Add(_("Calibrating game on the computer..."));
         mProgressStrings.Add(_("Ready!"));
 
@@ -150,7 +152,7 @@ void SplashScreenDialog::UpdateProgress(
     float progress,
     ProgressMessageType message)
 {
-    mGauge->SetValue(1 + static_cast<int>(100.0f * progress));
+    mGauge->SetValue(static_cast<int>(100.0f * progress));
 
     assert(static_cast<size_t>(message) < mProgressStrings.GetCount());
 

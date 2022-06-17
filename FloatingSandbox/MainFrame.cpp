@@ -889,8 +889,8 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
             mResourceLocator,
             [this, &splash](float progress, ProgressMessageType message)
             {
-                // 0.0 -> 0.5
-                splash->UpdateProgress(progress / 2.0f, message);
+                // 0.0 -> 0.3
+                splash->UpdateProgress(progress / 3.44444f, message);
                 this->mMainApp->Yield();
                 this->mMainApp->Yield();
                 this->mMainApp->Yield();
@@ -918,8 +918,8 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
             mResourceLocator,
             [&splash, this](float progress, ProgressMessageType message)
             {
-                // 0.5 -> 0.66
-                splash->UpdateProgress(0.5f + progress / 6.0f, message);
+                // 0.3 -> 0.7
+                splash->UpdateProgress(0.3f + progress / 2.5f, message);
                 this->mMainApp->Yield();
                 this->mMainApp->Yield();
                 this->mMainApp->Yield();
@@ -947,8 +947,8 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
             mResourceLocator,
             [&splash, this](float progress, ProgressMessageType message)
             {
-                // 0.66 -> 0.83
-                splash->UpdateProgress(0.666f + progress / 6.0f, message);
+                // 0.7 -> 0.75
+                splash->UpdateProgress(0.7f + progress / 20.0f, message);
                 this->mMainApp->Yield();
                 this->mMainApp->Yield();
                 this->mMainApp->Yield();
@@ -1009,8 +1009,8 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
         mResourceLocator,
         [&splash, this](float progress, ProgressMessageType message)
         {
-            // 0.83 -> 1.0
-            splash->UpdateProgress(0.83f + progress / 6.0f, message);
+            // 0.75 -> 0.85
+            splash->UpdateProgress(0.75f + progress * 0.10f, message);
             this->mMainApp->Yield();
             this->mMainApp->Yield();
             this->mMainApp->Yield();
@@ -1066,6 +1066,14 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
                 [this](std::optional<std::filesystem::path> shipFilePath)
                 {
                     this->SwitchFromShipBuilder(shipFilePath);
+                },
+                [&splash, this](float progress, ProgressMessageType message)
+                {
+                    // 0.85 -> 0.99
+                    splash->UpdateProgress(0.85f + progress * 0.14f, message);
+                    this->mMainApp->Yield();
+                    this->mMainApp->Yield();
+                    this->mMainApp->Yield();
                 });
         }
         catch (std::exception const & e)
@@ -1100,6 +1108,12 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     //
     // Load initial ship
     //
+
+    splash->UpdateProgress(1.0f, ProgressMessageType::Ready);
+    this->mMainApp->Yield();
+    this->mMainApp->Yield();
+    this->mMainApp->Yield();
+    this->mMainApp->Yield();
 
     std::filesystem::path startupShipFilePath;
 
@@ -1157,16 +1171,6 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
         OnError("Error loading initial ship: " + std::string(exc.what()), true);
 
         return;
-    }
-
-    splash->UpdateProgress(1.0f, ProgressMessageType::Ready);
-
-    this->mMainApp->Yield();
-
-    for (int i = 0; i < 5; ++i)
-    {
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        this->mMainApp->Yield();
     }
 
 

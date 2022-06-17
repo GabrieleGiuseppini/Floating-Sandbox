@@ -31,6 +31,7 @@
 #include <Game/ShipTexturizer.h>
 
 #include <GameCore/GameTypes.h>
+#include <GameCore/ProgressCallback.h>
 
 #include <wx/accel.h>
 #include <wx/app.h>
@@ -75,7 +76,8 @@ public:
         LocalizationManager const & localizationManager,
         MaterialDatabase const & materialDatabase,
         ShipTexturizer const & shipTexturizer,
-        std::function<void(std::optional<std::filesystem::path>)> returnToGameFunctor);
+        std::function<void(std::optional<std::filesystem::path>)> returnToGameFunctor,
+        ProgressCallback const & progressCallback);
 
     void OpenForNewShip(std::optional<UnitsSystem> displayUnitsSystem);
 

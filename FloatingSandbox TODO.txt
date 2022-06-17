@@ -131,23 +131,59 @@
 			+ Air boat
 			+ Promote rocket and air boat
 			+ Merge into 1.17.2.next
-
-		- Misc quick things:
-			- See if water entering via hole is faster than water entering natural non-hull ("cut funnel")
-			- Negative pressure in Mylar bubble
-
-		- Spread out rotting:
+		+ MainFrame's progress: make ShipBuilder take progress callback
+			+ And move calls now done from MainFrame into that
+		+ Spread out rotting:
 			! Now: at step 20/49
-			- Next: TODOHERE - and fix also combustion slow period: spread evenly!
-				static constexpr int UpdateSinkingPeriodStep = 6;
+			! Old: 
+				static constexpr int UpdateSinkingPeriodStep = 6; -- Can stay as one step
 				static constexpr int CombustionStateMachineSlowPeriodStep1 = 13;
 				static constexpr int RotPointsPeriodStep = 20;
 				static constexpr int CombustionStateMachineSlowPeriodStep2 = 27;
 				static constexpr int SpringDecayAndTemperaturePeriodStep = 34; - Spread out spring coeffs' recalculations (*)
 				static constexpr int CombustionStateMachineSlowPeriodStep3 = 41;
 				static constexpr int CombustionStateMachineSlowPeriodStep4 = 48;
+			! Steps: 13 steps, period=(39) // If not: 52
+				UpdateSinking
+				CombustionStateMachineSlow1
+				CombustionStateMachineSlow2
+				CombustionStateMachineSlow3
+				CombustionStateMachineSlow4
+				RotPoints1
+				RotPoints2
+				RotPoints3
+				RotPoints4
+				SpringDecayAndTemperature1
+				SpringDecayAndTemperature2
+				SpringDecayAndTemperature3
+				SpringDecayAndTemperature4
+			+ New: period=36
+				+ 2: CombustionStateMachineSlow1
+				+ 5: SpringDecayAndTemperature1
+				+ 8: RotPoints1
+				+ 11: CombustionStateMachineSlow2
+				+ 14: SpringDecayAndTemperature2
+				+ 17: RotPoints2
+				+ 18: UpdateSinking
+				+ 20: CombustionStateMachineSlow3
+				+ 23: SpringDecayAndTemperature3
+				+ 26: RotPoints3
+				+ 29: CombustionStateMachineSlow4
+				+ 32: SpringDecayAndTemperature4
+				+ 35: RotPoints4
+			+ Test:
+				+ Verify spring melting does not show as localized
+				+ Verify rotting does not show as localized
+				+ 0..5 points/springs
+				+ Old dell
+			+ Cleanup logging
 
 		- Structural Tension View (*)
+
+		- Misc quick things:
+			- See if water entering via hole is faster than water entering natural non-hull ("cut funnel")
+				- See why Bernoulli doesn't make inflow faster
+			- Negative pressure in Mylar bubble
 
 		- ShipLoadDialog Toolbar (*)
 
@@ -1055,13 +1091,12 @@
 	- Structural Tension View (*)		
 		- Spec:
 			- Another "advanced rendering" setting
-			- When enabled, every N steps we:
+			- When enabled:
 				- Zero out Tension (new float) at each point
-				- Run a loop over springs:
-					- Calculate "tension" for spring and add to endpoints
+				- At existing UpdateStrains:
+					- Calculate "tension" for each spring (0.0 @ rest length, 1.0 @ breaking length) and add to endpoints
 				- Average each point's tension across its own springs
-			- Alternatively, use existing UpdateStrains loop to kill two birds with one stone
-			- Shader "variants" of each of the ship drawing shaders, mapping this new Tension float to color from Pac0's tension color map
+			- Shader "variants" for each of the ship drawing shaders, mapping this new Tension float to color from Pac0's tension color map
 			
 - Dynamics:
 

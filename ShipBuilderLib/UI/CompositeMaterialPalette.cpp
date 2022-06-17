@@ -14,7 +14,8 @@ CompositeMaterialPalette::CompositeMaterialPalette(
     std::function<void(fsStructuralMaterialSelectedEvent const & event)> onRopeLayerMaterialSelected,
     MaterialDatabase const & materialDatabase,
     ShipTexturizer const & shipTexturizer,
-    ResourceLocator const & resourceLocator)
+    ResourceLocator const & resourceLocator,
+    ProgressCallback const & progressCallback)
     : mOnStructuralLayerMaterialSelected(std::move(onStructuralLayerMaterialSelected))
     , mOnElectricalLayerMaterialSelected(std::move(onElectricalLayerMaterialSelected))
     , mOnRopeLayerMaterialSelected(std::move(onRopeLayerMaterialSelected))
@@ -24,8 +25,13 @@ CompositeMaterialPalette::CompositeMaterialPalette(
         parent,
         materialDatabase.GetStructuralMaterialPalette(),
         shipTexturizer,
-        resourceLocator);
-
+        resourceLocator,
+        [&progressCallback](float progress, ProgressMessageType message)
+        {
+            // 0.0 -> 0.33
+            progressCallback(progress * 0.3333f, message);
+        });
+    
     mStructuralMaterialPalette->Bind(
         fsEVT_STRUCTURAL_MATERIAL_SELECTED, 
         [this](fsStructuralMaterialSelectedEvent & event)
@@ -37,7 +43,12 @@ CompositeMaterialPalette::CompositeMaterialPalette(
         parent,
         materialDatabase.GetElectricalMaterialPalette(),
         shipTexturizer,
-        resourceLocator);
+        resourceLocator,
+        [&progressCallback](float progress, ProgressMessageType message)
+        {
+            // 0.33 -> 0.66
+            progressCallback(0.3333f + progress * 0.3333f, message);
+        });
 
     mElectricalMaterialPalette->Bind(
         fsEVT_ELECTRICAL_MATERIAL_SELECTED,
@@ -50,7 +61,12 @@ CompositeMaterialPalette::CompositeMaterialPalette(
         parent,
         materialDatabase.GetRopeMaterialPalette(),
         shipTexturizer,
-        resourceLocator);
+        resourceLocator,
+        [&progressCallback](float progress, ProgressMessageType message)
+        {
+            // 0.66 -> 1.0
+            progressCallback(0.6666f + progress * 0.3333f, message);
+        });
 
     mRopesMaterialPalette->Bind(
         fsEVT_STRUCTURAL_MATERIAL_SELECTED, 
@@ -58,6 +74,8 @@ CompositeMaterialPalette::CompositeMaterialPalette(
         {
             mOnRopeLayerMaterialSelected(event);
         });
+
+    progressCallback(1.0f, ProgressMessageType::LoadingMaterialPalette);
 }
 
 bool CompositeMaterialPalette::IsOpen() const

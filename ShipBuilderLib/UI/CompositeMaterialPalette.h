@@ -13,6 +13,7 @@
 #include <Game/ShipTexturizer.h>
 
 #include <GameCore/GameTypes.h>
+#include <GameCore/ProgressCallback.h>
 
 #include <wx/window.h>
 
@@ -32,7 +33,8 @@ public:
         std::function<void(fsStructuralMaterialSelectedEvent const & event)> onRopeLayerMaterialSelected,
         MaterialDatabase const & materialDatabase,
         ShipTexturizer const & shipTexturizer,
-        ResourceLocator const & resourceLocator);
+        ResourceLocator const & resourceLocator,
+        ProgressCallback const & progressCallback);
 
     template<LayerType TLayer>
     void Open(
