@@ -41,7 +41,7 @@ struct GameParameters
     // Low-frequency updates
     //
 
-    static constexpr int ParticleUpdateLowFrequencyPeriod = 7 * 7; // Number of simulation steps for low-frequency particle updates
+    static constexpr int ParticleUpdateLowFrequencyPeriod = 36; // Number of simulation steps for low-frequency particle updates
 
     template <typename T>
     static constexpr T ParticleUpdateLowFrequencyStepTimeDuration = SimulationStepTimeDuration<T> * static_cast<T>(ParticleUpdateLowFrequencyPeriod);

@@ -213,16 +213,30 @@ public:
         GameParameters const & gameParameters,
         Points const & points);
 
-    void UpdateForDecayAndTemperatureAndGameParameters(
-        GameParameters const & gameParameters,
-        Points const & points);
+    void UpdateForDecayAndTemperature(
+        ElementIndex partition,
+        ElementIndex partitionCount,
+        Points const & points)
+    {
+        // Recalculate coefficients for this paritition
+        UpdateCoefficients(
+            partition,
+            partitionCount,
+            mCurrentNumMechanicalDynamicsIterations,
+            mCurrentSpringStiffnessAdjustment,
+            mCurrentSpringDampingAdjustment,
+            mCurrentSpringStrengthAdjustment,
+            CalculateSpringStrengthIterationsAdjustment(mCurrentNumMechanicalDynamicsIterationsAdjustment),
+            mCurrentMeltingTemperatureAdjustment,
+            points);
+    }
 
     void UpdateForRestLength(
         ElementIndex springElementIndex,
         Points const & points)
     {
-        // Recalculate parameters for this spring
-        UpdateForDecayAndTemperatureAndGameParameters(
+        // Recalculate coefficients for this spring
+        UpdateCoefficients(
             springElementIndex,
             mCurrentNumMechanicalDynamicsIterations,
             mCurrentSpringStiffnessAdjustment,
@@ -238,7 +252,7 @@ public:
         Points const & points)
     {
         // Recalculate parameters for this spring
-        UpdateForDecayAndTemperatureAndGameParameters(
+        UpdateCoefficients(
             springElementIndex,
             mCurrentNumMechanicalDynamicsIterations,
             mCurrentSpringStiffnessAdjustment,
@@ -631,7 +645,9 @@ private:
             * (Clamp(strength, StartStrength, EndStrength) - StartStrength);
     }
 
-    void UpdateForDecayAndTemperatureAndGameParameters(
+    void UpdateCoefficients(
+        ElementIndex partition,
+        ElementIndex partitionCount,
         float numMechanicalDynamicsIterations,
         float numMechanicalDynamicsIterationsAdjustment,
         float stiffnessAdjustment,
@@ -640,7 +656,7 @@ private:
         float meltingTemperatureAdjustment,
         Points const & points);
 
-    void UpdateForDecayAndTemperatureAndGameParameters(
+    void UpdateCoefficients(
         ElementIndex springIndex,
         float numMechanicalDynamicsIterations,
         float stiffnessAdjustment,
@@ -650,7 +666,7 @@ private:
         float meltingTemperatureAdjustment,
         Points const & points);
 
-    inline void inline_UpdateForDecayAndTemperatureAndGameParameters(
+    inline void inline_UpdateCoefficients(
         ElementIndex springIndex,
         float numMechanicalDynamicsIterations,
         float stiffnessAdjustment,

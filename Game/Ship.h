@@ -540,6 +540,8 @@ private:
     // Misc
 
     void RotPoints(
+        ElementIndex partition,
+        ElementIndex partitionCount,
         float currentSimulationTime,
         GameParameters const & gameParameters);
 

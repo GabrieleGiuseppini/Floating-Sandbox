@@ -91,7 +91,7 @@ void Springs::Add(
     mMaterialThermalConductivityBuffer.emplace_back(thermalConductivity);
 
     // Calculate parameters for this spring
-    UpdateForDecayAndTemperatureAndGameParameters(
+    UpdateCoefficients(
         springIndex,
         mCurrentNumMechanicalDynamicsIterations,
         mCurrentSpringStiffnessAdjustment,
@@ -146,8 +146,8 @@ void Springs::Restore(
     // Clear the deleted flag
     mIsDeletedBuffer[springElementIndex] = false;
 
-    // Recalculate parameters for this spring
-    UpdateForDecayAndTemperatureAndGameParameters(
+    // Recalculate coefficients for this spring
+    UpdateCoefficients(
         springElementIndex,
         mCurrentNumMechanicalDynamicsIterations,
         mCurrentSpringStiffnessAdjustment,
@@ -175,45 +175,25 @@ void Springs::UpdateForGameParameters(
         || gameParameters.SpringStrengthAdjustment != mCurrentSpringStrengthAdjustment
         || gameParameters.MeltingTemperatureAdjustment != mCurrentMeltingTemperatureAdjustment)
     {
-        // Recalc
-        UpdateForDecayAndTemperatureAndGameParameters(
-            gameParameters,
+        // Update our version of the parameters
+        mCurrentNumMechanicalDynamicsIterations = gameParameters.NumMechanicalDynamicsIterations<float>();
+        mCurrentNumMechanicalDynamicsIterationsAdjustment = gameParameters.NumMechanicalDynamicsIterationsAdjustment;
+        mCurrentSpringStiffnessAdjustment = gameParameters.SpringStiffnessAdjustment;
+        mCurrentSpringDampingAdjustment = gameParameters.SpringDampingAdjustment;
+        mCurrentSpringStrengthAdjustment = gameParameters.SpringStrengthAdjustment;
+        mCurrentMeltingTemperatureAdjustment = gameParameters.MeltingTemperatureAdjustment;
+
+        // Recalc whole
+        UpdateCoefficients(
+            0, 1,
+            mCurrentNumMechanicalDynamicsIterations,
+            mCurrentSpringStiffnessAdjustment,
+            mCurrentSpringDampingAdjustment,
+            mCurrentSpringStrengthAdjustment,
+            CalculateSpringStrengthIterationsAdjustment(mCurrentNumMechanicalDynamicsIterationsAdjustment),
+            mCurrentMeltingTemperatureAdjustment,
             points);
-
-        assert(mCurrentNumMechanicalDynamicsIterations == gameParameters.NumMechanicalDynamicsIterations<float>());
-        assert(mCurrentNumMechanicalDynamicsIterationsAdjustment == gameParameters.NumMechanicalDynamicsIterationsAdjustment);
-        assert(mCurrentSpringStiffnessAdjustment == gameParameters.SpringStiffnessAdjustment);
-        assert(mCurrentSpringDampingAdjustment == gameParameters.SpringDampingAdjustment);
-        assert(mCurrentSpringStrengthAdjustment == gameParameters.SpringStrengthAdjustment);
-        assert(mCurrentMeltingTemperatureAdjustment == gameParameters.MeltingTemperatureAdjustment);
     }
-}
-
-void Springs::UpdateForDecayAndTemperatureAndGameParameters(
-    GameParameters const & gameParameters,
-    Points const & points)
-{
-    //
-    // Assumption: decay and temperature have changed; parameters might have (but most likely not)
-    //
-
-    // Recalc
-    UpdateForDecayAndTemperatureAndGameParameters(
-        gameParameters.NumMechanicalDynamicsIterations<float>(),
-        gameParameters.NumMechanicalDynamicsIterationsAdjustment,
-        gameParameters.SpringStiffnessAdjustment,
-        gameParameters.SpringDampingAdjustment,
-        gameParameters.SpringStrengthAdjustment,
-        gameParameters.MeltingTemperatureAdjustment,
-        points);
-
-    // Remember the new values
-    mCurrentNumMechanicalDynamicsIterations = gameParameters.NumMechanicalDynamicsIterations<float>();
-    mCurrentNumMechanicalDynamicsIterationsAdjustment = gameParameters.NumMechanicalDynamicsIterationsAdjustment;
-    mCurrentSpringStiffnessAdjustment = gameParameters.SpringStiffnessAdjustment;
-    mCurrentSpringDampingAdjustment = gameParameters.SpringDampingAdjustment;
-    mCurrentSpringStrengthAdjustment = gameParameters.SpringStrengthAdjustment;
-    mCurrentMeltingTemperatureAdjustment = gameParameters.MeltingTemperatureAdjustment;
 }
 
 void Springs::UploadElements(
@@ -343,7 +323,9 @@ void Springs::UpdateForStrains(
 
 ////////////////////////////////////////////////////////////////////
 
-void Springs::UpdateForDecayAndTemperatureAndGameParameters(
+void Springs::UpdateCoefficients(
+    ElementIndex partition,
+    ElementIndex partitionCount,
     float numMechanicalDynamicsIterations,
     float numMechanicalDynamicsIterationsAdjustment,
     float stiffnessAdjustment,
@@ -356,11 +338,14 @@ void Springs::UpdateForDecayAndTemperatureAndGameParameters(
         = CalculateSpringStrengthIterationsAdjustment(numMechanicalDynamicsIterationsAdjustment);
 
     // Recalc all parameters
-    for (ElementIndex s : *this)
+    ElementCount const partitionSize = (GetElementCount() / partitionCount) + ((GetElementCount() % partitionCount) ? 1 : 0);
+    ElementCount const startSpringIndex = partition * partitionSize;
+    ElementCount const endSpringIndex = std::min(startSpringIndex + partitionSize, GetElementCount());
+    for (ElementIndex s = startSpringIndex; s < endSpringIndex; ++s)
     {
         if (!IsDeleted(s))
         {
-            inline_UpdateForDecayAndTemperatureAndGameParameters(
+            inline_UpdateCoefficients(
                 s,
                 numMechanicalDynamicsIterations,
                 stiffnessAdjustment,
@@ -373,7 +358,7 @@ void Springs::UpdateForDecayAndTemperatureAndGameParameters(
     }
 }
 
-void Springs::UpdateForDecayAndTemperatureAndGameParameters(
+void Springs::UpdateCoefficients(
     ElementIndex springIndex,
     float numMechanicalDynamicsIterations,
     float stiffnessAdjustment,
@@ -383,7 +368,7 @@ void Springs::UpdateForDecayAndTemperatureAndGameParameters(
     float meltingTemperatureAdjustment,
     Points const & points)
 {
-    inline_UpdateForDecayAndTemperatureAndGameParameters(
+    inline_UpdateCoefficients(
         springIndex,
         numMechanicalDynamicsIterations,
         stiffnessAdjustment,
@@ -394,7 +379,7 @@ void Springs::UpdateForDecayAndTemperatureAndGameParameters(
         points);
 }
 
-void Springs::inline_UpdateForDecayAndTemperatureAndGameParameters(
+void Springs::inline_UpdateCoefficients(
     ElementIndex springIndex,
     float numMechanicalDynamicsIterations,
     float stiffnessAdjustment,
