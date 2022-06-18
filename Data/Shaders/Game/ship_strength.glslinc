@@ -39,15 +39,15 @@ uniform sampler2D paramSharedTexture;
 
 void main()
 {
-    vec4 vertexCol = texture2D(paramSharedTexture, vertexTextureCoords);
+    float vertexAlpha = texture2D(paramSharedTexture, vertexTextureCoords).w;
 
     // Discard transparent pixels, so that ropes (which are drawn temporally after
     // this shader but Z-ally behind) are not occluded by transparent triangles
-    if (vertexCol.w < 0.2)
+    if (vertexAlpha < 0.2)
         discard;
 
     // Make color based off strength
     float intensity = pow(vertexStrength / 4., 0.3);
     vec3 color = vec3(intensity * paramEffectiveAmbientLightIntensity);
-    gl_FragColor = vec4(color, vertexCol.w);
+    gl_FragColor = vec4(color, vertexAlpha);
 } 
