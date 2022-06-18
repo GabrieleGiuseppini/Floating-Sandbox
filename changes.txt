@@ -12,6 +12,8 @@
 	- Introduced new "Engine Transmission" electrical material that may be used to connect engine controllers with engines
 - Added auto-focus capability - for cinematic awesomeness
 	- May be turned off and on again via the Control menu or Ctrl+HOME
+- Added "Stress Overlay" view mode, showing structure stress as a heatmap
+	- Among other things, it allows for stress-testing your model and understanding where structural weaknesses are
 - Added lightning hit probability setting 
 	- Set to zero to prevent lightnings from hitting the ship altogether!
 - ShipBuilder:
