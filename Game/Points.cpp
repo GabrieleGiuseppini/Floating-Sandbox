@@ -43,7 +43,7 @@ void Points::Add(
     mMassBuffer.emplace_back(structuralMaterial.GetMass());
     mMaterialBuoyancyVolumeFillBuffer.emplace_back(structuralMaterial.BuoyancyVolumeFill);
     mStrengthBuffer.emplace_back(strength);
-    mTensionBuffer.emplace_back(0.0f);
+    mStressBuffer.emplace_back(0.0f);
     mDecayBuffer.emplace_back(1.0f);
     mFrozenCoefficientBuffer.emplace_back(1.0f);
     mIntegrationFactorTimeCoefficientBuffer.emplace_back(CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f));
@@ -1822,6 +1822,15 @@ void Points::UploadAttributes(
             partialPointCount);
     }
 
+    if (renderContext.GetStressRenderMode() != StressRenderModeType::None)
+    {
+        renderContext.UploadShipPointStressAsync(
+            shipId,
+            mStressBuffer.data(),
+            0,
+            partialPointCount);
+    }
+
     if (renderContext.GetDebugShipRenderMode() == DebugShipRenderModeType::InternalPressure)
     {
         renderContext.UploadShipPointAuxiliaryDataAsync(
@@ -1835,14 +1844,6 @@ void Points::UploadAttributes(
         renderContext.UploadShipPointAuxiliaryDataAsync(
             shipId,
             mStrengthBuffer.data(),
-            0,
-            partialPointCount);
-    }
-    else if (renderContext.GetDebugShipRenderMode() == DebugShipRenderModeType::Tension)
-    {
-        renderContext.UploadShipPointAuxiliaryDataAsync(
-            shipId,
-            mTensionBuffer.data(),
             0,
             partialPointCount);
     }

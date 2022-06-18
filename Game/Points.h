@@ -580,7 +580,7 @@ public:
         , mMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mMaterialBuoyancyVolumeFillBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mStrengthBuffer(mBufferElementCount, shipPointCount, 0.0f)
-        , mTensionBuffer(mBufferElementCount, shipPointCount, 0.0f)
+        , mStressBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mDecayBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mIsDecayBufferDirty(true)
         , mFrozenCoefficientBuffer(mBufferElementCount, shipPointCount, 1.0f)
@@ -1124,21 +1124,21 @@ public:
         return mStrengthBuffer[pointElementIndex];
     }
 
-    float GetTension(ElementIndex pointElementIndex) const
+    float GetStress(ElementIndex pointElementIndex) const
     {
-        return mTensionBuffer[pointElementIndex];
+        return mStressBuffer[pointElementIndex];
     }
 
-    void SetTension(
+    void SetStress(
         ElementIndex pointElementIndex,
         float value)
     {
-        mTensionBuffer[pointElementIndex] = value;
+        mStressBuffer[pointElementIndex] = value;
     }
 
-    void ResetTension()
+    void ResetStress()
     {
-        mTensionBuffer.fill(0.0f);
+        mStressBuffer.fill(0.0f);
     }
 
     float GetDecay(ElementIndex pointElementIndex) const
@@ -2030,7 +2030,7 @@ private:
     Buffer<float> mMassBuffer; // Augmented + Water
     Buffer<float> mMaterialBuoyancyVolumeFillBuffer;
     Buffer<float> mStrengthBuffer; // Immutable
-    Buffer<float> mTensionBuffer; // 0.0 -> 1.0, only calculated if rendering it
+    Buffer<float> mStressBuffer; // 0.0 -> 1.0, only calculated (at springs) if rendering it
     Buffer<float> mDecayBuffer; // 1.0 -> 0.0 (completely decayed)
     bool mutable mIsDecayBufferDirty; // Only tracks non-ephemerals
     Buffer<float> mFrozenCoefficientBuffer; // 1.0: not frozen; 0.0f: frozen

@@ -176,6 +176,7 @@ private:
     wxColourPickerCtrl * mFlatLampLightColorPicker;
     wxRadioBox * mHeatRenderModeRadioBox;
     SliderControl<float> * mHeatSensitivitySlider;
+    wxRadioBox * mStressRenderModeRadioBox;
     SliderControl<float> * mShipFlameSizeAdjustmentSlider;
     SliderControl<float> * mShipAmbientLightSensitivitySlider;
     wxColourPickerCtrl * mDefaultWaterColorPicker;

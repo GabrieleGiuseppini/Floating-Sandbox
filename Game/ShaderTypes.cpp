@@ -87,60 +87,92 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::ShipPointToPointArrows;
     else if (lstr == "ship_points_color")
         return ProgramType::ShipPointsColor;
+    else if (lstr == "ship_points_color_stress")
+        return ProgramType::ShipPointsColorStress;
     else if (lstr == "ship_points_color_heatoverlay")
         return ProgramType::ShipPointsColorHeatOverlay;
+    else if (lstr == "ship_points_color_heatoverlay_stress")
+        return ProgramType::ShipPointsColorHeatOverlayStress;
     else if (lstr == "ship_points_color_incandescence")
         return ProgramType::ShipPointsColorIncandescence;
+    else if (lstr == "ship_points_color_incandescence_stress")
+        return ProgramType::ShipPointsColorIncandescenceStress;
     else if (lstr == "ship_ropes")
         return ProgramType::ShipRopes;
+    else if (lstr == "ship_ropes_stress")
+        return ProgramType::ShipRopesStress;
     else if (lstr == "ship_ropes_heatoverlay")
         return ProgramType::ShipRopesHeatOverlay;
+    else if (lstr == "ship_ropes_heatoverlay_stress")
+        return ProgramType::ShipRopesHeatOverlayStress;
     else if (lstr == "ship_ropes_incandescence")
         return ProgramType::ShipRopesIncandescence;
+    else if (lstr == "ship_ropes_incandescence_stress")
+        return ProgramType::ShipRopesIncandescenceStress;
     else if (lstr == "ship_sparkles")
         return ProgramType::ShipSparkles;
     else if (lstr == "ship_springs_color")
         return ProgramType::ShipSpringsColor;
+    else if (lstr == "ship_springs_color_stress")
+        return ProgramType::ShipSpringsColorStress;
     else if (lstr == "ship_springs_color_heatoverlay")
         return ProgramType::ShipSpringsColorHeatOverlay;
+    else if (lstr == "ship_springs_color_heatoverlay_stress")
+        return ProgramType::ShipSpringsColorHeatOverlayStress;
     else if (lstr == "ship_springs_color_incandescence")
         return ProgramType::ShipSpringsColorIncandescence;
+    else if (lstr == "ship_springs_color_incandescence_stress")
+        return ProgramType::ShipSpringsColorIncandescenceStress;
     else if (lstr == "ship_springs_decay")
         return ProgramType::ShipSpringsDecay;
     else if (lstr == "ship_springs_internal_pressure")
         return ProgramType::ShipSpringsInternalPressure;
     else if (lstr == "ship_springs_strength")
         return ProgramType::ShipSpringsStrength;
-    else if (lstr == "ship_springs_tension")
-        return ProgramType::ShipSpringsTension;
     else if (lstr == "ship_springs_texture")
         return ProgramType::ShipSpringsTexture;
+    else if (lstr == "ship_springs_texture_stress")
+        return ProgramType::ShipSpringsTextureStress;
     else if (lstr == "ship_springs_texture_heatoverlay")
         return ProgramType::ShipSpringsTextureHeatOverlay;
+    else if (lstr == "ship_springs_texture_heatoverlay_stress")
+        return ProgramType::ShipSpringsTextureHeatOverlayStress;
     else if (lstr == "ship_springs_texture_incandescence")
         return ProgramType::ShipSpringsTextureIncandescence;
+    else if (lstr == "ship_springs_texture_incandescence_stress")
+        return ProgramType::ShipSpringsTextureIncandescenceStress;
     else if (lstr == "ship_stressed_springs")
         return ProgramType::ShipStressedSprings;
     else if (lstr == "ship_triangles_color")
         return ProgramType::ShipTrianglesColor;
+    else if (lstr == "ship_triangles_color_stress")
+        return ProgramType::ShipTrianglesColorStress;
     else if (lstr == "ship_triangles_color_heatoverlay")
         return ProgramType::ShipTrianglesColorHeatOverlay;
+    else if (lstr == "ship_triangles_color_heatoverlay_stress")
+        return ProgramType::ShipTrianglesColorHeatOverlayStress;
     else if (lstr == "ship_triangles_color_incandescence")
         return ProgramType::ShipTrianglesColorIncandescence;
+    else if (lstr == "ship_triangles_color_incandescence_stress")
+        return ProgramType::ShipTrianglesColorIncandescenceStress;
     else if (lstr == "ship_triangles_decay")
         return ProgramType::ShipTrianglesDecay;
     else if (lstr == "ship_triangles_internal_pressure")
         return ProgramType::ShipTrianglesInternalPressure;
     else if (lstr == "ship_triangles_strength")
         return ProgramType::ShipTrianglesStrength;
-    else if (lstr == "ship_triangles_tension")
-    return ProgramType::ShipTrianglesTension;
     else if (lstr == "ship_triangles_texture")
         return ProgramType::ShipTrianglesTexture;
+    else if (lstr == "ship_triangles_texture_stress")
+        return ProgramType::ShipTrianglesTextureStress;
     else if (lstr == "ship_triangles_texture_heatoverlay")
         return ProgramType::ShipTrianglesTextureHeatOverlay;
+    else if (lstr == "ship_triangles_texture_heatoverlay_stress")
+        return ProgramType::ShipTrianglesTextureHeatOverlayStress;
     else if (lstr == "ship_triangles_texture_incandescence")
         return ProgramType::ShipTrianglesTextureIncandescence;
+    else if (lstr == "ship_triangles_texture_incandescence_stress")
+        return ProgramType::ShipTrianglesTextureIncandescenceStress;
     else if (lstr == "ship_vectors")
         return ProgramType::ShipVectors;
     else if (lstr == "stars")
@@ -233,60 +265,92 @@ std::string ProgramTypeToStr(ProgramType program)
         return "ShipPointToPointArrows";
     case ProgramType::ShipPointsColor:
         return "ShipPointsColor";
+    case ProgramType::ShipPointsColorStress:
+        return "ShipPointsColorStress";
     case ProgramType::ShipPointsColorHeatOverlay:
         return "ShipPointsColorHeatOverlay";
+    case ProgramType::ShipPointsColorHeatOverlayStress:
+        return "ShipPointsColorHeatOverlayStress";
     case ProgramType::ShipPointsColorIncandescence:
         return "ShipPointsColorIncandescence";
+    case ProgramType::ShipPointsColorIncandescenceStress:
+        return "ShipPointsColorIncandescenceStress";
     case ProgramType::ShipRopes:
         return "ShipRopes";
+    case ProgramType::ShipRopesStress:
+        return "ShipRopesStress";
     case ProgramType::ShipRopesHeatOverlay:
         return "ShipRopesHeatOverlay";
+    case ProgramType::ShipRopesHeatOverlayStress:
+        return "ShipRopesHeatOverlayStress";
     case ProgramType::ShipRopesIncandescence:
         return "ShipRopesIncandescence";
+    case ProgramType::ShipRopesIncandescenceStress:
+        return "ShipRopesIncandescenceStress";
     case ProgramType::ShipSparkles:
         return "ShipSparkles";
     case ProgramType::ShipSpringsColor:
         return "ShipSpringsColor";
+    case ProgramType::ShipSpringsColorStress:
+        return "ShipSpringsColorStress";
     case ProgramType::ShipSpringsColorHeatOverlay:
         return "ShipSpringsColorHeatOverlay";
+    case ProgramType::ShipSpringsColorHeatOverlayStress:
+        return "ShipSpringsColorHeatOverlayStress";
     case ProgramType::ShipSpringsColorIncandescence:
         return "ShipSpringsColorIncandescence";
+    case ProgramType::ShipSpringsColorIncandescenceStress:
+        return "ShipSpringsColorIncandescenceStress";
     case ProgramType::ShipSpringsDecay:
         return "ShipSpringsDecay";
     case ProgramType::ShipSpringsInternalPressure:
         return "ShipSpringsInternalPressure";
     case ProgramType::ShipSpringsStrength:
         return "ShipSpringsStrength";
-    case ProgramType::ShipSpringsTension:
-        return "ShipSpringsTension";
     case ProgramType::ShipSpringsTexture:
         return "ShipSpringsTexture";
+    case ProgramType::ShipSpringsTextureStress:
+        return "ShipSpringsTextureStress";
     case ProgramType::ShipSpringsTextureHeatOverlay:
         return "ShipSpringsTextureHeatOverlay";
+    case ProgramType::ShipSpringsTextureHeatOverlayStress:
+        return "ShipSpringsTextureHeatOverlayStress";
     case ProgramType::ShipSpringsTextureIncandescence:
         return "ShipSpringsTextureIncandescence";
+    case ProgramType::ShipSpringsTextureIncandescenceStress:
+        return "ShipSpringsTextureIncandescenceStress";
     case ProgramType::ShipStressedSprings:
         return "ShipStressedSprings";
     case ProgramType::ShipTrianglesColor:
         return "ShipTrianglesColor";
+    case ProgramType::ShipTrianglesColorStress:
+        return "ShipTrianglesColorStress";
     case ProgramType::ShipTrianglesColorHeatOverlay:
         return "ShipTrianglesColorHeatOverlay";
+    case ProgramType::ShipTrianglesColorHeatOverlayStress:
+        return "ShipTrianglesColorHeatOverlayStress";
     case ProgramType::ShipTrianglesColorIncandescence:
         return "ShipTrianglesColorIncandescence";
+    case ProgramType::ShipTrianglesColorIncandescenceStress:
+        return "ShipTrianglesColorIncandescenceStress";
     case ProgramType::ShipTrianglesDecay:
         return "ShipTrianglesDecay";
     case ProgramType::ShipTrianglesInternalPressure:
         return "ShipTrianglesInternalPressure";
     case ProgramType::ShipTrianglesStrength:
         return "ShipTrianglesStrength";
-    case ProgramType::ShipTrianglesTension:
-        return "ShipTrianglesTension";
     case ProgramType::ShipTrianglesTexture:
         return "ShipTrianglesTexture";
+    case ProgramType::ShipTrianglesTextureStress:
+        return "ShipTrianglesTextureStress";
     case ProgramType::ShipTrianglesTextureHeatOverlay:
         return "ShipTrianglesTextureHeatOverlay";
+    case ProgramType::ShipTrianglesTextureHeatOverlayStress:
+        return "ShipTrianglesTextureHeatOverlayStress";
     case ProgramType::ShipTrianglesTextureIncandescence:
         return "ShipTrianglesTextureIncandescence";
+    case ProgramType::ShipTrianglesTextureIncandescenceStress:
+        return "ShipTrianglesTextureIncandescenceStress";
     case ProgramType::ShipVectors:
         return "ShipVectors";
     case ProgramType::Stars:
@@ -525,6 +589,8 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::ShipPointColor;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointTemperature"))
         return VertexAttributeType::ShipPointTemperature;
+    else if (Utils::CaseInsensitiveEquals(str, "ShipPointStress"))
+        return VertexAttributeType::ShipPointStress;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointAuxiliaryData"))
         return VertexAttributeType::ShipPointAuxiliaryData;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointFrontierColor"))

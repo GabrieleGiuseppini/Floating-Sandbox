@@ -209,7 +209,7 @@ void Ship::Update(
     float currentSimulationTime,
     Storm::Parameters const & stormParameters,
     GameParameters const & gameParameters,
-    DebugShipRenderModeType debugShipRenderMode,
+    StressRenderModeType stressRenderMode,
     Geometry::AABBSet & externalAabbSet,
     PerfStats & perfStats)
 {
@@ -334,18 +334,18 @@ void Ship::Update(
     // rerouting frontiers
     ///////////////////////////////////////////////////////////////////
 
-    if (debugShipRenderMode == DebugShipRenderModeType::Tension)
+    if (stressRenderMode != StressRenderModeType::None)
     {
-        mPoints.ResetTension();
+        mPoints.ResetStress();
     }
 
     // - Inputs: P.Position, S.SpringDeletion, S.ResetLength, S.BreakingElongation
-    // - Outputs: S.Destroy(), P.Tension
+    // - Outputs: S.Destroy(), P.Stress
     // - Fires events, updates frontiers
     mSprings.UpdateForStrains(
         gameParameters,
         mPoints,
-        debugShipRenderMode);
+        stressRenderMode);
 
     ///////////////////////////////////////////////////////////////////
     // Reset static forces, now that we have integrated them

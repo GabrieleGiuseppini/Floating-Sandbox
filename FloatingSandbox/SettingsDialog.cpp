@@ -4177,6 +4177,43 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     CellBorderInner);
             }
 
+            // Stress render mode
+            {
+                wxString stressRenderModeChoices[] =
+                {
+                    _("Overlay"),
+                    _("None")
+                };
+
+                mStressRenderModeRadioBox = new wxRadioBox(boxSizer->GetStaticBox(), wxID_ANY, _("Stress Draw Options"), wxDefaultPosition, wxDefaultSize,
+                    WXSIZEOF(stressRenderModeChoices), stressRenderModeChoices, 1, wxRA_SPECIFY_COLS);
+                mStressRenderModeRadioBox->SetToolTip(_("Selects how stress is rendered on the ship."));
+                mStressRenderModeRadioBox->Bind(
+                    wxEVT_RADIOBOX,
+                    [this](wxCommandEvent & event)
+                    {
+                        auto const selectedStressRenderMode = event.GetSelection();
+                        if (0 == selectedStressRenderMode)
+                        {
+                            mLiveSettings.SetValue(GameSettings::StressRenderMode, StressRenderModeType::Overlay);
+                        }
+                        else
+                        {
+                            assert(1 == selectedStressRenderMode);
+                            mLiveSettings.SetValue(GameSettings::StressRenderMode, StressRenderModeType::None);
+                        }
+
+                        OnLiveSettingsChanged();
+                    });
+
+                sizer->Add(
+                    mStressRenderModeRadioBox,
+                    wxGBPosition(0, 4),
+                    wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorderInner);
+            }
+
             boxSizer->Add(sizer, 0, wxALL, StaticBoxInsetMargin);
         }
 
@@ -4590,8 +4627,7 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
             _("Draw Structure"),
             _("Draw Decay"),
             _("Draw Internal Pressure"),
-            _("Draw Strength"),
-            _("Draw Tension"),
+            _("Draw Strength")
         };
 
         mDebugShipRenderModeRadioBox = new wxRadioBox(panel, wxID_ANY, _("Ship Debug Draw Options"), wxDefaultPosition, wxDefaultSize,
@@ -4633,14 +4669,10 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
                 {
                     mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderModeType::InternalPressure);
                 }
-                else if (8 == selectedDebugShipRenderMode)
-                {
-                    mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderModeType::Strength);
-                }
                 else
                 {
-                    assert(9 == selectedDebugShipRenderMode);
-                    mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderModeType::Tension);
+                    assert(8 == selectedDebugShipRenderMode);
+                    mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderModeType::Strength);
                 }
 
                 OnLiveSettingsChanged();
@@ -5502,6 +5534,23 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
 
     mHeatSensitivitySlider->SetValue(settings.GetValue<float>(GameSettings::HeatSensitivity));
     mHeatSensitivitySlider->Enable(heatRenderMode != HeatRenderModeType::None);
+
+    auto const stressRenderMode = settings.GetValue<StressRenderModeType>(GameSettings::StressRenderMode);
+    switch (stressRenderMode)
+    {
+        case StressRenderModeType::Overlay:
+        {
+            mStressRenderModeRadioBox->SetSelection(0);
+            break;
+        }
+
+        case StressRenderModeType::None:
+        {
+            mStressRenderModeRadioBox->SetSelection(1);
+            break;
+        }
+    }
+
     mShipFlameSizeAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::ShipFlameSizeAdjustment));
     mShipAmbientLightSensitivitySlider->SetValue(settings.GetValue<float>(GameSettings::ShipAmbientLightSensitivity));
 
@@ -5580,12 +5629,6 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
         case DebugShipRenderModeType::Strength:
         {
             mDebugShipRenderModeRadioBox->SetSelection(8);
-            break;
-        }
-
-        case DebugShipRenderModeType::Tension:
-        {
-            mDebugShipRenderModeRadioBox->SetSelection(9);
             break;
         }
     }

@@ -58,6 +58,7 @@ struct RenderParameters
     float ShipWaterLevelOfDetail;
     HeatRenderModeType HeatRenderMode;
     float HeatSensitivity;
+    StressRenderModeType StressRenderMode;
     DebugShipRenderModeType DebugShipRenderMode;
 
     //

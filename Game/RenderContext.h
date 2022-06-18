@@ -509,6 +509,17 @@ public:
         mRenderParameters.IsHeatSensitivityDirty = true;
     }
 
+    StressRenderModeType GetStressRenderMode() const
+    {
+        return mRenderParameters.StressRenderMode;
+    }
+
+    void SetStressRenderMode(StressRenderModeType stressRenderMode)
+    {
+        mRenderParameters.StressRenderMode = stressRenderMode;
+        mRenderParameters.AreShipStructureRenderModeSelectorsDirty = true;
+    }
+
     VectorFieldRenderModeType GetVectorFieldRenderMode() const
     {
         return mVectorFieldRenderMode;
@@ -945,6 +956,27 @@ public:
             {
                 mShips[shipId]->UploadPointTemperature(
                     temperature,
+                    startDst,
+                    count);
+            });
+    }
+
+    // Upload is Asynchronous - buffer may not be used until the
+    // next UpdateStart
+    inline void UploadShipPointStressAsync(
+        ShipId shipId,
+        float const * stress,
+        size_t startDst,
+        size_t count)
+    {
+        assert(shipId >= 0 && shipId < mShips.size());
+
+        // Run upload asynchronously
+        mRenderThread.QueueTask(
+            [=]()
+            {
+                mShips[shipId]->UploadPointStress(
+                    stress,
                     startDst,
                     count);
             });

@@ -39,6 +39,7 @@ ShipRenderContext::ShipRenderContext(
     , mPointAttributeGroup2VBO()
     , mPointColorVBO()
     , mPointTemperatureVBO()
+    , mPointStressVBO()
     , mPointAuxiliaryDataVBO()
     , mPointFrontierColorVBO()
     //
@@ -152,8 +153,8 @@ ShipRenderContext::ShipRenderContext(
     // Initialize buffers
     //
 
-    GLuint vbos[18];
-    glGenBuffers(18, vbos);
+    GLuint vbos[19];
+    glGenBuffers(19, vbos);
     CheckOpenGLError();
 
     mPointAttributeGroup1VBO = vbos[0];
@@ -182,39 +183,43 @@ ShipRenderContext::ShipRenderContext(
     glBindBuffer(GL_ARRAY_BUFFER, *mPointTemperatureVBO);
     glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(float), nullptr, GL_STREAM_DRAW);
 
-    mPointAuxiliaryDataVBO = vbos[4];
+    mPointStressVBO = vbos[4];
+    glBindBuffer(GL_ARRAY_BUFFER, *mPointStressVBO);
+    glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(float), nullptr, GL_STREAM_DRAW);
+
+    mPointAuxiliaryDataVBO = vbos[5];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointAuxiliaryDataVBO);
     glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(float), nullptr, GL_STREAM_DRAW);
 
-    mPointFrontierColorVBO = vbos[5];
+    mPointFrontierColorVBO = vbos[6];
     glBindBuffer(GL_ARRAY_BUFFER, *mPointFrontierColorVBO);
     glBufferData(GL_ARRAY_BUFFER, pointCount * sizeof(FrontierColor), nullptr, GL_STATIC_DRAW);
 
-    mStressedSpringElementVBO = vbos[6];
+    mStressedSpringElementVBO = vbos[7];
     mStressedSpringElementBuffer.reserve(1024); // Arbitrary
 
-    mFrontierEdgeElementVBO = vbos[7];
+    mFrontierEdgeElementVBO = vbos[8];
 
-    mElectricSparkVBO = vbos[8];
+    mElectricSparkVBO = vbos[9];
 
-    mFlameVBO = vbos[9];
+    mFlameVBO = vbos[10];
 
-    mJetEngineFlameVBO = vbos[10];
+    mJetEngineFlameVBO = vbos[11];
 
-    mExplosionVBO = vbos[11];
+    mExplosionVBO = vbos[12];
 
-    mSparkleVBO = vbos[12];
+    mSparkleVBO = vbos[13];
     mSparkleVertexBuffer.reserve(256); // Arbitrary
 
-    mGenericMipMappedTextureVBO = vbos[13];
+    mGenericMipMappedTextureVBO = vbos[14];
 
-    mHighlightVBO = vbos[14];
+    mHighlightVBO = vbos[15];
 
-    mVectorArrowVBO = vbos[15];
+    mVectorArrowVBO = vbos[16];
 
-    mCenterVBO = vbos[16];
+    mCenterVBO = vbos[17];
 
-    mPointToPointArrowVBO = vbos[17];
+    mPointToPointArrowVBO = vbos[18];
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -265,6 +270,11 @@ ShipRenderContext::ShipRenderContext(
         glBindBuffer(GL_ARRAY_BUFFER, *mPointTemperatureVBO);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipPointTemperature));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointTemperature), 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)(0));
+        CheckOpenGLError();
+
+        glBindBuffer(GL_ARRAY_BUFFER, *mPointStressVBO);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipPointStress));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipPointStress), 1, GL_FLOAT, GL_FALSE, sizeof(float), (void *)(0));
         CheckOpenGLError();
 
         glBindBuffer(GL_ARRAY_BUFFER, *mPointAuxiliaryDataVBO);
@@ -817,6 +827,27 @@ void ShipRenderContext::UploadPointTemperature(
     glBindBuffer(GL_ARRAY_BUFFER, *mPointTemperatureVBO);
 
     glBufferSubData(GL_ARRAY_BUFFER, startDst * sizeof(float), count * sizeof(float), temperature);
+    CheckOpenGLError();
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void ShipRenderContext::UploadPointStress(
+    float const * stress,
+    size_t startDst,
+    size_t count)
+{
+    // We've been invoked on the render thread
+
+    //
+    // Upload stress range
+    //
+
+    assert(startDst + count <= mPointCount);
+
+    glBindBuffer(GL_ARRAY_BUFFER, *mPointStressVBO);
+
+    glBufferSubData(GL_ARRAY_BUFFER, startDst * sizeof(float), count * sizeof(float), stress);
     CheckOpenGLError();
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -1383,7 +1414,6 @@ void ShipRenderContext::RenderDraw(
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::InternalPressure
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Strength
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Structure
-            || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Tension
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::None)
         {
             if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Decay)
@@ -1397,10 +1427,6 @@ void ShipRenderContext::RenderDraw(
             else if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Strength)
             {
                 mShaderManager.ActivateProgram<ProgramType::ShipTrianglesStrength>();
-            }
-            else if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Tension)
-            {
-                mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTension>();
             }
             else
             {
@@ -1457,7 +1483,7 @@ void ShipRenderContext::RenderDraw(
         //   structural springs -, or
         // - DebugRenderMode is structure, in which case we use colors - so to draw 1D chains -, or
         // - DebugRenderMode is none, in which case we use texture - so to draw 1D chains and edge springs
-        // - DebugRenderMode is decay|internalPressure|strength|tension, in which case we use the special rendering
+        // - DebugRenderMode is decay|internalPressure|strength, in which case we use the special rendering
         //
         // Note: when DebugRenderMode is springs|edgeSprings, ropes would all be here.
         //
@@ -1468,8 +1494,7 @@ void ShipRenderContext::RenderDraw(
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::None
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Decay
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::InternalPressure
-            || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Strength
-            || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Tension)
+            || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Strength)
         {
             if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Decay)
             {
@@ -1482,10 +1507,6 @@ void ShipRenderContext::RenderDraw(
             else if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Strength)
             {
                 mShaderManager.ActivateProgram<ProgramType::ShipSpringsStrength>();
-            }
-            else if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Tension)
-            {
-                mShaderManager.ActivateProgram<ProgramType::ShipSpringsTension>();
             }
             else
             {
@@ -2340,10 +2361,6 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
     mShaderManager.SetProgramParameter<ProgramType::ShipSpringsStrength, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<ProgramType::ShipSpringsTension>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipSpringsTension, ProgramParameterType::OrthoMatrix>(
-        shipOrthoMatrix);
-
     //
     // Layer 3: Triangles
     //
@@ -2373,10 +2390,6 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
 
     mShaderManager.ActivateProgram<ProgramType::ShipTrianglesStrength>();
     mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesStrength, ProgramParameterType::OrthoMatrix>(
-        shipOrthoMatrix);
-
-    mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTension>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesTension, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
 
     //
@@ -2594,10 +2607,6 @@ void ShipRenderContext::ApplyEffectiveAmbientLightIntensityChanges(RenderParamet
     mShaderManager.SetProgramParameter<ProgramType::ShipSpringsStrength, ProgramParameterType::EffectiveAmbientLightIntensity>(
         effectiveAmbientLightIntensityParamValue);
 
-    mShaderManager.ActivateProgram<ProgramType::ShipSpringsTension>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipSpringsTension, ProgramParameterType::EffectiveAmbientLightIntensity>(
-        effectiveAmbientLightIntensityParamValue);
-
     mShaderManager.ActivateProgram<ProgramType::ShipTrianglesDecay>();
     mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesDecay, ProgramParameterType::EffectiveAmbientLightIntensity>(
         effectiveAmbientLightIntensityParamValue);
@@ -2608,10 +2617,6 @@ void ShipRenderContext::ApplyEffectiveAmbientLightIntensityChanges(RenderParamet
 
     mShaderManager.ActivateProgram<ProgramType::ShipTrianglesStrength>();
     mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesStrength, ProgramParameterType::EffectiveAmbientLightIntensity>(
-        effectiveAmbientLightIntensityParamValue);
-
-    mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTension>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesTension, ProgramParameterType::EffectiveAmbientLightIntensity>(
         effectiveAmbientLightIntensityParamValue);
 
     mShaderManager.ActivateProgram<ProgramType::ShipGenericMipMappedTextures>();
@@ -2779,6 +2784,13 @@ void ShipRenderContext::ApplyHeatSensitivityChanges(RenderParameters const & ren
 
 void ShipRenderContext::SelectShipPrograms(RenderParameters const & renderParameters)
 {
+    // Here we select a cell out of a full 3D matrix; dimensions:
+    //  - Texture vs. Color (depending on DebugShipRenderMode)
+    //  - None vs HeatOverlay vs. Incandescence (depending on HeatRenderMode)
+    //  - None vs Stress (depending on StressRenderMode)
+
+    bool const doStress = (renderParameters.StressRenderMode != StressRenderModeType::None);
+
     if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::None)
     {
         // Use texture program
@@ -2786,28 +2798,61 @@ void ShipRenderContext::SelectShipPrograms(RenderParameters const & renderParame
         {
             case HeatRenderModeType::HeatOverlay:
             {
-                mShipPointsProgram = ProgramType::ShipPointsColorHeatOverlay;
-                mShipRopesProgram = ProgramType::ShipRopesHeatOverlay;
-                mShipSpringsProgram = ProgramType::ShipSpringsTextureHeatOverlay;
-                mShipTrianglesProgram = ProgramType::ShipTrianglesTextureHeatOverlay;
+                if (!doStress)
+                {
+                    mShipPointsProgram = ProgramType::ShipPointsColorHeatOverlay;
+                    mShipRopesProgram = ProgramType::ShipRopesHeatOverlay;
+                    mShipSpringsProgram = ProgramType::ShipSpringsTextureHeatOverlay;
+                    mShipTrianglesProgram = ProgramType::ShipTrianglesTextureHeatOverlay;
+                }
+                else
+                {
+                    mShipPointsProgram = ProgramType::ShipPointsColorHeatOverlayStress;
+                    mShipRopesProgram = ProgramType::ShipRopesHeatOverlayStress;
+                    mShipSpringsProgram = ProgramType::ShipSpringsTextureHeatOverlayStress;
+                    mShipTrianglesProgram = ProgramType::ShipTrianglesTextureHeatOverlayStress;
+                }
+
                 break;
             }
 
             case HeatRenderModeType::Incandescence:
             {
-                mShipPointsProgram = ProgramType::ShipPointsColorIncandescence;
-                mShipRopesProgram = ProgramType::ShipRopesIncandescence;
-                mShipSpringsProgram = ProgramType::ShipSpringsTextureIncandescence;
-                mShipTrianglesProgram = ProgramType::ShipTrianglesTextureIncandescence;
+                if (!doStress)
+                {
+                    mShipPointsProgram = ProgramType::ShipPointsColorIncandescence;
+                    mShipRopesProgram = ProgramType::ShipRopesIncandescence;
+                    mShipSpringsProgram = ProgramType::ShipSpringsTextureIncandescence;
+                    mShipTrianglesProgram = ProgramType::ShipTrianglesTextureIncandescence;
+                }
+                else
+                {
+                    mShipPointsProgram = ProgramType::ShipPointsColorIncandescenceStress;
+                    mShipRopesProgram = ProgramType::ShipRopesIncandescenceStress;
+                    mShipSpringsProgram = ProgramType::ShipSpringsTextureIncandescenceStress;
+                    mShipTrianglesProgram = ProgramType::ShipTrianglesTextureIncandescenceStress;
+                }
+
                 break;
             }
 
             case HeatRenderModeType::None:
             {
-                mShipPointsProgram = ProgramType::ShipPointsColor;
-                mShipRopesProgram = ProgramType::ShipRopes;
-                mShipSpringsProgram = ProgramType::ShipSpringsTexture;
-                mShipTrianglesProgram = ProgramType::ShipTrianglesTexture;
+                if (!doStress)
+                {
+                    mShipPointsProgram = ProgramType::ShipPointsColor;
+                    mShipRopesProgram = ProgramType::ShipRopes;
+                    mShipSpringsProgram = ProgramType::ShipSpringsTexture;
+                    mShipTrianglesProgram = ProgramType::ShipTrianglesTexture;
+                }
+                else
+                {
+                    mShipPointsProgram = ProgramType::ShipPointsColorStress;
+                    mShipRopesProgram = ProgramType::ShipRopesStress;
+                    mShipSpringsProgram = ProgramType::ShipSpringsTextureStress;
+                    mShipTrianglesProgram = ProgramType::ShipTrianglesTextureStress;
+                }
+
                 break;
             }
         }
@@ -2819,28 +2864,61 @@ void ShipRenderContext::SelectShipPrograms(RenderParameters const & renderParame
         {
             case HeatRenderModeType::HeatOverlay:
             {
-                mShipPointsProgram = ProgramType::ShipPointsColorHeatOverlay;
-                mShipRopesProgram = ProgramType::ShipRopesHeatOverlay;
-                mShipSpringsProgram = ProgramType::ShipSpringsColorHeatOverlay;
-                mShipTrianglesProgram = ProgramType::ShipTrianglesColorHeatOverlay;
+                if (!doStress)
+                {
+                    mShipPointsProgram = ProgramType::ShipPointsColorHeatOverlay;
+                    mShipRopesProgram = ProgramType::ShipRopesHeatOverlay;
+                    mShipSpringsProgram = ProgramType::ShipSpringsColorHeatOverlay;
+                    mShipTrianglesProgram = ProgramType::ShipTrianglesColorHeatOverlay;
+                }
+                else
+                {
+                    mShipPointsProgram = ProgramType::ShipPointsColorHeatOverlayStress;
+                    mShipRopesProgram = ProgramType::ShipRopesHeatOverlayStress;
+                    mShipSpringsProgram = ProgramType::ShipSpringsColorHeatOverlayStress;
+                    mShipTrianglesProgram = ProgramType::ShipTrianglesColorHeatOverlayStress;
+                }
+
                 break;
             }
 
             case HeatRenderModeType::Incandescence:
             {
-                mShipPointsProgram = ProgramType::ShipPointsColorIncandescence;
-                mShipRopesProgram = ProgramType::ShipRopesIncandescence;
-                mShipSpringsProgram = ProgramType::ShipSpringsColorIncandescence;
-                mShipTrianglesProgram = ProgramType::ShipTrianglesColorIncandescence;
+                if (!doStress)
+                {
+                    mShipPointsProgram = ProgramType::ShipPointsColorIncandescence;
+                    mShipRopesProgram = ProgramType::ShipRopesIncandescence;
+                    mShipSpringsProgram = ProgramType::ShipSpringsColorIncandescence;
+                    mShipTrianglesProgram = ProgramType::ShipTrianglesColorIncandescence;
+                }
+                else
+                {
+                    mShipPointsProgram = ProgramType::ShipPointsColorIncandescenceStress;
+                    mShipRopesProgram = ProgramType::ShipRopesIncandescenceStress;
+                    mShipSpringsProgram = ProgramType::ShipSpringsColorIncandescenceStress;
+                    mShipTrianglesProgram = ProgramType::ShipTrianglesColorIncandescenceStress;
+                }
+
                 break;
             }
 
             case HeatRenderModeType::None:
             {
-                mShipPointsProgram = ProgramType::ShipPointsColor;
-                mShipRopesProgram = ProgramType::ShipRopes;
-                mShipSpringsProgram = ProgramType::ShipSpringsColor;
-                mShipTrianglesProgram = ProgramType::ShipTrianglesColor;
+                if (!doStress)
+                {
+                    mShipPointsProgram = ProgramType::ShipPointsColor;
+                    mShipRopesProgram = ProgramType::ShipRopes;
+                    mShipSpringsProgram = ProgramType::ShipSpringsColor;
+                    mShipTrianglesProgram = ProgramType::ShipTrianglesColor;
+                }
+                else
+                {
+                    mShipPointsProgram = ProgramType::ShipPointsColorStress;
+                    mShipRopesProgram = ProgramType::ShipRopesStress;
+                    mShipSpringsProgram = ProgramType::ShipSpringsColorStress;
+                    mShipTrianglesProgram = ProgramType::ShipTrianglesColorStress;
+                }
+
                 break;
             }
         }

@@ -1024,6 +1024,15 @@ enum class HeatRenderModeType
     HeatOverlay
 };
 
+/* 
+ * The ways in which stress may be rendered.
+ */
+enum class StressRenderModeType
+{
+    None,
+    Overlay
+};
+
 /*
  * The debug ways in which ships may be rendered.
  */
@@ -1037,8 +1046,7 @@ enum class DebugShipRenderModeType
     Structure,
     Decay,
     InternalPressure,
-    Strength,
-    Tension
+    Strength
 };
 
 /*

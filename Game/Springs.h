@@ -270,7 +270,7 @@ public:
     void UpdateForStrains(
         GameParameters const & gameParameters,
         Points & points,
-        DebugShipRenderModeType debugShipRenderMode);
+        StressRenderModeType stressRenderMode);
 
     //
     // Render
@@ -607,7 +607,7 @@ public:
 
 private:
 
-    template<bool DoUpdateTension>
+    template<bool DoUpdateStress>
     inline void InternalUpdateForStrains(
         GameParameters const & gameParameters,
         Points & points);

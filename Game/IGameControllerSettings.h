@@ -401,6 +401,9 @@ struct IGameControllerSettings
     virtual float GetHeatSensitivity() const = 0;
     virtual void SetHeatSensitivity(float value) = 0;
 
+    virtual StressRenderModeType GetStressRenderMode() const = 0;
+    virtual void SetStressRenderMode(StressRenderModeType value) = 0;
+
     virtual bool GetDrawExplosions() const = 0;
     virtual void SetDrawExplosions(bool value) = 0;
 

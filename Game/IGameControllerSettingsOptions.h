@@ -281,7 +281,6 @@ struct IGameControllerSettingsOptions
     virtual float GetMinShipStrengthRandomizationExtent() const = 0;
     virtual float GetMaxShipStrengthRandomizationExtent() const = 0;
 
-
     //
     // Render parameters
     //

@@ -116,6 +116,11 @@ public:
         size_t startDst,
         size_t count);
 
+    void UploadPointStress(
+        float const * stress,
+        size_t startDst,
+        size_t count);
+
     void UploadPointAuxiliaryData(
         float const * auxiliaryData,
         size_t startDst,
@@ -1594,6 +1599,8 @@ private:
     GameOpenGLVBO mPointColorVBO;
 
     GameOpenGLVBO mPointTemperatureVBO;
+
+    GameOpenGLVBO mPointStressVBO;
 
     GameOpenGLVBO mPointAuxiliaryDataVBO;
 

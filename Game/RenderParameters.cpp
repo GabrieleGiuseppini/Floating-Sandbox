@@ -39,6 +39,7 @@ RenderParameters::RenderParameters(
 	, ShipWaterLevelOfDetail(0.6875f)
 	, HeatRenderMode(HeatRenderModeType::Incandescence)
 	, HeatSensitivity(0.0f)
+	, StressRenderMode(StressRenderModeType::None)
 	, DebugShipRenderMode(DebugShipRenderModeType::None)
 	// Misc
 	, DisplayUnitsSystem(UnitsSystem::SI_Kelvin)

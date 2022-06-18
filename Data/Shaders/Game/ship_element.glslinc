@@ -9,6 +9,9 @@ in vec4 inShipPointAttributeGroup2; // Light, Water, PlaneId, Decay
 #if HEAT_RENDER_MODE != 0
 in float inShipPointTemperature; // Temperature
 #endif
+#if STRESS_RENDER_MODE != 0
+in float inShipPointStress; // Stress
+#endif
 #ifdef WITH_MATTE_COLOR
 in vec4 inShipPointColor;
 #endif
@@ -22,6 +25,9 @@ out vec4 vertexCol;
 #endif
 #if HEAT_RENDER_MODE != 0
 out float vertexTemperature;
+#endif
+#if STRESS_RENDER_MODE != 0
+out float vertexStress;
 #endif
 
 // Params
@@ -39,6 +45,10 @@ void main()
 
 #if HEAT_RENDER_MODE != 0
     vertexTemperature = inShipPointTemperature;
+#endif
+
+#if STRESS_RENDER_MODE != 0
+    vertexStress = inShipPointStress;
 #endif
 
     gl_Position = paramOrthoMatrix * vec4(inShipPointAttributeGroup1.xy, inShipPointAttributeGroup2.z, 1.0);
@@ -61,6 +71,9 @@ in vec4 vertexCol;
 #endif
 #if HEAT_RENDER_MODE != 0
 in float vertexTemperature;
+#endif
+#if STRESS_RENDER_MODE != 0
+in float vertexStress;
 #endif
 
 // Params
@@ -115,6 +128,10 @@ void main()
 #endif
 
 
+    //
+    // Heat
+    //
+
 #if HEAT_RENDER_MODE == 0
     // None
 #elif HEAT_RENDER_MODE == 1
@@ -139,9 +156,47 @@ void main()
 #error Unrecognized value for HEAT_RENDER_MODE
 #endif
 
+    
     // Apply lamp color
     fragColour = mix(fragColour, paramLampLightColor, vertexAttributes.x);
-    
+
     // Make final color, using original vertex's alpha
     gl_FragColor = vec4(fragColour, vertexCol.w);
+
+
+    //
+    // Stress
+    //
+
+#if STRESS_RENDER_MODE == 0
+    // No stress
+#elif STRESS_RENDER_MODE == 1
+    // Stress Overlay
+
+    vec4 stressColorMap[6] = vec4[6](
+        vec4(0.0, 0.0, 166.0/255.0, 0.0),           // 0.00 -> 0.20
+        vec4(0.0, 0.0, 166.0/255.0, 1.0),           // 0.20 -> 0.40
+        vec4(0.0, 166.0/255.0, 0.0, 1.0),           // 0.40 -> 0.60
+        vec4(166.0/255.0, 166.0/255.0, 0.0, 1.0),   // 0.60 -> 0.80
+        vec4(166.0/255.0, 0.0, 0.0, 1.0),           // 0.80 -> 1.00
+        vec4(166.0/255.0, 0.0, 0.0, 1.0));          // 1.00 -> +INF
+
+    float effectiveVertexStress = 1.0 - (1.0 - vertexStress) * (1.0 - vertexStress);
+
+    int bracketIndex = int(effectiveVertexStress / 0.20);
+
+    vec4 stressCol = mix(
+        stressColorMap[bracketIndex],
+        stressColorMap[bracketIndex + 1],
+        (effectiveVertexStress - float(bracketIndex) * 0.20)  / 0.20);
+
+    // Render
+
+    gl_FragColor = mix(
+        gl_FragColor,
+        stressCol,
+        stressCol.w);
+#else
+#error Unrecognized value for STRESS_RENDER_MODE
+#endif        
 } 

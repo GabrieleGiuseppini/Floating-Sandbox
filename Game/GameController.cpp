@@ -361,8 +361,8 @@ void GameController::RunGameIteration()
         assert(!!mWorld);
         mWorld->Update(
             mGameParameters,
-            mRenderContext->GetDebugShipRenderMode(),
             mRenderContext->GetVisibleWorld(),
+            mRenderContext->GetStressRenderMode(),
             *mTotalPerfStats);
 
         // Flush events

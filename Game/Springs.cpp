@@ -259,21 +259,21 @@ void Springs::UploadStressedSpringElements(
 void Springs::UpdateForStrains(
     GameParameters const & gameParameters,
     Points & points,
-    DebugShipRenderModeType debugShipRenderMode)
+    StressRenderModeType stressRenderMode)
 {
-    if (debugShipRenderMode == DebugShipRenderModeType::Tension)
+    if (stressRenderMode == StressRenderModeType::None)
     {
-        InternalUpdateForStrains<true>(gameParameters, points);
+        InternalUpdateForStrains<false>(gameParameters, points);
     }
     else
     {
-        InternalUpdateForStrains<false>(gameParameters, points);
+        InternalUpdateForStrains<true>(gameParameters, points);
     }
 }
 
 ////////////////////////////////////////////////////////////////////
 
-template<bool DoUpdateTension>
+template<bool DoUpdateStress>
 void Springs::InternalUpdateForStrains(
     GameParameters const & gameParameters,
     Points & points)
@@ -339,25 +339,17 @@ void Springs::InternalUpdateForStrains(
                 }
 
                 // Update tension
-                if constexpr (DoUpdateTension)
+                if constexpr (DoUpdateStress)
                 {
-                    float const tension = strain / breakingElongation;
-
-                    // TODOTEST
-                    ////points.SetTension(
-                    ////    GetEndpointAIndex(s),
-                    ////    points.GetTension(GetEndpointAIndex(s)) + tension);
-
-                    ////points.SetTension(
-                    ////    GetEndpointBIndex(s),
-                    ////    points.GetTension(GetEndpointBIndex(s)) + tension);
-                    points.SetTension(
+                    float const stress = strain / breakingElongation;
+                    
+                    points.SetStress(
                         GetEndpointAIndex(s),
-                        std::max(points.GetTension(GetEndpointAIndex(s)), tension));
+                        std::max(points.GetStress(GetEndpointAIndex(s)), stress));
 
-                    points.SetTension(
+                    points.SetStress(
                         GetEndpointBIndex(s),
-                        std::max(points.GetTension(GetEndpointBIndex(s)), tension));
+                        std::max(points.GetStress(GetEndpointBIndex(s)), stress));
                 }
             }
         }
