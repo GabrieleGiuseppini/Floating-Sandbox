@@ -210,6 +210,9 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 		set(${flag_var} "${${flag_var}} /W4 /w44062")
 	endforeach(flag_var)
 
+	# Warnings are errors
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX")
+
 	# Make RelWithDebInfo use aggressive inlining
 	#if(${CMAKE_CXX_FLAGS_RELWITHDEBINFO} MATCHES "/Ob1")
 	#	string(REGEX REPLACE "/Ob1" "" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")

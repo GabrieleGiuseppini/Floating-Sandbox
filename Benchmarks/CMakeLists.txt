@@ -34,6 +34,9 @@ target_link_libraries (Benchmarks
 #
 
 if (MSVC)
+
+	# Google benchmark has its own warnings, can't do anything about them
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX-")
         
         set_target_properties(
                 Benchmarks
