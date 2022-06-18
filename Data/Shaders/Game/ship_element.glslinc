@@ -190,11 +190,10 @@ void main()
         stressColorMap[bracketIndex + 1],
         (effectiveVertexStress - float(bracketIndex) * 0.20)  / 0.20);
 
-    // Render
-
-    gl_FragColor = mix(
-        gl_FragColor,
-        stressCol,
+    // Render - keeping current alpha
+    gl_FragColor.xyz = mix(
+        gl_FragColor.xyz,
+        stressCol.xyz,
         stressCol.w);
 #else
 #error Unrecognized value for STRESS_RENDER_MODE
