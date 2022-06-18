@@ -36,7 +36,9 @@
 			- For each new pixel, first check its alpha:
 				- If small (below threshold): follow
 				- Else: check color
-	- Test: Bdega on Discord
+	- Tests: 
+		- Bdega on Discord
+		- Oxurus' textures in Dev server, Ship suggestions - https://www.reddit.com/user/Oceanic-Star-Line/
 
 - MainFrame: Game viz: add "export to image" button
 	- Rearc icons now:

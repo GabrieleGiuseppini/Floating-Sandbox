@@ -269,7 +269,8 @@ public:
      */
     void UpdateForStrains(
         GameParameters const & gameParameters,
-        Points & points);
+        Points & points,
+        DebugShipRenderModeType debugShipRenderMode);
 
     //
     // Render
@@ -605,6 +606,11 @@ public:
     }
 
 private:
+
+    template<bool DoUpdateTension>
+    inline void InternalUpdateForStrains(
+        GameParameters const & gameParameters,
+        Points & points);
 
     static float CalculateSpringStrengthIterationsAdjustment(float numMechanicalDynamicsIterationsAdjustment)
     {

@@ -346,6 +346,7 @@ public:
 
     void Update(
         GameParameters const & gameParameters,
+        DebugShipRenderModeType debugShipRenderMode,
         VisibleWorld const & visibleWorld,
         PerfStats & perfStats);
 

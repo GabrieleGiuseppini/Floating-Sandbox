@@ -76,6 +76,7 @@ public:
         float currentSimulationTime,
 		Storm::Parameters const & stormParameters,
         GameParameters const & gameParameters,
+        DebugShipRenderModeType debugShipRenderMode,
         Geometry::AABBSet & externalAabbSet,
         PerfStats & perfStats);
 

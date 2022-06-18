@@ -4590,7 +4590,8 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
             _("Draw Structure"),
             _("Draw Decay"),
             _("Draw Internal Pressure"),
-            _("Draw Strength")
+            _("Draw Strength"),
+            _("Draw Tension"),
         };
 
         mDebugShipRenderModeRadioBox = new wxRadioBox(panel, wxID_ANY, _("Ship Debug Draw Options"), wxDefaultPosition, wxDefaultSize,
@@ -4632,10 +4633,14 @@ void SettingsDialog::PopulateSoundAndAdvancedSettingsPanel(wxPanel * panel)
                 {
                     mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderModeType::InternalPressure);
                 }
+                else if (8 == selectedDebugShipRenderMode)
+                {
+                    mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderModeType::Strength);
+                }
                 else
                 {
-                    assert(8 == selectedDebugShipRenderMode);
-                    mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderModeType::Strength);
+                    assert(9 == selectedDebugShipRenderMode);
+                    mLiveSettings.SetValue(GameSettings::DebugShipRenderMode, DebugShipRenderModeType::Tension);
                 }
 
                 OnLiveSettingsChanged();
@@ -5575,6 +5580,12 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
         case DebugShipRenderModeType::Strength:
         {
             mDebugShipRenderModeRadioBox->SetSelection(8);
+            break;
+        }
+
+        case DebugShipRenderModeType::Tension:
+        {
+            mDebugShipRenderModeRadioBox->SetSelection(9);
             break;
         }
     }

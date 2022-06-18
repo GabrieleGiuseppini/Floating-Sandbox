@@ -258,6 +258,24 @@ void Springs::UploadStressedSpringElements(
 
 void Springs::UpdateForStrains(
     GameParameters const & gameParameters,
+    Points & points,
+    DebugShipRenderModeType debugShipRenderMode)
+{
+    if (debugShipRenderMode == DebugShipRenderModeType::Tension)
+    {
+        InternalUpdateForStrains<true>(gameParameters, points);
+    }
+    else
+    {
+        InternalUpdateForStrains<false>(gameParameters, points);
+    }
+}
+
+////////////////////////////////////////////////////////////////////
+
+template<bool DoUpdateTension>
+void Springs::InternalUpdateForStrains(
+    GameParameters const & gameParameters,
     Points & points)
 {
     float constexpr StrainLowWatermark = 0.08f; // Less than this multiplier to become non-stressed
@@ -289,39 +307,62 @@ void Springs::UpdateForStrains(
                     gameParameters,
                     points);
             }
-            else if (strainState.IsStressed)
-            {
-                // Stressed spring...
-                // ...see if should un-stress it
-
-                if (strain < StrainLowWatermark * breakingElongation)
-                {
-                    // It's not stressed anymore
-                    strainState.IsStressed = false;
-                }
-            }
             else
             {
-                // Not stressed spring
-                // ...see if should stress it
-
-                if (strain > strainState.StrainThresholdFraction * breakingElongation)
+                if (strainState.IsStressed)
                 {
-                    // It's stressed!
-                    strainState.IsStressed = true;
+                    // Stressed spring...
+                    // ...see if should un-stress it
 
-                    // Notify stress
-                    mGameEventHandler->OnStress(
-                        GetBaseStructuralMaterial(s),
-                        oceanSurface.IsUnderwater(GetEndpointAPosition(s, points)), // Arbitrary
-                        1);
+                    if (strain < StrainLowWatermark * breakingElongation)
+                    {
+                        // It's not stressed anymore
+                        strainState.IsStressed = false;
+                    }
+                }
+                else
+                {
+                    // Not stressed spring
+                    // ...see if should stress it
+
+                    if (strain > strainState.StrainThresholdFraction * breakingElongation)
+                    {
+                        // It's stressed!
+                        strainState.IsStressed = true;
+
+                        // Notify stress
+                        mGameEventHandler->OnStress(
+                            GetBaseStructuralMaterial(s),
+                            oceanSurface.IsUnderwater(GetEndpointAPosition(s, points)), // Arbitrary
+                            1);
+                    }
+                }
+
+                // Update tension
+                if constexpr (DoUpdateTension)
+                {
+                    float const tension = strain / breakingElongation;
+
+                    // TODOTEST
+                    ////points.SetTension(
+                    ////    GetEndpointAIndex(s),
+                    ////    points.GetTension(GetEndpointAIndex(s)) + tension);
+
+                    ////points.SetTension(
+                    ////    GetEndpointBIndex(s),
+                    ////    points.GetTension(GetEndpointBIndex(s)) + tension);
+                    points.SetTension(
+                        GetEndpointAIndex(s),
+                        std::max(points.GetTension(GetEndpointAIndex(s)), tension));
+
+                    points.SetTension(
+                        GetEndpointBIndex(s),
+                        std::max(points.GetTension(GetEndpointBIndex(s)), tension));
                 }
             }
         }
     }
 }
-
-////////////////////////////////////////////////////////////////////
 
 void Springs::UpdateCoefficients(
     ElementIndex partition,

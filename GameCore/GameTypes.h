@@ -1037,7 +1037,8 @@ enum class DebugShipRenderModeType
     Structure,
     Decay,
     InternalPressure,
-    Strength
+    Strength,
+    Tension
 };
 
 /*

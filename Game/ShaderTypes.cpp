@@ -111,6 +111,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::ShipSpringsInternalPressure;
     else if (lstr == "ship_springs_strength")
         return ProgramType::ShipSpringsStrength;
+    else if (lstr == "ship_springs_tension")
+        return ProgramType::ShipSpringsTension;
     else if (lstr == "ship_springs_texture")
         return ProgramType::ShipSpringsTexture;
     else if (lstr == "ship_springs_texture_heatoverlay")
@@ -131,6 +133,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::ShipTrianglesInternalPressure;
     else if (lstr == "ship_triangles_strength")
         return ProgramType::ShipTrianglesStrength;
+    else if (lstr == "ship_triangles_tension")
+    return ProgramType::ShipTrianglesTension;
     else if (lstr == "ship_triangles_texture")
         return ProgramType::ShipTrianglesTexture;
     else if (lstr == "ship_triangles_texture_heatoverlay")
@@ -253,6 +257,8 @@ std::string ProgramTypeToStr(ProgramType program)
         return "ShipSpringsInternalPressure";
     case ProgramType::ShipSpringsStrength:
         return "ShipSpringsStrength";
+    case ProgramType::ShipSpringsTension:
+        return "ShipSpringsTension";
     case ProgramType::ShipSpringsTexture:
         return "ShipSpringsTexture";
     case ProgramType::ShipSpringsTextureHeatOverlay:
@@ -273,6 +279,8 @@ std::string ProgramTypeToStr(ProgramType program)
         return "ShipTrianglesInternalPressure";
     case ProgramType::ShipTrianglesStrength:
         return "ShipTrianglesStrength";
+    case ProgramType::ShipTrianglesTension:
+        return "ShipTrianglesTension";
     case ProgramType::ShipTrianglesTexture:
         return "ShipTrianglesTexture";
     case ProgramType::ShipTrianglesTextureHeatOverlay:

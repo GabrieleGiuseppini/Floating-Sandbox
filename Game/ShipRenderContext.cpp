@@ -1383,6 +1383,7 @@ void ShipRenderContext::RenderDraw(
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::InternalPressure
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Strength
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Structure
+            || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Tension
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::None)
         {
             if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Decay)
@@ -1396,6 +1397,10 @@ void ShipRenderContext::RenderDraw(
             else if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Strength)
             {
                 mShaderManager.ActivateProgram<ProgramType::ShipTrianglesStrength>();
+            }
+            else if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Tension)
+            {
+                mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTension>();
             }
             else
             {
@@ -1452,7 +1457,7 @@ void ShipRenderContext::RenderDraw(
         //   structural springs -, or
         // - DebugRenderMode is structure, in which case we use colors - so to draw 1D chains -, or
         // - DebugRenderMode is none, in which case we use texture - so to draw 1D chains and edge springs
-        // - DebugRenderMode is decay|internalPressure, in which case we use the special rendering
+        // - DebugRenderMode is decay|internalPressure|strength|tension, in which case we use the special rendering
         //
         // Note: when DebugRenderMode is springs|edgeSprings, ropes would all be here.
         //
@@ -1463,7 +1468,8 @@ void ShipRenderContext::RenderDraw(
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::None
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Decay
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::InternalPressure
-            || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Strength)
+            || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Strength
+            || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Tension)
         {
             if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Decay)
             {
@@ -1476,6 +1482,10 @@ void ShipRenderContext::RenderDraw(
             else if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Strength)
             {
                 mShaderManager.ActivateProgram<ProgramType::ShipSpringsStrength>();
+            }
+            else if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Tension)
+            {
+                mShaderManager.ActivateProgram<ProgramType::ShipSpringsTension>();
             }
             else
             {
@@ -2330,6 +2340,10 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
     mShaderManager.SetProgramParameter<ProgramType::ShipSpringsStrength, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
 
+    mShaderManager.ActivateProgram<ProgramType::ShipSpringsTension>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipSpringsTension, ProgramParameterType::OrthoMatrix>(
+        shipOrthoMatrix);
+
     //
     // Layer 3: Triangles
     //
@@ -2359,6 +2373,10 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
 
     mShaderManager.ActivateProgram<ProgramType::ShipTrianglesStrength>();
     mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesStrength, ProgramParameterType::OrthoMatrix>(
+        shipOrthoMatrix);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTension>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesTension, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
 
     //
@@ -2576,6 +2594,10 @@ void ShipRenderContext::ApplyEffectiveAmbientLightIntensityChanges(RenderParamet
     mShaderManager.SetProgramParameter<ProgramType::ShipSpringsStrength, ProgramParameterType::EffectiveAmbientLightIntensity>(
         effectiveAmbientLightIntensityParamValue);
 
+    mShaderManager.ActivateProgram<ProgramType::ShipSpringsTension>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipSpringsTension, ProgramParameterType::EffectiveAmbientLightIntensity>(
+        effectiveAmbientLightIntensityParamValue);
+
     mShaderManager.ActivateProgram<ProgramType::ShipTrianglesDecay>();
     mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesDecay, ProgramParameterType::EffectiveAmbientLightIntensity>(
         effectiveAmbientLightIntensityParamValue);
@@ -2586,6 +2608,10 @@ void ShipRenderContext::ApplyEffectiveAmbientLightIntensityChanges(RenderParamet
 
     mShaderManager.ActivateProgram<ProgramType::ShipTrianglesStrength>();
     mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesStrength, ProgramParameterType::EffectiveAmbientLightIntensity>(
+        effectiveAmbientLightIntensityParamValue);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTension>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesTension, ProgramParameterType::EffectiveAmbientLightIntensity>(
         effectiveAmbientLightIntensityParamValue);
 
     mShaderManager.ActivateProgram<ProgramType::ShipGenericMipMappedTextures>();

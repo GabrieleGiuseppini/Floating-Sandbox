@@ -1088,15 +1088,36 @@
 	- Less repetitive auto-texturization:
 		- Material textures have to become procedurally-generated
 
-	- Structural Tension View (*)		
-		- Spec:
-			- Another "advanced rendering" setting
-			- When enabled:
-				- Zero out Tension (new float) at each point
-				- At existing UpdateStrains:
-					- Calculate "tension" for each spring (0.0 @ rest length, 1.0 @ breaking length) and add to endpoints
-				- Average each point's tension across its own springs
-			- Shader "variants" for each of the ship drawing shaders, mapping this new Tension float to color from Pac0's tension color map
+	= Structural Tension View (*)		
+		! Spec:
+			! Another "advanced rendering" setting
+			! When enabled:
+				! Zero out Tension (new float) at each point
+				! At existing UpdateStrains:
+					! Calculate "tension" for each spring (0.0 @ rest length, 1.0 @ breaking length) and add to endpoints
+				! Average each point's tension across its own springs
+			! Shader "variants" for each of the ship drawing shaders, mapping this new Tension float to color from Pac0's tension color map
+		= Code:
+			= SettingsDialog
+			+ Points::UploadAttributes
+			+ Ship::Update: prolog and epilog, all conditional to DebugShipRenderMode
+				+ Ship::Update takes ShipDebugRenderMode
+			+ Springs::UpdateStrains
+				+ Private templated helper
+			= Render:
+				= Do first with simple shader superimposed to texture
+					+ ShipRenderContext
+					= Shader
+						- Blue should show up more
+					= Try with max instead of sum
+						- Get rid of normalization if ok
+				- If nice, make better:
+					- Orthogonal flag, not ShipDebugRenderModeType
+						- Goes to Ship::Update instead of ShipDebugRenderMode
+					- Do with new #define which modifies ship_element.glslinc
+					- Multiply spring/rope/triangle shaders by "_with_tension"
+			- Strength shader: sample only alpha from texture
+				- And may be other shaders as well?
 			
 - Dynamics:
 

@@ -580,6 +580,7 @@ public:
         , mMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mMaterialBuoyancyVolumeFillBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mStrengthBuffer(mBufferElementCount, shipPointCount, 0.0f)
+        , mTensionBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mDecayBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mIsDecayBufferDirty(true)
         , mFrozenCoefficientBuffer(mBufferElementCount, shipPointCount, 1.0f)
@@ -881,7 +882,7 @@ public:
         rgbaColor const & color);
 
     // For experiments
-    Geometry::AABB GetAABB() const
+    Geometry::AABB MakeAABB() const
     {
         Geometry::AABB box;
         for (ElementIndex pointIndex : RawShipPoints())
@@ -1122,6 +1123,25 @@ public:
     {
         return mStrengthBuffer[pointElementIndex];
     }
+
+    float GetTension(ElementIndex pointElementIndex) const
+    {
+        return mTensionBuffer[pointElementIndex];
+    }
+
+    void SetTension(
+        ElementIndex pointElementIndex,
+        float value)
+    {
+        mTensionBuffer[pointElementIndex] = value;
+    }
+
+    void ResetTension()
+    {
+        mTensionBuffer.fill(0.0f);
+    }
+
+    void NormalizeTension();
 
     float GetDecay(ElementIndex pointElementIndex) const
     {
@@ -2012,6 +2032,7 @@ private:
     Buffer<float> mMassBuffer; // Augmented + Water
     Buffer<float> mMaterialBuoyancyVolumeFillBuffer;
     Buffer<float> mStrengthBuffer; // Immutable
+    Buffer<float> mTensionBuffer; // 0.0 -> 1.0, only calculated if rendering it
     Buffer<float> mDecayBuffer; // 1.0 -> 0.0 (completely decayed)
     bool mutable mIsDecayBufferDirty; // Only tracks non-ephemerals
     Buffer<float> mFrozenCoefficientBuffer; // 1.0: not frozen; 0.0f: frozen

@@ -43,6 +43,7 @@ void Points::Add(
     mMassBuffer.emplace_back(structuralMaterial.GetMass());
     mMaterialBuoyancyVolumeFillBuffer.emplace_back(structuralMaterial.BuoyancyVolumeFill);
     mStrengthBuffer.emplace_back(strength);
+    mTensionBuffer.emplace_back(0.0f);
     mDecayBuffer.emplace_back(1.0f);
     mFrozenCoefficientBuffer.emplace_back(1.0f);
     mIntegrationFactorTimeCoefficientBuffer.emplace_back(CalculateIntegrationFactorTimeCoefficient(mCurrentNumMechanicalDynamicsIterations, 1.0f));
@@ -1798,7 +1799,7 @@ void Points::UploadAttributes(
 
     // The following attributes never change for ephemeral particles,
     // hence after the first upload for reasonable defaults, we only
-    // need to upload them for the ship's (structural = raw) points,
+    // need to upload them for the ship's (structural == raw) points,
     // not for the ephemeral ones
     size_t const partialPointCount = mHaveWholeBuffersBeenUploadedOnce ? mRawShipPointCount : mAllPointCount;
 
@@ -1834,6 +1835,14 @@ void Points::UploadAttributes(
         renderContext.UploadShipPointAuxiliaryDataAsync(
             shipId,
             mStrengthBuffer.data(),
+            0,
+            partialPointCount);
+    }
+    else if (renderContext.GetDebugShipRenderMode() == DebugShipRenderModeType::Tension)
+    {
+        renderContext.UploadShipPointAuxiliaryDataAsync(
+            shipId,
+            mTensionBuffer.data(),
             0,
             partialPointCount);
     }
@@ -2205,6 +2214,18 @@ void Points::UpdateMasses(GameParameters const & gameParameters)
 
         integrationFactorBuffer[i * 2] = integrationFactorTimeCoefficientBuffer[i] / newMass;
         integrationFactorBuffer[i * 2 + 1] = integrationFactorTimeCoefficientBuffer[i] / newMass;
+    }
+}
+
+void Points::NormalizeTension()
+{
+    float * restrict const tensionBuffer = reinterpret_cast<float *>(mTensionBuffer.data());
+
+    // Visit all structural points - no need to do ephemeral, though it wouldn't hurt
+    for (size_t i = 0; i < mRawShipPointCount; ++i)
+    {
+        auto const springCount = mConnectedSpringsBuffer[i].ConnectedSprings.size();
+        mTensionBuffer[i] /= (springCount != 0) ? static_cast<float>(springCount) : 1.0f;
     }
 }
 

@@ -966,6 +966,7 @@ bool World::RestoreTriangle(ElementId triangleId)
 
 void World::Update(
     GameParameters const & gameParameters,
+    DebugShipRenderModeType debugShipRenderMode,
     VisibleWorld const & visibleWorld,
     PerfStats & perfStats)
 {
@@ -997,6 +998,7 @@ void World::Update(
             mCurrentSimulationTime,
             mStorm.GetParameters(),
             gameParameters,
+            debugShipRenderMode,
             mAllAABBs,
             perfStats);
     }
