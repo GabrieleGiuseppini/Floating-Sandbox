@@ -347,12 +347,6 @@ void Ship::Update(
         mPoints,
         debugShipRenderMode);
 
-    if (debugShipRenderMode == DebugShipRenderModeType::Tension)
-    {
-        ////// TODOTEST
-        ////mPoints.NormalizeTension();
-    }
-
     ///////////////////////////////////////////////////////////////////
     // Reset static forces, now that we have integrated them
     ///////////////////////////////////////////////////////////////////

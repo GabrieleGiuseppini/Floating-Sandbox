@@ -48,21 +48,22 @@ void main()
 
     // Calculate tension color
 
-    vec4 tensionColorMap[5] = vec4[5](
-        vec4(0.0, 0.0, 166.0/255.0, 0.0),           // 0.00 -> 0.25
-        vec4(0.0, 166.0/255.0, 0.0, 1.0),           // 0.25 -> 0.50
-        vec4(166.0/255.0, 166.0/255.0, 0.0, 1.0),   // 0.50 -> 0.75
-        vec4(166.0/255.0, 0.0, 0.0, 1.0),           // 0.75 -> 1.00
+    vec4 tensionColorMap[6] = vec4[6](
+        vec4(0.0, 0.0, 166.0/255.0, 0.0),           // 0.00 -> 0.20
+        vec4(0.0, 0.0, 166.0/255.0, 1.0),           // 0.20 -> 0.40
+        vec4(0.0, 166.0/255.0, 0.0, 1.0),           // 0.40 -> 0.60
+        vec4(166.0/255.0, 166.0/255.0, 0.0, 1.0),   // 0.60 -> 0.80
+        vec4(166.0/255.0, 0.0, 0.0, 1.0),           // 0.80 -> 1.00
         vec4(166.0/255.0, 0.0, 0.0, 1.0));          // 1.00 -> +INF
 
     float effectiveVertexTension = 1.0 - (1.0 - vertexTension) * (1.0 - vertexTension);
 
-    int bracketIndex = int(effectiveVertexTension / 0.25);
+    int bracketIndex = int(effectiveVertexTension / 0.20);
 
     vec4 tensionCol = mix(
         tensionColorMap[bracketIndex],
         tensionColorMap[bracketIndex + 1],
-        (effectiveVertexTension - float(bracketIndex) * 0.25)  / 0.25);
+        (effectiveVertexTension - float(bracketIndex) * 0.20)  / 0.20);
 
     // Render
 

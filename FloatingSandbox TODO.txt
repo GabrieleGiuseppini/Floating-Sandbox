@@ -1105,12 +1105,12 @@
 			+ Springs::UpdateStrains
 				+ Private templated helper
 			= Render:
-				= Do first with simple shader superimposed to texture
+				+ Do first with simple shader superimposed to texture
 					+ ShipRenderContext
-					= Shader
-						- Blue should show up more
-					= Try with max instead of sum
-						- Get rid of normalization if ok
+					+ Shader
+						+ Blue should show up more
+					+ Try with max instead of sum
+						+ Get rid of normalization if ok
 				- If nice, make better:
 					- Orthogonal flag, not ShipDebugRenderModeType
 						- Goes to Ship::Update instead of ShipDebugRenderMode

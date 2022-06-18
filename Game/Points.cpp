@@ -2217,18 +2217,6 @@ void Points::UpdateMasses(GameParameters const & gameParameters)
     }
 }
 
-void Points::NormalizeTension()
-{
-    float * restrict const tensionBuffer = reinterpret_cast<float *>(mTensionBuffer.data());
-
-    // Visit all structural points - no need to do ephemeral, though it wouldn't hurt
-    for (size_t i = 0; i < mRawShipPointCount; ++i)
-    {
-        auto const springCount = mConnectedSpringsBuffer[i].ConnectedSprings.size();
-        mTensionBuffer[i] /= (springCount != 0) ? static_cast<float>(springCount) : 1.0f;
-    }
-}
-
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 void Points::CalculateCombustionDecayParameters(

@@ -1141,8 +1141,6 @@ public:
         mTensionBuffer.fill(0.0f);
     }
 
-    void NormalizeTension();
-
     float GetDecay(ElementIndex pointElementIndex) const
     {
         return mDecayBuffer[pointElementIndex];
