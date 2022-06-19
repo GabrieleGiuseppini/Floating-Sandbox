@@ -2175,11 +2175,7 @@ void ShipRenderContext::RenderPrepareVectorArrows(RenderParameters const & /*ren
         {
             mShaderManager.ActivateProgram<ProgramType::ShipVectors>();
 
-            mShaderManager.SetProgramParameter<ProgramType::ShipVectors, ProgramParameterType::MatteColor>(
-                mVectorArrowColor.x,
-                mVectorArrowColor.y,
-                mVectorArrowColor.z,
-                mVectorArrowColor.w);
+            mShaderManager.SetProgramParameter<ProgramType::ShipVectors, ProgramParameterType::MatteColor>(mVectorArrowColor);
 
             mIsVectorArrowColorDirty = false;
         }
@@ -2695,22 +2691,22 @@ void ShipRenderContext::ApplyFlatLampLightColorChanges(RenderParameters const & 
     mShaderManager.ActivateProgram(mShipPointsProgram);
     mShaderManager.SetProgramParameter<ProgramParameterType::LampLightColor>(
         mShipPointsProgram,
-        lampLightColor.x, lampLightColor.y, lampLightColor.z);
+        lampLightColor);
 
     mShaderManager.ActivateProgram(mShipRopesProgram);
     mShaderManager.SetProgramParameter<ProgramParameterType::LampLightColor>(
         mShipRopesProgram,
-        lampLightColor.x, lampLightColor.y, lampLightColor.z);
+        lampLightColor);
 
     mShaderManager.ActivateProgram(mShipSpringsProgram);
     mShaderManager.SetProgramParameter<ProgramParameterType::LampLightColor>(
         mShipSpringsProgram,
-        lampLightColor.x, lampLightColor.y, lampLightColor.z);
+        lampLightColor);
 
     mShaderManager.ActivateProgram(mShipTrianglesProgram);
     mShaderManager.SetProgramParameter<ProgramParameterType::LampLightColor>(
         mShipTrianglesProgram,
-        lampLightColor.x, lampLightColor.y, lampLightColor.z);
+        lampLightColor);
 }
 
 void ShipRenderContext::ApplyWaterColorChanges(RenderParameters const & renderParameters)
@@ -2726,22 +2722,22 @@ void ShipRenderContext::ApplyWaterColorChanges(RenderParameters const & renderPa
         mShaderManager.ActivateProgram(mShipPointsProgram);
         mShaderManager.SetProgramParameter<ProgramParameterType::WaterColor>(
             mShipPointsProgram,
-            waterColor.x, waterColor.y, waterColor.z);
+            waterColor);
 
         mShaderManager.ActivateProgram(mShipRopesProgram);
         mShaderManager.SetProgramParameter<ProgramParameterType::WaterColor>(
             mShipRopesProgram,
-            waterColor.x, waterColor.y, waterColor.z);
+            waterColor);
 
         mShaderManager.ActivateProgram(mShipSpringsProgram);
         mShaderManager.SetProgramParameter<ProgramParameterType::WaterColor>(
             mShipSpringsProgram,
-            waterColor.x, waterColor.y, waterColor.z);
+            waterColor);
 
         mShaderManager.ActivateProgram(mShipTrianglesProgram);
         mShaderManager.SetProgramParameter<ProgramParameterType::WaterColor>(
             mShipTrianglesProgram,
-            waterColor.x, waterColor.y, waterColor.z);
+            waterColor);
     }
 }
 

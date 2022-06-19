@@ -201,11 +201,6 @@
 				+ SetProcessPriority
 				+ Floating point settings
 
-		- Stress shader on old Dell
-			- Try passing map as a uniform array: glUniform4fv https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glUniform.xhtml
-			- ShaderManager.h: make overloads that take vectors
-				- Replace usages as much as possible
-
 		- Misc quick things:
 			- See if water entering via hole is faster than water entering natural non-hull ("cut funnel")
 				- See why Bernoulli doesn't make inflow faster

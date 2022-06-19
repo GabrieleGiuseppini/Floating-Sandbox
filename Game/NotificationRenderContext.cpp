@@ -634,9 +634,7 @@ void NotificationRenderContext::ApplyDisplayUnitsSystemChanges(RenderParameters 
 
     // Set texture offset in program
     mShaderManager.ActivateProgram<ProgramType::PhysicsProbePanel>();
-    mShaderManager.SetProgramParameter<ProgramType::PhysicsProbePanel, ProgramParameterType::AtlasTile1LeftBottomTextureCoordinates>(
-        frameMetadata.TextureCoordinatesBottomLeft.x,
-        frameMetadata.TextureCoordinatesBottomLeft.y);
+    mShaderManager.SetProgramParameter<ProgramType::PhysicsProbePanel, ProgramParameterType::AtlasTile1LeftBottomTextureCoordinates>(frameMetadata.TextureCoordinatesBottomLeft);
 }
 
 void NotificationRenderContext::RenderPrepareTextNotifications()

@@ -115,6 +115,12 @@ public:
     }
 
     template <typename Traits::ProgramType Program, typename Traits::ProgramParameterType Parameter>
+    inline void SetProgramParameter(vec2f const & val)
+    {
+        SetProgramParameter<Program, Parameter>(val.x, val.y);
+    }
+
+    template <typename Traits::ProgramType Program, typename Traits::ProgramParameterType Parameter>
     inline void SetProgramParameter(float val1, float val2)
     {
         constexpr uint32_t programIndex = static_cast<uint32_t>(Program);
@@ -129,17 +135,17 @@ public:
 
         CheckUniformError<Program, Parameter>();
     }
-    
+
     template <typename Traits::ProgramType Program, typename Traits::ProgramParameterType Parameter>
-    inline void SetProgramParameter(float val1, float val2, float val3)
+    inline void SetProgramParameter(vec3f const & val)
     {
-        SetProgramParameter<Parameter>(Program, val1, val2, val3);
+        SetProgramParameter<Parameter>(Program, val);
     }
 
     template <typename Traits::ProgramParameterType Parameter>
     inline void SetProgramParameter(
         typename Traits::ProgramType program,
-        float val1, float val2, float val3)
+        vec3f const & val)
     {
         uint32_t const programIndex = static_cast<uint32_t>(program);
         uint32_t constexpr ParameterIndex = static_cast<uint32_t>(Parameter);
@@ -148,15 +154,15 @@ public:
 
         glUniform3f(
             mPrograms[programIndex].UniformLocations[ParameterIndex],
-            val1,
-            val2,
-            val3);
+            val.x,
+            val.y,
+            val.z);
 
         CheckUniformError(program, Parameter);
     }
 
     template <typename Traits::ProgramType Program, typename Traits::ProgramParameterType Parameter>
-    inline void SetProgramParameter(float val1, float val2, float val3, float val4)
+    inline void SetProgramParameter(vec4f const & val)
     {
         constexpr uint32_t programIndex = static_cast<uint32_t>(Program);
         constexpr uint32_t parameterIndex = static_cast<uint32_t>(Parameter);
@@ -165,10 +171,10 @@ public:
 
         glUniform4f(
             mPrograms[programIndex].UniformLocations[parameterIndex],
-            val1,
-            val2,
-            val3,
-            val4);
+            val.x,
+            val.y,
+            val.z,
+            val.w);
 
         CheckUniformError<Program, Parameter>();
     }

@@ -401,8 +401,7 @@ WorldRenderContext::WorldRenderContext(
         1.0f / static_cast<float>(worldBorderAtlasFrameMetadata.FrameMetadata.Size.width),
         1.0f / static_cast<float>(worldBorderAtlasFrameMetadata.FrameMetadata.Size.height));
     mShaderManager.SetProgramParameter<ProgramType::WorldBorder, ProgramParameterType::AtlasTile1LeftBottomTextureCoordinates>(
-        worldBorderAtlasFrameMetadata.TextureCoordinatesBottomLeft.x,
-        worldBorderAtlasFrameMetadata.TextureCoordinatesBottomLeft.y);
+        worldBorderAtlasFrameMetadata.TextureCoordinatesBottomLeft);
     mShaderManager.SetProgramParameter<ProgramType::WorldBorder, ProgramParameterType::AtlasTile1Size>(
         worldBorderAtlasFrameMetadata.TextureSpaceWidth,
         worldBorderAtlasFrameMetadata.TextureSpaceHeight);
@@ -1479,14 +1478,10 @@ void WorldRenderContext::ApplyCanvasSizeChanges(RenderParameters const & renderP
         static_cast<float>(view.GetCanvasPhysicalSize().height));
 
     mShaderManager.ActivateProgram<ProgramType::CrossOfLight>();
-    mShaderManager.SetProgramParameter<ProgramType::CrossOfLight, ProgramParameterType::ViewportSize>(
-        viewportSize.x,
-        viewportSize.y);
+    mShaderManager.SetProgramParameter<ProgramType::CrossOfLight, ProgramParameterType::ViewportSize>(viewportSize);
 
     mShaderManager.ActivateProgram<ProgramType::Rain>();
-    mShaderManager.SetProgramParameter<ProgramType::Rain, ProgramParameterType::ViewportSize>(
-        viewportSize.x,
-        viewportSize.y);
+    mShaderManager.SetProgramParameter<ProgramType::Rain, ProgramParameterType::ViewportSize>(viewportSize);
 }
 
 void WorldRenderContext::ApplyEffectiveAmbientLightIntensityChanges(RenderParameters const & renderParameters)
@@ -1605,56 +1600,38 @@ void WorldRenderContext::ApplyOceanRenderModeParametersChanges(RenderParameters 
 {
     // Set ocean parameters in all water programs
 
-    auto const depthColorStart = renderParameters.DepthOceanColorStart.toVec3f();
-    mShaderManager.ActivateProgram<ProgramType::OceanDepthBasic>();
-    mShaderManager.SetProgramParameter<ProgramType::OceanDepthBasic, ProgramParameterType::OceanDepthColorStart>(
-        depthColorStart.x,
-        depthColorStart.y,
-        depthColorStart.z);
-    mShaderManager.ActivateProgram<ProgramType::OceanDepthDetailedBackground>();
-    mShaderManager.SetProgramParameter<ProgramType::OceanDepthDetailedBackground, ProgramParameterType::OceanDepthColorStart>(
-        depthColorStart.x,
-        depthColorStart.y,
-        depthColorStart.z);
-    mShaderManager.ActivateProgram<ProgramType::OceanDepthDetailedForeground>();
-    mShaderManager.SetProgramParameter<ProgramType::OceanDepthDetailedForeground, ProgramParameterType::OceanDepthColorStart>(
-        depthColorStart.x,
-        depthColorStart.y,
-        depthColorStart.z);
+    vec3f const depthColorStart = renderParameters.DepthOceanColorStart.toVec3f();
 
-    auto const depthColorEnd = renderParameters.DepthOceanColorEnd.toVec3f();
     mShaderManager.ActivateProgram<ProgramType::OceanDepthBasic>();
-    mShaderManager.SetProgramParameter<ProgramType::OceanDepthBasic, ProgramParameterType::OceanDepthColorEnd>(
-        depthColorEnd.x,
-        depthColorEnd.y,
-        depthColorEnd.z);
+    mShaderManager.SetProgramParameter<ProgramType::OceanDepthBasic, ProgramParameterType::OceanDepthColorStart>(depthColorStart);
+    
     mShaderManager.ActivateProgram<ProgramType::OceanDepthDetailedBackground>();
-    mShaderManager.SetProgramParameter<ProgramType::OceanDepthDetailedBackground, ProgramParameterType::OceanDepthColorEnd>(
-        depthColorEnd.x,
-        depthColorEnd.y,
-        depthColorEnd.z);
-    mShaderManager.ActivateProgram<ProgramType::OceanDepthDetailedForeground>();
-    mShaderManager.SetProgramParameter<ProgramType::OceanDepthDetailedForeground, ProgramParameterType::OceanDepthColorEnd>(
-        depthColorEnd.x,
-        depthColorEnd.y,
-        depthColorEnd.z);
+    mShaderManager.SetProgramParameter<ProgramType::OceanDepthDetailedBackground, ProgramParameterType::OceanDepthColorStart>(depthColorStart);
 
-    auto const flatColor = renderParameters.FlatOceanColor.toVec3f();
+    mShaderManager.ActivateProgram<ProgramType::OceanDepthDetailedForeground>();
+    mShaderManager.SetProgramParameter<ProgramType::OceanDepthDetailedForeground, ProgramParameterType::OceanDepthColorStart>(depthColorStart);
+
+    vec3f const depthColorEnd = renderParameters.DepthOceanColorEnd.toVec3f();
+
+    mShaderManager.ActivateProgram<ProgramType::OceanDepthBasic>();
+    mShaderManager.SetProgramParameter<ProgramType::OceanDepthBasic, ProgramParameterType::OceanDepthColorEnd>(depthColorEnd);
+
+    mShaderManager.ActivateProgram<ProgramType::OceanDepthDetailedBackground>();
+    mShaderManager.SetProgramParameter<ProgramType::OceanDepthDetailedBackground, ProgramParameterType::OceanDepthColorEnd>(depthColorEnd);
+
+    mShaderManager.ActivateProgram<ProgramType::OceanDepthDetailedForeground>();
+    mShaderManager.SetProgramParameter<ProgramType::OceanDepthDetailedForeground, ProgramParameterType::OceanDepthColorEnd>(depthColorEnd);
+
+    vec3f const flatColor = renderParameters.FlatOceanColor.toVec3f();
+
     mShaderManager.ActivateProgram<ProgramType::OceanFlatBasic>();
-    mShaderManager.SetProgramParameter<ProgramType::OceanFlatBasic, ProgramParameterType::OceanFlatColor>(
-        flatColor.x,
-        flatColor.y,
-        flatColor.z);
+    mShaderManager.SetProgramParameter<ProgramType::OceanFlatBasic, ProgramParameterType::OceanFlatColor>(flatColor);
+
     mShaderManager.ActivateProgram<ProgramType::OceanFlatDetailedBackground>();
-    mShaderManager.SetProgramParameter<ProgramType::OceanFlatDetailedBackground, ProgramParameterType::OceanFlatColor>(
-        flatColor.x,
-        flatColor.y,
-        flatColor.z);
+    mShaderManager.SetProgramParameter<ProgramType::OceanFlatDetailedBackground, ProgramParameterType::OceanFlatColor>(flatColor);
+
     mShaderManager.ActivateProgram<ProgramType::OceanFlatDetailedForeground>();
-    mShaderManager.SetProgramParameter<ProgramType::OceanFlatDetailedForeground, ProgramParameterType::OceanFlatColor>(
-        flatColor.x,
-        flatColor.y,
-        flatColor.z);
+    mShaderManager.SetProgramParameter<ProgramType::OceanFlatDetailedForeground, ProgramParameterType::OceanFlatColor>(flatColor);
 }
 
 void WorldRenderContext::ApplyOceanTextureIndexChanges(RenderParameters const & renderParameters)
@@ -1724,12 +1701,10 @@ void WorldRenderContext::ApplyLandRenderParametersChanges(RenderParameters const
 {
     // Set land parameters in all land programs
 
-    auto const flatColor = renderParameters.FlatLandColor.toVec3f();
+    vec3f const flatColor = renderParameters.FlatLandColor.toVec3f();
+
     mShaderManager.ActivateProgram<ProgramType::LandFlat>();
-    mShaderManager.SetProgramParameter<ProgramType::LandFlat, ProgramParameterType::LandFlatColor>(
-        flatColor.x,
-        flatColor.y,
-        flatColor.z);
+    mShaderManager.SetProgramParameter<ProgramType::LandFlat, ProgramParameterType::LandFlatColor>(flatColor);
 }
 
 void WorldRenderContext::ApplyLandTextureIndexChanges(RenderParameters const & renderParameters)
