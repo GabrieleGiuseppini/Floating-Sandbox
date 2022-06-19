@@ -228,7 +228,7 @@ std::string ShaderManager<Traits>::ResolveIncludes(
     std::string const & shaderSource,
     std::unordered_map<std::string, std::pair<bool, std::string>> const & shaderSources)
 {
-    static std::regex IncludeRegex(R"!(^\s*#include\s+\"\s*([_a-zA-Z0-9\.]+)\s*\"\s*$)!");
+    static std::regex const IncludeRegex(R"!(^\s*#include\s+\"\s*([_a-zA-Z0-9\.]+)\s*\"\s*$)!");
 
     std::unordered_set<std::string> resolvedIncludes;
 
@@ -288,8 +288,8 @@ std::string ShaderManager<Traits>::ResolveIncludes(
 template<typename Traits>
 std::tuple<std::string, std::string> ShaderManager<Traits>::SplitSource(std::string const & source)
 {
-    static std::regex VertexHeaderRegex(R"!(\s*###VERTEX-(\d{3})\s*)!");
-    static std::regex FragmentHeaderRegex(R"!(\s*###FRAGMENT-(\d{3})\s*)!");
+    static std::regex const VertexHeaderRegex(R"!(\s*###VERTEX-(\d{3})\s*)!");
+    static std::regex const FragmentHeaderRegex(R"!(\s*###FRAGMENT-(\d{3})\s*)!");
 
     std::stringstream sSource(source);
 
@@ -375,7 +375,7 @@ void ShaderManager<Traits>::ParseLocalStaticParameters(
     std::string const & localStaticParametersSource,
     std::map<std::string, std::string> & staticParameters)
 {
-    static std::regex StaticParamDefinitionRegex(R"!(^\s*([_a-zA-Z][_a-zA-Z0-9]*)\s*=\s*(.*?)\s*$)!");
+    static std::regex const StaticParamDefinitionRegex(R"!(^\s*([_a-zA-Z][_a-zA-Z0-9]*)\s*=\s*(.*?)\s*$)!");
 
     std::stringstream sSource(localStaticParametersSource);
     std::string line;
@@ -415,7 +415,7 @@ std::string ShaderManager<Traits>::SubstituteStaticParameters(
     std::string const & source,
     std::map<std::string, std::string> const & staticParameters)
 {
-    static std::regex StaticParamNameRegex("%([_a-zA-Z][_a-zA-Z0-9]*)%");
+    static std::regex const StaticParamNameRegex("%([_a-zA-Z][_a-zA-Z0-9]*)%");
 
     std::string remainingSource = source;
     std::stringstream sSubstitutedSource;
@@ -493,6 +493,9 @@ std::set<std::string> ShaderManager<Traits>::ExtractVertexAttributeNames(GameOpe
 template<typename Traits>
 std::set<std::string> ShaderManager<Traits>::ExtractParameterNames(GameOpenGLShaderProgram const & shaderProgram)
 {
+    static std::regex const ArrayParameterRegEx(R"!(^(.+)\[[0-9]+\]$)!");
+    static char constexpr ParamPrefix[5] = { 'p', 'a', 'r', 'a', 'm' };
+
     std::set<std::string> parameterNames;
 
     GLint count;
@@ -515,18 +518,29 @@ std::set<std::string> ShaderManager<Traits>::ExtractParameterNames(GameOpenGLSha
             nameBuffer);
         CheckOpenGLError();
 
-        if (nameLength < 5 || strncmp(nameBuffer, "param", 5))
+        if (nameLength < sizeof(ParamPrefix) || strncmp(nameBuffer, ParamPrefix, sizeof(ParamPrefix)))
         {
             throw GameException("Uniform name \"" + std::string(nameBuffer, nameLength) + "\" does not follow the expected name structure: missing \"param\" prefix");
         }
 
-        std::string const parameterName(nameBuffer + 5, nameLength - 5);
+        // Remove "param" prefix
+        std::string parameterName(nameBuffer + sizeof(ParamPrefix), nameLength - sizeof(ParamPrefix));
+
+        // Check if it's an array (element)
+        std::smatch arrayParameterMatch;
+        if (std::regex_match(parameterName, arrayParameterMatch, ArrayParameterRegEx))
+        {
+            // Remove suffix
+            assert(arrayParameterMatch.size() == 1 + 1);
+            parameterName = arrayParameterMatch[1].str();
+        }
 
         // Lookup the parameter name - just as a sanity check
         Traits::StrToProgramParameterType(parameterName);
 
         // Store it, making sure it's not specified more than once
-        if (!parameterNames.insert(parameterName).second)
+        if (!parameterNames.insert(parameterName).second
+            && arrayParameterMatch.empty())
         {
             throw GameException("Uniform name \"" + parameterName + "\" is declared more than once");
         }

@@ -129,7 +129,7 @@ public:
 
         CheckUniformError<Program, Parameter>();
     }
-
+    
     template <typename Traits::ProgramType Program, typename Traits::ProgramParameterType Parameter>
     inline void SetProgramParameter(float val1, float val2, float val3)
     {
@@ -195,6 +195,25 @@ public:
             GL_FALSE,
             &(value[0][0]));
 
+        CheckUniformError(program, Parameter);
+    }
+
+    template <typename Traits::ProgramParameterType Parameter>
+    inline void SetProgramParameterVec4fArray(
+        typename Traits::ProgramType program,
+        vec4f const * array,
+        size_t vectorCount)
+    {
+        uint32_t const programIndex = static_cast<uint32_t>(program);
+        uint32_t constexpr ParameterIndex = static_cast<uint32_t>(Parameter);
+
+        assert(mPrograms[programIndex].UniformLocations[ParameterIndex] != NoParameterLocation);
+
+        glUniform4fv(
+            mPrograms[programIndex].UniformLocations[ParameterIndex],
+            static_cast<GLsizei>(vectorCount),
+            reinterpret_cast<GLfloat const *>(array));
+        
         CheckUniformError(program, Parameter);
     }
 

@@ -629,6 +629,54 @@ ShipRenderContext::ShipRenderContext(
     // Unbind texture
     glBindTexture(GL_TEXTURE_2D, 0);
 
+    //
+    // Initialize "once-and-for-all" uniforms
+    //
+
+    {
+        //
+        // Stress color map
+        //
+
+        std::array<vec4f, 6> stressColorMap {
+            vec4f(0.0f, 0.0f, 166.0f / 255.0f, 0.0f),               // 0.00 -> 0.20
+            vec4f(0.0f, 0.0f, 166.0f / 255.0f, 1.0f),               // 0.20 -> 0.40
+            vec4f(0.0f, 166.0f / 255.0f, 0.0f, 1.0f),               // 0.40 -> 0.60
+            vec4f(166.0f / 255.0f, 166.0f / 255.0f, 0.0f, 1.0f),    // 0.60 -> 0.80
+            vec4f(166.0f / 255.0f, 0.0f, 0.0f, 1.0f),               // 0.80 -> 1.00
+            vec4f(166.0f / 255.0f, 0.0f, 0.0f, 1.0f) };             // 1.00 -> +INF
+
+        std::array<ProgramType, 18> programs{
+            ProgramType::ShipPointsColorStress,
+            ProgramType::ShipPointsColorHeatOverlayStress,
+            ProgramType::ShipPointsColorIncandescenceStress,
+            ProgramType::ShipRopesStress,
+            ProgramType::ShipRopesHeatOverlayStress,
+            ProgramType::ShipRopesIncandescenceStress,
+            ProgramType::ShipSpringsColorStress,
+            ProgramType::ShipSpringsColorHeatOverlayStress,
+            ProgramType::ShipSpringsColorIncandescenceStress,
+            ProgramType::ShipSpringsTextureStress,
+            ProgramType::ShipSpringsTextureHeatOverlayStress,
+            ProgramType::ShipSpringsTextureIncandescenceStress,
+            ProgramType::ShipTrianglesColorStress,
+            ProgramType::ShipTrianglesColorHeatOverlayStress,
+            ProgramType::ShipTrianglesColorIncandescenceStress,
+            ProgramType::ShipTrianglesTextureStress,
+            ProgramType::ShipTrianglesTextureHeatOverlayStress,
+            ProgramType::ShipTrianglesTextureIncandescenceStress
+        };
+
+        for (auto program : programs)
+        {
+            mShaderManager.ActivateProgram(program);
+            mShaderManager.SetProgramParameterVec4fArray<ProgramParameterType::StressColorMap>(
+                program,
+                stressColorMap.data(),
+                stressColorMap.size());
+        }
+    }
+
 
     //
     // Set initial values of non-render parameters from which

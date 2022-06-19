@@ -87,6 +87,9 @@ uniform vec3 paramLampLightColor;
 #if HEAT_RENDER_MODE != 0
 uniform float paramHeatShift;
 #endif
+#if STRESS_RENDER_MODE != 0
+uniform vec4 paramStressColorMap[6];
+#endif
 
 #ifndef  WITH_MATTE_COLOR
 // Input texture
@@ -173,21 +176,21 @@ void main()
 #elif STRESS_RENDER_MODE == 1
     // Stress Overlay
 
-    vec4 stressColorMap[6] = vec4[6](
-        vec4(0.0, 0.0, 166.0/255.0, 0.0),           // 0.00 -> 0.20
-        vec4(0.0, 0.0, 166.0/255.0, 1.0),           // 0.20 -> 0.40
-        vec4(0.0, 166.0/255.0, 0.0, 1.0),           // 0.40 -> 0.60
-        vec4(166.0/255.0, 166.0/255.0, 0.0, 1.0),   // 0.60 -> 0.80
-        vec4(166.0/255.0, 0.0, 0.0, 1.0),           // 0.80 -> 1.00
-        vec4(166.0/255.0, 0.0, 0.0, 1.0));          // 1.00 -> +INF
+    // Color map is of size 6; each entry is for the following stress brackets:
+    // 0: 0.00 -> 0.20
+    // 1: 0.20 -> 0.40
+    // 2: 0.40 -> 0.60
+    // 3: 0.60 -> 0.80
+    // 4: 0.80 -> 1.00
+    // 5: 1.00 -> +INF
 
     float effectiveVertexStress = 1.0 - (1.0 - vertexStress) * (1.0 - vertexStress);
 
     int bracketIndex = int(effectiveVertexStress / 0.20);
 
     vec4 stressCol = mix(
-        stressColorMap[bracketIndex],
-        stressColorMap[bracketIndex + 1],
+        paramStressColorMap[bracketIndex],
+        paramStressColorMap[bracketIndex + 1],
         (effectiveVertexStress - float(bracketIndex) * 0.20)  / 0.20);
 
     // Render - keeping current alpha
