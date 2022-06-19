@@ -295,7 +295,7 @@ ShipRenderContext::ShipRenderContext(
         //
 
         // NOTE: Intel drivers have a bug in the VAO ARB: they do not store the ELEMENT_ARRAY_BUFFER binding
-        // in the VAO. So we won't associate the element VBO here, but rather before the drawing call.
+        // in the VAO. So we won't associate the element VBO here, but rather before each drawing call.
         ////glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mPointElementVBO);
         ////CheckOpenGLError();
 
