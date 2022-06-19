@@ -61,6 +61,8 @@ set  (SOURCES
 	StrongTypeDef.h
 	SysSpecifics.cpp
 	SysSpecifics.h
+	SystemThreadManager.cpp
+	SystemThreadManager.h
 	TaskThread.cpp
 	TaskThread.h
 	TaskThreadPool.cpp

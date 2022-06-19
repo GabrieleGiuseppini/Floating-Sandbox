@@ -16,8 +16,8 @@
 
 #include <Game/ResourceLocator.h>
 
-#include <GameCore/FloatingPoint.h>
 #include <GameCore/SysSpecifics.h>
+#include <GameCore/SystemThreadManager.h>
 
 #include <wx/app.h>
 #include <wx/cmdline.h>
@@ -29,12 +29,16 @@
 #include <optional>
 #include <string>
 
+#if FS_IS_OS_WINDOWS()
+#define NOMINMAX
+#include <Windows.h>
+#endif
+
 #ifdef _DEBUG
 #if FS_IS_OS_WINDOWS()
 #include <crtdbg.h>
 #include <signal.h>
 #include <stdlib.h>
-#include <WinBase.h>
 
 void SignalHandler(int signal)
 {
@@ -112,27 +116,63 @@ MainApp::MainApp()
     : mMainFrame(nullptr)
     , mLocalizationManager()
 {
+
 #if FS_IS_OS_LINUX()
+
     //
     // Initialize multi-threading in X-Windows
     //
 
     XInitThreads();
+
 #endif
-}
 
-bool MainApp::OnInit()
-{
-    if (!wxApp::OnInit())
-        return false;
+#if FS_IS_OS_WINDOWS()
 
+    //
+    // Adjust system timer resolution
+    //
+
+    ULONG currentTimerResolution = GetCurrentTimerResolution();
+    if (currentTimerResolution > 9974) // When 0.997ms, we get 64 calls/sec; when 15.621ms, we get 50 calls/sec
+    {
+        HMODULE const hNtDll = ::GetModuleHandle(L"Ntdll");
+        assert(hNtDll != NULL);
+
+        typedef NTSTATUS(CALLBACK * LPFN_NtSetTimerResolution)(ULONG, BOOLEAN, PULONG);
+        auto const pSetTimerResolution = (LPFN_NtSetTimerResolution)::GetProcAddress(hNtDll, "NtSetTimerResolution");
+        if (pSetTimerResolution != nullptr
+            && pSetTimerResolution(9974, TRUE, &currentTimerResolution) == ERROR_SUCCESS)
+        {
+            LogMessage("Adjusted timer resolution: returned current=", currentTimerResolution);
+            GetCurrentTimerResolution();
+        }
+    }
+
+    //
+    // Set process priority
+    //
+
+    BOOL const res = ::SetPriorityClass(GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS);
+    if (!res)
+    {
+        DWORD const dwLastError = ::GetLastError();
+        LogMessage("Error invoking SetPriorityClass: ", dwLastError);
+    }
+
+#endif
+
+    //
+    // Initialize this thread
+    //
+
+    SystemThreadManager::GetInstance().InitializeThisThread();
 
     //
     // Install handler for unhandled exceptions
     //
 
     InstallUnhandledExceptionHandler();
-
 
     //
     // Initialize assert handling
@@ -152,40 +192,12 @@ bool MainApp::OnInit()
     signal(SIGABRT, SignalHandler);
 #endif
 #endif
+}
 
-
-    //
-    // Initialize floating point handling
-    //
-
-    // Avoid denormal numbers for very small quantities
-    EnableFloatingPointFlushToZero();
-
-#ifdef FLOATING_POINT_CHECKS
-    EnableFloatingPointExceptions();
-#endif
-
-    //
-    // Adjust system timer resolution
-    //
-
-#if FS_IS_OS_WINDOWS()
-    ULONG currentTimerResolution = GetCurrentTimerResolution();
-    if (currentTimerResolution > 9974) // When 0.997ms, we get 64 calls/sec; when 15.621ms, we get 50 calls/sec
-    {
-        HMODULE const hNtDll = ::GetModuleHandle(L"Ntdll");
-        assert(hNtDll != NULL);
-
-        typedef NTSTATUS(CALLBACK * LPFN_NtSetTimerResolution)(ULONG, BOOLEAN, PULONG);
-        auto const pSetTimerResolution = (LPFN_NtSetTimerResolution)::GetProcAddress(hNtDll, "NtSetTimerResolution");
-        if (pSetTimerResolution != nullptr
-            && pSetTimerResolution(9974, TRUE, &currentTimerResolution) == ERROR_SUCCESS)
-        {
-            LogMessage("Adjusted timer resolution: returned current=", currentTimerResolution);
-            GetCurrentTimerResolution();
-        }
-    }
-#endif
+bool MainApp::OnInit()
+{
+    if (!wxApp::OnInit())
+        return false;
 
     try
     {

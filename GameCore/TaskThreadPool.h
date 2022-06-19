@@ -27,7 +27,7 @@ public:
 
     TaskThreadPool();
 
-    TaskThreadPool(size_t hardwareThreads);
+    TaskThreadPool(size_t numberOfProcessors);
 
     ~TaskThreadPool();
 

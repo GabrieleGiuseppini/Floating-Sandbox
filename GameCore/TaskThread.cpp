@@ -5,8 +5,8 @@
 ***************************************************************************************/
 #include "TaskThread.h"
 
-#include "FloatingPoint.h"
 #include "Log.h"
+#include "SystemThreadManager.h"
 
 TaskThread::TaskThread()
     : TaskThread(false)
@@ -18,7 +18,7 @@ TaskThread::TaskThread(bool doForceNoMultiThreading)
     // Only use a real thread on multi-core boxes; on single-core
     // boxes, we'll just emulate multi-threading by running all
     // tasks directly - and synchronously - on the caller's thread
-    mHasThread = std::thread::hardware_concurrency() > 1;
+    mHasThread = SystemThreadManager::GetInstance().GetNumberOfProcessors() > 1;
 
     if (doForceNoMultiThreading)
         mHasThread = false;
@@ -64,15 +64,10 @@ void TaskThread::ThreadLoop()
     assert(mHasThread); // This method only runs if we're truly multi-threaded
 
     //
-    // Initialize floating point handling
+    // Initialize thread
     //
 
-    // Avoid denormal numbers for very small quantities
-    EnableFloatingPointFlushToZero();
-
-#ifdef FLOATING_POINT_CHECKS
-    EnableFloatingPointExceptions();
-#endif
+    SystemThreadManager::GetInstance().InitializeThisThread();
 
     //
     // Run loop

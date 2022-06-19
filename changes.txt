@@ -7,7 +7,7 @@
 	- ...and two engine controllers:
 		- Jet Engine Throttle Controller: best for controlling Jet Engines
 		- Jet Engine Thrust Controller: best for controlling Jet Thrust Engines
-	- Check the new Air Boat and Rocket ships to see these engines in action!
+	- Check out the new Air Boat and Rocket ships to see these engines in action!
 - Re-designed interaction between engine controllers and engines, allowing a controller to run an unlimited number of engines
 	- Introduced new "Engine Transmission" electrical material that may be used to connect engine controllers with engines
 - Added auto-focus capability - for cinematic awesomeness

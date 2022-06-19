@@ -5,20 +5,17 @@
 ***************************************************************************************/
 #include "TaskThreadPool.h"
 
-#include "FloatingPoint.h"
 #include "Log.h"
+#include "SystemThreadManager.h"
 
 #include <algorithm>
 
 TaskThreadPool::TaskThreadPool()
-    : TaskThreadPool(
-        std::max(
-            size_t(1),
-            static_cast<size_t>(std::thread::hardware_concurrency())))
+    : TaskThreadPool(SystemThreadManager::GetInstance().GetNumberOfProcessors())
 {
 }
 
-TaskThreadPool::TaskThreadPool(size_t hardwareThreads)
+TaskThreadPool::TaskThreadPool(size_t numberOfProcessors)
     : mLock()
     , mThreads()
     , mWorkerThreadSignal()
@@ -27,12 +24,12 @@ TaskThreadPool::TaskThreadPool(size_t hardwareThreads)
     , mTasksToComplete(0)
     , mIsStop(false)
 {
-    assert(hardwareThreads > 0);
+    assert(numberOfProcessors > 0);
 
     // Cap threads to 2 as we don't need more than those
-    size_t const threadCount = std::min(size_t(2), hardwareThreads - 1);
+    size_t const threadCount = std::min(size_t(2), numberOfProcessors - 1);
 
-    LogMessage("TaskThreadPool: number of hardware threads: ", hardwareThreads,
+    LogMessage("TaskThreadPool: number of processors: ", numberOfProcessors,
         " number of threads in pool: ", threadCount);
 
     // Start threads
@@ -117,15 +114,10 @@ void TaskThreadPool::Run(std::vector<Task> const & tasks)
 void TaskThreadPool::ThreadLoop()
 {
     //
-    // Initialize floating point handling
+    // Initialize thread
     //
 
-    // Avoid denormal numbers for very small quantities
-    EnableFloatingPointFlushToZero();
-
-#ifdef FLOATING_POINT_CHECKS
-    EnableFloatingPointExceptions();
-#endif
+    SystemThreadManager::GetInstance().InitializeThisThread();
 
     //
     // Run thread loop until thread pool is destroyed

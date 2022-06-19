@@ -179,6 +179,27 @@
 			+ Cleanup logging
 		+ Structural Tension View (*)
 			+ changelist
+		+ Send for testing
+		+ See windows timer/50fps thing
+			! http://mirrors.arcadecontrols.com/www.sysinternals.com/Information/HighResolutionTimers.html
+			+ @ 50fps: Windows timer resolution (min/max/cur): 15.625 / 0.500 / 15.621 ms
+				   Windows timer resolution (min/max/cur): 15.625 / 0.500 / 15.620 ms
+				   Windows timer resolution (min/max/cur): 15.625 / 0.500 / 15.621 ms
+			+ @ 64fps: Windows timer resolution (min/max/cur): 15.625 / 0.500 / 0.997 ms
+				   Windows timer resolution (min/max/cur): 15.625 / 0.500 / 0.997 ms
+		+ Affinitize threads:
+			+ At MainApp and at first line of each TaskLoop: CoreLib/SystemThreadManager.GetInstance()::InitializeThisThread()
+				+ Also SystemThreadManager::GetNumberOfProcessors()
+				+ Change into "InitializeThread"
+					+ Also doing floating point checks
+				+ Thread affinitization with set
+			+ Also do SetProcessPriority
+			+ Main thread (@GameController)
+			+ Rendering thread (@TaskThread)
+			+ Task threads (@ThreadPool)
+			+ Tests:
+				+ SetProcessPriority
+				+ Floating point settings
 
 		- Misc quick things:
 			- See if water entering via hole is faster than water entering natural non-hull ("cut funnel")
@@ -197,20 +218,6 @@
 		- Bubbles issue (that "old" issue)
 			- Add temp code to calc total internal water, and see if it's true that it keeps increasing
 			- Do same for "other internal pressure"
-
-		= See windows timer/50fps thing
-			! http://mirrors.arcadecontrols.com/www.sysinternals.com/Information/HighResolutionTimers.html
-			+ @ 50fps: Windows timer resolution (min/max/cur): 15.625 / 0.500 / 15.621 ms
-				   Windows timer resolution (min/max/cur): 15.625 / 0.500 / 15.620 ms
-				   Windows timer resolution (min/max/cur): 15.625 / 0.500 / 15.621 ms
-			+ @ 64fps: Windows timer resolution (min/max/cur): 15.625 / 0.500 / 0.997 ms
-				   Windows timer resolution (min/max/cur): 15.625 / 0.500 / 0.997 ms
-
-		- Affinitize threads on Windows:
-			- Main thread (@GameController)
-				- On same thread on which it's running
-			- Rendering thread (@TaskThread)
-			- Task threads (@ThreadPool)
 
 
 		- Release:
