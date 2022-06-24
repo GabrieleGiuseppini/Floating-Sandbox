@@ -39,7 +39,8 @@ std::string ProgramTypeToStr(ProgramType program);
 
 enum class ProgramParameterType : uint8_t
 {
-    Opacity = 0,
+    CanvasBackgroundColor = 0,
+    Opacity,
     OrthoMatrix,
     PixelsPerShipParticle,
     PixelSize,

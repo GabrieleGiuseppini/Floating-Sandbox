@@ -41,6 +41,7 @@ public:
 
     View(
         ShipSpaceSize shipSpaceSize,
+        rgbColor const & canvasBackgroundColor,
         VisualizationType primaryVisualization,
         float otherVisualizationsOpacity,
         bool isGridEnabled,
@@ -128,6 +129,8 @@ public:
     }
 
 public:
+
+    void SetCanvasBackgroundColor(rgbColor const & color);
 
     void SetPrimaryVisualization(VisualizationType visualization)
     {

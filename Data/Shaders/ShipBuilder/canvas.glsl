@@ -27,6 +27,7 @@ in vec2 normalizedCoords; // (x=[0.0, 1.0], y=[0.0, 1.0])
 
 // Params
 uniform vec2 paramPixelSize;
+uniform vec3 paramCanvasBackgroundColor;
 
 void main()
 {
@@ -43,7 +44,7 @@ void main()
     float borderDepth = min(borderDepthX + borderDepthY, 1.);
 
     gl_FragColor = mix(
-        vec4(1., 1., 1., 1.),       // BG color
-        vec4(.35, .35, .35, 1.),    // Border color      
+        vec4(paramCanvasBackgroundColor, 1.),   // BG color
+        vec4(.35, .35, .35, 1.),                // Border color      
         borderDepth);
 } 

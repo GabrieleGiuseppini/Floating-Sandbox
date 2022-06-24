@@ -10,6 +10,7 @@
 #include <Game/Materials.h>
 #include <Game/MaterialDatabase.h>
 
+#include <GameCore/Colors.h>
 #include <GameCore/GameTypes.h>
 
 #include <picojson.h>
@@ -222,6 +223,16 @@ public:
     // Visualizations
     //
 
+    rgbColor GetCanvasBackgroundColor() const
+    {
+        return mCanvasBackgroundColor;
+    }
+
+    void SetCanvasBackgroundColor(rgbColor const & color)
+    {
+        mCanvasBackgroundColor = color;
+    }
+
     static VisualizationType constexpr GetDefaultPrimaryVisualization()
     {
         return VisualizationType::Game;
@@ -321,6 +332,11 @@ public:
     // Misc
     //
 
+    static int constexpr GetMaxShipDimension()
+    {
+        return 2000;
+    }
+
     ShipSpaceSize GetNewShipSize() const
     {
         return mNewShipSize;
@@ -386,6 +402,7 @@ private:
     bool mStructuralFloodToolIsContiguous;
 
     // Visualizations
+    rgbColor mCanvasBackgroundColor;
     VisualizationType mPrimaryVisualization;
     GameVisualizationModeType mGameVisualizationMode;
     StructuralLayerVisualizationModeType mStructuralLayerVisualizationMode;

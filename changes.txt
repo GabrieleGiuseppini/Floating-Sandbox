@@ -17,10 +17,11 @@
 - Added lightning hit probability setting 
 	- Set to zero to prevent lightnings from hitting the ship altogether!
 - ShipBuilder:
-	- Fixed drawing lag that was occurring on low-bandwidth graphic cards
 	- Added "Backup Ship" button to save the current ship to a backup file 
 		- Useful when you're making experiments and you're not sure whether they'll work out!
+	- Added Preferences window for setting a default size for new ships, and a custom background color for the canvas
 	- Fixed material palettes annoyingly closing when mouse moves out of the palette 
+	- Fixed drawing lag that was occurring on low-bandwidth graphic cards
 
 1.17.2
 - Expanded the materials database - building lighter ships has just become easier!

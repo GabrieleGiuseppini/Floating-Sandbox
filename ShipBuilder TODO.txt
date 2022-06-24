@@ -18,9 +18,33 @@
 			+ Check out wxNotificationMessage
 	+ changelist
 
-- Preferences dialog (to/from WorkbenchState):
-	- New ship size
-	- Canvas background color
++ Preferences dialog (to/from WorkbenchState):
+	+ Impl:
+		+ WorkbenchState gets CanvasBackgroundColor
+			+ Move defaults here (255, 255, 255)
+			+ Both CanvasBackgroundColor and NewShipSize are loaded and saved
+		+ Dialog:
+			+ ::Open() gets both Controller and WorkbenchState
+				+ Stores current bg color in session
+				+ Session only takes Controller, WorkbenchState given to ReconciliateUI
+			+ UI:
+				+ New ship size
+				+ Canvas background color
+					+ Swap custom with predefined, and remove "Custom" label
+					+ Changes to bg color are reflected immediately, going to Controller
+					+ Reconciliate: set into custom color
+			+ OnOk: just store new ship size (taking it from UI)
+			+ OnCancel: revert bg color to old saved in session
+		+ Controller:
+			+ Setter for color (which talks to WorkbenchState and View) and for ship size (which just talks to WorkbenchState)
+		+ Shader parameter
+			+ In shader
+			+ Set in view at init'n (and taken as arg) and at change
+	+ Tests:
+		+ Cancel
+		+ Close
+		+ Save/load preferences
+		+ All overlays: should show bg color
 
 - Texture flood tool ("Magic Eraser")
 	+ First off: mouse coordinates from MainFrame to Controller becomes LogicalDisplayCoords, and they're converted to ShipSpace coords where needed

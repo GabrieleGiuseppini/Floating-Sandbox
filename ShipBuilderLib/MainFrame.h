@@ -14,6 +14,7 @@
 #include "UI/CompositeMaterialPalette.h"
 #include "UI/ElectricalPanelEditDialog.h"
 #include "UI/ModelValidationDialog.h"
+#include "UI/PreferencesDialog.h"
 #include "UI/ResizeDialog.h"
 #include "UI/RibbonToolbarButton.h"
 #include "UI/ShipPropertiesEditDialog.h"
@@ -163,6 +164,7 @@ private:
     wxRibbonPage * CreateMainRibbonPage(wxRibbonBar * parent);
     wxRibbonPanel * CreateMainFileRibbonPanel(wxRibbonPage * parent);
     wxRibbonPanel * CreateMainViewRibbonPanel(wxRibbonPage * parent);
+    wxRibbonPanel * CreateMainPreferencesRibbonPanel(wxRibbonPage * parent);
     wxRibbonPage * CreateLayersRibbonPage(wxRibbonBar * parent);
     wxRibbonPanel * CreateLayerRibbonPanel(wxRibbonPage * parent, LayerType layer);
     wxRibbonPage * CreateEditRibbonPage(wxRibbonBar * parent);
@@ -223,6 +225,8 @@ private:
     void ImportLayerFromShip(LayerType layer);
 
     void ImportTextureLayerFromImage();
+
+    void OnPreferences();
 
     void OnShipCanvasResize();
 
@@ -438,6 +442,7 @@ private:
     std::unique_ptr<ShipLoadDialog> mShipLoadDialog;
     std::unique_ptr<ShipSaveDialog> mShipSaveDialog;
     std::unique_ptr<LoggingDialog> mLoggingDialog;
+    std::unique_ptr<PreferencesDialog> mPreferencesDialog;
     std::unique_ptr<ResizeDialog> mResizeDialog;
     std::unique_ptr<ShipPropertiesEditDialog> mShipPropertiesEditDialog;
     std::unique_ptr<ModelValidationDialog> mModelValidationDialog;

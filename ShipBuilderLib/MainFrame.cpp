@@ -684,6 +684,7 @@ wxRibbonPage * MainFrame::CreateMainRibbonPage(wxRibbonBar * parent)
 
     CreateMainFileRibbonPanel(page);
     CreateMainViewRibbonPanel(page);
+    CreateMainPreferencesRibbonPanel(page);
 
     return page;
 }
@@ -971,6 +972,45 @@ wxRibbonPanel * MainFrame::CreateMainViewRibbonPanel(wxRibbonPage * parent)
                     ResetView();
                 }
             });
+    }
+
+    // Wrap in a sizer just for margins
+    {
+        wxSizer * tmpSizer = new wxBoxSizer(wxVERTICAL); // Arbitrary
+
+        tmpSizer->Add(
+            panelGridSizer,
+            0,
+            wxALL,
+            RibbonToolbarButtonMargin);
+
+        panel->SetSizerAndFit(tmpSizer);
+    }
+
+    return panel;
+}
+
+wxRibbonPanel * MainFrame::CreateMainPreferencesRibbonPanel(wxRibbonPage * parent)
+{
+    wxRibbonPanel * panel = new wxRibbonPanel(parent, wxID_ANY, _("Preferences"), wxNullBitmap, wxDefaultPosition, wxDefaultSize,
+        wxRIBBON_PANEL_NO_AUTO_MINIMISE);
+
+    wxGridBagSizer * panelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
+
+    // Preferences
+    {
+        auto const button = new RibbonToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetIconFilePath("preferences_button"),
+            _("Preferences"),
+            [this]()
+            {
+                OnPreferences();
+            },
+            _("Change general ShipBuilder settings."));
+
+        panelGridSizer->Add(button);
     }
 
     // Wrap in a sizer just for margins
@@ -4116,6 +4156,18 @@ void MainFrame::ImportTextureLayerFromImage()
             ShowError(exc.what());
         }
     }
+}
+
+void MainFrame::OnPreferences()
+{
+    if (!mPreferencesDialog)
+    {
+        mPreferencesDialog = std::make_unique<PreferencesDialog>(this, mResourceLocator);
+    }
+
+    mPreferencesDialog->ShowModal(
+        *mController,
+        mWorkbenchState);
 }
 
 void MainFrame::OnShipCanvasResize()

@@ -91,6 +91,7 @@ Controller::Controller(
 
     mView = std::make_unique<View>(
         mModelController->GetShipSize(),
+        mWorkbenchState.GetCanvasBackgroundColor(),
         mWorkbenchState.GetPrimaryVisualization(),
         mWorkbenchState.GetOtherVisualizationsOpacity(),
         mWorkbenchState.IsGridEnabled(),
@@ -1006,6 +1007,18 @@ void Controller::SetCurrentTool(std::optional<ToolType> tool)
             mCurrentTool = MakeTool(*mWorkbenchState.GetCurrentToolType());
         }
     }
+}
+
+void Controller::SetNewShipSize(ShipSpaceSize size)
+{
+    mWorkbenchState.SetNewShipSize(size);
+}
+
+void Controller::SetCanvasBackgroundColor(rgbColor const & color)
+{
+    mWorkbenchState.SetCanvasBackgroundColor(color);
+    mView->SetCanvasBackgroundColor(color);
+    mUserInterface.RefreshView();
 }
 
 void Controller::SetStructuralMaterial(StructuralMaterial const * material, MaterialPlaneType plane)

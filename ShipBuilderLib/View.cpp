@@ -13,6 +13,7 @@ namespace ShipBuilder {
 
 View::View(
     ShipSpaceSize shipSpaceSize,
+    rgbColor const & canvasBackgroundColor,
     VisualizationType primaryVisualization,
     float otherVisualizationsOpacity,
     bool isGridEnabled,
@@ -613,7 +614,19 @@ View::View(
         glBindVertexArray(0);
     }
 
+    //
+    // Initialize misc settings
+    //
+
+    SetCanvasBackgroundColor(canvasBackgroundColor);
+
     // Here we assume there will be an OnViewModelUpdated() call generated
+}
+
+void View::SetCanvasBackgroundColor(rgbColor const & color)
+{
+    mShaderManager->ActivateProgram<ProgramType::Canvas>();
+    mShaderManager->SetProgramParameter<ProgramType::Canvas, ProgramParameterType::CanvasBackgroundColor>(color.toVec3f());
 }
 
 void View::EnableVisualGrid(bool doEnable)

@@ -252,6 +252,9 @@ public:
 
     void SetCurrentTool(std::optional<ToolType> tool);
 
+    void SetNewShipSize(ShipSpaceSize size);
+    void SetCanvasBackgroundColor(rgbColor const & color);
+
     void SetStructuralMaterial(StructuralMaterial const * material, MaterialPlaneType plane);
     void SetElectricalMaterial(ElectricalMaterial const * material, MaterialPlaneType plane);
     void SetRopeMaterial(StructuralMaterial const * material, MaterialPlaneType plane);

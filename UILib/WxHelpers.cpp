@@ -86,6 +86,14 @@ wxBitmap WxHelpers::MakeMatteBitmap(
     rgbaColor const & color,
     ImageSize const & size)
 {
+    return WxHelpers::MakeMatteBitmap(color, color, size);
+}
+
+wxBitmap WxHelpers::MakeMatteBitmap(
+    rgbaColor const & color,
+    rgbaColor const & borderColor,
+    ImageSize const & size)
+{
     if (size.width == 0 || size.height == 0)
     {
         throw std::runtime_error("Cannot create bitmap with one zero dimension");
@@ -104,23 +112,80 @@ wxBitmap WxHelpers::MakeMatteBitmap(
     assert(pixelData.GetHeight() == size.height);
 
     auto writeIt = pixelData.GetPixels();
+
     writeIt.OffsetY(pixelData, size.height - 1);
-    for (int y = 0; y < size.height; ++y)
+
+    // Border bottom
     {
-        // Save current iterator
         auto rowStart = writeIt;
 
         for (int x = 0; x < size.width; ++x, ++writeIt)
         {
-            writeIt.Red() = color.r;
-            writeIt.Green() = color.g;
-            writeIt.Blue() = color.b;
-            writeIt.Alpha() = color.a;
+            writeIt.Red() = borderColor.r;
+            writeIt.Green() = borderColor.g;
+            writeIt.Blue() = borderColor.b;
+            writeIt.Alpha() = borderColor.a;
         }
 
         // Move write iterator to next row
         writeIt = rowStart;
         writeIt.OffsetY(pixelData, -1);
+    }
+
+    for (int y = 1; y < size.height - 1; ++y)
+    {
+        // Save current iterator
+        auto rowStart = writeIt;
+
+        // Border left
+        {
+            writeIt.Red() = borderColor.r;
+            writeIt.Green() = borderColor.g;
+            writeIt.Blue() = borderColor.b;
+            writeIt.Alpha() = borderColor.a;
+
+            ++writeIt;
+        }
+
+        // Interior
+        for (int x = 1; x < size.width - 1; ++x)
+        {
+            writeIt.Red() = color.r;
+            writeIt.Green() = color.g;
+            writeIt.Blue() = color.b;
+            writeIt.Alpha() = color.a;
+
+            ++writeIt;
+        }
+
+        // Border right
+        {
+            writeIt.Red() = borderColor.r;
+            writeIt.Green() = borderColor.g;
+            writeIt.Blue() = borderColor.b;
+            writeIt.Alpha() = borderColor.a;
+
+            ++writeIt;
+        }
+
+        // Move write iterator to next row
+        writeIt = rowStart;
+        writeIt.OffsetY(pixelData, -1);
+    }
+
+    // Border top
+    {
+        auto rowStart = writeIt;
+
+        for (int x = 0; x < size.width; ++x)
+        {
+            writeIt.Red() = borderColor.r;
+            writeIt.Green() = borderColor.g;
+            writeIt.Blue() = borderColor.b;
+            writeIt.Alpha() = borderColor.a;
+
+            ++writeIt;
+        }
     }
 
     return bitmap;

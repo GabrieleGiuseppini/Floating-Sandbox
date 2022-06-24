@@ -5,6 +5,8 @@
  ***************************************************************************************/
 #include "ResizeDialog.h"
 
+#include "WorkbenchState.h"
+
 #include <UILib/WxHelpers.h>
 
 #include <wx/gbsizer.h>
@@ -41,7 +43,6 @@ ResizeDialog::ResizeDialog(
         // Size boxes
         {
             int constexpr TextCtrlWidth = 60;
-            int const MaxDimension = 2000;
 
             wxGridBagSizer * sizer = new wxGridBagSizer(5, 5);
 
@@ -158,7 +159,7 @@ ResizeDialog::ResizeDialog(
                         this,
                         TextCtrlWidth,
                         1,
-                        MaxDimension,
+                        WorkbenchState::GetMaxShipDimension(),
                         0, // Temporary
                         wxEmptyString,
                         [this](int value)
@@ -202,7 +203,7 @@ ResizeDialog::ResizeDialog(
                         this,
                         TextCtrlWidth,
                         1,
-                        MaxDimension,
+                        WorkbenchState::GetMaxShipDimension(),
                         0, // Temporary
                         wxEmptyString,
                         [this](int value)

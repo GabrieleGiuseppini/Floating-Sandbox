@@ -53,6 +53,8 @@ set (UI_SOURCES
 	UI/NewPasswordDialog.h
 	UI/NewShipNameDialog.cpp
 	UI/NewShipNameDialog.h
+	UI/PreferencesDialog.cpp
+	UI/PreferencesDialog.h
 	UI/ResizeDialog.cpp
 	UI/ResizeDialog.h
 	UI/RibbonToolbarButton.h

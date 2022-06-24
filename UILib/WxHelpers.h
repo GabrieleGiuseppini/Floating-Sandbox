@@ -34,6 +34,11 @@ namespace WxHelpers
         rgbaColor const & color,
         ImageSize const & size);
 
+    wxBitmap MakeMatteBitmap(
+        rgbaColor const & color,
+        rgbaColor const & borderColor,
+        ImageSize const & size);
+
     wxBitmap MakeEmptyBitmap();
 
     wxCursor LoadCursor(

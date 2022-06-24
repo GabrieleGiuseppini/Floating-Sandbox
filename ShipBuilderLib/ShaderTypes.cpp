@@ -75,7 +75,9 @@ std::string ProgramTypeToStr(ProgramType program)
 
 ProgramParameterType StrToProgramParameterType(std::string const & str)
 {
-    if (str == "Opacity")
+    if (str == "CanvasBackgroundColor")
+        return ProgramParameterType::CanvasBackgroundColor;
+    else if (str == "Opacity")
         return ProgramParameterType::Opacity;
     else if (str == "OrthoMatrix")
         return ProgramParameterType::OrthoMatrix;
@@ -101,6 +103,8 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
 {
     switch (programParameter)
     {
+        case ProgramParameterType::CanvasBackgroundColor:
+            return "CanvasBackgroundColor";
         case ProgramParameterType::Opacity:
             return "Opacity";
         case ProgramParameterType::OrthoMatrix:

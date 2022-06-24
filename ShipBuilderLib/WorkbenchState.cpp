@@ -63,6 +63,7 @@ WorkbenchState::WorkbenchState(MaterialDatabase const & materialDatabase)
     // Default visualization settings
     //
 
+    mCanvasBackgroundColor = rgbColor(255, 255, 255);
     mPrimaryVisualization = GetDefaultPrimaryVisualization();
     mGameVisualizationMode = GameVisualizationModeType::AutoTexturizationMode; // Will be changed (by Controller) to Texture when loading a ship with texture
     mStructuralLayerVisualizationMode = StructuralLayerVisualizationModeType::PixelMode;
@@ -186,6 +187,16 @@ void WorkbenchState::LoadPreferences()
                 }
             }
         }
+
+        //
+        // Canvas BG color
+        //
+
+        if (auto canvasBackgroundColorIt = preferencesRootObject->find("canvas_background_color");
+            canvasBackgroundColorIt != preferencesRootObject->end() && canvasBackgroundColorIt->second.is<std::string>())
+        {
+            mCanvasBackgroundColor = rgbColor::fromString(canvasBackgroundColorIt->second.get<std::string>());
+        }
     }
 }
 
@@ -209,6 +220,9 @@ void WorkbenchState::SavePreferences() const
 
         preferencesRootObject["ship_load_directories"] = picojson::value(shipLoadDirectories);
     }
+
+    // Add canvas background color
+    preferencesRootObject["canvas_background_color"] = picojson::value(mCanvasBackgroundColor.toString());
 
     // Save
     Utils::SaveJSONFile(

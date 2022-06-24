@@ -9,6 +9,7 @@
 
 #include <GameCore/Utils.h>
 
+#include <wx/panel.h>
 #include <wx/sizer.h>
 #include <wx/spinbutt.h>
 #include <wx/textctrl.h>
