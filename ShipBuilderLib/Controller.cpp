@@ -12,6 +12,7 @@
 #include "Tools/RopeEraserTool.h"
 #include "Tools/RopePencilTool.h"
 #include "Tools/SamplerTool.h"
+#include "Tools/TextureMagicWandTool.h"
 
 #include <Game/ImageFileTools.h>
 
@@ -1730,6 +1731,13 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
         case ToolType::RopeSampler:
         {
             return std::make_unique<RopeSamplerTool>(
+                *this,
+                mResourceLocator);
+        }
+
+        case ToolType::TextureMagicWand:
+        {
+            return std::make_unique<TextureMagicWandTool>(
                 *this,
                 mResourceLocator);
         }

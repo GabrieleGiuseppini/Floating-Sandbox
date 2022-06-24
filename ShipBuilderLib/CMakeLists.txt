@@ -89,6 +89,8 @@ set (TOOLS_SOURCES
 	Tools/RopePencilTool.h
 	Tools/SamplerTool.cpp
 	Tools/SamplerTool.h
+	Tools/TextureMagicWandTool.cpp
+	Tools/TextureMagicWandTool.h
 	Tools/Tool.cpp
 	Tools/Tool.h
 )

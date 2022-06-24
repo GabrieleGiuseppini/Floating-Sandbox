@@ -3364,9 +3364,20 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
         {
             wxGridBagSizer * toolsSizer = new wxGridBagSizer(ButtonMargin, ButtonMargin);
 
-            // Move
+            // Magic wand
             {
-                // TODO
+                auto button = makeToolButton(
+                    ToolType::TextureMagicWand,
+                    textureToolbarPanel,
+                    "magic_wand_icon",
+                    _("Erase background."));
+
+                toolsSizer->Add(
+                    button,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    0,
+                    0);
             }
 
             textureToolbarSizer->Add(

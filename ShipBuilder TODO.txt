@@ -57,13 +57,20 @@
 			- Controller::RestoreTextureLayerForUndo
 			- Controller::ResizeShip
 			- No need to do at removal...
-	- Icon: magic wand
-	- Cursor: magic wand
-	- Tolerance, etc.
-		- Flood notes:
-			- For each new pixel, first check its alpha:
-				- If small (below threshold): follow
-				- Else: check color
+	+ Icon: magic wand
+	+ Cursor: magic wand
+	- Tool settings:
+		- Tolerance, etc.
+	- Tool:
+		- If mouse coords in range, do:
+			- Save undo
+			- Invoke ModelController::TextureEraseBackground(...)
+			- If affected => push Undo
+		- ModelController::TextureEraseBackground:
+			- Flood notes:
+				- For each new pixel, first check its alpha:
+					- If small (below threshold): follow
+					- Else: check color
 	- Tests: 
 		- Bdega on Discord
 		- Oxurus' textures in Dev server, Ship suggestions - https://www.reddit.com/user/Oceanic-Star-Line/

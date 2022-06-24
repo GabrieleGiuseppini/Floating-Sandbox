@@ -33,8 +33,9 @@ enum class ToolType : std::uint32_t
     RopePencil,
     RopeEraser,
     RopeSampler,
+    TextureMagicWand,
 
-    _Last = RopeSampler
+    _Last = TextureMagicWand
 };
 
 size_t constexpr LayerCount = static_cast<size_t>(LayerType::Texture) + 1;
