@@ -78,14 +78,30 @@
 				+ Resize
 		- ModelController::TextureMagicWandEraseBackground:
 			- Flood notes:
-				- For each new pixel, first check its alpha:
-					- If small (below threshold): follow
-					- Else: check color
+				! Photoshop:
+					- Magic background eraser on uniform red, tolerance 0%:
+						- When alpha is not zero (but still very small), erasing from it erases all - even at tolerance zero
+						- When alpha is zero, erasing from it erases nothing
+					- Unrelated info:
+						- Magic BG eraser:
+							- Once erased (with opacity 100%), re-clicking on original pixel (now empty) does not erase anything anymore, even after changing tolerance
+								- With opacity < 100%, re-clicking on original pixel (now half-empty) makes erasing more pronounced, over and over
+						- Eraser:
+							- When erased with *block*, the original color has been forgotten - an erased red and an erased blue are considered identical
+								- The sampler tool in fact doesn't pick up anything
+							- When erased with *brush*, even when a lot, the original color still seems to apply
+								- The sampler tool in fact picks up the original color
+			- TODOHERE:
+			- For each new pixel, first check its alpha:
+				- If small (below threshold): follow
+				- Else: check color
 		- Do also @ mouse move?
 			- If so, undo needs to be committed at mouse up
 	- Tests: 
 		- Bdega on Discord
 		- Oxurus' textures in Dev server, Ship suggestions - https://www.reddit.com/user/Oceanic-Star-Line/
+
+- Texture eraser tool
 
 - MainFrame: Game viz: add "export to image" button
 	- Rearc icons now:

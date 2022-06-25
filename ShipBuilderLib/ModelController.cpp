@@ -2050,12 +2050,71 @@ std::optional<ImageRect> ModelController::DoTextureMagicWandEraseBackground(
     bool doContiguousOnly,
     TextureLayerData & layer)
 {
-    // TODOTEST
-    layer.Buffer[start] = rgbaColor(255, 0, 0, 255);
-    (void)tolerance;
-    (void)isAntiAlias;
-    (void)doContiguousOnly;
-    return ImageRect(start);
+    //
+    // Fort the purposes of this operation, a pixel might exist or not. 
+    // It exists only if its alpha is not zero.
+    //
+
+    assert(start.IsInSize(layer.Buffer.Size));
+
+    // Get starting color
+    rgbaColor const seedColorRgb = layer.Buffer[start];
+    if (seedColorRgb.a == 0)
+    {
+        // Starting pixel does not exist
+        return std::nullopt;
+    }
+
+    vec3f const seedColor = seedColorRgb.toVec3f();
+
+    // Transform tolerance into max distance (included) in color space
+    float const maxColorDistance = std::sqrt(3.0f) * static_cast<float>(tolerance) / 100.0f;
+
+    // Initialize affected region
+    ImageRect affectedRegion(start); // We're sure we'll erase this one
+
+    if (!doContiguousOnly)
+    {
+        //
+        // Color substitution
+        //
+
+        auto const textureSize = layer.Buffer.Size;
+
+        for (int y = 0; y < textureSize.height; ++y)
+        {
+            for (int x = 0; x < textureSize.width; ++x)
+            {
+                ImageCoordinates const sampleCoordinates{ x, y };
+                vec3f const sampleColor = layer.Buffer[sampleCoordinates].toVec3f();
+                if ((sampleColor - seedColor).length() <= maxColorDistance) // TODO: tolerance check? Calculate epsilon
+                {
+                    // Erase
+                    layer.Buffer[sampleCoordinates].a = 0;
+                    affectedRegion.UnionWith(sampleCoordinates);
+
+                    if (isAntiAlias)
+                    {
+                        //
+                        // Do anti-aliasing on neighboring, too-distant pixels
+                        //
+
+                        // TODOHERE
+                    }
+                }
+            }
+        }
+    }
+    else
+    {
+        //
+        // Flood
+        //
+
+        // TODOHERE
+    }
+
+    return affectedRegion;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
