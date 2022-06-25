@@ -233,7 +233,6 @@ public:
     }
 
     // Returns none if not in texture
-    // TODO: if stays opt, also change Tool's method signatures
     std::optional<ImageCoordinates> ScreenToTextureSpace(DisplayLogicalCoordinates const & displayCoordinates) const
     {
         assert(mTextureLayerVisualizationTextureSize.has_value());
@@ -244,26 +243,10 @@ public:
             static_cast<float>(mShipSize.height) - (static_cast<float>(displayCoordinates.y * mLogicalToPhysicalPixelFactor) * mDisplayPhysicalToShipSpaceFactor 
                 - mDisplayPhysicalToShipSpaceFactor // One "pixel" in ship space
                 - static_cast<float>(MarginDisplayShipSize) + static_cast<float>(mCam.y)));
-
-        // From View:
-        //      We map the texture with the same "0.5 ship offset" that we use at ShipFactory,
-        //      which is for sampling the texture at the center of each ship particle square
-        //      (thus the texture exterior is slightly out, but we take this hit).
-        //
-        //      Moreover, we draw the *quad* itself shifted by half of a ship particle square,
-        //      as particles are taken to exist at the *center* of each square.
-        //
-        // So:
-        //  The texture width (minus 2 half ship space quads) is mapped to the 0.5 -> ship_width-0.5 ship space width
-
-        // TODOHERE: wrong
+        
         ImageCoordinates const textureSpaceCoords(
-            mShipSize.width > 1 ?
-                std::floor((fractionalShipSpaceCoordinates.x - 0.5f) * static_cast<float>(mTextureLayerVisualizationTextureSize->width) / static_cast<float>(mShipSize.width - 1))
-                : 0,
-            mShipSize.height > 1 ?
-                std::floor((fractionalShipSpaceCoordinates.y - 0.5f) * static_cast<float>(mTextureLayerVisualizationTextureSize->height) / static_cast<float>(mShipSize.height - 1))
-                : 0);
+            fractionalShipSpaceCoordinates.x / static_cast<float>(mShipSize.width) * static_cast<float>(mTextureLayerVisualizationTextureSize->width),
+            fractionalShipSpaceCoordinates.y / static_cast<float>(mShipSize.height) * static_cast<float>(mTextureLayerVisualizationTextureSize->height));
 
         return textureSpaceCoords.IsInRect(ImageRect(*mTextureLayerVisualizationTextureSize))
             ? std::optional<ImageCoordinates>(textureSpaceCoords)

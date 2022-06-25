@@ -109,11 +109,16 @@ private:
         // so that the texture for a particle at ship coords (x, y) is sampled at the center of the 
         // texture's quad for that particle.
         //
+        // In other words, the texture is still mapped onto the whole ship space (i.e. ship_width x ship_height),
+        // but given that of the ship mesh only the portion anchored at the _center_ of its corner quads is
+        // visible (i.e. the (0.5 -> width-0.5) X (0.5 -> height-0.5) portion), the texture ends up with a small 
+        // portion of its outermost border cut off.
+        //
         // With this offset, the domain of the texture coordinates is thus:
         //  Ship (0, 0) -> Texture (o, o)
         //  Ship (SW-1, SH-1) -> Texture (1.0-o, 1.0-o)
         //
-        // Where (SW, SH) are the ship dimensions, and o is the offset (which is < 1.0)
+        // Where (SW, SH) are the ship dimensions, and o is the offset (which is the number of pixels - in texture space - in half of a ship square).
         //
 
         float const sampleOffsetX = 0.5f / static_cast<float>(shipSize.width);

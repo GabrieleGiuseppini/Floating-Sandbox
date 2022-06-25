@@ -10,7 +10,7 @@
 #include "UI/WaterlineAnalyzerDialog.h"
 
 #include <UILib/HighlightableTextButton.h>
-#include <UILib/EditSpinBox.h>
+
 #include <UILib/ImageLoadDialog.h>
 #include <UILib/ImageSaveDialog.h>
 #include <UILib/UnderConstructionDialog.h>
@@ -2082,22 +2082,45 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
 
         // Tolerance slider
         {
-            wxSlider * slider = new wxSlider(dynamicPanel, wxID_ANY, mWorkbenchState.GetTextureMagicWandTolerance(), 0, 100,
-                wxDefaultPosition, wxSize(80, -1), wxSL_HORIZONTAL | wxSL_INVERSE);
+            mTextureMagicWandToleranceSlider = new wxSlider(dynamicPanel, wxID_ANY, mWorkbenchState.GetTextureMagicWandTolerance(), 0, 100,
+                wxDefaultPosition, wxSize(80, -1), wxSL_HORIZONTAL);
 
-            slider->SetToolTip(_("How different other colors must be from the selected color in order to be erased."));
+            mTextureMagicWandToleranceSlider->SetToolTip(_("How different other colors must be from the selected color in order to be erased."));
 
-            slider->Bind(
+            mTextureMagicWandToleranceSlider->Bind(
                 wxEVT_SLIDER,
-                [this, slider](wxCommandEvent &)
+                [this](wxCommandEvent &)
                 {
-                    mWorkbenchState.SetTextureMagicWandTolerance(slider->GetValue());
+                    mWorkbenchState.SetTextureMagicWandTolerance(mTextureMagicWandToleranceSlider->GetValue());
+                    mTextureMagicWandToleranceEditSpinBox->SetValue(mTextureMagicWandToleranceSlider->GetValue());
                 });
 
             dynamicPanelGridSizer->Add(
-                slider,
+                mTextureMagicWandToleranceSlider,
                 wxGBPosition(0, 1),
-                wxGBSpan(1, 1),
+                wxGBSpan(1, 2),
+                wxALIGN_CENTER_VERTICAL);
+        }
+
+        // Tolerance spin box
+        {
+            mTextureMagicWandToleranceEditSpinBox = new EditSpinBox<std::uint32_t>(
+                dynamicPanel,
+                40,
+                0,
+                100,
+                mWorkbenchState.GetTextureMagicWandTolerance(),
+                _("How different other colors must be from the selected color in order to be erased."),
+                [this](std::uint32_t value)
+                {
+                    mWorkbenchState.SetTextureMagicWandTolerance(value);
+                    mTextureMagicWandToleranceSlider->SetValue(value);
+                });
+
+            dynamicPanelGridSizer->Add(
+                mTextureMagicWandToleranceEditSpinBox,
+                wxGBPosition(0, 3),
+                wxGBSpan(1, 2),
                 wxALIGN_CENTER_VERTICAL);
         }
 
@@ -2143,7 +2166,7 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
             dynamicPanelGridSizer->Add(
                 staticText,
                 wxGBPosition(1, 2),
-                wxGBSpan(1, 1),
+                wxGBSpan(1, 2),
                 wxALIGN_CENTER_VERTICAL);
         }
 
@@ -2164,7 +2187,7 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
 
             dynamicPanelGridSizer->Add(
                 chkBox,
-                wxGBPosition(1, 3),
+                wxGBPosition(1, 4),
                 wxGBSpan(1, 1),
                 wxALIGN_CENTER_VERTICAL);
         }

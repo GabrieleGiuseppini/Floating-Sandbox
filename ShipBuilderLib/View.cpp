@@ -908,20 +908,22 @@ void View::UploadTextureLayerVisualization(RgbaImageData const & texture)
     //
     // Create vertices
     //
-    // We map the texture with the same "0.5 ship offset" that we use at ShipFactory,
-    // which is for sampling the texture at the center of each ship particle square
-    // (thus the texture exterior is slightly out, but we take this hit).
+    // Here we do something that technically is wrong, but we have to continue doing
+    // it for historical reasons. We do so to mimic exactly what we do at ShipFactory
+    // time when we create texture coords for each particle.
     //
-    // Moreover, we draw the *quad* itself shifted by half of a ship particle square,
-    // as particles are taken to exist at the *center* of each square.
+    // The texture _is_ mapped to the (0,0)->(ship_width,ship_height) quad, but considering
+    // that of the (w,h) quad only the sub-region starting at the center of the corner ship 
+    // squares is visible, we map the texture to the (0.5,0.5)->(w-0.5,h-0.5) quad, and
+    // cut out its outer border (of thickness 0.5 ship space).
     //
 
     float const shipWidth = static_cast<float>(mViewModel.GetShipSize().width);
     float const shipHeight = static_cast<float>(mViewModel.GetShipSize().height);
-    float constexpr QuadOffsetX = 0.5f;
-    float constexpr QuadOffsetY = 0.5f;
-    float const texOffsetX = 0.5f / shipWidth;
-    float const texOffsetY = 0.5f / shipHeight;
+    float constexpr QuadOffsetX = 0.5f; // Center of a ship quad
+    float constexpr QuadOffsetY = 0.5f; // Center of a ship quad
+    float const texOffsetX = 0.5f / shipWidth; // Skip one half of a ship quad (in texture space coords)
+    float const texOffsetY = 0.5f / shipHeight; // Skip one half of a ship quad (in texture space coords)
 
     UploadTextureVerticesTriangleStripQuad(
         QuadOffsetX, texOffsetX,

@@ -22,6 +22,7 @@
 
 #include <UILib/BitmapButton.h>
 #include <UILib/BitmapRadioButton.h>
+#include <UILib/EditSpinBox.h>
 #include <UILib/LocalizationManager.h>
 #include <UILib/LoggingDialog.h>
 #include <UILib/ShipLoadDialog.h>
@@ -388,6 +389,9 @@ private:
     RibbonToolbarButton<BitmapButton> * mElectricalPanelEditButton;
     wxSizer * mToolSettingsPanelsSizer;
     std::vector<std::tuple<ToolType, wxPanel *>> mToolSettingsPanels;
+    wxSlider * mTextureMagicWandToleranceSlider;
+    EditSpinBox<std::uint32_t> * mTextureMagicWandToleranceEditSpinBox;
+
 
     // Visualization details panel
     wxSizer * mVisualizationModeHeaderPanelsSizer;

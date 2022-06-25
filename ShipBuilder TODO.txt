@@ -46,25 +46,24 @@
 		+ Save/load preferences
 		+ All overlays: should show bg color
 
-- Texture flood tool ("Magic Eraser")
+= Texture flood tool ("Magic Wand Eraser")
 	+ First off: mouse coordinates from MainFrame to Controller becomes LogicalDisplayCoords, and they're converted to ShipSpace coords where needed
-	= Conversion to texture coords: done by View & ViewModel, exactly like conversion to ShipSpaceCoords, and invoked by texture tool(s)
+	+ Conversion to texture coords: done by View & ViewModel, exactly like conversion to ShipSpaceCoords, and invoked by texture tool(s)
 		+ ViewModel also stores texture layer size (as opt<ImageSize> mTextureLayerVisualizationTextureSize), next to ShipSize, via new Set/RemoveTextureLayerVisualizationTextureSize
 		  invoked by View at UploadTexture
 			+ ScreenToTextureSpace: assert we have mTextureLayerVisualizationTextureSize
 		+ ScreenToTextureSpace
-		- Test:
-			- All four corners
+		+ Test:
+			+ All four corners
 	+ Icon: magic wand
 	+ Cursor: magic wand
-	= Tool settings:
+	+ Tool settings:
 		+ TextureMagicWandTolerance: 0-100 unsigned int
 		+ TextureMagicWandTolerance Anti-alias: bool
 		+ TextureMagicWandTolerance Contiguous: bool
-		= At:
+		+ At:
 			+ WorkbenchState
-			= UI
-				- Edit box for slider
+			+ UI
 	= Tool:
 		+ If mouse coords in range, do:
 			+ Save undo
@@ -80,7 +79,6 @@
 		- Do also @ mouse move?
 			- If so, undo needs to be committed at mouse up
 	- Tests: 
-		- Check out TODOTEST @ View::UploadTextureLayerVisualization wrt that texture offset
 		- Bdega on Discord
 		- Oxurus' textures in Dev server, Ship suggestions - https://www.reddit.com/user/Oceanic-Star-Line/
 
