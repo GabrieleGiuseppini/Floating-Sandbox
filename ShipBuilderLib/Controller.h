@@ -162,6 +162,9 @@ public:
         TextureLayerData && textureLayer,
         std::optional<std::string> textureArtCredits);
     void RemoveTextureLayer();
+    void RestoreTextureLayerRegionForUndo(
+        TextureLayerData && layerRegion,
+        ImageCoordinates const & origin);
     void RestoreTextureLayerForUndo(
         std::unique_ptr<TextureLayerData> textureLayer,
         std::optional<std::string> originalTextureArtCredits);

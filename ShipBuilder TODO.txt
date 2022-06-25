@@ -48,30 +48,39 @@
 
 - Texture flood tool ("Magic Eraser")
 	+ First off: mouse coordinates from MainFrame to Controller becomes LogicalDisplayCoords, and they're converted to ShipSpace coords where needed
-	- Conversion to texture coords: done by View & ViewModel, exactly like conversion to ShipSpaceCoords, and invoked by texture tool(s)
-		- ViewModel also stores texture layer size (as ImageSize), next to ShipSize; set into View 
-		  by Controller (via View.SetTextureLayerSize) at each texture layer size change (OR: implicitly from UploadTexture? Would be best as we don't have to remember to SetTextureLayerSize at multiple sites, 
-		  but what when there's no texture uploaded yet? just assert.)
-			- Controller::CreateForShip
-			- Controller::SetTextureLayer
-			- Controller::RestoreTextureLayerForUndo
-			- Controller::ResizeShip
-			- No need to do at removal...
+	= Conversion to texture coords: done by View & ViewModel, exactly like conversion to ShipSpaceCoords, and invoked by texture tool(s)
+		+ ViewModel also stores texture layer size (as opt<ImageSize> mTextureLayerVisualizationTextureSize), next to ShipSize, via new Set/RemoveTextureLayerVisualizationTextureSize
+		  invoked by View at UploadTexture
+			+ ScreenToTextureSpace: assert we have mTextureLayerVisualizationTextureSize
+		+ ScreenToTextureSpace
+		- Test:
+			- All four corners
 	+ Icon: magic wand
 	+ Cursor: magic wand
-	- Tool settings:
-		- Tolerance, etc.
-	- Tool:
-		- If mouse coords in range, do:
-			- Save undo
-			- Invoke ModelController::TextureEraseBackground(...)
-			- If affected => push Undo
-		- ModelController::TextureEraseBackground:
+	= Tool settings:
+		+ TextureMagicWandTolerance: 0-100 unsigned int
+		+ TextureMagicWandTolerance Anti-alias: bool
+		+ TextureMagicWandTolerance Contiguous: bool
+		= At:
+			+ WorkbenchState
+			= UI
+				- Edit box for slider
+	= Tool:
+		+ If mouse coords in range, do:
+			+ Save undo
+			+ Invoke ModelController::TextureMagicWandEraseBackground(...)
+			+ If affected => push Undo
+		- Allow upload of only a region of texture
+			- Hence, separate dirty region registration for Image space instead of Ship space
+		- ModelController::TextureMagicWandEraseBackground:
 			- Flood notes:
 				- For each new pixel, first check its alpha:
 					- If small (below threshold): follow
 					- Else: check color
+		- Do also @ mouse move?
+			- If so, undo needs to be committed at mouse up
 	- Tests: 
+		- Check out TODOTEST @ View::UploadTextureLayerVisualization wrt that texture offset
 		- Bdega on Discord
 		- Oxurus' textures in Dev server, Ship suggestions - https://www.reddit.com/user/Oceanic-Star-Line/
 

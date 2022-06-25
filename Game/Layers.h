@@ -203,6 +203,11 @@ struct TextureLayerData
         return TextureLayerData(Buffer.Clone());
     }
 
+    void Trim(ImageRect const & rect)
+    {
+        Buffer.Trim(rect);
+    }
+
     TextureLayerData MakeReframed(
         ImageSize const & newSize, // Final size
         ImageCoordinates const & originOffset, // Position in final buffer of original {0, 0}

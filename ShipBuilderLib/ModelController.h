@@ -197,7 +197,7 @@ public:
 
             case LayerType::Texture:
             {
-                // Nop
+                // No ephemeral for texture
                 break;
             }
         }
@@ -333,6 +333,17 @@ public:
 
     std::unique_ptr<TextureLayerData> CloneTextureLayer() const;
 
+    std::optional<ImageRect> TextureMagicWandEraseBackground(
+        ImageCoordinates const & start,
+        unsigned int tolerance,
+        bool isAntiAlias,
+        bool doContiguousOnly);
+
+    void RestoreTextureLayerRegion(
+        TextureLayerData && sourceLayerRegion,
+        ImageRect const & sourceRegion,
+        ImageCoordinates const & targetOrigin);
+
     void RestoreTextureLayer(
         std::unique_ptr<TextureLayerData> textureLayer,
         std::optional<std::string> originalTextureArtCredits);
@@ -392,11 +403,18 @@ private:
     bool InternalEraseRopeAt(ShipSpaceCoordinates const & coords);
 
     template<LayerType TLayer>
-    std::optional<ShipSpaceRect> Flood(
+    std::optional<ShipSpaceRect> DoFlood(
         ShipSpaceCoordinates const & start,
         typename LayerTypeTraits<TLayer>::material_type const * material,
         bool doContiguousOnly,
         typename LayerTypeTraits<TLayer>::layer_data_type const & layer);
+
+    std::optional<ImageRect> DoTextureMagicWandEraseBackground(
+        ImageCoordinates const & start,
+        unsigned int tolerance,
+        bool isAntiAlias,
+        bool doContiguousOnly,
+        TextureLayerData & layer);
 
     // Viz
 

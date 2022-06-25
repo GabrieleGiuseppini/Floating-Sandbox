@@ -909,7 +909,8 @@ void View::UploadTextureLayerVisualization(RgbaImageData const & texture)
     // Create vertices
     //
     // We map the texture with the same "0.5 ship offset" that we use at ShipFactory,
-    // which is for sampling the texture at the center of each ship particle square.
+    // which is for sampling the texture at the center of each ship particle square
+    // (thus the texture exterior is slightly out, but we take this hit).
     //
     // Moreover, we draw the *quad* itself shifted by half of a ship particle square,
     // as particles are taken to exist at the *center* of each square.
@@ -934,11 +935,19 @@ void View::UploadTextureLayerVisualization(RgbaImageData const & texture)
     //
 
     mHasTextureLayerVisualization = true;
+
+    //
+    // Tell view model
+    //
+
+    mViewModel.SetTextureLayerVisualizationTextureSize(texture.Size);
 }
 
 void View::RemoveTextureLayerVisualization()
 {
     mHasTextureLayerVisualization = false;
+
+    mViewModel.RemoveTextureLayerVisualizationTextureSize();
 }
 
 void View::UploadCircleOverlay(

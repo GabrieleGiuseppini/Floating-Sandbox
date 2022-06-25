@@ -24,45 +24,40 @@ TextureMagicWandTool::TextureMagicWandTool(
 
 void TextureMagicWandTool::OnLeftMouseDown()
 {
-    // TODOHERE
-    /*
-    // Take clone of current layer
-    auto layerDirtyStateClone = mController.GetModelController().GetDirtyState();
-    auto layerClone = mController.GetModelController().CloneExistingLayer<TLayer>();
-
-    // Do edit
-
-    LayerMaterialType const * const floodMaterial = GetFloodMaterial(isRightButton ? MaterialPlaneType::Background : MaterialPlaneType::Foreground);
-
-    static_assert(TLayer == LayerType::Structural);
-    std::optional<ShipSpaceRect> affectedRegion = mController.GetModelController().StructuralFlood(
-        mouseCoordinates,
-        floodMaterial,
-        mController.GetWorkbenchState().GetStructuralFloodToolIsContiguous());
-
-    if (affectedRegion.has_value())
+    auto const mouseCoordinatesInTextureSpace = ScreenToTextureSpace(GetCurrentMouseCoordinates());
+    if (mouseCoordinatesInTextureSpace.has_value())
     {
-        // Create undo action
+        // Take clone of current layer
+        auto layerDirtyStateClone = mController.GetModelController().GetDirtyState();
+        auto layerClone = mController.GetModelController().CloneExistingLayer<LayerType::Texture>();
 
-        layerClone.Trim(*affectedRegion);
+        // Do edit
 
-        mController.StoreUndoAction(
-            TLayer == LayerType::Structural ? _("Flood Structural") : _("Flood Electrical"),
-            layerClone.Buffer.GetByteSize(),
-            layerDirtyStateClone,
-            [layerClone = std::move(layerClone), origin = affectedRegion->origin](Controller & controller) mutable
-            {
-                static_assert(TLayer == LayerType::Structural);
-                controller.RestoreStructuralLayerRegionForUndo(std::move(layerClone), origin);
-            });
+        std::optional<ImageRect> affectedRegion = mController.GetModelController().TextureMagicWandEraseBackground(
+            *mouseCoordinatesInTextureSpace,
+            mController.GetWorkbenchState().GetTextureMagicWandTolerance(),
+            mController.GetWorkbenchState().GetTextureMagicWandIsAntiAliased(),
+            mController.GetWorkbenchState().GetTextureMagicWandIsContiguous());
 
-        // Display sampled material
-        mController.BroadcastSampledInformationUpdatedAt(mouseCoordinates, TLayer);
+        if (affectedRegion.has_value())
+        {
+            // Create undo action
 
-        // Epilog
-        mController.LayerChangeEpilog(TLayer);
+            layerClone.Trim(*affectedRegion);
+
+            mController.StoreUndoAction(
+                _("Background Erase"),
+                layerClone.Buffer.GetByteSize(),
+                layerDirtyStateClone,
+                [layerClone = std::move(layerClone), origin = affectedRegion->origin](Controller & controller) mutable
+                {
+                    controller.RestoreTextureLayerRegionForUndo(std::move(layerClone), origin);
+                });
+
+            // Epilog
+            mController.LayerChangeEpilog(LayerType::Texture);
+        }
     }
-    */
 }
 
 }

@@ -556,6 +556,27 @@ void Controller::RemoveTextureLayer()
     InternalRemoveLayer<LayerType::Texture>();
 }
 
+void Controller::RestoreTextureLayerRegionForUndo(
+    TextureLayerData && layerRegion,
+    ImageCoordinates const & origin)
+{
+    auto const scopedToolResumeState = SuspendTool();
+
+    mModelController->RestoreTextureLayerRegion(
+        std::move(layerRegion),
+        { {0, 0}, layerRegion.Buffer.Size },
+        origin);
+
+    // No need to update dirtyness, this is for undo
+
+    // Notify macro properties
+    NotifyModelMacroPropertiesUpdated();
+
+    // Refresh model visualizations
+    mModelController->UpdateVisualizations(*mView);
+    mUserInterface.RefreshView();
+}
+
 void Controller::RestoreTextureLayerForUndo(
     std::unique_ptr<TextureLayerData> textureLayer,
     std::optional<std::string> originalTextureArtCredits)

@@ -24,6 +24,7 @@
 #include <array>
 #include <functional>
 #include <memory>
+#include <optional>
 #include <vector>
 
 namespace ShipBuilder {
@@ -126,6 +127,11 @@ public:
     ShipSpaceCoordinates ScreenToShipSpace(DisplayLogicalCoordinates const & displayCoordinates) const
     {
         return mViewModel.ScreenToShipSpace(displayCoordinates);
+    }
+
+    std::optional<ImageCoordinates> ScreenToTextureSpace(DisplayLogicalCoordinates const & displayCoordinates) const
+    {
+        return mViewModel.ScreenToTextureSpace(displayCoordinates);
     }
 
 public:

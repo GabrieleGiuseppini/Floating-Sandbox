@@ -58,6 +58,9 @@ WorkbenchState::WorkbenchState(MaterialDatabase const & materialDatabase)
     mStructuralLineToolSize = 1;
     mStructuralLineToolIsHullMode = false;
     mStructuralFloodToolIsContiguous = true;
+    mTextureMagicWandTolerance = 0;
+    mTextureMagicWandIsAntiAliased = false;
+    mTextureMagicWandIsContiguous = true;
 
     //
     // Default visualization settings

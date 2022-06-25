@@ -219,6 +219,36 @@ public:
         mStructuralFloodToolIsContiguous = value;
     }
 
+    unsigned int GetTextureMagicWandTolerance() const
+    {
+        return mTextureMagicWandTolerance;
+    }
+
+    void SetTextureMagicWandTolerance(unsigned int value)
+    {
+        mTextureMagicWandTolerance = value;
+    }
+
+    bool GetTextureMagicWandIsAntiAliased() const
+    {
+        return mTextureMagicWandIsAntiAliased;
+    }
+
+    void SetTextureMagicWandIsAntiAliased(bool value)
+    {
+        mTextureMagicWandIsAntiAliased = value;
+    }
+
+    bool GetTextureMagicWandIsContiguous() const
+    {
+        return mTextureMagicWandIsContiguous;
+    }
+
+    void SetTextureMagicWandIsContiguous(bool value)
+    {
+        mTextureMagicWandIsContiguous = value;
+    }
+
     //
     // Visualizations
     //
@@ -400,6 +430,9 @@ private:
     std::uint32_t mStructuralLineToolSize;
     bool mStructuralLineToolIsHullMode;
     bool mStructuralFloodToolIsContiguous;
+    unsigned int mTextureMagicWandTolerance; // 0-100
+    bool mTextureMagicWandIsAntiAliased;
+    bool mTextureMagicWandIsContiguous;
 
     // Visualizations
     rgbColor mCanvasBackgroundColor;

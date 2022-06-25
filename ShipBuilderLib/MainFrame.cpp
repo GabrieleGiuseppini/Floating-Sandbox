@@ -2063,6 +2063,128 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
         }
     }
 
+    // Texture magic wand
+    {
+        wxPanel * dynamicPanel = new wxPanel(ribbonPanel);
+        wxGridBagSizer * dynamicPanelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
+
+        // Tolerance Label
+        {
+            auto * staticText = new wxStaticText(dynamicPanel, wxID_ANY, _("Tolerance:"));
+            staticText->SetForegroundColour(labelColor);
+
+            dynamicPanelGridSizer->Add(
+                staticText,
+                wxGBPosition(0, 0),
+                wxGBSpan(1, 1),
+                wxALIGN_CENTER_VERTICAL);
+        }
+
+        // Tolerance slider
+        {
+            wxSlider * slider = new wxSlider(dynamicPanel, wxID_ANY, mWorkbenchState.GetTextureMagicWandTolerance(), 0, 100,
+                wxDefaultPosition, wxSize(80, -1), wxSL_HORIZONTAL | wxSL_INVERSE);
+
+            slider->SetToolTip(_("How different other colors must be from the selected color in order to be erased."));
+
+            slider->Bind(
+                wxEVT_SLIDER,
+                [this, slider](wxCommandEvent &)
+                {
+                    mWorkbenchState.SetTextureMagicWandTolerance(slider->GetValue());
+                });
+
+            dynamicPanelGridSizer->Add(
+                slider,
+                wxGBPosition(0, 1),
+                wxGBSpan(1, 1),
+                wxALIGN_CENTER_VERTICAL);
+        }
+
+        // Anti-Alias Label
+        {
+            auto * staticText = new wxStaticText(dynamicPanel, wxID_ANY, _("Anti-Alias:"));
+            staticText->SetForegroundColour(labelColor);
+
+            dynamicPanelGridSizer->Add(
+                staticText,
+                wxGBPosition(1, 0),
+                wxGBSpan(1, 1),
+                wxALIGN_CENTER_VERTICAL);
+        }
+
+        // Anti-Alias Checkbox
+        {
+            wxCheckBox * chkBox = new wxCheckBox(dynamicPanel, wxID_ANY, wxEmptyString);
+
+            chkBox->SetToolTip(_("When enabled, erased background color regions are anti-aliased."));
+
+            chkBox->SetValue(mWorkbenchState.GetTextureMagicWandIsAntiAliased());
+
+            chkBox->Bind(
+                wxEVT_CHECKBOX,
+                [this](wxCommandEvent & event)
+                {
+                    mWorkbenchState.SetTextureMagicWandIsAntiAliased(event.IsChecked());
+                });
+
+            dynamicPanelGridSizer->Add(
+                chkBox,
+                wxGBPosition(1, 1),
+                wxGBSpan(1, 1),
+                wxALIGN_CENTER_VERTICAL);
+        }
+
+        // Contiguous Label
+        {
+            auto * staticText = new wxStaticText(dynamicPanel, wxID_ANY, _("Contiguous Only:"));
+            staticText->SetForegroundColour(labelColor);
+
+            dynamicPanelGridSizer->Add(
+                staticText,
+                wxGBPosition(1, 2),
+                wxGBSpan(1, 1),
+                wxALIGN_CENTER_VERTICAL);
+        }
+
+        // Contiguous Checkbox
+        {
+            wxCheckBox * chkBox = new wxCheckBox(dynamicPanel, wxID_ANY, wxEmptyString);
+
+            chkBox->SetToolTip(_("Erase only pixels contiguous to the starting pixel. When not checked, the tool effectively removes colors."));
+
+            chkBox->SetValue(mWorkbenchState.GetTextureMagicWandIsContiguous());
+
+            chkBox->Bind(
+                wxEVT_CHECKBOX,
+                [this](wxCommandEvent & event)
+                {
+                    mWorkbenchState.SetTextureMagicWandIsContiguous(event.IsChecked());
+                });
+
+            dynamicPanelGridSizer->Add(
+                chkBox,
+                wxGBPosition(1, 3),
+                wxGBSpan(1, 1),
+                wxALIGN_CENTER_VERTICAL);
+        }
+
+        dynamicPanel->SetSizerAndFit(dynamicPanelGridSizer);
+
+        // Insert in dynamic panel
+        {
+            mToolSettingsPanelsSizer->Add(
+                dynamicPanel,
+                0,
+                wxALIGN_CENTER_VERTICAL,
+                0);
+
+            mToolSettingsPanels.emplace_back(
+                ToolType::TextureMagicWand,
+                dynamicPanel);
+        }
+    }
+
     // Wrap in a sizer just for margins
     {
         wxSizer * tmpSizer = new wxBoxSizer(wxVERTICAL); // Arbitrary

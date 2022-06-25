@@ -591,7 +591,7 @@ std::optional<ShipSpaceRect> ModelController::StructuralFlood(
     // Update model
     //
 
-    std::optional<ShipSpaceRect> affectedRect = Flood<LayerType::Structural>(
+    std::optional<ShipSpaceRect> affectedRect = DoFlood<LayerType::Structural>(
         start,
         material,
         doContiguousOnly,
@@ -1264,6 +1264,60 @@ std::unique_ptr<TextureLayerData> ModelController::CloneTextureLayer() const
     return mModel.CloneTextureLayer();
 }
 
+std::optional<ImageRect> ModelController::TextureMagicWandEraseBackground(
+    ImageCoordinates const & start,
+    unsigned int tolerance,
+    bool isAntiAlias,
+    bool doContiguousOnly)
+{
+    assert(mModel.HasLayer(LayerType::Texture));
+
+    //
+    // Update model
+    //
+
+    std::optional<ImageRect> affectedRect = DoTextureMagicWandEraseBackground(
+        start,
+        tolerance,
+        isAntiAlias,
+        doContiguousOnly,
+        mModel.GetTextureLayer());
+
+    if (affectedRect.has_value())
+    {
+        //
+        // Update visualization
+        //
+
+        RegisterDirtyVisualization<VisualizationType::TextureLayer>(GetWholeShipRect());
+    }
+
+    return affectedRect;
+}
+
+void ModelController::RestoreTextureLayerRegion(
+    TextureLayerData && sourceLayerRegion,
+    ImageRect const & sourceRegion,
+    ImageCoordinates const & targetOrigin)
+{
+    assert(mModel.HasLayer(LayerType::Texture));
+
+    //
+    // Restore model
+    //
+
+    mModel.GetTextureLayer().Buffer.BlitFromRegion(
+        sourceLayerRegion.Buffer,
+        sourceRegion,
+        targetOrigin);
+
+    //
+    // Update visualization
+    //
+
+    RegisterDirtyVisualization<VisualizationType::TextureLayer>(GetWholeShipRect());
+}
+
 void ModelController::RestoreTextureLayer(
     std::unique_ptr<TextureLayerData> textureLayer,
     std::optional<std::string> originalTextureArtCredits)
@@ -1857,7 +1911,7 @@ bool ModelController::InternalEraseRopeAt(ShipSpaceCoordinates const & coords)
 }
 
 template<LayerType TLayer>
-std::optional<ShipSpaceRect> ModelController::Flood(
+std::optional<ShipSpaceRect> ModelController::DoFlood(
     ShipSpaceCoordinates const & start,
     typename LayerTypeTraits<TLayer>::material_type const * material,
     bool doContiguousOnly,
@@ -1953,6 +2007,21 @@ std::optional<ShipSpaceRect> ModelController::Flood(
 
         return affectedRect;
     }
+}
+
+std::optional<ImageRect> ModelController::DoTextureMagicWandEraseBackground(
+    ImageCoordinates const & start,
+    unsigned int tolerance,
+    bool isAntiAlias,
+    bool doContiguousOnly,
+    TextureLayerData & layer)
+{
+    // TODOTEST
+    layer.Buffer[start] = rgbaColor(255, 0, 0, 255);
+    (void)tolerance;
+    (void)isAntiAlias;
+    (void)doContiguousOnly;
+    return ImageRect(start);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////

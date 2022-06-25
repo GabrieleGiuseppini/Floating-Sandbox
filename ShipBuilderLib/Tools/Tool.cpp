@@ -7,6 +7,8 @@
 
 #include "Controller.h"
 
+#include <optional>
+
 namespace ShipBuilder {
 
 void Tool::SetCursor(wxImage const & cursorImage)
@@ -19,14 +21,24 @@ ShipSpaceCoordinates Tool::ScreenToShipSpace(DisplayLogicalCoordinates const & d
     return mController.GetView().ScreenToShipSpace(displayCoordinates);
 }
 
+std::optional<ImageCoordinates> Tool::ScreenToTextureSpace(DisplayLogicalCoordinates const & displayCoordinates) const
+{
+    return mController.GetView().ScreenToTextureSpace(displayCoordinates);
+}
+
 std::optional<DisplayLogicalCoordinates> Tool::GetMouseCoordinatesIfInWorkCanvas() const
 {
     return mController.GetUserInterface().GetMouseCoordinatesIfInWorkCanvas();
 }
 
+DisplayLogicalCoordinates Tool::GetCurrentMouseCoordinates() const
+{
+    return mController.GetUserInterface().GetMouseCoordinates();
+}
+
 ShipSpaceCoordinates Tool::GetCurrentMouseCoordinatesInShipSpace() const
 {
-    return mController.GetView().ScreenToShipSpace(mController.GetUserInterface().GetMouseCoordinates());
+    return mController.GetView().ScreenToShipSpace(GetCurrentMouseCoordinates());
 }
 
 }
