@@ -2068,7 +2068,11 @@ std::optional<ImageRect> ModelController::DoTextureMagicWandEraseBackground(
     vec3f const seedColor = seedColorRgb.toVec3f();
 
     // Transform tolerance into max distance (included) in color space
-    float const maxColorDistance = std::sqrt(3.0f) * static_cast<float>(tolerance) / 100.0f;
+    // TODOHERE: 3.something here is   6 at photoshop
+    //          16.something here is  30 at photoshop
+    //          25           here is 100 at photoshop
+    //float const maxColorDistance = std::sqrt(3.0f) * static_cast<float>(tolerance) / 100.0f;
+    float const maxColorDistance = static_cast<float>(tolerance) / 100.0f;
 
     // Initialize affected region
     ImageRect affectedRegion(start); // We're sure we'll erase this one
