@@ -373,7 +373,14 @@ private:
 
     inline ShipSpaceRect GetWholeShipRect() const
     {
-        return { ShipSpaceCoordinates(0, 0), mModel.GetShipSize() };
+        return ShipSpaceRect(mModel.GetShipSize());
+    }
+
+    inline ImageRect GetWholeTextureRect() const
+    {
+        assert(mModel.HasLayer(LayerType::Texture));
+            
+        return ImageRect(mModel.GetTextureLayer().Buffer.Size);
     }
 
     void InitializeStructuralLayerAnalysis();
@@ -418,8 +425,8 @@ private:
 
     // Viz
 
-    template<VisualizationType TVisualization>
-    void RegisterDirtyVisualization(ShipSpaceRect const & region);
+    template<VisualizationType TVisualization, typename TRect>
+    void RegisterDirtyVisualization(TRect const & region);
 
     ImageRect UpdateGameVisualization(ShipSpaceRect const & region);
 
@@ -472,7 +479,11 @@ private:
     TextureLayerVisualizationModeType mTextureLayerVisualizationMode;
 
     // Regions whose visualization needs to be *updated* and uploaded
-    std::array<std::optional<ShipSpaceRect>, VisualizationCount> mDirtyVisualizationRegions;
+    std::optional<ShipSpaceRect> mDirtyGameVisualizationRegion;
+    std::optional<ShipSpaceRect> mDirtyStructuralLayerVisualizationRegion;
+    std::optional<ShipSpaceRect> mDirtyElectricalLayerVisualizationRegion;
+    std::optional<ShipSpaceRect> mDirtyRopesLayerVisualizationRegion;
+    std::optional<ImageRect> mDirtyTextureLayerVisualizationRegion;
 
     //
     // Debugging

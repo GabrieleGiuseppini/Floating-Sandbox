@@ -945,6 +945,25 @@ void View::UploadTextureLayerVisualization(RgbaImageData const & texture)
     mViewModel.SetTextureLayerVisualizationTextureSize(texture.Size);
 }
 
+void View::UpdateTextureLayerVisualization(
+    RgbaImageData const & subTexture,
+    ImageCoordinates const & origin)
+{
+    assert(mHasTextureLayerVisualization);
+
+    // Bind texture
+    glBindTexture(GL_TEXTURE_2D, *mTextureLayerVisualizationTexture);
+    CheckOpenGLError();
+
+    // Upload texture region
+    GameOpenGL::UploadTextureRegion(
+        subTexture.Data.get(),
+        origin.x,
+        origin.y,
+        subTexture.Size.width,
+        subTexture.Size.height);
+}
+
 void View::RemoveTextureLayerVisualization()
 {
     mHasTextureLayerVisualization = false;

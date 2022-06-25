@@ -227,6 +227,10 @@ public:
 
     void UploadTextureLayerVisualization(RgbaImageData const & texture);
 
+    void UpdateTextureLayerVisualization(
+        RgbaImageData const & subTexture,
+        ImageCoordinates const & origin);
+
     void RemoveTextureLayerVisualization();
 
     bool HasTextureLayerVisualization() const

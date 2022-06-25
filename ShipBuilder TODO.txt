@@ -69,8 +69,13 @@
 			+ Save undo
 			+ Invoke ModelController::TextureMagicWandEraseBackground(...)
 			+ If affected => push Undo
-		- Allow upload of only a region of texture
-			- Hence, separate dirty region registration for Image space instead of Ship space
+		+ Allow upload of only a region of texture
+			+ Separate dirty region registrations
+			+ View::Upload
+			+ Tests:
+				+ This tool: changes are uploaded
+				+ Trim/Flip
+				+ Resize
 		- ModelController::TextureMagicWandEraseBackground:
 			- Flood notes:
 				- For each new pixel, first check its alpha:
