@@ -2055,7 +2055,9 @@ std::optional<ImageRect> ModelController::DoTextureMagicWandEraseBackground(
     // it exists if and only if its alpha is not zero.
     //
 
-    assert(start.IsInSize(layer.Buffer.Size));
+    auto const textureSize = layer.Buffer.Size;
+
+    assert(start.IsInSize(textureSize));
 
     // Get starting color
     rgbaColor const seedColorRgb = layer.Buffer[start];
@@ -2101,13 +2103,60 @@ std::optional<ImageRect> ModelController::DoTextureMagicWandEraseBackground(
         affectedRegion.UnionWith(neighborCoordinates);
     };
 
-    if (!doContiguousOnly)
+    if (doContiguousOnly)
+    {
+        //
+        // Flood
+        //
+
+        std::queue<ImageCoordinates> pixelsToPropagateFrom;
+
+        // Erase this pixel
+        layer.Buffer[start].a = 0;
+        affectedRegion.UnionWith(start);
+
+        // Visit from here
+        pixelsToPropagateFrom.push(start);
+
+        while (!pixelsToPropagateFrom.empty())
+        {
+            auto const sourceCoords = pixelsToPropagateFrom.front();
+            pixelsToPropagateFrom.pop();
+
+            // Check neighbors
+            for (int yn = sourceCoords.y - 1; yn <= sourceCoords.y + 1; ++yn)
+            {
+                for (int xn = sourceCoords.x - 1; xn <= sourceCoords.x + 1; ++xn)
+                {
+                    ImageCoordinates const neighborCoordinates{ xn, yn };
+                    if (neighborCoordinates.IsInSize(textureSize)
+                        && layer.Buffer[neighborCoordinates].a != 0)
+                    {
+                        // Check distance
+                        if (distanceFromSeed(layer.Buffer[neighborCoordinates].toVec3f()) <= maxColorDistance)
+                        {
+                            // Erase this pixel
+                            layer.Buffer[neighborCoordinates].a = 0;
+                            affectedRegion.UnionWith(neighborCoordinates);
+
+                            // Continue visit from here
+                            pixelsToPropagateFrom.push(neighborCoordinates);
+                        }
+                        else if (isAntiAlias)
+                        {
+                            // Anti-alias this neighbor
+                            doAntiAliasNeighbor(neighborCoordinates);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    else
     {
         //
         // Color substitution
         //
-
-        auto const textureSize = layer.Buffer.Size;
 
         for (int y = 0; y < textureSize.height; ++y)
         {
@@ -2133,7 +2182,7 @@ std::optional<ImageRect> ModelController::DoTextureMagicWandEraseBackground(
                             for (int xn = x - 1; xn <= x + 1; ++xn)
                             {
                                 ImageCoordinates const neighborCoordinates{ xn, yn };
-                                if (neighborCoordinates.IsInSize(layer.Buffer.Size)
+                                if (neighborCoordinates.IsInSize(textureSize)
                                     && layer.Buffer[neighborCoordinates].a != 0
                                     && distanceFromSeed(layer.Buffer[neighborCoordinates].toVec3f()) > maxColorDistance)
                                 {
@@ -2145,14 +2194,6 @@ std::optional<ImageRect> ModelController::DoTextureMagicWandEraseBackground(
                 }
             }
         }
-    }
-    else
-    {
-        //
-        // Flood
-        //
-
-        // TODOHERE
     }
 
     return affectedRegion;
