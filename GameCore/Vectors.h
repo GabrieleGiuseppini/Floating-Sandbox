@@ -474,12 +474,12 @@ public:
         }
     }
 
-    vec3f ceilPositive() const noexcept
+    vec3f abs() const noexcept
     {
         return vec3f(
-            std::max(x, 0.0f),
-            std::max(y, 0.0f),
-            std::max(z, 0.0f));
+            std::abs(x),
+            std::abs(y),
+            std::abs(z));
     }
 
     std::string toString() const;

@@ -82,6 +82,12 @@
 					- Magic background eraser on uniform red, tolerance 0%:
 						- When alpha is not zero (but still very small), erasing from it erases all - even at tolerance zero
 						- When alpha is zero, erasing from it erases nothing
+						- Anti-aliasing:
+							- Regardless of angle and number of neighboring pixels, alpha of neighbor goes from 1.0 to a fraction of what it was - even
+							  for pixels touching only on corners
+								- Twice-aliased (at different times) distant neighbor is more transparent than once-aliased one
+							- Erasing from inside is different than erasing from outside (first alpha higher than second); it's because the 
+							  more the number of pixels removed, the more the alpha is lowered
 					- Unrelated info:
 						- Magic BG eraser:
 							- Once erased (with opacity 100%), re-clicking on original pixel (now empty) does not erase anything anymore, even after changing tolerance

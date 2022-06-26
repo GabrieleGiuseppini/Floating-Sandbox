@@ -2067,11 +2067,7 @@ std::optional<ImageRect> ModelController::DoTextureMagicWandEraseBackground(
 
     vec3f const seedColor = seedColorRgb.toVec3f();
 
-    // Transform tolerance into max distance (included) in color space
-    // TODOHERE: 3.something here is   6 at photoshop
-    //          16.something here is  30 at photoshop
-    //          25           here is 100 at photoshop
-    //float const maxColorDistance = std::sqrt(3.0f) * static_cast<float>(tolerance) / 100.0f;
+    // Transform tolerance into max component-wise distance (included) in color space
     float const maxColorDistance = static_cast<float>(tolerance) / 100.0f;
 
     // Initialize affected region
@@ -2090,8 +2086,16 @@ std::optional<ImageRect> ModelController::DoTextureMagicWandEraseBackground(
             for (int x = 0; x < textureSize.width; ++x)
             {
                 ImageCoordinates const sampleCoordinates{ x, y };
+
+                // Check distance - from https://www.photoshopgurus.com/forum/threads/tolerance.52555/page-2
                 vec3f const sampleColor = layer.Buffer[sampleCoordinates].toVec3f();
-                if ((sampleColor - seedColor).length() <= maxColorDistance) // TODO: tolerance check? Calculate epsilon
+                vec3f const deltaColor = (sampleColor - seedColor).abs();
+                if (deltaColor.x <= maxColorDistance
+                    && deltaColor.y <= maxColorDistance
+                    && deltaColor.z <= maxColorDistance
+                    && std::abs(deltaColor.x - deltaColor.y) <= maxColorDistance
+                    && std::abs(deltaColor.y - deltaColor.z) <= maxColorDistance
+                    && std::abs(deltaColor.z - deltaColor.x) <= maxColorDistance)
                 {
                     // Erase
                     layer.Buffer[sampleCoordinates].a = 0;
