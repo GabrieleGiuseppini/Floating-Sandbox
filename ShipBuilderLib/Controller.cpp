@@ -1234,13 +1234,11 @@ void Controller::InternalSetLayer(wxString actionTitle, TArgs&& ... args)
         // Create undo action
         InternalPushUndoForWholeLayer<LayerType::Texture>(actionTitle);
 
-        // FUTUREWORK: disabled primary layer switch for this release, as there are no tools
-        // and thus it's pointless
-        ////// Switch visualization mode to this new one, if needed
-        ////if (mWorkbenchState.GetPrimaryVisualization() != VisualizationType::StructuralLayer)
-        ////{
-        ////    newVisualizationType = VisualizationType::StructuralLayer;
-        ////}
+        // Switch visualization mode to this new one, if needed
+        if (mWorkbenchState.GetPrimaryVisualization() != VisualizationType::TextureLayer)
+        {
+            newVisualizationType = VisualizationType::TextureLayer;
+        }
 
         // Set layer
         WrapLikelyLayerPresenceChangingOperation<TLayerType>(

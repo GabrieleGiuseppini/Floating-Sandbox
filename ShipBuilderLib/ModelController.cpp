@@ -2051,8 +2051,8 @@ std::optional<ImageRect> ModelController::DoTextureMagicWandEraseBackground(
     TextureLayerData & layer)
 {
     //
-    // Fort the purposes of this operation, a pixel might exist or not. 
-    // It exists only if its alpha is not zero.
+    // For the purposes of this operation, a pixel might exist or not;
+    // it exists if and only if its alpha is not zero.
     //
 
     assert(start.IsInSize(layer.Buffer.Size));
@@ -2067,11 +2067,25 @@ std::optional<ImageRect> ModelController::DoTextureMagicWandEraseBackground(
 
     vec3f const seedColor = seedColorRgb.toVec3f();
 
-    // Transform tolerance into max component-wise distance (included) in color space
+    // Our distance function - from https://www.photoshopgurus.com/forum/threads/tolerance.52555/page-2
+    auto const distanceFromSeed = [seedColor](vec3f const & sampleColor)
+    {
+        vec3f const deltaColor = (sampleColor - seedColor).abs();
+
+        return std::max({
+            deltaColor.x,
+            deltaColor.y,
+            deltaColor.z,
+            std::abs(deltaColor.x - deltaColor.y),
+            std::abs(deltaColor.y - deltaColor.z),
+            std::abs(deltaColor.z - deltaColor.x) });
+    };
+
+    // Transform tolerance into max distance (included)
     float const maxColorDistance = static_cast<float>(tolerance) / 100.0f;
 
     // Initialize affected region
-    ImageRect affectedRegion(start); // We're sure we'll erase this one
+    ImageRect affectedRegion(start); // We're sure we'll erase the start pixel
 
     if (!doContiguousOnly)
     {
@@ -2087,15 +2101,9 @@ std::optional<ImageRect> ModelController::DoTextureMagicWandEraseBackground(
             {
                 ImageCoordinates const sampleCoordinates{ x, y };
 
-                // Check distance - from https://www.photoshopgurus.com/forum/threads/tolerance.52555/page-2
+                // Check distance
                 vec3f const sampleColor = layer.Buffer[sampleCoordinates].toVec3f();
-                vec3f const deltaColor = (sampleColor - seedColor).abs();
-                if (deltaColor.x <= maxColorDistance
-                    && deltaColor.y <= maxColorDistance
-                    && deltaColor.z <= maxColorDistance
-                    && std::abs(deltaColor.x - deltaColor.y) <= maxColorDistance
-                    && std::abs(deltaColor.y - deltaColor.z) <= maxColorDistance
-                    && std::abs(deltaColor.z - deltaColor.x) <= maxColorDistance)
+                if (distanceFromSeed(sampleColor) <= maxColorDistance)
                 {
                     // Erase
                     layer.Buffer[sampleCoordinates].a = 0;
