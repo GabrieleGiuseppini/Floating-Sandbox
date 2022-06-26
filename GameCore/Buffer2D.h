@@ -270,6 +270,22 @@ public:
         }
     }
 
+    template<typename TNewElement, typename TFunctor>
+    Buffer2D<TNewElement, TIntegralTag> Transform(
+        TFunctor const & functor) const
+    {
+        auto newData = std::make_unique<TNewElement[]>(mLinearSize);
+
+        for (size_t i = 0; i < mLinearSize; ++i)
+        {
+            newData[i] = functor(Data[i]);
+        }
+
+        return Buffer2D<TNewElement, TIntegralTag>(
+            Size,
+            std::move(newData));
+    }
+
 private:
 
     template<bool H, bool V>

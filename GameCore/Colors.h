@@ -80,23 +80,30 @@ public:
     inline constexpr vec3f toVec3f() const
     {
         return vec3f(
-            static_cast<float>(r) / 255.0f,
-            static_cast<float>(g) / 255.0f,
-            static_cast<float>(b) / 255.0f);
+            _toFloat(r),
+            _toFloat(g),
+            _toFloat(b));
     }
 
     inline constexpr vec4f toVec4f(float a) const
     {
         return vec4f(
-            static_cast<float>(r) / 255.0f,
-            static_cast<float>(g) / 255.0f,
-            static_cast<float>(b) / 255.0f,
+            _toFloat(r),
+            _toFloat(g),
+            _toFloat(b),
             a);
     }
 
     static rgbColor fromString(std::string const & str);
 
     std::string toString() const;
+
+private:
+
+    static inline constexpr float _toFloat(uint8_t val) noexcept
+    {
+        return static_cast<float>(val) / 255.0f;
+    }
 };
 
 #pragma pack(pop)
@@ -243,23 +250,35 @@ public:
     inline constexpr vec3f toVec3f() const noexcept
     {
         return vec3f(
-            static_cast<float>(r) / 255.0f,
-            static_cast<float>(g) / 255.0f,
-            static_cast<float>(b) / 255.0f);
+            _toFloat(r),
+            _toFloat(g),
+            _toFloat(b));
     }
 
     inline constexpr vec4f toVec4f() const noexcept
     {
         return vec4f(
-            static_cast<float>(r) / 255.0f,
-            static_cast<float>(g) / 255.0f,
-            static_cast<float>(b) / 255.0f,
-            static_cast<float>(a) / 255.0f);
+            _toFloat(r),
+            _toFloat(g),
+            _toFloat(b),
+            _toFloat(a));
+    }
+
+    inline constexpr float alphaAsFloat() const noexcept
+    {
+        return _toFloat(a);
     }
 
     static rgbaColor fromString(std::string const & str);
 
     std::string toString() const;
+
+private:
+
+    static inline constexpr float _toFloat(uint8_t val) noexcept
+    {
+        return static_cast<float>(val) / 255.0f;
+    }
 };
 
 #pragma pack(pop)

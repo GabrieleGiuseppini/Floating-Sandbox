@@ -886,3 +886,37 @@ TEST_P(Rotate90CCWTest, Rotate90CCWTest)
         }
     }
 }
+
+TEST(Buffer2DTests, MakeTransformed)
+{
+    Buffer2D<int, struct IntegralTag> sourceBuffer(8, 6);
+
+    int iVal = 100;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[IntegralCoordinates(x, y)] = iVal++;
+        }
+    }
+
+    auto const targetBuffer = sourceBuffer.Transform<std::tuple<float, float>>(
+        [](int const & value)
+        {
+            return std::tuple<float, float>(static_cast<float>(value), static_cast<float>(value * 2));
+        });
+
+    ASSERT_EQ(targetBuffer.Size, IntegralRectSize(8, 6));
+    
+    float fVal = 100.0;
+    for (int y = 0; y < targetBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < targetBuffer.Size.width; ++x)
+        {
+            EXPECT_EQ(std::get<0>(targetBuffer[IntegralCoordinates(x, y)]), fVal);
+            EXPECT_EQ(std::get<1>(targetBuffer[IntegralCoordinates(x, y)]), fVal * 2.0f);
+
+            fVal += 1.0f;
+        }
+    }
+}

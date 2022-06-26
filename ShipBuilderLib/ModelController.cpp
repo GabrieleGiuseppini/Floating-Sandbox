@@ -2068,7 +2068,7 @@ std::optional<ImageRect> ModelController::DoTextureMagicWandEraseBackground(
     vec3f const seedColor = seedColorRgb.toVec3f();
 
     // Our distance function - from https://www.photoshopgurus.com/forum/threads/tolerance.52555/page-2
-    auto const distanceFromSeed = [seedColor](vec3f const & sampleColor)
+    auto const distanceFromSeed = [seedColor](vec3f const & sampleColor) -> float
     {
         vec3f const deltaColor = (sampleColor - seedColor).abs();
 
@@ -2084,8 +2084,22 @@ std::optional<ImageRect> ModelController::DoTextureMagicWandEraseBackground(
     // Transform tolerance into max distance (included)
     float const maxColorDistance = static_cast<float>(tolerance) / 100.0f;
 
+    // Save original alpha mask for neighbors
+    Buffer2D<typename rgbaColor::data_type, ImageTag> originalAlphaMask = layer.Buffer.Transform<typename rgbaColor::data_type>(
+        [](rgbaColor const & color) -> typename rgbaColor::data_type
+        {
+            return color.a;
+        });
+
     // Initialize affected region
     ImageRect affectedRegion(start); // We're sure we'll erase the start pixel
+
+    // Anti-alias functor
+    auto const doAntiAliasNeighbor = [&](ImageCoordinates const & neighborCoordinates) -> void
+    {
+        layer.Buffer[neighborCoordinates].a = originalAlphaMask[neighborCoordinates] / 3;
+        affectedRegion.UnionWith(neighborCoordinates);
+    };
 
     if (!doContiguousOnly)
     {
@@ -2101,9 +2115,8 @@ std::optional<ImageRect> ModelController::DoTextureMagicWandEraseBackground(
             {
                 ImageCoordinates const sampleCoordinates{ x, y };
 
-                // Check distance
-                vec3f const sampleColor = layer.Buffer[sampleCoordinates].toVec3f();
-                if (distanceFromSeed(sampleColor) <= maxColorDistance)
+                if (layer.Buffer[sampleCoordinates].a != 0
+                    && distanceFromSeed(layer.Buffer[sampleCoordinates].toVec3f()) <= maxColorDistance)
                 {
                     // Erase
                     layer.Buffer[sampleCoordinates].a = 0;
@@ -2115,7 +2128,19 @@ std::optional<ImageRect> ModelController::DoTextureMagicWandEraseBackground(
                         // Do anti-aliasing on neighboring, too-distant pixels
                         //
 
-                        // TODOHERE
+                        for (int yn = y - 1; yn <= y + 1; ++yn)
+                        {
+                            for (int xn = x - 1; xn <= x + 1; ++xn)
+                            {
+                                ImageCoordinates const neighborCoordinates{ xn, yn };
+                                if (neighborCoordinates.IsInSize(layer.Buffer.Size)
+                                    && layer.Buffer[neighborCoordinates].a != 0
+                                    && distanceFromSeed(layer.Buffer[neighborCoordinates].toVec3f()) > maxColorDistance)
+                                {
+                                    doAntiAliasNeighbor(neighborCoordinates);
+                                }
+                            }
+                        }
                     }
                 }
             }
