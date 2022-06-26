@@ -2106,7 +2106,7 @@ std::optional<ImageRect> ModelController::DoTextureMagicWandEraseBackground(
     if (doContiguousOnly)
     {
         //
-        // Flood
+        // Flood from starting point
         //
 
         std::queue<ImageCoordinates> pixelsToPropagateFrom;
