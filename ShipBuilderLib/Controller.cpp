@@ -1380,7 +1380,7 @@ void Controller::InternalPushUndoForWholeLayer(wxString const & title)
     else
     {
         auto originalLayerClone = mModelController->CloneTextureLayer();
-        auto const cloneByteSize = originalLayerClone->Buffer.GetByteSize();
+        auto const cloneByteSize = originalLayerClone ? originalLayerClone->Buffer.GetByteSize() : 0;
         auto originalTextureArtCredits = mModelController->GetShipMetadata().ArtCredits;
 
         // Create undo action

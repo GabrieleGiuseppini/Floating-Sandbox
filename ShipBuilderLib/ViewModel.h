@@ -232,25 +232,25 @@ public:
             static_cast<int>(ShipSpaceToDisplayPhysical(static_cast<float>(size.height))));
     }
 
-    // Returns none if not in texture
-    std::optional<ImageCoordinates> ScreenToTextureSpace(DisplayLogicalCoordinates const & displayCoordinates) const
+    vec2f ScreenToFractionalShipSpace(DisplayLogicalCoordinates const & displayCoordinates) const
+    {
+        return vec2f(
+            static_cast<float>(displayCoordinates.x * mLogicalToPhysicalPixelFactor) * mDisplayPhysicalToShipSpaceFactor
+            - static_cast<float>(MarginDisplayShipSize) + static_cast<float>(mCam.x),
+            static_cast<float>(mShipSize.height) - (static_cast<float>(displayCoordinates.y * mLogicalToPhysicalPixelFactor) * mDisplayPhysicalToShipSpaceFactor
+            - mDisplayPhysicalToShipSpaceFactor // One "pixel" in ship space
+            - static_cast<float>(MarginDisplayShipSize) + static_cast<float>(mCam.y)));
+    }
+
+    ImageCoordinates ScreenToTextureSpace(DisplayLogicalCoordinates const & displayCoordinates) const
     {
         assert(mTextureLayerVisualizationTextureSize.has_value());
 
-        vec2f const fractionalShipSpaceCoordinates(
-            static_cast<float>(displayCoordinates.x * mLogicalToPhysicalPixelFactor) * mDisplayPhysicalToShipSpaceFactor 
-                - static_cast<float>(MarginDisplayShipSize) + static_cast<float>(mCam.x),
-            static_cast<float>(mShipSize.height) - (static_cast<float>(displayCoordinates.y * mLogicalToPhysicalPixelFactor) * mDisplayPhysicalToShipSpaceFactor 
-                - mDisplayPhysicalToShipSpaceFactor // One "pixel" in ship space
-                - static_cast<float>(MarginDisplayShipSize) + static_cast<float>(mCam.y)));
+        vec2f const fractionalShipSpaceCoordinates = ScreenToFractionalShipSpace(displayCoordinates);
         
-        ImageCoordinates const textureSpaceCoords(
+        return ImageCoordinates(
             fractionalShipSpaceCoordinates.x / static_cast<float>(mShipSize.width) * static_cast<float>(mTextureLayerVisualizationTextureSize->width),
             fractionalShipSpaceCoordinates.y / static_cast<float>(mShipSize.height) * static_cast<float>(mTextureLayerVisualizationTextureSize->height));
-
-        return textureSpaceCoords.IsInRect(ImageRect(*mTextureLayerVisualizationTextureSize))
-            ? std::optional<ImageCoordinates>(textureSpaceCoords)
-            : std::nullopt;
     }
 
     ProjectionMatrix const & GetOrthoMatrix() const

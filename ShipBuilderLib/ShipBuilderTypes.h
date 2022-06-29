@@ -36,7 +36,7 @@ enum class ToolType : std::uint32_t
     TextureMagicWand,
     TextureEraser,
 
-    _Last = TextureMagicWand
+    _Last = TextureEraser
 };
 
 size_t constexpr LayerCount = static_cast<size_t>(LayerType::Texture) + 1;

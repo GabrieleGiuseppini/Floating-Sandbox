@@ -21,14 +21,24 @@ ShipSpaceCoordinates Tool::ScreenToShipSpace(DisplayLogicalCoordinates const & d
     return mController.GetView().ScreenToShipSpace(displayCoordinates);
 }
 
-std::optional<ImageCoordinates> Tool::ScreenToTextureSpace(DisplayLogicalCoordinates const & displayCoordinates) const
-{
-    return mController.GetView().ScreenToTextureSpace(displayCoordinates);
-}
-
 std::optional<DisplayLogicalCoordinates> Tool::GetMouseCoordinatesIfInWorkCanvas() const
 {
     return mController.GetUserInterface().GetMouseCoordinatesIfInWorkCanvas();
+}
+
+std::optional<ImageCoordinates> Tool::GetMouseCoordinatesInTextureSpaceIfInTexture() const
+{
+    DisplayLogicalCoordinates const mouseCoords = GetCurrentMouseCoordinates();
+    ImageCoordinates const mouseTextureCoords = mController.GetView().ScreenToTextureSpace(mouseCoords);
+
+    if (mouseTextureCoords.IsInRect(ImageRect(mController.GetModelController().GetTextureSize())))
+    {
+        return mouseTextureCoords;
+    }
+    else
+    {
+        return std::nullopt;
+    }
 }
 
 DisplayLogicalCoordinates Tool::GetCurrentMouseCoordinates() const

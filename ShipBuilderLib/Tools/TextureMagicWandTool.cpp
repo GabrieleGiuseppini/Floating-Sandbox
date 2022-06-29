@@ -24,7 +24,7 @@ TextureMagicWandTool::TextureMagicWandTool(
 
 void TextureMagicWandTool::OnLeftMouseDown()
 {
-    auto const mouseCoordinatesInTextureSpace = ScreenToTextureSpace(GetCurrentMouseCoordinates());
+    auto const mouseCoordinatesInTextureSpace = GetMouseCoordinatesInTextureSpaceIfInTexture();
     if (mouseCoordinatesInTextureSpace.has_value())
     {
         // Take clone of current layer

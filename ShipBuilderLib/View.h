@@ -129,7 +129,7 @@ public:
         return mViewModel.ScreenToShipSpace(displayCoordinates);
     }
 
-    std::optional<ImageCoordinates> ScreenToTextureSpace(DisplayLogicalCoordinates const & displayCoordinates) const
+    ImageCoordinates ScreenToTextureSpace(DisplayLogicalCoordinates const & displayCoordinates) const
     {
         return mViewModel.ScreenToTextureSpace(displayCoordinates);
     }

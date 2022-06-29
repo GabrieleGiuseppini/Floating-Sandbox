@@ -326,6 +326,13 @@ public:
 
     TextureLayerData const & GetTextureLayer() const;
 
+    ImageSize const & GetTextureSize() const
+    {
+        assert(mModel.HasLayer(LayerType::Texture));
+
+        return mModel.GetTextureLayer().Buffer.Size;
+    }
+
     void SetTextureLayer(
         TextureLayerData && textureLayer,
         std::optional<std::string> originalTextureArtCredits);
@@ -390,7 +397,7 @@ private:
     {
         assert(mModel.HasLayer(LayerType::Texture));
             
-        return ImageRect(mModel.GetTextureLayer().Buffer.Size);
+        return ImageRect(GetTextureSize());
     }
 
     void InitializeStructuralLayerAnalysis();

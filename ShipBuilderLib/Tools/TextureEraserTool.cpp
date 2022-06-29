@@ -29,11 +29,11 @@ TextureEraserTool::TextureEraserTool(
     SetCursor(WxHelpers::LoadCursorImage("eraser_cursor", 8, 27, resourceLocator));
 
     // Check if we need to immediately do a visualization
-    auto const mouseCoordinates = ScreenToTextureSpace(GetCurrentMouseCoordinates());
-    if (mouseCoordinates)
+    auto const mouseCoordinatesInTextureSpace = GetMouseCoordinatesInTextureSpaceIfInTexture();
+    if (mouseCoordinatesInTextureSpace)
     {
         // Calculate affected rect
-        std::optional<ImageRect> const affectedRect = CalculateApplicableRect(*mouseCoordinates);
+        std::optional<ImageRect> const affectedRect = CalculateApplicableRect(*mouseCoordinatesInTextureSpace);
 
         // Apply (temporary) change
         if (affectedRect)
@@ -60,13 +60,13 @@ TextureEraserTool::~TextureEraserTool()
     }
 }
 
-void TextureEraserTool::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates)
+void TextureEraserTool::OnMouseMove(DisplayLogicalCoordinates const & /*mouseCoordinates*/)
 {
     // Assuming L/R button transitions already communicated
 
-    // TODOHERE: if mouse moves out of space, we should mend temp viz?
-    auto const mouseCoords = ScreenToTextureSpace(mouseCoordinates);
-    if (mouseCoords)
+    // TODOHERE: if mouse moves out of space, we should mend temp viz - flip with checks below
+    auto const mouseCoordinatesInTextureSpace = GetMouseCoordinatesInTextureSpaceIfInTexture();
+    if (mouseCoordinatesInTextureSpace)
     {
         if (!mEngagementData)
         {
@@ -75,7 +75,7 @@ void TextureEraserTool::OnMouseMove(DisplayLogicalCoordinates const & mouseCoord
             //
 
             // Calculate affected rect
-            std::optional<ImageRect> const affectedRect = CalculateApplicableRect(*mouseCoords);
+            std::optional<ImageRect> const affectedRect = CalculateApplicableRect(*mouseCoordinatesInTextureSpace);
 
             if (affectedRect != mTempVisualizationDirtyTextureRegion)
             {
@@ -100,15 +100,15 @@ void TextureEraserTool::OnMouseMove(DisplayLogicalCoordinates const & mouseCoord
         }
         else
         {
-            DoEdit(*mouseCoords);
+            DoEdit(*mouseCoordinatesInTextureSpace);
         }
     }
 }
 
 void TextureEraserTool::OnLeftMouseDown()
 {
-    auto const mouseCoords = ScreenToTextureSpace(GetCurrentMouseCoordinates());
-    if (mouseCoords)
+    auto const mouseCoordinatesInTextureSpace = GetMouseCoordinatesInTextureSpaceIfInTexture();
+    if (mouseCoordinatesInTextureSpace)
     {
         // Restore temp visualization
         if (mTempVisualizationDirtyTextureRegion)
@@ -120,12 +120,12 @@ void TextureEraserTool::OnLeftMouseDown()
 
         if (!mEngagementData)
         {
-            StartEngagement(*mouseCoords);
+            StartEngagement(*mouseCoordinatesInTextureSpace);
 
             assert(mEngagementData);
         }
 
-        DoEdit(*mouseCoords);
+        DoEdit(*mouseCoordinatesInTextureSpace);
     }
 }
 
@@ -146,14 +146,14 @@ void TextureEraserTool::OnShiftKeyDown()
 {
     mIsShiftDown = true;
 
-    auto const mouseCoords = ScreenToTextureSpace(GetCurrentMouseCoordinates());
-    if (mouseCoords)
+    auto const mouseCoordinatesInTextureSpace = GetMouseCoordinatesInTextureSpaceIfInTexture();
+    if (mouseCoordinatesInTextureSpace)
     {
         if (mEngagementData)
         {
             // Remember initial engagement
             assert(!mEngagementData->ShiftLockInitialPosition.has_value());
-            mEngagementData->ShiftLockInitialPosition = *mouseCoords;
+            mEngagementData->ShiftLockInitialPosition = *mouseCoordinatesInTextureSpace;
         }
     }
 }
@@ -338,7 +338,7 @@ std::optional<ImageRect> TextureEraserTool::CalculateApplicableRect(ImageCoordin
     ImageCoordinates const origin = ImageCoordinates(coords.x, coords.y - (pencilSize - 1));
 
     return ImageRect(origin - ImageSize(topLeftPencilSize, -topLeftPencilSize), { pencilSize, pencilSize })
-        .MakeIntersectionWith({ { 0, 0 }, mController.GetModelController().GetTextureLayer().Buffer.Size });
+        .MakeIntersectionWith({ { 0, 0 }, mController.GetModelController().GetTextureSize()});
 }
 
 }
