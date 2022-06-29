@@ -60,6 +60,7 @@ ModelController::ModelController(
     , mIsStructuralLayerInEphemeralVisualization(false)
     , mIsElectricalLayerInEphemeralVisualization(false)
     , mIsRopesLayerInEphemeralVisualization(false)
+    , mIsTextureLayerInEphemeralVisualization(false)
 {
     // Model is not dirty now
     assert(!mModel.GetIsDirty());
@@ -348,6 +349,8 @@ void ModelController::Flip(DirectionType direction)
     // Texture layer
     if (mModel.HasLayer(LayerType::Texture))
     {
+        assert(!mIsTextureLayerInEphemeralVisualization);
+
         mModel.GetTextureLayer().Buffer.Flip(direction);
 
         RegisterDirtyVisualization<VisualizationType::TextureLayer>(GetWholeTextureRect());
@@ -405,6 +408,8 @@ void ModelController::Rotate90(RotationDirectionType direction)
     // Texture layer
     if (mModel.HasLayer(LayerType::Texture))
     {
+        assert(!mIsTextureLayerInEphemeralVisualization);
+
         mModel.GetTextureLayer().Buffer.Rotate90(direction);
 
         RegisterDirtyVisualization<VisualizationType::TextureLayer>(GetWholeTextureRect());
@@ -481,6 +486,8 @@ void ModelController::ResizeShip(
     // Texture layer
     if (mModel.HasLayer(LayerType::Texture))
     {
+        assert(!mIsTextureLayerInEphemeralVisualization);
+
         // Convert (scale) rect to texture coordinates space
         vec2f const shipToImage(
             static_cast<float>(mModel.GetTextureLayer().Buffer.Size.width) / static_cast<float>(originalShipSize.width),
@@ -1244,6 +1251,8 @@ void ModelController::SetTextureLayer(
 
     RegisterDirtyVisualization<VisualizationType::Game>(GetWholeShipRect());
     RegisterDirtyVisualization<VisualizationType::TextureLayer>(GetWholeTextureRect());
+
+    mIsTextureLayerInEphemeralVisualization = false;
 }
 
 void ModelController::RemoveTextureLayer()
@@ -1257,6 +1266,8 @@ void ModelController::RemoveTextureLayer()
 
     RegisterDirtyVisualization<VisualizationType::Game>(GetWholeShipRect());
     RegisterDirtyVisualization<VisualizationType::TextureLayer>(oldWholeTextureRect);
+
+    mIsTextureLayerInEphemeralVisualization = false;
 }
 
 std::unique_ptr<TextureLayerData> ModelController::CloneTextureLayer() const
@@ -1266,8 +1277,31 @@ std::unique_ptr<TextureLayerData> ModelController::CloneTextureLayer() const
 
 void ModelController::TextureRegionErase(ImageRect const & region)
 {
-    // TODOHERE
-    (void)region;
+    assert(mModel.HasLayer(LayerType::Texture));
+
+    assert(!mIsTextureLayerInEphemeralVisualization);
+
+    assert(region.IsContainedInRect(mModel.GetTextureLayer().Buffer.Size));
+
+    //
+    // Update model
+    //
+
+    auto & textureLayerBuffer = mModel.GetTextureLayer().Buffer;
+
+    for (int y = region.origin.y; y < region.origin.y + region.size.height; ++y)
+    {
+        for (int x = region.origin.x; x < region.origin.x + region.size.width; ++x)
+        {
+            textureLayerBuffer[{x, y}].a = 0;
+        }
+    }
+
+    //
+    // Update visualization
+    //
+
+    RegisterDirtyVisualization<VisualizationType::TextureLayer>(region);
 }
 
 std::optional<ImageRect> ModelController::TextureMagicWandEraseBackground(
@@ -1277,6 +1311,8 @@ std::optional<ImageRect> ModelController::TextureMagicWandEraseBackground(
     bool doContiguousOnly)
 {
     assert(mModel.HasLayer(LayerType::Texture));
+
+    assert(!mIsTextureLayerInEphemeralVisualization);
 
     //
     // Update model
@@ -1308,6 +1344,8 @@ void ModelController::RestoreTextureLayerRegion(
 {
     assert(mModel.HasLayer(LayerType::Texture));
 
+    assert(!mIsTextureLayerInEphemeralVisualization);
+
     //
     // Restore model
     //
@@ -1328,7 +1366,12 @@ void ModelController::RestoreTextureLayer(
     std::unique_ptr<TextureLayerData> textureLayer,
     std::optional<std::string> originalTextureArtCredits)
 {
-    // First off, calculate largest affected rect between before and after
+    assert(!mIsTextureLayerInEphemeralVisualization);
+
+    //
+    // Calculate largest affected rect between before and after
+    //
+
     ImageRect dirtyTextureRect;
     if (mModel.HasLayer(LayerType::Texture))
     {
@@ -1364,8 +1407,30 @@ void ModelController::RestoreTextureLayer(
 
 void ModelController::TextureRegionEraseForEphemeralVisualization(ImageRect const & region)
 {
-    // TODOHERE
-    (void)region;
+    assert(mModel.HasLayer(LayerType::Texture));
+
+    //
+    // Update model
+    //
+
+    auto & textureLayerBuffer = mModel.GetTextureLayer().Buffer;
+
+    for (int y = region.origin.y; y < region.origin.y + region.size.height; ++y)
+    {
+        for (int x = region.origin.x; x < region.origin.x + region.size.width; ++x)
+        {
+            textureLayerBuffer[{x, y}].a = 0;
+        }
+    }
+
+    //
+    // Update visualization
+    //
+
+    RegisterDirtyVisualization<VisualizationType::TextureLayer>(region);
+
+    // Remember we are in temp visualization now
+    mIsTextureLayerInEphemeralVisualization = true;
 }
 
 void ModelController::RestoreTextureLayerRegionForEphemeralVisualization(
@@ -1373,10 +1438,27 @@ void ModelController::RestoreTextureLayerRegionForEphemeralVisualization(
     ImageRect const & sourceRegion,
     ImageCoordinates const & targetOrigin)
 {
-    // TODOHERE
-    (void)sourceLayerRegion;
-    (void)sourceRegion;
-    (void)targetOrigin;
+    assert(mModel.HasLayer(LayerType::Texture));
+
+    assert(mIsTextureLayerInEphemeralVisualization);
+
+    //
+    // Restore model, and nothing else
+    //
+
+    mModel.GetTextureLayer().Buffer.BlitFromRegion(
+        sourceLayerRegion.Buffer,
+        sourceRegion,
+        targetOrigin);
+
+    //
+    // Update visualization
+    //
+
+    RegisterDirtyVisualization<VisualizationType::TextureLayer>(ImageRect(targetOrigin, sourceRegion.size));
+
+    // Remember we are not anymore in temp visualization
+    mIsTextureLayerInEphemeralVisualization = false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

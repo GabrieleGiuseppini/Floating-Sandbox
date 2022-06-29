@@ -114,11 +114,13 @@
 		+ Caller needs to ensure display coords are in Work Canvas
 		+ Test with magic eraser on single pixel/hack it to draw pixel
 	+ Use new ModelController::GetTextureSize() whenever we need texture size
-	- ModelController::TextureRegionErase(ImageRect)
-	- ModelController::TextureRegionEraseForEphemeralViz
-		- And its own Restore, and ephemeral viz infrastructure for texture
-			- And re-instate old assert(s) that we have removed from other texture methods
+	+ ModelController::TextureRegionErase(ImageRect)
+	+ ModelController::TextureRegionEraseForEphemeralViz
+		+ And its own Restore, and ephemeral viz infrastructure for texture
+			+ And re-instate old assert(s) that we have removed from other texture methods
 	- Tool itself
+		- Paradigm: we always get display mouse coords, and CalculateApplicableRect does the -> texture transformation, with in-texture intersection
+		- See then if GetMouseCoordinatesInTextureSpaceIfInTexture is still needed
 	- View::RectOverlay method in texture layer space
 		! We store vertices in fractional ship space, reusing VBO and shader
 		- Duplicate all RectOverlay methods in two: ...ShipSpace and ...TextureLayerSpace

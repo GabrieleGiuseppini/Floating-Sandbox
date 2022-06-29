@@ -118,7 +118,8 @@ public:
     {
         return mIsStructuralLayerInEphemeralVisualization
             || mIsElectricalLayerInEphemeralVisualization
-            || mIsRopesLayerInEphemeralVisualization;
+            || mIsRopesLayerInEphemeralVisualization
+            || mIsTextureLayerInEphemeralVisualization;
     }
 #endif
 
@@ -197,7 +198,7 @@ public:
 
             case LayerType::Texture:
             {
-                // No ephemeral for texture
+                assert(!mIsTextureLayerInEphemeralVisualization);
                 break;
             }
         }
@@ -509,6 +510,7 @@ private:
     bool mIsStructuralLayerInEphemeralVisualization;
     bool mIsElectricalLayerInEphemeralVisualization;
     bool mIsRopesLayerInEphemeralVisualization;
+    bool mIsTextureLayerInEphemeralVisualization;
 };
 
 }
