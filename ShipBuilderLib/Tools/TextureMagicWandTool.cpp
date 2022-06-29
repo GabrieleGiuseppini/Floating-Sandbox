@@ -24,8 +24,8 @@ TextureMagicWandTool::TextureMagicWandTool(
 
 void TextureMagicWandTool::OnLeftMouseDown()
 {
-    auto const mouseCoordinatesInTextureSpace = GetMouseCoordinatesInTextureSpaceIfInTexture();
-    if (mouseCoordinatesInTextureSpace.has_value())
+    auto const mouseCoordinatesInTextureSpace = ScreenToTextureSpace(GetCurrentMouseCoordinates());
+    if (mouseCoordinatesInTextureSpace.IsInRect(ImageRect({0, 0}, mController.GetModelController().GetTextureSize())))
     {
         // Take clone of current layer
         auto layerDirtyStateClone = mController.GetModelController().GetDirtyState();
@@ -34,7 +34,7 @@ void TextureMagicWandTool::OnLeftMouseDown()
         // Do edit
 
         std::optional<ImageRect> affectedRegion = mController.GetModelController().TextureMagicWandEraseBackground(
-            *mouseCoordinatesInTextureSpace,
+            mouseCoordinatesInTextureSpace,
             mController.GetWorkbenchState().GetTextureMagicWandTolerance(),
             mController.GetWorkbenchState().GetTextureMagicWandIsAntiAliased(),
             mController.GetWorkbenchState().GetTextureMagicWandIsContiguous());

@@ -41,9 +41,9 @@ View::View(
     , mCircleOverlayCenter(0, 0) // Will be overwritten
     , mCircleOverlayColor(vec3f::zero()) // Will be overwritten
     , mHasCircleOverlay(false)
-    , mRectOverlayRect({0, 0}, {1, 1}) // Will be overwritten
+    , mRectOverlayShipSpaceRect()
+    , mRectOverlayTextureSpaceRect()
     , mRectOverlayColor(vec3f::zero()) // Will be overwritten
-    , mHasRectOverlay(false)
     , mDashedLineOverlayColor(vec3f::zero()) // Will be overwritten
     , mHasCenterOfBuoyancyWaterlineMarker(false)
     , mHasCenterOfMassWaterlineMarker(false)
@@ -998,13 +998,13 @@ void View::UploadRectOverlay(
     ShipSpaceRect const & rect,
     OverlayMode mode)
 {
+    assert(!mRectOverlayTextureSpaceRect.has_value());
+
     // Store rect
-    mRectOverlayRect = rect;
+    mRectOverlayShipSpaceRect = rect;
 
     // Store color
     mRectOverlayColor = GetOverlayColor(mode);
-
-    mHasRectOverlay = true;
 
     // Update overlay
     UpdateRectOverlay();
@@ -1014,16 +1014,24 @@ void View::UploadRectOverlay(
     ImageRect const & rect,
     OverlayMode mode)
 {
-    // TODOHERE
-    (void)rect;
-    (void)mode;
+    assert(!mRectOverlayShipSpaceRect.has_value());
+
+    // Store rect
+    mRectOverlayTextureSpaceRect = rect;
+
+    // Store color
+    mRectOverlayColor = GetOverlayColor(mode);
+
+    // Update overlay
+    UpdateRectOverlay();
 }
 
 void View::RemoveRectOverlay()
 {
-    assert(mHasRectOverlay);
+    assert(mRectOverlayShipSpaceRect || mRectOverlayTextureSpaceRect);
 
-    mHasRectOverlay = false;
+    mRectOverlayShipSpaceRect.reset();
+    mRectOverlayTextureSpaceRect.reset();
 }
 
 void View::UploadDashedLineOverlay(
@@ -1363,7 +1371,7 @@ void View::Render()
     }
 
     // Rect overlay
-    if (mHasRectOverlay)
+    if (mRectOverlayShipSpaceRect || mRectOverlayTextureSpaceRect)
     {
         // Bind VAO
         glBindVertexArray(*mRectOverlayVAO);
@@ -1465,7 +1473,7 @@ void View::OnViewModelUpdated()
         UpdateCircleOverlay();
     }
 
-    if (mHasRectOverlay)
+    if (mRectOverlayShipSpaceRect || mRectOverlayTextureSpaceRect)
     {
         UpdateRectOverlay();
     }
@@ -1780,43 +1788,74 @@ void View::UpdateCircleOverlay()
 
 void View::UpdateRectOverlay()
 {
-    assert(mHasRectOverlay);
-
     //
     // Upload vertices
     //
 
     std::array<RectOverlayVertex, 4> vertexBuffer;
 
+    vec2f topLeftShipSpace;
+    vec2f bottomRightShipSpace;
+    vec2f rectPhysSize; // Number of physical display pixels along W and H of this rect
+    float pixelSizeMultiplier;
+    if (mRectOverlayShipSpaceRect)
+    {
+        topLeftShipSpace = vec2f(
+            static_cast<float>(mRectOverlayShipSpaceRect->origin.x),
+            static_cast<float>(mRectOverlayShipSpaceRect->origin.y + mRectOverlayShipSpaceRect->size.height));
+
+        bottomRightShipSpace = vec2f(
+            static_cast<float>(mRectOverlayShipSpaceRect->origin.x + mRectOverlayShipSpaceRect->size.width),
+            static_cast<float>(mRectOverlayShipSpaceRect->origin.y));
+
+        rectPhysSize = mViewModel.ShipSpaceSizeToPhysicalDisplaySize(mRectOverlayShipSpaceRect->size).ToFloat();
+        pixelSizeMultiplier = 1.0f;
+    }
+    else
+    {
+        assert(mRectOverlayTextureSpaceRect);
+
+        topLeftShipSpace = mViewModel.TextureSpaceToFractionalShipSpace({ 
+            mRectOverlayTextureSpaceRect->origin.x,
+            mRectOverlayTextureSpaceRect->origin.y + mRectOverlayTextureSpaceRect->size.height });
+
+        bottomRightShipSpace = mViewModel.TextureSpaceToFractionalShipSpace({
+            mRectOverlayTextureSpaceRect->origin.x + mRectOverlayTextureSpaceRect->size.width,
+            mRectOverlayTextureSpaceRect->origin.y });
+
+        rectPhysSize = mViewModel.FractionalShipSpaceSizeToFractionalPhysicalDisplaySize({ bottomRightShipSpace.x - topLeftShipSpace.x, topLeftShipSpace.y - bottomRightShipSpace.y});
+        pixelSizeMultiplier = 3.5f;
+    }
+
     // Left, Top
     vertexBuffer[0] = RectOverlayVertex(
         vec2f(
-            static_cast<float>(mRectOverlayRect.origin.x),
-            static_cast<float>(mRectOverlayRect.origin.y + mRectOverlayRect.size.height)),
+            topLeftShipSpace.x,
+            topLeftShipSpace.y),
         vec2f(0.0f, 0.0f),
         mRectOverlayColor);
 
     // Left, Bottom
     vertexBuffer[1] = RectOverlayVertex(
         vec2f(
-            static_cast<float>(mRectOverlayRect.origin.x),
-            static_cast<float>(mRectOverlayRect.origin.y)),
+            topLeftShipSpace.x,
+            bottomRightShipSpace.y),
         vec2f(0.0f, 1.0f),
         mRectOverlayColor);
 
     // Right, Top
     vertexBuffer[2] = RectOverlayVertex(
         vec2f(
-            static_cast<float>(mRectOverlayRect.origin.x + mRectOverlayRect.size.width),
-            static_cast<float>(mRectOverlayRect.origin.y + mRectOverlayRect.size.height)),
+            bottomRightShipSpace.x,
+            topLeftShipSpace.y),
         vec2f(1.0f, 0.0f),
         mRectOverlayColor);
 
     // Right, Bottom
     vertexBuffer[3] = RectOverlayVertex(
         vec2f(
-            static_cast<float>(mRectOverlayRect.origin.x + mRectOverlayRect.size.width),
-            static_cast<float>(mRectOverlayRect.origin.y)),
+            bottomRightShipSpace.x,
+            bottomRightShipSpace.y),
         vec2f(1.0f, 1.0f),
         mRectOverlayColor);
 
@@ -1830,11 +1869,9 @@ void View::UpdateRectOverlay()
     // Set pixel size parameter - normalized size (i.e. in the 0->1 space) of 1 pixel (w, h separately)
     //
 
-    DisplayPhysicalSize const squarePhysSize = mViewModel.ShipSpaceSizeToPhysicalDisplaySize(mRectOverlayRect.size);
-
     vec2f const pixelSize = vec2f(
-        1.0f / std::max(squarePhysSize.width, 1),
-        1.0f / std::max(squarePhysSize.height, 1));
+        pixelSizeMultiplier / std::max(rectPhysSize.x, 1.0f),
+        pixelSizeMultiplier / std::max(rectPhysSize.y, 1.0f));
 
     mShaderManager->ActivateProgram<ProgramType::RectOverlay>();
     mShaderManager->SetProgramParameter<ProgramType::RectOverlay, ProgramParameterType::PixelSize>(pixelSize.x, pixelSize.y);

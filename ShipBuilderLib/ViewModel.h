@@ -218,28 +218,30 @@ public:
         return mDisplayPhysicalToShipSpaceFactor;
     }
 
-    DisplayPhysicalCoordinates ShipSpaceToPhysicalDisplaySpace(ShipSpaceCoordinates const & coords)
+    DisplayPhysicalCoordinates ShipSpaceToPhysicalDisplaySpace(ShipSpaceCoordinates const & coords) const
     {
         return DisplayPhysicalCoordinates(
             static_cast<int>(ShipSpaceToDisplayPhysical(static_cast<float>(coords.x - mCam.x + MarginDisplayShipSize))),
             static_cast<int>(ShipSpaceToDisplayPhysical(static_cast<float>(mShipSize.height - 1 - coords.y + MarginDisplayShipSize - mCam.y))));
     }
 
-    DisplayPhysicalSize ShipSpaceSizeToPhysicalDisplaySize(ShipSpaceSize const & size)
+    DisplayPhysicalSize ShipSpaceSizeToPhysicalDisplaySize(ShipSpaceSize const & size) const
     {
+        vec2f const fractionalPhysicalDisplaySize = FractionalShipSpaceSizeToFractionalPhysicalDisplaySize(
+            vec2f(
+                static_cast<float>(size.width),
+                static_cast<float>(size.height)));
+        
         return DisplayPhysicalSize(
-            static_cast<int>(ShipSpaceToDisplayPhysical(static_cast<float>(size.width))),
-            static_cast<int>(ShipSpaceToDisplayPhysical(static_cast<float>(size.height))));
+            static_cast<int>(fractionalPhysicalDisplaySize.x),
+            static_cast<int>(fractionalPhysicalDisplaySize.y));
     }
 
-    vec2f ScreenToFractionalShipSpace(DisplayLogicalCoordinates const & displayCoordinates) const
+    vec2f FractionalShipSpaceSizeToFractionalPhysicalDisplaySize(vec2f const & size) const
     {
         return vec2f(
-            static_cast<float>(displayCoordinates.x * mLogicalToPhysicalPixelFactor) * mDisplayPhysicalToShipSpaceFactor
-            - static_cast<float>(MarginDisplayShipSize) + static_cast<float>(mCam.x),
-            static_cast<float>(mShipSize.height) - (static_cast<float>(displayCoordinates.y * mLogicalToPhysicalPixelFactor) * mDisplayPhysicalToShipSpaceFactor
-            - mDisplayPhysicalToShipSpaceFactor // One "pixel" in ship space
-            - static_cast<float>(MarginDisplayShipSize) + static_cast<float>(mCam.y)));
+            ShipSpaceToDisplayPhysical(size.x),
+            ShipSpaceToDisplayPhysical(size.y));
     }
 
     ImageCoordinates ScreenToTextureSpace(DisplayLogicalCoordinates const & displayCoordinates) const
@@ -251,6 +253,15 @@ public:
         return ImageCoordinates(
             fractionalShipSpaceCoordinates.x / static_cast<float>(mShipSize.width) * static_cast<float>(mTextureLayerVisualizationTextureSize->width),
             fractionalShipSpaceCoordinates.y / static_cast<float>(mShipSize.height) * static_cast<float>(mTextureLayerVisualizationTextureSize->height));
+    }
+
+    vec2f TextureSpaceToFractionalShipSpace(ImageCoordinates const & coords) const
+    {
+        assert(mTextureLayerVisualizationTextureSize.has_value());
+
+        return vec2f(
+            static_cast<float>(coords.x) / static_cast<float>(mTextureLayerVisualizationTextureSize->width) * static_cast<float>(mShipSize.width),
+            static_cast<float>(coords.y) / static_cast<float>(mTextureLayerVisualizationTextureSize->height) * static_cast<float>(mShipSize.height));
     }
 
     ProjectionMatrix const & GetOrthoMatrix() const
@@ -325,6 +336,16 @@ private:
     float ShipSpaceToDisplayPhysical(TValue size) const
     {
         return static_cast<float>(size) / mDisplayPhysicalToShipSpaceFactor;
+    }
+
+    vec2f ScreenToFractionalShipSpace(DisplayLogicalCoordinates const & displayCoordinates) const
+    {
+        return vec2f(
+            static_cast<float>(displayCoordinates.x * mLogicalToPhysicalPixelFactor) * mDisplayPhysicalToShipSpaceFactor
+            - static_cast<float>(MarginDisplayShipSize) + static_cast<float>(mCam.x),
+            static_cast<float>(mShipSize.height) - (static_cast<float>(displayCoordinates.y * mLogicalToPhysicalPixelFactor) * mDisplayPhysicalToShipSpaceFactor
+            - mDisplayPhysicalToShipSpaceFactor // One "pixel" in ship space
+            - static_cast<float>(MarginDisplayShipSize) + static_cast<float>(mCam.y)));
     }
 
 private:

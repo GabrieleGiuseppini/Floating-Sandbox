@@ -107,9 +107,9 @@
 		- Oxurus' textures in Dev server, Ship suggestions - https://www.reddit.com/user/Oceanic-Star-Line/
 
 = Texture eraser tool
-	= MainFrame:
-		= Tool "toolbar"
-		= Tool settings - exactly like other eraser tool
+	+ MainFrame:
+		+ Tool "toolbar"
+		+ Tool settings - exactly like other eraser tool
 	+ Make ViewModel::DisplayToTexture NOT return opt, as display space point is guaranteed to be in ship canvas (if caller checks)
 		+ Caller needs to ensure display coords are in Work Canvas
 		+ Test with magic eraser on single pixel/hack it to draw pixel
@@ -118,18 +118,23 @@
 	+ ModelController::TextureRegionEraseForEphemeralViz
 		+ And its own Restore, and ephemeral viz infrastructure for texture
 			+ And re-instate old assert(s) that we have removed from other texture methods
-	- Tool itself
-		- Paradigm: we always get display mouse coords, and CalculateApplicableRect does the -> texture transformation, with in-texture intersection
-		- See then if GetMouseCoordinatesInTextureSpaceIfInTexture is still needed
-	- View::RectOverlay method in texture layer space
+	+ Tool itself
+		+ Paradigm: we always get display mouse coords, and CalculateApplicableRect does the -> texture transformation, with in-texture intersection
+		+ See then if GetMouseCoordinatesInTextureSpaceIfInTexture is still needed
+	+ View::RectOverlay method in texture layer space
 		! We store vertices in fractional ship space, reusing VBO and shader
-		- Duplicate all RectOverlay methods in two: ...ShipSpace and ...TextureLayerSpace
-			- They store in one of two new rect members: ...ShipSpace and ...TextureLayerSpace
-		- One UpdateRectOverlay()
-			- Assuming only one rect will be active at a time, it checks which one is active and does the corresponding tranx to fractional ship space
-				- assert only one at a time
-			- New one uses new ViewModel::TextureLayerSpaceToFractionalShipSpace
-			- They are both populated into same VBO obviously
+		+ Duplicate all RectOverlay methods in two: ...ShipSpace and ...TextureLayerSpace
+			+ They store in one of two new rect members: ...ShipSpace and ...TextureLayerSpace
+		+ One UpdateRectOverlay()
+			+ Assuming only one rect will be active at a time, it checks which one is active and does the corresponding tranx to fractional ship space
+				+ assert only one at a time
+			+ New one uses new ViewModel::TextureLayerSpaceToFractionalShipSpace
+			+ They are both populated into same VBO obviously
+		= Fix 1-pixel width
+	- Test:
+		- Eraser quad intersection with texture
+		- Shift lock
+		- Dialog modal/close
 		
 - changelist: both tools, "Added texture editing tools"
 

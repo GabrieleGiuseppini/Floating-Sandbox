@@ -438,7 +438,7 @@ private:
 
     struct RectOverlayVertex
     {
-        vec2f positionShip; // Ship space
+        vec2f positionShip; // Ship space - also fractional
         vec2f positionNorm; //  0->1
         vec3f overlayColor;
 
@@ -551,9 +551,9 @@ private:
     // RectOverlay
     GameOpenGLVAO mRectOverlayVAO;
     GameOpenGLVBO mRectOverlayVBO;
-    ShipSpaceRect mRectOverlayRect;
+    std::optional<ShipSpaceRect> mRectOverlayShipSpaceRect;
+    std::optional<ImageRect> mRectOverlayTextureSpaceRect;
     vec3f mRectOverlayColor;
-    bool mHasRectOverlay;
 
     // DashedLineOverlay
     GameOpenGLVAO mDashedLineOverlayVAO;

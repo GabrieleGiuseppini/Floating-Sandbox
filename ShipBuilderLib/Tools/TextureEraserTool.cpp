@@ -28,22 +28,21 @@ TextureEraserTool::TextureEraserTool(
 {
     SetCursor(WxHelpers::LoadCursorImage("eraser_cursor", 8, 27, resourceLocator));
 
-    // Check if we need to immediately do a visualization
-    auto const mouseCoordinatesInTextureSpace = GetMouseCoordinatesInTextureSpaceIfInTexture();
-    if (mouseCoordinatesInTextureSpace)
+    //
+    // Do initial visualization
+    //
+
+    // Calculate affected rect
+    std::optional<ImageRect> const affectedRect = CalculateApplicableRect(ScreenToTextureSpace(GetCurrentMouseCoordinates()));
+
+    // Apply (temporary) change
+    if (affectedRect)
     {
-        // Calculate affected rect
-        std::optional<ImageRect> const affectedRect = CalculateApplicableRect(*mouseCoordinatesInTextureSpace);
+        DoTempVisualization(*affectedRect);
 
-        // Apply (temporary) change
-        if (affectedRect)
-        {
-            DoTempVisualization(*affectedRect);
+        assert(mTempVisualizationDirtyTextureRegion);
 
-            assert(mTempVisualizationDirtyTextureRegion);
-
-            mController.LayerChangeEpilog();
-        }
+        mController.LayerChangeEpilog();
     }
 }
 
@@ -60,73 +59,68 @@ TextureEraserTool::~TextureEraserTool()
     }
 }
 
-void TextureEraserTool::OnMouseMove(DisplayLogicalCoordinates const & /*mouseCoordinates*/)
+void TextureEraserTool::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates)
 {
     // Assuming L/R button transitions already communicated
 
-    // TODOHERE: if mouse moves out of space, we should mend temp viz - flip with checks below
-    auto const mouseCoordinatesInTextureSpace = GetMouseCoordinatesInTextureSpaceIfInTexture();
-    if (mouseCoordinatesInTextureSpace)
+    auto const mouseCoordinatesInTextureSpace = ScreenToTextureSpace(mouseCoordinates);
+
+    if (!mEngagementData)
     {
-        if (!mEngagementData)
+        //
+        // Temp visualization
+        //
+
+        // Calculate affected rect
+        std::optional<ImageRect> const affectedRect = CalculateApplicableRect(mouseCoordinatesInTextureSpace);
+
+        if (affectedRect != mTempVisualizationDirtyTextureRegion)
         {
-            //
-            // Temp visualization
-            //
-
-            // Calculate affected rect
-            std::optional<ImageRect> const affectedRect = CalculateApplicableRect(*mouseCoordinatesInTextureSpace);
-
-            if (affectedRect != mTempVisualizationDirtyTextureRegion)
+            // Restore previous temp visualization
+            if (mTempVisualizationDirtyTextureRegion)
             {
-                // Restore previous temp visualization
-                if (mTempVisualizationDirtyTextureRegion)
-                {
-                    MendTempVisualization();
+                MendTempVisualization();
 
-                    assert(!mTempVisualizationDirtyTextureRegion);
-                }
-
-                // Apply (temporary) change
-                if (affectedRect)
-                {
-                    DoTempVisualization(*affectedRect);
-
-                    assert(mTempVisualizationDirtyTextureRegion);
-                }
-
-                mController.LayerChangeEpilog();
+                assert(!mTempVisualizationDirtyTextureRegion);
             }
+
+            // Apply (temporary) change
+            if (affectedRect)
+            {
+                DoTempVisualization(*affectedRect);
+
+                assert(mTempVisualizationDirtyTextureRegion);
+            }
+
+            mController.LayerChangeEpilog();
         }
-        else
-        {
-            DoEdit(*mouseCoordinatesInTextureSpace);
-        }
+    }
+    else
+    {
+        DoEdit(mouseCoordinatesInTextureSpace);
     }
 }
 
 void TextureEraserTool::OnLeftMouseDown()
 {
-    auto const mouseCoordinatesInTextureSpace = GetMouseCoordinatesInTextureSpaceIfInTexture();
-    if (mouseCoordinatesInTextureSpace)
+    auto const mouseCoordinatesInTextureSpace = ScreenToTextureSpace(GetCurrentMouseCoordinates());
+
+    // Restore temp visualization
+    if (mTempVisualizationDirtyTextureRegion)
     {
-        // Restore temp visualization
-        if (mTempVisualizationDirtyTextureRegion)
-        {
-            MendTempVisualization();
+        MendTempVisualization();
 
-            assert(!mTempVisualizationDirtyTextureRegion);
-        }
-
-        if (!mEngagementData)
-        {
-            StartEngagement(*mouseCoordinatesInTextureSpace);
-
-            assert(mEngagementData);
-        }
-
-        DoEdit(*mouseCoordinatesInTextureSpace);
+        assert(!mTempVisualizationDirtyTextureRegion);
     }
+
+    if (!mEngagementData)
+    {
+        StartEngagement(mouseCoordinatesInTextureSpace);
+
+        assert(mEngagementData);
+    }
+
+    DoEdit(mouseCoordinatesInTextureSpace);
 }
 
 void TextureEraserTool::OnLeftMouseUp()
@@ -146,15 +140,11 @@ void TextureEraserTool::OnShiftKeyDown()
 {
     mIsShiftDown = true;
 
-    auto const mouseCoordinatesInTextureSpace = GetMouseCoordinatesInTextureSpaceIfInTexture();
-    if (mouseCoordinatesInTextureSpace)
+    if (mEngagementData)
     {
-        if (mEngagementData)
-        {
-            // Remember initial engagement
-            assert(!mEngagementData->ShiftLockInitialPosition.has_value());
-            mEngagementData->ShiftLockInitialPosition = *mouseCoordinatesInTextureSpace;
-        }
+        // Remember initial engagement
+        assert(!mEngagementData->ShiftLockInitialPosition.has_value());
+        mEngagementData->ShiftLockInitialPosition = ScreenToTextureSpace(GetCurrentMouseCoordinates());
     }
 }
 

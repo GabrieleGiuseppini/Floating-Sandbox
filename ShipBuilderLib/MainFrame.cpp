@@ -2231,7 +2231,7 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
                 dynamicPanel,
                 40,
                 1,
-                MaxPencilSize,
+                40,
                 mWorkbenchState.GetTextureEraserToolSize(),
                 _("The size of the eraser tool."),
                 [this](std::uint32_t value)

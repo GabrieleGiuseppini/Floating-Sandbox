@@ -37,12 +37,12 @@ void main()
     #define SafetyMultiplier 1.25
 
     float borderDepthX = 
-        step(normalizedCoords.x, paramPixelSize.x * SafetyMultiplier)
-        + step(1.0 - paramPixelSize.x * SafetyMultiplier, normalizedCoords.x);
+        1.0 - smoothstep(0.0, paramPixelSize.x * SafetyMultiplier, normalizedCoords.x)
+        + smoothstep(1.0 - paramPixelSize.x * SafetyMultiplier, 1.0, normalizedCoords.x);
 
     float borderDepthY = 
-        step(normalizedCoords.y, paramPixelSize.y * SafetyMultiplier)
-        + step(1.0 - paramPixelSize.y * SafetyMultiplier, normalizedCoords.y);
+        1.0 - smoothstep(0.0, paramPixelSize.y * SafetyMultiplier, normalizedCoords.y)
+        + smoothstep(1.0 - paramPixelSize.y * SafetyMultiplier, 1.0, normalizedCoords.y);
         
     float borderDepth = min(borderDepthX + borderDepthY, 1.);
 

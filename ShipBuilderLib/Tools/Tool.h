@@ -65,9 +65,9 @@ protected:
     void SetCursor(wxImage const & cursorImage);
 
     ShipSpaceCoordinates ScreenToShipSpace(DisplayLogicalCoordinates const & displayCoordinates) const;
+    ImageCoordinates ScreenToTextureSpace(DisplayLogicalCoordinates const & displayCoordinates) const;
 
     std::optional<DisplayLogicalCoordinates> GetMouseCoordinatesIfInWorkCanvas() const;
-    std::optional<ImageCoordinates> GetMouseCoordinatesInTextureSpaceIfInTexture() const;
 
     DisplayLogicalCoordinates GetCurrentMouseCoordinates() const;
     ShipSpaceCoordinates GetCurrentMouseCoordinatesInShipSpace() const;
