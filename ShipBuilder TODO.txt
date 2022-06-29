@@ -131,10 +131,10 @@
 			+ New one uses new ViewModel::TextureLayerSpaceToFractionalShipSpace
 			+ They are both populated into same VBO obviously
 		= Fix 1-pixel width
-	- Test:
-		- Eraser quad intersection with texture
-		- Shift lock
-		- Dialog modal/close
+	= Test:
+		+ Eraser quad intersection with texture
+		+ Shift lock
+		+ Dialog modal/close
 		
 - changelist: both tools, "Added texture editing tools"
 
