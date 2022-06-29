@@ -100,11 +100,35 @@
 			+ For each new pixel, first check its alpha:
 				+ If small (below threshold): follow
 				+ Else: check color
+	- See if want an alpha slider
+		- 25->75?
 	- Tests: 
 		- Bdega on Discord
 		- Oxurus' textures in Dev server, Ship suggestions - https://www.reddit.com/user/Oceanic-Star-Line/
 
-- Texture eraser tool
+= Texture eraser tool
+	= MainFrame:
+		= Tool "toolbar"
+		= Tool settings - exactly like other eraser tool
+	- Make ViewModel::DisplayToTexture NOT return opt, as display space point is guaranteed to be in ship canvas (if caller checks)
+		- Caller needs to ensure display coords are in Work Canvas
+		- Test with magic eraser on single pixel
+	- ModelController::TextureRegionErase(ImageRect)
+	- ModelController::TextureRegionEraseForEphemeralViz
+		- And its own Restore, and ephemeral viz infrastructure for texture
+			- And re-instate old assert(s) that we have removed from other texture methods
+	- Tool itself
+	- View::RectOverlay method in texture layer space
+		! We store vertices in fractional ship space, reusing VBO and shader
+		- Duplicate all RectOverlay methods in two: ...ShipSpace and ...TextureLayerSpace
+			- They store in one of two new rect members: ...ShipSpace and ...TextureLayerSpace
+		- One UpdateRectOverlay()
+			- Assuming only one rect will be active at a time, it checks which one is active and does the corresponding tranx to fractional ship space
+				- assert only one at a time
+			- New one uses new ViewModel::TextureLayerSpaceToFractionalShipSpace
+			- They are both populated into same VBO obviously
+		
+- changelist: both tools, "Added texture editing tools"
 
 - MainFrame: Game viz: add "export to image" button
 	- Rearc icons now:

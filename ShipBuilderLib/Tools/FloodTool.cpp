@@ -93,10 +93,11 @@ void FloodTool<TLayer>::DoEdit(
         // Create undo action
 
         layerClone.Trim(*affectedRegion);
+        auto const cloneByteSize = layerClone.Buffer.GetByteSize();
 
         mController.StoreUndoAction(
             TLayer == LayerType::Structural ? _("Flood Structural") : _("Flood Electrical"),
-            layerClone.Buffer.GetByteSize(),
+            cloneByteSize,
             layerDirtyStateClone,
             [layerClone = std::move(layerClone), origin = affectedRegion->origin](Controller & controller) mutable
             {

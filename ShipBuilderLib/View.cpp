@@ -1010,6 +1010,15 @@ void View::UploadRectOverlay(
     UpdateRectOverlay();
 }
 
+void View::UploadRectOverlay(
+    ImageRect const & rect,
+    OverlayMode mode)
+{
+    // TODOHERE
+    (void)rect;
+    (void)mode;
+}
+
 void View::RemoveRectOverlay()
 {
     assert(mHasRectOverlay);

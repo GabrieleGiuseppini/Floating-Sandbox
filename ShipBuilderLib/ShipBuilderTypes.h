@@ -34,6 +34,7 @@ enum class ToolType : std::uint32_t
     RopeEraser,
     RopeSampler,
     TextureMagicWand,
+    TextureEraser,
 
     _Last = TextureMagicWand
 };

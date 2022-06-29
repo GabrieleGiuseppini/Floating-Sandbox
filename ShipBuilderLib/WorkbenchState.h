@@ -249,6 +249,16 @@ public:
         mTextureMagicWandIsContiguous = value;
     }
 
+    std::uint32_t GetTextureEraserToolSize() const
+    {
+        return mTextureEraserToolSize;
+    }
+
+    void SetTextureEraserToolSize(std::uint32_t value)
+    {
+        mTextureEraserToolSize = value;
+    }
+
     //
     // Visualizations
     //
@@ -433,6 +443,7 @@ private:
     unsigned int mTextureMagicWandTolerance; // 0-100
     bool mTextureMagicWandIsAntiAliased;
     bool mTextureMagicWandIsContiguous;
+    std::uint32_t mTextureEraserToolSize;
 
     // Visualizations
     rgbColor mCanvasBackgroundColor;

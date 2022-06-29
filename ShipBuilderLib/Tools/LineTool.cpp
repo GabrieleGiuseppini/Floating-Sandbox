@@ -268,10 +268,11 @@ void LineTool<TLayer>::EndEngagement(ShipSpaceCoordinates const & mouseCoordinat
         //
 
         auto clippedLayerClone = mOriginalLayerClone.Clone(*resultantEffectiveRect);
+        auto const clipByteSize = clippedLayerClone.Buffer.GetByteSize();
 
         mController.StoreUndoAction(
             TLayer == LayerType::Structural ? _("Line Structural") : _("Line Electrical"),
-            clippedLayerClone.Buffer.GetByteSize(),
+            clipByteSize,
             mEngagementData->OriginalDirtyState,
             [clippedLayerClone = std::move(clippedLayerClone), origin = resultantEffectiveRect->origin](Controller & controller) mutable
             {

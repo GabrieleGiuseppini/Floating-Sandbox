@@ -12,6 +12,7 @@
 #include "Tools/RopeEraserTool.h"
 #include "Tools/RopePencilTool.h"
 #include "Tools/SamplerTool.h"
+#include "Tools/TextureEraserTool.h"
 #include "Tools/TextureMagicWandTool.h"
 
 #include <Game/ImageFileTools.h>
@@ -477,10 +478,11 @@ void Controller::TrimElectricalParticlesWithoutSubstratum()
             // Create undo action
 
             ElectricalLayerData clippedRegionClone = originalLayerClone.Clone(*affectedRect);
+            auto const clipByteSize = clippedRegionClone.Buffer.GetByteSize();
 
             mUndoStack.Push(
                 _("Trim Electrical"),
-                clippedRegionClone.Buffer.GetByteSize(),
+                clipByteSize,
                 originalDirtyStateClone,
                 [clippedRegionClone = std::move(clippedRegionClone), origin = affectedRect->origin](Controller & controller) mutable
                 {
@@ -1331,10 +1333,11 @@ void Controller::InternalPushUndoForWholeLayer(wxString const & title)
     if constexpr (TLayerType == LayerType::Electrical)
     {
         auto originalLayerClone = mModelController->CloneElectricalLayer();
+        auto const cloneByteSize = originalLayerClone ? originalLayerClone->Buffer.GetByteSize() : 0;
 
         mUndoStack.Push(
             title,
-            originalLayerClone ? originalLayerClone->Buffer.GetByteSize() : 0,
+            cloneByteSize,
             originalDirtyStateClone,
             [originalLayerClone = std::move(originalLayerClone)](Controller & controller) mutable
             {
@@ -1345,11 +1348,12 @@ void Controller::InternalPushUndoForWholeLayer(wxString const & title)
     else if constexpr (TLayerType == LayerType::Ropes)
     {
         auto originalLayerClone = mModelController->CloneRopesLayer();
+        auto const cloneByteSize = originalLayerClone ? originalLayerClone->Buffer.GetSize() * sizeof(RopeElement) : 0;
 
         // Create undo action
         mUndoStack.Push(
             title,
-            originalLayerClone ? originalLayerClone->Buffer.GetSize() * sizeof(RopeElement) : 0,
+            cloneByteSize,
             originalDirtyStateClone,
             [originalLayerClone = std::move(originalLayerClone)](Controller & controller) mutable
             {
@@ -1360,11 +1364,12 @@ void Controller::InternalPushUndoForWholeLayer(wxString const & title)
     else if constexpr (TLayerType == LayerType::Structural)
     {
         auto originalLayerClone = mModelController->CloneStructuralLayer();
+        auto const cloneByteSize = originalLayerClone.Buffer.GetByteSize();
 
         // Create undo action
         mUndoStack.Push(
             title,
-            originalLayerClone.Buffer.GetByteSize(),
+            cloneByteSize,
             originalDirtyStateClone,
             [originalLayerClone = std::move(originalLayerClone)](Controller & controller) mutable
             {
@@ -1375,12 +1380,13 @@ void Controller::InternalPushUndoForWholeLayer(wxString const & title)
     else
     {
         auto originalLayerClone = mModelController->CloneTextureLayer();
+        auto const cloneByteSize = originalLayerClone->Buffer.GetByteSize();
         auto originalTextureArtCredits = mModelController->GetShipMetadata().ArtCredits;
 
         // Create undo action
         mUndoStack.Push(
             title,
-            originalLayerClone ? originalLayerClone->Buffer.GetByteSize() : 0,
+            cloneByteSize,
             originalDirtyStateClone,
             [originalLayerClone = std::move(originalLayerClone), originalTextureArtCredits = std::move(originalTextureArtCredits)](Controller & controller) mutable
             {
@@ -1750,6 +1756,13 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
         case ToolType::RopeSampler:
         {
             return std::make_unique<RopeSamplerTool>(
+                *this,
+                mResourceLocator);
+        }
+
+        case ToolType::TextureEraser:
+        {
+            return std::make_unique<TextureEraserTool>(
                 *this,
                 mResourceLocator);
         }

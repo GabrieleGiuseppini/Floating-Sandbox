@@ -203,6 +203,11 @@ struct TextureLayerData
         return TextureLayerData(Buffer.Clone());
     }
 
+    TextureLayerData Clone(ImageRect const & region) const
+    {
+        return TextureLayerData(Buffer.CloneRegion(region));
+    }
+
     void Trim(ImageRect const & rect)
     {
         Buffer.Trim(rect);

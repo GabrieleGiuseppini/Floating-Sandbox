@@ -254,8 +254,14 @@ public:
 
     void RemoveCircleOverlay();
 
+    // Ship space
     void UploadRectOverlay(
         ShipSpaceRect const & rect,
+        OverlayMode mode);
+
+    // Texture space
+    void UploadRectOverlay(
+        ImageRect const & rect,
         OverlayMode mode);
 
     void RemoveRectOverlay();

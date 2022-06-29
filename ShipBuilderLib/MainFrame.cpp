@@ -2208,6 +2208,60 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
         }
     }
 
+    // Texture eraser
+    {
+        wxPanel * dynamicPanel = new wxPanel(ribbonPanel);
+        wxGridBagSizer * dynamicPanelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
+
+        // Label
+        {
+            auto * staticText = new wxStaticText(dynamicPanel, wxID_ANY, _("Eraser Size:"));
+            staticText->SetForegroundColour(labelColor);
+
+            dynamicPanelGridSizer->Add(
+                staticText,
+                wxGBPosition(0, 0),
+                wxGBSpan(1, 1),
+                wxALIGN_CENTER_VERTICAL);
+        }
+
+        // Edit spin box
+        {
+            EditSpinBox<std::uint32_t> * editSpinBox = new EditSpinBox<std::uint32_t>(
+                dynamicPanel,
+                40,
+                1,
+                MaxPencilSize,
+                mWorkbenchState.GetTextureEraserToolSize(),
+                _("The size of the eraser tool."),
+                [this](std::uint32_t value)
+                {
+                    mWorkbenchState.SetTextureEraserToolSize(value);
+                });
+
+            dynamicPanelGridSizer->Add(
+                editSpinBox,
+                wxGBPosition(0, 1),
+                wxGBSpan(1, 1),
+                wxALIGN_CENTER_VERTICAL);
+        }
+
+        dynamicPanel->SetSizerAndFit(dynamicPanelGridSizer);
+
+        // Insert in dynamic panel
+        {
+            mToolSettingsPanelsSizer->Add(
+                dynamicPanel,
+                0,
+                wxALIGN_CENTER_VERTICAL,
+                0);
+
+            mToolSettingsPanels.emplace_back(
+                ToolType::TextureEraser,
+                dynamicPanel);
+        }
+    }
+
     // Wrap in a sizer just for margins
     {
         wxSizer * tmpSizer = new wxBoxSizer(wxVERTICAL); // Arbitrary
@@ -3520,6 +3574,22 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                 toolsSizer->Add(
                     button,
                     wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    0,
+                    0);
+            }
+
+            // Eraser
+            {
+                auto button = makeToolButton(
+                    ToolType::TextureEraser,
+                    textureToolbarPanel,
+                    "eraser_icon",
+                    _("Erase individual texture pixels."));
+
+                toolsSizer->Add(
+                    button,
+                    wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
                     0,
                     0);

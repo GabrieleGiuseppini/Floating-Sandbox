@@ -1264,6 +1264,12 @@ std::unique_ptr<TextureLayerData> ModelController::CloneTextureLayer() const
     return mModel.CloneTextureLayer();
 }
 
+void ModelController::TextureRegionErase(ImageRect const & region)
+{
+    // TODOHERE
+    (void)region;
+}
+
 std::optional<ImageRect> ModelController::TextureMagicWandEraseBackground(
     ImageCoordinates const & start,
     unsigned int tolerance,
@@ -1354,6 +1360,23 @@ void ModelController::RestoreTextureLayer(
     mGameVisualizationAutoTexturizationTexture.release();
     RegisterDirtyVisualization<VisualizationType::Game>(GetWholeShipRect());
     RegisterDirtyVisualization<VisualizationType::TextureLayer>(dirtyTextureRect);
+}
+
+void ModelController::TextureRegionEraseForEphemeralVisualization(ImageRect const & region)
+{
+    // TODOHERE
+    (void)region;
+}
+
+void ModelController::RestoreTextureLayerRegionForEphemeralVisualization(
+    TextureLayerData const & sourceLayerRegion,
+    ImageRect const & sourceRegion,
+    ImageCoordinates const & targetOrigin)
+{
+    // TODOHERE
+    (void)sourceLayerRegion;
+    (void)sourceRegion;
+    (void)targetOrigin;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

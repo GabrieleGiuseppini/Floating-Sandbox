@@ -333,6 +333,8 @@ public:
 
     std::unique_ptr<TextureLayerData> CloneTextureLayer() const;
 
+    void TextureRegionErase(ImageRect const & region);
+
     std::optional<ImageRect> TextureMagicWandEraseBackground(
         ImageCoordinates const & start,
         unsigned int tolerance,
@@ -347,6 +349,14 @@ public:
     void RestoreTextureLayer(
         std::unique_ptr<TextureLayerData> textureLayer,
         std::optional<std::string> originalTextureArtCredits);
+
+    void TextureRegionEraseForEphemeralVisualization(ImageRect const & region);
+
+    void RestoreTextureLayerRegionForEphemeralVisualization(
+        TextureLayerData const & sourceLayerRegion,
+        ImageRect const & sourceRegion,
+        ImageCoordinates const & targetOrigin);
+
 
     //
     // Visualizations
