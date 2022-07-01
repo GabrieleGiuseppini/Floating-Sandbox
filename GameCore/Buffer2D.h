@@ -172,6 +172,7 @@ public:
             }
 
             Size = rect.size;
+            mLinearSize = static_cast<size_t>(Size.width) * static_cast<size_t>(Size.height);
         }
     }
 

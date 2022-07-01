@@ -104,12 +104,15 @@ TEST(Buffer2DTests, Trim_Equal)
         }
     }
 
+    ASSERT_EQ(sizeof(int) * 4 * 4, buffer.GetByteSize());
+
     buffer.Trim(
         IntegralRect(
             { 0, 0 },
             { 4, 4 }));
 
     ASSERT_EQ(IntegralRectSize(4, 4), buffer.Size);
+    EXPECT_EQ(sizeof(int) * 4 * 4, buffer.GetByteSize());
 
     iVal = 100;
     for (int y = 0; y < 4; ++y)
@@ -135,12 +138,15 @@ TEST(Buffer2DTests, Trim_Smaller_SameOrigin)
         }
     }
 
+    ASSERT_EQ(sizeof(int) * 4 * 4, buffer.GetByteSize());
+
     buffer.Trim(
         IntegralRect(
             { 0, 0 },
             { 2, 2 }));
 
     ASSERT_EQ(IntegralRectSize(2, 2), buffer.Size);
+    EXPECT_EQ(sizeof(int) * 2 * 2, buffer.GetByteSize());
 
     for (int y = 0; y < 2; ++y)
     {
@@ -166,12 +172,15 @@ TEST(Buffer2DTests, Trim_Smaller_SameSize)
         }
     }
 
+    ASSERT_EQ(sizeof(int) * 4 * 4, buffer.GetByteSize());
+
     buffer.Trim(
         IntegralRect(
             { 2, 2 },
             { 2, 2 }));
 
     ASSERT_EQ(IntegralRectSize(2, 2), buffer.Size);
+    EXPECT_EQ(sizeof(int) * 2 * 2, buffer.GetByteSize());
 
     for (int y = 0; y < 2; ++y)
     {
@@ -197,12 +206,15 @@ TEST(Buffer2DTests, Trim_ProperInside)
         }
     }
 
+    ASSERT_EQ(sizeof(int) * 4 * 4, buffer.GetByteSize());
+
     buffer.Trim(
         IntegralRect(
             { 1, 1 },
             { 2, 2 }));
 
     ASSERT_EQ(IntegralRectSize(2, 2), buffer.Size);
+    EXPECT_EQ(sizeof(int) * 2 * 2, buffer.GetByteSize());
 
     for (int y = 0; y < 2; ++y)
     {
