@@ -1797,7 +1797,6 @@ void View::UpdateRectOverlay()
     vec2f topLeftShipSpace;
     vec2f bottomRightShipSpace;
     vec2f rectPhysSize; // Number of physical display pixels along W and H of this rect
-    float pixelSizeMultiplier;
     if (mRectOverlayShipSpaceRect)
     {
         topLeftShipSpace = vec2f(
@@ -1809,22 +1808,32 @@ void View::UpdateRectOverlay()
             static_cast<float>(mRectOverlayShipSpaceRect->origin.y));
 
         rectPhysSize = mViewModel.ShipSpaceSizeToPhysicalDisplaySize(mRectOverlayShipSpaceRect->size).ToFloat();
-        pixelSizeMultiplier = 1.0f;
     }
     else
     {
         assert(mRectOverlayTextureSpaceRect);
 
-        topLeftShipSpace = mViewModel.TextureSpaceToFractionalShipSpace({ 
+        float const shipSpaceQuantum = mViewModel.GetShipSpaceForOnePhysicalDisplayPixel();
+
+        vec2f const rawTopLeftShipSpace = mViewModel.TextureSpaceToFractionalShipSpace({
             mRectOverlayTextureSpaceRect->origin.x,
             mRectOverlayTextureSpaceRect->origin.y + mRectOverlayTextureSpaceRect->size.height });
 
-        bottomRightShipSpace = mViewModel.TextureSpaceToFractionalShipSpace({
+        // Quantize to physical pixel
+        topLeftShipSpace = vec2f(
+            std::floor(rawTopLeftShipSpace.x / shipSpaceQuantum) * shipSpaceQuantum,
+            std::floor(rawTopLeftShipSpace.y / shipSpaceQuantum) * shipSpaceQuantum);
+
+        vec2f const rawBottomRightShipSpace = mViewModel.TextureSpaceToFractionalShipSpace({
             mRectOverlayTextureSpaceRect->origin.x + mRectOverlayTextureSpaceRect->size.width,
             mRectOverlayTextureSpaceRect->origin.y });
 
+        // Quantize to physical pixel
+        bottomRightShipSpace = vec2f(
+            std::floor(rawBottomRightShipSpace.x / shipSpaceQuantum) * shipSpaceQuantum,
+            std::floor(rawBottomRightShipSpace.y / shipSpaceQuantum) * shipSpaceQuantum);
+
         rectPhysSize = mViewModel.FractionalShipSpaceSizeToFractionalPhysicalDisplaySize({ bottomRightShipSpace.x - topLeftShipSpace.x, topLeftShipSpace.y - bottomRightShipSpace.y});
-        pixelSizeMultiplier = 3.5f;
     }
 
     // Left, Top
@@ -1870,8 +1879,8 @@ void View::UpdateRectOverlay()
     //
 
     vec2f const pixelSize = vec2f(
-        pixelSizeMultiplier / std::max(rectPhysSize.x, 1.0f),
-        pixelSizeMultiplier / std::max(rectPhysSize.y, 1.0f));
+        1.0f / std::max(rectPhysSize.x, 1.0f),
+        1.0f / std::max(rectPhysSize.y, 1.0f));
 
     mShaderManager->ActivateProgram<ProgramType::RectOverlay>();
     mShaderManager->SetProgramParameter<ProgramType::RectOverlay, ProgramParameterType::PixelSize>(pixelSize.x, pixelSize.y);
