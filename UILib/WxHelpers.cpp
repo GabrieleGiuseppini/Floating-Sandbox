@@ -175,8 +175,6 @@ wxBitmap WxHelpers::MakeMatteBitmap(
 
     // Border top
     {
-        auto rowStart = writeIt;
-
         for (int x = 0; x < size.width; ++x)
         {
             writeIt.Red() = borderColor.r;
