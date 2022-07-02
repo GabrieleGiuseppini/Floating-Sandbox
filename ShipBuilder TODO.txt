@@ -3,6 +3,7 @@
 	- Test:
 		- Titanics
 		- Other frequently-used ships
+	- changelist
 
 - Do Selection/Copy'n'Cut/Paste workflow
 	- (*) below (needs copy from Moleskine)
@@ -180,19 +181,6 @@
 		+ Magic Eraser (for texture layer only)
 			+ Tolerance (0-100): % of distance(this color, start color)/max_distance
 			+ Anti-aliasing (bool): when on, alpha = distance(this color, start color)/tolerance_distance
-	- SelectionManager pseudo-tool:
-		- Maintains current selection
-		- Not really a tool but a pseudo-tool
-		- Takes View so that it can instruct it to render marching ants
-			- Is not responsible for drawing of temporary selection while the user is making it, that is the Selection tool
-		- Read by ClipboardManager pseudo-tool to make clip
-		- Selection spec (*)
-	- ClipboardManager pseudo-tool:
-		- Maintains clip
-		- Implements operations: Copy, Cut, Paste
-			- TODO: who should be responsible for the interactions during Paste? See Photoshop and Paint
-				- A different, unselectable tool?
-		- Talks with IUserInterface to enable/disable ribbon toolbar buttons
 	- Other edit operations, not via tools - via menu (and buttons?)
 		+ Auto-trim (on bounding box)
 
@@ -226,6 +214,7 @@
 			- ClipboardManager notifies IUserInterface @ population; used for: Paste
 			- Controller::DoCopy() reads WorkbenchState::all-layers flag
 		- Paste tool:
+			- TODO: how to ensure its own state (pasted & eventually modified LayersRegion) survives tool suspensions?
 			- Not selectable by user; auto-activated @ Paste
 				- Never enters "last tool" stack
 			- Gets own copy of LayersRegion at creation, and modifications happen to it (rather than to Clipboard's)
@@ -240,6 +229,21 @@
 				- Flag for opaque vs transparent
 					- Checkbox->Ctrl->PasteTool
 				- ModelController::PasteAt(LayersRegion, origin) X 2 (ephemeral, normal)
+	- OLD:
+	- SelectionManager pseudo-tool:
+		- Maintains current selection
+		- Not really a tool but a pseudo-tool
+		- Takes View so that it can instruct it to render marching ants
+			- Is not responsible for drawing of temporary selection while the user is making it, that is the Selection tool
+		- Read by ClipboardManager pseudo-tool to make clip
+		- Selection spec (*)
+	- ClipboardManager pseudo-tool:
+		- Maintains clip
+		- Implements operations: Copy, Cut, Paste
+			- TODO: who should be responsible for the interactions during Paste? See Photoshop and Paint
+				- A different, unselectable tool?
+		- Talks with IUserInterface to enable/disable ribbon toolbar buttons
+
 
 = RenderContext:
 	+ Single-threaded
