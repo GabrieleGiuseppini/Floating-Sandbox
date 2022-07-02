@@ -20,6 +20,7 @@ public:
         StructureTooLarge,
         MissingElectricalSubstratum,
         TooManyLights,
+        TooManyVisibleElectricalPanelElements,
         UnpoweredElectricalComponent,
         UnconsumedElectricalSource,
         UnpoweredEngineComponent,

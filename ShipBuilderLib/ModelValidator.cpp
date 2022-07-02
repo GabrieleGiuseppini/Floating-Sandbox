@@ -65,6 +65,7 @@ ModelValidationResults ModelValidator::ValidateModel(Model const & model)
 
         size_t electricalParticlesWithNoStructuralSubstratumCount = 0;
         size_t lightEmittingParticlesCount = 0;
+        size_t visibleElectricalPanelElementsCount = 0;
 
         assert(structuralLayer.Buffer.Size == electricalLayer.Buffer.Size);
         for (int y = 0; y < structuralLayer.Buffer.Size.height; ++y)
@@ -73,14 +74,26 @@ ModelValidationResults ModelValidator::ValidateModel(Model const & model)
             {
                 auto const coords = ShipSpaceCoordinates(x, y);
                 auto const electricalMaterial = electricalLayer.Buffer[coords].Material;
-                if (electricalMaterial != nullptr
-                    && structuralLayer.Buffer[coords].Material == nullptr)
+                if (electricalMaterial != nullptr)
                 {
-                    ++electricalParticlesWithNoStructuralSubstratumCount;
+                    if (structuralLayer.Buffer[coords].Material == nullptr)
+                    {
+                        ++electricalParticlesWithNoStructuralSubstratumCount;
+                    }
 
                     if (electricalMaterial->Luminiscence != 0.0f)
                     {
                         ++lightEmittingParticlesCount;
+                    }
+
+                    if (electricalMaterial->IsInstanced)
+                    {
+                        assert(electricalLayer.Buffer[coords].InstanceIndex != NoneElectricalElementInstanceIndex);
+                        if (auto const searchIt = electricalLayer.Panel.find(electricalLayer.Buffer[coords].InstanceIndex);
+                            searchIt == electricalLayer.Panel.end() || !searchIt->second.IsHidden)
+                        {
+                            ++visibleElectricalPanelElementsCount;
+                        }
                     }
                 }
             }
@@ -109,6 +122,16 @@ ModelValidationResults ModelValidator::ValidateModel(Model const & model)
         issues.emplace_back(
             ModelValidationIssue::CheckClassType::TooManyLights,
             (lightEmittingParticlesCount > MaxLightEmittingParticles) ? ModelValidationIssue::SeverityType::Warning : ModelValidationIssue::SeverityType::Success);
+
+        //
+        // Check: too many elements in electrical panel
+        //
+
+        size_t constexpr MaxVisibleElectricalPanelElements = 22;
+
+        issues.emplace_back(
+            ModelValidationIssue::CheckClassType::TooManyVisibleElectricalPanelElements,
+            (visibleElectricalPanelElementsCount > MaxVisibleElectricalPanelElements) ? ModelValidationIssue::SeverityType::Warning : ModelValidationIssue::SeverityType::Success);
     }
 
     return ModelValidationResults(std::move(issues));

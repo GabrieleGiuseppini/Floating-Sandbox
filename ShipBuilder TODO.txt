@@ -1,4 +1,5 @@
-- Electrical validations (*)
+= Electrical validations (*)
+	+ Do
 	- Test:
 		- Titanics
 		- Other frequently-used ships
@@ -267,7 +268,7 @@
 		+ So no need to reset/change/update at new model creation
 	+ Saves and loads (some of) its settings from json
 
-= Validations:
++ Validations:
 	+ Move validations to own class - ModelValidator
 		+ Exports one static method
 	+ Electrical connectivity validation
@@ -278,7 +279,7 @@
 			+ Flood from each element, propagating through an element if it's flagged as "connector"
 				+ Use private helper for this
 			+ When done, detect all "opposites" (source->sink, sink->source) that are not reachable and complain
-	- Electrical panel: not too many elements visible 
+	+ Electrical panel: not too many elements visible 
 
 - Visualizations:
 	- Electrical layer's "circuit" visualization

@@ -487,6 +487,20 @@ void ModelValidationDialog::ShowResults(ModelValidationResults const & results)
                             break;
                         }
 
+                        case ModelValidationIssue::CheckClassType::TooManyVisibleElectricalPanelElements:
+                        {
+                            if (issue.GetSeverity() != ModelValidationIssue::SeverityType::Success)
+                            {
+                                labelText = _("The electrical panel contains too many elements, cluttering the panel and making it difficult to use. It is advised to hide some elements and not exceed a maximum of about 20 elements.");
+                            }
+                            else
+                            {
+                                labelText = _("The electrical panel does not contain too many elements.");
+                            }
+
+                            break;
+                        }
+
                         case ModelValidationIssue::CheckClassType::UnpoweredElectricalComponent:
                         {
                             if (issue.GetSeverity() != ModelValidationIssue::SeverityType::Success)
