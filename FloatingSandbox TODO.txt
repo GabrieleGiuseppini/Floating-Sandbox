@@ -203,9 +203,14 @@
 
 		= ShipBuilder things
 
+		- Test Ubuntu build
+
 		- Tensile display: try with green at 0, blue at tensile, red at compressive
 
+		- Check all those ships
+
 		- Release:
+			- TODOHERE
 			- After release: update Wordpress post w/new engine stuff
 				- Connectivity
 				- Types

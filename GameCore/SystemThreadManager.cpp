@@ -102,6 +102,6 @@ void SystemThreadManager::AffinitizeThisThread()
 
         // If we're here, no luck
         LogMessage("WARNING: couldn't find a CPU to affinitize this thread on");
-    }
 #endif
+    }
 }
