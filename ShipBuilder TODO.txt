@@ -1,4 +1,7 @@
-- Electrical validation (*)
+- Electrical validations (*)
+	- Test:
+		- Titanics
+		- Other frequently-used ships
 
 - Do Selection/Copy'n'Cut/Paste workflow
 	- (*) below (needs copy from Moleskine)
@@ -264,16 +267,17 @@
 		+ So no need to reset/change/update at new model creation
 	+ Saves and loads (some of) its settings from json
 
-- Validations:
-	- Move validations to own class - ModelValidator
-		- Exports one static method
-	- Electrical connectivity validation
-		! Verifies that sources are connected to sinks, and viceversa
-		- Pass 1: detect "electrical sources" (generators), "electrical sinks" (non-self-powered lamps, switches, engine controllers, etc.), "engine sources", "engine sinks", "connectors"
-			- Have 2D buffer of uint8_t union with flags, incl. "visited" flags
-		- Pass 2: for each source & sink category:
-			- Flood from each element, propagating through en element if it's flagged as "connector"
-			- When done, detect all "opposites" (source->sink, sink->source) that are not reachable and complain
+= Validations:
+	+ Move validations to own class - ModelValidator
+		+ Exports one static method
+	+ Electrical connectivity validation
+		! Verifies that sources are connected to sinks and viceversa - both electrical and engine
+		+ Pass 1: detect "electrical sources" (generators), "electrical components" (anything that's supposed to be reachable, e.g. non-self-powered lamps, switches, engine controllers, etc.), "engine sources", "engine components"
+			+ Have 2D buffer of uint8_t union with flags, incl. "visited" flags
+		+ Pass 2: for each source & sink category:
+			+ Flood from each element, propagating through an element if it's flagged as "connector"
+				+ Use private helper for this
+			+ When done, detect all "opposites" (source->sink, sink->source) that are not reachable and complain
 	- Electrical panel: not too many elements visible 
 
 - Visualizations:

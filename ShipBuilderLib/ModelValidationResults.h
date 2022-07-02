@@ -19,7 +19,11 @@ public:
         EmptyStructuralLayer,
         StructureTooLarge,
         MissingElectricalSubstratum,
-        TooManyLights
+        TooManyLights,
+        UnpoweredElectricalComponent,
+        UnconsumedElectricalSource,
+        UnpoweredEngineComponent,
+        UnconsumedEngineSource
     };
 
     enum class SeverityType

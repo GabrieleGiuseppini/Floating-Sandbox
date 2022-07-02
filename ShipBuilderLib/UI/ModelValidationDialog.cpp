@@ -486,6 +486,62 @@ void ModelValidationDialog::ShowResults(ModelValidationResults const & results)
 
                             break;
                         }
+
+                        case ModelValidationIssue::CheckClassType::UnpoweredElectricalComponent:
+                        {
+                            if (issue.GetSeverity() != ModelValidationIssue::SeverityType::Success)
+                            {
+                                labelText = _("The electrical layer contains components that are not connected to a power source. Review your circuits to ensure all components are connected to at least one power source, such as a generator.");
+                            }
+                            else
+                            {
+                                labelText = _("All electrical components in the electrical layer are connected to at least one power source.");
+                            }
+
+                            break;
+                        }
+
+                        case ModelValidationIssue::CheckClassType::UnconsumedElectricalSource:
+                        {
+                            if (issue.GetSeverity() != ModelValidationIssue::SeverityType::Success)
+                            {
+                                labelText = _("The electrical layer contains power sources that are not connected to any passive elements. Review your circuits to ensure all power sources are connected to at least one passive electrical element, such as a lamp, a horn, or an engine controller.");
+                            }
+                            else
+                            {
+                                labelText = _("All power sources in the electrical layer are connected to at least one electrical element.");
+                            }
+
+                            break;
+                        }
+
+                        case ModelValidationIssue::CheckClassType::UnpoweredEngineComponent:
+                        {
+                            if (issue.GetSeverity() != ModelValidationIssue::SeverityType::Success)
+                            {
+                                labelText = _("The electrical layer contains engine components that are not connected to an engine controller. Review your circuits to ensure all engine components (engines and engine cables) are connected to at least one engine controller.");
+                            }
+                            else
+                            {
+                                labelText = _("All engine components in the electrical layer are connected to at least one engine controller.");
+                            }
+
+                            break;
+                        }
+
+                        case ModelValidationIssue::CheckClassType::UnconsumedEngineSource:
+                        {
+                            if (issue.GetSeverity() != ModelValidationIssue::SeverityType::Success)
+                            {
+                                labelText = _("The electrical layer contains engine controllers that are not connected to any engines. Review your circuits to ensure all engine controllers are connected to at least one engine.");
+                            }
+                            else
+                            {
+                                labelText = _("All engine controllers in the electrical layer are connected to at least one engine.");
+                            }
+
+                            break;
+                        }
                     }
 
                     // Label

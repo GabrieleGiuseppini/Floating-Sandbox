@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #include "ModelController.h"
 
+#include "ModelValidator.h"
+
 #include <cassert>
 #include <queue>
 
@@ -139,101 +141,7 @@ std::optional<ShipSpaceRect> ModelController::CalculateBoundingBox() const
 
 ModelValidationResults ModelController::ValidateModel() const
 {
-    std::vector<ModelValidationIssue> issues;
-
-    //
-    // Visit structural layer
-    //
-
-    assert(mModel.HasLayer(LayerType::Structural));
-
-    StructuralLayerData const & structuralLayer = mModel.GetStructuralLayer();
-
-    size_t structuralParticlesCount = 0;
-
-    for (int y = 0; y < structuralLayer.Buffer.Size.height; ++y)
-    {
-        for (int x = 0; x < structuralLayer.Buffer.Size.width; ++x)
-        {
-            if (structuralLayer.Buffer[{x, y}].Material != nullptr)
-            {
-                ++structuralParticlesCount;
-            }
-        }
-    }
-
-    //
-    // Check: empty structural layer
-    //
-
-    issues.emplace_back(
-        ModelValidationIssue::CheckClassType::EmptyStructuralLayer,
-        (structuralParticlesCount == 0) ? ModelValidationIssue::SeverityType::Error : ModelValidationIssue::SeverityType::Success);
-
-    if (structuralParticlesCount != 0)
-    {
-        //
-        // Check: structure too large
-        //
-
-        size_t constexpr MaxStructuralParticles = 100000;
-
-        issues.emplace_back(
-            ModelValidationIssue::CheckClassType::StructureTooLarge,
-            (structuralParticlesCount > MaxStructuralParticles) ? ModelValidationIssue::SeverityType::Warning : ModelValidationIssue::SeverityType::Success);
-    }
-
-    if (mModel.HasLayer(LayerType::Electrical))
-    {
-        //
-        // Visit electrical layer
-        //
-
-        ElectricalLayerData const & electricalLayer = mModel.GetElectricalLayer();
-
-        size_t electricalParticlesWithNoStructuralSubstratumCount = 0;
-        size_t lightEmittingParticlesCount = 0;
-
-        assert(structuralLayer.Buffer.Size == electricalLayer.Buffer.Size);
-        for (int y = 0; y < structuralLayer.Buffer.Size.height; ++y)
-        {
-            for (int x = 0; x < structuralLayer.Buffer.Size.width; ++x)
-            {
-                auto const coords = ShipSpaceCoordinates(x, y);
-                auto const electricalMaterial = electricalLayer.Buffer[coords].Material;
-                if (electricalMaterial != nullptr
-                    && structuralLayer.Buffer[coords].Material == nullptr)
-                {
-                    ++electricalParticlesWithNoStructuralSubstratumCount;
-
-                    if (electricalMaterial->Luminiscence != 0.0f)
-                    {
-                        ++lightEmittingParticlesCount;
-                    }
-                }
-            }
-        }
-
-        //
-        // Check: electrical substratum
-        //
-
-        issues.emplace_back(
-            ModelValidationIssue::CheckClassType::MissingElectricalSubstratum,
-            (electricalParticlesWithNoStructuralSubstratumCount > 0) ? ModelValidationIssue::SeverityType::Error : ModelValidationIssue::SeverityType::Success);
-
-        //
-        // Check: too many lights
-        //
-
-        size_t constexpr MaxLightEmittingParticles = 5000;
-
-        issues.emplace_back(
-            ModelValidationIssue::CheckClassType::TooManyLights,
-            (lightEmittingParticlesCount > MaxLightEmittingParticles) ? ModelValidationIssue::SeverityType::Warning : ModelValidationIssue::SeverityType::Success);
-    }
-
-    return ModelValidationResults(std::move(issues));
+    return ModelValidator::ValidateModel(mModel);
 }
 
 std::optional<SampledInformation> ModelController::SampleInformationAt(ShipSpaceCoordinates const & coordinates, LayerType layer) const

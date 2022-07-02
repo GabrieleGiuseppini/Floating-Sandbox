@@ -1569,7 +1569,19 @@
 			- SoundController can access Position() buffer of each ship, and thus access positions at Update() and update
 			  sound position
 
-	- Voices
+	- Sounds rearc:
+		- ISoundManager
+			- Implemented by both single sounds and composite/aggregates
+			- Reset() // full reset, including container-stuff
+			- Pause()/Resume()
+			- SetMuted(isMuted, Group)
+			- SetGroupVolume(vol, Group)
+		- Sound (or "GameSound")
+			! Base of all simple sounds
+			- cctor(...Group...)
+			- GetGroup()
+			- SetGroupVolume(float)
+				- On top of SetMasterVolume & SetVolume
 
 -Probing:
 	- IProbe:
