@@ -17,6 +17,9 @@
 - Added lightning hit probability setting 
 	- Set to zero to prevent lightnings from hitting the ship altogether!
 - ShipBuilder:
+	- Added first texture editing tools:
+		- Magic Eraser: for removing background from textures
+		- Eraser: for removing entire sections of textures
 	- Added "Backup Ship" button to save the current ship to a backup file 
 		- Useful when you're making experiments and you're not sure whether they'll work out!
 	- Added Preferences window for setting a default size for new ships, and a custom background color for the canvas

@@ -201,6 +201,16 @@
 				+ SetProcessPriority
 				+ Floating point settings
 
+		= ShipBuilder things
+
+		- Tensile display: try with green at 0, blue at tensile, red at compressive
+
+		- Release:
+			- After release: update Wordpress post w/new engine stuff
+				- Connectivity
+				- Types
+
+
 		- Misc quick things:
 			- See if water entering via hole is faster than water entering natural non-hull ("cut funnel")
 				- See why Bernoulli doesn't make inflow faster
@@ -219,12 +229,6 @@
 			- Add temp code to calc total internal water, and see if it's true that it keeps increasing
 			- Do same for "other internal pressure"
 
-
-		- Release:
-			- Update Wordpress post w/new engine stuff
-				- Connectivity
-				- Types
-
 		- More parallelism at Ship::Update
 
 		- Test using normalize_approx in spring loop
@@ -234,9 +238,9 @@
 			- Sharing VBOs in VAOs: 
 				- https://computergraphics.stackexchange.com/questions/4623/multiple-vao-share-a-vbo
 				- https://stackoverflow.com/questions/23542355/using-a-vertex-buffer-in-two-different-vertex-array-objects
-				- Idea: one single "TriangleQuadIndexSeries" VBO for all render contexts, created and initialized in GlobalRenderContext, and passed
+				- Idea: one single "TriangleQuadIndexSeries" (or "sequence") VBO for all render contexts, created and initialized in GlobalRenderContext, and passed
 				  to all child contextes via cctor
-					- New class in OpenGL lib: TriangleQuadIndexSeriesVBO
+					- New class in OpenGL lib: TriangleQuadIndexSeriesVBO (or "sequence")
 						- Wraps VBO (private) and local buffer (BoundedVector, private)
 							- VBO created in static factory (read below, instance of TriangleQuadIndexSeriesVBO is deferred-init'd as uq_ptr)
 						- Exposes void ensure_size(# of quads)
@@ -259,13 +263,21 @@
 					- Child contextes do:				
 						- Upload(): ensure_size(# of quads)
 						- Draw: Bind before drawing quads
+			- Test with bubbles
+				- Do
+				- New Dell: 
+					- Before: upload= render=
+					- After: upload= render=
+				- Old Dell: 
+					- Before: upload= render=
+					- After: upload= render=
 			- If works, other candidates:
 				- Clouds
 				- Generic textures
-				- Fonts
+				- Text (NotificationContext)
 				- Fishes
 
-		- Light improvements (*)
+		- Lights improvement options (*)
 
 		- Sources of Light
 			- See if there's a * below

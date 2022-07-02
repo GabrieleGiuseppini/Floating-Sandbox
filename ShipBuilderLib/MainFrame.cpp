@@ -2140,7 +2140,7 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
         {
             wxCheckBox * chkBox = new wxCheckBox(dynamicPanel, wxID_ANY, wxEmptyString);
 
-            chkBox->SetToolTip(_("When enabled, erased background color regions are anti-aliased."));
+            chkBox->SetToolTip(_("When enabled, the contours of erased background color regions are anti-aliased in order to minimize the appearance of jagged lines."));
 
             chkBox->SetValue(mWorkbenchState.GetTextureMagicWandIsAntiAliased());
 

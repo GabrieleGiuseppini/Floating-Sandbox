@@ -1,152 +1,8 @@
-====== 1.17.3
+- Electrical validation (*)
 
-+ See if can make MaterialsPalette close only when mouse is *clicked* outside, not just when it's *moved* outside
-	X Option 1: derive from wxPopupWindow - replace Dismiss with Hide()
-	+ Option 2: OnWorkCanvasMouseEnteredWindow: do not catch focus if palette is open
-	+ changelist
+- Do Selection/Copy'n'Cut/Paste workflow
+	- (*) below (needs copy from Moleskine)
 
-+ "Backup Ship" - like SaveAs, but does not change current
-	+ Ribbon button
-		+ Enabled only if the ship is "currently saved" (i.e. loaded or saved)
-	+ Requires ShipLoadDialog to show filename (incl. extension)
-	+ Action:
-		+ Appends "_backup" to filename (also if it has it already)
-		+ Saves
-			+ Make a static version of DoSaveShipWithoutValidation ("DoSaveShip(...)")
-		+ Does *not* ask when overrides
-		+ Shows dialog afterwards saying "Ship file has been backed up as "....""
-			+ Check out wxNotificationMessage
-	+ changelist
-
-+ Preferences dialog (to/from WorkbenchState):
-	+ Impl:
-		+ WorkbenchState gets CanvasBackgroundColor
-			+ Move defaults here (255, 255, 255)
-			+ Both CanvasBackgroundColor and NewShipSize are loaded and saved
-		+ Dialog:
-			+ ::Open() gets both Controller and WorkbenchState
-				+ Stores current bg color in session
-				+ Session only takes Controller, WorkbenchState given to ReconciliateUI
-			+ UI:
-				+ New ship size
-				+ Canvas background color
-					+ Swap custom with predefined, and remove "Custom" label
-					+ Changes to bg color are reflected immediately, going to Controller
-					+ Reconciliate: set into custom color
-			+ OnOk: just store new ship size (taking it from UI)
-			+ OnCancel: revert bg color to old saved in session
-		+ Controller:
-			+ Setter for color (which talks to WorkbenchState and View) and for ship size (which just talks to WorkbenchState)
-		+ Shader parameter
-			+ In shader
-			+ Set in view at init'n (and taken as arg) and at change
-	+ Tests:
-		+ Cancel
-		+ Close
-		+ Save/load preferences
-		+ All overlays: should show bg color
-
-= Texture flood tool ("Magic Wand Eraser")
-	+ First off: mouse coordinates from MainFrame to Controller becomes LogicalDisplayCoords, and they're converted to ShipSpace coords where needed
-	+ Conversion to texture coords: done by View & ViewModel, exactly like conversion to ShipSpaceCoords, and invoked by texture tool(s)
-		+ ViewModel also stores texture layer size (as opt<ImageSize> mTextureLayerVisualizationTextureSize), next to ShipSize, via new Set/RemoveTextureLayerVisualizationTextureSize
-		  invoked by View at UploadTexture
-			+ ScreenToTextureSpace: assert we have mTextureLayerVisualizationTextureSize
-		+ ScreenToTextureSpace
-		+ Test:
-			+ All four corners
-	+ Icon: magic wand
-	+ Cursor: magic wand
-	+ Tool settings:
-		+ TextureMagicWandTolerance: 0-100 unsigned int
-		+ TextureMagicWandTolerance Anti-alias: bool
-		+ TextureMagicWandTolerance Contiguous: bool
-		+ At:
-			+ WorkbenchState
-			+ UI
-	+ Tool:
-		+ If mouse coords in range, do:
-			+ Save undo
-			+ Invoke ModelController::TextureMagicWandEraseBackground(...)
-			+ If affected => push Undo
-		+ Allow upload of only a region of texture
-			+ Separate dirty region registrations
-			+ View::Upload
-			+ Tests:
-				+ This tool: changes are uploaded
-				+ Trim/Flip
-				+ Resize
-		+ ModelController::TextureMagicWandEraseBackground:
-			! Flood notes:
-				! Photoshop:
-					! Magic background eraser on uniform red, tolerance 0%:
-						! When alpha is not zero (but still very small), erasing from it erases all - even at tolerance zero
-						! When alpha is zero, erasing from it erases nothing
-						! Anti-aliasing:
-							! Regardless of angle and number of neighboring pixels, alpha of neighbor goes from 1.0 to a fraction of what it was - even
-							  for pixels touching only on corners
-								- Twice-aliased (at different times) distant neighbor is more transparent than once-aliased one
-							! Erasing from inside is different than erasing from outside (first alpha higher than second); it's because the 
-							  more the number of pixels removed, the more the alpha is lowered
-					! Unrelated info:
-						! Magic BG eraser:
-							! Once erased (with opacity 100%), re-clicking on original pixel (now empty) does not erase anything anymore, even after changing tolerance
-								! With opacity < 100%, re-clicking on original pixel (now half-empty) makes erasing more pronounced, over and over
-						! Eraser:
-							! When erased with *block*, the original color has been forgotten - an erased red and an erased blue are considered identical
-								! The sampler tool in fact doesn't pick up anything
-							! When erased with *brush*, even when a lot, the original color still seems to apply
-								! The sampler tool in fact picks up the original color
-			+ For each new pixel, first check its alpha:
-				+ If small (below threshold): follow
-				+ Else: check color
-	- See if want an alpha slider
-		- 25->75?
-	- Tests: 
-		- Bdega on Discord
-		- Oxurus' textures in Dev server, Ship suggestions - https://www.reddit.com/user/Oceanic-Star-Line/
-
-= Texture eraser tool
-	+ MainFrame:
-		+ Tool "toolbar"
-		+ Tool settings - exactly like other eraser tool
-	+ Make ViewModel::DisplayToTexture NOT return opt, as display space point is guaranteed to be in ship canvas (if caller checks)
-		+ Caller needs to ensure display coords are in Work Canvas
-		+ Test with magic eraser on single pixel/hack it to draw pixel
-	+ Use new ModelController::GetTextureSize() whenever we need texture size
-	+ ModelController::TextureRegionErase(ImageRect)
-	+ ModelController::TextureRegionEraseForEphemeralViz
-		+ And its own Restore, and ephemeral viz infrastructure for texture
-			+ And re-instate old assert(s) that we have removed from other texture methods
-	+ Tool itself
-		+ Paradigm: we always get display mouse coords, and CalculateApplicableRect does the -> texture transformation, with in-texture intersection
-		+ See then if GetMouseCoordinatesInTextureSpaceIfInTexture is still needed
-	+ View::RectOverlay method in texture layer space
-		! We store vertices in fractional ship space, reusing VBO and shader
-		+ Duplicate all RectOverlay methods in two: ...ShipSpace and ...TextureLayerSpace
-			+ They store in one of two new rect members: ...ShipSpace and ...TextureLayerSpace
-		+ One UpdateRectOverlay()
-			+ Assuming only one rect will be active at a time, it checks which one is active and does the corresponding tranx to fractional ship space
-				+ assert only one at a time
-			+ New one uses new ViewModel::TextureLayerSpaceToFractionalShipSpace
-			+ They are both populated into same VBO obviously
-		= Fix 1-pixel width
-	= Test:
-		+ Eraser quad intersection with texture
-		+ Shift lock
-		+ Dialog modal/close
-		
-- changelist: both tools, "Added texture editing tools"
-
-- MainFrame: Game viz: add "export to image" button
-	- Rearc icons now:
-		- Export: above=<file==folder|image==photo> below=<arrow pointing up>
-		- Import: above=<file==folder|image==photo> below=<arrow pointing down>
-	- TODO: ropes would be missing...
-		- Could just say that the screenshot is for the current visualization(s), i.e. the canvas render buffer as it is
-			- So it's more of a Screenshot tool, not specific to the Game viz layer
-
-- MaterialsPalette: make flag for making it its own wxFrame, so one can use it in a second monitor
 
 ================================================================================================================================================================================
 
@@ -317,9 +173,9 @@
 			- Selection spec (*)
 		- Ellipses
 		- Traslate (aka move)
-		- Magic Eraser (for texture layer only)
-			- Tolerance (0-100): % of distance(this color, start color)/max_distance
-			- Anti-aliasing (bool): when on, alpha = distance(this color, start color)/tolerance_distance
+		+ Magic Eraser (for texture layer only)
+			+ Tolerance (0-100): % of distance(this color, start color)/max_distance
+			+ Anti-aliasing (bool): when on, alpha = distance(this color, start color)/tolerance_distance
 	- SelectionManager pseudo-tool:
 		- Maintains current selection
 		- Not really a tool but a pseudo-tool
@@ -337,23 +193,12 @@
 		+ Auto-trim (on bounding box)
 
 - Selection Spec (*):
-	- TODOOLD
-	- Selection is created by tool (@ each layer); selection pseudo-tool populates SelectionManager with quad and layer
-	- Once SelectionManager has a selection, new Selection ribbon becomes enabled
-		- Ribbon has selection edit tools (flip, rotate, clear, etc.) and radio for layer-only or all layers (@ WorkbenchState)
-			- Edits go to Controller, who inspects SelectionManager and WorkbenchState for applicable layers
-	- Once SelectionManager has a selection, toolbars for all layers get enablements for selection-specific tools
-		- OR TODO: still in ribbon, but work as normal tools (of non-layer-specific types, will have to act on one or all layers)
-		- Move
-		- TODO: others?
+	- TODO: from Moleskine
 
 = RenderContext:
 	+ Single-threaded
 	+ Initializes on same canvas that main frame initializes on
-	= Renders synchronously, on-demand via SB::MainFrame::OnPaint()
-		- Except when we need animated tools, e.g. ants walking: for these we set a timer (in the order of 100's of ms) during the duration
-		  of the tool
-			- via an IUserInterface method, and another call to stop it ("SetAutoRender(bool)")
+	+ Renders synchronously, on-demand via SB::MainFrame::OnPaint()
 	+ ViewModel:
 		+ Terminology:
 			+ WorkSpace: has the pixel size of the structure (equivalent of ::World)
@@ -379,14 +224,15 @@
 
 - Validations:
 	- Move validations to own class - ModelValidator
+		- Exports one static method
 	- Electrical connectivity validation
-		- Start visit from all sources
-			- Use bool constexpr ElectricalMaterial::IsSource/Sink(ElectricalElementType)
-				- re-used also for static_assert's @ ElectricalElements::Add(.)
-		- Assume all switches, etc. are conductive
-		- Make sure all sinks have been reached
-	- Also include electrical engines connected to controllers
-	- Electrical palette: not too many elements visible
+		! Verifies that sources are connected to sinks, and viceversa
+		- Pass 1: detect "electrical sources" (generators), "electrical sinks" (non-self-powered lamps, switches, engine controllers, etc.), "engine sources", "engine sinks", "connectors"
+			- Have 2D buffer of uint8_t union with flags, incl. "visited" flags
+		- Pass 2: for each source & sink category:
+			- Flood from each element, propagating through en element if it's flagged as "connector"
+			- When done, detect all "opposites" (source->sink, sink->source) that are not reachable and complain
+	- Electrical panel: not too many elements visible 
 
 - Visualizations:
 	- Electrical layer's "circuit" visualization
@@ -406,19 +252,15 @@
 	- Test User Ships folder
 
 - Misc:
-	- When primary layer is other than Texture, render texture layer in texturization mode (as opposed to simple texture-sample mode, i.e. nearest neighbor)
-		- This is assuming that ShipTexturizer mocks closely enough tessellation
 	- Localization:
 		- See if can do separate extraction into separate file, which then is loaded at all times by LocalizationManager together with the other one 
 	- Ruler: pick a scale (pixels to meter of original ship), then you choose how long the ruler
 		- L shaped: horizontal and vertical
 		- Ruler sticks to the canvas
 		- Only one ruler at a time
-	- Texture Generator for ship canvas:
-		- Makes larger image, with bilinear interpolation with alpha blending
-			- Ain't that what we've got already for the auto-texturizer?
+	- Ship bootstrapper from texture
+		- Uses fg and bg color for contour/interior
 	- Selectable backgrounds		
-	- See if it takes so long to initialize SB::MainFrame that we need IProgress
 	- Inherits FullScreen state and shares state changes (so, for example, if exits full screen in ShipBuilder, also Game has exited full screen)
 		- How to share state changes? 
 			- FullScreenManager class, shared_ptr in both
@@ -429,6 +271,9 @@
 		- What to do with background music when switching back and forth?
 	- Ability to import an image to trace over it
 		- Like a texture layer, but not saved and not part of the ship
+	- MainFrame: add "export to image" button (in non-layer-specific ribbon) - basically a Screenshot tool
+		- Screenshot for the current visualization(s), i.e. the canvas render buffer as it is
+	- MaterialsPalette: make flag for making it its own wxFrame, so one can use it in a second monitor
 
 - Ephemeral visualization rearch:
 	- Current structure:
@@ -2498,3 +2343,138 @@ DONE
 	+ Remove logs
 
 + Merge into 1.17.1.next
+
+====== 1.17.3
+
++ See if can make MaterialsPalette close only when mouse is *clicked* outside, not just when it's *moved* outside
+	X Option 1: derive from wxPopupWindow - replace Dismiss with Hide()
+	+ Option 2: OnWorkCanvasMouseEnteredWindow: do not catch focus if palette is open
+	+ changelist
+
++ "Backup Ship" - like SaveAs, but does not change current
+	+ Ribbon button
+		+ Enabled only if the ship is "currently saved" (i.e. loaded or saved)
+	+ Requires ShipLoadDialog to show filename (incl. extension)
+	+ Action:
+		+ Appends "_backup" to filename (also if it has it already)
+		+ Saves
+			+ Make a static version of DoSaveShipWithoutValidation ("DoSaveShip(...)")
+		+ Does *not* ask when overrides
+		+ Shows dialog afterwards saying "Ship file has been backed up as "....""
+			+ Check out wxNotificationMessage
+	+ changelist
+
++ Preferences dialog (to/from WorkbenchState):
+	+ Impl:
+		+ WorkbenchState gets CanvasBackgroundColor
+			+ Move defaults here (255, 255, 255)
+			+ Both CanvasBackgroundColor and NewShipSize are loaded and saved
+		+ Dialog:
+			+ ::Open() gets both Controller and WorkbenchState
+				+ Stores current bg color in session
+				+ Session only takes Controller, WorkbenchState given to ReconciliateUI
+			+ UI:
+				+ New ship size
+				+ Canvas background color
+					+ Swap custom with predefined, and remove "Custom" label
+					+ Changes to bg color are reflected immediately, going to Controller
+					+ Reconciliate: set into custom color
+			+ OnOk: just store new ship size (taking it from UI)
+			+ OnCancel: revert bg color to old saved in session
+		+ Controller:
+			+ Setter for color (which talks to WorkbenchState and View) and for ship size (which just talks to WorkbenchState)
+		+ Shader parameter
+			+ In shader
+			+ Set in view at init'n (and taken as arg) and at change
+	+ Tests:
+		+ Cancel
+		+ Close
+		+ Save/load preferences
+		+ All overlays: should show bg color
+
++ Texture flood tool ("Magic Wand Eraser")
+	+ First off: mouse coordinates from MainFrame to Controller becomes LogicalDisplayCoords, and they're converted to ShipSpace coords where needed
+	+ Conversion to texture coords: done by View & ViewModel, exactly like conversion to ShipSpaceCoords, and invoked by texture tool(s)
+		+ ViewModel also stores texture layer size (as opt<ImageSize> mTextureLayerVisualizationTextureSize), next to ShipSize, via new Set/RemoveTextureLayerVisualizationTextureSize
+		  invoked by View at UploadTexture
+			+ ScreenToTextureSpace: assert we have mTextureLayerVisualizationTextureSize
+		+ ScreenToTextureSpace
+		+ Test:
+			+ All four corners
+	+ Icon: magic wand
+	+ Cursor: magic wand
+	+ Tool settings:
+		+ TextureMagicWandTolerance: 0-100 unsigned int
+		+ TextureMagicWandTolerance Anti-alias: bool
+		+ TextureMagicWandTolerance Contiguous: bool
+		+ At:
+			+ WorkbenchState
+			+ UI
+	+ Tool:
+		+ If mouse coords in range, do:
+			+ Save undo
+			+ Invoke ModelController::TextureMagicWandEraseBackground(...)
+			+ If affected => push Undo
+		+ Allow upload of only a region of texture
+			+ Separate dirty region registrations
+			+ View::Upload
+			+ Tests:
+				+ This tool: changes are uploaded
+				+ Trim/Flip
+				+ Resize
+		+ ModelController::TextureMagicWandEraseBackground:
+			! Flood notes:
+				! Photoshop:
+					! Magic background eraser on uniform red, tolerance 0%:
+						! When alpha is not zero (but still very small), erasing from it erases all - even at tolerance zero
+						! When alpha is zero, erasing from it erases nothing
+						! Anti-aliasing:
+							! Regardless of angle and number of neighboring pixels, alpha of neighbor goes from 1.0 to a fraction of what it was - even
+							  for pixels touching only on corners
+								- Twice-aliased (at different times) distant neighbor is more transparent than once-aliased one
+							! Erasing from inside is different than erasing from outside (first alpha higher than second); it's because the 
+							  more the number of pixels removed, the more the alpha is lowered
+					! Unrelated info:
+						! Magic BG eraser:
+							! Once erased (with opacity 100%), re-clicking on original pixel (now empty) does not erase anything anymore, even after changing tolerance
+								! With opacity < 100%, re-clicking on original pixel (now half-empty) makes erasing more pronounced, over and over
+						! Eraser:
+							! When erased with *block*, the original color has been forgotten - an erased red and an erased blue are considered identical
+								! The sampler tool in fact doesn't pick up anything
+							! When erased with *brush*, even when a lot, the original color still seems to apply
+								! The sampler tool in fact picks up the original color
+			+ For each new pixel, first check its alpha:
+				+ If small (below threshold): follow
+				+ Else: check color
+
++ Texture eraser tool
+	+ MainFrame:
+		+ Tool "toolbar"
+		+ Tool settings - exactly like other eraser tool
+	+ Make ViewModel::DisplayToTexture NOT return opt, as display space point is guaranteed to be in ship canvas (if caller checks)
+		+ Caller needs to ensure display coords are in Work Canvas
+		+ Test with magic eraser on single pixel/hack it to draw pixel
+	+ Use new ModelController::GetTextureSize() whenever we need texture size
+	+ ModelController::TextureRegionErase(ImageRect)
+	+ ModelController::TextureRegionEraseForEphemeralViz
+		+ And its own Restore, and ephemeral viz infrastructure for texture
+			+ And re-instate old assert(s) that we have removed from other texture methods
+	+ Tool itself
+		+ Paradigm: we always get display mouse coords, and CalculateApplicableRect does the -> texture transformation, with in-texture intersection
+		+ See then if GetMouseCoordinatesInTextureSpaceIfInTexture is still needed
+	+ View::RectOverlay method in texture layer space
+		! We store vertices in fractional ship space, reusing VBO and shader
+		+ Duplicate all RectOverlay methods in two: ...ShipSpace and ...TextureLayerSpace
+			+ They store in one of two new rect members: ...ShipSpace and ...TextureLayerSpace
+		+ One UpdateRectOverlay()
+			+ Assuming only one rect will be active at a time, it checks which one is active and does the corresponding tranx to fractional ship space
+				+ assert only one at a time
+			+ New one uses new ViewModel::TextureLayerSpaceToFractionalShipSpace
+			+ They are both populated into same VBO obviously
+		+ Fix 1-pixel width
+	+ Test:
+		+ Eraser quad intersection with texture
+		+ Shift lock
+		+ Dialog modal/close
+		
++ changelist: both tools, "Added texture editing tools"
