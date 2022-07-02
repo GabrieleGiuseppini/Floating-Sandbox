@@ -278,13 +278,13 @@ void Ship::StraightenTwoSpringChains(ElementIndex pointIndex)
     // wrong side of S0S1, and flip it. We do this to supplement the CCW triangle
     // detection which won't work for traverse spring.
     //
-    //       P
-    //       O
-    //      / \
-    //     /   \
-    //    /     \
-    //   O       O
-    //  S0       S1
+    //       P              |
+    //       O              |
+    //      / \             |
+    //     /   \            |
+    //    /     \           |
+    //   O       O          |
+    //  S0       S1         |
     //
 
     auto const & connectedSprings = mPoints.GetConnectedSprings(pointIndex).ConnectedSprings;

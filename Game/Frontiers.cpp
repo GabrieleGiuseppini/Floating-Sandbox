@@ -1166,15 +1166,15 @@ inline std::tuple<ElementIndex, ElementIndex> Frontiers::FindTriangleCuspOpposit
     // to the in and out edges, which are contained in the in^out sector
     //
 
-    // in
-    //  \      /
-    //   \    /
-    //    \  /
-    // cp  >
-    //    /  \
-    //   /    \
-    //  /      \
-    // out
+    // in          |
+    //  \      /   |
+    //   \    /    |
+    //    \  /     |
+    // cp  >       |
+    //    /  \     |
+    //   /    \    |
+    //  /      \   |
+    // out         |
 
     // a) Find frontier spring connected to cusp point with lowest octant among all those
     //    with octant greater than edge in's
@@ -1404,14 +1404,14 @@ inline bool Frontiers::ProcessTriangleCuspRestore(
                     //
 
                     //
-                    //     /-------------\
-                    //    /               \
-                    //   /                 \
-                    //  A-------- X --------B
-                    //  __      /   \      __
-                    //    \    /     \    /
-                    //     \  /       \  /
-                    //      \/         \/
+                    //     /-------------\              |
+                    //    /               \             |
+                    //   /                 \            |
+                    //  A-------- X --------B           |
+                    //  __      /   \      __           |
+                    //    \    /     \    /             |
+                    //     \  /       \  /              |
+                    //      \/         \/               |
                     //       C         D
                     //
                     // A->X = edgeIn
