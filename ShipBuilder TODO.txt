@@ -193,7 +193,49 @@
 		+ Auto-trim (on bounding box)
 
 - Selection Spec (*):
-	- TODO: from Moleskine
+	- Gist:
+		- LayersRegion: container of (regions of) layers, for each layer type
+			- Elec contains own region of PanelMetadata
+			- It is Paste's job to ensure target has all layers required by LayersRegion - creates layers as required
+				- OR: ignores non-existing layers (for consistency with ephemeral)
+		- SelectionManager: just glorified optional<Rect> member of Controller
+			- Owned by Controller, created @ cctor
+			- Reset at:
+				- Tool destroy
+				- Deselect
+				- Controller::~Controller (obviously)
+		- ClipboardManager: stores opt<LayersRegion>
+			- Owned by Controller, created @ cctor
+				- TODO: or, owned by WorkbenchState, so we may have clipboard surviving reloads?
+			- Never reset
+		- Select tool <TLayer>: populates selection Rect into SelectionManager
+			- TODO: really <TLayer>?
+			- "Tool Settings" ribbon: // change label of ribbon to actual tool name
+				- "All Layers" checkbox 
+					- Used @ clipboard population
+				- "Deselect" button (/CTRL^D)
+					- Talks to tool via dynamic_cast
+			- SelectionManager notifies IUserInterface @ selection presence toggles; used for: Copy, Cut, Deselect buttons			
+		- Copy & Cut buttons:
+			- Buttons at "Edit" ribbon (new own section)
+			- Populate LayersRegion in ClipboardManager, via Controller::DoCopy()
+			- ClipboardManager notifies IUserInterface @ population; used for: Paste
+			- Controller::DoCopy() reads WorkbenchState::all-layers flag
+		- Paste tool:
+			- Not selectable by user; auto-activated @ Paste
+				- Never enters "last tool" stack
+			- Gets own copy of LayersRegion at creation, and modifications happen to it (rather than to Clipboard's)
+			- Exited by:
+				- Selecting another tool
+					- In this case, it Commit's()
+				- Commit & Abort "Tool Settings" button
+				- ~PasteTool() 
+					- In this case, it Abort's()
+			- Tool does Move; various "Tool Settings" buttons do rotate/flip/etc.
+				- Rotate/flip/etc: Button->Ctrl->PasteTool
+				- Flag for opaque vs transparent
+					- Checkbox->Ctrl->PasteTool
+				- ModelController::PasteAt(LayersRegion, origin) X 2 (ephemeral, normal)
 
 = RenderContext:
 	+ Single-threaded
