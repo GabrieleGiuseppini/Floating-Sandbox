@@ -646,7 +646,7 @@ ShipRenderContext::ShipRenderContext(
             vec4f(166.0f / 255.0f, 0.0f, 0.0f, 1.0f),               // 0.80 -> 1.00
             vec4f(166.0f / 255.0f, 0.0f, 0.0f, 1.0f) };             // 1.00 -> +INF
 
-        std::array<ProgramType, 18> programs{
+        static std::array<ProgramType, 18> constexpr StressColorMapPrograms{
             ProgramType::ShipPointsColorStress,
             ProgramType::ShipPointsColorHeatOverlayStress,
             ProgramType::ShipPointsColorIncandescenceStress,
@@ -667,7 +667,7 @@ ShipRenderContext::ShipRenderContext(
             ProgramType::ShipTrianglesTextureIncandescenceStress
         };
 
-        for (auto program : programs)
+        for (auto program : StressColorMapPrograms)
         {
             mShaderManager.ActivateProgram(program);
             mShaderManager.SetProgramParameterVec4fArray<ProgramParameterType::StressColorMap>(
