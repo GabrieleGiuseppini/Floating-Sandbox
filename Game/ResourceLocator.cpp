@@ -33,7 +33,7 @@ std::filesystem::path ResourceLocator::GetInstalledShipFolderPath() const
 
 std::filesystem::path ResourceLocator::GetDefaultShipDefinitionFilePath() const
 {
-    std::filesystem::path defaultShipDefinitionFilePath = GetInstalledShipFolderPath() / "default_ship.shp";
+    std::filesystem::path defaultShipDefinitionFilePath = GetInstalledShipFolderPath() / "default_ship.shp2";
     if (!std::filesystem::exists(defaultShipDefinitionFilePath))
     {
         defaultShipDefinitionFilePath = GetInstalledShipFolderPath() / "default_ship.png";

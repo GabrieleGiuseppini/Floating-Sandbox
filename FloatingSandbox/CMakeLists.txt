@@ -185,9 +185,9 @@ install(DIRECTORY "${CMAKE_SOURCE_DIR}/Guides"
 install(DIRECTORY "${CMAKE_SOURCE_DIR}/Ships"
 	DESTINATION .
 	PATTERN "default_ship.png" EXCLUDE)
-install(FILES "${CMAKE_SOURCE_DIR}/Ships/R.M.S. Titanic (With Power).shp"
+install(FILES "${CMAKE_SOURCE_DIR}/Ships/R.M.S. Titanic (With Power).shp2"
 	DESTINATION Ships
-	RENAME "default_ship.shp")
+	RENAME "default_ship.shp2")
 
 # License et al
 install(FILES "${CMAKE_SOURCE_DIR}/license.txt" "${CMAKE_SOURCE_DIR}/changes.txt" "${CMAKE_SOURCE_DIR}/README.md"
