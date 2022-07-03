@@ -201,11 +201,14 @@
 				+ SetProcessPriority
 				+ Floating point settings
 
-		= ShipBuilder things
+		+ ShipBuilder things
 
-		- Test Ubuntu build
+		= Test Ubuntu build
+			- See why doesn't exit - see changes in MainApp
 
 		- Tensile display: try with green at 0, blue at tensile, red at compressive
+
+		- Localization
 
 		- Check all those ships
 

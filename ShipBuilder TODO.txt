@@ -1,9 +1,3 @@
-= Electrical validations (*)
-	+ Do
-	- Test:
-		- Titanics
-		- Other frequently-used ships
-	- changelist
 
 - Do Selection/Copy'n'Cut/Paste workflow
 	- (*) below (needs copy from Moleskine)

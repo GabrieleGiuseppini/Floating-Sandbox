@@ -1,9 +1,0 @@
-{
-	"structure_image":"imminent_disaster_structural.png.dat",
-	"electrical_image":"imminent_disaster_electrical.png.dat",
-	"offset":{"x":0.0, "y":-4.0},
-	"ship_name":"Imminent Disaster",
-	"created_by":"Gabriele Giuseppini",
-	"description":
-		"The designers of this ship weren't the sharpest pencils in the box. They have placed heating elements too close to dry wood, with diesel pipes running around and stashes of gunpowder lying in the neighborhood.<br/>It's definitely a disaster waiting to happen!<br/><br/>This ship demonstrates:<br/><ul><li>The use of electrical heating elements</li><li>Gunpowder and Diesel materials</li></ul>"
-}
