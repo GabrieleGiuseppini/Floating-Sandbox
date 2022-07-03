@@ -203,9 +203,6 @@
 
 		+ ShipBuilder things
 
-		= Test Ubuntu build
-			- See why doesn't exit - see changes in MainApp
-
 		- Tensile display: try with green at 0, blue at tensile, red at compressive
 
 		- Localization
@@ -217,7 +214,6 @@
 			- After release: update Wordpress post w/new engine stuff
 				- Connectivity
 				- Types
-
 
 		- Misc quick things:
 			- See if water entering via hole is faster than water entering natural non-hull ("cut funnel")
@@ -561,6 +557,8 @@
 	+ Test new feautures:
 		+ Inflatable balloon popping
 	+ Fix unit tests
+	- MainApp does not exit
+
 	
 - MAC:
 	+ FS build cannot find wxWidgets
