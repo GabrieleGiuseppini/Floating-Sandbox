@@ -2030,7 +2030,7 @@ private:
     Buffer<float> mMassBuffer; // Augmented + Water
     Buffer<float> mMaterialBuoyancyVolumeFillBuffer;
     Buffer<float> mStrengthBuffer; // Immutable
-    Buffer<float> mStressBuffer; // 0.0 -> 1.0, only calculated (at springs) if rendering it
+    Buffer<float> mStressBuffer; // -1.0 -> 1.0, only calculated (at springs) if rendering it
     Buffer<float> mDecayBuffer; // 1.0 -> 0.0 (completely decayed)
     bool mutable mIsDecayBufferDirty; // Only tracks non-ephemerals
     Buffer<float> mFrozenCoefficientBuffer; // 1.0: not frozen; 0.0f: frozen

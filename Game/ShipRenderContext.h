@@ -1328,6 +1328,7 @@ private:
     void ApplyWaterContrastChanges(RenderParameters const & renderParameters);
     void ApplyWaterLevelOfDetailChanges(RenderParameters const & renderParameters);
     void ApplyHeatSensitivityChanges(RenderParameters const & renderParameters);
+    void ApplyStressRenderModeChanges(RenderParameters const & renderParameters);
 
     void SelectShipPrograms(RenderParameters const & renderParameters);
 

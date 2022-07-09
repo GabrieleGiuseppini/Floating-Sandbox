@@ -202,15 +202,61 @@
 				+ Floating point settings
 
 		+ ShipBuilder things
+		+ Send localization files
 
-		- Tensile display: try with green at 0, blue at tensile, red at compressive
+		= Tensile display: try with green at 0, blue at tensile, red at compressive
+			+ Add new value to enum
+				= SettingsDialog
+			+ ShipRenderContext: react to changes in StressRenderMode and set array param accordingly
+			+ Shader: 12 brackets, new formula
+			+ Springs::UpdateForStrain: figure out how to replace max thing	
+			- Test on old Dell
 
-		- Localization
-
-		- Check all those ships
+		- Check all those new ships
 
 		- Release:
-			- TODOHERE
+			= Localization:
+				+ IT
+				- ES
+				- RU
+			- Branch is merged into master (if applicable)
+			- Windows
+				- MSI variable
+				- Commit & push
+				- 64-bit MSI
+					- Cleanup Install
+					- Build Release Install (after clean)
+					- Make MSI
+					- Rename MSI
+					- Test upgrade from previous version
+				- 32-bit MSI
+					- Cleanup Install
+					- Build Release Install (after clean)
+					- Make MSI
+					- Rename MSI
+					- Test clean install
+			- Ubuntu
+				- rm -rf floating-sandbox
+				- pull 
+				- rm -rf build; mkdir build
+				- cd build
+				- cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
+				- make install
+				- Make tar ("cd floating-sandbox && tar -cvf ../Floating-Sandbox-1.16.5-x64.tar . && cd -")
+				- Zip tar
+				- Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
+			- Get 3 installers tested on dev server
+			- Wait for test results
+			- Cut tag on github
+			- Upload packages to GameJolt
+				- Report file as safe (https://gamejolt.com/privacy)
+				- Post
+			- www.floatingsandbox.com:
+				- Update current version in FAQ
+				- Wait a day or two, to exclude disastrous bugs
+				- Upload changes2.txt
+					- Test w/old FS
+
 			- After release: update Wordpress post w/new engine stuff
 				- Connectivity
 				- Types

@@ -4181,7 +4181,8 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
             {
                 wxString stressRenderModeChoices[] =
                 {
-                    _("Overlay"),
+                    _("Stress Overlay"),
+                    _("Tension Overlay"),
                     _("None")
                 };
 
@@ -4195,11 +4196,15 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                         auto const selectedStressRenderMode = event.GetSelection();
                         if (0 == selectedStressRenderMode)
                         {
-                            mLiveSettings.SetValue(GameSettings::StressRenderMode, StressRenderModeType::Overlay);
+                            mLiveSettings.SetValue(GameSettings::StressRenderMode, StressRenderModeType::StressOverlay);
+                        }
+                        else if (1 == selectedStressRenderMode)
+                        {
+                            mLiveSettings.SetValue(GameSettings::StressRenderMode, StressRenderModeType::TensionOverlay);
                         }
                         else
                         {
-                            assert(1 == selectedStressRenderMode);
+                            assert(2 == selectedStressRenderMode);
                             mLiveSettings.SetValue(GameSettings::StressRenderMode, StressRenderModeType::None);
                         }
 
@@ -5538,15 +5543,21 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     auto const stressRenderMode = settings.GetValue<StressRenderModeType>(GameSettings::StressRenderMode);
     switch (stressRenderMode)
     {
-        case StressRenderModeType::Overlay:
+        case StressRenderModeType::StressOverlay:
         {
             mStressRenderModeRadioBox->SetSelection(0);
             break;
         }
 
-        case StressRenderModeType::None:
+        case StressRenderModeType::TensionOverlay:
         {
             mStressRenderModeRadioBox->SetSelection(1);
+            break;
+        }
+
+        case StressRenderModeType::None:
+        {
+            mStressRenderModeRadioBox->SetSelection(2);
             break;
         }
     }

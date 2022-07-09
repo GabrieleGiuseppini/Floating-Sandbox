@@ -18,7 +18,7 @@
 #define APPLICATION_VERSION_MAJOR               1
 #define APPLICATION_VERSION_MINOR               17
 #define APPLICATION_VERSION_PATCH               3
-#define APPLICATION_VERSION_BUILD               5
+#define APPLICATION_VERSION_BUILD               6
 
 #define APPLICATION_VERSION_LONG_STR    STRINGIZE(APPLICATION_VERSION_MAJOR)        \
                                         "." STRINGIZE(APPLICATION_VERSION_MINOR)    \

@@ -629,54 +629,6 @@ ShipRenderContext::ShipRenderContext(
     // Unbind texture
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    //
-    // Initialize "once-and-for-all" uniforms
-    //
-
-    {
-        //
-        // Stress color map
-        //
-
-        std::array<vec4f, 6> stressColorMap {
-            vec4f(0.0f, 0.0f, 166.0f / 255.0f, 0.0f),               // 0.00 -> 0.20
-            vec4f(0.0f, 0.0f, 166.0f / 255.0f, 1.0f),               // 0.20 -> 0.40
-            vec4f(0.0f, 166.0f / 255.0f, 0.0f, 1.0f),               // 0.40 -> 0.60
-            vec4f(166.0f / 255.0f, 166.0f / 255.0f, 0.0f, 1.0f),    // 0.60 -> 0.80
-            vec4f(166.0f / 255.0f, 0.0f, 0.0f, 1.0f),               // 0.80 -> 1.00
-            vec4f(166.0f / 255.0f, 0.0f, 0.0f, 1.0f) };             // 1.00 -> +INF
-
-        static std::array<ProgramType, 18> constexpr StressColorMapPrograms{
-            ProgramType::ShipPointsColorStress,
-            ProgramType::ShipPointsColorHeatOverlayStress,
-            ProgramType::ShipPointsColorIncandescenceStress,
-            ProgramType::ShipRopesStress,
-            ProgramType::ShipRopesHeatOverlayStress,
-            ProgramType::ShipRopesIncandescenceStress,
-            ProgramType::ShipSpringsColorStress,
-            ProgramType::ShipSpringsColorHeatOverlayStress,
-            ProgramType::ShipSpringsColorIncandescenceStress,
-            ProgramType::ShipSpringsTextureStress,
-            ProgramType::ShipSpringsTextureHeatOverlayStress,
-            ProgramType::ShipSpringsTextureIncandescenceStress,
-            ProgramType::ShipTrianglesColorStress,
-            ProgramType::ShipTrianglesColorHeatOverlayStress,
-            ProgramType::ShipTrianglesColorIncandescenceStress,
-            ProgramType::ShipTrianglesTextureStress,
-            ProgramType::ShipTrianglesTextureHeatOverlayStress,
-            ProgramType::ShipTrianglesTextureIncandescenceStress
-        };
-
-        for (auto program : StressColorMapPrograms)
-        {
-            mShaderManager.ActivateProgram(program);
-            mShaderManager.SetProgramParameterVec4fArray<ProgramParameterType::StressColorMap>(
-                program,
-                stressColorMap.data(),
-                stressColorMap.size());
-        }
-    }
-
 
     //
     // Set initial values of non-render parameters from which
@@ -699,6 +651,7 @@ ShipRenderContext::ShipRenderContext(
     ApplyWaterContrastChanges(renderParameters);
     ApplyWaterLevelOfDetailChanges(renderParameters);
     ApplyHeatSensitivityChanges(renderParameters);
+    ApplyStressRenderModeChanges(renderParameters);
 }
 
 ShipRenderContext::~ShipRenderContext()
@@ -1140,7 +1093,8 @@ void ShipRenderContext::ProcessParameterChanges(RenderParameters const & renderP
         ApplyShipStructureRenderModeChanges(renderParameters); // Also selects shaders for following functions to set parameters on
     }
 
-    if (renderParameters.IsViewDirty || mIsViewModelDirty
+    if (renderParameters.IsViewDirty 
+        || mIsViewModelDirty
         || renderParameters.AreShipStructureRenderModeSelectorsDirty)
     {
         ApplyViewModelChanges(renderParameters);
@@ -1182,6 +1136,11 @@ void ShipRenderContext::ProcessParameterChanges(RenderParameters const & renderP
         || renderParameters.AreShipStructureRenderModeSelectorsDirty)
     {
         ApplyHeatSensitivityChanges(renderParameters);
+    }
+
+    if (renderParameters.AreShipStructureRenderModeSelectorsDirty)
+    {
+        ApplyStressRenderModeChanges(renderParameters);
     }
 }
 
@@ -2318,7 +2277,7 @@ void ShipRenderContext::ApplyShipStructureRenderModeChanges(RenderParameters con
     // Select shaders
     SelectShipPrograms(renderParameters);
 
-    // Parameters will be set in shaders by ProcessParameterChanges()
+    // Shader parameters will be set in shaders by ProcessParameterChanges()
 }
 
 void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderParameters)
@@ -2835,6 +2794,106 @@ void ShipRenderContext::ApplyHeatSensitivityChanges(RenderParameters const & ren
         mShaderManager.SetProgramParameter<ProgramParameterType::HeatShift>(
             mShipTrianglesProgram,
             heatShift);
+    }
+}
+
+void ShipRenderContext::ApplyStressRenderModeChanges(RenderParameters const & renderParameters)
+{
+    //
+    // Update stress color map
+    //
+
+    vec4f const * stressColorMap = nullptr;
+
+    switch (renderParameters.StressRenderMode)
+    {
+        case StressRenderModeType::None:
+        {
+            // Nothing to do
+            return;
+        }
+
+        case StressRenderModeType::StressOverlay:
+        {
+            // Symmetric left and right, transparent at center
+
+            static std::array<vec4f, 12> constexpr StressColorMap {
+
+                vec4f(166.0f / 255.0f, 0.0f, 0.0f, 1.0f),               // [-1.20 -> -1.00)
+                vec4f(166.0f / 255.0f, 0.0f, 0.0f, 1.0f),               // [-1.00 -> -0.80)
+                vec4f(166.0f / 255.0f, 166.0f / 255.0f, 0.0f, 1.0f),    // [-0.80 -> -0.60)
+                vec4f(0.0f, 166.0f / 255.0f, 0.0f, 1.0f),               // [-0.60 -> -0.40)
+                vec4f(0.0f, 0.0f, 166.0f / 255.0f, 1.0f),               // [-0.40 -> -0.20)
+                vec4f(0.0f, 0.0f, 166.0f / 255.0f, 0.0f),               // [-0.20 ->  0.00)
+
+                vec4f(0.0f, 0.0f, 166.0f / 255.0f, 0.0f),               // [ 0.00 ->  0.20)
+                vec4f(0.0f, 0.0f, 166.0f / 255.0f, 1.0f),               // [ 0.20 ->  0.40)
+                vec4f(0.0f, 166.0f / 255.0f, 0.0f, 1.0f),               // [ 0.40 ->  0.60)
+                vec4f(166.0f / 255.0f, 166.0f / 255.0f, 0.0f, 1.0f),    // [ 0.60 ->  0.80)
+                vec4f(166.0f / 255.0f, 0.0f, 0.0f, 1.0f),               // [ 0.80 ->  1.00)
+                vec4f(166.0f / 255.0f, 0.0f, 0.0f, 1.0f)                // [ 1.00 ->  1.20)
+            };
+
+            stressColorMap = StressColorMap.data();
+            
+            break;
+        }
+
+        case StressRenderModeType::TensionOverlay:
+        {
+            // Opaque green at center, full red at -1.0, full blue at +1.0
+
+            static std::array<vec4f, 12> constexpr StressColorMap {
+
+                vec4f(166.0f / 255.0f, 0.0f, 0.0f, 1.0f),               // [-1.20 -> -1.00)
+                vec4f(166.0f / 255.0f, 0.0f, 0.0f, 1.0f),               // [-1.00 -> -0.80)
+                vec4f(166.0f / 255.0f, 83.0f / 255.0f, 0.0f, 1.0f),     // [-0.80 -> -0.60)
+                vec4f(166.0f / 255.0f, 166.0f / 255.0f, 0.0f, 1.0f),    // [-0.60 -> -0.40)
+                vec4f(83.0f / 255.0f, 166.0f / 255.0f, 0.0f, 1.0f),     // [-0.40 -> -0.20)
+                vec4f(0.0f, 166.0f / 255.0f, 0.0f, 1.0f),               // [-0.20 ->  0.00)
+
+                vec4f(0.0f, 166.0f / 255.0f, 0.0f, 1.0f),               // [ 0.00 ->  0.20)
+                vec4f(0.0f, 125.0f / 255.0f, 42.0f / 255.0f, 1.0f),     // [ 0.20 ->  0.40)
+                vec4f(0.0f, 83.0f / 255.0f, 83.0f / 255.0f, 1.0f),      // [ 0.40 ->  0.60)
+                vec4f(0.0f, 42.0f / 255.0f, 125.0f / 255.0f, 1.0f),     // [ 0.60 ->  0.80)
+                vec4f(0.0f, 0.0f, 166.0f / 255.0f, 1.0f),               // [ 0.80 ->  1.00)
+                vec4f(0.0f, 0.0f, 166.0f / 255.0f, 1.0f)                // [ 1.00 ->  1.20)
+            };
+
+            stressColorMap = StressColorMap.data();
+
+            break;
+        }
+    }
+
+    static std::array<ProgramType, 18> constexpr StressColorMapPrograms{
+        ProgramType::ShipPointsColorStress,
+        ProgramType::ShipPointsColorHeatOverlayStress,
+        ProgramType::ShipPointsColorIncandescenceStress,
+        ProgramType::ShipRopesStress,
+        ProgramType::ShipRopesHeatOverlayStress,
+        ProgramType::ShipRopesIncandescenceStress,
+        ProgramType::ShipSpringsColorStress,
+        ProgramType::ShipSpringsColorHeatOverlayStress,
+        ProgramType::ShipSpringsColorIncandescenceStress,
+        ProgramType::ShipSpringsTextureStress,
+        ProgramType::ShipSpringsTextureHeatOverlayStress,
+        ProgramType::ShipSpringsTextureIncandescenceStress,
+        ProgramType::ShipTrianglesColorStress,
+        ProgramType::ShipTrianglesColorHeatOverlayStress,
+        ProgramType::ShipTrianglesColorIncandescenceStress,
+        ProgramType::ShipTrianglesTextureStress,
+        ProgramType::ShipTrianglesTextureHeatOverlayStress,
+        ProgramType::ShipTrianglesTextureIncandescenceStress
+    };
+
+    for (auto program : StressColorMapPrograms)
+    {
+        mShaderManager.ActivateProgram(program);
+        mShaderManager.SetProgramParameterVec4fArray<ProgramParameterType::StressColorMap>(
+            program,
+            stressColorMap,
+            12);
     }
 }
 

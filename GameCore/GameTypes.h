@@ -1030,7 +1030,8 @@ enum class HeatRenderModeType
 enum class StressRenderModeType
 {
     None,
-    Overlay
+    StressOverlay,
+    TensionOverlay
 };
 
 /*

@@ -290,12 +290,13 @@ void Springs::InternalUpdateForStrains(
         {
             auto & strainState = mStrainStateBuffer[s];
 
-            // Calculate strain length
-            float const strain = fabs(GetLength(s, points) - mRestLengthBuffer[s]);
+            // Calculate strain
+            float const strain = GetLength(s, points) - mRestLengthBuffer[s];
+            float const absStrain = std::abs(strain);
 
             // Check against breaking elongation
             float const breakingElongation = strainState.BreakingElongation;
-            if (strain > breakingElongation)
+            if (absStrain > breakingElongation)
             {
                 // It's broken!
 
@@ -314,7 +315,7 @@ void Springs::InternalUpdateForStrains(
                     // Stressed spring...
                     // ...see if should un-stress it
 
-                    if (strain < StrainLowWatermark * breakingElongation)
+                    if (absStrain < StrainLowWatermark * breakingElongation)
                     {
                         // It's not stressed anymore
                         strainState.IsStressed = false;
@@ -325,7 +326,7 @@ void Springs::InternalUpdateForStrains(
                     // Not stressed spring
                     // ...see if should stress it
 
-                    if (strain > strainState.StrainThresholdFraction * breakingElongation)
+                    if (absStrain > strainState.StrainThresholdFraction * breakingElongation)
                     {
                         // It's stressed!
                         strainState.IsStressed = true;
@@ -338,18 +339,24 @@ void Springs::InternalUpdateForStrains(
                     }
                 }
 
-                // Update tension
+                // Update stress
                 if constexpr (DoUpdateStress)
                 {
-                    float const stress = strain / breakingElongation;
+                    float const stress = strain / breakingElongation; // Between -1.0 and +1.0
                     
-                    points.SetStress(
-                        GetEndpointAIndex(s),
-                        std::max(points.GetStress(GetEndpointAIndex(s)), stress));
+                    if (std::abs(stress) > std::abs(points.GetStress(GetEndpointAIndex(s))))
+                    {
+                        points.SetStress(
+                            GetEndpointAIndex(s),
+                            stress);
+                    }
 
-                    points.SetStress(
-                        GetEndpointBIndex(s),
-                        std::max(points.GetStress(GetEndpointBIndex(s)), stress));
+                    if (std::abs(stress) > std::abs(points.GetStress(GetEndpointBIndex(s))))
+                    {
+                        points.SetStress(
+                            GetEndpointBIndex(s),
+                            stress);
+                    }
                 }
             }
         }
