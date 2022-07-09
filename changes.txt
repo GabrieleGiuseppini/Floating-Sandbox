@@ -5,28 +5,29 @@
 		- Jet Engine: provides main propulsion
 		- Jet Thrust Engine: provides short bursts to correct small directional deviations
 	- ...and two engine controllers:
-		- Jet Engine Throttle Controller: best for controlling Jet Engines
-		- Jet Engine Thrust Controller: best for controlling Jet Thrust Engines
+		- Jet Engine Throttle Controller: best for controlling Jet engines
+		- Jet Engine Thrust Controller: best for controlling Jet Thrust engines
 	- Check out the new Air Boat and Rocket ships to see these engines in action!
 - Re-designed interaction between engine controllers and engines, allowing a controller to run an unlimited number of engines
-	- Introduced new "Engine Transmission" electrical material that may be used to connect engine controllers with engines
-- Added auto-focus capability - for cinematic awesomeness
-	- May be turned off and on again via the Control menu or Ctrl+HOME
+	- Introduced new "Engine Transmission" electrical material that may be used to connect engine controllers with engines at a distance
+- Added auto-focus - for cinematic awesomeness
+	- May be turned off and on via the Control menu or by pressing Ctrl+HOME
 - Added "Stress Overlay" view mode, showing structure stress as a heatmap
 	- Among other things, it allows for stress-testing your model and understanding where structural weaknesses are
 - Added lightning hit probability setting 
-	- Set to zero to prevent lightnings from hitting the ship altogether!
-- More stable FPS rate on multi-core Windows systems
+	- You can set it to zero to prevent lightnings from hitting the ship altogether!
+- More stable FPS rate on multi-core Windows computers
 - ShipBuilder:
-	- Added first texture editing tools:
+	- Added some initial texture editing tools:
 		- Magic Eraser: for removing background from textures
 		- Eraser: for removing entire sections of textures
-	- Added inspection of electrical layer to the existing set of ship validations, in order to detect issues with electrical circuits early on 
+	- Added analysis of electrical layer during ship validation
+		- Detects issues with electrical circuits such as disconnected engines and unpowered components
 	- Added "Backup Ship" button to save the current ship to a backup file 
 		- Useful when you're making experiments and you're not sure whether they'll work out!
-	- Added Preferences window for setting a default size for new ships, and a custom background color for the canvas
+	- Added Preferences window for setting a default size for new ships, and for setting a custom background color for the canvas
 	- Fixed material palettes annoyingly closing when mouse moves out of the palette 
-	- Fixed drawing lag that was occurring on low-bandwidth graphic cards
+	- Fixed drawing lag on low-bandwidth graphic cards
 
 1.17.2
 - Expanded the materials database - building lighter ships has just become easier!
