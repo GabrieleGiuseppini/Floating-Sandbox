@@ -28,6 +28,8 @@
 	- Added Preferences window for setting a default size for new ships, and for setting a custom background color for the canvas
 	- Fixed material palettes annoyingly closing when mouse moves out of the palette 
 	- Fixed drawing lag on low-bandwidth graphic cards
+- Added 9 new ships 
+	- Thanks to Pocketwatch, Menta1ity, braun, and BeamierBoomer!
 
 1.17.2
 - Expanded the materials database - building lighter ships has just become easier!

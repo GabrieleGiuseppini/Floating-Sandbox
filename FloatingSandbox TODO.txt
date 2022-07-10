@@ -207,42 +207,31 @@
 			+ Fix telegraph control
 			+ See if it's also in other controls
 		+ See horizontal oscillations, e.g. with SS_Kbenhavn
-
-		= Tensile display: try with green at 0, blue at tensile, red at compressive
+		+ Tensile display: try with green at 0, blue at tensile, red at compressive
 			+ Add new value to enum
 				= SettingsDialog
 			+ ShipRenderContext: react to changes in StressRenderMode and set array param accordingly
 			+ Shader: 12 brackets, new formula
 			+ Springs::UpdateForStrain: figure out how to replace max thing	
-			- Test on old Dell
-			- Think of spring-only
-				- Re-check exactly what he wants
-
-		- Check all those new ships
-			= S.S. Arctic - take it
-				+ Menta1ity
-				+ Ask Mentality if supposed to have holes in funnel
-				- Add him to credits
-			= Great_Grandeur_1956
-				+ Pocketwatch
-			= S.S._Hoogbeke
-				+ Pocketwatch
-			= SS_Kbenhavn_1923
-				+ Pocketwatch
-			= U.S.S. Rhode Island
-				+ Pocketwatch
-
-			= M.S_Bjeli_Orao_2: 
-				+ BeamierBoomer
-				- Check if final
-			= Estonia
+			+ Test on old Dell
+		+ Check all those new ships
+			+ S.S. Arctic
+				+ "Menta1ity"
+				+ Add him to credits
+			+ Estonia
 				+ "braun"
-				- Add him to credits
-			- Ships\ 
-				- "Dimitri Warin" or "Hellooping" (gmail)
-				- Asked name
-				- Asked ShipBucket credits
-			- changelist
+				+ Add him to credits
+			+ Great_Grandeur_1956
+				+ Pocketwatch
+			+ S.S._Hoogbeke
+				+ Pocketwatch
+			+ SS_Kbenhavn_1923
+				+ Pocketwatch
+			+ U.S.S. Rhode Island
+				+ Pocketwatch
+			+ M.S_Bjeli_Orao_2: 
+				+ BeamierBoomer
+			+ changelist
 
 		- Release:
 			= Localization:
@@ -251,7 +240,6 @@
 					- Wait until "Floats:" re-done
 				- RU
 					= Asked "Floats:"/"Trim:"
-			- Branch is merged into master (if applicable)
 			- Windows
 				- MSI variable
 				- Commit & push
@@ -569,6 +557,10 @@
 			+ Test
 			+ Meta: The package includes 11 ships. The name of this pack is: The Mateusz's Small Steamship ShipPack. Author: "The Mateusz"
 	- New ships:
+		- TO_TRY\Ships\ 
+			- "Dimitri Warin" or "Hellooping" (gmail)
+			- Asked name
+			- Asked ShipBucket credits
 		- Check out from FS server:
 			- You can find the best ships in the #architect-creations channel
 			- Theres some really good ones in #creation-sharing as well so dont forget about that
@@ -1108,6 +1100,8 @@
 
 
 - Gfx:
+
+	- Tensile/Stress display variant: only color springs (but in "normal" mode)
 
 	- In Windows' "high contrast mode", the names of the ships in the Ship Load Dialog disappear
 
