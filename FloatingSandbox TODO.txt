@@ -207,6 +207,8 @@
 			+ Fix telegraph control
 			+ See if it's also in other controls
 
+		- See horizontal oscillations, e.g. with SS_Kbenhavn
+
 		= Tensile display: try with green at 0, blue at tensile, red at compressive
 			+ Add new value to enum
 				= SettingsDialog
@@ -216,11 +218,6 @@
 			- Test on old Dell
 			- Think of spring-only
 				- Re-check exactly what he wants
-
-
-		- See what caused that Pocketwatch ship re-write to fail load
-
-		- See oscillations, e.g. with SS_Kbenhavn
 
 		- Check all those new ships
 			= S.S. Arctic - take it

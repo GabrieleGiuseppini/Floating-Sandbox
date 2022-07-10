@@ -26,7 +26,7 @@
     std::uint32_t( ((ch1 & 0xff) << 24) | ((ch2 & 0xff) << 16) | ((ch3 & 0xff) << 8) | (ch4 & 0xff) )
 
 /*
- * All the logic to load and save ships from and to .shp2 files.
+ * All the logic to *load* and *save* ships from and to .shp2 files.
  */
 class ShipDefinitionFormatDeSerializer
 {
@@ -111,8 +111,8 @@ private:
         // Numeric values are serialized in ship files, changing them will result
         // in ship files being un-deserializable!
 
-        FSVersion1 = MAKE_TAG('F', 'S', 'V', '1'),
-        FSVersion2 = MAKE_TAG('F', 'S', 'V', '2'),
+        FSVersion1 = MAKE_TAG('F', 'S', 'V', '1'),  // Legacy, used until 1.17.2 included
+        FSVersion2 = MAKE_TAG('F', 'S', 'V', '2'),  // Current, used from 1.17.3 included
         ShipSize = MAKE_TAG('S', 'S', 'Z', '1'),
         HasTextureLayer = MAKE_TAG('H', 'T', 'X', '1'),
         HasElectricalLayer = MAKE_TAG('H', 'E', 'L', '1'),
