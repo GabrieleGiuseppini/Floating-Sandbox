@@ -206,8 +206,7 @@
 		+ See core dump
 			+ Fix telegraph control
 			+ See if it's also in other controls
-
-		- See horizontal oscillations, e.g. with SS_Kbenhavn
+		+ See horizontal oscillations, e.g. with SS_Kbenhavn
 
 		= Tensile display: try with green at 0, blue at tensile, red at compressive
 			+ Add new value to enum

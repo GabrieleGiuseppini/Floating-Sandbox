@@ -215,8 +215,8 @@ void ViewManager::Update(Geometry::AABBSet const & allAABBs)
             // Convert back into world offset
             vec2f const newAutoFocusCameraWorldPositionOffset = mRenderContext.NdcOffsetToWorldOffset(
                 vec2f(
-                    newAutoFocusCameraPositionNdcOffset.x,
-                    newAutoFocusCameraPositionNdcOffset.y * SmoothStep(0.0f, 0.4f, std::abs(newAutoFocusCameraPositionNdcOffset.y))), // Compress Y displacement to reduce effect of waves
+                    newAutoFocusCameraPositionNdcOffset.x * SmoothStep(0.0f, 0.1f, std::abs(newAutoFocusCameraPositionNdcOffset.x)),    // Compress X displacement to reduce small oscillations
+                    newAutoFocusCameraPositionNdcOffset.y * SmoothStep(0.0f, 0.4f, std::abs(newAutoFocusCameraPositionNdcOffset.y))),   // Compress Y displacement to reduce effect of waves
                 mAutoFocus->CurrentAutoFocusZoom);
 
             mAutoFocus->CurrentAutoFocusCameraWorldPosition = mAutoFocus->CurrentAutoFocusCameraWorldPosition + newAutoFocusCameraWorldPositionOffset;
