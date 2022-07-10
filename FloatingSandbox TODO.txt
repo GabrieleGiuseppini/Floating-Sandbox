@@ -233,15 +233,13 @@
 				+ BeamierBoomer
 			+ changelist
 
-		- Release:
-			= Localization:
+		+ Release:
+			+ Localization:
 				+ IT
-				- ES
-					- Wait until "Floats:" re-done
-				- RU
-					= Asked "Floats:"/"Trim:"
+				+ ES
+				+ RU
 			- Windows
-				- MSI variable
+				+ MSI variable
 				- Commit & push
 				- 64-bit MSI
 					- Cleanup Install
@@ -1567,23 +1565,33 @@
 	  rather than the current annoying behavior
 
 	- Also "clock time since last reload" would be helpful
-		- Add two Game Preferences checkboxes to select each
+		- Add Game Preferences radio to select clock type
 
 	- ShipLoadDialog toolbar (*): 
 		- Above preview window
 		- Flip H and V (toggle buttons, wxBitmapToggleButton)
-			= Icons
-		- Info button (move from below)
-			+ Icon
-		- Sort "button" w/drop-down, like in Windows; contains:
-			- UIControls: Popup button
-				- Static image (w/Windows background effect) with little arrow to the right (TODO - think well)
-				- Custom handler that takes coords
-			= Icon
-			- By: Name, HD/Elec/0, Elec/HD/0, Size, Date added (radio)
+			- Given as flags to ShipFactory, hence must be returned by ShipLoadDialog to caller
+		- Sort method, as:
+			- BitmapButton, showing currently-selected sorting method
+				- When clicking on it, dropdown appears with bitmaps to choose sorting methods
+					- Icons:
+						- Name ("A/Z")
+						- Date added (clock?)
+						- Year built ("1912" w/e.g. "2" over "3")
+						- HD/Elec/... (ribbon)
+				- When entry from dropdown is selected, BitmapButton icon changes to selected one
+			- Thin button with either up or down arrow, thin horizontally but as tall as previous BitmapButton
+				- Clicking on it toggles up/down
+			- By: Name, Date added, Year Built, HD/Elec/0
 				- Date added: see after install if file creation dates are still originals
-			- Asc/desc radio
-		- Display also folders
+			- Sorting impl @ PreviewWindow:
+				- Vector of info tiles is assumed to be always sorted by the currently-selected method
+				- Has std::function "sort predicate" member
+				- Upon receiving new entries from thread, inserts in info tiles vector according to current order/predicate
+				- Upon changing "sort predicate", re-sorts entire info tiles vector 
+		- Move "Info" button here
+		- Move search here
+		- Move "Ok/Cancel" below next to dir dropdown (taking place of "search")
 
 	- Localization:
 		- Keyboard shortcuts

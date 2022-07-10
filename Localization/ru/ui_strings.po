@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Floating Sandbox\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-07-03 23:39+0200\n"
+"PO-Revision-Date: 2022-07-10 15:25+0200\n"
 "Last-Translator: Gabriele Giuseppini <gabrielegiuseppini@gmail.com>\n"
 "Language-Team: Ilya Voloshin; Roman Shavernew (DioxCode)\n"
 "Language: ru\n"
@@ -312,6 +312,8 @@ msgid ""
 "Adjusts the probability of a lightning hitting the ship. Set to zero to "
 "prevent altogether lightnings from hitting the ship."
 msgstr ""
+"Регулирует вероятность попадания молнии в корабль. Установите нулевое "
+"значение, чтобы предотвратить попадание молний в корабль."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2473
 msgid "Adjusts the quantity of light emitted by luminescent materials."
@@ -472,18 +474,24 @@ msgid ""
 "All electrical components in the electrical layer are connected to at least "
 "one power source."
 msgstr ""
+"Все электрические компоненты в электрическом слое подключены как минимум к "
+"одному источнику питания."
 
 #: ..\ShipBuilderLib\UI\ModelValidationDialog.cpp:540
 msgid ""
 "All engine components in the electrical layer are connected to at least one "
 "engine controller."
 msgstr ""
+"Все компоненты двигателя в электрическом слое подключены по крайней мере к "
+"одному контроллеру двигателя."
 
 #: ..\ShipBuilderLib\UI\ModelValidationDialog.cpp:554
 msgid ""
 "All engine controllers in the electrical layer are connected to at least one "
 "engine."
 msgstr ""
+"Все контроллеры двигателей в электрическом слое подключены по крайней мере к "
+"одному двигателю."
 
 #: ..\ShipBuilderLib\UI\ModelValidationDialog.cpp:460
 msgid ""
@@ -500,6 +508,8 @@ msgid ""
 "All power sources in the electrical layer are connected to at least one "
 "electrical element."
 msgstr ""
+"Все источники питания в электрическом слое подключены по крайней мере к "
+"одному электрическому элементу."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1683
 msgid "Analysis"
@@ -507,7 +517,7 @@ msgstr "Анализ"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2129
 msgid "Anti-Alias:"
-msgstr ""
+msgstr "Анти-Алиас:"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4992
 msgid "Apply Saved Settings"
@@ -562,10 +572,8 @@ msgstr "Автор(ы), например, \"Эллен Рипли; Дэвид Г
 
 #: ..\FloatingSandbox\MainFrame.cpp:255
 #: ..\FloatingSandbox\PreferencesDialog.cpp:940
-#, fuzzy
-#| msgid "Auto-Zoom at Ship Load"
 msgid "Auto-Focus at Ship Load"
-msgstr "Авто-Масштабирование при загрузке судна"
+msgstr "Автофокусировка при загрузке судна"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:764
 #: ..\ShipBuilderLib\UI\ShipPropertiesEditDialog.cpp:92
@@ -574,7 +582,7 @@ msgstr "Автоматическое Текстурирование"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1554
 msgid "Auto-Trim"
-msgstr "Автоматическая отделка"
+msgstr "Автоматическая обрезка"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2640
 msgid "Auto-texturization mode: view ship as when it is auto-texturized."
@@ -594,10 +602,8 @@ msgid "Background Music Volume"
 msgstr "Громкость Фоновой Музыки"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:802
-#, fuzzy
-#| msgid "Load Ship"
 msgid "Backup Ship"
-msgstr "Загрузить корабль"
+msgstr "Резервный корабль"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1543
 msgid "Base Speed"
@@ -625,7 +631,7 @@ msgstr "Взрывной инструмент"
 
 #: ..\ShipBuilderLib\UI\PreferencesDialog.cpp:194
 msgid "Blue Sky"
-msgstr ""
+msgstr "Синее небо"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2822
 msgid "Bombs"
@@ -677,7 +683,7 @@ msgstr "Не удается проверить наличие обновлени
 
 #: ..\ShipBuilderLib\UI\PreferencesDialog.cpp:134
 msgid "Canvas Background Color:"
-msgstr ""
+msgstr "Цвет фона холста:"
 
 #: ..\ShipBuilderLib\UI\ResizeDialog.cpp:469
 msgid "Center Texture"
@@ -685,7 +691,7 @@ msgstr "Текстура центра"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1011
 msgid "Change general ShipBuilder settings."
-msgstr ""
+msgstr "Изменить общие настройки ShipBuilder."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:464
 msgid ""
@@ -795,7 +801,7 @@ msgstr "Только смежные:"
 #: ..\FloatingSandbox\MainFrame.cpp:259
 #: ..\FloatingSandbox\PreferencesDialog.cpp:925
 msgid "Continuous Auto-Focus"
-msgstr ""
+msgstr "Непрерывная автофокусировка"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4272
 msgid "Contrast"
@@ -1137,10 +1143,8 @@ msgid "Electrical Panel"
 msgstr "Электрическая панель"
 
 #: ..\ShipBuilderLib\UI\ElectricalPanelEditDialog.cpp:35
-#, fuzzy
-#| msgid "Electrical Panel"
 msgid "Electrical Panel Edit"
-msgstr "Электрическая панель"
+msgstr "Редактирование электрической панели"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2534
 msgid "Electricals"
@@ -1155,18 +1159,12 @@ msgid "Enable Shoaling"
 msgstr "Включить обмеление"
 
 #: ..\FloatingSandbox\MainFrame.cpp:255
-#, fuzzy
-#| msgid "Enables or disables auto-zooming when loading a new ship."
 msgid "Enable or disable auto-focus when a ship is loaded."
-msgstr ""
-"Включает или отключает автоматическое масштабирование при загрузке нового "
-"корабля."
+msgstr "Включить или отключить автофокусировку при загрузке корабля."
 
 #: ..\FloatingSandbox\MainFrame.cpp:259
-#, fuzzy
-#| msgid "Enables or disables rendering of flames."
 msgid "Enable or disable continuous auto-focus."
-msgstr "Включает или отключает рендеринг пламени."
+msgstr "Включение или отключение непрерывной автофокусировки."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2982
 msgid "Enable/disable the visual guides."
@@ -1181,30 +1179,24 @@ msgid "Enables or disables amplification of tool forces and inflicted damages."
 msgstr "Включает или отключает усиление инструментов и нанесенных повреждений."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:941
-#, fuzzy
-#| msgid "Enables or disables auto-zooming when loading a new ship."
 msgid "Enables or disables auto-focus when a ship is loaded."
-msgstr ""
-"Включает или отключает автоматическое масштабирование при загрузке нового "
-"корабля."
+msgstr "Включает или выключает автофокусировку при загрузке корабля."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2383
 msgid "Enables or disables automatic cycling of daylight."
 msgstr "Включает или отключает автоматическое переключение дневного света."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:926
-#, fuzzy
-#| msgid "Enables or disables automatic cycling of daylight."
 msgid "Enables or disables automatic focus on the ship."
-msgstr "Включает или отключает автоматическое переключение дневного света."
+msgstr "Включает или выключает автоматическую фокусировку на корабле."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:956
 msgid ""
 "Enables or disables automatic showing of the ship's electrical panel when a "
 "ship with interactive electrical elements is loaded."
 msgstr ""
-"Включает или отключает автоматическое отображение электрической панели при "
-"загрузке корабля с интерактивными электрическими элементами."
+"Включает или выключает автоматический показ электрической панели корабля, "
+"когда загружается корабль с интерактивными электрическими элементами."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:1097
 msgid "Enables or disables background music while playing the game."
@@ -1375,7 +1367,7 @@ msgstr "Регулировка Тяги Двигателя"
 
 #: ..\ShipBuilderLib\UI\MaterialPalette.cpp:780
 msgid "Engine Transmission"
-msgstr ""
+msgstr "Трансмиссия двигателя"
 
 #: ..\ShipBuilderLib\UI\MaterialPalette.cpp:727
 msgid "Engine Type"
@@ -1383,7 +1375,7 @@ msgstr "Тип двигателя"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:3572
 msgid "Erase background."
-msgstr ""
+msgstr "Стереть фон."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:3278
 msgid "Erase individual electrical elements."
@@ -1394,22 +1386,16 @@ msgid "Erase individual structure particles."
 msgstr "Стирание отдельных частиц структуры."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:3588
-#, fuzzy
-#| msgid "Erase individual structure particles."
 msgid "Erase individual texture pixels."
-msgstr "Стирание отдельных частиц структуры."
+msgstr "Стирание отдельных пикселей текстуры."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2177
-#, fuzzy
-#| msgid ""
-#| "Flood only particles touching each other. When not checked, the flood "
-#| "tool effectively replaces a material with another."
 msgid ""
 "Erase only pixels contiguous to the starting pixel. When not checked, the "
 "tool effectively removes colors."
 msgstr ""
-"Заливает только частицы, соприкасающиеся друг с другом. Если флажок не "
-"установлен, инструмент заливки эффективно заменяет материал другим."
+"Стирать только пиксели, смежные с начальным пикселем. Если флажок не "
+"установлен, инструмент эффективно удаляет цвета."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:3441
 msgid "Erase rope endpoints."
@@ -1531,7 +1517,7 @@ msgstr "Переверните корабль вертикально."
 
 #: ..\ShipBuilderLib\UI\WaterlineAnalyzerDialog.cpp:184
 msgid "Floats:"
-msgstr ""
+msgstr "Плавучесть:"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3178
 msgid "Flood Tool"
@@ -1667,10 +1653,8 @@ msgid "Go to your Ships folder"
 msgstr "Перейдите в папку \"Корабли\""
 
 #: ..\ShipBuilderLib\UI\PreferencesDialog.cpp:195
-#, fuzzy
-#| msgid "Normal Screen"
 msgid "Green Screen"
-msgstr "Оконный экран"
+msgstr "Зеленый экран"
 
 #: ..\FloatingSandbox\MainFrame.cpp:575
 msgid "Guide"
@@ -1746,6 +1730,8 @@ msgid ""
 "How different other colors must be from the selected color in order to be "
 "erased."
 msgstr ""
+"Насколько другие цвета должны отличаться от выбранного цвета, чтобы их можно "
+"было стереть."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3233
 msgid "How much water is injected or drained by the flood tool (m3)."
@@ -1867,11 +1853,11 @@ msgstr "Неверный пароль!"
 
 #: ..\ShipBuilderLib\UI\ShipNameSuggestionDialog.cpp:41
 msgid "It seems that a better name for this ship might be:"
-msgstr ""
+msgstr "Кажется, что лучшим названием для этого корабля могло бы быть:"
 
 #: ..\ShipBuilderLib\UI\MaterialPalette.cpp:739
 msgid "Jet"
-msgstr ""
+msgstr "Реактивный двигатель"
 
 #: ..\ShipBuilderLib\UI\MaterialPalette.cpp:818
 msgid "Lamp"
@@ -1906,7 +1892,7 @@ msgstr "Лицензия Creative Commons: By Attribution 4.0 License"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1992
 msgid "Lightning Hit Probability"
-msgstr ""
+msgstr "Вероятность попадания молнии"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:2460
 msgid "Lights"
@@ -1949,10 +1935,8 @@ msgid "Load an Image"
 msgstr "Загрузить изображение"
 
 #: ..\FloatingSandbox\SplashScreenDialog.cpp:126
-#, fuzzy
-#| msgid "Loading shaders..."
 msgid "Loading ShipBuilder..."
-msgstr "Загрузка шейдеров..."
+msgstr "Загрузка ShipBuilder..."
 
 #: ..\FloatingSandbox\SplashScreenDialog.cpp:119
 msgid "Loading cloud texture atlas..."
@@ -1979,10 +1963,8 @@ msgid "Loading generic textures..."
 msgstr "Загрузка стандартных текстур..."
 
 #: ..\FloatingSandbox\SplashScreenDialog.cpp:127
-#, fuzzy
-#| msgid "Loading electrical panel..."
 msgid "Loading materials palette..."
-msgstr "Загрузка электрической панели..."
+msgstr "Загрузка палитры материалов..."
 
 #: ..\FloatingSandbox\SplashScreenDialog.cpp:124
 msgid "Loading music..."
@@ -2155,16 +2137,12 @@ msgid "New Ship"
 msgstr "Новый корабль"
 
 #: ..\ShipBuilderLib\UI\NewShipNameDialog.cpp:28
-#, fuzzy
-#| msgid "Ship Name"
 msgid "New Ship Name"
-msgstr "Название Корабля"
+msgstr "Новое название корабля"
 
 #: ..\ShipBuilderLib\UI\PreferencesDialog.cpp:52
-#, fuzzy
-#| msgid "New Ship"
 msgid "New Ship Size:"
-msgstr "Новый корабль"
+msgstr "Новый размер корабля:"
 
 #: ..\ShipBuilderLib\UI\ResizeDialog.cpp:136
 msgid "New Size"
@@ -2179,10 +2157,8 @@ msgid "Night Vision"
 msgstr "Ночное Видение"
 
 #: ..\ShipBuilderLib\UI\WaterlineAnalyzerDialog.cpp:395
-#, fuzzy
-#| msgid "None"
 msgid "No"
-msgstr "None"
+msgstr "Нет"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4627
 msgid "No Debug"
@@ -2214,7 +2190,7 @@ msgstr "Нет визуализации: слой текстуры не отри
 
 #: ..\ShipBuilderLib\UI\ShipNameSuggestionDialog.cpp:78
 msgid "No, I want to keep my name"
-msgstr ""
+msgstr "Нет, я хочу сохранить свое имя"
 
 #: ..\ShipBuilderLib\UI\MaterialPalette.cpp:877
 msgid "Nominal Force"
@@ -2429,18 +2405,16 @@ msgstr "Монитор питания"
 
 #: ..\ShipBuilderLib\UI\ShipNameSuggestionDialog.cpp:24
 msgid "Prefer This Ship Name?"
-msgstr ""
+msgstr "Предпочитаете это название корабля?"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:995 ..\ShipBuilderLib\MainFrame.cpp:1006
 #: ..\ShipBuilderLib\UI\PreferencesDialog.cpp:29
-#, fuzzy
-#| msgid "Game Preferences"
 msgid "Preferences"
-msgstr "Игровые Предпочтения"
+msgstr "Параметры"
 
 #: ..\ShipBuilderLib\UI\PreferencesDialog.cpp:175
 msgid "Preset Colors:"
-msgstr ""
+msgstr "Заданные цвета:"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1001
 #: ..\FloatingSandbox\SettingsDialog.cpp:2159
@@ -2527,10 +2501,8 @@ msgid "Recent directories:"
 msgstr "Последние каталоги:"
 
 #: ..\ShipBuilderLib\UI\PreferencesDialog.cpp:196
-#, fuzzy
-#| msgid "Full Screen"
 msgid "Red Screen"
-msgstr "Полный Экран"
+msgstr "Красный экран"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:936
 msgid "Reduce the view (-)."
@@ -2795,10 +2767,8 @@ msgid "Save the current ship and return to the simulator."
 msgstr "Сохранить текущий корабль и вернуться в симулятор."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:807
-#, fuzzy
-#| msgid "Save the current ship to a different file."
 msgid "Save the current ship file to a backup file."
-msgstr "Сохранить текущий корабль в другой файл."
+msgstr "Сохранить текущий файл корабля в резервный файл."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:791
 msgid "Save the current ship to a different file."
@@ -2861,10 +2831,8 @@ msgid "Selects how heat is rendered on the ship."
 msgstr "Выбирает способ отвода тепла на корабле."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4191
-#, fuzzy
-#| msgid "Selects how heat is rendered on the ship."
 msgid "Selects how stress is rendered on the ship."
-msgstr "Выбирает способ отвода тепла на корабле."
+msgstr "Выбор способа отображения напряжения на корабле."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:404
 msgid ""
@@ -2898,20 +2866,16 @@ msgid "Set ship-specific auto-texturization settings."
 msgstr "Установка параметров автотекстурирования для конкретного корабля."
 
 #: ..\ShipBuilderLib\UI\PreferencesDialog.cpp:188
-#, fuzzy
-#| msgid "Sets the single color of the ocean floor."
 msgid "Sets a predefined color for the canvas background."
-msgstr "Задает единый цвет океанского дна."
+msgstr "Устанавливает предопределенный цвет для фона холста."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4018
 msgid "Sets the color of lamp lights."
 msgstr "Устанавливает цвет свечения лампы."
 
 #: ..\ShipBuilderLib\UI\PreferencesDialog.cpp:151
-#, fuzzy
-#| msgid "Sets the color of the sky. Duh."
 msgid "Sets the color of the canvas background."
-msgstr "Задает цвет неба."
+msgstr "Устанавливает цвет фона холста."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3975
 msgid "Sets the color of the sky. Duh."
@@ -3226,16 +3190,12 @@ msgid "Strength Randomization"
 msgstr "Рандомизация прочности"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4189
-#, fuzzy
-#| msgid "Extra Draw Options"
 msgid "Stress Draw Options"
-msgstr "Дополнительные параметры отрисовки"
+msgstr "Варианты рисования стресса"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4184
-#, fuzzy
-#| msgid "Heat Overlay"
 msgid "Stress Overlay"
-msgstr "Тепловое наложение"
+msgstr "Наложение стресса"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1080 ..\ShipBuilderLib\MainFrame.cpp:2330
 #: ..\ShipBuilderLib\MainFrame.cpp:2388
@@ -3272,10 +3232,8 @@ msgid "Temperature"
 msgstr "Температура"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:4185
-#, fuzzy
-#| msgid "Heat Overlay"
 msgid "Tension Overlay"
-msgstr "Тепловое наложение"
+msgstr "Наложение натяжения"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3673
 #: ..\FloatingSandbox\SettingsDialog.cpp:3894
@@ -3348,6 +3306,9 @@ msgid ""
 "source. Review your circuits to ensure all components are connected to at "
 "least one power source, such as a generator."
 msgstr ""
+"Электрический слой содержит компоненты, которые не подключены к источнику "
+"питания. Просмотрите свои схемы, чтобы убедиться, что все компоненты "
+"подключены хотя бы к одному источнику питания, например, к генератору."
 
 #: ..\ShipBuilderLib\UI\ModelValidationDialog.cpp:536
 msgid ""
@@ -3355,6 +3316,10 @@ msgid ""
 "engine controller. Review your circuits to ensure all engine components "
 "(engines and engine cables) are connected to at least one engine controller."
 msgstr ""
+"Электрический слой содержит компоненты двигателя, которые не подключены к "
+"контроллеру двигателя. Просмотрите свои схемы, чтобы убедиться, что все "
+"компоненты двигателя (двигатели и кабели двигателя) подключены как минимум к "
+"одному контроллеру двигателя."
 
 #: ..\ShipBuilderLib\UI\ModelValidationDialog.cpp:550
 msgid ""
@@ -3362,6 +3327,9 @@ msgid ""
 "any engines. Review your circuits to ensure all engine controllers are "
 "connected to at least one engine."
 msgstr ""
+"Электрический слой содержит контроллеры двигателя, которые не подключены ни "
+"к одному двигателю. Просмотрите свои схемы, чтобы убедиться, что все "
+"контроллеры двигателя подключены хотя бы к одному двигателю."
 
 #: ..\ShipBuilderLib\UI\ModelValidationDialog.cpp:522
 msgid ""
@@ -3370,6 +3338,10 @@ msgid ""
 "connected to at least one passive electrical element, such as a lamp, a "
 "horn, or an engine controller."
 msgstr ""
+"Электрический слой содержит источники питания, которые не подключены к каким-"
+"либо пассивным элементам. Просмотрите свои схемы и убедитесь, что все "
+"источники питания подключены хотя бы к одному пассивному электрическому "
+"элементу, такому как лампа, звуковой сигнал или контроллер двигателя."
 
 #: ..\ShipBuilderLib\UI\ModelValidationDialog.cpp:480
 msgid ""
@@ -3392,13 +3364,13 @@ msgid ""
 "making it difficult to use. It is advised to hide some elements and not "
 "exceed a maximum of about 20 elements."
 msgstr ""
+"Электрическая панель содержит слишком много элементов, загромождая панель и "
+"затрудняя ее использование. Рекомендуется скрыть некоторые элементы и не "
+"превышать максимум около 20 элементов."
 
 #: ..\ShipBuilderLib\UI\ModelValidationDialog.cpp:498
-#, fuzzy
-#| msgid ""
-#| "The electrical layer does not contain too many light-emitting particles."
 msgid "The electrical panel does not contain too many elements."
-msgstr "Электрический слой не содержит слишком много светоизлучающих частиц."
+msgstr "Электрическая панель не содержит слишком много элементов."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1868
 msgid ""
@@ -3436,10 +3408,8 @@ msgid "The heat produced by the HeatBlaster tool (KJ/s)."
 msgstr "Тепло, выделяемое инструментом Тепловым Бластером (кДж/с)."
 
 #: ..\ShipBuilderLib\UI\PreferencesDialog.cpp:116
-#, fuzzy
-#| msgid "The size of the eraser tool."
 msgid "The height of the canvas."
-msgstr "Размер инструмента ластика."
+msgstr "Высота холста."
 
 #: ..\FloatingSandbox\CheckForUpdatesDialog.cpp:159
 #, c-format
@@ -3583,10 +3553,8 @@ msgid "The transparency of materials' textures"
 msgstr "Прозрачность текстур материалов"
 
 #: ..\ShipBuilderLib\UI\PreferencesDialog.cpp:84
-#, fuzzy
-#| msgid "The size of the eraser tool."
 msgid "The width of the canvas."
-msgstr "Размер инструмента ластика."
+msgstr "The width of the canvas."
 
 #: ..\ShipBuilderLib\UI\MaterialPalette.cpp:602
 msgid "Thermal Conductivity (W/(m*K))"
@@ -3697,7 +3665,7 @@ msgstr "Бомба с таймером"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2073
 msgid "Tolerance:"
-msgstr ""
+msgstr "Толерантность:"
 
 #: ..\ShipBuilderLib\UI\AskPasswordDialog.cpp:313
 msgid "Too many attempts, aborting."
@@ -3741,17 +3709,15 @@ msgstr "Вызвать цунами"
 
 #: ..\ShipBuilderLib\Controller.cpp:681
 msgid "Trim"
-msgstr "Отделка"
+msgstr "Отклонение"
 
 #: ..\ShipBuilderLib\Controller.cpp:484
 msgid "Trim Electrical"
-msgstr "Электрическая отделка"
+msgstr "Электрическое отклонение"
 
 #: ..\ShipBuilderLib\UI\WaterlineAnalyzerDialog.cpp:156
-#, fuzzy
-#| msgid "Trim"
 msgid "Trim:"
-msgstr "Отделка"
+msgstr "Отклонение:"
 
 #: ..\FloatingSandbox\BootSettingsDialog.cpp:66
 #: ..\FloatingSandbox\BootSettingsDialog.cpp:111
@@ -3893,10 +3859,8 @@ msgid "Waterline"
 msgstr "Ватерлиния"
 
 #: ..\ShipBuilderLib\UI\WaterlineAnalyzerDialog.cpp:37
-#, fuzzy
-#| msgid "Waterline"
 msgid "Waterline Analysis"
-msgstr "Ватерлиния"
+msgstr "Анализ ватерлинии"
 
 #: ..\ShipBuilderLib\UI\MaterialPalette.cpp:893
 msgid "Watertight Door"
@@ -3920,7 +3884,7 @@ msgstr "Добро пожаловать!"
 
 #: ..\ShipBuilderLib\UI\NewShipNameDialog.cpp:46
 msgid "What's the name of your new ship?"
-msgstr ""
+msgstr "Как называется ваш новый корабль?"
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:786
 msgid ""
@@ -3959,6 +3923,8 @@ msgid ""
 "When enabled, the contours of erased background color regions are anti-"
 "aliased in order to minimize the appearance of jagged lines."
 msgstr ""
+"Если эта функция включена, контуры областей со стертым цветом фона "
+"сглаживаются, чтобы минимизировать появление неровных линий."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1668
 msgid "Width Adjust"
@@ -3999,11 +3965,11 @@ msgstr "Год постройки судна, например, \"1911\"."
 
 #: ..\ShipBuilderLib\UI\WaterlineAnalyzerDialog.cpp:390
 msgid "Yes"
-msgstr ""
+msgstr "Да"
 
 #: ..\ShipBuilderLib\UI\ShipNameSuggestionDialog.cpp:71
 msgid "Yes, I want to use the suggested name"
-msgstr ""
+msgstr "Да, я хочу использовать предложенное имя"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1515
 msgid "Zero"
