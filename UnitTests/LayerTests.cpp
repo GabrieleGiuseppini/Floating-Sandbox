@@ -249,7 +249,7 @@ TEST(LayerTests, ElectricalLayer_Clone_Smaller)
 
     ElectricalLayerData sourceLayer(std::move(sourceBuffer), std::move(sourcePanel));
 
-    ASSERT_EQ(sourceLayer.Panel.size(), size_t(sourceBuffer.Size.height * sourceBuffer.Size.width));
+    ASSERT_EQ(sourceLayer.Panel.size(), static_cast<size_t>(sourceBuffer.Size.height * sourceBuffer.Size.width));
 
     //
     // Clone layer
@@ -275,7 +275,7 @@ TEST(LayerTests, ElectricalLayer_Clone_Smaller)
 
     // Panel
 
-    EXPECT_EQ(targetLayer.Panel.size(), targetLayer.Buffer.Size.height * targetLayer.Buffer.Size.width);
+    EXPECT_EQ(targetLayer.Panel.size(), static_cast<size_t>(targetLayer.Buffer.Size.height * targetLayer.Buffer.Size.width));
 
     for (int y = 0; y < 3; ++y)
     {
@@ -329,7 +329,7 @@ TEST(LayerTests, ElectricalLayer_Trim)
 
     ElectricalLayerData sourceLayer(std::move(sourceBuffer), std::move(sourcePanel));
 
-    ASSERT_EQ(sourceLayer.Panel.size(), sourceBuffer.Size.height * sourceBuffer.Size.width);
+    ASSERT_EQ(sourceLayer.Panel.size(), static_cast<size_t>(sourceBuffer.Size.height * sourceBuffer.Size.width));
 
     //
     // Trim layer
@@ -356,7 +356,7 @@ TEST(LayerTests, ElectricalLayer_Trim)
 
     // Panel
 
-    EXPECT_EQ(targetLayer.Panel.size(), targetLayer.Buffer.Size.height * targetLayer.Buffer.Size.width);
+    EXPECT_EQ(targetLayer.Panel.size(), static_cast<size_t>(targetLayer.Buffer.Size.height * targetLayer.Buffer.Size.width));
 
     for (int y = 0; y < 3; ++y)
     {
@@ -684,7 +684,7 @@ TEST(LayerTests, RopesLayer_Trim)
     // Verify
     //
 
-    ASSERT_EQ(targetLayer.Buffer.GetSize(), 1);
+    ASSERT_EQ(targetLayer.Buffer.GetSize(), 1u);
 
     EXPECT_EQ(targetLayer.Buffer[0].StartCoords, ShipSpaceCoordinates(1, 2));
     EXPECT_EQ(targetLayer.Buffer[0].EndCoords, ShipSpaceCoordinates(7, 7));
@@ -731,7 +731,7 @@ TEST(LayerTests, RopesLayer_Reframe_Smaller)
     // Verify
     //
 
-    ASSERT_EQ(targetLayer.Buffer.GetSize(), 1);
+    ASSERT_EQ(targetLayer.Buffer.GetSize(), 1u);
 
     EXPECT_EQ(targetLayer.Buffer[0].StartCoords, ShipSpaceCoordinates(1, 2));
     EXPECT_EQ(targetLayer.Buffer[0].EndCoords, ShipSpaceCoordinates(7, 7));
@@ -778,7 +778,7 @@ TEST(LayerTests, RopesLayer_Reframe_Larger)
     // Verify
     //
 
-    ASSERT_EQ(targetLayer.Buffer.GetSize(), 3);
+    ASSERT_EQ(targetLayer.Buffer.GetSize(), 3u);
 
     EXPECT_EQ(targetLayer.Buffer[0].StartCoords, ShipSpaceCoordinates(8, 9));
     EXPECT_EQ(targetLayer.Buffer[0].EndCoords, ShipSpaceCoordinates(14, 14));
@@ -831,7 +831,7 @@ TEST(LayerTests, RopesLayer_Reframe_Same)
     // Verify
     //
 
-    ASSERT_EQ(targetLayer.Buffer.GetSize(), 3);
+    ASSERT_EQ(targetLayer.Buffer.GetSize(), 3u);
 
     EXPECT_EQ(targetLayer.Buffer[0].StartCoords, ShipSpaceCoordinates(4, 5));
     EXPECT_EQ(targetLayer.Buffer[0].EndCoords, ShipSpaceCoordinates(10, 10));
