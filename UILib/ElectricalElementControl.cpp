@@ -132,7 +132,7 @@ void EngineControllerTelegraphElectricalElementControl::OnKeyboardShortcutDown(b
                 --mCurrentValue;
         }
 
-        mOnControllerUpdated(mCurrentValue);
+        mOnControllerUpdated(TelegraphValueToControllerValue(mCurrentValue));
     }
 }
 
@@ -157,6 +157,8 @@ void EngineControllerTelegraphElectricalElementControl::Render(wxDC & dc)
     //
     // Draw hand
     //
+
+    assert(mCurrentValue >= 0 && mCurrentValue < mHandImages.size());
 
     dc.DrawBitmap(
         mHandImages[mCurrentValue],
