@@ -559,7 +559,7 @@ void Springs::inline_UpdateCoefficients(
         GetMaterialStrength(springIndex)
         * strengthAdjustment
         * 0.839501f // Magic number: from 1.14, after #iterations increased from 24 to 30
-        * 0.643389f // Magic number: in 1.15.2 we're shortened the simulation time step from 0.2 to 0.156
+        * 0.643389f // Magic number: in 1.15.2 we've shortened the simulation time step from 0.2 to 0.156
         * strengthIterationsAdjustment
         * springDecay
         * GetRestLength(springIndex) // To make strain comparison independent from rest length
