@@ -15,6 +15,9 @@
 #include <GameCore/ImageTools.h>
 #include <GameCore/Log.h>
 
+#include <algorithm>
+#include <limits>
+
 wxDEFINE_EVENT(fsEVT_SHIP_FILE_SELECTED, fsShipFileSelectedEvent);
 wxDEFINE_EVENT(fsEVT_SHIP_FILE_CHOSEN, fsShipFileChosenEvent);
 
@@ -143,21 +146,14 @@ void ShipPreviewWindow::SetDirectory(std::filesystem::path const & directoryPath
     // Build set of files from directory
     //
 
-    auto directoryFiles = EnumerateShipFiles(directoryPath);
+    DirectorySnapshot directorySnapshot = EnumerateShipFiles(directoryPath);
 
     // Check if we're moving to a new directory, or if not, if there's
     // a change in the current directory
     if (!mCurrentlyCompletedDirectorySnapshot.has_value()
-        || directoryPath != mCurrentlyCompletedDirectorySnapshot->DirectoryPath
-        || mCurrentlyCompletedDirectorySnapshot->Files != directoryFiles)
+        || !mCurrentlyCompletedDirectorySnapshot->IsEquivalentTo(directorySnapshot))
     {
         LogMessage("ShipPreviewWindow::SetDirectory(", directoryPath.string(), "): change detected");
-
-        //
-        // Create directory snapshot
-        //
-
-        DirectorySnapshot directorySnapshot = DirectorySnapshot(directoryPath, std::move(directoryFiles));
 
         //
         // Stop thread's scan (if thread is running)
@@ -411,9 +407,10 @@ void ShipPreviewWindow::OnPollQueueTimer(wxTimerEvent & /*event*/)
                 // Populate info tile
                 //
 
-                assert(message->GetShipIndex() < mInfoTiles.size());
+                size_t const infoTileIndex = ShipFileIdToInfoTileIndex(message->GetShipFileId());
+                assert(infoTileIndex < mInfoTiles.size());
 
-                auto & infoTile = mInfoTiles[message->GetShipIndex()];
+                auto & infoTile = mInfoTiles[infoTileIndex];
 
                 ShipPreviewData const & shipPreviewData = message->GetShipPreviewData();
 
@@ -482,12 +479,18 @@ void ShipPreviewWindow::OnPollQueueTimer(wxTimerEvent & /*event*/)
 
             case ThreadToPanelMessage::MessageType::PreviewError:
             {
+                //
                 // Set error image
-                assert(message->GetShipIndex() < mInfoTiles.size());
-                mInfoTiles[message->GetShipIndex()].Bitmap = mErrorBitmap;
-                mInfoTiles[message->GetShipIndex()].OriginalDescription1 = message->GetErrorMessage();
-                mInfoTiles[message->GetShipIndex()].Description1Size.reset();
+                //
 
+                size_t const infoTileIndex = ShipFileIdToInfoTileIndex(message->GetShipFileId());
+                assert(infoTileIndex < mInfoTiles.size());
+                
+                mInfoTiles[infoTileIndex].Bitmap = mErrorBitmap;
+                mInfoTiles[infoTileIndex].OriginalDescription1 = message->GetErrorMessage();
+                mInfoTiles[infoTileIndex].Description1Size.reset();
+
+                // Remember we need to refresh now
                 doRefresh = true;
 
                 break;
@@ -498,7 +501,7 @@ void ShipPreviewWindow::OnPollQueueTimer(wxTimerEvent & /*event*/)
                 LogMessage("ShipPreviewPanel::OnPollQueueTimer: PreviewCompleted for ", message->GetDirectorySnapshot().DirectoryPath.string());
 
                 // Remember the current snapshot, now that it's complete
-                mCurrentlyCompletedDirectorySnapshot.emplace(std::move(message->GetDirectorySnapshot()));
+                mCurrentlyCompletedDirectorySnapshot.emplace(message->GetDirectorySnapshot());
 
                 break;
             }
@@ -562,18 +565,19 @@ void ShipPreviewWindow::ResetInfoTiles(DirectorySnapshot const & directorySnapsh
     LogMessage("ShipPreviewPanel::ResetInfoTiles start...");
 
     mInfoTiles.clear();
-    mInfoTiles.reserve(directorySnapshot.Files.size());
+    mInfoTiles.reserve(directorySnapshot.FileEntries.size());
 
-    for (auto const & fileEntry : directorySnapshot.Files)
+    for (auto const & fileEntry : directorySnapshot.FileEntries)
     {
         mInfoTiles.emplace_back(
             mWaitBitmap,
-            fileEntry.first);
+            fileEntry.FilePath,
+            fileEntry.ShipFileId);
 
         // Add ship filename to search map
         mInfoTiles.back().SearchStrings.push_back(
             Utils::ToLower(
-                fileEntry.first.filename().string()));
+                fileEntry.FilePath.filename().string()));
     }
 
     // Recalculate geometry
@@ -589,9 +593,24 @@ void ShipPreviewWindow::SortInfoTiles()
     // TODOHERE
 }
 
-std::map<std::filesystem::path, std::filesystem::file_time_type> ShipPreviewWindow::EnumerateShipFiles(std::filesystem::path const & directoryPath)
+size_t ShipPreviewWindow::ShipFileIdToInfoTileIndex(size_t shipFileId) const
 {
-    std::map<std::filesystem::path, std::filesystem::file_time_type> map;
+    // Search for info tile with this ship file ID
+    for (size_t i = 0; i < mInfoTiles.size(); ++i)
+    {
+        if (mInfoTiles[i].ShipFileId == shipFileId)
+        {
+            return i;
+        }
+    }
+
+    assert(false);
+    return std::numeric_limits<size_t>::max();
+}
+
+ShipPreviewWindow::DirectorySnapshot ShipPreviewWindow::EnumerateShipFiles(std::filesystem::path const & directoryPath)
+{
+    std::vector<std::tuple<std::filesystem::path, std::filesystem::file_time_type>> files;
 
     LogMessage("ShipPreviewWindow::EnumerateShipFiles(", directoryPath.string(), "): start...");
 
@@ -617,7 +636,7 @@ std::map<std::filesystem::path, std::filesystem::file_time_type> ShipPreviewWind
                     std::string _ = entryFilepath.filename().string();
                     (void)_;
 
-                    map.try_emplace(
+                    files.emplace_back(
                         entryFilepath,
                         std::filesystem::last_write_time(entryFilepath));
                 }
@@ -631,9 +650,22 @@ std::map<std::filesystem::path, std::filesystem::file_time_type> ShipPreviewWind
         }
     }
 
-    LogMessage("ShipPreviewWindow::EnumerateShipFiles(", directoryPath.string(), "): ...found ", map.size(), " ship files.");
+    LogMessage("ShipPreviewWindow::EnumerateShipFiles(", directoryPath.string(), "): ...found ", files.size(), " ship files.");
 
-    return map;
+    // Sort just to have a deterministic order
+    // (but honor sort method just to make default case - sort by name - less jumpy)
+    std::sort(
+        files.begin(),
+        files.end(),
+        [this](auto const & l, auto const & r) -> bool
+        {
+            auto const lFilename = std::get<0>(l).filename();
+            auto const rFilename = std::get<0>(r).filename();
+            return ((lFilename < rFilename) != (mIsSortDescending)) ||
+                (lFilename == rFilename && std::get<1>(l) < std::get<1>(r));
+        });
+
+    return DirectorySnapshot(directoryPath, std::move(files));
 }
 
 wxBitmap ShipPreviewWindow::MakeBitmap(RgbaImageData const & shipPreviewImage) const
@@ -1046,8 +1078,7 @@ void ShipPreviewWindow::ScanDirectorySnapshot(DirectorySnapshot && directorySnap
     // Process all files and create previews
     //
 
-    size_t iShip = 0;
-    for (auto fileIt = directorySnapshot.Files.cbegin(); fileIt != directorySnapshot.Files.cend(); ++fileIt, ++iShip)
+    for (auto fileIt = directorySnapshot.FileEntries.cbegin(); fileIt != directorySnapshot.FileEntries.cend(); ++fileIt)
     {
         // Check whether we have been interrupted
         if (!!mPanelToThreadMessage)
@@ -1063,7 +1094,7 @@ void ShipPreviewWindow::ScanDirectorySnapshot(DirectorySnapshot && directorySnap
         try
         {
             // Load preview data
-            auto shipPreviewData = ShipDeSerializer::LoadShipPreviewData(fileIt->first);
+            auto shipPreviewData = ShipDeSerializer::LoadShipPreviewData(fileIt->FilePath);
 
             // Load preview image
             auto shipPreviewImage = previewDirectoryManager->LoadPreviewImage(shipPreviewData, PreviewImageSize);
@@ -1071,7 +1102,7 @@ void ShipPreviewWindow::ScanDirectorySnapshot(DirectorySnapshot && directorySnap
             // Notify
             QueueThreadToPanelMessage(
                 ThreadToPanelMessage::MakePreviewReadyMessage(
-                    iShip,
+                    fileIt->ShipFileId,
                     std::move(shipPreviewData),
                     std::move(shipPreviewImage)));
         }
@@ -1082,7 +1113,7 @@ void ShipPreviewWindow::ScanDirectorySnapshot(DirectorySnapshot && directorySnap
             // Notify
             QueueThreadToPanelMessage(
                 ThreadToPanelMessage::MakePreviewErrorMessage(
-                    iShip,
+                    fileIt->ShipFileId,
                     "Cannot load preview"));
 
             LogMessage("PreviewThread::ScanDirectorySnapshot(): ...error notified.");

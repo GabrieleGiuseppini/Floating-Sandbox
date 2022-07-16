@@ -250,25 +250,72 @@ private:
     struct DirectorySnapshot
     {
         std::filesystem::path DirectoryPath;
-        std::map<std::filesystem::path, std::filesystem::file_time_type> Files;
+
+        struct FileEntry
+        {
+            std::filesystem::path FilePath;
+            std::filesystem::file_time_type FileLastModified;
+            size_t ShipFileId;
+
+            FileEntry(
+                std::filesystem::path const & filePath,
+                std::filesystem::file_time_type const & fileLastModified,
+                size_t shipFileId)
+                : FilePath(filePath)
+                , FileLastModified(fileLastModified)
+                , ShipFileId(shipFileId)
+            {}
+        };
+
+        std::vector<FileEntry> FileEntries;
 
         DirectorySnapshot(
             std::filesystem::path const & directoryPath,
-            std::map<std::filesystem::path, std::filesystem::file_time_type> && files)
+            std::vector<std::tuple<std::filesystem::path, std::filesystem::file_time_type>> && files)
             : DirectoryPath(directoryPath)
-            , Files(std::move(files))
-        {}
+        {
+            for (auto const & file : files)
+            {
+                FileEntries.emplace_back(
+                    std::get<0>(file),
+                    std::get<1>(file),
+                    FileEntries.size()); // Here we assign the ID once and for all
+            }
+        }
+
+        bool IsEquivalentTo(DirectorySnapshot const & other) const
+        {
+            if (DirectoryPath != other.DirectoryPath)
+                return false;
+
+            if (FileEntries.size() != other.FileEntries.size())
+                return false;
+
+            for (size_t f = 0; f < FileEntries.size(); ++f)
+            {
+                if (FileEntries[f].FilePath != other.FileEntries[f].FilePath
+                    || FileEntries[f].FileLastModified != other.FileEntries[f].FileLastModified)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
     };
 
     struct InfoTile
     {
         wxBitmap Bitmap;
+        // TODO: needed? For name while we wait for metadata?
+        std::filesystem::path ShipFilepath;
+        size_t ShipFileId;
+
         bool IsHD;
         bool HasElectricals;
         std::string OriginalDescription1;
         std::string OriginalDescription2;
         std::string OriginalDescription3;
-        std::filesystem::path ShipFilepath;
 
         wxString Description1;
         std::optional<wxSize> Description1Size;
@@ -289,14 +336,17 @@ private:
 
         InfoTile(
             wxBitmap bitmap,
-            std::filesystem::path const & shipFilepath)
+            std::filesystem::path const & shipFilepath,
+            size_t shipFileId)
             : Bitmap(bitmap)
+            , ShipFilepath(shipFilepath)
+            , ShipFileId(shipFileId)
             , IsHD(false)
             , HasElectricals(false)
             , OriginalDescription1()
             , OriginalDescription2()
             , OriginalDescription3()
-            , ShipFilepath(shipFilepath)
+            
         {}
     };
 
@@ -310,7 +360,9 @@ private:
 
     void SortInfoTiles();
 
-    static std::map<std::filesystem::path, std::filesystem::file_time_type> EnumerateShipFiles(std::filesystem::path const & directoryPath);
+    size_t ShipFileIdToInfoTileIndex(size_t shipFileId) const;
+
+    DirectorySnapshot EnumerateShipFiles(std::filesystem::path const & directoryPath);
 
     wxBitmap MakeBitmap(RgbaImageData const & shipPreviewImage) const;
 
@@ -355,7 +407,8 @@ private:
 
     std::unique_ptr<wxTimer> mPollQueueTimer;
 
-    // The info tiles currently populated
+    // The info tiles currently populated; always
+    // sorted by the current sort method
     std::vector<InfoTile> mInfoTiles;
 
     // The currently-selected info tile
@@ -472,23 +525,23 @@ private:
         }
 
         static std::unique_ptr<ThreadToPanelMessage> MakePreviewReadyMessage(
-            size_t shipIndex,
+            size_t shipFileId,
             ShipPreviewData && shipPreviewData,
             RgbaImageData && shipPreviewImage)
         {
             std::unique_ptr<ThreadToPanelMessage> msg(new ThreadToPanelMessage(MessageType::PreviewReady));
-            msg->mShipIndex = shipIndex;
+            msg->mShipFileId = shipFileId;
             msg->mShipPreviewData.emplace(std::move(shipPreviewData));
             msg->mShipPreviewImage.emplace(std::move(shipPreviewImage));
             return msg;
         }
 
         static std::unique_ptr<ThreadToPanelMessage> MakePreviewErrorMessage(
-            size_t shipIndex,
+            size_t shipFileId,
             std::string errorMessage)
         {
             std::unique_ptr<ThreadToPanelMessage> msg(new ThreadToPanelMessage(MessageType::PreviewError));
-            msg->mShipIndex = shipIndex;
+            msg->mShipFileId = shipFileId;
             msg->mErrorMessage = std::move(errorMessage);
             return msg;
         }
@@ -520,10 +573,10 @@ private:
             return mErrorMessage;
         }
 
-        size_t GetShipIndex() const
+        size_t GetShipFileId() const
         {
-            assert(!!mShipIndex);
-            return *mShipIndex;
+            assert(!!mShipFileId);
+            return *mShipFileId;
         }
 
         ShipPreviewData const & GetShipPreviewData()
@@ -542,7 +595,7 @@ private:
             : mMessageType(messageType)
             , mDirectorySnapshot()
             , mErrorMessage()
-            , mShipIndex()
+            , mShipFileId()
             , mShipPreviewData()
             , mShipPreviewImage()
         {}
@@ -551,7 +604,7 @@ private:
 
         std::optional<DirectorySnapshot> mDirectorySnapshot;
         std::string mErrorMessage;
-        std::optional<size_t> mShipIndex;
+        std::optional<size_t> mShipFileId;
         std::optional<ShipPreviewData> mShipPreviewData;
         std::optional<RgbaImageData> mShipPreviewImage;
     };

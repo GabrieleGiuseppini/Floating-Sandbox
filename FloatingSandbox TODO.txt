@@ -284,12 +284,14 @@
 		+ Bumpup version
 		- Update checker: more indentations
 
+		- Fix ship exploding at max strength
+
 		- Misc quick things:
 			- See if water entering via hole is faster than water entering natural non-hull ("cut funnel")
 				- See why Bernoulli doesn't make inflow faster
 			- Negative pressure in Mylar bubble
 
-		- ShipLoadDialog Toolbar (*)
+		= ShipLoadDialog Toolbar (*)
 
 		- At lights going off, before flickering: flash w/spread and luminiscence
 			- See 1:53 at https://www.youtube.com/watch?v=yg9rkceLOzA
@@ -1583,6 +1585,12 @@
 			+ Move "Info" button here
 			- Flip H and V (toggle buttons, wxBitmapToggleButton)
 				- Given as flags to ShipFactory, hence must be returned by ShipLoadDialog to caller
+				- ShipLayers class (@ existing Layers.cpp/h), with Flip() methods applied to all layers
+					- Used at ShipDefinition
+						- And ShipFactory calls Flip() on it
+					- Used at ShipLayers also @ ShipBuilder::Model
+						- ...and thus also implement Clone(), Trim(), Rotate(), etc.
+					- Unit tests
 			= Sort method, as:
 				+ BitmapButton, showing currently-selected sorting method
 					+ When clicking on it, popup appears with horizonal buttons
@@ -1596,16 +1604,27 @@
 					+ Clicking on it toggles asc/desc for sorting, and bitmap
 				+ By: Name, Date added, Year Built, HD/Elec/0
 					~ Date added: see after install if file creation dates are still originals
-				- Sorting impl @ PreviewWindow:
+				= Sorting impl @ PreviewWindow:
+					+ Selection is by ShipId, not index
+						+ Assigned at creation, taken by thread as well
+							+ DirectorySnapshot must store them
+						+ Adjust to new DirectorySnapshot:
+							+ ResetInfoTiles()
+							+ Thread's directory scan
+							+ Main Thread's handling of PreviewReady
+							+ Main Thread's handling of PreviewError
+						+ Helper methods:
+							+ GetInfoTileIndex(size_t ShipId) -> size_t
 					- Vector of info tiles is assumed to be always sorted by the currently-selected method
 						- Change InfoTile: needs to become agnostic of own position in grid, which also needs to be recalc'd a) at each new InfoTile, and b) at each change of sorting
 						- Replace those members with functions that go to and from linear position in InfoTile vector to VirtualRect
-					- Selection is by ShipId, not index
-						- Assigned by thread
-						- No more "ShipIndex"
-					- TODOHERE: enum + boolean + std::function vector (function uses xor)
-					- Has std::function "sort predicate" member
-					- Upon changing "sort predicate", re-sorts entire info tiles vector according to current order+predicate			
+					- Do sorting
+						- TODO: Has std::function "sort predicate" member, memoized by SetSortMethod/Direction()
+						- Need to sort at:
+							- Sortmethod change
+							- InfoTile preview ready
+							- InfoTile preview error
+
 			+ Move search here
 			+ Move "Ok/Cancel" buttons below next to dir dropdown (taking place of "search")
 		- Misc:
@@ -1614,6 +1633,10 @@
 				- Read at Deserializer::Load; if not found => from file
 					- Other de-serializers: from file
 			- Remove sorting on thread
+		- Tests:
+			- Preview error
+	- ShipLoadDialog improvements:
+		- Display folders in grid
 
 	- Localization:
 		- Keyboard shortcuts
