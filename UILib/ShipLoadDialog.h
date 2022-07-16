@@ -30,7 +30,7 @@ public:
         wxWindow* parent,
         ResourceLocator const & resourceLocator);
 
-	virtual ~ShipLoadDialog();
+    virtual ~ShipLoadDialog();
 
     int ShowModal(std::vector<std::filesystem::path> const & shipLoadDirectories);
 
@@ -73,7 +73,7 @@ private:
 
 private:
 
-	wxWindow * const mParent;
+    wxWindow * const mParent;
     ResourceLocator const & mResourceLocator;
 
     wxBitmap mSortByNameIcon;

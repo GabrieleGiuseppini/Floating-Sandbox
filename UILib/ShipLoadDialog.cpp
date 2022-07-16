@@ -20,16 +20,16 @@ constexpr int MaxDirComboWidth = 650;
 ShipLoadDialog::ShipLoadDialog(
     wxWindow * parent,
     ResourceLocator const & resourceLocator)
-	: mParent(parent)
+    : mParent(parent)
     , mResourceLocator(resourceLocator)
     , mStandardInstalledShipFolderPath(resourceLocator.GetInstalledShipFolderPath())
     , mUserShipFolderPath(StandardSystemPaths::GetInstance().GetUserShipFolderPath())
 {
-	Create(
-		mParent,
-		wxID_ANY,
+    Create(
+        mParent,
+        wxID_ANY,
         _("Load Ship"),
-		wxDefaultPosition,
+        wxDefaultPosition,
         wxDefaultSize,
         wxCAPTION | wxRESIZE_BORDER | wxCLOSE_BOX | wxFRAME_SHAPED
 #if !defined(_DEBUG) || !defined(_WIN32)
@@ -38,7 +38,7 @@ ShipLoadDialog::ShipLoadDialog(
             ,
         wxS("Load Ship Dialog"));
 
-	SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
+    SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
 
     Bind(wxEVT_CLOSE_WINDOW, &ShipLoadDialog::OnCloseWindow, this);
 
@@ -294,7 +294,7 @@ ShipLoadDialog::ShipLoadDialog(
                 emptyComboChoices,
                 wxCB_DROPDOWN | wxCB_READONLY);
 
-			mRecentDirectoriesComboBox->SetMaxSize(wxSize(MaxDirComboWidth, -1));
+            mRecentDirectoriesComboBox->SetMaxSize(wxSize(MaxDirComboWidth, -1));
             mRecentDirectoriesComboBox->Bind(wxEVT_COMBOBOX, &ShipLoadDialog::OnRecentDirectorySelected, this);
 
             hComboSizer->Add(mRecentDirectoriesComboBox, 1, wxALIGN_CENTRE_VERTICAL);
