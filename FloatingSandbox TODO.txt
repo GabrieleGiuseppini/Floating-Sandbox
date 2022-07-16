@@ -238,7 +238,7 @@
 				+ IT
 				+ ES
 				+ RU
-			= Windows
+			+ Windows
 				+ MSI variable
 				+ Commit & push
 				+ 64-bit MSI
@@ -247,12 +247,12 @@
 					+ Make MSI
 					+ Rename MSI
 					+ Test upgrade from previous version
-				= 32-bit MSI
+				+ 32-bit MSI
 					+ Cleanup Install
 					+ Build Release Install (after clean)
-					- Make MSI
-					- Rename MSI
-					- Test clean install
+					+ Make MSI
+					+ Rename MSI
+					+ Test clean install
 			+ Ubuntu
 				+ rm -rf floating-sandbox
 				+ pull 
@@ -262,17 +262,16 @@
 				+ Make tar ("cd floating-sandbox && tar -cvf ../Floating-Sandbox-1.17.3-x64.tar . && cd -")
 				+ Zip tar
 				+ Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
-			- Get 3 installers tested on dev server
-			- Wait for test results
-			- Cut tag on github
-			- Upload packages to GameJolt
-				- Report file as safe (https://gamejolt.com/privacy)
-				- Post
-			- www.floatingsandbox.com:
-				- Update current version in FAQ
-				- Wait a day or two, to exclude disastrous bugs
-				- Upload changes2.txt
-					- Test w/old FS
+			+ Get 3 installers tested on dev server
+			+ Wait for test results
+			+ Cut tag on github
+			+ Upload packages to GameJolt
+				+ Post video
+				+ Post
+			+ www.floatingsandbox.com:
+				+ Update current version in FAQ
+				+ Upload changes2.txt
+					+ Test w/old FS
 
 			- After release: update Wordpress post w/new engine stuff
 				- Connectivity
@@ -281,6 +280,9 @@
 		---------------------------------------------------------
 
 	- 1.17.4:
+
+		+ Bumpup version
+		- Update checker: more indentations
 
 		- Misc quick things:
 			- See if water entering via hole is faster than water entering natural non-hull ("cut funnel")
@@ -1101,7 +1103,13 @@
 
 - Gfx:
 
-	- Tensile/Stress display variant: only color springs (but in "normal" mode)
+	- Auto-focus improvements:
+		- Settings to fine-tune how close (or far) auto-focus should be
+			- Basically changes NDC fraction/s
+
+	- Tensile/Stress display: 
+		- Show water (@ point buffer)
+		- New variant: only color springs (but in "normal" mode)
 
 	- In Windows' "high contrast mode", the names of the ships in the Ship Load Dialog disappear
 
@@ -1569,31 +1577,42 @@
 	- Also "clock time since last reload" would be helpful
 		- Add Game Preferences radio to select clock type
 
-	- ShipLoadDialog toolbar (*): 
-		- Above preview window
-		- Flip H and V (toggle buttons, wxBitmapToggleButton)
-			- Given as flags to ShipFactory, hence must be returned by ShipLoadDialog to caller
-		- Sort method, as:
-			- BitmapButton, showing currently-selected sorting method
-				- When clicking on it, dropdown appears with bitmaps to choose sorting methods
-					- Icons:
-						- Name ("A/Z")
-						- Date added (clock?)
-						- Year built ("1912" w/e.g. "2" over "3")
-						- HD/Elec/... (ribbon)
-				- When entry from dropdown is selected, BitmapButton icon changes to selected one
-			- Thin button with either up or down arrow, thin horizontally but as tall as previous BitmapButton
-				- Clicking on it toggles up/down
-			- By: Name, Date added, Year Built, HD/Elec/0
-				- Date added: see after install if file creation dates are still originals
-			- Sorting impl @ PreviewWindow:
-				- Vector of info tiles is assumed to be always sorted by the currently-selected method
-				- Has std::function "sort predicate" member
-				- Upon receiving new entries from thread, inserts in info tiles vector according to current order/predicate
-				- Upon changing "sort predicate", re-sorts entire info tiles vector 
-		- Move "Info" button here
-		- Move search here
-		- Move "Ok/Cancel" below next to dir dropdown (taking place of "search")
+	= ShipLoadDialog toolbar (*): 
+		= Toolbar:
+			+ Above preview window
+			= Move "Info" button here
+			- Flip H and V (toggle buttons, wxBitmapToggleButton)
+				- Given as flags to ShipFactory, hence must be returned by ShipLoadDialog to caller
+			= Sort method, as:
+				= BitmapButton, showing currently-selected sorting method
+					= When clicking on it, popup appears with horizonal buttons
+						+ Icons:
+							- Name ("A/Z")
+							- Date added (clock?)
+							+ Year built ("1912" w/e.g. "2" over "3")
+							+ HD/Elec/... (ribbon)
+							- Arrow
+					= When a button is selected, popup disappears amd BitmapButton icon changes to selected one
+				= Thin button with either up or down arrow, thin horizontally but as tall as previous BitmapButton
+					= Clicking on it toggles asc/desc for sorting, and bitmap
+				+ By: Name, Date added, Year Built, HD/Elec/0
+					~ Date added: see after install if file creation dates are still originals
+				- Sorting impl @ PreviewWindow:
+					- Vector of info tiles is assumed to be always sorted by the currently-selected method
+						- Change InfoTile: needs to become agnostic of own position in grid, which also needs to be recalc'd a) at each new InfoTile, and b) at each change of sorting
+						- Replace those members with functions that go to and from linear position in InfoTile vector to VirtualRect
+					- TODOHERE: enum + boolean + std::function vector (function uses xor)
+					- Has std::function "sort predicate" member
+					- Upon receiving new entries from thread, inserts in info tiles vector according to current order+predicate
+					- Upon changing "sort predicate", re-sorts entire info tiles vector according to current order+predicate			
+			- Move search here
+			- Move "Ok/Cancel" buttons below next to dir dropdown (taking place of "search")
+		- Misc:
+			- LastModified is new attrib of Metadata @ shp2
+				- Clock taken at Deserializer::Save
+				- Read at Deserializer::Load; if not found => from file
+					- Other de-serializers: from file
+			- Remove sorting on thread
 
 	- Localization:
 		- Keyboard shortcuts

@@ -42,12 +42,26 @@ ShipLoadDialog::ShipLoadDialog(
 
     Bind(wxEVT_CLOSE_WINDOW, &ShipLoadDialog::OnCloseWindow, this);
 
+    //
+    // Bitmaps
+    //
 
+    mSortByNameIcon = WxHelpers::LoadBitmap("sort_by_name_button", resourceLocator);
+    mSortByLastModifiedIcon = WxHelpers::LoadBitmap("sort_by_time_button", resourceLocator);
+    mSortByYearBuiltIcon = WxHelpers::LoadBitmap("sort_by_year_button", resourceLocator);
+    mSortByFeaturesIcon = WxHelpers::LoadBitmap("sort_by_features_button", resourceLocator);
+    mSortAscendingIcon = WxHelpers::LoadBitmap("arrow_down_medium", resourceLocator);
+    mSortDescendingIcon = WxHelpers::LoadBitmap("arrow_up_medium", resourceLocator);
+
+    //
+    // Layout controls
+    //
 
     wxBoxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
 
     //
-    // Directory tree and preview
+    // [ Directory tree ] [ Toolbar ]
+    // [                ] [ Preview ]
     //
 
     {
@@ -76,16 +90,151 @@ ShipLoadDialog::ShipLoadDialog(
             hSizer1->Add(mDirCtrl, 0, wxEXPAND | wxALIGN_TOP);
         }
 
-
-        // Preview
         {
-            mShipPreviewWindow = new ShipPreviewWindow(this, mResourceLocator);
+            wxBoxSizer * vSizer1 = new wxBoxSizer(wxVERTICAL);
 
-            mShipPreviewWindow->SetMinSize(wxSize(ShipPreviewWindow::CalculateMinWidthForColumns(3) + 40, -1));
-            mShipPreviewWindow->Bind(fsEVT_SHIP_FILE_SELECTED, &ShipLoadDialog::OnShipFileSelected, this);
-            mShipPreviewWindow->Bind(fsEVT_SHIP_FILE_CHOSEN, &ShipLoadDialog::OnShipFileChosen, this);
+            vSizer1->AddSpacer(5);
 
-            hSizer1->Add(mShipPreviewWindow, 1, wxALIGN_TOP | wxEXPAND);
+            // Toolbar
+            {                
+                int constexpr LargeMargin = 30;
+
+                wxBoxSizer * hToolbarSizer = new wxBoxSizer(wxHORIZONTAL);
+
+                hToolbarSizer->AddStretchSpacer();
+
+                // Info button
+                {
+                    mInfoButton = new wxBitmapButton(this, wxID_ANY, WxHelpers::LoadBitmap("info", resourceLocator), wxDefaultPosition, wxDefaultSize);
+                    mInfoButton->SetToolTip(_("See ship information"));
+                    mInfoButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnInfoButtonClicked, this);
+
+                    hToolbarSizer->Add(
+                        mInfoButton,
+                        0,
+                        wxALIGN_BOTTOM,
+                        0);
+                }
+
+                hToolbarSizer->AddSpacer(LargeMargin);
+
+                // Load modifiers buttons
+                // TODO
+
+                // Sort method button
+                {
+                    mSortMethodButton = new wxBitmapButton(this, wxID_ANY, mSortByFeaturesIcon, wxDefaultPosition, wxDefaultSize);
+                    mSortMethodButton->SetToolTip(_("Change order of ships"));
+                    mSortMethodButton->Bind(wxEVT_BUTTON,
+                        [this](wxCommandEvent &)
+                        {
+                            mSortMethodSelectionPopupWindow->SetPosition(this->ClientToScreen(mSortMethodButton->GetPosition() + mSortMethodButton->GetSize() / 2));
+                            mSortMethodSelectionPopupWindow->Popup();
+                        });
+
+                    hToolbarSizer->Add(
+                        mSortMethodButton,
+                        0,
+                        wxALIGN_BOTTOM,
+                        0);
+                }
+
+                // Sort direction button
+                {
+                    mSortDirectionButton = new wxBitmapButton(this, wxID_ANY, mSortAscendingIcon, wxDefaultPosition, wxDefaultSize);
+                    mSortDirectionButton->SetToolTip(_("Change direction of ships' order"));
+                    mSortDirectionButton->Bind(wxEVT_BUTTON,
+                        [this](wxCommandEvent &)
+                        {
+                            OnSortDirectionChanged(!mShipPreviewWindow->GetCurrentIsSortDescending());
+                        });
+
+                    hToolbarSizer->Add(
+                        mSortDirectionButton,
+                        0,
+                        wxALIGN_BOTTOM,
+                        0);
+                }
+
+                hToolbarSizer->AddSpacer(LargeMargin);
+
+                // Search
+                {
+                    wxBoxSizer * vSearchSizer = new wxBoxSizer(wxVERTICAL);
+
+                    // Label
+                    {
+                        wxStaticText * searchLabel = new wxStaticText(this, wxID_ANY, _("Search in this folder:"));
+                        vSearchSizer->Add(searchLabel, 0, wxALIGN_LEFT | wxEXPAND);
+                    }
+
+                    // Search box + button
+                    {
+                        wxBoxSizer * hSearchSizer = new wxBoxSizer(wxHORIZONTAL);
+
+                        // Search box
+
+                        mShipSearchCtrl = new wxSearchCtrl(
+                            this,
+                            wxID_ANY,
+                            wxEmptyString,
+                            wxDefaultPosition,
+                            wxSize(-1, 24),
+                            0);
+
+                        mShipSearchCtrl->ShowCancelButton(true);
+                        mShipSearchCtrl->Bind(wxEVT_TEXT, &ShipLoadDialog::OnShipSearchCtrlText, this);
+                        mShipSearchCtrl->Bind(wxEVT_SEARCHCTRL_SEARCH_BTN, &ShipLoadDialog::OnShipSearchCtrlSearchBtn, this);
+                        mShipSearchCtrl->Bind(wxEVT_SEARCHCTRL_CANCEL_BTN, &ShipLoadDialog::OnShipSearchCtrlCancelBtn, this);
+
+                        hSearchSizer->Add(mShipSearchCtrl, 1, wxALIGN_CENTRE_VERTICAL);
+
+                        // Search button
+
+                        wxBitmap searchNextBitmap(mResourceLocator.GetIconFilePath("right_arrow").string(), wxBITMAP_TYPE_PNG);
+                        mSearchNextButton = new wxBitmapButton(this, wxID_ANY, searchNextBitmap, wxDefaultPosition, wxDefaultSize);
+                        mSearchNextButton->SetToolTip(_("Go to the next search result"));
+                        mSearchNextButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnSearchNextButtonClicked, this);
+
+                        hSearchSizer->Add(mSearchNextButton, 0, wxALIGN_CENTRE_VERTICAL);
+
+                        vSearchSizer->Add(hSearchSizer, 1, wxALIGN_LEFT | wxEXPAND);
+                    }
+
+                    hToolbarSizer->Add(
+                        vSearchSizer,
+                        0,
+                        wxALIGN_BOTTOM,
+                        0);
+                }
+
+                hToolbarSizer->AddStretchSpacer();
+
+                vSizer1->Add(
+                    hToolbarSizer, 
+                    0, 
+                    wxEXPAND, // Expand to occupy all available H space
+                    0);
+            }
+
+            vSizer1->AddSpacer(5);
+
+            // Preview
+            {
+                mShipPreviewWindow = new ShipPreviewWindow(this, mResourceLocator);
+
+                mShipPreviewWindow->SetMinSize(wxSize(ShipPreviewWindow::CalculateMinWidthForColumns(3) + 40, -1));
+                mShipPreviewWindow->Bind(fsEVT_SHIP_FILE_SELECTED, &ShipLoadDialog::OnShipFileSelected, this);
+                mShipPreviewWindow->Bind(fsEVT_SHIP_FILE_CHOSEN, &ShipLoadDialog::OnShipFileChosen, this);
+
+                vSizer1->Add(
+                    mShipPreviewWindow, 
+                    1,  // Use all V space
+                    wxEXPAND, // Expand to occupy all available H space
+                    0);
+            }
+
+            hSizer1->Add(vSizer1, 1, wxALIGN_TOP | wxEXPAND);
         }
 
         vSizer->Add(hSizer1, 1, wxEXPAND);
@@ -93,15 +242,13 @@ ShipLoadDialog::ShipLoadDialog(
 
     vSizer->AddSpacer(10);
 
-
-
     //
-    // Recent directories combo and home button, and ship search box
+    // Recent directories combo and home button
     //
 
     {
-        // |  | Label       |   | Label            | |
-        // |  | Combo, Home |   | SearchBox [Next] | |
+        // |  | Label       |       |              |  |
+        // |  | Combo, Home |       | Load, Cancel |  |
 
         wxFlexGridSizer * gridSizer = new wxFlexGridSizer(2, 5, 0, 0);
 
@@ -121,10 +268,7 @@ ShipLoadDialog::ShipLoadDialog(
 
         gridSizer->AddSpacer(10);
 
-        {
-            wxStaticText * searchLabel = new wxStaticText(this, wxID_ANY, _("Search in this folder:"));
-            gridSizer->Add(searchLabel, 1, wxALIGN_LEFT | wxEXPAND | wxALL);
-        }
+        gridSizer->AddSpacer(0);
 
         gridSizer->AddSpacer(10);
 
@@ -185,35 +329,23 @@ ShipLoadDialog::ShipLoadDialog(
         gridSizer->AddSpacer(10);
 
         {
-            wxBoxSizer * hSearchSizer = new wxBoxSizer(wxHORIZONTAL);
+            wxBoxSizer * buttonsSizer = new wxBoxSizer(wxHORIZONTAL);
 
-            // Search box
+            buttonsSizer->AddStretchSpacer(1);
 
-            mShipSearchCtrl = new wxSearchCtrl(
-                this,
-                wxID_ANY,
-                wxEmptyString,
-                wxDefaultPosition,
-                wxSize(-1, 24),
-                0);
+            mLoadButton = new wxButton(this, wxID_ANY, _("Load"));
+            mLoadButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnLoadButton, this);
+            buttonsSizer->Add(mLoadButton, 0);
 
-			mShipSearchCtrl->ShowCancelButton(true);
-            mShipSearchCtrl->Bind(wxEVT_TEXT, &ShipLoadDialog::OnShipSearchCtrlText, this);
-            mShipSearchCtrl->Bind(wxEVT_SEARCHCTRL_SEARCH_BTN, &ShipLoadDialog::OnShipSearchCtrlSearchBtn, this);
-            mShipSearchCtrl->Bind(wxEVT_SEARCHCTRL_CANCEL_BTN, &ShipLoadDialog::OnShipSearchCtrlCancelBtn, this);
+            buttonsSizer->AddSpacer(20);
 
-            hSearchSizer->Add(mShipSearchCtrl, 1, wxALIGN_CENTRE_VERTICAL);
+            wxButton * cancelButton = new wxButton(this, wxID_ANY, _("Cancel"));
+            cancelButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnCancelButton, this);
+            buttonsSizer->Add(cancelButton, 0);
 
-			// Search button
+            buttonsSizer->AddSpacer(10);
 
-            wxBitmap searchNextBitmap(mResourceLocator.GetIconFilePath("right_arrow").string(), wxBITMAP_TYPE_PNG);
-            mSearchNextButton = new wxBitmapButton(this, wxID_ANY, searchNextBitmap, wxDefaultPosition, wxDefaultSize);
-            mSearchNextButton->SetToolTip(_("Go to the next search result"));
-            mSearchNextButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnSearchNextButtonClicked, this);
-
-            hSearchSizer->Add(mSearchNextButton, 0, wxALIGN_CENTRE_VERTICAL);
-
-            gridSizer->Add(hSearchSizer, 1, wxALIGN_LEFT | wxEXPAND | wxALL);
+            gridSizer->Add(buttonsSizer, 0, wxEXPAND);
         }
 
         gridSizer->AddSpacer(10);
@@ -221,44 +353,7 @@ ShipLoadDialog::ShipLoadDialog(
         vSizer->Add(gridSizer, 0, wxEXPAND | wxALL);
     }
 
-    vSizer->AddSpacer(10);
-
-
-
-    //
-    // Buttons
-    //
-
-    {
-
-        wxBoxSizer * buttonsSizer = new wxBoxSizer(wxHORIZONTAL);
-
-        buttonsSizer->AddSpacer(10);
-
-        wxBitmap infoBitmap(mResourceLocator.GetIconFilePath("info").string(), wxBITMAP_TYPE_PNG);
-        mInfoButton = new wxBitmapButton(this, wxID_ANY, infoBitmap, wxDefaultPosition, wxDefaultSize);
-        mInfoButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnInfoButtonClicked, this);
-        buttonsSizer->Add(mInfoButton, 0);
-
-        buttonsSizer->AddStretchSpacer(1);
-
-        mLoadButton = new wxButton(this, wxID_ANY, _("Load"));
-        mLoadButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnLoadButton, this);
-        buttonsSizer->Add(mLoadButton, 0);
-
-        buttonsSizer->AddSpacer(20);
-
-        wxButton * cancelButton = new wxButton(this, wxID_ANY, _("Cancel"));
-        cancelButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnCancelButton, this);
-        buttonsSizer->Add(cancelButton, 0);
-
-        buttonsSizer->AddSpacer(10);
-
-        vSizer->Add(buttonsSizer, 0, wxEXPAND);
-    }
-
-    vSizer->AddSpacer(10);
-
+    vSizer->AddSpacer(15);
 
     //
     // Finalize layout
@@ -270,6 +365,122 @@ ShipLoadDialog::ShipLoadDialog(
     SetSize(wxSize(TotalWidth, 600 * TotalWidth / 800));
 
     Centre();
+
+    //
+    // Create sort method popup window
+    //
+
+    {
+        mSortMethodSelectionPopupWindow = new wxPopupTransientWindow(this, wxPU_CONTAINS_CONTROLS | wxBORDER_SIMPLE);
+
+        auto * tmpVSizer = new wxBoxSizer(wxVERTICAL);
+
+        tmpVSizer->AddSpacer(5);
+
+        {
+            auto * hSizer = new wxBoxSizer(wxHORIZONTAL);
+
+            {
+                int constexpr HHalfMargin = 10;
+
+                hSizer->AddSpacer(HHalfMargin);
+
+                // By name
+                {
+                    auto * button = new wxBitmapButton(mSortMethodSelectionPopupWindow, wxID_ANY, mSortByNameIcon, wxDefaultPosition, wxDefaultSize);
+                    button->SetToolTip(_("Order ship by name"));
+                    button->Bind(wxEVT_BUTTON,
+                        [this](wxCommandEvent &)
+                        {
+                            mSortMethodSelectionPopupWindow->Dismiss();
+
+                            OnSortMethodChanged(ShipPreviewWindow::SortMethod::ByName);
+                        });
+
+                    hSizer->Add(
+                        button,
+                        0,
+                        wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT,
+                        HHalfMargin);
+                }
+
+                // By last modified
+                {
+                    auto * button = new wxBitmapButton(mSortMethodSelectionPopupWindow, wxID_ANY, mSortByLastModifiedIcon, wxDefaultPosition, wxDefaultSize);
+                    button->SetToolTip(_("Order ship by last modified time"));
+                    button->Bind(wxEVT_BUTTON,
+                        [this](wxCommandEvent &)
+                        {
+                            mSortMethodSelectionPopupWindow->Dismiss();
+
+                            OnSortMethodChanged(ShipPreviewWindow::SortMethod::ByLastModified);
+                        });
+
+                    hSizer->Add(
+                        button,
+                        0,
+                        wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT,
+                        HHalfMargin);
+                }
+
+                // By year built
+                {
+                    auto * button = new wxBitmapButton(mSortMethodSelectionPopupWindow, wxID_ANY, mSortByYearBuiltIcon, wxDefaultPosition, wxDefaultSize);
+                    button->SetToolTip(_("Order ship by year built"));
+                    button->Bind(wxEVT_BUTTON,
+                        [this](wxCommandEvent &)
+                        {
+                            mSortMethodSelectionPopupWindow->Dismiss();
+
+                            OnSortMethodChanged(ShipPreviewWindow::SortMethod::ByYearBuilt);
+                        });
+
+                    hSizer->Add(
+                        button,
+                        0,
+                        wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT,
+                        HHalfMargin);
+                }
+
+                // By features
+                {
+                    auto * button = new wxBitmapButton(mSortMethodSelectionPopupWindow, wxID_ANY, mSortByFeaturesIcon, wxDefaultPosition, wxDefaultSize);
+                    button->SetToolTip(_("Order ship by features"));
+                    button->Bind(wxEVT_BUTTON,
+                        [this](wxCommandEvent &)
+                        {
+                            mSortMethodSelectionPopupWindow->Dismiss();
+
+                            OnSortMethodChanged(ShipPreviewWindow::SortMethod::ByFeatures);
+                        });
+
+                    hSizer->Add(
+                        button,
+                        0,
+                        wxALIGN_CENTER_VERTICAL | wxLEFT | wxRIGHT,
+                        HHalfMargin);
+                }
+
+                hSizer->AddSpacer(HHalfMargin);
+            }
+
+            tmpVSizer->Add(
+                hSizer,
+                0,
+                wxEXPAND,
+                0);
+        }
+
+        tmpVSizer->AddSpacer(5);
+
+        mSortMethodSelectionPopupWindow->SetSizerAndFit(tmpVSizer);
+    }
+
+    //
+    // Initialize UI
+    //
+
+    ReconciliateUIWithSortMethod();
 }
 
 ShipLoadDialog::~ShipLoadDialog()
@@ -391,6 +602,18 @@ void ShipLoadDialog::OnUserHomeDirButtonClicked(wxCommandEvent & /*event*/)
     mDirCtrl->SetPath(mRecentDirectoriesComboBox->GetValue()); // Will send its own event
 }
 
+void ShipLoadDialog::OnSortMethodChanged(ShipPreviewWindow::SortMethod sortMethod)
+{
+    mShipPreviewWindow->SetSortMethod(sortMethod);
+    ReconciliateUIWithSortMethod();
+}
+
+void ShipLoadDialog::OnSortDirectionChanged(bool isSortDescending)
+{
+    mShipPreviewWindow->SetIsSortDescending(isSortDescending);
+    ReconciliateUIWithSortMethod();
+}
+
 void ShipLoadDialog::OnInfoButtonClicked(wxCommandEvent & /*event*/)
 {
     assert(!!mSelectedShipMetadata);
@@ -465,6 +688,38 @@ void ShipLoadDialog::EndModal(int retCode)
     mShipPreviewWindow->OnClose();
 
     wxDialog::EndModal(retCode);
+}
+
+void ShipLoadDialog::ReconciliateUIWithSortMethod()
+{
+    switch (mShipPreviewWindow->GetCurrentSortMethod())
+    {
+        case ShipPreviewWindow::SortMethod::ByFeatures:
+        {
+            mSortMethodButton->SetBitmap(mSortByFeaturesIcon);
+            break;
+        }
+
+        case ShipPreviewWindow::SortMethod::ByLastModified:
+        {
+            mSortMethodButton->SetBitmap(mSortByLastModifiedIcon);
+            break;
+        }
+
+        case ShipPreviewWindow::SortMethod::ByName:
+        {
+            mSortMethodButton->SetBitmap(mSortByNameIcon);
+            break;
+        }
+
+        case ShipPreviewWindow::SortMethod::ByYearBuilt:
+        {
+            mSortMethodButton->SetBitmap(mSortByYearBuiltIcon);
+            break;
+        }
+    }
+
+    mSortDirectionButton->SetBitmap(mShipPreviewWindow->GetCurrentIsSortDescending() ? mSortDescendingIcon : mSortAscendingIcon);
 }
 
 void ShipLoadDialog::StartShipSearch()

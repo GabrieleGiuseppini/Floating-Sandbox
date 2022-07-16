@@ -44,6 +44,8 @@ ShipPreviewWindow::ShipPreviewWindow(
     , mPollQueueTimer()
     , mInfoTiles()
     , mSelectedInfoTileIndex()
+    , mSortMethod(SortMethod::ByName)
+    , mIsSortDescending(false)
     , mCurrentlyCompletedDirectorySnapshot()
     //
     , mPreviewThread()
@@ -264,6 +266,18 @@ bool ShipPreviewWindow::Search(std::string const & shipName)
     }
 
     return foundShipIndex.has_value();
+}
+
+void ShipPreviewWindow::SetSortMethod(SortMethod sortMethod)
+{
+    mSortMethod = sortMethod;
+    SortInfoTiles();
+}
+
+void ShipPreviewWindow::SetIsSortDescending(bool isSortDescending)
+{
+    mIsSortDescending = isSortDescending;
+    SortInfoTiles();
 }
 
 void ShipPreviewWindow::ChooseSelectedIfAny()
@@ -568,6 +582,11 @@ void ShipPreviewWindow::ResetInfoTiles(DirectorySnapshot const & directorySnapsh
     LogMessage("ShipPreviewPanel::ResetInfoTiles ...end.");
 
     Refresh();
+}
+
+void ShipPreviewWindow::SortInfoTiles()
+{
+    // TODOHERE
 }
 
 std::map<std::filesystem::path, std::filesystem::file_time_type> ShipPreviewWindow::EnumerateShipFiles(std::filesystem::path const & directoryPath)

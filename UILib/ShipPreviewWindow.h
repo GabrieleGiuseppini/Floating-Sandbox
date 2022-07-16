@@ -134,6 +134,20 @@ class ShipPreviewWindow : public wxScrolled<wxWindow>
 public:
 
     //
+    // Sort method
+    //
+
+    enum class SortMethod
+    {
+        ByName = 0,
+        ByLastModified = 1,
+        ByYearBuilt = 2,
+        ByFeatures = 3
+    };
+
+public:
+
+    //
     // InfoTile components
     //
 
@@ -205,6 +219,21 @@ public:
     void SetDirectory(std::filesystem::path const & directoryPath);
 
     bool Search(std::string const & shipName);
+
+    SortMethod GetCurrentSortMethod() const
+    {
+        return mSortMethod;
+    }
+
+    void SetSortMethod(SortMethod sortMethod);
+    
+    bool GetCurrentIsSortDescending() const
+    {
+        return mIsSortDescending;
+    }
+
+    void SetIsSortDescending(bool isSortDescending);
+
     void ChooseSelectedIfAny();
 
 private:
@@ -279,6 +308,8 @@ private:
 
     void ResetInfoTiles(DirectorySnapshot const & directorySnapshot);
 
+    void SortInfoTiles();
+
     static std::map<std::filesystem::path, std::filesystem::file_time_type> EnumerateShipFiles(std::filesystem::path const & directoryPath);
 
     wxBitmap MakeBitmap(RgbaImageData const & shipPreviewImage) const;
@@ -329,6 +360,10 @@ private:
 
     // The currently-selected info tile
     std::optional<size_t> mSelectedInfoTileIndex;
+
+    // The current sorting of the info tiles
+    SortMethod mSortMethod;
+    bool mIsSortDescending;
 
     // When set, indicates that the preview of this directory is completed
     std::optional<DirectorySnapshot> mCurrentlyCompletedDirectorySnapshot;

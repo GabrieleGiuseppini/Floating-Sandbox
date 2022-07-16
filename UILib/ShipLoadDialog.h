@@ -9,9 +9,12 @@
 
 #include <Game/ResourceLocator.h>
 
+#include <UILib/BitmapButton.h>
+
 #include <wx/combobox.h>
 #include <wx/dialog.h>
 #include <wx/dirctrl.h>
+#include <wx/popupwin.h>
 #include <wx/srchctrl.h>
 
 #include <filesystem>
@@ -49,6 +52,8 @@ private:
     void OnSearchNextButtonClicked(wxCommandEvent & event);
     void OnStandardHomeDirButtonClicked(wxCommandEvent & event);
     void OnUserHomeDirButtonClicked(wxCommandEvent & event);
+    void OnSortMethodChanged(ShipPreviewWindow::SortMethod sortMethod);
+    void OnSortDirectionChanged(bool isSortDescending);
     void OnInfoButtonClicked(wxCommandEvent & event);
     void OnLoadButton(wxCommandEvent & event);
     void OnCancelButton(wxCommandEvent & event);
@@ -62,6 +67,7 @@ private:
     using wxDialog::ShowModal;
     virtual void EndModal(int retCode) override;
 
+    void ReconciliateUIWithSortMethod();
     void StartShipSearch();
     void RepopulateRecentDirectoriesComboBox(std::vector<std::filesystem::path> const & shipLoadDirectories);
 
@@ -70,7 +76,17 @@ private:
 	wxWindow * const mParent;
     ResourceLocator const & mResourceLocator;
 
+    wxBitmap mSortByNameIcon;
+    wxBitmap mSortByLastModifiedIcon;
+    wxBitmap mSortByYearBuiltIcon;
+    wxBitmap mSortByFeaturesIcon;
+    wxBitmap mSortAscendingIcon;
+    wxBitmap mSortDescendingIcon;
+
     wxGenericDirCtrl * mDirCtrl;
+    wxPopupTransientWindow * mSortMethodSelectionPopupWindow;
+    wxBitmapButton * mSortMethodButton;
+    wxBitmapButton * mSortDirectionButton;
     ShipPreviewWindow * mShipPreviewWindow;
     wxComboBox * mRecentDirectoriesComboBox;
     wxSearchCtrl * mShipSearchCtrl;
