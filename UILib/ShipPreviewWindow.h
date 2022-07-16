@@ -306,10 +306,10 @@ private:
 
     struct InfoTile
     {
-        wxBitmap Bitmap;
-        // TODO: needed? For name while we wait for metadata?
-        std::filesystem::path ShipFilepath;
         size_t ShipFileId;
+        std::filesystem::path ShipFilepath;
+
+        wxBitmap Bitmap;
 
         bool IsHD;
         bool HasElectricals;
@@ -317,14 +317,14 @@ private:
         std::string OriginalDescription2;
         std::string OriginalDescription3;
 
-        wxString Description1;
-        std::optional<wxSize> Description1Size;
-        wxString Description2;
-        std::optional<wxSize> Description2Size;
-        wxString Description3;
-        std::optional<wxSize> Description3Size;
-        wxString Filename;
-        std::optional<wxSize> FilenameSize;
+        wxString DescriptionLabel1;
+        std::optional<wxSize> DescriptionLabel1Size;
+        wxString DescriptionLabel2;
+        std::optional<wxSize> DescriptionLabel2Size;
+        wxString DescriptionLabel3;
+        std::optional<wxSize> DescriptionLabel3Size;
+        wxString FilenameLabel;
+        std::optional<wxSize> FilenameLabelSize;
 
         int Col;
         int Row;
@@ -335,18 +335,17 @@ private:
         std::vector<std::string> SearchStrings;
 
         InfoTile(
-            wxBitmap bitmap,
+            size_t shipFileId,
             std::filesystem::path const & shipFilepath,
-            size_t shipFileId)
-            : Bitmap(bitmap)
+            wxBitmap bitmap)
+            : ShipFileId(shipFileId)
             , ShipFilepath(shipFilepath)
-            , ShipFileId(shipFileId)
+            , Bitmap(bitmap)
             , IsHD(false)
             , HasElectricals(false)
             , OriginalDescription1()
             , OriginalDescription2()
             , OriginalDescription3()
-            
         {}
     };
 

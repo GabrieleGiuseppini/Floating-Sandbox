@@ -422,7 +422,7 @@ void ShipPreviewWindow::OnPollQueueTimer(wxTimerEvent & /*event*/)
                 if (shipPreviewData.Metadata.YearBuilt.has_value())
                     descriptionLabelText1 += " (" + *(shipPreviewData.Metadata.YearBuilt) + ")";
                 infoTile.OriginalDescription1 = std::move(descriptionLabelText1);
-                infoTile.Description1Size.reset();
+                infoTile.DescriptionLabel1Size.reset();
 
                 int const metres = shipPreviewData.ShipSize.width;
                 int const feet = static_cast<int>(std::round(3.28f * metres));
@@ -434,11 +434,11 @@ void ShipPreviewWindow::OnPollQueueTimer(wxTimerEvent & /*event*/)
                 if (shipPreviewData.Metadata.Author.has_value())
                     descriptionLabelText2 += " - by " + *(shipPreviewData.Metadata.Author);
                 infoTile.OriginalDescription2 = std::move(descriptionLabelText2);
-                infoTile.Description2Size.reset();
+                infoTile.DescriptionLabel2Size.reset();
 
                 if (shipPreviewData.Metadata.ArtCredits.has_value())
                     infoTile.OriginalDescription3 = "Art by " + *(shipPreviewData.Metadata.ArtCredits);
-                infoTile.Description3Size.reset();
+                infoTile.DescriptionLabel3Size.reset();
 
                 infoTile.Metadata.emplace(shipPreviewData.Metadata);
 
@@ -488,7 +488,7 @@ void ShipPreviewWindow::OnPollQueueTimer(wxTimerEvent & /*event*/)
                 
                 mInfoTiles[infoTileIndex].Bitmap = mErrorBitmap;
                 mInfoTiles[infoTileIndex].OriginalDescription1 = message->GetErrorMessage();
-                mInfoTiles[infoTileIndex].Description1Size.reset();
+                mInfoTiles[infoTileIndex].DescriptionLabel1Size.reset();
 
                 // Remember we need to refresh now
                 doRefresh = true;
@@ -570,9 +570,9 @@ void ShipPreviewWindow::ResetInfoTiles(DirectorySnapshot const & directorySnapsh
     for (auto const & fileEntry : directorySnapshot.FileEntries)
     {
         mInfoTiles.emplace_back(
-            mWaitBitmap,
+            fileEntry.ShipFileId,
             fileEntry.FilePath,
-            fileEntry.ShipFileId);
+            mWaitBitmap);
 
         // Add ship filename to search map
         mInfoTiles.back().SearchStrings.push_back(
@@ -715,10 +715,10 @@ void ShipPreviewWindow::RecalculateGeometry(
     // Update all info tiles's rectangles
     for (size_t i = 0; i < mInfoTiles.size(); ++i)
     {
-        mInfoTiles[i].Description1Size.reset();
-        mInfoTiles[i].Description2Size.reset();
-        mInfoTiles[i].Description3Size.reset();
-        mInfoTiles[i].FilenameSize.reset();
+        mInfoTiles[i].DescriptionLabel1Size.reset();
+        mInfoTiles[i].DescriptionLabel2Size.reset();
+        mInfoTiles[i].DescriptionLabel3Size.reset();
+        mInfoTiles[i].FilenameLabelSize.reset();
 
         mInfoTiles[i].Col = static_cast<int>(i % mCols);
         mInfoTiles[i].Row = static_cast<int>(i / mCols);
@@ -887,70 +887,70 @@ void ShipPreviewWindow::Render(wxDC & dc)
                 dc.SetTextForeground(mDescriptionColor);
                 dc.SetFont(mDescriptionFont);
 
-                if (!infoTile.Description1Size)
+                if (!infoTile.DescriptionLabel1Size)
                 {
                     auto const [descr, size] = CalculateTextSizeWithCurrentFont(dc, infoTile.OriginalDescription1);
-                    infoTile.Description1 = descr;
-                    infoTile.Description1Size = size;
+                    infoTile.DescriptionLabel1 = descr;
+                    infoTile.DescriptionLabel1Size = size;
                 }
 
                 dc.DrawText(
-                    infoTile.Description1,
-                    labelCenterX - infoTile.Description1Size->GetWidth() / 2,
+                    infoTile.DescriptionLabel1,
+                    labelCenterX - infoTile.DescriptionLabel1Size->GetWidth() / 2,
                     nextLabelY);
 
-                nextLabelY += infoTile.Description1Size->GetHeight() + DescriptionLabel1BottomMargin;
+                nextLabelY += infoTile.DescriptionLabel1Size->GetHeight() + DescriptionLabel1BottomMargin;
 
                 // Filename
 
                 dc.SetTextForeground(mFilenameColor);
                 dc.SetFont(mFilenameFont);
 
-                if (!infoTile.FilenameSize)
+                if (!infoTile.FilenameLabelSize)
                 {
                     auto const [filename, size] = CalculateTextSizeWithCurrentFont(dc, "(" + infoTile.ShipFilepath.filename().string() + ")");
-                    infoTile.Filename = filename;
-                    infoTile.FilenameSize = size;
+                    infoTile.FilenameLabel = filename;
+                    infoTile.FilenameLabelSize = size;
                 }
 
                 dc.DrawText(
-                    infoTile.Filename,
-                    labelCenterX - infoTile.FilenameSize->GetWidth() / 2,
+                    infoTile.FilenameLabel,
+                    labelCenterX - infoTile.FilenameLabelSize->GetWidth() / 2,
                     nextLabelY);
 
-                nextLabelY += infoTile.FilenameSize->GetHeight() + FilenameLabelBottomMargin;
+                nextLabelY += infoTile.FilenameLabelSize->GetHeight() + FilenameLabelBottomMargin;
 
                 // Description 2
 
                 dc.SetTextForeground(mDescriptionColor);
                 dc.SetFont(mDescriptionFont);
 
-                if (!infoTile.Description2Size)
+                if (!infoTile.DescriptionLabel2Size)
                 {
                     auto const [descr, size] = CalculateTextSizeWithCurrentFont(dc, infoTile.OriginalDescription2);
-                    infoTile.Description2 = descr;
-                    infoTile.Description2Size = size;
+                    infoTile.DescriptionLabel2 = descr;
+                    infoTile.DescriptionLabel2Size = size;
                 }
 
                 dc.DrawText(
-                    infoTile.Description2,
-                    labelCenterX - infoTile.Description2Size->GetWidth() / 2,
+                    infoTile.DescriptionLabel2,
+                    labelCenterX - infoTile.DescriptionLabel2Size->GetWidth() / 2,
                     nextLabelY);
 
-                nextLabelY += infoTile.Description2Size->GetHeight() + DescriptionLabel2BottomMargin;
+                nextLabelY += infoTile.DescriptionLabel2Size->GetHeight() + DescriptionLabel2BottomMargin;
 
                 // Description 3
 
-                if (!infoTile.Description3Size)
+                if (!infoTile.DescriptionLabel3Size)
                 {
                     auto const [descr, size] = CalculateTextSizeWithCurrentFont(dc, infoTile.OriginalDescription3);
-                    infoTile.Description3 = descr;
-                    infoTile.Description3Size = size;
+                    infoTile.DescriptionLabel3 = descr;
+                    infoTile.DescriptionLabel3Size = size;
                 }
 
                 dc.DrawText(
-                    infoTile.Description3,
-                    labelCenterX - infoTile.Description3Size->GetWidth() / 2,
+                    infoTile.DescriptionLabel3,
+                    labelCenterX - infoTile.DescriptionLabel3Size->GetWidth() / 2,
                     nextLabelY);
 
                 //
