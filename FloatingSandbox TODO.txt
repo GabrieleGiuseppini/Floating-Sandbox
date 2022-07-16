@@ -1580,33 +1580,34 @@
 	= ShipLoadDialog toolbar (*): 
 		= Toolbar:
 			+ Above preview window
-			= Move "Info" button here
+			+ Move "Info" button here
 			- Flip H and V (toggle buttons, wxBitmapToggleButton)
 				- Given as flags to ShipFactory, hence must be returned by ShipLoadDialog to caller
 			= Sort method, as:
-				= BitmapButton, showing currently-selected sorting method
-					= When clicking on it, popup appears with horizonal buttons
+				+ BitmapButton, showing currently-selected sorting method
+					+ When clicking on it, popup appears with horizonal buttons
 						+ Icons:
-							- Name ("A/Z")
-							- Date added (clock?)
+							+ Name ("A/Z")
+							+ Date added (clock?)
 							+ Year built ("1912" w/e.g. "2" over "3")
 							+ HD/Elec/... (ribbon)
-							- Arrow
-					= When a button is selected, popup disappears amd BitmapButton icon changes to selected one
-				= Thin button with either up or down arrow, thin horizontally but as tall as previous BitmapButton
-					= Clicking on it toggles asc/desc for sorting, and bitmap
+					+ When a button is selected, popup disappears amd BitmapButton icon changes to selected one
+				+ Thin button with either up or down arrow, thin horizontally but as tall as previous BitmapButton
+					+ Clicking on it toggles asc/desc for sorting, and bitmap
 				+ By: Name, Date added, Year Built, HD/Elec/0
 					~ Date added: see after install if file creation dates are still originals
 				- Sorting impl @ PreviewWindow:
 					- Vector of info tiles is assumed to be always sorted by the currently-selected method
 						- Change InfoTile: needs to become agnostic of own position in grid, which also needs to be recalc'd a) at each new InfoTile, and b) at each change of sorting
 						- Replace those members with functions that go to and from linear position in InfoTile vector to VirtualRect
+					- Selection is by ShipId, not index
+						- Assigned by thread
+						- No more "ShipIndex"
 					- TODOHERE: enum + boolean + std::function vector (function uses xor)
 					- Has std::function "sort predicate" member
-					- Upon receiving new entries from thread, inserts in info tiles vector according to current order+predicate
 					- Upon changing "sort predicate", re-sorts entire info tiles vector according to current order+predicate			
-			- Move search here
-			- Move "Ok/Cancel" buttons below next to dir dropdown (taking place of "search")
+			+ Move search here
+			+ Move "Ok/Cancel" buttons below next to dir dropdown (taking place of "search")
 		- Misc:
 			- LastModified is new attrib of Metadata @ shp2
 				- Clock taken at Deserializer::Save
