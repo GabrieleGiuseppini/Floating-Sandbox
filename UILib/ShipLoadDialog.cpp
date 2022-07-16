@@ -388,7 +388,7 @@ ShipLoadDialog::ShipLoadDialog(
                 // By name
                 {
                     auto * button = new wxBitmapButton(mSortMethodSelectionPopupWindow, wxID_ANY, mSortByNameIcon, wxDefaultPosition, wxDefaultSize);
-                    button->SetToolTip(_("Order ship by name"));
+                    button->SetToolTip(_("Order ships by name"));
                     button->Bind(wxEVT_BUTTON,
                         [this](wxCommandEvent &)
                         {
@@ -407,7 +407,7 @@ ShipLoadDialog::ShipLoadDialog(
                 // By last modified
                 {
                     auto * button = new wxBitmapButton(mSortMethodSelectionPopupWindow, wxID_ANY, mSortByLastModifiedIcon, wxDefaultPosition, wxDefaultSize);
-                    button->SetToolTip(_("Order ship by last modified time"));
+                    button->SetToolTip(_("Order ships by last modified time"));
                     button->Bind(wxEVT_BUTTON,
                         [this](wxCommandEvent &)
                         {
@@ -426,7 +426,7 @@ ShipLoadDialog::ShipLoadDialog(
                 // By year built
                 {
                     auto * button = new wxBitmapButton(mSortMethodSelectionPopupWindow, wxID_ANY, mSortByYearBuiltIcon, wxDefaultPosition, wxDefaultSize);
-                    button->SetToolTip(_("Order ship by year built"));
+                    button->SetToolTip(_("Order ships by year built"));
                     button->Bind(wxEVT_BUTTON,
                         [this](wxCommandEvent &)
                         {
@@ -445,7 +445,7 @@ ShipLoadDialog::ShipLoadDialog(
                 // By features
                 {
                     auto * button = new wxBitmapButton(mSortMethodSelectionPopupWindow, wxID_ANY, mSortByFeaturesIcon, wxDefaultPosition, wxDefaultSize);
-                    button->SetToolTip(_("Order ship by features"));
+                    button->SetToolTip(_("Order ships by features"));
                     button->Bind(wxEVT_BUTTON,
                         [this](wxCommandEvent &)
                         {
