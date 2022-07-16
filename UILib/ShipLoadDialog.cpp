@@ -101,7 +101,7 @@ ShipLoadDialog::ShipLoadDialog(
 
                 wxBoxSizer * hToolbarSizer = new wxBoxSizer(wxHORIZONTAL);
 
-                hToolbarSizer->AddStretchSpacer();
+                hToolbarSizer->AddSpacer(LargeMargin);
 
                 // Info button
                 {
@@ -116,7 +116,7 @@ ShipLoadDialog::ShipLoadDialog(
                         0);
                 }
 
-                hToolbarSizer->AddSpacer(LargeMargin);
+                hToolbarSizer->AddStretchSpacer();
 
                 // Load modifiers buttons
                 // TODO
