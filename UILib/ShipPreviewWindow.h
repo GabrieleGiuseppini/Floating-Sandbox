@@ -35,11 +35,9 @@ public:
     fsShipFileSelectedEvent(
         wxEventType eventType,
         int winid,
-        size_t shipIndex,
         std::optional<ShipMetadata> const & shipMetadata,
         std::filesystem::path const & shipFilepath)
         : wxEvent(winid, eventType)
-        , mShipIndex(shipIndex)
         , mShipMetadata(shipMetadata)
         , mShipFilepath(shipFilepath)
     {
@@ -48,7 +46,6 @@ public:
 
     fsShipFileSelectedEvent(fsShipFileSelectedEvent const & other)
         : wxEvent(other)
-        , mShipIndex(other.mShipIndex)
         , mShipMetadata(other.mShipMetadata)
         , mShipFilepath(other.mShipFilepath)
     {
@@ -58,11 +55,6 @@ public:
     virtual wxEvent *Clone() const override
     {
         return new fsShipFileSelectedEvent(*this);
-    }
-
-    size_t GetShipIndex() const
-    {
-        return mShipIndex;
     }
 
     std::optional<ShipMetadata> const & GetShipMetadata() const
@@ -77,7 +69,6 @@ public:
 
 private:
 
-    size_t const mShipIndex;
     std::optional<ShipMetadata> const mShipMetadata;
     std::filesystem::path const mShipFilepath;
 };
@@ -347,9 +338,9 @@ private:
 
 private:
 
-    void SelectShipFileId(size_t shipFileId);
+    void SelectInfoTile(size_t infoTileIndex);
 
-    void ChooseShipFileId(size_t shipFileId);
+    void ChooseInfoTile(size_t infoTileIndex);
 
     void ResetInfoTiles(DirectorySnapshot const & directorySnapshot);
 

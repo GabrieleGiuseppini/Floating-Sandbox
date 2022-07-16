@@ -258,7 +258,7 @@ bool ShipPreviewWindow::Search(std::string const & shipName)
         // Select item
         //
 
-        SelectShipFileId(mInfoTiles[*foundShipIndex].ShipFileId);
+        SelectInfoTile(*foundShipIndex);
     }
 
     return foundShipIndex.has_value();
@@ -280,7 +280,7 @@ void ShipPreviewWindow::ChooseSelectedIfAny()
 {
     if (mSelectedShipFileId.has_value())
     {
-        ChooseShipFileId(*mSelectedShipFileId);
+        ChooseInfoTile(ShipFileIdToInfoTileIndex(*mSelectedShipFileId));
     }
 }
 
@@ -313,7 +313,7 @@ void ShipPreviewWindow::OnMouseSingleClick(wxMouseEvent & event)
     auto selectedInfoTileIndex = MapMousePositionToInfoTile(event.GetPosition());
     if (selectedInfoTileIndex < mInfoTiles.size())
     {
-        SelectShipFileId(mInfoTiles[selectedInfoTileIndex].ShipFileId);
+        SelectInfoTile(selectedInfoTileIndex);
     }
 
     // Allow focus move
@@ -325,7 +325,7 @@ void ShipPreviewWindow::OnMouseDoubleClick(wxMouseEvent & event)
     auto selectedInfoTileIndex = MapMousePositionToInfoTile(event.GetPosition());
     if (selectedInfoTileIndex < mInfoTiles.size())
     {
-        ChooseShipFileId(mInfoTiles[selectedInfoTileIndex].ShipFileId);
+        ChooseInfoTile(selectedInfoTileIndex);
     }
 }
 
@@ -350,7 +350,7 @@ void ShipPreviewWindow::OnKeyDown(wxKeyEvent & event)
         deltaElement = mCols;
     else if (keyCode == WXK_RETURN)
     {
-        ChooseShipFileId(*mSelectedShipFileId);
+        ChooseInfoTile(ShipFileIdToInfoTileIndex(*mSelectedShipFileId));
         return;
     }
     else
@@ -364,7 +364,7 @@ void ShipPreviewWindow::OnKeyDown(wxKeyEvent & event)
         int const newInfoTileIndex = static_cast<int>(ShipFileIdToInfoTileIndex(*mSelectedShipFileId)) + deltaElement;
         if (newInfoTileIndex >= 0 && newInfoTileIndex < static_cast<int>(mInfoTiles.size()))
         {
-            SelectShipFileId(mInfoTiles[newInfoTileIndex].ShipFileId);
+            SelectInfoTile(newInfoTileIndex);
 
             // Move into view if needed
             EnsureTileIsVisible(newInfoTileIndex);
@@ -516,11 +516,11 @@ void ShipPreviewWindow::OnPollQueueTimer(wxTimerEvent & /*event*/)
 
 /////////////////////////////////////////////////////////////////////////////////
 
-void ShipPreviewWindow::SelectShipFileId(size_t shipFileId)
+void ShipPreviewWindow::SelectInfoTile(size_t infoTileIndex)
 {
-    bool isDirty = (mSelectedShipFileId != shipFileId);
+    bool isDirty = (mSelectedShipFileId != mInfoTiles[infoTileIndex].ShipFileId);
 
-    mSelectedShipFileId = shipFileId;
+    mSelectedShipFileId = mInfoTiles[infoTileIndex].ShipFileId;
 
     if (isDirty)
     {
@@ -534,7 +534,6 @@ void ShipPreviewWindow::SelectShipFileId(size_t shipFileId)
         auto event = fsShipFileSelectedEvent(
             fsEVT_SHIP_FILE_SELECTED,
             this->GetId(),
-            mSelectedShipFileId,
             mInfoTiles[infoTileIndex].Metadata,
             mInfoTiles[infoTileIndex].ShipFilepath);
 
@@ -542,7 +541,7 @@ void ShipPreviewWindow::SelectShipFileId(size_t shipFileId)
     }
 }
 
-void ShipPreviewWindow::ChooseShipFileId(size_t shipFileId)
+void ShipPreviewWindow::ChooseInfoTile(size_t infoTileIndex)
 {
     //
     // Fire chosen event
