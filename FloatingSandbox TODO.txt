@@ -1616,14 +1616,19 @@
 						+ Helper methods:
 							+ GetInfoTileIndex(size_t ShipId) -> size_t
 					- Vector of info tiles is assumed to be always sorted by the currently-selected method
-						- Change InfoTile: needs to become agnostic of own position in grid, which also needs to be recalc'd a) at each new InfoTile, and b) at each change of sorting
-						- Replace those members with functions that go to and from linear position in InfoTile vector to VirtualRect
+						+ Change InfoTile: needs to become agnostic of own position in grid, which also needs to be recalc'd a) at each new InfoTile, and b) at each change of sorting
+						+ Replace those members with functions that go to and from linear position in InfoTile vector to VirtualRect
+						- Do strongly-typed ship file ID
+							- TODOHERE:
+						- Search:
+							- "forward" direction must depend on search order
 					- Do sorting
 						- TODO: Has std::function "sort predicate" member, memoized by SetSortMethod/Direction()
 						- Need to sort at:
 							- Sortmethod change
 							- InfoTile preview ready
 							- InfoTile preview error
+						- At each sort, need to call EnsureTileIsVisible
 
 			+ Move search here
 			+ Move "Ok/Cancel" buttons below next to dir dropdown (taking place of "search")
@@ -1635,6 +1640,7 @@
 			- Remove sorting on thread
 		- Tests:
 			- Preview error
+			- Search: goes from selected onwards - in right order and direction
 	- ShipLoadDialog improvements:
 		- Display folders in grid
 

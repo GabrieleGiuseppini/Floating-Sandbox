@@ -46,7 +46,7 @@ ShipPreviewWindow::ShipPreviewWindow(
     //
     , mPollQueueTimer()
     , mInfoTiles()
-    , mSelectedInfoTileIndex()
+    , mSelectedShipFileId()
     , mSortMethod(SortMethod::ByName)
     , mIsSortDescending(false)
     , mCurrentlyCompletedDirectorySnapshot()
@@ -104,7 +104,7 @@ ShipPreviewWindow::~ShipPreviewWindow()
 
 void ShipPreviewWindow::OnOpen()
 {
-    assert(!mSelectedInfoTileIndex);
+    assert(!mSelectedShipFileId);
 
     // Clear message queue
     assert(mThreadToPanelMessageQueue.empty());
@@ -135,7 +135,7 @@ void ShipPreviewWindow::OnClose()
     // Clear state
     //
 
-    mSelectedInfoTileIndex.reset();
+    mSelectedShipFileId.reset();
 }
 
 void ShipPreviewWindow::SetDirectory(std::filesystem::path const & directoryPath)
@@ -200,7 +200,7 @@ void ShipPreviewWindow::SetDirectory(std::filesystem::path const & directoryPath
         ResetInfoTiles(directorySnapshot);
 
         // Clear selection
-        mSelectedInfoTileIndex.reset();
+        mSelectedShipFileId.reset();
 
         // Start thread's scan (if thread is not running now, it'll pick it up when it starts)
         {
@@ -228,20 +228,20 @@ bool ShipPreviewWindow::Search(std::string const & shipName)
     //
 
     std::optional<size_t> foundShipIndex;
-    size_t sOffset = mSelectedInfoTileIndex ? (*mSelectedInfoTileIndex + 1) : 0;
+    size_t startInfoTileIndex = mSelectedShipFileId ? (ShipFileIdToInfoTileIndex(*mSelectedShipFileId) + 1) : 0;
     for (size_t i = 0; i < mInfoTiles.size(); ++i)
     {
-        size_t s = (sOffset + i) % mInfoTiles.size();
+        size_t shipInfoTileIndex = (startInfoTileIndex + i) % mInfoTiles.size();
 
         if (std::any_of(
-            mInfoTiles[s].SearchStrings.cbegin(),
-            mInfoTiles[s].SearchStrings.cend(),
+            mInfoTiles[shipInfoTileIndex].SearchStrings.cbegin(),
+            mInfoTiles[shipInfoTileIndex].SearchStrings.cend(),
             [&shipNameLCase](auto const & str)
             {
                 return str.find(shipNameLCase) != std::string::npos;
             }))
         {
-            foundShipIndex = s;
+            foundShipIndex = shipInfoTileIndex;
             break;
         }
     }
@@ -258,7 +258,7 @@ bool ShipPreviewWindow::Search(std::string const & shipName)
         // Select item
         //
 
-        Select(*foundShipIndex);
+        SelectShipFileId(mInfoTiles[*foundShipIndex].ShipFileId);
     }
 
     return foundShipIndex.has_value();
@@ -278,9 +278,9 @@ void ShipPreviewWindow::SetIsSortDescending(bool isSortDescending)
 
 void ShipPreviewWindow::ChooseSelectedIfAny()
 {
-    if (!!mSelectedInfoTileIndex)
+    if (mSelectedShipFileId.has_value())
     {
-        Choose(*mSelectedInfoTileIndex);
+        ChooseShipFileId(*mSelectedShipFileId);
     }
 }
 
@@ -313,7 +313,7 @@ void ShipPreviewWindow::OnMouseSingleClick(wxMouseEvent & event)
     auto selectedInfoTileIndex = MapMousePositionToInfoTile(event.GetPosition());
     if (selectedInfoTileIndex < mInfoTiles.size())
     {
-        Select(selectedInfoTileIndex);
+        SelectShipFileId(mInfoTiles[selectedInfoTileIndex].ShipFileId);
     }
 
     // Allow focus move
@@ -325,13 +325,13 @@ void ShipPreviewWindow::OnMouseDoubleClick(wxMouseEvent & event)
     auto selectedInfoTileIndex = MapMousePositionToInfoTile(event.GetPosition());
     if (selectedInfoTileIndex < mInfoTiles.size())
     {
-        Choose(selectedInfoTileIndex);
+        ChooseShipFileId(mInfoTiles[selectedInfoTileIndex].ShipFileId);
     }
 }
 
 void ShipPreviewWindow::OnKeyDown(wxKeyEvent & event)
 {
-    if (!mSelectedInfoTileIndex.has_value())
+    if (!mSelectedShipFileId.has_value())
     {
         event.Skip();
         return;
@@ -350,7 +350,7 @@ void ShipPreviewWindow::OnKeyDown(wxKeyEvent & event)
         deltaElement = mCols;
     else if (keyCode == WXK_RETURN)
     {
-        Choose(*mSelectedInfoTileIndex);
+        ChooseShipFileId(*mSelectedShipFileId);
         return;
     }
     else
@@ -361,13 +361,13 @@ void ShipPreviewWindow::OnKeyDown(wxKeyEvent & event)
 
     if (deltaElement != 0)
     {
-        int const newIndex = static_cast<int>(*mSelectedInfoTileIndex) + deltaElement;
-        if (newIndex >= 0 && newIndex < static_cast<int>(mInfoTiles.size()))
+        int const newInfoTileIndex = static_cast<int>(ShipFileIdToInfoTileIndex(*mSelectedShipFileId)) + deltaElement;
+        if (newInfoTileIndex >= 0 && newInfoTileIndex < static_cast<int>(mInfoTiles.size()))
         {
-            Select(static_cast<size_t>(newIndex));
+            SelectShipFileId(mInfoTiles[newInfoTileIndex].ShipFileId);
 
             // Move into view if needed
-            EnsureTileIsVisible(newIndex);
+            EnsureTileIsVisible(newInfoTileIndex);
         }
     }
 }
@@ -516,13 +516,11 @@ void ShipPreviewWindow::OnPollQueueTimer(wxTimerEvent & /*event*/)
 
 /////////////////////////////////////////////////////////////////////////////////
 
-void ShipPreviewWindow::Select(size_t infoTileIndex)
+void ShipPreviewWindow::SelectShipFileId(size_t shipFileId)
 {
-    assert(infoTileIndex < mInfoTiles.size());
+    bool isDirty = (mSelectedShipFileId != shipFileId);
 
-    bool isDirty = (mSelectedInfoTileIndex != infoTileIndex);
-
-    mSelectedInfoTileIndex = infoTileIndex;
+    mSelectedShipFileId = shipFileId;
 
     if (isDirty)
     {
@@ -536,7 +534,7 @@ void ShipPreviewWindow::Select(size_t infoTileIndex)
         auto event = fsShipFileSelectedEvent(
             fsEVT_SHIP_FILE_SELECTED,
             this->GetId(),
-            infoTileIndex,
+            mSelectedShipFileId,
             mInfoTiles[infoTileIndex].Metadata,
             mInfoTiles[infoTileIndex].ShipFilepath);
 
@@ -544,10 +542,8 @@ void ShipPreviewWindow::Select(size_t infoTileIndex)
     }
 }
 
-void ShipPreviewWindow::Choose(size_t infoTileIndex)
+void ShipPreviewWindow::ChooseShipFileId(size_t shipFileId)
 {
-    assert(infoTileIndex < mInfoTiles.size());
-
     //
     // Fire chosen event
     //
@@ -606,6 +602,16 @@ size_t ShipPreviewWindow::ShipFileIdToInfoTileIndex(size_t shipFileId) const
 
     assert(false);
     return std::numeric_limits<size_t>::max();
+}
+
+wxRect ShipPreviewWindow::InfoTileIndexToRectVirtual(size_t infoTileIndex) const
+{
+    int const iCol = static_cast<int>(infoTileIndex % mCols);
+    int const iRow = static_cast<int>(infoTileIndex / mCols);
+
+    int const x = iCol * mColumnWidth;
+    int const y = iRow * RowHeight;
+    return wxRect(x, y, mColumnWidth, RowHeight);
 }
 
 ShipPreviewWindow::DirectorySnapshot ShipPreviewWindow::EnumerateShipFiles(std::filesystem::path const & directoryPath)
@@ -711,22 +717,6 @@ void ShipPreviewWindow::RecalculateGeometry(
 
     LogMessage("ShipPreviewPanel::RecalculateGeometry(", clientSize.GetWidth(), ", ", clientSize.GetHeight(), ", ", nPreviews,"): nCols=",
         mCols, " nRows=", mRows, " expHMargin=", mExpandedHorizontalMargin, " virtH=", mVirtualHeight);
-
-    // Update all info tiles's rectangles
-    for (size_t i = 0; i < mInfoTiles.size(); ++i)
-    {
-        mInfoTiles[i].DescriptionLabel1Size.reset();
-        mInfoTiles[i].DescriptionLabel2Size.reset();
-        mInfoTiles[i].DescriptionLabel3Size.reset();
-        mInfoTiles[i].FilenameLabelSize.reset();
-
-        mInfoTiles[i].Col = static_cast<int>(i % mCols);
-        mInfoTiles[i].Row = static_cast<int>(i / mCols);
-
-        int x = mInfoTiles[i].Col * mColumnWidth;
-        int y = mInfoTiles[i].Row * RowHeight;
-        mInfoTiles[i].RectVirtual = wxRect(x, y, mColumnWidth, RowHeight);
-    }
 }
 
 size_t ShipPreviewWindow::MapMousePositionToInfoTile(wxPoint const & mousePosition)
@@ -743,10 +733,12 @@ size_t ShipPreviewWindow::MapMousePositionToInfoTile(wxPoint const & mousePositi
 
 void ShipPreviewWindow::EnsureTileIsVisible(size_t infoTileIndex)
 {
-    assert(infoTileIndex < mInfoTiles.size());
+    wxRect const visibleRectVirtual = GetVisibleRectVirtual();
 
-    wxRect visibleRectVirtual = GetVisibleRectVirtual();
-    if (!visibleRectVirtual.Contains(mInfoTiles[infoTileIndex].RectVirtual))
+    assert(infoTileIndex < mInfoTiles.size());
+    wxRect const infoTileRectVirtual = InfoTileIndexToRectVirtual(infoTileIndex);
+    
+    if (!visibleRectVirtual.Contains(infoTileRectVirtual))
     {
         int xUnit, yUnit;
         GetScrollPixelsPerUnit(&xUnit, &yUnit);
@@ -754,7 +746,7 @@ void ShipPreviewWindow::EnsureTileIsVisible(size_t infoTileIndex)
         {
             this->Scroll(
                 -1,
-                mInfoTiles[infoTileIndex].RectVirtual.GetTop() / yUnit);
+                infoTileRectVirtual.GetTop() / yUnit);
         }
     }
 }
@@ -811,10 +803,11 @@ void ShipPreviewWindow::Render(wxDC & dc)
         // Process all info tiles
         for (size_t i = 0; i < mInfoTiles.size(); ++i)
         {
+            wxRect const infoTileRectVirtual = InfoTileIndexToRectVirtual(i);
             auto & infoTile = mInfoTiles[i];
 
             // Check if this info tile's virtual rect intersects the visible one
-            if (visibleRectVirtual.Intersects(infoTile.RectVirtual))
+            if (visibleRectVirtual.Intersects(infoTileRectVirtual))
             {
                 //
                 // Bitmap
@@ -822,10 +815,10 @@ void ShipPreviewWindow::Render(wxDC & dc)
 
                 dc.DrawBitmap(
                     infoTile.Bitmap,
-                    infoTile.RectVirtual.GetLeft() + infoTileContentLeftMargin
+                    infoTileRectVirtual.GetLeft() + infoTileContentLeftMargin
                         + PreviewImageWidth / 2 - infoTile.Bitmap.GetWidth() / 2
                         - originVirtual.x,
-                    infoTile.RectVirtual.GetTop() + InfoTileInset
+                    infoTileRectVirtual.GetTop() + InfoTileInset
                         + PreviewImageHeight - infoTile.Bitmap.GetHeight()
                         - originVirtual.y,
                     true);
@@ -840,9 +833,9 @@ void ShipPreviewWindow::Render(wxDC & dc)
                     {
                         dc.DrawBitmap(
                             mPreviewRibbonBatteryAndHDBitmap,
-                            infoTile.RectVirtual.GetLeft() + InfoTileInset
+                            infoTileRectVirtual.GetLeft() + InfoTileInset
                                 - originVirtual.x,
-                            infoTile.RectVirtual.GetTop() + InfoTileInset
+                            infoTileRectVirtual.GetTop() + InfoTileInset
                                 - originVirtual.y,
                             true);
                     }
@@ -850,9 +843,9 @@ void ShipPreviewWindow::Render(wxDC & dc)
                     {
                         dc.DrawBitmap(
                             mPreviewRibbonHDBitmap,
-                            infoTile.RectVirtual.GetLeft() + InfoTileInset
+                            infoTileRectVirtual.GetLeft() + InfoTileInset
                                 - originVirtual.x,
-                            infoTile.RectVirtual.GetTop() + InfoTileInset
+                            infoTileRectVirtual.GetTop() + InfoTileInset
                                 - originVirtual.y,
                             true);
                     }
@@ -861,9 +854,9 @@ void ShipPreviewWindow::Render(wxDC & dc)
                 {
                     dc.DrawBitmap(
                         mPreviewRibbonBatteryBitmap,
-                        infoTile.RectVirtual.GetLeft() + InfoTileInset
+                        infoTileRectVirtual.GetLeft() + InfoTileInset
                             - originVirtual.x,
-                        infoTile.RectVirtual.GetTop() + InfoTileInset
+                        infoTileRectVirtual.GetTop() + InfoTileInset
                             - originVirtual.y,
                         true);
                 }
@@ -873,12 +866,12 @@ void ShipPreviewWindow::Render(wxDC & dc)
                 //
 
                 int const labelCenterX =
-                    infoTile.RectVirtual.GetLeft() + infoTileContentLeftMargin
+                    infoTileRectVirtual.GetLeft() + infoTileContentLeftMargin
                     + PreviewImageWidth / 2
                     - originVirtual.x;
 
                 int nextLabelY =
-                    infoTile.RectVirtual.GetTop() + InfoTileInset
+                    infoTileRectVirtual.GetTop() + InfoTileInset
                     + PreviewImageHeight + PreviewImageBottomMargin
                     - originVirtual.y;
 
@@ -957,15 +950,15 @@ void ShipPreviewWindow::Render(wxDC & dc)
                 // Selection
                 //
 
-                if (i == mSelectedInfoTileIndex)
+                if (mInfoTiles[i].ShipFileId == mSelectedShipFileId)
                 {
                     dc.SetPen(mSelectionPen);
                     dc.SetBrush(*wxTRANSPARENT_BRUSH);
                     dc.DrawRectangle(
-                        infoTile.RectVirtual.GetLeft() + 2 - originVirtual.x,
-                        infoTile.RectVirtual.GetTop() + 2 - originVirtual.y,
-                        infoTile.RectVirtual.GetWidth() - 4,
-                        infoTile.RectVirtual.GetHeight() - 4);
+                        infoTileRectVirtual.GetLeft() + 2 - originVirtual.x,
+                        infoTileRectVirtual.GetTop() + 2 - originVirtual.y,
+                        infoTileRectVirtual.GetWidth() - 4,
+                        infoTileRectVirtual.GetHeight() - 4);
                 }
             }
         }

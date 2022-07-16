@@ -326,10 +326,6 @@ private:
         wxString FilenameLabel;
         std::optional<wxSize> FilenameLabelSize;
 
-        int Col;
-        int Row;
-        wxRect RectVirtual;
-
         std::optional<ShipMetadata> Metadata;
 
         std::vector<std::string> SearchStrings;
@@ -351,15 +347,17 @@ private:
 
 private:
 
-    void Select(size_t infoTileIndex);
+    void SelectShipFileId(size_t shipFileId);
 
-    void Choose(size_t infoTileIndex);
+    void ChooseShipFileId(size_t shipFileId);
 
     void ResetInfoTiles(DirectorySnapshot const & directorySnapshot);
 
     void SortInfoTiles();
 
     size_t ShipFileIdToInfoTileIndex(size_t shipFileId) const;
+
+    wxRect InfoTileIndexToRectVirtual(size_t infoTileIndex) const;
 
     DirectorySnapshot EnumerateShipFiles(std::filesystem::path const & directoryPath);
 
@@ -410,8 +408,8 @@ private:
     // sorted by the current sort method
     std::vector<InfoTile> mInfoTiles;
 
-    // The currently-selected info tile
-    std::optional<size_t> mSelectedInfoTileIndex;
+    // The currently-selected ship file ID (hence info tile index)
+    std::optional<size_t> mSelectedShipFileId;
 
     // The current sorting of the info tiles
     SortMethod mSortMethod;
