@@ -586,6 +586,9 @@ void ShipPreviewWindow::ResetInfoTiles(DirectorySnapshot const & directorySnapsh
                 fileEntry.FilePath.filename().string()));
     }
 
+    // Sort info tiles according to current sort method
+    SortInfoTiles();
+
     // Recalculate geometry
     RecalculateGeometry(mClientSize, static_cast<int>(mInfoTiles.size()));
 
@@ -759,19 +762,6 @@ ShipPreviewWindow::DirectorySnapshot ShipPreviewWindow::EnumerateShipFiles(std::
     }
 
     LogMessage("ShipPreviewWindow::EnumerateShipFiles(", directoryPath.string(), "): ...found ", files.size(), " ship files.");
-
-    // Sort just to have a deterministic order
-    // (but honor sort method just to make default case - sort by name - less jumpy)
-    std::sort(
-        files.begin(),
-        files.end(),
-        [this](auto const & l, auto const & r) -> bool
-        {
-            auto const lFilename = std::get<0>(l).filename();
-            auto const rFilename = std::get<0>(r).filename();
-            return ((lFilename < rFilename) != (mIsSortDescending)) ||
-                (lFilename == rFilename && std::get<1>(l) < std::get<1>(r));
-        });
 
     return DirectorySnapshot(directoryPath, std::move(files));
 }

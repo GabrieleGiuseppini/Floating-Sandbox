@@ -274,6 +274,15 @@ private:
                     std::get<1>(file),
                     ShipFileId_t(FileEntries.size())); // Here we assign the ID once and for all
             }
+
+            // Sort just to have a deterministic order - needed for comparisons between DirectorySnapshot's
+            std::sort(
+                FileEntries.begin(),
+                FileEntries.end(),
+                [](auto const & l, auto const & r) -> bool
+                {
+                    return l.FilePath < r.FilePath;
+                });
         }
 
         bool IsEquivalentTo(DirectorySnapshot const & other) const

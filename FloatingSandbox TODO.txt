@@ -1631,12 +1631,12 @@
 									- Clock taken at Deserializer::Save
 									- Read at Deserializer::Load; if not found => from file
 									- Other de-serializers: from file
-						- Initial DirectorySnapshot sorting should be invariant from sort method
-							- Or else won't match if changed in-between
+						+ Initial DirectorySnapshot sorting should be invariant from sort direction
+							+ Or else won't match if changed in-between
 						= Need to sort at:
 							+ Sortmethod change
 							- InfoTile preview ready
-								- For insert to work, initial InfoTiles must already be fully sorted by predicate
+								+ For insert to work, initial InfoTiles must already be fully sorted by predicate
 							- InfoTile preview error
 						+ At each sort, need to call EnsureTileIsVisible
 
