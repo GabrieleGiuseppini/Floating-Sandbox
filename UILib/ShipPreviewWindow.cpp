@@ -49,6 +49,7 @@ ShipPreviewWindow::ShipPreviewWindow(
     , mSelectedShipFileId()
     , mSortMethod(SortMethod::ByName)
     , mIsSortDescending(false)
+    , mSortPredicate(MakeSortPredicate(mSortMethod, mIsSortDescending))
     , mCurrentlyCompletedDirectorySnapshot()
     //
     , mPreviewThread()
@@ -267,13 +268,17 @@ bool ShipPreviewWindow::Search(std::string const & shipName)
 void ShipPreviewWindow::SetSortMethod(SortMethod sortMethod)
 {
     mSortMethod = sortMethod;
+    RefreshSortPredicate();
     SortInfoTiles();
+    Refresh();
 }
 
 void ShipPreviewWindow::SetIsSortDescending(bool isSortDescending)
 {
     mIsSortDescending = isSortDescending;
+    RefreshSortPredicate();
     SortInfoTiles();
+    Refresh();
 }
 
 void ShipPreviewWindow::ChooseSelectedIfAny()
@@ -471,6 +476,8 @@ void ShipPreviewWindow::OnPollQueueTimer(wxTimerEvent & /*event*/)
                             *(shipPreviewData.Metadata.YearBuilt)));
                 }
 
+                // TODO: sort element
+
                 // Remember we need to refresh now
                 doRefresh = true;
 
@@ -489,6 +496,8 @@ void ShipPreviewWindow::OnPollQueueTimer(wxTimerEvent & /*event*/)
                 mInfoTiles[infoTileIndex].Bitmap = mErrorBitmap;
                 mInfoTiles[infoTileIndex].OriginalDescription1 = message->GetErrorMessage();
                 mInfoTiles[infoTileIndex].DescriptionLabel1Size.reset();
+
+                // TODO: sort element
 
                 // Remember we need to refresh now
                 doRefresh = true;
@@ -511,6 +520,8 @@ void ShipPreviewWindow::OnPollQueueTimer(wxTimerEvent & /*event*/)
     if (doRefresh)
     {
         Refresh();
+
+        EnsureSelectedShipIsVisible();
     }
 }
 
@@ -585,7 +596,12 @@ void ShipPreviewWindow::ResetInfoTiles(DirectorySnapshot const & directorySnapsh
 
 void ShipPreviewWindow::SortInfoTiles()
 {
-    // TODOHERE
+    std::sort(
+        mInfoTiles.begin(),
+        mInfoTiles.end(),
+        mSortPredicate);
+
+    EnsureSelectedShipIsVisible();
 }
 
 size_t ShipPreviewWindow::ShipFileIdToInfoTileIndex(size_t shipFileId) const
@@ -611,6 +627,90 @@ wxRect ShipPreviewWindow::InfoTileIndexToRectVirtual(size_t infoTileIndex) const
     int const x = iCol * mColumnWidth;
     int const y = iRow * RowHeight;
     return wxRect(x, y, mColumnWidth, RowHeight);
+}
+
+void ShipPreviewWindow::RefreshSortPredicate()
+{
+    mSortPredicate = MakeSortPredicate(mSortMethod, mIsSortDescending);
+}
+
+std::function<bool(ShipPreviewWindow::InfoTile const &, ShipPreviewWindow::InfoTile const &)> ShipPreviewWindow::MakeSortPredicate(SortMethod sortMethod, bool isSortDescending)
+{
+    std::function<bool(InfoTile const &, InfoTile const &)> metadataPredicate;
+
+    switch (sortMethod)
+    {
+        case SortMethod::ByFeatures:
+        {
+            // TODO
+            break;
+        }
+
+        case SortMethod::ByLastModified:
+        {
+            // TODO
+            break;
+        }
+
+        case SortMethod::ByName:
+        {
+            metadataPredicate = [isSortDescending](InfoTile const & l, InfoTile const & r) -> bool
+            {
+                assert(l.Metadata.has_value() && r.Metadata.has_value());
+
+                bool const ascendingResult =
+                    (l.Metadata->ShipName < r.Metadata->ShipName)
+                    || ((l.Metadata->ShipName == r.Metadata->ShipName) && (l.ShipFileId < r.ShipFileId));
+
+                return (ascendingResult) != (isSortDescending);
+            };
+
+            break;
+        }
+
+        case SortMethod::ByYearBuilt:
+        {
+            metadataPredicate = [isSortDescending](InfoTile const & l, InfoTile const & r) -> bool
+            {
+                assert(l.Metadata.has_value() && r.Metadata.has_value());
+
+                bool const ascendingResult =
+                    (l.Metadata->YearBuilt < r.Metadata->YearBuilt)
+                    || ((l.Metadata->YearBuilt == r.Metadata->YearBuilt) && (l.ShipFileId < r.ShipFileId));
+
+                return (ascendingResult) != (isSortDescending);
+            };
+
+            break;
+        }
+    }
+
+    return [isSortDescending, metadataPredicate=std::move(metadataPredicate)](InfoTile const & l, InfoTile const & r) -> bool
+    {
+        if (l.Metadata.has_value())
+        {
+            if (r.Metadata.has_value())
+            {
+                return metadataPredicate(l, r);
+            }
+            else
+            {
+                // L has metadata, R not
+                return (true) != (isSortDescending); // All metadata-having ones before non-metadata having ones
+            }
+        }
+        else if (r.Metadata.has_value())
+        {
+            // L has no metadata, R has metadata
+            return (false) != (isSortDescending); // All metadata-having ones before non-metadata having ones
+        }
+        else
+        {
+            // Neither has metadata...
+            // ...sort on filename
+            return (l.ShipFilepath.filename() < r.ShipFilepath.filename()) != (isSortDescending);
+        }
+    };
 }
 
 ShipPreviewWindow::DirectorySnapshot ShipPreviewWindow::EnumerateShipFiles(std::filesystem::path const & directoryPath)
@@ -747,6 +847,14 @@ void ShipPreviewWindow::EnsureTileIsVisible(size_t infoTileIndex)
                 -1,
                 infoTileRectVirtual.GetTop() / yUnit);
         }
+    }
+}
+
+void ShipPreviewWindow::EnsureSelectedShipIsVisible()
+{
+    if (mSelectedShipFileId.has_value())
+    {
+        EnsureTileIsVisible(ShipFileIdToInfoTileIndex(*mSelectedShipFileId));
     }
 }
 

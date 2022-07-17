@@ -17,6 +17,7 @@
 #include <condition_variable>
 #include <deque>
 #include <filesystem>
+#include <functional>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -350,6 +351,10 @@ private:
 
     wxRect InfoTileIndexToRectVirtual(size_t infoTileIndex) const;
 
+    void RefreshSortPredicate();
+
+    static std::function<bool(InfoTile const &, InfoTile const &)> MakeSortPredicate(SortMethod sortMethod, bool isSortDescending);
+
     DirectorySnapshot EnumerateShipFiles(std::filesystem::path const & directoryPath);
 
     wxBitmap MakeBitmap(RgbaImageData const & shipPreviewImage) const;
@@ -361,6 +366,8 @@ private:
     size_t MapMousePositionToInfoTile(wxPoint const & mousePosition);
 
     void EnsureTileIsVisible(size_t infoTileIndex);
+
+    void EnsureSelectedShipIsVisible();
 
     wxRect GetVisibleRectVirtual() const;
 
@@ -405,6 +412,7 @@ private:
     // The current sorting of the info tiles
     SortMethod mSortMethod;
     bool mIsSortDescending;
+    std::function<bool(InfoTile const &, InfoTile const &)> mSortPredicate;
 
     // When set, indicates that the preview of this directory is completed
     std::optional<DirectorySnapshot> mCurrentlyCompletedDirectorySnapshot;

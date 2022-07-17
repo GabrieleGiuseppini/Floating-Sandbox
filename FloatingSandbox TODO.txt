@@ -1615,30 +1615,34 @@
 							+ Main Thread's handling of PreviewError
 						+ Helper methods:
 							+ GetInfoTileIndex(size_t ShipId) -> size_t
-					- Vector of info tiles is assumed to be always sorted by the currently-selected method
+					= Vector of info tiles is assumed to be always sorted by the currently-selected method
 						+ Change InfoTile: needs to become agnostic of own position in grid, which also needs to be recalc'd a) at each new InfoTile, and b) at each change of sorting
 						+ Replace those members with functions that go to and from linear position in InfoTile vector to VirtualRect
 						- Do strongly-typed ship file ID
 							- TODOHERE:
 						- Search:
 							- "forward" direction must depend on search order
-					- Do sorting
-						- TODO: Has std::function "sort predicate" member, memoized by SetSortMethod/Direction()
-						- Need to sort at:
-							- Sortmethod change
+					= Do sorting
+						- Can make non-metadata ones (e.g. errors) always at end?
+						= Has std::function "sort predicate" member, memoized by SetSortMethod/Direction()
+							+ By name
+							+ By year
+							- By features
+							- By last modified
+								- LastModified is new attrib of Metadata @ shp2
+									- Clock taken at Deserializer::Save
+									- Read at Deserializer::Load; if not found => from file
+									- Other de-serializers: from file
+						= Need to sort at:
+							= Sortmethod change
 							- InfoTile preview ready
 							- InfoTile preview error
-						- At each sort, need to call EnsureTileIsVisible
+						+ At each sort, need to call EnsureTileIsVisible
 
 			+ Move search here
 			+ Move "Ok/Cancel" buttons below next to dir dropdown (taking place of "search")
-		- Misc:
-			- LastModified is new attrib of Metadata @ shp2
-				- Clock taken at Deserializer::Save
-				- Read at Deserializer::Load; if not found => from file
-					- Other de-serializers: from file
-			- Remove sorting on thread
 		- Tests:
+			- Year built: string sorting we do matches year numeric
 			- Preview error
 			- Search: goes from selected onwards - in right order and direction
 	- ShipLoadDialog improvements:
