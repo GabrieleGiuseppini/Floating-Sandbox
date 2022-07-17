@@ -43,8 +43,8 @@ public:
 private:
 
     void OnDirCtrlDirSelected(wxCommandEvent & event);
-    void OnShipFileSelected(fsShipFileSelectedEvent & event);
-    void OnShipFileChosen(fsShipFileChosenEvent & event);
+    void OnShipFileSelected(ShipPreviewWindow::fsShipFileSelectedEvent & event);
+    void OnShipFileChosen(ShipPreviewWindow::fsShipFileChosenEvent & event);
     void OnRecentDirectorySelected(wxCommandEvent & event);
     void OnShipSearchCtrlText(wxCommandEvent & event);
     void OnShipSearchCtrlSearchBtn(wxCommandEvent & event);

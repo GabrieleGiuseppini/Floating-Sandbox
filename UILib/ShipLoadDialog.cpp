@@ -526,7 +526,7 @@ void ShipLoadDialog::OnDirCtrlDirSelected(wxCommandEvent & /*event*/)
     OnDirectorySelected(selectedDirPath);
 }
 
-void ShipLoadDialog::OnShipFileSelected(fsShipFileSelectedEvent & event)
+void ShipLoadDialog::OnShipFileSelected(ShipPreviewWindow::fsShipFileSelectedEvent & event)
 {
     // Store selection
     if (!!event.GetShipMetadata())
@@ -540,7 +540,7 @@ void ShipLoadDialog::OnShipFileSelected(fsShipFileSelectedEvent & event)
     mLoadButton->Enable(true);
 }
 
-void ShipLoadDialog::OnShipFileChosen(fsShipFileChosenEvent & event)
+void ShipLoadDialog::OnShipFileChosen(ShipPreviewWindow::fsShipFileChosenEvent & event)
 {
     // Store selection
     mSelectedShipFilepath = event.GetShipFilepath();

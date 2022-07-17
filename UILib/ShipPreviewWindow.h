@@ -9,6 +9,7 @@
 #include <Game/ShipPreviewData.h>
 
 #include <GameCore/ImageData.h>
+#include <GameCore/StrongTypeDef.h>
 
 #include <wx/timer.h>
 #include <wx/wx.h>
@@ -27,96 +28,6 @@
 #include <vector>
 
 /*
- * Event fired when a ship file has been selected.
- */
-class fsShipFileSelectedEvent : public wxEvent
-{
-public:
-
-    fsShipFileSelectedEvent(
-        wxEventType eventType,
-        int winid,
-        std::optional<ShipMetadata> const & shipMetadata,
-        std::filesystem::path const & shipFilepath)
-        : wxEvent(winid, eventType)
-        , mShipMetadata(shipMetadata)
-        , mShipFilepath(shipFilepath)
-    {
-        m_propagationLevel = wxEVENT_PROPAGATE_MAX;
-    }
-
-    fsShipFileSelectedEvent(fsShipFileSelectedEvent const & other)
-        : wxEvent(other)
-        , mShipMetadata(other.mShipMetadata)
-        , mShipFilepath(other.mShipFilepath)
-    {
-        m_propagationLevel = wxEVENT_PROPAGATE_MAX;
-    }
-
-    virtual wxEvent *Clone() const override
-    {
-        return new fsShipFileSelectedEvent(*this);
-    }
-
-    std::optional<ShipMetadata> const & GetShipMetadata() const
-    {
-        return mShipMetadata;
-    }
-
-    std::filesystem::path const & GetShipFilepath() const
-    {
-        return mShipFilepath;
-    }
-
-private:
-
-    std::optional<ShipMetadata> const mShipMetadata;
-    std::filesystem::path const mShipFilepath;
-};
-
-wxDECLARE_EVENT(fsEVT_SHIP_FILE_SELECTED, fsShipFileSelectedEvent);
-
-/*
- * Event fired when a ship file has been chosen.
- */
-class fsShipFileChosenEvent : public wxEvent
-{
-public:
-
-    fsShipFileChosenEvent(
-        wxEventType eventType,
-        int winid,
-        std::filesystem::path const & shipFilepath)
-        : wxEvent(winid, eventType)
-        , mShipFilepath(shipFilepath)
-    {
-        m_propagationLevel = wxEVENT_PROPAGATE_MAX;
-    }
-
-    fsShipFileChosenEvent(fsShipFileChosenEvent const & other)
-        : wxEvent(other)
-        , mShipFilepath(other.mShipFilepath)
-    {
-        m_propagationLevel = wxEVENT_PROPAGATE_MAX;
-    }
-
-    virtual wxEvent *Clone() const override
-    {
-        return new fsShipFileChosenEvent(*this);
-    }
-
-    std::filesystem::path const GetShipFilepath() const
-    {
-        return mShipFilepath;
-    }
-
-private:
-    std::filesystem::path const mShipFilepath;
-};
-
-wxDECLARE_EVENT(fsEVT_SHIP_FILE_CHOSEN, fsShipFileChosenEvent);
-
-/*
  * This window populates itself with previews of all ships found in a directory.
  * The search for ships and extraction of previews is done by a separate thread,
  * so to not interfere with the UI message pump.
@@ -124,6 +35,96 @@ wxDECLARE_EVENT(fsEVT_SHIP_FILE_CHOSEN, fsShipFileChosenEvent);
 class ShipPreviewWindow : public wxScrolled<wxWindow>
 {
 public:
+
+    using ShipFileId_t = StrongTypeDef<size_t, struct _tagShipFileId>;
+
+    //
+    // Event fired when a ship file has been selected.
+    //
+
+    class fsShipFileSelectedEvent : public wxEvent
+    {
+    public:
+
+        fsShipFileSelectedEvent(
+            wxEventType eventType,
+            int winid,
+            std::optional<ShipMetadata> const & shipMetadata,
+            std::filesystem::path const & shipFilepath)
+            : wxEvent(winid, eventType)
+            , mShipMetadata(shipMetadata)
+            , mShipFilepath(shipFilepath)
+        {
+            m_propagationLevel = wxEVENT_PROPAGATE_MAX;
+        }
+
+        fsShipFileSelectedEvent(fsShipFileSelectedEvent const & other)
+            : wxEvent(other)
+            , mShipMetadata(other.mShipMetadata)
+            , mShipFilepath(other.mShipFilepath)
+        {
+            m_propagationLevel = wxEVENT_PROPAGATE_MAX;
+        }
+
+        virtual wxEvent * Clone() const override
+        {
+            return new fsShipFileSelectedEvent(*this);
+        }
+
+        std::optional<ShipMetadata> const & GetShipMetadata() const
+        {
+            return mShipMetadata;
+        }
+
+        std::filesystem::path const & GetShipFilepath() const
+        {
+            return mShipFilepath;
+        }
+
+    private:
+
+        std::optional<ShipMetadata> const mShipMetadata;
+        std::filesystem::path const mShipFilepath;
+    };
+
+    //
+    // Event fired when a ship file has been chosen.
+    //
+
+    class fsShipFileChosenEvent : public wxEvent
+    {
+    public:
+
+        fsShipFileChosenEvent(
+            wxEventType eventType,
+            int winid,
+            std::filesystem::path const & shipFilepath)
+            : wxEvent(winid, eventType)
+            , mShipFilepath(shipFilepath)
+        {
+            m_propagationLevel = wxEVENT_PROPAGATE_MAX;
+        }
+
+        fsShipFileChosenEvent(fsShipFileChosenEvent const & other)
+            : wxEvent(other)
+            , mShipFilepath(other.mShipFilepath)
+        {
+            m_propagationLevel = wxEVENT_PROPAGATE_MAX;
+        }
+
+        virtual wxEvent * Clone() const override
+        {
+            return new fsShipFileChosenEvent(*this);
+        }
+
+        std::filesystem::path const GetShipFilepath() const
+        {
+            return mShipFilepath;
+        }
+
+    private:
+        std::filesystem::path const mShipFilepath;
+    };
 
     //
     // Sort method
@@ -247,12 +248,12 @@ private:
         {
             std::filesystem::path FilePath;
             std::filesystem::file_time_type FileLastModified;
-            size_t ShipFileId;
+            ShipFileId_t ShipFileId;
 
             FileEntry(
                 std::filesystem::path const & filePath,
                 std::filesystem::file_time_type const & fileLastModified,
-                size_t shipFileId)
+                ShipFileId_t shipFileId)
                 : FilePath(filePath)
                 , FileLastModified(fileLastModified)
                 , ShipFileId(shipFileId)
@@ -271,7 +272,7 @@ private:
                 FileEntries.emplace_back(
                     std::get<0>(file),
                     std::get<1>(file),
-                    FileEntries.size()); // Here we assign the ID once and for all
+                    ShipFileId_t(FileEntries.size())); // Here we assign the ID once and for all
             }
         }
 
@@ -298,7 +299,7 @@ private:
 
     struct InfoTile
     {
-        size_t ShipFileId;
+        ShipFileId_t ShipFileId;
         std::filesystem::path ShipFilepath;
 
         wxBitmap Bitmap;
@@ -323,7 +324,7 @@ private:
         std::vector<std::string> SearchStrings;
 
         InfoTile(
-            size_t shipFileId,
+            ShipFileId_t shipFileId,
             std::filesystem::path const & shipFilepath,
             wxBitmap bitmap)
             : ShipFileId(shipFileId)
@@ -347,7 +348,7 @@ private:
 
     void SortInfoTiles();
 
-    size_t ShipFileIdToInfoTileIndex(size_t shipFileId) const;
+    size_t ShipFileIdToInfoTileIndex(ShipFileId_t shipFileId) const;
 
     wxRect InfoTileIndexToRectVirtual(size_t infoTileIndex) const;
 
@@ -365,7 +366,7 @@ private:
 
     size_t MapMousePositionToInfoTile(wxPoint const & mousePosition);
 
-    void EnsureTileIsVisible(size_t infoTileIndex);
+    void EnsureInfoTileIsVisible(size_t infoTileIndex);
 
     void EnsureSelectedShipIsVisible();
 
@@ -402,12 +403,11 @@ private:
 
     std::unique_ptr<wxTimer> mPollQueueTimer;
 
-    // The info tiles currently populated; always
-    // sorted by the current sort method
+    // The info tiles currently populated; always sorted by the current sort method
     std::vector<InfoTile> mInfoTiles;
 
     // The currently-selected ship file ID (hence info tile index)
-    std::optional<size_t> mSelectedShipFileId;
+    std::optional<ShipFileId_t> mSelectedShipFileId;
 
     // The current sorting of the info tiles
     SortMethod mSortMethod;
@@ -521,7 +521,7 @@ private:
         }
 
         static std::unique_ptr<ThreadToPanelMessage> MakePreviewReadyMessage(
-            size_t shipFileId,
+            ShipFileId_t shipFileId,
             ShipPreviewData && shipPreviewData,
             RgbaImageData && shipPreviewImage)
         {
@@ -533,7 +533,7 @@ private:
         }
 
         static std::unique_ptr<ThreadToPanelMessage> MakePreviewErrorMessage(
-            size_t shipFileId,
+            ShipFileId_t shipFileId,
             std::string errorMessage)
         {
             std::unique_ptr<ThreadToPanelMessage> msg(new ThreadToPanelMessage(MessageType::PreviewError));
@@ -569,9 +569,9 @@ private:
             return mErrorMessage;
         }
 
-        size_t GetShipFileId() const
+        ShipFileId_t GetShipFileId() const
         {
-            assert(!!mShipFileId);
+            assert(mShipFileId.has_value());
             return *mShipFileId;
         }
 
@@ -600,7 +600,7 @@ private:
 
         std::optional<DirectorySnapshot> mDirectorySnapshot;
         std::string mErrorMessage;
-        std::optional<size_t> mShipFileId;
+        std::optional<ShipFileId_t> mShipFileId;
         std::optional<ShipPreviewData> mShipPreviewData;
         std::optional<RgbaImageData> mShipPreviewImage;
     };
@@ -618,3 +618,7 @@ private:
     std::mutex mThreadToPanelScanInterruptAckMutex;
     std::condition_variable mThreadToPanelScanInterruptAckEvent;
 };
+
+wxDECLARE_EVENT(fsEVT_SHIP_FILE_SELECTED, ShipPreviewWindow::fsShipFileSelectedEvent);
+
+wxDECLARE_EVENT(fsEVT_SHIP_FILE_CHOSEN, ShipPreviewWindow::fsShipFileChosenEvent);

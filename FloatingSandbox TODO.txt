@@ -1615,17 +1615,15 @@
 							+ Main Thread's handling of PreviewError
 						+ Helper methods:
 							+ GetInfoTileIndex(size_t ShipId) -> size_t
-					= Vector of info tiles is assumed to be always sorted by the currently-selected method
+					+ Vector of info tiles is assumed to be always sorted by the currently-selected method
 						+ Change InfoTile: needs to become agnostic of own position in grid, which also needs to be recalc'd a) at each new InfoTile, and b) at each change of sorting
 						+ Replace those members with functions that go to and from linear position in InfoTile vector to VirtualRect
-						- Do strongly-typed ship file ID
-							- TODOHERE:
-						- Search:
-							- "forward" direction must depend on search order
-					= Do sorting
-						- Can make non-metadata ones (e.g. errors) always at end?
+						+ Do strongly-typed ship file ID
+					= Do sorting						
 						= Has std::function "sort predicate" member, memoized by SetSortMethod/Direction()
+							+ Make non-metadata tiles (e.g. errors) always appear at end - do not use direction here
 							+ By name
+								+ Case-insensitive
 							+ By year
 							- By features
 							- By last modified
@@ -1633,9 +1631,12 @@
 									- Clock taken at Deserializer::Save
 									- Read at Deserializer::Load; if not found => from file
 									- Other de-serializers: from file
+						- Initial DirectorySnapshot sorting should be invariant from sort method
+							- Or else won't match if changed in-between
 						= Need to sort at:
-							= Sortmethod change
+							+ Sortmethod change
 							- InfoTile preview ready
+								- For insert to work, initial InfoTiles must already be fully sorted by predicate
 							- InfoTile preview error
 						+ At each sort, need to call EnsureTileIsVisible
 

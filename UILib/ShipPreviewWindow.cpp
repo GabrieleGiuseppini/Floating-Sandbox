@@ -18,8 +18,8 @@
 #include <algorithm>
 #include <limits>
 
-wxDEFINE_EVENT(fsEVT_SHIP_FILE_SELECTED, fsShipFileSelectedEvent);
-wxDEFINE_EVENT(fsEVT_SHIP_FILE_CHOSEN, fsShipFileChosenEvent);
+wxDEFINE_EVENT(fsEVT_SHIP_FILE_SELECTED, ShipPreviewWindow::fsShipFileSelectedEvent);
+wxDEFINE_EVENT(fsEVT_SHIP_FILE_CHOSEN, ShipPreviewWindow::fsShipFileChosenEvent);
 
 ShipPreviewWindow::ShipPreviewWindow(
     wxWindow* parent,
@@ -224,7 +224,7 @@ bool ShipPreviewWindow::Search(std::string const & shipName)
     std::string const shipNameLCase = Utils::ToLower(shipName);
 
     //
-    // Find first ship that contains the requested name as a substring,
+    // Find next ship that contains the requested name as a substring,
     // doing a circular search from the currently-selected ship
     //
 
@@ -232,7 +232,7 @@ bool ShipPreviewWindow::Search(std::string const & shipName)
     size_t startInfoTileIndex = mSelectedShipFileId ? (ShipFileIdToInfoTileIndex(*mSelectedShipFileId) + 1) : 0;
     for (size_t i = 0; i < mInfoTiles.size(); ++i)
     {
-        size_t shipInfoTileIndex = (startInfoTileIndex + i) % mInfoTiles.size();
+        size_t const shipInfoTileIndex = (startInfoTileIndex + i) % mInfoTiles.size();
 
         if (std::any_of(
             mInfoTiles[shipInfoTileIndex].SearchStrings.cbegin(),
@@ -247,13 +247,13 @@ bool ShipPreviewWindow::Search(std::string const & shipName)
         }
     }
 
-    if (!!foundShipIndex)
+    if (foundShipIndex.has_value())
     {
         //
         // Scroll to the item if it's not fully visible
         //
 
-        EnsureTileIsVisible(*foundShipIndex);
+        EnsureInfoTileIsVisible(*foundShipIndex);
 
         //
         // Select item
@@ -372,7 +372,7 @@ void ShipPreviewWindow::OnKeyDown(wxKeyEvent & event)
             SelectInfoTile(newInfoTileIndex);
 
             // Move into view if needed
-            EnsureTileIsVisible(newInfoTileIndex);
+            EnsureInfoTileIsVisible(newInfoTileIndex);
         }
     }
 }
@@ -604,7 +604,7 @@ void ShipPreviewWindow::SortInfoTiles()
     EnsureSelectedShipIsVisible();
 }
 
-size_t ShipPreviewWindow::ShipFileIdToInfoTileIndex(size_t shipFileId) const
+size_t ShipPreviewWindow::ShipFileIdToInfoTileIndex(ShipFileId_t shipFileId) const
 {
     // Search for info tile with this ship file ID
     for (size_t i = 0; i < mInfoTiles.size(); ++i)
@@ -658,9 +658,12 @@ std::function<bool(ShipPreviewWindow::InfoTile const &, ShipPreviewWindow::InfoT
             {
                 assert(l.Metadata.has_value() && r.Metadata.has_value());
 
+                auto const lShipNameI = Utils::ToLower(l.Metadata->ShipName);
+                auto const rShipNameI = Utils::ToLower(r.Metadata->ShipName);
+
                 bool const ascendingResult =
-                    (l.Metadata->ShipName < r.Metadata->ShipName)
-                    || ((l.Metadata->ShipName == r.Metadata->ShipName) && (l.ShipFileId < r.ShipFileId));
+                    (lShipNameI < rShipNameI)
+                    || ((lShipNameI == rShipNameI) && (l.ShipFileId < r.ShipFileId));
 
                 return (ascendingResult) != (isSortDescending);
             };
@@ -696,13 +699,13 @@ std::function<bool(ShipPreviewWindow::InfoTile const &, ShipPreviewWindow::InfoT
             else
             {
                 // L has metadata, R not
-                return (true) != (isSortDescending); // All metadata-having ones before non-metadata having ones
+                return true; // All metadata-having ones before non-metadata having ones
             }
         }
         else if (r.Metadata.has_value())
         {
             // L has no metadata, R has metadata
-            return (false) != (isSortDescending); // All metadata-having ones before non-metadata having ones
+            return false; // All metadata-having ones before non-metadata having ones
         }
         else
         {
@@ -830,7 +833,7 @@ size_t ShipPreviewWindow::MapMousePositionToInfoTile(wxPoint const & mousePositi
     return static_cast<size_t>(c + r * mCols);
 }
 
-void ShipPreviewWindow::EnsureTileIsVisible(size_t infoTileIndex)
+void ShipPreviewWindow::EnsureInfoTileIsVisible(size_t infoTileIndex)
 {
     wxRect const visibleRectVirtual = GetVisibleRectVirtual();
 
@@ -854,7 +857,7 @@ void ShipPreviewWindow::EnsureSelectedShipIsVisible()
 {
     if (mSelectedShipFileId.has_value())
     {
-        EnsureTileIsVisible(ShipFileIdToInfoTileIndex(*mSelectedShipFileId));
+        EnsureInfoTileIsVisible(ShipFileIdToInfoTileIndex(*mSelectedShipFileId));
     }
 }
 
