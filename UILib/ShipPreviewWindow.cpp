@@ -379,7 +379,7 @@ void ShipPreviewWindow::OnKeyDown(wxKeyEvent & event)
 
 void ShipPreviewWindow::OnPollQueueTimer(wxTimerEvent & /*event*/)
 {
-    bool doRefresh = false;
+    bool haveInfoTilesBeenUpdated = false;
 
     // Process these many messages at a time
     for (size_t i = 0; i < 10; ++i)
@@ -422,6 +422,12 @@ void ShipPreviewWindow::OnPollQueueTimer(wxTimerEvent & /*event*/)
                 infoTile.Bitmap = MakeBitmap(message->GetShipPreviewImage());
                 infoTile.IsHD = shipPreviewData.IsHD;
                 infoTile.HasElectricals = shipPreviewData.HasElectricals;
+
+                infoTile.FeatureScore = 0;
+                if (shipPreviewData.IsHD)
+                    infoTile.FeatureScore += 1;
+                if (shipPreviewData.HasElectricals)
+                    infoTile.FeatureScore += 2;
 
                 std::string descriptionLabelText1 = shipPreviewData.Metadata.ShipName;
                 if (shipPreviewData.Metadata.YearBuilt.has_value())
@@ -476,10 +482,11 @@ void ShipPreviewWindow::OnPollQueueTimer(wxTimerEvent & /*event*/)
                             *(shipPreviewData.Metadata.YearBuilt)));
                 }
 
-                // TODO: sort element
+                // Re-sort this info tile
+                ResortInfoTile(infoTileIndex);
 
                 // Remember we need to refresh now
-                doRefresh = true;
+                haveInfoTilesBeenUpdated = true;
 
                 break;
             }
@@ -497,10 +504,11 @@ void ShipPreviewWindow::OnPollQueueTimer(wxTimerEvent & /*event*/)
                 mInfoTiles[infoTileIndex].OriginalDescription1 = message->GetErrorMessage();
                 mInfoTiles[infoTileIndex].DescriptionLabel1Size.reset();
 
-                // TODO: sort element
+                // Re-sort this info tile
+                ResortInfoTile(infoTileIndex);
 
                 // Remember we need to refresh now
-                doRefresh = true;
+                haveInfoTilesBeenUpdated = true;
 
                 break;
             }
@@ -517,7 +525,7 @@ void ShipPreviewWindow::OnPollQueueTimer(wxTimerEvent & /*event*/)
         }
     }
 
-    if (doRefresh)
+    if (haveInfoTilesBeenUpdated)
     {
         Refresh();
 
@@ -607,6 +615,23 @@ void ShipPreviewWindow::SortInfoTiles()
     EnsureSelectedShipIsVisible();
 }
 
+void ShipPreviewWindow::ResortInfoTile(size_t infoTileIndex)
+{
+    // Extract item
+    InfoTile infoTile = std::move(mInfoTiles[infoTileIndex]);
+    mInfoTiles.erase(mInfoTiles.cbegin() + infoTileIndex);
+
+    // Find position
+    auto const it = std::upper_bound(
+        mInfoTiles.cbegin(),
+        mInfoTiles.cend(),
+        infoTile,
+        mSortPredicate);
+
+    // Insert
+    mInfoTiles.insert(it, std::move(infoTile));
+}
+
 size_t ShipPreviewWindow::ShipFileIdToInfoTileIndex(ShipFileId_t shipFileId) const
 {
     // Search for info tile with this ship file ID
@@ -645,7 +670,31 @@ std::function<bool(ShipPreviewWindow::InfoTile const &, ShipPreviewWindow::InfoT
     {
         case SortMethod::ByFeatures:
         {
-            // TODO
+            metadataPredicate = [isSortDescending](InfoTile const & l, InfoTile const & r) -> bool
+            {
+                assert(l.Metadata.has_value() && r.Metadata.has_value());
+
+                if (l.FeatureScore > r.FeatureScore) // We want highest score to be at top
+                {
+                    return (true) != (isSortDescending);
+                }
+                else if (l.FeatureScore == r.FeatureScore)
+                {
+                    auto const lShipNameI = Utils::ToLower(l.Metadata->ShipName);
+                    auto const rShipNameI = Utils::ToLower(r.Metadata->ShipName);
+
+                    bool const ascendingResult =
+                        (lShipNameI < rShipNameI)
+                        || ((lShipNameI == rShipNameI) && (l.ShipFileId < r.ShipFileId));
+
+                    return (ascendingResult) != (isSortDescending);
+                }
+                else
+                {
+                    return (false) != (isSortDescending);
+                }
+            };
+
             break;
         }
 
@@ -680,11 +729,38 @@ std::function<bool(ShipPreviewWindow::InfoTile const &, ShipPreviewWindow::InfoT
             {
                 assert(l.Metadata.has_value() && r.Metadata.has_value());
 
-                bool const ascendingResult =
-                    (l.Metadata->YearBuilt < r.Metadata->YearBuilt)
-                    || ((l.Metadata->YearBuilt == r.Metadata->YearBuilt) && (l.ShipFileId < r.ShipFileId));
+                if (l.Metadata->YearBuilt.has_value() 
+                    && r.Metadata->YearBuilt.has_value()
+                    && *(l.Metadata->YearBuilt) != *(r.Metadata->YearBuilt))
+                {
+                    return (*(l.Metadata->YearBuilt) < *(r.Metadata->YearBuilt)) != (isSortDescending);
+                }
+                else if (*(l.Metadata->YearBuilt) == *(r.Metadata->YearBuilt)) // Either both are set and match values, or neither is set
+                {
+                    auto const lShipNameI = Utils::ToLower(l.Metadata->ShipName);
+                    auto const rShipNameI = Utils::ToLower(r.Metadata->ShipName);
 
-                return (ascendingResult) != (isSortDescending);
+                    bool const ascendingResult =
+                        (lShipNameI < rShipNameI)
+                        || ((lShipNameI == rShipNameI) && (l.ShipFileId < r.ShipFileId));
+
+                    return (ascendingResult) != (isSortDescending);
+                }
+                else
+                {
+                    assert(l.Metadata->YearBuilt.has_value() != r.Metadata->YearBuilt.has_value());
+
+                    if (l.Metadata->YearBuilt.has_value())
+                    {
+                        // L has year built, R has not: L on top
+                        return true;
+                    }
+                    else
+                    {
+                        // L has no year built, R has it: R on top
+                        return false;
+                    }
+                }
             };
 
             break;

@@ -315,6 +315,7 @@ private:
 
         bool IsHD;
         bool HasElectricals;
+        int FeatureScore;
         std::string OriginalDescription1;
         std::string OriginalDescription2;
         std::string OriginalDescription3;
@@ -341,6 +342,7 @@ private:
             , Bitmap(bitmap)
             , IsHD(false)
             , HasElectricals(false)
+            , FeatureScore(0)
             , OriginalDescription1()
             , OriginalDescription2()
             , OriginalDescription3()
@@ -356,6 +358,8 @@ private:
     void ResetInfoTiles(DirectorySnapshot const & directorySnapshot);
 
     void SortInfoTiles();
+
+    void ResortInfoTile(size_t infoTileIndex);
 
     size_t ShipFileIdToInfoTileIndex(ShipFileId_t shipFileId) const;
 

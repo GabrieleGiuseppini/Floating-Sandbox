@@ -1624,26 +1624,37 @@
 							+ Make non-metadata tiles (e.g. errors) always appear at end - do not use direction here
 							+ By name
 								+ Case-insensitive
-							+ By year
-							- By features
+							= By year
+								- No year goes to end
+								= Same year: by name (case insensitive); same name: by ship ID
+							+ By features
+								+ InfoTile: FeatureScore member, populated at InfoTile preview ready
+								+ Same feature score: by name (case insensitive); same name: by ship ID
 							- By last modified
-								- LastModified is new attrib of Metadata @ shp2
+								- LastModified is new attrib of ship definition file serialization @ shp2
+									- First off: datetime
+									- Returned by ShipPreview
 									- Clock taken at Deserializer::Save
 									- Read at Deserializer::Load; if not found => from file
 									- Other de-serializers: from file
+								- Same last modified: by name (case insensitive); same name: by ship ID
+									- See if can rewrite predicate more easily: compare predicate with <=>
 						+ Initial DirectorySnapshot sorting should be invariant from sort direction
 							+ Or else won't match if changed in-between
-						= Need to sort at:
+						+ Need to sort at:
 							+ Sortmethod change
-							- InfoTile preview ready
-								+ For insert to work, initial InfoTiles must already be fully sorted by predicate
-							- InfoTile preview error
+							+ InfoTile preview ready																
+							+ InfoTile preview error
+							+ ResortInfoTile(infoTileIndex)
+							+ For insert to work, initial InfoTiles must already be fully sorted by predicate
 						+ At each sort, need to call EnsureTileIsVisible
 
 			+ Move search here
 			+ Move "Ok/Cancel" buttons below next to dir dropdown (taking place of "search")
 		- Tests:
-			- Year built: string sorting we do matches year numeric
+			- Slow population
+				- Do artificial 100ms sleep @ thread
+			- Year built: the string sorting that we do matches year numeric
 			- Preview error
 			- Search: goes from selected onwards - in right order and direction
 	- ShipLoadDialog improvements:
