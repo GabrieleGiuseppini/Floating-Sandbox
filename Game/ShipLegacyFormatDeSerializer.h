@@ -30,7 +30,7 @@ public:
         std::filesystem::path const & shipFilePath,
         MaterialDatabase const & materialDatabase);
 
-    static ShipPreviewData LoadShipPreviewDataFromImageDefinition(std::filesystem::path const & shipFilePath);
+    static ShipPreviewData LoadShipPreviewDataFromImageDefinition(std::filesystem::path const & imageDefinitionFilePath);
 
     static ShipPreviewData LoadShipPreviewDataFromLegacyShpShipDefinition(std::filesystem::path const & shipFilePath);
 

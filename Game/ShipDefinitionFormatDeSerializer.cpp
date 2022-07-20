@@ -55,7 +55,7 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
                 case static_cast<uint32_t>(MainSectionTagType::ShipAttributes) :
                 {
                     ReadIntoBuffer(inputFile, buffer, sectionHeader.SectionBodySize);
-                    shipAttributes = ReadShipAttributes(buffer);
+                    shipAttributes = ReadShipAttributes(shipFilePath, buffer);
 
                     break;
                 }
@@ -220,7 +220,7 @@ ShipPreviewData ShipDefinitionFormatDeSerializer::LoadPreviewData(std::filesyste
                 case static_cast<uint32_t>(MainSectionTagType::ShipAttributes):
                 {
                     ReadIntoBuffer(inputFile, buffer, sectionHeader.SectionBodySize);
-                    shipAttributes = ReadShipAttributes(buffer);
+                    shipAttributes = ReadShipAttributes(shipFilePath, buffer);
 
                     break;
                 }
@@ -258,7 +258,8 @@ ShipPreviewData ShipDefinitionFormatDeSerializer::LoadPreviewData(std::filesyste
         shipAttributes->ShipSize,
         *shipMetadata,
         isHD,
-        hasElectricals);
+        hasElectricals,
+        shipAttributes->LastWriteTime);
 }
 
 RgbaImageData ShipDefinitionFormatDeSerializer::LoadPreviewImage(
@@ -347,7 +348,8 @@ void ShipDefinitionFormatDeSerializer::Save(
         Version::CurrentVersion(),
         shipDefinition.StructuralLayer.Buffer.Size,
         shipDefinition.TextureLayer != nullptr,
-        shipDefinition.ElectricalLayer != nullptr);
+        shipDefinition.ElectricalLayer != nullptr,
+        PortableTimepoint::Now());
 
     AppendSection(
         outputFile,
@@ -596,6 +598,14 @@ size_t ShipDefinitionFormatDeSerializer::AppendShipAttributes(
         sectionBodySize += AppendShipAttributesEntry(
             ShipAttributesTagType::HasElectricalLayer,
             shipAttributes.HasElectricalLayer,
+            buffer);
+    }
+
+    // Last write time
+    {
+        sectionBodySize += AppendShipAttributesEntry(
+            ShipAttributesTagType::LastWriteTime,
+            shipAttributes.LastWriteTime.Value(),
             buffer);
     }
 
@@ -1409,12 +1419,15 @@ void ShipDefinitionFormatDeSerializer::ReadFileHeader(DeSerializationBuffer<BigE
     }
 }
 
-ShipDefinitionFormatDeSerializer::ShipAttributes ShipDefinitionFormatDeSerializer::ReadShipAttributes(DeSerializationBuffer<BigEndianess> const & buffer)
+ShipDefinitionFormatDeSerializer::ShipAttributes ShipDefinitionFormatDeSerializer::ReadShipAttributes(
+    std::filesystem::path const & shipFilePath,
+    DeSerializationBuffer<BigEndianess> const & buffer)
 {
     std::optional<Version> fsVersion;
     std::optional<ShipSpaceSize> shipSize;
     std::optional<bool> hasTextureLayer;
     std::optional<bool> hasElectricalLayer;
+    std::optional<PortableTimepoint> lastWriteTime;
 
     // Read all tags
     for (size_t offset = 0;;)
@@ -1489,6 +1502,16 @@ ShipDefinitionFormatDeSerializer::ShipAttributes ShipDefinitionFormatDeSerialize
                 break;
             }
 
+            case static_cast<uint32_t>(ShipAttributesTagType::LastWriteTime):
+            {
+                PortableTimepoint::value_type value;
+                offset += buffer.ReadAt<PortableTimepoint::value_type>(offset, value);
+
+                lastWriteTime.emplace(PortableTimepoint(value));
+
+                break;
+            }
+
             case static_cast<uint32_t>(ShipAttributesTagType::Tail):
             {
                 // We're done
@@ -1519,11 +1542,17 @@ ShipDefinitionFormatDeSerializer::ShipAttributes ShipDefinitionFormatDeSerialize
         throw UserGameException(UserGameException::MessageIdType::InvalidShipFile);
     }
 
+    if (!lastWriteTime.has_value())
+    {
+        lastWriteTime = PortableTimepoint::FromLastWriteTime(shipFilePath);
+    }
+
     return ShipAttributes(
         *fsVersion,
         *shipSize,
         *hasTextureLayer,
-        *hasElectricalLayer);
+        *hasElectricalLayer,
+        *lastWriteTime);
 }
 
 ShipMetadata ShipDefinitionFormatDeSerializer::ReadMetadata(DeSerializationBuffer<BigEndianess> const & buffer)

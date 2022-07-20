@@ -52,6 +52,8 @@ set  (SOURCES
 	Matrix.h
 	MemoryStreams.h
 	ParameterSmoother.h
+	PortableTimepoint.cpp
+	PortableTimepoint.h
 	PrecalculatedFunction.cpp
 	PrecalculatedFunction.h
 	ProgressCallback.h

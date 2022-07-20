@@ -6,278 +6,10 @@
 
 - Roadmap:
 
-	= 1.17.3:
+	- After release: update Wordpress post w/new engine stuff
+		- Connectivity
+		- Types
 
-		+ 1.17.2 release: wait a day or two, then upload changes2.txt
-			+ Test w/old FS
-
-		---------
-
-		+ Commit and push
-
-		+ Add ShipBuilder to github's ReadMe
-			+ And to GameJolt's
-
-		+ Fix WIX onto Visual Studio 2022
-			! https://marketplace.visualstudio.com/items?itemName=WixToolset.WixToolsetVisualStudio2022Extension
-			+ Test clean install, upgrade, and removal
-				+ With new FS version
-
-		+ Merge from master into 1.17.2.next
-		+ Cleanup plan(s)
-
-		+ Try bubbles with different buoyancy
-			+ Use counter
-			+ Try correlation with vortex
-
-		X Test with SpringReductionFraction = 0.6 (@GameParameters)
-
-		+ Better sparkles shader
-			+ Make more transparent @ tail
-
-		+ Fix strings @ WaterlineAnalysisDialog
-			+ Trim "~0^A0" on old Dell
-				+ Test on old Dell
-
-		+ Fix: load 1.17.2 ship in 1.17.1: "non-standard materials/non-release version"
-			+ Need to also include patch in check at ShipDefinitionFormatDeSerializer.cpp:1312
-				+ Shouldn't we then include the entire version, given that we're at it?
-			+ Tests:
-				+ Load sodium with 1.17.1: verify gives wrong message
-				+ Make ship as version "1.17.5" with missing material; load in this version and verify OK message
-				+ Try to also load this new ship with 1.17.1, which won't recognize ShipAttributes
-
-		+ Fix UpdateNotification while LoadShip is open
-
-		+ See if can display error message when user starts FS on an unloadable ship
-
-		+ Check if template png is ok
-			+ Cardboard hull blue
-			+ Add validation to script
-			+ Redo template
-
-		+ Option to disable lightning making damage - people want to sail in the storm
-			+ Lightning Hit Probability
-			+ SettingsDialog
-			+ Test:
-				+ Manual: 0, 1
-				+ Storm: 0, 1
-				+ Verify setting saved and reloadable
-			+ changelist
-			+ Custom setting: strong and logn storm, zero lightnings
-				+ Test
-				+ Make production
-
-		+ Update water velocities with blast
-			+ Adding velocities during blast
-
-		+ Continuous Auto-focus (*)
-			+ Send for testing, w/auto-focus being on by default
-			+ Re-send for testing, again - !!! WITH AUTO-FOCUS ON
-			+ Bump up build
-			+ Decide whether auto-focus should be on by default: YES, ON BY DEFAULT
-				+ Do
-				+ Ctrl+HOME to toggle
-					+ No more ESC
-			+ Problem with ocean floor moving line by line
-				+ Try first with alpha/anti-aliasing @ ocean floor
-					+ This fixes only horizontal: float alpha = mix(0.0, 1.0, textureCoord.z / 0.2);
-					+ This should be the winner; see if can do also for "vertical" edges
-				X ViewManager:
-					+ Figure out first if due to zoom or pan only
-						+ Zoom does it (when no pan enabled)
-						+ Pan does it (when no pan enabled)
-					X World X/Y: no move if abs < 0.2
-					X Zoom: no move if abs/current < 0.01
-			X Ignore AABBs that are "too small"
-				+ AABB::Add: Track largest area
-				+ AABBSet: MakeUnion templated overload taking predicate - other calls this one
-					+ Unit tests
-				X Ignore AABBs with area smaller than a fraction of that
-					+ Internal (inline) helper
-					+ InternalFocusOnShip
-					+ Update
-			+ Ocean floor tool's SHIFT lock: stable w/camera moving
-				+ Convert from screen to world in tool
-			+ changelist
-			+ Test land anti-aliasing on old Dell
-
-		+ ShipBuilder lag with pencil tool px-1 moving across the screen
-			+ See if texturization is done for right area
-			+ See if OpenGL uploads are done for right area: NO
-				+ Pre:
-					+ ShipBuilder::MainFrame::OnWorkCanvasMouseMove: 63.31%
-						...
-						+ ShipBuilder::View::UploadGameVisualization: 55.67%
-							+ GameOpenGL::UploadTexture: 55.61%
-						+ ShipTexturizer::AutoTexturizeInto: 0.36%
-						+ Controller::RefreshToolCoordinatesDisplay: 5.74%
-				+ Do region like we used to do
-				+ Post - also structural:
-					+ ShipBuilder::MainFrame::OnWorkCanvasMouseMove: 23.47% - 23.29%
-						+ ShipBuilder::View::UpdateGameVisualization: 3.16% - 5.22%
-							+ GameOpenGL::UploadTextureRegion: 3.05%
-						+ ShipBuilder::View::UploadStructuralLayerVisualization: 2.94% - 0.69%
-							+ GameOpenGL::UploadTexture: 2.90%
-						+ Controller::RefreshToolCoordinatesDisplay: 14.27% - 14.80%
-			+ Test on old Dell:
-				+ Save exe version without fix and use as benchmark
-			+ Send to TimCan and WOLFF and other guy
-			+ changelist
-		+ Engines rearc (*)
-		+ Jet engines @ Material system improvements (*)			
-			+ Redo material template
-			+ changelist (both rearc and jet engines)
-			+ Air boat
-			+ Promote rocket and air boat
-			+ Merge into 1.17.2.next
-		+ MainFrame's progress: make ShipBuilder take progress callback
-			+ And move calls now done from MainFrame into that
-		+ Spread out rotting:
-			! Now: at step 20/49
-			! Old: 
-				static constexpr int UpdateSinkingPeriodStep = 6; -- Can stay as one step
-				static constexpr int CombustionStateMachineSlowPeriodStep1 = 13;
-				static constexpr int RotPointsPeriodStep = 20;
-				static constexpr int CombustionStateMachineSlowPeriodStep2 = 27;
-				static constexpr int SpringDecayAndTemperaturePeriodStep = 34; - Spread out spring coeffs' recalculations (*)
-				static constexpr int CombustionStateMachineSlowPeriodStep3 = 41;
-				static constexpr int CombustionStateMachineSlowPeriodStep4 = 48;
-			! Steps: 13 steps, period=(39) // If not: 52
-				UpdateSinking
-				CombustionStateMachineSlow1
-				CombustionStateMachineSlow2
-				CombustionStateMachineSlow3
-				CombustionStateMachineSlow4
-				RotPoints1
-				RotPoints2
-				RotPoints3
-				RotPoints4
-				SpringDecayAndTemperature1
-				SpringDecayAndTemperature2
-				SpringDecayAndTemperature3
-				SpringDecayAndTemperature4
-			+ New: period=36
-				+ 2: CombustionStateMachineSlow1
-				+ 5: SpringDecayAndTemperature1
-				+ 8: RotPoints1
-				+ 11: CombustionStateMachineSlow2
-				+ 14: SpringDecayAndTemperature2
-				+ 17: RotPoints2
-				+ 18: UpdateSinking
-				+ 20: CombustionStateMachineSlow3
-				+ 23: SpringDecayAndTemperature3
-				+ 26: RotPoints3
-				+ 29: CombustionStateMachineSlow4
-				+ 32: SpringDecayAndTemperature4
-				+ 35: RotPoints4
-			+ Test:
-				+ Verify spring melting does not show as localized
-				+ Verify rotting does not show as localized
-				+ 0..5 points/springs
-				+ Old dell
-			+ Cleanup logging
-		+ Structural Tension View (*)
-			+ changelist
-		+ Send for testing
-		+ See windows timer/50fps thing
-			! http://mirrors.arcadecontrols.com/www.sysinternals.com/Information/HighResolutionTimers.html
-			+ @ 50fps: Windows timer resolution (min/max/cur): 15.625 / 0.500 / 15.621 ms
-				   Windows timer resolution (min/max/cur): 15.625 / 0.500 / 15.620 ms
-				   Windows timer resolution (min/max/cur): 15.625 / 0.500 / 15.621 ms
-			+ @ 64fps: Windows timer resolution (min/max/cur): 15.625 / 0.500 / 0.997 ms
-				   Windows timer resolution (min/max/cur): 15.625 / 0.500 / 0.997 ms
-		+ Affinitize threads:
-			+ At MainApp and at first line of each TaskLoop: CoreLib/SystemThreadManager.GetInstance()::InitializeThisThread()
-				+ Also SystemThreadManager::GetNumberOfProcessors()
-				+ Change into "InitializeThread"
-					+ Also doing floating point checks
-				+ Thread affinitization with set
-			+ Also do SetProcessPriority
-			+ Main thread (@GameController)
-			+ Rendering thread (@TaskThread)
-			+ Task threads (@ThreadPool)
-			+ Tests:
-				+ SetProcessPriority
-				+ Floating point settings
-
-		+ ShipBuilder things
-		+ Send localization files
-		+ See core dump
-			+ Fix telegraph control
-			+ See if it's also in other controls
-		+ See horizontal oscillations, e.g. with SS_Kbenhavn
-		+ Tensile display: try with green at 0, blue at tensile, red at compressive
-			+ Add new value to enum
-				= SettingsDialog
-			+ ShipRenderContext: react to changes in StressRenderMode and set array param accordingly
-			+ Shader: 12 brackets, new formula
-			+ Springs::UpdateForStrain: figure out how to replace max thing	
-			+ Test on old Dell
-		+ Check all those new ships
-			+ S.S. Arctic
-				+ "Menta1ity"
-				+ Add him to credits
-			+ Estonia
-				+ "braun"
-				+ Add him to credits
-			+ Great_Grandeur_1956
-				+ Pocketwatch
-			+ S.S._Hoogbeke
-				+ Pocketwatch
-			+ SS_Kbenhavn_1923
-				+ Pocketwatch
-			+ U.S.S. Rhode Island
-				+ Pocketwatch
-			+ M.S_Bjeli_Orao_2: 
-				+ BeamierBoomer
-			+ changelist
-
-		+ Release:
-			+ Localization:
-				+ IT
-				+ ES
-				+ RU
-			+ Windows
-				+ MSI variable
-				+ Commit & push
-				+ 64-bit MSI
-					+ Cleanup Install
-					+ Build Release Install (after clean)
-					+ Make MSI
-					+ Rename MSI
-					+ Test upgrade from previous version
-				+ 32-bit MSI
-					+ Cleanup Install
-					+ Build Release Install (after clean)
-					+ Make MSI
-					+ Rename MSI
-					+ Test clean install
-			+ Ubuntu
-				+ rm -rf floating-sandbox
-				+ pull 
-				+ rm -rf build; mkdir build; cd build
-				+ cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
-				+ make install
-				+ Make tar ("cd floating-sandbox && tar -cvf ../Floating-Sandbox-1.17.3-x64.tar . && cd -")
-				+ Zip tar
-				+ Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
-			+ Get 3 installers tested on dev server
-			+ Wait for test results
-			+ Cut tag on github
-			+ Upload packages to GameJolt
-				+ Post video
-				+ Post
-			+ www.floatingsandbox.com:
-				+ Update current version in FAQ
-				+ Upload changes2.txt
-					+ Test w/old FS
-
-			- After release: update Wordpress post w/new engine stuff
-				- Connectivity
-				- Types
-
-		---------------------------------------------------------
 
 	- 1.17.4:
 
@@ -292,6 +24,10 @@
 			- Negative pressure in Mylar bubble
 
 		= ShipLoadDialog Toolbar (*)
+
+		- Upgrade 
+			- GoogleTest
+			- Google Benchmark
 
 		- At lights going off, before flickering: flash w/spread and luminiscence
 			- See 1:53 at https://www.youtube.com/watch?v=yg9rkceLOzA
@@ -1631,12 +1367,18 @@
 								+ InfoTile: FeatureScore member, populated at InfoTile preview ready
 								+ Same feature score: by name (case insensitive); same name: by ship ID
 							- By last modified
-								- LastModified is new attrib of ship definition file serialization @ shp2
-									- First off: datetime
-									- Returned by ShipPreview
-									- Clock taken at Deserializer::Save
-									- Read at Deserializer::Load; if not found => from file
-									- Other de-serializers: from file
+								+ LastModified is new attrib of ship definition file serialization @ shp2
+									+ PortableTimestamp type
+										+ From std::filesystem::path
+										+ From now()
+									+ Returned by ShipPreview
+									+ New format: in ShipAttributes:
+										+ Serializer::Save: take Now()
+											+ Write new ShipAttributes tag
+										+ Deserializer::Load: read from new tag; if not found => from file
+										+ Unit tests
+											+ Load: both formats
+									+ Other de-serializers: read from file
 								- Same last modified: by name (case insensitive); same name: by ship ID
 									- See if can rewrite predicate more easily: compare predicate with <=>
 						+ Initial DirectorySnapshot sorting should be invariant from sort direction
@@ -1656,7 +1398,7 @@
 				- Do artificial 100ms sleep @ thread
 			- Year built: the string sorting that we do matches year numeric
 			- Preview error
-			- Search: goes from selected onwards - in right order and direction
+			- Search: goes from selected onwards - in right order and always down
 	- ShipLoadDialog improvements:
 		- Display folders in grid
 
@@ -14470,3 +14212,269 @@ IF WX:
 
 		+ Material system improvements (*)
 
+	+ 1.17.3:
+
+		+ 1.17.2 release: wait a day or two, then upload changes2.txt
+			+ Test w/old FS
+
+		---------
+
+		+ Commit and push
+
+		+ Add ShipBuilder to github's ReadMe
+			+ And to GameJolt's
+
+		+ Fix WIX onto Visual Studio 2022
+			! https://marketplace.visualstudio.com/items?itemName=WixToolset.WixToolsetVisualStudio2022Extension
+			+ Test clean install, upgrade, and removal
+				+ With new FS version
+
+		+ Merge from master into 1.17.2.next
+		+ Cleanup plan(s)
+
+		+ Try bubbles with different buoyancy
+			+ Use counter
+			+ Try correlation with vortex
+
+		X Test with SpringReductionFraction = 0.6 (@GameParameters)
+
+		+ Better sparkles shader
+			+ Make more transparent @ tail
+
+		+ Fix strings @ WaterlineAnalysisDialog
+			+ Trim "~0^A0" on old Dell
+				+ Test on old Dell
+
+		+ Fix: load 1.17.2 ship in 1.17.1: "non-standard materials/non-release version"
+			+ Need to also include patch in check at ShipDefinitionFormatDeSerializer.cpp:1312
+				+ Shouldn't we then include the entire version, given that we're at it?
+			+ Tests:
+				+ Load sodium with 1.17.1: verify gives wrong message
+				+ Make ship as version "1.17.5" with missing material; load in this version and verify OK message
+				+ Try to also load this new ship with 1.17.1, which won't recognize ShipAttributes
+
+		+ Fix UpdateNotification while LoadShip is open
+
+		+ See if can display error message when user starts FS on an unloadable ship
+
+		+ Check if template png is ok
+			+ Cardboard hull blue
+			+ Add validation to script
+			+ Redo template
+
+		+ Option to disable lightning making damage - people want to sail in the storm
+			+ Lightning Hit Probability
+			+ SettingsDialog
+			+ Test:
+				+ Manual: 0, 1
+				+ Storm: 0, 1
+				+ Verify setting saved and reloadable
+			+ changelist
+			+ Custom setting: strong and logn storm, zero lightnings
+				+ Test
+				+ Make production
+
+		+ Update water velocities with blast
+			+ Adding velocities during blast
+
+		+ Continuous Auto-focus (*)
+			+ Send for testing, w/auto-focus being on by default
+			+ Re-send for testing, again - !!! WITH AUTO-FOCUS ON
+			+ Bump up build
+			+ Decide whether auto-focus should be on by default: YES, ON BY DEFAULT
+				+ Do
+				+ Ctrl+HOME to toggle
+					+ No more ESC
+			+ Problem with ocean floor moving line by line
+				+ Try first with alpha/anti-aliasing @ ocean floor
+					+ This fixes only horizontal: float alpha = mix(0.0, 1.0, textureCoord.z / 0.2);
+					+ This should be the winner; see if can do also for "vertical" edges
+				X ViewManager:
+					+ Figure out first if due to zoom or pan only
+						+ Zoom does it (when no pan enabled)
+						+ Pan does it (when no pan enabled)
+					X World X/Y: no move if abs < 0.2
+					X Zoom: no move if abs/current < 0.01
+			X Ignore AABBs that are "too small"
+				+ AABB::Add: Track largest area
+				+ AABBSet: MakeUnion templated overload taking predicate - other calls this one
+					+ Unit tests
+				X Ignore AABBs with area smaller than a fraction of that
+					+ Internal (inline) helper
+					+ InternalFocusOnShip
+					+ Update
+			+ Ocean floor tool's SHIFT lock: stable w/camera moving
+				+ Convert from screen to world in tool
+			+ changelist
+			+ Test land anti-aliasing on old Dell
+
+		+ ShipBuilder lag with pencil tool px-1 moving across the screen
+			+ See if texturization is done for right area
+			+ See if OpenGL uploads are done for right area: NO
+				+ Pre:
+					+ ShipBuilder::MainFrame::OnWorkCanvasMouseMove: 63.31%
+						...
+						+ ShipBuilder::View::UploadGameVisualization: 55.67%
+							+ GameOpenGL::UploadTexture: 55.61%
+						+ ShipTexturizer::AutoTexturizeInto: 0.36%
+						+ Controller::RefreshToolCoordinatesDisplay: 5.74%
+				+ Do region like we used to do
+				+ Post - also structural:
+					+ ShipBuilder::MainFrame::OnWorkCanvasMouseMove: 23.47% - 23.29%
+						+ ShipBuilder::View::UpdateGameVisualization: 3.16% - 5.22%
+							+ GameOpenGL::UploadTextureRegion: 3.05%
+						+ ShipBuilder::View::UploadStructuralLayerVisualization: 2.94% - 0.69%
+							+ GameOpenGL::UploadTexture: 2.90%
+						+ Controller::RefreshToolCoordinatesDisplay: 14.27% - 14.80%
+			+ Test on old Dell:
+				+ Save exe version without fix and use as benchmark
+			+ Send to TimCan and WOLFF and other guy
+			+ changelist
+		+ Engines rearc (*)
+		+ Jet engines @ Material system improvements (*)			
+			+ Redo material template
+			+ changelist (both rearc and jet engines)
+			+ Air boat
+			+ Promote rocket and air boat
+			+ Merge into 1.17.2.next
+		+ MainFrame's progress: make ShipBuilder take progress callback
+			+ And move calls now done from MainFrame into that
+		+ Spread out rotting:
+			! Now: at step 20/49
+			! Old: 
+				static constexpr int UpdateSinkingPeriodStep = 6; -- Can stay as one step
+				static constexpr int CombustionStateMachineSlowPeriodStep1 = 13;
+				static constexpr int RotPointsPeriodStep = 20;
+				static constexpr int CombustionStateMachineSlowPeriodStep2 = 27;
+				static constexpr int SpringDecayAndTemperaturePeriodStep = 34; - Spread out spring coeffs' recalculations (*)
+				static constexpr int CombustionStateMachineSlowPeriodStep3 = 41;
+				static constexpr int CombustionStateMachineSlowPeriodStep4 = 48;
+			! Steps: 13 steps, period=(39) // If not: 52
+				UpdateSinking
+				CombustionStateMachineSlow1
+				CombustionStateMachineSlow2
+				CombustionStateMachineSlow3
+				CombustionStateMachineSlow4
+				RotPoints1
+				RotPoints2
+				RotPoints3
+				RotPoints4
+				SpringDecayAndTemperature1
+				SpringDecayAndTemperature2
+				SpringDecayAndTemperature3
+				SpringDecayAndTemperature4
+			+ New: period=36
+				+ 2: CombustionStateMachineSlow1
+				+ 5: SpringDecayAndTemperature1
+				+ 8: RotPoints1
+				+ 11: CombustionStateMachineSlow2
+				+ 14: SpringDecayAndTemperature2
+				+ 17: RotPoints2
+				+ 18: UpdateSinking
+				+ 20: CombustionStateMachineSlow3
+				+ 23: SpringDecayAndTemperature3
+				+ 26: RotPoints3
+				+ 29: CombustionStateMachineSlow4
+				+ 32: SpringDecayAndTemperature4
+				+ 35: RotPoints4
+			+ Test:
+				+ Verify spring melting does not show as localized
+				+ Verify rotting does not show as localized
+				+ 0..5 points/springs
+				+ Old dell
+			+ Cleanup logging
+		+ Structural Tension View (*)
+			+ changelist
+		+ Send for testing
+		+ See windows timer/50fps thing
+			! http://mirrors.arcadecontrols.com/www.sysinternals.com/Information/HighResolutionTimers.html
+			+ @ 50fps: Windows timer resolution (min/max/cur): 15.625 / 0.500 / 15.621 ms
+				   Windows timer resolution (min/max/cur): 15.625 / 0.500 / 15.620 ms
+				   Windows timer resolution (min/max/cur): 15.625 / 0.500 / 15.621 ms
+			+ @ 64fps: Windows timer resolution (min/max/cur): 15.625 / 0.500 / 0.997 ms
+				   Windows timer resolution (min/max/cur): 15.625 / 0.500 / 0.997 ms
+		+ Affinitize threads:
+			+ At MainApp and at first line of each TaskLoop: CoreLib/SystemThreadManager.GetInstance()::InitializeThisThread()
+				+ Also SystemThreadManager::GetNumberOfProcessors()
+				+ Change into "InitializeThread"
+					+ Also doing floating point checks
+				+ Thread affinitization with set
+			+ Also do SetProcessPriority
+			+ Main thread (@GameController)
+			+ Rendering thread (@TaskThread)
+			+ Task threads (@ThreadPool)
+			+ Tests:
+				+ SetProcessPriority
+				+ Floating point settings
+
+		+ ShipBuilder things
+		+ Send localization files
+		+ See core dump
+			+ Fix telegraph control
+			+ See if it's also in other controls
+		+ See horizontal oscillations, e.g. with SS_Kbenhavn
+		+ Tensile display: try with green at 0, blue at tensile, red at compressive
+			+ Add new value to enum
+				= SettingsDialog
+			+ ShipRenderContext: react to changes in StressRenderMode and set array param accordingly
+			+ Shader: 12 brackets, new formula
+			+ Springs::UpdateForStrain: figure out how to replace max thing	
+			+ Test on old Dell
+		+ Check all those new ships
+			+ S.S. Arctic
+				+ "Menta1ity"
+				+ Add him to credits
+			+ Estonia
+				+ "braun"
+				+ Add him to credits
+			+ Great_Grandeur_1956
+				+ Pocketwatch
+			+ S.S._Hoogbeke
+				+ Pocketwatch
+			+ SS_Kbenhavn_1923
+				+ Pocketwatch
+			+ U.S.S. Rhode Island
+				+ Pocketwatch
+			+ M.S_Bjeli_Orao_2: 
+				+ BeamierBoomer
+			+ changelist
+
+		+ Release:
+			+ Localization:
+				+ IT
+				+ ES
+				+ RU
+			+ Windows
+				+ MSI variable
+				+ Commit & push
+				+ 64-bit MSI
+					+ Cleanup Install
+					+ Build Release Install (after clean)
+					+ Make MSI
+					+ Rename MSI
+					+ Test upgrade from previous version
+				+ 32-bit MSI
+					+ Cleanup Install
+					+ Build Release Install (after clean)
+					+ Make MSI
+					+ Rename MSI
+					+ Test clean install
+			+ Ubuntu
+				+ rm -rf floating-sandbox
+				+ pull 
+				+ rm -rf build; mkdir build; cd build
+				+ cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
+				+ make install
+				+ Make tar ("cd floating-sandbox && tar -cvf ../Floating-Sandbox-1.17.3-x64.tar . && cd -")
+				+ Zip tar
+				+ Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
+			+ Get 3 installers tested on dev server
+			+ Wait for test results
+			+ Cut tag on github
+			+ Upload packages to GameJolt
+				+ Post video
+				+ Post
+			+ www.floatingsandbox.com:
+				+ Update current version in FAQ
+				+ Upload changes2.txt
+					+ Test w/old FS

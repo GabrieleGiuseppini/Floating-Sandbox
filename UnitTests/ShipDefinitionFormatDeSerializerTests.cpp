@@ -65,13 +65,14 @@ TEST(ShipDefinitionFormatDeSerializerTests, ShipAttributes)
         Version(200, 14, 54, 1),
         ShipSpaceSize(242, 409),
         true,
-        false);
+        false,
+        PortableTimepoint::Now());
 
     ShipDefinitionFormatDeSerializer::AppendShipAttributes(sourceShipAttributes, buffer);
 
     // Read
 
-    ShipDefinitionFormatDeSerializer::ShipAttributes const targetShipAttributes = ShipDefinitionFormatDeSerializer::ReadShipAttributes(buffer);
+    ShipDefinitionFormatDeSerializer::ShipAttributes const targetShipAttributes = ShipDefinitionFormatDeSerializer::ReadShipAttributes(std::filesystem::path(), buffer);
 
     EXPECT_EQ(sourceShipAttributes.FileFSVersion.GetMajor(), targetShipAttributes.FileFSVersion.GetMajor());
     EXPECT_EQ(sourceShipAttributes.FileFSVersion.GetMinor(), targetShipAttributes.FileFSVersion.GetMinor());
@@ -80,6 +81,7 @@ TEST(ShipDefinitionFormatDeSerializerTests, ShipAttributes)
     EXPECT_EQ(sourceShipAttributes.ShipSize, targetShipAttributes.ShipSize);
     EXPECT_EQ(sourceShipAttributes.HasTextureLayer, targetShipAttributes.HasTextureLayer);
     EXPECT_EQ(sourceShipAttributes.HasElectricalLayer, targetShipAttributes.HasElectricalLayer);
+    EXPECT_EQ(sourceShipAttributes.LastWriteTime, targetShipAttributes.LastWriteTime);
 }
 
 TEST(ShipDefinitionFormatDeSerializerTests, Metadata_Full)
@@ -201,7 +203,7 @@ protected:
         DeSerializationBuffer<BigEndianess> & buffer)
     {
         std::unique_ptr<StructuralLayerData> targetStructuralLayer;
-        ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(Version(1, 16, 200, 4), sourceStructuralLayer.Buffer.Size, false, false);
+        ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(Version(1, 16, 200, 4), sourceStructuralLayer.Buffer.Size, false, false, PortableTimepoint::Now());
         ShipDefinitionFormatDeSerializer::ReadStructuralLayer(
             buffer,
             shipAttributes,
@@ -453,7 +455,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerTests, UnrecognizedMateri
         std::unique_ptr<StructuralLayerData> targetStructuralLayer;
         ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(
             Version::CurrentVersion(),
-            sourceStructuralLayer.Buffer.Size, false, false);
+            sourceStructuralLayer.Buffer.Size, false, false, PortableTimepoint::Now());
         ShipDefinitionFormatDeSerializer::ReadStructuralLayer(
             buffer,
             shipAttributes,
@@ -497,7 +499,8 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerTests, UnrecognizedMateri
     {
         std::unique_ptr<StructuralLayerData> targetStructuralLayer;
         ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(
-            fileFSVersion, sourceStructuralLayer.Buffer.Size, false, false);
+            fileFSVersion, 
+            sourceStructuralLayer.Buffer.Size, false, false, PortableTimepoint::Now());
         ShipDefinitionFormatDeSerializer::ReadStructuralLayer(
             buffer,
             shipAttributes,
@@ -546,7 +549,8 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerTests, UnrecognizedMateri
     {
         std::unique_ptr<StructuralLayerData> targetStructuralLayer;
         ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(
-            fileFSVersion, sourceStructuralLayer.Buffer.Size, false, false);
+            fileFSVersion, 
+            sourceStructuralLayer.Buffer.Size, false, false, PortableTimepoint::Now());
         ShipDefinitionFormatDeSerializer::ReadStructuralLayer(
             buffer,
             shipAttributes,
@@ -591,7 +595,7 @@ protected:
         DeSerializationBuffer<BigEndianess> & buffer)
     {
         std::unique_ptr<ElectricalLayerData> targetElectricalLayer;
-        ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(Version::CurrentVersion(), sourceElectricalLayer.Buffer.Size, false, false);
+        ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(Version::CurrentVersion(), sourceElectricalLayer.Buffer.Size, false, false, PortableTimepoint::Now());
         ShipDefinitionFormatDeSerializer::ReadElectricalLayer(
             buffer,
             shipAttributes,
@@ -896,7 +900,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerTests, UnrecognizedMateri
     {
         std::unique_ptr<ElectricalLayerData> targetElectricalLayer;
         ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(
-            Version::CurrentVersion(), sourceElectricalLayer.Buffer.Size, false, false);
+            Version::CurrentVersion(), sourceElectricalLayer.Buffer.Size, false, false, PortableTimepoint::Now());
         ShipDefinitionFormatDeSerializer::ReadElectricalLayer(
             buffer,
             shipAttributes,
@@ -941,7 +945,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerTests, UnrecognizedMateri
     {
         std::unique_ptr<ElectricalLayerData> targetElectricalLayer;
         ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(
-            fileFSVersion, sourceElectricalLayer.Buffer.Size, false, false);
+            fileFSVersion, sourceElectricalLayer.Buffer.Size, false, false, PortableTimepoint::Now());
         ShipDefinitionFormatDeSerializer::ReadElectricalLayer(
             buffer,
             shipAttributes,
@@ -991,7 +995,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerTests, UnrecognizedMateri
     {
         std::unique_ptr<ElectricalLayerData> targetElectricalLayer;
         ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(
-            fileFSVersion, sourceElectricalLayer.Buffer.Size, false, false);
+            fileFSVersion, sourceElectricalLayer.Buffer.Size, false, false, PortableTimepoint::Now());
         ShipDefinitionFormatDeSerializer::ReadElectricalLayer(
             buffer,
             shipAttributes,
@@ -1035,7 +1039,7 @@ protected:
         DeSerializationBuffer<BigEndianess> & buffer)
     {
         std::unique_ptr<RopesLayerData> targetRopesLayer;
-        ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(Version::CurrentVersion(), {242, 242}, false, false);
+        ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(Version::CurrentVersion(), {242, 242}, false, false, PortableTimepoint::Now());
         ShipDefinitionFormatDeSerializer::ReadRopesLayer(
             buffer,
             shipAttributes,
@@ -1118,7 +1122,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_RopesLayerTests, UnrecognizedMaterial_Sa
     {
         std::unique_ptr<RopesLayerData> targetRopesLayer;
         ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(
-            Version::CurrentVersion(), { 1, 1 }, false, false);
+            Version::CurrentVersion(), { 1, 1 }, false, false, PortableTimepoint::Now());
         ShipDefinitionFormatDeSerializer::ReadRopesLayer(
             buffer,
             shipAttributes,
@@ -1163,7 +1167,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_RopesLayerTests, UnrecognizedMaterial_La
     {
         std::unique_ptr<RopesLayerData> targetRopesLayer;
         ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(
-            fileFSVersion, { 1, 1 }, false, false);
+            fileFSVersion, { 1, 1 }, false, false, PortableTimepoint::Now());
         ShipDefinitionFormatDeSerializer::ReadRopesLayer(
             buffer,
             shipAttributes,
@@ -1213,7 +1217,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_RopesLayerTests, UnrecognizedMaterial_La
     {
         std::unique_ptr<RopesLayerData> targetRopesLayer;
         ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(
-            fileFSVersion, { 1, 1 }, false, false);
+            fileFSVersion, { 1, 1 }, false, false, PortableTimepoint::Now());
         ShipDefinitionFormatDeSerializer::ReadRopesLayer(
             buffer,
             shipAttributes,

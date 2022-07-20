@@ -12,6 +12,7 @@
 #include <GameCore/DeSerializationBuffer.h>
 #include <GameCore/GameTypes.h>
 #include <GameCore/ImageData.h>
+#include <GameCore/PortableTimepoint.h>
 #include <GameCore/Version.h>
 
 #include <cstdint>
@@ -75,16 +76,19 @@ private:
         ShipSpaceSize ShipSize;
         bool HasTextureLayer;
         bool HasElectricalLayer;
+        PortableTimepoint LastWriteTime;
 
         ShipAttributes(
             Version fileFSVersion,
             ShipSpaceSize shipSize,
             bool hasTextureLayer,
-            bool hasElectricalLayer)
+            bool hasElectricalLayer,
+            PortableTimepoint lastWriteTime)
             : FileFSVersion(fileFSVersion)
             , ShipSize(shipSize)
             , HasTextureLayer(hasTextureLayer)
             , HasElectricalLayer(hasElectricalLayer)
+            , LastWriteTime(lastWriteTime)
         {}
     };
 
@@ -116,6 +120,7 @@ private:
         ShipSize = MAKE_TAG('S', 'S', 'Z', '1'),
         HasTextureLayer = MAKE_TAG('H', 'T', 'X', '1'),
         HasElectricalLayer = MAKE_TAG('H', 'E', 'L', '1'),
+        LastWriteTime = MAKE_TAG('W', 'R', 'T', '1'),
 
         Tail = 0xffffffff
     };
@@ -322,7 +327,9 @@ private:
 
     static void ReadFileHeader(DeSerializationBuffer<BigEndianess> & buffer);
 
-    static ShipAttributes ReadShipAttributes(DeSerializationBuffer<BigEndianess> const & buffer);
+    static ShipAttributes ReadShipAttributes(
+        std::filesystem::path const & shipFilePath,
+        DeSerializationBuffer<BigEndianess> const & buffer);
 
     static ShipMetadata ReadMetadata(DeSerializationBuffer<BigEndianess> const & buffer);
 

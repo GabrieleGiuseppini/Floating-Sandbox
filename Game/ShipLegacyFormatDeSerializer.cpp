@@ -46,16 +46,17 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadShipFromLegacyShpShipDefinition
         materialDatabase);
 }
 
-ShipPreviewData ShipLegacyFormatDeSerializer::LoadShipPreviewDataFromImageDefinition(std::filesystem::path const & shipFilePath)
+ShipPreviewData ShipLegacyFormatDeSerializer::LoadShipPreviewDataFromImageDefinition(std::filesystem::path const & imageDefinitionFilePath)
 {
-    auto const imageSize = ImageFileTools::GetImageSize(shipFilePath);
+    auto const imageSize = ImageFileTools::GetImageSize(imageDefinitionFilePath);
 
     return ShipPreviewData(
-        shipFilePath,
+        imageDefinitionFilePath,
         ShipSpaceSize(imageSize.width, imageSize.height),
-        ShipMetadata(shipFilePath.stem().string()),
+        ShipMetadata(imageDefinitionFilePath.stem().string()),
         false, // isHD
-        false); // hasElectricals
+        false, // hasElectricals
+        PortableTimepoint::FromLastWriteTime(imageDefinitionFilePath));
 }
 
 ShipPreviewData ShipLegacyFormatDeSerializer::LoadShipPreviewDataFromLegacyShpShipDefinition(std::filesystem::path const & shipFilePath)
@@ -91,7 +92,8 @@ ShipPreviewData ShipLegacyFormatDeSerializer::LoadShipPreviewDataFromLegacyShpSh
         ShipSpaceSize(structuralImageSize.width, structuralImageSize.height), // Ship size is from structural image
         jsonDefinition.Metadata,
         isHD,
-        hasElectricals);
+        hasElectricals,
+        PortableTimepoint::FromLastWriteTime(shipFilePath));
 }
 
 RgbaImageData ShipLegacyFormatDeSerializer::LoadPreviewImage(
