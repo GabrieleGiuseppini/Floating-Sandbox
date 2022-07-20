@@ -1327,7 +1327,7 @@
 					- Used at ShipLayers also @ ShipBuilder::Model
 						- ...and thus also implement Clone(), Trim(), Rotate(), etc.
 					- Unit tests
-			= Sort method, as:
+			+ Sort method, as:
 				+ BitmapButton, showing currently-selected sorting method
 					+ When clicking on it, popup appears with horizonal buttons
 						+ Icons:
@@ -1340,7 +1340,7 @@
 					+ Clicking on it toggles asc/desc for sorting, and bitmap
 				+ By: Name, Date added, Year Built, HD/Elec/0
 					~ Date added: see after install if file creation dates are still originals
-				= Sorting impl @ PreviewWindow:
+				+ Sorting impl @ PreviewWindow:
 					+ Selection is by ShipId, not index
 						+ Assigned at creation, taken by thread as well
 							+ DirectorySnapshot must store them
@@ -1355,18 +1355,20 @@
 						+ Change InfoTile: needs to become agnostic of own position in grid, which also needs to be recalc'd a) at each new InfoTile, and b) at each change of sorting
 						+ Replace those members with functions that go to and from linear position in InfoTile vector to VirtualRect
 						+ Do strongly-typed ship file ID
-					= Do sorting						
-						= Has std::function "sort predicate" member, memoized by SetSortMethod/Direction()
+					+ Do sorting						
+						+ Has std::function "sort predicate" member, memoized by SetSortMethod/Direction()
 							+ Make non-metadata tiles (e.g. errors) always appear at end - do not use direction here
 							+ By name
 								+ Case-insensitive
-							= By year
-								- No year goes to end
-								= Same year: by name (case insensitive); same name: by ship ID
+							+ By year
+								+ No year goes to end
+								+ Same year: by name (case insensitive); same name: by ship ID
+									+ By name and by ship ID: should not honor direction
 							+ By features
 								+ InfoTile: FeatureScore member, populated at InfoTile preview ready
 								+ Same feature score: by name (case insensitive); same name: by ship ID
-							- By last modified
+									- By name and by ship ID: should not honor direction
+							+ By last modified
 								+ LastModified is new attrib of ship definition file serialization @ shp2
 									+ PortableTimestamp type
 										+ From std::filesystem::path
@@ -1379,8 +1381,8 @@
 										+ Unit tests
 											+ Load: both formats
 									+ Other de-serializers: read from file
-								- Same last modified: by name (case insensitive); same name: by ship ID
-									- See if can rewrite predicate more easily: compare predicate with <=>
+								+ Same last modified: by name (case insensitive); same name: by ship ID
+									+ By name and by ship ID: should not honor direction
 						+ Initial DirectorySnapshot sorting should be invariant from sort direction
 							+ Or else won't match if changed in-between
 						+ Need to sort at:
@@ -1394,11 +1396,12 @@
 			+ Move search here
 			+ Move "Ok/Cancel" buttons below next to dir dropdown (taking place of "search")
 		- Tests:
-			- Slow population
-				- Do artificial 100ms sleep @ thread
-			- Year built: the string sorting that we do matches year numeric
-			- Preview error
-			- Search: goes from selected onwards - in right order and always down
+			- Sorting:
+				- Slow population
+					- Do artificial 100ms sleep @ thread
+				- Year built: the string sorting that we do matches year numeric
+				- Preview error
+				- Search: goes from selected onwards - in right order and always down
 	- ShipLoadDialog improvements:
 		- Display folders in grid
 

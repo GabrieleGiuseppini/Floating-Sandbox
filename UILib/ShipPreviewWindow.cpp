@@ -686,11 +686,9 @@ std::function<bool(ShipPreviewWindow::InfoTile const &, ShipPreviewWindow::InfoT
                     auto const lShipNameI = Utils::ToLower(l.Metadata->ShipName);
                     auto const rShipNameI = Utils::ToLower(r.Metadata->ShipName);
 
-                    bool const ascendingResult =
+                    return
                         (lShipNameI < rShipNameI)
                         || ((lShipNameI == rShipNameI) && (l.ShipFileId < r.ShipFileId));
-
-                    return (ascendingResult) != (isSortDescending);
                 }
                 else
                 {
@@ -703,7 +701,29 @@ std::function<bool(ShipPreviewWindow::InfoTile const &, ShipPreviewWindow::InfoT
 
         case SortMethod::ByLastModified:
         {
-            // TODO
+            metadataPredicate = [isSortDescending](InfoTile const & l, InfoTile const & r) -> bool
+            {
+                assert(l.Metadata.has_value() && r.Metadata.has_value());
+
+                if (l.LastWriteTime > r.LastWriteTime) // We want most recent at top
+                {
+                    return (true) != (isSortDescending);
+                }
+                else if (l.LastWriteTime == r.LastWriteTime)
+                {
+                    auto const lShipNameI = Utils::ToLower(l.Metadata->ShipName);
+                    auto const rShipNameI = Utils::ToLower(r.Metadata->ShipName);
+
+                    return
+                        (lShipNameI < rShipNameI)
+                        || ((lShipNameI == rShipNameI) && (l.ShipFileId < r.ShipFileId));
+                }
+                else
+                {
+                    return (false) != (isSortDescending);
+                }
+            };
+
             break;
         }
 
@@ -738,16 +758,14 @@ std::function<bool(ShipPreviewWindow::InfoTile const &, ShipPreviewWindow::InfoT
                 {
                     return (*(l.Metadata->YearBuilt) < *(r.Metadata->YearBuilt)) != (isSortDescending);
                 }
-                else if (*(l.Metadata->YearBuilt) == *(r.Metadata->YearBuilt)) // Either both are set and match values, or neither is set
+                else if (l.Metadata->YearBuilt == r.Metadata->YearBuilt) // Either both are set and match values, or neither is set
                 {
                     auto const lShipNameI = Utils::ToLower(l.Metadata->ShipName);
                     auto const rShipNameI = Utils::ToLower(r.Metadata->ShipName);
 
-                    bool const ascendingResult =
+                    return
                         (lShipNameI < rShipNameI)
                         || ((lShipNameI == rShipNameI) && (l.ShipFileId < r.ShipFileId));
-
-                    return (ascendingResult) != (isSortDescending);
                 }
                 else
                 {
