@@ -9,6 +9,7 @@
 #include <Game/ShipPreviewData.h>
 
 #include <GameCore/ImageData.h>
+#include <GameCore/PortableTimepoint.h>
 #include <GameCore/StrongTypeDef.h>
 
 #include <wx/timer.h>
@@ -316,6 +317,7 @@ private:
         bool IsHD;
         bool HasElectricals;
         int FeatureScore;
+        PortableTimepoint LastWriteTime;
         std::string OriginalDescription1;
         std::string OriginalDescription2;
         std::string OriginalDescription3;
@@ -343,6 +345,7 @@ private:
             , IsHD(false)
             , HasElectricals(false)
             , FeatureScore(0)
+            , LastWriteTime(0)
             , OriginalDescription1()
             , OriginalDescription2()
             , OriginalDescription3()

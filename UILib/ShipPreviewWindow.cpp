@@ -7,6 +7,7 @@
 
 #include <UILib/WxHelpers.h>
 
+#include <GameCore/Conversions.h>
 #include <Game/ImageFileTools.h>
 #include <Game/ShipDeSerializer.h>
 #include <Game/ShipPreviewDirectoryManager.h>
@@ -429,6 +430,8 @@ void ShipPreviewWindow::OnPollQueueTimer(wxTimerEvent & /*event*/)
                 if (shipPreviewData.HasElectricals)
                     infoTile.FeatureScore += 2;
 
+                infoTile.LastWriteTime = shipPreviewData.LastWriteTime;
+
                 std::string descriptionLabelText1 = shipPreviewData.Metadata.ShipName;
                 if (shipPreviewData.Metadata.YearBuilt.has_value())
                     descriptionLabelText1 += " (" + *(shipPreviewData.Metadata.YearBuilt) + ")";
@@ -436,7 +439,7 @@ void ShipPreviewWindow::OnPollQueueTimer(wxTimerEvent & /*event*/)
                 infoTile.DescriptionLabel1Size.reset();
 
                 int const metres = shipPreviewData.ShipSize.width;
-                int const feet = static_cast<int>(std::round(3.28f * metres));
+                int const feet = static_cast<int>(std::round(MeterToFoot(metres)));
                 std::string descriptionLabelText2 =
                     std::to_string(metres)
                     + "m/"
