@@ -241,20 +241,20 @@ void GameController::RebindOpenGLContext()
     mRenderContext->RebindContext();
 }
 
-ShipMetadata GameController::ResetAndLoadShip(std::filesystem::path const & shipDefinitionFilepath)
+ShipMetadata GameController::ResetAndLoadShip(ShipLoadSpecifications const & loadSpecs)
 {
-    return InternalResetAndLoadShip(shipDefinitionFilepath);
+    return InternalResetAndLoadShip(loadSpecs);
 }
 
-ShipMetadata GameController::ResetAndReloadShip(std::filesystem::path const & shipDefinitionFilepath)
+ShipMetadata GameController::ResetAndReloadShip(ShipLoadSpecifications const & loadSpecs)
 {
-    return InternalResetAndLoadShip(shipDefinitionFilepath);
+    return InternalResetAndLoadShip(loadSpecs);
 }
 
-ShipMetadata GameController::AddShip(std::filesystem::path const & shipDefinitionFilepath)
+ShipMetadata GameController::AddShip(ShipLoadSpecifications const & loadSpecs)
 {
     // Load ship definition
-    auto shipDefinition = ShipDeSerializer::LoadShip(shipDefinitionFilepath, mMaterialDatabase);
+    auto shipDefinition = ShipDeSerializer::LoadShip(loadSpecs.DefinitionFilepath, mMaterialDatabase);
 
     // Pre-validate ship's texture, if any
     if (shipDefinition.TextureLayer)
@@ -273,6 +273,7 @@ ShipMetadata GameController::AddShip(std::filesystem::path const & shipDefinitio
         shipId,
         *mWorld,
         std::move(shipDefinition),
+        loadSpecs.LoadOptions,
         mMaterialDatabase,
         mShipTexturizer,
         mShipStrengthRandomizer,
@@ -284,7 +285,7 @@ ShipMetadata GameController::AddShip(std::filesystem::path const & shipDefinitio
     // No errors, so we may continue
     //
 
-    OnShipCreated(
+    InternalAddShip(
         std::move(ship),
         std::move(textureImage),
         shipMetadata);
@@ -1344,12 +1345,12 @@ void GameController::OnShipRepaired(ShipId /*shipId*/)
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
-ShipMetadata GameController::InternalResetAndLoadShip(std::filesystem::path const & shipDefinitionFilepath)
+ShipMetadata GameController::InternalResetAndLoadShip(ShipLoadSpecifications const & loadSpecs)
 {
     assert(!!mWorld);
 
     // Load ship definition
-    auto shipDefinition = ShipDeSerializer::LoadShip(shipDefinitionFilepath, mMaterialDatabase);
+    auto shipDefinition = ShipDeSerializer::LoadShip(loadSpecs.DefinitionFilepath, mMaterialDatabase);
 
     // Pre-validate ship's texture
     if (shipDefinition.TextureLayer)
@@ -1373,6 +1374,7 @@ ShipMetadata GameController::InternalResetAndLoadShip(std::filesystem::path cons
         shipId,
         *newWorld,
         std::move(shipDefinition),
+        loadSpecs.LoadOptions,
         mMaterialDatabase,
         mShipTexturizer,
         mShipStrengthRandomizer,
@@ -1386,7 +1388,7 @@ ShipMetadata GameController::InternalResetAndLoadShip(std::filesystem::path cons
 
     Reset(std::move(newWorld));
 
-    OnShipCreated(
+    InternalAddShip(
         std::move(ship),
         std::move(textureImage),
         shipMetadata);
@@ -1417,7 +1419,7 @@ void GameController::Reset(std::unique_ptr<Physics::World> newWorld)
     mGameEventDispatcher->OnGameReset();
 }
 
-void GameController::OnShipCreated(
+void GameController::InternalAddShip(
     std::unique_ptr<Physics::Ship> ship,
     RgbaImageData && textureImage,
     ShipMetadata const & shipMetadata)

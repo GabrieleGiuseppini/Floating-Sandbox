@@ -23,7 +23,7 @@ UIPreferencesManager::UIPreferencesManager(
     // Set defaults for our preferences
     //
 
-    mLastShipLoadedFilePath.clear();
+    mLastShipLoadedSpecifications.reset();
     mReloadLastLoadedShipOnStartup = false;
 
     mScreenshotsFolderPath = StandardSystemPaths::GetInstance().GetUserPicturesGameFolderPath();
@@ -154,13 +154,19 @@ void UIPreferencesManager::LoadPreferences()
         }
 
         //
-        // Last ship loaded file path
+        // Last ship loaded
         //
 
-        if (auto lastShipLoadedFilePathIt = preferencesRootObject->find("last_ship_loaded_file_path");
-            lastShipLoadedFilePathIt != preferencesRootObject->end() && lastShipLoadedFilePathIt->second.is<std::string>())
+        if (auto const lastShipLoadedSpecsIt = preferencesRootObject->find("last_ship_loaded_specifications"); // First introduced in 1.17.4
+            lastShipLoadedSpecsIt != preferencesRootObject->cend() && lastShipLoadedSpecsIt->second.is<picojson::object>())
         {
-            mLastShipLoadedFilePath = lastShipLoadedFilePathIt->second.get<std::string>();
+            picojson::object const & specsObject = lastShipLoadedSpecsIt->second.get<picojson::object>();
+            mLastShipLoadedSpecifications = ShipLoadSpecifications::FromJson(specsObject);
+        }
+        else if (auto const lastShipLoadedFilePathIt = preferencesRootObject->find("last_ship_loaded_file_path"); // No more since 1.17.4
+            lastShipLoadedFilePathIt != preferencesRootObject->cend() && lastShipLoadedFilePathIt->second.is<std::string>())
+        {
+            mLastShipLoadedSpecifications = ShipLoadSpecifications(lastShipLoadedFilePathIt->second.get<std::string>());
         }
 
         //
@@ -465,9 +471,11 @@ void UIPreferencesManager::SavePreferences() const
         preferencesRootObject["ship_load_directories"] = picojson::value(shipLoadDirectories);
     }
 
-    // Add last ship loaded file path
-    if (!mLastShipLoadedFilePath.empty())
-        preferencesRootObject["last_ship_loaded_file_path"] = picojson::value(mLastShipLoadedFilePath.string());
+    // Add last ship loaded
+    if (mLastShipLoadedSpecifications.has_value())
+    {
+        preferencesRootObject["last_ship_loaded_specifications"] = picojson::value(mLastShipLoadedSpecifications->ToJson());
+    }
 
     // Add reload last loaded ship on startup
     preferencesRootObject["reload_last_loaded_ship_on_startup"] = picojson::value(mReloadLastLoadedShipOnStartup);

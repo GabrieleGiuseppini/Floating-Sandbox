@@ -49,6 +49,8 @@ set  (GAME_SOURCES
 	ShipDefinition.h
 	ShipLegacyFormatDeSerializer.cpp
 	ShipLegacyFormatDeSerializer.h
+	ShipLoadOptions.h
+	ShipLoadSpecifications.h
 	ShipMetadata.h
 	ShipPhysicsData.h
 	ShipPreviewData.h

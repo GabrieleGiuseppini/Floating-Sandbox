@@ -10,6 +10,7 @@
 #include "Physics.h"
 #include "ShipDefinition.h"
 #include "ShipFactoryTypes.h"
+#include "ShipLoadOptions.h"
 #include "ShipStrengthRandomizer.h"
 #include "ShipTexturizer.h"
 
@@ -38,6 +39,7 @@ public:
         ShipId shipId,
         Physics::World & parentWorld,
         ShipDefinition && shipDefinition,
+        ShipLoadOptions const & shipLoadOptions,
         MaterialDatabase const & materialDatabase,
         ShipTexturizer const & shipTexturizer,
         ShipStrengthRandomizer const & shipStrengthRandomizer,

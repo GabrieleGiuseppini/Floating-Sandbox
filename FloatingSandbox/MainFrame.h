@@ -29,6 +29,7 @@
 #include <Game/GameController.h>
 #include <Game/IGameEventHandlers.h>
 #include <Game/ResourceLocator.h>
+#include <Game/ShipLoadSpecifications.h>
 
 #include "SplashScreenDialog.h" // Need to include this (which includes wxGLCanvas) *after* our glad.h has been included,
  // so that wxGLCanvas ends up *not* including the system's OpenGL header but glad's instead
@@ -379,10 +380,10 @@ private:
     static std::filesystem::path ChooseDefaultShip(ResourceLocator const & resourceLocator);
 
     void LoadShip(
-        std::filesystem::path const & shipFilePath,
+        ShipLoadSpecifications const & loadSpecs,
         bool isFromUser);
 
-    void OnShipLoaded(std::filesystem::path shipFilePath);
+    void OnShipLoaded(ShipLoadSpecifications const & loadSpecs);
 
     wxAcceleratorEntry MakePlainAcceleratorKey(int key, wxMenuItem * menuItem);
 
@@ -417,8 +418,8 @@ private:
     //
 
     std::optional<std::filesystem::path> const mInitialShipFilePath;
-    std::filesystem::path mCurrentShipFilePath;
-    std::filesystem::path mPreviousShipFilePath;
+    std::optional<ShipLoadSpecifications> mCurrentShipLoadSpecs;
+    std::optional<ShipLoadSpecifications> mPreviousShipLoadSpecs;
 
     bool mHasWindowBeenShown;
     bool mHasStartupTipBeenChecked;

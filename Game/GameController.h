@@ -20,6 +20,7 @@
 #include "RenderDeviceProperties.h"
 #include "ResourceLocator.h"
 #include "ShipFactory.h"
+#include "ShipLoadSpecifications.h"
 #include "ShipMetadata.h"
 #include "ViewManager.h"
 
@@ -132,9 +133,9 @@ public:
 
     void RebindOpenGLContext();
 
-    ShipMetadata ResetAndLoadShip(std::filesystem::path const & shipDefinitionFilepath) override;
-    ShipMetadata ResetAndReloadShip(std::filesystem::path const & shipDefinitionFilepath) override;
-    ShipMetadata AddShip(std::filesystem::path const & shipDefinitionFilepath) override;
+    ShipMetadata ResetAndLoadShip(ShipLoadSpecifications const & loadSpecs) override;
+    ShipMetadata ResetAndReloadShip(ShipLoadSpecifications const & loadSpecs) override;
+    ShipMetadata AddShip(ShipLoadSpecifications const & loadSpecs) override;
 
     RgbImageData TakeScreenshot() override;
 
@@ -861,11 +862,11 @@ private:
         ResourceLocator const & resourceLocator,
         ProgressCallback const & progressCallback);
 
-    ShipMetadata InternalResetAndLoadShip(std::filesystem::path const & shipDefinitionFilepath);
+    ShipMetadata InternalResetAndLoadShip(ShipLoadSpecifications const & loadSpecs);
 
     void Reset(std::unique_ptr<Physics::World> newWorld);
 
-    void OnShipCreated(
+    void InternalAddShip(
         std::unique_ptr<Physics::Ship> ship,
         RgbaImageData && textureImage,
         ShipMetadata const & shipMetadata);

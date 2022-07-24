@@ -45,6 +45,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
     ShipId shipId,
     World & parentWorld,
     ShipDefinition && shipDefinition,
+    ShipLoadOptions const & shipLoadOptions,
     MaterialDatabase const & materialDatabase,
     ShipTexturizer const & shipTexturizer,
     ShipStrengthRandomizer const & shipStrengthRandomizer,
@@ -53,6 +54,13 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
     GameParameters const & gameParameters)
 {
     auto const totalStartTime = std::chrono::steady_clock::now();
+
+    //
+    // Process load options
+    //
+
+    // TODOHERE
+    (void)shipLoadOptions;
 
     //
     // Process materialized ship layer and:

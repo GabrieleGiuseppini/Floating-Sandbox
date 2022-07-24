@@ -116,8 +116,8 @@ MainFrame::MainFrame(
     , mUIPreferencesManager()
     // State
     , mInitialShipFilePath(initialShipFilePath)
-    , mCurrentShipFilePath()
-    , mPreviousShipFilePath()
+    , mCurrentShipLoadSpecs()
+    , mPreviousShipLoadSpecs()
     , mHasWindowBeenShown(false)
     , mHasStartupTipBeenChecked(false)
     , mIsGameFrozen(false)
@@ -797,7 +797,7 @@ void MainFrame::OnSecretTypingLoadBuiltInShip(int ship)
     else
         builtInShipFilePath = mResourceLocator.GetFallbackShipDefinitionFilePath();
 
-    LoadShip(builtInShipFilePath, false);
+    LoadShip(ShipLoadSpecifications(builtInShipFilePath), false);
 }
 
 void MainFrame::OnSecretTypingGoToWorldEnd(int side)
@@ -1115,46 +1115,50 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     this->mMainApp->Yield();
     this->mMainApp->Yield();
 
-    std::filesystem::path startupShipFilePath;
+    std::optional<ShipLoadSpecifications> startupShipLoadSpecs;
 
     if (mInitialShipFilePath.has_value())
     {
         // Use given
-        startupShipFilePath = *mInitialShipFilePath;
+        startupShipLoadSpecs.emplace(*mInitialShipFilePath);
     }
     else
     {
         // See if the last loaded ship is applicable
         if (mUIPreferencesManager->GetReloadLastLoadedShipOnStartup())
         {
-            startupShipFilePath = mUIPreferencesManager->GetLastShipLoadedFilePath();
+            startupShipLoadSpecs = mUIPreferencesManager->GetLastShipLoadedSpecifications();
 
             // Make sure it still exists
-            if (!startupShipFilePath.empty()
-                && !std::filesystem::exists(startupShipFilePath))
+            if (startupShipLoadSpecs.has_value()
+                && !std::filesystem::exists(startupShipLoadSpecs->DefinitionFilepath))
             {
-                startupShipFilePath.clear();
+                startupShipLoadSpecs.reset();
             }
         }
     }
 
-    if (startupShipFilePath.empty())
+    if (!startupShipLoadSpecs.has_value())
     {
         // Use default ship
-        startupShipFilePath = ChooseDefaultShip(mResourceLocator);
+        startupShipLoadSpecs.emplace(ChooseDefaultShip(mResourceLocator));
     }
 
-    if (!std::filesystem::exists(startupShipFilePath))
+    assert(startupShipLoadSpecs.has_value());
+
+    if (!std::filesystem::exists(startupShipLoadSpecs->DefinitionFilepath))
     {
-        startupShipFilePath = mResourceLocator.GetFallbackShipDefinitionFilePath();
+        startupShipLoadSpecs.emplace(mResourceLocator.GetFallbackShipDefinitionFilePath());
     }
+
+    assert(startupShipLoadSpecs.has_value());
 
     try
     {
-        mGameController->AddShip(startupShipFilePath);
+        mGameController->AddShip(*startupShipLoadSpecs);
 
         // Succeeded
-        OnShipLoaded(startupShipFilePath);
+        OnShipLoaded(*startupShipLoadSpecs);
     }
     catch (UserGameException const & exc)
     {
@@ -1519,11 +1523,11 @@ void MainFrame::OnLoadShipMenuItemSelected(wxCommandEvent & /*event*/)
         // Load ship
         //
 
-        auto const shipFilePath = mShipLoadDialog->GetChosenShipFilepath();
-        LoadShip(shipFilePath, true);
+        auto const shipLoadSpecs = mShipLoadDialog->GetChosenShipLoadSpecifications();
+        LoadShip(shipLoadSpecs, true);
 
         // Store directory in preferences
-        mUIPreferencesManager->AddShipLoadDirectory(shipFilePath.parent_path());
+        mUIPreferencesManager->AddShipLoadDirectory(shipLoadSpecs.DefinitionFilepath.parent_path());
     }
 
     SetPaused(false);
@@ -1531,16 +1535,16 @@ void MainFrame::OnLoadShipMenuItemSelected(wxCommandEvent & /*event*/)
 
 void MainFrame::OnReloadCurrentShipMenuItemSelected(wxCommandEvent & /*event*/)
 {
-    assert(!mCurrentShipFilePath.empty());
+    assert(mCurrentShipLoadSpecs.has_value());
 
-    LoadShip(mCurrentShipFilePath, false);
+    LoadShip(*mCurrentShipLoadSpecs, false);
 }
 
 void MainFrame::OnReloadPreviousShipMenuItemSelected(wxCommandEvent & /*event*/)
 {
-    assert(!mPreviousShipFilePath.empty()); // Or else we wouldn't be here
+    assert(mPreviousShipLoadSpecs.has_value()); // Or else we wouldn't be here
 
-    LoadShip(mPreviousShipFilePath, false);
+    LoadShip(*mPreviousShipLoadSpecs, false);
 }
 
 void MainFrame::OnSaveScreenshotMenuItemSelected(wxCommandEvent & /*event*/)
@@ -2469,8 +2473,8 @@ void MainFrame::ReconciliateUIWithUIPreferences()
     mFullScreenMenuItem->Enable(!mUIPreferencesManager->GetStartInFullScreen());
     mNormalScreenMenuItem->Enable(mUIPreferencesManager->GetStartInFullScreen());
 
-    mPreviousShipFilePath = mUIPreferencesManager->GetLastShipLoadedFilePath();
-    mReloadPreviousShipMenuItem->Enable(!mPreviousShipFilePath.empty());
+    mPreviousShipLoadSpecs = mUIPreferencesManager->GetLastShipLoadedSpecifications();
+    mReloadPreviousShipMenuItem->Enable(mPreviousShipLoadSpecs.has_value());
 
     mShowStatusTextMenuItem->Check(mUIPreferencesManager->GetShowStatusText());
     mShowExtendedStatusTextMenuItem->Check(mUIPreferencesManager->GetShowExtendedStatusText());
@@ -2497,7 +2501,7 @@ std::filesystem::path MainFrame::ChooseDefaultShip(ResourceLocator const & resou
 }
 
 void MainFrame::LoadShip(
-    std::filesystem::path const & shipFilePath,
+    ShipLoadSpecifications const & loadSpecs,
     bool isFromUser)
 {
     //
@@ -2523,10 +2527,10 @@ void MainFrame::LoadShip(
     {
         // Load
         assert(!!mGameController);
-        auto const shipMetadata = mGameController->ResetAndLoadShip(shipFilePath);
+        auto const shipMetadata = mGameController->ResetAndLoadShip(loadSpecs);
 
         // Succeeded
-        OnShipLoaded(shipFilePath);
+        OnShipLoaded(loadSpecs);
 
         // Open description, if a description exists and the user allows
         if (isFromUser
@@ -2559,28 +2563,28 @@ void MainFrame::LoadShip(
     }
 }
 
-void MainFrame::OnShipLoaded(std::filesystem::path shipFilePath)
+void MainFrame::OnShipLoaded(ShipLoadSpecifications const & loadSpecs)
 {
     //
     // Check whether the current ship may become the "previous" ship
     //
 
-    if (!mCurrentShipFilePath.empty()
-        && shipFilePath != mCurrentShipFilePath)
+    if (mCurrentShipLoadSpecs.has_value()
+        && loadSpecs.DefinitionFilepath != mCurrentShipLoadSpecs->DefinitionFilepath)
     {
-        mPreviousShipFilePath = mCurrentShipFilePath;
+        mPreviousShipLoadSpecs = mCurrentShipLoadSpecs;
 
         mReloadPreviousShipMenuItem->Enable(true);
     }
 
     //
-    // Remember the current ship file path
+    // Remember the current ship load specs
     //
 
-    mCurrentShipFilePath = shipFilePath;
+    mCurrentShipLoadSpecs = loadSpecs;
 
     assert(!!mUIPreferencesManager);
-    mUIPreferencesManager->SetLastShipLoadedFilePath(mCurrentShipFilePath);
+    mUIPreferencesManager->SetLastShipLoadedSpecifications(loadSpecs);
 }
 
 wxAcceleratorEntry MainFrame::MakePlainAcceleratorKey(int key, wxMenuItem * menuItem)
@@ -2629,7 +2633,8 @@ void MainFrame::SwitchToShipBuilderForCurrentShip()
 
     // Open ShipBuilder frame for editing current ship
     assert(mShipBuilderMainFrame);
-    mShipBuilderMainFrame->OpenForLoadShip(mCurrentShipFilePath, mUIPreferencesManager->GetDisplayUnitsSystem());
+    assert(mCurrentShipLoadSpecs.has_value());
+    mShipBuilderMainFrame->OpenForLoadShip(mCurrentShipLoadSpecs->DefinitionFilepath, mUIPreferencesManager->GetDisplayUnitsSystem());
 }
 
 void MainFrame::SwitchFromShipBuilder(std::optional<std::filesystem::path> shipFilePath)
@@ -2647,12 +2652,13 @@ void MainFrame::SwitchFromShipBuilder(std::optional<std::filesystem::path> shipF
     if (shipFilePath.has_value())
     {
         // Load the ship
-        LoadShip(*shipFilePath, false);
+        LoadShip(ShipLoadSpecifications(*shipFilePath), false);
     }
     else
     {
         // Reload current ship
-        LoadShip(mCurrentShipFilePath, false);
+        assert(mCurrentShipLoadSpecs.has_value());
+        LoadShip(*mCurrentShipLoadSpecs, false);
     }
 
     // Restart

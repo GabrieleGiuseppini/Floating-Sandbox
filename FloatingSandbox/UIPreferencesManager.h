@@ -11,6 +11,7 @@
 #include <UILib/LocalizationManager.h>
 
 #include <Game/IGameController.h>
+#include <Game/ShipLoadSpecifications.h>
 
 #include <GameCore/GameTypes.h>
 #include <GameCore/Version.h>
@@ -57,14 +58,14 @@ public:
         }
     }
 
-    std::filesystem::path const & GetLastShipLoadedFilePath() const
+    std::optional<ShipLoadSpecifications> const & GetLastShipLoadedSpecifications() const
     {
-        return mLastShipLoadedFilePath;
+        return mLastShipLoadedSpecifications;
     }
 
-    void SetLastShipLoadedFilePath(std::filesystem::path lastShipLoadedFilePath)
+    void SetLastShipLoadedSpecifications(ShipLoadSpecifications const & lastShipLoadedSpecs)
     {
-        mLastShipLoadedFilePath = std::move(lastShipLoadedFilePath);
+        mLastShipLoadedSpecifications = lastShipLoadedSpecs;
     }
 
     bool GetReloadLastLoadedShipOnStartup() const
@@ -404,7 +405,7 @@ private:
     //
 
     std::vector<std::filesystem::path> mShipLoadDirectories;
-    std::filesystem::path mLastShipLoadedFilePath;
+    std::optional<ShipLoadSpecifications> mLastShipLoadedSpecifications;
     bool mReloadLastLoadedShipOnStartup;
 
     std::filesystem::path mScreenshotsFolderPath;

@@ -8,6 +8,7 @@
 #include "ShipPreviewWindow.h"
 
 #include <Game/ResourceLocator.h>
+#include <Game/ShipLoadSpecifications.h>
 
 #include <UILib/BitmapButton.h>
 
@@ -34,10 +35,11 @@ public:
 
     int ShowModal(std::vector<std::filesystem::path> const & shipLoadDirectories);
 
-    std::filesystem::path GetChosenShipFilepath() const
+    ShipLoadSpecifications GetChosenShipLoadSpecifications() const
     {
         assert(!!mChosenShipFilepath);
-        return *mChosenShipFilepath;
+        // TODOHERE
+        return ShipLoadSpecifications(*mChosenShipFilepath);
     }
 
 private:

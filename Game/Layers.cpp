@@ -92,3 +92,47 @@ TextureLayerData TextureLayerData::MakeReframed(
             originOffset,
             fillerValue));
 }
+
+void ShipLayers::Flip(DirectionType direction)
+{
+    auto const originalSize = StructuralLayer.Buffer.Size;
+
+    StructuralLayer.Buffer.Flip(direction);
+
+    if (ElectricalLayer)
+    {
+        ElectricalLayer->Buffer.Flip(direction);
+    }
+
+    if (RopesLayer)
+    {
+        RopesLayer->Buffer.Flip(direction, originalSize);
+    }
+
+    if (TextureLayer)
+    {
+        TextureLayer->Buffer.Flip(direction);
+    }
+}
+
+void ShipLayers::Rotate90(RotationDirectionType direction)
+{
+    auto const originalSize = StructuralLayer.Buffer.Size;
+
+    StructuralLayer.Buffer.Rotate90(direction);
+
+    if (ElectricalLayer)
+    {
+        ElectricalLayer->Buffer.Rotate90(direction);
+    }
+
+    if (RopesLayer)
+    {
+        RopesLayer->Buffer.Rotate90(direction, originalSize);
+    }
+
+    if (TextureLayer)
+    {
+        TextureLayer->Buffer.Rotate90(direction);
+    }
+}

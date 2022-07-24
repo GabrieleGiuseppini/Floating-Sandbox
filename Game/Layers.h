@@ -15,6 +15,7 @@
 
 #include <cassert>
 #include <map>
+#include <memory>
 
 template <LayerType TLayer>
 struct LayerTypeTraits
@@ -223,4 +224,31 @@ template <>
 struct LayerTypeTraits<LayerType::Texture>
 {
     using layer_data_type = TextureLayerData;
+};
+
+//////////////////////////////////////////////////////////////////
+// All Layers
+//////////////////////////////////////////////////////////////////
+
+struct ShipLayers
+{
+    StructuralLayerData StructuralLayer;
+    std::unique_ptr<ElectricalLayerData> ElectricalLayer;
+    std::unique_ptr<RopesLayerData> RopesLayer;
+    std::unique_ptr<TextureLayerData> TextureLayer;
+
+    ShipLayers(
+        StructuralLayerData && structuralLayer,
+        std::unique_ptr<ElectricalLayerData> && electricalLayer,
+        std::unique_ptr<RopesLayerData> && ropesLayer,
+        std::unique_ptr<TextureLayerData> && textureLayer)
+        : StructuralLayer(std::move(structuralLayer))
+        , ElectricalLayer(std::move(electricalLayer))
+        , RopesLayer(std::move(ropesLayer))
+        , TextureLayer(std::move(textureLayer))
+    {}
+
+    void Flip(DirectionType direction);
+    
+    void Rotate90(RotationDirectionType direction);
 };

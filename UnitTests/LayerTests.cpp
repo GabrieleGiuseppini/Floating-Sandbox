@@ -988,3 +988,141 @@ TEST(LayerTests, TextureLayer_Reframe_Same)
         }
     }
 }
+
+TEST(LayerTests, ShipLayers_Flip)
+{
+    std::vector<StructuralMaterial> structuralMaterials;
+    std::vector<ElectricalMaterial> electricalMaterials;
+
+    //
+    // Create source
+    //
+
+    Buffer2D<StructuralElement, struct ShipSpaceTag> sourceStructuralLayerBuffer(8, 6);
+    uint8_t iVal = 0;
+    for (int y = 0; y < sourceStructuralLayerBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceStructuralLayerBuffer.Size.width; ++x)
+        {
+            structuralMaterials.emplace_back(MakeTestStructuralMaterial("Foo", rgbColor(iVal, iVal, iVal)));
+            sourceStructuralLayerBuffer[ShipSpaceCoordinates(x, y)] = StructuralElement(&(structuralMaterials.back()));
+
+            ++iVal;
+        }
+    }
+
+    Buffer2D<ElectricalElement, struct ShipSpaceTag> sourceElectricalLayerBuffer(8, 6);
+    iVal = 0;
+    for (int y = 0; y < sourceElectricalLayerBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceElectricalLayerBuffer.Size.width; ++x)
+        {
+            electricalMaterials.emplace_back(MakeTestElectricalMaterial("Foo", rgbColor(iVal, iVal, iVal), false));
+            sourceElectricalLayerBuffer[ShipSpaceCoordinates(x, y)] = ElectricalElement(&(electricalMaterials.back()), NoneElectricalElementInstanceIndex);
+
+            ++iVal;
+        }
+    }
+
+    ElectricalPanelMetadata sourcePanel;
+
+    RopeBuffer sourceRopesLayerBuffer;
+    {
+        sourceRopesLayerBuffer.EmplaceBack(
+            ShipSpaceCoordinates(5, 5),
+            ShipSpaceCoordinates(2, 3),
+            nullptr,
+            rgbaColor(1, 2, 3, 4));
+
+        sourceRopesLayerBuffer.EmplaceBack(
+            ShipSpaceCoordinates(1, 1),
+            ShipSpaceCoordinates(2, 2),
+            nullptr,
+            rgbaColor(1, 2, 3, 4));
+    }
+
+    Buffer2D<rgbaColor, struct ImageTag> sourceTextureLayerBuffer(80, 60);
+
+    iVal = 0;
+    for (int y = 0; y < sourceTextureLayerBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceTextureLayerBuffer.Size.width; ++x)
+        {
+            sourceTextureLayerBuffer[ImageCoordinates(x, y)] = rgbaColor(iVal, iVal, iVal, iVal);
+
+            ++iVal;
+        }
+    }
+
+    ShipLayers layers(
+        StructuralLayerData(std::move(sourceStructuralLayerBuffer)),
+        std::make_unique<ElectricalLayerData>(std::move(sourceElectricalLayerBuffer), std::move(sourcePanel)),
+        std::make_unique<RopesLayerData>(std::move(sourceRopesLayerBuffer)),
+        std::make_unique<TextureLayerData>(std::move(sourceTextureLayerBuffer)));
+
+    //
+    // Flip
+    //
+
+    layers.Flip(DirectionType::Horizontal);
+
+    //
+    // Verify
+    //
+
+    ASSERT_EQ(layers.StructuralLayer.Buffer.Size, ShipSpaceSize(8, 6));
+
+    iVal = 0;
+    for (int y = 0; y < layers.StructuralLayer.Buffer.Size.height; ++y)
+    {
+        for (int x = layers.StructuralLayer.Buffer.Size.width - 1; x >= 0; --x)
+        {
+            auto const coords = ShipSpaceCoordinates(x, y);
+            EXPECT_EQ(layers.StructuralLayer.Buffer[coords].Material->ColorKey, rgbColor(iVal, iVal, iVal));
+
+            ++iVal;
+        }
+    }
+
+
+    ASSERT_TRUE(layers.ElectricalLayer);
+    ASSERT_EQ(layers.ElectricalLayer->Buffer.Size, ShipSpaceSize(8, 6));
+
+    iVal = 0;
+    for (int y = 0; y < layers.ElectricalLayer->Buffer.Size.height; ++y)
+    {
+        for (int x = layers.ElectricalLayer->Buffer.Size.width - 1; x >= 0; --x)
+        {
+            auto const coords = ShipSpaceCoordinates(x, y);
+            EXPECT_EQ(layers.ElectricalLayer->Buffer[coords].Material->ColorKey, rgbColor(iVal, iVal, iVal));
+
+            ++iVal;
+        }
+    }
+
+
+    ASSERT_TRUE(layers.RopesLayer);
+    ASSERT_EQ(layers.RopesLayer->Buffer.GetSize(), 2u);
+
+    EXPECT_EQ(layers.RopesLayer->Buffer[0].StartCoords, ShipSpaceCoordinates(2, 5));
+    EXPECT_EQ(layers.RopesLayer->Buffer[0].EndCoords, ShipSpaceCoordinates(5, 3));
+
+    EXPECT_EQ(layers.RopesLayer->Buffer[1].StartCoords, ShipSpaceCoordinates(6, 1));
+    EXPECT_EQ(layers.RopesLayer->Buffer[1].EndCoords, ShipSpaceCoordinates(5, 2));
+
+
+    ASSERT_TRUE(layers.TextureLayer);
+    ASSERT_EQ(layers.TextureLayer->Buffer.Size, ImageSize(80, 60));
+
+    iVal = 0;
+    for (int y = 0; y < layers.TextureLayer->Buffer.Size.height; ++y)
+    {
+        for (int x = layers.TextureLayer->Buffer.Size.width - 1; x >= 0; --x)
+        {
+            auto const coords = ImageCoordinates(x, y);
+            EXPECT_EQ(layers.TextureLayer->Buffer[coords], rgbaColor(iVal, iVal, iVal, iVal));
+
+            ++iVal;
+        }
+    }
+}

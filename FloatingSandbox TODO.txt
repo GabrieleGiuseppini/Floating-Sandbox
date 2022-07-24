@@ -1319,14 +1319,27 @@
 		= Toolbar:
 			+ Above preview window
 			+ Move "Info" button here
-			- Flip H and V (toggle buttons, wxBitmapToggleButton)
-				- Given as flags to ShipFactory, hence must be returned by ShipLoadDialog to caller
-				- ShipLayers class (@ existing Layers.cpp/h), with Flip() methods applied to all layers
+			= Flip H and V, Rotate 90 CCW (toggle buttons, wxBitmapToggleButton)
+				- UI
+					- ForShipBuilder: password-protected
+						- flag goes into ShipPreview
+				= Given as ShipLoadSpecifications to ShipFactory, hence must be returned by ShipLoadDialog to caller
+				+ FS::MainFrame handles ShipLoadSpecifications
+					+ Should also have UIPreferencesManager remember ShipLoadSpecs at LastShipLoadedFilePath, instead of just file path
+				- SB::MainFrame deals with ShipLoadSpecifications - but only stores path
+					- ShipLoadDialog cctor takes enum - ForGame, ForShipBuilder
+					- ShipLoadOptions is optional
+				= ShipLayers class (@ existing Layers.cpp/h), with Flip() methods applied to all layers
+					+ Class
+						+ Flip, Rotate
 					- Used at ShipDefinition
-						- And ShipFactory calls Flip() on it
 					- Used at ShipLayers also @ ShipBuilder::Model
-						- ...and thus also implement Clone(), Trim(), Rotate(), etc.
-					- Unit tests
+						- ...and thus also used for implementation of Clone(), Trim()/ResizeShip(), Rotate(), etc.
+					+ Unit tests
+				- ShipFactory uses it
+				- Tests:
+					- Main: reload this ship, reload previous ship,
+					- Last ship specs saved and then loaded in preferences
 			+ Sort method, as:
 				+ BitmapButton, showing currently-selected sorting method
 					+ When clicking on it, popup appears with horizonal buttons
@@ -1397,6 +1410,7 @@
 			+ Move "Ok/Cancel" buttons below next to dir dropdown (taking place of "search")
 		- Tests:
 			- Sorting:
+				- Last modified: E2E
 				- Slow population
 					- Do artificial 100ms sleep @ thread
 				- Year built: the string sorting that we do matches year numeric

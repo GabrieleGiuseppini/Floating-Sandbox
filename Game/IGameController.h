@@ -9,6 +9,7 @@
 #include "IGameEventHandlers.h"
 #include "ResourceLocator.h"
 #include "ShipAutoTexturizationSettings.h"
+#include "ShipLoadSpecifications.h"
 #include "ShipMetadata.h"
 
 #include <GameCore/Colors.h>
@@ -40,9 +41,9 @@ struct IGameController
     virtual void RegisterElectricalElementEventHandler(IElectricalElementGameEventHandler * handler) = 0;
     virtual void RegisterGenericEventHandler(IGenericGameEventHandler * handler) = 0;
 
-    virtual ShipMetadata ResetAndLoadShip(std::filesystem::path const & shipDefinitionFilepath) = 0;
-    virtual ShipMetadata ResetAndReloadShip(std::filesystem::path const & shipDefinitionFilepath) = 0;
-    virtual ShipMetadata AddShip(std::filesystem::path const & shipDefinitionFilepath) = 0;
+    virtual ShipMetadata ResetAndLoadShip(ShipLoadSpecifications const & loadSpecs) = 0;
+    virtual ShipMetadata ResetAndReloadShip(ShipLoadSpecifications const & loadSpecs) = 0;
+    virtual ShipMetadata AddShip(ShipLoadSpecifications const & loadSpecs) = 0;
 
     virtual RgbImageData TakeScreenshot() = 0;
 
