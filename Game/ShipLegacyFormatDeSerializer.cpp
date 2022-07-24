@@ -720,10 +720,11 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImages(
     // Bake definition
     return ShipDefinition(
         shipSize,
-        std::move(structuralLayer),
-        hasElectricalElements ? std::make_unique<ElectricalLayerData>(std::move(electricalLayer)) : nullptr,
-        hasRopeElements ? std::make_unique<RopesLayerData>(std::move(ropesLayer)) : nullptr,
-        std::move(textureLayer),
+        ShipLayers(
+            std::move(structuralLayer),
+            hasElectricalElements ? std::make_unique<ElectricalLayerData>(std::move(electricalLayer)) : nullptr,
+            hasRopeElements ? std::make_unique<RopesLayerData>(std::move(ropesLayer)) : nullptr,
+            std::move(textureLayer)),
         metadata,
         physicsData,
         autoTexturizationSettings);

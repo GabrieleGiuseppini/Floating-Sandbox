@@ -257,8 +257,8 @@ ShipMetadata GameController::AddShip(ShipLoadSpecifications const & loadSpecs)
     auto shipDefinition = ShipDeSerializer::LoadShip(loadSpecs.DefinitionFilepath, mMaterialDatabase);
 
     // Pre-validate ship's texture, if any
-    if (shipDefinition.TextureLayer)
-        mRenderContext->ValidateShipTexture(shipDefinition.TextureLayer->Buffer);
+    if (shipDefinition.Layers.TextureLayer)
+        mRenderContext->ValidateShipTexture(shipDefinition.Layers.TextureLayer->Buffer);
 
     // Remember metadata
     ShipMetadata shipMetadata(shipDefinition.Metadata);
@@ -1353,8 +1353,8 @@ ShipMetadata GameController::InternalResetAndLoadShip(ShipLoadSpecifications con
     auto shipDefinition = ShipDeSerializer::LoadShip(loadSpecs.DefinitionFilepath, mMaterialDatabase);
 
     // Pre-validate ship's texture
-    if (shipDefinition.TextureLayer)
-        mRenderContext->ValidateShipTexture(shipDefinition.TextureLayer->Buffer);
+    if (shipDefinition.Layers.TextureLayer)
+        mRenderContext->ValidateShipTexture(shipDefinition.Layers.TextureLayer->Buffer);
 
     // Save metadata
     ShipMetadata shipMetadata(shipDefinition.Metadata);

@@ -63,10 +63,12 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
     (void)shipLoadOptions;
 
     //
-    // Process materialized ship layer and:
+    // Process structural ship layer and:
     // - Create ShipFactoryPoint's for each particle, including ropes' endpoints
     // - Build a 2D matrix containing indices to the particles
     //
+
+    auto const & structuralLayerBuffer = shipDefinition.Layers.StructuralLayer.Buffer;
 
     float const halfShipWidth = static_cast<float>(shipDefinition.Size.width) / 2.0f;
     float const shipSpaceToWorldSpaceFactor = shipDefinition.Metadata.Scale.outputUnits / shipDefinition.Metadata.Scale.inputUnits;
@@ -93,7 +95,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
 
             // Get structural material properties
 
-            StructuralMaterial const * structuralMaterial = shipDefinition.StructuralLayer.Buffer[coords].Material;
+            StructuralMaterial const * structuralMaterial = structuralLayerBuffer[coords].Material;
 
             rgbaColor structuralMaterialRenderColor = (structuralMaterial != nullptr)
                 ? structuralMaterial->RenderColor
@@ -108,17 +110,17 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
                 : false;
 
             // Check if there's a rope endpoint here
-            if (shipDefinition.RopesLayer)
+            if (shipDefinition.Layers.RopesLayer)
             {
                 auto const ropeSearchIt = std::find_if(
-                    shipDefinition.RopesLayer->Buffer.cbegin(),
-                    shipDefinition.RopesLayer->Buffer.cend(),
+                    shipDefinition.Layers.RopesLayer->Buffer.cbegin(),
+                    shipDefinition.Layers.RopesLayer->Buffer.cend(),
                     [&coords](RopeElement const & e)
                     {
                         return e.StartCoords == coords || e.EndCoords == coords;
                     });
 
-                if (ropeSearchIt != shipDefinition.RopesLayer->Buffer.cend())
+                if (ropeSearchIt != shipDefinition.Layers.RopesLayer->Buffer.cend())
                 {
                     //
                     // There is a rope endpoint here
@@ -180,10 +182,10 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
                     water);
 
                 // Eventually decorate with electrical layer information
-                if (shipDefinition.ElectricalLayer && shipDefinition.ElectricalLayer->Buffer[coords].Material != nullptr)
+                if (shipDefinition.Layers.ElectricalLayer && shipDefinition.Layers.ElectricalLayer->Buffer[coords].Material != nullptr)
                 {
-                    pointInfos1.back().ElectricalMtl = shipDefinition.ElectricalLayer->Buffer[coords].Material;
-                    pointInfos1.back().ElectricalElementInstanceIdx = shipDefinition.ElectricalLayer->Buffer[coords].InstanceIndex;
+                    pointInfos1.back().ElectricalMtl = shipDefinition.Layers.ElectricalLayer->Buffer[coords].Material;
+                    pointInfos1.back().ElectricalElementInstanceIdx = shipDefinition.Layers.ElectricalLayer->Buffer[coords].InstanceIndex;
                 }
 
                 //
@@ -213,10 +215,10 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
 
     PointPairToIndexMap pointPairToSpringIndex1Map;
 
-    if (shipDefinition.RopesLayer)
+    if (shipDefinition.Layers.RopesLayer)
     {
         AppendRopes(
-            shipDefinition.RopesLayer->Buffer,
+            shipDefinition.Layers.RopesLayer->Buffer,
             shipDefinition.Size,
             pointIndexMatrix,
             pointInfos1,
@@ -378,8 +380,8 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
     ElectricalElements electricalElements = CreateElectricalElements(
         points,
         electricalElementInstanceIndices,
-        shipDefinition.ElectricalLayer != nullptr
-            ? shipDefinition.ElectricalLayer->Panel
+        shipDefinition.Layers.ElectricalLayer
+            ? shipDefinition.Layers.ElectricalLayer->Panel
             : ElectricalPanelMetadata(),
         shipId,
         parentWorld,
@@ -399,10 +401,10 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
     // Create texture, if needed
     //
 
-    RgbaImageData textureImage = shipDefinition.TextureLayer
-        ? std::move(shipDefinition.TextureLayer->Buffer) // Use provided texture
+    RgbaImageData textureImage = shipDefinition.Layers.TextureLayer
+        ? std::move(shipDefinition.Layers.TextureLayer->Buffer) // Use provided texture
         : shipTexturizer.MakeAutoTexture(
-            shipDefinition.StructuralLayer,
+            shipDefinition.Layers.StructuralLayer,
             shipDefinition.AutoTexturizationSettings); // Auto-texturize
 
     //

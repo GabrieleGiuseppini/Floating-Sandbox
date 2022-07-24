@@ -4239,14 +4239,14 @@ void MainFrame::ImportLayerFromShip(LayerType layer)
         {
             case LayerType::Electrical:
             {
-                if (!shipDefinition->ElectricalLayer)
+                if (!shipDefinition->Layers.ElectricalLayer)
                 {
                     ShowError(_("The selected ship does not have an electrical layer"));
                     return;
                 }
 
                 // Reframe loaded layer to fit our model's size
-                ElectricalLayerData newElectricalLayer = shipDefinition->ElectricalLayer->MakeReframed(
+                ElectricalLayerData newElectricalLayer = shipDefinition->Layers.ElectricalLayer->MakeReframed(
                     mController->GetModelController().GetShipSize(),
                     ShipSpaceCoordinates(0, 0),
                     ElectricalElement(nullptr, NoneElectricalElementInstanceIndex));
@@ -4260,14 +4260,14 @@ void MainFrame::ImportLayerFromShip(LayerType layer)
 
             case LayerType::Ropes:
             {
-                if (!shipDefinition->RopesLayer)
+                if (!shipDefinition->Layers.RopesLayer)
                 {
                     ShowError(_("The selected ship does not have a ropes layer"));
                     return;
                 }
 
                 // Reframe loaded layer to fit our model's size
-                RopesLayerData newRopesLayer = shipDefinition->RopesLayer->MakeReframed(
+                RopesLayerData newRopesLayer = shipDefinition->Layers.RopesLayer->MakeReframed(
                     mController->GetModelController().GetShipSize(),
                     ShipSpaceCoordinates(0, 0));
 
@@ -4281,7 +4281,7 @@ void MainFrame::ImportLayerFromShip(LayerType layer)
             case LayerType::Structural:
             {
                 // Reframe loaded layer to fit our model's size
-                StructuralLayerData newStructuralLayer = shipDefinition->StructuralLayer.MakeReframed(
+                StructuralLayerData newStructuralLayer = shipDefinition->Layers.StructuralLayer.MakeReframed(
                     mController->GetModelController().GetShipSize(),
                     ShipSpaceCoordinates(0, 0),
                     StructuralElement(nullptr));
@@ -4295,7 +4295,7 @@ void MainFrame::ImportLayerFromShip(LayerType layer)
 
             case LayerType::Texture:
             {
-                if (!shipDefinition->TextureLayer)
+                if (!shipDefinition->Layers.TextureLayer)
                 {
                     ShowError(_("The selected ship does not have a texture layer"));
                     return;
@@ -4305,7 +4305,7 @@ void MainFrame::ImportLayerFromShip(LayerType layer)
                 // we'll leave it to the user, though, to ensure the *ratio* matches
                 mController->SetTextureLayer(
                     _("Import Texture Layer"),
-                    std::move(*(shipDefinition->TextureLayer.release())),
+                    std::move(*(shipDefinition->Layers.TextureLayer.release())),
                     shipDefinition->Metadata.ArtCredits); // Import also art credits
 
                 break;

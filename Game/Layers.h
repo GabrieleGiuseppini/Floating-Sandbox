@@ -248,6 +248,21 @@ struct ShipLayers
         , TextureLayer(std::move(textureLayer))
     {}
 
+    bool HasElectricalLayer() const
+    {
+        return (bool)ElectricalLayer;
+    }
+
+    bool HasRopesLayer() const
+    {
+        return (bool)RopesLayer;
+    }
+
+    bool HasTextureLayer() const
+    {
+        return (bool)TextureLayer;
+    }
+
     void Flip(DirectionType direction);
     
     void Rotate90(RotationDirectionType direction);

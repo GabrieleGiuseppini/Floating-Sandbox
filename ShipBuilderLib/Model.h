@@ -97,13 +97,29 @@ public:
 
     void SetElectricalPanelMetadata(ElectricalPanelMetadata && panelMetadata)
     {
-        assert(mElectricalLayer);
-        mElectricalLayer->Panel = panelMetadata;
+        assert(mLayers.ElectricalLayer);
+        mLayers.ElectricalLayer->Panel = panelMetadata;
     }
 
     bool HasLayer(LayerType layer) const
     {
-        return mLayerPresenceMap[static_cast<size_t>(layer)];
+        switch (layer)
+        {
+            case LayerType::Structural:
+                return true;
+
+            case LayerType::Electrical:
+                return mLayers.HasElectricalLayer();
+
+            case LayerType::Ropes:
+                return mLayers.HasRopesLayer();
+
+            case LayerType::Texture:
+                return mLayers.HasTextureLayer();
+        }
+
+        assert(false);
+        return false;
     }
 
     ModelDirtyState const & GetDirtyState() const
@@ -136,7 +152,7 @@ public:
     {
         for (size_t l = 0; l < LayerCount; ++l)
         {
-            mDirtyState.IsLayerDirtyMap[l] |= mLayerPresenceMap[l];
+            mDirtyState.IsLayerDirtyMap[l] |= HasLayer(static_cast<LayerType>(l));
         }
 
         mDirtyState.GlobalIsDirty = true;
@@ -158,38 +174,35 @@ public:
     {
         if constexpr (TLayer == LayerType::Structural)
         {
-            assert(mStructuralLayer);
-            return mStructuralLayer->Clone();
+            return mLayers.StructuralLayer.Clone();
         }
         else if constexpr (TLayer == LayerType::Electrical)
         {
-            assert(mElectricalLayer);
-            return mElectricalLayer->Clone();
+            assert(mLayers.ElectricalLayer);
+            return mLayers.ElectricalLayer->Clone();
         }
         else if constexpr (TLayer == LayerType::Ropes)
         {
-            assert(mRopesLayer);
-            return mRopesLayer->Clone();
+            assert(mLayers.RopesLayer);
+            return mLayers.RopesLayer->Clone();
         }
         else
         {
             static_assert(TLayer == LayerType::Texture);
 
-            assert(mTextureLayer);
-            return mTextureLayer->Clone();
+            assert(mLayers.TextureLayer);
+            return mLayers.TextureLayer->Clone();
         }
     }
 
     StructuralLayerData const & GetStructuralLayer() const
     {
-        assert(mStructuralLayer);
-        return *mStructuralLayer;
+        return mLayers.StructuralLayer;
     }
 
     StructuralLayerData & GetStructuralLayer()
     {
-        assert(mStructuralLayer);
-        return *mStructuralLayer;
+        return mLayers.StructuralLayer;
     }
 
     void SetStructuralLayer(StructuralLayerData && structuralLayer);
@@ -199,14 +212,14 @@ public:
 
     ElectricalLayerData const & GetElectricalLayer() const
     {
-        assert(mElectricalLayer);
-        return *mElectricalLayer;
+        assert(mLayers.ElectricalLayer);
+        return *mLayers.ElectricalLayer;
     }
 
     ElectricalLayerData & GetElectricalLayer()
     {
-        assert(mElectricalLayer);
-        return *mElectricalLayer;
+        assert(mLayers.ElectricalLayer);
+        return *mLayers.ElectricalLayer;
     }
 
     void SetElectricalLayer(ElectricalLayerData && electricalLayer);
@@ -217,14 +230,14 @@ public:
 
     RopesLayerData const & GetRopesLayer() const
     {
-        assert(mRopesLayer);
-        return *mRopesLayer;
+        assert(mLayers.RopesLayer);
+        return *mLayers.RopesLayer;
     }
 
     RopesLayerData & GetRopesLayer()
     {
-        assert(mRopesLayer);
-        return *mRopesLayer;
+        assert(mLayers.RopesLayer);
+        return *mLayers.RopesLayer;
     }
 
     void SetRopesLayer(RopesLayerData && ropesLayer);
@@ -235,14 +248,14 @@ public:
 
     TextureLayerData const & GetTextureLayer() const
     {
-        assert(mTextureLayer);
-        return *mTextureLayer;
+        assert(mLayers.TextureLayer);
+        return *mLayers.TextureLayer;
     }
 
     TextureLayerData & GetTextureLayer()
     {
-        assert(mTextureLayer);
-        return *mTextureLayer;
+        assert(mLayers.TextureLayer);
+        return *mLayers.TextureLayer;
     }
 
     void SetTextureLayer(TextureLayerData && textureLayer);
@@ -253,7 +266,7 @@ public:
 
 private:
 
-    static std::unique_ptr<StructuralLayerData> MakeNewEmptyStructuralLayer(ShipSpaceSize const & shipSize);
+    static StructuralLayerData MakeNewEmptyStructuralLayer(ShipSpaceSize const & shipSize);
 
 private:
 
@@ -263,24 +276,11 @@ private:
     ShipPhysicsData mShipPhysicsData;
     std::optional<ShipAutoTexturizationSettings> mShipAutoTexturizationSettings;
 
-    //
-    // Layers
-    //
-
-    std::unique_ptr<StructuralLayerData> mStructuralLayer;
-
-    std::unique_ptr<ElectricalLayerData> mElectricalLayer;
-
-    std::unique_ptr<RopesLayerData> mRopesLayer;
-
-    std::unique_ptr<TextureLayerData> mTextureLayer;
+    ShipLayers mLayers;
 
     //
     // Misc state
     //
-
-    // Layer presence map (cached)
-    std::array<bool, LayerCount> mLayerPresenceMap;
 
     // Dirty state
     ModelDirtyState mDirtyState;
