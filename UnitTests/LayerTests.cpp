@@ -12,15 +12,15 @@ TEST(LayerTests, StructuralLayer_Trim)
 
     Buffer2D<StructuralElement, struct ShipSpaceTag> sourceBuffer(8, 6);
 
-    std::vector<StructuralMaterial> materials;
+    std::vector<std::unique_ptr<StructuralMaterial>> materials;
 
     uint8_t iVal = 2;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
         for (int x = 0; x < sourceBuffer.Size.width; ++x)
         {
-            materials.emplace_back(MakeTestStructuralMaterial("Foo", rgbColor(iVal, iVal + 1, iVal + 2)));
-            sourceBuffer[ShipSpaceCoordinates(x, y)] = StructuralElement(&(materials.back()));
+            materials.emplace_back(new StructuralMaterial(MakeTestStructuralMaterial("Foo", rgbColor(iVal, iVal + 1, iVal + 2))));
+            sourceBuffer[ShipSpaceCoordinates(x, y)] = StructuralElement(materials.back().get());
         }
     }
 
@@ -67,15 +67,15 @@ TEST(LayerTests, StructuralLayer_Reframe_Smaller)
 
     Buffer2D<StructuralElement, struct ShipSpaceTag> sourceBuffer(8, 6);
 
-    std::vector<StructuralMaterial> materials;
+    std::vector<std::unique_ptr<StructuralMaterial>> materials;
 
     uint8_t iVal = 2;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
         for (int x = 0; x < sourceBuffer.Size.width; ++x)
         {
-            materials.emplace_back(MakeTestStructuralMaterial("Foo", rgbColor(iVal, iVal + 1, iVal + 2)));
-            sourceBuffer[ShipSpaceCoordinates(x, y)] = StructuralElement(&(materials.back()));
+            materials.emplace_back(new StructuralMaterial(MakeTestStructuralMaterial("Foo", rgbColor(iVal, iVal + 1, iVal + 2))));
+            sourceBuffer[ShipSpaceCoordinates(x, y)] = StructuralElement(materials.back().get());
         }
     }
 
@@ -121,15 +121,15 @@ TEST(LayerTests, StructuralLayer_Reframe_Larger)
 
     Buffer2D<StructuralElement, struct ShipSpaceTag> sourceBuffer(4, 4);
 
-    std::vector<StructuralMaterial> materials;
+    std::vector<std::unique_ptr<StructuralMaterial>> materials;
 
     uint8_t iVal = 2;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
         for (int x = 0; x < sourceBuffer.Size.width; ++x)
         {
-            materials.emplace_back(MakeTestStructuralMaterial("Foo", rgbColor(iVal, iVal + 1, iVal + 2)));
-            sourceBuffer[ShipSpaceCoordinates(x, y)] = StructuralElement(&(materials.back()));
+            materials.emplace_back(new StructuralMaterial(MakeTestStructuralMaterial("Foo", rgbColor(iVal, iVal + 1, iVal + 2))));
+            sourceBuffer[ShipSpaceCoordinates(x, y)] = StructuralElement(materials.back().get());
         }
     }
 
@@ -175,15 +175,15 @@ TEST(LayerTests, StructuralLayer_Reframe_Same)
 
     Buffer2D<StructuralElement, struct ShipSpaceTag> sourceBuffer(8, 8);
 
-    std::vector<StructuralMaterial> materials;
+    std::vector<std::unique_ptr<StructuralMaterial>> materials;
 
     uint8_t iVal = 2;
     for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
         for (int x = 0; x < sourceBuffer.Size.width; ++x)
         {
-            materials.emplace_back(MakeTestStructuralMaterial("Foo", rgbColor(iVal, iVal + 1, iVal + 2)));
-            sourceBuffer[ShipSpaceCoordinates(x, y)] = StructuralElement(&(materials.back()));
+            materials.emplace_back(new StructuralMaterial(MakeTestStructuralMaterial("Foo", rgbColor(iVal, iVal + 1, iVal + 2))));
+            sourceBuffer[ShipSpaceCoordinates(x, y)] = StructuralElement(materials.back().get());
         }
     }
 
@@ -223,7 +223,7 @@ TEST(LayerTests, ElectricalLayer_Clone_Smaller)
     Buffer2D<ElectricalElement, struct ShipSpaceTag> sourceBuffer(8, 6);
     ElectricalPanelMetadata sourcePanel;
 
-    std::vector<ElectricalMaterial> materials;
+    std::vector<std::unique_ptr<ElectricalMaterial>> materials;
 
     uint8_t iVal = 2;
     ElectricalElementInstanceIndex curIdx = 0;
@@ -241,9 +241,9 @@ TEST(LayerTests, ElectricalLayer_Clone_Smaller)
                 "Foo",
                 false);
 
-            materials.emplace_back(MakeTestElectricalMaterial("Foo", rgbColor(iVal, iVal + 1, iVal + 2), idx != NoneElectricalElementInstanceIndex));
+            materials.emplace_back(new ElectricalMaterial(MakeTestElectricalMaterial("Foo", rgbColor(iVal, iVal + 1, iVal + 2), idx != NoneElectricalElementInstanceIndex)));
 
-            sourceBuffer[coords] = ElectricalElement(&(materials.back()), idx);
+            sourceBuffer[coords] = ElectricalElement(materials.back().get(), idx);
         }
     }
 
@@ -303,7 +303,7 @@ TEST(LayerTests, ElectricalLayer_Trim)
     Buffer2D<ElectricalElement, struct ShipSpaceTag> sourceBuffer(8, 6);
     ElectricalPanelMetadata sourcePanel;
 
-    std::vector<ElectricalMaterial> materials;
+    std::vector<std::unique_ptr<ElectricalMaterial>> materials;
 
     uint8_t iVal = 2;
     ElectricalElementInstanceIndex curIdx = 0;
@@ -321,9 +321,9 @@ TEST(LayerTests, ElectricalLayer_Trim)
                 "Foo",
                 false);
 
-            materials.emplace_back(MakeTestElectricalMaterial("Foo", rgbColor(iVal, iVal + 1, iVal + 2), idx != NoneElectricalElementInstanceIndex));
+            materials.emplace_back(new ElectricalMaterial(MakeTestElectricalMaterial("Foo", rgbColor(iVal, iVal + 1, iVal + 2), idx != NoneElectricalElementInstanceIndex)));
 
-            sourceBuffer[coords] = ElectricalElement(&(materials.back()), idx);
+            sourceBuffer[coords] = ElectricalElement(materials.back().get(), idx);
         }
     }
 
@@ -384,7 +384,7 @@ TEST(LayerTests, ElectricalLayer_Reframe_Smaller)
     Buffer2D<ElectricalElement, struct ShipSpaceTag> sourceBuffer(8, 6);
     ElectricalPanelMetadata sourcePanel;
 
-    std::vector<ElectricalMaterial> materials;
+    std::vector<std::unique_ptr<ElectricalMaterial>> materials;
 
     uint8_t iVal = 2;
     ElectricalElementInstanceIndex curIdx = 1;
@@ -413,9 +413,9 @@ TEST(LayerTests, ElectricalLayer_Reframe_Smaller)
                 idx = NoneElectricalElementInstanceIndex;
             }
 
-            materials.emplace_back(MakeTestElectricalMaterial("Foo", rgbColor(iVal, iVal + 1, iVal + 2), idx != NoneElectricalElementInstanceIndex));
+            materials.emplace_back(new ElectricalMaterial(MakeTestElectricalMaterial("Foo", rgbColor(iVal, iVal + 1, iVal + 2), idx != NoneElectricalElementInstanceIndex)));
 
-            sourceBuffer[ShipSpaceCoordinates(x, y)] = ElectricalElement(&(materials.back()), idx);
+            sourceBuffer[ShipSpaceCoordinates(x, y)] = ElectricalElement(materials.back().get(), idx);
         }
     }
 
@@ -487,7 +487,7 @@ TEST(LayerTests, ElectricalLayer_Reframe_Larger)
     Buffer2D<ElectricalElement, struct ShipSpaceTag> sourceBuffer(4, 4);
     ElectricalPanelMetadata sourcePanel;
 
-    std::vector<ElectricalMaterial> materials;
+    std::vector<std::unique_ptr<ElectricalMaterial>> materials;
 
     uint8_t iVal = 2;
     ElectricalElementInstanceIndex curIdx = 1;
@@ -515,9 +515,9 @@ TEST(LayerTests, ElectricalLayer_Reframe_Larger)
                 idx = NoneElectricalElementInstanceIndex;
             }
 
-            materials.emplace_back(MakeTestElectricalMaterial("Foo", rgbColor(iVal, iVal + 1, iVal + 2), idx != NoneElectricalElementInstanceIndex));
+            materials.emplace_back(new ElectricalMaterial(MakeTestElectricalMaterial("Foo", rgbColor(iVal, iVal + 1, iVal + 2), idx != NoneElectricalElementInstanceIndex)));
 
-            sourceBuffer[ShipSpaceCoordinates(x, y)] = ElectricalElement(&(materials.back()), idx);
+            sourceBuffer[ShipSpaceCoordinates(x, y)] = ElectricalElement(materials.back().get(), idx);
         }
     }
 
@@ -573,7 +573,7 @@ TEST(LayerTests, ElectricalLayer_Reframe_Same)
     Buffer2D<ElectricalElement, struct ShipSpaceTag> sourceBuffer(8, 8);
     ElectricalPanelMetadata sourcePanel;
 
-    std::vector<ElectricalMaterial> materials;
+    std::vector<std::unique_ptr<ElectricalMaterial>> materials;
 
     uint8_t iVal = 2;
     ElectricalElementInstanceIndex curIdx = 1;
@@ -602,9 +602,9 @@ TEST(LayerTests, ElectricalLayer_Reframe_Same)
                 idx = NoneElectricalElementInstanceIndex;
             }
 
-            materials.emplace_back(MakeTestElectricalMaterial("Foo", rgbColor(iVal, iVal + 1, iVal + 2), idx != NoneElectricalElementInstanceIndex));
+            materials.emplace_back(new ElectricalMaterial(MakeTestElectricalMaterial("Foo", rgbColor(iVal, iVal + 1, iVal + 2), idx != NoneElectricalElementInstanceIndex)));
 
-            sourceBuffer[ShipSpaceCoordinates(x, y)] = ElectricalElement(&(materials.back()), idx);
+            sourceBuffer[ShipSpaceCoordinates(x, y)] = ElectricalElement(materials.back().get(), idx);
         }
     }
 
@@ -991,8 +991,8 @@ TEST(LayerTests, TextureLayer_Reframe_Same)
 
 TEST(LayerTests, ShipLayers_Flip)
 {
-    std::vector<StructuralMaterial> structuralMaterials;
-    std::vector<ElectricalMaterial> electricalMaterials;
+    std::vector<std::unique_ptr<StructuralMaterial>> structuralMaterials;
+    std::vector<std::unique_ptr<ElectricalMaterial>> electricalMaterials;
 
     //
     // Create source
@@ -1004,8 +1004,8 @@ TEST(LayerTests, ShipLayers_Flip)
     {
         for (int x = 0; x < sourceStructuralLayerBuffer.Size.width; ++x)
         {
-            structuralMaterials.emplace_back(MakeTestStructuralMaterial("Foo", rgbColor(iVal, iVal, iVal)));
-            sourceStructuralLayerBuffer[ShipSpaceCoordinates(x, y)] = StructuralElement(&(structuralMaterials.back()));
+            structuralMaterials.emplace_back(new StructuralMaterial(MakeTestStructuralMaterial("Foo", rgbColor(iVal, iVal, iVal))));
+            sourceStructuralLayerBuffer[ShipSpaceCoordinates(x, y)] = StructuralElement(structuralMaterials.back().get());
 
             ++iVal;
         }
@@ -1017,8 +1017,8 @@ TEST(LayerTests, ShipLayers_Flip)
     {
         for (int x = 0; x < sourceElectricalLayerBuffer.Size.width; ++x)
         {
-            electricalMaterials.emplace_back(MakeTestElectricalMaterial("Foo", rgbColor(iVal, iVal, iVal), false));
-            sourceElectricalLayerBuffer[ShipSpaceCoordinates(x, y)] = ElectricalElement(&(electricalMaterials.back()), NoneElectricalElementInstanceIndex);
+            electricalMaterials.emplace_back(new ElectricalMaterial(MakeTestElectricalMaterial("Foo", rgbColor(iVal, iVal, iVal), false)));
+            sourceElectricalLayerBuffer[ShipSpaceCoordinates(x, y)] = ElectricalElement(electricalMaterials.back().get(), NoneElectricalElementInstanceIndex);
 
             ++iVal;
         }
@@ -1083,7 +1083,6 @@ TEST(LayerTests, ShipLayers_Flip)
             ++iVal;
         }
     }
-
 
     ASSERT_TRUE(layers.ElectricalLayer);
     ASSERT_EQ(layers.ElectricalLayer->Buffer.Size, ShipSpaceSize(8, 6));

@@ -1326,16 +1326,18 @@
 				= Given as ShipLoadSpecifications to ShipFactory, hence must be returned by ShipLoadDialog to caller
 				+ FS::MainFrame handles ShipLoadSpecifications
 					+ Should also have UIPreferencesManager remember ShipLoadSpecs at LastShipLoadedFilePath, instead of just file path
-				- SB::MainFrame deals with ShipLoadSpecifications - but only stores path
-					- ShipLoadDialog cctor takes enum - ForGame, ForShipBuilder
-					- ShipLoadOptions is optional
+				+ SB::MainFrame deals with ShipLoadSpecifications - but only stores path
+					+ ShipLoadDialog templated on enum - ForGame, ForShipBuilder
 				= ShipLayers class (@ existing Layers.cpp/h), with Flip() methods applied to all layers
 					+ Class
 						+ Flip, Rotate
 					- Used at ShipDefinition
 					- Used at ShipLayers also @ ShipBuilder::Model
 						- ...and thus also used for implementation of Clone(), Trim()/ResizeShip(), Rotate(), etc.
-					+ Unit tests
+					= Unit tests
+						+ FlipH
+						- FlipV
+						- Rotate90
 				- ShipFactory uses it
 				- Tests:
 					- Main: reload this ship, reload previous ship,

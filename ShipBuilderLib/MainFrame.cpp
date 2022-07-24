@@ -364,7 +364,7 @@ MainFrame::MainFrame(
         wxEmptyString,
         this);
 
-    mShipLoadDialog = std::make_unique<ShipLoadDialog>(
+    mShipLoadDialog = std::make_unique<ShipLoadDialog<ShipLoadDialogUsageType::ForShipBuilder>>(
         this,
         mResourceLocator);
 
@@ -4129,7 +4129,7 @@ void MainFrame::LoadShip()
     if (res == wxID_OK)
     {
         // Load ship
-        auto const shipFilePath = mShipLoadDialog->GetChosenShipFilepath();
+        std::filesystem::path const shipFilePath = mShipLoadDialog->GetChosenShip();
         DoLoadShip(shipFilePath); // Ignore eventual failure
 
         // Store directory in preferences
@@ -4226,7 +4226,7 @@ void MainFrame::ImportLayerFromShip(LayerType layer)
     auto const res = mShipLoadDialog->ShowModal(mWorkbenchState.GetShipLoadDirectories());
     if (res == wxID_OK)
     {
-        auto const shipFilePath = mShipLoadDialog->GetChosenShipFilepath();
+        std::filesystem::path const shipFilePath = mShipLoadDialog->GetChosenShip();
 
         std::optional<ShipDefinition> shipDefinition = DoLoadShipDefinitionAndCheckPassword(shipFilePath);
         if (!shipDefinition.has_value())

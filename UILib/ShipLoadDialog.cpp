@@ -17,7 +17,8 @@
 constexpr int MinDirCtrlWidth = 260;
 constexpr int MaxDirComboWidth = 650;
 
-ShipLoadDialog::ShipLoadDialog(
+template<ShipLoadDialogUsageType TUsageType>
+ShipLoadDialog<TUsageType>::ShipLoadDialog(
     wxWindow * parent,
     ResourceLocator const & resourceLocator)
     : mParent(parent)
@@ -483,11 +484,13 @@ ShipLoadDialog::ShipLoadDialog(
     ReconciliateUIWithSortMethod();
 }
 
-ShipLoadDialog::~ShipLoadDialog()
+template<ShipLoadDialogUsageType TUsageType>
+ShipLoadDialog<TUsageType>::~ShipLoadDialog()
 {
 }
 
-int ShipLoadDialog::ShowModal(std::vector<std::filesystem::path> const & shipLoadDirectories)
+template<ShipLoadDialogUsageType TUsageType>
+int ShipLoadDialog<TUsageType>::ShowModal(std::vector<std::filesystem::path> const & shipLoadDirectories)
 {
     // Reset our current ship selection
     mSelectedShipMetadata.reset();
@@ -519,14 +522,16 @@ int ShipLoadDialog::ShowModal(std::vector<std::filesystem::path> const & shipLoa
     return wxDialog::ShowModal();
 }
 
-void ShipLoadDialog::OnDirCtrlDirSelected(wxCommandEvent & /*event*/)
+template<ShipLoadDialogUsageType TUsageType>
+void ShipLoadDialog<TUsageType>::OnDirCtrlDirSelected(wxCommandEvent & /*event*/)
 {
     std::filesystem::path selectedDirPath(mDirCtrl->GetPath().ToStdString());
 
     OnDirectorySelected(selectedDirPath);
 }
 
-void ShipLoadDialog::OnShipFileSelected(ShipPreviewWindow::fsShipFileSelectedEvent & event)
+template<ShipLoadDialogUsageType TUsageType>
+void ShipLoadDialog<TUsageType>::OnShipFileSelected(ShipPreviewWindow::fsShipFileSelectedEvent & event)
 {
     // Store selection
     if (!!event.GetShipMetadata())
@@ -540,7 +545,8 @@ void ShipLoadDialog::OnShipFileSelected(ShipPreviewWindow::fsShipFileSelectedEve
     mLoadButton->Enable(true);
 }
 
-void ShipLoadDialog::OnShipFileChosen(ShipPreviewWindow::fsShipFileChosenEvent & event)
+template<ShipLoadDialogUsageType TUsageType>
+void ShipLoadDialog<TUsageType>::OnShipFileChosen(ShipPreviewWindow::fsShipFileChosenEvent & event)
 {
     // Store selection
     mSelectedShipFilepath = event.GetShipFilepath();
@@ -551,28 +557,33 @@ void ShipLoadDialog::OnShipFileChosen(ShipPreviewWindow::fsShipFileChosenEvent &
     // Do not continue processing, as OnShipFileChosen() will fire event again
 }
 
-void ShipLoadDialog::OnRecentDirectorySelected(wxCommandEvent & /*event*/)
+template<ShipLoadDialogUsageType TUsageType>
+void ShipLoadDialog<TUsageType>::OnRecentDirectorySelected(wxCommandEvent & /*event*/)
 {
     mDirCtrl->SetPath(mRecentDirectoriesComboBox->GetValue()); // Will send its own event
 }
 
-void ShipLoadDialog::OnShipSearchCtrlText(wxCommandEvent & /*event*/)
+template<ShipLoadDialogUsageType TUsageType>
+void ShipLoadDialog<TUsageType>::OnShipSearchCtrlText(wxCommandEvent & /*event*/)
 {
     StartShipSearch();
 }
 
-void ShipLoadDialog::OnShipSearchCtrlSearchBtn(wxCommandEvent & /*event*/)
+template<ShipLoadDialogUsageType TUsageType>
+void ShipLoadDialog<TUsageType>::OnShipSearchCtrlSearchBtn(wxCommandEvent & /*event*/)
 {
     mShipPreviewWindow->ChooseSelectedIfAny();
 }
 
-void ShipLoadDialog::OnShipSearchCtrlCancelBtn(wxCommandEvent & /*event*/)
+template<ShipLoadDialogUsageType TUsageType>
+void ShipLoadDialog<TUsageType>::OnShipSearchCtrlCancelBtn(wxCommandEvent & /*event*/)
 {
     mShipSearchCtrl->Clear();
     mSearchNextButton->Enable(false);
 }
 
-void ShipLoadDialog::OnSearchNextButtonClicked(wxCommandEvent & /*event*/)
+template<ShipLoadDialogUsageType TUsageType>
+void ShipLoadDialog<TUsageType>::OnSearchNextButtonClicked(wxCommandEvent & /*event*/)
 {
     auto searchString = mShipSearchCtrl->GetValue();
     assert(!searchString.IsEmpty());
@@ -580,7 +591,8 @@ void ShipLoadDialog::OnSearchNextButtonClicked(wxCommandEvent & /*event*/)
     mShipPreviewWindow->Search(searchString.ToStdString());
 }
 
-void ShipLoadDialog::OnStandardHomeDirButtonClicked(wxCommandEvent & /*event*/)
+template<ShipLoadDialogUsageType TUsageType>
+void ShipLoadDialog<TUsageType>::OnStandardHomeDirButtonClicked(wxCommandEvent & /*event*/)
 {
     assert(mRecentDirectoriesComboBox->GetCount() >= 1);
 
@@ -591,7 +603,8 @@ void ShipLoadDialog::OnStandardHomeDirButtonClicked(wxCommandEvent & /*event*/)
     mDirCtrl->SetPath(mRecentDirectoriesComboBox->GetValue()); // Will send its own event
 }
 
-void ShipLoadDialog::OnUserHomeDirButtonClicked(wxCommandEvent & /*event*/)
+template<ShipLoadDialogUsageType TUsageType>
+void ShipLoadDialog<TUsageType>::OnUserHomeDirButtonClicked(wxCommandEvent & /*event*/)
 {
     assert(mRecentDirectoriesComboBox->GetCount() >= 2);
 
@@ -602,19 +615,22 @@ void ShipLoadDialog::OnUserHomeDirButtonClicked(wxCommandEvent & /*event*/)
     mDirCtrl->SetPath(mRecentDirectoriesComboBox->GetValue()); // Will send its own event
 }
 
-void ShipLoadDialog::OnSortMethodChanged(ShipPreviewWindow::SortMethod sortMethod)
+template<ShipLoadDialogUsageType TUsageType>
+void ShipLoadDialog<TUsageType>::OnSortMethodChanged(ShipPreviewWindow::SortMethod sortMethod)
 {
     mShipPreviewWindow->SetSortMethod(sortMethod);
     ReconciliateUIWithSortMethod();
 }
 
-void ShipLoadDialog::OnSortDirectionChanged(bool isSortDescending)
+template<ShipLoadDialogUsageType TUsageType>
+void ShipLoadDialog<TUsageType>::OnSortDirectionChanged(bool isSortDescending)
 {
     mShipPreviewWindow->SetIsSortDescending(isSortDescending);
     ReconciliateUIWithSortMethod();
 }
 
-void ShipLoadDialog::OnInfoButtonClicked(wxCommandEvent & /*event*/)
+template<ShipLoadDialogUsageType TUsageType>
+void ShipLoadDialog<TUsageType>::OnInfoButtonClicked(wxCommandEvent & /*event*/)
 {
     assert(!!mSelectedShipMetadata);
 
@@ -630,7 +646,8 @@ void ShipLoadDialog::OnInfoButtonClicked(wxCommandEvent & /*event*/)
     }
 }
 
-void ShipLoadDialog::OnLoadButton(wxCommandEvent & /*event*/)
+template<ShipLoadDialogUsageType TUsageType>
+void ShipLoadDialog<TUsageType>::OnLoadButton(wxCommandEvent & /*event*/)
 {
     assert(!!mSelectedShipFilepath);
 
@@ -638,19 +655,22 @@ void ShipLoadDialog::OnLoadButton(wxCommandEvent & /*event*/)
     OnShipFileChosen(*mSelectedShipFilepath);
 }
 
-void ShipLoadDialog::OnCancelButton(wxCommandEvent & /*event*/)
+template<ShipLoadDialogUsageType TUsageType>
+void ShipLoadDialog<TUsageType>::OnCancelButton(wxCommandEvent & /*event*/)
 {
     EndModal(wxID_CANCEL);
 }
 
-void ShipLoadDialog::OnCloseWindow(wxCloseEvent & /*event*/)
+template<ShipLoadDialogUsageType TUsageType>
+void ShipLoadDialog<TUsageType>::OnCloseWindow(wxCloseEvent & /*event*/)
 {
     // Invoked when the user has tried to close a frame or dialog box
     // using the window manager (X) or system menu (Windows); it can also be invoked by the application itself
     EndModal(wxID_CANCEL);
 }
 
-void ShipLoadDialog::OnDirectorySelected(std::filesystem::path directoryPath)
+template<ShipLoadDialogUsageType TUsageType>
+void ShipLoadDialog<TUsageType>::OnDirectorySelected(std::filesystem::path directoryPath)
 {
     // Reset our current selection
     mSelectedShipMetadata.reset();
@@ -668,7 +688,8 @@ void ShipLoadDialog::OnDirectorySelected(std::filesystem::path directoryPath)
     mShipPreviewWindow->SetDirectory(directoryPath);
 }
 
-void ShipLoadDialog::OnShipFileChosen(std::filesystem::path shipFilepath)
+template<ShipLoadDialogUsageType TUsageType>
+void ShipLoadDialog<TUsageType>::OnShipFileChosen(std::filesystem::path shipFilepath)
 {
     LogMessage("ShipLoadDialog::OnShipFileChosen: ", shipFilepath);
 
@@ -681,7 +702,8 @@ void ShipLoadDialog::OnShipFileChosen(std::filesystem::path shipFilepath)
 
 ////////////////////////////////////////////////////////////////////////////
 
-void ShipLoadDialog::EndModal(int retCode)
+template<ShipLoadDialogUsageType TUsageType>
+void ShipLoadDialog<TUsageType>::EndModal(int retCode)
 {
     LogMessage("ShipLoadDialog::EndModal(", retCode, ")");
 
@@ -690,7 +712,8 @@ void ShipLoadDialog::EndModal(int retCode)
     wxDialog::EndModal(retCode);
 }
 
-void ShipLoadDialog::ReconciliateUIWithSortMethod()
+template<ShipLoadDialogUsageType TUsageType>
+void ShipLoadDialog<TUsageType>::ReconciliateUIWithSortMethod()
 {
     switch (mShipPreviewWindow->GetCurrentSortMethod())
     {
@@ -722,7 +745,8 @@ void ShipLoadDialog::ReconciliateUIWithSortMethod()
     mSortDirectionButton->SetBitmap(mShipPreviewWindow->GetCurrentIsSortDescending() ? mSortDescendingIcon : mSortAscendingIcon);
 }
 
-void ShipLoadDialog::StartShipSearch()
+template<ShipLoadDialogUsageType TUsageType>
+void ShipLoadDialog<TUsageType>::StartShipSearch()
 {
     bool found = false;
 
@@ -735,7 +759,8 @@ void ShipLoadDialog::StartShipSearch()
     mSearchNextButton->Enable(found);
 }
 
-void ShipLoadDialog::RepopulateRecentDirectoriesComboBox(std::vector<std::filesystem::path> const & shipLoadDirectories)
+template<ShipLoadDialogUsageType TUsageType>
+void ShipLoadDialog<TUsageType>::RepopulateRecentDirectoriesComboBox(std::vector<std::filesystem::path> const & shipLoadDirectories)
 {
     // Get currently-selected directory
     wxString const currentlySelectedDir = mDirCtrl->GetPath();
@@ -774,3 +799,6 @@ void ShipLoadDialog::RepopulateRecentDirectoriesComboBox(std::vector<std::filesy
     mDirCtrl->SetPath(dirToSelect);
     mRecentDirectoriesComboBox->SetValue(dirToSelect);
 }
+
+template class ShipLoadDialog<ShipLoadDialogUsageType::ForGame>;
+template class ShipLoadDialog<ShipLoadDialogUsageType::ForShipBuilder>;

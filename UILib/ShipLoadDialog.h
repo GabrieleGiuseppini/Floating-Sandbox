@@ -23,6 +23,13 @@
 #include <string>
 #include <vector>
 
+enum class ShipLoadDialogUsageType
+{
+    ForGame,
+    ForShipBuilder
+};
+
+template<ShipLoadDialogUsageType TUsageType>
 class ShipLoadDialog : public wxDialog
 {
 public:
@@ -35,11 +42,20 @@ public:
 
     int ShowModal(std::vector<std::filesystem::path> const & shipLoadDirectories);
 
-    ShipLoadSpecifications GetChosenShipLoadSpecifications() const
+    auto GetChosenShip() const
     {
         assert(!!mChosenShipFilepath);
-        // TODOHERE
-        return ShipLoadSpecifications(*mChosenShipFilepath);
+
+        if constexpr (TUsageType == ShipLoadDialogUsageType::ForGame)
+        {
+            // TODOHERE
+            return ShipLoadSpecifications(*mChosenShipFilepath);
+        }
+        else
+        {
+            static_assert(TUsageType == ShipLoadDialogUsageType::ForShipBuilder);
+            return *mChosenShipFilepath;
+        }
     }
 
 private:

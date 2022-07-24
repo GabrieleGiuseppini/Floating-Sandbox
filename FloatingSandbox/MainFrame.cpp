@@ -1508,7 +1508,7 @@ void MainFrame::OnLoadShipMenuItemSelected(wxCommandEvent & /*event*/)
     // See if we need to create the ShipLoad dialog
     if (!mShipLoadDialog)
     {
-        mShipLoadDialog = std::make_unique<ShipLoadDialog>(
+        mShipLoadDialog = std::make_unique<ShipLoadDialog<ShipLoadDialogUsageType::ForGame>>(
             this,
             mResourceLocator);
     }
@@ -1523,7 +1523,7 @@ void MainFrame::OnLoadShipMenuItemSelected(wxCommandEvent & /*event*/)
         // Load ship
         //
 
-        auto const shipLoadSpecs = mShipLoadDialog->GetChosenShipLoadSpecifications();
+        ShipLoadSpecifications const shipLoadSpecs = mShipLoadDialog->GetChosenShip();
         LoadShip(shipLoadSpecs, true);
 
         // Store directory in preferences

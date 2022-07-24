@@ -443,7 +443,7 @@ private:
     //
     
     std::unique_ptr<wxNotificationMessage> mNotificationMessage;
-    std::unique_ptr<ShipLoadDialog> mShipLoadDialog;
+    std::unique_ptr<ShipLoadDialog<ShipLoadDialogUsageType::ForShipBuilder>> mShipLoadDialog;
     std::unique_ptr<ShipSaveDialog> mShipSaveDialog;
     std::unique_ptr<LoggingDialog> mLoggingDialog;
     std::unique_ptr<PreferencesDialog> mPreferencesDialog;

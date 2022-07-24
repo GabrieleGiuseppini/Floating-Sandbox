@@ -129,7 +129,7 @@ private:
     std::unique_ptr<LoggingDialog> mLoggingDialog;
     std::unique_ptr<PreferencesDialog> mPreferencesDialog;
     std::unique_ptr<SettingsDialog> mSettingsDialog;
-    std::unique_ptr<ShipLoadDialog> mShipLoadDialog;
+    std::unique_ptr<ShipLoadDialog<ShipLoadDialogUsageType::ForGame>> mShipLoadDialog;
 
     //
     // Timers
