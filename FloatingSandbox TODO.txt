@@ -1334,10 +1334,9 @@
 					- Used at ShipDefinition
 					- Used at ShipLayers also @ ShipBuilder::Model
 						- ...and thus also used for implementation of Clone(), Trim()/ResizeShip(), Rotate(), etc.
-					= Unit tests
-						+ FlipH
-						- FlipV
-						- Rotate90
+					+ Unit tests
+						+ Flip
+						+ Rotate
 				- ShipFactory uses it
 				- Tests:
 					- Main: reload this ship, reload previous ship,

@@ -44,7 +44,7 @@ public:
 
     auto GetChosenShip() const
     {
-        assert(!!mChosenShipFilepath);
+        assert(mChosenShipFilepath.has_value());
 
         if constexpr (TUsageType == ShipLoadDialogUsageType::ForGame)
         {

@@ -989,7 +989,7 @@ TEST(LayerTests, TextureLayer_Reframe_Same)
     }
 }
 
-TEST(LayerTests, ShipLayers_Flip)
+TEST(LayerTests, ShipLayers_FlipH)
 {
     std::vector<std::unique_ptr<StructuralMaterial>> structuralMaterials;
     std::vector<std::unique_ptr<ElectricalMaterial>> electricalMaterials;
@@ -1117,6 +1117,142 @@ TEST(LayerTests, ShipLayers_Flip)
     for (int y = 0; y < layers.TextureLayer->Buffer.Size.height; ++y)
     {
         for (int x = layers.TextureLayer->Buffer.Size.width - 1; x >= 0; --x)
+        {
+            auto const coords = ImageCoordinates(x, y);
+            EXPECT_EQ(layers.TextureLayer->Buffer[coords], rgbaColor(iVal, iVal, iVal, iVal));
+
+            ++iVal;
+        }
+    }
+}
+
+TEST(LayerTests, ShipLayers_Rotate)
+{
+    std::vector<std::unique_ptr<StructuralMaterial>> structuralMaterials;
+    std::vector<std::unique_ptr<ElectricalMaterial>> electricalMaterials;
+
+    //
+    // Create source
+    //
+
+    Buffer2D<StructuralElement, struct ShipSpaceTag> sourceStructuralLayerBuffer(8, 6);
+    uint8_t iVal = 0;
+    for (int y = 0; y < sourceStructuralLayerBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceStructuralLayerBuffer.Size.width; ++x)
+        {
+            structuralMaterials.emplace_back(new StructuralMaterial(MakeTestStructuralMaterial("Foo", rgbColor(iVal, iVal, iVal))));
+            sourceStructuralLayerBuffer[ShipSpaceCoordinates(x, y)] = StructuralElement(structuralMaterials.back().get());
+
+            ++iVal;
+        }
+    }
+
+    Buffer2D<ElectricalElement, struct ShipSpaceTag> sourceElectricalLayerBuffer(8, 6);
+    iVal = 0;
+    for (int y = 0; y < sourceElectricalLayerBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceElectricalLayerBuffer.Size.width; ++x)
+        {
+            electricalMaterials.emplace_back(new ElectricalMaterial(MakeTestElectricalMaterial("Foo", rgbColor(iVal, iVal, iVal), false)));
+            sourceElectricalLayerBuffer[ShipSpaceCoordinates(x, y)] = ElectricalElement(electricalMaterials.back().get(), NoneElectricalElementInstanceIndex);
+
+            ++iVal;
+        }
+    }
+
+    ElectricalPanelMetadata sourcePanel;
+
+    RopeBuffer sourceRopesLayerBuffer;
+    {
+        sourceRopesLayerBuffer.EmplaceBack(
+            ShipSpaceCoordinates(5, 5),
+            ShipSpaceCoordinates(2, 3),
+            nullptr,
+            rgbaColor(1, 2, 3, 4));
+
+        sourceRopesLayerBuffer.EmplaceBack(
+            ShipSpaceCoordinates(1, 1),
+            ShipSpaceCoordinates(2, 2),
+            nullptr,
+            rgbaColor(1, 2, 3, 4));
+    }
+
+    Buffer2D<rgbaColor, struct ImageTag> sourceTextureLayerBuffer(80, 60);
+
+    iVal = 0;
+    for (int y = 0; y < sourceTextureLayerBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceTextureLayerBuffer.Size.width; ++x)
+        {
+            sourceTextureLayerBuffer[ImageCoordinates(x, y)] = rgbaColor(iVal, iVal, iVal, iVal);
+
+            ++iVal;
+        }
+    }
+
+    ShipLayers layers(
+        StructuralLayerData(std::move(sourceStructuralLayerBuffer)),
+        std::make_unique<ElectricalLayerData>(std::move(sourceElectricalLayerBuffer), std::move(sourcePanel)),
+        std::make_unique<RopesLayerData>(std::move(sourceRopesLayerBuffer)),
+        std::make_unique<TextureLayerData>(std::move(sourceTextureLayerBuffer)));
+
+    //
+    // Flip
+    //
+
+    layers.Rotate90(RotationDirectionType::Clockwise);
+
+    //
+    // Verify
+    //
+
+    ASSERT_EQ(layers.StructuralLayer.Buffer.Size, ShipSpaceSize(6, 8));
+
+    iVal = 0;
+    for (int x = 0; x < layers.StructuralLayer.Buffer.Size.width; ++x)
+    {
+        for (int y = layers.StructuralLayer.Buffer.Size.height - 1; y >= 0; --y)
+        {
+            auto const coords = ShipSpaceCoordinates(x, y);
+            EXPECT_EQ(layers.StructuralLayer.Buffer[coords].Material->ColorKey, rgbColor(iVal, iVal, iVal));
+
+            ++iVal;
+        }
+    }
+
+    ASSERT_TRUE(layers.ElectricalLayer);
+    ASSERT_EQ(layers.ElectricalLayer->Buffer.Size, ShipSpaceSize(6, 8));
+
+    iVal = 0;
+    for (int x = 0; x < layers.ElectricalLayer->Buffer.Size.width; ++x)
+    {
+        for (int y = layers.ElectricalLayer->Buffer.Size.height - 1; y >= 0; --y)
+        {
+            auto const coords = ShipSpaceCoordinates(x, y);
+            EXPECT_EQ(layers.ElectricalLayer->Buffer[coords].Material->ColorKey, rgbColor(iVal, iVal, iVal));
+
+            ++iVal;
+        }
+    }
+
+    ASSERT_TRUE(layers.RopesLayer);
+    ASSERT_EQ(layers.RopesLayer->Buffer.GetSize(), 2u);
+
+    EXPECT_EQ(layers.RopesLayer->Buffer[0].StartCoords, ShipSpaceCoordinates(5, 2));
+    EXPECT_EQ(layers.RopesLayer->Buffer[0].EndCoords, ShipSpaceCoordinates(3, 5));
+
+    EXPECT_EQ(layers.RopesLayer->Buffer[1].StartCoords, ShipSpaceCoordinates(1, 6));
+    EXPECT_EQ(layers.RopesLayer->Buffer[1].EndCoords, ShipSpaceCoordinates(2, 5));
+
+
+    ASSERT_TRUE(layers.TextureLayer);
+    ASSERT_EQ(layers.TextureLayer->Buffer.Size, ImageSize(60, 80));
+
+    iVal = 0;
+    for (int x = 0; x < layers.TextureLayer->Buffer.Size.width; ++x)
+    {
+        for (int y = layers.TextureLayer->Buffer.Size.height - 1; y >= 0; --y)
         {
             auto const coords = ImageCoordinates(x, y);
             EXPECT_EQ(layers.TextureLayer->Buffer[coords], rgbaColor(iVal, iVal, iVal, iVal));
