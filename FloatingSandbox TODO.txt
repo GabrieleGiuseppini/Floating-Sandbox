@@ -1415,13 +1415,13 @@
 
 			+ Move search here
 			+ Move "Ok/Cancel" buttons below next to dir dropdown (taking place of "search")
-		- Tests:
+		= Tests:
 			- Sorting:
-				- Last modified: E2E
+				+ Last modified: E2E
 				- Slow population
 					- Do artificial 100ms sleep @ thread
 				- Year built: the string sorting that we do matches year numeric
-				- Preview error
+				+ Preview error
 				- Search: goes from selected onwards - in right order and always down
 
 	- ShipLoadDialog improvements:
