@@ -59,8 +59,23 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
     // Process load options
     //
 
-    // TODOHERE
-    (void)shipLoadOptions;
+    auto shipSize = shipDefinition.Size;
+
+    if (shipLoadOptions.FlipHorizontally)
+    {
+        shipDefinition.Layers.Flip(DirectionType::Horizontal);
+    }
+
+    if (shipLoadOptions.FlipVertically)
+    {
+        shipDefinition.Layers.Flip(DirectionType::Vertical);
+    }
+
+    if (shipLoadOptions.Rotate90CW)
+    {
+        shipSize.Rotate90();
+        shipDefinition.Layers.Rotate90(RotationDirectionType::Clockwise);
+    }
 
     //
     // Process structural ship layer and:
@@ -70,26 +85,26 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
 
     auto const & structuralLayerBuffer = shipDefinition.Layers.StructuralLayer.Buffer;
 
-    float const halfShipWidth = static_cast<float>(shipDefinition.Size.width) / 2.0f;
+    float const halfShipWidth = static_cast<float>(shipSize.width) / 2.0f;
     float const shipSpaceToWorldSpaceFactor = shipDefinition.Metadata.Scale.outputUnits / shipDefinition.Metadata.Scale.inputUnits;
 
     // ShipFactoryPoint's
     std::vector<ShipFactoryPoint> pointInfos1;
 
     // Matrix of points - we allocate 2 extra dummy rows and cols - around - to avoid checking for boundaries
-    ShipFactoryPointIndexMatrix pointIndexMatrix(shipDefinition.Size.width + 2, shipDefinition.Size.height + 2);
+    ShipFactoryPointIndexMatrix pointIndexMatrix(shipSize.width + 2, shipSize.height + 2);
 
     // Region of actual content
-    int minX = shipDefinition.Size.width;
+    int minX = shipSize.width;
     int maxX = 0;
-    int minY = shipDefinition.Size.height;
+    int minY = shipSize.height;
     int maxY = 0;
 
     // Visit all columns
-    for (int x = 0; x < shipDefinition.Size.width; ++x)
+    for (int x = 0; x < shipSize.width; ++x)
     {
         // From bottom to top
-        for (int y = 0; y < shipDefinition.Size.height; ++y)
+        for (int y = 0; y < shipSize.height; ++y)
         {
             ShipSpaceCoordinates const coords = ShipSpaceCoordinates(x, y);
 
@@ -173,7 +188,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
                 pointInfos1.emplace_back(
                     coords,
                     worldCoords,
-                    MakeTextureCoordinates(x, y, shipDefinition.Size),
+                    MakeTextureCoordinates(x, y, shipSize),
                     structuralMaterialRenderColor,
                     *structuralMaterial,
                     isStructuralMaterialRope,
@@ -219,7 +234,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
     {
         AppendRopes(
             shipDefinition.Layers.RopesLayer->Buffer,
-            shipDefinition.Size,
+            shipSize,
             pointIndexMatrix,
             pointInfos1,
             springInfos1,
@@ -418,7 +433,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
         triangles);
 #endif
 
-    LogMessage("ShipFactory: Created ship: W=", shipDefinition.Size.width, ", H=", shipDefinition.Size.height, ", ",
+    LogMessage("ShipFactory: Created ship: W=", shipSize.width, ", H=", shipSize.height, ", ",
         points.GetRawShipPointCount(), "/", points.GetBufferElementCount(), "buf points, ",
         springs.GetElementCount(), " springs, ", triangles.GetElementCount(), " triangles, ",
         electricalElements.GetElementCount(), " electrical elements, ",

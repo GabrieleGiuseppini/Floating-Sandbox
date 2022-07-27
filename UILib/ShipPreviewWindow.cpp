@@ -198,11 +198,11 @@ void ShipPreviewWindow::SetDirectory(std::filesystem::path const & directoryPath
 
         mCurrentlyCompletedDirectorySnapshot.reset();
 
-        // Reset info tiles
-        ResetInfoTiles(directorySnapshot);
-
         // Clear selection
         mSelectedShipFileId.reset();
+
+        // Reset info tiles
+        ResetInfoTiles(directorySnapshot);
 
         // Start thread's scan (if thread is not running now, it'll pick it up when it starts)
         {

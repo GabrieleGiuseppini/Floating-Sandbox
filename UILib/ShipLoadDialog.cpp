@@ -97,12 +97,12 @@ ShipLoadDialog<TUsageType>::ShipLoadDialog(
             vSizer1->AddSpacer(5);
 
             // Toolbar
-            {                
-                int constexpr LargeMargin = 30;
+            {   
+                int constexpr SmallMargin = 4;
 
                 wxBoxSizer * hToolbarSizer = new wxBoxSizer(wxHORIZONTAL);
 
-                hToolbarSizer->AddSpacer(LargeMargin);
+                hToolbarSizer->AddSpacer(SmallMargin);
 
                 // Info button
                 {
@@ -117,10 +117,77 @@ ShipLoadDialog<TUsageType>::ShipLoadDialog(
                         0);
                 }
 
-                hToolbarSizer->AddStretchSpacer();
+                if constexpr (TUsageType == ShipLoadDialogUsageType::ForGame)
+                {
+                    hToolbarSizer->AddStretchSpacer();
 
-                // Load modifiers buttons
-                // TODO
+                    // Flip-H
+                    {
+                        mFlipHButton = new BitmapToggleButton(
+                            this,
+                            resourceLocator.GetBitmapFilePath("flip_h_small"),
+                            []() {},
+                            _("Flip ship horizontally when loaded"));
+
+                        hToolbarSizer->Add(
+                            mFlipHButton,
+                            0,
+                            wxALIGN_BOTTOM,
+                            0);
+                    }
+
+                    hToolbarSizer->AddSpacer(SmallMargin);
+
+                    // Flip-V button
+                    {
+                        mFlipVButton = new BitmapToggleButton(
+                            this,
+                            resourceLocator.GetBitmapFilePath("flip_v_small"),
+                            []() {},
+                            _("Flip ship vertically when loaded"));
+
+                        hToolbarSizer->Add(
+                            mFlipVButton,
+                            0,
+                            wxALIGN_BOTTOM,
+                            0);
+                    }
+
+                    hToolbarSizer->AddSpacer(SmallMargin);
+
+                    // Rotate90 CW button
+                    {
+                        mRotate90CWButton = new BitmapToggleButton(
+                            this,
+                            resourceLocator.GetBitmapFilePath("rotate_90_cw_small"),
+                            []() {},
+                            _("Rotate ship 90 degrees clockwise when loaded"));
+
+                        hToolbarSizer->Add(
+                            mRotate90CWButton,
+                            0,
+                            wxALIGN_BOTTOM,
+                            0);
+                    }
+                }
+                else if constexpr (TUsageType == ShipLoadDialogUsageType::ForShipBuilder)
+                {
+                    hToolbarSizer->AddSpacer(SmallMargin);
+
+                    // Password protection indicator
+                    {
+                        mPasswordProtectedButton = new wxBitmapButton(this, wxID_ANY, WxHelpers::LoadBitmap("protected_small", resourceLocator), wxDefaultPosition, wxDefaultSize);
+                        mPasswordProtectedButton->SetToolTip(_("Indicates whether the ship is password-protected"));
+
+                        hToolbarSizer->Add(
+                            mPasswordProtectedButton,
+                            0,
+                            wxALIGN_BOTTOM,
+                            0);
+                    }
+                }
+
+                hToolbarSizer->AddStretchSpacer();
 
                 // Sort method button
                 {
@@ -157,7 +224,7 @@ ShipLoadDialog<TUsageType>::ShipLoadDialog(
                         0);
                 }
 
-                hToolbarSizer->AddSpacer(LargeMargin);
+                hToolbarSizer->AddStretchSpacer();
 
                 // Search
                 {
@@ -174,42 +241,44 @@ ShipLoadDialog<TUsageType>::ShipLoadDialog(
                         wxBoxSizer * hSearchSizer = new wxBoxSizer(wxHORIZONTAL);
 
                         // Search box
+                        {
+                            mShipSearchCtrl = new wxSearchCtrl(
+                                this,
+                                wxID_ANY,
+                                wxEmptyString,
+                                wxDefaultPosition,
+                                wxSize(-1, 24),
+                                0);
 
-                        mShipSearchCtrl = new wxSearchCtrl(
-                            this,
-                            wxID_ANY,
-                            wxEmptyString,
-                            wxDefaultPosition,
-                            wxSize(-1, 24),
-                            0);
+                            mShipSearchCtrl->ShowCancelButton(true);
+                            mShipSearchCtrl->Bind(wxEVT_TEXT, &ShipLoadDialog::OnShipSearchCtrlText, this);
+                            mShipSearchCtrl->Bind(wxEVT_SEARCHCTRL_SEARCH_BTN, &ShipLoadDialog::OnShipSearchCtrlSearchBtn, this);
+                            mShipSearchCtrl->Bind(wxEVT_SEARCHCTRL_CANCEL_BTN, &ShipLoadDialog::OnShipSearchCtrlCancelBtn, this);
 
-                        mShipSearchCtrl->ShowCancelButton(true);
-                        mShipSearchCtrl->Bind(wxEVT_TEXT, &ShipLoadDialog::OnShipSearchCtrlText, this);
-                        mShipSearchCtrl->Bind(wxEVT_SEARCHCTRL_SEARCH_BTN, &ShipLoadDialog::OnShipSearchCtrlSearchBtn, this);
-                        mShipSearchCtrl->Bind(wxEVT_SEARCHCTRL_CANCEL_BTN, &ShipLoadDialog::OnShipSearchCtrlCancelBtn, this);
-
-                        hSearchSizer->Add(mShipSearchCtrl, 1, wxALIGN_CENTRE_VERTICAL);
+                            hSearchSizer->Add(mShipSearchCtrl, 1, wxALIGN_CENTRE_VERTICAL);
+                        }
 
                         // Search button
+                        {
+                            wxBitmap searchNextBitmap(mResourceLocator.GetIconFilePath("right_arrow").string(), wxBITMAP_TYPE_PNG);
+                            mSearchNextButton = new wxBitmapButton(this, wxID_ANY, searchNextBitmap, wxDefaultPosition, wxDefaultSize);
+                            mSearchNextButton->SetToolTip(_("Go to the next search result"));
+                            mSearchNextButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnSearchNextButtonClicked, this);
 
-                        wxBitmap searchNextBitmap(mResourceLocator.GetIconFilePath("right_arrow").string(), wxBITMAP_TYPE_PNG);
-                        mSearchNextButton = new wxBitmapButton(this, wxID_ANY, searchNextBitmap, wxDefaultPosition, wxDefaultSize);
-                        mSearchNextButton->SetToolTip(_("Go to the next search result"));
-                        mSearchNextButton->Bind(wxEVT_BUTTON, &ShipLoadDialog::OnSearchNextButtonClicked, this);
-
-                        hSearchSizer->Add(mSearchNextButton, 0, wxALIGN_CENTRE_VERTICAL);
+                            hSearchSizer->Add(mSearchNextButton, 0, wxALIGN_CENTRE_VERTICAL);
+                        }
 
                         vSearchSizer->Add(hSearchSizer, 1, wxALIGN_LEFT | wxEXPAND);
                     }
 
                     hToolbarSizer->Add(
                         vSearchSizer,
-                        0,
+                        1, // Use all H space
                         wxALIGN_BOTTOM,
                         0);
                 }
-
-                hToolbarSizer->AddStretchSpacer();
+                
+                hToolbarSizer->AddSpacer(SmallMargin);
 
                 vSizer1->Add(
                     hToolbarSizer, 
@@ -499,6 +568,10 @@ int ShipLoadDialog<TUsageType>::ShowModal(std::vector<std::filesystem::path> con
 
     // Disable controls
     mInfoButton->Enable(false);
+    if constexpr (TUsageType == ShipLoadDialogUsageType::ForShipBuilder)
+    {
+        mPasswordProtectedButton->Enable(false);
+    }
     mLoadButton->Enable(false);
 
     // Clear search
@@ -542,6 +615,10 @@ void ShipLoadDialog<TUsageType>::OnShipFileSelected(ShipPreviewWindow::fsShipFil
 
     // Enable buttons
     mInfoButton->Enable(!!(event.GetShipMetadata()) && !!(event.GetShipMetadata()->Description));
+    if constexpr (TUsageType == ShipLoadDialogUsageType::ForShipBuilder)
+    {
+        mPasswordProtectedButton->Enable(!!(event.GetShipMetadata()) && !!(event.GetShipMetadata()->Password));
+    }
     mLoadButton->Enable(true);
 }
 
@@ -678,6 +755,10 @@ void ShipLoadDialog<TUsageType>::OnDirectorySelected(std::filesystem::path direc
 
     // Disable controls
     mInfoButton->Enable(false);
+    if constexpr (TUsageType == ShipLoadDialogUsageType::ForShipBuilder)
+    {
+        mPasswordProtectedButton->Enable(false);
+    }
     mLoadButton->Enable(false);
 
     // Clear search

@@ -11,6 +11,7 @@
 #include <Game/ShipLoadSpecifications.h>
 
 #include <UILib/BitmapButton.h>
+#include <UILib/BitmapToggleButton.h>
 
 #include <wx/combobox.h>
 #include <wx/dialog.h>
@@ -48,8 +49,16 @@ public:
 
         if constexpr (TUsageType == ShipLoadDialogUsageType::ForGame)
         {
-            // TODOHERE
-            return ShipLoadSpecifications(*mChosenShipFilepath);
+            assert(mFlipHButton);
+            assert(mFlipVButton);
+            assert(mRotate90CWButton);
+            
+            return ShipLoadSpecifications(
+                *mChosenShipFilepath,
+                ShipLoadOptions(
+                mFlipHButton->GetValue(),
+                mFlipVButton->GetValue(),
+                mRotate90CWButton->GetValue()));
         }
         else
         {
@@ -102,13 +111,17 @@ private:
     wxBitmap mSortDescendingIcon;
 
     wxGenericDirCtrl * mDirCtrl;
+    wxBitmapButton * mInfoButton;
+    wxBitmapButton * mPasswordProtectedButton;
+    BitmapToggleButton * mFlipHButton;
+    BitmapToggleButton * mFlipVButton;
+    BitmapToggleButton * mRotate90CWButton;
     wxPopupTransientWindow * mSortMethodSelectionPopupWindow;
     wxBitmapButton * mSortMethodButton;
     wxBitmapButton * mSortDirectionButton;
+    wxSearchCtrl * mShipSearchCtrl;
     ShipPreviewWindow * mShipPreviewWindow;
     wxComboBox * mRecentDirectoriesComboBox;
-    wxSearchCtrl * mShipSearchCtrl;
-    wxBitmapButton * mInfoButton;
     wxButton * mLoadButton;
     wxBitmapButton * mSearchNextButton;
 

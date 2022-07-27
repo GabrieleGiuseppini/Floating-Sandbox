@@ -383,7 +383,7 @@ private:
         ShipLoadSpecifications const & loadSpecs,
         bool isFromUser);
 
-    void OnShipLoaded(ShipLoadSpecifications const & loadSpecs);
+    void OnShipLoaded(ShipLoadSpecifications loadSpecs); // By val to have own copy vs current/prev
 
     wxAcceleratorEntry MakePlainAcceleratorKey(int key, wxMenuItem * menuItem);
 

@@ -1320,31 +1320,33 @@
 			+ Above preview window
 			+ Move "Info" button here
 			= Flip H and V, Rotate 90 CCW (toggle buttons, wxBitmapToggleButton)
-				- UI
-					- ForShipBuilder: password-protected
-						- flag goes into ShipPreview
-				= Given as ShipLoadSpecifications to ShipFactory, hence must be returned by ShipLoadDialog to caller
+				= UI
+					+ ForGame: three toggle buttons
+					= ForShipBuilder: password-protected
+						+ Update enabled just like we do for info
+						- Open popup when clicked?
+					- Wider search box
+						- TODO: stretch spacer?
+				+ Given as ShipLoadSpecifications to ShipFactory, hence must be returned by ShipLoadDialog to caller
 				+ FS::MainFrame handles ShipLoadSpecifications
 					+ Should also have UIPreferencesManager remember ShipLoadSpecs at LastShipLoadedFilePath, instead of just file path
 				+ SB::MainFrame deals with ShipLoadSpecifications - but only stores path
 					+ ShipLoadDialog templated on enum - ForGame, ForShipBuilder
-				= ShipLayers class (@ existing Layers.cpp/h), with Flip() methods applied to all layers
+				+ ShipLayers class (@ existing Layers.cpp/h), with Flip() methods applied to all layers
 					+ Class
 						+ Flip, Rotate
 					+ Used at ShipDefinition
-					= Used at ShipLayers also @ ShipBuilder::Model
-						- Move Flip and Rotate to Model
+					+ Used at ShipLayers also @ ShipBuilder::Model
 					+ Unit tests
 						+ Flip
 						+ Rotate
-				- ShipFactory uses it
-				- Do final TODO search
-				- Tests:
-					- ShipLoadDialog:
-						- ForGame: flips, rotates
-						- ForShipBuilder: shows password protection
-					- Main: reload this ship, reload previous ship
-					- Last ship specs saved and then loaded in preferences
+				+ ShipFactory uses it
+				+ Tests:
+					+ ShipLoadDialog:
+						+ ForGame: flips, rotates
+						+ ForShipBuilder: shows password protection
+					+ Main: reload this ship, reload previous ship
+					+ Last ship specs saved and then loaded in preferences
 			+ Sort method, as:
 				+ BitmapButton, showing currently-selected sorting method
 					+ When clicking on it, popup appears with horizonal buttons
@@ -1421,6 +1423,7 @@
 				- Year built: the string sorting that we do matches year numeric
 				- Preview error
 				- Search: goes from selected onwards - in right order and always down
+
 	- ShipLoadDialog improvements:
 		- Display folders in grid
 

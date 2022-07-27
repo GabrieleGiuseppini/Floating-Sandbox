@@ -137,8 +137,6 @@ TEST_P(IntegralRect_MakeIntersectionWith_Empty, IntegralRect_MakeIntersectionWit
     EXPECT_FALSE(result);
 }
 
-// TODO
-
 class CoordsRatio : public testing::TestWithParam<std::tuple<ShipSpaceCoordinates, ShipSpaceToWorldSpaceCoordsRatio, vec2f>>
 {
 };

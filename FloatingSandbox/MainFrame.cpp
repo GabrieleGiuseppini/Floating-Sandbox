@@ -2534,7 +2534,7 @@ void MainFrame::LoadShip(
 
         // Open description, if a description exists and the user allows
         if (isFromUser
-            && !!shipMetadata.Description
+            && shipMetadata.Description.has_value()
             && mUIPreferencesManager->GetShowShipDescriptionsAtShipLoad())
         {
             ShipDescriptionDialog shipDescriptionDialog(
@@ -2563,7 +2563,7 @@ void MainFrame::LoadShip(
     }
 }
 
-void MainFrame::OnShipLoaded(ShipLoadSpecifications const & loadSpecs)
+void MainFrame::OnShipLoaded(ShipLoadSpecifications loadSpecs)
 {
     //
     // Check whether the current ship may become the "previous" ship

@@ -14,34 +14,6 @@
 #include <string>
 #include <type_traits>
 
-////TODOTEST
-////namespace /*anoynmous*/ {
-////
-////    template<typename TEndianess, typename TType>
-////    struct _detail
-////    {
-////        size_t Append(
-////            TType const & value,
-////            unsigned char * buffer,
-////            size_t & bufferSize)
-////        {
-////            // Make sure it fits
-////            size_t const requiredSize = sizeof(TType);
-////            EnsureMayAppend(mSize + requiredSize);
-////
-////            // Append
-////            size_t const sz = Endian<T, TEndianess>::Write(value, mBuffer.get() + mSize);
-////            assert(sz <= requiredSize);
-////
-////            // Advance
-////            mSize += sz;
-////
-////            return sz;
-////        }
-////    };
-////
-////}
-
 template<typename TEndianess>
 class DeSerializationBuffer
 {

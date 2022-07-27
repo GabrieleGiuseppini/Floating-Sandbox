@@ -366,6 +366,11 @@ struct _IntegralSize
         return this->width * this->height;
     }
 
+    inline void Rotate90()
+    {
+        std::swap(width, height);
+    }
+
     inline _IntegralSize<TIntegralTag> Union(_IntegralSize<TIntegralTag> const & other) const
     {
         return _IntegralSize<TIntegralTag>(

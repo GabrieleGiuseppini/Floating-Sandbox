@@ -170,7 +170,7 @@ StatusBar::StatusBar(
     // Tool output label
     {
         mToolOutputStaticText = new wxStaticText(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
-        mToolOutputStaticText->SetMinSize(wxSize(200, -1)); // TODO?
+        mToolOutputStaticText->SetMinSize(wxSize(200, -1));
         hSizer->Add(mToolOutputStaticText, 0, wxALIGN_CENTRE_VERTICAL, 0);
     }
 
