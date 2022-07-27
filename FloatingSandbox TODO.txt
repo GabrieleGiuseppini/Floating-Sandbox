@@ -1325,8 +1325,7 @@
 					= ForShipBuilder: password-protected
 						+ Update enabled just like we do for info
 						- Open popup when clicked?
-					- Wider search box
-						- TODO: stretch spacer?
+					+ Wider search box
 				+ Given as ShipLoadSpecifications to ShipFactory, hence must be returned by ShipLoadDialog to caller
 				+ FS::MainFrame handles ShipLoadSpecifications
 					+ Should also have UIPreferencesManager remember ShipLoadSpecs at LastShipLoadedFilePath, instead of just file path
@@ -1419,10 +1418,10 @@
 			- Sorting:
 				+ Last modified: E2E
 				- Slow population
-					- Do artificial 100ms sleep @ thread
-				- Year built: the string sorting that we do matches year numeric
+					- Do artificial 100ms sleep @ thread, with various sorting methods
+				+ Year built: the string sorting that we do matches year numeric
 				+ Preview error
-				- Search: goes from selected onwards - in right order and always down
+				+ Search: goes from selected onwards - in right order and always down
 
 	- ShipLoadDialog improvements:
 		- Display folders in grid

@@ -119,7 +119,7 @@ ShipLoadDialog<TUsageType>::ShipLoadDialog(
 
                 if constexpr (TUsageType == ShipLoadDialogUsageType::ForGame)
                 {
-                    hToolbarSizer->AddStretchSpacer();
+                    hToolbarSizer->AddStretchSpacer(1);
 
                     // Flip-H
                     {
@@ -136,8 +136,6 @@ ShipLoadDialog<TUsageType>::ShipLoadDialog(
                             0);
                     }
 
-                    hToolbarSizer->AddSpacer(SmallMargin);
-
                     // Flip-V button
                     {
                         mFlipVButton = new BitmapToggleButton(
@@ -152,8 +150,6 @@ ShipLoadDialog<TUsageType>::ShipLoadDialog(
                             wxALIGN_BOTTOM,
                             0);
                     }
-
-                    hToolbarSizer->AddSpacer(SmallMargin);
 
                     // Rotate90 CW button
                     {
@@ -172,8 +168,6 @@ ShipLoadDialog<TUsageType>::ShipLoadDialog(
                 }
                 else if constexpr (TUsageType == ShipLoadDialogUsageType::ForShipBuilder)
                 {
-                    hToolbarSizer->AddSpacer(SmallMargin);
-
                     // Password protection indicator
                     {
                         mPasswordProtectedButton = new wxBitmapButton(this, wxID_ANY, WxHelpers::LoadBitmap("protected_small", resourceLocator), wxDefaultPosition, wxDefaultSize);
@@ -187,7 +181,7 @@ ShipLoadDialog<TUsageType>::ShipLoadDialog(
                     }
                 }
 
-                hToolbarSizer->AddStretchSpacer();
+                hToolbarSizer->AddStretchSpacer(1);
 
                 // Sort method button
                 {
@@ -224,7 +218,7 @@ ShipLoadDialog<TUsageType>::ShipLoadDialog(
                         0);
                 }
 
-                hToolbarSizer->AddStretchSpacer();
+                hToolbarSizer->AddStretchSpacer(1);
 
                 // Search
                 {
@@ -247,7 +241,7 @@ ShipLoadDialog<TUsageType>::ShipLoadDialog(
                                 wxID_ANY,
                                 wxEmptyString,
                                 wxDefaultPosition,
-                                wxSize(-1, 24),
+                                wxSize(200, 24),
                                 0);
 
                             mShipSearchCtrl->ShowCancelButton(true);
@@ -273,7 +267,7 @@ ShipLoadDialog<TUsageType>::ShipLoadDialog(
 
                     hToolbarSizer->Add(
                         vSearchSizer,
-                        1, // Use all H space
+                        0, // Maintain H width
                         wxALIGN_BOTTOM,
                         0);
                 }
