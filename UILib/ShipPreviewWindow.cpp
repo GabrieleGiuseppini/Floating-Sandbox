@@ -382,7 +382,7 @@ void ShipPreviewWindow::OnPollQueueTimer(wxTimerEvent & /*event*/)
 {
     bool haveInfoTilesBeenUpdated = false;
 
-    // Process these many messages at a time
+    // Process max these many messages at a time
     for (size_t i = 0; i < 10; ++i)
     {
         // Poll a message

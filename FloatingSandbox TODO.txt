@@ -18,12 +18,15 @@
 
 		- Fix ship exploding at max strength
 
-		- Misc quick things:
-			- See if water entering via hole is faster than water entering natural non-hull ("cut funnel")
-				- See why Bernoulli doesn't make inflow faster
-			- Negative pressure in Mylar bubble
-
 		= ShipLoadDialog Toolbar (*)
+
+		- Remove Floeddy's ships
+			- Also from credits
+				M.S. Breadmaster (Without Interior)
+				M.S. Breadmaster
+				M.S. Fluffic
+				S.S Library
+				S.S. Research
 
 		- Upgrade 
 			- GoogleTest
@@ -39,6 +42,8 @@
 		- Bubbles issue (that "old" issue)
 			- Add temp code to calc total internal water, and see if it's true that it keeps increasing
 			- Do same for "other internal pressure"
+
+		- Fireworks (*)
 
 		- Quad rendering with indices
 			- Sharing VBOs in VAOs: 
@@ -87,7 +92,11 @@
 			+ "Symmetry" - Kevin MacLeod (incompetech.com)			
 			- "Shadowlands 5 - Antechamber" - Kevin MacLeod (incompetech.com)
 
-		- Fireworks (*)
+		- Misc quick things:
+			- See if water entering via hole is faster than water entering natural non-hull ("cut funnel")
+				- See why Bernoulli doesn't make inflow faster
+			- Negative pressure in Mylar bubble - bug?
+			- See why with high water density, water entering a ship goes above the waterline - bug?
 
 		- More parallelism at Ship::Update (was: Multi-threading, phase II):
 			- Move PhysicsSimulation::UpdateWaterVelocities (8%) to separate thread
@@ -1160,7 +1169,13 @@
 				- massiveness = point's connected component size
 		- WATCH OUT: might be ugly with peaks (very vertical slope)
 			- Increase resolution of ocean floor - shouldn't impact perf other than for cache misses
-		- Richter reading upon impact (see https://www.quora.com/How-fast-did-the-Titanic-sink-to-the-bottom-and-did-it-make-a-noise-when-it-hit)
+			- Another way to reduce the warping is to have varying resolution, btw - e.g. the ocean floor becoming more detailed where an impact happens
+				- That could also open up to simulating a layer of sand that gets disturbed with the impact, without having to use particles, but by just playing with that higher-resolution "bitmap"
+		- Could also have a "dust cloud" effect
+
+
+	- Richter reading upon impact (see https://www.quora.com/How-fast-did-the-Titanic-sink-to-the-bottom-and-did-it-make-a-noise-when-it-hit)
+
 
 	- Gases:
 		- Spec:
@@ -1414,17 +1429,19 @@
 
 			+ Move search here
 			+ Move "Ok/Cancel" buttons below next to dir dropdown (taking place of "search")
-		= Tests:
-			- Sorting:
+		+ Tests:
+			+ Sorting:
 				+ Last modified: E2E
-				- Slow population
-					- Do artificial 100ms sleep @ thread, with various sorting methods
+				+ Slow population
+					+ Do artificial 100ms sleep @ thread, with various sorting methods
 				+ Year built: the string sorting that we do matches year numeric
 				+ Preview error
 				+ Search: goes from selected onwards - in right order and always down
 
 	- ShipLoadDialog improvements:
 		- Display folders in grid
+			- If we want to keep them as info tiles, sorting need to leave them at bottom - e.g. by always sorting them last
+				- We would also need different new info tile types: file or folder
 
 	- Localization:
 		- Keyboard shortcuts
