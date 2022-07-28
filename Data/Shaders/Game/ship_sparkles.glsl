@@ -49,8 +49,8 @@ void main()
     float vectorDistance = length(projection - sparkleSpacePosition);
     
     // Alpha: 1.0 at center, 0.0 at edge
-    #define LineThickness 0.1
-    float alpha = 1.0 - smoothstep(0.0, 1.0, vectorDistance/LineThickness);
+    float lineThickness = 0.1 * (1.0 - progress); // Gets narrower with time
+    float alpha = 1.0 - smoothstep(0.0, 1.0, vectorDistance / max(lineThickness, 0.01));
     
     // More transparent for t between 0 and -1
     alpha *= smoothstep(-1.5, 1.0, t);

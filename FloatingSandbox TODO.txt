@@ -20,6 +20,8 @@
 
 		= ShipLoadDialog Toolbar (*)
 
+		= Try sparkles becoming narrower with time
+
 		- Remove Floeddy's ships
 			- Also from credits
 				M.S. Breadmaster (Without Interior)
@@ -1339,7 +1341,7 @@
 					+ ForGame: three toggle buttons
 					= ForShipBuilder: password-protected
 						+ Update enabled just like we do for info
-						- Open popup when clicked?
+						- Open popup when clicked: ~"This ship is password-protected for editing."
 					+ Wider search box
 				+ Given as ShipLoadSpecifications to ShipFactory, hence must be returned by ShipLoadDialog to caller
 				+ FS::MainFrame handles ShipLoadSpecifications
@@ -1429,7 +1431,7 @@
 
 			+ Move search here
 			+ Move "Ok/Cancel" buttons below next to dir dropdown (taking place of "search")
-		+ Tests:
+		= Tests:
 			+ Sorting:
 				+ Last modified: E2E
 				+ Slow population
@@ -1437,6 +1439,7 @@
 				+ Year built: the string sorting that we do matches year numeric
 				+ Preview error
 				+ Search: goes from selected onwards - in right order and always down
+			- Test on old Dell
 
 	- ShipLoadDialog improvements:
 		- Display folders in grid
