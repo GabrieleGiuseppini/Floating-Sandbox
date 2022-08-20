@@ -14,13 +14,22 @@
 	- 1.17.4:
 
 		+ Bumpup version
+
+		= Try sparkles becoming narrower with time
+			+ Do
+			= Also rewrite them with "right" quad and simple shader
+				+ Do quad
+				= Finish shader: https://www.shadertoy.com/view/7l3yzr
+					+ Do early bailout 4 transparency
+					- Radius as param, based off length/width ratio and aspectratio
+		
 		- Update checker: more indentations
 
 		- Fix ship exploding at max strength
+		- Fix: allow users to adjust zoom speed
+			- And make both zoom and pan stop when close to target
 
 		= ShipLoadDialog Toolbar (*)
-
-		= Try sparkles becoming narrower with time
 
 		- Remove Floeddy's ships
 			- Also from credits

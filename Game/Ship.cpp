@@ -3358,11 +3358,10 @@ void Ship::GenerateSparklesForCut(
 
 
         //
-        // Calculate velocity angle: we want a gaussian centered around direction opposite to cut direction
+        // Calculate main (velocity) angle: we want a gaussian centered around direction opposite to cut direction
         //
 
         float const centralAngleCW = (cutDirectionStartPos - cutDirectionEndPos).angleCw();
-        float constexpr AngleWidth = Pi<float> / 20.0f;
 
 
         //
@@ -3382,12 +3381,12 @@ void Ship::GenerateSparklesForCut(
             // Velocity angle: gaussian centered around central angle
             float const velocityAngleCw =
                 centralAngleCW
-                + AngleWidth * GameRandomEngine::GetInstance().GenerateNormalizedNormalReal();
+                + Pi<float> / 100.0f * GameRandomEngine::GetInstance().GenerateNormalizedNormalReal();
 
             // Choose a lifetime
             float const maxLifetime = GameRandomEngine::GetInstance().GenerateUniformReal(
-                    GameParameters::MinSparkleParticlesForCutLifetime,
-                    GameParameters::MaxSparkleParticlesForCutLifetime);
+                GameParameters::MinSparkleParticlesForCutLifetime,
+                GameParameters::MaxSparkleParticlesForCutLifetime);
 
             // Create sparkle
             mPoints.CreateEphemeralParticleSparkle(

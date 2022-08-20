@@ -207,8 +207,8 @@ struct GameParameters
     static float constexpr MaxSmokeParticleLifetimeAdjustment = 10.0f;
 
     bool DoGenerateSparklesForCuts;
-    static constexpr unsigned int MinSparkleParticlesForCutEvent = 4;
-    static constexpr unsigned int MaxSparkleParticlesForCutEvent = 10;
+    static constexpr unsigned int MinSparkleParticlesForCutEvent = 1;
+    static constexpr unsigned int MaxSparkleParticlesForCutEvent = 2;
     static float constexpr MinSparkleParticlesForCutVelocity = 75.0f;
     static float constexpr MaxSparkleParticlesForCutVelocity = 150.0f;
     static constexpr float MinSparkleParticlesForCutLifetime = 0.2f;

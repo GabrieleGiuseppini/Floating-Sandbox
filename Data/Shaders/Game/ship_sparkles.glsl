@@ -33,7 +33,7 @@ in vec2 sparkleSpacePosition; // x: from -1.0 (left) to +1.0 (right); y: from -1
 void main()
 {
     // TODO: take as param, depending on length and aspect ratio    
-    #define HeadRadius 0.3
+    #define HeadRadius 0.05
     
     float yc = sparkleSpacePosition.y - (-1.0 + HeadRadius);
     
@@ -50,14 +50,16 @@ void main()
     
     // Focus
     alpha = alpha * alpha;
+
+    // Leave early outside of sparkle
+    if (alpha < 0.01)
+        discard;
     
-    // progress = 0.0: whole sparkle is yellow/white
-    // progress > 0.0: sparkle is orange at y=+1 end, yellow/white at y=-1 end
-    float progressFactor = progress * (1.0 - (1.0 - yp) / 2.0);
+    // Blend between yellow/white and orange/red depending on time
     vec3 col = mix(
-        vec3(1.0, 1.0, 0.90),	// yellow/white
-        vec3(0.9, 0.50, 0.14), 	// orange 
-        progressFactor);
+        vec3(1.0, 1.0, 0.90),	     // yellow/white
+        vec3(0.320, 0.0896, 0.0128), // orange/red
+        progress);
 
     // -----------------------------------
 
