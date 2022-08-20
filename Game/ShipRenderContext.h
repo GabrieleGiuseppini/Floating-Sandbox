@@ -641,21 +641,25 @@ public:
     inline void UploadSparkle(
         PlaneId planeId,
         vec2f const & position,
-        vec2f const & velocityVector,
+        vec2f const & velocity,
         float progress)
     {
         //
         // Calculate sparkle quad
         //
 
-        float constexpr HalfQuadSide = 1.5f;
+        float const sparkleLength = velocity.length() / 5.0f;
+        float const sparkleWidth = sparkleLength * 0.03f;
 
         // Calculate quad coordinates
-        float const leftX = position.x - HalfQuadSide;
-        float const rightX = position.x + HalfQuadSide;
-        float const topY = position.y - HalfQuadSide;
-        float const bottomY = position.y + HalfQuadSide;
-
+        vec2f const velocityDir = velocity.normalise();
+        vec2f const top = position + velocityDir * sparkleLength;
+        
+        vec2f const velocityDirPerp = velocityDir.to_perpendicular();
+        vec2f const topLeft = top - velocityDirPerp * sparkleWidth / 2.0f;
+        vec2f const toRight = top + velocityDirPerp * sparkleWidth / 2.0f;
+        vec2f const bottomLeft = position - velocityDirPerp * sparkleWidth / 2.0f;
+        vec2f const bottomRight = position + velocityDirPerp * sparkleWidth / 2.0f;
 
         //
         // Store vertices
@@ -665,52 +669,46 @@ public:
 
         // Top-left
         mSparkleVertexBuffer.emplace_back(
-            vec2f(leftX, topY),
+            topLeft,
             static_cast<float>(planeId),
             progress,
-            velocityVector,
             vec2f(-1.0f, -1.0f));
 
         // Top-right
         mSparkleVertexBuffer.emplace_back(
-            vec2f(rightX, topY),
+            toRight,
             static_cast<float>(planeId),
             progress,
-            velocityVector,
             vec2f(1.0f, -1.0f));
 
         // Bottom-left
         mSparkleVertexBuffer.emplace_back(
-            vec2f(leftX, bottomY),
+            bottomLeft,
             static_cast<float>(planeId),
             progress,
-            velocityVector,
             vec2f(-1.0f, 1.0f));
 
         // Triangle 2
 
         // Top-right
         mSparkleVertexBuffer.emplace_back(
-            vec2f(rightX, topY),
+            toRight,
             static_cast<float>(planeId),
             progress,
-            velocityVector,
             vec2f(1.0f, -1.0f));
 
         // Bottom-left
         mSparkleVertexBuffer.emplace_back(
-            vec2f(leftX, bottomY),
+            bottomLeft,
             static_cast<float>(planeId),
             progress,
-            velocityVector,
             vec2f(-1.0f, 1.0f));
 
         // Bottom-right
         mSparkleVertexBuffer.emplace_back(
-            vec2f(rightX, bottomY),
+            bottomRight,
             static_cast<float>(planeId),
             progress,
-            velocityVector,
             vec2f(1.0f, 1.0f));
     }
 
@@ -1471,19 +1469,16 @@ private:
         vec2f vertexPosition;
         float planeId;
         float progress;
-        vec2f velocityVector;
         vec2f sparkleSpacePosition;
 
         SparkleVertex(
             vec2f _vertexPosition,
             float _planeId,
             float _progress,
-            vec2f _velocityVector,
             vec2f _sparkleSpacePosition)
             : vertexPosition(_vertexPosition)
             , planeId(_planeId)
             , progress(_progress)
-            , velocityVector(_velocityVector)
             , sparkleSpacePosition(_sparkleSpacePosition)
         {}
     };

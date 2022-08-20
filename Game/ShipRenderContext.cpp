@@ -408,11 +408,11 @@ ShipRenderContext::ShipRenderContext(
 
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mSparkleVBO);
-        static_assert(sizeof(SparkleVertex) == (4 + 4) * sizeof(float));
+        static_assert(sizeof(SparkleVertex) == (4 + 2) * sizeof(float));
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Sparkle1));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Sparkle1), 4, GL_FLOAT, GL_FALSE, sizeof(SparkleVertex), (void *)0);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Sparkle2));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Sparkle2), 4, GL_FLOAT, GL_FALSE, sizeof(SparkleVertex), (void *)((4) * sizeof(float)));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Sparkle2), 2, GL_FLOAT, GL_FALSE, sizeof(SparkleVertex), (void *)((4) * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
