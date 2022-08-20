@@ -15,13 +15,12 @@
 
 		+ Bumpup version
 
-		= Try sparkles becoming narrower with time
+		+ Try sparkles becoming narrower with time
 			+ Do
-			= Also rewrite them with "right" quad and simple shader
+			+ Also rewrite them with "right" quad and simple shader
 				+ Do quad
-				= Finish shader: https://www.shadertoy.com/view/7l3yzr
+				+ Finish shader: https://www.shadertoy.com/view/7l3yzr
 					+ Do early bailout 4 transparency
-					- Radius as param, based off length/width ratio and aspectratio
 		
 		- Update checker: more indentations
 

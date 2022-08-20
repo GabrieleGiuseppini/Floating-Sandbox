@@ -32,7 +32,6 @@ in vec2 sparkleSpacePosition; // x: from -1.0 (left) to +1.0 (right); y: from -1
 
 void main()
 {
-    // TODO: take as param, depending on length and aspect ratio    
     #define HeadRadius 0.05
     
     float yc = sparkleSpacePosition.y - (-1.0 + HeadRadius);
