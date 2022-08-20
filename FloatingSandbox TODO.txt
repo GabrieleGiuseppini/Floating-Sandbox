@@ -15,6 +15,8 @@
 
 		+ Bumpup version
 
+		+ ShipLoadDialog Toolbar (*)
+
 		= Try sparkles becoming narrower with time
 			+ Do
 			+ Also rewrite them with "right" quad and simple shader
@@ -28,8 +30,6 @@
 		- Fix ship exploding at max strength
 		- Fix: allow users to adjust zoom speed
 			- And make both zoom and pan stop when close to target
-
-		= ShipLoadDialog Toolbar (*)
 
 		- Remove Floeddy's ships
 			- Also from credits
@@ -1340,115 +1340,6 @@
 
 	- Also "clock time since last reload" would be helpful
 		- Add Game Preferences radio to select clock type
-
-	= ShipLoadDialog toolbar (*): 
-		+ Toolbar:
-			+ Above preview window
-			+ Move "Info" button here
-			+ Flip H and V, Rotate 90 CCW (toggle buttons, wxBitmapToggleButton)
-				+ UI
-					+ ForGame: three toggle buttons
-					+ ForShipBuilder: password-protected
-						+ Update enabled just like we do for info
-						+ Open popup when clicked: ~"This ship is password-protected for editing."
-					+ Wider search box
-				+ Given as ShipLoadSpecifications to ShipFactory, hence must be returned by ShipLoadDialog to caller
-				+ FS::MainFrame handles ShipLoadSpecifications
-					+ Should also have UIPreferencesManager remember ShipLoadSpecs at LastShipLoadedFilePath, instead of just file path
-				+ SB::MainFrame deals with ShipLoadSpecifications - but only stores path
-					+ ShipLoadDialog templated on enum - ForGame, ForShipBuilder
-				+ ShipLayers class (@ existing Layers.cpp/h), with Flip() methods applied to all layers
-					+ Class
-						+ Flip, Rotate
-					+ Used at ShipDefinition
-					+ Used at ShipLayers also @ ShipBuilder::Model
-					+ Unit tests
-						+ Flip
-						+ Rotate
-				+ ShipFactory uses it
-				+ Tests:
-					+ ShipLoadDialog:
-						+ ForGame: flips, rotates
-						+ ForShipBuilder: shows password protection
-					+ Main: reload this ship, reload previous ship
-					+ Last ship specs saved and then loaded in preferences
-			+ Sort method, as:
-				+ BitmapButton, showing currently-selected sorting method
-					+ When clicking on it, popup appears with horizonal buttons
-						+ Icons:
-							+ Name ("A/Z")
-							+ Date added (clock?)
-							+ Year built ("1912" w/e.g. "2" over "3")
-							+ HD/Elec/... (ribbon)
-					+ When a button is selected, popup disappears amd BitmapButton icon changes to selected one
-				+ Thin button with either up or down arrow, thin horizontally but as tall as previous BitmapButton
-					+ Clicking on it toggles asc/desc for sorting, and bitmap
-				+ By: Name, Date added, Year Built, HD/Elec/0
-					~ Date added: see after install if file creation dates are still originals
-				+ Sorting impl @ PreviewWindow:
-					+ Selection is by ShipId, not index
-						+ Assigned at creation, taken by thread as well
-							+ DirectorySnapshot must store them
-						+ Adjust to new DirectorySnapshot:
-							+ ResetInfoTiles()
-							+ Thread's directory scan
-							+ Main Thread's handling of PreviewReady
-							+ Main Thread's handling of PreviewError
-						+ Helper methods:
-							+ GetInfoTileIndex(size_t ShipId) -> size_t
-					+ Vector of info tiles is assumed to be always sorted by the currently-selected method
-						+ Change InfoTile: needs to become agnostic of own position in grid, which also needs to be recalc'd a) at each new InfoTile, and b) at each change of sorting
-						+ Replace those members with functions that go to and from linear position in InfoTile vector to VirtualRect
-						+ Do strongly-typed ship file ID
-					+ Do sorting						
-						+ Has std::function "sort predicate" member, memoized by SetSortMethod/Direction()
-							+ Make non-metadata tiles (e.g. errors) always appear at end - do not use direction here
-							+ By name
-								+ Case-insensitive
-							+ By year
-								+ No year goes to end
-								+ Same year: by name (case insensitive); same name: by ship ID
-									+ By name and by ship ID: should not honor direction
-							+ By features
-								+ InfoTile: FeatureScore member, populated at InfoTile preview ready
-								+ Same feature score: by name (case insensitive); same name: by ship ID
-									- By name and by ship ID: should not honor direction
-							+ By last modified
-								+ LastModified is new attrib of ship definition file serialization @ shp2
-									+ PortableTimestamp type
-										+ From std::filesystem::path
-										+ From now()
-									+ Returned by ShipPreview
-									+ New format: in ShipAttributes:
-										+ Serializer::Save: take Now()
-											+ Write new ShipAttributes tag
-										+ Deserializer::Load: read from new tag; if not found => from file
-										+ Unit tests
-											+ Load: both formats
-									+ Other de-serializers: read from file
-								+ Same last modified: by name (case insensitive); same name: by ship ID
-									+ By name and by ship ID: should not honor direction
-						+ Initial DirectorySnapshot sorting should be invariant from sort direction
-							+ Or else won't match if changed in-between
-						+ Need to sort at:
-							+ Sortmethod change
-							+ InfoTile preview ready																
-							+ InfoTile preview error
-							+ ResortInfoTile(infoTileIndex)
-							+ For insert to work, initial InfoTiles must already be fully sorted by predicate
-						+ At each sort, need to call EnsureTileIsVisible
-
-			+ Move search here
-			+ Move "Ok/Cancel" buttons below next to dir dropdown (taking place of "search")
-		= Tests:
-			+ Sorting:
-				+ Last modified: E2E
-				+ Slow population
-					+ Do artificial 100ms sleep @ thread, with various sorting methods
-				+ Year built: the string sorting that we do matches year numeric
-				+ Preview error
-				+ Search: goes from selected onwards - in right order and always down
-			- Test on old Dell
 
 	- ShipLoadDialog improvements:
 		- Display folders in grid
@@ -3584,6 +3475,114 @@ IF WX:
 			+ Half
 			+ Broken ship
 			+ Repaired ship
+	+ ShipLoadDialog toolbar (*): 
+		+ Toolbar:
+			+ Above preview window
+			+ Move "Info" button here
+			+ Flip H and V, Rotate 90 CCW (toggle buttons, wxBitmapToggleButton)
+				+ UI
+					+ ForGame: three toggle buttons
+					+ ForShipBuilder: password-protected
+						+ Update enabled just like we do for info
+						+ Open popup when clicked: ~"This ship is password-protected for editing."
+					+ Wider search box
+				+ Given as ShipLoadSpecifications to ShipFactory, hence must be returned by ShipLoadDialog to caller
+				+ FS::MainFrame handles ShipLoadSpecifications
+					+ Should also have UIPreferencesManager remember ShipLoadSpecs at LastShipLoadedFilePath, instead of just file path
+				+ SB::MainFrame deals with ShipLoadSpecifications - but only stores path
+					+ ShipLoadDialog templated on enum - ForGame, ForShipBuilder
+				+ ShipLayers class (@ existing Layers.cpp/h), with Flip() methods applied to all layers
+					+ Class
+						+ Flip, Rotate
+					+ Used at ShipDefinition
+					+ Used at ShipLayers also @ ShipBuilder::Model
+					+ Unit tests
+						+ Flip
+						+ Rotate
+				+ ShipFactory uses it
+				+ Tests:
+					+ ShipLoadDialog:
+						+ ForGame: flips, rotates
+						+ ForShipBuilder: shows password protection
+					+ Main: reload this ship, reload previous ship
+					+ Last ship specs saved and then loaded in preferences
+			+ Sort method, as:
+				+ BitmapButton, showing currently-selected sorting method
+					+ When clicking on it, popup appears with horizonal buttons
+						+ Icons:
+							+ Name ("A/Z")
+							+ Date added (clock?)
+							+ Year built ("1912" w/e.g. "2" over "3")
+							+ HD/Elec/... (ribbon)
+					+ When a button is selected, popup disappears amd BitmapButton icon changes to selected one
+				+ Thin button with either up or down arrow, thin horizontally but as tall as previous BitmapButton
+					+ Clicking on it toggles asc/desc for sorting, and bitmap
+				+ By: Name, Date added, Year Built, HD/Elec/0
+					~ Date added: see after install if file creation dates are still originals
+				+ Sorting impl @ PreviewWindow:
+					+ Selection is by ShipId, not index
+						+ Assigned at creation, taken by thread as well
+							+ DirectorySnapshot must store them
+						+ Adjust to new DirectorySnapshot:
+							+ ResetInfoTiles()
+							+ Thread's directory scan
+							+ Main Thread's handling of PreviewReady
+							+ Main Thread's handling of PreviewError
+						+ Helper methods:
+							+ GetInfoTileIndex(size_t ShipId) -> size_t
+					+ Vector of info tiles is assumed to be always sorted by the currently-selected method
+						+ Change InfoTile: needs to become agnostic of own position in grid, which also needs to be recalc'd a) at each new InfoTile, and b) at each change of sorting
+						+ Replace those members with functions that go to and from linear position in InfoTile vector to VirtualRect
+						+ Do strongly-typed ship file ID
+					+ Do sorting						
+						+ Has std::function "sort predicate" member, memoized by SetSortMethod/Direction()
+							+ Make non-metadata tiles (e.g. errors) always appear at end - do not use direction here
+							+ By name
+								+ Case-insensitive
+							+ By year
+								+ No year goes to end
+								+ Same year: by name (case insensitive); same name: by ship ID
+									+ By name and by ship ID: should not honor direction
+							+ By features
+								+ InfoTile: FeatureScore member, populated at InfoTile preview ready
+								+ Same feature score: by name (case insensitive); same name: by ship ID
+									- By name and by ship ID: should not honor direction
+							+ By last modified
+								+ LastModified is new attrib of ship definition file serialization @ shp2
+									+ PortableTimestamp type
+										+ From std::filesystem::path
+										+ From now()
+									+ Returned by ShipPreview
+									+ New format: in ShipAttributes:
+										+ Serializer::Save: take Now()
+											+ Write new ShipAttributes tag
+										+ Deserializer::Load: read from new tag; if not found => from file
+										+ Unit tests
+											+ Load: both formats
+									+ Other de-serializers: read from file
+								+ Same last modified: by name (case insensitive); same name: by ship ID
+									+ By name and by ship ID: should not honor direction
+						+ Initial DirectorySnapshot sorting should be invariant from sort direction
+							+ Or else won't match if changed in-between
+						+ Need to sort at:
+							+ Sortmethod change
+							+ InfoTile preview ready																
+							+ InfoTile preview error
+							+ ResortInfoTile(infoTileIndex)
+							+ For insert to work, initial InfoTiles must already be fully sorted by predicate
+						+ At each sort, need to call EnsureTileIsVisible
+
+			+ Move search here
+			+ Move "Ok/Cancel" buttons below next to dir dropdown (taking place of "search")
+		+ Tests:
+			+ Sorting:
+				+ Last modified: E2E
+				+ Slow population
+					+ Do artificial 100ms sleep @ thread, with various sorting methods
+				+ Year built: the string sorting that we do matches year numeric
+				+ Preview error
+				+ Search: goes from selected onwards - in right order and always down
+			+ Test on old Dell
 
 + Gfx:
 	+ Do ropes with two endpoints (000xxx)
