@@ -13,6 +13,7 @@
 #include <UILib/WxHelpers.h>
 
 #include <wx/sizer.h>
+#include <wx/statbmp.h>
 
 constexpr int MinDirCtrlWidth = 260;
 constexpr int MaxDirComboWidth = 650;
@@ -23,6 +24,9 @@ ShipLoadDialog<TUsageType>::ShipLoadDialog(
     ResourceLocator const & resourceLocator)
     : mParent(parent)
     , mResourceLocator(resourceLocator)
+    ///
+    , mPasswordProtectionInfoDialog(nullptr)
+    ///
     , mStandardInstalledShipFolderPath(resourceLocator.GetInstalledShipFolderPath())
     , mUserShipFolderPath(StandardSystemPaths::GetInstance().GetUserShipFolderPath())
 {
@@ -170,8 +174,33 @@ ShipLoadDialog<TUsageType>::ShipLoadDialog(
                 {
                     // Password protection indicator
                     {
+                        // Notif dialog
+                        {
+                            mPasswordProtectionInfoDialog = new wxDialog(this, wxID_ANY, _T("Info"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxSTAY_ON_TOP);
+
+                            auto * hSizer = new wxBoxSizer(wxHORIZONTAL);
+
+                            hSizer->AddSpacer(15);
+
+                            auto icon = new wxStaticBitmap(mPasswordProtectionInfoDialog, wxID_ANY, WxHelpers::LoadBitmap("protected_medium", resourceLocator));
+                            hSizer->Add(icon, 0, wxALIGN_CENTER_VERTICAL | wxALL, 8);
+
+                            auto label = new wxStaticText(mPasswordProtectionInfoDialog, wxID_ANY, _("This ship is password-protected for editing."), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
+                            hSizer->Add(label, 0, wxALIGN_CENTER_VERTICAL | wxALL, 8);
+
+                            hSizer->AddSpacer(15);
+
+                            mPasswordProtectionInfoDialog->SetSizerAndFit(hSizer);
+                        }
+
                         mPasswordProtectedButton = new wxBitmapButton(this, wxID_ANY, WxHelpers::LoadBitmap("protected_small", resourceLocator), wxDefaultPosition, wxDefaultSize);
                         mPasswordProtectedButton->SetToolTip(_("Indicates whether the ship is password-protected"));
+                        mPasswordProtectedButton->Bind(wxEVT_BUTTON,
+                            [this](wxCommandEvent &)
+                            {
+                                mPasswordProtectionInfoDialog->CenterOnParent();
+                                mPasswordProtectionInfoDialog->ShowModal();
+                            });
 
                         hToolbarSizer->Add(
                             mPasswordProtectedButton,

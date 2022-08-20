@@ -125,6 +125,8 @@ private:
     wxButton * mLoadButton;
     wxBitmapButton * mSearchNextButton;
 
+    wxDialog * mPasswordProtectionInfoDialog;
+
 private:
 
     std::filesystem::path const mStandardInstalledShipFolderPath;

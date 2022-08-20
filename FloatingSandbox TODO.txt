@@ -15,12 +15,13 @@
 
 		+ Bumpup version
 
-		+ Try sparkles becoming narrower with time
+		= Try sparkles becoming narrower with time
 			+ Do
 			+ Also rewrite them with "right" quad and simple shader
 				+ Do quad
 				+ Finish shader: https://www.shadertoy.com/view/7l3yzr
 					+ Do early bailout 4 transparency
+			- Think of "tail problem" (sparkle appearing far from cut because of tail being transparent)
 		
 		- Update checker: more indentations
 
@@ -1341,15 +1342,15 @@
 		- Add Game Preferences radio to select clock type
 
 	= ShipLoadDialog toolbar (*): 
-		= Toolbar:
+		+ Toolbar:
 			+ Above preview window
 			+ Move "Info" button here
-			= Flip H and V, Rotate 90 CCW (toggle buttons, wxBitmapToggleButton)
-				= UI
+			+ Flip H and V, Rotate 90 CCW (toggle buttons, wxBitmapToggleButton)
+				+ UI
 					+ ForGame: three toggle buttons
-					= ForShipBuilder: password-protected
+					+ ForShipBuilder: password-protected
 						+ Update enabled just like we do for info
-						- Open popup when clicked: ~"This ship is password-protected for editing."
+						+ Open popup when clicked: ~"This ship is password-protected for editing."
 					+ Wider search box
 				+ Given as ShipLoadSpecifications to ShipFactory, hence must be returned by ShipLoadDialog to caller
 				+ FS::MainFrame handles ShipLoadSpecifications
