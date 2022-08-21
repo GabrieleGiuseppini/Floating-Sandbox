@@ -219,7 +219,7 @@ public:
         Points const & points)
     {
         // Recalculate coefficients for this paritition
-        UpdateCoefficients(
+        UpdateCoefficientsForPartition(
             partition,
             partitionCount,
             mCurrentNumMechanicalDynamicsIterations,
@@ -651,14 +651,14 @@ private:
             * (Clamp(strength, StartStrength, EndStrength) - StartStrength);
     }
 
-    void UpdateCoefficients(
+    void UpdateCoefficientsForPartition(
         ElementIndex partition,
         ElementIndex partitionCount,
         float numMechanicalDynamicsIterations,
-        float numMechanicalDynamicsIterationsAdjustment,
         float stiffnessAdjustment,
         float dampingAdjustment,
         float strengthAdjustment,
+        float strengthIterationsAdjustment,
         float meltingTemperatureAdjustment,
         Points const & points);
 

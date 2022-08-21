@@ -184,7 +184,7 @@ void Springs::UpdateForGameParameters(
         mCurrentMeltingTemperatureAdjustment = gameParameters.MeltingTemperatureAdjustment;
 
         // Recalc whole
-        UpdateCoefficients(
+        UpdateCoefficientsForPartition(
             0, 1,
             mCurrentNumMechanicalDynamicsIterations,
             mCurrentSpringStiffnessAdjustment,
@@ -363,20 +363,17 @@ void Springs::InternalUpdateForStrains(
     }
 }
 
-void Springs::UpdateCoefficients(
+void Springs::UpdateCoefficientsForPartition(
     ElementIndex partition,
     ElementIndex partitionCount,
     float numMechanicalDynamicsIterations,
-    float numMechanicalDynamicsIterationsAdjustment,
     float stiffnessAdjustment,
     float dampingAdjustment,
     float strengthAdjustment,
+    float strengthIterationsAdjustment,
     float meltingTemperatureAdjustment,
     Points const & points)
 {
-    float const strengthIterationsAdjustment
-        = CalculateSpringStrengthIterationsAdjustment(numMechanicalDynamicsIterationsAdjustment);
-
     // Recalc all parameters
     ElementCount const partitionSize = (GetElementCount() / partitionCount) + ((GetElementCount() % partitionCount) ? 1 : 0);
     ElementCount const startSpringIndex = partition * partitionSize;

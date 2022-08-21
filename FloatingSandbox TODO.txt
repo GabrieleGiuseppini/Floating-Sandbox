@@ -16,6 +16,7 @@
 		+ Bumpup version
 
 		+ ShipLoadDialog Toolbar (*)
+		+ Fix ship exploding at max strength
 
 		= Try sparkles becoming narrower with time
 			+ Do
@@ -27,7 +28,6 @@
 		
 		- Update checker: more indentations
 
-		- Fix ship exploding at max strength
 		- Fix: allow users to adjust zoom speed
 			- And make both zoom and pan stop when close to target
 
