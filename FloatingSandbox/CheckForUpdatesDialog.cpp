@@ -22,6 +22,8 @@ CheckForUpdatesDialog::CheckForUpdatesDialog(
         wxDefaultSize,
         wxCAPTION | wxFRAME_SHAPED | wxSTAY_ON_TOP)
 {
+    int constexpr Margin = 12;
+
     SetMinSize(wxSize(300, -1));
 
     mPanelSizer = new wxBoxSizer(wxVERTICAL);
@@ -43,13 +45,13 @@ CheckForUpdatesDialog::CheckForUpdatesDialog(
                 auto label = new wxStaticText(mCheckingPanel, wxID_ANY, _("Checking for updates..."), wxDefaultPosition,
                     wxDefaultSize, wxALIGN_CENTER_HORIZONTAL);
 
-                vSizer->Add(label, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 6);
+                vSizer->Add(label, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, Margin);
             }
 
             {
                 mCheckingGauge = new wxGauge(mCheckingPanel, wxID_ANY, 20, wxDefaultPosition, wxDefaultSize, wxGA_HORIZONTAL);
 
-                vSizer->Add(mCheckingGauge, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 6);
+                vSizer->Add(mCheckingGauge, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, Margin);
             }
 
             vSizer->AddStretchSpacer(1);
@@ -76,14 +78,14 @@ CheckForUpdatesDialog::CheckForUpdatesDialog(
                 mNoUpdateMessage = new wxStaticText(mNoUpdatePanel, wxID_ANY, wxEmptyString, wxDefaultPosition,
                     wxSize(-1, 30), wxALIGN_CENTER_HORIZONTAL);
 
-                vSizer->Add(mNoUpdateMessage, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 6);
+                vSizer->Add(mNoUpdateMessage, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, Margin);
             }
 
             {
                 wxButton * okButton = new wxButton(mNoUpdatePanel, wxID_CANCEL, _("OK"));
                 okButton->SetDefault();
 
-                vSizer->Add(okButton, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, 6);
+                vSizer->Add(okButton, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, Margin);
             }
 
             vSizer->AddStretchSpacer(1);

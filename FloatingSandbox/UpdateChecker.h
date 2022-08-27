@@ -33,16 +33,16 @@ public:
 
         // Only populated when OutcomeType==HasVersion
         std::optional<Version> LatestVersion;
-        std::vector<std::vector<std::string>> Features;
+        std::string HtmlFeatures;
 
         static Outcome MakeHasVersionOutcome(
             Version && latestVersion,
-            std::vector<std::vector<std::string>> && features)
+            std::string && htmlFeatures)
         {
             return Outcome(
                 UpdateCheckOutcomeType::HasVersion,
                 std::move(latestVersion),
-                std::move(features));
+                std::move(htmlFeatures));
         }
 
         static Outcome MakeErrorOutcome()
@@ -64,10 +64,10 @@ public:
         Outcome(
             UpdateCheckOutcomeType outcomeType,
             std::optional<Version> && latestVersion,
-            std::vector<std::vector<std::string>> && features)
+            std::string && htmlFeatures)
             : OutcomeType(outcomeType)
             , LatestVersion(std::move(latestVersion))
-            , Features(std::move(features))
+            , HtmlFeatures(std::move(htmlFeatures))
         {}
     };
 
@@ -88,6 +88,7 @@ public:
         static std::optional<Outcome> OptionalOutcome;
 
         std::lock_guard<std::mutex> lock(mOutcomeMutex);
+
         if (!!mOutcome)
             OptionalOutcome = *mOutcome;
         else

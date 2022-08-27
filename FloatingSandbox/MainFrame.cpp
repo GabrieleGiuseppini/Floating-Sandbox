@@ -2074,7 +2074,7 @@ void MainFrame::OnCheckForUpdatesMenuItemSelected(wxCommandEvent & /*event*/)
         NewVersionDisplayDialog newVersionDlg(
             this,
             *(checkDlg.GetHasVersionOutcome()->LatestVersion),
-            checkDlg.GetHasVersionOutcome()->Features,
+            checkDlg.GetHasVersionOutcome()->HtmlFeatures,
             nullptr);
 
         newVersionDlg.ShowModal();
@@ -2109,7 +2109,7 @@ void MainFrame::RunGameIteration()
                 NewVersionDisplayDialog dlg(
                     this,
                     *(outcome->LatestVersion),
-                    outcome->Features,
+                    outcome->HtmlFeatures,
                     mUIPreferencesManager.get());
 
                 dlg.ShowModal();

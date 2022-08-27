@@ -260,7 +260,7 @@ namespace Utils
     // String
     ////////////////////////////////////////////////////////
 
-    inline std::string Trim(std::string const & str)
+    inline std::string LTrim(std::string const & str)
     {
         std::string str2 = str;
         str2.erase(str2.begin(), std::find_if(str2.begin(), str2.end(), [](int ch) {
@@ -268,6 +268,21 @@ namespace Utils
         }));
 
         return str2;
+    }
+
+    inline std::string RTrim(std::string const & str)
+    {
+        std::string str2 = str;
+        str2.erase(std::find_if(str2.rbegin(), str2.rend(), [](int ch) {
+            return !std::isspace(ch);
+        }).base(), str2.end());
+
+        return str2;
+    }
+
+    inline std::string Trim(std::string const & str)
+    {
+        return LTrim(RTrim(str));
     }
 
     inline std::string ToLower(std::string const & str)
@@ -552,4 +567,10 @@ namespace Utils
         file.flush();
         file.close();
     }
+
+    ////////////////////////////////////////////////////////
+    // Misc
+    ////////////////////////////////////////////////////////
+
+    std::string ChangelistToHtml(std::istream & inputStream);
 };

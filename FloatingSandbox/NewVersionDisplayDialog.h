@@ -23,7 +23,7 @@ public:
     NewVersionDisplayDialog(
         wxWindow* parent,
         Version const & version,
-        std::vector<std::vector<std::string>> const & features,
+        std::string const & htmlFeatures,
         UIPreferencesManager * uiPreferencesManager); // Only if at startup
 
     virtual ~NewVersionDisplayDialog();
@@ -32,7 +32,7 @@ private:
 
     static std::string MakeHtml(
         Version const & version,
-        std::vector<std::vector<std::string>> const & features);
+        std::string const & htmlFeatures);
 
     void OnGoToDownloadPageButtonClicked(wxCommandEvent & event);
 

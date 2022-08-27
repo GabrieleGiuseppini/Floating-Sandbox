@@ -6,6 +6,7 @@
 #include "UpdateChecker.h"
 
 #include <GameCore/Log.h>
+#include <GameCore/Utils.h>
 
 #include <SFML/Network/Http.hpp>
 
@@ -52,39 +53,11 @@ UpdateChecker::Outcome UpdateChecker::ParseChangeList(std::string const & change
     // Parse features
     //
 
-    static std::regex const FeatureRegex(R"(^(\s+)?-\s*(.*)\s*$)");
-
-    std::vector<std::vector<std::string>> features;
-
-    std::vector<std::string> * currentFeature = nullptr;
-
-    while (true)
-    {
-        std::getline(ss, line);
-        if (!ss.good())
-            break;
-
-        if (line.empty())
-            break; // We're done with this feature
-
-        std::smatch featureMatch;
-        if (std::regex_match(line, featureMatch, FeatureRegex))
-        {
-            assert(featureMatch.size() == 1 + 2);
-            if (!featureMatch[1].matched ||
-                nullptr == currentFeature)
-            {
-                // New feature
-                currentFeature = &(features.emplace_back());
-            }
-
-            currentFeature->push_back(featureMatch[2].str());
-        }
-    }
+    std::string htmlFeatures = Utils::ChangelistToHtml(ss);
 
     return Outcome::MakeHasVersionOutcome(
         std::move(version),
-        std::move(features));
+        std::move(htmlFeatures));
 }
 
 void UpdateChecker::WorkerThread()
@@ -97,8 +70,8 @@ void UpdateChecker::WorkerThread()
         ////    std::this_thread::sleep_for(std::chrono::seconds(2));
         ////    std::ifstream f("C:\\Users\\Neurodancer\\source\\repos\\Floating-Sandbox\\changes.txt");
 
-        ////    std::unique_ptr<char[]> buf(new char[16384]);
-        ////    f.read(buf.get(), 16384);
+        ////    std::unique_ptr<char[]> buf(new char[32768]);
+        ////    f.read(buf.get(), 32768);
         ////    changesFileContent = std::string(buf.get(), f.gcount());
         ////}
 
@@ -122,10 +95,13 @@ void UpdateChecker::WorkerThread()
 
         {
             std::lock_guard<std::mutex> lock(mOutcomeMutex);
+
             mOutcome = std::make_unique<Outcome>(ParseChangeList(changesFileContent));
 
             if (mOutcome->OutcomeType == UpdateCheckOutcomeType::HasVersion)
+            {
                 LogMessage("UpdateChecker: LatestVersion=" + mOutcome->LatestVersion->ToString());
+            }
         }
     }
     catch (...)

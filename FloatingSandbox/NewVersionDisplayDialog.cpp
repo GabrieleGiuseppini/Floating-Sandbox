@@ -14,7 +14,7 @@
 NewVersionDisplayDialog::NewVersionDisplayDialog(
     wxWindow* parent,
     Version const & version,
-    std::vector<std::vector<std::string>> const & features,
+    std::string const & htmlFeatures,
     UIPreferencesManager * uiPreferencesManager)
     : wxDialog(parent, wxID_ANY, _("A New Version Is Available!"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxSTAY_ON_TOP)
     , mVersion(version)
@@ -31,7 +31,7 @@ NewVersionDisplayDialog::NewVersionDisplayDialog(
             wxHW_SCROLLBAR_AUTO | wxHW_NO_SELECTION);
 
         html->SetBorders(0);
-        html->SetPage(MakeHtml(version, features));
+        html->SetPage(MakeHtml(version, htmlFeatures));
 
         topSizer->Add(html, 1, wxALL, 10);
     }
@@ -81,7 +81,7 @@ NewVersionDisplayDialog::~NewVersionDisplayDialog()
 
 std::string NewVersionDisplayDialog::MakeHtml(
     Version const & version,
-    std::vector<std::vector<std::string>> const & features)
+    std::string const & htmlFeatures)
 {
     std::stringstream ss;
 
@@ -99,32 +99,9 @@ std::string NewVersionDisplayDialog::MakeHtml(
 </tr>)";
 
 
-    ss << "<tr><td><ul>";
-
-    for (auto const & feature : features)
-    {
-        ss << "<li>";
-
-        auto sfIt = feature.cbegin();
-        assert(sfIt != feature.cend());
-        ss << *(sfIt++);
-
-        if (sfIt != feature.cend())
-        {
-            ss << "<ul>";
-
-            for (; sfIt != feature.cend(); ++sfIt)
-            {
-                ss << "<li>" << *sfIt << "</li>";
-            }
-
-            ss << "</ul>";
-        }
-
-        ss << "</li>";
-    }
-
-    ss << "</ul></td></tr>";
+    ss  << "<tr><td>"
+        << htmlFeatures
+        << "</td></tr>";
 
 
     ss << R"(</table></body></html>)";

@@ -75,3 +75,116 @@ void Utils::SaveJSONFile(
         serializedJson,
         filepath);
 }
+
+////////////////////////////////////////////////////////
+// Misc
+////////////////////////////////////////////////////////
+
+std::string Utils::ChangelistToHtml(std::istream & inputStream)
+{
+    static std::regex const FeatureRegex(R"(^(\s*)-\s*(.*)\s*$)");
+
+    std::stringstream outputStream;
+
+    // State
+    int currentIndent = 0;
+    bool isCurrentlyInBullet = false;
+
+    while (true)
+    {
+        std::string line;
+        std::getline(inputStream, line);
+        if (line.empty() && !inputStream.good())
+        {
+            // We're done
+            break;
+        }
+
+        line = RTrim(line);
+
+        if (line.empty() && outputStream.tellp() != 0)
+        {
+            // We're done with this section
+            break;
+        }
+
+        std::smatch featureMatch;
+        if (std::regex_match(line, featureMatch, FeatureRegex))
+        {
+            //
+            // Bullet
+            //
+
+            // Close previous
+            if (isCurrentlyInBullet)
+            {
+                outputStream << "</li>";
+                isCurrentlyInBullet = false;
+            }
+
+            assert(featureMatch.size() == 1 + 2);
+
+            // Calculate indent size
+            int indent = 0;
+            for (char const ch : featureMatch[1].str())
+            {
+                if (ch == '\t')
+                    indent += 4;
+                else
+                    indent += 1;
+            }
+
+            // Normalize in 1...N range
+            indent = 1 + (indent / 4);
+
+            // Indent
+
+            while (indent > currentIndent)
+            {
+                outputStream << "<ul>";
+                ++currentIndent;
+            }
+
+            while (indent < currentIndent)
+            {
+                outputStream << "</ul>";
+                --currentIndent;
+            }
+
+            // Add bullet
+            outputStream << "<li>" << Trim(featureMatch[2].str());
+
+            isCurrentlyInBullet = true;
+        }
+        else
+        {
+            //
+            // No new bullet
+            //
+
+            // Eventually new line
+            if (outputStream.tellp() != 0)
+            {
+                outputStream << "<br/>";
+            }
+
+            outputStream << Trim(line);
+        }
+    }
+
+    // Close
+
+    if (isCurrentlyInBullet)
+    {
+        outputStream << "</li>";
+        isCurrentlyInBullet = false;
+    }
+
+    while (currentIndent > 0)
+    {
+        outputStream << "</ul>";
+        --currentIndent;
+    }
+
+    return outputStream.str();
+}

@@ -17,6 +17,7 @@
 
 		+ ShipLoadDialog Toolbar (*)
 		+ Fix ship exploding at max strength
+		+ Update checker: more indentations
 
 		= Try sparkles becoming narrower with time
 			+ Do
@@ -26,8 +27,6 @@
 					+ Do early bailout 4 transparency
 			- Think of "tail problem" (sparkle appearing far from cut because of tail being transparent)
 		
-		- Update checker: more indentations
-
 		- Fix: allow users to adjust zoom speed
 			- And make both zoom and pan stop when close to target
 
