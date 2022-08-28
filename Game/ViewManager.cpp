@@ -20,6 +20,7 @@ ViewManager::ViewManager(
     , mZoomParameterSmoother()
     , mCameraWorldPositionParameterSmoother()
     // Defaults
+    , mCameraSpeedAdjustment(1.0f)
     , mDoAutoFocusOnShipLoad(true)
     , mAutoFocus() // Set later
 {
@@ -36,7 +37,7 @@ ViewManager::ViewManager(
         {
             return mRenderContext.ClampZoom(value);
         },
-        0.05f);
+        CalculateZoomParameterSmootherConvergenceFactor(mCameraSpeedAdjustment));
 
     mCameraWorldPositionParameterSmoother = std::make_unique<ParameterSmoother<vec2f>>(
         [this]() -> vec2f const &
@@ -51,10 +52,26 @@ ViewManager::ViewManager(
         {
             return mRenderContext.ClampCameraWorldPosition(value);
         },
-        0.1f);
+        CalculateCameraWorldPositionParameterSmootherConvergenceFactor(mCameraSpeedAdjustment));
 
     // Default: continuous auto-focus is ON
     SetDoContinuousAutoFocus(true);
+}
+
+float ViewManager::GetCameraSpeedAdjustment() const
+{
+    return mCameraSpeedAdjustment;
+}
+
+void ViewManager::SetCameraSpeedAdjustment(float value)
+{
+    mCameraSpeedAdjustment = value;
+
+    mZoomParameterSmoother->SetConvergenceFactor(
+        CalculateZoomParameterSmootherConvergenceFactor(mCameraSpeedAdjustment));
+
+    mCameraWorldPositionParameterSmoother->SetConvergenceFactor(
+        CalculateCameraWorldPositionParameterSmootherConvergenceFactor(mCameraSpeedAdjustment));
 }
 
 bool ViewManager::GetDoAutoFocusOnShipLoad() const
@@ -266,6 +283,50 @@ void ViewManager::Update(Geometry::AABBSet const & allAABBs)
 
     mZoomParameterSmoother->Update();
     mCameraWorldPositionParameterSmoother->Update();
+}
+
+float ViewManager::CalculateZoomParameterSmootherConvergenceFactor(float cameraSpeedAdjustment)
+{
+    return CalculateParameterSmootherConvergenceFactor(
+        cameraSpeedAdjustment,
+        0.005f,
+        0.05f,
+        0.3f);
+}
+
+float ViewManager::CalculateCameraWorldPositionParameterSmootherConvergenceFactor(float cameraSpeedAdjustment)
+{
+    return CalculateParameterSmootherConvergenceFactor(
+        cameraSpeedAdjustment,
+        0.005f,
+        0.1f,
+        0.3f);
+}
+
+float ViewManager::CalculateParameterSmootherConvergenceFactor(
+    float cameraSpeedAdjustment,
+    float min,
+    float mid,
+    float max)
+{
+    // SpeedAdjMin  => Min
+    // SpeedAdj 1.0 => Mid
+    // SpeedAdjMax  => Max
+
+    static_assert(GetMinCameraSpeedAdjustment() < 1.0 && 1.0 < GetMaxCameraSpeedAdjustment());
+
+    if (cameraSpeedAdjustment < 1.0f)
+    {
+        return
+            min
+            + (mid - min) * (cameraSpeedAdjustment - GetMinCameraSpeedAdjustment()) / (1.0f - GetMinCameraSpeedAdjustment());
+    }
+    else
+    {
+        return mid
+            + (max - mid) * (cameraSpeedAdjustment - 1.0f) / (GetMaxCameraSpeedAdjustment() - 1.0f);
+
+    }
 }
 
 void ViewManager::InternalFocusOnShip(Geometry::AABBSet const & allAABBs)

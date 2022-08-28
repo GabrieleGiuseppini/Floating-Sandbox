@@ -91,6 +91,11 @@ public:
         }
     }
 
+    void SetConvergenceFactor(float value)
+    {
+        mConvergenceFactor = value;
+    }
+
 private:
 
     float Distance(float value1, float value2) const
@@ -108,7 +113,7 @@ private:
     std::function<TValue const & ()> const mGetter;
     std::function<TValue const &(TValue const &)> const mSetter;
     std::function<TValue(TValue const &)> const mClamper;
-    float const mConvergenceFactor;
+    float mConvergenceFactor;
 
     TValue mCurrentValue;
     TValue mTargetValue; // This is also the new official storage of the parameter value

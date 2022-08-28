@@ -43,6 +43,7 @@ private:
     void OnShowTsunamiNotificationsCheckBoxClicked(wxCommandEvent & event);
     void OnZoomIncrementSpinCtrl(wxSpinEvent & event);
     void OnPanIncrementSpinCtrl(wxSpinEvent & event);
+    void OnCameraSpeedAdjustmentSpinCtrl(wxSpinEvent & event);
     void OnShowStatusTextCheckBoxClicked(wxCommandEvent & event);
     void OnShowExtendedStatusTextCheckBoxClicked(wxCommandEvent & event);
     void OnLanguagesListBoxSelected(wxCommandEvent & event);
@@ -76,6 +77,9 @@ private:
     static int PanIncrementSpinToPanIncrement(int spinPosition);
     static int PanIncrementToPanIncrementSpin(int panIncrement);
 
+    float CameraSpeedAdjustmentSpinToCameraSpeedAdjustment(int spinPosition) const;
+    int CameraSpeedAdjustmentToCameraSpeedAdjustmentSpin(float zoomIncrement) const;
+
     void ReconciliateShipAutoTexturizationModeSettings();
     void ReconcileSoundSettings();
 
@@ -92,6 +96,7 @@ private:
     wxCheckBox * mShowTsunamiNotificationsCheckBox;
     wxSpinCtrl * mZoomIncrementSpinCtrl;
     wxSpinCtrl * mPanIncrementSpinCtrl;
+    wxSpinCtrl * mCameraSpeedAdjustmentSpinCtrl;
     wxCheckBox * mShowStatusTextCheckBox;
     wxCheckBox * mShowExtendedStatusTextCheckBox;
     wxListBox * mLanguagesListBox;

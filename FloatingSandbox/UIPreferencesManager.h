@@ -196,6 +196,26 @@ public:
         mShowShipDescriptionsAtShipLoad = value;
     }
 
+    float GetCameraSpeedAdjustment() const
+    {
+        return mGameController->GetCameraSpeedAdjustment();
+    }
+
+    void SetCameraSpeedAdjustment(float value)
+    {
+        mGameController->SetCameraSpeedAdjustment(value);
+    }
+
+    float GetMinCameraSpeedAdjustment() const
+    {
+        return mGameController->GetMinCameraSpeedAdjustment();
+    }
+
+    float GetMaxCameraSpeedAdjustment() const
+    {
+        return mGameController->GetMaxCameraSpeedAdjustment();
+    }
+
     bool GetDoAutoFocusAtShipLoad() const
     {
         return mGameController->GetDoAutoFocusOnShipLoad();

@@ -158,6 +158,12 @@ struct IGameController
     virtual vec2f ScreenToWorld(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
     virtual vec2f ScreenOffsetToWorldOffset(DisplayLogicalSize const & screenOffset) const = 0;
 
+    virtual float GetCameraSpeedAdjustment() const = 0;
+    virtual void SetCameraSpeedAdjustment(float value) = 0;
+    virtual float GetMinCameraSpeedAdjustment() const = 0;
+    virtual float GetMaxCameraSpeedAdjustment() const = 0;
+
+
     virtual bool GetDoAutoFocusOnShipLoad() const = 0;
     virtual void SetDoAutoFocusOnShipLoad(bool value) = 0;
 

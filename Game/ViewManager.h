@@ -23,6 +23,11 @@ public:
         Render::RenderContext & renderContext,
         NotificationLayer & notificationLayer);
 
+    float GetCameraSpeedAdjustment() const;
+    void SetCameraSpeedAdjustment(float value);
+    static float constexpr GetMinCameraSpeedAdjustment() { return 0.2f; }
+    static float constexpr GetMaxCameraSpeedAdjustment() { return 10.0f; }
+
     bool GetDoAutoFocusOnShipLoad() const;
     void SetDoAutoFocusOnShipLoad(bool value);
 
@@ -41,6 +46,14 @@ public:
 
 private:
 
+    static float CalculateZoomParameterSmootherConvergenceFactor(float cameraSpeedAdjustment);
+    static float CalculateCameraWorldPositionParameterSmootherConvergenceFactor(float cameraSpeedAdjustment);
+    static float CalculateParameterSmootherConvergenceFactor(
+        float cameraSpeedAdjustment,
+        float min,
+        float mid,
+        float max);
+
     void InternalFocusOnShip(Geometry::AABBSet const & allAABBs);
 
     float InternalCalculateZoom(Geometry::AABB const & aabb);
@@ -53,11 +66,9 @@ private:
     std::unique_ptr<ParameterSmoother<float>> mZoomParameterSmoother;
     std::unique_ptr<ParameterSmoother<vec2f>> mCameraWorldPositionParameterSmoother;
 
-    //
-    // Auto-zoom and auto-focus
-    //
+    float mCameraSpeedAdjustment; // Storage
 
-    bool mDoAutoFocusOnShipLoad;
+    bool mDoAutoFocusOnShipLoad; // Storage
 
     struct AutoFocusSessionData
     {

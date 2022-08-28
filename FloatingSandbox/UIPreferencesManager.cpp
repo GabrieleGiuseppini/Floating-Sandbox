@@ -309,13 +309,23 @@ void UIPreferencesManager::LoadPreferences()
         ////}
 
         //
+        // Camera speed adjustment
+        //
+
+        if (auto it = preferencesRootObject->find("camera_speed_adjustment");
+            it != preferencesRootObject->end() && it->second.is<double>())
+        {
+            mGameController->SetCameraSpeedAdjustment(static_cast<float>(it->second.get<double>()));
+        }
+
+        //
         // Auto-focus at ship load
         //
 
-        if (auto autoZoomAtShipLoadIt = preferencesRootObject->find("auto_zoom_at_ship_load");
-            autoZoomAtShipLoadIt != preferencesRootObject->end() && autoZoomAtShipLoadIt->second.is<bool>())
+        if (auto it = preferencesRootObject->find("auto_zoom_at_ship_load");
+            it != preferencesRootObject->end() && it->second.is<bool>())
         {
-            mGameController->SetDoAutoFocusOnShipLoad(autoZoomAtShipLoadIt->second.get<bool>());
+            mGameController->SetDoAutoFocusOnShipLoad(it->second.get<bool>());
         }
 
         //
@@ -520,6 +530,9 @@ void UIPreferencesManager::SavePreferences() const
     // We don't load/save this setting on purpose
     ////// Add ship auto-texturization force shared settings onto ship
     ////preferencesRootObject["ship_auto_texturization_force_defaults_onto_ship"] = picojson::value(mGameController->GetShipAutoTexturizationDoForceSharedSettingsOntoShipSettings());
+
+    // Add camera speed adjustment
+    preferencesRootObject["camera_speed_adjustment"] = picojson::value(static_cast<double>(mGameController->GetCameraSpeedAdjustment()));
 
     // Add auto focus at ship load
     preferencesRootObject["auto_zoom_at_ship_load"] = picojson::value(mGameController->GetDoAutoFocusOnShipLoad());

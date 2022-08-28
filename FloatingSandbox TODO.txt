@@ -27,8 +27,16 @@
 					+ Do early bailout 4 transparency
 			- Think of "tail problem" (sparkle appearing far from cut because of tail being transparent)
 		
-		- Fix: allow users to adjust zoom speed
-			- And make both zoom and pan stop when close to target
+		= Fix: allow users to adjust zoom speed
+			+ Smoother
+			= Preferences UI
+				- Slider? TODO
+			- Commit
+			- Use state (mCurrentTrajectory) for:
+				- Avoid step (slope change)
+				- Adaptive distance threshold
+					- for "And make both zoom and pan stop when close to target"
+						- Try higher distance threshold
 
 		- Remove Floeddy's ships
 			- Also from credits

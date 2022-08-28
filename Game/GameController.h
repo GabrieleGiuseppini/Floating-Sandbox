@@ -252,6 +252,11 @@ public:
     vec2f ScreenToWorld(DisplayLogicalCoordinates const & screenCoordinates) const override;
     vec2f ScreenOffsetToWorldOffset(DisplayLogicalSize const & screenOffset) const override;
 
+    float GetCameraSpeedAdjustment() const override { return mViewManager.GetCameraSpeedAdjustment(); }
+    void SetCameraSpeedAdjustment(float value) override { mViewManager.SetCameraSpeedAdjustment(value); }
+    float GetMinCameraSpeedAdjustment() const override { return ViewManager::GetMinCameraSpeedAdjustment(); }
+    float GetMaxCameraSpeedAdjustment() const override { return ViewManager::GetMaxCameraSpeedAdjustment(); }
+
     bool GetDoAutoFocusOnShipLoad() const override { return mViewManager.GetDoAutoFocusOnShipLoad(); }
     void SetDoAutoFocusOnShipLoad(bool value) override { mViewManager.SetDoAutoFocusOnShipLoad(value); }
 

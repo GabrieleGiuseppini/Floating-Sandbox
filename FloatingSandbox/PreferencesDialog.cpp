@@ -26,6 +26,7 @@ static int constexpr SliderHeight = 140;
 
 static int constexpr MaxZoomIncrementPosition = 200;
 static int constexpr MaxPanIncrementPosition = 200;
+static float constexpr CameraSpeedAdjustmentSpinFactor = 100.0f;
 
 PreferencesDialog::PreferencesDialog(
     wxWindow* parent,
@@ -206,6 +207,14 @@ void PreferencesDialog::OnPanIncrementSpinCtrl(wxSpinEvent & event)
 {
     assert(!!mUIPreferencesManager);
     mUIPreferencesManager->SetPanIncrement(PanIncrementSpinToPanIncrement(event.GetPosition()));
+
+    mOnChangeCallback();
+}
+
+void PreferencesDialog::OnCameraSpeedAdjustmentSpinCtrl(wxSpinEvent & event)
+{
+    assert(!!mUIPreferencesManager);
+    mUIPreferencesManager->SetCameraSpeedAdjustment(CameraSpeedAdjustmentSpinToCameraSpeedAdjustment(event.GetPosition()));
 
     mOnChangeCallback();
 }
@@ -503,16 +512,31 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
             }
 
             {
-                mShowStatusTextCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY,
-                    _("Show Status Text"), wxDefaultPosition, wxDefaultSize, 0);
-                mShowStatusTextCheckBox->SetToolTip(_("Enables or disables the display of game performance information, such as frame rate and time elapsed."));
-                mShowStatusTextCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowStatusTextCheckBoxClicked, this);
+                mCameraSpeedAdjustmentSpinCtrl = new wxSpinCtrl(boxSizer->GetStaticBox(), wxID_ANY, _("Camera Speed"), wxDefaultPosition, wxSize(75, -1),
+                    wxSP_ARROW_KEYS | wxALIGN_CENTRE_HORIZONTAL);
+                mCameraSpeedAdjustmentSpinCtrl->SetRange(
+                    CameraSpeedAdjustmentToCameraSpeedAdjustmentSpin(mUIPreferencesManager->GetMinCameraSpeedAdjustment()), 
+                    CameraSpeedAdjustmentToCameraSpeedAdjustmentSpin(mUIPreferencesManager->GetMaxCameraSpeedAdjustment()));
+                mCameraSpeedAdjustmentSpinCtrl->SetToolTip(_("Adjusts the speed of the camera movements."));
+                mCameraSpeedAdjustmentSpinCtrl->Bind(wxEVT_SPINCTRL, &PreferencesDialog::OnCameraSpeedAdjustmentSpinCtrl, this);
 
                 sizer->Add(
-                    mShowStatusTextCheckBox,
+                    mCameraSpeedAdjustmentSpinCtrl,
                     wxGBPosition(2, 2),
-                    wxGBSpan(1, 2),
+                    wxGBSpan(1, 1),
                     wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxBOTTOM | wxRIGHT,
+                    UserInterfaceBorder);
+            }
+
+            {
+                auto label = new wxStaticText(boxSizer->GetStaticBox(), wxID_ANY, _("Camera Speed"), wxDefaultPosition, wxDefaultSize,
+                    wxALIGN_LEFT);
+
+                sizer->Add(
+                    label,
+                    wxGBPosition(2, 3),
+                    wxGBSpan(1, 1),
+                    wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxBOTTOM | wxRIGHT,
                     UserInterfaceBorder);
             }
 
@@ -533,15 +557,15 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
                     wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxBOTTOM,
                     UserInterfaceBorder);
             }
-            
+
             {
-                mShowExtendedStatusTextCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY,
-                    _("Show Extended Status Text"), wxDefaultPosition, wxDefaultSize, 0);
-                mShowExtendedStatusTextCheckBox->SetToolTip(_("Enables or disables the display of extended game performance information, such as update/render ratio and counts of primitives being rendered."));
-                mShowExtendedStatusTextCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowExtendedStatusTextCheckBoxClicked, this);
+                mShowStatusTextCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY,
+                    _("Show Status Text"), wxDefaultPosition, wxDefaultSize, 0);
+                mShowStatusTextCheckBox->SetToolTip(_("Enables or disables the display of game performance information, such as frame rate and time elapsed."));
+                mShowStatusTextCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowStatusTextCheckBoxClicked, this);
 
                 sizer->Add(
-                    mShowExtendedStatusTextCheckBox,
+                    mShowStatusTextCheckBox,
                     wxGBPosition(3, 2),
                     wxGBSpan(1, 2),
                     wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxBOTTOM | wxRIGHT,
@@ -563,6 +587,20 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
                     wxGBPosition(4, 0),
                     wxGBSpan(1, 1),
                     wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxLEFT | wxBOTTOM,
+                    UserInterfaceBorder);
+            }
+
+            {
+                mShowExtendedStatusTextCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY,
+                    _("Show Extended Status Text"), wxDefaultPosition, wxDefaultSize, 0);
+                mShowExtendedStatusTextCheckBox->SetToolTip(_("Enables or disables the display of extended game performance information, such as update/render ratio and counts of primitives being rendered."));
+                mShowExtendedStatusTextCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED, &PreferencesDialog::OnShowExtendedStatusTextCheckBoxClicked, this);
+
+                sizer->Add(
+                    mShowExtendedStatusTextCheckBox,
+                    wxGBPosition(4, 2),
+                    wxGBSpan(1, 2),
+                    wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL | wxBOTTOM | wxRIGHT,
                     UserInterfaceBorder);
             }
 
@@ -1179,6 +1217,7 @@ void PreferencesDialog::ReadSettings()
     mShowTsunamiNotificationsCheckBox->SetValue(mUIPreferencesManager->GetDoShowTsunamiNotifications());
     mZoomIncrementSpinCtrl->SetValue(ZoomIncrementToZoomIncrementSpin(mUIPreferencesManager->GetZoomIncrement()));
     mPanIncrementSpinCtrl->SetValue(PanIncrementToPanIncrementSpin(mUIPreferencesManager->GetPanIncrement()));
+    mCameraSpeedAdjustmentSpinCtrl->SetValue(CameraSpeedAdjustmentToCameraSpeedAdjustmentSpin(mUIPreferencesManager->GetCameraSpeedAdjustment()));
     mShowStatusTextCheckBox->SetValue(mUIPreferencesManager->GetShowStatusText());
     mShowExtendedStatusTextCheckBox->SetValue(mUIPreferencesManager->GetShowExtendedStatusText());
     mLanguagesListBox->SetSelection(GetLanguagesListBoxIndex(mUIPreferencesManager->GetDesiredLanguage()));
@@ -1254,6 +1293,16 @@ int PreferencesDialog::PanIncrementSpinToPanIncrement(int spinPosition)
 int PreferencesDialog::PanIncrementToPanIncrementSpin(int panIncrement)
 {
     return panIncrement;
+}
+
+float PreferencesDialog::CameraSpeedAdjustmentSpinToCameraSpeedAdjustment(int spinPosition) const
+{
+    return static_cast<float>(spinPosition) / CameraSpeedAdjustmentSpinFactor;
+}
+
+int PreferencesDialog::CameraSpeedAdjustmentToCameraSpeedAdjustmentSpin(float cameraSpeedAdjustment) const
+{
+    return static_cast<int>(cameraSpeedAdjustment * CameraSpeedAdjustmentSpinFactor);
 }
 
 void PreferencesDialog::ReconciliateShipAutoTexturizationModeSettings()
