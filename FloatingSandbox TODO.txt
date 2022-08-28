@@ -25,6 +25,9 @@
 			+ M.S. Fluffic
 			+ S.S Library
 			+ S.S. Research
+		+ Upgrade 
+			+ GoogleTest
+			+ Google Benchmark
 
 		= Fix: allow users to adjust zoom speed
 			+ Smoother
@@ -44,13 +47,6 @@
 					+ Do early bailout 4 transparency
 			- Think of "tail problem" (sparkle appearing far from cut because of tail being transparent)
 		
-		= Upgrade 
-			- GoogleTest
-				- x64
-				- Win32
-				- Readme
-			+ Google Benchmark
-
 		- At lights going off, before flickering: flash w/spread and luminiscence
 			- See 1:53 at https://www.youtube.com/watch?v=yg9rkceLOzA
 			- Impl:

@@ -68,12 +68,12 @@ Many Linux distributions now use Wayland for their desktop environments, and Flo
 I build this game with Visual Studio 2022 (thus with full C++ 17 support) on Windows. From time to time I also build on Ubuntu to ensure the codebase is still portable.
 
 In order to build the game, you will need the following dependencies:
-- <a href="https://www.wxwidgets.org/">WxWidgets</a> v3.1.4 (cross-platform GUI library)
-- <a href="http://openil.sourceforge.net/">DevIL</a> (cross-platform image manipulation library)
-- <a href="https://www.sfml-dev.org/index.php">SFML</a> (cross-platform multimedia library)
+- <a href="https://www.wxwidgets.org/">WxWidgets</a> (cross-platform GUI library) (v3.1.4)
+- <a href="http://openil.sourceforge.net/">DevIL</a> (cross-platform image manipulation library) (1.8.0)
+- <a href="https://www.sfml-dev.org/index.php">SFML</a> (cross-platform multimedia library) (2.5.1)
 - <a href="https://github.com/kazuho/picojson">picojson</a> (header-only JSON parser and serializer)
-- <a href="https://github.com/google/benchmark">Google Benchmark</a> 1.7.0
-- <a href="https://github.com/google/googletest/">Google Test</a> (release-1.10.0)
+- <a href="https://github.com/google/benchmark">Google Benchmark</a> (1.7.0)
+- <a href="https://github.com/google/googletest/">Google Test</a> (release-1.12.0)
 - ...and the ubiquitous _zlib_, _jpeg_, and _libpng_ libraries.
 
 A custom `UserSettings.cmake` may be used in order to configure the locations of all dependencies. If you want to use it, copy the `UserSettings.example-<platform>.cmake` example file to `UserSettings.cmake` and adapt it to your setup. In case you do not want to use this file, you can use the example to get an overview of all CMake variables you might need to use to configure the dependencies.
