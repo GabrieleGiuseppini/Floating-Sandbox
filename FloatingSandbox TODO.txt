@@ -29,9 +29,8 @@
 		
 		= Fix: allow users to adjust zoom speed
 			+ Smoother
-			= Preferences UI
-				- Slider? TODO
-			- Commit
+			+ Preferences UI
+			+ Commit
 			- Use state (mCurrentTrajectory) for:
 				- Avoid step (slope change)
 				- Adaptive distance threshold

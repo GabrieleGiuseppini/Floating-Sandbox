@@ -291,7 +291,7 @@ float ViewManager::CalculateZoomParameterSmootherConvergenceFactor(float cameraS
         cameraSpeedAdjustment,
         0.005f,
         0.05f,
-        0.3f);
+        0.2f);
 }
 
 float ViewManager::CalculateCameraWorldPositionParameterSmootherConvergenceFactor(float cameraSpeedAdjustment)
@@ -300,7 +300,7 @@ float ViewManager::CalculateCameraWorldPositionParameterSmootherConvergenceFacto
         cameraSpeedAdjustment,
         0.005f,
         0.1f,
-        0.3f);
+        0.2f);
 }
 
 float ViewManager::CalculateParameterSmootherConvergenceFactor(
