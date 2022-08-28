@@ -18,6 +18,22 @@
 		+ ShipLoadDialog Toolbar (*)
 		+ Fix ship exploding at max strength
 		+ Update checker: more indentations
+		+ Remove Floeddy's ships
+			+ Also from credits
+			+ M.S. Breadmaster (Without Interior)
+			+ M.S. Breadmaster
+			+ M.S. Fluffic
+			+ S.S Library
+			+ S.S. Research
+
+		= Fix: allow users to adjust zoom speed
+			+ Smoother
+			+ Preferences UI
+			+ Commit
+			- Slowe convergence problem:
+				! Only affects pan - zoom is OK (confirmed with log)
+				! Due to smooth-stepping offsets (confirmed with log)
+				- TODO: fix?
 
 		= Try sparkles becoming narrower with time
 			+ Do
@@ -27,24 +43,6 @@
 					+ Do early bailout 4 transparency
 			- Think of "tail problem" (sparkle appearing far from cut because of tail being transparent)
 		
-		= Fix: allow users to adjust zoom speed
-			+ Smoother
-			+ Preferences UI
-			+ Commit
-			- Use state (mCurrentTrajectory) for:
-				- Avoid step (slope change)
-				- Adaptive distance threshold
-					- for "And make both zoom and pan stop when close to target"
-						- Try higher distance threshold
-
-		- Remove Floeddy's ships
-			- Also from credits
-				M.S. Breadmaster (Without Interior)
-				M.S. Breadmaster
-				M.S. Fluffic
-				S.S Library
-				S.S. Research
-
 		- Upgrade 
 			- GoogleTest
 			- Google Benchmark
