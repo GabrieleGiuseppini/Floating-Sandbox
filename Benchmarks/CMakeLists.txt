@@ -53,3 +53,13 @@ if (MSVC)
                 PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD_DEBUG TRUE)
 
 endif (MSVC)
+
+
+#
+# Copy files
+#
+
+message (STATUS "Copying data files for Benchmarks...")
+
+file(COPY "${CMAKE_SOURCE_DIR}/Data"
+	DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/Release")

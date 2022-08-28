@@ -30,10 +30,11 @@
 			+ Smoother
 			+ Preferences UI
 			+ Commit
-			- Slowe convergence problem:
+			- Slow convergence problem:
 				! Only affects pan - zoom is OK (confirmed with log)
 				! Due to smooth-stepping offsets (confirmed with log)
 				- TODO: fix?
+					- Option 1: smoothstep only when setting in smoother, not in own calculations
 
 		= Try sparkles becoming narrower with time
 			+ Do
@@ -43,9 +44,12 @@
 					+ Do early bailout 4 transparency
 			- Think of "tail problem" (sparkle appearing far from cut because of tail being transparent)
 		
-		- Upgrade 
+		= Upgrade 
 			- GoogleTest
-			- Google Benchmark
+				- x64
+				- Win32
+				- Readme
+			+ Google Benchmark
 
 		- At lights going off, before flickering: flash w/spread and luminiscence
 			- See 1:53 at https://www.youtube.com/watch?v=yg9rkceLOzA
@@ -53,6 +57,7 @@
 				- "lights severed" flag becomes enum (for water, for severed)
 				- At lamp state machine: use a single opt<bool> storing first decision on whether or not to do it
 				- Lamp::State contains TransientApertureMultiplier, and that's the one messed with by state
+					- And of course it's used when uploading to lights buffer, multiplied with actual aperture
 
 		- Bubbles issue (that "old" issue)
 			- Add temp code to calc total internal water, and see if it's true that it keeps increasing
