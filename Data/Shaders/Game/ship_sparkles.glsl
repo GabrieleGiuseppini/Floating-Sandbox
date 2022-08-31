@@ -34,11 +34,13 @@ void main()
 {
     #define HeadRadius 0.05
     
-    float yc = sparkleSpacePosition.y - (-1.0 + HeadRadius);
+    float yc = sparkleSpacePosition.y - (-1.0 + HeadRadius);  // -HeadRadius, 0.0, 2.0 - HeadRadius
+
+    float ycBottomScaled = yc / (2.0 - HeadRadius); // Bottom 0.0: 0.0 ... 1.0
     
     float yp = 
         step(yc, 0.0) * yc / HeadRadius
-        + step(0.0, yc) * yc / (2.0 - HeadRadius);
+        + step(0.0, yc) * (ycBottomScaled * ycBottomScaled);
         
     float antiProgress = 1.0 - progress;
     float depth = max(

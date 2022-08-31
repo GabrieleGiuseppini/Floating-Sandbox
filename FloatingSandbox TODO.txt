@@ -29,24 +29,29 @@
 			+ GoogleTest
 			+ Google Benchmark
 
-		= Fix: allow users to adjust zoom speed
-			+ Smoother
-			+ Preferences UI
-			+ Commit
-			- Slow convergence problem:
-				! Only affects pan - zoom is OK (confirmed with log)
-				! Due to smooth-stepping offsets (confirmed with log)
-				- TODO: fix?
-					- Option 1: smoothstep only when setting in smoother, not in own calculations
-
-		= Try sparkles becoming narrower with time
+		+ Try sparkles becoming narrower with time
 			+ Do
 			+ Also rewrite them with "right" quad and simple shader
 				+ Do quad
 				+ Finish shader: https://www.shadertoy.com/view/7l3yzr
 					+ Do early bailout 4 transparency
-			- Think of "tail problem" (sparkle appearing far from cut because of tail being transparent)
-		
+			+ Think of "tail problem" (sparkle appearing far from cut because of tail being transparent)
+				~ Try: alpha = smoothstep(0.0, 1.0, alpha);
+				~ Try: yp * 0.9
+				+ Try square
+			+ Shorter sparkles (less velocity @ generation)
+				+ But then wider dependency of width w/velocity
+
+		= Fix: allow users to adjust zoom speed
+			+ Smoother
+			+ Preferences UI
+			+ Commit
+			= Slow convergence problem:
+				! Only affects pan - zoom is OK (confirmed with log)
+				! Due to current smooth-stepping of offsets (confirmed with log)
+				- TODO: fix?
+					- Option 1: smoothstep only when setting in smoother, not in own calculations
+
 		- At lights going off, before flickering: flash w/spread and luminiscence
 			- See 1:53 at https://www.youtube.com/watch?v=yg9rkceLOzA
 			- Impl:
