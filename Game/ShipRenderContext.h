@@ -648,7 +648,7 @@ public:
         // Calculate sparkle quad
         //
 
-        float const sparkleLength = velocity.length() / 3.33f;
+        float const sparkleLength = velocity.length() / 5.0f;
         float const sparkleWidth = sparkleLength * 0.03f;
 
         // Calculate quad coordinates

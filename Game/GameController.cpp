@@ -127,6 +127,7 @@ GameController::GameController(
     //
 
     float constexpr GenericParameterConvergenceFactor = 0.1f;
+    float constexpr GenericParameterTerminationThreshold = 0.0005f;
 
     assert(mFloatParameterSmoothers.size() == SpringStiffnessAdjustmentParameterSmoother);
     mFloatParameterSmoothers.emplace_back(
@@ -138,7 +139,8 @@ GameController::GameController(
         {
             this->mGameParameters.SpringStiffnessAdjustment = value;
         },
-        GenericParameterConvergenceFactor);
+        GenericParameterConvergenceFactor,
+        GenericParameterTerminationThreshold);
 
     assert(mFloatParameterSmoothers.size() == SpringStrengthAdjustmentParameterSmoother);
     mFloatParameterSmoothers.emplace_back(
@@ -150,7 +152,8 @@ GameController::GameController(
         {
             this->mGameParameters.SpringStrengthAdjustment = value;
         },
-        GenericParameterConvergenceFactor);
+        GenericParameterConvergenceFactor,
+        GenericParameterTerminationThreshold);
 
     assert(mFloatParameterSmoothers.size() == SeaDepthParameterSmoother);
     mFloatParameterSmoothers.emplace_back(
@@ -162,7 +165,8 @@ GameController::GameController(
         {
             this->mGameParameters.SeaDepth = value;
         },
-        GenericParameterConvergenceFactor);
+        GenericParameterConvergenceFactor,
+        GenericParameterTerminationThreshold);
 
     assert(mFloatParameterSmoothers.size() == OceanFloorBumpinessParameterSmoother);
     mFloatParameterSmoothers.emplace_back(
@@ -174,7 +178,8 @@ GameController::GameController(
         {
             this->mGameParameters.OceanFloorBumpiness = value;
         },
-        GenericParameterConvergenceFactor);
+        GenericParameterConvergenceFactor,
+        GenericParameterTerminationThreshold);
 
     assert(mFloatParameterSmoothers.size() == OceanFloorDetailAmplificationParameterSmoother);
     mFloatParameterSmoothers.emplace_back(
@@ -186,7 +191,8 @@ GameController::GameController(
         {
             this->mGameParameters.OceanFloorDetailAmplification = value;
         },
-        GenericParameterConvergenceFactor);
+        GenericParameterConvergenceFactor,
+        GenericParameterTerminationThreshold);
 
     assert(mFloatParameterSmoothers.size() == FlameSizeAdjustmentParameterSmoother);
     mFloatParameterSmoothers.emplace_back(
@@ -198,7 +204,8 @@ GameController::GameController(
         {
             this->mRenderContext->SetShipFlameSizeAdjustment(value);
         },
-        GenericParameterConvergenceFactor);
+        GenericParameterConvergenceFactor,
+        GenericParameterTerminationThreshold);
 
     assert(mFloatParameterSmoothers.size() == BasalWaveHeightAdjustmentParameterSmoother);
     mFloatParameterSmoothers.emplace_back(
@@ -210,7 +217,8 @@ GameController::GameController(
         {
             this->mGameParameters.BasalWaveHeightAdjustment = value;
         },
-        GenericParameterConvergenceFactor);
+        GenericParameterConvergenceFactor,
+        GenericParameterTerminationThreshold);
 
     assert(mFloatParameterSmoothers.size() == FishSizeMultiplierParameterSmoother);
     mFloatParameterSmoothers.emplace_back(
@@ -222,7 +230,8 @@ GameController::GameController(
         {
             this->mGameParameters.FishSizeMultiplier = value;
         },
-        GenericParameterConvergenceFactor);
+        GenericParameterConvergenceFactor,
+        GenericParameterTerminationThreshold);
 
     //
     // Calibrate game

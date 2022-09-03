@@ -3349,55 +3349,34 @@ void Ship::GenerateSparklesForCut(
 {
     if (gameParameters.DoGenerateSparklesForCuts)
     {
-        //
-        // Choose number of particles
-        //
-
-        unsigned int const sparkleParticleCount = GameRandomEngine::GetInstance().GenerateUniformInteger(
-            GameParameters::MinSparkleParticlesForCutEvent, GameParameters::MaxSparkleParticlesForCutEvent);
-
-
-        //
-        // Calculate main (velocity) angle: we want a gaussian centered around direction opposite to cut direction
-        //
-
-        float const centralAngleCW = (cutDirectionStartPos - cutDirectionEndPos).angleCw();
-
-
-        //
-        // Create particles
-        //
-
         vec2f const sparklePosition = mSprings.GetMidpointPosition(springElementIndex, mPoints);
 
         float const sparkleDepth = mParentWorld.GetOceanSurface().GetDepth(sparklePosition);
 
-        for (unsigned int d = 0; d < sparkleParticleCount; ++d)
-        {
-            // Velocity magnitude
-            float const velocityMagnitude = GameRandomEngine::GetInstance().GenerateUniformReal(
-                GameParameters::MinSparkleParticlesForCutVelocity, GameParameters::MaxSparkleParticlesForCutVelocity);
+        // Velocity magnitude
+        float const velocityMagnitude = GameRandomEngine::GetInstance().GenerateUniformReal(
+            GameParameters::MinSparkleParticlesForCutVelocity, GameParameters::MaxSparkleParticlesForCutVelocity);
 
-            // Velocity angle: gaussian centered around central angle
-            float const velocityAngleCw =
-                centralAngleCW
-                + Pi<float> / 100.0f * GameRandomEngine::GetInstance().GenerateNormalizedNormalReal();
+        // Velocity angle: gaussian centered around direction opposite to cut direction
+        float const centralAngleCW = (cutDirectionStartPos - cutDirectionEndPos).angleCw();
+        float const velocityAngleCw =
+            centralAngleCW
+            + Pi<float> / 100.0f * GameRandomEngine::GetInstance().GenerateNormalizedNormalReal();
 
-            // Choose a lifetime
-            float const maxLifetime = GameRandomEngine::GetInstance().GenerateUniformReal(
-                GameParameters::MinSparkleParticlesForCutLifetime,
-                GameParameters::MaxSparkleParticlesForCutLifetime);
+        // Choose a lifetime
+        float const maxLifetime = GameRandomEngine::GetInstance().GenerateUniformReal(
+            GameParameters::MinSparkleParticlesForCutLifetime,
+            GameParameters::MaxSparkleParticlesForCutLifetime);
 
-            // Create sparkle
-            mPoints.CreateEphemeralParticleSparkle(
-                sparklePosition,
-                vec2f::fromPolar(velocityMagnitude, velocityAngleCw),
-                mSprings.GetBaseStructuralMaterial(springElementIndex),
-                sparkleDepth,
-                currentSimulationTime,
-                maxLifetime,
-                mSprings.GetPlaneId(springElementIndex, mPoints));
-        }
+        // Create sparkle
+        mPoints.CreateEphemeralParticleSparkle(
+            sparklePosition,
+            vec2f::fromPolar(velocityMagnitude, velocityAngleCw),
+            mSprings.GetBaseStructuralMaterial(springElementIndex),
+            sparkleDepth,
+            currentSimulationTime,
+            maxLifetime,
+            mSprings.GetPlaneId(springElementIndex, mPoints));
     }
 }
 

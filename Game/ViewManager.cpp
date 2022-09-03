@@ -37,7 +37,8 @@ ViewManager::ViewManager(
         {
             return mRenderContext.ClampZoom(value);
         },
-        CalculateZoomParameterSmootherConvergenceFactor(mCameraSpeedAdjustment));
+        CalculateZoomParameterSmootherConvergenceFactor(mCameraSpeedAdjustment),
+        0.0001f);
 
     mCameraWorldPositionParameterSmoother = std::make_unique<ParameterSmoother<vec2f>>(
         [this]() -> vec2f const &
@@ -52,7 +53,8 @@ ViewManager::ViewManager(
         {
             return mRenderContext.ClampCameraWorldPosition(value);
         },
-        CalculateCameraWorldPositionParameterSmootherConvergenceFactor(mCameraSpeedAdjustment));
+        CalculateCameraWorldPositionParameterSmootherConvergenceFactor(mCameraSpeedAdjustment),
+        0.001f);
 
     // Default: continuous auto-focus is ON
     SetDoContinuousAutoFocus(true);
@@ -232,8 +234,8 @@ void ViewManager::Update(Geometry::AABBSet const & allAABBs)
             // Convert back into world offset
             vec2f const newAutoFocusCameraWorldPositionOffset = mRenderContext.NdcOffsetToWorldOffset(
                 vec2f(
-                    newAutoFocusCameraPositionNdcOffset.x * SmoothStep(0.0f, 0.1f, std::abs(newAutoFocusCameraPositionNdcOffset.x)),    // Compress X displacement to reduce small oscillations
-                    newAutoFocusCameraPositionNdcOffset.y * SmoothStep(0.0f, 0.4f, std::abs(newAutoFocusCameraPositionNdcOffset.y))),   // Compress Y displacement to reduce effect of waves
+                    newAutoFocusCameraPositionNdcOffset.x * SmoothStep(0.04f, 0.1f, std::abs(newAutoFocusCameraPositionNdcOffset.x)),    // Compress X displacement to reduce small oscillations
+                    newAutoFocusCameraPositionNdcOffset.y * SmoothStep(0.04f, 0.4f, std::abs(newAutoFocusCameraPositionNdcOffset.y))),   // Compress Y displacement to reduce effect of waves
                 mAutoFocus->CurrentAutoFocusZoom);
 
             mAutoFocus->CurrentAutoFocusCameraWorldPosition = mAutoFocus->CurrentAutoFocusCameraWorldPosition + newAutoFocusCameraWorldPositionOffset;

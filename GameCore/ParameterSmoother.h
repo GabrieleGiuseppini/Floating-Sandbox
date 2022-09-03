@@ -16,7 +16,8 @@ public:
     ParameterSmoother(
         std::function<TValue const &()> getter,
         std::function<void(TValue const &)> setter,
-        float convergenceFactor)
+        float convergenceFactor,
+        float terminationThreshold)
         : ParameterSmoother(
             getter,
             [setter](TValue const & value) -> TValue const &
@@ -28,18 +29,21 @@ public:
             {
                 return value;
             },
-            convergenceFactor)
+            convergenceFactor,
+            terminationThreshold)
     {}
 
     ParameterSmoother(
         std::function<TValue const &()> getter,
         std::function<TValue const &(TValue const &)> setter,
         std::function<TValue(TValue const &)> clamper,
-        float convergenceFactor)
+        float convergenceFactor,
+        float terminationThreshold)
         : mGetter(std::move(getter))
         , mSetter(std::move(setter))
         , mClamper(std::move(clamper))
         , mConvergenceFactor(convergenceFactor)
+        , mTerminationThreshold(terminationThreshold)
     {
         mCurrentValue = mTargetValue = mGetter();
     }
@@ -76,7 +80,7 @@ public:
             mCurrentValue += (mTargetValue - mCurrentValue) * mConvergenceFactor;
 
             // See if close enough
-            if (Distance(mCurrentValue, mTargetValue) < 0.0001f)
+            if (Distance(mCurrentValue, mTargetValue) < mTerminationThreshold)
             {
                 // Reached target
                 mCurrentValue = mTargetValue;
@@ -114,6 +118,7 @@ private:
     std::function<TValue const &(TValue const &)> const mSetter;
     std::function<TValue(TValue const &)> const mClamper;
     float mConvergenceFactor;
+    float const mTerminationThreshold;
 
     TValue mCurrentValue;
     TValue mTargetValue; // This is also the new official storage of the parameter value
