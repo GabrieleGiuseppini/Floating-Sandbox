@@ -636,5 +636,4 @@ private:
 };
 
 wxDECLARE_EVENT(fsEVT_SHIP_FILE_SELECTED, ShipPreviewWindow::fsShipFileSelectedEvent);
-
 wxDECLARE_EVENT(fsEVT_SHIP_FILE_CHOSEN, ShipPreviewWindow::fsShipFileChosenEvent);
