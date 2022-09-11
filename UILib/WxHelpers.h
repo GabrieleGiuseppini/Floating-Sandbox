@@ -15,22 +15,26 @@
 #include <wx/image.h>
 #include <wx/wx.h>
 
+#include <filesystem>
 #include <string>
 
 namespace WxHelpers
 {
     wxBitmap LoadBitmap(
         std::string const & bitmapName,
-        ResourceLocator const & resourceLocator);
+        ResourceLocator const & resourceLocator);    
 
     wxBitmap LoadBitmap(
         std::string const & bitmapName,
         ImageSize const & size,
         ResourceLocator const & resourceLocator);
 
+    wxBitmap LoadBitmap(std::filesystem::path const & bitmapFilePath);
+
     wxBitmap MakeBitmap(RgbaImageData const & imageData);
 
-    wxBitmap MakeSelectedButtonBitmap(wxBitmap const & baseBitmap);
+    wxBitmap MakeBaseButtonBitmap(std::filesystem::path const & bitmapFilePath);
+    wxBitmap MakeSelectedButtonBitmap(std::filesystem::path const & bitmapFilePath);
 
     wxBitmap MakeMatteBitmap(
         rgbaColor const & color,

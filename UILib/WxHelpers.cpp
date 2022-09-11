@@ -19,7 +19,7 @@ wxBitmap WxHelpers::LoadBitmap(
     std::string const & bitmapName,
     ResourceLocator const & resourceLocator)
 {
-    return wxBitmap(resourceLocator.GetBitmapFilePath(bitmapName).string(), wxBITMAP_TYPE_PNG);
+    return LoadBitmap(resourceLocator.GetBitmapFilePath(bitmapName));
 }
 
 wxBitmap WxHelpers::LoadBitmap(
@@ -35,6 +35,11 @@ wxBitmap WxHelpers::LoadBitmap(
     wxImage image(resourceLocator.GetBitmapFilePath(bitmapName).string(), wxBITMAP_TYPE_PNG);
     image.Rescale(size.width, size.height, wxIMAGE_QUALITY_HIGH);
     return wxBitmap(image);
+}
+
+wxBitmap WxHelpers::LoadBitmap(std::filesystem::path const & bitmapFilePath)
+{
+    return wxBitmap(bitmapFilePath.string(), wxBITMAP_TYPE_PNG);
 }
 
 wxBitmap WxHelpers::MakeBitmap(RgbaImageData const & imageData)
@@ -84,125 +89,141 @@ wxBitmap WxHelpers::MakeBitmap(RgbaImageData const & imageData)
     return bitmap;
 }
 
-wxBitmap WxHelpers::MakeSelectedButtonBitmap(wxBitmap const & baseBitmap)
+wxBitmap WxHelpers::MakeBaseButtonBitmap(std::filesystem::path const & bitmapFilePath)
 {
-    rgbaColor const borderColor = rgbaColor(ButtonSelectedBorderColor, 255);
-    rgbaColor const bgColor = rgbaColor(ButtonSelectedBgColor, 255);
+    wxBitmap baseBitmap = LoadBitmap(bitmapFilePath);
+    auto const baseWidth = baseBitmap.GetWidth();
+    auto const baseHeight = baseBitmap.GetHeight();
 
-    auto const width = baseBitmap.GetWidth();
-    auto const height = baseBitmap.GetHeight();
-
-    wxBitmap bitmap = baseBitmap.GetSubBitmap(wxRect(0, 0, width, height));
-
-    wxPixelData<wxBitmap, wxAlphaPixelFormat> const pixelData(bitmap);
-    if (!pixelData)
+    wxPixelData<wxBitmap, wxAlphaPixelFormat> const rPixelData(baseBitmap);
+    if (!rPixelData)
     {
         throw std::runtime_error("Cannot get bitmap pixel data");
     }
 
-    assert(pixelData.GetWidth() == width);
-    assert(pixelData.GetHeight() == height);
+    wxBitmap newBitmap = wxBitmap(baseWidth + 2 * Style::ButtonExtraBorderThickness, baseHeight + 2 * Style::ButtonExtraBorderThickness);
+    auto const newWidth = newBitmap.GetWidth();
+    auto const newHeight = newBitmap.GetHeight();
 
-    //
-    // Add border, and make interior light blue-ish
-    //
-
-    auto readIt = pixelData.GetPixels();
-    auto writeIt = pixelData.GetPixels();
-
-    readIt.OffsetY(pixelData, height - 1);
-    writeIt.OffsetY(pixelData, height - 1);
-
-    // Border bottom
+    wxPixelData<wxBitmap, wxAlphaPixelFormat> wPixelData(newBitmap);
+    if (!wPixelData)
     {
-        auto wRowStart = writeIt;
-
-        for (int x = 0; x < width; ++x, ++writeIt)
-        {
-            writeIt.Red() = borderColor.r;
-            writeIt.Green() = borderColor.g;
-            writeIt.Blue() = borderColor.b;
-            writeIt.Alpha() = borderColor.a;
-        }
-
-        // Move read iterator to next row
-        readIt.OffsetY(pixelData, -1);
-
-        // Move write iterator to next row
-        writeIt = wRowStart;
-        writeIt.OffsetY(pixelData, -1);
+        throw std::runtime_error("Cannot get bitmap pixel data");
     }
 
-    for (int y = 1; y < height - 1; ++y)
+    //
+    // Copy and add empty border
+    //
+
+    auto readIt = rPixelData.GetPixels();
+    auto writeIt = wPixelData.GetPixels();
+
+    readIt.OffsetY(rPixelData, baseHeight - 1);
+    writeIt.OffsetY(wPixelData, newHeight - 1);
+
+    for (int ny = 0; ny < newHeight; ++ny)
     {
-        // Save current iterators
-        auto rRowStart = readIt;
-        auto wRowStart = writeIt;        
-
-        // Border left
+        for (int nx = 0; nx < newWidth; ++nx, ++writeIt)
         {
-            writeIt.Red() = borderColor.r;
-            writeIt.Green() = borderColor.g;
-            writeIt.Blue() = borderColor.b;
-            writeIt.Alpha() = borderColor.a;
-
-            ++readIt;
-            ++writeIt;
-        }
-
-        // Interior
-        for (int x = 1; x < width - 1; ++x)
-        {
-            auto const color = bgColor.blend(
-                rgbaColor(
+            rgbaColor newColor;
+            if (ny < Style::ButtonExtraBorderThickness || ny >= newHeight - Style::ButtonExtraBorderThickness
+                || nx < Style::ButtonExtraBorderThickness || nx >= newWidth - Style::ButtonExtraBorderThickness)
+            {
+                // Empty
+                newColor = rgbaColor::zero();
+            }
+            else
+            {
+                // Copy
+                newColor = rgbaColor(
                     readIt.Red(),
                     readIt.Green(),
                     readIt.Blue(),
-                    readIt.Alpha()));
+                    readIt.Alpha());
+                ++readIt;
+            }
 
-            writeIt.Red() = color.r;
-            writeIt.Green() = color.g;
-            writeIt.Blue() = color.b;
-            writeIt.Alpha() = color.a;
-
-            ++readIt;
-            ++writeIt;
+            writeIt.Red() = newColor.r;
+            writeIt.Green() = newColor.g;
+            writeIt.Blue() = newColor.b;
+            writeIt.Alpha() = newColor.a;
         }
-
-        // Border right
-        {
-            writeIt.Red() = borderColor.r;
-            writeIt.Green() = borderColor.g;
-            writeIt.Blue() = borderColor.b;
-            writeIt.Alpha() = borderColor.a;
-
-            ++readIt;
-            ++writeIt;
-        }
-
-        // Move read iterator to next row
-        readIt = rRowStart;
-        readIt.OffsetY(pixelData, -1);
-
-        // Move write iterator to next row
-        writeIt = wRowStart;
-        writeIt.OffsetY(pixelData, -1);
     }
 
-    // Border top
+    return newBitmap;
+}
+
+wxBitmap WxHelpers::MakeSelectedButtonBitmap(std::filesystem::path const & bitmapFilePath)
+{
+    rgbaColor const bgColor = rgbaColor(Style::ButtonSelectedBgColor, 255);
+
+    wxBitmap baseBitmap = LoadBitmap(bitmapFilePath);
+    auto const baseWidth = baseBitmap.GetWidth();
+    auto const baseHeight = baseBitmap.GetHeight();
+
+    wxPixelData<wxBitmap, wxAlphaPixelFormat> const rPixelData(baseBitmap);
+    if (!rPixelData)
     {
-        for (int x = 0; x < width; ++x)
-        {
-            writeIt.Red() = borderColor.r;
-            writeIt.Green() = borderColor.g;
-            writeIt.Blue() = borderColor.b;
-            writeIt.Alpha() = borderColor.a;
+        throw std::runtime_error("Cannot get bitmap pixel data");
+    }
 
-            ++writeIt;
+    wxBitmap newBitmap = wxBitmap(baseWidth + 2 * Style::ButtonExtraBorderThickness, baseHeight + 2 * Style::ButtonExtraBorderThickness);
+    auto const newWidth = newBitmap.GetWidth();
+    auto const newHeight = newBitmap.GetHeight();
+
+    wxPixelData<wxBitmap, wxAlphaPixelFormat> wPixelData(newBitmap);
+    if (!wPixelData)
+    {
+        throw std::runtime_error("Cannot get bitmap pixel data");
+    }
+
+    //
+    // Copy and add border and empty border
+    //
+
+    auto readIt = rPixelData.GetPixels();
+    auto writeIt = wPixelData.GetPixels();
+
+    readIt.OffsetY(rPixelData, baseHeight - 1);
+    writeIt.OffsetY(wPixelData, newHeight - 1);
+
+    for (int ny = 0; ny < newHeight; ++ny)
+    {
+        for (int nx = 0; nx < newWidth; ++nx, ++writeIt)
+        {
+            rgbaColor newColor;
+            if (ny == 0 || ny == newHeight - 1 
+                || nx == 0 || nx == newWidth - 1)
+            {
+                // Border
+                newColor = rgbaColor(Style::ButtonSelectedBorderColor, 255);
+            }
+            else if (ny < Style::ButtonExtraBorderThickness || ny >= newHeight - Style::ButtonExtraBorderThickness
+                || nx  < Style::ButtonExtraBorderThickness || nx >= newWidth - Style::ButtonExtraBorderThickness)
+            {
+                // Empty
+                newColor = rgbaColor::zero();
+            }
+            else
+            {
+                // Copy, blending
+                newColor = bgColor.blend(
+                    rgbaColor(
+                        readIt.Red(),
+                        readIt.Green(),
+                        readIt.Blue(),
+                        readIt.Alpha()));
+                ++readIt;
+            }
+
+            writeIt.Red() = newColor.r;
+            writeIt.Green() = newColor.g;
+            writeIt.Blue() = newColor.b;
+            writeIt.Alpha() = newColor.a;
         }
     }
 
-    return bitmap;
+    return newBitmap;
 }
 
 wxBitmap WxHelpers::MakeMatteBitmap(

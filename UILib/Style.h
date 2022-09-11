@@ -7,5 +7,10 @@
 
 #include <GameCore/Colors.h>
 
+namespace Style
+{
+static int constexpr ButtonExtraBorderThickness = 2;
+
 static rgbColor constexpr ButtonSelectedBgColor(224, 238, 249);
 static rgbColor constexpr ButtonSelectedBorderColor(0, 120, 212);
+}

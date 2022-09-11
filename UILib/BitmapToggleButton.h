@@ -31,9 +31,8 @@ public:
             wxDefaultSize,
             wxBU_EXACTFIT)
     {
-        auto bitmap = wxBitmap(wxImage(bitmapFilePath.string(), wxBITMAP_TYPE_PNG));
-        SetBitmapLabel(bitmap);
-        SetBitmapPressed(WxHelpers::MakeSelectedButtonBitmap(bitmap));
+        SetBitmapLabel(WxHelpers::MakeBaseButtonBitmap(bitmapFilePath));
+        SetBitmapPressed(WxHelpers::MakeSelectedButtonBitmap(bitmapFilePath));
 
         if (!toolTipLabel.empty())
             SetToolTip(toolTipLabel);
