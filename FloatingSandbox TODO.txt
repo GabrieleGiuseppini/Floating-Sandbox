@@ -42,15 +42,57 @@
 			+ Shorter sparkles (less velocity @ generation)
 				+ But then wider dependency of width w/velocity
 
-		= Fix: allow users to adjust zoom speed
+		+ Fix: allow users to adjust zoom speed
 			+ Smoother
 			+ Preferences UI
 			+ Commit
-			= Slow convergence problem:
-				! Only affects pan - zoom is OK (confirmed with log)
-				! Due to current smooth-stepping of offsets (confirmed with log)
-				- TODO: fix?
-					- Option 1: smoothstep only when setting in smoother, not in own calculations
+			+ Slow convergence problem
+
+		+ ShipBuilder rope crash (*)
+			+ Changelist
+
+		= Win 11 issue
+			X NOT DUE TO THIS - ALSO HAPPENS WITH MULTI-THREADING DISABLED: wxGLCanvas::SwapBuffer() invoked from other thread; impl:
+				- ::SwapBuffers(m_hDC) 
+					- According to https://community.khronos.org/t/swapbuffers-in-another-thread/70349:
+						- DeviceContexts are actually thread-affine, and GDI functions should only be called on them in the threads that created them
+			+ Next to test: reduce OpenGL calls to minimum
+				+ Happens with neither RenderUpload nor RenderDraw, but SwapBuffers
+				+ Does not happen when SwapBuffers is NOT called, even with the *WHOLE* OpenGL upload+draw
+			+ Next: retry minimal repro w/OpenGL canvas and invoking SwapBuffers in timer callback
+			+ Try wxWidgets upgrade to 3.2.0 (https://www.wikiwand.com/en/WxWidgets) on repro
+				+ Build SDK
+				+ Try repro with it
+			+ Report to MS
+
+		- BitmapRadioButton: & BitmapToggleButton make it more highlighted when "checked"
+			- Chase all other UI buttons to ensure they're all ok as well
+			- Test also on:
+				- Win 7
+				- Win 10
+
+		- Localization:
+			- IT
+			- RU
+			- ES
+
+		- ShipBuilder crop doesn't have Undo (*)
+
+		- Frozen structure (*)
+			- Shader:
+				- Reuse shader's temperature buffer: when negative, clamp by personality seed
+					- And personality seed is also needed by shader for color saturation
+					- Add personality seed to set of immutable attributes, uploaded @ beginning
+			- Physics:
+				- Allow temperatures to go below 0 but exponentially towards -273.15
+					- Check curve for Dt=?Dq/T
+					- At:
+						- Air temperature
+						- Water temperature
+						- CoolBlaster tool
+						- ...and everywhere we update Points.Temperature
+				- Apply freezing at springs temperature update: make stiffness approach 1.0 (from below, e.g. rope)
+			- Check and update plan at *
 
 		- At lights going off, before flickering: flash w/spread and luminiscence
 			- See 1:53 at https://www.youtube.com/watch?v=yg9rkceLOzA
@@ -141,7 +183,6 @@
 			- Whenever a triangle or spring is destroyed, break also *lights* attached to any of the endpoints
 				- @ Ship::DestroyHandler's
 				- Invoke what we end up doing at "Lamps breaking under pressure (*)"
-
 
 		- Test using normalize_approx in spring loop
 			- Verify gain on Dell
@@ -634,6 +675,25 @@
 				  2 0x000000007bc91c13 call_thread_func+0xd2() in ntdll (0x000000000f0bffd0)
 	+ Build DevIL as a static lib (*)
 		+ Redo zlib and libpng SDKs
+	- Upgrade wxWidgets (3.2.0):
+		= x64 SDK
+			+ Build wxWidgets
+			- Test FS against it
+				- Settings window
+				- Ship load window
+				- ShipBuilder
+				- Credits
+				- Switchboard
+		- 32 SDK
+			- Build wxWidgets
+			- Test FS against it
+				- Settings window
+				- Ship load window
+				- ShipBuilder
+				- Credits
+				- Switchboard
+		- Changelist, readme.md
+
 	- See if may upgrade SFML to master (~2.6) with OPUS support
 		- Then make all music OPUS
 	- Looped sounds (engines, bells, horns, etc.): make them OGG with built-in loop points (see https://rpgmaker.net/tutorials/1341/)
@@ -1279,7 +1339,7 @@
 		- Self-adjustment of kSpring and kDamp based off paper's formula (H and L bounds)
 		- Debug to see if bounds ever exceeded
 
-	- Frozen structure:
+	- Frozen structure (*):
 		- Simply, in low-frequency spring coeffs' Update(), also do other side of temperature spectrum
 			- With breaking length becoming smaller
 			- With rest lengths staying the same
@@ -1304,6 +1364,11 @@
 
 	- Ripple: "basically you click and hold somewhere on the ship, and when you let go, it sends a ripple into the ship, weak points might tear,
 	  or start getting damaged, etc."
+
+	- Laser cutter tool
+		- Like saw but heats structure
+		- Nice shader for laser ray
+		- Sound
 
 - Game Interactions and Controls:
 

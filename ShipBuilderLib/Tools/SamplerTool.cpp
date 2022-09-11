@@ -119,8 +119,12 @@ void SamplerTool<TLayer>::DoSelectMaterial(
         else
         {
             static_assert(TLayer == LayerType::Ropes);
-            mController.GetWorkbenchState().SetRopesMaterial(material, plane);
-            mController.GetUserInterface().OnRopesMaterialChanged(material, plane);
+
+            if (material != nullptr) // Ropes material is not allowed to be NULL
+            {
+                mController.GetWorkbenchState().SetRopesMaterial(material, plane);
+                mController.GetUserInterface().OnRopesMaterialChanged(material, plane);
+            }
         }
     }
 }

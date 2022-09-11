@@ -1,4 +1,10 @@
 
++ See crash with Rope tool
+	+ "In my case it happened when I accidentaly picken air in the rope layer and tried to make a rope with it"
+		+ Rope sampler tool should not pick up nothing
+
+- Crop doesn't have Undo
+
 - Do Selection/Copy'n'Cut/Paste workflow
 	- (*) below (needs copy from Moleskine)
 

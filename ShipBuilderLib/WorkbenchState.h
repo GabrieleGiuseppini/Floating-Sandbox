@@ -109,26 +109,32 @@ public:
 
     StructuralMaterial const * GetRopesForegroundMaterial() const
     {
+        assert(mRopesForegroundMaterial != nullptr); // Ropes material is never NULL
         return mRopesForegroundMaterial;
     }
 
     void SetRopesForegroundMaterial(StructuralMaterial const * material)
     {
+        assert(material != nullptr); // Ropes material is never NULL
         mRopesForegroundMaterial = material;
     }
 
     StructuralMaterial const * GetRopesBackgroundMaterial() const
     {
+        assert(mRopesBackgroundMaterial != nullptr); // Ropes material is never NULL
         return mRopesBackgroundMaterial;
     }
 
     void SetRopesBackgroundMaterial(StructuralMaterial const * material)
     {
+        assert(material != nullptr); // Ropes material is never NULL
         mRopesBackgroundMaterial = material;
     }
 
     void SetRopesMaterial(StructuralMaterial const * material, MaterialPlaneType plane)
     {
+        assert(material != nullptr); // Ropes material is never NULL
+
         if (plane == MaterialPlaneType::Foreground)
         {
             SetRopesForegroundMaterial(material);
