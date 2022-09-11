@@ -7,6 +7,7 @@
 
 #include "SettingsManager.h"
 
+#include <UILib/BitmapToggleButton.h>
 #include <UILib/SliderControl.h>
 
 #include <Game/IGameControllerSettingsOptions.h>
@@ -22,7 +23,6 @@
 #include <wx/listctrl.h>
 #include <wx/radiobox.h>
 #include <wx/textctrl.h>
-#include <wx/tglbtn.h>
 
 #include <memory>
 #include <vector>
@@ -71,7 +71,7 @@ private:
     SliderControl<float> * mCombustionSpeedAdjustmentSlider;
     SliderControl<float> * mCombustionHeatAdjustmentSlider;
     SliderControl<unsigned int> * mMaxBurningParticlesSlider;
-    wxToggleButton * mUltraViolentToggleButton;
+    BitmapToggleButton * mUltraViolentToggleButton;
 
     // Ocean and Water
     SliderControl<float> * mWaterDensityAdjustmentSlider;

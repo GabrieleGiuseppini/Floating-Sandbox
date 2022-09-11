@@ -411,8 +411,8 @@ private:
     BitmapRadioButton * mRopesLayerVisualizationLinesModeButton;
     BitmapRadioButton * mTextureLayerVisualizationNoneModeButton;
     BitmapRadioButton * mTextureLayerVisualizationMatteModeButton;
-    wxBitmapToggleButton * mViewWaterlineMarkersButton;
-    wxBitmapToggleButton * mViewGridButton;
+    BitmapToggleButton * mViewWaterlineMarkersButton;
+    BitmapToggleButton * mViewGridButton;
 
     // Toolbar panel
     wxSizer * mToolbarPanelsSizer;

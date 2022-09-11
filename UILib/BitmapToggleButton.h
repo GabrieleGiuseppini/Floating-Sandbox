@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
+#include <UILib/WxHelpers.h>
+
 #include <wx/bitmap.h>
 #include <wx/image.h>
 #include <wx/tglbtn.h>
@@ -19,7 +21,7 @@ public:
     BitmapToggleButton(
         wxWindow * parent,
         std::filesystem::path const & bitmapFilePath,
-        std::function<void()> onClickHandler,
+        std::function<void(bool)> onClickHandler,
         wxString const & toolTipLabel = "")
         : wxToggleButton(
             parent,
@@ -29,8 +31,9 @@ public:
             wxDefaultSize,
             wxBU_EXACTFIT)
     {
-        auto img = wxImage(bitmapFilePath.string(), wxBITMAP_TYPE_PNG);
-        SetBitmap(wxBitmap(img));
+        auto bitmap = wxBitmap(wxImage(bitmapFilePath.string(), wxBITMAP_TYPE_PNG));
+        SetBitmapLabel(bitmap);
+        SetBitmapPressed(WxHelpers::MakeSelectedButtonBitmap(bitmap));
 
         if (!toolTipLabel.empty())
             SetToolTip(toolTipLabel);
@@ -39,7 +42,7 @@ public:
             wxEVT_TOGGLEBUTTON,
             [onClickHandler, this](wxCommandEvent & /*event*/)
             {
-                onClickHandler();
+                onClickHandler(this->GetValue());
             });
     }
 };

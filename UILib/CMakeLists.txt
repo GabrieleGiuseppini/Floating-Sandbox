@@ -35,6 +35,7 @@ set  (UI_LIB_SOURCES
 	SliderControl.h
 	StandardSystemPaths.cpp
 	StandardSystemPaths.h
+	Style.h
 	TextValidators.h
 	UnderConstructionDialog.cpp
 	UnderConstructionDialog.h

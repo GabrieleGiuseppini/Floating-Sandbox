@@ -726,19 +726,15 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
         }
 
         {
-            wxBitmap bitmap = wxBitmap(
-                resourceLocator.GetIconFilePath("uv_mode_icon").string(),
-                wxBITMAP_TYPE_PNG);
-
-            mUltraViolentToggleButton = new wxBitmapToggleButton(boxSizer->GetStaticBox(), wxID_ANY, bitmap);
-            mUltraViolentToggleButton->SetToolTip(_("Enables or disables amplification of tool forces and inflicted damages."));
-            mUltraViolentToggleButton->Bind(
-                wxEVT_TOGGLEBUTTON,
-                [this](wxCommandEvent & event)
+            mUltraViolentToggleButton = new BitmapToggleButton(
+                boxSizer->GetStaticBox(),
+                resourceLocator.GetIconFilePath("uv_mode_icon"),
+                [this](bool isChecked)
                 {
-                    mLiveSettings.SetValue(GameSettings::UltraViolentMode, event.IsChecked());
+                    mLiveSettings.SetValue(GameSettings::UltraViolentMode, isChecked);
                     OnLiveSettingsChanged();
-                });
+                },
+                _("Enables or disables amplification of tool forces and inflicted damages."));
 
             boxSizer->Add(
                 mUltraViolentToggleButton,

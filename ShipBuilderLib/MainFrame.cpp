@@ -2953,18 +2953,17 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
 
         // View waterline markers button
         {
-            auto bitmap = WxHelpers::LoadBitmap("view_waterline_markers_button", mResourceLocator);
-            mViewWaterlineMarkersButton = new wxBitmapToggleButton(panel, wxID_ANY, bitmap, wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
-            mViewWaterlineMarkersButton->SetToolTip(_("Enable/disable visualization of the ship's center of mass."));
-            mViewWaterlineMarkersButton->Bind(
-                wxEVT_TOGGLEBUTTON,
-                [this](wxCommandEvent & event)
+            mViewWaterlineMarkersButton = new BitmapToggleButton(
+                panel,
+                mResourceLocator.GetBitmapFilePath("view_waterline_markers_button"),
+                [this](bool isChecked)
                 {
                     assert(mController);
-                    mController->EnableWaterlineMarkers(event.IsChecked());
+                    mController->EnableWaterlineMarkers(isChecked);
 
                     DeviateFocus();
-                });
+                },
+                _("Enable/disable visualization of the ship's center of mass."));
 
             mVisualizationModePanelsSizer->Add(
                 mViewWaterlineMarkersButton,
@@ -2977,18 +2976,17 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
 
         // View grid button
         {
-            auto bitmap = WxHelpers::LoadBitmap("view_grid_button", mResourceLocator);
-            mViewGridButton = new wxBitmapToggleButton(panel, wxID_ANY, bitmap, wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
-            mViewGridButton->SetToolTip(_("Enable/disable the visual guides."));
-            mViewGridButton->Bind(
-                wxEVT_TOGGLEBUTTON,
-                [this](wxCommandEvent & event)
+            mViewGridButton = new BitmapToggleButton(
+                panel,
+                mResourceLocator.GetBitmapFilePath("view_grid_button"),
+                [this](bool isChecked)
                 {
                     assert(mController);
-                    mController->EnableVisualGrid(event.IsChecked());
+                    mController->EnableVisualGrid(isChecked);
 
                     DeviateFocus();
-                });
+                },
+                _("Enable/disable the visual guides."));
 
             mVisualizationModePanelsSizer->Add(
                 mViewGridButton,

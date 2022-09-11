@@ -236,9 +236,9 @@ ResizeDialog::ResizeDialog(
                 mTargetSizeDimensionLockButton = new BitmapToggleButton(
                     this,
                     resourceLocator.GetBitmapFilePath("locked_vertical_small"),
-                    [this]()
+                    [this](bool isChecked)
                     {
-                        if (mTargetSizeDimensionLockButton->GetValue())
+                        if (isChecked)
                         {
                             // Calculate height when preserving source aspect ratio
                             int const newHeight = std::max(

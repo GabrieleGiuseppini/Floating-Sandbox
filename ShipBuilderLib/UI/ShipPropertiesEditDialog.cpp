@@ -670,7 +670,7 @@ void ShipPropertiesEditDialog::PopulateAutoTexturizationPanel(wxPanel * panel)
         wxGridBagSizer * gSizer = new wxGridBagSizer(10, 5);
 
         {
-            mAutoTexturizationSettingsOffButton = new BitmapToggleButton(
+            mAutoTexturizationSettingsOffButton = new BitmapRadioButton(
                 panel,
                 mResourceLocator.GetBitmapFilePath("x_medium"),
                 [this]()
@@ -707,7 +707,7 @@ void ShipPropertiesEditDialog::PopulateAutoTexturizationPanel(wxPanel * panel)
         }
 
         {
-            mAutoTexturizationSettingsOnButton = new BitmapToggleButton(
+            mAutoTexturizationSettingsOnButton = new BitmapRadioButton(
                 panel,
                 mResourceLocator.GetBitmapFilePath("ship_file_medium"),
                 [this]()
@@ -762,7 +762,7 @@ void ShipPropertiesEditDialog::PopulateAutoTexturizationPanel(wxPanel * panel)
                 wxGridBagSizer * gSizer = new wxGridBagSizer(10, 5);
 
                 {
-                    mFlatStructureAutoTexturizationModeButton = new BitmapToggleButton(
+                    mFlatStructureAutoTexturizationModeButton = new BitmapRadioButton(
                         texturizationModeBoxSizer->GetStaticBox(),
                         mResourceLocator.GetBitmapFilePath("auto_texturization_particle"),
                         [this]()
@@ -801,7 +801,7 @@ void ShipPropertiesEditDialog::PopulateAutoTexturizationPanel(wxPanel * panel)
                 }
 
                 {
-                    mMaterialTexturesAutoTexturizationModeButton = new BitmapToggleButton(
+                    mMaterialTexturesAutoTexturizationModeButton = new BitmapRadioButton(
                         texturizationModeBoxSizer->GetStaticBox(),
                         mResourceLocator.GetBitmapFilePath("auto_texturization_material"),
                         [this]()
@@ -944,7 +944,7 @@ void ShipPropertiesEditDialog::PopulatePasswordProtectionPanel(wxPanel * panel)
     wxGridBagSizer * gSizer = new wxGridBagSizer(10, 5);
 
     {
-        mPasswordOnButton = new BitmapToggleButton(
+        mPasswordOnButton = new BitmapRadioButton(
             panel,
             mResourceLocator.GetBitmapFilePath("protected_medium"),
             [this]()
@@ -976,7 +976,7 @@ void ShipPropertiesEditDialog::PopulatePasswordProtectionPanel(wxPanel * panel)
     }
 
     {
-        mPasswordOffButton = new BitmapToggleButton(
+        mPasswordOffButton = new BitmapRadioButton(
             panel,
             mResourceLocator.GetBitmapFilePath("unprotected_medium"),
             [this]()

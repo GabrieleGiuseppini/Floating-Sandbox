@@ -30,6 +30,8 @@ namespace WxHelpers
 
     wxBitmap MakeBitmap(RgbaImageData const & imageData);
 
+    wxBitmap MakeSelectedButtonBitmap(wxBitmap const & baseBitmap);
+
     wxBitmap MakeMatteBitmap(
         rgbaColor const & color,
         ImageSize const & size);

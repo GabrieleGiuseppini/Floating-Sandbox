@@ -130,7 +130,7 @@ ShipLoadDialog<TUsageType>::ShipLoadDialog(
                         mFlipHButton = new BitmapToggleButton(
                             this,
                             resourceLocator.GetBitmapFilePath("flip_h_small"),
-                            []() {},
+                            [](bool) {},
                             _("Flip ship horizontally when loaded"));
 
                         hToolbarSizer->Add(
@@ -145,7 +145,7 @@ ShipLoadDialog<TUsageType>::ShipLoadDialog(
                         mFlipVButton = new BitmapToggleButton(
                             this,
                             resourceLocator.GetBitmapFilePath("flip_v_small"),
-                            []() {},
+                            [](bool) {},
                             _("Flip ship vertically when loaded"));
 
                         hToolbarSizer->Add(
@@ -160,7 +160,7 @@ ShipLoadDialog<TUsageType>::ShipLoadDialog(
                         mRotate90CWButton = new BitmapToggleButton(
                             this,
                             resourceLocator.GetBitmapFilePath("rotate_90_cw_small"),
-                            []() {},
+                            [](bool) {},
                             _("Rotate ship 90 degrees clockwise when loaded"));
 
                         hToolbarSizer->Add(

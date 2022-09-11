@@ -9,7 +9,7 @@
 #include "ShipNameNormalizer.h"
 #include "ShipOffsetVisualizationControl.h"
 
-#include <UILib/BitmapToggleButton.h>
+#include <UILib/BitmapRadioButton.h>
 #include <UILib/EditSpinBox.h>
 #include <UILib/SliderControl.h>
 
@@ -93,10 +93,10 @@ private:
     EditSpinBox<float> * mOffsetYEditSpinBox;
     EditSpinBox<float> * mInternalPressureEditSpinBox;
 
-    BitmapToggleButton * mAutoTexturizationSettingsOffButton;
-    BitmapToggleButton * mAutoTexturizationSettingsOnButton;
-    BitmapToggleButton * mFlatStructureAutoTexturizationModeButton;
-    BitmapToggleButton * mMaterialTexturesAutoTexturizationModeButton;
+    BitmapRadioButton * mAutoTexturizationSettingsOffButton;
+    BitmapRadioButton * mAutoTexturizationSettingsOnButton;
+    BitmapRadioButton * mFlatStructureAutoTexturizationModeButton;
+    BitmapRadioButton * mMaterialTexturesAutoTexturizationModeButton;
     SliderControl<float> * mMaterialTextureMagnificationSlider;
     SliderControl<float> * mMaterialTextureTransparencySlider;
     bool mIsAutoTexturizationSettingsDirty;
@@ -115,8 +115,8 @@ private:
     wxPanel * mAutoTexturizationPanel;
     wxPanel * mAutoTexturizationSettingsPanel;
 
-    BitmapToggleButton * mPasswordOnButton;
-    BitmapToggleButton * mPasswordOffButton;
+    BitmapRadioButton * mPasswordOnButton;
+    BitmapRadioButton * mPasswordOffButton;
 
     wxButton * mOkButton;
 

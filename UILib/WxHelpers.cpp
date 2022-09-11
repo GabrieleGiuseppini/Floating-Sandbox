@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #include "WxHelpers.h"
 
+#include "Style.h"
+
 #include <GameCore/GameException.h>
 
 #include <wx/rawbmp.h>
@@ -77,6 +79,127 @@ wxBitmap WxHelpers::MakeBitmap(RgbaImageData const & imageData)
         // Move write iterator to next row
         writeIt = rowStart;
         writeIt.OffsetY(pixelData, -1);
+    }
+
+    return bitmap;
+}
+
+wxBitmap WxHelpers::MakeSelectedButtonBitmap(wxBitmap const & baseBitmap)
+{
+    rgbaColor const borderColor = rgbaColor(ButtonSelectedBorderColor, 255);
+    rgbaColor const bgColor = rgbaColor(ButtonSelectedBgColor, 255);
+
+    auto const width = baseBitmap.GetWidth();
+    auto const height = baseBitmap.GetHeight();
+
+    wxBitmap bitmap = baseBitmap.GetSubBitmap(wxRect(0, 0, width, height));
+
+    wxPixelData<wxBitmap, wxAlphaPixelFormat> const pixelData(bitmap);
+    if (!pixelData)
+    {
+        throw std::runtime_error("Cannot get bitmap pixel data");
+    }
+
+    assert(pixelData.GetWidth() == width);
+    assert(pixelData.GetHeight() == height);
+
+    //
+    // Add border, and make interior light blue-ish
+    //
+
+    auto readIt = pixelData.GetPixels();
+    auto writeIt = pixelData.GetPixels();
+
+    readIt.OffsetY(pixelData, height - 1);
+    writeIt.OffsetY(pixelData, height - 1);
+
+    // Border bottom
+    {
+        auto wRowStart = writeIt;
+
+        for (int x = 0; x < width; ++x, ++writeIt)
+        {
+            writeIt.Red() = borderColor.r;
+            writeIt.Green() = borderColor.g;
+            writeIt.Blue() = borderColor.b;
+            writeIt.Alpha() = borderColor.a;
+        }
+
+        // Move read iterator to next row
+        readIt.OffsetY(pixelData, -1);
+
+        // Move write iterator to next row
+        writeIt = wRowStart;
+        writeIt.OffsetY(pixelData, -1);
+    }
+
+    for (int y = 1; y < height - 1; ++y)
+    {
+        // Save current iterators
+        auto rRowStart = readIt;
+        auto wRowStart = writeIt;        
+
+        // Border left
+        {
+            writeIt.Red() = borderColor.r;
+            writeIt.Green() = borderColor.g;
+            writeIt.Blue() = borderColor.b;
+            writeIt.Alpha() = borderColor.a;
+
+            ++readIt;
+            ++writeIt;
+        }
+
+        // Interior
+        for (int x = 1; x < width - 1; ++x)
+        {
+            auto const color = bgColor.blend(
+                rgbaColor(
+                    readIt.Red(),
+                    readIt.Green(),
+                    readIt.Blue(),
+                    readIt.Alpha()));
+
+            writeIt.Red() = color.r;
+            writeIt.Green() = color.g;
+            writeIt.Blue() = color.b;
+            writeIt.Alpha() = color.a;
+
+            ++readIt;
+            ++writeIt;
+        }
+
+        // Border right
+        {
+            writeIt.Red() = borderColor.r;
+            writeIt.Green() = borderColor.g;
+            writeIt.Blue() = borderColor.b;
+            writeIt.Alpha() = borderColor.a;
+
+            ++readIt;
+            ++writeIt;
+        }
+
+        // Move read iterator to next row
+        readIt = rRowStart;
+        readIt.OffsetY(pixelData, -1);
+
+        // Move write iterator to next row
+        writeIt = wRowStart;
+        writeIt.OffsetY(pixelData, -1);
+    }
+
+    // Border top
+    {
+        for (int x = 0; x < width; ++x)
+        {
+            writeIt.Red() = borderColor.r;
+            writeIt.Green() = borderColor.g;
+            writeIt.Blue() = borderColor.b;
+            writeIt.Alpha() = borderColor.a;
+
+            ++writeIt;
+        }
     }
 
     return bitmap;

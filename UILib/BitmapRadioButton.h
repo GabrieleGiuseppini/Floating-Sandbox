@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
+#include <UILib/WxHelpers.h>
+
 #include <wx/bitmap.h>
 #include <wx/image.h>
 #include <wx/tglbtn.h>
@@ -34,11 +36,14 @@ public:
             wxDefaultSize,
             wxBU_EXACTFIT)
     {
-        auto img = wxImage(bitmapFilePath.string(), wxBITMAP_TYPE_PNG);
-        SetBitmap(wxBitmap(img));
+        auto bitmap = wxBitmap(wxImage(bitmapFilePath.string(), wxBITMAP_TYPE_PNG));
+        SetBitmapLabel(bitmap);
+        SetBitmapPressed(WxHelpers::MakeSelectedButtonBitmap(bitmap));
 
         if (!toolTipLabel.empty())
+        {
             SetToolTip(toolTipLabel);
+        }
 
         Bind(
             wxEVT_TOGGLEBUTTON,
