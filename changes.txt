@@ -1,7 +1,9 @@
 1.17.4
 - Improved "Ship Load" window, allowing to sort by different attributes and allowing to load ships flipped and/or rotated
+- Small user interface changes here and there to improve experience on Windows 11
 - Fixed bug which would cause ships to explode when increasing the "strength adjustment" setting
 - Fixed sporadic ShipBuilder crash while the Ropes tool was setup with "no rope" material
+- Added new background music track, "Nightmare" - by Kukan Effect (https://kukaneffect.bandcamp.com/)
 
 1.17.3
 - Added Jet Engines
