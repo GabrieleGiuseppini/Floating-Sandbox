@@ -55,7 +55,9 @@ private:
 public:
 
     ShipOverlays()
-        : mPointToPointArrows()
+        : mCenters()
+        , mIsCentersBufferDirty(false)
+        , mPointToPointArrows()
         , mIsPointToPointArrowsBufferDirty(true)
     {}
 
