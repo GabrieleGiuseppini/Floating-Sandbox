@@ -19,7 +19,18 @@ wxBitmap WxHelpers::LoadBitmap(
     std::string const & bitmapName,
     ResourceLocator const & resourceLocator)
 {
-    return LoadBitmap(resourceLocator.GetBitmapFilePath(bitmapName));
+    return WxHelpers::LoadBitmap(resourceLocator.GetBitmapFilePath(bitmapName));
+}
+
+wxBitmap WxHelpers::LoadBitmap(std::filesystem::path const & bitmapFilePath)
+{
+    wxBitmap bitmap = wxBitmap(bitmapFilePath.string(), wxBITMAP_TYPE_PNG);
+    if (!bitmap.IsOk())
+    {
+        throw std::runtime_error("Cannot load bitmap \"" + bitmapFilePath.string() + "\"");
+    }
+
+    return bitmap;
 }
 
 wxBitmap WxHelpers::LoadBitmap(
@@ -35,17 +46,6 @@ wxBitmap WxHelpers::LoadBitmap(
     wxImage image(resourceLocator.GetBitmapFilePath(bitmapName).string(), wxBITMAP_TYPE_PNG);
     image.Rescale(size.width, size.height, wxIMAGE_QUALITY_HIGH);
     return wxBitmap(image);
-}
-
-wxBitmap WxHelpers::LoadBitmap(std::filesystem::path const & bitmapFilePath)
-{
-    auto bitmap = wxBitmap(bitmapFilePath.string(), wxBITMAP_TYPE_PNG);
-    if (!bitmap.IsOk())
-    {
-        throw std::runtime_error("Cannot load bitmap \"" + bitmapFilePath.string() + "\"");
-    }
-
-    return bitmap;
 }
 
 wxBitmap WxHelpers::MakeBitmap(RgbaImageData const & imageData)
@@ -96,7 +96,7 @@ wxBitmap WxHelpers::MakeBitmap(RgbaImageData const & imageData)
 
 wxBitmap WxHelpers::MakeBaseButtonBitmap(std::filesystem::path const & bitmapFilePath)
 {
-    wxBitmap baseBitmap = LoadBitmap(bitmapFilePath);
+    wxBitmap baseBitmap = WxHelpers::LoadBitmap(bitmapFilePath);
     auto const baseWidth = baseBitmap.GetWidth();
     auto const baseHeight = baseBitmap.GetHeight();
 
@@ -165,7 +165,7 @@ wxBitmap WxHelpers::MakeSelectedButtonBitmap(std::filesystem::path const & bitma
 {
     rgbaColor const bgColor = rgbaColor(Style::ButtonSelectedBgColor, 255);
 
-    wxBitmap baseBitmap = LoadBitmap(bitmapFilePath);
+    wxBitmap baseBitmap = WxHelpers::LoadBitmap(bitmapFilePath);
     auto const baseWidth = baseBitmap.GetWidth();
     auto const baseHeight = baseBitmap.GetHeight();
 

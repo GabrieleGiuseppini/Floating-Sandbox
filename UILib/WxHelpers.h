@@ -22,14 +22,14 @@ namespace WxHelpers
 {
     wxBitmap LoadBitmap(
         std::string const & bitmapName,
-        ResourceLocator const & resourceLocator);    
+        ResourceLocator const & resourceLocator);
+
+    wxBitmap LoadBitmap(std::filesystem::path const & bitmapFilePath);
 
     wxBitmap LoadBitmap(
         std::string const & bitmapName,
         ImageSize const & size,
-        ResourceLocator const & resourceLocator);
-
-    wxBitmap LoadBitmap(std::filesystem::path const & bitmapFilePath);
+        ResourceLocator const & resourceLocator);    
 
     wxBitmap MakeBitmap(RgbaImageData const & imageData);
 
