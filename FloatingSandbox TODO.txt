@@ -93,11 +93,50 @@
 			+ RU
 			+ ES
 
-		= Sparkle length, again (TimCan)
+		+ Sparkle length, again (TimCan)
 		- ShipBuilder crop doesn't have Undo (*)
 
 		- Release
-			- TODOHERE
+			- Windows
+				- MSI variable
+				- Commit & push
+				- 64-bit MSI
+					- Cleanup Install
+					- Build Release Install (after clean)
+					- Make MSI
+					- Rename MSI
+					- Test upgrade from previous version
+				- 32-bit MSI
+					- Cleanup Install
+					- Build Release Install (after clean)
+					- Make MSI
+					- Rename MSI
+					- Test clean install
+			- Ubuntu
+				- rm -rf ~/floating-sandbox
+				- pull 
+				- rm -rf build; mkdir build; cd build
+				- cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
+				- make install
+				- Make tar ("cd floating-sandbox && tar -cvf ../Floating-Sandbox-1.16.5-x64.tar . && cd -")
+				- Zip tar
+				- Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
+			- Get 3 installers tested on dev server
+			- Wait for test results
+			- Cut tag on github
+			- Upload packages to GameJolt
+				- Report file as safe (https://gamejolt.com/privacy)
+				- Post
+			- www.floatingsandbox.com:
+				- Update current version in FAQ
+				- Wait a day or two, to exclude disastrous bugs
+				- Upload changes2.txt
+					- Test w/old FS
+
+		- Fix: GameController ends up being deleted by SwitchboardPanel - might be the cause of the "blocking" issue on GTK
+			- MainFrame: GameController, SoundController, MusicController: all uq_ptrs
+				- But ordered: roots first (GameController)
+			- When these are args to others: only references
 
 		- Laser cut tool
 			- Turrets at four corners, oriented towards mouse
