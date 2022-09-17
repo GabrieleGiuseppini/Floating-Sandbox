@@ -19,7 +19,8 @@ TEST(ParameterSmootherTests, CurrentValueIsTarget)
         {
 			parameterValue = value;
         },
-        0.001f);
+        0.001f,
+        0.0005f);
 
     smoother.SetValue(10.0f);
 
@@ -41,7 +42,8 @@ TEST(ParameterSmootherTests, SmoothsFromStartToTarget)
 			parameterValue = value;
 			hasSetterBeenInvoked = true;
         },
-        0.1f);
+        0.1f,
+        0.0005f);
 
     smoother.SetValue(10.0f);
 
@@ -79,7 +81,8 @@ TEST(ParameterSmootherTests, TargetsClampedTarget)
             // Clamp to this
             return std::min(targetValue, 5.0f);
         },
-        0.1f);
+        0.1f,
+        0.0005f);
 
     smoother.SetValue(10.0f);
 
@@ -111,7 +114,8 @@ TEST(ParameterSmootherTests, SetValueImmediateTruncatesProgress)
 			parameterValue = value;
 			hasSetterBeenInvoked = true;
         },
-        0.1f);
+        0.1f,
+        0.0005f);
 
     smoother.SetValue(10.0f);
 
@@ -128,4 +132,37 @@ TEST(ParameterSmootherTests, SetValueImmediateTruncatesProgress)
 
     EXPECT_FLOAT_EQ(smoother.GetValue(), 95.0f);
     EXPECT_TRUE(ApproxEquals(parameterValue, 95.0f, 0.1f));
+}
+
+TEST(ParameterSmootherTests, StopsAfterThreshold)
+{
+    float parameterValue = 0.0f;
+    bool hasSetterBeenInvoked = false;
+
+    ParameterSmoother<float> smoother(
+        [&parameterValue]() -> float const &
+        {
+            return parameterValue;
+        },
+        [&parameterValue, &hasSetterBeenInvoked](float const & value)
+        {
+            parameterValue = value;
+            hasSetterBeenInvoked = true;
+        },
+        0.5f,
+        1.24f);
+
+    smoother.SetValue(10.0f);
+
+    smoother.Update();
+    EXPECT_TRUE(ApproxEquals(parameterValue, 5.0f, 0.0001f));
+
+    smoother.Update();
+    EXPECT_TRUE(ApproxEquals(parameterValue, 7.5f, 0.0001f));
+
+    smoother.Update();
+    EXPECT_TRUE(ApproxEquals(parameterValue, 8.75f, 0.0001f));
+    
+    smoother.Update();
+    EXPECT_TRUE(ApproxEquals(parameterValue, 10.0f, 0.0f));
 }

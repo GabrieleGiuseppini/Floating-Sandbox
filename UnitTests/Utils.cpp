@@ -4,7 +4,7 @@
 
 ::testing::AssertionResult ApproxEquals(float a, float b, float tolerance)
 {
-    if (std::abs(a - b) < tolerance)
+    if (std::abs(a - b) <= tolerance)
     {
         return ::testing::AssertionSuccess();
     }
