@@ -39,7 +39,13 @@ wxBitmap WxHelpers::LoadBitmap(
 
 wxBitmap WxHelpers::LoadBitmap(std::filesystem::path const & bitmapFilePath)
 {
-    return wxBitmap(bitmapFilePath.string(), wxBITMAP_TYPE_PNG);
+    auto bitmap = wxBitmap(bitmapFilePath.string(), wxBITMAP_TYPE_PNG);
+    if (!bitmap.IsOk())
+    {
+        throw std::runtime_error("Cannot load bitmap \"" + bitmapFilePath.string() + "\"");
+    }
+
+    return bitmap;
 }
 
 wxBitmap WxHelpers::MakeBitmap(RgbaImageData const & imageData)
@@ -49,8 +55,7 @@ wxBitmap WxHelpers::MakeBitmap(RgbaImageData const & imageData)
         throw std::runtime_error("Cannot create bitmap with one zero dimension");
     }
 
-    wxBitmap bitmap;
-    bitmap.Create(imageData.Size.width, imageData.Size.height, 32);
+    wxBitmap bitmap(imageData.Size.width, imageData.Size.height, 32);
 
     wxPixelData<wxBitmap, wxAlphaPixelFormat> pixelData(bitmap);
     if (!pixelData)
@@ -101,7 +106,7 @@ wxBitmap WxHelpers::MakeBaseButtonBitmap(std::filesystem::path const & bitmapFil
         throw std::runtime_error("Cannot get bitmap pixel data");
     }
 
-    wxBitmap newBitmap = wxBitmap(
+    wxBitmap newBitmap(
         baseWidth + 2 * Style::ButtonExtraBorderThickness, 
         baseHeight + 2 * Style::ButtonExtraBorderThickness,
         baseBitmap.GetDepth());
@@ -170,7 +175,10 @@ wxBitmap WxHelpers::MakeSelectedButtonBitmap(std::filesystem::path const & bitma
         throw std::runtime_error("Cannot get bitmap pixel data");
     }
 
-    wxBitmap newBitmap = wxBitmap(baseWidth + 2 * Style::ButtonExtraBorderThickness, baseHeight + 2 * Style::ButtonExtraBorderThickness);
+    wxBitmap newBitmap = wxBitmap(
+        baseWidth + 2 * Style::ButtonExtraBorderThickness, 
+        baseHeight + 2 * Style::ButtonExtraBorderThickness,
+        baseBitmap.GetDepth());
     auto const newWidth = newBitmap.GetWidth();
     auto const newHeight = newBitmap.GetHeight();
 
@@ -246,8 +254,7 @@ wxBitmap WxHelpers::MakeMatteBitmap(
         throw std::runtime_error("Cannot create bitmap with one zero dimension");
     }
 
-    wxBitmap bitmap;
-    bitmap.Create(size.width, size.height, 32);
+    wxBitmap bitmap(size.width, size.height, 32);
 
     wxPixelData<wxBitmap, wxAlphaPixelFormat> pixelData(bitmap);
     if (!pixelData)
@@ -338,9 +345,7 @@ wxBitmap WxHelpers::MakeMatteBitmap(
 
 wxBitmap WxHelpers::MakeEmptyBitmap()
 {
-    wxBitmap bitmap;
-
-    bitmap.Create(1, 1, 32);
+    wxBitmap bitmap(1, 1, 32);
 
     wxPixelData<wxBitmap, wxAlphaPixelFormat> pixelData(bitmap);
     if (!pixelData)
@@ -379,9 +384,9 @@ wxImage WxHelpers::LoadCursorImage(
     ResourceLocator const & resourceLocator)
 {
     auto filepath = resourceLocator.GetCursorFilePath(cursorName);
-    auto bmp = std::make_unique<wxBitmap>(filepath.string(), wxBITMAP_TYPE_PNG);
+    auto bmp = wxBitmap(filepath.string(), wxBITMAP_TYPE_PNG);
 
-    wxImage img = bmp->ConvertToImage();
+    wxImage img = bmp.ConvertToImage();
 
     // Set hotspots
     img.SetOption(wxIMAGE_OPTION_CUR_HOTSPOT_X, hotspotX);
