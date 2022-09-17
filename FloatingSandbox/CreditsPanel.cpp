@@ -90,7 +90,10 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
         {1, wxS("m2"), 0},
         {1, wxS("Oxurus"), 0},
         {1, wxS("bishobe644"), 0},
-        {1, wxS("TheCrafters001"), VMargin3},
+        {1, wxS("TheCrafters001"), 0},
+        {1, wxS("minch"), 0},
+        {1, wxS("Rpr5704"), 0},
+        {1, wxS("Pocketwatch"), VMargin3},
 
         {0, _("TRANSLATION"), 0},
         {1, wxS("Gabriele Giuseppini (Italian)"), 0},
@@ -125,6 +128,9 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
 
         {0, _("MUSIC"), VMargin},
 
+        {1, wxS("\"Nightmare\""), 0},
+        {3, wxS("Kukan Effect (https://kukaneffect.bandcamp.com/)"), VMargin},
+
         {1, wxS("\"The Short Journey to the Seabed\""), 0},
         {3, wxS("Soul Heater (https://soundcloud.com/soul-heater)"), 0},
         {2, _("Licensed under Creative Commons: By Attribution 4.0 License"), VMargin},
@@ -140,9 +146,6 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
         {1, wxS("\"Shadowlands 4 - Breath\""), 0},
         {3, wxS("Kevin MacLeod (https://incompetech.com)"), 0},
         {2, _("Licensed under Creative Commons: By Attribution 4.0 License"), VMargin},
-
-        {1, wxS("\"Nightmare\""), 0},
-        {3, wxS("Kukan Effect (https://kukaneffect.bandcamp.com/)"), VMargin},
 
         {1, wxS("\"Untitled #1\""), 0},
         {3, wxS("Michael Bozarth; Stuart's Piano World (https://stuartspianoworld.com/)"), VMargin},
