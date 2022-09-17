@@ -131,6 +131,10 @@ wxBitmap WxHelpers::MakeBaseButtonBitmap(std::filesystem::path const & bitmapFil
 
     for (int ny = 0; ny < newHeight; ++ny)
     {
+        // Save current iterators
+        auto rRowStart = readIt;
+        auto wRowStart = writeIt;
+
         for (int nx = 0; nx < newWidth; ++nx, ++writeIt)
         {
             rgbaColor newColor;
@@ -156,6 +160,15 @@ wxBitmap WxHelpers::MakeBaseButtonBitmap(std::filesystem::path const & bitmapFil
             writeIt.Blue() = newColor.b;
             writeIt.Alpha() = newColor.a;
         }
+
+        // Move iterators to next row
+        if (ny >= Style::ButtonExtraBorderThickness && ny < newHeight - Style::ButtonExtraBorderThickness)
+        {
+            readIt = rRowStart;
+            readIt.OffsetY(rPixelData, -1);
+        }
+        writeIt = wRowStart;
+        writeIt.OffsetY(wPixelData, -1);
     }
 
     return newBitmap;
@@ -200,6 +213,10 @@ wxBitmap WxHelpers::MakeSelectedButtonBitmap(std::filesystem::path const & bitma
 
     for (int ny = 0; ny < newHeight; ++ny)
     {
+        // Save current iterators
+        auto rRowStart = readIt;
+        auto wRowStart = writeIt;
+
         for (int nx = 0; nx < newWidth; ++nx, ++writeIt)
         {
             rgbaColor newColor;
@@ -232,6 +249,15 @@ wxBitmap WxHelpers::MakeSelectedButtonBitmap(std::filesystem::path const & bitma
             writeIt.Blue() = newColor.b;
             writeIt.Alpha() = newColor.a;
         }
+
+        // Move iterators to next row
+        if (ny >= Style::ButtonExtraBorderThickness && ny < newHeight - Style::ButtonExtraBorderThickness)
+        {
+            readIt = rRowStart;
+            readIt.OffsetY(rPixelData, -1);
+        }
+        writeIt = wRowStart;
+        writeIt.OffsetY(wPixelData, -1);
     }
 
     return newBitmap;
