@@ -94,19 +94,19 @@
 			+ ES
 
 		+ Sparkle length, again (TimCan)
-		- ShipBuilder crop doesn't have Undo (*)
 
-		- Release
-			- Windows
-				- MSI variable
+		= Release
+			= Windows
+				+ MSI variable
 				- Commit & push
 				- 64-bit MSI
-					- Cleanup Install
+					+ Cleanup Install
 					- Build Release Install (after clean)
 					- Make MSI
 					- Rename MSI
 					- Test upgrade from previous version
 				- 32-bit MSI
+					- Re-generate from CMake
 					- Cleanup Install
 					- Build Release Install (after clean)
 					- Make MSI

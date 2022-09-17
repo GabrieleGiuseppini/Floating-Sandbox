@@ -7,8 +7,6 @@
 	+ Seems to be due to ModelController::RestoreTextureLayer considering earlier texture size in calculation of dirty region
 		X Why did we do that?
 
-- Crop doesn't have Undo
-
 - Do Selection/Copy'n'Cut/Paste workflow
 	- (*) below (needs copy from Moleskine)
 

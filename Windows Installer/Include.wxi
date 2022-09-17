@@ -2,9 +2,9 @@
 <Include xmlns="http://schemas.microsoft.com/wix/2006/wi">
 
     <!-- Change at each release!!! -->
-	<?define ProductCode = "E62D2033-C40A-459A-A9C4-6F38BFB855DF"?> <!-- 1.17.3 -->
+	<?define ProductCode = "B7B75134-8635-4159-BC7F-DB4FC1AA4C01"?> <!-- 1.17.4 -->
 
-    <!-- Static properties -->
+	<!-- Static properties -->
     <?define UpgradeCode = "2DDDB95C-9D3E-4EFE-95BC-FD06A2F33FA7"?> <!-- First used in 1.12.0 -->
     <?if $(var.Platform) = x64 ?>
       <?define SourceInstallFolderPath = "C:\Users\Neurodancer\source\build\Floating-Sandbox\Install"?>
