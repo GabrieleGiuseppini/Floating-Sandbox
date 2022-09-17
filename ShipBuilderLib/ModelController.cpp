@@ -1277,26 +1277,6 @@ void ModelController::RestoreTextureLayer(
     assert(!mIsTextureLayerInEphemeralVisualization);
 
     //
-    // Calculate largest affected rect between before and after
-    //
-
-    ImageRect dirtyTextureRect;
-    if (mModel.HasLayer(LayerType::Texture))
-    {
-        dirtyTextureRect = mModel.GetTextureLayer().Buffer.Size;
-
-        if (textureLayer)
-        {
-            // Largest
-            dirtyTextureRect.UnionWith(textureLayer->Buffer.Size);
-        }
-    }
-    else if (textureLayer)
-    {
-        dirtyTextureRect = textureLayer->Buffer.Size;
-    }
-
-    //
     // Restore model
     //
 
@@ -1310,7 +1290,7 @@ void ModelController::RestoreTextureLayer(
     mGameVisualizationTexture.reset();
     mGameVisualizationAutoTexturizationTexture.release();
     RegisterDirtyVisualization<VisualizationType::Game>(GetWholeShipRect());
-    RegisterDirtyVisualization<VisualizationType::TextureLayer>(dirtyTextureRect);
+    RegisterDirtyVisualization<VisualizationType::TextureLayer>(GetWholeTextureRect());
 }
 
 void ModelController::TextureRegionEraseForEphemeralVisualization(ImageRect const & region)
