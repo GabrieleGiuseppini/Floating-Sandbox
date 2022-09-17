@@ -1290,7 +1290,15 @@ void ModelController::RestoreTextureLayer(
     mGameVisualizationTexture.reset();
     mGameVisualizationAutoTexturizationTexture.release();
     RegisterDirtyVisualization<VisualizationType::Game>(GetWholeShipRect());
-    RegisterDirtyVisualization<VisualizationType::TextureLayer>(GetWholeTextureRect());
+    if (mModel.HasLayer(LayerType::Texture))
+    {
+        RegisterDirtyVisualization<VisualizationType::TextureLayer>(GetWholeTextureRect());
+    }
+    else
+    {
+        // We've just removed the texture layer; we rely now on texture viz mode being set to None 
+        // before we UpdateVisualizations(), causing the View texture to be remove
+    }
 }
 
 void ModelController::TextureRegionEraseForEphemeralVisualization(ImageRect const & region)
