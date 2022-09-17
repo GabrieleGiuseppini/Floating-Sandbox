@@ -101,7 +101,10 @@ wxBitmap WxHelpers::MakeBaseButtonBitmap(std::filesystem::path const & bitmapFil
         throw std::runtime_error("Cannot get bitmap pixel data");
     }
 
-    wxBitmap newBitmap = wxBitmap(baseWidth + 2 * Style::ButtonExtraBorderThickness, baseHeight + 2 * Style::ButtonExtraBorderThickness);
+    wxBitmap newBitmap = wxBitmap(
+        baseWidth + 2 * Style::ButtonExtraBorderThickness, 
+        baseHeight + 2 * Style::ButtonExtraBorderThickness,
+        baseBitmap.GetDepth());
     auto const newWidth = newBitmap.GetWidth();
     auto const newHeight = newBitmap.GetHeight();
 
