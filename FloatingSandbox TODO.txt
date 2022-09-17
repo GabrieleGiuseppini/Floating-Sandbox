@@ -51,7 +51,21 @@
 		+ ShipBuilder rope crash (*)
 			+ Changelist
 
-		= Win 11 issue
+		+ BitmapRadioButton: & BitmapToggleButton make it more highlighted when "checked"
+			+ Do
+			+ Chase all other UI buttons to ensure they're all ok as well
+				+ BitmapToggleButton: handler takes bool
+				+ Nuke all usages of:
+					+ wxBitmapToggleButton
+						+ SettingsDialog: UltraViolentMode
+				+ Test:
+					+ ShipPropertiesEditDialog::PopulateAutoTexturizationPanel
+			+ Test also on:
+				+ Win 7
+				+ Win 10
+			+ changelist ("Windows 11 ready")
+
+		+ Win 11 issue
 			X NOT DUE TO THIS - ALSO HAPPENS WITH MULTI-THREADING DISABLED: wxGLCanvas::SwapBuffer() invoked from other thread; impl:
 				- ::SwapBuffers(m_hDC) 
 					- According to https://community.khronos.org/t/swapbuffers-in-another-thread/70349:
@@ -65,28 +79,29 @@
 				+ Try repro with it
 			+ Report to MS
 
-		= BitmapRadioButton: & BitmapToggleButton make it more highlighted when "checked"
-			+ Do
-			+ Chase all other UI buttons to ensure they're all ok as well
-				+ BitmapToggleButton: handler takes bool
-				+ Nuke all usages of:
-					+ wxBitmapToggleButton
-						+ SettingsDialog: UltraViolentMode
-				+ Test:
-					+ ShipPropertiesEditDialog::PopulateAutoTexturizationPanel
-			- Test also on:
-				- Win 7
-				- Win 10
-			- changelist ("Windows 11 ready")
+		+ Kukan's track
+			+ Add to changelist
+			+ Make it first
 
-		- Verify FS->ShipBuilder transition in Win 11
+		+ Add new testers to Credits:
+			+ minch
+			+ Rpr5704
+			+ Pocketwatch
 
-		- Localization:
-			- IT
-			- RU
-			- ES
+		+ Localization:
+			+ IT
+			+ RU
+			+ ES
 
+		= Sparkle length, again (TimCan)
 		- ShipBuilder crop doesn't have Undo (*)
+
+		- Release
+			- TODOHERE
+
+		- Laser cut tool
+			- Turrets at four corners, oriented towards mouse
+			- When clicking, laser shaders from four corners
 
 		- Frozen structure (*)
 			- Shader:
