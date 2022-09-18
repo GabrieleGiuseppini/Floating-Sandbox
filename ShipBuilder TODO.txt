@@ -190,12 +190,13 @@
 	- Gist:
 		- LayersRegion: container of (regions of) layers, for each layer type
 			- Elec contains own region of PanelMetadata
-			- It is Paste's job to ensure target has all layers required by LayersRegion - creates layers as required
-				- OR: ignores non-existing layers (for consistency with ephemeral)
+			- It is Paste's job to ensure clipboard and target "match"
+				- i.e. ignores non-existing layers (for consistency with ephemeral)
 		- SelectionManager: just glorified optional<Rect> member of Controller
 			- Owned by Controller, created @ cctor
+			- Has reference to IUserInterface (to notify of selection on/off toggles)
 			- Reset at:
-				- Tool destroy
+				- Selection tool destroy
 				- Deselect
 				- Controller::~Controller (obviously)
 		- ClipboardManager: stores opt<LayersRegion>
@@ -203,6 +204,7 @@
 				- TODO: or, owned by WorkbenchState, so we may have clipboard surviving reloads?
 			- Never reset
 		- Select tool <TLayer>: populates selection Rect into SelectionManager
+			- Icon: Selector.png, ready
 			- TODO: really <TLayer>?
 			- "Tool Settings" ribbon: // change label of ribbon to actual tool name
 				- "All Layers" checkbox 

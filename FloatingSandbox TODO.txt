@@ -10,137 +10,52 @@
 		- Connectivity
 		- Types
 
-
-	- 1.17.4:
-
-		+ Bumpup version
-
-		+ ShipLoadDialog Toolbar (*)
-		+ Fix ship exploding at max strength
-		+ Update checker: more indentations
-		+ Remove Floeddy's ships
-			+ Also from credits
-			+ M.S. Breadmaster (Without Interior)
-			+ M.S. Breadmaster
-			+ M.S. Fluffic
-			+ S.S Library
-			+ S.S. Research
-		+ Upgrade 
-			+ GoogleTest
-			+ Google Benchmark
-
-		+ Try sparkles becoming narrower with time
-			+ Do
-			+ Also rewrite them with "right" quad and simple shader
-				+ Do quad
-				+ Finish shader: https://www.shadertoy.com/view/7l3yzr
-					+ Do early bailout 4 transparency
-			+ Think of "tail problem" (sparkle appearing far from cut because of tail being transparent)
-				~ Try: alpha = smoothstep(0.0, 1.0, alpha);
-				~ Try: yp * 0.9
-				+ Try square
-			+ Shorter sparkles (less velocity @ generation)
-				+ But then wider dependency of width w/velocity
-
-		+ Fix: allow users to adjust zoom speed
-			+ Smoother
-			+ Preferences UI
-			+ Commit
-			+ Slow convergence problem
-
-		+ ShipBuilder rope crash (*)
-			+ Changelist
-
-		+ BitmapRadioButton: & BitmapToggleButton make it more highlighted when "checked"
-			+ Do
-			+ Chase all other UI buttons to ensure they're all ok as well
-				+ BitmapToggleButton: handler takes bool
-				+ Nuke all usages of:
-					+ wxBitmapToggleButton
-						+ SettingsDialog: UltraViolentMode
-				+ Test:
-					+ ShipPropertiesEditDialog::PopulateAutoTexturizationPanel
-			+ Test also on:
-				+ Win 7
-				+ Win 10
-			+ changelist ("Windows 11 ready")
-
-		+ Win 11 issue
-			X NOT DUE TO THIS - ALSO HAPPENS WITH MULTI-THREADING DISABLED: wxGLCanvas::SwapBuffer() invoked from other thread; impl:
-				- ::SwapBuffers(m_hDC) 
-					- According to https://community.khronos.org/t/swapbuffers-in-another-thread/70349:
-						- DeviceContexts are actually thread-affine, and GDI functions should only be called on them in the threads that created them
-			+ Next to test: reduce OpenGL calls to minimum
-				+ Happens with neither RenderUpload nor RenderDraw, but SwapBuffers
-				+ Does not happen when SwapBuffers is NOT called, even with the *WHOLE* OpenGL upload+draw
-			+ Next: retry minimal repro w/OpenGL canvas and invoking SwapBuffers in timer callback
-			+ Try wxWidgets upgrade to 3.2.0 (https://www.wikiwand.com/en/WxWidgets) on repro
-				+ Build SDK
-				+ Try repro with it
-			+ Report to MS
-
-		+ Kukan's track
-			+ Add to changelist
-			+ Make it first
-
-		+ Add new testers to Credits:
-			+ minch
-			+ Rpr5704
-			+ Pocketwatch
-
-		+ Localization:
-			+ IT
-			+ RU
-			+ ES
-
-		+ Sparkle length, again (TimCan)
-
 		= Release
-			= Windows
+			+ Windows
 				+ MSI variable
-				- Commit & push
-				- 64-bit MSI
+				+ Commit & push
+				+ 64-bit MSI
 					+ Cleanup Install
-					- Build Release Install (after clean)
-					- Make MSI
-					- Rename MSI
-					- Test upgrade from previous version
-				- 32-bit MSI
-					- Re-generate from CMake
-					- Cleanup Install
-					- Build Release Install (after clean)
-					- Make MSI
-					- Rename MSI
-					- Test clean install
-			- Ubuntu
-				- rm -rf ~/floating-sandbox
-				- pull 
-				- rm -rf build; mkdir build; cd build
-				- cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
-				- make install
-				- Make tar ("cd floating-sandbox && tar -cvf ../Floating-Sandbox-1.16.5-x64.tar . && cd -")
-				- Zip tar
-				- Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
-			- Get 3 installers tested on dev server
-			- Wait for test results
-			- Cut tag on github
-			- Upload packages to GameJolt
-				- Report file as safe (https://gamejolt.com/privacy)
-				- Post
-			- www.floatingsandbox.com:
-				- Update current version in FAQ
+					+ Build Release Install (after clean)
+					+ Make MSI
+					+ Rename MSI
+					+ Test upgrade from previous version
+				+ 32-bit MSI
+					+ Re-generate from CMake
+					+ Cleanup Install
+					+ Build Release Install (after clean)
+					+ Make MSI
+					+ Rename MSI
+					+ Test clean install
+			+ Ubuntu
+				+ rm -rf ~/floating-sandbox
+				+ pull 
+				+ rm -rf build; mkdir build; cd build
+				+ cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
+				+ make install
+				+ Make tar ("cd ~/floating-sandbox && tar -cvf ../Floating-Sandbox-1.17.4-x64.tar . && cd -")
+				+ Zip tar
+				+ Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
+			+ Get 3 installers tested on dev server
+			+ Wait for test results
+			+ Cut tag on github
+			+ Upload packages to GameJolt
+				+ Report file as safe (https://gamejolt.com/privacy)
+				+ Post
+			+ www.floatingsandbox.com:
+				+ Update current version in FAQ
 				- Wait a day or two, to exclude disastrous bugs
 				- Upload changes2.txt
 					- Test w/old FS
+
+		+ Cleanup plan, commit & push
 
 		- Fix: GameController ends up being deleted by SwitchboardPanel - might be the cause of the "blocking" issue on GTK
 			- MainFrame: GameController, SoundController, MusicController: all uq_ptrs
 				- But ordered: roots first (GameController)
 			- When these are args to others: only references
 
-		- Laser cut tool
-			- Turrets at four corners, oriented towards mouse
-			- When clicking, laser shaders from four corners
+		- Laser Cannon tool (*)
 
 		- Frozen structure (*)
 			- Shader:
@@ -154,8 +69,8 @@
 						- Air temperature
 						- Water temperature
 						- CoolBlaster tool
-						- ...and everywhere we update Points.Temperature
-				- Apply freezing at springs temperature update: make stiffness approach 1.0 (from below, e.g. rope)
+						- ...and everywhere else we update Points.Temperature
+				- Apply freezing at springs temperature update: make stiffness approach 1.0 (when from below, e.g. rope)
 			- Check and update plan at *
 
 		- At lights going off, before flickering: flash w/spread and luminiscence
@@ -218,6 +133,7 @@
 		- Add more background music:
 			+ "Symmetry" - Kevin MacLeod (incompetech.com)			
 			- "Shadowlands 5 - Antechamber" - Kevin MacLeod (incompetech.com)
+			- More from Kukaneffect?
 
 		- Misc quick things:
 			- See if water entering via hole is faster than water entering natural non-hull ("cut funnel")
@@ -1109,6 +1025,8 @@
 					- Gfx: Clock dial (normalized on duration), new ElectricalControl
 					- Sound: clock
 				- Thermal switch
+				- Solar panel
+					- Like generator, but only generates power when daylight above threshold, *and* when on frontier
 
 	- "Soft" setting for ocean floors
 		- Just less impact
@@ -1429,10 +1347,16 @@
 	- Ripple: "basically you click and hold somewhere on the ship, and when you let go, it sends a ripple into the ship, weak points might tear,
 	  or start getting damaged, etc."
 
-	- Laser cutter tool
-		- Like saw but heats structure
-		- Nice shader for laser ray
-		- Sound
+	- Laser cannon tool (*)
+		- Spec:
+			- Like saw but heats structure
+			- Turrets at four corners, oriented towards mouse
+			- When clicking, laser shaders from four corners
+				- Nice shader for laser ray
+			- Sound
+		- Impl:
+			- TODO: misc points to remember:
+				- Cannon rendering and laser shader all managed by NotificationLayer/NotificationRenderContext
 
 - Game Interactions and Controls:
 
@@ -14669,3 +14593,87 @@ IF WX:
 				+ Update current version in FAQ
 				+ Upload changes2.txt
 					+ Test w/old FS
+
+	+ 1.17.4:
+
+		+ Bumpup version
+
+		+ ShipLoadDialog Toolbar (*)
+		+ Fix ship exploding at max strength
+		+ Update checker: more indentations
+		+ Remove Floeddy's ships
+			+ Also from credits
+			+ M.S. Breadmaster (Without Interior)
+			+ M.S. Breadmaster
+			+ M.S. Fluffic
+			+ S.S Library
+			+ S.S. Research
+		+ Upgrade 
+			+ GoogleTest
+			+ Google Benchmark
+
+		+ Try sparkles becoming narrower with time
+			+ Do
+			+ Also rewrite them with "right" quad and simple shader
+				+ Do quad
+				+ Finish shader: https://www.shadertoy.com/view/7l3yzr
+					+ Do early bailout 4 transparency
+			+ Think of "tail problem" (sparkle appearing far from cut because of tail being transparent)
+				~ Try: alpha = smoothstep(0.0, 1.0, alpha);
+				~ Try: yp * 0.9
+				+ Try square
+			+ Shorter sparkles (less velocity @ generation)
+				+ But then wider dependency of width w/velocity
+
+		+ Fix: allow users to adjust zoom speed
+			+ Smoother
+			+ Preferences UI
+			+ Commit
+			+ Slow convergence problem
+
+		+ ShipBuilder rope crash (*)
+			+ Changelist
+
+		+ BitmapRadioButton: & BitmapToggleButton make it more highlighted when "checked"
+			+ Do
+			+ Chase all other UI buttons to ensure they're all ok as well
+				+ BitmapToggleButton: handler takes bool
+				+ Nuke all usages of:
+					+ wxBitmapToggleButton
+						+ SettingsDialog: UltraViolentMode
+				+ Test:
+					+ ShipPropertiesEditDialog::PopulateAutoTexturizationPanel
+			+ Test also on:
+				+ Win 7
+				+ Win 10
+			+ changelist ("Windows 11 ready")
+
+		+ Win 11 issue
+			X NOT DUE TO THIS - ALSO HAPPENS WITH MULTI-THREADING DISABLED: wxGLCanvas::SwapBuffer() invoked from other thread; impl:
+				- ::SwapBuffers(m_hDC) 
+					- According to https://community.khronos.org/t/swapbuffers-in-another-thread/70349:
+						- DeviceContexts are actually thread-affine, and GDI functions should only be called on them in the threads that created them
+			+ Next to test: reduce OpenGL calls to minimum
+				+ Happens with neither RenderUpload nor RenderDraw, but SwapBuffers
+				+ Does not happen when SwapBuffers is NOT called, even with the *WHOLE* OpenGL upload+draw
+			+ Next: retry minimal repro w/OpenGL canvas and invoking SwapBuffers in timer callback
+			+ Try wxWidgets upgrade to 3.2.0 (https://www.wikiwand.com/en/WxWidgets) on repro
+				+ Build SDK
+				+ Try repro with it
+			+ Report to MS
+
+		+ Kukan's track
+			+ Add to changelist
+			+ Make it first
+
+		+ Add new testers to Credits:
+			+ minch
+			+ Rpr5704
+			+ Pocketwatch
+
+		+ Localization:
+			+ IT
+			+ RU
+			+ ES
+
+		+ Sparkle length, again (TimCan)
