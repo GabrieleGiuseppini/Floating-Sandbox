@@ -238,6 +238,8 @@ RenderContext::RenderContext(
 
                 ProcessParameterChanges(initialRenderParameters);
 
+                mGlobalRenderContext->ProcessParameterChanges(initialRenderParameters);
+
                 mWorldRenderContext->ProcessParameterChanges(initialRenderParameters);
 
                 mNotificationRenderContext->ProcessParameterChanges(initialRenderParameters);

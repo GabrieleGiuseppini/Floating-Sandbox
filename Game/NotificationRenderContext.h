@@ -614,10 +614,10 @@ public:
 				// Create cannon vertices
 				//
 
-				vec2f const ndcTopLeft = ndcCorner + rayPerpDir * ndcCannonWidth;
-				vec2f const ndcBottomLeft = ndcCorner - rayPerpDir * ndcCannonWidth;
-				vec2f const ndcTopRight = ndcCorner + rayDir * NdcCannonLength + rayPerpDir * ndcCannonWidth;
-				vec2f const ndcBottomRight = ndcCorner + rayDir * NdcCannonLength - rayPerpDir * ndcCannonWidth;
+				vec2f const ndcTopLeft = ndcCorner + rayPerpDir * ndcCannonWidth / 2.0f;
+				vec2f const ndcBottomLeft = ndcCorner - rayPerpDir * ndcCannonWidth / 2.0f;
+				vec2f const ndcTopRight = ndcCorner + rayDir * NdcCannonLength + rayPerpDir * ndcCannonWidth / 2.0f;
+				vec2f const ndcBottomRight = ndcCorner + rayDir * NdcCannonLength - rayPerpDir * ndcCannonWidth / 2.0f;
 
 				// Bottom-left
 				mLaserCannonVertexBuffer.emplace_back(

@@ -673,10 +673,6 @@ void NotificationRenderContext::ApplyEffectiveAmbientLightIntensityChanges(Rende
 {
     // Set parameter in all programs
 
-    mShaderManager.ActivateProgram<ProgramType::GenericMipMappedTexturesNdc>();
-    mShaderManager.SetProgramParameter<ProgramType::GenericMipMappedTexturesNdc, ProgramParameterType::EffectiveAmbientLightIntensity>(
-        renderParameters.EffectiveAmbientLightIntensity);
-
     float const lighteningStrength = Step(0.5f, 1.0f - renderParameters.EffectiveAmbientLightIntensity);
 
     mShaderManager.ActivateProgram<ProgramType::Text>();

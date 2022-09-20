@@ -1368,8 +1368,7 @@
 					- Ray vertices
 				- Shaders:
 					= GenericMipMappedTexturesNdc
-						- Move texture - and its params - to NotificationLayer section of ShaderTypes? Shaders are per-section after all
-					- LaserRay
+					= LaserRay
 				= Cannons are subject to daylight, ray is not
 			- Physics (Ship::Apply...):
 				- TODO

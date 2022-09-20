@@ -46,7 +46,7 @@ void GlobalRenderContext::InitializeNoiseTextures(ResourceLocator const & resour
         GL_LINEAR);
 
     //
-    // Set noise 1 texture in ship shaders
+    // Set noise 1 texture in shaders that require it
     //
 
     glBindTexture(GL_TEXTURE_2D, mUploadedNoiseTexturesManager.GetOpenGLHandle(NoiseTextureGroups::Noise, 0));
@@ -69,6 +69,16 @@ void GlobalRenderContext::InitializeNoiseTextures(ResourceLocator const & resour
         noiseTextureDatabase.GetGroup(NoiseTextureGroups::Noise),
         1,
         GL_LINEAR);
+
+    //
+    // Set noise 2 texture in shaders that require it
+    //
+
+    glBindTexture(GL_TEXTURE_2D, mUploadedNoiseTexturesManager.GetOpenGLHandle(NoiseTextureGroups::Noise, 1));
+    CheckOpenGLError();
+
+    mShaderManager.ActivateProgram<ProgramType::LaserRay>();
+    mShaderManager.SetTextureParameters<ProgramType::LaserRay>();
 }
 
 void GlobalRenderContext::InitializeGenericTextures(ResourceLocator const & resourceLocator)
@@ -241,5 +251,16 @@ void GlobalRenderContext::InitializeExplosionTextures(ResourceLocator const & re
     mShaderManager.ActivateProgram<ProgramType::ShipExplosions>();
     mShaderManager.SetTextureParameters<ProgramType::ShipExplosions>();
 }
+
+void GlobalRenderContext::ProcessParameterChanges(RenderParameters const & renderParameters)
+{
+    if (renderParameters.IsEffectiveAmbientLightIntensityDirty)
+    {
+        mShaderManager.ActivateProgram<ProgramType::GenericMipMappedTexturesNdc>();
+        mShaderManager.SetProgramParameter<ProgramType::GenericMipMappedTexturesNdc, ProgramParameterType::EffectiveAmbientLightIntensity>(
+            renderParameters.EffectiveAmbientLightIntensity);
+    }
+}
+
 
 }
