@@ -29,6 +29,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::FireExtinguisherSpray;
     else if (lstr == "fishes")
         return ProgramType::Fishes;
+    else if (lstr == "generic_mipmapped_textures_ndc")
+        return ProgramType::GenericMipMappedTexturesNdc;
     else if (lstr == "heat_blaster_flame_cool")
         return ProgramType::HeatBlasterFlameCool;
     else if (lstr == "heat_blaster_flame_heat")
@@ -37,6 +39,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::LandFlat;
     else if (lstr == "land_texture")
         return ProgramType::LandTexture;
+    else if (lstr == "laser_ray")
+        return ProgramType::LaserRay;
     else if (lstr == "lightning")
         return ProgramType::Lightning;
     else if (lstr == "ocean_depth_basic")
@@ -207,6 +211,8 @@ std::string ProgramTypeToStr(ProgramType program)
         return "FireExtinguisherSpray";
     case ProgramType::Fishes:
         return "Fishes";
+    case ProgramType::GenericMipMappedTexturesNdc:
+        return "GenericMipMappedTexturesNdc";
     case ProgramType::HeatBlasterFlameCool:
         return "HeatBlasterFlameCool";
     case ProgramType::HeatBlasterFlameHeat:
@@ -215,6 +221,8 @@ std::string ProgramTypeToStr(ProgramType program)
         return "LandFlat";
     case ProgramType::LandTexture:
         return "LandTexture";
+    case ProgramType::LaserRay:
+        return "LaserRay";
     case ProgramType::Lightning:
         return "Lightning";
     case ProgramType::OceanDepthBasic:
@@ -611,12 +619,12 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::Sparkle1;
     else if (Utils::CaseInsensitiveEquals(str, "Sparkle2"))
         return VertexAttributeType::Sparkle2;
-    else if (Utils::CaseInsensitiveEquals(str, "GenericMipMappedTexture1"))
-        return VertexAttributeType::GenericMipMappedTexture1;
-    else if (Utils::CaseInsensitiveEquals(str, "GenericMipMappedTexture2"))
-        return VertexAttributeType::GenericMipMappedTexture2;
-    else if (Utils::CaseInsensitiveEquals(str, "GenericMipMappedTexture3"))
-        return VertexAttributeType::GenericMipMappedTexture3;
+    else if (Utils::CaseInsensitiveEquals(str, "ShipGenericMipMappedTexture1"))
+        return VertexAttributeType::ShipGenericMipMappedTexture1;
+    else if (Utils::CaseInsensitiveEquals(str, "ShipGenericMipMappedTexture2"))
+        return VertexAttributeType::ShipGenericMipMappedTexture2;
+    else if (Utils::CaseInsensitiveEquals(str, "ShipGenericMipMappedTexture3"))
+        return VertexAttributeType::ShipGenericMipMappedTexture3;
     else if (Utils::CaseInsensitiveEquals(str, "Flame1"))
         return VertexAttributeType::Flame1;
     else if (Utils::CaseInsensitiveEquals(str, "Flame2"))
@@ -670,6 +678,15 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::WindSphere1;
     else if (Utils::CaseInsensitiveEquals(str, "WindSphere2"))
         return VertexAttributeType::WindSphere2;
+    else if (Utils::CaseInsensitiveEquals(str, "LaserRay1"))
+        return VertexAttributeType::LaserRay1;
+    else if (Utils::CaseInsensitiveEquals(str, "LaserRay2"))
+        return VertexAttributeType::LaserRay2;
+    // Global
+    else if (Utils::CaseInsensitiveEquals(str, "GenericMipMappedTextureNdc1"))
+        return VertexAttributeType::GenericMipMappedTextureNdc1;
+    else if (Utils::CaseInsensitiveEquals(str, "GenericMipMappedTextureNdc2"))
+        return VertexAttributeType::GenericMipMappedTextureNdc2;
     else
         throw GameException("Unrecognized vertex attribute \"" + str + "\"");
 }

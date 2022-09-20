@@ -1354,15 +1354,29 @@
 			- Turrets at four corners, oriented towards mouse
 			- When clicking, laser shaders from four corners
 				- Nice shader for laser ray
-			- Sounds:
-				- TODO: spec
+			- Sounds
 		= Impl:
 			+ Test all other notif's w/pause
-			- Rendering (NotificationRenderContext):
+			- Tool:
 				- TODO
+			= Rendering (NotificationRenderContext):
+				+ Cannon @ mipmapped alias
+					+ PNG
+					+ Database + enum
+				= Upload
+					= Cannon vertices
+					- Ray vertices
+				- Shaders:
+					= GenericMipMappedTexturesNdc
+						- Move texture - and its params - to NotificationLayer section of ShaderTypes? Shaders are per-section after all
+					- LaserRay
+				= Cannons are subject to daylight, ray is not
 			- Physics (Ship::Apply...):
 				- TODO
 			- Sounds:
+		- Cleanup:
+			- LaserCannonTool:
+				- If EngagementData not needed, nuke it and get away with boolean
 
 - Game Interactions and Controls:
 

@@ -3348,6 +3348,8 @@ public:
     {
         bool doUpdateCursor = false;
 
+        std::optional<float> force;
+
         if (inputState.IsLeftMouseDown)
         {
             // Update engagement state
@@ -3358,7 +3360,14 @@ public:
             }
 
             // Calculate force
-            // TODO
+            if (inputState.IsShiftKeyDown)
+            { 
+                force = 2.0f;
+            }
+            else
+            {
+                force = 1.0f;
+            }
         }
         else
         {
@@ -3370,10 +3379,11 @@ public:
             }
 
             // Zero force
-            // TODO
         }
 
-        // TODO: invoke, with pos & force
+        mGameController->ApplyLaserCannonAt(
+            inputState.MousePosition,
+            force);
 
         if (doUpdateCursor)
         {

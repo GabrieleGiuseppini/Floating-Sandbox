@@ -102,6 +102,7 @@ enum class GenericMipMappedTextureGroups : uint16_t
     AntiMatterBombSphereCloud,
     EngineWake,
     ImpactBomb,
+    LaserCannon,
     PhysicsProbe,
     PhysicsProbePing,
     PinnedPoint,
@@ -135,6 +136,8 @@ struct GenericMipMappedTextureTextureDatabaseTraits
             return TextureGroups::EngineWake;
         else if (Utils::CaseInsensitiveEquals(str, "ImpactBomb"))
             return TextureGroups::ImpactBomb;
+        else if (Utils::CaseInsensitiveEquals(str, "LaserCannon"))
+            return TextureGroups::LaserCannon;
         else if (Utils::CaseInsensitiveEquals(str, "PhysicsProbe"))
             return TextureGroups::PhysicsProbe;
         else if (Utils::CaseInsensitiveEquals(str, "PhysicsProbePing"))

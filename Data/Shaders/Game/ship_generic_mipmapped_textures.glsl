@@ -4,9 +4,9 @@
 #define out varying
 
 // Inputs
-in vec4 inGenericMipMappedTexture1; // CenterPosition, VertexOffset
-in vec4 inGenericMipMappedTexture2; // TextureCoordinates, PlaneId, Scale
-in vec3 inGenericMipMappedTexture3; // Angle, Alpha, AmbientLightSensitivity
+in vec4 inShipGenericMipMappedTexture1; // CenterPosition, VertexOffset
+in vec4 inShipGenericMipMappedTexture2; // TextureCoordinates, PlaneId, Scale
+in vec3 inShipGenericMipMappedTexture3; // Angle, Alpha, AmbientLightSensitivity
 
 // Outputs
 out vec2 vertexTextureCoordinates;
@@ -19,24 +19,24 @@ uniform mat4 paramOrthoMatrix;
 
 void main()
 {
-    vertexTextureCoordinates = inGenericMipMappedTexture2.xy; 
-    vertexAlpha = inGenericMipMappedTexture3.y;
+    vertexTextureCoordinates = inShipGenericMipMappedTexture2.xy; 
+    vertexAlpha = inShipGenericMipMappedTexture3.y;
     vertexEffectiveAmbientLightIntensity = 
-        (1.0 - inGenericMipMappedTexture3.z)
-	    + inGenericMipMappedTexture3.z * paramEffectiveAmbientLightIntensity;
+        (1.0 - inShipGenericMipMappedTexture3.z)
+	    + inShipGenericMipMappedTexture3.z * paramEffectiveAmbientLightIntensity;
 
-    float scale = inGenericMipMappedTexture2.w;
-    float angle = inGenericMipMappedTexture3.x;
+    float scale = inShipGenericMipMappedTexture2.w;
+    float angle = inShipGenericMipMappedTexture3.x;
 
     mat2 rotationMatrix = mat2(
         cos(angle), -sin(angle),
         sin(angle), cos(angle));
 
     vec2 worldPosition = 
-        inGenericMipMappedTexture1.xy 
-        + rotationMatrix * inGenericMipMappedTexture1.zw * scale;
+        inShipGenericMipMappedTexture1.xy 
+        + rotationMatrix * inShipGenericMipMappedTexture1.zw * scale;
 
-    gl_Position = paramOrthoMatrix * vec4(worldPosition.xy, inGenericMipMappedTexture2.z, 1.0);
+    gl_Position = paramOrthoMatrix * vec4(worldPosition.xy, inShipGenericMipMappedTexture2.z, 1.0);
 }
 
 ###FRAGMENT-120

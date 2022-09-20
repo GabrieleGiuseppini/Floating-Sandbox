@@ -21,6 +21,9 @@ NotificationRenderContext::NotificationRenderContext(
     : mShaderManager(shaderManager)
     , mScreenToNdcX(0.0f) // Will be recalculated
     , mScreenToNdcY(0.0f) // Will be recalculated
+    // Textures
+    , mGenericLinearTextureAtlasMetadata(globalRenderContext.GetGenericLinearTextureAtlasMetadata())
+    , mGenericMipMappedTextureAtlasMetadata(globalRenderContext.GetGenericMipMappedTextureAtlasMetadata())
 	// Text
     , mFontTextureAtlasMetadata()
     , mTextNotificationTypeContexts()
@@ -30,7 +33,6 @@ NotificationRenderContext::NotificationRenderContext(
     , mTextVBO()
     , mFontAtlasTextureHandle()
     // Texture notifications
-    , mGenericLinearTextureAtlasMetadata(globalRenderContext.GetGenericLinearTextureAtlasMetadata())
     , mTextureNotifications()
     , mIsTextureNotificationDataDirty(false)
     , mTextureNotificationVAO()
@@ -55,6 +57,10 @@ NotificationRenderContext::NotificationRenderContext(
     , mPressureInjectionHaloVBO()
     , mWindSphereVAO()
     , mWindSphereVBO()
+    , mLaserCannonVAO()
+    , mLaserCannonVBO()
+    , mLaserRayVAO()
+    , mLaserRayVBO()
 {
     GLuint tmpGLuint;
 
@@ -430,6 +436,64 @@ NotificationRenderContext::NotificationRenderContext(
         mShaderManager.SetTextureParameters<ProgramType::WindSphere>();
     }
 
+    //
+    // Initialize Laser Cannon
+    //
+
+    {
+        glGenVertexArrays(1, &tmpGLuint);
+        mLaserCannonVAO = tmpGLuint;
+
+        glBindVertexArray(*mLaserCannonVAO);
+        CheckOpenGLError();
+
+        glGenBuffers(1, &tmpGLuint);
+        mLaserCannonVBO = tmpGLuint;        
+
+        // Describe vertex attributes
+        static_assert(sizeof(LaserCannonVertex) == (4 + 3) * sizeof(float));
+        glBindBuffer(GL_ARRAY_BUFFER, *mLaserCannonVBO);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::GenericMipMappedTextureNdc1));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericMipMappedTextureNdc1), 4, GL_FLOAT, GL_FALSE, sizeof(LaserCannonVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::GenericMipMappedTextureNdc2));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericMipMappedTextureNdc2), 3, GL_FLOAT, GL_FALSE, sizeof(LaserCannonVertex), (void *)(4 * sizeof(float)));
+        CheckOpenGLError();
+
+        glBindVertexArray(0);        
+    }
+
+    //
+    // Initialize Laser Ray
+    //
+
+    {
+        glGenVertexArrays(1, &tmpGLuint);
+        mLaserRayVAO = tmpGLuint;
+
+        glBindVertexArray(*mLaserRayVAO);
+        CheckOpenGLError();
+
+        glGenBuffers(1, &tmpGLuint);
+        mLaserRayVBO = tmpGLuint;
+
+        // Describe vertex attributes
+        static_assert(sizeof(LaserRayVertex) == (4 + 1) * sizeof(float));
+        glBindBuffer(GL_ARRAY_BUFFER, *mLaserRayVBO);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::LaserRay1));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::LaserRay1), 4, GL_FLOAT, GL_FALSE, sizeof(LaserRayVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::LaserRay2));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::LaserRay2), 1, GL_FLOAT, GL_FALSE, sizeof(LaserRayVertex), (void *)(4 * sizeof(float)));
+        CheckOpenGLError();
+
+        glBindVertexArray(0);
+
+        // Set noise in shader
+        mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture2>();
+        glBindTexture(GL_TEXTURE_2D, globalRenderContext.GetNoiseTextureOpenGLHandle(1));
+        mShaderManager.ActivateProgram<ProgramType::LaserRay>();
+        mShaderManager.SetTextureParameters<ProgramType::LaserRay>();
+    }
+
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
@@ -447,8 +511,14 @@ void NotificationRenderContext::UploadStart()
     // Reset pressure injection halo, it's uploaded as needed
     mPressureInjectionHaloVertexBuffer.clear();
 
-    // Reset wind pshere, it's uploaded as needed
+    // Reset wind sphere, it's uploaded as needed
     mWindSphereVertexBuffer.clear();
+
+    // Reset laser cannon, it's uploaded as needed
+    mLaserCannonVertexBuffer.clear();
+
+    // Reset laser ray, it's uploaded as needed
+    mLaserRayVertexBuffer.clear();
 }
 
 void NotificationRenderContext::UploadEnd()
@@ -496,11 +566,20 @@ void NotificationRenderContext::RenderPrepare()
     RenderPreparePressureInjectionHalo();
 
     RenderPrepareWindSphere();
+
+    RenderPrepareLaserCannon();
+
+    RenderPrepareLaserRay();
 }
 
 void NotificationRenderContext::RenderDraw()
 {
-    RenderDrawPhysicsProbePanel(); // Draw panel first
+    // Note the Z-order here!
+
+    RenderDrawLaserRay();
+    RenderDrawLaserCannon();
+
+    RenderDrawPhysicsProbePanel(); 
 
     RenderDrawTextNotifications();
 
@@ -592,12 +671,18 @@ void NotificationRenderContext::ApplyCanvasSizeChanges(RenderParameters const & 
 
 void NotificationRenderContext::ApplyEffectiveAmbientLightIntensityChanges(RenderParameters const & renderParameters)
 {
+    // Set parameter in all programs
+
+    mShaderManager.ActivateProgram<ProgramType::GenericMipMappedTexturesNdc>();
+    mShaderManager.SetProgramParameter<ProgramType::GenericMipMappedTexturesNdc, ProgramParameterType::EffectiveAmbientLightIntensity>(
+        renderParameters.EffectiveAmbientLightIntensity);
+
     float const lighteningStrength = Step(0.5f, 1.0f - renderParameters.EffectiveAmbientLightIntensity);
 
-    // Set parameter in all programs
     mShaderManager.ActivateProgram<ProgramType::Text>();
     mShaderManager.SetProgramParameter<ProgramType::Text, ProgramParameterType::TextLighteningStrength>(
         lighteningStrength);
+
     mShaderManager.ActivateProgram<ProgramType::TextureNotifications>();
     mShaderManager.SetProgramParameter<ProgramType::TextureNotifications, ProgramParameterType::TextureLighteningStrength>(
         lighteningStrength);
@@ -1007,6 +1092,76 @@ void NotificationRenderContext::RenderDrawWindSphere()
         // Draw
         assert((mWindSphereVertexBuffer.size() % 6) == 0);
         glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mWindSphereVertexBuffer.size()));
+
+        glBindVertexArray(0);
+    }
+}
+
+void NotificationRenderContext::RenderPrepareLaserCannon()
+{
+    if (!mLaserCannonVertexBuffer.empty())
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, *mLaserCannonVBO);
+
+        glBufferData(GL_ARRAY_BUFFER,
+            sizeof(LaserCannonVertex) * mLaserCannonVertexBuffer.size(),
+            mLaserCannonVertexBuffer.data(),
+            GL_DYNAMIC_DRAW);
+        CheckOpenGLError();
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+}
+
+void NotificationRenderContext::RenderDrawLaserCannon()
+{
+    if (!mLaserCannonVertexBuffer.empty())
+    {
+        glBindVertexArray(*mLaserCannonVAO);
+
+        mShaderManager.ActivateProgram<ProgramType::GenericMipMappedTexturesNdc>();
+
+        // Draw
+        assert((mLaserCannonVertexBuffer.size() % 6) == 0);
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mLaserCannonVertexBuffer.size()));
+
+        glBindVertexArray(0);
+    }
+}
+
+void NotificationRenderContext::RenderPrepareLaserRay()
+{
+    if (!mLaserRayVertexBuffer.empty())
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, *mLaserRayVBO);
+
+        glBufferData(GL_ARRAY_BUFFER,
+            sizeof(LaserRayVertex) * mLaserRayVertexBuffer.size(),
+            mLaserRayVertexBuffer.data(),
+            GL_DYNAMIC_DRAW);
+        CheckOpenGLError();
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        // Set time parameter
+        mShaderManager.ActivateProgram<ProgramType::LaserRay>();
+        mShaderManager.SetProgramParameter<ProgramParameterType::Time>(
+            ProgramType::LaserRay,
+            GameWallClock::GetInstance().NowAsFloat());
+    }
+}
+
+void NotificationRenderContext::RenderDrawLaserRay()
+{
+    if (!mLaserRayVertexBuffer.empty())
+    {
+        glBindVertexArray(*mLaserRayVAO);
+
+        mShaderManager.ActivateProgram<ProgramType::LaserRay>();
+
+        // Draw
+        assert((mLaserRayVertexBuffer.size() % 6) == 0);
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mLaserRayVertexBuffer.size()));
 
         glBindVertexArray(0);
     }

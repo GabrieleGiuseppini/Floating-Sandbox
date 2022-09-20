@@ -707,7 +707,8 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 	{
 		notificationRenderContext.UploadLaserCannon(
 			mLaserCannonToRender2->WorldPosition,
-			mLaserCannonToRender2->Strength);
+			mLaserCannonToRender2->Strength,
+			renderContext.GetViewModel());
 	}
 }
 

@@ -575,12 +575,106 @@ public:
 	}
 
 	inline void UploadLaserCannon(
-		vec2f const & worldPosition,
-		std::optional<float> strength)
+		vec2f const & worldCenter,
+		std::optional<float> strength,
+		ViewModel const & viewModel)
 	{
-		// TODOHERE
-		(void)worldPosition;
-		(void)strength;
+		std::array<vec2f, 4> constexpr NdcCorners{
+			vec2f(-1.0f, 1.0f),
+			vec2f(1.0f, 1.0f),
+			vec2f(1.0f, -1.0f),
+			vec2f(-1.0f, -1.0f)
+		};		
+
+		auto const & frameMetadata = mGenericMipMappedTextureAtlasMetadata.GetFrameMetadata(
+			TextureFrameId<GenericMipMappedTextureGroups>(GenericMipMappedTextureGroups::LaserCannon, 0));
+
+		float const ambientLightSensitivity = frameMetadata.FrameMetadata.HasOwnAmbientLight ? 0.0f : 1.0f;
+
+		float constexpr NdcCannonLength = 0.2f;
+		float const ndcCannonWidth = 
+			NdcCannonLength 
+			* static_cast<float>(frameMetadata.FrameMetadata.Size.height) / static_cast<float>(frameMetadata.FrameMetadata.Size.width);
+
+		// Convert center position to NDC
+		vec2f const ndcCenter = viewModel.WorldToNdc(worldCenter);
+
+		// Process all corners
+		for (vec2f const & ndcCorner : NdcCorners)
+		{
+			vec2f const ndcRay = ndcCenter - ndcCorner;
+			float const ndcRayLength = ndcRay.length();
+			// Only create cannon and ray if ray length >= cannon's NDC length
+			if (ndcRayLength >= NdcCannonLength)
+			{
+				vec2f const rayDir = ndcRay.normalise(ndcRayLength);
+				vec2f const rayPerpDir = rayDir.to_perpendicular();
+
+				//
+				// Create cannon vertices
+				//
+
+				vec2f const ndcTopLeft = ndcCorner + rayPerpDir * ndcCannonWidth;
+				vec2f const ndcBottomLeft = ndcCorner - rayPerpDir * ndcCannonWidth;
+				vec2f const ndcTopRight = ndcCorner + rayDir * NdcCannonLength + rayPerpDir * ndcCannonWidth;
+				vec2f const ndcBottomRight = ndcCorner + rayDir * NdcCannonLength - rayPerpDir * ndcCannonWidth;
+
+				// Bottom-left
+				mLaserCannonVertexBuffer.emplace_back(
+					ndcBottomLeft,
+					frameMetadata.TextureCoordinatesBottomLeft,
+					1.0f, // PlaneID
+					1.0f, // Alpha
+					ambientLightSensitivity);
+
+				// Top-left
+				mLaserCannonVertexBuffer.emplace_back(
+					ndcTopLeft,
+					vec2f(frameMetadata.TextureCoordinatesBottomLeft.x, frameMetadata.TextureCoordinatesTopRight.y),
+					1.0f, // PlaneID
+					1.0f, // Alpha
+					ambientLightSensitivity);
+
+				// Bottom-right
+				mLaserCannonVertexBuffer.emplace_back(
+					ndcBottomRight,
+					vec2f(frameMetadata.TextureCoordinatesTopRight.x, frameMetadata.TextureCoordinatesBottomLeft.y),
+					1.0f, // PlaneID
+					1.0f, // Alpha
+					ambientLightSensitivity);
+
+				// Top-left
+				mLaserCannonVertexBuffer.emplace_back(
+					ndcTopLeft,
+					vec2f(frameMetadata.TextureCoordinatesBottomLeft.x, frameMetadata.TextureCoordinatesTopRight.y),
+					1.0f, // PlaneID
+					1.0f, // Alpha
+					ambientLightSensitivity);
+
+				// Bottom-right
+				mLaserCannonVertexBuffer.emplace_back(
+					ndcBottomRight,
+					vec2f(frameMetadata.TextureCoordinatesTopRight.x, frameMetadata.TextureCoordinatesBottomLeft.y),
+					1.0f, // PlaneID
+					1.0f, // Alpha
+					ambientLightSensitivity);
+
+				// Top-right
+				mLaserCannonVertexBuffer.emplace_back(
+					ndcTopRight,
+					frameMetadata.TextureCoordinatesTopRight,
+					1.0f, // PlaneID
+					1.0f, // Alpha
+					ambientLightSensitivity);
+
+				//
+				// Create ray vertices
+				//
+
+				// TODOHERE
+				(void)strength;
+			}
+		}
 	}
 
 	void UploadEnd();
@@ -621,6 +715,12 @@ private:
 
 	inline void RenderPrepareWindSphere();
 	inline void RenderDrawWindSphere();
+
+	inline void RenderPrepareLaserCannon();
+	inline void RenderDrawLaserCannon();
+
+	inline void RenderPrepareLaserRay();
+	inline void RenderDrawLaserRay();
 
 private:
 
@@ -789,7 +889,52 @@ private:
 		{}
 	};
 
+	struct LaserCannonVertex
+	{
+		vec2f vertexPositionNDC;
+		vec2f textureCoordinate;
+		float planeId;
+		float alpha;
+		float ambientLightSensitivity;
+
+		LaserCannonVertex(
+			vec2f const & _vertexPositionNDC,
+			vec2f const & _textureCoordinate,
+			float _planeId,
+			float _alpha,
+			float _ambientLightSensitivity)
+			: vertexPositionNDC(_vertexPositionNDC)
+			, textureCoordinate(_textureCoordinate)
+			, planeId(_planeId)
+			, alpha(_alpha)
+			, ambientLightSensitivity(_ambientLightSensitivity)
+		{}
+	};
+
+	struct LaserRayVertex
+	{
+		vec2f vertexPositionNDC;
+		vec2f vertexSpacePosition;
+		float strength;
+
+		LaserRayVertex(
+			vec2f const & _vertexPositionNDC,
+			vec2f const & _vertexSpacePosition,
+			float _strength)
+			: vertexPositionNDC(_vertexPositionNDC)
+			, vertexSpacePosition(_vertexSpacePosition)
+			, strength(_strength)
+		{}
+	};
+
 #pragma pack(pop)
+
+	//
+	// Textures
+	//
+
+	TextureAtlasMetadata<GenericLinearTextureGroups> const & mGenericLinearTextureAtlasMetadata;
+	TextureAtlasMetadata<GenericMipMappedTextureGroups> const & mGenericMipMappedTextureAtlasMetadata;
 
     //
     // Text notifications
@@ -873,9 +1018,7 @@ private:
 
 	//
 	// Texture notifications
-	//
-
-	TextureAtlasMetadata<GenericLinearTextureGroups> const & mGenericLinearTextureAtlasMetadata;
+	//	
 
 	struct TextureNotification
 	{
@@ -938,6 +1081,14 @@ private:
 	GameOpenGLVAO mWindSphereVAO;
 	std::vector<WindSphereVertex> mWindSphereVertexBuffer;
 	GameOpenGLVBO mWindSphereVBO;
+
+	GameOpenGLVAO mLaserCannonVAO;
+	std::vector<LaserCannonVertex> mLaserCannonVertexBuffer;
+	GameOpenGLVBO mLaserCannonVBO;
+
+	GameOpenGLVAO mLaserRayVAO;
+	std::vector<LaserCannonVertex> mLaserRayVertexBuffer;
+	GameOpenGLVBO mLaserRayVBO;
 };
 
 }

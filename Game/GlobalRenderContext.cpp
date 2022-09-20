@@ -147,7 +147,6 @@ void GlobalRenderContext::InitializeGenericTextures(ResourceLocator const & reso
         fireAtlasFrameMetadata.TextureSpaceWidth,
         fireAtlasFrameMetadata.TextureSpaceHeight);
 
-
     //
     // Create generic mipmapped texture atlas
     //
@@ -193,7 +192,9 @@ void GlobalRenderContext::InitializeGenericTextures(ResourceLocator const & reso
     // Store metadata
     mGenericMipMappedTextureAtlasMetadata = std::make_unique<TextureAtlasMetadata<GenericMipMappedTextureGroups>>(genericMipMappedTextureAtlas.Metadata);
 
-    // Set texture in shaders
+    // Set texture in all shaders that use it
+    mShaderManager.ActivateProgram<ProgramType::GenericMipMappedTexturesNdc>();
+    mShaderManager.SetTextureParameters<ProgramType::GenericMipMappedTexturesNdc>();
     mShaderManager.ActivateProgram<ProgramType::ShipGenericMipMappedTextures>();
     mShaderManager.SetTextureParameters<ProgramType::ShipGenericMipMappedTextures>();
 }
