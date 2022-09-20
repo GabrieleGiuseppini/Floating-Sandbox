@@ -255,6 +255,20 @@ void NotificationLayer::Reset()
 	mIsPhysicsProbePanelDirty = true;
 	mPhysicsProbeReadingStrings.reset();
 	mArePhysicsProbeReadingStringsDirty = true;
+
+	// Reset interactions
+	mHeatBlasterFlameToRender1.reset();
+	mHeatBlasterFlameToRender2.reset();
+	mFireExtinguisherSprayToRender1.reset();
+	mFireExtinguisherSprayToRender2.reset();
+	mBlastToolHaloToRender1.reset();
+	mBlastToolHaloToRender2.reset();
+	mPressureInjectionHaloToRender1.reset();
+	mPressureInjectionHaloToRender2.reset();
+	mWindSphereToRender1.reset();
+	mWindSphereToRender2.reset();
+	mLaserCannonToRender1.reset();
+	mLaserCannonToRender2.reset();
 }
 
 void NotificationLayer::Update(float now)
@@ -433,6 +447,28 @@ void NotificationLayer::Update(float now)
 			mIsPhysicsProbePanelDirty = true;
 		}
 	}
+
+	//
+	// Update interactions
+	//
+
+	mHeatBlasterFlameToRender2 = mHeatBlasterFlameToRender1;
+	mHeatBlasterFlameToRender1.reset();
+
+	mFireExtinguisherSprayToRender2 = mFireExtinguisherSprayToRender1;
+	mFireExtinguisherSprayToRender1.reset();
+
+	mBlastToolHaloToRender2 = mBlastToolHaloToRender1;
+	mBlastToolHaloToRender1.reset();
+
+	mPressureInjectionHaloToRender2 = mPressureInjectionHaloToRender1;
+	mPressureInjectionHaloToRender1.reset();
+
+	mWindSphereToRender2 = mWindSphereToRender1;
+	mWindSphereToRender1.reset();
+
+	mLaserCannonToRender2 = mLaserCannonToRender1;
+	mLaserCannonToRender1.reset();
 }
 
 void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
@@ -626,57 +662,53 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 	// Upload interactions, if needed
 	//
 
-	if (mHeatBlasterFlameToRender.has_value())
+	if (mHeatBlasterFlameToRender2.has_value())
 	{
 		notificationRenderContext.UploadHeatBlasterFlame(
-			mHeatBlasterFlameToRender->WorldCoordinates,
-			mHeatBlasterFlameToRender->Radius,
-			mHeatBlasterFlameToRender->Action);
-
-		mHeatBlasterFlameToRender.reset();
+			mHeatBlasterFlameToRender2->WorldCoordinates,
+			mHeatBlasterFlameToRender2->Radius,
+			mHeatBlasterFlameToRender2->Action);
 	}
 
-	if (mFireExtinguisherSprayToRender.has_value())
+	if (mFireExtinguisherSprayToRender2.has_value())
 	{
 		notificationRenderContext.UploadFireExtinguisherSpray(
-			mFireExtinguisherSprayToRender->WorldCoordinates,
-			mFireExtinguisherSprayToRender->Radius);
-
-		mFireExtinguisherSprayToRender.reset();
+			mFireExtinguisherSprayToRender2->WorldCoordinates,
+			mFireExtinguisherSprayToRender2->Radius);
 	}
 
-	if (mBlastToolHaloToRender.has_value())
+	if (mBlastToolHaloToRender2.has_value())
 	{
 		notificationRenderContext.UploadBlastToolHalo(
-			mBlastToolHaloToRender->WorldCoordinates,
-			mBlastToolHaloToRender->Radius,
-			mBlastToolHaloToRender->RenderProgress,
-			mBlastToolHaloToRender->PersonalitySeed);
-
-		mBlastToolHaloToRender.reset();
+			mBlastToolHaloToRender2->WorldCoordinates,
+			mBlastToolHaloToRender2->Radius,
+			mBlastToolHaloToRender2->RenderProgress,
+			mBlastToolHaloToRender2->PersonalitySeed);
 	}
 
-	if (mPressureInjectionHaloToRender.has_value())
+	if (mPressureInjectionHaloToRender2.has_value())
 	{
 		notificationRenderContext.UploadPressureInjectionHalo(
-			mPressureInjectionHaloToRender->WorldCoordinates,
-			mPressureInjectionHaloToRender->FlowMultiplier);
-
-		mPressureInjectionHaloToRender.reset();
+			mPressureInjectionHaloToRender2->WorldCoordinates,
+			mPressureInjectionHaloToRender2->FlowMultiplier);
 	}
 
-	if (mWindSphereToRender.has_value())
+	if (mWindSphereToRender2.has_value())
 	{
 		notificationRenderContext.UploadWindSphere(
-			mWindSphereToRender->SourcePos,
-			mWindSphereToRender->PreFrontRadius,
-			mWindSphereToRender->PreFrontIntensityMultiplier,
-			mWindSphereToRender->MainFrontRadius,
-			mWindSphereToRender->MainFrontIntensityMultiplier);
-
-		mWindSphereToRender.reset();
+			mWindSphereToRender2->SourcePos,
+			mWindSphereToRender2->PreFrontRadius,
+			mWindSphereToRender2->PreFrontIntensityMultiplier,
+			mWindSphereToRender2->MainFrontRadius,
+			mWindSphereToRender2->MainFrontIntensityMultiplier);
 	}
 
+	if (mLaserCannonToRender2.has_value())
+	{
+		notificationRenderContext.UploadLaserCannon(
+			mLaserCannonToRender2->WorldPosition,
+			mLaserCannonToRender2->Strength);
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

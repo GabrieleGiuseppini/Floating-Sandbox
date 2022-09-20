@@ -428,6 +428,11 @@ MainFrame::MainFrame(
                 }
 
                 {
+                    auto menuItem = ADD_TOOL_MENUITEM(_("LaserCannon"), wxS("\t2"), "laser_cannon_icon", OnLaserCannonMenuItemSelected);
+                    ADD_PLAIN_ACCELERATOR_KEY('2', menuItem);
+                }
+
+                {
                     auto menuItem = ADD_TOOL_MENUITEM(_("Adjust Terrain"), wxS("\tJ"), "terrain_adjust_cursor_up", OnAdjustTerrainMenuItemSelected);
                     ADD_PLAIN_ACCELERATOR_KEY('J', menuItem);
                 }
@@ -1822,6 +1827,12 @@ void MainFrame::OnWindMakerMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mToolController);
     mToolController->SetTool(ToolType::WindMakerTool);
+}
+
+void MainFrame::OnLaserCannonMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mToolController);
+    mToolController->SetTool(ToolType::LaserCannonTool);
 }
 
 void MainFrame::OnAdjustTerrainMenuItemSelected(wxCommandEvent & /*event*/)

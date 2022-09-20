@@ -206,6 +206,7 @@ private:
     void OnThanosSnapMenuItemSelected(wxCommandEvent & event);
     void OnWaveMakerMenuItemSelected(wxCommandEvent & event);
     void OnWindMakerMenuItemSelected(wxCommandEvent & event);
+    void OnLaserCannonMenuItemSelected(wxCommandEvent & event);
     void OnAdjustTerrainMenuItemSelected(wxCommandEvent & event);
     void OnRepairStructureMenuItemSelected(wxCommandEvent & event);
     void OnScrubMenuItemSelected(wxCommandEvent & event);

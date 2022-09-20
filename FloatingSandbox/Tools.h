@@ -56,7 +56,8 @@ enum class ToolType
     PhysicsProbe,
     BlastTool,
     ElectricSparkTool,
-    WindMakerTool
+    WindMakerTool,
+    LaserCannonTool
 };
 
 struct InputState
@@ -3317,4 +3318,101 @@ private:
     // The cursors
     wxImage const mUpCursorImage;
     std::array<wxImage, 3> mDownCursorImages;
+};
+
+class LaserCannonTool final : public Tool
+{
+public:
+
+    LaserCannonTool(
+        IToolCursorManager & toolCursorManager,
+        std::shared_ptr<IGameController> gameController,
+        std::shared_ptr<SoundController> soundController,
+        ResourceLocator const & resourceLocator);
+
+public:
+
+    virtual void Initialize(InputState const & /*inputState*/) override
+    {
+        mEngagementData.reset();
+
+        SetCurrentCursor();
+    }
+
+    virtual void Deinitialize() override
+    {
+        // TODOHERE: sounds
+    }
+
+    virtual void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
+    {
+        bool doUpdateCursor = false;
+
+        if (inputState.IsLeftMouseDown)
+        {
+            // Update engagement state
+            if (!mEngagementData.has_value())
+            {
+                mEngagementData.emplace();
+                doUpdateCursor = true;
+            }
+
+            // Calculate force
+            // TODO
+        }
+        else
+        {
+            // Update engagement state
+            if (mEngagementData.has_value())
+            {
+                mEngagementData.reset();
+                doUpdateCursor = true;
+            }
+
+            // Zero force
+            // TODO
+        }
+
+        // TODO: invoke, with pos & force
+
+        if (doUpdateCursor)
+        {
+            SetCurrentCursor();
+        }
+    }
+
+    virtual void OnMouseMove(InputState const & /*inputState*/) override {}
+
+    virtual void OnLeftMouseDown(InputState const & /*inputState*/) override {}
+
+    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}
+
+    virtual void OnShiftKeyDown(InputState const & /*inputState*/) override {}
+
+    virtual void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+
+private:
+
+    void SetCurrentCursor()
+    {
+        if (!mEngagementData.has_value())
+        {
+            mToolCursorManager.SetToolCursor(mUpCursorImage);
+        }
+        else
+        {
+            mToolCursorManager.SetToolCursor(mDownCursorImage);
+        }
+    }
+
+    struct EngagementData
+    {
+        // TODO
+    };
+
+    std::optional<EngagementData> mEngagementData;
+
+    // The cursors
+    wxImage const mUpCursorImage;
+    wxImage const mDownCursorImage;
 };

@@ -51,6 +51,7 @@
 		+ Cleanup plan, commit & push
 
 		- Fix: GameController ends up being deleted by SwitchboardPanel - might be the cause of the "blocking" issue on GTK
+			- First off: add logging to destructors and verify GameController is NOT last nowadays
 			- MainFrame: GameController, SoundController, MusicController: all uq_ptrs
 				- But ordered: roots first (GameController)
 			- When these are args to others: only references
@@ -1347,16 +1348,21 @@
 	- Ripple: "basically you click and hold somewhere on the ship, and when you let go, it sends a ripple into the ship, weak points might tear,
 	  or start getting damaged, etc."
 
-	- Laser cannon tool (*)
-		- Spec:
+	= Laser cannon tool (*)
+		! Spec:
 			- Like saw but heats structure
 			- Turrets at four corners, oriented towards mouse
 			- When clicking, laser shaders from four corners
 				- Nice shader for laser ray
-			- Sound
-		- Impl:
-			- TODO: misc points to remember:
-				- Cannon rendering and laser shader all managed by NotificationLayer/NotificationRenderContext
+			- Sounds:
+				- TODO: spec
+		= Impl:
+			+ Test all other notif's w/pause
+			- Rendering (NotificationRenderContext):
+				- TODO
+			- Physics (Ship::Apply...):
+				- TODO
+			- Sounds:
 
 - Game Interactions and Controls:
 

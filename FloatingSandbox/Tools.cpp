@@ -662,3 +662,23 @@ WindMakerTool::WindMakerTool(
         })
 {
 }
+
+////////////////////////////////////////////////////////////////////////
+// LaserCannonTool
+////////////////////////////////////////////////////////////////////////
+
+LaserCannonTool::LaserCannonTool(
+    IToolCursorManager & toolCursorManager,
+    std::shared_ptr<IGameController> gameController,
+    std::shared_ptr<SoundController> soundController,
+    ResourceLocator const & resourceLocator)
+    : Tool(
+        ToolType::LaserCannonTool,
+        toolCursorManager,
+        std::move(gameController),
+        std::move(soundController))
+    , mEngagementData()
+    , mUpCursorImage(WxHelpers::LoadCursorImage("crosshair_cursor_up", 15, 15, resourceLocator))
+    , mDownCursorImage(WxHelpers::LoadCursorImage("crosshair_cursor_down", 15, 15, resourceLocator))
+{
+}

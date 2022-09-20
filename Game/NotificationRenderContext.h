@@ -574,6 +574,15 @@ public:
 			mainFrontIntensityMultiplier);
 	}
 
+	inline void UploadLaserCannon(
+		vec2f const & worldPosition,
+		std::optional<float> strength)
+	{
+		// TODOHERE
+		(void)worldPosition;
+		(void)strength;
+	}
+
 	void UploadEnd();
 
 	void ProcessParameterChanges(RenderParameters const & renderParameters);

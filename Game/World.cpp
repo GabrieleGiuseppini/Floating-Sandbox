@@ -474,6 +474,21 @@ void World::ApplyRadialWindFrom(
     }
 }
 
+void World::ApplyLaserCannonAt(
+    vec2f const & targetPos,
+    float strength,
+    GameParameters const & gameParameters)
+{
+    // Apply to ships
+    for (auto & ship : mAllShips)
+    {
+        ship->ApplyLaserCannonAt(
+            targetPos,
+            strength,
+            gameParameters);
+    }
+}
+
 void World::DrawTo(
     vec2f const & targetPos,
     float strengthFraction,

@@ -962,6 +962,28 @@ void GameController::ApplyRadialWindFrom(
         mainFrontIntensityMultiplier);
 }
 
+void GameController::ApplyLaserCannonAt(
+    DisplayLogicalCoordinates const & screenCoordinates, 
+    std::optional<float> strength)
+{
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+
+    if (strength)
+    {
+        // Apply action
+        assert(!!mWorld);
+        mWorld->ApplyLaserCannonAt(
+            worldCoordinates,
+            *strength,
+            mGameParameters);
+    }
+
+    // Draw notification (one frame only)
+    mNotificationLayer.SetLaserCannon(
+        worldCoordinates,
+        strength);
+}
+
 void GameController::DrawTo(
     DisplayLogicalCoordinates const & screenCoordinates,
     float strengthFraction)

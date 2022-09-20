@@ -736,6 +736,17 @@ void Ship::ApplyRadialWindFrom(
             mainFrontWindForceMagnitude));
 }
 
+void Ship::ApplyLaserCannonAt(
+    vec2f const & targetPos,
+    float strength,
+    GameParameters const & gameParameters)
+{
+    // TODOHERE
+    (void)targetPos;
+    (void)strength;
+    (void)gameParameters;
+}
+
 void Ship::ApplyRadialWindFrom(Interaction::ArgumentsUnion::RadialWindArguments const & args)
 {
     // Visit all points, including ephemerals

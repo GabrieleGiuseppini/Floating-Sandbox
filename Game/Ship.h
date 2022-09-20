@@ -179,6 +179,11 @@ public:
         float mainFrontWindSpeed,
         GameParameters const & gameParameters);
 
+    void ApplyLaserCannonAt(
+        vec2f const & targetPos,
+        float strength,
+        GameParameters const & gameParameters);
+
     void DrawTo(
         vec2f const & targetPos,
         float strengthFraction,
