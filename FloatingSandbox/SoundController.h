@@ -162,6 +162,9 @@ public:
     void PlayFishFoodSound();
     void StopFishFoodSound();
 
+    void PlayLaserRaySound(bool isAmplified);
+    void StopLaserRaySound();
+
     void PlayBlastToolSlow1Sound();
     void PlayBlastToolSlow2Sound();
     void PlayBlastToolFastSound();
@@ -612,6 +615,8 @@ private:
     ContinuousSingleChoiceSound mWaveMakerSound;
     ContinuousSingleChoiceSound mFishScareSound;
     ContinuousSingleChoiceSound mFishFoodSound;
+    ContinuousSingleChoiceSound mLaserRayNormalSound;
+    ContinuousSingleChoiceSound mLaserRayAmplifiedSound;
     OneShotSingleChoiceSound mBlastToolSlow1Sound;
     OneShotSingleChoiceSound mBlastToolSlow2Sound;
     OneShotSingleChoiceSound mBlastToolFastSound;

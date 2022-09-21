@@ -521,6 +521,157 @@ void NotificationRenderContext::UploadStart()
     mLaserRayVertexBuffer.clear();
 }
 
+void NotificationRenderContext::UploadLaserCannon(
+    vec2f const & worldCenter,
+    std::optional<float> strength,
+    ViewModel const & viewModel)
+{
+    std::array<vec2f, 4> constexpr NdcCorners{
+        vec2f(-1.0f, 1.0f),
+        vec2f(1.0f, 1.0f),
+        vec2f(1.0f, -1.0f),
+        vec2f(-1.0f, -1.0f)
+    };
+
+    auto const & frameMetadata = mGenericMipMappedTextureAtlasMetadata.GetFrameMetadata(
+        TextureFrameId<GenericMipMappedTextureGroups>(GenericMipMappedTextureGroups::LaserCannon, 0));
+
+    float const ambientLightSensitivity = frameMetadata.FrameMetadata.HasOwnAmbientLight ? 0.0f : 1.0f;
+
+    float constexpr NdcCannonLength = 0.2f;
+    float const ndcCannonWidth =
+        NdcCannonLength
+        * static_cast<float>(frameMetadata.FrameMetadata.Size.width) / static_cast<float>(frameMetadata.FrameMetadata.Size.height);
+    float constexpr NdcRayWidth = 0.04f;
+
+    // Convert center position to NDC
+    vec2f const ndcCenter = viewModel.WorldToNdc(worldCenter);
+
+    // Process all corners
+    for (vec2f const & ndcCorner : NdcCorners)
+    {
+        vec2f const ndcRay = ndcCenter - ndcCorner;
+        float const ndcRayLength = ndcRay.length();
+        // Skip cannon if too short
+        if (ndcRayLength > 0.001f)
+        {
+            vec2f rayDir = ndcRay.normalise(ndcRayLength);
+            vec2f const rayPerpDir = rayDir.to_perpendicular();
+
+            //
+            // Create cannon vertices
+            //
+
+            // Cannon origin: H=mid, V=bottom, calculated considering retreat when there is not enough room
+            vec2f const ndcOrigin = ndcCorner - rayDir * std::max(NdcCannonLength - ndcRayLength, 0.0f);
+
+            vec2f const ndcCannonBottomLeft = ndcOrigin + rayPerpDir * ndcCannonWidth / 2.0f;
+            vec2f const ndcCannonBottomRight = ndcOrigin - rayPerpDir * ndcCannonWidth / 2.0f;
+            vec2f const ndcCannonTopLeft = ndcOrigin + rayDir * NdcCannonLength + rayPerpDir * ndcCannonWidth / 2.0f;
+            vec2f const ndcCannonTopRight = ndcOrigin + rayDir * NdcCannonLength - rayPerpDir * ndcCannonWidth / 2.0f;
+
+            // Bottom-left
+            mLaserCannonVertexBuffer.emplace_back(
+                ndcCannonBottomLeft,
+                frameMetadata.TextureCoordinatesBottomLeft,
+                1.0f, // PlaneID
+                1.0f, // Alpha
+                ambientLightSensitivity);
+
+            // Top-left
+            mLaserCannonVertexBuffer.emplace_back(
+                ndcCannonTopLeft,
+                vec2f(frameMetadata.TextureCoordinatesBottomLeft.x, frameMetadata.TextureCoordinatesTopRight.y),
+                1.0f, // PlaneID
+                1.0f, // Alpha
+                ambientLightSensitivity);
+
+            // Bottom-right
+            mLaserCannonVertexBuffer.emplace_back(
+                ndcCannonBottomRight,
+                vec2f(frameMetadata.TextureCoordinatesTopRight.x, frameMetadata.TextureCoordinatesBottomLeft.y),
+                1.0f, // PlaneID
+                1.0f, // Alpha
+                ambientLightSensitivity);
+
+            // Top-left
+            mLaserCannonVertexBuffer.emplace_back(
+                ndcCannonTopLeft,
+                vec2f(frameMetadata.TextureCoordinatesBottomLeft.x, frameMetadata.TextureCoordinatesTopRight.y),
+                1.0f, // PlaneID
+                1.0f, // Alpha
+                ambientLightSensitivity);
+
+            // Bottom-right
+            mLaserCannonVertexBuffer.emplace_back(
+                ndcCannonBottomRight,
+                vec2f(frameMetadata.TextureCoordinatesTopRight.x, frameMetadata.TextureCoordinatesBottomLeft.y),
+                1.0f, // PlaneID
+                1.0f, // Alpha
+                ambientLightSensitivity);
+
+            // Top-right
+            mLaserCannonVertexBuffer.emplace_back(
+                ndcCannonTopRight,
+                frameMetadata.TextureCoordinatesTopRight,
+                1.0f, // PlaneID
+                1.0f, // Alpha
+                ambientLightSensitivity);
+
+            if (strength)
+            {
+                //
+                // Create ray vertices
+                //
+
+                // Taper ray towards center, depending on zoom: the further (smaller), the more tapered
+                float const ndcRayWidthEnd = NdcRayWidth * std::min(viewModel.GetZoom(), 1.0f);
+
+                vec2f const ndcRayBottomLeft = ndcOrigin + rayPerpDir * NdcRayWidth / 2.0f;
+                vec2f const ndcRayBottomRight = ndcOrigin - rayPerpDir * NdcRayWidth / 2.0f;
+                vec2f const ndcRayTopLeft = ndcCenter + rayPerpDir * ndcRayWidthEnd / 2.0f;
+                vec2f const ndcRayTopRight = ndcCenter - rayPerpDir * ndcRayWidthEnd / 2.0f;
+
+                // Bottom-left
+                mLaserRayVertexBuffer.emplace_back(
+                    ndcRayBottomLeft,
+                    vec2f(-1.0f, -1.0f),
+                    *strength);
+
+                // Top-left
+                mLaserRayVertexBuffer.emplace_back(
+                    ndcRayTopLeft,
+                    vec2f(-1.0f, 1.0f),
+                    *strength);
+
+                // Bottom-right
+                mLaserRayVertexBuffer.emplace_back(
+                    ndcRayBottomRight,
+                    vec2f(1.0f, -1.0f),
+                    *strength);
+
+                // Top-left
+                mLaserRayVertexBuffer.emplace_back(
+                    ndcRayTopLeft,
+                    vec2f(-1.0f, 1.0f),
+                    *strength);
+
+                // Bottom-right
+                mLaserRayVertexBuffer.emplace_back(
+                    ndcRayBottomRight,
+                    vec2f(1.0f, -1.0f),
+                    *strength);
+
+                // Top-right
+                mLaserRayVertexBuffer.emplace_back(
+                    ndcRayTopRight,
+                    vec2f(1.0f, 1.0f),
+                    *strength);
+            }
+        }
+    }
+}
+
 void NotificationRenderContext::UploadEnd()
 {
     // Nop

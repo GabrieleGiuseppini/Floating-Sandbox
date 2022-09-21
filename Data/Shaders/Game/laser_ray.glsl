@@ -47,20 +47,16 @@ float getNoise(float x, float block) // -1.0, 1.0
 void main()
 {
     // Width
-    float widthModifier = getNoise(raySpacePosition.y / 10.0 - paramTime, 0.2) * 0.1;
+    float widthModifier = getNoise(raySpacePosition.y / 4.0 - paramTime / 2.0, 0.2) * 0.4;
     float xDistance = abs(raySpacePosition.x) + abs(widthModifier);
     
     // Wide alpha
     float alpha1 = 1.0 - clamp(xDistance, 0.0, 1.0);    
-    // Taper at end
-    alpha1 *= 1.0 - clamp((raySpacePosition.y - 0.7) / 0.3, 0.0, 1.0);
     // Focus
     alpha1 = alpha1 * alpha1;
     
     // Narrow alpha
     float alpha2 = 1.0 - clamp(xDistance / 0.5, 0.0, 1.0);    
-    // Taper at end
-    alpha2 *= 1.0 - clamp((raySpacePosition.y - 0.7) / 0.3, 0.0, 1.0);
     // Focus
     alpha2 = alpha2 * alpha2;
     

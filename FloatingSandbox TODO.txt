@@ -1365,14 +1365,20 @@
 					+ Database + enum
 				= Upload
 					= Cannon vertices
-					- Ray vertices
+						= Make cannons rectractable - watch out for zero ray length
+					= Ray vertices
+						- Make noise invariant from length: instead of -1..+1, do -1..ray_length
 				- Shaders:
 					= GenericMipMappedTexturesNdc
 					= LaserRay
+						- Strength variant
 				= Cannons are subject to daylight, ray is not
 			- Physics (Ship::Apply...):
 				- TODO
-			- Sounds:
+			= Sounds:
+				= Basic
+				- Make amplified variant
+				- Do cut sound (much like "SawedMetal" or "SawedWood")
 		- Cleanup:
 			- LaserCannonTool:
 				- If EngagementData not needed, nuke it and get away with boolean

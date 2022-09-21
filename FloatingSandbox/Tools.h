@@ -3341,7 +3341,11 @@ public:
 
     virtual void Deinitialize() override
     {
-        // TODOHERE: sounds
+        if (mEngagementData.has_value())
+        {
+            // Stop sound
+            mSoundController->StopLaserRaySound();
+        }
     }
 
     virtual void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
@@ -3355,8 +3359,12 @@ public:
             // Update engagement state
             if (!mEngagementData.has_value())
             {
+                // Engage
                 mEngagementData.emplace();
                 doUpdateCursor = true;
+
+                // Start sound
+                mSoundController->PlayLaserRaySound(inputState.IsShiftKeyDown);
             }
 
             // Calculate force
@@ -3374,6 +3382,10 @@ public:
             // Update engagement state
             if (mEngagementData.has_value())
             {
+                // Stop sound
+                mSoundController->StopLaserRaySound();
+
+                // Disengage
                 mEngagementData.reset();
                 doUpdateCursor = true;
             }
@@ -3381,10 +3393,12 @@ public:
             // Zero force
         }
 
+        // Apply interaction
         mGameController->ApplyLaserCannonAt(
             inputState.MousePosition,
             force);
 
+        // Update cursor
         if (doUpdateCursor)
         {
             SetCurrentCursor();

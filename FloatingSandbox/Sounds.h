@@ -126,6 +126,8 @@ enum class SoundType : uint32_t
     BlastToolSlow2,
     BlastToolFast,
     PressureInjection,
+    LaserRayNormal,
+    LaserRayAmplified,
 
     // UI
     Error

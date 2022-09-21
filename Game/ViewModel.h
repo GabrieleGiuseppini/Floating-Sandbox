@@ -189,6 +189,9 @@ public:
         return mCanvasPhysicalSize;
     }
 
+    /*
+     * Display physical width / display physical height.
+     */
     float GetAspectRatio() const
     {
         return mAspectRatio;
