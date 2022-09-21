@@ -56,7 +56,7 @@ void main()
     alpha1 = alpha1 * alpha1;
     
     // Narrow alpha
-    float alpha2 = 1.0 - clamp(xDistance / 0.5, 0.0, 1.0);    
+    float alpha2 = 1.0 - clamp(xDistance / (0.5 * strength), 0.0, 1.0);    
     // Focus
     alpha2 = alpha2 * alpha2;
     

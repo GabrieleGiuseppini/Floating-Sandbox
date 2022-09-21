@@ -542,7 +542,9 @@ void NotificationRenderContext::UploadLaserCannon(
     float const ndcCannonWidth =
         NdcCannonLength
         * static_cast<float>(frameMetadata.FrameMetadata.Size.width) / static_cast<float>(frameMetadata.FrameMetadata.Size.height);
-    float constexpr NdcRayWidth = 0.04f;
+
+    float const ndcRayWidth = 0.04f * strength.value_or(1.0f);
+    float const ndcRayWidthEnd = ndcRayWidth * std::min(viewModel.GetZoom(), 1.0f); // Taper ray towards center, depending on zoom: the further (smaller), the more tapered
 
     // Convert center position to NDC
     vec2f const ndcCenter = viewModel.WorldToNdc(worldCenter);
@@ -624,11 +626,8 @@ void NotificationRenderContext::UploadLaserCannon(
                 // Create ray vertices
                 //
 
-                // Taper ray towards center, depending on zoom: the further (smaller), the more tapered
-                float const ndcRayWidthEnd = NdcRayWidth * std::min(viewModel.GetZoom(), 1.0f);
-
-                vec2f const ndcRayBottomLeft = ndcOrigin + rayPerpDir * NdcRayWidth / 2.0f;
-                vec2f const ndcRayBottomRight = ndcOrigin - rayPerpDir * NdcRayWidth / 2.0f;
+                vec2f const ndcRayBottomLeft = ndcOrigin + rayPerpDir * ndcRayWidth / 2.0f;
+                vec2f const ndcRayBottomRight = ndcOrigin - rayPerpDir * ndcRayWidth / 2.0f;
                 vec2f const ndcRayTopLeft = ndcCenter + rayPerpDir * ndcRayWidthEnd / 2.0f;
                 vec2f const ndcRayTopRight = ndcCenter - rayPerpDir * ndcRayWidthEnd / 2.0f;
 

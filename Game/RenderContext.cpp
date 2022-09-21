@@ -475,6 +475,8 @@ void RenderContext::Draw()
             {
                 ProcessParameterChanges(renderParameters);
 
+                mGlobalRenderContext->ProcessParameterChanges(renderParameters);
+
                 mWorldRenderContext->ProcessParameterChanges(renderParameters);
 
                 for (auto const & ship : mShips)

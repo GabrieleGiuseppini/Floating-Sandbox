@@ -76,7 +76,7 @@
 
 {
 	"groupName": "LaserCannon",
-	"hasOwnAmbientLight": true,
+	"hasOwnAmbientLight": false,
 	"frames":[
 		{	
 			"worldWidth": 1.0,

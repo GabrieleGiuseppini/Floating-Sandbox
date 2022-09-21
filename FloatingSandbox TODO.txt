@@ -1366,19 +1366,24 @@
 				= Upload
 					= Cannon vertices
 						= Make cannons rectractable - watch out for zero ray length
+						- Fix aspect ratio problem
 					= Ray vertices
 						- Make noise invariant from length: instead of -1..+1, do -1..ray_length
-				- Shaders:
-					= GenericMipMappedTexturesNdc
-					= LaserRay
-						- Strength variant
-				= Cannons are subject to daylight, ray is not
+						= Thicker when strong
+							- Watch out: not thicker than cannon
+				= Shaders:
+					+ GenericMipMappedTexturesNdc
+					+ LaserRay
+						+ Strength variation: more yellow room, less orange room
+				+ Cannons are subject to daylight, ray is not
 			- Physics (Ship::Apply...):
-				- TODO
+				- TODO				- 
 			= Sounds:
-				= Basic
-				- Make amplified variant
-				- Do cut sound (much like "SawedMetal" or "SawedWood")
+				+ Basic code
+				- Normal variant (more electronic)
+				- Amplified variant
+				- Cut sound (much like "SawedMetal" or "SawedWood")
+					- Physics
 		- Cleanup:
 			- LaserCannonTool:
 				- If EngagementData not needed, nuke it and get away with boolean
