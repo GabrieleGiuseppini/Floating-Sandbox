@@ -575,7 +575,7 @@ public:
 	}
 
 	void UploadLaserCannon(
-		vec2f const & worldCenter,
+		DisplayLogicalCoordinates const & screenCenter,
 		std::optional<float> strength,
 		ViewModel const & viewModel);
 

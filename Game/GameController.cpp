@@ -980,7 +980,7 @@ void GameController::ApplyLaserCannonAt(
 
     // Draw notification (one frame only)
     mNotificationLayer.SetLaserCannon(
-        worldCoordinates,
+        screenCoordinates,
         strength);
 }
 

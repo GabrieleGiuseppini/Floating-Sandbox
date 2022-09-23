@@ -706,7 +706,7 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 	if (mLaserCannonToRender2.has_value())
 	{
 		notificationRenderContext.UploadLaserCannon(
-			mLaserCannonToRender2->WorldPosition,
+			mLaserCannonToRender2->Center,
 			mLaserCannonToRender2->Strength,
 			renderContext.GetViewModel());
 	}

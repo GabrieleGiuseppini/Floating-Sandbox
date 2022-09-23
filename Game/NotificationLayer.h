@@ -128,11 +128,11 @@ public:
 
 	// One frame only; after Update() it's gone
 	inline void SetLaserCannon(
-		vec2f const & worldPosition,
+		DisplayLogicalCoordinates const & center,
 		std::optional<float> strength)
 	{
 		mLaserCannonToRender1.emplace(
-			worldPosition,
+			center,
 			strength);
 	}
 
@@ -398,13 +398,13 @@ private:
 
 	struct LaserCannon
 	{
-		vec2f WorldPosition;
+		DisplayLogicalCoordinates Center;
 		std::optional<float> Strength;
 
 		LaserCannon(
-			vec2f const & worldPosition,
+			DisplayLogicalCoordinates const & center,
 			std::optional<float> strength)
-			: WorldPosition(worldPosition)
+			: Center(center)
 			, Strength(strength)
 		{}
 	};

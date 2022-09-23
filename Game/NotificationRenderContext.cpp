@@ -522,15 +522,24 @@ void NotificationRenderContext::UploadStart()
 }
 
 void NotificationRenderContext::UploadLaserCannon(
-    vec2f const & worldCenter,
+    DisplayLogicalCoordinates const & screenCenter,
     std::optional<float> strength,
     ViewModel const & viewModel)
 {
-    std::array<vec2f, 4> constexpr NdcCorners{
-        vec2f(-1.0f, 1.0f),
-        vec2f(1.0f, 1.0f),
-        vec2f(1.0f, -1.0f),
-        vec2f(-1.0f, -1.0f)
+    //
+    // Calculations are all in screen (logical display) coordinates
+    //
+
+    vec2f const screenCenterF = screenCenter.ToFloat();
+
+    float const width = static_cast<float>(viewModel.GetCanvasLogicalSize().width);
+    float const height = static_cast<float>(viewModel.GetCanvasLogicalSize().height);
+
+    std::array<vec2f, 4> const screenCorners{
+        vec2f(0.0f, 0.0f),
+        vec2f(0.0f, height),
+        vec2f(width, 0.0f),
+        vec2f(width, height)
     };
 
     auto const & frameMetadata = mGenericMipMappedTextureAtlasMetadata.GetFrameMetadata(
@@ -538,26 +547,21 @@ void NotificationRenderContext::UploadLaserCannon(
 
     float const ambientLightSensitivity = frameMetadata.FrameMetadata.HasOwnAmbientLight ? 0.0f : 1.0f;
 
-    float constexpr NdcCannonLength = 0.2f;
-    float const ndcCannonWidth =
-        NdcCannonLength
-        * static_cast<float>(frameMetadata.FrameMetadata.Size.width) / static_cast<float>(frameMetadata.FrameMetadata.Size.height);
+    float const screenCannonLength = static_cast<float>(frameMetadata.FrameMetadata.Size.height);
+    float const screenCannonWidth = static_cast<float>(frameMetadata.FrameMetadata.Size.width);
 
-    float const ndcRayWidth = 0.04f * strength.value_or(1.0f);
-    float const ndcRayWidthEnd = ndcRayWidth * std::min(viewModel.GetZoom(), 1.0f); // Taper ray towards center, depending on zoom: the further (smaller), the more tapered
-
-    // Convert center position to NDC
-    vec2f const ndcCenter = viewModel.WorldToNdc(worldCenter);
+    float const screenRayWidth = 20.0f * strength.value_or(1.0f);
+    float const screenRayWidthEnd = screenRayWidth * std::min(viewModel.GetZoom(), 1.0f); // Taper ray towards center, depending on zoom: the further (smaller), the more tapered
 
     // Process all corners
-    for (vec2f const & ndcCorner : NdcCorners)
+    for (vec2f const & screenCorner : screenCorners)
     {
-        vec2f const ndcRay = ndcCenter - ndcCorner;
-        float const ndcRayLength = ndcRay.length();
+        vec2f const screenRay = screenCenterF - screenCorner;
+        float const screenRayLength = screenRay.length();
         // Skip cannon if too short
-        if (ndcRayLength > 0.001f)
+        if (screenRayLength > 1.0f)
         {
-            vec2f rayDir = ndcRay.normalise(ndcRayLength);
+            vec2f rayDir = screenRay.normalise(screenRayLength);
             vec2f const rayPerpDir = rayDir.to_perpendicular();
 
             //
@@ -565,12 +569,12 @@ void NotificationRenderContext::UploadLaserCannon(
             //
 
             // Cannon origin: H=mid, V=bottom, calculated considering retreat when there is not enough room
-            vec2f const ndcOrigin = ndcCorner - rayDir * std::max(NdcCannonLength - ndcRayLength, 0.0f);
-
-            vec2f const ndcCannonBottomLeft = ndcOrigin + rayPerpDir * ndcCannonWidth / 2.0f;
-            vec2f const ndcCannonBottomRight = ndcOrigin - rayPerpDir * ndcCannonWidth / 2.0f;
-            vec2f const ndcCannonTopLeft = ndcOrigin + rayDir * NdcCannonLength + rayPerpDir * ndcCannonWidth / 2.0f;
-            vec2f const ndcCannonTopRight = ndcOrigin + rayDir * NdcCannonLength - rayPerpDir * ndcCannonWidth / 2.0f;
+            vec2f const screenOrigin = screenCorner - rayDir * std::max(screenCannonLength - screenRayLength, 0.0f);
+            
+            vec2f const ndcCannonBottomLeft = viewModel.ScreenToNdc(DisplayLogicalCoordinates::FromFloatRound(screenOrigin + rayPerpDir * screenCannonWidth / 2.0f));
+            vec2f const ndcCannonBottomRight = viewModel.ScreenToNdc(DisplayLogicalCoordinates::FromFloatRound(screenOrigin - rayPerpDir * screenCannonWidth / 2.0f));
+            vec2f const ndcCannonTopLeft = viewModel.ScreenToNdc(DisplayLogicalCoordinates::FromFloatRound(screenOrigin + rayDir * screenCannonLength + rayPerpDir * screenCannonWidth / 2.0f));
+            vec2f const ndcCannonTopRight = viewModel.ScreenToNdc(DisplayLogicalCoordinates::FromFloatRound(screenOrigin + rayDir * screenCannonLength - rayPerpDir * screenCannonWidth / 2.0f));
 
             // Bottom-left
             mLaserCannonVertexBuffer.emplace_back(
@@ -626,10 +630,10 @@ void NotificationRenderContext::UploadLaserCannon(
                 // Create ray vertices
                 //
 
-                vec2f const ndcRayBottomLeft = ndcOrigin + rayPerpDir * ndcRayWidth / 2.0f;
-                vec2f const ndcRayBottomRight = ndcOrigin - rayPerpDir * ndcRayWidth / 2.0f;
-                vec2f const ndcRayTopLeft = ndcCenter + rayPerpDir * ndcRayWidthEnd / 2.0f;
-                vec2f const ndcRayTopRight = ndcCenter - rayPerpDir * ndcRayWidthEnd / 2.0f;
+                vec2f const ndcRayBottomLeft = viewModel.ScreenToNdc(DisplayLogicalCoordinates::FromFloatRound(screenOrigin + rayPerpDir * screenRayWidth / 2.0f));
+                vec2f const ndcRayBottomRight = viewModel.ScreenToNdc(DisplayLogicalCoordinates::FromFloatRound(screenOrigin - rayPerpDir * screenRayWidth / 2.0f));
+                vec2f const ndcRayTopLeft = viewModel.ScreenToNdc(DisplayLogicalCoordinates::FromFloatRound(screenCenterF + rayPerpDir * screenRayWidthEnd / 2.0f));
+                vec2f const ndcRayTopRight = viewModel.ScreenToNdc(DisplayLogicalCoordinates::FromFloatRound(screenCenterF - rayPerpDir * screenRayWidthEnd / 2.0f));
 
                 // Bottom-left
                 mLaserRayVertexBuffer.emplace_back(

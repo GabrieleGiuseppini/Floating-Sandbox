@@ -1360,21 +1360,26 @@
 			- Tool:
 				- TODO
 			= Rendering (NotificationRenderContext):
-				+ Cannon @ mipmapped alias
-					+ PNG
+				= Cannon @ mipmapped alias
+					= PNG
+						- Smaller
+						- Play with colors
+						- Play with textures
 					+ Database + enum
 				= Upload
 					= Cannon vertices
 						= Make cannons rectractable - watch out for zero ray length
-						- Fix aspect ratio problem
+						+ Fix aspect ratio problem
 					= Ray vertices
-						- Make noise invariant from length: instead of -1..+1, do -1..ray_length
-						= Thicker when strong
-							- Watch out: not thicker than cannon
+						- Make noise invariant from length: instead of -1..+1, do  +1-ScreenToNdc(ray_length)..+1
+						- Strength no thickness change
 				= Shaders:
 					+ GenericMipMappedTexturesNdc
-					+ LaserRay
-						+ Strength variation: more yellow room, less orange room
+					= LaserRay
+						- Strength variation:
+							- A little thicker when strong
+							- Center more white
+						- Outer noise different - TODOHERE
 				+ Cannons are subject to daylight, ray is not
 			- Physics (Ship::Apply...):
 				- TODO				- 
