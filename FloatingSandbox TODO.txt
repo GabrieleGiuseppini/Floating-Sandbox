@@ -1317,9 +1317,9 @@
 			- Sounds
 		= Impl:
 			+ Test all other notif's w/pause
-			- Tool:
-				- TODO
-			= Rendering (NotificationRenderContext):
+			= Tool:
+				- Stride
+			+ Rendering (NotificationRenderContext):
 				+ Cannon @ mipmapped alias
 					+ PNG
 						+ Smaller
@@ -1343,16 +1343,20 @@
 						+ Outer noise different
 				+ Cannons are subject to daylight, ray is not
 			- Physics (Ship::Apply...):
-				- TODO				- 
+				- Stride:
+					= Heat injection
+					- Cut				
+				- TODO: cut sound?
 			= Sounds:
 				+ Basic code
-				- Normal variant (more electronic)
-				- Amplified variant
+				+ Normal variant (more electronic)
+				+ Amplified variant
 				- Cut sound (much like "SawedMetal" or "SawedWood")
 					- Physics
-		- Cleanup:
-			- LaserCannonTool:
-				- If EngagementData not needed, nuke it and get away with boolean
+					- TODO: really?
+		- SettingsDialog:
+			- LaserRay heat
+				- Double-check value range
 
 - Game Interactions and Controls:
 

@@ -3353,18 +3353,33 @@ public:
         bool doUpdateCursor = false;
 
         std::optional<float> force;
+        bool isAmplified = inputState.IsShiftKeyDown;
 
         if (inputState.IsLeftMouseDown)
         {
             // Update engagement state
+            bool doUpdateSound = false;
             if (!mEngagementData.has_value())
             {
                 // Engage
-                mEngagementData.emplace();
+                mEngagementData.emplace(isAmplified);
                 doUpdateCursor = true;
 
-                // Start sound
-                mSoundController->PlayLaserRaySound(inputState.IsShiftKeyDown);
+                // Update sound
+                doUpdateSound = true;
+            }
+            else if (mEngagementData->IsAmplified != isAmplified)
+            {
+                // Update state
+                mEngagementData->IsAmplified = isAmplified;
+
+                // Update sound
+                doUpdateSound = true;
+            }
+
+            if (doUpdateSound)
+            {
+                mSoundController->PlayLaserRaySound(isAmplified);
             }
 
             // Calculate force
@@ -3431,7 +3446,11 @@ private:
 
     struct EngagementData
     {
-        // TODO
+        bool IsAmplified;
+
+        EngagementData(bool isAmplified)
+            : IsAmplified(isAmplified)
+        {}
     };
 
     std::optional<EngagementData> mEngagementData;

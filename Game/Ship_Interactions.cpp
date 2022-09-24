@@ -741,10 +741,52 @@ void Ship::ApplyLaserCannonAt(
     float strength,
     GameParameters const & gameParameters)
 {
-    // TODOHERE
-    (void)targetPos;
-    (void)strength;
-    (void)gameParameters;
+    // Q = q*dt
+    float const effectiveLaserHeat =
+        gameParameters.LaserRayHeat * 1000.0f // KJoule->Joule
+        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f)
+        * GameParameters::SimulationStepTimeDuration<float>
+        * (1.0f + (strength - 1.0f) * 4.0f);
+
+    //
+    // Find closest point - of any type - within the search radius
+    //
+
+    float constexpr SearchRadius = 0.75f; // Magic number
+    float constexpr SquareSearchRadius = SearchRadius * SearchRadius;
+
+    float bestSquareDistance = std::numeric_limits<float>::max();
+    ElementIndex bestPoint = NoneElementIndex;
+
+    for (auto p : mPoints)
+    {
+        float const squareDistance = (mPoints.GetPosition(p) - targetPos).squareLength();
+        if (squareDistance < SquareSearchRadius
+            && squareDistance < bestSquareDistance
+            && mPoints.IsActive(p))
+        {
+            bestSquareDistance = squareDistance;
+            bestPoint = p;
+        }
+    }
+
+    if (bestPoint != NoneElementIndex)
+    {
+        //
+        // Inject/remove heat at this point
+        //
+
+        // Calc temperature delta
+        // T = Q/HeatCapacity
+        float deltaT =
+            effectiveLaserHeat
+            * mPoints.GetMaterialHeatCapacityReciprocal(bestPoint);
+
+        // Increase/lower temperature
+        mPoints.SetTemperature(
+            bestPoint,
+            mPoints.GetTemperature(bestPoint) + deltaT);
+    }
 }
 
 void Ship::ApplyRadialWindFrom(Interaction::ArgumentsUnion::RadialWindArguments const & args)

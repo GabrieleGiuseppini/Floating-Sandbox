@@ -69,6 +69,7 @@ GameParameters::GameParameters()
     , CombustionHeatAdjustment(1.0f)
     , HeatBlasterHeatFlow(2000.0f) // 900KJ: 80kg of iron (~=1 particle) get dT=1500 in 60 seconds
     , HeatBlasterRadius(8.0f)
+    , LaserRayHeat(150000.0f)
     // Electricals
     , LuminiscenceAdjustment(1.0f)
     , LightSpreadAdjustment(1.0f)
