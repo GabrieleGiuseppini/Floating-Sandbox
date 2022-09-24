@@ -66,7 +66,8 @@ void main()
     float widthModifierN = pixelNoiseN * 0.05;
     float xDistanceN = abs(nuv.x) + abs(widthModifierN);
 
-    float alphaN = 1.0 - clamp(xDistanceN / 0.5, 0.0, 1.0);    
+    float innerThickness = 0.5 + (strength - 1.0) * 0.3; // s=1 => 0.5; s=2 => 0.8
+    float alphaN = 1.0 - clamp(xDistanceN / innerThickness, 0.0, 1.0);    
     // Taper at end
     //alphaN *= 1.0 - clamp((nuv.y - 0.7) / 0.3, 0.0, 1.0);
     // Focus
@@ -80,12 +81,12 @@ void main()
     vec2 wuv = raySpacePosition;
     
     float pixelNoiseW = getNoise(
-        wuv.y / 0.5 - paramTime * 7.0,                                // evolution along y
-        wuv.x - sign(wuv.x) * paramTime * 1.0 + pixelNoiseN * 0.8);  // evolution along x
+        wuv.y / 0.1 - paramTime * 3.0,                                // evolution along y
+        wuv.x - sign(wuv.x) * paramTime * 1.0 + pixelNoiseN * 0.08);  // evolution along x
     
     // Rotate pixel
     float angle = pixelNoiseW * 0.06;
-    vec2 rotationOrigin = vec2(0.0, 2.0); // The further the rotation center, the more scattered the halo is
+    vec2 rotationOrigin = vec2(0.0, 20.0); // The further the rotation center, the more scattered the halo is
     vec2 displacedWuv = 
         GetRotationMatrix(angle) * (wuv - rotationOrigin)
         + rotationOrigin;
@@ -109,7 +110,7 @@ void main()
     //    discard;
     
     vec3 colW = vec3(0.660, 0.0198, 0.0198);
-    vec3 colN = vec3(0.988, 0.990, 0.842);
+    vec3 colN = mix(vec3(0.988, 0.990, 0.842), vec3(1.), strength - 1.0);
     
     vec3 col = mix(
         colW,
