@@ -530,10 +530,10 @@ void NotificationRenderContext::UploadLaserCannon(
     // Calculations are all in screen (logical display) coordinates
     //
 
-    vec2f const screenCenterF = screenCenter.ToFloat();
-
     float const width = static_cast<float>(viewModel.GetCanvasLogicalSize().width);
     float const height = static_cast<float>(viewModel.GetCanvasLogicalSize().height);
+
+    vec2f const screenCenterF = screenCenter.ToFloat().clamp(0.0f, width, 0.0f, height);
 
     std::array<vec2f, 4> const screenCorners{
         vec2f(0.0f, 0.0f),
@@ -550,7 +550,7 @@ void NotificationRenderContext::UploadLaserCannon(
     float const screenCannonLength = static_cast<float>(frameMetadata.FrameMetadata.Size.height);
     float const screenCannonWidth = static_cast<float>(frameMetadata.FrameMetadata.Size.width);
 
-    float const screenRayWidth = 20.0f * strength.value_or(1.0f);
+    float const screenRayWidth = 20.0f;
     float const screenRayWidthEnd = screenRayWidth * std::min(viewModel.GetZoom(), 1.0f); // Taper ray towards center, depending on zoom: the further (smaller), the more tapered
 
     // Process all corners
@@ -635,10 +635,14 @@ void NotificationRenderContext::UploadLaserCannon(
                 vec2f const ndcRayTopLeft = viewModel.ScreenToNdc(DisplayLogicalCoordinates::FromFloatRound(screenCenterF + rayPerpDir * screenRayWidthEnd / 2.0f));
                 vec2f const ndcRayTopRight = viewModel.ScreenToNdc(DisplayLogicalCoordinates::FromFloatRound(screenCenterF - rayPerpDir * screenRayWidthEnd / 2.0f));
 
+                // Ray space: tip Y is +1.0, bottom Y follows ray length so that short rays are not denser than long rays
+                // TODOHERE: this smells
+                float const raySpaceYBottom = 1.0f - (ndcRayTopLeft - ndcRayBottomLeft).length() / 0.7f * 2.0f;
+
                 // Bottom-left
                 mLaserRayVertexBuffer.emplace_back(
                     ndcRayBottomLeft,
-                    vec2f(-1.0f, -1.0f),
+                    vec2f(-1.0f, raySpaceYBottom),
                     *strength);
 
                 // Top-left
@@ -650,7 +654,7 @@ void NotificationRenderContext::UploadLaserCannon(
                 // Bottom-right
                 mLaserRayVertexBuffer.emplace_back(
                     ndcRayBottomRight,
-                    vec2f(1.0f, -1.0f),
+                    vec2f(1.0f, raySpaceYBottom),
                     *strength);
 
                 // Top-left
@@ -662,7 +666,7 @@ void NotificationRenderContext::UploadLaserCannon(
                 // Bottom-right
                 mLaserRayVertexBuffer.emplace_back(
                     ndcRayBottomRight,
-                    vec2f(1.0f, -1.0f),
+                    vec2f(1.0f, raySpaceYBottom),
                     *strength);
 
                 // Top-right
