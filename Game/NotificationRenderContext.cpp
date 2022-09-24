@@ -550,7 +550,7 @@ void NotificationRenderContext::UploadLaserCannon(
     float const screenCannonLength = static_cast<float>(frameMetadata.FrameMetadata.Size.height);
     float const screenCannonWidth = static_cast<float>(frameMetadata.FrameMetadata.Size.width);
 
-    float const screenRayWidth = 20.0f;
+    float const screenRayWidth = 15.0f; // Based on cannon PNG
     float const screenRayWidthEnd = screenRayWidth * std::min(viewModel.GetZoom(), 1.0f); // Taper ray towards center, depending on zoom: the further (smaller), the more tapered
 
     // Process all corners
@@ -635,9 +635,8 @@ void NotificationRenderContext::UploadLaserCannon(
                 vec2f const ndcRayTopLeft = viewModel.ScreenToNdc(DisplayLogicalCoordinates::FromFloatRound(screenCenterF + rayPerpDir * screenRayWidthEnd / 2.0f));
                 vec2f const ndcRayTopRight = viewModel.ScreenToNdc(DisplayLogicalCoordinates::FromFloatRound(screenCenterF - rayPerpDir * screenRayWidthEnd / 2.0f));
 
-                // Ray space: tip Y is +1.0, bottom Y follows ray length so that short rays are not denser than long rays
-                // TODOHERE: this smells
-                float const raySpaceYBottom = 1.0f - (ndcRayTopLeft - ndcRayBottomLeft).length() / 0.7f * 2.0f;
+                // Ray space: tip Y is +1.0, bottom Y follows ray length so that shorter rays are not denser than longer rays
+                float const raySpaceYBottom = 1.0f - (ndcRayTopLeft - ndcRayBottomLeft).length() / 1.4142f;
 
                 // Bottom-left
                 mLaserRayVertexBuffer.emplace_back(

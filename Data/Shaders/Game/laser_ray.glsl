@@ -66,7 +66,7 @@ void main()
     float widthModifierN = pixelNoiseN * 0.05;
     float xDistanceN = abs(nuv.x) + abs(widthModifierN);
 
-    float innerThickness = 0.5 + (strength - 1.0) * 0.3; // s=1 => 0.5; s=2 => 0.8
+    float innerThickness = 0.5 + (strength - 1.0) * 0.4; // s=1 => 0.5; s=2 => 0.9
     float alphaN = 1.0 - clamp(xDistanceN / innerThickness, 0.0, 1.0);    
     // Taper at end
     //alphaN *= 1.0 - clamp((nuv.y - 0.7) / 0.3, 0.0, 1.0);
@@ -110,7 +110,7 @@ void main()
     //    discard;
     
     vec3 colW = vec3(0.660, 0.0198, 0.0198);
-    vec3 colN = mix(vec3(0.988, 0.990, 0.842), vec3(1.), strength - 1.0);
+    vec3 colN = vec3(0.988, 0.990, 0.842);
     
     vec3 col = mix(
         colW,
