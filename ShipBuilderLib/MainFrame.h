@@ -432,7 +432,7 @@ private:
     wxScrolledWindow * mUndoStackPanel;
 
     // Work panel
-    std::unique_ptr<wxGLCanvas> mWorkCanvas;
+    wxGLCanvas * mWorkCanvas;
     wxScrollBar * mWorkCanvasHScrollBar;
     wxScrollBar * mWorkCanvasVScrollBar;
 

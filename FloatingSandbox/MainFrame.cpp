@@ -156,7 +156,7 @@ MainFrame::MainFrame(
     // Build OpenGL canvas - this is where we render the game to
     //
 
-    mMainGLCanvas = std::make_unique<GLCanvas>(
+    mMainGLCanvas = new GLCanvas(
         mMainPanel,
         ID_MAIN_CANVAS);
 
@@ -172,7 +172,7 @@ MainFrame::MainFrame(
     mMainGLCanvas->Connect(wxEVT_MOUSE_CAPTURE_LOST, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasCaptureMouseLost, 0, this);
 
     mMainPanelSizer->Add(
-        mMainGLCanvas.get(),
+        mMainGLCanvas,
         1,                  // Occupy all available vertical space
         wxEXPAND,           // Expand also horizontally
         0);                 // Border
@@ -1037,7 +1037,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
         mToolController = std::make_unique<ToolController>(
             initialToolType,
             mGameController->GetEffectiveAmbientLightIntensity(),
-            mMainGLCanvas.get(),
+            mMainGLCanvas,
             mGameController,
             mSoundController,
             mResourceLocator);
@@ -1359,7 +1359,7 @@ void MainFrame::OnIdle(wxIdleEvent & /*event*/)
 
 void MainFrame::OnMainGLCanvasShow(wxShowEvent & event)
 {
-    LogMessage("MainFrame::OnMainGLCanvasShow()");
+    LogMessage("MainFrame::OnMainGLCanvasShow(", event.IsShown() ? "SHOW" : "HIDE", ")");
 
     event.Skip();
 }
@@ -1379,7 +1379,7 @@ void MainFrame::OnMainGLCanvasPaint(wxPaintEvent & event)
         assert(!!mMainGLCanvas);
         assert(!!mMainGLCanvasContext);
         assert(!!mGameController);
-        mCurrentOpenGLCanvas.store(mMainGLCanvas.get());
+        mCurrentOpenGLCanvas.store(mMainGLCanvas);
         mGameController->RebindOpenGLContext();
 
         // Close splash screen

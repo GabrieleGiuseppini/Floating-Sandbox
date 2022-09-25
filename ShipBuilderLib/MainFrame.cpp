@@ -3663,7 +3663,7 @@ wxPanel * MainFrame::CreateWorkPanel(wxWindow * parent)
             0, 0
         };
 
-        mWorkCanvas = std::make_unique<wxGLCanvas>(panel, wxID_ANY, glCanvasAttributes);
+        mWorkCanvas = new wxGLCanvas(panel, wxID_ANY, glCanvasAttributes);
 
         mWorkCanvas->Connect(wxEVT_PAINT, (wxObjectEventFunction)&MainFrame::OnWorkCanvasPaint, 0, this);
         mWorkCanvas->Connect(wxEVT_SIZE, (wxObjectEventFunction)&MainFrame::OnWorkCanvasResize, 0, this);
@@ -3680,7 +3680,7 @@ wxPanel * MainFrame::CreateWorkPanel(wxWindow * parent)
         mWorkCanvas->Connect(wxEVT_KEY_UP, (wxObjectEventFunction)&MainFrame::OnWorkCanvasKeyUp, 0, this);
 
         sizer->Add(
-            mWorkCanvas.get(),
+            mWorkCanvas,
             1, // Occupy all space
             wxEXPAND, // Stretch as much as available
             0);

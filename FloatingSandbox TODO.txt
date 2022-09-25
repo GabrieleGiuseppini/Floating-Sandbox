@@ -12,19 +12,13 @@
 		- Connectivity
 		- Types
 
-	- Fix: GameController ends up being deleted by SwitchboardPanel - might be the cause of the "blocking" issue on GTK
-		- It happens because mElectricalPanel (SwitchboardPanel uq_ptr) is added to MainFrame, hence it's deleted by it *AND* by later uq_ptr
-		- Major issue: everything that's added to sizers, etc. should NOT be a uq_ptr
+	= Fix: GameController ends up being deleted by SwitchboardPanel - might be the cause of the "blocking" issue on GTK
+		! It happens because mElectricalPanel (SwitchboardPanel uq_ptr) is added to MainFrame, hence it's deleted by it *AND* by later uq_ptr
+		= Major issue: everything that's added to sizers, etc. should NOT be a uq_ptr
 			+ EventTicker
 			+ ProbePanel
-			- MainGLCanvas?
-			- ShipBuilderMainFrame?
+			+ MainGLCanvas
 		- See if GTK issue is gone
-
-	- Windows 11 issue: try to play with vsync
-		- https://stackoverflow.com/questions/589064/how-to-enable-vertical-sync-in-opengl
-
-	- Frozen structure (*)
 
 	- At lights going off because of flooding of power, before flickering: flash w/spread and luminiscence
 		- See 1:53 at https://www.youtube.com/watch?v=yg9rkceLOzA
@@ -33,6 +27,11 @@
 			- At lamp state machine: use a single opt<bool> storing first decision on whether or not to do it
 			- Lamp::State contains TransientApertureMultiplier, and that's the one messed with by state
 				- And of course it's used when uploading to lights buffer, multiplied with actual aperture
+
+	- Frozen structure (*)
+
+	- Windows 11 issue: try to play with vsync
+		- https://stackoverflow.com/questions/589064/how-to-enable-vertical-sync-in-opengl
 
 	- Bubbles issue (that "old" issue)
 		- Add temp code to calc total internal water, and see if it's true that it keeps increasing
