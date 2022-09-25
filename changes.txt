@@ -1,3 +1,6 @@
+1.17.5
+- Added new "Laser Cannon" tool
+
 1.17.4
 - Improved "Ship Load" window, allowing to sort by different attributes, and allowing to load ships flipped and/or rotated
 - Small user interface changes here and there, mostly to improve experience on Windows 11

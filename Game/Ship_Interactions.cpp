@@ -742,18 +742,14 @@ void Ship::ApplyLaserCannonThrough(
     float strength,
     GameParameters const & gameParameters)
 {
-    // TODOTEST
-    (void)startPos;
-    /*
     //
-    // Find all springs that intersect the stride
+    // Cut all springs that intersect the stride according to their laser ray cut sensitivity
     //
     
-    unsigned int springsCut = 0;
-
     for (auto springIndex : mSprings)
     {
-        if (!mSprings.IsDeleted(springIndex))
+        if (!mSprings.IsDeleted(springIndex)
+            && mSprings.GetBaseStructuralMaterial(springIndex).LaserRayCutReceptivity != 0.0f)
         {
             if (Segment::ProperIntersectionTest(
                 startPos,
@@ -771,23 +767,13 @@ void Ship::ApplyLaserCannonThrough(
                     | Springs::DestroyOptions::DestroyOnlyConnectedTriangle,
                     gameParameters,
                     mPoints);
-
-                // Remember we have cut a spring
-                ++springsCut;
             }
         }
     }
 
-    // Notify (including zero)
-    // TODO
-    //mGameEventHandler->OnSawed(true, metalsSawed);
-    */
-
     //
-    // Find point close to the segment, and inject heat
+    // Find points close to the segment, and inject heat
     //
-
-    // TODO: radius
 
     // Q = q*dt
     float const effectiveLaserHeat =
@@ -819,55 +805,6 @@ void Ship::ApplyLaserCannonThrough(
                 mPoints.GetTemperature(p) + deltaT);
         }
     }
-
-    /* TODOOLD
-    //
-    // Find closest point - of any type - within the search radius, and inject heat
-    //
-
-    // Q = q*dt
-    float const effectiveLaserHeat =
-        gameParameters.LaserRayHeat * 1000.0f // KJoule->Joule
-        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f)
-        * GameParameters::SimulationStepTimeDuration<float>
-        *(1.0f + (strength - 1.0f) * 4.0f);
-
-    float constexpr SearchRadius = 0.75f; // Magic number
-    float constexpr SquareSearchRadius = SearchRadius * SearchRadius;
-
-    float bestSquareDistance = std::numeric_limits<float>::max();
-    ElementIndex bestPoint = NoneElementIndex;
-
-    for (auto p : mPoints)
-    {
-        float const squareDistance = (mPoints.GetPosition(p) - endPos).squareLength();
-        if (squareDistance < SquareSearchRadius
-            && squareDistance < bestSquareDistance
-            && mPoints.IsActive(p))
-        {
-            bestSquareDistance = squareDistance;
-            bestPoint = p;
-        }
-    }
-
-    if (bestPoint != NoneElementIndex)
-    {
-        //
-        // Inject/remove heat at this point
-        //
-
-        // Calc temperature delta
-        // T = Q/HeatCapacity
-        float deltaT =
-            effectiveLaserHeat
-            * mPoints.GetMaterialHeatCapacityReciprocal(bestPoint);
-
-        // Increase/lower temperature
-        mPoints.SetTemperature(
-            bestPoint,
-            mPoints.GetTemperature(bestPoint) + deltaT);
-    }
-    */
 }
 
 void Ship::ApplyRadialWindFrom(Interaction::ArgumentsUnion::RadialWindArguments const & args)

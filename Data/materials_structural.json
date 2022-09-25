@@ -17,6 +17,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1783.15,
             "is_hull": true,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.0935,
                 "nominal_mass": 7950
@@ -56,6 +57,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1783.15,
             "is_hull": true,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.0374,
                 "nominal_mass": 7850.0
@@ -95,6 +97,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1783.15,
             "is_hull": true,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.00935,
                 "nominal_mass": 7850.0
@@ -134,6 +137,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1783.15,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.0935,
                 "nominal_mass": 7950
@@ -173,6 +177,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1783.15,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.00935,
                 "nominal_mass": 7850
@@ -212,6 +217,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1783.15,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.00935,
                 "nominal_mass": 7850
@@ -251,6 +257,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1643.15,
             "is_hull": true,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.0935,
                 "nominal_mass": 7580
@@ -290,6 +297,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1643.15,
             "is_hull": true,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.0374,
                 "nominal_mass": 7480.0
@@ -329,6 +337,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1643.15,
             "is_hull": true,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.00935,
                 "nominal_mass": 7480.0
@@ -368,6 +377,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1643.15,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.0935,
                 "nominal_mass": 7580
@@ -408,6 +418,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1643.15,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.00935,
                 "nominal_mass": 7480
@@ -447,6 +458,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1643.15,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.00935,
                 "nominal_mass": 7480
@@ -486,6 +498,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1473.15,
             "is_hull": true,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.0935,
                 "nominal_mass": 4600
@@ -525,6 +538,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1473.15,
             "is_hull": true,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.0374,
                 "nominal_mass": 4500.0
@@ -564,6 +578,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1473.15,
             "is_hull": true,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.00935,
                 "nominal_mass": 4500.0
@@ -603,6 +618,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1473.15,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.0935,
                 "nominal_mass": 4600.0
@@ -642,6 +658,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1473.15,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.00935,
                 "nominal_mass": 4500
@@ -681,6 +698,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1473.15,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.00935,
                 "nominal_mass": 4500.0
@@ -720,6 +738,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1000000.0,
             "is_hull": true,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.0935,
                 "nominal_mass": 2710
@@ -759,6 +778,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1000000.0,
             "is_hull": true,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.0374,
                 "nominal_mass": 2710.0
@@ -798,6 +818,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1000000.0,
             "is_hull": true,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.00935,
                 "nominal_mass": 2710.0
@@ -837,6 +858,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1000000.0,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.0935,
                 "nominal_mass": 2710
@@ -876,6 +898,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1000000.0,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.00935,
                 "nominal_mass": 2710
@@ -915,6 +938,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1000000.0,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.00935,
                 "nominal_mass": 2710
@@ -954,6 +978,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 453.0,
             "is_hull": true,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.116875,
                 "nominal_mass": 800
@@ -993,6 +1018,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 453.0,
             "is_hull": true,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.03131,
                 "nominal_mass": 800.0
@@ -1032,6 +1058,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 453.0,
             "is_hull": true,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.022935,
                 "nominal_mass": 800.0
@@ -1071,6 +1098,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 453.0,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.116875,
                 "nominal_mass": 800.0
@@ -1110,6 +1138,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 453.0,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.022935,
                 "nominal_mass": 800
@@ -1149,6 +1178,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 453.0,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.022935,
                 "nominal_mass": 800.0
@@ -1188,6 +1218,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 453.0,
             "is_hull": true,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.17,
                 "nominal_mass": 1600
@@ -1227,6 +1258,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 453.0,
             "is_hull": true,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.116875,
                 "nominal_mass": 500
@@ -1266,6 +1298,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 453.0,
             "is_hull": true,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.100112,
                 "nominal_mass": 500.0
@@ -1305,6 +1338,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 453.0,
             "is_hull": true,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.022935,
                 "nominal_mass": 500.0
@@ -1344,6 +1378,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 453.0,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.116875,
                 "nominal_mass": 500
@@ -1383,6 +1418,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 453.0,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.022935,
                 "nominal_mass": 500
@@ -1422,6 +1458,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 453.0,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.022935,
                 "nominal_mass": 500.0
@@ -1461,6 +1498,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 453.0,
             "is_hull": true,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.17,
                 "nominal_mass": 1000
@@ -1500,6 +1538,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 393.15,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 1.0,
             "mass": {
                 "density": 0.0215,
                 "nominal_mass": 30
@@ -1537,6 +1576,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 973.15,
             "is_hull": true,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.0373,
                 "nominal_mass": 1900
@@ -1574,6 +1614,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 973.15,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.00915,
                 "nominal_mass": 1900
@@ -1603,6 +1644,7 @@
             "explosive_combustion_strength": 50.0,
             "ignition_temperature": 483.15,
             "is_hull": true,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 1.0,
                 "nominal_mass": 820.0
@@ -1634,6 +1676,7 @@
             "explosive_combustion_strength": 95.0,
             "ignition_temperature": 693.15,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.8,
                 "nominal_mass": 801.0
@@ -1664,6 +1707,7 @@
             "explosive_combustion_strength": 100.0,
             "ignition_temperature": 693.15,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.8,
                 "nominal_mass": 801.0
@@ -1692,6 +1736,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 388.15,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 1.0,
                 "nominal_mass": 968.0
@@ -1711,7 +1756,7 @@
             "texture_name": "concrete_1",
             "thermal_conductivity": 140.0,
             "water_diffusion_speed": 0.5,
-	    "water_reactivity": 1.0,
+            "water_reactivity": 1.0,
             "water_retention": 0.25,
             "wind_receptivity": 0.1
         },
@@ -1732,6 +1777,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1000000.0,
             "is_hull": true,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.01045,
                 "nominal_mass": 2710
@@ -1771,6 +1817,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1000000.0,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.001045,
                 "nominal_mass": 2710
@@ -1810,6 +1857,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 491.15,
             "is_hull": true,
+            "laser_ray_cut_receptivity": 1.0,
             "mass": {
                 "density": 0.0935,
                 "nominal_mass": 50
@@ -1850,6 +1898,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 491.15,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 1.0,
             "mass": {
                 "density": 0.0935,
                 "nominal_mass": 25
@@ -1879,6 +1928,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 450.15,
             "is_hull": true,
+            "laser_ray_cut_receptivity": 1.0,
             "mass": {
                 "density": 0.045,
                 "nominal_mass": 20
@@ -1909,6 +1959,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 450.15,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 1.0,
             "mass": {
                 "density": 0.022935,
                 "nominal_mass": 20
@@ -1950,6 +2001,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1643.15,
             "is_hull": true,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.17,
                 "nominal_mass": 6500
@@ -1989,6 +2041,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1643.15,
             "is_hull": true,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.0935,
                 "nominal_mass": 7580
@@ -2029,6 +2082,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1643.15,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.00935,
                 "nominal_mass": 7480
@@ -2069,6 +2123,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1473.15,
             "is_hull": true,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.17,
                 "nominal_mass": 5000
@@ -2108,6 +2163,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1783.15,
             "is_hull": true,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.17,
                 "nominal_mass": 7500
@@ -2148,6 +2204,7 @@
             "description": "The most fragile material of them all.",
             "ignition_temperature": 1213.0,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.0417,
                 "nominal_mass": 50
@@ -2185,6 +2242,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1000000.0,
             "is_hull": true,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.0374,
                 "nominal_mass": 2500
@@ -2224,6 +2282,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1000000.0,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.00917,
                 "nominal_mass": 2500
@@ -2263,6 +2322,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1000000.0,
             "is_hull": true,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.0374,
                 "nominal_mass": 2500
@@ -2302,6 +2362,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1000000.0,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.00917,
                 "nominal_mass": 2500
@@ -2325,8 +2386,7 @@
             "water_retention": 0.0,
             "wind_receptivity": 0.1
         },
-
-	{
+        {
             "buoyancy_volume_fill": 0.0,
             "color_key": [
                 "#BFBFBF",
@@ -2336,6 +2396,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 553.15,
             "is_hull": true,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.0935,
                 "nominal_mass": 1522
@@ -2369,6 +2430,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 553.15,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.02,
                 "nominal_mass": 1522
@@ -2402,6 +2464,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 553.15,
             "is_hull": true,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.0935,
                 "nominal_mass": 1522
@@ -2435,6 +2498,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 553.15,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.02,
                 "nominal_mass": 1522
@@ -2475,6 +2539,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1000000.0,
             "is_hull": true,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.0935,
                 "nominal_mass": 1522
@@ -2514,6 +2579,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1000000.0,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.00935,
                 "nominal_mass": 1522
@@ -2549,6 +2615,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 689.15,
             "is_hull": true,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.38,
                 "nominal_mass": 1060
@@ -2585,6 +2652,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 689.15,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.38,
                 "nominal_mass": 1060
@@ -2614,6 +2682,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1000000.0,
             "is_hull": true,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 1.0,
                 "nominal_mass": 1000
@@ -2645,6 +2714,7 @@
             "description": "This opaque variant is the one we use as representative of the 'Air' unique type.",
             "ignition_temperature": 1000000.0,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 1.0,
                 "nominal_mass": 1.2754
@@ -2670,12 +2740,13 @@
             "water_retention": 0.0,
             "wind_receptivity": 0.1
         },
-	{
+        {
             "buoyancy_volume_fill": 1.0,
             "color_key": "#F0F0F1",
             "combustion_type": "Combustion",
             "ignition_temperature": 1000000.0,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 1.0,
                 "nominal_mass": 1.2754
@@ -2708,6 +2779,7 @@
             "explosive_combustion_strength": 100.0,
             "ignition_temperature": 773.15,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 1.0,
                 "nominal_mass": 0.0813
@@ -2731,7 +2803,7 @@
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
-	{
+        {
             "buoyancy_volume_fill": 1.0,
             "color_key": "#CECECD",
             "combustion_type": "Explosion",
@@ -2739,6 +2811,7 @@
             "explosive_combustion_strength": 100.0,
             "ignition_temperature": 773.15,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 1.0,
                 "nominal_mass": 0.0813
@@ -2770,6 +2843,7 @@
             "explosive_combustion_strength": 100.0,
             "ignition_temperature": 1000000.0,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 1.0,
                 "nominal_mass": 0.1645
@@ -2793,7 +2867,7 @@
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
-	{
+        {
             "buoyancy_volume_fill": 1.0,
             "color_key": "#BEBECE",
             "combustion_type": "Explosion",
@@ -2801,6 +2875,7 @@
             "explosive_combustion_strength": 100.0,
             "ignition_temperature": 1000000.0,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 1.0,
                 "nominal_mass": 0.1645
@@ -2841,6 +2916,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1000000.0,
             "is_hull": true,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 1.0,
                 "nominal_mass": 2400.0
@@ -2881,6 +2957,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1000000.0,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.6,
                 "nominal_mass": 2400.0
@@ -2910,6 +2987,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1000000.0,
             "is_hull": true,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 1.0,
                 "nominal_mass": 50
@@ -2940,6 +3018,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1000000.0,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.25,
                 "nominal_mass": 50
@@ -2970,6 +3049,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1000000.0,
             "is_hull": true,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.0033633,
                 "nominal_mass": 1390
@@ -2999,6 +3079,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1000000.0,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.003,
                 "nominal_mass": 1390
@@ -3031,6 +3112,7 @@
             "ignition_temperature": 1000000.0,
             "is_hull": false,
             "is_legacy_electrical": true,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.275,
                 "nominal_mass": 30
@@ -3055,6 +3137,7 @@
             "ignition_temperature": 1000000.0,
             "is_hull": false,
             "is_legacy_electrical": true,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.275,
                 "nominal_mass": 30
@@ -3079,6 +3162,7 @@
             "ignition_temperature": 1000000.0,
             "is_hull": false,
             "is_legacy_electrical": true,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.275,
                 "nominal_mass": 900
@@ -3103,6 +3187,7 @@
             "ignition_temperature": 689.15,
             "is_hull": true,
             "is_legacy_electrical": true,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.275,
                 "nominal_mass": 30
@@ -3127,6 +3212,7 @@
             "ignition_temperature": 689.15,
             "is_hull": false,
             "is_legacy_electrical": true,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.275,
                 "nominal_mass": 30
@@ -3151,6 +3237,7 @@
             "ignition_temperature": 353.0,
             "is_hull": false,
             "is_legacy_electrical": true,
+            "laser_ray_cut_receptivity": 0.0,
             "mass": {
                 "density": 0.022935,
                 "nominal_mass": 800
@@ -3184,6 +3271,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 393.15,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 1.0,
             "mass": {
                 "density": 0.0935,
                 "nominal_mass": 180
@@ -3223,6 +3311,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 393.15,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 1.0,
             "mass": {
                 "density": 0.0935,
                 "nominal_mass": 180
@@ -3261,6 +3350,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1000000.0,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 1.0,
             "mass": {
                 "density": 0.00935,
                 "nominal_mass": 7850
@@ -3300,6 +3390,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1000000.0,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 1.0,
             "mass": {
                 "density": 0.00935,
                 "nominal_mass": 7850
@@ -3339,6 +3430,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 1000000.0,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 1.0,
             "mass": {
                 "density": 0.00935,
                 "nominal_mass": 2710
@@ -3378,6 +3470,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 553.15,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 1.0,
             "mass": {
                 "density": 0.03,
                 "nominal_mass": 1100
@@ -3418,6 +3511,7 @@
             "combustion_type": "Combustion",
             "ignition_temperature": 553.15,
             "is_hull": false,
+            "laser_ray_cut_receptivity": 1.0,
             "mass": {
                 "density": 0.03,
                 "nominal_mass": 1100
@@ -3642,7 +3736,7 @@
                             "Opaque Glass",
                             "Transparent Glass Hull",
                             "Transparent Glass"
-			]
+                        ]
                     }
                 ]
             },
@@ -3707,10 +3801,10 @@
                         "name": "Elements",
                         "sub_categories": [
                             "Air",
-			    "Helium",
+                            "Helium",
                             "Hydrogen",
-			    "Sodium",
-			    "Water"
+                            "Sodium",
+                            "Water"
                         ]
                     }
                 ]
@@ -3723,7 +3817,7 @@
                         "sub_categories": [
                             "Diesel",
                             "Gunpowder Light",
-                            "Gunpowder Strong"                            
+                            "Gunpowder Strong"
                         ]
                     }
                 ]

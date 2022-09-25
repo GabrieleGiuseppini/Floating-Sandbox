@@ -5,10 +5,13 @@ from collections import OrderedDict
  
 def adjust_material(material):
 
-    material["water_diffusion_speed"] = 0.5
-
-    pass
-
+    val = 0.0
+    if "palette_coordinates" in material:
+        cat = material["palette_coordinates"]["category"]
+        if cat == "Cloth" or cat == "Cardboard and Paper" or cat == "Ropes" or cat == "Chains" or cat == "Rubber Bands":
+            val = 1.0
+            
+    material["laser_ray_cut_receptivity"] = val
 
 def main():
     
@@ -19,7 +22,7 @@ def main():
     with open(sys.argv[1], "r") as in_file:
         json_obj = json.load(in_file)
 
-    for material in json_obj:
+    for material in json_obj["materials"]:
         adjust_material(material)
 
     with open(sys.argv[2], "w") as out_file:
