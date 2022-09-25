@@ -371,6 +371,10 @@ MainFrame::MainFrame(
     progressCallback(1.0f, ProgressMessageType::LoadingShipBuilder);
 }
 
+MainFrame::~MainFrame()
+{
+}
+
 void MainFrame::OpenForNewShip(std::optional<UnitsSystem> displayUnitsSystem)
 {
     // Set units system

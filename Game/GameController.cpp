@@ -244,6 +244,10 @@ GameController::GameController(
     ComputerCalibrator::TuneGame(score, mGameParameters, *mRenderContext);
 }
 
+GameController::~GameController()
+{
+}
+
 void GameController::RebindOpenGLContext()
 {
     assert(!!mRenderContext);

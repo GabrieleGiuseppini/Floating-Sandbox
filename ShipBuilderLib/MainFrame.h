@@ -81,6 +81,8 @@ public:
         std::function<void(std::optional<std::filesystem::path>)> returnToGameFunctor,
         ProgressCallback const & progressCallback);
 
+    ~MainFrame();
+
     void OpenForNewShip(std::optional<UnitsSystem> displayUnitsSystem);
 
     void OpenForLoadShip(

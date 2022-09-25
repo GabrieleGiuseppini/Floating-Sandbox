@@ -62,6 +62,8 @@ public:
         ResourceLocator const & resourceLocator,
         ProgressCallback const & progressCallback);
 
+    ~GameController();
+
 public:
 
     MaterialDatabase const & GetMaterialDatabase() const

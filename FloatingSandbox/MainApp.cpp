@@ -13,9 +13,11 @@
 #include "UnhandledExceptionHandler.h"
 
 #include <UILib/LocalizationManager.h>
+#include <UILib/StandardSystemPaths.h>
 
 #include <Game/ResourceLocator.h>
 
+#include <GameCore/Log.h>
 #include <GameCore/SysSpecifics.h>
 #include <GameCore/SystemThreadManager.h>
 
@@ -76,14 +78,16 @@ ULONG GetCurrentTimerResolution()
 }
 #endif
 
-class MainApp : public wxApp
+class MainApp final : public wxApp
 {
 public:
 
     MainApp();
+    ~MainApp();
 
     virtual bool OnInit() override;
     virtual void OnInitCmdLine(wxCmdLineParser & parser) override;
+    virtual int OnExit() override;
 
     virtual int FilterEvent(wxEvent & event) override;
 
@@ -194,10 +198,16 @@ MainApp::MainApp()
 #endif
 }
 
+MainApp::~MainApp()
+{
+}
+
 bool MainApp::OnInit()
 {
     if (!wxApp::OnInit())
+    {
         return false;
+    }
 
     try
     {
@@ -282,6 +292,21 @@ void MainApp::OnInitCmdLine(wxCmdLineParser & parser)
 
     // Put back the base "verbose" or else we get asserts in debug
     parser.AddSwitch("v", "verbose");
+}
+
+int MainApp::OnExit()
+{
+    // Flush log
+    try
+    {
+        std::filesystem::path const diagnosticsFolderPath = StandardSystemPaths::GetInstance().GetDiagnosticsFolderPath(true);
+        Logger::Instance.FlushToFile(diagnosticsFolderPath, "last_run");
+    }
+    catch (...)
+    { /* ignore */
+    }
+
+    return wxApp::OnExit();
 }
 
 int MainApp::FilterEvent(wxEvent & event)

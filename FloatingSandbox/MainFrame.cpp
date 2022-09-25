@@ -622,11 +622,11 @@ MainFrame::MainFrame(
     // Probe panel
     //
 
-    mProbePanel = std::make_unique<ProbePanel>(mMainPanel);
+    mProbePanel = new ProbePanel(mMainPanel);
 
-    mMainPanelSizer->Add(mProbePanel.get(), 0, wxEXPAND); // Expand horizontally
+    mMainPanelSizer->Add(mProbePanel, 0, wxEXPAND); // Expand horizontally
 
-    mMainPanelSizer->Hide(mProbePanel.get());
+    mMainPanelSizer->Hide(mProbePanel);
 
 
 
@@ -634,11 +634,11 @@ MainFrame::MainFrame(
     // Event ticker panel
     //
 
-    mEventTickerPanel = std::make_unique<EventTickerPanel>(mMainPanel);
+    mEventTickerPanel = new EventTickerPanel(mMainPanel);
 
-    mMainPanelSizer->Add(mEventTickerPanel.get(), 0, wxEXPAND); // Expand horizontally
+    mMainPanelSizer->Add(mEventTickerPanel, 0, wxEXPAND); // Expand horizontally
 
-    mMainPanelSizer->Hide(mEventTickerPanel.get());
+    mMainPanelSizer->Hide(mEventTickerPanel);
 
 
 
@@ -1021,7 +1021,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
             this->mMainApp->Yield();
         });
 
-    mMainPanelSizer->Add(mElectricalPanel.get(), 0, wxEXPAND); // Expand horizontally
+    mMainPanelSizer->Add(mElectricalPanel, 0, wxEXPAND); // Expand horizontally
 
 
     //
@@ -1279,16 +1279,6 @@ void MainFrame::OnMainFrameClose(wxCloseEvent & /*event*/)
         {
             mSettingsManager->SaveLastModifiedSettings();
         }
-    }
-
-    // Flush log
-    try
-    {
-        std::filesystem::path const diagnosticsFolderPath = StandardSystemPaths::GetInstance().GetDiagnosticsFolderPath(true);
-        Logger::Instance.FlushToFile(diagnosticsFolderPath, "last_run");
-    }
-    catch (...)
-    { /* ignore */
     }
 
     // Destroy the frame!
@@ -1980,11 +1970,11 @@ void MainFrame::OnShowEventTickerMenuItemSelected(wxCommandEvent & /*event*/)
 
     if (mShowEventTickerMenuItem->IsChecked())
     {
-        mMainPanelSizer->Show(mEventTickerPanel.get());
+        mMainPanelSizer->Show(mEventTickerPanel);
     }
     else
     {
-        mMainPanelSizer->Hide(mEventTickerPanel.get());
+        mMainPanelSizer->Hide(mEventTickerPanel);
     }
 
     mMainPanelSizer->Layout();
@@ -1996,11 +1986,11 @@ void MainFrame::OnShowProbePanelMenuItemSelected(wxCommandEvent & /*event*/)
 
     if (mShowProbePanelMenuItem->IsChecked())
     {
-        mMainPanelSizer->Show(mProbePanel.get());
+        mMainPanelSizer->Show(mProbePanel);
     }
     else
     {
-        mMainPanelSizer->Hide(mProbePanel.get());
+        mMainPanelSizer->Hide(mProbePanel);
     }
 
     mMainPanelSizer->Layout();

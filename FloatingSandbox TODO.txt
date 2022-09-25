@@ -13,10 +13,13 @@
 		- Types
 
 	- Fix: GameController ends up being deleted by SwitchboardPanel - might be the cause of the "blocking" issue on GTK
-		- First off: add logging to destructors and verify GameController is NOT last nowadays
-		- MainFrame: GameController, SoundController, MusicController: all uq_ptrs
-			- But ordered: roots first (GameController)
-		- When these are args to others: only references
+		- It happens because mElectricalPanel (SwitchboardPanel uq_ptr) is added to MainFrame, hence it's deleted by it *AND* by later uq_ptr
+		- Major issue: everything that's added to sizers, etc. should NOT be a uq_ptr
+			+ EventTicker
+			+ ProbePanel
+			- MainGLCanvas?
+			- ShipBuilderMainFrame?
+		- See if GTK issue is gone
 
 	- Windows 11 issue: try to play with vsync
 		- https://stackoverflow.com/questions/589064/how-to-enable-vertical-sync-in-opengl
