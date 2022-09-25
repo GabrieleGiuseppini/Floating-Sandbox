@@ -3350,10 +3350,9 @@ public:
 
     virtual void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
     {
-        bool doUpdateCursor = false;
+        bool const isAmplified = inputState.IsShiftKeyDown;
 
-        std::optional<float> force;
-        bool isAmplified = inputState.IsShiftKeyDown;
+        bool doUpdateCursor = false;
 
         if (inputState.IsLeftMouseDown)
         {
@@ -3362,7 +3361,7 @@ public:
             if (!mEngagementData.has_value())
             {
                 // Engage
-                mEngagementData.emplace(isAmplified);
+                mEngagementData.emplace(isAmplified, inputState.MousePosition);
                 doUpdateCursor = true;
 
                 // Update sound
@@ -3377,19 +3376,19 @@ public:
                 doUpdateSound = true;
             }
 
+            // Apply interaction
+            mGameController->ApplyLaserCannonThrough(
+                mEngagementData->PreviousMousePosition,
+                inputState.MousePosition,
+                isAmplified ? 2.0f : 1.0f);
+
+            // Update state
+            mEngagementData->PreviousMousePosition = inputState.MousePosition;
+
+            // Update sound
             if (doUpdateSound)
             {
                 mSoundController->PlayLaserRaySound(isAmplified);
-            }
-
-            // Calculate force
-            if (inputState.IsShiftKeyDown)
-            { 
-                force = 2.0f;
-            }
-            else
-            {
-                force = 1.0f;
             }
         }
         else
@@ -3405,13 +3404,12 @@ public:
                 doUpdateCursor = true;
             }
 
-            // Zero force
+            // Apply interaction
+            mGameController->ApplyLaserCannonThrough(
+                inputState.MousePosition,
+                inputState.MousePosition,
+                std::nullopt);
         }
-
-        // Apply interaction
-        mGameController->ApplyLaserCannonAt(
-            inputState.MousePosition,
-            force);
 
         // Update cursor
         if (doUpdateCursor)
@@ -3447,9 +3445,13 @@ private:
     struct EngagementData
     {
         bool IsAmplified;
+        DisplayLogicalCoordinates PreviousMousePosition;
 
-        EngagementData(bool isAmplified)
+        EngagementData(
+            bool isAmplified,
+            DisplayLogicalCoordinates const & previousMousePosition)
             : IsAmplified(isAmplified)
+            , PreviousMousePosition(previousMousePosition)
         {}
     };
 

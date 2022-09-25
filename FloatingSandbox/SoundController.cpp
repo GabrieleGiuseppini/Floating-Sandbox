@@ -28,7 +28,7 @@ float constexpr SawVolume = 50.0f;
 float constexpr SawedVolume = 80.0f;
 std::chrono::milliseconds constexpr SawedInertiaDuration = std::chrono::milliseconds(200);
 float constexpr WaveSplashTriggerSize = 0.5f;
-float constexpr LaserRayVolume = 60.0f;
+float constexpr LaserRayVolume = 50.0f;
 
 SoundController::SoundController(
     ResourceLocator const & resourceLocator,

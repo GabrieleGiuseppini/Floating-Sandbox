@@ -185,6 +185,9 @@ struct IGameControllerSettings
     virtual float GetHeatBlasterRadius() const = 0;
     virtual void SetHeatBlasterRadius(float value) = 0;
 
+    virtual float GetLaserRayHeatFlow() const = 0;
+    virtual void SetLaserRayHeatFlow(float value) = 0;
+
     // Electricals
 
     virtual float GetLuminiscenceAdjustment() const = 0;

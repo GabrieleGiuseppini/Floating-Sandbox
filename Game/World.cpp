@@ -474,16 +474,18 @@ void World::ApplyRadialWindFrom(
     }
 }
 
-void World::ApplyLaserCannonAt(
-    vec2f const & targetPos,
+void World::ApplyLaserCannonThrough(
+    vec2f const & startPos,
+    vec2f const & endPos,
     float strength,
     GameParameters const & gameParameters)
 {
     // Apply to ships
     for (auto & ship : mAllShips)
     {
-        ship->ApplyLaserCannonAt(
-            targetPos,
+        ship->ApplyLaserCannonThrough(
+            startPos,
+            endPos,
             strength,
             gameParameters);
     }

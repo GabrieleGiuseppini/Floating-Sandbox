@@ -1,6 +1,10 @@
 #include <GameCore/GameGeometry.h>
 
+#include "Utils.h"
+
 #include "gtest/gtest.h"
+
+#include <cmath>
 
 class SegmentIntersectionTest : public testing::TestWithParam<std::tuple<vec2f, vec2f, vec2f, vec2f, bool>>
 {
@@ -121,6 +125,50 @@ TEST_P(IsPointInTriangleTest, PositiveAndNegativeTests)
         std::get<3>(GetParam()));
 
     EXPECT_EQ(result, std::get<4>(GetParam()));
+}
+
+///////////////////////////////////////////////////////
+
+class Segment_DistanceToPointTest : public testing::TestWithParam<std::tuple<vec2f, vec2f, vec2f, float>>
+{
+public:
+    virtual void SetUp() {}
+    virtual void TearDown() {}
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    Segment_DistanceToPointTests,
+    Segment_DistanceToPointTest,
+    ::testing::Values(
+    // Empty segment
+    std::make_tuple(vec2f{ 1.0f, 2.0f }, vec2f{ 1.0f, 2.0f }, vec2f{ 1.0f, 2.5f }, 0.5f),
+    std::make_tuple(vec2f{ 1.0f, 2.0f }, vec2f{ 1.0f, 2.0f }, vec2f{ 0.5f, 2.0f }, 0.5f),
+    // Matching endpoint
+    std::make_tuple(vec2f{ 1.0f, 2.0f }, vec2f{ 3.0f, 4.0f }, vec2f{ 1.0f, 2.0f }, 0.0f),
+    std::make_tuple(vec2f{ 1.0f, 2.0f }, vec2f{ 3.0f, 4.0f }, vec2f{ 3.0f, 4.0f }, 0.0f),
+    // Within endpoints
+    std::make_tuple(vec2f{ 1.0f, 2.0f }, vec2f{ 3.0f, 2.0f }, vec2f{ 2.0f, 2.0f }, 0.0f),
+
+    // Proper - within
+    std::make_tuple(vec2f{ 1.0f, 2.0f }, vec2f{ 3.0f, 2.0f }, vec2f{ 2.0f, 3.0f }, 1.0f),
+
+    // Proper - outside - in-line
+    std::make_tuple(vec2f{ 1.0f, 2.0f }, vec2f{ 3.0f, 2.0f }, vec2f{ 0.0f, 2.0f }, 1.0f),
+    std::make_tuple(vec2f{ 1.0f, 2.0f }, vec2f{ 3.0f, 2.0f }, vec2f{ 4.0f, 2.0f }, 1.0f),
+
+    // Proper - outside - out-line
+    std::make_tuple(vec2f{ 1.0f, 2.0f }, vec2f{ 3.0f, 7.0f }, vec2f{ 0.0f, 1.0f }, std::sqrt(2.0f)),
+    std::make_tuple(vec2f{ 1.0f, 2.0f }, vec2f{ 3.0f, 7.0f }, vec2f{ 4.0f, 8.0f }, std::sqrt(2.0f))
+));
+
+TEST_P(Segment_DistanceToPointTest, Segment_DistanceToPointTests)
+{
+    float result = Segment::DistanceToPoint(
+        std::get<0>(GetParam()),
+        std::get<1>(GetParam()),
+        std::get<2>(GetParam()));
+
+    EXPECT_TRUE(ApproxEquals(result, std::get<3>(GetParam()), 0.0001f));
 }
 
 ///////////////////////////////////////////////////////

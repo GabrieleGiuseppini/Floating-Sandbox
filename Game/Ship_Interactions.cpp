@@ -736,21 +736,101 @@ void Ship::ApplyRadialWindFrom(
             mainFrontWindForceMagnitude));
 }
 
-void Ship::ApplyLaserCannonAt(
-    vec2f const & targetPos,
+void Ship::ApplyLaserCannonThrough(
+    vec2f const & startPos,
+    vec2f const & endPos,
     float strength,
     GameParameters const & gameParameters)
 {
+    // TODOTEST
+    (void)startPos;
+    /*
+    //
+    // Find all springs that intersect the stride
+    //
+    
+    unsigned int springsCut = 0;
+
+    for (auto springIndex : mSprings)
+    {
+        if (!mSprings.IsDeleted(springIndex))
+        {
+            if (Segment::ProperIntersectionTest(
+                startPos,
+                endPos,
+                mSprings.GetEndpointAPosition(springIndex, mPoints),
+                mSprings.GetEndpointBPosition(springIndex, mPoints)))
+            {
+                //
+                // Destroy spring
+                //
+
+                mSprings.Destroy(
+                    springIndex,
+                    Springs::DestroyOptions::DoNotFireBreakEvent
+                    | Springs::DestroyOptions::DestroyOnlyConnectedTriangle,
+                    gameParameters,
+                    mPoints);
+
+                // Remember we have cut a spring
+                ++springsCut;
+            }
+        }
+    }
+
+    // Notify (including zero)
+    // TODO
+    //mGameEventHandler->OnSawed(true, metalsSawed);
+    */
+
+    //
+    // Find point close to the segment, and inject heat
+    //
+
+    // TODO: radius
+
+    // Q = q*dt
+    float const effectiveLaserHeat =
+        gameParameters.LaserRayHeatFlow * 1000.0f // KJoule->Joule
+        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f)
+        * GameParameters::SimulationStepTimeDuration<float>
+        * (1.0f + (strength - 1.0f) * 4.0f);
+
+    float constexpr SearchRadius = 0.75f; // Magic number
+
+    for (auto p : mPoints)
+    {
+        float const distance = Segment::DistanceToPoint(startPos, endPos, mPoints.GetPosition(p));
+        if (distance < SearchRadius)
+        {
+            //
+            // Inject/remove heat at this point
+            //
+
+            // Calc temperature delta
+            // T = Q/HeatCapacity
+            float deltaT =
+                effectiveLaserHeat
+                * mPoints.GetMaterialHeatCapacityReciprocal(p);
+
+            // Increase/lower temperature
+            mPoints.SetTemperature(
+                p,
+                mPoints.GetTemperature(p) + deltaT);
+        }
+    }
+
+    /* TODOOLD
+    //
+    // Find closest point - of any type - within the search radius, and inject heat
+    //
+
     // Q = q*dt
     float const effectiveLaserHeat =
         gameParameters.LaserRayHeat * 1000.0f // KJoule->Joule
         * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f)
         * GameParameters::SimulationStepTimeDuration<float>
-        * (1.0f + (strength - 1.0f) * 4.0f);
-
-    //
-    // Find closest point - of any type - within the search radius
-    //
+        *(1.0f + (strength - 1.0f) * 4.0f);
 
     float constexpr SearchRadius = 0.75f; // Magic number
     float constexpr SquareSearchRadius = SearchRadius * SearchRadius;
@@ -760,7 +840,7 @@ void Ship::ApplyLaserCannonAt(
 
     for (auto p : mPoints)
     {
-        float const squareDistance = (mPoints.GetPosition(p) - targetPos).squareLength();
+        float const squareDistance = (mPoints.GetPosition(p) - endPos).squareLength();
         if (squareDistance < SquareSearchRadius
             && squareDistance < bestSquareDistance
             && mPoints.IsActive(p))
@@ -787,6 +867,7 @@ void Ship::ApplyLaserCannonAt(
             bestPoint,
             mPoints.GetTemperature(bestPoint) + deltaT);
     }
+    */
 }
 
 void Ship::ApplyRadialWindFrom(Interaction::ArgumentsUnion::RadialWindArguments const & args)

@@ -1317,8 +1317,10 @@
 			- Sounds
 		= Impl:
 			+ Test all other notif's w/pause
-			= Tool:
-				- Stride
+			+ Tool:
+				+ Stride
+					+ EngagementData has previousMousePos
+					+ Update previousMousePos @ Update()
 			+ Rendering (NotificationRenderContext):
 				+ Cannon @ mipmapped alias
 					+ PNG
@@ -1342,21 +1344,25 @@
 							+ Center more white
 						+ Outer noise different
 				+ Cannons are subject to daylight, ray is not
-			- Physics (Ship::Apply...):
-				- Stride:
-					= Heat injection
-					- Cut				
-				- TODO: cut sound?
+			= Physics (Ship::Apply...):
+				= Stride:
+					= Cut 
+						X Full cut (like @ saw)
+						- New material property: laser_ray_cut_receptivity
+							- Use script to set it to 1.0 for: ropes, cloths, ?
+						- Cut springs iff material
+						- TODO: cut event->sound if we end up cutting?
+					+ Heat injection at each point close to stride segment
+						+ Find right distance
 			= Sounds:
 				+ Basic code
 				+ Normal variant (more electronic)
 				+ Amplified variant
 				- Cut sound (much like "SawedMetal" or "SawedWood")
-					- Physics
-					- TODO: really?
-		- SettingsDialog:
-			- LaserRay heat
-				- Double-check value range
+					- TODO: if decided
+		+ SettingsDialog:
+			+ LaserRay heat flow
+				+ Double-check value range
 
 - Game Interactions and Controls:
 
