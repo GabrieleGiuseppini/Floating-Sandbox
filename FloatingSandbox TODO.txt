@@ -19,14 +19,27 @@
 		- Connectivity
 		- Types
 
+	- Laser cannon: cut with prob inverse to mass
+		- Try without using laser_ray_cut_receptivity
+
 	- At lights going off because of flooding of power, before flickering: flash w/spread and luminiscence
 		- See 1:53 at https://www.youtube.com/watch?v=yg9rkceLOzA
 		- Impl:
-			- "lights severed" flag becomes enum ("for water", "for severed")
+			- "lights severed" flag becomes opt<enum> ("for water", "for severed")
 				- Set as "For water" when power source is cutoff because of water
+					! Note: current causes for "severed":
+						- Destroyed elements
+						- OnElectricSpark
+						- UpdateSourcesAndPropagation: Power generator transitioning into NotProducingCurrent
+					! Note: "severed" is consumed at lamp state machine transitioning from LightOn (for any cause), to decide whether
+					  to turn off immediately or through flicker
+				+ Severed is cleaned up at end of UpdateSinks
+					+ So clean here whole opt<enum>
 			- At lamp state machine: use a single opt<bool> storing first decision on whether or not to do it
 			- Lamp::State contains TransientApertureMultiplier, and that's the one messed with by state
 				- And of course it's used when uploading to lights buffer, multiplied with actual aperture
+
+	- Lamps breaking under pressure (*)
 
 	- ShipBuilder things (*)
 
@@ -111,12 +124,6 @@
 							- Put cross-partition springs into last partition
 				- Prepare parallel tasks
 				- Run parallel tasks
-
-	- Lamps breaking under pressure (*)
-	- Break lights when structure gets "broken"
-		- Whenever a triangle or spring is destroyed, break also *lights* attached to any of the endpoints
-			- @ Ship::DestroyHandler's
-			- Invoke what we end up doing at "Lamps breaking under pressure (*)"
 
 	- Test using normalize_approx in spring loop
 		- Verify gain on Dell
@@ -1217,22 +1224,25 @@
 
 	- Lamps breaking under pressure (*)
 		! Unrelated to pressure crush (*) with frontier
-		- Idea:
-			- Lamps only
-			- UpdateLampStateMachine: first step checks external pressure (as in, depth) and if over threshold (from material): 
-				- TODO: the below, or simply Points::whatever_we_invoke_now with smash tool and the like
-				- Invokes Points::Break(iPointIndex): // new
-					- Sets self as Deleted
-					- Invokes IShipPhyisicsHandler::OnPointBroken(iIndex): // new
-						- Destroys triangles (springs stay)
-						- For each electrical element: invokes ElectricalElements::Break(iIndex): // new
-							- If lamp:
-								- Sound
-								- Sets flag TODO: OR Destroy()
-						- Invokes Gadgets
-					- TODO: how to do together with Destroy?
-			- Same effect should be caused by hammer on point, and possibly others
-		- TODO: see if can couple of Electric Sparkle tool: a lot of sparkle can cause lights to explode
+		- Pre:
+			- Make ship w/lamp electrical material
+			- Verify NO glass sound when hammered and when broken (w/ tearing)
+		- UpdateLampStateMachine: first step checks external pressure (as in, depth) and if over (randomized) threshold (from electrical material): 
+				- Randomization: taken where needed from points
+				- New electrical material property: "lamp_external_pressure_breakage_threshold", in Pa (i.e. N/m2)
+				- TODO: ext pressure requires effective water/air density, etc.
+					- See if can pass these from Ship::Update to ElectricalElements::Update?
+			- Invoke Destroy(own index, WithDebris)
+				- Destroy(.) takes new Options{NoDebris,WithDebris}
+				- case Lamp:
+					- IShipPhyisicsHandler::OnLampBroken(elec material index, option) // new
+						- Does glass sound
+						- Eventually does debris
+			- Test:
+				- Verify that hammer on point *and* breakage for tearing also cause glass sound now
+		- TODO: see if can couple with Electric Sparkle tool: a lot of sparkle can cause lights to explode
+			- Lamp accumulates electricity; when above threshold, explodes w/debris
+			- Make sure lamps have enough time to accumulate before they get "spark-disabled"
 
 	- Tool to break enough to let water enter, but not to make a hole all the way to the other side
 		- Just sets points as leaking
