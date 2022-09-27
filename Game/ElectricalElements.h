@@ -198,6 +198,7 @@ private:
                 LightOn,
                 FlickerA,
                 FlickerB,
+                FlickerOvercharge,
                 LightOff
             };
 
@@ -206,7 +207,7 @@ private:
             static constexpr auto FlickerBInterval = 100ms;
 
             StateType State;
-            std::uint8_t FlickerCounter;
+            std::uint8_t SubStateCounter;
             GameWallClock::time_point NextStateTransitionTimePoint;
             GameWallClock::time_point NextWetFailureCheckTimePoint;
 
@@ -216,7 +217,7 @@ private:
                 : IsSelfPowered(isSelfPowered)
                 , WetFailureRateCdf(1.0f - exp(-wetFailureRate / 60.0f))
                 , State(StateType::Initial)
-                , FlickerCounter(0u)
+                , SubStateCounter(0u)
                 , NextStateTransitionTimePoint()
                 , NextWetFailureCheckTimePoint()
             {}
@@ -224,7 +225,7 @@ private:
             void Reset()
             {
                 State = StateType::Initial;
-                FlickerCounter = 0;
+                SubStateCounter = 0;
             }
         };
 
@@ -415,6 +416,12 @@ private:
         ElectricSpark,
         PowerSourceFlood,
         Other
+    };
+
+    enum class LampOffSequenceType
+    {
+        Flicker,
+        Overcharge
     };
 
 public:
@@ -693,9 +700,9 @@ public:
     /*
      * Gets the lamp's light distance coefficient, net of the lamp's available light.
      */
-    inline float GetLampRawDistanceCoefficient(ElementIndex electricalElementIndex) const
+    inline float GetLampRawDistanceCoefficient(ElementIndex lampElementIndex) const
     {
-        return mLampRawDistanceCoefficientBuffer[electricalElementIndex];
+        return mLampRawDistanceCoefficientBuffer[lampElementIndex];
     }
 
     /*
@@ -775,6 +782,7 @@ private:
 
     void RunLampStateMachine(
         bool isConnectedToPower,
+        std::optional<LampOffSequenceType> const & powerFailureSequenceType,
         ElementIndex elementLampIndex,
         GameWallClock::time_point currentWallClockTime,
         float currentSimulationTime,

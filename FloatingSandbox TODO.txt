@@ -36,9 +36,10 @@
 					+ Make sure only set at PowerSource being down and at destroyed elements (not at lamp being down)
 				+ Severed is cleaned up at end of UpdateSinks
 					+ So clean here whole opt<enum>
-			- At lamp state machine: use a single opt<PowerFailureNextState> storing first decision on whether or not to do it
+			+ At lamp state machine: use a single opt<PowerFailureNextState> storing first decision on whether or not to do it
 			- Lamp::State contains TransientApertureMultiplier, and that's the one messed with by state
 				- And of course it's used when uploading to lights buffer, multiplied with actual aperture
+				- TODO: when to reset?
 
 	- Lamps breaking under pressure (*)
 

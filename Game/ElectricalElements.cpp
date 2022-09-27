@@ -124,7 +124,7 @@ void ElectricalElements::Add(
                     electricalMaterial.Luminiscence,
                     mCurrentLuminiscenceAdjustment,
                     lampLightSpreadMaxDistance));
-
+            
             mLampLightSpreadMaxDistanceBuffer.emplace_back(lampLightSpreadMaxDistance);
 
             break;
@@ -960,12 +960,12 @@ void ElectricalElements::UpdateForGameParameters(GameParameters const & gamePara
                 mMaterialLightSpreadBuffer[lampElementIndex],
                 gameParameters.LightSpreadAdjustment);
 
-            mLampRawDistanceCoefficientBuffer[l] = CalculateLampRawDistanceCoefficient(
+            mLampRawDistanceCoefficientBuffer[static_cast<ElementIndex>(l)] = CalculateLampRawDistanceCoefficient(
                 mMaterialLuminiscenceBuffer[lampElementIndex],
                 gameParameters.LuminiscenceAdjustment,
                 lampLightSpreadMaxDistance);
 
-            mLampLightSpreadMaxDistanceBuffer[l] = lampLightSpreadMaxDistance;
+            mLampLightSpreadMaxDistanceBuffer[static_cast<ElementIndex>(l)] = lampLightSpreadMaxDistance;
         }
 
         // Remember new parameters
@@ -1599,6 +1599,22 @@ void ElectricalElements::UpdateSinks(
         + stormParameters.AirTemperatureDelta
         + 200.0f; // To ensure buoyancy
 
+    // If power has been severed, this is the OFF sequence type
+    // for *all* lamps
+    std::optional<LampOffSequenceType> powerFailureSequenceType;
+    if (mPowerFailureReasonInCurrentStep)
+    {
+        if (mPowerFailureReasonInCurrentStep == PowerFailureReason::PowerSourceFlood
+            && GameRandomEngine::GetInstance().GenerateUniformReal(0.0f, 1.0f) < 0.5f)
+        {
+            powerFailureSequenceType = LampOffSequenceType::Overcharge;
+        }
+        else
+        {
+            powerFailureSequenceType = LampOffSequenceType::Flicker;
+        }
+    }
+
     for (auto const sinkElementIndex : mSinks)
     {
         //
@@ -1728,6 +1744,7 @@ void ElectricalElements::UpdateSinks(
                     // Update state machine
                     RunLampStateMachine(
                         isConnectedToPower,
+                        powerFailureSequenceType,
                         sinkElementIndex,
                         currentWallClockTime,
                         currentSimulationTime,
@@ -2498,6 +2515,7 @@ void ElectricalElements::UpdateSinks(
 
 void ElectricalElements::RunLampStateMachine(
     bool isConnectedToPower,
+    std::optional<LampOffSequenceType> const & powerFailureSequenceType,
     ElementIndex elementLampIndex,
     GameWallClock::time_point currentWallClockTime,
     float currentSimulationTime,
@@ -2572,21 +2590,40 @@ void ElectricalElements::RunLampStateMachine(
 
                 mAvailableLightBuffer[elementLampIndex] = 0.0f;
 
-                // Check whether we need to flicker or just turn off suddenly
-                // TODOHERE: to be tackled above
-                if (mPowerFailureReasonInCurrentStep)
+                // Transition to next state
+                if (powerFailureSequenceType)
                 {
-                    //
-                    // Start flicker state machine
-                    //
+                    switch (*powerFailureSequenceType)
+                    {
+                        case LampOffSequenceType::Flicker:
+                        {
+                            //
+                            // Start flicker state machine
+                            //
 
-                    // Transition state, choose whether to A or B
-                    lamp.FlickerCounter = 0u;
-                    lamp.NextStateTransitionTimePoint = currentWallClockTime + ElementState::LampState::FlickerStartInterval;
-                    if (GameRandomEngine::GetInstance().Choose(2) == 0)
-                        lamp.State = ElementState::LampState::StateType::FlickerA;
-                    else
-                        lamp.State = ElementState::LampState::StateType::FlickerB;
+                            // Transition state, choose whether to A or B
+                            lamp.SubStateCounter = 0u;
+                            lamp.NextStateTransitionTimePoint = currentWallClockTime + ElementState::LampState::FlickerStartInterval;
+                            if (GameRandomEngine::GetInstance().Choose(2) == 0)
+                                lamp.State = ElementState::LampState::StateType::FlickerA;
+                            else
+                                lamp.State = ElementState::LampState::StateType::FlickerB;
+
+                            break;
+                        }
+
+                        case LampOffSequenceType::Overcharge:
+                        {
+                            //
+                            // Start overcharge state machine
+                            //
+
+                            lamp.SubStateCounter = 0u;
+                            lamp.State = ElementState::LampState::StateType::FlickerOvercharge;
+
+                            break;
+                        }
+                    }
                 }
                 else
                 {
@@ -2618,10 +2655,10 @@ void ElectricalElements::RunLampStateMachine(
             }
             else if (currentWallClockTime > lamp.NextStateTransitionTimePoint)
             {
-                ++lamp.FlickerCounter;
+                ++lamp.SubStateCounter;
 
-                if (1 == lamp.FlickerCounter
-                    || 3 == lamp.FlickerCounter)
+                if (1 == lamp.SubStateCounter
+                    || 3 == lamp.SubStateCounter)
                 {
                     // Flicker to on, for a short time
 
@@ -2634,7 +2671,7 @@ void ElectricalElements::RunLampStateMachine(
 
                     lamp.NextStateTransitionTimePoint = currentWallClockTime + ElementState::LampState::FlickerAInterval;
                 }
-                else if (2 == lamp.FlickerCounter)
+                else if (2 == lamp.SubStateCounter)
                 {
                     // Flicker to off, for a short time
 
@@ -2644,7 +2681,7 @@ void ElectricalElements::RunLampStateMachine(
                 }
                 else
                 {
-                    assert(4 == lamp.FlickerCounter);
+                    assert(4 == lamp.SubStateCounter);
 
                     // Transition to off for good
                     mAvailableLightBuffer[elementLampIndex] = 0.f;
@@ -2672,10 +2709,10 @@ void ElectricalElements::RunLampStateMachine(
             }
             else if (currentWallClockTime > lamp.NextStateTransitionTimePoint)
             {
-                ++lamp.FlickerCounter;
+                ++lamp.SubStateCounter;
 
-                if (1 == lamp.FlickerCounter
-                    || 5 == lamp.FlickerCounter)
+                if (1 == lamp.SubStateCounter
+                    || 5 == lamp.SubStateCounter)
                 {
                     // Flicker to on, for a short time
 
@@ -2688,8 +2725,8 @@ void ElectricalElements::RunLampStateMachine(
 
                     lamp.NextStateTransitionTimePoint = currentWallClockTime + ElementState::LampState::FlickerBInterval;
                 }
-                else if (2 == lamp.FlickerCounter
-                        || 4 == lamp.FlickerCounter)
+                else if (2 == lamp.SubStateCounter
+                        || 4 == lamp.SubStateCounter)
                 {
                     // Flicker to off, for a short time
 
@@ -2697,7 +2734,7 @@ void ElectricalElements::RunLampStateMachine(
 
                     lamp.NextStateTransitionTimePoint = currentWallClockTime + ElementState::LampState::FlickerBInterval;
                 }
-                else if (3 == lamp.FlickerCounter)
+                else if (3 == lamp.SubStateCounter)
                 {
                     // Flicker to on, for a longer time
 
@@ -2712,12 +2749,42 @@ void ElectricalElements::RunLampStateMachine(
                 }
                 else
                 {
-                    assert(6 == lamp.FlickerCounter);
+                    assert(6 == lamp.SubStateCounter);
 
                     // Transition to off for good
                     mAvailableLightBuffer[elementLampIndex] = 0.f;
                     lamp.State = ElementState::LampState::StateType::LightOff;
                 }
+            }
+
+            break;
+        }
+
+        case ElementState::LampState::StateType::FlickerOvercharge:
+        {
+            // TODOHERE
+            static std::array<float, 3> constexpr TransientApertureMultipliersProfile{
+                1.0f,
+                5.0f,
+                1.0f
+            };
+
+            if (static_cast<size_t>(lamp.SubStateCounter) < TransientApertureMultipliersProfile.size())
+            {
+                // Store this aperture multiplier
+                // TODOHERE
+                //mTransientLightSpreadMultiplierBuffer[elementLampIndex] = TransientApertureMultipliersProfile[lamp.SubStateCounter];
+
+                // Advance
+                ++lamp.SubStateCounter;
+            }
+            else
+            {
+                // Transition to off for good
+                mAvailableLightBuffer[elementLampIndex] = 0.f;
+                // TODOHERE
+                //mTransientLightSpreadMultiplierBuffer[elementLampIndex] = 1.0f;
+                lamp.State = ElementState::LampState::StateType::LightOff;
             }
 
             break;
