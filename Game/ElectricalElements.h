@@ -406,6 +406,17 @@ private:
         {}
     };
 
+    /*
+     * The possible reasons for which power to sinks may disappear
+     * because of failures.
+     */
+    enum class PowerFailureReason
+    {
+        ElectricSpark,
+        PowerSourceFlood,
+        Other
+    };
+
 public:
 
     ElectricalElements(
@@ -462,7 +473,7 @@ public:
         , mCurrentLightSpreadAdjustment(gameParameters.LightSpreadAdjustment)
         , mCurrentLuminiscenceAdjustment(gameParameters.LuminiscenceAdjustment)
         , mHasConnectivityStructureChangedInCurrentStep(true)
-        , mHasPowerBeenSeveredInCurrentStep(false)
+        , mPowerFailureReasonInCurrentStep()
     {
         mInstanceInfos.reserve(mElementCount);
     }
@@ -635,7 +646,7 @@ public:
         if (hasBeenSevered)
         {
             // Remember that power has been severed during this step
-            mHasPowerBeenSeveredInCurrentStep = true;
+            mPowerFailureReasonInCurrentStep = PowerFailureReason::Other;
         }
 
         (void)found;
@@ -889,14 +900,16 @@ private:
     // to happen at these changes
     bool mHasConnectivityStructureChangedInCurrentStep;
 
-    // Flag indicating whether or not power has been 'violently' severed
-    // during the current simulation step; cleared at the end of sinks' update.
-    // Used to distinguish malfunctions from explicit actions.
+    // Flag indicating the cause of a power failure during the current
+    // simulation step; cleared at the end of sinks' update.
+    // Set only when there's been a failure; not set if power disappears
+    // because of a user action (e.g. switch toggle).
+    // Used to distinguish outage due to failures from simple switch toggles.
     // A bit of a hack, as the sink that gets a power state toggle
     // won't know for sure if that's because of a switch toggle,
     // but the real problem is in practice also ambiguous, and
     // this is good enough.
-    bool mHasPowerBeenSeveredInCurrentStep;
+    std::optional<PowerFailureReason> mPowerFailureReasonInCurrentStep;
 };
 
 }

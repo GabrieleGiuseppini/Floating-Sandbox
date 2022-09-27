@@ -559,10 +559,7 @@ void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
 
     assert(!IsDeleted(electricalElementIndex));
 
-    // Zero out our light
-    mAvailableLightBuffer[electricalElementIndex] = 0.0f;
-
-    // Switch state as appropriate
+    // Process as appropriate
     switch (GetMaterialType(electricalElementIndex))
     {
         case ElectricalMaterial::ElectricalElementType::Engine:
@@ -621,6 +618,14 @@ void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
                     mShipId,
                     electricalElementIndex),
                 false);
+
+            break;
+        }
+
+        case ElectricalMaterial::ElectricalElementType::Lamp:
+        {
+            // Zero out our light
+            mAvailableLightBuffer[electricalElementIndex] = 0.0f;
 
             break;
         }
@@ -721,7 +726,6 @@ void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
 
         case ElectricalMaterial::ElectricalElementType::Cable:
         case ElectricalMaterial::ElectricalElementType::EngineTransmission:
-        case ElectricalMaterial::ElectricalElementType::Lamp:
         case ElectricalMaterial::ElectricalElementType::OtherSink:
         case ElectricalMaterial::ElectricalElementType::SmokeEmitter:
         {
@@ -736,8 +740,11 @@ void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
     // Remember that connectivity structure has changed during this step
     mHasConnectivityStructureChangedInCurrentStep = true;
 
-    // Remember that power has been severed during this step
-    mHasPowerBeenSeveredInCurrentStep = true;
+    // Remember there's been a power failure in this step;
+    // note we also set it in case a *lamp* is broken, not only when a generator
+    // or cable gets broken. That's fine though, the lamp state machine coming 
+    // from this one is still plausible
+    mPowerFailureReasonInCurrentStep = PowerFailureReason::Other;
 
     // Flag ourselves as deleted
     mIsDeletedBuffer[electricalElementIndex] = true;
@@ -890,12 +897,12 @@ void ElectricalElements::OnPhysicalStructureChanged(Points const & points)
 void ElectricalElements::OnElectricSpark(
     ElementIndex electricalElementIndex,
     float currentSimulationTime)
-{
-    // Disable as appropriate
+{    
     switch (GetMaterialType(electricalElementIndex))
     {
         case ElectricalMaterial::ElectricalElementType::Engine:
         {
+            // Set engine in super-electrification mode
             mElementStateBuffer[electricalElementIndex].Engine.SuperElectrificationSimulationTimestampEnd =
                 currentSimulationTime + GameRandomEngine::GetInstance().GenerateUniformReal(7.0f, 15.0f);
 
@@ -904,18 +911,26 @@ void ElectricalElements::OnElectricSpark(
 
         case ElectricalMaterial::ElectricalElementType::Generator:
         {
+            // Disable generator
             mElementStateBuffer[electricalElementIndex].Generator.DisabledSimulationTimestampEnd =
                 currentSimulationTime + GameRandomEngine::GetInstance().GenerateUniformReal(15.0f, 30.0f);
+
+            mPowerFailureReasonInCurrentStep = PowerFailureReason::ElectricSpark; // Override
 
             break;
         }
 
         case ElectricalMaterial::ElectricalElementType::Lamp:
         {
+            // Disable lamp
             mElementStateBuffer[electricalElementIndex].Lamp.DisabledSimulationTimestampEnd =
                 currentSimulationTime + GameRandomEngine::GetInstance().GenerateUniformReal(4.0f, 8.0f);
 
-            mHasPowerBeenSeveredInCurrentStep = true;
+            if (!mPowerFailureReasonInCurrentStep)
+            {
+                // Suggest state machine for this lamp
+                mPowerFailureReasonInCurrentStep = PowerFailureReason::Other;
+            }
 
             break;
         }
@@ -1427,14 +1442,29 @@ void ElectricalElements::UpdateSourcesAndPropagation(
                     bool isProducingCurrent;
                     if (generatorState.IsProducingCurrent)
                     {
-                        if (points.IsWet(sourcePointIndex, 0.55f)
-                            || !mMaterialOperatingTemperaturesBuffer[sourceElementIndex].IsInRange(points.GetTemperature(sourcePointIndex))
-                            || generatorState.DisabledSimulationTimestampEnd.has_value())
+                        if (points.IsWet(sourcePointIndex, 0.55f))
                         {
+                            // Being off because we're wet
+                            isProducingCurrent = false;
+                            mPowerFailureReasonInCurrentStep = PowerFailureReason::PowerSourceFlood; // Arbitrarily override eventual other reason
+                        }
+                        else if (!mMaterialOperatingTemperaturesBuffer[sourceElementIndex].IsInRange(points.GetTemperature(sourcePointIndex)))
+                        {
+                            // Being off because we're hot
+                            isProducingCurrent = false;
+                            if (!mPowerFailureReasonInCurrentStep)
+                            {
+                                mPowerFailureReasonInCurrentStep = PowerFailureReason::Other;
+                            }
+                        }
+                        else if (generatorState.DisabledSimulationTimestampEnd.has_value())
+                        {
+                            // Being off because we're still disabled
                             isProducingCurrent = false;
                         }
                         else
                         {
+                            // We're on
                             isProducingCurrent = true;
                         }
                     }
@@ -1476,12 +1506,6 @@ void ElectricalElements::UpdateSourcesAndPropagation(
                             {
                                 HighlightElectricalElement(sourceElementIndex, points);
                             }
-                        }
-
-                        // Remember that power has been severed, in case we're turning off
-                        if (!isProducingCurrent)
-                        {
-                            mHasPowerBeenSeveredInCurrentStep = true;
                         }
                     }
 
@@ -2466,10 +2490,10 @@ void ElectricalElements::UpdateSinks(
     }
 
     //
-    // Clear "power severed" dirtyness
+    // Clear indicator of power failure
     //
 
-    mHasPowerBeenSeveredInCurrentStep = false;
+    mPowerFailureReasonInCurrentStep.reset();
 }
 
 void ElectricalElements::RunLampStateMachine(
@@ -2549,7 +2573,8 @@ void ElectricalElements::RunLampStateMachine(
                 mAvailableLightBuffer[elementLampIndex] = 0.0f;
 
                 // Check whether we need to flicker or just turn off suddenly
-                if (mHasPowerBeenSeveredInCurrentStep)
+                // TODOHERE: to be tackled above
+                if (mPowerFailureReasonInCurrentStep)
                 {
                     //
                     // Start flicker state machine
