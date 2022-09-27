@@ -186,6 +186,8 @@ private:
 
         struct LampState
         {
+            ElementIndex LampElementIndex;
+
             bool IsSelfPowered;
             std::optional<float> DisabledSimulationTimestampEnd;
 
@@ -212,9 +214,11 @@ private:
             GameWallClock::time_point NextWetFailureCheckTimePoint;
 
             LampState(
+                ElementIndex lampElementIndex,
                 bool isSelfPowered,
                 float wetFailureRate)
-                : IsSelfPowered(isSelfPowered)
+                : LampElementIndex(lampElementIndex)
+                , IsSelfPowered(isSelfPowered)
                 , WetFailureRateCdf(1.0f - exp(-wetFailureRate / 60.0f))
                 , State(StateType::Initial)
                 , SubStateCounter(0u)
@@ -811,6 +815,33 @@ private:
         return materialLuminiscence
             * luminiscenceAdjustment
             / lampLightSpreadMaxDistance;
+    }
+
+    inline void RecalculateLampCoefficients(ElementIndex elementIndex)
+    {
+        CalculateLampCoefficients(
+            elementIndex,
+            mCurrentLightSpreadAdjustment,
+            mCurrentLuminiscenceAdjustment);
+    }
+
+    inline void CalculateLampCoefficients(
+        ElementIndex elementIndex,
+        float lightSpreadAdjustment,
+        float luminiscenceAdjustment)
+    {
+        ElementIndex const lampElementIndex = mElementStateBuffer[elementIndex].Lamp.LampElementIndex;
+
+        float const lampLightSpreadMaxDistance = CalculateLampLightSpreadMaxDistance(
+            mMaterialLightSpreadBuffer[elementIndex],
+            lightSpreadAdjustment);
+
+        mLampRawDistanceCoefficientBuffer[lampElementIndex] = CalculateLampRawDistanceCoefficient(
+            mMaterialLuminiscenceBuffer[elementIndex],
+            luminiscenceAdjustment,
+            lampLightSpreadMaxDistance);
+
+        mLampLightSpreadMaxDistanceBuffer[lampElementIndex] = lampLightSpreadMaxDistance;
     }
 
 private:

@@ -106,6 +106,7 @@ void ElectricalElements::Add(
             // State
             mElementStateBuffer.emplace_back(
                 ElementState::LampState(
+                    static_cast<ElementIndex>(mLamps.size()),
                     electricalMaterial.IsSelfPowered,
                     electricalMaterial.WetFailureRate));
 
@@ -115,17 +116,13 @@ void ElectricalElements::Add(
 
             // Lighting
 
-            float const lampLightSpreadMaxDistance = CalculateLampLightSpreadMaxDistance(
-                electricalMaterial.LightSpread,
-                mCurrentLightSpreadAdjustment);
+            mLampRawDistanceCoefficientBuffer.emplace_back(0.0f);
+            mLampLightSpreadMaxDistanceBuffer.emplace_back(0.0f);
 
-            mLampRawDistanceCoefficientBuffer.emplace_back(
-                CalculateLampRawDistanceCoefficient(
-                    electricalMaterial.Luminiscence,
-                    mCurrentLuminiscenceAdjustment,
-                    lampLightSpreadMaxDistance));
-            
-            mLampLightSpreadMaxDistanceBuffer.emplace_back(lampLightSpreadMaxDistance);
+            CalculateLampCoefficients(
+                elementIndex,
+                mCurrentLightSpreadAdjustment,
+                mCurrentLuminiscenceAdjustment);
 
             break;
         }
@@ -791,6 +788,8 @@ void ElectricalElements::Restore(ElementIndex electricalElementIndex)
         {
             mElementStateBuffer[electricalElementIndex].Lamp.Reset();
 
+            RecalculateLampCoefficients(electricalElementIndex);
+
             break;
         }
 
@@ -956,16 +955,10 @@ void ElectricalElements::UpdateForGameParameters(GameParameters const & gamePara
         {
             auto const lampElementIndex = mLamps[l];
 
-            float const lampLightSpreadMaxDistance = CalculateLampLightSpreadMaxDistance(
-                mMaterialLightSpreadBuffer[lampElementIndex],
-                gameParameters.LightSpreadAdjustment);
-
-            mLampRawDistanceCoefficientBuffer[static_cast<ElementIndex>(l)] = CalculateLampRawDistanceCoefficient(
-                mMaterialLuminiscenceBuffer[lampElementIndex],
-                gameParameters.LuminiscenceAdjustment,
-                lampLightSpreadMaxDistance);
-
-            mLampLightSpreadMaxDistanceBuffer[static_cast<ElementIndex>(l)] = lampLightSpreadMaxDistance;
+            CalculateLampCoefficients(
+                lampElementIndex,
+                gameParameters.LightSpreadAdjustment,
+                gameParameters.LuminiscenceAdjustment);
         }
 
         // Remember new parameters
@@ -1605,7 +1598,9 @@ void ElectricalElements::UpdateSinks(
     if (mPowerFailureReasonInCurrentStep)
     {
         if (mPowerFailureReasonInCurrentStep == PowerFailureReason::PowerSourceFlood
-            && GameRandomEngine::GetInstance().GenerateUniformReal(0.0f, 1.0f) < 0.5f)
+            // TODOTEST
+            //&& GameRandomEngine::GetInstance().GenerateUniformReal(0.0f, 1.0f) < 0.5f)
+            )
         {
             powerFailureSequenceType = LampOffSequenceType::Overcharge;
         }
@@ -2584,11 +2579,6 @@ void ElectricalElements::RunLampStateMachine(
                     lamp.DisabledSimulationTimestampEnd.has_value()
                 ))
             {
-                //
-                // Turn off
-                //
-
-                mAvailableLightBuffer[elementLampIndex] = 0.0f;
 
                 // Transition to next state
                 if (powerFailureSequenceType)
@@ -2600,6 +2590,9 @@ void ElectricalElements::RunLampStateMachine(
                             //
                             // Start flicker state machine
                             //
+
+                            // Turn off
+                            mAvailableLightBuffer[elementLampIndex] = 0.0f;
 
                             // Transition state, choose whether to A or B
                             lamp.SubStateCounter = 0u;
@@ -2631,6 +2624,7 @@ void ElectricalElements::RunLampStateMachine(
                     // Turn off immediately
                     //
 
+                    mAvailableLightBuffer[elementLampIndex] = 0.0f;
                     lamp.State = ElementState::LampState::StateType::LightOff;
                 }
             }
@@ -2762,30 +2756,48 @@ void ElectricalElements::RunLampStateMachine(
 
         case ElementState::LampState::StateType::FlickerOvercharge:
         {
-            // TODOHERE
-            static std::array<float, 3> constexpr TransientApertureMultipliersProfile{
+            static std::array<float, 15> constexpr LightMultipliersProfile{
+                2.0f,
+                3.0f,
+                4.0f,
+                4.0f,
+                3.0f,
+                2.0f,
+
                 1.0f,
+                1.0f,
+                1.0f,
+
+                3.0f,
                 5.0f,
-                1.0f
+                7.0f,
+                7.0f,
+                7.0f,
+                3.0f
             };
 
-            if (static_cast<size_t>(lamp.SubStateCounter) < TransientApertureMultipliersProfile.size())
+            float lightIntensityMultiplier = 1.0f;
+            if (static_cast<size_t>(lamp.SubStateCounter) < LightMultipliersProfile.size())
             {
-                // Store this aperture multiplier
-                // TODOHERE
-                //mTransientLightSpreadMultiplierBuffer[elementLampIndex] = TransientApertureMultipliersProfile[lamp.SubStateCounter];
+                // Update multiplier
+                lightIntensityMultiplier = LightMultipliersProfile[lamp.SubStateCounter];
 
-                // Advance
+                // Advance sub-state
+                mAvailableLightBuffer[elementLampIndex] = 1.f;
                 ++lamp.SubStateCounter;
             }
             else
             {
                 // Transition to off for good
-                mAvailableLightBuffer[elementLampIndex] = 0.f;
-                // TODOHERE
-                //mTransientLightSpreadMultiplierBuffer[elementLampIndex] = 1.0f;
+                mAvailableLightBuffer[elementLampIndex] = 0.0f;
                 lamp.State = ElementState::LampState::StateType::LightOff;
             }
+
+            // Adjust coeffs
+            CalculateLampCoefficients(
+                elementLampIndex,
+                mCurrentLightSpreadAdjustment * lightIntensityMultiplier,
+                mCurrentLuminiscenceAdjustment * (1.0f + (lightIntensityMultiplier - 1.0f) / 9.0f));
 
             break;
         }

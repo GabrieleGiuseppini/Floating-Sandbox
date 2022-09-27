@@ -22,8 +22,7 @@
 	- Laser cannon: cut with prob inverse to mass
 		- Try without using laser_ray_cut_receptivity
 
-	= At lights going off because of flooding of power, before flickering: flash w/spread and luminiscence
-		- See 1:53 at https://www.youtube.com/watch?v=yg9rkceLOzA
+	= At lights going off because of flooding of power, before flickering: flash w/spread and luminiscence		
 		= Impl:
 			+ "lights severed" flag becomes opt<enum> ("for water", "for severed")
 				+ Set as "For water" when power source is cutoff because of water
@@ -37,9 +36,12 @@
 				+ Severed is cleaned up at end of UpdateSinks
 					+ So clean here whole opt<enum>
 			+ At lamp state machine: use a single opt<PowerFailureNextState> storing first decision on whether or not to do it
-			- Lamp::State contains TransientApertureMultiplier, and that's the one messed with by state
-				- And of course it's used when uploading to lights buffer, multiplied with actual aperture
-				- TODO: when to reset?
+			= Lamp::State contains TransientApertureMultiplier, and that's the one messed with by state
+				+ And of course it's used when uploading to lights buffer, multiplied with actual aperture
+				+ Reset at Restore()
+				- Better profile
+					- See 1:53 at https://www.youtube.com/watch?v=yg9rkceLOzA:  ...t.T...
+			- Put back randomness when choosing overcharge
 
 	- Lamps breaking under pressure (*)
 
