@@ -40,7 +40,7 @@
 				+ And of course it's used when uploading to lights buffer, multiplied with actual aperture
 				+ Reset at Restore()
 				- Better profile
-					- See 1:53 at https://www.youtube.com/watch?v=yg9rkceLOzA:  ...t.T...
+					- See 1:53 at https://www.youtube.com/watch?v=yg9rkceLOzA:  ...t.TTT..
 			- Put back randomness when choosing overcharge
 
 	- Lamps breaking under pressure (*)
@@ -1238,8 +1238,9 @@
 					- See if can pass these from Ship::Update to ElectricalElements::Update?
 			- Invoke Destroy(own index, WithDebris)
 				- Destroy(.) takes new Options{NoDebris,WithDebris}
+				- Also IShipPhysicsHandler::OnElecMaterialDesptroyed takes new enum: LampImpl/Expl/None
 				- case Lamp:
-					- IShipPhyisicsHandler::OnLampBroken(point index, option) // new
+					- IShipPhyisicsHandler::OnElecMaterialDesptroyed(point index, option)
 						- Does glass sound
 						- Eventually does debris
 			- Test:

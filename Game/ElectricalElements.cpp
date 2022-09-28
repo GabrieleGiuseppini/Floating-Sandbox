@@ -2756,24 +2756,26 @@ void ElectricalElements::RunLampStateMachine(
 
         case ElementState::LampState::StateType::FlickerOvercharge:
         {
-            static std::array<float, 15> constexpr LightMultipliersProfile{
+            // TODO: spread peak 3.5, luminiscence peak 2.5, 
+            static std::array<float, 16> constexpr LightMultipliersProfile{
                 2.0f,
                 3.0f,
-                4.0f,
                 4.0f,
                 3.0f,
                 2.0f,
 
-                1.0f,
-                1.0f,
-                1.0f,
+                1.5f,
 
                 3.0f,
                 5.0f,
                 7.0f,
                 7.0f,
                 7.0f,
-                3.0f
+                6.0f,
+                5.0f,
+                4.0f,
+                3.0f,
+                2.0f
             };
 
             float lightIntensityMultiplier = 1.0f;
