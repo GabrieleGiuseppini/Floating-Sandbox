@@ -1598,9 +1598,7 @@ void ElectricalElements::UpdateSinks(
     if (mPowerFailureReasonInCurrentStep)
     {
         if (mPowerFailureReasonInCurrentStep == PowerFailureReason::PowerSourceFlood
-            // TODOTEST
-            //&& GameRandomEngine::GetInstance().GenerateUniformReal(0.0f, 1.0f) < 0.5f)
-            )
+            && GameRandomEngine::GetInstance().GenerateUniformReal(0.0f, 1.0f) < 0.6f)
         {
             powerFailureSequenceType = LampOffSequenceType::Overcharge;
         }
@@ -2756,26 +2754,14 @@ void ElectricalElements::RunLampStateMachine(
 
         case ElementState::LampState::StateType::FlickerOvercharge:
         {
-            // TODO: spread peak 3.5, luminiscence peak 2.5, 
             static std::array<float, 16> constexpr LightMultipliersProfile{
-                2.0f,
-                3.0f,
-                4.0f,
-                3.0f,
-                2.0f,
+                1.4f, 1.8f, 2.25f, 1.8f, 1.4f,
 
-                1.5f,
+                1.2f,
 
-                3.0f,
-                5.0f,
-                7.0f,
-                7.0f,
-                7.0f,
-                6.0f,
-                5.0f,
-                4.0f,
-                3.0f,
-                2.0f
+                1.8f, 2.6f, 3.5f,
+                3.5f,
+                3.5f, 3.1f, 2.7f, 2.3f, 1.9f, 1.5f
             };
 
             float lightIntensityMultiplier = 1.0f;
@@ -2783,6 +2769,15 @@ void ElectricalElements::RunLampStateMachine(
             {
                 // Update multiplier
                 lightIntensityMultiplier = LightMultipliersProfile[lamp.SubStateCounter];
+
+                // Publish event (for sound)
+                if (lamp.SubStateCounter == 7)
+                {
+                    mGameEventHandler->OnLightFlicker(
+                        DurationShortLongType::Short,
+                        points.IsCachedUnderwater(pointIndex),
+                        1);
+                }
 
                 // Advance sub-state
                 mAvailableLightBuffer[elementLampIndex] = 1.f;
@@ -2799,7 +2794,7 @@ void ElectricalElements::RunLampStateMachine(
             CalculateLampCoefficients(
                 elementLampIndex,
                 mCurrentLightSpreadAdjustment * lightIntensityMultiplier,
-                mCurrentLuminiscenceAdjustment * (1.0f + (lightIntensityMultiplier - 1.0f) / 9.0f));
+                mCurrentLuminiscenceAdjustment * (1.0f + (lightIntensityMultiplier - 1.0f) / 1.66f));
 
             break;
         }
