@@ -743,13 +743,13 @@ void Ship::ApplyLaserCannonThrough(
     GameParameters const & gameParameters)
 {
     //
-    // Cut all springs that intersect the stride according to their laser ray cut sensitivity
+    // Cut all springs that intersect the stride with a probability inversely proportional to their mass
     //
     
     for (auto springIndex : mSprings)
     {
         if (!mSprings.IsDeleted(springIndex)
-            && mSprings.GetBaseStructuralMaterial(springIndex).LaserRayCutReceptivity != 0.0f)
+            && GameRandomEngine::GetInstance().GenerateUniformBoolean(10.0f / mSprings.GetBaseStructuralMaterial(springIndex).GetMass()))
         {
             if (Segment::ProperIntersectionTest(
                 startPos,

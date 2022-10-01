@@ -98,7 +98,6 @@ public:
     float ExplosiveCombustionStrength; // adimensional
 
     // Misc
-    float LaserRayCutReceptivity;
     float WindReceptivity;
     float WaterReactivity;
     bool IsLegacyElectrical;
@@ -171,7 +170,6 @@ public:
         float explosiveCombustionRadius,
         float explosiveCombustionStrength,
         // Misc
-        float laserRayCutReceptivity,
         float windReceptivity,
         float waterReactivity,
         bool isLegacyElectrical,
@@ -203,7 +201,6 @@ public:
         , CombustionType(combustionType)
         , ExplosiveCombustionRadius(explosiveCombustionRadius)
         , ExplosiveCombustionStrength(explosiveCombustionStrength)
-        , LaserRayCutReceptivity(laserRayCutReceptivity)
         , WindReceptivity(windReceptivity)
         , WaterReactivity(waterReactivity)
         , IsLegacyElectrical(isLegacyElectrical)
@@ -241,7 +238,6 @@ public:
         , CombustionType(MaterialCombustionType::Combustion)
         , ExplosiveCombustionRadius(1.0f)
         , ExplosiveCombustionStrength(1.0f)
-        , LaserRayCutReceptivity(0.0f)
         , WindReceptivity(1.0f)
         , WaterReactivity(0.0f)
         , IsLegacyElectrical(false)

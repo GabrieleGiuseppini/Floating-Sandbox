@@ -35,6 +35,8 @@
 			+ Better profile
 				+ See 1:53 at https://www.youtube.com/watch?v=yg9rkceLOzA:  ...t.TTT..
 		+ Put back randomness when choosing overcharge
+	+ Laser cannon: cut with prob inverse to mass
+		+ Remove laser_ray_cut_receptivity
 
 	- After release: update Wordpress post w/new engine stuff
 		- Connectivity
@@ -42,13 +44,8 @@
 
 	+ Electric Sparkle tool: sparkles can cause lights to explode (*)
 	= Lamps breaking under pressure (*)
-		- Test:
-			- Verify that hammer on point *and* breakage for tearing also cause glass sound now
-		- changelist for both
+		+ changelist for both
 
-
-	- Laser cannon: cut with prob inverse to mass
-		- Try without using laser_ray_cut_receptivity
 
 	- Send for testing
 		- Ask specifically to check lamps in sinking ships

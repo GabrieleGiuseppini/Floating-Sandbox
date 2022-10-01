@@ -84,7 +84,6 @@ StructuralMaterial StructuralMaterial::Create(
 
         // Misc
 
-        float const laserRayCutReceptivity = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "laser_ray_cut_receptivity");
         float const windReceptivity = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "wind_receptivity");
         float const waterReactivity = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "water_reactivity", 0.0f);
         bool isLegacyElectrical = Utils::GetOptionalJsonMember<bool>(structuralMaterialJson, "is_legacy_electrical", false);
@@ -133,7 +132,6 @@ StructuralMaterial StructuralMaterial::Create(
             explosiveCombustionRadius,
             explosiveCombustionStrength,
             // Misc
-            laserRayCutReceptivity,
             windReceptivity,
             waterReactivity,
             isLegacyElectrical,

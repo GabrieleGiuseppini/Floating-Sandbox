@@ -5,6 +5,7 @@ from collections import OrderedDict
  
 def adjust_material(material):
 
+    """
     val = 0.0
     if "palette_coordinates" in material:
         cat = material["palette_coordinates"]["category"]
@@ -12,6 +13,8 @@ def adjust_material(material):
             val = 1.0
             
     material["laser_ray_cut_receptivity"] = val
+    """
+    del material["laser_ray_cut_receptivity"]
 
 def main():
     
