@@ -370,6 +370,7 @@ void Ship::Update(
     ApplyWorldForces(
         effectiveAirDensity,
         effectiveWaterDensity,
+        currentSimulationTime,
         gameParameters,
         externalAabbSet);
 
@@ -976,6 +977,7 @@ void Ship::ApplyQueuedInteractionForces()
 void Ship::ApplyWorldForces(
     float effectiveAirDensity,
     float effectiveWaterDensity,
+    float currentSimulationTime,
     GameParameters const & gameParameters,
     Geometry::AABBSet & externalAabbSet)
 {
@@ -986,7 +988,7 @@ void Ship::ApplyWorldForces(
     // Particle forces
     //
 
-    ApplyWorldParticleForces(effectiveAirDensity, effectiveWaterDensity, *newCachedPointDepths, gameParameters);
+    ApplyWorldParticleForces(effectiveAirDensity, effectiveWaterDensity, currentSimulationTime, *newCachedPointDepths, gameParameters);
 
     //
     // Surface forces
@@ -1004,6 +1006,7 @@ void Ship::ApplyWorldForces(
 void Ship::ApplyWorldParticleForces(
     float effectiveAirDensity,
     float effectiveWaterDensity,
+    float currentSimulationTime,
     Buffer<float> & newCachedPointDepths,
     GameParameters const & gameParameters)
 {
@@ -1035,11 +1038,14 @@ void Ship::ApplyWorldParticleForces(
     {
         vec2f staticForce = vec2f::zero();
 
+        vec2f const & pointPosition = mPoints.GetPosition(pointIndex);
+
         //
         // Calculate and store depth
         //
 
-        newCachedPointDepthsBuffer[pointIndex] = oceanSurface.GetDepth(mPoints.GetPosition(pointIndex));
+        float const oceanSurfaceY = oceanSurface.GetHeightAt(pointPosition.x);
+        newCachedPointDepthsBuffer[pointIndex] = oceanSurfaceY - pointPosition.y;
 
         //
         // Calculate above/under-water coefficient
@@ -1099,6 +1105,39 @@ void Ship::ApplyWorldParticleForces(
             * (1.0f - uwCoefficient); // Only above-water
 
         staticForcesBuffer[pointIndex] += staticForce;
+
+        //
+        // External pressure on lamps
+        //
+
+        if (auto const electricalElementIndex = mPoints.GetElectricalElement(pointIndex);
+            electricalElementIndex != NoneElementIndex 
+            && mElectricalElements.GetMaterialType(electricalElementIndex) == ElectricalMaterial::ElectricalElementType::Lamp
+            && !mElectricalElements.IsDeleted(electricalElementIndex))
+        {
+            // Calculate water pressure
+            float const totalExternalPressure = Formulae::CalculateTotalPressureAt(
+                pointPosition.y,
+                oceanSurfaceY,
+                effectiveAirDensity,
+                effectiveWaterDensity,
+                gameParameters);
+
+            // Check against lamp's limit
+            assert(mPoints.GetElectricalMaterial(pointIndex) != nullptr);
+            float const externalPressureLimit = 
+                mPoints.GetElectricalMaterial(pointIndex)->ExternalPressureBreakageThreshold * 1000.0f // KPa->Pa
+                // +/- 45%
+                * (1.0f + (mPoints.GetRandomNormalizedUniformPersonalitySeed(pointIndex) - 0.5f) * 2.0f * 0.45f);
+            if (totalExternalPressure >= externalPressureLimit)
+            {
+                mElectricalElements.Destroy(
+                    electricalElementIndex, 
+                    ElectricalElements::DestroyReason::LampImplosion,
+                    currentSimulationTime,
+                    gameParameters);
+            }
+        }
     }
 }
 
@@ -3618,25 +3657,29 @@ void Ship::HandleSpringDestroy(
 
 
     //
-    // If both endpoints are electrical elements, then disconnect them - i.e. remove
-    // them from each other's set of connected electrical elements
+    // If endpoints are electrical elements connected to each other, then 
+    // disconnect them from each other - i.e. remove them from each other's 
+    // set of connected electrical elements
     //
-
-    auto electricalElementAIndex = mPoints.GetElectricalElement(pointAIndex);
-    if (NoneElementIndex != electricalElementAIndex)
-    {
-        auto electricalElementBIndex = mPoints.GetElectricalElement(pointBIndex);
-        if (NoneElementIndex != electricalElementBIndex)
+    
+    if (auto const electricalElementAIndex = mPoints.GetElectricalElement(pointAIndex);
+        NoneElementIndex != electricalElementAIndex)
+    {        
+        if (auto electricalElementBIndex = mPoints.GetElectricalElement(pointBIndex);
+            NoneElementIndex != electricalElementBIndex)
         {
-            mElectricalElements.RemoveConnectedElectricalElement(
-                electricalElementAIndex,
-                electricalElementBIndex,
-                true /*severed*/);
+            if (mElectricalElements.AreConnected(electricalElementAIndex, electricalElementBIndex))
+            {
+                mElectricalElements.RemoveConnectedElectricalElement(
+                    electricalElementAIndex,
+                    electricalElementBIndex,
+                    true /*severed*/);
 
-            mElectricalElements.RemoveConnectedElectricalElement(
-                electricalElementBIndex,
-                electricalElementAIndex,
-                true /*severed*/);
+                mElectricalElements.RemoveConnectedElectricalElement(
+                    electricalElementBIndex,
+                    electricalElementAIndex,
+                    true /*severed*/);
+            }
         }
     }
 

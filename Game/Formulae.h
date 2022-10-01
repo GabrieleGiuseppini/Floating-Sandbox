@@ -75,7 +75,7 @@ public:
             * GameParameters::GravityMagnitude;
     }
 
-    // Calculates the total (air above + water) pressure at the given y
+    // Calculates the total (air above + water) pressure at the given y, in N/m2 (Pa)
     static float CalculateTotalPressureAt(
         float y,
         float oceanSurfaceY,

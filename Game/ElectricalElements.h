@@ -635,6 +635,15 @@ public:
         return mConductingConnectedElectricalElementsBuffer[electricalElementIndex];
     }
 
+    inline bool AreConnected(
+        ElementIndex electricalElementIndexA,
+        ElementIndex electricalElementIndexB)
+    {
+        bool const areConnected = mConnectedElectricalElementsBuffer[electricalElementIndexA].contains(electricalElementIndexB);
+        assert(areConnected == mConnectedElectricalElementsBuffer[electricalElementIndexB].contains(electricalElementIndexA));
+        return areConnected;
+    }
+
     inline void AddConnectedElectricalElement(
         ElementIndex electricalElementIndex,
         ElementIndex connectedElectricalElementIndex)

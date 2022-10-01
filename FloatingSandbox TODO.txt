@@ -36,14 +36,20 @@
 				+ See 1:53 at https://www.youtube.com/watch?v=yg9rkceLOzA:  ...t.TTT..
 		+ Put back randomness when choosing overcharge
 
-	= Lamps breaking under pressure (*)
-
 	- After release: update Wordpress post w/new engine stuff
 		- Connectivity
 		- Types
 
+	+ Electric Sparkle tool: sparkles can cause lights to explode (*)
+	= Lamps breaking under pressure (*)
+		- Test:
+			- Verify that hammer on point *and* breakage for tearing also cause glass sound now
+		- changelist for both
+
 	- Laser cannon: cut with prob inverse to mass
 		- Try without using laser_ray_cut_receptivity
+
+	- Ukrainian
 
 	- ShipBuilder things (*)
 
@@ -1231,31 +1237,31 @@
 		+ Pre:
 			+ Make ship w/lamp electrical material
 			+ Verify NO glass sound when hammered and when broken (w/ tearing)
-		- UpdateLampStateMachine: first step checks external pressure (as in, depth) and if over (randomized) threshold (from electrical material): 
-				- Randomization: taken where needed from points
-				+ New electrical material property: "lamp_external_pressure_breakage_threshold", in Pa (i.e. N/m2)
-					+ json
-				- TODO: ext pressure requires effective water/air density, etc.
-					- See if can pass these from Ship::Update to ElectricalElements::Update?
+			+ New electrical material property: "lamp_external_pressure_breakage_threshold", in Pa (i.e. N/m2)
+				+ json
 			+ IEventHandler
 			+ Invoke Destroy(own index, DestroyReason=None|ForLampImplosion|ForLampExplosion)
 				+ Destroy(.) translates into IShipPhysicsHandler::ElectricalElementDestroySpecializationType
-			= Specialization types, and IShipPhysicsHandler::OnElecMaterialDestroyed takes ElectricalElementDestroySpecializationType
+			+ Specialization types, and IShipPhysicsHandler::OnElecMaterialDestroyed takes ElectricalElementDestroySpecializationType
 				+ None: nothing else
 				+ Lamp: glass sound
-				= LampImplosion: lamp implosion sound
+				+ LampImplosion: lamp implosion sound
 				+ LampExplosion: lamp explosion sound + debris
 			+ SoundController
-			- Test:
-				- Verify that hammer on point *and* breakage for tearing also cause glass sound now
-		= Electric Sparkle tool: a lot of sparkle can cause lights to explode
-			+ Can be done within OnElectrified, by calling directly Desotry(Explode) with randomness
-				+ See why can't be repaired
-				+ Better debris material: new StructuralMaterial unique type: GlassDebris
-				+ Nail down probability 
-			- TODOOLD
-			- Lamp accumulates electricity; when above threshold, explodes w/debris
-			- Make sure lamps have enough time to accumulate before they get "spark-disabled"
+		= Option 1: @ Ship::Update(.):
+			+ Find points loop that may be used for this
+			+ If has electrical element and that elec element is not deleted and that element is a Lamp: ElectricalElements::Destroy(implosion)
+				+ Regardless of current operating state of lamp
+			- Nail down depths:
+				- 300m => 3011.43
+				- 2000m => 3011.43
+		- Option 2: @ ElectricalElements::RunLampStateMachine(.): 
+			- First step checks external pressure (as in, depth) and if over (randomized) threshold (from electrical material), invokes Destroy(Implosion)
+				- Checked regardless of current operating state of lamp
+					- But not checked if deleted, obviously
+				- Randomization: taken from Points
+				- ElectricalElements::Update(.) -> RunLampStateMachine(.): whole path takes effective water/air density, etc.
+					- Pass these from Ship::Update
 
 	- Tool to break enough to let water enter, but not to make a hole all the way to the other side
 		- Just sets points as leaking
@@ -9176,6 +9182,11 @@ IF WX:
 				+ Double-check value range
 		+ Test on Dell
 		+ changes.txt
+	+ Electric Sparkle tool: sparkles can cause lights to explode (*)
+		+ Can be done within OnElectrified, by calling directly Desotry(Explode) with randomness
+			+ See why can't be repaired
+			+ Better debris material: new StructuralMaterial unique type: GlassDebris
+			+ Nail down probability 
 
 
 

@@ -478,12 +478,14 @@ private:
     void ApplyWorldForces(
         float effectiveAirDensity,
         float effectiveWaterDensity,
+        float currentSimulationTime,
         GameParameters const & gameParameters,
         Geometry::AABBSet & externalAabbSet);
 
     void ApplyWorldParticleForces(
         float effectiveAirDensity,
         float effectiveWaterDensity,
+        float currentSimulationTime,
         Buffer<float> & newCachedPointDepths,
         GameParameters const & gameParameters);
 
