@@ -7,6 +7,7 @@
 - Roadmap:
 
 	+ Laser Cannon tool (*)
+
 	+ Fix: GameController ends up being deleted by SwitchboardPanel - might be the cause of the "blocking" issue on GTK
 		! It happens because mElectricalPanel (SwitchboardPanel uq_ptr) is added to MainFrame, hence it's deleted by it *AND* by later uq_ptr
 		+ Major issue: everything that's added to sizers, etc. should NOT be a uq_ptr
@@ -14,13 +15,6 @@
 			+ ProbePanel
 			+ MainGLCanvas
 		X See if GTK issue is gone
-
-	- After release: update Wordpress post w/new engine stuff
-		- Connectivity
-		- Types
-
-	- Laser cannon: cut with prob inverse to mass
-		- Try without using laser_ray_cut_receptivity
 
 	+ At lights going off because of flooding of power, before flickering: flash w/spread and luminiscence		
 		+ "lights severed" flag becomes opt<enum> ("for water", "for severed")
@@ -42,7 +36,14 @@
 				+ See 1:53 at https://www.youtube.com/watch?v=yg9rkceLOzA:  ...t.TTT..
 		+ Put back randomness when choosing overcharge
 
-	- Lamps breaking under pressure (*)
+	= Lamps breaking under pressure (*)
+
+	- After release: update Wordpress post w/new engine stuff
+		- Connectivity
+		- Types
+
+	- Laser cannon: cut with prob inverse to mass
+		- Try without using laser_ray_cut_receptivity
 
 	- ShipBuilder things (*)
 
@@ -1225,27 +1226,31 @@
 
 	- Fires break out where electrical layer breaks (e.g. where *powered* line is cut)
 
-	- Lamps breaking under pressure (*)
+	= Lamps breaking under pressure (*)
 		! Unrelated to pressure crush (*) with frontier
-		- Pre:
-			- Make ship w/lamp electrical material
-			- Verify NO glass sound when hammered and when broken (w/ tearing)
+		+ Pre:
+			+ Make ship w/lamp electrical material
+			+ Verify NO glass sound when hammered and when broken (w/ tearing)
 		- UpdateLampStateMachine: first step checks external pressure (as in, depth) and if over (randomized) threshold (from electrical material): 
 				- Randomization: taken where needed from points
-				- New electrical material property: "lamp_external_pressure_breakage_threshold", in Pa (i.e. N/m2)
+				+ New electrical material property: "lamp_external_pressure_breakage_threshold", in Pa (i.e. N/m2)
+					+ json
 				- TODO: ext pressure requires effective water/air density, etc.
 					- See if can pass these from Ship::Update to ElectricalElements::Update?
-			- Invoke Destroy(own index, WithDebris)
-				- Destroy(.) takes new Options{NoDebris,WithDebris}
-				- Also IShipPhysicsHandler::OnElecMaterialDesptroyed takes new enum: LampImpl/Expl/None
-				- case Lamp:
-					- IShipPhyisicsHandler::OnElecMaterialDesptroyed(point index, option)
-						- Does glass sound
-						- Eventually does debris
+			+ IEventHandler
+			+ Invoke Destroy(own index, DestroyReason=None|ForLampImplosion|ForLampExplosion)
+				+ Destroy(.) translates into IShipPhysicsHandler::ElectricalElementDestroySpecializationType
+			= Specialization types, and IShipPhysicsHandler::OnElecMaterialDestroyed takes ElectricalElementDestroySpecializationType
+				+ None: nothing else
+				= Lamp: glass sound
+				= LampImplosion: lamp implosion sound
+				= LampExplosion: lamp explosion sound + debris
+					- For debris: New StructuralMaterial unique type: GlassFragment
+			+ SoundController
 			- Test:
 				- Verify that hammer on point *and* breakage for tearing also cause glass sound now
-		- TODO: see if can couple with Electric Sparkle tool: a lot of sparkle can cause lights to explode
-			- Can be done within OnElectrified, by calling directly Desotry(Explode)
+		= Electric Sparkle tool: a lot of sparkle can cause lights to explode
+			= Can be done within OnElectrified, by calling directly Desotry(Explode) with randomness
 			- TODOOLD
 			- Lamp accumulates electricity; when above threshold, explodes w/debris
 			- Make sure lamps have enough time to accumulate before they get "spark-disabled"

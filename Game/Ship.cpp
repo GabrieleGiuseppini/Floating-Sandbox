@@ -3484,7 +3484,11 @@ void Ship::HandlePointDetach(
             assert(mElectricalElements.GetConnectedElectricalElements(electricalElementIndex).empty());
             assert(mElectricalElements.GetConductingConnectedElectricalElements(electricalElementIndex).empty());
 
-            mElectricalElements.Destroy(electricalElementIndex);
+            mElectricalElements.Destroy(
+                electricalElementIndex, 
+                ElectricalElements::DestroyReason::Other,
+                currentSimulationTime,
+                gameParameters);
 
             hasAnythingBeenDestroyed = true;
         }
@@ -3819,7 +3823,12 @@ void Ship::HandleTriangleRestore(ElementIndex triangleElementIndex)
     }
 }
 
-void Ship::HandleElectricalElementDestroy(ElementIndex electricalElementIndex)
+void Ship::HandleElectricalElementDestroy(
+    ElementIndex electricalElementIndex,
+    ElementIndex pointElementIndex,
+    ElectricalElementDestroySpecializationType specialization,
+    float currentSimulationTime,
+    GameParameters const & gameParameters)
 {
     //
     // For all of the connected electrical elements: remove electrical connections
@@ -3840,6 +3849,51 @@ void Ship::HandleElectricalElementDestroy(ElementIndex electricalElementIndex)
             connectedElectricalElementIndex,
             electricalElementIndex,
             true /*severed*/);
+    }
+
+    //
+    // Address specialization
+    //
+
+    switch (specialization)
+    {
+        case ElectricalElementDestroySpecializationType::Lamp:
+        {
+            mGameEventHandler->OnLampBroken(
+                mParentWorld.GetOceanSurface().IsUnderwater(mPoints.GetPosition(pointElementIndex)),
+                1);
+
+            break;
+        }
+
+        case ElectricalElementDestroySpecializationType::LampExplosion:
+        {
+            GenerateDebris(
+                pointElementIndex,
+                currentSimulationTime,
+                gameParameters);
+
+            mGameEventHandler->OnLampExploded(
+                mParentWorld.GetOceanSurface().IsUnderwater(mPoints.GetPosition(pointElementIndex)),
+                1);
+
+            break;
+        }
+
+        case ElectricalElementDestroySpecializationType::LampImplosion:
+        {
+            mGameEventHandler->OnLampImploded(
+                mParentWorld.GetOceanSurface().IsUnderwater(mPoints.GetPosition(pointElementIndex)),
+                1);
+
+            break;
+        }
+
+        case ElectricalElementDestroySpecializationType::None:
+        {
+            // Nothing else
+            break;
+        }
     }
 }
 
@@ -4042,7 +4096,8 @@ void Ship::HandleElectricSpark(
     {
         mElectricalElements.OnElectricSpark(
             electricalElementIndex,
-            currentSimulationTime);
+            currentSimulationTime,
+            gameParameters);
     }
 
     //

@@ -232,6 +232,18 @@ public:
         bool isUnderwater,
         unsigned int size) override;
 
+    void OnLampBroken(
+        bool isUnderwater,
+        unsigned int size) override;
+
+    void OnLampExploded(
+        bool isUnderwater,
+        unsigned int size) override;
+
+    void OnLampImploded(
+        bool isUnderwater,
+        unsigned int size) override;
+
     void OnDestroy(
         StructuralMaterial const & structuralMaterial,
         bool isUnderwater,

@@ -66,6 +66,27 @@ struct IStructuralGameEventHandler
     {
         // Default-implemented
     }
+
+    virtual void OnLampBroken(
+        bool /*isUnderwater*/,
+        unsigned int /*size*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnLampExploded(
+        bool /*isUnderwater*/,
+        unsigned int /*size*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnLampImploded(
+        bool /*isUnderwater*/,
+        unsigned int /*size*/)
+    {
+        // Default-implemented
+    }
 };
 
 struct IWavePhenomenaGameEventHandler

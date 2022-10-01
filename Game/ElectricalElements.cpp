@@ -550,13 +550,26 @@ void ElectricalElements::SetEngineControllerState(
     }
 }
 
-void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
+void ElectricalElements::Destroy(
+    ElementIndex electricalElementIndex,
+    DestroyReason reason,
+    float currentSimulationTime,
+    GameParameters const & gameParameters)
 {
+    assert(
+        (reason != IShipPhysicsHandler::ElectricalElementDestroySpecializationType::Lamp 
+        && reason != IShipPhysicsHandler::ElectricalElementDestroySpecializationType::LampExplosion
+        && reason != IShipPhysicsHandler::ElectricalElementDestroySpecializationType::LampImplosion) 
+        || GetMaterialType(electricalElementIndex) == ElectricalMaterial::ElectricalElementType::Lamp);
+
     // Connectivity is taken care by ship destroy handler, as usual
 
     assert(!IsDeleted(electricalElementIndex));
 
+    auto const pointIndex = GetPointIndex(electricalElementIndex);
+
     // Process as appropriate
+    auto destroySpecializationType = IShipPhysicsHandler::ElectricalElementDestroySpecializationType::None;
     switch (GetMaterialType(electricalElementIndex))
     {
         case ElectricalMaterial::ElectricalElementType::Engine:
@@ -623,6 +636,20 @@ void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
         {
             // Zero out our light
             mAvailableLightBuffer[electricalElementIndex] = 0.0f;
+
+            // Translate reason
+            if (reason == DestroyReason::LampExplosion)
+            {
+                destroySpecializationType = IShipPhysicsHandler::ElectricalElementDestroySpecializationType::LampExplosion;
+            }
+            else if (reason == DestroyReason::LampImplosion)
+            {
+                destroySpecializationType = IShipPhysicsHandler::ElectricalElementDestroySpecializationType::LampImplosion;
+            }
+            else
+            {
+                destroySpecializationType = IShipPhysicsHandler::ElectricalElementDestroySpecializationType::Lamp;
+            }
 
             break;
         }
@@ -732,7 +759,12 @@ void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
 
     // Invoke destroy handler
     assert(nullptr != mShipPhysicsHandler);
-    mShipPhysicsHandler->HandleElectricalElementDestroy(electricalElementIndex);
+    mShipPhysicsHandler->HandleElectricalElementDestroy(
+        electricalElementIndex, 
+        pointIndex, 
+        destroySpecializationType,
+        currentSimulationTime,
+        gameParameters);
 
     // Remember that connectivity structure has changed during this step
     mHasConnectivityStructureChangedInCurrentStep = true;
@@ -895,7 +927,8 @@ void ElectricalElements::OnPhysicalStructureChanged(Points const & points)
 
 void ElectricalElements::OnElectricSpark(
     ElementIndex electricalElementIndex,
-    float currentSimulationTime)
+    float currentSimulationTime,
+    GameParameters const & gameParameters)
 {    
     switch (GetMaterialType(electricalElementIndex))
     {
@@ -914,6 +947,7 @@ void ElectricalElements::OnElectricSpark(
             mElementStateBuffer[electricalElementIndex].Generator.DisabledSimulationTimestampEnd =
                 currentSimulationTime + GameRandomEngine::GetInstance().GenerateUniformReal(15.0f, 30.0f);
 
+            // Remember that this power failure is due to an electric spark
             mPowerFailureReasonInCurrentStep = PowerFailureReason::ElectricSpark; // Override
 
             break;
@@ -921,15 +955,29 @@ void ElectricalElements::OnElectricSpark(
 
         case ElectricalMaterial::ElectricalElementType::Lamp:
         {
+            // Handle electrification of this lamp
+            if (mElementStateBuffer[electricalElementIndex].Lamp.State == ElementState::LampState::StateType::LightOn
+                && !mElementStateBuffer[electricalElementIndex].Lamp.DisabledSimulationTimestampEnd
+                && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.1f))
+            {
+                // Explode
+                Destroy(
+                    electricalElementIndex,
+                    DestroyReason::LampExplosion,
+                    currentSimulationTime,
+                    gameParameters);
+            }
+
             // Disable lamp
             mElementStateBuffer[electricalElementIndex].Lamp.DisabledSimulationTimestampEnd =
                 currentSimulationTime + GameRandomEngine::GetInstance().GenerateUniformReal(4.0f, 8.0f);
 
-            if (!mPowerFailureReasonInCurrentStep)
-            {
-                // Suggest state machine for this lamp
-                mPowerFailureReasonInCurrentStep = PowerFailureReason::Other;
-            }
+            // TODOHERE
+            ////if (!mPowerFailureReasonInCurrentStep)
+            ////{
+            ////    // Suggest state machine for this lamp
+            ////    mPowerFailureReasonInCurrentStep = PowerFailureReason::Other;
+            ////}
 
             break;
         }
@@ -1598,7 +1646,7 @@ void ElectricalElements::UpdateSinks(
     if (mPowerFailureReasonInCurrentStep)
     {
         if (mPowerFailureReasonInCurrentStep == PowerFailureReason::PowerSourceFlood
-            && GameRandomEngine::GetInstance().GenerateUniformReal(0.0f, 1.0f) < 0.6f)
+            && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.6f))
         {
             powerFailureSequenceType = LampOffSequenceType::Overcharge;
         }
@@ -2577,7 +2625,6 @@ void ElectricalElements::RunLampStateMachine(
                     lamp.DisabledSimulationTimestampEnd.has_value()
                 ))
             {
-
                 // Transition to next state
                 if (powerFailureSequenceType)
                 {

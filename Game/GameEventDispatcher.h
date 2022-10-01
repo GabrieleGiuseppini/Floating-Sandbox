@@ -32,6 +32,9 @@ public:
     GameEventDispatcher()
         : mStressEvents()
         , mBreakEvents()
+        , mLampBrokenEvents()
+        , mLampExplodedEvents()
+        , mLampImplodedEvents()
         , mCombustionExplosionEvents()
         , mLightningHitEvents()
         , mLightFlickerEvents()
@@ -123,6 +126,27 @@ public:
         unsigned int size) override
     {
         mBreakEvents[std::make_tuple(&structuralMaterial, isUnderwater)] += size;
+    }
+
+    void OnLampBroken(
+        bool isUnderwater,
+        unsigned int size) override
+    {
+        mLampBrokenEvents[std::make_tuple(isUnderwater)] += size;
+    }
+
+    void OnLampExploded(
+        bool isUnderwater,
+        unsigned int size) override
+    {
+        mLampExplodedEvents[std::make_tuple(isUnderwater)] += size;
+    }
+
+    void OnLampImploded(
+        bool isUnderwater,
+        unsigned int size) override
+    {
+        mLampImplodedEvents[std::make_tuple(isUnderwater)] += size;
     }
 
     //
@@ -808,10 +832,28 @@ public:
             {
                 sink->OnBreak(*(std::get<0>(entry.first)), std::get<1>(entry.first), entry.second);
             }
+
+            for (auto const & entry : mLampBrokenEvents)
+            {
+                sink->OnLampBroken(std::get<0>(entry.first), entry.second);
+            }
+
+            for (auto const & entry : mLampExplodedEvents)
+            {
+                sink->OnLampExploded(std::get<0>(entry.first), entry.second);
+            }
+
+            for (auto const & entry : mLampImplodedEvents)
+            {
+                sink->OnLampImploded(std::get<0>(entry.first), entry.second);
+            }
         }
 
         mStressEvents.clear();
         mBreakEvents.clear();
+        mLampBrokenEvents.clear();
+        mLampExplodedEvents.clear();
+        mLampImplodedEvents.clear();
 
         for (auto * sink : mCombustionSinks)
         {
@@ -953,6 +995,9 @@ private:
     // The current events being aggregated
     unordered_tuple_map<std::tuple<StructuralMaterial const *, bool>, unsigned int> mStressEvents;
     unordered_tuple_map<std::tuple<StructuralMaterial const *, bool>, unsigned int> mBreakEvents;
+    unordered_tuple_map<std::tuple<bool>, unsigned int> mLampBrokenEvents;
+    unordered_tuple_map<std::tuple<bool>, unsigned int> mLampExplodedEvents;
+    unordered_tuple_map<std::tuple<bool>, unsigned int> mLampImplodedEvents;
     unordered_tuple_map<std::tuple<bool>, unsigned int> mCombustionExplosionEvents;
     unordered_tuple_map<std::tuple<StructuralMaterial const *>, unsigned int> mLightningHitEvents;
     unordered_tuple_map<std::tuple<DurationShortLongType, bool>, unsigned int> mLightFlickerEvents;

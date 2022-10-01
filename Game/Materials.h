@@ -323,11 +323,12 @@ public:
     bool IsSelfPowered;
     bool ConductsElectricity;
 
-    // Light
+    // Lamp
     float Luminiscence;
     vec4f LightColor;
     float LightSpread;
     float WetFailureRate; // Number of lamp failures per minute
+    float ExternalPressureBreakageThreshold; // KPa
 
     // Heat
     float HeatGenerated; // KJ/s
@@ -390,6 +391,7 @@ public:
         vec4f lightColor,
         float lightSpread,
         float wetFailureRate,
+        float externalPressureBreakageThreshold,
         float heatGenerated,
         float minimumOperatingTemperature,
         float maximumOperatingTemperature,
@@ -414,6 +416,7 @@ public:
         , LightColor(lightColor)
         , LightSpread(lightSpread)
         , WetFailureRate(wetFailureRate)
+        , ExternalPressureBreakageThreshold(externalPressureBreakageThreshold)
         , HeatGenerated(heatGenerated)
         , MinimumOperatingTemperature(minimumOperatingTemperature)
         , MaximumOperatingTemperature(maximumOperatingTemperature)
@@ -448,6 +451,7 @@ public:
         , LightColor(vec4f::zero())
         , LightSpread(1.0f)
         , WetFailureRate(0.0f)
+        , ExternalPressureBreakageThreshold(100000.0f)
         , HeatGenerated(0.0f)
         , MinimumOperatingTemperature(0.0f)
         , MaximumOperatingTemperature(1000.0f)

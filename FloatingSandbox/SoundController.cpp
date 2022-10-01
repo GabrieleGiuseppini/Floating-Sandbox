@@ -1777,6 +1777,47 @@ void SoundController::OnBreak(
     }
 }
 
+void SoundController::OnLampBroken(
+    bool isUnderwater,
+    unsigned int size)
+{
+    if (mPlayBreakSounds)
+    {
+        PlayMSUOneShotMultipleChoiceSound(
+            SoundType::Break,
+            StructuralMaterial::MaterialSoundType::Glass,
+            SoundGroupType::Effects,
+            size,
+            isUnderwater,
+            BreakSoundVolume,
+            true);
+    }
+}
+
+void SoundController::OnLampExploded(
+    bool isUnderwater,
+    unsigned int /*size*/)
+{
+    PlayUOneShotMultipleChoiceSound(
+        SoundType::LampExplosion,
+        SoundGroupType::Effects,
+        isUnderwater,
+        100.0f,
+        true);
+}
+
+void SoundController::OnLampImploded(
+    bool isUnderwater,
+    unsigned int /*size*/)
+{
+    PlayUOneShotMultipleChoiceSound(
+        SoundType::LampImplosion,
+        SoundGroupType::Effects,
+        isUnderwater,
+        100.0f,
+        true);
+}
+
 void SoundController::OnWaterTaken(float waterTaken)
 {
     // 50 * (-1 / 2.4^(0.3 * x) + 1)

@@ -219,6 +219,7 @@ ElectricalMaterial ElectricalMaterial::Create(
         vec4f lightColor = vec4f::zero();
         float lightSpread = 0.0f;
         float wetFailureRate = 0.0f;
+        float externalPressureBreakageThreshold = 100000.0f;
         if (ElectricalElementType::Lamp == electricalType)
         {
             luminiscence = Utils::GetMandatoryJsonMember<float>(electricalMaterialJson, "luminiscence");
@@ -229,6 +230,7 @@ ElectricalMaterial ElectricalMaterial::Create(
 
             lightSpread = Utils::GetMandatoryJsonMember<float>(electricalMaterialJson, "light_spread");
             wetFailureRate = Utils::GetMandatoryJsonMember<float>(electricalMaterialJson, "wet_failure_rate");
+            externalPressureBreakageThreshold = Utils::GetMandatoryJsonMember<float>(electricalMaterialJson, "external_pressure_breakage_threshold");
 
             if (luminiscence < 0.0f)
                 throw GameException("Error loading electrical material \"" + name + "\": the value of the \"luminiscence\" parameter must be greater than or equal 0.0");
@@ -238,6 +240,8 @@ ElectricalMaterial ElectricalMaterial::Create(
                 throw GameException("Error loading electrical material \"" + name + "\": the value of the \"light_spread\" parameter must be greater than or equal 0.0");
             if (wetFailureRate < 0.0f)
                 throw GameException("Error loading electrical material \"" + name + "\": the value of the \"wet_failure_rate\" parameter must be greater than or equal 0.0");
+            if (externalPressureBreakageThreshold < 0.0f)
+                throw GameException("Error loading electrical material \"" + name + "\": the value of the \"externalPressureBreakageThreshold\" parameter must be greater than or equal 0.0");
         }
 
         // Heat
@@ -329,6 +333,7 @@ ElectricalMaterial ElectricalMaterial::Create(
             lightColor,
             lightSpread,
             wetFailureRate,
+            externalPressureBreakageThreshold,
             heatGenerated,
             minimumOperatingTemperature,
             maximumOperatingTemperature,

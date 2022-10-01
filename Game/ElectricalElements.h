@@ -430,6 +430,15 @@ private:
 
 public:
 
+    enum class DestroyReason
+    {
+        LampImplosion,
+        LampExplosion,
+        Other
+    };
+
+public:
+
     ElectricalElements(
         ElementCount allElementCount,
         ElementCount lampElementCount,
@@ -541,7 +550,11 @@ public:
         float controllerValue,
         GameParameters const & gameParameters);
 
-    void Destroy(ElementIndex electricalElementIndex);
+    void Destroy(
+        ElementIndex electricalElementIndex,
+        DestroyReason reason,
+        float currentSimulationTime,
+        GameParameters const & gameParameters);
 
     void Restore(ElementIndex electricalElementIndex);
 
@@ -549,7 +562,8 @@ public:
 
     void OnElectricSpark(
         ElementIndex electricalElementIndex,
-        float currentSimulationTime);
+        float currentSimulationTime,
+        GameParameters const & gameParameters);
 
     void UpdateForGameParameters(GameParameters const & gameParameters);
 

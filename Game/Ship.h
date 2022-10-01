@@ -682,7 +682,12 @@ private:
 
     virtual void HandleTriangleRestore(ElementIndex triangleElementIndex) override;
 
-    virtual void HandleElectricalElementDestroy(ElementIndex electricalElementIndex) override;
+    virtual void HandleElectricalElementDestroy(
+        ElementIndex electricalElementIndex,
+        ElementIndex pointIndex,
+        ElectricalElementDestroySpecializationType specialization,
+        float currentSimulationTime,
+        GameParameters const & gameParameters) override;
 
     virtual void HandleElectricalElementRestore(ElementIndex electricalElementIndex) override;
 

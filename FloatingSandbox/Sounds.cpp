@@ -207,6 +207,10 @@ SoundType StrToSoundType(std::string const & str)
         return SoundType::LaserRayNormal;
     else if (Utils::CaseInsensitiveEquals(str, "LaserRayAmplified"))
         return SoundType::LaserRayAmplified;
+    else if (Utils::CaseInsensitiveEquals(str, "LampExplosion"))
+        return SoundType::LampExplosion;
+    else if (Utils::CaseInsensitiveEquals(str, "LampImplosion"))
+        return SoundType::LampImplosion;
     else if (Utils::CaseInsensitiveEquals(str, "Error"))
         return SoundType::Error;
     else

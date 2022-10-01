@@ -128,6 +128,8 @@ enum class SoundType : uint32_t
     PressureInjection,
     LaserRayNormal,
     LaserRayAmplified,
+    LampExplosion,
+    LampImplosion,
 
     // UI
     Error
