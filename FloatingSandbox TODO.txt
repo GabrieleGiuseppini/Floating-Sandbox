@@ -1256,7 +1256,7 @@
 			+ Find points loop that may be used for this
 			+ If has electrical element and that elec element is not deleted and that element is a Lamp: ElectricalElements::Destroy(implosion)
 				+ Regardless of current operating state of lamp
-			= Nail down variance: constant, not percentage
+			- Nail down variance: constant, not percentage
 			= Nail down depths:
 				- 500m => 5019.04
 				- 2000m => 20076.17

@@ -961,7 +961,7 @@ void ElectricalElements::OnElectricSpark(
 
                 // Handle electrification of this lamp
                 if (mElementStateBuffer[electricalElementIndex].Lamp.State == ElementState::LampState::StateType::LightOn
-                    && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.02f))
+                    && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.05f))
                 {
                     // Explode
                     Destroy(
