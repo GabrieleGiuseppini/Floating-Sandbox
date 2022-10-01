@@ -609,7 +609,8 @@ private:
         GameParameters const & gameParameters);
 
     void GenerateDebris(
-        ElementIndex pointElementIndex,
+        ElementIndex sourcePointElementIndex,
+        StructuralMaterial const & debrisStructuralMaterial,
         float currentSimulationTime,
         GameParameters const & gameParameters);
 

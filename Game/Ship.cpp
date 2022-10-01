@@ -3302,7 +3302,8 @@ void Ship::GenerateAirBubble(
 }
 
 void Ship::GenerateDebris(
-    ElementIndex pointElementIndex,
+    ElementIndex sourcePointElementIndex,
+    StructuralMaterial const & debrisStructuralMaterial,
     float currentSimulationTime,
     GameParameters const & gameParameters)
 {
@@ -3311,9 +3312,10 @@ void Ship::GenerateDebris(
         unsigned int const debrisParticleCount = GameRandomEngine::GetInstance().GenerateUniformInteger(
             GameParameters::MinDebrisParticlesPerEvent, GameParameters::MaxDebrisParticlesPerEvent);
 
-        vec2f const pointPosition = mPoints.GetPosition(pointElementIndex);
-
-        float const pointDepth = mParentWorld.GetOceanSurface().GetDepth(pointPosition);
+        auto const pointPosition = mPoints.GetPosition(sourcePointElementIndex);
+        auto const pointDepth = mParentWorld.GetOceanSurface().GetDepth(pointPosition);
+        auto const pointWater = mPoints.GetWater(sourcePointElementIndex);
+        auto const pointPlaneId = mPoints.GetPlaneId(sourcePointElementIndex);
 
         for (unsigned int d = 0; d < debrisParticleCount; ++d)
         {
@@ -3331,11 +3333,11 @@ void Ship::GenerateDebris(
                 pointPosition,
                 velocity,
                 pointDepth,
-                mPoints.GetWater(pointElementIndex),
-                mPoints.GetStructuralMaterial(pointElementIndex),
+                pointWater,
+                debrisStructuralMaterial,
                 currentSimulationTime,
                 maxLifetime,
-                mPoints.GetPlaneId(pointElementIndex));
+                pointPlaneId);
         }
     }
 }
@@ -3504,6 +3506,7 @@ void Ship::HandlePointDetach(
             // Emit debris
             GenerateDebris(
                 pointElementIndex,
+                mPoints.GetStructuralMaterial(pointElementIndex),
                 currentSimulationTime,
                 gameParameters);
         }
@@ -3870,6 +3873,7 @@ void Ship::HandleElectricalElementDestroy(
         {
             GenerateDebris(
                 pointElementIndex,
+                mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Glass),
                 currentSimulationTime,
                 gameParameters);
 

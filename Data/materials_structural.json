@@ -2302,6 +2302,7 @@
             "texture_name": "glass_1",
             "thermal_conductivity": 0.8,
             "thermal_expansion_coefficient": 5e-06,
+	    "unique_type": "Glass",
             "water_diffusion_speed": 0.5,
             "water_retention": 0.0,
             "wind_receptivity": 0.1

@@ -34,11 +34,12 @@ public:
         Explosion
     };
 
-    enum class MaterialUniqueType : size_t
+    enum class MaterialUniqueType : size_t // There's an array indexed by this
     {
         Air = 0,
-        Rope = 1,
-        Water = 2,
+        Glass,
+        Rope,
+        Water,
 
         _Last = Water
     };
