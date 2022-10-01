@@ -46,8 +46,12 @@
 			- Verify that hammer on point *and* breakage for tearing also cause glass sound now
 		- changelist for both
 
+
 	- Laser cannon: cut with prob inverse to mass
 		- Try without using laser_ray_cut_receptivity
+
+	- Send for testing
+		- Ask specifically to check lamps in sinking ships
 
 	- Ukrainian
 
@@ -1248,20 +1252,14 @@
 				+ LampImplosion: lamp implosion sound
 				+ LampExplosion: lamp explosion sound + debris
 			+ SoundController
-		= Option 1: @ Ship::Update(.):
+		= @ Ship::Update(.):
 			+ Find points loop that may be used for this
 			+ If has electrical element and that elec element is not deleted and that element is a Lamp: ElectricalElements::Destroy(implosion)
 				+ Regardless of current operating state of lamp
-			- Nail down depths:
-				- 300m => 3011.43
-				- 2000m => 3011.43
-		- Option 2: @ ElectricalElements::RunLampStateMachine(.): 
-			- First step checks external pressure (as in, depth) and if over (randomized) threshold (from electrical material), invokes Destroy(Implosion)
-				- Checked regardless of current operating state of lamp
-					- But not checked if deleted, obviously
-				- Randomization: taken from Points
-				- ElectricalElements::Update(.) -> RunLampStateMachine(.): whole path takes effective water/air density, etc.
-					- Pass these from Ship::Update
+			= Nail down variance: constant, not percentage
+			= Nail down depths:
+				- 500m => 5019.04
+				- 2000m => 20076.17
 
 	- Tool to break enough to let water enter, but not to make a hole all the way to the other side
 		- Just sets points as leaking
