@@ -1016,10 +1016,12 @@ void ShipRenderContext::UploadJetEngineFlamesEnd()
 
 void ShipRenderContext::UploadElementEphemeralPointsStart()
 {
-    // Client wants to upload a new set of ephemeral point elements
+    // Client wants to upload a new set of ephemeral point elements    
 
     // Empty buffer
     mEphemeralPointElementBuffer.clear();
+
+    mAreElementBuffersDirty = true;
 }
 
 void ShipRenderContext::UploadElementEphemeralPointsEnd()

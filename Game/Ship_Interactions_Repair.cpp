@@ -87,7 +87,8 @@ void Ship::RepairAt(
 
     //
     // Pass 4:
-    //  a) Restore deleted _eligible_ triangles that were connected to each (in-radius) point
+    //
+    // a) Restore deleted _eligible_ triangles that were connected to each (in-radius) point
     //     at factory time
     //
     // A triangle is eligible for being restored if all of its subsprings are not deleted.
@@ -98,6 +99,8 @@ void Ship::RepairAt(
     // only when restoring a spring
     //
     // b) (Partially) restore (in-radius) springs' rest lengths
+    //
+    // c) Restore (in-radius) electrical elements of repaired points
     //
 
     // Visit all (in-radius) non-ephemeral points
@@ -148,6 +151,17 @@ void Ship::RepairAt(
                 mSprings.UpdateForRestLength(
                     cs.SpringIndex,
                     mPoints);
+            }
+        }
+
+        // c) Restore electrical element - iff point is not damanged
+        if (!mPoints.IsDamaged(pointIndex))
+        {
+            auto const electricalElementIndex = mPoints.GetElectricalElement(pointIndex);
+            if (NoneElementIndex != electricalElementIndex
+                && mElectricalElements.IsDeleted(electricalElementIndex))
+            {
+                mElectricalElements.Restore(electricalElementIndex);
             }
         }
     }

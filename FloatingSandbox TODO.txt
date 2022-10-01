@@ -1242,15 +1242,17 @@
 				+ Destroy(.) translates into IShipPhysicsHandler::ElectricalElementDestroySpecializationType
 			= Specialization types, and IShipPhysicsHandler::OnElecMaterialDestroyed takes ElectricalElementDestroySpecializationType
 				+ None: nothing else
-				= Lamp: glass sound
+				+ Lamp: glass sound
 				= LampImplosion: lamp implosion sound
-				= LampExplosion: lamp explosion sound + debris
-					- For debris: New StructuralMaterial unique type: GlassFragment
+				+ LampExplosion: lamp explosion sound + debris
 			+ SoundController
 			- Test:
 				- Verify that hammer on point *and* breakage for tearing also cause glass sound now
 		= Electric Sparkle tool: a lot of sparkle can cause lights to explode
-			= Can be done within OnElectrified, by calling directly Desotry(Explode) with randomness
+			+ Can be done within OnElectrified, by calling directly Desotry(Explode) with randomness
+				+ See why can't be repaired
+				- Better debris material: new StructuralMaterial unique type: GlassDebris
+				- Remove TODO for probability 
 			- TODOOLD
 			- Lamp accumulates electricity; when above threshold, explodes w/debris
 			- Make sure lamps have enough time to accumulate before they get "spark-disabled"

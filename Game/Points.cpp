@@ -262,7 +262,7 @@ void Points::CreateEphemeralParticleDebris(
     assert(mLightBuffer[pointIndex] == 0.0f);
     //mLightBuffer[pointIndex] = 0.0f;
 
-    mMaterialWindReceptivityBuffer[pointIndex] = 3.0f; // Debris are susceptible to wind
+    mMaterialWindReceptivityBuffer[pointIndex] = 3.0f; // Debris is susceptible to wind
 
     assert(mMaterialRustReceptivityBuffer[pointIndex] == 0.0f);
     //mMaterialRustReceptivityBuffer[pointIndex] = 0.0f;
@@ -281,8 +281,8 @@ void Points::CreateEphemeralParticleDebris(
     mColorBuffer[pointIndex] = structuralMaterial.RenderColor.toVec4f();
     mIsEphemeralColorBufferDirty = true;
 
-    // Remember that ephemeral points are dirty now
-    mAreEphemeralPointsDirtyForRendering = true;
+    // Remember that ephemeral point elements are dirty now
+    mAreEphemeralPointElementsDirtyForRendering = true;
 }
 
 void Points::CreateEphemeralParticleSmoke(
@@ -1520,8 +1520,8 @@ void Points::UpdateEphemeralParticles(
                     {
                         ExpireEphemeralParticle(pointIndex);
 
-                        // Remember that ephemeral points are now dirty
-                        mAreEphemeralPointsDirtyForRendering = true;
+                        // Remember that ephemeral point elements are now dirty
+                        mAreEphemeralPointElementsDirtyForRendering = true;
                     }
                     else
                     {
@@ -2021,7 +2021,7 @@ void Points::UploadEphemeralParticles(
 
     auto & shipRenderContext = renderContext.GetShipRenderContext(shipId);
 
-    if (mAreEphemeralPointsDirtyForRendering)
+    if (mAreEphemeralPointElementsDirtyForRendering)
     {
         shipRenderContext.UploadElementEphemeralPointsStart();
     }
@@ -2052,7 +2052,7 @@ void Points::UploadEphemeralParticles(
             case EphemeralType::Debris:
             {
                 // Don't upload point unless there's been a change
-                if (mAreEphemeralPointsDirtyForRendering)
+                if (mAreEphemeralPointElementsDirtyForRendering)
                 {
                     shipRenderContext.UploadElementEphemeralPoint(pointIndex);
                 }
@@ -2120,12 +2120,12 @@ void Points::UploadEphemeralParticles(
         }
     }
 
-    if (mAreEphemeralPointsDirtyForRendering)
+    if (mAreEphemeralPointElementsDirtyForRendering)
     {
         shipRenderContext.UploadElementEphemeralPointsEnd();
 
         // Not dirty anymore
-        mAreEphemeralPointsDirtyForRendering = false;
+        mAreEphemeralPointElementsDirtyForRendering = false;
     }
 }
 

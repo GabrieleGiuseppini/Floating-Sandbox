@@ -557,9 +557,7 @@ void ElectricalElements::Destroy(
     GameParameters const & gameParameters)
 {
     assert(
-        (reason != IShipPhysicsHandler::ElectricalElementDestroySpecializationType::Lamp 
-        && reason != IShipPhysicsHandler::ElectricalElementDestroySpecializationType::LampExplosion
-        && reason != IShipPhysicsHandler::ElectricalElementDestroySpecializationType::LampImplosion) 
+        (reason != DestroyReason::LampExplosion && reason != DestroyReason::LampImplosion) 
         || GetMaterialType(electricalElementIndex) == ElectricalMaterial::ElectricalElementType::Lamp);
 
     // Connectivity is taken care by ship destroy handler, as usual
@@ -808,10 +806,10 @@ void ElectricalElements::Restore(ElementIndex electricalElementIndex)
 
         case ElectricalMaterial::ElectricalElementType::Generator:
         {
-            // Nothing to do: at the next UpdateSources() that makes this generator work, the generator will start
-            // producing current again and it will announce it
+            mElementStateBuffer[electricalElementIndex].Generator.Reset();
 
-            assert(!mElementStateBuffer[electricalElementIndex].Generator.IsProducingCurrent);
+            // At the next UpdateSources() that makes this generator work, the generator will start
+            // producing current again and it will announce it
 
             break;
         }
@@ -930,62 +928,59 @@ void ElectricalElements::OnElectricSpark(
     float currentSimulationTime,
     GameParameters const & gameParameters)
 {    
-    switch (GetMaterialType(electricalElementIndex))
+    if (!IsDeleted(electricalElementIndex))
     {
-        case ElectricalMaterial::ElectricalElementType::Engine:
+        switch (GetMaterialType(electricalElementIndex))
         {
-            // Set engine in super-electrification mode
-            mElementStateBuffer[electricalElementIndex].Engine.SuperElectrificationSimulationTimestampEnd =
-                currentSimulationTime + GameRandomEngine::GetInstance().GenerateUniformReal(7.0f, 15.0f);
-
-            break;
-        }
-
-        case ElectricalMaterial::ElectricalElementType::Generator:
-        {
-            // Disable generator
-            mElementStateBuffer[electricalElementIndex].Generator.DisabledSimulationTimestampEnd =
-                currentSimulationTime + GameRandomEngine::GetInstance().GenerateUniformReal(15.0f, 30.0f);
-
-            // Remember that this power failure is due to an electric spark
-            mPowerFailureReasonInCurrentStep = PowerFailureReason::ElectricSpark; // Override
-
-            break;
-        }
-
-        case ElectricalMaterial::ElectricalElementType::Lamp:
-        {
-            // Handle electrification of this lamp
-            if (mElementStateBuffer[electricalElementIndex].Lamp.State == ElementState::LampState::StateType::LightOn
-                && !mElementStateBuffer[electricalElementIndex].Lamp.DisabledSimulationTimestampEnd
-                && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.1f))
+            case ElectricalMaterial::ElectricalElementType::Engine:
             {
-                // Explode
-                Destroy(
-                    electricalElementIndex,
-                    DestroyReason::LampExplosion,
-                    currentSimulationTime,
-                    gameParameters);
+                // Set engine in super-electrification mode
+                mElementStateBuffer[electricalElementIndex].Engine.SuperElectrificationSimulationTimestampEnd =
+                    currentSimulationTime + GameRandomEngine::GetInstance().GenerateUniformReal(7.0f, 15.0f);
+
+                break;
             }
 
-            // Disable lamp
-            mElementStateBuffer[electricalElementIndex].Lamp.DisabledSimulationTimestampEnd =
-                currentSimulationTime + GameRandomEngine::GetInstance().GenerateUniformReal(4.0f, 8.0f);
+            case ElectricalMaterial::ElectricalElementType::Generator:
+            {
+                // Disable generator
+                mElementStateBuffer[electricalElementIndex].Generator.DisabledSimulationTimestampEnd =
+                    currentSimulationTime + GameRandomEngine::GetInstance().GenerateUniformReal(15.0f, 28.0f);
 
-            // TODOHERE
-            ////if (!mPowerFailureReasonInCurrentStep)
-            ////{
-            ////    // Suggest state machine for this lamp
-            ////    mPowerFailureReasonInCurrentStep = PowerFailureReason::Other;
-            ////}
+                // Remember that this power failure is due to an electric spark
+                mPowerFailureReasonInCurrentStep = PowerFailureReason::ElectricSpark; // Override
 
-            break;
-        }
+                break;
+            }
 
-        default:
-        {
-            // We don't disable anything else, we rely on generators going off
-            break;
+            case ElectricalMaterial::ElectricalElementType::Lamp:
+            {
+                // Disable lamp - will cause the lamp to transition state
+                mElementStateBuffer[electricalElementIndex].Lamp.DisabledSimulationTimestampEnd =
+                    currentSimulationTime + GameRandomEngine::GetInstance().GenerateUniformReal(4.0f, 8.0f);
+
+                // Handle electrification of this lamp
+                if (mElementStateBuffer[electricalElementIndex].Lamp.State == ElementState::LampState::StateType::LightOn
+                    // TODOTEST
+                    //&& GameRandomEngine::GetInstance().GenerateUniformBoolean(0.02f))
+                    && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.99f))
+                {
+                    // Explode
+                    Destroy(
+                        electricalElementIndex,
+                        DestroyReason::LampExplosion,
+                        currentSimulationTime,
+                        gameParameters);
+                }
+
+                break;
+            }
+
+            default:
+            {
+                // We don't disable anything else, we rely on generators going off
+                break;
+            }
         }
     }
 }

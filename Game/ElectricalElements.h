@@ -182,6 +182,11 @@ private:
             GeneratorState(bool isProducingCurrent)
                 : IsProducingCurrent(isProducingCurrent)
             {}
+
+            void Reset()
+            {
+                DisabledSimulationTimestampEnd.reset();
+            }
         };
 
         struct LampState
@@ -219,6 +224,7 @@ private:
                 float wetFailureRate)
                 : LampElementIndex(lampElementIndex)
                 , IsSelfPowered(isSelfPowered)
+                , DisabledSimulationTimestampEnd()
                 , WetFailureRateCdf(1.0f - exp(-wetFailureRate / 60.0f))
                 , State(StateType::Initial)
                 , SubStateCounter(0u)
@@ -228,6 +234,7 @@ private:
 
             void Reset()
             {
+                DisabledSimulationTimestampEnd.reset();
                 State = StateType::Initial;
                 SubStateCounter = 0;
             }
