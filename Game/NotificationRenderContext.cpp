@@ -550,7 +550,7 @@ void NotificationRenderContext::UploadLaserCannon(
     float const screenCannonLength = static_cast<float>(frameMetadata.FrameMetadata.Size.height);
     float const screenCannonWidth = static_cast<float>(frameMetadata.FrameMetadata.Size.width);
 
-    float const screenRayWidth = 15.0f; // Based on cannon PNG
+    float const screenRayWidth = 17.0f; // Based on cannon PNG
     float const screenRayWidthEnd = screenRayWidth * std::min(viewModel.GetZoom(), 1.0f); // Taper ray towards center, depending on zoom: the further (smaller), the more tapered
 
     // Process all corners

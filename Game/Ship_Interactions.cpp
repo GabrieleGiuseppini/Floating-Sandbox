@@ -749,7 +749,7 @@ void Ship::ApplyLaserCannonThrough(
     for (auto springIndex : mSprings)
     {
         if (!mSprings.IsDeleted(springIndex)
-            && GameRandomEngine::GetInstance().GenerateUniformBoolean(10.0f / mSprings.GetBaseStructuralMaterial(springIndex).GetMass()))
+            && GameRandomEngine::GetInstance().GenerateUniformBoolean(10.0f * strength / mSprings.GetBaseStructuralMaterial(springIndex).GetMass()))
         {
             if (Segment::ProperIntersectionTest(
                 startPos,

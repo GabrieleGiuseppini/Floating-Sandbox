@@ -81,12 +81,12 @@ void main()
     vec2 wuv = raySpacePosition;
     
     float pixelNoiseW = getNoise(
-        wuv.y / 0.1 - paramTime * 3.0,                                // evolution along y
-        wuv.x - sign(wuv.x) * paramTime * 1.0 + pixelNoiseN * 0.08);  // evolution along x
+        wuv.y / 4.0  - paramTime * 0.00,                                        // evolution along y
+        (wuv.x - sign(wuv.x) * paramTime * 2.0 + pixelNoiseN * 0.08) * 0.2);    // evolution along x
     
     // Rotate pixel
     float angle = pixelNoiseW * 0.06;
-    vec2 rotationOrigin = vec2(0.0, 20.0); // The further the rotation center, the more scattered the halo is
+    vec2 rotationOrigin = vec2(0.0, 10.0); // The further the rotation center, the more scattered the halo is
     vec2 displacedWuv = 
         GetRotationMatrix(angle) * (wuv - rotationOrigin)
         + rotationOrigin;

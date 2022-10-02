@@ -45,17 +45,19 @@
 	= Laser cannon
 		+ Cut with prob inverse to mass
 			+ Remove laser_ray_cut_receptivity
-		- Shader: more smeared on the outside
-		- More prob when SHIFT is down
+		+ Shader: more smeared on the outside
+		+ More prob when SHIFT is down
 		- Sound for cut
-
-	- Should laser cannon make sound when cutting?
 
 	- Ukrainian (uk)
 		- changelist
 
+	- Merge into master
+
 	- Send for testing
 		- Ask specifically to check lamps in sinking ships
+
+	- Bump up version
 
 	- ShipBuilder things (*)
 
