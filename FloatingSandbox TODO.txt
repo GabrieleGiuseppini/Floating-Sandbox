@@ -49,13 +49,16 @@
 		+ More prob when SHIFT is down
 		+ Sound for cut
 
-	- Ukrainian (uk)
+	= Ukrainian (uk)
+		+ 2 .mo files
+		= 2 HTML files
 		- changelist
 
 	- Merge into master
 
 	- Send for testing
 		- Ask specifically to check lamps in sinking ships
+		- Ask to check Ukrainian
 
 	- Bump up version
 
