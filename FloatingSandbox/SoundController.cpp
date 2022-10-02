@@ -29,6 +29,7 @@ float constexpr SawedVolume = 80.0f;
 std::chrono::milliseconds constexpr SawedInertiaDuration = std::chrono::milliseconds(200);
 float constexpr WaveSplashTriggerSize = 0.5f;
 float constexpr LaserRayVolume = 50.0f;
+float constexpr WindMaxVolume = 70.0f;
 
 SoundController::SoundController(
     ResourceLocator const & resourceLocator,
@@ -1975,15 +1976,15 @@ void SoundController::OnWindSpeedUpdated(
     {
         // 20 -> 43:
         // 100 * (-1 / 1.1^(0.3 * x) + 1)
-        windVolume = 100.f * (-1.f / std::pow(1.1f, 0.3f * (windSpeedAbsoluteMagnitude - std::abs(baseSpeedMagnitude))) + 1.f);
+        windVolume = WindMaxVolume * (-1.f / std::pow(1.1f, 0.3f * (windSpeedAbsoluteMagnitude - std::abs(baseSpeedMagnitude))) + 1.f);
     }
     else
     {
-        // Raise volume only if goes up
+        // Raise volume only if going up
         float const deltaUp = std::max(0.0f, windSpeedAbsoluteMagnitude - mLastWindSpeedAbsoluteMagnitude);
 
         // 100 * (-1 / 1.1^(0.3 * x) + 1)
-        windVolume = 100.f * (-1.f / std::pow(1.1f, 0.3f * deltaUp) + 1.f);
+        windVolume = WindMaxVolume * (-1.f / std::pow(1.1f, 0.3f * deltaUp) + 1.f);
     }
 
     // Smooth the volume
