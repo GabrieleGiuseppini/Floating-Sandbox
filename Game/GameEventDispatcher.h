@@ -585,6 +585,14 @@ public:
         }
     }
 
+    virtual void OnLaserCut(unsigned int size) override
+    {
+        for (auto sink : mGenericSinks)
+        {
+            sink->OnLaserCut(size);
+        }
+    }
+
     void OnPinToggled(
         bool isPinned,
         bool isUnderwater) override

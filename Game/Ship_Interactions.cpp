@@ -736,7 +736,7 @@ void Ship::ApplyRadialWindFrom(
             mainFrontWindForceMagnitude));
 }
 
-void Ship::ApplyLaserCannonThrough(
+bool Ship::ApplyLaserCannonThrough(
     vec2f const & startPos,
     vec2f const & endPos,
     float strength,
@@ -745,6 +745,8 @@ void Ship::ApplyLaserCannonThrough(
     //
     // Cut all springs that intersect the stride with a probability inversely proportional to their mass
     //
+
+    int cutCount = 0;
     
     for (auto springIndex : mSprings)
     {
@@ -767,6 +769,8 @@ void Ship::ApplyLaserCannonThrough(
                     | Springs::DestroyOptions::DestroyOnlyConnectedTriangle,
                     gameParameters,
                     mPoints);
+
+                ++cutCount;
             }
         }
     }
@@ -805,6 +809,10 @@ void Ship::ApplyLaserCannonThrough(
                 mPoints.GetTemperature(p) + deltaT);
         }
     }
+
+    mGameEventHandler->OnLaserCut(cutCount);
+
+    return cutCount > 0;
 }
 
 void Ship::ApplyRadialWindFrom(Interaction::ArgumentsUnion::RadialWindArguments const & args)

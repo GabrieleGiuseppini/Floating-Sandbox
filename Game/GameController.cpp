@@ -966,11 +966,13 @@ void GameController::ApplyRadialWindFrom(
         mainFrontIntensityMultiplier);
 }
 
-void GameController::ApplyLaserCannonThrough(
+bool GameController::ApplyLaserCannonThrough(
     DisplayLogicalCoordinates const & startScreenCoordinates, 
     DisplayLogicalCoordinates const & endScreenCoordinates,
     std::optional<float> strength)
 {
+    bool hasCut = false;
+
     vec2f const startWorld = mRenderContext->ScreenToWorld(startScreenCoordinates);
     vec2f const endWorld = mRenderContext->ScreenToWorld(endScreenCoordinates);
 
@@ -978,7 +980,7 @@ void GameController::ApplyLaserCannonThrough(
     {
         // Apply action
         assert(!!mWorld);
-        mWorld->ApplyLaserCannonThrough(
+        hasCut = mWorld->ApplyLaserCannonThrough(
             startWorld,
             endWorld,
             *strength,
@@ -989,6 +991,8 @@ void GameController::ApplyLaserCannonThrough(
     mNotificationLayer.SetLaserCannon(
         endScreenCoordinates,
         strength);
+
+    return hasCut;
 }
 
 void GameController::DrawTo(

@@ -25,6 +25,8 @@ SoundType StrToSoundType(std::string const & str)
         return SoundType::Saw;
     else if (Utils::CaseInsensitiveEquals(str, "Sawed"))
         return SoundType::Sawed;
+    else if (Utils::CaseInsensitiveEquals(str, "LaserCut"))
+        return SoundType::LaserCut;
     else if (Utils::CaseInsensitiveEquals(str, "HeatBlasterCool"))
         return SoundType::HeatBlasterCool;
     else if (Utils::CaseInsensitiveEquals(str, "HeatBlasterHeat"))

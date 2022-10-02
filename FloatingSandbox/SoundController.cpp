@@ -27,6 +27,8 @@ float constexpr RepairVolume = 40.0f;
 float constexpr SawVolume = 50.0f;
 float constexpr SawedVolume = 80.0f;
 std::chrono::milliseconds constexpr SawedInertiaDuration = std::chrono::milliseconds(200);
+float constexpr LaserCutVolume = 100.0f;
+std::chrono::milliseconds constexpr LaserCutInertiaDuration = std::chrono::milliseconds(200);
 float constexpr WaveSplashTriggerSize = 0.5f;
 float constexpr LaserRayVolume = 50.0f;
 float constexpr WindMaxVolume = 70.0f;
@@ -59,6 +61,7 @@ SoundController::SoundController(
     // Continuous sounds
     , mSawedMetalSound(SawedInertiaDuration)
     , mSawedWoodSound(SawedInertiaDuration)
+    , mLaserCutSound(LaserCutInertiaDuration)
     , mSawAbovewaterSound()
     , mSawUnderwaterSound()    
     , mHeatBlasterCoolSound()
@@ -218,6 +221,13 @@ SoundController::SoundController(
                     mMasterEffectsVolume,
                     mMasterEffectsMuted);
             }
+        }
+        else if (soundType == SoundType::LaserCut)
+        {
+            mLaserCutSound.Initialize(
+                std::move(soundFile),
+                mMasterEffectsVolume,
+                mMasterEffectsMuted);
         }
         else if (soundType == SoundType::HeatBlasterCool)
         {
@@ -987,6 +997,7 @@ void SoundController::SetMasterEffectsVolume(float volume)
 
     mSawedMetalSound.SetMasterVolume(mMasterEffectsVolume);
     mSawedWoodSound.SetMasterVolume(mMasterEffectsVolume);
+    mLaserCutSound.SetMasterVolume(mMasterEffectsVolume);
     mWindMakerWindSound.SetMasterVolume(mMasterEffectsVolume);
     mWaterRushSound.SetMasterVolume(mMasterEffectsVolume);
     mWaterSplashSound.SetMasterVolume(mMasterEffectsVolume);
@@ -1017,6 +1028,7 @@ void SoundController::SetMasterEffectsMuted(bool isMuted)
 
     mSawedMetalSound.SetMuted(mMasterEffectsMuted);
     mSawedWoodSound.SetMuted(mMasterEffectsMuted);
+    mLaserCutSound.SetMuted(mMasterEffectsMuted);
     mWindMakerWindSound.SetMuted(mMasterEffectsMuted);
     mWaterRushSound.SetMuted(mMasterEffectsMuted);
     mWaterSplashSound.SetMuted(mMasterEffectsMuted);
@@ -1415,12 +1427,16 @@ void SoundController::PlayLaserRaySound(bool isAmplified)
         mLaserRayNormalSound.Start();
         mLaserRayAmplifiedSound.Stop();
     }
+
+    mLaserCutSound.Start();
 }
 
 void SoundController::StopLaserRaySound()
 {
     mLaserRayNormalSound.Stop();
     mLaserRayAmplifiedSound.Stop();
+
+    mLaserCutSound.Stop();
 }
 
 void SoundController::PlayBlastToolSlow1Sound()
@@ -1536,6 +1552,7 @@ void SoundController::UpdateSimulation()
     // they've just been started or will be started really soon
     mSawedMetalSound.SetVolume(0.0f);
     mSawedWoodSound.SetVolume(0.0f);
+    mLaserCutSound.SetVolume(0.0f);
 }
 
 void SoundController::LowFrequencyUpdateSimulation()
@@ -1564,6 +1581,7 @@ void SoundController::Reset()
 
     mSawedMetalSound.Reset();
     mSawedWoodSound.Reset();
+    mLaserCutSound.Reset();
     mSawAbovewaterSound.Reset();
     mSawUnderwaterSound.Reset();
     mHeatBlasterCoolSound.Reset();
@@ -1684,6 +1702,11 @@ void SoundController::OnSawed(
         mSawedMetalSound.SetVolume(size > 0 ? SawedVolume : 0.0f);
     else
         mSawedWoodSound.SetVolume(size > 0 ? SawedVolume : 0.0f);
+}
+
+void SoundController::OnLaserCut(unsigned int size)
+{
+    mLaserCutSound.SetVolume(size > 0 ? LaserCutVolume : 0.0f);
 }
 
 void SoundController::OnPinToggled(

@@ -179,7 +179,7 @@ public:
         float mainFrontWindSpeed,
         GameParameters const & gameParameters);
 
-    void ApplyLaserCannonThrough(
+    bool ApplyLaserCannonThrough(
         vec2f const & startPos,
         vec2f const & endPos,
         float strength,

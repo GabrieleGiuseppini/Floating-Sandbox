@@ -37,6 +37,7 @@ enum class SoundType : uint32_t
     Draw,
     Saw,
     Sawed,
+    LaserCut,
     HeatBlasterCool,
     HeatBlasterHeat,
     ElectricSpark,

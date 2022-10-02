@@ -42,12 +42,12 @@
 	+ Lamps breaking under pressure (*)
 		+ changelist for both
 
-	= Laser cannon
+	+ Laser cannon
 		+ Cut with prob inverse to mass
 			+ Remove laser_ray_cut_receptivity
 		+ Shader: more smeared on the outside
 		+ More prob when SHIFT is down
-		- Sound for cut
+		+ Sound for cut
 
 	- Ukrainian (uk)
 		- changelist

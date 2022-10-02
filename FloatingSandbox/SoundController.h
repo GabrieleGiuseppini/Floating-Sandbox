@@ -265,6 +265,8 @@ public:
         bool isMetal,
         unsigned int size) override;
 
+    void OnLaserCut(unsigned int size) override;
+
     void OnPinToggled(
         bool isPinned,
         bool isUnderwater) override;
@@ -610,6 +612,7 @@ private:
 
     ContinuousInertialSound mSawedMetalSound;
     ContinuousInertialSound mSawedWoodSound;
+    ContinuousInertialSound mLaserCutSound;
 
     ContinuousSingleChoiceSound mSawAbovewaterSound;
     ContinuousSingleChoiceSound mSawUnderwaterSound;

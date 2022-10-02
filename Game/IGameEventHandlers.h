@@ -399,6 +399,12 @@ struct IGenericGameEventHandler
         // Default-implemented
     }
 
+    virtual void OnLaserCut(
+        unsigned int /*size*/)
+    {
+        // Default-implemented
+    }
+
     virtual void OnPinToggled(
         bool /*isPinned*/,
         bool /*isUnderwater*/)
