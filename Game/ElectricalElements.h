@@ -194,10 +194,12 @@ private:
             ElementIndex LampElementIndex;
 
             bool IsSelfPowered;
-            std::optional<float> DisabledSimulationTimestampEnd;
 
             // Probability that light fails within 1 second
             float WetFailureRateCdf;
+
+            // Max external pressure before breaking; in Pa
+            float ExternalPressureBreakageThreshold;
 
             enum class StateType
             {
@@ -217,26 +219,29 @@ private:
             std::uint8_t SubStateCounter;
             GameWallClock::time_point NextStateTransitionTimePoint;
             GameWallClock::time_point NextWetFailureCheckTimePoint;
+            std::optional<float> DisabledSimulationTimestampEnd;
 
             LampState(
                 ElementIndex lampElementIndex,
                 bool isSelfPowered,
-                float wetFailureRate)
+                float wetFailureRate,
+                float externalPressureBreakageThreshold)
                 : LampElementIndex(lampElementIndex)
                 , IsSelfPowered(isSelfPowered)
-                , DisabledSimulationTimestampEnd()
                 , WetFailureRateCdf(1.0f - exp(-wetFailureRate / 60.0f))
+                , ExternalPressureBreakageThreshold(externalPressureBreakageThreshold)
                 , State(StateType::Initial)
                 , SubStateCounter(0u)
                 , NextStateTransitionTimePoint()
                 , NextWetFailureCheckTimePoint()
+                , DisabledSimulationTimestampEnd()
             {}
 
             void Reset()
             {
-                DisabledSimulationTimestampEnd.reset();
                 State = StateType::Initial;
                 SubStateCounter = 0;
+                DisabledSimulationTimestampEnd.reset();
             }
         };
 
@@ -580,6 +585,8 @@ public:
         SequenceNumber newConnectivityVisitSequenceNumber,
         Points & points,
         Springs const & springs,
+        float effectiveAirDensity,
+        float effectiveWaterDensity,
         Storm::Parameters const & stormParameters,
         GameParameters const & gameParameters);
 
@@ -811,6 +818,8 @@ private:
         float currentSimulationTime,
         SequenceNumber currentConnectivityVisitSequenceNumber,
         Points & points,
+        float effectiveAirDensity,
+        float effectiveWaterDensity,
         Storm::Parameters const & stormParameters,
         GameParameters const & gameParameters);
 

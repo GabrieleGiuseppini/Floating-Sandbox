@@ -35,10 +35,11 @@
 			+ Better profile
 				+ See 1:53 at https://www.youtube.com/watch?v=yg9rkceLOzA:  ...t.TTT..
 		+ Put back randomness when choosing overcharge
+	
 	+ Lower volume of wind sound
 
 	+ Electric Sparkle tool: sparkles can cause lights to explode (*)
-	= Lamps breaking under pressure (*)
+	+ Lamps breaking under pressure (*)
 		+ changelist for both
 
 	= Laser cannon
@@ -1239,44 +1240,6 @@
 	- When lightning hits (a metal part of) the ship, then lights should go off temporarily
 
 	- Fires break out where electrical layer breaks (e.g. where *powered* line is cut)
-
-	= Lamps breaking under pressure (*)
-		! Unrelated to pressure crush (*) with frontier
-		+ Pre:
-			+ Make ship w/lamp electrical material
-			+ Verify NO glass sound when hammered and when broken (w/ tearing)
-			+ New electrical material property: "lamp_external_pressure_breakage_threshold", in Pa (i.e. N/m2)
-				+ json
-			+ IEventHandler
-			+ Invoke Destroy(own index, DestroyReason=None|ForLampImplosion|ForLampExplosion)
-				+ Destroy(.) translates into IShipPhysicsHandler::ElectricalElementDestroySpecializationType
-			+ Specialization types, and IShipPhysicsHandler::OnElecMaterialDestroyed takes ElectricalElementDestroySpecializationType
-				+ None: nothing else
-				+ Lamp: glass sound
-				+ LampImplosion: lamp implosion sound
-				+ LampExplosion: lamp explosion sound + debris
-			+ SoundController
-		= @ Ship::Update(.):
-			+ Find points loop that may be used for this
-			+ If has electrical element and that elec element is not deleted and that element is a Lamp: ElectricalElements::Destroy(implosion)
-				+ Regardless of current operating state of lamp
-			- Nail down variance: constant, not percentage
-				- Rearc:
-					! Move physics from Ship to ElectricalElements
-						! Update(.) takes effective air density, etc.
-					- Adjustment setting
-						- SettingsDialog
-					- ElectricalElements::Add(.) pre-calc's threshold external pressure
-						- Gaussian
-						- Calcs using function
-						- Stores it in LampState
-					- OnGameParamsChanged: react to adjustment changes and re-calcs
-					- UpdateSinks(.):
-						- case Lamp: before RunLampStateMachine(.), check pressure and eventually call Destroy(.)
-							- Verify current physics also calls ElectricalElements::Destroy(.)
-			= Nail down depths:
-				+ 500m => 5019.04
-				= 5000m => 50190.43
 
 	- Tool to break enough to let water enter, but not to make a hole all the way to the other side
 		- Just sets points as leaking
@@ -9202,6 +9165,45 @@ IF WX:
 			+ See why can't be repaired
 			+ Better debris material: new StructuralMaterial unique type: GlassDebris
 			+ Nail down probability 
+	+ Lamps breaking under pressure (*)
+		! Unrelated to pressure crush (*) with frontier
+		+ Pre:
+			+ Make ship w/lamp electrical material
+			+ Verify NO glass sound when hammered and when broken (w/ tearing)
+			+ New electrical material property: "lamp_external_pressure_breakage_threshold", in Pa (i.e. N/m2)
+				+ json
+			+ IEventHandler
+			+ Invoke Destroy(own index, DestroyReason=None|ForLampImplosion|ForLampExplosion)
+				+ Destroy(.) translates into IShipPhysicsHandler::ElectricalElementDestroySpecializationType
+			+ Specialization types, and IShipPhysicsHandler::OnElecMaterialDestroyed takes ElectricalElementDestroySpecializationType
+				+ None: nothing else
+				+ Lamp: glass sound
+				+ LampImplosion: lamp implosion sound
+				+ LampExplosion: lamp explosion sound + debris
+			+ SoundController
+		+ @ Ship::Update(.):
+			+ Find points loop that may be used for this
+			+ If has electrical element and that elec element is not deleted and that element is a Lamp: ElectricalElements::Destroy(implosion)
+				+ Regardless of current operating state of lamp
+			+ Nail down variance: constant, not percentage
+				+ Rearc:
+					! Move physics from Ship to ElectricalElements
+						! Update(.) takes effective air density, etc.
+					+ ElectricalElements::Add(.) pre-calc's threshold external pressure
+						+ Gaussian
+						+ Stores it in LampState
+					+ UpdateSinks(.):
+						+ case Lamp: before RunLampStateMachine(.), check pressure and eventually call Destroy(.)
+							+ Verify current physics also calls ElectricalElements::Destroy(.)
+							+ Use adjustment
+					+ Remove from Ship
+						+ Put ship's code back to normal
+				+ Test:
+					+ Check spark particles (Ship::GenerateSparklesForCut)
+					+ Titanic 
+			+ Nail down depths:
+				+ 500m => 5019.04
+				+ 5000m => 50190.43
 
 
 

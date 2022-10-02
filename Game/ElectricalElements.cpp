@@ -103,12 +103,32 @@ void ElectricalElements::Add(
 
         case ElectricalMaterial::ElectricalElementType::Lamp:
         {
+            // Calculate external pressure breakage
+            float externalPressureBreakageThreshold;
+            {
+                float const materialExternalPressureBreakageThreshold = electricalMaterial.ExternalPressureBreakageThreshold;
+                externalPressureBreakageThreshold =
+                    GameRandomEngine::GetInstance().GenerateNormalReal(
+                    materialExternalPressureBreakageThreshold,
+                    materialExternalPressureBreakageThreshold * 0.4f); // 68% of the times within 40%
+                
+                // Fold upper tail - to prevent sudden breakage
+                float constexpr MaxRelativeDivergence = 0.6f;
+                if (externalPressureBreakageThreshold < materialExternalPressureBreakageThreshold * (1.0f - MaxRelativeDivergence))
+                {
+                    externalPressureBreakageThreshold =
+                        materialExternalPressureBreakageThreshold * (1.0f + MaxRelativeDivergence)
+                        + (materialExternalPressureBreakageThreshold * (1.0f - MaxRelativeDivergence) - externalPressureBreakageThreshold);
+                }
+            }
+
             // State
             mElementStateBuffer.emplace_back(
                 ElementState::LampState(
                     static_cast<ElementIndex>(mLamps.size()),
                     electricalMaterial.IsSelfPowered,
-                    electricalMaterial.WetFailureRate));
+                    electricalMaterial.WetFailureRate,
+                    externalPressureBreakageThreshold * 1000.0f)); // KPa->Pa
 
             // Indices
             mSinks.emplace_back(elementIndex);
@@ -1014,6 +1034,8 @@ void ElectricalElements::Update(
     SequenceNumber newConnectivityVisitSequenceNumber,
     Points & points,
     Springs const & springs,
+    float effectiveAirDensity,
+    float effectiveWaterDensity,
     Storm::Parameters const & stormParameters,
     GameParameters const & gameParameters)
 {
@@ -1064,6 +1086,8 @@ void ElectricalElements::Update(
         currentSimulationTime,
         newConnectivityVisitSequenceNumber,
         points,
+        effectiveAirDensity,
+        effectiveWaterDensity,
         stormParameters,
         gameParameters);
 }
@@ -1611,6 +1635,8 @@ void ElectricalElements::UpdateSinks(
     float currentSimulationTime,
     SequenceNumber currentConnectivityVisitSequenceNumber,
     Points & points,
+    float effectiveAirDensity,
+    float effectiveWaterDensity,
     Storm::Parameters const & stormParameters,
     GameParameters const & gameParameters)
 {
@@ -1775,17 +1801,41 @@ void ElectricalElements::UpdateSinks(
             {
                 if (!IsDeleted(sinkElementIndex))
                 {
-                    // Update state machine
-                    RunLampStateMachine(
-                        isConnectedToPower,
-                        powerFailureSequenceType,
-                        sinkElementIndex,
-                        currentWallClockTime,
-                        currentSimulationTime,
-                        points,
-                        gameParameters);
+                    // Calculate external pressure
+                    vec2f const & pointPosition = points.GetPosition(GetPointIndex(sinkElementIndex));
+                    float const totalExternalPressure = 
+                        Formulae::CalculateTotalPressureAt(
+                            pointPosition.y,
+                            mParentWorld.GetOceanSurface().GetHeightAt(pointPosition.x),
+                            effectiveAirDensity,
+                            effectiveWaterDensity,
+                            gameParameters)
+                        * gameParameters.StaticPressureForceAdjustment;
 
-                    isProducingHeat = (GetAvailableLight(sinkElementIndex) > 0.0f);
+                    // Check against lamp's limit
+                    if (totalExternalPressure >= mElementStateBuffer[sinkElementIndex].Lamp.ExternalPressureBreakageThreshold)
+                    {
+                        // Lamp implosion!
+                        Destroy(
+                            sinkElementIndex,
+                            ElectricalElements::DestroyReason::LampImplosion,
+                            currentSimulationTime,
+                            gameParameters);
+                    }
+                    else
+                    {
+                        // Update state machine
+                        RunLampStateMachine(
+                            isConnectedToPower,
+                            powerFailureSequenceType,
+                            sinkElementIndex,
+                            currentWallClockTime,
+                            currentSimulationTime,
+                            points,
+                            gameParameters);
+
+                        isProducingHeat = (GetAvailableLight(sinkElementIndex) > 0.0f);
+                    }                    
                 }
 
                 break;
@@ -2485,7 +2535,7 @@ void ElectricalElements::UpdateSinks(
                             // Choose random angle for this particle
                             float constexpr HalfFanOutAngle = Pi<float> / 14.0f; // Magic number
                             float const angle = Clamp(
-                                0.15f * GameRandomEngine::GetInstance().GenerateNormalizedNormalReal(),
+                                0.15f * GameRandomEngine::GetInstance().GenerateStandardNormalReal(),
                                 -HalfFanOutAngle,
                                 HalfFanOutAngle);
 

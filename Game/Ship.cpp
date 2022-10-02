@@ -370,7 +370,6 @@ void Ship::Update(
     ApplyWorldForces(
         effectiveAirDensity,
         effectiveWaterDensity,
-        currentSimulationTime,
         gameParameters,
         externalAabbSet);
 
@@ -500,6 +499,10 @@ void Ship::Update(
         UpdateSinking();
     }
 
+#ifdef _DEBUG
+    Verify(!mPoints.Diagnostic_ArePositionsDirty());
+#endif
+
     ///////////////////////////////////////////////////////////////////
     // Update electrical dynamics
     ///////////////////////////////////////////////////////////////////
@@ -513,6 +516,8 @@ void Ship::Update(
         mCurrentElectricalVisitSequenceNumber,
         mPoints,
         mSprings,
+        effectiveAirDensity,
+        effectiveWaterDensity,
         stormParameters,
         gameParameters);
 
@@ -977,7 +982,6 @@ void Ship::ApplyQueuedInteractionForces()
 void Ship::ApplyWorldForces(
     float effectiveAirDensity,
     float effectiveWaterDensity,
-    float currentSimulationTime,
     GameParameters const & gameParameters,
     Geometry::AABBSet & externalAabbSet)
 {
@@ -988,7 +992,7 @@ void Ship::ApplyWorldForces(
     // Particle forces
     //
 
-    ApplyWorldParticleForces(effectiveAirDensity, effectiveWaterDensity, currentSimulationTime, *newCachedPointDepths, gameParameters);
+    ApplyWorldParticleForces(effectiveAirDensity, effectiveWaterDensity, *newCachedPointDepths, gameParameters);
 
     //
     // Surface forces
@@ -1006,7 +1010,6 @@ void Ship::ApplyWorldForces(
 void Ship::ApplyWorldParticleForces(
     float effectiveAirDensity,
     float effectiveWaterDensity,
-    float currentSimulationTime,
     Buffer<float> & newCachedPointDepths,
     GameParameters const & gameParameters)
 {
@@ -1038,14 +1041,11 @@ void Ship::ApplyWorldParticleForces(
     {
         vec2f staticForce = vec2f::zero();
 
-        vec2f const & pointPosition = mPoints.GetPosition(pointIndex);
-
         //
         // Calculate and store depth
         //
 
-        float const oceanSurfaceY = oceanSurface.GetHeightAt(pointPosition.x);
-        newCachedPointDepthsBuffer[pointIndex] = oceanSurfaceY - pointPosition.y;
+        newCachedPointDepthsBuffer[pointIndex] = oceanSurface.GetDepth(mPoints.GetPosition(pointIndex));
 
         //
         // Calculate above/under-water coefficient
@@ -1105,39 +1105,6 @@ void Ship::ApplyWorldParticleForces(
             * (1.0f - uwCoefficient); // Only above-water
 
         staticForcesBuffer[pointIndex] += staticForce;
-
-        //
-        // External pressure on lamps
-        //
-
-        if (auto const electricalElementIndex = mPoints.GetElectricalElement(pointIndex);
-            electricalElementIndex != NoneElementIndex 
-            && mElectricalElements.GetMaterialType(electricalElementIndex) == ElectricalMaterial::ElectricalElementType::Lamp
-            && !mElectricalElements.IsDeleted(electricalElementIndex))
-        {
-            // Calculate water pressure
-            float const totalExternalPressure = Formulae::CalculateTotalPressureAt(
-                pointPosition.y,
-                oceanSurfaceY,
-                effectiveAirDensity,
-                effectiveWaterDensity,
-                gameParameters);
-
-            // Check against lamp's limit
-            assert(mPoints.GetElectricalMaterial(pointIndex) != nullptr);
-            float const externalPressureLimit = 
-                mPoints.GetElectricalMaterial(pointIndex)->ExternalPressureBreakageThreshold * 1000.0f // KPa->Pa
-                // +/- 45%
-                * (1.0f + (mPoints.GetRandomNormalizedUniformPersonalitySeed(pointIndex) - 0.5f) * 2.0f * 0.45f);
-            if (totalExternalPressure >= externalPressureLimit)
-            {
-                mElectricalElements.Destroy(
-                    electricalElementIndex, 
-                    ElectricalElements::DestroyReason::LampImplosion,
-                    currentSimulationTime,
-                    gameParameters);
-            }
-        }
     }
 }
 
@@ -2076,6 +2043,11 @@ void Ship::TrimForWorldBounds(GameParameters const & gameParameters)
             // Bounce bounded
             velocityBuffer[p].y = std::min(-velocityBuffer[p].y, MaxBounceVelocity);
         }
+
+        assert(positionBuffer[p].x >= MaxWorldLeft);
+        assert(positionBuffer[p].x <= MaxWorldRight);
+        assert(positionBuffer[p].y >= MaxWorldBottom);
+        assert(positionBuffer[p].y <= MaxWorldTop);
     }
 
 #ifdef _DEBUG
@@ -3400,9 +3372,7 @@ void Ship::GenerateSparklesForCut(
 
         // Velocity angle: gaussian centered around direction opposite to cut direction
         float const centralAngleCW = (cutDirectionStartPos - cutDirectionEndPos).angleCw();
-        float const velocityAngleCw =
-            centralAngleCW
-            + Pi<float> / 100.0f * GameRandomEngine::GetInstance().GenerateNormalizedNormalReal();
+        float const velocityAngleCw = GameRandomEngine::GetInstance().GenerateNormalReal(centralAngleCW, Pi<float> / 100.0f);
 
         // Choose a lifetime
         float const maxLifetime = GameRandomEngine::GetInstance().GenerateUniformReal(
