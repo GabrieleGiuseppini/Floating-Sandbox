@@ -62,6 +62,8 @@ public:
         ResourceLocator const & resourceLocator,
         ProgressCallback const & progressCallback);
 
+    ~GameController();
+
 public:
 
     MaterialDatabase const & GetMaterialDatabase() const
@@ -200,6 +202,7 @@ public:
     void ApplyBlastAt(DisplayLogicalCoordinates const & screenCoordinates, float radiusMultiplier, float forceMultiplier, float renderProgress, float personalitySeed) override;
     bool ApplyElectricSparkAt(DisplayLogicalCoordinates const & screenCoordinates, std::uint64_t counter, float lengthMultiplier, float currentSimulationTime) override;
     void ApplyRadialWindFrom(DisplayLogicalCoordinates const & sourcePos, float preFrontSimulationTimeElapsed, float preFrontIntensityMultiplier, float mainFrontSimulationTimeElapsed, float mainFrontIntensityMultiplier) override;
+    bool ApplyLaserCannonThrough(DisplayLogicalCoordinates const & startScreenCoordinates, DisplayLogicalCoordinates const & endScreenCoordinates, std::optional<float> strength) override;
     void DrawTo(DisplayLogicalCoordinates const & screenCoordinates, float strengthFraction) override;
     void SwirlAt(DisplayLogicalCoordinates const & screenCoordinates, float strengthFraction) override;
     void TogglePinAt(DisplayLogicalCoordinates const & screenCoordinates) override;
@@ -536,6 +539,11 @@ public:
     void SetHeatBlasterRadius(float value) override { mGameParameters.HeatBlasterRadius = value; }
     float GetMinHeatBlasterRadius() const override { return GameParameters::MinHeatBlasterRadius; }
     float GetMaxHeatBlasterRadius() const override { return GameParameters::MaxHeatBlasterRadius; }
+
+    float GetLaserRayHeatFlow() const override { return mGameParameters.LaserRayHeatFlow; }
+    void SetLaserRayHeatFlow(float value) override { mGameParameters.LaserRayHeatFlow = value; }
+    float GetMinLaserRayHeatFlow() const override { return GameParameters::MinLaserRayHeatFlow; }
+    float GetMaxLaserRayHeatFlow() const override { return GameParameters::MaxLaserRayHeatFlow; }
 
     float GetElectricalElementHeatProducedAdjustment() const override { return mGameParameters.ElectricalElementHeatProducedAdjustment; }
     void SetElectricalElementHeatProducedAdjustment(float value) override { mGameParameters.ElectricalElementHeatProducedAdjustment = value; }

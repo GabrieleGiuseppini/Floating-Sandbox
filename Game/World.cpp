@@ -301,20 +301,21 @@ bool World::SawThrough(
     bool isFirstSegment,
     GameParameters const & gameParameters)
 {
-    bool atLeastOneShipApplied = false;
+    bool atLeastOneCut = false;
 
     for (auto & ship : mAllShips)
     {
-        bool const isApplied = ship->SawThrough(
+        bool const isCut = ship->SawThrough(
             startPos,
             endPos,
             isFirstSegment,
             mCurrentSimulationTime,
             gameParameters);
-        atLeastOneShipApplied |= isApplied;
+
+        atLeastOneCut |= isCut;
     }
 
-    return atLeastOneShipApplied;
+    return atLeastOneCut;
 }
 
 bool World::ApplyHeatBlasterAt(
@@ -472,6 +473,29 @@ void World::ApplyRadialWindFrom(
         mOceanSurface.DisplaceAt(std::max(sourcePos.x - horizontalDistance, -GameParameters::HalfMaxWorldWidth), displacementMagnitude);
         mOceanSurface.DisplaceAt(std::min(sourcePos.x + horizontalDistance, GameParameters::HalfMaxWorldWidth), displacementMagnitude);
     }
+}
+
+bool World::ApplyLaserCannonThrough(
+    vec2f const & startPos,
+    vec2f const & endPos,
+    float strength,
+    GameParameters const & gameParameters)
+{
+    bool atLeastOneCut = false;
+
+    // Apply to ships
+    for (auto & ship : mAllShips)
+    {
+        bool const isCut = ship->ApplyLaserCannonThrough(
+            startPos,
+            endPos,
+            strength,
+            gameParameters);
+
+        atLeastOneCut |= isCut;
+    }
+
+    return atLeastOneCut;
 }
 
 void World::DrawTo(

@@ -56,7 +56,8 @@ enum class ToolType
     PhysicsProbe,
     BlastTool,
     ElectricSparkTool,
-    WindMakerTool
+    WindMakerTool,
+    LaserCannonTool
 };
 
 struct InputState
@@ -3317,4 +3318,146 @@ private:
     // The cursors
     wxImage const mUpCursorImage;
     std::array<wxImage, 3> mDownCursorImages;
+};
+
+class LaserCannonTool final : public Tool
+{
+public:
+
+    LaserCannonTool(
+        IToolCursorManager & toolCursorManager,
+        std::shared_ptr<IGameController> gameController,
+        std::shared_ptr<SoundController> soundController,
+        ResourceLocator const & resourceLocator);
+
+public:
+
+    virtual void Initialize(InputState const & /*inputState*/) override
+    {
+        mEngagementData.reset();
+
+        SetCurrentCursor();
+    }
+
+    virtual void Deinitialize() override
+    {
+        if (mEngagementData.has_value())
+        {
+            // Stop sound
+            mSoundController->StopLaserRaySound();
+        }
+    }
+
+    virtual void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
+    {
+        bool const isAmplified = inputState.IsShiftKeyDown;
+
+        bool doUpdateCursor = false;
+
+        if (inputState.IsLeftMouseDown)
+        {
+            // Update engagement state
+            bool doUpdateSound = false;
+            if (!mEngagementData.has_value())
+            {
+                // Engage
+                mEngagementData.emplace(isAmplified, inputState.MousePosition);
+                doUpdateCursor = true;
+
+                // Update sound
+                doUpdateSound = true;
+            }
+            else if (mEngagementData->IsAmplified != isAmplified)
+            {
+                // Update state
+                mEngagementData->IsAmplified = isAmplified;
+
+                // Update sound
+                doUpdateSound = true;
+            }
+
+            // Apply interaction
+            mGameController->ApplyLaserCannonThrough(
+                mEngagementData->PreviousMousePosition,
+                inputState.MousePosition,
+                isAmplified ? 2.0f : 1.0f);
+
+            // Update state
+            mEngagementData->PreviousMousePosition = inputState.MousePosition;
+
+            // Update sound
+            if (doUpdateSound)
+            {
+                mSoundController->PlayLaserRaySound(isAmplified);
+            }
+        }
+        else
+        {
+            // Update engagement state
+            if (mEngagementData.has_value())
+            {
+                // Stop sound
+                mSoundController->StopLaserRaySound();
+
+                // Disengage
+                mEngagementData.reset();
+                doUpdateCursor = true;
+            }
+
+            // Apply interaction
+            mGameController->ApplyLaserCannonThrough(
+                inputState.MousePosition,
+                inputState.MousePosition,
+                std::nullopt);
+        }
+
+        // Update cursor
+        if (doUpdateCursor)
+        {
+            SetCurrentCursor();
+        }
+    }
+
+    virtual void OnMouseMove(InputState const & /*inputState*/) override {}
+
+    virtual void OnLeftMouseDown(InputState const & /*inputState*/) override {}
+
+    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}
+
+    virtual void OnShiftKeyDown(InputState const & /*inputState*/) override {}
+
+    virtual void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+
+private:
+
+    void SetCurrentCursor()
+    {
+        if (!mEngagementData.has_value())
+        {
+            mToolCursorManager.SetToolCursor(mUpCursorImage);
+        }
+        else
+        {
+            mToolCursorManager.SetToolCursor(mDownCursorImage);
+        }
+    }
+
+    struct EngagementData
+    {
+        bool IsAmplified;
+        DisplayLogicalCoordinates PreviousMousePosition;
+
+        EngagementData(
+            bool isAmplified,
+            DisplayLogicalCoordinates const & previousMousePosition)
+            : IsAmplified(isAmplified)
+            , PreviousMousePosition(previousMousePosition)
+        {}
+    };
+
+    std::optional<EngagementData> mEngagementData;
+
+    // The cursors
+    wxImage const mUpCursorImage;
+    wxImage const mDownCursorImage;
 };

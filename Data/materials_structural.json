@@ -1711,7 +1711,7 @@
             "texture_name": "concrete_1",
             "thermal_conductivity": 140.0,
             "water_diffusion_speed": 0.5,
-	    "water_reactivity": 1.0,
+            "water_reactivity": 1.0,
             "water_retention": 0.25,
             "wind_receptivity": 0.1
         },
@@ -2243,6 +2243,7 @@
             "texture_name": "glass_1",
             "thermal_conductivity": 0.8,
             "thermal_expansion_coefficient": 5e-06,
+            "unique_type": "Glass",
             "water_diffusion_speed": 0.5,
             "water_retention": 0.0,
             "wind_receptivity": 0.1
@@ -2325,8 +2326,7 @@
             "water_retention": 0.0,
             "wind_receptivity": 0.1
         },
-
-	{
+        {
             "buoyancy_volume_fill": 0.0,
             "color_key": [
                 "#BFBFBF",
@@ -2670,7 +2670,7 @@
             "water_retention": 0.0,
             "wind_receptivity": 0.1
         },
-	{
+        {
             "buoyancy_volume_fill": 1.0,
             "color_key": "#F0F0F1",
             "combustion_type": "Combustion",
@@ -2731,7 +2731,7 @@
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
-	{
+        {
             "buoyancy_volume_fill": 1.0,
             "color_key": "#CECECD",
             "combustion_type": "Explosion",
@@ -2793,7 +2793,7 @@
             "water_retention": 0.05,
             "wind_receptivity": 0.1
         },
-	{
+        {
             "buoyancy_volume_fill": 1.0,
             "color_key": "#BEBECE",
             "combustion_type": "Explosion",
@@ -3642,7 +3642,7 @@
                             "Opaque Glass",
                             "Transparent Glass Hull",
                             "Transparent Glass"
-			]
+                        ]
                     }
                 ]
             },
@@ -3707,10 +3707,10 @@
                         "name": "Elements",
                         "sub_categories": [
                             "Air",
-			    "Helium",
+                            "Helium",
                             "Hydrogen",
-			    "Sodium",
-			    "Water"
+                            "Sodium",
+                            "Water"
                         ]
                     }
                 ]
@@ -3723,7 +3723,7 @@
                         "sub_categories": [
                             "Diesel",
                             "Gunpowder Light",
-                            "Gunpowder Strong"                            
+                            "Gunpowder Strong"
                         ]
                     }
                 ]

@@ -182,15 +182,24 @@ private:
             GeneratorState(bool isProducingCurrent)
                 : IsProducingCurrent(isProducingCurrent)
             {}
+
+            void Reset()
+            {
+                DisabledSimulationTimestampEnd.reset();
+            }
         };
 
         struct LampState
         {
+            ElementIndex LampElementIndex;
+
             bool IsSelfPowered;
-            std::optional<float> DisabledSimulationTimestampEnd;
 
             // Probability that light fails within 1 second
             float WetFailureRateCdf;
+
+            // Max external pressure before breaking; in Pa
+            float ExternalPressureBreakageThreshold;
 
             enum class StateType
             {
@@ -198,6 +207,7 @@ private:
                 LightOn,
                 FlickerA,
                 FlickerB,
+                FlickerOvercharge,
                 LightOff
             };
 
@@ -206,25 +216,32 @@ private:
             static constexpr auto FlickerBInterval = 100ms;
 
             StateType State;
-            std::uint8_t FlickerCounter;
+            std::uint8_t SubStateCounter;
             GameWallClock::time_point NextStateTransitionTimePoint;
             GameWallClock::time_point NextWetFailureCheckTimePoint;
+            std::optional<float> DisabledSimulationTimestampEnd;
 
             LampState(
+                ElementIndex lampElementIndex,
                 bool isSelfPowered,
-                float wetFailureRate)
-                : IsSelfPowered(isSelfPowered)
+                float wetFailureRate,
+                float externalPressureBreakageThreshold)
+                : LampElementIndex(lampElementIndex)
+                , IsSelfPowered(isSelfPowered)
                 , WetFailureRateCdf(1.0f - exp(-wetFailureRate / 60.0f))
+                , ExternalPressureBreakageThreshold(externalPressureBreakageThreshold)
                 , State(StateType::Initial)
-                , FlickerCounter(0u)
+                , SubStateCounter(0u)
                 , NextStateTransitionTimePoint()
                 , NextWetFailureCheckTimePoint()
+                , DisabledSimulationTimestampEnd()
             {}
 
             void Reset()
             {
                 State = StateType::Initial;
-                FlickerCounter = 0;
+                SubStateCounter = 0;
+                DisabledSimulationTimestampEnd.reset();
             }
         };
 
@@ -406,6 +423,32 @@ private:
         {}
     };
 
+    /*
+     * The possible reasons for which power to sinks may disappear
+     * because of failures.
+     */
+    enum class PowerFailureReason
+    {
+        ElectricSpark,
+        PowerSourceFlood,
+        Other
+    };
+
+    enum class LampOffSequenceType
+    {
+        Flicker,
+        Overcharge
+    };
+
+public:
+
+    enum class DestroyReason
+    {
+        LampImplosion,
+        LampExplosion,
+        Other
+    };
+
 public:
 
     ElectricalElements(
@@ -462,7 +505,7 @@ public:
         , mCurrentLightSpreadAdjustment(gameParameters.LightSpreadAdjustment)
         , mCurrentLuminiscenceAdjustment(gameParameters.LuminiscenceAdjustment)
         , mHasConnectivityStructureChangedInCurrentStep(true)
-        , mHasPowerBeenSeveredInCurrentStep(false)
+        , mPowerFailureReasonInCurrentStep()
     {
         mInstanceInfos.reserve(mElementCount);
     }
@@ -519,7 +562,11 @@ public:
         float controllerValue,
         GameParameters const & gameParameters);
 
-    void Destroy(ElementIndex electricalElementIndex);
+    void Destroy(
+        ElementIndex electricalElementIndex,
+        DestroyReason reason,
+        float currentSimulationTime,
+        GameParameters const & gameParameters);
 
     void Restore(ElementIndex electricalElementIndex);
 
@@ -527,7 +574,8 @@ public:
 
     void OnElectricSpark(
         ElementIndex electricalElementIndex,
-        float currentSimulationTime);
+        float currentSimulationTime,
+        GameParameters const & gameParameters);
 
     void UpdateForGameParameters(GameParameters const & gameParameters);
 
@@ -537,6 +585,8 @@ public:
         SequenceNumber newConnectivityVisitSequenceNumber,
         Points & points,
         Springs const & springs,
+        float effectiveAirDensity,
+        float effectiveWaterDensity,
         Storm::Parameters const & stormParameters,
         GameParameters const & gameParameters);
 
@@ -592,6 +642,15 @@ public:
         return mConductingConnectedElectricalElementsBuffer[electricalElementIndex];
     }
 
+    inline bool AreConnected(
+        ElementIndex electricalElementIndexA,
+        ElementIndex electricalElementIndexB)
+    {
+        bool const areConnected = mConnectedElectricalElementsBuffer[electricalElementIndexA].contains(electricalElementIndexB);
+        assert(areConnected == mConnectedElectricalElementsBuffer[electricalElementIndexB].contains(electricalElementIndexA));
+        return areConnected;
+    }
+
     inline void AddConnectedElectricalElement(
         ElementIndex electricalElementIndex,
         ElementIndex connectedElectricalElementIndex)
@@ -635,7 +694,7 @@ public:
         if (hasBeenSevered)
         {
             // Remember that power has been severed during this step
-            mHasPowerBeenSeveredInCurrentStep = true;
+            mPowerFailureReasonInCurrentStep = PowerFailureReason::Other;
         }
 
         (void)found;
@@ -682,9 +741,9 @@ public:
     /*
      * Gets the lamp's light distance coefficient, net of the lamp's available light.
      */
-    inline float GetLampRawDistanceCoefficient(ElementIndex electricalElementIndex) const
+    inline float GetLampRawDistanceCoefficient(ElementIndex lampElementIndex) const
     {
-        return mLampRawDistanceCoefficientBuffer[electricalElementIndex];
+        return mLampRawDistanceCoefficientBuffer[lampElementIndex];
     }
 
     /*
@@ -759,11 +818,14 @@ private:
         float currentSimulationTime,
         SequenceNumber currentConnectivityVisitSequenceNumber,
         Points & points,
+        float effectiveAirDensity,
+        float effectiveWaterDensity,
         Storm::Parameters const & stormParameters,
         GameParameters const & gameParameters);
 
     void RunLampStateMachine(
         bool isConnectedToPower,
+        std::optional<LampOffSequenceType> const & powerFailureSequenceType,
         ElementIndex elementLampIndex,
         GameWallClock::time_point currentWallClockTime,
         float currentSimulationTime,
@@ -792,6 +854,33 @@ private:
         return materialLuminiscence
             * luminiscenceAdjustment
             / lampLightSpreadMaxDistance;
+    }
+
+    inline void RecalculateLampCoefficients(ElementIndex elementIndex)
+    {
+        CalculateLampCoefficients(
+            elementIndex,
+            mCurrentLightSpreadAdjustment,
+            mCurrentLuminiscenceAdjustment);
+    }
+
+    inline void CalculateLampCoefficients(
+        ElementIndex elementIndex,
+        float lightSpreadAdjustment,
+        float luminiscenceAdjustment)
+    {
+        ElementIndex const lampElementIndex = mElementStateBuffer[elementIndex].Lamp.LampElementIndex;
+
+        float const lampLightSpreadMaxDistance = CalculateLampLightSpreadMaxDistance(
+            mMaterialLightSpreadBuffer[elementIndex],
+            lightSpreadAdjustment);
+
+        mLampRawDistanceCoefficientBuffer[lampElementIndex] = CalculateLampRawDistanceCoefficient(
+            mMaterialLuminiscenceBuffer[elementIndex],
+            luminiscenceAdjustment,
+            lampLightSpreadMaxDistance);
+
+        mLampLightSpreadMaxDistanceBuffer[lampElementIndex] = lampLightSpreadMaxDistance;
     }
 
 private:
@@ -889,14 +978,16 @@ private:
     // to happen at these changes
     bool mHasConnectivityStructureChangedInCurrentStep;
 
-    // Flag indicating whether or not power has been 'violently' severed
-    // during the current simulation step; cleared at the end of sinks' update.
-    // Used to distinguish malfunctions from explicit actions.
+    // Flag indicating the cause of a power failure during the current
+    // simulation step; cleared at the end of sinks' update.
+    // Set only when there's been a failure; not set if power disappears
+    // because of a user action (e.g. switch toggle).
+    // Used to distinguish outage due to failures from simple switch toggles.
     // A bit of a hack, as the sink that gets a power state toggle
     // won't know for sure if that's because of a switch toggle,
     // but the real problem is in practice also ambiguous, and
     // this is good enough.
-    bool mHasPowerBeenSeveredInCurrentStep;
+    std::optional<PowerFailureReason> mPowerFailureReasonInCurrentStep;
 };
 
 }

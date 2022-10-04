@@ -736,6 +736,85 @@ void Ship::ApplyRadialWindFrom(
             mainFrontWindForceMagnitude));
 }
 
+bool Ship::ApplyLaserCannonThrough(
+    vec2f const & startPos,
+    vec2f const & endPos,
+    float strength,
+    GameParameters const & gameParameters)
+{
+    //
+    // Cut all springs that intersect the stride with a probability inversely proportional to their mass
+    //
+
+    int cutCount = 0;
+    
+    for (auto springIndex : mSprings)
+    {
+        if (!mSprings.IsDeleted(springIndex)
+            && GameRandomEngine::GetInstance().GenerateUniformBoolean(10.0f * strength / mSprings.GetBaseStructuralMaterial(springIndex).GetMass()))
+        {
+            if (Segment::ProperIntersectionTest(
+                startPos,
+                endPos,
+                mSprings.GetEndpointAPosition(springIndex, mPoints),
+                mSprings.GetEndpointBPosition(springIndex, mPoints)))
+            {
+                //
+                // Destroy spring
+                //
+
+                mSprings.Destroy(
+                    springIndex,
+                    Springs::DestroyOptions::DoNotFireBreakEvent
+                    | Springs::DestroyOptions::DestroyOnlyConnectedTriangle,
+                    gameParameters,
+                    mPoints);
+
+                ++cutCount;
+            }
+        }
+    }
+
+    //
+    // Find points close to the segment, and inject heat
+    //
+
+    // Q = q*dt
+    float const effectiveLaserHeat =
+        gameParameters.LaserRayHeatFlow * 1000.0f // KJoule->Joule
+        * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f)
+        * GameParameters::SimulationStepTimeDuration<float>
+        * (1.0f + (strength - 1.0f) * 4.0f);
+
+    float constexpr SearchRadius = 0.75f; // Magic number
+
+    for (auto p : mPoints)
+    {
+        float const distance = Segment::DistanceToPoint(startPos, endPos, mPoints.GetPosition(p));
+        if (distance < SearchRadius)
+        {
+            //
+            // Inject/remove heat at this point
+            //
+
+            // Calc temperature delta
+            // T = Q/HeatCapacity
+            float deltaT =
+                effectiveLaserHeat
+                * mPoints.GetMaterialHeatCapacityReciprocal(p);
+
+            // Increase/lower temperature
+            mPoints.SetTemperature(
+                p,
+                mPoints.GetTemperature(p) + deltaT);
+        }
+    }
+
+    mGameEventHandler->OnLaserCut(cutCount);
+
+    return cutCount > 0;
+}
+
 void Ship::ApplyRadialWindFrom(Interaction::ArgumentsUnion::RadialWindArguments const & args)
 {
     // Visit all points, including ephemerals

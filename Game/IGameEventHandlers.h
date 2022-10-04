@@ -66,6 +66,27 @@ struct IStructuralGameEventHandler
     {
         // Default-implemented
     }
+
+    virtual void OnLampBroken(
+        bool /*isUnderwater*/,
+        unsigned int /*size*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnLampExploded(
+        bool /*isUnderwater*/,
+        unsigned int /*size*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnLampImploded(
+        bool /*isUnderwater*/,
+        unsigned int /*size*/)
+    {
+        // Default-implemented
+    }
 };
 
 struct IWavePhenomenaGameEventHandler
@@ -373,6 +394,12 @@ struct IGenericGameEventHandler
 
     virtual void OnSawed(
         bool /*isMetal*/,
+        unsigned int /*size*/)
+    {
+        // Default-implemented
+    }
+
+    virtual void OnLaserCut(
         unsigned int /*size*/)
     {
         // Default-implemented

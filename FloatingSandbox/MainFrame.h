@@ -85,7 +85,7 @@ private:
     // OpenGL Canvas and Context
     //
 
-    std::unique_ptr<GLCanvas> mMainGLCanvas;
+    GLCanvas * mMainGLCanvas;
     std::unique_ptr<wxGLContext> mMainGLCanvasContext;
 
     // Pointer to the canvas that the OpenGL context may be made current on
@@ -115,9 +115,9 @@ private:
     wxMenuItem * mFullScreenMenuItem;
     wxMenuItem * mNormalScreenMenuItem;
     wxMenuItem * mMuteMenuItem;
-    std::unique_ptr<ProbePanel> mProbePanel;
-    std::unique_ptr<EventTickerPanel> mEventTickerPanel;
-    std::unique_ptr<SwitchboardPanel> mElectricalPanel;
+    ProbePanel * mProbePanel;
+    EventTickerPanel * mEventTickerPanel;
+    SwitchboardPanel * mElectricalPanel;
 
     //
     // Dialogs
@@ -206,6 +206,7 @@ private:
     void OnThanosSnapMenuItemSelected(wxCommandEvent & event);
     void OnWaveMakerMenuItemSelected(wxCommandEvent & event);
     void OnWindMakerMenuItemSelected(wxCommandEvent & event);
+    void OnLaserCannonMenuItemSelected(wxCommandEvent & event);
     void OnAdjustTerrainMenuItemSelected(wxCommandEvent & event);
     void OnRepairStructureMenuItemSelected(wxCommandEvent & event);
     void OnScrubMenuItemSelected(wxCommandEvent & event);

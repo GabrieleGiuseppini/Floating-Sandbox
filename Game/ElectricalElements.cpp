@@ -103,11 +103,32 @@ void ElectricalElements::Add(
 
         case ElectricalMaterial::ElectricalElementType::Lamp:
         {
+            // Calculate external pressure breakage
+            float externalPressureBreakageThreshold;
+            {
+                float const materialExternalPressureBreakageThreshold = electricalMaterial.ExternalPressureBreakageThreshold;
+                externalPressureBreakageThreshold =
+                    GameRandomEngine::GetInstance().GenerateNormalReal(
+                    materialExternalPressureBreakageThreshold,
+                    materialExternalPressureBreakageThreshold * 0.4f); // 68% of the times within 40%
+                
+                // Fold upper tail - to prevent sudden breakage
+                float constexpr MaxRelativeDivergence = 0.6f;
+                if (externalPressureBreakageThreshold < materialExternalPressureBreakageThreshold * (1.0f - MaxRelativeDivergence))
+                {
+                    externalPressureBreakageThreshold =
+                        materialExternalPressureBreakageThreshold * (1.0f + MaxRelativeDivergence)
+                        + (materialExternalPressureBreakageThreshold * (1.0f - MaxRelativeDivergence) - externalPressureBreakageThreshold);
+                }
+            }
+
             // State
             mElementStateBuffer.emplace_back(
                 ElementState::LampState(
+                    static_cast<ElementIndex>(mLamps.size()),
                     electricalMaterial.IsSelfPowered,
-                    electricalMaterial.WetFailureRate));
+                    electricalMaterial.WetFailureRate,
+                    externalPressureBreakageThreshold * 1000.0f)); // KPa->Pa
 
             // Indices
             mSinks.emplace_back(elementIndex);
@@ -115,17 +136,13 @@ void ElectricalElements::Add(
 
             // Lighting
 
-            float const lampLightSpreadMaxDistance = CalculateLampLightSpreadMaxDistance(
-                electricalMaterial.LightSpread,
-                mCurrentLightSpreadAdjustment);
+            mLampRawDistanceCoefficientBuffer.emplace_back(0.0f);
+            mLampLightSpreadMaxDistanceBuffer.emplace_back(0.0f);
 
-            mLampRawDistanceCoefficientBuffer.emplace_back(
-                CalculateLampRawDistanceCoefficient(
-                    electricalMaterial.Luminiscence,
-                    mCurrentLuminiscenceAdjustment,
-                    lampLightSpreadMaxDistance));
-
-            mLampLightSpreadMaxDistanceBuffer.emplace_back(lampLightSpreadMaxDistance);
+            CalculateLampCoefficients(
+                elementIndex,
+                mCurrentLightSpreadAdjustment,
+                mCurrentLuminiscenceAdjustment);
 
             break;
         }
@@ -553,16 +570,24 @@ void ElectricalElements::SetEngineControllerState(
     }
 }
 
-void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
+void ElectricalElements::Destroy(
+    ElementIndex electricalElementIndex,
+    DestroyReason reason,
+    float currentSimulationTime,
+    GameParameters const & gameParameters)
 {
+    assert(
+        (reason != DestroyReason::LampExplosion && reason != DestroyReason::LampImplosion) 
+        || GetMaterialType(electricalElementIndex) == ElectricalMaterial::ElectricalElementType::Lamp);
+
     // Connectivity is taken care by ship destroy handler, as usual
 
     assert(!IsDeleted(electricalElementIndex));
 
-    // Zero out our light
-    mAvailableLightBuffer[electricalElementIndex] = 0.0f;
+    auto const pointIndex = GetPointIndex(electricalElementIndex);
 
-    // Switch state as appropriate
+    // Process as appropriate
+    auto destroySpecializationType = IShipPhysicsHandler::ElectricalElementDestroySpecializationType::None;
     switch (GetMaterialType(electricalElementIndex))
     {
         case ElectricalMaterial::ElectricalElementType::Engine:
@@ -621,6 +646,28 @@ void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
                     mShipId,
                     electricalElementIndex),
                 false);
+
+            break;
+        }
+
+        case ElectricalMaterial::ElectricalElementType::Lamp:
+        {
+            // Zero out our light
+            mAvailableLightBuffer[electricalElementIndex] = 0.0f;
+
+            // Translate reason
+            if (reason == DestroyReason::LampExplosion)
+            {
+                destroySpecializationType = IShipPhysicsHandler::ElectricalElementDestroySpecializationType::LampExplosion;
+            }
+            else if (reason == DestroyReason::LampImplosion)
+            {
+                destroySpecializationType = IShipPhysicsHandler::ElectricalElementDestroySpecializationType::LampImplosion;
+            }
+            else
+            {
+                destroySpecializationType = IShipPhysicsHandler::ElectricalElementDestroySpecializationType::Lamp;
+            }
 
             break;
         }
@@ -721,7 +768,6 @@ void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
 
         case ElectricalMaterial::ElectricalElementType::Cable:
         case ElectricalMaterial::ElectricalElementType::EngineTransmission:
-        case ElectricalMaterial::ElectricalElementType::Lamp:
         case ElectricalMaterial::ElectricalElementType::OtherSink:
         case ElectricalMaterial::ElectricalElementType::SmokeEmitter:
         {
@@ -731,13 +777,21 @@ void ElectricalElements::Destroy(ElementIndex electricalElementIndex)
 
     // Invoke destroy handler
     assert(nullptr != mShipPhysicsHandler);
-    mShipPhysicsHandler->HandleElectricalElementDestroy(electricalElementIndex);
+    mShipPhysicsHandler->HandleElectricalElementDestroy(
+        electricalElementIndex, 
+        pointIndex, 
+        destroySpecializationType,
+        currentSimulationTime,
+        gameParameters);
 
     // Remember that connectivity structure has changed during this step
     mHasConnectivityStructureChangedInCurrentStep = true;
 
-    // Remember that power has been severed during this step
-    mHasPowerBeenSeveredInCurrentStep = true;
+    // Remember there's been a power failure in this step;
+    // note we also set it in case a *lamp* is broken, not only when a generator
+    // or cable gets broken. That's fine though, the lamp state machine coming 
+    // from this one is still plausible
+    mPowerFailureReasonInCurrentStep = PowerFailureReason::Other;
 
     // Flag ourselves as deleted
     mIsDeletedBuffer[electricalElementIndex] = true;
@@ -772,10 +826,10 @@ void ElectricalElements::Restore(ElementIndex electricalElementIndex)
 
         case ElectricalMaterial::ElectricalElementType::Generator:
         {
-            // Nothing to do: at the next UpdateSources() that makes this generator work, the generator will start
-            // producing current again and it will announce it
+            mElementStateBuffer[electricalElementIndex].Generator.Reset();
 
-            assert(!mElementStateBuffer[electricalElementIndex].Generator.IsProducingCurrent);
+            // At the next UpdateSources() that makes this generator work, the generator will start
+            // producing current again and it will announce it
 
             break;
         }
@@ -783,6 +837,8 @@ void ElectricalElements::Restore(ElementIndex electricalElementIndex)
         case ElectricalMaterial::ElectricalElementType::Lamp:
         {
             mElementStateBuffer[electricalElementIndex].Lamp.Reset();
+
+            RecalculateLampCoefficients(electricalElementIndex);
 
             break;
         }
@@ -889,41 +945,60 @@ void ElectricalElements::OnPhysicalStructureChanged(Points const & points)
 
 void ElectricalElements::OnElectricSpark(
     ElementIndex electricalElementIndex,
-    float currentSimulationTime)
-{
-    // Disable as appropriate
-    switch (GetMaterialType(electricalElementIndex))
+    float currentSimulationTime,
+    GameParameters const & gameParameters)
+{    
+    if (!IsDeleted(electricalElementIndex))
     {
-        case ElectricalMaterial::ElectricalElementType::Engine:
+        switch (GetMaterialType(electricalElementIndex))
         {
-            mElementStateBuffer[electricalElementIndex].Engine.SuperElectrificationSimulationTimestampEnd =
-                currentSimulationTime + GameRandomEngine::GetInstance().GenerateUniformReal(7.0f, 15.0f);
+            case ElectricalMaterial::ElectricalElementType::Engine:
+            {
+                // Set engine in super-electrification mode
+                mElementStateBuffer[electricalElementIndex].Engine.SuperElectrificationSimulationTimestampEnd =
+                    currentSimulationTime + GameRandomEngine::GetInstance().GenerateUniformReal(7.0f, 15.0f);
 
-            break;
-        }
+                break;
+            }
 
-        case ElectricalMaterial::ElectricalElementType::Generator:
-        {
-            mElementStateBuffer[electricalElementIndex].Generator.DisabledSimulationTimestampEnd =
-                currentSimulationTime + GameRandomEngine::GetInstance().GenerateUniformReal(15.0f, 30.0f);
+            case ElectricalMaterial::ElectricalElementType::Generator:
+            {
+                // Disable generator
+                mElementStateBuffer[electricalElementIndex].Generator.DisabledSimulationTimestampEnd =
+                    currentSimulationTime + GameRandomEngine::GetInstance().GenerateUniformReal(15.0f, 28.0f);
 
-            break;
-        }
+                // Remember that this power failure is due to an electric spark
+                mPowerFailureReasonInCurrentStep = PowerFailureReason::ElectricSpark; // Override
 
-        case ElectricalMaterial::ElectricalElementType::Lamp:
-        {
-            mElementStateBuffer[electricalElementIndex].Lamp.DisabledSimulationTimestampEnd =
-                currentSimulationTime + GameRandomEngine::GetInstance().GenerateUniformReal(4.0f, 8.0f);
+                break;
+            }
 
-            mHasPowerBeenSeveredInCurrentStep = true;
+            case ElectricalMaterial::ElectricalElementType::Lamp:
+            {
+                // Disable lamp - will cause the lamp to transition state
+                mElementStateBuffer[electricalElementIndex].Lamp.DisabledSimulationTimestampEnd =
+                    currentSimulationTime + GameRandomEngine::GetInstance().GenerateUniformReal(4.0f, 8.0f);
 
-            break;
-        }
+                // Handle electrification of this lamp
+                if (mElementStateBuffer[electricalElementIndex].Lamp.State == ElementState::LampState::StateType::LightOn
+                    && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.05f))
+                {
+                    // Explode
+                    Destroy(
+                        electricalElementIndex,
+                        DestroyReason::LampExplosion,
+                        currentSimulationTime,
+                        gameParameters);
+                }
 
-        default:
-        {
-            // We don't disable anything else, we rely on generators going off
-            break;
+                break;
+            }
+
+            default:
+            {
+                // We don't disable anything else, we rely on generators going off
+                break;
+            }
         }
     }
 }
@@ -941,16 +1016,10 @@ void ElectricalElements::UpdateForGameParameters(GameParameters const & gamePara
         {
             auto const lampElementIndex = mLamps[l];
 
-            float const lampLightSpreadMaxDistance = CalculateLampLightSpreadMaxDistance(
-                mMaterialLightSpreadBuffer[lampElementIndex],
-                gameParameters.LightSpreadAdjustment);
-
-            mLampRawDistanceCoefficientBuffer[l] = CalculateLampRawDistanceCoefficient(
-                mMaterialLuminiscenceBuffer[lampElementIndex],
-                gameParameters.LuminiscenceAdjustment,
-                lampLightSpreadMaxDistance);
-
-            mLampLightSpreadMaxDistanceBuffer[l] = lampLightSpreadMaxDistance;
+            CalculateLampCoefficients(
+                lampElementIndex,
+                gameParameters.LightSpreadAdjustment,
+                gameParameters.LuminiscenceAdjustment);
         }
 
         // Remember new parameters
@@ -965,6 +1034,8 @@ void ElectricalElements::Update(
     SequenceNumber newConnectivityVisitSequenceNumber,
     Points & points,
     Springs const & springs,
+    float effectiveAirDensity,
+    float effectiveWaterDensity,
     Storm::Parameters const & stormParameters,
     GameParameters const & gameParameters)
 {
@@ -1015,6 +1086,8 @@ void ElectricalElements::Update(
         currentSimulationTime,
         newConnectivityVisitSequenceNumber,
         points,
+        effectiveAirDensity,
+        effectiveWaterDensity,
         stormParameters,
         gameParameters);
 }
@@ -1427,14 +1500,29 @@ void ElectricalElements::UpdateSourcesAndPropagation(
                     bool isProducingCurrent;
                     if (generatorState.IsProducingCurrent)
                     {
-                        if (points.IsWet(sourcePointIndex, 0.55f)
-                            || !mMaterialOperatingTemperaturesBuffer[sourceElementIndex].IsInRange(points.GetTemperature(sourcePointIndex))
-                            || generatorState.DisabledSimulationTimestampEnd.has_value())
+                        if (points.IsWet(sourcePointIndex, 0.55f))
                         {
+                            // Being off because we're wet
+                            isProducingCurrent = false;
+                            mPowerFailureReasonInCurrentStep = PowerFailureReason::PowerSourceFlood; // Arbitrarily override eventual other reason
+                        }
+                        else if (!mMaterialOperatingTemperaturesBuffer[sourceElementIndex].IsInRange(points.GetTemperature(sourcePointIndex)))
+                        {
+                            // Being off because we're hot
+                            isProducingCurrent = false;
+                            if (!mPowerFailureReasonInCurrentStep)
+                            {
+                                mPowerFailureReasonInCurrentStep = PowerFailureReason::Other;
+                            }
+                        }
+                        else if (generatorState.DisabledSimulationTimestampEnd.has_value())
+                        {
+                            // Being off because we're still disabled
                             isProducingCurrent = false;
                         }
                         else
                         {
+                            // We're on
                             isProducingCurrent = true;
                         }
                     }
@@ -1476,12 +1564,6 @@ void ElectricalElements::UpdateSourcesAndPropagation(
                             {
                                 HighlightElectricalElement(sourceElementIndex, points);
                             }
-                        }
-
-                        // Remember that power has been severed, in case we're turning off
-                        if (!isProducingCurrent)
-                        {
-                            mHasPowerBeenSeveredInCurrentStep = true;
                         }
                     }
 
@@ -1553,6 +1635,8 @@ void ElectricalElements::UpdateSinks(
     float currentSimulationTime,
     SequenceNumber currentConnectivityVisitSequenceNumber,
     Points & points,
+    float effectiveAirDensity,
+    float effectiveWaterDensity,
     Storm::Parameters const & stormParameters,
     GameParameters const & gameParameters)
 {
@@ -1574,6 +1658,22 @@ void ElectricalElements::UpdateSinks(
         gameParameters.AirTemperature
         + stormParameters.AirTemperatureDelta
         + 200.0f; // To ensure buoyancy
+
+    // If power has been severed, this is the OFF sequence type
+    // for *all* lamps
+    std::optional<LampOffSequenceType> powerFailureSequenceType;
+    if (mPowerFailureReasonInCurrentStep)
+    {
+        if (mPowerFailureReasonInCurrentStep == PowerFailureReason::PowerSourceFlood
+            && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.6f))
+        {
+            powerFailureSequenceType = LampOffSequenceType::Overcharge;
+        }
+        else
+        {
+            powerFailureSequenceType = LampOffSequenceType::Flicker;
+        }
+    }
 
     for (auto const sinkElementIndex : mSinks)
     {
@@ -1701,16 +1801,41 @@ void ElectricalElements::UpdateSinks(
             {
                 if (!IsDeleted(sinkElementIndex))
                 {
-                    // Update state machine
-                    RunLampStateMachine(
-                        isConnectedToPower,
-                        sinkElementIndex,
-                        currentWallClockTime,
-                        currentSimulationTime,
-                        points,
-                        gameParameters);
+                    // Calculate external pressure
+                    vec2f const & pointPosition = points.GetPosition(GetPointIndex(sinkElementIndex));
+                    float const totalExternalPressure = 
+                        Formulae::CalculateTotalPressureAt(
+                            pointPosition.y,
+                            mParentWorld.GetOceanSurface().GetHeightAt(pointPosition.x),
+                            effectiveAirDensity,
+                            effectiveWaterDensity,
+                            gameParameters)
+                        * gameParameters.StaticPressureForceAdjustment;
 
-                    isProducingHeat = (GetAvailableLight(sinkElementIndex) > 0.0f);
+                    // Check against lamp's limit
+                    if (totalExternalPressure >= mElementStateBuffer[sinkElementIndex].Lamp.ExternalPressureBreakageThreshold)
+                    {
+                        // Lamp implosion!
+                        Destroy(
+                            sinkElementIndex,
+                            ElectricalElements::DestroyReason::LampImplosion,
+                            currentSimulationTime,
+                            gameParameters);
+                    }
+                    else
+                    {
+                        // Update state machine
+                        RunLampStateMachine(
+                            isConnectedToPower,
+                            powerFailureSequenceType,
+                            sinkElementIndex,
+                            currentWallClockTime,
+                            currentSimulationTime,
+                            points,
+                            gameParameters);
+
+                        isProducingHeat = (GetAvailableLight(sinkElementIndex) > 0.0f);
+                    }                    
                 }
 
                 break;
@@ -2410,7 +2535,7 @@ void ElectricalElements::UpdateSinks(
                             // Choose random angle for this particle
                             float constexpr HalfFanOutAngle = Pi<float> / 14.0f; // Magic number
                             float const angle = Clamp(
-                                0.15f * GameRandomEngine::GetInstance().GenerateNormalizedNormalReal(),
+                                0.15f * GameRandomEngine::GetInstance().GenerateStandardNormalReal(),
                                 -HalfFanOutAngle,
                                 HalfFanOutAngle);
 
@@ -2466,14 +2591,15 @@ void ElectricalElements::UpdateSinks(
     }
 
     //
-    // Clear "power severed" dirtyness
+    // Clear indicator of power failure
     //
 
-    mHasPowerBeenSeveredInCurrentStep = false;
+    mPowerFailureReasonInCurrentStep.reset();
 }
 
 void ElectricalElements::RunLampStateMachine(
     bool isConnectedToPower,
+    std::optional<LampOffSequenceType> const & powerFailureSequenceType,
     ElementIndex elementLampIndex,
     GameWallClock::time_point currentWallClockTime,
     float currentSimulationTime,
@@ -2542,26 +2668,43 @@ void ElectricalElements::RunLampStateMachine(
                     lamp.DisabledSimulationTimestampEnd.has_value()
                 ))
             {
-                //
-                // Turn off
-                //
-
-                mAvailableLightBuffer[elementLampIndex] = 0.0f;
-
-                // Check whether we need to flicker or just turn off suddenly
-                if (mHasPowerBeenSeveredInCurrentStep)
+                // Transition to next state
+                if (powerFailureSequenceType)
                 {
-                    //
-                    // Start flicker state machine
-                    //
+                    switch (*powerFailureSequenceType)
+                    {
+                        case LampOffSequenceType::Flicker:
+                        {
+                            //
+                            // Start flicker state machine
+                            //
 
-                    // Transition state, choose whether to A or B
-                    lamp.FlickerCounter = 0u;
-                    lamp.NextStateTransitionTimePoint = currentWallClockTime + ElementState::LampState::FlickerStartInterval;
-                    if (GameRandomEngine::GetInstance().Choose(2) == 0)
-                        lamp.State = ElementState::LampState::StateType::FlickerA;
-                    else
-                        lamp.State = ElementState::LampState::StateType::FlickerB;
+                            // Turn off
+                            mAvailableLightBuffer[elementLampIndex] = 0.0f;
+
+                            // Transition state, choose whether to A or B
+                            lamp.SubStateCounter = 0u;
+                            lamp.NextStateTransitionTimePoint = currentWallClockTime + ElementState::LampState::FlickerStartInterval;
+                            if (GameRandomEngine::GetInstance().Choose(2) == 0)
+                                lamp.State = ElementState::LampState::StateType::FlickerA;
+                            else
+                                lamp.State = ElementState::LampState::StateType::FlickerB;
+
+                            break;
+                        }
+
+                        case LampOffSequenceType::Overcharge:
+                        {
+                            //
+                            // Start overcharge state machine
+                            //
+
+                            lamp.SubStateCounter = 0u;
+                            lamp.State = ElementState::LampState::StateType::FlickerOvercharge;
+
+                            break;
+                        }
+                    }
                 }
                 else
                 {
@@ -2569,6 +2712,7 @@ void ElectricalElements::RunLampStateMachine(
                     // Turn off immediately
                     //
 
+                    mAvailableLightBuffer[elementLampIndex] = 0.0f;
                     lamp.State = ElementState::LampState::StateType::LightOff;
                 }
             }
@@ -2593,10 +2737,10 @@ void ElectricalElements::RunLampStateMachine(
             }
             else if (currentWallClockTime > lamp.NextStateTransitionTimePoint)
             {
-                ++lamp.FlickerCounter;
+                ++lamp.SubStateCounter;
 
-                if (1 == lamp.FlickerCounter
-                    || 3 == lamp.FlickerCounter)
+                if (1 == lamp.SubStateCounter
+                    || 3 == lamp.SubStateCounter)
                 {
                     // Flicker to on, for a short time
 
@@ -2609,7 +2753,7 @@ void ElectricalElements::RunLampStateMachine(
 
                     lamp.NextStateTransitionTimePoint = currentWallClockTime + ElementState::LampState::FlickerAInterval;
                 }
-                else if (2 == lamp.FlickerCounter)
+                else if (2 == lamp.SubStateCounter)
                 {
                     // Flicker to off, for a short time
 
@@ -2619,7 +2763,7 @@ void ElectricalElements::RunLampStateMachine(
                 }
                 else
                 {
-                    assert(4 == lamp.FlickerCounter);
+                    assert(4 == lamp.SubStateCounter);
 
                     // Transition to off for good
                     mAvailableLightBuffer[elementLampIndex] = 0.f;
@@ -2647,10 +2791,10 @@ void ElectricalElements::RunLampStateMachine(
             }
             else if (currentWallClockTime > lamp.NextStateTransitionTimePoint)
             {
-                ++lamp.FlickerCounter;
+                ++lamp.SubStateCounter;
 
-                if (1 == lamp.FlickerCounter
-                    || 5 == lamp.FlickerCounter)
+                if (1 == lamp.SubStateCounter
+                    || 5 == lamp.SubStateCounter)
                 {
                     // Flicker to on, for a short time
 
@@ -2663,8 +2807,8 @@ void ElectricalElements::RunLampStateMachine(
 
                     lamp.NextStateTransitionTimePoint = currentWallClockTime + ElementState::LampState::FlickerBInterval;
                 }
-                else if (2 == lamp.FlickerCounter
-                        || 4 == lamp.FlickerCounter)
+                else if (2 == lamp.SubStateCounter
+                        || 4 == lamp.SubStateCounter)
                 {
                     // Flicker to off, for a short time
 
@@ -2672,7 +2816,7 @@ void ElectricalElements::RunLampStateMachine(
 
                     lamp.NextStateTransitionTimePoint = currentWallClockTime + ElementState::LampState::FlickerBInterval;
                 }
-                else if (3 == lamp.FlickerCounter)
+                else if (3 == lamp.SubStateCounter)
                 {
                     // Flicker to on, for a longer time
 
@@ -2687,13 +2831,60 @@ void ElectricalElements::RunLampStateMachine(
                 }
                 else
                 {
-                    assert(6 == lamp.FlickerCounter);
+                    assert(6 == lamp.SubStateCounter);
 
                     // Transition to off for good
                     mAvailableLightBuffer[elementLampIndex] = 0.f;
                     lamp.State = ElementState::LampState::StateType::LightOff;
                 }
             }
+
+            break;
+        }
+
+        case ElementState::LampState::StateType::FlickerOvercharge:
+        {
+            static std::array<float, 16> constexpr LightMultipliersProfile{
+                1.4f, 1.8f, 2.25f, 1.8f, 1.4f,
+
+                1.2f,
+
+                1.8f, 2.6f, 3.5f,
+                3.5f,
+                3.5f, 3.1f, 2.7f, 2.3f, 1.9f, 1.5f
+            };
+
+            float lightIntensityMultiplier = 1.0f;
+            if (static_cast<size_t>(lamp.SubStateCounter) < LightMultipliersProfile.size())
+            {
+                // Update multiplier
+                lightIntensityMultiplier = LightMultipliersProfile[lamp.SubStateCounter];
+
+                // Publish event (for sound)
+                if (lamp.SubStateCounter == 7)
+                {
+                    mGameEventHandler->OnLightFlicker(
+                        DurationShortLongType::Short,
+                        points.IsCachedUnderwater(pointIndex),
+                        1);
+                }
+
+                // Advance sub-state
+                mAvailableLightBuffer[elementLampIndex] = 1.f;
+                ++lamp.SubStateCounter;
+            }
+            else
+            {
+                // Transition to off for good
+                mAvailableLightBuffer[elementLampIndex] = 0.0f;
+                lamp.State = ElementState::LampState::StateType::LightOff;
+            }
+
+            // Adjust coeffs
+            CalculateLampCoefficients(
+                elementLampIndex,
+                mCurrentLightSpreadAdjustment * lightIntensityMultiplier,
+                mCurrentLuminiscenceAdjustment * (1.0f + (lightIntensityMultiplier - 1.0f) / 1.66f));
 
             break;
         }

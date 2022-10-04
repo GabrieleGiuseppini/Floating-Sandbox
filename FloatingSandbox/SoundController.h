@@ -162,6 +162,9 @@ public:
     void PlayFishFoodSound();
     void StopFishFoodSound();
 
+    void PlayLaserRaySound(bool isAmplified);
+    void StopLaserRaySound();
+
     void PlayBlastToolSlow1Sound();
     void PlayBlastToolSlow2Sound();
     void PlayBlastToolFastSound();
@@ -229,6 +232,18 @@ public:
         bool isUnderwater,
         unsigned int size) override;
 
+    void OnLampBroken(
+        bool isUnderwater,
+        unsigned int size) override;
+
+    void OnLampExploded(
+        bool isUnderwater,
+        unsigned int size) override;
+
+    void OnLampImploded(
+        bool isUnderwater,
+        unsigned int size) override;
+
     void OnDestroy(
         StructuralMaterial const & structuralMaterial,
         bool isUnderwater,
@@ -249,6 +264,8 @@ public:
     void OnSawed(
         bool isMetal,
         unsigned int size) override;
+
+    void OnLaserCut(unsigned int size) override;
 
     void OnPinToggled(
         bool isPinned,
@@ -595,6 +612,7 @@ private:
 
     ContinuousInertialSound mSawedMetalSound;
     ContinuousInertialSound mSawedWoodSound;
+    ContinuousInertialSound mLaserCutSound;
 
     ContinuousSingleChoiceSound mSawAbovewaterSound;
     ContinuousSingleChoiceSound mSawUnderwaterSound;
@@ -612,6 +630,8 @@ private:
     ContinuousSingleChoiceSound mWaveMakerSound;
     ContinuousSingleChoiceSound mFishScareSound;
     ContinuousSingleChoiceSound mFishFoodSound;
+    ContinuousSingleChoiceSound mLaserRayNormalSound;
+    ContinuousSingleChoiceSound mLaserRayAmplifiedSound;
     OneShotSingleChoiceSound mBlastToolSlow1Sound;
     OneShotSingleChoiceSound mBlastToolSlow2Sound;
     OneShotSingleChoiceSound mBlastToolFastSound;

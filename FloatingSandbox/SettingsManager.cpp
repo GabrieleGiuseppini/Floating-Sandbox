@@ -96,6 +96,7 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(float, CombustionHeatAdjustment);
     ADD_GC_SETTING(float, HeatBlasterHeatFlow);
     ADD_GC_SETTING(float, HeatBlasterRadius);
+    ADD_GC_SETTING(float, LaserRayHeatFlow);
 
     // Electricals
     ADD_GC_SETTING(float, LuminiscenceAdjustment);

@@ -144,6 +144,7 @@ private:
     SliderControl<float> * mAntiMatterBombImplosionStrengthSlider;
     SliderControl<float> * mBlastToolRadiusSlider;
     SliderControl<float> * mBlastToolForceAdjustmentSlider;
+    SliderControl<float> * mLaserRayHeatFlowSlider;
 
     // Other Tools
     SliderControl<float> * mFloodRadiusSlider;

@@ -499,6 +499,10 @@ void Ship::Update(
         UpdateSinking();
     }
 
+#ifdef _DEBUG
+    Verify(!mPoints.Diagnostic_ArePositionsDirty());
+#endif
+
     ///////////////////////////////////////////////////////////////////
     // Update electrical dynamics
     ///////////////////////////////////////////////////////////////////
@@ -512,6 +516,8 @@ void Ship::Update(
         mCurrentElectricalVisitSequenceNumber,
         mPoints,
         mSprings,
+        effectiveAirDensity,
+        effectiveWaterDensity,
         stormParameters,
         gameParameters);
 
@@ -2037,6 +2043,11 @@ void Ship::TrimForWorldBounds(GameParameters const & gameParameters)
             // Bounce bounded
             velocityBuffer[p].y = std::min(-velocityBuffer[p].y, MaxBounceVelocity);
         }
+
+        assert(positionBuffer[p].x >= MaxWorldLeft);
+        assert(positionBuffer[p].x <= MaxWorldRight);
+        assert(positionBuffer[p].y >= MaxWorldBottom);
+        assert(positionBuffer[p].y <= MaxWorldTop);
     }
 
 #ifdef _DEBUG
@@ -3302,7 +3313,8 @@ void Ship::GenerateAirBubble(
 }
 
 void Ship::GenerateDebris(
-    ElementIndex pointElementIndex,
+    ElementIndex sourcePointElementIndex,
+    StructuralMaterial const & debrisStructuralMaterial,
     float currentSimulationTime,
     GameParameters const & gameParameters)
 {
@@ -3311,9 +3323,10 @@ void Ship::GenerateDebris(
         unsigned int const debrisParticleCount = GameRandomEngine::GetInstance().GenerateUniformInteger(
             GameParameters::MinDebrisParticlesPerEvent, GameParameters::MaxDebrisParticlesPerEvent);
 
-        vec2f const pointPosition = mPoints.GetPosition(pointElementIndex);
-
-        float const pointDepth = mParentWorld.GetOceanSurface().GetDepth(pointPosition);
+        auto const pointPosition = mPoints.GetPosition(sourcePointElementIndex);
+        auto const pointDepth = mParentWorld.GetOceanSurface().GetDepth(pointPosition);
+        auto const pointWater = mPoints.GetWater(sourcePointElementIndex);
+        auto const pointPlaneId = mPoints.GetPlaneId(sourcePointElementIndex);
 
         for (unsigned int d = 0; d < debrisParticleCount; ++d)
         {
@@ -3331,11 +3344,11 @@ void Ship::GenerateDebris(
                 pointPosition,
                 velocity,
                 pointDepth,
-                mPoints.GetWater(pointElementIndex),
-                mPoints.GetStructuralMaterial(pointElementIndex),
+                pointWater,
+                debrisStructuralMaterial,
                 currentSimulationTime,
                 maxLifetime,
-                mPoints.GetPlaneId(pointElementIndex));
+                pointPlaneId);
         }
     }
 }
@@ -3359,9 +3372,7 @@ void Ship::GenerateSparklesForCut(
 
         // Velocity angle: gaussian centered around direction opposite to cut direction
         float const centralAngleCW = (cutDirectionStartPos - cutDirectionEndPos).angleCw();
-        float const velocityAngleCw =
-            centralAngleCW
-            + Pi<float> / 100.0f * GameRandomEngine::GetInstance().GenerateNormalizedNormalReal();
+        float const velocityAngleCw = GameRandomEngine::GetInstance().GenerateNormalReal(centralAngleCW, Pi<float> / 100.0f);
 
         // Choose a lifetime
         float const maxLifetime = GameRandomEngine::GetInstance().GenerateUniformReal(
@@ -3484,7 +3495,11 @@ void Ship::HandlePointDetach(
             assert(mElectricalElements.GetConnectedElectricalElements(electricalElementIndex).empty());
             assert(mElectricalElements.GetConductingConnectedElectricalElements(electricalElementIndex).empty());
 
-            mElectricalElements.Destroy(electricalElementIndex);
+            mElectricalElements.Destroy(
+                electricalElementIndex, 
+                ElectricalElements::DestroyReason::Other,
+                currentSimulationTime,
+                gameParameters);
 
             hasAnythingBeenDestroyed = true;
         }
@@ -3500,6 +3515,7 @@ void Ship::HandlePointDetach(
             // Emit debris
             GenerateDebris(
                 pointElementIndex,
+                mPoints.GetStructuralMaterial(pointElementIndex),
                 currentSimulationTime,
                 gameParameters);
         }
@@ -3611,25 +3627,29 @@ void Ship::HandleSpringDestroy(
 
 
     //
-    // If both endpoints are electrical elements, then disconnect them - i.e. remove
-    // them from each other's set of connected electrical elements
+    // If endpoints are electrical elements connected to each other, then 
+    // disconnect them from each other - i.e. remove them from each other's 
+    // set of connected electrical elements
     //
-
-    auto electricalElementAIndex = mPoints.GetElectricalElement(pointAIndex);
-    if (NoneElementIndex != electricalElementAIndex)
-    {
-        auto electricalElementBIndex = mPoints.GetElectricalElement(pointBIndex);
-        if (NoneElementIndex != electricalElementBIndex)
+    
+    if (auto const electricalElementAIndex = mPoints.GetElectricalElement(pointAIndex);
+        NoneElementIndex != electricalElementAIndex)
+    {        
+        if (auto electricalElementBIndex = mPoints.GetElectricalElement(pointBIndex);
+            NoneElementIndex != electricalElementBIndex)
         {
-            mElectricalElements.RemoveConnectedElectricalElement(
-                electricalElementAIndex,
-                electricalElementBIndex,
-                true /*severed*/);
+            if (mElectricalElements.AreConnected(electricalElementAIndex, electricalElementBIndex))
+            {
+                mElectricalElements.RemoveConnectedElectricalElement(
+                    electricalElementAIndex,
+                    electricalElementBIndex,
+                    true /*severed*/);
 
-            mElectricalElements.RemoveConnectedElectricalElement(
-                electricalElementBIndex,
-                electricalElementAIndex,
-                true /*severed*/);
+                mElectricalElements.RemoveConnectedElectricalElement(
+                    electricalElementBIndex,
+                    electricalElementAIndex,
+                    true /*severed*/);
+            }
         }
     }
 
@@ -3819,7 +3839,12 @@ void Ship::HandleTriangleRestore(ElementIndex triangleElementIndex)
     }
 }
 
-void Ship::HandleElectricalElementDestroy(ElementIndex electricalElementIndex)
+void Ship::HandleElectricalElementDestroy(
+    ElementIndex electricalElementIndex,
+    ElementIndex pointElementIndex,
+    ElectricalElementDestroySpecializationType specialization,
+    float currentSimulationTime,
+    GameParameters const & gameParameters)
 {
     //
     // For all of the connected electrical elements: remove electrical connections
@@ -3840,6 +3865,52 @@ void Ship::HandleElectricalElementDestroy(ElementIndex electricalElementIndex)
             connectedElectricalElementIndex,
             electricalElementIndex,
             true /*severed*/);
+    }
+
+    //
+    // Address specialization
+    //
+
+    switch (specialization)
+    {
+        case ElectricalElementDestroySpecializationType::Lamp:
+        {
+            mGameEventHandler->OnLampBroken(
+                mParentWorld.GetOceanSurface().IsUnderwater(mPoints.GetPosition(pointElementIndex)),
+                1);
+
+            break;
+        }
+
+        case ElectricalElementDestroySpecializationType::LampExplosion:
+        {
+            GenerateDebris(
+                pointElementIndex,
+                mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Glass),
+                currentSimulationTime,
+                gameParameters);
+
+            mGameEventHandler->OnLampExploded(
+                mParentWorld.GetOceanSurface().IsUnderwater(mPoints.GetPosition(pointElementIndex)),
+                1);
+
+            break;
+        }
+
+        case ElectricalElementDestroySpecializationType::LampImplosion:
+        {
+            mGameEventHandler->OnLampImploded(
+                mParentWorld.GetOceanSurface().IsUnderwater(mPoints.GetPosition(pointElementIndex)),
+                1);
+
+            break;
+        }
+
+        case ElectricalElementDestroySpecializationType::None:
+        {
+            // Nothing else
+            break;
+        }
     }
 }
 
@@ -4042,7 +4113,8 @@ void Ship::HandleElectricSpark(
     {
         mElectricalElements.OnElectricSpark(
             electricalElementIndex,
-            currentSimulationTime);
+            currentSimulationTime,
+            gameParameters);
     }
 
     //

@@ -574,6 +574,11 @@ public:
 			mainFrontIntensityMultiplier);
 	}
 
+	void UploadLaserCannon(
+		DisplayLogicalCoordinates const & screenCenter,
+		std::optional<float> strength,
+		ViewModel const & viewModel);
+
 	void UploadEnd();
 
 	void ProcessParameterChanges(RenderParameters const & renderParameters);
@@ -612,6 +617,12 @@ private:
 
 	inline void RenderPrepareWindSphere();
 	inline void RenderDrawWindSphere();
+
+	inline void RenderPrepareLaserCannon();
+	inline void RenderDrawLaserCannon();
+
+	inline void RenderPrepareLaserRay();
+	inline void RenderDrawLaserRay();
 
 private:
 
@@ -780,7 +791,52 @@ private:
 		{}
 	};
 
+	struct LaserCannonVertex
+	{
+		vec2f vertexPositionNDC;
+		vec2f textureCoordinate;
+		float planeId;
+		float alpha;
+		float ambientLightSensitivity;
+
+		LaserCannonVertex(
+			vec2f const & _vertexPositionNDC,
+			vec2f const & _textureCoordinate,
+			float _planeId,
+			float _alpha,
+			float _ambientLightSensitivity)
+			: vertexPositionNDC(_vertexPositionNDC)
+			, textureCoordinate(_textureCoordinate)
+			, planeId(_planeId)
+			, alpha(_alpha)
+			, ambientLightSensitivity(_ambientLightSensitivity)
+		{}
+	};
+
+	struct LaserRayVertex
+	{
+		vec2f vertexPositionNDC;
+		vec2f vertexSpacePosition;
+		float strength;
+
+		LaserRayVertex(
+			vec2f const & _vertexPositionNDC,
+			vec2f const & _vertexSpacePosition,
+			float _strength)
+			: vertexPositionNDC(_vertexPositionNDC)
+			, vertexSpacePosition(_vertexSpacePosition)
+			, strength(_strength)
+		{}
+	};
+
 #pragma pack(pop)
+
+	//
+	// Textures
+	//
+
+	TextureAtlasMetadata<GenericLinearTextureGroups> const & mGenericLinearTextureAtlasMetadata;
+	TextureAtlasMetadata<GenericMipMappedTextureGroups> const & mGenericMipMappedTextureAtlasMetadata;
 
     //
     // Text notifications
@@ -864,9 +920,7 @@ private:
 
 	//
 	// Texture notifications
-	//
-
-	TextureAtlasMetadata<GenericLinearTextureGroups> const & mGenericLinearTextureAtlasMetadata;
+	//	
 
 	struct TextureNotification
 	{
@@ -929,6 +983,14 @@ private:
 	GameOpenGLVAO mWindSphereVAO;
 	std::vector<WindSphereVertex> mWindSphereVertexBuffer;
 	GameOpenGLVBO mWindSphereVBO;
+
+	GameOpenGLVAO mLaserCannonVAO;
+	std::vector<LaserCannonVertex> mLaserCannonVertexBuffer;
+	GameOpenGLVBO mLaserCannonVBO;
+
+	GameOpenGLVAO mLaserRayVAO;
+	std::vector<LaserRayVertex> mLaserRayVertexBuffer;
+	GameOpenGLVBO mLaserRayVBO;
 };
 
 }

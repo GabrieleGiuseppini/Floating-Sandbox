@@ -69,6 +69,7 @@ enum class GameSettings : size_t
     CombustionHeatAdjustment,
     HeatBlasterHeatFlow,
     HeatBlasterRadius,
+    LaserRayHeatFlow,
 
     // Electricals
     LuminiscenceAdjustment,

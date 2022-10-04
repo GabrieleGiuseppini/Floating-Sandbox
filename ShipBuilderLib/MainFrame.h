@@ -81,6 +81,8 @@ public:
         std::function<void(std::optional<std::filesystem::path>)> returnToGameFunctor,
         ProgressCallback const & progressCallback);
 
+    ~MainFrame();
+
     void OpenForNewShip(std::optional<UnitsSystem> displayUnitsSystem);
 
     void OpenForLoadShip(
@@ -430,7 +432,7 @@ private:
     wxScrolledWindow * mUndoStackPanel;
 
     // Work panel
-    std::unique_ptr<wxGLCanvas> mWorkCanvas;
+    wxGLCanvas * mWorkCanvas;
     wxScrollBar * mWorkCanvasHScrollBar;
     wxScrollBar * mWorkCanvasVScrollBar;
 

@@ -432,12 +432,12 @@ ShipRenderContext::ShipRenderContext(
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mGenericMipMappedTextureVBO);
         static_assert(sizeof(GenericTextureVertex) == (4 + 4 + 3) * sizeof(float));
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::GenericMipMappedTexture1));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericMipMappedTexture1), 4, GL_FLOAT, GL_FALSE, sizeof(GenericTextureVertex), (void*)0);
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::GenericMipMappedTexture2));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericMipMappedTexture2), 4, GL_FLOAT, GL_FALSE, sizeof(GenericTextureVertex), (void*)((4) * sizeof(float)));
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::GenericMipMappedTexture3));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericMipMappedTexture3), 3, GL_FLOAT, GL_FALSE, sizeof(GenericTextureVertex), (void*)((4 + 4) * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipGenericMipMappedTexture1));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipGenericMipMappedTexture1), 4, GL_FLOAT, GL_FALSE, sizeof(GenericTextureVertex), (void*)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipGenericMipMappedTexture2));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipGenericMipMappedTexture2), 4, GL_FLOAT, GL_FALSE, sizeof(GenericTextureVertex), (void*)((4) * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::ShipGenericMipMappedTexture3));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::ShipGenericMipMappedTexture3), 3, GL_FLOAT, GL_FALSE, sizeof(GenericTextureVertex), (void*)((4 + 4) * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -1016,10 +1016,12 @@ void ShipRenderContext::UploadJetEngineFlamesEnd()
 
 void ShipRenderContext::UploadElementEphemeralPointsStart()
 {
-    // Client wants to upload a new set of ephemeral point elements
+    // Client wants to upload a new set of ephemeral point elements    
 
     // Empty buffer
     mEphemeralPointElementBuffer.clear();
+
+    mAreElementBuffersDirty = true;
 }
 
 void ShipRenderContext::UploadElementEphemeralPointsEnd()
@@ -2821,15 +2823,15 @@ void ShipRenderContext::ApplyStressRenderModeChanges(RenderParameters const & re
 
                 vec4f(166.0f / 255.0f, 0.0f, 0.0f, 1.0f),               // [-1.20 -> -1.00)
                 vec4f(166.0f / 255.0f, 0.0f, 0.0f, 1.0f),               // [-1.00 -> -0.80)
-                vec4f(166.0f / 255.0f, 166.0f / 255.0f, 0.0f, 1.0f),    // [-0.80 -> -0.60)
-                vec4f(0.0f, 166.0f / 255.0f, 0.0f, 1.0f),               // [-0.60 -> -0.40)
-                vec4f(0.0f, 0.0f, 166.0f / 255.0f, 1.0f),               // [-0.40 -> -0.20)
-                vec4f(0.0f, 0.0f, 166.0f / 255.0f, 0.0f),               // [-0.20 ->  0.00)
+                vec4f(166.0f / 255.0f, 130.0f / 255.0f, 0.0f, 1.0f),    // [-0.80 -> -0.60)
+                vec4f(0.0f, 130.0f / 255.0f, 0.0f, 1.0f),               // [-0.60 -> -0.40)
+                vec4f(0.0f, 0.0f, 94.0f / 255.0f, 1.0f),                // [-0.40 -> -0.20)
+                vec4f(0.0f, 0.0f, 94.0f / 255.0f, 0.0f),                // [-0.20 ->  0.00)
 
-                vec4f(0.0f, 0.0f, 166.0f / 255.0f, 0.0f),               // [ 0.00 ->  0.20)
-                vec4f(0.0f, 0.0f, 166.0f / 255.0f, 1.0f),               // [ 0.20 ->  0.40)
-                vec4f(0.0f, 166.0f / 255.0f, 0.0f, 1.0f),               // [ 0.40 ->  0.60)
-                vec4f(166.0f / 255.0f, 166.0f / 255.0f, 0.0f, 1.0f),    // [ 0.60 ->  0.80)
+                vec4f(0.0f, 0.0f, 94.0f / 255.0f, 0.0f),                // [ 0.00 ->  0.20)
+                vec4f(0.0f, 0.0f, 94.0f / 255.0f, 1.0f),                // [ 0.20 ->  0.40)
+                vec4f(0.0f, 130.0f / 255.0f, 0.0f, 1.0f),               // [ 0.40 ->  0.60)
+                vec4f(166.0f / 255.0f, 130.0f / 255.0f, 0.0f, 1.0f),    // [ 0.60 ->  0.80)
                 vec4f(166.0f / 255.0f, 0.0f, 0.0f, 1.0f),               // [ 0.80 ->  1.00)
                 vec4f(166.0f / 255.0f, 0.0f, 0.0f, 1.0f)                // [ 1.00 ->  1.20)
             };
@@ -2847,17 +2849,17 @@ void ShipRenderContext::ApplyStressRenderModeChanges(RenderParameters const & re
 
                 vec4f(166.0f / 255.0f, 0.0f, 0.0f, 1.0f),               // [-1.20 -> -1.00)
                 vec4f(166.0f / 255.0f, 0.0f, 0.0f, 1.0f),               // [-1.00 -> -0.80)
-                vec4f(166.0f / 255.0f, 83.0f / 255.0f, 0.0f, 1.0f),     // [-0.80 -> -0.60)
-                vec4f(166.0f / 255.0f, 166.0f / 255.0f, 0.0f, 1.0f),    // [-0.60 -> -0.40)
-                vec4f(83.0f / 255.0f, 166.0f / 255.0f, 0.0f, 1.0f),     // [-0.40 -> -0.20)
-                vec4f(0.0f, 166.0f / 255.0f, 0.0f, 1.0f),               // [-0.20 ->  0.00)
+                vec4f(166.0f / 255.0f, 65.0f / 255.0f, 0.0f, 1.0f),     // [-0.80 -> -0.60)
+                vec4f(166.0f / 255.0f, 130.0f / 255.0f, 0.0f, 1.0f),    // [-0.60 -> -0.40)
+                vec4f(83.0f / 255.0f, 130.0f / 255.0f, 0.0f, 1.0f),     // [-0.40 -> -0.20)
+                vec4f(0.0f, 130.0f / 255.0f, 0.0f, 1.0f),               // [-0.20 ->  0.00)
 
-                vec4f(0.0f, 166.0f / 255.0f, 0.0f, 1.0f),               // [ 0.00 ->  0.20)
-                vec4f(0.0f, 125.0f / 255.0f, 42.0f / 255.0f, 1.0f),     // [ 0.20 ->  0.40)
-                vec4f(0.0f, 83.0f / 255.0f, 83.0f / 255.0f, 1.0f),      // [ 0.40 ->  0.60)
-                vec4f(0.0f, 42.0f / 255.0f, 125.0f / 255.0f, 1.0f),     // [ 0.60 ->  0.80)
-                vec4f(0.0f, 0.0f, 166.0f / 255.0f, 1.0f),               // [ 0.80 ->  1.00)
-                vec4f(0.0f, 0.0f, 166.0f / 255.0f, 1.0f)                // [ 1.00 ->  1.20)
+                vec4f(0.0f, 130.0f / 255.0f, 0.0f, 1.0f),               // [ 0.00 ->  0.20)
+                vec4f(0.0f, 98.0f / 255.0f, 23.0f / 255.0f, 1.0f),      // [ 0.20 ->  0.40)
+                vec4f(0.0f, 66.0f / 255.0f, 46.0f / 255.0f, 1.0f),      // [ 0.40 ->  0.60)
+                vec4f(0.0f, 33.0f / 255.0f, 69.0f / 255.0f, 1.0f),      // [ 0.60 ->  0.80)
+                vec4f(0.0f, 0.0f, 94.0f / 255.0f, 1.0f),                // [ 0.80 ->  1.00)
+                vec4f(0.0f, 0.0f, 94.0f / 255.0f, 1.0f)                 // [ 1.00 ->  1.20)
             };
 
             stressColorMap = StressColorMap.data();

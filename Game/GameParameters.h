@@ -376,6 +376,10 @@ struct GameParameters
     static float constexpr MinHeatBlasterRadius = 1.0f;
     static float constexpr MaxHeatBlasterRadius = 100.0f;
 
+    float LaserRayHeatFlow; // KJoules/sec
+    static float constexpr MinLaserRayHeatFlow = 50000.0f;
+    static float constexpr MaxLaserRayHeatFlow = 2000000.0f;
+
     // Water reactions
 
     static float constexpr WaterReactionHeat = 100.0f * 1000.0f; // 100KJ, for exothermic reactions

@@ -189,6 +189,9 @@ public:
         return mCanvasPhysicalSize;
     }
 
+    /*
+     * Display physical width / display physical height.
+     */
     float GetAspectRatio() const
     {
         return mAspectRatio;
@@ -263,6 +266,15 @@ public:
         return vec2f(
             (worldCoordinates.x - cameraWorldPosition.x) * 2.0f / visibleWorldWidth,
             (worldCoordinates.y - cameraWorldPosition.y) * 2.0f / visibleWorldHeight);
+    }
+
+    inline vec2f ScreenToNdc(DisplayLogicalCoordinates const & screenCoordinates) const
+    {
+        vec2f const ndcCoordinates = vec2f(
+            static_cast<float>(screenCoordinates.x * mLogicalToPhysicalDisplayFactor) / static_cast<float>(mCanvasPhysicalSize.width) * 2.0f - 1.0f,
+            -static_cast<float>(screenCoordinates.y * mLogicalToPhysicalDisplayFactor) / static_cast<float>(mCanvasPhysicalSize.height) * 2.0f + 1.0f);
+        
+        return ndcCoordinates;
     }
 
     inline vec2f NdcOffsetToWorldOffset(

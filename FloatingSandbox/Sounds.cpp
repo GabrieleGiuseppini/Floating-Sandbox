@@ -25,6 +25,8 @@ SoundType StrToSoundType(std::string const & str)
         return SoundType::Saw;
     else if (Utils::CaseInsensitiveEquals(str, "Sawed"))
         return SoundType::Sawed;
+    else if (Utils::CaseInsensitiveEquals(str, "LaserCut"))
+        return SoundType::LaserCut;
     else if (Utils::CaseInsensitiveEquals(str, "HeatBlasterCool"))
         return SoundType::HeatBlasterCool;
     else if (Utils::CaseInsensitiveEquals(str, "HeatBlasterHeat"))
@@ -203,6 +205,14 @@ SoundType StrToSoundType(std::string const & str)
         return SoundType::BlastToolFast;
     else if (Utils::CaseInsensitiveEquals(str, "PressureInjection"))
         return SoundType::PressureInjection;
+    else if (Utils::CaseInsensitiveEquals(str, "LaserRayNormal"))
+        return SoundType::LaserRayNormal;
+    else if (Utils::CaseInsensitiveEquals(str, "LaserRayAmplified"))
+        return SoundType::LaserRayAmplified;
+    else if (Utils::CaseInsensitiveEquals(str, "LampExplosion"))
+        return SoundType::LampExplosion;
+    else if (Utils::CaseInsensitiveEquals(str, "LampImplosion"))
+        return SoundType::LampImplosion;
     else if (Utils::CaseInsensitiveEquals(str, "Error"))
         return SoundType::Error;
     else

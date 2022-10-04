@@ -37,6 +37,7 @@ enum class SoundType : uint32_t
     Draw,
     Saw,
     Sawed,
+    LaserCut,
     HeatBlasterCool,
     HeatBlasterHeat,
     ElectricSpark,
@@ -126,6 +127,10 @@ enum class SoundType : uint32_t
     BlastToolSlow2,
     BlastToolFast,
     PressureInjection,
+    LaserRayNormal,
+    LaserRayAmplified,
+    LampExplosion,
+    LampImplosion,
 
     // UI
     Error

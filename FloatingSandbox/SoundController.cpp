@@ -27,7 +27,11 @@ float constexpr RepairVolume = 40.0f;
 float constexpr SawVolume = 50.0f;
 float constexpr SawedVolume = 80.0f;
 std::chrono::milliseconds constexpr SawedInertiaDuration = std::chrono::milliseconds(200);
+float constexpr LaserCutVolume = 100.0f;
+std::chrono::milliseconds constexpr LaserCutInertiaDuration = std::chrono::milliseconds(200);
 float constexpr WaveSplashTriggerSize = 0.5f;
+float constexpr LaserRayVolume = 50.0f;
+float constexpr WindMaxVolume = 70.0f;
 
 SoundController::SoundController(
     ResourceLocator const & resourceLocator,
@@ -57,8 +61,9 @@ SoundController::SoundController(
     // Continuous sounds
     , mSawedMetalSound(SawedInertiaDuration)
     , mSawedWoodSound(SawedInertiaDuration)
+    , mLaserCutSound(LaserCutInertiaDuration)
     , mSawAbovewaterSound()
-    , mSawUnderwaterSound()
+    , mSawUnderwaterSound()    
     , mHeatBlasterCoolSound()
     , mHeatBlasterHeatSound()
     , mElectricSparkAbovewaterSound()
@@ -73,6 +78,8 @@ SoundController::SoundController(
     , mWaveMakerSound()
     , mFishScareSound()
     , mFishFoodSound()
+    , mLaserRayNormalSound()
+    , mLaserRayAmplifiedSound()
     , mBlastToolSlow1Sound()
     , mBlastToolSlow2Sound()
     , mBlastToolFastSound()
@@ -215,6 +222,13 @@ SoundController::SoundController(
                     mMasterEffectsMuted);
             }
         }
+        else if (soundType == SoundType::LaserCut)
+        {
+            mLaserCutSound.Initialize(
+                std::move(soundFile),
+                mMasterEffectsVolume,
+                mMasterEffectsMuted);
+        }
         else if (soundType == SoundType::HeatBlasterCool)
         {
             mHeatBlasterCoolSound.Initialize(
@@ -302,6 +316,22 @@ SoundController::SoundController(
             mFishFoodSound.Initialize(
                 std::move(soundFile),
                 40.0f,
+                mMasterToolsVolume,
+                mMasterToolsMuted);
+        }
+        else if (soundType == SoundType::LaserRayNormal)
+        {
+            mLaserRayNormalSound.Initialize(
+                std::move(soundFile),
+                LaserRayVolume,
+                mMasterToolsVolume,
+                mMasterToolsMuted);
+        }
+        else if (soundType == SoundType::LaserRayAmplified)
+        {
+            mLaserRayAmplifiedSound.Initialize(
+                std::move(soundFile),
+                LaserRayVolume,
                 mMasterToolsVolume,
                 mMasterToolsMuted);
         }
@@ -967,6 +997,7 @@ void SoundController::SetMasterEffectsVolume(float volume)
 
     mSawedMetalSound.SetMasterVolume(mMasterEffectsVolume);
     mSawedWoodSound.SetMasterVolume(mMasterEffectsVolume);
+    mLaserCutSound.SetMasterVolume(mMasterEffectsVolume);
     mWindMakerWindSound.SetMasterVolume(mMasterEffectsVolume);
     mWaterRushSound.SetMasterVolume(mMasterEffectsVolume);
     mWaterSplashSound.SetMasterVolume(mMasterEffectsVolume);
@@ -997,6 +1028,7 @@ void SoundController::SetMasterEffectsMuted(bool isMuted)
 
     mSawedMetalSound.SetMuted(mMasterEffectsMuted);
     mSawedWoodSound.SetMuted(mMasterEffectsMuted);
+    mLaserCutSound.SetMuted(mMasterEffectsMuted);
     mWindMakerWindSound.SetMuted(mMasterEffectsMuted);
     mWaterRushSound.SetMuted(mMasterEffectsMuted);
     mWaterSplashSound.SetMuted(mMasterEffectsMuted);
@@ -1043,6 +1075,8 @@ void SoundController::SetMasterToolsVolume(float volume)
     mWaveMakerSound.SetMasterVolume(mMasterToolsVolume);
     mFishScareSound.SetMasterVolume(mMasterToolsVolume);
     mFishFoodSound.SetMasterVolume(mMasterToolsVolume);
+    mLaserRayNormalSound.SetMasterVolume(mMasterToolsVolume);
+    mLaserRayAmplifiedSound.SetMasterVolume(mMasterToolsVolume);
     mWindMakerWindSound.SetMasterVolume(mMasterToolsVolume);
 }
 
@@ -1077,6 +1111,8 @@ void SoundController::SetMasterToolsMuted(bool isMuted)
     mWaveMakerSound.SetMuted(mMasterToolsMuted);
     mFishScareSound.SetMuted(mMasterToolsMuted);
     mFishFoodSound.SetMuted(mMasterToolsMuted);
+    mLaserRayNormalSound.SetMuted(mMasterToolsMuted);
+    mLaserRayAmplifiedSound.SetMuted(mMasterToolsMuted);
     mWindMakerWindSound.SetMuted(mMasterToolsMuted);
 }
 
@@ -1379,6 +1415,30 @@ void SoundController::StopFishFoodSound()
     mFishFoodSound.Stop();
 }
 
+void SoundController::PlayLaserRaySound(bool isAmplified)
+{
+    if (isAmplified)
+    {
+        mLaserRayAmplifiedSound.Start();
+        mLaserRayNormalSound.Stop();
+    }
+    else
+    {
+        mLaserRayNormalSound.Start();
+        mLaserRayAmplifiedSound.Stop();
+    }
+
+    mLaserCutSound.Start();
+}
+
+void SoundController::StopLaserRaySound()
+{
+    mLaserRayNormalSound.Stop();
+    mLaserRayAmplifiedSound.Stop();
+
+    mLaserCutSound.Stop();
+}
+
 void SoundController::PlayBlastToolSlow1Sound()
 {
     if (!GetMasterToolsMuted())
@@ -1492,6 +1552,7 @@ void SoundController::UpdateSimulation()
     // they've just been started or will be started really soon
     mSawedMetalSound.SetVolume(0.0f);
     mSawedWoodSound.SetVolume(0.0f);
+    mLaserCutSound.SetVolume(0.0f);
 }
 
 void SoundController::LowFrequencyUpdateSimulation()
@@ -1520,6 +1581,7 @@ void SoundController::Reset()
 
     mSawedMetalSound.Reset();
     mSawedWoodSound.Reset();
+    mLaserCutSound.Reset();
     mSawAbovewaterSound.Reset();
     mSawUnderwaterSound.Reset();
     mHeatBlasterCoolSound.Reset();
@@ -1536,6 +1598,8 @@ void SoundController::Reset()
     mWaveMakerSound.Reset();
     mFishScareSound.Reset();
     mFishFoodSound.Reset();
+    mLaserRayNormalSound.Reset();
+    mLaserRayAmplifiedSound.Reset();
     mWindMakerWindSound.Reset();
 
     mWaterRushSound.Reset();
@@ -1640,6 +1704,11 @@ void SoundController::OnSawed(
         mSawedWoodSound.SetVolume(size > 0 ? SawedVolume : 0.0f);
 }
 
+void SoundController::OnLaserCut(unsigned int size)
+{
+    mLaserCutSound.SetVolume(size > 0 ? LaserCutVolume : 0.0f);
+}
+
 void SoundController::OnPinToggled(
     bool isPinned,
     bool isUnderwater)
@@ -1730,6 +1799,47 @@ void SoundController::OnBreak(
             BreakSoundVolume,
             true);
     }
+}
+
+void SoundController::OnLampBroken(
+    bool isUnderwater,
+    unsigned int size)
+{
+    if (mPlayBreakSounds)
+    {
+        PlayMSUOneShotMultipleChoiceSound(
+            SoundType::Break,
+            StructuralMaterial::MaterialSoundType::Glass,
+            SoundGroupType::Effects,
+            size,
+            isUnderwater,
+            BreakSoundVolume,
+            true);
+    }
+}
+
+void SoundController::OnLampExploded(
+    bool isUnderwater,
+    unsigned int /*size*/)
+{
+    PlayUOneShotMultipleChoiceSound(
+        SoundType::LampExplosion,
+        SoundGroupType::Effects,
+        isUnderwater,
+        100.0f,
+        true);
+}
+
+void SoundController::OnLampImploded(
+    bool isUnderwater,
+    unsigned int /*size*/)
+{
+    PlayUOneShotMultipleChoiceSound(
+        SoundType::LampImplosion,
+        SoundGroupType::Effects,
+        isUnderwater,
+        100.0f,
+        true);
 }
 
 void SoundController::OnWaterTaken(float waterTaken)
@@ -1889,15 +1999,15 @@ void SoundController::OnWindSpeedUpdated(
     {
         // 20 -> 43:
         // 100 * (-1 / 1.1^(0.3 * x) + 1)
-        windVolume = 100.f * (-1.f / std::pow(1.1f, 0.3f * (windSpeedAbsoluteMagnitude - std::abs(baseSpeedMagnitude))) + 1.f);
+        windVolume = WindMaxVolume * (-1.f / std::pow(1.1f, 0.3f * (windSpeedAbsoluteMagnitude - std::abs(baseSpeedMagnitude))) + 1.f);
     }
     else
     {
-        // Raise volume only if goes up
+        // Raise volume only if going up
         float const deltaUp = std::max(0.0f, windSpeedAbsoluteMagnitude - mLastWindSpeedAbsoluteMagnitude);
 
         // 100 * (-1 / 1.1^(0.3 * x) + 1)
-        windVolume = 100.f * (-1.f / std::pow(1.1f, 0.3f * deltaUp) + 1.f);
+        windVolume = WindMaxVolume * (-1.f / std::pow(1.1f, 0.3f * deltaUp) + 1.f);
     }
 
     // Smooth the volume

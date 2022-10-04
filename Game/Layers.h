@@ -230,6 +230,9 @@ struct LayerTypeTraits<LayerType::Texture>
 // All Layers
 //////////////////////////////////////////////////////////////////
 
+/*
+ * Container of (regions of) layers, for each layer type.
+ */
 struct ShipLayers
 {
     StructuralLayerData StructuralLayer;

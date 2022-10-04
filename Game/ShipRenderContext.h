@@ -1206,7 +1206,7 @@ private:
         float const topY = frame.FrameMetadata.WorldHeight - frame.FrameMetadata.AnchorCenterWorld.y;
         float const bottomY = -frame.FrameMetadata.AnchorCenterWorld.y;
 
-        float const lightSensitivity =
+        float const ambientLightSensitivity =
             frame.FrameMetadata.HasOwnAmbientLight ? 0.0f : 1.0f;
 
         // Append vertices - two triangles
@@ -1222,7 +1222,7 @@ private:
             scale,
             -angleCw,
             alpha,
-            lightSensitivity);
+            ambientLightSensitivity);
 
         // Top-Right
         vertexBuffer.emplace_back(
@@ -1233,7 +1233,7 @@ private:
             scale,
             -angleCw,
             alpha,
-            lightSensitivity);
+            ambientLightSensitivity);
 
         // Bottom-left
         vertexBuffer.emplace_back(
@@ -1244,7 +1244,7 @@ private:
             scale,
             -angleCw,
             alpha,
-            lightSensitivity);
+            ambientLightSensitivity);
 
         // Triangle 2
 
@@ -1257,7 +1257,7 @@ private:
             scale,
             -angleCw,
             alpha,
-            lightSensitivity);
+            ambientLightSensitivity);
 
         // Bottom-left
         vertexBuffer.emplace_back(
@@ -1268,7 +1268,7 @@ private:
             scale,
             -angleCw,
             alpha,
-            lightSensitivity);
+            ambientLightSensitivity);
 
         // Bottom-right
         vertexBuffer.emplace_back(
@@ -1279,7 +1279,7 @@ private:
             scale,
             -angleCw,
             alpha,
-            lightSensitivity);
+            ambientLightSensitivity);
     }
 
 private:

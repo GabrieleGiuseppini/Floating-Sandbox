@@ -106,6 +106,7 @@ struct IGameController
     virtual void ApplyBlastAt(DisplayLogicalCoordinates const & screenCoordinates, float radiusMultiplier, float forceMultiplier, float renderProgress, float personalitySeed) = 0;
     virtual bool ApplyElectricSparkAt(DisplayLogicalCoordinates const & screenCoordinates, std::uint64_t counter, float lengthMultiplier, float currentSimulationTime) = 0;
     virtual void ApplyRadialWindFrom(DisplayLogicalCoordinates const & sourcePos, float preFrontSimulationTimeElapsed, float preFrontIntensityMultiplier, float mainFrontSimulationTimeElapsed, float mainFrontIntensityMultiplier) = 0;
+    virtual bool ApplyLaserCannonThrough(DisplayLogicalCoordinates const & startScreenCoordinates, DisplayLogicalCoordinates const & endScreenCoordinates, std::optional<float> strength) = 0;
     virtual void DrawTo(DisplayLogicalCoordinates const & screenCoordinates, float strengthFraction) = 0;
     virtual void SwirlAt(DisplayLogicalCoordinates const & screenCoordinates, float strengthFraction) = 0;
     virtual void TogglePinAt(DisplayLogicalCoordinates const & screenCoordinates) = 0;

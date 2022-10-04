@@ -25,10 +25,12 @@ enum class ProgramType
     CrossOfLight,
     FireExtinguisherSpray,
     Fishes,
+    GenericMipMappedTexturesNdc,
     HeatBlasterFlameCool,
     HeatBlasterFlameHeat,
     LandFlat,
     LandTexture,
+    LaserRay,
     Lightning,
     OceanDepthBasic,
     OceanDepthDetailedBackground,
@@ -225,9 +227,9 @@ enum class VertexAttributeType : GLuint
     Sparkle1 = 0,
     Sparkle2 = 1,
 
-    GenericMipMappedTexture1 = 0,
-    GenericMipMappedTexture2 = 1,
-    GenericMipMappedTexture3 = 2,
+    ShipGenericMipMappedTexture1 = 0,
+    ShipGenericMipMappedTexture2 = 1,
+    ShipGenericMipMappedTexture3 = 2,
 
     Flame1 = 0,
     Flame2 = 1,
@@ -271,7 +273,17 @@ enum class VertexAttributeType : GLuint
     PressureInjectionHalo2 = 1,
 
     WindSphere1 = 0,
-    WindSphere2 = 1
+    WindSphere2 = 1,
+
+    LaserRay1 = 0,
+    LaserRay2 = 1,
+
+    //
+    // Global
+    //
+
+    GenericMipMappedTextureNdc1 = 0,
+    GenericMipMappedTextureNdc2 = 1
 };
 
 VertexAttributeType StrToVertexAttributeType(std::string const & str);

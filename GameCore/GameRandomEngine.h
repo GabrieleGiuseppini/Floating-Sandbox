@@ -140,14 +140,14 @@ public:
      * Generates a random number between -INF and +INF, distributed
      * according to a Gaussian with mean zero and stdev 1.
      */
-    inline float GenerateNormalizedNormalReal()
+    inline float GenerateStandardNormalReal()
     {
         return mNormalDistribution(mRandomEngine);
     }
 
     /*
      * Generates a random number between -INF and +INF, distributed
-     * according to a Gaussian with mean zero and stdev 1.
+     * according to a Gaussian with the specified mean and stdev.
      */
     inline float GenerateNormalReal(
         float mean,

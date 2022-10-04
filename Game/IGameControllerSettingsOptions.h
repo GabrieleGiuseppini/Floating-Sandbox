@@ -170,6 +170,9 @@ struct IGameControllerSettingsOptions
     virtual float GetMinHeatBlasterRadius() const = 0;
     virtual float GetMaxHeatBlasterRadius() const = 0;
 
+    virtual float GetMinLaserRayHeatFlow() const = 0;
+    virtual float GetMaxLaserRayHeatFlow() const = 0;
+
     // Electricals
 
     virtual float GetMinLuminiscenceAdjustment() const = 0;

@@ -6,240 +6,219 @@
 
 - Roadmap:
 
-	- After release: update Wordpress post w/new engine stuff
-		- Connectivity
-		- Types
+	+ Laser Cannon tool (*)
 
-		= Release
-			+ Windows
-				+ MSI variable
-				+ Commit & push
-				+ 64-bit MSI
-					+ Cleanup Install
-					+ Build Release Install (after clean)
-					+ Make MSI
-					+ Rename MSI
-					+ Test upgrade from previous version
-				+ 32-bit MSI
-					+ Re-generate from CMake
-					+ Cleanup Install
-					+ Build Release Install (after clean)
-					+ Make MSI
-					+ Rename MSI
-					+ Test clean install
-			+ Ubuntu
-				+ rm -rf ~/floating-sandbox
-				+ pull 
-				+ rm -rf build; mkdir build; cd build
-				+ cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
-				+ make install
-				+ Make tar ("cd ~/floating-sandbox && tar -cvf ../Floating-Sandbox-1.17.4-x64.tar . && cd -")
-				+ Zip tar
-				+ Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
-			+ Get 3 installers tested on dev server
-			+ Wait for test results
-			+ Cut tag on github
-			+ Upload packages to GameJolt
-				+ Report file as safe (https://gamejolt.com/privacy)
-				+ Post
-			+ www.floatingsandbox.com:
-				+ Update current version in FAQ
-				- Wait a day or two, to exclude disastrous bugs
-				- Upload changes2.txt
-					- Test w/old FS
+	+ Fix: GameController ends up being deleted by SwitchboardPanel - might be the cause of the "blocking" issue on GTK
+		! It happens because mElectricalPanel (SwitchboardPanel uq_ptr) is added to MainFrame, hence it's deleted by it *AND* by later uq_ptr
+		+ Major issue: everything that's added to sizers, etc. should NOT be a uq_ptr
+			+ EventTicker
+			+ ProbePanel
+			+ MainGLCanvas
+		X See if GTK issue is gone
 
-		+ Cleanup plan, commit & push
+	+ At lights going off because of flooding of power, before flickering: flash w/spread and luminiscence		
+		+ "lights severed" flag becomes opt<enum> ("for water", "for severed")
+			+ Set as "For water" when power source is cutoff because of water
+				! Note: current causes for "severed":
+					- Destroyed elements
+					- OnElectricSpark
+					- UpdateSourcesAndPropagation: Power generator transitioning into NotProducingCurrent
+				! Note: "severed" is consumed at lamp state machine transitioning from LightOn (for any cause), to decide whether
+				  to turn off immediately or through flicker
+				+ Make sure only set at PowerSource being down and at destroyed elements (not at lamp being down)
+			+ Severed is cleaned up at end of UpdateSinks
+				+ So clean here whole opt<enum>
+		+ At lamp state machine: use a single opt<PowerFailureNextState> storing first decision on whether or not to do it
+		+ Lamp::State contains TransientApertureMultiplier, and that's the one messed with by state
+			+ And of course it's used when uploading to lights buffer, multiplied with actual aperture
+			+ Reset at Restore()
+			+ Better profile
+				+ See 1:53 at https://www.youtube.com/watch?v=yg9rkceLOzA:  ...t.TTT..
+		+ Put back randomness when choosing overcharge
+	
+	+ Lower volume of wind sound
 
-		- Fix: GameController ends up being deleted by SwitchboardPanel - might be the cause of the "blocking" issue on GTK
-			- MainFrame: GameController, SoundController, MusicController: all uq_ptrs
-				- But ordered: roots first (GameController)
-			- When these are args to others: only references
+	+ Electric Sparkle tool: sparkles can cause lights to explode (*)
+	+ Lamps breaking under pressure (*)
+		+ changelist for both
 
-		- Laser Cannon tool (*)
+	+ Laser cannon
+		+ Cut with prob inverse to mass
+			+ Remove laser_ray_cut_receptivity
+		+ Shader: more smeared on the outside
+		+ More prob when SHIFT is down
+		+ Sound for cut
 
-		- Frozen structure (*)
-			- Shader:
-				- Reuse shader's temperature buffer: when negative, clamp by personality seed
-					- And personality seed is also needed by shader for color saturation
-					- Add personality seed to set of immutable attributes, uploaded @ beginning
-			- Physics:
-				- Allow temperatures to go below 0 but exponentially towards -273.15
-					- Check curve for Dt=?Dq/T
-					- At:
-						- Air temperature
-						- Water temperature
-						- CoolBlaster tool
-						- ...and everywhere else we update Points.Temperature
-				- Apply freezing at springs temperature update: make stiffness approach 1.0 (when from below, e.g. rope)
-			- Check and update plan at *
+	+ Ukrainian (uk)
+		+ 2 .mo files
+		+ 2 HTML files
+		+ changelist
 
-		- At lights going off, before flickering: flash w/spread and luminiscence
-			- See 1:53 at https://www.youtube.com/watch?v=yg9rkceLOzA
-			- Impl:
-				- "lights severed" flag becomes enum (for water, for severed)
-				- At lamp state machine: use a single opt<bool> storing first decision on whether or not to do it
-				- Lamp::State contains TransientApertureMultiplier, and that's the one messed with by state
-					- And of course it's used when uploading to lights buffer, multiplied with actual aperture
+	- Merge into master
 
-		- Bubbles issue (that "old" issue)
-			- Add temp code to calc total internal water, and see if it's true that it keeps increasing
-			- Do same for "other internal pressure"
+	- Send for testing
+		- Ask specifically to check lamps in sinking ships
+		- Ask to check Ukrainian
 
-		- Fireworks (*)
+	- Bump up version
 
-		- Quad rendering with indices
-			- Sharing VBOs in VAOs: 
-				- https://computergraphics.stackexchange.com/questions/4623/multiple-vao-share-a-vbo
-				- https://stackoverflow.com/questions/23542355/using-a-vertex-buffer-in-two-different-vertex-array-objects
-				- Idea: one single "TriangleQuadIndexSeries" (or "sequence") VBO for all render contexts, created and initialized in GlobalRenderContext, and passed
-				  to all child contextes via cctor
-					- New class in OpenGL lib: TriangleQuadIndexSeriesVBO (or "sequence")
-						- Wraps VBO (private) and local buffer (BoundedVector, private)
-							- VBO created in static factory (read below, instance of TriangleQuadIndexSeriesVBO is deferred-init'd as uq_ptr)
+	- ShipBuilder things (*)
+
+	- Frozen structure (*)
+
+	- Windows 11 issue: try to play with vsync
+		- https://stackoverflow.com/questions/589064/how-to-enable-vertical-sync-in-opengl
+
+	- Bubbles issue (that "old" issue)
+		- Add temp code to calc total internal water, and see if it's true that it keeps increasing
+		- Do same for "other internal pressure"
+
+	- Fireworks (*)
+
+	- Quad rendering with indices
+		- Sharing VBOs in VAOs: 
+			- https://computergraphics.stackexchange.com/questions/4623/multiple-vao-share-a-vbo
+			- https://stackoverflow.com/questions/23542355/using-a-vertex-buffer-in-two-different-vertex-array-objects
+			- Idea: one single "TriangleQuadIndexSeries" (or "sequence") VBO for all render contexts, created and initialized in GlobalRenderContext, and passed
+			  to all child contextes via cctor
+				- New class in OpenGL lib: TriangleQuadIndexSeriesVBO (or "sequence")
+					- Wraps VBO (private) and local buffer (BoundedVector, private)
+						- VBO created in static factory (read below, instance of TriangleQuadIndexSeriesVBO is deferred-init'd as uq_ptr)
+					- Exposes void ensure_size(# of quads)
+						- If # of quads > current: enlarge & populate local buffer, flag as dirty
+						- Starts empty
+					- Exposes IsDirty()
+					- Exposes Bind()
+					- Exposes Upload()
+						- Binds and uploads
+					- OLD:						
 						- Exposes void ensure_size(# of quads)
-							- If # of quads > current: enlarge & populate local buffer, flag as dirty
+							- If # of quads > current: enlarge & populate local buffer, re-allocates VBO and uploads new portion
 							- Starts empty
-						- Exposes IsDirty()
-						- Exposes Bind()
-						- Exposes Upload()
-							- Binds and uploads
-						- OLD:						
-							- Exposes void ensure_size(# of quads)
-								- If # of quads > current: enlarge & populate local buffer, re-allocates VBO and uploads new portion
-								- Starts empty
-							- Exposes VBO via getter
-					- One single instance owned by GlobalRenderContext, as uq_ptr (w/deferred creation via static Create())
-						- At GlobalRenderContext::cctor() (verify doable)
-					- Passed to child contextes as reference
-					- GlobalContext does:
-						- @RenderPrepare: if TriangleQuadsSeriesVBO.IsDirty: Upload()
-					- Child contextes do:				
-						- Upload(): ensure_size(# of quads)
-						- Draw: Bind before drawing quads
-			- Test with bubbles
-				- Do
-				- New Dell: 
-					- Before: upload= render=
-					- After: upload= render=
-				- Old Dell: 
-					- Before: upload= render=
-					- After: upload= render=
-			- If works, other candidates:
-				- Clouds
-				- Generic textures
-				- Text (NotificationContext)
-				- Fishes
+						- Exposes VBO via getter
+				- One single instance owned by GlobalRenderContext, as uq_ptr (w/deferred creation via static Create())
+					- At GlobalRenderContext::cctor() (verify doable)
+				- Passed to child contextes as reference
+				- GlobalContext does:
+					- @RenderPrepare: if TriangleQuadsSeriesVBO.IsDirty: Upload()
+				- Child contextes do:				
+					- Upload(): ensure_size(# of quads)
+					- Draw: Bind before drawing quads
+		- Test with bubbles
+			- Do
+			- New Dell: 
+				- Before: upload= render=
+				- After: upload= render=
+			- Old Dell: 
+				- Before: upload= render=
+				- After: upload= render=
+		- If works, other candidates:
+			- Clouds
+			- Generic textures
+			- Text (NotificationContext)
+			- Fishes
 
-		- Add more background music:
-			+ "Symmetry" - Kevin MacLeod (incompetech.com)			
-			- "Shadowlands 5 - Antechamber" - Kevin MacLeod (incompetech.com)
-			- More from Kukaneffect?
+	- Add more background music:
+		+ "Symmetry" - Kevin MacLeod (incompetech.com)			
+		- "Shadowlands 5 - Antechamber" - Kevin MacLeod (incompetech.com)
+		- More from Kukaneffect?
 
-		- Misc quick things:
-			- See if water entering via hole is faster than water entering natural non-hull ("cut funnel")
-				- See why Bernoulli doesn't make inflow faster
-			- Negative pressure in Mylar bubble - bug?
-			- See why with high water density, water entering a ship goes above the waterline - bug?
+	- Misc quick things:
+		- See if water entering via hole is faster than water entering natural non-hull ("cut funnel")
+			- See why Bernoulli doesn't make inflow faster
+		- Negative pressure in Mylar bubble - bug?
+		- See why with high water density, water entering a ship goes above the waterline - bug?
 
-		- More parallelism at Ship::Update (was: Multi-threading, phase II):
-			- Move PhysicsSimulation::UpdateWaterVelocities (8%) to separate thread
-				- If water is being read in parallel, make UpdateWaterVelocities take the newWater buffer, and swap it after the tasks have completed
-			- Springs: each iteration done in parallel with NThreads partitions
-				- Do
-					- Pool: if run 1, run straight away on main thread
-					- Spring indices need to be partitioned beforehand into multiple Buffer<ElementIndex>'s
-						- These are stored by Springs
-						- @ShipBuilder:
-							- Is given # of partitions
-								- ...caller uses mThreadPool->GetNumberOfThreads();
-							- N-1 partitions plus one "stitching" partition
-								- Partition points and all springs between those points
-								- Put cross-partition springs into last partition
-					- Prepare parallel tasks
-					- Run parallel tasks
+	- More parallelism at Ship::Update (was: Multi-threading, phase II):
+		- Move PhysicsSimulation::UpdateWaterVelocities (8%) to separate thread
+			- If water is being read in parallel, make UpdateWaterVelocities take the newWater buffer, and swap it after the tasks have completed
+		- Springs: each iteration done in parallel with NThreads partitions
+			- Do
+				- Pool: if run 1, run straight away on main thread
+				- Spring indices need to be partitioned beforehand into multiple Buffer<ElementIndex>'s
+					- These are stored by Springs
+					- @ShipBuilder:
+						- Is given # of partitions
+							- ...caller uses mThreadPool->GetNumberOfThreads();
+						- N-1 partitions plus one "stitching" partition
+							- Partition points and all springs between those points
+							- Put cross-partition springs into last partition
+				- Prepare parallel tasks
+				- Run parallel tasks
 
-		- Lamps breaking under pressure (*)
-		- Break lights when structure gets "broken"
-			- Whenever a triangle or spring is destroyed, break also *lights* attached to any of the endpoints
-				- @ Ship::DestroyHandler's
-				- Invoke what we end up doing at "Lamps breaking under pressure (*)"
+	- Test using normalize_approx in spring loop
+		- Verify gain on Dell
 
-		- Test using normalize_approx in spring loop
-			- Verify gain on Dell
+	- Spring relaxation with intrinsics
 
-		- Spring relaxation with intrinsics
+	- Lights improvement options (*)
 
-		- Lights improvement options (*)
+	- Sources of Light
+		- See if there's a * below
+		- Add to fireworks as precondition
+		- Spec:
+			- Ship owns LightSource instance, just container of point index, material params, calcd params
+				- A part of it is fixed, the other comes and goes
+					- ElectricalElements go to fixed part
+					- All others to dynamic part
+				- Buffer-aligned
+				- Params are shader-friendly, as we'll upload them with Lights Improvements work (*)
+			- Add/Removed to by:
+				- ElectricalElements: added @ init & kept forever
+					- Populated initially by ship invoking ElectricalElements::PopulateLightSources(LightSource &)
+					- LightSource::AddStaticSource -> LightSourceIndex
+					- Lamp state @ ElectricalElements stores the index in LightSource, which is needed for setting params, etc.
+				- Firework state machine: added & removed as needed
+					- LightSource::Add/RemoveDynamicSource
+					- Ephemeral particle state @ Point stores the index in LightSource, which is needed for setting params, removing, etc.
+			- Used by lighting algorithm AND by shader (after Lights Improvements work (*))
 
-		- Sources of Light
-			- See if there's a * below
-			- Add to fireworks as precondition
-			- Spec:
-				- Ship owns LightSource instance, just container of point index, material params, calcd params
-					- A part of it is fixed, the other comes and goes
-						- ElectricalElements go to fixed part
-						- All others to dynamic part
-					- Buffer-aligned
-					- Params are shader-friendly, as we'll upload them with Lights Improvements work (*)
-				- Add/Removed to by:
-					- ElectricalElements: added @ init & kept forever
-						- Populated initially by ship invoking ElectricalElements::PopulateLightSources(LightSource &)
-						- LightSource::AddStaticSource -> LightSourceIndex
-						- Lamp state @ ElectricalElements stores the index in LightSource, which is needed for setting params, etc.
-					- Firework state machine: added & removed as needed
-						- LightSource::Add/RemoveDynamicSource
-						- Ephemeral particle state @ Point stores the index in LightSource, which is needed for setting params, removing, etc.
-				- Used by lighting algorithm AND by shader (after Lights Improvements work (*))
+	- New tool 2: Punch
+		- Spec:
+			- Works only on frontier from outside->in
+				- Might want to try, at end, also from inside->out
+		- Impl:
+			- TODOHERE
 
-		- New tool 2: Punch
-			- Spec:
-				- Works only on frontier from outside->in
-					- Might want to try, at end, also from inside->out
-			- Impl:
-				- TODOHERE
+	- Sound space (*)
 
-		- Sound space (*)
+	- ShipRenderContext: see if may turn off Z-depth check @ triangles
+		- Check first on Dell if doing so would improve perf
+		- Check then if there are any artifacts when doing so
 
-		- ShipRenderContext: see if may turn off Z-depth check @ triangles
-			- Check first on Dell if doing so would improve perf
-			- Check then if there are any artifacts when doing so
+	- Investigate perf hit of rendering to buffer and directly drawing the buffer afterwards
+		- OpenGL Frame Buffer Object 101: https://www.gamedev.net/reference/articles/article2331.asp
+		- http://www.mathematik.tu-dortmund.de/~goeddeke/gpgpu/tutorial3.html
+		- If it works: do "reshader" type of work (*)
 
-		- Investigate perf hit of rendering to buffer and directly drawing the buffer afterwards
-			- OpenGL Frame Buffer Object 101: https://www.gamedev.net/reference/articles/article2331.asp
-			- http://www.mathematik.tu-dortmund.de/~goeddeke/gpgpu/tutorial3.html
-			- If it works: do "reshader" type of work (*)
+	- See if may put smoke emitters behind triangles and springs
+		- At the moment we're using GenericTextures for smoke, hence we're in the same layer as bombs, etc.;
+		  need to have a way to change layer, which would however require a different rendering batch (because
+		  of different orthomatrix)
 
-		- See if may put smoke emitters behind triangles and springs
-			- At the moment we're using GenericTextures for smoke, hence we're in the same layer as bombs, etc.;
-			  need to have a way to change layer, which would however require a different rendering batch (because
-			  of different orthomatrix)
+	- Test: re-try cache layout optimizations
+		- See current optimization's impact first with NOP optimization
+		- Check if simply ordering points by X makes it faster (because of improved ocean floor/ocean surface sampling locality)
 
-		- Test: re-try cache layout optimizations
-			- See current optimization's impact first with NOP optimization
-			- Check if simply ordering points by X makes it faster (because of improved ocean floor/ocean surface sampling locality)
+	- Splashes
+		- Option A) Ephemeral particles with own shader:
+			- Texture of splash
+			- Elongated with vertical velocity
+		- Option B) Same as A, but instead of one single texture, a (small) set of frames
+		- Option C) Fully "movie" (not ephemeral particles), just like explosions
 
-		- Splashes
-			- Option A) Ephemeral particles with own shader:
-				- Texture of splash
-				- Elongated with vertical velocity
-			- Option B) Same as A, but instead of one single texture, a (small) set of frames
-			- Option C) Fully "movie" (not ephemeral particles), just like explosions
+	= See if fire may emit Heavy smoke
+		- Smoke should be drawn behind flames, hence GenericTexture's should be in an earlier layer than flames.
+		  However, generic textures (smoke) have internal transparency, while flames have none; the Z test makes it so then
+		  that smoke at plane ID P shows the ship behind it, even though there are flames at plane IDs < P
+		- We need a new shader, 'cause black smoke looks awful when it fades away
+			- Identical to GenericTextures, but with whitening contestual with alpha
+			- Buffer can stay the same, just need separate portions: all generic textures followed by smoke
+		- Do cleanup tasks
 
-		= See if fire may emit Heavy smoke
-			- Smoke should be drawn behind flames, hence GenericTexture's should be in an earlier layer than flames.
-			  However, generic textures (smoke) have internal transparency, while flames have none; the Z test makes it so then
-			  that smoke at plane ID P shows the ship behind it, even though there are flames at plane IDs < P
-			- We need a new shader, 'cause black smoke looks awful when it fades away
-				- Identical to GenericTextures, but with whitening contestual with alpha
-				- Buffer can stay the same, just need separate portions: all generic textures followed by smoke
-			- Do cleanup tasks
-
-		= Do shader at Anti-Matter bomb pre-implosion
-			+ Shader already started: https://www.shadertoy.com/view/3sVSRc
-			- See if should add some noise: add some of those playful experiments
-
-		- Underwater currents (*)
-
+	= Do shader at Anti-Matter bomb pre-implosion
+		+ Shader already started: https://www.shadertoy.com/view/3sVSRc
+		- See if should add some noise: add some of those playful experiments
 		
 
 - Release template:
@@ -506,6 +485,9 @@
 	- www.floatingsandbox.com:
 		- Embed GameJolt Widget
 		- Talk about builder (w/screenshot) on main page
+	- After release: update Wordpress post w/new engine stuff
+		- Connectivity
+		- Types
 
 - Suggestions to spec:
 	- Northern lights
@@ -1264,25 +1246,6 @@
 
 	- Fires break out where electrical layer breaks (e.g. where *powered* line is cut)
 
-	- Lamps breaking under pressure (*)
-		! Unrelated to pressure crush (*) with frontier
-		- Idea:
-			- Lamps only
-			- UpdateLampStateMachine: first step checks external pressure (as in, depth) and if over threshold (from material): 
-				- TODO: the below, or simply Points::whatever_we_invoke_now with smash tool and the like
-				- Invokes Points::Break(iPointIndex): // new
-					- Sets self as Deleted
-					- Invokes IShipPhyisicsHandler::OnPointBroken(iIndex): // new
-						- Destroys triangles (springs stay)
-						- For each electrical element: invokes ElectricalElements::Break(iIndex): // new
-							- If lamp:
-								- Sound
-								- Sets flag TODO: OR Destroy()
-						- Invokes Gadgets
-					- TODO: how to do together with Destroy?
-			- Same effect should be caused by hammer on point, and possibly others
-		- TODO: see if can couple of Electric Sparkle tool: a lot of sparkle can cause lights to explode
-
 	- Tool to break enough to let water enter, but not to make a hole all the way to the other side
 		- Just sets points as leaking
 
@@ -1322,12 +1285,23 @@
 		- Debug to see if bounds ever exceeded
 
 	- Frozen structure (*):
-		- Simply, in low-frequency spring coeffs' Update(), also do other side of temperature spectrum
-			- With breaking length becoming smaller
-			- With rest lengths staying the same
-				- Or negligibly smaller?
-			- With stiffness going marginally up
-		- Shader?
+		- Physics:
+			- Prep: allow temperatures to go below 0 but exponentially towards -273.15
+				- Check curve for Dt=?Dq/T
+				- At:
+					- Air temperature
+					- Water temperature
+					- CoolBlaster tool
+					- ...and everywhere else we update Points.Temperature
+			- Freezing effect: simply, in low-frequency spring coeffs' Update(), also do other side of temperature spectrum:
+				- With breaking length becoming smaller
+				- With rest lengths staying the same
+					- Or negligibly smaller? Or negligibly larger? To simulate volume change...
+				- Stiffness approaches 1.0 (when from below, e.g. for rope)
+		- Shader:
+			- Reuse shader's temperature buffer: when negative, clamp by personality seed
+				- And personality seed is also needed by shader for color saturation
+				- Add personality seed to set of immutable attributes, uploaded @ beginning
 
 	- Stars with database
 		- python script to generate binary maps for N and S emispheres
@@ -1347,16 +1321,6 @@
 	- Ripple: "basically you click and hold somewhere on the ship, and when you let go, it sends a ripple into the ship, weak points might tear,
 	  or start getting damaged, etc."
 
-	- Laser cannon tool (*)
-		- Spec:
-			- Like saw but heats structure
-			- Turrets at four corners, oriented towards mouse
-			- When clicking, laser shaders from four corners
-				- Nice shader for laser ray
-			- Sound
-		- Impl:
-			- TODO: misc points to remember:
-				- Cannon rendering and laser shader all managed by NotificationLayer/NotificationRenderContext
 
 - Game Interactions and Controls:
 
@@ -9091,7 +9055,6 @@ IF WX:
 						+ Jet Thrust:
 							+ Works between -1 and +1
 							+ Switchboard: Disabled/Enabled, On/Off 
-
 	+ Engines rearc (*)
 		! Goal: allow controllers to control engines at a distance
 		+ EngineState: EngineGroup member
@@ -9149,6 +9112,103 @@ IF WX:
 				+ Make test ship, and watch queryElement/log
 				+ Circuits
 				+ Destroy/Restore
+	+ Laser cannon tool (*)
+		! Spec:
+			! Like saw but heats structure
+			! Turrets at four corners, oriented towards mouse
+			! When clicking, laser shaders from four corners
+				! Nice shader for laser ray
+		+ Impl:
+			+ Test all other notif's w/pause
+			+ Tool:
+				+ Stride
+					+ EngagementData has previousMousePos
+					+ Update previousMousePos @ Update()
+			+ Rendering (NotificationRenderContext):
+				+ Cannon @ mipmapped alias
+					+ PNG
+						+ Smaller
+						+ Play with colors
+						+ Play with textures
+					+ Database + enum
+				+ Upload
+					+ Cannon vertices
+						+ Make cannons rectractable 
+							+ Watch out for negative points
+						+ Fix aspect ratio problem
+					+ Ray vertices
+						+ Make noise invariant from length: instead of -1..+1, do  +1-ScreenToNdc(ray_length)..+1
+						+ Strength no thickness change
+				+ Shaders:
+					+ GenericMipMappedTexturesNdc
+					+ LaserRay
+						+ Strength variation:
+							+ A little thicker when strong
+							+ Center more white
+						+ Outer noise different
+				+ Cannons are subject to daylight, ray is not
+			+ Physics (Ship::Apply...):
+				+ Stride:
+					+ Cut 
+						X Full cut (like @ saw)
+						+ New material property: laser_ray_cut_receptivity
+							+ Use script to set it to 1.0 for: ropes, cloths, paper, ...
+						+ Cut springs iff material
+					+ Heat injection at each point close to stride segment
+						+ Find right distance
+			+ Sounds:
+				+ Basic code
+				+ Normal variant (more electronic)
+				+ Amplified variant
+		+ SettingsDialog:
+			+ LaserRay heat flow
+				+ Double-check value range
+		+ Test on Dell
+		+ changes.txt
+	+ Electric Sparkle tool: sparkles can cause lights to explode (*)
+		+ Can be done within OnElectrified, by calling directly Desotry(Explode) with randomness
+			+ See why can't be repaired
+			+ Better debris material: new StructuralMaterial unique type: GlassDebris
+			+ Nail down probability 
+	+ Lamps breaking under pressure (*)
+		! Unrelated to pressure crush (*) with frontier
+		+ Pre:
+			+ Make ship w/lamp electrical material
+			+ Verify NO glass sound when hammered and when broken (w/ tearing)
+			+ New electrical material property: "lamp_external_pressure_breakage_threshold", in Pa (i.e. N/m2)
+				+ json
+			+ IEventHandler
+			+ Invoke Destroy(own index, DestroyReason=None|ForLampImplosion|ForLampExplosion)
+				+ Destroy(.) translates into IShipPhysicsHandler::ElectricalElementDestroySpecializationType
+			+ Specialization types, and IShipPhysicsHandler::OnElecMaterialDestroyed takes ElectricalElementDestroySpecializationType
+				+ None: nothing else
+				+ Lamp: glass sound
+				+ LampImplosion: lamp implosion sound
+				+ LampExplosion: lamp explosion sound + debris
+			+ SoundController
+		+ @ Ship::Update(.):
+			+ Find points loop that may be used for this
+			+ If has electrical element and that elec element is not deleted and that element is a Lamp: ElectricalElements::Destroy(implosion)
+				+ Regardless of current operating state of lamp
+			+ Nail down variance: constant, not percentage
+				+ Rearc:
+					! Move physics from Ship to ElectricalElements
+						! Update(.) takes effective air density, etc.
+					+ ElectricalElements::Add(.) pre-calc's threshold external pressure
+						+ Gaussian
+						+ Stores it in LampState
+					+ UpdateSinks(.):
+						+ case Lamp: before RunLampStateMachine(.), check pressure and eventually call Destroy(.)
+							+ Verify current physics also calls ElectricalElements::Destroy(.)
+							+ Use adjustment
+					+ Remove from Ship
+						+ Put ship's code back to normal
+				+ Test:
+					+ Check spark particles (Ship::GenerateSparklesForCut)
+					+ Titanic 
+			+ Nail down depths:
+				+ 500m => 5019.04
+				+ 5000m => 50190.43
 
 
 
@@ -14677,3 +14737,43 @@ IF WX:
 			+ ES
 
 		+ Sparkle length, again (TimCan)
+
+		+ Release
+			+ Windows
+				+ MSI variable
+				+ Commit & push
+				+ 64-bit MSI
+					+ Cleanup Install
+					+ Build Release Install (after clean)
+					+ Make MSI
+					+ Rename MSI
+					+ Test upgrade from previous version
+				+ 32-bit MSI
+					+ Re-generate from CMake
+					+ Cleanup Install
+					+ Build Release Install (after clean)
+					+ Make MSI
+					+ Rename MSI
+					+ Test clean install
+			+ Ubuntu
+				+ rm -rf ~/floating-sandbox
+				+ pull 
+				+ rm -rf build; mkdir build; cd build
+				+ cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
+				+ make install
+				+ Make tar ("cd ~/floating-sandbox && tar -cvf ../Floating-Sandbox-1.17.4-x64.tar . && cd -")
+				+ Zip tar
+				+ Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
+			+ Get 3 installers tested on dev server
+			+ Wait for test results
+			+ Cut tag on github
+			+ Upload packages to GameJolt
+				+ Report file as safe (https://gamejolt.com/privacy)
+				+ Post
+			+ www.floatingsandbox.com:
+				+ Update current version in FAQ
+				+ Wait a day or two, to exclude disastrous bugs
+				+ Upload changes2.txt
+					+ Test w/old FS
+
+		+ Cleanup plan, commit & push

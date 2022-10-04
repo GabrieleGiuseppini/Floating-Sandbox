@@ -671,7 +671,7 @@ public:
         , mBurningPoints()
         , mStoppedBurningPoints()
         , mFreeEphemeralParticleSearchStartIndex(mAlignedShipPointCount)
-        , mAreEphemeralPointsDirtyForRendering(false)
+        , mAreEphemeralPointElementsDirtyForRendering(false)
 #ifdef _DEBUG
         , mDiagnostic_ArePositionsDirty(false)
 #endif
@@ -2225,12 +2225,12 @@ private:
     // (just an optimization over restarting from zero each time)
     ElementIndex mFreeEphemeralParticleSearchStartIndex;
 
-    // Flag remembering whether the set of ephemeral points is dirty
+    // Flag remembering whether the set of ephemeral point *elements* is dirty
     // (i.e. whether there are more or less points than previously
     // reported to the rendering engine); only tracks dirtyness
-    // of ephemeral types that are uploaded as ephemeral points
+    // of ephemeral types that are uploaded as ephemeral point *elements*
     // (thus no AirBubbles nor Sparkles, which are both uploaded specially)
-    bool mutable mAreEphemeralPointsDirtyForRendering;
+    bool mutable mAreEphemeralPointElementsDirtyForRendering;
 
     // Calculated constants for combustion decay
     float mCombustionDecayAlphaFunctionA;

@@ -244,6 +244,10 @@ GameController::GameController(
     ComputerCalibrator::TuneGame(score, mGameParameters, *mRenderContext);
 }
 
+GameController::~GameController()
+{
+}
+
 void GameController::RebindOpenGLContext()
 {
     assert(!!mRenderContext);
@@ -960,6 +964,35 @@ void GameController::ApplyRadialWindFrom(
         preFrontIntensityMultiplier,
         mainFrontRadius,
         mainFrontIntensityMultiplier);
+}
+
+bool GameController::ApplyLaserCannonThrough(
+    DisplayLogicalCoordinates const & startScreenCoordinates, 
+    DisplayLogicalCoordinates const & endScreenCoordinates,
+    std::optional<float> strength)
+{
+    bool hasCut = false;
+
+    vec2f const startWorld = mRenderContext->ScreenToWorld(startScreenCoordinates);
+    vec2f const endWorld = mRenderContext->ScreenToWorld(endScreenCoordinates);
+
+    if (strength)
+    {
+        // Apply action
+        assert(!!mWorld);
+        hasCut = mWorld->ApplyLaserCannonThrough(
+            startWorld,
+            endWorld,
+            *strength,
+            mGameParameters);
+    }
+
+    // Draw notification at end (one frame only)
+    mNotificationLayer.SetLaserCannon(
+        endScreenCoordinates,
+        strength);
+
+    return hasCut;
 }
 
 void GameController::DrawTo(

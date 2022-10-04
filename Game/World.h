@@ -225,6 +225,12 @@ public:
         float mainFrontWindSpeed,
         GameParameters const & gameParameters);
 
+    bool ApplyLaserCannonThrough(
+        vec2f const & startPos,
+        vec2f const & endPos,
+        float strength,
+        GameParameters const & gameParameters);
+
     void DrawTo(
         vec2f const & targetPos,
         float strengthFraction,

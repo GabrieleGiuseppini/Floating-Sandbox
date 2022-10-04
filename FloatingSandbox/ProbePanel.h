@@ -30,7 +30,7 @@ public:
 
     ProbePanel(wxWindow* parent);
 
-    virtual ~ProbePanel();
+    ~ProbePanel();
 
     void UpdateSimulation();
 

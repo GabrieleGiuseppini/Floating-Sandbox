@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "RenderParameters.h"
 #include "ResourceLocator.h"
 #include "ShaderTypes.h"
 #include "TextureAtlas.h"
@@ -32,6 +33,8 @@ public:
     void InitializeGenericTextures(ResourceLocator const & resourceLocator);
 
     void InitializeExplosionTextures(ResourceLocator const & resourceLocator);
+
+    void ProcessParameterChanges(RenderParameters const & renderParameters);
 
 public:
 

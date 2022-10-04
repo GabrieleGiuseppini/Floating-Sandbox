@@ -23,7 +23,7 @@
 static constexpr int MaxElementsPerRow = 11;
 static constexpr int MaxKeyboardShortcuts = 20;
 
-std::unique_ptr<SwitchboardPanel> SwitchboardPanel::Create(
+SwitchboardPanel * SwitchboardPanel::Create(
     wxWindow * parent,
     std::function<void()> onRelayout,
     std::shared_ptr<IGameController> gameController,
@@ -32,15 +32,14 @@ std::unique_ptr<SwitchboardPanel> SwitchboardPanel::Create(
     ResourceLocator const & resourceLocator,
     ProgressCallback const & progressCallback)
 {
-    return std::unique_ptr<SwitchboardPanel>(
-        new SwitchboardPanel(
-            parent,
-            std::move(onRelayout),
-            std::move(gameController),
-            std::move(soundController),
-            std::move(uiPreferencesManager),
-            resourceLocator,
-            progressCallback));
+    return new SwitchboardPanel(
+        parent,
+        std::move(onRelayout),
+        std::move(gameController),
+        std::move(soundController),
+        std::move(uiPreferencesManager),
+        resourceLocator,
+        progressCallback);
 }
 
 SwitchboardPanel::SwitchboardPanel(

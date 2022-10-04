@@ -15,6 +15,14 @@
  */
 struct IShipPhysicsHandler
 {
+    enum class ElectricalElementDestroySpecializationType
+    {
+        None,
+        Lamp,
+        LampExplosion,
+        LampImplosion        
+    };
+
     //
     // Structure
     //
@@ -128,7 +136,12 @@ struct IShipPhysicsHandler
      * The handler is not re-entrant: destroying other electrical elements from it is not supported
      * and leads to undefined behavior.
      */
-    virtual void HandleElectricalElementDestroy(ElementIndex electricalElementIndex) = 0;
+    virtual void HandleElectricalElementDestroy(
+        ElementIndex electricalElementIndex,
+        ElementIndex pointIndex,
+        ElectricalElementDestroySpecializationType specialization,
+        float currentSimulationTime,
+        GameParameters const & gameParameters) = 0;
 
     /*
      * Invoked whenever an electrical element is restored.

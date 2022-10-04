@@ -36,14 +36,14 @@
 
 class SwitchPanel;
 
-class SwitchboardPanel
+class SwitchboardPanel final
     : public wxCustomBackgroundWindow<UnFocusablePanel>
     , public ILifecycleGameEventHandler
     , public IElectricalElementGameEventHandler
 {
 public:
 
-    static std::unique_ptr<SwitchboardPanel> Create(
+    static SwitchboardPanel * Create(
         wxWindow * parent,
         std::function<void()> onRelayout,
         std::shared_ptr<IGameController> gameController,
@@ -52,7 +52,7 @@ public:
         ResourceLocator const & resourceLocator,
         ProgressCallback const & progressCallback);
 
-    virtual ~SwitchboardPanel();
+    ~SwitchboardPanel();
 
     void UpdateSimulation()
     {

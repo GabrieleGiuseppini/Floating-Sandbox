@@ -63,29 +63,29 @@ public:
 
 	void SetDisplayUnitsSystem(UnitsSystem value);
 
-	// One frame only; after RenderUpload() it's gone
+	// One frame only; after Update() it's gone
 	inline void SetHeatBlaster(
 		vec2f const & worldCoordinates,
 		float radius,
 		HeatBlasterActionType action)
 	{
-		mHeatBlasterFlameToRender.emplace(
+		mHeatBlasterFlameToRender1.emplace(
 			worldCoordinates,
 			radius,
 			action);
 	}
 
-	// One frame only; after RenderUpload() it's gone
+	// One frame only; after Update() it's gone
 	inline void SetFireExtinguisherSpray(
 		vec2f const & worldCoordinates,
 		float radius)
 	{
-		mFireExtinguisherSprayToRender.emplace(
+		mFireExtinguisherSprayToRender1.emplace(
 			worldCoordinates,
 			radius);
 	}
 
-	// One frame only; after RenderUpload() it's gone
+	// One frame only; after Update() it's gone
 	// (special case as this is really UI)
 	inline void SetBlastToolHalo(
 		vec2f const & worldCoordinates,
@@ -93,24 +93,24 @@ public:
 		float renderProgress,
 		float personalitySeed)
 	{
-		mBlastToolHaloToRender.emplace(
+		mBlastToolHaloToRender1.emplace(
 			worldCoordinates,
 			radius,
 			renderProgress,
 			personalitySeed);
 	}
 
-	// One frame only; after RenderUpload() it's gone
+	// One frame only; after Update() it's gone
 	inline void SetPressureInjectionHalo(
 		vec2f const & worldCoordinates,
 		float flowMultiplier)
 	{
-		mPressureInjectionHaloToRender.emplace(
+		mPressureInjectionHaloToRender1.emplace(
 			worldCoordinates,
 			flowMultiplier);
 	}
 
-	// One frame only; after RenderUpload() it's gone
+	// One frame only; after Update() it's gone
 	inline void SetWindSphere(
 		vec2f const & sourcePos,
 		float preFrontRadius,
@@ -118,12 +118,22 @@ public:
 		float mainFrontRadius,
 		float mainFrontIntensityMultiplier)
 	{
-		mWindSphereToRender.emplace(
+		mWindSphereToRender1.emplace(
 			sourcePos,
 			preFrontRadius,
 			preFrontIntensityMultiplier,
 			mainFrontRadius,
 			mainFrontIntensityMultiplier);
+	}
+
+	// One frame only; after Update() it's gone
+	inline void SetLaserCannon(
+		DisplayLogicalCoordinates const & center,
+		std::optional<float> strength)
+	{
+		mLaserCannonToRender1.emplace(
+			center,
+			strength);
 	}
 
 	void Reset();
@@ -304,9 +314,8 @@ private:
 		{}
 	};
 
-	// When set, will be uploaded to display the HeatBlaster flame
-	// - and then reset (one-time use, it's a special case as it's really UI)
-	std::optional<HeatBlasterInfo> mHeatBlasterFlameToRender;
+	std::optional<HeatBlasterInfo> mHeatBlasterFlameToRender1;
+	std::optional<HeatBlasterInfo> mHeatBlasterFlameToRender2;
 
 	struct FireExtinguisherSpray
 	{
@@ -321,9 +330,8 @@ private:
 		{}
 	};
 
-	// When set, will be uploaded to display the fire extinguisher spray
-	// - and then reset (one-time use, it's a special case as it's really UI)
-	std::optional<FireExtinguisherSpray> mFireExtinguisherSprayToRender;
+	std::optional<FireExtinguisherSpray> mFireExtinguisherSprayToRender1;
+	std::optional<FireExtinguisherSpray> mFireExtinguisherSprayToRender2;
 
 	struct BlastToolHalo
 	{
@@ -344,9 +352,8 @@ private:
 		{}
 	};
 
-	// When set, will be uploaded to display the blast
-	// - and then reset (one-time use, it's a special case as it's really UI)
-	std::optional<BlastToolHalo> mBlastToolHaloToRender;
+	std::optional<BlastToolHalo> mBlastToolHaloToRender1;
+	std::optional<BlastToolHalo> mBlastToolHaloToRender2;
 
 	struct PressureInjectionHalo
 	{
@@ -361,13 +368,12 @@ private:
 		{}
 	};
 
-	// When set, will be uploaded to display the pressure injection
-	// - and then reset (one-time use, it's a special case as it's really UI)
-	std::optional<PressureInjectionHalo> mPressureInjectionHaloToRender;
+	std::optional<PressureInjectionHalo> mPressureInjectionHaloToRender1;
+	std::optional<PressureInjectionHalo> mPressureInjectionHaloToRender2;
 
 	struct WindSphere
 	{
-		vec2f const SourcePos;
+		vec2f SourcePos;
 		float PreFrontRadius;
 		float PreFrontIntensityMultiplier;
 		float MainFrontRadius;
@@ -387,7 +393,22 @@ private:
 		{}
 	};
 
-	// When set, will be uploaded to display the wind sphere
-	// - and then reset (one-time use, it's a special case as it's really UI)
-	std::optional<WindSphere> mWindSphereToRender;
+	std::optional<WindSphere> mWindSphereToRender1;
+	std::optional<WindSphere> mWindSphereToRender2;
+
+	struct LaserCannon
+	{
+		DisplayLogicalCoordinates Center;
+		std::optional<float> Strength;
+
+		LaserCannon(
+			DisplayLogicalCoordinates const & center,
+			std::optional<float> strength)
+			: Center(center)
+			, Strength(strength)
+		{}
+	};
+
+	std::optional<LaserCannon> mLaserCannonToRender1;
+	std::optional<LaserCannon> mLaserCannonToRender2;
 };

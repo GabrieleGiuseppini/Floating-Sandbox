@@ -179,6 +179,12 @@ public:
         float mainFrontWindSpeed,
         GameParameters const & gameParameters);
 
+    bool ApplyLaserCannonThrough(
+        vec2f const & startPos,
+        vec2f const & endPos,
+        float strength,
+        GameParameters const & gameParameters);
+
     void DrawTo(
         vec2f const & targetPos,
         float strengthFraction,
@@ -603,7 +609,8 @@ private:
         GameParameters const & gameParameters);
 
     void GenerateDebris(
-        ElementIndex pointElementIndex,
+        ElementIndex sourcePointElementIndex,
+        StructuralMaterial const & debrisStructuralMaterial,
         float currentSimulationTime,
         GameParameters const & gameParameters);
 
@@ -676,7 +683,12 @@ private:
 
     virtual void HandleTriangleRestore(ElementIndex triangleElementIndex) override;
 
-    virtual void HandleElectricalElementDestroy(ElementIndex electricalElementIndex) override;
+    virtual void HandleElectricalElementDestroy(
+        ElementIndex electricalElementIndex,
+        ElementIndex pointIndex,
+        ElectricalElementDestroySpecializationType specialization,
+        float currentSimulationTime,
+        GameParameters const & gameParameters) override;
 
     virtual void HandleElectricalElementRestore(ElementIndex electricalElementIndex) override;
 

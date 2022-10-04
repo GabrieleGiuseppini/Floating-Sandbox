@@ -1,3 +1,11 @@
+1.17.5
+- Added new "Laser Cannon" tool
+- Improved behavior of lamps under extreme conditions:
+	- At great ocean depths
+	- When subject to electric sparks
+	- When their power generator is flooded
+- Added Ukrainian translation - thanks to Roman Shavernew (Dioxcode)!
+
 1.17.4
 - Improved "Ship Load" window, allowing to sort by different attributes, and allowing to load ships flipped and/or rotated
 - Small user interface changes here and there, mostly to improve experience on Windows 11
