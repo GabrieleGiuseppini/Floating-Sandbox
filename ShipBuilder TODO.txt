@@ -200,8 +200,8 @@
 			- Deselect
 			- Controller::~Controller (obviously)
 	- ClipboardManager: stores opt<LayersRegion>
-		- Owned by Controller, created @ cctor
-			- TODO: or, owned by WorkbenchState, so we may have clipboard surviving reloads?
+		- Owned by WorkbenchState, created @ cctor
+			- Owned by WorkbenchState, so we may have clipboard surviving reloads
 		- Has reference to IUserInterface (to notify of clipboard full/empty toggles)
 		- Never reset
 	- Select tool <TLayer>: populates selection Rect into SelectionManager

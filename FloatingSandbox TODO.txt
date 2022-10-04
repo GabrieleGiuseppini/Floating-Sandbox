@@ -49,10 +49,10 @@
 		+ More prob when SHIFT is down
 		+ Sound for cut
 
-	= Ukrainian (uk)
+	+ Ukrainian (uk)
 		+ 2 .mo files
-		= 2 HTML files
-		- changelist
+		+ 2 HTML files
+		+ changelist
 
 	- Merge into master
 

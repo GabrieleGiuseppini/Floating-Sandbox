@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Floating Sandbox\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-09-19 15:16+0300\n"
+"PO-Revision-Date: 2022-10-04 02:35+0300\n"
 "Last-Translator: Gabriele Giuseppini <gabrielegiuseppini@gmail.com>\n"
 "Language-Team: Ilya Voloshin; Roman Shavernew (DioxCode)\n"
 "Language: ru\n"
@@ -554,7 +554,7 @@ msgstr ""
 
 #: ..\FloatingSandbox\MainFrame.cpp:371
 msgid "Attract/Repel"
-msgstr "Приємність/Відштовхування"
+msgstr "Притягання/Відштовхування"
 
 #: ..\ShipBuilderLib\UI\ShipPropertiesEditDialog.cpp:227
 msgid "Author(s)"
