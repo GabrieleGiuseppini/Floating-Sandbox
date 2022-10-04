@@ -54,13 +54,13 @@
 		+ 2 HTML files
 		+ changelist
 
-	- Merge into master
+	+ Merge into master
 
-	- Send for testing
-		- Ask specifically to check lamps in sinking ships
-		- Ask to check Ukrainian
+	+ Send for testing
+		+ Ask specifically to check lamps in sinking ships
+		+ Ask to check Ukrainian
 
-	- Bump up version
+	+ Bump up version
 
 	- ShipBuilder things (*)
 
