@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #include "SelectionTool.h"
 
+#include "Controller.h"
+
 #include <UILib/WxHelpers.h>
 
 namespace ShipBuilder {
@@ -57,8 +59,6 @@ SelectionTool<TLayer>::SelectionTool(
     , mEngagementData()
 {
     SetCursor(WxHelpers::LoadCursorImage("selection_cursor", 10, 10, resourceLocator));
-
-    // TODO
 }
 
 template<LayerType TLayer>
@@ -67,39 +67,53 @@ SelectionTool<TLayer>::~SelectionTool()
     if (mCurrentRect && !mCurrentRect->IsEmpty())
     {
         // Remove overlay
-        // TODOHERE
+        mController.GetView().RemoveSelectionOverlay();
+        mController.GetUserInterface().RefreshView();
     }
 }
 
 template<LayerType TLayer>
 void SelectionTool<TLayer>::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates)
 {
-    // TODO
-    (void)mouseCoordinates;
+    if (mEngagementData)
+    {
+        // TODO: clip to ship canvas, etc.
+        // TODO: snap to 0.5
+        auto const mouseShipSpaceCoords = ScreenToShipSpace(mouseCoordinates);
+        mController.GetView().UploadSelectionOverlay(
+            mEngagementData->SelectionStartCorner,
+            mouseShipSpaceCoords);
+        mController.GetUserInterface().RefreshView();
+    }
 }
 
 template<LayerType TLayer>
 void SelectionTool<TLayer>::OnLeftMouseDown()
 {
-    // TODO
+    assert(!mEngagementData);
+
+    auto const mouseCoordinates = GetMouseCoordinatesIfInWorkCanvas();
+    if (mouseCoordinates)
+    {
+        // TODOHERE: check if we have a rect and if it matches existing corner
+
+        // Engage
+        auto const mouseShipSpaceCoords = ScreenToShipSpace(*mouseCoordinates);
+        mEngagementData.emplace(mouseShipSpaceCoords);
+
+        // No point in updating, selection rect is empty now
+    }
 }
 
 template<LayerType TLayer>
 void SelectionTool<TLayer>::OnLeftMouseUp()
 {
     // TODO
-}
 
-template<LayerType TLayer>
-void SelectionTool<TLayer>::OnRightMouseDown()
-{
-    // TODO
-}
-
-template<LayerType TLayer>
-void SelectionTool<TLayer>::OnRightMouseUp()
-{
-    // TODO
+    assert(mEngagementData);
+    mEngagementData.reset();
+    mController.GetView().RemoveSelectionOverlay();
+    mController.GetUserInterface().RefreshView();
 }
 
 template<LayerType TLayer>

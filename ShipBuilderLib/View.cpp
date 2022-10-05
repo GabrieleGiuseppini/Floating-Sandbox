@@ -6,6 +6,7 @@
 #include "View.h"
 
 #include <GameCore/GameException.h>
+#include <GameCore/GameMath.h>
 #include <GameCore/Log.h>
 #include <GameCore/SysSpecifics.h>
 
@@ -557,6 +558,35 @@ View::View(
     }
 
     //
+    // Initialize selection overlay VAO
+    //
+
+    {
+        GLuint tmpGLuint;
+
+        // Create VAO
+        glGenVertexArrays(1, &tmpGLuint);
+        mSelectionOverlayVAO = tmpGLuint;
+        glBindVertexArray(*mSelectionOverlayVAO);
+        CheckOpenGLError();
+
+        // Create VBO
+        glGenBuffers(1, &tmpGLuint);
+        mSelectionOverlayVBO = tmpGLuint;
+
+        // Describe vertex attributes
+        glBindBuffer(GL_ARRAY_BUFFER, *mSelectionOverlayVBO);
+        static_assert(sizeof(DashedLineOverlayVertex) == (3 + 3) * sizeof(float));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::DashedLineOverlay1));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::DashedLineOverlay1), 3, GL_FLOAT, GL_FALSE, sizeof(DashedLineOverlayVertex), (void *)0);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::DashedLineOverlay2));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::DashedLineOverlay2), 3, GL_FLOAT, GL_FALSE, sizeof(DashedLineOverlayVertex), (void *)(3 * sizeof(float)));
+        CheckOpenGLError();
+
+        glBindVertexArray(0);
+    }
+
+    //
     // Initialize waterline markers VAO
     //
 
@@ -1057,6 +1087,24 @@ void View::RemoveDashedLineOverlay()
     mDashedLineOverlaySet.clear();
 }
 
+void View::UploadSelectionOverlay(
+    ShipSpaceCoordinates const & cornerA,
+    ShipSpaceCoordinates const & cornerB)
+{
+    // Store rect
+    mSelectionOverlayRect.emplace(cornerA, cornerB);
+
+    // Update overlay
+    UpdateSelectionOverlay();
+}
+
+void View::RemoveSelectionOverlay()
+{
+    assert(mSelectionOverlayRect.has_value());
+
+    mSelectionOverlayRect.reset();
+}
+
 void View::UploadWaterlineMarker(
     vec2f const & center,
     WaterlineMarkerType type)
@@ -1383,6 +1431,24 @@ void View::Render()
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         CheckOpenGLError();
     }
+
+    // Selection overlay
+    if (mSelectionOverlayRect.has_value())
+    {
+        // Bind VAO
+        glBindVertexArray(*mSelectionOverlayVAO);
+
+        // Activate program
+        mShaderManager->ActivateProgram<ProgramType::DashedLineOverlay>();
+
+        // Set line width
+        glLineWidth(1.5f);
+
+        // Draw
+        glDrawArrays(GL_LINES, 0, 8);
+        CheckOpenGLError();
+    }
+
 
     // Waterline
     if (mHasWaterline)
@@ -1928,6 +1994,109 @@ void View::UpdateDashedLineOverlay()
 
     // Upload vertices
     glBindBuffer(GL_ARRAY_BUFFER, *mDashedLineOverlayVBO);
+    glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size() * sizeof(DashedLineOverlayVertex), vertexBuffer.data(), GL_STATIC_DRAW);
+    CheckOpenGLError();
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void View::UpdateSelectionOverlay()
+{
+    assert(mSelectionOverlayRect.has_value());
+
+    vec3f constexpr OverlayColor = vec3f(0.0f, 0.0f, 0.0f);
+
+    //
+    // Populate vertices - assuming corner A is the origin of the dashes
+    //
+
+    std::vector<DashedLineOverlayVertex> vertexBuffer;
+
+
+    vec2f const cornerA = mSelectionOverlayRect->first.ToFloat();
+    vec2f const cornerB = mSelectionOverlayRect->second.ToFloat();
+
+    // Calculate width and height, in pixels, signed
+    float const shipWidth = cornerB.x - cornerA.x;
+    float const pixelWidth = mViewModel.FractionalShipSpaceOffsetToFractionalPhysicalDisplayOffset(shipWidth);
+    float const shipHeight = cornerB.y - cornerA.y;
+    float const pixelHeight = mViewModel.FractionalShipSpaceOffsetToFractionalPhysicalDisplayOffset(shipHeight);
+
+    // One pixel in ship space
+    float const shipSpaceQuantum = mViewModel.GetShipSpaceForOnePhysicalDisplayPixel();
+
+
+    // Left-Top (conceptually, could be anywhere)
+    vertexBuffer.emplace_back(
+        vec2f(
+            cornerA.x + shipSpaceQuantum * Sign(shipWidth),
+            cornerA.y + shipSpaceQuantum * Sign(shipHeight)),
+        0.0f,
+        OverlayColor);
+
+    // Right-Top (conceptually, could be anywhere)
+    vertexBuffer.emplace_back(
+        vec2f(
+            cornerA.x + shipWidth - shipSpaceQuantum * Sign(shipWidth),
+            cornerA.y + shipSpaceQuantum * Sign(shipHeight)),
+        std::abs(pixelWidth),
+        OverlayColor);
+
+
+    // Right-Top (conceptually, could be anywhere)
+    vertexBuffer.emplace_back(
+        vec2f(
+            cornerA.x + shipWidth - shipSpaceQuantum * Sign(shipWidth),
+            cornerA.y + shipSpaceQuantum * Sign(shipHeight)),
+        std::abs(pixelWidth),
+        OverlayColor);
+
+    // Right-Bottom (conceptually, could be anywhere)
+    vertexBuffer.emplace_back(
+        vec2f(
+            cornerA.x + shipWidth - shipSpaceQuantum * Sign(shipWidth),
+            cornerA.y + shipHeight - shipSpaceQuantum * Sign(shipHeight)),
+        std::abs(pixelWidth) + std::abs(pixelHeight),
+        OverlayColor);
+
+
+    // Left-Top (conceptually, could be anywhere)
+    vertexBuffer.emplace_back(
+        vec2f(
+            cornerA.x + shipSpaceQuantum * Sign(shipWidth),
+            cornerA.y + shipSpaceQuantum * Sign(shipHeight)),
+        0.0f,
+        OverlayColor);
+
+    // Left-Bottom (conceptually, could be anywhere)
+    vertexBuffer.emplace_back(
+        vec2f(
+            cornerA.x + shipSpaceQuantum * Sign(shipWidth),
+            cornerA.y + shipHeight - shipSpaceQuantum * Sign(shipHeight)),
+        std::abs(pixelHeight),
+        OverlayColor);
+
+
+    // Left-Bottom (conceptually, could be anywhere)
+    vertexBuffer.emplace_back(
+        vec2f(
+            cornerA.x + shipSpaceQuantum * Sign(shipWidth),
+            cornerA.y + shipHeight - shipSpaceQuantum * Sign(shipHeight)),
+        std::abs(pixelHeight),
+        OverlayColor);
+
+    // Right-Bottom (conceptually, could be anywhere)
+    vertexBuffer.emplace_back(
+        vec2f(
+            cornerA.x + shipWidth - shipSpaceQuantum * Sign(shipWidth),
+            cornerA.y + shipHeight - shipSpaceQuantum * Sign(shipHeight)),
+        std::abs(pixelHeight) + std::abs(pixelWidth),
+        OverlayColor);
+
+    //
+    // Upload vertices
+    //
+
+    glBindBuffer(GL_ARRAY_BUFFER, *mSelectionOverlayVBO);
     glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size() * sizeof(DashedLineOverlayVertex), vertexBuffer.data(), GL_STATIC_DRAW);
     CheckOpenGLError();
     glBindBuffer(GL_ARRAY_BUFFER, 0);

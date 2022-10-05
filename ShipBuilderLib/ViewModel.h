@@ -225,23 +225,28 @@ public:
             static_cast<int>(ShipSpaceToDisplayPhysical(static_cast<float>(mShipSize.height - 1 - coords.y + MarginDisplayShipSize - mCam.y))));
     }
 
-    DisplayPhysicalSize ShipSpaceSizeToPhysicalDisplaySize(ShipSpaceSize const & size) const
+    DisplayPhysicalSize ShipSpaceSizeToPhysicalDisplaySize(ShipSpaceSize const & shipSpaceSize) const
     {
         vec2f const fractionalPhysicalDisplaySize = FractionalShipSpaceSizeToFractionalPhysicalDisplaySize(
             vec2f(
-                static_cast<float>(size.width),
-                static_cast<float>(size.height)));
+                static_cast<float>(shipSpaceSize.width),
+                static_cast<float>(shipSpaceSize.height)));
         
         return DisplayPhysicalSize(
             static_cast<int>(fractionalPhysicalDisplaySize.x),
             static_cast<int>(fractionalPhysicalDisplaySize.y));
     }
 
-    vec2f FractionalShipSpaceSizeToFractionalPhysicalDisplaySize(vec2f const & size) const
+    vec2f FractionalShipSpaceSizeToFractionalPhysicalDisplaySize(vec2f const & shipSpaceSize) const
     {
         return vec2f(
-            ShipSpaceToDisplayPhysical(size.x),
-            ShipSpaceToDisplayPhysical(size.y));
+            ShipSpaceToDisplayPhysical(shipSpaceSize.x),
+            ShipSpaceToDisplayPhysical(shipSpaceSize.y));
+    }
+
+    float FractionalShipSpaceOffsetToFractionalPhysicalDisplayOffset(float shipSpaceOffset) const
+    {
+        return ShipSpaceToDisplayPhysical(shipSpaceOffset);
     }
 
     ImageCoordinates ScreenToTextureSpace(DisplayLogicalCoordinates const & displayCoordinates) const

@@ -181,6 +181,12 @@ inline float Step(
     return x < lEdge ? 0.0f : 1.0f;
 }
 
+template <typename T> 
+inline int Sign(T val)  // 0.0 returns +1.0
+{
+    return (T(0) <= val) - (val < T(0));
+}
+
 inline float SignStep(
     float lEdge,
     float x) noexcept

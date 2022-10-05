@@ -155,6 +155,13 @@ TEST(GameMathTests, Step_Basic)
     EXPECT_EQ(1.0f, Step(1.0f, 2.0f));
 }
 
+TEST(GameMathTests, Sign_Basic)
+{
+    EXPECT_EQ(1.0f, Sign(0.0f));
+    EXPECT_EQ(1.0f, Sign(10.0f));
+    EXPECT_EQ(-1.0f, Sign(-10.0f));
+}
+
 TEST(GameMathTests, LinearStep_Basic)
 {
     EXPECT_EQ(0.0f, LinearStep(1.0f, 2.0f, 0.5f));

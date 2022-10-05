@@ -5444,16 +5444,14 @@ void MainFrame::ReconciliateUIWithSelectedTool(std::optional<ToolType> tool)
         }
 
         mToolSettingsRibbonPanel->Show(true);
-        mMainRibbonBar->Realize();
     }
     else
     {
-        // TODOTEST
-        //// Do not re-realize main ribbon bar, or else the panel becomes tiny
-        //mToolSettingsPanelsSizer->Layout();
         mToolSettingsRibbonPanel->Show(false);
-        mMainRibbonBar->Realize();
     }
+
+    // React to new layout
+    mMainRibbonBar->Realize();
 
     // Tell status bar
     mStatusBar->SetCurrentToolType(tool);

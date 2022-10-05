@@ -25,8 +25,8 @@ public:
     void OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates) override;
     void OnLeftMouseDown() override;
     void OnLeftMouseUp() override;
-    void OnRightMouseDown() override;
-    void OnRightMouseUp() override;
+    void OnRightMouseDown() override {}
+    void OnRightMouseUp() override {}
     void OnShiftKeyDown() override;
     void OnShiftKeyUp() override;
 
@@ -39,6 +39,9 @@ protected:
 
 private:
 
+
+private:
+
     // When set - and not empty - we have a selection (*and* thus also
     // a selection overlay)
     std::optional<ShipSpaceRect> mCurrentRect;
@@ -46,6 +49,10 @@ private:
     struct EngagementData
     {
         ShipSpaceCoordinates SelectionStartCorner;
+
+        EngagementData(ShipSpaceCoordinates const & selectionStartCorner)
+            : SelectionStartCorner(selectionStartCorner)
+        {}
     };
 
     // When set, we're engaged (dragging)
