@@ -10,6 +10,7 @@
 #include <GameCore/Colors.h>
 #include <GameCore/ImageData.h>
 
+#include <wx/bitmap.h>
 #include <wx/cursor.h>
 #include <wx/generic/statbmpg.h>
 #include <wx/image.h>

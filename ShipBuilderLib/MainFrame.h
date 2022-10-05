@@ -138,6 +138,8 @@ public:
 
     void OnUndoStackStateChanged(UndoStack & undoStack) override;
 
+    void OnSelectionChanged(std::optional<ShipSpaceRect> const & selectionRect) override;
+
     void OnToolCoordinatesChanged(std::optional<ShipSpaceCoordinates> coordinates, ShipSpaceSize const & shipSize) override;
 
     void OnSampledInformationUpdated(std::optional<SampledInformation> sampledInformation) override;
@@ -238,6 +240,8 @@ private:
     void OnElectricalPanelEdit();
 
     void ValidateShip();
+
+    void Deselect();
 
     void OpenMaterialPalette(
         wxMouseEvent const & event,
@@ -343,6 +347,8 @@ private:
 
     void ReconciliateUIWithUndoStackState(UndoStack & undoStack);
 
+    void ReconciliateUIWithSelection(std::optional<ShipSpaceRect> const & selectionRect);
+
     void ReconciliateUIWithDisplayUnitsSystem(UnitsSystem displayUnitsSystem);
     void ReconciliateUIWithShipFilename();
 
@@ -389,8 +395,9 @@ private:
     std::array<RibbonToolbarButton<BitmapButton> *, LayerCount> mLayerExportButtons;
     std::array<RibbonToolbarButton<BitmapButton> *, LayerCount> mLayerDeleteButtons;
     RibbonToolbarButton<BitmapButton> * mElectricalPanelEditButton;
+    wxRibbonPanel * mToolSettingsRibbonPanel;
     wxSizer * mToolSettingsPanelsSizer;
-    std::vector<std::tuple<ToolType, wxPanel *>> mToolSettingsPanels;
+    std::vector<std::tuple<std::vector<ToolType>, wxPanel *>> mToolSettingsPanels;
     wxSlider * mTextureMagicWandToleranceSlider;
     EditSpinBox<std::uint32_t> * mTextureMagicWandToleranceEditSpinBox;
 

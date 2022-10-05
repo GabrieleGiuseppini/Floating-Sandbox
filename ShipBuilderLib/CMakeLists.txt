@@ -19,7 +19,6 @@ set (SHIPBUILDER_LIB_SOURCES
 	ModelValidator.cpp
 	ModelValidator.h
 	OpenGLManager.h
-	SelectionManager.cpp	
 	SelectionManager.h
 	ShaderTypes.cpp
 	ShaderTypes.h
@@ -91,6 +90,8 @@ set (TOOLS_SOURCES
 	Tools/RopePencilTool.h
 	Tools/SamplerTool.cpp
 	Tools/SamplerTool.h
+	Tools/SelectionTool.cpp
+	Tools/SelectionTool.h
 	Tools/TextureEraserTool.cpp
 	Tools/TextureEraserTool.h
 	Tools/TextureMagicWandTool.cpp

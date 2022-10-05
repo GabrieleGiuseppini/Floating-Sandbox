@@ -75,6 +75,9 @@ struct IUserInterface
     // Notifies of a change in the state of the undo stack
     virtual void OnUndoStackStateChanged(UndoStack & undoStack) = 0;
 
+    // Notifies of a change in the current selection
+    virtual void OnSelectionChanged(std::optional<ShipSpaceRect> const & selectionRect) = 0;
+
     // Notifies of a change in the tool coordinates to display
     virtual void OnToolCoordinatesChanged(std::optional<ShipSpaceCoordinates> coordinates, ShipSpaceSize const & shipSize) = 0;
 

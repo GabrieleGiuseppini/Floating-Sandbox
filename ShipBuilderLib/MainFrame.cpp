@@ -585,6 +585,11 @@ void MainFrame::OnUndoStackStateChanged(UndoStack & undoStack)
     ReconciliateUIWithUndoStackState(undoStack);
 }
 
+void MainFrame::OnSelectionChanged(std::optional<ShipSpaceRect> const & selectionRect)
+{
+    ReconciliateUIWithSelection(selectionRect);
+}
+
 void MainFrame::OnToolCoordinatesChanged(std::optional<ShipSpaceCoordinates> coordinates, ShipSpaceSize const & shipSize)
 {
     if (coordinates.has_value())
@@ -1757,14 +1762,14 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
     std::uint32_t constexpr MaxPencilSize = 8;
     wxColor const labelColor = parent->GetArtProvider()->GetColor(wxRIBBON_ART_BUTTON_BAR_LABEL_COLOUR);
 
-    wxRibbonPanel * ribbonPanel = new wxRibbonPanel(parent, wxID_ANY, _("Tool Settings"), wxNullBitmap, wxDefaultPosition, wxDefaultSize,
+    mToolSettingsRibbonPanel = new wxRibbonPanel(parent, wxID_ANY, _("Tool Settings"), wxNullBitmap, wxDefaultPosition, wxDefaultSize,
         wxRIBBON_PANEL_NO_AUTO_MINIMISE);
 
     mToolSettingsPanelsSizer = new wxBoxSizer(wxHORIZONTAL);
 
     // Structural pencil
     {
-        wxPanel * dynamicPanel = new wxPanel(ribbonPanel);
+        wxPanel * dynamicPanel = new wxPanel(mToolSettingsRibbonPanel);
         wxGridBagSizer * dynamicPanelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
 
         // Label
@@ -1802,7 +1807,7 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
 
         dynamicPanel->SetSizerAndFit(dynamicPanelGridSizer);
 
-        // Insert in dynamic panel
+        // Insert in place
         {
             mToolSettingsPanelsSizer->Add(
                 dynamicPanel,
@@ -1811,14 +1816,14 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
                 0);
 
             mToolSettingsPanels.emplace_back(
-                ToolType::StructuralPencil,
+                std::vector<ToolType>{ ToolType::StructuralPencil },
                 dynamicPanel);
         }
     }
 
     // Structural eraser
     {
-        wxPanel * dynamicPanel = new wxPanel(ribbonPanel);
+        wxPanel * dynamicPanel = new wxPanel(mToolSettingsRibbonPanel);
         wxGridBagSizer * dynamicPanelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
 
         // Label
@@ -1856,7 +1861,7 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
 
         dynamicPanel->SetSizerAndFit(dynamicPanelGridSizer);
 
-        // Insert in dynamic panel
+        // Insert in place
         {
             mToolSettingsPanelsSizer->Add(
                 dynamicPanel,
@@ -1865,14 +1870,14 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
                 0);
 
             mToolSettingsPanels.emplace_back(
-                ToolType::StructuralEraser,
+                std::vector<ToolType>{ ToolType::StructuralEraser },
                 dynamicPanel);
         }
     }
 
     // Electrical eraser
     {
-        wxPanel * dynamicPanel = new wxPanel(ribbonPanel);
+        wxPanel * dynamicPanel = new wxPanel(mToolSettingsRibbonPanel);
         wxGridBagSizer * dynamicPanelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
 
         // Label
@@ -1910,7 +1915,7 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
 
         dynamicPanel->SetSizerAndFit(dynamicPanelGridSizer);
 
-        // Insert in dynamic panel
+        // Insert in place
         {
             mToolSettingsPanelsSizer->Add(
                 dynamicPanel,
@@ -1919,14 +1924,14 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
                 0);
 
             mToolSettingsPanels.emplace_back(
-                ToolType::ElectricalEraser,
+                std::vector<ToolType>{ ToolType::ElectricalEraser },
                 dynamicPanel);
         }
     }
 
     // Structural line
     {
-        wxPanel * dynamicPanel = new wxPanel(ribbonPanel);
+        wxPanel * dynamicPanel = new wxPanel(mToolSettingsRibbonPanel);
         wxGridBagSizer * dynamicPanelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
 
         // Line Size Label
@@ -1998,7 +2003,7 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
 
         dynamicPanel->SetSizerAndFit(dynamicPanelGridSizer);
 
-        // Insert in dynamic panel
+        // Insert in place
         {
             mToolSettingsPanelsSizer->Add(
                 dynamicPanel,
@@ -2007,14 +2012,14 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
                 0);
 
             mToolSettingsPanels.emplace_back(
-                ToolType::StructuralLine,
+                std::vector<ToolType>{ ToolType::StructuralLine },
                 dynamicPanel);
         }
     }
 
     // Structural flood
     {
-        wxPanel * dynamicPanel = new wxPanel(ribbonPanel);
+        wxPanel * dynamicPanel = new wxPanel(mToolSettingsRibbonPanel);
         wxGridBagSizer * dynamicPanelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
 
         // Contiguous Label
@@ -2053,7 +2058,7 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
 
         dynamicPanel->SetSizerAndFit(dynamicPanelGridSizer);
 
-        // Insert in dynamic panel
+        // Insert in place
         {
             mToolSettingsPanelsSizer->Add(
                 dynamicPanel,
@@ -2062,14 +2067,14 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
                 0);
 
             mToolSettingsPanels.emplace_back(
-                ToolType::StructuralFlood,
+                std::vector<ToolType>{ ToolType::StructuralFlood },
                 dynamicPanel);
         }
     }
 
     // Texture magic wand
     {
-        wxPanel * dynamicPanel = new wxPanel(ribbonPanel);
+        wxPanel * dynamicPanel = new wxPanel(mToolSettingsRibbonPanel);
         wxGridBagSizer * dynamicPanelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
 
         // Tolerance Label
@@ -2198,7 +2203,7 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
 
         dynamicPanel->SetSizerAndFit(dynamicPanelGridSizer);
 
-        // Insert in dynamic panel
+        // Insert in place
         {
             mToolSettingsPanelsSizer->Add(
                 dynamicPanel,
@@ -2207,14 +2212,14 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
                 0);
 
             mToolSettingsPanels.emplace_back(
-                ToolType::TextureMagicWand,
+                std::vector<ToolType>{ ToolType::TextureMagicWand },
                 dynamicPanel);
         }
     }
 
     // Texture eraser
     {
-        wxPanel * dynamicPanel = new wxPanel(ribbonPanel);
+        wxPanel * dynamicPanel = new wxPanel(mToolSettingsRibbonPanel);
         wxGridBagSizer * dynamicPanelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
 
         // Label
@@ -2252,7 +2257,7 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
 
         dynamicPanel->SetSizerAndFit(dynamicPanelGridSizer);
 
-        // Insert in dynamic panel
+        // Insert in place
         {
             mToolSettingsPanelsSizer->Add(
                 dynamicPanel,
@@ -2261,7 +2266,120 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
                 0);
 
             mToolSettingsPanels.emplace_back(
-                ToolType::TextureEraser,
+                std::vector<ToolType>{ ToolType::TextureEraser },
+                dynamicPanel);
+        }
+    }
+
+    // Selection
+    {
+        wxPanel * dynamicPanel = new wxPanel(mToolSettingsRibbonPanel);
+        wxGridBagSizer * dynamicPanelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
+
+        // All Layers Label
+        {
+            auto * staticText = new wxStaticText(dynamicPanel, wxID_ANY, _("All Layers:"));
+            staticText->SetForegroundColour(labelColor);
+
+            dynamicPanelGridSizer->Add(
+                staticText,
+                wxGBPosition(0, 0),
+                wxGBSpan(1, 1),
+                wxALIGN_CENTER_VERTICAL);
+        }
+
+        // All Layers Checkbox
+        {
+            wxCheckBox * chkBox = new wxCheckBox(dynamicPanel, wxID_ANY, wxEmptyString);
+
+            chkBox->SetToolTip(_("When enabled, the selection affects all layers instead of just the current layer."));
+
+            chkBox->SetValue(mWorkbenchState.GetSelectionIsAllLayers());
+
+            chkBox->Bind(
+                wxEVT_CHECKBOX,
+                [this](wxCommandEvent & event)
+                {
+                    mWorkbenchState.SetSelectionIsAllLayers(event.IsChecked());
+                });
+
+            dynamicPanelGridSizer->Add(
+                chkBox,
+                wxGBPosition(0, 1),
+                wxGBSpan(1, 1),
+                wxALIGN_CENTER_VERTICAL);
+        }
+
+        // Deselect button
+        {
+            wxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
+
+            // Button
+            {
+                auto * button = new BitmapButton(
+                    dynamicPanel,
+                    mResourceLocator.GetIconFilePath("deselect_button"),
+                    [this]()
+                    {
+                        Deselect();
+                    },
+                    _("Remove the current selection (Ctrl+D)."));
+
+                vSizer->Add(
+                    button,
+                    0,
+                    wxALIGN_CENTER_HORIZONTAL,
+                    0);
+            }
+
+            // Label
+            {
+                auto * label = new wxStaticText(
+                    dynamicPanel,
+                    wxID_ANY,
+                    _("Deselect"));
+
+                label->SetForegroundColour(parent->GetArtProvider()->GetColor(wxRIBBON_ART_BUTTON_BAR_LABEL_COLOUR));
+
+                vSizer->Add(
+                    label,
+                    0,
+                    wxALIGN_CENTER_HORIZONTAL | wxTOP,
+                    2);
+            }
+
+            dynamicPanelGridSizer->Add(
+                vSizer,
+                wxGBPosition(0, 2),
+                wxGBSpan(1, 1));
+
+            AddAcceleratorKey(wxACCEL_CTRL, (int)'D',
+                [this]()
+                {
+                    // With keys we have no insurance of a controller
+                    if (mController)
+                    {
+                        Deselect();
+                    }
+                });
+        }
+
+        dynamicPanel->SetSizerAndFit(dynamicPanelGridSizer);
+
+        // Insert in place
+        {
+            mToolSettingsPanelsSizer->Add(
+                dynamicPanel,
+                0,
+                wxALIGN_CENTER_VERTICAL,
+                0);
+
+            mToolSettingsPanels.emplace_back(
+                std::vector<ToolType>{
+                    ToolType::StructuralSelection,
+                    ToolType::ElectricalSelection,
+                    ToolType::RopeSelection,
+                    ToolType::TextureSelection},
                 dynamicPanel);
         }
     }
@@ -2276,7 +2394,7 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
             wxALL,
             RibbonToolbarButtonMargin);
 
-        ribbonPanel->SetSizerAndFit(tmpSizer);
+        mToolSettingsRibbonPanel->SetSizerAndFit(tmpSizer);
     }
 
     // Find widest panel
@@ -2295,11 +2413,15 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
     {
         mToolSettingsPanelsSizer->Show(
             std::get<1>(entry),
-            (widestPanel == nullptr && std::get<0>(entry) == ToolType::StructuralLine)
+            (widestPanel == nullptr 
+                && std::find(
+                    std::get<0>(entry).cbegin(), 
+                    std::get<0>(entry).cend(), 
+                    ToolType::StructuralLine) != std::get<0>(entry).cend())
             || (widestPanel != nullptr && std::get<1>(entry) == widestPanel));
     }
 
-    return ribbonPanel;
+    return mToolSettingsRibbonPanel;
 }
 
 wxPanel * MainFrame::CreateVisualizationModeHeaderPanel(wxWindow * parent)
@@ -3124,6 +3246,22 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     0);
             }
 
+            // Selection
+            {
+                auto button = makeToolButton(
+                    ToolType::StructuralSelection,
+                    structuralToolbarPanel,
+                    "selection_icon",
+                    _("Select an area for copying and/or cutting."));
+
+                toolsSizer->Add(
+                    button,
+                    wxGBPosition(2, 0),
+                    wxGBSpan(1, 1),
+                    0,
+                    0);
+            }
+
             // Sampler
             {
                 auto button = makeToolButton(
@@ -3134,7 +3272,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
                 toolsSizer->Add(
                     button,
-                    wxGBPosition(2, 0),
+                    wxGBPosition(2, 1),
                     wxGBSpan(1, 1),
                     0,
                     0);
@@ -3150,7 +3288,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
                 toolsSizer->Add(
                     button,
-                    wxGBPosition(2, 1),
+                    wxGBPosition(3, 0),
                     wxGBSpan(1, 1),
                     0,
                     0);
@@ -3303,6 +3441,22 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     0);
             }
 
+            // Selection
+            {
+                auto button = makeToolButton(
+                    ToolType::ElectricalSelection,
+                    electricalToolbarPanel,
+                    "selection_icon",
+                    _("Select an area for copying and/or cutting."));
+
+                toolsSizer->Add(
+                    button,
+                    wxGBPosition(1, 1),
+                    wxGBSpan(1, 1),
+                    0,
+                    0);
+            }
+
             // Sampler
             {
                 auto button = makeToolButton(
@@ -3313,7 +3467,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
                 toolsSizer->Add(
                     button,
-                    wxGBPosition(1, 1),
+                    wxGBPosition(2, 0),
                     wxGBSpan(1, 1),
                     0,
                     0);
@@ -3450,6 +3604,22 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     0);
             }
 
+            // Selection
+            {
+                auto button = makeToolButton(
+                    ToolType::RopeSelection,
+                    ropesToolbarPanel,
+                    "selection_icon",
+                    _("Select an area for copying and/or cutting."));
+
+                toolsSizer->Add(
+                    button,
+                    wxGBPosition(1, 0),
+                    wxGBSpan(1, 1),
+                    0,
+                    0);
+            }
+
             // Sampler
             {
                 auto button = makeToolButton(
@@ -3460,7 +3630,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
                 toolsSizer->Add(
                     button,
-                    wxGBPosition(1, 0),
+                    wxGBPosition(1, 1),
                     wxGBSpan(1, 1),
                     0,
                     0);
@@ -3592,6 +3762,22 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                 toolsSizer->Add(
                     button,
                     wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    0,
+                    0);
+            }
+
+            // Selection
+            {
+                auto button = makeToolButton(
+                    ToolType::TextureSelection,
+                    textureToolbarPanel,
+                    "selection_icon",
+                    _("Select an area for copying and/or cutting."));
+
+                toolsSizer->Add(
+                    button,
+                    wxGBPosition(1, 0),
                     wxGBSpan(1, 1),
                     0,
                     0);
@@ -4472,6 +4658,12 @@ void MainFrame::ValidateShip()
     mModelValidationDialog->ShowModalForStandAloneValidation(*mController);
 }
 
+void MainFrame::Deselect()
+{
+    assert(mController);
+    // TODO: invoke Controller::Deselect()
+}
+
 void MainFrame::OpenMaterialPalette(
     wxMouseEvent const & event,
     LayerType layer,
@@ -5179,7 +5371,9 @@ void MainFrame::ReconciliateUIWithSelectedTool(std::optional<ToolType> tool)
     bool hasPanel = false;
     for (auto const & entry : mToolSettingsPanels)
     {
-        bool const isSelected = (tool.has_value() && std::get<0>(entry) == *tool);
+        bool const isSelected = 
+            tool.has_value() 
+            && std::find(std::get<0>(entry).cbegin(), std::get<0>(entry).cend(), *tool) != std::get<0>(entry).cend();
 
         mToolSettingsPanelsSizer->Show(std::get<1>(entry), isSelected);
 
@@ -5189,12 +5383,76 @@ void MainFrame::ReconciliateUIWithSelectedTool(std::optional<ToolType> tool)
     // Pickup new layout
     if (hasPanel)
     {
+        // Change name
+        assert(tool.has_value());
+        switch (*tool)
+        {
+            case ToolType::StructuralEraser:
+            case ToolType::ElectricalEraser:            
+            case ToolType::TextureEraser:
+            {
+                mToolSettingsRibbonPanel->SetLabel("Eraser");
+                break;
+            }
+
+            case ToolType::StructuralLine:
+            {
+                mToolSettingsRibbonPanel->SetLabel("Line");
+                break;
+            }
+
+            case ToolType::StructuralPencil:
+            {
+                mToolSettingsRibbonPanel->SetLabel("Pencil");
+                break;
+            }
+
+            case ToolType::StructuralFlood:
+            {
+                mToolSettingsRibbonPanel->SetLabel("Fill");
+                break;
+            }
+
+            case ToolType::TextureMagicWand:
+            {
+                mToolSettingsRibbonPanel->SetLabel("Background Eraser");
+                break;
+            }
+
+            case ToolType::StructuralSelection:
+            case ToolType::ElectricalSelection:
+            case ToolType::RopeSelection:
+            case ToolType::TextureSelection:
+            {
+                mToolSettingsRibbonPanel->SetLabel("Selection");
+                break;
+            }
+
+            case ToolType::RopeEraser:
+            case ToolType::ElectricalLine:
+            case ToolType::ElectricalPencil:
+            case ToolType::RopePencil:
+            case ToolType::StructuralSampler:
+            case ToolType::ElectricalSampler:
+            case ToolType::RopeSampler:
+            case ToolType::StructuralMeasuringTapeTool:
+            {
+                // Don't have settings
+                assert(false);
+                break;
+            }
+        }
+
+        mToolSettingsRibbonPanel->Show(true);
         mMainRibbonBar->Realize();
     }
     else
     {
-        // Do not re-realize main ribbon bar, or else the panel becomes tiny
-        mToolSettingsPanelsSizer->Layout();
+        // TODOTEST
+        //// Do not re-realize main ribbon bar, or else the panel becomes tiny
+        //mToolSettingsPanelsSizer->Layout();
+        mToolSettingsRibbonPanel->Show(false);
+        mMainRibbonBar->Realize();
     }
 
     // Tell status bar
@@ -5374,6 +5632,12 @@ void MainFrame::ReconciliateUIWithUndoStackState(UndoStack & undoStack)
 
     // Scroll to bottom
     mUndoStackPanel->Scroll(wxDefaultCoord, mUndoStackPanel->GetScrollRange(wxVERTICAL));
+}
+
+void MainFrame::ReconciliateUIWithSelection(std::optional<ShipSpaceRect> const & selectionRect)
+{
+    // TODOHERE: enable/disable copy, cut, deselect buttons
+    (void)selectionRect;
 }
 
 void MainFrame::ReconciliateUIWithDisplayUnitsSystem(UnitsSystem displayUnitsSystem)

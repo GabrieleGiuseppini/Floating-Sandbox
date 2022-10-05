@@ -5,32 +5,40 @@
 ***************************************************************************************/
 #pragma once
 
+#include "IUserInterface.h"
 #include "ShipBuilderTypes.h"
-#include "View.h"
+
+#include <optional>
 
 namespace ShipBuilder {
 
 /*
- * Manages selection of regions in various layers.
- *
- * - Maintains current selection
- * - Not really a tool but a pseudo-tool
- * - Takes View so that it can instruct it to render marching ants
- * - Is not responsible for drawing of temporary selection while the user is making it, that is the Selection tool
- * - Read by ClipboardManager pseudo-tool to make clip
+ * Just a glorified optional<Rect>, maintaining current selection and notifying of state changes.
  */
-// TODO: templated on layer type?
-class SelectionManager
+class SelectionManager final
 {
 public:
 
-    SelectionManager(View & view)
-        : mView(view)
+    SelectionManager(IUserInterface & userInterface)
+        : mUserInterface(userInterface)
     {}
+
+    std::optional<ShipSpaceRect> const & GetSelection() const
+    {
+        return mSelection;
+    }
+
+    void SetSelection(std::optional<ShipSpaceRect> selection)
+    {
+        mSelection = selection;
+        mUserInterface.OnSelectionChanged(mSelection);
+    }
 
 protected:
 
-    View & mView;
+    std::optional<ShipSpaceRect> mSelection;
+
+    IUserInterface & mUserInterface;
 };
 
 }

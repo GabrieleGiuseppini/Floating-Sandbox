@@ -191,39 +191,54 @@
 			- Elec contains own region of PanelMetadata
 			- It is Paste's job to ensure clipboard and target "match"
 				- i.e. ignores non-existing layers (for consistency with ephemeral)
-	- ShipLayers == LayersRegion
-	- SelectionManager: just glorified optional<Rect> member of Controller
-		- Owned by Controller, created @ cctor
-		- Has reference to IUserInterface (to notify of selection on/off toggles)
-		- Reset at:
-			- Selection tool destroy
-			- Deselect
-			- Controller::~Controller (obviously)
-	- ClipboardManager: stores opt<LayersRegion>
-		- Owned by WorkbenchState, created @ cctor
-			- Owned by WorkbenchState, so we may have clipboard surviving reloads
-		- Has reference to IUserInterface (to notify of clipboard full/empty toggles)
-		- Never reset
-	- Select tool <TLayer>: populates selection Rect into SelectionManager
-		- Icon: Selector.png, ready
-		- "Tool Settings" ribbon: // change label of ribbon to actual tool name
-			- "All Layers" checkbox 
+		- SelectionManager: just glorified optional<Rect> member of Controller
+			- Owned by Controller, created @ cctor
+			- Has reference to IUserInterface (to notify of selection on/off toggles)
+			- Reset at:
+				- Selection tool destroy
+				- Deselect (ctrl^D/deselect button at Select tool's "Tool Settings" ribbon)
+				- Controller::~Controller (obviously)
+		- ClipboardManager: stores opt<LayersRegion>
+			- Owned by WorkbenchState, created @ cctor
+				- Owned by WorkbenchState, so we may have clipboard surviving reloads
+			- Has reference to IUserInterface (to notify of clipboard full/empty toggles)
+			- Never reset
+
+	+ ShipLayers == LayersRegion
+	= Assets
+		+ Selection
+		- Copy, Cut, Paste button icons
+		- Paste tool icon
+	= Select tool <TLayer>: populates selection Rect into SelectionManager
+		+ Icon: Selector.png, ready
+		= "Tool Settings" ribbon: // - change label of ribbon to actual tool name
+			= "All Layers" checkbox 
 				- Used @ clipboard population
-			- "Deselect" button (/CTRL^D)
+			= "Deselect" button (/CTRL^D)
 				- Talks to tool via dynamic_cast
-		- It's <TLayer> just to make it easier to know which layer to copy when "All Layers" is not selected
-		- SelectionManager notifies IUserInterface @ selection presence toggles; used for: Copy, Cut, Deselect buttons			
+		= Tool:
+			+ Cursor
+			- TODOHERE
+			+ SelectionManager notifies IUserInterface @ selection presence toggles; used for: Copy, Cut, Deselect buttons
+			- Ctrl^A accel => tool => Select all
+			- Publish size to StatusBar
+				- Clone of OnMeasuredWorldLengthChanged
+				- Between tool coordinates and sampled material
+					- We have an icon for that, "selection_size"
 	- Copy & Cut buttons:
 		- Buttons at "Edit" ribbon (new own section)
 		- Populate LayersRegion in ClipboardManager, via Controller::DoCopy()
 		- ClipboardManager notifies IUserInterface @ population; used for: Paste
 		- Controller::DoCopy() reads WorkbenchState::all-layers flag
+	- MainFrame::ReconciliateUIWithSelection(): enable/disable Cut, Copy, Deselect buttons
 	- Paste tool:
 		- TODO: how to ensure its own state (pasted & eventually modified LayersRegion) survives tool suspensions?
 			- Verified: tool moving out of canvas causes PasteTool to die
 			- May be PasteTool instance is not uq_ptr'd as normal tools, but it has different lifetime (special member of Controller)?
+			- ANSWER: tools become shared_ptr's, and next to mTool we also have mPasteTool (of Paste type)
 		- Not selectable by user; auto-activated @ Paste
 			- Never enters "last tool" stack
+			- Tool's button is always disabled, except when active: is_enabled==is_active
 		- Gets own copy of LayersRegion at creation, and modifications happen to it (rather than to Clipboard's)
 		- Exited by:
 			- Selecting another tool

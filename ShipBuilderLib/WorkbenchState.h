@@ -265,6 +265,16 @@ public:
         mTextureEraserToolSize = value;
     }
 
+    bool GetSelectionIsAllLayers() const
+    {
+        return mSelectionIsAllLayers;
+    }
+
+    void SetSelectionIsAllLayers(bool value)
+    {
+        mSelectionIsAllLayers = value;
+    }
+
     //
     // Visualizations
     //
@@ -450,6 +460,7 @@ private:
     bool mTextureMagicWandIsAntiAliased;
     bool mTextureMagicWandIsContiguous;
     std::uint32_t mTextureEraserToolSize;
+    bool mSelectionIsAllLayers;
 
     // Visualizations
     rgbColor mCanvasBackgroundColor;

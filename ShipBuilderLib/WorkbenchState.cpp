@@ -62,6 +62,7 @@ WorkbenchState::WorkbenchState(MaterialDatabase const & materialDatabase)
     mTextureMagicWandIsAntiAliased = true;
     mTextureMagicWandIsContiguous = true;
     mTextureEraserToolSize = 4;
+    mSelectionIsAllLayers = false;
 
     //
     // Default visualization settings

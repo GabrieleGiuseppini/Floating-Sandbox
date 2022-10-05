@@ -635,6 +635,11 @@ struct _IntegralRect
         return !(*this == other);
     }
 
+    bool IsEmpty() const
+    {
+        return size.width == 0 || size.height == 0;
+    }
+
     bool IsContainedInRect(_IntegralRect<TIntegralTag> const & container) const
     {
         return origin.x >= container.origin.x

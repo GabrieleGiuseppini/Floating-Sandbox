@@ -12,6 +12,7 @@
 #include "Tools/RopeEraserTool.h"
 #include "Tools/RopePencilTool.h"
 #include "Tools/SamplerTool.h"
+#include "Tools/SelectionTool.h"
 #include "Tools/TextureEraserTool.h"
 #include "Tools/TextureMagicWandTool.h"
 
@@ -77,6 +78,7 @@ Controller::Controller(
     : mView()
     , mModelController(std::move(modelController))
     , mUndoStack()
+    , mSelectionManager(userInterface)
     , mWorkbenchState(workbenchState)
     , mUserInterface(userInterface)
     , mResourceLocator(resourceLocator)
@@ -125,6 +127,7 @@ Controller::Controller(
     mUserInterface.OnModelDirtyChanged(*mModelController);
     mUserInterface.OnElectricalLayerInstancedElementSetChanged(mModelController->GetInstancedElectricalElementSet());
     mUserInterface.OnUndoStackStateChanged(mUndoStack);
+    mUserInterface.OnSelectionChanged(mSelectionManager.GetSelection());
 
     //
     // Initialize visualization
@@ -1770,6 +1773,34 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
         case ToolType::TextureMagicWand:
         {
             return std::make_unique<TextureMagicWandTool>(
+                *this,
+                mResourceLocator);
+        }
+
+        case ToolType::StructuralSelection:
+        {
+            return std::make_unique<StructuralSelectionTool>(
+                *this,
+                mResourceLocator);
+        }
+
+        case ToolType::ElectricalSelection:
+        {
+            return std::make_unique<ElectricalSelectionTool>(
+                *this,
+                mResourceLocator);
+        }
+
+        case ToolType::RopeSelection:
+        {
+            return std::make_unique<RopeSelectionTool>(
+                *this,
+                mResourceLocator);
+        }
+
+        case ToolType::TextureSelection:
+        {
+            return std::make_unique<TextureSelectionTool>(
                 *this,
                 mResourceLocator);
         }

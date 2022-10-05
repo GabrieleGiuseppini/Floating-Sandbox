@@ -9,6 +9,7 @@
 #include "ModelController.h"
 #include "OpenGLManager.h"
 #include "UndoStack.h"
+#include "SelectionManager.h"
 #include "ShipBuilderTypes.h"
 #include "View.h"
 #include "WorkbenchState.h"
@@ -370,6 +371,7 @@ private:
     std::unique_ptr<View> mView;
     std::unique_ptr<ModelController> mModelController;
     UndoStack mUndoStack;
+    SelectionManager mSelectionManager;
     WorkbenchState & mWorkbenchState;
     IUserInterface & mUserInterface;
 
