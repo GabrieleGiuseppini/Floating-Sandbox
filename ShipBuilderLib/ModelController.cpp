@@ -2332,8 +2332,12 @@ ImageRect ModelController::UpdateGameVisualization(ShipSpaceRect const & region)
     //
 
     return ImageRect(
-        { effectiveRegion.origin.x * mGameVisualizationTextureMagnificationFactor, effectiveRegion.origin.y * mGameVisualizationTextureMagnificationFactor },
-        { effectiveRegion.size.width * mGameVisualizationTextureMagnificationFactor, effectiveRegion.size.height * mGameVisualizationTextureMagnificationFactor });
+        ImageCoordinates(
+            effectiveRegion.origin.x * mGameVisualizationTextureMagnificationFactor, 
+            effectiveRegion.origin.y * mGameVisualizationTextureMagnificationFactor),
+        ImageSize(
+            effectiveRegion.size.width * mGameVisualizationTextureMagnificationFactor, 
+            effectiveRegion.size.height * mGameVisualizationTextureMagnificationFactor));
 }
 
 ImageRect ModelController::UpdateStructuralLayerVisualization(ShipSpaceRect const & region)
@@ -2360,8 +2364,12 @@ ImageRect ModelController::UpdateStructuralLayerVisualization(ShipSpaceRect cons
     }
 
     return ImageRect(
-        { region.origin.x, region.origin.y },
-        { region.size.width, region.size.height });
+        ImageCoordinates(
+            region.origin.x, 
+            region.origin.y),
+        ImageSize(
+            region.size.width, 
+            region.size.height));
 }
 
 void ModelController::RenderStructureInto(

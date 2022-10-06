@@ -87,6 +87,9 @@ struct IUserInterface
     // Notifies of a change in the currently-measured length
     virtual void OnMeasuredWorldLengthChanged(std::optional<int> length) = 0;
 
+    // Notifies of a change in the measurement of the current selection
+    virtual void OnMeasuredSelectionSizeChanged(std::optional<ShipSpaceSize> selectionSize) = 0;
+
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     virtual void OnError(wxString const & errorMessage) const = 0;

@@ -1781,6 +1781,7 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
         {
             return std::make_unique<StructuralSelectionTool>(
                 *this,
+                mSelectionManager,
                 mResourceLocator);
         }
 
@@ -1788,6 +1789,7 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
         {
             return std::make_unique<ElectricalSelectionTool>(
                 *this,
+                mSelectionManager,
                 mResourceLocator);
         }
 
@@ -1795,6 +1797,7 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
         {
             return std::make_unique<RopeSelectionTool>(
                 *this,
+                mSelectionManager,
                 mResourceLocator);
         }
 
@@ -1802,6 +1805,7 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
         {
             return std::make_unique<TextureSelectionTool>(
                 *this,
+                mSelectionManager,
                 mResourceLocator);
         }
     }

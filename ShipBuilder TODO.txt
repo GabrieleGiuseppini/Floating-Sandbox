@@ -215,18 +215,29 @@
 			= "All Layers" checkbox 
 				- Used @ clipboard population
 			= "Deselect" button (/CTRL^D)
-				- Talks to tool via dynamic_cast
+				- Talks to (base) tool via dynamic_cast
 		= Tool:
 			+ Cursor
-			- TODOHERE
+			- TODO: change grid alignment			
+			= Mechanics:
+				+ Base
+				- Square constraining
+				- Corner picking
 			+ SelectionManager notifies IUserInterface @ selection presence toggles; used for: Copy, Cut, Deselect buttons
-			- Ctrl^A accel => tool => Select all
-			- Publish size to StatusBar
-				- Clone of OnMeasuredWorldLengthChanged
-				- Between tool coordinates and sampled material
-					- We have an icon for that, "selection_size"
+			- Tool base is not templated anymore - to allow for Ctrl^A/D (below)
+			- Do uq_ptr<Tool> -> sh_ptr<Tool> + sh_ptr<SelectionTool> rearc - to allow for Ctrl^A/D (below)
+			- Ctrl^A accel => Controller::SelectAll()
+				- If cur tool not SelectionTool (via sh_ptr): change tool
+				- Call sh_ptr->SelectAll()
+			- Ctrl^D accel => Controller::Deselect()
+				- Call sh_ptr<SelectionTool>->Deselect()
+			+ Publish size to StatusBar
+				+ Clone of OnMeasuredWorldLengthChanged
+				+ Between tool coordinates and sampled material
+					+ We have an icon for that, "selection_size"
 	- Copy & Cut buttons:
 		- Buttons at "Edit" ribbon (new own section)
+		- Reconciliation with selection: enable/disable
 		- Populate LayersRegion in ClipboardManager, via Controller::DoCopy()
 		- ClipboardManager notifies IUserInterface @ population; used for: Paste
 		- Controller::DoCopy() reads WorkbenchState::all-layers flag

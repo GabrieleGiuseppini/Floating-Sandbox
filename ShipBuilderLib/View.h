@@ -129,6 +129,11 @@ public:
         return mViewModel.ScreenToShipSpace(displayCoordinates);
     }
 
+    ShipSpaceCoordinates ScreenToShipSpaceNearest(DisplayLogicalCoordinates const & displayCoordinates) const
+    {
+        return mViewModel.ScreenToShipSpaceNearest(displayCoordinates);
+    }
+
     ImageCoordinates ScreenToTextureSpace(DisplayLogicalCoordinates const & displayCoordinates) const
     {
         return mViewModel.ScreenToTextureSpace(displayCoordinates);

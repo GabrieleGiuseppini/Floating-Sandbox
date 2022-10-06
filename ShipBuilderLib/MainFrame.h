@@ -146,6 +146,8 @@ public:
 
     void OnMeasuredWorldLengthChanged(std::optional<int> length) override;
 
+    void OnMeasuredSelectionSizeChanged(std::optional<ShipSpaceSize> selectionSize) override;
+
     void OnError(wxString const & errorMessage) const override;
 
     DisplayLogicalSize GetDisplaySize() const override;

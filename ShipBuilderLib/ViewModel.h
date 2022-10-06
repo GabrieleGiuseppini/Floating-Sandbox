@@ -213,6 +213,11 @@ public:
             mShipSize.height - 1 - (DisplayPhysicalToShipSpace(displayCoordinates.y * mLogicalToPhysicalPixelFactor) - MarginDisplayShipSize + mCam.y));
     }
 
+    ShipSpaceCoordinates ScreenToShipSpaceNearest(DisplayLogicalCoordinates const & displayCoordinates) const
+    {
+        return ShipSpaceCoordinates::FromFloatRound(ScreenToFractionalShipSpace(displayCoordinates));
+    }    
+
     float GetShipSpaceForOnePhysicalDisplayPixel() const
     {
         return mDisplayPhysicalToShipSpaceFactor;
@@ -324,7 +329,7 @@ private:
         mShipDisplayPhysicalRect =
             DisplayPhysicalRect(ShipSpaceToPhysicalDisplaySpace({ 0, mShipSize.height - 1 }), ShipSpaceSizeToPhysicalDisplaySize(mShipSize))
             .MakeIntersectionWith(DisplayPhysicalRect(mDisplayPhysicalSize))
-            .value_or(DisplayPhysicalRect({ 0, 0 }, { 0, 0 }));
+            .value_or(DisplayPhysicalRect(DisplayPhysicalCoordinates(0, 0), DisplayPhysicalSize(0, 0)));
     }
 
     static float CalculateDisplayPhysicalToShipSpaceFactor(int zoom)
@@ -347,10 +352,10 @@ private:
     {
         return vec2f(
             static_cast<float>(displayCoordinates.x * mLogicalToPhysicalPixelFactor) * mDisplayPhysicalToShipSpaceFactor
-            - static_cast<float>(MarginDisplayShipSize) + static_cast<float>(mCam.x),
+                - static_cast<float>(MarginDisplayShipSize) + static_cast<float>(mCam.x),
             static_cast<float>(mShipSize.height) - (static_cast<float>(displayCoordinates.y * mLogicalToPhysicalPixelFactor) * mDisplayPhysicalToShipSpaceFactor
-            - mDisplayPhysicalToShipSpaceFactor // One "pixel" in ship space
-            - static_cast<float>(MarginDisplayShipSize) + static_cast<float>(mCam.y)));
+                - mDisplayPhysicalToShipSpaceFactor // One "pixel" in ship space
+                - static_cast<float>(MarginDisplayShipSize) + static_cast<float>(mCam.y)));
     }
 
 private:

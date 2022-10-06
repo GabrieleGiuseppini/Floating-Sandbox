@@ -21,6 +21,11 @@ ShipSpaceCoordinates Tool::ScreenToShipSpace(DisplayLogicalCoordinates const & d
     return mController.GetView().ScreenToShipSpace(displayCoordinates);
 }
 
+ShipSpaceCoordinates Tool::ScreenToShipSpaceNearest(DisplayLogicalCoordinates const & displayCoordinates) const
+{
+    return mController.GetView().ScreenToShipSpaceNearest(displayCoordinates);
+}
+
 ImageCoordinates Tool::ScreenToTextureSpace(DisplayLogicalCoordinates const & displayCoordinates) const
 {
     return mController.GetView().ScreenToTextureSpace(displayCoordinates);

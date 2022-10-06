@@ -78,6 +78,26 @@ StatusBar::StatusBar(
 
         hSizer->AddSpacer(SpacerSizeMajor);
 
+        // Selection size
+        {
+            // Icon
+            {
+                auto * staticBitmap = new wxStaticBitmap(this, wxID_ANY, WxHelpers::LoadBitmap("selection_size_icon", resourceLocator));
+                hSizer->Add(staticBitmap, 0, wxALIGN_CENTRE_VERTICAL, 0);
+            }
+
+            hSizer->AddSpacer(SpacerSizeMinor);
+
+            // Label
+            {
+                mSelectionSizeStaticText = new wxStaticText(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT);
+                mSelectionSizeStaticText->SetMinSize(wxSize(70, -1));
+                hSizer->Add(mSelectionSizeStaticText, 0, wxALIGN_CENTRE_VERTICAL, 0);
+            }
+        }
+
+        hSizer->AddSpacer(SpacerSizeMajor);
+
         // Sampled data
         {
             // Icon
@@ -226,6 +246,15 @@ void StatusBar::SetToolCoordinates(std::optional<ShipSpaceCoordinates> coordinat
     }
 }
 
+void StatusBar::SetSelectionSize(std::optional<ShipSpaceSize> selectionSize)
+{
+    if (selectionSize != mSelectionSize)
+    {
+        mSelectionSize = selectionSize;
+        RefreshSelectionSize();
+    }
+}
+
 void StatusBar::SetSampledInformation(std::optional<SampledInformation> sampledInformation)
 {
     if (!(sampledInformation == mSampledInformation))
@@ -348,6 +377,18 @@ void StatusBar::RefreshToolCoordinates()
     }
 
     mToolCoordinatesStaticText->SetLabel(ss.str());
+}
+
+void StatusBar::RefreshSelectionSize()
+{
+    std::stringstream ss;
+
+    if (mSelectionSize.has_value())
+    {
+        ss << mSelectionSize->width << " x " << mSelectionSize->height;
+    }
+
+    mSelectionSizeStaticText->SetLabel(ss.str());
 }
 
 void StatusBar::RefreshSampledInformation()

@@ -611,6 +611,11 @@ void MainFrame::OnMeasuredWorldLengthChanged(std::optional<int> length)
     mStatusBar->SetMeasuredWorldLength(length);
 }
 
+void MainFrame::OnMeasuredSelectionSizeChanged(std::optional<ShipSpaceSize> selectionSize)
+{
+    mStatusBar->SetSelectionSize(selectionSize);
+}
+
 void MainFrame::OnError(wxString const & errorMessage) const
 {
     wxMessageBox(errorMessage, _("Error"), wxICON_ERROR);

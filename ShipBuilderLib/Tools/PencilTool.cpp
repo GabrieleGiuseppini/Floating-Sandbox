@@ -525,7 +525,7 @@ std::optional<ShipSpaceRect> PencilTool<TLayer, IsEraser>::CalculateApplicableRe
 
     ShipSpaceCoordinates const origin = ShipSpaceCoordinates(coords.x, coords.y - (pencilSize - 1));
 
-    return ShipSpaceRect(origin - ShipSpaceSize(topLeftPencilSize, -topLeftPencilSize), { pencilSize, pencilSize })
+    return ShipSpaceRect(origin - ShipSpaceSize(topLeftPencilSize, -topLeftPencilSize),  ShipSpaceSize(pencilSize, pencilSize))
         .MakeIntersectionWith({ { 0, 0 }, mController.GetModelController().GetShipSize() });
 }
 

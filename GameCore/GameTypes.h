@@ -7,6 +7,7 @@
 
 #include "Colors.h"
 #include "EnumFlags.h"
+#include "GameMath.h"
 #include "SysSpecifics.h"
 #include "Vectors.h"
 
@@ -514,6 +515,14 @@ struct _IntegralCoordinates
             && y >= rect.origin.y && y < rect.origin.y + rect.size.height;
     }
 
+    template<typename TSize>
+    _IntegralCoordinates<TIntegralTag> Clamp(TSize const & size) const
+    {
+        return _IntegralCoordinates<TIntegralTag>(
+            ::Clamp(x, 0, size.width),
+            ::Clamp(y, 0, size.height));
+    }
+
     _IntegralCoordinates<TIntegralTag> FlipX(integral_type width) const
     {
         assert(width > x);
@@ -618,6 +627,18 @@ struct _IntegralRect
         : origin(_origin)
         , size(1, 1)
     {}
+
+    constexpr _IntegralRect(
+        _IntegralCoordinates<TIntegralTag> const & _origin,
+        _IntegralCoordinates<TIntegralTag> const & _oppositeCorner)
+        : origin(
+            std::min(_origin.x, _oppositeCorner.x),
+            std::min(_origin.y, _oppositeCorner.y))
+        , size(
+            std::abs(_oppositeCorner.x - _origin.x),
+            std::abs(_oppositeCorner.y - _origin.y))
+    {
+    }
 
     constexpr _IntegralRect(_IntegralSize<TIntegralTag> const & _size)
         : origin(0, 0)

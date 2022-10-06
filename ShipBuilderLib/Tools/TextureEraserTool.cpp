@@ -327,7 +327,7 @@ std::optional<ImageRect> TextureEraserTool::CalculateApplicableRect(ImageCoordin
 
     ImageCoordinates const origin = ImageCoordinates(coords.x, coords.y - (pencilSize - 1));
 
-    return ImageRect(origin - ImageSize(topLeftPencilSize, -topLeftPencilSize), { pencilSize, pencilSize })
+    return ImageRect(origin - ImageSize(topLeftPencilSize, -topLeftPencilSize), ImageSize(pencilSize, pencilSize))
         .MakeIntersectionWith({ { 0, 0 }, mController.GetModelController().GetTextureSize()});
 }
 

@@ -528,7 +528,7 @@ std::optional<ShipSpaceRect> LineTool<TLayer>::CalculateApplicableRect(ShipSpace
 
     ShipSpaceCoordinates const origin = ShipSpaceCoordinates(coords.x, coords.y - (lineSize - 1));
 
-    return ShipSpaceRect(origin - ShipSpaceSize(topLeftLineSize, -topLeftLineSize), { lineSize, lineSize })
+    return ShipSpaceRect(origin - ShipSpaceSize(topLeftLineSize, -topLeftLineSize), ShipSpaceSize(lineSize, lineSize))
         .MakeIntersectionWith({ { 0, 0 }, mController.GetModelController().GetShipSize() });
 }
 

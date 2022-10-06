@@ -13,37 +13,45 @@ namespace ShipBuilder {
 
 StructuralSelectionTool::StructuralSelectionTool(
     Controller & controller,
+    SelectionManager & selectionManager,
     ResourceLocator const & resourceLocator)
     : SelectionTool(
         ToolType::StructuralSelection,
         controller,
+        selectionManager,
         resourceLocator)
 {}
 
 ElectricalSelectionTool::ElectricalSelectionTool(
     Controller & controller,
+    SelectionManager & selectionManager,
     ResourceLocator const & resourceLocator)
     : SelectionTool(
         ToolType::ElectricalSelection,
         controller,
+        selectionManager,
         resourceLocator)
 {}
 
 RopeSelectionTool::RopeSelectionTool(
     Controller & controller,
+    SelectionManager & selectionManager,
     ResourceLocator const & resourceLocator)
     : SelectionTool(
         ToolType::RopeSelection,
         controller,
+        selectionManager,
         resourceLocator)
 {}
 
 TextureSelectionTool::TextureSelectionTool(
     Controller & controller,
+    SelectionManager & selectionManager,
     ResourceLocator const & resourceLocator)
     : SelectionTool(
         ToolType::TextureSelection,
         controller,
+        selectionManager,
         resourceLocator)
 {}
 
@@ -51,12 +59,15 @@ template<LayerType TLayer>
 SelectionTool<TLayer>::SelectionTool(
     ToolType toolType,
     Controller & controller,
+    SelectionManager & selectionManager,
     ResourceLocator const & resourceLocator)
     : Tool(
         toolType,
         controller)
-    , mCurrentRect()
+    , mSelectionManager(selectionManager)
+    , mCurrentSelection()
     , mEngagementData()
+    , mIsShiftDown(false)
 {
     SetCursor(WxHelpers::LoadCursorImage("selection_cursor", 10, 10, resourceLocator));
 }
@@ -64,7 +75,7 @@ SelectionTool<TLayer>::SelectionTool(
 template<LayerType TLayer>
 SelectionTool<TLayer>::~SelectionTool()
 {
-    if (mCurrentRect && !mCurrentRect->IsEmpty())
+    if (mCurrentSelection || mEngagementData)
     {
         // Remove overlay
         mController.GetView().RemoveSelectionOverlay();
@@ -77,13 +88,11 @@ void SelectionTool<TLayer>::OnMouseMove(DisplayLogicalCoordinates const & mouseC
 {
     if (mEngagementData)
     {
-        // TODO: clip to ship canvas, etc.
-        // TODO: snap to 0.5
-        auto const mouseShipSpaceCoords = ScreenToShipSpace(mouseCoordinates);
-        mController.GetView().UploadSelectionOverlay(
-            mEngagementData->SelectionStartCorner,
-            mouseShipSpaceCoords);
-        mController.GetUserInterface().RefreshView();
+        auto const cornerCoordinates = GetCornerCoordinate(
+            ScreenToShipSpaceNearest(mouseCoordinates),
+            mIsShiftDown ? mEngagementData->SelectionStartCorner : std::optional<ShipSpaceCoordinates>());
+
+        UpdateEphemeralSelection(cornerCoordinates);
     }
 }
 
@@ -97,37 +106,143 @@ void SelectionTool<TLayer>::OnLeftMouseDown()
     {
         // TODOHERE: check if we have a rect and if it matches existing corner
 
-        // Engage
-        auto const mouseShipSpaceCoords = ScreenToShipSpace(*mouseCoordinates);
-        mEngagementData.emplace(mouseShipSpaceCoords);
+        // Engage at current coordinates
+        auto const cornerCoordinates = ScreenToShipSpaceNearest(*mouseCoordinates);
+        mEngagementData.emplace(cornerCoordinates);
 
-        // No point in updating, selection rect is empty now
+        UpdateEphemeralSelection(cornerCoordinates);
     }
 }
 
 template<LayerType TLayer>
 void SelectionTool<TLayer>::OnLeftMouseUp()
 {
-    // TODO
-
     assert(mEngagementData);
-    mEngagementData.reset();
-    mController.GetView().RemoveSelectionOverlay();
-    mController.GetUserInterface().RefreshView();
+    if (mEngagementData)
+    {
+        // Calculate corner
+        ShipSpaceCoordinates const cornerCoordinates = 
+            ScreenToShipSpaceNearest(GetCurrentMouseCoordinates())
+            .Clamp(mController.GetModelController().GetShipSize());
+
+        // Calculate selection
+        std::optional<ShipSpaceRect> selection;
+        if (cornerCoordinates.x != mEngagementData->SelectionStartCorner.x
+            && cornerCoordinates.y != mEngagementData->SelectionStartCorner.y)
+        {
+            // Non-empty selection
+            selection = ShipSpaceRect(
+                mEngagementData->SelectionStartCorner,
+                cornerCoordinates);
+
+            // Update overlay
+            mController.GetView().UploadSelectionOverlay(
+                mEngagementData->SelectionStartCorner,
+                cornerCoordinates);
+
+            // Update measurement
+            mController.GetUserInterface().OnMeasuredSelectionSizeChanged(selection->size);
+        }
+        else
+        {
+            // Empty selection
+
+            // Update overlay
+            mController.GetView().RemoveSelectionOverlay();
+
+            // Update measurement
+            mController.GetUserInterface().OnMeasuredSelectionSizeChanged(std::nullopt);
+        }
+
+        // Commit selection
+        mCurrentSelection = selection;
+        mSelectionManager.SetSelection(mCurrentSelection);
+
+        // Disengage
+        mEngagementData.reset();
+
+        mController.GetUserInterface().RefreshView();
+    }
 }
 
 template<LayerType TLayer>
 void SelectionTool<TLayer>::OnShiftKeyDown()
 {
-    // TODO
+    mIsShiftDown = true;
+
+    if (mEngagementData)
+    {
+        auto const cornerCoordinates = GetCornerCoordinate(
+            ScreenToShipSpaceNearest(GetCurrentMouseCoordinates()),
+            mIsShiftDown ? mEngagementData->SelectionStartCorner : std::optional<ShipSpaceCoordinates>());
+
+        UpdateEphemeralSelection(cornerCoordinates);
+    }
 }
 
 template<LayerType TLayer>
 void SelectionTool<TLayer>::OnShiftKeyUp()
 {
-    // TODO
+    mIsShiftDown = false;
+
+    if (mEngagementData)
+    {
+        auto const cornerCoordinates = GetCornerCoordinate(
+            ScreenToShipSpaceNearest(GetCurrentMouseCoordinates()),
+            mIsShiftDown ? mEngagementData->SelectionStartCorner : std::optional<ShipSpaceCoordinates>());
+
+        UpdateEphemeralSelection(cornerCoordinates);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////////
+
+template<LayerType TLayer>
+ShipSpaceCoordinates SelectionTool<TLayer>::GetCornerCoordinate(
+    ShipSpaceCoordinates const & input,
+    std::optional<ShipSpaceCoordinates> constrainToSquareCorner) const
+{
+    // Clamp
+    ShipSpaceCoordinates const currentMouseCoordinates = input.Clamp(mController.GetModelController().GetShipSize());
+
+    // Eventually constrain to square
+    if (constrainToSquareCorner)
+    {
+        if (std::abs(currentMouseCoordinates.x - constrainToSquareCorner->x) < std::abs(currentMouseCoordinates.y - constrainToSquareCorner->y))
+        {
+            // Use width
+            return ShipSpaceCoordinates(
+                currentMouseCoordinates.x,
+                constrainToSquareCorner->y + (constrainToSquareCorner->x - currentMouseCoordinates.x));
+        }
+        else
+        {
+            // Use height
+            return ShipSpaceCoordinates(
+                constrainToSquareCorner->x + (constrainToSquareCorner->y - currentMouseCoordinates.y),
+                currentMouseCoordinates.y);
+        }
+    }
+    else
+    {
+        return currentMouseCoordinates;
+    }
+}
+
+template<LayerType TLayer>
+void SelectionTool<TLayer>::UpdateEphemeralSelection(ShipSpaceCoordinates const & cornerCoordinates)
+{
+    // Update overlay
+    mController.GetView().UploadSelectionOverlay(
+        mEngagementData->SelectionStartCorner,
+        cornerCoordinates);
+    mController.GetUserInterface().RefreshView();
+
+    // Update measurement
+    mController.GetUserInterface().OnMeasuredSelectionSizeChanged(
+        ShipSpaceSize(
+            std::abs(cornerCoordinates.x - mEngagementData->SelectionStartCorner.x),
+            std::abs(cornerCoordinates.y - mEngagementData->SelectionStartCorner.y)));
+}
 
 }

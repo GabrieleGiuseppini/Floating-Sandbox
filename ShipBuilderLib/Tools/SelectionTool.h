@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "SelectionManager.h"
 #include "Tool.h"
 
 #include <Game/ResourceLocator.h>
@@ -35,16 +36,23 @@ protected:
     SelectionTool(
         ToolType toolType,
         Controller & controller,
+        SelectionManager & selectionManager,
         ResourceLocator const & resourceLocator);
 
 private:
 
+    ShipSpaceCoordinates GetCornerCoordinate(
+        ShipSpaceCoordinates const & input,
+        std::optional<ShipSpaceCoordinates> constrainToSquareCorner) const;
+
+    void UpdateEphemeralSelection(ShipSpaceCoordinates const & cornerCoordinates);
 
 private:
 
-    // When set - and not empty - we have a selection (*and* thus also
-    // a selection overlay)
-    std::optional<ShipSpaceRect> mCurrentRect;
+    SelectionManager & mSelectionManager;
+
+    // Carries the same selection currently in the SelectionManager
+    std::optional<ShipSpaceRect> mCurrentSelection;
 
     struct EngagementData
     {
@@ -57,6 +65,8 @@ private:
 
     // When set, we're engaged (dragging)
     std::optional<EngagementData> mEngagementData;
+
+    bool mIsShiftDown;
 };
 
 class StructuralSelectionTool final : public SelectionTool<LayerType::Structural>
@@ -65,6 +75,7 @@ public:
 
     StructuralSelectionTool(
         Controller & controller,
+        SelectionManager & selectionManager,
         ResourceLocator const & resourceLocator);
 };
 
@@ -74,6 +85,7 @@ public:
 
     ElectricalSelectionTool(
         Controller & controller,
+        SelectionManager & selectionManager,
         ResourceLocator const & resourceLocator);
 };
 
@@ -83,6 +95,7 @@ public:
 
     RopeSelectionTool(
         Controller & controller,
+        SelectionManager & selectionManager,
         ResourceLocator const & resourceLocator);
 };
 
@@ -92,6 +105,7 @@ public:
 
     TextureSelectionTool(
         Controller & controller,
+        SelectionManager & selectionManager,
         ResourceLocator const & resourceLocator);
 };
 
