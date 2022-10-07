@@ -220,9 +220,10 @@
 		= Tool:
 			+ Cursor
 			= Mechanics:
-				+ Base
+				+ Base				
+				= Corner picking
+					- See if there's a way to not change origin...
 				- Square constraining
-				- Corner picking
 			+ SelectionManager notifies IUserInterface @ selection presence toggles; used for: Copy, Cut, Deselect buttons
 			- See if can stop suspending tool at MouseLeaveWindow; rearc:
 				- No more suspend @ mosue left window

@@ -104,11 +104,35 @@ void SelectionTool<TLayer>::OnLeftMouseDown()
     auto const mouseCoordinates = GetMouseCoordinatesIfInWorkCanvas();
     if (mouseCoordinates)
     {
-        // TODOHERE: check if we have a rect and if it matches existing corner
-
-        // Engage at current coordinates
         auto const cornerCoordinates = ScreenToShipSpaceNearest(*mouseCoordinates);
-        mEngagementData.emplace(cornerCoordinates);
+
+        // Create new corner - init with current coords, eventually
+        // we end up with an empty rect
+        ShipSpaceCoordinates selectionStartCorner = cornerCoordinates;
+
+        // Check if hitting a corner
+        if (mCurrentSelection)
+        {
+            if (cornerCoordinates == mCurrentSelection->CornerA())
+            {
+                selectionStartCorner = mCurrentSelection->CornerC();
+            }
+            else if (cornerCoordinates == mCurrentSelection->CornerB())
+            {
+                selectionStartCorner = mCurrentSelection->CornerD();
+            }
+            else if (cornerCoordinates == mCurrentSelection->CornerC())
+            {
+                selectionStartCorner = mCurrentSelection->CornerA();
+            }
+            else if (cornerCoordinates == mCurrentSelection->CornerD())
+            {
+                selectionStartCorner = mCurrentSelection->CornerB();
+            }
+        }
+
+        // Engage at selection start corner
+        mEngagementData.emplace(selectionStartCorner);
 
         UpdateEphemeralSelection(cornerCoordinates);
     }

@@ -645,6 +645,32 @@ struct _IntegralRect
         , size(_size)
     {}
 
+    _IntegralCoordinates<TIntegralTag> CornerA() const
+    {
+        return origin;
+    }
+
+    _IntegralCoordinates<TIntegralTag> CornerB() const
+    {
+        return _IntegralCoordinates<TIntegralTag>(
+            origin.x + size.width,
+            origin.y);
+    }
+
+    _IntegralCoordinates<TIntegralTag> CornerC() const
+    {
+        return _IntegralCoordinates<TIntegralTag>(
+            origin.x + size.width,
+            origin.y + size.height);
+    }
+
+    _IntegralCoordinates<TIntegralTag> CornerD() const
+    {
+        return _IntegralCoordinates<TIntegralTag>(
+            origin.x,
+            origin.y + size.height);
+    }
+
     inline bool operator==(_IntegralRect<TIntegralTag> const & other) const
     {
         return origin == other.origin
