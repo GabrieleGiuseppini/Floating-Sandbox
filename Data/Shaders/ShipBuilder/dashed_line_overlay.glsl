@@ -34,7 +34,7 @@ uniform float paramPixelStep;
 
 void main()
 {
-    float inDash = mod(pixelCoord + 1., 2.0 * paramPixelStep); // Shift by one, so smoothstep's are centered at DashLength's
+    float inDash = mod(pixelCoord, 2.0 * paramPixelStep);
     float lineDepth = 
         smoothstep(0.0, 2.0, inDash)
         - smoothstep(paramPixelStep, paramPixelStep + 2.0, inDash);

@@ -2028,11 +2028,13 @@ void View::UpdateSelectionOverlay()
     vec2f const cornerA = mSelectionOverlayRect->first.ToFloat();
     vec2f const cornerB = mSelectionOverlayRect->second.ToFloat();
 
-    // Calculate width and height, in pixels, signed
+    // Calculate width and height, in ship (signed) and in pixels (absolute)
     float const shipWidth = cornerB.x - cornerA.x;
-    float const pixelWidth = mViewModel.FractionalShipSpaceOffsetToFractionalPhysicalDisplayOffset(shipWidth);
+    float absPixelWidth = mViewModel.FractionalShipSpaceOffsetToFractionalPhysicalDisplayOffset(std::abs(shipWidth));
+    absPixelWidth = std::round(absPixelWidth / SelectionOverlayPixelStep) * SelectionOverlayPixelStep;
     float const shipHeight = cornerB.y - cornerA.y;
-    float const pixelHeight = mViewModel.FractionalShipSpaceOffsetToFractionalPhysicalDisplayOffset(shipHeight);
+    float absPixelHeight = mViewModel.FractionalShipSpaceOffsetToFractionalPhysicalDisplayOffset(std::abs(shipHeight));
+    absPixelHeight = std::round(absPixelHeight / SelectionOverlayPixelStep) * SelectionOverlayPixelStep;
 
     // One pixel in ship space
     float const shipSpaceQuantum = mViewModel.GetShipSpaceForOnePhysicalDisplayPixel();
@@ -2050,7 +2052,7 @@ void View::UpdateSelectionOverlay()
         vec2f(
             cornerA.x + shipWidth - shipSpaceQuantum * Sign(shipWidth),
             cornerA.y + shipSpaceQuantum * Sign(shipHeight)),
-        std::abs(pixelWidth),
+        absPixelWidth,
         OverlayColor);
 
 
@@ -2059,7 +2061,7 @@ void View::UpdateSelectionOverlay()
         vec2f(
             cornerA.x + shipWidth - shipSpaceQuantum * Sign(shipWidth),
             cornerA.y + shipSpaceQuantum * Sign(shipHeight)),
-        std::abs(pixelWidth),
+        0.0f,
         OverlayColor);
 
     // Right-Bottom (conceptually, could be anywhere)
@@ -2067,7 +2069,7 @@ void View::UpdateSelectionOverlay()
         vec2f(
             cornerA.x + shipWidth - shipSpaceQuantum * Sign(shipWidth),
             cornerA.y + shipHeight - shipSpaceQuantum * Sign(shipHeight)),
-        std::abs(pixelWidth) + std::abs(pixelHeight),
+        absPixelHeight,
         OverlayColor);
 
 
@@ -2084,7 +2086,7 @@ void View::UpdateSelectionOverlay()
         vec2f(
             cornerA.x + shipSpaceQuantum * Sign(shipWidth),
             cornerA.y + shipHeight - shipSpaceQuantum * Sign(shipHeight)),
-        std::abs(pixelHeight),
+        absPixelHeight,
         OverlayColor);
 
 
@@ -2093,7 +2095,7 @@ void View::UpdateSelectionOverlay()
         vec2f(
             cornerA.x + shipSpaceQuantum * Sign(shipWidth),
             cornerA.y + shipHeight - shipSpaceQuantum * Sign(shipHeight)),
-        std::abs(pixelHeight),
+        0.0f,
         OverlayColor);
 
     // Right-Bottom (conceptually, could be anywhere)
@@ -2101,7 +2103,7 @@ void View::UpdateSelectionOverlay()
         vec2f(
             cornerA.x + shipWidth - shipSpaceQuantum * Sign(shipWidth),
             cornerA.y + shipHeight - shipSpaceQuantum * Sign(shipHeight)),
-        std::abs(pixelHeight) + std::abs(pixelWidth),
+        absPixelWidth,
         OverlayColor);
 
     //
