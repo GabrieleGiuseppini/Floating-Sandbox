@@ -1442,7 +1442,7 @@ void View::Render()
         mShaderManager->ActivateProgram<ProgramType::DashedLineOverlay>();
 
         // Set line width
-        glLineWidth(1.5f);
+        glLineWidth(1.0f);
 
         // Draw
         glDrawArrays(GL_LINES, 0, 8);
@@ -1547,6 +1547,11 @@ void View::OnViewModelUpdated()
     if (!mDashedLineOverlaySet.empty())
     {
         UpdateDashedLineOverlay();
+    }
+
+    if (mSelectionOverlayRect)
+    {
+        UpdateSelectionOverlay();
     }
 
     //
