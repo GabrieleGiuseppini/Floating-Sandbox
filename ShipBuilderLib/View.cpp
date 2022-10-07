@@ -12,6 +12,9 @@
 
 namespace ShipBuilder {
 
+float constexpr DashedLineOverlayPixelStep = 4.0f;
+float constexpr SelectionOverlayPixelStep = 2.0f;
+
 View::View(
     ShipSpaceSize shipSpaceSize,
     rgbColor const & canvasBackgroundColor,
@@ -1441,6 +1444,9 @@ void View::Render()
         // Activate program
         mShaderManager->ActivateProgram<ProgramType::DashedLineOverlay>();
 
+        // Set pixel step
+        mShaderManager->SetProgramParameter<ProgramType::DashedLineOverlay, ProgramParameterType::PixelStep>(SelectionOverlayPixelStep);
+
         // Set line width
         glLineWidth(1.0f);
 
@@ -1448,7 +1454,6 @@ void View::Render()
         glDrawArrays(GL_LINES, 0, 8);
         CheckOpenGLError();
     }
-
 
     // Waterline
     if (mHasWaterline)
@@ -1503,6 +1508,9 @@ void View::Render()
 
         // Activate program
         mShaderManager->ActivateProgram<ProgramType::DashedLineOverlay>();
+
+        // Set pixel step
+        mShaderManager->SetProgramParameter<ProgramType::DashedLineOverlay, ProgramParameterType::PixelStep>(DashedLineOverlayPixelStep);
 
         // Set line width
         glLineWidth(1.5f);
@@ -2028,7 +2036,6 @@ void View::UpdateSelectionOverlay()
 
     // One pixel in ship space
     float const shipSpaceQuantum = mViewModel.GetShipSpaceForOnePhysicalDisplayPixel();
-
 
     // Left-Top (conceptually, could be anywhere)
     vertexBuffer.emplace_back(

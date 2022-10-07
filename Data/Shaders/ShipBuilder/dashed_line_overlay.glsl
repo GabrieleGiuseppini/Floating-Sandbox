@@ -29,13 +29,15 @@ void main()
 in float pixelCoord;
 in vec3 lineColor;
 
+// Params
+uniform float paramPixelStep;
+
 void main()
 {
-    #define DashLength 4.0
-    float inDash = mod(pixelCoord + 1., 2.0 * DashLength); // Shift by one, so smoothstep's are centered at DashLength's
+    float inDash = mod(pixelCoord + 1., 2.0 * paramPixelStep); // Shift by one, so smoothstep's are centered at DashLength's
     float lineDepth = 
         smoothstep(0.0, 2.0, inDash)
-        - smoothstep(DashLength, DashLength + 2.0, inDash);
+        - smoothstep(paramPixelStep, paramPixelStep + 2.0, inDash);
     
     gl_FragColor = mix(
         vec4(.7, .7, .7, .5),
