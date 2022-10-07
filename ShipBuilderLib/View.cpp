@@ -1747,30 +1747,30 @@ void View::UpdateGrid()
     std::array<GridVertex, 4> vertexBuffer;
 
     // Notes:
-    //  - Grid origin is in upper-left corner
+    //  - Grid origin is in bottom-left corner
 
     // Bottom-left
     vertexBuffer[0] = GridVertex(
         vec2f(0.0f, 0.0f),
-        vec2f(0.0f, pixelHeight),
+        vec2f(0.0f, 0.0f),
         pixelMidX);
 
     // Top-left
     vertexBuffer[1] = GridVertex(
         vec2f(0.0f, shipHeight),
-        vec2f(0.0f, 0.0f),
+        vec2f(0.0f, pixelHeight),
         pixelMidX);
 
     // Bottom-right
     vertexBuffer[2] = GridVertex(
         vec2f(shipWidth, 0.0f),
-        vec2f(pixelWidth, pixelHeight),
+        vec2f(pixelWidth, 0.0f),
         pixelMidX);
 
     // Top-right
     vertexBuffer[3] = GridVertex(
         vec2f(shipWidth, shipHeight),
-        vec2f(pixelWidth, 0.0f),
+        vec2f(pixelWidth, pixelHeight),
         pixelMidX);
 
     // Upload vertices

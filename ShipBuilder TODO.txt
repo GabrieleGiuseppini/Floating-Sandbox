@@ -9,6 +9,7 @@
 
 - Do Selection/Copy'n'Cut/Paste workflow (*)
 
+- Do StructuralRectangle tool (*)
 
 ================================================================================================================================================================================
 
@@ -218,12 +219,24 @@
 				- Talks to (base) tool via dynamic_cast
 		= Tool:
 			+ Cursor
-			- TODO: change grid alignment			
 			= Mechanics:
 				+ Base
 				- Square constraining
 				- Corner picking
 			+ SelectionManager notifies IUserInterface @ selection presence toggles; used for: Copy, Cut, Deselect buttons
+			- See if can stop suspending tool at MouseLeaveWindow; rearc:
+				- No more suspend @ mosue left window
+				- But new OnLeftCanvas(), treated as a MouseMove() outside of canvas
+					- Note: never expected to be engaged
+				- Verify return comes with a MouseMove; if not, also need OnEnter()
+				- Technically:
+					- Leave == In->Out move
+					- Move (evt. after Enter):
+						- if (...state...): Out->In
+						- else: In->In
+			- All accesses to mouse coords: clamp to canvas
+				- Test with all tools
+				- Remove View::scissors afterwards
 			- Tool base is not templated anymore - to allow for Ctrl^A/D (below)
 			- Do uq_ptr<Tool> -> sh_ptr<Tool> + sh_ptr<SelectionTool> rearc - to allow for Ctrl^A/D (below)
 			- Ctrl^A accel => Controller::SelectAll()
@@ -244,9 +257,14 @@
 	- MainFrame::ReconciliateUIWithSelection(): enable/disable Cut, Copy, Deselect buttons
 	- Paste tool:
 		- TODO: how to ensure its own state (pasted & eventually modified LayersRegion) survives tool suspensions?
+			- ...tool suspensions because of:
+				- External suspension
+				- And also for mouse leave window, if it stays (see above)
 			- Verified: tool moving out of canvas causes PasteTool to die
 			- May be PasteTool instance is not uq_ptr'd as normal tools, but it has different lifetime (special member of Controller)?
 			- ANSWER: tools become shared_ptr's, and next to mTool we also have mPasteTool (of Paste type)
+				- Tool also exposes Suspend() and Resume() to remove ephemeral viz when suspended because of external suspension
+					- And also for mouse leave window, if it stays (see above)
 		- Not selectable by user; auto-activated @ Paste
 			- Never enters "last tool" stack
 			- Tool's button is always disabled, except when active: is_enabled==is_active
