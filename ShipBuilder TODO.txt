@@ -219,13 +219,13 @@
 				- Talks to (base) tool via dynamic_cast
 		= Tool:
 			+ Cursor
-			= Mechanics:
+			+ Mechanics:
 				+ Base				
 				+ Corner picking
-				- Square constraining
+				+ Square constraining
 			+ SelectionManager notifies IUserInterface @ selection presence toggles; used for: Copy, Cut, Deselect buttons
-			- See if can stop suspending tool at MouseLeaveWindow; rearc:
-				- No more suspend @ mosue left window
+			- Rearc: see if can stop suspending tool at MouseLeaveWindow
+				- No more suspend @ mouse left window
 				- But new OnLeftCanvas(), treated as a MouseMove() outside of canvas
 					- Note: never expected to be engaged
 				- Verify return comes with a MouseMove; if not, also need OnEnter()

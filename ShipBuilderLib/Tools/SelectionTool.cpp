@@ -80,6 +80,9 @@ SelectionTool<TLayer>::~SelectionTool()
         // Remove overlay
         mController.GetView().RemoveSelectionOverlay();
         mController.GetUserInterface().RefreshView();
+
+        // Remove measurement
+        mController.GetUserInterface().OnMeasuredSelectionSizeChanged(std::nullopt);
     }
 }
 
@@ -145,9 +148,9 @@ void SelectionTool<TLayer>::OnLeftMouseUp()
     if (mEngagementData)
     {
         // Calculate corner
-        ShipSpaceCoordinates const cornerCoordinates = 
-            ScreenToShipSpaceNearest(GetCurrentMouseCoordinates())
-            .Clamp(mController.GetModelController().GetShipSize());
+        ShipSpaceCoordinates const cornerCoordinates = GetCornerCoordinate(
+            ScreenToShipSpaceNearest(GetCurrentMouseCoordinates()),
+            mIsShiftDown ? mEngagementData->SelectionStartCorner : std::optional<ShipSpaceCoordinates>());
 
         // Calculate selection
         std::optional<ShipSpaceRect> selection;
@@ -232,18 +235,20 @@ ShipSpaceCoordinates SelectionTool<TLayer>::GetCornerCoordinate(
     // Eventually constrain to square
     if (constrainToSquareCorner)
     {
-        if (std::abs(currentMouseCoordinates.x - constrainToSquareCorner->x) < std::abs(currentMouseCoordinates.y - constrainToSquareCorner->y))
+        auto const width = currentMouseCoordinates.x - constrainToSquareCorner->x;
+        auto const height = currentMouseCoordinates.y - constrainToSquareCorner->y;
+        if (std::abs(width) < std::abs(height))
         {
             // Use width
             return ShipSpaceCoordinates(
                 currentMouseCoordinates.x,
-                constrainToSquareCorner->y + (constrainToSquareCorner->x - currentMouseCoordinates.x));
+                constrainToSquareCorner->y + std::abs(width) * Sign(height));
         }
         else
         {
             // Use height
             return ShipSpaceCoordinates(
-                constrainToSquareCorner->x + (constrainToSquareCorner->y - currentMouseCoordinates.y),
+                constrainToSquareCorner->x + std::abs(height) * Sign(width),
                 currentMouseCoordinates.y);
         }
     }
