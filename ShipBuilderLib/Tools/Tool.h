@@ -76,7 +76,10 @@ protected:
     std::optional<DisplayLogicalCoordinates> GetCurrentMouseCoordinatesIfInWorkCanvas() const;
     
     ShipSpaceCoordinates GetCurrentMouseShipCoordinates() const;
-    ShipSpaceCoordinates GetCurrentMouseShipCoordinatesClampedToWorkCanvas() const;
+    ShipSpaceCoordinates GetCurrentMouseShipCoordinatesClampedToShip() const; // <w, h> are excluded
+    ShipSpaceCoordinates GetCurrentMouseShipCoordinatesClampedToShip(DisplayLogicalCoordinates const & mouseCoordinates) const; // <w, h> are excluded
+    std::optional<ShipSpaceCoordinates> GetCurrentMouseShipCoordinatesIfInShip() const; // <w, h> are excluded
+    std::optional<ShipSpaceCoordinates> GetCurrentMouseShipCoordinatesIfInShip(DisplayLogicalCoordinates const & mouseCoordinates) const; // <w, h> are excluded
     std::optional<ShipSpaceCoordinates> GetCurrentMouseShipCoordinatesIfInWorkCanvas() const;
 
     ShipSpaceCoordinates ScreenToShipSpace(DisplayLogicalCoordinates const & displayCoordinates) const;

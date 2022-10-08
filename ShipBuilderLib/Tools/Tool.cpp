@@ -31,12 +31,35 @@ ShipSpaceCoordinates Tool::GetCurrentMouseShipCoordinates() const
     return mController.GetView().ScreenToShipSpace(GetCurrentMouseCoordinates());
 }
 
-ShipSpaceCoordinates Tool::GetCurrentMouseShipCoordinatesClampedToWorkCanvas() const
+ShipSpaceCoordinates Tool::GetCurrentMouseShipCoordinatesClampedToShip() const
 {
-    auto const coords = mController.GetView().ScreenToShipSpace(GetCurrentMouseCoordinates());
+    return GetCurrentMouseShipCoordinatesClampedToShip(GetCurrentMouseCoordinates());
+}
+
+ShipSpaceCoordinates Tool::GetCurrentMouseShipCoordinatesClampedToShip(DisplayLogicalCoordinates const & mouseCoordinates) const
+{
+    auto const coords = mController.GetView().ScreenToShipSpace(mouseCoordinates);
     return ShipSpaceCoordinates(
         Clamp(coords.x, 0, mController.GetModelController().GetShipSize().width - 1),
         Clamp(coords.y, 0, mController.GetModelController().GetShipSize().height - 1));
+}
+
+std::optional<ShipSpaceCoordinates> Tool::GetCurrentMouseShipCoordinatesIfInShip() const
+{
+    return GetCurrentMouseShipCoordinatesIfInShip(GetCurrentMouseCoordinates());
+}
+
+std::optional<ShipSpaceCoordinates> Tool::GetCurrentMouseShipCoordinatesIfInShip(DisplayLogicalCoordinates const & mouseCoordinates) const
+{
+    auto const coords = mController.GetView().ScreenToShipSpace(mouseCoordinates);
+    if (coords.IsInSize(mController.GetModelController().GetShipSize()))
+    {
+        return coords;
+    }
+    else
+    {
+        return std::nullopt;
+    }
 }
 
 std::optional<ShipSpaceCoordinates> Tool::GetCurrentMouseShipCoordinatesIfInWorkCanvas() const

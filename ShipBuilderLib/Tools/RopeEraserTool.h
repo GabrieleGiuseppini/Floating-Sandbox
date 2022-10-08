@@ -48,6 +48,8 @@ private:
 
     void StopEngagement();
 
+    void Leave(bool doCommitIfEngaged);
+
     void DrawOverlay(ShipSpaceCoordinates const & coords);
 
     void HideOverlay();
@@ -74,7 +76,9 @@ private:
         {}
     };
 
-    // Engagement data - when set, it means we're engaged
+    // Engagement data - when set, it means we're engaged;
+    // "being engaged" for this tool basically means that 
+    // the mouse button is down
     std::optional<EngagementData> mEngagementData;
 };
 

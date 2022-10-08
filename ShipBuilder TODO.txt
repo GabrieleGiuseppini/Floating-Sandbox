@@ -240,10 +240,10 @@
 						- else: In->In
 				= Tools:					
 					+ Line
-					- Flood
-					- MeasuringTape
-					- Pencil (Need to handle MouseLeft)
-					- RopeEraser
+					+ Flood
+					+ MeasuringTape
+					+ Pencil (Need to handle MouseLeft)
+					+ RopeEraser
 					- RopePencil
 					- Sampler
 					- Selection

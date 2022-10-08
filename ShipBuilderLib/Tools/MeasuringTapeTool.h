@@ -42,11 +42,11 @@ private:
 
     void StopEngagement();
 
-    void DrawOverlay(ShipSpaceCoordinates const & coords);
+    void Leave();
+
+    void UpdateOverlay(ShipSpaceCoordinates const & coords);
 
     void HideOverlay();
-
-    ShipSpaceCoordinates ClipToWorkCanvas(ShipSpaceCoordinates const & coords) const;
 
 private:
 

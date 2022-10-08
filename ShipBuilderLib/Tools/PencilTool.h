@@ -56,6 +56,8 @@ private:
 
     void EndEngagement();
 
+    void Leave(bool doCommitIfEngaged);
+
     void DoTempVisualization(ShipSpaceRect const & affectedRect);
 
     void MendTempVisualization();

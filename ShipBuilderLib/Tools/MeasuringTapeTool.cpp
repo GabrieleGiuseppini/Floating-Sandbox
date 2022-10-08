@@ -26,68 +26,71 @@ MeasuringTapeTool::MeasuringTapeTool(
     SetCursor(WxHelpers::LoadCursorImage("measuring_tape_cursor", 0, 25, resourceLocator));
 
     // Check if we draw the overlay right away
-    auto const mouseCoordinates = GetCurrentMouseCoordinatesIfInWorkCanvas();
-    if (mouseCoordinates)
+    auto const mouseShipCoords = GetCurrentMouseShipCoordinatesIfInShip();
+    if (mouseShipCoords)
     {
-        DrawOverlay(ClipToWorkCanvas(ScreenToShipSpace(*mouseCoordinates)));
+        UpdateOverlay(*mouseShipCoords);
         mController.GetUserInterface().RefreshView();
     }
 }
 
 MeasuringTapeTool::~MeasuringTapeTool()
 {
-    if (mHasOverlay)
-    {
-        HideOverlay();
-    }
-
-    if (mEngagementData.has_value())
-    {
-        StopEngagement();
-    }
-
-    mController.GetUserInterface().RefreshView();
+    Leave();
 }
 
 void MeasuringTapeTool::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates)
 {
-    auto const mouseShipSpaceCoords = ClipToWorkCanvas(ScreenToShipSpace(mouseCoordinates));
+    std::optional<ShipSpaceCoordinates> mouseShipCoords;
 
     if (mEngagementData.has_value())
     {
-        // Do action
-        DoAction(mouseShipSpaceCoords);
-    }
+        // Engaged: if mouse outside of ship, clamp to ship
 
-    // Draw overlay
-    DrawOverlay(mouseShipSpaceCoords);
+        mouseShipCoords = GetCurrentMouseShipCoordinatesClampedToShip(mouseCoordinates);
+        DoAction(*mouseShipCoords);
+
+        UpdateOverlay(*mouseShipCoords);
+    }
+    else
+    {
+        // Not engaged: only show overlay when inside the ship
+        
+        mouseShipCoords = GetCurrentMouseShipCoordinatesIfInShip(mouseCoordinates);
+        if (mouseShipCoords)
+        {
+            UpdateOverlay(*mouseShipCoords);
+        }
+        else if (mHasOverlay)
+        {
+            HideOverlay();
+        }
+    }
 
     mController.GetUserInterface().RefreshView();
 }
 
 void MeasuringTapeTool::OnLeftMouseDown()
 {
-    auto const shipSpaceMouseCoords = ClipToWorkCanvas(GetCurrentMouseShipCoordinates());
+    auto const mouseShipCoords = GetCurrentMouseShipCoordinatesClampedToShip();
 
     // Engage
-    StartEngagement(shipSpaceMouseCoords);
+    StartEngagement(mouseShipCoords);
 
     // Do action
-    DoAction(shipSpaceMouseCoords);
+    DoAction(mouseShipCoords);
 
     mController.GetUserInterface().RefreshView();
 }
 
 void MeasuringTapeTool::OnLeftMouseUp()
 {
-    // Check if should stop engagement
     if (mEngagementData.has_value())
     {
-        // Disengage
         StopEngagement();
-
-        mController.GetUserInterface().RefreshView();
     }
+
+    mController.GetUserInterface().RefreshView();
 }
 
 void MeasuringTapeTool::OnShiftKeyDown()
@@ -96,7 +99,7 @@ void MeasuringTapeTool::OnShiftKeyDown()
 
     if (mEngagementData.has_value())
     {
-        DoAction(ClipToWorkCanvas(GetCurrentMouseShipCoordinates()));
+        DoAction(GetCurrentMouseShipCoordinatesClampedToShip());
 
         mController.GetUserInterface().RefreshView();
     }
@@ -108,7 +111,7 @@ void MeasuringTapeTool::OnShiftKeyUp()
 
     if (mEngagementData.has_value())
     {
-        DoAction(ClipToWorkCanvas(GetCurrentMouseShipCoordinates()));
+        DoAction(GetCurrentMouseShipCoordinatesClampedToShip());
 
         mController.GetUserInterface().RefreshView();
     }
@@ -116,7 +119,7 @@ void MeasuringTapeTool::OnShiftKeyUp()
 
 void MeasuringTapeTool::OnMouseLeft()
 {
-    // TODOHERE
+    Leave();
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -171,7 +174,22 @@ void MeasuringTapeTool::StopEngagement()
     mEngagementData.reset();
 }
 
-void MeasuringTapeTool::DrawOverlay(ShipSpaceCoordinates const & coords)
+void MeasuringTapeTool::Leave()
+{
+    if (mHasOverlay)
+    {
+        HideOverlay();
+    }
+
+    if (mEngagementData.has_value())
+    {
+        StopEngagement();
+    }
+
+    mController.GetUserInterface().RefreshView();
+}
+
+void MeasuringTapeTool::UpdateOverlay(ShipSpaceCoordinates const & coords)
 {
     mController.GetView().UploadCircleOverlay(
         coords,
@@ -187,13 +205,6 @@ void MeasuringTapeTool::HideOverlay()
     mController.GetView().RemoveCircleOverlay();
 
     mHasOverlay = false;
-}
-
-ShipSpaceCoordinates MeasuringTapeTool::ClipToWorkCanvas(ShipSpaceCoordinates const & coords) const
-{
-    return ShipSpaceCoordinates(
-        Clamp(coords.x, 0, mController.GetModelController().GetShipSize().width - 1),
-        Clamp(coords.y, 0, mController.GetModelController().GetShipSize().height - 1));
 }
 
 }
