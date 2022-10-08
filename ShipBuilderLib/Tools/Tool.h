@@ -27,6 +27,13 @@ class Controller;
  * - Receive input state events from Controller, and notifications of WorkbenchState changed
  * - Instruct View for tool interactions, e.g. tool visualizations (lines, paste mask, etc.)
  * - Publish notifications to IUserInterface, e.g. to capture/release mouse
+ *
+ * Generally, the state machine of tools wrt event handlers is:
+ * - Cctor: if it's in canvas: start eph viz.
+ * - Mouse down: if in eph viz: stop eph viz; begin engagement.
+ * - Mouse up: if engaged: commit and end engagement; if it's in canvas: start eph viz.
+ * - Mouse leave: if in eph viz: stop eph viz; if engaged: commit and end engagement.
+ * - Mouse move: update eph viz and/or engagement.
  */
 class Tool
 {
@@ -64,7 +71,6 @@ protected:
     // Helpers
 
     void SetCursor(wxImage const & cursorImage);
-    
 
     DisplayLogicalCoordinates GetCurrentMouseCoordinates() const;
     std::optional<DisplayLogicalCoordinates> GetCurrentMouseCoordinatesIfInWorkCanvas() const;

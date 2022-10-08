@@ -224,29 +224,36 @@
 				+ Corner picking
 				+ Square constraining
 			+ SelectionManager notifies IUserInterface @ selection presence toggles; used for: Copy, Cut, Deselect buttons
-			- Rearc: see if can stop suspending tool at MouseLeaveWindow
+			= Rearc: see if can stop suspending tool at MouseLeaveWindow
 				+ First test sequence of calls @:
 					+ From out, L down then enter: expect: Ldown->Mmove; actual: Mmove (so subsequent Lup is unmatched)
 					+ From in, L down then leave (up happening out): expect: Lup->LeftCanvas; actual: UncapturedMouseOut->Lup
 				+ No more suspend @ mouse left window (& thus no more resume @ mouse enter window)
-				= But new OnLeftCanvas(), treated as a MouseMove() outside of canvas
-					- Note: *could* be engaged, in which case this is to be treated as Lup followed by LeftCanvas
-					- Add above to comment
+				+ But new OnLeftCanvas(), treated as a MouseMove() outside of canvas
+					+ Note: *could* be engaged, in which case this MouseLeave is to be treated as Lup (with commit) followed by LeftCanvas
+					+ Add above to comment
 				+ Verify return comes with a MouseMove; if not, also need OnEnter()
 				! Technically, state machine transitions are:
 					! Leave == In->Out move
 					! Move (evt. after Enter):
 						- if (...state...): Out->In
 						- else: In->In
-				- Tools:					
+				= Tools:					
 					+ Line
+					- Flood
+					- MeasuringTape
 					- Pencil (Need to handle MouseLeft)
-					- ...
+					- RopeEraser
+					- RopePencil
+					- Sampler
+					- Selection
+					- TextureEraser
+					- TextureMagicWand
 				- Final rearcs:
 					- Tool::OnMouseMove does *NOT* take mouse coords
 				- Cleanup all TODO's
-			- All accesses to mouse coords: clamp to canvas
-				- Test with all tools
+			- All accesses to mouse coords: clamp to canvas when needed, do not rely on scissors
+				- Identify and fix all tools that deal with View things that require scissors
 				- Remove View::scissors afterwards
 			- Tool base is not templated anymore - to allow for Ctrl^A/D (below)
 			- Do uq_ptr<Tool> -> sh_ptr<Tool> + sh_ptr<SelectionTool> rearc - to allow for Ctrl^A/D (below)

@@ -56,6 +56,8 @@ private:
 
     void EndEngagement(ShipSpaceCoordinates const & mouseCoordinates);
 
+    void Leave(bool doCommitIfEngaged);
+
     void DoEphemeralVisualization(ShipSpaceCoordinates const & mouseCoordinates);
 
     template<typename TVisitor>

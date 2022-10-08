@@ -63,15 +63,7 @@ LineTool<TLayer>::LineTool(
 template<LayerType TLayer>
 LineTool<TLayer>::~LineTool()
 {
-    // Mend our ephemeral visualization, if any
-    if (mEphemeralVisualization.has_value())
-    {
-        mEphemeralVisualization.reset();
-        mController.LayerChangeEpilog();
-    }
-
-    // Reset sampled material
-    mController.BroadcastSampledInformationUpdatedNone();
+    Leave(false);
 }
 
 template<LayerType TLayer>
@@ -84,7 +76,7 @@ void LineTool<TLayer>::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordi
     // Restore ephemeral visualization (if any)
     mEphemeralVisualization.reset();
 
-    // Display sampled material
+    // Display *original* sampled material (i.e. *before* our edit)
     mController.BroadcastSampledInformationUpdatedAt(mouseShipSpaceCoords, TLayer);
 
     // Do ephemeral visualization
@@ -212,15 +204,7 @@ void LineTool<TLayer>::OnShiftKeyUp()
 template<LayerType TLayer>
 void LineTool<TLayer>::OnMouseLeft()
 {
-    // Mend our ephemeral visualization, if any
-    if (mEphemeralVisualization.has_value())
-    {
-        mEphemeralVisualization.reset();
-        mController.LayerChangeEpilog();
-    }
-
-    // Reset sampled material
-    mController.BroadcastSampledInformationUpdatedNone();
+    Leave(true);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -299,7 +283,7 @@ void LineTool<TLayer>::EndEngagement(ShipSpaceCoordinates const & mouseCoordinat
                 }
             });
 
-        // Display sampled material
+        // Display *new* sampled material (i.e. *after* our edit)
         mController.BroadcastSampledInformationUpdatedAt(mouseCoordinates, TLayer);
 
         // Epilog (if no applicable rect then we haven't changed anything, not even eph viz)
@@ -317,6 +301,35 @@ void LineTool<TLayer>::EndEngagement(ShipSpaceCoordinates const & mouseCoordinat
     //
 
     mOriginalLayerClone = mController.GetModelController().CloneExistingLayer<TLayer>();
+}
+
+template<LayerType TLayer>
+void LineTool<TLayer>::Leave(bool doCommitIfEngaged)
+{
+    // Mend our ephemeral visualization, if any
+    mEphemeralVisualization.reset();
+
+    // Disengage, eventually
+    if (mEngagementData)
+    {
+        if (doCommitIfEngaged)
+        {
+            // Commit and disengage
+            EndEngagement(GetCurrentMouseShipCoordinates());
+        }
+        else
+        {
+            // Plainly disengage
+            mEngagementData.reset();
+        }
+
+        assert(!mEngagementData);
+    }
+
+    mController.LayerChangeEpilog();
+
+    // Reset sampled material
+    mController.BroadcastSampledInformationUpdatedNone();
 }
 
 template<LayerType TLayer>
