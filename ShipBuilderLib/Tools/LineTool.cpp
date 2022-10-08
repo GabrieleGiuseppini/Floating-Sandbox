@@ -48,16 +48,14 @@ LineTool<TLayer>::LineTool(
     SetCursor(cursorImage);
 
     // Check if we need to immediately do an ephemeral visualization
-    auto const mouseCoordinates = GetMouseCoordinatesIfInWorkCanvas();
-    if (mouseCoordinates)
+    auto const mouseShipSpaceCoords = GetCurrentMouseShipCoordinatesIfInWorkCanvas();
+    if (mouseShipSpaceCoords)
     {
-        auto const mouseShipSpaceCoords = ScreenToShipSpace(*mouseCoordinates);
-
         // Display sampled material
         mController.BroadcastSampledInformationUpdatedAt(mouseShipSpaceCoords, TLayer);
 
         // Ephemeral viz
-        DoEphemeralVisualization(mouseShipSpaceCoords);
+        DoEphemeralVisualization(*mouseShipSpaceCoords);
         mController.LayerChangeEpilog();
     }
 }
@@ -102,7 +100,7 @@ void LineTool<TLayer>::OnLeftMouseDown()
     // Restore ephemeral visualization (if any)
     mEphemeralVisualization.reset();
 
-    ShipSpaceCoordinates const mouseCoordinates = GetCurrentMouseCoordinatesInShipSpace();
+    ShipSpaceCoordinates const mouseCoordinates = GetCurrentMouseShipCoordinates();
 
     // Engage
     if (!mEngagementData)
@@ -124,7 +122,7 @@ void LineTool<TLayer>::OnLeftMouseUp()
     // Restore ephemeral visualization (if any)
     mEphemeralVisualization.reset();
 
-    ShipSpaceCoordinates const mouseCoordinates = GetCurrentMouseCoordinatesInShipSpace();
+    ShipSpaceCoordinates const mouseCoordinates = GetCurrentMouseShipCoordinates();
 
     // Disengage, eventually
     if (mEngagementData)
@@ -146,7 +144,7 @@ void LineTool<TLayer>::OnRightMouseDown()
     // Restore ephemeral visualization (if any)
     mEphemeralVisualization.reset();
 
-    ShipSpaceCoordinates const mouseCoordinates = GetCurrentMouseCoordinatesInShipSpace();
+    ShipSpaceCoordinates const mouseCoordinates = GetCurrentMouseShipCoordinates();
 
     // Engage
     if (!mEngagementData)
@@ -168,7 +166,7 @@ void LineTool<TLayer>::OnRightMouseUp()
     // Restore ephemeral visualization (if any)
     mEphemeralVisualization.reset();
 
-    ShipSpaceCoordinates const mouseCoordinates = GetCurrentMouseCoordinatesInShipSpace();
+    ShipSpaceCoordinates const mouseCoordinates = GetCurrentMouseShipCoordinates();
 
     // Disengage, eventually
     if (mEngagementData)
@@ -193,7 +191,7 @@ void LineTool<TLayer>::OnShiftKeyDown()
     mIsShiftDown = true;
 
     // Do ephemeral visualization
-    DoEphemeralVisualization(GetCurrentMouseCoordinatesInShipSpace());
+    DoEphemeralVisualization(GetCurrentMouseShipCoordinates());
 
     mController.LayerChangeEpilog();
 }
@@ -207,9 +205,15 @@ void LineTool<TLayer>::OnShiftKeyUp()
     mIsShiftDown = false;
 
     // Do ephemeral visualization
-    DoEphemeralVisualization(GetCurrentMouseCoordinatesInShipSpace());
+    DoEphemeralVisualization(GetCurrentMouseShipCoordinates());
 
     mController.LayerChangeEpilog();
+}
+
+template<LayerType TLayer>
+void LineTool<TLayer>::OnMouseLeft()
+{
+    // TODOHERE
 }
 
 //////////////////////////////////////////////////////////////////////////////

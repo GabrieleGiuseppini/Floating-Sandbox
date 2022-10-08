@@ -104,31 +104,29 @@ void SelectionTool<TLayer>::OnLeftMouseDown()
 {
     assert(!mEngagementData);
 
-    auto const mouseCoordinates = GetMouseCoordinatesIfInWorkCanvas();
-    if (mouseCoordinates)
+    auto const cornerCoordinates = GetCurrentMouseShipCoordinatesIfInWorkCanvas();
+    if (cornerCoordinates)
     {
-        auto const cornerCoordinates = ScreenToShipSpaceNearest(*mouseCoordinates);
-
         // Create new corner - init with current coords, eventually
         // we end up with an empty rect
-        ShipSpaceCoordinates selectionStartCorner = cornerCoordinates;
+        ShipSpaceCoordinates selectionStartCorner = *cornerCoordinates;
 
         // Check if hitting a corner
         if (mCurrentSelection)
         {
-            if (cornerCoordinates == mCurrentSelection->CornerA())
+            if (*cornerCoordinates == mCurrentSelection->CornerA())
             {
                 selectionStartCorner = mCurrentSelection->CornerC();
             }
-            else if (cornerCoordinates == mCurrentSelection->CornerB())
+            else if (*cornerCoordinates == mCurrentSelection->CornerB())
             {
                 selectionStartCorner = mCurrentSelection->CornerD();
             }
-            else if (cornerCoordinates == mCurrentSelection->CornerC())
+            else if (*cornerCoordinates == mCurrentSelection->CornerC())
             {
                 selectionStartCorner = mCurrentSelection->CornerA();
             }
-            else if (cornerCoordinates == mCurrentSelection->CornerD())
+            else if (*cornerCoordinates == mCurrentSelection->CornerD())
             {
                 selectionStartCorner = mCurrentSelection->CornerB();
             }
@@ -137,7 +135,7 @@ void SelectionTool<TLayer>::OnLeftMouseDown()
         // Engage at selection start corner
         mEngagementData.emplace(selectionStartCorner);
 
-        UpdateEphemeralSelection(cornerCoordinates);
+        UpdateEphemeralSelection(*cornerCoordinates);
     }
 }
 
@@ -222,6 +220,12 @@ void SelectionTool<TLayer>::OnShiftKeyUp()
     }
 }
 
+template<LayerType TLayer>
+void SelectionTool<TLayer>::OnMouseLeft()
+{
+    // TODOHERE
+}
+
 //////////////////////////////////////////////////////////////////////////////
 
 template<LayerType TLayer>
@@ -229,7 +233,7 @@ ShipSpaceCoordinates SelectionTool<TLayer>::GetCornerCoordinate(
     ShipSpaceCoordinates const & input,
     std::optional<ShipSpaceCoordinates> constrainToSquareCorner) const
 {
-    // Clamp
+    // Clamp - allowing for point at (w,h)
     ShipSpaceCoordinates const currentMouseCoordinates = input.Clamp(mController.GetModelController().GetShipSize());
 
     // Eventually constrain to square

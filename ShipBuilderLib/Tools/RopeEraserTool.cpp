@@ -26,7 +26,7 @@ RopeEraserTool::RopeEraserTool(
     SetCursor(WxHelpers::LoadCursorImage("eraser_cursor", 8, 27, resourceLocator));
 
     // Check if we draw the overlay right away
-    auto const mouseCoordinates = GetMouseCoordinatesIfInWorkCanvas();
+    auto const mouseCoordinates = GetCurrentMouseCoordinatesIfInWorkCanvas();
     if (mouseCoordinates)
     {
         auto const mouseShipSpaceCoords = ScreenToShipSpace(*mouseCoordinates);
@@ -90,6 +90,11 @@ void RopeEraserTool::OnRightMouseUp()
     OnMouseUp();
 }
 
+void RopeEraserTool::OnMouseLeft()
+{
+    // TODOHERE
+}
+
 //////////////////////////////////////////////////////////////////////////////
 
 void RopeEraserTool::OnMouseDown()
@@ -106,7 +111,7 @@ void RopeEraserTool::OnMouseDown()
     StartEngagement();
 
     // Do action
-    DoAction(GetCurrentMouseCoordinatesInShipSpace());
+    DoAction(GetCurrentMouseShipCoordinates());
 
     // No need to do eph viz when engaged
 }
@@ -122,7 +127,7 @@ void RopeEraserTool::OnMouseUp()
         StopEngagement();
 
         // Restart overlay
-        DrawOverlay(GetCurrentMouseCoordinatesInShipSpace());
+        DrawOverlay(GetCurrentMouseShipCoordinates());
 
         assert(mHasOverlay);
     }

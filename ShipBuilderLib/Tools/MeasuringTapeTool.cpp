@@ -26,7 +26,7 @@ MeasuringTapeTool::MeasuringTapeTool(
     SetCursor(WxHelpers::LoadCursorImage("measuring_tape_cursor", 0, 25, resourceLocator));
 
     // Check if we draw the overlay right away
-    auto const mouseCoordinates = GetMouseCoordinatesIfInWorkCanvas();
+    auto const mouseCoordinates = GetCurrentMouseCoordinatesIfInWorkCanvas();
     if (mouseCoordinates)
     {
         DrawOverlay(ClipToWorkCanvas(ScreenToShipSpace(*mouseCoordinates)));
@@ -67,7 +67,7 @@ void MeasuringTapeTool::OnMouseMove(DisplayLogicalCoordinates const & mouseCoord
 
 void MeasuringTapeTool::OnLeftMouseDown()
 {
-    auto const shipSpaceMouseCoords = ClipToWorkCanvas(GetCurrentMouseCoordinatesInShipSpace());
+    auto const shipSpaceMouseCoords = ClipToWorkCanvas(GetCurrentMouseShipCoordinates());
 
     // Engage
     StartEngagement(shipSpaceMouseCoords);
@@ -96,7 +96,7 @@ void MeasuringTapeTool::OnShiftKeyDown()
 
     if (mEngagementData.has_value())
     {
-        DoAction(ClipToWorkCanvas(GetCurrentMouseCoordinatesInShipSpace()));
+        DoAction(ClipToWorkCanvas(GetCurrentMouseShipCoordinates()));
 
         mController.GetUserInterface().RefreshView();
     }
@@ -108,10 +108,15 @@ void MeasuringTapeTool::OnShiftKeyUp()
 
     if (mEngagementData.has_value())
     {
-        DoAction(ClipToWorkCanvas(GetCurrentMouseCoordinatesInShipSpace()));
+        DoAction(ClipToWorkCanvas(GetCurrentMouseShipCoordinates()));
 
         mController.GetUserInterface().RefreshView();
     }
+}
+
+void MeasuringTapeTool::OnMouseLeft()
+{
+    // TODOHERE
 }
 
 //////////////////////////////////////////////////////////////////////////////

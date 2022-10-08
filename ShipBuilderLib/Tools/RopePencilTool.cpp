@@ -26,7 +26,7 @@ RopePencilTool::RopePencilTool(
     SetCursor(WxHelpers::LoadCursorImage("pencil_cursor", 2, 22, resourceLocator));
 
     // Check overlay
-    auto const mouseCoordinates = GetMouseCoordinatesIfInWorkCanvas();
+    auto const mouseCoordinates = GetCurrentMouseCoordinatesIfInWorkCanvas();
     if (mouseCoordinates)
     {
         auto const mouseShipSpaceCoords = ScreenToShipSpace(*mouseCoordinates);
@@ -98,7 +98,7 @@ void RopePencilTool::OnLeftMouseDown()
         assert(!mHasTempVisualization);
     }
 
-    ShipSpaceCoordinates const mouseCoordinates = GetCurrentMouseCoordinatesInShipSpace();
+    ShipSpaceCoordinates const mouseCoordinates = GetCurrentMouseShipCoordinates();
 
     // Check if should start engagement
     if (!mEngagementData.has_value())
@@ -127,7 +127,7 @@ void RopePencilTool::OnLeftMouseUp()
         assert(!mHasTempVisualization);
     }
 
-    ShipSpaceCoordinates const mouseCoordinates = GetCurrentMouseCoordinatesInShipSpace();
+    ShipSpaceCoordinates const mouseCoordinates = GetCurrentMouseShipCoordinates();
 
     // Check if should stop engagement
     bool hasEdited = false;
@@ -154,7 +154,7 @@ void RopePencilTool::OnRightMouseDown()
         assert(!mHasTempVisualization);
     }
 
-    ShipSpaceCoordinates const mouseCoordinates = GetCurrentMouseCoordinatesInShipSpace();
+    ShipSpaceCoordinates const mouseCoordinates = GetCurrentMouseShipCoordinates();
 
     // Check if should start engagement
     if (!mEngagementData)
@@ -183,7 +183,7 @@ void RopePencilTool::OnRightMouseUp()
         assert(!mHasTempVisualization);
     }
 
-    ShipSpaceCoordinates const mouseCoordinates = GetCurrentMouseCoordinatesInShipSpace();
+    ShipSpaceCoordinates const mouseCoordinates = GetCurrentMouseShipCoordinates();
 
     // Check if should stop engagement
     bool hasEdited = false;
@@ -198,6 +198,11 @@ void RopePencilTool::OnRightMouseUp()
     // Leave overlay
 
     mController.LayerChangeEpilog(hasEdited ? LayerType::Ropes : std::optional<LayerType>());
+}
+
+void RopePencilTool::OnMouseLeft()
+{
+    // TODOHERE
 }
 
 //////////////////////////////////////////////////////////////////////////////

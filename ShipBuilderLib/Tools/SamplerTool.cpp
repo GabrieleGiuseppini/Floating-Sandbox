@@ -50,7 +50,7 @@ SamplerTool<TLayerType>::SamplerTool(
 {
     SetCursor(mCursorImage);
 
-    auto const mouseCoordinates = GetMouseCoordinatesIfInWorkCanvas();
+    auto const mouseCoordinates = GetCurrentMouseCoordinatesIfInWorkCanvas();
     if (mouseCoordinates)
     {
         mController.BroadcastSampledInformationUpdatedAt(ScreenToShipSpace(*mouseCoordinates), TLayerType);
@@ -72,7 +72,7 @@ void SamplerTool<TLayer>::OnMouseMove(DisplayLogicalCoordinates const & mouseCoo
 template<LayerType TLayer>
 void SamplerTool<TLayer>::OnLeftMouseDown()
 {
-    auto const coords = GetMouseCoordinatesIfInWorkCanvas();
+    auto const coords = GetCurrentMouseCoordinatesIfInWorkCanvas();
     if (coords)
     {
         DoSelectMaterial(
@@ -84,13 +84,19 @@ void SamplerTool<TLayer>::OnLeftMouseDown()
 template<LayerType TLayer>
 void SamplerTool<TLayer>::OnRightMouseDown()
 {
-    auto const coords = GetMouseCoordinatesIfInWorkCanvas();
+    auto const coords = GetCurrentMouseCoordinatesIfInWorkCanvas();
     if (coords)
     {
         DoSelectMaterial(
             ScreenToShipSpace(*coords),
             MaterialPlaneType::Background);
     }
+}
+
+template<LayerType TLayer>
+void SamplerTool<TLayer>::OnMouseLeft()
+{
+    // TODOHERE
 }
 
 //////////////////////////////////////////////////////////////////////////////

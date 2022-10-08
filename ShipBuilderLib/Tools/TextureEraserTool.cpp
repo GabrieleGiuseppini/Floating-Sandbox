@@ -161,6 +161,11 @@ void TextureEraserTool::OnShiftKeyUp()
     }
 }
 
+void TextureEraserTool::OnMouseLeft()
+{
+    // TODOHERE
+}
+
 //////////////////////////////////////////////////////////////////////////////
 
 void TextureEraserTool::StartEngagement(ImageCoordinates const & mouseCoordinates)

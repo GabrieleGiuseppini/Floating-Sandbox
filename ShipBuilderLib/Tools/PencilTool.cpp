@@ -77,7 +77,7 @@ PencilTool<TLayer, IsEraser>::PencilTool(
     SetCursor(cursorImage);
 
     // Check if we need to immediately do a visualization
-    auto const mouseCoordinates = GetMouseCoordinatesIfInWorkCanvas();
+    auto const mouseCoordinates = GetCurrentMouseCoordinatesIfInWorkCanvas();
     if (mouseCoordinates)
     {
         auto const mouseShipSpaceCoords = ScreenToShipSpace(*mouseCoordinates);
@@ -174,7 +174,7 @@ void PencilTool<TLayer, IsEraser>::OnLeftMouseDown()
         assert(!mTempVisualizationDirtyShipRegion);
     }
 
-    auto const mouseShipSpaceCoords = GetCurrentMouseCoordinatesInShipSpace();
+    auto const mouseShipSpaceCoords = GetCurrentMouseShipCoordinates();
 
     if (!mEngagementData)
     {
@@ -211,7 +211,7 @@ void PencilTool<TLayer, IsEraser>::OnRightMouseDown()
         assert(!mTempVisualizationDirtyShipRegion);
     }
 
-    auto const mouseShipSpaceCoords = GetCurrentMouseCoordinatesInShipSpace();
+    auto const mouseShipSpaceCoords = GetCurrentMouseShipCoordinates();
 
     if (!mEngagementData)
     {
@@ -246,7 +246,7 @@ void PencilTool<TLayer, IsEraser>::OnShiftKeyDown()
     {
         // Remember initial engagement
         assert(!mEngagementData->ShiftLockInitialPosition.has_value());
-        mEngagementData->ShiftLockInitialPosition = GetCurrentMouseCoordinatesInShipSpace();
+        mEngagementData->ShiftLockInitialPosition = GetCurrentMouseShipCoordinates();
     }
 }
 
@@ -262,6 +262,12 @@ void PencilTool<TLayer, IsEraser>::OnShiftKeyUp()
         mEngagementData->ShiftLockInitialPosition.reset();
         mEngagementData->ShiftLockIsVertical.reset();
     }
+}
+
+template<LayerType TLayer, bool IsEraser>
+void PencilTool<TLayer, IsEraser>::OnMouseLeft()
+{
+    // TODOHERE
 }
 
 //////////////////////////////////////////////////////////////////////////////

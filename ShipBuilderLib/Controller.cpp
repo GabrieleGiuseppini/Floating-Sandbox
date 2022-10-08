@@ -153,15 +153,12 @@ Controller::Controller(
     mUserInterface.RefreshView();
 
     //
-    // Create tool - iff mouse is (logically) in work canvas at this very moment
+    // Create tool
     //
 
-    if (mUserInterface.IsMouseInWorkCanvas())
+    if (mWorkbenchState.GetCurrentToolType().has_value())
     {
-        if (mWorkbenchState.GetCurrentToolType().has_value())
-        {
-            mCurrentTool = MakeTool(*mWorkbenchState.GetCurrentToolType());
-        }
+        mCurrentTool = MakeTool(*mWorkbenchState.GetCurrentToolType());
     }
 
     RefreshToolCoordinatesDisplay();
@@ -1068,6 +1065,8 @@ void Controller::SetRopeMaterial(StructuralMaterial const * material, MaterialPl
 
 void Controller::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates)
 {
+    LogMessage("TODO:CCCC:OnMouseMove");
+
     // Forward to tool
     if (mCurrentTool)
     {
@@ -1079,6 +1078,8 @@ void Controller::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates)
 
 void Controller::OnLeftMouseDown()
 {
+    LogMessage("TODO:CCCC:OnLeftMouseDown");
+
     // Forward to tool
     if (mCurrentTool)
     {
@@ -1088,6 +1089,8 @@ void Controller::OnLeftMouseDown()
 
 void Controller::OnLeftMouseUp()
 {
+    LogMessage("TODO:CCCC:OnLeftMouseUp");
+
     // Forward to tool
     if (mCurrentTool)
     {
@@ -1133,19 +1136,34 @@ void Controller::OnShiftKeyUp()
 
 void Controller::OnUncapturedMouseIn()
 {
-    InternalResumeTool();
+    LogMessage("TODO:CCCC:OnUncapturedMouseIn");
+
+    // TODOTEST
+    //InternalResumeTool();
 }
 
 void Controller::OnUncapturedMouseOut()
 {
+    LogMessage("TODO:CCCC:OnUncapturedMouseOut");
+
+    if (mCurrentTool)
+    {
+        mCurrentTool->OnMouseLeft();
+    }
+
+    // TODOTEST
+    /*
     InternalSuspendTool();
 
     // Tell UI
     mUserInterface.OnToolCoordinatesChanged(std::nullopt, mModelController->GetShipSize());
+    */
 }
 
 void Controller::OnMouseCaptureLost()
 {
+    LogMessage("TODO:CCCC:OnMouseCaptureLost");
+
     // Reset tool
     InternalResetTool();
 }

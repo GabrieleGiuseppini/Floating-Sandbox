@@ -22,7 +22,7 @@ class SelectionTool : public Tool
 public:
 
     ~SelectionTool();
-
+    
     void OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates) override;
     void OnLeftMouseDown() override;
     void OnLeftMouseUp() override;
@@ -30,6 +30,7 @@ public:
     void OnRightMouseUp() override {}
     void OnShiftKeyDown() override;
     void OnShiftKeyUp() override;
+    void OnMouseLeft() override;
 
 protected:
 

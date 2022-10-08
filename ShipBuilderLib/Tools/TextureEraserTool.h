@@ -35,6 +35,7 @@ public:
     void OnRightMouseUp() override {}
     void OnShiftKeyDown() override;
     void OnShiftKeyUp() override;
+    void OnMouseLeft() override;
 
 private:
 

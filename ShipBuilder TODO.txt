@@ -225,15 +225,28 @@
 				+ Square constraining
 			+ SelectionManager notifies IUserInterface @ selection presence toggles; used for: Copy, Cut, Deselect buttons
 			- Rearc: see if can stop suspending tool at MouseLeaveWindow
-				- No more suspend @ mouse left window
-				- But new OnLeftCanvas(), treated as a MouseMove() outside of canvas
-					- Note: never expected to be engaged
-				- Verify return comes with a MouseMove; if not, also need OnEnter()
-				- Technically:
-					- Leave == In->Out move
-					- Move (evt. after Enter):
+				+ First test sequence of calls @:
+					+ From out, L down then enter: expect: Ldown->Mmove; actual: Mmove (so subsequent Lup is unmatched)
+					+ From in, L down then leave (up happening out): expect: Lup->LeftCanvas; actual: UncapturedMouseOut->Lup
+				+ No more suspend @ mouse left window (& thus no more resume @ mouse enter window)
+				= But new OnLeftCanvas(), treated as a MouseMove() outside of canvas
+					- Note: *could* be engaged, in which case this is to be treated as Lup followed by LeftCanvas
+					- Add above to comment
+				+ Verify return comes with a MouseMove; if not, also need OnEnter()
+				! Technically, state machine transitions are:
+					! Leave == In->Out move
+					! Move (evt. after Enter):
 						- if (...state...): Out->In
 						- else: In->In
+				- Tools:					
+					= Line
+						- Need to handle out
+					- Pencil
+						- Need to handle out
+					- ...
+				- Final rearcs:
+					- Tool::OnMouseMove does *NOT* take mouse coords
+				- Cleanup all TODO's
 			- All accesses to mouse coords: clamp to canvas
 				- Test with all tools
 				- Remove View::scissors afterwards

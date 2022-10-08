@@ -42,7 +42,7 @@ public:
     //
     // Event handlers
     //
-
+    
     virtual void OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates) = 0;
     virtual void OnLeftMouseDown() = 0;
     virtual void OnLeftMouseUp() = 0;
@@ -50,6 +50,7 @@ public:
     virtual void OnRightMouseUp() = 0;
     virtual void OnShiftKeyDown() = 0;
     virtual void OnShiftKeyUp() = 0;
+    virtual void OnMouseLeft() = 0;
 
 protected:
 
@@ -63,15 +64,18 @@ protected:
     // Helpers
 
     void SetCursor(wxImage const & cursorImage);
+    
+
+    DisplayLogicalCoordinates GetCurrentMouseCoordinates() const;
+    std::optional<DisplayLogicalCoordinates> GetCurrentMouseCoordinatesIfInWorkCanvas() const;
+    
+    ShipSpaceCoordinates GetCurrentMouseShipCoordinates() const;
+    ShipSpaceCoordinates GetCurrentMouseShipCoordinatesClampedToWorkCanvas() const;
+    std::optional<ShipSpaceCoordinates> GetCurrentMouseShipCoordinatesIfInWorkCanvas() const;
 
     ShipSpaceCoordinates ScreenToShipSpace(DisplayLogicalCoordinates const & displayCoordinates) const;
     ShipSpaceCoordinates ScreenToShipSpaceNearest(DisplayLogicalCoordinates const & displayCoordinates) const;
     ImageCoordinates ScreenToTextureSpace(DisplayLogicalCoordinates const & displayCoordinates) const;
-
-    std::optional<DisplayLogicalCoordinates> GetMouseCoordinatesIfInWorkCanvas() const;
-
-    DisplayLogicalCoordinates GetCurrentMouseCoordinates() const;
-    ShipSpaceCoordinates GetCurrentMouseCoordinatesInShipSpace() const;
 
 protected:
 
