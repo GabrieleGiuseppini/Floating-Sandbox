@@ -62,28 +62,46 @@ void RopePencilTool::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordina
         assert(!mHasTempVisualization);
     }
 
-    auto const mouseShipSpaceCoords = GetCurrentMouseShipCoordinatesIfInShip(mouseCoordinates);
-
-    // Show sampled information (or clear it)
-    mController.BroadcastSampledInformationUpdatedAt(mouseShipSpaceCoords, LayerType::Ropes);
-
-    if (mouseShipSpaceCoords)
+    if (mEngagementData.has_value())
     {
+        //
+        // Engaged: we clip
+        //
+
+        auto const mouseShipSpaceCoords = GetCurrentMouseShipCoordinatesClampedToShip(mouseCoordinates);
+
+        // Show sampled information
+        mController.BroadcastSampledInformationUpdatedAt(mouseShipSpaceCoords, LayerType::Ropes);
+
         // Do overlay
-        DrawOverlay(*mouseShipSpaceCoords);
+        DrawOverlay(mouseShipSpaceCoords);
 
         // Do ephemeral visualization
-        if (mEngagementData.has_value())
-        {
-            DoTempVisualization(*mouseShipSpaceCoords);
-        }
+        DoTempVisualization(mouseShipSpaceCoords);
     }
     else
     {
-        // Hide overlay
-        if (mHasOverlay)
+        //
+        // Not engaged: we don't clip
+        //
+
+        auto const mouseShipSpaceCoords = GetCurrentMouseShipCoordinatesIfInShip(mouseCoordinates);
+
+        // Show sampled information (or clear it)
+        mController.BroadcastSampledInformationUpdatedAt(mouseShipSpaceCoords, LayerType::Ropes);
+
+        if (mouseShipSpaceCoords)
         {
-            HideOverlay();
+            // Do overlay
+            DrawOverlay(*mouseShipSpaceCoords);
+        }
+        else
+        {
+            // Hide overlay
+            if (mHasOverlay)
+            {
+                HideOverlay();
+            }
         }
     }
 
@@ -282,17 +300,15 @@ bool RopePencilTool::CommmitAndStopEngagement()
     //
     // Check conditions for doing action:
     //  - If same coords as start: NO
-    //  - If outside ship rect : NO
     //  - Else: may release only if there's no other rope endpoint at that position
     //
 
     bool hasEdited = false;
 
-    auto const releaseShipCoords = GetCurrentMouseShipCoordinatesIfInShip();
+    auto const releaseShipCoords = GetCurrentMouseShipCoordinatesClampedToShip();    
 
-    if (releaseShipCoords
-        && !mController.GetModelController().GetRopeElementIndexAt(*releaseShipCoords).has_value()
-        && *releaseShipCoords != mEngagementData->StartCoords)
+    if (!mController.GetModelController().GetRopeElementIndexAt(releaseShipCoords).has_value()
+        && releaseShipCoords != mEngagementData->StartCoords)
     {
         //
         // May release here
@@ -304,7 +320,7 @@ bool RopePencilTool::CommmitAndStopEngagement()
             {
                 mController.GetModelController().AddRope(
                     mEngagementData->StartCoords,
-                    *releaseShipCoords,
+                    releaseShipCoords,
                     GetMaterial(mEngagementData->Plane));
             }
             else
@@ -312,7 +328,7 @@ bool RopePencilTool::CommmitAndStopEngagement()
                 mController.GetModelController().MoveRopeEndpoint(
                     *mEngagementData->ExistingRopeElementIndex,
                     mEngagementData->StartCoords,
-                    *releaseShipCoords);
+                    releaseShipCoords);
             }
         }
 
@@ -329,7 +345,7 @@ bool RopePencilTool::CommmitAndStopEngagement()
         }
 
         // Show sampled information
-        mController.BroadcastSampledInformationUpdatedAt(*releaseShipCoords, LayerType::Ropes);
+        mController.BroadcastSampledInformationUpdatedAt(releaseShipCoords, LayerType::Ropes);
 
         hasEdited = true;
     }
