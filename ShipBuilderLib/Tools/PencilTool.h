@@ -48,15 +48,15 @@ private:
 
 private:
 
+    void Leave(bool doCommitIfEngaged);
+
     void StartEngagement(
         ShipSpaceCoordinates const & mouseCoordinates,
         StrongTypedBool<struct IsRightMouseButton> isRightButton);
 
     void DoEdit(ShipSpaceCoordinates const & mouseCoordinates);
 
-    void EndEngagement();
-
-    void Leave(bool doCommitIfEngaged);
+    void EndEngagement();    
 
     void DoTempVisualization(ShipSpaceRect const & affectedRect);
 

@@ -124,6 +124,21 @@ void MeasuringTapeTool::OnMouseLeft()
 
 //////////////////////////////////////////////////////////////////////////////
 
+void MeasuringTapeTool::Leave()
+{
+    if (mHasOverlay)
+    {
+        HideOverlay();
+    }
+
+    if (mEngagementData.has_value())
+    {
+        StopEngagement();
+    }
+
+    mController.GetUserInterface().RefreshView();
+}
+
 void MeasuringTapeTool::StartEngagement(ShipSpaceCoordinates const & coords)
 {
     assert(!mEngagementData.has_value());
@@ -172,21 +187,6 @@ void MeasuringTapeTool::StopEngagement()
     mController.GetUserInterface().OnMeasuredWorldLengthChanged(std::nullopt);
 
     mEngagementData.reset();
-}
-
-void MeasuringTapeTool::Leave()
-{
-    if (mHasOverlay)
-    {
-        HideOverlay();
-    }
-
-    if (mEngagementData.has_value())
-    {
-        StopEngagement();
-    }
-
-    mController.GetUserInterface().RefreshView();
 }
 
 void MeasuringTapeTool::UpdateOverlay(ShipSpaceCoordinates const & coords)

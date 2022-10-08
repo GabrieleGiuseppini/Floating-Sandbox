@@ -210,6 +210,35 @@ void LineTool<TLayer>::OnMouseLeft()
 //////////////////////////////////////////////////////////////////////////////
 
 template<LayerType TLayer>
+void LineTool<TLayer>::Leave(bool doCommitIfEngaged)
+{
+    // Mend our ephemeral visualization, if any
+    mEphemeralVisualization.reset();
+
+    // Disengage, eventually
+    if (mEngagementData)
+    {
+        if (doCommitIfEngaged)
+        {
+            // Commit and disengage
+            EndEngagement(GetCurrentMouseShipCoordinates());
+        }
+        else
+        {
+            // Plainly disengage
+            mEngagementData.reset();
+        }
+
+        assert(!mEngagementData);
+    }
+
+    mController.LayerChangeEpilog();
+
+    // Reset sampled material
+    mController.BroadcastSampledInformationUpdatedNone();
+}
+
+template<LayerType TLayer>
 void LineTool<TLayer>::StartEngagement(
     ShipSpaceCoordinates const & mouseCoordinates,
     MaterialPlaneType plane)
@@ -301,35 +330,6 @@ void LineTool<TLayer>::EndEngagement(ShipSpaceCoordinates const & mouseCoordinat
     //
 
     mOriginalLayerClone = mController.GetModelController().CloneExistingLayer<TLayer>();
-}
-
-template<LayerType TLayer>
-void LineTool<TLayer>::Leave(bool doCommitIfEngaged)
-{
-    // Mend our ephemeral visualization, if any
-    mEphemeralVisualization.reset();
-
-    // Disengage, eventually
-    if (mEngagementData)
-    {
-        if (doCommitIfEngaged)
-        {
-            // Commit and disengage
-            EndEngagement(GetCurrentMouseShipCoordinates());
-        }
-        else
-        {
-            // Plainly disengage
-            mEngagementData.reset();
-        }
-
-        assert(!mEngagementData);
-    }
-
-    mController.LayerChangeEpilog();
-
-    // Reset sampled material
-    mController.BroadcastSampledInformationUpdatedNone();
 }
 
 template<LayerType TLayer>

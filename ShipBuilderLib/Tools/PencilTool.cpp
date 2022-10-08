@@ -260,6 +260,38 @@ void PencilTool<TLayer, IsEraser>::OnMouseLeft()
 //////////////////////////////////////////////////////////////////////////////
 
 template<LayerType TLayer, bool IsEraser>
+void PencilTool<TLayer, IsEraser>::Leave(bool doCommitIfEngaged)
+{
+    // Mend our temporary visualization, if any
+    if (mTempVisualizationDirtyShipRegion)
+    {
+        MendTempVisualization();
+    }
+
+    // Disengage, eventually
+    if (mEngagementData)
+    {
+        if (doCommitIfEngaged)
+        {
+            // Commit and disengage
+            EndEngagement();
+        }
+        else
+        {
+            // Plainly disengage
+            mEngagementData.reset();
+        }
+
+        assert(!mEngagementData);
+    }
+
+    mController.LayerChangeEpilog();
+
+    // Reset sampled material
+    mController.BroadcastSampledInformationUpdatedNone();
+}
+
+template<LayerType TLayer, bool IsEraser>
 void PencilTool<TLayer, IsEraser>::StartEngagement(
     ShipSpaceCoordinates const & mouseCoordinates,
     StrongTypedBool<struct IsRightMouseButton> isRightButton)
@@ -442,38 +474,6 @@ void PencilTool<TLayer, IsEraser>::EndEngagement()
 
     // Re-take original layer clone
     mOriginalLayerClone = mController.GetModelController().CloneExistingLayer<TLayer>();
-}
-
-template<LayerType TLayer, bool IsEraser>
-void PencilTool<TLayer, IsEraser>::Leave(bool doCommitIfEngaged)
-{
-    // Mend our temporary visualization, if any
-    if (mTempVisualizationDirtyShipRegion)
-    {
-        MendTempVisualization();
-    }
-
-    // Disengage, eventually
-    if (mEngagementData)
-    {
-        if (doCommitIfEngaged)
-        {
-            // Commit and disengage
-            EndEngagement();
-        }
-        else
-        {
-            // Plainly disengage
-            mEngagementData.reset();
-        }
-
-        assert(!mEngagementData);
-    }
-
-    mController.LayerChangeEpilog();
-
-    // Reset sampled material
-    mController.BroadcastSampledInformationUpdatedNone();
 }
 
 template<LayerType TLayer, bool IsEraser>

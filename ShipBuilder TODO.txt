@@ -244,11 +244,15 @@
 					+ MeasuringTape
 					+ Pencil (Need to handle MouseLeft)
 					+ RopeEraser
-					- RopePencil
+					= RopePencil
+						- TODO: clip
 					- Sampler
 					- Selection
 					- TextureEraser
 					- TextureMagicWand
+				- More tests:
+					- Make sure none of the tools changes IsDirty with own eph (because of wrong LayerChangeEpilog calls)
+					- Double check all Leave()'s: if they commit, they should invoke LayerChangeEpilog with arg to make it do undo
 				- Final rearcs:
 					- Tool::OnMouseMove does *NOT* take mouse coords
 				- Cleanup all TODO's

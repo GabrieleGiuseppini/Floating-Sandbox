@@ -142,6 +142,35 @@ void RopeEraserTool::OnMouseUp()
     }
 }
 
+void RopeEraserTool::Leave(bool doCommitIfEngaged)
+{
+    // Remove our overlay, if any
+    if (mHasOverlay)
+    {
+        HideOverlay();
+    }
+
+    // Disengage, eventually
+    if (mEngagementData)
+    {
+        if (doCommitIfEngaged)
+        {
+            // Disengage
+            StopEngagement();
+        }
+        else
+        {
+            // Plainly disengage
+            mEngagementData.reset();
+        }
+
+        assert(!mEngagementData);
+    }
+
+    // Reset sampled information
+    mController.BroadcastSampledInformationUpdatedNone();
+}
+
 void RopeEraserTool::StartEngagement()
 {
     assert(!mHasOverlay);
@@ -196,35 +225,6 @@ void RopeEraserTool::StopEngagement()
 
     // Stop engagement
     mEngagementData.reset();
-}
-
-void RopeEraserTool::Leave(bool doCommitIfEngaged)
-{
-    // Remove our overlay, if any
-    if (mHasOverlay)
-    {
-        HideOverlay();
-    }
-
-    // Disengage, eventually
-    if (mEngagementData)
-    {
-        if (doCommitIfEngaged)
-        {
-            // Disengage
-            StopEngagement();
-        }
-        else
-        {
-            // Plainly disengage
-            mEngagementData.reset();
-        }
-
-        assert(!mEngagementData);
-    }
-
-    // Reset sampled information
-    mController.BroadcastSampledInformationUpdatedNone();
 }
 
 void RopeEraserTool::DrawOverlay(ShipSpaceCoordinates const & coords)

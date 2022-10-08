@@ -42,13 +42,13 @@ private:
 
     void OnMouseUp();
 
+    void Leave(bool doCommitIfEngaged);
+
     void StartEngagement();
 
     void DoAction(ShipSpaceCoordinates const & coords);
 
-    void StopEngagement();
-
-    void Leave(bool doCommitIfEngaged);
+    void StopEngagement();    
 
     void DrawOverlay(ShipSpaceCoordinates const & coords);
 

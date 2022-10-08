@@ -50,13 +50,13 @@ private:
 
 private:
 
+    void Leave(bool doCommitIfEngaged);
+
     void StartEngagement(
         ShipSpaceCoordinates const & mouseCoordinates,
         MaterialPlaneType plane);
 
-    void EndEngagement(ShipSpaceCoordinates const & mouseCoordinates);
-
-    void Leave(bool doCommitIfEngaged);
+    void EndEngagement(ShipSpaceCoordinates const & mouseCoordinates);    
 
     void DoEphemeralVisualization(ShipSpaceCoordinates const & mouseCoordinates);
 

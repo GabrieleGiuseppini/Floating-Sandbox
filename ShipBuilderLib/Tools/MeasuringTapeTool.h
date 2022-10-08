@@ -36,13 +36,13 @@ public:
 
 private:
 
+    void Leave();
+
     void StartEngagement(ShipSpaceCoordinates const & coords);
 
     void DoAction(ShipSpaceCoordinates const & coords);
 
-    void StopEngagement();
-
-    void Leave();
+    void StopEngagement();    
 
     void UpdateOverlay(ShipSpaceCoordinates const & coords);
 
