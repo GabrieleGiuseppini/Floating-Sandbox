@@ -1015,18 +1015,16 @@ void Controller::SetCurrentTool(std::optional<ToolType> tool)
 {
     if (tool != mWorkbenchState.GetCurrentToolType())
     {
-        bool const hadTool = (mCurrentTool != nullptr);
-
         // Nuke current tool
         mWorkbenchState.SetCurrentToolType(std::nullopt);
         mCurrentTool.reset();
 
+        // Do bookkeeping
         InternalSetCurrentTool(tool);
 
-        // Make new tool - unless we are suspended
+        // Make new tool - unless we're clearing
         assert(mWorkbenchState.GetCurrentToolType() == tool);
-        if (mWorkbenchState.GetCurrentToolType().has_value()
-            && hadTool)
+        if (mWorkbenchState.GetCurrentToolType().has_value())
         {
             mCurrentTool = MakeTool(*mWorkbenchState.GetCurrentToolType());
         }
