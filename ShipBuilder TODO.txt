@@ -239,10 +239,8 @@
 						- if (...state...): Out->In
 						- else: In->In
 				- Tools:					
-					= Line
-						- Need to handle out
-					- Pencil
-						- Need to handle out
+					+ Line
+					- Pencil (Need to handle MouseLeft)
 					- ...
 				- Final rearcs:
 					- Tool::OnMouseMove does *NOT* take mouse coords

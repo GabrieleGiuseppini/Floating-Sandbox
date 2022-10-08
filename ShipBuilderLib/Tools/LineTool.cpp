@@ -67,7 +67,6 @@ LineTool<TLayer>::~LineTool()
     if (mEphemeralVisualization.has_value())
     {
         mEphemeralVisualization.reset();
-
         mController.LayerChangeEpilog();
     }
 
@@ -213,7 +212,15 @@ void LineTool<TLayer>::OnShiftKeyUp()
 template<LayerType TLayer>
 void LineTool<TLayer>::OnMouseLeft()
 {
-    // TODOHERE
+    // Mend our ephemeral visualization, if any
+    if (mEphemeralVisualization.has_value())
+    {
+        mEphemeralVisualization.reset();
+        mController.LayerChangeEpilog();
+    }
+
+    // Reset sampled material
+    mController.BroadcastSampledInformationUpdatedNone();
 }
 
 //////////////////////////////////////////////////////////////////////////////
