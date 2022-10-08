@@ -64,6 +64,13 @@
 
 	- ShipBuilder things (*)
 
+	- libjpg issue (https://github.com/GabrieleGiuseppini/Floating-Sandbox/issues/73)
+		- Add jpg next to png to libs in main CMakeLists
+			- Test on Ubuntu
+
+	- Make Mac instructions
+		- SFML build: https://github.com/SFML/SFML/issues/1496
+
 	- Frozen structure (*)
 
 	- Windows 11 issue: try to play with vsync
