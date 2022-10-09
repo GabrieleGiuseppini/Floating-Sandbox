@@ -85,7 +85,7 @@ include(${wxWidgets_USE_FILE})
 target_include_directories(FloatingSandbox PRIVATE .)
 target_include_directories(FloatingSandbox PRIVATE ${wxWidgets_INCLUDE_DIRS})
 target_compile_definitions(FloatingSandbox PRIVATE "${wxWidgets_DEFINITIONS}")
-target_link_libraries (FloatingSandbox
+target_link_libraries (FloatingSandbox PRIVATE
 	GameCoreLib
 	GameLib
 	GameOpenGLLib

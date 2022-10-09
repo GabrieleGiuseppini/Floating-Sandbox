@@ -1173,10 +1173,10 @@ void SettingsDialog::PopulateWaterAndOceanPanel(wxPanel * panel)
                     _("Depth"),
                     _("The ocean depth (m)."),
                     [this](float value)
-                {
-                    this->mLiveSettings.SetValue(GameSettings::SeaDepth, value);
-                    this->OnLiveSettingsChanged();
-                },
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::SeaDepth, value);
+                        this->OnLiveSettingsChanged();
+                    },
                     std::make_unique<ExponentialSliderCore>(
                         mGameControllerSettingsOptions->GetMinSeaDepth(),
                         1000.0f, // Matches default depth so that the setting is round

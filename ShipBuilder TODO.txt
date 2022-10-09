@@ -257,9 +257,10 @@
 					+ MeasuringTapeTool
 				+ Remove View::scissors afterwards
 			+ Merge to master
-			- TODOHERE: rethink below
-			- Tool base is not templated anymore - to allow for Ctrl^A/D (below)
-			- Do uq_ptr<Tool> -> sh_ptr<Tool> + sh_ptr<SelectionTool> rearc - to allow for Ctrl^A/D (below)
+			- Tool base is not templated anymore - to allow for Ctrl^A/D
+			- Controller::GetCurrentToolAsXXX - TODOHERE
+			- TODOOLD: rethink below; plan B could be: forced dynamic_cast's and assert's...			
+				- Do uq_ptr<Tool> -> sh_ptr<Tool> + sh_ptr<SelectionTool> rearc - to allow for Ctrl^A/D (below)
 			- Ctrl^A accel => Controller::SelectAll()
 				- If cur tool not SelectionTool (via sh_ptr): change tool
 				- Call sh_ptr->SelectAll()
@@ -272,9 +273,16 @@
 	= Copy & Cut buttons:
 		+ Buttons at "Edit" ribbon (new own section)
 		+ Reconciliation with selection: enable/disable
-		- Populate LayersRegion in ClipboardManager, via Controller::DoCopy()
-		- ClipboardManager notifies IUserInterface @ population; used for: Paste
-		- Controller::DoCopy() reads WorkbenchState::all-layers flag
+		- CopySelectionToClipboard(selection rect) // TODO: really arg? or takes it from selection manager?
+			- Populate LayersRegion in ClipboardManager
+				- Read WorkbenchState::all-layers flag
+			- ClipboardManager notifies IUserInterface @ population; used for: Paste		
+		- Controller::Cut():
+			- CopySelectionToClipboard(selection rect)
+			- ModelController::~"Cut"(selection rect, which layers) => Undo
+				- Note: Undo leaves clipboard populated - that's fine
+		- Controller::Copy():
+			- CopySelectionToClipboard(selection rect)
 	+ MainFrame::ReconciliateUIWithSelection(): enable/disable Cut, Copy, Deselect buttons
 	- Paste tool:
 		+ UI Reconciliation with clipboard: enable/disable
