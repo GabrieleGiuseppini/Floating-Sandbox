@@ -61,8 +61,4 @@ void TextureMagicWandTool::OnLeftMouseDown()
     }
 }
 
-void TextureMagicWandTool::OnMouseLeft()
-{
-    // TODOHERE
-}
 }

@@ -1023,6 +1023,8 @@ void Controller::SetCurrentTool(std::optional<ToolType> tool)
         InternalSetCurrentTool(tool);
 
         // Make new tool - unless we're clearing
+        // TODO: here we were avoiding to create a new tool if we had entered this function
+        // without a tool, stating that we were "not creating a new tool if we were suspended".
         assert(mWorkbenchState.GetCurrentToolType() == tool);
         if (mWorkbenchState.GetCurrentToolType().has_value())
         {

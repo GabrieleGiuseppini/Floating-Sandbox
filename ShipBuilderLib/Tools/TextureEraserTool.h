@@ -39,6 +39,8 @@ public:
 
 private:
 
+    void Leave();
+
     void StartEngagement(ImageCoordinates const & mouseCoordinates);
 
     void DoEdit(ImageCoordinates const & mouseCoordinates);

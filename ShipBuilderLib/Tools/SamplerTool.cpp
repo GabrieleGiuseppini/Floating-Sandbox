@@ -50,10 +50,11 @@ SamplerTool<TLayerType>::SamplerTool(
 {
     SetCursor(mCursorImage);
 
-    auto const mouseCoordinates = GetCurrentMouseCoordinatesIfInWorkCanvas();
-    if (mouseCoordinates)
+    // See if should sample right away
+    auto const mouseShipCoordinates = GetCurrentMouseShipCoordinatesIfInWorkCanvas();
+    if (mouseShipCoordinates)
     {
-        mController.BroadcastSampledInformationUpdatedAt(ScreenToShipSpace(*mouseCoordinates), TLayerType);
+        mController.BroadcastSampledInformationUpdatedAt(*mouseShipCoordinates, TLayerType);
     }
 }
 
@@ -72,11 +73,11 @@ void SamplerTool<TLayer>::OnMouseMove(DisplayLogicalCoordinates const & mouseCoo
 template<LayerType TLayer>
 void SamplerTool<TLayer>::OnLeftMouseDown()
 {
-    auto const coords = GetCurrentMouseCoordinatesIfInWorkCanvas();
-    if (coords)
+    auto const mouseShipCoordinates = GetCurrentMouseShipCoordinatesIfInShip();
+    if (mouseShipCoordinates)
     {
         DoSelectMaterial(
-            ScreenToShipSpace(*coords),
+            *mouseShipCoordinates,
             MaterialPlaneType::Foreground);
     }
 }
@@ -84,11 +85,11 @@ void SamplerTool<TLayer>::OnLeftMouseDown()
 template<LayerType TLayer>
 void SamplerTool<TLayer>::OnRightMouseDown()
 {
-    auto const coords = GetCurrentMouseCoordinatesIfInWorkCanvas();
-    if (coords)
+    auto const mouseShipCoordinates = GetCurrentMouseShipCoordinatesIfInShip();
+    if (mouseShipCoordinates)
     {
         DoSelectMaterial(
-            ScreenToShipSpace(*coords),
+            *mouseShipCoordinates,
             MaterialPlaneType::Background);
     }
 }
@@ -96,7 +97,7 @@ void SamplerTool<TLayer>::OnRightMouseDown()
 template<LayerType TLayer>
 void SamplerTool<TLayer>::OnMouseLeft()
 {
-    // TODOHERE
+    mController.BroadcastSampledInformationUpdatedNone();
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -106,31 +107,30 @@ void SamplerTool<TLayer>::DoSelectMaterial(
     ShipSpaceCoordinates const & mouseCoordinates,
     MaterialPlaneType plane)
 {
-    if (mouseCoordinates.IsInSize(mController.GetModelController().GetShipSize()))
+    assert(mouseCoordinates.IsInSize(mController.GetModelController().GetShipSize()));
+
+    // Get material
+    auto const * material = SampleMaterial(mouseCoordinates);
+
+    // Select material
+    if constexpr (TLayer == LayerType::Structural)
     {
-        // Get material
-        auto const * material = SampleMaterial(mouseCoordinates);
+        mController.GetWorkbenchState().SetStructuralMaterial(material, plane);
+        mController.GetUserInterface().OnStructuralMaterialChanged(material, plane);
+    }
+    else if constexpr (TLayer == LayerType::Electrical)
+    {
+        mController.GetWorkbenchState().SetElectricalMaterial(material, plane);
+        mController.GetUserInterface().OnElectricalMaterialChanged(material, plane);
+    }
+    else
+    {
+        static_assert(TLayer == LayerType::Ropes);
 
-        // Select material
-        if constexpr (TLayer == LayerType::Structural)
+        if (material != nullptr) // Ropes material is not allowed to be NULL
         {
-            mController.GetWorkbenchState().SetStructuralMaterial(material, plane);
-            mController.GetUserInterface().OnStructuralMaterialChanged(material, plane);
-        }
-        else if constexpr (TLayer == LayerType::Electrical)
-        {
-            mController.GetWorkbenchState().SetElectricalMaterial(material, plane);
-            mController.GetUserInterface().OnElectricalMaterialChanged(material, plane);
-        }
-        else
-        {
-            static_assert(TLayer == LayerType::Ropes);
-
-            if (material != nullptr) // Ropes material is not allowed to be NULL
-            {
-                mController.GetWorkbenchState().SetRopesMaterial(material, plane);
-                mController.GetUserInterface().OnRopesMaterialChanged(material, plane);
-            }
+            mController.GetWorkbenchState().SetRopesMaterial(material, plane);
+            mController.GetUserInterface().OnRopesMaterialChanged(material, plane);
         }
     }
 }

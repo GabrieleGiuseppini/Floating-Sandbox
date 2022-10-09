@@ -238,28 +238,24 @@
 					! Move (evt. after Enter):
 						- if (...state...): Out->In
 						- else: In->In
-				= Tools:					
+				+ Tools:					
 					+ Line
 					+ Flood
 					+ MeasuringTape
 					+ Pencil (Need to handle MouseLeft)
 					+ RopeEraser
 					+ RopePencil
-					- Sampler
-					- Selection
-					- TextureEraser
-					- TextureMagicWand
-				- More tests:
-					- Make sure none of the tools changes IsDirty with own eph (because of wrong LayerChangeEpilog calls)
-					- Double check all Leave()'s: if they commit, they should invoke LayerChangeEpilog with arg to make it do undo
-				- Final rearcs:
-					- Tool::OnMouseMove does *NOT* take mouse coords
+					+ Sampler
+					+ Selection
+					+ TextureEraser
+					+ TextureMagicWand
+				- Make sure all mouse up's don't assume they are engaged
 				- Cleanup all TODO's			
 			- All accesses to mouse coords: clamp to canvas when needed, do not rely on scissors
 				- Identify and fix all tools that deal with View things that require scissors
 				- Remove View::scissors afterwards
-			- Overlay for *moving* corners
-				- At MouseMove, and in general everywhere we have new mouse coords and one could mouse left down
+			- Merge to master
+			- TODOHERE: rethink below
 			- Tool base is not templated anymore - to allow for Ctrl^A/D (below)
 			- Do uq_ptr<Tool> -> sh_ptr<Tool> + sh_ptr<SelectionTool> rearc - to allow for Ctrl^A/D (below)
 			- Ctrl^A accel => Controller::SelectAll()
