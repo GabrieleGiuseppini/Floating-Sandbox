@@ -55,8 +55,7 @@ TextureSelectionTool::TextureSelectionTool(
         resourceLocator)
 {}
 
-template<LayerType TLayer>
-SelectionTool<TLayer>::SelectionTool(
+SelectionTool::SelectionTool(
     ToolType toolType,
     Controller & controller,
     SelectionManager & selectionManager,
@@ -72,8 +71,7 @@ SelectionTool<TLayer>::SelectionTool(
     SetCursor(WxHelpers::LoadCursorImage("selection_cursor", 10, 10, resourceLocator));
 }
 
-template<LayerType TLayer>
-SelectionTool<TLayer>::~SelectionTool()
+SelectionTool::~SelectionTool()
 {
     if (mCurrentSelection || mEngagementData)
     {
@@ -86,8 +84,7 @@ SelectionTool<TLayer>::~SelectionTool()
     }
 }
 
-template<LayerType TLayer>
-void SelectionTool<TLayer>::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates)
+void SelectionTool::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates)
 {
     if (mEngagementData)
     {
@@ -97,8 +94,7 @@ void SelectionTool<TLayer>::OnMouseMove(DisplayLogicalCoordinates const & mouseC
     }
 }
 
-template<LayerType TLayer>
-void SelectionTool<TLayer>::OnLeftMouseDown()
+void SelectionTool::OnLeftMouseDown()
 {
     assert(!mEngagementData);
 
@@ -137,8 +133,7 @@ void SelectionTool<TLayer>::OnLeftMouseDown()
     }
 }
 
-template<LayerType TLayer>
-void SelectionTool<TLayer>::OnLeftMouseUp()
+void SelectionTool::OnLeftMouseUp()
 {
     if (mEngagementData)
     {
@@ -185,8 +180,7 @@ void SelectionTool<TLayer>::OnLeftMouseUp()
     }
 }
 
-template<LayerType TLayer>
-void SelectionTool<TLayer>::OnShiftKeyDown()
+void SelectionTool::OnShiftKeyDown()
 {
     mIsShiftDown = true;
 
@@ -198,8 +192,7 @@ void SelectionTool<TLayer>::OnShiftKeyDown()
     }
 }
 
-template<LayerType TLayer>
-void SelectionTool<TLayer>::OnShiftKeyUp()
+void SelectionTool::OnShiftKeyUp()
 {
     mIsShiftDown = false;
 
@@ -213,14 +206,12 @@ void SelectionTool<TLayer>::OnShiftKeyUp()
 
 //////////////////////////////////////////////////////////////////////////////
 
-template<LayerType TLayer>
-ShipSpaceCoordinates SelectionTool<TLayer>::GetCornerCoordinatesEngaged() const
+ShipSpaceCoordinates SelectionTool::GetCornerCoordinatesEngaged() const
 {
     return GetCornerCoordinatesEngaged(GetCurrentMouseCoordinates());
 }
 
-template<LayerType TLayer>
-ShipSpaceCoordinates SelectionTool<TLayer>::GetCornerCoordinatesEngaged(DisplayLogicalCoordinates const & input) const
+ShipSpaceCoordinates SelectionTool::GetCornerCoordinatesEngaged(DisplayLogicalCoordinates const & input) const
 {
     // Convert to ship coords closest to grid point
     ShipSpaceCoordinates const nearestGridPointCoordinates = ScreenToShipSpaceNearest(input);
@@ -254,8 +245,7 @@ ShipSpaceCoordinates SelectionTool<TLayer>::GetCornerCoordinatesEngaged(DisplayL
     }
 }
 
-template<LayerType TLayer>
-std::optional<ShipSpaceCoordinates> SelectionTool<TLayer>::GetCornerCoordinatesFree() const
+std::optional<ShipSpaceCoordinates> SelectionTool::GetCornerCoordinatesFree() const
 {
     ShipSpaceCoordinates const mouseShipCoordinates = ScreenToShipSpaceNearest(GetCurrentMouseCoordinates());
 
@@ -273,8 +263,7 @@ std::optional<ShipSpaceCoordinates> SelectionTool<TLayer>::GetCornerCoordinatesF
     }
 }
 
-template<LayerType TLayer>
-void SelectionTool<TLayer>::UpdateEphemeralSelection(ShipSpaceCoordinates const & cornerCoordinates)
+void SelectionTool::UpdateEphemeralSelection(ShipSpaceCoordinates const & cornerCoordinates)
 {
     // Update overlay
     mController.GetView().UploadSelectionOverlay(

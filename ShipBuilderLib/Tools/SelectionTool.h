@@ -16,7 +16,6 @@
 
 namespace ShipBuilder {
 
-template<LayerType TLayer>
 class SelectionTool : public Tool
 {
 public:
@@ -72,7 +71,7 @@ private:
     bool mIsShiftDown;
 };
 
-class StructuralSelectionTool final : public SelectionTool<LayerType::Structural>
+class StructuralSelectionTool final : public SelectionTool
 {
 public:
 
@@ -82,7 +81,7 @@ public:
         ResourceLocator const & resourceLocator);
 };
 
-class ElectricalSelectionTool final : public SelectionTool<LayerType::Electrical>
+class ElectricalSelectionTool final : public SelectionTool
 {
 public:
 
@@ -92,7 +91,7 @@ public:
         ResourceLocator const & resourceLocator);
 };
 
-class RopeSelectionTool final : public SelectionTool<LayerType::Ropes>
+class RopeSelectionTool final : public SelectionTool
 {
 public:
 
@@ -102,7 +101,7 @@ public:
         ResourceLocator const & resourceLocator);
 };
 
-class TextureSelectionTool final : public SelectionTool<LayerType::Texture>
+class TextureSelectionTool final : public SelectionTool
 {
 public:
 
