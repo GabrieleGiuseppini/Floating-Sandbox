@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
+#include "ClipboardManager.h"
+#include "IUserInterface.h"
 #include "ShipBuilderTypes.h"
 
 #include <Game/Materials.h>
@@ -33,9 +35,25 @@ class WorkbenchState
 {
 public:
 
-    WorkbenchState(MaterialDatabase const & materialDatabase);
+    WorkbenchState(
+        MaterialDatabase const & materialDatabase,
+        IUserInterface & userInterface);
 
     ~WorkbenchState();
+
+    //
+    // Components
+    //
+
+    ClipboardManager const & GetClipboardManager() const
+    {
+        return mClipboardManager;
+    }
+
+    ClipboardManager & GetClipboardManager()
+    {
+        return mClipboardManager;
+    }
 
     //
     // Materials
@@ -439,6 +457,9 @@ private:
     void SavePreferences() const;
 
 private:
+
+    // Owned components
+    ClipboardManager mClipboardManager;
 
     // Materials
     StructuralMaterial const * mStructuralForegroundMaterial;

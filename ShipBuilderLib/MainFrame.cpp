@@ -75,7 +75,7 @@ MainFrame::MainFrame(
     , mIsMouseCapturedByWorkCanvas(false)
     , mIsShiftKeyDown(false)
     // State
-    , mWorkbenchState(materialDatabase)
+    , mWorkbenchState(materialDatabase, *this)
 {
     progressCallback(0.0f, ProgressMessageType::LoadingShipBuilder);
 
@@ -588,6 +588,11 @@ void MainFrame::OnUndoStackStateChanged(UndoStack & undoStack)
 void MainFrame::OnSelectionChanged(std::optional<ShipSpaceRect> const & selectionRect)
 {
     ReconciliateUIWithSelection(selectionRect);
+}
+
+void MainFrame::OnClipboardChanged(bool isPopulated)
+{
+    ReconciliateUIWithClipboard(isPopulated);
 }
 
 void MainFrame::OnToolCoordinatesChanged(std::optional<ShipSpaceCoordinates> coordinates, ShipSpaceSize const & shipSize)
@@ -1496,6 +1501,7 @@ wxRibbonPage * MainFrame::CreateEditRibbonPage(wxRibbonBar * parent)
 
     CreateEditUndoRibbonPanel(page);
     CreateEditShipRibbonPanel(page);
+    CreateEditEditRibbonPanel(page);
     CreateEditAnalysisRibbonPanel(page);
     CreateEditToolSettingsRibbonPanel(page);
 
@@ -1674,6 +1680,110 @@ wxRibbonPanel * MainFrame::CreateEditShipRibbonPanel(wxRibbonPage * parent)
             _("Edit the ship properties."));
 
         panelGridSizer->Add(button);
+    }
+
+    // Wrap in a sizer just for margins
+    {
+        wxSizer * tmpSizer = new wxBoxSizer(wxVERTICAL); // Arbitrary
+
+        tmpSizer->Add(
+            panelGridSizer,
+            0,
+            wxALL,
+            RibbonToolbarButtonMargin);
+
+        panel->SetSizerAndFit(tmpSizer);
+    }
+
+    return panel;
+}
+
+wxRibbonPanel * MainFrame::CreateEditEditRibbonPanel(wxRibbonPage * parent)
+{
+    wxRibbonPanel * panel = new wxRibbonPanel(parent, wxID_ANY, _("Edit"), wxNullBitmap, wxDefaultPosition, wxDefaultSize,
+        wxRIBBON_PANEL_NO_AUTO_MINIMISE);
+
+    wxGridBagSizer * panelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
+
+    // Copy
+    {
+        mCopyButton = new RibbonToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetIconFilePath("copy_button"),
+            _("Copy"),
+            [this]()
+            {
+                Copy();
+            },
+            _("Copy the current selection to the clipboard (Ctrl+C)."));
+
+        panelGridSizer->Add(mCopyButton);
+
+        AddAcceleratorKey(wxACCEL_CTRL, (int)'C',
+            [this]()
+            {
+                // With keys we have no insurance of a controller
+                if (mController && mCopyButton->IsEnabled())
+                {
+                    Copy();
+                }
+            });
+    }
+
+    // Cut
+    {
+        mCutButton = new RibbonToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetIconFilePath("cut_button"),
+            _("Cut"),
+            [this]()
+            {
+                Cut();
+            },
+            _("Erase the specified region and copy its content to the clipboard (Ctrl+X)."));
+
+        panelGridSizer->Add(mCutButton);
+
+        AddAcceleratorKey(wxACCEL_CTRL, (int)'X',
+            [this]()
+            {
+                // With keys we have no insurance of a controller
+                if (mController && mCutButton->IsEnabled())
+                {
+                    Cut();
+                }
+            });
+    }
+
+    // Paste
+    {
+        mPasteButton = new RibbonToolbarButton<BitmapButton>(
+            panel,
+            wxVERTICAL,
+            mResourceLocator.GetIconFilePath("paste_button"),
+            _("Paste"),
+            [this]()
+            {
+                Paste();
+            },
+            _("Paste the content of the clipboard into the ship (Ctrl+V)."));
+
+        // Start disabled
+        mPasteButton->Enable(false);
+
+        panelGridSizer->Add(mPasteButton);
+
+        AddAcceleratorKey(wxACCEL_CTRL, (int)'V',
+            [this]()
+            {
+                // With keys we have no insurance of a controller
+                if (mController && mPasteButton->IsEnabled())
+                {
+                    Paste();
+                }
+            });
     }
 
     // Wrap in a sizer just for margins
@@ -2321,7 +2431,7 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
 
             // Button
             {
-                auto * button = new BitmapButton(
+                mDeselectButton = new BitmapButton(
                     dynamicPanel,
                     mResourceLocator.GetIconFilePath("deselect_button"),
                     [this]()
@@ -2331,10 +2441,20 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
                     _("Remove the current selection (Ctrl+D)."));
 
                 vSizer->Add(
-                    button,
+                    mDeselectButton,
                     0,
                     wxALIGN_CENTER_HORIZONTAL,
                     0);
+
+                AddAcceleratorKey(wxACCEL_CTRL, (int)'D',
+                    [this]()
+                    {
+                        // With keys we have no insurance of a controller
+                        if (mController && mDeselectButton->IsEnabled())
+                        {
+                            Deselect();
+                        }
+                    });
             }
 
             // Label
@@ -2357,16 +2477,6 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
                 vSizer,
                 wxGBPosition(0, 2),
                 wxGBSpan(1, 1));
-
-            AddAcceleratorKey(wxACCEL_CTRL, (int)'D',
-                [this]()
-                {
-                    // With keys we have no insurance of a controller
-                    if (mController)
-                    {
-                        Deselect();
-                    }
-                });
         }
 
         dynamicPanel->SetSizerAndFit(dynamicPanelGridSizer);
@@ -4653,6 +4763,24 @@ void MainFrame::OnElectricalPanelEdit()
         mController->GetModelController().GetElectricalPanelMetadata());
 }
 
+void MainFrame::Copy()
+{
+    assert(mController);
+    // TODO: invoke Controller::Copy()
+}
+
+void MainFrame::Cut()
+{
+    assert(mController);
+    // TODO: invoke Controller::Cut()
+}
+
+void MainFrame::Paste()
+{
+    assert(mController);
+    // TODO: invoke Controller::Paste()
+}
+
 void MainFrame::ValidateShip()
 {
     if (!mModelValidationDialog)
@@ -5639,8 +5767,14 @@ void MainFrame::ReconciliateUIWithUndoStackState(UndoStack & undoStack)
 
 void MainFrame::ReconciliateUIWithSelection(std::optional<ShipSpaceRect> const & selectionRect)
 {
-    // TODOHERE: enable/disable copy, cut, deselect buttons
-    (void)selectionRect;
+    mCopyButton->Enable(selectionRect.has_value());
+    mCutButton->Enable(selectionRect.has_value());
+    mDeselectButton->Enable(selectionRect.has_value());
+}
+
+void MainFrame::ReconciliateUIWithClipboard(bool isPopulated)
+{
+    mPasteButton->Enable(isPopulated);
 }
 
 void MainFrame::ReconciliateUIWithDisplayUnitsSystem(UnitsSystem displayUnitsSystem)

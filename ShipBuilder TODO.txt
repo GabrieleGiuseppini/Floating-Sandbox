@@ -208,8 +208,8 @@
 	+ ShipLayers == LayersRegion
 	= Assets
 		+ Selection
-		- Copy, Cut, Paste button icons
-		- Paste tool icon
+		+ Copy, Cut, Paste button icons
+		- Paste tool icon and cursor
 	= Select tool <TLayer>: populates selection Rect into SelectionManager
 		+ Icon: Selector.png, ready
 		= "Tool Settings" ribbon: // - change label of ribbon to actual tool name
@@ -256,7 +256,7 @@
 					+ LineTool
 					+ MeasuringTapeTool
 				+ Remove View::scissors afterwards
-			- Merge to master
+			+ Merge to master
 			- TODOHERE: rethink below
 			- Tool base is not templated anymore - to allow for Ctrl^A/D (below)
 			- Do uq_ptr<Tool> -> sh_ptr<Tool> + sh_ptr<SelectionTool> rearc - to allow for Ctrl^A/D (below)
@@ -269,14 +269,16 @@
 				+ Clone of OnMeasuredWorldLengthChanged
 				+ Between tool coordinates and sampled material
 					+ We have an icon for that, "selection_size"
-	- Copy & Cut buttons:
-		- Buttons at "Edit" ribbon (new own section)
-		- Reconciliation with selection: enable/disable
+	= Copy & Cut buttons:
+		+ Buttons at "Edit" ribbon (new own section)
+		+ Reconciliation with selection: enable/disable
 		- Populate LayersRegion in ClipboardManager, via Controller::DoCopy()
 		- ClipboardManager notifies IUserInterface @ population; used for: Paste
 		- Controller::DoCopy() reads WorkbenchState::all-layers flag
-	- MainFrame::ReconciliateUIWithSelection(): enable/disable Cut, Copy, Deselect buttons
+	+ MainFrame::ReconciliateUIWithSelection(): enable/disable Cut, Copy, Deselect buttons
 	- Paste tool:
+		+ UI Reconciliation with clipboard: enable/disable
+			+ Initial call from Controller cctor
 		- TODO: how to ensure its own state (pasted & eventually modified LayersRegion) survives tool suspensions?
 			- ...tool suspensions because of:
 				- External suspension

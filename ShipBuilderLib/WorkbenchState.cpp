@@ -14,8 +14,12 @@
 
 namespace ShipBuilder {
 
-WorkbenchState::WorkbenchState(MaterialDatabase const & materialDatabase)
-    : mNewShipSize(0, 0) // Set later
+WorkbenchState::WorkbenchState(
+    MaterialDatabase const & materialDatabase,
+    IUserInterface & userInterface)
+    : mClipboardManager(userInterface)
+    ////////////////////////
+    , mNewShipSize(0, 0) // Set later
 {
     // Default structural foreground material: first structural material
     assert(!materialDatabase.GetStructuralMaterialPalette().Categories.empty()

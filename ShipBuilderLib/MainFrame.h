@@ -140,6 +140,8 @@ public:
 
     void OnSelectionChanged(std::optional<ShipSpaceRect> const & selectionRect) override;
 
+    void OnClipboardChanged(bool isPopulated) override;
+
     void OnToolCoordinatesChanged(std::optional<ShipSpaceCoordinates> coordinates, ShipSpaceSize const & shipSize) override;
 
     void OnSampledInformationUpdated(std::optional<SampledInformation> sampledInformation) override;
@@ -177,6 +179,7 @@ private:
     wxRibbonPage * CreateEditRibbonPage(wxRibbonBar * parent);
     wxRibbonPanel * CreateEditUndoRibbonPanel(wxRibbonPage * parent);
     wxRibbonPanel * CreateEditShipRibbonPanel(wxRibbonPage * parent);
+    wxRibbonPanel * CreateEditEditRibbonPanel(wxRibbonPage * parent);
     wxRibbonPanel * CreateEditAnalysisRibbonPanel(wxRibbonPage * parent);
     wxRibbonPanel * CreateEditToolSettingsRibbonPanel(wxRibbonPage * parent);
     wxPanel * CreateVisualizationModeHeaderPanel(wxWindow * parent);
@@ -240,6 +243,12 @@ private:
     void OnShipPropertiesEdit();
 
     void OnElectricalPanelEdit();
+
+    void Copy();
+
+    void Cut();
+
+    void Paste();
 
     void ValidateShip();
 
@@ -350,6 +359,7 @@ private:
     void ReconciliateUIWithUndoStackState(UndoStack & undoStack);
 
     void ReconciliateUIWithSelection(std::optional<ShipSpaceRect> const & selectionRect);
+    void ReconciliateUIWithClipboard(bool isPopulated);
 
     void ReconciliateUIWithDisplayUnitsSystem(UnitsSystem displayUnitsSystem);
     void ReconciliateUIWithShipFilename();
@@ -393,6 +403,9 @@ private:
     RibbonToolbarButton<BitmapButton> * mZoomInButton;
     RibbonToolbarButton<BitmapButton> * mZoomOutButton;
     RibbonToolbarButton<BitmapButton> * mUndoButton;
+    RibbonToolbarButton<BitmapButton> * mCopyButton;
+    RibbonToolbarButton<BitmapButton> * mCutButton;
+    RibbonToolbarButton<BitmapButton> * mPasteButton;
     std::array<RibbonToolbarButton<BitmapRadioButton> *, VisualizationCount> mVisualizationSelectButtons;
     std::array<RibbonToolbarButton<BitmapButton> *, LayerCount> mLayerExportButtons;
     std::array<RibbonToolbarButton<BitmapButton> *, LayerCount> mLayerDeleteButtons;
@@ -402,6 +415,7 @@ private:
     std::vector<std::tuple<std::vector<ToolType>, wxPanel *>> mToolSettingsPanels;
     wxSlider * mTextureMagicWandToleranceSlider;
     EditSpinBox<std::uint32_t> * mTextureMagicWandToleranceEditSpinBox;
+    BitmapButton * mDeselectButton;
 
 
     // Visualization details panel

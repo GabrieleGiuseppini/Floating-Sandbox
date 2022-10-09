@@ -78,6 +78,9 @@ struct IUserInterface
     // Notifies of a change in the current selection
     virtual void OnSelectionChanged(std::optional<ShipSpaceRect> const & selectionRect) = 0;
 
+    // Notifies of a change in the clipboard
+    virtual void OnClipboardChanged(bool isPopulated) = 0;
+
     // Notifies of a change in the tool coordinates to display
     virtual void OnToolCoordinatesChanged(std::optional<ShipSpaceCoordinates> coordinates, ShipSpaceSize const & shipSize) = 0;
 
