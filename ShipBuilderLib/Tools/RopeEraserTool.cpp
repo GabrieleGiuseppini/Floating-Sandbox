@@ -26,47 +26,48 @@ RopeEraserTool::RopeEraserTool(
     SetCursor(WxHelpers::LoadCursorImage("eraser_cursor", 8, 27, resourceLocator));
 
     // Check if we draw the overlay right away
-    auto const mouseCoordinates = GetMouseCoordinatesIfInWorkCanvas();
-    if (mouseCoordinates)
+    auto const mouseShipCoordinates = GetCurrentMouseShipCoordinatesIfInShip();
+    if (mouseShipCoordinates)
     {
-        auto const mouseShipSpaceCoords = ScreenToShipSpace(*mouseCoordinates);
+        DrawOverlay(*mouseShipCoordinates);
 
-        DrawOverlay(mouseShipSpaceCoords);
-
-        mController.BroadcastSampledInformationUpdatedAt(mouseShipSpaceCoords, LayerType::Ropes);
+        mController.BroadcastSampledInformationUpdatedAt(*mouseShipCoordinates, LayerType::Ropes);
     }
 }
 
 RopeEraserTool::~RopeEraserTool()
 {
-    // Remove our overlay, if any
-    if (mHasOverlay)
-    {
-        HideOverlay();
-    }
-
-    // Reset sampled information
-    mController.BroadcastSampledInformationUpdatedNone();
+    Leave(false);
 }
 
 void RopeEraserTool::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates)
 {
-    auto const mouseShipSpaceCoords = ScreenToShipSpace(mouseCoordinates);
-
-    if (mEngagementData.has_value())
+    auto const mouseShipCoords = GetCurrentMouseShipCoordinatesIfInShip(mouseCoordinates);
+    if (mouseShipCoords.has_value())
     {
-        // Do action
-        DoAction(mouseShipSpaceCoords);
+        if (mEngagementData.has_value())
+        {
+            // Do action
+            DoAction(*mouseShipCoords);
 
-        // No need to do eph viz when engaged
+            // No need to do eph viz when engaged
+        }
+        else
+        {
+            // Just draw overlay
+            DrawOverlay(*mouseShipCoords);
+
+            // Show sampled information
+            mController.BroadcastSampledInformationUpdatedAt(*mouseShipCoords, LayerType::Ropes);
+        }
     }
     else
     {
-        // Just draw overlay
-        DrawOverlay(mouseShipSpaceCoords);
-
-        // Show sampled information
-        mController.BroadcastSampledInformationUpdatedAt(mouseShipSpaceCoords, LayerType::Ropes);
+        // Hide overlay, if any
+        if (mHasOverlay)
+        {
+            HideOverlay();
+        }
     }
 }
 
@@ -90,6 +91,11 @@ void RopeEraserTool::OnRightMouseUp()
     OnMouseUp();
 }
 
+void RopeEraserTool::OnMouseLeft()
+{
+    Leave(true);
+}
+
 //////////////////////////////////////////////////////////////////////////////
 
 void RopeEraserTool::OnMouseDown()
@@ -105,8 +111,12 @@ void RopeEraserTool::OnMouseDown()
     // Engage
     StartEngagement();
 
-    // Do action
-    DoAction(GetCurrentMouseCoordinatesInShipSpace());
+    auto const mouseShipCoordinates = GetCurrentMouseShipCoordinatesIfInShip();
+    if (mouseShipCoordinates)
+    {
+        // Do action
+        DoAction(*mouseShipCoordinates);
+    }
 
     // No need to do eph viz when engaged
 }
@@ -121,11 +131,44 @@ void RopeEraserTool::OnMouseUp()
         // Disengage
         StopEngagement();
 
-        // Restart overlay
-        DrawOverlay(GetCurrentMouseCoordinatesInShipSpace());
+        auto const mouseShipCoordinates = GetCurrentMouseShipCoordinatesIfInShip();
+        if (mouseShipCoordinates)
+        {
+            // Restart overlay
+            DrawOverlay(*mouseShipCoordinates);
 
-        assert(mHasOverlay);
+            assert(mHasOverlay);
+        }
     }
+}
+
+void RopeEraserTool::Leave(bool doCommitIfEngaged)
+{
+    // Remove our overlay, if any
+    if (mHasOverlay)
+    {
+        HideOverlay();
+    }
+
+    // Disengage, eventually
+    if (mEngagementData)
+    {
+        if (doCommitIfEngaged)
+        {
+            // Disengage
+            StopEngagement();
+        }
+        else
+        {
+            // Plainly disengage
+            mEngagementData.reset();
+        }
+
+        assert(!mEngagementData);
+    }
+
+    // Reset sampled information
+    mController.BroadcastSampledInformationUpdatedNone();
 }
 
 void RopeEraserTool::StartEngagement()

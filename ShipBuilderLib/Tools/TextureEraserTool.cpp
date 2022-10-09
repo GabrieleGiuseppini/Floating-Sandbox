@@ -48,15 +48,7 @@ TextureEraserTool::TextureEraserTool(
 
 TextureEraserTool::~TextureEraserTool()
 {
-    // Mend our temporary visualization, if any
-    if (mTempVisualizationDirtyTextureRegion)
-    {
-        MendTempVisualization();
-
-        assert(!mTempVisualizationDirtyTextureRegion);
-
-        mController.LayerChangeEpilog();
-    }
+    Leave();
 }
 
 void TextureEraserTool::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates)
@@ -161,7 +153,25 @@ void TextureEraserTool::OnShiftKeyUp()
     }
 }
 
+void TextureEraserTool::OnMouseLeft()
+{
+    Leave();
+}
+
 //////////////////////////////////////////////////////////////////////////////
+
+void TextureEraserTool::Leave()
+{
+    // Mend our temporary visualization, if any
+    if (mTempVisualizationDirtyTextureRegion)
+    {
+        MendTempVisualization();
+
+        assert(!mTempVisualizationDirtyTextureRegion);
+
+        mController.LayerChangeEpilog();
+    }
+}
 
 void TextureEraserTool::StartEngagement(ImageCoordinates const & mouseCoordinates)
 {

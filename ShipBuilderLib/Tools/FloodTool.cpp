@@ -32,11 +32,7 @@ FloodTool<TLayerType>::FloodTool(
 {
     SetCursor(mCursorImage);
 
-    auto const mouseCoordinates = GetMouseCoordinatesIfInWorkCanvas();
-    if (mouseCoordinates)
-    {
-        mController.BroadcastSampledInformationUpdatedAt(ScreenToShipSpace(*mouseCoordinates), TLayerType);
-    }
+    mController.BroadcastSampledInformationUpdatedAt(ScreenToShipSpace(GetCurrentMouseCoordinates()), TLayerType);
 }
 
 template<LayerType TLayerType>
@@ -54,17 +50,31 @@ void FloodTool<TLayerType>::OnMouseMove(DisplayLogicalCoordinates const & mouseC
 template<LayerType TLayer>
 void FloodTool<TLayer>::OnLeftMouseDown()
 {
-    DoEdit(
-        GetCurrentMouseCoordinatesInShipSpace(),
-        StrongTypedFalse<IsRightMouseButton>);
+    auto const mouseCoordinates = GetCurrentMouseShipCoordinatesIfInShip();
+    if (mouseCoordinates)
+    {
+        DoEdit(
+            *mouseCoordinates,
+            StrongTypedFalse<IsRightMouseButton>);
+    }
 }
 
 template<LayerType TLayer>
 void FloodTool<TLayer>::OnRightMouseDown()
 {
-    DoEdit(
-        GetCurrentMouseCoordinatesInShipSpace(),
-        StrongTypedTrue<IsRightMouseButton>);
+    auto const mouseCoordinates = GetCurrentMouseShipCoordinatesIfInShip();
+    if (mouseCoordinates)
+    {
+        DoEdit(
+            *mouseCoordinates,
+            StrongTypedTrue<IsRightMouseButton>);
+    }
+}
+
+template<LayerType TLayer>
+void FloodTool<TLayer>::OnMouseLeft()
+{
+    mController.BroadcastSampledInformationUpdatedNone();
 }
 
 //////////////////////////////////////////////////////////////////////////////

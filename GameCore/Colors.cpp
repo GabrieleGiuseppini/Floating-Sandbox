@@ -35,8 +35,9 @@ rgbColor rgbColor::fromString(std::string const & str)
             ++iEnd;
         }
 
-        std::stringstream ss(str.substr(iStart, iEnd - iStart));
-        ss >> std::hex >> std::setfill('0') >> std::setw(2) >> components[c];
+        std::stringstream ss;
+        ss << std::hex << str.substr(iStart, iEnd - iStart);
+        ss >> components[c];
 
         iStart = iEnd;
     }

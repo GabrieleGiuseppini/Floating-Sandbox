@@ -22,7 +22,7 @@ class SelectionTool : public Tool
 public:
 
     ~SelectionTool();
-
+    
     void OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates) override;
     void OnLeftMouseDown() override;
     void OnLeftMouseUp() override;
@@ -30,6 +30,7 @@ public:
     void OnRightMouseUp() override {}
     void OnShiftKeyDown() override;
     void OnShiftKeyUp() override;
+    void OnMouseLeft() override {}
 
 protected:
 
@@ -41,9 +42,11 @@ protected:
 
 private:
 
-    ShipSpaceCoordinates GetCornerCoordinate(
-        ShipSpaceCoordinates const & input,
-        std::optional<ShipSpaceCoordinates> constrainToSquareCorner) const;
+    ShipSpaceCoordinates GetCornerCoordinatesEngaged() const;
+
+    ShipSpaceCoordinates GetCornerCoordinatesEngaged(DisplayLogicalCoordinates const & input) const;
+
+    std::optional<ShipSpaceCoordinates> GetCornerCoordinatesFree() const;
 
     void UpdateEphemeralSelection(ShipSpaceCoordinates const & cornerCoordinates);
 

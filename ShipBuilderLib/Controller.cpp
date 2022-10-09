@@ -153,15 +153,12 @@ Controller::Controller(
     mUserInterface.RefreshView();
 
     //
-    // Create tool - iff mouse is (logically) in work canvas at this very moment
+    // Create tool
     //
 
-    if (mUserInterface.IsMouseInWorkCanvas())
+    if (mWorkbenchState.GetCurrentToolType().has_value())
     {
-        if (mWorkbenchState.GetCurrentToolType().has_value())
-        {
-            mCurrentTool = MakeTool(*mWorkbenchState.GetCurrentToolType());
-        }
+        mCurrentTool = MakeTool(*mWorkbenchState.GetCurrentToolType());
     }
 
     RefreshToolCoordinatesDisplay();
@@ -1018,18 +1015,24 @@ void Controller::SetCurrentTool(std::optional<ToolType> tool)
 {
     if (tool != mWorkbenchState.GetCurrentToolType())
     {
-        bool const hadTool = (mCurrentTool != nullptr);
-
         // Nuke current tool
         mWorkbenchState.SetCurrentToolType(std::nullopt);
         mCurrentTool.reset();
 
+        // Do bookkeeping
         InternalSetCurrentTool(tool);
 
-        // Make new tool - unless we are suspended
+        // Make new tool - unless we're clearing.
+        // Note: when we were suspending tools at MouseLeft(), here we were avoiding to create 
+        // a new tool if we had entered this function without a tool, stating that we were 
+        // "not creating a new tool if we were suspended". We were then relying on MouseEnter()
+        // to create the tool.
+        // We changed this behavior. Now there's a risk that an invocation of this function while
+        // the tool is suspended for other reasons (e.g. because of an explicit suspension) will
+        // create the tool. But how can this function be invoked while in a workflow that required
+        // the explicit suspension?
         assert(mWorkbenchState.GetCurrentToolType() == tool);
-        if (mWorkbenchState.GetCurrentToolType().has_value()
-            && hadTool)
+        if (mWorkbenchState.GetCurrentToolType().has_value())
         {
             mCurrentTool = MakeTool(*mWorkbenchState.GetCurrentToolType());
         }
@@ -1133,15 +1136,14 @@ void Controller::OnShiftKeyUp()
 
 void Controller::OnUncapturedMouseIn()
 {
-    InternalResumeTool();
 }
 
 void Controller::OnUncapturedMouseOut()
 {
-    InternalSuspendTool();
-
-    // Tell UI
-    mUserInterface.OnToolCoordinatesChanged(std::nullopt, mModelController->GetShipSize());
+    if (mCurrentTool)
+    {
+        mCurrentTool->OnMouseLeft();
+    }
 }
 
 void Controller::OnMouseCaptureLost()

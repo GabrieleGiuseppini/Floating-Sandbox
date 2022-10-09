@@ -48,16 +48,14 @@ LineTool<TLayer>::LineTool(
     SetCursor(cursorImage);
 
     // Check if we need to immediately do an ephemeral visualization
-    auto const mouseCoordinates = GetMouseCoordinatesIfInWorkCanvas();
-    if (mouseCoordinates)
+    auto const mouseShipSpaceCoords = GetCurrentMouseShipCoordinatesIfInWorkCanvas();
+    if (mouseShipSpaceCoords)
     {
-        auto const mouseShipSpaceCoords = ScreenToShipSpace(*mouseCoordinates);
-
         // Display sampled material
         mController.BroadcastSampledInformationUpdatedAt(mouseShipSpaceCoords, TLayer);
 
         // Ephemeral viz
-        DoEphemeralVisualization(mouseShipSpaceCoords);
+        DoEphemeralVisualization(*mouseShipSpaceCoords);
         mController.LayerChangeEpilog();
     }
 }
@@ -65,16 +63,7 @@ LineTool<TLayer>::LineTool(
 template<LayerType TLayer>
 LineTool<TLayer>::~LineTool()
 {
-    // Mend our ephemeral visualization, if any
-    if (mEphemeralVisualization.has_value())
-    {
-        mEphemeralVisualization.reset();
-
-        mController.LayerChangeEpilog();
-    }
-
-    // Reset sampled material
-    mController.BroadcastSampledInformationUpdatedNone();
+    Leave(false);
 }
 
 template<LayerType TLayer>
@@ -87,7 +76,7 @@ void LineTool<TLayer>::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordi
     // Restore ephemeral visualization (if any)
     mEphemeralVisualization.reset();
 
-    // Display sampled material
+    // Display *original* sampled material (i.e. *before* our edit)
     mController.BroadcastSampledInformationUpdatedAt(mouseShipSpaceCoords, TLayer);
 
     // Do ephemeral visualization
@@ -102,7 +91,7 @@ void LineTool<TLayer>::OnLeftMouseDown()
     // Restore ephemeral visualization (if any)
     mEphemeralVisualization.reset();
 
-    ShipSpaceCoordinates const mouseCoordinates = GetCurrentMouseCoordinatesInShipSpace();
+    ShipSpaceCoordinates const mouseCoordinates = GetCurrentMouseShipCoordinates();
 
     // Engage
     if (!mEngagementData)
@@ -124,7 +113,7 @@ void LineTool<TLayer>::OnLeftMouseUp()
     // Restore ephemeral visualization (if any)
     mEphemeralVisualization.reset();
 
-    ShipSpaceCoordinates const mouseCoordinates = GetCurrentMouseCoordinatesInShipSpace();
+    ShipSpaceCoordinates const mouseCoordinates = GetCurrentMouseShipCoordinates();
 
     // Disengage, eventually
     if (mEngagementData)
@@ -146,7 +135,7 @@ void LineTool<TLayer>::OnRightMouseDown()
     // Restore ephemeral visualization (if any)
     mEphemeralVisualization.reset();
 
-    ShipSpaceCoordinates const mouseCoordinates = GetCurrentMouseCoordinatesInShipSpace();
+    ShipSpaceCoordinates const mouseCoordinates = GetCurrentMouseShipCoordinates();
 
     // Engage
     if (!mEngagementData)
@@ -168,7 +157,7 @@ void LineTool<TLayer>::OnRightMouseUp()
     // Restore ephemeral visualization (if any)
     mEphemeralVisualization.reset();
 
-    ShipSpaceCoordinates const mouseCoordinates = GetCurrentMouseCoordinatesInShipSpace();
+    ShipSpaceCoordinates const mouseCoordinates = GetCurrentMouseShipCoordinates();
 
     // Disengage, eventually
     if (mEngagementData)
@@ -193,7 +182,7 @@ void LineTool<TLayer>::OnShiftKeyDown()
     mIsShiftDown = true;
 
     // Do ephemeral visualization
-    DoEphemeralVisualization(GetCurrentMouseCoordinatesInShipSpace());
+    DoEphemeralVisualization(GetCurrentMouseShipCoordinates());
 
     mController.LayerChangeEpilog();
 }
@@ -207,12 +196,47 @@ void LineTool<TLayer>::OnShiftKeyUp()
     mIsShiftDown = false;
 
     // Do ephemeral visualization
-    DoEphemeralVisualization(GetCurrentMouseCoordinatesInShipSpace());
+    DoEphemeralVisualization(GetCurrentMouseShipCoordinates());
 
     mController.LayerChangeEpilog();
 }
 
+template<LayerType TLayer>
+void LineTool<TLayer>::OnMouseLeft()
+{
+    Leave(true);
+}
+
 //////////////////////////////////////////////////////////////////////////////
+
+template<LayerType TLayer>
+void LineTool<TLayer>::Leave(bool doCommitIfEngaged)
+{
+    // Mend our ephemeral visualization, if any
+    mEphemeralVisualization.reset();
+
+    // Disengage, eventually
+    if (mEngagementData)
+    {
+        if (doCommitIfEngaged)
+        {
+            // Commit and disengage
+            EndEngagement(GetCurrentMouseShipCoordinates());
+        }
+        else
+        {
+            // Plainly disengage
+            mEngagementData.reset();
+        }
+
+        assert(!mEngagementData);
+    }
+
+    mController.LayerChangeEpilog();
+
+    // Reset sampled material
+    mController.BroadcastSampledInformationUpdatedNone();
+}
 
 template<LayerType TLayer>
 void LineTool<TLayer>::StartEngagement(
@@ -288,7 +312,7 @@ void LineTool<TLayer>::EndEngagement(ShipSpaceCoordinates const & mouseCoordinat
                 }
             });
 
-        // Display sampled material
+        // Display *new* sampled material (i.e. *after* our edit)
         mController.BroadcastSampledInformationUpdatedAt(mouseCoordinates, TLayer);
 
         // Epilog (if no applicable rect then we haven't changed anything, not even eph viz)
@@ -349,6 +373,8 @@ void LineTool<TLayer>::DoEphemeralVisualization(ShipSpaceCoordinates const & mou
                 }
             });
 
+        // Note: we don't clip here - we allow line to be visible on background;
+        // kind of cool
         mController.GetView().UploadDashedLineOverlay(
             mEngagementData->StartCoords,
             mouseCoordinates,

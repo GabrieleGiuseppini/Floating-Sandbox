@@ -77,16 +77,14 @@ PencilTool<TLayer, IsEraser>::PencilTool(
     SetCursor(cursorImage);
 
     // Check if we need to immediately do a visualization
-    auto const mouseCoordinates = GetMouseCoordinatesIfInWorkCanvas();
-    if (mouseCoordinates)
+    auto const mouseShipSpaceCoords = GetCurrentMouseShipCoordinatesIfInWorkCanvas();
+    if (mouseShipSpaceCoords)
     {
-        auto const mouseShipSpaceCoords = ScreenToShipSpace(*mouseCoordinates);
-
         // Display sampled material
-        mController.BroadcastSampledInformationUpdatedAt(mouseShipSpaceCoords, TLayer);
+        mController.BroadcastSampledInformationUpdatedAt(*mouseShipSpaceCoords, TLayer);
 
         // Calculate affected rect
-        std::optional<ShipSpaceRect> const affectedRect = CalculateApplicableRect(mouseShipSpaceCoords);
+        std::optional<ShipSpaceRect> const affectedRect = CalculateApplicableRect(*mouseShipSpaceCoords);
 
         // Apply (temporary) change
         if (affectedRect)
@@ -103,18 +101,7 @@ PencilTool<TLayer, IsEraser>::PencilTool(
 template<LayerType TLayer, bool IsEraser>
 PencilTool<TLayer, IsEraser>::~PencilTool()
 {
-    // Mend our temporary visualization, if any
-    if (mTempVisualizationDirtyShipRegion)
-    {
-        MendTempVisualization();
-
-        assert(!mTempVisualizationDirtyShipRegion);
-
-        mController.LayerChangeEpilog();
-    }
-
-    // Reset sampled material
-    mController.BroadcastSampledInformationUpdatedNone();
+    Leave(false);
 }
 
 template<LayerType TLayer, bool IsEraser>
@@ -174,7 +161,7 @@ void PencilTool<TLayer, IsEraser>::OnLeftMouseDown()
         assert(!mTempVisualizationDirtyShipRegion);
     }
 
-    auto const mouseShipSpaceCoords = GetCurrentMouseCoordinatesInShipSpace();
+    auto const mouseShipSpaceCoords = GetCurrentMouseShipCoordinates();
 
     if (!mEngagementData)
     {
@@ -211,7 +198,7 @@ void PencilTool<TLayer, IsEraser>::OnRightMouseDown()
         assert(!mTempVisualizationDirtyShipRegion);
     }
 
-    auto const mouseShipSpaceCoords = GetCurrentMouseCoordinatesInShipSpace();
+    auto const mouseShipSpaceCoords = GetCurrentMouseShipCoordinates();
 
     if (!mEngagementData)
     {
@@ -246,7 +233,7 @@ void PencilTool<TLayer, IsEraser>::OnShiftKeyDown()
     {
         // Remember initial engagement
         assert(!mEngagementData->ShiftLockInitialPosition.has_value());
-        mEngagementData->ShiftLockInitialPosition = GetCurrentMouseCoordinatesInShipSpace();
+        mEngagementData->ShiftLockInitialPosition = GetCurrentMouseShipCoordinates();
     }
 }
 
@@ -264,7 +251,45 @@ void PencilTool<TLayer, IsEraser>::OnShiftKeyUp()
     }
 }
 
+template<LayerType TLayer, bool IsEraser>
+void PencilTool<TLayer, IsEraser>::OnMouseLeft()
+{
+    Leave(true);
+}
+
 //////////////////////////////////////////////////////////////////////////////
+
+template<LayerType TLayer, bool IsEraser>
+void PencilTool<TLayer, IsEraser>::Leave(bool doCommitIfEngaged)
+{
+    // Mend our temporary visualization, if any
+    if (mTempVisualizationDirtyShipRegion)
+    {
+        MendTempVisualization();
+    }
+
+    // Disengage, eventually
+    if (mEngagementData)
+    {
+        if (doCommitIfEngaged)
+        {
+            // Commit and disengage
+            EndEngagement();
+        }
+        else
+        {
+            // Plainly disengage
+            mEngagementData.reset();
+        }
+
+        assert(!mEngagementData);
+    }
+
+    mController.LayerChangeEpilog();
+
+    // Reset sampled material
+    mController.BroadcastSampledInformationUpdatedNone();
+}
 
 template<LayerType TLayer, bool IsEraser>
 void PencilTool<TLayer, IsEraser>::StartEngagement(

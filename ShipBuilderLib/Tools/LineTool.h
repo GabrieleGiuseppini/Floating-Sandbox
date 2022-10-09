@@ -35,6 +35,7 @@ public:
     void OnRightMouseUp() override;
     void OnShiftKeyDown() override;
     void OnShiftKeyUp() override;
+    void OnMouseLeft() override;
 
 protected:
 
@@ -49,11 +50,13 @@ private:
 
 private:
 
+    void Leave(bool doCommitIfEngaged);
+
     void StartEngagement(
         ShipSpaceCoordinates const & mouseCoordinates,
         MaterialPlaneType plane);
 
-    void EndEngagement(ShipSpaceCoordinates const & mouseCoordinates);
+    void EndEngagement(ShipSpaceCoordinates const & mouseCoordinates);    
 
     void DoEphemeralVisualization(ShipSpaceCoordinates const & mouseCoordinates);
 

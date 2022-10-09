@@ -33,6 +33,7 @@ public:
     void OnRightMouseUp() override;
     void OnShiftKeyDown() override;
     void OnShiftKeyUp() override;
+    void OnMouseLeft() override;
 
 protected:
 
@@ -47,13 +48,15 @@ private:
 
 private:
 
+    void Leave(bool doCommitIfEngaged);
+
     void StartEngagement(
         ShipSpaceCoordinates const & mouseCoordinates,
         StrongTypedBool<struct IsRightMouseButton> isRightButton);
 
     void DoEdit(ShipSpaceCoordinates const & mouseCoordinates);
 
-    void EndEngagement();
+    void EndEngagement();    
 
     void DoTempVisualization(ShipSpaceRect const & affectedRect);
 

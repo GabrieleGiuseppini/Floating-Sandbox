@@ -32,20 +32,21 @@ public:
     void OnRightMouseUp() override {}
     void OnShiftKeyDown() override;
     void OnShiftKeyUp() override;
+    void OnMouseLeft() override;
 
 private:
+
+    void Leave();
 
     void StartEngagement(ShipSpaceCoordinates const & coords);
 
     void DoAction(ShipSpaceCoordinates const & coords);
 
-    void StopEngagement();
+    void StopEngagement();    
 
-    void DrawOverlay(ShipSpaceCoordinates const & coords);
+    void UpdateOverlay(ShipSpaceCoordinates const & coords);
 
     void HideOverlay();
-
-    ShipSpaceCoordinates ClipToWorkCanvas(ShipSpaceCoordinates const & coords) const;
 
 private:
 

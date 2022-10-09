@@ -33,8 +33,8 @@ TEST(LayerTests, StructuralLayer_Trim)
     StructuralLayerData targetLayer = sourceLayer.Clone();
 
     targetLayer.Trim({
-        { 2, 1},
-        { 4, 3 } });
+        ShipSpaceCoordinates(2, 1),
+        ShipSpaceSize(4, 3) });
 
     //
     // Verify
@@ -255,7 +255,9 @@ TEST(LayerTests, ElectricalLayer_Clone_Smaller)
     // Clone layer
     //
 
-    ElectricalLayerData targetLayer = sourceLayer.Clone({ {2, 1}, {4, 3} });
+    ElectricalLayerData targetLayer = sourceLayer.Clone({ 
+        ShipSpaceCoordinates(2, 1),
+        ShipSpaceSize(4, 3) });
 
     //
     // Verify
@@ -336,7 +338,9 @@ TEST(LayerTests, ElectricalLayer_Trim)
     //
 
     ElectricalLayerData targetLayer = sourceLayer.Clone();
-    targetLayer.Trim({ {2, 1}, { 4, 3 } });
+    targetLayer.Trim({ 
+        ShipSpaceCoordinates(2, 1), 
+        ShipSpaceSize(4, 3) });
 
     //
     // Verify
@@ -678,7 +682,9 @@ TEST(LayerTests, RopesLayer_Trim)
 
     RopesLayerData targetLayer = sourceLayer.Clone();
 
-    targetLayer.Trim({ {3, 3}, {8, 9} });
+    targetLayer.Trim({ 
+        ShipSpaceCoordinates(3, 3),
+        ShipSpaceSize(8, 9) });
 
     //
     // Verify

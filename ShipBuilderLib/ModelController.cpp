@@ -1952,6 +1952,8 @@ std::optional<ShipSpaceRect> ModelController::DoFlood(
     bool doContiguousOnly,
     typename LayerTypeTraits<TLayer>::layer_data_type const & layer)
 {
+    assert(start.IsInRect(GetWholeShipRect()));
+
     // Pick material to flood
     auto const * const startMaterial = layer.Buffer[start].Material;
     if (material == startMaterial)

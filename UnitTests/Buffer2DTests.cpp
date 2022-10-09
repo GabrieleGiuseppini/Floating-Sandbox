@@ -76,7 +76,7 @@ TEST(Buffer2DTests, Clone_Region)
     auto const bufferClone = buffer.CloneRegion(
         IntegralRect(
             { 1, 1 },
-            { 2, 2 }));
+            IntegralRectSize(2, 2)));
 
     ASSERT_EQ(IntegralRectSize(2, 2), bufferClone.Size);
 
@@ -109,7 +109,7 @@ TEST(Buffer2DTests, Trim_Equal)
     buffer.Trim(
         IntegralRect(
             { 0, 0 },
-            { 4, 4 }));
+            IntegralRectSize(4, 4)));
 
     ASSERT_EQ(IntegralRectSize(4, 4), buffer.Size);
     EXPECT_EQ(sizeof(int) * 4 * 4, buffer.GetByteSize());
@@ -143,7 +143,7 @@ TEST(Buffer2DTests, Trim_Smaller_SameOrigin)
     buffer.Trim(
         IntegralRect(
             { 0, 0 },
-            { 2, 2 }));
+            IntegralRectSize(2, 2)));
 
     ASSERT_EQ(IntegralRectSize(2, 2), buffer.Size);
     EXPECT_EQ(sizeof(int) * 2 * 2, buffer.GetByteSize());
@@ -177,7 +177,7 @@ TEST(Buffer2DTests, Trim_Smaller_SameSize)
     buffer.Trim(
         IntegralRect(
             { 2, 2 },
-            { 2, 2 }));
+            IntegralRectSize(2, 2)));
 
     ASSERT_EQ(IntegralRectSize(2, 2), buffer.Size);
     EXPECT_EQ(sizeof(int) * 2 * 2, buffer.GetByteSize());
@@ -211,7 +211,7 @@ TEST(Buffer2DTests, Trim_ProperInside)
     buffer.Trim(
         IntegralRect(
             { 1, 1 },
-            { 2, 2 }));
+            IntegralRectSize(2, 2)));
 
     ASSERT_EQ(IntegralRectSize(2, 2), buffer.Size);
     EXPECT_EQ(sizeof(int) * 2 * 2, buffer.GetByteSize());
@@ -332,7 +332,7 @@ TEST(Buffer2DTests, BlitFromRegion_PortionOfSource_ToOffset)
     // Blit
     targetBuffer.BlitFromRegion(
         sourceBuffer,
-        { {1, 1}, {2, 2} },
+        { {1, 1}, IntegralRectSize(2, 2) },
         { 4, 7 });
 
     // Verify

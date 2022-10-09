@@ -35,10 +35,17 @@ public:
     void OnRightMouseUp() override;
     void OnShiftKeyDown() override {}
     void OnShiftKeyUp() override {}
+    void OnMouseLeft() override;
 
 private:
 
-    void CheckEngagement(
+    void OnMouseDown(MaterialPlaneType plane);
+
+    void OnMouseUp();
+
+    void Leave(bool doCommitIfEngaged);
+
+    void StartEngagement(
         ShipSpaceCoordinates const & coords,
         MaterialPlaneType materialPlane);
 
@@ -46,7 +53,7 @@ private:
 
     void MendTempVisualization();
 
-    bool CommmitAndStopEngagement(ShipSpaceCoordinates const & coords);
+    bool CommmitAndStopEngagement();
 
     void DrawOverlay(ShipSpaceCoordinates const & coords);
 
@@ -93,7 +100,9 @@ private:
         {}
     };
 
-    // Engagement data - when set, it means we're engaged
+    // Engagement data - when set, it means we're engaged;
+    // "being engaged" for this tool basically means that 
+    // the mouse button is down
     std::optional<EngagementData> mEngagementData;
 };
 
