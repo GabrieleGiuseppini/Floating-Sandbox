@@ -373,6 +373,8 @@ void LineTool<TLayer>::DoEphemeralVisualization(ShipSpaceCoordinates const & mou
                 }
             });
 
+        // Note: we don't clip here - we allow line to be visible on background;
+        // kind of cool
         mController.GetView().UploadDashedLineOverlay(
             mEngagementData->StartCoords,
             mouseCoordinates,

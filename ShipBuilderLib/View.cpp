@@ -1276,10 +1276,8 @@ void View::Render()
     glViewport(0, 0, mViewModel.GetDisplayPhysicalSize().width, mViewModel.GetDisplayPhysicalSize().height);
 
     //
-    // Following is with scissor test disabled
+    // Draw
     //
-
-    glDisable(GL_SCISSOR_TEST);
 
     // Background texture
     if (mBackgroundTextureSize.has_value())
@@ -1435,6 +1433,26 @@ void View::Render()
         CheckOpenGLError();
     }
 
+    // Dashed line overlay
+    if (!mDashedLineOverlaySet.empty())
+    {
+        // Bind VAO
+        glBindVertexArray(*mDashedLineOverlayVAO);
+
+        // Activate program
+        mShaderManager->ActivateProgram<ProgramType::DashedLineOverlay>();
+
+        // Set pixel step
+        mShaderManager->SetProgramParameter<ProgramType::DashedLineOverlay, ProgramParameterType::PixelStep>(DashedLineOverlayPixelStep);
+
+        // Set line width
+        glLineWidth(1.5f);
+
+        // Draw
+        glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(mDashedLineOverlaySet.size() * 2));
+        CheckOpenGLError();
+    }
+
     // Selection overlay
     if (mSelectionOverlayRect.has_value())
     {
@@ -1491,32 +1509,6 @@ void View::Render()
 
         // Draw
         glDrawArrays(GL_TRIANGLES, first, count);
-        CheckOpenGLError();
-    }
-
-    //
-    // Following is with scissor test enabled
-    //
-
-    glEnable(GL_SCISSOR_TEST);
-
-    // Dashed line overlay
-    if (!mDashedLineOverlaySet.empty())
-    {
-        // Bind VAO
-        glBindVertexArray(*mDashedLineOverlayVAO);
-
-        // Activate program
-        mShaderManager->ActivateProgram<ProgramType::DashedLineOverlay>();
-
-        // Set pixel step
-        mShaderManager->SetProgramParameter<ProgramType::DashedLineOverlay, ProgramParameterType::PixelStep>(DashedLineOverlayPixelStep);
-
-        // Set line width
-        glLineWidth(1.5f);
-
-        // Draw
-        glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(mDashedLineOverlaySet.size() * 2));
         CheckOpenGLError();
     }
 
@@ -1607,18 +1599,6 @@ void View::OnViewModelUpdated()
     mShaderManager->ActivateProgram<ProgramType::Waterline>();
     mShaderManager->SetProgramParameter<ProgramType::Waterline, ProgramParameterType::OrthoMatrix>(
         orthoMatrix);
-
-    //
-    // Scissor test
-    //
-
-    auto const physicalCanvasRect = mViewModel.GetPhysicalVisibleShipRegion();
-    glScissor(
-        physicalCanvasRect.origin.x,
-        mViewModel.GetDisplayPhysicalSize().height - 1 - (physicalCanvasRect.origin.y + physicalCanvasRect.size.height), // Origin is bottom
-        physicalCanvasRect.size.width,
-        physicalCanvasRect.size.height);
-    CheckOpenGLError();
 }
 
 void View::UpdateStructuralLayerVisualizationParameters()

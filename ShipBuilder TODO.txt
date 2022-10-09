@@ -251,9 +251,11 @@
 					+ TextureMagicWand
 				+ Make sure all mouse up's don't assume they are engaged
 				+ Cleanup all TODO's
-			- All accesses to mouse coords: clamp to canvas when needed, do not rely on scissors
-				- Identify and fix all tools that deal with View things that require scissors
-				- Remove View::scissors afterwards
+			+ All accesses to mouse coords: clamp to canvas when needed, do not rely on scissors
+				+ Identify and fix all tools that deal with View things that require scissors
+					+ LineTool
+					+ MeasuringTapeTool
+				+ Remove View::scissors afterwards
 			- Merge to master
 			- TODOHERE: rethink below
 			- Tool base is not templated anymore - to allow for Ctrl^A/D (below)
