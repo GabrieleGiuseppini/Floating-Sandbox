@@ -48,10 +48,6 @@ private:
 
     std::optional<ShipSpaceCoordinates> GetCornerCoordinatesFree() const;
 
-    // TODO
-
-    ShipSpaceCoordinates GetCornerCoordinates(ShipSpaceCoordinates const & input) const;
-
     void UpdateEphemeralSelection(ShipSpaceCoordinates const & cornerCoordinates);
 
 private:

@@ -32,6 +32,7 @@ class Controller;
  * - Cctor: if it's in canvas: start eph viz.
  * - Mouse down: if in eph viz: stop eph viz; begin engagement.
  * - Mouse up: if engaged: commit and end engagement; if it's in canvas: start eph viz.
+ *      Note: no guarantee that Mouse up is always preceded by Mouse down - e.g. when down happened outside window.
  * - Mouse leave: if in eph viz: stop eph viz; if engaged: commit and end engagement.
  * - Mouse move: update eph viz and/or engagement.
  */

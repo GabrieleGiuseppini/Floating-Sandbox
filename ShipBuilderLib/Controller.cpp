@@ -1022,9 +1022,15 @@ void Controller::SetCurrentTool(std::optional<ToolType> tool)
         // Do bookkeeping
         InternalSetCurrentTool(tool);
 
-        // Make new tool - unless we're clearing
-        // TODO: here we were avoiding to create a new tool if we had entered this function
-        // without a tool, stating that we were "not creating a new tool if we were suspended".
+        // Make new tool - unless we're clearing.
+        // Note: when we were suspending tools at MouseLeft(), here we were avoiding to create 
+        // a new tool if we had entered this function without a tool, stating that we were 
+        // "not creating a new tool if we were suspended". We were then relying on MouseEnter()
+        // to create the tool.
+        // We changed this behavior. Now there's a risk that an invocation of this function while
+        // the tool is suspended for other reasons (e.g. because of an explicit suspension) will
+        // create the tool. But how can this function be invoked while in a workflow that required
+        // the explicit suspension?
         assert(mWorkbenchState.GetCurrentToolType() == tool);
         if (mWorkbenchState.GetCurrentToolType().has_value())
         {
@@ -1065,8 +1071,6 @@ void Controller::SetRopeMaterial(StructuralMaterial const * material, MaterialPl
 
 void Controller::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates)
 {
-    LogMessage("TODO:CCCC:OnMouseMove");
-
     // Forward to tool
     if (mCurrentTool)
     {
@@ -1078,8 +1082,6 @@ void Controller::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates)
 
 void Controller::OnLeftMouseDown()
 {
-    LogMessage("TODO:CCCC:OnLeftMouseDown");
-
     // Forward to tool
     if (mCurrentTool)
     {
@@ -1089,8 +1091,6 @@ void Controller::OnLeftMouseDown()
 
 void Controller::OnLeftMouseUp()
 {
-    LogMessage("TODO:CCCC:OnLeftMouseUp");
-
     // Forward to tool
     if (mCurrentTool)
     {
@@ -1136,34 +1136,18 @@ void Controller::OnShiftKeyUp()
 
 void Controller::OnUncapturedMouseIn()
 {
-    LogMessage("TODO:CCCC:OnUncapturedMouseIn");
-
-    // TODOTEST
-    //InternalResumeTool();
 }
 
 void Controller::OnUncapturedMouseOut()
 {
-    LogMessage("TODO:CCCC:OnUncapturedMouseOut");
-
     if (mCurrentTool)
     {
         mCurrentTool->OnMouseLeft();
     }
-
-    // TODOTEST
-    /*
-    InternalSuspendTool();
-
-    // Tell UI
-    mUserInterface.OnToolCoordinatesChanged(std::nullopt, mModelController->GetShipSize());
-    */
 }
 
 void Controller::OnMouseCaptureLost()
 {
-    LogMessage("TODO:CCCC:OnMouseCaptureLost");
-
     // Reset tool
     InternalResetTool();
 }

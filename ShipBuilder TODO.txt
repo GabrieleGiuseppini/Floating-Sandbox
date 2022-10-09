@@ -224,7 +224,7 @@
 				+ Corner picking
 				+ Square constraining
 			+ SelectionManager notifies IUserInterface @ selection presence toggles; used for: Copy, Cut, Deselect buttons
-			= Rearc: see if can stop suspending tool at MouseLeaveWindow
+			+ Rearc: see if can stop suspending tool at MouseLeaveWindow
 				+ First test sequence of calls @:
 					+ From out, L down then enter: expect: Ldown->Mmove; actual: Mmove (so subsequent Lup is unmatched)
 					+ From in, L down then leave (up happening out): expect: Lup->LeftCanvas; actual: UncapturedMouseOut->Lup
@@ -249,8 +249,8 @@
 					+ Selection
 					+ TextureEraser
 					+ TextureMagicWand
-				- Make sure all mouse up's don't assume they are engaged
-				- Cleanup all TODO's			
+				+ Make sure all mouse up's don't assume they are engaged
+				+ Cleanup all TODO's
 			- All accesses to mouse coords: clamp to canvas when needed, do not rely on scissors
 				- Identify and fix all tools that deal with View things that require scissors
 				- Remove View::scissors afterwards
