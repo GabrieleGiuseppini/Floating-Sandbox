@@ -198,6 +198,10 @@ public:
     // no layer gets dirty)
     void LayerChangeEpilog(std::optional<LayerType> dirtyLayer = std::nullopt);
 
+    void SelectAll();
+
+    void Deselect();
+
     //
     // Visualization management
     //
@@ -350,6 +354,9 @@ private:
     void InternalResetTool();
 
     std::unique_ptr<Tool> MakeTool(ToolType toolType);
+
+    template<typename TTool>
+    TTool & GetCurrentToolAs(ToolClass toolClass);
 
     void InternalResizeShip(
         ShipSpaceSize const & newSize,

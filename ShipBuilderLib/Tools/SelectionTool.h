@@ -21,6 +21,11 @@ class SelectionTool : public Tool
 public:
 
     ~SelectionTool();
+
+    ToolClass GetClass() const override
+    {
+        return ToolClass::Selection;
+    }
     
     void OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates) override;
     void OnLeftMouseDown() override;
@@ -30,6 +35,9 @@ public:
     void OnShiftKeyDown() override;
     void OnShiftKeyUp() override;
     void OnMouseLeft() override {}
+
+    void SelectAll();
+    void Deselect();
 
 protected:
 

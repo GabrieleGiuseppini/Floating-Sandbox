@@ -43,6 +43,12 @@ enum class ToolType : std::uint32_t
     _Last = TextureSelection
 };
 
+enum class ToolClass
+{
+    Selection,
+    Other
+};
+
 size_t constexpr LayerCount = static_cast<size_t>(LayerType::Texture) + 1;
 
 enum class MaterialPlaneType

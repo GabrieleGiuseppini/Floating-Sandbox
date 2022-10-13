@@ -47,6 +47,11 @@ public:
         return mToolType;
     }
 
+    virtual ToolClass GetClass() const
+    {
+        return ToolClass::Other;
+    }
+
     //
     // Event handlers
     //

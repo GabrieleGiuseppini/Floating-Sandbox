@@ -746,6 +746,53 @@ void Controller::LayerChangeEpilog(std::optional<LayerType> dirtyLayer)
     mUserInterface.RefreshView();
 }
 
+void Controller::SelectAll()
+{
+    if (!mCurrentTool || mCurrentTool->GetClass() != ToolClass::Selection)
+    {
+        //
+        // Change/set current tool
+        //
+
+        ToolType toolType;
+        switch (VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization()))
+        {
+            case LayerType::Electrical:
+            {
+                toolType = ToolType::ElectricalSelection;
+                break;
+            }
+
+            case LayerType::Ropes:
+            {
+                toolType = ToolType::RopeSelection;
+                break;
+            }
+
+            case LayerType::Structural:
+            {
+                toolType = ToolType::StructuralSelection;
+                break;
+            }
+
+            case LayerType::Texture:
+            {
+                toolType = ToolType::TextureSelection;
+                break;
+            }            
+        }
+
+        SetCurrentTool(toolType);
+    }
+
+    GetCurrentToolAs<SelectionTool>(ToolClass::Selection).SelectAll();
+}
+
+void Controller::Deselect()
+{
+    GetCurrentToolAs<SelectionTool>(ToolClass::Selection).Deselect();
+}
+
 void Controller::SelectPrimaryVisualization(VisualizationType primaryVisualization)
 {
     if (primaryVisualization != mWorkbenchState.GetPrimaryVisualization())
@@ -1814,6 +1861,14 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
 
     assert(false);
     return nullptr;
+}
+
+template<typename TTool>
+TTool & Controller::GetCurrentToolAs(ToolClass toolClass)
+{
+    assert(mCurrentTool);
+    assert(mCurrentTool->GetClass() == toolClass);
+    return dynamic_cast<TTool &>(*mCurrentTool);
 }
 
 void Controller::InternalResizeShip(

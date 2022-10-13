@@ -204,6 +204,51 @@ void SelectionTool::OnShiftKeyUp()
     }
 }
 
+void SelectionTool::SelectAll()
+{
+    // Create selection
+    auto const selection = ShipSpaceRect(mController.GetModelController().GetShipSize());
+
+    // Update overlay
+    mController.GetView().UploadSelectionOverlay(
+        selection.CornerA(),
+        selection.CornerC());
+
+    // Update measurement
+    mController.GetUserInterface().OnMeasuredSelectionSizeChanged(selection.size);
+    
+    // Commit selection
+    mCurrentSelection = selection;
+    mSelectionManager.SetSelection(mCurrentSelection);
+
+    // Disengage
+    mEngagementData.reset();
+
+    mController.GetUserInterface().RefreshView();
+}
+
+void SelectionTool::Deselect()
+{
+    if (mCurrentSelection || mEngagementData)
+    {
+        // Update overlay
+        mController.GetView().RemoveSelectionOverlay();
+    }
+
+    // Update measurement
+    mController.GetUserInterface().OnMeasuredSelectionSizeChanged(std::nullopt);
+
+    // Commit selection
+    mCurrentSelection.reset();
+    mSelectionManager.SetSelection(std::nullopt);
+
+    // Disengage
+    mEngagementData.reset();
+
+    mController.GetUserInterface().RefreshView();
+}
+
+
 //////////////////////////////////////////////////////////////////////////////
 
 ShipSpaceCoordinates SelectionTool::GetCornerCoordinatesEngaged() const

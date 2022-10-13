@@ -252,6 +252,8 @@ private:
 
     void ValidateShip();
 
+    void SelectAll();
+
     void Deselect();
 
     void OpenMaterialPalette(

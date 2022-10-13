@@ -304,8 +304,20 @@ MainFrame::MainFrame(
             mLoggingDialog->Open();
         });
 
+    // Add Select All
+    AddAcceleratorKey(wxACCEL_CTRL, (int)'A',
+        [this]()
+        {
+            // With keys we have no insurance of a controller
+            if (mController)
+            {
+                SelectAll();
+            }
+        });
+
     wxAcceleratorTable acceleratorTable(mAcceleratorEntries.size(), mAcceleratorEntries.data());
     SetAcceleratorTable(acceleratorTable);
+
 
     //
     // Setup material palettes
@@ -4791,10 +4803,16 @@ void MainFrame::ValidateShip()
     mModelValidationDialog->ShowModalForStandAloneValidation(*mController);
 }
 
+void MainFrame::SelectAll()
+{
+    assert(mController);
+    mController->SelectAll();
+}
+
 void MainFrame::Deselect()
 {
     assert(mController);
-    // TODO: invoke Controller::Deselect()
+    mController->Deselect();
 }
 
 void MainFrame::OpenMaterialPalette(
