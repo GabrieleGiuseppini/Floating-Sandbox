@@ -269,9 +269,19 @@
 				+ Clone of OnMeasuredWorldLengthChanged
 				+ Between tool coordinates and sampled material
 					+ We have an icon for that, "selection_size"
+	+ Selection overlay: corners w/pixels
 	- Fix issue:
 		- ModelValidationDialog calls Controller::ValidateModel() from separate thread, which first suspends tool and then, when done, resumes the tool and 
 		  thus *creates* the tool (after our last change), causing OpenGL calls from separate thread
+			- Option A: explicit suspend (w/scope); keep using thread
+			- Option B: 
+				- No thread
+				- Controller::StartValidation() -> Validator
+					- Also suspends and stores scoped thing in Validator - cleared at Validator dctor
+					- Dialog stores Validator in opt (e.g. session data) and destroys when done
+				- Timer advances Validator until it's done
+					- And then destroy Validator in opt
+					
 	= Copy & Cut buttons:
 		+ Buttons at "Edit" ribbon (new own section)
 		+ Reconciliation with selection: enable/disable

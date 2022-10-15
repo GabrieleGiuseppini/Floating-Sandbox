@@ -2011,10 +2011,10 @@ void View::UpdateSelectionOverlay()
     // Calculate width and height, in ship (signed) and in pixels (absolute)
     float const shipWidth = cornerB.x - cornerA.x;
     float absPixelWidth = mViewModel.FractionalShipSpaceOffsetToFractionalPhysicalDisplayOffset(std::abs(shipWidth));
-    absPixelWidth = std::round(absPixelWidth / SelectionOverlayPixelStep) * SelectionOverlayPixelStep;
+    absPixelWidth = std::round(absPixelWidth / SelectionOverlayPixelStep) * SelectionOverlayPixelStep + SelectionOverlayPixelStep / 2.0f;
     float const shipHeight = cornerB.y - cornerA.y;
     float absPixelHeight = mViewModel.FractionalShipSpaceOffsetToFractionalPhysicalDisplayOffset(std::abs(shipHeight));
-    absPixelHeight = std::round(absPixelHeight / SelectionOverlayPixelStep) * SelectionOverlayPixelStep;
+    absPixelHeight = std::round(absPixelHeight / SelectionOverlayPixelStep) * SelectionOverlayPixelStep + SelectionOverlayPixelStep / 2.0f;
 
     // One pixel in ship space
     float const shipSpaceQuantum = mViewModel.GetShipSpaceForOnePhysicalDisplayPixel();

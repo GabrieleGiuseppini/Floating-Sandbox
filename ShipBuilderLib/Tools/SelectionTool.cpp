@@ -68,7 +68,7 @@ SelectionTool::SelectionTool(
     , mEngagementData()
     , mIsShiftDown(false)
 {
-    SetCursor(WxHelpers::LoadCursorImage("selection_cursor", 10, 10, resourceLocator));
+    SetCursor(WxHelpers::LoadCursorImage("selection_cursor", 11, 11, resourceLocator));
 }
 
 SelectionTool::~SelectionTool()

@@ -36,8 +36,8 @@ void main()
 {
     float inDash = mod(pixelCoord, 2.0 * paramPixelStep);
     float lineDepth = 
-        smoothstep(0.0, 2.0, inDash)
-        - smoothstep(paramPixelStep, paramPixelStep + 2.0, inDash);
+        step(0.0, inDash)
+        - step(paramPixelStep, inDash);
     
     gl_FragColor = mix(
         vec4(.7, .7, .7, .5),
