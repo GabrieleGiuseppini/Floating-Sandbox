@@ -6,6 +6,8 @@
 #pragma once
 
 #include "Controller.h"
+#include "ModelValidationResults.h"
+#include "ModelValidationSession.h"
 
 #include <Game/ResourceLocator.h>
 
@@ -18,7 +20,6 @@
 
 #include <memory>
 #include <optional>
-#include <thread>
 
 namespace ShipBuilder {
 
@@ -40,8 +41,8 @@ private:
     void OnCancelButton(wxCommandEvent & event);
 
     void PrepareUIForValidationRun();
+    void StartValidation();
     void OnValidationTimer(wxTimerEvent & event);
-    void ValidationThreadLoop();
     void ShowResults(ModelValidationResults const & results);
 
 private:
@@ -49,6 +50,8 @@ private:
     ResourceLocator const & mResourceLocator;
 
     wxSizer * mMainVSizer;
+
+    std::unique_ptr<wxTimer> mValidationTimer;
 
     // Validation panel
     wxPanel * mValidationPanel;
@@ -62,23 +65,26 @@ private:
     wxPanel * mButtonsPanel;
     wxSizer * mButtonsPanelVSizer;
 
-    // Validation thread
-    std::unique_ptr<wxTimer> mValidationTimer;
-    std::thread mValidationThread;
-    std::optional<ModelValidationResults> mValidationResults;
+    //
+    // State
+    //
 
     struct SessionData
     {
+        std::optional<ModelValidationSession> ValidationSession;
         Controller & BuilderController;
         bool const IsForSave;
         bool IsInValidationWorkflow;
+        std::optional<ModelValidationResults> ValidationResults;
 
         SessionData(
             Controller & builderController,
             bool isForSave)
-            : BuilderController(builderController)
+            : ValidationSession()
+            , BuilderController(builderController)
             , IsForSave(isForSave)
             , IsInValidationWorkflow(false)
+            , ValidationResults()
         {}
     };
 

@@ -8,7 +8,7 @@
 #include "IModelObservable.h"
 #include "InstancedElectricalElementSet.h"
 #include "Model.h"
-#include "ModelValidationResults.h"
+#include "ModelValidationSession.h"
 #include "ShipBuilderTypes.h"
 #include "View.h"
 
@@ -17,6 +17,7 @@
 #include <Game/ShipDefinition.h>
 #include <Game/ShipTexturizer.h>
 
+#include <GameCore/Finalizer.h>
 #include <GameCore/GameTypes.h>
 #include <GameCore/ImageData.h>
 
@@ -111,7 +112,7 @@ public:
         mModel.ClearIsDirty();
     }
 
-    ModelValidationResults ValidateModel() const;
+    ModelValidationSession StartValidation(Finalizer && finalizer) const;
 
 #ifdef _DEBUG
     bool IsInEphemeralVisualization() const

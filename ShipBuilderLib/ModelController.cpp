@@ -5,8 +5,6 @@
 ***************************************************************************************/
 #include "ModelController.h"
 
-#include "ModelValidator.h"
-
 #include <cassert>
 #include <queue>
 
@@ -139,9 +137,11 @@ std::optional<ShipSpaceRect> ModelController::CalculateBoundingBox() const
     return boundingBox;
 }
 
-ModelValidationResults ModelController::ValidateModel() const
+ModelValidationSession ModelController::StartValidation(Finalizer && finalizer) const
 {
-    return ModelValidator::ValidateModel(mModel);
+    return ModelValidationSession(
+        mModel,
+        std::move(finalizer));
 }
 
 std::optional<SampledInformation> ModelController::SampleInformationAt(ShipSpaceCoordinates const & coordinates, LayerType layer) const

@@ -7,10 +7,11 @@
 
 #include "IUserInterface.h"
 #include "ModelController.h"
+#include "ModelValidationSession.h"
 #include "OpenGLManager.h"
-#include "UndoStack.h"
 #include "SelectionManager.h"
 #include "ShipBuilderTypes.h"
+#include "UndoStack.h"
 #include "View.h"
 #include "WorkbenchState.h"
 #include "Tools/Tool.h"
@@ -19,6 +20,8 @@
 #include <Game/ResourceLocator.h>
 #include <Game/ShipDefinition.h>
 #include <Game/ShipTexturizer.h>
+
+#include <GameCore/Finalizer.h>
 
 #include <memory>
 #include <optional>
@@ -117,7 +120,7 @@ public:
 
     std::optional<ShipSpaceRect> CalculateBoundingBox() const;
 
-    ModelValidationResults ValidateModel();
+    ModelValidationSession StartValidation() const;
 
     //
     // Layer editing
@@ -280,38 +283,6 @@ public:
 
 private:
 
-    //
-    // Tool resume state, RAII
-    //
-
-    struct [[nodiscard]] ScopedToolResumeState
-    {
-        ScopedToolResumeState(
-            Controller const & controller,
-            bool doResumeTool)
-            : mController(controller)
-            , mDoResumeTool(doResumeTool)
-        {
-            LogMessage("ScopedToolResumeState::cctor(doResume=", doResumeTool, ")");
-        }
-
-        ~ScopedToolResumeState()
-        {
-            LogMessage("ScopedToolResumeState::dctor(doResume=", mDoResumeTool, ")");
-
-            if (mDoResumeTool)
-            {
-                (const_cast<Controller &>(mController)).InternalResumeTool();
-            }
-        }
-
-    private:
-        Controller const & mController;
-        bool const mDoResumeTool;
-    };
-
-private:
-
     Controller(
         std::unique_ptr<ModelController> modelController,
         OpenGLManager & openGLManager,
@@ -348,7 +319,7 @@ private:
 
     void InternalSetCurrentTool(std::optional<ToolType> toolType);
 
-    ScopedToolResumeState SuspendTool() const;
+    Finalizer SuspendTool() const;
     bool InternalSuspendTool();
     void InternalResumeTool();
     void InternalResetTool();

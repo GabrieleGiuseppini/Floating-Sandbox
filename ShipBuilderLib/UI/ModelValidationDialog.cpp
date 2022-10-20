@@ -17,7 +17,7 @@ namespace ShipBuilder {
 
 wxSize const MinDialogSizeForValidationResults = wxSize(680, 600);
 
-int constexpr ValidationTimerPeriodMsec = 250;
+int constexpr ValidationTimerPeriodMsec = 100;
 
 ModelValidationDialog::ModelValidationDialog(
     wxWindow * parent,
@@ -143,7 +143,9 @@ ModelValidationDialog::ModelValidationDialog(
 
 void ModelValidationDialog::ShowModalForStandAloneValidation(Controller & controller)
 {
-    mSessionData.emplace(controller, false);
+    mSessionData.emplace(
+        controller,
+        false);
 
     PrepareUIForValidationRun();
     this->SetMinSize(wxSize(-1, -1));
@@ -151,15 +153,17 @@ void ModelValidationDialog::ShowModalForStandAloneValidation(Controller & contro
     Layout();
     CentreOnParent(wxBOTH);
 
-    // Start validation timer
-    mValidationTimer->Start(ValidationTimerPeriodMsec);
+    // Start validation
+    StartValidation();    
 
     wxDialog::ShowModal();
 }
 
 bool ModelValidationDialog::ShowModalForSaveShipValidation(Controller & controller)
 {
-    mSessionData.emplace(controller, true);
+    mSessionData.emplace(
+        controller,
+        true);
 
     PrepareUIForValidationRun();
     this->SetMinSize(wxSize(-1, -1));
@@ -167,9 +171,8 @@ bool ModelValidationDialog::ShowModalForSaveShipValidation(Controller & controll
     Layout();
     CentreOnParent(wxBOTH);
 
-    // Start validation timer
-    assert(!mValidationThread.joinable());
-    mValidationTimer->Start(ValidationTimerPeriodMsec);
+    // Start validation
+    StartValidation();
 
     if (wxDialog::ShowModal() == 0)
     {
@@ -199,31 +202,44 @@ void ModelValidationDialog::PrepareUIForValidationRun()
     mMainVSizer->Hide(mButtonsPanel);
 }
 
+void ModelValidationDialog::StartValidation()
+{
+    assert(mSessionData);
+
+    // Clear results
+    mSessionData->ValidationResults.reset();
+
+    // Start validation session
+    assert(!mSessionData->ValidationSession);
+    mSessionData->ValidationSession.emplace(mSessionData->BuilderController.StartValidation());
+
+    // Setup gauge
+    mValidationWaitGauge->SetValue(0);
+    mValidationWaitGauge->SetRange(mSessionData->ValidationSession->GetNumberOfSteps());
+
+    // Start timer
+    mValidationTimer->Start(ValidationTimerPeriodMsec, true);
+}
+
 void ModelValidationDialog::OnValidationTimer(wxTimerEvent & /*event*/)
 {
-    // Check whether we've started the validation thread
-    if (!mValidationThread.joinable())
-    {
-        // Start validation on separate thread
-        mValidationResults.reset();
-        assert(!mValidationThread.joinable());
-        mValidationThread = std::thread(&ModelValidationDialog::ValidationThreadLoop, this);
-    }
+    assert(mSessionData);
+    assert(mSessionData->ValidationSession);
 
-    // Check if done
-    if (mValidationResults.has_value())
+    // Check whether we're done
+    if (mSessionData->ValidationResults)
     {
-        // Stop timer
-        mValidationTimer->Stop();
+        //
+        // We're done!
+        //
 
-        // Wait until thread is done
-        mValidationThread.join();
-        assert(!mValidationThread.joinable());
+        // Nuke validation session (resumes tool)
+        mSessionData->ValidationSession.reset();
 
         // Check whether we need to show validation results
         assert(mSessionData);
         if (mSessionData->IsForSave
-            && !mValidationResults->HasErrorsOrWarnings()
+            && !mSessionData->ValidationResults->HasErrorsOrWarnings()
             && !mSessionData->IsInValidationWorkflow)
         {
             // Nothing more to do
@@ -231,38 +247,30 @@ void ModelValidationDialog::OnValidationTimer(wxTimerEvent & /*event*/)
         }
         else
         {
-            // Being workflow, won't shrink anymore
+            // Make it workflow, so we won't shrink anymore
             mSessionData->IsInValidationWorkflow = true;
 
             // Show results
-            ShowResults(*mValidationResults);
+            ShowResults(*mSessionData->ValidationResults);
         }
-
-        return;
     }
+    else
+    {
+        // Do next validation
+        mSessionData->ValidationResults = mSessionData->ValidationSession->DoNext();
 
-    // Pulse gauge
-    mValidationWaitGauge->Pulse();
-}
+        // Advance gauge
+        mValidationWaitGauge->SetValue(mValidationWaitGauge->GetValue() + 1);
 
-void ModelValidationDialog::ValidationThreadLoop()
-{
-    //
-    // Runs on separate thread
-    //
-
-    // Get validation
-    assert(mSessionData.has_value());
-    auto validationResults = mSessionData->BuilderController.ValidateModel();
-
-    // Store - signaling that we're done
-    mValidationResults.emplace(validationResults);
+        // Schedule next timer step
+        mValidationTimer->Start(ValidationTimerPeriodMsec, true);
+    }
 }
 
 void ModelValidationDialog::ShowResults(ModelValidationResults const & results)
 {
     assert(mSessionData);
-    assert(mValidationResults);
+    assert(mSessionData->ValidationResults);
 
     wxWindowUpdateLocker scopedUpdateFreezer(this);
 
@@ -273,7 +281,7 @@ void ModelValidationDialog::ShowResults(ModelValidationResults const & results)
     mResultsPanelVSizer->Clear(true);
 
     if (mSessionData->IsForSave
-        && !mValidationResults->HasErrorsOrWarnings())
+        && !mSessionData->ValidationResults->HasErrorsOrWarnings())
     {
         //
         // Single "success" panel
@@ -607,9 +615,8 @@ void ModelValidationDialog::ShowResults(ModelValidationResults const & results)
                                 PrepareUIForValidationRun();
                                 Layout();
 
-                                // Start validation timer
-                                assert(!mValidationThread.joinable());
-                                mValidationTimer->Start(ValidationTimerPeriodMsec);
+                                // Re-start validation
+                                StartValidation();
                             });
 
                         vSizer->Add(
@@ -679,14 +686,14 @@ void ModelValidationDialog::ShowResults(ModelValidationResults const & results)
         {
             auto okButton = new wxButton(mButtonsPanel, wxID_ANY, _("OK"));
             okButton->Bind(wxEVT_BUTTON, &ModelValidationDialog::OnOkButton, this);
-            okButton->Enable(!mSessionData->IsForSave || !mValidationResults->HasErrors());
+            okButton->Enable(!mSessionData->IsForSave || !mSessionData->ValidationResults->HasErrors());
             hSizer->Add(okButton, 0);
         }
         else
         {
             auto okButton = new wxButton(mButtonsPanel, wxID_ANY, _("Save"));
             okButton->Bind(wxEVT_BUTTON, &ModelValidationDialog::OnOkButton, this);
-            okButton->Enable(!mValidationResults->HasErrors());
+            okButton->Enable(!mSessionData->ValidationResults->HasErrors());
             hSizer->Add(okButton, 0);
 
             hSizer->AddSpacer(20);

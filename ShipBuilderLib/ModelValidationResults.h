@@ -5,7 +5,6 @@
 ***************************************************************************************/
 #pragma once
 
-#include <algorithm>
 #include <vector>
 
 namespace ShipBuilder {
@@ -68,24 +67,15 @@ public:
     {
     }
 
-    ModelValidationResults(std::vector<ModelValidationIssue> && issues)
-        : mIssues(std::move(issues))
+    template<typename ... TArgs>
+    void AddIssue(TArgs&& ... args)
     {
-        mHasErrors = std::find_if(
-            mIssues.cbegin(),
-            mIssues.cend(),
-            [](ModelValidationIssue const & issue)
-            {
-                return issue.GetSeverity() == ModelValidationIssue::SeverityType::Error;
-            }) != mIssues.cend();
+        ModelValidationIssue issue(std::forward<TArgs>(args)...);
 
-        mHasWarnings = std::find_if(
-            mIssues.cbegin(),
-            mIssues.cend(),
-            [](ModelValidationIssue const & issue)
-            {
-                return issue.GetSeverity() == ModelValidationIssue::SeverityType::Warning;
-            }) != mIssues.cend();
+        mHasErrors |= (issue.GetSeverity() == ModelValidationIssue::SeverityType::Error);
+        mHasWarnings |= (issue.GetSeverity() == ModelValidationIssue::SeverityType::Warning);
+
+        mIssues.emplace_back(std::move(issue));
     }
 
     bool HasErrors() const

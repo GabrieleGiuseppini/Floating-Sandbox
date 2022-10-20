@@ -302,16 +302,6 @@ void Controller::RestoreDirtyState(ModelDirtyState && dirtyState)
     mUserInterface.OnModelDirtyChanged(*mModelController);
 }
 
-ModelValidationResults Controller::ValidateModel()
-{
-    auto const scopedToolResumeState = SuspendTool();
-
-    assert(mModelController);
-    assert(!mModelController->IsInEphemeralVisualization());
-
-    return mModelController->ValidateModel();
-}
-
 std::unique_ptr<RgbaImageData> Controller::MakePreview() const
 {
     auto const scopedToolResumeState = SuspendTool();
@@ -324,6 +314,16 @@ std::optional<ShipSpaceRect> Controller::CalculateBoundingBox() const
     auto const scopedToolResumeState = SuspendTool();
 
     return mModelController->CalculateBoundingBox();
+}
+
+ModelValidationSession Controller::StartValidation() const
+{
+    auto scopedToolResumeState = SuspendTool();
+
+    assert(mModelController);
+    assert(!mModelController->IsInEphemeralVisualization());
+
+    return mModelController->StartValidation(std::move(scopedToolResumeState));
 }
 
 void Controller::NewStructuralLayer()
@@ -1684,11 +1684,23 @@ void Controller::InternalSetCurrentTool(std::optional<ToolType> toolType)
     mLastToolTypePerLayer[static_cast<size_t>(VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization()))] = toolType;
 }
 
-Controller::ScopedToolResumeState Controller::SuspendTool() const
+Finalizer Controller::SuspendTool() const
 {
-    return ScopedToolResumeState(
-        *this,
-        (const_cast<Controller *>(this))->InternalSuspendTool());
+    LogMessage("Controller::SuspendTool()");
+
+    // Suspend tool
+    bool const doResumeTool = (const_cast<Controller *>(this))->InternalSuspendTool();
+
+    // Create finalizer
+    return Finalizer(
+        [doResumeTool, this]()
+        {
+            LogMessage("Controller::SuspendTool::Finalizer::dctor(doResume=", doResumeTool, ")");
+            if (doResumeTool)
+            {
+                (const_cast<Controller *>(this))->InternalResumeTool();
+            }
+        });
 }
 
 bool Controller::InternalSuspendTool()
@@ -1868,6 +1880,7 @@ TTool & Controller::GetCurrentToolAs(ToolClass toolClass)
 {
     assert(mCurrentTool);
     assert(mCurrentTool->GetClass() == toolClass);
+    (void)toolClass;
     return dynamic_cast<TTool &>(*mCurrentTool);
 }
 

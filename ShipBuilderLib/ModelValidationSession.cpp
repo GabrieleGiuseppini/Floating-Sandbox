@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #include "ModelValidationSession.h"
 
+#include <cassert>
 #include <queue>
 
 namespace ShipBuilder {
@@ -14,68 +15,38 @@ ModelValidationSession::ModelValidationSession(
     Finalizer && finalizer)
     : mModel(model)
     , mFinalizer(std::move(finalizer))
+    , mValidationSteps()
     , mCurrentStep(0)
 {
 }
 
 std::optional<ModelValidationResults> ModelValidationSession::DoNext()
 {
-    // TODO: replace with vector of funcs constructed at cctor
-    switch (mCurrentStep)
+    if (mCurrentStep == 0)
     {
-        case 0:
-        {
-            PrevisitStructuralLayer();
-            break;
-        }
-
-        case 1:
-        {
-            CheckEmptyStructuralLayer();
-            break;
-        }
-
-        case 2:
-        {
-            CheckStructureTooLarge();
-            break;
-        }
-
-        case 3:
-        {
-            PrevisitElectricalLayer();
-            break;
-        }
-
-        case 4:
-        {
-            CheckElectricalSubstratum();
-            break;
-        }
-
-        case 5:
-        {
-            CheckTooManyLights();
-            break;
-        }
-
-        case 6:
-        {
-            CheckTooManyElectricalPanelElements();
-            break;
-        }
-
-        case 7:
-        {
-            ValidateElectricalConnectivity();
-            break;
-        }
-
-        // TODOHERE
+        // Initialize validations (can't do in cctor)
+        assert(mValidationSteps.empty());
+        mValidationSteps.emplace_back(std::bind(&ModelValidationSession::PrevisitStructuralLayer, this));
+        mValidationSteps.emplace_back(std::bind(&ModelValidationSession::CheckEmptyStructuralLayer, this));
+        mValidationSteps.emplace_back(std::bind(&ModelValidationSession::CheckStructureTooLarge, this));
+        mValidationSteps.emplace_back(std::bind(&ModelValidationSession::PrevisitElectricalLayer, this));
+        mValidationSteps.emplace_back(std::bind(&ModelValidationSession::CheckElectricalSubstratum, this));
+        mValidationSteps.emplace_back(std::bind(&ModelValidationSession::CheckTooManyLights, this));
+        mValidationSteps.emplace_back(std::bind(&ModelValidationSession::CheckTooManyElectricalPanelElements, this));
+        mValidationSteps.emplace_back(std::bind(&ModelValidationSession::ValidateElectricalConnectivity, this));
     }
 
-    ++mCurrentStep;
-    return std::nullopt;
+    if (mCurrentStep < mValidationSteps.size())
+    {
+        mValidationSteps[mCurrentStep]();
+        ++mCurrentStep;
+        return std::nullopt;
+    }
+    else
+    {
+        // We're done
+        return mResults;
+    }
 }
 
 /////////////////////////////////////////////////////////////////

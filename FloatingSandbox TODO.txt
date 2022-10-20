@@ -82,6 +82,10 @@
 
 	- Fireworks (*)
 
+	- Review rope strength:
+		- 0.025 is better, but stresses too much
+			- Add optional stress_strength_fraction material property, default=current value, for ropes=100%
+
 	- Quad rendering with indices
 		- Sharing VBOs in VAOs: 
 			- https://computergraphics.stackexchange.com/questions/4623/multiple-vao-share-a-vbo

@@ -12,6 +12,7 @@
 #include <GameCore/Finalizer.h>
 #include <GameCore/GameTypes.h>
 
+#include <functional>
 #include <optional>
 #include <vector>
 
@@ -19,19 +20,16 @@ namespace ShipBuilder {
 
 class ModelValidationSession final
 {
-private:
-
-    static unsigned int constexpr NumberOfSteps = 2;
-
 public:
 
     ModelValidationSession(
         Model const & model,
         Finalizer && finalizer);
 
-    unsigned int GetNumberOfSteps() const
+    size_t GetNumberOfSteps() const
     {
-        return NumberOfSteps;
+        // TODOHERE: we don't have a vector anymore
+        return 7;
     }
 
     std::optional<ModelValidationResults> DoNext();
@@ -45,7 +43,9 @@ private:
     // State
     //
 
-    unsigned int mCurrentStep;
+    std::vector<std::function<void()>> mValidationSteps;
+
+    size_t mCurrentStep;
 
     size_t mStructuralParticlesCount;
     size_t mElectricalParticlesWithNoStructuralSubstratumCount;

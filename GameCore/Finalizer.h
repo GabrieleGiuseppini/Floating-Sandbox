@@ -7,7 +7,7 @@
 
 #include <functional>
 
-class Finalizer final
+struct [[nodiscard]] Finalizer final
 {
 public:
 
@@ -17,8 +17,17 @@ public:
 
     ~Finalizer()
     {
-        mFinalizerAction();
+        if (mFinalizerAction)
+        {
+            mFinalizerAction();
+        }
     }
+
+    Finalizer(Finalizer const &) = delete;
+    Finalizer(Finalizer &&) = default;
+
+    Finalizer & operator=(Finalizer const &) = delete;
+    Finalizer & operator=(Finalizer &&) = default;
 
 private:
 

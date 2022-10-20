@@ -17,8 +17,8 @@ set (SHIPBUILDER_LIB_SOURCES
 	ModelController.cpp
 	ModelController.h
 	ModelValidationResults.h
-	ModelValidator.cpp
-	ModelValidator.h
+	ModelValidationSession.cpp
+	ModelValidationSession.h
 	OpenGLManager.h
 	SelectionManager.h
 	ShaderTypes.cpp
