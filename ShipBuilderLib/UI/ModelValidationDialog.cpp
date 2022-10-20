@@ -30,7 +30,7 @@ ModelValidationDialog::ModelValidationDialog(
         _("Ship Issues"),
         wxDefaultPosition,
         wxDefaultSize,
-        wxCAPTION | wxCLOSE_BOX | wxFRAME_SHAPED);
+        wxCAPTION | wxFRAME_SHAPED);
 
     SetBackgroundColour(GetDefaultAttributes().colBg);
 
