@@ -289,8 +289,22 @@
 		+ Buttons at "Edit" ribbon (new own section)
 		+ Reconciliation with selection: enable/disable
 		- CopySelectionToClipboard(selection rect) // TODO: really arg? or takes it from selection manager?
-			- Populate LayersRegion in ClipboardManager
+			- Populate LayersRegion into ClipboardManager
 				- Read WorkbenchState::all-layers flag
+				- Layer primitives:
+					- Spec: 
+						- Structural: Clone=OK | Paste=OK
+						- Electrical: Clone=trim panel (DONE) | Paste=requires dealing with instance IDs (merging) and panel (for both instance ID's and position conflicts) (opposite of MakedTrimmedPanel)
+						- Ropes: Clone=trim (DONE) | Paste=needs to shift positions and deal with conflicts (@RopesBuffer)
+						- Texture: Clone=OK | Paste=OK
+					- XXXLayer::CloneRegion(Rect) -> LayerData
+					- XXXLayer::PasteRegion(pos, LayerData)
+					- ShipLayers::CloneRegion(Rect, layer selection) -> ShipLayers
+					- ShipLayers::PasteRegion(pos, LayerData, layer selection)
+				- Implement with these Layer primitives:
+					- Model::CloneRegion 
+					- Model::PasteRegion
+				- Rewrite/reroute Controller/ModelController/Model/Tools::Undo's primitives in terms of these
 			- ClipboardManager notifies IUserInterface @ population; used for: Paste		
 		- Controller::Cut():
 			- CopySelectionToClipboard(selection rect)

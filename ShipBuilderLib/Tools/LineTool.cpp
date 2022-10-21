@@ -291,7 +291,7 @@ void LineTool<TLayer>::EndEngagement(ShipSpaceCoordinates const & mouseCoordinat
         // Create undo action
         //
 
-        auto clippedLayerClone = mOriginalLayerClone.Clone(*resultantEffectiveRect);
+        auto clippedLayerClone = mOriginalLayerClone.CloneRegion(*resultantEffectiveRect);
         auto const clipByteSize = clippedLayerClone.Buffer.GetByteSize();
 
         mController.StoreUndoAction(

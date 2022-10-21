@@ -207,6 +207,13 @@ public:
         return mModel.CloneExistingLayer<TLayer>();
     }
 
+    std::unique_ptr<ShipLayers> CloneRegion(
+        ShipSpaceRect const & region,
+        std::optional<LayerType> layerSelection) const
+    {
+        return mModel.CloneRegion(region, layerSelection);
+    }
+
     //
     // Structural
     //

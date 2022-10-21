@@ -436,7 +436,7 @@ void PencilTool<TLayer, IsEraser>::EndEngagement()
         // Create undo action
         //
 
-        auto clippedLayerClone = mOriginalLayerClone.Clone(*mEngagementData->EditRegion);
+        auto clippedLayerClone = mOriginalLayerClone.CloneRegion(*mEngagementData->EditRegion);
         auto const clipByteSize = clippedLayerClone.Buffer.GetByteSize();
 
         mController.StoreUndoAction(

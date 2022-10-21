@@ -69,6 +69,18 @@ ElectricalPanelMetadata ElectricalLayerData::MakedTrimmedPanel(
     return newPanel;
 }
 
+RopesLayerData RopesLayerData::CloneRegion(ShipSpaceRect const & region) const
+{
+    RopeBuffer newBuffer = Buffer;
+    newBuffer.Reframe(
+        region.size,
+        ShipSpaceCoordinates(
+            -region.origin.x,
+            -region.origin.y));
+
+    return RopesLayerData(std::move(newBuffer));
+}
+
 RopesLayerData RopesLayerData::MakeReframed(
     ShipSpaceSize const & newSize, // Final size
     ShipSpaceCoordinates const & originOffset) const // Position in final buffer of original {0, 0}

@@ -195,6 +195,10 @@ public:
         }
     }
 
+    std::unique_ptr<ShipLayers> CloneRegion(
+        ShipSpaceRect const & region,
+        std::optional<LayerType> layerSelection) const;
+
     StructuralLayerData const & GetStructuralLayer() const
     {
         return mLayers.StructuralLayer;

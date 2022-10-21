@@ -108,21 +108,21 @@ void SelectionTool::OnLeftMouseDown()
         // Check if hitting a corner
         if (mCurrentSelection)
         {
-            if (*cornerCoordinates == mCurrentSelection->CornerA())
+            if (*cornerCoordinates == mCurrentSelection->MinMin())
             {
-                selectionStartCorner = mCurrentSelection->CornerC();
+                selectionStartCorner = mCurrentSelection->MaxMax();
             }
-            else if (*cornerCoordinates == mCurrentSelection->CornerB())
+            else if (*cornerCoordinates == mCurrentSelection->MaxMin())
             {
-                selectionStartCorner = mCurrentSelection->CornerD();
+                selectionStartCorner = mCurrentSelection->MinMax();
             }
-            else if (*cornerCoordinates == mCurrentSelection->CornerC())
+            else if (*cornerCoordinates == mCurrentSelection->MaxMax())
             {
-                selectionStartCorner = mCurrentSelection->CornerA();
+                selectionStartCorner = mCurrentSelection->MinMin();
             }
-            else if (*cornerCoordinates == mCurrentSelection->CornerD())
+            else if (*cornerCoordinates == mCurrentSelection->MinMax())
             {
-                selectionStartCorner = mCurrentSelection->CornerB();
+                selectionStartCorner = mCurrentSelection->MaxMin();
             }
         }
 
@@ -211,8 +211,8 @@ void SelectionTool::SelectAll()
 
     // Update overlay
     mController.GetView().UploadSelectionOverlay(
-        selection.CornerA(),
-        selection.CornerC());
+        selection.MinMin(),
+        selection.MaxMax());
 
     // Update measurement
     mController.GetUserInterface().OnMeasuredSelectionSizeChanged(selection.size);

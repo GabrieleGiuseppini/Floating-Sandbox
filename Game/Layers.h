@@ -48,7 +48,7 @@ struct StructuralLayerData
         return StructuralLayerData(Buffer.Clone());
     }
 
-    StructuralLayerData Clone(ShipSpaceRect const & region) const
+    StructuralLayerData CloneRegion(ShipSpaceRect const & region) const
     {
         return StructuralLayerData(Buffer.CloneRegion(region));
     }
@@ -117,7 +117,7 @@ struct ElectricalLayerData
             std::move(panelClone));
     }
 
-    ElectricalLayerData Clone(ShipSpaceRect const & region) const
+    ElectricalLayerData CloneRegion(ShipSpaceRect const & region) const
     {
         return ElectricalLayerData(
             Buffer.CloneRegion(region),
@@ -170,6 +170,8 @@ struct RopesLayerData
         return RopesLayerData(Buffer.Clone());
     }
 
+    RopesLayerData CloneRegion(ShipSpaceRect const & region) const;
+
     void Trim(ShipSpaceRect const & rect)
     {
         Buffer.Trim(rect.origin, rect.size);
@@ -204,7 +206,7 @@ struct TextureLayerData
         return TextureLayerData(Buffer.Clone());
     }
 
-    TextureLayerData Clone(ImageRect const & region) const
+    TextureLayerData CloneRegion(ImageRect const & region) const
     {
         return TextureLayerData(Buffer.CloneRegion(region));
     }

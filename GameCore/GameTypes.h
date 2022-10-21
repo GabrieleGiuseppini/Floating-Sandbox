@@ -645,26 +645,26 @@ struct _IntegralRect
         , size(_size)
     {}
 
-    _IntegralCoordinates<TIntegralTag> CornerA() const
+    _IntegralCoordinates<TIntegralTag> MinMin() const
     {
         return origin;
     }
 
-    _IntegralCoordinates<TIntegralTag> CornerB() const
+    _IntegralCoordinates<TIntegralTag> MaxMin() const
     {
         return _IntegralCoordinates<TIntegralTag>(
             origin.x + size.width,
             origin.y);
     }
 
-    _IntegralCoordinates<TIntegralTag> CornerC() const
+    _IntegralCoordinates<TIntegralTag> MaxMax() const
     {
         return _IntegralCoordinates<TIntegralTag>(
             origin.x + size.width,
             origin.y + size.height);
     }
 
-    _IntegralCoordinates<TIntegralTag> CornerD() const
+    _IntegralCoordinates<TIntegralTag> MinMax() const
     {
         return _IntegralCoordinates<TIntegralTag>(
             origin.x,

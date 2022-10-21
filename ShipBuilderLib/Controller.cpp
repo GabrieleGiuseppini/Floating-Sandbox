@@ -477,7 +477,7 @@ void Controller::TrimElectricalParticlesWithoutSubstratum()
         {
             // Create undo action
 
-            ElectricalLayerData clippedRegionClone = originalLayerClone.Clone(*affectedRect);
+            ElectricalLayerData clippedRegionClone = originalLayerClone.CloneRegion(*affectedRect);
             auto const clipByteSize = clippedRegionClone.Buffer.GetByteSize();
 
             mUndoStack.Push(

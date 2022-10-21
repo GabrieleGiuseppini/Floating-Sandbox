@@ -255,7 +255,7 @@ TEST(LayerTests, ElectricalLayer_Clone_Smaller)
     // Clone layer
     //
 
-    ElectricalLayerData targetLayer = sourceLayer.Clone({ 
+    ElectricalLayerData targetLayer = sourceLayer.CloneRegion({ 
         ShipSpaceCoordinates(2, 1),
         ShipSpaceSize(4, 3) });
 
@@ -695,6 +695,55 @@ TEST(LayerTests, RopesLayer_Trim)
     EXPECT_EQ(targetLayer.Buffer[0].StartCoords, ShipSpaceCoordinates(1, 2));
     EXPECT_EQ(targetLayer.Buffer[0].EndCoords, ShipSpaceCoordinates(7, 7));
 }
+
+TEST(LayerTests, RopesLayer_Clone_Smaller)
+{
+    //
+    // Create source layer
+    //
+    // Size= (12, 12)
+
+    RopeBuffer buffer;
+
+    buffer.EmplaceBack(
+        ShipSpaceCoordinates(4, 5), // In
+        ShipSpaceCoordinates(5, 6),
+        nullptr,
+        rgbaColor(1, 2, 3, 4));
+
+    buffer.EmplaceBack(
+        ShipSpaceCoordinates(0, 1), // Out
+        ShipSpaceCoordinates(5, 6),
+        nullptr,
+        rgbaColor(1, 2, 3, 4));
+
+    buffer.EmplaceBack(
+        ShipSpaceCoordinates(2, 4), // Out
+        ShipSpaceCoordinates(10, 10),
+        nullptr,
+        rgbaColor(1, 2, 3, 4));
+
+    RopesLayerData sourceLayer(std::move(buffer));
+
+    //
+    // Clone layer
+    //
+
+    RopesLayerData targetLayer = sourceLayer.CloneRegion(
+        ShipSpaceRect(
+            ShipSpaceCoordinates(1, 1),
+            ShipSpaceSize(8, 9)));
+
+    //
+    // Verify
+    //
+
+    ASSERT_EQ(targetLayer.Buffer.GetSize(), 1u);
+
+    EXPECT_EQ(targetLayer.Buffer[0].StartCoords, ShipSpaceCoordinates(3, 4));
+    EXPECT_EQ(targetLayer.Buffer[0].EndCoords, ShipSpaceCoordinates(4, 5));
+}
+
 
 TEST(LayerTests, RopesLayer_Reframe_Smaller)
 {
