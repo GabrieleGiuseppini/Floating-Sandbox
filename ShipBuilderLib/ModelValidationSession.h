@@ -26,10 +26,14 @@ public:
         Model const & model,
         Finalizer && finalizer);
 
-    size_t GetNumberOfSteps() const
+    size_t GetNumberOfSteps()
     {
-        // TODOHERE: we don't have a vector anymore
-        return 7;
+        if (mValidationSteps.empty())
+        {
+            InitializeValidationSteps();
+        }
+
+        return mValidationSteps.size();
     }
 
     std::optional<ModelValidationResults> DoNext();
@@ -67,6 +71,9 @@ private:
         std::uint8_t wholeElement;
         ConnectivityFlags flags;
     };
+
+    // Initialize validations (can't do in cctor)
+    void InitializeValidationSteps();
 
     void PrevisitStructuralLayer();
 

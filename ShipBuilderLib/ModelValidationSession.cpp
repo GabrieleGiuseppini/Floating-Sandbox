@@ -22,18 +22,9 @@ ModelValidationSession::ModelValidationSession(
 
 std::optional<ModelValidationResults> ModelValidationSession::DoNext()
 {
-    if (mCurrentStep == 0)
+    if (mValidationSteps.empty())
     {
-        // Initialize validations (can't do in cctor)
-        assert(mValidationSteps.empty());
-        mValidationSteps.emplace_back(std::bind(&ModelValidationSession::PrevisitStructuralLayer, this));
-        mValidationSteps.emplace_back(std::bind(&ModelValidationSession::CheckEmptyStructuralLayer, this));
-        mValidationSteps.emplace_back(std::bind(&ModelValidationSession::CheckStructureTooLarge, this));
-        mValidationSteps.emplace_back(std::bind(&ModelValidationSession::PrevisitElectricalLayer, this));
-        mValidationSteps.emplace_back(std::bind(&ModelValidationSession::CheckElectricalSubstratum, this));
-        mValidationSteps.emplace_back(std::bind(&ModelValidationSession::CheckTooManyLights, this));
-        mValidationSteps.emplace_back(std::bind(&ModelValidationSession::CheckTooManyElectricalPanelElements, this));
-        mValidationSteps.emplace_back(std::bind(&ModelValidationSession::ValidateElectricalConnectivity, this));
+        InitializeValidationSteps();
     }
 
     if (mCurrentStep < mValidationSteps.size())
@@ -50,6 +41,23 @@ std::optional<ModelValidationResults> ModelValidationSession::DoNext()
 }
 
 /////////////////////////////////////////////////////////////////
+
+void ModelValidationSession::InitializeValidationSteps()
+{
+    // Initialize validations (can't do in cctor)
+    assert(mValidationSteps.empty());
+    mValidationSteps.emplace_back(std::bind(&ModelValidationSession::PrevisitStructuralLayer, this));
+    mValidationSteps.emplace_back(std::bind(&ModelValidationSession::CheckEmptyStructuralLayer, this));
+    mValidationSteps.emplace_back(std::bind(&ModelValidationSession::CheckStructureTooLarge, this));
+    if (mModel.HasLayer(LayerType::Electrical))
+    {
+        mValidationSteps.emplace_back(std::bind(&ModelValidationSession::PrevisitElectricalLayer, this));
+        mValidationSteps.emplace_back(std::bind(&ModelValidationSession::CheckElectricalSubstratum, this));
+        mValidationSteps.emplace_back(std::bind(&ModelValidationSession::CheckTooManyLights, this));
+        mValidationSteps.emplace_back(std::bind(&ModelValidationSession::CheckTooManyElectricalPanelElements, this));
+        mValidationSteps.emplace_back(std::bind(&ModelValidationSession::ValidateElectricalConnectivity, this));
+    }
+}
 
 void ModelValidationSession::PrevisitStructuralLayer()
 {
@@ -90,346 +98,344 @@ void ModelValidationSession::CheckStructureTooLarge()
     }
 }
 
+void ModelValidationSession::PrevisitElectricalLayer()
+{
+    assert(mModel.HasLayer(LayerType::Electrical));
+
+    mElectricalParticlesWithNoStructuralSubstratumCount = 0;
+    mLightEmittingParticlesCount = 0;
+    mVisibleElectricalPanelElementsCount = 0;    
+    
+    //
+    // Visit electrical layer
+    //
+
+    StructuralLayerData const & structuralLayer = mModel.GetStructuralLayer();
+    ElectricalLayerData const & electricalLayer = mModel.GetElectricalLayer();
+
+    assert(structuralLayer.Buffer.Size == electricalLayer.Buffer.Size);
+    for (int y = 0; y < structuralLayer.Buffer.Size.height; ++y)
+    {
+        for (int x = 0; x < structuralLayer.Buffer.Size.width; ++x)
+        {
+            auto const coords = ShipSpaceCoordinates(x, y);
+            auto const electricalMaterial = electricalLayer.Buffer[coords].Material;
+            if (electricalMaterial != nullptr)
+            {
+                if (structuralLayer.Buffer[coords].Material == nullptr)
+                {
+                    ++mElectricalParticlesWithNoStructuralSubstratumCount;
+                }
+
+                if (electricalMaterial->Luminiscence != 0.0f)
+                {
+                    ++mLightEmittingParticlesCount;
+                }
+
+                if (electricalMaterial->IsInstanced)
+                {
+                    assert(electricalLayer.Buffer[coords].InstanceIndex != NoneElectricalElementInstanceIndex);
+                    if (auto const searchIt = electricalLayer.Panel.find(electricalLayer.Buffer[coords].InstanceIndex);
+                        searchIt == electricalLayer.Panel.end() || !searchIt->second.IsHidden)
+                    {
+                        ++mVisibleElectricalPanelElementsCount;
+                    }
+                }
+            }
+        }
+    }
+}
+
 void ModelValidationSession::CheckElectricalSubstratum()
 {
-    if (mModel.HasLayer(LayerType::Electrical))
-    {
-        mResults.AddIssue(
-            ModelValidationIssue::CheckClassType::MissingElectricalSubstratum,
-            (mElectricalParticlesWithNoStructuralSubstratumCount > 0) ? ModelValidationIssue::SeverityType::Error : ModelValidationIssue::SeverityType::Success);
-    }
+    assert(mModel.HasLayer(LayerType::Electrical));
+
+    mResults.AddIssue(
+        ModelValidationIssue::CheckClassType::MissingElectricalSubstratum,
+        (mElectricalParticlesWithNoStructuralSubstratumCount > 0) ? ModelValidationIssue::SeverityType::Error : ModelValidationIssue::SeverityType::Success);
 }
 
 void ModelValidationSession::CheckTooManyLights()
 {
-    if (mModel.HasLayer(LayerType::Electrical))
-    {
-        size_t constexpr MaxLightEmittingParticles = 5000;
+    assert(mModel.HasLayer(LayerType::Electrical));
 
-        mResults.AddIssue(
-            ModelValidationIssue::CheckClassType::TooManyLights,
-            (mLightEmittingParticlesCount > MaxLightEmittingParticles) ? ModelValidationIssue::SeverityType::Warning : ModelValidationIssue::SeverityType::Success);
-    }
+    size_t constexpr MaxLightEmittingParticles = 5000;
+
+    mResults.AddIssue(
+        ModelValidationIssue::CheckClassType::TooManyLights,
+        (mLightEmittingParticlesCount > MaxLightEmittingParticles) ? ModelValidationIssue::SeverityType::Warning : ModelValidationIssue::SeverityType::Success);
 }
 
 void ModelValidationSession::CheckTooManyElectricalPanelElements()
 {
-    if (mModel.HasLayer(LayerType::Electrical))
-    {
-        size_t constexpr MaxVisibleElectricalPanelElements = 22;
+    assert(mModel.HasLayer(LayerType::Electrical));
 
-        mResults.AddIssue(
-            ModelValidationIssue::CheckClassType::TooManyVisibleElectricalPanelElements,
-            (mVisibleElectricalPanelElementsCount > MaxVisibleElectricalPanelElements) ? ModelValidationIssue::SeverityType::Warning : ModelValidationIssue::SeverityType::Success);
-    }
+    size_t constexpr MaxVisibleElectricalPanelElements = 22;
+
+    mResults.AddIssue(
+        ModelValidationIssue::CheckClassType::TooManyVisibleElectricalPanelElements,
+        (mVisibleElectricalPanelElementsCount > MaxVisibleElectricalPanelElements) ? ModelValidationIssue::SeverityType::Warning : ModelValidationIssue::SeverityType::Success);
 }
 
-void ModelValidationSession::PrevisitElectricalLayer()
-{
-    mElectricalParticlesWithNoStructuralSubstratumCount = 0;
-    mLightEmittingParticlesCount = 0;
-    mVisibleElectricalPanelElementsCount = 0;
-
-    if (mModel.HasLayer(LayerType::Electrical))
-    {
-        //
-        // Visit electrical layer
-        //
-
-        StructuralLayerData const & structuralLayer = mModel.GetStructuralLayer();
-        ElectricalLayerData const & electricalLayer = mModel.GetElectricalLayer();
-
-        assert(structuralLayer.Buffer.Size == electricalLayer.Buffer.Size);
-        for (int y = 0; y < structuralLayer.Buffer.Size.height; ++y)
-        {
-            for (int x = 0; x < structuralLayer.Buffer.Size.width; ++x)
-            {
-                auto const coords = ShipSpaceCoordinates(x, y);
-                auto const electricalMaterial = electricalLayer.Buffer[coords].Material;
-                if (electricalMaterial != nullptr)
-                {
-                    if (structuralLayer.Buffer[coords].Material == nullptr)
-                    {
-                        ++mElectricalParticlesWithNoStructuralSubstratumCount;
-                    }
-
-                    if (electricalMaterial->Luminiscence != 0.0f)
-                    {
-                        ++mLightEmittingParticlesCount;
-                    }
-
-                    if (electricalMaterial->IsInstanced)
-                    {
-                        assert(electricalLayer.Buffer[coords].InstanceIndex != NoneElectricalElementInstanceIndex);
-                        if (auto const searchIt = electricalLayer.Panel.find(electricalLayer.Buffer[coords].InstanceIndex);
-                            searchIt == electricalLayer.Panel.end() || !searchIt->second.IsHidden)
-                        {
-                            ++mVisibleElectricalPanelElementsCount;
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
 
 void ModelValidationSession::ValidateElectricalConnectivity()
 {
-    if (mModel.HasLayer(LayerType::Electrical))
+    assert(mModel.HasLayer(LayerType::Electrical));
+
+    ElectricalLayerData const & electricalLayer = mModel.GetElectricalLayer();
+
+    //
+    // Pass 1: create collections of categories, and connectivity visit buffers
+    //
+
+    Buffer2D<CVElement, ShipSpaceTag> electricalConnectivityVisitBuffer(electricalLayer.Buffer.Size);
+    Buffer2D<CVElement, ShipSpaceTag> engineConnectivityVisitBuffer(electricalLayer.Buffer.Size);
+
+    std::vector<ShipSpaceCoordinates> electricalSources;
+    std::vector<ShipSpaceCoordinates> electricalComponents; // Anything that needs to be connected to a source; includes all consumers
+    std::vector<ShipSpaceCoordinates> electricalConsumers;
+    std::vector<ShipSpaceCoordinates> engineSources;
+    std::vector<ShipSpaceCoordinates> engineComponents; // Anything that needs to be connected to a source; incldues all consumers
+    std::vector<ShipSpaceCoordinates> engineConsumers;
+
+    bool hasElectricals = false;
+    bool hasEngines = false;
+
+    for (int y = 0; y < electricalLayer.Buffer.Size.height; ++y)
     {
-        ElectricalLayerData const & electricalLayer = mModel.GetElectricalLayer();
-
-        //
-        // Pass 1: create collections of categories, and connectivity visit buffers
-        //
-
-        Buffer2D<CVElement, ShipSpaceTag> electricalConnectivityVisitBuffer(electricalLayer.Buffer.Size);
-        Buffer2D<CVElement, ShipSpaceTag> engineConnectivityVisitBuffer(electricalLayer.Buffer.Size);
-
-        std::vector<ShipSpaceCoordinates> electricalSources;
-        std::vector<ShipSpaceCoordinates> electricalComponents; // Anything that needs to be connected to a source; includes all consumers
-        std::vector<ShipSpaceCoordinates> electricalConsumers;
-        std::vector<ShipSpaceCoordinates> engineSources;
-        std::vector<ShipSpaceCoordinates> engineComponents; // Anything that needs to be connected to a source; incldues all consumers
-        std::vector<ShipSpaceCoordinates> engineConsumers;
-
-        bool hasElectricals = false;
-        bool hasEngines = false;
-
-        for (int y = 0; y < electricalLayer.Buffer.Size.height; ++y)
+        for (int x = 0; x < electricalLayer.Buffer.Size.width; ++x)
         {
-            for (int x = 0; x < electricalLayer.Buffer.Size.width; ++x)
+            ShipSpaceCoordinates coords{ x, y };
+
+            // Initialize flags
+            electricalConnectivityVisitBuffer[coords].wholeElement = 0;
+            engineConnectivityVisitBuffer[coords].wholeElement = 0;
+
+            // Inspect material
+            auto const electricalMaterial = electricalLayer.Buffer[coords].Material;
+            if (electricalMaterial)
             {
-                ShipSpaceCoordinates coords{ x, y };
-
-                // Initialize flags
-                electricalConnectivityVisitBuffer[coords].wholeElement = 0;
-                engineConnectivityVisitBuffer[coords].wholeElement = 0;
-
-                // Inspect material
-                auto const electricalMaterial = electricalLayer.Buffer[coords].Material;
-                if (electricalMaterial)
+                switch (electricalMaterial->ElectricalType)
                 {
-                    switch (electricalMaterial->ElectricalType)
+                    case ElectricalMaterial::ElectricalElementType::Cable:
                     {
-                        case ElectricalMaterial::ElectricalElementType::Cable:
+                        electricalConnectivityVisitBuffer[coords].flags.isConductive = electricalMaterial->ConductsElectricity;
+                        engineConnectivityVisitBuffer[coords].flags.isConductive = false;
+                        electricalComponents.push_back(coords);
+
+                        hasElectricals = true;
+                        break;
+                    }
+
+                    case ElectricalMaterial::ElectricalElementType::Engine:
+                    {
+                        electricalConnectivityVisitBuffer[coords].flags.isConductive = true; // Engines may be electrically conductive when they're working
+                        engineConnectivityVisitBuffer[coords].flags.isConductive = true;
+                        engineComponents.push_back(coords);
+                        engineConsumers.push_back(coords);
+
+                        hasEngines = true;
+                        break;
+                    }
+
+                    case ElectricalMaterial::ElectricalElementType::EngineController:
+                    {
+                        electricalConnectivityVisitBuffer[coords].flags.isConductive = electricalMaterial->ConductsElectricity;
+                        engineConnectivityVisitBuffer[coords].flags.isConductive = true;
+                        electricalComponents.push_back(coords);
+                        electricalConsumers.push_back(coords); // Controllers need electricity
+                        engineSources.push_back(coords);
+
+                        hasElectricals = true;
+                        hasEngines = true;
+                        break;
+                    }
+
+                    case ElectricalMaterial::ElectricalElementType::EngineTransmission:
+                    {
+                        electricalConnectivityVisitBuffer[coords].flags.isConductive = electricalMaterial->ConductsElectricity;
+                        engineConnectivityVisitBuffer[coords].flags.isConductive = true;
+                        engineComponents.push_back(coords);
+
+                        hasEngines = true;
+                        break;
+                    }
+
+                    case ElectricalMaterial::ElectricalElementType::Generator:
+                    {
+                        electricalConnectivityVisitBuffer[coords].flags.isConductive = electricalMaterial->ConductsElectricity;
+                        engineConnectivityVisitBuffer[coords].flags.isConductive = false;
+                        electricalSources.push_back(coords);
+
+                        hasElectricals = true;
+                        break;
+                    }
+
+                    case ElectricalMaterial::ElectricalElementType::InteractiveSwitch:
+                    {
+                        electricalConnectivityVisitBuffer[coords].flags.isConductive = true;
+                        engineConnectivityVisitBuffer[coords].flags.isConductive = false;
+                        electricalComponents.push_back(coords);
+
+                        hasElectricals = true;
+                        break;
+                    }
+
+                    case ElectricalMaterial::ElectricalElementType::Lamp:
+                    {
+                        electricalConnectivityVisitBuffer[coords].flags.isConductive = electricalMaterial->ConductsElectricity;
+                        engineConnectivityVisitBuffer[coords].flags.isConductive = false;
+
+                        if (!electricalMaterial->IsSelfPowered)
                         {
-                            electricalConnectivityVisitBuffer[coords].flags.isConductive = electricalMaterial->ConductsElectricity;
-                            engineConnectivityVisitBuffer[coords].flags.isConductive = false;
-                            electricalComponents.push_back(coords);
-
-                            hasElectricals = true;
-                            break;
-                        }
-
-                        case ElectricalMaterial::ElectricalElementType::Engine:
-                        {
-                            electricalConnectivityVisitBuffer[coords].flags.isConductive = true; // Engines may be electrically conductive when they're working
-                            engineConnectivityVisitBuffer[coords].flags.isConductive = true;
-                            engineComponents.push_back(coords);
-                            engineConsumers.push_back(coords);
-
-                            hasEngines = true;
-                            break;
-                        }
-
-                        case ElectricalMaterial::ElectricalElementType::EngineController:
-                        {
-                            electricalConnectivityVisitBuffer[coords].flags.isConductive = electricalMaterial->ConductsElectricity;
-                            engineConnectivityVisitBuffer[coords].flags.isConductive = true;
-                            electricalComponents.push_back(coords);
-                            electricalConsumers.push_back(coords); // Controllers need electricity
-                            engineSources.push_back(coords);
-
-                            hasElectricals = true;
-                            hasEngines = true;
-                            break;
-                        }
-
-                        case ElectricalMaterial::ElectricalElementType::EngineTransmission:
-                        {
-                            electricalConnectivityVisitBuffer[coords].flags.isConductive = electricalMaterial->ConductsElectricity;
-                            engineConnectivityVisitBuffer[coords].flags.isConductive = true;
-                            engineComponents.push_back(coords);
-
-                            hasEngines = true;
-                            break;
-                        }
-
-                        case ElectricalMaterial::ElectricalElementType::Generator:
-                        {
-                            electricalConnectivityVisitBuffer[coords].flags.isConductive = electricalMaterial->ConductsElectricity;
-                            engineConnectivityVisitBuffer[coords].flags.isConductive = false;
-                            electricalSources.push_back(coords);
-
-                            hasElectricals = true;
-                            break;
-                        }
-
-                        case ElectricalMaterial::ElectricalElementType::InteractiveSwitch:
-                        {
-                            electricalConnectivityVisitBuffer[coords].flags.isConductive = true;
-                            engineConnectivityVisitBuffer[coords].flags.isConductive = false;
-                            electricalComponents.push_back(coords);
-
-                            hasElectricals = true;
-                            break;
-                        }
-
-                        case ElectricalMaterial::ElectricalElementType::Lamp:
-                        {
-                            electricalConnectivityVisitBuffer[coords].flags.isConductive = electricalMaterial->ConductsElectricity;
-                            engineConnectivityVisitBuffer[coords].flags.isConductive = false;
-
-                            if (!electricalMaterial->IsSelfPowered)
-                            {
-                                electricalComponents.push_back(coords);
-                                electricalConsumers.push_back(coords);
-                            }
-
-                            hasElectricals = true;
-                            break;
-                        }
-
-                        case ElectricalMaterial::ElectricalElementType::OtherSink:
-                        {
-                            electricalConnectivityVisitBuffer[coords].flags.isConductive = electricalMaterial->ConductsElectricity;
-                            engineConnectivityVisitBuffer[coords].flags.isConductive = false;
                             electricalComponents.push_back(coords);
                             electricalConsumers.push_back(coords);
-
-                            hasElectricals = true;
-                            break;
                         }
 
-                        case ElectricalMaterial::ElectricalElementType::PowerMonitor:
-                        {
-                            electricalConnectivityVisitBuffer[coords].flags.isConductive = electricalMaterial->ConductsElectricity;
-                            engineConnectivityVisitBuffer[coords].flags.isConductive = false;
-                            electricalComponents.push_back(coords);
-                            electricalConsumers.push_back(coords);
+                        hasElectricals = true;
+                        break;
+                    }
 
-                            hasElectricals = true;
-                            break;
-                        }
+                    case ElectricalMaterial::ElectricalElementType::OtherSink:
+                    {
+                        electricalConnectivityVisitBuffer[coords].flags.isConductive = electricalMaterial->ConductsElectricity;
+                        engineConnectivityVisitBuffer[coords].flags.isConductive = false;
+                        electricalComponents.push_back(coords);
+                        electricalConsumers.push_back(coords);
 
-                        case ElectricalMaterial::ElectricalElementType::ShipSound:
-                        {
-                            electricalConnectivityVisitBuffer[coords].flags.isConductive = true; // Acts as a switch
-                            engineConnectivityVisitBuffer[coords].flags.isConductive = false;
-                            electricalComponents.push_back(coords);
-                            electricalConsumers.push_back(coords);
+                        hasElectricals = true;
+                        break;
+                    }
 
-                            hasElectricals = true;
-                            break;
-                        }
+                    case ElectricalMaterial::ElectricalElementType::PowerMonitor:
+                    {
+                        electricalConnectivityVisitBuffer[coords].flags.isConductive = electricalMaterial->ConductsElectricity;
+                        engineConnectivityVisitBuffer[coords].flags.isConductive = false;
+                        electricalComponents.push_back(coords);
+                        electricalConsumers.push_back(coords);
 
-                        case ElectricalMaterial::ElectricalElementType::SmokeEmitter:
-                        {
-                            electricalConnectivityVisitBuffer[coords].flags.isConductive = electricalMaterial->ConductsElectricity;
-                            engineConnectivityVisitBuffer[coords].flags.isConductive = false;
-                            electricalComponents.push_back(coords);
-                            electricalConsumers.push_back(coords);
+                        hasElectricals = true;
+                        break;
+                    }
 
-                            hasElectricals = true;
-                            break;
-                        }
+                    case ElectricalMaterial::ElectricalElementType::ShipSound:
+                    {
+                        electricalConnectivityVisitBuffer[coords].flags.isConductive = true; // Acts as a switch
+                        engineConnectivityVisitBuffer[coords].flags.isConductive = false;
+                        electricalComponents.push_back(coords);
+                        electricalConsumers.push_back(coords);
 
-                        case ElectricalMaterial::ElectricalElementType::WaterPump:
-                        {
-                            electricalConnectivityVisitBuffer[coords].flags.isConductive = electricalMaterial->ConductsElectricity;
-                            engineConnectivityVisitBuffer[coords].flags.isConductive = false;
-                            electricalComponents.push_back(coords);
-                            electricalConsumers.push_back(coords);
+                        hasElectricals = true;
+                        break;
+                    }
 
-                            hasElectricals = true;
-                            break;
-                        }
+                    case ElectricalMaterial::ElectricalElementType::SmokeEmitter:
+                    {
+                        electricalConnectivityVisitBuffer[coords].flags.isConductive = electricalMaterial->ConductsElectricity;
+                        engineConnectivityVisitBuffer[coords].flags.isConductive = false;
+                        electricalComponents.push_back(coords);
+                        electricalConsumers.push_back(coords);
 
-                        case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
-                        {
-                            electricalConnectivityVisitBuffer[coords].flags.isConductive = true; // Acts as a switch
-                            engineConnectivityVisitBuffer[coords].flags.isConductive = false;
-                            electricalComponents.push_back(coords);
+                        hasElectricals = true;
+                        break;
+                    }
 
-                            hasElectricals = true;
-                            break;
-                        }
+                    case ElectricalMaterial::ElectricalElementType::WaterPump:
+                    {
+                        electricalConnectivityVisitBuffer[coords].flags.isConductive = electricalMaterial->ConductsElectricity;
+                        engineConnectivityVisitBuffer[coords].flags.isConductive = false;
+                        electricalComponents.push_back(coords);
+                        electricalConsumers.push_back(coords);
 
-                        case ElectricalMaterial::ElectricalElementType::WatertightDoor:
-                        {
-                            electricalConnectivityVisitBuffer[coords].flags.isConductive = electricalMaterial->ConductsElectricity;
-                            engineConnectivityVisitBuffer[coords].flags.isConductive = false;
-                            electricalComponents.push_back(coords);
-                            electricalConsumers.push_back(coords);
+                        hasElectricals = true;
+                        break;
+                    }
 
-                            hasElectricals = true;
-                            break;
-                        }
+                    case ElectricalMaterial::ElectricalElementType::WaterSensingSwitch:
+                    {
+                        electricalConnectivityVisitBuffer[coords].flags.isConductive = true; // Acts as a switch
+                        engineConnectivityVisitBuffer[coords].flags.isConductive = false;
+                        electricalComponents.push_back(coords);
+
+                        hasElectricals = true;
+                        break;
+                    }
+
+                    case ElectricalMaterial::ElectricalElementType::WatertightDoor:
+                    {
+                        electricalConnectivityVisitBuffer[coords].flags.isConductive = electricalMaterial->ConductsElectricity;
+                        engineConnectivityVisitBuffer[coords].flags.isConductive = false;
+                        electricalComponents.push_back(coords);
+                        electricalConsumers.push_back(coords);
+
+                        hasElectricals = true;
+                        break;
                     }
                 }
             }
         }
+    }
 
-        //
-        // Pass 2: do checks
-        //
+    //
+    // Pass 2: do checks
+    //
 
-        if (hasElectricals)
+    if (hasElectricals)
+    {
+        // Electrical components not connected to sources
         {
-            // Electrical components not connected to sources
-            {
-                size_t unpoweredElectricalComponentCount = CountElectricallyUnconnected(
-                    electricalSources,
-                    electricalComponents,
-                    electricalConnectivityVisitBuffer);
+            size_t unpoweredElectricalComponentCount = CountElectricallyUnconnected(
+                electricalSources,
+                electricalComponents,
+                electricalConnectivityVisitBuffer);
 
-                mResults.AddIssue(
-                    ModelValidationIssue::CheckClassType::UnpoweredElectricalComponent,
-                    (unpoweredElectricalComponentCount > 0) ? ModelValidationIssue::SeverityType::Warning : ModelValidationIssue::SeverityType::Success);
-            }
-
-            // Electrical sources not connected to any consumers 
-            {
-                size_t unconsumedElectricalSourceCount = CountElectricallyUnconnected(
-                    electricalConsumers,
-                    electricalSources,
-                    electricalConnectivityVisitBuffer);
-
-                mResults.AddIssue(
-                    ModelValidationIssue::CheckClassType::UnconsumedElectricalSource,
-                    (unconsumedElectricalSourceCount > 0) ? ModelValidationIssue::SeverityType::Warning : ModelValidationIssue::SeverityType::Success);
-            }
+            mResults.AddIssue(
+                ModelValidationIssue::CheckClassType::UnpoweredElectricalComponent,
+                (unpoweredElectricalComponentCount > 0) ? ModelValidationIssue::SeverityType::Warning : ModelValidationIssue::SeverityType::Success);
         }
 
-        if (hasEngines)
+        // Electrical sources not connected to any consumers 
         {
-            // Engine components not connected to sources
-            {
-                size_t unpoweredEngineComponentCount = CountElectricallyUnconnected(
-                    engineSources,
-                    engineComponents,
-                    engineConnectivityVisitBuffer);
+            size_t unconsumedElectricalSourceCount = CountElectricallyUnconnected(
+                electricalConsumers,
+                electricalSources,
+                electricalConnectivityVisitBuffer);
 
-                mResults.AddIssue(
-                    ModelValidationIssue::CheckClassType::UnpoweredEngineComponent,
-                    (unpoweredEngineComponentCount > 0) ? ModelValidationIssue::SeverityType::Warning : ModelValidationIssue::SeverityType::Success);
-            }
+            mResults.AddIssue(
+                ModelValidationIssue::CheckClassType::UnconsumedElectricalSource,
+                (unconsumedElectricalSourceCount > 0) ? ModelValidationIssue::SeverityType::Warning : ModelValidationIssue::SeverityType::Success);
+        }
+    }
 
-            // Engine sources not connected to any consumers 
-            {
-                size_t unconsumedEngineSourceCount = CountElectricallyUnconnected(
-                    engineConsumers,
-                    engineSources,
-                    engineConnectivityVisitBuffer);
+    if (hasEngines)
+    {
+        // Engine components not connected to sources
+        {
+            size_t unpoweredEngineComponentCount = CountElectricallyUnconnected(
+                engineSources,
+                engineComponents,
+                engineConnectivityVisitBuffer);
 
-                mResults.AddIssue(
-                    ModelValidationIssue::CheckClassType::UnconsumedEngineSource,
-                    (unconsumedEngineSourceCount > 0) ? ModelValidationIssue::SeverityType::Warning : ModelValidationIssue::SeverityType::Success);
-            }
+            mResults.AddIssue(
+                ModelValidationIssue::CheckClassType::UnpoweredEngineComponent,
+                (unpoweredEngineComponentCount > 0) ? ModelValidationIssue::SeverityType::Warning : ModelValidationIssue::SeverityType::Success);
+        }
+
+        // Engine sources not connected to any consumers 
+        {
+            size_t unconsumedEngineSourceCount = CountElectricallyUnconnected(
+                engineConsumers,
+                engineSources,
+                engineConnectivityVisitBuffer);
+
+            mResults.AddIssue(
+                ModelValidationIssue::CheckClassType::UnconsumedEngineSource,
+                (unconsumedEngineSourceCount > 0) ? ModelValidationIssue::SeverityType::Warning : ModelValidationIssue::SeverityType::Success);
         }
     }
 }
+
+///////////////////////////////////////////
 
 size_t ModelValidationSession::CountElectricallyUnconnected(
     std::vector<ShipSpaceCoordinates> const & propagationSources,
