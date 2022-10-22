@@ -155,6 +155,36 @@ public:
             std::move(newData));
     }
 
+    void PasteRegion(
+        Buffer2D const & source, 
+        _IntegralCoordinates<TIntegralTag> const & pos)
+    {
+        // The source buffer may be pasted anywhere
+
+        int const srcXStart = std::max(-pos.x, 0);
+        int const tgtXStart = std::max(pos.x, 0);
+        int const copyW = std::max(
+            std::min(source.Size.width - srcXStart, Size.width - tgtXStart),
+            0);
+
+        int const srcYStart = std::max(-pos.y, 0);
+        int const tgtYStart = std::max(pos.y, 0);
+        int const copyH = std::max(
+            std::min(source.Size.height - srcYStart, Size.height - tgtYStart),
+            0);
+
+        for (int yc = 0; yc < copyH; ++yc)
+        {
+            int const sourceLinearIndex = (srcYStart + yc) * source.Size.width + srcXStart;
+            int const targetLinearIndex = (tgtYStart + yc) * Size.width + tgtXStart;
+
+            std::memmove(
+                Data.get() + targetLinearIndex,
+                source.Data.get() + sourceLinearIndex,
+                copyW * sizeof(TElement));
+        }
+    }
+
     void Trim(_IntegralRect<TIntegralTag> const & rect)
     {
         // The new rect is smaller than the previous

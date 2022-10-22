@@ -299,11 +299,16 @@
 					- Texture: Clone=OK | Paste=OK
 				- All of these with unit tests:
 				+ Buffer<>::CloneRegion(Rect) -> Buffer
-				- Buffer::PasteRegion(pos, Buffer)
-					- Need to allow both pos and size to be outside of target buffer
-						- So cannot be done in terms of BlitFromRegion
+				= Buffer::PasteRegion(pos, Buffer)
+					= Need to allow both pos and size to be outside of target buffer
+						+ So cannot be done in terms of BlitFromRegion
 				- See if there are Buffer::obsolete methods now
 				- XXXLayer::CloneRegion(Rect) -> LayerData
+					- NOTE: should mostly be done by now
+					- Struc
+					- Elec: trims elec panel
+					- Ropes: keeps ropes also if one endpoint is out - i.e. it takes all ropes having at least one endpoint in region
+					- Texture
 				- XXXLayer::PasteRegion(pos, LayerData)
 					- Electrical: 
 						- Lift code from Model
@@ -319,7 +324,7 @@
 					- Ropes:
 						- Lift code from Model (if any)
 						- Shift positions (for new origin)
-						- If conflicting position: nuke rope
+						- If conflicting position or position out of range: nuke rope
 				- See if there are XXXLayer::obsolete methods now
 				- ShipLayers::CloneRegion(Rect, layer selection) -> ShipLayers
 				- ShipLayers::PasteRegion(pos, LayerData, layer selection)
