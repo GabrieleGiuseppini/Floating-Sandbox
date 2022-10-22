@@ -89,7 +89,7 @@ find_package(JPEG REQUIRED)
 find_package(PNG REQUIRED)
 
 #
-# pthread, iconv (required by wxWidgets on MAC)
+# iconv (required by wxWidgets on Mac)
 #
 
 if(APPLE)
