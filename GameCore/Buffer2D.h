@@ -173,15 +173,18 @@ public:
             std::min(source.Size.height - srcYStart, Size.height - tgtYStart),
             0);
 
+        int sourceLinearIndex = srcYStart * source.Size.width + srcXStart;
+        int targetLinearIndex = tgtYStart * Size.width + tgtXStart;
+
         for (int yc = 0; yc < copyH; ++yc)
         {
-            int const sourceLinearIndex = (srcYStart + yc) * source.Size.width + srcXStart;
-            int const targetLinearIndex = (tgtYStart + yc) * Size.width + tgtXStart;
-
             std::memmove(
                 Data.get() + targetLinearIndex,
                 source.Data.get() + sourceLinearIndex,
                 copyW * sizeof(TElement));
+
+            sourceLinearIndex += source.Size.width;
+            targetLinearIndex += Size.width;
         }
     }
 
