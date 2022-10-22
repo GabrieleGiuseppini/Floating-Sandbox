@@ -209,7 +209,7 @@
 	+ Assets
 		+ Selection
 		+ Copy, Cut, Paste button icons		
-	= Select tool <TLayer>: populates selection Rect into SelectionManager
+	+ Select tool <TLayer>: populates selection Rect into SelectionManager
 		+ Icon: Selector.png, ready
 		+ "Tool Settings" ribbon: // - change label of ribbon to actual tool name
 			+ "All Layers" checkbox 
@@ -269,7 +269,7 @@
 				+ Between tool coordinates and sampled material
 					+ We have an icon for that, "selection_size"
 	+ Selection overlay: corners w/pixels
-	= Fix issue:
+	+ Fix issue:
 		+ ModelValidationDialog calls Controller::ValidateModel() from separate thread, which first suspends tool and then, when done, resumes the tool and 
 		  thus *creates* the tool (after our last change), causing OpenGL calls from separate thread; fix:
 			+ No thread in dialog
@@ -281,52 +281,75 @@
 				+ And then destroy Validator in opt
 			+ Do lazy vector initialization at both Next() and GetCount()
 				+ And make it conditional
-		- Tests:
+		+ Tests:
 			+ "Fix issue" workflows
-			- Save workflow
+			+ Save workflow
 
 	= Copy & Cut buttons:
 		+ Buttons at "Edit" ribbon (new own section)
 		+ Reconciliation with selection: enable/disable
-		- CopySelectionToClipboard(selection rect) // TODO: really arg? or takes it from selection manager?
-			- Populate LayersRegion into ClipboardManager
-				- Read WorkbenchState::all-layers flag
-				- Layer primitives:
-					- Spec: 
-						- Structural: Clone=OK | Paste=OK
-						- Electrical: Clone=trim panel (DONE) | Paste=requires dealing with instance IDs (merging) and panel (for both instance ID's and position conflicts) (opposite of MakedTrimmedPanel)
-						- Ropes: Clone=trim (DONE) | Paste=needs to shift positions and deal with conflicts (@RopesBuffer)
-						- Texture: Clone=OK | Paste=OK
-					- XXXLayer::CloneRegion(Rect) -> LayerData
-					- XXXLayer::PasteRegion(pos, LayerData)
-					- ShipLayers::CloneRegion(Rect, layer selection) -> ShipLayers
-					- ShipLayers::PasteRegion(pos, LayerData, layer selection)
-				- Implement with these Layer primitives:
-					- Model::CloneRegion 
-					- Model::PasteRegion
-				- Rewrite/reroute Controller/ModelController/Model/Tools::Undo's primitives in terms of these
+		- private Controller::CopySelectionToClipboard()
+			- Gets SelectionRect from SelectionManager, and LayerSelection from WorkbenchState::all-layers flag
+			- Then gets LayersRegion from ModelController, and shoves it into ClipboardManager
+			- Layer primitives:
+				- Spec: 
+					- Structural: Clone=OK | Paste=OK
+					- Electrical: Clone=trim panel (DONE) | Paste=requires dealing with instance IDs (merging) and panel (for both instance ID's and position conflicts) (opposite of MakedTrimmedPanel)
+					- Ropes: Clone=trim (DONE) | Paste=needs to shift positions and deal with conflicts (@RopesBuffer)
+					- Texture: Clone=OK | Paste=OK
+				- All of these with unit tests:
+				+ Buffer<>::CloneRegion(Rect) -> Buffer
+				- Buffer::PasteRegion(pos, Buffer)
+					- Need to allow both pos and size to be outside of target buffer
+						- So cannot be done in terms of BlitFromRegion
+				- See if there are Buffer::obsolete methods now
+				- XXXLayer::CloneRegion(Rect) -> LayerData
+				- XXXLayer::PasteRegion(pos, LayerData)
+					- Electrical: 
+						- Lift code from Model
+						- Instance IDs: 
+							- Build old set from outside region
+							- For each new instanced:
+								- If ID can enter set, keep its ID and add to set
+								- Else: find new ID (w/loop), add it to set, ad store <oldID, newID> rename
+							- After paste into buffer, change ID of each instanced according to renames
+						- Panel:
+							- IDs: use renames from above
+							- Pos: if conflict => nuke pos (this is a shortcut)
+					- Ropes:
+						- Lift code from Model (if any)
+						- Shift positions (for new origin)
+						- If conflicting position: nuke rope
+				- See if there are XXXLayer::obsolete methods now
+				- ShipLayers::CloneRegion(Rect, layer selection) -> ShipLayers
+				- ShipLayers::PasteRegion(pos, LayerData, layer selection)
+				- See if there are ShipLayers::obsolete methods now
+				- Add unit tests for Trim<->CloneRegion equivalence, all layers
+					+ Buffer
+					- Layers
+			- Implement with these Layer primitives:
+				- Model::CloneRegion(...)
+				- Model::PasteRegion(...)
+			X Rewrite/reroute whole Undo machinery @ Controller/ModelController/Model/Tools in terms of these
+				X TODO: think of changing tools' actions and eph visualizations wrt cloned regions: Model::Operation(...) returns LayerData
+					X Which then Undo action creator pairs with origin
+				X But watch out:
+					X Ropes' Undo: still best to take whole layer, no risk of losing ropes
+					X NOT A GOOD IDEA: methods would then be un-harmonic, for some layers would return region and not for others (e.g. Ropes)
+						X Also would be not performant (continuous copy & paste vs only blit)
 			- ClipboardManager notifies IUserInterface @ population; used for: Paste		
 		- Controller::Cut():
-			- CopySelectionToClipboard(selection rect)
+			- Calls CopySelectionToClipboard(...), then:
 			- ModelController::~"Cut"(selection rect, which layers) => Undo
 				- Note: Undo leaves clipboard populated - that's fine
 		- Controller::Copy():
-			- CopySelectionToClipboard(selection rect)
+			- Calls CopySelectionToClipboard()
 	+ MainFrame::ReconciliateUIWithSelection(): enable/disable Cut, Copy, Deselect buttons
 	- Paste tool:
 		- Assets:
 			- Paste tool icon and cursor
-		+ UI Reconciliation with clipboard: enable/disable
+		= UI Reconciliation with clipboard: enable/disable
 			+ Initial call from Controller cctor
-		- TODO: how to ensure its own state (pasted & eventually modified LayersRegion) survives tool suspensions?
-			- ...tool suspensions because of:
-				- External suspension
-				- And also for mouse leave window, if it stays (see above)
-			- Verified: tool moving out of canvas causes PasteTool to die
-			- May be PasteTool instance is not uq_ptr'd as normal tools, but it has different lifetime (special member of Controller)?
-			- ANSWER: tools become shared_ptr's, and next to mTool we also have mPasteTool (of Paste type)
-				- Tool also exposes Suspend() and Resume() to remove ephemeral viz when suspended because of external suspension
-					- And also for mouse leave window, if it stays (see above)
 		- Not selectable by user; auto-activated @ Paste
 			- Never enters "last tool" stack
 			- Tool's button is always disabled, except when active: is_enabled==is_active
@@ -334,15 +357,15 @@
 		- Exited by:
 			- Selecting another tool
 				- In this case, it Commit's()
-			- Commit & Abort "Tool Settings" button
+			- Commit & Abort "Tool Settings" buttons
 			- ~PasteTool() (e.g. because of Validation, etc.)
 				- In this case, it Abort's()
-					- TODO: how to distinguish from "Selecting another tool"? MAy be this one should Commit() as well
+					- TODO: how to distinguish from "Selecting another tool"? May be this one should Commit() as well
 		- Tool does Move; various "Tool Settings" buttons do rotate/flip/etc.
 			- Rotate/flip/etc: Button->Ctrl->PasteTool
 			- Flag for opaque vs transparent
 				- Checkbox->Ctrl->PasteTool
-			- ModelController::PasteAt(LayersRegion, origin) X 2 (ephemeral, normal) -> Layers (for undo)
+			- ModelController::PasteRegion(LayersRegion, origin) X 2 (ephemeral, normal) -> Layers (for undo)
 
 
 = RenderContext:

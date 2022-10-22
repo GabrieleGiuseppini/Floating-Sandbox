@@ -227,6 +227,39 @@ TEST(Buffer2DTests, Trim_ProperInside)
     }
 }
 
+TEST(Buffer2DTests, Clone_Trim_Equivalence)
+{
+    Buffer2D<int, struct IntegralTag> buffer(4, 4, 0);
+
+    int iVal = 100;
+    for (int y = 0; y < 4; ++y)
+    {
+        for (int x = 0; x < 4; ++x)
+        {
+            buffer[IntegralCoordinates(x, y)] = iVal++;
+        }
+    }
+
+    auto const bufferClone = buffer.CloneRegion(
+        IntegralRect(
+            { 1, 1 },
+            IntegralRectSize(2, 2)));
+
+    buffer.Trim(IntegralRect(
+        { 1, 1 },
+        IntegralRectSize(2, 2)));
+
+    ASSERT_EQ(buffer.Size, bufferClone.Size);
+
+    for (int y = 0; y < 2; ++y)
+    {
+        for (int x = 0; x < 2; ++x)
+        {
+            EXPECT_EQ(bufferClone[IntegralCoordinates(x, y)], buffer[IntegralCoordinates(x, y)]);
+        }
+    }
+}
+
 TEST(Buffer2DTests, BlitFromRegion_WholeSource_ToOrigin)
 {
     // Prepare source

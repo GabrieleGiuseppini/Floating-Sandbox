@@ -133,6 +133,10 @@ public:
 
     Buffer2D CloneRegion(_IntegralRect<TIntegralTag> const & regionRect) const
     {
+        // The region is entirely within this buffer
+        assert(regionRect.origin.IsInSize(this->Size));
+        assert((regionRect.origin + regionRect.size).IsInSize(this->Size));
+
         auto newData = std::make_unique<TElement[]>(regionRect.size.width * regionRect.size.height);
 
         for (int targetY = 0; targetY < regionRect.size.height; ++targetY)
