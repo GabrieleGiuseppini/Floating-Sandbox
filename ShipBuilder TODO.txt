@@ -302,6 +302,8 @@
 				+ Buffer::PasteRegion(pos, Buffer)
 					+ Need to allow both pos and size to be outside of target buffer
 						+ So cannot be done in terms of BlitFromRegion
+					+ Add func operator
+						+ And one unit test for it
 				- See if there are Buffer::obsolete methods now
 				- XXXLayer::CloneRegion(Rect) -> LayerData
 					- NOTE: should mostly be done by now
@@ -309,7 +311,7 @@
 					- Elec: trims elec panel
 					- Ropes: keeps ropes also if one endpoint is out - i.e. it takes all ropes having at least one endpoint in region
 					- Texture: just buffer
-				- XXXLayer::PasteRegion(pos, LayerData)
+				- XXXLayer::PasteRegion(pos, LayerData, opaqueness_TODO)
 					- Electrical: 
 						- Lift code from Model
 						- Instance IDs: 

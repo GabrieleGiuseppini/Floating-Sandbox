@@ -156,8 +156,23 @@ public:
     }
 
     void PasteRegion(
-        Buffer2D const & source, 
+        Buffer2D const & source,
         _IntegralCoordinates<TIntegralTag> const & pos)
+    {
+        PasteRegion(
+            source,
+            pos,
+            [](TElement const & src, TElement const &) -> TElement
+            {
+                return src;
+            });
+    }
+
+    template<typename TOperator>
+    void PasteRegion(
+        Buffer2D const & source,
+        _IntegralCoordinates<TIntegralTag> const & pos,
+        TOperator const & elementOperator)
     {
         // The source buffer may be pasted anywhere
 
@@ -178,10 +193,10 @@ public:
 
         for (int yc = 0; yc < copyH; ++yc)
         {
-            std::memmove(
-                Data.get() + targetLinearIndex,
-                source.Data.get() + sourceLinearIndex,
-                copyW * sizeof(TElement));
+            for (int xc = 0; xc < copyW; ++xc)
+            {
+                Data[targetLinearIndex + xc] = elementOperator(source.Data[sourceLinearIndex + xc], Data[targetLinearIndex + xc]);
+            }
 
             sourceLinearIndex += source.Size.width;
             targetLinearIndex += Size.width;

@@ -91,7 +91,7 @@ TEST(Buffer2DTests, CloneRegion)
     }
 }
 
-TEST(Buffer2DTests, PasteInto_Identical)
+TEST(Buffer2DTests, PasteRegion_Identical)
 {
     // Target buffer
 
@@ -138,7 +138,7 @@ TEST(Buffer2DTests, PasteInto_Identical)
     }
 }
 
-TEST(Buffer2DTests, PasteInto_ProperlyContained)
+TEST(Buffer2DTests, PasteRegion_ProperlyContained)
 {
     // Target buffer
 
@@ -189,7 +189,7 @@ TEST(Buffer2DTests, PasteInto_ProperlyContained)
     }
 }
 
-TEST(Buffer2DTests, PasteInto_Contained_AtOrigin)
+TEST(Buffer2DTests, PasteRegion_Contained_AtOrigin)
 {
     // Target buffer
 
@@ -240,7 +240,7 @@ TEST(Buffer2DTests, PasteInto_Contained_AtOrigin)
     }
 }
 
-TEST(Buffer2DTests, PasteInto_Contained_AtOppositeCorner)
+TEST(Buffer2DTests, PasteRegion_Contained_AtOppositeCorner)
 {
     // Target buffer
 
@@ -291,7 +291,7 @@ TEST(Buffer2DTests, PasteInto_Contained_AtOppositeCorner)
     }
 }
 
-TEST(Buffer2DTests, PasteInto_PartiallyOutside_AtOrigin)
+TEST(Buffer2DTests, PasteRegion_PartiallyOutside_AtOrigin)
 {
     // Target buffer
 
@@ -343,7 +343,7 @@ TEST(Buffer2DTests, PasteInto_PartiallyOutside_AtOrigin)
     }
 }
 
-TEST(Buffer2DTests, PasteInto_PartiallyOutside_AtOppositeCorner)
+TEST(Buffer2DTests, PasteRegion_PartiallyOutside_AtOppositeCorner)
 {
     // Target buffer
 
@@ -395,7 +395,7 @@ TEST(Buffer2DTests, PasteInto_PartiallyOutside_AtOppositeCorner)
     }
 }
 
-TEST(Buffer2DTests, PasteInto_Outside_AtOrigin)
+TEST(Buffer2DTests, PasteRegion_Outside_AtOrigin)
 {
     // Target buffer
 
@@ -442,7 +442,7 @@ TEST(Buffer2DTests, PasteInto_Outside_AtOrigin)
     }
 }
 
-TEST(Buffer2DTests, PasteInto_Outside_AtOppositeCorner)
+TEST(Buffer2DTests, PasteRegion_Outside_AtOppositeCorner)
 {
     // Target buffer
 
@@ -489,7 +489,7 @@ TEST(Buffer2DTests, PasteInto_Outside_AtOppositeCorner)
     }
 }
 
-TEST(Buffer2DTests, PasteInto_CompletelyOutside_AtOrigin)
+TEST(Buffer2DTests, PasteRegion_CompletelyOutside_AtOrigin)
 {
     // Target buffer
 
@@ -536,7 +536,7 @@ TEST(Buffer2DTests, PasteInto_CompletelyOutside_AtOrigin)
     }
 }
 
-TEST(Buffer2DTests, PasteInto_CompletelyOutside_AtOppositeCorner)
+TEST(Buffer2DTests, PasteRegion_CompletelyOutside_AtOppositeCorner)
 {
     // Target buffer
 
@@ -578,6 +578,68 @@ TEST(Buffer2DTests, PasteInto_CompletelyOutside_AtOppositeCorner)
         for (int x = 0; x < targetBuffer.Size.width; ++x)
         {
             EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], iValT);
+            ++iValT;
+        }
+    }
+}
+
+TEST(Buffer2DTests, PasteRegion_Operator)
+{
+    // Target buffer
+
+    Buffer2D<int, struct IntegralTag> targetBuffer(6, 4, 0);
+
+    int iValT = 100;
+    for (int y = 0; y < targetBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < targetBuffer.Size.width; ++x)
+        {
+            targetBuffer[IntegralCoordinates(x, y)] = iValT++;
+        }
+    }
+
+    // Source buffer
+
+    Buffer2D<int, struct IntegralTag> sourceBuffer(3, 2, 0);
+
+    int iValS = 7;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[IntegralCoordinates(x, y)] = iValS++;
+        }
+    }
+
+    // Paste
+
+    targetBuffer.PasteRegion(
+        sourceBuffer, 
+        IntegralCoordinates(1, 1),
+        [](int const & src, int const & dst) -> int
+        {
+            return src + dst;
+        });
+
+    // Verify
+
+    ASSERT_EQ(IntegralRectSize(6, 4), targetBuffer.Size);
+
+    iValT = 100;
+    iValS = 7;
+    for (int y = 0; y < targetBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < targetBuffer.Size.width; ++x)
+        {
+            if ((x >= 1 && x < 1 + 3) && (y >= 1 && y < 1 + 2))
+            {
+                EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], iValS + iValT);
+                ++iValS;
+            }
+            else
+            {
+                EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], iValT);
+            }
             ++iValT;
         }
     }
