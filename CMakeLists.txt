@@ -93,7 +93,6 @@ find_package(PNG REQUIRED)
 #
 
 if(APPLE)
-	find_package(pthread REQUIRED)
 	find_package(iconv REQUIRED)
 endif()
 
