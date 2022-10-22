@@ -133,7 +133,7 @@ public:
 
     Buffer2D CloneRegion(_IntegralRect<TIntegralTag> const & regionRect) const
     {
-        // The region is entirely within this buffer
+        // The requested region is entirely within this buffer
         assert(regionRect.origin.IsInSize(this->Size));
         assert((regionRect.origin + regionRect.size).IsInSize(this->Size));
 

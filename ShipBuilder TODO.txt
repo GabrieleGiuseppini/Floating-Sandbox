@@ -304,7 +304,7 @@
 						+ So cannot be done in terms of BlitFromRegion
 					+ Add func operator
 						+ And one unit test for it
-				- See if there are Buffer::obsolete methods now
+				+ See if there are Buffer::obsolete methods now
 				- XXXLayer::CloneRegion(Rect) -> LayerData
 					- NOTE: should mostly be done by now
 					- Struc: just buffer
