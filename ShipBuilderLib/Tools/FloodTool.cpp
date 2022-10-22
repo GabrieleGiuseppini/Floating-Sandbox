@@ -86,7 +86,7 @@ void FloodTool<TLayer>::DoEdit(
 {
     // Take clone of current layer
     auto layerDirtyStateClone = mController.GetModelController().GetDirtyState();
-    auto layerClone = mController.GetModelController().CloneExistingLayer<TLayer>();
+    auto layerClone = mController.GetModelController().template CloneExistingLayer<TLayer>();
 
     // Do edit
 
