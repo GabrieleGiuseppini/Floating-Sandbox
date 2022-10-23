@@ -203,15 +203,18 @@ public:
         }
     }
 
+    /*
+     * In-place shrinking.
+     */
     void Trim(_IntegralRect<TIntegralTag> const & rect)
     {
-        // The new rect is smaller than the previous
-        assert(rect.origin.x + rect.size.width <= Size.width);
-        assert(rect.origin.y + rect.size.height <= Size.height);
+        // The origin falls in our current rect
+        assert(rect.origin.IsInSize(Size));
+        // The new rect is smaller than our current rect
+        assert((rect.origin + rect.size).IsInSize(Size));
 
         if (rect.size != Size)
         {
-            // In-place shrinking
             for (int targetY = 0; targetY < rect.size.height; ++targetY)
             {
                 int const sourceLinearIndex = (targetY + rect.origin.y) * Size.width + rect.origin.x;
@@ -226,6 +229,10 @@ public:
             Size = rect.size;
             mLinearSize = static_cast<size_t>(Size.width) * static_cast<size_t>(Size.height);
         }
+        else
+        {
+            assert (rect.origin == _IntegralCoordinates<TIntegralTag>(0, 0));
+        }
     }
 
     void BlitFromRegion(
@@ -233,7 +240,7 @@ public:
         _IntegralRect<TIntegralTag> const & sourceRegion,
         _IntegralCoordinates<TIntegralTag> const & targetOrigin)
     {
-        // The source region is entirely in the source buffer
+        // The source region is completely contained in the source buffer
         assert(sourceRegion.IsContainedInRect({ {0, 0}, source.Size }));
 
         // The target origin plus the region size are within this buffer
@@ -325,13 +332,13 @@ public:
 
     template<typename TNewElement, typename TFunctor>
     Buffer2D<TNewElement, TIntegralTag> Transform(
-        TFunctor const & functor) const
+        TFunctor const & elementOperator) const
     {
         auto newData = std::make_unique<TNewElement[]>(mLinearSize);
 
         for (size_t i = 0; i < mLinearSize; ++i)
         {
-            newData[i] = functor(Data[i]);
+            newData[i] = elementOperator(Data[i]);
         }
 
         return Buffer2D<TNewElement, TIntegralTag>(

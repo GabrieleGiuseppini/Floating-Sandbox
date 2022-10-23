@@ -298,17 +298,31 @@
 					- Ropes: Clone=trim (DONE) | Paste=needs to shift positions and deal with conflicts (@RopesBuffer)
 					- Texture: Clone=OK | Paste=OK
 				- All of these with unit tests:
-				+ Buffer<>::CloneRegion(Rect) -> Buffer
-				+ Buffer::PasteRegion(pos, Buffer)
-					+ Need to allow both pos and size to be outside of target buffer
-						+ So cannot be done in terms of BlitFromRegion
-					+ Add func operator
-						+ And one unit test for it
-				- See if there are Buffer::obsolete methods now
-					- Can Trim be done with MakeReframed?
-					- Rename MakeReframed?
-				- Rename Buffer and others: CloneRegion->Copy, PasteRegion->Paste
-				- Layers:
+				- Buffer2D:
+					+ Buffer<>::CloneRegion(Rect) -> Buffer
+					+ Buffer::PasteRegion(pos, Buffer)
+						+ Need to allow both pos and size to be outside of target buffer
+							+ So cannot be done in terms of BlitFromRegion
+						+ Add func operator
+							+ And one unit test for it
+					- See if there are Buffer::obsolete methods now
+						- List:
+							- Clone
+							- CloneRegion
+							- PasteRegion
+							- Trim
+							- BlitFromRegion
+							- MakeReframed
+						- Can Trim be done with MakeReframed?
+							- Write unit tests
+						- Can Paste be done with BlitFromRegion?
+							- Write unit tests
+						- Rename MakeReframed as "Reframe"
+					- Rename: CloneRegion->Copy, PasteRegion->Paste
+				================================
+				- TODOHERE: decide here on how much anemic we want Layers to be
+					- 
+				- XXXLayer:
 					- TODO: we need a flag for eph Paste, while user moves mouse
 						- No elec magic in this case
 						- Whih brings the question: do we really need these (and the old ones, e.g. Trim/MakeReframes) methods @ layers now?  We have a mix of them in ModelController and in Layer/s now
@@ -335,12 +349,16 @@
 							- Shift positions (for new origin)
 							- If conflicting position or position out of range: nuke rope
 					- See if there are XXXLayer::obsolete methods now
+					- Add unit tests for Trim<->CloneRegion equivalence, all layers
+				- ShipLayers:
+					- TODO: need Structural to be optional; before we make yet another "ShipLayersRegion" class, try and
+					  make ShipLayers with optional StructuralLayer
+						- TODO: this class also needs Size (e.g. for Ropes operations)
 					- ShipLayers::CloneRegion(Rect, layer selection) -> ShipLayers
 					- ShipLayers::PasteRegion(pos, LayerData, layer selection)
 					- See if there are ShipLayers::obsolete methods now
-					- Add unit tests for Trim<->CloneRegion equivalence, all layers
-						+ Buffer
-						- Layers
+					- Add unit tests for Trim<->CloneRegion equivalence
+
 			- Implement with these Layer primitives:
 				- Model::CloneRegion(...)
 				- Model::PasteRegion(...)
