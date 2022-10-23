@@ -36,7 +36,7 @@ There are lots of improvements that I'm currently working on; some of these are:
 
 These and other ideas will come out with frequent releases.
 
-The game is also featured at [GameJolt](https://gamejolt.com/games/floating-sandbox/353572), and plenty of videos may be found on Youtube.
+The game is also featured at [GameJolt](https://gamejolt.com/games/floating-sandbox/353572), and plenty of videos may be found on Youtube. Also have a look at [the official Floating Sandbox web site](https://floatingsandbox.com/), where you can find plenty of Ship Packs!
 
 # System Requirements
 - Windows:
