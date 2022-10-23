@@ -304,36 +304,43 @@
 						+ So cannot be done in terms of BlitFromRegion
 					+ Add func operator
 						+ And one unit test for it
-				+ See if there are Buffer::obsolete methods now
-				- XXXLayer::CloneRegion(Rect) -> LayerData
-					- NOTE: should mostly be done by now
-					- Struc: just buffer
-					- Elec: trims elec panel
-					- Ropes: keeps ropes also if one endpoint is out - i.e. it takes all ropes having at least one endpoint in region
-					- Texture: just buffer
-				- XXXLayer::PasteRegion(pos, LayerData, opaqueness_TODO)
-					- Electrical: 
-						- Lift code from Model
-						- Instance IDs: 
-							- Build old set from outside region
-							- For each new instanced:
-								- If ID can enter set, keep its ID and add to set
-								- Else: find new ID (w/loop), add it to set, ad store <oldID, newID> rename
-							- After paste into buffer, change ID of each instanced according to renames
-						- Panel:
-							- IDs: use renames from above
-							- Pos: if conflict => nuke pos (this is a shortcut)
-					- Ropes:
-						- Lift code from Model (if any)
-						- Shift positions (for new origin)
-						- If conflicting position or position out of range: nuke rope
-				- See if there are XXXLayer::obsolete methods now
-				- ShipLayers::CloneRegion(Rect, layer selection) -> ShipLayers
-				- ShipLayers::PasteRegion(pos, LayerData, layer selection)
-				- See if there are ShipLayers::obsolete methods now
-				- Add unit tests for Trim<->CloneRegion equivalence, all layers
-					+ Buffer
-					- Layers
+				- See if there are Buffer::obsolete methods now
+					- Can Trim be done with MakeReframed?
+					- Rename MakeReframed?
+				- Rename Buffer and others: CloneRegion->Copy, PasteRegion->Paste
+				- Layers:
+					- TODO: we need a flag for eph Paste, while user moves mouse
+						- No elec magic in this case
+						- Whih brings the question: do we really need these (and the old ones, e.g. Trim/MakeReframes) methods @ layers now?  We have a mix of them in ModelController and in Layer/s now
+					- XXXLayer::CloneRegion(Rect) -> LayerData					
+						- NOTE: should mostly be done by now
+						- Struc: just buffer
+						- Elec: trims elec panel
+						- Ropes: keeps ropes also if one endpoint is out - i.e. it takes all ropes having at least one endpoint in region
+						- Texture: just buffer
+					- XXXLayer::PasteRegion(pos, LayerData, opaqueness_TODO)
+						- Electrical: 
+							- Lift code from Model
+							- Instance IDs: 
+								- Build old set from outside region
+								- For each new instanced:
+									- If ID can enter set, keep its ID and add to set
+									- Else: find new ID (w/loop), add it to set, ad store <oldID, newID> rename
+								- After paste into buffer, change ID of each instanced according to renames
+							- Panel:
+								- IDs: use renames from above
+								- Pos: if conflict => nuke pos (this is a shortcut)
+						- Ropes:
+							- Lift code from Model (if any)
+							- Shift positions (for new origin)
+							- If conflicting position or position out of range: nuke rope
+					- See if there are XXXLayer::obsolete methods now
+					- ShipLayers::CloneRegion(Rect, layer selection) -> ShipLayers
+					- ShipLayers::PasteRegion(pos, LayerData, layer selection)
+					- See if there are ShipLayers::obsolete methods now
+					- Add unit tests for Trim<->CloneRegion equivalence, all layers
+						+ Buffer
+						- Layers
 			- Implement with these Layer primitives:
 				- Model::CloneRegion(...)
 				- Model::PasteRegion(...)

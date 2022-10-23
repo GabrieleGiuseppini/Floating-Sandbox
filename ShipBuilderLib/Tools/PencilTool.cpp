@@ -130,7 +130,7 @@ void PencilTool<TLayer, IsEraser>::OnMouseMove(DisplayLogicalCoordinates const &
                 assert(!mTempVisualizationDirtyShipRegion);
             }
 
-            // Display sampled material
+            // Display *original* sampled material (i.e. *before* our edit)
             mController.BroadcastSampledInformationUpdatedAt(mouseShipSpaceCoords, TLayer);
 
             // Apply (temporary) change
