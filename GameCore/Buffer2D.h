@@ -156,56 +156,6 @@ public:
     }
 
     /*
-    void PasteRegion(
-        Buffer2D const & source,
-        _IntegralCoordinates<TIntegralTag> const & pos)
-    {
-        PasteRegion(
-            source,
-            pos,
-            [](TElement const & src, TElement const &) -> TElement
-            {
-                return src;
-            });
-    }
-
-    template<typename TOperator>
-    void PasteRegion(
-        Buffer2D const & source,
-        _IntegralCoordinates<TIntegralTag> const & pos,
-        TOperator const & elementOperator)
-    {
-        // The source buffer may be pasted anywhere
-
-        int const srcXStart = std::max(-pos.x, 0);
-        int const tgtXStart = std::max(pos.x, 0);
-        int const copyW = std::max(
-            std::min(source.Size.width - srcXStart, Size.width - tgtXStart),
-            0);
-
-        int const srcYStart = std::max(-pos.y, 0);
-        int const tgtYStart = std::max(pos.y, 0);
-        int const copyH = std::max(
-            std::min(source.Size.height - srcYStart, Size.height - tgtYStart),
-            0);
-
-        int sourceLinearIndex = srcYStart * source.Size.width + srcXStart;
-        int targetLinearIndex = tgtYStart * Size.width + tgtXStart;
-
-        for (int yc = 0; yc < copyH; ++yc)
-        {
-            for (int xc = 0; xc < copyW; ++xc)
-            {
-                Data[targetLinearIndex + xc] = elementOperator(source.Data[sourceLinearIndex + xc], Data[targetLinearIndex + xc]);
-            }
-
-            sourceLinearIndex += source.Size.width;
-            targetLinearIndex += Size.width;
-        }
-    }
-    */
-
-    /*
      * In-place shrinking.
      */
     void Trim(_IntegralRect<TIntegralTag> const & rect)

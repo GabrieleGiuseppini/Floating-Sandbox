@@ -305,11 +305,11 @@
 							+ So cannot be done in terms of BlitFromRegion
 						+ Add func operator
 							+ And one unit test for it
-					= BlitFromRegion: takes responsibility of Paste
+					+ BlitFromRegion: takes responsibility of Paste
 						+ Nuke Paste afterwards
 					+ Renames: CloneRegion stays CloneRegion
 					- See if there are Buffer::obsolete methods now
-						- List:
+						! List:
 							- Clone
 							- CloneRegion
 							- Trim
