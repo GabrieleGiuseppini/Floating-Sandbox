@@ -91,6 +91,7 @@ TEST(Buffer2DTests, CloneRegion)
     }
 }
 
+/*
 TEST(Buffer2DTests, PasteRegion_Identical)
 {
     // Target buffer
@@ -644,6 +645,7 @@ TEST(Buffer2DTests, PasteRegion_Operator)
         }
     }
 }
+*/
 
 TEST(Buffer2DTests, Trim_Equal)
 {
@@ -814,21 +816,21 @@ TEST(Buffer2DTests, Clone_Trim_Equivalence)
     }
 }
 
-TEST(Buffer2DTests, BlitFromRegion_WholeSource_ToOrigin)
+TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_WholeSource_ToOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(2, 3);
-    int val = 100;
-    for (int y = 0; y < 3; ++y)
+    Buffer2D<int, struct IntegralTag> sourceBuffer(4, 8);
+    int valS = 0;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
-        for (int x = 0; x < 2; ++x)
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
         {
-            sourceBuffer[{x, y}] = val++;
+            sourceBuffer[{x, y}] = valS++;
         }
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(10, 20, 242);
+    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
@@ -837,112 +839,1372 @@ TEST(Buffer2DTests, BlitFromRegion_WholeSource_ToOrigin)
         { 0, 0 });
 
     // Verify
-    val = 100;
-    for (int y = 0; y < 20; ++y)
+    valS = 0;
+    for (int y = 0; y < targetBuffer.Size.height; ++y)
     {
-        for (int x = 0; x < 10; ++x)
+        for (int x = 0; x < targetBuffer.Size.width; ++x)
         {
-            int expectedValue;
-            if (x >= 2 || y >= 3)
-            {
-                expectedValue = 242;
-            }
-            else
-            {
-                expectedValue = val++;
-            }
-
-            EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], expectedValue);
+            EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], valS++);
         }
     }
 }
 
-TEST(Buffer2DTests, BlitFromRegion_WholeSource_ToOffset)
+TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_WholeSource_ToBeforeOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(2, 3);
-    int val = 100;
-    for (int y = 0; y < 3; ++y)
+    Buffer2D<int, struct IntegralTag> sourceBuffer(4, 8);
+    int valS = 0;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
-        for (int x = 0; x < 2; ++x)
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
         {
-            sourceBuffer[{x, y}] = val++;
+            sourceBuffer[{x, y}] = valS++;
         }
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(10, 20, 242);
+    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
         sourceBuffer,
         { {0, 0}, sourceBuffer.Size },
-        { 4, 7 });
+        { -2, -4 });
 
-    // Verify
-    val = 100;
-    for (int y = 0; y < 20; ++y)
+    // Verify    
+    for (int y = 0; y < targetBuffer.Size.height; ++y)
     {
-        for (int x = 0; x < 10; ++x)
-        {
-            int expectedValue;
-            if (x < 4 || x >= 4 + 2 || y < 7 || y >= 7 + 3)
+        for (int x = 0; x < targetBuffer.Size.width; ++x)
+        {            
+            if (x < 4 - 2 && y < 8 - 4)
             {
-                expectedValue = 242;
+                valS = (y + 4) * sourceBuffer.Size.width + (x + 2);
+                EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], valS);
             }
             else
             {
-                expectedValue = val++;
+                EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], 242);
             }
-
-            EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], expectedValue);
         }
     }
 }
 
-TEST(Buffer2DTests, BlitFromRegion_PortionOfSource_ToOffset)
+TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_WholeSource_ToAfterOrigin)
 {
     // Prepare source
-    Buffer2D<int, struct IntegralTag> sourceBuffer(4, 4);
-    int val = 100;
-    for (int y = 0; y < 4; ++y)
+    Buffer2D<int, struct IntegralTag> sourceBuffer(4, 8);
+    int valS = 0;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
     {
-        for (int x = 0; x < 4; ++x)
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
         {
-            sourceBuffer[{x, y}] = val++;
+            sourceBuffer[{x, y}] = valS++;
         }
     }
 
     // Prepare target
-    Buffer2D<int, struct IntegralTag> targetBuffer(10, 20, 242);
+    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
 
     // Blit
     targetBuffer.BlitFromRegion(
         sourceBuffer,
-        { {1, 1}, IntegralRectSize(2, 2) },
-        { 4, 7 });
+        { {0, 0}, sourceBuffer.Size },
+        { 2, 4 });
 
-    // Verify
-    int expectedVals[] = { 105, 106, 109, 110 };
-    int iExpectedVal = 0;
-    for (int y = 0; y < 20; ++y)
+    // Verify    
+    for (int y = 0; y < targetBuffer.Size.height; ++y)
     {
-        for (int x = 0; x < 10; ++x)
+        for (int x = 0; x < targetBuffer.Size.width; ++x)
         {
-            int expectedValue;
-            if (x < 4 || x >= 4 + 2 || y < 7 || y >= 7 + 2)
+            if (x >= 2 && y >= 4)
             {
-                expectedValue = 242;
+                valS = (y - 4) * sourceBuffer.Size.width + (x - 2);
+                EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], valS);
             }
             else
             {
-                expectedValue = expectedVals[iExpectedVal++];
+                EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], 242);
             }
-
-            EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], expectedValue);
         }
     }
 }
+
+TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_WholeSource_ToOutside_BeforeOrigin)
+{
+    // Prepare source
+    Buffer2D<int, struct IntegralTag> sourceBuffer(4, 8);
+    int valS = 0;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[{x, y}] = valS++;
+        }
+    }
+
+    // Prepare target
+    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+
+    // Blit
+    targetBuffer.BlitFromRegion(
+        sourceBuffer,
+        { {0, 0}, sourceBuffer.Size },
+        { -4, -8 });
+
+    // Verify    
+    for (int y = 0; y < targetBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < targetBuffer.Size.width; ++x)
+        {
+            EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], 242);
+        }
+    }
+}
+
+TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_WholeSource_ToOutside_AfterOppositeCorner)
+{
+    // Prepare source
+    Buffer2D<int, struct IntegralTag> sourceBuffer(4, 8);
+    int valS = 0;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[{x, y}] = valS++;
+        }
+    }
+
+    // Prepare target
+    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+
+    // Blit
+    targetBuffer.BlitFromRegion(
+        sourceBuffer,
+        { {0, 0}, sourceBuffer.Size },
+        { 10, 20 });
+
+    // Verify    
+    for (int y = 0; y < targetBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < targetBuffer.Size.width; ++x)
+        {
+            EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], 242);
+        }
+    }
+}
+
+TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionAtOrigin_ToOrigin)
+{
+    // Prepare source
+    Buffer2D<int, struct IntegralTag> sourceBuffer(4, 8);
+    int valS = 0;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[{x, y}] = valS++;
+        }
+    }
+
+    // Prepare target
+    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+
+    // Blit
+    targetBuffer.BlitFromRegion(
+        sourceBuffer,
+        { IntegralCoordinates{0, 0}, IntegralRectSize{2, 6} },
+        { 0, 0 });
+
+    // Verify    
+    for (int y = 0; y < targetBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < targetBuffer.Size.width; ++x)
+        {
+            if (x < 2 && y < 6)
+            {
+                valS = (y) * sourceBuffer.Size.width + (x);
+                EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], valS);
+            }
+            else
+            {
+                EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], 242);
+            }
+        }
+    }
+}
+
+TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionAtOrigin_ToBeforeOrigin)
+{
+    // Prepare source
+    Buffer2D<int, struct IntegralTag> sourceBuffer(4, 8);
+    int valS = 0;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[{x, y}] = valS++;
+        }
+    }
+
+    // Prepare target
+    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+
+    // Blit
+    targetBuffer.BlitFromRegion(
+        sourceBuffer,
+        { IntegralCoordinates{0, 0}, IntegralRectSize{2, 6} },
+        { -1, -1 });
+
+    // Verify    
+    for (int y = 0; y < targetBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < targetBuffer.Size.width; ++x)
+        {
+            if (x < 1 && y < 5)
+            {
+                valS = (y + 1) * sourceBuffer.Size.width + (x + 1);
+                EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], valS);
+            }
+            else
+            {
+                EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], 242);
+            }
+        }
+    }
+}
+
+TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionAtOrigin_ToAfterOrigin)
+{
+    // Prepare source
+    Buffer2D<int, struct IntegralTag> sourceBuffer(4, 8);
+    int valS = 0;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[{x, y}] = valS++;
+        }
+    }
+
+    // Prepare target
+    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+
+    // Blit
+    targetBuffer.BlitFromRegion(
+        sourceBuffer,
+        { IntegralCoordinates{0, 0}, IntegralRectSize{2, 6} },
+        { 1, 1 });
+
+    // Verify    
+    for (int y = 0; y < targetBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < targetBuffer.Size.width; ++x)
+        {
+            if (x >= 1 && x < 3 && y >= 1 && y < 7)
+            {
+                valS = (y - 1) * sourceBuffer.Size.width + (x - 1);
+                EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], valS);
+            }
+            else
+            {
+                EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], 242);
+            }
+        }
+    }
+}
+
+TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionAtOrigin_ToOutside_BeforeOrigin)
+{
+    // Prepare source
+    Buffer2D<int, struct IntegralTag> sourceBuffer(4, 8);
+    int valS = 0;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[{x, y}] = valS++;
+        }
+    }
+
+    // Prepare target
+    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+
+    // Blit
+    targetBuffer.BlitFromRegion(
+        sourceBuffer,
+        { IntegralCoordinates{0, 0}, IntegralRectSize{2, 6} },
+        { -3, -7 });
+
+    // Verify    
+    for (int y = 0; y < targetBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < targetBuffer.Size.width; ++x)
+        {
+            EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], 242);
+        }
+    }
+}
+
+TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionAtOrigin_ToOutside_AfterOppositeCorner)
+{
+    // Prepare source
+    Buffer2D<int, struct IntegralTag> sourceBuffer(4, 8);
+    int valS = 0;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[{x, y}] = valS++;
+        }
+    }
+
+    // Prepare target
+    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+
+    // Blit
+    targetBuffer.BlitFromRegion(
+        sourceBuffer,
+        { IntegralCoordinates{0, 0}, IntegralRectSize{2, 6} },
+        { 5, 9 });
+
+    // Verify    
+    for (int y = 0; y < targetBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < targetBuffer.Size.width; ++x)
+        {
+            EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], 242);
+        }
+    }
+}
+
+TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionAtOppositeCorner_ToOrigin)
+{
+    // Prepare source
+    Buffer2D<int, struct IntegralTag> sourceBuffer(4, 8);
+    int valS = 0;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[{x, y}] = valS++;
+        }
+    }
+
+    // Prepare target
+    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+
+    // Blit
+    targetBuffer.BlitFromRegion(
+        sourceBuffer,
+        { IntegralCoordinates{2, 2}, IntegralRectSize{2, 6} },
+        { 0, 0 });
+
+    // Verify    
+    for (int y = 0; y < targetBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < targetBuffer.Size.width; ++x)
+        {
+            if (x < 2 && y < 6)
+            {
+                valS = (y + 2) * sourceBuffer.Size.width + (x + 2);
+                EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], valS);
+            }
+            else
+            {
+                EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], 242);
+            }
+        }
+    }
+}
+
+TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionAtOppositeCorner_ToBeforeOrigin)
+{
+    // Prepare source
+    Buffer2D<int, struct IntegralTag> sourceBuffer(4, 8);
+    int valS = 0;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[{x, y}] = valS++;
+        }
+    }
+
+    // Prepare target
+    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+
+    // Blit
+    targetBuffer.BlitFromRegion(
+        sourceBuffer,
+        { IntegralCoordinates{2, 2}, IntegralRectSize{2, 6} },
+        { -1, -1 });
+
+    // Verify    
+    for (int y = 0; y < targetBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < targetBuffer.Size.width; ++x)
+        {
+            if (x < 1 && y < 5)
+            {
+                valS = (y + 2 + 1) * sourceBuffer.Size.width + (x + 2 + 1);
+                EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], valS);
+            }
+            else
+            {
+                EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], 242);
+            }
+        }
+    }
+}
+
+TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionAtOppositeCorner_ToAfterOrigin)
+{
+    // Prepare source
+    Buffer2D<int, struct IntegralTag> sourceBuffer(4, 8);
+    int valS = 0;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[{x, y}] = valS++;
+        }
+    }
+
+    // Prepare target
+    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+
+    // Blit
+    targetBuffer.BlitFromRegion(
+        sourceBuffer,
+        { IntegralCoordinates{2, 2}, IntegralRectSize{2, 6} },
+        { 1, 2 });
+
+    // Verify    
+    for (int y = 0; y < targetBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < targetBuffer.Size.width; ++x)
+        {
+            if (x >= 1 && x < 3 && y >= 2 && y < 8)
+            {
+                valS = (y) * sourceBuffer.Size.width + (x + 1);
+                EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], valS);
+            }
+            else
+            {
+                EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], 242);
+            }
+        }
+    }
+}
+
+TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionAtOppositeCorner_ToOutside_BeforeOrigin)
+{
+    // Prepare source
+    Buffer2D<int, struct IntegralTag> sourceBuffer(4, 8);
+    int valS = 0;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[{x, y}] = valS++;
+        }
+    }
+
+    // Prepare target
+    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+
+    // Blit
+    targetBuffer.BlitFromRegion(
+        sourceBuffer,
+        { IntegralCoordinates{2, 2}, IntegralRectSize{2, 6} },
+        { -2, -6 });
+
+    // Verify    
+    for (int y = 0; y < targetBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < targetBuffer.Size.width; ++x)
+        {
+            EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], 242);
+        }
+    }
+}
+
+TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionAtOppositeCorner_ToOutside_AfterOppositeCorner)
+{
+    // Prepare source
+    Buffer2D<int, struct IntegralTag> sourceBuffer(4, 8);
+    int valS = 0;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[{x, y}] = valS++;
+        }
+    }
+
+    // Prepare target
+    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+
+    // Blit
+    targetBuffer.BlitFromRegion(
+        sourceBuffer,
+        { IntegralCoordinates{2, 2}, IntegralRectSize{2, 6} },
+        { 4, 9 });
+
+    // Verify    
+    for (int y = 0; y < targetBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < targetBuffer.Size.width; ++x)
+        {
+            EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], 242);
+        }
+    }
+}
+
+TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionProperlyInside_ToOrigin)
+{
+    // Prepare source
+    Buffer2D<int, struct IntegralTag> sourceBuffer(4, 8);
+    int valS = 0;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[{x, y}] = valS++;
+        }
+    }
+
+    // Prepare target
+    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+
+    // Blit
+    targetBuffer.BlitFromRegion(
+        sourceBuffer,
+        { IntegralCoordinates{1, 1}, IntegralRectSize{2, 6} },
+        { 0, 0 });
+
+    // Verify    
+    for (int y = 0; y < targetBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < targetBuffer.Size.width; ++x)
+        {
+            if (x < 2 && y < 6)
+            {
+                valS = (y + 1) * sourceBuffer.Size.width + (x + 1);
+                EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], valS);
+            }
+            else
+            {
+                EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], 242);
+            }
+        }
+    }
+}
+
+TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionProperlyInside_ToBeforeOrigin)
+{
+    // Prepare source
+    Buffer2D<int, struct IntegralTag> sourceBuffer(4, 8);
+    int valS = 0;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[{x, y}] = valS++;
+        }
+    }
+
+    // Prepare target
+    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+
+    // Blit
+    targetBuffer.BlitFromRegion(
+        sourceBuffer,
+        { IntegralCoordinates{1, 1}, IntegralRectSize{2, 6} },
+        { -1, -2 });
+
+    // Verify    
+    for (int y = 0; y < targetBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < targetBuffer.Size.width; ++x)
+        {
+            if (x < 1 && y < 4)
+            {
+                valS = (y + 1 + 2) * sourceBuffer.Size.width + (x + 1 + 1);
+                EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], valS);
+            }
+            else
+            {
+                EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], 242);
+            }
+        }
+    }
+}
+
+TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionProperlyInside_ToAfterOrigin)
+{
+    // Prepare source
+    Buffer2D<int, struct IntegralTag> sourceBuffer(4, 8);
+    int valS = 0;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[{x, y}] = valS++;
+        }
+    }
+
+    // Prepare target
+    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+
+    // Blit
+    targetBuffer.BlitFromRegion(
+        sourceBuffer,
+        { IntegralCoordinates{1, 1}, IntegralRectSize{2, 6} },
+        { 1, 1 });
+
+    // Verify    
+    for (int y = 0; y < targetBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < targetBuffer.Size.width; ++x)
+        {
+            if (x >= 1 && x < 3 && y >= 1 && y < 7)
+            {
+                valS = (y) * sourceBuffer.Size.width + (x);
+                EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], valS);
+            }
+            else
+            {
+                EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], 242);
+            }
+        }
+    }
+}
+
+TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionProperlyInside_ToOutside_BeforeOrigin)
+{
+    // Prepare source
+    Buffer2D<int, struct IntegralTag> sourceBuffer(4, 8);
+    int valS = 0;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[{x, y}] = valS++;
+        }
+    }
+
+    // Prepare target
+    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+
+    // Blit
+    targetBuffer.BlitFromRegion(
+        sourceBuffer,
+        { IntegralCoordinates{1, 1}, IntegralRectSize{2, 6} },
+        { -3, -8 });
+
+    // Verify    
+    for (int y = 0; y < targetBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < targetBuffer.Size.width; ++x)
+        {
+            EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], 242);
+        }
+    }
+}
+
+TEST(Buffer2DTests, BlitFromRegion_SourceEqualTarget_SourcePortionProperlyInside_ToOutside_AfterOppositeCorner)
+{
+    // Prepare source
+    Buffer2D<int, struct IntegralTag> sourceBuffer(4, 8);
+    int valS = 0;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[{x, y}] = valS++;
+        }
+    }
+
+    // Prepare target
+    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+
+    // Blit
+    targetBuffer.BlitFromRegion(
+        sourceBuffer,
+        { IntegralCoordinates{1, 1}, IntegralRectSize{2, 6} },
+        { 6, 9 });
+
+    // Verify    
+    for (int y = 0; y < targetBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < targetBuffer.Size.width; ++x)
+        {
+            EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], 242);
+        }
+    }
+}
+
+TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_WholeSource_ToOrigin)
+{
+    // Prepare source
+    Buffer2D<int, struct IntegralTag> sourceBuffer(2, 6);
+    int valS = 0;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[{x, y}] = valS++;
+        }
+    }
+
+    // Prepare target
+    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+
+    // Blit
+    targetBuffer.BlitFromRegion(
+        sourceBuffer,
+        { IntegralCoordinates{0, 0}, IntegralRectSize{2, 6} },
+        { 0, 0 });
+
+    // Verify    
+    for (int y = 0; y < targetBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < targetBuffer.Size.width; ++x)
+        {
+            if (x < 2 && y < 6)
+            {
+                valS = (y) * sourceBuffer.Size.width + (x);
+                EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], valS);
+            }
+            else
+            {
+                EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], 242);
+            }
+        }
+    }
+}
+
+TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_WholeSource_ToBeforeOrigin)
+{
+    // Prepare source
+    Buffer2D<int, struct IntegralTag> sourceBuffer(2, 6);
+    int valS = 0;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[{x, y}] = valS++;
+        }
+    }
+
+    // Prepare target
+    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+
+    // Blit
+    targetBuffer.BlitFromRegion(
+        sourceBuffer,
+        { IntegralCoordinates{0, 0}, IntegralRectSize{2, 6} },
+        { -1, -2 });
+
+    // Verify    
+    for (int y = 0; y < targetBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < targetBuffer.Size.width; ++x)
+        {
+            if (x < 1 && y < 4)
+            {
+                valS = (y + 2) * sourceBuffer.Size.width + (x + 1);
+                EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], valS);
+            }
+            else
+            {
+                EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], 242);
+            }
+        }
+    }
+}
+
+TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_WholeSource_ToBeforeMinMax)
+{
+    // Prepare source
+    Buffer2D<int, struct IntegralTag> sourceBuffer(2, 6);
+    int valS = 0;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[{x, y}] = valS++;
+        }
+    }
+
+    // Prepare target
+    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+
+    // Blit
+    targetBuffer.BlitFromRegion(
+        sourceBuffer,
+        { IntegralCoordinates{0, 0}, IntegralRectSize{2, 6} },
+        { -1, 6 });
+
+    // Verify    
+    for (int y = 0; y < targetBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < targetBuffer.Size.width; ++x)
+        {
+            if (x < 1 && y >= 6)
+            {
+                valS = (y - 6) * sourceBuffer.Size.width + (x + 1);
+                EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], valS);
+            }
+            else
+            {
+                EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], 242);
+            }
+        }
+    }
+}
+
+TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_WholeSource_ToAfterOrigin)
+{
+    // Prepare source
+    Buffer2D<int, struct IntegralTag> sourceBuffer(2, 6);
+    int valS = 0;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[{x, y}] = valS++;
+        }
+    }
+
+    // Prepare target
+    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+
+    // Blit
+    targetBuffer.BlitFromRegion(
+        sourceBuffer,
+        { IntegralCoordinates{0, 0}, IntegralRectSize{2, 6} },
+        { 2, 3 });
+
+    // Verify    
+    for (int y = 0; y < targetBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < targetBuffer.Size.width; ++x)
+        {
+            if (x >= 2 && y >= 3)
+            {
+                valS = (y - 3) * sourceBuffer.Size.width + (x - 2);
+                EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], valS);
+            }
+            else
+            {
+                EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], 242);
+            }
+        }
+    }
+}
+
+TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_WholeSource_ToAfterMaxMin)
+{
+    // Prepare source
+    Buffer2D<int, struct IntegralTag> sourceBuffer(2, 6);
+    int valS = 0;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[{x, y}] = valS++;
+        }
+    }
+
+    // Prepare target
+    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+
+    // Blit
+    targetBuffer.BlitFromRegion(
+        sourceBuffer,
+        { IntegralCoordinates{0, 0}, IntegralRectSize{2, 6} },
+        { 2, -3 });
+
+    // Verify    
+    for (int y = 0; y < targetBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < targetBuffer.Size.width; ++x)
+        {
+            if (x >= 2 && y < 3)
+            {
+                valS = (y + 3) * sourceBuffer.Size.width + (x - 2);
+                EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], valS);
+            }
+            else
+            {
+                EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], 242);
+            }
+        }
+    }
+}
+
+TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_WholeSource_ToOutside_BeforeOrigin)
+{
+    // Prepare source
+    Buffer2D<int, struct IntegralTag> sourceBuffer(2, 6);
+    int valS = 0;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[{x, y}] = valS++;
+        }
+    }
+
+    // Prepare target
+    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+
+    // Blit
+    targetBuffer.BlitFromRegion(
+        sourceBuffer,
+        { IntegralCoordinates{0, 0}, IntegralRectSize{2, 6} },
+        { -2, -6 });
+
+    // Verify    
+    for (int y = 0; y < targetBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < targetBuffer.Size.width; ++x)
+        {
+            EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], 242);
+        }
+    }
+}
+
+TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_WholeSource_ToOutside_AfterOppositeCorner)
+{
+    // Prepare source
+    Buffer2D<int, struct IntegralTag> sourceBuffer(2, 6);
+    int valS = 0;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[{x, y}] = valS++;
+        }
+    }
+
+    // Prepare target
+    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+
+    // Blit
+    targetBuffer.BlitFromRegion(
+        sourceBuffer,
+        { IntegralCoordinates{0, 0}, IntegralRectSize{2, 6} },
+        { 4, 8 });
+
+    // Verify    
+    for (int y = 0; y < targetBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < targetBuffer.Size.width; ++x)
+        {
+            EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], 242);
+        }
+    }
+}
+
+TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionAtOrigin_ToOrigin)
+{
+    // Prepare source
+    Buffer2D<int, struct IntegralTag> sourceBuffer(2, 6);
+    int valS = 0;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[{x, y}] = valS++;
+        }
+    }
+
+    // Prepare target
+    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+
+    // Blit
+    targetBuffer.BlitFromRegion(
+        sourceBuffer,
+        { IntegralCoordinates{0, 0}, IntegralRectSize{1, 5} },
+        { 0, 0 });
+
+    // Verify    
+    for (int y = 0; y < targetBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < targetBuffer.Size.width; ++x)
+        {
+            if (x < 1 && y < 5)
+            {
+                valS = (y) * sourceBuffer.Size.width + (x);
+                EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], valS);
+            }
+            else
+            {
+                EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], 242);
+            }
+        }
+    }
+}
+
+TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionAtOrigin_ToBeforeOrigin)
+{
+    // Prepare source
+    Buffer2D<int, struct IntegralTag> sourceBuffer(2, 6);
+    int valS = 0;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[{x, y}] = valS++;
+        }
+    }
+
+    // Prepare target
+    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+
+    // Blit
+    targetBuffer.BlitFromRegion(
+        sourceBuffer,
+        { IntegralCoordinates{0, 0}, IntegralRectSize{1, 5} },
+        { 0, -2 });
+
+    // Verify    
+    for (int y = 0; y < targetBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < targetBuffer.Size.width; ++x)
+        {
+            if (x < 1 && y < 3)
+            {
+                valS = (y + 2) * sourceBuffer.Size.width + (x);
+                EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], valS);
+            }
+            else
+            {
+                EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], 242);
+            }
+        }
+    }
+}
+
+TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionAtOrigin_ToAfterOrigin)
+{
+    // Prepare source
+    Buffer2D<int, struct IntegralTag> sourceBuffer(2, 6);
+    int valS = 0;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[{x, y}] = valS++;
+        }
+    }
+
+    // Prepare target
+    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+
+    // Blit
+    targetBuffer.BlitFromRegion(
+        sourceBuffer,
+        { IntegralCoordinates{0, 0}, IntegralRectSize{1, 5} },
+        { 1, 2 });
+
+    // Verify    
+    for (int y = 0; y < targetBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < targetBuffer.Size.width; ++x)
+        {
+            if (x >= 1 && x < 2 && y >= 2 && y < 7)
+            {
+                valS = (y - 2) * sourceBuffer.Size.width + (x - 1);
+                EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], valS);
+            }
+            else
+            {
+                EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], 242);
+            }
+        }
+    }
+}
+
+TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionAtOrigin_ToOutside_BeforeOrigin)
+{
+    // Prepare source
+    Buffer2D<int, struct IntegralTag> sourceBuffer(2, 6);
+    int valS = 0;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[{x, y}] = valS++;
+        }
+    }
+
+    // Prepare target
+    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+
+    // Blit
+    targetBuffer.BlitFromRegion(
+        sourceBuffer,
+        { IntegralCoordinates{0, 0}, IntegralRectSize{1, 5} },
+        { -1, -5 });
+
+    // Verify    
+    for (int y = 0; y < targetBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < targetBuffer.Size.width; ++x)
+        {
+            EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], 242);
+        }
+    }
+}
+
+TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionAtOrigin_ToOutside_AfterOppositeCorner)
+{
+    // Prepare source
+    Buffer2D<int, struct IntegralTag> sourceBuffer(2, 6);
+    int valS = 0;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[{x, y}] = valS++;
+        }
+    }
+
+    // Prepare target
+    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+
+    // Blit
+    targetBuffer.BlitFromRegion(
+        sourceBuffer,
+        { IntegralCoordinates{0, 0}, IntegralRectSize{1, 5} },
+        { 4, 8 });
+
+    // Verify    
+    for (int y = 0; y < targetBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < targetBuffer.Size.width; ++x)
+        {
+            EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], 242);
+        }
+    }
+}
+
+TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionAtOppositeCorner_ToOrigin)
+{
+    // Prepare source
+    Buffer2D<int, struct IntegralTag> sourceBuffer(2, 6);
+    int valS = 0;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[{x, y}] = valS++;
+        }
+    }
+
+    // Prepare target
+    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+
+    // Blit
+    targetBuffer.BlitFromRegion(
+        sourceBuffer,
+        { IntegralCoordinates{1, 2}, IntegralRectSize{1, 4} },
+        { 0, 0 });
+
+    // Verify    
+    for (int y = 0; y < targetBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < targetBuffer.Size.width; ++x)
+        {
+            if (x < 1 && y < 4)
+            {
+                valS = (y + 2) * sourceBuffer.Size.width + (x + 1);
+                EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], valS);
+            }
+            else
+            {
+                EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], 242);
+            }
+        }
+    }
+}
+
+TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionAtOppositeCorner_ToBeforeOrigin)
+{
+    // Prepare source
+    Buffer2D<int, struct IntegralTag> sourceBuffer(2, 6);
+    int valS = 0;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[{x, y}] = valS++;
+        }
+    }
+
+    // Prepare target
+    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+
+    // Blit
+    targetBuffer.BlitFromRegion(
+        sourceBuffer,
+        { IntegralCoordinates{1, 2}, IntegralRectSize{1, 4} },
+        { 0, -1 });
+
+    // Verify    
+    for (int y = 0; y < targetBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < targetBuffer.Size.width; ++x)
+        {
+            if (x < 1 && y < 3)
+            {
+                valS = (y + 2 + 1) * sourceBuffer.Size.width + (x + 1);
+                EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], valS);
+            }
+            else
+            {
+                EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], 242);
+            }
+        }
+    }
+}
+
+
+TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionAtOppositeCorner_ToAfterOrigin)
+{
+    // Prepare source
+    Buffer2D<int, struct IntegralTag> sourceBuffer(2, 6);
+    int valS = 0;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[{x, y}] = valS++;
+        }
+    }
+
+    // Prepare target
+    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+
+    // Blit
+    targetBuffer.BlitFromRegion(
+        sourceBuffer,
+        { IntegralCoordinates{1, 2}, IntegralRectSize{1, 4} },
+        { 1, 1 });
+
+    // Verify    
+    for (int y = 0; y < targetBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < targetBuffer.Size.width; ++x)
+        {
+            if (x >= 1 && x < 2 && y >= 1 && y < 5)
+            {
+                valS = (y + 1) * sourceBuffer.Size.width + (x);
+                EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], valS);
+            }
+            else
+            {
+                EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], 242);
+            }
+        }
+    }
+}
+
+TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionAtOppositeCorner_ToOutside_BeforeOrigin)
+{
+    // Prepare source
+    Buffer2D<int, struct IntegralTag> sourceBuffer(2, 6);
+    int valS = 0;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[{x, y}] = valS++;
+        }
+    }
+
+    // Prepare target
+    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+
+    // Blit
+    targetBuffer.BlitFromRegion(
+        sourceBuffer,
+        { IntegralCoordinates{1, 2}, IntegralRectSize{1, 4} },
+        { -2, -5 });
+
+    // Verify    
+    for (int y = 0; y < targetBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < targetBuffer.Size.width; ++x)
+        {
+            EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], 242);
+        }
+    }
+}
+
+TEST(Buffer2DTests, BlitFromRegion_SourceSmallerThanTarget_SourcePortionAtOppositeCorner_ToOutside_AfterOppositeCorner)
+{
+    // Prepare source
+    Buffer2D<int, struct IntegralTag> sourceBuffer(2, 6);
+    int valS = 0;
+    for (int y = 0; y < sourceBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < sourceBuffer.Size.width; ++x)
+        {
+            sourceBuffer[{x, y}] = valS++;
+        }
+    }
+
+    // Prepare target
+    Buffer2D<int, struct IntegralTag> targetBuffer(4, 8, 242);
+
+    // Blit
+    targetBuffer.BlitFromRegion(
+        sourceBuffer,
+        { IntegralCoordinates{1, 2}, IntegralRectSize{1, 4} },
+        { 5, 9 });
+
+    // Verify    
+    for (int y = 0; y < targetBuffer.Size.height; ++y)
+    {
+        for (int x = 0; x < targetBuffer.Size.width; ++x)
+        {
+            EXPECT_EQ(targetBuffer[IntegralCoordinates(x, y)], 242);
+        }
+    }
+}
+
+// TODOHERE
+// SourceSmallerThanTarget - SourcePortionProperlyInside - ToOrigin
+// SourceSmallerThanTarget - SourcePortionProperlyInside - ToBeforeOrigin
+// SourceSmallerThanTarget - SourcePortionProperlyInside - ToAfterOrigin
+// SourceSmallerThanTarget - SourcePortionProperlyInside - ToOutside_BeforeOrigin
+// SourceSmallerThanTarget - SourcePortionProperlyInside - ToOutside_AfterOppositeCorner
+// SourceLargerThanTarget - WholeSource - ToOrigin
+// SourceLargerThanTarget - WholeSource - ToBeforeOrigin
+// SourceLargerThanTarget - WholeSource - ToAfterOrigin
+// SourceLargerThanTarget - WholeSource - ToOutside_BeforeOrigin
+// SourceLargerThanTarget - WholeSource - ToOutside_AfterOppositeCorner
+// SourceLargerThanTarget - SourcePortionAtOrigin - ToOrigin
+// SourceLargerThanTarget - SourcePortionAtOrigin - ToBeforeOrigin
+// SourceLargerThanTarget - SourcePortionAtOrigin - ToAfterOrigin
+// SourceLargerThanTarget - SourcePortionAtOrigin - ToOutside_BeforeOrigin
+// SourceLargerThanTarget - SourcePortionAtOrigin - ToOutside_AfterOppositeCorner
+// SourceLargerThanTarget - SourcePortionAtOppositeCorner - ToOrigin
+// SourceLargerThanTarget - SourcePortionAtOppositeCorner - ToBeforeOrigin
+// SourceLargerThanTarget - SourcePortionAtOppositeCorner - ToAfterOrigin
+// SourceLargerThanTarget - SourcePortionAtOppositeCorner - ToOutside_BeforeOrigin
+// SourceLargerThanTarget - SourcePortionAtOppositeCorner - ToOutside_AfterOppositeCorner
+// SourceLargerThanTarget - SourcePortionProperlyInside - ToOrigin
+// SourceLargerThanTarget - SourcePortionProperlyInside - ToBeforeOrigin
+// SourceLargerThanTarget - SourcePortionProperlyInside - ToAfterOrigin
+// SourceLargerThanTarget - SourcePortionProperlyInside - ToOutside_BeforeOrigin
+// SourceLargerThanTarget - SourcePortionProperlyInside - ToOutside_AfterOppositeCorner
+// Operator
 
 TEST(Buffer2DTests, Flip_Horizontal)
 {

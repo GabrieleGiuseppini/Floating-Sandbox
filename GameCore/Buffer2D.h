@@ -155,6 +155,7 @@ public:
             std::move(newData));
     }
 
+    /*
     void PasteRegion(
         Buffer2D const & source,
         _IntegralCoordinates<TIntegralTag> const & pos)
@@ -202,6 +203,7 @@ public:
             targetLinearIndex += Size.width;
         }
     }
+    */
 
     /*
      * In-place shrinking.
@@ -238,23 +240,56 @@ public:
     void BlitFromRegion(
         Buffer2D const & source,
         _IntegralRect<TIntegralTag> const & sourceRegion,
-        _IntegralCoordinates<TIntegralTag> const & targetOrigin)
+        _IntegralCoordinates<TIntegralTag> const & pos)
+    {
+        BlitFromRegion(
+            source,
+            sourceRegion,
+            pos,
+            [](TElement const & src, TElement const &) -> TElement
+            {
+                return src;
+            });
+    }
+
+    template<typename TOperator>
+    void BlitFromRegion(
+        Buffer2D const & source,
+        _IntegralRect<TIntegralTag> const & sourceRegion, // Expected to be contained in source buffer
+        _IntegralCoordinates<TIntegralTag> const & pos, // Might be anywhere
+        TOperator const & elementOperator)
     {
         // The source region is completely contained in the source buffer
         assert(sourceRegion.IsContainedInRect({ {0, 0}, source.Size }));
 
-        // The target origin plus the region size are within this buffer
-        assert(_IntegralRect<TIntegralTag>(targetOrigin, sourceRegion.size).IsContainedInRect({ {0, 0}, Size }));
+        int const srcXStart = sourceRegion.origin.x + std::max(-pos.x, 0);
+        int const tgtXStart = std::max(pos.x, 0);
+        int const copyW = std::max(
+            std::min(
+                (sourceRegion.origin.x + sourceRegion.size.width) - srcXStart,
+                Size.width - tgtXStart),
+            0);
 
-        for (int sourceRegionY = 0; sourceRegionY < sourceRegion.size.height; ++sourceRegionY)
+        int const srcYStart = sourceRegion.origin.y + std::max(-pos.y, 0);
+        int const tgtYStart = std::max(pos.y, 0);
+        int const copyH = std::max(
+            std::min(
+                (sourceRegion.origin.y + sourceRegion.size.height) - srcYStart,
+                Size.height - tgtYStart),
+            0);
+
+        int sourceLinearIndex = srcYStart * source.Size.width + srcXStart;
+        int targetLinearIndex = tgtYStart * Size.width + tgtXStart;
+
+        for (int yc = 0; yc < copyH; ++yc)
         {
-            int const sourceLinearIndex = (sourceRegion.origin.y + sourceRegionY) * source.Size.width + sourceRegion.origin.x;
-            int const targetLinearIndex = (targetOrigin.y + sourceRegionY) * Size.width + targetOrigin.x;
+            for (int xc = 0; xc < copyW; ++xc)
+            {
+                Data[targetLinearIndex + xc] = elementOperator(source.Data[sourceLinearIndex + xc], Data[targetLinearIndex + xc]);
+            }
 
-            std::memcpy(
-                Data.get() + targetLinearIndex,
-                source.Data.get() + sourceLinearIndex,
-                sourceRegion.size.width * sizeof(TElement));
+            sourceLinearIndex += source.Size.width;
+            targetLinearIndex += Size.width;
         }
     }
 
