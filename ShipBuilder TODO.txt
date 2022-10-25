@@ -292,13 +292,7 @@
 			- Gets SelectionRect from SelectionManager, and LayerSelection from WorkbenchState::all-layers flag
 			- Then gets LayersRegion from ModelController, and shoves it into ClipboardManager
 			- Layer primitives:
-				- Spec: 
-					- Structural: Clone=OK | Paste=OK
-					- Electrical: Clone=trim panel (DONE) | Paste=requires dealing with instance IDs (merging) and panel (for both instance ID's and position conflicts) (opposite of MakedTrimmedPanel)
-					- Ropes: Clone=trim (DONE) | Paste=needs to shift positions and deal with conflicts (@RopesBuffer)
-					- Texture: Clone=OK | Paste=OK
-				- All of these with unit tests:
-				= Buffer2D:
+				+ Buffer2D:
 					+ Buffer<>::CloneRegion(Rect) -> Buffer
 					+ Buffer::PasteRegion(pos, Buffer)
 						+ Need to allow both pos and size to be outside of target buffer
@@ -308,22 +302,13 @@
 					+ BlitFromRegion: takes responsibility of Paste
 						+ Nuke Paste afterwards
 					+ Renames: CloneRegion stays CloneRegion
-					- See if there are Buffer::obsolete methods now
-						! List:
-							- Clone
-							- CloneRegion
-							- Trim
-							- BlitFromRegion
-							- MakeReframed
-						- Can Trim be done with MakeReframed?
-							- Write unit tests
 				- New plan:
 					- Spec:
 						- "Buffer2D knows nothing about copy'n'paste"
 						- "ShipLayers only has methods for ShipFactory load options (e.g. Rotate, Flip, etc.)"
 							- Which anyway end up being used by ModelController as well
 					- 1: ShipLayers: see if can make Structural optional; before we make yet another "ShipLayersRegion" class, try and
-					     make ShipLayers with optional StructuralLayer
+					     make ShipLayers with optional StructuralLayer, and Size (for flip/rotate)
 						- If not: make ShipLayersRegion and TODO: way to implement Rotate, Flip once
 					- 2: Move XXXLayer() (and thus ShipLayers) methods that deal with Rope and Electric logic to ModelController,
 					     except for those needed by ShipFactory: Rotate, Flip, etc.
@@ -334,7 +319,11 @@
 				================================
 				- TODOHERE: OLD
 				- TODOHERE decide here on how much anemic we want Layers to be
-					- 
+				- Spec: 
+					- Structural: Clone=OK | Paste=OK
+					- Electrical: Clone=trim panel (DONE) | Paste=requires dealing with instance IDs (merging) and panel (for both instance ID's and position conflicts) (opposite of MakedTrimmedPanel)
+					- Ropes: Clone=trim (DONE) | Paste=needs to shift positions and deal with conflicts (@RopesBuffer)
+					- Texture: Clone=OK | Paste=OK
 				- XXXLayer:
 					- TODO: we need a flag for eph Paste, while user moves mouse
 						- No elec magic in this case
@@ -383,6 +372,10 @@
 					X NOT A GOOD IDEA: methods would then be un-harmonic, for some layers would return region and not for others (e.g. Ropes)
 						X Also would be not performant (continuous copy & paste vs only blit)
 			- ClipboardManager notifies IUserInterface @ population; used for: Paste		
+		- "Generic Undo"
+			- Kinda like ShipLayers(Region) - or even same class, let's see - where e.g. Ropes and Electrical Panel are whole
+			- Returned by ModelController methods and applied with specific ModelController method
+				- TODO: how to distinguish missing layers between "target has no layer" vs "no need to undo" (because unaffected)
 		- Controller::Cut():
 			- Calls CopySelectionToClipboard(...), then:
 			- ModelController::~"Cut"(selection rect, which layers) => Undo
