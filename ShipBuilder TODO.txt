@@ -9,6 +9,8 @@
 
 - Do Selection/Copy'n'Cut/Paste workflow (*)
 
+- Should ModelValidator allow for electrical particles on rope endpoints?
+
 - Do StructuralRectangle tool (*)
 
 ================================================================================================================================================================================
@@ -307,8 +309,9 @@
 						- "Buffer2D knows nothing about copy'n'paste"
 						- "ShipLayers only has methods for ShipFactory load options (e.g. Rotate, Flip, etc.)"
 							- Which anyway end up being used by ModelController as well
-					- 1: ShipLayers: see if can make Structural optional; before we make yet another "ShipLayersRegion" class, try and
+					= 1: ShipLayers: see if can make Structural optional; before we make yet another "ShipLayersRegion" class, try and
 					     make ShipLayers with optional StructuralLayer, and Size (for flip/rotate)
+						- Make sure Deserializer(s) complain if no structural layer
 						- If not: make ShipLayersRegion and TODO: way to implement Rotate, Flip once
 					- 2: Move XXXLayer() (and thus ShipLayers) methods that deal with Rope and Electric logic to ModelController,
 					     except for those needed by ShipFactory: Rotate, Flip, etc.

@@ -26,15 +26,12 @@ Model::Model(
 }
 
 Model::Model(ShipDefinition && shipDefinition)
+    // TODO: nuke
     : mShipSize(shipDefinition.Size)
     , mShipMetadata(shipDefinition.Metadata)
     , mShipPhysicsData(shipDefinition.PhysicsData)
-    , mShipAutoTexturizationSettings(shipDefinition.AutoTexturizationSettings)
-    , mLayers(
-        std::move(shipDefinition.Layers.StructuralLayer), 
-        std::move(shipDefinition.Layers.ElectricalLayer),
-        std::move(shipDefinition.Layers.RopesLayer),
-        std::move(shipDefinition.Layers.TextureLayer))
+    , mShipAutoTexturizationSettings(shipDefinition.AutoTexturizationSettings)    
+    , mLayers(std::move(shipDefinition.Layers))
     , mDirtyState()
 {
 }
@@ -44,6 +41,7 @@ ShipDefinition Model::MakeShipDefinition() const
     return ShipDefinition(
         GetShipSize(),
         ShipLayers(
+            // TODO: make it return uq_ptr
             CloneStructuralLayer(),
             CloneElectricalLayer(),
             CloneRopesLayer(),

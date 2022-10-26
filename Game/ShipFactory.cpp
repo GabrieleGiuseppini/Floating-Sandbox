@@ -59,7 +59,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
     // Process load options
     //
 
-    auto shipSize = shipDefinition.Size;
+    auto shipSize = shipDefinition.Layers.Size;
 
     if (shipLoadOptions.FlipHorizontally)
     {
@@ -83,7 +83,8 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
     // - Build a 2D matrix containing indices to the particles
     //
 
-    auto const & structuralLayerBuffer = shipDefinition.Layers.StructuralLayer.Buffer;
+    assert(shipDefinition.Layers.StructuralLayer);
+    auto const & structuralLayerBuffer = shipDefinition.Layers.StructuralLayer->Buffer;
 
     float const halfShipWidth = static_cast<float>(shipSize.width) / 2.0f;
     float const shipSpaceToWorldSpaceFactor = shipDefinition.Metadata.Scale.outputUnits / shipDefinition.Metadata.Scale.inputUnits;
@@ -419,7 +420,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
     RgbaImageData textureImage = shipDefinition.Layers.TextureLayer
         ? std::move(shipDefinition.Layers.TextureLayer->Buffer) // Use provided texture
         : shipTexturizer.MakeAutoTexture(
-            shipDefinition.Layers.StructuralLayer,
+            *shipDefinition.Layers.StructuralLayer,
             shipDefinition.AutoTexturizationSettings); // Auto-texturize
 
     //

@@ -190,9 +190,9 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
     }
 
     return ShipDefinition(
-        shipAttributes->ShipSize,
         ShipLayers(
-            std::move(*structuralLayer),
+            shipAttributes->ShipSize,
+            std::move(structuralLayer),
             std::move(electricalLayer),
             std::move(ropesLayer),
             std::move(textureLayer)),
@@ -325,7 +325,7 @@ void ShipDefinitionFormatDeSerializer::Save(
     ShipDefinition const & shipDefinition,
     std::filesystem::path const & shipFilePath)
 {
-    DeSerializationBuffer<BigEndianess> buffer(256);
+    DeSerializationBuffer<BigEndianess> buffer(256);    
 
     //
     // Open file
@@ -347,7 +347,7 @@ void ShipDefinitionFormatDeSerializer::Save(
 
     ShipAttributes const shipAttributes = ShipAttributes(
         Version::CurrentVersion(),
-        shipDefinition.Layers.StructuralLayer.Buffer.Size,
+        shipDefinition.Layers.Size,
         shipDefinition.Layers.HasTextureLayer(),
         shipDefinition.Layers.HasElectricalLayer(),
         PortableTimepoint::Now());
@@ -368,7 +368,7 @@ void ShipDefinitionFormatDeSerializer::Save(
         [&]() { return AppendMetadata(shipDefinition.Metadata, buffer); },
         buffer);
 
-    if (shipDefinition.Layers.TextureLayer)
+    if (shipDefinition.Layers.HasTextureLayer())
     {
         //
         // Write texture
@@ -380,7 +380,7 @@ void ShipDefinitionFormatDeSerializer::Save(
             [&]() { return AppendPngImage(shipDefinition.Layers.TextureLayer->Buffer, buffer); },
             buffer);
     }
-    else
+    else if (shipDefinition.Layers.HasStructuralLayer())
     {
         //
         // Make and write a preview image
@@ -389,7 +389,7 @@ void ShipDefinitionFormatDeSerializer::Save(
         AppendSection(
             outputFile,
             static_cast<std::uint32_t>(MainSectionTagType::Preview_PNG),
-            [&]() { return AppendPngPreview(shipDefinition.Layers.StructuralLayer, buffer); },
+            [&]() { return AppendPngPreview(*shipDefinition.Layers.StructuralLayer, buffer); },
             buffer);
     }
 
@@ -397,11 +397,14 @@ void ShipDefinitionFormatDeSerializer::Save(
     // Write structural layer
     //
 
-    AppendSection(
-        outputFile,
-        static_cast<std::uint32_t>(MainSectionTagType::StructuralLayer),
-        [&]() { return AppendStructuralLayer(shipDefinition.Layers.StructuralLayer, buffer); },
-        buffer);
+    if (shipDefinition.Layers.HasStructuralLayer())
+    {
+        AppendSection(
+            outputFile,
+            static_cast<std::uint32_t>(MainSectionTagType::StructuralLayer),
+            [&]() { return AppendStructuralLayer(*shipDefinition.Layers.StructuralLayer, buffer); },
+            buffer);
+    }
 
     //
     // Write electrical layer

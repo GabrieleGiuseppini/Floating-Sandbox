@@ -107,9 +107,10 @@ TextureLayerData TextureLayerData::MakeReframed(
 
 void ShipLayers::Flip(DirectionType direction)
 {
-    auto const originalSize = StructuralLayer.Buffer.Size;
-
-    StructuralLayer.Buffer.Flip(direction);
+    if (StructuralLayer)
+    {
+        StructuralLayer->Buffer.Flip(direction);
+    }
 
     if (ElectricalLayer)
     {
@@ -118,7 +119,7 @@ void ShipLayers::Flip(DirectionType direction)
 
     if (RopesLayer)
     {
-        RopesLayer->Buffer.Flip(direction, originalSize);
+        RopesLayer->Buffer.Flip(direction, Size);
     }
 
     if (TextureLayer)
@@ -129,9 +130,10 @@ void ShipLayers::Flip(DirectionType direction)
 
 void ShipLayers::Rotate90(RotationDirectionType direction)
 {
-    auto const originalSize = StructuralLayer.Buffer.Size;
-
-    StructuralLayer.Buffer.Rotate90(direction);
+    if (StructuralLayer)
+    {
+        StructuralLayer->Buffer.Rotate90(direction);
+    }
 
     if (ElectricalLayer)
     {
@@ -140,7 +142,7 @@ void ShipLayers::Rotate90(RotationDirectionType direction)
 
     if (RopesLayer)
     {
-        RopesLayer->Buffer.Rotate90(direction, originalSize);
+        RopesLayer->Buffer.Rotate90(direction, Size);
     }
 
     if (TextureLayer)

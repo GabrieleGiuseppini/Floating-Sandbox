@@ -14,20 +14,17 @@
 
 struct ShipDefinition
 {
-    ShipSpaceSize Size;
     ShipLayers Layers;
     ShipMetadata Metadata;
     ShipPhysicsData PhysicsData;
     std::optional<ShipAutoTexturizationSettings> const AutoTexturizationSettings;
 
     ShipDefinition(
-        ShipSpaceSize const & size,
         ShipLayers && layers,
         ShipMetadata const & metadata,
         ShipPhysicsData const & physicsData,
         std::optional<ShipAutoTexturizationSettings> const & autoTexturizationSettings)
-        : Size(size)
-        , Layers(std::move(layers))
+        : Layers(std::move(layers))
         , Metadata(metadata)
         , PhysicsData(physicsData)
         , AutoTexturizationSettings(autoTexturizationSettings)

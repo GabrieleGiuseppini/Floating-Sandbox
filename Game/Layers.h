@@ -237,21 +237,29 @@ struct LayerTypeTraits<LayerType::Texture>
  */
 struct ShipLayers
 {
-    StructuralLayerData StructuralLayer;
+    ShipSpaceSize Size;
+    std::unique_ptr<StructuralLayerData> StructuralLayer;
     std::unique_ptr<ElectricalLayerData> ElectricalLayer;
     std::unique_ptr<RopesLayerData> RopesLayer;
     std::unique_ptr<TextureLayerData> TextureLayer;
 
     ShipLayers(
-        StructuralLayerData && structuralLayer,
+        ShipSpaceSize const & size,
+        std::unique_ptr<StructuralLayerData> && structuralLayer,
         std::unique_ptr<ElectricalLayerData> && electricalLayer,
         std::unique_ptr<RopesLayerData> && ropesLayer,
         std::unique_ptr<TextureLayerData> && textureLayer)
-        : StructuralLayer(std::move(structuralLayer))
+        : Size(size)
+        , StructuralLayer(std::move(structuralLayer))
         , ElectricalLayer(std::move(electricalLayer))
         , RopesLayer(std::move(ropesLayer))
         , TextureLayer(std::move(textureLayer))
     {}
+
+    bool HasStructuralLayer() const
+    {
+        return (bool)StructuralLayer;
+    }
 
     bool HasElectricalLayer() const
     {
