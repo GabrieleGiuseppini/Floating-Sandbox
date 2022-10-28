@@ -369,13 +369,20 @@ void Controller::RestoreStructuralLayerRegionForUndo(
     mUserInterface.RefreshView();
 }
 
-void Controller::RestoreStructuralLayerForUndo(StructuralLayerData && structuralLayer)
+void Controller::RestoreStructuralLayerForUndo(std::unique_ptr<StructuralLayerData> structuralLayer)
 {
     auto const scopedToolResumeState = SuspendTool();
 
-    mModelController->RestoreStructuralLayer(std::move(structuralLayer));
+    WrapLikelyLayerPresenceChangingOperation<LayerType::Structural>(
+        [this, structuralLayer = std::move(structuralLayer)]() mutable
+        {
+            mModelController->RestoreStructuralLayer(std::move(structuralLayer));
+        });
 
     // No need to update dirtyness, this is for undo
+
+    // Update visualization modes
+    InternalUpdateModelControllerVisualizationModes();
 
     // Notify macro properties
     NotifyModelMacroPropertiesUpdated();
@@ -605,7 +612,7 @@ void Controller::RestoreTextureLayerForUndo(
 
 void Controller::RestoreAllLayersForUndo(
     ShipSpaceSize const & shipSize,
-    StructuralLayerData && structuralLayer,
+    std::unique_ptr<StructuralLayerData> structuralLayer,
     std::unique_ptr<ElectricalLayerData> electricalLayer,
     std::unique_ptr<RopesLayerData> ropesLayer,
     std::unique_ptr<TextureLayerData> textureLayer,
@@ -619,7 +626,11 @@ void Controller::RestoreAllLayersForUndo(
 
     mModelController->SetShipSize(shipSize);
 
-    mModelController->RestoreStructuralLayer(std::move(structuralLayer));
+    WrapLikelyLayerPresenceChangingOperation<LayerType::Structural>(
+        [this, structuralLayer = std::move(structuralLayer)]() mutable
+        {
+            mModelController->RestoreStructuralLayer(std::move(structuralLayer));
+        });
 
     WrapLikelyLayerPresenceChangingOperation<LayerType::Electrical>(
         [this, electricalLayer = std::move(electricalLayer)]() mutable
@@ -1416,7 +1427,7 @@ void Controller::InternalPushUndoForWholeLayer(wxString const & title)
     else if constexpr (TLayerType == LayerType::Structural)
     {
         auto originalLayerClone = mModelController->CloneStructuralLayer();
-        auto const cloneByteSize = originalLayerClone.Buffer.GetByteSize();
+        auto const cloneByteSize = originalLayerClone ? originalLayerClone->Buffer.GetByteSize() : 0;
 
         // Create undo action
         mUndoStack.Push(
@@ -1903,7 +1914,7 @@ void Controller::InternalResizeShip(
 
         // Calculate cost
         size_t const totalCost =
-            structuralLayerClone.Buffer.GetByteSize()
+            (structuralLayerClone ? structuralLayerClone->Buffer.GetByteSize() : 0)
             + (electricalLayerClone ? electricalLayerClone->Buffer.GetByteSize() : 0)
             + (ropesLayerClone ? ropesLayerClone->Buffer.GetSize() * sizeof(RopeElement) : 0)
             + (textureLayerClone ? textureLayerClone->Buffer.GetByteSize() : 0);

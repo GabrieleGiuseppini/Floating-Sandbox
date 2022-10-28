@@ -1053,7 +1053,9 @@ TEST(LayerTests, ShipLayers_FlipH)
     // Create source
     //
 
-    Buffer2D<StructuralElement, struct ShipSpaceTag> sourceStructuralLayerBuffer(8, 6);
+    ShipSpaceSize const shipSize(8, 6);
+
+    Buffer2D<StructuralElement, struct ShipSpaceTag> sourceStructuralLayerBuffer(shipSize);
     uint8_t iVal = 0;
     for (int y = 0; y < sourceStructuralLayerBuffer.Size.height; ++y)
     {
@@ -1066,7 +1068,7 @@ TEST(LayerTests, ShipLayers_FlipH)
         }
     }
 
-    Buffer2D<ElectricalElement, struct ShipSpaceTag> sourceElectricalLayerBuffer(8, 6);
+    Buffer2D<ElectricalElement, struct ShipSpaceTag> sourceElectricalLayerBuffer(shipSize);
     iVal = 0;
     for (int y = 0; y < sourceElectricalLayerBuffer.Size.height; ++y)
     {
@@ -1110,7 +1112,8 @@ TEST(LayerTests, ShipLayers_FlipH)
     }
 
     ShipLayers layers(
-        StructuralLayerData(std::move(sourceStructuralLayerBuffer)),
+        shipSize,
+        std::make_unique<StructuralLayerData>(std::move(sourceStructuralLayerBuffer)),
         std::make_unique<ElectricalLayerData>(std::move(sourceElectricalLayerBuffer), std::move(sourcePanel)),
         std::make_unique<RopesLayerData>(std::move(sourceRopesLayerBuffer)),
         std::make_unique<TextureLayerData>(std::move(sourceTextureLayerBuffer)));
@@ -1125,22 +1128,24 @@ TEST(LayerTests, ShipLayers_FlipH)
     // Verify
     //
 
-    ASSERT_EQ(layers.StructuralLayer.Buffer.Size, ShipSpaceSize(8, 6));
+    ASSERT_EQ(layers.Size, shipSize);
+
+    ASSERT_EQ(layers.StructuralLayer->Buffer.Size, shipSize);
 
     iVal = 0;
-    for (int y = 0; y < layers.StructuralLayer.Buffer.Size.height; ++y)
+    for (int y = 0; y < layers.StructuralLayer->Buffer.Size.height; ++y)
     {
-        for (int x = layers.StructuralLayer.Buffer.Size.width - 1; x >= 0; --x)
+        for (int x = layers.StructuralLayer->Buffer.Size.width - 1; x >= 0; --x)
         {
             auto const coords = ShipSpaceCoordinates(x, y);
-            EXPECT_EQ(layers.StructuralLayer.Buffer[coords].Material->ColorKey, rgbColor(iVal, iVal, iVal));
+            EXPECT_EQ(layers.StructuralLayer->Buffer[coords].Material->ColorKey, rgbColor(iVal, iVal, iVal));
 
             ++iVal;
         }
     }
 
     ASSERT_TRUE(layers.ElectricalLayer);
-    ASSERT_EQ(layers.ElectricalLayer->Buffer.Size, ShipSpaceSize(8, 6));
+    ASSERT_EQ(layers.ElectricalLayer->Buffer.Size, shipSize);
 
     iVal = 0;
     for (int y = 0; y < layers.ElectricalLayer->Buffer.Size.height; ++y)
@@ -1190,7 +1195,9 @@ TEST(LayerTests, ShipLayers_Rotate)
     // Create source
     //
 
-    Buffer2D<StructuralElement, struct ShipSpaceTag> sourceStructuralLayerBuffer(8, 6);
+    ShipSpaceSize const shipSize(8, 6);
+
+    Buffer2D<StructuralElement, struct ShipSpaceTag> sourceStructuralLayerBuffer(shipSize);
     uint8_t iVal = 0;
     for (int y = 0; y < sourceStructuralLayerBuffer.Size.height; ++y)
     {
@@ -1203,7 +1210,7 @@ TEST(LayerTests, ShipLayers_Rotate)
         }
     }
 
-    Buffer2D<ElectricalElement, struct ShipSpaceTag> sourceElectricalLayerBuffer(8, 6);
+    Buffer2D<ElectricalElement, struct ShipSpaceTag> sourceElectricalLayerBuffer(shipSize);
     iVal = 0;
     for (int y = 0; y < sourceElectricalLayerBuffer.Size.height; ++y)
     {
@@ -1247,7 +1254,8 @@ TEST(LayerTests, ShipLayers_Rotate)
     }
 
     ShipLayers layers(
-        StructuralLayerData(std::move(sourceStructuralLayerBuffer)),
+        shipSize,
+        std::make_unique<StructuralLayerData>(std::move(sourceStructuralLayerBuffer)),
         std::make_unique<ElectricalLayerData>(std::move(sourceElectricalLayerBuffer), std::move(sourcePanel)),
         std::make_unique<RopesLayerData>(std::move(sourceRopesLayerBuffer)),
         std::make_unique<TextureLayerData>(std::move(sourceTextureLayerBuffer)));
@@ -1262,15 +1270,15 @@ TEST(LayerTests, ShipLayers_Rotate)
     // Verify
     //
 
-    ASSERT_EQ(layers.StructuralLayer.Buffer.Size, ShipSpaceSize(6, 8));
+    ASSERT_EQ(layers.StructuralLayer->Buffer.Size, ShipSpaceSize(6, 8));
 
     iVal = 0;
-    for (int x = 0; x < layers.StructuralLayer.Buffer.Size.width; ++x)
+    for (int x = 0; x < layers.StructuralLayer->Buffer.Size.width; ++x)
     {
-        for (int y = layers.StructuralLayer.Buffer.Size.height - 1; y >= 0; --y)
+        for (int y = layers.StructuralLayer->Buffer.Size.height - 1; y >= 0; --y)
         {
             auto const coords = ShipSpaceCoordinates(x, y);
-            EXPECT_EQ(layers.StructuralLayer.Buffer[coords].Material->ColorKey, rgbColor(iVal, iVal, iVal));
+            EXPECT_EQ(layers.StructuralLayer->Buffer[coords].Material->ColorKey, rgbColor(iVal, iVal, iVal));
 
             ++iVal;
         }

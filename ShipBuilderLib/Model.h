@@ -43,12 +43,12 @@ public:
 
     ShipSpaceSize const & GetShipSize() const
     {
-        return mShipSize;
+        return mLayers.Size;
     }
 
     void SetShipSize(ShipSpaceSize const & size)
     {
-        mShipSize = size;
+        mLayers.Size = size;
     }
 
     ShipMetadata const & GetShipMetadata() const
@@ -174,7 +174,7 @@ public:
     {
         if constexpr (TLayer == LayerType::Structural)
         {
-            return mLayers.StructuralLayer.Clone();
+            return mLayers.StructuralLayer->Clone();
         }
         else if constexpr (TLayer == LayerType::Electrical)
         {
@@ -201,18 +201,20 @@ public:
 
     StructuralLayerData const & GetStructuralLayer() const
     {
-        return mLayers.StructuralLayer;
+        assert(mLayers.StructuralLayer);
+        return *mLayers.StructuralLayer;
     }
 
     StructuralLayerData & GetStructuralLayer()
     {
-        return mLayers.StructuralLayer;
+        assert(mLayers.StructuralLayer);
+        return *mLayers.StructuralLayer;
     }
 
     void SetStructuralLayer(StructuralLayerData && structuralLayer);
 
-    StructuralLayerData CloneStructuralLayer() const;
-    void RestoreStructuralLayer(StructuralLayerData && structuralLayer);
+    std::unique_ptr<StructuralLayerData> CloneStructuralLayer() const;
+    void RestoreStructuralLayer(std::unique_ptr<StructuralLayerData> structuralLayer);
 
     ElectricalLayerData const & GetElectricalLayer() const
     {
@@ -270,11 +272,9 @@ public:
 
 private:
 
-    static StructuralLayerData MakeNewEmptyStructuralLayer(ShipSpaceSize const & shipSize);
+    static std::unique_ptr<StructuralLayerData> MakeNewEmptyStructuralLayer(ShipSpaceSize const & shipSize);
 
 private:
-
-    ShipSpaceSize mShipSize;
 
     ShipMetadata mShipMetadata;
     ShipPhysicsData mShipPhysicsData;

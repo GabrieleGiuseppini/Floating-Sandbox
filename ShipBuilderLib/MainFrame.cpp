@@ -4595,8 +4595,14 @@ void MainFrame::ImportLayerFromShip(LayerType layer)
 
             case LayerType::Structural:
             {
+                if (!shipDefinition->Layers.StructuralLayer)
+                {
+                    ShowError(_("The selected ship does not have a structural layer"));
+                    return;
+                }
+
                 // Reframe loaded layer to fit our model's size
-                StructuralLayerData newStructuralLayer = shipDefinition->Layers.StructuralLayer.MakeReframed(
+                StructuralLayerData newStructuralLayer = shipDefinition->Layers.StructuralLayer->MakeReframed(
                     mController->GetModelController().GetShipSize(),
                     ShipSpaceCoordinates(0, 0),
                     StructuralElement(nullptr));

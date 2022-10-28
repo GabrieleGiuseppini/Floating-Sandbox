@@ -92,7 +92,7 @@ void FloodTool<TLayer>::DoEdit(
 
     LayerMaterialType const * const floodMaterial = GetFloodMaterial(isRightButton ? MaterialPlaneType::Background : MaterialPlaneType::Foreground);
 
-    static_assert(TLayer == LayerType::Structural);
+    static_assert(TLayer == LayerType::Structural); // At this moment this is only structural
     std::optional<ShipSpaceRect> affectedRegion = mController.GetModelController().StructuralFlood(
         mouseCoordinates,
         floodMaterial,

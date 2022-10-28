@@ -12,12 +12,12 @@ namespace ShipBuilder {
 Model::Model(
     ShipSpaceSize const & shipSize,
     std::string const & shipName)
-    : mShipSize(shipSize)
-    , mShipMetadata(shipName)
+    : mShipMetadata(shipName)
     , mShipPhysicsData()
     , mShipAutoTexturizationSettings()
     , mLayers(
-        MakeNewEmptyStructuralLayer(mShipSize), 
+        shipSize,
+        MakeNewEmptyStructuralLayer(shipSize),
         nullptr, 
         nullptr, 
         nullptr)
@@ -26,9 +26,7 @@ Model::Model(
 }
 
 Model::Model(ShipDefinition && shipDefinition)
-    // TODO: nuke
-    : mShipSize(shipDefinition.Size)
-    , mShipMetadata(shipDefinition.Metadata)
+    : mShipMetadata(shipDefinition.Metadata)
     , mShipPhysicsData(shipDefinition.PhysicsData)
     , mShipAutoTexturizationSettings(shipDefinition.AutoTexturizationSettings)    
     , mLayers(std::move(shipDefinition.Layers))
@@ -39,9 +37,8 @@ Model::Model(ShipDefinition && shipDefinition)
 ShipDefinition Model::MakeShipDefinition() const
 {
     return ShipDefinition(
-        GetShipSize(),
         ShipLayers(
-            // TODO: make it return uq_ptr
+            GetShipSize(),
             CloneStructuralLayer(),
             CloneElectricalLayer(),
             CloneRopesLayer(),
@@ -66,15 +63,22 @@ void Model::SetStructuralLayer(StructuralLayerData && structuralLayer)
     assert(structuralLayer.Buffer.Size == GetShipSize());
 
     // Update layer
-    mLayers.StructuralLayer = std::move(structuralLayer);
+    mLayers.StructuralLayer.reset(new StructuralLayerData(std::move(structuralLayer)));
 }
 
-StructuralLayerData Model::CloneStructuralLayer() const
+std::unique_ptr<StructuralLayerData> Model::CloneStructuralLayer() const
 {
-    return mLayers.StructuralLayer.Clone();
+    std::unique_ptr<StructuralLayerData> clonedLayer;
+
+    if (mLayers.StructuralLayer)
+    {
+        clonedLayer.reset(new StructuralLayerData(mLayers.StructuralLayer->Clone()));
+    }
+
+    return clonedLayer;
 }
 
-void Model::RestoreStructuralLayer(StructuralLayerData && structuralLayer)
+void Model::RestoreStructuralLayer(std::unique_ptr<StructuralLayerData> structuralLayer)
 {
     // Replace layer
     mLayers.StructuralLayer = std::move(structuralLayer);
@@ -174,9 +178,9 @@ void Model::RestoreTextureLayer(std::unique_ptr<TextureLayerData> textureLayer)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-StructuralLayerData Model::MakeNewEmptyStructuralLayer(ShipSpaceSize const & shipSize)
+std::unique_ptr<StructuralLayerData> Model::MakeNewEmptyStructuralLayer(ShipSpaceSize const & shipSize)
 {
-    return StructuralLayerData(
+    return std::make_unique<StructuralLayerData>(
         shipSize,
         StructuralElement(nullptr)); // No material
 }

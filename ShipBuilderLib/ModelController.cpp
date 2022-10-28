@@ -449,7 +449,7 @@ void ModelController::SetStructuralLayer(StructuralLayerData && structuralLayer)
     mIsStructuralLayerInEphemeralVisualization = false;
 }
 
-StructuralLayerData ModelController::CloneStructuralLayer() const
+std::unique_ptr<StructuralLayerData> ModelController::CloneStructuralLayer() const
 {
     return mModel.CloneStructuralLayer();
 }
@@ -555,7 +555,7 @@ void ModelController::RestoreStructuralLayerRegion(
     RegisterDirtyVisualization<VisualizationType::StructuralLayer>(ShipSpaceRect(targetOrigin, sourceRegion.size));
 }
 
-void ModelController::RestoreStructuralLayer(StructuralLayerData && sourceLayer)
+void ModelController::RestoreStructuralLayer(std::unique_ptr<StructuralLayerData> sourceLayer)
 {
     assert(!mIsStructuralLayerInEphemeralVisualization);
 

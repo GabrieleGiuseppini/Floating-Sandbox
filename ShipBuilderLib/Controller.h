@@ -135,7 +135,7 @@ public:
     void RestoreStructuralLayerRegionForUndo(
         StructuralLayerData && layerRegion,
         ShipSpaceCoordinates const & origin);
-    void RestoreStructuralLayerForUndo(StructuralLayerData && structuralLayer);
+    void RestoreStructuralLayerForUndo(std::unique_ptr<StructuralLayerData> structuralLayer);
 
     // Electrical layer
 
@@ -179,7 +179,7 @@ public:
 
     void RestoreAllLayersForUndo(
         ShipSpaceSize const & shipSize,
-        StructuralLayerData && structuralLayer,
+        std::unique_ptr<StructuralLayerData> structuralLayer,
         std::unique_ptr<ElectricalLayerData> electricalLayer,
         std::unique_ptr<RopesLayerData> ropesLayer,
         std::unique_ptr<TextureLayerData> textureLayer,

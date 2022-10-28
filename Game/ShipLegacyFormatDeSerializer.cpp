@@ -712,16 +712,16 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImages(
     //////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Make sure we have at least one structural or rope element
-    if (!hasStructuralElements && !hasRopeElements)
+    if (!hasStructuralElements)
     {
         throw GameException("The ship structure contains no pixels that may be recognized as structural material");
     }
 
     // Bake definition
-    return ShipDefinition(
-        shipSize,
+    return ShipDefinition(        
         ShipLayers(
-            std::move(structuralLayer),
+            shipSize,
+            hasStructuralElements ? std::make_unique<StructuralLayerData>(std::move(structuralLayer)) : nullptr,
             hasElectricalElements ? std::make_unique<ElectricalLayerData>(std::move(electricalLayer)) : nullptr,
             hasRopeElements ? std::make_unique<RopesLayerData>(std::move(ropesLayer)) : nullptr,
             std::move(textureLayer)),

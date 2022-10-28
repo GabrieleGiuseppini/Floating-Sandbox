@@ -222,7 +222,7 @@ public:
 
     void SetStructuralLayer(StructuralLayerData && structuralLayer);
 
-    StructuralLayerData CloneStructuralLayer() const;
+    std::unique_ptr<StructuralLayerData> CloneStructuralLayer() const;
 
     StructuralMaterial const * SampleStructuralMaterialAt(ShipSpaceCoordinates const & coords) const;
 
@@ -240,7 +240,7 @@ public:
         ShipSpaceRect const & sourceRegion,
         ShipSpaceCoordinates const & targetOrigin);
 
-    void RestoreStructuralLayer(StructuralLayerData && sourceLayer);
+    void RestoreStructuralLayer(std::unique_ptr<StructuralLayerData> sourceLayer);
 
     void StructuralRegionFillForEphemeralVisualization(
         ShipSpaceRect const & region,

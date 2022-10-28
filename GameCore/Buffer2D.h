@@ -162,8 +162,8 @@ public:
     {
         // The origin falls in our current rect
         assert(rect.origin.IsInSize(Size));
-        // The new rect is smaller than our current rect
-        assert((rect.origin + rect.size).IsInSize(Size));
+        // The new rect is smaller than or equal our current rect
+        assert(_IntegralRect<TIntegralTag>(rect.origin, rect.size).IsContainedInRect(_IntegralRect<TIntegralTag>(_IntegralCoordinates<TIntegralTag>(0, 0), Size)));
 
         if (rect.size != Size)
         {
