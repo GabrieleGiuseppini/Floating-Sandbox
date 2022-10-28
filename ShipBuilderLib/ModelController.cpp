@@ -78,6 +78,7 @@ ShipDefinition ModelController::MakeShipDefinition() const
 
 std::unique_ptr<RgbaImageData> ModelController::MakePreview() const
 {
+    // At this moment we can't but require a structural layer - there would be no preview without it
     assert(mModel.HasLayer(LayerType::Structural));
 
     auto previewTexture = std::make_unique<RgbaImageData>(ImageSize(mModel.GetShipSize().width, mModel.GetShipSize().height));
@@ -218,9 +219,8 @@ std::optional<SampledInformation> ModelController::SampleInformationAt(ShipSpace
 void ModelController::Flip(DirectionType direction)
 {
     // Structural layer
+    if (mModel.HasLayer(LayerType::Structural))
     {
-        assert(mModel.HasLayer(LayerType::Structural));
-
         assert(!mIsStructuralLayerInEphemeralVisualization);
 
         mModel.GetStructuralLayer().Buffer.Flip(direction);
@@ -275,9 +275,8 @@ void ModelController::Rotate90(RotationDirectionType direction)
     mModel.SetShipSize(ShipSpaceSize(originalSize.height, originalSize.width));
 
     // Structural layer
+    if (mModel.HasLayer(LayerType::Structural))
     {
-        assert(mModel.HasLayer(LayerType::Structural));
-
         assert(!mIsStructuralLayerInEphemeralVisualization);
 
         mModel.GetStructuralLayer().Buffer.Rotate90(direction);
@@ -429,6 +428,8 @@ void ModelController::ResizeShip(
 
 StructuralLayerData const & ModelController::GetStructuralLayer() const
 {
+    // This is used, among others, by WaterlineAnalyzer - at this moment
+    // we require the structural alyer to be always present
     assert(mModel.HasLayer(LayerType::Structural));
     assert(!mIsStructuralLayerInEphemeralVisualization);
 
@@ -437,8 +438,6 @@ StructuralLayerData const & ModelController::GetStructuralLayer() const
 
 void ModelController::SetStructuralLayer(StructuralLayerData && structuralLayer)
 {
-    assert(mModel.HasLayer(LayerType::Structural));
-
     mModel.SetStructuralLayer(std::move(structuralLayer));
 
     InitializeStructuralLayerAnalysis();
@@ -694,10 +693,16 @@ ElectricalMaterial const * ModelController::SampleElectricalMaterialAt(ShipSpace
 
 bool ModelController::IsElectricalParticleAllowedAt(ShipSpaceCoordinates const & coords) const
 {
-    assert(mModel.HasLayer(LayerType::Structural));
     assert(!mIsStructuralLayerInEphemeralVisualization);
 
-    return mModel.GetStructuralLayer().Buffer[coords].Material != nullptr;
+    if (mModel.HasLayer(LayerType::Structural))
+    {
+        return mModel.GetStructuralLayer().Buffer[coords].Material != nullptr;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 std::optional<ShipSpaceRect> ModelController::TrimElectricalParticlesWithoutSubstratum()

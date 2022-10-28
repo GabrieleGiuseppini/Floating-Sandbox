@@ -86,9 +86,6 @@ Controller::Controller(
     , mCurrentTool()
     , mLastToolTypePerLayer({ToolType::StructuralPencil, ToolType::ElectricalPencil, ToolType::RopePencil, std::nullopt})
 {
-    // We assume we start with at least a structural layer
-    assert(mModelController->HasLayer(LayerType::Structural));
-
     //
     // Create view
     //
@@ -1632,9 +1629,14 @@ void Controller::InternalUpdateModelControllerVisualizationModes()
 
     // Structural
 
-    assert(mModelController->HasLayer(LayerType::Structural));
-
-    mModelController->SetStructuralLayerVisualizationMode(mWorkbenchState.GetStructuralLayerVisualizationMode());
+    if (mModelController->HasLayer(LayerType::Structural))
+    {
+        mModelController->SetStructuralLayerVisualizationMode(mWorkbenchState.GetStructuralLayerVisualizationMode());
+    }
+    else
+    {
+        mModelController->SetStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType::None);
+    }
 
     // Electrical
 

@@ -106,16 +106,16 @@ public:
         switch (layer)
         {
             case LayerType::Structural:
-                return true;
+                return (bool)mLayers.StructuralLayer;
 
             case LayerType::Electrical:
-                return mLayers.HasElectricalLayer();
+                return (bool)mLayers.ElectricalLayer;
 
             case LayerType::Ropes:
-                return mLayers.HasRopesLayer();
+                return (bool)mLayers.RopesLayer;
 
             case LayerType::Texture:
-                return mLayers.HasTextureLayer();
+                return (bool)mLayers.TextureLayer;
         }
 
         assert(false);

@@ -348,8 +348,8 @@ void ShipDefinitionFormatDeSerializer::Save(
     ShipAttributes const shipAttributes = ShipAttributes(
         Version::CurrentVersion(),
         shipDefinition.Layers.Size,
-        shipDefinition.Layers.HasTextureLayer(),
-        shipDefinition.Layers.HasElectricalLayer(),
+        (bool)shipDefinition.Layers.TextureLayer,
+        (bool)shipDefinition.Layers.ElectricalLayer,
         PortableTimepoint::Now());
 
     AppendSection(
@@ -368,7 +368,7 @@ void ShipDefinitionFormatDeSerializer::Save(
         [&]() { return AppendMetadata(shipDefinition.Metadata, buffer); },
         buffer);
 
-    if (shipDefinition.Layers.HasTextureLayer())
+    if (shipDefinition.Layers.TextureLayer)
     {
         //
         // Write texture
@@ -380,7 +380,7 @@ void ShipDefinitionFormatDeSerializer::Save(
             [&]() { return AppendPngImage(shipDefinition.Layers.TextureLayer->Buffer, buffer); },
             buffer);
     }
-    else if (shipDefinition.Layers.HasStructuralLayer())
+    else if (shipDefinition.Layers.StructuralLayer)
     {
         //
         // Make and write a preview image
@@ -392,12 +392,16 @@ void ShipDefinitionFormatDeSerializer::Save(
             [&]() { return AppendPngPreview(*shipDefinition.Layers.StructuralLayer, buffer); },
             buffer);
     }
+    else
+    {
+        // Note: no preview image - but won't happen in reality that there's no structural layer
+    }
 
     //
     // Write structural layer
     //
 
-    if (shipDefinition.Layers.HasStructuralLayer())
+    if (shipDefinition.Layers.StructuralLayer)
     {
         AppendSection(
             outputFile,

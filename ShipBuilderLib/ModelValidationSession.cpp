@@ -46,9 +46,12 @@ void ModelValidationSession::InitializeValidationSteps()
 {
     // Initialize validations (can't do in cctor)
     assert(mValidationSteps.empty());
-    mValidationSteps.emplace_back(std::bind(&ModelValidationSession::PrevisitStructuralLayer, this));
-    mValidationSteps.emplace_back(std::bind(&ModelValidationSession::CheckEmptyStructuralLayer, this));
-    mValidationSteps.emplace_back(std::bind(&ModelValidationSession::CheckStructureTooLarge, this));
+    if (mModel.HasLayer(LayerType::Structural))
+    {
+        mValidationSteps.emplace_back(std::bind(&ModelValidationSession::PrevisitStructuralLayer, this));
+        mValidationSteps.emplace_back(std::bind(&ModelValidationSession::CheckEmptyStructuralLayer, this));
+        mValidationSteps.emplace_back(std::bind(&ModelValidationSession::CheckStructureTooLarge, this));
+    }
     if (mModel.HasLayer(LayerType::Electrical))
     {
         mValidationSteps.emplace_back(std::bind(&ModelValidationSession::PrevisitElectricalLayer, this));

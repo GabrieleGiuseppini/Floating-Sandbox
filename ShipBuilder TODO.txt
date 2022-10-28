@@ -289,10 +289,10 @@
 	= Copy & Cut buttons:
 		+ Buttons at "Edit" ribbon (new own section)
 		+ Reconciliation with selection: enable/disable
-		- private Controller::CopySelectionToClipboard()
+		= private Controller::CopySelectionToClipboard()
 			- Gets SelectionRect from SelectionManager, and LayerSelection from WorkbenchState::all-layers flag
 			- Then gets LayersRegion from ModelController, and shoves it into ClipboardManager
-			- Layer primitives:
+			= Layer primitives:
 				+ Buffer2D:
 					+ Buffer<>::CloneRegion(Rect) -> Buffer
 					+ Buffer::PasteRegion(pos, Buffer)
@@ -303,7 +303,7 @@
 					+ BlitFromRegion: takes responsibility of Paste
 						+ Nuke Paste afterwards
 					+ Renames: CloneRegion stays CloneRegion
-				- New plan:
+				= New plan:
 					- Spec:
 						! "Buffer2D knows nothing about copy'n'paste"
 						- "ShipLayers only has methods for ShipFactory load options (e.g. Rotate, Flip, etc.)"
@@ -312,7 +312,7 @@
 					     make ShipLayers with optional StructuralLayer, and Size (for flip/rotate)
 						+ Make sure Deserializers complain if no structural layer
 						X If not: make ShipLayersRegion and TODO: way to implement Rotate, Flip once
-						- Remove ShipLayers::HasXXX methods
+						+ Remove ShipLayers::HasXXX methods
 						+ Test
 							+ Add layer + Undo, X all layer types
 							+ Remove lyaer + Undo, X all layer types
