@@ -305,7 +305,7 @@
 					+ Renames: CloneRegion stays CloneRegion
 				- New plan:
 					- Spec:
-						- "Buffer2D knows nothing about copy'n'paste"
+						! "Buffer2D knows nothing about copy'n'paste"
 						- "ShipLayers only has methods for ShipFactory load options (e.g. Rotate, Flip, etc.)"
 							- Which anyway end up being used by ModelController as well
 					= 1: ShipLayers: see if can make Structural optional; before we make yet another "ShipLayersRegion" class, try and
@@ -313,14 +313,14 @@
 						+ Make sure Deserializers complain if no structural layer
 						X If not: make ShipLayersRegion and TODO: way to implement Rotate, Flip once
 						- Remove ShipLayers::HasXXX methods
-						- Test
-							- Add layer + Undo, X all layer types
-							- Remove lyaer + Undo, X all layer types
-							- Struc Pencil too + undo
-							- Elect Pencil too + undo
-							- Resize larger + undo
-							- Resize smaller + undo
-							- Rotate + undo
+						+ Test
+							+ Add layer + Undo, X all layer types
+							+ Remove lyaer + Undo, X all layer types
+							+ Struc Pencil tool + undo
+							+ Elect Pencil tool + undo
+							+ Resize larger + undo
+							+ Resize smaller + undo
+							+ Rotate + undo
 					- 2: Move XXXLayer() (and thus ShipLayers) methods that deal with Rope and Electric logic to ModelController,
 					     except for those needed by ShipFactory: Rotate, Flip, etc.
 						- Trim? Needed anywhere else?
