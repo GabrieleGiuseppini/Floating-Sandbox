@@ -344,13 +344,24 @@
 				+ "All layers" is picked up
 			+ Remove diagnostic logging
 		- Controller::Cut():
+			- Invoked by MainFrame
 			- Calls CopySelectionToClipboard(...), then:
-			- ModelController::~"Cut"(selection rect, which layers) => Undo
-				- Note: Undo leaves clipboard populated - that's fine
-				- "Generic Undo" class & ModelController Undo methods
-					- Used for paste (& cut?) undo
-					- Kinda like ShipLayers(Region) - or even same class, let's see - where Ropes and Electrical Panel are whole, and others plain buffer regions
-					- Who creates it? Method doing mod (e.g. paste)
+			- ModelController::~"Cut"(selection rect, which layers) => GenericUndo				
+				- "Generic Undo": class & ModelController Undo method
+					- Used for paste & cut undo, among eventually others
+					- GenericUndoPayload: kinda like ShipLayers(Region), with differences:
+						- Origin (coords)
+						- Ropes and Electrical Panel are whole, other buffers are "regions"
+						- Eventually, also ship metadata
+					- ModelController::Restore(GenericUndoPayload &&)
+				- ModelController::Cut(region, layer selection) -> GenericUndoPayload
+					- Make undo
+					- Implement cut for each layer
+				! Note: "Cut" Undo leaves clipboard populated - that's fine
+			- Store GenericUndo in UndoStack
+			- Tests:
+				- Cut for each individual layer, & Undo
+				- Cut for all layers, & Undo
 		+ Controller::Copy():
 			+ Calls CopySelectionToClipboard()
 	+ MainFrame::ReconciliateUIWithSelection(): enable/disable Cut, Copy, Deselect buttons
