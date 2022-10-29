@@ -4784,7 +4784,7 @@ void MainFrame::OnElectricalPanelEdit()
 void MainFrame::Copy()
 {
     assert(mController);
-    // TODO: invoke Controller::Copy()
+    mController->Copy();
 }
 
 void MainFrame::Cut()

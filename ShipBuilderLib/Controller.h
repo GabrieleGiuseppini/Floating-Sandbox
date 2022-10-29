@@ -185,6 +185,8 @@ public:
         std::unique_ptr<TextureLayerData> textureLayer,
         std::optional<std::string> originalTextureArtCredits);
 
+    void Copy() const;
+
     void AutoTrim();
 
     void Flip(DirectionType direction);
@@ -300,7 +302,7 @@ private:
     void InternalPushUndoForWholeLayer(wxString const & title);
 
     template<LayerType TLayerType, typename TFunctor>
-    void WrapLikelyLayerPresenceChangingOperation(TFunctor operation);
+    void WrapLikelyLayerPresenceChangingOperation(TFunctor operation);    
 
     //
 
@@ -339,6 +341,8 @@ private:
 
     template<bool IsForUndo>
     void InternalRotate90(RotationDirectionType direction);
+
+    void CopySelectionToClipboard() const;
 
     void NotifyModelMacroPropertiesUpdated();
 

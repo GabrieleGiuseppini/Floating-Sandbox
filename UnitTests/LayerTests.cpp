@@ -214,7 +214,7 @@ TEST(LayerTests, StructuralLayer_Reframe_Same)
     }
 }
 
-TEST(LayerTests, ElectricalLayer_Clone_Smaller)
+TEST(LayerTests, ElectricalLayer_CloneRegion_Smaller)
 {
     //
     // Create source layer
@@ -696,7 +696,7 @@ TEST(LayerTests, RopesLayer_Trim)
     EXPECT_EQ(targetLayer.Buffer[0].EndCoords, ShipSpaceCoordinates(7, 7));
 }
 
-TEST(LayerTests, RopesLayer_Clone_Smaller)
+TEST(LayerTests, RopesLayer_CloneRegion_Smaller)
 {
     //
     // Create source layer
@@ -743,7 +743,6 @@ TEST(LayerTests, RopesLayer_Clone_Smaller)
     EXPECT_EQ(targetLayer.Buffer[0].StartCoords, ShipSpaceCoordinates(3, 4));
     EXPECT_EQ(targetLayer.Buffer[0].EndCoords, ShipSpaceCoordinates(4, 5));
 }
-
 
 TEST(LayerTests, RopesLayer_Reframe_Smaller)
 {

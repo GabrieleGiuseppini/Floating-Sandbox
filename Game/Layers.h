@@ -170,7 +170,10 @@ struct RopesLayerData
         return RopesLayerData(Buffer.Clone());
     }
 
-    RopesLayerData CloneRegion(ShipSpaceRect const & region) const;
+    RopesLayerData CloneRegion(ShipSpaceRect const & region) const
+    {
+        return RopesLayerData(Buffer.CloneRegion(region));
+    }
 
     void Trim(ShipSpaceRect const & rect)
     {

@@ -44,6 +44,7 @@ ElectricalPanelMetadata ElectricalLayerData::MakedTrimmedPanel(
 {
     ElectricalPanelMetadata newPanel;
 
+    // Visit all instanced elements
     for (int y = 0; y < Buffer.Size.height; ++y)
     {
         for (int x = 0; x < Buffer.Size.width; ++x)
@@ -54,10 +55,12 @@ ElectricalPanelMetadata ElectricalLayerData::MakedTrimmedPanel(
             if (instanceIndex != NoneElectricalElementInstanceIndex
                 && coords.IsInRect(rect))
             {
-                // This instanced element remains
+                // This instanced element remains...
+                // ...see if it has an entry in the panel
                 auto searchIt = panel.find(instanceIndex);
                 if (searchIt != panel.end())
                 {
+                    // Copy to new panel
                     auto const [_, isInserted] = newPanel.emplace(instanceIndex, searchIt->second);
                     assert(isInserted);
                     (void)isInserted;
@@ -67,18 +70,6 @@ ElectricalPanelMetadata ElectricalLayerData::MakedTrimmedPanel(
     }
 
     return newPanel;
-}
-
-RopesLayerData RopesLayerData::CloneRegion(ShipSpaceRect const & region) const
-{
-    RopeBuffer newBuffer = Buffer;
-    newBuffer.Reframe(
-        region.size,
-        ShipSpaceCoordinates(
-            -region.origin.x,
-            -region.origin.y));
-
-    return RopesLayerData(std::move(newBuffer));
 }
 
 RopesLayerData RopesLayerData::MakeReframed(

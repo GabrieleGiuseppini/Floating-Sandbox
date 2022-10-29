@@ -81,6 +81,50 @@ struct RopeBuffer
         mBuffer.clear();
     }
 
+    RopeBuffer Clone() const
+    {
+        return RopeBuffer(mBuffer);
+    }
+
+    /*
+     * Copies ropes that have *both* endpoints in the specified region.
+     */
+    RopeBuffer CloneRegion(ShipSpaceRect const & region) const
+    {
+        RopeBuffer newBuffer = mBuffer;
+        newBuffer.Reframe(
+            region.size,
+            ShipSpaceCoordinates(
+                -region.origin.x,
+                -region.origin.y));
+
+        return newBuffer;
+    }
+
+    /*
+     * Copies ropes that have *at least* one endpoint in the specified region.
+     */    
+    RopeBuffer CopyRegion(ShipSpaceRect const & region) const
+    {
+        RopeBuffer newBuffer;
+
+        ShipSpaceSize const offset(region.origin.x, region.origin.y);
+
+        for (auto const & r : mBuffer)
+        {
+            if (r.StartCoords.IsInRect(region) || r.EndCoords.IsInRect(region))
+            {
+                newBuffer.EmplaceBack(
+                    r.StartCoords - offset,
+                    r.EndCoords - offset,
+                    r.Material,
+                    r.RenderColor);
+            }
+        }
+        
+        return newBuffer;
+    }
+
     void Flip(
         DirectionType direction,
         ShipSpaceSize const & size)
@@ -147,11 +191,6 @@ struct RopeBuffer
                 ++it;
             }
         }
-    }
-
-    RopeBuffer Clone() const
-    {
-        return RopeBuffer(mBuffer);
     }
 
 private:

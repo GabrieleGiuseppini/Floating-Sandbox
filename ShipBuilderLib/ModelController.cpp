@@ -332,7 +332,7 @@ void ModelController::ResizeShip(
     ShipSpaceSize const & newSize,
     ShipSpaceCoordinates const & originOffset)
 {
-    auto const originalShipSize = mModel.GetShipSize();
+    ShipSpaceSize const originalShipSize = mModel.GetShipSize();
 
     ShipSpaceRect newWholeShipRect({ 0, 0 }, newSize);
 
@@ -395,17 +395,13 @@ void ModelController::ResizeShip(
     {
         assert(!mIsTextureLayerInEphemeralVisualization);
 
-        // Convert (scale) rect to texture coordinates space
-        vec2f const shipToImage(
-            static_cast<float>(mModel.GetTextureLayer().Buffer.Size.width) / static_cast<float>(originalShipSize.width),
-            static_cast<float>(mModel.GetTextureLayer().Buffer.Size.height) / static_cast<float>(originalShipSize.height));
-        ImageSize const imageNewSize = ImageSize::FromFloatRound(newSize.ToFloat().scale(shipToImage));
-        ImageCoordinates imageOriginOffset = ImageCoordinates::FromFloatRound(originOffset.ToFloat().scale(shipToImage));
+        // Convert to texture space
+        vec2f const shipToTexture = GetShipSpaceToTextureSpaceFactor(originalShipSize, mModel.GetTextureLayer().Buffer.Size);
 
         mModel.SetTextureLayer(
             mModel.GetTextureLayer().MakeReframed(
-                imageNewSize,
-                imageOriginOffset,
+                ImageSize::FromFloatRound(newSize.ToFloat().scale(shipToTexture)),
+                ImageCoordinates::FromFloatRound(originOffset.ToFloat().scale(shipToTexture)),
                 rgbaColor(0, 0, 0, 0)));
 
         RegisterDirtyVisualization<VisualizationType::TextureLayer>(GetWholeTextureRect());
@@ -421,6 +417,57 @@ void ModelController::ResizeShip(
     assert(mModel.GetShipSize() == newSize);
     assert(GetWholeShipRect() == newWholeShipRect);
 }
+
+ShipLayers ModelController::Copy(
+    ShipSpaceRect const & region,
+    std::optional<LayerType> layerSelection) const
+{
+    // Structural
+    std::unique_ptr<StructuralLayerData> structuralLayerCopy;
+    if ((!layerSelection.has_value() || layerSelection == LayerType::Structural)
+        && mModel.HasLayer(LayerType::Structural))
+    {
+        structuralLayerCopy = std::make_unique<StructuralLayerData>(mModel.GetStructuralLayer().CloneRegion(region));
+    }
+
+    // Electrical
+    std::unique_ptr<ElectricalLayerData> electricalLayerCopy;
+    if ((!layerSelection.has_value() || layerSelection == LayerType::Electrical)
+        && mModel.HasLayer(LayerType::Electrical))
+    {
+        electricalLayerCopy = std::make_unique<ElectricalLayerData>(mModel.GetElectricalLayer().CloneRegion(region));
+    }
+
+    // Ropes
+    std::unique_ptr<RopesLayerData> ropesLayerCopy;
+    if ((!layerSelection.has_value() || layerSelection == LayerType::Ropes)
+        && mModel.HasLayer(LayerType::Ropes))
+    {
+        ropesLayerCopy = std::make_unique<RopesLayerData>(mModel.GetRopesLayer().Buffer.CopyRegion(region));
+    }
+
+    // Texture
+    std::unique_ptr<TextureLayerData> textureLayerCopy;
+    if ((!layerSelection.has_value() || layerSelection == LayerType::Texture)
+        && mModel.HasLayer(LayerType::Texture))
+    {
+        vec2f const shipToTexture = GetShipSpaceToTextureSpaceFactor(mModel.GetShipSize(), mModel.GetTextureLayer().Buffer.Size);
+
+        ImageRect const regionImageRect(
+            ImageCoordinates::FromFloatRound(region.origin.ToFloat().scale(shipToTexture)),
+            ImageSize::FromFloatRound(region.size.ToFloat().scale(shipToTexture)));
+
+        textureLayerCopy = std::make_unique<TextureLayerData>(mModel.GetTextureLayer().CloneRegion(regionImageRect));
+    }
+
+    return ShipLayers(
+        region.size,
+        std::move(structuralLayerCopy),
+        std::move(electricalLayerCopy),
+        std::move(ropesLayerCopy),
+        std::move(textureLayerCopy));
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Structural

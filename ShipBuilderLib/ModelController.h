@@ -207,12 +207,9 @@ public:
         return mModel.CloneExistingLayer<TLayer>();
     }
 
-    std::unique_ptr<ShipLayers> CloneRegion(
+    ShipLayers Copy(
         ShipSpaceRect const & region,
-        std::optional<LayerType> layerSelection) const
-    {
-        return mModel.CloneRegion(region, layerSelection);
-    }
+        std::optional<LayerType> layerSelection) const;
 
     //
     // Structural
@@ -340,6 +337,31 @@ public:
         assert(mModel.HasLayer(LayerType::Texture));
 
         return mModel.GetTextureLayer().Buffer.Size;
+    }
+
+    static vec2f GetShipSpaceToTextureSpaceFactor(
+        ShipSpaceSize const & shipSize,
+        ImageSize const & textureSize)
+    {
+        return vec2f(
+            static_cast<float>(textureSize.width) / static_cast<float>(shipSize.width),
+            static_cast<float>(textureSize.height) / static_cast<float>(shipSize.height));
+    }
+
+    // TODO: nuke
+    ImageRect ShipRectToTextureRectZ(
+        ShipSpaceRect const & shipRect,
+        ShipSpaceSize const & shipSize) const
+    {
+        assert(mModel.HasLayer(LayerType::Texture));
+
+        vec2f const shipToImage(
+            static_cast<float>(mModel.GetTextureLayer().Buffer.Size.width) / static_cast<float>(shipSize.width),
+            static_cast<float>(mModel.GetTextureLayer().Buffer.Size.height) / static_cast<float>(shipSize.height));
+
+        return ImageRect(
+            ImageCoordinates::FromFloatRound(shipRect.origin.ToFloat().scale(shipToImage)),
+            ImageSize::FromFloatRound(shipRect.size.ToFloat().scale(shipToImage)));
     }
 
     void SetTextureLayer(

@@ -48,16 +48,6 @@ ShipDefinition Model::MakeShipDefinition() const
         GetShipAutoTexturizationSettings());
 }
 
-std::unique_ptr<ShipLayers> Model::CloneRegion(
-    ShipSpaceRect const & region,
-    std::optional<LayerType> layerSelection) const
-{
-    // TODOHERE
-    (void)region;
-    (void)layerSelection;
-    return nullptr;
-}
-
 void Model::SetStructuralLayer(StructuralLayerData && structuralLayer)
 {
     assert(structuralLayer.Buffer.Size == GetShipSize());

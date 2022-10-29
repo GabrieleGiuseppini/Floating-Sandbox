@@ -286,12 +286,12 @@
 		+ Tests:
 			+ "Fix issue" workflows
 			+ Save workflow
-	= Copy & Cut buttons:
+	= Copy & Cut:
 		+ Buttons at "Edit" ribbon (new own section)
 		+ Reconciliation with selection: enable/disable
 		= private Controller::CopySelectionToClipboard()
-			- Gets SelectionRect from SelectionManager, and LayerSelection from WorkbenchState::all-layers flag
-			- Then gets LayersRegion from ModelController, and shoves it into ClipboardManager
+			+ Gets SelectionRect from SelectionManager, and LayerSelection from WorkbenchState::all-layers flag
+			+ Then gets LayersRegion from ModelController, and shoves it into ClipboardManager
 			= Layer primitives:
 				+ Buffer2D:
 					+ Buffer<>::CloneRegion(Rect) -> Buffer
@@ -308,7 +308,7 @@
 						! "Buffer2D knows nothing about copy'n'paste"
 						- "ShipLayers only has methods for ShipFactory load options (e.g. Rotate, Flip, etc.)"
 							- Which anyway end up being used by ModelController as well
-					= 1: ShipLayers: see if can make Structural optional; before we make yet another "ShipLayersRegion" class, try and
+					+ 1: ShipLayers: see if can make Structural optional; before we make yet another "ShipLayersRegion" class, try and
 					     make ShipLayers with optional StructuralLayer, and Size (for flip/rotate)
 						+ Make sure Deserializers complain if no structural layer
 						X If not: make ShipLayersRegion and TODO: way to implement Rotate, Flip once
@@ -322,59 +322,13 @@
 							+ Resize smaller + undo
 							+ Rotate + undo
 					- 2: Move XXXLayer() (and thus ShipLayers) methods that deal with Rope and Electric logic to ModelController,
-					     except for those needed by ShipFactory: Rotate, Flip, etc.
+					     except for Clone(), and for those needed by ShipFactory: Rotate(), Flip()
+						- TODO: leave this be for the time being - may be we don't need much duplication of elec panel and rope logic after all
+						- CloneRegion? Needed anywhere else?
 						- Trim? Needed anywhere else?
 						- MakeReframed? Needed anywhere else?
-						- Clone? Needed anywhere else?
+							- Think of making proper class for ElectricalPanel
 						- Others?
-				================================
-				- TODOHERE: OLD
-				- TODOHERE decide here on how much anemic we want Layers to be
-				- Spec: 
-					- Structural: Clone=OK | Paste=OK
-					- Electrical: Clone=trim panel (DONE) | Paste=requires dealing with instance IDs (merging) and panel (for both instance ID's and position conflicts) (opposite of MakedTrimmedPanel)
-					- Ropes: Clone=trim (DONE) | Paste=needs to shift positions and deal with conflicts (@RopesBuffer)
-					- Texture: Clone=OK | Paste=OK
-				- XXXLayer:
-					- TODO: we need a flag for eph Paste, while user moves mouse
-						- No elec magic in this case
-						- Whih brings the question: do we really need these (and the old ones, e.g. Trim/MakeReframes) methods @ layers now?  We have a mix of them in ModelController and in Layer/s now
-					- XXXLayer::CloneRegion(Rect) -> LayerData					
-						- NOTE: should mostly be done by now
-						- Struc: just buffer
-						- Elec: trims elec panel
-						- Ropes: keeps ropes also if one endpoint is out - i.e. it takes all ropes having at least one endpoint in region
-						- Texture: just buffer
-					- XXXLayer::PasteRegion(pos, LayerData, opaqueness_TODO)
-						- Electrical: 
-							- Lift code from Model
-							- Instance IDs: 
-								- Build old set from outside region
-								- For each new instanced:
-									- If ID can enter set, keep its ID and add to set
-									- Else: find new ID (w/loop), add it to set, ad store <oldID, newID> rename
-								- After paste into buffer, change ID of each instanced according to renames
-							- Panel:
-								- IDs: use renames from above
-								- Pos: if conflict => nuke pos (this is a shortcut)
-						- Ropes:
-							- Lift code from Model (if any)
-							- Shift positions (for new origin)
-							- If conflicting position or position out of range: nuke rope
-					- See if there are XXXLayer::obsolete methods now
-					- Add unit tests for Trim<->CloneRegion equivalence, all layers
-				- ShipLayers:
-					- TODO: need Structural to be optional; before we make yet another "ShipLayersRegion" class, try and
-					  make ShipLayers with optional StructuralLayer
-						- TODO: this class also needs Size (e.g. for Ropes operations)
-					- ShipLayers::CloneRegion(Rect, layer selection) -> ShipLayers
-					- ShipLayers::PasteRegion(pos, LayerData, layer selection)
-					- See if there are ShipLayers::obsolete methods now
-					- Add unit tests for Trim<->CloneRegion equivalence
-
-			- Implement with these Layer primitives:
-				- Model::CloneRegion(...)
-				- Model::PasteRegion(...)
 			X Rewrite/reroute whole Undo machinery @ Controller/ModelController/Model/Tools in terms of these
 				X TODO: think of changing tools' actions and eph visualizations wrt cloned regions: Model::Operation(...) returns LayerData
 					X Which then Undo action creator pairs with origin
@@ -382,17 +336,23 @@
 					X Ropes' Undo: still best to take whole layer, no risk of losing ropes
 					X NOT A GOOD IDEA: methods would then be un-harmonic, for some layers would return region and not for others (e.g. Ropes)
 						X Also would be not performant (continuous copy & paste vs only blit)
-			- ClipboardManager notifies IUserInterface @ population; used for: Paste		
-		- "Generic Undo"
-			- Kinda like ShipLayers(Region) - or even same class, let's see - where e.g. Ropes and Electrical Panel are whole
-			- Returned by ModelController methods and applied with specific ModelController method
-				- TODO: how to distinguish missing layers between "target has no layer" vs "no need to undo" (because unaffected)
+			+ ClipboardManager notifies IUserInterface @ population; used for: Paste		
+			+ ModelController::Copy -> ShipLayers:
+				+ Some layers are just buffer::CloneRegion, Ropes is Copy
+			+ Test:
+				+ Individual layer types are picked up
+				+ "All layers" is picked up
+			+ Remove diagnostic logging
 		- Controller::Cut():
 			- Calls CopySelectionToClipboard(...), then:
 			- ModelController::~"Cut"(selection rect, which layers) => Undo
 				- Note: Undo leaves clipboard populated - that's fine
-		- Controller::Copy():
-			- Calls CopySelectionToClipboard()
+				- "Generic Undo" class & ModelController Undo methods
+					- Used for paste (& cut?) undo
+					- Kinda like ShipLayers(Region) - or even same class, let's see - where Ropes and Electrical Panel are whole, and others plain buffer regions
+					- Who creates it? Method doing mod (e.g. paste)
+		+ Controller::Copy():
+			+ Calls CopySelectionToClipboard()
 	+ MainFrame::ReconciliateUIWithSelection(): enable/disable Cut, Copy, Deselect buttons
 	- Paste tool:
 		- Assets:
@@ -416,8 +376,10 @@
 				- Checkbox->Ctrl->PasteTool
 			- ModelController::PasteRegion(LayersRegion, origin) X 2 (ephemeral, normal) -> Layers (for undo)
 
+	- Tests:
+		- Ropes paste carries with it both and only ropes w/both endpoints in region, and with one endpoint in region
 
-= RenderContext:
++ RenderContext:
 	+ Single-threaded
 	+ Initializes on same canvas that main frame initializes on
 	+ Renders synchronously, on-demand via SB::MainFrame::OnPaint()

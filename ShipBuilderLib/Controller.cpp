@@ -673,6 +673,11 @@ void Controller::RestoreAllLayersForUndo(
     mUserInterface.RefreshView();
 }
 
+void Controller::Copy() const
+{
+    CopySelectionToClipboard();
+}
+
 void Controller::AutoTrim()
 {
     auto const scopedToolResumeState = SuspendTool();
@@ -2080,6 +2085,33 @@ void Controller::InternalRotate90(RotationDirectionType direction)
     // Refresh model visualizations
     mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
+}
+
+void Controller::CopySelectionToClipboard() const
+{
+    assert(mSelectionManager.GetSelection().has_value());
+
+    auto const selectionRect = *(mSelectionManager.GetSelection());
+
+    std::optional<LayerType> layerSelection;
+    if (mWorkbenchState.GetSelectionIsAllLayers())
+    {
+        // All layers
+        layerSelection = std::nullopt;
+    }
+    else
+    {
+        // Currently-selected layer
+        layerSelection = VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization());
+    }
+
+    // Get region from model controller
+    ShipLayers layersRegion = mModelController->Copy(
+        selectionRect,
+        layerSelection);
+
+    // Store region in clipboard manager
+    mWorkbenchState.GetClipboardManager().SetContent(std::move(layersRegion));
 }
 
 void Controller::NotifyModelMacroPropertiesUpdated()
