@@ -21,6 +21,11 @@ struct RopeBuffer
         return mBuffer.size();
     }
 
+    size_t GetByteSize() const
+    {
+        return mBuffer.size() * sizeof(RopeElement);
+    }
+
     auto begin() const
     {
         return mBuffer.begin();

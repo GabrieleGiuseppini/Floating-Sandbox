@@ -451,11 +451,10 @@ ShipLayers ModelController::Copy(
     if ((!layerSelection.has_value() || layerSelection == LayerType::Texture)
         && mModel.HasLayer(LayerType::Texture))
     {
-        vec2f const shipToTexture = GetShipSpaceToTextureSpaceFactor(mModel.GetShipSize(), mModel.GetTextureLayer().Buffer.Size);
-
-        ImageRect const regionImageRect(
-            ImageCoordinates::FromFloatRound(region.origin.ToFloat().scale(shipToTexture)),
-            ImageSize::FromFloatRound(region.size.ToFloat().scale(shipToTexture)));
+        ImageRect const regionImageRect = ShipSpaceToTextureSpace(
+            region,
+            mModel.GetShipSize(), 
+            mModel.GetTextureLayer().Buffer.Size);
 
         textureLayerCopy = std::make_unique<TextureLayerData>(mModel.GetTextureLayer().CloneRegion(regionImageRect));
     }
@@ -468,6 +467,40 @@ ShipLayers ModelController::Copy(
         std::move(textureLayerCopy));
 }
 
+GenericUndoPayload ModelController::EraseRegion(
+    ShipSpaceRect const & region,
+    std::optional<LayerType> const & layerSelection) const
+{
+    // TODOHERE
+}
+
+void ModelController::Restore(GenericUndoPayload && undoPayload)
+{
+    // Note: no layer presence changes
+
+    if (undoPayload.StructuralLayerRegion.has_value())
+    {
+        RestoreStructuralLayerRegion(
+            std::move(*undoPayload.StructuralLayerRegion),
+            ShipSpaceRect(
+                undoPayload.Origin,
+                undoPayload.StructuralLayerRegion->Buffer.Size),
+            undoPayload.Origin);
+    }
+
+    if (undoPayload.ElectricalLayerRegion.has_value())
+    {
+        // TODOHERE: figure out what to do
+        RestoreElectricalLayerRegionAndWholePanel(
+            std::move(*undoPayload.ElectricalLayerRegion),
+            ShipSpaceRect(
+                undoPayload.Origin,
+                undoPayload.ElectricalLayerRegion->Buffer.Size),
+            undoPayload.Origin);
+    }
+
+    // TODOHERE
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Structural
@@ -850,6 +883,7 @@ void ModelController::RestoreElectricalLayerRegion(
         sourceRegion,
         targetOrigin);
 
+    // TODOHERE: we should just blit sourceLayerRegion.Panel into current panel, as that is supposed to be a subset
     mModel.GetElectricalLayer().Panel = std::move(sourceLayerRegion.Panel);
 
     //
@@ -1090,6 +1124,29 @@ bool ModelController::EraseRopeAt(ShipSpaceCoordinates const & coords)
     {
         return false;
     }
+}
+
+void ModelController::RestoreRopesLayer(RopesLayerData && sourceLayer)
+{
+    assert(!mIsRopesLayerInEphemeralVisualization);
+
+    //
+    // Restore model
+    //
+
+    mModel.GetRopesLayer().Buffer = sourceLayer.Buffer;
+
+    //
+    // Re-initialize layer analysis
+    //
+
+    InitializeRopesLayerAnalysis();
+
+    //
+    // Update visualization
+    //
+
+    RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
 }
 
 void ModelController::RestoreRopesLayer(std::unique_ptr<RopesLayerData> sourceLayer)
@@ -2252,6 +2309,54 @@ std::optional<ImageRect> ModelController::DoTextureMagicWandEraseBackground(
     }
 
     return affectedRegion;
+}
+
+GenericUndoPayload ModelController::MakeGenericUndoPayload(
+    ShipSpaceRect const & region,
+    std::optional<LayerType> layerSelection) const
+{
+    std::optional<StructuralLayerData> structuralLayerRegion;
+    std::optional<ElectricalLayerData> electricalLayerRegion;
+    std::optional<RopesLayerData> ropesLayerWhole;
+    std::optional<TextureLayerData> textureLayerRegion;
+
+    if ((!layerSelection.has_value() || layerSelection == LayerType::Structural)
+        && mModel.HasLayer(LayerType::Structural))
+    {
+        structuralLayerRegion.emplace(mModel.GetStructuralLayer().CloneRegion(region));
+    }
+
+    if ((!layerSelection.has_value() || layerSelection == LayerType::Electrical)
+        && mModel.HasLayer(LayerType::Electrical))
+    {
+        electricalLayerRegion.emplace(
+            mModel.GetElectricalLayer().Buffer.CloneRegion(region),
+            mModel.GetElectricalLayer().Panel);
+    }
+
+    if ((!layerSelection.has_value() || layerSelection == LayerType::Ropes)
+        && mModel.HasLayer(LayerType::Ropes))
+    {
+        ropesLayerWhole = mModel.GetRopesLayer();
+    }
+
+    if ((!layerSelection.has_value() || layerSelection == LayerType::Texture)
+        && mModel.HasLayer(LayerType::Texture))
+    {
+        ImageRect const regionImageRect = ShipSpaceToTextureSpace(
+            region,
+            mModel.GetShipSize(),
+            mModel.GetTextureLayer().Buffer.Size);
+
+        textureLayerRegion.emplace(mModel.GetTextureLayer().CloneRegion(regionImageRect));
+    }
+
+    return GenericUndoPayload(
+        region.origin,
+        std::move(structuralLayerRegion),
+        std::move(electricalLayerRegion),
+        std::move(ropesLayerWhole),
+        std::move(textureLayerRegion));
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////

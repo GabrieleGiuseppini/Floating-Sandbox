@@ -185,7 +185,11 @@ public:
         std::unique_ptr<TextureLayerData> textureLayer,
         std::optional<std::string> originalTextureArtCredits);
 
+    void Restore(GenericUndoPayload && undoPayload);
+
     void Copy() const;
+
+    void Cut();
 
     void AutoTrim();
 
@@ -342,7 +346,9 @@ private:
     template<bool IsForUndo>
     void InternalRotate90(RotationDirectionType direction);
 
-    void CopySelectionToClipboard() const;
+    void CopySelectionToClipboard(
+        ShipSpaceRect const & selectionRegion,
+        std::optional<LayerType> const & layerSelection) const;
 
     void NotifyModelMacroPropertiesUpdated();
 

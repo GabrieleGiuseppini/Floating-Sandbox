@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #include "Controller.h"
 
+#include "GenericUndoPayload.h"
+
 #include "Tools/FloodTool.h"
 #include "Tools/LineTool.h"
 #include "Tools/MeasuringTapeTool.h"
@@ -673,9 +675,51 @@ void Controller::RestoreAllLayersForUndo(
     mUserInterface.RefreshView();
 }
 
+void Controller::Restore(GenericUndoPayload && undoPayload)
+{
+    // No layer-presence changing operations
+    mModelController->Restore(std::move(undoPayload));
+}
+
 void Controller::Copy() const
 {
-    CopySelectionToClipboard();
+    assert(mSelectionManager.GetSelection().has_value());
+    auto const selectionRegion = *(mSelectionManager.GetSelection());
+
+    std::optional<LayerType> const layerSelection = mWorkbenchState.GetSelectionIsAllLayers()
+        ? std::nullopt // All layers
+        : std::optional<LayerType>(VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization())); // Currently-selected layer
+
+    CopySelectionToClipboard(selectionRegion, layerSelection);
+}
+
+void Controller::Cut()
+{
+    assert(mSelectionManager.GetSelection().has_value());
+    auto const selectionRegion = *(mSelectionManager.GetSelection());
+
+    std::optional<LayerType> const layerSelection = mWorkbenchState.GetSelectionIsAllLayers()
+        ? std::nullopt // All layers
+        : std::optional<LayerType>(VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization())); // Currently-selected layer
+
+    // Copy to clipboard
+    CopySelectionToClipboard(selectionRegion, layerSelection);
+
+    // Cutout region
+    GenericUndoPayload undoPayload = mModelController->EraseRegion(selectionRegion, layerSelection);
+
+    // Store Undo
+    mUndoStack.Push(
+        _("Cut"),
+        undoPayload.GetTotalCost(),
+        mModelController->GetDirtyState(),
+        [undoPayload = std::move(undoPayload)](Controller & controller) mutable
+        {
+            controller.Restore(std::move(undoPayload));
+        });
+
+    mUserInterface.OnUndoStackStateChanged(mUndoStack);
+
 }
 
 void Controller::AutoTrim()
@@ -1413,7 +1457,7 @@ void Controller::InternalPushUndoForWholeLayer(wxString const & title)
     else if constexpr (TLayerType == LayerType::Ropes)
     {
         auto originalLayerClone = mModelController->CloneRopesLayer();
-        auto const cloneByteSize = originalLayerClone ? originalLayerClone->Buffer.GetSize() * sizeof(RopeElement) : 0;
+        auto const cloneByteSize = originalLayerClone ? originalLayerClone->Buffer.GetByteSize() : 0;
 
         // Create undo action
         mUndoStack.Push(
@@ -1923,7 +1967,7 @@ void Controller::InternalResizeShip(
         size_t const totalCost =
             (structuralLayerClone ? structuralLayerClone->Buffer.GetByteSize() : 0)
             + (electricalLayerClone ? electricalLayerClone->Buffer.GetByteSize() : 0)
-            + (ropesLayerClone ? ropesLayerClone->Buffer.GetSize() * sizeof(RopeElement) : 0)
+            + (ropesLayerClone ? ropesLayerClone->Buffer.GetByteSize() : 0)
             + (textureLayerClone ? textureLayerClone->Buffer.GetByteSize() : 0);
 
         // Create undo
@@ -2087,27 +2131,13 @@ void Controller::InternalRotate90(RotationDirectionType direction)
     mUserInterface.RefreshView();
 }
 
-void Controller::CopySelectionToClipboard() const
+void Controller::CopySelectionToClipboard(
+    ShipSpaceRect const & selectionRegion,
+    std::optional<LayerType> const & layerSelection) const
 {
-    assert(mSelectionManager.GetSelection().has_value());
-
-    auto const selectionRect = *(mSelectionManager.GetSelection());
-
-    std::optional<LayerType> layerSelection;
-    if (mWorkbenchState.GetSelectionIsAllLayers())
-    {
-        // All layers
-        layerSelection = std::nullopt;
-    }
-    else
-    {
-        // Currently-selected layer
-        layerSelection = VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization());
-    }
-
     // Get region from model controller
     ShipLayers layersRegion = mModelController->Copy(
-        selectionRect,
+        selectionRegion,
         layerSelection);
 
     // Store region in clipboard manager

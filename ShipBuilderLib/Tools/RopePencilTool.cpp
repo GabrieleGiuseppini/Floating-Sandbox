@@ -336,7 +336,7 @@ bool RopePencilTool::CommmitAndStopEngagement()
         {
             mController.StoreUndoAction(
                 _("Pencil Ropes"),
-                mEngagementData->OriginalLayerClone.Buffer.GetSize() * sizeof(RopeElement),
+                mEngagementData->OriginalLayerClone.Buffer.GetByteSize(),
                 mEngagementData->OriginalDirtyState,
                 [originalLayerClone = std::move(mEngagementData->OriginalLayerClone)](Controller & controller) mutable
                 {

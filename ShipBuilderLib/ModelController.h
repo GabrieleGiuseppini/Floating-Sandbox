@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "GenericUndoPayload.h"
 #include "IModelObservable.h"
 #include "InstancedElectricalElementSet.h"
 #include "Model.h"
@@ -211,6 +212,12 @@ public:
         ShipSpaceRect const & region,
         std::optional<LayerType> layerSelection) const;
 
+    GenericUndoPayload EraseRegion(
+        ShipSpaceRect const & region,
+        std::optional<LayerType> const & layerSelection) const;
+
+    void Restore(GenericUndoPayload && undoPayload);
+
     //
     // Structural
     //
@@ -312,6 +319,8 @@ public:
 
     bool EraseRopeAt(ShipSpaceCoordinates const & coords);
 
+    void RestoreRopesLayer(RopesLayerData && sourceLayer);
+
     void RestoreRopesLayer(std::unique_ptr<RopesLayerData> sourceLayer);
 
     void AddRopeForEphemeralVisualization(
@@ -348,20 +357,16 @@ public:
             static_cast<float>(textureSize.height) / static_cast<float>(shipSize.height));
     }
 
-    // TODO: nuke
-    ImageRect ShipRectToTextureRectZ(
+    static ImageRect ShipSpaceToTextureSpace(
         ShipSpaceRect const & shipRect,
-        ShipSpaceSize const & shipSize) const
+        ShipSpaceSize const & shipSize,
+        ImageSize const & textureSize)
     {
-        assert(mModel.HasLayer(LayerType::Texture));
-
-        vec2f const shipToImage(
-            static_cast<float>(mModel.GetTextureLayer().Buffer.Size.width) / static_cast<float>(shipSize.width),
-            static_cast<float>(mModel.GetTextureLayer().Buffer.Size.height) / static_cast<float>(shipSize.height));
+        vec2f const shipToTexture = GetShipSpaceToTextureSpaceFactor(shipSize, textureSize);
 
         return ImageRect(
-            ImageCoordinates::FromFloatRound(shipRect.origin.ToFloat().scale(shipToImage)),
-            ImageSize::FromFloatRound(shipRect.size.ToFloat().scale(shipToImage)));
+            ImageCoordinates::FromFloatRound(shipRect.origin.ToFloat().scale(shipToTexture)),
+            ImageSize::FromFloatRound(shipRect.size.ToFloat().scale(shipToTexture)));
     }
 
     void SetTextureLayer(
@@ -470,6 +475,10 @@ private:
         bool isAntiAlias,
         bool doContiguousOnly,
         TextureLayerData & layer);
+
+    GenericUndoPayload MakeGenericUndoPayload(
+        ShipSpaceRect const & region,
+        std::optional<LayerType> layerSelection) const;
 
     // Viz
 

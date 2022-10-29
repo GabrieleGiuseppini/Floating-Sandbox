@@ -4790,7 +4790,7 @@ void MainFrame::Copy()
 void MainFrame::Cut()
 {
     assert(mController);
-    // TODO: invoke Controller::Cut()
+    mController->Cut();
 }
 
 void MainFrame::Paste()
