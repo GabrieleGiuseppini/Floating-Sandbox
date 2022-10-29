@@ -345,17 +345,14 @@ void Controller::SetStructuralLayer(
         std::move(structuralLayer));
 }
 
-void Controller::RestoreStructuralLayerRegionForUndo(
-    StructuralLayerData && layerRegion,
+void Controller::RestoreStructuralLayerRegionBackupForUndo(
+    StructuralLayerData && layerRegionBackup,
     ShipSpaceCoordinates const & origin)
 {
     auto const scopedToolResumeState = SuspendTool();
 
-    ShipSpaceRect const regionRect({ {0, 0}, layerRegion.Buffer.Size });
-
-    mModelController->RestoreStructuralLayerRegion(
-        std::move(layerRegion),
-        regionRect,
+    mModelController->RestoreStructuralLayerRegionBackup(
+        std::move(layerRegionBackup),
         origin);
 
     // No need to update dirtyness, this is for undo
@@ -416,15 +413,14 @@ void Controller::RemoveElectricalLayer()
     InternalRemoveLayer<LayerType::Electrical>();
 }
 
-void Controller::RestoreElectricalLayerRegionForUndo(
-    ElectricalLayerData && layerRegion,
+void Controller::RestoreElectricalLayerRegionBackupForUndo(
+    ElectricalLayerData && layerRegionBackup,
     ShipSpaceCoordinates const & origin)
 {
     auto const scopedToolResumeState = SuspendTool();
 
-    mModelController->RestoreElectricalLayerRegion(
-        std::move(layerRegion),
-        { {0, 0}, layerRegion.Buffer.Size },
+    mModelController->RestoreElectricalLayerRegionBackup(
+        std::move(layerRegionBackup),
         origin);
 
     // No need to update dirtyness, this is for undo
@@ -483,16 +479,16 @@ void Controller::TrimElectricalParticlesWithoutSubstratum()
         {
             // Create undo action
 
-            ElectricalLayerData clippedRegionClone = originalLayerClone.CloneRegion(*affectedRect);
-            auto const clipByteSize = clippedRegionClone.Buffer.GetByteSize();
+            ElectricalLayerData clippedRegionBackup = originalLayerClone.MakeRegionBackup(*affectedRect);
+            auto const clipByteSize = clippedRegionBackup.Buffer.GetByteSize();
 
             mUndoStack.Push(
                 _("Trim Electrical"),
                 clipByteSize,
                 originalDirtyStateClone,
-                [clippedRegionClone = std::move(clippedRegionClone), origin = affectedRect->origin](Controller & controller) mutable
+                [clippedRegionBackup = std::move(clippedRegionBackup), origin = affectedRect->origin](Controller & controller) mutable
                 {
-                    controller.RestoreElectricalLayerRegionForUndo(std::move(clippedRegionClone), origin);
+                    controller.RestoreElectricalLayerRegionBackupForUndo(std::move(clippedRegionBackup), origin);
                 });
 
             mUserInterface.OnUndoStackStateChanged(mUndoStack);
@@ -523,6 +519,27 @@ void Controller::SetRopesLayer(
 void Controller::RemoveRopesLayer()
 {
     InternalRemoveLayer<LayerType::Ropes>();
+}
+
+void Controller::RestoreRopesLayerRegionBackupForUndo(
+    RopesLayerData && layerRegionBackup,
+    ShipSpaceCoordinates const & origin)
+{
+    auto const scopedToolResumeState = SuspendTool();
+
+    mModelController->RestoreRopesLayerRegionBackup(
+        std::move(layerRegionBackup),
+        origin);
+
+    // No need to update dirtyness, this is for undo
+
+    // Notify macro properties
+    NotifyModelMacroPropertiesUpdated();
+
+    // Refresh model visualizations
+    mModelController->UpdateVisualizations(*mView);
+    mUserInterface.RefreshView();
+
 }
 
 void Controller::RestoreRopesLayerForUndo(std::unique_ptr<RopesLayerData> ropesLayer)
@@ -564,15 +581,14 @@ void Controller::RemoveTextureLayer()
     InternalRemoveLayer<LayerType::Texture>();
 }
 
-void Controller::RestoreTextureLayerRegionForUndo(
-    TextureLayerData && layerRegion,
+void Controller::RestoreTextureLayerRegionBackupForUndo(
+    TextureLayerData && layerRegionBackup,
     ImageCoordinates const & origin)
 {
     auto const scopedToolResumeState = SuspendTool();
 
-    mModelController->RestoreTextureLayerRegion(
-        std::move(layerRegion),
-        { {0, 0}, layerRegion.Buffer.Size },
+    mModelController->RestoreTextureLayerRegionBackup(
+        std::move(layerRegionBackup),
         origin);
 
     // No need to update dirtyness, this is for undo
@@ -683,6 +699,8 @@ void Controller::Restore(GenericUndoPayload && undoPayload)
 
 void Controller::Copy() const
 {
+    auto const scopedToolResumeState = SuspendTool();
+
     assert(mSelectionManager.GetSelection().has_value());
     auto const selectionRegion = *(mSelectionManager.GetSelection());
 
@@ -690,11 +708,13 @@ void Controller::Copy() const
         ? std::nullopt // All layers
         : std::optional<LayerType>(VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization())); // Currently-selected layer
 
-    CopySelectionToClipboard(selectionRegion, layerSelection);
+    InternalCopySelectionToClipboard(selectionRegion, layerSelection);
 }
 
 void Controller::Cut()
 {
+    auto const scopedToolResumeState = SuspendTool();
+
     assert(mSelectionManager.GetSelection().has_value());
     auto const selectionRegion = *(mSelectionManager.GetSelection());
 
@@ -703,15 +723,16 @@ void Controller::Cut()
         : std::optional<LayerType>(VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization())); // Currently-selected layer
 
     // Copy to clipboard
-    CopySelectionToClipboard(selectionRegion, layerSelection);
+    InternalCopySelectionToClipboard(selectionRegion, layerSelection);
 
     // Cutout region
     GenericUndoPayload undoPayload = mModelController->EraseRegion(selectionRegion, layerSelection);
+    size_t const undoPayloadCost = undoPayload.GetTotalCost();
 
     // Store Undo
     mUndoStack.Push(
         _("Cut"),
-        undoPayload.GetTotalCost(),
+        undoPayloadCost,
         mModelController->GetDirtyState(),
         [undoPayload = std::move(undoPayload)](Controller & controller) mutable
         {
@@ -2131,7 +2152,7 @@ void Controller::InternalRotate90(RotationDirectionType direction)
     mUserInterface.RefreshView();
 }
 
-void Controller::CopySelectionToClipboard(
+void Controller::InternalCopySelectionToClipboard(
     ShipSpaceRect const & selectionRegion,
     std::optional<LayerType> const & layerSelection) const
 {

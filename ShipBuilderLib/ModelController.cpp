@@ -396,7 +396,7 @@ void ModelController::ResizeShip(
         assert(!mIsTextureLayerInEphemeralVisualization);
 
         // Convert to texture space
-        vec2f const shipToTexture = GetShipSpaceToTextureSpaceFactor(originalShipSize, mModel.GetTextureLayer().Buffer.Size);
+        vec2f const shipToTexture = GetShipSpaceToTextureSpaceFactor(originalShipSize, GetTextureSize());
 
         mModel.SetTextureLayer(
             mModel.GetTextureLayer().MakeReframed(
@@ -453,8 +453,8 @@ ShipLayers ModelController::Copy(
     {
         ImageRect const regionImageRect = ShipSpaceToTextureSpace(
             region,
-            mModel.GetShipSize(), 
-            mModel.GetTextureLayer().Buffer.Size);
+            GetShipSize(),
+            GetTextureSize());
 
         textureLayerCopy = std::make_unique<TextureLayerData>(mModel.GetTextureLayer().CloneRegion(regionImageRect));
     }
@@ -471,35 +471,52 @@ GenericUndoPayload ModelController::EraseRegion(
     ShipSpaceRect const & region,
     std::optional<LayerType> const & layerSelection) const
 {
-    // TODOHERE
+    //
+    // Prepare undo
+    //
+
+    GenericUndoPayload undoPayload = MakeGenericUndoPayload(region, layerSelection);
+
+    //
+    // Erase
+    //
+
+    // TODOHERE: use various flood/erase methods
+
+    return undoPayload;
 }
 
 void ModelController::Restore(GenericUndoPayload && undoPayload)
 {
     // Note: no layer presence changes
 
-    if (undoPayload.StructuralLayerRegion.has_value())
+    if (undoPayload.StructuralLayerRegionBackup.has_value())
     {
-        RestoreStructuralLayerRegion(
-            std::move(*undoPayload.StructuralLayerRegion),
-            ShipSpaceRect(
-                undoPayload.Origin,
-                undoPayload.StructuralLayerRegion->Buffer.Size),
+        RestoreStructuralLayerRegionBackup(
+            std::move(*undoPayload.StructuralLayerRegionBackup),
             undoPayload.Origin);
     }
 
-    if (undoPayload.ElectricalLayerRegion.has_value())
+    if (undoPayload.ElectricalLayerRegionBackup.has_value())
     {
-        // TODOHERE: figure out what to do
-        RestoreElectricalLayerRegionAndWholePanel(
-            std::move(*undoPayload.ElectricalLayerRegion),
-            ShipSpaceRect(
-                undoPayload.Origin,
-                undoPayload.ElectricalLayerRegion->Buffer.Size),
+        RestoreElectricalLayerRegionBackup(
+            std::move(*undoPayload.ElectricalLayerRegionBackup),
             undoPayload.Origin);
     }
 
-    // TODOHERE
+    if (undoPayload.RopesLayerRegionBackup.has_value())
+    {
+        RestoreRopesLayerRegionBackup(
+            std::move(*undoPayload.RopesLayerRegionBackup),
+            undoPayload.Origin);
+    }
+
+    if (undoPayload.TextureLayerRegionBackup.has_value())
+    {
+        RestoreTextureLayerRegionBackup(
+            std::move(*undoPayload.TextureLayerRegionBackup),
+            ShipSpaceToTextureSpace(undoPayload.Origin, GetShipSize(), GetTextureSize()));
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -602,9 +619,8 @@ std::optional<ShipSpaceRect> ModelController::StructuralFlood(
     return affectedRect;
 }
 
-void ModelController::RestoreStructuralLayerRegion(
-    StructuralLayerData && sourceLayerRegion,
-    ShipSpaceRect const & sourceRegion,
+void ModelController::RestoreStructuralLayerRegionBackup(
+    StructuralLayerData && sourceLayerRegionBackup,
     ShipSpaceCoordinates const & targetOrigin)
 {
     assert(mModel.HasLayer(LayerType::Structural));
@@ -615,9 +631,10 @@ void ModelController::RestoreStructuralLayerRegion(
     // Restore model
     //
 
-    mModel.GetStructuralLayer().Buffer.BlitFromRegion(
-        sourceLayerRegion.Buffer,
-        sourceRegion,
+    ShipSpaceSize const regionSize = sourceLayerRegionBackup.Buffer.Size;
+
+    mModel.GetStructuralLayer().RestoreRegionBackup(
+        std::move(sourceLayerRegionBackup),
         targetOrigin);
 
     //
@@ -630,8 +647,8 @@ void ModelController::RestoreStructuralLayerRegion(
     // Update visualization
     //
 
-    RegisterDirtyVisualization<VisualizationType::Game>(ShipSpaceRect(targetOrigin, sourceRegion.size));
-    RegisterDirtyVisualization<VisualizationType::StructuralLayer>(ShipSpaceRect(targetOrigin, sourceRegion.size));
+    RegisterDirtyVisualization<VisualizationType::Game>(ShipSpaceRect(targetOrigin, regionSize));
+    RegisterDirtyVisualization<VisualizationType::StructuralLayer>(ShipSpaceRect(targetOrigin, regionSize));
 }
 
 void ModelController::RestoreStructuralLayer(std::unique_ptr<StructuralLayerData> sourceLayer)
@@ -865,9 +882,8 @@ void ModelController::ElectricalRegionFill(
     RegisterDirtyVisualization<VisualizationType::ElectricalLayer>(region);
 }
 
-void ModelController::RestoreElectricalLayerRegion(
-    ElectricalLayerData && sourceLayerRegion,
-    ShipSpaceRect const & sourceRegion,
+void ModelController::RestoreElectricalLayerRegionBackup(
+    ElectricalLayerData && sourceLayerRegionBackup,
     ShipSpaceCoordinates const & targetOrigin)
 {
     assert(mModel.HasLayer(LayerType::Electrical));
@@ -878,13 +894,11 @@ void ModelController::RestoreElectricalLayerRegion(
     // Restore model
     //
 
-    mModel.GetElectricalLayer().Buffer.BlitFromRegion(
-        sourceLayerRegion.Buffer,
-        sourceRegion,
-        targetOrigin);
+    ShipSpaceSize const regionSize = sourceLayerRegionBackup.Buffer.Size;
 
-    // TODOHERE: we should just blit sourceLayerRegion.Panel into current panel, as that is supposed to be a subset
-    mModel.GetElectricalLayer().Panel = std::move(sourceLayerRegion.Panel);
+    mModel.GetElectricalLayer().RestoreRegionBackup(
+        std::move(sourceLayerRegionBackup),
+        targetOrigin);
 
     //
     // Re-initialize layer analysis (and instance IDs)
@@ -896,7 +910,7 @@ void ModelController::RestoreElectricalLayerRegion(
     // Update visualization
     //
 
-    RegisterDirtyVisualization<VisualizationType::ElectricalLayer>(ShipSpaceRect(targetOrigin, sourceRegion.size));
+    RegisterDirtyVisualization<VisualizationType::ElectricalLayer>(ShipSpaceRect(targetOrigin, regionSize));
 }
 
 void ModelController::RestoreElectricalLayer(std::unique_ptr<ElectricalLayerData> sourceLayer)
@@ -1126,7 +1140,9 @@ bool ModelController::EraseRopeAt(ShipSpaceCoordinates const & coords)
     }
 }
 
-void ModelController::RestoreRopesLayer(RopesLayerData && sourceLayer)
+void ModelController::RestoreRopesLayerRegionBackup(
+    RopesLayerData && sourceLayerRegionBackup,
+    ShipSpaceCoordinates const & targetOrigin)
 {
     assert(!mIsRopesLayerInEphemeralVisualization);
 
@@ -1134,7 +1150,9 @@ void ModelController::RestoreRopesLayer(RopesLayerData && sourceLayer)
     // Restore model
     //
 
-    mModel.GetRopesLayer().Buffer = sourceLayer.Buffer;
+    mModel.GetRopesLayer().RestoreRegionBackup(
+        std::move(sourceLayerRegionBackup),
+        targetOrigin);
 
     //
     // Re-initialize layer analysis
@@ -1354,9 +1372,8 @@ std::optional<ImageRect> ModelController::TextureMagicWandEraseBackground(
     return affectedRect;
 }
 
-void ModelController::RestoreTextureLayerRegion(
-    TextureLayerData && sourceLayerRegion,
-    ImageRect const & sourceRegion,
+void ModelController::RestoreTextureLayerRegionBackup(
+    TextureLayerData && sourceLayerRegionBackup,
     ImageCoordinates const & targetOrigin)
 {
     assert(mModel.HasLayer(LayerType::Texture));
@@ -1367,9 +1384,8 @@ void ModelController::RestoreTextureLayerRegion(
     // Restore model
     //
 
-    mModel.GetTextureLayer().Buffer.BlitFromRegion(
-        sourceLayerRegion.Buffer,
-        sourceRegion,
+    mModel.GetTextureLayer().RestoreRegionBackup(
+        std::move(sourceLayerRegionBackup),
         targetOrigin);
 
     //
@@ -2315,29 +2331,27 @@ GenericUndoPayload ModelController::MakeGenericUndoPayload(
     ShipSpaceRect const & region,
     std::optional<LayerType> layerSelection) const
 {
-    std::optional<StructuralLayerData> structuralLayerRegion;
-    std::optional<ElectricalLayerData> electricalLayerRegion;
-    std::optional<RopesLayerData> ropesLayerWhole;
-    std::optional<TextureLayerData> textureLayerRegion;
+    std::optional<StructuralLayerData> structuralLayerRegionBackup;
+    std::optional<ElectricalLayerData> electricalLayerRegionBackup;
+    std::optional<RopesLayerData> ropesLayerRegionBackup;
+    std::optional<TextureLayerData> textureLayerRegionBackup;
 
     if ((!layerSelection.has_value() || layerSelection == LayerType::Structural)
         && mModel.HasLayer(LayerType::Structural))
     {
-        structuralLayerRegion.emplace(mModel.GetStructuralLayer().CloneRegion(region));
+        structuralLayerRegionBackup = mModel.GetStructuralLayer().MakeRegionBackup(region);
     }
 
     if ((!layerSelection.has_value() || layerSelection == LayerType::Electrical)
         && mModel.HasLayer(LayerType::Electrical))
     {
-        electricalLayerRegion.emplace(
-            mModel.GetElectricalLayer().Buffer.CloneRegion(region),
-            mModel.GetElectricalLayer().Panel);
+        electricalLayerRegionBackup = mModel.GetElectricalLayer().MakeRegionBackup(region);
     }
 
     if ((!layerSelection.has_value() || layerSelection == LayerType::Ropes)
         && mModel.HasLayer(LayerType::Ropes))
     {
-        ropesLayerWhole = mModel.GetRopesLayer();
+        ropesLayerRegionBackup = mModel.GetRopesLayer().MakeRegionBackup(region);
     }
 
     if ((!layerSelection.has_value() || layerSelection == LayerType::Texture)
@@ -2345,18 +2359,18 @@ GenericUndoPayload ModelController::MakeGenericUndoPayload(
     {
         ImageRect const regionImageRect = ShipSpaceToTextureSpace(
             region,
-            mModel.GetShipSize(),
-            mModel.GetTextureLayer().Buffer.Size);
+            GetShipSize(),
+            GetTextureSize());
 
-        textureLayerRegion.emplace(mModel.GetTextureLayer().CloneRegion(regionImageRect));
+        textureLayerRegionBackup = mModel.GetTextureLayer().MakeRegionBackup(regionImageRect);
     }
 
     return GenericUndoPayload(
         region.origin,
-        std::move(structuralLayerRegion),
-        std::move(electricalLayerRegion),
-        std::move(ropesLayerWhole),
-        std::move(textureLayerRegion));
+        std::move(structuralLayerRegionBackup),
+        std::move(electricalLayerRegionBackup),
+        std::move(ropesLayerRegionBackup),
+        std::move(textureLayerRegionBackup));
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////

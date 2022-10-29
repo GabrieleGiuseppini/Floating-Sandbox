@@ -239,9 +239,8 @@ public:
         StructuralMaterial const * material,
         bool doContiguousOnly);
 
-    void RestoreStructuralLayerRegion(
-        StructuralLayerData && sourceLayerRegion,
-        ShipSpaceRect const & sourceRegion,
+    void RestoreStructuralLayerRegionBackup(
+        StructuralLayerData && sourceLayerRegionBackup,
         ShipSpaceCoordinates const & targetOrigin);
 
     void RestoreStructuralLayer(std::unique_ptr<StructuralLayerData> sourceLayer);
@@ -277,9 +276,8 @@ public:
         ShipSpaceRect const & region,
         ElectricalMaterial const * material);
 
-    void RestoreElectricalLayerRegion(
-        ElectricalLayerData && sourceLayerRegion,
-        ShipSpaceRect const & sourceRegion,
+    void RestoreElectricalLayerRegionBackup(
+        ElectricalLayerData && sourceLayerRegionBackup,
         ShipSpaceCoordinates const & targetOrigin);
 
     void RestoreElectricalLayer(std::unique_ptr<ElectricalLayerData> sourceLayer);
@@ -319,7 +317,9 @@ public:
 
     bool EraseRopeAt(ShipSpaceCoordinates const & coords);
 
-    void RestoreRopesLayer(RopesLayerData && sourceLayer);
+    void RestoreRopesLayerRegionBackup(
+        RopesLayerData && sourceLayerRegionBackup,
+        ShipSpaceCoordinates const & targetOrigin);
 
     void RestoreRopesLayer(std::unique_ptr<RopesLayerData> sourceLayer);
 
@@ -357,6 +357,16 @@ public:
             static_cast<float>(textureSize.height) / static_cast<float>(shipSize.height));
     }
 
+    static ImageCoordinates ShipSpaceToTextureSpace(
+        ShipSpaceCoordinates const & shipCoordinates,
+        ShipSpaceSize const & shipSize,
+        ImageSize const & textureSize)
+    {
+        vec2f const shipToTexture = GetShipSpaceToTextureSpaceFactor(shipSize, textureSize);
+
+        return ImageCoordinates::FromFloatRound(shipCoordinates.ToFloat().scale(shipToTexture));
+    }
+
     static ImageRect ShipSpaceToTextureSpace(
         ShipSpaceRect const & shipRect,
         ShipSpaceSize const & shipSize,
@@ -384,9 +394,8 @@ public:
         bool isAntiAlias,
         bool doContiguousOnly);
 
-    void RestoreTextureLayerRegion(
-        TextureLayerData && sourceLayerRegion,
-        ImageRect const & sourceRegion,
+    void RestoreTextureLayerRegionBackup(
+        TextureLayerData && sourceLayerRegionBackup,
         ImageCoordinates const & targetOrigin);
 
     void RestoreTextureLayer(

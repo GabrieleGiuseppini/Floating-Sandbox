@@ -132,8 +132,8 @@ public:
     void SetStructuralLayer(
         wxString actionTitle,
         StructuralLayerData && structuralLayer);
-    void RestoreStructuralLayerRegionForUndo(
-        StructuralLayerData && layerRegion,
+    void RestoreStructuralLayerRegionBackupForUndo(
+        StructuralLayerData && layerRegionBackup,
         ShipSpaceCoordinates const & origin);
     void RestoreStructuralLayerForUndo(std::unique_ptr<StructuralLayerData> structuralLayer);
 
@@ -144,8 +144,8 @@ public:
         wxString actionTitle,
         ElectricalLayerData && electricalLayer);
     void RemoveElectricalLayer();
-    void RestoreElectricalLayerRegionForUndo(
-        ElectricalLayerData && layerRegion,
+    void RestoreElectricalLayerRegionBackupForUndo(
+        ElectricalLayerData && layerRegionBackup,
         ShipSpaceCoordinates const & origin);
     void RestoreElectricalLayerForUndo(std::unique_ptr<ElectricalLayerData> electricalLayer);
     void TrimElectricalParticlesWithoutSubstratum();
@@ -157,6 +157,9 @@ public:
         wxString actionTitle,
         RopesLayerData && ropesLayer);
     void RemoveRopesLayer();
+    void RestoreRopesLayerRegionBackupForUndo(
+        RopesLayerData && layerRegionBackup,
+        ShipSpaceCoordinates const & origin);
     void RestoreRopesLayerForUndo(std::unique_ptr<RopesLayerData> ropesLayer);
 
     // Texture layer
@@ -166,8 +169,8 @@ public:
         TextureLayerData && textureLayer,
         std::optional<std::string> textureArtCredits);
     void RemoveTextureLayer();
-    void RestoreTextureLayerRegionForUndo(
-        TextureLayerData && layerRegion,
+    void RestoreTextureLayerRegionBackupForUndo(
+        TextureLayerData && layerRegionBackup,
         ImageCoordinates const & origin);
     void RestoreTextureLayerForUndo(
         std::unique_ptr<TextureLayerData> textureLayer,
@@ -346,7 +349,7 @@ private:
     template<bool IsForUndo>
     void InternalRotate90(RotationDirectionType direction);
 
-    void CopySelectionToClipboard(
+    void InternalCopySelectionToClipboard(
         ShipSpaceRect const & selectionRegion,
         std::optional<LayerType> const & layerSelection) const;
 

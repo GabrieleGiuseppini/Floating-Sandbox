@@ -23,33 +23,33 @@ public:
 
 	ShipSpaceCoordinates Origin;
 
-	std::optional<StructuralLayerData> StructuralLayerRegion;
-	std::optional<ElectricalLayerData> ElectricalLayerRegion; // Panel is whole
-	std::optional<RopesLayerData> RopesLayerWhole;
-	std::optional<TextureLayerData> TextureLayerRegion;
+	std::optional<StructuralLayerData> StructuralLayerRegionBackup;
+	std::optional<ElectricalLayerData> ElectricalLayerRegionBackup;
+	std::optional<RopesLayerData> RopesLayerRegionBackup;
+	std::optional<TextureLayerData> TextureLayerRegionBackup;
 
 	// Futurework: if needed, one day may add other elements, e.g. metadata
 
 	GenericUndoPayload(
 		ShipSpaceCoordinates const & origin,
-		std::optional<StructuralLayerData> && structuralLayerRegion,
-		std::optional<ElectricalLayerData > && electricalLayerRegion,
-		std::optional<RopesLayerData> && ropesLayerWhole,
-		std::optional<TextureLayerData> && textureLayerRegion)
+		std::optional<StructuralLayerData> && structuralLayerRegionBackup,
+		std::optional<ElectricalLayerData > && electricalLayerRegionBackup,
+		std::optional<RopesLayerData> && ropesLayerRegionBackup,
+		std::optional<TextureLayerData> && textureLayerRegionBackup)
 		: Origin(origin)
-		, StructuralLayerRegion(std::move(structuralLayerRegion))
-		, ElectricalLayerRegion(std::move(electricalLayerRegion))
-		, RopesLayerWhole(std::move(ropesLayerWhole))
-		, TextureLayerRegion(std::move(textureLayerRegion))
+		, StructuralLayerRegionBackup(std::move(structuralLayerRegionBackup))
+		, ElectricalLayerRegionBackup(std::move(electricalLayerRegionBackup))
+		, RopesLayerRegionBackup(std::move(ropesLayerRegionBackup))
+		, TextureLayerRegionBackup(std::move(textureLayerRegionBackup))
 	{}
 
 	size_t GetTotalCost() const
 	{
 		return
-			(StructuralLayerRegion ? StructuralLayerRegion->Buffer.GetByteSize() : 0)
-			+ (ElectricalLayerRegion ? ElectricalLayerRegion->Buffer.GetByteSize() : 0)
-			+ (RopesLayerWhole ? RopesLayerWhole->Buffer.GetByteSize() : 0)
-			+ (TextureLayerRegion ? TextureLayerRegion->Buffer.GetByteSize() : 0);
+			(StructuralLayerRegionBackup ? StructuralLayerRegionBackup->Buffer.GetByteSize() : 0)
+			+ (ElectricalLayerRegionBackup ? ElectricalLayerRegionBackup->Buffer.GetByteSize() : 0)
+			+ (RopesLayerRegionBackup ? RopesLayerRegionBackup->Buffer.GetByteSize() : 0)
+			+ (TextureLayerRegionBackup ? TextureLayerRegionBackup->Buffer.GetByteSize() : 0);
 	}
 };
 

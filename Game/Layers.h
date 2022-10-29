@@ -53,6 +53,23 @@ struct StructuralLayerData
         return StructuralLayerData(Buffer.CloneRegion(region));
     }
 
+    StructuralLayerData MakeRegionBackup(ShipSpaceRect const & region) const
+    {
+        return StructuralLayerData(Buffer.CloneRegion(region));
+    }
+
+    void RestoreRegionBackup(
+        StructuralLayerData && sourceRegionBackup,
+        ShipSpaceCoordinates const & position)
+    {
+        Buffer.BlitFromRegion(
+            sourceRegionBackup.Buffer,
+            ShipSpaceRect(
+                ShipSpaceCoordinates(0, 0),
+                sourceRegionBackup.Buffer.Size),
+            position);
+    }
+
     void Trim(ShipSpaceRect const & rect)
     {
         Buffer.Trim(rect);
@@ -124,6 +141,29 @@ struct ElectricalLayerData
             MakedTrimmedPanel(Panel, region));
     }
 
+    ElectricalLayerData MakeRegionBackup(ShipSpaceRect const & region) const
+    {
+        ElectricalPanelMetadata panelClone = Panel;
+
+        return ElectricalLayerData(
+            Buffer.CloneRegion(region),
+            std::move(panelClone)); // Panel is whole
+    }
+
+    void RestoreRegionBackup(
+        ElectricalLayerData && sourceRegionBackup,
+        ShipSpaceCoordinates const & position)
+    {
+        Buffer.BlitFromRegion(
+            sourceRegionBackup.Buffer,
+            ShipSpaceRect(
+                ShipSpaceCoordinates(0, 0),
+                sourceRegionBackup.Buffer.Size),
+            position);
+
+        Panel = std::move(sourceRegionBackup.Panel); // Panel is whole
+    }
+
     void Trim(ShipSpaceRect const & rect)
     {
         Panel = MakedTrimmedPanel(Panel, rect);
@@ -175,6 +215,20 @@ struct RopesLayerData
         return RopesLayerData(Buffer.CloneRegion(region));
     }
 
+    RopesLayerData MakeRegionBackup(ShipSpaceRect const & region) const
+    {
+        (void)region;
+        return RopesLayerData(Buffer.Clone()); // Buffer is whole
+    }
+
+    void RestoreRegionBackup(
+        RopesLayerData && sourceRegionBackup,
+        ShipSpaceCoordinates const & position)
+    {
+        (void)position;
+        Buffer = std::move(sourceRegionBackup.Buffer); // Buffer is whole
+    }
+
     void Trim(ShipSpaceRect const & rect)
     {
         Buffer.Trim(rect.origin, rect.size);
@@ -212,6 +266,23 @@ struct TextureLayerData
     TextureLayerData CloneRegion(ImageRect const & region) const
     {
         return TextureLayerData(Buffer.CloneRegion(region));
+    }
+
+    TextureLayerData MakeRegionBackup(ImageRect const & region) const
+    {
+        return TextureLayerData(Buffer.CloneRegion(region));
+    }
+
+    void RestoreRegionBackup(
+        TextureLayerData && sourceRegionBackup,
+        ImageCoordinates const & position)
+    {
+        Buffer.BlitFromRegion(
+            sourceRegionBackup.Buffer,
+            ImageRect(
+                ImageCoordinates(0, 0),
+                sourceRegionBackup.Buffer.Size),
+            position);
     }
 
     void Trim(ImageRect const & rect)

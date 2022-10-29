@@ -354,32 +354,13 @@
 						+ Ropes and Electrical Panel are whole, other buffers are "regions"
 						+ Eventually, also ship metadata
 					+ private ModelController::MakeGenericUndoPayload(rect, layer selection)
-					- TODO: fix this one first:
-						- Currently: other electrical layer undo's (e.g. LineTool, PencilTool) create restore payloads via ElectricalLayerData::CloneRegion(),
-						  which trims panel and only carries panel region; its undo should then "blit" from the undo payload back into the panel, but that's
-						  quite complicated. Ideally we create instead an electrical undo payload that carries a buffer region yes, but then the *whole* payload. 
-						  If we do this, then ModelController::RestoreElectricalLayerRegion can stay as it is (replacing whole panel with source panel).
-						  Note that this is also what we currently do (correctly) at ModelController::MakeGenericUndoPayload, with inline code that does the
-						  two-step ElectricalLayerData backup; if we end up creating a new method for this, it should be invoked here as well.
-						  - Option 1: XXXLayer::MakeBackup(region) at *all* layers.
-
-					= public ModelController::Restore(GenericUndoPayload &&)				
-						- TODOHERE: finish this one - figure out what to do w/panel & ropes
-						- TODO: ModelController::RestoreElectricalLayerRegion: do blit of panel
-							- Callers:
-								- Controller::TrimElectricalParticlesWithoutSubstratum's undo
-									- Panel is trimmed!
-								- LineTool::Undo:
-									- Panel is trimmed!
-								- PencilTool::Undo:
-									- Panel is trimmed!
+					+ public ModelController::Restore(GenericUndoPayload &&)				
 				= ModelController::EraseRegion(region, layer selection) -> GenericUndoPayload
-					- Make undo via MakeGenericUndoPayload
-					- Implement cut for each layer
-					- Return undo
+					+ Make undo via MakeGenericUndoPayload
+					- Implement cut for each layer - HERE
+					+ Return undo
 				! Note: "Cut" Undo leaves clipboard populated - that's fine
 			+ Store GenericUndo in UndoStack
-			- 
 			- Tests:
 				- Cut for each individual layer, & Undo
 				- Cut for all layers, & Undo

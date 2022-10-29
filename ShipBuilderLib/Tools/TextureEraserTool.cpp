@@ -274,16 +274,16 @@ void TextureEraserTool::EndEngagement()
         // Create undo action
         //
 
-        auto clippedLayerClone = mOriginalLayerClone.CloneRegion(*mEngagementData->EditRegion);
-        auto const clipByteSize = clippedLayerClone.Buffer.GetByteSize();
+        auto clippedLayerBackup = mOriginalLayerClone.MakeRegionBackup(*mEngagementData->EditRegion);
+        auto const clipByteSize = clippedLayerBackup.Buffer.GetByteSize();
 
         mController.StoreUndoAction(
             _("Eraser Texture"),
             clipByteSize,
             mEngagementData->OriginalDirtyState,
-            [clippedLayerClone = std::move(clippedLayerClone), origin = mEngagementData->EditRegion->origin](Controller & controller) mutable
+            [clippedLayerBackup = std::move(clippedLayerBackup), origin = mEngagementData->EditRegion->origin](Controller & controller) mutable
             {
-                controller.RestoreTextureLayerRegionForUndo(std::move(clippedLayerClone), origin);
+                controller.RestoreTextureLayerRegionBackupForUndo(std::move(clippedLayerBackup), origin);
             });
     }
 

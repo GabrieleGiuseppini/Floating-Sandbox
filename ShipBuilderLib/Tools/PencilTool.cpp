@@ -436,8 +436,8 @@ void PencilTool<TLayer, IsEraser>::EndEngagement()
         // Create undo action
         //
 
-        auto clippedLayerClone = mOriginalLayerClone.CloneRegion(*mEngagementData->EditRegion);
-        auto const clipByteSize = clippedLayerClone.Buffer.GetByteSize();
+        auto clippedLayerBackup = mOriginalLayerClone.MakeRegionBackup(*mEngagementData->EditRegion);
+        auto const clipByteSize = clippedLayerBackup.Buffer.GetByteSize();
 
         mController.StoreUndoAction(
             IsEraser
@@ -445,17 +445,17 @@ void PencilTool<TLayer, IsEraser>::EndEngagement()
             : (TLayer == LayerType::Structural ? _("Pencil Structural") : _("Pencil Electrical")),
             clipByteSize,
             mEngagementData->OriginalDirtyState,
-            [clippedLayerClone = std::move(clippedLayerClone), origin = mEngagementData->EditRegion->origin](Controller & controller) mutable
+            [clippedLayerBackup = std::move(clippedLayerBackup), origin = mEngagementData->EditRegion->origin](Controller & controller) mutable
             {
                 if constexpr(TLayer == LayerType::Structural)
                 {
-                    controller.RestoreStructuralLayerRegionForUndo(std::move(clippedLayerClone), origin);
+                    controller.RestoreStructuralLayerRegionBackupForUndo(std::move(clippedLayerBackup), origin);
                 }
                 else
                 {
                     static_assert(TLayer == LayerType::Electrical);
 
-                    controller.RestoreElectricalLayerRegionForUndo(std::move(clippedLayerClone), origin);
+                    controller.RestoreElectricalLayerRegionBackupForUndo(std::move(clippedLayerBackup), origin);
                 }
             });
     }
