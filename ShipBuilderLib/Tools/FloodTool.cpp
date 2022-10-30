@@ -102,17 +102,17 @@ void FloodTool<TLayer>::DoEdit(
     {
         // Create undo action
 
-        layerClone.Trim(*affectedRegion);
+        auto clippedLayerBackup = layerClone.MakeRegionBackup(*affectedRegion);
         auto const cloneByteSize = layerClone.Buffer.GetByteSize();
 
         mController.StoreUndoAction(
             TLayer == LayerType::Structural ? _("Flood Structural") : _("Flood Electrical"),
             cloneByteSize,
             layerDirtyStateClone,
-            [layerClone = std::move(layerClone), origin = affectedRegion->origin](Controller & controller) mutable
+            [clippedLayerBackup = std::move(clippedLayerBackup), origin = affectedRegion->origin](Controller & controller) mutable
             {
                 static_assert(TLayer == LayerType::Structural);
-                controller.RestoreStructuralLayerRegionForUndo(std::move(layerClone), origin);
+                controller.RestoreStructuralLayerRegionBackupForUndo(std::move(clippedLayerBackup), origin);
             });
 
         // Display sampled material

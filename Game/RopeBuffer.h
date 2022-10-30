@@ -130,6 +130,21 @@ struct RopeBuffer
         return newBuffer;
     }
 
+    void EraseRegion(ShipSpaceRect const & region)
+    {
+        for (auto it = mBuffer.begin(); it != mBuffer.end(); /* incremented in loop */)
+        {
+            if (it->StartCoords.IsInRect(region) || it->EndCoords.IsInRect(region))
+            {
+                it = mBuffer.erase(it);
+            }
+            else
+            {
+                ++it;
+            }
+        }
+    }
+
     void Flip(
         DirectionType direction,
         ShipSpaceSize const & size)

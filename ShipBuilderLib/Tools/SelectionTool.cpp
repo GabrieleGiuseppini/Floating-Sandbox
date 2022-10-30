@@ -75,6 +75,9 @@ SelectionTool::~SelectionTool()
 {
     if (mCurrentSelection || mEngagementData)
     {
+        // Remove selection
+        mSelectionManager.SetSelection(std::nullopt);
+
         // Remove overlay
         mController.GetView().RemoveSelectionOverlay();
         mController.GetUserInterface().RefreshView();

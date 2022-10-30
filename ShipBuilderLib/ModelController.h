@@ -214,7 +214,7 @@ public:
 
     GenericUndoPayload EraseRegion(
         ShipSpaceRect const & region,
-        std::optional<LayerType> const & layerSelection) const;
+        std::optional<LayerType> const & layerSelection);
 
     void Restore(GenericUndoPayload && undoPayload);
 
@@ -317,6 +317,8 @@ public:
 
     bool EraseRopeAt(ShipSpaceCoordinates const & coords);
 
+    void EraseRopesRegion(ShipSpaceRect const & region);
+
     void RestoreRopesLayerRegionBackup(
         RopesLayerData && sourceLayerRegionBackup,
         ShipSpaceCoordinates const & targetOrigin);
@@ -357,6 +359,15 @@ public:
             static_cast<float>(textureSize.height) / static_cast<float>(shipSize.height));
     }
 
+    static vec2f GetTextureSpaceToShipSpaceFactor(
+        ImageSize const & textureSize,
+        ShipSpaceSize const & shipSize)
+    {
+        return vec2f(
+            static_cast<float>(shipSize.width) / static_cast<float>(textureSize.width),
+            static_cast<float>(shipSize.height) / static_cast<float>(textureSize.height));
+    }
+
     static ImageCoordinates ShipSpaceToTextureSpace(
         ShipSpaceCoordinates const & shipCoordinates,
         ShipSpaceSize const & shipSize,
@@ -365,7 +376,7 @@ public:
         vec2f const shipToTexture = GetShipSpaceToTextureSpaceFactor(shipSize, textureSize);
 
         return ImageCoordinates::FromFloatRound(shipCoordinates.ToFloat().scale(shipToTexture));
-    }
+    }    
 
     static ImageRect ShipSpaceToTextureSpace(
         ShipSpaceRect const & shipRect,
@@ -379,6 +390,8 @@ public:
             ImageSize::FromFloatRound(shipRect.size.ToFloat().scale(shipToTexture)));
     }
 
+    ShipSpaceRect ImageRectToContainingShipSpaceRect(ImageRect const & imageRect) const;
+
     void SetTextureLayer(
         TextureLayerData && textureLayer,
         std::optional<std::string> originalTextureArtCredits);
@@ -386,7 +399,7 @@ public:
 
     std::unique_ptr<TextureLayerData> CloneTextureLayer() const;
 
-    void TextureRegionErase(ImageRect const & region);
+    void EraseTextureRegion(ImageRect const & region);
 
     std::optional<ImageRect> TextureMagicWandEraseBackground(
         ImageCoordinates const & start,
@@ -488,6 +501,14 @@ private:
     GenericUndoPayload MakeGenericUndoPayload(
         ShipSpaceRect const & region,
         std::optional<LayerType> layerSelection) const;
+
+    bool CheckLayerApplicability(
+        std::optional<LayerType> layerSelection,
+        LayerType layer) const
+    {
+        return (!layerSelection.has_value() || layerSelection == layer)
+            && HasLayer(layer);
+    }
 
     // Viz
 

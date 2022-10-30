@@ -241,7 +241,7 @@ void TextureEraserTool::DoEdit(ImageCoordinates const & mouseCoordinates)
             auto const applicableRect = CalculateApplicableRect(pos);
             if (applicableRect)
             {
-                mController.GetModelController().TextureRegionErase(*applicableRect);
+                mController.GetModelController().EraseTextureRegion(*applicableRect);
                 
                 // Update edit region
                 if (!mEngagementData->EditRegion)

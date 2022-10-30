@@ -695,14 +695,21 @@ void Controller::Restore(GenericUndoPayload && undoPayload)
 {
     // No layer-presence changing operations
     mModelController->Restore(std::move(undoPayload));
+
+    // Notify macro properties
+    NotifyModelMacroPropertiesUpdated();
+
+    // Refresh model visualizations
+    mModelController->UpdateVisualizations(*mView);
+    mUserInterface.RefreshView();
 }
 
 void Controller::Copy() const
 {
-    auto const scopedToolResumeState = SuspendTool();
-
     assert(mSelectionManager.GetSelection().has_value());
-    auto const selectionRegion = *(mSelectionManager.GetSelection());
+    auto const selectionRegion = *(mSelectionManager.GetSelection()); // Get selection before we remove tool
+
+    auto const scopedToolResumeState = SuspendTool();
 
     std::optional<LayerType> const layerSelection = mWorkbenchState.GetSelectionIsAllLayers()
         ? std::nullopt // All layers
@@ -713,10 +720,10 @@ void Controller::Copy() const
 
 void Controller::Cut()
 {
-    auto const scopedToolResumeState = SuspendTool();
-
     assert(mSelectionManager.GetSelection().has_value());
-    auto const selectionRegion = *(mSelectionManager.GetSelection());
+    auto const selectionRegion = *(mSelectionManager.GetSelection()); // Get selection before we remove tool
+
+    auto const scopedToolResumeState = SuspendTool();
 
     std::optional<LayerType> const layerSelection = mWorkbenchState.GetSelectionIsAllLayers()
         ? std::nullopt // All layers
@@ -725,11 +732,11 @@ void Controller::Cut()
     // Copy to clipboard
     InternalCopySelectionToClipboard(selectionRegion, layerSelection);
 
-    // Cutout region
+    // Erase region
     GenericUndoPayload undoPayload = mModelController->EraseRegion(selectionRegion, layerSelection);
-    size_t const undoPayloadCost = undoPayload.GetTotalCost();
 
     // Store Undo
+    size_t const undoPayloadCost = undoPayload.GetTotalCost();
     mUndoStack.Push(
         _("Cut"),
         undoPayloadCost,
@@ -741,6 +748,12 @@ void Controller::Cut()
 
     mUserInterface.OnUndoStackStateChanged(mUndoStack);
 
+    // Notify macro properties
+    NotifyModelMacroPropertiesUpdated();
+
+    // Refresh model visualizations
+    mModelController->UpdateVisualizations(*mView);
+    mUserInterface.RefreshView();
 }
 
 void Controller::AutoTrim()
@@ -1471,8 +1484,7 @@ void Controller::InternalPushUndoForWholeLayer(wxString const & title)
             originalDirtyStateClone,
             [originalLayerClone = std::move(originalLayerClone)](Controller & controller) mutable
             {
-                controller.RestoreElectricalLayerForUndo(
-                    std::move(originalLayerClone));
+                controller.RestoreElectricalLayerForUndo(std::move(originalLayerClone));
             });
     }
     else if constexpr (TLayerType == LayerType::Ropes)
@@ -1487,8 +1499,7 @@ void Controller::InternalPushUndoForWholeLayer(wxString const & title)
             originalDirtyStateClone,
             [originalLayerClone = std::move(originalLayerClone)](Controller & controller) mutable
             {
-                controller.RestoreRopesLayerForUndo(
-                    std::move(originalLayerClone));
+                controller.RestoreRopesLayerForUndo(std::move(originalLayerClone));
             });
     }
     else if constexpr (TLayerType == LayerType::Structural)
@@ -1503,8 +1514,7 @@ void Controller::InternalPushUndoForWholeLayer(wxString const & title)
             originalDirtyStateClone,
             [originalLayerClone = std::move(originalLayerClone)](Controller & controller) mutable
             {
-                controller.RestoreStructuralLayerForUndo(
-                    std::move(originalLayerClone));
+                controller.RestoreStructuralLayerForUndo(std::move(originalLayerClone));
             });
     }
     else

@@ -134,8 +134,7 @@ public:
     Buffer2D CloneRegion(_IntegralRect<TIntegralTag> const & regionRect) const
     {
         // The requested region is entirely within this buffer
-        assert(regionRect.origin.IsInSize(this->Size));
-        assert((regionRect.origin + regionRect.size).IsInSize(this->Size));
+        assert(regionRect.IsContainedInRect(_IntegralRect<TIntegralTag>(_IntegralCoordinates<TIntegralTag>(0, 0), Size)));
 
         auto newData = std::make_unique<TElement[]>(regionRect.size.width * regionRect.size.height);
 
@@ -160,10 +159,8 @@ public:
      */
     void Trim(_IntegralRect<TIntegralTag> const & rect)
     {
-        // The origin falls in our current rect
-        assert(rect.origin.IsInSize(Size));
-        // The new rect is smaller than or equal our current rect
-        assert(_IntegralRect<TIntegralTag>(rect.origin, rect.size).IsContainedInRect(_IntegralRect<TIntegralTag>(_IntegralCoordinates<TIntegralTag>(0, 0), Size)));
+        // The requested region is entirely within this buffer
+        assert(rect.IsContainedInRect(_IntegralRect<TIntegralTag>(_IntegralCoordinates<TIntegralTag>(0, 0), Size)));
 
         if (rect.size != Size)
         {

@@ -43,16 +43,16 @@ void TextureMagicWandTool::OnLeftMouseDown()
         {
             // Create undo action
 
-            layerClone.Trim(*affectedRegion);
-            auto const cloneByteSize = layerClone.Buffer.GetByteSize();
+            auto clippedLayerBackup = layerClone.MakeRegionBackup(*affectedRegion);
+            auto const cloneByteSize = clippedLayerBackup.Buffer.GetByteSize();
 
             mController.StoreUndoAction(
                 _("Background Erase"),
                 cloneByteSize,
                 layerDirtyStateClone,
-                [layerClone = std::move(layerClone), origin = affectedRegion->origin](Controller & controller) mutable
+                [clippedLayerBackup = std::move(clippedLayerBackup), origin = affectedRegion->origin](Controller & controller) mutable
                 {
-                    controller.RestoreTextureLayerRegionForUndo(std::move(layerClone), origin);
+                    controller.RestoreTextureLayerRegionBackupForUndo(std::move(clippedLayerBackup), origin);
                 });
 
             // Epilog

@@ -286,13 +286,13 @@
 		+ Tests:
 			+ "Fix issue" workflows
 			+ Save workflow
-	= Copy & Cut:
+	+ Copy & Cut:
 		+ Buttons at "Edit" ribbon (new own section)
 		+ Reconciliation with selection: enable/disable
-		= private Controller::CopySelectionToClipboard()
+		+ private Controller::CopySelectionToClipboard()
 			+ Gets SelectionRect from SelectionManager, and LayerSelection from WorkbenchState::all-layers flag
 			+ Then gets LayersRegion from ModelController, and shoves it into ClipboardManager
-			= Layer primitives:
+			+ Layer primitives:
 				+ Buffer2D:
 					+ Buffer<>::CloneRegion(Rect) -> Buffer
 					+ Buffer::PasteRegion(pos, Buffer)
@@ -303,10 +303,10 @@
 					+ BlitFromRegion: takes responsibility of Paste
 						+ Nuke Paste afterwards
 					+ Renames: CloneRegion stays CloneRegion
-				= New plan:
-					- Spec:
+				+ New plan:
+					! Spec:
 						! "Buffer2D knows nothing about copy'n'paste"
-						- "ShipLayers only has methods for ShipFactory load options (e.g. Rotate, Flip, etc.)"
+						X "ShipLayers only has methods for ShipFactory load options (e.g. Rotate, Flip, etc.)"
 							- Which anyway end up being used by ModelController as well
 					+ 1: ShipLayers: see if can make Structural optional; before we make yet another "ShipLayersRegion" class, try and
 					     make ShipLayers with optional StructuralLayer, and Size (for flip/rotate)
@@ -321,7 +321,7 @@
 							+ Resize larger + undo
 							+ Resize smaller + undo
 							+ Rotate + undo
-					- 2: Move XXXLayer() (and thus ShipLayers) methods that deal with Rope and Electric logic to ModelController,
+					X 2: Move XXXLayer() (and thus ShipLayers) methods that deal with Rope and Electric logic to ModelController,
 					     except for Clone(), and for those needed by ShipFactory: Rotate(), Flip()
 						- TODO: leave this be for the time being - may be we don't need much duplication of elec panel and rope logic after all
 						- CloneRegion? Needed anywhere else?
@@ -343,29 +343,48 @@
 				+ Individual layer types are picked up
 				+ "All layers" is picked up
 			+ Remove diagnostic logging
-		= Controller::Cut():
+		+ Controller::Cut():
 			+ Invoked by MainFrame
 			+ Calls CopySelectionToClipboard(...), then:
-			- ModelController::EraseRegion(selection rect, which layers) => GenericUndo				
-				- "Generic Undo": class & ModelController Undo method
-					- Used for paste & cut undo, among eventually others
+			+ ModelController::EraseRegion(selection rect, which layers) => GenericUndo				
+				+ "Generic Undo": class & ModelController Undo method
+					! Used for paste & cut undo, among eventually others
 					+ GenericUndoPayload: kinda like ShipLayers(Region), with differences:
 						+ Origin (coords)
 						+ Ropes and Electrical Panel are whole, other buffers are "regions"
 						+ Eventually, also ship metadata
 					+ private ModelController::MakeGenericUndoPayload(rect, layer selection)
 					+ public ModelController::Restore(GenericUndoPayload &&)				
-				= ModelController::EraseRegion(region, layer selection) -> GenericUndoPayload
+				+ ModelController::EraseRegion(region, layer selection) -> GenericUndoPayload
 					+ Make undo via MakeGenericUndoPayload
-					- Implement cut for each layer - HERE
+					+ Implement cut for each layer
 					+ Return undo
 				! Note: "Cut" Undo leaves clipboard populated - that's fine
 			+ Store GenericUndo in UndoStack
-			- Tests:
-				- Cut for each individual layer, & Undo
-				- Cut for all layers, & Undo
+			+ Tests:
+				+ GameViz bug:
+					+ Erase (Cut)
+					+ RestoreTextureLayerRegionBackup (Undo of cut)
+					+ MagicWand					
+					+ Ephemeral texture eraser
+				+ Cut for each individual layer, & Undo
+					+ Ropes: completely contained, & undo
+					+ Ropes: partially contained, & undo
+					+ Ropes: not contained
+				+ Cut for all layers, & Undo
+				+ Pencil S & Undo
+				+ Pencil E & Undo
+					+ Verify bug existed and now fixed
+				+ Line S & Undo
+				+ Line E & Undo
+					+ Verify bug existed and now fixed
+				+ Flood & Undo
+				+ TextureMagicWand & Undo
+				+ TrimElectricalSubstratum & Undo
 		+ Controller::Copy():
 			+ Calls CopySelectionToClipboard()
+	- Try to repro bug with layer removal and tool not coming back
+		- May be Undo was involved?
 	+ MainFrame::ReconciliateUIWithSelection(): enable/disable Cut, Copy, Deselect buttons
 	- Paste tool:
 		- Assets:
