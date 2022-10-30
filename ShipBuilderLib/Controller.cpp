@@ -86,7 +86,7 @@ Controller::Controller(
     , mResourceLocator(resourceLocator)
     // State
     , mCurrentTool()
-    , mLastToolTypePerLayer({ToolType::StructuralPencil, ToolType::ElectricalPencil, ToolType::RopePencil, std::nullopt})
+    , mLastToolTypePerLayer({ToolType::StructuralPencil, ToolType::ElectricalPencil, ToolType::RopePencil, ToolType::TextureEraser})
 {
     //
     // Create view
@@ -155,10 +155,7 @@ Controller::Controller(
     // Create tool
     //
 
-    if (mWorkbenchState.GetCurrentToolType().has_value())
-    {
-        mCurrentTool = MakeTool(*mWorkbenchState.GetCurrentToolType());
-    }
+    mCurrentTool = MakeTool(mWorkbenchState.GetCurrentToolType());
 
     RefreshToolCoordinatesDisplay();
 }
@@ -870,7 +867,14 @@ void Controller::SelectAll()
             {
                 toolType = ToolType::TextureSelection;
                 break;
-            }            
+            }
+
+            default:
+            {
+                assert(false);
+                toolType = WorkbenchState::GetDefaultToolType();
+                break;
+            }
         }
 
         SetCurrentTool(toolType);
@@ -1149,18 +1153,18 @@ void Controller::BroadcastSampledInformationUpdatedNone() const
     mUserInterface.OnSampledInformationUpdated(std::nullopt);
 }
 
-void Controller::SetCurrentTool(std::optional<ToolType> tool)
+void Controller::SetCurrentTool(ToolType tool)
 {
     if (tool != mWorkbenchState.GetCurrentToolType())
     {
         // Nuke current tool
-        mWorkbenchState.SetCurrentToolType(std::nullopt);
         mCurrentTool.reset();
 
         // Do bookkeeping
         InternalSetCurrentTool(tool);
 
-        // Make new tool - unless we're clearing.
+        // Make new tool
+        //
         // Note: when we were suspending tools at MouseLeft(), here we were avoiding to create 
         // a new tool if we had entered this function without a tool, stating that we were 
         // "not creating a new tool if we were suspended". We were then relying on MouseEnter()
@@ -1170,10 +1174,7 @@ void Controller::SetCurrentTool(std::optional<ToolType> tool)
         // create the tool. But how can this function be invoked while in a workflow that required
         // the explicit suspension?
         assert(mWorkbenchState.GetCurrentToolType() == tool);
-        if (mWorkbenchState.GetCurrentToolType().has_value())
-        {
-            mCurrentTool = MakeTool(*mWorkbenchState.GetCurrentToolType());
-        }
+        mCurrentTool = MakeTool(mWorkbenchState.GetCurrentToolType());
     }
 }
 
@@ -1752,7 +1753,7 @@ void Controller::InternalUpdateModelControllerVisualizationModes()
     }
 }
 
-void Controller::InternalSetCurrentTool(std::optional<ToolType> toolType)
+void Controller::InternalSetCurrentTool(ToolType toolType)
 {
     //
     // No tool destroy/create
@@ -1766,12 +1767,6 @@ void Controller::InternalSetCurrentTool(std::optional<ToolType> toolType)
 
     // Notify
     mUserInterface.OnCurrentToolChanged(toolType);
-
-    if (!toolType.has_value())
-    {
-        // Relinquish cursor
-        mUserInterface.ResetToolCursor();
-    }
 
     // Remember new tool as the last tool of this primary visualization's layer
     mLastToolTypePerLayer[static_cast<size_t>(VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization()))] = toolType;
@@ -1808,12 +1803,10 @@ bool Controller::InternalSuspendTool()
 
 void Controller::InternalResumeTool()
 {
+    assert(!mCurrentTool); // Should be here only when there's no current tool
     mCurrentTool.reset();
 
-    if (mWorkbenchState.GetCurrentToolType().has_value())
-    {
-        mCurrentTool = MakeTool(*mWorkbenchState.GetCurrentToolType());
-    }
+    mCurrentTool = MakeTool(mWorkbenchState.GetCurrentToolType());
 }
 
 void Controller::InternalResetTool()

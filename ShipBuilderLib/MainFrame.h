@@ -119,7 +119,7 @@ public:
     void OnElectricalMaterialChanged(ElectricalMaterial const * material, MaterialPlaneType plane) override;
     void OnRopesMaterialChanged(StructuralMaterial const * material, MaterialPlaneType plane) override;
 
-    void OnCurrentToolChanged(std::optional<ToolType> tool) override;
+    void OnCurrentToolChanged(ToolType tool) override;
 
     void OnPrimaryVisualizationChanged(VisualizationType primaryVisualization) override;
 
@@ -341,7 +341,7 @@ private:
     void ReconciliateUIWithElectricalMaterial(ElectricalMaterial const * material, MaterialPlaneType plane);
     void ReconciliateUIWithRopesMaterial(StructuralMaterial const * material, MaterialPlaneType plane);
 
-    void ReconciliateUIWithSelectedTool(std::optional<ToolType> tool);
+    void ReconciliateUIWithSelectedTool(ToolType tool);
 
     void ReconciliateUIWithPrimaryVisualizationSelection(VisualizationType primaryVisualization);
 

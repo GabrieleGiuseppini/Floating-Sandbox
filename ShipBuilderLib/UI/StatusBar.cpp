@@ -281,7 +281,7 @@ void StatusBar::SetShipMass(std::optional<float> shipMass)
         RefreshShipMass();
     }
 }
-void StatusBar::SetCurrentToolType(std::optional<ToolType> toolType)
+void StatusBar::SetCurrentToolType(ToolType toolType)
 {
     if (toolType != mCurrentToolType)
     {

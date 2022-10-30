@@ -542,7 +542,7 @@ void MainFrame::OnRopesMaterialChanged(StructuralMaterial const * material, Mate
     ReconciliateUIWithRopesMaterial(material, plane);
 }
 
-void MainFrame::OnCurrentToolChanged(std::optional<ToolType> tool)
+void MainFrame::OnCurrentToolChanged(ToolType tool)
 {
     ReconciliateUIWithSelectedTool(tool);
 }
@@ -5511,12 +5511,12 @@ void MainFrame::ReconciliateUIWithRopesMaterial(StructuralMaterial const * mater
     }
 }
 
-void MainFrame::ReconciliateUIWithSelectedTool(std::optional<ToolType> tool)
+void MainFrame::ReconciliateUIWithSelectedTool(ToolType tool)
 {
     // Select this tool's button and unselect the others
     for (size_t i = 0; i < mToolButtons.size(); ++i)
     {
-        bool const isSelected = (tool.has_value() && i == static_cast<size_t>(*tool));
+        bool const isSelected = i == static_cast<size_t>(tool);
 
         if (mToolButtons[i]->GetValue() != isSelected)
         {
@@ -5529,8 +5529,7 @@ void MainFrame::ReconciliateUIWithSelectedTool(std::optional<ToolType> tool)
     for (auto const & entry : mToolSettingsPanels)
     {
         bool const isSelected = 
-            tool.has_value() 
-            && std::find(std::get<0>(entry).cbegin(), std::get<0>(entry).cend(), *tool) != std::get<0>(entry).cend();
+            std::find(std::get<0>(entry).cbegin(), std::get<0>(entry).cend(), tool) != std::get<0>(entry).cend();
 
         mToolSettingsPanelsSizer->Show(std::get<1>(entry), isSelected);
 
@@ -5541,8 +5540,7 @@ void MainFrame::ReconciliateUIWithSelectedTool(std::optional<ToolType> tool)
     if (hasPanel)
     {
         // Change name
-        assert(tool.has_value());
-        switch (*tool)
+        switch (tool)
         {
             case ToolType::StructuralEraser:
             case ToolType::ElectricalEraser:            

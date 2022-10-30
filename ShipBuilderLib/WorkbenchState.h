@@ -173,12 +173,12 @@ public:
         return ToolType::StructuralPencil;
     }
 
-    std::optional<ToolType> GetCurrentToolType() const
+    ToolType GetCurrentToolType() const
     {
         return mCurrentToolType;
     }
 
-    void SetCurrentToolType(std::optional<ToolType> toolType)
+    void SetCurrentToolType(ToolType toolType)
     {
         mCurrentToolType = toolType;
     }
@@ -470,7 +470,7 @@ private:
     StructuralMaterial const * mRopesBackgroundMaterial;
 
     // Tool settings
-    std::optional<ToolType> mCurrentToolType;
+    ToolType mCurrentToolType;
     std::uint32_t mStructuralPencilToolSize;
     std::uint32_t mStructuralEraserToolSize;
     std::uint32_t mElectricalEraserToolSize;

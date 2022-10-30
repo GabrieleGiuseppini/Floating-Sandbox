@@ -270,7 +270,7 @@ public:
     // Misc
     //
 
-    void SetCurrentTool(std::optional<ToolType> tool);
+    void SetCurrentTool(ToolType tool);
 
     void SetNewShipSize(ShipSpaceSize size);
     void SetCanvasBackgroundColor(rgbColor const & color);
@@ -326,7 +326,7 @@ private:
 
     void InternalUpdateModelControllerVisualizationModes();
 
-    void InternalSetCurrentTool(std::optional<ToolType> toolType);
+    void InternalSetCurrentTool(ToolType toolType);
 
     Finalizer SuspendTool() const;
     bool InternalSuspendTool();
@@ -375,7 +375,7 @@ private:
     std::unique_ptr<Tool> mCurrentTool;
 
     // The last tool that was used for each layer
-    std::array<std::optional<ToolType>, LayerCount> mLastToolTypePerLayer;
+    std::array<ToolType, LayerCount> mLastToolTypePerLayer;
 };
 
 }
