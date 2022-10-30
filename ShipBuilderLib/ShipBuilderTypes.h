@@ -39,8 +39,12 @@ enum class ToolType : std::uint32_t
     ElectricalSelection,
     RopeSelection,
     TextureSelection,
+    StructuralPaste,
+    ElectricalPaste,
+    RopePaste,
+    TexturePaste,
 
-    _Last = TextureSelection
+    _Last = TexturePaste
 };
 
 enum class ToolClass

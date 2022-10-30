@@ -194,6 +194,8 @@ public:
 
     void Cut();
 
+    void Paste();
+
     void AutoTrim();
 
     void Flip(DirectionType direction);

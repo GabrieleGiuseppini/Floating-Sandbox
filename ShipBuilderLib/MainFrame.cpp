@@ -3389,6 +3389,22 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     0);
             }
 
+            // Paste
+            {
+                auto button = makeToolButton(
+                    ToolType::StructuralPaste,
+                    structuralToolbarPanel,
+                    "paste_icon",
+                    _("Paste clipboard."));
+
+                toolsSizer->Add(
+                    button,
+                    wxGBPosition(2, 1),
+                    wxGBSpan(1, 1),
+                    0,
+                    0);
+            }
+
             // Sampler
             {
                 auto button = makeToolButton(
@@ -3399,7 +3415,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
                 toolsSizer->Add(
                     button,
-                    wxGBPosition(2, 1),
+                    wxGBPosition(3, 0),
                     wxGBSpan(1, 1),
                     0,
                     0);
@@ -3415,7 +3431,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
                 toolsSizer->Add(
                     button,
-                    wxGBPosition(3, 0),
+                    wxGBPosition(3, 1),
                     wxGBSpan(1, 1),
                     0,
                     0);
@@ -3568,22 +3584,6 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     0);
             }
 
-            // Selection
-            {
-                auto button = makeToolButton(
-                    ToolType::ElectricalSelection,
-                    electricalToolbarPanel,
-                    "selection_icon",
-                    _("Select an area for copying and/or cutting."));
-
-                toolsSizer->Add(
-                    button,
-                    wxGBPosition(1, 1),
-                    wxGBSpan(1, 1),
-                    0,
-                    0);
-            }
-
             // Sampler
             {
                 auto button = makeToolButton(
@@ -3594,7 +3594,39 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
                 toolsSizer->Add(
                     button,
+                    wxGBPosition(1, 1),
+                    wxGBSpan(1, 1),
+                    0,
+                    0);
+            }
+
+            // Selection
+            {
+                auto button = makeToolButton(
+                    ToolType::ElectricalSelection,
+                    electricalToolbarPanel,
+                    "selection_icon",
+                    _("Select an area for copying and/or cutting."));
+
+                toolsSizer->Add(
+                    button,
                     wxGBPosition(2, 0),
+                    wxGBSpan(1, 1),
+                    0,
+                    0);
+            }
+
+            // Paste
+            {
+                auto button = makeToolButton(
+                    ToolType::ElectricalPaste,
+                    electricalToolbarPanel,
+                    "paste_icon",
+                    _("Paste clipboard."));
+
+                toolsSizer->Add(
+                    button,
+                    wxGBPosition(2, 1),
                     wxGBSpan(1, 1),
                     0,
                     0);
@@ -3747,6 +3779,22 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     0);
             }
 
+            // Paste
+            {
+                auto button = makeToolButton(
+                    ToolType::RopePaste,
+                    ropesToolbarPanel,
+                    "paste_icon",
+                    _("Paste clipboard."));
+
+                toolsSizer->Add(
+                    button,
+                    wxGBPosition(1, 1),
+                    wxGBSpan(1, 1),
+                    0,
+                    0);
+            }
+
             // Sampler
             {
                 auto button = makeToolButton(
@@ -3757,7 +3805,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
                 toolsSizer->Add(
                     button,
-                    wxGBPosition(1, 1),
+                    wxGBPosition(2, 0),
                     wxGBSpan(1, 1),
                     0,
                     0);
@@ -3862,13 +3910,13 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
         {
             wxGridBagSizer * toolsSizer = new wxGridBagSizer(ButtonMargin, ButtonMargin);
 
-            // Magic wand
+            // Eraser
             {
                 auto button = makeToolButton(
-                    ToolType::TextureMagicWand,
+                    ToolType::TextureEraser,
                     textureToolbarPanel,
-                    "magic_wand_icon",
-                    _("Erase background."));
+                    "eraser_icon",
+                    _("Erase individual texture pixels."));
 
                 toolsSizer->Add(
                     button,
@@ -3878,13 +3926,13 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     0);
             }
 
-            // Eraser
+            // Magic wand
             {
                 auto button = makeToolButton(
-                    ToolType::TextureEraser,
+                    ToolType::TextureMagicWand,
                     textureToolbarPanel,
-                    "eraser_icon",
-                    _("Erase individual texture pixels."));
+                    "magic_wand_icon",
+                    _("Erase background."));
 
                 toolsSizer->Add(
                     button,
@@ -3905,6 +3953,22 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                 toolsSizer->Add(
                     button,
                     wxGBPosition(1, 0),
+                    wxGBSpan(1, 1),
+                    0,
+                    0);
+            }
+
+            // Paste
+            {
+                auto button = makeToolButton(
+                    ToolType::TexturePaste,
+                    textureToolbarPanel,
+                    "paste_icon",
+                    _("Paste clipboard."));
+
+                toolsSizer->Add(
+                    button,
+                    wxGBPosition(1, 1),
                     wxGBSpan(1, 1),
                     0,
                     0);
@@ -5524,6 +5588,12 @@ void MainFrame::ReconciliateUIWithSelectedTool(ToolType tool)
         }
     }
 
+    // Consistency of Paste buttons enablement<->selection
+    for (ToolType t : {ToolType::StructuralPaste, ToolType::ElectricalPaste, ToolType::RopePaste, ToolType::TexturePaste})
+    {
+        mToolButtons[static_cast<size_t>(t)]->Enable(mToolButtons[static_cast<size_t>(t)]->GetValue());
+    }
+
     // Show this tool's settings panel and hide the others
     bool hasPanel = false;
     for (auto const & entry : mToolSettingsPanels)
@@ -5536,7 +5606,7 @@ void MainFrame::ReconciliateUIWithSelectedTool(ToolType tool)
         hasPanel |= isSelected;
     }
 
-    // Pickup new layout
+    // Pickup new ribbon layout
     if (hasPanel)
     {
         // Change name
@@ -5591,6 +5661,10 @@ void MainFrame::ReconciliateUIWithSelectedTool(ToolType tool)
             case ToolType::ElectricalSampler:
             case ToolType::RopeSampler:
             case ToolType::StructuralMeasuringTapeTool:
+            case ToolType::StructuralPaste:
+            case ToolType::ElectricalPaste:
+            case ToolType::RopePaste:
+            case ToolType::TexturePaste:
             {
                 // Don't have settings
                 assert(false);

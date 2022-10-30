@@ -753,6 +753,11 @@ void Controller::Cut()
     mUserInterface.RefreshView();
 }
 
+void Controller::Paste()
+{
+    // TODOHERE
+}
+
 void Controller::AutoTrim()
 {
     auto const scopedToolResumeState = SuspendTool();
@@ -1954,6 +1959,16 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
                 *this,
                 mSelectionManager,
                 mResourceLocator);
+        }
+
+        case ToolType::StructuralPaste:
+        case ToolType::ElectricalPaste:
+        case ToolType::RopePaste:
+        case ToolType::TexturePaste:
+        {
+            // We should never be invoked for this tool
+            assert(false);
+            break;
         }
     }
 

@@ -406,19 +406,22 @@
 				- Flag for opaque vs transparent
 					- Checkbox->Ctrl->PasteTool
 				- ModelController::PasteRegion(LayersRegion, origin) X 2 (ephemeral, normal) -> Layers (for undo)
-		- Impl:
+		= Impl:
 			+ Prelim: see if can make Controlller::ToolType not optional
-			- Assets:
-				- Paste tool icon and cursor
-			- Tool button @ each layer
-				- Initially disabled (sure? see others)
-				- Reconciliation @ tool change: always disabled, except when active: is_enabled==is_active
-			- Ctrl^V and button invoke Controller::Paste()
+			= Assets:
+				+ Paste tool icon: paste_icon.png
+				- Cursor: pan_cursor.png
+			= Tool button @ each layer
+				= Reconciliation @ tool change: always disabled, except when active: is_enabled==is_active
+			+ Ctrl^V and button invoke Controller::Paste()
 			- Controller::Paste():
 				- 1. Decide ToolType value (i.e. layer)
 					- First clipboard layer, and better if current viz layer
 					- After choice: if different layer than current, change viz
 				- 2. Instantiate tool
+					- Tool cctor takes clone of clipboard layers region (by move)
+				- 3. Set tool
+					- Here the tool type does not enter stack of last used
 					- TODOHERE
 		- Tests:
 			- 
