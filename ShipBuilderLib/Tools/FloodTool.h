@@ -55,10 +55,6 @@ private:
         StrongTypedBool<struct IsRightMouseButton> isRightButton);
 
     inline LayerMaterialType const * GetFloodMaterial(MaterialPlaneType plane) const;
-
-private:
-
-    wxImage mCursorImage;
 };
 
 class StructuralFloodTool : public FloodTool<LayerType::Structural>

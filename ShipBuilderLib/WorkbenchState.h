@@ -293,6 +293,16 @@ public:
         mSelectionIsAllLayers = value;
     }
 
+    bool GetPasteIsTransparent() const
+    {
+        return mPasteIsTransparent;
+    }
+
+    void SetPasteIsTransparent(bool value)
+    {
+        mPasteIsTransparent = value;
+    }
+
     //
     // Visualizations
     //
@@ -482,6 +492,7 @@ private:
     bool mTextureMagicWandIsContiguous;
     std::uint32_t mTextureEraserToolSize;
     bool mSelectionIsAllLayers;
+    bool mPasteIsTransparent;
 
     // Visualizations
     rgbColor mCanvasBackgroundColor;

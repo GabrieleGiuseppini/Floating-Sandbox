@@ -67,6 +67,7 @@ WorkbenchState::WorkbenchState(
     mTextureMagicWandIsContiguous = true;
     mTextureEraserToolSize = 4;
     mSelectionIsAllLayers = false;
+    mPasteIsTransparent = false;
 
     //
     // Default visualization settings

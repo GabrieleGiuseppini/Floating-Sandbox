@@ -28,9 +28,8 @@ FloodTool<TLayerType>::FloodTool(
     : Tool(
         toolType,
         controller)
-    , mCursorImage(WxHelpers::LoadCursorImage("flood_tool_cursor", 12, 29, resourceLocator))
 {
-    SetCursor(mCursorImage);
+    SetCursor(WxHelpers::LoadCursorImage("flood_tool_cursor", 12, 29, resourceLocator));
 
     mController.BroadcastSampledInformationUpdatedAt(ScreenToShipSpace(GetCurrentMouseCoordinates()), TLayerType);
 }

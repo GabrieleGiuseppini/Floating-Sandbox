@@ -50,6 +50,7 @@ enum class ToolType : std::uint32_t
 enum class ToolClass
 {
     Selection,
+    Paste,
     Other
 };
 

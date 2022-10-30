@@ -19,12 +19,16 @@
 
 namespace ShipBuilder {
 
-template<LayerType TLayer>
 class PasteTool : public Tool
 {
 public:
 
     virtual ~PasteTool();
+
+    ToolClass GetClass() const override
+    {
+        return ToolClass::Paste;
+    }
 
     void OnMouseMove(DisplayLogicalCoordinates const & /*mouseCoordinates*/) override;
     void OnLeftMouseDown() override;
@@ -35,10 +39,17 @@ public:
     void OnShiftKeyUp() override;
     void OnMouseLeft() override;
 
+    void SetIsTransparent(bool isTransparent);
+    void Rotate90CW();
+    void Rotate90CCW();
+    void FlipH();
+    void FlipV();
+
 protected:
 
     PasteTool(
         ShipLayers && pasteRegion,
+        bool isTransparent,
         ToolType toolType,
         Controller & controller,
         ResourceLocator const & resourceLocator);
@@ -46,46 +57,49 @@ protected:
 private:
 
     ShipLayers mPasteRegion;
-
-    wxImage mCursorImage;
+    bool mIsTransparent;
 };
 
-class StructuralPasteTool : public PasteTool<LayerType::Structural>
+class StructuralPasteTool : public PasteTool
 {
 public:
 
     StructuralPasteTool(
         ShipLayers && pasteRegion,
+        bool isTransparent,
         Controller & controller,
         ResourceLocator const & resourceLocator);
 };
 
-class ElectricalPasteTool : public PasteTool<LayerType::Electrical>
+class ElectricalPasteTool : public PasteTool
 {
 public:
 
     ElectricalPasteTool(
         ShipLayers && pasteRegion,
+        bool isTransparent,
         Controller & controller,
         ResourceLocator const & resourceLocator);
 };
 
-class RopePasteTool : public PasteTool<LayerType::Ropes>
+class RopePasteTool : public PasteTool
 {
 public:
 
     RopePasteTool(
         ShipLayers && pasteRegion,
+        bool isTransparent,
         Controller & controller,
         ResourceLocator const & resourceLocator);
 };
 
-class TexturePasteTool : public PasteTool<LayerType::Texture>
+class TexturePasteTool : public PasteTool
 {
 public:
 
     TexturePasteTool(
         ShipLayers && pasteRegion,
+        bool isTransparent,
         Controller & controller,
         ResourceLocator const & resourceLocator);
 };

@@ -13,10 +13,12 @@ namespace ShipBuilder {
 
 StructuralPasteTool::StructuralPasteTool(
     ShipLayers && pasteRegion,
+    bool isTransparent,
     Controller & controller,
     ResourceLocator const & resourceLocator)
     : PasteTool(
         std::move(pasteRegion),
+        isTransparent,
         ToolType::StructuralPaste,
         controller,
         resourceLocator)
@@ -24,10 +26,12 @@ StructuralPasteTool::StructuralPasteTool(
 
 ElectricalPasteTool::ElectricalPasteTool(
     ShipLayers && pasteRegion,
+    bool isTransparent,
     Controller & controller,
     ResourceLocator const & resourceLocator)
     : PasteTool(
         std::move(pasteRegion),
+        isTransparent,
         ToolType::ElectricalPaste,
         controller,
         resourceLocator)
@@ -35,10 +39,12 @@ ElectricalPasteTool::ElectricalPasteTool(
 
 RopePasteTool::RopePasteTool(
     ShipLayers && pasteRegion,
+    bool isTransparent,
     Controller & controller,
     ResourceLocator const & resourceLocator)
     : PasteTool(
         std::move(pasteRegion),
+        isTransparent,
         ToolType::RopePaste,
         controller,
         resourceLocator)
@@ -46,18 +52,20 @@ RopePasteTool::RopePasteTool(
 
 TexturePasteTool::TexturePasteTool(
     ShipLayers && pasteRegion,
+    bool isTransparent,
     Controller & controller,
     ResourceLocator const & resourceLocator)
     : PasteTool(
         std::move(pasteRegion),
+        isTransparent,
         ToolType::TexturePaste,
         controller,
         resourceLocator)
 {}
 
-template<LayerType TLayerType>
-PasteTool<TLayerType>::PasteTool(
+PasteTool::PasteTool(
     ShipLayers && pasteRegion,
+    bool isTransparent,
     ToolType toolType,
     Controller & controller,
     ResourceLocator const & resourceLocator)
@@ -65,54 +73,74 @@ PasteTool<TLayerType>::PasteTool(
         toolType,
         controller)
     , mPasteRegion(std::move(pasteRegion))
-    , mCursorImage(WxHelpers::LoadCursorImage("pan_cursor", 16, 16, resourceLocator))
+    , mIsTransparent(isTransparent)
 {
-    SetCursor(mCursorImage);
+    SetCursor(WxHelpers::LoadCursorImage("pan_cursor", 16, 16, resourceLocator));
 
     // TODO
 }
 
-template<LayerType TLayerType>
-PasteTool<TLayerType>::~PasteTool()
+PasteTool::~PasteTool()
 {
     // TODO
 }
 
-template<LayerType TLayer>
-void PasteTool<TLayer>::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates)
+void PasteTool::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates)
 {
     // TODO
     (void)mouseCoordinates;
 }
 
-template<LayerType TLayer>
-void PasteTool<TLayer>::OnLeftMouseDown()
+void PasteTool::OnLeftMouseDown()
 {
     // TODO
 }
 
-template<LayerType TLayer>
-void PasteTool<TLayer>::OnLeftMouseUp()
+void PasteTool::OnLeftMouseUp()
 {
     // TODO
 }
 
-template<LayerType TLayer>
-void PasteTool<TLayer>::OnShiftKeyDown()
+void PasteTool::OnShiftKeyDown()
 {
     // TODO
 }
 
-template<LayerType TLayer>
-void PasteTool<TLayer>::OnShiftKeyUp()
+void PasteTool::OnShiftKeyUp()
 {
     // TODO
 }
 
-template<LayerType TLayer>
-void PasteTool<TLayer>::OnMouseLeft()
+void PasteTool::OnMouseLeft()
 {
     mController.BroadcastSampledInformationUpdatedNone();
+}
+
+void PasteTool::SetIsTransparent(bool isTransparent)
+{
+    mIsTransparent = isTransparent;
+
+    // TODO
+}
+
+void PasteTool::Rotate90CW()
+{
+    // TODO
+}
+
+void PasteTool::Rotate90CCW()
+{
+    // TODO
+}
+
+void PasteTool::FlipH()
+{
+    // TODO
+}
+
+void PasteTool::FlipV()
+{
+    // TODO
 }
 
 //////////////////////////////////////////////////////////////////////////////

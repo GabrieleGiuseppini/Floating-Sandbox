@@ -46,9 +46,8 @@ SamplerTool<TLayerType>::SamplerTool(
     : Tool(
         toolType,
         controller)
-    , mCursorImage(WxHelpers::LoadCursorImage("sampler_cursor", 1, 30, resourceLocator))
 {
-    SetCursor(mCursorImage);
+    SetCursor(WxHelpers::LoadCursorImage("sampler_cursor", 1, 30, resourceLocator));
 
     // See if should sample right away
     auto const mouseShipCoordinates = GetCurrentMouseShipCoordinatesIfInWorkCanvas();

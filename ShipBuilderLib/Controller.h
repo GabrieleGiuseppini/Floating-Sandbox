@@ -196,6 +196,12 @@ public:
 
     void Paste();
 
+    void SetPasteIsTransparent(bool isTransparent);
+    void PasteRotate90CW();
+    void PasteRotate90CCW();
+    void PasteFlipH();
+    void PasteFlipV();
+
     void AutoTrim();
 
     void Flip(DirectionType direction);

@@ -17,9 +17,8 @@ TextureMagicWandTool::TextureMagicWandTool(
     : Tool(
         ToolType::TextureMagicWand,
         controller)
-    , mCursorImage(WxHelpers::LoadCursorImage("magic_wand_cursor", 8, 8, resourceLocator))
 {
-    SetCursor(mCursorImage);
+    SetCursor(WxHelpers::LoadCursorImage("magic_wand_cursor", 8, 8, resourceLocator));
 }
 
 void TextureMagicWandTool::OnLeftMouseDown()

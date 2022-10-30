@@ -54,10 +54,6 @@ private:
         MaterialPlaneType plane);
 
     inline LayerMaterialType const * SampleMaterial(ShipSpaceCoordinates const & mouseCoordinates);
-
-private:
-
-    wxImage mCursorImage;
 };
 
 class StructuralSamplerTool : public SamplerTool<LayerType::Structural>

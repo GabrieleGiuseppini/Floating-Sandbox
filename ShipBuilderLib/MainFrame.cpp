@@ -2511,6 +2511,246 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
         }
     }
 
+    // Paste
+    {
+        wxPanel * dynamicPanel = new wxPanel(mToolSettingsRibbonPanel);
+        wxGridBagSizer * dynamicPanelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
+
+        // Transparent Label
+        {
+            auto * staticText = new wxStaticText(dynamicPanel, wxID_ANY, _("Transparent:"));
+            staticText->SetForegroundColour(labelColor);
+
+            dynamicPanelGridSizer->Add(
+                staticText,
+                wxGBPosition(0, 0),
+                wxGBSpan(1, 1),
+                wxALIGN_CENTER_VERTICAL);
+        }
+
+        // Transparent Checkbox
+        {
+            wxCheckBox * chkBox = new wxCheckBox(dynamicPanel, wxID_ANY, wxEmptyString);
+
+            chkBox->SetToolTip(_("When enabled, empty regions are pasted as transparent; otherwise, empty regions are pasted as opaque and will erase anything on the background."));
+
+            chkBox->SetValue(mWorkbenchState.GetPasteIsTransparent());
+
+            chkBox->Bind(
+                wxEVT_CHECKBOX,
+                [this](wxCommandEvent & event)
+                {
+                    mWorkbenchState.SetPasteIsTransparent(event.IsChecked());
+
+                    if (mController)
+                    {
+                        mController->SetPasteIsTransparent(event.IsChecked());
+                    }
+                });
+
+            dynamicPanelGridSizer->Add(
+                chkBox,
+                wxGBPosition(0, 1),
+                wxGBSpan(1, 1),
+                wxALIGN_CENTER_VERTICAL);
+        }
+
+        // 90CW button
+        {
+            wxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
+
+            // Button
+            {
+                auto * button = new BitmapButton(
+                    dynamicPanel,
+                    mResourceLocator.GetIconFilePath("rotate_90_cw_medium"),
+                    [this]()
+                    {
+                        PasteRotate90CW();
+                    },
+                    _("Rotate the pasted region 90 degrees clockwise."));
+
+                vSizer->Add(
+                    button,
+                    0,
+                    wxALIGN_CENTER_HORIZONTAL,
+                    0);
+            }
+
+            // Label
+            {
+                auto * label = new wxStaticText(
+                    dynamicPanel,
+                    wxID_ANY,
+                    _("90 CW"));
+
+                label->SetForegroundColour(parent->GetArtProvider()->GetColor(wxRIBBON_ART_BUTTON_BAR_LABEL_COLOUR));
+
+                vSizer->Add(
+                    label,
+                    0,
+                    wxALIGN_CENTER_HORIZONTAL | wxTOP,
+                    2);
+            }
+
+            dynamicPanelGridSizer->Add(
+                vSizer,
+                wxGBPosition(0, 2),
+                wxGBSpan(1, 1));
+        }
+
+        // 90CCW button
+        {
+            wxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
+
+            // Button
+            {
+                auto * button = new BitmapButton(
+                    dynamicPanel,
+                    mResourceLocator.GetIconFilePath("rotate_90_ccw_medium"),
+                    [this]()
+                    {
+                        PasteRotate90CCW();
+                    },
+                    _("Rotate the pasted region 90 degrees anti-clockwise."));
+
+                vSizer->Add(
+                    button,
+                    0,
+                    wxALIGN_CENTER_HORIZONTAL,
+                    0);
+            }
+
+            // Label
+            {
+                auto * label = new wxStaticText(
+                    dynamicPanel,
+                    wxID_ANY,
+                    _("90 CCW"));
+
+                label->SetForegroundColour(parent->GetArtProvider()->GetColor(wxRIBBON_ART_BUTTON_BAR_LABEL_COLOUR));
+
+                vSizer->Add(
+                    label,
+                    0,
+                    wxALIGN_CENTER_HORIZONTAL | wxTOP,
+                    2);
+            }
+
+            dynamicPanelGridSizer->Add(
+                vSizer,
+                wxGBPosition(0, 3),
+                wxGBSpan(1, 1));
+        }
+
+        // FlipH button
+        {
+            wxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
+
+            // Button
+            {
+                auto * button = new BitmapButton(
+                    dynamicPanel,
+                    mResourceLocator.GetIconFilePath("flip_h_medium"),
+                    [this]()
+                    {
+                        PasteFlipH();
+                    },
+                    _("Flip the pasted region horizontally."));
+
+                vSizer->Add(
+                    button,
+                    0,
+                    wxALIGN_CENTER_HORIZONTAL,
+                    0);
+            }
+
+            // Label
+            {
+                auto * label = new wxStaticText(
+                    dynamicPanel,
+                    wxID_ANY,
+                    _("Flip H"));
+
+                label->SetForegroundColour(parent->GetArtProvider()->GetColor(wxRIBBON_ART_BUTTON_BAR_LABEL_COLOUR));
+
+                vSizer->Add(
+                    label,
+                    0,
+                    wxALIGN_CENTER_HORIZONTAL | wxTOP,
+                    2);
+            }
+
+            dynamicPanelGridSizer->Add(
+                vSizer,
+                wxGBPosition(0, 4),
+                wxGBSpan(1, 1));
+        }
+
+        // FlipV button
+        {
+            wxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
+
+            // Button
+            {
+                auto * button = new BitmapButton(
+                    dynamicPanel,
+                    mResourceLocator.GetIconFilePath("flip_v_medium"),
+                    [this]()
+                    {
+                        PasteFlipV();
+                    },
+                    _("Flip the pasted region vertically."));
+
+                vSizer->Add(
+                    button,
+                    0,
+                    wxALIGN_CENTER_HORIZONTAL,
+                    0);
+            }
+
+            // Label
+            {
+                auto * label = new wxStaticText(
+                    dynamicPanel,
+                    wxID_ANY,
+                    _("Flip V"));
+
+                label->SetForegroundColour(parent->GetArtProvider()->GetColor(wxRIBBON_ART_BUTTON_BAR_LABEL_COLOUR));
+
+                vSizer->Add(
+                    label,
+                    0,
+                    wxALIGN_CENTER_HORIZONTAL | wxTOP,
+                    2);
+            }
+
+            dynamicPanelGridSizer->Add(
+                vSizer,
+                wxGBPosition(0, 5),
+                wxGBSpan(1, 1));
+        }
+
+        dynamicPanel->SetSizerAndFit(dynamicPanelGridSizer);
+
+        // Insert in place
+        {
+            mToolSettingsPanelsSizer->Add(
+                dynamicPanel,
+                0,
+                wxALIGN_CENTER_VERTICAL,
+                0);
+
+            mToolSettingsPanels.emplace_back(
+                std::vector<ToolType>{
+                    ToolType::StructuralPaste,
+                    ToolType::ElectricalPaste,
+                    ToolType::RopePaste,
+                    ToolType::TexturePaste},
+                dynamicPanel);
+        }
+    }
+
     // Wrap in a sizer just for margins
     {
         wxSizer * tmpSizer = new wxBoxSizer(wxVERTICAL); // Arbitrary
@@ -4883,6 +5123,30 @@ void MainFrame::Deselect()
 {
     assert(mController);
     mController->Deselect();
+}
+
+void MainFrame::PasteRotate90CW()
+{
+    assert(mController);
+    mController->PasteRotate90CW();
+}
+
+void MainFrame::PasteRotate90CCW()
+{
+    assert(mController);
+    mController->PasteRotate90CCW();
+}
+
+void MainFrame::PasteFlipH()
+{
+    assert(mController);
+    mController->PasteFlipH();
+}
+
+void MainFrame::PasteFlipV()
+{
+    assert(mController);
+    mController->PasteFlipV();
 }
 
 void MainFrame::OpenMaterialPalette(

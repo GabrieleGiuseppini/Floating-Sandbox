@@ -759,6 +759,36 @@ void Controller::Paste()
     // TODOHERE
 }
 
+void Controller::SetPasteIsTransparent(bool isTransparent)
+{
+    PasteTool & pasteTool = GetCurrentToolAs<PasteTool>(ToolClass::Paste);
+    pasteTool.SetIsTransparent(isTransparent);
+}
+
+void Controller::PasteRotate90CW()
+{
+    PasteTool & pasteTool = GetCurrentToolAs<PasteTool>(ToolClass::Paste);
+    pasteTool.Rotate90CW();
+}
+
+void Controller::PasteRotate90CCW()
+{
+    PasteTool & pasteTool = GetCurrentToolAs<PasteTool>(ToolClass::Paste);
+    pasteTool.Rotate90CCW();
+}
+
+void Controller::PasteFlipH()
+{
+    PasteTool & pasteTool = GetCurrentToolAs<PasteTool>(ToolClass::Paste);
+    pasteTool.FlipH();
+}
+
+void Controller::PasteFlipV()
+{
+    PasteTool & pasteTool = GetCurrentToolAs<PasteTool>(ToolClass::Paste);
+    pasteTool.FlipV();
+}
+
 void Controller::AutoTrim()
 {
     auto const scopedToolResumeState = SuspendTool();

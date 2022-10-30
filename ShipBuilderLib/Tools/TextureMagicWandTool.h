@@ -27,10 +27,6 @@ public:
     void OnShiftKeyDown() override {};
     void OnShiftKeyUp() override {};
     void OnMouseLeft() override {};
-
-private:
-
-    wxImage mCursorImage;
 };
 
 }

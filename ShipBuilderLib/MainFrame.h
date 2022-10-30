@@ -256,6 +256,11 @@ private:
 
     void Deselect();
 
+    void PasteRotate90CW();
+    void PasteRotate90CCW();
+    void PasteFlipH();
+    void PasteFlipV();
+
     void OpenMaterialPalette(
         wxMouseEvent const & event,
         LayerType layer,
