@@ -38,11 +38,14 @@ public:
 protected:
 
     PasteTool(
+        ShipLayers && pasteRegion,
         ToolType toolType,
         Controller & controller,
         ResourceLocator const & resourceLocator);
 
 private:
+
+    ShipLayers mPasteRegion;
 
     wxImage mCursorImage;
 };
@@ -52,6 +55,7 @@ class StructuralPasteTool : public PasteTool<LayerType::Structural>
 public:
 
     StructuralPasteTool(
+        ShipLayers && pasteRegion,
         Controller & controller,
         ResourceLocator const & resourceLocator);
 };
@@ -61,6 +65,7 @@ class ElectricalPasteTool : public PasteTool<LayerType::Electrical>
 public:
 
     ElectricalPasteTool(
+        ShipLayers && pasteRegion,
         Controller & controller,
         ResourceLocator const & resourceLocator);
 };
@@ -70,6 +75,7 @@ class RopePasteTool : public PasteTool<LayerType::Ropes>
 public:
 
     RopePasteTool(
+        ShipLayers && pasteRegion,
         Controller & controller,
         ResourceLocator const & resourceLocator);
 };
@@ -79,6 +85,7 @@ class TexturePasteTool : public PasteTool<LayerType::Texture>
 public:
 
     TexturePasteTool(
+        ShipLayers && pasteRegion,
         Controller & controller,
         ResourceLocator const & resourceLocator);
 };

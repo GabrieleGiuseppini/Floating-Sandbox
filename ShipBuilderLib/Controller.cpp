@@ -10,6 +10,7 @@
 #include "Tools/FloodTool.h"
 #include "Tools/LineTool.h"
 #include "Tools/MeasuringTapeTool.h"
+#include "Tools/PasteTool.h"
 #include "Tools/PencilTool.h"
 #include "Tools/RopeEraserTool.h"
 #include "Tools/RopePencilTool.h"

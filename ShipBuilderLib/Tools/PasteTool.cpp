@@ -12,36 +12,44 @@
 namespace ShipBuilder {
 
 StructuralPasteTool::StructuralPasteTool(
+    ShipLayers && pasteRegion,
     Controller & controller,
     ResourceLocator const & resourceLocator)
     : PasteTool(
+        std::move(pasteRegion),
         ToolType::StructuralPaste,
         controller,
         resourceLocator)
 {}
 
 ElectricalPasteTool::ElectricalPasteTool(
+    ShipLayers && pasteRegion,
     Controller & controller,
     ResourceLocator const & resourceLocator)
     : PasteTool(
+        std::move(pasteRegion),
         ToolType::ElectricalPaste,
         controller,
         resourceLocator)
 {}
 
 RopePasteTool::RopePasteTool(
+    ShipLayers && pasteRegion,
     Controller & controller,
     ResourceLocator const & resourceLocator)
     : PasteTool(
+        std::move(pasteRegion),
         ToolType::RopePaste,
         controller,
         resourceLocator)
 {}
 
 TexturePasteTool::TexturePasteTool(
+    ShipLayers && pasteRegion,
     Controller & controller,
     ResourceLocator const & resourceLocator)
     : PasteTool(
+        std::move(pasteRegion),
         ToolType::TexturePaste,
         controller,
         resourceLocator)
@@ -49,12 +57,14 @@ TexturePasteTool::TexturePasteTool(
 
 template<LayerType TLayerType>
 PasteTool<TLayerType>::PasteTool(
+    ShipLayers && pasteRegion,
     ToolType toolType,
     Controller & controller,
     ResourceLocator const & resourceLocator)
     : Tool(
         toolType,
         controller)
+    , mPasteRegion(std::move(pasteRegion))
     , mCursorImage(WxHelpers::LoadCursorImage("pan_cursor", 16, 16, resourceLocator))
 {
     SetCursor(mCursorImage);

@@ -383,49 +383,91 @@
 				+ TrimElectricalSubstratum & Undo
 		+ Controller::Copy():
 			+ Calls CopySelectionToClipboard()
-	- Try to repro bug with layer removal and tool not coming back
-		- May be Undo was involved?
 	+ MainFrame::ReconciliateUIWithSelection(): enable/disable Cut, Copy, Deselect buttons
-	- Paste tool:
+	= Paste tool:
 		+ UI Reconciliation with clipboard being populated: enable/disable button
 			+ Initial call from Controller cctor
-		- Spec:
+		! Spec:
 			- Tool not selectable by user; auto-activated @ Paste
 				- Never enters "last tool" stack
-				- Tool's button is always disabled, except when active: is_enabled==is_active
+				! Tool's button is always disabled, except when active: is_enabled==is_active
 			- Tool gets own copy of LayersRegion at creation, and modifications happen to it (rather than to Clipboard's)
 			- Exited by:
 				- Selecting another tool
 					- In this case, it Commit's()
 				- Commit & Abort "Tool Settings" buttons
+					- Controller callbacks themselves tell PasteTool e.g. of abort, then destroy the tool
+					  and activate previous one for the layer
 				- ~PasteTool() (e.g. because of Validation, etc.)
 					- In this case, it Abort's()
 						- TODO: how to distinguish from "Selecting another tool"? May be this one should Commit() as well
 			- Tool does Move; various "Tool Settings" buttons do rotate/flip/etc.
 				- Rotate/flip/etc: Button->Ctrl->PasteTool
 				- Flag for opaque vs transparent
-					- Checkbox->Ctrl->PasteTool
-				- ModelController::PasteRegion(LayersRegion, origin) X 2 (ephemeral, normal) -> Layers (for undo)
+					- Checkbox->Ctrl->PasteTool				
 		= Impl:
 			+ Prelim: see if can make Controlller::ToolType not optional
 			= Assets:
 				+ Paste tool icon: paste_icon.png
-				- Cursor: pan_cursor.png
+				= Cursor: pan_cursor.png
 			= Tool button @ each layer
 				= Reconciliation @ tool change: always disabled, except when active: is_enabled==is_active
+			- Tool settings:
+				- Rotate/flip/etc
+					- -> Controller::RotatePaste()/etc.
+				- Flag for opaque vs transparent
+					- -> Controller::SetPaste"Opaque/Transparentness"
 			+ Ctrl^V and button invoke Controller::Paste()
 			- Controller::Paste():
 				- 1. Decide ToolType value (i.e. layer)
 					- First clipboard layer, and better if current viz layer
 					- After choice: if different layer than current, change viz
 				- 2. Instantiate tool
-					- Tool cctor takes clone of clipboard layers region (by move)
-					- See if can use MakeTool with TArgs... extra args here
+					= Tool cctor takes clone of clipboard layers region (by move)
+					- Tool cctor also takes flag for opaque vs transparent
 				- 3. Set tool
 					- Here the tool type does not enter stack of last used
 					- TODOHERE
+			- Controller::AbortPaste()
+				- Get tool as PasteTool, and invoke Abort() on it
+				- Then, destroy (reset) mCurrentTool, and activate previous one for the current layer
+			- Controller::CommitPaste()
+				- Get tool as PasteTool, and invoke Commit() on it
+				- Then, destroy (reset) mCurrentTool, and activate previous one for the current layer
+			- Controller::RotatePaste()/etc.
+				- Get tool as PasteTool, and invoke Rotate()/etc. on it
+			- Controller::SetPaste"Opaque/Transparentness":
+				- Invoked by MainFrame upon toggles of settings flag
+				- Get tool as PasteTool, and invoke Set"Opaque/Transparentness"() on it
+			- PasteTool:
+				- cctor:
+					- TODO
+				- dctor:
+					! If pending: commit
+					- TODO
+				- Leave():
+					- TODO
+				- Abort():
+					! Undo eph viz, and make sure subsequent dctor does not see it as pending
+					- TODO
+				- Commit():
+					! Undo eph viz, Commit, and make sure subsequent dctor does not see it as pending
+					- TODO
+				- Rotate()/etc.:
+					! Do operation on own mPasteRegion
+					- TODO
+				- Set"Opaque/Transparentness" (for changes)
+					- TODO
+				- MouseDown():
+					- TODO
+				- MouseUp():
+					- TODO
+				- ShiftDown/Up:
+					- TODO
+			- ModelController::Paste(LayersRegion, origin) X 2 (ephemeral, normal) -> GenericUndoPayload
+				- TODO
 		- Tests:
-			- 
+			- TODO
 
 	- Tests:
 		- Ropes paste carries with it both and only ropes w/both endpoints in region, and with one endpoint in region
