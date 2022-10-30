@@ -420,6 +420,7 @@
 					- After choice: if different layer than current, change viz
 				- 2. Instantiate tool
 					- Tool cctor takes clone of clipboard layers region (by move)
+					- See if can use MakeTool with TArgs... extra args here
 				- 3. Set tool
 					- Here the tool type does not enter stack of last used
 					- TODOHERE

@@ -84,6 +84,8 @@ set (TOOLS_SOURCES
 	Tools/LineTool.h
 	Tools/MeasuringTapeTool.cpp
 	Tools/MeasuringTapeTool.h
+	Tools/PasteTool.cpp
+	Tools/PasteTool.h
 	Tools/PencilTool.cpp
 	Tools/PencilTool.h
 	Tools/RopeEraserTool.cpp
