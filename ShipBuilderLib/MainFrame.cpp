@@ -2731,6 +2731,104 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
                 wxGBSpan(1, 1));
         }
 
+        // Separator
+        {
+            wxStaticLine * line = new wxStaticLine(dynamicPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_VERTICAL);
+
+            dynamicPanelGridSizer->Add(
+                line,
+                wxGBPosition(0, 6),
+                wxGBSpan(1, 1));
+        }
+
+        // Commit
+        {
+            wxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
+
+            // Button
+            {
+                auto * button = new BitmapButton(
+                    dynamicPanel,
+                    mResourceLocator.GetIconFilePath("confirm_40x40.png"),
+                    [this]()
+                    {
+                        PasteCommit();
+                    },
+                    _("Commit the paste operation."));
+
+                vSizer->Add(
+                    button,
+                    0,
+                    wxALIGN_CENTER_HORIZONTAL,
+                    0);
+            }
+
+            // Label
+            {
+                auto * label = new wxStaticText(
+                    dynamicPanel,
+                    wxID_ANY,
+                    _("Commit"));
+
+                label->SetForegroundColour(parent->GetArtProvider()->GetColor(wxRIBBON_ART_BUTTON_BAR_LABEL_COLOUR));
+
+                vSizer->Add(
+                    label,
+                    0,
+                    wxALIGN_CENTER_HORIZONTAL | wxTOP,
+                    2);
+            }
+
+            dynamicPanelGridSizer->Add(
+                vSizer,
+                wxGBPosition(0, 7),
+                wxGBSpan(1, 1));
+        }
+
+        // Abort
+        {
+            wxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
+
+            // Button
+            {
+                auto * button = new BitmapButton(
+                    dynamicPanel,
+                    mResourceLocator.GetIconFilePath("x_40x40.png"),
+                    [this]()
+                    {
+                        PasteAbort();
+                    },
+                    _("Abort the paste operation."));
+
+                vSizer->Add(
+                    button,
+                    0,
+                    wxALIGN_CENTER_HORIZONTAL,
+                    0);
+            }
+
+            // Label
+            {
+                auto * label = new wxStaticText(
+                    dynamicPanel,
+                    wxID_ANY,
+                    _("Abort"));
+
+                label->SetForegroundColour(parent->GetArtProvider()->GetColor(wxRIBBON_ART_BUTTON_BAR_LABEL_COLOUR));
+
+                vSizer->Add(
+                    label,
+                    0,
+                    wxALIGN_CENTER_HORIZONTAL | wxTOP,
+                    2);
+            }
+
+            dynamicPanelGridSizer->Add(
+                vSizer,
+                wxGBPosition(0, 8),
+                wxGBSpan(1, 1));
+        }
+
         dynamicPanel->SetSizerAndFit(dynamicPanelGridSizer);
 
         // Insert in place
@@ -5100,7 +5198,7 @@ void MainFrame::Cut()
 void MainFrame::Paste()
 {
     assert(mController);
-    // TODO: invoke Controller::Paste()
+    mController->Paste();
 }
 
 void MainFrame::ValidateShip()
@@ -5147,6 +5245,18 @@ void MainFrame::PasteFlipV()
 {
     assert(mController);
     mController->PasteFlipV();
+}
+
+void MainFrame::PasteCommit()
+{
+    assert(mController);
+    mController->PasteCommit();
+}
+
+void MainFrame::PasteAbort()
+{
+    assert(mController);
+    mController->PasteAbort();
 }
 
 void MainFrame::OpenMaterialPalette(
@@ -5569,8 +5679,6 @@ void MainFrame::ReconciliateUIWithWorkbenchState()
     ReconciliateUIWithRopesMaterial(mWorkbenchState.GetRopesForegroundMaterial(), MaterialPlaneType::Foreground);
     ReconciliateUIWithRopesMaterial(mWorkbenchState.GetRopesBackgroundMaterial(), MaterialPlaneType::Background);
 
-    ReconciliateUIWithSelectedTool(mWorkbenchState.GetCurrentToolType());
-
     ReconciliateUIWithPrimaryVisualizationSelection(mWorkbenchState.GetPrimaryVisualization());
 
     ReconciliateUIWithGameVisualizationModeSelection(mWorkbenchState.GetGameVisualizationMode());
@@ -5844,30 +5952,34 @@ void MainFrame::ReconciliateUIWithSelectedTool(ToolType tool)
     // Select this tool's button and unselect the others
     for (size_t i = 0; i < mToolButtons.size(); ++i)
     {
-        bool const isSelected = i == static_cast<size_t>(tool);
+        bool const mustBeSelected = (i == static_cast<size_t>(tool));
 
-        if (mToolButtons[i]->GetValue() != isSelected)
+        if (mToolButtons[i]->GetValue() != mustBeSelected)
         {
-            mToolButtons[i]->SetValue(isSelected);
+            mToolButtons[i]->SetValue(mustBeSelected);
         }
     }
 
     // Consistency of Paste buttons enablement<->selection
     for (ToolType t : {ToolType::StructuralPaste, ToolType::ElectricalPaste, ToolType::RopePaste, ToolType::TexturePaste})
     {
-        mToolButtons[static_cast<size_t>(t)]->Enable(mToolButtons[static_cast<size_t>(t)]->GetValue());
+        bool mustBeEnabled = mToolButtons[static_cast<size_t>(t)]->GetValue();
+
+        if (mToolButtons[static_cast<size_t>(t)]->IsEnabled() != mustBeEnabled)
+        {
+            mToolButtons[static_cast<size_t>(t)]->Enable(mustBeEnabled);
+        }
     }
 
     // Show this tool's settings panel and hide the others
     bool hasPanel = false;
     for (auto const & entry : mToolSettingsPanels)
     {
-        bool const isSelected = 
-            std::find(std::get<0>(entry).cbegin(), std::get<0>(entry).cend(), tool) != std::get<0>(entry).cend();
+        bool const mustBeSelected = std::find(std::get<0>(entry).cbegin(), std::get<0>(entry).cend(), tool) != std::get<0>(entry).cend();
 
-        mToolSettingsPanelsSizer->Show(std::get<1>(entry), isSelected);
+        mToolSettingsPanelsSizer->Show(std::get<1>(entry), mustBeSelected);
 
-        hasPanel |= isSelected;
+        hasPanel |= mustBeSelected;
     }
 
     // Pickup new ribbon layout

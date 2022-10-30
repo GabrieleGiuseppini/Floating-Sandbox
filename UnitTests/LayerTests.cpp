@@ -1269,6 +1269,8 @@ TEST(LayerTests, ShipLayers_Rotate)
     // Verify
     //
 
+    ASSERT_EQ(layers.Size, ShipSpaceSize(6, 8));
+
     ASSERT_EQ(layers.StructuralLayer->Buffer.Size, ShipSpaceSize(6, 8));
 
     iVal = 0;
@@ -1322,4 +1324,105 @@ TEST(LayerTests, ShipLayers_Rotate)
             ++iVal;
         }
     }
+}
+
+TEST(LayerTests, ShipLayers_Clone_Full)
+{
+    //
+    // Create source
+    //
+
+    ShipSpaceSize const shipSize(8, 6);
+
+    Buffer2D<StructuralElement, struct ShipSpaceTag> sourceStructuralLayerBuffer(shipSize);
+    
+    Buffer2D<ElectricalElement, struct ShipSpaceTag> sourceElectricalLayerBuffer(shipSize);
+    
+    ElectricalPanelMetadata sourcePanel;
+    sourcePanel.emplace(ElectricalElementInstanceIndex(1), ElectricalPanelElementMetadata(std::nullopt, std::nullopt, true));
+
+    RopeBuffer sourceRopesLayerBuffer;
+    {
+        sourceRopesLayerBuffer.EmplaceBack(
+            ShipSpaceCoordinates(5, 5),
+            ShipSpaceCoordinates(2, 3),
+            nullptr,
+            rgbaColor(1, 2, 3, 4));
+
+        sourceRopesLayerBuffer.EmplaceBack(
+            ShipSpaceCoordinates(1, 1),
+            ShipSpaceCoordinates(2, 2),
+            nullptr,
+            rgbaColor(1, 2, 3, 4));
+    }
+
+    Buffer2D<rgbaColor, struct ImageTag> sourceTextureLayerBuffer(80, 60);
+
+    ShipLayers layers(
+        shipSize,
+        std::make_unique<StructuralLayerData>(std::move(sourceStructuralLayerBuffer)),
+        std::make_unique<ElectricalLayerData>(std::move(sourceElectricalLayerBuffer), std::move(sourcePanel)),
+        std::make_unique<RopesLayerData>(std::move(sourceRopesLayerBuffer)),
+        std::make_unique<TextureLayerData>(std::move(sourceTextureLayerBuffer)));
+
+    //
+    // Clone
+    //
+
+    auto layerClone = layers.Clone();
+
+    //
+    // Verify
+    //
+
+    ASSERT_EQ(layerClone.Size, shipSize);
+
+    ASSERT_TRUE(layerClone.StructuralLayer);
+    ASSERT_EQ(layerClone.StructuralLayer->Buffer.Size, shipSize);
+
+    ASSERT_TRUE(layerClone.ElectricalLayer);
+    ASSERT_EQ(layerClone.ElectricalLayer->Buffer.Size, shipSize);
+    ASSERT_EQ(layerClone.ElectricalLayer->Panel.size(), 1);
+
+    ASSERT_TRUE(layerClone.RopesLayer);
+    ASSERT_EQ(layerClone.RopesLayer->Buffer.GetSize(), 2);
+
+    ASSERT_TRUE(layerClone.TextureLayer);
+    ASSERT_EQ(layerClone.TextureLayer->Buffer.Size, ImageSize(80, 60));
+}
+
+TEST(LayerTests, ShipLayers_Clone_Empty)
+{
+    //
+    // Create source
+    //
+
+    ShipSpaceSize const shipSize(8, 6);
+
+    ShipLayers layers(
+        shipSize,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr);
+
+    //
+    // Clone
+    //
+
+    auto layerClone = layers.Clone();
+
+    //
+    // Verify
+    //
+
+    ASSERT_EQ(layerClone.Size, shipSize);
+
+    ASSERT_FALSE(layerClone.StructuralLayer);
+
+    ASSERT_FALSE(layerClone.ElectricalLayer);
+
+    ASSERT_FALSE(layerClone.RopesLayer);
+
+    ASSERT_FALSE(layerClone.TextureLayer);
 }

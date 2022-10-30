@@ -260,6 +260,8 @@ private:
     void PasteRotate90CCW();
     void PasteFlipH();
     void PasteFlipV();
+    void PasteCommit();
+    void PasteAbort();
 
     void OpenMaterialPalette(
         wxMouseEvent const & event,

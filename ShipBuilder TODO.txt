@@ -401,15 +401,24 @@
 				- ~PasteTool() (e.g. because of Validation, etc.)
 					- In this case, it Abort's()
 						- TODO: how to distinguish from "Selecting another tool"? May be this one should Commit() as well
+			- PasteTool must not get resumed after a suspension
 			- Tool does Move; various "Tool Settings" buttons do rotate/flip/etc.
 				- Rotate/flip/etc: Button->Ctrl->PasteTool
 				- Flag for opaque vs transparent
-					- Checkbox->Ctrl->PasteTool				
+					- Checkbox->Ctrl->PasteTool		
 		= Impl:
-			+ Prelim: see if can make Controlller::ToolType not optional
+			+ Prelims: 
+				+ Make Controlller::ToolType not optional
+				= Get rid of WorkbenchState::CurrentToolType altogether
+					+ Controller::cctor:
+						+ Set current tool from last tool for current viz
+					+ Tests:
+						+ Suspend/Resume: MainFrame is being refreshed now; how does it look?
+						+ Removal of layers and thus change of primary viz layer => change of tool
+					- Decide what to do wrt double tool notification from Controller::SetCurrentTool(.) at tool resume time
 			= Assets:
 				+ Paste tool icon: paste_icon.png
-				= Cursor: pan_cursor.png
+				+ Cursor: pan_cursor.png
 			= Tool button @ each layer
 				= Reconciliation @ tool change: always disabled, except when active: is_enabled==is_active
 			= Tool settings:
@@ -418,14 +427,22 @@
 					+ -> Controller::SetPaste"Opaque/Transparentness"
 				+ Rotate/flip/etc
 					+ -> Controller::RotatePaste()/etc.
-				- Separator
-				- Commit/Abort
-					- -> Controller::Commit/AbortPaste
+				+ Separator
+				+ Commit/Abort
+					+ Assets: 
+						+ confirm_40x40.png
+						+ x_40x40.png
+					+ Buttons
+					+ -> Controller::Commit/AbortPaste
 			+ Ctrl^V and button invoke Controller::Paste()
-			- Controller::Paste():
-				- 1. Decide ToolType value (i.e. layer)
-					- First clipboard layer, and better if current viz layer
-					- After choice: if different layer than current, change viz (same logic as after layer removal)
+			= Controller::Paste():
+				+ 0. Clone clipboard
+					+ ShipLayers::Clone
+						+ Unit Tests X 2 (full, empty)
+				= 1. Decide ToolType value (i.e. layer)
+					+ First clipboard layer, and better if current viz layer
+					- After choice: if different layer than current, change viz (same logic as after layer removal, but without tool change)
+						- See if there's an easy way to use current helper, without making it do a tool change
 				- 2. Instantiate tool
 					= Tool cctor takes clone of clipboard layers region (by move)
 					- Tool cctor also takes flag for opaque vs transparent (comes from WorkbenchState)
@@ -433,7 +450,9 @@
 					- Here the tool type does not enter stack of last used
 					- "Normal" new tool select notification goes out to IUserInterface
 						- So now we can test "Tool settings" toolbar layout above
-				- TODOHERE
+					- See if tool setting may be set via "normal" helper, after modifying it to ensure Paste class does not enter "last tool" stack
+						- We stil need to ensure Paste class does not enter "last tool" stack because that's what's used at tool resume time now
+			- Make sure tool does not get resumed after a suspension		
 			- Controller::AbortPaste()
 				- Get tool as PasteTool, and invoke Abort() on it
 				- Then, destroy (reset) mCurrentTool, and activate previous one for the current layer
@@ -473,12 +492,14 @@
 			- ModelController::Paste(LayersRegion, origin, opaque/transparent) X 2 (ephemeral, normal) -> GenericUndoPayload
 				- TODO
 		- Tests:
+			- Make sure none of the Paste tools may be selected by user
 			- What happens after PasteTool is gone:
 				- TODO
 			- TODO
 
 	- Tests:
 		- Ropes paste carries with it both and only ropes w/both endpoints in region, and with one endpoint in region
+	- Merge back into master
 
 + RenderContext:
 	+ Single-threaded

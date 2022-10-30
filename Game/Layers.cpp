@@ -140,4 +140,6 @@ void ShipLayers::Rotate90(RotationDirectionType direction)
     {
         TextureLayer->Buffer.Rotate90(direction);
     }
+
+    Size = ShipSpaceSize(Size.height, Size.width);
 }

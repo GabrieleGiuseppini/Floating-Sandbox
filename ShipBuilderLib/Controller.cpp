@@ -153,10 +153,10 @@ Controller::Controller(
     mUserInterface.RefreshView();
 
     //
-    // Create tool
+    // Set tool to last tool for current visualization
     //
 
-    mCurrentTool = MakeTool(mWorkbenchState.GetCurrentToolType());
+    SetCurrentTool(GetLastToolTypeForCurrentVisualization());
 
     RefreshToolCoordinatesDisplay();
 }
@@ -756,6 +756,67 @@ void Controller::Cut()
 
 void Controller::Paste()
 {
+    //
+    // Clone clipboard
+    //
+
+    assert(!mWorkbenchState.GetClipboardManager().IsEmpty());
+
+    ShipLayers clipboardClone = mWorkbenchState.GetClipboardManager().GetContent()->Clone();
+
+    //
+    // Decide which of the layer variants to choose:
+    //  - First layer present in clipboard
+    //  - If clipboard has layer for current viz, wins
+    //
+
+    std::optional<LayerType> bestLayer;
+
+    LayerType currentVizLayer = VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization());
+    
+    if (clipboardClone.StructuralLayer)
+    {
+        if (!bestLayer || currentVizLayer == LayerType::Structural)
+        {
+            bestLayer = LayerType::Structural;
+        }
+    }
+
+    if (clipboardClone.ElectricalLayer)
+    {
+        if (!bestLayer || currentVizLayer == LayerType::Electrical)
+        {
+            bestLayer = LayerType::Electrical;
+        }
+    }
+
+    if (clipboardClone.RopesLayer)
+    {
+        if (!bestLayer || currentVizLayer == LayerType::Ropes)
+        {
+            bestLayer = LayerType::Ropes;
+        }
+    }
+
+    if (clipboardClone.TextureLayer)
+    {
+        if (!bestLayer || currentVizLayer == LayerType::Texture)
+        {
+            bestLayer = LayerType::Texture;
+        }
+    }    
+
+    assert(bestLayer);
+
+    //
+    // If chosen layer is not current viz's, change viz - WITHOUT setting tool
+    //
+
+    if (*bestLayer != currentVizLayer)
+    {
+        // TODOHERE
+    }
+
     // TODOHERE
 }
 
@@ -787,6 +848,16 @@ void Controller::PasteFlipV()
 {
     PasteTool & pasteTool = GetCurrentToolAs<PasteTool>(ToolClass::Paste);
     pasteTool.FlipV();
+}
+
+void Controller::PasteCommit()
+{
+    // TODOHERE
+}
+
+void Controller::PasteAbort()
+{
+    // TODOHERE
 }
 
 void Controller::AutoTrim()
@@ -875,7 +946,7 @@ void Controller::SelectAll()
     if (!mCurrentTool || mCurrentTool->GetClass() != ToolClass::Selection)
     {
         //
-        // Change/set current tool
+        // Change/set current tool to selection tool
         //
 
         ToolType toolType;
@@ -908,7 +979,7 @@ void Controller::SelectAll()
             default:
             {
                 assert(false);
-                toolType = WorkbenchState::GetDefaultToolType();
+                toolType = ToolType::StructuralPencil;
                 break;
             }
         }
@@ -1191,13 +1262,16 @@ void Controller::BroadcastSampledInformationUpdatedNone() const
 
 void Controller::SetCurrentTool(ToolType tool)
 {
-    if (tool != mWorkbenchState.GetCurrentToolType())
+    if (!mCurrentTool || tool != mCurrentTool->GetType())
     {
-        // Nuke current tool
+        // Nuke current tool (if)
         mCurrentTool.reset();
 
-        // Do bookkeeping
-        InternalSetCurrentTool(tool);
+        // Notify new tool
+        mUserInterface.OnCurrentToolChanged(tool);
+
+        // Remember new tool as the last tool of this primary visualization's layer
+        mLastToolTypePerLayer[static_cast<size_t>(VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization()))] = tool;
 
         // Make new tool
         //
@@ -1209,8 +1283,7 @@ void Controller::SetCurrentTool(ToolType tool)
         // the tool is suspended for other reasons (e.g. because of an explicit suspension) will
         // create the tool. But how can this function be invoked while in a workflow that required
         // the explicit suspension?
-        assert(mWorkbenchState.GetCurrentToolType() == tool);
-        mCurrentTool = MakeTool(mWorkbenchState.GetCurrentToolType());
+        mCurrentTool = MakeTool(tool);
     }
 }
 
@@ -1702,10 +1775,6 @@ void Controller::InternalSelectPrimaryVisualization(VisualizationType primaryVis
     // Notify
     mUserInterface.OnPrimaryVisualizationChanged(primaryVisualization);
 
-    // Select the last tool we have used for this new viz's layer
-    // Note: stores new tool for new layer
-    InternalSetCurrentTool(mLastToolTypePerLayer[static_cast<size_t>(VisualizationToLayer(primaryVisualization))]);
-
     // Tell view
     mView->SetPrimaryVisualization(primaryVisualization);
 }
@@ -1789,23 +1858,9 @@ void Controller::InternalUpdateModelControllerVisualizationModes()
     }
 }
 
-void Controller::InternalSetCurrentTool(ToolType toolType)
+ToolType Controller::GetLastToolTypeForCurrentVisualization()
 {
-    //
-    // No tool destroy/create
-    // No visualization changes
-    //
-
-    assert(!mCurrentTool);
-
-    // Set current tool
-    mWorkbenchState.SetCurrentToolType(toolType);
-
-    // Notify
-    mUserInterface.OnCurrentToolChanged(toolType);
-
-    // Remember new tool as the last tool of this primary visualization's layer
-    mLastToolTypePerLayer[static_cast<size_t>(VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization()))] = toolType;
+    return mLastToolTypePerLayer[static_cast<size_t>(VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization()))];
 }
 
 Finalizer Controller::SuspendTool() const
@@ -1832,7 +1887,6 @@ bool Controller::InternalSuspendTool()
     bool const doResume = (mCurrentTool != nullptr);
 
     mCurrentTool.reset();
-    // Leave mCurrentToolType as-is
 
     return doResume;
 }
@@ -1842,7 +1896,8 @@ void Controller::InternalResumeTool()
     assert(!mCurrentTool); // Should be here only when there's no current tool
     mCurrentTool.reset();
 
-    mCurrentTool = MakeTool(mWorkbenchState.GetCurrentToolType());
+    // Restart last tool for current layer
+    SetCurrentTool(mLastToolTypePerLayer[static_cast<size_t>(VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization()))]);
 }
 
 void Controller::InternalResetTool()

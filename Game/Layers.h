@@ -330,6 +330,16 @@ struct ShipLayers
         , TextureLayer(std::move(textureLayer))
     {}
 
+    ShipLayers Clone() const
+    {
+        return ShipLayers(
+            Size,
+            StructuralLayer ? std::make_unique<StructuralLayerData>(StructuralLayer->Clone()) : nullptr,
+            ElectricalLayer ? std::make_unique<ElectricalLayerData>(ElectricalLayer->Clone()) : nullptr,
+            RopesLayer ? std::make_unique<RopesLayerData>(RopesLayer->Clone()) : nullptr,
+            TextureLayer ? std::make_unique<TextureLayerData>(TextureLayer->Clone()) : nullptr);
+    }
+
     void Flip(DirectionType direction);
     
     void Rotate90(RotationDirectionType direction);

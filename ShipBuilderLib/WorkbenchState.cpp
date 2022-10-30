@@ -55,7 +55,6 @@ WorkbenchState::WorkbenchState(
     // Default tool settings
     //
 
-    mCurrentToolType = GetDefaultToolType();
     mStructuralPencilToolSize = 1;
     mStructuralEraserToolSize = 4;
     mElectricalEraserToolSize = 1;

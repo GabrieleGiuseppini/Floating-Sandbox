@@ -201,6 +201,8 @@ public:
     void PasteRotate90CCW();
     void PasteFlipH();
     void PasteFlipV();
+    void PasteCommit();
+    void PasteAbort();
 
     void AutoTrim();
 
@@ -334,7 +336,7 @@ private:
 
     void InternalUpdateModelControllerVisualizationModes();
 
-    void InternalSetCurrentTool(ToolType toolType);
+    ToolType GetLastToolTypeForCurrentVisualization();
 
     Finalizer SuspendTool() const;
     bool InternalSuspendTool();
