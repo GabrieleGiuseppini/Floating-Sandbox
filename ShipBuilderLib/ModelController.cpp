@@ -1179,6 +1179,8 @@ void ModelController::RestoreRopesLayerRegionBackup(
     RopesLayerData && sourceLayerRegionBackup,
     ShipSpaceCoordinates const & targetOrigin)
 {
+    assert(mModel.HasLayer(LayerType::Ropes));
+
     assert(!mIsRopesLayerInEphemeralVisualization);
 
     //

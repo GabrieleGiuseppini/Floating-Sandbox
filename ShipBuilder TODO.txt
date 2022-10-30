@@ -389,24 +389,31 @@
 	- Paste tool:
 		- Assets:
 			- Paste tool icon and cursor
-		= UI Reconciliation with clipboard: enable/disable
+		+ UI Reconciliation with clipboard being populated: enable/disable button
 			+ Initial call from Controller cctor
-		- Not selectable by user; auto-activated @ Paste
-			- Never enters "last tool" stack
-			- Tool's button is always disabled, except when active: is_enabled==is_active
-		- Gets own copy of LayersRegion at creation, and modifications happen to it (rather than to Clipboard's)
-		- Exited by:
-			- Selecting another tool
-				- In this case, it Commit's()
-			- Commit & Abort "Tool Settings" buttons
-			- ~PasteTool() (e.g. because of Validation, etc.)
-				- In this case, it Abort's()
-					- TODO: how to distinguish from "Selecting another tool"? May be this one should Commit() as well
-		- Tool does Move; various "Tool Settings" buttons do rotate/flip/etc.
-			- Rotate/flip/etc: Button->Ctrl->PasteTool
-			- Flag for opaque vs transparent
-				- Checkbox->Ctrl->PasteTool
-			- ModelController::PasteRegion(LayersRegion, origin) X 2 (ephemeral, normal) -> Layers (for undo)
+		- Spec:
+			- Tool not selectable by user; auto-activated @ Paste
+				- Never enters "last tool" stack
+				- Tool's button is always disabled, except when active: is_enabled==is_active
+			- Tool gets own copy of LayersRegion at creation, and modifications happen to it (rather than to Clipboard's)
+			- Exited by:
+				- Selecting another tool
+					- In this case, it Commit's()
+				- Commit & Abort "Tool Settings" buttons
+				- ~PasteTool() (e.g. because of Validation, etc.)
+					- In this case, it Abort's()
+						- TODO: how to distinguish from "Selecting another tool"? May be this one should Commit() as well
+			- Tool does Move; various "Tool Settings" buttons do rotate/flip/etc.
+				- Rotate/flip/etc: Button->Ctrl->PasteTool
+				- Flag for opaque vs transparent
+					- Checkbox->Ctrl->PasteTool
+				- ModelController::PasteRegion(LayersRegion, origin) X 2 (ephemeral, normal) -> Layers (for undo)
+		- Impl:
+			- Ctrl^V and button invoke Controller::Paste()
+			- Controller::Paste():
+				- TODOHERE
+		- Tests:
+			- 
 
 	- Tests:
 		- Ropes paste carries with it both and only ropes w/both endpoints in region, and with one endpoint in region
