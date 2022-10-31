@@ -448,16 +448,16 @@
 				+ 2. Instantiate tool
 					+ Tool cctor takes clone of clipboard layers region (by move)
 					+ Tool cctor also takes flag for opaque vs transparent (comes from WorkbenchState)
-				- 3. Set tool
-					- Here the tool type does not enter stack of last used
-					- "Normal" new tool select notification goes out to IUserInterface
+				= 3. Set tool
+					+ Here the tool type does not enter stack of last used
+					= "Normal" new tool select notification goes out to IUserInterface
 						- So now we can test "Tool settings" toolbar layout above
 					- See if tool setting may be set via "normal" helper, after modifying it to ensure Paste class does not enter "last tool" stack
 						- We stil need to ensure Paste class does not enter "last tool" stack because that's what's used at tool resume time now
 						- Actually, see if helper really needs to set tool: if current tool is always suspended at call time,
 						  the new tool will be automagically created by resume
 							- Then the tool simply becomes "change tool for layer"
-			- Make sure tool does not get resumed after a suspension		
+			- Make sure Paste tool does not get resumed after a suspension		
 			- Controller::AbortPaste()
 				- Get tool as PasteTool, and invoke Abort() on it
 				- Then, destroy (reset) mCurrentTool, and activate previous one for the current layer

@@ -336,7 +336,7 @@ private:
 
     void InternalUpdateModelControllerVisualizationModes();
 
-    ToolType GetLastToolTypeForCurrentVisualization();
+    ToolType GetToolTypeForCurrentVisualization();
 
     Finalizer SuspendTool() const;
     bool InternalSuspendTool();
@@ -384,8 +384,8 @@ private:
 
     std::unique_ptr<Tool> mCurrentTool;
 
-    // The last tool that was used for each layer
-    std::array<ToolType, LayerCount> mLastToolTypePerLayer;
+    // The tool active for each layer
+    std::array<ToolType, LayerCount> mCurrentToolTypePerLayer;
 };
 
 }

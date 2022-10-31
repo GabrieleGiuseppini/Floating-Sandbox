@@ -87,7 +87,7 @@ Controller::Controller(
     , mResourceLocator(resourceLocator)
     // State
     , mCurrentTool()
-    , mLastToolTypePerLayer({ToolType::StructuralPencil, ToolType::ElectricalPencil, ToolType::RopePencil, ToolType::TextureEraser})
+    , mCurrentToolTypePerLayer({ToolType::StructuralPencil, ToolType::ElectricalPencil, ToolType::RopePencil, ToolType::TextureEraser})
 {
     //
     // Create view
@@ -153,10 +153,10 @@ Controller::Controller(
     mUserInterface.RefreshView();
 
     //
-    // Set tool to last tool for current visualization
+    // Set tool to tool for current visualization
     //
 
-    SetCurrentTool(GetLastToolTypeForCurrentVisualization());
+    SetCurrentTool(GetToolTypeForCurrentVisualization());
 
     RefreshToolCoordinatesDisplay();
 }
@@ -849,15 +849,14 @@ void Controller::Paste()
     }
 
     //
-    // Instantiate tool
+    // Instantiate and set tool
     //
 
-    std::unique_ptr<Tool> pasteTool;
     switch (*bestLayer)
     {
         case LayerType::Structural:
         {
-            pasteTool = std::make_unique<StructuralPasteTool>(
+            mCurrentTool = std::make_unique<StructuralPasteTool>(
                 std::move(clipboardClone),
                 mWorkbenchState.GetPasteIsTransparent(),
                 *this,
@@ -868,7 +867,7 @@ void Controller::Paste()
 
         case LayerType::Electrical:
         {
-            pasteTool = std::make_unique<ElectricalPasteTool>(
+            mCurrentTool = std::make_unique<ElectricalPasteTool>(
                 std::move(clipboardClone),
                 mWorkbenchState.GetPasteIsTransparent(),
                 *this,
@@ -879,7 +878,7 @@ void Controller::Paste()
 
         case LayerType::Ropes:
         {
-            pasteTool = std::make_unique<RopePasteTool>(
+            mCurrentTool = std::make_unique<RopePasteTool>(
                 std::move(clipboardClone),
                 mWorkbenchState.GetPasteIsTransparent(),
                 *this,
@@ -890,7 +889,7 @@ void Controller::Paste()
 
         case LayerType::Texture:
         {
-            pasteTool = std::make_unique<TexturePasteTool>(
+            mCurrentTool = std::make_unique<TexturePasteTool>(
                 std::move(clipboardClone),
                 mWorkbenchState.GetPasteIsTransparent(),
                 *this,
@@ -900,9 +899,10 @@ void Controller::Paste()
         }
     }
 
-    assert(pasteTool);
+    assert(mCurrentTool);
 
-    // TODOHERE
+    // Notify new tool
+    mUserInterface.OnCurrentToolChanged(mCurrentTool->GetType());
 }
 
 void Controller::SetPasteIsTransparent(bool isTransparent)
@@ -1352,23 +1352,19 @@ void Controller::SetCurrentTool(ToolType tool)
         // Nuke current tool (if)
         mCurrentTool.reset();
 
+        // Make new tool
+        mCurrentTool = MakeTool(tool);
+
         // Notify new tool
         mUserInterface.OnCurrentToolChanged(tool);
 
-        // Remember new tool as the last tool of this primary visualization's layer
-        mLastToolTypePerLayer[static_cast<size_t>(VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization()))] = tool;
-
-        // Make new tool
-        //
-        // Note: when we were suspending tools at MouseLeft(), here we were avoiding to create 
-        // a new tool if we had entered this function without a tool, stating that we were 
-        // "not creating a new tool if we were suspended". We were then relying on MouseEnter()
-        // to create the tool.
-        // We changed this behavior. Now there's a risk that an invocation of this function while
-        // the tool is suspended for other reasons (e.g. because of an explicit suspension) will
-        // create the tool. But how can this function be invoked while in a workflow that required
-        // the explicit suspension?
-        mCurrentTool = MakeTool(tool);
+        // Set new tool as the current tool of this primary visualization's layer - unless it's the Paste tool,
+        // in which case we allow the previous tool for this viz layer to be resumed after the Paste tool is suspended
+        assert(mCurrentTool->GetClass() != ToolClass::Paste);
+        if (mCurrentTool->GetClass() != ToolClass::Paste)
+        {
+            mCurrentToolTypePerLayer[static_cast<size_t>(VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization()))] = tool;
+        }
     }
 }
 
@@ -1943,9 +1939,9 @@ void Controller::InternalUpdateModelControllerVisualizationModes()
     }
 }
 
-ToolType Controller::GetLastToolTypeForCurrentVisualization()
+ToolType Controller::GetToolTypeForCurrentVisualization()
 {
-    return mLastToolTypePerLayer[static_cast<size_t>(VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization()))];
+    return mCurrentToolTypePerLayer[static_cast<size_t>(VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization()))];
 }
 
 Finalizer Controller::SuspendTool() const
@@ -1982,7 +1978,7 @@ void Controller::InternalResumeTool()
     mCurrentTool.reset();
 
     // Restart last tool for current layer
-    SetCurrentTool(mLastToolTypePerLayer[static_cast<size_t>(VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization()))]);
+    SetCurrentTool(mCurrentToolTypePerLayer[static_cast<size_t>(VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization()))]);
 }
 
 void Controller::InternalResetTool()
