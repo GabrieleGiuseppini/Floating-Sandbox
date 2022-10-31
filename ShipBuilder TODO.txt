@@ -409,19 +409,17 @@
 		= Impl:
 			+ Prelims: 
 				+ Make Controlller::ToolType not optional
-				= Get rid of WorkbenchState::CurrentToolType altogether
+				+ Get rid of WorkbenchState::CurrentToolType altogether
 					+ Controller::cctor:
 						+ Set current tool from last tool for current viz
 					+ Tests:
 						+ Suspend/Resume: MainFrame is being refreshed now; how does it look?
 						+ Removal of layers and thus change of primary viz layer => change of tool
-					- Decide what to do wrt double tool notification from Controller::SetCurrentTool(.) at tool resume time
-						- See if "if always suspended" below helps with this
-			= Assets:
+			+ Assets:
 				+ Paste tool icon: paste_icon.png
 				+ Cursor: pan_cursor.png
-			= Tool button @ each layer
-				= Reconciliation @ tool change: always disabled, except when active: is_enabled==is_active
+			+ Tool button @ each layer
+				+ Reconciliation @ tool change: always disabled, except when active: is_enabled==is_active
 			= Tool settings:
 				+ Layout is same as Selection
 				+ Flag for opaque vs transparent
@@ -435,8 +433,9 @@
 						+ x_40x40.png
 					+ Buttons
 					+ -> Controller::Commit/AbortPaste
+				- Fix width: largest settings needs to be enabled at startup or else ribbon bar does size wide enough
 			+ Ctrl^V and button invoke Controller::Paste()
-			= Controller::Paste():
+			+ Controller::Paste():
 				+ 0a. Clone clipboard
 					+ ShipLayers::Clone
 						+ Unit Tests X 2 (full, empty)
@@ -448,16 +447,10 @@
 				+ 2. Instantiate tool
 					+ Tool cctor takes clone of clipboard layers region (by move)
 					+ Tool cctor also takes flag for opaque vs transparent (comes from WorkbenchState)
-				= 3. Set tool
+				+ 3. Set tool
 					+ Here the tool type does not enter stack of last used
-					= "Normal" new tool select notification goes out to IUserInterface
-						- So now we can test "Tool settings" toolbar layout above
-					- See if tool setting may be set via "normal" helper, after modifying it to ensure Paste class does not enter "last tool" stack
-						- We stil need to ensure Paste class does not enter "last tool" stack because that's what's used at tool resume time now
-						- Actually, see if helper really needs to set tool: if current tool is always suspended at call time,
-						  the new tool will be automagically created by resume
-							- Then the tool simply becomes "change tool for layer"
-			- Make sure Paste tool does not get resumed after a suspension		
+					+ "Normal" new tool select notification goes out to IUserInterface
+			+ Make sure Paste tool does not get resumed after a suspension		
 			- Controller::AbortPaste()
 				- Get tool as PasteTool, and invoke Abort() on it
 				- Then, destroy (reset) mCurrentTool, and activate previous one for the current layer

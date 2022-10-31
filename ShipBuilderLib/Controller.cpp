@@ -849,7 +849,8 @@ void Controller::Paste()
     }
 
     //
-    // Instantiate and set tool
+    // Instantiate and set tool, making sure it does not become "the" tool
+    // for the current viz mode
     //
 
     switch (*bestLayer)

@@ -2749,7 +2749,7 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
             {
                 auto * button = new BitmapButton(
                     dynamicPanel,
-                    mResourceLocator.GetIconFilePath("confirm_40x40.png"),
+                    mResourceLocator.GetIconFilePath("confirm_40x40"),
                     [this]()
                     {
                         PasteCommit();
@@ -2793,7 +2793,7 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
             {
                 auto * button = new BitmapButton(
                     dynamicPanel,
-                    mResourceLocator.GetIconFilePath("x_40x40.png"),
+                    mResourceLocator.GetIconFilePath("x_40x40"),
                     [this]()
                     {
                         PasteAbort();
@@ -6029,6 +6029,15 @@ void MainFrame::ReconciliateUIWithSelectedTool(ToolType tool)
                 break;
             }
 
+            case ToolType::StructuralPaste:
+            case ToolType::ElectricalPaste:
+            case ToolType::RopePaste:
+            case ToolType::TexturePaste:
+            {
+                mToolSettingsRibbonPanel->SetLabel("Paste");
+                break;
+            }
+
             case ToolType::RopeEraser:
             case ToolType::ElectricalLine:
             case ToolType::ElectricalPencil:
@@ -6037,10 +6046,6 @@ void MainFrame::ReconciliateUIWithSelectedTool(ToolType tool)
             case ToolType::ElectricalSampler:
             case ToolType::RopeSampler:
             case ToolType::StructuralMeasuringTapeTool:
-            case ToolType::StructuralPaste:
-            case ToolType::ElectricalPaste:
-            case ToolType::RopePaste:
-            case ToolType::TexturePaste:
             {
                 // Don't have settings
                 assert(false);
