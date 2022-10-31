@@ -765,6 +765,12 @@ void Controller::Paste()
     ShipLayers clipboardClone = mWorkbenchState.GetClipboardManager().GetContent()->Clone();
 
     //
+    // Nuke current tool
+    //
+
+    mCurrentTool.reset();
+
+    //
     // Decide which of the layer variants to choose:
     //  - First layer present in clipboard
     //  - If clipboard has layer for current viz, wins
@@ -814,8 +820,87 @@ void Controller::Paste()
 
     if (*bestLayer != currentVizLayer)
     {
-        // TODOHERE
+        switch (*bestLayer)
+        {
+            case LayerType::Structural:
+            {
+                InternalSelectPrimaryVisualization(VisualizationType::Game); // Arbitrary
+                break;
+            }
+
+            case LayerType::Electrical:
+            {
+                InternalSelectPrimaryVisualization(VisualizationType::ElectricalLayer);
+                break;
+            }
+
+            case LayerType::Ropes:
+            {
+                InternalSelectPrimaryVisualization(VisualizationType::RopesLayer);
+                break;
+            }
+
+            case LayerType::Texture:
+            {
+                InternalSelectPrimaryVisualization(VisualizationType::TextureLayer);
+                break;
+            }
+        }
     }
+
+    //
+    // Instantiate tool
+    //
+
+    std::unique_ptr<Tool> pasteTool;
+    switch (*bestLayer)
+    {
+        case LayerType::Structural:
+        {
+            pasteTool = std::make_unique<StructuralPasteTool>(
+                std::move(clipboardClone),
+                mWorkbenchState.GetPasteIsTransparent(),
+                *this,
+                mResourceLocator);
+
+            break;
+        }
+
+        case LayerType::Electrical:
+        {
+            pasteTool = std::make_unique<ElectricalPasteTool>(
+                std::move(clipboardClone),
+                mWorkbenchState.GetPasteIsTransparent(),
+                *this,
+                mResourceLocator);
+
+            break;
+        }
+
+        case LayerType::Ropes:
+        {
+            pasteTool = std::make_unique<RopePasteTool>(
+                std::move(clipboardClone),
+                mWorkbenchState.GetPasteIsTransparent(),
+                *this,
+                mResourceLocator);
+
+            break;
+        }
+
+        case LayerType::Texture:
+        {
+            pasteTool = std::make_unique<TexturePasteTool>(
+                std::move(clipboardClone),
+                mWorkbenchState.GetPasteIsTransparent(),
+                *this,
+                mResourceLocator);
+
+            break;
+        }
+    }
+
+    assert(pasteTool);
 
     // TODOHERE
 }
