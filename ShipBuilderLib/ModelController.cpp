@@ -585,25 +585,11 @@ GenericUndoPayload ModelController::PasteForEphemeralVisualization(
                     return src;
                 };
 
-            mModel.GetStructuralLayer().Buffer.BlitFromRegion(
-                sourcePayload.StructuralLayer->Buffer,
-                ShipSpaceRect(sourcePayload.StructuralLayer->Buffer.Size),
+            DoStructuralRegionPaste(
+                *sourcePayload.StructuralLayer,
+                mModel.GetStructuralLayer(),
                 pasteOrigin,
                 elementOperator);
-
-            //
-            // Update visualization
-            //
-
-            auto const affectedRegion = 
-                ShipSpaceRect(pasteOrigin, sourcePayload.StructuralLayer->Buffer.Size)
-                .MakeIntersectionWith(GetWholeShipRect());
-
-            if (affectedRegion)
-            {
-                RegisterDirtyVisualization<VisualizationType::Game>(*affectedRegion);
-                RegisterDirtyVisualization<VisualizationType::StructuralLayer>(*affectedRegion);
-            }
 
             // Remember we are in temp visualization now
             mIsStructuralLayerInEphemeralVisualization = true;
@@ -626,19 +612,10 @@ void ModelController::RestoreForEphemeralVisualization(GenericUndoPayload && und
         assert(mModel.HasLayer(LayerType::Structural));
         assert(mIsStructuralLayerInEphemeralVisualization);
 
-        mModel.GetStructuralLayer().Buffer.BlitFromRegion(
-            undoPayload.StructuralLayerRegionBackup->Buffer,
-            ShipSpaceRect(undoPayload.StructuralLayerRegionBackup->Buffer.Size),
+        DoStructuralRegionPaste(
+            *undoPayload.StructuralLayerRegionBackup,
+            mModel.GetStructuralLayer(),
             undoPayload.Origin);
-
-        //
-        // Update visualization
-        //
-
-        ShipSpaceRect const affectedRegion(undoPayload.Origin, undoPayload.StructuralLayerRegionBackup->Buffer.Size);
-
-        RegisterDirtyVisualization<VisualizationType::Game>(ShipSpaceRect(affectedRegion));
-        RegisterDirtyVisualization<VisualizationType::StructuralLayer>(ShipSpaceRect(affectedRegion));
 
         // Remember we are not anymore in temp visualization
         mIsStructuralLayerInEphemeralVisualization = false;
@@ -2566,6 +2543,33 @@ GenericUndoPayload ModelController::MakeGenericUndoPayload(
         std::move(electricalLayerRegionBackup),
         std::move(ropesLayerRegionBackup),
         std::move(textureLayerRegionBackup));
+}
+
+void ModelController::DoStructuralRegionPaste(
+    StructuralLayerData const & source,
+    StructuralLayerData & target,
+    ShipSpaceCoordinates const & targetCoordinates,
+    std::function<StructuralElement(StructuralElement const &, StructuralElement const &)> const & elementOperator)
+{
+    target.Buffer.BlitFromRegion(
+        source.Buffer,
+        ShipSpaceRect(source.Buffer.Size),
+        targetCoordinates,
+        elementOperator);
+
+    //
+    // Update visualization
+    //
+
+    auto const affectedRegion =
+        ShipSpaceRect(targetCoordinates, source.Buffer.Size)
+        .MakeIntersectionWith(GetWholeShipRect());
+
+    if (affectedRegion)
+    {
+        RegisterDirtyVisualization<VisualizationType::Game>(*affectedRegion);
+        RegisterDirtyVisualization<VisualizationType::StructuralLayer>(*affectedRegion);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////

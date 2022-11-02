@@ -520,6 +520,13 @@ private:
             && HasLayer(layer);
     }
 
+    void DoStructuralRegionPaste(
+        StructuralLayerData const & source,
+        StructuralLayerData & target,
+        ShipSpaceCoordinates const & targetCoordinates,
+        std::function<StructuralElement(StructuralElement const &, StructuralElement const &)> const & elementOperator =
+            [](StructuralElement const & src, StructuralElement const &) { return src; });
+
     // Viz
 
     template<VisualizationType TVisualization, typename TRect>

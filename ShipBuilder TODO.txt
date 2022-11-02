@@ -472,23 +472,25 @@
 					= ShipSpaceCoords mPasteOrigin
 						+ Initialized at cctor
 						- Moved at MouseMove+LeftDown
-				- private DrawEphViz
-					- assert(!eph viz)
-					- MC::PasteForEphViz eph viz @ mPasteOrigin
-					- View::UpdateOverlay
-					- -> Undo in finalizer
-				- private RestoreEphViz(undo payload)
-					- Called by finalizer
-					- assert(eph viz)
-					- MC::RestoreForEphViz
-					- View::RemoveOverlay
+					- mPasteRegion: optional; indicates "pending" (i.e. neither committed nor aborted)
+						- Actually: optional should be of PasteRegion + MousePasteCoords
+							- ...and eph viz?
+				+ private DrawEphViz
+					+ assert(!eph viz)
+					+ MC::PasteForEphViz eph viz @ mPasteOrigin
+					+ View::UpdateOverlay
+					+ -> Undo in eph viz
+				+ private UndoEphemeralVisualization()
+					+ assert(eph viz)
+					+ MC::RestoreForEphViz
+					+ View::RemoveOverlay
 				+ cctor:
 					+ If cur mouse is visible: use it;
 					+- Else: calc mid of visible window -> mPasteOrigin
 					+ DrawEphViz
-				- dctor:
+				+ dctor:
 					! If pending: commit
-					- Commit()
+					+ Commit()
 				- Leave():
 					- TODO
 				- Abort():
@@ -496,18 +498,25 @@
 					- TODO
 				- Commit():
 					! Undo eph viz, Commit, and make sure subsequent dctor does not see it as pending
-					- Reset eph viz (if any)
+					+ Reset eph viz (if any)
 					- Commit (if pending)
-					- TODO
+					+ LayerChangeEpilog
 				- Rotate()/etc.:
 					! Do operation on own mPasteRegion
 					- TODO
 				- Set"Opaque/Transparentness" (for changes)
+					! Undo eph viz, change, Redo eph viz
 					- TODO
 				- MouseDown():
+					- TODO: decide in/out canvas thing
 					- TODO
 				- MouseUp():
-					- TODO
+					- Reset mMouseAnchor
+				- MouseMove():					
+					- If mMouseAnchor:
+						- Reset eph viz (if any)
+						- Calc stride and add it to mMousePasteCoords
+						- DrawEphViz
 				- ShiftDown/Up:
 					- TODO
 			- ModelController::Paste(LayersRegion, origin, opaque/transparent) X 2 (ephemeral, normal) -> GenericUndoPayload

@@ -40,6 +40,9 @@ public:
     void OnShiftKeyUp() override;
     void OnMouseLeft() override;
 
+    void Commit();
+    void Abort();
+
     void SetIsTransparent(bool isTransparent);
     void Rotate90CW();
     void Rotate90CCW();
@@ -77,9 +80,11 @@ private:
     ShipLayers mPasteRegion;    
     bool mIsTransparent;
 
-    ShipSpaceCoordinates mMouseCoords;
+    ShipSpaceCoordinates mMousePasteCoords;
 
-    // Ephemeral visualization
+    // Only set while we're dragging - remembers the previous mouse pos
+    std::optional<ShipSpaceCoordinates> mMouseAnchor;
+
     std::optional<GenericUndoPayload> mEphemeralVisualization;
 };
 

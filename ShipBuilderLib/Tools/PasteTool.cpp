@@ -75,7 +75,8 @@ PasteTool::PasteTool(
     , mPasteRegion(std::move(pasteRegion))
     , mIsTransparent(isTransparent)
     , mEphemeralVisualization()
-    , mMouseCoords(CalculateInitialMouseOrigin())
+    , mMousePasteCoords(CalculateInitialMouseOrigin())
+    , mMouseAnchor()
 {
     SetCursor(WxHelpers::LoadCursorImage("pan_cursor", 16, 16, resourceLocator));
 
@@ -86,14 +87,7 @@ PasteTool::PasteTool(
 
 PasteTool::~PasteTool()
 {
-    // TODO
-    if (mEphemeralVisualization)
-    {
-        UndoEphemeralVisualization();
-        assert(!mEphemeralVisualization);
-
-        mController.LayerChangeEpilog();
-    }
+    Commit();
 }
 
 void PasteTool::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates)
@@ -109,7 +103,7 @@ void PasteTool::OnLeftMouseDown()
 
 void PasteTool::OnLeftMouseUp()
 {
-    // TODO
+    mMouseAnchor.reset();
 }
 
 void PasteTool::OnShiftKeyDown()
@@ -127,11 +121,37 @@ void PasteTool::OnMouseLeft()
     // TODO
 }
 
+void PasteTool::Commit()
+{
+    if (mEphemeralVisualization)
+    {
+        UndoEphemeralVisualization();
+        assert(!mEphemeralVisualization);
+    }
+
+    // TODO: commit, iff pending (i.e. not aborted)
+
+    mController.LayerChangeEpilog();
+}
+
+void PasteTool::Abort()
+{
+    // TODO
+}
+
 void PasteTool::SetIsTransparent(bool isTransparent)
 {
+    if (mEphemeralVisualization)
+    {
+        UndoEphemeralVisualization();
+        assert(!mEphemeralVisualization);
+    }
+
     mIsTransparent = isTransparent;
 
-    // TODO
+    DrawEphemeralVisualization();
+
+    mController.LayerChangeEpilog();
 }
 
 void PasteTool::Rotate90CW()
@@ -175,7 +195,7 @@ void PasteTool::DrawEphemeralVisualization()
 {
     assert(!mEphemeralVisualization);
 
-    ShipSpaceCoordinates const pasteOrigin = MouseCoordsToPasteOrigin(mMouseCoords);
+    ShipSpaceCoordinates const pasteOrigin = MouseCoordsToPasteOrigin(mMousePasteCoords);
 
     GenericUndoPayload pasteUndo = mController.GetModelController().PasteForEphemeralVisualization(
         mPasteRegion,
