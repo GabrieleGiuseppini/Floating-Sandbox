@@ -704,10 +704,11 @@ void Controller::Restore(GenericUndoPayload && undoPayload)
 
 void Controller::Copy() const
 {
-    assert(mSelectionManager.GetSelection().has_value());
-    auto const selectionRegion = *(mSelectionManager.GetSelection()); // Get selection before we remove tool
+    // Note: no need to suspend tool, as Selection tool has no eph viz
+    assert(!mCurrentTool || mCurrentTool->GetClass() == ToolClass::Selection);
 
-    auto const scopedToolResumeState = SuspendTool();
+    assert(mSelectionManager.GetSelection().has_value());
+    auto const selectionRegion = *(mSelectionManager.GetSelection());
 
     std::optional<LayerType> const layerSelection = mWorkbenchState.GetSelectionIsAllLayers()
         ? std::nullopt // All layers

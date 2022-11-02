@@ -156,3 +156,12 @@ TEST_P(CoordsRatio, CoordsRatio)
 
     EXPECT_EQ(result, std::get<2>(GetParam()));
 }
+
+TEST(IntegralSystemTests, Rect_Center)
+{
+    IntegralRect rect(
+        IntegralCoordinates(10, 8),
+        IntegralRectSize(4, 12));
+
+    EXPECT_EQ(rect.Center(), IntegralCoordinates(12, 14));
+}

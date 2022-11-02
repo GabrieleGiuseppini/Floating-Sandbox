@@ -148,7 +148,7 @@ MainFrame::MainFrame(
             CreateLayersRibbonPage(mMainRibbonBar);
             CreateEditRibbonPage(mMainRibbonBar);
 
-            mMainRibbonBar->SetActivePage(1); // We start with the widest of the pages
+            mMainRibbonBar->SetActivePage(2); // We start with the widest of the pages
             mMainRibbonBar->Realize();
 
             row0HSizer->Add(
@@ -2738,7 +2738,8 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
             dynamicPanelGridSizer->Add(
                 line,
                 wxGBPosition(0, 6),
-                wxGBSpan(1, 1));
+                wxGBSpan(1, 1),
+                wxEXPAND);
         }
 
         // Commit

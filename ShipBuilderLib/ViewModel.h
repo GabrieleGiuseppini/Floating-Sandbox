@@ -197,6 +197,24 @@ public:
             DisplayPhysicalToShipSpace(mDisplayPhysicalSize.height));
     }
 
+    /*
+     * Portion of ship space (i.e. between (0,0) and (s.w, s.h)) that is currently visible
+     */
+    ShipSpaceRect GetDisplayShipSpaceRect() const
+    {
+        ShipSpaceCoordinates const bottomRight = DisplayPhysicalToShipSpace({ mDisplayPhysicalSize.width, mDisplayPhysicalSize.height });
+
+        return ShipSpaceRect(
+            // Left-top
+            ShipSpaceCoordinates(
+                mCam.x,
+                mShipSize.height - mCam.y),
+            // Right-bottom
+            ShipSpaceCoordinates(
+                std::min(bottomRight.x, mShipSize.width),
+                std::max(bottomRight.y, 0)));
+    }
+
     DisplayPhysicalRect GetPhysicalVisibleShipRegion() const
     {
         return mShipDisplayPhysicalRect;
@@ -206,11 +224,19 @@ public:
     // Coordinate transformations
     //
 
-    ShipSpaceCoordinates ScreenToShipSpace(DisplayLogicalCoordinates const & displayCoordinates) const
+    ShipSpaceCoordinates ScreenToShipSpace(DisplayLogicalCoordinates const & displayLogicalCoordinates) const
+    {
+        return DisplayPhysicalToShipSpace(
+            DisplayPhysicalCoordinates(
+                displayLogicalCoordinates.x * mLogicalToPhysicalPixelFactor,
+                displayLogicalCoordinates.y * mLogicalToPhysicalPixelFactor));
+    }
+
+    ShipSpaceCoordinates DisplayPhysicalToShipSpace(DisplayPhysicalCoordinates const & displayPhysicalCoordinates) const
     {
         return ShipSpaceCoordinates(
-            DisplayPhysicalToShipSpace(displayCoordinates.x * mLogicalToPhysicalPixelFactor) - MarginDisplayShipSize + mCam.x,
-            mShipSize.height - 1 - (DisplayPhysicalToShipSpace(displayCoordinates.y * mLogicalToPhysicalPixelFactor) - MarginDisplayShipSize + mCam.y));
+            DisplayPhysicalToShipSpace(displayPhysicalCoordinates.x) - MarginDisplayShipSize + mCam.x,
+            mShipSize.height - 1 - (DisplayPhysicalToShipSpace(displayPhysicalCoordinates.y) - MarginDisplayShipSize + mCam.y));
     }
 
     ShipSpaceCoordinates ScreenToShipSpaceNearest(DisplayLogicalCoordinates const & displayCoordinates) const
@@ -365,7 +391,7 @@ private:
 
     // Primary inputs
     int mZoom; // >=0: display pixels occupied by one ship space pixel
-    ShipSpaceCoordinates mCam; // Ship space coordinates of of ship pixel that is visible at (0, 0) in display
+    ShipSpaceCoordinates mCam; // Ship space coordinates (w/inverted y) of ship pixel that is visible at (0, 0) (top, left) in display
     int const mLogicalToPhysicalPixelFactor;
     DisplayLogicalSize mDisplayLogicalSize;
     DisplayPhysicalSize mDisplayPhysicalSize;

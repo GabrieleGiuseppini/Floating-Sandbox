@@ -30,6 +30,10 @@ public:
 
 	// Futurework: if needed, one day may add other elements, e.g. metadata
 
+	GenericUndoPayload(ShipSpaceCoordinates const & origin)
+		: Origin(origin)
+	{}
+
 	GenericUndoPayload(
 		ShipSpaceCoordinates const & origin,
 		std::optional<StructuralLayerData> && structuralLayerRegionBackup,

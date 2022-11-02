@@ -74,15 +74,26 @@ PasteTool::PasteTool(
         controller)
     , mPasteRegion(std::move(pasteRegion))
     , mIsTransparent(isTransparent)
+    , mEphemeralVisualization()
+    , mMouseCoords(CalculateInitialMouseOrigin())
 {
     SetCursor(WxHelpers::LoadCursorImage("pan_cursor", 16, 16, resourceLocator));
 
-    // TODO
+    DrawEphemeralVisualization();
+
+    mController.LayerChangeEpilog();
 }
 
 PasteTool::~PasteTool()
 {
     // TODO
+    if (mEphemeralVisualization)
+    {
+        UndoEphemeralVisualization();
+        assert(!mEphemeralVisualization);
+
+        mController.LayerChangeEpilog();
+    }
 }
 
 void PasteTool::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates)
@@ -113,7 +124,7 @@ void PasteTool::OnShiftKeyUp()
 
 void PasteTool::OnMouseLeft()
 {
-    mController.BroadcastSampledInformationUpdatedNone();
+    // TODO
 }
 
 void PasteTool::SetIsTransparent(bool isTransparent)
@@ -144,5 +155,49 @@ void PasteTool::FlipV()
 }
 
 //////////////////////////////////////////////////////////////////////////////
+
+ShipSpaceCoordinates PasteTool::CalculateInitialMouseOrigin() const
+{
+    ShipSpaceRect visibleShipRect = mController.GetView().GetDisplayShipSpaceRect();
+
+    // Use mouse coordinates if they are visible
+    ShipSpaceCoordinates const coordinates = GetCurrentMouseShipCoordinates();
+    if (coordinates.IsInRect(visibleShipRect))
+    {
+        return coordinates;
+    }
+
+    // Choose mid of visible rect
+    return visibleShipRect.Center();
+}
+
+void PasteTool::DrawEphemeralVisualization()
+{
+    assert(!mEphemeralVisualization);
+
+    ShipSpaceCoordinates const pasteOrigin = MouseCoordsToPasteOrigin(mMouseCoords);
+
+    GenericUndoPayload pasteUndo = mController.GetModelController().PasteForEphemeralVisualization(
+        mPasteRegion,
+        pasteOrigin,
+        mIsTransparent);
+
+    mController.GetView().UploadSelectionOverlay(
+        pasteOrigin,
+        pasteOrigin + mPasteRegion.Size);
+
+    mEphemeralVisualization.emplace(std::move(pasteUndo));
+}
+
+void PasteTool::UndoEphemeralVisualization()
+{
+    assert(mEphemeralVisualization);
+
+    mController.GetView().RemoveSelectionOverlay();
+
+    mController.GetModelController().RestoreForEphemeralVisualization(std::move(*mEphemeralVisualization));
+
+    mEphemeralVisualization.reset();
+}
 
 }

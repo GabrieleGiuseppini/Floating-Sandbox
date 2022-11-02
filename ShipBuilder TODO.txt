@@ -420,7 +420,7 @@
 				+ Cursor: pan_cursor.png
 			+ Tool button @ each layer
 				+ Reconciliation @ tool change: always disabled, except when active: is_enabled==is_active
-			= Tool settings:
+			+ Tool settings:
 				+ Layout is same as Selection
 				+ Flag for opaque vs transparent
 					+ -> Controller::SetPaste"Opaque/Transparentness"
@@ -433,7 +433,7 @@
 						+ x_40x40.png
 					+ Buttons
 					+ -> Controller::Commit/AbortPaste
-				- Fix width: largest settings needs to be enabled at startup or else ribbon bar does size wide enough
+				+ Fix width: largest settings needs to be enabled at startup or else ribbon bar does size wide enough
 			+ Ctrl^V and button invoke Controller::Paste()
 			+ Controller::Paste():
 				+ 0a. Clone clipboard
@@ -462,12 +462,33 @@
 			+ Controller::SetPasteIsTransparent:
 				+ Invoked by MainFrame upon toggles of settings flag
 				+ Get tool as PasteTool, and invoke Set"Opaque/Transparentness"() on it
-			- PasteTool:
-				- cctor:
-					- TODO
+			= PasteTool:
+				= State:
+					+ Eph viz: contains output of ModelController::PasteForEhpViz (which is GenericUndoPayload)
+						+ DrawEphViz()
+							+ Calls ModelController::PasteForEphViz(...) -> GenericUndoPayload
+						+ UndoEphViz()
+							+ Calls ModelController::~RestoreForEphViz(GenericUndoPayload)
+					= ShipSpaceCoords mPasteOrigin
+						+ Initialized at cctor
+						- Moved at MouseMove+LeftDown
+				- private DrawEphViz
+					- assert(!eph viz)
+					- MC::PasteForEphViz eph viz @ mPasteOrigin
+					- View::UpdateOverlay
+					- -> Undo in finalizer
+				- private RestoreEphViz(undo payload)
+					- Called by finalizer
+					- assert(eph viz)
+					- MC::RestoreForEphViz
+					- View::RemoveOverlay
+				+ cctor:
+					+ If cur mouse is visible: use it;
+					+- Else: calc mid of visible window -> mPasteOrigin
+					+ DrawEphViz
 				- dctor:
 					! If pending: commit
-					- TODO
+					- Commit()
 				- Leave():
 					- TODO
 				- Abort():
@@ -475,6 +496,8 @@
 					- TODO
 				- Commit():
 					! Undo eph viz, Commit, and make sure subsequent dctor does not see it as pending
+					- Reset eph viz (if any)
+					- Commit (if pending)
 					- TODO
 				- Rotate()/etc.:
 					! Do operation on own mPasteRegion
@@ -488,12 +511,21 @@
 				- ShiftDown/Up:
 					- TODO
 			- ModelController::Paste(LayersRegion, origin, opaque/transparent) X 2 (ephemeral, normal) -> GenericUndoPayload
-				- TODO
+				= PasteForEphemeralVisualization(...) -> GenericUndoPayload
+					- blit, blit, ?, blit
+				= RestoreForEphemeralVisualization(GenericUndoPayload)
+					- blit, blit, ?, blit
+				- Paste(...) -> GenericUndoPayload
+					- special, special, ?, blit
+				+ Restore(GenericUndoPayload)
+				- If Buffer::Blit's operator is not needed anymore, move back to memmove
 		- Tests:
 			- Make sure none of the Paste tools may be selected by user
 			- What happens after PasteTool is gone:
 				- TODO
 			- TODO
+	- SelectionTool:
+		- Allows OnMouseDown to work even if outside ship - clip to it
 
 	- Tests:
 		- Ropes paste carries with it both and only ropes w/both endpoints in region, and with one endpoint in region

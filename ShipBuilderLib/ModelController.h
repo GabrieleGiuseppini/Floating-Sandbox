@@ -218,6 +218,13 @@ public:
 
     void Restore(GenericUndoPayload && undoPayload);
 
+    GenericUndoPayload PasteForEphemeralVisualization(
+        ShipLayers const & sourcePayload,
+        ShipSpaceCoordinates const & pasteOrigin,
+        bool isTransparent);
+
+    void RestoreForEphemeralVisualization(GenericUndoPayload && undoPayload);
+
     //
     // Structural
     //
@@ -500,9 +507,12 @@ private:
 
     GenericUndoPayload MakeGenericUndoPayload(
         ShipSpaceRect const & region,
-        std::optional<LayerType> layerSelection) const;
+        bool doStructuralLayer,
+        bool doElectricalLayer,
+        bool doRopesLayer,
+        bool doTextureLayer) const;
 
-    bool CheckLayerApplicability(
+    bool CheckLayerSelectionApplicability(
         std::optional<LayerType> layerSelection,
         LayerType layer) const
     {

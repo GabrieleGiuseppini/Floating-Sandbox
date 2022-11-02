@@ -119,6 +119,11 @@ public:
         return mViewModel.GetDisplayShipSpaceSize();
     }
 
+    ShipSpaceRect GetDisplayShipSpaceRect() const
+    {
+        return mViewModel.GetDisplayShipSpaceRect();
+    }
+
     DisplayPhysicalRect GetPhysicalVisibleShipRegion() const
     {
         return mViewModel.GetPhysicalVisibleShipRegion();

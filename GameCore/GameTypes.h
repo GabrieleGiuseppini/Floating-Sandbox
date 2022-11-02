@@ -671,6 +671,13 @@ struct _IntegralRect
             origin.y + size.height);
     }
 
+    _IntegralCoordinates<TIntegralTag> Center() const
+    {
+        return _IntegralCoordinates<TIntegralTag>(
+            origin.x + size.width / 2,
+            origin.y + size.height / 2);
+    }
+
     inline bool operator==(_IntegralRect<TIntegralTag> const & other) const
     {
         return origin == other.origin

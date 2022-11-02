@@ -5,12 +5,13 @@
 ***************************************************************************************/
 #pragma once
 
+#include "GenericUndoPayload.h"
 #include "Tool.h"
+
+#include <UILib/WxHelpers.h>
 
 #include <Game/Layers.h>
 #include <Game/ResourceLocator.h>
-
-#include <UILib/WxHelpers.h>
 
 #include <GameCore/GameTypes.h>
 
@@ -56,8 +57,30 @@ protected:
 
 private:
 
-    ShipLayers mPasteRegion;
+    ShipSpaceCoordinates CalculateInitialMouseOrigin() const;
+
+    ShipSpaceCoordinates MouseCoordsToPasteOrigin(ShipSpaceCoordinates const & mouseCoords)
+    {
+        // We want paste' to b's top-left corner to be at the top-left corner of the ship "square" 
+        // whose bottom-left corner is the specified mouse coords
+        return ShipSpaceCoordinates(
+            mouseCoords.x,
+            mouseCoords.y)
+            - ShipSpaceSize(0, mPasteRegion.Size.height - 1);
+    }
+
+    void DrawEphemeralVisualization();
+    void UndoEphemeralVisualization();
+
+private:
+
+    ShipLayers mPasteRegion;    
     bool mIsTransparent;
+
+    ShipSpaceCoordinates mMouseCoords;
+
+    // Ephemeral visualization
+    std::optional<GenericUndoPayload> mEphemeralVisualization;
 };
 
 class StructuralPasteTool : public PasteTool
