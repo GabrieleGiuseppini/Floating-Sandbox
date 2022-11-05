@@ -62,30 +62,46 @@ private:
 
     ShipSpaceCoordinates CalculateInitialMouseOrigin() const;
 
-    ShipSpaceCoordinates MouseCoordsToPasteOrigin(ShipSpaceCoordinates const & mouseCoords)
-    {
-        // We want paste' to b's top-left corner to be at the top-left corner of the ship "square" 
-        // whose bottom-left corner is the specified mouse coords
-        return ShipSpaceCoordinates(
-            mouseCoords.x,
-            mouseCoords.y)
-            - ShipSpaceSize(0, mPasteRegion.Size.height - 1);
-    }
+    ShipSpaceCoordinates MousePasteCoordsToActualPasteOrigin(
+        ShipSpaceCoordinates const & mousePasteCoords,
+        ShipSpaceSize const & pasteRegionSize) const;
+
+    ShipSpaceCoordinates ClampMousePasteCoords(
+        ShipSpaceCoordinates const & mousePasteCoords,
+        ShipSpaceSize const & pasteRegionSize) const;
 
     void DrawEphemeralVisualization();
+
     void UndoEphemeralVisualization();
 
 private:
 
-    ShipLayers mPasteRegion;    
-    bool mIsTransparent;
+    struct PendingSessionData
+    {
+        ShipLayers PasteRegion;
+        bool IsTransparent;
 
-    ShipSpaceCoordinates mMousePasteCoords;
+        ShipSpaceCoordinates MousePasteCoords;
+
+        // When set we have an ephemeral visualization
+        std::optional<GenericUndoPayload> EphemeralVisualization;
+
+        PendingSessionData(
+            ShipLayers && pasteRegion,
+            bool isTransparent,
+            ShipSpaceCoordinates const & mousePasteCoords)
+            : PasteRegion(std::move(pasteRegion))
+            , IsTransparent(isTransparent)
+            , MousePasteCoords(mousePasteCoords)
+            , EphemeralVisualization()
+        {}
+    };
+
+    // Only set when the current paste has not been committed nor aborted yet
+    std::optional<PendingSessionData> mPendingSessionData;
 
     // Only set while we're dragging - remembers the previous mouse pos
     std::optional<ShipSpaceCoordinates> mMouseAnchor;
-
-    std::optional<GenericUndoPayload> mEphemeralVisualization;
 };
 
 class StructuralPasteTool : public PasteTool

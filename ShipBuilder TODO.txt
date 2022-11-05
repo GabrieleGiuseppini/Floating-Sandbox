@@ -463,18 +463,17 @@
 				+ Invoked by MainFrame upon toggles of settings flag
 				+ Get tool as PasteTool, and invoke Set"Opaque/Transparentness"() on it
 			= PasteTool:
-				= State:
+				+ State:
 					+ Eph viz: contains output of ModelController::PasteForEhpViz (which is GenericUndoPayload)
 						+ DrawEphViz()
 							+ Calls ModelController::PasteForEphViz(...) -> GenericUndoPayload
 						+ UndoEphViz()
 							+ Calls ModelController::~RestoreForEphViz(GenericUndoPayload)
-					= ShipSpaceCoords mPasteOrigin
+					+ ShipSpaceCoords mPasteOrigin
 						+ Initialized at cctor
-						- Moved at MouseMove+LeftDown
-					- mPasteRegion: optional; indicates "pending" (i.e. neither committed nor aborted)
-						- Actually: optional should be of PasteRegion + MousePasteCoords
-							- ...and eph viz?
+						+ Moved at MouseMove+LeftDown
+					+ mPasteRegion: optional; indicates "pending" (i.e. neither committed nor aborted)
+						+ Actually: optional should be of PasteRegion + MousePasteCoords, and eph viz
 				+ private DrawEphViz
 					+ assert(!eph viz)
 					+ MC::PasteForEphViz eph viz @ mPasteOrigin
@@ -490,33 +489,39 @@
 					+ DrawEphViz
 				+ dctor:
 					! If pending: commit
-					+ Commit()
+					+ If pending: Commit()
 				- Leave():
 					- TODO
-				- Abort():
+				+ Abort():
 					! Undo eph viz, and make sure subsequent dctor does not see it as pending
-					- TODO
+					+ assert (pending)
+					+ Reset eph viz (if any)
+					+ LayerChangeEpilog
 				- Commit():
 					! Undo eph viz, Commit, and make sure subsequent dctor does not see it as pending
+					+ assert (pending)
 					+ Reset eph viz (if any)
-					- Commit (if pending)
+					- Commit
 					+ LayerChangeEpilog
 				- Rotate()/etc.:
 					! Do operation on own mPasteRegion
 					- TODO
-				- Set"Opaque/Transparentness" (for changes)
+				+ Set"Opaque/Transparentness" (for changes)
 					! Undo eph viz, change, Redo eph viz
-					- TODO
-				- MouseDown():
-					- TODO: decide in/out canvas thing
-					- TODO
-				- MouseUp():
-					- Reset mMouseAnchor
-				- MouseMove():					
-					- If mMouseAnchor:
-						- Reset eph viz (if any)
-						- Calc stride and add it to mMousePasteCoords
-						- DrawEphViz
+				+ MouseDown():
+					+ Get mouse coords; if in work canvas (OK even outside of ship):
+						+ Change mouse anchor
+				+ MouseUp():
+					+ Reset mMouseAnchor
+				= MouseMove():					
+					+ If mMouseAnchor:
+						+ Get mouse coords - anywhere
+						+ Reset eph viz (if any)
+						+ Calc stride and add it to mMousePasteCoords
+							= Clamp paste target to ship rect
+						+ DrawEphViz
+						+ LayerChangeEpilog
+					- Do perf analysis
 				- ShiftDown/Up:
 					- TODO
 			- ModelController::Paste(LayersRegion, origin, opaque/transparent) X 2 (ephemeral, normal) -> GenericUndoPayload

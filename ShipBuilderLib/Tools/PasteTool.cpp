@@ -7,7 +7,7 @@
 
 #include <Controller.h>
 
-#include <type_traits>
+#include "GameCore/GameMath.h"
 
 namespace ShipBuilder {
 
@@ -72,13 +72,16 @@ PasteTool::PasteTool(
     : Tool(
         toolType,
         controller)
-    , mPasteRegion(std::move(pasteRegion))
-    , mIsTransparent(isTransparent)
-    , mEphemeralVisualization()
-    , mMousePasteCoords(CalculateInitialMouseOrigin())
+    , mPendingSessionData()
     , mMouseAnchor()
 {
     SetCursor(WxHelpers::LoadCursorImage("pan_cursor", 16, 16, resourceLocator));
+
+    // Begin pending session
+    mPendingSessionData.emplace(
+        std::move(pasteRegion),
+        isTransparent,
+        CalculateInitialMouseOrigin());
 
     DrawEphemeralVisualization();
 
@@ -87,18 +90,46 @@ PasteTool::PasteTool(
 
 PasteTool::~PasteTool()
 {
-    Commit();
+    if (mPendingSessionData)
+    {
+        Commit();
+    }
 }
 
 void PasteTool::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates)
 {
-    // TODO
-    (void)mouseCoordinates;
+    assert(mPendingSessionData);
+
+    if (mMouseAnchor)
+    {
+        if (mPendingSessionData->EphemeralVisualization)
+        {
+            UndoEphemeralVisualization();
+            assert(!mPendingSessionData->EphemeralVisualization);
+        }
+
+        // Move mouse coords
+        auto const shipMouseCoordinates = ScreenToShipSpace(mouseCoordinates);
+        mPendingSessionData->MousePasteCoords = ClampMousePasteCoords(
+            mPendingSessionData->MousePasteCoords + (shipMouseCoordinates - *mMouseAnchor),
+            mPendingSessionData->PasteRegion.Size);
+
+        DrawEphemeralVisualization();
+
+        mController.LayerChangeEpilog();
+
+        mMouseAnchor = shipMouseCoordinates;
+    }
 }
 
 void PasteTool::OnLeftMouseDown()
 {
-    // TODO
+    auto const coords = GetCurrentMouseShipCoordinatesIfInWorkCanvas();
+    if (coords)
+    {
+        // Start engagement
+        mMouseAnchor = *coords;
+    }
 }
 
 void PasteTool::OnLeftMouseUp()
@@ -123,31 +154,47 @@ void PasteTool::OnMouseLeft()
 
 void PasteTool::Commit()
 {
-    if (mEphemeralVisualization)
+    assert (mPendingSessionData);
+
+    if (mPendingSessionData->EphemeralVisualization)
     {
         UndoEphemeralVisualization();
-        assert(!mEphemeralVisualization);
+        assert(!mPendingSessionData->EphemeralVisualization);
     }
 
     // TODO: commit, iff pending (i.e. not aborted)
 
     mController.LayerChangeEpilog();
+
+    mPendingSessionData.reset();
 }
 
 void PasteTool::Abort()
 {
-    // TODO
+    assert(mPendingSessionData);
+
+    if (mPendingSessionData->EphemeralVisualization)
+    {
+        UndoEphemeralVisualization();
+        assert(!mPendingSessionData->EphemeralVisualization);
+    }
+
+    mController.LayerChangeEpilog();
+
+    mPendingSessionData.reset();
 }
 
 void PasteTool::SetIsTransparent(bool isTransparent)
 {
-    if (mEphemeralVisualization)
+    assert(mPendingSessionData);
+
+    if (mPendingSessionData->EphemeralVisualization)
     {
         UndoEphemeralVisualization();
-        assert(!mEphemeralVisualization);
+        assert(!mPendingSessionData->EphemeralVisualization);
     }
 
-    mIsTransparent = isTransparent;
+    mPendingSessionData->IsTransparent = isTransparent;
 
     DrawEphemeralVisualization();
 
@@ -191,33 +238,56 @@ ShipSpaceCoordinates PasteTool::CalculateInitialMouseOrigin() const
     return visibleShipRect.Center();
 }
 
+ShipSpaceCoordinates PasteTool::MousePasteCoordsToActualPasteOrigin(
+    ShipSpaceCoordinates const & mousePasteCoords,
+    ShipSpaceSize const & pasteRegionSize) const
+{
+    // We want paste's top-left corner to be at the top-left corner of the ship "square" 
+    // whose bottom-left corner is the specified mouse coords
+    return ShipSpaceCoordinates(
+        mousePasteCoords.x,
+        mousePasteCoords.y)
+        - ShipSpaceSize(0, pasteRegionSize.height - 1);
+}
+
+ShipSpaceCoordinates PasteTool::ClampMousePasteCoords(
+    ShipSpaceCoordinates const & mousePasteCoords,
+    ShipSpaceSize const & pasteRegionSize) const
+{
+    return ShipSpaceCoordinates(
+        Clamp(mousePasteCoords.x, -pasteRegionSize.width, mController.GetModelController().GetShipSize().width),
+        Clamp(mousePasteCoords.y, -1, mController.GetModelController().GetShipSize().height + pasteRegionSize.height - 1));
+}
+
 void PasteTool::DrawEphemeralVisualization()
 {
-    assert(!mEphemeralVisualization);
+    assert(mPendingSessionData);
+    assert(!mPendingSessionData->EphemeralVisualization);
 
-    ShipSpaceCoordinates const pasteOrigin = MouseCoordsToPasteOrigin(mMousePasteCoords);
+    ShipSpaceCoordinates const pasteOrigin = MousePasteCoordsToActualPasteOrigin(mPendingSessionData->MousePasteCoords, mPendingSessionData->PasteRegion.Size);
 
     GenericUndoPayload pasteUndo = mController.GetModelController().PasteForEphemeralVisualization(
-        mPasteRegion,
+        mPendingSessionData->PasteRegion,
         pasteOrigin,
-        mIsTransparent);
+        mPendingSessionData->IsTransparent);
 
     mController.GetView().UploadSelectionOverlay(
         pasteOrigin,
-        pasteOrigin + mPasteRegion.Size);
+        pasteOrigin + mPendingSessionData->PasteRegion.Size);
 
-    mEphemeralVisualization.emplace(std::move(pasteUndo));
+    mPendingSessionData->EphemeralVisualization.emplace(std::move(pasteUndo));
 }
 
 void PasteTool::UndoEphemeralVisualization()
 {
-    assert(mEphemeralVisualization);
+    assert(mPendingSessionData);
+    assert(mPendingSessionData->EphemeralVisualization);
 
     mController.GetView().RemoveSelectionOverlay();
 
-    mController.GetModelController().RestoreForEphemeralVisualization(std::move(*mEphemeralVisualization));
+    mController.GetModelController().RestoreForEphemeralVisualization(std::move(*(mPendingSessionData->EphemeralVisualization)));
 
-    mEphemeralVisualization.reset();
+    mPendingSessionData->EphemeralVisualization.reset();
 }
 
 }

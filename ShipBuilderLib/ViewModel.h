@@ -202,17 +202,16 @@ public:
      */
     ShipSpaceRect GetDisplayShipSpaceRect() const
     {
-        ShipSpaceCoordinates const bottomRight = DisplayPhysicalToShipSpace({ mDisplayPhysicalSize.width, mDisplayPhysicalSize.height });
-
-        return ShipSpaceRect(
-            // Left-top
-            ShipSpaceCoordinates(
-                mCam.x,
-                mShipSize.height - mCam.y),
-            // Right-bottom
-            ShipSpaceCoordinates(
-                std::min(bottomRight.x, mShipSize.width),
-                std::max(bottomRight.y, 0)));
+        auto const displayShipSpaceRect =
+            ShipSpaceRect(
+                DisplayPhysicalToShipSpace({ 0, 0 }),
+                DisplayPhysicalToShipSpace({ mDisplayPhysicalSize.width, mDisplayPhysicalSize.height }))
+            .MakeIntersectionWith(
+                ShipSpaceRect(
+                    ShipSpaceCoordinates(0, 0),
+                    mShipSize));
+        assert(displayShipSpaceRect);
+        return *displayShipSpaceRect;
     }
 
     DisplayPhysicalRect GetPhysicalVisibleShipRegion() const
