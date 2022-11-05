@@ -85,6 +85,7 @@ template <>
 struct LayerTypeTraits<LayerType::Structural>
 {
     using material_type = StructuralMaterial;
+    using buffer_type = Buffer2D<StructuralElement, struct ShipSpaceTag>;
     using layer_data_type = StructuralLayerData;
 };
 
@@ -186,6 +187,7 @@ template <>
 struct LayerTypeTraits<LayerType::Electrical>
 {
     using material_type = ElectricalMaterial;
+    using buffer_type = Buffer2D<ElectricalElement, struct ShipSpaceTag>;
     using layer_data_type = ElectricalLayerData;
 };
 
@@ -243,6 +245,7 @@ template <>
 struct LayerTypeTraits<LayerType::Ropes>
 {
     using material_type = StructuralMaterial;
+    using buffer_type = RopeBuffer;
     using layer_data_type = RopesLayerData;
 };
 
@@ -299,6 +302,7 @@ struct TextureLayerData
 template <>
 struct LayerTypeTraits<LayerType::Texture>
 {
+    using buffer_type = ImageData<rgbaColor>;
     using layer_data_type = TextureLayerData;
 };
 

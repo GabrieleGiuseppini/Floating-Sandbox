@@ -107,7 +107,7 @@ void PasteTool::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates)
             UndoEphemeralVisualization();
             assert(!mPendingSessionData->EphemeralVisualization);
 
-            mController.LayerChangeEpilog();
+            mController.LayerChangeEpilog(); // Since we're moving, it's likely that 2xregion is less expensive than union of two regions
         }
 
         // Move mouse coords
@@ -200,7 +200,19 @@ void PasteTool::SetIsTransparent(bool isTransparent)
 
 void PasteTool::Rotate90CW()
 {
-    // TODO
+    assert(mPendingSessionData);
+
+    if (mPendingSessionData->EphemeralVisualization)
+    {
+        UndoEphemeralVisualization();
+        assert(!mPendingSessionData->EphemeralVisualization);
+    }
+
+    mPendingSessionData->PasteRegion.Rotate90(RotationDirectionType::Clockwise);
+
+    DrawEphemeralVisualization();
+
+    mController.LayerChangeEpilog();
 }
 
 void PasteTool::Rotate90CCW()

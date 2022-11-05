@@ -64,6 +64,9 @@
 
 	- ShipBuilder things (*)
 
+	- Check ship move beyond world borders
+		- in Debug mode
+
 	- Add Ukrainian to credits
 	- Take S.S. Avila 2 (Matthew Anderson) (ToTake folder)
 	- Take A_single_Blue_Angel (Kazindel) (ToTake folder)

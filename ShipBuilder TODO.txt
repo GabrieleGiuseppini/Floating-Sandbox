@@ -9,6 +9,8 @@
 
 - Do Selection/Copy'n'Cut/Paste workflow (*)
 
+- Try changing ribbon page to Tool Settings after selecting tool that has settings
+
 - Should ModelValidator allow for electrical particles on rope endpoints?
 
 - Do StructuralRectangle tool (*)
@@ -501,9 +503,8 @@
 					+ Reset eph viz (if any)
 					- Commit
 					+ LayerChangeEpilog
-				- Rotate()/etc.:
-					! Do operation on own mPasteRegion
-					- TODO
+				= Rotate()/etc.:
+					!  Undo eph viz, Do operation on own mPasteRegion, Redo eph viz
 				+ Set"Opaque/Transparentness" (for changes)
 					! Undo eph viz, change, Redo eph viz
 				+ MouseDown():
@@ -523,13 +524,21 @@
 					- TODO
 			- ModelController::Paste(LayersRegion, origin, opaque/transparent) X 2 (ephemeral, normal) -> GenericUndoPayload
 				= PasteForEphemeralVisualization(...) -> GenericUndoPayload
-					- blit, blit, ?, blit
+					+ blit (DoStructuralRegionBufferPaste)
+					+ blit (DoElectricalRegionBufferPaste)
+					- ? (@RopesBuffer)
+					+ blit (DoTextureRegionBufferPaste)
 				= RestoreForEphemeralVisualization(GenericUndoPayload)
-					- blit, blit, ?, blit
+					+ blit (DoStructuralRegionBufferPaste)
+					+ blit (DoElectricalRegionBufferPaste)
+					- ?
+					+ blit (DoTextureRegionBufferPaste)
 				- Paste(...) -> GenericUndoPayload
-					- special, special, ?, blit
+					- special
+					- special
+					- ?
+					- blit (DoTextureRegionBufferPaste)
 				+ Restore(GenericUndoPayload)
-				- If Buffer::Blit's operator is not needed anymore, move back to memmove
 		- Tests:
 			- Make sure none of the Paste tools may be selected by user
 			- What happens after PasteTool is gone:

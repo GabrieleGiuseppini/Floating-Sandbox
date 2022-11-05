@@ -569,33 +569,43 @@ GenericUndoPayload ModelController::PasteForEphemeralVisualization(
         // Paste
         //
 
-        if (sourcePayload.StructuralLayer)
+        if (sourcePayload.StructuralLayer && mModel.HasLayer(LayerType::Structural))
         {
-            assert(mModel.HasLayer(LayerType::Structural));
-
-            auto const elementOperator = isTransparent
-                ? [](StructuralElement const & src, StructuralElement const & dst) -> StructuralElement
-                {
-                    return src.Material
-                        ? src
-                        : dst;
-                }
-                : [](StructuralElement const & src, StructuralElement const &) -> StructuralElement
-                {
-                    return src;
-                };
-
-            DoStructuralRegionPaste(
-                *sourcePayload.StructuralLayer,
-                mModel.GetStructuralLayer(),
+            DoStructuralRegionBufferPaste(
+                sourcePayload.StructuralLayer->Buffer,
+                mModel.GetStructuralLayer().Buffer,
                 pasteOrigin,
-                elementOperator);
+                isTransparent);
 
             // Remember we are in temp visualization now
             mIsStructuralLayerInEphemeralVisualization = true;
         }
 
-        // TODOHERE
+        if (sourcePayload.ElectricalLayer && mModel.HasLayer(LayerType::Electrical))
+        {
+            DoElectricalRegionBufferPaste(
+                sourcePayload.ElectricalLayer->Buffer,
+                mModel.GetElectricalLayer().Buffer,
+                pasteOrigin,
+                isTransparent);
+
+            // Remember we are in temp visualization now
+            mIsElectricalLayerInEphemeralVisualization = true;
+        }
+
+        // TODOHERE: ropes
+
+        if (sourcePayload.TextureLayer && mModel.HasLayer(LayerType::Texture))
+        {
+            DoTextureRegionBufferPaste(
+                sourcePayload.TextureLayer->Buffer,
+                mModel.GetTextureLayer().Buffer,
+                pasteOrigin,
+                isTransparent);
+
+            // Remember we are in temp visualization now
+            mIsTextureLayerInEphemeralVisualization = true;
+        }
 
         return undoPayload;
     }
@@ -612,37 +622,47 @@ void ModelController::RestoreForEphemeralVisualization(GenericUndoPayload && und
         assert(mModel.HasLayer(LayerType::Structural));
         assert(mIsStructuralLayerInEphemeralVisualization);
 
-        DoStructuralRegionPaste(
-            *undoPayload.StructuralLayerRegionBackup,
-            mModel.GetStructuralLayer(),
-            undoPayload.Origin);
+        DoStructuralRegionBufferPaste(
+            undoPayload.StructuralLayerRegionBackup->Buffer,
+            mModel.GetStructuralLayer().Buffer,
+            undoPayload.Origin,
+            false);
 
         // Remember we are not anymore in temp visualization
         mIsStructuralLayerInEphemeralVisualization = false;
     }
 
-    /* TODOHERE
     if (undoPayload.ElectricalLayerRegionBackup.has_value())
     {
-        RestoreElectricalLayerRegionBackup(
-            std::move(*undoPayload.ElectricalLayerRegionBackup),
-            undoPayload.Origin);
+        assert(mModel.HasLayer(LayerType::Electrical));
+        assert(mIsElectricalLayerInEphemeralVisualization);
+
+        DoElectricalRegionBufferPaste(
+            undoPayload.ElectricalLayerRegionBackup->Buffer,
+            mModel.GetElectricalLayer().Buffer,
+            undoPayload.Origin,
+            false);
+
+        // Remember we are not anymore in temp visualization
+        mIsElectricalLayerInEphemeralVisualization = false;
     }
 
-    if (undoPayload.RopesLayerRegionBackup.has_value())
-    {
-        RestoreRopesLayerRegionBackup(
-            std::move(*undoPayload.RopesLayerRegionBackup),
-            undoPayload.Origin);
-    }
+    // TODOHERE: ropes
 
     if (undoPayload.TextureLayerRegionBackup.has_value())
     {
-        RestoreTextureLayerRegionBackup(
-            std::move(*undoPayload.TextureLayerRegionBackup),
-            ShipSpaceToTextureSpace(undoPayload.Origin, GetShipSize(), GetTextureSize()));
+        assert(mModel.HasLayer(LayerType::Texture));
+        assert(mIsTextureLayerInEphemeralVisualization);
+
+        DoTextureRegionBufferPaste(
+            undoPayload.TextureLayerRegionBackup->Buffer,
+            mModel.GetTextureLayer().Buffer,
+            undoPayload.Origin,
+            false);
+
+        // Remember we are in temp visualization now
+        mIsTextureLayerInEphemeralVisualization = true;
     }
-    */
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2545,15 +2565,27 @@ GenericUndoPayload ModelController::MakeGenericUndoPayload(
         std::move(textureLayerRegionBackup));
 }
 
-void ModelController::DoStructuralRegionPaste(
-    StructuralLayerData const & source,
-    StructuralLayerData & target,
+void ModelController::DoStructuralRegionBufferPaste(
+    typename LayerTypeTraits<LayerType::Structural>::buffer_type const & sourceBuffer,
+    typename LayerTypeTraits<LayerType::Structural>::buffer_type & targetBuffer,
     ShipSpaceCoordinates const & targetCoordinates,
-    std::function<StructuralElement(StructuralElement const &, StructuralElement const &)> const & elementOperator)
+    bool isTransparent)
 {
-    target.Buffer.BlitFromRegion(
-        source.Buffer,
-        ShipSpaceRect(source.Buffer.Size),
+    auto const elementOperator = isTransparent
+        ? [](StructuralElement const & src, StructuralElement const & dst) -> StructuralElement
+        {
+            return src.Material
+                ? src
+                : dst;
+        }
+        : [](StructuralElement const & src, StructuralElement const &) -> StructuralElement
+        {
+            return src;
+        };
+
+    targetBuffer.BlitFromRegion(
+        sourceBuffer,
+        ShipSpaceRect(sourceBuffer.Size),
         targetCoordinates,
         elementOperator);
 
@@ -2562,13 +2594,93 @@ void ModelController::DoStructuralRegionPaste(
     //
 
     auto const affectedRegion =
-        ShipSpaceRect(targetCoordinates, source.Buffer.Size)
+        ShipSpaceRect(targetCoordinates, sourceBuffer.Size)
         .MakeIntersectionWith(GetWholeShipRect());
 
     if (affectedRegion)
     {
         RegisterDirtyVisualization<VisualizationType::Game>(*affectedRegion);
         RegisterDirtyVisualization<VisualizationType::StructuralLayer>(*affectedRegion);
+    }
+}
+
+void ModelController::DoElectricalRegionBufferPaste(
+    typename LayerTypeTraits<LayerType::Electrical>::buffer_type const & sourceBuffer,
+    typename LayerTypeTraits<LayerType::Electrical>::buffer_type & targetBuffer,
+    ShipSpaceCoordinates const & targetCoordinates,
+    bool isTransparent)
+{
+    auto const elementOperator = isTransparent
+        ? [](ElectricalElement const & src, ElectricalElement const & dst) -> ElectricalElement
+        {
+            return src.Material
+                ? src
+                : dst;
+        }
+        : [](ElectricalElement const & src, ElectricalElement const &) -> ElectricalElement
+        {
+            return src;
+        };
+
+    targetBuffer.BlitFromRegion(
+        sourceBuffer,
+        ShipSpaceRect(sourceBuffer.Size),
+        targetCoordinates,
+        elementOperator);
+
+    //
+    // Update visualization
+    //
+
+    auto const affectedRegion =
+        ShipSpaceRect(targetCoordinates, sourceBuffer.Size)
+        .MakeIntersectionWith(GetWholeShipRect());
+
+    if (affectedRegion)
+    {
+        RegisterDirtyVisualization<VisualizationType::ElectricalLayer>(*affectedRegion);
+    }
+}
+
+void ModelController::DoTextureRegionBufferPaste(
+    typename LayerTypeTraits<LayerType::Texture>::buffer_type const & sourceBuffer,
+    typename LayerTypeTraits<LayerType::Texture>::buffer_type & targetBuffer,
+    ShipSpaceCoordinates const & targetCoordinates,
+    bool isTransparent)
+{
+    auto const elementOperator = isTransparent
+        ? [](rgbaColor const & src, rgbaColor const & dst) -> rgbaColor
+        {
+            return dst.blend(src);
+        }
+        : [](rgbaColor const & src, rgbaColor const &) -> rgbaColor
+        {
+            return src;
+        };
+
+    ImageCoordinates const targetTextureCoordinates = ShipSpaceToTextureSpace(
+        targetCoordinates, 
+        GetShipSize(),
+        GetTextureSize());
+
+    targetBuffer.BlitFromRegion(
+        sourceBuffer,
+        ImageRect(sourceBuffer.Size),
+        targetTextureCoordinates,
+        elementOperator);
+
+    //
+    // Update visualization
+    //
+
+    auto const affectedRegion =
+        ImageRect(targetTextureCoordinates, sourceBuffer.Size)
+        .MakeIntersectionWith(GetWholeTextureRect());
+
+    if (affectedRegion)
+    {
+        RegisterDirtyVisualization<VisualizationType::Game>(ImageRectToContainingShipSpaceRect(*affectedRegion));
+        RegisterDirtyVisualization<VisualizationType::TextureLayer>(*affectedRegion);
     }
 }
 
