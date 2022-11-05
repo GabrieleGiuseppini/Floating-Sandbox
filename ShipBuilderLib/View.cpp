@@ -1326,29 +1326,6 @@ void View::Render()
         RenderRopesLayerVisualization();
     }
 
-    // Game, structural, and texture visualizations - whichever is primary goes first
-    if (mPrimaryVisualization == VisualizationType::Game)
-    {
-        if (mHasGameVisualization)
-        {
-            RenderGameVisualization();
-        }
-    }
-    else if (mPrimaryVisualization == VisualizationType::StructuralLayer)
-    {
-        if (mHasStructuralLayerVisualization)
-        {
-            RenderStructuralLayerVisualization();
-        }
-    }
-    else if (mPrimaryVisualization == VisualizationType::TextureLayer)
-    {
-        if (mHasTextureLayerVisualization)
-        {
-            RenderTextureLayerVisualization();
-        }
-    }
-
     // Game, structural, and texture visualizations - when they're not primary
 
     if (mPrimaryVisualization != VisualizationType::Game)
@@ -1368,6 +1345,29 @@ void View::Render()
     }
 
     if (mPrimaryVisualization != VisualizationType::TextureLayer)
+    {
+        if (mHasTextureLayerVisualization)
+        {
+            RenderTextureLayerVisualization();
+        }
+    }
+
+    // Game, structural, and texture visualizations - whichever is primary now
+    if (mPrimaryVisualization == VisualizationType::Game)
+    {
+        if (mHasGameVisualization)
+        {
+            RenderGameVisualization();
+        }
+    }
+    else if (mPrimaryVisualization == VisualizationType::StructuralLayer)
+    {
+        if (mHasStructuralLayerVisualization)
+        {
+            RenderStructuralLayerVisualization();
+        }
+    }
+    else if (mPrimaryVisualization == VisualizationType::TextureLayer)
     {
         if (mHasTextureLayerVisualization)
         {
