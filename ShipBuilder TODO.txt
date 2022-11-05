@@ -490,8 +490,6 @@
 				+ dctor:
 					! If pending: commit
 					+ If pending: Commit()
-				- Leave():
-					- TODO
 				+ Abort():
 					! Undo eph viz, and make sure subsequent dctor does not see it as pending
 					+ assert (pending)
@@ -513,7 +511,7 @@
 						+ Change mouse anchor
 				+ MouseUp():
 					+ Reset mMouseAnchor
-				= MouseMove():					
+				+ MouseMove():					
 					+ If mMouseAnchor:
 						+ Get mouse coords - anywhere
 						+ Reset eph viz (if any)
@@ -521,7 +519,6 @@
 							= Clamp paste target to ship rect
 						+ DrawEphViz
 						+ LayerChangeEpilog
-					- Do perf analysis
 				- ShiftDown/Up:
 					- TODO
 			- ModelController::Paste(LayersRegion, origin, opaque/transparent) X 2 (ephemeral, normal) -> GenericUndoPayload

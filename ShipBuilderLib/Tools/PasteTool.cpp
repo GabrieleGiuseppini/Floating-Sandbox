@@ -106,6 +106,8 @@ void PasteTool::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates)
         {
             UndoEphemeralVisualization();
             assert(!mPendingSessionData->EphemeralVisualization);
+
+            mController.LayerChangeEpilog();
         }
 
         // Move mouse coords
@@ -143,11 +145,6 @@ void PasteTool::OnShiftKeyDown()
 }
 
 void PasteTool::OnShiftKeyUp()
-{
-    // TODO
-}
-
-void PasteTool::OnMouseLeft()
 {
     // TODO
 }
