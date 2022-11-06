@@ -542,7 +542,7 @@
 				= RestoreForEphemeralVisualization(GenericUndoPayload)
 					+ blit (DoStructuralRegionBufferPaste)
 					+ blit (DoElectricalRegionBufferPaste)
-					= ? (RopesBuffer::Blit(..., isTransparent)) via DoRopesRegionBufferPaste
+					= Whole ropes buffer - via RestoreRegionBackup
 					+ blit (DoTextureRegionBufferPaste)
 				= Paste(...) -> GenericUndoPayload
 					- special

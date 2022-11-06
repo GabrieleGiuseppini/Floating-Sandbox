@@ -792,11 +792,8 @@ void ModelController::RestoreForEphemeralVisualization(GenericUndoPayload && und
                 assert(mModel.HasLayer(LayerType::Ropes));
                 assert(mIsRopesLayerInEphemeralVisualization);
 
-                DoRopesRegionBufferPaste(
-                    undoPayload.RopesLayerRegionBackup->Buffer,
-                    mModel.GetRopesLayer().Buffer,
-                    undoPayload.Origin,
-                    false);
+                // Note: for simplicity, GenericUndoPayload has *whole* ropes layer
+                mModel.GetRopesLayer().Buffer = std::move(undoPayload.RopesLayerRegionBackup->Buffer);
 
                 // Remember we are not anymore in temp visualization
                 mIsRopesLayerInEphemeralVisualization = false;
@@ -2837,11 +2834,12 @@ void ModelController::DoRopesRegionBufferPaste(
     ShipSpaceCoordinates const & targetCoordinates,
     bool isTransparent)
 {
-    // TODO: RopeBuffer::Paste
-    (void)sourceRegionBuffer;
-    (void)targetBuffer;
-    (void)targetCoordinates;
-    (void)isTransparent;
+    targetBuffer.BlitFromRegion(
+        sourceRegionBuffer,
+        GetWholeShipRect(),
+        targetCoordinates,
+        GetShipSize(),
+        isTransparent);
 
     //
     // Update visualization
