@@ -939,12 +939,22 @@ void Controller::PasteFlipV()
 
 void Controller::PasteCommit()
 {
-    // TODOHERE
+    // Commit
+    PasteTool & pasteTool = GetCurrentToolAs<PasteTool>(ToolClass::Paste);
+    pasteTool.Commit();
+
+    // Nuke tool and restore previous tool
+    SetCurrentTool(mCurrentToolTypePerLayer[static_cast<size_t>(VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization()))]);
 }
 
 void Controller::PasteAbort()
 {
-    // TODOHERE
+    // Abort
+    PasteTool & pasteTool = GetCurrentToolAs<PasteTool>(ToolClass::Paste);
+    pasteTool.Abort();
+
+    // Nuke tool and restore previous tool
+    SetCurrentTool(mCurrentToolTypePerLayer[static_cast<size_t>(VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization()))]);
 }
 
 void Controller::AutoTrim()
@@ -1008,6 +1018,10 @@ void Controller::LayerChangeEpilog(std::optional<LayerType> dirtyLayer)
 {
     if (dirtyLayer.has_value())
     {
+        //
+        // This change is final (as opposed to ephemeral)
+        //
+
         // Mark layer as dirty
         mModelController->SetLayerDirty(*dirtyLayer);
         mUserInterface.OnModelDirtyChanged(*mModelController);
@@ -1764,7 +1778,7 @@ void Controller::WrapLikelyLayerPresenceChangingOperation(TFunctor operation)
             // Switch primary viz to default if it was about this layer
             if (VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization()) == TLayerType)
             {
-                InternalSelectPrimaryVisualization(WorkbenchState::GetDefaultPrimaryVisualization()); // Will also change tool
+                InternalSelectPrimaryVisualization(WorkbenchState::GetDefaultPrimaryVisualization());
             }
 
             if constexpr (TLayerType == LayerType::Texture)

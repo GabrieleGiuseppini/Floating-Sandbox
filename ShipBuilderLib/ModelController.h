@@ -216,6 +216,11 @@ public:
         ShipSpaceRect const & region,
         std::optional<LayerType> const & layerSelection);
 
+    GenericUndoPayload Paste(
+        ShipLayers const & sourcePayload,
+        ShipSpaceCoordinates const & pasteOrigin,
+        bool isTransparent);
+
     void Restore(GenericUndoPayload && undoPayload);
 
     GenericUndoPayload PasteForEphemeralVisualization(
@@ -521,19 +526,25 @@ private:
     }
 
     void DoStructuralRegionBufferPaste(
-        typename LayerTypeTraits<LayerType::Structural>::buffer_type const & sourceBuffer,
+        typename LayerTypeTraits<LayerType::Structural>::buffer_type const & sourceRegionBuffer,
         typename LayerTypeTraits<LayerType::Structural>::buffer_type & targetBuffer,
         ShipSpaceCoordinates const & targetCoordinates,
         bool isTransparent);
 
     void DoElectricalRegionBufferPaste(
-        typename LayerTypeTraits<LayerType::Electrical>::buffer_type const & sourceBuffer,
+        typename LayerTypeTraits<LayerType::Electrical>::buffer_type const & sourceRegionBuffer,
         typename LayerTypeTraits<LayerType::Electrical>::buffer_type & targetBuffer,
         ShipSpaceCoordinates const & targetCoordinates,
         bool isTransparent);
 
+    void DoRopesRegionBufferPaste(
+        typename LayerTypeTraits<LayerType::Ropes>::buffer_type const & sourceRegionBuffer,
+        typename LayerTypeTraits<LayerType::Ropes>::buffer_type & targetBuffer,
+        ShipSpaceCoordinates const & targetCoordinates,
+        bool isTransparent);
+
     void DoTextureRegionBufferPaste(
-        typename LayerTypeTraits<LayerType::Texture>::buffer_type const & sourceBuffer,
+        typename LayerTypeTraits<LayerType::Texture>::buffer_type const & sourceRegionBuffer,
         typename LayerTypeTraits<LayerType::Texture>::buffer_type & targetBuffer,
         ShipSpaceCoordinates const & targetCoordinates,
         bool isTransparent);

@@ -159,8 +159,29 @@ void PasteTool::Commit()
         assert(!mPendingSessionData->EphemeralVisualization);
     }
 
-    // TODO: commit, iff pending (i.e. not aborted)
+    // Commit
 
+    ShipSpaceCoordinates const pasteOrigin = MousePasteCoordsToActualPasteOrigin(
+        mPendingSessionData->MousePasteCoords, 
+        mPendingSessionData->PasteRegion.Size);
+
+    GenericUndoPayload undoPayload = mController.GetModelController().Paste(
+        mPendingSessionData->PasteRegion,
+        pasteOrigin,
+        mPendingSessionData->IsTransparent);
+
+    // Store undo
+    size_t const undoPayloadCost = undoPayload.GetTotalCost();
+    mController.StoreUndoAction(
+        _("Paste"),
+        undoPayloadCost,
+        mController.GetModelController().GetDirtyState(),
+        [undoPayload = std::move(undoPayload)](Controller & controller) mutable
+        {
+            controller.Restore(std::move(undoPayload));
+        });
+
+    // TODO: all affected layers should be marked as dirty here
     mController.LayerChangeEpilog();
 
     mPendingSessionData.reset();
@@ -273,7 +294,9 @@ void PasteTool::DrawEphemeralVisualization()
     assert(mPendingSessionData);
     assert(!mPendingSessionData->EphemeralVisualization);
 
-    ShipSpaceCoordinates const pasteOrigin = MousePasteCoordsToActualPasteOrigin(mPendingSessionData->MousePasteCoords, mPendingSessionData->PasteRegion.Size);
+    ShipSpaceCoordinates const pasteOrigin = MousePasteCoordsToActualPasteOrigin(
+        mPendingSessionData->MousePasteCoords, 
+        mPendingSessionData->PasteRegion.Size);
 
     GenericUndoPayload pasteUndo = mController.GetModelController().PasteForEphemeralVisualization(
         mPendingSessionData->PasteRegion,

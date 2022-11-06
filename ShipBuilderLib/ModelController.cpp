@@ -510,6 +510,86 @@ GenericUndoPayload ModelController::EraseRegion(
     return undoPayload;
 }
 
+GenericUndoPayload ModelController::Paste(
+    ShipLayers const & sourcePayload,
+    ShipSpaceCoordinates const & pasteOrigin,
+    bool isTransparent)
+{
+    auto const affectedRect =
+        ShipSpaceRect(pasteOrigin, sourcePayload.Size)
+        .MakeIntersectionWith(GetWholeShipRect());
+
+    if (affectedRect.has_value())
+    {
+        //
+        // Prepare undo
+        //
+
+        GenericUndoPayload undoPayload = MakeGenericUndoPayload(
+            *affectedRect,
+            (bool)(sourcePayload.StructuralLayer) && mModel.HasLayer(LayerType::Structural),
+            (bool)(sourcePayload.ElectricalLayer) && mModel.HasLayer(LayerType::Electrical),
+            (bool)(sourcePayload.RopesLayer) && mModel.HasLayer(LayerType::Ropes),
+            (bool)(sourcePayload.TextureLayer) && mModel.HasLayer(LayerType::Texture));
+        
+        //
+        // Paste - update model
+        //
+
+        if (sourcePayload.StructuralLayer && mModel.HasLayer(LayerType::Structural))
+        {
+            assert(!mIsStructuralLayerInEphemeralVisualization);
+
+            // TODOHERE
+            //DoStructuralRegionBufferPaste(
+            //    sourcePayload.StructuralLayer->Buffer,
+            //    mModel.GetStructuralLayer().Buffer,
+            //    pasteOrigin,
+            //    isTransparent);
+        }
+
+        if (sourcePayload.ElectricalLayer && mModel.HasLayer(LayerType::Electrical))
+        {
+            assert(!mIsElectricalLayerInEphemeralVisualization);
+
+            // TODOHERE
+            //DoElectricalRegionBufferPaste(
+            //    sourcePayload.ElectricalLayer->Buffer,
+            //    mModel.GetElectricalLayer().Buffer,
+            //    pasteOrigin,
+            //    isTransparent);
+        }
+
+        if (sourcePayload.RopesLayer && mModel.HasLayer(LayerType::Ropes))
+        {
+            assert(!mIsRopesLayerInEphemeralVisualization);
+
+            DoRopesRegionBufferPaste(
+                sourcePayload.RopesLayer->Buffer,
+                mModel.GetRopesLayer().Buffer,
+                pasteOrigin,
+                isTransparent);
+        }
+
+        if (sourcePayload.TextureLayer && mModel.HasLayer(LayerType::Texture))
+        {
+            assert(!mIsTextureLayerInEphemeralVisualization);
+
+            DoTextureRegionBufferPaste(
+                sourcePayload.TextureLayer->Buffer,
+                mModel.GetTextureLayer().Buffer,
+                pasteOrigin,
+                isTransparent);
+        }
+
+        return undoPayload;
+    }
+    else
+    {
+        return GenericUndoPayload(pasteOrigin);
+    }
+}
+
 void ModelController::Restore(GenericUndoPayload && undoPayload)
 {
     // Note: no layer presence changes
@@ -593,7 +673,17 @@ GenericUndoPayload ModelController::PasteForEphemeralVisualization(
             mIsElectricalLayerInEphemeralVisualization = true;
         }
 
-        // TODOHERE: ropes
+        if (sourcePayload.RopesLayer && mModel.HasLayer(LayerType::Ropes))
+        {
+            DoRopesRegionBufferPaste(
+                sourcePayload.RopesLayer->Buffer,
+                mModel.GetRopesLayer().Buffer,
+                pasteOrigin,
+                isTransparent);
+
+            // Remember we are in temp visualization now
+            mIsRopesLayerInEphemeralVisualization = true;
+        }
 
         if (sourcePayload.TextureLayer && mModel.HasLayer(LayerType::Texture))
         {
@@ -647,7 +737,20 @@ void ModelController::RestoreForEphemeralVisualization(GenericUndoPayload && und
         mIsElectricalLayerInEphemeralVisualization = false;
     }
 
-    // TODOHERE: ropes
+    if (undoPayload.RopesLayerRegionBackup.has_value())
+    {
+        assert(mModel.HasLayer(LayerType::Ropes));
+        assert(mIsRopesLayerInEphemeralVisualization);
+
+        DoRopesRegionBufferPaste(
+            undoPayload.RopesLayerRegionBackup->Buffer,            
+            mModel.GetRopesLayer().Buffer,
+            undoPayload.Origin,
+            false);
+
+        // Remember we are not anymore in temp visualization
+        mIsRopesLayerInEphemeralVisualization = false;
+    }
 
     if (undoPayload.TextureLayerRegionBackup.has_value())
     {
@@ -660,8 +763,8 @@ void ModelController::RestoreForEphemeralVisualization(GenericUndoPayload && und
             undoPayload.Origin,
             false);
 
-        // Remember we are in temp visualization now
-        mIsTextureLayerInEphemeralVisualization = true;
+        // Remember we are not anymore in temp visualization
+        mIsTextureLayerInEphemeralVisualization = false;
     }
 }
 
@@ -2566,7 +2669,7 @@ GenericUndoPayload ModelController::MakeGenericUndoPayload(
 }
 
 void ModelController::DoStructuralRegionBufferPaste(
-    typename LayerTypeTraits<LayerType::Structural>::buffer_type const & sourceBuffer,
+    typename LayerTypeTraits<LayerType::Structural>::buffer_type const & sourceRegionBuffer,
     typename LayerTypeTraits<LayerType::Structural>::buffer_type & targetBuffer,
     ShipSpaceCoordinates const & targetCoordinates,
     bool isTransparent)
@@ -2584,8 +2687,8 @@ void ModelController::DoStructuralRegionBufferPaste(
         };
 
     targetBuffer.BlitFromRegion(
-        sourceBuffer,
-        ShipSpaceRect(sourceBuffer.Size),
+        sourceRegionBuffer,
+        ShipSpaceRect(sourceRegionBuffer.Size),
         targetCoordinates,
         elementOperator);
 
@@ -2594,7 +2697,7 @@ void ModelController::DoStructuralRegionBufferPaste(
     //
 
     auto const affectedRegion =
-        ShipSpaceRect(targetCoordinates, sourceBuffer.Size)
+        ShipSpaceRect(targetCoordinates, sourceRegionBuffer.Size)
         .MakeIntersectionWith(GetWholeShipRect());
 
     if (affectedRegion)
@@ -2605,7 +2708,7 @@ void ModelController::DoStructuralRegionBufferPaste(
 }
 
 void ModelController::DoElectricalRegionBufferPaste(
-    typename LayerTypeTraits<LayerType::Electrical>::buffer_type const & sourceBuffer,
+    typename LayerTypeTraits<LayerType::Electrical>::buffer_type const & sourceRegionBuffer,
     typename LayerTypeTraits<LayerType::Electrical>::buffer_type & targetBuffer,
     ShipSpaceCoordinates const & targetCoordinates,
     bool isTransparent)
@@ -2623,8 +2726,8 @@ void ModelController::DoElectricalRegionBufferPaste(
         };
 
     targetBuffer.BlitFromRegion(
-        sourceBuffer,
-        ShipSpaceRect(sourceBuffer.Size),
+        sourceRegionBuffer,
+        ShipSpaceRect(sourceRegionBuffer.Size),
         targetCoordinates,
         elementOperator);
 
@@ -2633,7 +2736,7 @@ void ModelController::DoElectricalRegionBufferPaste(
     //
 
     auto const affectedRegion =
-        ShipSpaceRect(targetCoordinates, sourceBuffer.Size)
+        ShipSpaceRect(targetCoordinates, sourceRegionBuffer.Size)
         .MakeIntersectionWith(GetWholeShipRect());
 
     if (affectedRegion)
@@ -2642,8 +2745,23 @@ void ModelController::DoElectricalRegionBufferPaste(
     }
 }
 
+void ModelController::DoRopesRegionBufferPaste(
+    typename LayerTypeTraits<LayerType::Ropes>::buffer_type const & sourceRegionBuffer,
+    typename LayerTypeTraits<LayerType::Ropes>::buffer_type & targetBuffer,
+    ShipSpaceCoordinates const & targetCoordinates,
+    bool isTransparent)
+{
+    // TODO: RopeBuffer::Paste
+
+    //
+    // Update visualization
+    //
+
+    RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
+}
+
 void ModelController::DoTextureRegionBufferPaste(
-    typename LayerTypeTraits<LayerType::Texture>::buffer_type const & sourceBuffer,
+    typename LayerTypeTraits<LayerType::Texture>::buffer_type const & sourceRegionBuffer,
     typename LayerTypeTraits<LayerType::Texture>::buffer_type & targetBuffer,
     ShipSpaceCoordinates const & targetCoordinates,
     bool isTransparent)
@@ -2664,8 +2782,8 @@ void ModelController::DoTextureRegionBufferPaste(
         GetTextureSize());
 
     targetBuffer.BlitFromRegion(
-        sourceBuffer,
-        ImageRect(sourceBuffer.Size),
+        sourceRegionBuffer,
+        ImageRect(sourceRegionBuffer.Size),
         targetTextureCoordinates,
         elementOperator);
 
@@ -2674,7 +2792,7 @@ void ModelController::DoTextureRegionBufferPaste(
     //
 
     auto const affectedRegion =
-        ImageRect(targetTextureCoordinates, sourceBuffer.Size)
+        ImageRect(targetTextureCoordinates, sourceRegionBuffer.Size)
         .MakeIntersectionWith(GetWholeTextureRect());
 
     if (affectedRegion)

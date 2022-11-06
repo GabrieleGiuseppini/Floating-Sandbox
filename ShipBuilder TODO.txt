@@ -453,9 +453,9 @@
 					+ Here the tool type does not enter stack of last used
 					+ "Normal" new tool select notification goes out to IUserInterface
 			+ Make sure Paste tool does not get resumed after a suspension		
-			- Controller::AbortPaste()
-				- Get tool as PasteTool, and invoke Abort() on it
-				- Then, destroy (reset) mCurrentTool, and activate previous one for the current layer
+			+ Controller::AbortPaste()
+				+ Get tool as PasteTool, and invoke Abort() on it
+				+ Then, destroy (reset) mCurrentTool, and activate previous one for the current layer
 			- Controller::CommitPaste()
 				- Get tool as PasteTool, and invoke Commit() on it
 				- Then, destroy (reset) mCurrentTool, and activate previous one for the current layer
@@ -501,7 +501,12 @@
 					! Undo eph viz, Commit, and make sure subsequent dctor does not see it as pending
 					+ assert (pending)
 					+ Reset eph viz (if any)
-					- Commit
+					- ModelController::Paste
+						- TODO: make sure all affected layers are marked as dirty - ideally ModelController::Paste() tells that
+							- LayerChangeEpilog takes vector<LayerType>
+							- ModelController exposes new vector<LayerType> CalculateLayerApplicability(ShipLayers)
+					= Store Undo
+						- No Undo if no layer affected
 					+ LayerChangeEpilog
 				= Rotate()/etc.:
 					!  Undo eph viz, Do operation on own mPasteRegion, Redo eph viz
@@ -522,28 +527,29 @@
 						+ LayerChangeEpilog
 				- ShiftDown/Up:
 					- TODO
+			- See if can avoid making that fake GenericUndoPayload
 			- ModelController::Paste(LayersRegion, origin, opaque/transparent) X 2 (ephemeral, normal) -> GenericUndoPayload
 				= PasteForEphemeralVisualization(...) -> GenericUndoPayload
 					+ blit (DoStructuralRegionBufferPaste)
 					+ blit (DoElectricalRegionBufferPaste)
-					- ? (@RopesBuffer)
+					= ? (RopesBuffer::Paste(..., isTransparent)) via DoRopesRegionBufferPaste
 					+ blit (DoTextureRegionBufferPaste)
 				= RestoreForEphemeralVisualization(GenericUndoPayload)
 					+ blit (DoStructuralRegionBufferPaste)
 					+ blit (DoElectricalRegionBufferPaste)
-					- ?
+					= ? (RopesBuffer::Paste(..., isTransparent)) via DoRopesRegionBufferPaste
 					+ blit (DoTextureRegionBufferPaste)
-				- Paste(...) -> GenericUndoPayload
+				= Paste(...) -> GenericUndoPayload
 					- special
 					- special
-					- ?
-					- blit (DoTextureRegionBufferPaste)
+					= ? (RopesBuffer::Paste(..., isTransparent)) via DoRopesRegionBufferPaste
+					+ blit (DoTextureRegionBufferPaste)
 				+ Restore(GenericUndoPayload)
 		- Tests:
 			- Make sure none of the Paste tools may be selected by user
-			- What happens after PasteTool is gone:
-				- TODO
-			- TODO
+				- After removing layer
+			- Copy 1 layer and paste when that layer doesn't exist
+				- Expect: no action at commit, no Undo (even if empty)
 	- SelectionTool:
 		- Allows OnMouseDown to work even if outside ship - clip to it
 

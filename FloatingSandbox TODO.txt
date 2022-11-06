@@ -70,6 +70,7 @@
 	- Add Ukrainian to credits
 	- Take S.S. Avila 2 (Matthew Anderson) (ToTake folder)
 	- Take A_single_Blue_Angel (Kazindel) (ToTake folder)
+		- "Kazindel" - check out Credits
 
 	- Make Mac instructions
 		- SFML build: https://github.com/SFML/SFML/issues/1496
@@ -1006,7 +1007,9 @@
 					- Has precedence when looking for candidates @ Lightning strike
 				- Uranium 235
 					- "A single pixel of uranium when smashed with a hammer or cut with a chainsaw causes a huge explosion the size of the titanic. And it glows blue when you put in underwater."
+				- New metal color (for White Line): F1D4A1
 			- Electrical materials:
+				- Backup generators: would activate 10 seconds after connection is cut from the main power and it would power the lights only
 				- Non-Instanced Watertight Doors (see if possible)
 				- Non-Instanced Water In/Out Pumps (see if possible)
 				- Clamp
@@ -1372,6 +1375,9 @@
 		- Merge multi-layered ships
 		- Test
 		- How to Guide
+
+	- New tool: slingshot
+		- "You hold down the left click, and pull back and aim - and it would fire somethin like a cannon ball or wrecking ball like projectile"
 
 - UI:
 	- Automatic contrast for the cursor, e.g. for when it's at depth

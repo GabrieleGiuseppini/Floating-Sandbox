@@ -40,7 +40,7 @@ The game is also featured at [GameJolt](https://gamejolt.com/games/floating-sand
 
 # System Requirements
 - Windows:
-	- Windows 7, 8, 10, or 11, either 64-bit or 32-bit
+	- Windows Vista, 7, 8, 10, or 11, either 64-bit or 32-bit
 		- The 64-bit build of Floating Sandbox runs ~7% faster than the 32-bit build, so if you're running a 64-bit Windows it is advisable to install the 64-bit build of Floating Sandbox
 	- OpenGL 2.1 or later
 		- If your graphics card does not support OpenGL 2.1, try upgrading its drivers - most likely there's a newer version with support for 2.1
