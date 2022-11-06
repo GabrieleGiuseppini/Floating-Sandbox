@@ -55,7 +55,7 @@ void TextureMagicWandTool::OnLeftMouseDown()
                 });
 
             // Epilog
-            mController.LayerChangeEpilog(LayerType::Texture);
+            mController.LayerChangeEpilog({ LayerType::Texture });
         }
     }
 }

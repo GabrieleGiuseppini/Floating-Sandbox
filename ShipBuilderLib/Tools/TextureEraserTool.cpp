@@ -242,7 +242,7 @@ void TextureEraserTool::DoEdit(ImageCoordinates const & mouseCoordinates)
             if (applicableRect)
             {
                 mController.GetModelController().EraseTextureRegion(*applicableRect);
-                
+
                 // Update edit region
                 if (!mEngagementData->EditRegion)
                 {
@@ -261,7 +261,7 @@ void TextureEraserTool::DoEdit(ImageCoordinates const & mouseCoordinates)
     mEngagementData->PreviousEngagementPosition = endPoint;
 
     // Epilog
-    mController.LayerChangeEpilog(LayerType::Texture);
+    mController.LayerChangeEpilog({ LayerType::Texture });
 }
 
 void TextureEraserTool::EndEngagement()

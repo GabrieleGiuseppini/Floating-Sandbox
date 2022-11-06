@@ -118,7 +118,7 @@ void FloodTool<TLayer>::DoEdit(
         mController.BroadcastSampledInformationUpdatedAt(mouseCoordinates, TLayer);
 
         // Epilog
-        mController.LayerChangeEpilog(TLayer);
+        mController.LayerChangeEpilog({ TLayer });
     }
 }
 

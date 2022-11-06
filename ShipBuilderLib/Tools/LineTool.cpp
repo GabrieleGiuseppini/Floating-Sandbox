@@ -316,7 +316,7 @@ void LineTool<TLayer>::EndEngagement(ShipSpaceCoordinates const & mouseCoordinat
         mController.BroadcastSampledInformationUpdatedAt(mouseCoordinates, TLayer);
 
         // Epilog (if no applicable rect then we haven't changed anything, not even eph viz)
-        mController.LayerChangeEpilog(TLayer);
+        mController.LayerChangeEpilog({ TLayer });
     }
 
     //

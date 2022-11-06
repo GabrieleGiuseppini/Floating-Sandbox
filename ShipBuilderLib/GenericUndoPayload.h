@@ -10,6 +10,7 @@
 #include <Game/Layers.h>
 
 #include <optional>
+#include <vector>
 
 namespace ShipBuilder {
 
@@ -55,6 +56,34 @@ public:
 			+ (RopesLayerRegionBackup ? RopesLayerRegionBackup->Buffer.GetByteSize() : 0)
 			+ (TextureLayerRegionBackup ? TextureLayerRegionBackup->Buffer.GetByteSize() : 0);
 	}
+
+	std::vector<LayerType> GetAffectedLayers() const
+	{
+		std::vector<LayerType> affectedLayers;
+
+		if (StructuralLayerRegionBackup.has_value())
+		{
+			affectedLayers.emplace_back(LayerType::Structural);
+		}
+
+		if (ElectricalLayerRegionBackup.has_value())
+		{
+			affectedLayers.emplace_back(LayerType::Electrical);
+		}
+
+		if (RopesLayerRegionBackup.has_value())
+		{
+			affectedLayers.emplace_back(LayerType::Ropes);
+		}
+
+		if (TextureLayerRegionBackup.has_value())
+		{
+			affectedLayers.emplace_back(LayerType::Texture);
+		}
+
+		return affectedLayers;
+	}
+
 };
 
 }

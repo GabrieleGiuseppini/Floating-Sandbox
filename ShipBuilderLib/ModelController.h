@@ -230,6 +230,8 @@ public:
 
     void RestoreForEphemeralVisualization(GenericUndoPayload && undoPayload);
 
+    std::vector<LayerType> CalculateAffectedLayers(ShipLayers const & otherSource) const;
+
     //
     // Structural
     //

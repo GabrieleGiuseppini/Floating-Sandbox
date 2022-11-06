@@ -422,7 +422,10 @@ void PencilTool<TLayer, IsEraser>::DoEdit(ShipSpaceCoordinates const & mouseCoor
     mController.BroadcastSampledInformationUpdatedAt(mouseCoordinates, TLayer);
 
     // Epilog
-    mController.LayerChangeEpilog(hasEdited ? TLayer : std::optional<LayerType>());
+    if (hasEdited)
+        mController.LayerChangeEpilog({TLayer});
+    else
+        mController.LayerChangeEpilog();
 }
 
 template<LayerType TLayer, bool IsEraser>

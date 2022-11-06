@@ -497,16 +497,20 @@
 					+ assert (pending)
 					+ Reset eph viz (if any)
 					+ LayerChangeEpilog
-				- Commit():
+				+ Commit():
 					! Undo eph viz, Commit, and make sure subsequent dctor does not see it as pending
 					+ assert (pending)
 					+ Reset eph viz (if any)
-					- ModelController::Paste
-						- TODO: make sure all affected layers are marked as dirty - ideally ModelController::Paste() tells that
-							- LayerChangeEpilog takes vector<LayerType>
-							- ModelController exposes new vector<LayerType> CalculateLayerApplicability(ShipLayers)
-					= Store Undo
-						- No Undo if no layer affected
+					+ ModelController::Paste
+						+ Make sure all affected layers are marked as dirty:
+							+ LayerChangeEpilog takes vector<LayerType>
+							+ ModelController exposes new vector<LayerType> CalculateLayerApplicability(ShipLayers)
+								+ Also use it at:
+									+ Paste
+									+ PasteForEph
+									+ 2 x Restore
+					+ Store Undo
+						+ No Undo if no layer affected
 					+ LayerChangeEpilog
 				= Rotate()/etc.:
 					!  Undo eph viz, Do operation on own mPasteRegion, Redo eph viz
@@ -528,6 +532,7 @@
 				- ShiftDown/Up:
 					- TODO
 			- See if can avoid making that fake GenericUndoPayload
+			- Try with Size in RopesBuffer
 			- ModelController::Paste(LayersRegion, origin, opaque/transparent) X 2 (ephemeral, normal) -> GenericUndoPayload
 				= PasteForEphemeralVisualization(...) -> GenericUndoPayload
 					+ blit (DoStructuralRegionBufferPaste)

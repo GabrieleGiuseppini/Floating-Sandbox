@@ -218,7 +218,7 @@ public:
 
     // Invoked for changes to any layer, including ephemeral viz changes (in which case
     // no layer gets dirty)
-    void LayerChangeEpilog(std::optional<LayerType> dirtyLayer = std::nullopt);
+    void LayerChangeEpilog(std::vector<LayerType> dirtyLayers = {});
 
     void SelectAll();
 
@@ -319,7 +319,7 @@ private:
     void InternalPushUndoForWholeLayer(wxString const & title);
 
     template<LayerType TLayerType, typename TFunctor>
-    void WrapLikelyLayerPresenceChangingOperation(TFunctor operation);    
+    void WrapLikelyLayerPresenceChangingOperation(TFunctor operation);
 
     //
 

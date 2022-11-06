@@ -491,7 +491,7 @@ void Controller::TrimElectricalParticlesWithoutSubstratum()
 
             mUserInterface.OnUndoStackStateChanged(mUndoStack);
 
-            LayerChangeEpilog(LayerType::Electrical);
+            LayerChangeEpilog({ LayerType::Electrical });
         }
     }
 }
@@ -780,7 +780,7 @@ void Controller::Paste()
     std::optional<LayerType> bestLayer;
 
     LayerType currentVizLayer = VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization());
-    
+
     if (clipboardClone.StructuralLayer)
     {
         if (!bestLayer || currentVizLayer == LayerType::Structural)
@@ -811,7 +811,7 @@ void Controller::Paste()
         {
             bestLayer = LayerType::Texture;
         }
-    }    
+    }
 
     assert(bestLayer);
 
@@ -1014,23 +1014,28 @@ void Controller::ResizeShip(
         _("Resize Ship"));
 }
 
-void Controller::LayerChangeEpilog(std::optional<LayerType> dirtyLayer)
+void Controller::LayerChangeEpilog(std::vector<LayerType> dirtyLayers)
 {
-    if (dirtyLayer.has_value())
+    if (!dirtyLayers.empty())
     {
         //
         // This change is final (as opposed to ephemeral)
         //
 
-        // Mark layer as dirty
-        mModelController->SetLayerDirty(*dirtyLayer);
-        mUserInterface.OnModelDirtyChanged(*mModelController);
-
-        if (*dirtyLayer == LayerType::Electrical)
+        for (LayerType const dirtyLayer : dirtyLayers)
         {
-            // Notify of (possible) change in electrical panel
-            mUserInterface.OnElectricalLayerInstancedElementSetChanged(mModelController->GetInstancedElectricalElementSet());
+            // Mark layer as dirty
+            mModelController->SetLayerDirty(dirtyLayer);
+
+            if (dirtyLayer == LayerType::Electrical)
+            {
+                // Notify of (possible) change in electrical panel
+                mUserInterface.OnElectricalLayerInstancedElementSetChanged(mModelController->GetInstancedElectricalElementSet());
+            }
         }
+
+        // Notify dirty changes
+        mUserInterface.OnModelDirtyChanged(*mModelController);
 
         // Notify macro properties
         NotifyModelMacroPropertiesUpdated();
@@ -1614,7 +1619,7 @@ void Controller::InternalSetLayer(wxString actionTitle, TArgs&& ... args)
     // Update visualization modes
     InternalUpdateModelControllerVisualizationModes();
 
-    LayerChangeEpilog(TLayerType);
+    LayerChangeEpilog({ TLayerType });
 }
 
 template<LayerType TLayerType>
@@ -1668,7 +1673,7 @@ void Controller::InternalRemoveLayer()
     // Update visualization modes
     InternalUpdateModelControllerVisualizationModes();
 
-    LayerChangeEpilog(TLayerType);
+    LayerChangeEpilog({ TLayerType });
 }
 
 template<LayerType TLayerType>
