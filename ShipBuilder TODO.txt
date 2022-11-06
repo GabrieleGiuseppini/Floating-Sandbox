@@ -532,24 +532,27 @@
 				- ShiftDown/Up:
 					- TODO
 			- See if can avoid making that fake GenericUndoPayload
-			- Try with Size in RopesBuffer
+			- Try with Size in RopeBuffer
 			- ModelController::Paste(LayersRegion, origin, opaque/transparent) X 2 (ephemeral, normal) -> GenericUndoPayload
 				= PasteForEphemeralVisualization(...) -> GenericUndoPayload
 					+ blit (DoStructuralRegionBufferPaste)
 					+ blit (DoElectricalRegionBufferPaste)
-					= ? (RopesBuffer::Paste(..., isTransparent)) via DoRopesRegionBufferPaste
+					= ? (RopesBuffer::Blit(..., isTransparent)) via DoRopesRegionBufferPaste
 					+ blit (DoTextureRegionBufferPaste)
 				= RestoreForEphemeralVisualization(GenericUndoPayload)
 					+ blit (DoStructuralRegionBufferPaste)
 					+ blit (DoElectricalRegionBufferPaste)
-					= ? (RopesBuffer::Paste(..., isTransparent)) via DoRopesRegionBufferPaste
+					= ? (RopesBuffer::Blit(..., isTransparent)) via DoRopesRegionBufferPaste
 					+ blit (DoTextureRegionBufferPaste)
 				= Paste(...) -> GenericUndoPayload
 					- special
 					- special
-					= ? (RopesBuffer::Paste(..., isTransparent)) via DoRopesRegionBufferPaste
+					= ? (RopesBuffer::Blit(..., isTransparent)) via DoRopesRegionBufferPaste
 					+ blit (DoTextureRegionBufferPaste)
 				+ Restore(GenericUndoPayload)
+				+ RopesBuffer::Blit
+					+ Code
+					+ Unit tests
 		- Tests:
 			- Make sure none of the Paste tools may be selected by user
 				- After removing layer

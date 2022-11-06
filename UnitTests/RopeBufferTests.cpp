@@ -121,6 +121,494 @@ TEST(RopeBufferTests, CopyRegion)
     EXPECT_EQ(rgbaColor(2, 2, 2, 2), clone[1].RenderColor);
 }
 
+TEST(RopeBufferTests, BlitFromRegion_Opaque_AllEndUpInTargetRegion_NoConflicts)
+{
+    ShipSpaceRect sourceRegion(
+        ShipSpaceCoordinates(1, 1),
+        ShipSpaceSize(15, 20));
+
+    ShipSpaceCoordinates const targetPos(10, 15);
+
+    ShipSpaceSize const targetSize(100, 200);
+
+    // Source region: [1, 1] -> (1 + 15, 1 + 20) == [15, 20]
+    // Target paste region: [10, 15] -> (10 + 15, 15 + 20) == [24, 34]
+    // Target region: [0, 0] -> [100, 200]
+
+    //
+    // Prepare target
+    //
+
+    RopeBuffer targetBuffer;
+
+    targetBuffer.EmplaceBack(
+        ShipSpaceCoordinates(4, 5),
+        ShipSpaceCoordinates(10, 10),
+        nullptr,
+        rgbaColor(1, 1, 1, 1));
+
+    targetBuffer.EmplaceBack(
+        ShipSpaceCoordinates(5, 6),
+        ShipSpaceCoordinates(6, 7),
+        nullptr,
+        rgbaColor(2, 2, 2, 2));
+
+    targetBuffer.EmplaceBack(
+        ShipSpaceCoordinates(1, 1),
+        ShipSpaceCoordinates(11, 17), // In target paste region
+        nullptr,
+        rgbaColor(3, 3, 3, 3));
+
+    //
+    // Prepare source
+    //
+
+    RopeBuffer sourceBuffer;
+
+    // Both endpoints in source region
+    // End up at: (1-1+10==10, 2-1+15==16), (15-1+10==24, 20-1+15==34) - i.e. in target region
+    sourceBuffer.EmplaceBack(
+        ShipSpaceCoordinates(1, 2),
+        ShipSpaceCoordinates(15, 20),
+        nullptr,
+        rgbaColor(4, 4, 4, 4));
+
+    // One endpoint in source region
+    // End up at: (2-1+10==11, 3-1+15==17), (16-1+10==25, 20-1+15==34) - i.e. in target region
+    sourceBuffer.EmplaceBack(
+        ShipSpaceCoordinates(2, 3),
+        ShipSpaceCoordinates(16, 20),
+        nullptr,
+        rgbaColor(5, 5, 5, 5));
+
+    // Both endpoints outside of source region
+    sourceBuffer.EmplaceBack(
+        ShipSpaceCoordinates(0, 1),
+        ShipSpaceCoordinates(15, 21),
+        nullptr,
+        rgbaColor(6, 6, 6, 6));
+
+    //
+    // Test
+    //
+
+    targetBuffer.BlitFromRegion(
+        sourceBuffer,
+        sourceRegion,
+        targetPos,
+        targetSize,
+        false);
+
+    //
+    // Verify
+    //
+
+    ASSERT_EQ(targetBuffer.GetSize(), 2u + 2u);
+
+    // Orig
+
+    EXPECT_EQ(ShipSpaceCoordinates(4, 5), targetBuffer[0].StartCoords);
+    EXPECT_EQ(ShipSpaceCoordinates(10, 10), targetBuffer[0].EndCoords);
+    EXPECT_EQ(rgbaColor(1, 1, 1, 1), targetBuffer[0].RenderColor);
+
+    EXPECT_EQ(ShipSpaceCoordinates(5, 6), targetBuffer[1].StartCoords);
+    EXPECT_EQ(ShipSpaceCoordinates(6, 7), targetBuffer[1].EndCoords);
+    EXPECT_EQ(rgbaColor(2, 2, 2, 2), targetBuffer[1].RenderColor);
+
+    // New
+
+    EXPECT_EQ(ShipSpaceCoordinates(1 - 1 + 10, 2 - 1 + 15), targetBuffer[2].StartCoords);
+    EXPECT_EQ(ShipSpaceCoordinates(15 - 1 + 10, 20 - 1 + 15), targetBuffer[2].EndCoords);
+    EXPECT_EQ(rgbaColor(4, 4, 4, 4), targetBuffer[2].RenderColor);
+
+    EXPECT_EQ(ShipSpaceCoordinates(2 - 1 + 10, 3 - 1 + 15), targetBuffer[3].StartCoords);
+    EXPECT_EQ(ShipSpaceCoordinates(16 - 1 + 10, 20 - 1 + 15), targetBuffer[3].EndCoords);
+    EXPECT_EQ(rgbaColor(5, 5, 5, 5), targetBuffer[3].RenderColor);
+}
+
+TEST(RopeBufferTests, BlitFromRegion_Opaque_EndsUpOutsideTargetRegion_NoConflicts)
+{
+    ShipSpaceRect sourceRegion(
+        ShipSpaceCoordinates(1, 1),
+        ShipSpaceSize(15, 21));
+
+    ShipSpaceCoordinates const targetPos(10, 15);
+
+    ShipSpaceSize const targetSize(24, 34);
+
+    // Source region: [1, 1] -> (1 + 15, 1 + 21) == [15, 21]
+    // Target paste region: [10, 15] -> (10 + 15, 15 + 21) == [24, 35]
+    // Target region: [0, 0] -> [23, 33]
+
+    //
+    // Prepare target
+    //
+
+    RopeBuffer targetBuffer;
+
+    targetBuffer.EmplaceBack(
+        ShipSpaceCoordinates(4, 5),
+        ShipSpaceCoordinates(10, 10),
+        nullptr,
+        rgbaColor(1, 1, 1, 1));
+
+    targetBuffer.EmplaceBack(
+        ShipSpaceCoordinates(5, 6),
+        ShipSpaceCoordinates(6, 7),
+        nullptr,
+        rgbaColor(2, 2, 2, 2));
+
+    targetBuffer.EmplaceBack(
+        ShipSpaceCoordinates(1, 1),
+        ShipSpaceCoordinates(11, 17), // In target paste region
+        nullptr,
+        rgbaColor(3, 3, 3, 3));
+
+    //
+    // Prepare source
+    //
+
+    RopeBuffer sourceBuffer;
+
+    // Both endpoints in source region
+    // End up at: (1-1+10==10, 2-1+15==16), (14-1+10==23, 19-1+15==33) - i.e. in target region
+    sourceBuffer.EmplaceBack(
+        ShipSpaceCoordinates(1, 2),
+        ShipSpaceCoordinates(14, 19),
+        nullptr,
+        rgbaColor(4, 4, 4, 4));
+
+    // Both endpoints in source region
+    // End up at: (1-1+10==10, 2-1+15==16), (15-1+10==24, 20-1+15==34) - i.e. outside target region
+    sourceBuffer.EmplaceBack(
+        ShipSpaceCoordinates(1, 2),
+        ShipSpaceCoordinates(15, 20),
+        nullptr,
+        rgbaColor(5, 5, 5, 5));
+
+    //
+    // Test
+    //
+
+    targetBuffer.BlitFromRegion(
+        sourceBuffer,
+        sourceRegion,
+        targetPos,
+        targetSize,
+        false);
+
+    //
+    // Verify
+    //
+
+    ASSERT_EQ(targetBuffer.GetSize(), 2u + 1u);
+
+    // Orig
+
+    EXPECT_EQ(ShipSpaceCoordinates(4, 5), targetBuffer[0].StartCoords);
+    EXPECT_EQ(ShipSpaceCoordinates(10, 10), targetBuffer[0].EndCoords);
+    EXPECT_EQ(rgbaColor(1, 1, 1, 1), targetBuffer[0].RenderColor);
+
+    EXPECT_EQ(ShipSpaceCoordinates(5, 6), targetBuffer[1].StartCoords);
+    EXPECT_EQ(ShipSpaceCoordinates(6, 7), targetBuffer[1].EndCoords);
+    EXPECT_EQ(rgbaColor(2, 2, 2, 2), targetBuffer[1].RenderColor);
+
+    // New
+
+    EXPECT_EQ(ShipSpaceCoordinates(1 - 1 + 10, 2 - 1 + 15), targetBuffer[2].StartCoords);
+    EXPECT_EQ(ShipSpaceCoordinates(14 - 1 + 10, 19 - 1 + 15), targetBuffer[2].EndCoords);
+    EXPECT_EQ(rgbaColor(4, 4, 4, 4), targetBuffer[2].RenderColor);
+}
+
+TEST(RopeBufferTests, BlitFromRegion_Transparent_AllEndUpInTargetRegion_NoConflicts)
+{
+    ShipSpaceRect sourceRegion(
+        ShipSpaceCoordinates(1, 1),
+        ShipSpaceSize(15, 20));
+
+    ShipSpaceCoordinates const targetPos(10, 15);
+
+    ShipSpaceSize const targetSize(100, 200);
+
+    // Source region: [1, 1] -> (1 + 15, 1 + 20) == [15, 20]
+    // Target paste region: [10, 15] -> (10 + 15, 15 + 20) == [24, 34]
+    // Target region: [0, 0] -> [100, 200]
+
+    //
+    // Prepare target
+    //
+
+    RopeBuffer targetBuffer;
+
+    targetBuffer.EmplaceBack(
+        ShipSpaceCoordinates(4, 5),
+        ShipSpaceCoordinates(10, 10),
+        nullptr,
+        rgbaColor(1, 1, 1, 1));
+
+    targetBuffer.EmplaceBack(
+        ShipSpaceCoordinates(5, 6),
+        ShipSpaceCoordinates(6, 7),
+        nullptr,
+        rgbaColor(2, 2, 2, 2));
+
+    targetBuffer.EmplaceBack(
+        ShipSpaceCoordinates(1, 1),
+        ShipSpaceCoordinates(11, 16), // In target paste region
+        nullptr,
+        rgbaColor(3, 3, 3, 3));
+
+    //
+    // Prepare source
+    //
+
+    RopeBuffer sourceBuffer;
+
+    // Both endpoints in source region
+    // End up at: (1-1+10==10, 2-1+15==16), (15-1+10==24, 20-1+15==34) - i.e. in target region
+    sourceBuffer.EmplaceBack(
+        ShipSpaceCoordinates(1, 2),
+        ShipSpaceCoordinates(15, 20),
+        nullptr,
+        rgbaColor(4, 4, 4, 4));
+
+    // One endpoint in source region
+    // End up at: (2-1+10==11, 3-1+15==17), (16-1+10==25, 20-1+15==34) - i.e. in target region
+    sourceBuffer.EmplaceBack(
+        ShipSpaceCoordinates(2, 3),
+        ShipSpaceCoordinates(16, 20),
+        nullptr,
+        rgbaColor(5, 5, 5, 5));
+
+    // Both endpoints outside of source region
+    sourceBuffer.EmplaceBack(
+        ShipSpaceCoordinates(0, 1),
+        ShipSpaceCoordinates(15, 21),
+        nullptr,
+        rgbaColor(6, 6, 6, 6));
+
+    //
+    // Test
+    //
+
+    targetBuffer.BlitFromRegion(
+        sourceBuffer,
+        sourceRegion,
+        targetPos,
+        targetSize,
+        true);
+
+    //
+    // Verify
+    //
+
+    ASSERT_EQ(targetBuffer.GetSize(), 3u + 2u);
+
+    // Orig
+
+    EXPECT_EQ(ShipSpaceCoordinates(4, 5), targetBuffer[0].StartCoords);
+    EXPECT_EQ(ShipSpaceCoordinates(10, 10), targetBuffer[0].EndCoords);
+    EXPECT_EQ(rgbaColor(1, 1, 1, 1), targetBuffer[0].RenderColor);
+
+    EXPECT_EQ(ShipSpaceCoordinates(5, 6), targetBuffer[1].StartCoords);
+    EXPECT_EQ(ShipSpaceCoordinates(6, 7), targetBuffer[1].EndCoords);
+    EXPECT_EQ(rgbaColor(2, 2, 2, 2), targetBuffer[1].RenderColor);
+
+    EXPECT_EQ(ShipSpaceCoordinates(1, 1), targetBuffer[2].StartCoords);
+    EXPECT_EQ(ShipSpaceCoordinates(11, 16), targetBuffer[2].EndCoords);
+    EXPECT_EQ(rgbaColor(3, 3, 3, 3), targetBuffer[2].RenderColor);
+
+    // New
+
+    EXPECT_EQ(ShipSpaceCoordinates(1 - 1 + 10, 2 - 1 + 15), targetBuffer[3].StartCoords);
+    EXPECT_EQ(ShipSpaceCoordinates(15 - 1 + 10, 20 - 1 + 15), targetBuffer[3].EndCoords);
+    EXPECT_EQ(rgbaColor(4, 4, 4, 4), targetBuffer[3].RenderColor);
+
+    EXPECT_EQ(ShipSpaceCoordinates(2 - 1 + 10, 3 - 1 + 15), targetBuffer[4].StartCoords);
+    EXPECT_EQ(ShipSpaceCoordinates(16 - 1 + 10, 20 - 1 + 15), targetBuffer[4].EndCoords);
+    EXPECT_EQ(rgbaColor(5, 5, 5, 5), targetBuffer[4].RenderColor);
+}
+
+TEST(RopeBufferTests, BlitFromRegion_Transparent_EndsUpOutsideTargetRegion_NoConflicts)
+{
+    ShipSpaceRect sourceRegion(
+        ShipSpaceCoordinates(1, 1),
+        ShipSpaceSize(15, 21));
+
+    ShipSpaceCoordinates const targetPos(10, 15);
+
+    ShipSpaceSize const targetSize(24, 34);
+
+    // Source region: [1, 1] -> (1 + 15, 1 + 21) == [15, 21]
+    // Target paste region: [10, 15] -> (10 + 15, 15 + 21) == [24, 35]
+    // Target region: [0, 0] -> [23, 33]
+
+    //
+    // Prepare target
+    //
+
+    RopeBuffer targetBuffer;
+
+    targetBuffer.EmplaceBack(
+        ShipSpaceCoordinates(4, 5),
+        ShipSpaceCoordinates(10, 10),
+        nullptr,
+        rgbaColor(1, 1, 1, 1));
+
+    targetBuffer.EmplaceBack(
+        ShipSpaceCoordinates(5, 6),
+        ShipSpaceCoordinates(6, 7),
+        nullptr,
+        rgbaColor(2, 2, 2, 2));
+
+    targetBuffer.EmplaceBack(
+        ShipSpaceCoordinates(1, 1),
+        ShipSpaceCoordinates(11, 17), // In target paste region
+        nullptr,
+        rgbaColor(3, 3, 3, 3));
+
+    //
+    // Prepare source
+    //
+
+    RopeBuffer sourceBuffer;
+
+    // Both endpoints in source region
+    // End up at: (1-1+10==10, 2-1+15==16), (14-1+10==23, 19-1+15==33) - i.e. in target region
+    sourceBuffer.EmplaceBack(
+        ShipSpaceCoordinates(1, 2),
+        ShipSpaceCoordinates(14, 19),
+        nullptr,
+        rgbaColor(4, 4, 4, 4));
+
+    // Both endpoints in source region
+    // End up at: (1-1+10==10, 1-1+15==15), (15-1+10==24, 20-1+15==34) - i.e. outside target region
+    sourceBuffer.EmplaceBack(
+        ShipSpaceCoordinates(1, 1),
+        ShipSpaceCoordinates(15, 20),
+        nullptr,
+        rgbaColor(5, 5, 5, 5));
+
+    //
+    // Test
+    //
+
+    targetBuffer.BlitFromRegion(
+        sourceBuffer,
+        sourceRegion,
+        targetPos,
+        targetSize,
+        true);
+
+    //
+    // Verify
+    //
+
+    ASSERT_EQ(targetBuffer.GetSize(), 3u + 1u);
+
+    // Orig
+
+    EXPECT_EQ(ShipSpaceCoordinates(4, 5), targetBuffer[0].StartCoords);
+    EXPECT_EQ(ShipSpaceCoordinates(10, 10), targetBuffer[0].EndCoords);
+    EXPECT_EQ(rgbaColor(1, 1, 1, 1), targetBuffer[0].RenderColor);
+
+    EXPECT_EQ(ShipSpaceCoordinates(5, 6), targetBuffer[1].StartCoords);
+    EXPECT_EQ(ShipSpaceCoordinates(6, 7), targetBuffer[1].EndCoords);
+    EXPECT_EQ(rgbaColor(2, 2, 2, 2), targetBuffer[1].RenderColor);
+
+    EXPECT_EQ(ShipSpaceCoordinates(1, 1), targetBuffer[2].StartCoords);
+    EXPECT_EQ(ShipSpaceCoordinates(11, 17), targetBuffer[2].EndCoords);
+    EXPECT_EQ(rgbaColor(3, 3, 3, 3), targetBuffer[2].RenderColor);
+
+    // New
+
+    EXPECT_EQ(ShipSpaceCoordinates(1 - 1 + 10, 2 - 1 + 15), targetBuffer[3].StartCoords);
+    EXPECT_EQ(ShipSpaceCoordinates(14 - 1 + 10, 19 - 1 + 15), targetBuffer[3].EndCoords);
+    EXPECT_EQ(rgbaColor(4, 4, 4, 4), targetBuffer[3].RenderColor);
+}
+
+TEST(RopeBufferTests, BlitFromRegion_Transparent_Conflict)
+{
+    ShipSpaceRect sourceRegion(
+        ShipSpaceCoordinates(1, 1),
+        ShipSpaceSize(150, 200));
+
+    ShipSpaceCoordinates const targetPos(2, 5);
+
+    ShipSpaceSize const targetSize(100, 200);
+
+    //
+    // Prepare target
+    //
+
+    RopeBuffer targetBuffer;
+
+    targetBuffer.EmplaceBack(
+        ShipSpaceCoordinates(4, 5),
+        ShipSpaceCoordinates(10, 10),
+        nullptr,
+        rgbaColor(1, 1, 1, 1));
+
+    targetBuffer.EmplaceBack(
+        ShipSpaceCoordinates(5, 6),
+        ShipSpaceCoordinates(6, 7),
+        nullptr,
+        rgbaColor(2, 2, 2, 2));
+
+    //
+    // Prepare source
+    //
+
+    RopeBuffer sourceBuffer;
+
+    // Start endpoint conflicts: (9-1+2==10, 6-1+5==10)
+    sourceBuffer.EmplaceBack(
+        ShipSpaceCoordinates(9, 6),
+        ShipSpaceCoordinates(15, 20),
+        nullptr,
+        rgbaColor(3, 3, 3, 3));
+
+    // Start endpoint does not conflict: (10-1+2==11, 6-1+5==10)
+    sourceBuffer.EmplaceBack(
+        ShipSpaceCoordinates(10, 6),
+        ShipSpaceCoordinates(16, 20),
+        nullptr,
+        rgbaColor(4, 4, 4, 4));
+
+    //
+    // Test
+    //
+
+    targetBuffer.BlitFromRegion(
+        sourceBuffer,
+        sourceRegion,
+        targetPos,
+        targetSize,
+        true);
+
+    //
+    // Verify
+    //
+
+    ASSERT_EQ(targetBuffer.GetSize(), 1u + 2u);
+
+    // Orig
+
+    EXPECT_EQ(ShipSpaceCoordinates(5, 6), targetBuffer[0].StartCoords);
+    EXPECT_EQ(ShipSpaceCoordinates(6, 7), targetBuffer[0].EndCoords);
+    EXPECT_EQ(rgbaColor(2, 2, 2, 2), targetBuffer[0].RenderColor);
+
+    // New
+
+    EXPECT_EQ(ShipSpaceCoordinates(9 - 1 + 2, 6 - 1 + 5), targetBuffer[1].StartCoords);
+    EXPECT_EQ(ShipSpaceCoordinates(15 - 1 + 2, 20 - 1 + 5), targetBuffer[1].EndCoords);
+    EXPECT_EQ(rgbaColor(3, 3, 3, 3), targetBuffer[1].RenderColor);
+
+    EXPECT_EQ(ShipSpaceCoordinates(10 - 1 + 2, 6 - 1 + 5), targetBuffer[2].StartCoords);
+    EXPECT_EQ(ShipSpaceCoordinates(16 - 1 + 2, 20 - 1 + 5), targetBuffer[2].EndCoords);
+    EXPECT_EQ(rgbaColor(4, 4, 4, 4), targetBuffer[2].RenderColor);
+}
+
 TEST(RopeBufferTests, EraseRegion_Smaller)
 {
     RopeBuffer buffer;

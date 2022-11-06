@@ -108,7 +108,7 @@ struct RopeBuffer
 
     /*
      * Copies ropes that have *at least* one endpoint in the specified region.
-     */    
+     */
     RopeBuffer CopyRegion(ShipSpaceRect const & region) const
     {
         RopeBuffer newBuffer;
@@ -126,8 +126,75 @@ struct RopeBuffer
                     r.RenderColor);
             }
         }
-        
+
         return newBuffer;
+    }
+
+    void BlitFromRegion(
+        RopeBuffer const & source,
+        ShipSpaceRect const & sourceRegion,
+        ShipSpaceCoordinates const & targetPos,
+        ShipSpaceSize const & targetSize,
+        bool isTransparent)
+    {
+        if (!isTransparent)
+        {
+            // Clear affected region first
+            ShipSpaceRect const targetPasteRegion(
+                targetPos,
+                sourceRegion.size);
+
+            for (auto tgtIt = mBuffer.begin(); tgtIt != mBuffer.end(); )
+            {
+                if (tgtIt->StartCoords.IsInRect(targetPasteRegion) || tgtIt->EndCoords.IsInRect(targetPasteRegion))
+                {
+                    tgtIt = mBuffer.erase(tgtIt);
+                }
+                else
+                {
+                    ++tgtIt;
+                }
+            }
+        }
+
+        // Copy
+        for (auto const & r : source.mBuffer)
+        {
+            // Only copy source ropes that have at least one endpoint in source region
+            if (r.StartCoords.IsInRect(sourceRegion) || r.EndCoords.IsInRect(sourceRegion))
+            {
+                // Translate coords
+                ShipSpaceCoordinates startCoordsInTarget = targetPos + (r.StartCoords - sourceRegion.origin);
+                ShipSpaceCoordinates endCoordsInTarget = targetPos + (r.EndCoords - sourceRegion.origin);
+
+                // Make sure translated coords are inside target size
+                if (startCoordsInTarget.IsInSize(targetSize) && endCoordsInTarget.IsInSize(targetSize))
+                {
+                    // Remove all ropes in target that share an endpoint with this rope
+                    for (auto tgtIt = mBuffer.begin(); tgtIt != mBuffer.end(); )
+                    {
+                        if (tgtIt->StartCoords == startCoordsInTarget
+                            || tgtIt->StartCoords == endCoordsInTarget
+                            || tgtIt->EndCoords == startCoordsInTarget
+                            || tgtIt->EndCoords == endCoordsInTarget)
+                        {
+                            tgtIt = mBuffer.erase(tgtIt);
+                        }
+                        else
+                        {
+                            ++tgtIt;
+                        }
+                    }
+
+                    // Store
+                    mBuffer.emplace_back(
+                        startCoordsInTarget,
+                        endCoordsInTarget,
+                        r.Material,
+                        r.RenderColor);
+                }
+            }
+        }
     }
 
     void EraseRegion(ShipSpaceRect const & region)
