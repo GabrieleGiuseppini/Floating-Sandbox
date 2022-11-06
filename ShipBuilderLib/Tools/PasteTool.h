@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "GenericEphemeralVisualizationRestorePayload.h"
 #include "GenericUndoPayload.h"
 #include "Tool.h"
 
@@ -84,7 +85,7 @@ private:
         ShipSpaceCoordinates MousePasteCoords;
 
         // When set we have an ephemeral visualization
-        std::optional<GenericUndoPayload> EphemeralVisualization;
+        std::optional<GenericEphemeralVisualizationRestorePayload> EphemeralVisualization;
 
         PendingSessionData(
             ShipLayers && pasteRegion,

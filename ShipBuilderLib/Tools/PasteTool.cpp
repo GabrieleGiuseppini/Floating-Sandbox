@@ -307,7 +307,7 @@ void PasteTool::DrawEphemeralVisualization()
         mPendingSessionData->MousePasteCoords,
         mPendingSessionData->PasteRegion.Size);
 
-    GenericUndoPayload pasteUndo = mController.GetModelController().PasteForEphemeralVisualization(
+    GenericEphemeralVisualizationRestorePayload pasteEphVizRestore = mController.GetModelController().PasteForEphemeralVisualization(
         mPendingSessionData->PasteRegion,
         pasteOrigin,
         mPendingSessionData->IsTransparent);
@@ -316,7 +316,7 @@ void PasteTool::DrawEphemeralVisualization()
         pasteOrigin,
         pasteOrigin + mPendingSessionData->PasteRegion.Size);
 
-    mPendingSessionData->EphemeralVisualization.emplace(std::move(pasteUndo));
+    mPendingSessionData->EphemeralVisualization.emplace(std::move(pasteEphVizRestore));
 }
 
 void PasteTool::UndoEphemeralVisualization()
@@ -326,7 +326,7 @@ void PasteTool::UndoEphemeralVisualization()
 
     mController.GetView().RemoveSelectionOverlay();
 
-    mController.GetModelController().RestoreForEphemeralVisualization(std::move(*(mPendingSessionData->EphemeralVisualization)));
+    mController.GetModelController().RestoreEphemeralVisualization(std::move(*(mPendingSessionData->EphemeralVisualization)));
 
     mPendingSessionData->EphemeralVisualization.reset();
 }

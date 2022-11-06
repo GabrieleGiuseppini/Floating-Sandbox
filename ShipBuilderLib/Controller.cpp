@@ -5,8 +5,6 @@
 ***************************************************************************************/
 #include "Controller.h"
 
-#include "GenericUndoPayload.h"
-
 #include "Tools/FloodTool.h"
 #include "Tools/LineTool.h"
 #include "Tools/MeasuringTapeTool.h"

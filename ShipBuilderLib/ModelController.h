@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "GenericEphemeralVisualizationRestorePayload.h"
 #include "GenericUndoPayload.h"
 #include "IModelObservable.h"
 #include "InstancedElectricalElementSet.h"
@@ -223,12 +224,12 @@ public:
 
     void Restore(GenericUndoPayload && undoPayload);
 
-    GenericUndoPayload PasteForEphemeralVisualization(
+    GenericEphemeralVisualizationRestorePayload PasteForEphemeralVisualization(
         ShipLayers const & sourcePayload,
         ShipSpaceCoordinates const & pasteOrigin,
         bool isTransparent);
 
-    void RestoreForEphemeralVisualization(GenericUndoPayload && undoPayload);
+    void RestoreEphemeralVisualization(GenericEphemeralVisualizationRestorePayload && restorePayload);
 
     std::vector<LayerType> CalculateAffectedLayers(ShipLayers const & otherSource) const;
 
@@ -390,7 +391,7 @@ public:
         vec2f const shipToTexture = GetShipSpaceToTextureSpaceFactor(shipSize, textureSize);
 
         return ImageCoordinates::FromFloatRound(shipCoordinates.ToFloat().scale(shipToTexture));
-    }    
+    }
 
     static ImageRect ShipSpaceToTextureSpace(
         ShipSpaceRect const & shipRect,
@@ -468,7 +469,7 @@ private:
     inline ImageRect GetWholeTextureRect() const
     {
         assert(mModel.HasLayer(LayerType::Texture));
-            
+
         return ImageRect(GetTextureSize());
     }
 
@@ -513,6 +514,13 @@ private:
         TextureLayerData & layer);
 
     GenericUndoPayload MakeGenericUndoPayload(
+        ShipSpaceRect const & region,
+        bool doStructuralLayer,
+        bool doElectricalLayer,
+        bool doRopesLayer,
+        bool doTextureLayer) const;
+
+    GenericEphemeralVisualizationRestorePayload MakeGenericEphemeralVisualizationRestorePayload(
         ShipSpaceRect const & region,
         bool doStructuralLayer,
         bool doElectricalLayer,

@@ -7,6 +7,7 @@ set (SHIPBUILDER_LIB_SOURCES
 	ClipboardManager.h
 	Controller.cpp
 	Controller.h
+	GenericEphemeralVisualizationRestorePayload.h
 	GenericUndoPayload.h
 	IModelObservable.h
 	InstancedElectricalElementSet.h

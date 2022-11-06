@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "GenericUndoPayload.h"
 #include "IUserInterface.h"
 #include "ModelController.h"
 #include "ModelValidationSession.h"

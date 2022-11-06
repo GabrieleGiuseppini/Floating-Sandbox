@@ -531,8 +531,33 @@
 						+ LayerChangeEpilog
 				- ShiftDown/Up:
 					- TODO
-			- See if can avoid making that fake GenericUndoPayload
-			- Rethink PasteForEphViz/RestoreForEphViz: do own pure buffer blitting at both, storing into TODOHERE: MultiLayerBufferUndoPayload
+			+ Rethink PasteForEphViz/RestoreForEphViz: do own pure buffer blitting at both, storing into TODOHERE: MultiLayerBufferUndoPayload
+			= Missing symmetry of methods:
+				- MakeGenericEphemeralVisualizationRestorePayload:
+					- S:	- Undo: CloneRegion
+					- E:	- Undo: CloneRegion
+					- R:	- Undo: Clone
+					- T:	- Undo: CloneRegion
+				- RestoreEphemeralVisualization:
+					- S:	- Do: DoStructuralRegionBufferPaste
+					- E:	- Do: DoElectricalRegionBufferPaste
+					- R:	- Do: Move
+					- T:	- Do: DoTextureRegionBufferPaste
+				------------------------------------------------
+				+ Option 1:
+					+ GenericUndoBufferPayload becomes GenericEphemeralVisualizationRestorePayload
+						+ Own file
+						+ PasteForEphViz uses helper (again) to make it: MakeGenericEphemeralVisualizationRestorePayload(...)
+						+ RestoreForEphViz becomes RestoreEphemeralVisualization(.)
+				- FIX: RestoreEphemeralVisualization does not invalidate Ropes region!!!
+					- Option 1:
+						- Replace DoStructuralRegionBufferPaste/etc. calls in RestoreEphemeralVisualization with inline
+							- See if DoStructuralRegionBufferPaste, ... still needed
+					- Option 2:
+						- MakeGenericEphemeralVisualizationRestorePayload: call individual MakeXXXLayerGenericEphemeralVisualizationRestorePayload(?)
+							- Calls CloneRegion, ..., Clone, ...
+						- RestoreEphemeralVisualization: call individual RestoreXXXLayerEphViz(?)
+							- Calls DoStructuralRegionBufferPaste, .., Move, ...
 			- ModelController::Paste(LayersRegion, origin, opaque/transparent) X 2 (ephemeral, normal) -> GenericUndoPayload
 				= PasteForEphemeralVisualization(...) -> GenericUndoPayload
 					+ blit (DoStructuralRegionBufferPaste)
@@ -546,10 +571,13 @@
 					+ blit (DoTextureRegionBufferPaste)
 				= Paste(...) -> GenericUndoPayload
 					- special
+						- Make sure analysis is updated
 					- special
+						- Make sure analysis is updated - incl. elec instance ID factory is re-initialized
 					= ? (RopesBuffer::Blit(..., isTransparent)) via DoRopesRegionBufferPaste
 					+ blit (DoTextureRegionBufferPaste)
-				+ Restore(GenericUndoPayload)
+				= Restore(GenericUndoPayload)
+					- Make sure elec instance ID factory is re-initialized
 				+ RopesBuffer::Blit
 					+ Code
 					+ Unit tests
@@ -560,6 +588,7 @@
 				- Expect: no action at commit, no Undo (even if empty)
 	- SelectionTool:
 		- Allows OnMouseDown to work even if outside ship - clip to it
+		- Change cursor @ OnMouseMove when not engaged and when at place for moving corner
 
 	- Tests:
 		- Ropes paste carries with it both and only ropes w/both endpoints in region, and with one endpoint in region

@@ -83,7 +83,6 @@ public:
 
 		return affectedLayers;
 	}
-
 };
 
 }

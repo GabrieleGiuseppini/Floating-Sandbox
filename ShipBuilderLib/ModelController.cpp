@@ -651,7 +651,7 @@ void ModelController::Restore(GenericUndoPayload && undoPayload)
     }
 }
 
-GenericUndoPayload ModelController::PasteForEphemeralVisualization(
+GenericEphemeralVisualizationRestorePayload ModelController::PasteForEphemeralVisualization(
     ShipLayers const & sourcePayload,
     ShipSpaceCoordinates const & pasteOrigin,
     bool isTransparent)
@@ -663,10 +663,10 @@ GenericUndoPayload ModelController::PasteForEphemeralVisualization(
     if (affectedRect.has_value())
     {
         //
-        // Prepare undo
+        // Prepare restore
         //
 
-        GenericUndoPayload undoPayload = MakeGenericUndoPayload(
+        GenericEphemeralVisualizationRestorePayload restorePayload = MakeGenericEphemeralVisualizationRestorePayload(
             *affectedRect,
             (bool)(sourcePayload.StructuralLayer) && mModel.HasLayer(LayerType::Structural),
             (bool)(sourcePayload.ElectricalLayer) && mModel.HasLayer(LayerType::Electrical),
@@ -739,17 +739,17 @@ GenericUndoPayload ModelController::PasteForEphemeralVisualization(
             }
         }
 
-        return undoPayload;
+        return restorePayload;
     }
     else
     {
-        return GenericUndoPayload(pasteOrigin);
+        return GenericEphemeralVisualizationRestorePayload(pasteOrigin);
     }
 }
 
-void ModelController::RestoreForEphemeralVisualization(GenericUndoPayload && undoPayload)
+void ModelController::RestoreEphemeralVisualization(GenericEphemeralVisualizationRestorePayload && restorePayload)
 {
-    for (LayerType const affectedLayerType : undoPayload.GetAffectedLayers())
+    for (LayerType const affectedLayerType : restorePayload.GetAffectedLayers())
     {
         switch (affectedLayerType)
         {
@@ -759,9 +759,9 @@ void ModelController::RestoreForEphemeralVisualization(GenericUndoPayload && und
                 assert(mIsStructuralLayerInEphemeralVisualization);
 
                 DoStructuralRegionBufferPaste(
-                    undoPayload.StructuralLayerRegionBackup->Buffer,
+                    *restorePayload.StructuralLayerBufferRegion,
                     mModel.GetStructuralLayer().Buffer,
-                    undoPayload.Origin,
+                    restorePayload.Origin,
                     false);
 
                 // Remember we are not anymore in temp visualization
@@ -776,9 +776,9 @@ void ModelController::RestoreForEphemeralVisualization(GenericUndoPayload && und
                 assert(mIsElectricalLayerInEphemeralVisualization);
 
                 DoElectricalRegionBufferPaste(
-                    undoPayload.ElectricalLayerRegionBackup->Buffer,
+                    *restorePayload.ElectricalLayerBufferRegion,
                     mModel.GetElectricalLayer().Buffer,
-                    undoPayload.Origin,
+                    restorePayload.Origin,
                     false);
 
                 // Remember we are not anymore in temp visualization
@@ -792,8 +792,7 @@ void ModelController::RestoreForEphemeralVisualization(GenericUndoPayload && und
                 assert(mModel.HasLayer(LayerType::Ropes));
                 assert(mIsRopesLayerInEphemeralVisualization);
 
-                // Note: for simplicity, GenericUndoPayload has *whole* ropes layer
-                mModel.GetRopesLayer().Buffer = std::move(undoPayload.RopesLayerRegionBackup->Buffer);
+                mModel.GetRopesLayer().Buffer = std::move(*restorePayload.RopesLayerBuffer);
 
                 // Remember we are not anymore in temp visualization
                 mIsRopesLayerInEphemeralVisualization = false;
@@ -807,9 +806,9 @@ void ModelController::RestoreForEphemeralVisualization(GenericUndoPayload && und
                 assert(mIsTextureLayerInEphemeralVisualization);
 
                 DoTextureRegionBufferPaste(
-                    undoPayload.TextureLayerRegionBackup->Buffer,
+                    *restorePayload.TextureLayerBufferRegion,
                     mModel.GetTextureLayer().Buffer,
-                    undoPayload.Origin,
+                    restorePayload.Origin,
                     false);
 
                 // Remember we are not anymore in temp visualization
@@ -2749,6 +2748,54 @@ GenericUndoPayload ModelController::MakeGenericUndoPayload(
         std::move(electricalLayerRegionBackup),
         std::move(ropesLayerRegionBackup),
         std::move(textureLayerRegionBackup));
+}
+
+GenericEphemeralVisualizationRestorePayload ModelController::MakeGenericEphemeralVisualizationRestorePayload(
+    ShipSpaceRect const & region,
+    bool doStructuralLayer,
+    bool doElectricalLayer,
+    bool doRopesLayer,
+    bool doTextureLayer) const
+{
+    // The requested region is entirely within this buffer
+    assert(region.IsContainedInRect(GetWholeShipRect()));
+
+    std::optional<typename LayerTypeTraits<LayerType::Structural>::buffer_type> structuralLayerBufferRegion;
+    std::optional<typename LayerTypeTraits<LayerType::Electrical>::buffer_type> electricalLayerBufferRegion;
+    std::optional<typename LayerTypeTraits<LayerType::Ropes>::buffer_type> ropesLayerBuffer; // Whole buffer
+    std::optional<typename LayerTypeTraits<LayerType::Texture>::buffer_type> textureLayerBufferRegion;
+
+    if (doStructuralLayer)
+    {
+        structuralLayerBufferRegion = mModel.GetStructuralLayer().Buffer.CloneRegion(region);
+    }
+
+    if (doElectricalLayer)
+    {
+        electricalLayerBufferRegion = mModel.GetElectricalLayer().Buffer.CloneRegion(region);
+    }
+
+    if (doRopesLayer)
+    {
+        ropesLayerBuffer = mModel.GetRopesLayer().Buffer.Clone();
+    }
+
+    if (doTextureLayer)
+    {
+        ImageRect const regionImageRect = ShipSpaceToTextureSpace(
+            region,
+            GetShipSize(),
+            GetTextureSize());
+
+        textureLayerBufferRegion = mModel.GetTextureLayer().Buffer.CloneRegion(regionImageRect);
+    }
+
+    return GenericEphemeralVisualizationRestorePayload(
+        region.origin,
+        std::move(structuralLayerBufferRegion),
+        std::move(electricalLayerBufferRegion),
+        std::move(ropesLayerBuffer),
+        std::move(textureLayerBufferRegion));
 }
 
 void ModelController::DoStructuralRegionBufferPaste(
