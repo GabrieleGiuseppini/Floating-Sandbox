@@ -255,7 +255,7 @@ TEST(LayerTests, ElectricalLayer_CloneRegion_Smaller)
     // Clone layer
     //
 
-    ElectricalLayerData targetLayer = sourceLayer.CloneRegion({ 
+    ElectricalLayerData targetLayer = sourceLayer.CloneRegion({
         ShipSpaceCoordinates(2, 1),
         ShipSpaceSize(4, 3) });
 
@@ -338,8 +338,8 @@ TEST(LayerTests, ElectricalLayer_Trim)
     //
 
     ElectricalLayerData targetLayer = sourceLayer.Clone();
-    targetLayer.Trim({ 
-        ShipSpaceCoordinates(2, 1), 
+    targetLayer.Trim({
+        ShipSpaceCoordinates(2, 1),
         ShipSpaceSize(4, 3) });
 
     //
@@ -654,7 +654,7 @@ TEST(LayerTests, RopesLayer_Trim)
     //
     // Size= (12, 12)
 
-    RopeBuffer buffer;
+    RopeBuffer buffer({400, 200});
 
     buffer.EmplaceBack(
         ShipSpaceCoordinates(4, 5), // In
@@ -682,7 +682,7 @@ TEST(LayerTests, RopesLayer_Trim)
 
     RopesLayerData targetLayer = sourceLayer.Clone();
 
-    targetLayer.Trim({ 
+    targetLayer.Trim({
         ShipSpaceCoordinates(3, 3),
         ShipSpaceSize(8, 9) });
 
@@ -690,7 +690,8 @@ TEST(LayerTests, RopesLayer_Trim)
     // Verify
     //
 
-    ASSERT_EQ(targetLayer.Buffer.GetSize(), 1u);
+    EXPECT_EQ(ShipSpaceSize(8, 9), targetLayer.Buffer.GetSize());
+    ASSERT_EQ(1u, targetLayer.Buffer.GetElementCount());
 
     EXPECT_EQ(targetLayer.Buffer[0].StartCoords, ShipSpaceCoordinates(1, 2));
     EXPECT_EQ(targetLayer.Buffer[0].EndCoords, ShipSpaceCoordinates(7, 7));
@@ -703,7 +704,7 @@ TEST(LayerTests, RopesLayer_CloneRegion_Smaller)
     //
     // Size= (12, 12)
 
-    RopeBuffer buffer;
+    RopeBuffer buffer({ 400, 200 });
 
     buffer.EmplaceBack(
         ShipSpaceCoordinates(4, 5), // In
@@ -738,7 +739,8 @@ TEST(LayerTests, RopesLayer_CloneRegion_Smaller)
     // Verify
     //
 
-    ASSERT_EQ(targetLayer.Buffer.GetSize(), 1u);
+    EXPECT_EQ(ShipSpaceSize(8, 9), targetLayer.Buffer.GetSize());
+    ASSERT_EQ(1u, targetLayer.Buffer.GetElementCount());
 
     EXPECT_EQ(targetLayer.Buffer[0].StartCoords, ShipSpaceCoordinates(3, 4));
     EXPECT_EQ(targetLayer.Buffer[0].EndCoords, ShipSpaceCoordinates(4, 5));
@@ -751,7 +753,7 @@ TEST(LayerTests, RopesLayer_Reframe_Smaller)
     //
     // Size= (12, 12)
 
-    RopeBuffer buffer;
+    RopeBuffer buffer({ 400, 200 });
 
     buffer.EmplaceBack(
         ShipSpaceCoordinates(4, 5), // In
@@ -785,7 +787,8 @@ TEST(LayerTests, RopesLayer_Reframe_Smaller)
     // Verify
     //
 
-    ASSERT_EQ(targetLayer.Buffer.GetSize(), 1u);
+    EXPECT_EQ(ShipSpaceSize(8, 9), targetLayer.Buffer.GetSize());
+    ASSERT_EQ(1u, targetLayer.Buffer.GetElementCount());
 
     EXPECT_EQ(targetLayer.Buffer[0].StartCoords, ShipSpaceCoordinates(1, 2));
     EXPECT_EQ(targetLayer.Buffer[0].EndCoords, ShipSpaceCoordinates(7, 7));
@@ -798,7 +801,7 @@ TEST(LayerTests, RopesLayer_Reframe_Larger)
     //
     // Size= (12, 12)
 
-    RopeBuffer buffer;
+    RopeBuffer buffer({ 4, 2 });
 
     buffer.EmplaceBack(
         ShipSpaceCoordinates(4, 5), // In
@@ -832,7 +835,8 @@ TEST(LayerTests, RopesLayer_Reframe_Larger)
     // Verify
     //
 
-    ASSERT_EQ(targetLayer.Buffer.GetSize(), 3u);
+    EXPECT_EQ(ShipSpaceSize(20, 20), targetLayer.Buffer.GetSize());
+    ASSERT_EQ(3u, targetLayer.Buffer.GetElementCount());
 
     EXPECT_EQ(targetLayer.Buffer[0].StartCoords, ShipSpaceCoordinates(8, 9));
     EXPECT_EQ(targetLayer.Buffer[0].EndCoords, ShipSpaceCoordinates(14, 14));
@@ -851,7 +855,7 @@ TEST(LayerTests, RopesLayer_Reframe_Same)
     //
     // Size= (12, 12)
 
-    RopeBuffer buffer;
+    RopeBuffer buffer({ 12, 12 });
 
     buffer.EmplaceBack(
         ShipSpaceCoordinates(4, 5), // In
@@ -885,7 +889,8 @@ TEST(LayerTests, RopesLayer_Reframe_Same)
     // Verify
     //
 
-    ASSERT_EQ(targetLayer.Buffer.GetSize(), 3u);
+    EXPECT_EQ(ShipSpaceSize(12, 12), targetLayer.Buffer.GetSize());
+    ASSERT_EQ(3u, targetLayer.Buffer.GetElementCount());
 
     EXPECT_EQ(targetLayer.Buffer[0].StartCoords, ShipSpaceCoordinates(4, 5));
     EXPECT_EQ(targetLayer.Buffer[0].EndCoords, ShipSpaceCoordinates(10, 10));
@@ -1082,7 +1087,8 @@ TEST(LayerTests, ShipLayers_FlipH)
 
     ElectricalPanelMetadata sourcePanel;
 
-    RopeBuffer sourceRopesLayerBuffer;
+    RopeBuffer sourceRopesLayerBuffer(shipSize);
+
     {
         sourceRopesLayerBuffer.EmplaceBack(
             ShipSpaceCoordinates(5, 5),
@@ -1158,9 +1164,9 @@ TEST(LayerTests, ShipLayers_FlipH)
         }
     }
 
-
     ASSERT_TRUE(layers.RopesLayer);
-    ASSERT_EQ(layers.RopesLayer->Buffer.GetSize(), 2u);
+    ASSERT_EQ(layers.RopesLayer->Buffer.GetSize(), shipSize);
+    ASSERT_EQ(layers.RopesLayer->Buffer.GetElementCount(), 2u);
 
     EXPECT_EQ(layers.RopesLayer->Buffer[0].StartCoords, ShipSpaceCoordinates(2, 5));
     EXPECT_EQ(layers.RopesLayer->Buffer[0].EndCoords, ShipSpaceCoordinates(5, 3));
@@ -1224,7 +1230,8 @@ TEST(LayerTests, ShipLayers_Rotate)
 
     ElectricalPanelMetadata sourcePanel;
 
-    RopeBuffer sourceRopesLayerBuffer;
+    RopeBuffer sourceRopesLayerBuffer(shipSize);
+
     {
         sourceRopesLayerBuffer.EmplaceBack(
             ShipSpaceCoordinates(5, 5),
@@ -1301,7 +1308,8 @@ TEST(LayerTests, ShipLayers_Rotate)
     }
 
     ASSERT_TRUE(layers.RopesLayer);
-    ASSERT_EQ(layers.RopesLayer->Buffer.GetSize(), 2u);
+    ASSERT_EQ(layers.RopesLayer->Buffer.GetSize(), ShipSpaceSize(6, 8));
+    ASSERT_EQ(layers.RopesLayer->Buffer.GetElementCount(), 2u);
 
     EXPECT_EQ(layers.RopesLayer->Buffer[0].StartCoords, ShipSpaceCoordinates(5, 2));
     EXPECT_EQ(layers.RopesLayer->Buffer[0].EndCoords, ShipSpaceCoordinates(3, 5));
@@ -1335,13 +1343,14 @@ TEST(LayerTests, ShipLayers_Clone_Full)
     ShipSpaceSize const shipSize(8, 6);
 
     Buffer2D<StructuralElement, struct ShipSpaceTag> sourceStructuralLayerBuffer(shipSize);
-    
+
     Buffer2D<ElectricalElement, struct ShipSpaceTag> sourceElectricalLayerBuffer(shipSize);
-    
+
     ElectricalPanelMetadata sourcePanel;
     sourcePanel.emplace(ElectricalElementInstanceIndex(1), ElectricalPanelElementMetadata(std::nullopt, std::nullopt, true));
 
-    RopeBuffer sourceRopesLayerBuffer;
+    RopeBuffer sourceRopesLayerBuffer(shipSize);
+
     {
         sourceRopesLayerBuffer.EmplaceBack(
             ShipSpaceCoordinates(5, 5),
@@ -1385,7 +1394,8 @@ TEST(LayerTests, ShipLayers_Clone_Full)
     ASSERT_EQ(layerClone.ElectricalLayer->Panel.size(), 1);
 
     ASSERT_TRUE(layerClone.RopesLayer);
-    ASSERT_EQ(layerClone.RopesLayer->Buffer.GetSize(), 2);
+    ASSERT_EQ(layerClone.RopesLayer->Buffer.GetSize(), shipSize);
+    ASSERT_EQ(layerClone.RopesLayer->Buffer.GetElementCount(), 2);
 
     ASSERT_TRUE(layerClone.TextureLayer);
     ASSERT_EQ(layerClone.TextureLayer->Buffer.Size, ImageSize(80, 60));

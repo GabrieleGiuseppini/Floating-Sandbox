@@ -199,8 +199,8 @@ struct RopesLayerData
 {
     RopeBuffer Buffer;
 
-    RopesLayerData()
-        : Buffer()
+    explicit RopesLayerData(ShipSpaceSize shipSize)
+        : Buffer(shipSize)
     {}
 
     explicit RopesLayerData(RopeBuffer && buffer)
@@ -345,6 +345,6 @@ struct ShipLayers
     }
 
     void Flip(DirectionType direction);
-    
+
     void Rotate90(RotationDirectionType direction);
 };

@@ -499,7 +499,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerTests, UnrecognizedMateri
     {
         std::unique_ptr<StructuralLayerData> targetStructuralLayer;
         ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(
-            fileFSVersion, 
+            fileFSVersion,
             sourceStructuralLayer.Buffer.Size, false, false, PortableTimepoint::Now());
         ShipDefinitionFormatDeSerializer::ReadStructuralLayer(
             buffer,
@@ -540,16 +540,16 @@ TEST_F(ShipDefinitionFormatDeSerializer_StructuralLayerTests, UnrecognizedMateri
     //
 
     Version const fileFSVersion(
-        Version::CurrentVersion().GetMajor(), 
-        Version::CurrentVersion().GetMinor(), 
-        Version::CurrentVersion().GetPatch() + 1, 
+        Version::CurrentVersion().GetMajor(),
+        Version::CurrentVersion().GetMinor(),
+        Version::CurrentVersion().GetPatch() + 1,
         Version::CurrentVersion().GetBuild());
 
     try
     {
         std::unique_ptr<StructuralLayerData> targetStructuralLayer;
         ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(
-            fileFSVersion, 
+            fileFSVersion,
             sourceStructuralLayer.Buffer.Size, false, false, PortableTimepoint::Now());
         ShipDefinitionFormatDeSerializer::ReadStructuralLayer(
             buffer,
@@ -1039,15 +1039,16 @@ protected:
         DeSerializationBuffer<BigEndianess> & buffer)
     {
         std::unique_ptr<RopesLayerData> targetRopesLayer;
-        ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(Version::CurrentVersion(), {242, 242}, false, false, PortableTimepoint::Now());
+        ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(Version::CurrentVersion(), sourceRopesLayer.Buffer.GetSize(), false, false, PortableTimepoint::Now());
         ShipDefinitionFormatDeSerializer::ReadRopesLayer(
             buffer,
             shipAttributes,
             TestMaterialMap,
             targetRopesLayer);
 
-        ASSERT_EQ(targetRopesLayer->Buffer.GetSize(), sourceRopesLayer.Buffer.GetSize());
-        for (size_t i = 0; i < sourceRopesLayer.Buffer.GetSize(); ++i)
+        EXPECT_EQ(targetRopesLayer->Buffer.GetSize(), sourceRopesLayer.Buffer.GetSize());
+        ASSERT_EQ(targetRopesLayer->Buffer.GetElementCount(), sourceRopesLayer.Buffer.GetElementCount());
+        for (size_t i = 0; i < sourceRopesLayer.Buffer.GetElementCount(); ++i)
         {
             EXPECT_EQ(targetRopesLayer->Buffer[i], sourceRopesLayer.Buffer[i]);
         }
@@ -1070,7 +1071,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_RopesLayerTests, TwoElements)
         });
 
     // Populate ropes layer
-    RopesLayerData sourceRopesLayer;
+    RopesLayerData sourceRopesLayer({400, 200});
     sourceRopesLayer.Buffer.EmplaceBack(
         ShipSpaceCoordinates(0, 1),
         ShipSpaceCoordinates(90, 91),
@@ -1103,7 +1104,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_RopesLayerTests, UnrecognizedMaterial_Sa
         rgbaColor(0x12, 0x34, 0x56, 0xff));
 
     // Populate ropes layer
-    RopesLayerData sourceRopesLayer;
+    RopesLayerData sourceRopesLayer({400, 200});
     sourceRopesLayer.Buffer.EmplaceBack(
         ShipSpaceCoordinates(0, 1),
         ShipSpaceCoordinates(90, 91),
@@ -1122,7 +1123,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_RopesLayerTests, UnrecognizedMaterial_Sa
     {
         std::unique_ptr<RopesLayerData> targetRopesLayer;
         ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(
-            Version::CurrentVersion(), { 1, 1 }, false, false, PortableTimepoint::Now());
+            Version::CurrentVersion(), sourceRopesLayer.Buffer.GetSize(), false, false, PortableTimepoint::Now());
         ShipDefinitionFormatDeSerializer::ReadRopesLayer(
             buffer,
             shipAttributes,
@@ -1146,7 +1147,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_RopesLayerTests, UnrecognizedMaterial_La
         rgbaColor(0x12, 0x34, 0x56, 0xff));
 
     // Populate ropes layer
-    RopesLayerData sourceRopesLayer;
+    RopesLayerData sourceRopesLayer({ 400, 200 });
     sourceRopesLayer.Buffer.EmplaceBack(
         ShipSpaceCoordinates(0, 1),
         ShipSpaceCoordinates(90, 91),
@@ -1167,7 +1168,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_RopesLayerTests, UnrecognizedMaterial_La
     {
         std::unique_ptr<RopesLayerData> targetRopesLayer;
         ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(
-            fileFSVersion, { 1, 1 }, false, false, PortableTimepoint::Now());
+            fileFSVersion, sourceRopesLayer.Buffer.GetSize(), false, false, PortableTimepoint::Now());
         ShipDefinitionFormatDeSerializer::ReadRopesLayer(
             buffer,
             shipAttributes,
@@ -1192,7 +1193,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_RopesLayerTests, UnrecognizedMaterial_La
         rgbaColor(0x12, 0x34, 0x56, 0xff));
 
     // Populate ropes layer
-    RopesLayerData sourceRopesLayer;
+    RopesLayerData sourceRopesLayer({400, 200});
     sourceRopesLayer.Buffer.EmplaceBack(
         ShipSpaceCoordinates(0, 1),
         ShipSpaceCoordinates(90, 91),
@@ -1217,7 +1218,7 @@ TEST_F(ShipDefinitionFormatDeSerializer_RopesLayerTests, UnrecognizedMaterial_La
     {
         std::unique_ptr<RopesLayerData> targetRopesLayer;
         ShipDefinitionFormatDeSerializer::ShipAttributes shipAttributes(
-            fileFSVersion, { 1, 1 }, false, false, PortableTimepoint::Now());
+            fileFSVersion, sourceRopesLayer.Buffer.GetSize(), false, false, PortableTimepoint::Now());
         ShipDefinitionFormatDeSerializer::ReadRopesLayer(
             buffer,
             shipAttributes,

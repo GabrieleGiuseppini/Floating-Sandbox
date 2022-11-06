@@ -187,12 +187,12 @@ public:
     void BlitFromRegion(
         Buffer2D const & source,
         _IntegralRect<TIntegralTag> const & sourceRegion,
-        _IntegralCoordinates<TIntegralTag> const & pos)
+        _IntegralCoordinates<TIntegralTag> const & targetPos)
     {
         BlitFromRegion(
             source,
             sourceRegion,
-            pos,
+            targetPos,
             [](TElement const & src, TElement const &) -> TElement
             {
                 return src;
@@ -203,22 +203,22 @@ public:
     void BlitFromRegion(
         Buffer2D const & source,
         _IntegralRect<TIntegralTag> const & sourceRegion, // Expected to be contained in source buffer
-        _IntegralCoordinates<TIntegralTag> const & pos, // Might be anywhere
+        _IntegralCoordinates<TIntegralTag> const & targetPos, // Might be anywhere
         TOperator const & elementOperator)
     {
         // The source region is completely contained in the source buffer
         assert(sourceRegion.IsContainedInRect({ {0, 0}, source.Size }));
 
-        int const srcXStart = sourceRegion.origin.x + std::max(-pos.x, 0);
-        int const tgtXStart = std::max(pos.x, 0);
+        int const srcXStart = sourceRegion.origin.x + std::max(-targetPos.x, 0);
+        int const tgtXStart = std::max(targetPos.x, 0);
         int const copyW = std::max(
             std::min(
                 (sourceRegion.origin.x + sourceRegion.size.width) - srcXStart,
                 Size.width - tgtXStart),
             0);
 
-        int const srcYStart = sourceRegion.origin.y + std::max(-pos.y, 0);
-        int const tgtYStart = std::max(pos.y, 0);
+        int const srcYStart = sourceRegion.origin.y + std::max(-targetPos.y, 0);
+        int const tgtYStart = std::max(targetPos.y, 0);
         int const copyH = std::max(
             std::min(
                 (sourceRegion.origin.y + sourceRegion.size.height) - srcYStart,

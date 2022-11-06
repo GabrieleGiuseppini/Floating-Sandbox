@@ -532,7 +532,7 @@
 				- ShiftDown/Up:
 					- TODO
 			- See if can avoid making that fake GenericUndoPayload
-			- Try with Size in RopeBuffer
+			- Rethink PasteForEphViz/RestoreForEphViz: do own pure buffer blitting at both, storing into TODOHERE: MultiLayerBufferUndoPayload
 			- ModelController::Paste(LayersRegion, origin, opaque/transparent) X 2 (ephemeral, normal) -> GenericUndoPayload
 				= PasteForEphemeralVisualization(...) -> GenericUndoPayload
 					+ blit (DoStructuralRegionBufferPaste)

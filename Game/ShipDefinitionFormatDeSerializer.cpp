@@ -325,7 +325,7 @@ void ShipDefinitionFormatDeSerializer::Save(
     ShipDefinition const & shipDefinition,
     std::filesystem::path const & shipFilePath)
 {
-    DeSerializationBuffer<BigEndianess> buffer(256);    
+    DeSerializationBuffer<BigEndianess> buffer(256);
 
     //
     // Open file
@@ -1142,7 +1142,7 @@ size_t ShipDefinitionFormatDeSerializer::AppendRopesLayerBuffer(
     size_t subSectionBodySize = 0;
 
     // Number of entries
-    std::uint32_t count = static_cast<std::uint32_t>(ropesLayerBuffer.GetSize());
+    std::uint32_t count = static_cast<std::uint32_t>(ropesLayerBuffer.GetElementCount());
     subSectionBodySize += buffer.Append(count);
 
     // Entries
@@ -2060,7 +2060,7 @@ void ShipDefinitionFormatDeSerializer::ReadRopesLayer(
     size_t readOffset = 0;
 
     // Allocate layer
-    ropesLayer.reset(new RopesLayerData());
+    ropesLayer.reset(new RopesLayerData(shipAttributes.ShipSize));
 
     // Read all tags
     while (true)

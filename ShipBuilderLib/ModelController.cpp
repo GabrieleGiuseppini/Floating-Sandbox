@@ -247,7 +247,7 @@ void ModelController::Flip(DirectionType direction)
     {
         assert(!mIsRopesLayerInEphemeralVisualization);
 
-        mModel.GetRopesLayer().Buffer.Flip(direction, mModel.GetShipSize());
+        mModel.GetRopesLayer().Buffer.Flip(direction);
 
         RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
 
@@ -271,7 +271,7 @@ void ModelController::Flip(DirectionType direction)
 void ModelController::Rotate90(RotationDirectionType direction)
 {
     // Rotate size
-    auto const originalSize = mModel.GetShipSize();
+    auto const originalSize = GetShipSize();
     mModel.SetShipSize(ShipSpaceSize(originalSize.height, originalSize.width));
 
     // Structural layer
@@ -305,7 +305,7 @@ void ModelController::Rotate90(RotationDirectionType direction)
     {
         assert(!mIsRopesLayerInEphemeralVisualization);
 
-        mModel.GetRopesLayer().Buffer.Rotate90(direction, originalSize);
+        mModel.GetRopesLayer().Buffer.Rotate90(direction);
 
         RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
 
@@ -1430,7 +1430,7 @@ void ModelController::MoveRopeEndpoint(
     // Update model
     //
 
-    assert(ropeElementIndex < mModel.GetRopesLayer().Buffer.GetSize());
+    assert(ropeElementIndex < mModel.GetRopesLayer().Buffer.GetElementCount());
 
     MoveRopeEndpoint(
         mModel.GetRopesLayer().Buffer[ropeElementIndex],
@@ -1574,7 +1574,7 @@ void ModelController::ModelController::MoveRopeEndpointForEphemeralVisualization
     // Update model with jsut movement - no analyses
     //
 
-    assert(ropeElementIndex < mModel.GetRopesLayer().Buffer.GetSize());
+    assert(ropeElementIndex < mModel.GetRopesLayer().Buffer.GetElementCount());
 
     MoveRopeEndpoint(
         mModel.GetRopesLayer().Buffer[ropeElementIndex],
@@ -2836,9 +2836,8 @@ void ModelController::DoRopesRegionBufferPaste(
 {
     targetBuffer.BlitFromRegion(
         sourceRegionBuffer,
-        GetWholeShipRect(),
+        ShipSpaceRect(sourceRegionBuffer.GetSize()), // Whole source region
         targetCoordinates,
-        GetShipSize(),
         isTransparent);
 
     //

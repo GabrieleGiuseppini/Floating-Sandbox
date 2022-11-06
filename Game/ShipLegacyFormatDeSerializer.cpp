@@ -388,7 +388,7 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImages(
     ElectricalLayerData electricalLayer(shipSize, std::move(electricalPanel));
     bool hasElectricalElements = false;
 
-    RopesLayerData ropesLayer;
+    RopesLayerData ropesLayer(shipSize);
     bool hasRopeElements = false;
 
     std::unique_ptr<TextureLayerData> textureLayer = textureLayerImage.has_value()
@@ -718,7 +718,7 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImages(
     }
 
     // Bake definition
-    return ShipDefinition(        
+    return ShipDefinition(
         ShipLayers(
             shipSize,
             hasStructuralElements ? std::make_unique<StructuralLayerData>(std::move(structuralLayer)) : nullptr,

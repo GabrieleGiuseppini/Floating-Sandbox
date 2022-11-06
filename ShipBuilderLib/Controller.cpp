@@ -498,7 +498,7 @@ void Controller::TrimElectricalParticlesWithoutSubstratum()
 
 void Controller::NewRopesLayer()
 {
-    RopesLayerData newRopesLayer;
+    RopesLayerData newRopesLayer(mModelController->GetShipSize());
 
     InternalSetLayer<LayerType::Ropes>(
         _("New Ropes Layer"),

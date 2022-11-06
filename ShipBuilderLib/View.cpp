@@ -887,7 +887,7 @@ void View::UploadRopesLayerVisualization(RopeBuffer const & ropeBuffer)
     //
 
     std::vector<RopeVertex> vertexBuffer;
-    vertexBuffer.reserve(ropeBuffer.GetSize());
+    vertexBuffer.reserve(ropeBuffer.GetElementCount());
 
     for (auto const & e : ropeBuffer)
     {
@@ -917,7 +917,7 @@ void View::UploadRopesLayerVisualization(RopeBuffer const & ropeBuffer)
     // Remember we have ropes
     //
 
-    mRopeCount = ropeBuffer.GetSize();
+    mRopeCount = ropeBuffer.GetElementCount();
 }
 
 void View::RemoveRopesLayerVisualization()
@@ -946,7 +946,7 @@ void View::UploadTextureLayerVisualization(RgbaImageData const & texture)
     // time when we create texture coords for each particle.
     //
     // The texture _is_ mapped to the (0,0)->(ship_width,ship_height) quad, but considering
-    // that of the (w,h) quad only the sub-region starting at the center of the corner ship 
+    // that of the (w,h) quad only the sub-region starting at the center of the corner ship
     // squares is visible, we map the texture to the (0.5,0.5)->(w-0.5,h-0.5) quad, and
     // cut out its outer border (of thickness 0.5 ship space).
     //

@@ -110,7 +110,7 @@ void ShipLayers::Flip(DirectionType direction)
 
     if (RopesLayer)
     {
-        RopesLayer->Buffer.Flip(direction, Size);
+        RopesLayer->Buffer.Flip(direction);
     }
 
     if (TextureLayer)
@@ -133,7 +133,7 @@ void ShipLayers::Rotate90(RotationDirectionType direction)
 
     if (RopesLayer)
     {
-        RopesLayer->Buffer.Rotate90(direction, Size);
+        RopesLayer->Buffer.Rotate90(direction);
     }
 
     if (TextureLayer)
