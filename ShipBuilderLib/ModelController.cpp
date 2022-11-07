@@ -755,101 +755,40 @@ void ModelController::RestoreEphemeralVisualization(GenericEphemeralVisualizatio
         {
             case LayerType::Structural:
             {
-                assert(mModel.HasLayer(LayerType::Structural));
-                assert(mIsStructuralLayerInEphemeralVisualization);
-
-                auto const affectedRegion =
-                    ShipSpaceRect(restorePayload.Origin, restorePayload.StructuralLayerBufferRegion->Size)
-                    .MakeIntersectionWith(GetWholeShipRect());
-
-                if (affectedRegion)
-                {
-                    mModel.GetStructuralLayer().Buffer.BlitFromRegion(
-                        *restorePayload.StructuralLayerBufferRegion,
-                        ShipSpaceRect(restorePayload.StructuralLayerBufferRegion->Size),
-                        restorePayload.Origin);
-
-                    // Update visualization
-                    RegisterDirtyVisualization<VisualizationType::Game>(*affectedRegion);
-                    RegisterDirtyVisualization<VisualizationType::StructuralLayer>(*affectedRegion);
-                }
-
-                // Remember we are not anymore in temp visualization
-                mIsStructuralLayerInEphemeralVisualization = false;
+                RestoreStructuralLayerRegionEphemeralVisualization(
+                    *restorePayload.StructuralLayerBufferRegion,
+                    ShipSpaceRect(restorePayload.StructuralLayerBufferRegion->Size), // Whole backup
+                    restorePayload.Origin);
 
                 break;
             }
 
             case LayerType::Electrical:
             {
-                assert(mModel.HasLayer(LayerType::Electrical));
-                assert(mIsElectricalLayerInEphemeralVisualization);
-
-                auto const affectedRegion =
-                    ShipSpaceRect(restorePayload.Origin, restorePayload.ElectricalLayerBufferRegion->Size)
-                    .MakeIntersectionWith(GetWholeShipRect());
-
-                if (affectedRegion)
-                {
-                    mModel.GetElectricalLayer().Buffer.BlitFromRegion(
-                        *restorePayload.ElectricalLayerBufferRegion,
-                        ShipSpaceRect(restorePayload.ElectricalLayerBufferRegion->Size),
-                        restorePayload.Origin);
-
-                    // Update visualization
-                    RegisterDirtyVisualization<VisualizationType::ElectricalLayer>(*affectedRegion);
-                }
-
-                // Remember we are not anymore in temp visualization
-                mIsElectricalLayerInEphemeralVisualization = false;
+                RestoreElectricalLayerRegionEphemeralVisualization(
+                    *restorePayload.ElectricalLayerBufferRegion,
+                    ShipSpaceRect(restorePayload.ElectricalLayerBufferRegion->Size), // Whole backup
+                    restorePayload.Origin);
 
                 break;
             }
 
             case LayerType::Ropes:
             {
-                assert(mModel.HasLayer(LayerType::Ropes));
-                assert(mIsRopesLayerInEphemeralVisualization);
-
-                mModel.GetRopesLayer().Buffer = std::move(*restorePayload.RopesLayerBuffer);
-
-                // Update visualization
-                RegisterDirtyVisualization<VisualizationType::RopesLayer>(GetWholeShipRect());
-
-                // Remember we are not anymore in temp visualization
-                mIsRopesLayerInEphemeralVisualization = false;
+                RestoreRopesLayerEphemeralVisualization(*restorePayload.RopesLayerBuffer);
 
                 break;
             }
 
             case LayerType::Texture:
             {
-                assert(mModel.HasLayer(LayerType::Texture));
-                assert(mIsTextureLayerInEphemeralVisualization);
-
-                ImageCoordinates const originTextureCoordinates = ShipSpaceToTextureSpace(
-                    restorePayload.Origin,
-                    GetShipSize(),
-                    GetTextureSize());
-
-                auto const affectedRegion =
-                    ImageRect(originTextureCoordinates, restorePayload.TextureLayerBufferRegion->Size)
-                    .MakeIntersectionWith(GetWholeTextureRect());
-
-                if (affectedRegion)
-                {
-                    mModel.GetTextureLayer().Buffer.BlitFromRegion(
-                        *restorePayload.TextureLayerBufferRegion,
-                        ImageRect(restorePayload.TextureLayerBufferRegion->Size),
-                        originTextureCoordinates);
-
-                    // Update visualization
-                    RegisterDirtyVisualization<VisualizationType::Game>(ImageRectToContainingShipSpaceRect(*affectedRegion));
-                    RegisterDirtyVisualization<VisualizationType::TextureLayer>(*affectedRegion);
-                }
-
-                // Remember we are not anymore in temp visualization
-                mIsTextureLayerInEphemeralVisualization = false;
+                RestoreTextureLayerRegionEphemeralVisualization(
+                    *restorePayload.TextureLayerBufferRegion,
+                    ImageRect(restorePayload.TextureLayerBufferRegion->Size), // Whole backup
+                    ShipSpaceToTextureSpace(
+                        restorePayload.Origin,
+                        GetShipSize(),
+                        GetTextureSize()));
 
                 break;
             }
@@ -1074,30 +1013,38 @@ void ModelController::StructuralRegionFillForEphemeralVisualization(
     mIsStructuralLayerInEphemeralVisualization = true;
 }
 
-void ModelController::RestoreStructuralLayerRegionForEphemeralVisualization(
-    StructuralLayerData const & sourceLayerRegion,
-    ShipSpaceRect const & sourceRegion,
+void ModelController::RestoreStructuralLayerRegionEphemeralVisualization(
+    typename LayerTypeTraits<LayerType::Structural>::buffer_type const & backupBuffer,
+    ShipSpaceRect const & backupBufferRegion,
     ShipSpaceCoordinates const & targetOrigin)
 {
     assert(mModel.HasLayer(LayerType::Structural));
-
     assert(mIsStructuralLayerInEphemeralVisualization);
 
     //
     // Restore model, and nothing else
     //
 
+    // The backup buffer region is completely contained in the backup buffer
+    assert(backupBufferRegion.IsContainedInRect(backupBuffer.Size));
+
+    // Rect in the ship that will be affected by this operation
+    ShipSpaceRect const affectedRegion(targetOrigin, backupBufferRegion.size);
+
+    // The ship region affected by this operation is completely contained in the ship
+    assert(affectedRegion.IsContainedInRect(GetWholeShipRect()));
+
     mModel.GetStructuralLayer().Buffer.BlitFromRegion(
-        sourceLayerRegion.Buffer,
-        sourceRegion,
+        backupBuffer,
+        backupBufferRegion,
         targetOrigin);
 
     //
     // Update visualization
     //
 
-    RegisterDirtyVisualization<VisualizationType::Game>(ShipSpaceRect(targetOrigin, sourceRegion.size));
-    RegisterDirtyVisualization<VisualizationType::StructuralLayer>(ShipSpaceRect(targetOrigin, sourceRegion.size));
+    RegisterDirtyVisualization<VisualizationType::Game>(affectedRegion);
+    RegisterDirtyVisualization<VisualizationType::StructuralLayer>(affectedRegion);
 
     // Remember we are not anymore in temp visualization
     mIsStructuralLayerInEphemeralVisualization = false;
@@ -1332,29 +1279,37 @@ void ModelController::ElectricalRegionFillForEphemeralVisualization(
     mIsElectricalLayerInEphemeralVisualization = true;
 }
 
-void ModelController::RestoreElectricalLayerRegionForEphemeralVisualization(
-    ElectricalLayerData const & sourceLayerRegion,
-    ShipSpaceRect const & sourceRegion,
+void ModelController::RestoreElectricalLayerRegionEphemeralVisualization(
+    typename LayerTypeTraits<LayerType::Electrical>::buffer_type const & backupBuffer,
+    ShipSpaceRect const & backupBufferRegion,
     ShipSpaceCoordinates const & targetOrigin)
 {
     assert(mModel.HasLayer(LayerType::Electrical));
-
     assert(mIsElectricalLayerInEphemeralVisualization);
 
     //
     // Restore model, and nothing else
     //
 
+    // The backup buffer region is completely contained in the backup buffer
+    assert(backupBufferRegion.IsContainedInRect(backupBuffer.Size));
+
+    // Rect in the ship that will be affected by this operation
+    ShipSpaceRect const affectedRegion(targetOrigin, backupBufferRegion.size);
+
+    // The ship region affected by this operation is completely contained in the ship
+    assert(affectedRegion.IsContainedInRect(GetWholeShipRect()));
+
     mModel.GetElectricalLayer().Buffer.BlitFromRegion(
-        sourceLayerRegion.Buffer,
-        sourceRegion,
+        backupBuffer,
+        backupBufferRegion,
         targetOrigin);
 
     //
     // Update visualization
     //
 
-    RegisterDirtyVisualization<VisualizationType::ElectricalLayer>(ShipSpaceRect(targetOrigin, sourceRegion.size));
+    RegisterDirtyVisualization<VisualizationType::ElectricalLayer>(affectedRegion);
 
     // Remember we are not anymore in temp visualization
     mIsElectricalLayerInEphemeralVisualization = false;
@@ -1627,17 +1582,16 @@ void ModelController::ModelController::MoveRopeEndpointForEphemeralVisualization
     mIsRopesLayerInEphemeralVisualization = true;
 }
 
-void ModelController::RestoreRopesLayerForEphemeralVisualization(RopesLayerData const & sourceLayer)
+void ModelController::RestoreRopesLayerEphemeralVisualization(typename LayerTypeTraits<LayerType::Ropes>::buffer_type const & backupBuffer)
 {
     assert(mModel.HasLayer(LayerType::Ropes));
-
     assert(mIsRopesLayerInEphemeralVisualization);
 
     //
     // Restore model, and nothing else
     //
 
-    mModel.GetRopesLayer().Buffer = sourceLayer.Buffer;
+    mModel.GetRopesLayer().Buffer = backupBuffer;
 
     //
     // Update visualization
@@ -1863,32 +1817,40 @@ void ModelController::TextureRegionEraseForEphemeralVisualization(ImageRect cons
     mIsTextureLayerInEphemeralVisualization = true;
 }
 
-void ModelController::RestoreTextureLayerRegionForEphemeralVisualization(
-    TextureLayerData const & sourceLayerRegion,
-    ImageRect const & sourceRegion,
+void ModelController::RestoreTextureLayerRegionEphemeralVisualization(
+    typename LayerTypeTraits<LayerType::Texture>::buffer_type const & backupBuffer,
+    ImageRect const & backupBufferRegion,
     ImageCoordinates const & targetOrigin)
 {
     assert(mModel.HasLayer(LayerType::Texture));
-
     assert(mIsTextureLayerInEphemeralVisualization);
 
     //
     // Restore model, and nothing else
     //
 
+    // The backup buffer region is completely contained in the backup buffer
+    assert(backupBufferRegion.IsContainedInRect(backupBuffer.Size));
+
+    // Rect in the texture that will be affected by this operation
+    ImageRect const affectedRegion(targetOrigin, backupBufferRegion.size);
+
+    // The texture region affected by this operation is completely contained in the texture
+    assert(affectedRegion.IsContainedInRect(GetWholeTextureRect()));
+
+    LogMessage("TODOTEST: Restoring: ", targetOrigin, " ", backupBufferRegion.size);
+
     mModel.GetTextureLayer().Buffer.BlitFromRegion(
-        sourceLayerRegion.Buffer,
-        sourceRegion,
+        backupBuffer,
+        backupBufferRegion,
         targetOrigin);
 
     //
     // Update visualization
     //
 
-    ImageRect const affectedRect(targetOrigin, sourceRegion.size);
-
-    RegisterDirtyVisualization<VisualizationType::Game>(ImageRectToContainingShipSpaceRect(affectedRect));
-    RegisterDirtyVisualization<VisualizationType::TextureLayer>(affectedRect);
+    RegisterDirtyVisualization<VisualizationType::Game>(ImageRectToContainingShipSpaceRect(affectedRegion));
+    RegisterDirtyVisualization<VisualizationType::TextureLayer>(affectedRegion);
 
     // Remember we are not anymore in temp visualization
     mIsTextureLayerInEphemeralVisualization = false;
@@ -2824,6 +2786,8 @@ GenericEphemeralVisualizationRestorePayload ModelController::MakeGenericEphemera
             GetShipSize(),
             GetTextureSize());
 
+        LogMessage("TODOTEST: Saving: ", regionImageRect.origin, " ", regionImageRect.size);
+
         textureLayerBufferRegion = mModel.GetTextureLayer().Buffer.CloneRegion(regionImageRect);
     }
 
@@ -2951,6 +2915,8 @@ void ModelController::DoTextureRegionBufferPaste(
         targetCoordinates,
         GetShipSize(),
         GetTextureSize());
+
+    LogMessage("TODOTEST: Pasting: ", targetTextureCoordinates, " ", sourceRegionBuffer.Size);
 
     targetBuffer.BlitFromRegion(
         sourceRegionBuffer,

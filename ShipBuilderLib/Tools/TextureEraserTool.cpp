@@ -318,8 +318,8 @@ void TextureEraserTool::MendTempVisualization()
 {
     assert(mTempVisualizationDirtyTextureRegion);
 
-    mController.GetModelController().RestoreTextureLayerRegionForEphemeralVisualization(
-        mOriginalLayerClone,
+    mController.GetModelController().RestoreTextureLayerRegionEphemeralVisualization(
+        mOriginalLayerClone.Buffer,
         *mTempVisualizationDirtyTextureRegion,
         mTempVisualizationDirtyTextureRegion->origin);
 

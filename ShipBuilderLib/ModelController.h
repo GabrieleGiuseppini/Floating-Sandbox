@@ -264,9 +264,9 @@ public:
         ShipSpaceRect const & region,
         StructuralMaterial const * material);
 
-    void RestoreStructuralLayerRegionForEphemeralVisualization(
-        StructuralLayerData const & sourceLayerRegion,
-        ShipSpaceRect const & sourceRegion,
+    void RestoreStructuralLayerRegionEphemeralVisualization(
+        typename LayerTypeTraits<LayerType::Structural>::buffer_type const & backupBuffer,
+        ShipSpaceRect const & backupBufferRegion,
         ShipSpaceCoordinates const & targetOrigin);
 
     //
@@ -301,9 +301,9 @@ public:
         ShipSpaceRect const & region,
         ElectricalMaterial const * material);
 
-    void RestoreElectricalLayerRegionForEphemeralVisualization(
-        ElectricalLayerData const & sourceLayerRegion,
-        ShipSpaceRect const & sourceRegion,
+    void RestoreElectricalLayerRegionEphemeralVisualization(
+        typename LayerTypeTraits<LayerType::Electrical>::buffer_type const & backupBuffer,
+        ShipSpaceRect const & backupBufferRegion,
         ShipSpaceCoordinates const & targetOrigin);
 
     //
@@ -350,7 +350,7 @@ public:
         ShipSpaceCoordinates const & oldCoords,
         ShipSpaceCoordinates const & newCoords);
 
-    void RestoreRopesLayerForEphemeralVisualization(RopesLayerData const & sourceLayer);
+    void RestoreRopesLayerEphemeralVisualization(typename LayerTypeTraits<LayerType::Ropes>::buffer_type const & backupBuffer);
 
     //
     // Texture
@@ -432,11 +432,10 @@ public:
 
     void TextureRegionEraseForEphemeralVisualization(ImageRect const & region);
 
-    void RestoreTextureLayerRegionForEphemeralVisualization(
-        TextureLayerData const & sourceLayerRegion,
-        ImageRect const & sourceRegion,
+    void RestoreTextureLayerRegionEphemeralVisualization(
+        typename LayerTypeTraits<LayerType::Texture>::buffer_type const & backupBuffer,
+        ImageRect const & backupBufferRegion,
         ImageCoordinates const & targetOrigin);
-
 
     //
     // Visualizations

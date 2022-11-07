@@ -555,21 +555,26 @@
 						- S, E: NOT NEEDED
 							- Unless we can make "deep" paste (i.e. analysys) via operator()
 						- R, T: used by both Paste() and PasteForEphemeralVisualization()
-			- See to reuse RestoreEphemeralVisualization() when undoing eph viz's from various tools, hopefully
-			  nuking some redundant ModelController methods in the process
-				- Generic...Payload::MakeFromClone(full clone, region)
-				- OR: at least restore these eph viz's via same helpers
-					- Tools use RestoreXXXLayerRegionForEphemeralVisualization, which takes LayerData and does Buffer.BlitFromRegion + Viz registration
-					- RestoreEphemeralVisualization() does Buffer.BlitFromRegion + Viz registration
-					- Differences:
-						- Affected rect calc'n: not needed if we assume region and args passed to RestoreEphemeralVisualization() are consistent (after all snapshot was
-						  taken at a time of consistency)
-				- Option 1:
-					- PencilTool: RestoreStructuralLayerRegionForEphemeralVisualization(LayerData, sourceRegion=DirtyRec, targetPos=DirtyRec.origin)
-					- RestoreEphemeralVisualization(): affectedRegion=orig_region_intersect_ship (pointless, see above), buffer.Clone(), dirty reg'n
+			= Remove redundancies
+				+ S:
+					+ Helper: RestoreStructuralLayerRegionEphemeralVisualization
+					+ Use at:
+						+ RestoreEphemeralVisualization()
+						+ All tools
+					+ Test
+				+ E:
+					+ Do
+					+ Test
+				+ R:
+					+ Do
+					+ Test
+				= T:
+					+ Do
+					= Test
 
 
 			- See if can get rid of double-calc'ing affected rect (intersection) - i.e. see if can assert containments at BlitFromRegion(.)
+				- Note: this might be done for eph viz; not sure about others
 
 
 			- ModelController::Paste(LayersRegion, origin, opaque/transparent) X 2 (ephemeral, normal) -> GenericUndoPayload

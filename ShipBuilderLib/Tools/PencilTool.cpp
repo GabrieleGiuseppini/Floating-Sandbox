@@ -523,8 +523,8 @@ void PencilTool<TLayer, IsEraser>::MendTempVisualization()
 
     if constexpr (TLayer == LayerType::Structural)
     {
-        mController.GetModelController().RestoreStructuralLayerRegionForEphemeralVisualization(
-            mOriginalLayerClone,
+        mController.GetModelController().RestoreStructuralLayerRegionEphemeralVisualization(
+            mOriginalLayerClone.Buffer,
             *mTempVisualizationDirtyShipRegion,
             mTempVisualizationDirtyShipRegion->origin);
     }
@@ -532,8 +532,8 @@ void PencilTool<TLayer, IsEraser>::MendTempVisualization()
     {
         static_assert(TLayer == LayerType::Electrical);
 
-        mController.GetModelController().RestoreElectricalLayerRegionForEphemeralVisualization(
-            mOriginalLayerClone,
+        mController.GetModelController().RestoreElectricalLayerRegionEphemeralVisualization(
+            mOriginalLayerClone.Buffer,
             *mTempVisualizationDirtyShipRegion,
             mTempVisualizationDirtyShipRegion->origin);
     }
