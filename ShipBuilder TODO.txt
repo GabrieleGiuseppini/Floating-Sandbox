@@ -533,12 +533,12 @@
 					- TODO
 			+ Rethink PasteForEphViz/RestoreForEphViz: do own pure buffer blitting at both, storing into TODOHERE: MultiLayerBufferUndoPayload
 			= Missing symmetry of methods:
-				- MakeGenericEphemeralVisualizationRestorePayload:
+				! MakeGenericEphemeralVisualizationRestorePayload:
 					- S:	- Undo: CloneRegion
 					- E:	- Undo: CloneRegion
 					- R:	- Undo: Clone
 					- T:	- Undo: CloneRegion
-				- RestoreEphemeralVisualization:
+				! RestoreEphemeralVisualization:
 					- S:	- Do: DoStructuralRegionBufferPaste
 					- E:	- Do: DoElectricalRegionBufferPaste
 					- R:	- Do: Move
@@ -571,10 +571,21 @@
 				= T:
 					+ Do
 					= Test
-
+						= Fix skidmarks:
+							= Both Paste and PasteForEphViz calculate affected rect - and most importantly affected source - and use those in their implementation, rather than letting
+							  Blit() calc that
+								+ Try with texture (DoTextureRegionBufferPaste)
+									+ assert containments
+									+ Convert affected source rect to texture coords
+									+ Blit & mark dirty viz
+									+ Use it at all places:
+										+ Paste
+										+ PasteForEphViz									
+								+ If works, do with all others as well
+								- (*)
 
 			- See if can get rid of double-calc'ing affected rect (intersection) - i.e. see if can assert containments at BlitFromRegion(.)
-				- Note: this might be done for eph viz; not sure about others
+				- Note: this might be done for eph viz (*); not sure about others
 
 
 			- ModelController::Paste(LayersRegion, origin, opaque/transparent) X 2 (ephemeral, normal) -> GenericUndoPayload

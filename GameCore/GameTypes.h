@@ -340,8 +340,8 @@ struct _IntegralSize
     static _IntegralSize<TIntegralTag> FromFloatRound(vec2f const & vec)
     {
         return _IntegralSize<TIntegralTag>(
-            static_cast<integral_type>(FastTruncateToArchInt(vec.x + 0.5f)),
-            static_cast<integral_type>(FastTruncateToArchInt(vec.y + 0.5f)));
+            static_cast<integral_type>(std::round(vec.x)),
+            static_cast<integral_type>(std::round(vec.y)));
     }
 
     inline bool operator==(_IntegralSize<TIntegralTag> const & other) const
@@ -446,8 +446,8 @@ struct _IntegralCoordinates
     static _IntegralCoordinates<TIntegralTag> FromFloatRound(vec2f const & vec)
     {
         return _IntegralCoordinates<TIntegralTag>(
-            static_cast<integral_type>(FastTruncateToArchInt(vec.x + 0.5f)),
-            static_cast<integral_type>(FastTruncateToArchInt(vec.y + 0.5f)));
+            static_cast<integral_type>(std::round(vec.x)),
+            static_cast<integral_type>(std::round(vec.y)));
     }
 
     inline bool operator==(_IntegralCoordinates<TIntegralTag> const & other) const
@@ -623,7 +623,7 @@ struct _IntegralRect
         , size(_size)
     {}
 
-    constexpr _IntegralRect(_IntegralCoordinates<TIntegralTag> const & _origin)
+    explicit constexpr _IntegralRect(_IntegralCoordinates<TIntegralTag> const & _origin)
         : origin(_origin)
         , size(1, 1)
     {}
@@ -640,7 +640,10 @@ struct _IntegralRect
     {
     }
 
-    constexpr _IntegralRect(_IntegralSize<TIntegralTag> const & _size)
+    /*
+     * Makes a rectangle from {0, 0} of the specified size.
+     */
+    explicit constexpr _IntegralRect(_IntegralSize<TIntegralTag> const & _size)
         : origin(0, 0)
         , size(_size)
     {}
@@ -765,6 +768,14 @@ struct _IntegralRect
 };
 
 #pragma pack(pop)
+
+template<typename TTag>
+inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, _IntegralRect<TTag> const & p)
+{
+    os << p.origin.ToString() << "x" << p.size.ToString();
+    return os;
+}
+
 
 using IntegralRect = _IntegralRect<struct IntegralTag>;
 using ImageRect = _IntegralRect<struct ImageTag>;
@@ -1088,7 +1099,7 @@ enum class HeatRenderModeType
     HeatOverlay
 };
 
-/* 
+/*
  * The ways in which stress may be rendered.
  */
 enum class StressRenderModeType

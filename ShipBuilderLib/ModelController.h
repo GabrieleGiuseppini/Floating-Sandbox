@@ -535,26 +535,26 @@ private:
     }
 
     void DoStructuralRegionBufferPaste(
-        typename LayerTypeTraits<LayerType::Structural>::buffer_type const & sourceRegionBuffer,
-        typename LayerTypeTraits<LayerType::Structural>::buffer_type & targetBuffer,
+        typename LayerTypeTraits<LayerType::Structural>::buffer_type const & sourceBuffer,
+        ShipSpaceRect const & sourceRegion,
         ShipSpaceCoordinates const & targetCoordinates,
         bool isTransparent);
 
     void DoElectricalRegionBufferPaste(
-        typename LayerTypeTraits<LayerType::Electrical>::buffer_type const & sourceRegionBuffer,
-        typename LayerTypeTraits<LayerType::Electrical>::buffer_type & targetBuffer,
+        typename LayerTypeTraits<LayerType::Electrical>::buffer_type const & sourceBuffer,
+        ShipSpaceRect const & sourceRegion,
         ShipSpaceCoordinates const & targetCoordinates,
         bool isTransparent);
 
     void DoRopesRegionBufferPaste(
-        typename LayerTypeTraits<LayerType::Ropes>::buffer_type const & sourceRegionBuffer,
-        typename LayerTypeTraits<LayerType::Ropes>::buffer_type & targetBuffer,
+        typename LayerTypeTraits<LayerType::Ropes>::buffer_type const & sourceBuffer,
+        ShipSpaceRect const & sourceRegion,
         ShipSpaceCoordinates const & targetCoordinates,
         bool isTransparent);
 
     void DoTextureRegionBufferPaste(
-        typename LayerTypeTraits<LayerType::Texture>::buffer_type const & sourceRegionBuffer,
-        typename LayerTypeTraits<LayerType::Texture>::buffer_type & targetBuffer,
+        typename LayerTypeTraits<LayerType::Texture>::buffer_type const & sourceBuffer,
+        ShipSpaceRect const & sourceRegion,
         ShipSpaceCoordinates const & targetCoordinates,
         bool isTransparent);
 

@@ -515,18 +515,28 @@ GenericUndoPayload ModelController::Paste(
     ShipSpaceCoordinates const & pasteOrigin,
     bool isTransparent)
 {
-    auto const affectedRect =
+    auto const affectedTargetRect =
         ShipSpaceRect(pasteOrigin, sourcePayload.Size)
         .MakeIntersectionWith(GetWholeShipRect());
 
-    if (affectedRect.has_value())
+    if (affectedTargetRect.has_value())
     {
+        //
+        // Calculate affected *source* region
+        //
+
+        assert(!affectedTargetRect->IsEmpty());
+
+        ShipSpaceRect const affectedSourceRegion(
+            ShipSpaceCoordinates(0, 0) + (affectedTargetRect->origin - pasteOrigin),
+            affectedTargetRect->size);
+
         //
         // Prepare undo
         //
 
         GenericUndoPayload undoPayload = MakeGenericUndoPayload(
-            *affectedRect,
+            *affectedTargetRect,
             (bool)(sourcePayload.StructuralLayer) && mModel.HasLayer(LayerType::Structural),
             (bool)(sourcePayload.ElectricalLayer) && mModel.HasLayer(LayerType::Electrical),
             (bool)(sourcePayload.RopesLayer) && mModel.HasLayer(LayerType::Ropes),
@@ -574,8 +584,8 @@ GenericUndoPayload ModelController::Paste(
 
                     DoRopesRegionBufferPaste(
                         sourcePayload.RopesLayer->Buffer,
-                        mModel.GetRopesLayer().Buffer,
-                        pasteOrigin,
+                        affectedSourceRegion,
+                        affectedTargetRect->origin,
                         isTransparent);
 
                     break;
@@ -587,8 +597,8 @@ GenericUndoPayload ModelController::Paste(
 
                     DoTextureRegionBufferPaste(
                         sourcePayload.TextureLayer->Buffer,
-                        mModel.GetTextureLayer().Buffer,
-                        pasteOrigin,
+                        affectedSourceRegion,
+                        affectedTargetRect->origin,
                         isTransparent);
 
                     break;
@@ -656,18 +666,32 @@ GenericEphemeralVisualizationRestorePayload ModelController::PasteForEphemeralVi
     ShipSpaceCoordinates const & pasteOrigin,
     bool isTransparent)
 {
-    auto const affectedRect =
+    //
+    // Calculate affected *target* (i.e. in this ship) region
+    //
+
+    auto const affectedTargetRect =
         ShipSpaceRect(pasteOrigin, sourcePayload.Size)
         .MakeIntersectionWith(GetWholeShipRect());
 
-    if (affectedRect.has_value())
+    if (affectedTargetRect.has_value())
     {
         //
+        // Calculate affected *source* region
+        //
+
+        assert(!affectedTargetRect->IsEmpty());
+
+        ShipSpaceRect const affectedSourceRegion(
+            ShipSpaceCoordinates(0, 0) + (affectedTargetRect->origin - pasteOrigin),
+            affectedTargetRect->size);
+
+
         // Prepare restore
         //
 
         GenericEphemeralVisualizationRestorePayload restorePayload = MakeGenericEphemeralVisualizationRestorePayload(
-            *affectedRect,
+            *affectedTargetRect,
             (bool)(sourcePayload.StructuralLayer) && mModel.HasLayer(LayerType::Structural),
             (bool)(sourcePayload.ElectricalLayer) && mModel.HasLayer(LayerType::Electrical),
             (bool)(sourcePayload.RopesLayer) && mModel.HasLayer(LayerType::Ropes),
@@ -685,8 +709,8 @@ GenericEphemeralVisualizationRestorePayload ModelController::PasteForEphemeralVi
                 {
                     DoStructuralRegionBufferPaste(
                         sourcePayload.StructuralLayer->Buffer,
-                        mModel.GetStructuralLayer().Buffer,
-                        pasteOrigin,
+                        affectedSourceRegion,
+                        affectedTargetRect->origin,
                         isTransparent);
 
                     // Remember we are in temp visualization now
@@ -699,8 +723,8 @@ GenericEphemeralVisualizationRestorePayload ModelController::PasteForEphemeralVi
                 {
                     DoElectricalRegionBufferPaste(
                         sourcePayload.ElectricalLayer->Buffer,
-                        mModel.GetElectricalLayer().Buffer,
-                        pasteOrigin,
+                        affectedSourceRegion,
+                        affectedTargetRect->origin,
                         isTransparent);
 
                     // Remember we are in temp visualization now
@@ -713,8 +737,8 @@ GenericEphemeralVisualizationRestorePayload ModelController::PasteForEphemeralVi
                 {
                     DoRopesRegionBufferPaste(
                         sourcePayload.RopesLayer->Buffer,
-                        mModel.GetRopesLayer().Buffer,
-                        pasteOrigin,
+                        affectedSourceRegion,
+                        affectedTargetRect->origin,
                         isTransparent);
 
                     // Remember we are in temp visualization now
@@ -727,8 +751,8 @@ GenericEphemeralVisualizationRestorePayload ModelController::PasteForEphemeralVi
                 {
                     DoTextureRegionBufferPaste(
                         sourcePayload.TextureLayer->Buffer,
-                        mModel.GetTextureLayer().Buffer,
-                        pasteOrigin,
+                        affectedSourceRegion,
+                        affectedTargetRect->origin,
                         isTransparent);
 
                     // Remember we are in temp visualization now
@@ -1026,7 +1050,7 @@ void ModelController::RestoreStructuralLayerRegionEphemeralVisualization(
     //
 
     // The backup buffer region is completely contained in the backup buffer
-    assert(backupBufferRegion.IsContainedInRect(backupBuffer.Size));
+    assert(backupBufferRegion.IsContainedInRect(ShipSpaceRect(backupBuffer.Size)));
 
     // Rect in the ship that will be affected by this operation
     ShipSpaceRect const affectedRegion(targetOrigin, backupBufferRegion.size);
@@ -1292,7 +1316,7 @@ void ModelController::RestoreElectricalLayerRegionEphemeralVisualization(
     //
 
     // The backup buffer region is completely contained in the backup buffer
-    assert(backupBufferRegion.IsContainedInRect(backupBuffer.Size));
+    assert(backupBufferRegion.IsContainedInRect(ShipSpaceRect(backupBuffer.Size)));
 
     // Rect in the ship that will be affected by this operation
     ShipSpaceRect const affectedRegion(targetOrigin, backupBufferRegion.size);
@@ -1671,7 +1695,7 @@ void ModelController::EraseTextureRegion(ImageRect const & region)
 
     assert(!mIsTextureLayerInEphemeralVisualization);
 
-    assert(region.IsContainedInRect(mModel.GetTextureLayer().Buffer.Size));
+    assert(region.IsContainedInRect(ImageRect(mModel.GetTextureLayer().Buffer.Size)));
 
     //
     // Update model
@@ -1830,15 +1854,13 @@ void ModelController::RestoreTextureLayerRegionEphemeralVisualization(
     //
 
     // The backup buffer region is completely contained in the backup buffer
-    assert(backupBufferRegion.IsContainedInRect(backupBuffer.Size));
+    assert(backupBufferRegion.IsContainedInRect(ImageRect(backupBuffer.Size)));
 
     // Rect in the texture that will be affected by this operation
     ImageRect const affectedRegion(targetOrigin, backupBufferRegion.size);
 
     // The texture region affected by this operation is completely contained in the texture
     assert(affectedRegion.IsContainedInRect(GetWholeTextureRect()));
-
-    LogMessage("TODOTEST: Restoring: ", targetOrigin, " ", backupBufferRegion.size);
 
     mModel.GetTextureLayer().Buffer.BlitFromRegion(
         backupBuffer,
@@ -2018,7 +2040,7 @@ void ModelController::UpdateVisualizations(View & view)
             ImageRect const dirtyTextureRegion = UpdateGameVisualization(*mDirtyGameVisualizationRegion);
 
             // Upload visualization
-            if (dirtyTextureRegion != mGameVisualizationTexture->Size)
+            if (dirtyTextureRegion != ImageRect(mGameVisualizationTexture->Size))
             {
                 //
                 // For better performance, we only upload the dirty sub-texture
@@ -2080,7 +2102,7 @@ void ModelController::UpdateVisualizations(View & view)
             ImageRect const dirtyTextureRegion = UpdateStructuralLayerVisualization(*mDirtyStructuralLayerVisualizationRegion);
 
             // Upload visualization
-            if (dirtyTextureRegion != mStructuralLayerVisualizationTexture->Size)
+            if (dirtyTextureRegion != ImageRect(mStructuralLayerVisualizationTexture->Size))
             {
                 //
                 // For better performance, we only upload the dirty sub-texture
@@ -2183,7 +2205,7 @@ void ModelController::UpdateVisualizations(View & view)
             UpdateTextureLayerVisualization(); // Dirty region not needed for updating viz in this implementation
 
             // Upload visualization
-            if (*mDirtyTextureLayerVisualizationRegion != mModel.GetTextureLayer().Buffer.Size)
+            if (*mDirtyTextureLayerVisualizationRegion != ImageRect(mModel.GetTextureLayer().Buffer.Size))
             {
                 //
                 // For better performance, we only upload the dirty sub-texture
@@ -2786,8 +2808,6 @@ GenericEphemeralVisualizationRestorePayload ModelController::MakeGenericEphemera
             GetShipSize(),
             GetTextureSize());
 
-        LogMessage("TODOTEST: Saving: ", regionImageRect.origin, " ", regionImageRect.size);
-
         textureLayerBufferRegion = mModel.GetTextureLayer().Buffer.CloneRegion(regionImageRect);
     }
 
@@ -2800,11 +2820,17 @@ GenericEphemeralVisualizationRestorePayload ModelController::MakeGenericEphemera
 }
 
 void ModelController::DoStructuralRegionBufferPaste(
-    typename LayerTypeTraits<LayerType::Structural>::buffer_type const & sourceRegionBuffer,
-    typename LayerTypeTraits<LayerType::Structural>::buffer_type & targetBuffer,
+    typename LayerTypeTraits<LayerType::Structural>::buffer_type const & sourceBuffer,
+    ShipSpaceRect const & sourceRegion,
     ShipSpaceCoordinates const & targetCoordinates,
     bool isTransparent)
 {
+    // The paste region is entirely contained in this ship
+    assert(ShipSpaceRect(targetCoordinates, sourceRegion.size).IsContainedInRect(GetWholeShipRect()));
+
+    // The source region is entirely contained in the source buffer
+    assert(sourceRegion.IsContainedInRect(ShipSpaceRect(sourceBuffer.Size)));
+
     auto const elementOperator = isTransparent
         ? [](StructuralElement const & src, StructuralElement const & dst) -> StructuralElement
         {
@@ -2817,9 +2843,9 @@ void ModelController::DoStructuralRegionBufferPaste(
             return src;
         };
 
-    targetBuffer.BlitFromRegion(
-        sourceRegionBuffer,
-        ShipSpaceRect(sourceRegionBuffer.Size),
+    mModel.GetStructuralLayer().Buffer.BlitFromRegion(
+        sourceBuffer,
+        sourceRegion,
         targetCoordinates,
         elementOperator);
 
@@ -2827,23 +2853,24 @@ void ModelController::DoStructuralRegionBufferPaste(
     // Update visualization
     //
 
-    auto const affectedRegion =
-        ShipSpaceRect(targetCoordinates, sourceRegionBuffer.Size)
-        .MakeIntersectionWith(GetWholeShipRect());
+    ShipSpaceRect const affectedRegion(targetCoordinates, sourceRegion.size); // Effective dirtied region
 
-    if (affectedRegion)
-    {
-        RegisterDirtyVisualization<VisualizationType::Game>(*affectedRegion);
-        RegisterDirtyVisualization<VisualizationType::StructuralLayer>(*affectedRegion);
-    }
+    RegisterDirtyVisualization<VisualizationType::Game>(affectedRegion);
+    RegisterDirtyVisualization<VisualizationType::StructuralLayer>(affectedRegion);
 }
 
 void ModelController::DoElectricalRegionBufferPaste(
-    typename LayerTypeTraits<LayerType::Electrical>::buffer_type const & sourceRegionBuffer,
-    typename LayerTypeTraits<LayerType::Electrical>::buffer_type & targetBuffer,
+    typename LayerTypeTraits<LayerType::Electrical>::buffer_type const & sourceBuffer,
+    ShipSpaceRect const & sourceRegion,
     ShipSpaceCoordinates const & targetCoordinates,
     bool isTransparent)
 {
+    // The paste region is entirely contained in this ship
+    assert(ShipSpaceRect(targetCoordinates, sourceRegion.size).IsContainedInRect(GetWholeShipRect()));
+
+    // The source region is entirely contained in the source buffer
+    assert(sourceRegion.IsContainedInRect(ShipSpaceRect(sourceBuffer.Size)));
+
     auto const elementOperator = isTransparent
         ? [](ElectricalElement const & src, ElectricalElement const & dst) -> ElectricalElement
         {
@@ -2856,9 +2883,9 @@ void ModelController::DoElectricalRegionBufferPaste(
             return src;
         };
 
-    targetBuffer.BlitFromRegion(
-        sourceRegionBuffer,
-        ShipSpaceRect(sourceRegionBuffer.Size),
+    mModel.GetElectricalLayer().Buffer.BlitFromRegion(
+        sourceBuffer,
+        sourceRegion,
         targetCoordinates,
         elementOperator);
 
@@ -2866,25 +2893,26 @@ void ModelController::DoElectricalRegionBufferPaste(
     // Update visualization
     //
 
-    auto const affectedRegion =
-        ShipSpaceRect(targetCoordinates, sourceRegionBuffer.Size)
-        .MakeIntersectionWith(GetWholeShipRect());
+    ShipSpaceRect const affectedRegion(targetCoordinates, sourceRegion.size); // Effective dirtied region
 
-    if (affectedRegion)
-    {
-        RegisterDirtyVisualization<VisualizationType::ElectricalLayer>(*affectedRegion);
-    }
+    RegisterDirtyVisualization<VisualizationType::ElectricalLayer>(affectedRegion);
 }
 
 void ModelController::DoRopesRegionBufferPaste(
-    typename LayerTypeTraits<LayerType::Ropes>::buffer_type const & sourceRegionBuffer,
-    typename LayerTypeTraits<LayerType::Ropes>::buffer_type & targetBuffer,
+    typename LayerTypeTraits<LayerType::Ropes>::buffer_type const & sourceBuffer,
+    ShipSpaceRect const & sourceRegion,
     ShipSpaceCoordinates const & targetCoordinates,
     bool isTransparent)
 {
-    targetBuffer.BlitFromRegion(
-        sourceRegionBuffer,
-        ShipSpaceRect(sourceRegionBuffer.GetSize()), // Whole source region
+    // The paste region is entirely contained in this ship
+    assert(ShipSpaceRect(targetCoordinates, sourceRegion.size).IsContainedInRect(GetWholeShipRect()));
+
+    // The source region is entirely contained in the source buffer
+    assert(sourceRegion.IsContainedInRect(ShipSpaceRect(sourceBuffer.GetSize())));
+
+    mModel.GetRopesLayer().Buffer.BlitFromRegion(
+        sourceBuffer,
+        sourceRegion,
         targetCoordinates,
         isTransparent);
 
@@ -2896,11 +2924,27 @@ void ModelController::DoRopesRegionBufferPaste(
 }
 
 void ModelController::DoTextureRegionBufferPaste(
-    typename LayerTypeTraits<LayerType::Texture>::buffer_type const & sourceRegionBuffer,
-    typename LayerTypeTraits<LayerType::Texture>::buffer_type & targetBuffer,
+    typename LayerTypeTraits<LayerType::Texture>::buffer_type const & sourceBuffer,
+    ShipSpaceRect const & sourceRegion,
     ShipSpaceCoordinates const & targetCoordinates,
     bool isTransparent)
 {
+    // The paste region is entirely contained in this ship
+    assert(ShipSpaceRect(targetCoordinates, sourceRegion.size).IsContainedInRect(GetWholeShipRect()));
+
+    ImageRect const sourceTextureRegion = ShipSpaceToTextureSpace(
+        sourceRegion,
+        GetShipSize(),
+        GetTextureSize());
+
+    // The source region is entirely contained in the source buffer
+    assert(sourceTextureRegion.IsContainedInRect(ImageRect(sourceBuffer.Size)));
+
+    ImageCoordinates const targetTextureCoordinates = ShipSpaceToTextureSpace(
+        targetCoordinates,
+        GetShipSize(),
+        GetTextureSize());
+
     auto const elementOperator = isTransparent
         ? [](rgbaColor const & src, rgbaColor const & dst) -> rgbaColor
         {
@@ -2911,16 +2955,9 @@ void ModelController::DoTextureRegionBufferPaste(
             return src;
         };
 
-    ImageCoordinates const targetTextureCoordinates = ShipSpaceToTextureSpace(
-        targetCoordinates,
-        GetShipSize(),
-        GetTextureSize());
-
-    LogMessage("TODOTEST: Pasting: ", targetTextureCoordinates, " ", sourceRegionBuffer.Size);
-
-    targetBuffer.BlitFromRegion(
-        sourceRegionBuffer,
-        ImageRect(sourceRegionBuffer.Size),
+    mModel.GetTextureLayer().Buffer.BlitFromRegion(
+        sourceBuffer,
+        sourceTextureRegion,
         targetTextureCoordinates,
         elementOperator);
 
@@ -2928,15 +2965,10 @@ void ModelController::DoTextureRegionBufferPaste(
     // Update visualization
     //
 
-    auto const affectedRegion =
-        ImageRect(targetTextureCoordinates, sourceRegionBuffer.Size)
-        .MakeIntersectionWith(GetWholeTextureRect());
+    ImageRect const affectedTextureRegion(targetTextureCoordinates, sourceTextureRegion.size); // Effective dirtied texture region
 
-    if (affectedRegion)
-    {
-        RegisterDirtyVisualization<VisualizationType::Game>(ImageRectToContainingShipSpaceRect(*affectedRegion));
-        RegisterDirtyVisualization<VisualizationType::TextureLayer>(*affectedRegion);
-    }
+    RegisterDirtyVisualization<VisualizationType::Game>(ImageRectToContainingShipSpaceRect(affectedTextureRegion)); // In excess
+    RegisterDirtyVisualization<VisualizationType::TextureLayer>(affectedTextureRegion);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
