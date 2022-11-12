@@ -230,34 +230,38 @@ void PasteTool::SetIsTransparent(bool isTransparent)
 
 void PasteTool::Rotate90CW()
 {
-    assert(mPendingSessionData);
-
-    if (mPendingSessionData->EphemeralVisualization)
-    {
-        UndoEphemeralVisualization();
-        assert(!mPendingSessionData->EphemeralVisualization);
-    }
-
-    mPendingSessionData->PasteRegion.Rotate90(RotationDirectionType::Clockwise);
-
-    DrawEphemeralVisualization();
-
-    mController.LayerChangeEpilog();
+    ModifyPasteRegion(
+        [](ShipLayers & pasteRegion)
+        {
+            pasteRegion.Rotate90(RotationDirectionType::Clockwise);
+        });
 }
 
 void PasteTool::Rotate90CCW()
 {
-    // TODO
+    ModifyPasteRegion(
+        [](ShipLayers & pasteRegion)
+        {
+            pasteRegion.Rotate90(RotationDirectionType::CounterClockwise);
+        });
 }
 
 void PasteTool::FlipH()
 {
-    // TODO
+    ModifyPasteRegion(
+        [](ShipLayers & pasteRegion)
+        {
+            pasteRegion.Flip(DirectionType::Horizontal);
+        });
 }
 
 void PasteTool::FlipV()
 {
-    // TODO
+    ModifyPasteRegion(
+        [](ShipLayers & pasteRegion)
+        {
+            pasteRegion.Flip(DirectionType::Vertical);
+        });
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -329,6 +333,24 @@ void PasteTool::UndoEphemeralVisualization()
     mController.GetModelController().RestoreEphemeralVisualization(std::move(*(mPendingSessionData->EphemeralVisualization)));
 
     mPendingSessionData->EphemeralVisualization.reset();
+}
+
+template<typename TModifier>
+void PasteTool::ModifyPasteRegion(TModifier && modifier)
+{
+    assert(mPendingSessionData);
+
+    if (mPendingSessionData->EphemeralVisualization)
+    {
+        UndoEphemeralVisualization();
+        assert(!mPendingSessionData->EphemeralVisualization);
+    }
+
+    modifier(mPendingSessionData->PasteRegion);
+
+    DrawEphemeralVisualization();
+
+    mController.LayerChangeEpilog();
 }
 
 }

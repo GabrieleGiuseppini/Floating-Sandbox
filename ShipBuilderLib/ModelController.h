@@ -390,7 +390,7 @@ public:
     {
         vec2f const shipToTexture = GetShipSpaceToTextureSpaceFactor(shipSize, textureSize);
 
-        return ImageCoordinates::FromFloatRound(shipCoordinates.ToFloat().scale(shipToTexture));
+        return ImageCoordinates::FromFloatFloor(shipCoordinates.ToFloat().scale(shipToTexture));
     }
 
     static ImageRect ShipSpaceToTextureSpace(
@@ -401,8 +401,8 @@ public:
         vec2f const shipToTexture = GetShipSpaceToTextureSpaceFactor(shipSize, textureSize);
 
         return ImageRect(
-            ImageCoordinates::FromFloatRound(shipRect.origin.ToFloat().scale(shipToTexture)),
-            ImageSize::FromFloatRound(shipRect.size.ToFloat().scale(shipToTexture)));
+            ImageCoordinates::FromFloatFloor(shipRect.origin.ToFloat().scale(shipToTexture)),
+            ImageSize::FromFloatFloor(shipRect.size.ToFloat().scale(shipToTexture)));
     }
 
     ShipSpaceRect ImageRectToContainingShipSpaceRect(ImageRect const & imageRect) const;

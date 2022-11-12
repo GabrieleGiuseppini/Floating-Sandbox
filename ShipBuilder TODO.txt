@@ -456,9 +456,9 @@
 			+ Controller::AbortPaste()
 				+ Get tool as PasteTool, and invoke Abort() on it
 				+ Then, destroy (reset) mCurrentTool, and activate previous one for the current layer
-			- Controller::CommitPaste()
-				- Get tool as PasteTool, and invoke Commit() on it
-				- Then, destroy (reset) mCurrentTool, and activate previous one for the current layer
+			= Controller::CommitPaste()
+				= Get tool as PasteTool, and invoke Commit() on it
+				= Then, destroy (reset) mCurrentTool, and activate previous one for the current layer
 			+ Controller::RotatePaste()/etc.
 				+ Get tool as PasteTool, and invoke Rotate()/etc. on it
 			+ Controller::SetPasteIsTransparent:
@@ -514,6 +514,9 @@
 					+ LayerChangeEpilog
 				= Rotate()/etc.:
 					!  Undo eph viz, Do operation on own mPasteRegion, Redo eph viz
+					+ Flip H/V
+					= Rotate
+						- Fix H/V aspect ratio issue
 				+ Set"Opaque/Transparentness" (for changes)
 					! Undo eph viz, change, Redo eph viz
 				+ MouseDown():
@@ -555,7 +558,7 @@
 						- S, E: NOT NEEDED
 							- Unless we can make "deep" paste (i.e. analysys) via operator()
 						- R, T: used by both Paste() and PasteForEphemeralVisualization()
-			= Remove redundancies
+			+ Remove redundancies
 				+ S:
 					+ Helper: RestoreStructuralLayerRegionEphemeralVisualization
 					+ Use at:
@@ -568,11 +571,11 @@
 				+ R:
 					+ Do
 					+ Test
-				= T:
+				+ T:
 					+ Do
-					= Test
-						= Fix skidmarks:
-							= Both Paste and PasteForEphViz calculate affected rect - and most importantly affected source - and use those in their implementation, rather than letting
+					+ Test
+						+ Fix skidmarks:
+							+ Both Paste and PasteForEphViz calculate affected rect - and most importantly affected source - and use those in their implementation, rather than letting
 							  Blit() calc that
 								+ Try with texture (DoTextureRegionBufferPaste)
 									+ assert containments
@@ -582,35 +585,33 @@
 										+ Paste
 										+ PasteForEphViz									
 								+ If works, do with all others as well
-								- (*)
 
-			- See if can get rid of double-calc'ing affected rect (intersection) - i.e. see if can assert containments at BlitFromRegion(.)
-				- Note: this might be done for eph viz (*); not sure about others
-
-
-			- ModelController::Paste(LayersRegion, origin, opaque/transparent) X 2 (ephemeral, normal) -> GenericUndoPayload
-				= PasteForEphemeralVisualization(...) -> GenericUndoPayload
+			= ModelController::Paste(LayersRegion, origin, opaque/transparent) X 2 (ephemeral, normal) -> GenericUndoPayload
+				+ PasteForEphemeralVisualization(...) -> GenericUndoPayload
 					+ blit (DoStructuralRegionBufferPaste)
 					+ blit (DoElectricalRegionBufferPaste)
-					= ? (RopesBuffer::Blit(..., isTransparent)) via DoRopesRegionBufferPaste
+					+ blit (DoRopesRegionBufferPaste)
 					+ blit (DoTextureRegionBufferPaste)
-				= RestoreForEphemeralVisualization(GenericUndoPayload)
-					+ blit (DoStructuralRegionBufferPaste)
-					+ blit (DoElectricalRegionBufferPaste)
-					= Whole ropes buffer - via RestoreRegionBackup
-					+ blit (DoTextureRegionBufferPaste)
+				+ RestoreEphemeralVisualization(GenericUndoPayload)
+					+ blit (RestoreStructuralLayerRegionEphemeralVisualization)
+					+ blit (RestoreElectricalLayerRegionEphemeralVisualization)
+					+ Whole ropes buffer (RestoreRopesLayerEphemeralVisualization)
+					+ blit (RestoreTextureLayerRegionEphemeralVisualization)
 				= Paste(...) -> GenericUndoPayload
 					- special
 						- Make sure analysis is updated
 					- special
 						- Make sure analysis is updated - incl. elec instance ID factory is re-initialized
-					= ? (RopesBuffer::Blit(..., isTransparent)) via DoRopesRegionBufferPaste
+					+ blit (DoRopesRegionBufferPaste)
 					+ blit (DoTextureRegionBufferPaste)
-				= Restore(GenericUndoPayload)
-					- Make sure elec instance ID factory is re-initialized
+				+ Restore(GenericUndoPayload)
+					+ Make sure elec instance ID factory is re-initialized
 				+ RopesBuffer::Blit
 					+ Code
 					+ Unit tests
+			- Unify DoXXXRegionBufferPaste with RestoreXXXLayerRegionEphemeralVisualization
+				- Funcs stay separate, but core implementation is only one
+					- Except for Ropes, may be?
 		- Tests:
 			- Make sure none of the Paste tools may be selected by user
 				- After removing layer

@@ -2825,8 +2825,11 @@ void ModelController::DoStructuralRegionBufferPaste(
     ShipSpaceCoordinates const & targetCoordinates,
     bool isTransparent)
 {
-    // The paste region is entirely contained in this ship
-    assert(ShipSpaceRect(targetCoordinates, sourceRegion.size).IsContainedInRect(GetWholeShipRect()));
+    // Rect in the ship that will be affected by this operation
+    ShipSpaceRect const affectedRegion(targetCoordinates, sourceRegion.size);
+
+    // The affected region is entirely contained in this ship
+    assert(affectedRegion.IsContainedInRect(GetWholeShipRect()));
 
     // The source region is entirely contained in the source buffer
     assert(sourceRegion.IsContainedInRect(ShipSpaceRect(sourceBuffer.Size)));
@@ -2853,8 +2856,6 @@ void ModelController::DoStructuralRegionBufferPaste(
     // Update visualization
     //
 
-    ShipSpaceRect const affectedRegion(targetCoordinates, sourceRegion.size); // Effective dirtied region
-
     RegisterDirtyVisualization<VisualizationType::Game>(affectedRegion);
     RegisterDirtyVisualization<VisualizationType::StructuralLayer>(affectedRegion);
 }
@@ -2865,8 +2866,11 @@ void ModelController::DoElectricalRegionBufferPaste(
     ShipSpaceCoordinates const & targetCoordinates,
     bool isTransparent)
 {
-    // The paste region is entirely contained in this ship
-    assert(ShipSpaceRect(targetCoordinates, sourceRegion.size).IsContainedInRect(GetWholeShipRect()));
+    // Rect in the ship that will be affected by this operation
+    ShipSpaceRect const affectedRegion(targetCoordinates, sourceRegion.size);
+
+    // The affected region is entirely contained in this ship
+    assert(affectedRegion.IsContainedInRect(GetWholeShipRect()));
 
     // The source region is entirely contained in the source buffer
     assert(sourceRegion.IsContainedInRect(ShipSpaceRect(sourceBuffer.Size)));
@@ -2893,8 +2897,6 @@ void ModelController::DoElectricalRegionBufferPaste(
     // Update visualization
     //
 
-    ShipSpaceRect const affectedRegion(targetCoordinates, sourceRegion.size); // Effective dirtied region
-
     RegisterDirtyVisualization<VisualizationType::ElectricalLayer>(affectedRegion);
 }
 
@@ -2904,8 +2906,11 @@ void ModelController::DoRopesRegionBufferPaste(
     ShipSpaceCoordinates const & targetCoordinates,
     bool isTransparent)
 {
-    // The paste region is entirely contained in this ship
-    assert(ShipSpaceRect(targetCoordinates, sourceRegion.size).IsContainedInRect(GetWholeShipRect()));
+    // Rect in the ship that will be affected by this operation
+    ShipSpaceRect const affectedRegion(targetCoordinates, sourceRegion.size);
+
+    // The affected region is entirely contained in this ship
+    assert(affectedRegion.IsContainedInRect(GetWholeShipRect()));
 
     // The source region is entirely contained in the source buffer
     assert(sourceRegion.IsContainedInRect(ShipSpaceRect(sourceBuffer.GetSize())));
@@ -2929,8 +2934,11 @@ void ModelController::DoTextureRegionBufferPaste(
     ShipSpaceCoordinates const & targetCoordinates,
     bool isTransparent)
 {
-    // The paste region is entirely contained in this ship
-    assert(ShipSpaceRect(targetCoordinates, sourceRegion.size).IsContainedInRect(GetWholeShipRect()));
+    // Rect in the ship that will be affected by this operation
+    ShipSpaceRect const affectedRegion(targetCoordinates, sourceRegion.size);
+
+    // The affected region is entirely contained in this ship
+    assert(affectedRegion.IsContainedInRect(GetWholeShipRect()));
 
     ImageRect const sourceTextureRegion = ShipSpaceToTextureSpace(
         sourceRegion,

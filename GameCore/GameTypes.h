@@ -344,6 +344,13 @@ struct _IntegralSize
             static_cast<integral_type>(std::round(vec.y)));
     }
 
+    static _IntegralSize<TIntegralTag> FromFloatFloor(vec2f const & vec)
+    {
+        return _IntegralSize<TIntegralTag>(
+            static_cast<integral_type>(std::floor(vec.x)),
+            static_cast<integral_type>(std::floor(vec.y)));
+    }
+
     inline bool operator==(_IntegralSize<TIntegralTag> const & other) const
     {
         return this->width == other.width
@@ -448,6 +455,13 @@ struct _IntegralCoordinates
         return _IntegralCoordinates<TIntegralTag>(
             static_cast<integral_type>(std::round(vec.x)),
             static_cast<integral_type>(std::round(vec.y)));
+    }
+
+    static _IntegralCoordinates<TIntegralTag> FromFloatFloor(vec2f const & vec)
+    {
+        return _IntegralCoordinates<TIntegralTag>(
+            static_cast<integral_type>(std::floor(vec.x)),
+            static_cast<integral_type>(std::floor(vec.y)));
     }
 
     inline bool operator==(_IntegralCoordinates<TIntegralTag> const & other) const

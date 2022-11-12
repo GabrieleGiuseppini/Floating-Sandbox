@@ -75,6 +75,9 @@ private:
 
     void UndoEphemeralVisualization();
 
+    template<typename TModifier>
+    void ModifyPasteRegion(TModifier && modifier);
+
 private:
 
     struct PendingSessionData
