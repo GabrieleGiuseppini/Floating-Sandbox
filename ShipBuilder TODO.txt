@@ -540,7 +540,7 @@
 				- ShiftDown/Up:
 					- TODO: constrain H/V
 			+ Rethink PasteForEphViz/RestoreForEphViz: do own pure buffer blitting at both, storing into TODOHERE: MultiLayerBufferUndoPayload
-			= Missing symmetry of methods:
+			+ Missing symmetry of methods:
 				! MakeGenericEphemeralVisualizationRestorePayload:
 					- S:	- Undo: CloneRegion
 					- E:	- Undo: CloneRegion
@@ -557,12 +557,8 @@
 						+ Own file
 						+ PasteForEphViz uses helper (again) to make it: MakeGenericEphemeralVisualizationRestorePayload(...)
 						+ RestoreForEphViz becomes RestoreEphemeralVisualization(.)
-				= FIX: RestoreEphemeralVisualization does not invalidate Ropes region!!!
+				+ FIX: RestoreEphemeralVisualization does not invalidate Ropes region!!!
 					+ Replace DoStructuralRegionBufferPaste/etc. calls in RestoreEphemeralVisualization with inline
-					- See if DoStructuralRegionBufferPaste, ... still needed
-						- S, E: NOT NEEDED
-							- Unless we can make "deep" paste (i.e. analysis) via operator()
-						+ R, T: used by both Paste() and PasteForEphemeralVisualization()
 			+ Remove redundancies
 				+ S:
 					+ Helper: RestoreStructuralLayerRegionEphemeralVisualization
@@ -590,8 +586,6 @@
 										+ Paste
 										+ PasteForEphViz									
 								+ If works, do with all others as well
-			- See if can do these other undo's with GenericUndo:
-				- Resize
 			= ModelController::Paste(LayersRegion, origin, opaque/transparent) X 2 (ephemeral, normal) -> GenericUndoPayload
 				+ PasteForEphemeralVisualization(...) -> GenericUndoPayload
 					+ blit (DoStructuralRegionBufferPaste)
@@ -604,10 +598,9 @@
 					+ Whole ropes buffer (RestoreRopesLayerEphemeralVisualization)
 					+ blit (RestoreTextureLayerRegionEphemeralVisualization)
 				= Paste(...) -> GenericUndoPayload
-					- special
-						- Make sure analysis is updated
-					- special
-						- Make sure analysis is updated - incl. elec instance ID factory is re-initialized
+					+ blit (DoStructuralRegionBufferPaste) & analysis re-initialization
+					- blit (DoElectricalRegionBufferPaste) & analysis re-initialization
+						- Copy also electrical panel elements
 					+ blit (DoRopesRegionBufferPaste)
 					+ blit (DoTextureRegionBufferPaste)
 				+ Restore(GenericUndoPayload)
@@ -618,6 +611,7 @@
 			- Unify DoXXXRegionBufferPaste with RestoreXXXLayerRegionEphemeralVisualization
 				- Funcs stay separate, but core implementation is only one
 					- Except for Ropes, may be?
+					- Check if: RestoreXXXLayerRegionEphemeralVisualization -> DoXXXRegionBufferPaste
 		- Tests:
 			- Make sure none of the Paste tools may be selected by user
 				- After removing layer
@@ -629,6 +623,8 @@
 
 	- Tests:
 		- Ropes paste carries with it both and only ropes w/both endpoints in region, and with one endpoint in region
+	- See if can do these other undo's with GenericUndo:
+		- Resize
 	- Merge back into master
 
 + RenderContext:

@@ -539,12 +539,14 @@ GenericUndoPayload ModelController::Paste(
             structuralLayerRegionBackup = mModel.GetStructuralLayer().MakeRegionBackup(*affectedTargetRectShip);
 
             // Paste
-            // TODOHERE
-            //DoStructuralRegionBufferPaste(
-            //    sourcePayload.StructuralLayer->Buffer,
-            //    affectedSourceRegion,
-            //    actualPasteOriginShip,
-            //    isTransparent);
+            DoStructuralRegionBufferPaste(
+                sourcePayload.StructuralLayer->Buffer,
+                affectedSourceRegion,
+                actualPasteOriginShip,
+                isTransparent);
+
+            // Re-initialize layer analysis
+            InitializeStructuralLayerAnalysis();
         }
 
         if (sourcePayload.ElectricalLayer && mModel.HasLayer(LayerType::Electrical))
@@ -561,6 +563,9 @@ GenericUndoPayload ModelController::Paste(
             //    affectedSourceRegion,
             //    actualPasteOriginShip,
             //    isTransparent);
+
+            // Re-initialize layer analysis
+            // InitializeElectricalLayerAnalysis();
         }
 
         if (sourcePayload.RopesLayer && mModel.HasLayer(LayerType::Ropes))
