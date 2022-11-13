@@ -1096,33 +1096,13 @@ void ModelController::RestoreStructuralLayerRegionEphemeralVisualization(
     ShipSpaceRect const & backupBufferRegion,
     ShipSpaceCoordinates const & targetOrigin)
 {
-    assert(mModel.HasLayer(LayerType::Structural));
     assert(mIsStructuralLayerInEphemeralVisualization);
 
-    //
-    // Restore model, and nothing else
-    //
-
-    // The backup buffer region is completely contained in the backup buffer
-    assert(backupBufferRegion.IsContainedInRect(ShipSpaceRect(backupBuffer.Size)));
-
-    // Rect in the ship that will be affected by this operation
-    ShipSpaceRect const affectedRegion(targetOrigin, backupBufferRegion.size);
-
-    // The ship region affected by this operation is completely contained in the ship
-    assert(affectedRegion.IsContainedInRect(GetWholeShipRect()));
-
-    mModel.GetStructuralLayer().Buffer.BlitFromRegion(
+    DoStructuralRegionBufferPaste(
         backupBuffer,
         backupBufferRegion,
-        targetOrigin);
-
-    //
-    // Update visualization
-    //
-
-    RegisterDirtyVisualization<VisualizationType::Game>(affectedRegion);
-    RegisterDirtyVisualization<VisualizationType::StructuralLayer>(affectedRegion);
+        targetOrigin,
+        false);
 
     // Remember we are not anymore in temp visualization
     mIsStructuralLayerInEphemeralVisualization = false;
@@ -1362,32 +1342,13 @@ void ModelController::RestoreElectricalLayerRegionEphemeralVisualization(
     ShipSpaceRect const & backupBufferRegion,
     ShipSpaceCoordinates const & targetOrigin)
 {
-    assert(mModel.HasLayer(LayerType::Electrical));
     assert(mIsElectricalLayerInEphemeralVisualization);
 
-    //
-    // Restore model, and nothing else
-    //
-
-    // The backup buffer region is completely contained in the backup buffer
-    assert(backupBufferRegion.IsContainedInRect(ShipSpaceRect(backupBuffer.Size)));
-
-    // Rect in the ship that will be affected by this operation
-    ShipSpaceRect const affectedRegion(targetOrigin, backupBufferRegion.size);
-
-    // The ship region affected by this operation is completely contained in the ship
-    assert(affectedRegion.IsContainedInRect(GetWholeShipRect()));
-
-    mModel.GetElectricalLayer().Buffer.BlitFromRegion(
+    DoElectricalRegionBufferPaste(
         backupBuffer,
         backupBufferRegion,
-        targetOrigin);
-
-    //
-    // Update visualization
-    //
-
-    RegisterDirtyVisualization<VisualizationType::ElectricalLayer>(affectedRegion);
+        targetOrigin,
+        false);
 
     // Remember we are not anymore in temp visualization
     mIsElectricalLayerInEphemeralVisualization = false;
@@ -1900,33 +1861,14 @@ void ModelController::RestoreTextureLayerRegionEphemeralVisualization(
     ImageRect const & backupBufferRegion,
     ImageCoordinates const & targetOrigin)
 {
-    assert(mModel.HasLayer(LayerType::Texture));
     assert(mIsTextureLayerInEphemeralVisualization);
 
-    //
-    // Restore model, and nothing else
-    //
-
-    // The backup buffer region is completely contained in the backup buffer
-    assert(backupBufferRegion.IsContainedInRect(ImageRect(backupBuffer.Size)));
-
-    // Rect in the texture that will be affected by this operation
-    ImageRect const affectedRegion(targetOrigin, backupBufferRegion.size);
-
-    // The texture region affected by this operation is completely contained in the texture
-    assert(affectedRegion.IsContainedInRect(GetWholeTextureRect()));
-
-    mModel.GetTextureLayer().Buffer.BlitFromRegion(
+    DoTextureRegionBufferPaste(
         backupBuffer,
         backupBufferRegion,
-        targetOrigin);
-
-    //
-    // Update visualization
-    //
-
-    RegisterDirtyVisualization<VisualizationType::Game>(ImageRectToContainingShipSpaceRect(affectedRegion));
-    RegisterDirtyVisualization<VisualizationType::TextureLayer>(affectedRegion);
+        ImageRect(targetOrigin, backupBufferRegion.size),
+        targetOrigin,
+        false);
 
     // Remember we are not anymore in temp visualization
     mIsTextureLayerInEphemeralVisualization = false;

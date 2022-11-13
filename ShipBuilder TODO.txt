@@ -608,10 +608,10 @@
 				+ RopesBuffer::Blit
 					+ Code
 					+ Unit tests
-			- Unify DoXXXRegionBufferPaste with RestoreXXXLayerRegionEphemeralVisualization
-				- Funcs stay separate, but core implementation is only one
-					- Except for Ropes, may be?
-					- Check if: RestoreXXXLayerRegionEphemeralVisualization -> DoXXXRegionBufferPaste
+			+ Unify DoXXXRegionBufferPaste with RestoreXXXLayerRegionEphemeralVisualization
+				+ S
+				+ E
+				+ T
 		- Tests:
 			- Make sure none of the Paste tools may be selected by user
 				- After removing layer
