@@ -447,12 +447,7 @@ ShipLayers ModelController::Copy(
     std::unique_ptr<TextureLayerData> textureLayerCopy;
     if (CheckLayerSelectionApplicability(layerSelection, LayerType::Texture))
     {
-        ImageRect const regionImageRect = ShipSpaceToTextureSpace(
-            region,
-            GetShipSize(),
-            GetTextureSize());
-
-        textureLayerCopy = std::make_unique<TextureLayerData>(mModel.GetTextureLayer().CloneRegion(regionImageRect));
+        textureLayerCopy = std::make_unique<TextureLayerData>(mModel.GetTextureLayer().CloneRegion(ShipSpaceToTextureSpace(region)));
     }
 
     return ShipLayers(
@@ -499,12 +494,7 @@ GenericUndoPayload ModelController::EraseRegion(
 
     if (CheckLayerSelectionApplicability(layerSelection, LayerType::Texture))
     {
-        ImageRect const regionImageRect = ShipSpaceToTextureSpace(
-            region,
-            GetShipSize(),
-            GetTextureSize());
-
-        EraseTextureRegion(regionImageRect);
+        EraseTextureRegion(ShipSpaceToTextureSpace(region));
     }
 
     return undoPayload;
@@ -597,10 +587,7 @@ GenericUndoPayload ModelController::Paste(
 
     if (sourcePayload.TextureLayer && mModel.HasLayer(LayerType::Texture))
     {
-        ImageCoordinates pasteOriginTexture = ShipSpaceToTextureSpace(
-            pasteOrigin,
-            GetShipSize(),
-            GetTextureSize());
+        ImageCoordinates const pasteOriginTexture = ShipSpaceToTextureSpace(pasteOrigin);
 
         ImageCoordinates actualPasteOriginTexture = pasteOriginTexture;
 
@@ -685,7 +672,7 @@ void ModelController::Restore(GenericUndoPayload && undoPayload)
             {
                 RestoreTextureLayerRegionBackup(
                     std::move(*undoPayload.TextureLayerRegionBackup),
-                    ShipSpaceToTextureSpace(undoPayload.Origin, GetShipSize(), GetTextureSize()));
+                    ShipSpaceToTextureSpace(undoPayload.Origin));
 
                 break;
             }
@@ -787,10 +774,7 @@ GenericEphemeralVisualizationRestorePayload ModelController::PasteForEphemeralVi
 
     if (sourcePayload.TextureLayer && mModel.HasLayer(LayerType::Texture))
     {
-        ImageCoordinates pasteOriginTexture = ShipSpaceToTextureSpace(
-            pasteOrigin,
-            GetShipSize(),
-            GetTextureSize());
+        ImageCoordinates const pasteOriginTexture = ShipSpaceToTextureSpace(pasteOrigin);
 
         ImageCoordinates actualPasteOriginTexture = pasteOriginTexture;
 
@@ -877,10 +861,7 @@ void ModelController::RestoreEphemeralVisualization(GenericEphemeralVisualizatio
                 RestoreTextureLayerRegionEphemeralVisualization(
                     *restorePayload.TextureLayerBufferRegion,
                     ImageRect(restorePayload.TextureLayerBufferRegion->Size), // Whole backup
-                    ShipSpaceToTextureSpace(
-                        restorePayload.Origin,
-                        GetShipSize(),
-                        GetTextureSize()));
+                    ShipSpaceToTextureSpace(restorePayload.Origin));
 
                 break;
             }
@@ -2798,7 +2779,7 @@ GenericUndoPayload ModelController::MakeGenericUndoPayload(
     bool doRopesLayer,
     bool doTextureLayer) const
 {
-    // The requested region is entirely within this buffer
+    // The requested region is entirely within the ship
     assert(region.IsContainedInRect(GetWholeShipRect()));
 
     std::optional<StructuralLayerData> structuralLayerRegionBackup;
@@ -2823,12 +2804,10 @@ GenericUndoPayload ModelController::MakeGenericUndoPayload(
 
     if (doTextureLayer)
     {
-        ImageRect const regionImageRect = ShipSpaceToTextureSpace(
-            region,
-            GetShipSize(),
-            GetTextureSize());
+        // The requested region is entirely within the ship
+        assert(ShipSpaceToTextureSpace(region).IsContainedInRect(GetWholeTextureRect()));
 
-        textureLayerRegionBackup = mModel.GetTextureLayer().MakeRegionBackup(regionImageRect);
+        textureLayerRegionBackup = mModel.GetTextureLayer().MakeRegionBackup(ShipSpaceToTextureSpace(region));
     }
 
     return GenericUndoPayload(
@@ -2846,7 +2825,7 @@ GenericEphemeralVisualizationRestorePayload ModelController::MakeGenericEphemera
     bool doRopesLayer,
     bool doTextureLayer) const
 {
-    // The requested region is entirely within this buffer
+    // The requested region is entirely within the ship
     assert(region.IsContainedInRect(GetWholeShipRect()));
 
     std::optional<typename LayerTypeTraits<LayerType::Structural>::buffer_type> structuralLayerBufferRegion;
@@ -2871,12 +2850,10 @@ GenericEphemeralVisualizationRestorePayload ModelController::MakeGenericEphemera
 
     if (doTextureLayer)
     {
-        ImageRect const regionImageRect = ShipSpaceToTextureSpace(
-            region,
-            GetShipSize(),
-            GetTextureSize());
+        // The requested region is entirely within the ship
+        assert(ShipSpaceToTextureSpace(region).IsContainedInRect(GetWholeTextureRect()));
 
-        textureLayerBufferRegion = mModel.GetTextureLayer().Buffer.CloneRegion(regionImageRect);
+        textureLayerBufferRegion = mModel.GetTextureLayer().Buffer.CloneRegion(ShipSpaceToTextureSpace(region));
     }
 
     return GenericEphemeralVisualizationRestorePayload(

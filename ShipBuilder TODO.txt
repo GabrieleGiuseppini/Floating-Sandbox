@@ -512,19 +512,16 @@
 					+ Store Undo
 						+ No Undo if no layer affected
 					+ LayerChangeEpilog
-				= Rotate()/etc.:
+				+ Rotate()/etc.:
 					!  Undo eph viz, Do operation on own mPasteRegion, Redo eph viz
 					+ Flip H/V
-					= Rotate
-						- Fix H/V aspect ratio issue:
-							- Option 1:
-								- Paste, PasteForEphViz: undo payload's texture must take into consideration actual texture region that will be pasted
-									- ...which must take into consideration _source_ region as we can't do more than that
-									- Ideally: both source and target affected rects have a texture counterpart (when payload has it) which takes into
+					+ Rotate
+						+ Fix H/V aspect ratio issue:
+							+ Option 1:
+								+ Paste, PasteForEphViz: undo payload's texture must take into consideration actual texture region that will be pasted
+									+ ...which must take into consideration _source_ region as we can't do more than that
+									+ Ideally: both source and target affected rects have a texture counterpart (when payload has it) which takes into
 									  account texture buffer
-							- Cleanup:
-								- See if ShipSpaceToTextureSpace/TextureSpaceToShipSpace always use GetShip...()/GetTexture...(); if so, make it non-static
-								  and nuke members
 				+ Set"Opaque/Transparentness" (for changes)
 					! Undo eph viz, change, Redo eph viz
 				+ MouseDown():
@@ -541,7 +538,7 @@
 						+ DrawEphViz
 						+ LayerChangeEpilog
 				- ShiftDown/Up:
-					- TODO
+					- TODO: constrain H/V
 			+ Rethink PasteForEphViz/RestoreForEphViz: do own pure buffer blitting at both, storing into TODOHERE: MultiLayerBufferUndoPayload
 			= Missing symmetry of methods:
 				! MakeGenericEphemeralVisualizationRestorePayload:
@@ -564,8 +561,8 @@
 					+ Replace DoStructuralRegionBufferPaste/etc. calls in RestoreEphemeralVisualization with inline
 					- See if DoStructuralRegionBufferPaste, ... still needed
 						- S, E: NOT NEEDED
-							- Unless we can make "deep" paste (i.e. analysys) via operator()
-						- R, T: used by both Paste() and PasteForEphemeralVisualization()
+							- Unless we can make "deep" paste (i.e. analysis) via operator()
+						+ R, T: used by both Paste() and PasteForEphemeralVisualization()
 			+ Remove redundancies
 				+ S:
 					+ Helper: RestoreStructuralLayerRegionEphemeralVisualization
@@ -593,7 +590,7 @@
 										+ Paste
 										+ PasteForEphViz									
 								+ If works, do with all others as well
-			- See if can do this other undo's with GenericUndo:
+			- See if can do these other undo's with GenericUndo:
 				- Resize
 			= ModelController::Paste(LayersRegion, origin, opaque/transparent) X 2 (ephemeral, normal) -> GenericUndoPayload
 				+ PasteForEphemeralVisualization(...) -> GenericUndoPayload

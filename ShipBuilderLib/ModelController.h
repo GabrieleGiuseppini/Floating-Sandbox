@@ -383,22 +383,16 @@ public:
             static_cast<float>(shipSize.height) / static_cast<float>(textureSize.height));
     }
 
-    static ImageCoordinates ShipSpaceToTextureSpace(
-        ShipSpaceCoordinates const & shipCoordinates,
-        ShipSpaceSize const & shipSize,
-        ImageSize const & textureSize)
+    ImageCoordinates ShipSpaceToTextureSpace(ShipSpaceCoordinates const & shipCoordinates) const
     {
-        vec2f const shipToTexture = GetShipSpaceToTextureSpaceFactor(shipSize, textureSize);
+        vec2f const shipToTexture = GetShipSpaceToTextureSpaceFactor(GetShipSize(), GetTextureSize());
 
         return ImageCoordinates::FromFloatFloor(shipCoordinates.ToFloat().scale(shipToTexture));
     }
 
-    static ImageRect ShipSpaceToTextureSpace(
-        ShipSpaceRect const & shipRect,
-        ShipSpaceSize const & shipSize,
-        ImageSize const & textureSize)
+    ImageRect ShipSpaceToTextureSpace(ShipSpaceRect const & shipRect) const
     {
-        vec2f const shipToTexture = GetShipSpaceToTextureSpaceFactor(shipSize, textureSize);
+        vec2f const shipToTexture = GetShipSpaceToTextureSpaceFactor(GetShipSize(), GetTextureSize());
 
         return ImageRect(
             ImageCoordinates::FromFloatFloor(shipRect.origin.ToFloat().scale(shipToTexture)),
