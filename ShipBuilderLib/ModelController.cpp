@@ -515,103 +515,135 @@ GenericUndoPayload ModelController::Paste(
     ShipSpaceCoordinates const & pasteOrigin,
     bool isTransparent)
 {
-    auto const affectedTargetRect =
+    //
+    // Structural, Electrical, Ropes
+    //
+
+    ShipSpaceCoordinates actualPasteOriginShip = pasteOrigin;
+
+    std::optional<StructuralLayerData> structuralLayerRegionBackup;
+    std::optional<ElectricalLayerData> electricalLayerRegionBackup;
+    std::optional<RopesLayerData> ropesLayerRegionBackup;
+
+    std::optional<ShipSpaceRect> const affectedTargetRectShip =
         ShipSpaceRect(pasteOrigin, sourcePayload.Size)
         .MakeIntersectionWith(GetWholeShipRect());
 
-    if (affectedTargetRect.has_value())
+    if (affectedTargetRectShip.has_value())
     {
-        //
-        // Calculate affected *source* region
-        //
+        assert(!affectedTargetRectShip->IsEmpty());
 
-        assert(!affectedTargetRect->IsEmpty());
+        // Adjust paste origin
+        actualPasteOriginShip = affectedTargetRectShip->origin;
 
+        // Calculate affected source region
         ShipSpaceRect const affectedSourceRegion(
-            ShipSpaceCoordinates(0, 0) + (affectedTargetRect->origin - pasteOrigin),
-            affectedTargetRect->size);
+            ShipSpaceCoordinates(0, 0) + (actualPasteOriginShip - pasteOrigin),
+            affectedTargetRectShip->size);
 
-        //
-        // Prepare undo
-        //
-
-        GenericUndoPayload undoPayload = MakeGenericUndoPayload(
-            *affectedTargetRect,
-            (bool)(sourcePayload.StructuralLayer) && mModel.HasLayer(LayerType::Structural),
-            (bool)(sourcePayload.ElectricalLayer) && mModel.HasLayer(LayerType::Electrical),
-            (bool)(sourcePayload.RopesLayer) && mModel.HasLayer(LayerType::Ropes),
-            (bool)(sourcePayload.TextureLayer) && mModel.HasLayer(LayerType::Texture));
-
-        //
-        // Paste - update model
-        //
-
-        for (LayerType const affectedLayerType : CalculateAffectedLayers(sourcePayload))
+        if (sourcePayload.StructuralLayer && mModel.HasLayer(LayerType::Structural))
         {
-            switch (affectedLayerType)
-            {
-                case LayerType::Structural:
-                {
-                    assert(!mIsStructuralLayerInEphemeralVisualization);
+            assert(!mIsStructuralLayerInEphemeralVisualization);
 
-                    // TODOHERE
-                    //DoStructuralRegionBufferPaste(
-                    //    sourcePayload.StructuralLayer->Buffer,
-                    //    mModel.GetStructuralLayer().Buffer,
-                    //    pasteOrigin,
-                    //    isTransparent);
+            // Prepare undo
+            structuralLayerRegionBackup = mModel.GetStructuralLayer().MakeRegionBackup(*affectedTargetRectShip);
 
-                    break;
-                }
-
-                case LayerType::Electrical:
-                {
-                    assert(!mIsElectricalLayerInEphemeralVisualization);
-
-                    // TODOHERE
-                    //DoElectricalRegionBufferPaste(
-                    //    sourcePayload.ElectricalLayer->Buffer,
-                    //    mModel.GetElectricalLayer().Buffer,
-                    //    pasteOrigin,
-                    //    isTransparent);
-
-                    break;
-                }
-
-                case LayerType::Ropes:
-                {
-                    assert(!mIsRopesLayerInEphemeralVisualization);
-
-                    DoRopesRegionBufferPaste(
-                        sourcePayload.RopesLayer->Buffer,
-                        affectedSourceRegion,
-                        affectedTargetRect->origin,
-                        isTransparent);
-
-                    break;
-                }
-
-                case LayerType::Texture:
-                {
-                    assert(!mIsTextureLayerInEphemeralVisualization);
-
-                    DoTextureRegionBufferPaste(
-                        sourcePayload.TextureLayer->Buffer,
-                        affectedSourceRegion,
-                        affectedTargetRect->origin,
-                        isTransparent);
-
-                    break;
-                }
-            }
+            // Paste
+            // TODOHERE
+            //DoStructuralRegionBufferPaste(
+            //    sourcePayload.StructuralLayer->Buffer,
+            //    affectedSourceRegion,
+            //    actualPasteOriginShip,
+            //    isTransparent);
         }
 
-        return undoPayload;
+        if (sourcePayload.ElectricalLayer && mModel.HasLayer(LayerType::Electrical))
+        {
+            assert(!mIsElectricalLayerInEphemeralVisualization);
+
+            // Prepare undo
+            electricalLayerRegionBackup = mModel.GetElectricalLayer().MakeRegionBackup(*affectedTargetRectShip);
+
+            // Paste
+            // TODOHERE
+            //DoElectricalRegionBufferPaste(
+            //    sourcePayload.ElectricalLayer->Buffer,
+            //    affectedSourceRegion,
+            //    actualPasteOriginShip,
+            //    isTransparent);
+        }
+
+        if (sourcePayload.RopesLayer && mModel.HasLayer(LayerType::Ropes))
+        {
+            assert(!mIsRopesLayerInEphemeralVisualization);
+
+            // Prepare undo
+            ropesLayerRegionBackup = mModel.GetRopesLayer().MakeRegionBackup(*affectedTargetRectShip);
+
+            // Paste
+            DoRopesRegionBufferPaste(
+                sourcePayload.RopesLayer->Buffer,
+                affectedSourceRegion,
+                actualPasteOriginShip,
+                isTransparent);
+        }
     }
-    else
+
+    //
+    // Texture
+    //
+
+    std::optional<TextureLayerData> textureLayerRegionBackup;
+
+    if (sourcePayload.TextureLayer && mModel.HasLayer(LayerType::Texture))
     {
-        return GenericUndoPayload(pasteOrigin);
+        ImageCoordinates pasteOriginTexture = ShipSpaceToTextureSpace(
+            pasteOrigin,
+            GetShipSize(),
+            GetTextureSize());
+
+        ImageCoordinates actualPasteOriginTexture = pasteOriginTexture;
+
+        std::optional<ImageRect> const affectedTargetRectTexture =
+            ImageRect(pasteOriginTexture, sourcePayload.TextureLayer->Buffer.Size)
+            .MakeIntersectionWith(GetWholeTextureRect());
+
+        if (affectedTargetRectTexture)
+        {
+            assert(!affectedTargetRectTexture->IsEmpty());
+
+            // Adjust paste origin
+            actualPasteOriginTexture = affectedTargetRectTexture->origin;
+
+            // Calculate affected source region
+            ImageRect const affectedSourceRegion(
+                ImageCoordinates(0, 0) + (actualPasteOriginTexture - pasteOriginTexture),
+                affectedTargetRectTexture->size);
+
+            if (sourcePayload.TextureLayer && mModel.HasLayer(LayerType::Texture)) // Rotfl - just for code structure symmetry
+            {
+                assert(!mIsTextureLayerInEphemeralVisualization);
+
+                // Prepare undo
+                textureLayerRegionBackup = mModel.GetTextureLayer().MakeRegionBackup(*affectedTargetRectTexture);
+
+                // Paste
+                DoTextureRegionBufferPaste(
+                    sourcePayload.TextureLayer->Buffer,
+                    affectedSourceRegion,
+                    *affectedTargetRectTexture,
+                    actualPasteOriginTexture,
+                    isTransparent);
+            }
+        }
     }
+
+    return GenericUndoPayload(
+        actualPasteOriginShip,
+        std::move(structuralLayerRegionBackup),
+        std::move(electricalLayerRegionBackup),
+        std::move(ropesLayerRegionBackup),
+        std::move(textureLayerRegionBackup));
 }
 
 void ModelController::Restore(GenericUndoPayload && undoPayload)
@@ -667,108 +699,144 @@ GenericEphemeralVisualizationRestorePayload ModelController::PasteForEphemeralVi
     bool isTransparent)
 {
     //
-    // Calculate affected *target* (i.e. in this ship) region
+    // Structural, Electrical, Ropes
     //
 
-    auto const affectedTargetRect =
+    ShipSpaceCoordinates actualPasteOriginShip = pasteOrigin;
+
+    std::optional<typename LayerTypeTraits<LayerType::Structural>::buffer_type> structuralLayerUndoBufferRegion;
+    std::optional<typename LayerTypeTraits<LayerType::Electrical>::buffer_type> electricalLayerUndoBufferRegion;
+    std::optional<typename LayerTypeTraits<LayerType::Ropes>::buffer_type> ropesLayerUndoBuffer;
+
+    std::optional<ShipSpaceRect> const affectedTargetRectShip =
         ShipSpaceRect(pasteOrigin, sourcePayload.Size)
         .MakeIntersectionWith(GetWholeShipRect());
 
-    if (affectedTargetRect.has_value())
+    if (affectedTargetRectShip.has_value())
     {
-        //
-        // Calculate affected *source* region
-        //
+        assert(!affectedTargetRectShip->IsEmpty());
 
-        assert(!affectedTargetRect->IsEmpty());
+        // Adjust paste origin
+        actualPasteOriginShip = affectedTargetRectShip->origin;
 
+        // Calculate affected source region
         ShipSpaceRect const affectedSourceRegion(
-            ShipSpaceCoordinates(0, 0) + (affectedTargetRect->origin - pasteOrigin),
-            affectedTargetRect->size);
+            ShipSpaceCoordinates(0, 0) + (actualPasteOriginShip - pasteOrigin),
+            affectedTargetRectShip->size);
 
-
-        // Prepare restore
-        //
-
-        GenericEphemeralVisualizationRestorePayload restorePayload = MakeGenericEphemeralVisualizationRestorePayload(
-            *affectedTargetRect,
-            (bool)(sourcePayload.StructuralLayer) && mModel.HasLayer(LayerType::Structural),
-            (bool)(sourcePayload.ElectricalLayer) && mModel.HasLayer(LayerType::Electrical),
-            (bool)(sourcePayload.RopesLayer) && mModel.HasLayer(LayerType::Ropes),
-            (bool)(sourcePayload.TextureLayer) && mModel.HasLayer(LayerType::Texture));
-
-        //
-        // Paste
-        //
-
-        for (LayerType const affectedLayerType : CalculateAffectedLayers(sourcePayload))
+        if (sourcePayload.StructuralLayer && mModel.HasLayer(LayerType::Structural))
         {
-            switch (affectedLayerType)
-            {
-                case LayerType::Structural:
-                {
-                    DoStructuralRegionBufferPaste(
-                        sourcePayload.StructuralLayer->Buffer,
-                        affectedSourceRegion,
-                        affectedTargetRect->origin,
-                        isTransparent);
+            assert(!mIsStructuralLayerInEphemeralVisualization);
 
-                    // Remember we are in temp visualization now
-                    mIsStructuralLayerInEphemeralVisualization = true;
+            // Prepare undo
+            structuralLayerUndoBufferRegion = mModel.GetStructuralLayer().Buffer.CloneRegion(*affectedTargetRectShip);
 
-                    break;
-                }
+            // Paste
+            DoStructuralRegionBufferPaste(
+                sourcePayload.StructuralLayer->Buffer,
+                affectedSourceRegion,
+                actualPasteOriginShip,
+                isTransparent);
 
-                case LayerType::Electrical:
-                {
-                    DoElectricalRegionBufferPaste(
-                        sourcePayload.ElectricalLayer->Buffer,
-                        affectedSourceRegion,
-                        affectedTargetRect->origin,
-                        isTransparent);
-
-                    // Remember we are in temp visualization now
-                    mIsElectricalLayerInEphemeralVisualization = true;
-
-                    break;
-                }
-
-                case LayerType::Ropes:
-                {
-                    DoRopesRegionBufferPaste(
-                        sourcePayload.RopesLayer->Buffer,
-                        affectedSourceRegion,
-                        affectedTargetRect->origin,
-                        isTransparent);
-
-                    // Remember we are in temp visualization now
-                    mIsRopesLayerInEphemeralVisualization = true;
-
-                    break;
-                }
-
-                case LayerType::Texture:
-                {
-                    DoTextureRegionBufferPaste(
-                        sourcePayload.TextureLayer->Buffer,
-                        affectedSourceRegion,
-                        affectedTargetRect->origin,
-                        isTransparent);
-
-                    // Remember we are in temp visualization now
-                    mIsTextureLayerInEphemeralVisualization = true;
-
-                    break;
-                }
-            }
+            // Remember we are in temp visualization now
+            mIsStructuralLayerInEphemeralVisualization = true;
         }
 
-        return restorePayload;
+        if (sourcePayload.ElectricalLayer && mModel.HasLayer(LayerType::Electrical))
+        {
+            assert(!mIsElectricalLayerInEphemeralVisualization);
+
+            // Prepare undo
+            electricalLayerUndoBufferRegion = mModel.GetElectricalLayer().Buffer.CloneRegion(*affectedTargetRectShip);
+
+            // Paste
+            DoElectricalRegionBufferPaste(
+                sourcePayload.ElectricalLayer->Buffer,
+                affectedSourceRegion,
+                actualPasteOriginShip,
+                isTransparent);
+
+            // Remember we are in temp visualization now
+            mIsElectricalLayerInEphemeralVisualization = true;
+        }
+
+        if (sourcePayload.RopesLayer && mModel.HasLayer(LayerType::Ropes))
+        {
+            assert(!mIsRopesLayerInEphemeralVisualization);
+
+            // Prepare undo
+            ropesLayerUndoBuffer = mModel.GetRopesLayer().Buffer.Clone();
+
+            // Paste
+            DoRopesRegionBufferPaste(
+                sourcePayload.RopesLayer->Buffer,
+                affectedSourceRegion,
+                actualPasteOriginShip,
+                isTransparent);
+
+            // Remember we are in temp visualization now
+            mIsRopesLayerInEphemeralVisualization = true;
+        }
     }
-    else
+
+    //
+    // Texture
+    //
+
+    std::optional<typename LayerTypeTraits<LayerType::Texture>::buffer_type> textureLayerUndoBufferRegion;
+
+    if (sourcePayload.TextureLayer && mModel.HasLayer(LayerType::Texture))
     {
-        return GenericEphemeralVisualizationRestorePayload(pasteOrigin);
+        ImageCoordinates pasteOriginTexture = ShipSpaceToTextureSpace(
+            pasteOrigin,
+            GetShipSize(),
+            GetTextureSize());
+
+        ImageCoordinates actualPasteOriginTexture = pasteOriginTexture;
+
+        std::optional<ImageRect> const affectedTargetRectTexture =
+            ImageRect(pasteOriginTexture, sourcePayload.TextureLayer->Buffer.Size)
+            .MakeIntersectionWith(GetWholeTextureRect());
+
+        if (affectedTargetRectTexture)
+        {
+            assert(!affectedTargetRectTexture->IsEmpty());
+
+            // Adjust paste origin
+            actualPasteOriginTexture = affectedTargetRectTexture->origin;
+
+            // Calculate affected source region
+            ImageRect const affectedSourceRegion(
+                ImageCoordinates(0, 0) + (actualPasteOriginTexture - pasteOriginTexture),
+                affectedTargetRectTexture->size);
+
+            if (sourcePayload.TextureLayer && mModel.HasLayer(LayerType::Texture)) // Rotfl - just for code structure symmetry
+            {
+                assert(!mIsTextureLayerInEphemeralVisualization);
+
+                // Prepare undo
+                textureLayerUndoBufferRegion = mModel.GetTextureLayer().Buffer.CloneRegion(*affectedTargetRectTexture);
+
+                // Paste
+                DoTextureRegionBufferPaste(
+                    sourcePayload.TextureLayer->Buffer,
+                    affectedSourceRegion,
+                    *affectedTargetRectTexture,
+                    actualPasteOriginTexture,
+                    isTransparent);
+
+                // Remember we are in temp visualization now
+                mIsTextureLayerInEphemeralVisualization = true;
+            }
+        }
     }
+
+    return GenericEphemeralVisualizationRestorePayload(
+        actualPasteOriginShip,
+        std::move(structuralLayerUndoBufferRegion),
+        std::move(electricalLayerUndoBufferRegion),
+        std::move(ropesLayerUndoBuffer),
+        std::move(textureLayerUndoBufferRegion));
 }
 
 void ModelController::RestoreEphemeralVisualization(GenericEphemeralVisualizationRestorePayload && restorePayload)
@@ -2930,28 +2998,16 @@ void ModelController::DoRopesRegionBufferPaste(
 
 void ModelController::DoTextureRegionBufferPaste(
     typename LayerTypeTraits<LayerType::Texture>::buffer_type const & sourceBuffer,
-    ShipSpaceRect const & sourceRegion,
-    ShipSpaceCoordinates const & targetCoordinates,
+    ImageRect const & sourceRegion,
+    ImageRect const & targetRegion,
+    ImageCoordinates const & targetCoordinates,
     bool isTransparent)
 {
-    // Rect in the ship that will be affected by this operation
-    ShipSpaceRect const affectedRegion(targetCoordinates, sourceRegion.size);
-
-    // The affected region is entirely contained in this ship
-    assert(affectedRegion.IsContainedInRect(GetWholeShipRect()));
-
-    ImageRect const sourceTextureRegion = ShipSpaceToTextureSpace(
-        sourceRegion,
-        GetShipSize(),
-        GetTextureSize());
-
     // The source region is entirely contained in the source buffer
-    assert(sourceTextureRegion.IsContainedInRect(ImageRect(sourceBuffer.Size)));
+    assert(sourceRegion.IsContainedInRect(ImageRect(sourceBuffer.Size)));
 
-    ImageCoordinates const targetTextureCoordinates = ShipSpaceToTextureSpace(
-        targetCoordinates,
-        GetShipSize(),
-        GetTextureSize());
+    // The target region is entirely contained in this ship
+    assert(targetRegion.IsContainedInRect(GetWholeTextureRect()));
 
     auto const elementOperator = isTransparent
         ? [](rgbaColor const & src, rgbaColor const & dst) -> rgbaColor
@@ -2965,18 +3021,16 @@ void ModelController::DoTextureRegionBufferPaste(
 
     mModel.GetTextureLayer().Buffer.BlitFromRegion(
         sourceBuffer,
-        sourceTextureRegion,
-        targetTextureCoordinates,
+        sourceRegion,
+        targetCoordinates,
         elementOperator);
 
     //
     // Update visualization
     //
 
-    ImageRect const affectedTextureRegion(targetTextureCoordinates, sourceTextureRegion.size); // Effective dirtied texture region
-
-    RegisterDirtyVisualization<VisualizationType::Game>(ImageRectToContainingShipSpaceRect(affectedTextureRegion)); // In excess
-    RegisterDirtyVisualization<VisualizationType::TextureLayer>(affectedTextureRegion);
+    RegisterDirtyVisualization<VisualizationType::Game>(ImageRectToContainingShipSpaceRect(targetRegion)); // In excess
+    RegisterDirtyVisualization<VisualizationType::TextureLayer>(targetRegion);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////

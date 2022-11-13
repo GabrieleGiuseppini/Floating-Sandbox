@@ -554,8 +554,9 @@ private:
 
     void DoTextureRegionBufferPaste(
         typename LayerTypeTraits<LayerType::Texture>::buffer_type const & sourceBuffer,
-        ShipSpaceRect const & sourceRegion,
-        ShipSpaceCoordinates const & targetCoordinates,
+        ImageRect const & sourceRegion,
+        ImageRect const & targetRegion,
+        ImageCoordinates const & targetCoordinates,
         bool isTransparent);
 
     // Viz

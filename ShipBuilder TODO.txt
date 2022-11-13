@@ -516,7 +516,15 @@
 					!  Undo eph viz, Do operation on own mPasteRegion, Redo eph viz
 					+ Flip H/V
 					= Rotate
-						- Fix H/V aspect ratio issue
+						- Fix H/V aspect ratio issue:
+							- Option 1:
+								- Paste, PasteForEphViz: undo payload's texture must take into consideration actual texture region that will be pasted
+									- ...which must take into consideration _source_ region as we can't do more than that
+									- Ideally: both source and target affected rects have a texture counterpart (when payload has it) which takes into
+									  account texture buffer
+							- Cleanup:
+								- See if ShipSpaceToTextureSpace/TextureSpaceToShipSpace always use GetShip...()/GetTexture...(); if so, make it non-static
+								  and nuke members
 				+ Set"Opaque/Transparentness" (for changes)
 					! Undo eph viz, change, Redo eph viz
 				+ MouseDown():
@@ -585,7 +593,8 @@
 										+ Paste
 										+ PasteForEphViz									
 								+ If works, do with all others as well
-
+			- See if can do this other undo's with GenericUndo:
+				- Resize
 			= ModelController::Paste(LayersRegion, origin, opaque/transparent) X 2 (ephemeral, normal) -> GenericUndoPayload
 				+ PasteForEphemeralVisualization(...) -> GenericUndoPayload
 					+ blit (DoStructuralRegionBufferPaste)
