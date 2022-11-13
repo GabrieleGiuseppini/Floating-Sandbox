@@ -2870,6 +2870,8 @@ void ModelController::DoStructuralRegionBufferPaste(
     ShipSpaceCoordinates const & targetCoordinates,
     bool isTransparent)
 {
+    assert(mModel.HasLayer(LayerType::Structural));
+
     // Rect in the ship that will be affected by this operation
     ShipSpaceRect const affectedRegion(targetCoordinates, sourceRegion.size);
 
@@ -2911,6 +2913,8 @@ void ModelController::DoElectricalRegionBufferPaste(
     ShipSpaceCoordinates const & targetCoordinates,
     bool isTransparent)
 {
+    assert(mModel.HasLayer(LayerType::Electrical));
+
     // Rect in the ship that will be affected by this operation
     ShipSpaceRect const affectedRegion(targetCoordinates, sourceRegion.size);
 
@@ -2951,6 +2955,8 @@ void ModelController::DoRopesRegionBufferPaste(
     ShipSpaceCoordinates const & targetCoordinates,
     bool isTransparent)
 {
+    assert(mModel.HasLayer(LayerType::Ropes));
+
     // Rect in the ship that will be affected by this operation
     ShipSpaceRect const affectedRegion(targetCoordinates, sourceRegion.size);
 
@@ -2980,6 +2986,8 @@ void ModelController::DoTextureRegionBufferPaste(
     ImageCoordinates const & targetCoordinates,
     bool isTransparent)
 {
+    assert(mModel.HasLayer(LayerType::Texture));
+
     // The source region is entirely contained in the source buffer
     assert(sourceRegion.IsContainedInRect(ImageRect(sourceBuffer.Size)));
 
