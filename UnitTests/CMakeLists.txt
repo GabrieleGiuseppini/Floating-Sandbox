@@ -24,7 +24,8 @@ set (UNIT_TEST_SOURCES
 	Buffer2DTests.cpp
 	CircularListTests.cpp
 	ColorsTests.cpp
-	DeSerializationBufferTests.cpp	
+	DeSerializationBufferTests.cpp
+	ElectricalPanelTests.cpp
 	EndianTests.cpp
 	EnumFlagsTests.cpp
 	FinalizerTests.cpp

@@ -599,8 +599,14 @@
 					+ blit (RestoreTextureLayerRegionEphemeralVisualization)
 				= Paste(...) -> GenericUndoPayload
 					+ blit (DoStructuralRegionBufferPaste) & analysis re-initialization
-					- blit (DoElectricalRegionBufferPaste) & analysis re-initialization
+					= blit (DoElectricalRegionBufferPaste) & analysis re-initialization
 						- Copy also electrical panel elements
+							= ElectricalPanel
+								+ UnitTests
+								- Use at ShipLayers - and etc.
+									- Move ElectricalPanelElementMetadata from GameTypes to ElectricalPanel::ElementMetadata
+							- Do copy
+							+ Make sure calls to InitializeElectricalLayerAnalysis know panel side-effects - NONE!
 					+ blit (DoRopesRegionBufferPaste)
 					+ blit (DoTextureRegionBufferPaste)
 				+ Restore(GenericUndoPayload)
