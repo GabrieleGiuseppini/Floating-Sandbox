@@ -10,14 +10,41 @@
 #include <algorithm>
 #include <cassert>
 #include <map>
+#include <optional>
 
 class ElectricalPanel final
 {
 public:
 
+	struct ElementMetadata
+	{
+		std::optional<IntegralCoordinates> PanelCoordinates;
+		std::optional<std::string> Label;
+		bool IsHidden;
+
+		ElementMetadata(
+			std::optional<IntegralCoordinates> panelCoordinates,
+			std::optional<std::string> label,
+			bool isHidden)
+			: PanelCoordinates(std::move(panelCoordinates))
+			, Label(std::move(label))
+			, IsHidden(isHidden)
+		{}
+	};
+
+	auto begin() const
+	{
+		return mMap.begin();
+	}
+
 	auto cbegin() const
 	{
 		return mMap.cbegin();
+	}
+
+	auto end() const
+	{
+		return mMap.end();
 	}
 
 	auto cend() const
@@ -25,18 +52,56 @@ public:
 		return mMap.cend();
 	}
 
+	auto find(ElectricalElementInstanceIndex const instanceIndex) const
+	{
+		return mMap.find(instanceIndex);
+	}
+
+	bool Contains(ElectricalElementInstanceIndex const instanceIndex) const
+	{
+		return mMap.find(instanceIndex) != mMap.end();
+	}
+
+	ElementMetadata const & operator[](ElectricalElementInstanceIndex instanceIndex) const
+	{
+		assert(mMap.find(instanceIndex) != mMap.cend());
+		return mMap.at(instanceIndex);
+	}
+
+	ElementMetadata & operator[](ElectricalElementInstanceIndex instanceIndex)
+	{
+		assert(mMap.find(instanceIndex) != mMap.end());
+		return mMap.at(instanceIndex);
+	}
+
+	bool IsEmpty() const
+	{
+		return mMap.empty();
+	}
+
 	size_t GetSize() const
 	{
 		return mMap.size();
+	}
+
+	bool Add(
+		ElectricalElementInstanceIndex instanceIndex,
+		ElementMetadata metadata)
+	{
+		auto const [_, isInserted] = mMap.emplace(
+			instanceIndex,
+			std::move(metadata));
+
+		return isInserted;
 	}
 
 	/*
 	 * Adds the specified element, eventually clearing position information if it conflicts
 	 * with the position of another element.
 	 */
-	void Add(
+	void SafeAdd(
 		ElectricalElementInstanceIndex instanceIndex,
-		ElectricalPanelElementMetadata metadata)
+		ElementMetadata metadata)
 	{
 		// Find if position is occupied
 		auto const it = std::find_if(
@@ -54,11 +119,9 @@ public:
 			metadata.PanelCoordinates.reset();
 		}
 
-		auto const res = mMap.emplace(
-			instanceIndex,
-			std::move(metadata));
-
-		assert(res.second);
+		bool const isInserted = Add(instanceIndex, std::move(metadata));
+		assert(isInserted);
+		(void)isInserted;
 	}
 
 	void Remove(ElectricalElementInstanceIndex instanceIndex)
@@ -77,5 +140,5 @@ public:
 
 private:
 
-	std::map<ElectricalElementInstanceIndex, ElectricalPanelElementMetadata> mMap;
+	std::map<ElectricalElementInstanceIndex, ElementMetadata> mMap;
 };

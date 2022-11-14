@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "ElectricalPanel.h"
 #include "LayerElements.h"
 #include "RopeBuffer.h"
 
@@ -14,7 +15,6 @@
 #include <GameCore/ImageData.h>
 
 #include <cassert>
-#include <map>
 #include <memory>
 
 template <LayerType TLayer>
@@ -93,12 +93,10 @@ struct LayerTypeTraits<LayerType::Structural>
 // Electrical
 //////////////////////////////////////////////////////////////////
 
-using ElectricalPanelMetadata = std::map<ElectricalElementInstanceIndex, ElectricalPanelElementMetadata>;
-
 struct ElectricalLayerData
 {
     Buffer2D<ElectricalElement, struct ShipSpaceTag> Buffer;
-    ElectricalPanelMetadata Panel;
+    ElectricalPanel Panel;
 
     explicit ElectricalLayerData(ShipSpaceSize shipSize)
         : Buffer(shipSize)
@@ -107,14 +105,14 @@ struct ElectricalLayerData
 
     ElectricalLayerData(
         ShipSpaceSize shipSize,
-        ElectricalPanelMetadata && panel)
+        ElectricalPanel && panel)
         : Buffer(shipSize)
         , Panel(std::move(panel))
     {}
 
     ElectricalLayerData(
         Buffer2D<ElectricalElement, struct ShipSpaceTag> && buffer,
-        ElectricalPanelMetadata && panel)
+        ElectricalPanel && panel)
         : Buffer(std::move(buffer))
         , Panel(std::move(panel))
     {}
@@ -128,7 +126,7 @@ struct ElectricalLayerData
 
     ElectricalLayerData Clone() const
     {
-        ElectricalPanelMetadata panelClone = Panel;
+        ElectricalPanel panelClone = Panel;
 
         return ElectricalLayerData(
             Buffer.Clone(),
@@ -144,7 +142,7 @@ struct ElectricalLayerData
 
     ElectricalLayerData MakeRegionBackup(ShipSpaceRect const & region) const
     {
-        ElectricalPanelMetadata panelClone = Panel;
+        ElectricalPanel panelClone = Panel;
 
         return ElectricalLayerData(
             Buffer.CloneRegion(region),
@@ -178,8 +176,8 @@ struct ElectricalLayerData
 
 private:
 
-    ElectricalPanelMetadata MakedTrimmedPanel(
-        ElectricalPanelMetadata const & panel,
+    ElectricalPanel MakedTrimmedPanel(
+        ElectricalPanel const & panel,
         ShipSpaceRect const & rect) const;
 };
 

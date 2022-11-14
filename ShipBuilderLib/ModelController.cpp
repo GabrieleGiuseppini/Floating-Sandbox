@@ -1112,7 +1112,7 @@ void ModelController::RestoreStructuralLayerRegionEphemeralVisualization(
 // Electrical
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-ElectricalPanelMetadata const & ModelController::GetElectricalPanelMetadata() const
+ElectricalPanel const & ModelController::GetElectricalPanel() const
 {
     assert(mModel.HasLayer(LayerType::Electrical));
 
@@ -2376,7 +2376,7 @@ void ModelController::WriteParticle(
             instanceIndex = NoneElectricalElementInstanceIndex;
 
             // Remove from panel
-            mModel.GetElectricalLayer().Panel.erase(oldElement.InstanceIndex);
+            mModel.GetElectricalLayer().Panel.Remove(oldElement.InstanceIndex);
         }
         else
         {

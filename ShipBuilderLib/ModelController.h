@@ -161,9 +161,9 @@ public:
         return mInstancedElectricalElementSet;
     }
 
-    void SetElectricalPanelMetadata(ElectricalPanelMetadata && panelMetadata)
+    void SetElectricalPanel(ElectricalPanel && electricalPanel)
     {
-        mModel.SetElectricalPanelMetadata(std::move(panelMetadata));
+        mModel.SetElectricalPanel(std::move(electricalPanel));
     }
 
     std::optional<SampledInformation> SampleInformationAt(ShipSpaceCoordinates const & coordinates, LayerType layer) const;
@@ -273,7 +273,7 @@ public:
     // Electrical
     //
 
-    ElectricalPanelMetadata const & GetElectricalPanelMetadata() const;
+    ElectricalPanel const & GetElectricalPanel() const;
 
     void SetElectricalLayer(ElectricalLayerData && electricalLayer);
 

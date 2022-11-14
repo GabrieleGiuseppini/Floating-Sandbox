@@ -971,7 +971,7 @@ size_t ShipDefinitionFormatDeSerializer::AppendElectricalLayer(
     // Electrical panel
     //
 
-    if (!electricalLayer.Panel.empty())
+    if (!electricalLayer.Panel.IsEmpty())
     {
         buffer.Append(static_cast<uint32_t>(ElectricalLayerTagType::Panel));
         size_t const sectionBodySizeIndex = buffer.ReserveAndAdvance<std::uint32_t>();
@@ -1060,13 +1060,13 @@ size_t ShipDefinitionFormatDeSerializer::AppendElectricalLayerBuffer(
 }
 
 size_t ShipDefinitionFormatDeSerializer::AppendElectricalLayerPanel(
-    ElectricalPanelMetadata const & electricalPanel,
+    ElectricalPanel const & electricalPanel,
     DeSerializationBuffer<BigEndianess> & buffer)
 {
     size_t subSectionBodySize = 0;
 
     // Number of entries
-    std::uint16_t count = static_cast<std::uint16_t>(electricalPanel.size());
+    std::uint16_t count = static_cast<std::uint16_t>(electricalPanel.GetSize());
     subSectionBodySize += buffer.Append(count);
 
     // Entries
@@ -1971,7 +1971,7 @@ void ShipDefinitionFormatDeSerializer::ReadElectricalLayer(
 
             case static_cast<uint32_t>(ElectricalLayerTagType::Panel) :
             {
-                electricalLayer->Panel.clear();
+                electricalLayer->Panel.Clear();
 
                 size_t elecPanelReadOffset = readOffset;
 
@@ -2011,14 +2011,14 @@ void ShipDefinitionFormatDeSerializer::ReadElectricalLayer(
                     bool isHidden;
                     elecPanelReadOffset += buffer.ReadAt<bool>(elecPanelReadOffset, isHidden);
 
-                    auto const res = electricalLayer->Panel.try_emplace(
+                    bool const isAdded = electricalLayer->Panel.Add(
                         static_cast<ElectricalElementInstanceIndex>(instanceIndex),
-                        ElectricalPanelElementMetadata(
+                        ElectricalPanel::ElementMetadata(
                             panelCoordinates,
                             label,
                             isHidden));
 
-                    if (!res.second)
+                    if (!isAdded)
                     {
                         LogMessage("WARNING: Duplicate electrical element instance index \"", instanceIndex, "\"");
                     }

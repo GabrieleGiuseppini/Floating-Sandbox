@@ -602,10 +602,19 @@
 					= blit (DoElectricalRegionBufferPaste) & analysis re-initialization
 						- Copy also electrical panel elements
 							= ElectricalPanel
-								+ UnitTests
-								- Use at ShipLayers - and etc.
-									- Move ElectricalPanelElementMetadata from GameTypes to ElectricalPanel::ElementMetadata
-							- Do copy
+								= UnitTests
+								+ Use at ShipLayers - and etc.
+									+ Move ElectricalPanelElementMetadata from GameTypes to ElectricalPanel::ElementMetadata
+								- TryAdd -> [,]
+								- Add: strong
+								- "SafeAdd" -> "Merge"
+								- Replace all calls to find() with Contains()
+								- See if find() really needed
+								- Test
+									- Load legacy ship
+									- Load Titanic & check panel
+									- Edit panel
+							- Do blit with operator
 							+ Make sure calls to InitializeElectricalLayerAnalysis know panel side-effects - NONE!
 					+ blit (DoRopesRegionBufferPaste)
 					+ blit (DoTextureRegionBufferPaste)

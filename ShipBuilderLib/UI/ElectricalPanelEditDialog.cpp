@@ -150,13 +150,13 @@ ElectricalPanelEditDialog::ElectricalPanelEditDialog(
 void ElectricalPanelEditDialog::ShowModal(
     Controller & controller,
     InstancedElectricalElementSet const & instancedElectricalElementSet,
-    ElectricalPanelMetadata const & electricalPanelMetadata)
+    ElectricalPanel const & originalElectricalPanel)
 {
     //
     // Create own electrical panel, fully populated
     //
 
-    ElectricalPanelMetadata electricalPanel = electricalPanelMetadata;
+    ElectricalPanel electricalPanel = originalElectricalPanel;
 
     for (auto const & elementEntry : instancedElectricalElementSet.GetElements())
     {
@@ -198,7 +198,7 @@ void ElectricalPanelEditDialog::OnOkButton(wxCommandEvent & /*event*/)
         // Set in controller
         //
 
-        mSessionData->BuilderController.SetElectricalPanelMetadata(mSessionData->PanelMetadata);
+        mSessionData->BuilderController.SetElectricalPanel(mSessionData->Panel);
     }
 
     //
@@ -276,7 +276,7 @@ void ElectricalPanelEditDialog::ReconciliateUI()
     {
         ElectricalElementInstanceIndex const instancedElementIndex = instancedElement.first;
 
-        assert(mSessionData->PanelMetadata.count(instancedElementIndex) == 1);
+        assert(mSessionData->Panel.Contains(instancedElementIndex));
 
         wxPanel * elementPanel = new wxPanel(mListPanel, wxID_ANY, wxDefaultPosition, wxSize(-1, ListPanelElementHeight), wxSIMPLE_BORDER);
 
@@ -315,9 +315,9 @@ void ElectricalPanelEditDialog::ReconciliateUI()
 
         // Label
         {
-            assert(mSessionData->PanelMetadata.at(instancedElementIndex).Label.has_value());
+            assert(mSessionData->Panel[instancedElementIndex].Label.has_value());
 
-            auto textCtrl = new wxTextCtrl(elementPanel, wxID_ANY, *mSessionData->PanelMetadata.at(instancedElementIndex).Label,
+            auto textCtrl = new wxTextCtrl(elementPanel, wxID_ANY, *mSessionData->Panel[instancedElementIndex].Label,
                 wxDefaultPosition, wxSize(240, -1), wxTE_CENTRE);
 
             textCtrl->SetMaxLength(32);
@@ -338,8 +338,8 @@ void ElectricalPanelEditDialog::ReconciliateUI()
                 [this, instancedElementIndex](wxCommandEvent & event)
                 {
                     assert(mSessionData.has_value());
-                    assert(mSessionData->PanelMetadata.count(instancedElementIndex) == 1);
-                    mSessionData->PanelMetadata.at(instancedElementIndex).Label = event.GetString();
+                    assert(mSessionData->Panel.Contains(instancedElementIndex));
+                    mSessionData->Panel[instancedElementIndex].Label = event.GetString();
 
                     // Remember we're dirty
                     mSessionData->IsListPanelDirty = true;
@@ -378,7 +378,7 @@ void ElectricalPanelEditDialog::ReconciliateUI()
             auto tglButton = new wxBitmapToggleButton(elementPanel, wxID_ANY, mInvisibleBitmap, wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
             tglButton->SetBitmapPressed(mVisibleBitmap);
 
-            tglButton->SetValue(!(mSessionData->PanelMetadata.at(instancedElementIndex).IsHidden));
+            tglButton->SetValue(!(mSessionData->Panel[instancedElementIndex].IsHidden));
 
             tglButton->Bind(
                 wxEVT_TOGGLEBUTTON,
@@ -394,8 +394,8 @@ void ElectricalPanelEditDialog::ReconciliateUI()
 
                     // Update visibility
                     assert(mSessionData.has_value());
-                    assert(mSessionData->PanelMetadata.count(instancedElementIndex) == 1);
-                    ElectricalPanelElementMetadata & panelElement = mSessionData->PanelMetadata.at(instancedElementIndex);
+                    assert(mSessionData->Panel.Contains(instancedElementIndex));
+                    ElectricalPanel::ElementMetadata & panelElement = mSessionData->Panel[instancedElementIndex];
                     panelElement.IsHidden = !isVisible;
 
                     // Notify control of visibility change
@@ -427,7 +427,7 @@ void ElectricalPanelEditDialog::ReconciliateUI()
     // Populate layout control
     //
 
-    mElectricalPanel->SetPanel(mSessionData->PanelMetadata);
+    mElectricalPanel->SetPanel(mSessionData->Panel);
 
     //
     // Finalize

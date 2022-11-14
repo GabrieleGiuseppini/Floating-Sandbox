@@ -19,7 +19,7 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadShipFromImageDefinition(
     return LoadFromDefinitionImageFilePaths(
         shipFilePath,
         std::nullopt, // Electrical
-        ElectricalPanelMetadata(),
+        ElectricalPanel(),
         std::nullopt, // Ropes
         std::nullopt, // Texture
         ShipMetadata(shipFilePath.stem().string()),
@@ -37,7 +37,7 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadShipFromLegacyShpShipDefinition
     return LoadFromDefinitionImageFilePaths(
         jsonDefinition.StructuralLayerImageFilePath,
         jsonDefinition.ElectricalLayerImageFilePath,
-        std::move(jsonDefinition.ElectricalPanel),
+        std::move(jsonDefinition.EPanel),
         jsonDefinition.RopesLayerImageFilePath,
         jsonDefinition.TextureLayerImageFilePath,
         jsonDefinition.Metadata,
@@ -231,7 +231,7 @@ ShipLegacyFormatDeSerializer::JsonDefinition ShipLegacyFormatDeSerializer::LoadL
     // Electrical panel metadata
     //
 
-    ElectricalPanelMetadata electricalPanel;
+    ElectricalPanel electricalPanel;
     std::optional<picojson::object> const electricalPanelMetadataObject = Utils::GetOptionalJsonObject(definitionJson, "electrical_panel");
     if (!!electricalPanelMetadataObject)
     {
@@ -249,15 +249,14 @@ ShipLegacyFormatDeSerializer::JsonDefinition ShipLegacyFormatDeSerializer::LoadL
             auto const label = Utils::GetOptionalJsonMember<std::string>(elementMetadataObject, "label");
             auto const isHidden = Utils::GetOptionalJsonMember<bool>(elementMetadataObject, "is_hidden", false);
 
-            auto const res = electricalPanel.emplace(
-                std::piecewise_construct,
-                std::forward_as_tuple(instanceIndex),
-                std::forward_as_tuple(
+            bool const isInserted = electricalPanel.Add(
+                instanceIndex,
+                ElectricalPanel::ElementMetadata(
                     panelX.has_value() ? IntegralCoordinates(int(*panelX), int(*panelY)) : std::optional<IntegralCoordinates>(),
                     label,
                     isHidden));
 
-            if (!res.second)
+            if (!isInserted)
                 throw GameException("Electrical element with ID '" + it.first + "' is specified more than twice in the electrical panel");
         }
     }
@@ -293,7 +292,7 @@ ShipLegacyFormatDeSerializer::JsonDefinition ShipLegacyFormatDeSerializer::LoadL
 ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImageFilePaths(
     std::filesystem::path const & structuralLayerImageFilePath,
     std::optional<std::filesystem::path> const & electricalLayerImageFilePath,
-    ElectricalPanelMetadata && electricalPanel,
+    ElectricalPanel && electricalPanel,
     std::optional<std::filesystem::path> const & ropesLayerImageFilePath,
     std::optional<std::filesystem::path> const & textureLayerImageFilePath,
     ShipMetadata const & metadata,
@@ -368,7 +367,7 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImageFilePaths(
 ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImages(
     RgbImageData && structuralLayerImage,
     std::optional<RgbImageData> && electricalLayerImage,
-    ElectricalPanelMetadata && electricalPanel,
+    ElectricalPanel && electricalPanel,
     std::optional<RgbImageData> && ropesLayerImage,
     std::optional<RgbaImageData> && textureLayerImage,
     ShipMetadata const & metadata,

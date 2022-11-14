@@ -95,10 +95,10 @@ public:
         mDirtyState.GlobalIsDirty = true;
     }
 
-    void SetElectricalPanelMetadata(ElectricalPanelMetadata && panelMetadata)
+    void SetElectricalPanel(ElectricalPanel && electricalPanel)
     {
         assert(mLayers.ElectricalLayer);
-        mLayers.ElectricalLayer->Panel = panelMetadata;
+        mLayers.ElectricalLayer->Panel = std::move(electricalPanel);
     }
 
     bool HasLayer(LayerType layer) const

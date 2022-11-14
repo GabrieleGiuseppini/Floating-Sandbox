@@ -23,7 +23,7 @@ ElectricalLayerData ElectricalLayerData::MakeReframed(
     ElectricalElement const & fillerValue) const
 {
     // Trim panel
-    ElectricalPanelMetadata newPanel = MakedTrimmedPanel(
+    ElectricalPanel newPanel = MakedTrimmedPanel(
         Panel,
         ShipSpaceRect(
             -originOffset,
@@ -38,11 +38,11 @@ ElectricalLayerData ElectricalLayerData::MakeReframed(
         std::move(newPanel));
 }
 
-ElectricalPanelMetadata ElectricalLayerData::MakedTrimmedPanel(
-    ElectricalPanelMetadata const & panel,
+ElectricalPanel ElectricalLayerData::MakedTrimmedPanel(
+    ElectricalPanel const & panel,
     ShipSpaceRect const & rect) const
 {
-    ElectricalPanelMetadata newPanel;
+    ElectricalPanel newPanel;
 
     // Visit all instanced elements
     for (int y = 0; y < Buffer.Size.height; ++y)
@@ -58,10 +58,10 @@ ElectricalPanelMetadata ElectricalLayerData::MakedTrimmedPanel(
                 // This instanced element remains...
                 // ...see if it has an entry in the panel
                 auto searchIt = panel.find(instanceIndex);
-                if (searchIt != panel.end())
+                if (searchIt != panel.cend())
                 {
                     // Copy to new panel
-                    auto const [_, isInserted] = newPanel.emplace(instanceIndex, searchIt->second);
+                    bool const isInserted = newPanel.Add(instanceIndex, searchIt->second);
                     assert(isInserted);
                     (void)isInserted;
                 }

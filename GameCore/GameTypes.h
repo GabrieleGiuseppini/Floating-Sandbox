@@ -1036,25 +1036,6 @@ enum class DurationShortLongType
 DurationShortLongType StrToDurationShortLongType(std::string const & str);
 
 /*
- * Information (layout, etc.) for an element in the electrical panel.
- */
-struct ElectricalPanelElementMetadata
-{
-    std::optional<IntegralCoordinates> PanelCoordinates;
-    std::optional<std::string> Label;
-    bool IsHidden;
-
-    ElectricalPanelElementMetadata(
-        std::optional<IntegralCoordinates> panelCoordinates,
-        std::optional<std::string> label,
-        bool isHidden)
-        : PanelCoordinates(std::move(panelCoordinates))
-        , Label(std::move(label))
-        , IsHidden(isHidden)
-    {}
-};
-
-/*
  * HeatBlaster action.
  */
 enum class HeatBlasterActionType

@@ -615,12 +615,12 @@ protected:
         }
 
         // Panel
-        ASSERT_EQ(targetElectricalLayer->Panel.size(), sourceElectricalLayer.Panel.size());
+        ASSERT_EQ(targetElectricalLayer->Panel.GetSize(), sourceElectricalLayer.Panel.GetSize());
         for (auto const & sourceEntry : sourceElectricalLayer.Panel)
         {
-            ASSERT_TRUE(targetElectricalLayer->Panel.count(sourceEntry.first) == 1);
+            ASSERT_NE(targetElectricalLayer->Panel.find(sourceEntry.first), targetElectricalLayer->Panel.cend());
 
-            auto const & targetElement = targetElectricalLayer->Panel.at(sourceEntry.first);
+            auto const & targetElement = targetElectricalLayer->Panel[sourceEntry.first];
             EXPECT_EQ(targetElement.Label, sourceEntry.second.Label);
             EXPECT_EQ(targetElement.PanelCoordinates, sourceEntry.second.PanelCoordinates);
             EXPECT_EQ(targetElement.IsHidden, sourceEntry.second.IsHidden);
@@ -835,30 +835,30 @@ TEST_F(ShipDefinitionFormatDeSerializer_ElectricalLayerTests, ElectricalPanel)
 
     // Populate electrical panel
 
-    ElectricalPanelElementMetadata elem1 = ElectricalPanelElementMetadata(
+    ElectricalPanel::ElementMetadata elem1 = ElectricalPanel::ElementMetadata(
         std::nullopt,
         std::nullopt,
         true);
 
-    ElectricalPanelElementMetadata elem2 = ElectricalPanelElementMetadata(
+    ElectricalPanel::ElementMetadata elem2 = ElectricalPanel::ElementMetadata(
         IntegralCoordinates(3, 127),
         std::nullopt,
         false);
 
-    ElectricalPanelElementMetadata elem3 = ElectricalPanelElementMetadata(
+    ElectricalPanel::ElementMetadata elem3 = ElectricalPanel::ElementMetadata(
         std::nullopt,
         "Foo bar",
         true);
 
-    ElectricalPanelElementMetadata elem4 = ElectricalPanelElementMetadata(
+    ElectricalPanel::ElementMetadata elem4 = ElectricalPanel::ElementMetadata(
         IntegralCoordinates(13, -45),
         "Foobar 2",
         false);
 
-    sourceElectricalLayer.Panel.emplace(ElectricalElementInstanceIndex(8), elem1);
-    sourceElectricalLayer.Panel.emplace(ElectricalElementInstanceIndex(0), elem2);
-    sourceElectricalLayer.Panel.emplace(ElectricalElementInstanceIndex(18), elem3);
-    sourceElectricalLayer.Panel.emplace(ElectricalElementInstanceIndex(234), elem4);
+    sourceElectricalLayer.Panel.Add(ElectricalElementInstanceIndex(8), elem1);
+    sourceElectricalLayer.Panel.Add(ElectricalElementInstanceIndex(0), elem2);
+    sourceElectricalLayer.Panel.Add(ElectricalElementInstanceIndex(18), elem3);
+    sourceElectricalLayer.Panel.Add(ElectricalElementInstanceIndex(234), elem4);
 
     // Serialize
     DeSerializationBuffer<BigEndianess> buffer(256);

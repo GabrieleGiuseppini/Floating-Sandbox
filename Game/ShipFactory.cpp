@@ -398,7 +398,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
         electricalElementInstanceIndices,
         shipDefinition.Layers.ElectricalLayer
             ? shipDefinition.Layers.ElectricalLayer->Panel
-            : ElectricalPanelMetadata(),
+            : ElectricalPanel(),
         shipId,
         parentWorld,
         gameEventDispatcher,
@@ -1446,7 +1446,7 @@ Physics::Triangles ShipFactory::CreateTriangles(
 ElectricalElements ShipFactory::CreateElectricalElements(
     Physics::Points const & points,
     std::vector<ElectricalElementInstanceIndex> const & electricalElementInstanceIndices,
-    ElectricalPanelMetadata const & panelMetadata,
+    ElectricalPanel const & electricalPanel,
     ShipId shipId,
     Physics::World & parentWorld,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
@@ -1456,7 +1456,7 @@ ElectricalElements ShipFactory::CreateElectricalElements(
     // Verify all panel metadata indices are valid instance IDs
     //
 
-    for (auto const & entry : panelMetadata)
+    for (auto const & entry : electricalPanel)
     {
         if (std::find(
             electricalElementInstanceIndices.cbegin(),
@@ -1476,12 +1476,12 @@ ElectricalElements ShipFactory::CreateElectricalElements(
     {
         ElementIndex elementIndex;
         ElectricalElementInstanceIndex instanceIndex;
-        std::optional<ElectricalPanelElementMetadata> panelElementMetadata;
+        std::optional<ElectricalPanel::ElementMetadata> panelElementMetadata;
 
         ElectricalElementInfo(
             ElementIndex _elementIndex,
             ElectricalElementInstanceIndex _instanceIndex,
-            std::optional<ElectricalPanelElementMetadata> _panelElementMetadata)
+            std::optional<ElectricalPanel::ElementMetadata> _panelElementMetadata)
             : elementIndex(_elementIndex)
             , instanceIndex(_instanceIndex)
             , panelElementMetadata(_panelElementMetadata)
@@ -1498,14 +1498,13 @@ ElectricalElements ShipFactory::CreateElectricalElements(
             auto const instanceIndex = electricalElementInstanceIndices[pointIndex];
 
             // Get panel metadata
-            std::optional<ElectricalPanelElementMetadata> panelElementMetadata;
+            std::optional<ElectricalPanel::ElementMetadata> panelElementMetadata;
             if (electricalMaterial->IsInstanced)
             {
                 assert(NoneElectricalElementInstanceIndex != instanceIndex);
 
-                auto const findIt = panelMetadata.find(instanceIndex);
-
-                if (findIt != panelMetadata.end())
+                auto const findIt = electricalPanel.find(instanceIndex);
+                if (findIt != electricalPanel.end())
                 {
                     // Take metadata
                     panelElementMetadata = findIt->second;

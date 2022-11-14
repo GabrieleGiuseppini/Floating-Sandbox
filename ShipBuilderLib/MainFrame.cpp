@@ -321,7 +321,7 @@ MainFrame::MainFrame(
 
     //
     // Setup material palettes
-    //    
+    //
 
     {
         mCompositeMaterialPalette = std::make_unique<CompositeMaterialPalette>(
@@ -2879,10 +2879,10 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
     {
         mToolSettingsPanelsSizer->Show(
             std::get<1>(entry),
-            (widestPanel == nullptr 
+            (widestPanel == nullptr
                 && std::find(
-                    std::get<0>(entry).cbegin(), 
-                    std::get<0>(entry).cend(), 
+                    std::get<0>(entry).cbegin(),
+                    std::get<0>(entry).cend(),
                     ToolType::StructuralLine) != std::get<0>(entry).cend())
             || (widestPanel != nullptr && std::get<1>(entry) == widestPanel));
     }
@@ -4867,7 +4867,7 @@ void MainFrame::SaveShipAs()
 
 void MainFrame::BackupShip()
 {
-    if (mCurrentShipFilePath.has_value()) // Should be true anyway as the button is only enabled when the ship has a filename 
+    if (mCurrentShipFilePath.has_value()) // Should be true anyway as the button is only enabled when the ship has a filename
     {
         // Make new filename up
         auto const newShipFileName = mCurrentShipFilePath->stem().string() + "_backup" + mCurrentShipFilePath->extension().string();
@@ -5181,7 +5181,7 @@ void MainFrame::OnElectricalPanelEdit()
     mElectricalPanelEditDialog->ShowModal(
         *mController,
         mController->GetModelController().GetInstancedElectricalElementSet(),
-        mController->GetModelController().GetElectricalPanelMetadata());
+        mController->GetModelController().GetElectricalPanel());
 }
 
 void MainFrame::Copy()
@@ -5339,7 +5339,7 @@ void MainFrame::DoNewShip()
     mController.reset();
 
     // Reset current ship filename
-    mCurrentShipFilePath.reset();    
+    mCurrentShipFilePath.reset();
 
     // Ask user for ship name
     NewShipNameDialog dlg(this, *mShipNameNormalizer, mResourceLocator);
@@ -5990,7 +5990,7 @@ void MainFrame::ReconciliateUIWithSelectedTool(ToolType tool)
         switch (tool)
         {
             case ToolType::StructuralEraser:
-            case ToolType::ElectricalEraser:            
+            case ToolType::ElectricalEraser:
             case ToolType::TextureEraser:
             {
                 mToolSettingsRibbonPanel->SetLabel("Eraser");

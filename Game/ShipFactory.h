@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "ElectricalPanel.h"
 #include "GameParameters.h"
 #include "MaterialDatabase.h"
 #include "Physics.h"
@@ -108,12 +109,12 @@ private:
     {
         //
         // Important: we offset the texture coords by half of a "ship pixel" (which is multiple texture pixels),
-        // so that the texture for a particle at ship coords (x, y) is sampled at the center of the 
+        // so that the texture for a particle at ship coords (x, y) is sampled at the center of the
         // texture's quad for that particle.
         //
         // In other words, the texture is still mapped onto the whole ship space (i.e. ship_width x ship_height),
         // but given that of the ship mesh only the portion anchored at the _center_ of its corner quads is
-        // visible (i.e. the (0.5 -> width-0.5) X (0.5 -> height-0.5) portion), the texture ends up with a small 
+        // visible (i.e. the (0.5 -> width-0.5) X (0.5 -> height-0.5) portion), the texture ends up with a small
         // portion of its outermost border cut off.
         //
         // With this offset, the domain of the texture coordinates is thus:
@@ -203,7 +204,7 @@ private:
     static Physics::ElectricalElements CreateElectricalElements(
         Physics::Points const & points,
         std::vector<ElectricalElementInstanceIndex> const & electricalElementInstanceIndices,
-        ElectricalPanelMetadata const & panelMetadata,
+        ElectricalPanel const & electricalPanel,
         ShipId shipId,
         Physics::World & parentWorld,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,

@@ -238,7 +238,7 @@ void Controller::RestoreShipPropertiesForUndo(
     mUserInterface.OnModelDirtyChanged(*mModelController);
 }
 
-void Controller::SetElectricalPanelMetadata(ElectricalPanelMetadata panelMetadata)
+void Controller::SetElectricalPanel(ElectricalPanel electricalPanel)
 {
     assert(mModelController);
 
@@ -246,9 +246,9 @@ void Controller::SetElectricalPanelMetadata(ElectricalPanelMetadata panelMetadat
     // Prepare undo entry
     //
 
-    auto f = [oldPanelMetadata = mModelController->GetElectricalPanelMetadata()] (Controller & controller) mutable
+    auto f = [oldElectricalPanel = mModelController->GetElectricalPanel()] (Controller & controller) mutable
     {
-        controller.RestoreElectricalPanelMetadataForUndo(std::move(oldPanelMetadata));
+        controller.RestoreElectricalPanelForUndo(std::move(oldElectricalPanel));
     };
 
     auto originalDirtyState = mModelController->GetDirtyState();
@@ -257,7 +257,7 @@ void Controller::SetElectricalPanelMetadata(ElectricalPanelMetadata panelMetadat
     // Set new panel
     //
 
-    InternalSetElectricalPanelMetadata(std::move(panelMetadata));
+    InternalSetElectricalPanel(std::move(electricalPanel));
 
     mModelController->SetLayerDirty(LayerType::Electrical);
     mUserInterface.OnModelDirtyChanged(*mModelController);
@@ -275,11 +275,11 @@ void Controller::SetElectricalPanelMetadata(ElectricalPanelMetadata panelMetadat
     mUserInterface.OnUndoStackStateChanged(mUndoStack);
 }
 
-void Controller::RestoreElectricalPanelMetadataForUndo(ElectricalPanelMetadata && panelMetadata)
+void Controller::RestoreElectricalPanelForUndo(ElectricalPanel && electricalPanel)
 {
     assert(mModelController);
 
-    InternalSetElectricalPanelMetadata(std::move(panelMetadata));
+    InternalSetElectricalPanel(std::move(electricalPanel));
 
     mUserInterface.OnModelDirtyChanged(*mModelController);
 }
@@ -1852,11 +1852,11 @@ void Controller::InternalSetShipProperties(
     }
 }
 
-void Controller::InternalSetElectricalPanelMetadata(ElectricalPanelMetadata && panelMetadata)
+void Controller::InternalSetElectricalPanel(ElectricalPanel && electricalPanel)
 {
     assert(mModelController);
 
-    mModelController->SetElectricalPanelMetadata(std::move(panelMetadata));
+    mModelController->SetElectricalPanel(std::move(electricalPanel));
 }
 
 void Controller::InternalSelectPrimaryVisualization(VisualizationType primaryVisualization)
