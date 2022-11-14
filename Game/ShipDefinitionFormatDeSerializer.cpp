@@ -2011,7 +2011,7 @@ void ShipDefinitionFormatDeSerializer::ReadElectricalLayer(
                     bool isHidden;
                     elecPanelReadOffset += buffer.ReadAt<bool>(elecPanelReadOffset, isHidden);
 
-                    bool const isAdded = electricalLayer->Panel.Add(
+                    auto const [_, isAdded] = electricalLayer->Panel.TryAdd(
                         static_cast<ElectricalElementInstanceIndex>(instanceIndex),
                         ElectricalPanel::ElementMetadata(
                             panelCoordinates,

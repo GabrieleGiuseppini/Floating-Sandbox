@@ -477,7 +477,7 @@ void SwitchboardPanel::OnSwitchCreated(
     SwitchType type,
     ElectricalState state,
     ElectricalMaterial const & electricalMaterial,
-    std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata)
+    std::optional<ElectricalPanel::ElementMetadata> const & panelElementMetadata)
 {
     //
     // Take element metadata
@@ -617,7 +617,7 @@ void SwitchboardPanel::OnPowerProbeCreated(
     PowerProbeType type,
     ElectricalState state,
     ElectricalMaterial const & electricalMaterial,
-    std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata)
+    std::optional<ElectricalPanel::ElementMetadata> const & panelElementMetadata)
 {
     //
     // Create power monitor control
@@ -716,7 +716,7 @@ void SwitchboardPanel::OnEngineControllerCreated(
     ElectricalElementId electricalElementId,
     ElectricalElementInstanceIndex instanceIndex,
     ElectricalMaterial const & electricalMaterial,
-    std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata)
+    std::optional<ElectricalPanel::ElementMetadata> const & panelElementMetadata)
 {
     //
     // Take metadata
@@ -832,7 +832,7 @@ void SwitchboardPanel::OnEngineMonitorCreated(
     float /*thrustMagnitude*/,
     float rpm,
     ElectricalMaterial const & electricalMaterial,
-    std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata)
+    std::optional<ElectricalPanel::ElementMetadata> const & panelElementMetadata)
 {
     //
     // Take metadata
@@ -923,7 +923,7 @@ void SwitchboardPanel::OnWaterPumpCreated(
     ElectricalElementInstanceIndex instanceIndex,
     float normalizedForce,
     ElectricalMaterial const & electricalMaterial,
-    std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata)
+    std::optional<ElectricalPanel::ElementMetadata> const & panelElementMetadata)
 {
     //
     // Take metadata
@@ -986,7 +986,7 @@ void SwitchboardPanel::OnWatertightDoorCreated(
     ElectricalElementInstanceIndex instanceIndex,
     bool isOpen,
     ElectricalMaterial const & electricalMaterial,
-    std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata)
+    std::optional<ElectricalPanel::ElementMetadata> const & panelElementMetadata)
 {
     //
     // Take metadata

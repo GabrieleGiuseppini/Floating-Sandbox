@@ -160,14 +160,14 @@ void ElectricalPanelEditDialog::ShowModal(
 
     for (auto const & elementEntry : instancedElectricalElementSet.GetElements())
     {
-        auto [it, isInserted] = electricalPanel.try_emplace(
+        auto [it, isInserted] = electricalPanel.TryAdd(
             elementEntry.first,
-            ElectricalPanelElementMetadata(
+            ElectricalPanel::ElementMetadata(
                 std::nullopt,
                 elementEntry.second->MakeInstancedElementLabel(elementEntry.first),
                 false)); // Not hidden by default
 
-        // Make sure there's a label
+        // If we had it already, make sure there's a label
         if (!isInserted && !it->second.Label.has_value())
         {
             it->second.Label = elementEntry.second->MakeInstancedElementLabel(elementEntry.first);

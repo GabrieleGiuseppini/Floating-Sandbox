@@ -221,7 +221,7 @@ TEST(LayerTests, ElectricalLayer_CloneRegion_Smaller)
     //
 
     Buffer2D<ElectricalElement, struct ShipSpaceTag> sourceBuffer(8, 6);
-    ElectricalPanelMetadata sourcePanel;
+    ElectricalPanel sourcePanel;
 
     std::vector<std::unique_ptr<ElectricalMaterial>> materials;
 
@@ -235,11 +235,12 @@ TEST(LayerTests, ElectricalLayer_CloneRegion_Smaller)
 
             ElectricalElementInstanceIndex idx = curIdx++;
 
-            sourcePanel.try_emplace(
+            sourcePanel.Add(
                 idx,
-                IntegralCoordinates(idx + 5, idx + 7),
-                "Foo",
-                false);
+                ElectricalPanel::ElementMetadata(
+                    IntegralCoordinates(idx + 5, idx + 7),
+                    "Foo",
+                    false));
 
             materials.emplace_back(new ElectricalMaterial(MakeTestElectricalMaterial("Foo", rgbColor(iVal, iVal + 1, iVal + 2), idx != NoneElectricalElementInstanceIndex)));
 
@@ -249,7 +250,7 @@ TEST(LayerTests, ElectricalLayer_CloneRegion_Smaller)
 
     ElectricalLayerData sourceLayer(std::move(sourceBuffer), std::move(sourcePanel));
 
-    ASSERT_EQ(sourceLayer.Panel.size(), static_cast<size_t>(sourceBuffer.Size.height * sourceBuffer.Size.width));
+    ASSERT_EQ(sourceLayer.Panel.GetSize(), static_cast<size_t>(sourceBuffer.Size.height * sourceBuffer.Size.width));
 
     //
     // Clone layer
@@ -277,7 +278,7 @@ TEST(LayerTests, ElectricalLayer_CloneRegion_Smaller)
 
     // Panel
 
-    EXPECT_EQ(targetLayer.Panel.size(), static_cast<size_t>(targetLayer.Buffer.Size.height * targetLayer.Buffer.Size.width));
+    EXPECT_EQ(targetLayer.Panel.GetSize(), static_cast<size_t>(targetLayer.Buffer.Size.height * targetLayer.Buffer.Size.width));
 
     for (int y = 0; y < 3; ++y)
     {
@@ -289,7 +290,7 @@ TEST(LayerTests, ElectricalLayer_CloneRegion_Smaller)
             ElectricalElementInstanceIndex const expectedTargetIdx = static_cast<ElectricalElementInstanceIndex>(1 * sourceBuffer.Size.width + (y * sourceBuffer.Size.width) + 2 + x);
             EXPECT_EQ(actualTargetIdx, expectedTargetIdx);
 
-            auto const it = targetLayer.Panel.find(expectedTargetIdx);
+            auto const it = targetLayer.Panel.Find(expectedTargetIdx);
             ASSERT_NE(it, targetLayer.Panel.end());
             EXPECT_EQ(it->second.PanelCoordinates, IntegralCoordinates(expectedTargetIdx + 5, expectedTargetIdx + 7));
         }
@@ -303,7 +304,7 @@ TEST(LayerTests, ElectricalLayer_Trim)
     //
 
     Buffer2D<ElectricalElement, struct ShipSpaceTag> sourceBuffer(8, 6);
-    ElectricalPanelMetadata sourcePanel;
+    ElectricalPanel sourcePanel;
 
     std::vector<std::unique_ptr<ElectricalMaterial>> materials;
 
@@ -317,11 +318,12 @@ TEST(LayerTests, ElectricalLayer_Trim)
 
             ElectricalElementInstanceIndex idx = curIdx++;
 
-            sourcePanel.try_emplace(
+            sourcePanel.Add(
                 idx,
-                IntegralCoordinates(idx + 5, idx + 7),
-                "Foo",
-                false);
+                ElectricalPanel::ElementMetadata(
+                    IntegralCoordinates(idx + 5, idx + 7),
+                    "Foo",
+                    false));
 
             materials.emplace_back(new ElectricalMaterial(MakeTestElectricalMaterial("Foo", rgbColor(iVal, iVal + 1, iVal + 2), idx != NoneElectricalElementInstanceIndex)));
 
@@ -331,7 +333,7 @@ TEST(LayerTests, ElectricalLayer_Trim)
 
     ElectricalLayerData sourceLayer(std::move(sourceBuffer), std::move(sourcePanel));
 
-    ASSERT_EQ(sourceLayer.Panel.size(), static_cast<size_t>(sourceBuffer.Size.height * sourceBuffer.Size.width));
+    ASSERT_EQ(sourceLayer.Panel.GetSize(), static_cast<size_t>(sourceBuffer.Size.height * sourceBuffer.Size.width));
 
     //
     // Trim layer
@@ -360,7 +362,7 @@ TEST(LayerTests, ElectricalLayer_Trim)
 
     // Panel
 
-    EXPECT_EQ(targetLayer.Panel.size(), static_cast<size_t>(targetLayer.Buffer.Size.height * targetLayer.Buffer.Size.width));
+    EXPECT_EQ(targetLayer.Panel.GetSize(), static_cast<size_t>(targetLayer.Buffer.Size.height * targetLayer.Buffer.Size.width));
 
     for (int y = 0; y < 3; ++y)
     {
@@ -372,7 +374,7 @@ TEST(LayerTests, ElectricalLayer_Trim)
             ElectricalElementInstanceIndex const expectedTargetIdx = static_cast<ElectricalElementInstanceIndex>(1 * sourceBuffer.Size.width + (y * sourceBuffer.Size.width) + 2 + x);
             EXPECT_EQ(actualTargetIdx, expectedTargetIdx);
 
-            auto const it = targetLayer.Panel.find(expectedTargetIdx);
+            auto const it = targetLayer.Panel.Find(expectedTargetIdx);
             ASSERT_NE(it, targetLayer.Panel.end());
             EXPECT_EQ(it->second.PanelCoordinates, IntegralCoordinates(expectedTargetIdx + 5, expectedTargetIdx + 7));
         }
@@ -386,7 +388,7 @@ TEST(LayerTests, ElectricalLayer_Reframe_Smaller)
     //
 
     Buffer2D<ElectricalElement, struct ShipSpaceTag> sourceBuffer(8, 6);
-    ElectricalPanelMetadata sourcePanel;
+    ElectricalPanel sourcePanel;
 
     std::vector<std::unique_ptr<ElectricalMaterial>> materials;
 
@@ -406,11 +408,12 @@ TEST(LayerTests, ElectricalLayer_Reframe_Smaller)
             {
                 idx = curIdx++;
 
-                sourcePanel.try_emplace(
+                sourcePanel.Add(
                     idx,
-                    IntegralCoordinates(idx + 5, idx + 7),
-                    "Foo",
-                    false);
+                    ElectricalPanel::ElementMetadata(
+                        IntegralCoordinates(idx + 5, idx + 7),
+                        "Foo",
+                        false));
             }
             else
             {
@@ -425,7 +428,7 @@ TEST(LayerTests, ElectricalLayer_Reframe_Smaller)
 
     ElectricalLayerData sourceLayer(std::move(sourceBuffer), std::move(sourcePanel));
 
-    ASSERT_EQ(sourceLayer.Panel.size(), 4u);
+    ASSERT_EQ(sourceLayer.Panel.GetSize(), 4u);
 
     //
     // Reframe layer
@@ -463,22 +466,22 @@ TEST(LayerTests, ElectricalLayer_Reframe_Smaller)
 
     // Panel
 
-    EXPECT_EQ(targetLayer.Panel.size(), 2u);
+    EXPECT_EQ(targetLayer.Panel.GetSize(), 2u);
 
-    auto it = targetLayer.Panel.find(1);
+    auto it = targetLayer.Panel.Find(1);
     EXPECT_EQ(it, targetLayer.Panel.end());
 
-    it = targetLayer.Panel.find(2);
+    it = targetLayer.Panel.Find(2);
     ASSERT_NE(it, targetLayer.Panel.end());
     ASSERT_TRUE(it->second.PanelCoordinates.has_value());
     EXPECT_EQ(*(it->second.PanelCoordinates), IntegralCoordinates(7, 9));
 
-    it = targetLayer.Panel.find(3);
+    it = targetLayer.Panel.Find(3);
     ASSERT_NE(it, targetLayer.Panel.end());
     ASSERT_TRUE(it->second.PanelCoordinates.has_value());
     EXPECT_EQ(*(it->second.PanelCoordinates), IntegralCoordinates(8, 10));
 
-    it = targetLayer.Panel.find(4);
+    it = targetLayer.Panel.Find(4);
     EXPECT_EQ(it, targetLayer.Panel.end());
 }
 
@@ -489,7 +492,7 @@ TEST(LayerTests, ElectricalLayer_Reframe_Larger)
     //
 
     Buffer2D<ElectricalElement, struct ShipSpaceTag> sourceBuffer(4, 4);
-    ElectricalPanelMetadata sourcePanel;
+    ElectricalPanel sourcePanel;
 
     std::vector<std::unique_ptr<ElectricalMaterial>> materials;
 
@@ -508,11 +511,12 @@ TEST(LayerTests, ElectricalLayer_Reframe_Larger)
             {
                 idx = curIdx++;
 
-                sourcePanel.try_emplace(
+                sourcePanel.Add(
                     idx,
-                    IntegralCoordinates(idx + 5, idx + 7),
-                    "Foo",
-                    false);
+                    ElectricalPanel::ElementMetadata(
+                        IntegralCoordinates(idx + 5, idx + 7),
+                        "Foo",
+                        false));
             }
             else
             {
@@ -527,7 +531,7 @@ TEST(LayerTests, ElectricalLayer_Reframe_Larger)
 
     ElectricalLayerData sourceLayer(std::move(sourceBuffer), std::move(sourcePanel));
 
-    ASSERT_EQ(sourceLayer.Panel.size(), 3u);
+    ASSERT_EQ(sourceLayer.Panel.GetSize(), 3u);
 
     //
     // Reframe layer
@@ -565,7 +569,7 @@ TEST(LayerTests, ElectricalLayer_Reframe_Larger)
 
     // Panel
 
-    EXPECT_EQ(targetLayer.Panel.size(), 3u);
+    EXPECT_EQ(targetLayer.Panel.GetSize(), 3u);
 }
 
 TEST(LayerTests, ElectricalLayer_Reframe_Same)
@@ -575,7 +579,7 @@ TEST(LayerTests, ElectricalLayer_Reframe_Same)
     //
 
     Buffer2D<ElectricalElement, struct ShipSpaceTag> sourceBuffer(8, 8);
-    ElectricalPanelMetadata sourcePanel;
+    ElectricalPanel sourcePanel;
 
     std::vector<std::unique_ptr<ElectricalMaterial>> materials;
 
@@ -595,11 +599,12 @@ TEST(LayerTests, ElectricalLayer_Reframe_Same)
             {
                 idx = curIdx++;
 
-                sourcePanel.try_emplace(
+                sourcePanel.Add(
                     idx,
-                    IntegralCoordinates(idx + 5, idx + 7),
-                    "Foo",
-                    false);
+                    ElectricalPanel::ElementMetadata(
+                        IntegralCoordinates(idx + 5, idx + 7),
+                        "Foo",
+                        false));
             }
             else
             {
@@ -614,7 +619,7 @@ TEST(LayerTests, ElectricalLayer_Reframe_Same)
 
     ElectricalLayerData sourceLayer(std::move(sourceBuffer), std::move(sourcePanel));
 
-    ASSERT_EQ(sourceLayer.Panel.size(), 4u);
+    ASSERT_EQ(sourceLayer.Panel.GetSize(), 4u);
 
     //
     // Reframe layer
@@ -644,7 +649,7 @@ TEST(LayerTests, ElectricalLayer_Reframe_Same)
 
     // Panel
 
-    EXPECT_EQ(targetLayer.Panel.size(), 4u);
+    EXPECT_EQ(targetLayer.Panel.GetSize(), 4u);
 }
 
 TEST(LayerTests, RopesLayer_Trim)
@@ -1085,7 +1090,7 @@ TEST(LayerTests, ShipLayers_FlipH)
         }
     }
 
-    ElectricalPanelMetadata sourcePanel;
+    ElectricalPanel sourcePanel;
 
     RopeBuffer sourceRopesLayerBuffer(shipSize);
 
@@ -1228,7 +1233,7 @@ TEST(LayerTests, ShipLayers_Rotate)
         }
     }
 
-    ElectricalPanelMetadata sourcePanel;
+    ElectricalPanel sourcePanel;
 
     RopeBuffer sourceRopesLayerBuffer(shipSize);
 
@@ -1346,8 +1351,10 @@ TEST(LayerTests, ShipLayers_Clone_Full)
 
     Buffer2D<ElectricalElement, struct ShipSpaceTag> sourceElectricalLayerBuffer(shipSize);
 
-    ElectricalPanelMetadata sourcePanel;
-    sourcePanel.emplace(ElectricalElementInstanceIndex(1), ElectricalPanelElementMetadata(std::nullopt, std::nullopt, true));
+    ElectricalPanel sourcePanel;
+    sourcePanel.Add(
+        ElectricalElementInstanceIndex(1),
+        ElectricalPanel::ElementMetadata(std::nullopt, std::nullopt, true));
 
     RopeBuffer sourceRopesLayerBuffer(shipSize);
 
@@ -1391,7 +1398,7 @@ TEST(LayerTests, ShipLayers_Clone_Full)
 
     ASSERT_TRUE(layerClone.ElectricalLayer);
     ASSERT_EQ(layerClone.ElectricalLayer->Buffer.Size, shipSize);
-    ASSERT_EQ(layerClone.ElectricalLayer->Panel.size(), 1);
+    ASSERT_EQ(layerClone.ElectricalLayer->Panel.GetSize(), 1);
 
     ASSERT_TRUE(layerClone.RopesLayer);
     ASSERT_EQ(layerClone.RopesLayer->Buffer.GetSize(), shipSize);

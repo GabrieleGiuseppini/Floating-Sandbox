@@ -37,22 +37,12 @@ public:
 		return mMap.begin();
 	}
 
-	auto cbegin() const
-	{
-		return mMap.cbegin();
-	}
-
 	auto end() const
 	{
 		return mMap.end();
 	}
 
-	auto cend() const
-	{
-		return mMap.cend();
-	}
-
-	auto find(ElectricalElementInstanceIndex const instanceIndex) const
+	auto Find(ElectricalElementInstanceIndex const instanceIndex) const
 	{
 		return mMap.find(instanceIndex);
 	}
@@ -84,7 +74,16 @@ public:
 		return mMap.size();
 	}
 
-	bool Add(
+	auto TryAdd(
+		ElectricalElementInstanceIndex instanceIndex,
+		ElementMetadata metadata)
+	{
+		return mMap.emplace(
+			instanceIndex,
+			std::move(metadata));
+	}
+
+	void Add(
 		ElectricalElementInstanceIndex instanceIndex,
 		ElementMetadata metadata)
 	{
@@ -92,14 +91,15 @@ public:
 			instanceIndex,
 			std::move(metadata));
 
-		return isInserted;
+		assert(isInserted);
+		(void)isInserted;
 	}
 
 	/*
 	 * Adds the specified element, eventually clearing position information if it conflicts
 	 * with the position of another element.
 	 */
-	void SafeAdd(
+	void Merge(
 		ElectricalElementInstanceIndex instanceIndex,
 		ElementMetadata metadata)
 	{
@@ -119,9 +119,7 @@ public:
 			metadata.PanelCoordinates.reset();
 		}
 
-		bool const isInserted = Add(instanceIndex, std::move(metadata));
-		assert(isInserted);
-		(void)isInserted;
+		Add(instanceIndex, std::move(metadata));
 	}
 
 	void Remove(ElectricalElementInstanceIndex instanceIndex)

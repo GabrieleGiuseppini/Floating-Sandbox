@@ -90,7 +90,7 @@ public:
         SwitchType type,
         ElectricalState state,
         ElectricalMaterial const & electricalMaterial,
-        std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override;
+        std::optional<ElectricalPanel::ElementMetadata> const & panelElementMetadata) override;
 
     virtual void OnPowerProbeCreated(
         ElectricalElementId electricalElementId,
@@ -98,13 +98,13 @@ public:
         PowerProbeType type,
         ElectricalState state,
         ElectricalMaterial const & electricalMaterial,
-        std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override;
+        std::optional<ElectricalPanel::ElementMetadata> const & panelElementMetadata) override;
 
     virtual void OnEngineControllerCreated(
         ElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
         ElectricalMaterial const & electricalMaterial,
-        std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override;
+        std::optional<ElectricalPanel::ElementMetadata> const & panelElementMetadata) override;
 
     virtual void OnEngineMonitorCreated(
         ElectricalElementId electricalElementId,
@@ -112,21 +112,21 @@ public:
         float thrustMagnitude,
         float rpm,
         ElectricalMaterial const & electricalMaterial,
-        std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override;
+        std::optional<ElectricalPanel::ElementMetadata> const & panelElementMetadata) override;
 
     virtual void OnWaterPumpCreated(
         ElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
         float normalizedForce,
         ElectricalMaterial const & electricalMaterial,
-        std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override;
+        std::optional<ElectricalPanel::ElementMetadata> const & panelElementMetadata) override;
 
     virtual void OnWatertightDoorCreated(
         ElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
         bool isOpen,
         ElectricalMaterial const & electricalMaterial,
-        std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override;
+        std::optional<ElectricalPanel::ElementMetadata> const & panelElementMetadata) override;
 
     virtual void OnElectricalElementAnnouncementsEnd() override;
 
@@ -262,14 +262,14 @@ private:
         ElectricalElementControl * Control;
         IDisablableElectricalElementControl * DisablableControl;
         IInteractiveElectricalElementControl * InteractiveControl;
-        std::optional<ElectricalPanelElementMetadata> PanelElementMetadata;
+        std::optional<ElectricalPanel::ElementMetadata> PanelElementMetadata;
 
         ElectricalElementInfo(
             ElectricalElementInstanceIndex instanceIndex,
             ElectricalElementControl * control,
             IDisablableElectricalElementControl * disablableControl,
             IInteractiveElectricalElementControl * interactiveControl,
-            std::optional<ElectricalPanelElementMetadata> panelElementMetadata)
+            std::optional<ElectricalPanel::ElementMetadata> panelElementMetadata)
             : InstanceIndex(instanceIndex)
             , Control(control)
             , DisablableControl(disablableControl)

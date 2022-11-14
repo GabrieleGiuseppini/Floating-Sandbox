@@ -601,19 +601,11 @@
 					+ blit (DoStructuralRegionBufferPaste) & analysis re-initialization
 					= blit (DoElectricalRegionBufferPaste) & analysis re-initialization
 						- Copy also electrical panel elements
-							= ElectricalPanel
-								= UnitTests
+							+ ElectricalPanel
+								+ UnitTests
 								+ Use at ShipLayers - and etc.
 									+ Move ElectricalPanelElementMetadata from GameTypes to ElectricalPanel::ElementMetadata
-								- TryAdd -> [,]
-								- Add: strong
-								- "SafeAdd" -> "Merge"
-								- Replace all calls to find() with Contains()
-								- See if find() really needed
-								- Test
-									- Load legacy ship
-									- Load Titanic & check panel
-									- Edit panel
+								+ Test
 							- Do blit with operator
 							+ Make sure calls to InitializeElectricalLayerAnalysis know panel side-effects - NONE!
 					+ blit (DoRopesRegionBufferPaste)
@@ -640,6 +632,7 @@
 		- Ropes paste carries with it both and only ropes w/both endpoints in region, and with one endpoint in region
 	- See if can do these other undo's with GenericUndo:
 		- Resize
+	- Buffer2D::size
 	- Merge back into master
 
 + RenderContext:

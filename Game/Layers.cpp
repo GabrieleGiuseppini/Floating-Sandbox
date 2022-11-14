@@ -57,13 +57,11 @@ ElectricalPanel ElectricalLayerData::MakedTrimmedPanel(
             {
                 // This instanced element remains...
                 // ...see if it has an entry in the panel
-                auto searchIt = panel.find(instanceIndex);
-                if (searchIt != panel.cend())
+                auto searchIt = panel.Find(instanceIndex);
+                if (searchIt != panel.end())
                 {
                     // Copy to new panel
-                    bool const isInserted = newPanel.Add(instanceIndex, searchIt->second);
-                    assert(isInserted);
-                    (void)isInserted;
+                    newPanel.Add(instanceIndex, searchIt->second);
                 }
             }
         }

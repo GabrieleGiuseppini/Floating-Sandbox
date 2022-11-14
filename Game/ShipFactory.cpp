@@ -1503,7 +1503,7 @@ ElectricalElements ShipFactory::CreateElectricalElements(
             {
                 assert(NoneElectricalElementInstanceIndex != instanceIndex);
 
-                auto const findIt = electricalPanel.find(instanceIndex);
+                auto const findIt = electricalPanel.Find(instanceIndex);
                 if (findIt != electricalPanel.end())
                 {
                     // Take metadata

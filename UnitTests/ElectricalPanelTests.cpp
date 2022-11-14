@@ -2,16 +2,16 @@
 
 #include "gtest/gtest.h"
 
-TEST(ElectricalPanelTests, SafeAdd_FreePosition)
+TEST(ElectricalPanelTests, Merge_FreePosition)
 {
     ElectricalPanel panel;
-    panel.SafeAdd(
+    panel.Merge(
         ElectricalElementInstanceIndex(4),
         ElectricalPanel::ElementMetadata(IntegralCoordinates(12, 42), "foo", false));
 
     ASSERT_EQ(1, panel.GetSize());
 
-    auto const it = panel.cbegin();
+    auto const it = panel.begin();
 
     EXPECT_TRUE(it->second.PanelCoordinates.has_value());
     EXPECT_EQ(IntegralCoordinates(12, 42), it->second.PanelCoordinates);
@@ -22,20 +22,20 @@ TEST(ElectricalPanelTests, SafeAdd_FreePosition)
     EXPECT_EQ(false, it->second.IsHidden);
 }
 
-TEST(ElectricalPanelTests, SafeAdd_OccupiedPosition)
+TEST(ElectricalPanelTests, Merge_OccupiedPosition)
 {
     ElectricalPanel panel;
-    panel.SafeAdd(
+    panel.Merge(
         ElectricalElementInstanceIndex(4),
         ElectricalPanel::ElementMetadata(IntegralCoordinates(12, 42), "foo", false));
 
-    panel.SafeAdd(
+    panel.Merge(
         ElectricalElementInstanceIndex(43),
         ElectricalPanel::ElementMetadata(IntegralCoordinates(12, 42), "bar", true));
 
     ASSERT_EQ(2, panel.GetSize());
 
-    auto it = panel.cbegin();
+    auto it = panel.begin();
     if (it->first != 43)
     {
         ++it;
@@ -51,10 +51,10 @@ TEST(ElectricalPanelTests, SafeAdd_OccupiedPosition)
     EXPECT_EQ(true, it->second.IsHidden);
 }
 
-TEST(ElectricalPanelTests, Add_and_Find)
+TEST(ElectricalPanelTests, TryAdd_and_Find)
 {
     ElectricalPanel panel;
-    bool const isInserted = panel.Add(
+    auto const [_, isInserted] = panel.TryAdd(
         ElectricalElementInstanceIndex(4),
         ElectricalPanel::ElementMetadata(IntegralCoordinates(12, 42), "foo", false));
 
@@ -62,11 +62,11 @@ TEST(ElectricalPanelTests, Add_and_Find)
     ASSERT_FALSE(panel.IsEmpty());
     ASSERT_EQ(1, panel.GetSize());
 
-    auto const it1 = panel.find(4);
-    EXPECT_NE(it1, panel.cend());
+    auto const it1 = panel.Find(4);
+    EXPECT_NE(it1, panel.end());
 
-    auto const it2 = panel.find(5);
-    EXPECT_EQ(it2, panel.cend());
+    auto const it2 = panel.Find(5);
+    EXPECT_EQ(it2, panel.end());
 }
 
 TEST(ElectricalPanelTests, Contains)
@@ -83,11 +83,10 @@ TEST(ElectricalPanelTests, Contains)
 TEST(ElectricalPanelTests, IndexOperator)
 {
     ElectricalPanel panel;
-    bool const isInserted = panel.Add(
+    panel.Add(
         ElectricalElementInstanceIndex(4),
         ElectricalPanel::ElementMetadata(IntegralCoordinates(12, 42), "foo", false));
 
-    ASSERT_TRUE(isInserted);
     ASSERT_FALSE(panel.IsEmpty());
     ASSERT_EQ(1, panel.GetSize());
 

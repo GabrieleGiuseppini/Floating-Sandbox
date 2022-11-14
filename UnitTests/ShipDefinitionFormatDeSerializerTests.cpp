@@ -618,7 +618,7 @@ protected:
         ASSERT_EQ(targetElectricalLayer->Panel.GetSize(), sourceElectricalLayer.Panel.GetSize());
         for (auto const & sourceEntry : sourceElectricalLayer.Panel)
         {
-            ASSERT_NE(targetElectricalLayer->Panel.find(sourceEntry.first), targetElectricalLayer->Panel.cend());
+            ASSERT_TRUE(targetElectricalLayer->Panel.Contains(sourceEntry.first));
 
             auto const & targetElement = targetElectricalLayer->Panel[sourceEntry.first];
             EXPECT_EQ(targetElement.Label, sourceEntry.second.Label);

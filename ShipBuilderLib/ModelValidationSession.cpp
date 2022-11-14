@@ -107,8 +107,8 @@ void ModelValidationSession::PrevisitElectricalLayer()
 
     mElectricalParticlesWithNoStructuralSubstratumCount = 0;
     mLightEmittingParticlesCount = 0;
-    mVisibleElectricalPanelElementsCount = 0;    
-    
+    mVisibleElectricalPanelElementsCount = 0;
+
     //
     // Visit electrical layer
     //
@@ -138,7 +138,7 @@ void ModelValidationSession::PrevisitElectricalLayer()
                 if (electricalMaterial->IsInstanced)
                 {
                     assert(electricalLayer.Buffer[coords].InstanceIndex != NoneElectricalElementInstanceIndex);
-                    if (auto const searchIt = electricalLayer.Panel.find(electricalLayer.Buffer[coords].InstanceIndex);
+                    if (auto const searchIt = electricalLayer.Panel.Find(electricalLayer.Buffer[coords].InstanceIndex);
                         searchIt == electricalLayer.Panel.end() || !searchIt->second.IsHidden)
                     {
                         ++mVisibleElectricalPanelElementsCount;
@@ -397,7 +397,7 @@ void ModelValidationSession::ValidateElectricalConnectivity()
                 (unpoweredElectricalComponentCount > 0) ? ModelValidationIssue::SeverityType::Warning : ModelValidationIssue::SeverityType::Success);
         }
 
-        // Electrical sources not connected to any consumers 
+        // Electrical sources not connected to any consumers
         {
             size_t unconsumedElectricalSourceCount = CountElectricallyUnconnected(
                 electricalConsumers,
@@ -424,7 +424,7 @@ void ModelValidationSession::ValidateElectricalConnectivity()
                 (unpoweredEngineComponentCount > 0) ? ModelValidationIssue::SeverityType::Warning : ModelValidationIssue::SeverityType::Success);
         }
 
-        // Engine sources not connected to any consumers 
+        // Engine sources not connected to any consumers
         {
             size_t unconsumedEngineSourceCount = CountElectricallyUnconnected(
                 engineConsumers,

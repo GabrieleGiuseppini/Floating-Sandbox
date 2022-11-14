@@ -249,14 +249,14 @@ ShipLegacyFormatDeSerializer::JsonDefinition ShipLegacyFormatDeSerializer::LoadL
             auto const label = Utils::GetOptionalJsonMember<std::string>(elementMetadataObject, "label");
             auto const isHidden = Utils::GetOptionalJsonMember<bool>(elementMetadataObject, "is_hidden", false);
 
-            bool const isInserted = electricalPanel.Add(
+            auto const [_, isAdded] = electricalPanel.TryAdd(
                 instanceIndex,
                 ElectricalPanel::ElementMetadata(
                     panelX.has_value() ? IntegralCoordinates(int(*panelX), int(*panelY)) : std::optional<IntegralCoordinates>(),
                     label,
                     isHidden));
 
-            if (!isInserted)
+            if (!isAdded)
                 throw GameException("Electrical element with ID '" + it.first + "' is specified more than twice in the electrical panel");
         }
     }

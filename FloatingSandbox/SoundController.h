@@ -312,14 +312,14 @@ public:
         float thrustMagnitude,
         float rpm,
         ElectricalMaterial const & electricalMaterial,
-        std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override;
+        std::optional<ElectricalPanel::ElementMetadata> const & panelElementMetadata) override;
 
     void OnWaterPumpCreated(
         ElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
         float normalizedForce,
         ElectricalMaterial const & electricalMaterial,
-        std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override;
+        std::optional<ElectricalPanel::ElementMetadata> const & panelElementMetadata) override;
 
     void OnSwitchToggled(
         ElectricalElementId electricalElementId,
