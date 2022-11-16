@@ -622,9 +622,9 @@
 				+ S
 				+ E
 				+ T
-	- SelectionTool:
+	= SelectionTool:
 		- Allow OnMouseDown to work even if outside ship - clip to it
-		- Change cursor @ OnMouseMove when not engaged and when at place for moving corner
+		+ Change cursor @ OnMouseMove when not engaged and when at place for moving corner
 
 	- Tests:
 		- Ropes paste carries with it both and only ropes w/both endpoints in region, and with one endpoint in region

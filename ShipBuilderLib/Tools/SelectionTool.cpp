@@ -67,8 +67,10 @@ SelectionTool::SelectionTool(
     , mCurrentSelection()
     , mEngagementData()
     , mIsShiftDown(false)
+    , mPointerCursor(WxHelpers::LoadCursorImage("selection_cursor", 11, 11, resourceLocator))
+    , mBaseCornerCursor(WxHelpers::LoadCursorImage("corner_cursor", 15, 15, resourceLocator))
 {
-    SetCursor(WxHelpers::LoadCursorImage("selection_cursor", 11, 11, resourceLocator));
+    SetCursor(mPointerCursor);
 }
 
 SelectionTool::~SelectionTool()
@@ -94,6 +96,36 @@ void SelectionTool::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinat
         auto const cornerCoordinates = GetCornerCoordinatesEngaged(mouseCoordinates);
 
         UpdateEphemeralSelection(cornerCoordinates);
+
+        SetCursor(mPointerCursor);
+    }
+    else
+    {
+        // Check if hitting a corner
+        if (mCurrentSelection)
+        {
+            auto const cornerCoordinates = GetCornerCoordinatesFree();
+            if (cornerCoordinates == mCurrentSelection->MinMin())
+            {
+                SetCursor(mBaseCornerCursor.Rotate90(false));
+            }
+            else if (cornerCoordinates == mCurrentSelection->MaxMin())
+            {
+                SetCursor(mBaseCornerCursor.Rotate180());
+            }
+            else if (cornerCoordinates == mCurrentSelection->MaxMax())
+            {
+                SetCursor(mBaseCornerCursor.Rotate90(true));
+            }
+            else if (cornerCoordinates == mCurrentSelection->MinMax())
+            {
+                SetCursor(mBaseCornerCursor);
+            }
+            else
+            {
+                SetCursor(mPointerCursor);
+            }
+        }
     }
 }
 
@@ -219,7 +251,7 @@ void SelectionTool::SelectAll()
 
     // Update measurement
     mController.GetUserInterface().OnMeasuredSelectionSizeChanged(selection.size);
-    
+
     // Commit selection
     mCurrentSelection = selection;
     mSelectionManager.SetSelection(mCurrentSelection);
