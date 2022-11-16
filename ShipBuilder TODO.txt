@@ -389,7 +389,7 @@
 		+ Controller::Copy():
 			+ Calls CopySelectionToClipboard()
 	+ MainFrame::ReconciliateUIWithSelection(): enable/disable Cut, Copy, Deselect buttons
-	= Paste tool:
+	+ Paste tool:
 		+ UI Reconciliation with clipboard being populated: enable/disable button
 			+ Initial call from Controller cctor
 		! Spec:
@@ -405,13 +405,13 @@
 					  and activate previous one for the layer
 				- ~PasteTool() (e.g. because of Validation, etc.)
 					- In this case, it Abort's()
-						- TODO: how to distinguish from "Selecting another tool"? May be this one should Commit() as well
+						- How to distinguish from "Selecting another tool"? May be this one should Commit() as well
 			- PasteTool must not get resumed after a suspension
 			- Tool does Move; various "Tool Settings" buttons do rotate/flip/etc.
 				- Rotate/flip/etc: Button->Ctrl->PasteTool
 				- Flag for opaque vs transparent
 					- Checkbox->Ctrl->PasteTool		
-		= Impl:
+		+ Impl:
 			+ Prelims: 
 				+ Make Controlller::ToolType not optional
 				+ Get rid of WorkbenchState::CurrentToolType altogether
@@ -459,15 +459,15 @@
 			+ Controller::AbortPaste()
 				+ Get tool as PasteTool, and invoke Abort() on it
 				+ Then, destroy (reset) mCurrentTool, and activate previous one for the current layer
-			= Controller::CommitPaste()
-				= Get tool as PasteTool, and invoke Commit() on it
-				= Then, destroy (reset) mCurrentTool, and activate previous one for the current layer
+			+ Controller::CommitPaste()
+				+ Get tool as PasteTool, and invoke Commit() on it
+				+ Then, destroy (reset) mCurrentTool, and activate previous one for the current layer
 			+ Controller::RotatePaste()/etc.
 				+ Get tool as PasteTool, and invoke Rotate()/etc. on it
 			+ Controller::SetPasteIsTransparent:
 				+ Invoked by MainFrame upon toggles of settings flag
 				+ Get tool as PasteTool, and invoke Set"Opaque/Transparentness"() on it
-			= PasteTool:
+			+ PasteTool:
 				+ State:
 					+ Eph viz: contains output of ModelController::PasteForEhpViz (which is GenericUndoPayload)
 						+ DrawEphViz()
@@ -540,8 +540,8 @@
 							= Clamp paste target to ship rect
 						+ DrawEphViz
 						+ LayerChangeEpilog
-				- ShiftDown/Up:
-					- TODO: constrain H/V
+				+ ShiftDown/Up:
+					+ Constrain H/V
 			+ Rethink PasteForEphViz/RestoreForEphViz: do own pure buffer blitting at both, storing into TODOHERE: MultiLayerBufferUndoPayload
 			+ Missing symmetry of methods:
 				! MakeGenericEphemeralVisualizationRestorePayload:
@@ -622,17 +622,16 @@
 				+ S
 				+ E
 				+ T
-		- Tests:
-			- Make sure none of the Paste tools may be selected by user
-				- After removing layer
-			- Copy 1 layer and paste when that layer doesn't exist
-				- Expect: no action at commit, no Undo (even if empty)
 	- SelectionTool:
-		- Allows OnMouseDown to work even if outside ship - clip to it
+		- Allow OnMouseDown to work even if outside ship - clip to it
 		- Change cursor @ OnMouseMove when not engaged and when at place for moving corner
 
 	- Tests:
 		- Ropes paste carries with it both and only ropes w/both endpoints in region, and with one endpoint in region
+		- Make sure none of the Paste tools may be selected by user
+			- After removing layer
+		- Copy 1 layer and paste when that layer doesn't exist
+			- Expect: no action at commit, no Undo (even if empty)
 	- See if can do these other undo's with GenericUndo:
 		- Resize
 	- Buffer2D::size

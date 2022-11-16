@@ -71,6 +71,8 @@ private:
         ShipSpaceCoordinates const & mousePasteCoords,
         ShipSpaceSize const & pasteRegionSize) const;
 
+    void UpdateEphemeralVisualization(ShipSpaceCoordinates const & mouseCoordinates);
+
     void DrawEphemeralVisualization();
 
     void UndoEphemeralVisualization();
@@ -79,6 +81,8 @@ private:
     void ModifyPasteRegion(TModifier && modifier);
 
 private:
+
+    bool mIsShiftDown;
 
     struct PendingSessionData
     {
@@ -104,8 +108,21 @@ private:
     // Only set when the current paste has not been committed nor aborted yet
     std::optional<PendingSessionData> mPendingSessionData;
 
-    // Only set while we're dragging - remembers the previous mouse pos
-    std::optional<ShipSpaceCoordinates> mMouseAnchor;
+    struct DragSessionData
+    {
+        ShipSpaceCoordinates LastMousePosition;
+        std::optional<ShipSpaceCoordinates> LockedOrigin;
+
+        DragSessionData(
+            ShipSpaceCoordinates const & currentMousePosition,
+            bool isLocked)
+            : LastMousePosition(currentMousePosition)
+            , LockedOrigin(isLocked ? currentMousePosition : std::optional<ShipSpaceCoordinates>())
+        {}
+    };
+
+    // Only set while we're dragging
+    std::optional<DragSessionData> mDragSessionData;
 };
 
 class StructuralPasteTool : public PasteTool

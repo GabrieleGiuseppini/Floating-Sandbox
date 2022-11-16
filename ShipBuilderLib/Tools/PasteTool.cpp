@@ -9,6 +9,8 @@
 
 #include "GameCore/GameMath.h"
 
+#include <cmath>
+
 namespace ShipBuilder {
 
 StructuralPasteTool::StructuralPasteTool(
@@ -72,8 +74,9 @@ PasteTool::PasteTool(
     : Tool(
         toolType,
         controller)
+    , mIsShiftDown(false)
     , mPendingSessionData()
-    , mMouseAnchor()
+    , mDragSessionData()
 {
     SetCursor(WxHelpers::LoadCursorImage("pan_cursor", 16, 16, resourceLocator));
 
@@ -100,27 +103,9 @@ void PasteTool::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates)
 {
     assert(mPendingSessionData);
 
-    if (mMouseAnchor)
+    if (mDragSessionData)
     {
-        if (mPendingSessionData->EphemeralVisualization)
-        {
-            UndoEphemeralVisualization();
-            assert(!mPendingSessionData->EphemeralVisualization);
-
-            mController.LayerChangeEpilog(); // Since we're moving, it's likely that 2xregion is less expensive than union of two regions
-        }
-
-        // Move mouse coords
-        auto const shipMouseCoordinates = ScreenToShipSpace(mouseCoordinates);
-        mPendingSessionData->MousePasteCoords = ClampMousePasteCoords(
-            mPendingSessionData->MousePasteCoords + (shipMouseCoordinates - *mMouseAnchor),
-            mPendingSessionData->PasteRegion.Size);
-
-        DrawEphemeralVisualization();
-
-        mController.LayerChangeEpilog();
-
-        mMouseAnchor = shipMouseCoordinates;
+        UpdateEphemeralVisualization(ScreenToShipSpace(mouseCoordinates));
     }
 }
 
@@ -130,23 +115,37 @@ void PasteTool::OnLeftMouseDown()
     if (coords)
     {
         // Start engagement
-        mMouseAnchor = *coords;
+        mDragSessionData.emplace(*coords, mIsShiftDown);
     }
 }
 
 void PasteTool::OnLeftMouseUp()
 {
-    mMouseAnchor.reset();
+    mDragSessionData.reset();
 }
 
 void PasteTool::OnShiftKeyDown()
 {
-    // TODO
+    mIsShiftDown = true;
+
+    if (mDragSessionData)
+    {
+        mDragSessionData->LockedOrigin = mDragSessionData->LastMousePosition;
+
+        UpdateEphemeralVisualization(GetCurrentMouseShipCoordinates());
+    }
 }
 
 void PasteTool::OnShiftKeyUp()
 {
-    // TODO
+    mIsShiftDown = false;
+
+    if (mDragSessionData)
+    {
+        mDragSessionData->LockedOrigin.reset();
+
+        UpdateEphemeralVisualization(GetCurrentMouseShipCoordinates());
+    }
 }
 
 void PasteTool::Commit()
@@ -300,6 +299,44 @@ ShipSpaceCoordinates PasteTool::ClampMousePasteCoords(
     return ShipSpaceCoordinates(
         Clamp(mousePasteCoords.x, -pasteRegionSize.width, mController.GetModelController().GetShipSize().width),
         Clamp(mousePasteCoords.y, -1, mController.GetModelController().GetShipSize().height + pasteRegionSize.height - 1));
+}
+
+void PasteTool::UpdateEphemeralVisualization(ShipSpaceCoordinates const & mouseCoordinates)
+{
+    // Undo ephemeral viz
+    if (mPendingSessionData->EphemeralVisualization)
+    {
+        UndoEphemeralVisualization();
+        assert(!mPendingSessionData->EphemeralVisualization);
+
+        mController.LayerChangeEpilog(); // Since we're moving, it's likely that 2xregion is less expensive than union of two regions
+    }
+
+    // Calc new mouse coords
+    auto newMouseCoordinates = mouseCoordinates;
+    if (mDragSessionData->LockedOrigin)
+    {
+        if (std::abs(mouseCoordinates.x - mDragSessionData->LockedOrigin->x) >= std::abs(mouseCoordinates.y - mDragSessionData->LockedOrigin->y))
+        {
+            newMouseCoordinates.y = mDragSessionData->LockedOrigin->y;
+        }
+        else
+        {
+            newMouseCoordinates.x = mDragSessionData->LockedOrigin->x;
+        }
+    }
+
+    // Move mouse coords
+    mPendingSessionData->MousePasteCoords = ClampMousePasteCoords(
+        mPendingSessionData->MousePasteCoords + (newMouseCoordinates - mDragSessionData->LastMousePosition),
+        mPendingSessionData->PasteRegion.Size);
+
+    // Draw eph vix
+    DrawEphemeralVisualization();
+
+    mController.LayerChangeEpilog();
+
+    mDragSessionData->LastMousePosition = newMouseCoordinates;
 }
 
 void PasteTool::DrawEphemeralVisualization()
