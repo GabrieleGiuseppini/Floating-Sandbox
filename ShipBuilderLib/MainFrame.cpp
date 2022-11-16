@@ -5200,6 +5200,9 @@ void MainFrame::Paste()
 {
     assert(mController);
     mController->Paste();
+
+    // Move to Edit ribbon page - to show paste settings
+    mMainRibbonBar->SetActivePage(2);
 }
 
 void MainFrame::ValidateShip()
@@ -5976,7 +5979,10 @@ void MainFrame::ReconciliateUIWithSelectedTool(ToolType tool)
     bool hasPanel = false;
     for (auto const & entry : mToolSettingsPanels)
     {
-        bool const mustBeSelected = std::find(std::get<0>(entry).cbegin(), std::get<0>(entry).cend(), tool) != std::get<0>(entry).cend();
+        bool const mustBeSelected = std::find(
+            std::get<0>(entry).cbegin(),
+            std::get<0>(entry).cend(),
+            tool) != std::get<0>(entry).cend();
 
         mToolSettingsPanelsSizer->Show(std::get<1>(entry), mustBeSelected);
 
