@@ -557,15 +557,65 @@ GenericUndoPayload ModelController::Paste(
             electricalLayerRegionBackup = mModel.GetElectricalLayer().MakeRegionBackup(*affectedTargetRectShip);
 
             // Paste
-            // TODOHERE
-            //DoElectricalRegionBufferPaste(
-            //    sourcePayload.ElectricalLayer->Buffer,
-            //    affectedSourceRegion,
-            //    actualPasteOriginShip,
-            //    isTransparent);
+            DoElectricalRegionBufferPaste(
+                sourcePayload.ElectricalLayer->Buffer,
+                affectedSourceRegion,
+                actualPasteOriginShip,
+                [isTransparent, this, &sourcePayload](ElectricalElement const & src, ElectricalElement const & dst) -> ElectricalElement const &
+                {
+                    // Take care of deletion of old
+                    if (dst.Material != nullptr && (src.Material != nullptr || !isTransparent))
+                    {
+                        // Old is deleted
+                        --mElectricalParticleCount;
 
-            // Re-initialize layer analysis
-            // InitializeElectricalLayerAnalysis();
+                        // See whether old was instanced
+                        if (dst.InstanceIndex != NoneElectricalElementInstanceIndex)
+                        {
+                            // De-register instance ID
+                            mInstancedElectricalElementSet.Remove(dst.InstanceIndex);
+
+                            // Remove from panel (if there)
+                            mModel.GetElectricalLayer().Panel.TryRemove(dst.InstanceIndex);
+                        }
+                    }
+
+                    // Take care of creation of new
+                    if (src.Material != nullptr)
+                    {
+                        // New is created
+                        ++mElectricalParticleCount;
+
+                        // See whether new is instanced
+                        if (src.InstanceIndex != NoneElectricalElementInstanceIndex)
+                        {
+                            // Register new instance ID
+                            auto newInstanceIndex = mInstancedElectricalElementSet.IsRegistered(src.InstanceIndex)
+                                ? mInstancedElectricalElementSet.Add(src.Material) // Rename
+                                : mInstancedElectricalElementSet.Register(src.InstanceIndex, src.Material); // Reuse
+
+                            // Copy panel element - if any
+                            if (sourcePayload.ElectricalLayer->Panel.Contains(src.InstanceIndex))
+                            {
+                                mModel.GetElectricalLayer().Panel.Add(
+                                    newInstanceIndex,
+                                    sourcePayload.ElectricalLayer->Panel[src.InstanceIndex]);
+                            }
+                        }
+                    }
+
+                    return isTransparent
+                        ? (src.Material ? src : dst)
+                        : src;
+                });
+
+            assert(static_cast<size_t>(std::count_if(
+                mModel.GetElectricalLayer().Buffer.Data.get(),
+                &(mModel.GetElectricalLayer().Buffer.Data.get()[mModel.GetElectricalLayer().Buffer.Size.GetLinearSize()]),
+                [](ElectricalElement const & elem) -> bool
+                {
+                    return elem.Material != nullptr;
+                })) == mElectricalParticleCount);
         }
 
         if (sourcePayload.RopesLayer && mModel.HasLayer(LayerType::Ropes))
@@ -746,7 +796,17 @@ GenericEphemeralVisualizationRestorePayload ModelController::PasteForEphemeralVi
                 sourcePayload.ElectricalLayer->Buffer,
                 affectedSourceRegion,
                 actualPasteOriginShip,
-                isTransparent);
+                isTransparent
+                    ? [](ElectricalElement const & src, ElectricalElement const & dst) -> ElectricalElement const &
+                    {
+                        return src.Material
+                            ? src
+                            : dst;
+                    }
+                    : [](ElectricalElement const & src, ElectricalElement const &) -> ElectricalElement const &
+                    {
+                        return src;
+                    });
 
             // Remember we are in temp visualization now
             mIsElectricalLayerInEphemeralVisualization = true;
@@ -1348,7 +1408,10 @@ void ModelController::RestoreElectricalLayerRegionEphemeralVisualization(
         backupBuffer,
         backupBufferRegion,
         targetOrigin,
-        false);
+        [](ElectricalElement const & src, ElectricalElement const &) -> ElectricalElement const &
+        {
+            return src;
+        });
 
     // Remember we are not anymore in temp visualization
     mIsElectricalLayerInEphemeralVisualization = false;
@@ -2375,8 +2438,8 @@ void ModelController::WriteParticle(
             mInstancedElectricalElementSet.Remove(oldElement.InstanceIndex);
             instanceIndex = NoneElectricalElementInstanceIndex;
 
-            // Remove from panel
-            mModel.GetElectricalLayer().Panel.Remove(oldElement.InstanceIndex);
+            // Remove from panel (if there)
+            mModel.GetElectricalLayer().Panel.TryRemove(oldElement.InstanceIndex);
         }
         else
         {
@@ -2829,13 +2892,13 @@ void ModelController::DoStructuralRegionBufferPaste(
     assert(sourceRegion.IsContainedInRect(ShipSpaceRect(sourceBuffer.Size)));
 
     auto const elementOperator = isTransparent
-        ? [](StructuralElement const & src, StructuralElement const & dst) -> StructuralElement
+        ? [](StructuralElement const & src, StructuralElement const & dst) -> StructuralElement const &
         {
             return src.Material
                 ? src
                 : dst;
         }
-        : [](StructuralElement const & src, StructuralElement const &) -> StructuralElement
+        : [](StructuralElement const & src, StructuralElement const &) -> StructuralElement const &
         {
             return src;
         };
@@ -2858,7 +2921,7 @@ void ModelController::DoElectricalRegionBufferPaste(
     typename LayerTypeTraits<LayerType::Electrical>::buffer_type const & sourceBuffer,
     ShipSpaceRect const & sourceRegion,
     ShipSpaceCoordinates const & targetCoordinates,
-    bool isTransparent)
+    std::function<ElectricalElement const &(ElectricalElement const &, ElectricalElement const &)> elementOperator)
 {
     assert(mModel.HasLayer(LayerType::Electrical));
 
@@ -2870,18 +2933,6 @@ void ModelController::DoElectricalRegionBufferPaste(
 
     // The source region is entirely contained in the source buffer
     assert(sourceRegion.IsContainedInRect(ShipSpaceRect(sourceBuffer.Size)));
-
-    auto const elementOperator = isTransparent
-        ? [](ElectricalElement const & src, ElectricalElement const & dst) -> ElectricalElement
-        {
-            return src.Material
-                ? src
-                : dst;
-        }
-        : [](ElectricalElement const & src, ElectricalElement const &) -> ElectricalElement
-        {
-            return src;
-        };
 
     mModel.GetElectricalLayer().Buffer.BlitFromRegion(
         sourceBuffer,

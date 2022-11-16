@@ -22,7 +22,19 @@ TEST(InstancedElectricalElementSetTests, FromEmpty)
     EXPECT_EQ(2, instanceId);
 }
 
-TEST(InstancedElectricalElementSetTests, Dispose_First)
+TEST(InstancedElectricalElementSetTests, IsRegistered)
+{
+    InstancedElectricalElementSet elementSet;
+
+    auto const material = MakeTestElectricalMaterial("mat1", rgbColor(1, 2, 3), true);
+
+    auto instanceId = elementSet.Add(&material);
+
+    EXPECT_TRUE(elementSet.IsRegistered(instanceId));
+    EXPECT_FALSE(elementSet.IsRegistered(instanceId + 1));
+}
+
+TEST(InstancedElectricalElementSetTests, Remove_First)
 {
     InstancedElectricalElementSet elementSet;
 
@@ -42,7 +54,7 @@ TEST(InstancedElectricalElementSetTests, Dispose_First)
     EXPECT_EQ(3, instanceId);
 }
 
-TEST(InstancedElectricalElementSetTests, Dispose_Mid_One)
+TEST(InstancedElectricalElementSetTests, Remove_Mid_One)
 {
     InstancedElectricalElementSet elementSet;
 
@@ -62,7 +74,7 @@ TEST(InstancedElectricalElementSetTests, Dispose_Mid_One)
     EXPECT_EQ(3, instanceId);
 }
 
-TEST(InstancedElectricalElementSetTests, Dispose_Multiple)
+TEST(InstancedElectricalElementSetTests, Remove_Multiple)
 {
     InstancedElectricalElementSet elementSet;
 
@@ -86,7 +98,7 @@ TEST(InstancedElectricalElementSetTests, Dispose_Multiple)
     EXPECT_EQ(3, instanceId);
 }
 
-TEST(InstancedElectricalElementSetTests, Dispose_Last)
+TEST(InstancedElectricalElementSetTests, Remove_Last)
 {
     InstancedElectricalElementSet elementSet;
 
@@ -106,7 +118,7 @@ TEST(InstancedElectricalElementSetTests, Dispose_Last)
     EXPECT_EQ(3, instanceId);
 }
 
-TEST(InstancedElectricalElementSetTests, Dispose_Last_Backwards)
+TEST(InstancedElectricalElementSetTests, Remove_Last_Backwards)
 {
     InstancedElectricalElementSet elementSet;
 
@@ -130,7 +142,7 @@ TEST(InstancedElectricalElementSetTests, Dispose_Last_Backwards)
     EXPECT_EQ(3, instanceId);
 }
 
-TEST(InstancedElectricalElementSetTests, Dispose_All)
+TEST(InstancedElectricalElementSetTests, Remove_All)
 {
     InstancedElectricalElementSet elementSet;
 

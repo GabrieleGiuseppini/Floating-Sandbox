@@ -313,8 +313,7 @@ public:
     }
 
     template<typename TNewElement, typename TFunctor>
-    Buffer2D<TNewElement, TIntegralTag> Transform(
-        TFunctor const & elementOperator) const
+    Buffer2D<TNewElement, TIntegralTag> Transform(TFunctor const & elementOperator) const
     {
         auto newData = std::make_unique<TNewElement[]>(mLinearSize);
 

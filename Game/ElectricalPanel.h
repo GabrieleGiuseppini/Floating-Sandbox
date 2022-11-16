@@ -122,7 +122,7 @@ public:
 		Add(instanceIndex, std::move(metadata));
 	}
 
-	void Remove(ElectricalElementInstanceIndex instanceIndex)
+	void TryRemove(ElectricalElementInstanceIndex instanceIndex)
 	{
 		auto const it = mMap.find(instanceIndex);
 		if (it != mMap.end())

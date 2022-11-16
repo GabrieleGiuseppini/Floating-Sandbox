@@ -24,6 +24,7 @@
 #include <GameCore/ImageData.h>
 
 #include <array>
+#include <functional>
 #include <memory>
 #include <optional>
 #include <vector>
@@ -538,7 +539,7 @@ private:
         typename LayerTypeTraits<LayerType::Electrical>::buffer_type const & sourceBuffer,
         ShipSpaceRect const & sourceRegion,
         ShipSpaceCoordinates const & targetCoordinates,
-        bool isTransparent);
+        std::function<ElectricalElement const &(ElectricalElement const &, ElectricalElement const &)> elementOperator);
 
     void DoRopesRegionBufferPaste(
         typename LayerTypeTraits<LayerType::Ropes>::buffer_type const & sourceBuffer,

@@ -27,6 +27,11 @@ public:
         return mInstanceMap;
     }
 
+    bool IsRegistered(ElectricalElementInstanceIndex instanceIndex) const
+    {
+        return mInstanceMap.count(instanceIndex) != 0;
+    }
+
     ElectricalElementInstanceIndex Add(ElectricalMaterial const * material)
     {
         assert(nullptr != material);
@@ -46,7 +51,7 @@ public:
         return newIndex;
     }
 
-    void Register(ElectricalElementInstanceIndex instanceIndex, ElectricalMaterial const * material)
+    ElectricalElementInstanceIndex Register(ElectricalElementInstanceIndex instanceIndex, ElectricalMaterial const * material)
     {
         assert(mInstanceMap.count(instanceIndex) == 0);
         assert(nullptr != material);
@@ -62,6 +67,8 @@ public:
             assert(instanceIndex == mFirstFreeInstanceIndex);
             RecalculateNextFreeIndex(insertIt);
         }
+
+        return instanceIndex;
     }
 
     void Remove(ElectricalElementInstanceIndex instanceIndex)
