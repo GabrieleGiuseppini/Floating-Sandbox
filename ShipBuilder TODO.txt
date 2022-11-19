@@ -1,4 +1,3 @@
-
 + See crash with Rope tool
 	+ "In my case it happened when I accidentaly picken air in the rope layer and tried to make a rope with it"
 		+ Rope sampler tool should not pick up nothing
@@ -8,6 +7,7 @@
 		X Why did we do that?
 
 - Do Selection/Copy'n'Cut/Paste workflow (*)
+	- Merge back into master
 
 - Try RegisterDirtyViz() storing list of rects
 	- 1: View: bunch of rects, so that we may visualize current behavior
@@ -196,7 +196,7 @@
 	- Other edit operations, not via tools - via menu (and buttons?)
 		+ Auto-trim (on bounding box)
 
-= Selection/Copy'n'Paste (*):
++ Selection/Copy'n'Paste (*):
 	! Spec:
 		- ~LayersRegion: container of (regions of) layers, for each layer type
 			- Elec contains own region of PanelMetadata
@@ -643,8 +643,6 @@
 			+ Cut()
 			+ Flip
 			+ Rotate
-	- Buffer2D::size
-	- Merge back into master
 
 + RenderContext:
 	+ Single-threaded
