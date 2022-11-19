@@ -190,9 +190,9 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
     }
 
     return ShipDefinition(
-        shipAttributes->ShipSize,
         ShipLayers(
-            std::move(*structuralLayer),
+            shipAttributes->ShipSize,
+            std::move(structuralLayer),
             std::move(electricalLayer),
             std::move(ropesLayer),
             std::move(textureLayer)),
@@ -347,9 +347,9 @@ void ShipDefinitionFormatDeSerializer::Save(
 
     ShipAttributes const shipAttributes = ShipAttributes(
         Version::CurrentVersion(),
-        shipDefinition.Layers.StructuralLayer.Buffer.Size,
-        shipDefinition.Layers.HasTextureLayer(),
-        shipDefinition.Layers.HasElectricalLayer(),
+        shipDefinition.Layers.Size,
+        (bool)shipDefinition.Layers.TextureLayer,
+        (bool)shipDefinition.Layers.ElectricalLayer,
         PortableTimepoint::Now());
 
     AppendSection(
@@ -380,7 +380,7 @@ void ShipDefinitionFormatDeSerializer::Save(
             [&]() { return AppendPngImage(shipDefinition.Layers.TextureLayer->Buffer, buffer); },
             buffer);
     }
-    else
+    else if (shipDefinition.Layers.StructuralLayer)
     {
         //
         // Make and write a preview image
@@ -389,19 +389,26 @@ void ShipDefinitionFormatDeSerializer::Save(
         AppendSection(
             outputFile,
             static_cast<std::uint32_t>(MainSectionTagType::Preview_PNG),
-            [&]() { return AppendPngPreview(shipDefinition.Layers.StructuralLayer, buffer); },
+            [&]() { return AppendPngPreview(*shipDefinition.Layers.StructuralLayer, buffer); },
             buffer);
+    }
+    else
+    {
+        // Note: no preview image - but won't happen in reality that there's no structural layer
     }
 
     //
     // Write structural layer
     //
 
-    AppendSection(
-        outputFile,
-        static_cast<std::uint32_t>(MainSectionTagType::StructuralLayer),
-        [&]() { return AppendStructuralLayer(shipDefinition.Layers.StructuralLayer, buffer); },
-        buffer);
+    if (shipDefinition.Layers.StructuralLayer)
+    {
+        AppendSection(
+            outputFile,
+            static_cast<std::uint32_t>(MainSectionTagType::StructuralLayer),
+            [&]() { return AppendStructuralLayer(*shipDefinition.Layers.StructuralLayer, buffer); },
+            buffer);
+    }
 
     //
     // Write electrical layer
@@ -964,7 +971,7 @@ size_t ShipDefinitionFormatDeSerializer::AppendElectricalLayer(
     // Electrical panel
     //
 
-    if (!electricalLayer.Panel.empty())
+    if (!electricalLayer.Panel.IsEmpty())
     {
         buffer.Append(static_cast<uint32_t>(ElectricalLayerTagType::Panel));
         size_t const sectionBodySizeIndex = buffer.ReserveAndAdvance<std::uint32_t>();
@@ -1053,13 +1060,13 @@ size_t ShipDefinitionFormatDeSerializer::AppendElectricalLayerBuffer(
 }
 
 size_t ShipDefinitionFormatDeSerializer::AppendElectricalLayerPanel(
-    ElectricalPanelMetadata const & electricalPanel,
+    ElectricalPanel const & electricalPanel,
     DeSerializationBuffer<BigEndianess> & buffer)
 {
     size_t subSectionBodySize = 0;
 
     // Number of entries
-    std::uint16_t count = static_cast<std::uint16_t>(electricalPanel.size());
+    std::uint16_t count = static_cast<std::uint16_t>(electricalPanel.GetSize());
     subSectionBodySize += buffer.Append(count);
 
     // Entries
@@ -1135,7 +1142,7 @@ size_t ShipDefinitionFormatDeSerializer::AppendRopesLayerBuffer(
     size_t subSectionBodySize = 0;
 
     // Number of entries
-    std::uint32_t count = static_cast<std::uint32_t>(ropesLayerBuffer.GetSize());
+    std::uint32_t count = static_cast<std::uint32_t>(ropesLayerBuffer.GetElementCount());
     subSectionBodySize += buffer.Append(count);
 
     // Entries
@@ -1964,7 +1971,7 @@ void ShipDefinitionFormatDeSerializer::ReadElectricalLayer(
 
             case static_cast<uint32_t>(ElectricalLayerTagType::Panel) :
             {
-                electricalLayer->Panel.clear();
+                electricalLayer->Panel.Clear();
 
                 size_t elecPanelReadOffset = readOffset;
 
@@ -2004,14 +2011,14 @@ void ShipDefinitionFormatDeSerializer::ReadElectricalLayer(
                     bool isHidden;
                     elecPanelReadOffset += buffer.ReadAt<bool>(elecPanelReadOffset, isHidden);
 
-                    auto const res = electricalLayer->Panel.try_emplace(
+                    auto const [_, isAdded] = electricalLayer->Panel.TryAdd(
                         static_cast<ElectricalElementInstanceIndex>(instanceIndex),
-                        ElectricalPanelElementMetadata(
+                        ElectricalPanel::ElementMetadata(
                             panelCoordinates,
                             label,
                             isHidden));
 
-                    if (!res.second)
+                    if (!isAdded)
                     {
                         LogMessage("WARNING: Duplicate electrical element instance index \"", instanceIndex, "\"");
                     }
@@ -2053,7 +2060,7 @@ void ShipDefinitionFormatDeSerializer::ReadRopesLayer(
     size_t readOffset = 0;
 
     // Allocate layer
-    ropesLayer.reset(new RopesLayerData());
+    ropesLayer.reset(new RopesLayerData(shipAttributes.ShipSize));
 
     // Read all tags
     while (true)

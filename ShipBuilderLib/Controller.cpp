@@ -8,6 +8,7 @@
 #include "Tools/FloodTool.h"
 #include "Tools/LineTool.h"
 #include "Tools/MeasuringTapeTool.h"
+#include "Tools/PasteTool.h"
 #include "Tools/PencilTool.h"
 #include "Tools/RopeEraserTool.h"
 #include "Tools/RopePencilTool.h"
@@ -84,11 +85,8 @@ Controller::Controller(
     , mResourceLocator(resourceLocator)
     // State
     , mCurrentTool()
-    , mLastToolTypePerLayer({ToolType::StructuralPencil, ToolType::ElectricalPencil, ToolType::RopePencil, std::nullopt})
+    , mCurrentToolTypePerLayer({ToolType::StructuralPencil, ToolType::ElectricalPencil, ToolType::RopePencil, ToolType::TextureEraser})
 {
-    // We assume we start with at least a structural layer
-    assert(mModelController->HasLayer(LayerType::Structural));
-
     //
     // Create view
     //
@@ -153,13 +151,10 @@ Controller::Controller(
     mUserInterface.RefreshView();
 
     //
-    // Create tool
+    // Set tool to tool for current visualization
     //
 
-    if (mWorkbenchState.GetCurrentToolType().has_value())
-    {
-        mCurrentTool = MakeTool(*mWorkbenchState.GetCurrentToolType());
-    }
+    InternalSetCurrentTool(GetToolTypeForCurrentVisualization(), false);
 
     RefreshToolCoordinatesDisplay();
 }
@@ -243,7 +238,7 @@ void Controller::RestoreShipPropertiesForUndo(
     mUserInterface.OnModelDirtyChanged(*mModelController);
 }
 
-void Controller::SetElectricalPanelMetadata(ElectricalPanelMetadata panelMetadata)
+void Controller::SetElectricalPanel(ElectricalPanel electricalPanel)
 {
     assert(mModelController);
 
@@ -251,9 +246,9 @@ void Controller::SetElectricalPanelMetadata(ElectricalPanelMetadata panelMetadat
     // Prepare undo entry
     //
 
-    auto f = [oldPanelMetadata = mModelController->GetElectricalPanelMetadata()] (Controller & controller) mutable
+    auto f = [oldElectricalPanel = mModelController->GetElectricalPanel()] (Controller & controller) mutable
     {
-        controller.RestoreElectricalPanelMetadataForUndo(std::move(oldPanelMetadata));
+        controller.RestoreElectricalPanelForUndo(std::move(oldElectricalPanel));
     };
 
     auto originalDirtyState = mModelController->GetDirtyState();
@@ -262,7 +257,7 @@ void Controller::SetElectricalPanelMetadata(ElectricalPanelMetadata panelMetadat
     // Set new panel
     //
 
-    InternalSetElectricalPanelMetadata(std::move(panelMetadata));
+    InternalSetElectricalPanel(std::move(electricalPanel));
 
     mModelController->SetLayerDirty(LayerType::Electrical);
     mUserInterface.OnModelDirtyChanged(*mModelController);
@@ -280,11 +275,11 @@ void Controller::SetElectricalPanelMetadata(ElectricalPanelMetadata panelMetadat
     mUserInterface.OnUndoStackStateChanged(mUndoStack);
 }
 
-void Controller::RestoreElectricalPanelMetadataForUndo(ElectricalPanelMetadata && panelMetadata)
+void Controller::RestoreElectricalPanelForUndo(ElectricalPanel && electricalPanel)
 {
     assert(mModelController);
 
-    InternalSetElectricalPanelMetadata(std::move(panelMetadata));
+    InternalSetElectricalPanel(std::move(electricalPanel));
 
     mUserInterface.OnModelDirtyChanged(*mModelController);
 }
@@ -346,17 +341,14 @@ void Controller::SetStructuralLayer(
         std::move(structuralLayer));
 }
 
-void Controller::RestoreStructuralLayerRegionForUndo(
-    StructuralLayerData && layerRegion,
+void Controller::RestoreStructuralLayerRegionBackupForUndo(
+    StructuralLayerData && layerRegionBackup,
     ShipSpaceCoordinates const & origin)
 {
     auto const scopedToolResumeState = SuspendTool();
 
-    ShipSpaceRect const regionRect({ {0, 0}, layerRegion.Buffer.Size });
-
-    mModelController->RestoreStructuralLayerRegion(
-        std::move(layerRegion),
-        regionRect,
+    mModelController->RestoreStructuralLayerRegionBackup(
+        std::move(layerRegionBackup),
         origin);
 
     // No need to update dirtyness, this is for undo
@@ -369,13 +361,20 @@ void Controller::RestoreStructuralLayerRegionForUndo(
     mUserInterface.RefreshView();
 }
 
-void Controller::RestoreStructuralLayerForUndo(StructuralLayerData && structuralLayer)
+void Controller::RestoreStructuralLayerForUndo(std::unique_ptr<StructuralLayerData> structuralLayer)
 {
     auto const scopedToolResumeState = SuspendTool();
 
-    mModelController->RestoreStructuralLayer(std::move(structuralLayer));
+    WrapLikelyLayerPresenceChangingOperation<LayerType::Structural>(
+        [this, structuralLayer = std::move(structuralLayer)]() mutable
+        {
+            mModelController->RestoreStructuralLayer(std::move(structuralLayer));
+        });
 
     // No need to update dirtyness, this is for undo
+
+    // Update visualization modes
+    InternalUpdateModelControllerVisualizationModes();
 
     // Notify macro properties
     NotifyModelMacroPropertiesUpdated();
@@ -410,15 +409,14 @@ void Controller::RemoveElectricalLayer()
     InternalRemoveLayer<LayerType::Electrical>();
 }
 
-void Controller::RestoreElectricalLayerRegionForUndo(
-    ElectricalLayerData && layerRegion,
+void Controller::RestoreElectricalLayerRegionBackupForUndo(
+    ElectricalLayerData && layerRegionBackup,
     ShipSpaceCoordinates const & origin)
 {
     auto const scopedToolResumeState = SuspendTool();
 
-    mModelController->RestoreElectricalLayerRegion(
-        std::move(layerRegion),
-        { {0, 0}, layerRegion.Buffer.Size },
+    mModelController->RestoreElectricalLayerRegionBackup(
+        std::move(layerRegionBackup),
         origin);
 
     // No need to update dirtyness, this is for undo
@@ -477,28 +475,28 @@ void Controller::TrimElectricalParticlesWithoutSubstratum()
         {
             // Create undo action
 
-            ElectricalLayerData clippedRegionClone = originalLayerClone.Clone(*affectedRect);
-            auto const clipByteSize = clippedRegionClone.Buffer.GetByteSize();
+            ElectricalLayerData clippedRegionBackup = originalLayerClone.MakeRegionBackup(*affectedRect);
+            auto const clipByteSize = clippedRegionBackup.Buffer.GetByteSize();
 
             mUndoStack.Push(
                 _("Trim Electrical"),
                 clipByteSize,
                 originalDirtyStateClone,
-                [clippedRegionClone = std::move(clippedRegionClone), origin = affectedRect->origin](Controller & controller) mutable
+                [clippedRegionBackup = std::move(clippedRegionBackup), origin = affectedRect->origin](Controller & controller) mutable
                 {
-                    controller.RestoreElectricalLayerRegionForUndo(std::move(clippedRegionClone), origin);
+                    controller.RestoreElectricalLayerRegionBackupForUndo(std::move(clippedRegionBackup), origin);
                 });
 
             mUserInterface.OnUndoStackStateChanged(mUndoStack);
 
-            LayerChangeEpilog(LayerType::Electrical);
+            LayerChangeEpilog({ LayerType::Electrical });
         }
     }
 }
 
 void Controller::NewRopesLayer()
 {
-    RopesLayerData newRopesLayer;
+    RopesLayerData newRopesLayer(mModelController->GetShipSize());
 
     InternalSetLayer<LayerType::Ropes>(
         _("New Ropes Layer"),
@@ -517,6 +515,27 @@ void Controller::SetRopesLayer(
 void Controller::RemoveRopesLayer()
 {
     InternalRemoveLayer<LayerType::Ropes>();
+}
+
+void Controller::RestoreRopesLayerRegionBackupForUndo(
+    RopesLayerData && layerRegionBackup,
+    ShipSpaceCoordinates const & origin)
+{
+    auto const scopedToolResumeState = SuspendTool();
+
+    mModelController->RestoreRopesLayerRegionBackup(
+        std::move(layerRegionBackup),
+        origin);
+
+    // No need to update dirtyness, this is for undo
+
+    // Notify macro properties
+    NotifyModelMacroPropertiesUpdated();
+
+    // Refresh model visualizations
+    mModelController->UpdateVisualizations(*mView);
+    mUserInterface.RefreshView();
+
 }
 
 void Controller::RestoreRopesLayerForUndo(std::unique_ptr<RopesLayerData> ropesLayer)
@@ -558,15 +577,14 @@ void Controller::RemoveTextureLayer()
     InternalRemoveLayer<LayerType::Texture>();
 }
 
-void Controller::RestoreTextureLayerRegionForUndo(
-    TextureLayerData && layerRegion,
+void Controller::RestoreTextureLayerRegionBackupForUndo(
+    TextureLayerData && layerRegionBackup,
     ImageCoordinates const & origin)
 {
     auto const scopedToolResumeState = SuspendTool();
 
-    mModelController->RestoreTextureLayerRegion(
-        std::move(layerRegion),
-        { {0, 0}, layerRegion.Buffer.Size },
+    mModelController->RestoreTextureLayerRegionBackup(
+        std::move(layerRegionBackup),
         origin);
 
     // No need to update dirtyness, this is for undo
@@ -605,7 +623,7 @@ void Controller::RestoreTextureLayerForUndo(
 
 void Controller::RestoreAllLayersForUndo(
     ShipSpaceSize const & shipSize,
-    StructuralLayerData && structuralLayer,
+    std::unique_ptr<StructuralLayerData> structuralLayer,
     std::unique_ptr<ElectricalLayerData> electricalLayer,
     std::unique_ptr<RopesLayerData> ropesLayer,
     std::unique_ptr<TextureLayerData> textureLayer,
@@ -619,7 +637,11 @@ void Controller::RestoreAllLayersForUndo(
 
     mModelController->SetShipSize(shipSize);
 
-    mModelController->RestoreStructuralLayer(std::move(structuralLayer));
+    WrapLikelyLayerPresenceChangingOperation<LayerType::Structural>(
+        [this, structuralLayer = std::move(structuralLayer)]() mutable
+        {
+            mModelController->RestoreStructuralLayer(std::move(structuralLayer));
+        });
 
     WrapLikelyLayerPresenceChangingOperation<LayerType::Electrical>(
         [this, electricalLayer = std::move(electricalLayer)]() mutable
@@ -663,6 +685,269 @@ void Controller::RestoreAllLayersForUndo(
     // Refresh model visualizations
     mModelController->UpdateVisualizations(*mView);
     mUserInterface.RefreshView();
+}
+
+void Controller::Restore(GenericUndoPayload && undoPayload)
+{
+    // No layer-presence changing operations
+    mModelController->Restore(std::move(undoPayload));
+
+    // Notify macro properties
+    NotifyModelMacroPropertiesUpdated();
+
+    // Refresh model visualizations
+    mModelController->UpdateVisualizations(*mView);
+    mUserInterface.RefreshView();
+}
+
+void Controller::Copy() const
+{
+    // Note: no need to suspend tool, as Selection tool has no eph viz
+    assert(!mCurrentTool || mCurrentTool->GetClass() == ToolClass::Selection);
+
+    assert(mSelectionManager.GetSelection().has_value());
+    auto const selectionRegion = *(mSelectionManager.GetSelection());
+
+    std::optional<LayerType> const layerSelection = mWorkbenchState.GetSelectionIsAllLayers()
+        ? std::nullopt // All layers
+        : std::optional<LayerType>(VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization())); // Currently-selected layer
+
+    InternalCopySelectionToClipboard(selectionRegion, layerSelection);
+}
+
+void Controller::Cut()
+{
+    assert(mSelectionManager.GetSelection().has_value());
+    auto const selectionRegion = *(mSelectionManager.GetSelection()); // Get selection before we remove tool
+
+    auto const scopedToolResumeState = SuspendTool();
+
+    std::optional<LayerType> const layerSelection = mWorkbenchState.GetSelectionIsAllLayers()
+        ? std::nullopt // All layers
+        : std::optional<LayerType>(VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization())); // Currently-selected layer
+
+    // Copy to clipboard
+    InternalCopySelectionToClipboard(selectionRegion, layerSelection);
+
+    // Erase region
+    GenericUndoPayload undoPayload = mModelController->EraseRegion(selectionRegion, layerSelection);
+
+    // Store Undo
+    size_t const undoPayloadCost = undoPayload.GetTotalCost();
+    mUndoStack.Push(
+        _("Cut"),
+        undoPayloadCost,
+        mModelController->GetDirtyState(),
+        [undoPayload = std::move(undoPayload)](Controller & controller) mutable
+        {
+            controller.Restore(std::move(undoPayload));
+        });
+
+    mUserInterface.OnUndoStackStateChanged(mUndoStack);
+
+    LayerChangeEpilog(mModelController->CalculateAffectedLayers(layerSelection));
+}
+
+void Controller::Paste()
+{
+    //
+    // Clone clipboard
+    //
+
+    assert(!mWorkbenchState.GetClipboardManager().IsEmpty());
+
+    ShipLayers clipboardClone = mWorkbenchState.GetClipboardManager().GetContent()->Clone();
+
+    //
+    // Nuke current tool
+    //
+
+    mCurrentTool.reset();
+
+    //
+    // Decide which of the layer variants to choose:
+    //  - First layer present in clipboard
+    //  - If clipboard has layer for current viz, wins
+    //
+
+    std::optional<LayerType> bestLayer;
+
+    LayerType currentVizLayer = VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization());
+
+    if (clipboardClone.StructuralLayer)
+    {
+        if (!bestLayer || currentVizLayer == LayerType::Structural)
+        {
+            bestLayer = LayerType::Structural;
+        }
+    }
+
+    if (clipboardClone.ElectricalLayer)
+    {
+        if (!bestLayer || currentVizLayer == LayerType::Electrical)
+        {
+            bestLayer = LayerType::Electrical;
+        }
+    }
+
+    if (clipboardClone.RopesLayer)
+    {
+        if (!bestLayer || currentVizLayer == LayerType::Ropes)
+        {
+            bestLayer = LayerType::Ropes;
+        }
+    }
+
+    if (clipboardClone.TextureLayer)
+    {
+        if (!bestLayer || currentVizLayer == LayerType::Texture)
+        {
+            bestLayer = LayerType::Texture;
+        }
+    }
+
+    assert(bestLayer);
+
+    //
+    // If chosen layer is not current viz's, change viz - WITHOUT setting tool
+    //
+
+    if (*bestLayer != currentVizLayer)
+    {
+        switch (*bestLayer)
+        {
+            case LayerType::Structural:
+            {
+                InternalSelectPrimaryVisualization(VisualizationType::Game); // Arbitrary
+                break;
+            }
+
+            case LayerType::Electrical:
+            {
+                InternalSelectPrimaryVisualization(VisualizationType::ElectricalLayer);
+                break;
+            }
+
+            case LayerType::Ropes:
+            {
+                InternalSelectPrimaryVisualization(VisualizationType::RopesLayer);
+                break;
+            }
+
+            case LayerType::Texture:
+            {
+                InternalSelectPrimaryVisualization(VisualizationType::TextureLayer);
+                break;
+            }
+        }
+    }
+
+    //
+    // Instantiate and set tool, making sure it does not become "the" tool
+    // for the current viz mode
+    //
+
+    switch (*bestLayer)
+    {
+        case LayerType::Structural:
+        {
+            mCurrentTool = std::make_unique<StructuralPasteTool>(
+                std::move(clipboardClone),
+                mWorkbenchState.GetPasteIsTransparent(),
+                *this,
+                mResourceLocator);
+
+            break;
+        }
+
+        case LayerType::Electrical:
+        {
+            mCurrentTool = std::make_unique<ElectricalPasteTool>(
+                std::move(clipboardClone),
+                mWorkbenchState.GetPasteIsTransparent(),
+                *this,
+                mResourceLocator);
+
+            break;
+        }
+
+        case LayerType::Ropes:
+        {
+            mCurrentTool = std::make_unique<RopePasteTool>(
+                std::move(clipboardClone),
+                mWorkbenchState.GetPasteIsTransparent(),
+                *this,
+                mResourceLocator);
+
+            break;
+        }
+
+        case LayerType::Texture:
+        {
+            mCurrentTool = std::make_unique<TexturePasteTool>(
+                std::move(clipboardClone),
+                mWorkbenchState.GetPasteIsTransparent(),
+                *this,
+                mResourceLocator);
+
+            break;
+        }
+    }
+
+    assert(mCurrentTool);
+
+    // Notify new tool
+    mUserInterface.OnCurrentToolChanged(mCurrentTool->GetType(), true);
+}
+
+void Controller::SetPasteIsTransparent(bool isTransparent)
+{
+    PasteTool & pasteTool = GetCurrentToolAs<PasteTool>(ToolClass::Paste);
+    pasteTool.SetIsTransparent(isTransparent);
+}
+
+void Controller::PasteRotate90CW()
+{
+    PasteTool & pasteTool = GetCurrentToolAs<PasteTool>(ToolClass::Paste);
+    pasteTool.Rotate90CW();
+}
+
+void Controller::PasteRotate90CCW()
+{
+    PasteTool & pasteTool = GetCurrentToolAs<PasteTool>(ToolClass::Paste);
+    pasteTool.Rotate90CCW();
+}
+
+void Controller::PasteFlipH()
+{
+    PasteTool & pasteTool = GetCurrentToolAs<PasteTool>(ToolClass::Paste);
+    pasteTool.FlipH();
+}
+
+void Controller::PasteFlipV()
+{
+    PasteTool & pasteTool = GetCurrentToolAs<PasteTool>(ToolClass::Paste);
+    pasteTool.FlipV();
+}
+
+void Controller::PasteCommit()
+{
+    // Commit
+    PasteTool & pasteTool = GetCurrentToolAs<PasteTool>(ToolClass::Paste);
+    pasteTool.Commit();
+
+    // Nuke tool and restore previous tool
+    InternalSetCurrentTool(mCurrentToolTypePerLayer[static_cast<size_t>(VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization()))], true);
+}
+
+void Controller::PasteAbort()
+{
+    // Abort
+    PasteTool & pasteTool = GetCurrentToolAs<PasteTool>(ToolClass::Paste);
+    pasteTool.Abort();
+
+    // Nuke tool and restore previous tool
+    InternalSetCurrentTool(mCurrentToolTypePerLayer[static_cast<size_t>(VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization()))], true);
 }
 
 void Controller::AutoTrim()
@@ -722,23 +1007,32 @@ void Controller::ResizeShip(
         _("Resize Ship"));
 }
 
-void Controller::LayerChangeEpilog(std::optional<LayerType> dirtyLayer)
+void Controller::LayerChangeEpilog(std::vector<LayerType> dirtyLayers)
 {
-    if (dirtyLayer.has_value())
+    if (!dirtyLayers.empty())
     {
-        // Mark layer as dirty
-        mModelController->SetLayerDirty(*dirtyLayer);
-        mUserInterface.OnModelDirtyChanged(*mModelController);
+        //
+        // This change is final (as opposed to ephemeral)
+        //
 
-        if (*dirtyLayer == LayerType::Electrical)
+        for (LayerType const dirtyLayer : dirtyLayers)
         {
-            // Notify of (possible) change in electrical panel
-            mUserInterface.OnElectricalLayerInstancedElementSetChanged(mModelController->GetInstancedElectricalElementSet());
+            // Mark layer as dirty
+            mModelController->SetLayerDirty(dirtyLayer);
+
+            if (dirtyLayer == LayerType::Electrical)
+            {
+                // Notify of (possible) change in electrical panel
+                mUserInterface.OnElectricalLayerInstancedElementSetChanged(mModelController->GetInstancedElectricalElementSet());
+            }
         }
 
-        // Notify macro properties
-        NotifyModelMacroPropertiesUpdated();
+        // Notify dirty changes
+        mUserInterface.OnModelDirtyChanged(*mModelController);
     }
+
+    // Notify macro properties
+    NotifyModelMacroPropertiesUpdated();
 
     // Refresh visualization
     assert(mView);
@@ -751,7 +1045,7 @@ void Controller::SelectAll()
     if (!mCurrentTool || mCurrentTool->GetClass() != ToolClass::Selection)
     {
         //
-        // Change/set current tool
+        // Change/set current tool to selection tool
         //
 
         ToolType toolType;
@@ -779,10 +1073,17 @@ void Controller::SelectAll()
             {
                 toolType = ToolType::TextureSelection;
                 break;
-            }            
+            }
+
+            default:
+            {
+                assert(false);
+                toolType = ToolType::StructuralPencil;
+                break;
+            }
         }
 
-        SetCurrentTool(toolType);
+        InternalSetCurrentTool(toolType, true);
     }
 
     GetCurrentToolAs<SelectionTool>(ToolClass::Selection).SelectAll();
@@ -1058,32 +1359,9 @@ void Controller::BroadcastSampledInformationUpdatedNone() const
     mUserInterface.OnSampledInformationUpdated(std::nullopt);
 }
 
-void Controller::SetCurrentTool(std::optional<ToolType> tool)
+void Controller::SetCurrentTool(ToolType tool)
 {
-    if (tool != mWorkbenchState.GetCurrentToolType())
-    {
-        // Nuke current tool
-        mWorkbenchState.SetCurrentToolType(std::nullopt);
-        mCurrentTool.reset();
-
-        // Do bookkeeping
-        InternalSetCurrentTool(tool);
-
-        // Make new tool - unless we're clearing.
-        // Note: when we were suspending tools at MouseLeft(), here we were avoiding to create 
-        // a new tool if we had entered this function without a tool, stating that we were 
-        // "not creating a new tool if we were suspended". We were then relying on MouseEnter()
-        // to create the tool.
-        // We changed this behavior. Now there's a risk that an invocation of this function while
-        // the tool is suspended for other reasons (e.g. because of an explicit suspension) will
-        // create the tool. But how can this function be invoked while in a workflow that required
-        // the explicit suspension?
-        assert(mWorkbenchState.GetCurrentToolType() == tool);
-        if (mWorkbenchState.GetCurrentToolType().has_value())
-        {
-            mCurrentTool = MakeTool(*mWorkbenchState.GetCurrentToolType());
-        }
-    }
+    InternalSetCurrentTool(tool, true);
 }
 
 void Controller::SetNewShipSize(ShipSpaceSize size)
@@ -1316,7 +1594,7 @@ void Controller::InternalSetLayer(wxString actionTitle, TArgs&& ... args)
     // Update visualization modes
     InternalUpdateModelControllerVisualizationModes();
 
-    LayerChangeEpilog(TLayerType);
+    LayerChangeEpilog({ TLayerType });
 }
 
 template<LayerType TLayerType>
@@ -1370,7 +1648,7 @@ void Controller::InternalRemoveLayer()
     // Update visualization modes
     InternalUpdateModelControllerVisualizationModes();
 
-    LayerChangeEpilog(TLayerType);
+    LayerChangeEpilog({ TLayerType });
 }
 
 template<LayerType TLayerType>
@@ -1393,14 +1671,13 @@ void Controller::InternalPushUndoForWholeLayer(wxString const & title)
             originalDirtyStateClone,
             [originalLayerClone = std::move(originalLayerClone)](Controller & controller) mutable
             {
-                controller.RestoreElectricalLayerForUndo(
-                    std::move(originalLayerClone));
+                controller.RestoreElectricalLayerForUndo(std::move(originalLayerClone));
             });
     }
     else if constexpr (TLayerType == LayerType::Ropes)
     {
         auto originalLayerClone = mModelController->CloneRopesLayer();
-        auto const cloneByteSize = originalLayerClone ? originalLayerClone->Buffer.GetSize() * sizeof(RopeElement) : 0;
+        auto const cloneByteSize = originalLayerClone ? originalLayerClone->Buffer.GetByteSize() : 0;
 
         // Create undo action
         mUndoStack.Push(
@@ -1409,14 +1686,13 @@ void Controller::InternalPushUndoForWholeLayer(wxString const & title)
             originalDirtyStateClone,
             [originalLayerClone = std::move(originalLayerClone)](Controller & controller) mutable
             {
-                controller.RestoreRopesLayerForUndo(
-                    std::move(originalLayerClone));
+                controller.RestoreRopesLayerForUndo(std::move(originalLayerClone));
             });
     }
     else if constexpr (TLayerType == LayerType::Structural)
     {
         auto originalLayerClone = mModelController->CloneStructuralLayer();
-        auto const cloneByteSize = originalLayerClone.Buffer.GetByteSize();
+        auto const cloneByteSize = originalLayerClone ? originalLayerClone->Buffer.GetByteSize() : 0;
 
         // Create undo action
         mUndoStack.Push(
@@ -1425,8 +1701,7 @@ void Controller::InternalPushUndoForWholeLayer(wxString const & title)
             originalDirtyStateClone,
             [originalLayerClone = std::move(originalLayerClone)](Controller & controller) mutable
             {
-                controller.RestoreStructuralLayerForUndo(
-                    std::move(originalLayerClone));
+                controller.RestoreStructuralLayerForUndo(std::move(originalLayerClone));
             });
     }
     else
@@ -1483,7 +1758,7 @@ void Controller::WrapLikelyLayerPresenceChangingOperation(TFunctor operation)
             // Switch primary viz to default if it was about this layer
             if (VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization()) == TLayerType)
             {
-                InternalSelectPrimaryVisualization(WorkbenchState::GetDefaultPrimaryVisualization()); // Will also change tool
+                InternalSelectPrimaryVisualization(WorkbenchState::GetDefaultPrimaryVisualization());
             }
 
             if constexpr (TLayerType == LayerType::Texture)
@@ -1554,11 +1829,11 @@ void Controller::InternalSetShipProperties(
     }
 }
 
-void Controller::InternalSetElectricalPanelMetadata(ElectricalPanelMetadata && panelMetadata)
+void Controller::InternalSetElectricalPanel(ElectricalPanel && electricalPanel)
 {
     assert(mModelController);
 
-    mModelController->SetElectricalPanelMetadata(std::move(panelMetadata));
+    mModelController->SetElectricalPanel(std::move(electricalPanel));
 }
 
 void Controller::InternalSelectPrimaryVisualization(VisualizationType primaryVisualization)
@@ -1576,10 +1851,6 @@ void Controller::InternalSelectPrimaryVisualization(VisualizationType primaryVis
 
     // Notify
     mUserInterface.OnPrimaryVisualizationChanged(primaryVisualization);
-
-    // Select the last tool we have used for this new viz's layer
-    // Note: stores new tool for new layer
-    InternalSetCurrentTool(mLastToolTypePerLayer[static_cast<size_t>(VisualizationToLayer(primaryVisualization))]);
 
     // Tell view
     mView->SetPrimaryVisualization(primaryVisualization);
@@ -1621,9 +1892,14 @@ void Controller::InternalUpdateModelControllerVisualizationModes()
 
     // Structural
 
-    assert(mModelController->HasLayer(LayerType::Structural));
-
-    mModelController->SetStructuralLayerVisualizationMode(mWorkbenchState.GetStructuralLayerVisualizationMode());
+    if (mModelController->HasLayer(LayerType::Structural))
+    {
+        mModelController->SetStructuralLayerVisualizationMode(mWorkbenchState.GetStructuralLayerVisualizationMode());
+    }
+    else
+    {
+        mModelController->SetStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType::None);
+    }
 
     // Electrical
 
@@ -1659,29 +1935,34 @@ void Controller::InternalUpdateModelControllerVisualizationModes()
     }
 }
 
-void Controller::InternalSetCurrentTool(std::optional<ToolType> toolType)
+ToolType Controller::GetToolTypeForCurrentVisualization()
 {
-    //
-    // No tool destroy/create
-    // No visualization changes
-    //
+    return mCurrentToolTypePerLayer[static_cast<size_t>(VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization()))];
+}
 
-    assert(!mCurrentTool);
-
-    // Set current tool
-    mWorkbenchState.SetCurrentToolType(toolType);
-
-    // Notify
-    mUserInterface.OnCurrentToolChanged(toolType);
-
-    if (!toolType.has_value())
+void Controller::InternalSetCurrentTool(
+    ToolType tool,
+    bool isFromUser)
+{
+    if (!mCurrentTool || tool != mCurrentTool->GetType())
     {
-        // Relinquish cursor
-        mUserInterface.ResetToolCursor();
-    }
+        // Nuke current tool (if)
+        mCurrentTool.reset();
 
-    // Remember new tool as the last tool of this primary visualization's layer
-    mLastToolTypePerLayer[static_cast<size_t>(VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization()))] = toolType;
+        // Make new tool
+        mCurrentTool = MakeTool(tool);
+
+        // Notify new tool
+        mUserInterface.OnCurrentToolChanged(tool, isFromUser);
+
+        // Set new tool as the current tool of this primary visualization's layer - unless it's the Paste tool,
+        // in which case we allow the previous tool for this viz layer to be resumed after the Paste tool is suspended
+        assert(mCurrentTool->GetClass() != ToolClass::Paste);
+        if (mCurrentTool->GetClass() != ToolClass::Paste)
+        {
+            mCurrentToolTypePerLayer[static_cast<size_t>(VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization()))] = tool;
+        }
+    }
 }
 
 Finalizer Controller::SuspendTool() const
@@ -1708,19 +1989,17 @@ bool Controller::InternalSuspendTool()
     bool const doResume = (mCurrentTool != nullptr);
 
     mCurrentTool.reset();
-    // Leave mCurrentToolType as-is
 
     return doResume;
 }
 
 void Controller::InternalResumeTool()
 {
+    assert(!mCurrentTool); // Should be here only when there's no current tool
     mCurrentTool.reset();
 
-    if (mWorkbenchState.GetCurrentToolType().has_value())
-    {
-        mCurrentTool = MakeTool(*mWorkbenchState.GetCurrentToolType());
-    }
+    // Restart last tool for current layer
+    InternalSetCurrentTool(mCurrentToolTypePerLayer[static_cast<size_t>(VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization()))], false);
 }
 
 void Controller::InternalResetTool()
@@ -1869,6 +2148,16 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
                 mSelectionManager,
                 mResourceLocator);
         }
+
+        case ToolType::StructuralPaste:
+        case ToolType::ElectricalPaste:
+        case ToolType::RopePaste:
+        case ToolType::TexturePaste:
+        {
+            // We should never be invoked for this tool
+            assert(false);
+            break;
+        }
     }
 
     assert(false);
@@ -1903,9 +2192,9 @@ void Controller::InternalResizeShip(
 
         // Calculate cost
         size_t const totalCost =
-            structuralLayerClone.Buffer.GetByteSize()
+            (structuralLayerClone ? structuralLayerClone->Buffer.GetByteSize() : 0)
             + (electricalLayerClone ? electricalLayerClone->Buffer.GetByteSize() : 0)
-            + (ropesLayerClone ? ropesLayerClone->Buffer.GetSize() * sizeof(RopeElement) : 0)
+            + (ropesLayerClone ? ropesLayerClone->Buffer.GetByteSize() : 0)
             + (textureLayerClone ? textureLayerClone->Buffer.GetByteSize() : 0);
 
         // Create undo
@@ -1936,10 +2225,6 @@ void Controller::InternalResizeShip(
     // Resize
     mModelController->ResizeShip(newSize, originOffset);
 
-    // Update dirtyness
-    mModelController->SetAllPresentLayersDirty();
-    mUserInterface.OnModelDirtyChanged(*mModelController);
-
     // Notify view of new size
     mView->SetShipSize(newSize);
     mUserInterface.OnViewModelChanged(mView->GetViewModel());
@@ -1947,12 +2232,7 @@ void Controller::InternalResizeShip(
     // Notify UI of new ship size
     mUserInterface.OnShipSizeChanged(newSize);
 
-    // Notify macro properties
-    NotifyModelMacroPropertiesUpdated();
-
-    // Refresh model visualizations
-    mModelController->UpdateVisualizations(*mView);
-    mUserInterface.RefreshView();
+    LayerChangeEpilog(mModelController->GetAllPresentLayers());
 }
 
 template<bool IsForUndo>
@@ -1991,19 +2271,9 @@ void Controller::InternalFlip(DirectionType direction)
     // Flip
     mModelController->Flip(direction);
 
-    if constexpr (!IsForUndo)
-    {
-        // Update dirtyness
-        mModelController->SetAllPresentLayersDirty();
-        mUserInterface.OnModelDirtyChanged(*mModelController);
-    }
-
-    // Update macro properties
-    NotifyModelMacroPropertiesUpdated();
-
-    // Refresh model visualizations
-    mModelController->UpdateVisualizations(*mView);
-    mUserInterface.RefreshView();
+    LayerChangeEpilog(IsForUndo
+        ? std::vector<LayerType>()
+        : mModelController->GetAllPresentLayers());
 }
 
 template<bool IsForUndo>
@@ -2047,13 +2317,6 @@ void Controller::InternalRotate90(RotationDirectionType direction)
     // Rotate
     mModelController->Rotate90(direction);
 
-    if constexpr (!IsForUndo)
-    {
-        // Update dirtyness
-        mModelController->SetAllPresentLayersDirty();
-        mUserInterface.OnModelDirtyChanged(*mModelController);
-    }
-
     // Notify view of new size
     mView->SetShipSize(mModelController->GetShipSize());
     mUserInterface.OnViewModelChanged(mView->GetViewModel());
@@ -2061,12 +2324,22 @@ void Controller::InternalRotate90(RotationDirectionType direction)
     // Notify UI of new ship size
     mUserInterface.OnShipSizeChanged(mModelController->GetShipSize());
 
-    // Update macro properties
-    NotifyModelMacroPropertiesUpdated();
+    LayerChangeEpilog(IsForUndo
+        ? std::vector<LayerType>()
+        : mModelController->GetAllPresentLayers());
+}
 
-    // Refresh model visualizations
-    mModelController->UpdateVisualizations(*mView);
-    mUserInterface.RefreshView();
+void Controller::InternalCopySelectionToClipboard(
+    ShipSpaceRect const & selectionRegion,
+    std::optional<LayerType> const & layerSelection) const
+{
+    // Get region from model controller
+    ShipLayers layersRegion = mModelController->Copy(
+        selectionRegion,
+        layerSelection);
+
+    // Store region in clipboard manager
+    mWorkbenchState.GetClipboardManager().SetContent(std::move(layersRegion));
 }
 
 void Controller::NotifyModelMacroPropertiesUpdated()

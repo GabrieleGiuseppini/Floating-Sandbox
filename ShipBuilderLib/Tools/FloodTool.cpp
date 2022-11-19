@@ -28,9 +28,8 @@ FloodTool<TLayerType>::FloodTool(
     : Tool(
         toolType,
         controller)
-    , mCursorImage(WxHelpers::LoadCursorImage("flood_tool_cursor", 12, 29, resourceLocator))
 {
-    SetCursor(mCursorImage);
+    SetCursor(WxHelpers::LoadCursorImage("flood_tool_cursor", 12, 29, resourceLocator));
 
     mController.BroadcastSampledInformationUpdatedAt(ScreenToShipSpace(GetCurrentMouseCoordinates()), TLayerType);
 }
@@ -92,7 +91,7 @@ void FloodTool<TLayer>::DoEdit(
 
     LayerMaterialType const * const floodMaterial = GetFloodMaterial(isRightButton ? MaterialPlaneType::Background : MaterialPlaneType::Foreground);
 
-    static_assert(TLayer == LayerType::Structural);
+    static_assert(TLayer == LayerType::Structural); // At this moment this is only structural
     std::optional<ShipSpaceRect> affectedRegion = mController.GetModelController().StructuralFlood(
         mouseCoordinates,
         floodMaterial,
@@ -102,24 +101,24 @@ void FloodTool<TLayer>::DoEdit(
     {
         // Create undo action
 
-        layerClone.Trim(*affectedRegion);
+        auto clippedLayerBackup = layerClone.MakeRegionBackup(*affectedRegion);
         auto const cloneByteSize = layerClone.Buffer.GetByteSize();
 
         mController.StoreUndoAction(
             TLayer == LayerType::Structural ? _("Flood Structural") : _("Flood Electrical"),
             cloneByteSize,
             layerDirtyStateClone,
-            [layerClone = std::move(layerClone), origin = affectedRegion->origin](Controller & controller) mutable
+            [clippedLayerBackup = std::move(clippedLayerBackup), origin = affectedRegion->origin](Controller & controller) mutable
             {
                 static_assert(TLayer == LayerType::Structural);
-                controller.RestoreStructuralLayerRegionForUndo(std::move(layerClone), origin);
+                controller.RestoreStructuralLayerRegionBackupForUndo(std::move(clippedLayerBackup), origin);
             });
 
         // Display sampled material
         mController.BroadcastSampledInformationUpdatedAt(mouseCoordinates, TLayer);
 
         // Epilog
-        mController.LayerChangeEpilog(TLayer);
+        mController.LayerChangeEpilog({ TLayer });
     }
 }
 

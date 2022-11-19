@@ -17,6 +17,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <vector>
 
 namespace ShipBuilder {
 
@@ -43,12 +44,12 @@ public:
 
     ShipSpaceSize const & GetShipSize() const
     {
-        return mShipSize;
+        return mLayers.Size;
     }
 
     void SetShipSize(ShipSpaceSize const & size)
     {
-        mShipSize = size;
+        mLayers.Size = size;
     }
 
     ShipMetadata const & GetShipMetadata() const
@@ -95,10 +96,10 @@ public:
         mDirtyState.GlobalIsDirty = true;
     }
 
-    void SetElectricalPanelMetadata(ElectricalPanelMetadata && panelMetadata)
+    void SetElectricalPanel(ElectricalPanel && electricalPanel)
     {
         assert(mLayers.ElectricalLayer);
-        mLayers.ElectricalLayer->Panel = panelMetadata;
+        mLayers.ElectricalLayer->Panel = std::move(electricalPanel);
     }
 
     bool HasLayer(LayerType layer) const
@@ -106,20 +107,35 @@ public:
         switch (layer)
         {
             case LayerType::Structural:
-                return true;
+                return (bool)mLayers.StructuralLayer;
 
             case LayerType::Electrical:
-                return mLayers.HasElectricalLayer();
+                return (bool)mLayers.ElectricalLayer;
 
             case LayerType::Ropes:
-                return mLayers.HasRopesLayer();
+                return (bool)mLayers.RopesLayer;
 
             case LayerType::Texture:
-                return mLayers.HasTextureLayer();
+                return (bool)mLayers.TextureLayer;
         }
 
         assert(false);
         return false;
+    }
+
+    std::vector<LayerType> GetAllPresentLayers() const
+    {
+        std::vector<LayerType> layers;
+
+        for (size_t l = 0; l < LayerCount; ++l)
+        {
+            if (HasLayer(static_cast<LayerType>(l)))
+            {
+                layers.push_back(static_cast<LayerType>(l));
+            }
+        }
+
+        return layers;
     }
 
     ModelDirtyState const & GetDirtyState() const
@@ -148,16 +164,6 @@ public:
         mDirtyState.GlobalIsDirty = true;
     }
 
-    void SetAllPresentLayersDirty()
-    {
-        for (size_t l = 0; l < LayerCount; ++l)
-        {
-            mDirtyState.IsLayerDirtyMap[l] |= HasLayer(static_cast<LayerType>(l));
-        }
-
-        mDirtyState.GlobalIsDirty = true;
-    }
-
     void ClearIsDirty()
     {
         mDirtyState = ModelDirtyState();
@@ -174,7 +180,7 @@ public:
     {
         if constexpr (TLayer == LayerType::Structural)
         {
-            return mLayers.StructuralLayer.Clone();
+            return mLayers.StructuralLayer->Clone();
         }
         else if constexpr (TLayer == LayerType::Electrical)
         {
@@ -197,18 +203,20 @@ public:
 
     StructuralLayerData const & GetStructuralLayer() const
     {
-        return mLayers.StructuralLayer;
+        assert(mLayers.StructuralLayer);
+        return *mLayers.StructuralLayer;
     }
 
     StructuralLayerData & GetStructuralLayer()
     {
-        return mLayers.StructuralLayer;
+        assert(mLayers.StructuralLayer);
+        return *mLayers.StructuralLayer;
     }
 
     void SetStructuralLayer(StructuralLayerData && structuralLayer);
 
-    StructuralLayerData CloneStructuralLayer() const;
-    void RestoreStructuralLayer(StructuralLayerData && structuralLayer);
+    std::unique_ptr<StructuralLayerData> CloneStructuralLayer() const;
+    void RestoreStructuralLayer(std::unique_ptr<StructuralLayerData> structuralLayer);
 
     ElectricalLayerData const & GetElectricalLayer() const
     {
@@ -266,11 +274,9 @@ public:
 
 private:
 
-    static StructuralLayerData MakeNewEmptyStructuralLayer(ShipSpaceSize const & shipSize);
+    static std::unique_ptr<StructuralLayerData> MakeNewEmptyStructuralLayer(ShipSpaceSize const & shipSize);
 
 private:
-
-    ShipSpaceSize mShipSize;
 
     ShipMetadata mShipMetadata;
     ShipPhysicsData mShipPhysicsData;

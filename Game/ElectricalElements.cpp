@@ -16,7 +16,7 @@ namespace Physics {
 void ElectricalElements::Add(
     ElementIndex pointElementIndex,
     ElectricalElementInstanceIndex instanceIndex,
-    std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata,
+    std::optional<ElectricalPanel::ElementMetadata> const & panelElementMetadata,
     ElectricalMaterial const & electricalMaterial,
     Points const & points)
 {
@@ -111,7 +111,7 @@ void ElectricalElements::Add(
                     GameRandomEngine::GetInstance().GenerateNormalReal(
                     materialExternalPressureBreakageThreshold,
                     materialExternalPressureBreakageThreshold * 0.4f); // 68% of the times within 40%
-                
+
                 // Fold upper tail - to prevent sudden breakage
                 float constexpr MaxRelativeDivergence = 0.6f;
                 if (externalPressureBreakageThreshold < materialExternalPressureBreakageThreshold * (1.0f - MaxRelativeDivergence))
@@ -552,7 +552,7 @@ void ElectricalElements::SetEngineControllerState(
 
     assert(GetMaterialType(elementIndex) == ElectricalMaterial::ElectricalElementType::EngineController);
     auto & state = mElementStateBuffer[elementIndex].EngineController;
-    
+
     // Make sure it's a state change
     if (controllerValue != state.CurrentValue)
     {
@@ -577,7 +577,7 @@ void ElectricalElements::Destroy(
     GameParameters const & gameParameters)
 {
     assert(
-        (reason != DestroyReason::LampExplosion && reason != DestroyReason::LampImplosion) 
+        (reason != DestroyReason::LampExplosion && reason != DestroyReason::LampImplosion)
         || GetMaterialType(electricalElementIndex) == ElectricalMaterial::ElectricalElementType::Lamp);
 
     // Connectivity is taken care by ship destroy handler, as usual
@@ -778,8 +778,8 @@ void ElectricalElements::Destroy(
     // Invoke destroy handler
     assert(nullptr != mShipPhysicsHandler);
     mShipPhysicsHandler->HandleElectricalElementDestroy(
-        electricalElementIndex, 
-        pointIndex, 
+        electricalElementIndex,
+        pointIndex,
         destroySpecializationType,
         currentSimulationTime,
         gameParameters);
@@ -789,7 +789,7 @@ void ElectricalElements::Destroy(
 
     // Remember there's been a power failure in this step;
     // note we also set it in case a *lamp* is broken, not only when a generator
-    // or cable gets broken. That's fine though, the lamp state machine coming 
+    // or cable gets broken. That's fine though, the lamp state machine coming
     // from this one is still plausible
     mPowerFailureReasonInCurrentStep = PowerFailureReason::Other;
 
@@ -947,7 +947,7 @@ void ElectricalElements::OnElectricSpark(
     ElementIndex electricalElementIndex,
     float currentSimulationTime,
     GameParameters const & gameParameters)
-{    
+{
     if (!IsDeleted(electricalElementIndex))
     {
         switch (GetMaterialType(electricalElementIndex))
@@ -1256,7 +1256,7 @@ void ElectricalElements::UpdateEngineConductivity(
                 // Add to queue
                 assert(elementsToVisit.empty());
                 elementsToVisit.push(engineControllerElementIndex);
-                
+
                 while (!elementsToVisit.empty())
                 {
                     auto const e = elementsToVisit.front();
@@ -1374,7 +1374,7 @@ void ElectricalElements::UpdateEngineConductivity(
     //
 
     size_t const engineGroupCount = static_cast<size_t>(nextEngineGroupIndex);
-    
+
     mEngineGroupStates.resize(engineGroupCount);
 }
 
@@ -1714,7 +1714,7 @@ void ElectricalElements::UpdateSinks(
                     {
                         //
                         // Update engine group for this controller
-                        //                        
+                        //
 
                         assert(controllerState.EngineGroup != 0);
 
@@ -1752,7 +1752,7 @@ void ElectricalElements::UpdateSinks(
 
                                 // Thrust magnitude: 0, +/- 1
                                 controllerThrustMagnitude = controllerState.CurrentValue;
-                                
+
                                 break;
                             }
 
@@ -1803,7 +1803,7 @@ void ElectricalElements::UpdateSinks(
                 {
                     // Calculate external pressure
                     vec2f const & pointPosition = points.GetPosition(GetPointIndex(sinkElementIndex));
-                    float const totalExternalPressure = 
+                    float const totalExternalPressure =
                         Formulae::CalculateTotalPressureAt(
                             pointPosition.y,
                             mParentWorld.GetOceanSurface().GetHeightAt(pointPosition.x),
@@ -1835,7 +1835,7 @@ void ElectricalElements::UpdateSinks(
                             gameParameters);
 
                         isProducingHeat = (GetAvailableLight(sinkElementIndex) > 0.0f);
-                    }                    
+                    }
                 }
 
                 break;
@@ -2385,7 +2385,7 @@ void ElectricalElements::UpdateSinks(
                 powerMultiplier = 0.0f;
             }
 
-            // Update current RPM to match group target (via responsiveness)            
+            // Update current RPM to match group target (via responsiveness)
             float const targetRpm = mEngineGroupStates[engineState.EngineGroup].GroupRpm * powerMultiplier;
             {
                 float const targetAbsRpm = std::abs(targetRpm);
@@ -2492,14 +2492,14 @@ void ElectricalElements::UpdateSinks(
                 //  - 8000HP:   1.0
                 float const enginePowerScale =
                     0.5f +
-                    0.5f * (engineState.ThrustCapacity / 746.0f - 50.0f) / (8000.0f - 50.0f);                
+                    0.5f * (engineState.ThrustCapacity / 746.0f - 50.0f) / (8000.0f - 50.0f);
 
-                vec2f const targetJetEngineFlameVector = 
+                vec2f const targetJetEngineFlameVector =
                     -engineState.CurrentThrustDir
                     * targetRpm
                     * enginePowerScale
                     * gameParameters.EngineThrustAdjustment;
-                
+
                 engineState.CurrentJetEngineFlameVector =
                     engineState.CurrentJetEngineFlameVector
                     + (targetJetEngineFlameVector - engineState.CurrentJetEngineFlameVector) * engineState.Responsiveness;

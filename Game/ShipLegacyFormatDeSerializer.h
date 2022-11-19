@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "ElectricalPanel.h"
 #include "MaterialDatabase.h"
 #include "ShipDefinition.h"
 #include "ShipPreviewData.h"
@@ -44,7 +45,7 @@ private:
     {
         std::filesystem::path StructuralLayerImageFilePath;
         std::optional<std::filesystem::path> ElectricalLayerImageFilePath;
-        ElectricalPanelMetadata ElectricalPanel;
+        ElectricalPanel EPanel;
         std::optional<std::filesystem::path> RopesLayerImageFilePath;
         std::optional<std::filesystem::path> TextureLayerImageFilePath;
         ShipMetadata Metadata;
@@ -54,7 +55,7 @@ private:
         JsonDefinition(
             std::filesystem::path const & structuralLayerImageFilePath,
             std::optional<std::filesystem::path> const & electricalLayerImageFilePath,
-            ElectricalPanelMetadata electricalPanel,
+            ElectricalPanel electricalPanel,
             std::optional<std::filesystem::path> const & ropesLayerImageFilePath,
             std::optional<std::filesystem::path> const & textureLayerImageFilePath,
             ShipMetadata const & metadata,
@@ -62,7 +63,7 @@ private:
             std::optional<ShipAutoTexturizationSettings> autoTexturizationSettings)
             : StructuralLayerImageFilePath(structuralLayerImageFilePath)
             , ElectricalLayerImageFilePath(electricalLayerImageFilePath)
-            , ElectricalPanel(std::move(electricalPanel))
+            , EPanel(std::move(electricalPanel))
             , RopesLayerImageFilePath(ropesLayerImageFilePath)
             , TextureLayerImageFilePath(textureLayerImageFilePath)
             , Metadata(metadata)
@@ -76,7 +77,7 @@ private:
     static ShipDefinition LoadFromDefinitionImageFilePaths(
         std::filesystem::path const & structuralLayerImageFilePath,
         std::optional<std::filesystem::path> const & electricalLayerImageFilePath,
-        ElectricalPanelMetadata && electricalPanel,
+        ElectricalPanel && electricalPanel,
         std::optional<std::filesystem::path> const & ropesLayerImageFilePath,
         std::optional<std::filesystem::path> const & textureLayerImageFilePath,
         ShipMetadata const & metadata,
@@ -87,7 +88,7 @@ private:
     static ShipDefinition LoadFromDefinitionImages(
         RgbImageData && structuralLayerImage,
         std::optional<RgbImageData> && electricalLayerImage,
-        ElectricalPanelMetadata && electricalPanel,
+        ElectricalPanel && electricalPanel,
         std::optional<RgbImageData> && ropesLayerImage,
         std::optional<RgbaImageData> && textureLayerImage,
         ShipMetadata const & metadata,

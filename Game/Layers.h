@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "ElectricalPanel.h"
 #include "LayerElements.h"
 #include "RopeBuffer.h"
 
@@ -14,7 +15,6 @@
 #include <GameCore/ImageData.h>
 
 #include <cassert>
-#include <map>
 #include <memory>
 
 template <LayerType TLayer>
@@ -48,9 +48,26 @@ struct StructuralLayerData
         return StructuralLayerData(Buffer.Clone());
     }
 
-    StructuralLayerData Clone(ShipSpaceRect const & region) const
+    StructuralLayerData CloneRegion(ShipSpaceRect const & region) const
     {
         return StructuralLayerData(Buffer.CloneRegion(region));
+    }
+
+    StructuralLayerData MakeRegionBackup(ShipSpaceRect const & region) const
+    {
+        return StructuralLayerData(Buffer.CloneRegion(region));
+    }
+
+    void RestoreRegionBackup(
+        StructuralLayerData && sourceRegionBackup,
+        ShipSpaceCoordinates const & position)
+    {
+        Buffer.BlitFromRegion(
+            sourceRegionBackup.Buffer,
+            ShipSpaceRect(
+                ShipSpaceCoordinates(0, 0),
+                sourceRegionBackup.Buffer.Size),
+            position);
     }
 
     void Trim(ShipSpaceRect const & rect)
@@ -68,6 +85,7 @@ template <>
 struct LayerTypeTraits<LayerType::Structural>
 {
     using material_type = StructuralMaterial;
+    using buffer_type = Buffer2D<StructuralElement, struct ShipSpaceTag>;
     using layer_data_type = StructuralLayerData;
 };
 
@@ -75,12 +93,10 @@ struct LayerTypeTraits<LayerType::Structural>
 // Electrical
 //////////////////////////////////////////////////////////////////
 
-using ElectricalPanelMetadata = std::map<ElectricalElementInstanceIndex, ElectricalPanelElementMetadata>;
-
 struct ElectricalLayerData
 {
     Buffer2D<ElectricalElement, struct ShipSpaceTag> Buffer;
-    ElectricalPanelMetadata Panel;
+    ElectricalPanel Panel;
 
     explicit ElectricalLayerData(ShipSpaceSize shipSize)
         : Buffer(shipSize)
@@ -89,14 +105,14 @@ struct ElectricalLayerData
 
     ElectricalLayerData(
         ShipSpaceSize shipSize,
-        ElectricalPanelMetadata && panel)
+        ElectricalPanel && panel)
         : Buffer(shipSize)
         , Panel(std::move(panel))
     {}
 
     ElectricalLayerData(
         Buffer2D<ElectricalElement, struct ShipSpaceTag> && buffer,
-        ElectricalPanelMetadata && panel)
+        ElectricalPanel && panel)
         : Buffer(std::move(buffer))
         , Panel(std::move(panel))
     {}
@@ -110,18 +126,41 @@ struct ElectricalLayerData
 
     ElectricalLayerData Clone() const
     {
-        ElectricalPanelMetadata panelClone = Panel;
+        ElectricalPanel panelClone = Panel;
 
         return ElectricalLayerData(
             Buffer.Clone(),
             std::move(panelClone));
     }
 
-    ElectricalLayerData Clone(ShipSpaceRect const & region) const
+    ElectricalLayerData CloneRegion(ShipSpaceRect const & region) const
     {
         return ElectricalLayerData(
             Buffer.CloneRegion(region),
             MakedTrimmedPanel(Panel, region));
+    }
+
+    ElectricalLayerData MakeRegionBackup(ShipSpaceRect const & region) const
+    {
+        ElectricalPanel panelClone = Panel;
+
+        return ElectricalLayerData(
+            Buffer.CloneRegion(region),
+            std::move(panelClone)); // Panel is whole
+    }
+
+    void RestoreRegionBackup(
+        ElectricalLayerData && sourceRegionBackup,
+        ShipSpaceCoordinates const & position)
+    {
+        Buffer.BlitFromRegion(
+            sourceRegionBackup.Buffer,
+            ShipSpaceRect(
+                ShipSpaceCoordinates(0, 0),
+                sourceRegionBackup.Buffer.Size),
+            position);
+
+        Panel = std::move(sourceRegionBackup.Panel); // Panel is whole
     }
 
     void Trim(ShipSpaceRect const & rect)
@@ -137,8 +176,8 @@ struct ElectricalLayerData
 
 private:
 
-    ElectricalPanelMetadata MakedTrimmedPanel(
-        ElectricalPanelMetadata const & panel,
+    ElectricalPanel MakedTrimmedPanel(
+        ElectricalPanel const & panel,
         ShipSpaceRect const & rect) const;
 };
 
@@ -146,6 +185,7 @@ template <>
 struct LayerTypeTraits<LayerType::Electrical>
 {
     using material_type = ElectricalMaterial;
+    using buffer_type = Buffer2D<ElectricalElement, struct ShipSpaceTag>;
     using layer_data_type = ElectricalLayerData;
 };
 
@@ -157,8 +197,8 @@ struct RopesLayerData
 {
     RopeBuffer Buffer;
 
-    RopesLayerData()
-        : Buffer()
+    explicit RopesLayerData(ShipSpaceSize shipSize)
+        : Buffer(shipSize)
     {}
 
     explicit RopesLayerData(RopeBuffer && buffer)
@@ -168,6 +208,25 @@ struct RopesLayerData
     RopesLayerData Clone() const
     {
         return RopesLayerData(Buffer.Clone());
+    }
+
+    RopesLayerData CloneRegion(ShipSpaceRect const & region) const
+    {
+        return RopesLayerData(Buffer.CloneRegion(region));
+    }
+
+    RopesLayerData MakeRegionBackup(ShipSpaceRect const & region) const
+    {
+        (void)region;
+        return RopesLayerData(Buffer.Clone()); // Buffer is whole
+    }
+
+    void RestoreRegionBackup(
+        RopesLayerData && sourceRegionBackup,
+        ShipSpaceCoordinates const & position)
+    {
+        (void)position;
+        Buffer = std::move(sourceRegionBackup.Buffer); // Buffer is whole
     }
 
     void Trim(ShipSpaceRect const & rect)
@@ -184,6 +243,7 @@ template <>
 struct LayerTypeTraits<LayerType::Ropes>
 {
     using material_type = StructuralMaterial;
+    using buffer_type = RopeBuffer;
     using layer_data_type = RopesLayerData;
 };
 
@@ -204,9 +264,26 @@ struct TextureLayerData
         return TextureLayerData(Buffer.Clone());
     }
 
-    TextureLayerData Clone(ImageRect const & region) const
+    TextureLayerData CloneRegion(ImageRect const & region) const
     {
         return TextureLayerData(Buffer.CloneRegion(region));
+    }
+
+    TextureLayerData MakeRegionBackup(ImageRect const & region) const
+    {
+        return TextureLayerData(Buffer.CloneRegion(region));
+    }
+
+    void RestoreRegionBackup(
+        TextureLayerData && sourceRegionBackup,
+        ImageCoordinates const & position)
+    {
+        Buffer.BlitFromRegion(
+            sourceRegionBackup.Buffer,
+            ImageRect(
+                ImageCoordinates(0, 0),
+                sourceRegionBackup.Buffer.Size),
+            position);
     }
 
     void Trim(ImageRect const & rect)
@@ -223,6 +300,7 @@ struct TextureLayerData
 template <>
 struct LayerTypeTraits<LayerType::Texture>
 {
+    using buffer_type = ImageData<rgbaColor>;
     using layer_data_type = TextureLayerData;
 };
 
@@ -235,38 +313,36 @@ struct LayerTypeTraits<LayerType::Texture>
  */
 struct ShipLayers
 {
-    StructuralLayerData StructuralLayer;
+    ShipSpaceSize Size;
+    std::unique_ptr<StructuralLayerData> StructuralLayer;
     std::unique_ptr<ElectricalLayerData> ElectricalLayer;
     std::unique_ptr<RopesLayerData> RopesLayer;
     std::unique_ptr<TextureLayerData> TextureLayer;
 
     ShipLayers(
-        StructuralLayerData && structuralLayer,
+        ShipSpaceSize const & size,
+        std::unique_ptr<StructuralLayerData> && structuralLayer,
         std::unique_ptr<ElectricalLayerData> && electricalLayer,
         std::unique_ptr<RopesLayerData> && ropesLayer,
         std::unique_ptr<TextureLayerData> && textureLayer)
-        : StructuralLayer(std::move(structuralLayer))
+        : Size(size)
+        , StructuralLayer(std::move(structuralLayer))
         , ElectricalLayer(std::move(electricalLayer))
         , RopesLayer(std::move(ropesLayer))
         , TextureLayer(std::move(textureLayer))
     {}
 
-    bool HasElectricalLayer() const
+    ShipLayers Clone() const
     {
-        return (bool)ElectricalLayer;
-    }
-
-    bool HasRopesLayer() const
-    {
-        return (bool)RopesLayer;
-    }
-
-    bool HasTextureLayer() const
-    {
-        return (bool)TextureLayer;
+        return ShipLayers(
+            Size,
+            StructuralLayer ? std::make_unique<StructuralLayerData>(StructuralLayer->Clone()) : nullptr,
+            ElectricalLayer ? std::make_unique<ElectricalLayerData>(ElectricalLayer->Clone()) : nullptr,
+            RopesLayer ? std::make_unique<RopesLayerData>(RopesLayer->Clone()) : nullptr,
+            TextureLayer ? std::make_unique<TextureLayerData>(TextureLayer->Clone()) : nullptr);
     }
 
     void Flip(DirectionType direction);
-    
+
     void Rotate90(RotationDirectionType direction);
 };

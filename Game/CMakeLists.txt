@@ -6,6 +6,7 @@
 set  (GAME_SOURCES	
 	ComputerCalibration.cpp
 	ComputerCalibration.h
+	ElectricalPanel.h
 	EventRecorder.h
 	FishSpeciesDatabase.cpp
 	FishSpeciesDatabase.h

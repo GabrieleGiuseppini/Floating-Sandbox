@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "GenericUndoPayload.h"
 #include "IUserInterface.h"
 #include "ModelController.h"
 #include "ModelValidationSession.h"
@@ -108,9 +109,9 @@ public:
         std::optional<ShipPhysicsData> && physicsData,
         std::optional<std::optional<ShipAutoTexturizationSettings>> && autoTexturizationSettings);
 
-    void SetElectricalPanelMetadata(ElectricalPanelMetadata panelMetadata);
+    void SetElectricalPanel(ElectricalPanel electricalPanel);
 
-    void RestoreElectricalPanelMetadataForUndo(ElectricalPanelMetadata && panelMetadata);
+    void RestoreElectricalPanelForUndo(ElectricalPanel && electricalPanel);
 
     void ClearModelDirty();
 
@@ -132,10 +133,10 @@ public:
     void SetStructuralLayer(
         wxString actionTitle,
         StructuralLayerData && structuralLayer);
-    void RestoreStructuralLayerRegionForUndo(
-        StructuralLayerData && layerRegion,
+    void RestoreStructuralLayerRegionBackupForUndo(
+        StructuralLayerData && layerRegionBackup,
         ShipSpaceCoordinates const & origin);
-    void RestoreStructuralLayerForUndo(StructuralLayerData && structuralLayer);
+    void RestoreStructuralLayerForUndo(std::unique_ptr<StructuralLayerData> structuralLayer);
 
     // Electrical layer
 
@@ -144,8 +145,8 @@ public:
         wxString actionTitle,
         ElectricalLayerData && electricalLayer);
     void RemoveElectricalLayer();
-    void RestoreElectricalLayerRegionForUndo(
-        ElectricalLayerData && layerRegion,
+    void RestoreElectricalLayerRegionBackupForUndo(
+        ElectricalLayerData && layerRegionBackup,
         ShipSpaceCoordinates const & origin);
     void RestoreElectricalLayerForUndo(std::unique_ptr<ElectricalLayerData> electricalLayer);
     void TrimElectricalParticlesWithoutSubstratum();
@@ -157,6 +158,9 @@ public:
         wxString actionTitle,
         RopesLayerData && ropesLayer);
     void RemoveRopesLayer();
+    void RestoreRopesLayerRegionBackupForUndo(
+        RopesLayerData && layerRegionBackup,
+        ShipSpaceCoordinates const & origin);
     void RestoreRopesLayerForUndo(std::unique_ptr<RopesLayerData> ropesLayer);
 
     // Texture layer
@@ -166,8 +170,8 @@ public:
         TextureLayerData && textureLayer,
         std::optional<std::string> textureArtCredits);
     void RemoveTextureLayer();
-    void RestoreTextureLayerRegionForUndo(
-        TextureLayerData && layerRegion,
+    void RestoreTextureLayerRegionBackupForUndo(
+        TextureLayerData && layerRegionBackup,
         ImageCoordinates const & origin);
     void RestoreTextureLayerForUndo(
         std::unique_ptr<TextureLayerData> textureLayer,
@@ -179,11 +183,27 @@ public:
 
     void RestoreAllLayersForUndo(
         ShipSpaceSize const & shipSize,
-        StructuralLayerData && structuralLayer,
+        std::unique_ptr<StructuralLayerData> structuralLayer,
         std::unique_ptr<ElectricalLayerData> electricalLayer,
         std::unique_ptr<RopesLayerData> ropesLayer,
         std::unique_ptr<TextureLayerData> textureLayer,
         std::optional<std::string> originalTextureArtCredits);
+
+    void Restore(GenericUndoPayload && undoPayload);
+
+    void Copy() const;
+
+    void Cut();
+
+    void Paste();
+
+    void SetPasteIsTransparent(bool isTransparent);
+    void PasteRotate90CW();
+    void PasteRotate90CCW();
+    void PasteFlipH();
+    void PasteFlipV();
+    void PasteCommit();
+    void PasteAbort();
 
     void AutoTrim();
 
@@ -199,7 +219,7 @@ public:
 
     // Invoked for changes to any layer, including ephemeral viz changes (in which case
     // no layer gets dirty)
-    void LayerChangeEpilog(std::optional<LayerType> dirtyLayer = std::nullopt);
+    void LayerChangeEpilog(std::vector<LayerType> dirtyLayers = {});
 
     void SelectAll();
 
@@ -261,7 +281,7 @@ public:
     // Misc
     //
 
-    void SetCurrentTool(std::optional<ToolType> tool);
+    void SetCurrentTool(ToolType tool);
 
     void SetNewShipSize(ShipSpaceSize size);
     void SetCanvasBackgroundColor(rgbColor const & color);
@@ -309,7 +329,7 @@ private:
         std::optional<ShipPhysicsData> && physicsData,
         std::optional<std::optional<ShipAutoTexturizationSettings>> && autoTexturizationSettings);
 
-    void InternalSetElectricalPanelMetadata(ElectricalPanelMetadata && panelMetadata);
+    void InternalSetElectricalPanel(ElectricalPanel && electricalPanel);
 
     void InternalSelectPrimaryVisualization(VisualizationType primaryVisualization);
 
@@ -317,8 +337,9 @@ private:
 
     void InternalUpdateModelControllerVisualizationModes();
 
-    void InternalSetCurrentTool(std::optional<ToolType> toolType);
+    ToolType GetToolTypeForCurrentVisualization();
 
+    void InternalSetCurrentTool(ToolType tool, bool isFromUser);
     Finalizer SuspendTool() const;
     bool InternalSuspendTool();
     void InternalResumeTool();
@@ -339,6 +360,10 @@ private:
 
     template<bool IsForUndo>
     void InternalRotate90(RotationDirectionType direction);
+
+    void InternalCopySelectionToClipboard(
+        ShipSpaceRect const & selectionRegion,
+        std::optional<LayerType> const & layerSelection) const;
 
     void NotifyModelMacroPropertiesUpdated();
 
@@ -361,8 +386,8 @@ private:
 
     std::unique_ptr<Tool> mCurrentTool;
 
-    // The last tool that was used for each layer
-    std::array<std::optional<ToolType>, LayerCount> mLastToolTypePerLayer;
+    // The tool active for each layer
+    std::array<ToolType, LayerCount> mCurrentToolTypePerLayer;
 };
 
 }

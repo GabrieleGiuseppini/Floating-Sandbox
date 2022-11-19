@@ -63,7 +63,7 @@ SoundController::SoundController(
     , mSawedWoodSound(SawedInertiaDuration)
     , mLaserCutSound(LaserCutInertiaDuration)
     , mSawAbovewaterSound()
-    , mSawUnderwaterSound()    
+    , mSawUnderwaterSound()
     , mHeatBlasterCoolSound()
     , mHeatBlasterHeatSound()
     , mElectricSparkAbovewaterSound()
@@ -2084,7 +2084,7 @@ void SoundController::OnEngineMonitorCreated(
     float /*thrustMagnitude*/,
     float /*rpm*/,
     ElectricalMaterial const & electricalMaterial,
-    std::optional<ElectricalPanelElementMetadata> const & /*panelElementMetadata*/)
+    std::optional<ElectricalPanel::ElementMetadata> const & /*panelElementMetadata*/)
 {
     // Associate sound type with this element
     switch (electricalMaterial.EngineType)
@@ -2128,7 +2128,7 @@ void SoundController::OnWaterPumpCreated(
     ElectricalElementInstanceIndex /*instanceIndex*/,
     float /*normalizedForce*/,
     ElectricalMaterial const & /*electricalMaterial*/,
-    std::optional<ElectricalPanelElementMetadata> const & /*panelElementMetadata*/)
+    std::optional<ElectricalPanel::ElementMetadata> const & /*panelElementMetadata*/)
 {
     // Associate sound type with this element
     mLoopedSounds.AddSoundTypeForInstanceId(electricalElementId, SoundType::WaterPump);

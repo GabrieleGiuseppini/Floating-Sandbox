@@ -10,21 +10,21 @@ The game is really a generic physics simulator that can be used to simulate just
 
 As of now the simulator implements the following aspects of physics:
 - Classical mechanics - Hooke's law of springs, impacts with rigid surfaces, thrust from engines
-- Thermodynamics - heat transfer, dissipation, combustion
+- Thermodynamics - heat transfer, dissipation, combustion, melting
 - Fluid dynamics - buoyancy, drag, hydrostatic and atmospheric pressure, wind
 - Basic electrotechnics - conductivity
 
 <img src="https://i.imgur.com/kovxCty.png">
 <img src="https://i.imgur.com/XHw3Jrl.png">
 
-The simulator comes with a built-in ShipBuilder that allows you to create ships by drawing individual particles drawn out of the materials in the game's library. Each material has its own physical properties, such as mass, strength, stiffness, water permeability, specific heat, sound properties, and so on. You can also create electrical layers with electrical materials (lamps, engines, generators, switches, etc.), layers with ropes, and texture layers for a final, high-definition look'n'feel of the ship.
+The simulator comes with a built-in ShipBuilder that allows you to create ships by drawing individual particles choosing materials out of the game's library. Each material has its own physical properties, such as mass, strength, stiffness, water permeability, specific heat, sound properties, and so on. You can also create electrical layers with electrical materials (lamps, engines, generators, switches, etc.), layers with ropes, and texture layers for a final, high-definition look'n'feel of the ship.
 
 <img src="https://i.imgur.com/lSUj90c.png">
 <img src="https://imgur.com/E0X3n93.png">
 
-In coding this game I'm trying to avoid as much as possible tricks that just please the eye; every bit of the simulation is instead grounded as close as possible into real physics. For example, the material system has been put together using physical attributes of real-world materials, and all of the interactions are based on the physical properties of the world being simulated. This makes it sometimes hard to build structures that sustain their own weight or float easily - as it is in reality, after all - but the reward is a realistic world-in-a-sandbox where every action and corresponding reaction are not pre-programmed, but rather are evolved naturally by the physics engine simulator.
+In coding this game I'm trying to avoid as much as possible tricks that just please the eye; every bit of the simulation is instead grounded as close as possible into real physics. For example, the material system has been put together using actual physical attributes of real-world materials, and all of the interactions are constructed according to the laws of physics. This makes it sometimes hard to build structures that sustain their own weight or float easily - as it is in reality, after all - but the reward is a realistic world-in-a-sandbox where every action and corresponding reaction are not pre-programmed, but rather are evolved naturally by the physics simulation engine.
 
-The game currently comes with a few example objects - mostly ships - and I'm always busy making new ships and objects. Anyone is encouraged to make their own objects, and if you'd like them to be included in the game, just get in touch with me - you'll get proper recognition in the About dialog, of course.
+The game currently comes with a few example objects - mostly ships - and I'm always busy making new ships and objects. Anyone is encouraged to make their own objects, and if you'd like them to be included in the game, just get in touch with me - you'll get proper recognition in the About dialog, of course. Also have a look at [the official Floating Sandbox web site](https://floatingsandbox.com/), where you can find plenty of Ship Packs!
 
 There are lots of improvements that I'm currently working on; some of these are:
 - Improved rigid body simulation algorithm
@@ -36,11 +36,11 @@ There are lots of improvements that I'm currently working on; some of these are:
 
 These and other ideas will come out with frequent releases.
 
-The game is also featured at [GameJolt](https://gamejolt.com/games/floating-sandbox/353572), and plenty of videos may be found on Youtube.
+The game is also featured at [GameJolt](https://gamejolt.com/games/floating-sandbox/353572), and plenty of videos may be found on Youtube. 
 
 # System Requirements
 - Windows:
-	- Windows 7, 8, or 10, either 64-bit or 32-bit
+	- Windows Vista, 7, 8, 10, or 11, either 64-bit or 32-bit
 		- The 64-bit build of Floating Sandbox runs ~7% faster than the 32-bit build, so if you're running a 64-bit Windows it is advisable to install the 64-bit build of Floating Sandbox
 	- OpenGL 2.1 or later
 		- If your graphics card does not support OpenGL 2.1, try upgrading its drivers - most likely there's a newer version with support for 2.1
@@ -57,7 +57,7 @@ I started coding this game after stumbling upon Luke Wren's and Francis Racicot'
 
 # Performance Characteristics
 The bottleneck at the moment is the spring relaxation algorithm, which requires about 80% of the time spent for the simulation of each single frame. I have an alternative version of the same algorithm written with intrinsics in the Benchmarks project, which shows a 20%-27% perf improvement. Sooner or later I'll integrate that in the game, but it's not gonna be a...game changer (pun intended). Instead, I plan to revisit the spring relaxation algorithm altogether after the next two major versions (see roadmap at https://gamejolt.com/games/floating-sandbox/353572/devlog/the-future-of-floating-sandbox-cdk2c9yi). There is a different family of algorithms based on minimization of potential energy, which supposedly requires less iterations and on top of that is easily parallelizable - the current iterative algorithm is not (easily) parallelize-able.
-This said, in the current implementation, what matters the most is CPU speed - the whole simulation is basically single-threaded (some small steps are parallel, but they're puny compared with the spring relaxation). My laptop is a single-core, 2.2GHz Intel box, and the plain Titanic runs at ~22 FPS. The same ship on a 4-core, 1GHz Intel laptop runs at ~9FPS.
+This said, in the current implementation, what matters the most is CPU speed - the whole simulation is basically single-threaded (some small steps are parallelized, but they're puny compared with the spring relaxation). My 2010 laptop is a single-core, 2.2GHz Intel box, and the plain Titanic runs at ~22 FPS.
 
 Rendering is a different story. At some point I've moved all the rendering code to a separate thread, allowing simulation updates and rendering to run in parallel. Obviously, only multi-core boxes benefit from parallel rendering, and boxes with very slow or emulated graphics hardware benefit the most. In any case, at this moment rendering requires a fraction of the time needed for updating the simulation, so CPU speed still dominates the performance you get, compared to GPU speed.
 

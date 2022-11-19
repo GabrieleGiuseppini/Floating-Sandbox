@@ -55,7 +55,6 @@ WorkbenchState::WorkbenchState(
     // Default tool settings
     //
 
-    mCurrentToolType = GetDefaultToolType();
     mStructuralPencilToolSize = 1;
     mStructuralEraserToolSize = 4;
     mElectricalEraserToolSize = 1;
@@ -67,6 +66,7 @@ WorkbenchState::WorkbenchState(
     mTextureMagicWandIsContiguous = true;
     mTextureEraserToolSize = 4;
     mSelectionIsAllLayers = false;
+    mPasteIsTransparent = false;
 
     //
     // Default visualization settings

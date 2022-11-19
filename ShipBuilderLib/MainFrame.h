@@ -119,7 +119,7 @@ public:
     void OnElectricalMaterialChanged(ElectricalMaterial const * material, MaterialPlaneType plane) override;
     void OnRopesMaterialChanged(StructuralMaterial const * material, MaterialPlaneType plane) override;
 
-    void OnCurrentToolChanged(std::optional<ToolType> tool) override;
+    void OnCurrentToolChanged(ToolType tool, bool isFromUser) override;
 
     void OnPrimaryVisualizationChanged(VisualizationType primaryVisualization) override;
 
@@ -256,6 +256,13 @@ private:
 
     void Deselect();
 
+    void PasteRotate90CW();
+    void PasteRotate90CCW();
+    void PasteFlipH();
+    void PasteFlipV();
+    void PasteCommit();
+    void PasteAbort();
+
     void OpenMaterialPalette(
         wxMouseEvent const & event,
         LayerType layer,
@@ -341,7 +348,9 @@ private:
     void ReconciliateUIWithElectricalMaterial(ElectricalMaterial const * material, MaterialPlaneType plane);
     void ReconciliateUIWithRopesMaterial(StructuralMaterial const * material, MaterialPlaneType plane);
 
-    void ReconciliateUIWithSelectedTool(std::optional<ToolType> tool);
+    void ReconciliateUIWithSelectedTool(
+        ToolType tool,
+        bool isFromUser);
 
     void ReconciliateUIWithPrimaryVisualizationSelection(VisualizationType primaryVisualization);
 
@@ -463,12 +472,12 @@ private:
 
     // Misc UI elements
     std::unique_ptr<CompositeMaterialPalette> mCompositeMaterialPalette;
-    StatusBar * mStatusBar;    
+    StatusBar * mStatusBar;
 
     //
     // Dialogs
     //
-    
+
     std::unique_ptr<wxNotificationMessage> mNotificationMessage;
     std::unique_ptr<ShipLoadDialog<ShipLoadDialogUsageType::ForShipBuilder>> mShipLoadDialog;
     std::unique_ptr<ShipSaveDialog> mShipSaveDialog;

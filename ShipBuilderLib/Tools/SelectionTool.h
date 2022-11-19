@@ -12,6 +12,8 @@
 
 #include <GameCore/GameTypes.h>
 
+#include <wx/image.h>
+
 #include <optional>
 
 namespace ShipBuilder {
@@ -26,7 +28,7 @@ public:
     {
         return ToolClass::Selection;
     }
-    
+
     void OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates) override;
     void OnLeftMouseDown() override;
     void OnLeftMouseUp() override;
@@ -77,6 +79,10 @@ private:
     std::optional<EngagementData> mEngagementData;
 
     bool mIsShiftDown;
+
+    // Cursors
+    wxImage const mPointerCursor;
+    wxImage const mBaseCornerCursor;
 };
 
 class StructuralSelectionTool final : public SelectionTool

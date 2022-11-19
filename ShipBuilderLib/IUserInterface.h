@@ -55,7 +55,7 @@ struct IUserInterface
     virtual void OnElectricalMaterialChanged(ElectricalMaterial const * material, MaterialPlaneType plane) = 0;
     virtual void OnRopesMaterialChanged(StructuralMaterial const * material, MaterialPlaneType plane) = 0;
 
-    virtual void OnCurrentToolChanged(std::optional<ToolType> tool) = 0;
+    virtual void OnCurrentToolChanged(ToolType tool, bool isFromUser) = 0;
 
     virtual void OnPrimaryVisualizationChanged(VisualizationType primaryVisualization) = 0;
 

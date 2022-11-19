@@ -340,8 +340,15 @@ struct _IntegralSize
     static _IntegralSize<TIntegralTag> FromFloatRound(vec2f const & vec)
     {
         return _IntegralSize<TIntegralTag>(
-            static_cast<integral_type>(FastTruncateToArchInt(vec.x + 0.5f)),
-            static_cast<integral_type>(FastTruncateToArchInt(vec.y + 0.5f)));
+            static_cast<integral_type>(std::round(vec.x)),
+            static_cast<integral_type>(std::round(vec.y)));
+    }
+
+    static _IntegralSize<TIntegralTag> FromFloatFloor(vec2f const & vec)
+    {
+        return _IntegralSize<TIntegralTag>(
+            static_cast<integral_type>(std::floor(vec.x)),
+            static_cast<integral_type>(std::floor(vec.y)));
     }
 
     inline bool operator==(_IntegralSize<TIntegralTag> const & other) const
@@ -446,8 +453,15 @@ struct _IntegralCoordinates
     static _IntegralCoordinates<TIntegralTag> FromFloatRound(vec2f const & vec)
     {
         return _IntegralCoordinates<TIntegralTag>(
-            static_cast<integral_type>(FastTruncateToArchInt(vec.x + 0.5f)),
-            static_cast<integral_type>(FastTruncateToArchInt(vec.y + 0.5f)));
+            static_cast<integral_type>(std::round(vec.x)),
+            static_cast<integral_type>(std::round(vec.y)));
+    }
+
+    static _IntegralCoordinates<TIntegralTag> FromFloatFloor(vec2f const & vec)
+    {
+        return _IntegralCoordinates<TIntegralTag>(
+            static_cast<integral_type>(std::floor(vec.x)),
+            static_cast<integral_type>(std::floor(vec.y)));
     }
 
     inline bool operator==(_IntegralCoordinates<TIntegralTag> const & other) const
@@ -623,7 +637,7 @@ struct _IntegralRect
         , size(_size)
     {}
 
-    constexpr _IntegralRect(_IntegralCoordinates<TIntegralTag> const & _origin)
+    explicit constexpr _IntegralRect(_IntegralCoordinates<TIntegralTag> const & _origin)
         : origin(_origin)
         , size(1, 1)
     {}
@@ -640,35 +654,45 @@ struct _IntegralRect
     {
     }
 
-    constexpr _IntegralRect(_IntegralSize<TIntegralTag> const & _size)
+    /*
+     * Makes a rectangle from {0, 0} of the specified size.
+     */
+    explicit constexpr _IntegralRect(_IntegralSize<TIntegralTag> const & _size)
         : origin(0, 0)
         , size(_size)
     {}
 
-    _IntegralCoordinates<TIntegralTag> CornerA() const
+    _IntegralCoordinates<TIntegralTag> MinMin() const
     {
         return origin;
     }
 
-    _IntegralCoordinates<TIntegralTag> CornerB() const
+    _IntegralCoordinates<TIntegralTag> MaxMin() const
     {
         return _IntegralCoordinates<TIntegralTag>(
             origin.x + size.width,
             origin.y);
     }
 
-    _IntegralCoordinates<TIntegralTag> CornerC() const
+    _IntegralCoordinates<TIntegralTag> MaxMax() const
     {
         return _IntegralCoordinates<TIntegralTag>(
             origin.x + size.width,
             origin.y + size.height);
     }
 
-    _IntegralCoordinates<TIntegralTag> CornerD() const
+    _IntegralCoordinates<TIntegralTag> MinMax() const
     {
         return _IntegralCoordinates<TIntegralTag>(
             origin.x,
             origin.y + size.height);
+    }
+
+    _IntegralCoordinates<TIntegralTag> Center() const
+    {
+        return _IntegralCoordinates<TIntegralTag>(
+            origin.x + size.width / 2,
+            origin.y + size.height / 2);
     }
 
     inline bool operator==(_IntegralRect<TIntegralTag> const & other) const
@@ -758,6 +782,14 @@ struct _IntegralRect
 };
 
 #pragma pack(pop)
+
+template<typename TTag>
+inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, _IntegralRect<TTag> const & p)
+{
+    os << p.origin.ToString() << "x" << p.size.ToString();
+    return os;
+}
+
 
 using IntegralRect = _IntegralRect<struct IntegralTag>;
 using ImageRect = _IntegralRect<struct ImageTag>;
@@ -1004,25 +1036,6 @@ enum class DurationShortLongType
 DurationShortLongType StrToDurationShortLongType(std::string const & str);
 
 /*
- * Information (layout, etc.) for an element in the electrical panel.
- */
-struct ElectricalPanelElementMetadata
-{
-    std::optional<IntegralCoordinates> PanelCoordinates;
-    std::optional<std::string> Label;
-    bool IsHidden;
-
-    ElectricalPanelElementMetadata(
-        std::optional<IntegralCoordinates> panelCoordinates,
-        std::optional<std::string> label,
-        bool isHidden)
-        : PanelCoordinates(std::move(panelCoordinates))
-        , Label(std::move(label))
-        , IsHidden(isHidden)
-    {}
-};
-
-/*
  * HeatBlaster action.
  */
 enum class HeatBlasterActionType
@@ -1081,7 +1094,7 @@ enum class HeatRenderModeType
     HeatOverlay
 };
 
-/* 
+/*
  * The ways in which stress may be rendered.
  */
 enum class StressRenderModeType

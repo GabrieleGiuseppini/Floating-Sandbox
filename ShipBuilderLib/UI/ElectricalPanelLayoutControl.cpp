@@ -90,11 +90,11 @@ ElectricalPanelLayoutControl::ElectricalPanelLayoutControl(
     Bind(wxEVT_SIZE, &ElectricalPanelLayoutControl::OnResized, this);
 }
 
-void ElectricalPanelLayoutControl::SetPanel(ElectricalPanelMetadata & electricalPanelMetadata)
+void ElectricalPanelLayoutControl::SetPanel(ElectricalPanel & electricalPanel)
 {
     ResetPanel();
 
-    mSessionData.emplace(electricalPanelMetadata);
+    mSessionData.emplace(electricalPanel);
 
     RecalculateLayout();
 
@@ -202,12 +202,12 @@ void ElectricalPanelLayoutControl::OnLeftMouseUp(wxMouseEvent & /*event*/)
 
                 // ...move it to the layout coords of the movable element
                 auto const movableElementLayoutCoords = GetLayoutCoordinatesOf(mCurrentlyMovableElement->InstanceIndex);
-                mSessionData->ElectricalPanel.at(otherElementInstanceIndex).PanelCoordinates = movableElementLayoutCoords;
+                mSessionData->Panel[otherElementInstanceIndex].PanelCoordinates = movableElementLayoutCoords;
                 mLayoutSlotsByLayoutCoordinates.at(movableElementLayoutCoords).OccupyingInstanceIndex = otherElementInstanceIndex;
             }
 
             // Move movable element to drop slot
-            mSessionData->ElectricalPanel.at(mCurrentlyMovableElement->InstanceIndex).PanelCoordinates = *mCurrentDropCandidateSlotCoordinates;
+            mSessionData->Panel[mCurrentlyMovableElement->InstanceIndex].PanelCoordinates = *mCurrentDropCandidateSlotCoordinates;
             mLayoutSlotsByLayoutCoordinates.at(*mCurrentDropCandidateSlotCoordinates).OccupyingInstanceIndex = mCurrentlyMovableElement->InstanceIndex;
 
             RecalculateLayout();
@@ -490,7 +490,7 @@ void ElectricalPanelLayoutControl::RecalculateLayout()
 
         std::vector<LayoutHelper::LayoutElement<ElectricalElementInstanceIndex>> layoutElements;
 
-        for (auto const & element : mSessionData->ElectricalPanel)
+        for (auto const & element : mSessionData->Panel)
         {
             auto const instanceIndex = element.first;
 
@@ -567,8 +567,8 @@ void ElectricalPanelLayoutControl::RecalculateLayout()
                     // Store this instance at this slot, both in the panel and in the layout
                     //
 
-                    assert(mSessionData->ElectricalPanel.count(*instanceIndex) == 1);
-                    mSessionData->ElectricalPanel.at(*instanceIndex).PanelCoordinates = layoutCoords;
+                    assert(mSessionData->Panel.Contains(*instanceIndex));
+                    mSessionData->Panel[*instanceIndex].PanelCoordinates = layoutCoords;
 
                     assert(mLayoutSlotsByLayoutCoordinates.count(layoutCoords) == 1);
                     mLayoutSlotsByLayoutCoordinates.at(layoutCoords).OccupyingInstanceIndex = instanceIndex;

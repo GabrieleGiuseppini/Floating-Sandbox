@@ -1,4 +1,3 @@
-
 + See crash with Rope tool
 	+ "In my case it happened when I accidentaly picken air in the rope layer and tried to make a rope with it"
 		+ Rope sampler tool should not pick up nothing
@@ -8,6 +7,17 @@
 		X Why did we do that?
 
 - Do Selection/Copy'n'Cut/Paste workflow (*)
+	- Merge back into master
+
+- Try RegisterDirtyViz() storing list of rects
+	- 1: View: bunch of rects, so that we may visualize current behavior
+
++ Try changing ribbon page to Tool Settings after selecting tool that has settings
+	+ @ Paste
+	+ Ideally we do this only if this is a direct consequence of a tool change from the user
+		+ If so: remove changing page at paste selection
+
+- Should ModelValidator allow for electrical particles on rope endpoints?
 
 - Do StructuralRectangle tool (*)
 
@@ -186,7 +196,7 @@
 	- Other edit operations, not via tools - via menu (and buttons?)
 		+ Auto-trim (on bounding box)
 
-= Selection/Copy'n'Paste (*):
++ Selection/Copy'n'Paste (*):
 	! Spec:
 		- ~LayersRegion: container of (regions of) layers, for each layer type
 			- Elec contains own region of PanelMetadata
@@ -209,7 +219,7 @@
 	+ Assets
 		+ Selection
 		+ Copy, Cut, Paste button icons		
-	= Select tool <TLayer>: populates selection Rect into SelectionManager
+	+ Select tool <TLayer>: populates selection Rect into SelectionManager
 		+ Icon: Selector.png, ready
 		+ "Tool Settings" ribbon: // - change label of ribbon to actual tool name
 			+ "All Layers" checkbox 
@@ -269,7 +279,7 @@
 				+ Between tool coordinates and sampled material
 					+ We have an icon for that, "selection_size"
 	+ Selection overlay: corners w/pixels
-	= Fix issue:
+	+ Fix issue:
 		+ ModelValidationDialog calls Controller::ValidateModel() from separate thread, which first suspends tool and then, when done, resumes the tool and 
 		  thus *creates* the tool (after our last change), causing OpenGL calls from separate thread; fix:
 			+ No thread in dialog
@@ -281,57 +291,360 @@
 				+ And then destroy Validator in opt
 			+ Do lazy vector initialization at both Next() and GetCount()
 				+ And make it conditional
-		- Tests:
+		+ Tests:
 			+ "Fix issue" workflows
-			- Save workflow
-
-	= Copy & Cut buttons:
+			+ Save workflow
+	+ Copy & Cut:
 		+ Buttons at "Edit" ribbon (new own section)
 		+ Reconciliation with selection: enable/disable
-		- CopySelectionToClipboard(selection rect) // TODO: really arg? or takes it from selection manager?
-			- Populate LayersRegion in ClipboardManager
-				- Read WorkbenchState::all-layers flag
-			- ClipboardManager notifies IUserInterface @ population; used for: Paste		
-		- Controller::Cut():
-			- CopySelectionToClipboard(selection rect)
-			- ModelController::~"Cut"(selection rect, which layers) => Undo
-				- Note: Undo leaves clipboard populated - that's fine
-		- Controller::Copy():
-			- CopySelectionToClipboard(selection rect)
+		+ private Controller::CopySelectionToClipboard()
+			+ Gets SelectionRect from SelectionManager, and LayerSelection from WorkbenchState::all-layers flag
+			+ Then gets LayersRegion from ModelController, and shoves it into ClipboardManager
+			+ Layer primitives:
+				+ Buffer2D:
+					+ Buffer<>::CloneRegion(Rect) -> Buffer
+					+ Buffer::PasteRegion(pos, Buffer)
+						+ Need to allow both pos and size to be outside of target buffer
+							+ So cannot be done in terms of BlitFromRegion
+						+ Add func operator
+							+ And one unit test for it
+					+ BlitFromRegion: takes responsibility of Paste
+						+ Nuke Paste afterwards
+					+ Renames: CloneRegion stays CloneRegion
+				+ New plan:
+					! Spec:
+						! "Buffer2D knows nothing about copy'n'paste"
+						X "ShipLayers only has methods for ShipFactory load options (e.g. Rotate, Flip, etc.)"
+							- Which anyway end up being used by ModelController as well
+					+ 1: ShipLayers: see if can make Structural optional; before we make yet another "ShipLayersRegion" class, try and
+					     make ShipLayers with optional StructuralLayer, and Size (for flip/rotate)
+						+ Make sure Deserializers complain if no structural layer
+						X If not: make ShipLayersRegion and TODO: way to implement Rotate, Flip once
+						+ Remove ShipLayers::HasXXX methods
+						+ Test
+							+ Add layer + Undo, X all layer types
+							+ Remove lyaer + Undo, X all layer types
+							+ Struc Pencil tool + undo
+							+ Elect Pencil tool + undo
+							+ Resize larger + undo
+							+ Resize smaller + undo
+							+ Rotate + undo
+					X 2: Move XXXLayer() (and thus ShipLayers) methods that deal with Rope and Electric logic to ModelController,
+					     except for Clone(), and for those needed by ShipFactory: Rotate(), Flip()
+						- TODO: leave this be for the time being - may be we don't need much duplication of elec panel and rope logic after all
+						- CloneRegion? Needed anywhere else?
+						- Trim? Needed anywhere else?
+						- MakeReframed? Needed anywhere else?
+							- Think of making proper class for ElectricalPanel
+						- Others?
+			X Rewrite/reroute whole Undo machinery @ Controller/ModelController/Model/Tools in terms of these
+				X TODO: think of changing tools' actions and eph visualizations wrt cloned regions: Model::Operation(...) returns LayerData
+					X Which then Undo action creator pairs with origin
+				X But watch out:
+					X Ropes' Undo: still best to take whole layer, no risk of losing ropes
+					X NOT A GOOD IDEA: methods would then be un-harmonic, for some layers would return region and not for others (e.g. Ropes)
+						X Also would be not performant (continuous copy & paste vs only blit)
+			+ ClipboardManager notifies IUserInterface @ population; used for: Paste		
+			+ ModelController::Copy -> ShipLayers:
+				+ Some layers are just buffer::CloneRegion, Ropes is Copy
+			+ Test:
+				+ Individual layer types are picked up
+				+ "All layers" is picked up
+			+ Remove diagnostic logging
+		+ Controller::Cut():
+			+ Invoked by MainFrame
+			+ Calls CopySelectionToClipboard(...), then:
+			+ ModelController::EraseRegion(selection rect, which layers) => GenericUndo				
+				+ "Generic Undo": class & ModelController Undo method
+					! Used for paste & cut undo, among eventually others
+					+ GenericUndoPayload: kinda like ShipLayers(Region), with differences:
+						+ Origin (coords)
+						+ Ropes and Electrical Panel are whole, other buffers are "regions"
+						+ Eventually, also ship metadata
+					+ private ModelController::MakeGenericUndoPayload(rect, layer selection)
+					+ public ModelController::Restore(GenericUndoPayload &&)				
+				+ ModelController::EraseRegion(region, layer selection) -> GenericUndoPayload
+					+ Make undo via MakeGenericUndoPayload
+					+ Implement cut for each layer
+					+ Return undo
+				! Note: "Cut" Undo leaves clipboard populated - that's fine
+			+ Store GenericUndo in UndoStack
+			+ Tests:
+				+ GameViz bug:
+					+ Erase (Cut)
+					+ RestoreTextureLayerRegionBackup (Undo of cut)
+					+ MagicWand					
+					+ Ephemeral texture eraser
+				+ Cut for each individual layer, & Undo
+					+ Ropes: completely contained, & undo
+					+ Ropes: partially contained, & undo
+					+ Ropes: not contained
+				+ Cut for all layers, & Undo
+				+ Pencil S & Undo
+				+ Pencil E & Undo
+					+ Verify bug existed and now fixed
+				+ Line S & Undo
+				+ Line E & Undo
+					+ Verify bug existed and now fixed
+				+ Flood & Undo
+				+ TextureMagicWand & Undo
+				+ TrimElectricalSubstratum & Undo
+		+ Controller::Copy():
+			+ Calls CopySelectionToClipboard()
 	+ MainFrame::ReconciliateUIWithSelection(): enable/disable Cut, Copy, Deselect buttons
-	- Paste tool:
-		- Assets:
-			- Paste tool icon and cursor
-		+ UI Reconciliation with clipboard: enable/disable
+	+ Paste tool:
+		+ UI Reconciliation with clipboard being populated: enable/disable button
 			+ Initial call from Controller cctor
-		- TODO: how to ensure its own state (pasted & eventually modified LayersRegion) survives tool suspensions?
-			- ...tool suspensions because of:
-				- External suspension
-				- And also for mouse leave window, if it stays (see above)
-			- Verified: tool moving out of canvas causes PasteTool to die
-			- May be PasteTool instance is not uq_ptr'd as normal tools, but it has different lifetime (special member of Controller)?
-			- ANSWER: tools become shared_ptr's, and next to mTool we also have mPasteTool (of Paste type)
-				- Tool also exposes Suspend() and Resume() to remove ephemeral viz when suspended because of external suspension
-					- And also for mouse leave window, if it stays (see above)
-		- Not selectable by user; auto-activated @ Paste
-			- Never enters "last tool" stack
-			- Tool's button is always disabled, except when active: is_enabled==is_active
-		- Gets own copy of LayersRegion at creation, and modifications happen to it (rather than to Clipboard's)
-		- Exited by:
-			- Selecting another tool
-				- In this case, it Commit's()
-			- Commit & Abort "Tool Settings" button
-			- ~PasteTool() (e.g. because of Validation, etc.)
-				- In this case, it Abort's()
-					- TODO: how to distinguish from "Selecting another tool"? MAy be this one should Commit() as well
-		- Tool does Move; various "Tool Settings" buttons do rotate/flip/etc.
-			- Rotate/flip/etc: Button->Ctrl->PasteTool
-			- Flag for opaque vs transparent
-				- Checkbox->Ctrl->PasteTool
-			- ModelController::PasteAt(LayersRegion, origin) X 2 (ephemeral, normal) -> Layers (for undo)
+		! Spec:
+			- Tool not selectable by user; auto-activated @ Paste
+				- Never enters "last tool" stack
+				! Tool's button is always disabled, except when active: is_enabled==is_active
+			- Tool gets own copy of LayersRegion at creation, and modifications happen to it (rather than to Clipboard's)
+			- Exited by:
+				- Selecting another tool
+					- In this case, it Commit's()
+				- Commit & Abort "Tool Settings" buttons
+					- Controller callbacks themselves tell PasteTool e.g. of abort, then destroy the tool
+					  and activate previous one for the layer
+				- ~PasteTool() (e.g. because of Validation, etc.)
+					- In this case, it Abort's()
+						- How to distinguish from "Selecting another tool"? May be this one should Commit() as well
+			- PasteTool must not get resumed after a suspension
+			- Tool does Move; various "Tool Settings" buttons do rotate/flip/etc.
+				- Rotate/flip/etc: Button->Ctrl->PasteTool
+				- Flag for opaque vs transparent
+					- Checkbox->Ctrl->PasteTool		
+		+ Impl:
+			+ Prelims: 
+				+ Make Controlller::ToolType not optional
+				+ Get rid of WorkbenchState::CurrentToolType altogether
+					+ Controller::cctor:
+						+ Set current tool from last tool for current viz
+					+ Tests:
+						+ Suspend/Resume: MainFrame is being refreshed now; how does it look?
+						+ Removal of layers and thus change of primary viz layer => change of tool
+			+ Assets:
+				+ Paste tool icon: paste_icon.png
+				+ Cursor: pan_cursor.png
+			+ Tool button @ each layer
+				+ Reconciliation @ tool change: always disabled, except when active: is_enabled==is_active
+			+ Tool settings:
+				+ Layout is same as Selection
+				+ Flag for opaque vs transparent
+					+ -> Controller::SetPaste"Opaque/Transparentness"
+				+ Rotate/flip/etc
+					+ -> Controller::RotatePaste()/etc.
+				+ Separator
+				+ Commit/Abort
+					+ Assets: 
+						+ confirm_40x40.png
+						+ x_40x40.png
+					+ Buttons
+					+ -> Controller::Commit/AbortPaste
+				+ Fix width: largest settings needs to be enabled at startup or else ribbon bar does size wide enough
+			+ Ctrl^V and button invoke Controller::Paste()
+			+ Controller::Paste():
+				+ 0a. Clone clipboard
+					+ ShipLayers::Clone
+						+ Unit Tests X 2 (full, empty)
+				+ 0b. Nuke current tool
+				+ 1. Decide ToolType value (i.e. layer)
+					+ First clipboard layer, and better if current viz layer
+					+ After choice: if different layer than current, change viz
+						+ Can use InternalSelectPrimaryVisualization, does not change tool
+				+ 2. Instantiate tool
+					+ Tool cctor takes clone of clipboard layers region (by move)
+					+ Tool cctor also takes flag for opaque vs transparent (comes from WorkbenchState)
+				+ 3. Set tool
+					+ Here the tool type does not enter stack of last used
+					+ "Normal" new tool select notification goes out to IUserInterface
+			+ Make sure Paste tool does not get resumed after a suspension		
+			+ Controller::AbortPaste()
+				+ Get tool as PasteTool, and invoke Abort() on it
+				+ Then, destroy (reset) mCurrentTool, and activate previous one for the current layer
+			+ Controller::CommitPaste()
+				+ Get tool as PasteTool, and invoke Commit() on it
+				+ Then, destroy (reset) mCurrentTool, and activate previous one for the current layer
+			+ Controller::RotatePaste()/etc.
+				+ Get tool as PasteTool, and invoke Rotate()/etc. on it
+			+ Controller::SetPasteIsTransparent:
+				+ Invoked by MainFrame upon toggles of settings flag
+				+ Get tool as PasteTool, and invoke Set"Opaque/Transparentness"() on it
+			+ PasteTool:
+				+ State:
+					+ Eph viz: contains output of ModelController::PasteForEhpViz (which is GenericUndoPayload)
+						+ DrawEphViz()
+							+ Calls ModelController::PasteForEphViz(...) -> GenericUndoPayload
+						+ UndoEphViz()
+							+ Calls ModelController::~RestoreForEphViz(GenericUndoPayload)
+					+ ShipSpaceCoords mPasteOrigin
+						+ Initialized at cctor
+						+ Moved at MouseMove+LeftDown
+					+ mPasteRegion: optional; indicates "pending" (i.e. neither committed nor aborted)
+						+ Actually: optional should be of PasteRegion + MousePasteCoords, and eph viz
+				+ private DrawEphViz
+					+ assert(!eph viz)
+					+ MC::PasteForEphViz eph viz @ mPasteOrigin
+					+ View::UpdateOverlay
+					+ -> Undo in eph viz
+				+ private UndoEphemeralVisualization()
+					+ assert(eph viz)
+					+ MC::RestoreForEphViz
+					+ View::RemoveOverlay
+				+ cctor:
+					+ If cur mouse is visible: use it;
+					+- Else: calc mid of visible window -> mPasteOrigin
+					+ DrawEphViz
+				+ dctor:
+					! If pending: commit
+					+ If pending: Commit()
+				+ Abort():
+					! Undo eph viz, and make sure subsequent dctor does not see it as pending
+					+ assert (pending)
+					+ Reset eph viz (if any)
+					+ LayerChangeEpilog
+				+ Commit():
+					! Undo eph viz, Commit, and make sure subsequent dctor does not see it as pending
+					+ assert (pending)
+					+ Reset eph viz (if any)
+					+ ModelController::Paste
+						+ Make sure all affected layers are marked as dirty:
+							+ LayerChangeEpilog takes vector<LayerType>
+							+ ModelController exposes new vector<LayerType> CalculateLayerApplicability(ShipLayers)
+								+ Also use it at:
+									+ Paste
+									+ PasteForEph
+									+ 2 x Restore
+					+ Store Undo
+						+ No Undo if no layer affected
+					+ LayerChangeEpilog
+				+ Rotate()/etc.:
+					!  Undo eph viz, Do operation on own mPasteRegion, Redo eph viz
+					+ Flip H/V
+					+ Rotate
+						+ Fix H/V aspect ratio issue:
+							+ Option 1:
+								+ Paste, PasteForEphViz: undo payload's texture must take into consideration actual texture region that will be pasted
+									+ ...which must take into consideration _source_ region as we can't do more than that
+									+ Ideally: both source and target affected rects have a texture counterpart (when payload has it) which takes into
+									  account texture buffer
+				+ Set"Opaque/Transparentness" (for changes)
+					! Undo eph viz, change, Redo eph viz
+				+ MouseDown():
+					+ Get mouse coords; if in work canvas (OK even outside of ship):
+						+ Change mouse anchor
+				+ MouseUp():
+					+ Reset mMouseAnchor
+				+ MouseMove():					
+					+ If mMouseAnchor:
+						+ Get mouse coords - anywhere
+						+ Reset eph viz (if any)
+						+ Calc stride and add it to mMousePasteCoords
+							= Clamp paste target to ship rect
+						+ DrawEphViz
+						+ LayerChangeEpilog
+				+ ShiftDown/Up:
+					+ Constrain H/V
+			+ Rethink PasteForEphViz/RestoreForEphViz: do own pure buffer blitting at both, storing into TODOHERE: MultiLayerBufferUndoPayload
+			+ Missing symmetry of methods:
+				! MakeGenericEphemeralVisualizationRestorePayload:
+					- S:	- Undo: CloneRegion
+					- E:	- Undo: CloneRegion
+					- R:	- Undo: Clone
+					- T:	- Undo: CloneRegion
+				! RestoreEphemeralVisualization:
+					- S:	- Do: DoStructuralRegionBufferPaste
+					- E:	- Do: DoElectricalRegionBufferPaste
+					- R:	- Do: Move
+					- T:	- Do: DoTextureRegionBufferPaste
+				------------------------------------------------
+				+ Option 1:
+					+ GenericUndoBufferPayload becomes GenericEphemeralVisualizationRestorePayload
+						+ Own file
+						+ PasteForEphViz uses helper (again) to make it: MakeGenericEphemeralVisualizationRestorePayload(...)
+						+ RestoreForEphViz becomes RestoreEphemeralVisualization(.)
+				+ FIX: RestoreEphemeralVisualization does not invalidate Ropes region!!!
+					+ Replace DoStructuralRegionBufferPaste/etc. calls in RestoreEphemeralVisualization with inline
+			+ Remove redundancies
+				+ S:
+					+ Helper: RestoreStructuralLayerRegionEphemeralVisualization
+					+ Use at:
+						+ RestoreEphemeralVisualization()
+						+ All tools
+					+ Test
+				+ E:
+					+ Do
+					+ Test
+				+ R:
+					+ Do
+					+ Test
+				+ T:
+					+ Do
+					+ Test
+						+ Fix skidmarks:
+							+ Both Paste and PasteForEphViz calculate affected rect - and most importantly affected source - and use those in their implementation, rather than letting
+							  Blit() calc that
+								+ Try with texture (DoTextureRegionBufferPaste)
+									+ assert containments
+									+ Convert affected source rect to texture coords
+									+ Blit & mark dirty viz
+									+ Use it at all places:
+										+ Paste
+										+ PasteForEphViz									
+								+ If works, do with all others as well
+			+ ModelController::Paste(LayersRegion, origin, opaque/transparent) X 2 (ephemeral, normal) -> GenericUndoPayload
+				+ PasteForEphemeralVisualization(...) -> GenericUndoPayload
+					+ blit (DoStructuralRegionBufferPaste)
+					+ blit (DoElectricalRegionBufferPaste)
+					+ blit (DoRopesRegionBufferPaste)
+					+ blit (DoTextureRegionBufferPaste)
+				+ RestoreEphemeralVisualization(GenericUndoPayload)
+					+ blit (RestoreStructuralLayerRegionEphemeralVisualization)
+					+ blit (RestoreElectricalLayerRegionEphemeralVisualization)
+					+ Whole ropes buffer (RestoreRopesLayerEphemeralVisualization)
+					+ blit (RestoreTextureLayerRegionEphemeralVisualization)
+				+ Paste(...) -> GenericUndoPayload
+					+ blit (DoStructuralRegionBufferPaste) & analysis re-initialization
+					+ blit (DoElectricalRegionBufferPaste), w/operator
+						+ Copy also electrical panel elements
+							+ ElectricalPanel
+								+ UnitTests
+								+ Use at ShipLayers - and etc.
+									+ Move ElectricalPanelElementMetadata from GameTypes to ElectricalPanel::ElementMetadata
+								+ Test
+							+ Do blit with operator
+							+ Make sure calls to InitializeElectricalLayerAnalysis know panel side-effects - NONE!
+					+ blit (DoRopesRegionBufferPaste)
+					+ blit (DoTextureRegionBufferPaste)
+				+ Restore(GenericUndoPayload)
+					+ Make sure elec instance ID factory is re-initialized
+				+ RopesBuffer::Blit
+					+ Code
+					+ Unit tests
+			+ Unify DoXXXRegionBufferPaste with RestoreXXXLayerRegionEphemeralVisualization
+				+ S
+				+ E
+				+ T
+	+ SelectionTool:
+		+ Change cursor @ OnMouseMove when not engaged and when at place for moving corner
+	+ Tests:
+		+ Ropes paste carries with it both and only ropes w/both endpoints in region, and with one endpoint in region
+		+ Make sure none of the Paste tools may be selected by user
+			+ After removing layer
+		+ Copy 1 layer and paste when that layer doesn't exist
+			+ Expect: no action at commit, no Undo (even if empty)
+	+ See if can do these other undo's with GenericUndo:
+		+ Resize (& Trim)
+		+ See if these are still needed afterwards:
+			+ MC::SetAllPresentLayersDirty
+		+ Re-test (w/undos)
+			+ Resize
+			+ Trim
+			+ Cut()
+			+ Flip
+			+ Rotate
 
-
-= RenderContext:
++ RenderContext:
 	+ Single-threaded
 	+ Initializes on same canvas that main frame initializes on
 	+ Renders synchronously, on-demand via SB::MainFrame::OnPaint()

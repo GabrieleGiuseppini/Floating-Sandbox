@@ -39,7 +39,7 @@ public:
     }
 
     // Invoked to populate and start a new usage session
-    void SetPanel(ElectricalPanelMetadata & electricalPanelMetadata);
+    void SetPanel(ElectricalPanel & electricalPanel);
 
     // Invoked to un-populate and stop the current usage session
     void ResetPanel();
@@ -119,11 +119,11 @@ private:
 
     struct SessionData
     {
-        ElectricalPanelMetadata & ElectricalPanel;
+        ElectricalPanel & Panel;
         bool IsDirty;
 
-        SessionData(ElectricalPanelMetadata & electricalPanel)
-            : ElectricalPanel(electricalPanel)
+        SessionData(ElectricalPanel & electricalPanel)
+            : Panel(electricalPanel)
             , IsDirty(false)
         {}
     };

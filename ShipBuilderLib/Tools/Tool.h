@@ -55,7 +55,7 @@ public:
     //
     // Event handlers
     //
-    
+
     virtual void OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates) = 0;
     virtual void OnLeftMouseDown() = 0;
     virtual void OnLeftMouseUp() = 0;
@@ -80,7 +80,7 @@ protected:
 
     DisplayLogicalCoordinates GetCurrentMouseCoordinates() const;
     std::optional<DisplayLogicalCoordinates> GetCurrentMouseCoordinatesIfInWorkCanvas() const;
-    
+
     ShipSpaceCoordinates GetCurrentMouseShipCoordinates() const;
     ShipSpaceCoordinates GetCurrentMouseShipCoordinatesClampedToShip() const; // <w, h> are excluded
     ShipSpaceCoordinates GetCurrentMouseShipCoordinatesClampedToShip(DisplayLogicalCoordinates const & mouseCoordinates) const; // <w, h> are excluded

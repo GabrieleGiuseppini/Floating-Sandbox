@@ -193,9 +193,13 @@ void RopeEraserTool::DoAction(ShipSpaceCoordinates const & coords)
 
         // Show sampled information
         mController.BroadcastSampledInformationUpdatedAt(coords, LayerType::Ropes);
-    }
 
-    mController.LayerChangeEpilog(hasErased ? LayerType::Ropes : std::optional<LayerType>());
+        mController.LayerChangeEpilog({LayerType::Ropes});
+    }
+    else
+    {
+        mController.LayerChangeEpilog();
+    }
 }
 
 void RopeEraserTool::StopEngagement()
@@ -212,7 +216,7 @@ void RopeEraserTool::StopEngagement()
 
         mController.StoreUndoAction(
             _("Eraser Ropes"),
-            mOriginalLayerClone.Buffer.GetSize() * sizeof(RopeElement),
+            mOriginalLayerClone.Buffer.GetByteSize(),
             mEngagementData->OriginalDirtyState,
             [originalLayerClone = std::move(mOriginalLayerClone)](Controller & controller) mutable
             {

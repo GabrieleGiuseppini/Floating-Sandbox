@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
+#include "GenericEphemeralVisualizationRestorePayload.h"
+#include "GenericUndoPayload.h"
 #include "IModelObservable.h"
 #include "InstancedElectricalElementSet.h"
 #include "Model.h"
@@ -22,6 +24,7 @@
 #include <GameCore/ImageData.h>
 
 #include <array>
+#include <functional>
 #include <memory>
 #include <optional>
 #include <vector>
@@ -77,6 +80,11 @@ public:
         return mModel.HasLayer(layer);
     }
 
+    std::vector<LayerType> GetAllPresentLayers() const
+    {
+        return mModel.GetAllPresentLayers();
+    }
+
     bool IsDirty() const override
     {
         return mModel.GetIsDirty();
@@ -95,11 +103,6 @@ public:
     void SetLayerDirty(LayerType layer)
     {
         mModel.SetIsDirty(layer);
-    }
-
-    void SetAllPresentLayersDirty()
-    {
-        mModel.SetAllPresentLayersDirty();
     }
 
     void RestoreDirtyState(ModelDirtyState const & dirtyState)
@@ -159,9 +162,9 @@ public:
         return mInstancedElectricalElementSet;
     }
 
-    void SetElectricalPanelMetadata(ElectricalPanelMetadata && panelMetadata)
+    void SetElectricalPanel(ElectricalPanel && electricalPanel)
     {
-        mModel.SetElectricalPanelMetadata(std::move(panelMetadata));
+        mModel.SetElectricalPanel(std::move(electricalPanel));
     }
 
     std::optional<SampledInformation> SampleInformationAt(ShipSpaceCoordinates const & coordinates, LayerType layer) const;
@@ -207,6 +210,32 @@ public:
         return mModel.CloneExistingLayer<TLayer>();
     }
 
+    ShipLayers Copy(
+        ShipSpaceRect const & region,
+        std::optional<LayerType> layerSelection) const;
+
+    GenericUndoPayload EraseRegion(
+        ShipSpaceRect const & region,
+        std::optional<LayerType> const & layerSelection);
+
+    GenericUndoPayload Paste(
+        ShipLayers const & sourcePayload,
+        ShipSpaceCoordinates const & pasteOrigin,
+        bool isTransparent);
+
+    void Restore(GenericUndoPayload && undoPayload);
+
+    GenericEphemeralVisualizationRestorePayload PasteForEphemeralVisualization(
+        ShipLayers const & sourcePayload,
+        ShipSpaceCoordinates const & pasteOrigin,
+        bool isTransparent);
+
+    void RestoreEphemeralVisualization(GenericEphemeralVisualizationRestorePayload && restorePayload);
+
+    std::vector<LayerType> CalculateAffectedLayers(ShipLayers const & otherSource) const;
+
+    std::vector<LayerType> CalculateAffectedLayers(std::optional<LayerType> const & layerSelection) const;
+
     //
     // Structural
     //
@@ -215,7 +244,7 @@ public:
 
     void SetStructuralLayer(StructuralLayerData && structuralLayer);
 
-    StructuralLayerData CloneStructuralLayer() const;
+    std::unique_ptr<StructuralLayerData> CloneStructuralLayer() const;
 
     StructuralMaterial const * SampleStructuralMaterialAt(ShipSpaceCoordinates const & coords) const;
 
@@ -228,27 +257,26 @@ public:
         StructuralMaterial const * material,
         bool doContiguousOnly);
 
-    void RestoreStructuralLayerRegion(
-        StructuralLayerData && sourceLayerRegion,
-        ShipSpaceRect const & sourceRegion,
+    void RestoreStructuralLayerRegionBackup(
+        StructuralLayerData && sourceLayerRegionBackup,
         ShipSpaceCoordinates const & targetOrigin);
 
-    void RestoreStructuralLayer(StructuralLayerData && sourceLayer);
+    void RestoreStructuralLayer(std::unique_ptr<StructuralLayerData> sourceLayer);
 
     void StructuralRegionFillForEphemeralVisualization(
         ShipSpaceRect const & region,
         StructuralMaterial const * material);
 
-    void RestoreStructuralLayerRegionForEphemeralVisualization(
-        StructuralLayerData const & sourceLayerRegion,
-        ShipSpaceRect const & sourceRegion,
+    void RestoreStructuralLayerRegionEphemeralVisualization(
+        typename LayerTypeTraits<LayerType::Structural>::buffer_type const & backupBuffer,
+        ShipSpaceRect const & backupBufferRegion,
         ShipSpaceCoordinates const & targetOrigin);
 
     //
     // Electrical
     //
 
-    ElectricalPanelMetadata const & GetElectricalPanelMetadata() const;
+    ElectricalPanel const & GetElectricalPanel() const;
 
     void SetElectricalLayer(ElectricalLayerData && electricalLayer);
 
@@ -266,9 +294,8 @@ public:
         ShipSpaceRect const & region,
         ElectricalMaterial const * material);
 
-    void RestoreElectricalLayerRegion(
-        ElectricalLayerData && sourceLayerRegion,
-        ShipSpaceRect const & sourceRegion,
+    void RestoreElectricalLayerRegionBackup(
+        ElectricalLayerData && sourceLayerRegionBackup,
         ShipSpaceCoordinates const & targetOrigin);
 
     void RestoreElectricalLayer(std::unique_ptr<ElectricalLayerData> sourceLayer);
@@ -277,9 +304,9 @@ public:
         ShipSpaceRect const & region,
         ElectricalMaterial const * material);
 
-    void RestoreElectricalLayerRegionForEphemeralVisualization(
-        ElectricalLayerData const & sourceLayerRegion,
-        ShipSpaceRect const & sourceRegion,
+    void RestoreElectricalLayerRegionEphemeralVisualization(
+        typename LayerTypeTraits<LayerType::Electrical>::buffer_type const & backupBuffer,
+        ShipSpaceRect const & backupBufferRegion,
         ShipSpaceCoordinates const & targetOrigin);
 
     //
@@ -308,6 +335,12 @@ public:
 
     bool EraseRopeAt(ShipSpaceCoordinates const & coords);
 
+    void EraseRopesRegion(ShipSpaceRect const & region);
+
+    void RestoreRopesLayerRegionBackup(
+        RopesLayerData && sourceLayerRegionBackup,
+        ShipSpaceCoordinates const & targetOrigin);
+
     void RestoreRopesLayer(std::unique_ptr<RopesLayerData> sourceLayer);
 
     void AddRopeForEphemeralVisualization(
@@ -320,7 +353,7 @@ public:
         ShipSpaceCoordinates const & oldCoords,
         ShipSpaceCoordinates const & newCoords);
 
-    void RestoreRopesLayerForEphemeralVisualization(RopesLayerData const & sourceLayer);
+    void RestoreRopesLayerEphemeralVisualization(typename LayerTypeTraits<LayerType::Ropes>::buffer_type const & backupBuffer);
 
     //
     // Texture
@@ -335,6 +368,42 @@ public:
         return mModel.GetTextureLayer().Buffer.Size;
     }
 
+    static vec2f GetShipSpaceToTextureSpaceFactor(
+        ShipSpaceSize const & shipSize,
+        ImageSize const & textureSize)
+    {
+        return vec2f(
+            static_cast<float>(textureSize.width) / static_cast<float>(shipSize.width),
+            static_cast<float>(textureSize.height) / static_cast<float>(shipSize.height));
+    }
+
+    static vec2f GetTextureSpaceToShipSpaceFactor(
+        ImageSize const & textureSize,
+        ShipSpaceSize const & shipSize)
+    {
+        return vec2f(
+            static_cast<float>(shipSize.width) / static_cast<float>(textureSize.width),
+            static_cast<float>(shipSize.height) / static_cast<float>(textureSize.height));
+    }
+
+    ImageCoordinates ShipSpaceToTextureSpace(ShipSpaceCoordinates const & shipCoordinates) const
+    {
+        vec2f const shipToTexture = GetShipSpaceToTextureSpaceFactor(GetShipSize(), GetTextureSize());
+
+        return ImageCoordinates::FromFloatFloor(shipCoordinates.ToFloat().scale(shipToTexture));
+    }
+
+    ImageRect ShipSpaceToTextureSpace(ShipSpaceRect const & shipRect) const
+    {
+        vec2f const shipToTexture = GetShipSpaceToTextureSpaceFactor(GetShipSize(), GetTextureSize());
+
+        return ImageRect(
+            ImageCoordinates::FromFloatFloor(shipRect.origin.ToFloat().scale(shipToTexture)),
+            ImageSize::FromFloatFloor(shipRect.size.ToFloat().scale(shipToTexture)));
+    }
+
+    ShipSpaceRect ImageRectToContainingShipSpaceRect(ImageRect const & imageRect) const;
+
     void SetTextureLayer(
         TextureLayerData && textureLayer,
         std::optional<std::string> originalTextureArtCredits);
@@ -342,7 +411,7 @@ public:
 
     std::unique_ptr<TextureLayerData> CloneTextureLayer() const;
 
-    void TextureRegionErase(ImageRect const & region);
+    void EraseTextureRegion(ImageRect const & region);
 
     std::optional<ImageRect> TextureMagicWandEraseBackground(
         ImageCoordinates const & start,
@@ -350,9 +419,8 @@ public:
         bool isAntiAlias,
         bool doContiguousOnly);
 
-    void RestoreTextureLayerRegion(
-        TextureLayerData && sourceLayerRegion,
-        ImageRect const & sourceRegion,
+    void RestoreTextureLayerRegionBackup(
+        TextureLayerData && sourceLayerRegionBackup,
         ImageCoordinates const & targetOrigin);
 
     void RestoreTextureLayer(
@@ -361,11 +429,10 @@ public:
 
     void TextureRegionEraseForEphemeralVisualization(ImageRect const & region);
 
-    void RestoreTextureLayerRegionForEphemeralVisualization(
-        TextureLayerData const & sourceLayerRegion,
-        ImageRect const & sourceRegion,
+    void RestoreTextureLayerRegionEphemeralVisualization(
+        typename LayerTypeTraits<LayerType::Texture>::buffer_type const & backupBuffer,
+        ImageRect const & backupBufferRegion,
         ImageCoordinates const & targetOrigin);
-
 
     //
     // Visualizations
@@ -398,7 +465,7 @@ private:
     inline ImageRect GetWholeTextureRect() const
     {
         assert(mModel.HasLayer(LayerType::Texture));
-            
+
         return ImageRect(GetTextureSize());
     }
 
@@ -441,6 +508,53 @@ private:
         bool isAntiAlias,
         bool doContiguousOnly,
         TextureLayerData & layer);
+
+    GenericUndoPayload MakeGenericUndoPayload(
+        std::optional<ShipSpaceRect> const & region,
+        bool doStructuralLayer,
+        bool doElectricalLayer,
+        bool doRopesLayer,
+        bool doTextureLayer) const;
+
+    GenericEphemeralVisualizationRestorePayload MakeGenericEphemeralVisualizationRestorePayload(
+        ShipSpaceRect const & region,
+        bool doStructuralLayer,
+        bool doElectricalLayer,
+        bool doRopesLayer,
+        bool doTextureLayer) const;
+
+    bool CheckLayerSelectionApplicability(
+        std::optional<LayerType> layerSelection,
+        LayerType layer) const
+    {
+        return (!layerSelection.has_value() || layerSelection == layer)
+            && HasLayer(layer);
+    }
+
+    void DoStructuralRegionBufferPaste(
+        typename LayerTypeTraits<LayerType::Structural>::buffer_type const & sourceBuffer,
+        ShipSpaceRect const & sourceRegion,
+        ShipSpaceCoordinates const & targetCoordinates,
+        bool isTransparent);
+
+    void DoElectricalRegionBufferPaste(
+        typename LayerTypeTraits<LayerType::Electrical>::buffer_type const & sourceBuffer,
+        ShipSpaceRect const & sourceRegion,
+        ShipSpaceCoordinates const & targetCoordinates,
+        std::function<ElectricalElement const &(ElectricalElement const &, ElectricalElement const &)> elementOperator);
+
+    void DoRopesRegionBufferPaste(
+        typename LayerTypeTraits<LayerType::Ropes>::buffer_type const & sourceBuffer,
+        ShipSpaceRect const & sourceRegion,
+        ShipSpaceCoordinates const & targetCoordinates,
+        bool isTransparent);
+
+    void DoTextureRegionBufferPaste(
+        typename LayerTypeTraits<LayerType::Texture>::buffer_type const & sourceBuffer,
+        ImageRect const & sourceRegion,
+        ImageRect const & targetRegion,
+        ImageCoordinates const & targetCoordinates,
+        bool isTransparent);
 
     // Viz
 

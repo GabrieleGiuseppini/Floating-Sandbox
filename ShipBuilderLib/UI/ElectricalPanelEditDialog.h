@@ -33,7 +33,7 @@ public:
     void ShowModal(
         Controller & controller,
         InstancedElectricalElementSet const & instancedElectricalElementSet,
-        ElectricalPanelMetadata const & electricalPanelMetadata);
+        ElectricalPanel const & originalElectricalPanel);
 
 private:
 
@@ -57,7 +57,7 @@ private:
     {
         Controller & BuilderController;
         InstancedElectricalElementSet const & ElementSet;
-        ElectricalPanelMetadata PanelMetadata; // Own copy
+        ElectricalPanel Panel; // Own copy
 
         std::optional<ElectricalElementInstanceIndex> CurrentlySelectedElement;
         bool IsListPanelDirty;
@@ -65,10 +65,10 @@ private:
         SessionData(
             Controller & controller,
             InstancedElectricalElementSet const & elementSet,
-            ElectricalPanelMetadata && panelMetadata)
+            ElectricalPanel && electricalPanel)
             : BuilderController(controller)
             , ElementSet(elementSet)
-            , PanelMetadata(std::move(panelMetadata))
+            , Panel(std::move(electricalPanel))
             , CurrentlySelectedElement()
             , IsListPanelDirty(false)
         {}

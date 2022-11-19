@@ -130,7 +130,7 @@ void PencilTool<TLayer, IsEraser>::OnMouseMove(DisplayLogicalCoordinates const &
                 assert(!mTempVisualizationDirtyShipRegion);
             }
 
-            // Display sampled material
+            // Display *original* sampled material (i.e. *before* our edit)
             mController.BroadcastSampledInformationUpdatedAt(mouseShipSpaceCoords, TLayer);
 
             // Apply (temporary) change
@@ -422,7 +422,10 @@ void PencilTool<TLayer, IsEraser>::DoEdit(ShipSpaceCoordinates const & mouseCoor
     mController.BroadcastSampledInformationUpdatedAt(mouseCoordinates, TLayer);
 
     // Epilog
-    mController.LayerChangeEpilog(hasEdited ? TLayer : std::optional<LayerType>());
+    if (hasEdited)
+        mController.LayerChangeEpilog({TLayer});
+    else
+        mController.LayerChangeEpilog();
 }
 
 template<LayerType TLayer, bool IsEraser>
@@ -436,8 +439,8 @@ void PencilTool<TLayer, IsEraser>::EndEngagement()
         // Create undo action
         //
 
-        auto clippedLayerClone = mOriginalLayerClone.Clone(*mEngagementData->EditRegion);
-        auto const clipByteSize = clippedLayerClone.Buffer.GetByteSize();
+        auto clippedLayerBackup = mOriginalLayerClone.MakeRegionBackup(*mEngagementData->EditRegion);
+        auto const clipByteSize = clippedLayerBackup.Buffer.GetByteSize();
 
         mController.StoreUndoAction(
             IsEraser
@@ -445,17 +448,17 @@ void PencilTool<TLayer, IsEraser>::EndEngagement()
             : (TLayer == LayerType::Structural ? _("Pencil Structural") : _("Pencil Electrical")),
             clipByteSize,
             mEngagementData->OriginalDirtyState,
-            [clippedLayerClone = std::move(clippedLayerClone), origin = mEngagementData->EditRegion->origin](Controller & controller) mutable
+            [clippedLayerBackup = std::move(clippedLayerBackup), origin = mEngagementData->EditRegion->origin](Controller & controller) mutable
             {
                 if constexpr(TLayer == LayerType::Structural)
                 {
-                    controller.RestoreStructuralLayerRegionForUndo(std::move(clippedLayerClone), origin);
+                    controller.RestoreStructuralLayerRegionBackupForUndo(std::move(clippedLayerBackup), origin);
                 }
                 else
                 {
                     static_assert(TLayer == LayerType::Electrical);
 
-                    controller.RestoreElectricalLayerRegionForUndo(std::move(clippedLayerClone), origin);
+                    controller.RestoreElectricalLayerRegionBackupForUndo(std::move(clippedLayerBackup), origin);
                 }
             });
     }
@@ -520,8 +523,8 @@ void PencilTool<TLayer, IsEraser>::MendTempVisualization()
 
     if constexpr (TLayer == LayerType::Structural)
     {
-        mController.GetModelController().RestoreStructuralLayerRegionForEphemeralVisualization(
-            mOriginalLayerClone,
+        mController.GetModelController().RestoreStructuralLayerRegionEphemeralVisualization(
+            mOriginalLayerClone.Buffer,
             *mTempVisualizationDirtyShipRegion,
             mTempVisualizationDirtyShipRegion->origin);
     }
@@ -529,8 +532,8 @@ void PencilTool<TLayer, IsEraser>::MendTempVisualization()
     {
         static_assert(TLayer == LayerType::Electrical);
 
-        mController.GetModelController().RestoreElectricalLayerRegionForEphemeralVisualization(
-            mOriginalLayerClone,
+        mController.GetModelController().RestoreElectricalLayerRegionEphemeralVisualization(
+            mOriginalLayerClone.Buffer,
             *mTempVisualizationDirtyShipRegion,
             mTempVisualizationDirtyShipRegion->origin);
     }

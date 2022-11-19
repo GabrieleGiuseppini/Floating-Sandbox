@@ -335,7 +335,7 @@ public:
         SwitchType type,
         ElectricalState state,
         ElectricalMaterial const & electricalMaterial,
-        std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override
+        std::optional<ElectricalPanel::ElementMetadata> const & panelElementMetadata) override
     {
         LogMessage("OnSwitchCreated(EEID=", electricalElementId, " IID=", int(instanceIndex), "): State=", static_cast<bool>(state));
 
@@ -351,7 +351,7 @@ public:
         PowerProbeType type,
         ElectricalState state,
         ElectricalMaterial const & electricalMaterial,
-        std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override
+        std::optional<ElectricalPanel::ElementMetadata> const & panelElementMetadata) override
     {
         LogMessage("OnPowerProbeCreated(EEID=", electricalElementId, " IID=", int(instanceIndex), "): State=", static_cast<bool>(state));
 
@@ -365,7 +365,7 @@ public:
         ElectricalElementId electricalElementId,
         ElectricalElementInstanceIndex instanceIndex,
         ElectricalMaterial const & electricalMaterial,
-        std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override
+        std::optional<ElectricalPanel::ElementMetadata> const & panelElementMetadata) override
     {
         LogMessage("OnEngineControllerCreated(EEID=", electricalElementId, " IID=", int(instanceIndex), ")");
 
@@ -381,7 +381,7 @@ public:
         float thrustMagnitude,
         float rpm,
         ElectricalMaterial const & electricalMaterial,
-        std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override
+        std::optional<ElectricalPanel::ElementMetadata> const & panelElementMetadata) override
     {
         LogMessage("OnEngineMonitorCreated(EEID=", electricalElementId, " IID=", int(instanceIndex), "): Thrust=", thrustMagnitude, " RPM=", rpm);
 
@@ -396,7 +396,7 @@ public:
         ElectricalElementInstanceIndex instanceIndex,
         float normalizedForce,
         ElectricalMaterial const & electricalMaterial,
-        std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override
+        std::optional<ElectricalPanel::ElementMetadata> const & panelElementMetadata) override
     {
         LogMessage("OnWaterPumpCreated(EEID=", electricalElementId, " IID=", int(instanceIndex), ")");
 
@@ -411,7 +411,7 @@ public:
         ElectricalElementInstanceIndex instanceIndex,
         bool isOpen,
         ElectricalMaterial const & electricalMaterial,
-        std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata) override
+        std::optional<ElectricalPanel::ElementMetadata> const & panelElementMetadata) override
     {
         LogMessage("OnWatertightDoorCreated(EEID=", electricalElementId, " IID=", int(instanceIndex), ")");
 

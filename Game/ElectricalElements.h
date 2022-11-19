@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "ElectricalPanel.h"
 #include "Materials.h"
 
 #include <GameCore/Buffer.h>
@@ -40,11 +41,11 @@ private:
     struct InstanceInfo
     {
         ElectricalElementInstanceIndex InstanceIndex;
-        std::optional<ElectricalPanelElementMetadata> PanelElementMetadata;
+        std::optional<ElectricalPanel::ElementMetadata> PanelElementMetadata;
 
         InstanceInfo(
             ElectricalElementInstanceIndex instanceIndex,
-            std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata)
+            std::optional<ElectricalPanel::ElementMetadata> const & panelElementMetadata)
             : InstanceIndex(instanceIndex)
             , PanelElementMetadata(panelElementMetadata)
         {}
@@ -528,7 +529,7 @@ public:
     void Add(
         ElementIndex pointElementIndex,
         ElectricalElementInstanceIndex instanceIndex,
-        std::optional<ElectricalPanelElementMetadata> const & panelElementMetadata,
+        std::optional<ElectricalPanel::ElementMetadata> const & panelElementMetadata,
         ElectricalMaterial const & electricalMaterial,
         Points const & points);
 

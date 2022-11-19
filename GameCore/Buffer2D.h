@@ -133,6 +133,9 @@ public:
 
     Buffer2D CloneRegion(_IntegralRect<TIntegralTag> const & regionRect) const
     {
+        // The requested region is entirely within this buffer
+        assert(regionRect.IsContainedInRect(_IntegralRect<TIntegralTag>(_IntegralCoordinates<TIntegralTag>(0, 0), Size)));
+
         auto newData = std::make_unique<TElement[]>(regionRect.size.width * regionRect.size.height);
 
         for (int targetY = 0; targetY < regionRect.size.height; ++targetY)
@@ -151,15 +154,16 @@ public:
             std::move(newData));
     }
 
+    /*
+     * In-place shrinking.
+     */
     void Trim(_IntegralRect<TIntegralTag> const & rect)
     {
-        // The new rect is smaller than the previous
-        assert(rect.origin.x + rect.size.width <= Size.width);
-        assert(rect.origin.y + rect.size.height <= Size.height);
+        // The requested region is entirely within this buffer
+        assert(rect.IsContainedInRect(_IntegralRect<TIntegralTag>(_IntegralCoordinates<TIntegralTag>(0, 0), Size)));
 
         if (rect.size != Size)
         {
-            // In-place shrinking
             for (int targetY = 0; targetY < rect.size.height; ++targetY)
             {
                 int const sourceLinearIndex = (targetY + rect.origin.y) * Size.width + rect.origin.x;
@@ -174,28 +178,65 @@ public:
             Size = rect.size;
             mLinearSize = static_cast<size_t>(Size.width) * static_cast<size_t>(Size.height);
         }
+        else
+        {
+            assert (rect.origin == _IntegralCoordinates<TIntegralTag>(0, 0));
+        }
     }
 
     void BlitFromRegion(
         Buffer2D const & source,
         _IntegralRect<TIntegralTag> const & sourceRegion,
-        _IntegralCoordinates<TIntegralTag> const & targetOrigin)
+        _IntegralCoordinates<TIntegralTag> const & targetPos)
     {
-        // The source region is entirely in the source buffer
+        BlitFromRegion(
+            source,
+            sourceRegion,
+            targetPos,
+            [](TElement const & src, TElement const &) -> TElement
+            {
+                return src;
+            });
+    }
+
+    template<typename TOperator>
+    void BlitFromRegion(
+        Buffer2D const & source,
+        _IntegralRect<TIntegralTag> const & sourceRegion, // Expected to be contained in source buffer
+        _IntegralCoordinates<TIntegralTag> const & targetPos, // Might be anywhere
+        TOperator const & elementOperator)
+    {
+        // The source region is completely contained in the source buffer
         assert(sourceRegion.IsContainedInRect({ {0, 0}, source.Size }));
 
-        // The target origin plus the region size are within this buffer
-        assert(_IntegralRect<TIntegralTag>(targetOrigin, sourceRegion.size).IsContainedInRect({ {0, 0}, Size }));
+        int const srcXStart = sourceRegion.origin.x + std::max(-targetPos.x, 0);
+        int const tgtXStart = std::max(targetPos.x, 0);
+        int const copyW = std::max(
+            std::min(
+                (sourceRegion.origin.x + sourceRegion.size.width) - srcXStart,
+                Size.width - tgtXStart),
+            0);
 
-        for (int sourceRegionY = 0; sourceRegionY < sourceRegion.size.height; ++sourceRegionY)
+        int const srcYStart = sourceRegion.origin.y + std::max(-targetPos.y, 0);
+        int const tgtYStart = std::max(targetPos.y, 0);
+        int const copyH = std::max(
+            std::min(
+                (sourceRegion.origin.y + sourceRegion.size.height) - srcYStart,
+                Size.height - tgtYStart),
+            0);
+
+        int sourceLinearIndex = srcYStart * source.Size.width + srcXStart;
+        int targetLinearIndex = tgtYStart * Size.width + tgtXStart;
+
+        for (int yc = 0; yc < copyH; ++yc)
         {
-            int const sourceLinearIndex = (sourceRegion.origin.y + sourceRegionY) * source.Size.width + sourceRegion.origin.x;
-            int const targetLinearIndex = (targetOrigin.y + sourceRegionY) * Size.width + targetOrigin.x;
+            for (int xc = 0; xc < copyW; ++xc)
+            {
+                Data[targetLinearIndex + xc] = elementOperator(source.Data[sourceLinearIndex + xc], Data[targetLinearIndex + xc]);
+            }
 
-            std::memcpy(
-                Data.get() + targetLinearIndex,
-                source.Data.get() + sourceLinearIndex,
-                sourceRegion.size.width * sizeof(TElement));
+            sourceLinearIndex += source.Size.width;
+            targetLinearIndex += Size.width;
         }
     }
 
@@ -272,14 +313,13 @@ public:
     }
 
     template<typename TNewElement, typename TFunctor>
-    Buffer2D<TNewElement, TIntegralTag> Transform(
-        TFunctor const & functor) const
+    Buffer2D<TNewElement, TIntegralTag> Transform(TFunctor const & elementOperator) const
     {
         auto newData = std::make_unique<TNewElement[]>(mLinearSize);
 
         for (size_t i = 0; i < mLinearSize; ++i)
         {
-            newData[i] = functor(Data[i]);
+            newData[i] = elementOperator(Data[i]);
         }
 
         return Buffer2D<TNewElement, TIntegralTag>(

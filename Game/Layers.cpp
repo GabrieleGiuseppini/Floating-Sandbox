@@ -23,7 +23,7 @@ ElectricalLayerData ElectricalLayerData::MakeReframed(
     ElectricalElement const & fillerValue) const
 {
     // Trim panel
-    ElectricalPanelMetadata newPanel = MakedTrimmedPanel(
+    ElectricalPanel newPanel = MakedTrimmedPanel(
         Panel,
         ShipSpaceRect(
             -originOffset,
@@ -38,12 +38,13 @@ ElectricalLayerData ElectricalLayerData::MakeReframed(
         std::move(newPanel));
 }
 
-ElectricalPanelMetadata ElectricalLayerData::MakedTrimmedPanel(
-    ElectricalPanelMetadata const & panel,
+ElectricalPanel ElectricalLayerData::MakedTrimmedPanel(
+    ElectricalPanel const & panel,
     ShipSpaceRect const & rect) const
 {
-    ElectricalPanelMetadata newPanel;
+    ElectricalPanel newPanel;
 
+    // Visit all instanced elements
     for (int y = 0; y < Buffer.Size.height; ++y)
     {
         for (int x = 0; x < Buffer.Size.width; ++x)
@@ -54,13 +55,13 @@ ElectricalPanelMetadata ElectricalLayerData::MakedTrimmedPanel(
             if (instanceIndex != NoneElectricalElementInstanceIndex
                 && coords.IsInRect(rect))
             {
-                // This instanced element remains
-                auto searchIt = panel.find(instanceIndex);
+                // This instanced element remains...
+                // ...see if it has an entry in the panel
+                auto searchIt = panel.Find(instanceIndex);
                 if (searchIt != panel.end())
                 {
-                    auto const [_, isInserted] = newPanel.emplace(instanceIndex, searchIt->second);
-                    assert(isInserted);
-                    (void)isInserted;
+                    // Copy to new panel
+                    newPanel.Add(instanceIndex, searchIt->second);
                 }
             }
         }
@@ -95,9 +96,10 @@ TextureLayerData TextureLayerData::MakeReframed(
 
 void ShipLayers::Flip(DirectionType direction)
 {
-    auto const originalSize = StructuralLayer.Buffer.Size;
-
-    StructuralLayer.Buffer.Flip(direction);
+    if (StructuralLayer)
+    {
+        StructuralLayer->Buffer.Flip(direction);
+    }
 
     if (ElectricalLayer)
     {
@@ -106,7 +108,7 @@ void ShipLayers::Flip(DirectionType direction)
 
     if (RopesLayer)
     {
-        RopesLayer->Buffer.Flip(direction, originalSize);
+        RopesLayer->Buffer.Flip(direction);
     }
 
     if (TextureLayer)
@@ -117,9 +119,10 @@ void ShipLayers::Flip(DirectionType direction)
 
 void ShipLayers::Rotate90(RotationDirectionType direction)
 {
-    auto const originalSize = StructuralLayer.Buffer.Size;
-
-    StructuralLayer.Buffer.Rotate90(direction);
+    if (StructuralLayer)
+    {
+        StructuralLayer->Buffer.Rotate90(direction);
+    }
 
     if (ElectricalLayer)
     {
@@ -128,11 +131,13 @@ void ShipLayers::Rotate90(RotationDirectionType direction)
 
     if (RopesLayer)
     {
-        RopesLayer->Buffer.Rotate90(direction, originalSize);
+        RopesLayer->Buffer.Rotate90(direction);
     }
 
     if (TextureLayer)
     {
         TextureLayer->Buffer.Rotate90(direction);
     }
+
+    Size = ShipSpaceSize(Size.height, Size.width);
 }

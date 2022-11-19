@@ -189,7 +189,10 @@ void RopePencilTool::OnMouseUp()
 
     // Leave overlay as-is
 
-    mController.LayerChangeEpilog(hasEdited ? LayerType::Ropes : std::optional<LayerType>());
+    if (hasEdited)
+        mController.LayerChangeEpilog({LayerType::Ropes});
+    else
+        mController.LayerChangeEpilog();
 }
 
 void RopePencilTool::Leave(bool doCommitIfEngaged)
@@ -225,7 +228,10 @@ void RopePencilTool::Leave(bool doCommitIfEngaged)
     // Reset sampled information
     mController.BroadcastSampledInformationUpdatedNone();
 
-    mController.LayerChangeEpilog(hasEdited ? LayerType::Ropes : std::optional<LayerType>());
+    if (hasEdited)
+        mController.LayerChangeEpilog({ LayerType::Ropes });
+    else
+        mController.LayerChangeEpilog();
 }
 
 void RopePencilTool::StartEngagement(
@@ -286,7 +292,7 @@ void RopePencilTool::MendTempVisualization()
 
     assert(mEngagementData.has_value());
 
-    mController.GetModelController().RestoreRopesLayerForEphemeralVisualization(mEngagementData->OriginalLayerClone);
+    mController.GetModelController().RestoreRopesLayerEphemeralVisualization(mEngagementData->OriginalLayerClone.Buffer);
 
     mHasTempVisualization = false;
 }
@@ -305,7 +311,7 @@ bool RopePencilTool::CommmitAndStopEngagement()
 
     bool hasEdited = false;
 
-    auto const releaseShipCoords = GetCurrentMouseShipCoordinatesClampedToShip();    
+    auto const releaseShipCoords = GetCurrentMouseShipCoordinatesClampedToShip();
 
     if (!mController.GetModelController().GetRopeElementIndexAt(releaseShipCoords).has_value()
         && releaseShipCoords != mEngagementData->StartCoords)
@@ -336,7 +342,7 @@ bool RopePencilTool::CommmitAndStopEngagement()
         {
             mController.StoreUndoAction(
                 _("Pencil Ropes"),
-                mEngagementData->OriginalLayerClone.Buffer.GetSize() * sizeof(RopeElement),
+                mEngagementData->OriginalLayerClone.Buffer.GetByteSize(),
                 mEngagementData->OriginalDirtyState,
                 [originalLayerClone = std::move(mEngagementData->OriginalLayerClone)](Controller & controller) mutable
                 {

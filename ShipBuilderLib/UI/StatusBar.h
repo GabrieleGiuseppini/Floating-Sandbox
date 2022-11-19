@@ -37,7 +37,7 @@ public:
     void SetSampledInformation(std::optional<SampledInformation> sampledInformation);
     void SetZoom(std::optional<float> zoom);
     void SetShipMass(std::optional<float> shipMass);
-    void SetCurrentToolType(std::optional<ToolType> toolType);
+    void SetCurrentToolType(ToolType toolType);
     void SetMeasuredWorldLength(std::optional<int> measuredWorldLength);
 
 private:

@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "ElectricalPanel.h"
 #include "Materials.h"
 #include "ShipMetadata.h"
 
@@ -218,7 +219,7 @@ struct IElectricalElementGameEventHandler
         SwitchType /*type*/,
         ElectricalState /*state*/,
         ElectricalMaterial const & /*electricalMaterial*/,
-        std::optional<ElectricalPanelElementMetadata> const & /*panelElementMetadata*/)
+        std::optional<ElectricalPanel::ElementMetadata> const & /*panelElementMetadata*/)
     {
         // Default-implemented
     }
@@ -229,7 +230,7 @@ struct IElectricalElementGameEventHandler
         PowerProbeType /*type*/,
         ElectricalState /*state*/,
         ElectricalMaterial const & /*electricalMaterial*/,
-        std::optional<ElectricalPanelElementMetadata> const & /*panelElementMetadata*/)
+        std::optional<ElectricalPanel::ElementMetadata> const & /*panelElementMetadata*/)
     {
         // Default-implemented
     }
@@ -238,7 +239,7 @@ struct IElectricalElementGameEventHandler
         ElectricalElementId /*electricalElementId*/,
         ElectricalElementInstanceIndex /*instanceIndex*/,
         ElectricalMaterial const & /*electricalMaterial*/,
-        std::optional<ElectricalPanelElementMetadata> const & /*panelElementMetadata*/)
+        std::optional<ElectricalPanel::ElementMetadata> const & /*panelElementMetadata*/)
     {
         // Default-implemented
     }
@@ -249,7 +250,7 @@ struct IElectricalElementGameEventHandler
         float /*thrustMagnitude*/,
         float /*rpm*/,
         ElectricalMaterial const & /*electricalMaterial*/,
-        std::optional<ElectricalPanelElementMetadata> const & /*panelElementMetadata*/)
+        std::optional<ElectricalPanel::ElementMetadata> const & /*panelElementMetadata*/)
     {
         // Default-implemented
     }
@@ -259,7 +260,7 @@ struct IElectricalElementGameEventHandler
         ElectricalElementInstanceIndex /*instanceIndex*/,
         float /*normalizedForce*/,
         ElectricalMaterial const & /*electricalMaterial*/,
-        std::optional<ElectricalPanelElementMetadata> const & /*panelElementMetadata*/)
+        std::optional<ElectricalPanel::ElementMetadata> const & /*panelElementMetadata*/)
     {
         // Default-implemented
     }
@@ -269,7 +270,7 @@ struct IElectricalElementGameEventHandler
         ElectricalElementInstanceIndex /*instanceIndex*/,
         bool /*isOpen*/,
         ElectricalMaterial const & /*electricalMaterial*/,
-        std::optional<ElectricalPanelElementMetadata> const & /*panelElementMetadata*/)
+        std::optional<ElectricalPanel::ElementMetadata> const & /*panelElementMetadata*/)
     {
         // Default-implemented
     }

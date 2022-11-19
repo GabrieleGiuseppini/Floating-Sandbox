@@ -241,8 +241,8 @@ void TextureEraserTool::DoEdit(ImageCoordinates const & mouseCoordinates)
             auto const applicableRect = CalculateApplicableRect(pos);
             if (applicableRect)
             {
-                mController.GetModelController().TextureRegionErase(*applicableRect);
-                
+                mController.GetModelController().EraseTextureRegion(*applicableRect);
+
                 // Update edit region
                 if (!mEngagementData->EditRegion)
                 {
@@ -261,7 +261,7 @@ void TextureEraserTool::DoEdit(ImageCoordinates const & mouseCoordinates)
     mEngagementData->PreviousEngagementPosition = endPoint;
 
     // Epilog
-    mController.LayerChangeEpilog(LayerType::Texture);
+    mController.LayerChangeEpilog({ LayerType::Texture });
 }
 
 void TextureEraserTool::EndEngagement()
@@ -274,16 +274,16 @@ void TextureEraserTool::EndEngagement()
         // Create undo action
         //
 
-        auto clippedLayerClone = mOriginalLayerClone.Clone(*mEngagementData->EditRegion);
-        auto const clipByteSize = clippedLayerClone.Buffer.GetByteSize();
+        auto clippedLayerBackup = mOriginalLayerClone.MakeRegionBackup(*mEngagementData->EditRegion);
+        auto const clipByteSize = clippedLayerBackup.Buffer.GetByteSize();
 
         mController.StoreUndoAction(
             _("Eraser Texture"),
             clipByteSize,
             mEngagementData->OriginalDirtyState,
-            [clippedLayerClone = std::move(clippedLayerClone), origin = mEngagementData->EditRegion->origin](Controller & controller) mutable
+            [clippedLayerBackup = std::move(clippedLayerBackup), origin = mEngagementData->EditRegion->origin](Controller & controller) mutable
             {
-                controller.RestoreTextureLayerRegionForUndo(std::move(clippedLayerClone), origin);
+                controller.RestoreTextureLayerRegionBackupForUndo(std::move(clippedLayerBackup), origin);
             });
     }
 
@@ -318,8 +318,8 @@ void TextureEraserTool::MendTempVisualization()
 {
     assert(mTempVisualizationDirtyTextureRegion);
 
-    mController.GetModelController().RestoreTextureLayerRegionForEphemeralVisualization(
-        mOriginalLayerClone,
+    mController.GetModelController().RestoreTextureLayerRegionEphemeralVisualization(
+        mOriginalLayerClone.Buffer,
         *mTempVisualizationDirtyTextureRegion,
         mTempVisualizationDirtyTextureRegion->origin);
 

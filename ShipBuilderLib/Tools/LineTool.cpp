@@ -291,24 +291,24 @@ void LineTool<TLayer>::EndEngagement(ShipSpaceCoordinates const & mouseCoordinat
         // Create undo action
         //
 
-        auto clippedLayerClone = mOriginalLayerClone.Clone(*resultantEffectiveRect);
-        auto const clipByteSize = clippedLayerClone.Buffer.GetByteSize();
+        auto clippedLayerBackup = mOriginalLayerClone.MakeRegionBackup(*resultantEffectiveRect);
+        auto const clipByteSize = clippedLayerBackup.Buffer.GetByteSize();
 
         mController.StoreUndoAction(
             TLayer == LayerType::Structural ? _("Line Structural") : _("Line Electrical"),
             clipByteSize,
             mEngagementData->OriginalDirtyState,
-            [clippedLayerClone = std::move(clippedLayerClone), origin = resultantEffectiveRect->origin](Controller & controller) mutable
+            [clippedLayerBackup = std::move(clippedLayerBackup), origin = resultantEffectiveRect->origin](Controller & controller) mutable
             {
                 if constexpr (TLayer == LayerType::Structural)
                 {
-                    controller.RestoreStructuralLayerRegionForUndo(std::move(clippedLayerClone), origin);
+                    controller.RestoreStructuralLayerRegionBackupForUndo(std::move(clippedLayerBackup), origin);
                 }
                 else
                 {
                     static_assert(TLayer == LayerType::Electrical);
 
-                    controller.RestoreElectricalLayerRegionForUndo(std::move(clippedLayerClone), origin);
+                    controller.RestoreElectricalLayerRegionBackupForUndo(std::move(clippedLayerBackup), origin);
                 }
             });
 
@@ -316,7 +316,7 @@ void LineTool<TLayer>::EndEngagement(ShipSpaceCoordinates const & mouseCoordinat
         mController.BroadcastSampledInformationUpdatedAt(mouseCoordinates, TLayer);
 
         // Epilog (if no applicable rect then we haven't changed anything, not even eph viz)
-        mController.LayerChangeEpilog(TLayer);
+        mController.LayerChangeEpilog({ TLayer });
     }
 
     //
@@ -388,8 +388,8 @@ void LineTool<TLayer>::DoEphemeralVisualization(ShipSpaceCoordinates const & mou
                 {
                     if constexpr (TLayer == LayerType::Structural)
                     {
-                        mController.GetModelController().RestoreStructuralLayerRegionForEphemeralVisualization(
-                            mOriginalLayerClone,
+                        mController.GetModelController().RestoreStructuralLayerRegionEphemeralVisualization(
+                            mOriginalLayerClone.Buffer,
                             *resultantEffectiveRect,
                             resultantEffectiveRect->origin);
                     }
@@ -397,8 +397,8 @@ void LineTool<TLayer>::DoEphemeralVisualization(ShipSpaceCoordinates const & mou
                     {
                         static_assert(TLayer == LayerType::Electrical);
 
-                        mController.GetModelController().RestoreElectricalLayerRegionForEphemeralVisualization(
-                            mOriginalLayerClone,
+                        mController.GetModelController().RestoreElectricalLayerRegionEphemeralVisualization(
+                            mOriginalLayerClone.Buffer,
                             *resultantEffectiveRect,
                             resultantEffectiveRect->origin);
                     }
@@ -432,8 +432,8 @@ void LineTool<TLayer>::DoEphemeralVisualization(ShipSpaceCoordinates const & mou
                     {
                         if constexpr (TLayer == LayerType::Structural)
                         {
-                            mController.GetModelController().RestoreStructuralLayerRegionForEphemeralVisualization(
-                                mOriginalLayerClone,
+                            mController.GetModelController().RestoreStructuralLayerRegionEphemeralVisualization(
+                                mOriginalLayerClone.Buffer,
                                 *effectiveRect,
                                 effectiveRect->origin);
                         }
@@ -441,8 +441,8 @@ void LineTool<TLayer>::DoEphemeralVisualization(ShipSpaceCoordinates const & mou
                         {
                             static_assert(TLayer == LayerType::Electrical);
 
-                            mController.GetModelController().RestoreElectricalLayerRegionForEphemeralVisualization(
-                                mOriginalLayerClone,
+                            mController.GetModelController().RestoreElectricalLayerRegionEphemeralVisualization(
+                                mOriginalLayerClone.Buffer,
                                 *effectiveRect,
                                 effectiveRect->origin);
                         }

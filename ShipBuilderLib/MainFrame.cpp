@@ -148,7 +148,7 @@ MainFrame::MainFrame(
             CreateLayersRibbonPage(mMainRibbonBar);
             CreateEditRibbonPage(mMainRibbonBar);
 
-            mMainRibbonBar->SetActivePage(1); // We start with the widest of the pages
+            mMainRibbonBar->SetActivePage(2); // We start with the widest of the pages
             mMainRibbonBar->Realize();
 
             row0HSizer->Add(
@@ -321,7 +321,7 @@ MainFrame::MainFrame(
 
     //
     // Setup material palettes
-    //    
+    //
 
     {
         mCompositeMaterialPalette = std::make_unique<CompositeMaterialPalette>(
@@ -542,9 +542,9 @@ void MainFrame::OnRopesMaterialChanged(StructuralMaterial const * material, Mate
     ReconciliateUIWithRopesMaterial(material, plane);
 }
 
-void MainFrame::OnCurrentToolChanged(std::optional<ToolType> tool)
+void MainFrame::OnCurrentToolChanged(ToolType tool, bool isFromUser)
 {
-    ReconciliateUIWithSelectedTool(tool);
+    ReconciliateUIWithSelectedTool(tool, isFromUser);
 }
 
 void MainFrame::OnPrimaryVisualizationChanged(VisualizationType primaryVisualization)
@@ -2511,6 +2511,345 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
         }
     }
 
+    // Paste
+    {
+        wxPanel * dynamicPanel = new wxPanel(mToolSettingsRibbonPanel);
+        wxGridBagSizer * dynamicPanelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
+
+        // Transparent Label
+        {
+            auto * staticText = new wxStaticText(dynamicPanel, wxID_ANY, _("Transparent:"));
+            staticText->SetForegroundColour(labelColor);
+
+            dynamicPanelGridSizer->Add(
+                staticText,
+                wxGBPosition(0, 0),
+                wxGBSpan(1, 1),
+                wxALIGN_CENTER_VERTICAL);
+        }
+
+        // Transparent Checkbox
+        {
+            wxCheckBox * chkBox = new wxCheckBox(dynamicPanel, wxID_ANY, wxEmptyString);
+
+            chkBox->SetToolTip(_("When enabled, empty regions are pasted as transparent; otherwise, empty regions are pasted as opaque and will erase anything on the background."));
+
+            chkBox->SetValue(mWorkbenchState.GetPasteIsTransparent());
+
+            chkBox->Bind(
+                wxEVT_CHECKBOX,
+                [this](wxCommandEvent & event)
+                {
+                    mWorkbenchState.SetPasteIsTransparent(event.IsChecked());
+
+                    if (mController)
+                    {
+                        mController->SetPasteIsTransparent(event.IsChecked());
+                    }
+                });
+
+            dynamicPanelGridSizer->Add(
+                chkBox,
+                wxGBPosition(0, 1),
+                wxGBSpan(1, 1),
+                wxALIGN_CENTER_VERTICAL);
+        }
+
+        // 90CW button
+        {
+            wxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
+
+            // Button
+            {
+                auto * button = new BitmapButton(
+                    dynamicPanel,
+                    mResourceLocator.GetIconFilePath("rotate_90_cw_medium"),
+                    [this]()
+                    {
+                        PasteRotate90CW();
+                    },
+                    _("Rotate the pasted region 90 degrees clockwise."));
+
+                vSizer->Add(
+                    button,
+                    0,
+                    wxALIGN_CENTER_HORIZONTAL,
+                    0);
+            }
+
+            // Label
+            {
+                auto * label = new wxStaticText(
+                    dynamicPanel,
+                    wxID_ANY,
+                    _("90 CW"));
+
+                label->SetForegroundColour(parent->GetArtProvider()->GetColor(wxRIBBON_ART_BUTTON_BAR_LABEL_COLOUR));
+
+                vSizer->Add(
+                    label,
+                    0,
+                    wxALIGN_CENTER_HORIZONTAL | wxTOP,
+                    2);
+            }
+
+            dynamicPanelGridSizer->Add(
+                vSizer,
+                wxGBPosition(0, 2),
+                wxGBSpan(1, 1));
+        }
+
+        // 90CCW button
+        {
+            wxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
+
+            // Button
+            {
+                auto * button = new BitmapButton(
+                    dynamicPanel,
+                    mResourceLocator.GetIconFilePath("rotate_90_ccw_medium"),
+                    [this]()
+                    {
+                        PasteRotate90CCW();
+                    },
+                    _("Rotate the pasted region 90 degrees anti-clockwise."));
+
+                vSizer->Add(
+                    button,
+                    0,
+                    wxALIGN_CENTER_HORIZONTAL,
+                    0);
+            }
+
+            // Label
+            {
+                auto * label = new wxStaticText(
+                    dynamicPanel,
+                    wxID_ANY,
+                    _("90 CCW"));
+
+                label->SetForegroundColour(parent->GetArtProvider()->GetColor(wxRIBBON_ART_BUTTON_BAR_LABEL_COLOUR));
+
+                vSizer->Add(
+                    label,
+                    0,
+                    wxALIGN_CENTER_HORIZONTAL | wxTOP,
+                    2);
+            }
+
+            dynamicPanelGridSizer->Add(
+                vSizer,
+                wxGBPosition(0, 3),
+                wxGBSpan(1, 1));
+        }
+
+        // FlipH button
+        {
+            wxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
+
+            // Button
+            {
+                auto * button = new BitmapButton(
+                    dynamicPanel,
+                    mResourceLocator.GetIconFilePath("flip_h_medium"),
+                    [this]()
+                    {
+                        PasteFlipH();
+                    },
+                    _("Flip the pasted region horizontally."));
+
+                vSizer->Add(
+                    button,
+                    0,
+                    wxALIGN_CENTER_HORIZONTAL,
+                    0);
+            }
+
+            // Label
+            {
+                auto * label = new wxStaticText(
+                    dynamicPanel,
+                    wxID_ANY,
+                    _("Flip H"));
+
+                label->SetForegroundColour(parent->GetArtProvider()->GetColor(wxRIBBON_ART_BUTTON_BAR_LABEL_COLOUR));
+
+                vSizer->Add(
+                    label,
+                    0,
+                    wxALIGN_CENTER_HORIZONTAL | wxTOP,
+                    2);
+            }
+
+            dynamicPanelGridSizer->Add(
+                vSizer,
+                wxGBPosition(0, 4),
+                wxGBSpan(1, 1));
+        }
+
+        // FlipV button
+        {
+            wxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
+
+            // Button
+            {
+                auto * button = new BitmapButton(
+                    dynamicPanel,
+                    mResourceLocator.GetIconFilePath("flip_v_medium"),
+                    [this]()
+                    {
+                        PasteFlipV();
+                    },
+                    _("Flip the pasted region vertically."));
+
+                vSizer->Add(
+                    button,
+                    0,
+                    wxALIGN_CENTER_HORIZONTAL,
+                    0);
+            }
+
+            // Label
+            {
+                auto * label = new wxStaticText(
+                    dynamicPanel,
+                    wxID_ANY,
+                    _("Flip V"));
+
+                label->SetForegroundColour(parent->GetArtProvider()->GetColor(wxRIBBON_ART_BUTTON_BAR_LABEL_COLOUR));
+
+                vSizer->Add(
+                    label,
+                    0,
+                    wxALIGN_CENTER_HORIZONTAL | wxTOP,
+                    2);
+            }
+
+            dynamicPanelGridSizer->Add(
+                vSizer,
+                wxGBPosition(0, 5),
+                wxGBSpan(1, 1));
+        }
+
+        // Separator
+        {
+            wxStaticLine * line = new wxStaticLine(dynamicPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_VERTICAL);
+
+            dynamicPanelGridSizer->Add(
+                line,
+                wxGBPosition(0, 6),
+                wxGBSpan(1, 1),
+                wxEXPAND);
+        }
+
+        // Commit
+        {
+            wxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
+
+            // Button
+            {
+                auto * button = new BitmapButton(
+                    dynamicPanel,
+                    mResourceLocator.GetIconFilePath("confirm_40x40"),
+                    [this]()
+                    {
+                        PasteCommit();
+                    },
+                    _("Commit the paste operation."));
+
+                vSizer->Add(
+                    button,
+                    0,
+                    wxALIGN_CENTER_HORIZONTAL,
+                    0);
+            }
+
+            // Label
+            {
+                auto * label = new wxStaticText(
+                    dynamicPanel,
+                    wxID_ANY,
+                    _("Commit"));
+
+                label->SetForegroundColour(parent->GetArtProvider()->GetColor(wxRIBBON_ART_BUTTON_BAR_LABEL_COLOUR));
+
+                vSizer->Add(
+                    label,
+                    0,
+                    wxALIGN_CENTER_HORIZONTAL | wxTOP,
+                    2);
+            }
+
+            dynamicPanelGridSizer->Add(
+                vSizer,
+                wxGBPosition(0, 7),
+                wxGBSpan(1, 1));
+        }
+
+        // Abort
+        {
+            wxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
+
+            // Button
+            {
+                auto * button = new BitmapButton(
+                    dynamicPanel,
+                    mResourceLocator.GetIconFilePath("x_40x40"),
+                    [this]()
+                    {
+                        PasteAbort();
+                    },
+                    _("Abort the paste operation."));
+
+                vSizer->Add(
+                    button,
+                    0,
+                    wxALIGN_CENTER_HORIZONTAL,
+                    0);
+            }
+
+            // Label
+            {
+                auto * label = new wxStaticText(
+                    dynamicPanel,
+                    wxID_ANY,
+                    _("Abort"));
+
+                label->SetForegroundColour(parent->GetArtProvider()->GetColor(wxRIBBON_ART_BUTTON_BAR_LABEL_COLOUR));
+
+                vSizer->Add(
+                    label,
+                    0,
+                    wxALIGN_CENTER_HORIZONTAL | wxTOP,
+                    2);
+            }
+
+            dynamicPanelGridSizer->Add(
+                vSizer,
+                wxGBPosition(0, 8),
+                wxGBSpan(1, 1));
+        }
+
+        dynamicPanel->SetSizerAndFit(dynamicPanelGridSizer);
+
+        // Insert in place
+        {
+            mToolSettingsPanelsSizer->Add(
+                dynamicPanel,
+                0,
+                wxALIGN_CENTER_VERTICAL,
+                0);
+
+            mToolSettingsPanels.emplace_back(
+                std::vector<ToolType>{
+                    ToolType::StructuralPaste,
+                    ToolType::ElectricalPaste,
+                    ToolType::RopePaste,
+                    ToolType::TexturePaste},
+                dynamicPanel);
+        }
+    }
+
     // Wrap in a sizer just for margins
     {
         wxSizer * tmpSizer = new wxBoxSizer(wxVERTICAL); // Arbitrary
@@ -2540,10 +2879,10 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
     {
         mToolSettingsPanelsSizer->Show(
             std::get<1>(entry),
-            (widestPanel == nullptr 
+            (widestPanel == nullptr
                 && std::find(
-                    std::get<0>(entry).cbegin(), 
-                    std::get<0>(entry).cend(), 
+                    std::get<0>(entry).cbegin(),
+                    std::get<0>(entry).cend(),
                     ToolType::StructuralLine) != std::get<0>(entry).cend())
             || (widestPanel != nullptr && std::get<1>(entry) == widestPanel));
     }
@@ -3389,6 +3728,22 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     0);
             }
 
+            // Paste
+            {
+                auto button = makeToolButton(
+                    ToolType::StructuralPaste,
+                    structuralToolbarPanel,
+                    "paste_icon",
+                    _("Paste clipboard."));
+
+                toolsSizer->Add(
+                    button,
+                    wxGBPosition(2, 1),
+                    wxGBSpan(1, 1),
+                    0,
+                    0);
+            }
+
             // Sampler
             {
                 auto button = makeToolButton(
@@ -3399,7 +3754,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
                 toolsSizer->Add(
                     button,
-                    wxGBPosition(2, 1),
+                    wxGBPosition(3, 0),
                     wxGBSpan(1, 1),
                     0,
                     0);
@@ -3415,7 +3770,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
                 toolsSizer->Add(
                     button,
-                    wxGBPosition(3, 0),
+                    wxGBPosition(3, 1),
                     wxGBSpan(1, 1),
                     0,
                     0);
@@ -3568,22 +3923,6 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     0);
             }
 
-            // Selection
-            {
-                auto button = makeToolButton(
-                    ToolType::ElectricalSelection,
-                    electricalToolbarPanel,
-                    "selection_icon",
-                    _("Select an area for copying and/or cutting."));
-
-                toolsSizer->Add(
-                    button,
-                    wxGBPosition(1, 1),
-                    wxGBSpan(1, 1),
-                    0,
-                    0);
-            }
-
             // Sampler
             {
                 auto button = makeToolButton(
@@ -3594,7 +3933,39 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
                 toolsSizer->Add(
                     button,
+                    wxGBPosition(1, 1),
+                    wxGBSpan(1, 1),
+                    0,
+                    0);
+            }
+
+            // Selection
+            {
+                auto button = makeToolButton(
+                    ToolType::ElectricalSelection,
+                    electricalToolbarPanel,
+                    "selection_icon",
+                    _("Select an area for copying and/or cutting."));
+
+                toolsSizer->Add(
+                    button,
                     wxGBPosition(2, 0),
+                    wxGBSpan(1, 1),
+                    0,
+                    0);
+            }
+
+            // Paste
+            {
+                auto button = makeToolButton(
+                    ToolType::ElectricalPaste,
+                    electricalToolbarPanel,
+                    "paste_icon",
+                    _("Paste clipboard."));
+
+                toolsSizer->Add(
+                    button,
+                    wxGBPosition(2, 1),
                     wxGBSpan(1, 1),
                     0,
                     0);
@@ -3747,6 +4118,22 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     0);
             }
 
+            // Paste
+            {
+                auto button = makeToolButton(
+                    ToolType::RopePaste,
+                    ropesToolbarPanel,
+                    "paste_icon",
+                    _("Paste clipboard."));
+
+                toolsSizer->Add(
+                    button,
+                    wxGBPosition(1, 1),
+                    wxGBSpan(1, 1),
+                    0,
+                    0);
+            }
+
             // Sampler
             {
                 auto button = makeToolButton(
@@ -3757,7 +4144,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
                 toolsSizer->Add(
                     button,
-                    wxGBPosition(1, 1),
+                    wxGBPosition(2, 0),
                     wxGBSpan(1, 1),
                     0,
                     0);
@@ -3862,13 +4249,13 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
         {
             wxGridBagSizer * toolsSizer = new wxGridBagSizer(ButtonMargin, ButtonMargin);
 
-            // Magic wand
+            // Eraser
             {
                 auto button = makeToolButton(
-                    ToolType::TextureMagicWand,
+                    ToolType::TextureEraser,
                     textureToolbarPanel,
-                    "magic_wand_icon",
-                    _("Erase background."));
+                    "eraser_icon",
+                    _("Erase individual texture pixels."));
 
                 toolsSizer->Add(
                     button,
@@ -3878,13 +4265,13 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     0);
             }
 
-            // Eraser
+            // Magic wand
             {
                 auto button = makeToolButton(
-                    ToolType::TextureEraser,
+                    ToolType::TextureMagicWand,
                     textureToolbarPanel,
-                    "eraser_icon",
-                    _("Erase individual texture pixels."));
+                    "magic_wand_icon",
+                    _("Erase background."));
 
                 toolsSizer->Add(
                     button,
@@ -3905,6 +4292,22 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                 toolsSizer->Add(
                     button,
                     wxGBPosition(1, 0),
+                    wxGBSpan(1, 1),
+                    0,
+                    0);
+            }
+
+            // Paste
+            {
+                auto button = makeToolButton(
+                    ToolType::TexturePaste,
+                    textureToolbarPanel,
+                    "paste_icon",
+                    _("Paste clipboard."));
+
+                toolsSizer->Add(
+                    button,
+                    wxGBPosition(1, 1),
                     wxGBSpan(1, 1),
                     0,
                     0);
@@ -4464,7 +4867,7 @@ void MainFrame::SaveShipAs()
 
 void MainFrame::BackupShip()
 {
-    if (mCurrentShipFilePath.has_value()) // Should be true anyway as the button is only enabled when the ship has a filename 
+    if (mCurrentShipFilePath.has_value()) // Should be true anyway as the button is only enabled when the ship has a filename
     {
         // Make new filename up
         auto const newShipFileName = mCurrentShipFilePath->stem().string() + "_backup" + mCurrentShipFilePath->extension().string();
@@ -4595,8 +4998,14 @@ void MainFrame::ImportLayerFromShip(LayerType layer)
 
             case LayerType::Structural:
             {
+                if (!shipDefinition->Layers.StructuralLayer)
+                {
+                    ShowError(_("The selected ship does not have a structural layer"));
+                    return;
+                }
+
                 // Reframe loaded layer to fit our model's size
-                StructuralLayerData newStructuralLayer = shipDefinition->Layers.StructuralLayer.MakeReframed(
+                StructuralLayerData newStructuralLayer = shipDefinition->Layers.StructuralLayer->MakeReframed(
                     mController->GetModelController().GetShipSize(),
                     ShipSpaceCoordinates(0, 0),
                     StructuralElement(nullptr));
@@ -4772,25 +5181,25 @@ void MainFrame::OnElectricalPanelEdit()
     mElectricalPanelEditDialog->ShowModal(
         *mController,
         mController->GetModelController().GetInstancedElectricalElementSet(),
-        mController->GetModelController().GetElectricalPanelMetadata());
+        mController->GetModelController().GetElectricalPanel());
 }
 
 void MainFrame::Copy()
 {
     assert(mController);
-    // TODO: invoke Controller::Copy()
+    mController->Copy();
 }
 
 void MainFrame::Cut()
 {
     assert(mController);
-    // TODO: invoke Controller::Cut()
+    mController->Cut();
 }
 
 void MainFrame::Paste()
 {
     assert(mController);
-    // TODO: invoke Controller::Paste()
+    mController->Paste();
 }
 
 void MainFrame::ValidateShip()
@@ -4813,6 +5222,42 @@ void MainFrame::Deselect()
 {
     assert(mController);
     mController->Deselect();
+}
+
+void MainFrame::PasteRotate90CW()
+{
+    assert(mController);
+    mController->PasteRotate90CW();
+}
+
+void MainFrame::PasteRotate90CCW()
+{
+    assert(mController);
+    mController->PasteRotate90CCW();
+}
+
+void MainFrame::PasteFlipH()
+{
+    assert(mController);
+    mController->PasteFlipH();
+}
+
+void MainFrame::PasteFlipV()
+{
+    assert(mController);
+    mController->PasteFlipV();
+}
+
+void MainFrame::PasteCommit()
+{
+    assert(mController);
+    mController->PasteCommit();
+}
+
+void MainFrame::PasteAbort()
+{
+    assert(mController);
+    mController->PasteAbort();
 }
 
 void MainFrame::OpenMaterialPalette(
@@ -4894,7 +5339,7 @@ void MainFrame::DoNewShip()
     mController.reset();
 
     // Reset current ship filename
-    mCurrentShipFilePath.reset();    
+    mCurrentShipFilePath.reset();
 
     // Ask user for ship name
     NewShipNameDialog dlg(this, *mShipNameNormalizer, mResourceLocator);
@@ -5235,8 +5680,6 @@ void MainFrame::ReconciliateUIWithWorkbenchState()
     ReconciliateUIWithRopesMaterial(mWorkbenchState.GetRopesForegroundMaterial(), MaterialPlaneType::Foreground);
     ReconciliateUIWithRopesMaterial(mWorkbenchState.GetRopesBackgroundMaterial(), MaterialPlaneType::Background);
 
-    ReconciliateUIWithSelectedTool(mWorkbenchState.GetCurrentToolType());
-
     ReconciliateUIWithPrimaryVisualizationSelection(mWorkbenchState.GetPrimaryVisualization());
 
     ReconciliateUIWithGameVisualizationModeSelection(mWorkbenchState.GetGameVisualizationMode());
@@ -5505,16 +5948,29 @@ void MainFrame::ReconciliateUIWithRopesMaterial(StructuralMaterial const * mater
     }
 }
 
-void MainFrame::ReconciliateUIWithSelectedTool(std::optional<ToolType> tool)
+void MainFrame::ReconciliateUIWithSelectedTool(
+    ToolType tool,
+    bool isFromUser)
 {
     // Select this tool's button and unselect the others
     for (size_t i = 0; i < mToolButtons.size(); ++i)
     {
-        bool const isSelected = (tool.has_value() && i == static_cast<size_t>(*tool));
+        bool const mustBeSelected = (i == static_cast<size_t>(tool));
 
-        if (mToolButtons[i]->GetValue() != isSelected)
+        if (mToolButtons[i]->GetValue() != mustBeSelected)
         {
-            mToolButtons[i]->SetValue(isSelected);
+            mToolButtons[i]->SetValue(mustBeSelected);
+        }
+    }
+
+    // Consistency of Paste buttons enablement<->selection
+    for (ToolType t : {ToolType::StructuralPaste, ToolType::ElectricalPaste, ToolType::RopePaste, ToolType::TexturePaste})
+    {
+        bool mustBeEnabled = mToolButtons[static_cast<size_t>(t)]->GetValue();
+
+        if (mToolButtons[static_cast<size_t>(t)]->IsEnabled() != mustBeEnabled)
+        {
+            mToolButtons[static_cast<size_t>(t)]->Enable(mustBeEnabled);
         }
     }
 
@@ -5522,24 +5978,30 @@ void MainFrame::ReconciliateUIWithSelectedTool(std::optional<ToolType> tool)
     bool hasPanel = false;
     for (auto const & entry : mToolSettingsPanels)
     {
-        bool const isSelected = 
-            tool.has_value() 
-            && std::find(std::get<0>(entry).cbegin(), std::get<0>(entry).cend(), *tool) != std::get<0>(entry).cend();
+        bool const mustBeSelected = std::find(
+            std::get<0>(entry).cbegin(),
+            std::get<0>(entry).cend(),
+            tool) != std::get<0>(entry).cend();
 
-        mToolSettingsPanelsSizer->Show(std::get<1>(entry), isSelected);
+        mToolSettingsPanelsSizer->Show(std::get<1>(entry), mustBeSelected);
 
-        hasPanel |= isSelected;
+        hasPanel |= mustBeSelected;
     }
 
-    // Pickup new layout
+    if (isFromUser && hasPanel)
+    {
+        // Move to Edit ribbon page - to show tool settings
+        mMainRibbonBar->SetActivePage(2);
+    }
+
+    // Pickup new ribbon layout
     if (hasPanel)
     {
         // Change name
-        assert(tool.has_value());
-        switch (*tool)
+        switch (tool)
         {
             case ToolType::StructuralEraser:
-            case ToolType::ElectricalEraser:            
+            case ToolType::ElectricalEraser:
             case ToolType::TextureEraser:
             {
                 mToolSettingsRibbonPanel->SetLabel("Eraser");
@@ -5576,6 +6038,15 @@ void MainFrame::ReconciliateUIWithSelectedTool(std::optional<ToolType> tool)
             case ToolType::TextureSelection:
             {
                 mToolSettingsRibbonPanel->SetLabel("Selection");
+                break;
+            }
+
+            case ToolType::StructuralPaste:
+            case ToolType::ElectricalPaste:
+            case ToolType::RopePaste:
+            case ToolType::TexturePaste:
+            {
+                mToolSettingsRibbonPanel->SetLabel("Paste");
                 break;
             }
 

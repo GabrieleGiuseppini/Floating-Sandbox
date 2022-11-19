@@ -67,14 +67,19 @@ SelectionTool::SelectionTool(
     , mCurrentSelection()
     , mEngagementData()
     , mIsShiftDown(false)
+    , mPointerCursor(WxHelpers::LoadCursorImage("selection_cursor", 11, 11, resourceLocator))
+    , mBaseCornerCursor(WxHelpers::LoadCursorImage("corner_cursor", 15, 15, resourceLocator))
 {
-    SetCursor(WxHelpers::LoadCursorImage("selection_cursor", 11, 11, resourceLocator));
+    SetCursor(mPointerCursor);
 }
 
 SelectionTool::~SelectionTool()
 {
     if (mCurrentSelection || mEngagementData)
     {
+        // Remove selection
+        mSelectionManager.SetSelection(std::nullopt);
+
         // Remove overlay
         mController.GetView().RemoveSelectionOverlay();
         mController.GetUserInterface().RefreshView();
@@ -91,6 +96,36 @@ void SelectionTool::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinat
         auto const cornerCoordinates = GetCornerCoordinatesEngaged(mouseCoordinates);
 
         UpdateEphemeralSelection(cornerCoordinates);
+
+        SetCursor(mPointerCursor);
+    }
+    else
+    {
+        // Check if hitting a corner
+        if (mCurrentSelection)
+        {
+            auto const cornerCoordinates = GetCornerCoordinatesFree();
+            if (cornerCoordinates == mCurrentSelection->MinMin())
+            {
+                SetCursor(mBaseCornerCursor.Rotate90(false));
+            }
+            else if (cornerCoordinates == mCurrentSelection->MaxMin())
+            {
+                SetCursor(mBaseCornerCursor.Rotate180());
+            }
+            else if (cornerCoordinates == mCurrentSelection->MaxMax())
+            {
+                SetCursor(mBaseCornerCursor.Rotate90(true));
+            }
+            else if (cornerCoordinates == mCurrentSelection->MinMax())
+            {
+                SetCursor(mBaseCornerCursor);
+            }
+            else
+            {
+                SetCursor(mPointerCursor);
+            }
+        }
     }
 }
 
@@ -108,21 +143,21 @@ void SelectionTool::OnLeftMouseDown()
         // Check if hitting a corner
         if (mCurrentSelection)
         {
-            if (*cornerCoordinates == mCurrentSelection->CornerA())
+            if (*cornerCoordinates == mCurrentSelection->MinMin())
             {
-                selectionStartCorner = mCurrentSelection->CornerC();
+                selectionStartCorner = mCurrentSelection->MaxMax();
             }
-            else if (*cornerCoordinates == mCurrentSelection->CornerB())
+            else if (*cornerCoordinates == mCurrentSelection->MaxMin())
             {
-                selectionStartCorner = mCurrentSelection->CornerD();
+                selectionStartCorner = mCurrentSelection->MinMax();
             }
-            else if (*cornerCoordinates == mCurrentSelection->CornerC())
+            else if (*cornerCoordinates == mCurrentSelection->MaxMax())
             {
-                selectionStartCorner = mCurrentSelection->CornerA();
+                selectionStartCorner = mCurrentSelection->MinMin();
             }
-            else if (*cornerCoordinates == mCurrentSelection->CornerD())
+            else if (*cornerCoordinates == mCurrentSelection->MinMax())
             {
-                selectionStartCorner = mCurrentSelection->CornerB();
+                selectionStartCorner = mCurrentSelection->MaxMin();
             }
         }
 
@@ -211,12 +246,12 @@ void SelectionTool::SelectAll()
 
     // Update overlay
     mController.GetView().UploadSelectionOverlay(
-        selection.CornerA(),
-        selection.CornerC());
+        selection.MinMin(),
+        selection.MaxMax());
 
     // Update measurement
     mController.GetUserInterface().OnMeasuredSelectionSizeChanged(selection.size);
-    
+
     // Commit selection
     mCurrentSelection = selection;
     mSelectionManager.SetSelection(mCurrentSelection);

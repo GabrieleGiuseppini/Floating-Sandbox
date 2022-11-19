@@ -13,12 +13,24 @@
 
 struct RopeBuffer
 {
-    RopeBuffer()
+    explicit RopeBuffer(ShipSpaceSize const & size)
+        : mSize(size)
+        , mBuffer()
     {}
 
-    size_t GetSize() const
+    ShipSpaceSize GetSize() const
+    {
+        return mSize;
+    }
+
+    size_t GetElementCount() const
     {
         return mBuffer.size();
+    }
+
+    size_t GetByteSize() const
+    {
+        return mBuffer.size() * sizeof(RopeElement);
     }
 
     auto begin() const
@@ -81,36 +93,157 @@ struct RopeBuffer
         mBuffer.clear();
     }
 
-    void Flip(
-        DirectionType direction,
-        ShipSpaceSize const & size)
+    RopeBuffer Clone() const
     {
-        if (direction == DirectionType::Horizontal)
+        return RopeBuffer(mSize, mBuffer);
+    }
+
+    /*
+     * Copies ropes that have *both* endpoints in the specified region.
+     */
+    RopeBuffer CloneRegion(ShipSpaceRect const & region) const
+    {
+        RopeBuffer newBuffer(mSize, mBuffer);
+        newBuffer.Reframe(
+            region.size,
+            ShipSpaceCoordinates(
+                -region.origin.x,
+                -region.origin.y));
+
+        return newBuffer;
+    }
+
+    /*
+     * Copies ropes that have *at least* one endpoint in the specified region.
+     */
+    RopeBuffer CopyRegion(ShipSpaceRect const & region) const
+    {
+        RopeBuffer newBuffer(region.size);
+
+        ShipSpaceSize const offset(region.origin.x, region.origin.y);
+
+        for (auto const & r : mBuffer)
         {
-            Flip<true, false>(size);
+            if (r.StartCoords.IsInRect(region) || r.EndCoords.IsInRect(region))
+            {
+                newBuffer.EmplaceBack(
+                    r.StartCoords - offset,
+                    r.EndCoords - offset,
+                    r.Material,
+                    r.RenderColor);
+            }
         }
-        else if (direction == DirectionType::Vertical)
+
+        return newBuffer;
+    }
+
+    void BlitFromRegion(
+        RopeBuffer const & source,
+        ShipSpaceRect const & sourceRegion,
+        ShipSpaceCoordinates const & targetPos,
+        bool isTransparent)
+    {
+        // Clear affected region first, if requested
+        if (!isTransparent)
         {
-            Flip<false, true>(size);
+            ShipSpaceRect const targetPasteRegion(
+                targetPos,
+                sourceRegion.size);
+
+            for (auto tgtIt = mBuffer.begin(); tgtIt != mBuffer.end(); )
+            {
+                if (tgtIt->StartCoords.IsInRect(targetPasteRegion) || tgtIt->EndCoords.IsInRect(targetPasteRegion))
+                {
+                    tgtIt = mBuffer.erase(tgtIt);
+                }
+                else
+                {
+                    ++tgtIt;
+                }
+            }
         }
-        else if (direction == (DirectionType::Vertical | DirectionType::Horizontal))
+
+        // Now copy
+        for (auto const & r : source.mBuffer)
         {
-            Flip<true, true>(size);
+            // Only copy source ropes that have at least one endpoint in source region
+            if (r.StartCoords.IsInRect(sourceRegion) || r.EndCoords.IsInRect(sourceRegion))
+            {
+                // Translate coords
+                ShipSpaceCoordinates startCoordsInTarget = targetPos + (r.StartCoords - sourceRegion.origin);
+                ShipSpaceCoordinates endCoordsInTarget = targetPos + (r.EndCoords - sourceRegion.origin);
+
+                // Make sure translated coords are inside our size
+                if (startCoordsInTarget.IsInSize(mSize) && endCoordsInTarget.IsInSize(mSize))
+                {
+                    // Remove all ropes in target that share an endpoint with this rope
+                    for (auto tgtIt = mBuffer.begin(); tgtIt != mBuffer.end(); )
+                    {
+                        if (tgtIt->StartCoords == startCoordsInTarget
+                            || tgtIt->StartCoords == endCoordsInTarget
+                            || tgtIt->EndCoords == startCoordsInTarget
+                            || tgtIt->EndCoords == endCoordsInTarget)
+                        {
+                            tgtIt = mBuffer.erase(tgtIt);
+                        }
+                        else
+                        {
+                            ++tgtIt;
+                        }
+                    }
+
+                    // Store
+                    mBuffer.emplace_back(
+                        startCoordsInTarget,
+                        endCoordsInTarget,
+                        r.Material,
+                        r.RenderColor);
+                }
+            }
         }
     }
 
-    void Rotate90(
-        RotationDirectionType direction,
-        ShipSpaceSize const & size)
+    void EraseRegion(ShipSpaceRect const & region)
+    {
+        for (auto it = mBuffer.begin(); it != mBuffer.end(); /* incremented in loop */)
+        {
+            if (it->StartCoords.IsInRect(region) || it->EndCoords.IsInRect(region))
+            {
+                it = mBuffer.erase(it);
+            }
+            else
+            {
+                ++it;
+            }
+        }
+    }
+
+    void Flip(DirectionType direction)
+    {
+        if (direction == DirectionType::Horizontal)
+        {
+            Flip<true, false>();
+        }
+        else if (direction == DirectionType::Vertical)
+        {
+            Flip<false, true>();
+        }
+        else if (direction == (DirectionType::Vertical | DirectionType::Horizontal))
+        {
+            Flip<true, true>();
+        }
+    }
+
+    void Rotate90(RotationDirectionType direction)
     {
         if (direction == RotationDirectionType::Clockwise)
         {
-            Rotate90<RotationDirectionType::Clockwise>(size);
+            Rotate90<RotationDirectionType::Clockwise>();
         }
         else
         {
             assert(direction == RotationDirectionType::CounterClockwise);
-            Rotate90<RotationDirectionType::CounterClockwise>(size);
+            Rotate90<RotationDirectionType::CounterClockwise>();
         }
     }
 
@@ -147,49 +280,52 @@ struct RopeBuffer
                 ++it;
             }
         }
-    }
 
-    RopeBuffer Clone() const
-    {
-        return RopeBuffer(mBuffer);
+        mSize = newSize;
     }
 
 private:
 
-    RopeBuffer(std::vector<RopeElement> buffer)
-        : mBuffer(std::move(buffer))
+    RopeBuffer(
+        ShipSpaceSize const & size,
+        std::vector<RopeElement> buffer)
+        : mSize(size)
+        , mBuffer(std::move(buffer))
     {}
 
     template<bool H, bool V>
-    inline void Flip(ShipSpaceSize const & size)
+    inline void Flip()
     {
         for (auto & element : mBuffer)
         {
             auto startCoords = element.StartCoords;
             if constexpr (H)
-                startCoords = startCoords.FlipX(size.width);
+                startCoords = startCoords.FlipX(mSize.width);
             if constexpr (V)
-                startCoords = startCoords.FlipY(size.height);
+                startCoords = startCoords.FlipY(mSize.height);
             element.StartCoords = startCoords;
 
             auto endCoords = element.EndCoords;
             if constexpr (H)
-                endCoords = endCoords.FlipX(size.width);
+                endCoords = endCoords.FlipX(mSize.width);
             if constexpr (V)
-                endCoords = endCoords.FlipY(size.height);
+                endCoords = endCoords.FlipY(mSize.height);
             element.EndCoords = endCoords;
         }
     }
 
     template<RotationDirectionType TDirection>
-    inline void Rotate90(ShipSpaceSize const & size)
+    inline void Rotate90()
     {
         for (auto & element : mBuffer)
         {
-            element.StartCoords = element.StartCoords.Rotate90<TDirection>(size);
-            element.EndCoords = element.EndCoords.Rotate90<TDirection>(size);
+            element.StartCoords = element.StartCoords.Rotate90<TDirection>(mSize);
+            element.EndCoords = element.EndCoords.Rotate90<TDirection>(mSize);
         }
+
+        mSize = ShipSpaceSize(mSize.height, mSize.width);
     }
 
+    ShipSpaceSize mSize;
     std::vector<RopeElement> mBuffer;
 };

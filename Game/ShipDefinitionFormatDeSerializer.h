@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "ElectricalPanel.h"
 #include "MaterialDatabase.h"
 #include "ShipDefinition.h"
 #include "ShipPreviewData.h"
@@ -276,7 +277,7 @@ private:
         DeSerializationBuffer<BigEndianess> & buffer);
 
     static size_t AppendElectricalLayerPanel(
-        ElectricalPanelMetadata const & electricalPanel,
+        ElectricalPanel const & electricalPanel,
         DeSerializationBuffer<BigEndianess> & buffer);
 
     static size_t AppendRopesLayer(

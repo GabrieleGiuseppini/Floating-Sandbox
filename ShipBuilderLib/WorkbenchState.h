@@ -165,23 +165,8 @@ public:
     }
 
     //
-    // Tools
+    // Tools settings
     //
-
-    static ToolType constexpr GetDefaultToolType()
-    {
-        return ToolType::StructuralPencil;
-    }
-
-    std::optional<ToolType> GetCurrentToolType() const
-    {
-        return mCurrentToolType;
-    }
-
-    void SetCurrentToolType(std::optional<ToolType> toolType)
-    {
-        mCurrentToolType = toolType;
-    }
 
     std::uint32_t GetStructuralPencilToolSize() const
     {
@@ -291,6 +276,16 @@ public:
     void SetSelectionIsAllLayers(bool value)
     {
         mSelectionIsAllLayers = value;
+    }
+
+    bool GetPasteIsTransparent() const
+    {
+        return mPasteIsTransparent;
+    }
+
+    void SetPasteIsTransparent(bool value)
+    {
+        mPasteIsTransparent = value;
     }
 
     //
@@ -470,7 +465,6 @@ private:
     StructuralMaterial const * mRopesBackgroundMaterial;
 
     // Tool settings
-    std::optional<ToolType> mCurrentToolType;
     std::uint32_t mStructuralPencilToolSize;
     std::uint32_t mStructuralEraserToolSize;
     std::uint32_t mElectricalEraserToolSize;
@@ -482,6 +476,7 @@ private:
     bool mTextureMagicWandIsContiguous;
     std::uint32_t mTextureEraserToolSize;
     bool mSelectionIsAllLayers;
+    bool mPasteIsTransparent;
 
     // Visualizations
     rgbColor mCanvasBackgroundColor;
