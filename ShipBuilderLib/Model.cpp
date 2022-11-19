@@ -18,8 +18,8 @@ Model::Model(
     , mLayers(
         shipSize,
         MakeNewEmptyStructuralLayer(shipSize),
-        nullptr, 
-        nullptr, 
+        nullptr,
+        nullptr,
         nullptr)
     , mDirtyState()
 {
@@ -28,7 +28,7 @@ Model::Model(
 Model::Model(ShipDefinition && shipDefinition)
     : mShipMetadata(shipDefinition.Metadata)
     , mShipPhysicsData(shipDefinition.PhysicsData)
-    , mShipAutoTexturizationSettings(shipDefinition.AutoTexturizationSettings)    
+    , mShipAutoTexturizationSettings(shipDefinition.AutoTexturizationSettings)
     , mLayers(std::move(shipDefinition.Layers))
     , mDirtyState()
 {

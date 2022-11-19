@@ -745,12 +745,7 @@ void Controller::Cut()
 
     mUserInterface.OnUndoStackStateChanged(mUndoStack);
 
-    // Notify macro properties
-    NotifyModelMacroPropertiesUpdated();
-
-    // Refresh model visualizations
-    mModelController->UpdateVisualizations(*mView);
-    mUserInterface.RefreshView();
+    LayerChangeEpilog(mModelController->CalculateAffectedLayers(layerSelection));
 }
 
 void Controller::Paste()
@@ -1034,10 +1029,10 @@ void Controller::LayerChangeEpilog(std::vector<LayerType> dirtyLayers)
 
         // Notify dirty changes
         mUserInterface.OnModelDirtyChanged(*mModelController);
-
-        // Notify macro properties
-        NotifyModelMacroPropertiesUpdated();
     }
+
+    // Notify macro properties
+    NotifyModelMacroPropertiesUpdated();
 
     // Refresh visualization
     assert(mView);
@@ -2230,10 +2225,6 @@ void Controller::InternalResizeShip(
     // Resize
     mModelController->ResizeShip(newSize, originOffset);
 
-    // Update dirtyness
-    mModelController->SetAllPresentLayersDirty();
-    mUserInterface.OnModelDirtyChanged(*mModelController);
-
     // Notify view of new size
     mView->SetShipSize(newSize);
     mUserInterface.OnViewModelChanged(mView->GetViewModel());
@@ -2241,12 +2232,7 @@ void Controller::InternalResizeShip(
     // Notify UI of new ship size
     mUserInterface.OnShipSizeChanged(newSize);
 
-    // Notify macro properties
-    NotifyModelMacroPropertiesUpdated();
-
-    // Refresh model visualizations
-    mModelController->UpdateVisualizations(*mView);
-    mUserInterface.RefreshView();
+    LayerChangeEpilog(mModelController->GetAllPresentLayers());
 }
 
 template<bool IsForUndo>
@@ -2285,19 +2271,9 @@ void Controller::InternalFlip(DirectionType direction)
     // Flip
     mModelController->Flip(direction);
 
-    if constexpr (!IsForUndo)
-    {
-        // Update dirtyness
-        mModelController->SetAllPresentLayersDirty();
-        mUserInterface.OnModelDirtyChanged(*mModelController);
-    }
-
-    // Update macro properties
-    NotifyModelMacroPropertiesUpdated();
-
-    // Refresh model visualizations
-    mModelController->UpdateVisualizations(*mView);
-    mUserInterface.RefreshView();
+    LayerChangeEpilog(IsForUndo
+        ? std::vector<LayerType>()
+        : mModelController->GetAllPresentLayers());
 }
 
 template<bool IsForUndo>
@@ -2341,13 +2317,6 @@ void Controller::InternalRotate90(RotationDirectionType direction)
     // Rotate
     mModelController->Rotate90(direction);
 
-    if constexpr (!IsForUndo)
-    {
-        // Update dirtyness
-        mModelController->SetAllPresentLayersDirty();
-        mUserInterface.OnModelDirtyChanged(*mModelController);
-    }
-
     // Notify view of new size
     mView->SetShipSize(mModelController->GetShipSize());
     mUserInterface.OnViewModelChanged(mView->GetViewModel());
@@ -2355,12 +2324,9 @@ void Controller::InternalRotate90(RotationDirectionType direction)
     // Notify UI of new ship size
     mUserInterface.OnShipSizeChanged(mModelController->GetShipSize());
 
-    // Update macro properties
-    NotifyModelMacroPropertiesUpdated();
-
-    // Refresh model visualizations
-    mModelController->UpdateVisualizations(*mView);
-    mUserInterface.RefreshView();
+    LayerChangeEpilog(IsForUndo
+        ? std::vector<LayerType>()
+        : mModelController->GetAllPresentLayers());
 }
 
 void Controller::InternalCopySelectionToClipboard(

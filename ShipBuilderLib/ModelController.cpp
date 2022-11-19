@@ -690,7 +690,7 @@ GenericUndoPayload ModelController::Paste(
 
 void ModelController::Restore(GenericUndoPayload && undoPayload)
 {
-    // Note: no layer presence changes
+    // Note: no layer presence nor size changes
 
     for (LayerType const affectedLayerType : undoPayload.GetAffectedLayers())
     {
@@ -954,6 +954,33 @@ std::vector<LayerType> ModelController::CalculateAffectedLayers(ShipLayers const
     }
 
     if (otherSource.TextureLayer && mModel.HasLayer(LayerType::Texture))
+    {
+        affectedLayers.emplace_back(LayerType::Texture);
+    }
+
+    return affectedLayers;
+}
+
+std::vector<LayerType> ModelController::CalculateAffectedLayers(std::optional<LayerType> const & layerSelection) const
+{
+    std::vector<LayerType> affectedLayers;
+
+    if (CheckLayerSelectionApplicability(layerSelection, LayerType::Structural))
+    {
+        affectedLayers.emplace_back(LayerType::Structural);
+    }
+
+    if (CheckLayerSelectionApplicability(layerSelection, LayerType::Electrical))
+    {
+        affectedLayers.emplace_back(LayerType::Electrical);
+    }
+
+    if (CheckLayerSelectionApplicability(layerSelection, LayerType::Ropes))
+    {
+        affectedLayers.emplace_back(LayerType::Ropes);
+    }
+
+    if (CheckLayerSelectionApplicability(layerSelection, LayerType::Texture))
     {
         affectedLayers.emplace_back(LayerType::Texture);
     }
@@ -2783,14 +2810,16 @@ std::optional<ImageRect> ModelController::DoTextureMagicWandEraseBackground(
 }
 
 GenericUndoPayload ModelController::MakeGenericUndoPayload(
-    ShipSpaceRect const & region,
+    std::optional<ShipSpaceRect> const & region,
     bool doStructuralLayer,
     bool doElectricalLayer,
     bool doRopesLayer,
     bool doTextureLayer) const
 {
+    ShipSpaceRect actualRegion = region.value_or(GetWholeShipRect());
+
     // The requested region is entirely within the ship
-    assert(region.IsContainedInRect(GetWholeShipRect()));
+    assert(actualRegion.IsContainedInRect(GetWholeShipRect()));
 
     std::optional<StructuralLayerData> structuralLayerRegionBackup;
     std::optional<ElectricalLayerData> electricalLayerRegionBackup;
@@ -2799,29 +2828,33 @@ GenericUndoPayload ModelController::MakeGenericUndoPayload(
 
     if (doStructuralLayer)
     {
-        structuralLayerRegionBackup = mModel.GetStructuralLayer().MakeRegionBackup(region);
+        structuralLayerRegionBackup = mModel.GetStructuralLayer().MakeRegionBackup(actualRegion);
     }
 
     if (doElectricalLayer)
     {
-        electricalLayerRegionBackup = mModel.GetElectricalLayer().MakeRegionBackup(region);
+        electricalLayerRegionBackup = mModel.GetElectricalLayer().MakeRegionBackup(actualRegion);
     }
 
     if (doRopesLayer)
     {
-        ropesLayerRegionBackup = mModel.GetRopesLayer().MakeRegionBackup(region);
+        ropesLayerRegionBackup = mModel.GetRopesLayer().MakeRegionBackup(actualRegion);
     }
 
     if (doTextureLayer)
     {
-        // The requested region is entirely within the ship
-        assert(ShipSpaceToTextureSpace(region).IsContainedInRect(GetWholeTextureRect()));
+        // The requested region - if any - is entirely within the ship
+        assert(!region.has_value() || ShipSpaceToTextureSpace(*region).IsContainedInRect(GetWholeTextureRect()));
 
-        textureLayerRegionBackup = mModel.GetTextureLayer().MakeRegionBackup(ShipSpaceToTextureSpace(region));
+        ImageRect actualTextureRegion = region.has_value()
+            ? ShipSpaceToTextureSpace(*region)
+            : GetWholeTextureRect();
+
+        textureLayerRegionBackup = mModel.GetTextureLayer().MakeRegionBackup(actualTextureRegion);
     }
 
     return GenericUndoPayload(
-        region.origin,
+        actualRegion.origin,
         std::move(structuralLayerRegionBackup),
         std::move(electricalLayerRegionBackup),
         std::move(ropesLayerRegionBackup),

@@ -17,6 +17,7 @@ namespace ShipBuilder {
 /*
  * Generic undo payload for a region of the ship. Rules:
  * - Does *not* change the presence of layers
+ * - Does *not* change the size of layers
  */
 class GenericUndoPayload final
 {

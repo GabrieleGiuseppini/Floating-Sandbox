@@ -80,6 +80,11 @@ public:
         return mModel.HasLayer(layer);
     }
 
+    std::vector<LayerType> GetAllPresentLayers() const
+    {
+        return mModel.GetAllPresentLayers();
+    }
+
     bool IsDirty() const override
     {
         return mModel.GetIsDirty();
@@ -98,11 +103,6 @@ public:
     void SetLayerDirty(LayerType layer)
     {
         mModel.SetIsDirty(layer);
-    }
-
-    void SetAllPresentLayersDirty()
-    {
-        mModel.SetAllPresentLayersDirty();
     }
 
     void RestoreDirtyState(ModelDirtyState const & dirtyState)
@@ -233,6 +233,8 @@ public:
     void RestoreEphemeralVisualization(GenericEphemeralVisualizationRestorePayload && restorePayload);
 
     std::vector<LayerType> CalculateAffectedLayers(ShipLayers const & otherSource) const;
+
+    std::vector<LayerType> CalculateAffectedLayers(std::optional<LayerType> const & layerSelection) const;
 
     //
     // Structural
@@ -508,7 +510,7 @@ private:
         TextureLayerData & layer);
 
     GenericUndoPayload MakeGenericUndoPayload(
-        ShipSpaceRect const & region,
+        std::optional<ShipSpaceRect> const & region,
         bool doStructuralLayer,
         bool doElectricalLayer,
         bool doRopesLayer,

@@ -17,6 +17,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <vector>
 
 namespace ShipBuilder {
 
@@ -122,6 +123,21 @@ public:
         return false;
     }
 
+    std::vector<LayerType> GetAllPresentLayers() const
+    {
+        std::vector<LayerType> layers;
+
+        for (size_t l = 0; l < LayerCount; ++l)
+        {
+            if (HasLayer(static_cast<LayerType>(l)))
+            {
+                layers.push_back(static_cast<LayerType>(l));
+            }
+        }
+
+        return layers;
+    }
+
     ModelDirtyState const & GetDirtyState() const
     {
         return mDirtyState;
@@ -145,16 +161,6 @@ public:
     void SetIsDirty(LayerType layer)
     {
         mDirtyState.IsLayerDirtyMap[static_cast<size_t>(layer)] = true;
-        mDirtyState.GlobalIsDirty = true;
-    }
-
-    void SetAllPresentLayersDirty()
-    {
-        for (size_t l = 0; l < LayerCount; ++l)
-        {
-            mDirtyState.IsLayerDirtyMap[l] |= HasLayer(static_cast<LayerType>(l));
-        }
-
         mDirtyState.GlobalIsDirty = true;
     }
 

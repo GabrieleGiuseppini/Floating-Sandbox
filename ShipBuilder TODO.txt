@@ -633,8 +633,16 @@
 			+ After removing layer
 		+ Copy 1 layer and paste when that layer doesn't exist
 			+ Expect: no action at commit, no Undo (even if empty)
-	- See if can do these other undo's with GenericUndo:
-		- Resize (& Trim)
+	+ See if can do these other undo's with GenericUndo:
+		+ Resize (& Trim)
+		+ See if these are still needed afterwards:
+			+ MC::SetAllPresentLayersDirty
+		+ Re-test (w/undos)
+			+ Resize
+			+ Trim
+			+ Cut()
+			+ Flip
+			+ Rotate
 	- Buffer2D::size
 	- Merge back into master
 
