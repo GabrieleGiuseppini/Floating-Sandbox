@@ -4,6 +4,23 @@
 
 #include "gtest/gtest.h"
 
+TEST(RopeBufferTests, HasEndpointAt)
+{
+    auto const material1 = MakeTestStructuralMaterial("mat1", rgbColor(1, 2, 3));
+
+    RopeBuffer buffer({ 400, 400 });
+
+    buffer.EmplaceBack(
+        ShipSpaceCoordinates(4, 5),
+        ShipSpaceCoordinates(10, 10),
+        &material1,
+        rgbaColor(1, 2, 3, 4));
+
+    EXPECT_TRUE(buffer.HasEndpointAt({ 4, 5 }));
+    EXPECT_TRUE(buffer.HasEndpointAt({ 10, 10 }));
+    EXPECT_FALSE(buffer.HasEndpointAt({ 4, 6 }));
+}
+
 TEST(RopeBufferTests, SampleAt)
 {
     auto const material1 = MakeTestStructuralMaterial("mat1", rgbColor(1, 2, 3));

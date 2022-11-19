@@ -115,6 +115,9 @@ void ModelValidationSession::PrevisitElectricalLayer()
 
     StructuralLayerData const & structuralLayer = mModel.GetStructuralLayer();
     ElectricalLayerData const & electricalLayer = mModel.GetElectricalLayer();
+    std::optional<RopesLayerData> const & ropesLayer = mModel.HasLayer(LayerType::Ropes)
+        ? mModel.GetRopesLayer()
+        : std::optional<RopesLayerData>();
 
     assert(structuralLayer.Buffer.Size == electricalLayer.Buffer.Size);
     for (int y = 0; y < structuralLayer.Buffer.Size.height; ++y)
@@ -125,7 +128,8 @@ void ModelValidationSession::PrevisitElectricalLayer()
             auto const electricalMaterial = electricalLayer.Buffer[coords].Material;
             if (electricalMaterial != nullptr)
             {
-                if (structuralLayer.Buffer[coords].Material == nullptr)
+                if (structuralLayer.Buffer[coords].Material == nullptr
+                    && (!ropesLayer.has_value() || !ropesLayer->Buffer.HasEndpointAt(coords)))
                 {
                     ++mElectricalParticlesWithNoStructuralSubstratumCount;
                 }

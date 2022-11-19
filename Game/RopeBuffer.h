@@ -9,6 +9,7 @@
 
 #include <GameCore/GameTypes.h>
 
+#include <algorithm>
 #include <vector>
 
 struct RopeBuffer
@@ -61,6 +62,17 @@ struct RopeBuffer
     RopeElement & operator[](size_t index) noexcept
     {
         return mBuffer[index];
+    }
+
+    bool HasEndpointAt(ShipSpaceCoordinates const & coords) const noexcept
+    {
+        return std::find_if(
+            mBuffer.cbegin(),
+            mBuffer.cend(),
+            [&coords](RopeElement const & element) -> bool
+            {
+                return element.StartCoords == coords || element.EndCoords == coords;
+            }) != mBuffer.cend();
     }
 
     StructuralMaterial const * SampleMaterialEndpointAt(ShipSpaceCoordinates const & endpointCoords) const noexcept

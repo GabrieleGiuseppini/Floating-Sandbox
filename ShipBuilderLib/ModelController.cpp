@@ -1249,14 +1249,19 @@ bool ModelController::IsElectricalParticleAllowedAt(ShipSpaceCoordinates const &
 {
     assert(!mIsStructuralLayerInEphemeralVisualization);
 
-    if (mModel.HasLayer(LayerType::Structural))
+    if (mModel.HasLayer(LayerType::Structural)
+        && mModel.GetStructuralLayer().Buffer[coords].Material != nullptr)
     {
-        return mModel.GetStructuralLayer().Buffer[coords].Material != nullptr;
+        return true;
     }
-    else
+
+    if (mModel.HasLayer(LayerType::Ropes)
+        && mModel.GetRopesLayer().Buffer.HasEndpointAt(coords))
     {
-        return false;
+        return true;
     }
+
+    return false;
 }
 
 std::optional<ShipSpaceRect> ModelController::TrimElectricalParticlesWithoutSubstratum()

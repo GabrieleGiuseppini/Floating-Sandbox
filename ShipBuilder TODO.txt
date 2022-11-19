@@ -6,8 +6,13 @@
 	+ Seems to be due to ModelController::RestoreTextureLayer considering earlier texture size in calculation of dirty region
 		X Why did we do that?
 
-- Do Selection/Copy'n'Cut/Paste workflow (*)
-	- Merge back into master
++ Do Selection/Copy'n'Cut/Paste workflow (*)
+	+ Merge back into master
+
++ Allow for electrical particles on rope endpoints
+	+ Pencil
+	+ Line
+	+ Model validation
 
 - Try RegisterDirtyViz() storing list of rects
 	- 1: View: bunch of rects, so that we may visualize current behavior
@@ -16,8 +21,6 @@
 	+ @ Paste
 	+ Ideally we do this only if this is a direct consequence of a tool change from the user
 		+ If so: remove changing page at paste selection
-
-- Should ModelValidator allow for electrical particles on rope endpoints?
 
 - Do StructuralRectangle tool (*)
 
