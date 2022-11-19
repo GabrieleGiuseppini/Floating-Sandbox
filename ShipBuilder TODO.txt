@@ -12,9 +12,9 @@
 - Try RegisterDirtyViz() storing list of rects
 	- 1: View: bunch of rects, so that we may visualize current behavior
 
-= Try changing ribbon page to Tool Settings after selecting tool that has settings
++ Try changing ribbon page to Tool Settings after selecting tool that has settings
 	+ @ Paste
-	= Ideally we do this only if this is a direct consequence of a tool change from the user
+	+ Ideally we do this only if this is a direct consequence of a tool change from the user
 		+ If so: remove changing page at paste selection
 
 - Should ModelValidator allow for electrical particles on rope endpoints?
@@ -625,18 +625,16 @@
 				+ S
 				+ E
 				+ T
-	= SelectionTool:
-		- Allow OnMouseDown to work even if outside ship - clip to it
+	+ SelectionTool:
 		+ Change cursor @ OnMouseMove when not engaged and when at place for moving corner
-
-	- Tests:
-		- Ropes paste carries with it both and only ropes w/both endpoints in region, and with one endpoint in region
-		- Make sure none of the Paste tools may be selected by user
-			- After removing layer
-		- Copy 1 layer and paste when that layer doesn't exist
-			- Expect: no action at commit, no Undo (even if empty)
+	+ Tests:
+		+ Ropes paste carries with it both and only ropes w/both endpoints in region, and with one endpoint in region
+		+ Make sure none of the Paste tools may be selected by user
+			+ After removing layer
+		+ Copy 1 layer and paste when that layer doesn't exist
+			+ Expect: no action at commit, no Undo (even if empty)
 	- See if can do these other undo's with GenericUndo:
-		- Resize
+		- Resize (& Trim)
 	- Buffer2D::size
 	- Merge back into master
 
