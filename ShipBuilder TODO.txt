@@ -115,7 +115,7 @@
 	+ Resize button (canvas resize)
 
 
-= StatusBar:
++ StatusBar:
 	+ Own class
 	+ Try making it a wxPanel rather than a wxStatusBar
 	+ Cctor w/UnitsSystem
@@ -123,21 +123,21 @@
 	+ Also is notified of every change in ship scale, so that it uses it to go from ship to world
 		+ Notifications
 		+ Used
-	- Areas:
-		- Canvas:
+	+ Areas:
+		+ Canvas:
 			+ WorkSpace size and icon (wxh), w/meters/feet as well
 				+ GameCore::Conversions.h: MetersToFeet, etc.
 			+ Coords and icon (x,y), w/meters/feet as well			
-			- Selection/line/rect/etc. size and icon (wxh), w/meters/feet as well
+			+ Selection/line/rect/etc. size and icon (wxh), w/meters/feet as well
 			+ Zoom (%)
 				+ MainFrame: OnViewModelChanged calls a new ReconciliateUIWithViewModel(), which does:
 					+ StatusBar: set zoom
 					+ RecalculateWorkCanvasPanning
-			= InteractiveTool (for Material, MeasuringTape, etc.)
+			+ InteractiveTool (for Material, MeasuringTape, etc.)
 				+ Icon (store images/bitmaps as members)
-				- MeasuringTape
-				= Material under cursor (for drop tool)
-		- Test physics probe w/both systems
+				+ MeasuringTape
+				+ Material under cursor (for drop tool)
+
 - Tools:
 	! Most tools should pan when the (captured) mouse is outside of the canvas
 		- Via BaseTool::ScrollIntoViewIfNeeded, which simply forwards to IUserInterface::ScrollIntoViewIfNeeded(display logical)
@@ -187,16 +187,16 @@
 					+ Clip length 
 		- Rectangle
 			- Settings: FillWithFore|FillWithBack|NoFill; Size
-		- Selection
-			- Implements selection interaction and rendering of visual feedback *during the interaction only*
-			- Takes SelectionManager ref in its cctor, and populates it upon confirmation of selection made
-			- Selection spec (*)
+		+ Selection
+			+ Implements selection interaction and rendering of visual feedback *during the interaction only*
+			+ Takes SelectionManager ref in its cctor, and populates it upon confirmation of selection made
+			+ Selection spec (*)
 		- Ellipses
 		- Traslate (aka move)
 		+ Magic Eraser (for texture layer only)
 			+ Tolerance (0-100): % of distance(this color, start color)/max_distance
 			+ Anti-aliasing (bool): when on, alpha = distance(this color, start color)/tolerance_distance
-	- Other edit operations, not via tools - via menu (and buttons?)
+	+ Other edit operations, not via tools - via menu (and buttons?)
 		+ Auto-trim (on bounding box)
 
 + Selection/Copy'n'Paste (*):
