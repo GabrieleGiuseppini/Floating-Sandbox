@@ -542,9 +542,9 @@ void MainFrame::OnRopesMaterialChanged(StructuralMaterial const * material, Mate
     ReconciliateUIWithRopesMaterial(material, plane);
 }
 
-void MainFrame::OnCurrentToolChanged(ToolType tool)
+void MainFrame::OnCurrentToolChanged(ToolType tool, bool isFromUser)
 {
-    ReconciliateUIWithSelectedTool(tool);
+    ReconciliateUIWithSelectedTool(tool, isFromUser);
 }
 
 void MainFrame::OnPrimaryVisualizationChanged(VisualizationType primaryVisualization)
@@ -5200,9 +5200,6 @@ void MainFrame::Paste()
 {
     assert(mController);
     mController->Paste();
-
-    // Move to Edit ribbon page - to show paste settings
-    mMainRibbonBar->SetActivePage(2);
 }
 
 void MainFrame::ValidateShip()
@@ -5951,7 +5948,9 @@ void MainFrame::ReconciliateUIWithRopesMaterial(StructuralMaterial const * mater
     }
 }
 
-void MainFrame::ReconciliateUIWithSelectedTool(ToolType tool)
+void MainFrame::ReconciliateUIWithSelectedTool(
+    ToolType tool,
+    bool isFromUser)
 {
     // Select this tool's button and unselect the others
     for (size_t i = 0; i < mToolButtons.size(); ++i)
@@ -5987,6 +5986,12 @@ void MainFrame::ReconciliateUIWithSelectedTool(ToolType tool)
         mToolSettingsPanelsSizer->Show(std::get<1>(entry), mustBeSelected);
 
         hasPanel |= mustBeSelected;
+    }
+
+    if (isFromUser && hasPanel)
+    {
+        // Move to Edit ribbon page - to show tool settings
+        mMainRibbonBar->SetActivePage(2);
     }
 
     // Pickup new ribbon layout

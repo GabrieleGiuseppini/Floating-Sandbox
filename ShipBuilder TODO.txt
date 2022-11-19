@@ -14,7 +14,8 @@
 
 = Try changing ribbon page to Tool Settings after selecting tool that has settings
 	+ @ Paste
-	- Ideally we do this only if this is a direct consequence of a tool change from the user
+	= Ideally we do this only if this is a direct consequence of a tool change from the user
+		+ If so: remove changing page at paste selection
 
 - Should ModelValidator allow for electrical particles on rope endpoints?
 

@@ -119,7 +119,7 @@ public:
     void OnElectricalMaterialChanged(ElectricalMaterial const * material, MaterialPlaneType plane) override;
     void OnRopesMaterialChanged(StructuralMaterial const * material, MaterialPlaneType plane) override;
 
-    void OnCurrentToolChanged(ToolType tool) override;
+    void OnCurrentToolChanged(ToolType tool, bool isFromUser) override;
 
     void OnPrimaryVisualizationChanged(VisualizationType primaryVisualization) override;
 
@@ -348,7 +348,9 @@ private:
     void ReconciliateUIWithElectricalMaterial(ElectricalMaterial const * material, MaterialPlaneType plane);
     void ReconciliateUIWithRopesMaterial(StructuralMaterial const * material, MaterialPlaneType plane);
 
-    void ReconciliateUIWithSelectedTool(ToolType tool);
+    void ReconciliateUIWithSelectedTool(
+        ToolType tool,
+        bool isFromUser);
 
     void ReconciliateUIWithPrimaryVisualizationSelection(VisualizationType primaryVisualization);
 
@@ -470,12 +472,12 @@ private:
 
     // Misc UI elements
     std::unique_ptr<CompositeMaterialPalette> mCompositeMaterialPalette;
-    StatusBar * mStatusBar;    
+    StatusBar * mStatusBar;
 
     //
     // Dialogs
     //
-    
+
     std::unique_ptr<wxNotificationMessage> mNotificationMessage;
     std::unique_ptr<ShipLoadDialog<ShipLoadDialogUsageType::ForShipBuilder>> mShipLoadDialog;
     std::unique_ptr<ShipSaveDialog> mShipSaveDialog;

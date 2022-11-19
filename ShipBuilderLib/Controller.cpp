@@ -154,7 +154,7 @@ Controller::Controller(
     // Set tool to tool for current visualization
     //
 
-    SetCurrentTool(GetToolTypeForCurrentVisualization());
+    InternalSetCurrentTool(GetToolTypeForCurrentVisualization(), false);
 
     RefreshToolCoordinatesDisplay();
 }
@@ -902,7 +902,7 @@ void Controller::Paste()
     assert(mCurrentTool);
 
     // Notify new tool
-    mUserInterface.OnCurrentToolChanged(mCurrentTool->GetType());
+    mUserInterface.OnCurrentToolChanged(mCurrentTool->GetType(), true);
 }
 
 void Controller::SetPasteIsTransparent(bool isTransparent)
@@ -942,7 +942,7 @@ void Controller::PasteCommit()
     pasteTool.Commit();
 
     // Nuke tool and restore previous tool
-    SetCurrentTool(mCurrentToolTypePerLayer[static_cast<size_t>(VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization()))]);
+    InternalSetCurrentTool(mCurrentToolTypePerLayer[static_cast<size_t>(VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization()))], true);
 }
 
 void Controller::PasteAbort()
@@ -952,7 +952,7 @@ void Controller::PasteAbort()
     pasteTool.Abort();
 
     // Nuke tool and restore previous tool
-    SetCurrentTool(mCurrentToolTypePerLayer[static_cast<size_t>(VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization()))]);
+    InternalSetCurrentTool(mCurrentToolTypePerLayer[static_cast<size_t>(VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization()))], true);
 }
 
 void Controller::AutoTrim()
@@ -1088,7 +1088,7 @@ void Controller::SelectAll()
             }
         }
 
-        SetCurrentTool(toolType);
+        InternalSetCurrentTool(toolType, true);
     }
 
     GetCurrentToolAs<SelectionTool>(ToolClass::Selection).SelectAll();
@@ -1366,25 +1366,7 @@ void Controller::BroadcastSampledInformationUpdatedNone() const
 
 void Controller::SetCurrentTool(ToolType tool)
 {
-    if (!mCurrentTool || tool != mCurrentTool->GetType())
-    {
-        // Nuke current tool (if)
-        mCurrentTool.reset();
-
-        // Make new tool
-        mCurrentTool = MakeTool(tool);
-
-        // Notify new tool
-        mUserInterface.OnCurrentToolChanged(tool);
-
-        // Set new tool as the current tool of this primary visualization's layer - unless it's the Paste tool,
-        // in which case we allow the previous tool for this viz layer to be resumed after the Paste tool is suspended
-        assert(mCurrentTool->GetClass() != ToolClass::Paste);
-        if (mCurrentTool->GetClass() != ToolClass::Paste)
-        {
-            mCurrentToolTypePerLayer[static_cast<size_t>(VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization()))] = tool;
-        }
-    }
+    InternalSetCurrentTool(tool, true);
 }
 
 void Controller::SetNewShipSize(ShipSpaceSize size)
@@ -1963,6 +1945,31 @@ ToolType Controller::GetToolTypeForCurrentVisualization()
     return mCurrentToolTypePerLayer[static_cast<size_t>(VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization()))];
 }
 
+void Controller::InternalSetCurrentTool(
+    ToolType tool,
+    bool isFromUser)
+{
+    if (!mCurrentTool || tool != mCurrentTool->GetType())
+    {
+        // Nuke current tool (if)
+        mCurrentTool.reset();
+
+        // Make new tool
+        mCurrentTool = MakeTool(tool);
+
+        // Notify new tool
+        mUserInterface.OnCurrentToolChanged(tool, isFromUser);
+
+        // Set new tool as the current tool of this primary visualization's layer - unless it's the Paste tool,
+        // in which case we allow the previous tool for this viz layer to be resumed after the Paste tool is suspended
+        assert(mCurrentTool->GetClass() != ToolClass::Paste);
+        if (mCurrentTool->GetClass() != ToolClass::Paste)
+        {
+            mCurrentToolTypePerLayer[static_cast<size_t>(VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization()))] = tool;
+        }
+    }
+}
+
 Finalizer Controller::SuspendTool() const
 {
     LogMessage("Controller::SuspendTool()");
@@ -1997,7 +2004,7 @@ void Controller::InternalResumeTool()
     mCurrentTool.reset();
 
     // Restart last tool for current layer
-    SetCurrentTool(mCurrentToolTypePerLayer[static_cast<size_t>(VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization()))]);
+    InternalSetCurrentTool(mCurrentToolTypePerLayer[static_cast<size_t>(VisualizationToLayer(mWorkbenchState.GetPrimaryVisualization()))], false);
 }
 
 void Controller::InternalResetTool()

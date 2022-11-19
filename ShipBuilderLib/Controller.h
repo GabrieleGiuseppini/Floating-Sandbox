@@ -339,6 +339,7 @@ private:
 
     ToolType GetToolTypeForCurrentVisualization();
 
+    void InternalSetCurrentTool(ToolType tool, bool isFromUser);
     Finalizer SuspendTool() const;
     bool InternalSuspendTool();
     void InternalResumeTool();
