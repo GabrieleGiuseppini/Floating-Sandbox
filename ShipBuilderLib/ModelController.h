@@ -611,7 +611,7 @@ private:
 
     TextureLayerVisualizationModeType mTextureLayerVisualizationMode;
 
-    // Regions whose visualization needs to be *updated* and uploaded
+    // Regions whose visualization needs to be *updated* and *uploaded*
     std::optional<ShipSpaceRect> mDirtyGameVisualizationRegion;
     std::optional<ShipSpaceRect> mDirtyStructuralLayerVisualizationRegion;
     std::optional<ShipSpaceRect> mDirtyElectricalLayerVisualizationRegion;

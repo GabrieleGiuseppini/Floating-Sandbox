@@ -23,12 +23,12 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::DashedLineOverlay;
     else if (lstr == "grid")
         return ProgramType::Grid;
+    else if (lstr == "matte")
+        return ProgramType::Matte;
     else if (lstr == "mipmapped_texture_quad")
         return ProgramType::MipMappedTextureQuad;
     else if (lstr == "rect_overlay")
         return ProgramType::RectOverlay;
-    else if (lstr == "rope")
-        return ProgramType::Rope;
     else if (lstr == "structure_mesh")
         return ProgramType::StructureMesh;
     else if (lstr == "texture")
@@ -57,8 +57,8 @@ std::string ProgramTypeToStr(ProgramType program)
             return "MipMappedTextureQuad";
         case ProgramType::RectOverlay:
             return "RectOverlay";
-        case ProgramType::Rope:
-            return "Rope";
+        case ProgramType::Matte:
+            return "Matte";
         case ProgramType::StructureMesh:
             return "StructureMesh";
         case ProgramType::Texture:
@@ -141,18 +141,22 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::DashedLineOverlay1;
     else if (Utils::CaseInsensitiveEquals(str, "DashedLineOverlay2"))
         return VertexAttributeType::DashedLineOverlay2;
+    else if (Utils::CaseInsensitiveEquals(str, "DebugRegionOverlay1"))
+        return VertexAttributeType::DebugRegionOverlay1;
+    else if (Utils::CaseInsensitiveEquals(str, "DebugRegionOverlay2"))
+        return VertexAttributeType::DebugRegionOverlay2;
     else if (Utils::CaseInsensitiveEquals(str, "Grid1"))
         return VertexAttributeType::Grid1;
     else if (Utils::CaseInsensitiveEquals(str, "Grid2"))
         return VertexAttributeType::Grid2;
+    else if (Utils::CaseInsensitiveEquals(str, "Matte1"))
+        return VertexAttributeType::Matte1;
+    else if (Utils::CaseInsensitiveEquals(str, "Matte2"))
+        return VertexAttributeType::Matte2;
     else if (Utils::CaseInsensitiveEquals(str, "RectOverlay1"))
         return VertexAttributeType::RectOverlay1;
     else if (Utils::CaseInsensitiveEquals(str, "RectOverlay2"))
         return VertexAttributeType::RectOverlay2;
-    else if (Utils::CaseInsensitiveEquals(str, "Rope1"))
-        return VertexAttributeType::Rope1;
-    else if (Utils::CaseInsensitiveEquals(str, "Rope2"))
-        return VertexAttributeType::Rope2;
     else if (Utils::CaseInsensitiveEquals(str, "Texture"))
         return VertexAttributeType::Texture;
     else if (Utils::CaseInsensitiveEquals(str, "TextureNdc"))

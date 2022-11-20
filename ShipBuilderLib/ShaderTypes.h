@@ -22,9 +22,9 @@ enum class ProgramType
     CircleOverlay,
     DashedLineOverlay,
     Grid,
+    Matte,
     MipMappedTextureQuad,
     RectOverlay,
-    Rope,
     StructureMesh,
     Texture,
     TextureNdc,
@@ -73,14 +73,17 @@ enum class VertexAttributeType : GLuint
     DashedLineOverlay1 = 0,
     DashedLineOverlay2 = 1,
 
+    DebugRegionOverlay1 = 0,
+    DebugRegionOverlay2 = 1,
+
     Grid1 = 0,
     Grid2 = 1,
 
+    Matte1 = 0,
+    Matte2 = 1,
+
     RectOverlay1 = 0,
     RectOverlay2 = 1,
-
-    Rope1 = 0,
-    Rope2 = 1,
 
     Texture = 0,
 

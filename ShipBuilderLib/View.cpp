@@ -42,6 +42,8 @@ View::View(
     , mRopeCount(false)
     , mHasTextureLayerVisualization(false)
     , mIsGridEnabled(isGridEnabled)
+    , mDebugRegionOverlayVertexBuffer()
+    , mIsDebugRegionOverlayBufferDirty(false)
     , mCircleOverlayCenter(0, 0) // Will be overwritten
     , mCircleOverlayColor(vec3f::zero()) // Will be overwritten
     , mHasCircleOverlay(false)
@@ -384,10 +386,10 @@ View::View(
         // Describe vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mRopesVBO);
         static_assert(sizeof(RopeVertex) == (2 + 4) * sizeof(float));
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Rope1));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Rope1), 2, GL_FLOAT, GL_FALSE, sizeof(RopeVertex), (void *)(0));
-        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Rope2));
-        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Rope2), 4, GL_FLOAT, GL_FALSE, sizeof(RopeVertex), (void *)(2 * sizeof(float)));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Matte1));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Matte1), 2, GL_FLOAT, GL_FALSE, sizeof(RopeVertex), (void *)(0));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Matte2));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Matte2), 4, GL_FLOAT, GL_FALSE, sizeof(RopeVertex), (void *)(2 * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -468,6 +470,35 @@ View::View(
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Grid1), 4, GL_FLOAT, GL_FALSE, sizeof(GridVertex), (void *)0);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Grid2));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Grid2), 1, GL_FLOAT, GL_FALSE, sizeof(GridVertex), (void *)(4 * sizeof(float)));
+        CheckOpenGLError();
+
+        glBindVertexArray(0);
+    }
+
+    //
+    // Initialize debug region overlay VAO
+    //
+
+    {
+        GLuint tmpGLuint;
+
+        // Create VAO
+        glGenVertexArrays(1, &tmpGLuint);
+        mDebugRegionOverlayVAO = tmpGLuint;
+        glBindVertexArray(*mDebugRegionOverlayVAO);
+        CheckOpenGLError();
+
+        // Create VBO
+        glGenBuffers(1, &tmpGLuint);
+        mDebugRegionOverlayVBO = tmpGLuint;
+
+        // Describe vertex attributes
+        glBindBuffer(GL_ARRAY_BUFFER, *mDebugRegionOverlayVBO);
+        static_assert(sizeof(DebugRegionOverlayVertex) == (2 + 4) * sizeof(float));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Matte1));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Matte1), 2, GL_FLOAT, GL_FALSE, sizeof(DebugRegionOverlayVertex), (void *)(0));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Matte2));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Matte2), 4, GL_FLOAT, GL_FALSE, sizeof(DebugRegionOverlayVertex), (void *)(2 * sizeof(float)));
         CheckOpenGLError();
 
         glBindVertexArray(0);
@@ -1004,6 +1035,51 @@ void View::RemoveTextureLayerVisualization()
     mViewModel.RemoveTextureLayerVisualizationTextureSize();
 }
 
+void View::UploadDebugRegionOverlay(ShipSpaceRect const & rect)
+{
+    vec4f const color = vec4f(209.0 / 255.0, 15.0 / 255.0, 15.0 / 255.0, 1.0f);
+
+    mDebugRegionOverlayVertexBuffer.emplace_back(
+        rect.MinMin().ToFloat(),
+        color);
+
+    mDebugRegionOverlayVertexBuffer.emplace_back(
+        rect.MinMax().ToFloat(),
+        color);
+
+    mDebugRegionOverlayVertexBuffer.emplace_back(
+        rect.MinMax().ToFloat(),
+        color);
+
+    mDebugRegionOverlayVertexBuffer.emplace_back(
+        rect.MaxMax().ToFloat(),
+        color);
+
+    mDebugRegionOverlayVertexBuffer.emplace_back(
+        rect.MaxMax().ToFloat(),
+        color);
+
+    mDebugRegionOverlayVertexBuffer.emplace_back(
+        rect.MaxMin().ToFloat(),
+        color);
+
+    mDebugRegionOverlayVertexBuffer.emplace_back(
+        rect.MaxMin().ToFloat(),
+        color);
+
+    mDebugRegionOverlayVertexBuffer.emplace_back(
+        rect.MinMin().ToFloat(),
+        color);
+
+    mIsDebugRegionOverlayBufferDirty = true;
+}
+
+void View::RemoveDebugRegionOverlays()
+{
+    mDebugRegionOverlayVertexBuffer.clear();
+    mIsDebugRegionOverlayBufferDirty = true;
+}
+
 void View::UploadCircleOverlay(
     ShipSpaceCoordinates const & center,
     OverlayMode mode)
@@ -1276,6 +1352,17 @@ void View::Render()
     glViewport(0, 0, mViewModel.GetDisplayPhysicalSize().width, mViewModel.GetDisplayPhysicalSize().height);
 
     //
+    // Upload buffers
+    //
+
+    if (mIsDebugRegionOverlayBufferDirty)
+    {
+        UploadDebugRegionOverlayVertexBuffer();
+
+        mIsDebugRegionOverlayBufferDirty = false;
+    }
+
+    //
     // Draw
     //
 
@@ -1512,6 +1599,26 @@ void View::Render()
         CheckOpenGLError();
     }
 
+    // Debug region rect overlay
+    if (!mDebugRegionOverlayVertexBuffer.empty())
+    {
+        // Bind VAO
+        glBindVertexArray(*mDebugRegionOverlayVAO);
+
+        // Activate program
+        mShaderManager->ActivateProgram<ProgramType::Matte>();
+
+        // Set opacity
+        mShaderManager->SetProgramParameter<ProgramType::Matte, ProgramParameterType::Opacity>(1.0f);
+
+        // Set line width
+        glLineWidth(1.5f);
+
+        // Draw
+        glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(mDebugRegionOverlayVertexBuffer.size()));
+        CheckOpenGLError();
+    }
+
     // Unbind VAOs
     glBindVertexArray(0);
 
@@ -1576,16 +1683,16 @@ void View::OnViewModelUpdated()
     mShaderManager->SetProgramParameter<ProgramType::Grid, ProgramParameterType::OrthoMatrix>(
         orthoMatrix);
 
+    mShaderManager->ActivateProgram<ProgramType::Matte>();
+    mShaderManager->SetProgramParameter<ProgramType::Matte, ProgramParameterType::OrthoMatrix>(
+        orthoMatrix);
+
     mShaderManager->ActivateProgram<ProgramType::MipMappedTextureQuad>();
     mShaderManager->SetProgramParameter<ProgramType::MipMappedTextureQuad, ProgramParameterType::OrthoMatrix>(
         orthoMatrix);
 
     mShaderManager->ActivateProgram<ProgramType::RectOverlay>();
     mShaderManager->SetProgramParameter<ProgramType::RectOverlay, ProgramParameterType::OrthoMatrix>(
-        orthoMatrix);
-
-    mShaderManager->ActivateProgram<ProgramType::Rope>();
-    mShaderManager->SetProgramParameter<ProgramType::Rope, ProgramParameterType::OrthoMatrix>(
         orthoMatrix);
 
     mShaderManager->ActivateProgram<ProgramType::StructureMesh>();
@@ -2135,6 +2242,17 @@ void View::UploadTextureVerticesTriangleStripQuad(
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
+void View::UploadDebugRegionOverlayVertexBuffer()
+{
+    if (mDebugRegionOverlayVertexBuffer.size() > 0)
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, *mDebugRegionOverlayVBO);
+        glBufferData(GL_ARRAY_BUFFER, mDebugRegionOverlayVertexBuffer.size() * sizeof(DebugRegionOverlayVertex), mDebugRegionOverlayVertexBuffer.data(), GL_STATIC_DRAW);
+        CheckOpenGLError();
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+}
+
 void View::RenderGameVisualization()
 {
     // Set this texture in the shader's sampler
@@ -2205,10 +2323,10 @@ void View::RenderRopesLayerVisualization()
     glBindVertexArray(*mRopesVAO);
 
     // Activate program
-    mShaderManager->ActivateProgram<ProgramType::Rope>();
+    mShaderManager->ActivateProgram<ProgramType::Matte>();
 
     // Set opacity
-    mShaderManager->SetProgramParameter<ProgramType::Rope, ProgramParameterType::Opacity>(
+    mShaderManager->SetProgramParameter<ProgramType::Matte, ProgramParameterType::Opacity>(
         mPrimaryVisualization == VisualizationType::RopesLayer ? 1.0f : mOtherVisualizationsOpacity);
 
     // Set line width

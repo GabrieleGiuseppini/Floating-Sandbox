@@ -252,6 +252,10 @@ public:
     // Overlays (all sticky)
     //
 
+    void UploadDebugRegionOverlay(ShipSpaceRect const & rect);
+
+    void RemoveDebugRegionOverlays();
+
     enum class OverlayMode
     {
         Default,
@@ -335,6 +339,8 @@ private:
         float bottomYShip, float bottomYTex,
         float topYShip, float topYTex,
         GameOpenGLVBO const & vbo);
+
+    void UploadDebugRegionOverlayVertexBuffer();
 
     void RenderGameVisualization();
     void RenderStructuralLayerVisualization();
@@ -432,6 +438,21 @@ private:
             vec4f _color)
             : positionShip(_positionShip)
             , color(_color)
+        {}
+    };
+
+    struct DebugRegionOverlayVertex
+    {
+        vec2f positionShip;
+        vec4f overlayColor;
+
+        DebugRegionOverlayVertex() = default;
+
+        DebugRegionOverlayVertex(
+            vec2f _positionShip,
+            vec4f _overlayColor)
+            : positionShip(_positionShip)
+            , overlayColor(_overlayColor)
         {}
     };
 
@@ -557,6 +578,12 @@ private:
     GameOpenGLVAO mGridVAO;
     GameOpenGLVBO mGridVBO;
     bool mIsGridEnabled;
+
+    // DebugRegionOverlay
+    GameOpenGLVAO mDebugRegionOverlayVAO;
+    GameOpenGLVBO mDebugRegionOverlayVBO;
+    std::vector<DebugRegionOverlayVertex> mDebugRegionOverlayVertexBuffer;
+    bool mIsDebugRegionOverlayBufferDirty;
 
     // CircleOverlay
     GameOpenGLVAO mCircleOverlayVAO;
