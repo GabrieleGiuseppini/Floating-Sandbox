@@ -14,11 +14,6 @@
 	+ Line
 	+ Model validation
 
-= Try RegisterDirtyViz() storing list of rects
-	= 1: View: bunch of rects, so that we may visualize current behavior
-		- Make setting to enable/disable
-	- 2: make structural & game regions *vectors* of rects
-
 + Try changing ribbon page to Tool Settings after selecting tool that has settings
 	+ @ Paste
 	+ Ideally we do this only if this is a direct consequence of a tool change from the user
@@ -187,7 +182,7 @@
 				+ @ move: 
 					+ Clip overlay 
 					+ Clip length 
-		- Rectangle
+		- Rectangle (*)
 			- Settings: FillWithFore|FillWithBack|NoFill; Size
 		+ Selection
 			+ Implements selection interaction and rendering of visual feedback *during the interaction only*

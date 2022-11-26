@@ -2104,8 +2104,6 @@ void ModelController::UpdateVisualizations(View & view)
     // remove visualizations that are not needed
     //
 
-    view.RemoveDebugRegionOverlays();
-
     // Game
 
     if (mGameVisualizationMode != GameVisualizationModeType::None)
@@ -2154,8 +2152,6 @@ void ModelController::UpdateVisualizations(View & view)
                 // Upload whole texture
                 view.UploadGameVisualization(*mGameVisualizationTexture);
             }
-
-            view.UploadDebugRegionOverlay(*mDirtyGameVisualizationRegion);
         }
     }
     else
@@ -2218,8 +2214,6 @@ void ModelController::UpdateVisualizations(View & view)
                 // Upload whole texture
                 view.UploadStructuralLayerVisualization(*mStructuralLayerVisualizationTexture);
             }
-
-            view.UploadDebugRegionOverlay(*mDirtyStructuralLayerVisualizationRegion);
         }
     }
     else
