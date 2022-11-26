@@ -62,7 +62,10 @@
 
 	+ Bump up version
 
-	- ShipBuilder things (*)
+	= ShipBuilder things (*)
+
+	= Test flames with heightened luminosity
+		- Test perf of flames on Dell
 
 	- Check ship move beyond world borders
 		- in Debug mode
@@ -71,6 +74,8 @@
 	- Take S.S. Avila 2 (Matthew Anderson) (ToTake folder)
 	- Take A_single_Blue_Angel (Kazindel) (ToTake folder)
 		- "Kazindel" - check out Credits
+
+	- Release
 
 	- Make Mac instructions
 		- SFML build: https://github.com/SFML/SFML/issues/1496

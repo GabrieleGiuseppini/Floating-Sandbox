@@ -151,13 +151,20 @@ void main()
     vec2 colorVirtualTextureCoords = fract(
         vec2(
             uv.x / ColorResolution,
-            uv.y / ColorResolution - paramFlameProgress * 1.5 + noiseOffset.x)); // Adding some per-flame random Y displacement
+            uv.y / ColorResolution - paramFlameProgress * 1.5 + noiseOffset.x / 3.)); // Adding some per-flame random Y displacement
 
     // Clamp to dead center pixels
-    colorVirtualTextureCoords.y = clamp(colorVirtualTextureCoords.y, paramAtlasTile1Dx.y, 1.0 - paramAtlasTile1Dx.y);
+    colorVirtualTextureCoords = clamp(colorVirtualTextureCoords, paramAtlasTile1Dx, vec2(1.0) - paramAtlasTile1Dx);
 
     vec2 colorSampleCoords = paramAtlasTile1LeftBottomTextureCoordinates + paramAtlasTile1Size * colorVirtualTextureCoords;
     vec4 sampledColor = texture2D(paramGenericLinearTexturesAtlasTexture, colorSampleCoords);
+
+    // Better contrast
+    float lum = 0.2126 * sampledColor.r + 0.7152 * sampledColor.g + 0.0722 * sampledColor.b;
+    float flum = 1.0 / (3.0 + exp(8.0 - 16.0*lum*lum));
+    sampledColor = vec4(
+        sampledColor.rgb + (vec3(1.) - sampledColor.rgb) * flum,
+        sampledColor.a);
 
     //
     // Emit
