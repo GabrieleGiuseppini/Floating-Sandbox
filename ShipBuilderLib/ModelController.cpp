@@ -1056,6 +1056,45 @@ void ModelController::StructuralRegionFill(
     RegisterDirtyVisualization<VisualizationType::StructuralLayer>(region);
 }
 
+GenericUndoPayload ModelController::StructuralRectangle(
+    ShipSpaceRect const & rect,
+    std::uint32_t lineSize,
+    StructuralMaterial const * lineMaterial,
+    StructuralMaterial const * fillMaterial)
+{
+    assert(mModel.HasLayer(LayerType::Structural));
+    assert(!mIsStructuralLayerInEphemeralVisualization);
+
+    //
+    // Prepare undo
+    //
+
+    StructuralLayerData structuralLayerRegionBackup = mModel.GetStructuralLayer().MakeRegionBackup(rect);
+
+    //
+    // Update model
+    //
+
+    // TODOHERE
+    (void)lineSize;
+    (void)lineMaterial;
+    (void)fillMaterial;
+
+    //
+    // Update visualization
+    //
+
+    RegisterDirtyVisualization<VisualizationType::Game>(rect);
+    RegisterDirtyVisualization<VisualizationType::StructuralLayer>(rect);
+
+    return GenericUndoPayload(
+        rect.origin,
+        std::move(structuralLayerRegionBackup),
+        std::nullopt,
+        std::nullopt,
+        std::nullopt);
+}
+
 std::optional<ShipSpaceRect> ModelController::StructuralFlood(
     ShipSpaceCoordinates const & start,
     StructuralMaterial const * material,
@@ -1176,6 +1215,47 @@ void ModelController::StructuralRegionFillForEphemeralVisualization(
 
     // Remember we are in temp visualization now
     mIsStructuralLayerInEphemeralVisualization = true;
+}
+
+GenericEphemeralVisualizationRestorePayload ModelController::StructuralRectangleForEphemeralVisualization(
+    ShipSpaceRect const & rect,
+    std::uint32_t lineSize,
+    StructuralMaterial const * lineMaterial,
+    StructuralMaterial const * fillMaterial)
+{
+    assert(mModel.HasLayer(LayerType::Structural));
+
+    //
+    // Prepare undo
+    //
+
+    auto structuralLayerUndoBufferRegion = mModel.GetStructuralLayer().Buffer.CloneRegion(rect);
+
+    //
+    // Update model with just material - no analyses
+    //
+
+    // TODOHERE
+    (void)lineSize;
+    (void)lineMaterial;
+    (void)fillMaterial;
+
+    //
+    // Update visualization
+    //
+
+    RegisterDirtyVisualization<VisualizationType::Game>(rect);
+    RegisterDirtyVisualization<VisualizationType::StructuralLayer>(rect);
+
+    // Remember we are in temp visualization now
+    mIsStructuralLayerInEphemeralVisualization = true;
+
+    return GenericEphemeralVisualizationRestorePayload(
+        rect.origin,
+        std::move(structuralLayerUndoBufferRegion),
+        std::nullopt,
+        std::nullopt,
+        std::nullopt);
 }
 
 void ModelController::RestoreStructuralLayerRegionEphemeralVisualization(

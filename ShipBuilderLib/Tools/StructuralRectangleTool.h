@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "GenericEphemeralVisualizationRestorePayload.h"
 #include "Tool.h"
 
 #include <Game/ResourceLocator.h>
@@ -39,24 +40,28 @@ protected:
 
 private:
 
+    void UpdateEphViz();
+
     ShipSpaceCoordinates GetCornerCoordinatesEngaged() const;
 
-    ShipSpaceCoordinates GetCornerCoordinatesEngaged(DisplayLogicalCoordinates const & input) const;
+    GenericEphemeralVisualizationRestorePayload DrawEphemeralRectangle(ShipSpaceRect const & rect);
 
-    std::optional<ShipSpaceCoordinates> GetCornerCoordinatesFree() const;
+    void UndoEphemeralRectangle();
 
-    void UpdateEphemeralRectangle(ShipSpaceCoordinates const & cornerCoordinates);
+    void DrawFinalRectangle(ShipSpaceRect const & rect);
+
+    std::tuple<StructuralMaterial const *, StructuralMaterial const *> GetMaterials() const;
 
 private:
-
-    std::optional<ShipSpaceRect> mCurrentRectangle;
 
     struct EngagementData
     {
         ShipSpaceCoordinates StartCorner;
+        std::optional<GenericEphemeralVisualizationRestorePayload> EphVizRestorePayload;
 
         EngagementData(ShipSpaceCoordinates const & startCorner)
             : StartCorner(startCorner)
+            , EphVizRestorePayload()
         {}
     };
 

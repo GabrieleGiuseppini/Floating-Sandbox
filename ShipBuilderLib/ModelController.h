@@ -252,6 +252,12 @@ public:
         ShipSpaceRect const & region,
         StructuralMaterial const * material);
 
+    GenericUndoPayload StructuralRectangle(
+        ShipSpaceRect const & rect,
+        std::uint32_t lineSize,
+        StructuralMaterial const * lineMaterial,
+        StructuralMaterial const * fillMaterial);
+
     std::optional<ShipSpaceRect> StructuralFlood(
         ShipSpaceCoordinates const & start,
         StructuralMaterial const * material,
@@ -266,6 +272,12 @@ public:
     void StructuralRegionFillForEphemeralVisualization(
         ShipSpaceRect const & region,
         StructuralMaterial const * material);
+
+    GenericEphemeralVisualizationRestorePayload StructuralRectangleForEphemeralVisualization(
+        ShipSpaceRect const & rect,
+        std::uint32_t lineSize,
+        StructuralMaterial const * lineMaterial,
+        StructuralMaterial const * fillMaterial);
 
     void RestoreStructuralLayerRegionEphemeralVisualization(
         typename LayerTypeTraits<LayerType::Structural>::buffer_type const & backupBuffer,

@@ -195,7 +195,7 @@
 				- Tool:
 					- TODOHERE
 					- Do
-					- See if mCurrentRectangle still needed
+					+ See if mCurrentRectangle still needed
 				- View: rename "SelectionOverlay" -> "DashedRectangleOverlay"
 		+ Selection
 			+ Implements selection interaction and rendering of visual feedback *during the interaction only*

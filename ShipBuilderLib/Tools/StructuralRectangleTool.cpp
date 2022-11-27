@@ -17,7 +17,6 @@ StructuralRectangleTool::StructuralRectangleTool(
     : Tool(
         ToolType::StructuralRectangle,
         controller)
-    , mCurrentRectangle()
     , mEngagementData()
     , mIsShiftDown(false)
 {
@@ -26,24 +25,23 @@ StructuralRectangleTool::StructuralRectangleTool(
 
 StructuralRectangleTool::~StructuralRectangleTool()
 {
-    if (mCurrentRectangle || mEngagementData)
+    if (mEngagementData)
     {
-        // Remove overlay
-        mController.GetView().RemoveSelectionOverlay();
-        mController.GetUserInterface().RefreshView();
+        // Undo eph viz
+        UndoEphemeralRectangle();
+
+        mController.LayerChangeEpilog();
 
         // Remove measurement
         mController.GetUserInterface().OnMeasuredSelectionSizeChanged(std::nullopt);
     }
 }
 
-void StructuralRectangleTool::OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates)
+void StructuralRectangleTool::OnMouseMove(DisplayLogicalCoordinates const & /*mouseCoordinates*/)
 {
     if (mEngagementData)
     {
-        auto const cornerCoordinates = GetCornerCoordinatesEngaged(mouseCoordinates);
-
-        UpdateEphemeralRectangle(cornerCoordinates);
+        UpdateEphViz();
     }
 }
 
@@ -51,13 +49,22 @@ void StructuralRectangleTool::OnLeftMouseDown()
 {
     assert(!mEngagementData);
 
-    auto const cornerCoordinates = GetCornerCoordinatesFree();
-    if (cornerCoordinates)
+    auto const startCoordinates = GetCurrentMouseShipCoordinatesIfInShip();
+    if (startCoordinates)
     {
         // Engage at selection start corner
-        mEngagementData.emplace(*cornerCoordinates);
+        mEngagementData.emplace(*startCoordinates);
 
-        UpdateEphemeralRectangle(*cornerCoordinates);
+        // Calc rect
+        ShipSpaceRect rect(mEngagementData->StartCorner, *startCoordinates);
+
+        // Draw eph viz
+        mEngagementData->EphVizRestorePayload = DrawEphemeralRectangle(rect);
+
+        mController.LayerChangeEpilog();
+
+        // Update measurement
+        mController.GetUserInterface().OnMeasuredSelectionSizeChanged(rect.size);
     }
 }
 
@@ -65,45 +72,22 @@ void StructuralRectangleTool::OnLeftMouseUp()
 {
     if (mEngagementData)
     {
-        // Calculate corner
-        ShipSpaceCoordinates const cornerCoordinates = GetCornerCoordinatesEngaged();
+        // Undo eph viz
+        UndoEphemeralRectangle();
 
-        // Calculate rectangle
-        std::optional<ShipSpaceRect> rectangle;
-        if (cornerCoordinates.x != mEngagementData->StartCorner.x
-            && cornerCoordinates.y != mEngagementData->StartCorner.y)
-        {
-            // Non-empty rectangle
-            rectangle = ShipSpaceRect(
-                mEngagementData->StartCorner,
-                cornerCoordinates);
+        // Calc rect
+        ShipSpaceRect rect(mEngagementData->StartCorner, GetCornerCoordinatesEngaged());
 
-            // Update overlay
-            mController.GetView().UploadSelectionOverlay(
-                mEngagementData->StartCorner,
-                cornerCoordinates);
+        // Draw rect
+        DrawFinalRectangle(rect);
 
-            // Update measurement
-            mController.GetUserInterface().OnMeasuredSelectionSizeChanged(rectangle->size);
-        }
-        else
-        {
-            // Empty rectangle
+        mController.LayerChangeEpilog({LayerType::Structural});
 
-            // Update overlay
-            mController.GetView().RemoveSelectionOverlay();
-
-            // Update measurement
-            mController.GetUserInterface().OnMeasuredSelectionSizeChanged(std::nullopt);
-        }
-
-        // Commit rectangle
-        mCurrentRectangle = rectangle;
+        // Remove measurement
+        mController.GetUserInterface().OnMeasuredSelectionSizeChanged(std::nullopt);
 
         // Disengage
         mEngagementData.reset();
-
-        mController.GetUserInterface().RefreshView();
     }
 }
 
@@ -113,9 +97,7 @@ void StructuralRectangleTool::OnShiftKeyDown()
 
     if (mEngagementData)
     {
-        auto const cornerCoordinates = GetCornerCoordinatesEngaged();
-
-        UpdateEphemeralRectangle(cornerCoordinates);
+        UpdateEphViz();
     }
 }
 
@@ -125,39 +107,45 @@ void StructuralRectangleTool::OnShiftKeyUp()
 
     if (mEngagementData)
     {
-        auto const cornerCoordinates = GetCornerCoordinatesEngaged();
-
-        UpdateEphemeralRectangle(cornerCoordinates);
+        UpdateEphViz();
     }
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-ShipSpaceCoordinates StructuralRectangleTool::GetCornerCoordinatesEngaged() const
+void StructuralRectangleTool::UpdateEphViz()
 {
-    return GetCornerCoordinatesEngaged(GetCurrentMouseCoordinates());
+    assert(mEngagementData);
+
+    // Undo eph viz
+    UndoEphemeralRectangle();
+
+    // Calc rect
+    ShipSpaceRect rect(mEngagementData->StartCorner, GetCornerCoordinatesEngaged());
+
+    // Draw eph viz
+    mEngagementData->EphVizRestorePayload = DrawEphemeralRectangle(rect);
+
+    mController.LayerChangeEpilog();
+
+    // Update measurement
+    mController.GetUserInterface().OnMeasuredSelectionSizeChanged(rect.size);
 }
 
-ShipSpaceCoordinates StructuralRectangleTool::GetCornerCoordinatesEngaged(DisplayLogicalCoordinates const & input) const
+ShipSpaceCoordinates StructuralRectangleTool::GetCornerCoordinatesEngaged() const
 {
-    // TODOHERE
-
-    // Convert to ship coords closest to grid point
-    ShipSpaceCoordinates const nearestGridPointCoordinates = ScreenToShipSpaceNearest(input);
-
-    // Clamp - allowing for point at (w,h)
-    ShipSpaceCoordinates const cornerCoordinates = nearestGridPointCoordinates.Clamp(mController.GetModelController().GetShipSize());
+    ShipSpaceCoordinates const mouseCoordinates = GetCurrentMouseShipCoordinatesClampedToShip();
 
     // Eventually constrain to square
     if (mIsShiftDown)
     {
-        auto const width = cornerCoordinates.x - mEngagementData->StartCorner.x;
-        auto const height = cornerCoordinates.y - mEngagementData->StartCorner.y;
+        auto const width = mouseCoordinates.x - mEngagementData->StartCorner.x;
+        auto const height = mouseCoordinates.y - mEngagementData->StartCorner.y;
         if (std::abs(width) < std::abs(height))
         {
             // Use width
             return ShipSpaceCoordinates(
-                cornerCoordinates.x,
+                mouseCoordinates.x,
                 mEngagementData->StartCorner.y + std::abs(width) * Sign(height));
         }
         else
@@ -165,47 +153,94 @@ ShipSpaceCoordinates StructuralRectangleTool::GetCornerCoordinatesEngaged(Displa
             // Use height
             return ShipSpaceCoordinates(
                 mEngagementData->StartCorner.x + std::abs(height) * Sign(width),
-                cornerCoordinates.y);
+                mouseCoordinates.y);
         }
     }
     else
     {
-        return cornerCoordinates;
+        return mouseCoordinates;
     }
 }
 
-std::optional<ShipSpaceCoordinates> StructuralRectangleTool::GetCornerCoordinatesFree() const
+GenericEphemeralVisualizationRestorePayload StructuralRectangleTool::DrawEphemeralRectangle(ShipSpaceRect const & rect)
 {
-    // TODOHERE
-    ShipSpaceCoordinates const mouseShipCoordinates = ScreenToShipSpaceNearest(GetCurrentMouseCoordinates());
+    auto const [lineMaterial, fillMaterial] = GetMaterials();
 
-    auto const shipSize = mController.GetModelController().GetShipSize();
-    if (mouseShipCoordinates.IsInRect(
-        ShipSpaceRect(
-            ShipSpaceCoordinates(0, 0),
-            ShipSpaceSize(shipSize.width + 1, shipSize.height + 1))))
-    {
-        return mouseShipCoordinates;
-    }
-    else
-    {
-        return std::nullopt;
-    }
-}
+    auto restorePayload = mController.GetModelController().StructuralRectangleForEphemeralVisualization(
+        rect,
+        mController.GetWorkbenchState().GetStructuralRectangleLineSize(),
+        lineMaterial,
+        fillMaterial);
 
-void StructuralRectangleTool::UpdateEphemeralRectangle(ShipSpaceCoordinates const & cornerCoordinates)
-{
-    // Update overlay
     mController.GetView().UploadSelectionOverlay(
-        mEngagementData->StartCorner,
-        cornerCoordinates);
-    mController.GetUserInterface().RefreshView();
+        rect.MinMin(),
+        rect.MaxMax() + ShipSpaceSize(1, 1));
 
-    // Update measurement
-    mController.GetUserInterface().OnMeasuredSelectionSizeChanged(
-        ShipSpaceSize(
-            std::abs(cornerCoordinates.x - mEngagementData->StartCorner.x),
-            std::abs(cornerCoordinates.y - mEngagementData->StartCorner.y)));
+    return restorePayload;
+}
+
+void StructuralRectangleTool::UndoEphemeralRectangle()
+{
+    mController.GetView().RemoveSelectionOverlay();
+
+    if (mEngagementData && mEngagementData->EphVizRestorePayload)
+    {
+        mController.GetModelController().RestoreEphemeralVisualization(std::move(*mEngagementData->EphVizRestorePayload));
+        mEngagementData->EphVizRestorePayload.reset();
+    }
+}
+
+void StructuralRectangleTool::DrawFinalRectangle(ShipSpaceRect const & rect)
+{
+    auto const [lineMaterial, fillMaterial] = GetMaterials();
+
+    auto undoPayload = mController.GetModelController().StructuralRectangle(
+        rect,
+        mController.GetWorkbenchState().GetStructuralRectangleLineSize(),
+        lineMaterial,
+        fillMaterial);
+
+    // Store undo
+
+    size_t const undoPayloadCost = undoPayload.GetTotalCost();
+
+    mController.StoreUndoAction(
+        _("Rect"),
+        undoPayloadCost,
+        mController.GetModelController().GetDirtyState(),
+        [undoPayload = std::move(undoPayload)](Controller & controller) mutable
+        {
+            controller.Restore(std::move(undoPayload));
+        });
+}
+
+std::tuple<StructuralMaterial const *, StructuralMaterial const *> StructuralRectangleTool::GetMaterials() const
+{
+    StructuralMaterial const * fillMaterial;
+    switch (mController.GetWorkbenchState().GetStructuralRectangleFillMode())
+    {
+        case FillMode::FillWithForeground:
+        {
+            fillMaterial = mController.GetWorkbenchState().GetStructuralForegroundMaterial();
+            break;
+        }
+
+        case FillMode::FillWithBackground:
+        {
+            fillMaterial = mController.GetWorkbenchState().GetStructuralBackgroundMaterial();
+            break;
+        }
+
+        case FillMode::NoFill:
+        {
+            fillMaterial = nullptr;
+            break;
+        }
+    }
+
+    return std::make_tuple(
+        mController.GetWorkbenchState().GetStructuralForegroundMaterial(),
+        fillMaterial);
 }
 
 }
