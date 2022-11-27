@@ -1075,10 +1075,11 @@ GenericUndoPayload ModelController::StructuralRectangle(
     // Update model
     //
 
-    // TODOHERE
-    (void)lineSize;
-    (void)lineMaterial;
-    (void)fillMaterial;
+    DoStructuralRectangle<false>(
+        rect,
+        lineSize,
+        lineMaterial,
+        fillMaterial);
 
     //
     // Update visualization
@@ -1235,10 +1236,11 @@ GenericEphemeralVisualizationRestorePayload ModelController::StructuralRectangle
     // Update model with just material - no analyses
     //
 
-    // TODOHERE
-    (void)lineSize;
-    (void)lineMaterial;
-    (void)fillMaterial;
+    DoStructuralRectangle<true>(
+        rect,
+        lineSize,
+        lineMaterial,
+        fillMaterial);
 
     //
     // Update visualization
@@ -2505,6 +2507,20 @@ void ModelController::WriteParticle(
         mTotalMass += mass;
         mCenterOfMassSum += coords.ToFloat() * mass;
     }
+}
+
+template<bool IsForEphViz>
+void ModelController::DoStructuralRectangle(
+    ShipSpaceRect const & rect,
+    std::uint32_t lineSize,
+    StructuralMaterial const * lineMaterial,
+    StructuralMaterial const * fillMaterial)
+{
+    // TODOHERE
+    (void)rect;
+    (void)lineSize;
+    (void)lineMaterial;
+    (void)fillMaterial;
 }
 
 void ModelController::WriteParticle(

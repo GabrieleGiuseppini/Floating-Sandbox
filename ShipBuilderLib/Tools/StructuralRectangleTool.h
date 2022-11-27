@@ -40,13 +40,15 @@ protected:
 
 private:
 
-    void UpdateEphViz();
-
     ShipSpaceCoordinates GetCornerCoordinatesEngaged() const;
+
+    ShipSpaceRect CalculateRect(ShipSpaceCoordinates const & cornerCoordinates) const;
 
     GenericEphemeralVisualizationRestorePayload DrawEphemeralRectangle(ShipSpaceRect const & rect);
 
     void UndoEphemeralRectangle();
+
+    void UpdateEphViz();
 
     void DrawFinalRectangle(ShipSpaceRect const & rect);
 

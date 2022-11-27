@@ -56,7 +56,7 @@ void StructuralRectangleTool::OnLeftMouseDown()
         mEngagementData.emplace(*startCoordinates);
 
         // Calc rect
-        ShipSpaceRect rect(mEngagementData->StartCorner, *startCoordinates);
+        ShipSpaceRect const rect = CalculateRect(*startCoordinates);
 
         // Draw eph viz
         mEngagementData->EphVizRestorePayload = DrawEphemeralRectangle(rect);
@@ -76,7 +76,7 @@ void StructuralRectangleTool::OnLeftMouseUp()
         UndoEphemeralRectangle();
 
         // Calc rect
-        ShipSpaceRect rect(mEngagementData->StartCorner, GetCornerCoordinatesEngaged());
+        ShipSpaceRect const rect = CalculateRect(GetCornerCoordinatesEngaged());
 
         // Draw rect
         DrawFinalRectangle(rect);
@@ -113,25 +113,6 @@ void StructuralRectangleTool::OnShiftKeyUp()
 
 //////////////////////////////////////////////////////////////////////////////
 
-void StructuralRectangleTool::UpdateEphViz()
-{
-    assert(mEngagementData);
-
-    // Undo eph viz
-    UndoEphemeralRectangle();
-
-    // Calc rect
-    ShipSpaceRect rect(mEngagementData->StartCorner, GetCornerCoordinatesEngaged());
-
-    // Draw eph viz
-    mEngagementData->EphVizRestorePayload = DrawEphemeralRectangle(rect);
-
-    mController.LayerChangeEpilog();
-
-    // Update measurement
-    mController.GetUserInterface().OnMeasuredSelectionSizeChanged(rect.size);
-}
-
 ShipSpaceCoordinates StructuralRectangleTool::GetCornerCoordinatesEngaged() const
 {
     ShipSpaceCoordinates const mouseCoordinates = GetCurrentMouseShipCoordinatesClampedToShip();
@@ -162,6 +143,16 @@ ShipSpaceCoordinates StructuralRectangleTool::GetCornerCoordinatesEngaged() cons
     }
 }
 
+ShipSpaceRect StructuralRectangleTool::CalculateRect(ShipSpaceCoordinates const & cornerCoordinates) const
+{
+    assert(mEngagementData);
+
+    ShipSpaceRect rect(mEngagementData->StartCorner, cornerCoordinates);
+    rect.size += ShipSpaceSize(1, 1);
+
+    return rect;
+}
+
 GenericEphemeralVisualizationRestorePayload StructuralRectangleTool::DrawEphemeralRectangle(ShipSpaceRect const & rect)
 {
     auto const [lineMaterial, fillMaterial] = GetMaterials();
@@ -174,7 +165,7 @@ GenericEphemeralVisualizationRestorePayload StructuralRectangleTool::DrawEphemer
 
     mController.GetView().UploadSelectionOverlay(
         rect.MinMin(),
-        rect.MaxMax() + ShipSpaceSize(1, 1));
+        rect.MaxMax());
 
     return restorePayload;
 }
@@ -188,6 +179,25 @@ void StructuralRectangleTool::UndoEphemeralRectangle()
         mController.GetModelController().RestoreEphemeralVisualization(std::move(*mEngagementData->EphVizRestorePayload));
         mEngagementData->EphVizRestorePayload.reset();
     }
+}
+
+void StructuralRectangleTool::UpdateEphViz()
+{
+    assert(mEngagementData);
+
+    // Undo eph viz
+    UndoEphemeralRectangle();
+
+    // Calc rect
+    ShipSpaceRect const rect = CalculateRect(GetCornerCoordinatesEngaged());
+
+    // Draw eph viz
+    mEngagementData->EphVizRestorePayload = DrawEphemeralRectangle(rect);
+
+    mController.LayerChangeEpilog();
+
+    // Update measurement
+    mController.GetUserInterface().OnMeasuredSelectionSizeChanged(rect.size);
 }
 
 void StructuralRectangleTool::DrawFinalRectangle(ShipSpaceRect const & rect)

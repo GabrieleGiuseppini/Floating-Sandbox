@@ -362,6 +362,19 @@ struct _IntegralSize
         return !(*this == other);
     }
 
+    inline _IntegralSize<TIntegralTag> operator+(_IntegralSize<TIntegralTag> const & sz) const
+    {
+        return _IntegralSize<TIntegralTag>(
+            this->width + sz.width,
+            this->height + sz.height);
+    }
+
+    inline void operator+=(_IntegralSize<TIntegralTag> const & sz)
+    {
+        this->width += sz.width;
+        this->height += sz.height;
+    }
+
     inline _IntegralSize<TIntegralTag> operator*(integral_type factor) const
     {
         return _IntegralSize<TIntegralTag>(

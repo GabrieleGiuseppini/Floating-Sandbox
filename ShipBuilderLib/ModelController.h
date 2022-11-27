@@ -491,6 +491,13 @@ private:
         ShipSpaceCoordinates const & coords,
         StructuralMaterial const * material);
 
+    template<bool IsForEphViz>
+    void DoStructuralRectangle(
+        ShipSpaceRect const & rect,
+        std::uint32_t lineSize,
+        StructuralMaterial const * lineMaterial,
+        StructuralMaterial const * fillMaterial);
+
     inline void WriteParticle(
         ShipSpaceCoordinates const & coords,
         ElectricalMaterial const * material);
