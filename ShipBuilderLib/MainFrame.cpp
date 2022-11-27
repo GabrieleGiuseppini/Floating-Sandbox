@@ -27,6 +27,7 @@
 #include <GameCore/Version.h>
 
 #include <wx/button.h>
+#include <wx/combobox.h>
 #include <wx/cursor.h>
 #include <wx/gbsizer.h>
 #include <wx/msgdlg.h>
@@ -2182,12 +2183,9 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
                 wxALIGN_CENTER_VERTICAL);
         }
 
-        // TODOHERE
-        /*
-
-        // Contiguity Label
+        // Fill Mode Label
         {
-            auto * staticText = new wxStaticText(dynamicPanel, wxID_ANY, _("Hull Mode:"));
+            auto * staticText = new wxStaticText(dynamicPanel, wxID_ANY, _("Fill Mode:"));
             staticText->SetForegroundColour(labelColor);
 
             dynamicPanelGridSizer->Add(
@@ -2197,28 +2195,78 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
                 wxALIGN_CENTER_VERTICAL);
         }
 
-        // Contiguity Checkbox
+        // Fill Mode drop-down
         {
-            wxCheckBox * chkBox = new wxCheckBox(dynamicPanel, wxID_ANY, wxEmptyString);
+            wxString choices[3] = {
+                _("Foreground"),
+                _("Background"),
+                _("None")
+            };
 
-            chkBox->SetToolTip(_("When enabled, draw lines with pixel edges touching each other."));
+            wxComboBox * cmbBox = new wxComboBox(dynamicPanel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize,
+                3, choices, wxCB_DROPDOWN | wxCB_READONLY);
 
-            chkBox->SetValue(mWorkbenchState.GetStructuralLineToolIsHullMode());
+            cmbBox->SetToolTip(_("How the rectangle is to be filled."));
 
-            chkBox->Bind(
-                wxEVT_CHECKBOX,
-                [this](wxCommandEvent & event)
+            switch (mWorkbenchState.GetStructuralRectangleFillMode())
+            {
+                case FillMode::FillWithForeground:
                 {
-                    mWorkbenchState.SetStructuralLineToolIsHullMode(event.IsChecked());
+                    cmbBox->SetSelection(0);
+                    break;
+                }
+
+                case FillMode::FillWithBackground:
+                {
+                    cmbBox->SetSelection(1);
+                    break;
+                }
+
+                case FillMode::NoFill:
+                {
+                    cmbBox->SetSelection(2);
+                    break;
+                }
+            }
+
+            cmbBox->Bind(
+                wxEVT_COMBOBOX,
+                [this, cmbBox](wxCommandEvent &)
+                {
+                    switch (cmbBox->GetSelection())
+                    {
+                        case 0:
+                        {
+                            mWorkbenchState.SetStructuralRectangleFillMode(FillMode::FillWithForeground);
+                            break;
+                        }
+
+                        case 1:
+                        {
+                            mWorkbenchState.SetStructuralRectangleFillMode(FillMode::FillWithBackground);
+                            break;
+                        }
+
+                        case 2:
+                        {
+                            mWorkbenchState.SetStructuralRectangleFillMode(FillMode::NoFill);
+                            break;
+                        }
+
+                        default:
+                        {
+                            assert(false);
+                            break;
+                        }
+                    }
                 });
 
             dynamicPanelGridSizer->Add(
-                chkBox,
+                cmbBox,
                 wxGBPosition(1, 1),
                 wxGBSpan(1, 1),
                 wxALIGN_CENTER_VERTICAL);
         }
-        */
 
         dynamicPanel->SetSizerAndFit(dynamicPanelGridSizer);
 

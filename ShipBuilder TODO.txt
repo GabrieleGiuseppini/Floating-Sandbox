@@ -187,11 +187,11 @@
 				! Settings: FillWithFore|FillWithBack|NoFill; Size
 			= Impl:
 				+ WorkbenchState settings
-				= MainFrame:
+				+ MainFrame:
 					+ Button
-					= Settings
+					+ Settings
 						+ Line size
-						- Dropdown for mode
+						+ Dropdown for mode
 				- Tool:
 					- TODOHERE
 					- Do
