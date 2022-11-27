@@ -49,6 +49,7 @@ public:
 
     virtual ToolClass GetClass() const
     {
+        // Default: not a special class
         return ToolClass::Other;
     }
 

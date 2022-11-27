@@ -182,8 +182,21 @@
 				+ @ move: 
 					+ Clip overlay 
 					+ Clip length 
-		- Rectangle (*)
-			- Settings: FillWithFore|FillWithBack|NoFill; Size
+		= StructuralRectangle (*)
+			! Spec:
+				! Settings: FillWithFore|FillWithBack|NoFill; Size
+			= Impl:
+				+ WorkbenchState settings
+				= MainFrame:
+					+ Button
+					= Settings
+						+ Line size
+						- Dropdown for mode
+				- Tool:
+					- TODOHERE
+					- Do
+					- See if mCurrentRectangle still needed
+				- View: rename "SelectionOverlay" -> "DashedRectangleOverlay"
 		+ Selection
 			+ Implements selection interaction and rendering of visual feedback *during the interaction only*
 			+ Takes SelectionManager ref in its cctor, and populates it upon confirmation of selection made

@@ -97,6 +97,8 @@ set (TOOLS_SOURCES
 	Tools/SamplerTool.h
 	Tools/SelectionTool.cpp
 	Tools/SelectionTool.h
+	Tools/StructuralRectangleTool.cpp
+	Tools/StructuralRectangleTool.h
 	Tools/TextureEraserTool.cpp
 	Tools/TextureEraserTool.h
 	Tools/TextureMagicWandTool.cpp

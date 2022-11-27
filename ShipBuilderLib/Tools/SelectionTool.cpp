@@ -283,7 +283,6 @@ void SelectionTool::Deselect()
     mController.GetUserInterface().RefreshView();
 }
 
-
 //////////////////////////////////////////////////////////////////////////////
 
 ShipSpaceCoordinates SelectionTool::GetCornerCoordinatesEngaged() const

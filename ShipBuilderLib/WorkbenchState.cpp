@@ -56,6 +56,8 @@ WorkbenchState::WorkbenchState(
     //
 
     mStructuralPencilToolSize = 1;
+    mStructuralRectangleLineSize = 1;
+    mStructuralRectangleFillMode = FillMode::NoFill;
     mStructuralEraserToolSize = 4;
     mElectricalEraserToolSize = 1;
     mStructuralLineToolSize = 1;

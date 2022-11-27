@@ -178,6 +178,26 @@ public:
         mStructuralPencilToolSize = value;
     }
 
+    std::uint32_t GetStructuralRectangleLineSize() const
+    {
+        return mStructuralRectangleLineSize;
+    }
+
+    void SetStructuralRectangleLineSize(std::uint32_t value)
+    {
+        mStructuralRectangleLineSize = value;
+    }
+
+    FillMode GetStructuralRectangleFillMode() const
+    {
+        return mStructuralRectangleFillMode;
+    }
+
+    void SetStructuralRectangleFillMode(FillMode fillMode)
+    {
+        mStructuralRectangleFillMode = fillMode;
+    }
+
     std::uint32_t GetStructuralEraserToolSize() const
     {
         return mStructuralEraserToolSize;
@@ -466,6 +486,8 @@ private:
 
     // Tool settings
     std::uint32_t mStructuralPencilToolSize;
+    std::uint32_t mStructuralRectangleLineSize;
+    FillMode mStructuralRectangleFillMode;
     std::uint32_t mStructuralEraserToolSize;
     std::uint32_t mElectricalEraserToolSize;
     std::uint32_t mStructuralLineToolSize;

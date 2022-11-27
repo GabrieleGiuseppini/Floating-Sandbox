@@ -43,8 +43,9 @@ enum class ToolType : std::uint32_t
     ElectricalPaste,
     RopePaste,
     TexturePaste,
+    StructuralRectangle,
 
-    _Last = TexturePaste
+    _Last = StructuralRectangle
 };
 
 enum class ToolClass
@@ -60,6 +61,13 @@ enum class MaterialPlaneType
 {
     Foreground,
     Background
+};
+
+enum class FillMode
+{
+    FillWithForeground,
+    FillWithBackground,
+    NoFill
 };
 
 //

@@ -2144,6 +2144,98 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
         }
     }
 
+    // Structural rectangle
+    {
+        wxPanel * dynamicPanel = new wxPanel(mToolSettingsRibbonPanel);
+        wxGridBagSizer * dynamicPanelGridSizer = new wxGridBagSizer(RibbonToolbarButtonMargin, RibbonToolbarButtonMargin + RibbonToolbarButtonMargin);
+
+        // Line Size Label
+        {
+            auto * staticText = new wxStaticText(dynamicPanel, wxID_ANY, _("Line Size:"));
+            staticText->SetForegroundColour(labelColor);
+
+            dynamicPanelGridSizer->Add(
+                staticText,
+                wxGBPosition(0, 0),
+                wxGBSpan(1, 1),
+                wxALIGN_CENTER_VERTICAL);
+        }
+
+        // Line Size Edit spin box
+        {
+            EditSpinBox<std::uint32_t> * editSpinBox = new EditSpinBox<std::uint32_t>(
+                dynamicPanel,
+                40,
+                1,
+                MaxPencilSize,
+                mWorkbenchState.GetStructuralRectangleLineSize(),
+                _("The size of the rectangle tool's line."),
+                [this](std::uint32_t value)
+                {
+                    mWorkbenchState.SetStructuralRectangleLineSize(value);
+                });
+
+            dynamicPanelGridSizer->Add(
+                editSpinBox,
+                wxGBPosition(0, 1),
+                wxGBSpan(1, 1),
+                wxALIGN_CENTER_VERTICAL);
+        }
+
+        // TODOHERE
+        /*
+
+        // Contiguity Label
+        {
+            auto * staticText = new wxStaticText(dynamicPanel, wxID_ANY, _("Hull Mode:"));
+            staticText->SetForegroundColour(labelColor);
+
+            dynamicPanelGridSizer->Add(
+                staticText,
+                wxGBPosition(1, 0),
+                wxGBSpan(1, 1),
+                wxALIGN_CENTER_VERTICAL);
+        }
+
+        // Contiguity Checkbox
+        {
+            wxCheckBox * chkBox = new wxCheckBox(dynamicPanel, wxID_ANY, wxEmptyString);
+
+            chkBox->SetToolTip(_("When enabled, draw lines with pixel edges touching each other."));
+
+            chkBox->SetValue(mWorkbenchState.GetStructuralLineToolIsHullMode());
+
+            chkBox->Bind(
+                wxEVT_CHECKBOX,
+                [this](wxCommandEvent & event)
+                {
+                    mWorkbenchState.SetStructuralLineToolIsHullMode(event.IsChecked());
+                });
+
+            dynamicPanelGridSizer->Add(
+                chkBox,
+                wxGBPosition(1, 1),
+                wxGBSpan(1, 1),
+                wxALIGN_CENTER_VERTICAL);
+        }
+        */
+
+        dynamicPanel->SetSizerAndFit(dynamicPanelGridSizer);
+
+        // Insert in place
+        {
+            mToolSettingsPanelsSizer->Add(
+                dynamicPanel,
+                0,
+                wxALIGN_CENTER_VERTICAL,
+                0);
+
+            mToolSettingsPanels.emplace_back(
+                std::vector<ToolType>{ ToolType::StructuralRectangle },
+                dynamicPanel);
+        }
+    }
+
     // Structural flood
     {
         wxPanel * dynamicPanel = new wxPanel(mToolSettingsRibbonPanel);
@@ -3696,6 +3788,22 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     0);
             }
 
+            // Rectangle
+            {
+                auto button = makeToolButton(
+                    ToolType::StructuralRectangle,
+                    structuralToolbarPanel,
+                    "rectangles_icon",
+                    _("Draw rectangles of particles."));
+
+                toolsSizer->Add(
+                    button,
+                    wxGBPosition(1, 1),
+                    wxGBSpan(1, 1),
+                    0,
+                    0);
+            }
+
             // Flood
             {
                 auto button = makeToolButton(
@@ -3706,39 +3814,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
                 toolsSizer->Add(
                     button,
-                    wxGBPosition(1, 1),
-                    wxGBSpan(1, 1),
-                    0,
-                    0);
-            }
-
-            // Selection
-            {
-                auto button = makeToolButton(
-                    ToolType::StructuralSelection,
-                    structuralToolbarPanel,
-                    "selection_icon",
-                    _("Select an area for copying and/or cutting."));
-
-                toolsSizer->Add(
-                    button,
                     wxGBPosition(2, 0),
-                    wxGBSpan(1, 1),
-                    0,
-                    0);
-            }
-
-            // Paste
-            {
-                auto button = makeToolButton(
-                    ToolType::StructuralPaste,
-                    structuralToolbarPanel,
-                    "paste_icon",
-                    _("Paste clipboard."));
-
-                toolsSizer->Add(
-                    button,
-                    wxGBPosition(2, 1),
                     wxGBSpan(1, 1),
                     0,
                     0);
@@ -3754,7 +3830,39 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
                 toolsSizer->Add(
                     button,
+                    wxGBPosition(2, 1),
+                    wxGBSpan(1, 1),
+                    0,
+                    0);
+            }
+
+            // Selection
+            {
+                auto button = makeToolButton(
+                    ToolType::StructuralSelection,
+                    structuralToolbarPanel,
+                    "selection_icon",
+                    _("Select an area for copying and/or cutting."));
+
+                toolsSizer->Add(
+                    button,
                     wxGBPosition(3, 0),
+                    wxGBSpan(1, 1),
+                    0,
+                    0);
+            }
+
+            // Paste
+            {
+                auto button = makeToolButton(
+                    ToolType::StructuralPaste,
+                    structuralToolbarPanel,
+                    "paste_icon",
+                    _("Paste clipboard."));
+
+                toolsSizer->Add(
+                    button,
+                    wxGBPosition(3, 1),
                     wxGBSpan(1, 1),
                     0,
                     0);
@@ -3770,7 +3878,7 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
 
                 toolsSizer->Add(
                     button,
-                    wxGBPosition(3, 1),
+                    wxGBPosition(4, 0),
                     wxGBSpan(1, 1),
                     0,
                     0);
@@ -6047,6 +6155,12 @@ void MainFrame::ReconciliateUIWithSelectedTool(
             case ToolType::TexturePaste:
             {
                 mToolSettingsRibbonPanel->SetLabel("Paste");
+                break;
+            }
+
+            case ToolType::StructuralRectangle:
+            {
+                mToolSettingsRibbonPanel->SetLabel("Rectangle");
                 break;
             }
 

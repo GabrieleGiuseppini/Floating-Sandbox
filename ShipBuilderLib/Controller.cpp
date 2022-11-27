@@ -14,6 +14,7 @@
 #include "Tools/RopePencilTool.h"
 #include "Tools/SamplerTool.h"
 #include "Tools/SelectionTool.h"
+#include "Tools/StructuralRectangleTool.h"
 #include "Tools/TextureEraserTool.h"
 #include "Tools/TextureMagicWandTool.h"
 
@@ -2157,6 +2158,13 @@ std::unique_ptr<Tool> Controller::MakeTool(ToolType toolType)
             // We should never be invoked for this tool
             assert(false);
             break;
+        }
+
+        case ToolType::StructuralRectangle:
+        {
+            return std::make_unique<StructuralRectangleTool>(
+                *this,
+                mResourceLocator);
         }
     }
 
