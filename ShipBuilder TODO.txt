@@ -1,28 +1,3 @@
-+ See crash with Rope tool
-	+ "In my case it happened when I accidentaly picken air in the rope layer and tried to make a rope with it"
-		+ Rope sampler tool should not pick up nothing
-+ Fix: debug assert when load ship with texture and then resize all ship to make it larger and then undo
-	+ Debug assert when blitting a large region from the new (i.e. the new texture layer after undo) smaller texture
-	+ Seems to be due to ModelController::RestoreTextureLayer considering earlier texture size in calculation of dirty region
-		X Why did we do that?
-
-+ Do Selection/Copy'n'Cut/Paste workflow (*)
-	+ Merge back into master
-
-+ Allow for electrical particles on rope endpoints
-	+ Pencil
-	+ Line
-	+ Model validation
-
-+ Try changing ribbon page to Tool Settings after selecting tool that has settings
-	+ @ Paste
-	+ Ideally we do this only if this is a direct consequence of a tool change from the user
-		+ If so: remove changing page at paste selection
-
-- Do StructuralRectangle tool (*)
-
-= Check default Hull mode
-
 ================================================================================================================================================================================
 
 - Gist:
@@ -184,10 +159,10 @@
 				+ @ move: 
 					+ Clip overlay 
 					+ Clip length 
-		= StructuralRectangle (*)
+		+ StructuralRectangle (*)
 			! Spec:
 				! Settings: FillWithFore|FillWithBack|NoFill; Size
-			= Impl:
+			+ Impl:
 				+ WorkbenchState settings
 				+ MainFrame:
 					+ Button
@@ -198,7 +173,7 @@
 					+ Do
 					+ See if mCurrentRectangle still needed
 				+ View: rename "SelectionOverlay" -> "DashedRectangleOverlay"
-				- Rename: "Foreground"/"Background" -> "Primary"/"Secondary"
+				+ Rename: "Foreground"/"Background" -> "Primary"/"Secondary"
 		+ Selection
 			+ Implements selection interaction and rendering of visual feedback *during the interaction only*
 			+ Takes SelectionManager ref in its cctor, and populates it upon confirmation of selection made
@@ -2943,3 +2918,30 @@ DONE
 		+ Dialog modal/close
 		
 + changelist: both tools, "Added texture editing tools"
+
++ See crash with Rope tool
+	+ "In my case it happened when I accidentaly picken air in the rope layer and tried to make a rope with it"
+		+ Rope sampler tool should not pick up nothing
++ Fix: debug assert when load ship with texture and then resize all ship to make it larger and then undo
+	+ Debug assert when blitting a large region from the new (i.e. the new texture layer after undo) smaller texture
+	+ Seems to be due to ModelController::RestoreTextureLayer considering earlier texture size in calculation of dirty region
+		X Why did we do that?
+
++ Do Selection/Copy'n'Cut/Paste workflow (*)
+	+ Merge back into master
+
++ Allow for electrical particles on rope endpoints
+	+ Pencil
+	+ Line
+	+ Model validation
+
++ Try changing ribbon page to Tool Settings after selecting tool that has settings
+	+ @ Paste
+	+ Ideally we do this only if this is a direct consequence of a tool change from the user
+		+ If so: remove changing page at paste selection
+
++ Do StructuralRectangle tool (*)
+
++ Check default Hull mode
+
++ changelist

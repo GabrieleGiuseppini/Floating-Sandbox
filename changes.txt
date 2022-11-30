@@ -4,6 +4,11 @@
 	- At great ocean depths
 	- When subject to electric sparks
 	- When their power generator is flooded
+- ShipBuilder:
+	- Added Copy/Cut/Paste tools
+	- Added rectangle-drawing tool
+	- Allowed electrical particles to be placed on rope endpoints, thus enabling construction of "electrical ropes"
+	- Fixed a sporadic crash with the rope-drawing tool
 - Added Ukrainian translation - thanks to Roman Shavernew (Dioxcode)!
 
 1.17.4

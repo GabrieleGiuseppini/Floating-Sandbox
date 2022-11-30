@@ -62,20 +62,58 @@
 
 	+ Bump up version
 
-	= ShipBuilder things (*)
+	+ ShipBuilder things (*)
+	
+	+ Check ship move beyond world borders
+		+ in Debug mode
+	+ Add Ukrainian to credits
 
 	= Test flames with heightened luminosity
 		- Test perf of flames on Dell
 
-	- Check ship move beyond world borders
-		- in Debug mode
-
-	- Add Ukrainian to credits
 	- Take S.S. Avila 2 (Matthew Anderson) (ToTake folder)
 	- Take A_single_Blue_Angel (Kazindel) (ToTake folder)
 		- "Kazindel" - check out Credits
 
-	- Release
+	- Send for testing & localization
+
+	- Release:
+		- Branch is merged into master (if applicable)
+		- Windows
+			- MSI variable
+			- Commit & push
+			- 64-bit MSI
+				- Cleanup Install
+				- Build Release Install (after clean)
+				- Make MSI
+				- Rename MSI
+				- Test upgrade from previous version
+			- 32-bit MSI
+				- Cleanup Install
+				- Build Release Install (after clean)
+				- Make MSI
+				- Rename MSI
+				- Test clean install
+		- Ubuntu
+			- rm -rf ~/floating-sandbox
+			- pull 
+			- rm -rf build; mkdir build; cd build
+			- cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
+			- make install
+			- Make tar ("cd floating-sandbox && tar -cvf ../Floating-Sandbox-1.16.5-x64.tar . && cd -")
+			- Zip tar
+			- Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
+		- Get 3 installers tested on dev server
+		- Wait for test results
+		- Cut tag on github
+		- Upload packages to GameJolt
+			- Report file as safe (https://gamejolt.com/privacy)
+			- Post
+		- www.floatingsandbox.com:
+			- Update current version in FAQ
+			- Wait a day or two, to exclude disastrous bugs
+			- Upload changes2.txt
+				- Test w/old FS
 
 	- Make Mac instructions
 		- SFML build: https://github.com/SFML/SFML/issues/1496
@@ -282,6 +320,7 @@
 - Localization:
 	- Italian: Gabriele Giuseppini
 	- Russian: DioxCode (Fallback: Ilya_Voloshin, Faulttix#8691)
+	- Ukrainian: DioxCode
 	- Spanish (Latin American): Joadix (Fallback: The G a z e r W o l f)
 
 	- Portuguese: Kiko

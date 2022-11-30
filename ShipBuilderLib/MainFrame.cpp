@@ -2198,15 +2198,15 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
         // Fill Mode drop-down
         {
             wxString choices[3] = {
-                _("Foreground"),
-                _("Background"),
+                _("Primary"), // i.e. Foreground
+                _("Secondary"), // i.e. Background
                 _("None")
             };
 
             wxComboBox * cmbBox = new wxComboBox(dynamicPanel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize,
                 3, choices, wxCB_DROPDOWN | wxCB_READONLY);
 
-            cmbBox->SetToolTip(_("How the rectangle is to be filled."));
+            cmbBox->SetToolTip(_("Which material to fill the rectangle with."));
 
             switch (mWorkbenchState.GetStructuralRectangleFillMode())
             {
