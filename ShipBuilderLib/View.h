@@ -287,11 +287,11 @@ public:
 
     void RemoveDashedLineOverlay();
 
-    void UploadSelectionOverlay(
+    void UploadDashedRectangleOverlay(
         ShipSpaceCoordinates const & cornerA,
         ShipSpaceCoordinates const & cornerB);
 
-    void RemoveSelectionOverlay();
+    void RemoveDashedRectangleOverlay();
 
     //
     // Misc
@@ -331,7 +331,7 @@ private:
     void UpdateCircleOverlay();
     void UpdateRectOverlay();
     void UpdateDashedLineOverlay();
-    void UpdateSelectionOverlay();
+    void UpdateDashedRectangleOverlay();
 
     inline void UploadTextureVerticesTriangleStripQuad(
         float leftXShip, float leftXTex,
@@ -605,10 +605,10 @@ private:
     std::vector<std::pair<ShipSpaceCoordinates, ShipSpaceCoordinates>> mDashedLineOverlaySet;
     vec3f mDashedLineOverlayColor;
 
-    // SelectionOverlay
-    GameOpenGLVAO mSelectionOverlayVAO;
-    GameOpenGLVBO mSelectionOverlayVBO;
-    std::optional<std::pair<ShipSpaceCoordinates, ShipSpaceCoordinates>> mSelectionOverlayRect;
+    // DashedRectangleOverlay
+    GameOpenGLVAO mDashedRectangleOverlayVAO;
+    GameOpenGLVBO mDashedRectangleOverlayVBO;
+    std::optional<std::pair<ShipSpaceCoordinates, ShipSpaceCoordinates>> mDashedRectangleOverlayRect;
 
     // Waterline markers
     GameOpenGLVAO mWaterlineMarkersVAO;

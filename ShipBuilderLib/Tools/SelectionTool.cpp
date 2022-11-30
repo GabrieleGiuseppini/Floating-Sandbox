@@ -81,7 +81,7 @@ SelectionTool::~SelectionTool()
         mSelectionManager.SetSelection(std::nullopt);
 
         // Remove overlay
-        mController.GetView().RemoveSelectionOverlay();
+        mController.GetView().RemoveDashedRectangleOverlay();
         mController.GetUserInterface().RefreshView();
 
         // Remove measurement
@@ -186,7 +186,7 @@ void SelectionTool::OnLeftMouseUp()
                 cornerCoordinates);
 
             // Update overlay
-            mController.GetView().UploadSelectionOverlay(
+            mController.GetView().UploadDashedRectangleOverlay(
                 mEngagementData->SelectionStartCorner,
                 cornerCoordinates);
 
@@ -198,7 +198,7 @@ void SelectionTool::OnLeftMouseUp()
             // Empty selection
 
             // Update overlay
-            mController.GetView().RemoveSelectionOverlay();
+            mController.GetView().RemoveDashedRectangleOverlay();
 
             // Update measurement
             mController.GetUserInterface().OnMeasuredSelectionSizeChanged(std::nullopt);
@@ -245,7 +245,7 @@ void SelectionTool::SelectAll()
     auto const selection = ShipSpaceRect(mController.GetModelController().GetShipSize());
 
     // Update overlay
-    mController.GetView().UploadSelectionOverlay(
+    mController.GetView().UploadDashedRectangleOverlay(
         selection.MinMin(),
         selection.MaxMax());
 
@@ -267,7 +267,7 @@ void SelectionTool::Deselect()
     if (mCurrentSelection || mEngagementData)
     {
         // Update overlay
-        mController.GetView().RemoveSelectionOverlay();
+        mController.GetView().RemoveDashedRectangleOverlay();
     }
 
     // Update measurement
@@ -345,7 +345,7 @@ std::optional<ShipSpaceCoordinates> SelectionTool::GetCornerCoordinatesFree() co
 void SelectionTool::UpdateEphemeralSelection(ShipSpaceCoordinates const & cornerCoordinates)
 {
     // Update overlay
-    mController.GetView().UploadSelectionOverlay(
+    mController.GetView().UploadDashedRectangleOverlay(
         mEngagementData->SelectionStartCorner,
         cornerCoordinates);
     mController.GetUserInterface().RefreshView();

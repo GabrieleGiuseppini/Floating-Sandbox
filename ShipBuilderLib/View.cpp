@@ -13,7 +13,7 @@
 namespace ShipBuilder {
 
 float constexpr DashedLineOverlayPixelStep = 4.0f;
-float constexpr SelectionOverlayPixelStep = 2.0f;
+float constexpr DashedRectangleOverlayPixelStep = 2.0f;
 
 View::View(
     ShipSpaceSize shipSpaceSize,
@@ -592,7 +592,7 @@ View::View(
     }
 
     //
-    // Initialize selection overlay VAO
+    // Initialize dashed rectangle overlay VAO
     //
 
     {
@@ -600,16 +600,16 @@ View::View(
 
         // Create VAO
         glGenVertexArrays(1, &tmpGLuint);
-        mSelectionOverlayVAO = tmpGLuint;
-        glBindVertexArray(*mSelectionOverlayVAO);
+        mDashedRectangleOverlayVAO = tmpGLuint;
+        glBindVertexArray(*mDashedRectangleOverlayVAO);
         CheckOpenGLError();
 
         // Create VBO
         glGenBuffers(1, &tmpGLuint);
-        mSelectionOverlayVBO = tmpGLuint;
+        mDashedRectangleOverlayVBO = tmpGLuint;
 
         // Describe vertex attributes
-        glBindBuffer(GL_ARRAY_BUFFER, *mSelectionOverlayVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, *mDashedRectangleOverlayVBO);
         static_assert(sizeof(DashedLineOverlayVertex) == (3 + 3) * sizeof(float));
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::DashedLineOverlay1));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::DashedLineOverlay1), 3, GL_FLOAT, GL_FALSE, sizeof(DashedLineOverlayVertex), (void *)0);
@@ -1166,22 +1166,22 @@ void View::RemoveDashedLineOverlay()
     mDashedLineOverlaySet.clear();
 }
 
-void View::UploadSelectionOverlay(
+void View::UploadDashedRectangleOverlay(
     ShipSpaceCoordinates const & cornerA,
     ShipSpaceCoordinates const & cornerB)
 {
     // Store rect
-    mSelectionOverlayRect.emplace(cornerA, cornerB);
+    mDashedRectangleOverlayRect.emplace(cornerA, cornerB);
 
     // Update overlay
-    UpdateSelectionOverlay();
+    UpdateDashedRectangleOverlay();
 }
 
-void View::RemoveSelectionOverlay()
+void View::RemoveDashedRectangleOverlay()
 {
-    assert(mSelectionOverlayRect.has_value());
+    assert(mDashedRectangleOverlayRect.has_value());
 
-    mSelectionOverlayRect.reset();
+    mDashedRectangleOverlayRect.reset();
 }
 
 void View::UploadWaterlineMarker(
@@ -1540,17 +1540,17 @@ void View::Render()
         CheckOpenGLError();
     }
 
-    // Selection overlay
-    if (mSelectionOverlayRect.has_value())
+    // Dashed rectangle overlay
+    if (mDashedRectangleOverlayRect.has_value())
     {
         // Bind VAO
-        glBindVertexArray(*mSelectionOverlayVAO);
+        glBindVertexArray(*mDashedRectangleOverlayVAO);
 
         // Activate program
         mShaderManager->ActivateProgram<ProgramType::DashedLineOverlay>();
 
         // Set pixel step
-        mShaderManager->SetProgramParameter<ProgramType::DashedLineOverlay, ProgramParameterType::PixelStep>(SelectionOverlayPixelStep);
+        mShaderManager->SetProgramParameter<ProgramType::DashedLineOverlay, ProgramParameterType::PixelStep>(DashedRectangleOverlayPixelStep);
 
         // Set line width
         glLineWidth(1.0f);
@@ -1656,9 +1656,9 @@ void View::OnViewModelUpdated()
         UpdateDashedLineOverlay();
     }
 
-    if (mSelectionOverlayRect)
+    if (mDashedRectangleOverlayRect)
     {
-        UpdateSelectionOverlay();
+        UpdateDashedRectangleOverlay();
     }
 
     //
@@ -2099,9 +2099,9 @@ void View::UpdateDashedLineOverlay()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void View::UpdateSelectionOverlay()
+void View::UpdateDashedRectangleOverlay()
 {
-    assert(mSelectionOverlayRect.has_value());
+    assert(mDashedRectangleOverlayRect.has_value());
 
     vec3f constexpr OverlayColor = vec3f(0.0f, 0.0f, 0.0f);
 
@@ -2112,16 +2112,16 @@ void View::UpdateSelectionOverlay()
     std::vector<DashedLineOverlayVertex> vertexBuffer;
 
 
-    vec2f const cornerA = mSelectionOverlayRect->first.ToFloat();
-    vec2f const cornerB = mSelectionOverlayRect->second.ToFloat();
+    vec2f const cornerA = mDashedRectangleOverlayRect->first.ToFloat();
+    vec2f const cornerB = mDashedRectangleOverlayRect->second.ToFloat();
 
     // Calculate width and height, in ship (signed) and in pixels (absolute)
     float const shipWidth = cornerB.x - cornerA.x;
     float absPixelWidth = mViewModel.FractionalShipSpaceOffsetToFractionalPhysicalDisplayOffset(std::abs(shipWidth));
-    absPixelWidth = std::round(absPixelWidth / SelectionOverlayPixelStep) * SelectionOverlayPixelStep + SelectionOverlayPixelStep / 2.0f;
+    absPixelWidth = std::round(absPixelWidth / DashedRectangleOverlayPixelStep) * DashedRectangleOverlayPixelStep + DashedRectangleOverlayPixelStep / 2.0f;
     float const shipHeight = cornerB.y - cornerA.y;
     float absPixelHeight = mViewModel.FractionalShipSpaceOffsetToFractionalPhysicalDisplayOffset(std::abs(shipHeight));
-    absPixelHeight = std::round(absPixelHeight / SelectionOverlayPixelStep) * SelectionOverlayPixelStep + SelectionOverlayPixelStep / 2.0f;
+    absPixelHeight = std::round(absPixelHeight / DashedRectangleOverlayPixelStep) * DashedRectangleOverlayPixelStep + DashedRectangleOverlayPixelStep / 2.0f;
 
     // One pixel in ship space
     float const shipSpaceQuantum = mViewModel.GetShipSpaceForOnePhysicalDisplayPixel();
@@ -2197,7 +2197,7 @@ void View::UpdateSelectionOverlay()
     // Upload vertices
     //
 
-    glBindBuffer(GL_ARRAY_BUFFER, *mSelectionOverlayVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, *mDashedRectangleOverlayVBO);
     glBufferData(GL_ARRAY_BUFFER, vertexBuffer.size() * sizeof(DashedLineOverlayVertex), vertexBuffer.data(), GL_STATIC_DRAW);
     CheckOpenGLError();
     glBindBuffer(GL_ARRAY_BUFFER, 0);

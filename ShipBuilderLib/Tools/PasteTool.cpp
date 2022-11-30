@@ -353,7 +353,7 @@ void PasteTool::DrawEphemeralVisualization()
         pasteOrigin,
         mPendingSessionData->IsTransparent);
 
-    mController.GetView().UploadSelectionOverlay(
+    mController.GetView().UploadDashedRectangleOverlay(
         pasteOrigin,
         pasteOrigin + mPendingSessionData->PasteRegion.Size);
 
@@ -365,7 +365,7 @@ void PasteTool::UndoEphemeralVisualization()
     assert(mPendingSessionData);
     assert(mPendingSessionData->EphemeralVisualization);
 
-    mController.GetView().RemoveSelectionOverlay();
+    mController.GetView().RemoveDashedRectangleOverlay();
 
     mController.GetModelController().RestoreEphemeralVisualization(std::move(*(mPendingSessionData->EphemeralVisualization)));
 

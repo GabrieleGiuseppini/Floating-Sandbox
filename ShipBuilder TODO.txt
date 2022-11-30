@@ -197,7 +197,8 @@
 				+ Tool:
 					+ Do
 					+ See if mCurrentRectangle still needed
-				- View: rename "SelectionOverlay" -> "DashedRectangleOverlay"
+				+ View: rename "SelectionOverlay" -> "DashedRectangleOverlay"
+				- Rename: "Foreground"/"Background" -> "Primary"/"Secondary"
 		+ Selection
 			+ Implements selection interaction and rendering of visual feedback *during the interaction only*
 			+ Takes SelectionManager ref in its cctor, and populates it upon confirmation of selection made

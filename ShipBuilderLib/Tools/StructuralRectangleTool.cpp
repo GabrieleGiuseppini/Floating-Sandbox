@@ -163,7 +163,7 @@ GenericEphemeralVisualizationRestorePayload StructuralRectangleTool::DrawEphemer
         lineMaterial,
         fillMaterial);
 
-    mController.GetView().UploadSelectionOverlay(
+    mController.GetView().UploadDashedRectangleOverlay(
         rect.MinMin(),
         rect.MaxMax());
 
@@ -172,7 +172,7 @@ GenericEphemeralVisualizationRestorePayload StructuralRectangleTool::DrawEphemer
 
 void StructuralRectangleTool::UndoEphemeralRectangle()
 {
-    mController.GetView().RemoveSelectionOverlay();
+    mController.GetView().RemoveDashedRectangleOverlay();
 
     if (mEngagementData && mEngagementData->EphVizRestorePayload)
     {
