@@ -21,6 +21,8 @@
 
 - Do StructuralRectangle tool (*)
 
+= Check default Hull mode
+
 ================================================================================================================================================================================
 
 - Gist:
@@ -192,9 +194,8 @@
 					+ Settings
 						+ Line size
 						+ Dropdown for mode
-				- Tool:
-					- TODOHERE
-					- Do
+				+ Tool:
+					+ Do
 					+ See if mCurrentRectangle still needed
 				- View: rename "SelectionOverlay" -> "DashedRectangleOverlay"
 		+ Selection

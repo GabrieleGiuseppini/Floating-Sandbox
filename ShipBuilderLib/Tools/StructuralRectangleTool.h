@@ -52,7 +52,7 @@ private:
 
     void DrawFinalRectangle(ShipSpaceRect const & rect);
 
-    std::tuple<StructuralMaterial const *, StructuralMaterial const *> GetMaterials() const;
+    std::tuple<StructuralMaterial const *, std::optional<StructuralMaterial const *>> GetMaterials() const;
 
 private:
 

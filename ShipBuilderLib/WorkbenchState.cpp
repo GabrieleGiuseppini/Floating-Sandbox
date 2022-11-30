@@ -61,7 +61,7 @@ WorkbenchState::WorkbenchState(
     mStructuralEraserToolSize = 4;
     mElectricalEraserToolSize = 1;
     mStructuralLineToolSize = 1;
-    mStructuralLineToolIsHullMode = false;
+    mStructuralLineToolIsHullMode = true;
     mStructuralFloodToolIsContiguous = true;
     mTextureMagicWandTolerance = 0;
     mTextureMagicWandIsAntiAliased = true;

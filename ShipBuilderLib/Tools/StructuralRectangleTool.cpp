@@ -224,9 +224,9 @@ void StructuralRectangleTool::DrawFinalRectangle(ShipSpaceRect const & rect)
         });
 }
 
-std::tuple<StructuralMaterial const *, StructuralMaterial const *> StructuralRectangleTool::GetMaterials() const
+std::tuple<StructuralMaterial const *, std::optional<StructuralMaterial const *>> StructuralRectangleTool::GetMaterials() const
 {
-    StructuralMaterial const * fillMaterial;
+    std::optional<StructuralMaterial const *> fillMaterial;
     switch (mController.GetWorkbenchState().GetStructuralRectangleFillMode())
     {
         case FillMode::FillWithForeground:
@@ -243,7 +243,7 @@ std::tuple<StructuralMaterial const *, StructuralMaterial const *> StructuralRec
 
         case FillMode::NoFill:
         {
-            fillMaterial = nullptr;
+            fillMaterial = std::nullopt;
             break;
         }
     }

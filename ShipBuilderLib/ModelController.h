@@ -256,7 +256,7 @@ public:
         ShipSpaceRect const & rect,
         std::uint32_t lineSize,
         StructuralMaterial const * lineMaterial,
-        StructuralMaterial const * fillMaterial);
+        std::optional<StructuralMaterial const *> fillMaterial);
 
     std::optional<ShipSpaceRect> StructuralFlood(
         ShipSpaceCoordinates const & start,
@@ -277,7 +277,7 @@ public:
         ShipSpaceRect const & rect,
         std::uint32_t lineSize,
         StructuralMaterial const * lineMaterial,
-        StructuralMaterial const * fillMaterial);
+        std::optional<StructuralMaterial const *> fillMaterial);
 
     void RestoreStructuralLayerRegionEphemeralVisualization(
         typename LayerTypeTraits<LayerType::Structural>::buffer_type const & backupBuffer,
@@ -496,7 +496,7 @@ private:
         ShipSpaceRect const & rect,
         std::uint32_t lineSize,
         StructuralMaterial const * lineMaterial,
-        StructuralMaterial const * fillMaterial);
+        std::optional<StructuralMaterial const *> fillMaterial);
 
     inline void WriteParticle(
         ShipSpaceCoordinates const & coords,

@@ -1060,7 +1060,7 @@ GenericUndoPayload ModelController::StructuralRectangle(
     ShipSpaceRect const & rect,
     std::uint32_t lineSize,
     StructuralMaterial const * lineMaterial,
-    StructuralMaterial const * fillMaterial)
+    std::optional<StructuralMaterial const *> fillMaterial)
 {
     assert(mModel.HasLayer(LayerType::Structural));
     assert(!mIsStructuralLayerInEphemeralVisualization);
@@ -1222,7 +1222,7 @@ GenericEphemeralVisualizationRestorePayload ModelController::StructuralRectangle
     ShipSpaceRect const & rect,
     std::uint32_t lineSize,
     StructuralMaterial const * lineMaterial,
-    StructuralMaterial const * fillMaterial)
+    std::optional<StructuralMaterial const *> fillMaterial)
 {
     assert(mModel.HasLayer(LayerType::Structural));
 
@@ -2514,13 +2514,54 @@ void ModelController::DoStructuralRectangle(
     ShipSpaceRect const & rect,
     std::uint32_t lineSize,
     StructuralMaterial const * lineMaterial,
-    StructuralMaterial const * fillMaterial)
+    std::optional<StructuralMaterial const *> fillMaterial)
 {
-    // TODOHERE
-    (void)rect;
-    (void)lineSize;
-    (void)lineMaterial;
-    (void)fillMaterial;
+    auto & structuralLayerBuffer = mModel.GetStructuralLayer().Buffer;
+
+    int const yLineBottom = rect.origin.y + static_cast<int>(lineSize);
+    int const yLineTop = rect.origin.y + rect.size.height - static_cast<int>(lineSize);
+    int const yTop = rect.origin.y + rect.size.height;
+
+    int const xLineLeft = rect.origin.x + static_cast<int>(lineSize);
+    int const xLineRight = rect.origin.x + rect.size.width - static_cast<int>(lineSize);
+    int const xRight = rect.origin.x + rect.size.width;
+
+    for (int y = rect.origin.y; y < yTop; ++y)
+    {
+        for (int x = rect.origin.x; x < xRight; ++x)
+        {
+            ShipSpaceCoordinates const coords(x, y);
+
+            if (y >= yLineBottom && y < yLineTop
+                && x >= xLineLeft && x < xLineRight)
+            {
+                // Fill
+                if (fillMaterial)
+                {
+                    if constexpr (IsForEphViz)
+                    {
+                        structuralLayerBuffer[coords] = StructuralElement(*fillMaterial);
+                    }
+                    else
+                    {
+                        WriteParticle(coords, *fillMaterial);
+                    }
+                }
+            }
+            else
+            {
+                // Line
+                if constexpr (IsForEphViz)
+                {
+                    structuralLayerBuffer[coords] = StructuralElement(lineMaterial);
+                }
+                else
+                {
+                    WriteParticle(coords, lineMaterial);
+                }
+            }
+        }
+    }
 }
 
 void ModelController::WriteParticle(
