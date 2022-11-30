@@ -71,8 +71,9 @@
 	= Test flames with heightened luminosity
 		- Test perf of flames on Dell
 
-	- Take S.S. Avila 2 (Matthew Anderson) (ToTake folder)
-	- Take A_single_Blue_Angel (Kazindel) (ToTake folder)
+	+ Take S.S. Avila 2 (Matthew Anderson) (ToTake folder)
+	= Take A_single_Blue_Angel (Kazindel) (ToTake folder)
+		- Wrong credits - shipbucket?
 		- "Kazindel" - check out Credits
 
 	- Send for testing & localization
