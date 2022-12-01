@@ -73,15 +73,22 @@
 
 	+ Take S.S. Avila 2 (Matthew Anderson) (ToTake folder)
 	- Take Dugongsmallwtrtight-Walter (ToTake folder)
-		- Name?
-		- Credits?
+		- Name? (ASKED)
+		- Credits? (ASKED)
 	- Take B-17 Flying Fortress (DKUZ) (ToTake folder)
 		+ Credits
-	= Take A_single_Blue_Angel (Kazindel) (ToTake folder)
-		- Wrong credits - shipbucket?
-		- "Kazindel" in Credits
-
-	- Send for testing & localization
+		= Asked for texture credits
+	+ Take A_single_Blue_Angel (Kazindel) (ToTake folder)
+		+ Wrong credits - shipbucket? (ASKED)
+			+ TaskForce51 http://shipbucket.com/forums/viewtopic.php?t=10424&start=180 That is (And I am 100% sure) not where I got it from but it was so far the only mention of it
+		+ "Kazindel" in Credits
+	- Look at other ships
+		- Antonia Graza: make switches for lights
+		- Normandie: change panel & properties
+		- Golden
+	- Ask Kazindel to add jet engines to Space-X
+	
+	= Send for testing & localization
 
 	- Localization:
 		+ IT
