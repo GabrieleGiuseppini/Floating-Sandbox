@@ -72,11 +72,22 @@
 		- Test perf of flames on Dell
 
 	+ Take S.S. Avila 2 (Matthew Anderson) (ToTake folder)
+	- Take Dugongsmallwtrtight-Walter (ToTake folder)
+		- Name?
+		- Credits?
+	- Take B-17 Flying Fortress (DKUZ) (ToTake folder)
+		+ Credits
 	= Take A_single_Blue_Angel (Kazindel) (ToTake folder)
 		- Wrong credits - shipbucket?
-		- "Kazindel" - check out Credits
+		- "Kazindel" in Credits
 
 	- Send for testing & localization
+
+	- Localization:
+		- IT
+		- ES
+		- RU
+		- UK
 
 	- Release:
 		- Branch is merged into master (if applicable)
