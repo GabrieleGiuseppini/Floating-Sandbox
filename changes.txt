@@ -10,7 +10,7 @@
 	- Allowed electrical particles to be placed on rope endpoints, thus enabling construction of "electrical ropes"
 	- Fixed a sporadic crash with the rope-drawing tool
 - Added Ukrainian translation - thanks to Roman Shavernew (Dioxcode)!
-- Added two new ships
+- Added 6 new ships
 
 1.17.4
 - Improved "Ship Load" window, allowing to sort by different attributes, and allowing to load ships flipped and/or rotated

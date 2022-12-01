@@ -71,22 +71,30 @@
 	= Test flames with heightened luminosity
 		- Test perf of flames on Dell
 
-	+ Take S.S. Avila 2 (Matthew Anderson) (ToTake folder)
-	- Take Dugongsmallwtrtight-Walter (ToTake folder)
-		- Name? (ASKED)
-		- Credits? (ASKED)
-	- Take B-17 Flying Fortress (DKUZ) (ToTake folder)
-		+ Credits
-		= Asked for texture credits
-	+ Take A_single_Blue_Angel (Kazindel) (ToTake folder)
-		+ Wrong credits - shipbucket? (ASKED)
-			+ TaskForce51 http://shipbucket.com/forums/viewtopic.php?t=10424&start=180 That is (And I am 100% sure) not where I got it from but it was so far the only mention of it
-		+ "Kazindel" in Credits
-	- Look at other ships
-		- Antonia Graza: make switches for lights
-		- Normandie: change panel & properties
-		- Golden
-	- Ask Kazindel to add jet engines to Space-X
+	- Ships:
+		+ Take S.S. Avila 2 (Matthew Anderson) (ToTake folder)
+		+ Take B-17 Flying Fortress (DKUZ) (ToTake folder)
+			+ Credits
+			+ Asked for texture credits
+		+ Take A_single_Blue_Angel (Kazindel) (ToTake folder)
+			+ Wrong credits - shipbucket? (ASKED)
+				+ TaskForce51 http://shipbucket.com/forums/viewtopic.php?t=10424&start=180 That is (And I am 100% sure) not where I got it from but it was so far the only mention of it
+			+ "Kazindel" in Credits
+		+ Take Normandie
+			+ Find author - "P1X"
+				+ Author in properties
+				+ Credits: "P1X"
+		+ Take R.M.S. Oceanic
+			+ Ask Golden
+				+ Author in properties
+				+ Credits
+		+ Take Antonia Graza - left server
+			+ Find author
+				+ Author in properties
+				+ Credits: "MTF"
+		- Take Dugongsmallwtrtight-Walter (ToTake folder)
+			- Name? (ASKED)
+			- Credits? (ASKED)
 	
 	= Send for testing & localization
 
