@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Floating Sandbox\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-12-01 11:07+0100\n"
+"PO-Revision-Date: 2022-12-01 11:41+0100\n"
 "Last-Translator: Gabriele Giuseppini <gabrielegiuseppini@gmail.com>\n"
 "Language-Team: Ilya Voloshin; Roman Shavernew (DioxCode)\n"
 "Language: ru\n"
@@ -2586,7 +2586,7 @@ msgstr ""
 "змінити цей параметр пізніше у вікні \"Налаштування гри\"."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2201
-msgid "Primary"
+msgid "Primary Material"
 msgstr ""
 
 #: ..\FloatingSandbox\CreditsPanel.cpp:188
@@ -2980,7 +2980,7 @@ msgid "Search in this folder:"
 msgstr "Шукати в цій папці:"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2202
-msgid "Secondary"
+msgid "Secondary Material"
 msgstr ""
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3858

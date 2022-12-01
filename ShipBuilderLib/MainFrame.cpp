@@ -2198,8 +2198,8 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
         // Fill Mode drop-down
         {
             wxString choices[3] = {
-                _("Primary"), // i.e. Foreground
-                _("Secondary"), // i.e. Background
+                _("Primary Material"), // i.e. Foreground
+                _("Secondary Material"), // i.e. Background
                 _("None")
             };
 

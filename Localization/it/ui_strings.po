@@ -2572,7 +2572,9 @@ msgstr ""
 "secondo momento dal menu \"Preferenze\"."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2201
-msgid "Primary"
+#, fuzzy
+#| msgid "Primary"
+msgid "Primary Material"
 msgstr "Materiale principale"
 
 #: ..\FloatingSandbox\CreditsPanel.cpp:188
@@ -2954,7 +2956,7 @@ msgid "Search in this folder:"
 msgstr "Cerca nella cartella:"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2202
-msgid "Secondary"
+msgid "Secondary Material"
 msgstr "Materiale secondario"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3858

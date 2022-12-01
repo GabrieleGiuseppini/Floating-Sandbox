@@ -84,7 +84,7 @@
 	- Send for testing & localization
 
 	- Localization:
-		- IT
+		+ IT
 		- ES
 		- RU
 		- UK

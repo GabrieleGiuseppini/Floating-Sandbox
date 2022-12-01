@@ -2269,7 +2269,7 @@ msgid "Prevents these tips from being shown each time the game starts. You can a
 msgstr ""
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2201
-msgid "Primary"
+msgid "Primary Material"
 msgstr ""
 
 #: ..\FloatingSandbox\CreditsPanel.cpp:188
@@ -2645,7 +2645,7 @@ msgid "Search in this folder:"
 msgstr ""
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2202
-msgid "Secondary"
+msgid "Secondary Material"
 msgstr ""
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3858
