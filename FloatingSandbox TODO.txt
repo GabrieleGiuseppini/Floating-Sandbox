@@ -71,7 +71,7 @@
 	= Test flames with heightened luminosity
 		- Test perf of flames on Dell
 
-	- Ships:
+	= Ships:
 		+ Take S.S. Avila 2 (Matthew Anderson) (ToTake folder)
 		+ Take B-17 Flying Fortress (DKUZ) (ToTake folder)
 			+ Credits
