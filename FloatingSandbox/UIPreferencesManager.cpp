@@ -12,12 +12,12 @@
 #include <GameCore/Utils.h>
 
 UIPreferencesManager::UIPreferencesManager(
-    std::shared_ptr<IGameController> gameController,
-    LocalizationManager & localizationManager,
-    std::shared_ptr<MusicController> musicController)
-    : mGameController(std::move(gameController))
-    , mLocalizationManager(localizationManager)
-    , mMusicController(std::move(musicController))
+    IGameController & gameController,
+    MusicController & musicController,
+    LocalizationManager & localizationManager)
+    : mGameController(gameController)
+    , mMusicController(musicController)
+    , mLocalizationManager(localizationManager)    
 {
     //
     // Set defaults for our preferences
@@ -273,7 +273,7 @@ void UIPreferencesManager::LoadPreferences()
         if (auto showTsunamiNotificationsIt = preferencesRootObject->find("show_tsunami_notifications");
             showTsunamiNotificationsIt != preferencesRootObject->end() && showTsunamiNotificationsIt->second.is<bool>())
         {
-            mGameController->SetDoShowTsunamiNotifications(showTsunamiNotificationsIt->second.get<bool>());
+            mGameController.SetDoShowTsunamiNotifications(showTsunamiNotificationsIt->second.get<bool>());
         }
 
         //
@@ -283,7 +283,7 @@ void UIPreferencesManager::LoadPreferences()
         if (auto displayUnitsSystemIt = preferencesRootObject->find("display_units_system");
             displayUnitsSystemIt != preferencesRootObject->end() && displayUnitsSystemIt->second.is<std::int64_t>())
         {
-            mGameController->SetDisplayUnitsSystem(static_cast<UnitsSystem>(displayUnitsSystemIt->second.get<std::int64_t>()));
+            mGameController.SetDisplayUnitsSystem(static_cast<UnitsSystem>(displayUnitsSystemIt->second.get<std::int64_t>()));
         }
 
         //
@@ -293,7 +293,7 @@ void UIPreferencesManager::LoadPreferences()
         if (auto shipAutoTexturizationSharedSettingsIt = preferencesRootObject->find("ship_auto_texturization_default_settings");
             shipAutoTexturizationSharedSettingsIt != preferencesRootObject->end() && shipAutoTexturizationSharedSettingsIt->second.is<picojson::object>())
         {
-            mGameController->SetShipAutoTexturizationSharedSettings(ShipAutoTexturizationSettings::FromJSON(shipAutoTexturizationSharedSettingsIt->second.get<picojson::object>()));
+            mGameController.SetShipAutoTexturizationSharedSettings(ShipAutoTexturizationSettings::FromJSON(shipAutoTexturizationSharedSettingsIt->second.get<picojson::object>()));
         }
 
         // We don't load/save this setting on purpose
@@ -305,7 +305,7 @@ void UIPreferencesManager::LoadPreferences()
         ////    shipAutoTexturizationForceDefaultsOntoShipIt != preferencesRootObject->end()
         ////    && shipAutoTexturizationForceDefaultsOntoShipIt->second.is<bool>())
         ////{
-        ////    mGameController->SetShipAutoTexturizationDoForceSharedSettingsOntoShipSettings(shipAutoTexturizationForceSharedSettingsOntoShipIt->second.get<bool>());
+        ////    mGameController.SetShipAutoTexturizationDoForceSharedSettingsOntoShipSettings(shipAutoTexturizationForceSharedSettingsOntoShipIt->second.get<bool>());
         ////}
 
         //
@@ -315,7 +315,7 @@ void UIPreferencesManager::LoadPreferences()
         if (auto it = preferencesRootObject->find("camera_speed_adjustment");
             it != preferencesRootObject->end() && it->second.is<double>())
         {
-            mGameController->SetCameraSpeedAdjustment(static_cast<float>(it->second.get<double>()));
+            mGameController.SetCameraSpeedAdjustment(static_cast<float>(it->second.get<double>()));
         }
 
         //
@@ -325,7 +325,7 @@ void UIPreferencesManager::LoadPreferences()
         if (auto it = preferencesRootObject->find("auto_zoom_at_ship_load");
             it != preferencesRootObject->end() && it->second.is<bool>())
         {
-            mGameController->SetDoAutoFocusOnShipLoad(it->second.get<bool>());
+            mGameController.SetDoAutoFocusOnShipLoad(it->second.get<bool>());
         }
 
         //
@@ -335,7 +335,7 @@ void UIPreferencesManager::LoadPreferences()
         if (auto continuousAutoFocusIt = preferencesRootObject->find("continuous_auto_focus");
             continuousAutoFocusIt != preferencesRootObject->end() && continuousAutoFocusIt->second.is<bool>())
         {
-            mGameController->SetDoContinuousAutoFocus(continuousAutoFocusIt->second.get<bool>());
+            mGameController.SetDoContinuousAutoFocus(continuousAutoFocusIt->second.get<bool>());
         }
 
         //
@@ -365,7 +365,7 @@ void UIPreferencesManager::LoadPreferences()
         if (auto showElectricalNotificationsIt = preferencesRootObject->find("show_electrical_notifications");
             showElectricalNotificationsIt != preferencesRootObject->end() && showElectricalNotificationsIt->second.is<bool>())
         {
-            mGameController->SetDoShowElectricalNotifications(showElectricalNotificationsIt->second.get<bool>());
+            mGameController.SetDoShowElectricalNotifications(showElectricalNotificationsIt->second.get<bool>());
         }
 
         //
@@ -395,7 +395,7 @@ void UIPreferencesManager::LoadPreferences()
         if (auto showStatusTextIt = preferencesRootObject->find("show_status_text");
             showStatusTextIt != preferencesRootObject->end() && showStatusTextIt->second.is<bool>())
         {
-            mGameController->SetShowStatusText(showStatusTextIt->second.get<bool>());
+            mGameController.SetShowStatusText(showStatusTextIt->second.get<bool>());
         }
 
         //
@@ -405,7 +405,7 @@ void UIPreferencesManager::LoadPreferences()
         if (auto showExtendedStatusTextIt = preferencesRootObject->find("show_extended_status_text");
             showExtendedStatusTextIt != preferencesRootObject->end() && showExtendedStatusTextIt->second.is<bool>())
         {
-            mGameController->SetShowExtendedStatusText(showExtendedStatusTextIt->second.get<bool>());
+            mGameController.SetShowExtendedStatusText(showExtendedStatusTextIt->second.get<bool>());
         }
 
         //
@@ -419,42 +419,42 @@ void UIPreferencesManager::LoadPreferences()
             {
                 bool const isSoundMuted = globalMuteIt->second.get<bool>();
                 AudioController::SetGlobalMute(isSoundMuted);
-                mGameController->NotifySoundMuted(isSoundMuted);
+                mGameController.NotifySoundMuted(isSoundMuted);
             }
 
             // Background music volume
             if (auto backgroundMusicVolumeIt = preferencesRootObject->find("background_music_volume");
                 backgroundMusicVolumeIt != preferencesRootObject->end() && backgroundMusicVolumeIt->second.is<double>())
             {
-                mMusicController->SetBackgroundMusicVolume(static_cast<float>(backgroundMusicVolumeIt->second.get<double>()));
+                mMusicController.SetBackgroundMusicVolume(static_cast<float>(backgroundMusicVolumeIt->second.get<double>()));
             }
 
             // Play background music
             if (auto playBackgroundMusicIt = preferencesRootObject->find("play_background_music");
                 playBackgroundMusicIt != preferencesRootObject->end() && playBackgroundMusicIt->second.is<bool>())
             {
-                mMusicController->SetPlayBackgroundMusic(playBackgroundMusicIt->second.get<bool>());
+                mMusicController.SetPlayBackgroundMusic(playBackgroundMusicIt->second.get<bool>());
             }
 
             // Last-played background music
             if (auto lastPlayedBackgroundMusicIt = preferencesRootObject->find("last_played_background_music");
                 lastPlayedBackgroundMusicIt != preferencesRootObject->end() && lastPlayedBackgroundMusicIt->second.is<int64_t>())
             {
-                mMusicController->SetLastPlayedBackgroundMusic(static_cast<size_t>(lastPlayedBackgroundMusicIt->second.get<int64_t>()));
+                mMusicController.SetLastPlayedBackgroundMusic(static_cast<size_t>(lastPlayedBackgroundMusicIt->second.get<int64_t>()));
             }
 
             // Game music volume
             if (auto gameMusicVolumeIt = preferencesRootObject->find("game_music_volume");
                 gameMusicVolumeIt != preferencesRootObject->end() && gameMusicVolumeIt->second.is<double>())
             {
-                mMusicController->SetGameMusicVolume(static_cast<float>(gameMusicVolumeIt->second.get<double>()));
+                mMusicController.SetGameMusicVolume(static_cast<float>(gameMusicVolumeIt->second.get<double>()));
             }
 
             // Play sinking music
             if (auto playSinkingMusicIt = preferencesRootObject->find("play_sinking_music");
                 playSinkingMusicIt != preferencesRootObject->end() && playSinkingMusicIt->second.is<bool>())
             {
-                mMusicController->SetPlaySinkingMusic(playSinkingMusicIt->second.get<bool>());
+                mMusicController.SetPlaySinkingMusic(playSinkingMusicIt->second.get<bool>());
             }
         }
 
@@ -519,26 +519,26 @@ void UIPreferencesManager::SavePreferences() const
     preferencesRootObject["show_ship_descriptions_at_ship_load"] = picojson::value(mShowShipDescriptionsAtShipLoad);
 
     // Add show tsunami notification
-    preferencesRootObject["show_tsunami_notifications"] = picojson::value(mGameController->GetDoShowTsunamiNotifications());
+    preferencesRootObject["show_tsunami_notifications"] = picojson::value(mGameController.GetDoShowTsunamiNotifications());
 
     // Add display units system
-    preferencesRootObject["display_units_system"] = picojson::value(static_cast<std::int64_t>(mGameController->GetDisplayUnitsSystem()));
+    preferencesRootObject["display_units_system"] = picojson::value(static_cast<std::int64_t>(mGameController.GetDisplayUnitsSystem()));
 
     // Add ship auto-texturization shared settings
-    preferencesRootObject["ship_auto_texturization_default_settings"] = picojson::value(mGameController->GetShipAutoTexturizationSharedSettings().ToJSON());
+    preferencesRootObject["ship_auto_texturization_default_settings"] = picojson::value(mGameController.GetShipAutoTexturizationSharedSettings().ToJSON());
 
     // We don't load/save this setting on purpose
     ////// Add ship auto-texturization force shared settings onto ship
-    ////preferencesRootObject["ship_auto_texturization_force_defaults_onto_ship"] = picojson::value(mGameController->GetShipAutoTexturizationDoForceSharedSettingsOntoShipSettings());
+    ////preferencesRootObject["ship_auto_texturization_force_defaults_onto_ship"] = picojson::value(mGameController.GetShipAutoTexturizationDoForceSharedSettingsOntoShipSettings());
 
     // Add camera speed adjustment
-    preferencesRootObject["camera_speed_adjustment"] = picojson::value(static_cast<double>(mGameController->GetCameraSpeedAdjustment()));
+    preferencesRootObject["camera_speed_adjustment"] = picojson::value(static_cast<double>(mGameController.GetCameraSpeedAdjustment()));
 
     // Add auto focus at ship load
-    preferencesRootObject["auto_zoom_at_ship_load"] = picojson::value(mGameController->GetDoAutoFocusOnShipLoad());
+    preferencesRootObject["auto_zoom_at_ship_load"] = picojson::value(mGameController.GetDoAutoFocusOnShipLoad());
 
     // Add continuous auto focus
-    preferencesRootObject["continuous_auto_focus"] = picojson::value(mGameController->GetDoContinuousAutoFocus());
+    preferencesRootObject["continuous_auto_focus"] = picojson::value(mGameController.GetDoContinuousAutoFocus());
 
     // Add auto show switchboard
     preferencesRootObject["auto_show_switchboard"] = picojson::value(mAutoShowSwitchboard);
@@ -547,7 +547,7 @@ void UIPreferencesManager::SavePreferences() const
     preferencesRootObject["switchboard_background_bitmap_index"] = picojson::value(static_cast<std::int64_t>(mSwitchboardBackgroundBitmapIndex));
 
     // Add show electrical notifications
-    preferencesRootObject["show_electrical_notifications"] = picojson::value(mGameController->GetDoShowElectricalNotifications());
+    preferencesRootObject["show_electrical_notifications"] = picojson::value(mGameController.GetDoShowElectricalNotifications());
 
     // Add zoom increment
     preferencesRootObject["zoom_increment"] = picojson::value(static_cast<double>(mZoomIncrement));
@@ -556,10 +556,10 @@ void UIPreferencesManager::SavePreferences() const
     preferencesRootObject["pan_increment"] = picojson::value(static_cast<std::int64_t>(mPanIncrement));
 
     // Add show status text
-    preferencesRootObject["show_status_text"] = picojson::value(mGameController->GetShowStatusText());
+    preferencesRootObject["show_status_text"] = picojson::value(mGameController.GetShowStatusText());
 
     // Add show extended status text
-    preferencesRootObject["show_extended_status_text"] = picojson::value(mGameController->GetShowExtendedStatusText());
+    preferencesRootObject["show_extended_status_text"] = picojson::value(mGameController.GetShowExtendedStatusText());
 
     //
     // Sounds and Music
@@ -568,15 +568,15 @@ void UIPreferencesManager::SavePreferences() const
     {
         preferencesRootObject["global_mute"] = picojson::value(AudioController::GetGlobalMute());
 
-        preferencesRootObject["background_music_volume"] = picojson::value(static_cast<double>(mMusicController->GetBackgroundMusicVolume()));
+        preferencesRootObject["background_music_volume"] = picojson::value(static_cast<double>(mMusicController.GetBackgroundMusicVolume()));
 
-        preferencesRootObject["play_background_music"] = picojson::value(mMusicController->GetPlayBackgroundMusic());
+        preferencesRootObject["play_background_music"] = picojson::value(mMusicController.GetPlayBackgroundMusic());
 
-        preferencesRootObject["last_played_background_music"] = picojson::value(static_cast<int64_t>(mMusicController->GetLastPlayedBackgroundMusic()));
+        preferencesRootObject["last_played_background_music"] = picojson::value(static_cast<int64_t>(mMusicController.GetLastPlayedBackgroundMusic()));
 
-        preferencesRootObject["game_music_volume"] = picojson::value(static_cast<double>(mMusicController->GetGameMusicVolume()));
+        preferencesRootObject["game_music_volume"] = picojson::value(static_cast<double>(mMusicController.GetGameMusicVolume()));
 
-        preferencesRootObject["play_sinking_music"] = picojson::value(mMusicController->GetPlaySinkingMusic());
+        preferencesRootObject["play_sinking_music"] = picojson::value(mMusicController.GetPlaySinkingMusic());
     }
 
     // Language

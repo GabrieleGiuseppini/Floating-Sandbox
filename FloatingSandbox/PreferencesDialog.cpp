@@ -30,12 +30,12 @@ static float constexpr CameraSpeedAdjustmentSpinFactor = 100.0f;
 
 PreferencesDialog::PreferencesDialog(
     wxWindow* parent,
-    std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
+    UIPreferencesManager & uiPreferencesManager,
     std::function<void()> onChangeCallback)
     : mParent(parent)
-    , mUIPreferencesManager(std::move(uiPreferencesManager))
+    , mUIPreferencesManager(uiPreferencesManager)
     , mOnChangeCallback(std::move(onChangeCallback))
-    , mAvailableLanguages(mUIPreferencesManager->GetAvailableLanguages())
+    , mAvailableLanguages(mUIPreferencesManager.GetAvailableLanguages())
     , mHasWarnedAboutLanguageSettingChanges(false)
 {
     Create(
@@ -145,7 +145,7 @@ void PreferencesDialog::Open()
 void PreferencesDialog::OnScreenshotDirPickerChanged(wxCommandEvent & /*event*/)
 {
     assert(!!mUIPreferencesManager);
-    mUIPreferencesManager->SetScreenshotsFolderPath(mScreenshotDirPickerCtrl->GetPath().ToStdString());
+    mUIPreferencesManager.SetScreenshotsFolderPath(mScreenshotDirPickerCtrl->GetPath().ToStdString());
 
     mOnChangeCallback();
 }
@@ -153,7 +153,7 @@ void PreferencesDialog::OnScreenshotDirPickerChanged(wxCommandEvent & /*event*/)
 void PreferencesDialog::OnStartInFullScreenCheckBoxClicked(wxCommandEvent & /*event*/)
 {
     assert(!!mUIPreferencesManager);
-    mUIPreferencesManager->SetStartInFullScreen(mStartInFullScreenCheckBox->GetValue());
+    mUIPreferencesManager.SetStartInFullScreen(mStartInFullScreenCheckBox->GetValue());
 
     mOnChangeCallback();
 }
@@ -161,7 +161,7 @@ void PreferencesDialog::OnStartInFullScreenCheckBoxClicked(wxCommandEvent & /*ev
 void PreferencesDialog::OnShowTipOnStartupCheckBoxClicked(wxCommandEvent & /*event*/)
 {
     assert(!!mUIPreferencesManager);
-    mUIPreferencesManager->SetShowStartupTip(mShowTipOnStartupCheckBox->GetValue());
+    mUIPreferencesManager.SetShowStartupTip(mShowTipOnStartupCheckBox->GetValue());
 
     mOnChangeCallback();
 }
@@ -169,11 +169,11 @@ void PreferencesDialog::OnShowTipOnStartupCheckBoxClicked(wxCommandEvent & /*eve
 void PreferencesDialog::OnCheckForUpdatesAtStartupCheckBoxClicked(wxCommandEvent & /*event*/)
 {
     assert(!!mUIPreferencesManager);
-    mUIPreferencesManager->SetCheckUpdatesAtStartup(mCheckForUpdatesAtStartupCheckBox->GetValue());
+    mUIPreferencesManager.SetCheckUpdatesAtStartup(mCheckForUpdatesAtStartupCheckBox->GetValue());
 
     if (mCheckForUpdatesAtStartupCheckBox->GetValue())
     {
-        mUIPreferencesManager->ResetUpdateBlacklist();
+        mUIPreferencesManager.ResetUpdateBlacklist();
     }
 
     mOnChangeCallback();
@@ -182,7 +182,7 @@ void PreferencesDialog::OnCheckForUpdatesAtStartupCheckBoxClicked(wxCommandEvent
 void PreferencesDialog::OnSaveSettingsOnExitCheckBoxClicked(wxCommandEvent & /*event*/)
 {
     assert(!!mUIPreferencesManager);
-    mUIPreferencesManager->SetSaveSettingsOnExit(mSaveSettingsOnExitCheckBox->GetValue());
+    mUIPreferencesManager.SetSaveSettingsOnExit(mSaveSettingsOnExitCheckBox->GetValue());
 
     mOnChangeCallback();
 }
@@ -190,7 +190,7 @@ void PreferencesDialog::OnSaveSettingsOnExitCheckBoxClicked(wxCommandEvent & /*e
 void PreferencesDialog::OnShowTsunamiNotificationsCheckBoxClicked(wxCommandEvent & /*event*/)
 {
     assert(!!mUIPreferencesManager);
-    mUIPreferencesManager->SetDoShowTsunamiNotifications(mShowTsunamiNotificationsCheckBox->GetValue());
+    mUIPreferencesManager.SetDoShowTsunamiNotifications(mShowTsunamiNotificationsCheckBox->GetValue());
 
     mOnChangeCallback();
 }
@@ -198,7 +198,7 @@ void PreferencesDialog::OnShowTsunamiNotificationsCheckBoxClicked(wxCommandEvent
 void PreferencesDialog::OnZoomIncrementSpinCtrl(wxSpinEvent & event)
 {
     assert(!!mUIPreferencesManager);
-    mUIPreferencesManager->SetZoomIncrement(ZoomIncrementSpinToZoomIncrement(event.GetPosition()));
+    mUIPreferencesManager.SetZoomIncrement(ZoomIncrementSpinToZoomIncrement(event.GetPosition()));
 
     mOnChangeCallback();
 }
@@ -206,7 +206,7 @@ void PreferencesDialog::OnZoomIncrementSpinCtrl(wxSpinEvent & event)
 void PreferencesDialog::OnPanIncrementSpinCtrl(wxSpinEvent & event)
 {
     assert(!!mUIPreferencesManager);
-    mUIPreferencesManager->SetPanIncrement(PanIncrementSpinToPanIncrement(event.GetPosition()));
+    mUIPreferencesManager.SetPanIncrement(PanIncrementSpinToPanIncrement(event.GetPosition()));
 
     mOnChangeCallback();
 }
@@ -214,7 +214,7 @@ void PreferencesDialog::OnPanIncrementSpinCtrl(wxSpinEvent & event)
 void PreferencesDialog::OnCameraSpeedAdjustmentSpinCtrl(wxSpinEvent & event)
 {
     assert(!!mUIPreferencesManager);
-    mUIPreferencesManager->SetCameraSpeedAdjustment(CameraSpeedAdjustmentSpinToCameraSpeedAdjustment(event.GetPosition()));
+    mUIPreferencesManager.SetCameraSpeedAdjustment(CameraSpeedAdjustmentSpinToCameraSpeedAdjustment(event.GetPosition()));
 
     mOnChangeCallback();
 }
@@ -222,7 +222,7 @@ void PreferencesDialog::OnCameraSpeedAdjustmentSpinCtrl(wxSpinEvent & event)
 void PreferencesDialog::OnShowStatusTextCheckBoxClicked(wxCommandEvent & /*event*/)
 {
     assert(!!mUIPreferencesManager);
-    mUIPreferencesManager->SetShowStatusText(mShowStatusTextCheckBox->GetValue());
+    mUIPreferencesManager.SetShowStatusText(mShowStatusTextCheckBox->GetValue());
 
     mOnChangeCallback();
 }
@@ -230,7 +230,7 @@ void PreferencesDialog::OnShowStatusTextCheckBoxClicked(wxCommandEvent & /*event
 void PreferencesDialog::OnShowExtendedStatusTextCheckBoxClicked(wxCommandEvent & /*event*/)
 {
     assert(!!mUIPreferencesManager);
-    mUIPreferencesManager->SetShowExtendedStatusText(mShowExtendedStatusTextCheckBox->GetValue());
+    mUIPreferencesManager.SetShowExtendedStatusText(mShowExtendedStatusTextCheckBox->GetValue());
 
     mOnChangeCallback();
 }
@@ -256,7 +256,7 @@ void PreferencesDialog::OnLanguagesListBoxSelected(wxCommandEvent & /*event*/)
             desiredLanguageIdentifier = mAvailableLanguages[languageIndex].Identifier;
         }
 
-        if (desiredLanguageIdentifier != mUIPreferencesManager->GetDesiredLanguage()
+        if (desiredLanguageIdentifier != mUIPreferencesManager.GetDesiredLanguage()
             && !mHasWarnedAboutLanguageSettingChanges)
         {
             wxMessageBox(
@@ -267,7 +267,7 @@ void PreferencesDialog::OnLanguagesListBoxSelected(wxCommandEvent & /*event*/)
             mHasWarnedAboutLanguageSettingChanges = true;
         }
 
-        mUIPreferencesManager->SetDesiredLanguage(desiredLanguageIdentifier);
+        mUIPreferencesManager.SetDesiredLanguage(desiredLanguageIdentifier);
     }
 
     mOnChangeCallback();
@@ -276,7 +276,7 @@ void PreferencesDialog::OnLanguagesListBoxSelected(wxCommandEvent & /*event*/)
 void PreferencesDialog::OnReloadLastLoadedShipOnStartupCheckBoxClicked(wxCommandEvent & /*event*/)
 {
     assert(!!mUIPreferencesManager);
-    mUIPreferencesManager->SetReloadLastLoadedShipOnStartup(mReloadLastLoadedShipOnStartupCheckBox->GetValue());
+    mUIPreferencesManager.SetReloadLastLoadedShipOnStartup(mReloadLastLoadedShipOnStartupCheckBox->GetValue());
 
     mOnChangeCallback();
 }
@@ -284,7 +284,7 @@ void PreferencesDialog::OnReloadLastLoadedShipOnStartupCheckBoxClicked(wxCommand
 void PreferencesDialog::OnShowShipDescriptionAtShipLoadCheckBoxClicked(wxCommandEvent & /*event*/)
 {
     assert(!!mUIPreferencesManager);
-    mUIPreferencesManager->SetShowShipDescriptionsAtShipLoad(mShowShipDescriptionAtShipLoadCheckBox->GetValue());
+    mUIPreferencesManager.SetShowShipDescriptionsAtShipLoad(mShowShipDescriptionAtShipLoadCheckBox->GetValue());
 
     mOnChangeCallback();
 }
@@ -292,7 +292,7 @@ void PreferencesDialog::OnShowShipDescriptionAtShipLoadCheckBoxClicked(wxCommand
 void PreferencesDialog::OnContinuousAutoFocusCheckBoxClicked(wxCommandEvent & /*event*/)
 {
     assert(!!mUIPreferencesManager);
-    mUIPreferencesManager->SetDoContinuousAutoFocus(mContinuousAutoFocusCheckBox->GetValue());
+    mUIPreferencesManager.SetDoContinuousAutoFocus(mContinuousAutoFocusCheckBox->GetValue());
 
     mOnChangeCallback();
 }
@@ -300,7 +300,7 @@ void PreferencesDialog::OnContinuousAutoFocusCheckBoxClicked(wxCommandEvent & /*
 void PreferencesDialog::OnAutoFocusAtShipLoadCheckBoxClicked(wxCommandEvent & /*event*/)
 {
     assert(!!mUIPreferencesManager);
-    mUIPreferencesManager->SetDoAutoFocusAtShipLoad(mAutoFocusAtShipLoadCheckBox->GetValue());
+    mUIPreferencesManager.SetDoAutoFocusAtShipLoad(mAutoFocusAtShipLoadCheckBox->GetValue());
 
     mOnChangeCallback();
 }
@@ -308,7 +308,7 @@ void PreferencesDialog::OnAutoFocusAtShipLoadCheckBoxClicked(wxCommandEvent & /*
 void PreferencesDialog::OnAutoShowSwitchboardCheckBoxClicked(wxCommandEvent & /*event*/)
 {
     assert(!!mUIPreferencesManager);
-    mUIPreferencesManager->SetAutoShowSwitchboard(mAutoShowSwitchboardCheckBox->GetValue());
+    mUIPreferencesManager.SetAutoShowSwitchboard(mAutoShowSwitchboardCheckBox->GetValue());
 
     mOnChangeCallback();
 }
@@ -316,7 +316,7 @@ void PreferencesDialog::OnAutoShowSwitchboardCheckBoxClicked(wxCommandEvent & /*
 void PreferencesDialog::OnShowElectricalNotificationsCheckBoxClicked(wxCommandEvent & /*event*/)
 {
     assert(!!mUIPreferencesManager);
-    mUIPreferencesManager->SetDoShowElectricalNotifications(mShowElectricalNotificationsCheckBox->GetValue());
+    mUIPreferencesManager.SetDoShowElectricalNotifications(mShowElectricalNotificationsCheckBox->GetValue());
 
     mOnChangeCallback();
 }
@@ -325,12 +325,12 @@ void PreferencesDialog::OnAutoTexturizationModeRadioButtonClick(wxCommandEvent &
 {
     if (mFlatStructureAutoTexturizationModeRadioButton->GetValue())
     {
-        mUIPreferencesManager->GetShipAutoTexturizationSharedSettings().Mode = ShipAutoTexturizationModeType::FlatStructure;
+        mUIPreferencesManager.GetShipAutoTexturizationSharedSettings().Mode = ShipAutoTexturizationModeType::FlatStructure;
     }
     else
     {
         assert(mMaterialTexturesAutoTexturizationModeRadioButton->GetValue());
-        mUIPreferencesManager->GetShipAutoTexturizationSharedSettings().Mode = ShipAutoTexturizationModeType::MaterialTextures;
+        mUIPreferencesManager.GetShipAutoTexturizationSharedSettings().Mode = ShipAutoTexturizationModeType::MaterialTextures;
     }
 
     ReconciliateShipAutoTexturizationModeSettings();
@@ -341,7 +341,7 @@ void PreferencesDialog::OnAutoTexturizationModeRadioButtonClick(wxCommandEvent &
 void PreferencesDialog::OnForceSharedAutoTexturizationSettingsOntoShipCheckBoxClicked(wxCommandEvent & /*event*/)
 {
     assert(!!mUIPreferencesManager);
-    mUIPreferencesManager->SetShipAutoTexturizationForceSharedSettingsOntoShipDefinition(mForceSharedAutoTexturizationSettingsOntoShipCheckBox->GetValue());
+    mUIPreferencesManager.SetShipAutoTexturizationForceSharedSettingsOntoShipDefinition(mForceSharedAutoTexturizationSettingsOntoShipCheckBox->GetValue());
 
     mOnChangeCallback();
 }
@@ -349,7 +349,7 @@ void PreferencesDialog::OnForceSharedAutoTexturizationSettingsOntoShipCheckBoxCl
 void PreferencesDialog::OnGlobalMuteCheckBoxClicked(wxCommandEvent & /*event*/)
 {
     assert(!!mUIPreferencesManager);
-    mUIPreferencesManager->SetGlobalMute(mGlobalMuteCheckBox->GetValue());
+    mUIPreferencesManager.SetGlobalMute(mGlobalMuteCheckBox->GetValue());
 
     ReconcileSoundSettings();
 
@@ -359,7 +359,7 @@ void PreferencesDialog::OnGlobalMuteCheckBoxClicked(wxCommandEvent & /*event*/)
 void PreferencesDialog::OnPlayBackgroundMusicCheckBoxClicked(wxCommandEvent & /*event*/)
 {
     assert(!!mUIPreferencesManager);
-    mUIPreferencesManager->SetPlayBackgroundMusic(mPlayBackgroundMusicCheckBox->GetValue());
+    mUIPreferencesManager.SetPlayBackgroundMusic(mPlayBackgroundMusicCheckBox->GetValue());
 
     ReconcileSoundSettings();
 
@@ -369,7 +369,7 @@ void PreferencesDialog::OnPlayBackgroundMusicCheckBoxClicked(wxCommandEvent & /*
 void PreferencesDialog::OnPlaySinkingMusicCheckBoxClicked(wxCommandEvent & /*event*/)
 {
     assert(!!mUIPreferencesManager);
-    mUIPreferencesManager->SetPlaySinkingMusic(mPlaySinkingMusicCheckBox->GetValue());
+    mUIPreferencesManager.SetPlaySinkingMusic(mPlaySinkingMusicCheckBox->GetValue());
 
     ReconcileSoundSettings();
 
@@ -515,8 +515,8 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
                 mCameraSpeedAdjustmentSpinCtrl = new wxSpinCtrl(boxSizer->GetStaticBox(), wxID_ANY, _("Camera Speed"), wxDefaultPosition, wxSize(75, -1),
                     wxSP_ARROW_KEYS | wxALIGN_CENTRE_HORIZONTAL);
                 mCameraSpeedAdjustmentSpinCtrl->SetRange(
-                    CameraSpeedAdjustmentToCameraSpeedAdjustmentSpin(mUIPreferencesManager->GetMinCameraSpeedAdjustment()), 
-                    CameraSpeedAdjustmentToCameraSpeedAdjustmentSpin(mUIPreferencesManager->GetMaxCameraSpeedAdjustment()));
+                    CameraSpeedAdjustmentToCameraSpeedAdjustmentSpin(mUIPreferencesManager.GetMinCameraSpeedAdjustment()), 
+                    CameraSpeedAdjustmentToCameraSpeedAdjustmentSpin(mUIPreferencesManager.GetMaxCameraSpeedAdjustment()));
                 mCameraSpeedAdjustmentSpinCtrl->SetToolTip(_("Adjusts the speed of the camera movements."));
                 mCameraSpeedAdjustmentSpinCtrl->Bind(wxEVT_SPINCTRL, &PreferencesDialog::OnCameraSpeedAdjustmentSpinCtrl, this);
 
@@ -651,19 +651,19 @@ void PreferencesDialog::PopulateGamePanel(wxPanel * panel)
                         {
                             case 0:
                             {
-                                mUIPreferencesManager->SetDisplayUnitsSystem(UnitsSystem::SI_Kelvin);
+                                mUIPreferencesManager.SetDisplayUnitsSystem(UnitsSystem::SI_Kelvin);
                                 break;
                             }
 
                             case 1:
                             {
-                                mUIPreferencesManager->SetDisplayUnitsSystem(UnitsSystem::SI_Celsius);
+                                mUIPreferencesManager.SetDisplayUnitsSystem(UnitsSystem::SI_Celsius);
                                 break;
                             }
 
                             case 2:
                             {
-                                mUIPreferencesManager->SetDisplayUnitsSystem(UnitsSystem::USCS);
+                                mUIPreferencesManager.SetDisplayUnitsSystem(UnitsSystem::USCS);
                                 break;
                             }
 
@@ -863,7 +863,7 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
                     [this](float value)
                     {
                         assert(!!mUIPreferencesManager);
-                        mUIPreferencesManager->GetShipAutoTexturizationSharedSettings().MaterialTextureMagnification = value;
+                        mUIPreferencesManager.GetShipAutoTexturizationSharedSettings().MaterialTextureMagnification = value;
                         mOnChangeCallback();
                     },
                     std::make_unique<ExponentialSliderCore>(
@@ -891,7 +891,7 @@ void PreferencesDialog::PopulateShipPanel(wxPanel * panel)
                     [this](float value)
                     {
                         assert(!!mUIPreferencesManager);
-                        mUIPreferencesManager->GetShipAutoTexturizationSharedSettings().MaterialTextureTransparency = value;
+                        mUIPreferencesManager.GetShipAutoTexturizationSharedSettings().MaterialTextureTransparency = value;
                         mOnChangeCallback();
                     },
                     std::make_unique<LinearSliderCore>(
@@ -1081,7 +1081,7 @@ void PreferencesDialog::PopulateMusicPanel(wxPanel * panel)
                         _("Adjusts the volume of background music."),
                         [this](float value)
                         {
-                            this->mUIPreferencesManager->SetBackgroundMusicVolume(value);
+                            this->mUIPreferencesManager.SetBackgroundMusicVolume(value);
                             this->mOnChangeCallback();
                         },
                         std::make_unique<LinearSliderCore>(
@@ -1107,7 +1107,7 @@ void PreferencesDialog::PopulateMusicPanel(wxPanel * panel)
                         _("Adjusts the volume of the music played when a ship is sinking."),
                         [this](float value)
                         {
-                            this->mUIPreferencesManager->SetGameMusicVolume(value);
+                            this->mUIPreferencesManager.SetGameMusicVolume(value);
                             this->mOnChangeCallback();
                         },
                         std::make_unique<LinearSliderCore>(
@@ -1208,20 +1208,20 @@ void PreferencesDialog::ReadSettings()
 {
     assert(!!mUIPreferencesManager);
 
-    mScreenshotDirPickerCtrl->SetPath(mUIPreferencesManager->GetScreenshotsFolderPath().string());
+    mScreenshotDirPickerCtrl->SetPath(mUIPreferencesManager.GetScreenshotsFolderPath().string());
 
-    mStartInFullScreenCheckBox->SetValue(mUIPreferencesManager->GetStartInFullScreen());
-    mShowTipOnStartupCheckBox->SetValue(mUIPreferencesManager->GetShowStartupTip());
-    mCheckForUpdatesAtStartupCheckBox->SetValue(mUIPreferencesManager->GetCheckUpdatesAtStartup());
-    mSaveSettingsOnExitCheckBox->SetValue(mUIPreferencesManager->GetSaveSettingsOnExit());
-    mShowTsunamiNotificationsCheckBox->SetValue(mUIPreferencesManager->GetDoShowTsunamiNotifications());
-    mZoomIncrementSpinCtrl->SetValue(ZoomIncrementToZoomIncrementSpin(mUIPreferencesManager->GetZoomIncrement()));
-    mPanIncrementSpinCtrl->SetValue(PanIncrementToPanIncrementSpin(mUIPreferencesManager->GetPanIncrement()));
-    mCameraSpeedAdjustmentSpinCtrl->SetValue(CameraSpeedAdjustmentToCameraSpeedAdjustmentSpin(mUIPreferencesManager->GetCameraSpeedAdjustment()));
-    mShowStatusTextCheckBox->SetValue(mUIPreferencesManager->GetShowStatusText());
-    mShowExtendedStatusTextCheckBox->SetValue(mUIPreferencesManager->GetShowExtendedStatusText());
-    mLanguagesListBox->SetSelection(GetLanguagesListBoxIndex(mUIPreferencesManager->GetDesiredLanguage()));
-    switch (mUIPreferencesManager->GetDisplayUnitsSystem())
+    mStartInFullScreenCheckBox->SetValue(mUIPreferencesManager.GetStartInFullScreen());
+    mShowTipOnStartupCheckBox->SetValue(mUIPreferencesManager.GetShowStartupTip());
+    mCheckForUpdatesAtStartupCheckBox->SetValue(mUIPreferencesManager.GetCheckUpdatesAtStartup());
+    mSaveSettingsOnExitCheckBox->SetValue(mUIPreferencesManager.GetSaveSettingsOnExit());
+    mShowTsunamiNotificationsCheckBox->SetValue(mUIPreferencesManager.GetDoShowTsunamiNotifications());
+    mZoomIncrementSpinCtrl->SetValue(ZoomIncrementToZoomIncrementSpin(mUIPreferencesManager.GetZoomIncrement()));
+    mPanIncrementSpinCtrl->SetValue(PanIncrementToPanIncrementSpin(mUIPreferencesManager.GetPanIncrement()));
+    mCameraSpeedAdjustmentSpinCtrl->SetValue(CameraSpeedAdjustmentToCameraSpeedAdjustmentSpin(mUIPreferencesManager.GetCameraSpeedAdjustment()));
+    mShowStatusTextCheckBox->SetValue(mUIPreferencesManager.GetShowStatusText());
+    mShowExtendedStatusTextCheckBox->SetValue(mUIPreferencesManager.GetShowExtendedStatusText());
+    mLanguagesListBox->SetSelection(GetLanguagesListBoxIndex(mUIPreferencesManager.GetDesiredLanguage()));
+    switch (mUIPreferencesManager.GetDisplayUnitsSystem())
     {
         case UnitsSystem::SI_Kelvin:
         {
@@ -1242,13 +1242,13 @@ void PreferencesDialog::ReadSettings()
         }
     }
 
-    mReloadLastLoadedShipOnStartupCheckBox->SetValue(mUIPreferencesManager->GetReloadLastLoadedShipOnStartup());
-    mShowShipDescriptionAtShipLoadCheckBox->SetValue(mUIPreferencesManager->GetShowShipDescriptionsAtShipLoad());
-    mContinuousAutoFocusCheckBox->SetValue(mUIPreferencesManager->GetDoContinuousAutoFocus());
-    mAutoFocusAtShipLoadCheckBox->SetValue(mUIPreferencesManager->GetDoAutoFocusAtShipLoad());
-    mAutoShowSwitchboardCheckBox->SetValue(mUIPreferencesManager->GetAutoShowSwitchboard());
-    mShowElectricalNotificationsCheckBox->SetValue(mUIPreferencesManager->GetDoShowElectricalNotifications());
-    switch (mUIPreferencesManager->GetShipAutoTexturizationSharedSettings().Mode)
+    mReloadLastLoadedShipOnStartupCheckBox->SetValue(mUIPreferencesManager.GetReloadLastLoadedShipOnStartup());
+    mShowShipDescriptionAtShipLoadCheckBox->SetValue(mUIPreferencesManager.GetShowShipDescriptionsAtShipLoad());
+    mContinuousAutoFocusCheckBox->SetValue(mUIPreferencesManager.GetDoContinuousAutoFocus());
+    mAutoFocusAtShipLoadCheckBox->SetValue(mUIPreferencesManager.GetDoAutoFocusAtShipLoad());
+    mAutoShowSwitchboardCheckBox->SetValue(mUIPreferencesManager.GetAutoShowSwitchboard());
+    mShowElectricalNotificationsCheckBox->SetValue(mUIPreferencesManager.GetDoShowElectricalNotifications());
+    switch (mUIPreferencesManager.GetShipAutoTexturizationSharedSettings().Mode)
     {
         case ShipAutoTexturizationModeType::FlatStructure:
         {
@@ -1262,15 +1262,15 @@ void PreferencesDialog::ReadSettings()
             break;
         }
     }
-    mForceSharedAutoTexturizationSettingsOntoShipCheckBox->SetValue(mUIPreferencesManager->GetShipAutoTexturizationForceSharedSettingsOntoShipDefinition());
-    mMaterialTextureMagnificationSlider->SetValue(mUIPreferencesManager->GetShipAutoTexturizationSharedSettings().MaterialTextureMagnification);
-    mMaterialTextureTransparencySlider->SetValue(mUIPreferencesManager->GetShipAutoTexturizationSharedSettings().MaterialTextureTransparency);
+    mForceSharedAutoTexturizationSettingsOntoShipCheckBox->SetValue(mUIPreferencesManager.GetShipAutoTexturizationForceSharedSettingsOntoShipDefinition());
+    mMaterialTextureMagnificationSlider->SetValue(mUIPreferencesManager.GetShipAutoTexturizationSharedSettings().MaterialTextureMagnification);
+    mMaterialTextureTransparencySlider->SetValue(mUIPreferencesManager.GetShipAutoTexturizationSharedSettings().MaterialTextureTransparency);
 
-    mGlobalMuteCheckBox->SetValue(mUIPreferencesManager->GetGlobalMute());
-    mBackgroundMusicVolumeSlider->SetValue(mUIPreferencesManager->GetBackgroundMusicVolume());
-    mPlayBackgroundMusicCheckBox->SetValue(mUIPreferencesManager->GetPlayBackgroundMusic());
-    mSinkingMusicVolumeSlider->SetValue(mUIPreferencesManager->GetGameMusicVolume());
-    mPlaySinkingMusicCheckBox->SetValue(mUIPreferencesManager->GetPlaySinkingMusic());
+    mGlobalMuteCheckBox->SetValue(mUIPreferencesManager.GetGlobalMute());
+    mBackgroundMusicVolumeSlider->SetValue(mUIPreferencesManager.GetBackgroundMusicVolume());
+    mPlayBackgroundMusicCheckBox->SetValue(mUIPreferencesManager.GetPlayBackgroundMusic());
+    mSinkingMusicVolumeSlider->SetValue(mUIPreferencesManager.GetGameMusicVolume());
+    mPlaySinkingMusicCheckBox->SetValue(mUIPreferencesManager.GetPlaySinkingMusic());
 
     ReconcileSoundSettings();
 }

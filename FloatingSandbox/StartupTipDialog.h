@@ -20,8 +20,8 @@ class StartupTipDialog : public wxDialog
 public:
 
     StartupTipDialog(
-        wxWindow* parent,
-        std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
+        wxWindow * parent,
+        UIPreferencesManager & uiPreferencesManager,
         ResourceLocator const & resourceLocator,
         LocalizationManager const & localizationManager);
 
@@ -33,5 +33,5 @@ private:
 
 private:
 
-    std::shared_ptr<UIPreferencesManager> mUIPreferencesManager;
+    UIPreferencesManager & mUIPreferencesManager;
 };

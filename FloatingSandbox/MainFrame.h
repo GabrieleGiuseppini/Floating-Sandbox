@@ -81,6 +81,24 @@ public:
 
 private:
 
+    wxApp* const mMainApp;
+
+    std::unique_ptr<ShipBuilder::MainFrame> mShipBuilderMainFrame;
+
+    //
+    // Helpers
+    //
+
+    ResourceLocator const& mResourceLocator;
+    LocalizationManager& mLocalizationManager;
+    std::unique_ptr<GameController> mGameController;
+    std::unique_ptr<SoundController> mSoundController;
+    std::unique_ptr<MusicController> mMusicController;
+    std::unique_ptr<ToolController> mToolController;
+    std::unique_ptr<SettingsManager> mSettingsManager;
+    std::unique_ptr<UIPreferencesManager> mUIPreferencesManager;
+    std::unique_ptr<UpdateChecker> mUpdateChecker;
+
     UnFocusablePanel * mMainPanel;
 
     //
@@ -396,24 +414,6 @@ private:
     void SwitchFromShipBuilder(std::optional<std::filesystem::path> shipFilePath);
 
 private:
-
-    wxApp * const mMainApp;
-
-    std::unique_ptr<ShipBuilder::MainFrame> mShipBuilderMainFrame;
-
-    //
-    // Helpers
-    //
-
-    ResourceLocator const & mResourceLocator;
-    LocalizationManager & mLocalizationManager;
-    std::shared_ptr<GameController> mGameController;
-    std::shared_ptr<SoundController> mSoundController;
-    std::shared_ptr<MusicController> mMusicController;
-    std::unique_ptr<ToolController> mToolController;
-    std::shared_ptr<SettingsManager> mSettingsManager;
-    std::shared_ptr<UIPreferencesManager> mUIPreferencesManager;
-    std::unique_ptr<UpdateChecker> mUpdateChecker;
 
     //
     // State

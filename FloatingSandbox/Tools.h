@@ -105,8 +105,8 @@ protected:
     Tool(
         ToolType toolType,
         IToolCursorManager & toolCursorManager,
-        std::shared_ptr<IGameController> gameController,
-        std::shared_ptr<SoundController> soundController)
+        IGameController & gameController,
+        SoundController & soundController)
         : mToolCursorManager(toolCursorManager)
         , mGameController(gameController)
         , mSoundController(soundController)
@@ -114,8 +114,8 @@ protected:
     {}
 
     IToolCursorManager & mToolCursorManager;
-    std::shared_ptr<IGameController> const mGameController;
-    std::shared_ptr<SoundController> const mSoundController;
+    IGameController & mGameController;
+    SoundController & mSoundController;
 
 private:
 
@@ -144,13 +144,13 @@ protected:
     OneShotTool(
         ToolType toolType,
         IToolCursorManager & toolCursorManager,
-        std::shared_ptr<IGameController> gameController,
-        std::shared_ptr<SoundController> soundController)
+        IGameController & gameController,
+        SoundController & soundController)
         : Tool(
             toolType,
             toolCursorManager,
-            std::move(gameController),
-            std::move(soundController))
+            gameController,
+            soundController)
     {}
 };
 
@@ -195,13 +195,13 @@ protected:
     ContinuousTool(
         ToolType toolType,
         IToolCursorManager & toolCursorManager,
-        std::shared_ptr<IGameController> gameController,
-        std::shared_ptr<SoundController> soundController)
+        IGameController & gameController,
+        SoundController & soundController)
         : Tool(
             toolType,
             toolCursorManager,
-            std::move(gameController),
-            std::move(soundController))
+            gameController,
+            soundController)
         , mPreviousMousePosition(0, 0)
         , mPreviousTimestamp(std::chrono::steady_clock::now())
         , mCumulatedTime(0)
@@ -275,7 +275,7 @@ public:
         if (!!mEngagedMovableObjectId)
         {
             // Tell IGameController to stop moving
-            mGameController->SetMoveToolEngaged(false);
+            mGameController.SetMoveToolEngaged(false);
         }
     }
 
@@ -312,7 +312,7 @@ public:
                 DisplayLogicalSize const integralOffset = DisplayLogicalSize::FromFloatRound(fractionalOffset);
 
                 // Move
-                mGameController->MoveBy(
+                mGameController.MoveBy(
                     mCurrentTrajectory->EngagedMovableObjectId,
                     integralOffset,
                     integralOffset);
@@ -323,7 +323,7 @@ public:
             else
             {
                 // Rotate
-                mGameController->RotateBy(
+                mGameController.RotateBy(
                     mCurrentTrajectory->EngagedMovableObjectId,
                     newCurrentPosition.y - mCurrentTrajectory->CurrentPosition.y,
                     DisplayLogicalCoordinates::FromFloatRound(*mCurrentTrajectory->RotationCenter),
@@ -346,7 +346,7 @@ public:
                     if (!mCurrentTrajectory->RotationCenter)
                     {
                         // Move to stop
-                        mGameController->MoveBy(
+                        mGameController.MoveBy(
                             mCurrentTrajectory->EngagedMovableObjectId,
                             DisplayLogicalSize(0, 0),
                             DisplayLogicalSize(0, 0));
@@ -354,7 +354,7 @@ public:
                     else
                     {
                         // Rotate to stop
-                        mGameController->RotateBy(
+                        mGameController.RotateBy(
                             mCurrentTrajectory->EngagedMovableObjectId,
                             0.0f,
                             DisplayLogicalCoordinates::FromFloatRound(*mCurrentTrajectory->RotationCenter),
@@ -435,8 +435,8 @@ protected:
     BaseMoveTool(
         ToolType toolType,
         IToolCursorManager & toolCursorManager,
-        std::shared_ptr<IGameController> gameController,
-        std::shared_ptr<SoundController> soundController,
+        IGameController & gameController,
+        SoundController & soundController,
         wxImage upCursorImage,
         wxImage downCursorImage,
         wxImage rotateUpCursorImage,
@@ -444,8 +444,8 @@ protected:
         : OneShotTool(
             toolType,
             toolCursorManager,
-            std::move(gameController),
-            std::move(soundController))
+            gameController,
+            soundController)
         , mEngagedMovableObjectId()
         , mCurrentTrajectory()
         , mRotationCenter()
@@ -475,7 +475,7 @@ private:
                 //
 
                 // Check with game controller
-                mGameController->PickObjectToMove(
+                mGameController.PickObjectToMove(
                     inputState.MousePosition,
                     mEngagedMovableObjectId);
 
@@ -484,7 +484,7 @@ private:
                     // Engaged!
 
                     // Tell IGameController
-                    mGameController->SetMoveToolEngaged(true);
+                    mGameController.SetMoveToolEngaged(true);
                 }
             }
         }
@@ -513,7 +513,7 @@ private:
                     // Impart last inertia == distance left
                     if (!mCurrentTrajectory->RotationCenter)
                     {
-                        mGameController->MoveBy(
+                        mGameController.MoveBy(
                             mCurrentTrajectory->EngagedMovableObjectId,
                             DisplayLogicalSize(0, 0),
                             DisplayLogicalSize::FromFloatRound(mCurrentTrajectory->EndPosition - mCurrentTrajectory->CurrentPosition));
@@ -521,7 +521,7 @@ private:
                     else
                     {
                         // Rotate to stop
-                        mGameController->RotateBy(
+                        mGameController.RotateBy(
                             mCurrentTrajectory->EngagedMovableObjectId,
                             0.0f,
                             DisplayLogicalCoordinates::FromFloatRound(*mCurrentTrajectory->RotationCenter),
@@ -533,7 +533,7 @@ private:
                 }
 
                 // Tell IGameController we've stopped moving
-                mGameController->SetMoveToolEngaged(false);
+                mGameController.SetMoveToolEngaged(false);
             }
         }
 
@@ -647,8 +647,8 @@ public:
 
     MoveTool(
         IToolCursorManager & toolCursorManager,
-        std::shared_ptr<IGameController> gameController,
-        std::shared_ptr<SoundController> soundController,
+        IGameController & gameController,
+        SoundController & soundController,
         ResourceLocator const & resourceLocator);
 };
 
@@ -658,8 +658,8 @@ public:
 
     MoveAllTool(
         IToolCursorManager & toolCursorManager,
-        std::shared_ptr<IGameController> gameController,
-        std::shared_ptr<SoundController> soundController,
+        IGameController & gameController,
+        SoundController & soundController,
         ResourceLocator const & resourceLocator);
 };
 
@@ -669,8 +669,8 @@ public:
 
     PickAndPullTool(
         IToolCursorManager & toolCursorManager,
-        std::shared_ptr<IGameController> gameController,
-        std::shared_ptr<SoundController> soundController,
+        IGameController & gameController,
+        SoundController & soundController,
         ResourceLocator const & resourceLocator);
 
 public:
@@ -698,7 +698,7 @@ public:
                 // ...see if we're able to pick a point and thus start engagement
                 //
 
-                auto elementId = mGameController->PickObjectForPickAndPull(inputState.MousePosition);
+                auto elementId = mGameController.PickObjectForPickAndPull(inputState.MousePosition);
                 if (elementId.has_value())
                 {
                     //
@@ -710,7 +710,7 @@ public:
                         inputState.MousePosition.ToFloat());
 
                     // Play sound
-                    mSoundController->PlayPliersSound(mGameController->IsUnderwater(*elementId));
+                    mSoundController.PlayPliersSound(mGameController.IsUnderwater(*elementId));
                 }
             }
             else
@@ -725,7 +725,7 @@ public:
                 // 2. Calculate convergence speed based on speed of mouse move
 
                 vec2f const mouseMovementStride = inputState.MousePosition.ToFloat() - mCurrentEngagementState->LastScreenPosition;
-                float const worldStride = mGameController->ScreenOffsetToWorldOffset(DisplayLogicalSize::FromFloatRound(mouseMovementStride)).length();
+                float const worldStride = mGameController.ScreenOffsetToWorldOffset(DisplayLogicalSize::FromFloatRound(mouseMovementStride)).length();
 
                 // New convergence rate:
                 // - Stride < 2.0: 0.03 (76 steps to 0.9 of target)
@@ -754,7 +754,7 @@ public:
                     * mCurrentEngagementState->CurrentConvergenceSpeed;
 
                 // 4. Apply force towards current position
-                mGameController->Pull(
+                mGameController.Pull(
                     mCurrentEngagementState->PickedParticle,
                     DisplayLogicalCoordinates::FromFloatRound(mCurrentEngagementState->CurrentScreenPosition));
             }
@@ -821,8 +821,8 @@ public:
 
     SmashTool(
         IToolCursorManager & toolCursorManager,
-        std::shared_ptr<IGameController> gameController,
-        std::shared_ptr<SoundController> soundController,
+        IGameController & gameController,
+        SoundController & soundController,
         ResourceLocator const & resourceLocator);
 
 public:
@@ -883,8 +883,8 @@ public:
 
     SawTool(
         IToolCursorManager & toolCursorManager,
-        std::shared_ptr<IGameController> gameController,
-        std::shared_ptr<SoundController> soundController,
+        IGameController & gameController,
+        SoundController & soundController,
         ResourceLocator const & resourceLocator);
 
 public:
@@ -903,7 +903,7 @@ public:
     virtual void Deinitialize() override
     {
         // Stop sound if we're playing
-        mSoundController->StopSawSound();
+        mSoundController.StopSawSound();
     }
 
     virtual void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
@@ -914,11 +914,11 @@ public:
             assert(mPreviousMousePos.has_value());
 
             // Update underwater-ness of sound
-            bool isUnderwater = mGameController->IsUnderwater(inputState.MousePosition);
+            bool isUnderwater = mGameController.IsUnderwater(inputState.MousePosition);
             if (isUnderwater != mIsUnderwater)
             {
                 // Update sound
-                mSoundController->PlaySawSound(isUnderwater);
+                mSoundController.PlaySawSound(isUnderwater);
 
                 // Update state
                 mIsUnderwater = isUnderwater;
@@ -941,7 +941,7 @@ public:
             auto const targetPosition = CalculateTargetPosition(inputState);
 
             // Saw
-            mGameController->SawThrough(
+            mGameController.SawThrough(
                 *mPreviousMousePos,
                 targetPosition,
                 mIsFirstSegment);
@@ -981,7 +981,7 @@ public:
     virtual void OnLeftMouseUp(InputState const & inputState) override
     {
         // Stop sound
-        mSoundController->StopSawSound();
+        mSoundController.StopSawSound();
 
         // Set cursor
         SetCurrentCursor(inputState);
@@ -998,10 +998,10 @@ private:
         mPreviousMousePos = inputState.MousePosition;
         mCurrentLockedDirection.reset();
         mIsFirstSegment = true;
-        mIsUnderwater = mGameController->IsUnderwater(inputState.MousePosition);
+        mIsUnderwater = mGameController.IsUnderwater(inputState.MousePosition);
 
         // Start sound
-        mSoundController->PlaySawSound(mIsUnderwater);
+        mSoundController.PlaySawSound(mIsUnderwater);
     }
 
     DisplayLogicalCoordinates CalculateTargetPosition(InputState const & inputState) const
@@ -1068,8 +1068,8 @@ public:
 
     HeatBlasterTool(
         IToolCursorManager & toolCursorManager,
-        std::shared_ptr<IGameController> gameController,
-        std::shared_ptr<SoundController> soundController,
+        IGameController & gameController,
+        SoundController & soundController,
         ResourceLocator const & resourceLocator);
 
 public:
@@ -1080,7 +1080,7 @@ public:
 
         if (inputState.IsLeftMouseDown)
         {
-            mIsEngaged = mGameController->ApplyHeatBlasterAt(inputState.MousePosition, mCurrentAction);
+            mIsEngaged = mGameController.ApplyHeatBlasterAt(inputState.MousePosition, mCurrentAction);
         }
         else
         {
@@ -1093,7 +1093,7 @@ public:
     virtual void Deinitialize() override
     {
         // Stop sound
-        mSoundController->StopHeatBlasterSound();
+        mSoundController.StopHeatBlasterSound();
     }
 
     virtual void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
@@ -1103,7 +1103,7 @@ public:
 
         if (inputState.IsLeftMouseDown)
         {
-            isEngaged = mGameController->ApplyHeatBlasterAt(inputState.MousePosition, mCurrentAction);
+            isEngaged = mGameController.ApplyHeatBlasterAt(inputState.MousePosition, mCurrentAction);
         }
         else
         {
@@ -1120,7 +1120,7 @@ public:
                 mCurrentAction = currentAction;
 
                 // Start sound
-                mSoundController->PlayHeatBlasterSound(mCurrentAction);
+                mSoundController.PlayHeatBlasterSound(mCurrentAction);
 
                 // Update cursor
                 SetCurrentCursor();
@@ -1134,7 +1134,7 @@ public:
                 mIsEngaged = false;
 
                 // Stop sound
-                mSoundController->StopHeatBlasterSound();
+                mSoundController.StopHeatBlasterSound();
 
                 // Update cursor
                 SetCurrentCursor();
@@ -1187,8 +1187,8 @@ public:
 
     FireExtinguisherTool(
         IToolCursorManager & toolCursorManager,
-        std::shared_ptr<IGameController> gameController,
-        std::shared_ptr<SoundController> soundController,
+        IGameController & gameController,
+        SoundController & soundController,
         ResourceLocator const & resourceLocator);
 
 public:
@@ -1197,7 +1197,7 @@ public:
     {
         if (inputState.IsLeftMouseDown)
         {
-            mIsEngaged = mGameController->ExtinguishFireAt(inputState.MousePosition);
+            mIsEngaged = mGameController.ExtinguishFireAt(inputState.MousePosition);
         }
         else
         {
@@ -1210,7 +1210,7 @@ public:
     virtual void Deinitialize() override
     {
         // Stop sound
-        mSoundController->StopFireExtinguisherSound();
+        mSoundController.StopFireExtinguisherSound();
     }
 
     virtual void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
@@ -1219,7 +1219,7 @@ public:
 
         if (inputState.IsLeftMouseDown)
         {
-            isEngaged = mGameController->ExtinguishFireAt(inputState.MousePosition);
+            isEngaged = mGameController.ExtinguishFireAt(inputState.MousePosition);
         }
         else
         {
@@ -1234,7 +1234,7 @@ public:
                 mIsEngaged = true;
 
                 // Start sound
-                mSoundController->PlayFireExtinguisherSound();
+                mSoundController.PlayFireExtinguisherSound();
 
                 // Update cursor
                 SetCurrentCursor();
@@ -1248,7 +1248,7 @@ public:
                 mIsEngaged = false;
 
                 // Stop sound
-                mSoundController->StopFireExtinguisherSound();
+                mSoundController.StopFireExtinguisherSound();
 
                 // Update cursor
                 SetCurrentCursor();
@@ -1290,8 +1290,8 @@ public:
 
     GrabTool(
         IToolCursorManager & toolCursorManager,
-        std::shared_ptr<IGameController> gameController,
-        std::shared_ptr<SoundController> soundController,
+        IGameController & gameController,
+        SoundController & soundController,
         ResourceLocator const & resourceLocator);
 
 public:
@@ -1303,7 +1303,7 @@ public:
         if (inputState.IsLeftMouseDown)
         {
             // Start sound
-            mSoundController->PlayDrawSound(mGameController->IsUnderwater(inputState.MousePosition));
+            mSoundController.PlayDrawSound(mGameController.IsUnderwater(inputState.MousePosition));
         }
 
         SetBasisCursor(inputState);
@@ -1312,7 +1312,7 @@ public:
     virtual void Deinitialize() override
     {
         // Stop sound
-        mSoundController->StopDrawSound();
+        mSoundController.StopDrawSound();
     }
 
     virtual void OnLeftMouseDown(InputState const & inputState) override
@@ -1320,7 +1320,7 @@ public:
         ContinuousTool::OnLeftMouseDown(inputState);
 
         // Start sound
-        mSoundController->PlayDrawSound(mGameController->IsUnderwater(inputState.MousePosition));
+        mSoundController.PlayDrawSound(mGameController.IsUnderwater(inputState.MousePosition));
 
         // Change cursor
         SetBasisCursor(inputState);
@@ -1329,7 +1329,7 @@ public:
     virtual void OnLeftMouseUp(InputState const & inputState) override
     {
         // Stop sound
-        mSoundController->StopDrawSound();
+        mSoundController.StopDrawSound();
 
         // Change cursor
         SetBasisCursor(inputState);
@@ -1395,8 +1395,8 @@ public:
 
     SwirlTool(
         IToolCursorManager & toolCursorManager,
-        std::shared_ptr<IGameController> gameController,
-        std::shared_ptr<SoundController> soundController,
+        IGameController & gameController,
+        SoundController & soundController,
         ResourceLocator const & resourceLocator);
 
 public:
@@ -1408,7 +1408,7 @@ public:
         if (inputState.IsLeftMouseDown)
         {
             // Start sound
-            mSoundController->PlaySwirlSound(mGameController->IsUnderwater(inputState.MousePosition));
+            mSoundController.PlaySwirlSound(mGameController.IsUnderwater(inputState.MousePosition));
         }
 
         SetBasisCursor(inputState);
@@ -1417,7 +1417,7 @@ public:
     virtual void Deinitialize() override
     {
         // Stop sound
-        mSoundController->StopSwirlSound();
+        mSoundController.StopSwirlSound();
     }
 
     virtual void OnLeftMouseDown(InputState const & inputState) override
@@ -1425,7 +1425,7 @@ public:
         ContinuousTool::OnLeftMouseDown(inputState);
 
         // Start sound
-        mSoundController->PlaySwirlSound(mGameController->IsUnderwater(inputState.MousePosition));
+        mSoundController.PlaySwirlSound(mGameController.IsUnderwater(inputState.MousePosition));
 
         // Change cursor
         SetBasisCursor(inputState);
@@ -1434,7 +1434,7 @@ public:
     virtual void OnLeftMouseUp(InputState const & inputState) override
     {
         // Stop sound
-        mSoundController->StopSwirlSound();
+        mSoundController.StopSwirlSound();
 
         // Change cursor
         SetBasisCursor(inputState);
@@ -1500,8 +1500,8 @@ public:
 
     PinTool(
         IToolCursorManager & toolCursorManager,
-        std::shared_ptr<IGameController> gameController,
-        std::shared_ptr<SoundController> soundController,
+        IGameController & gameController,
+        SoundController & soundController,
         ResourceLocator const & resourceLocator);
 
 public:
@@ -1517,12 +1517,12 @@ public:
         if (!inputState.IsShiftKeyDown)
         {
             // Toggle pin
-            mGameController->TogglePinAt(inputState.MousePosition);
+            mGameController.TogglePinAt(inputState.MousePosition);
         }
         else
         {
             // Remove all pins
-            mGameController->RemoveAllPins();
+            mGameController.RemoveAllPins();
         }
     }
 
@@ -1539,8 +1539,8 @@ public:
 
     InjectPressureTool(
         IToolCursorManager & toolCursorManager,
-        std::shared_ptr<IGameController> gameController,
-        std::shared_ptr<SoundController> soundController,
+        IGameController & gameController,
+        SoundController & soundController,
         ResourceLocator const & resourceLocator);
 
 public:
@@ -1565,7 +1565,7 @@ public:
         std::optional<ActionType> newAction;
         if (inputState.IsLeftMouseDown)
         {
-            auto const locus = mGameController->InjectPressureAt(
+            auto const locus = mGameController.InjectPressureAt(
                 inputState.MousePosition,
                 inputState.IsShiftKeyDown ? -1.0f : 1.0f);
 
@@ -1585,10 +1585,10 @@ public:
             if (!mCurrentAction.has_value())
             {
                 // Start sounds
-                mSoundController->PlayPressureInjectionSound();
+                mSoundController.PlayPressureInjectionSound();
                 if (*newAction == ActionType::AirBubble)
                 {
-                    mSoundController->PlayAirBubblesSound();
+                    mSoundController.PlayAirBubblesSound();
                 }
 
                 doUpdateCursor = true;
@@ -1597,12 +1597,12 @@ public:
             {
                 if (*mCurrentAction == ActionType::AirBubble)
                 {
-                    mSoundController->StopAirBubblesSound();
+                    mSoundController.StopAirBubblesSound();
                 }
                 else
                 {
                     assert(*newAction == ActionType::AirBubble);
-                    mSoundController->PlayAirBubblesSound();
+                    mSoundController.PlayAirBubblesSound();
                 }
             }
         }
@@ -1647,11 +1647,11 @@ private:
 
     void StopSounds(ActionType action)
     {
-        mSoundController->StopPressureInjectionSound();
+        mSoundController.StopPressureInjectionSound();
 
         if (action == ActionType::AirBubble)
         {
-            mSoundController->StopAirBubblesSound();
+            mSoundController.StopAirBubblesSound();
         }
     }
 
@@ -1669,8 +1669,8 @@ public:
 
     FloodHoseTool(
         IToolCursorManager & toolCursorManager,
-        std::shared_ptr<IGameController> gameController,
-        std::shared_ptr<SoundController> soundController,
+        IGameController & gameController,
+        SoundController & soundController,
         ResourceLocator const & resourceLocator);
 
 public:
@@ -1684,7 +1684,7 @@ public:
     virtual void Deinitialize() override
     {
         // Stop sound
-        mSoundController->StopFloodHoseSound();
+        mSoundController.StopFloodHoseSound();
     }
 
     virtual void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
@@ -1692,7 +1692,7 @@ public:
         bool isEngaged;
         if (inputState.IsLeftMouseDown)
         {
-            isEngaged = mGameController->FloodAt(
+            isEngaged = mGameController.FloodAt(
                 inputState.MousePosition,
                 inputState.IsShiftKeyDown ? -1.0f : 1.0f);
         }
@@ -1709,7 +1709,7 @@ public:
                 mIsEngaged = true;
 
                 // Start sound
-                mSoundController->PlayFloodHoseSound();
+                mSoundController.PlayFloodHoseSound();
             }
             else
             {
@@ -1728,7 +1728,7 @@ public:
                 mIsEngaged = false;
 
                 // Stop sound
-                mSoundController->StopFloodHoseSound();
+                mSoundController.StopFloodHoseSound();
 
                 // Update cursor
                 SetCurrentCursor();
@@ -1770,8 +1770,8 @@ public:
 
     AntiMatterBombTool(
         IToolCursorManager & toolCursorManager,
-        std::shared_ptr<IGameController> gameController,
-        std::shared_ptr<SoundController> soundController,
+        IGameController & gameController,
+        SoundController & soundController,
         ResourceLocator const & resourceLocator);
 
 public:
@@ -1785,7 +1785,7 @@ public:
     virtual void OnLeftMouseDown(InputState const & inputState) override
     {
         // Toggle bomb
-        mGameController->ToggleAntiMatterBombAt(inputState.MousePosition);
+        mGameController.ToggleAntiMatterBombAt(inputState.MousePosition);
     }
 
     virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}
@@ -1801,8 +1801,8 @@ public:
 
     ImpactBombTool(
         IToolCursorManager & toolCursorManager,
-        std::shared_ptr<IGameController> gameController,
-        std::shared_ptr<SoundController> soundController,
+        IGameController & gameController,
+        SoundController & soundController,
         ResourceLocator const & resourceLocator);
 
 public:
@@ -1816,7 +1816,7 @@ public:
     virtual void OnLeftMouseDown(InputState const & inputState) override
     {
         // Toggle bomb
-        mGameController->ToggleImpactBombAt(inputState.MousePosition);
+        mGameController.ToggleImpactBombAt(inputState.MousePosition);
     }
 
     virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}
@@ -1832,8 +1832,8 @@ public:
 
     RCBombTool(
         IToolCursorManager & toolCursorManager,
-        std::shared_ptr<IGameController> gameController,
-        std::shared_ptr<SoundController> soundController,
+        IGameController & gameController,
+        SoundController & soundController,
         ResourceLocator const & resourceLocator);
 
 public:
@@ -1847,7 +1847,7 @@ public:
     virtual void OnLeftMouseDown(InputState const & inputState) override
     {
         // Toggle bomb
-        mGameController->ToggleRCBombAt(inputState.MousePosition);
+        mGameController.ToggleRCBombAt(inputState.MousePosition);
     }
 
     virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}
@@ -1863,8 +1863,8 @@ public:
 
     TimerBombTool(
         IToolCursorManager & toolCursorManager,
-        std::shared_ptr<IGameController> gameController,
-        std::shared_ptr<SoundController> soundController,
+        IGameController & gameController,
+        SoundController & soundController,
         ResourceLocator const & resourceLocator);
 
 public:
@@ -1878,7 +1878,7 @@ public:
     virtual void OnLeftMouseDown(InputState const & inputState) override
     {
         // Toggle bomb
-        mGameController->ToggleTimerBombAt(inputState.MousePosition);
+        mGameController.ToggleTimerBombAt(inputState.MousePosition);
     }
 
     virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}
@@ -1894,8 +1894,8 @@ public:
 
     WaveMakerTool(
         IToolCursorManager & toolCursorManager,
-        std::shared_ptr<IGameController> gameController,
-        std::shared_ptr<SoundController> soundController,
+        IGameController & gameController,
+        SoundController & soundController,
         ResourceLocator const & resourceLocator);
 
 public:
@@ -1904,9 +1904,9 @@ public:
     {
         if (inputState.IsLeftMouseDown)
         {
-            mGameController->AdjustOceanSurfaceTo(inputState.MousePosition);
+            mGameController.AdjustOceanSurfaceTo(inputState.MousePosition);
 
-            mSoundController->PlayWaveMakerSound();
+            mSoundController.PlayWaveMakerSound();
         }
 
         // Set cursor
@@ -1915,22 +1915,22 @@ public:
 
     virtual void Deinitialize() override
     {
-        mSoundController->StopWaveMakerSound();
+        mSoundController.StopWaveMakerSound();
     }
 
     virtual void OnMouseMove(InputState const & inputState) override
     {
         if (inputState.IsLeftMouseDown)
         {
-            mGameController->AdjustOceanSurfaceTo(inputState.MousePosition);
+            mGameController.AdjustOceanSurfaceTo(inputState.MousePosition);
         }
     }
 
     virtual void OnLeftMouseDown(InputState const & inputState) override
     {
-        mGameController->AdjustOceanSurfaceTo(inputState.MousePosition);
+        mGameController.AdjustOceanSurfaceTo(inputState.MousePosition);
 
-        mSoundController->PlayWaveMakerSound();
+        mSoundController.PlayWaveMakerSound();
 
         // Set cursor
         SetCurrentCursor(inputState);
@@ -1938,9 +1938,9 @@ public:
 
     virtual void OnLeftMouseUp(InputState const & inputState) override
     {
-        mSoundController->StopWaveMakerSound();
+        mSoundController.StopWaveMakerSound();
 
-        mGameController->AdjustOceanSurfaceTo(std::nullopt);
+        mGameController.AdjustOceanSurfaceTo(std::nullopt);
 
         // Set cursor
         SetCurrentCursor(inputState);
@@ -1971,8 +1971,8 @@ public:
 
     TerrainAdjustTool(
         IToolCursorManager & toolCursorManager,
-        std::shared_ptr<IGameController> gameController,
-        std::shared_ptr<SoundController> soundController,
+        IGameController & gameController,
+        SoundController & soundController,
         ResourceLocator const & resourceLocator);
 
 public:
@@ -1983,7 +1983,7 @@ public:
 
         if (inputState.IsLeftMouseDown)
         {
-            mCurrentTrajectoryPreviousWorldPosition = mGameController->ScreenToWorld(inputState.MousePosition);
+            mCurrentTrajectoryPreviousWorldPosition = mGameController.ScreenToWorld(inputState.MousePosition);
             SetCurrentCursor(&mDownCursorImage);
         }
         else
@@ -2001,7 +2001,7 @@ public:
     {
         if (inputState.IsLeftMouseDown)
         {
-            vec2f const mouseWorldPosition = mGameController->ScreenToWorld(inputState.MousePosition);
+            vec2f const mouseWorldPosition = mGameController.ScreenToWorld(inputState.MousePosition);
 
             if (!mCurrentTrajectoryPreviousWorldPosition)
             {
@@ -2012,7 +2012,7 @@ public:
                 ? vec2f(mouseWorldPosition.x, mCurrentTrajectoryPreviousWorldPosition->y)
                 : mouseWorldPosition;
 
-            auto const isAdjusted = mGameController->AdjustOceanFloorTo(
+            auto const isAdjusted = mGameController.AdjustOceanFloorTo(
                 *mCurrentTrajectoryPreviousWorldPosition,
                 targetPosition);
 
@@ -2021,7 +2021,7 @@ public:
                 // Adjusted, eventually idempotent
                 if (*isAdjusted)
                 {
-                    mSoundController->PlayTerrainAdjustSound();
+                    mSoundController.PlayTerrainAdjustSound();
                 }
 
                 SetCurrentCursor(&mDownCursorImage);
@@ -2029,7 +2029,7 @@ public:
             else
             {
                 // No adjustment
-                mSoundController->PlayErrorSound();
+                mSoundController.PlayErrorSound();
                 SetCurrentCursor(&mErrorCursorImage);
             }
 
@@ -2077,8 +2077,8 @@ public:
 
     ScrubTool(
         IToolCursorManager & toolCursorManager,
-        std::shared_ptr<IGameController> gameController,
-        std::shared_ptr<SoundController> soundController,
+        IGameController & gameController,
+        SoundController & soundController,
         ResourceLocator const & resourceLocator);
 
 public:
@@ -2118,13 +2118,13 @@ public:
                 bool hasStriked;
                 if (inputState.IsShiftKeyDown)
                 {
-                    hasStriked = mGameController->RotThrough(
+                    hasStriked = mGameController.RotThrough(
                         *mPreviousMousePos,
                         inputState.MousePosition);
                 }
                 else
                 {
-                    hasStriked = mGameController->ScrubThrough(
+                    hasStriked = mGameController.ScrubThrough(
                         *mPreviousMousePos,
                         inputState.MousePosition);
                 }
@@ -2143,9 +2143,9 @@ public:
                         {
                             // Play sound
                             if (inputState.IsShiftKeyDown)
-                                mSoundController->PlayRotSound();
+                                mSoundController.PlayRotSound();
                             else
-                                mSoundController->PlayScrubSound();
+                                mSoundController.PlayScrubSound();
 
                             mPreviousStrikeVector = newStrikeVector;
                             mPreviousSoundTimestamp = now;
@@ -2248,8 +2248,8 @@ public:
 
     RepairStructureTool(
         IToolCursorManager & toolCursorManager,
-        std::shared_ptr<IGameController> gameController,
-        std::shared_ptr<SoundController> soundController,
+        IGameController & gameController,
+        SoundController & soundController,
         ResourceLocator const & resourceLocator);
 
     virtual void Initialize(InputState const & /*inputState*/) override
@@ -2264,7 +2264,7 @@ public:
     virtual void Deinitialize() override
     {
         // Stop sound, just in case
-        mSoundController->StopRepairStructureSound();
+        mSoundController.StopRepairStructureSound();
     }
 
     virtual void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
@@ -2288,14 +2288,14 @@ public:
                 mEngagementStartTimestamp = std::chrono::steady_clock::now();
 
                 // Start sound
-                mSoundController->PlayRepairStructureSound();
+                mSoundController.PlayRepairStructureSound();
             }
 
             // Increment step
             ++mCurrentStepId;
 
             // Repair
-            mGameController->RepairAt(
+            mGameController.RepairAt(
                 inputState.MousePosition,
                 1.0f,
                 mCurrentStepId);
@@ -2311,7 +2311,7 @@ public:
                 mEngagementStartTimestamp.reset();
 
                 // Stop sound
-                mSoundController->StopRepairStructureSound();
+                mSoundController.StopRepairStructureSound();
 
                 // Update cursor
                 UpdateCurrentCursor();
@@ -2383,8 +2383,8 @@ public:
 
     ThanosSnapTool(
         IToolCursorManager & toolCursorManager,
-        std::shared_ptr<IGameController> gameController,
-        std::shared_ptr<SoundController> soundController,
+        IGameController & gameController,
+        SoundController & soundController,
         ResourceLocator const & resourceLocator);
 
 public:
@@ -2398,8 +2398,8 @@ public:
     virtual void OnLeftMouseDown(InputState const & inputState) override
     {
         // Do snap
-        mGameController->ApplyThanosSnapAt(inputState.MousePosition);
-        mSoundController->PlayThanosSnapSound();
+        mGameController.ApplyThanosSnapAt(inputState.MousePosition);
+        mSoundController.PlayThanosSnapSound();
 
         // Update cursor
         SetCurrentCursor(inputState);
@@ -2428,8 +2428,8 @@ public:
 
     ScareFishTool(
         IToolCursorManager & toolCursorManager,
-        std::shared_ptr<IGameController> gameController,
-        std::shared_ptr<SoundController> soundController,
+        IGameController & gameController,
+        SoundController & soundController,
         ResourceLocator const & resourceLocator);
 
 public:
@@ -2465,7 +2465,7 @@ public:
             {
                 case ActionType::Attract:
                 {
-                    mGameController->AttractFish(
+                    mGameController.AttractFish(
                         inputState.MousePosition,
                         50.0f, // Radius
                         std::chrono::milliseconds(0)); // Delay
@@ -2475,7 +2475,7 @@ public:
 
                 case ActionType::Scare:
                 {
-                    mGameController->ScareFish(
+                    mGameController.ScareFish(
                         inputState.MousePosition,
                         40.0f, // Radius
                         std::chrono::milliseconds(0)); // Delay
@@ -2585,13 +2585,13 @@ private:
         {
             case ActionType::Attract:
             {
-                mSoundController->PlayFishFoodSound();
+                mSoundController.PlayFishFoodSound();
                 break;
             }
 
             case ActionType::Scare:
             {
-                mSoundController->PlayFishScareSound();
+                mSoundController.PlayFishScareSound();
                 break;
             }
         }
@@ -2603,13 +2603,13 @@ private:
         {
             case ActionType::Attract:
             {
-                mSoundController->StopFishFoodSound();
+                mSoundController.StopFishFoodSound();
                 break;
             }
 
             case ActionType::Scare:
             {
-                mSoundController->StopFishScareSound();
+                mSoundController.StopFishScareSound();
                 break;
             }
         }
@@ -2637,8 +2637,8 @@ public:
 
     PhysicsProbeTool(
         IToolCursorManager & toolCursorManager,
-        std::shared_ptr<IGameController> gameController,
-        std::shared_ptr<SoundController> soundController,
+        IGameController & gameController,
+        SoundController & soundController,
         ResourceLocator const & resourceLocator);
 
 public:
@@ -2652,7 +2652,7 @@ public:
     virtual void OnLeftMouseDown(InputState const & inputState) override
     {
         // Toggle probe
-        mGameController->TogglePhysicsProbeAt(inputState.MousePosition);
+        mGameController.TogglePhysicsProbeAt(inputState.MousePosition);
     }
 
     virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}
@@ -2668,8 +2668,8 @@ public:
 
     BlastTool(
         IToolCursorManager & toolCursorManager,
-        std::shared_ptr<IGameController> gameController,
-        std::shared_ptr<SoundController> soundController,
+        IGameController & gameController,
+        SoundController & soundController,
         ResourceLocator const & resourceLocator);
 
 public:
@@ -2700,9 +2700,9 @@ public:
                 GameRandomEngine::GetInstance().GenerateNormalizedUniformReal());
 
             if (isBoosted)
-                mSoundController->PlayBlastToolFastSound();
+                mSoundController.PlayBlastToolFastSound();
             else
-                mSoundController->PlayBlastToolSlow1Sound();
+                mSoundController.PlayBlastToolSlow1Sound();
 
             SetCurrentCursor(isBoosted);
         }
@@ -2724,7 +2724,7 @@ public:
 
                     float const progress = std::min(elapsed / BlastDuration1, 1.0f);
 
-                    mGameController->ApplyBlastAt(
+                    mGameController.ApplyBlastAt(
                         inputState.MousePosition,
                         progress,
                         1.0f,
@@ -2754,7 +2754,7 @@ public:
                         mEngagementData->CurrentStateStartSimulationTime = currentSimulationTime;
 
                         // Emit sound
-                        mSoundController->PlayBlastToolSlow2Sound();
+                        mSoundController.PlayBlastToolSlow2Sound();
                     }
 
                     break;
@@ -2766,7 +2766,7 @@ public:
 
                     float const progress = std::min(elapsed / BlastDuration2, 1.0f);
 
-                    mGameController->ApplyBlastAt(
+                    mGameController.ApplyBlastAt(
                         inputState.MousePosition,
                         1.0f + progress * 2.5f,
                         2.0f + 0.5f,
@@ -2794,7 +2794,7 @@ public:
 
                     float const progress = std::min(elapsed / BoostedBlastDuration, 1.0f);
 
-                    mGameController->ApplyBlastAt(
+                    mGameController.ApplyBlastAt(
                         inputState.MousePosition,
                         progress * 2.0f,
                         2.0f,
@@ -2903,8 +2903,8 @@ public:
 
     ElectricSparkTool(
         IToolCursorManager & toolCursorManager,
-        std::shared_ptr<IGameController> gameController,
-        std::shared_ptr<SoundController> soundController,
+        IGameController & gameController,
+        SoundController & soundController,
         ResourceLocator const & resourceLocator);
 
 public:
@@ -2918,7 +2918,7 @@ public:
     virtual void Deinitialize() override
     {
         // Stop sound
-        mSoundController->StopElectricSparkSound();
+        mSoundController.StopElectricSparkSound();
     }
 
     virtual void UpdateSimulation(InputState const & inputState, float currentSimulationTime) override
@@ -2932,7 +2932,7 @@ public:
                 // We are currently engaged
 
                 // Send interaction
-                bool hasBeenApplied = mGameController->ApplyElectricSparkAt(
+                bool hasBeenApplied = mGameController.ApplyElectricSparkAt(
                     inputState.MousePosition,
                     ++(mEngagementData->CurrentCounter),
                     mEngagementData->CurrentLengthMultiplier,
@@ -2949,10 +2949,10 @@ public:
                 else
                 {
                     // Check if we need to change the underwater-ness of the sound
-                    bool isUnderwater = mGameController->IsUnderwater(inputState.MousePosition);
+                    bool isUnderwater = mGameController.IsUnderwater(inputState.MousePosition);
                     if (isUnderwater != mEngagementData->IsUnderwater)
                     {
-                        mSoundController->PlayElectricSparkSound(isUnderwater);
+                        mSoundController.PlayElectricSparkSound(isUnderwater);
                         mEngagementData->IsUnderwater = isUnderwater;
                     }
 
@@ -2967,7 +2967,7 @@ public:
                 // We are currently not engaged
 
                 // Send first interaction, together with probe
-                bool hasBeenApplied = mGameController->ApplyElectricSparkAt(
+                bool hasBeenApplied = mGameController.ApplyElectricSparkAt(
                     inputState.MousePosition,
                     0,
                     interactionLengthMultiplier,
@@ -2979,14 +2979,14 @@ public:
                     // State change: not engaged -> engaged
                     //
 
-                    bool const isUnderwater = mGameController->IsUnderwater(inputState.MousePosition);
+                    bool const isUnderwater = mGameController.IsUnderwater(inputState.MousePosition);
 
                     mEngagementData.emplace(
                         0,  // counter
                         interactionLengthMultiplier,
                         isUnderwater);
 
-                    mSoundController->PlayElectricSparkSound(isUnderwater);
+                    mSoundController.PlayElectricSparkSound(isUnderwater);
 
                     SetCurrentCursor();
                 }
@@ -3017,7 +3017,7 @@ private:
     {
         mEngagementData.reset();
 
-        mSoundController->StopElectricSparkSound();
+        mSoundController.StopElectricSparkSound();
 
         SetCurrentCursor();
     }
@@ -3060,8 +3060,8 @@ public:
 
     WindMakerTool(
         IToolCursorManager & toolCursorManager,
-        std::shared_ptr<IGameController> gameController,
-        std::shared_ptr<SoundController> soundController,
+        IGameController & gameController,
+        SoundController & soundController,
         ResourceLocator const & resourceLocator);
 
 public:
@@ -3078,7 +3078,7 @@ public:
     {
         if (mEngagementData.has_value())
         {
-            mSoundController->StopWindMakerWindSound();
+            mSoundController.StopWindMakerWindSound();
         }
     }
 
@@ -3098,7 +3098,7 @@ public:
 
                 if (inputState.IsShiftKeyDown)
                 {
-                    mSoundController->PlayWindGustShortSound();
+                    mSoundController.PlayWindGustShortSound();
                 }
 
                 doUpdateCursor = true;
@@ -3202,7 +3202,7 @@ public:
             float const mainFrontIntensityMultiplier = intensity * (inputState.IsShiftKeyDown ? 1.5f : 1.0f);
 
             // Invoke world
-            mGameController->ApplyRadialWindFrom(
+            mGameController.ApplyRadialWindFrom(
                 centerPosition,
                 mEngagementData->GetElapsedPreFrontSimulationTime(currentSimulationTime),
                 preFrontIntensityMultiplier,
@@ -3210,7 +3210,7 @@ public:
                 mainFrontIntensityMultiplier);
 
             // Sound
-            mSoundController->PlayOrUpdateWindMakerWindSound(mainFrontIntensityMultiplier * 50.0f);
+            mSoundController.PlayOrUpdateWindMakerWindSound(mainFrontIntensityMultiplier * 50.0f);
         }
 
         if (doUpdateCursor)
@@ -3234,7 +3234,7 @@ public:
         if (mEngagementData.has_value()
             && mEngagementData->CurrentState != EngagementData::StateType::TearDown)
         {
-            mSoundController->PlayWindGustShortSound();
+            mSoundController.PlayWindGustShortSound();
         }
     }
 
@@ -3326,8 +3326,8 @@ public:
 
     LaserCannonTool(
         IToolCursorManager & toolCursorManager,
-        std::shared_ptr<IGameController> gameController,
-        std::shared_ptr<SoundController> soundController,
+        IGameController & gameController,
+        SoundController & soundController,
         ResourceLocator const & resourceLocator);
 
 public:
@@ -3344,7 +3344,7 @@ public:
         if (mEngagementData.has_value())
         {
             // Stop sound
-            mSoundController->StopLaserRaySound();
+            mSoundController.StopLaserRaySound();
         }
     }
 
@@ -3377,7 +3377,7 @@ public:
             }
 
             // Apply interaction
-            mGameController->ApplyLaserCannonThrough(
+            mGameController.ApplyLaserCannonThrough(
                 mEngagementData->PreviousMousePosition,
                 inputState.MousePosition,
                 isAmplified ? 2.0f : 1.0f);
@@ -3388,7 +3388,7 @@ public:
             // Update sound
             if (doUpdateSound)
             {
-                mSoundController->PlayLaserRaySound(isAmplified);
+                mSoundController.PlayLaserRaySound(isAmplified);
             }
         }
         else
@@ -3397,7 +3397,7 @@ public:
             if (mEngagementData.has_value())
             {
                 // Stop sound
-                mSoundController->StopLaserRaySound();
+                mSoundController.StopLaserRaySound();
 
                 // Disengage
                 mEngagementData.reset();
@@ -3405,7 +3405,7 @@ public:
             }
 
             // Apply interaction
-            mGameController->ApplyLaserCannonThrough(
+            mGameController.ApplyLaserCannonThrough(
                 inputState.MousePosition,
                 inputState.MousePosition,
                 std::nullopt);

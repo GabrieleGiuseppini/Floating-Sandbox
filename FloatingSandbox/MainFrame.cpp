@@ -104,8 +104,8 @@ MainFrame::MainFrame(
     std::optional<std::filesystem::path> initialShipFilePath,
     ResourceLocator const & resourceLocator,
     LocalizationManager & localizationManager)
-    : mCurrentOpenGLCanvas(nullptr)
-    , mMainApp(mainApp)
+    : mMainApp(mainApp)
+    , mShipBuilderMainFrame()
     , mResourceLocator(resourceLocator)
     , mLocalizationManager(localizationManager)
     , mGameController()
@@ -114,6 +114,11 @@ MainFrame::MainFrame(
     , mToolController()
     , mSettingsManager()
     , mUIPreferencesManager()
+    , mUpdateChecker()
+    , mMainPanel(nullptr)
+    , mMainGLCanvas(nullptr)
+    , mMainGLCanvasContext()
+    , mCurrentOpenGLCanvas(nullptr)
     // State
     , mInitialShipFilePath(initialShipFilePath)
     , mCurrentShipLoadSpecs()
@@ -789,8 +794,8 @@ void MainFrame::OnSecretTypingDebug()
     {
         mDebugDialog = std::make_unique<DebugDialog>(
             this,
-            mGameController,
-            mSoundController);
+            *mGameController,
+            *mSoundController);
     }
 
     mDebugDialog->Open();
@@ -923,7 +928,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
     try
     {
-        mSoundController = std::make_shared<SoundController>(
+        mSoundController = std::make_unique<SoundController>(
             mResourceLocator,
             [&splash, this](float progress, ProgressMessageType message)
             {
@@ -952,7 +957,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
 
     try
     {
-        mMusicController = std::make_shared<MusicController>(
+        mMusicController = std::make_unique<MusicController>(
             mResourceLocator,
             [&splash, this](float progress, ProgressMessageType message)
             {
@@ -979,9 +984,9 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     // Create Settings Manager
     //
 
-    mSettingsManager = std::make_shared<SettingsManager>(
-        mGameController,
-        mSoundController,
+    mSettingsManager = std::make_unique<SettingsManager>(
+        *mGameController,
+        *mSoundController,
         mResourceLocator.GetThemeSettingsRootFilePath(),
         StandardSystemPaths::GetInstance().GetUserGameSettingsRootFolderPath());
 
@@ -993,10 +998,10 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
     // Create UI Preferences Manager
     //
 
-    mUIPreferencesManager = std::make_shared<UIPreferencesManager>(
-        mGameController,
-        mLocalizationManager,
-        mMusicController);
+    mUIPreferencesManager = std::make_unique<UIPreferencesManager>(
+        *mGameController,
+        *mMusicController,
+        mLocalizationManager);
 
     ReconciliateUIWithUIPreferences();
 
@@ -1012,9 +1017,9 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
             // Layout
             mMainPanel->Layout();
         },
-        mGameController,
-        mSoundController,
-        mUIPreferencesManager,
+        *mGameController,
+        *mSoundController,
+        *mUIPreferencesManager,
         mResourceLocator,
         [&splash, this](float progress, ProgressMessageType message)
         {
@@ -1042,8 +1047,8 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
             initialToolType,
             mGameController->GetEffectiveAmbientLightIntensity(),
             mMainGLCanvas,
-            mGameController,
-            mSoundController,
+            *mGameController,
+            *mSoundController,
             mResourceLocator);
     }
     catch (std::exception const & e)
@@ -1286,6 +1291,16 @@ void MainFrame::OnMainFrameClose(wxCloseEvent & /*event*/)
             mSettingsManager->SaveLastModifiedSettings();
         }
     }
+
+    // Destroy all our objects - before windows (and thus GL contextes, etc.)
+    // get destroyed by wxWidgets
+    mUpdateChecker.reset();
+    mUIPreferencesManager.reset();
+    mSettingsManager.reset();
+    mToolController.reset();
+    mMusicController.reset();
+    mSoundController.reset();
+    mGameController.reset();
 
     // Destroy the frame!
     Destroy();
@@ -1906,8 +1921,8 @@ void MainFrame::OnOpenSettingsWindowMenuItemSelected(wxCommandEvent & /*event*/)
     {
         mSettingsDialog = std::make_unique<SettingsDialog>(
             this,
-            mSettingsManager,
-            mGameController,
+            *mSettingsManager,
+            *mGameController,
             mResourceLocator);
     }
 
@@ -1945,7 +1960,7 @@ void MainFrame::OnOpenPreferencesWindowMenuItemSelected(wxCommandEvent & /*event
     {
         mPreferencesDialog = std::make_unique<PreferencesDialog>(
             this,
-            mUIPreferencesManager,
+            *mUIPreferencesManager,
             [this]()
             {
                 this->ReconciliateUIWithUIPreferences();
@@ -2224,7 +2239,7 @@ void MainFrame::RunGameIteration()
 
             StartupTipDialog startupTipDialog(
                 this,
-                mUIPreferencesManager,
+                *mUIPreferencesManager,
                 mResourceLocator,
                 mLocalizationManager);
 

@@ -169,14 +169,14 @@ class SettingsManager final : public BaseSettingsManager<GameSettings>
 public:
 
     SettingsManager(
-        std::shared_ptr<IGameControllerSettings> gameControllerSettings,
-        std::shared_ptr<SoundController> soundController,
+        IGameControllerSettings & gameControllerSettings,
+        SoundController & soundController,
         std::filesystem::path const & rootSystemSettingsDirectoryPath,
         std::filesystem::path const & rootUserSettingsDirectoryPath);
 
 private:
 
     static BaseSettingsManagerFactory MakeSettingsFactory(
-        std::shared_ptr<IGameControllerSettings> gameControllerSettings,
-        std::shared_ptr<SoundController> soundController);
+        IGameControllerSettings & gameControllerSettings,
+        SoundController & soundController);
 };

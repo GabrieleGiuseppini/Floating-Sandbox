@@ -14,29 +14,29 @@ std::string MangleSettingName(std::string && settingName);
     factory.AddSetting<type>(                           \
         GameSettings::name,                             \
         MangleSettingName(#name),                       \
-        [gameControllerSettings]() -> type { return gameControllerSettings->Get##name(); }, \
-        [gameControllerSettings](auto const & v) { gameControllerSettings->Set##name(v); }, \
-        [gameControllerSettings](auto const & v) { gameControllerSettings->Set##name(v); });
+        [&gameControllerSettings]() -> type { return gameControllerSettings.Get##name(); }, \
+        [&gameControllerSettings](auto const & v) { gameControllerSettings.Set##name(v); }, \
+        [&gameControllerSettings](auto const & v) { gameControllerSettings.Set##name(v); });
 
 #define ADD_GC_SETTING_WITH_IMMEDIATE(type, name)       \
     factory.AddSetting<type>(                           \
         GameSettings::name,                             \
         MangleSettingName(#name),                       \
-        [gameControllerSettings]() -> type { return gameControllerSettings->Get##name(); }, \
-        [gameControllerSettings](auto const & v) { gameControllerSettings->Set##name(v); }, \
-        [gameControllerSettings](auto const & v) { gameControllerSettings->Set##name ## Immediate(v); });
+        [&gameControllerSettings]() -> type { return gameControllerSettings.Get##name(); }, \
+        [&gameControllerSettings](auto const & v) { gameControllerSettings.Set##name(v); }, \
+        [&gameControllerSettings](auto const & v) { gameControllerSettings.Set##name ## Immediate(v); });
 
 #define ADD_SC_SETTING(type, name)                      \
     factory.AddSetting<type>(                           \
         GameSettings::name,                             \
         MangleSettingName(#name),                       \
-        [soundController]() -> type { return soundController->Get##name(); },	\
-        [soundController](auto const & v) { soundController->Set##name(v); },	\
-        [soundController](auto const & v) { soundController->Set##name(v); });
+        [&soundController]() -> type { return soundController.Get##name(); },	\
+        [&soundController](auto const & v) { soundController.Set##name(v); },	\
+        [&soundController](auto const & v) { soundController.Set##name(v); });
 
 BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::MakeSettingsFactory(
-    std::shared_ptr<IGameControllerSettings> gameControllerSettings,
-    std::shared_ptr<SoundController> soundController)
+    IGameControllerSettings & gameControllerSettings,
+    SoundController & soundController)
 {
     BaseSettingsManagerFactory factory;
 
@@ -192,8 +192,8 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
 }
 
 SettingsManager::SettingsManager(
-    std::shared_ptr<IGameControllerSettings> gameControllerSettings,
-    std::shared_ptr<SoundController> soundController,
+    IGameControllerSettings & gameControllerSettings,
+    SoundController & soundController,
     std::filesystem::path const & rootSystemSettingsDirectoryPath,
     std::filesystem::path const & rootUserSettingsDirectoryPath)
     : BaseSettingsManager<GameSettings>(

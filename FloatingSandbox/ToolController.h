@@ -29,8 +29,8 @@ public:
         ToolType initialToolType,
         float initialEffectiveAmbientLightIntensity,
         wxWindow * parentWindow,
-        std::shared_ptr<IGameController> gameController,
-        std::shared_ptr<SoundController> soundController,
+        IGameController & gameController,
+        SoundController & soundController,
         ResourceLocator const & resourceLocator);
 
     void SetTool(ToolType toolType)
@@ -62,7 +62,7 @@ public:
     void UpdateSimulation(float currentSimulationTime)
     {
         // See if cursor brightness has changed
-        float const newCurrentToolCursorBrightness = CalculateCursorBrightness(mGameController->GetEffectiveAmbientLightIntensity());
+        float const newCurrentToolCursorBrightness = CalculateCursorBrightness(mGameController.GetEffectiveAmbientLightIntensity());
         if (newCurrentToolCursorBrightness != mCurrentToolCursorBrightness)
         {
             mCurrentToolCursorBrightness = newCurrentToolCursorBrightness;
@@ -139,8 +139,8 @@ private:
 
     wxWindow * const mParentWindow;
     wxCursor mPanCursor;
-    std::shared_ptr<IGameController> const mGameController;
-    std::shared_ptr<SoundController> const mSoundController;
+    IGameController & mGameController;
+    SoundController & mSoundController;
 
 private:
 

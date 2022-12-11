@@ -26,18 +26,18 @@ static constexpr int MaxKeyboardShortcuts = 20;
 SwitchboardPanel * SwitchboardPanel::Create(
     wxWindow * parent,
     std::function<void()> onRelayout,
-    std::shared_ptr<IGameController> gameController,
-    std::shared_ptr<SoundController> soundController,
-    std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
+    IGameController & gameController,
+    SoundController & soundController,
+    UIPreferencesManager & uiPreferencesManager,
     ResourceLocator const & resourceLocator,
     ProgressCallback const & progressCallback)
 {
     return new SwitchboardPanel(
         parent,
         std::move(onRelayout),
-        std::move(gameController),
-        std::move(soundController),
-        std::move(uiPreferencesManager),
+        gameController,
+        soundController,
+        uiPreferencesManager,
         resourceLocator,
         progressCallback);
 }
@@ -45,9 +45,9 @@ SwitchboardPanel * SwitchboardPanel::Create(
 SwitchboardPanel::SwitchboardPanel(
     wxWindow * parent,
     std::function<void()> onRelayout,
-    std::shared_ptr<IGameController> gameController,
-    std::shared_ptr<SoundController> soundController,
-    std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
+    IGameController & gameController,
+    SoundController & soundController,
+    UIPreferencesManager & uiPreferencesManager,
     ResourceLocator const & resourceLocator,
     ProgressCallback const & progressCallback)
     : mShowingMode(ShowingMode::NotShowing)
@@ -61,9 +61,9 @@ SwitchboardPanel::SwitchboardPanel(
     , mCurrentKeyDownElementId()
     //
     , mOnRelayout(std::move(onRelayout))
-    , mGameController(std::move(gameController))
-    , mSoundController(std::move(soundController))
-    , mUIPreferencesManager(std::move(uiPreferencesManager))
+    , mGameController(gameController)
+    , mSoundController(soundController)
+    , mUIPreferencesManager(uiPreferencesManager)
     //
     , mMinBitmapSize(std::numeric_limits<int>::max(), std::numeric_limits<int>::max())
 {
@@ -132,7 +132,7 @@ SwitchboardPanel::SwitchboardPanel(
 
     // Select background from preferences
     int backgroundBitmapIndex = std::min(
-        mUIPreferencesManager->GetSwitchboardBackgroundBitmapIndex(),
+        mUIPreferencesManager.GetSwitchboardBackgroundBitmapIndex(),
         static_cast<int>(mBackgroundBitmapComboBox->GetCount()) - 1);
     mBackgroundBitmapComboBox->Select(backgroundBitmapIndex);
 
@@ -520,7 +520,7 @@ void SwitchboardPanel::OnSwitchCreated(
                     mInteractiveCursor,
                     [this, electricalElementId](ElectricalState newState)
                     {
-                        mGameController->SetSwitchState(electricalElementId, newState);
+                        mGameController.SetSwitchState(electricalElementId, newState);
                     },
                     state);
 
@@ -542,7 +542,7 @@ void SwitchboardPanel::OnSwitchCreated(
                     mInteractiveCursor,
                     [this, electricalElementId](ElectricalState newState)
                     {
-                        mGameController->SetSwitchState(electricalElementId, newState);
+                        mGameController.SetSwitchState(electricalElementId, newState);
                     },
                     state);
 
@@ -586,7 +586,7 @@ void SwitchboardPanel::OnSwitchCreated(
                     mInteractiveCursor,
                     [this, electricalElementId](ElectricalState newState)
                     {
-                        mGameController->SetSwitchState(electricalElementId, newState);
+                        mGameController.SetSwitchState(electricalElementId, newState);
                     },
                     state);
 
@@ -760,7 +760,7 @@ void SwitchboardPanel::OnEngineControllerCreated(
                     mInteractiveCursor,
                     [this, electricalElementId](float controllerValue)
                     {
-                        mGameController->SetEngineControllerState(
+                        mGameController.SetEngineControllerState(
                             electricalElementId,
                             controllerValue);
                     },
@@ -781,7 +781,7 @@ void SwitchboardPanel::OnEngineControllerCreated(
                     mInteractiveCursor,
                     [this, electricalElementId](float controllerValue)
                     {
-                        mGameController->SetEngineControllerState(
+                        mGameController.SetEngineControllerState(
                             electricalElementId,
                             controllerValue);
                     },
@@ -804,7 +804,7 @@ void SwitchboardPanel::OnEngineControllerCreated(
                     mInteractiveCursor,
                     [this, electricalElementId](float controllerValue)
                     {
-                        mGameController->SetEngineControllerState(
+                        mGameController.SetEngineControllerState(
                             electricalElementId,
                             controllerValue);
                     },
@@ -1155,7 +1155,7 @@ void SwitchboardPanel::OnElectricalElementAnnouncementsEnd()
     {
         // We have elements
 
-        if (mUIPreferencesManager->GetAutoShowSwitchboard())
+        if (mUIPreferencesManager.GetAutoShowSwitchboard())
         {
             ShowFullyDocked();
         }
@@ -1523,7 +1523,7 @@ void SwitchboardPanel::OnDockCheckbox(wxCommandEvent & event)
         mOnRelayout();
 
         // Play sound
-        mSoundController->PlayElectricalPanelDockSound(false);
+        mSoundController.PlayElectricalPanelDockSound(false);
     }
     else
     {
@@ -1537,7 +1537,7 @@ void SwitchboardPanel::OnDockCheckbox(wxCommandEvent & event)
         mOnRelayout();
 
         // Play sound
-        mSoundController->PlayElectricalPanelDockSound(true);
+        mSoundController.PlayElectricalPanelDockSound(true);
     }
 }
 
@@ -1555,7 +1555,7 @@ void SwitchboardPanel::OnEnterWindow(wxMouseEvent & /*event*/)
         mOnRelayout();
 
         // Play sound
-        mSoundController->PlayElectricalPanelOpenSound(false);
+        mSoundController.PlayElectricalPanelOpenSound(false);
     }
 }
 
@@ -1573,7 +1573,7 @@ void SwitchboardPanel::OnLeaveWindow()
         mOnRelayout();
 
         // Play sound
-        mSoundController->PlayElectricalPanelOpenSound(true);
+        mSoundController.PlayElectricalPanelOpenSound(true);
     }
 }
 
@@ -1597,11 +1597,11 @@ void SwitchboardPanel::OnBackgroundSelectionChanged(wxCommandEvent & /*event*/)
     SetBackgroundBitmapFromCombo(selection);
 
     // Remember preferences
-    mUIPreferencesManager->SetSwitchboardBackgroundBitmapIndex(selection);
+    mUIPreferencesManager.SetSwitchboardBackgroundBitmapIndex(selection);
 }
 
 void SwitchboardPanel::OnTick(ElectricalElementId electricalElementId)
 {
-    this->mGameController->HighlightElectricalElement(electricalElementId);
-    this->mSoundController->PlayTickSound();
+    mGameController.HighlightElectricalElement(electricalElementId);
+    mSoundController.PlayTickSound();
 }

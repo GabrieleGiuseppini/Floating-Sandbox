@@ -46,9 +46,9 @@ public:
     static SwitchboardPanel * Create(
         wxWindow * parent,
         std::function<void()> onRelayout,
-        std::shared_ptr<IGameController> gameController,
-        std::shared_ptr<SoundController> soundController,
-        std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
+        IGameController & gameController,
+        SoundController & soundController,
+        UIPreferencesManager & uiPreferencesManager,
         ResourceLocator const & resourceLocator,
         ProgressCallback const & progressCallback);
 
@@ -178,9 +178,9 @@ private:
     SwitchboardPanel(
         wxWindow * parent,
         std::function<void()> onRelayout,
-        std::shared_ptr<IGameController> gameController,
-        std::shared_ptr<SoundController> soundController,
-        std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
+        IGameController & gameController,
+        SoundController & soundController,
+        UIPreferencesManager & uiPreferencesManager,
         ResourceLocator const & resourceLocator,
         ProgressCallback const & progressCallback);
 
@@ -296,9 +296,9 @@ private:
 
     std::function<void()> const mOnRelayout;
 
-    std::shared_ptr<IGameController> const mGameController;
-    std::shared_ptr<SoundController> const mSoundController;
-    std::shared_ptr<UIPreferencesManager> const mUIPreferencesManager;
+    IGameController & mGameController;
+    SoundController & mSoundController;
+    UIPreferencesManager & mUIPreferencesManager;
 
     //
     // Bitmaps

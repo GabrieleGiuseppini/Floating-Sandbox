@@ -16,8 +16,8 @@ ToolController::ToolController(
     ToolType initialToolType,
     float initialEffectiveAmbientLightIntensity,
     wxWindow * parentWindow,
-    std::shared_ptr<IGameController> gameController,
-    std::shared_ptr<SoundController> soundController,
+    IGameController & gameController,
+    SoundController & soundController,
     ResourceLocator const & resourceLocator)
     : mInputState()
     , mCurrentTool(nullptr)
@@ -243,7 +243,7 @@ void ToolController::OnMouseMove(DisplayLogicalCoordinates const & mouseScreenPo
 
         // Pan (opposite direction)
         DisplayLogicalSize screenOffset = mInputState.PreviousMousePosition - mInputState.MousePosition;
-        mGameController->Pan(screenOffset);
+        mGameController.Pan(screenOffset);
     }
     else
     {

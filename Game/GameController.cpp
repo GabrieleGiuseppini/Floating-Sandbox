@@ -246,6 +246,7 @@ GameController::GameController(
 
 GameController::~GameController()
 {
+    LogMessage("GameController::~GameController()");
 }
 
 void GameController::RebindOpenGLContext()

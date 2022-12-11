@@ -33,8 +33,8 @@ public:
 
     SettingsDialog(
         wxWindow * parent,
-        std::shared_ptr<SettingsManager> settingsManager,
-        std::shared_ptr<IGameControllerSettingsOptions> gameControllerSettingsOptions,
+        SettingsManager & settingsManager,
+        IGameControllerSettingsOptions & gameControllerSettingsOptions,
         ResourceLocator const & resourceLocator);
 
     virtual ~SettingsDialog();
@@ -261,8 +261,8 @@ private:
 private:
 
     wxWindow * const mParent;
-    std::shared_ptr<SettingsManager> mSettingsManager;
-    std::shared_ptr<IGameControllerSettingsOptions> mGameControllerSettingsOptions;
+    SettingsManager & mSettingsManager;
+    IGameControllerSettingsOptions & mGameControllerSettingsOptions;
 
     //
     // State

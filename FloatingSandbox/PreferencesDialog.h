@@ -18,7 +18,6 @@
 #include <wx/wx.h>
 
 #include <functional>
-#include <memory>
 
 class PreferencesDialog : public wxDialog
 {
@@ -26,7 +25,7 @@ public:
 
     PreferencesDialog(
         wxWindow * parent,
-        std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
+        UIPreferencesManager & uiPreferencesManager,
         std::function<void()> onChangeCallback);
 
     virtual ~PreferencesDialog();
@@ -128,7 +127,7 @@ private:
 private:
 
     wxWindow * const mParent;
-    std::shared_ptr<UIPreferencesManager> mUIPreferencesManager;
+    UIPreferencesManager & mUIPreferencesManager;
     std::function<void()> mOnChangeCallback;
 
     std::vector<LocalizationManager::LanguageInfo> const mAvailableLanguages;

@@ -12,11 +12,11 @@
 
 StartupTipDialog::StartupTipDialog(
     wxWindow * parent,
-    std::shared_ptr<UIPreferencesManager> uiPreferencesManager,
+    UIPreferencesManager & uiPreferencesManager,
     ResourceLocator const & resourceLocator,
     LocalizationManager const & localizationManager)
     : wxDialog(parent, wxID_ANY, _("Welcome!"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxSTAY_ON_TOP)
-    , mUIPreferencesManager(std::move(uiPreferencesManager))
+    , mUIPreferencesManager(uiPreferencesManager)
 {
     wxBoxSizer * topSizer = new wxBoxSizer(wxVERTICAL);
 
@@ -79,5 +79,5 @@ StartupTipDialog::~StartupTipDialog()
 
 void StartupTipDialog::OnDontShowAgainCheckboxChanged(wxCommandEvent & event)
 {
-    mUIPreferencesManager->SetShowStartupTip(!event.IsChecked());
+    mUIPreferencesManager.SetShowStartupTip(!event.IsChecked());
 }

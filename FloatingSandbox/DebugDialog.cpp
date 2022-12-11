@@ -19,11 +19,11 @@ static int constexpr StaticBoxTopMargin = 7;
 
 DebugDialog::DebugDialog(
     wxWindow* parent,
-    std::shared_ptr<IGameController> gameController,
-    std::shared_ptr<SoundController> soundController)
+    IGameController & gameController,
+    SoundController & soundController)
     : mParent(parent)
-    , mGameController(std::move(gameController))
-    , mSoundController(std::move(soundController))
+    , mGameController(gameController)
+    , mSoundController(soundController)
     , mRecordedEvents()
     , mCurrentRecordedEventIndex(0)
 {
@@ -128,14 +128,14 @@ void DebugDialog::PopulateTrianglesPanel(wxPanel * panel)
                 wxEVT_BUTTON,
                 [this](wxCommandEvent &)
                 {
-                    bool bRes = mGameController->DestroyTriangle(
+                    bool bRes = mGameController.DestroyTriangle(
                         ElementId(
                             0, // TODO: ship ID
                             static_cast<ElementIndex>(mDestroyTriangleIndexSpinCtrl->GetValue())));
 
                     if (!bRes)
                     {
-                        mSoundController->PlayErrorSound();
+                        mSoundController.PlayErrorSound();
                     }
                 });
 
@@ -186,14 +186,14 @@ void DebugDialog::PopulateTrianglesPanel(wxPanel * panel)
                 wxEVT_BUTTON,
                 [this](wxCommandEvent &)
                 {
-                    bool bRes = mGameController->RestoreTriangle(
+                    bool bRes = mGameController.RestoreTriangle(
                         ElementId(
                             0, // TODO: ship ID
                             static_cast<ElementIndex>(mRestoreTriangleIndexSpinCtrl->GetValue())));
 
                     if (!bRes)
                     {
-                        mSoundController->PlayErrorSound();
+                        mSoundController.PlayErrorSound();
                     }
                 });
 
@@ -241,7 +241,7 @@ void DebugDialog::PopulateEventRecordingPanel(wxPanel * panel)
 
                 mRecordedEventTextCtrl->Clear();
 
-                mGameController->StartRecordingEvents(
+                mGameController.StartRecordingEvents(
                     [this](uint32_t eventIndex, RecordedEvent const & recordedEvent)
                     {
                         SetRecordedEventText(eventIndex, recordedEvent);
@@ -270,7 +270,7 @@ void DebugDialog::PopulateEventRecordingPanel(wxPanel * panel)
                 mRecordEventStopButton->Enable(false);
 
                 mRecordedEvents = std::make_shared<RecordedEvents>(
-                    mGameController->StopRecordingEvents());
+                    mGameController.StopRecordingEvents());
 
                 mCurrentRecordedEventIndex = 0;
 
@@ -324,7 +324,7 @@ void DebugDialog::PopulateEventRecordingPanel(wxPanel * panel)
                 assert(!!mRecordedEvents);
                 assert(mCurrentRecordedEventIndex < mRecordedEvents->GetSize());
 
-                mGameController->ReplayRecordedEvent(
+                mGameController.ReplayRecordedEvent(
                     mRecordedEvents->GetEvent(mCurrentRecordedEventIndex));
 
                 ++mCurrentRecordedEventIndex;

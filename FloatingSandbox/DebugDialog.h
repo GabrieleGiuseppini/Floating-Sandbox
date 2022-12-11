@@ -23,8 +23,8 @@ public:
 
     DebugDialog(
         wxWindow * parent,
-        std::shared_ptr<IGameController> gameController,
-        std::shared_ptr<SoundController> soundController);
+        IGameController & gameController,
+        SoundController & soundController);
 
     void Open();
 
@@ -56,8 +56,8 @@ private:
 private:
 
     wxWindow * const mParent;
-    std::shared_ptr<IGameController> mGameController;
-    std::shared_ptr<SoundController> mSoundController;
+    IGameController & mGameController;
+    SoundController & mSoundController;
 
     std::shared_ptr<RecordedEvents> mRecordedEvents;
     uint32_t mCurrentRecordedEventIndex;

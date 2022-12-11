@@ -50,14 +50,14 @@ void ContinuousTool::UpdateSimulation(InputState const & inputState, float /*cur
 
 MoveTool::MoveTool(
     IToolCursorManager & toolCursorManager,
-    std::shared_ptr<IGameController> gameController,
-    std::shared_ptr<SoundController> soundController,
+    IGameController & gameController,
+    SoundController & soundController,
     ResourceLocator const & resourceLocator)
     : BaseMoveTool(
         ToolType::Move,
         toolCursorManager,
-        std::move(gameController),
-        std::move(soundController),
+        gameController,
+        soundController,
         WxHelpers::LoadCursorImage("move_cursor_up", 13, 5, resourceLocator),
         WxHelpers::LoadCursorImage("move_cursor_down", 13, 5, resourceLocator),
         WxHelpers::LoadCursorImage("move_cursor_rotate_up", 13, 5, resourceLocator),
@@ -67,14 +67,14 @@ MoveTool::MoveTool(
 
 MoveAllTool::MoveAllTool(
     IToolCursorManager & toolCursorManager,
-    std::shared_ptr<IGameController> gameController,
-    std::shared_ptr<SoundController> soundController,
+    IGameController & gameController,
+    SoundController & soundController,
     ResourceLocator const & resourceLocator)
     : BaseMoveTool(
         ToolType::MoveAll,
         toolCursorManager,
-        std::move(gameController),
-        std::move(soundController),
+        gameController,
+        soundController,
         WxHelpers::LoadCursorImage("move_all_cursor_up", 13, 5, resourceLocator),
         WxHelpers::LoadCursorImage("move_all_cursor_down", 13, 5, resourceLocator),
         WxHelpers::LoadCursorImage("move_all_cursor_rotate_up", 13, 5, resourceLocator),
@@ -88,14 +88,14 @@ MoveAllTool::MoveAllTool(
 
 PickAndPullTool::PickAndPullTool(
     IToolCursorManager & toolCursorManager,
-    std::shared_ptr<IGameController> gameController,
-    std::shared_ptr<SoundController> soundController,
+    IGameController & gameController,
+    SoundController & soundController,
     ResourceLocator const & resourceLocator)
     : Tool(
         ToolType::PickAndPull,
         toolCursorManager,
-        std::move(gameController),
-        std::move(soundController))
+        gameController,
+        soundController)
     , mUpCursorImage(WxHelpers::LoadCursorImage("pliers_cursor_up", 2, 2, resourceLocator))
     , mDownCursorImage(WxHelpers::LoadCursorImage("pliers_cursor_down", 2, 2, resourceLocator))
 {
@@ -107,14 +107,14 @@ PickAndPullTool::PickAndPullTool(
 
 SmashTool::SmashTool(
     IToolCursorManager & toolCursorManager,
-    std::shared_ptr<IGameController> gameController,
-    std::shared_ptr<SoundController> soundController,
+    IGameController & gameController,
+    SoundController & soundController,
     ResourceLocator const & resourceLocator)
     : ContinuousTool(
         ToolType::Smash,
         toolCursorManager,
-        std::move(gameController),
-        std::move(soundController))
+        gameController,
+        soundController)
     , mUpCursorImage(WxHelpers::LoadCursorImage("smash_cursor_up", 6, 9, resourceLocator))
     , mDownCursorImage(WxHelpers::LoadCursorImage("smash_cursor_down", 6, 9, resourceLocator))
 {
@@ -140,7 +140,7 @@ void SmashTool::ApplyTool(
     InternalSetToolCursor(mDownCursorImage, radiusFraction);
 
     // Destroy
-    mGameController->DestroyAt(
+    mGameController.DestroyAt(
         inputState.MousePosition,
         radiusFraction * 10.0f);
 }
@@ -151,14 +151,14 @@ void SmashTool::ApplyTool(
 
 SawTool::SawTool(
     IToolCursorManager & toolCursorManager,
-    std::shared_ptr<IGameController> gameController,
-    std::shared_ptr<SoundController> soundController,
+    IGameController & gameController,
+    SoundController & soundController,
     ResourceLocator const & resourceLocator)
     : Tool(
         ToolType::Saw,
         toolCursorManager,
-        std::move(gameController),
-        std::move(soundController))
+        gameController,
+        soundController)
     , mUpCursorImage(WxHelpers::LoadCursorImage("chainsaw_cursor_up", 8, 20, resourceLocator))
     , mDownCursorImage1(WxHelpers::LoadCursorImage("chainsaw_cursor_down_1", 8, 20, resourceLocator))
     , mDownCursorImage2(WxHelpers::LoadCursorImage("chainsaw_cursor_down_2", 8, 20, resourceLocator))
@@ -176,14 +176,14 @@ SawTool::SawTool(
 
 HeatBlasterTool::HeatBlasterTool(
     IToolCursorManager & toolCursorManager,
-    std::shared_ptr<IGameController> gameController,
-    std::shared_ptr<SoundController> soundController,
+    IGameController & gameController,
+    SoundController & soundController,
     ResourceLocator const & resourceLocator)
     : Tool(
         ToolType::HeatBlaster,
         toolCursorManager,
-        std::move(gameController),
-        std::move(soundController))
+        gameController,
+        soundController)
     , mIsEngaged(false)
     , mCurrentAction(HeatBlasterActionType::Heat)
     , mHeatUpCursorImage(WxHelpers::LoadCursorImage("heat_blaster_heat_cursor_up", 5, 1, resourceLocator))
@@ -199,14 +199,14 @@ HeatBlasterTool::HeatBlasterTool(
 
 FireExtinguisherTool::FireExtinguisherTool(
     IToolCursorManager & toolCursorManager,
-    std::shared_ptr<IGameController> gameController,
-    std::shared_ptr<SoundController> soundController,
+    IGameController & gameController,
+    SoundController & soundController,
     ResourceLocator const & resourceLocator)
     : Tool(
         ToolType::FireExtinguisher,
         toolCursorManager,
-        std::move(gameController),
-        std::move(soundController))
+        gameController,
+        soundController)
     , mIsEngaged(false)
     , mUpCursorImage(WxHelpers::LoadCursorImage("fire_extinguisher_cursor_up", 6, 3, resourceLocator))
     , mDownCursorImage(WxHelpers::LoadCursorImage("fire_extinguisher_cursor_down", 6, 3, resourceLocator))
@@ -219,14 +219,14 @@ FireExtinguisherTool::FireExtinguisherTool(
 
 GrabTool::GrabTool(
     IToolCursorManager & toolCursorManager,
-    std::shared_ptr<IGameController> gameController,
-    std::shared_ptr<SoundController> soundController,
+    IGameController & gameController,
+    SoundController & soundController,
     ResourceLocator const & resourceLocator)
     : ContinuousTool(
         ToolType::Grab,
         toolCursorManager,
-        std::move(gameController),
-        std::move(soundController))
+        gameController,
+        soundController)
     , mUpPlusCursorImage(WxHelpers::LoadCursorImage("drag_cursor_up_plus", 15, 15, resourceLocator))
     , mUpMinusCursorImage(WxHelpers::LoadCursorImage("drag_cursor_up_minus", 15, 15, resourceLocator))
     , mDownPlusCursorImage(WxHelpers::LoadCursorImage("drag_cursor_down_plus", 15, 15, resourceLocator))
@@ -255,7 +255,7 @@ void GrabTool::ApplyTool(
         strengthFraction);
 
     // Draw
-    mGameController->DrawTo(
+    mGameController.DrawTo(
         inputState.MousePosition,
         inputState.IsShiftKeyDown
         ? -strengthFraction
@@ -268,14 +268,14 @@ void GrabTool::ApplyTool(
 
 SwirlTool::SwirlTool(
     IToolCursorManager & toolCursorManager,
-    std::shared_ptr<IGameController> gameController,
-    std::shared_ptr<SoundController> soundController,
+    IGameController & gameController,
+    SoundController & soundController,
     ResourceLocator const & resourceLocator)
     : ContinuousTool(
         ToolType::Grab,
         toolCursorManager,
-        std::move(gameController),
-        std::move(soundController))
+        gameController,
+        soundController)
     , mUpPlusCursorImage(WxHelpers::LoadCursorImage("swirl_cursor_up_cw", 15, 15, resourceLocator))
     , mUpMinusCursorImage(WxHelpers::LoadCursorImage("swirl_cursor_up_ccw", 15, 15, resourceLocator))
     , mDownPlusCursorImage(WxHelpers::LoadCursorImage("swirl_cursor_down_cw", 15, 15, resourceLocator))
@@ -304,7 +304,7 @@ void SwirlTool::ApplyTool(
         strengthFraction);
 
     // Draw
-    mGameController->SwirlAt(
+    mGameController.SwirlAt(
         inputState.MousePosition,
         inputState.IsShiftKeyDown
         ? -strengthFraction
@@ -317,14 +317,14 @@ void SwirlTool::ApplyTool(
 
 PinTool::PinTool(
     IToolCursorManager & toolCursorManager,
-    std::shared_ptr<IGameController> gameController,
-    std::shared_ptr<SoundController> soundController,
+    IGameController & gameController,
+    SoundController & soundController,
     ResourceLocator const & resourceLocator)
     : OneShotTool(
         ToolType::Pin,
         toolCursorManager,
-        std::move(gameController),
-        std::move(soundController))
+        gameController,
+        soundController)
     , mCursorImage(WxHelpers::LoadCursorImage("pin_cursor", 4, 27, resourceLocator))
 {
 }
@@ -335,14 +335,14 @@ PinTool::PinTool(
 
 InjectPressureTool::InjectPressureTool(
     IToolCursorManager & toolCursorManager,
-    std::shared_ptr<IGameController> gameController,
-    std::shared_ptr<SoundController> soundController,
+    IGameController & gameController,
+    SoundController & soundController,
     ResourceLocator const & resourceLocator)
     : Tool(
         ToolType::InjectPressure,
         toolCursorManager,
-        std::move(gameController),
-        std::move(soundController))
+        gameController,
+        soundController)
     , mCurrentAction(std::nullopt)
     , mUpCursorImage(WxHelpers::LoadCursorImage("air_tank_cursor_up", 15, 1, resourceLocator))
     , mDownCursorImage(WxHelpers::LoadCursorImage("air_tank_cursor_down", 15, 1, resourceLocator))
@@ -355,14 +355,14 @@ InjectPressureTool::InjectPressureTool(
 
 FloodHoseTool::FloodHoseTool(
     IToolCursorManager & toolCursorManager,
-    std::shared_ptr<IGameController> gameController,
-    std::shared_ptr<SoundController> soundController,
+    IGameController & gameController,
+    SoundController & soundController,
     ResourceLocator const & resourceLocator)
     : Tool(
         ToolType::FloodHose,
         toolCursorManager,
-        std::move(gameController),
-        std::move(soundController))
+        gameController,
+        soundController)
     , mIsEngaged(false)
     , mUpCursorImage(WxHelpers::LoadCursorImage("flood_cursor_up", 20, 0, resourceLocator))
     , mDownCursorImage1(WxHelpers::LoadCursorImage("flood_cursor_down_1", 20, 0, resourceLocator))
@@ -377,14 +377,14 @@ FloodHoseTool::FloodHoseTool(
 
 AntiMatterBombTool::AntiMatterBombTool(
     IToolCursorManager & toolCursorManager,
-    std::shared_ptr<IGameController> gameController,
-    std::shared_ptr<SoundController> soundController,
+    IGameController & gameController,
+    SoundController & soundController,
     ResourceLocator const & resourceLocator)
     : OneShotTool(
         ToolType::AntiMatterBomb,
         toolCursorManager,
-        std::move(gameController),
-        std::move(soundController))
+        gameController,
+        soundController)
     , mCursorImage(WxHelpers::LoadCursorImage("am_bomb_cursor", 16, 16, resourceLocator))
 {
 }
@@ -395,14 +395,14 @@ AntiMatterBombTool::AntiMatterBombTool(
 
 ImpactBombTool::ImpactBombTool(
     IToolCursorManager & toolCursorManager,
-    std::shared_ptr<IGameController> gameController,
-    std::shared_ptr<SoundController> soundController,
+    IGameController & gameController,
+    SoundController & soundController,
     ResourceLocator const & resourceLocator)
     : OneShotTool(
         ToolType::ImpactBomb,
         toolCursorManager,
-        std::move(gameController),
-        std::move(soundController))
+        gameController,
+        soundController)
     , mCursorImage(WxHelpers::LoadCursorImage("impact_bomb_cursor", 18, 10, resourceLocator))
 {
 }
@@ -413,14 +413,14 @@ ImpactBombTool::ImpactBombTool(
 
 RCBombTool::RCBombTool(
     IToolCursorManager & toolCursorManager,
-    std::shared_ptr<IGameController> gameController,
-    std::shared_ptr<SoundController> soundController,
+    IGameController & gameController,
+    SoundController & soundController,
     ResourceLocator const & resourceLocator)
     : OneShotTool(
         ToolType::RCBomb,
         toolCursorManager,
-        std::move(gameController),
-        std::move(soundController))
+        gameController,
+        soundController)
     , mCursorImage(WxHelpers::LoadCursorImage("rc_bomb_cursor", 16, 21, resourceLocator))
 {
 }
@@ -431,14 +431,14 @@ RCBombTool::RCBombTool(
 
 TimerBombTool::TimerBombTool(
     IToolCursorManager & toolCursorManager,
-    std::shared_ptr<IGameController> gameController,
-    std::shared_ptr<SoundController> soundController,
+    IGameController & gameController,
+    SoundController & soundController,
     ResourceLocator const & resourceLocator)
     : OneShotTool(
         ToolType::TimerBomb,
         toolCursorManager,
-        std::move(gameController),
-        std::move(soundController))
+        gameController,
+        soundController)
     , mCursorImage(WxHelpers::LoadCursorImage("timer_bomb_cursor", 16, 19, resourceLocator))
 {
 }
@@ -449,14 +449,14 @@ TimerBombTool::TimerBombTool(
 
 WaveMakerTool::WaveMakerTool(
     IToolCursorManager & toolCursorManager,
-    std::shared_ptr<IGameController> gameController,
-    std::shared_ptr<SoundController> soundController,
+    IGameController & gameController,
+    SoundController & soundController,
     ResourceLocator const & resourceLocator)
     : OneShotTool(
         ToolType::WaveMaker,
         toolCursorManager,
-        std::move(gameController),
-        std::move(soundController))
+        gameController,
+        soundController)
     , mUpCursorImage(WxHelpers::LoadCursorImage("wave_maker_cursor_up", 15, 15, resourceLocator))
     , mDownCursorImage(WxHelpers::LoadCursorImage("wave_maker_cursor_down", 15, 15, resourceLocator))
 {
@@ -468,14 +468,14 @@ WaveMakerTool::WaveMakerTool(
 
 TerrainAdjustTool::TerrainAdjustTool(
     IToolCursorManager & toolCursorManager,
-    std::shared_ptr<IGameController> gameController,
-    std::shared_ptr<SoundController> soundController,
+    IGameController & gameController,
+    SoundController & soundController,
     ResourceLocator const & resourceLocator)
     : Tool(
         ToolType::TerrainAdjust,
         toolCursorManager,
-        std::move(gameController),
-        std::move(soundController))
+        gameController,
+        soundController)
     , mCurrentTrajectoryPreviousWorldPosition()
     , mCurrentCursor(nullptr)
     , mUpCursorImage(WxHelpers::LoadCursorImage("terrain_adjust_cursor_up", 15, 15, resourceLocator))
@@ -490,14 +490,14 @@ TerrainAdjustTool::TerrainAdjustTool(
 
 ScrubTool::ScrubTool(
     IToolCursorManager & toolCursorManager,
-    std::shared_ptr<IGameController> gameController,
-    std::shared_ptr<SoundController> soundController,
+    IGameController & gameController,
+    SoundController & soundController,
     ResourceLocator const & resourceLocator)
     : Tool(
         ToolType::Scrub,
         toolCursorManager,
-        std::move(gameController),
-        std::move(soundController))
+        gameController,
+        soundController)
     , mScrubUpCursorImage(WxHelpers::LoadCursorImage("scrub_cursor_up", 15, 15, resourceLocator))
     , mScrubDownCursorImage(WxHelpers::LoadCursorImage("scrub_cursor_down", 15, 15, resourceLocator))
     , mRotUpCursorImage(WxHelpers::LoadCursorImage("rot_cursor_up", 8, 24, resourceLocator))
@@ -514,14 +514,14 @@ ScrubTool::ScrubTool(
 
 RepairStructureTool::RepairStructureTool(
     IToolCursorManager & toolCursorManager,
-    std::shared_ptr<IGameController> gameController,
-    std::shared_ptr<SoundController> soundController,
+    IGameController & gameController,
+    SoundController & soundController,
     ResourceLocator const & resourceLocator)
     : Tool(
         ToolType::RepairStructure,
         toolCursorManager,
-        std::move(gameController),
-        std::move(soundController))
+        gameController,
+        soundController)
     , mEngagementStartTimestamp()
     , mCurrentStepId()
     , mUpCursorImage(WxHelpers::LoadCursorImage("repair_structure_cursor_up", 8, 8, resourceLocator))
@@ -540,14 +540,14 @@ RepairStructureTool::RepairStructureTool(
 
 ThanosSnapTool::ThanosSnapTool(
     IToolCursorManager & toolCursorManager,
-    std::shared_ptr<IGameController> gameController,
-    std::shared_ptr<SoundController> soundController,
+    IGameController & gameController,
+    SoundController & soundController,
     ResourceLocator const & resourceLocator)
     : OneShotTool(
         ToolType::ThanosSnap,
         toolCursorManager,
-        std::move(gameController),
-        std::move(soundController))
+        gameController,
+        soundController)
     , mUpCursorImage(WxHelpers::LoadCursorImage("thanos_snap_cursor_up", 15, 15, resourceLocator))
     , mDownCursorImage(WxHelpers::LoadCursorImage("thanos_snap_cursor_down", 15, 15, resourceLocator))
 {
@@ -559,14 +559,14 @@ ThanosSnapTool::ThanosSnapTool(
 
 ScareFishTool::ScareFishTool(
     IToolCursorManager & toolCursorManager,
-    std::shared_ptr<IGameController> gameController,
-    std::shared_ptr<SoundController> soundController,
+    IGameController & gameController,
+    SoundController & soundController,
     ResourceLocator const & resourceLocator)
     : Tool(
         ToolType::ScareFish,
         toolCursorManager,
-        std::move(gameController),
-        std::move(soundController))
+        gameController,
+        soundController)
     , mIsEngaged(false)
     , mCurrentAction(ActionType::Scare)
     , mScareUpCursorImage(WxHelpers::LoadCursorImage("megaphone_cursor_up", 8, 10, resourceLocator))
@@ -585,14 +585,14 @@ ScareFishTool::ScareFishTool(
 
 PhysicsProbeTool::PhysicsProbeTool(
     IToolCursorManager & toolCursorManager,
-    std::shared_ptr<IGameController> gameController,
-    std::shared_ptr<SoundController> soundController,
+    IGameController & gameController,
+    SoundController & soundController,
     ResourceLocator const & resourceLocator)
     : OneShotTool(
         ToolType::PhysicsProbe,
         toolCursorManager,
-        std::move(gameController),
-        std::move(soundController))
+        gameController,
+        soundController)
     , mCursorImage(WxHelpers::LoadCursorImage("physics_probe_cursor", 0, 19, resourceLocator))
 {
 }
@@ -603,14 +603,14 @@ PhysicsProbeTool::PhysicsProbeTool(
 
 BlastTool::BlastTool(
     IToolCursorManager & toolCursorManager,
-    std::shared_ptr<IGameController> gameController,
-    std::shared_ptr<SoundController> soundController,
+    IGameController & gameController,
+    SoundController & soundController,
     ResourceLocator const & resourceLocator)
     : Tool(
         ToolType::BlastTool,
         toolCursorManager,
-        std::move(gameController),
-        std::move(soundController))
+        gameController,
+        soundController)
     , mEngagementData()
     , mUpCursorImage1(WxHelpers::LoadCursorImage("blast_cursor_up_1", 15, 15, resourceLocator))
     , mUpCursorImage2(WxHelpers::LoadCursorImage("blast_cursor_up_2", 15, 15, resourceLocator))
@@ -624,14 +624,14 @@ BlastTool::BlastTool(
 
 ElectricSparkTool::ElectricSparkTool(
     IToolCursorManager & toolCursorManager,
-    std::shared_ptr<IGameController> gameController,
-    std::shared_ptr<SoundController> soundController,
+    IGameController & gameController,
+    SoundController & soundController,
     ResourceLocator const & resourceLocator)
     : Tool(
         ToolType::ElectricSparkTool,
         toolCursorManager,
-        std::move(gameController),
-        std::move(soundController))
+        gameController,
+        soundController)
     , mEngagementData()
     , mUpCursorImage(WxHelpers::LoadCursorImage("electric_spark_cursor_up", 10, 30, resourceLocator))
     , mDownCursorImage(WxHelpers::LoadCursorImage("electric_spark_cursor_down", 13, 31, resourceLocator))
@@ -644,14 +644,14 @@ ElectricSparkTool::ElectricSparkTool(
 
 WindMakerTool::WindMakerTool(
     IToolCursorManager & toolCursorManager,
-    std::shared_ptr<IGameController> gameController,
-    std::shared_ptr<SoundController> soundController,
+    IGameController & gameController,
+    SoundController & soundController,
     ResourceLocator const & resourceLocator)
     : Tool(
         ToolType::WindMakerTool,
         toolCursorManager,
-        std::move(gameController),
-        std::move(soundController))
+        gameController,
+        soundController)
     , mEngagementData()
     , mUpCursorImage(WxHelpers::LoadCursorImage("wind_cursor_up", 15, 15, resourceLocator))
     , mDownCursorImages(
@@ -669,14 +669,14 @@ WindMakerTool::WindMakerTool(
 
 LaserCannonTool::LaserCannonTool(
     IToolCursorManager & toolCursorManager,
-    std::shared_ptr<IGameController> gameController,
-    std::shared_ptr<SoundController> soundController,
+    IGameController & gameController,
+    SoundController & soundController,
     ResourceLocator const & resourceLocator)
     : Tool(
         ToolType::LaserCannonTool,
         toolCursorManager,
-        std::move(gameController),
-        std::move(soundController))
+        gameController,
+        soundController)
     , mEngagementData()
     , mUpCursorImage(WxHelpers::LoadCursorImage("crosshair_cursor_up", 15, 15, resourceLocator))
     , mDownCursorImage(WxHelpers::LoadCursorImage("crosshair_cursor_down", 15, 15, resourceLocator))

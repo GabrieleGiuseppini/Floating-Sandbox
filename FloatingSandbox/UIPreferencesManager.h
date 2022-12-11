@@ -19,7 +19,6 @@
 #include <algorithm>
 #include <cassert>
 #include <filesystem>
-#include <memory>
 #include <optional>
 #include <vector>
 
@@ -33,9 +32,9 @@ class UIPreferencesManager
 public:
 
     UIPreferencesManager(
-        std::shared_ptr<IGameController> gameController,
-        LocalizationManager & localizationManager,
-        std::shared_ptr<MusicController> musicController);
+        IGameController & gameController,
+        MusicController & musicController,
+        LocalizationManager & localizationManager);
 
     ~UIPreferencesManager();
 
@@ -163,27 +162,27 @@ public:
 
     ShipAutoTexturizationSettings const & GetShipAutoTexturizationSharedSettings() const
     {
-        return mGameController->GetShipAutoTexturizationSharedSettings();
+        return mGameController.GetShipAutoTexturizationSharedSettings();
     }
 
     ShipAutoTexturizationSettings & GetShipAutoTexturizationSharedSettings()
     {
-        return mGameController->GetShipAutoTexturizationSharedSettings();
+        return mGameController.GetShipAutoTexturizationSharedSettings();
     }
 
     void SetShipAutoTexturizationSharedSettings(ShipAutoTexturizationSettings const & settings)
     {
-        mGameController->SetShipAutoTexturizationSharedSettings(settings);
+        mGameController.SetShipAutoTexturizationSharedSettings(settings);
     }
 
     bool GetShipAutoTexturizationForceSharedSettingsOntoShipDefinition() const
     {
-        return mGameController->GetShipAutoTexturizationDoForceSharedSettingsOntoShipSettings();
+        return mGameController.GetShipAutoTexturizationDoForceSharedSettingsOntoShipSettings();
     }
 
     void SetShipAutoTexturizationForceSharedSettingsOntoShipDefinition(bool value)
     {
-        mGameController->SetShipAutoTexturizationDoForceSharedSettingsOntoShipSettings(value);
+        mGameController.SetShipAutoTexturizationDoForceSharedSettingsOntoShipSettings(value);
     }
 
     bool GetShowShipDescriptionsAtShipLoad() const
@@ -198,62 +197,62 @@ public:
 
     float GetCameraSpeedAdjustment() const
     {
-        return mGameController->GetCameraSpeedAdjustment();
+        return mGameController.GetCameraSpeedAdjustment();
     }
 
     void SetCameraSpeedAdjustment(float value)
     {
-        mGameController->SetCameraSpeedAdjustment(value);
+        mGameController.SetCameraSpeedAdjustment(value);
     }
 
     float GetMinCameraSpeedAdjustment() const
     {
-        return mGameController->GetMinCameraSpeedAdjustment();
+        return mGameController.GetMinCameraSpeedAdjustment();
     }
 
     float GetMaxCameraSpeedAdjustment() const
     {
-        return mGameController->GetMaxCameraSpeedAdjustment();
+        return mGameController.GetMaxCameraSpeedAdjustment();
     }
 
     bool GetDoAutoFocusAtShipLoad() const
     {
-        return mGameController->GetDoAutoFocusOnShipLoad();
+        return mGameController.GetDoAutoFocusOnShipLoad();
     }
 
     void SetDoAutoFocusAtShipLoad(bool value)
     {
-        mGameController->SetDoAutoFocusOnShipLoad(value);
+        mGameController.SetDoAutoFocusOnShipLoad(value);
     }
 
     bool GetDoContinuousAutoFocus() const
     {
-        return mGameController->GetDoContinuousAutoFocus();
+        return mGameController.GetDoContinuousAutoFocus();
     }
 
     void SetDoContinuousAutoFocus(bool value)
     {
-        mGameController->SetDoContinuousAutoFocus(value);
+        mGameController.SetDoContinuousAutoFocus(value);
     }
 
     bool GetDoShowTsunamiNotifications() const
     {
-        return mGameController->GetDoShowTsunamiNotifications();
+        return mGameController.GetDoShowTsunamiNotifications();
     }
 
     void SetDoShowTsunamiNotifications(bool value)
     {
-        mGameController->SetDoShowTsunamiNotifications(value);
+        mGameController.SetDoShowTsunamiNotifications(value);
     }
 
     UnitsSystem GetDisplayUnitsSystem() const
     {
-        return mGameController->GetDisplayUnitsSystem();
+        return mGameController.GetDisplayUnitsSystem();
     }
 
     void SetDisplayUnitsSystem(UnitsSystem value)
     {
-        mGameController->SetDisplayUnitsSystem(value);
+        mGameController.SetDisplayUnitsSystem(value);
     }
 
     bool GetAutoShowSwitchboard() const
@@ -278,12 +277,12 @@ public:
 
     bool GetDoShowElectricalNotifications() const
     {
-        return mGameController->GetDoShowElectricalNotifications();
+        return mGameController.GetDoShowElectricalNotifications();
     }
 
     void SetDoShowElectricalNotifications(bool value)
     {
-        mGameController->SetDoShowElectricalNotifications(value);
+        mGameController.SetDoShowElectricalNotifications(value);
     }
 
     float GetZoomIncrement() const
@@ -308,22 +307,22 @@ public:
 
     bool GetShowStatusText() const
     {
-        return mGameController->GetShowStatusText();
+        return mGameController.GetShowStatusText();
     }
 
     void SetShowStatusText(bool value)
     {
-        mGameController->SetShowStatusText(value);
+        mGameController.SetShowStatusText(value);
     }
 
     bool GetShowExtendedStatusText() const
     {
-        return mGameController->GetShowExtendedStatusText();
+        return mGameController.GetShowExtendedStatusText();
     }
 
     void SetShowExtendedStatusText(bool value)
     {
-        mGameController->SetShowExtendedStatusText(value);
+        mGameController.SetShowExtendedStatusText(value);
     }
 
     //
@@ -338,47 +337,47 @@ public:
     void SetGlobalMute(bool value)
     {
         AudioController::SetGlobalMute(value);
-        mGameController->NotifySoundMuted(value);
+        mGameController.NotifySoundMuted(value);
     }
 
     float GetBackgroundMusicVolume() const
     {
-        return mMusicController->GetBackgroundMusicVolume();
+        return mMusicController.GetBackgroundMusicVolume();
     }
 
     void SetBackgroundMusicVolume(float value)
     {
-        mMusicController->SetBackgroundMusicVolume(value);
+        mMusicController.SetBackgroundMusicVolume(value);
     }
 
     bool GetPlayBackgroundMusic() const
     {
-        return mMusicController->GetPlayBackgroundMusic();
+        return mMusicController.GetPlayBackgroundMusic();
     }
 
     void SetPlayBackgroundMusic(bool value)
     {
-        mMusicController->SetPlayBackgroundMusic(value);
+        mMusicController.SetPlayBackgroundMusic(value);
     }
 
     float GetGameMusicVolume() const
     {
-        return mMusicController->GetGameMusicVolume();
+        return mMusicController.GetGameMusicVolume();
     }
 
     void SetGameMusicVolume(float value)
     {
-        mMusicController->SetGameMusicVolume(value);
+        mMusicController.SetGameMusicVolume(value);
     }
 
     bool GetPlaySinkingMusic() const
     {
-        return mMusicController->GetPlaySinkingMusic();
+        return mMusicController.GetPlaySinkingMusic();
     }
 
     void SetPlaySinkingMusic(bool value)
     {
-        mMusicController->SetPlaySinkingMusic(value);
+        mMusicController.SetPlaySinkingMusic(value);
     }
 
     //
@@ -416,9 +415,9 @@ private:
 private:
 
     // The owners/storage of our properties
-    std::shared_ptr<IGameController> mGameController;
-    LocalizationManager & mLocalizationManager;
-    std::shared_ptr<MusicController> mMusicController;
+    IGameController & mGameController;
+    MusicController & mMusicController;
+    LocalizationManager & mLocalizationManager;   
 
     //
     // The preferences for which we are the owners/storage
