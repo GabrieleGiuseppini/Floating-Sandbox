@@ -160,7 +160,6 @@ MainFrame::MainFrame(
         mMainPanel,
         ID_MAIN_CANVAS);
 
-    mMainGLCanvas->Connect(wxEVT_SHOW, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasShow, 0, this);
     mMainGLCanvas->Connect(wxEVT_PAINT, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasPaint, 0, this);
     mMainGLCanvas->Connect(wxEVT_SIZE, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasResize, 0, this);
     mMainGLCanvas->Connect(wxEVT_LEFT_DOWN, (wxObjectEventFunction)&MainFrame::OnMainGLCanvasLeftDown, 0, this);
@@ -675,6 +674,11 @@ MainFrame::MainFrame(
     mPostInitializeTimer = std::make_unique<wxTimer>(this, ID_POSTIINITIALIZE_TIMER);
     Connect(ID_POSTIINITIALIZE_TIMER, wxEVT_TIMER, (wxObjectEventFunction)&MainFrame::OnPostInitializeTrigger);
     mPostInitializeTimer->Start(1, true);
+}
+
+MainFrame::~MainFrame()
+{
+    LogMessage("MainFrame::~MainFrame()");
 }
 
 bool MainFrame::ProcessKeyDown(
@@ -1269,6 +1273,8 @@ void MainFrame::OnPostInitializeIdle(wxIdleEvent & /*event*/)
 
 void MainFrame::OnMainFrameClose(wxCloseEvent & /*event*/)
 {
+    LogMessage("MainFrame::OnMainFrameClose()");
+
     // Stop game
     FreezeGame();
 
@@ -1287,6 +1293,8 @@ void MainFrame::OnMainFrameClose(wxCloseEvent & /*event*/)
 
 void MainFrame::OnQuit(wxCommandEvent & /*event*/)
 {
+    LogMessage("MainFrame::OnQuit()");
+
     // Close frame
     Close();
 }
@@ -1356,13 +1364,6 @@ void MainFrame::OnIdle(wxIdleEvent & /*event*/)
 //
 // Main canvas event handlers
 //
-
-void MainFrame::OnMainGLCanvasShow(wxShowEvent & event)
-{
-    LogMessage("MainFrame::OnMainGLCanvasShow(", event.IsShown() ? "SHOW" : "HIDE", ")");
-
-    event.Skip();
-}
 
 void MainFrame::OnMainGLCanvasPaint(wxPaintEvent & event)
 {

@@ -34,6 +34,7 @@ public:
 
     ~GLCanvas()
     {
+        LogMessage("GLCanvas::~GLCanvas()");
     }
 
 private:

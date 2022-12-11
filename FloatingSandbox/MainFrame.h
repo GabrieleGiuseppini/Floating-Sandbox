@@ -64,6 +64,8 @@ public:
         ResourceLocator const & resourceLocator,
         LocalizationManager & localizationManager);
 
+    ~MainFrame();
+
     bool ProcessKeyDown(
         int keyCode,
         int keyModifiers);
@@ -159,7 +161,6 @@ private:
     void OnIdle(wxIdleEvent & event);
 
     // Main GL canvas
-    void OnMainGLCanvasShow(wxShowEvent & event);
     void OnMainGLCanvasPaint(wxPaintEvent & event);
     void OnMainGLCanvasResize(wxSizeEvent & event);
     void OnMainGLCanvasLeftDown(wxMouseEvent & event);

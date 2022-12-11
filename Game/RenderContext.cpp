@@ -261,6 +261,8 @@ RenderContext::RenderContext(
 
 RenderContext::~RenderContext()
 {
+    LogMessage("RenderContext::~RenderContext()");
+
     // Wait for an eventual pending render
     // (this destructor may only be invoked between two cycles,
     // hence knowing that there's no more render's is enough to ensure
