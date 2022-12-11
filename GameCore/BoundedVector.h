@@ -5,8 +5,6 @@
 ***************************************************************************************/
 #pragma once
 
-#include "Log.h"
-
 #include <algorithm>
 #include <cassert>
 #include <cstdlib>

@@ -91,7 +91,7 @@ struct GameParameters
 
     float NumMechanicalDynamicsIterationsAdjustment;
     static float constexpr MinNumMechanicalDynamicsIterationsAdjustment = 0.5f;
-    static float constexpr MaxNumMechanicalDynamicsIterationsAdjustment = 20.0f;
+    static float constexpr MaxNumMechanicalDynamicsIterationsAdjustment = 5.0f;
 
     template <typename T>
     inline T NumMechanicalDynamicsIterations() const

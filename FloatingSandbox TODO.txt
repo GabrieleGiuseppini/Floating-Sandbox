@@ -68,8 +68,20 @@
 		+ in Debug mode
 	+ Add Ukrainian to credits
 
-	= Test flames with heightened luminosity
-		- Test perf of flames on Dell
+	+ Max sim quality: 5.0
+
+	+ Send for testing & localization
+
+	+ Localization:
+		+ IT
+		+ ES
+		+ RU
+		+ UK
+
+	+ Test flames with heightened luminosity
+		+ Test perf of flames on Dell
+
+	= Investigate crash upon exit on Dell
 
 	= Ships:
 		+ Take S.S. Avila 2 (Matthew Anderson) (ToTake folder)
@@ -96,14 +108,6 @@
 			- Name? (ASKED)
 			- Credits? (ASKED)
 	
-	= Send for testing & localization
-
-	- Localization:
-		+ IT
-		- ES
-		- RU
-		- UK
-
 	- Release:
 		- Branch is merged into master (if applicable)
 		- Windows
