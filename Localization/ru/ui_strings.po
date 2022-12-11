@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Floating Sandbox\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-12-01 11:41+0100\n"
+"PO-Revision-Date: 2022-12-11 14:57+0100\n"
 "Last-Translator: Gabriele Giuseppini <gabrielegiuseppini@gmail.com>\n"
 "Language-Team: Ilya Voloshin; Roman Shavernew (DioxCode)\n"
 "Language: ru\n"
@@ -80,13 +80,11 @@ msgstr "Бросить и вернуться"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2956
 msgid "Abort"
-msgstr ""
+msgstr "Отмена"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2942
-#, fuzzy
-#| msgid "Undo the last edit operation (Ctrl+Z)."
 msgid "Abort the paste operation."
-msgstr "Отмена последней операции редактирования (Ctrl+Z)."
+msgstr "Отменить операцию вставки."
 
 #: ..\FloatingSandbox\AboutDialog.cpp:24
 #, c-format
@@ -484,10 +482,8 @@ msgid "Air and Sky"
 msgstr "Воздух и небо"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2548
-#, fuzzy
-#| msgid "Layers"
 msgid "All Layers:"
-msgstr "Слои"
+msgstr "Слои:"
 
 #: ..\ShipBuilderLib\UI\ModelValidationDialog.cpp:520
 msgid ""
@@ -817,13 +813,11 @@ msgstr "Вид горения"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2912
 msgid "Commit"
-msgstr ""
+msgstr "Выполнить"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2898
-#, fuzzy
-#| msgid "Undo the last edit operation (Ctrl+Z)."
 msgid "Commit the paste operation."
-msgstr "Отмена последней операции редактирования (Ctrl+Z)."
+msgstr "Выполните операцию вставки."
 
 #: ..\ShipBuilderLib\UI\MaterialPalette.cpp:619
 msgid "Conductive"
@@ -860,11 +854,11 @@ msgstr ""
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1727
 msgid "Copy"
-msgstr ""
+msgstr "Копировать"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1732
 msgid "Copy the current selection to the clipboard (Ctrl+C)."
-msgstr ""
+msgstr "Копирование текущего выделения в буфер обмена (Ctrl+C)."
 
 #: ..\FloatingSandbox\CreditsPanel.cpp:159
 msgid "Copyright (c) 1998-2005 Julian Smart, Robert Roebling et al"
@@ -898,7 +892,7 @@ msgstr "Создайте новый пустой корабль (Ctrl+N)."
 
 #: ..\ShipBuilderLib\Controller.cpp:739 ..\ShipBuilderLib\MainFrame.cpp:1753
 msgid "Cut"
-msgstr ""
+msgstr "Вырезать"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3908
 msgid "Darkening Rate"
@@ -968,10 +962,8 @@ msgid "Description:"
 msgstr "Описание:"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2617
-#, fuzzy
-#| msgid "Diesel"
 msgid "Deselect"
-msgstr "Дизель"
+msgstr "Снять выделение"
 
 #: ..\FloatingSandbox\DebugDialog.cpp:106
 msgid "Destroy"
@@ -1132,10 +1124,8 @@ msgid "Draw particles in lines."
 msgstr "Рисуйте частицы линиями."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:3845
-#, fuzzy
-#| msgid "Draw individual structure particles."
 msgid "Draw rectangles of particles."
-msgstr "Нарисуйте отдельные частицы структуры."
+msgstr "Нарисуйте прямоугольники из частиц."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3980
 msgid "Draws the ocean floor using a static color."
@@ -1473,6 +1463,8 @@ msgstr "Стереть конечные точки каната."
 msgid ""
 "Erase the specified region and copy its content to the clipboard (Ctrl+X)."
 msgstr ""
+"Стереть указанную область и скопировать ее содержимое в буфер обмена (Ctrl"
+"+X)."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1959 ..\ShipBuilderLib\MainFrame.cpp:2013
 #: ..\ShipBuilderLib\MainFrame.cpp:2494
@@ -1526,10 +1518,8 @@ msgid "File"
 msgstr "Файл"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2188
-#, fuzzy
-#| msgid "Hull Mode:"
 msgid "Fill Mode:"
-msgstr "Режим корпуса:"
+msgstr "Режим заливки:"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:3861
 msgid "Fill an area with structure particles."
@@ -1597,16 +1587,12 @@ msgid "Flip ship vertically when loaded"
 msgstr "Перевернуть корабль вертикально при загрузке"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2799
-#, fuzzy
-#| msgid "Flip the ship horizontally."
 msgid "Flip the pasted region horizontally."
-msgstr "Переверните корабль в горизонтальное положение."
+msgstr "Переверните вставленную область по горизонтали."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2843
-#, fuzzy
-#| msgid "Flip the ship vertically."
 msgid "Flip the pasted region vertically."
-msgstr "Переверните корабль вертикально."
+msgstr "Переверните вставленную область по вертикали."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1644
 msgid "Flip the ship horizontally."
@@ -1782,10 +1768,8 @@ msgid "Heat Draw Options"
 msgstr "Параметры тепловой настройки"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3188
-#, fuzzy
-#| msgid "Heat Boost"
 msgid "Heat Flow"
-msgstr "Повышение температуры"
+msgstr "Тепловой поток"
 
 #: ..\ShipBuilderLib\UI\MaterialPalette.cpp:620
 msgid "Heat Generated (KJ/s)"
@@ -1988,11 +1972,11 @@ msgstr "Язык"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3160
 msgid "Laser Ray"
-msgstr ""
+msgstr "Лазерный луч"
 
 #: ..\FloatingSandbox\MainFrame.cpp:431
 msgid "LaserCannon"
-msgstr ""
+msgstr "ЛазернаяПушка"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1066
 msgid "Layers"
@@ -2470,16 +2454,16 @@ msgstr "Защита паролем"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1779
 msgid "Paste"
-msgstr ""
+msgstr "Вставить"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:3909 ..\ShipBuilderLib\MainFrame.cpp:4120
 #: ..\ShipBuilderLib\MainFrame.cpp:4283 ..\ShipBuilderLib\MainFrame.cpp:4462
 msgid "Paste clipboard."
-msgstr ""
+msgstr "Вставить буфер обмена."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1784
 msgid "Paste the content of the clipboard into the ship (Ctrl+V)."
-msgstr ""
+msgstr "Вставьте содержимое буфера обмена в корабль (Ctrl+V)."
 
 #: ..\FloatingSandbox\MainFrame.cpp:280
 msgid "Pause"
@@ -2599,7 +2583,7 @@ msgstr ""
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2201
 msgid "Primary Material"
-msgstr ""
+msgstr "Первичный материал"
 
 #: ..\FloatingSandbox\CreditsPanel.cpp:188
 msgid "Programmed in Amsterdam, the Netherlands"
@@ -2698,10 +2682,8 @@ msgid "Remove empty space around the ship."
 msgstr "Удаляет пустое пространство вокруг корабля."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2593
-#, fuzzy
-#| msgid "Undo the last edit operation (Ctrl+Z)."
 msgid "Remove the current selection (Ctrl+D)."
-msgstr "Отмена последней операции редактирования (Ctrl+Z)."
+msgstr "Снять текущее выделение (Ctrl+D)."
 
 #: ..\ShipBuilderLib\UI\ShipPropertiesEditDialog.cpp:986
 msgid "Remove the password lock."
@@ -2845,16 +2827,12 @@ msgid "Rotate ship 90 degrees clockwise when loaded"
 msgstr "Поворот судна на 90 градусов по часовой стрелке при погрузке"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2755
-#, fuzzy
-#| msgid "Rotate the ship 90 degrees anti-clockwise."
 msgid "Rotate the pasted region 90 degrees anti-clockwise."
-msgstr "Поверните корабль на 90 градусов налево."
+msgstr "Поверните вставленную область на 90 градусов против часовой стрелки."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2711
-#, fuzzy
-#| msgid "Rotate the ship 90 degrees clockwise."
 msgid "Rotate the pasted region 90 degrees clockwise."
-msgstr "Поверните корабль на 90 градусов на право."
+msgstr "Поверните вставленную область на 90 градусов по часовой стрелке."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:1627
 msgid "Rotate the ship 90 degrees anti-clockwise."
@@ -2991,7 +2969,7 @@ msgstr "Искать в этой папке:"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2202
 msgid "Secondary Material"
-msgstr ""
+msgstr "Вторичный материал"
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3858
 msgid "See Ship Through Water"
@@ -3004,7 +2982,7 @@ msgstr "Смотрите информацию о судне"
 #: ..\ShipBuilderLib\MainFrame.cpp:3893 ..\ShipBuilderLib\MainFrame.cpp:4104
 #: ..\ShipBuilderLib\MainFrame.cpp:4267 ..\ShipBuilderLib\MainFrame.cpp:4446
 msgid "Select an area for copying and/or cutting."
-msgstr ""
+msgstr "Выберите область для копирования и/или резки."
 
 #: ..\FloatingSandbox\PreferencesDialog.cpp:717
 msgid "Select directory that screenshots will be saved to:"
@@ -3596,10 +3574,8 @@ msgid "The heat produced by the HeatBlaster tool (KJ/s)."
 msgstr "Тепло, выделяемое инструментом Тепловым Бластером (кДж/с)."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:3189
-#, fuzzy
-#| msgid "The heat produced by the HeatBlaster tool (KJ/s)."
 msgid "The heat produced by the laser ray (KJ/s)."
-msgstr "Тепло, выделяемое инструментом Тепловым Бластером (кДж/с)."
+msgstr "Тепло, выделяемое лазерным лучом (КДж/с)."
 
 #: ..\ShipBuilderLib\UI\PreferencesDialog.cpp:116
 msgid "The height of the canvas."
@@ -3669,10 +3645,8 @@ msgid "The selected ship does not have a ropes layer"
 msgstr "Выбранное судно не имеет слоя канатов"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:5159
-#, fuzzy
-#| msgid "The selected ship does not have a texture layer"
 msgid "The selected ship does not have a structural layer"
-msgstr "Выбранный корабль не имеет слоя текстуры"
+msgstr "Выбранное судно не имеет структурного слоя"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:5180
 msgid "The selected ship does not have a texture layer"
@@ -3706,10 +3680,8 @@ msgid "The size of the pencil tool."
 msgstr "Размер инструмента \"карандаш\"."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2173
-#, fuzzy
-#| msgid "The size of the eraser tool."
 msgid "The size of the rectangle tool's line."
-msgstr "Размер инструмента ластика."
+msgstr "Размер линии инструмента прямоугольника."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:5212
 msgid ""
@@ -3898,10 +3870,8 @@ msgid "Transparency"
 msgstr "Прозрачность"
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2661
-#, fuzzy
-#| msgid "Transparency"
 msgid "Transparent:"
-msgstr "Прозрачность"
+msgstr "Прозрачный:"
 
 #: ..\FloatingSandbox\DebugDialog.cpp:64
 msgid "Triangles"
@@ -4139,6 +4109,9 @@ msgid ""
 "When enabled, empty regions are pasted as transparent; otherwise, empty "
 "regions are pasted as opaque and will erase anything on the background."
 msgstr ""
+"Если эта функция включена, пустые области вставляются как прозрачные; в "
+"противном случае пустые области вставляются как непрозрачные и стирают все, "
+"что находится на фоне."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2419
 msgid ""
@@ -4153,10 +4126,12 @@ msgid ""
 "When enabled, the selection affects all layers instead of just the current "
 "layer."
 msgstr ""
+"Если эта функция включена, выделение затрагивает все слои, а не только "
+"текущий слой."
 
 #: ..\ShipBuilderLib\MainFrame.cpp:2209
 msgid "Which material to fill the rectangle with."
-msgstr ""
+msgstr "Каким материалом заполнить прямоугольник."
 
 #: ..\FloatingSandbox\SettingsDialog.cpp:1664
 msgid "Width Adjust"
