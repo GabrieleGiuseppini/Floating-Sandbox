@@ -82,6 +82,9 @@
 		+ Test perf of flames on Dell
 
 	= Investigate crash upon exit on Dell
+		- Also test on ubuntu
+
+	- Bump up version
 
 	= Ships:
 		+ Take S.S. Avila 2 (Matthew Anderson) (ToTake folder)
