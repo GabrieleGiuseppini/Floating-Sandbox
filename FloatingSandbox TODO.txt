@@ -81,12 +81,7 @@
 	+ Test flames with heightened luminosity
 		+ Test perf of flames on Dell
 
-	= Investigate crash upon exit on Dell
-		- Also test on ubuntu
-
-	- Bump up version
-
-	= Ships:
+	+ Ships:
 		+ Take S.S. Avila 2 (Matthew Anderson) (ToTake folder)
 		+ Take B-17 Flying Fortress (DKUZ) (ToTake folder)
 			+ Credits
@@ -107,9 +102,12 @@
 			+ Find author
 				+ Author in properties
 				+ Credits: "MTF"
-		- Take Dugongsmallwtrtight-Walter (ToTake folder)
-			- Name? (ASKED)
-			- Credits? (ASKED)
+
+	+ Investigate crash upon exit on Dell
+		+ Also test on ubuntu
+		+ Wait for testers
+
+	- Bump up version
 	
 	- Release:
 		- Branch is merged into master (if applicable)
@@ -151,6 +149,11 @@
 
 	- Make Mac instructions
 		- SFML build: https://github.com/SFML/SFML/issues/1496
+
+	- Ships:
+		- Take Dugongsmallwtrtight-Walter (ToTake folder)
+			- Name? (ASKED)
+			- Credits? (ASKED)
 
 	- Frozen structure (*)
 
