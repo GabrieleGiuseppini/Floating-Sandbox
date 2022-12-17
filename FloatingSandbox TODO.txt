@@ -107,12 +107,12 @@
 		+ Also test on ubuntu
 		+ Wait for testers
 
-	- Bump up version
+	+ Bump up version
 	
-	- Release:
-		- Branch is merged into master (if applicable)
-		- Windows
-			- MSI variable
+	= Release:
+		+ Branch is merged into master (if applicable)
+		= Windows
+			+ MSI variable
 			- Commit & push
 			- 64-bit MSI
 				- Cleanup Install
