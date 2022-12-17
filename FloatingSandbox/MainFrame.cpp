@@ -1382,7 +1382,7 @@ void MainFrame::OnIdle(wxIdleEvent & /*event*/)
 
 void MainFrame::OnMainGLCanvasPaint(wxPaintEvent & event)
 {
-    if (!!mSplashScreenDialog)
+    if (mSplashScreenDialog)
     {
         //
         // Now that the glCanvas is visible, we may transfer the 
@@ -1410,9 +1410,9 @@ void MainFrame::OnMainGLCanvasPaint(wxPaintEvent & event)
 void MainFrame::OnMainGLCanvasResize(wxSizeEvent & event)
 {
     LogMessage("OnMainGLCanvasResize: ", event.GetSize().GetX(), "x", event.GetSize().GetY(),
-        (!!mGameController) ? " (With GameController)" : " (Without GameController)");
+        (mGameController) ? " (With GameController)" : " (Without GameController)");
 
-    if (!!mGameController
+    if (mGameController
         && event.GetSize().GetX() > 0
         && event.GetSize().GetY() > 0)
     {
@@ -1435,8 +1435,10 @@ void MainFrame::OnMainGLCanvasLeftDown(wxMouseEvent & /*event*/)
     }
 
     // Tell tool controller
-    assert(!!mToolController);
-    mToolController->OnLeftMouseDown();
+    if (mToolController)
+    {
+        mToolController->OnLeftMouseDown();
+    }
 
     // Hang on to the mouse for as long as the button is pressed
     if (!mIsMouseCapturedByGLCanvas)
@@ -1455,14 +1457,18 @@ void MainFrame::OnMainGLCanvasLeftUp(wxMouseEvent & /*event*/)
         mIsMouseCapturedByGLCanvas = false;
     }
 
-    assert(!!mToolController);
-    mToolController->OnLeftMouseUp();
+    if (mToolController)
+    {
+        mToolController->OnLeftMouseUp();
+    }
 }
 
 void MainFrame::OnMainGLCanvasRightDown(wxMouseEvent & /*event*/)
 {
-    assert(!!mToolController);
-    mToolController->OnRightMouseDown();
+    if (mToolController)
+    {
+        mToolController->OnRightMouseDown();
+    }
 
     // Hang on to the mouse for as long as the button is pressed
     if (!mIsMouseCapturedByGLCanvas)
@@ -1481,29 +1487,37 @@ void MainFrame::OnMainGLCanvasRightUp(wxMouseEvent & /*event*/)
         mIsMouseCapturedByGLCanvas = false;
     }
 
-    assert(!!mToolController);
-    mToolController->OnRightMouseUp();
+    if (mToolController)
+    {
+        mToolController->OnRightMouseUp();
+    }
 }
 
 void MainFrame::OnMainGLCanvasMouseMove(wxMouseEvent & event)
 {
-    assert(!!mToolController);
-    mToolController->OnMouseMove(
-        DisplayLogicalCoordinates(
-            event.GetX(),
-            event.GetY()));
+    if (mToolController)
+    {
+        mToolController->OnMouseMove(
+            DisplayLogicalCoordinates(
+                event.GetX(),
+                event.GetY()));
+    }
 }
 
 void MainFrame::OnMainGLCanvasMouseWheel(wxMouseEvent & event)
 {
-    assert(!!mGameController);
-    mGameController->AdjustZoom(powf(1.002f, event.GetWheelRotation()));
+    if (mGameController)
+    {
+        mGameController->AdjustZoom(powf(1.002f, event.GetWheelRotation()));
+    }
 }
 
 void MainFrame::OnMainGLCanvasCaptureMouseLost(wxMouseCaptureLostEvent & /*event*/)
 {
-    assert(!!mToolController);
-    mToolController->UnsetTool();
+    if (mToolController)
+    {
+        mToolController->UnsetTool();
+    }
 }
 
 //
@@ -2102,7 +2116,9 @@ void MainFrame::OnCheckForUpdatesMenuItemSelected(wxCommandEvent & /*event*/)
 
 void MainFrame::RunGameIteration()
 {
-    if (!!mUpdateChecker && !IsPaused()) // A bit of a hack: if the LoadShip dialog is open while we ShowModal() the NewVersion dialog, the UI loop freezes
+    assert(mUIPreferencesManager);
+
+    if (mUpdateChecker && !IsPaused()) // A bit of a hack: if the LoadShip dialog is open while we ShowModal() the NewVersion dialog, the UI loop freezes
     {
         // We are checking for updates...
         // ...check whether the...check has completed
@@ -2158,6 +2174,9 @@ void MainFrame::RunGameIteration()
     std::chrono::steady_clock::time_point const startTimestamp = std::chrono::steady_clock::now();
 #endif
 
+    assert(mGameController);
+    assert(mToolController);
+
     // Update SHIFT key state
     if (wxGetKeyState(WXK_SHIFT))
     {
@@ -2183,8 +2202,6 @@ void MainFrame::RunGameIteration()
     try
     {
         // Update tool controller
-        assert(!!mGameController);
-        assert(!!mToolController);
         mToolController->UpdateSimulation(mGameController->GetCurrentSimulationTime());
 
         // Update and render
@@ -2192,7 +2209,6 @@ void MainFrame::RunGameIteration()
         ////    !!mSplashScreenDialog ? std::to_string(mSplashScreenDialog->IsShown()) : "<NoSplash>",
         ////    " IsMainGLCanvasShown=", !!mMainGLCanvas ? std::to_string(mMainGLCanvas->IsShown()) : "<NoCanvas>",
         ////    " IsFrameShown=", std::to_string(this->IsShown()));
-        assert(!!mGameController);
         mGameController->RunGameIteration();
 
         // Update probe panel
@@ -2343,12 +2359,12 @@ void MainFrame::FreezeGame()
     // Stop timers
     //
 
-    if (!!mGameTimer)
+    if (mGameTimer)
     {
         mGameTimer->Stop();
     }
 
-    if (!!mLowFrequencyTimer)
+    if (mLowFrequencyTimer)
     {
         mLowFrequencyTimer->Stop();
     }
@@ -2357,7 +2373,7 @@ void MainFrame::FreezeGame()
     // Freeze game controller
     //
 
-    if (!!mGameController)
+    if (mGameController)
     {
         mGameController->Freeze();
     }
@@ -2366,12 +2382,12 @@ void MainFrame::FreezeGame()
     // Stop sounds
     //
 
-    if (!!mSoundController)
+    if (mSoundController)
     {
         mSoundController->Reset();
     }
 
-    if (!!mMusicController)
+    if (mMusicController)
     {
         mMusicController->Reset();
     }
@@ -2385,7 +2401,7 @@ void MainFrame::ThawGame()
     // Thaw game controller
     //
 
-    if (!!mGameController)
+    if (mGameController)
     {
         mGameController->Thaw();
     }
@@ -2394,12 +2410,12 @@ void MainFrame::ThawGame()
     // Restart timers
     //
 
-    if (!!mGameTimer)
+    if (mGameTimer)
     {
         PostGameStepTimer(mGameTimerDuration);
     }
 
-    if (!!mLowFrequencyTimer)
+    if (mLowFrequencyTimer)
     {
         StartLowFrequencyTimer();
     }
@@ -2419,13 +2435,13 @@ void MainFrame::SetPaused(bool isPaused)
         {
             // Set pause
 
-            if (!!mGameController)
+            if (mGameController)
                 mGameController->SetPaused(true);
 
-            if (!!mSoundController)
+            if (mSoundController)
                 mSoundController->SetPaused(true);
 
-            if (!!mMusicController)
+            if (mMusicController)
                 mMusicController->SetPaused(true);
 
             mStepMenuItem->Enable(true);
@@ -2442,13 +2458,13 @@ void MainFrame::SetPaused(bool isPaused)
         {
             // Resume
 
-            if (!!mGameController)
+            if (mGameController)
                 mGameController->SetPaused(false);
 
-            if (!!mSoundController)
+            if (mSoundController)
                 mSoundController->SetPaused(false);
 
-            if (!!mMusicController)
+            if (mMusicController)
                 mMusicController->SetPaused(false);
 
             mStepMenuItem->Enable(false);
@@ -2463,7 +2479,7 @@ bool MainFrame::IsPaused() const
 
 void MainFrame::PostGameStepTimer(std::chrono::milliseconds duration)
 {
-    assert(!!mGameTimer);
+    assert(mGameTimer);
 
     mGameTimer->Start(
         duration.count(),
@@ -2472,7 +2488,7 @@ void MainFrame::PostGameStepTimer(std::chrono::milliseconds duration)
 
 void MainFrame::StartLowFrequencyTimer()
 {
-    assert(!!mLowFrequencyTimer);
+    assert(mLowFrequencyTimer);
 
     mLowFrequencyTimer->Start(
         1000,
@@ -2525,13 +2541,13 @@ void MainFrame::LoadShip(
     // Reset
     //
 
-    assert(!!mToolController);
+    assert(mToolController);
     mToolController->Reset();
 
-    assert(!!mSoundController);
+    assert(mSoundController);
     mSoundController->Reset();
 
-    assert(!!mMusicController);
+    assert(mMusicController);
     mMusicController->Reset();
 
     ResetShipUIState();
@@ -2543,7 +2559,7 @@ void MainFrame::LoadShip(
     try
     {
         // Load
-        assert(!!mGameController);
+        assert(mGameController);
         auto const shipMetadata = mGameController->ResetAndLoadShip(loadSpecs);
 
         // Succeeded
@@ -2600,7 +2616,7 @@ void MainFrame::OnShipLoaded(ShipLoadSpecifications loadSpecs)
 
     mCurrentShipLoadSpecs = loadSpecs;
 
-    assert(!!mUIPreferencesManager);
+    assert(mUIPreferencesManager);
     mUIPreferencesManager->SetLastShipLoadedSpecifications(loadSpecs);
 }
 
