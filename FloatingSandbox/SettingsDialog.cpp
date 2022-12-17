@@ -322,8 +322,6 @@ void SettingsDialog::Open()
     if (IsShown())
         return; // Handle Ctrl^S while minimized
 
-    assert(!!mSettingsManager);
-
     //
     // Initialize state
     //
@@ -437,8 +435,6 @@ void SettingsDialog::OnCancelButton(wxCommandEvent & /*event*/)
 
 void SettingsDialog::OnUndoButton(wxCommandEvent & /*event*/)
 {
-    assert(!!mSettingsManager);
-
     //
     // Undo changes done since last open, including eventual loads
     //
@@ -471,8 +467,6 @@ void SettingsDialog::OnCloseButton(wxCloseEvent & /*event*/)
 
 void SettingsDialog::DoCancel()
 {
-    assert(!!mSettingsManager);
-
     if (mHasBeenDirtyInCurrentSession)
     {
         //
@@ -5770,8 +5764,6 @@ void SettingsDialog::ReconciliateLandRenderModeSettings()
 
 void SettingsDialog::OnLiveSettingsChanged()
 {
-    assert(!!mSettingsManager);
-
     // Enforce settings that have just changed
     mSettingsManager.EnforceDirtySettings(mLiveSettings);
 
