@@ -153,6 +153,7 @@
         </Feature>
 
 
+	    <UIRef Id="WixUI_ErrorProgressText" />
         <UIRef Id="FloatingSandboxUI" />
 
 

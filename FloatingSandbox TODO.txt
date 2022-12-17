@@ -114,18 +114,18 @@
 		= Windows
 			+ MSI variable
 			+ Commit & push
-			= 64-bit MSI
+			+ 64-bit MSI
 				+ Cleanup Install
 				+ Build Release Install (after clean)
 				+ AV executable
 				+ Make MSI
 				+ Rename MSI
-				= AV installer
-				- Test upgrade from previous version
-					- Verify bitness & version
+				+ AV installer
+				+ Test upgrade from previous version
+					+ Verify bitness & version
 			= 32-bit MSI
-				+ Cleanup Install
-				= Build Release Install (after clean)
+				- Cleanup Install
+				- Build Release Install (after clean)
 				- Make MSI
 				- Rename MSI
 				- Test clean install
