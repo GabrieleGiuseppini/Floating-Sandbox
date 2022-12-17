@@ -1398,11 +1398,11 @@ TEST(LayerTests, ShipLayers_Clone_Full)
 
     ASSERT_TRUE(layerClone.ElectricalLayer);
     ASSERT_EQ(layerClone.ElectricalLayer->Buffer.Size, shipSize);
-    ASSERT_EQ(layerClone.ElectricalLayer->Panel.GetSize(), 1);
+    ASSERT_EQ(layerClone.ElectricalLayer->Panel.GetSize(), 1u);
 
     ASSERT_TRUE(layerClone.RopesLayer);
     ASSERT_EQ(layerClone.RopesLayer->Buffer.GetSize(), shipSize);
-    ASSERT_EQ(layerClone.RopesLayer->Buffer.GetElementCount(), 2);
+    ASSERT_EQ(layerClone.RopesLayer->Buffer.GetElementCount(), 2u);
 
     ASSERT_TRUE(layerClone.TextureLayer);
     ASSERT_EQ(layerClone.TextureLayer->Buffer.Size, ImageSize(80, 60));

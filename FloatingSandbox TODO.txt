@@ -113,25 +113,29 @@
 		+ Branch is merged into master (if applicable)
 		= Windows
 			+ MSI variable
-			- Commit & push
-			- 64-bit MSI
-				- Cleanup Install
-				- Build Release Install (after clean)
-				- Make MSI
-				- Rename MSI
+			+ Commit & push
+			= 64-bit MSI
+				+ Cleanup Install
+				+ Build Release Install (after clean)
+				+ AV executable
+				+ Make MSI
+				+ Rename MSI
+				= AV installer
 				- Test upgrade from previous version
-			- 32-bit MSI
-				- Cleanup Install
-				- Build Release Install (after clean)
+					- Verify bitness & version
+			= 32-bit MSI
+				+ Cleanup Install
+				= Build Release Install (after clean)
 				- Make MSI
 				- Rename MSI
 				- Test clean install
+					- Verify bitness & version
 		- Ubuntu
-			+ rm -rf ~/floating-sandbox
-			+ pull 
-			+ rm -rf build; mkdir build; cd build
-			+ cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
-			= make install
+			- rm -rf ~/floating-sandbox
+			- pull 
+			- rm -rf build; mkdir build; cd build
+			- cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
+			- make install
 			- Make tar ("cd floating-sandbox && tar -cvf ../Floating-Sandbox-1.16.5-x64.tar . && cd -")
 			- Zip tar
 			- Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")

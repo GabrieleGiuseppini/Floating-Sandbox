@@ -9,7 +9,7 @@ TEST(ElectricalPanelTests, Merge_FreePosition)
         ElectricalElementInstanceIndex(4),
         ElectricalPanel::ElementMetadata(IntegralCoordinates(12, 42), "foo", false));
 
-    ASSERT_EQ(1, panel.GetSize());
+    ASSERT_EQ(1u, panel.GetSize());
 
     auto const it = panel.begin();
 
@@ -33,7 +33,7 @@ TEST(ElectricalPanelTests, Merge_OccupiedPosition)
         ElectricalElementInstanceIndex(43),
         ElectricalPanel::ElementMetadata(IntegralCoordinates(12, 42), "bar", true));
 
-    ASSERT_EQ(2, panel.GetSize());
+    ASSERT_EQ(2u, panel.GetSize());
 
     auto it = panel.begin();
     if (it->first != 43)
@@ -60,7 +60,7 @@ TEST(ElectricalPanelTests, TryAdd_and_Find)
 
     ASSERT_TRUE(isInserted);
     ASSERT_FALSE(panel.IsEmpty());
-    ASSERT_EQ(1, panel.GetSize());
+    ASSERT_EQ(1u, panel.GetSize());
 
     auto const it1 = panel.Find(4);
     EXPECT_NE(it1, panel.end());
@@ -88,7 +88,7 @@ TEST(ElectricalPanelTests, IndexOperator)
         ElectricalPanel::ElementMetadata(IntegralCoordinates(12, 42), "foo", false));
 
     ASSERT_FALSE(panel.IsEmpty());
-    ASSERT_EQ(1, panel.GetSize());
+    ASSERT_EQ(1u, panel.GetSize());
 
     auto const & elem = panel[4];
 
