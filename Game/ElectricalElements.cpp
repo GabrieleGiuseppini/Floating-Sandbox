@@ -1801,41 +1801,44 @@ void ElectricalElements::UpdateSinks(
             {
                 if (!IsDeleted(sinkElementIndex))
                 {
-                    // Calculate external pressure
-                    vec2f const & pointPosition = points.GetPosition(GetPointIndex(sinkElementIndex));
-                    float const totalExternalPressure =
-                        Formulae::CalculateTotalPressureAt(
-                            pointPosition.y,
-                            mParentWorld.GetOceanSurface().GetHeightAt(pointPosition.x),
-                            effectiveAirDensity,
-                            effectiveWaterDensity,
-                            gameParameters)
-                        * gameParameters.StaticPressureForceAdjustment;
+                    auto & lampState = mElementStateBuffer[sinkElementIndex].Lamp;
 
-                    // Check against lamp's limit
-                    if (totalExternalPressure >= mElementStateBuffer[sinkElementIndex].Lamp.ExternalPressureBreakageThreshold)
+                    // Check implosion
+                    if (lampState.State != ElementState::LampState::StateType::ImplosionLeadIn
+                        && lampState.State != ElementState::LampState::StateType::Implosion)
                     {
-                        // Lamp implosion!
-                        Destroy(
-                            sinkElementIndex,
-                            ElectricalElements::DestroyReason::LampImplosion,
-                            currentSimulationTime,
-                            gameParameters);
-                    }
-                    else
-                    {
-                        // Update state machine
-                        RunLampStateMachine(
-                            isConnectedToPower,
-                            powerFailureSequenceType,
-                            sinkElementIndex,
-                            currentWallClockTime,
-                            currentSimulationTime,
-                            points,
-                            gameParameters);
+                        // Calculate external pressure
+                        vec2f const & pointPosition = points.GetPosition(GetPointIndex(sinkElementIndex));
+                        float const totalExternalPressure =
+                            Formulae::CalculateTotalPressureAt(
+                                pointPosition.y,
+                                mParentWorld.GetOceanSurface().GetHeightAt(pointPosition.x),
+                                effectiveAirDensity,
+                                effectiveWaterDensity,
+                                gameParameters)
+                            * gameParameters.StaticPressureForceAdjustment;
 
-                        isProducingHeat = (GetAvailableLight(sinkElementIndex) > 0.0f);
+                        // Check against lamp's limit
+                        if (totalExternalPressure >= mElementStateBuffer[sinkElementIndex].Lamp.ExternalPressureBreakageThreshold)
+                        {
+                            // Lamp implosion!
+
+                            // Start with it
+                            mElementStateBuffer[sinkElementIndex].Lamp.State = ElementState::LampState::StateType::ImplosionLeadIn;
+                        }
                     }
+
+                    // Update state machine
+                    RunLampStateMachine(
+                        isConnectedToPower,
+                        powerFailureSequenceType,
+                        sinkElementIndex,
+                        currentWallClockTime,
+                        currentSimulationTime,
+                        points,
+                        gameParameters);
+
+                    isProducingHeat = (GetAvailableLight(sinkElementIndex) > 0.0f);
                 }
 
                 break;
@@ -2604,7 +2607,7 @@ void ElectricalElements::RunLampStateMachine(
     GameWallClock::time_point currentWallClockTime,
     float currentSimulationTime,
     Points & points,
-    GameParameters const & /*gameParameters*/)
+    GameParameters const & gameParameters)
 {
     float constexpr LampWetFailureWaterHighWatermark = 0.1f;
     float constexpr LampWetFailureWaterLowWatermark = 0.055f;
@@ -2910,6 +2913,36 @@ void ElectricalElements::RunLampStateMachine(
                 // Transition state
                 lamp.State = ElementState::LampState::StateType::LightOn;
             }
+
+            break;
+        }
+
+        case ElementState::LampState::StateType::ImplosionLeadIn:
+        {
+            //
+            // Very brief flash
+            // 
+             
+            CalculateLampCoefficients(
+                elementLampIndex,
+                2.5f, // Spread
+                2.0f); // Luminiscence
+
+            mAvailableLightBuffer[elementLampIndex] = 1.f;
+            
+            // Transition state
+            lamp.State = ElementState::LampState::StateType::Implosion;
+
+            break;
+        }
+
+        case ElementState::LampState::StateType::Implosion:
+        {
+            Destroy(
+                elementLampIndex,
+                ElectricalElements::DestroyReason::LampImplosion,
+                currentSimulationTime,
+                gameParameters);
 
             break;
         }

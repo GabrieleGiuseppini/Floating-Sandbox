@@ -154,12 +154,9 @@
 
 	+ Show build date @ Credits
 
-	- Option to render ocean floor independently to darkening
+	+ Lamps flashing when exploding
 
-	- Lamps flashing when exploding?
-
-	- Make Mac instructions
-		- SFML build: https://github.com/SFML/SFML/issues/1496
+	- Option to render ocean floor independently from darkening
 
 	- Ships:
 		- Take Dugongsmallwtrtight-Walter (ToTake folder)
@@ -228,6 +225,9 @@
 		+ "Symmetry" - Kevin MacLeod (incompetech.com)			
 		- "Shadowlands 5 - Antechamber" - Kevin MacLeod (incompetech.com)
 		- More from Kukaneffect?
+
+	- Make Mac instructions
+		- SFML build: https://github.com/SFML/SFML/issues/1496
 
 	- Misc quick things:
 		- See if water entering via hole is faster than water entering natural non-hull ("cut funnel")
