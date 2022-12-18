@@ -27,7 +27,8 @@ public:
         ss
             << mArchitecture << " "
             << mOS << " "
-            << mBuildFlavor;
+            << mBuildFlavor << " "
+            << mBuildDate;
 
         return ss.str();
     }

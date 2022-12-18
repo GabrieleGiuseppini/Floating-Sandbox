@@ -111,7 +111,7 @@
 	
 	= Release:
 		+ Branch is merged into master (if applicable)
-		= Windows
+		+ Windows
 			+ MSI variable
 			+ Commit & push
 			+ 64-bit MSI
@@ -123,33 +123,40 @@
 				+ AV installer
 				+ Test upgrade from previous version
 					+ Verify bitness & version
-			= 32-bit MSI
-				- Cleanup Install
-				- Build Release Install (after clean)
-				- Make MSI
-				- Rename MSI
-				- Test clean install
-					- Verify bitness & version
-		- Ubuntu
-			- rm -rf ~/floating-sandbox
-			- pull 
-			- rm -rf build; mkdir build; cd build
-			- cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
-			- make install
-			- Make tar ("cd floating-sandbox && tar -cvf ../Floating-Sandbox-1.16.5-x64.tar . && cd -")
-			- Zip tar
-			- Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
-		- Get 3 installers tested on dev server
-		- Wait for test results
-		- Cut tag on github
-		- Upload packages to GameJolt
-			- Report file as safe (https://gamejolt.com/privacy)
-			- Post
-		- www.floatingsandbox.com:
-			- Update current version in FAQ
+			+ 32-bit MSI
+				+ Cleanup Install
+				+ Build Release Install (after clean)
+				+ Make MSI
+				+ Rename MSI
+				+ Test clean install
+					+ Verify bitness & version
+		+ Ubuntu
+			+ rm -rf ~/floating-sandbox
+			+ pull 
+			+ rm -rf build; mkdir build; cd build
+			+ cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
+			+ make install
+			+ Make tar ("cd floating-sandbox && tar -cvf ../Floating-Sandbox-1.17.5-x64.tar . && cd -")
+			+ Zip tar
+			+ Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
+		+ Cut tag on github
+		+ Upload packages to GameJolt
+			+ Upload
+			+ Wait for a few downloads
+			+ Post
+		= www.floatingsandbox.com:
+			+ Update current version in FAQ
 			- Wait a day or two, to exclude disastrous bugs
 			- Upload changes2.txt
 				- Test w/old FS
+
+	-----------------
+
+	+ Show build date @ Credits
+
+	- Option to render ocean floor independently to darkening
+
+	- Lamps flashing when exploding?
 
 	- Make Mac instructions
 		- SFML build: https://github.com/SFML/SFML/issues/1496
@@ -1361,19 +1368,26 @@
 				   the only way I have to help visualising what I mean is by adding some noise on top of an image of the ships and the darkness of the colour would represent the rate of decay
 
 	- Underwater currents
-		- Implicit function of x defines trajectory
-			- To try:
-				- Constant
-				- Lorenz, from http://sprott.physics.wisc.edu/chaos/eulermap.htm
-				- Lorenz II, from https://en.wikipedia.org/wiki/Lorenz_96_model
-				- OceanSurface profile, but x-shifted
-		- For each point: y-distance between point.y and trajectory(point.x) gives strength of x and y components of a force on the point
-		- Dynamics:
-			- Ship gets UnderwaterCurrents object from parent world
-				- May be also give OceanSurface and nuke IsUnderwater/GetWaterDepth from World
-		- Rendered (via option):
-			- Texture is distorted depending on force field
-			- TBD: see moleskine
+		- Option 1:
+			- New piecewise line across ocean:
+				- Divide the ocean width in N chunks (N ~=256)
+				- Each chunk boundary gets a point that moves slowly, randomly, and sinuisodally up and down
+				- Each imaginary line connecting two adjacent points is the line along which bodies feel most force; the further from the line, the least
+					- The gradient from the line should be enough to impart a rotational force to bodies close to the line
+		- Option 2 (older):
+			- Implicit function of x defines trajectory
+				- To try:
+					- Constant
+					- Lorenz, from http://sprott.physics.wisc.edu/chaos/eulermap.htm
+					- Lorenz II, from https://en.wikipedia.org/wiki/Lorenz_96_model
+					- OceanSurface profile, but x-shifted
+			- For each point: y-distance between point.y and trajectory(point.x) gives strength of x and y components of a force on the point
+			- Dynamics:
+				- Ship gets UnderwaterCurrents object from parent world
+					- May be also give OceanSurface and nuke IsUnderwater/GetWaterDepth from World
+			- Rendered (via option):
+				- Texture is distorted depending on force field
+				- TBD: see moleskine
 
 	- Dynamite that may be thrown to the ship
 
