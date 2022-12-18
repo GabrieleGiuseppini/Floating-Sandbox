@@ -157,6 +157,7 @@
 	+ Lamps flashing when exploding
 
 	- Option to render ocean floor independently from darkening
+		- Just affects if/how we set Land::OceanDarkeningRate
 
 	- Ships:
 		- Take Dugongsmallwtrtight-Walter (ToTake folder)
