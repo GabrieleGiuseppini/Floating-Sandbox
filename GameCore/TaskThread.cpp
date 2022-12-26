@@ -8,6 +8,8 @@
 #include "Log.h"
 #include "SystemThreadManager.h"
 
+#include <cassert>
+
 TaskThread::TaskThread()
     : TaskThread(false)
 {}

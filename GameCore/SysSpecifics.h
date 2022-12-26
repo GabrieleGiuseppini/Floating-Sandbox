@@ -257,14 +257,3 @@ inline unique_aligned_buffer<TElement> make_unique_buffer_aligned_to_vectorizati
         reinterpret_cast<TElement *>(alloc_aligned_to_vectorization_word(elementCount * sizeof(TElement))),
         aligned_buffer_deleter<TElement>());
 }
-
-template<typename TElement>
-using shared_aligned_buffer = std::shared_ptr<TElement>;
-
-template<typename TElement>
-inline shared_aligned_buffer<TElement> make_shared_buffer_aligned_to_vectorization_word(size_t elementCount)
-{
-    return shared_aligned_buffer<TElement>(
-        reinterpret_cast<TElement *>(alloc_aligned_to_vectorization_word(elementCount * sizeof(TElement))),
-        aligned_buffer_deleter<TElement>());
-}

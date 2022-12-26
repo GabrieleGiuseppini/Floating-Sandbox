@@ -6,155 +6,13 @@
 
 - Roadmap:
 
-	+ Laser Cannon tool (*)
-
-	+ Fix: GameController ends up being deleted by SwitchboardPanel - might be the cause of the "blocking" issue on GTK
-		! It happens because mElectricalPanel (SwitchboardPanel uq_ptr) is added to MainFrame, hence it's deleted by it *AND* by later uq_ptr
-		+ Major issue: everything that's added to sizers, etc. should NOT be a uq_ptr
-			+ EventTicker
-			+ ProbePanel
-			+ MainGLCanvas
-		X See if GTK issue is gone
-
-	+ At lights going off because of flooding of power, before flickering: flash w/spread and luminiscence		
-		+ "lights severed" flag becomes opt<enum> ("for water", "for severed")
-			+ Set as "For water" when power source is cutoff because of water
-				! Note: current causes for "severed":
-					- Destroyed elements
-					- OnElectricSpark
-					- UpdateSourcesAndPropagation: Power generator transitioning into NotProducingCurrent
-				! Note: "severed" is consumed at lamp state machine transitioning from LightOn (for any cause), to decide whether
-				  to turn off immediately or through flicker
-				+ Make sure only set at PowerSource being down and at destroyed elements (not at lamp being down)
-			+ Severed is cleaned up at end of UpdateSinks
-				+ So clean here whole opt<enum>
-		+ At lamp state machine: use a single opt<PowerFailureNextState> storing first decision on whether or not to do it
-		+ Lamp::State contains TransientApertureMultiplier, and that's the one messed with by state
-			+ And of course it's used when uploading to lights buffer, multiplied with actual aperture
-			+ Reset at Restore()
-			+ Better profile
-				+ See 1:53 at https://www.youtube.com/watch?v=yg9rkceLOzA:  ...t.TTT..
-		+ Put back randomness when choosing overcharge
-	
-	+ Lower volume of wind sound
-
-	+ Electric Sparkle tool: sparkles can cause lights to explode (*)
-	+ Lamps breaking under pressure (*)
-		+ changelist for both
-
-	+ Laser cannon
-		+ Cut with prob inverse to mass
-			+ Remove laser_ray_cut_receptivity
-		+ Shader: more smeared on the outside
-		+ More prob when SHIFT is down
-		+ Sound for cut
-
-	+ Ukrainian (uk)
-		+ 2 .mo files
-		+ 2 HTML files
-		+ changelist
-
-	+ Merge into master
-
-	+ Send for testing
-		+ Ask specifically to check lamps in sinking ships
-		+ Ask to check Ukrainian
-
-	+ Bump up version
-
-	+ ShipBuilder things (*)
-	
-	+ Check ship move beyond world borders
-		+ in Debug mode
-	+ Add Ukrainian to credits
-
-	+ Max sim quality: 5.0
-
-	+ Send for testing & localization
-
-	+ Localization:
-		+ IT
-		+ ES
-		+ RU
-		+ UK
-
-	+ Test flames with heightened luminosity
-		+ Test perf of flames on Dell
-
-	+ Ships:
-		+ Take S.S. Avila 2 (Matthew Anderson) (ToTake folder)
-		+ Take B-17 Flying Fortress (DKUZ) (ToTake folder)
-			+ Credits
-			+ Asked for texture credits
-		+ Take A_single_Blue_Angel (Kazindel) (ToTake folder)
-			+ Wrong credits - shipbucket? (ASKED)
-				+ TaskForce51 http://shipbucket.com/forums/viewtopic.php?t=10424&start=180 That is (And I am 100% sure) not where I got it from but it was so far the only mention of it
-			+ "Kazindel" in Credits
-		+ Take Normandie
-			+ Find author - "P1X"
-				+ Author in properties
-				+ Credits: "P1X"
-		+ Take R.M.S. Oceanic
-			+ Ask Golden
-				+ Author in properties
-				+ Credits
-		+ Take Antonia Graza - left server
-			+ Find author
-				+ Author in properties
-				+ Credits: "MTF"
-
-	+ Investigate crash upon exit on Dell
-		+ Also test on ubuntu
-		+ Wait for testers
-
-	+ Bump up version
-	
-	= Release:
-		+ Branch is merged into master (if applicable)
-		+ Windows
-			+ MSI variable
-			+ Commit & push
-			+ 64-bit MSI
-				+ Cleanup Install
-				+ Build Release Install (after clean)
-				+ AV executable
-				+ Make MSI
-				+ Rename MSI
-				+ AV installer
-				+ Test upgrade from previous version
-					+ Verify bitness & version
-			+ 32-bit MSI
-				+ Cleanup Install
-				+ Build Release Install (after clean)
-				+ Make MSI
-				+ Rename MSI
-				+ Test clean install
-					+ Verify bitness & version
-		+ Ubuntu
-			+ rm -rf ~/floating-sandbox
-			+ pull 
-			+ rm -rf build; mkdir build; cd build
-			+ cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
-			+ make install
-			+ Make tar ("cd floating-sandbox && tar -cvf ../Floating-Sandbox-1.17.5-x64.tar . && cd -")
-			+ Zip tar
-			+ Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
-		+ Cut tag on github
-		+ Upload packages to GameJolt
-			+ Upload
-			+ Wait for a few downloads
-			+ Post
-		= www.floatingsandbox.com:
-			+ Update current version in FAQ
-			- Wait a day or two, to exclude disastrous bugs
-			- Upload changes2.txt
-				- Test w/old FS
-
-	-----------------
-
 	+ Show build date @ Credits
 
-	+ Lamps flashing when exploding
+	= Lamps flashing when exploding
+		+ At depth
+		- Via sparkle tool
+
+	- Buy new track for farewell: https://www.pond5.com/royalty-free-music/item/204959560-nearer-my-god-thee
 
 	- Option to render ocean floor independently from darkening
 		- Just affects if/how we set Land::OceanDarkeningRate
@@ -14899,3 +14757,151 @@ IF WX:
 					+ Test w/old FS
 
 		+ Cleanup plan, commit & push
+
+	+ 1.17.5:
+
+		+ Laser Cannon tool (*)
+
+		+ Fix: GameController ends up being deleted by SwitchboardPanel - might be the cause of the "blocking" issue on GTK
+			! It happens because mElectricalPanel (SwitchboardPanel uq_ptr) is added to MainFrame, hence it's deleted by it *AND* by later uq_ptr
+			+ Major issue: everything that's added to sizers, etc. should NOT be a uq_ptr
+				+ EventTicker
+				+ ProbePanel
+				+ MainGLCanvas
+			X See if GTK issue is gone
+
+		+ At lights going off because of flooding of power, before flickering: flash w/spread and luminiscence		
+			+ "lights severed" flag becomes opt<enum> ("for water", "for severed")
+				+ Set as "For water" when power source is cutoff because of water
+					! Note: current causes for "severed":
+						- Destroyed elements
+						- OnElectricSpark
+						- UpdateSourcesAndPropagation: Power generator transitioning into NotProducingCurrent
+					! Note: "severed" is consumed at lamp state machine transitioning from LightOn (for any cause), to decide whether
+					  to turn off immediately or through flicker
+					+ Make sure only set at PowerSource being down and at destroyed elements (not at lamp being down)
+				+ Severed is cleaned up at end of UpdateSinks
+					+ So clean here whole opt<enum>
+			+ At lamp state machine: use a single opt<PowerFailureNextState> storing first decision on whether or not to do it
+			+ Lamp::State contains TransientApertureMultiplier, and that's the one messed with by state
+				+ And of course it's used when uploading to lights buffer, multiplied with actual aperture
+				+ Reset at Restore()
+				+ Better profile
+					+ See 1:53 at https://www.youtube.com/watch?v=yg9rkceLOzA:  ...t.TTT..
+			+ Put back randomness when choosing overcharge
+		
+		+ Lower volume of wind sound
+
+		+ Electric Sparkle tool: sparkles can cause lights to explode (*)
+		+ Lamps breaking under pressure (*)
+			+ changelist for both
+
+		+ Laser cannon
+			+ Cut with prob inverse to mass
+				+ Remove laser_ray_cut_receptivity
+			+ Shader: more smeared on the outside
+			+ More prob when SHIFT is down
+			+ Sound for cut
+
+		+ Ukrainian (uk)
+			+ 2 .mo files
+			+ 2 HTML files
+			+ changelist
+
+		+ Merge into master
+
+		+ Send for testing
+			+ Ask specifically to check lamps in sinking ships
+			+ Ask to check Ukrainian
+
+		+ Bump up version
+
+		+ ShipBuilder things (*)
+		
+		+ Check ship move beyond world borders
+			+ in Debug mode
+		+ Add Ukrainian to credits
+
+		+ Max sim quality: 5.0
+
+		+ Send for testing & localization
+
+		+ Localization:
+			+ IT
+			+ ES
+			+ RU
+			+ UK
+
+		+ Test flames with heightened luminosity
+			+ Test perf of flames on Dell
+
+		+ Ships:
+			+ Take S.S. Avila 2 (Matthew Anderson) (ToTake folder)
+			+ Take B-17 Flying Fortress (DKUZ) (ToTake folder)
+				+ Credits
+				+ Asked for texture credits
+			+ Take A_single_Blue_Angel (Kazindel) (ToTake folder)
+				+ Wrong credits - shipbucket? (ASKED)
+					+ TaskForce51 http://shipbucket.com/forums/viewtopic.php?t=10424&start=180 That is (And I am 100% sure) not where I got it from but it was so far the only mention of it
+				+ "Kazindel" in Credits
+			+ Take Normandie
+				+ Find author - "P1X"
+					+ Author in properties
+					+ Credits: "P1X"
+			+ Take R.M.S. Oceanic
+				+ Ask Golden
+					+ Author in properties
+					+ Credits
+			+ Take Antonia Graza - left server
+				+ Find author
+					+ Author in properties
+					+ Credits: "MTF"
+
+		+ Investigate crash upon exit on Dell
+			+ Also test on ubuntu
+			+ Wait for testers
+
+		+ Bump up version
+		
+		+ Release:
+			+ Branch is merged into master (if applicable)
+			+ Windows
+				+ MSI variable
+				+ Commit & push
+				+ 64-bit MSI
+					+ Cleanup Install
+					+ Build Release Install (after clean)
+					+ AV executable
+					+ Make MSI
+					+ Rename MSI
+					+ AV installer
+					+ Test upgrade from previous version
+						+ Verify bitness & version
+				+ 32-bit MSI
+					+ Cleanup Install
+					+ Build Release Install (after clean)
+					+ Make MSI
+					+ Rename MSI
+					+ Test clean install
+						+ Verify bitness & version
+			+ Ubuntu
+				+ rm -rf ~/floating-sandbox
+				+ pull 
+				+ rm -rf build; mkdir build; cd build
+				+ cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
+				+ make install
+				+ Make tar ("cd floating-sandbox && tar -cvf ../Floating-Sandbox-1.17.5-x64.tar . && cd -")
+				+ Zip tar
+				+ Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
+			+ Cut tag on github
+			+ Upload packages to GameJolt
+				+ Upload
+				+ Wait for a few downloads
+				+ Post
+			+ www.floatingsandbox.com:
+				+ Update current version in FAQ
+				+ Wait a day or two, to exclude disastrous bugs
+				+ Upload changes2.txt
+					+ Test w/old FS
+
+		-----------------
