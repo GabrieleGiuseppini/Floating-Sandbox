@@ -38,7 +38,7 @@
 #undef FS_IS_ARCHITECTURE_ARM_64
 #define FS_IS_ARCHITECTURE_ARM_64() 1
 #undef FS_IS_REGISTER_WIDTH_64
-#undef FS_IS_REGISTER_WIDTH_64() 1
+#define FS_IS_REGISTER_WIDTH_64() 1
 #elif defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64) || defined(_M_X64) || defined (_M_AMD64)
 #undef FS_IS_ARCHITECTURE_X86_64
 #define FS_IS_ARCHITECTURE_X86_64() 1
@@ -167,7 +167,7 @@ static constexpr T vectorization_byte_count = vectorization_float_count<T> * siz
  */
 inline bool is_aligned_to_vectorization_word(void const * ptr) noexcept
 {
-    auto ui_ptr = reinterpret_cast<std::uintptr_t>(ptr);
+    auto const ui_ptr = reinterpret_cast<std::uintptr_t>(ptr);
     return !(ui_ptr % vectorization_byte_count<std::uintptr_t>);
 }
 

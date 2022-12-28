@@ -33,7 +33,7 @@ ViewManager::ViewManager(
         {
             return mRenderContext.SetZoom(value);
         },
-        [this](float const & value)
+        [this](float const & value) -> float
         {
             return mRenderContext.ClampZoom(value);
         },
@@ -49,7 +49,7 @@ ViewManager::ViewManager(
         {
             return mRenderContext.SetCameraWorldPosition(value);
         },
-        [this](vec2f const & value)
+        [this](vec2f const & value) -> vec2f
         {
             return mRenderContext.ClampCameraWorldPosition(value);
         },

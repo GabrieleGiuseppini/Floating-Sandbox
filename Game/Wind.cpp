@@ -7,7 +7,7 @@
 
 #include <GameCore/GameRandomEngine.h>
 
-#include <limits.h>
+#include <limits>
 
 namespace Physics {
 
@@ -98,7 +98,7 @@ void Wind::Update(
             {
                 // Transition
                 mCurrentState = State::Base1;
-                mNextStateTransitionTimestamp = now + ChooseDuration(10.0, 20.0f);
+                mNextStateTransitionTimestamp = now + ChooseDuration(10.0f, 20.0f);
 
                 [[fallthrough]];
             }
@@ -121,7 +121,7 @@ void Wind::Update(
             {
                 // Transition
                 mCurrentState = State::PreGusting;
-                mNextStateTransitionTimestamp = now + ChooseDuration(5.0, 10.0f);
+                mNextStateTransitionTimestamp = now + ChooseDuration(5.0f, 10.0f);
 
                 [[fallthrough]];
             }
@@ -144,7 +144,7 @@ void Wind::Update(
             {
                 // Transition
                 mCurrentState = State::Gusting;
-                mNextStateTransitionTimestamp = now + ChooseDuration(10.0, 20.0f);
+                mNextStateTransitionTimestamp = now + ChooseDuration(10.0f, 20.0f);
 
                 // Schedule next poisson sampling
                 mNextPoissonSampleTimestamp =
@@ -221,7 +221,7 @@ void Wind::Update(
             {
                 // Transition
                 mCurrentState = State::PostGusting;
-                mNextStateTransitionTimestamp = now + ChooseDuration(5.0, 10.0f);
+                mNextStateTransitionTimestamp = now + ChooseDuration(5.0f, 10.0f);
 
                 [[fallthrough]];
             }
@@ -244,7 +244,7 @@ void Wind::Update(
             {
                 // Transition
                 mCurrentState = State::Base2;
-                mNextStateTransitionTimestamp = now + ChooseDuration(3.0, 10.0f);
+                mNextStateTransitionTimestamp = now + ChooseDuration(3.0f, 10.0f);
 
                 [[fallthrough]];
             }
@@ -267,7 +267,7 @@ void Wind::Update(
             {
                 // Transition
                 mCurrentState = State::Zero;
-                mNextStateTransitionTimestamp = now + ChooseDuration(5.0, 15.0f);
+                mNextStateTransitionTimestamp = now + ChooseDuration(5.0f, 15.0f);
 
                 [[fallthrough]];
             }

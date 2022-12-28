@@ -5,6 +5,8 @@
  ***************************************************************************************/
 #pragma once
 
+#include "Vectors.h"
+
 #include <cassert>
 #include <functional>
 

@@ -15,6 +15,7 @@
 #include <GameCore/StrongTypeDef.h>
 #include <GameCore/SysSpecifics.h>
 
+#include <memory>
 #include <optional>
 
 namespace Physics
