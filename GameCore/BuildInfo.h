@@ -6,7 +6,6 @@
 #pragma once
 
 #include "SysSpecifics.h"
-#include "Version.h"
 
 #include <sstream>
 #include <string>
@@ -28,7 +27,7 @@ public:
             << mArchitecture << " "
             << mOS << " "
             << mBuildFlavor << " "
-            << mBuildDate;
+            << "(" << mBuildDate << ")";
 
         return ss.str();
     }
@@ -59,7 +58,7 @@ private:
         mOS = "<OS?>";
 #endif
 
-        mBuildDate = " (" __DATE__ ")";
+        mBuildDate = __DATE__;
 
 #ifdef _DEBUG
         mBuildFlavor = "DEBUG";
