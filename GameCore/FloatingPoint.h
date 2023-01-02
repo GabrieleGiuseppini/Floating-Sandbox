@@ -31,8 +31,21 @@ inline void EnableFloatingPointExceptions()
 
 inline void EnableFloatingPointFlushToZero()
 {
-#if FS_IS_ARCHITECTURE_ARM_32() || FS_IS_ARCHITECTURE_ARM_64()
-    asm volatile("vmsr fpscr,%0" :: "r" (1 << 24));
+#if FS_IS_ARCHITECTURE_ARM_32()
+    uint32_t tmpFpscr;
+    asm volatile("vmrs %0, fpscr" : "=r" (tmpFpscr));
+    tmpFpscr = tmpFpscr | (1 << 24);
+#if __has_builtin(__builtin_arm_set_fpscr)
+    /* see https://gcc.gnu.org/ml/gcc-patches/2017-04/msg00443.html */
+    __builtin_arm_set_fpscr(tmpFpscr);
+#else
+    asm volatile("vmsr fpscr, %0" : : "r" (tmpFpscr) : "vfpcc", "memory");
+#endif
+#elif FS_IS_ARCHITECTURE_ARM_64()
+    uint64_t tmpFpcr;
+    asm volatile("mrs %0, fpcr" : "=r" (tmpFpcr));
+    tmpFpcr = tmpFpcr | (1 << 24);
+    asm volatile("msr fpcr, %0" : : "ri" (tmpFpcr));
 #elif FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
     _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
     _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
@@ -43,8 +56,21 @@ inline void EnableFloatingPointFlushToZero()
 
 inline void DisableFloatingPointFlushToZero()
 {
-#if FS_IS_ARCHITECTURE_ARM_32() || FS_IS_ARCHITECTURE_ARM_64()
-    asm volatile("vmsr fpscr,%0" :: "r" (0 << 24));
+#if FS_IS_ARCHITECTURE_ARM_32()
+    uint32_t tmpFpscr;
+    asm volatile("vmrs %0, fpscr" : "=r" (tmpFpscr));
+    tmpFpscr = tmpFpscr & (~(1 << 24));
+#if __has_builtin(__builtin_arm_set_fpscr)
+    /* see https://gcc.gnu.org/ml/gcc-patches/2017-04/msg00443.html */
+    __builtin_arm_set_fpscr(tmpFpscr);
+#else
+    asm volatile("vmsr fpscr, %0" : : "r" (tmpFpscr) : "vfpcc", "memory");
+#endif
+#elif FS_IS_ARCHITECTURE_ARM_64()
+    uint64_t tmpFpcr;
+    asm volatile("mrs %0, fpcr" : "=r" (tmpFpcr));
+    tmpFpcr = tmpFpcr & (~(1 << 24));
+    asm volatile("msr fpcr, %0" : : "ri" (tmpFpcr));
 #elif FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
     _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_OFF);
     _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_OFF);
