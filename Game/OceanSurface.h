@@ -65,11 +65,17 @@ public:
             + mSamples[sampleIndexI].SampleValuePlusOneMinusSampleValue * sampleIndexDx;
     }
 
+    /*
+     * Assumption: x is in world boundaries.
+     */
     inline float GetDepth(vec2f const & position) const noexcept
     {
         return GetHeightAt(position.x) - position.y;
     }
 
+    /*
+     * Assumption: x is in world boundaries.
+     */
     inline bool IsUnderwater(vec2f const & position) const noexcept
     {
         return GetDepth(position) > 0.0f;
