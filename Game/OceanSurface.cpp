@@ -202,7 +202,7 @@ void OceanSurface::Update(
 
     for (size_t i = 0; i < mInteractiveWaveBuffer.GetSize(); ++i)
     {
-        float constexpr k = 10.0f;
+        float constexpr k = 2.0f;
         float constexpr mass = 1.0f;
         float constexpr dt = GameParameters::SimulationStepTimeDuration<float>;
         float constexpr damping = 0.025f;
@@ -280,10 +280,11 @@ void OceanSurface::AdjustTo(
     float constexpr MinRelativeHeight = -6.0f;
     float const targetHeight =
         Clamp(worldCoordinates.y / SWEHeightFieldAmplification, MinRelativeHeight, MaxRelativeHeight)
-        // TODOTEST
+        // TODO: we consider interactiveWaveBuffer height of zero to be rest
         //+ SWEHeightFieldOffset;
         ;
 
+    // TODOTEST
     mInteractiveWaveBuffer[sampleIndex].TargetHeight = targetHeight;
 
     // TODOOLD
