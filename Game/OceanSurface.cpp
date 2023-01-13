@@ -48,6 +48,7 @@ OceanSurface::OceanSurface(
     , mSamples(SamplesCount + 1)
     , mSWEHeightField(SWEBufferAlignmentPrefixSize + SWEBoundaryConditionsSamples + SamplesCount + SWEBoundaryConditionsSamples)
     , mSWEVelocityField(SWEBufferAlignmentPrefixSize + SWEBoundaryConditionsSamples + SamplesCount + SWEBoundaryConditionsSamples + 1)
+    , mInteractiveWaveBuffer(SamplesCount)
     , mDeltaHeightBuffer(DeltaHeightBufferAlignmentPrefixSize + (DeltaHeightSmoothing / 2) + SamplesCount + (DeltaHeightSmoothing / 2))
     ////////
     , mSWEInteractiveWaveStateMachine()
@@ -60,6 +61,7 @@ OceanSurface::OceanSurface(
     mSamples.fill({ 0.0f, 0.0f });
     mSWEHeightField.fill(SWEHeightFieldOffset);
     mSWEVelocityField.fill(0.0f);
+    mInteractiveWaveBuffer.fill(InteractiveWaveElement());
     mDeltaHeightBuffer.fill(0.0f);
 
     // Initialize constant sample values
@@ -96,23 +98,24 @@ void OceanSurface::Update(
     // 1. Advance SWE Wave State Machines
     //
 
-    // Interactive
-    if (mSWEInteractiveWaveStateMachine.has_value())
-    {
-        auto const heightValue = mSWEInteractiveWaveStateMachine->Update(currentSimulationTime);
-        if (!heightValue.has_value())
-        {
-            // Done
-            mSWEInteractiveWaveStateMachine.reset();
-        }
-        else
-        {
-            // Apply
-            AddToSWEWaveHeightViaDeltaBuffer(
-                mSWEInteractiveWaveStateMachine->GetCenterIndex(),
-                *heightValue);
-        }
-    }
+    // TODOOLD
+    ////// Interactive
+    ////if (mSWEInteractiveWaveStateMachine.has_value())
+    ////{
+    ////    auto const heightValue = mSWEInteractiveWaveStateMachine->Update(currentSimulationTime);
+    ////    if (!heightValue.has_value())
+    ////    {
+    ////        // Done
+    ////        mSWEInteractiveWaveStateMachine.reset();
+    ////    }
+    ////    else
+    ////    {
+    ////        // Apply
+    ////        AddToSWEWaveHeightViaDeltaBuffer(
+    ////            mSWEInteractiveWaveStateMachine->GetCenterIndex(),
+    ////            *heightValue);
+    ////    }
+    ////}
 
     // Tsunami
     if (mSWETsunamiWaveStateMachine.has_value())
@@ -126,7 +129,7 @@ void OceanSurface::Update(
         else
         {
             // Apply
-            AddToSWEWaveHeightViaDeltaBuffer(
+            AddHeightToSWEWaveHeightViaDeltaBuffer(
                 mSWETsunamiWaveStateMachine->GetCenterIndex(),
                 *heightValue);
         }
@@ -167,7 +170,7 @@ void OceanSurface::Update(
         else
         {
             // Apply
-            AddToSWEWaveHeightViaDeltaBuffer(
+            AddHeightToSWEWaveHeightViaDeltaBuffer(
                 mSWERogueWaveWaveStateMachine->GetCenterIndex(),
                 *heightValue);
         }
@@ -194,7 +197,30 @@ void OceanSurface::Update(
     }
 
     //
-    // 2. SWE Update
+    // 2. Interactive Waves Update
+    //
+
+    for (size_t i = 0; i < mInteractiveWaveBuffer.GetSize(); ++i)
+    {
+        float constexpr k = 10.0f;
+        float constexpr mass = 1.0f;
+        float constexpr dt = GameParameters::SimulationStepTimeDuration<float>;
+        float constexpr damping = 0.025f;
+
+        // Integrate
+        float const elasticForce = k * (mInteractiveWaveBuffer[i].TargetHeight - mInteractiveWaveBuffer[i].CurrentHeight);
+        float const deltaHeight = mInteractiveWaveBuffer[i].CurrentVelocity * dt + elasticForce * dt * dt / mass;
+        mInteractiveWaveBuffer[i].CurrentHeight += deltaHeight;
+        mInteractiveWaveBuffer[i].CurrentVelocity = (deltaHeight / dt) * (1.0f - damping);
+
+        // Add to delta buffer
+        // TODOTEST
+        AddDeltaHeightToSWEWaveHeightViaDeltaBuffer(i + SWEBufferPrefixSize, mInteractiveWaveBuffer[i].CurrentHeight);
+        //mSWEHeightField[i + SWEBufferPrefixSize] += mInteractiveWaveBuffer[i].CurrentHeight;
+    }
+
+    //
+    // 3. SWE Update
     //
 
     SmoothDeltaBufferIntoHeightField();
@@ -206,13 +232,22 @@ void OceanSurface::Update(
     UpdateFields(gameParameters);
 
     //
-    // 3. Generate samples
+    // 4. Generate Samples
     //
 
     GenerateSamples(
         currentSimulationTime,
         wind,
         gameParameters);
+
+    //
+    // 5. Reset Interactive Waves
+    //
+
+    for (size_t i = 0; i < mInteractiveWaveBuffer.GetSize(); ++i)
+    {
+        mInteractiveWaveBuffer[i].TargetHeight = 0.0f;
+    }
 }
 
 void OceanSurface::Upload(Render::RenderContext & renderContext) const
@@ -236,58 +271,71 @@ void OceanSurface::Upload(Render::RenderContext & renderContext) const
 }
 
 void OceanSurface::AdjustTo(
-    std::optional<vec2f> const & worldCoordinates,
-    float currentSimulationTime)
+    vec2f const & worldCoordinates,
+    float /*currentSimulationTime*/)
 {
-    if (worldCoordinates.has_value())
-    {
-        // Calculate target height
-        float constexpr MaxRelativeHeight = 6.0f;
-        float constexpr MinRelativeHeight = -6.0f;
-        float targetHeight =
-            Clamp(worldCoordinates->y / SWEHeightFieldAmplification, MinRelativeHeight, MaxRelativeHeight)
-            + SWEHeightFieldOffset;
+    auto const sampleIndex = ToSampleIndex(worldCoordinates.x);
 
-        // Check whether we are already advancing an interactive wave, or whether
-        // we may smother the almost-complete existing one
-        if (!mSWEInteractiveWaveStateMachine
-            || mSWEInteractiveWaveStateMachine->MayBeOverridden())
-        {
-            //
-            // Start advancing a new interactive wave
-            //
+    float constexpr MaxRelativeHeight = 6.0f;
+    float constexpr MinRelativeHeight = -6.0f;
+    float const targetHeight =
+        Clamp(worldCoordinates.y / SWEHeightFieldAmplification, MinRelativeHeight, MaxRelativeHeight)
+        // TODOTEST
+        //+ SWEHeightFieldOffset;
+        ;
 
-            auto const sampleIndex = ToSampleIndex(worldCoordinates->x);
+    mInteractiveWaveBuffer[sampleIndex].TargetHeight = targetHeight;
 
-            size_t const centerIndex = SWEBufferPrefixSize + static_cast<size_t>(sampleIndex);
+    // TODOOLD
+    ////if (worldCoordinates.has_value())
+    ////{
+    ////    // Calculate target height
+    ////    float constexpr MaxRelativeHeight = 6.0f;
+    ////    float constexpr MinRelativeHeight = -6.0f;
+    ////    float targetHeight =
+    ////        Clamp(worldCoordinates->y / SWEHeightFieldAmplification, MinRelativeHeight, MaxRelativeHeight)
+    ////        + SWEHeightFieldOffset;
 
-            // Start wave
-            mSWEInteractiveWaveStateMachine.emplace(
-                centerIndex,
-                mSWEHeightField[centerIndex],  // LowHeight == current height
-                targetHeight,               // HighHeight == target
-                currentSimulationTime);
-        }
-        else
-        {
-            //
-            // Restart currently-advancing interactive wave
-            //
+    ////    // Check whether we are already advancing an interactive wave, or whether
+    ////    // we may smother the almost-complete existing one
+    ////    if (!mSWEInteractiveWaveStateMachine
+    ////        || mSWEInteractiveWaveStateMachine->MayBeOverridden())
+    ////    {
+    ////        //
+    ////        // Start advancing a new interactive wave
+    ////        //
 
-            mSWEInteractiveWaveStateMachine->Restart(
-                targetHeight,
-                currentSimulationTime);
-        }
-    }
-    else
-    {
-        //
-        // Start release of currently-advancing interactive wave
-        //
+    ////        auto const sampleIndex = ToSampleIndex(worldCoordinates->x);
 
-        assert(!!mSWEInteractiveWaveStateMachine);
-        mSWEInteractiveWaveStateMachine->Release(currentSimulationTime);
-    }
+    ////        size_t const centerIndex = SWEBufferPrefixSize + static_cast<size_t>(sampleIndex);
+
+    ////        // Start wave
+    ////        mSWEInteractiveWaveStateMachine.emplace(
+    ////            centerIndex,
+    ////            mSWEHeightField[centerIndex],  // LowHeight == current height
+    ////            targetHeight,               // HighHeight == target
+    ////            currentSimulationTime);
+    ////    }
+    ////    else
+    ////    {
+    ////        //
+    ////        // Restart currently-advancing interactive wave
+    ////        //
+
+    ////        mSWEInteractiveWaveStateMachine->Restart(
+    ////            targetHeight,
+    ////            currentSimulationTime);
+    ////    }
+    ////}
+    ////else
+    ////{
+    ////    //
+    ////    // Start release of currently-advancing interactive wave
+    ////    //
+
+    ////    assert(!!mSWEInteractiveWaveStateMachine);
+    ////    mSWEInteractiveWaveStateMachine->Release(currentSimulationTime);
+    ////}
 }
 
 void OceanSurface::ApplyThanosSnap(

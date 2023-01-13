@@ -1156,14 +1156,12 @@ void GameController::DetonateAntiMatterBombs()
     mWorld->DetonateAntiMatterBombs();
 }
 
-void GameController::AdjustOceanSurfaceTo(std::optional<DisplayLogicalCoordinates> const & screenCoordinates)
+void GameController::AdjustOceanSurfaceTo(DisplayLogicalCoordinates const & screenCoordinates)
 {
-    std::optional<vec2f> const worldCoordinates = !!screenCoordinates
-        ? mRenderContext->ScreenToWorld(*screenCoordinates)
-        : std::optional<vec2f>();
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
     // Apply action
-    assert(!!mWorld);
+    assert(mWorld);
     mWorld->AdjustOceanSurfaceTo(worldCoordinates);
 }
 

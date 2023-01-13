@@ -457,6 +457,7 @@ WaveMakerTool::WaveMakerTool(
         toolCursorManager,
         gameController,
         soundController)
+    , mIsEngaged(false)
     , mUpCursorImage(WxHelpers::LoadCursorImage("wave_maker_cursor_up", 15, 15, resourceLocator))
     , mDownCursorImage(WxHelpers::LoadCursorImage("wave_maker_cursor_down", 15, 15, resourceLocator))
 {

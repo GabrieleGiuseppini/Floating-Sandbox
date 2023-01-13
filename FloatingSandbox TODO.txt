@@ -8,6 +8,37 @@
 
 	+ Show build date @ Credits
 
+	= New OceanSurface interaction experiment:
+		+ 1. Tool: only interacts with OceanSurface at Update(), using last known button state & mouse position
+		= 2. OceanSurface:
+			+ a. New "InteractiveWaves" buffer with:
+				+ CurrentHeight
+				+ TargetHeight
+				+ CurrentVelocity
+			= b. @ Update():				
+				+ b1. Remove SWE interactive state machine update
+				= b2. Add new InteractiveWaves update
+					+ Magick goes here
+					- Elastic force should be greater at small deltaH, but same as now at max deltaH
+						- So instead of being linear (from 0@0 to k*max@max) should be a1@epsilon to k*max@max
+					- Fix cuspid
+						- What is it due to? May be to fixing H at a specific X and allowing that H to go with SWE immediately around?
+				+ b3. @ calculate samples: add CurrentHeight from this new buffer
+					+ OR: copy (add) CurrentHeight to DeltaHeightBuffer at previous step
+				+ b4. Zero out TargetHeight
+			- c. Cleanup:
+				- Tool: no need to invoke when turning off; just invoke simply each time mouse button is pressed
+					- Also cleanup OceanSurface::AdjustToHeight() then
+						- And remove current simulation time arg altogether
+				- Buffer:
+					- "CurrentHeight" -> "CurrentDeltaHeight"
+				- Use new CurrentHeight at all places at which we have to probe current height
+					- OR: see above
+				- Nuke old SWE interactive state machine
+
+	- Tools.h:
+		- All overrides not virtual
+
 	= Lamps flashing when exploding
 		+ At depth
 		- Via sparkle tool

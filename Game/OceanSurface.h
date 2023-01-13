@@ -106,7 +106,7 @@ public:
     }
 
     void AdjustTo(
-        std::optional<vec2f> const & worldCoordinates,
+        vec2f const & worldCoordinates,
         float currentSimulationTime);
 
     inline void DisplaceAt(
@@ -156,12 +156,19 @@ private:
         return sampleIndexI;
     }
 
-    void AddToSWEWaveHeightViaDeltaBuffer(
+    void AddHeightToSWEWaveHeightViaDeltaBuffer(
         size_t centerIndex, // Coords are in SWE Buffer space
         float height)
     {
         float const currentSWEHeight = mSWEHeightField[centerIndex];
         mDeltaHeightBuffer[centerIndex - SWEBufferPrefixSize + DeltaHeightBufferPrefixSize] += (height - currentSWEHeight);
+    }
+
+    void AddDeltaHeightToSWEWaveHeightViaDeltaBuffer(
+        size_t centerIndex, // Coords are in SWE Buffer space
+        float deltaHeight)
+    {
+        mDeltaHeightBuffer[centerIndex - SWEBufferPrefixSize + DeltaHeightBufferPrefixSize] += deltaHeight;
     }
 
     void RecalculateWaveCoefficients(
@@ -292,6 +299,25 @@ private:
     Buffer<float> mSWEVelocityField;
 
     //
+    // Interactive waves
+    //
+
+    struct InteractiveWaveElement
+    {
+        float CurrentHeight;
+        float TargetHeight; // Continuously reset to zero during update, continuously updated to desired target during interacting
+        float CurrentVelocity;
+
+        InteractiveWaveElement()
+            : CurrentHeight(0.0f)
+            , TargetHeight(0.0f)
+            , CurrentVelocity(0.0f)
+        {}
+    };
+
+    Buffer<InteractiveWaveElement> mInteractiveWaveBuffer;
+
+    //
     // Delta height buffer
     //
     // - Contains interactive surface height delta's that are taken into account during update step
@@ -319,9 +345,7 @@ private:
 
 private:
 
-    //
-    // Interactive waves
-    //
+    // TODOOLD
 
     class SWEInteractiveWaveStateMachine
     {

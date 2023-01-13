@@ -1900,16 +1900,8 @@ public:
 
 public:
 
-    virtual void Initialize(InputState const & inputState) override
+    virtual void Initialize(InputState const & inputState) override 
     {
-        if (inputState.IsLeftMouseDown)
-        {
-            mGameController.AdjustOceanSurfaceTo(inputState.MousePosition);
-
-            mSoundController.PlayWaveMakerSound();
-        }
-
-        // Set cursor
         SetCurrentCursor(inputState);
     }
 
@@ -1918,33 +1910,43 @@ public:
         mSoundController.StopWaveMakerSound();
     }
 
-    virtual void OnMouseMove(InputState const & inputState) override
+    void UpdateSimulation(
+        InputState const & inputState, 
+        float /*currentSimulationTime*/) override
     {
-        if (inputState.IsLeftMouseDown)
+        if (mIsEngaged)
         {
-            mGameController.AdjustOceanSurfaceTo(inputState.MousePosition);
+            if (inputState.IsLeftMouseDown)
+            {
+                mGameController.AdjustOceanSurfaceTo(inputState.MousePosition);
+            }
+            else
+            {
+                // State change: stop
+
+                mSoundController.StopWaveMakerSound();
+                SetCurrentCursor(inputState);
+
+                mIsEngaged = false;
+            }
+        }
+        else
+        {
+            if (inputState.IsLeftMouseDown)
+            {
+                // State change: start
+                mGameController.AdjustOceanSurfaceTo(inputState.MousePosition);
+
+                mSoundController.PlayWaveMakerSound();
+                SetCurrentCursor(inputState);
+
+                mIsEngaged = true;
+            }
         }
     }
 
-    virtual void OnLeftMouseDown(InputState const & inputState) override
-    {
-        mGameController.AdjustOceanSurfaceTo(inputState.MousePosition);
-
-        mSoundController.PlayWaveMakerSound();
-
-        // Set cursor
-        SetCurrentCursor(inputState);
-    }
-
-    virtual void OnLeftMouseUp(InputState const & inputState) override
-    {
-        mSoundController.StopWaveMakerSound();
-
-        mGameController.AdjustOceanSurfaceTo(std::nullopt);
-
-        // Set cursor
-        SetCurrentCursor(inputState);
-    }
+    virtual void OnLeftMouseDown(InputState const & /*inputState*/) override {}
+    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}
 
 private:
 
@@ -1959,6 +1961,9 @@ private:
             mToolCursorManager.SetToolCursor(mUpCursorImage);
         }
     }
+
+    // State
+    bool mIsEngaged;
 
     // The cursors
     wxImage const mUpCursorImage;
