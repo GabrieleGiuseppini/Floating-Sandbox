@@ -202,10 +202,10 @@ void OceanSurface::Update(
 
     for (size_t i = 0; i < mInteractiveWaveBuffer.GetSize(); ++i)
     {
-        float constexpr k = 2.0f;
+        float constexpr k = 4.0f;
         float constexpr mass = 1.0f;
         float constexpr dt = GameParameters::SimulationStepTimeDuration<float>;
-        float constexpr damping = 0.025f;
+        float constexpr damping = 0.0125f;
 
         // Integrate
         float const elasticForce = k * (mInteractiveWaveBuffer[i].TargetHeight - mInteractiveWaveBuffer[i].CurrentHeight);
@@ -214,8 +214,8 @@ void OceanSurface::Update(
         mInteractiveWaveBuffer[i].CurrentVelocity = (deltaHeight / dt) * (1.0f - damping);
 
         // Add to delta buffer
-        // TODOTEST
         AddDeltaHeightToSWEWaveHeightViaDeltaBuffer(i + SWEBufferPrefixSize, mInteractiveWaveBuffer[i].CurrentHeight);
+        // TODOTEST: line below is to add without delta buffer
         //mSWEHeightField[i + SWEBufferPrefixSize] += mInteractiveWaveBuffer[i].CurrentHeight;
     }
 
