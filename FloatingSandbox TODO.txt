@@ -24,8 +24,15 @@
 							X Opt 1: TargetHeight is absolute, so might also be reached naturally by SWE
 								X Then force exherted must depend on delta behind current SWE height and target 
 								X TODO: but then we have a problem with zero-ing - if we zero target to current SWE height, perturbations never disappear
-							= Opt 2: TargetHeight is relative (to 0.0), but we need some kung-fu when we incorporate into SWE height field in order to prevent adding delta's over delta's
+							X Opt 2: TargetHeight is relative (to 0.0), but we need some kung-fu when we incorporate into SWE height field in order to prevent adding delta's over delta's
 								- TODO: but then we compound delta's: we add a delta to SWE height field, then we add it again at the next iteration
+							= Opt 3:
+								+ Target height is absolute
+								+ Target height reset to SWE height field at end of Update
+								+ At beginning of update: interactive state machine updated, and _now_ its output set into SWE height, _before_ SWE height update
+								- TODO: but now we have a problem with zero-ing - if we zero target to current SWE height, these manual perturbations never disappear
+									- Try with DoForce flag
+									- To fix sudden death: fading multiplier on top of delta height @ mSWEHeightField[i + SWEBufferPrefixSize] += deltaHeight;
 					- Find good values of k and damping
 					- Damping on fall higher than damping on rise
 						- Basically: less overshoot when falling - from Mattia
