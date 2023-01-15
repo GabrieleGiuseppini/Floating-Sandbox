@@ -305,7 +305,7 @@ private:
     struct InteractiveWaveElement
     {
         float CurrentHeight;
-        float TargetHeight; // Continuously reset to zero during update, continuously updated to desired target during interacting
+        float TargetHeight; // Relative to 0.0; continuously reset to zero during update, continuously updated to desired target during interacting
         float CurrentVelocity;
 
         InteractiveWaveElement()
