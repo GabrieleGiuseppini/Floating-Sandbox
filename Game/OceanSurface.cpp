@@ -285,11 +285,18 @@ void OceanSurface::AdjustTo(
 
     float constexpr MaxAbsRelativeHeight = 6.0f;
 
-    mInteractiveWaveBuffer[sampleIndex].TargetHeight = Clamp(
-        worldCoordinates.y / SWEHeightFieldAmplification, 
-        -MaxAbsRelativeHeight,
-        MaxAbsRelativeHeight)
+    float const targetHeight = Clamp(worldCoordinates.y / SWEHeightFieldAmplification, -MaxAbsRelativeHeight, MaxAbsRelativeHeight)
         + SWEHeightFieldOffset;
+
+    mInteractiveWaveBuffer[sampleIndex].TargetHeight = targetHeight;
+
+    // TODOTEST
+    for (size_t d = 1; d < 4; ++d)
+    {
+        float const coeff = 1.0f - (static_cast<float>(d) / 4.0f) * (static_cast<float>(d) / 4.0f);
+        mInteractiveWaveBuffer[sampleIndex - d].TargetHeight = mSWEHeightField[sampleIndex - d + SWEBufferPrefixSize] + (targetHeight - mSWEHeightField[sampleIndex - d + SWEBufferPrefixSize]) * coeff;
+        mInteractiveWaveBuffer[sampleIndex + d].TargetHeight = mSWEHeightField[sampleIndex + d + SWEBufferPrefixSize] + (targetHeight - mSWEHeightField[sampleIndex + d + SWEBufferPrefixSize]) * coeff;
+    }
 
     // TODOOLD
     ////if (worldCoordinates.has_value())
