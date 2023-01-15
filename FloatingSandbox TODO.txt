@@ -19,10 +19,17 @@
 				+ b1. Remove SWE interactive state machine update
 				= b2. Add new InteractiveWaves update
 					+ Magick goes here
+					= State machine should take into account current SWE height field to avoid adding delta's over delta's:
+						= Interactive state machine:
+							X Opt 1: TargetHeight is absolute, so might also be reached naturally by SWE
+								X Then force exherted must depend on delta behind current SWE height and target 
+								X TODO: but then we have a problem with zero-ing - if we zero target to current SWE height, perturbations never disappear
+							= Opt 2: TargetHeight is relative (to 0.0), but we need some kung-fu when we incorporate into SWE height field in order to prevent adding delta's over delta's
+								- TODO: but then we compound delta's: we add a delta to SWE height field, then we add it again at the next iteration
 					- Find good values of k and damping
 					- Damping on fall higher than damping on rise
 						- Basically: less overshoot when falling - from Mattia
-					- Elastic force should be greater at small deltaH, but same as now at max deltaH
+					- Elastic force should be greater at small deltaH (to make for quick rise also at small target H), but same as now at max deltaH
 						- So instead of being linear (from 0@0 to k*max@max) should be a1@epsilon to k*max@max
 					- Fix cuspid
 						- Analysis:
@@ -40,6 +47,7 @@
 				+ b4. Zero out TargetHeight
 			- c. Misc others:
 				- Try changing speed of waves
+				- Try incorporating wind speed in SWE velocity field
 			- d. Cleanup:
 				- Tool: no need to invoke when turning off; just invoke simply each time mouse button is pressed
 					- Also cleanup OceanSurface::AdjustToHeight() then

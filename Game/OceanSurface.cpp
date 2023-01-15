@@ -214,9 +214,13 @@ void OceanSurface::Update(
         mInteractiveWaveBuffer[i].CurrentVelocity = (deltaHeight / dt) * (1.0f - damping);
 
         // Add to delta buffer
-        AddDeltaHeightToSWEWaveHeightViaDeltaBuffer(i + SWEBufferPrefixSize, mInteractiveWaveBuffer[i].CurrentHeight);
-        // TODOTEST: line below is to add without delta buffer
+        //AddDeltaHeightToSWEWaveHeightViaDeltaBuffer(i + SWEBufferPrefixSize, mInteractiveWaveBuffer[i].CurrentHeight);
+        // TODOTEST: line below is to add without delta buffer; problem: we compound delta - i.e. we keep adding currentheight to SWE height field
         //mSWEHeightField[i + SWEBufferPrefixSize] += mInteractiveWaveBuffer[i].CurrentHeight;
+        // TODOTEST
+        //AddHeightToSWEWaveHeightViaDeltaBuffer(i + SWEBufferPrefixSize, mInteractiveWaveBuffer[i].CurrentHeight + SWEHeightFieldOffset);
+        // TODOTEST: the below cancels all SWE and only incorporates interactive waves
+        //mSWEHeightField[i + SWEBufferPrefixSize] = mInteractiveWaveBuffer[i].CurrentHeight + SWEHeightFieldOffset;
     }
 
     //
@@ -276,16 +280,12 @@ void OceanSurface::AdjustTo(
 {
     auto const sampleIndex = ToSampleIndex(worldCoordinates.x);
 
-    float constexpr MaxRelativeHeight = 6.0f;
-    float constexpr MinRelativeHeight = -6.0f;
-    float const targetHeight =
-        Clamp(worldCoordinates.y / SWEHeightFieldAmplification, MinRelativeHeight, MaxRelativeHeight)
-        // TODO: we consider interactiveWaveBuffer height of zero to be rest
-        //+ SWEHeightFieldOffset;
-        ;
+    float constexpr MaxAbsRelativeHeight = 6.0f;
 
-    // TODOTEST
-    mInteractiveWaveBuffer[sampleIndex].TargetHeight = targetHeight;
+    mInteractiveWaveBuffer[sampleIndex].TargetHeight = Clamp(
+        worldCoordinates.y / SWEHeightFieldAmplification, 
+        -MaxAbsRelativeHeight,
+        MaxAbsRelativeHeight);
 
     // TODOOLD
     ////if (worldCoordinates.has_value())
