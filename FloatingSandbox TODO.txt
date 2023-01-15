@@ -30,9 +30,8 @@
 								+ Target height is absolute
 								+ Target height reset to SWE height field at end of Update
 								+ At beginning of update: interactive state machine updated, and _now_ its output set into SWE height, _before_ SWE height update
-								- TODO: but now we have a problem with zero-ing - if we zero target to current SWE height, these manual perturbations never disappear
-									- Try with DoForce flag
-									- To fix sudden death: fading multiplier on top of delta height @ mSWEHeightField[i + SWEBufferPrefixSize] += deltaHeight;
+								- Do anti-cuspid and see if it fixes a) cuspid and b) not reaching target height
+								- See if need fall-time damping, to fix cuspids at fall and to fine-tune fall speed
 					- Find good values of k and damping
 					- Damping on fall higher than damping on rise
 						- Basically: less overshoot when falling - from Mattia
@@ -64,6 +63,8 @@
 				- Use new CurrentHeight at all places at which we have to probe current height
 					- OR: see above
 				- Nuke old SWE interactive state machine
+
+	- Nuke default_ship.shp2 and make Titanic's filename in code		
 
 	- Tools.h:
 		- All overrides not virtual

@@ -202,31 +202,28 @@ void OceanSurface::Update(
 
     for (size_t i = 0; i < mInteractiveWaveBuffer.GetSize(); ++i)
     {
-        //if (mInteractiveWaveBuffer[i].DoForce)
-        {
-            float constexpr k = 40.0f;
-            float constexpr mass = 1.0f;
-            float constexpr dt = GameParameters::SimulationStepTimeDuration<float>;
-            float constexpr damping = 0.0125f;
+        float constexpr k = 40.0f;
+        float constexpr mass = 1.0f;
+        float constexpr dt = GameParameters::SimulationStepTimeDuration<float>;
+        float constexpr damping = 0.0125f;
 
-            // Integrate
-            //float const elasticForce = k * (mInteractiveWaveBuffer[i].TargetHeight - mInteractiveWaveBuffer[i].CurrentHeight);
-            float const elasticForce = k * (mInteractiveWaveBuffer[i].TargetHeight - mSWEHeightField[i + SWEBufferPrefixSize]);
-            float const deltaHeight = mInteractiveWaveBuffer[i].CurrentVelocity * dt + elasticForce * dt * dt / mass;
-            mInteractiveWaveBuffer[i].CurrentHeight += deltaHeight;
-            mInteractiveWaveBuffer[i].CurrentVelocity = (deltaHeight / dt) * (1.0f - damping);
+        // Integrate
+        //float const elasticForce = k * (mInteractiveWaveBuffer[i].TargetHeight - mInteractiveWaveBuffer[i].CurrentHeight);
+        float const elasticForce = k * (mInteractiveWaveBuffer[i].TargetHeight - mSWEHeightField[i + SWEBufferPrefixSize]);
+        float const deltaHeight = mInteractiveWaveBuffer[i].CurrentVelocity * dt + elasticForce * dt * dt / mass;
+        mInteractiveWaveBuffer[i].CurrentHeight += deltaHeight;
+        mInteractiveWaveBuffer[i].CurrentVelocity = (deltaHeight / dt) * (1.0f - damping);
 
-            // Add to delta buffer
-            //AddDeltaHeightToSWEWaveHeightViaDeltaBuffer(i + SWEBufferPrefixSize, mInteractiveWaveBuffer[i].CurrentHeight);
-            // TODOTEST: line below is to add without delta buffer; problem: we compound delta - i.e. we keep adding currentheight to SWE height field
-            //mSWEHeightField[i + SWEBufferPrefixSize] += mInteractiveWaveBuffer[i].CurrentHeight;
-            // TODOTEST
-            //AddHeightToSWEWaveHeightViaDeltaBuffer(i + SWEBufferPrefixSize, mInteractiveWaveBuffer[i].CurrentHeight + SWEHeightFieldOffset);
-            // TODOTEST: the below cancels all SWE and only incorporates interactive waves
-            //mSWEHeightField[i + SWEBufferPrefixSize] = mInteractiveWaveBuffer[i].CurrentHeight + SWEHeightFieldOffset;
-            // TODOTEST: we set directly into height buffer now
-            mSWEHeightField[i + SWEBufferPrefixSize] += deltaHeight;
-        }
+        // Add to delta buffer
+        //AddDeltaHeightToSWEWaveHeightViaDeltaBuffer(i + SWEBufferPrefixSize, mInteractiveWaveBuffer[i].CurrentHeight);
+        // TODOTEST: line below is to add without delta buffer; problem: we compound delta - i.e. we keep adding currentheight to SWE height field
+        //mSWEHeightField[i + SWEBufferPrefixSize] += mInteractiveWaveBuffer[i].CurrentHeight;
+        // TODOTEST
+        //AddHeightToSWEWaveHeightViaDeltaBuffer(i + SWEBufferPrefixSize, mInteractiveWaveBuffer[i].CurrentHeight + SWEHeightFieldOffset);
+        // TODOTEST: the below cancels all SWE and only incorporates interactive waves
+        //mSWEHeightField[i + SWEBufferPrefixSize] = mInteractiveWaveBuffer[i].CurrentHeight + SWEHeightFieldOffset;
+        // TODOTEST: we set directly into height buffer now
+        mSWEHeightField[i + SWEBufferPrefixSize] += deltaHeight;
     }
 
     //
@@ -257,7 +254,6 @@ void OceanSurface::Update(
     for (size_t i = 0; i < mInteractiveWaveBuffer.GetSize(); ++i)
     {
         mInteractiveWaveBuffer[i].TargetHeight = mSWEHeightField[i + SWEBufferPrefixSize];
-        mInteractiveWaveBuffer[i].DoForce = false;
     }
 }
 
@@ -294,7 +290,6 @@ void OceanSurface::AdjustTo(
         -MaxAbsRelativeHeight,
         MaxAbsRelativeHeight)
         + SWEHeightFieldOffset;
-    mInteractiveWaveBuffer[sampleIndex].DoForce = true;
 
     // TODOOLD
     ////if (worldCoordinates.has_value())

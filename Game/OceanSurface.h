@@ -307,13 +307,11 @@ private:
         float CurrentHeight;
         float TargetHeight; // Absolute; continuously reset to SWE height during update, continuously updated to desired target during interacting
         float CurrentVelocity;
-        bool DoForce;
 
         InteractiveWaveElement()
             : CurrentHeight(0.0f)
             , TargetHeight(SWEHeightFieldOffset) // TODOBETTER
             , CurrentVelocity(0.0f)
-            , DoForce(false)
         {}
     };
 
