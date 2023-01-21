@@ -202,28 +202,9 @@ void OceanSurface::Update(
 
     for (size_t i = 0; i < mInteractiveWaveBuffer.GetSize(); ++i)
     {
-        float constexpr k = 40.0f;
-        float constexpr mass = 1.0f;
-        float constexpr dt = GameParameters::SimulationStepTimeDuration<float>;
-        float constexpr damping = 0.0125f;
-
-        // Integrate
-        //float const elasticForce = k * (mInteractiveWaveBuffer[i].TargetHeight - mInteractiveWaveBuffer[i].CurrentHeight);
-        float const elasticForce = k * (mInteractiveWaveBuffer[i].TargetHeight - mSWEHeightField[i + SWEBufferPrefixSize]);
-        float const deltaHeight = mInteractiveWaveBuffer[i].CurrentVelocity * dt + elasticForce * dt * dt / mass;
-        mInteractiveWaveBuffer[i].CurrentHeight += deltaHeight;
-        mInteractiveWaveBuffer[i].CurrentVelocity = (deltaHeight / dt) * (1.0f - damping);
-
-        // Add to delta buffer
-        //AddDeltaHeightToSWEWaveHeightViaDeltaBuffer(i + SWEBufferPrefixSize, mInteractiveWaveBuffer[i].CurrentHeight);
-        // TODOTEST: line below is to add without delta buffer; problem: we compound delta - i.e. we keep adding currentheight to SWE height field
-        //mSWEHeightField[i + SWEBufferPrefixSize] += mInteractiveWaveBuffer[i].CurrentHeight;
-        // TODOTEST
-        //AddHeightToSWEWaveHeightViaDeltaBuffer(i + SWEBufferPrefixSize, mInteractiveWaveBuffer[i].CurrentHeight + SWEHeightFieldOffset);
-        // TODOTEST: the below cancels all SWE and only incorporates interactive waves
-        //mSWEHeightField[i + SWEBufferPrefixSize] = mInteractiveWaveBuffer[i].CurrentHeight + SWEHeightFieldOffset;
-        // TODOTEST: we set directly into height buffer now
-        mSWEHeightField[i + SWEBufferPrefixSize] += deltaHeight;
+        mInteractiveWaveBuffer[i].CurrentCoefficient += (mInteractiveWaveBuffer[i].TargetCoefficient - mInteractiveWaveBuffer[i].CurrentCoefficient) * mInteractiveWaveBuffer[i].CoefficientRate;
+        float const deltaHeight = mInteractiveWaveBuffer[i].TargetHeight - mSWEHeightField[i + SWEBufferPrefixSize];
+        mSWEHeightField[i + SWEBufferPrefixSize] += deltaHeight * mInteractiveWaveBuffer[i].CurrentCoefficient;
     }
 
     //
@@ -253,7 +234,8 @@ void OceanSurface::Update(
 
     for (size_t i = 0; i < mInteractiveWaveBuffer.GetSize(); ++i)
     {
-        mInteractiveWaveBuffer[i].TargetHeight = mSWEHeightField[i + SWEBufferPrefixSize];
+        mInteractiveWaveBuffer[i].TargetCoefficient = 0.0f;
+        mInteractiveWaveBuffer[i].CoefficientRate = 0.03f;
     }
 }
 
@@ -281,21 +263,42 @@ void OceanSurface::AdjustTo(
     vec2f const & worldCoordinates,
     float /*currentSimulationTime*/)
 {
+    float constexpr RaiseCoefficientRate = 0.007f;
+
     auto const sampleIndex = ToSampleIndex(worldCoordinates.x);
 
-    float constexpr MaxAbsRelativeHeight = 6.0f;
+    float constexpr MaxAbsRelativeHeight = 6.0f;    
+    float const targetRelativeHeight = Clamp(worldCoordinates.y / SWEHeightFieldAmplification, -MaxAbsRelativeHeight, MaxAbsRelativeHeight);
+    float const targetAbsoluteHeight = targetRelativeHeight + SWEHeightFieldOffset;
 
-    float const targetHeight = Clamp(worldCoordinates.y / SWEHeightFieldAmplification, -MaxAbsRelativeHeight, MaxAbsRelativeHeight)
-        + SWEHeightFieldOffset;
+    float constexpr MaxRadius = 16.0f;
+    // TODO: max with passed pointer size
+    float const actionRadius = MaxRadius * std::abs(targetRelativeHeight) / MaxAbsRelativeHeight;
 
-    mInteractiveWaveBuffer[sampleIndex].TargetHeight = targetHeight;
+    LogMessage("---------------- radius=", actionRadius);
 
-    // TODOTEST
-    for (size_t d = 1; d < 4; ++d)
+    mInteractiveWaveBuffer[sampleIndex].TargetHeight = targetAbsoluteHeight;
+    mInteractiveWaveBuffer[sampleIndex].TargetCoefficient = 1.0f;
+    mInteractiveWaveBuffer[sampleIndex].CoefficientRate = RaiseCoefficientRate;
+    
+    for (int64_t d = 1; d <= static_cast<int64_t>(std::floor(actionRadius)); ++d)
     {
-        float const coeff = 1.0f - (static_cast<float>(d) / 4.0f) * (static_cast<float>(d) / 4.0f);
-        mInteractiveWaveBuffer[sampleIndex - d].TargetHeight = mSWEHeightField[sampleIndex - d + SWEBufferPrefixSize] + (targetHeight - mSWEHeightField[sampleIndex - d + SWEBufferPrefixSize]) * coeff;
-        mInteractiveWaveBuffer[sampleIndex + d].TargetHeight = mSWEHeightField[sampleIndex + d + SWEBufferPrefixSize] + (targetHeight - mSWEHeightField[sampleIndex + d + SWEBufferPrefixSize]) * coeff;
+        float const coeff =
+            1.0f - (static_cast<float>(d) / actionRadius) * (static_cast<float>(d) / actionRadius);
+
+        if (sampleIndex - d >= 0)
+        {
+            mInteractiveWaveBuffer[sampleIndex - d].TargetHeight = targetAbsoluteHeight;
+            mInteractiveWaveBuffer[sampleIndex - d].TargetCoefficient = coeff;
+            mInteractiveWaveBuffer[sampleIndex - d].CoefficientRate = RaiseCoefficientRate;
+        }
+
+        if (sampleIndex + d < SamplesCount)
+        {
+            mInteractiveWaveBuffer[sampleIndex + d].TargetHeight = targetAbsoluteHeight;
+            mInteractiveWaveBuffer[sampleIndex + d].TargetCoefficient = coeff;
+            mInteractiveWaveBuffer[sampleIndex + d].CoefficientRate = RaiseCoefficientRate;
+        }
     }
 
     // TODOOLD

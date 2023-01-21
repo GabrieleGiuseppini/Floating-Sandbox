@@ -304,14 +304,16 @@ private:
 
     struct InteractiveWaveElement
     {
-        float CurrentHeight;
-        float TargetHeight; // Absolute; continuously reset to SWE height during update, continuously updated to desired target during interacting
-        float CurrentVelocity;
+        float TargetHeight; // Absolute; continuously updated to desired target during interacting
+        float CurrentCoefficient;
+        float TargetCoefficient;
+        float CoefficientRate;
 
         InteractiveWaveElement()
-            : CurrentHeight(0.0f)
-            , TargetHeight(SWEHeightFieldOffset) // TODOBETTER
-            , CurrentVelocity(0.0f)
+            : TargetHeight(SWEHeightFieldOffset) // TODOBETTER
+            , CurrentCoefficient(0.0f)
+            , TargetCoefficient(0.0f)
+            , CoefficientRate(0.0f)
         {}
     };
 
