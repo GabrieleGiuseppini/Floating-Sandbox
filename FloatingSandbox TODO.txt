@@ -38,12 +38,13 @@
 									X Try without height growth coefficient growth
 									+ Try larger cuspid
 									+ Add comment on fall rate
+									+ See rates for fall vs raise, and fine-tune
+										+ Ask Mattia
 									- See if we want waves to rise faster at small H
 										- GrowthCoeffGrowtRate should be higher at small height
 										- And also the release one?
-									= See rates for fall vs raise, and fine-tune
-										- Ask Mattia
 									- Cleanup 2
+										- Incl. vectorization
 						- Take pointer size
 					- Find good values of k and damping
 					- Damping on fall higher than damping on rise
