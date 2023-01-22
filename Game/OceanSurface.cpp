@@ -103,7 +103,7 @@ void OceanSurface::Update(
     }
 
     //
-    // 1. Advance SWE Wave State Machines
+    // 1. Advance Abnormal Wave State Machines
     //
 
     // Tsunami
@@ -745,7 +745,6 @@ void OceanSurface::ImpartInteractiveWave(
     // Registers the will to adjust the SWE height field at the specified x to the specified height.
     // 
     // Widens the action field horizontally to mitigate the "cuspid problem".
-    //
     // Notes on the "cuspid problem": the cuspid we see is the result of setting H and running two field cycles:
     //  - First, the H we set at x = X becomes Dt / Dx * (velocityField[i] - velocityField[i + 1]) smaller;
     //  - Then, for any target H, there are two "regime" H's:
@@ -771,13 +770,8 @@ void OceanSurface::ImpartInteractiveWave(
         MaxRadius * heightFraction + alpha / (heightFraction + beta),
         worldRadius); // Take into account also the interactive radius
 
-    // Set at central
-    mInteractiveWaveTargetHeight[centerIndex] = targetAbsoluteHeight;
-    mInteractiveWaveTargetHeightGrowthCoefficient[centerIndex] = 1.0f;
-    mInteractiveWaveHeightGrowthCoefficientGrowthRate[centerIndex] = growthRate;
-
-    // Set around
-    for (int64_t d = 1; d <= static_cast<int64_t>(std::floor(actionRadius)); ++d)
+    // Set at center and around
+    for (int64_t d = 0; d <= static_cast<int64_t>(std::floor(actionRadius)); ++d)
     {
         float const coeff =
             1.0f - (static_cast<float>(d) / actionRadius) * (static_cast<float>(d) / actionRadius);
@@ -789,7 +783,7 @@ void OceanSurface::ImpartInteractiveWave(
             mInteractiveWaveHeightGrowthCoefficientGrowthRate[centerIndex - d] = growthRate;
         }
 
-        if (centerIndex + d < SamplesCount)
+        if (centerIndex + d < SamplesCount && d != 0)
         {
             mInteractiveWaveTargetHeight[centerIndex + d] = targetAbsoluteHeight;
             mInteractiveWaveTargetHeightGrowthCoefficient[centerIndex + d] = coeff;

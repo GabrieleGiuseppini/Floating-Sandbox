@@ -15,22 +15,22 @@
 				+ CurrentHeight
 				+ TargetHeight
 				+ CurrentVelocity
-			= b. @ Update():				
+			+ b. @ Update():				
 				+ b1. Remove SWE interactive state machine update
-				= b2. Add new InteractiveWaves update
+				+ b2. Add new InteractiveWaves update
 					+ Magick goes here
-					= State machine should take into account current SWE height field to avoid adding delta's over delta's:
-						= Interactive state machine:
+					+ State machine should take into account current SWE height field to avoid adding delta's over delta's:
+						+ Interactive state machine:
 							X Opt 1: TargetHeight is absolute, so might also be reached naturally by SWE
 								X Then force exherted must depend on delta behind current SWE height and target 
 								X TODO: but then we have a problem with zero-ing - if we zero target to current SWE height, perturbations never disappear
 							X Opt 2: TargetHeight is relative (to 0.0), but we need some kung-fu when we incorporate into SWE height field in order to prevent adding delta's over delta's
 								- TODO: but then we compound delta's: we add a delta to SWE height field, then we add it again at the next iteration
-							= Opt 3:
+							+ Opt 3:
 								+ Target height is absolute
 								+ Target height reset to SWE height field at end of Update
 								+ At beginning of update: interactive state machine updated, and _now_ its output set into SWE height, _before_ SWE height update
-								= Try coefficient approach
+								+ Try coefficient approach
 									+ Do anti-cuspid and see if it fixes a) cuspid and b) not reaching target height
 										+ Wider?
 											+ If no works: use non-linear ratio, more radius at low values
@@ -40,10 +40,9 @@
 									+ Add comment on fall rate
 									+ See rates for fall vs raise, and fine-tune
 										+ Ask Mattia
-									= See if we want waves to rise faster at small H
+									+ See if we want waves to rise faster at small H
 										+ GrowthCoeffGrowtRate should be higher at small height
 											+ 1.0f at 0.0, InteractiveRaiseHeightGrowthCoefficientGrowthRate at ~1.0
-										- TODO1 And also the release one? May be it's not needed
 									+ Cleanup 2
 										+ Incl. vectorization
 						+ Take pointer size
