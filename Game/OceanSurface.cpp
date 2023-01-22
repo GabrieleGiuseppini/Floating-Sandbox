@@ -295,8 +295,8 @@ void OceanSurface::AdjustTo(
         worldRadius); // Take into account also the interactive radius
 
     // Calculate the growth rate for the height growth coefficient; we want small waves to raise fast
-    // and tall lwaves to raise slow; our formula is thus:
-    // 0.007 + (1.0 - 0.007) * 0.005 / (x + 0.005)
+    // and tall waves to raise slow; our formula is thus:
+    // 0.007 + (1.0 - 0.007) * 0.005 / (h + 0.005)
     float constexpr AsymptoticRate = 0.007f;
     float const heightGrowthCoefficientGrowthRate = AsymptoticRate + (1.0f - AsymptoticRate) * (0.005f / (std::abs(targetRelativeHeight) + 0.005f));
 
