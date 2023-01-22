@@ -271,9 +271,18 @@ void OceanSurface::AdjustTo(
     float const targetRelativeHeight = Clamp(worldCoordinates.y / SWEHeightFieldAmplification, -MaxAbsRelativeHeight, MaxAbsRelativeHeight);
     float const targetAbsoluteHeight = targetRelativeHeight + SWEHeightFieldOffset;
 
+    // Calculate radius: in general we want it linear with h so that it's MaxRadius at MaxAbsRelativeHeight, but 
+    // we also want it to start at a certain value - H - at zero delta height. So we add a 1/h factor to the linear dependency.
+    // The general formula is:
+    //      calcd_radius = MaxRadius * height_fraction + alpha / (height_fraction + beta)
+    // Imposing that this curve has a slope of zero at zero, we get that alpha = H^2 / MaxRadius and beta = H / MaxRadius
     float constexpr MaxRadius = 16.0f;
+    float constexpr H = 3.0f;
+    float constexpr alpha = H * H / MaxRadius;
+    float constexpr beta = H / MaxRadius;    
+    float const heightFraction = std::abs(targetRelativeHeight) / MaxAbsRelativeHeight;
     // TODO: max with passed pointer size
-    float const actionRadius = MaxRadius * std::abs(targetRelativeHeight) / MaxAbsRelativeHeight;
+    float const actionRadius = MaxRadius * heightFraction + alpha / (heightFraction + beta);
 
     LogMessage("---------------- radius=", actionRadius);
 

@@ -31,11 +31,11 @@
 								+ Target height reset to SWE height field at end of Update
 								+ At beginning of update: interactive state machine updated, and _now_ its output set into SWE height, _before_ SWE height update
 								= Try coefficient approach
-									= Do anti-cuspid and see if it fixes a) cuspid and b) not reaching target height
-										= Wider?
-											- If no works: use non-linear ratio, more radius at low values
-									= See if need fall-time damping, to fix cuspids at fall and to fine-tune fall speed
-										- Better value
+									+ Do anti-cuspid and see if it fixes a) cuspid and b) not reaching target height
+										+ Wider?
+											+ If no works: use non-linear ratio, more radius at low values
+									- Cleanup
+									- See rates for fall vs raise, and fine-tune
 					- Find good values of k and damping
 					- Damping on fall higher than damping on rise
 						- Basically: less overshoot when falling - from Mattia
