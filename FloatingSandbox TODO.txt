@@ -41,8 +41,8 @@
 									+ See rates for fall vs raise, and fine-tune
 										+ Ask Mattia
 									= See if we want waves to rise faster at small H
-										- GrowthCoeffGrowtRate should be higher at small height
-											- 1.0f at 0.0, InteractiveRaiseHeightGrowthCoefficientGrowthRate at ~1.0
+										+ GrowthCoeffGrowtRate should be higher at small height
+											+ 1.0f at 0.0, InteractiveRaiseHeightGrowthCoefficientGrowthRate at ~1.0
 										- And also the release one?
 									- Cleanup 2
 										- Incl. vectorization

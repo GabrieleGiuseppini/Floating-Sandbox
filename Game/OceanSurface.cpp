@@ -15,15 +15,6 @@
 
 namespace Physics {
 
-// The speed at which the height growth coefficient of interactive waves raises for imparted waves;
-// this is basically the rate at which we increase the strength with which we pull the SWE height field
-float constexpr InteractiveRaiseHeightGrowthCoefficientGrowthRate = 0.007f;
-
-// The speed at which the height growth coefficient of interactive waves lowers after release;
-// this is basically the rate at which we stop pulling the SWE height field
-//float constexpr InteractiveFallHeightGrowthCoefficientGrowthRate = 0.03f;
-float constexpr InteractiveFallHeightGrowthCoefficientGrowthRate = 0.1f;
-
 // The number of slices we want to render the water surface as;
 // this is our graphical resolution
 template<typename T>
@@ -253,7 +244,7 @@ void OceanSurface::Update(
     for (size_t i = 0; i < mInteractiveWaveBuffer.GetSize(); ++i)
     {
         mInteractiveWaveBuffer[i].TargetHeightGrowthCoefficient = 0.0f;
-        mInteractiveWaveBuffer[i].HeightGrowthCoefficientGrowthRate = InteractiveFallHeightGrowthCoefficientGrowthRate;
+        mInteractiveWaveBuffer[i].HeightGrowthCoefficientGrowthRate = 0.1f; // Magic number: rate with which we stop pinning the SWE height field
     }
 }
 
@@ -283,6 +274,7 @@ void OceanSurface::AdjustTo(
 {
     auto const centerIndex = ToSampleIndex(worldCoordinates.x);
 
+    // Calculate desired height
     float constexpr MaxAbsRelativeHeight = 6.0f;    
     float const targetRelativeHeight = Clamp(worldCoordinates.y / SWEHeightFieldAmplification, -MaxAbsRelativeHeight, MaxAbsRelativeHeight);
     float const targetAbsoluteHeight = targetRelativeHeight + SWEHeightFieldOffset;
@@ -301,16 +293,16 @@ void OceanSurface::AdjustTo(
         MaxRadius * heightFraction + alpha / (heightFraction + beta),
         worldRadius); // Take into account also the interactive radius
 
-    // TODOTEST
-    // 0.2 + 0.8 * 0.1/(x+0.1)
-    float const todo = InteractiveRaiseHeightGrowthCoefficientGrowthRate + (1.0f - InteractiveRaiseHeightGrowthCoefficientGrowthRate) * (0.001f / (std::abs(targetRelativeHeight) + 0.001f));
-
-    LogMessage("TODO coeff @ h=", std::abs(targetRelativeHeight), ": ", todo);
+    // Calculate the growth rate for the height growth coefficient; we want small waves to raise fast
+    // and tall lwaves to raise slow; our formula is thus:
+    // 0.007 + (1.0 - 0.007) * 0.005 / (x + 0.005)
+    float constexpr AsymptoticRate = 0.007f;
+    float const heightGrowthCoefficientGrowthRate = AsymptoticRate + (1.0f - AsymptoticRate) * (0.005f / (std::abs(targetRelativeHeight) + 0.005f));
 
     // Set at central
     mInteractiveWaveBuffer[centerIndex].TargetHeight = targetAbsoluteHeight;
     mInteractiveWaveBuffer[centerIndex].TargetHeightGrowthCoefficient = 1.0f;
-    mInteractiveWaveBuffer[centerIndex].HeightGrowthCoefficientGrowthRate = todo;
+    mInteractiveWaveBuffer[centerIndex].HeightGrowthCoefficientGrowthRate = heightGrowthCoefficientGrowthRate;
     
     // Set around
     for (int64_t d = 1; d <= static_cast<int64_t>(std::floor(actionRadius)); ++d)
@@ -322,14 +314,14 @@ void OceanSurface::AdjustTo(
         {
             mInteractiveWaveBuffer[centerIndex - d].TargetHeight = targetAbsoluteHeight;
             mInteractiveWaveBuffer[centerIndex - d].TargetHeightGrowthCoefficient = coeff;
-            mInteractiveWaveBuffer[centerIndex - d].HeightGrowthCoefficientGrowthRate = todo;
+            mInteractiveWaveBuffer[centerIndex - d].HeightGrowthCoefficientGrowthRate = heightGrowthCoefficientGrowthRate;
         }
 
         if (centerIndex + d < SamplesCount)
         {
             mInteractiveWaveBuffer[centerIndex + d].TargetHeight = targetAbsoluteHeight;
             mInteractiveWaveBuffer[centerIndex + d].TargetHeightGrowthCoefficient = coeff;
-            mInteractiveWaveBuffer[centerIndex + d].HeightGrowthCoefficientGrowthRate = todo;
+            mInteractiveWaveBuffer[centerIndex + d].HeightGrowthCoefficientGrowthRate = heightGrowthCoefficientGrowthRate;
         }
     }
 }

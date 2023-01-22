@@ -312,7 +312,9 @@ private:
         float CurrentHeightGrowthCoefficient;
         float TargetHeightGrowthCoefficient;
 
-        // The rate at which the growth coefficient grows itself
+        // The rate at which the growth coefficient grows itself.
+        // During interaction (rising), this is the speed at which the height growth coefficient raises;
+        // during release (falling), this is basically the rate at which we let go of pulling the SWE height field
         float HeightGrowthCoefficientGrowthRate;
 
         InteractiveWaveElement(float targetHeight)
