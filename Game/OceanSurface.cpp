@@ -15,12 +15,15 @@
 
 namespace Physics {
 
+float constexpr MaxInteractiveWaveAbsRelativeHeight = 6.0f;
+
 // The number of slices we want to render the water surface as;
 // this is our graphical resolution
 template<typename T>
 T constexpr RenderSlices = 768;
 
 static std::chrono::seconds constexpr TsunamiGracePeriod(120);
+static std::chrono::seconds constexpr RogueWaveGracePeriod(5);
 
 OceanSurface::OceanSurface(
     World & parentWorld,
@@ -54,7 +57,6 @@ OceanSurface::OceanSurface(
     , mInteractiveWaveHeightGrowthCoefficientGrowthRate(SamplesCount)
     , mDeltaHeightBuffer(DeltaHeightBufferAlignmentPrefixSize + (DeltaHeightSmoothing / 2) + SamplesCount + (DeltaHeightSmoothing / 2))
     ////////
-    , mSWEInteractiveWaveStateMachine()
     , mSWETsunamiWaveStateMachine()
     , mSWERogueWaveWaveStateMachine()
     , mLastTsunamiTimestamp(GameWallClock::GetInstance().Now())
@@ -104,30 +106,10 @@ void OceanSurface::Update(
     // 1. Advance SWE Wave State Machines
     //
 
-    // TODOOLD
-    ////// Interactive
-    ////if (mSWEInteractiveWaveStateMachine.has_value())
-    ////{
-    ////    auto const heightValue = mSWEInteractiveWaveStateMachine->Update(currentSimulationTime);
-    ////    if (!heightValue.has_value())
-    ////    {
-    ////        // Done
-    ////        mSWEInteractiveWaveStateMachine.reset();
-    ////    }
-    ////    else
-    ////    {
-    ////        // Apply
-    ////        AddToSWEWaveHeightViaDeltaBuffer(
-    ////            mSWEInteractiveWaveStateMachine->GetCenterIndex(),
-    ////            *heightValue);
-    ////    }
-    ////}
-
     // Tsunami
     if (mSWETsunamiWaveStateMachine.has_value())
     {
-        auto const heightValue = mSWETsunamiWaveStateMachine->Update(currentSimulationTime);
-        if (!heightValue.has_value())
+        if (currentSimulationTime > mSWETsunamiWaveStateMachine->GetStartSimulationTime() + 5.0f)
         {
             // Done
             mSWETsunamiWaveStateMachine.reset();
@@ -135,9 +117,11 @@ void OceanSurface::Update(
         else
         {
             // Apply
-            AddHeightToSWEWaveHeightViaDeltaBuffer(
-                mSWETsunamiWaveStateMachine->GetCenterIndex(),
-                *heightValue);
+            ImpartInteractiveWave(
+                mSWETsunamiWaveStateMachine->GetCenterX(),
+                mSWETsunamiWaveStateMachine->GetTargetRelativeHeight(),
+                mSWETsunamiWaveStateMachine->GetRate(),
+                0.0f);
         }
     }
     else
@@ -167,8 +151,7 @@ void OceanSurface::Update(
     // Rogue Wave
     if (mSWERogueWaveWaveStateMachine.has_value())
     {
-        auto const heightValue = mSWERogueWaveWaveStateMachine->Update(currentSimulationTime);
-        if (!heightValue.has_value())
+        if (currentSimulationTime > mSWERogueWaveWaveStateMachine->GetStartSimulationTime() + 2.0f)
         {
             // Done
             mSWERogueWaveWaveStateMachine.reset();
@@ -176,9 +159,11 @@ void OceanSurface::Update(
         else
         {
             // Apply
-            AddHeightToSWEWaveHeightViaDeltaBuffer(
-                mSWERogueWaveWaveStateMachine->GetCenterIndex(),
-                *heightValue);
+            ImpartInteractiveWave(
+                mSWERogueWaveWaveStateMachine->GetCenterX(),
+                mSWERogueWaveWaveStateMachine->GetTargetRelativeHeight(),
+                mSWERogueWaveWaveStateMachine->GetRate(),
+                0.0f);
         }
     }
     else
@@ -198,7 +183,7 @@ void OceanSurface::Update(
             mNextRogueWaveTimestamp = CalculateNextAbnormalWaveTimestamp(
                 now,
                 gameParameters.RogueWaveRate,
-                std::chrono::seconds(0));
+                RogueWaveGracePeriod);
         }
     }
 
@@ -260,71 +245,20 @@ void OceanSurface::AdjustTo(
     vec2f const & worldCoordinates,
     float worldRadius)
 {
-    //
-    // Registers the will to adjust the SWE height field at the specified x to the specified height.
-    // 
-    // Widens the action field horizontally to mitigate the "cuspid problem".
-    //
-    // Notes on the "cuspid problem": the cuspid we see is the result of setting H and running two field cycles:
-    //  - First, the H we set at x = X becomes Dt / Dx * (velocityField[i] - velocityField[i + 1]) smaller;
-    //  - Then, for any target H, there are two "regime" H's:
-    //      - The one at x = X - lower than H;
-    //      - The one in the neighborhood, extending to infinite.
-    //  - The cuspid itself is our interpolation! It's just that the regime H at x=X is way higher than the regime H at its neighboring cells
-    // 
-
-    auto const centerIndex = ToSampleIndex(worldCoordinates.x);
-
     // Calculate desired height
-    float constexpr MaxAbsRelativeHeight = 6.0f;    
-    float const targetRelativeHeight = Clamp(worldCoordinates.y / SWEHeightFieldAmplification, -MaxAbsRelativeHeight, MaxAbsRelativeHeight);
-    float const targetAbsoluteHeight = targetRelativeHeight + SWEHeightFieldOffset;
-
-    // Calculate radius: in general we want it linear with h so that it's MaxRadius at MaxAbsRelativeHeight, but 
-    // we also want it to start at a certain value - H - at zero delta height. So we add a 1/h factor to the linear dependency.
-    // The general formula is:
-    //      calcd_radius = MaxRadius * height_fraction + alpha / (height_fraction + beta)
-    // Imposing that this curve has a slope of zero at zero, we get that alpha = H^2 / MaxRadius and beta = H / MaxRadius
-    float constexpr MaxRadius = 22.0f;
-    float constexpr H = 3.0f;
-    float constexpr alpha = H * H / MaxRadius;
-    float constexpr beta = H / MaxRadius;    
-    float const heightFraction = std::abs(targetRelativeHeight) / MaxAbsRelativeHeight;
-    float const actionRadius = std::max(
-        MaxRadius * heightFraction + alpha / (heightFraction + beta),
-        worldRadius); // Take into account also the interactive radius
+    float const targetRelativeHeight = Clamp(worldCoordinates.y / SWEHeightFieldAmplification, -MaxInteractiveWaveAbsRelativeHeight, MaxInteractiveWaveAbsRelativeHeight);
 
     // Calculate the growth rate for the height growth coefficient; we want small waves to raise fast
     // and tall waves to raise slow; our formula is thus:
-    // 0.007 + (1.0 - 0.007) * 0.005 / (h + 0.005)
-    float constexpr AsymptoticRate = 0.007f;
-    float const heightGrowthCoefficientGrowthRate = AsymptoticRate + (1.0f - AsymptoticRate) * (0.005f / (std::abs(targetRelativeHeight) + 0.005f));
+    // AsymptoticRate + (1.0 - AsymptoticRate) * alpha^2 / (h + alpha)^2
+    float constexpr AsymptoticRate = 0.0001f;
+    float const heightGrowthCoefficientGrowthRate = AsymptoticRate + (1.0f - AsymptoticRate) * (0.1f * 0.1f / ((std::abs(targetRelativeHeight) + 0.1f) * (std::abs(targetRelativeHeight) + 0.1f)));
 
-    // Set at central
-    mInteractiveWaveTargetHeight[centerIndex] = targetAbsoluteHeight;
-    mInteractiveWaveTargetHeightGrowthCoefficient[centerIndex] = 1.0f;
-    mInteractiveWaveHeightGrowthCoefficientGrowthRate[centerIndex] = heightGrowthCoefficientGrowthRate;
-    
-    // Set around
-    for (int64_t d = 1; d <= static_cast<int64_t>(std::floor(actionRadius)); ++d)
-    {
-        float const coeff =
-            1.0f - (static_cast<float>(d) / actionRadius) * (static_cast<float>(d) / actionRadius);
-
-        if (centerIndex - d >= 0)
-        {
-            mInteractiveWaveTargetHeight[centerIndex - d] = targetAbsoluteHeight;
-            mInteractiveWaveTargetHeightGrowthCoefficient[centerIndex - d] = coeff;
-            mInteractiveWaveHeightGrowthCoefficientGrowthRate[centerIndex - d] = heightGrowthCoefficientGrowthRate;
-        }
-
-        if (centerIndex + d < SamplesCount)
-        {
-            mInteractiveWaveTargetHeight[centerIndex + d] = targetAbsoluteHeight;
-            mInteractiveWaveTargetHeightGrowthCoefficient[centerIndex + d] = coeff;
-            mInteractiveWaveHeightGrowthCoefficientGrowthRate[centerIndex + d] = heightGrowthCoefficientGrowthRate;
-        }
-    }
+    ImpartInteractiveWave(
+        worldCoordinates.x,
+        targetRelativeHeight,
+        heightGrowthCoefficientGrowthRate,
+        worldRadius);
 }
 
 void OceanSurface::ApplyThanosSnap(
@@ -343,33 +277,19 @@ void OceanSurface::ApplyThanosSnap(
 void OceanSurface::TriggerTsunami(float currentSimulationTime)
 {
     // Choose X
-    float const tsunamiWorldX = GameRandomEngine::GetInstance().GenerateUniformReal(
+    float const centerX = GameRandomEngine::GetInstance().GenerateUniformReal(
         -GameParameters::HalfMaxWorldWidth * 4.0f / 5.0f,
         GameParameters::HalfMaxWorldWidth * 4.0f / 5.0f);
 
     // Choose height
-    float constexpr AverageTsunamiHeight = 350.0f / SWEHeightFieldAmplification;
-    float const tsunamiHeight = GameRandomEngine::GetInstance().GenerateUniformReal(
-        AverageTsunamiHeight * 0.96f,
-        AverageTsunamiHeight * 1.04f)
-        + SWEHeightFieldOffset;
-
-    // Make it a sample index
-    auto const sampleIndex = ToSampleIndex(tsunamiWorldX);
+    float const tsunamiRelativeHeight = GameRandomEngine::GetInstance().GenerateUniformReal(MaxInteractiveWaveAbsRelativeHeight * 0.6f, MaxInteractiveWaveAbsRelativeHeight * 0.85f);
 
     // (Re-)start state machine
-    size_t const centerIndex = SWEBufferPrefixSize + static_cast<size_t>(sampleIndex);
     mSWETsunamiWaveStateMachine.emplace(
-        centerIndex,
-        mSWEHeightField[centerIndex],  // LowHeight == current height
-        tsunamiHeight,              // HighHeight == tsunami height
-        3.0f, // Rise delay
-        2.0f, // Fall delay
+        centerX,
+        tsunamiRelativeHeight,
+        0.0004f,
         currentSimulationTime);
-
-    // Fire tsunami event
-    assert(!!mGameEventHandler);
-    mGameEventHandler->OnTsunami(tsunamiWorldX);
 }
 
 void OceanSurface::TriggerRogueWave(
@@ -377,37 +297,26 @@ void OceanSurface::TriggerRogueWave(
     Wind const & wind)
 {
     // Choose locus
-    size_t centerIndex;
+    float centerX;
     if (wind.GetBaseAndStormSpeedMagnitude() >= 0.0f)
     {
         // Left locus
-        centerIndex = SWEBufferPrefixSize;
+        centerX = -GameParameters::HalfMaxWorldWidth;
     }
     else
     {
         // Right locus
-        centerIndex = SWEBufferPrefixSize + SamplesCount;
+        centerX = GameParameters::HalfMaxWorldWidth;
     }
 
     // Choose height
-    float constexpr MaxRogueWaveHeight = 200.0f / SWEHeightFieldAmplification;
-    float const rogueWaveHeight = GameRandomEngine::GetInstance().GenerateUniformReal(
-        MaxRogueWaveHeight * 0.45f,
-        MaxRogueWaveHeight)
-        + SWEHeightFieldOffset;
-
-    // Choose rate
-    float const rogueWaveDelay = GameRandomEngine::GetInstance().GenerateUniformReal(
-        0.7f,
-        2.0f);
+    float const rogueWaveRelativeHeight = GameRandomEngine::GetInstance().GenerateUniformReal(MaxInteractiveWaveAbsRelativeHeight * 0.2f, MaxInteractiveWaveAbsRelativeHeight * 0.4f);
 
     // (Re-)start state machine
     mSWERogueWaveWaveStateMachine.emplace(
-        centerIndex,
-        mSWEHeightField[centerIndex],  // LowHeight == current height
-        rogueWaveHeight,            // HighHeight == rogue wave height
-        rogueWaveDelay, // Rise delay
-        rogueWaveDelay / 2.0f, // Fall delay
+        centerX,
+        rogueWaveRelativeHeight,
+        0.0005f,
         currentSimulationTime);
 }
 
@@ -707,7 +616,7 @@ void OceanSurface::RecalculateAbnormalWaveTimestamps(GameParameters const & game
         mNextRogueWaveTimestamp = CalculateNextAbnormalWaveTimestamp(
             mLastRogueWaveTimestamp,
             gameParameters.RogueWaveRate,
-            std::chrono::seconds(0));
+            RogueWaveGracePeriod);
     }
     else
     {
@@ -825,6 +734,69 @@ void OceanSurface::AdvectFieldsTest()
         SWETotalSamples - 2 * SWEBoundaryConditionsSamples);
 }
 */
+
+void OceanSurface::ImpartInteractiveWave(
+    float x,
+    float targetRelativeHeight,
+    float growthRate,
+    float worldRadius)
+{
+    //
+    // Registers the will to adjust the SWE height field at the specified x to the specified height.
+    // 
+    // Widens the action field horizontally to mitigate the "cuspid problem".
+    //
+    // Notes on the "cuspid problem": the cuspid we see is the result of setting H and running two field cycles:
+    //  - First, the H we set at x = X becomes Dt / Dx * (velocityField[i] - velocityField[i + 1]) smaller;
+    //  - Then, for any target H, there are two "regime" H's:
+    //      - The one at x = X - lower than H;
+    //      - The one in the neighborhood, extending to infinite.
+    //  - The cuspid itself is our interpolation! It's just that the regime H at x=X is way higher than the regime H at its neighboring cells
+    // 
+
+    auto const centerIndex = ToSampleIndex(x);
+    float const targetAbsoluteHeight = targetRelativeHeight + SWEHeightFieldOffset;
+
+    // Calculate radius: in general we want it linear with h so that it's MaxRadius at MaxAbsRelativeHeight, but 
+    // we also want it to start at a certain value - H - at zero delta height. So we add a 1/h factor to the linear dependency.
+    // The general formula is:
+    //      calcd_radius = MaxRadius * height_fraction + alpha / (height_fraction + beta)
+    // Imposing that this curve has a slope of zero at zero, we get that alpha = H^2 / MaxRadius and beta = H / MaxRadius
+    float constexpr MaxRadius = 22.0f;
+    float constexpr H = 3.0f;
+    float constexpr alpha = H * H / MaxRadius;
+    float constexpr beta = H / MaxRadius;
+    float const heightFraction = std::abs(targetRelativeHeight) / MaxInteractiveWaveAbsRelativeHeight;
+    float const actionRadius = std::max(
+        MaxRadius * heightFraction + alpha / (heightFraction + beta),
+        worldRadius); // Take into account also the interactive radius
+
+    // Set at central
+    mInteractiveWaveTargetHeight[centerIndex] = targetAbsoluteHeight;
+    mInteractiveWaveTargetHeightGrowthCoefficient[centerIndex] = 1.0f;
+    mInteractiveWaveHeightGrowthCoefficientGrowthRate[centerIndex] = growthRate;
+
+    // Set around
+    for (int64_t d = 1; d <= static_cast<int64_t>(std::floor(actionRadius)); ++d)
+    {
+        float const coeff =
+            1.0f - (static_cast<float>(d) / actionRadius) * (static_cast<float>(d) / actionRadius);
+
+        if (centerIndex - d >= 0)
+        {
+            mInteractiveWaveTargetHeight[centerIndex - d] = targetAbsoluteHeight;
+            mInteractiveWaveTargetHeightGrowthCoefficient[centerIndex - d] = coeff;
+            mInteractiveWaveHeightGrowthCoefficientGrowthRate[centerIndex - d] = growthRate;
+        }
+
+        if (centerIndex + d < SamplesCount)
+        {
+            mInteractiveWaveTargetHeight[centerIndex + d] = targetAbsoluteHeight;
+            mInteractiveWaveTargetHeightGrowthCoefficient[centerIndex + d] = coeff;
+            mInteractiveWaveHeightGrowthCoefficientGrowthRate[centerIndex + d] = growthRate;
+        }
+    }
+}
 
 void OceanSurface::UpdateInteractiveWaves()
 {
@@ -1062,213 +1034,6 @@ void OceanSurface::GenerateSamples(
     mSamples[SamplesCount].SampleValue = previousSampleValue;
 
     assert(mSamples[SamplesCount].SampleValuePlusOneMinusSampleValue == 0.0f); // From cctor
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////
-
-OceanSurface::SWEInteractiveWaveStateMachine::SWEInteractiveWaveStateMachine(
-    size_t centerIndex,
-    float startHeight,
-    float targetHeight,
-    float currentSimulationTime)
-    : mCenterIndex(centerIndex)
-    , mOriginalHeight(startHeight)
-    , mCurrentPhaseStartHeight(startHeight)
-    , mCurrentPhaseTargetHeight(targetHeight)
-    , mCurrentHeight(startHeight)
-    , mCurrentPhaseStartSimulationTime(currentSimulationTime)
-    , mCurrentWavePhase(WavePhaseType::Rise)
-    , mRisingPhaseDuration(CalculateRisingPhaseDuration(targetHeight - mOriginalHeight))
-    , mFallingPhaseDecayCoefficient(0.0f) // Will be calculated when needed
-{
-}
-
-void OceanSurface::SWEInteractiveWaveStateMachine::Restart(
-    float restartHeight,
-    float currentSimulationTime)
-{
-    if (mCurrentWavePhase == WavePhaseType::Rise)
-    {
-        // Restart during rise...
-
-        // ...extend the current smoothing, keeping the following invariants:
-        // - The current value
-        // - The current time
-        // - The "slope" at the current time
-
-        // Calculate current timestamp as fraction of duration
-        //
-        // We need to make sure we're not too close to 1.0f, or else
-        // values start diverging too much.
-        // We may safely clamp down to 0.9 as the value will stay and the slope
-        // will only change marginally.
-        float const elapsed = currentSimulationTime - mCurrentPhaseStartSimulationTime;
-        float const progressFraction = std::min(
-            elapsed / mRisingPhaseDuration,
-            0.9f);
-
-        // Calculate new duration which would be required to go
-        // from where we started from, up to our new target
-        float const newDuration = CalculateRisingPhaseDuration(restartHeight - mOriginalHeight);
-
-        // Calculate fictitious start timestamp so that current elapsed is
-        // to old duration like new elapsed would be to new duration
-        mCurrentPhaseStartSimulationTime = currentSimulationTime - newDuration * progressFraction;
-
-        // Our new target is the restart target
-        mCurrentPhaseTargetHeight = restartHeight;
-
-        // Calculate fictitious start value so that calculated current value
-        // at current timestamp matches current value:
-        //  newStartValue = currentValue - f(newEndValue - newStartValue)
-        float const valueFraction = SmoothStep(0.0f, 1.0f, progressFraction);
-        mCurrentPhaseStartHeight =
-            (mCurrentHeight - mCurrentPhaseTargetHeight * valueFraction)
-            / (1.0f - valueFraction);
-
-        // Store new duration
-        mRisingPhaseDuration = newDuration;
-    }
-    else
-    {
-        // Restart during fall...
-
-        // ...start rising from scratch
-        mCurrentPhaseStartHeight = mCurrentHeight;
-        mCurrentPhaseTargetHeight = restartHeight;
-        mCurrentPhaseStartSimulationTime = currentSimulationTime;
-        mCurrentWavePhase = WavePhaseType::Rise;
-
-        mRisingPhaseDuration = CalculateRisingPhaseDuration(restartHeight - mOriginalHeight);
-    }
-}
-
-void OceanSurface::SWEInteractiveWaveStateMachine::Release(float currentSimulationTime)
-{
-    assert(mCurrentWavePhase == WavePhaseType::Rise);
-
-    // Start falling back to original height
-    mCurrentPhaseStartHeight = mCurrentHeight;
-    mCurrentPhaseTargetHeight = mOriginalHeight;
-    mCurrentPhaseStartSimulationTime = currentSimulationTime;
-    mCurrentWavePhase = WavePhaseType::Fall;
-
-    // Calculate decay coefficient based on delta to fall
-    mFallingPhaseDecayCoefficient = CalculateFallingPhaseDecayCoefficient(mCurrentHeight - mOriginalHeight);
-}
-
-std::optional<float> OceanSurface::SWEInteractiveWaveStateMachine::Update(
-    float currentSimulationTime)
-{
-    float const elapsed = currentSimulationTime - mCurrentPhaseStartSimulationTime;
-
-    if (mCurrentWavePhase == WavePhaseType::Rise)
-    {
-        // Calculate height as f(elapsed)
-
-        float const smoothFactor = SmoothStep(
-            0.0f,
-            mRisingPhaseDuration,
-            elapsed);
-
-        mCurrentHeight =
-            mCurrentPhaseStartHeight + (mCurrentPhaseTargetHeight - mCurrentPhaseStartHeight) * smoothFactor;
-
-        return mCurrentHeight;
-    }
-    else
-    {
-        assert(mCurrentWavePhase == WavePhaseType::Fall);
-
-        // Update height with decay process
-
-        mCurrentHeight += (mCurrentPhaseTargetHeight - mCurrentHeight) * mFallingPhaseDecayCoefficient;
-
-        // Check whether it's time to shut down
-        if (std::abs(mCurrentPhaseTargetHeight - mCurrentHeight) < 0.001f)
-        {
-            return std::nullopt;
-        }
-
-        return mCurrentHeight;
-    }
-}
-
-bool OceanSurface::SWEInteractiveWaveStateMachine::MayBeOverridden() const
-{
-    return mCurrentWavePhase == WavePhaseType::Fall
-        && std::abs(mCurrentPhaseTargetHeight - mCurrentHeight) < 0.2f;
-}
-
-float OceanSurface::SWEInteractiveWaveStateMachine::CalculateRisingPhaseDuration(float deltaHeight)
-{
-    // We want little rises to be quick (close to 0.0)
-    // We want large rises to be slow, so that we don't generate slopes that are
-    // too steep
-    float const duration = 2.0f * SmoothStep(0.0, 5.0f, std::abs(deltaHeight));
-    return duration;
-}
-
-float OceanSurface::SWEInteractiveWaveStateMachine::CalculateFallingPhaseDecayCoefficient(float /*deltaHeight*/)
-{
-    return 0.1f;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////
-
-OceanSurface::SWEAbnormalWaveStateMachine::SWEAbnormalWaveStateMachine(
-    size_t centerIndex,
-    float lowHeight,
-    float highHeight,
-    float riseDelay, // sec
-    float fallDelay, // sec
-    float currentSimulationTime)
-    : mCenterIndex(centerIndex)
-    , mLowHeight(lowHeight)
-    , mHighHeight(highHeight)
-    , mFallDelay(fallDelay)
-    , mCurrentProgress(0.0f)
-    , mCurrentPhaseStartSimulationTime(currentSimulationTime)
-    , mCurrentPhaseDelay(riseDelay)
-    , mCurrentWavePhase(WavePhaseType::Rise)
-{}
-
-std::optional<float> OceanSurface::SWEAbnormalWaveStateMachine::Update(
-    float currentSimulationTime)
-{
-    // Advance
-    mCurrentProgress =
-        (currentSimulationTime - mCurrentPhaseStartSimulationTime)
-        / mCurrentPhaseDelay;
-
-    // Calculate sinusoidal progress
-    float const sinProgress = sin(Pi<float> / 2.0f * std::min(mCurrentProgress, 1.0f));
-
-    // Calculate new height value
-    float currentHeight =
-        (WavePhaseType::Rise == mCurrentWavePhase)
-        ? mLowHeight + (mHighHeight - mLowHeight) * sinProgress
-        : mHighHeight - (mHighHeight - mLowHeight) * sinProgress;
-
-    // Check whether it's time to switch phase
-    if (mCurrentProgress >= 1.0f)
-    {
-        if (mCurrentWavePhase == WavePhaseType::Rise)
-        {
-            // Start falling
-            mCurrentProgress = 0.0f;
-            mCurrentPhaseStartSimulationTime = currentSimulationTime;
-            mCurrentPhaseDelay = mFallDelay;
-            mCurrentWavePhase = WavePhaseType::Fall;
-        }
-        else
-        {
-            // We're done
-            return std::nullopt;
-        }
-    }
-
-    return currentHeight;
 }
 
 }

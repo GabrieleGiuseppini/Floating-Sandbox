@@ -183,6 +183,12 @@ private:
         TRateDuration rate,
         TGraceDuration gracePeriod);
 
+    void ImpartInteractiveWave(
+        float x,
+        float targetRelativeHeight,
+        float growthRate,
+        float worldRadius);
+
     void UpdateInteractiveWaves();
 
     void ResetInteractiveWaves();
@@ -347,66 +353,7 @@ private:
     Buffer<float> mDeltaHeightBuffer;
 
 private:
-
-    // TODOOLD
-
-    class SWEInteractiveWaveStateMachine
-    {
-    public:
-
-        SWEInteractiveWaveStateMachine(
-            size_t centerIndex,
-            float lowHeight,
-            float highHeight,
-            float currentSimulationTime);
-
-        // Absolute coordinate in SWE buffer space, not sample coordinate
-        auto GetCenterIndex() const
-        {
-            return mCenterIndex;
-        }
-
-        void Restart(
-            float newTargetHeight,
-            float currentSimulationTime);
-
-        void Release(float currentSimulationTime);
-
-        /*
-         * Returns none when it may be retired.
-         */
-        std::optional<float> Update(
-            float currentSimulationTime);
-
-        bool MayBeOverridden() const;
-
-    private:
-
-        enum class WavePhaseType
-        {
-            Rise,
-            Fall
-        };
-
-        static float CalculateRisingPhaseDuration(float deltaHeight);
-
-        static float CalculateFallingPhaseDecayCoefficient(float deltaHeight);
-
-        size_t const mCenterIndex;
-        float const mOriginalHeight;
-        float mCurrentPhaseStartHeight;
-        float mCurrentPhaseTargetHeight;
-        float mCurrentHeight;
-        float mCurrentPhaseStartSimulationTime;
-        WavePhaseType mCurrentWavePhase;
-
-        float mRisingPhaseDuration;
-        float mFallingPhaseDecayCoefficient;
-    };
-
-    std::optional<SWEInteractiveWaveStateMachine> mSWEInteractiveWaveStateMachine;
-
-
+    
     //
     // Abnormal waves
     //
@@ -416,41 +363,42 @@ private:
     public:
 
         SWEAbnormalWaveStateMachine(
-            size_t centerIndex,
-            float lowHeight,
-            float highHeight,
-            float riseDelay, // sec
-            float fallDelay, // sec
-            float currentSimulationTime);
+            float centerX,
+            float targetRelativeHeight,
+            float rate,
+            float currentSimulationTime)
+            : mCenterX(centerX)
+            , mTargetRelativeHeight(targetRelativeHeight)
+            , mRate(rate)
+            , mStartSimulationTime(currentSimulationTime)
+        {}
 
-        // Absolute coordinate in SWE buffer state, not sample coordinate
-        auto GetCenterIndex() const
+        float GetCenterX() const
         {
-            return mCenterIndex;
+            return mCenterX;
         }
 
-        /*
-         * Returns none when it may be retired.
-         */
-        std::optional<float> Update(
-            float currentSimulationTime);
+        float GetTargetRelativeHeight() const
+        {
+            return mTargetRelativeHeight;
+        }
+
+        float GetRate() const
+        {
+            return mRate;
+        }
+
+        float GetStartSimulationTime() const
+        {
+            return mStartSimulationTime;
+        }
 
     private:
 
-        enum class WavePhaseType
-        {
-            Rise,
-            Fall
-        };
-
-        size_t const mCenterIndex;
-        float const mLowHeight;
-        float const mHighHeight;
-        float const mFallDelay; // sec
-        float mCurrentProgress; // Between 0 and 1, regardless of direction
-        float mCurrentPhaseStartSimulationTime;
-        float mCurrentPhaseDelay;
-        WavePhaseType mCurrentWavePhase;
+        float const mCenterX;
+        float const mTargetRelativeHeight;
+        float const mRate;
+        float mStartSimulationTime;
     };
 
     std::optional<SWEAbnormalWaveStateMachine> mSWETsunamiWaveStateMachine;

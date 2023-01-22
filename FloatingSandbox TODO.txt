@@ -43,7 +43,7 @@
 									= See if we want waves to rise faster at small H
 										+ GrowthCoeffGrowtRate should be higher at small height
 											+ 1.0f at 0.0, InteractiveRaiseHeightGrowthCoefficientGrowthRate at ~1.0
-										- And also the release one?
+										- TODO1 And also the release one? May be it's not needed
 									+ Cleanup 2
 										+ Incl. vectorization
 						+ Take pointer size
@@ -59,10 +59,16 @@
 					+ OR: copy (add) CurrentHeight to DeltaHeightBuffer at previous step
 				+ b4. Zero out TargetHeight
 			- c. Misc other improvements to OceanSurface:
-				- Try texture anchor change
+				= Try texture anchor change
+					- Nice when we anchor at bottom (e.g. 0.0f) and leave top "almost static" (static would be yTop - yVisibleWorldBottom, almost is yTop * 0.75f - yVisibleWorldBottom),
+					  but ugly when one zooms out
 				- Try changing speed of waves
 				- Try incorporating wind speed in SWE velocity field
-				- Try moving Tsunami & RogueWave to new Interactive system
+				+ Try moving Tsunami & RogueWave to new Interactive system
+					+ Still need state machines for these, which will invoke AdjustTo
+					+ Tsunami will want a slow growth, while RogueWave would be fine with current interactive speed
+						+ Pass AymptoticRate as param
+							+ Requires our curve to work better: serious 1.0 at low height, real AymptoticRate at 6.0
 				- Try adding back field advection
 			- d. Cleanup:
 				+ Tool: no need to invoke when turning off; just invoke simply each time mouse button is pressed
@@ -72,9 +78,6 @@
 					- After replacing Tsunami & RogueWave with it
 
 	- Nuke default_ship.shp2 and make Titanic's filename in code		
-
-	- Tools.h:
-		- All overrides not virtual
 
 	= Lamps flashing when exploding
 		+ At depth
