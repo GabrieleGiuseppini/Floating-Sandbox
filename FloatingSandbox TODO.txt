@@ -34,9 +34,16 @@
 									+ Do anti-cuspid and see if it fixes a) cuspid and b) not reaching target height
 										+ Wider?
 											+ If no works: use non-linear ratio, more radius at low values
-									+ Cleanup
+									+ Cleanup									
+									X Try without height growth coefficient growth
+									+ Try larger cuspid
+									+ Add comment on fall rate
+									- See if we want waves to rise faster at small H
+										- GrowthCoeffGrowtRate should be higher at small height
+										- And also the release one?
 									= See rates for fall vs raise, and fine-tune
 										- Ask Mattia
+									- Cleanup 2
 						- Take pointer size
 					- Find good values of k and damping
 					- Damping on fall higher than damping on rise

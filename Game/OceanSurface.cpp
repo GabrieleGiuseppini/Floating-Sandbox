@@ -15,10 +15,12 @@
 
 namespace Physics {
 
-// The speed at which the height growth coefficient of interactive waves raises for imparted waves
+// The speed at which the height growth coefficient of interactive waves raises for imparted waves;
+// this is basically the rate at which we increase the strength with which we pull the SWE height field
 float constexpr InteractiveRaiseHeightGrowthCoefficientGrowthRate = 0.007f;
 
-// The speed at which the height growth coefficient of interactive waves lowers after release
+// The speed at which the height growth coefficient of interactive waves lowers after release;
+// this is basically the rate at which we stop pulling the SWE height field
 //float constexpr InteractiveFallHeightGrowthCoefficientGrowthRate = 0.03f;
 float constexpr InteractiveFallHeightGrowthCoefficientGrowthRate = 0.1f;
 
@@ -216,8 +218,9 @@ void OceanSurface::Update(
             * mInteractiveWaveBuffer[i].HeightGrowthCoefficientGrowthRate;
 
         // Smooth current height to target according to current growth coefficient
-        float const deltaHeight = mInteractiveWaveBuffer[i].TargetHeight - mSWEHeightField[i + SWEBufferPrefixSize];
-        mSWEHeightField[i + SWEBufferPrefixSize] += deltaHeight * mInteractiveWaveBuffer[i].CurrentHeightGrowthCoefficient;
+        mSWEHeightField[i + SWEBufferPrefixSize] += 
+            (mInteractiveWaveBuffer[i].TargetHeight - mSWEHeightField[i + SWEBufferPrefixSize]) 
+            * mInteractiveWaveBuffer[i].CurrentHeightGrowthCoefficient;
     }
 
     //
@@ -289,7 +292,7 @@ void OceanSurface::AdjustTo(
     // The general formula is:
     //      calcd_radius = MaxRadius * height_fraction + alpha / (height_fraction + beta)
     // Imposing that this curve has a slope of zero at zero, we get that alpha = H^2 / MaxRadius and beta = H / MaxRadius
-    float constexpr MaxRadius = 16.0f;
+    float constexpr MaxRadius = 22.0f;
     float constexpr H = 3.0f;
     float constexpr alpha = H * H / MaxRadius;
     float constexpr beta = H / MaxRadius;    

@@ -307,7 +307,8 @@ private:
         float TargetHeight; // Absolute; continuously updated to desired target during interacting
 
         // We reach target height by this "growth coefficient" (fraction) of the remaining height;
-        // the coefficient itself varies from current to target
+        // this is basically the strength with which we pull the SWE height field.
+        // The coefficient itself varies over time
         float CurrentHeightGrowthCoefficient;
         float TargetHeightGrowthCoefficient;
 
