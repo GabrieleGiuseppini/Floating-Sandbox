@@ -306,35 +306,24 @@ private:
     // Interactive waves
     //
 
-    struct InteractiveWaveElement
-    {
-        float TargetHeight; // Absolute; continuously updated to desired target during interacting
+    // Absolute desired height of SWE field; continuously updated during interacting
+    Buffer<float> mInteractiveWaveTargetHeight; 
 
-        // We reach target height by this "growth coefficient" (fraction) of the remaining height;
-        // this is basically the strength with which we pull the SWE height field.
-        // The coefficient itself varies over time
-        float CurrentHeightGrowthCoefficient;
-        float TargetHeightGrowthCoefficient;
+    // We reach target height by this "growth coefficient" (fraction) of the remaining height;
+    // this is basically the strength with which we pull the SWE height field.
+    // The coefficient itself varies over time
+    Buffer<float> mInteractiveWaveCurrentHeightGrowthCoefficient;
+    Buffer<float> mInteractiveWaveTargetHeightGrowthCoefficient;
 
-        // The rate at which the growth coefficient grows itself.
-        // During interaction (rising), this is the speed at which the height growth coefficient raises;
-        // during release (falling), this is basically the rate at which we let go of pulling the SWE height field
-        float HeightGrowthCoefficientGrowthRate;
-
-        InteractiveWaveElement(float targetHeight)
-            : TargetHeight(targetHeight)
-            , CurrentHeightGrowthCoefficient(0.0f)
-            , TargetHeightGrowthCoefficient(0.0f)
-            , HeightGrowthCoefficientGrowthRate(0.0f)
-        {}
-    };
-
-    Buffer<InteractiveWaveElement> mInteractiveWaveBuffer;
+    // The rate at which the growth coefficient grows itself.
+    // During interaction (rising), this is the speed at which the height growth coefficient raises;
+    // during release (falling), this is basically the rate at which we let go of pulling the SWE height field
+    Buffer<float> mInteractiveWaveHeightGrowthCoefficientGrowthRate;
 
     //
     // Delta height buffer
     //
-    // - Contains interactive surface height delta's that are taken into account during update step
+    // - Contains surface height delta's that are taken into account during update step
     // - Geometry:
     //      - Padding for making buffer "body" below aligned (size == DeltaHeightBufferAlignmentPrefixSize)
     //      - Half smoothing window (which will be filled with zeroes, size == DeltaHeightSmoothing / 2)

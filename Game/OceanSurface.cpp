@@ -48,7 +48,10 @@ OceanSurface::OceanSurface(
     , mSamples(SamplesCount + 1)
     , mSWEHeightField(SWEBufferAlignmentPrefixSize + SWEBoundaryConditionsSamples + SamplesCount + SWEBoundaryConditionsSamples)
     , mSWEVelocityField(SWEBufferAlignmentPrefixSize + SWEBoundaryConditionsSamples + SamplesCount + SWEBoundaryConditionsSamples + 1)
-    , mInteractiveWaveBuffer(SamplesCount)
+    , mInteractiveWaveTargetHeight(SamplesCount)
+    , mInteractiveWaveCurrentHeightGrowthCoefficient(SamplesCount)
+    , mInteractiveWaveTargetHeightGrowthCoefficient(SamplesCount)
+    , mInteractiveWaveHeightGrowthCoefficientGrowthRate(SamplesCount)
     , mDeltaHeightBuffer(DeltaHeightBufferAlignmentPrefixSize + (DeltaHeightSmoothing / 2) + SamplesCount + (DeltaHeightSmoothing / 2))
     ////////
     , mSWEInteractiveWaveStateMachine()
@@ -61,7 +64,10 @@ OceanSurface::OceanSurface(
     mSamples.fill({ 0.0f, 0.0f });
     mSWEHeightField.fill(SWEHeightFieldOffset);
     mSWEVelocityField.fill(0.0f);
-    mInteractiveWaveBuffer.fill(InteractiveWaveElement(SWEHeightFieldOffset));
+    mInteractiveWaveTargetHeight.fill(SWEHeightFieldOffset);
+    mInteractiveWaveCurrentHeightGrowthCoefficient.fill(0.0f);
+    mInteractiveWaveTargetHeightGrowthCoefficient.fill(0.0f);
+    mInteractiveWaveHeightGrowthCoefficientGrowthRate.fill(0.0f);
     mDeltaHeightBuffer.fill(0.0f);
 
     // Initialize constant sample values
@@ -254,6 +260,19 @@ void OceanSurface::AdjustTo(
     vec2f const & worldCoordinates,
     float worldRadius)
 {
+    //
+    // Registers the will to adjust the SWE height field at the specified x to the specified height.
+    // 
+    // Widens the action field horizontally to mitigate the "cuspid problem".
+    //
+    // Notes on the "cuspid problem": the cuspid we see is the result of setting H and running two field cycles:
+    //  - First, the H we set at x = X becomes Dt / Dx * (velocityField[i] - velocityField[i + 1]) smaller;
+    //  - Then, for any target H, there are two "regime" H's:
+    //      - The one at x = X - lower than H;
+    //      - The one in the neighborhood, extending to infinite.
+    //  - The cuspid itself is our interpolation! It's just that the regime H at x=X is way higher than the regime H at its neighboring cells
+    // 
+
     auto const centerIndex = ToSampleIndex(worldCoordinates.x);
 
     // Calculate desired height
@@ -282,9 +301,9 @@ void OceanSurface::AdjustTo(
     float const heightGrowthCoefficientGrowthRate = AsymptoticRate + (1.0f - AsymptoticRate) * (0.005f / (std::abs(targetRelativeHeight) + 0.005f));
 
     // Set at central
-    mInteractiveWaveBuffer[centerIndex].TargetHeight = targetAbsoluteHeight;
-    mInteractiveWaveBuffer[centerIndex].TargetHeightGrowthCoefficient = 1.0f;
-    mInteractiveWaveBuffer[centerIndex].HeightGrowthCoefficientGrowthRate = heightGrowthCoefficientGrowthRate;
+    mInteractiveWaveTargetHeight[centerIndex] = targetAbsoluteHeight;
+    mInteractiveWaveTargetHeightGrowthCoefficient[centerIndex] = 1.0f;
+    mInteractiveWaveHeightGrowthCoefficientGrowthRate[centerIndex] = heightGrowthCoefficientGrowthRate;
     
     // Set around
     for (int64_t d = 1; d <= static_cast<int64_t>(std::floor(actionRadius)); ++d)
@@ -294,16 +313,16 @@ void OceanSurface::AdjustTo(
 
         if (centerIndex - d >= 0)
         {
-            mInteractiveWaveBuffer[centerIndex - d].TargetHeight = targetAbsoluteHeight;
-            mInteractiveWaveBuffer[centerIndex - d].TargetHeightGrowthCoefficient = coeff;
-            mInteractiveWaveBuffer[centerIndex - d].HeightGrowthCoefficientGrowthRate = heightGrowthCoefficientGrowthRate;
+            mInteractiveWaveTargetHeight[centerIndex - d] = targetAbsoluteHeight;
+            mInteractiveWaveTargetHeightGrowthCoefficient[centerIndex - d] = coeff;
+            mInteractiveWaveHeightGrowthCoefficientGrowthRate[centerIndex - d] = heightGrowthCoefficientGrowthRate;
         }
 
         if (centerIndex + d < SamplesCount)
         {
-            mInteractiveWaveBuffer[centerIndex + d].TargetHeight = targetAbsoluteHeight;
-            mInteractiveWaveBuffer[centerIndex + d].TargetHeightGrowthCoefficient = coeff;
-            mInteractiveWaveBuffer[centerIndex + d].HeightGrowthCoefficientGrowthRate = heightGrowthCoefficientGrowthRate;
+            mInteractiveWaveTargetHeight[centerIndex + d] = targetAbsoluteHeight;
+            mInteractiveWaveTargetHeightGrowthCoefficient[centerIndex + d] = coeff;
+            mInteractiveWaveHeightGrowthCoefficientGrowthRate[centerIndex + d] = heightGrowthCoefficientGrowthRate;
         }
     }
 }
@@ -809,31 +828,27 @@ void OceanSurface::AdvectFieldsTest()
 
 void OceanSurface::UpdateInteractiveWaves()
 {
-    // TODO: verify it's SSE'd
+    float * const restrict currentHeightGrowthCoefficientBuffer = mInteractiveWaveCurrentHeightGrowthCoefficient.data();
+    float * const restrict sweHeightFieldBuffer = mSWEHeightField.data() + SWEBufferPrefixSize;
 
-    for (size_t i = 0; i < mInteractiveWaveBuffer.GetSize(); ++i)
+    for (size_t i = 0; i < SamplesCount; ++i)
     {
         // Update growth coefficient
-        mInteractiveWaveBuffer[i].CurrentHeightGrowthCoefficient +=
-            (mInteractiveWaveBuffer[i].TargetHeightGrowthCoefficient - mInteractiveWaveBuffer[i].CurrentHeightGrowthCoefficient)
-            * mInteractiveWaveBuffer[i].HeightGrowthCoefficientGrowthRate;
+        currentHeightGrowthCoefficientBuffer[i] +=
+            (mInteractiveWaveTargetHeightGrowthCoefficient[i] - currentHeightGrowthCoefficientBuffer[i])
+            * mInteractiveWaveHeightGrowthCoefficientGrowthRate[i];
 
         // Smooth current height to target according to current growth coefficient
-        mSWEHeightField[i + SWEBufferPrefixSize] +=
-            (mInteractiveWaveBuffer[i].TargetHeight - mSWEHeightField[i + SWEBufferPrefixSize])
-            * mInteractiveWaveBuffer[i].CurrentHeightGrowthCoefficient;
+        sweHeightFieldBuffer[i] +=
+            (mInteractiveWaveTargetHeight[i] - sweHeightFieldBuffer[i])
+            * currentHeightGrowthCoefficientBuffer[i];
     }
 }
 
 void OceanSurface::ResetInteractiveWaves()
 {
-    // TODO: verify it's SSE'd
-
-    for (size_t i = 0; i < mInteractiveWaveBuffer.GetSize(); ++i)
-    {
-        mInteractiveWaveBuffer[i].TargetHeightGrowthCoefficient = 0.0f;
-        mInteractiveWaveBuffer[i].HeightGrowthCoefficientGrowthRate = 0.1f; // Magic number: rate with which we stop pinning the SWE height field
-    }
+    mInteractiveWaveTargetHeightGrowthCoefficient.fill(0.0f);
+    mInteractiveWaveHeightGrowthCoefficientGrowthRate.fill(0.1f); // Magic number: rate with which we stop pinning the SWE height field
 }
 
 void OceanSurface::SmoothDeltaBufferIntoHeightField()
