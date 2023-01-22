@@ -610,6 +610,11 @@ public:
         return mRenderParameters.View.ScreenOffsetToWorldOffset(screenOffset);
     }
 
+    inline float ScreenOffsetToWorldOffset(int screenOffset) const
+    {
+        return mRenderParameters.View.ScreenOffsetToWorldOffset(screenOffset);
+    }
+
     //
     // Statistics
     //

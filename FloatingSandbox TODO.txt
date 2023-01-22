@@ -40,12 +40,13 @@
 									+ Add comment on fall rate
 									+ See rates for fall vs raise, and fine-tune
 										+ Ask Mattia
-									- See if we want waves to rise faster at small H
+									= See if we want waves to rise faster at small H
 										- GrowthCoeffGrowtRate should be higher at small height
+											- 1.0f at 0.0, InteractiveRaiseHeightGrowthCoefficientGrowthRate at ~1.0
 										- And also the release one?
 									- Cleanup 2
 										- Incl. vectorization
-						- Take pointer size
+						+ Take pointer size
 					- Find good values of k and damping
 					- Damping on fall higher than damping on rise
 						- Basically: less overshoot when falling - from Mattia
@@ -70,11 +71,13 @@
 				- Try texture anchor change
 				- Try changing speed of waves
 				- Try incorporating wind speed in SWE velocity field
+				- Try moving Tsunami & RogueWave to new Interactive system
 			- d. Cleanup:
-				- Tool: no need to invoke when turning off; just invoke simply each time mouse button is pressed
-					- Also cleanup OceanSurface::AdjustToHeight() then
-						- And remove current simulation time arg altogether
+				+ Tool: no need to invoke when turning off; just invoke simply each time mouse button is pressed
+					+ Also cleanup OceanSurface::AdjustToHeight() then
+						+ And remove current simulation time arg altogether
 				- Nuke old SWE interactive state machine
+					- After replacing Tsunami & RogueWave with it
 
 	- Nuke default_ship.shp2 and make Titanic's filename in code		
 

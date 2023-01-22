@@ -216,7 +216,7 @@ public:
     void ToggleTimerBombAt(DisplayLogicalCoordinates const & screenCoordinates) override;
     void DetonateRCBombs() override;
     void DetonateAntiMatterBombs() override;
-    void AdjustOceanSurfaceTo(DisplayLogicalCoordinates const & screenCoordinates) override;
+    void AdjustOceanSurfaceTo(DisplayLogicalCoordinates const & screenCoordinates, int screenRadius) override;
     std::optional<bool> AdjustOceanFloorTo(vec2f const & startWorldPosition, vec2f const & endWorldPosition) override;
     bool ScrubThrough(DisplayLogicalCoordinates const & startScreenCoordinates, DisplayLogicalCoordinates const & endScreenCoordinates) override;
     bool RotThrough(DisplayLogicalCoordinates const & startScreenCoordinates, DisplayLogicalCoordinates const & endScreenCoordinates) override;

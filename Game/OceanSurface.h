@@ -107,7 +107,7 @@ public:
 
     void AdjustTo(
         vec2f const & worldCoordinates,
-        float currentSimulationTime);
+        float worldRadius);
 
     inline void DisplaceAt(
         float const x,

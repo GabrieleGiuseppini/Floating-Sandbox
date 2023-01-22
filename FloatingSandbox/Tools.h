@@ -1914,11 +1914,13 @@ public:
         InputState const & inputState, 
         float /*currentSimulationTime*/) override
     {
+        int constexpr PointerRadius = 0; // On PC we do not simulate a pointer size
+
         if (mIsEngaged)
         {
             if (inputState.IsLeftMouseDown)
             {
-                mGameController.AdjustOceanSurfaceTo(inputState.MousePosition);
+                mGameController.AdjustOceanSurfaceTo(inputState.MousePosition, PointerRadius);
             }
             else
             {
@@ -1935,7 +1937,7 @@ public:
             if (inputState.IsLeftMouseDown)
             {
                 // State change: start
-                mGameController.AdjustOceanSurfaceTo(inputState.MousePosition);
+                mGameController.AdjustOceanSurfaceTo(inputState.MousePosition, PointerRadius);
 
                 mSoundController.PlayWaveMakerSound();
                 SetCurrentCursor(inputState);

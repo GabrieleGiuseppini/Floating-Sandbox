@@ -279,7 +279,7 @@ void OceanSurface::Upload(Render::RenderContext & renderContext) const
 
 void OceanSurface::AdjustTo(
     vec2f const & worldCoordinates,
-    float /*currentSimulationTime*/)
+    float worldRadius)
 {
     auto const centerIndex = ToSampleIndex(worldCoordinates.x);
 
@@ -297,13 +297,20 @@ void OceanSurface::AdjustTo(
     float constexpr alpha = H * H / MaxRadius;
     float constexpr beta = H / MaxRadius;    
     float const heightFraction = std::abs(targetRelativeHeight) / MaxAbsRelativeHeight;
-    // TODO: max with passed pointer size
-    float const actionRadius = MaxRadius * heightFraction + alpha / (heightFraction + beta);
+    float const actionRadius = std::max(
+        MaxRadius * heightFraction + alpha / (heightFraction + beta),
+        worldRadius); // Take into account also the interactive radius
+
+    // TODOTEST
+    // 0.2 + 0.8 * 0.1/(x+0.1)
+    float const todo = InteractiveRaiseHeightGrowthCoefficientGrowthRate + (1.0f - InteractiveRaiseHeightGrowthCoefficientGrowthRate) * (0.001f / (std::abs(targetRelativeHeight) + 0.001f));
+
+    LogMessage("TODO coeff @ h=", std::abs(targetRelativeHeight), ": ", todo);
 
     // Set at central
     mInteractiveWaveBuffer[centerIndex].TargetHeight = targetAbsoluteHeight;
     mInteractiveWaveBuffer[centerIndex].TargetHeightGrowthCoefficient = 1.0f;
-    mInteractiveWaveBuffer[centerIndex].HeightGrowthCoefficientGrowthRate = InteractiveRaiseHeightGrowthCoefficientGrowthRate;
+    mInteractiveWaveBuffer[centerIndex].HeightGrowthCoefficientGrowthRate = todo;
     
     // Set around
     for (int64_t d = 1; d <= static_cast<int64_t>(std::floor(actionRadius)); ++d)
@@ -315,14 +322,14 @@ void OceanSurface::AdjustTo(
         {
             mInteractiveWaveBuffer[centerIndex - d].TargetHeight = targetAbsoluteHeight;
             mInteractiveWaveBuffer[centerIndex - d].TargetHeightGrowthCoefficient = coeff;
-            mInteractiveWaveBuffer[centerIndex - d].HeightGrowthCoefficientGrowthRate = InteractiveRaiseHeightGrowthCoefficientGrowthRate;
+            mInteractiveWaveBuffer[centerIndex - d].HeightGrowthCoefficientGrowthRate = todo;
         }
 
         if (centerIndex + d < SamplesCount)
         {
             mInteractiveWaveBuffer[centerIndex + d].TargetHeight = targetAbsoluteHeight;
             mInteractiveWaveBuffer[centerIndex + d].TargetHeightGrowthCoefficient = coeff;
-            mInteractiveWaveBuffer[centerIndex + d].HeightGrowthCoefficientGrowthRate = InteractiveRaiseHeightGrowthCoefficientGrowthRate;
+            mInteractiveWaveBuffer[centerIndex + d].HeightGrowthCoefficientGrowthRate = todo;
         }
     }
 }

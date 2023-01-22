@@ -742,11 +742,13 @@ void World::DetonateAntiMatterBombs()
     }
 }
 
-void World::AdjustOceanSurfaceTo(vec2f const & worldCoordinates)
+void World::AdjustOceanSurfaceTo(
+    vec2f const & worldCoordinates,
+    float worldRadius)
 {
     mOceanSurface.AdjustTo(
         worldCoordinates,
-        mCurrentSimulationTime);
+        worldRadius);
 }
 
 std::optional<bool> World::AdjustOceanFloorTo(

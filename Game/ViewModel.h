@@ -310,6 +310,12 @@ public:
             static_cast<float>(-screenOffset.height * mLogicalToPhysicalDisplayFactor) / static_cast<float>(mCanvasPhysicalSize.height) * mVisibleWorld.Height);
     }
 
+    inline float ScreenOffsetToWorldOffset(int screenOffset) const
+    {
+        // Note: width or height is the same
+        return static_cast<float>(screenOffset * mLogicalToPhysicalDisplayFactor) / static_cast<float>(mCanvasPhysicalSize.width) * mVisibleWorld.Width;
+    }
+
     inline float PixelWidthToWorldWidth(float pixelWidth) const
     {
         // Width between 0 and 1.0
