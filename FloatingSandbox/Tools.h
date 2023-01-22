@@ -675,7 +675,7 @@ public:
 
 public:
 
-    virtual void Initialize(InputState const & /*inputState*/) override
+    void Initialize(InputState const & /*inputState*/) override
     {
         mCurrentEngagementState.reset();
 
@@ -683,9 +683,9 @@ public:
         SetCurrentCursor();
     }
 
-    virtual void Deinitialize() override {}
+    void Deinitialize() override {}
 
-    virtual void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
+    void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
     {
         bool wasEngaged = !!mCurrentEngagementState;
 
@@ -774,11 +774,11 @@ public:
         }
     }
 
-    virtual void OnMouseMove(InputState const & /*inputState*/) override {}
-    virtual void OnLeftMouseDown(InputState const & /*inputState*/) override {}
-    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}
-    virtual void OnShiftKeyDown(InputState const & /*inputState*/) override {}
-    virtual void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+    void OnMouseMove(InputState const & /*inputState*/) override {}
+    void OnLeftMouseDown(InputState const & /*inputState*/) override {}
+    void OnLeftMouseUp(InputState const & /*inputState*/) override {}
+    void OnShiftKeyDown(InputState const & /*inputState*/) override {}
+    void OnShiftKeyUp(InputState const & /*inputState*/) override {}
 
 private:
 
@@ -827,7 +827,7 @@ public:
 
 public:
 
-    virtual void Initialize(InputState const & inputState) override
+    void Initialize(InputState const & inputState) override
     {
         ContinuousTool::Initialize(inputState);
 
@@ -835,9 +835,9 @@ public:
         SetBasisCursor(inputState);
     }
 
-    virtual void Deinitialize() override {}
+    void Deinitialize() override {}
 
-    virtual void OnLeftMouseDown(InputState const & inputState) override
+    void OnLeftMouseDown(InputState const & inputState) override
     {
         ContinuousTool::OnLeftMouseDown(inputState);
 
@@ -845,7 +845,7 @@ public:
         SetBasisCursor(inputState);
     }
 
-    virtual void OnLeftMouseUp(InputState const & inputState) override
+    void OnLeftMouseUp(InputState const & inputState) override
     {
         // Reset cursor
         SetBasisCursor(inputState);
@@ -853,7 +853,7 @@ public:
 
 protected:
 
-    virtual void ApplyTool(
+    void ApplyTool(
         std::chrono::microseconds const & cumulatedTime,
         InputState const & inputState) override;
 
@@ -889,7 +889,7 @@ public:
 
 public:
 
-    virtual void Initialize(InputState const & inputState) override
+    void Initialize(InputState const & inputState) override
     {
         if (inputState.IsLeftMouseDown)
         {
@@ -900,13 +900,13 @@ public:
         SetCurrentCursor(inputState);
     }
 
-    virtual void Deinitialize() override
+    void Deinitialize() override
     {
         // Stop sound if we're playing
         mSoundController.StopSawSound();
     }
 
-    virtual void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
+    void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
     {
         if (inputState.IsLeftMouseDown)
         {
@@ -930,7 +930,7 @@ public:
         }
     }
 
-    virtual void OnMouseMove(InputState const & inputState) override
+    void OnMouseMove(InputState const & inputState) override
     {
         if (inputState.IsLeftMouseDown)
         {
@@ -970,7 +970,7 @@ public:
         }
     }
 
-    virtual void OnLeftMouseDown(InputState const & inputState) override
+    void OnLeftMouseDown(InputState const & inputState) override
     {
         InitializeDown(inputState);
 
@@ -978,7 +978,7 @@ public:
         SetCurrentCursor(inputState);
     }
 
-    virtual void OnLeftMouseUp(InputState const & inputState) override
+    void OnLeftMouseUp(InputState const & inputState) override
     {
         // Stop sound
         mSoundController.StopSawSound();
@@ -987,8 +987,8 @@ public:
         SetCurrentCursor(inputState);
     }
 
-    virtual void OnShiftKeyDown(InputState const & /*inputState*/) override {}
-    virtual void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+    void OnShiftKeyDown(InputState const & /*inputState*/) override {}
+    void OnShiftKeyUp(InputState const & /*inputState*/) override {}
 
 private:
 
@@ -1074,7 +1074,7 @@ public:
 
 public:
 
-    virtual void Initialize(InputState const & inputState) override
+    void Initialize(InputState const & inputState) override
     {
         mCurrentAction = inputState.IsShiftKeyDown ? HeatBlasterActionType::Cool : HeatBlasterActionType::Heat;
 
@@ -1090,13 +1090,13 @@ public:
         SetCurrentCursor();
     }
 
-    virtual void Deinitialize() override
+    void Deinitialize() override
     {
         // Stop sound
         mSoundController.StopHeatBlasterSound();
     }
 
-    virtual void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
+    void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
     {
         bool isEngaged;
         HeatBlasterActionType currentAction = inputState.IsShiftKeyDown ? HeatBlasterActionType::Cool : HeatBlasterActionType::Heat;
@@ -1150,11 +1150,11 @@ public:
         }
     }
 
-    virtual void OnMouseMove(InputState const & /*inputState*/) override {}
-    virtual void OnLeftMouseDown(InputState const & /*inputState*/) override {}
-    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}
-    virtual void OnShiftKeyDown(InputState const & /*inputState*/) override {}
-    virtual void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+    void OnMouseMove(InputState const & /*inputState*/) override {}
+    void OnLeftMouseDown(InputState const & /*inputState*/) override {}
+    void OnLeftMouseUp(InputState const & /*inputState*/) override {}
+    void OnShiftKeyDown(InputState const & /*inputState*/) override {}
+    void OnShiftKeyUp(InputState const & /*inputState*/) override {}
 
 private:
 
@@ -1193,7 +1193,7 @@ public:
 
 public:
 
-    virtual void Initialize(InputState const & inputState) override
+    void Initialize(InputState const & inputState) override
     {
         if (inputState.IsLeftMouseDown)
         {
@@ -1207,13 +1207,13 @@ public:
         SetCurrentCursor();
     }
 
-    virtual void Deinitialize() override
+    void Deinitialize() override
     {
         // Stop sound
         mSoundController.StopFireExtinguisherSound();
     }
 
-    virtual void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
+    void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
     {
         bool isEngaged;
 
@@ -1256,11 +1256,11 @@ public:
         }
     }
 
-    virtual void OnMouseMove(InputState const & /*inputState*/) override {}
-    virtual void OnLeftMouseDown(InputState const & /*inputState*/) override {}
-    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}
-    virtual void OnShiftKeyDown(InputState const & /*inputState*/) override {}
-    virtual void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+    void OnMouseMove(InputState const & /*inputState*/) override {}
+    void OnLeftMouseDown(InputState const & /*inputState*/) override {}
+    void OnLeftMouseUp(InputState const & /*inputState*/) override {}
+    void OnShiftKeyDown(InputState const & /*inputState*/) override {}
+    void OnShiftKeyUp(InputState const & /*inputState*/) override {}
 
 private:
 
@@ -1296,7 +1296,7 @@ public:
 
 public:
 
-    virtual void Initialize(InputState const & inputState) override
+    void Initialize(InputState const & inputState) override
     {
         ContinuousTool::Initialize(inputState);
 
@@ -1309,13 +1309,13 @@ public:
         SetBasisCursor(inputState);
     }
 
-    virtual void Deinitialize() override
+    void Deinitialize() override
     {
         // Stop sound
         mSoundController.StopDrawSound();
     }
 
-    virtual void OnLeftMouseDown(InputState const & inputState) override
+    void OnLeftMouseDown(InputState const & inputState) override
     {
         ContinuousTool::OnLeftMouseDown(inputState);
 
@@ -1326,7 +1326,7 @@ public:
         SetBasisCursor(inputState);
     }
 
-    virtual void OnLeftMouseUp(InputState const & inputState) override
+    void OnLeftMouseUp(InputState const & inputState) override
     {
         // Stop sound
         mSoundController.StopDrawSound();
@@ -1335,19 +1335,19 @@ public:
         SetBasisCursor(inputState);
     }
 
-    virtual void OnShiftKeyDown(InputState const & inputState) override
+    void OnShiftKeyDown(InputState const & inputState) override
     {
         SetBasisCursor(inputState);
     }
 
-    virtual void OnShiftKeyUp(InputState const & inputState) override
+    void OnShiftKeyUp(InputState const & inputState) override
     {
         SetBasisCursor(inputState);
     }
 
 protected:
 
-    virtual void ApplyTool(
+    void ApplyTool(
         std::chrono::microseconds const & cumulatedTime,
         InputState const & inputState) override;
 
@@ -1401,7 +1401,7 @@ public:
 
 public:
 
-    virtual void Initialize(InputState const & inputState) override
+    void Initialize(InputState const & inputState) override
     {
         ContinuousTool::Initialize(inputState);
 
@@ -1414,13 +1414,13 @@ public:
         SetBasisCursor(inputState);
     }
 
-    virtual void Deinitialize() override
+    void Deinitialize() override
     {
         // Stop sound
         mSoundController.StopSwirlSound();
     }
 
-    virtual void OnLeftMouseDown(InputState const & inputState) override
+    void OnLeftMouseDown(InputState const & inputState) override
     {
         ContinuousTool::OnLeftMouseDown(inputState);
 
@@ -1431,7 +1431,7 @@ public:
         SetBasisCursor(inputState);
     }
 
-    virtual void OnLeftMouseUp(InputState const & inputState) override
+    void OnLeftMouseUp(InputState const & inputState) override
     {
         // Stop sound
         mSoundController.StopSwirlSound();
@@ -1440,19 +1440,19 @@ public:
         SetBasisCursor(inputState);
     }
 
-    virtual void OnShiftKeyDown(InputState const & inputState) override
+    void OnShiftKeyDown(InputState const & inputState) override
     {
         SetBasisCursor(inputState);
     }
 
-    virtual void OnShiftKeyUp(InputState const & inputState) override
+    void OnShiftKeyUp(InputState const & inputState) override
     {
         SetBasisCursor(inputState);
     }
 
 protected:
 
-    virtual void ApplyTool(
+    void ApplyTool(
         std::chrono::microseconds const & cumulatedTime,
         InputState const & inputState) override;
 
@@ -1506,13 +1506,13 @@ public:
 
 public:
 
-    virtual void Initialize(InputState const & /*inputState*/) override
+    void Initialize(InputState const & /*inputState*/) override
     {
         // Reset cursor
         mToolCursorManager.SetToolCursor(mCursorImage);
     }
 
-    virtual void OnLeftMouseDown(InputState const & inputState) override
+    void OnLeftMouseDown(InputState const & inputState) override
     {
         if (!inputState.IsShiftKeyDown)
         {
@@ -1526,7 +1526,7 @@ public:
         }
     }
 
-    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}
+    void OnLeftMouseUp(InputState const & /*inputState*/) override {}
 
 private:
 
@@ -1545,12 +1545,12 @@ public:
 
 public:
 
-    virtual void Initialize(InputState const & /*inputState*/) override
+    void Initialize(InputState const & /*inputState*/) override
     {
         SetCurrentCursor();
     }
 
-    virtual void Deinitialize() override
+    void Deinitialize() override
     {
         if (mCurrentAction.has_value())
         {
@@ -1559,7 +1559,7 @@ public:
         }
     }
 
-    virtual void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
+    void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
     {
         // Calculate new state
         std::optional<ActionType> newAction;
@@ -1626,11 +1626,11 @@ public:
         }
     }
 
-    virtual void OnMouseMove(InputState const & /*inputState*/) override {}
-    virtual void OnLeftMouseDown(InputState const & /*inputState*/) override {}
-    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}
-    virtual void OnShiftKeyDown(InputState const & /*inputState*/) override {}
-    virtual void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+    void OnMouseMove(InputState const & /*inputState*/) override {}
+    void OnLeftMouseDown(InputState const & /*inputState*/) override {}
+    void OnLeftMouseUp(InputState const & /*inputState*/) override {}
+    void OnShiftKeyDown(InputState const & /*inputState*/) override {}
+    void OnShiftKeyUp(InputState const & /*inputState*/) override {}
 
 private:
 
@@ -1675,19 +1675,19 @@ public:
 
 public:
 
-    virtual void Initialize(InputState const & /*inputState*/) override
+    void Initialize(InputState const & /*inputState*/) override
     {
         // Update cursor
         SetCurrentCursor();
     }
 
-    virtual void Deinitialize() override
+    void Deinitialize() override
     {
         // Stop sound
         mSoundController.StopFloodHoseSound();
     }
 
-    virtual void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
+    void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
     {
         bool isEngaged;
         if (inputState.IsLeftMouseDown)
@@ -1736,11 +1736,11 @@ public:
         }
     }
 
-    virtual void OnMouseMove(InputState const & /*inputState*/) override {}
-    virtual void OnLeftMouseDown(InputState const & /*inputState*/) override {}
-    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}
-    virtual void OnShiftKeyDown(InputState const & /*inputState*/) override {}
-    virtual void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+    void OnMouseMove(InputState const & /*inputState*/) override {}
+    void OnLeftMouseDown(InputState const & /*inputState*/) override {}
+    void OnLeftMouseUp(InputState const & /*inputState*/) override {}
+    void OnShiftKeyDown(InputState const & /*inputState*/) override {}
+    void OnShiftKeyUp(InputState const & /*inputState*/) override {}
 
 private:
 
@@ -1776,19 +1776,19 @@ public:
 
 public:
 
-    virtual void Initialize(InputState const & /*inputState*/) override
+    void Initialize(InputState const & /*inputState*/) override
     {
         // Reset cursor
         mToolCursorManager.SetToolCursor(mCursorImage);
     }
 
-    virtual void OnLeftMouseDown(InputState const & inputState) override
+    void OnLeftMouseDown(InputState const & inputState) override
     {
         // Toggle bomb
         mGameController.ToggleAntiMatterBombAt(inputState.MousePosition);
     }
 
-    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}
+    void OnLeftMouseUp(InputState const & /*inputState*/) override {}
 
 private:
 
@@ -1807,19 +1807,19 @@ public:
 
 public:
 
-    virtual void Initialize(InputState const & /*inputState*/) override
+    void Initialize(InputState const & /*inputState*/) override
     {
         // Reset cursor
         mToolCursorManager.SetToolCursor(mCursorImage);
     }
 
-    virtual void OnLeftMouseDown(InputState const & inputState) override
+    void OnLeftMouseDown(InputState const & inputState) override
     {
         // Toggle bomb
         mGameController.ToggleImpactBombAt(inputState.MousePosition);
     }
 
-    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}
+    void OnLeftMouseUp(InputState const & /*inputState*/) override {}
 
 private:
 
@@ -1838,19 +1838,19 @@ public:
 
 public:
 
-    virtual void Initialize(InputState const & /*inputState*/) override
+    void Initialize(InputState const & /*inputState*/) override
     {
         // Reset cursor
         mToolCursorManager.SetToolCursor(mCursorImage);
     }
 
-    virtual void OnLeftMouseDown(InputState const & inputState) override
+    void OnLeftMouseDown(InputState const & inputState) override
     {
         // Toggle bomb
         mGameController.ToggleRCBombAt(inputState.MousePosition);
     }
 
-    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}
+    void OnLeftMouseUp(InputState const & /*inputState*/) override {}
 
 private:
 
@@ -1869,19 +1869,19 @@ public:
 
 public:
 
-    virtual void Initialize(InputState const & /*inputState*/) override
+    void Initialize(InputState const & /*inputState*/) override
     {
         // Reset cursor
         mToolCursorManager.SetToolCursor(mCursorImage);
     }
 
-    virtual void OnLeftMouseDown(InputState const & inputState) override
+    void OnLeftMouseDown(InputState const & inputState) override
     {
         // Toggle bomb
         mGameController.ToggleTimerBombAt(inputState.MousePosition);
     }
 
-    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}
+    void OnLeftMouseUp(InputState const & /*inputState*/) override {}
 
 private:
 
@@ -1900,12 +1900,12 @@ public:
 
 public:
 
-    virtual void Initialize(InputState const & inputState) override 
+    void Initialize(InputState const & inputState) override 
     {
         SetCurrentCursor(inputState);
     }
 
-    virtual void Deinitialize() override
+    void Deinitialize() override
     {
         mSoundController.StopWaveMakerSound();
     }
@@ -1947,8 +1947,8 @@ public:
         }
     }
 
-    virtual void OnLeftMouseDown(InputState const & /*inputState*/) override {}
-    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}
+    void OnLeftMouseDown(InputState const & /*inputState*/) override {}
+    void OnLeftMouseUp(InputState const & /*inputState*/) override {}
 
 private:
 
@@ -1984,7 +1984,7 @@ public:
 
 public:
 
-    virtual void Initialize(InputState const & inputState) override
+    void Initialize(InputState const & inputState) override
     {
         mCurrentCursor = nullptr;
 
@@ -2000,11 +2000,11 @@ public:
         }
     }
 
-    virtual void Deinitialize() override
+    void Deinitialize() override
     {
     }
 
-    virtual void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
+    void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
     {
         if (inputState.IsLeftMouseDown)
         {
@@ -2051,11 +2051,11 @@ public:
         }
     }
 
-    virtual void OnMouseMove(InputState const & /*inputState*/) override {}
-    virtual void OnLeftMouseDown(InputState const & /*inputState*/) override {}
-    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}
-    virtual void OnShiftKeyDown(InputState const & /*inputState*/) override {}
-    virtual void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+    void OnMouseMove(InputState const & /*inputState*/) override {}
+    void OnLeftMouseDown(InputState const & /*inputState*/) override {}
+    void OnLeftMouseUp(InputState const & /*inputState*/) override {}
+    void OnShiftKeyDown(InputState const & /*inputState*/) override {}
+    void OnShiftKeyUp(InputState const & /*inputState*/) override {}
 
 private:
 
@@ -2090,7 +2090,7 @@ public:
 
 public:
 
-    virtual void Initialize(InputState const & inputState) override
+    void Initialize(InputState const & inputState) override
     {
         if (inputState.IsLeftMouseDown)
         {
@@ -2111,11 +2111,11 @@ public:
         SetCurrentCursor(inputState);
     }
 
-    virtual void Deinitialize() override {}
+    void Deinitialize() override {}
 
-    virtual void UpdateSimulation(InputState const & /*inputState*/, float /*currentSimulationTime*/) override {}
+    void UpdateSimulation(InputState const & /*inputState*/, float /*currentSimulationTime*/) override {}
 
-    virtual void OnMouseMove(InputState const & inputState) override
+    void OnMouseMove(InputState const & inputState) override
     {
         if (inputState.IsLeftMouseDown)
         {
@@ -2166,7 +2166,7 @@ public:
         }
     }
 
-    virtual void OnLeftMouseDown(InputState const & inputState) override
+    void OnLeftMouseDown(InputState const & inputState) override
     {
         // Initialize state
         mPreviousMousePos = inputState.MousePosition;
@@ -2177,7 +2177,7 @@ public:
         SetCurrentCursor(inputState);
     }
 
-    virtual void OnLeftMouseUp(InputState const & inputState) override
+    void OnLeftMouseUp(InputState const & inputState) override
     {
         // Reset state
         mPreviousMousePos = std::nullopt;
@@ -2186,13 +2186,13 @@ public:
         SetCurrentCursor(inputState);
     }
 
-    virtual void OnShiftKeyDown(InputState const & inputState) override
+    void OnShiftKeyDown(InputState const & inputState) override
     {
         // Set cursor
         SetCurrentCursor(inputState);
     }
 
-    virtual void OnShiftKeyUp(InputState const & inputState) override
+    void OnShiftKeyUp(InputState const & inputState) override
     {
         // Set cursor
         SetCurrentCursor(inputState);
@@ -2259,7 +2259,7 @@ public:
         SoundController & soundController,
         ResourceLocator const & resourceLocator);
 
-    virtual void Initialize(InputState const & /*inputState*/) override
+    void Initialize(InputState const & /*inputState*/) override
     {
         // Reset state
         mEngagementStartTimestamp.reset();
@@ -2268,13 +2268,13 @@ public:
         UpdateCurrentCursor();
     }
 
-    virtual void Deinitialize() override
+    void Deinitialize() override
     {
         // Stop sound, just in case
         mSoundController.StopRepairStructureSound();
     }
 
-    virtual void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
+    void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
     {
         bool isEngaged;
         if (inputState.IsLeftMouseDown)
@@ -2326,15 +2326,15 @@ public:
         }
     }
 
-    virtual void OnMouseMove(InputState const & /*inputState*/) override {}
-    virtual void OnLeftMouseDown(InputState const & /*inputState*/) override {}
-    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}
-    virtual void OnShiftKeyDown(InputState const & /*inputState*/) override {}
-    virtual void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+    void OnMouseMove(InputState const & /*inputState*/) override {}
+    void OnLeftMouseDown(InputState const & /*inputState*/) override {}
+    void OnLeftMouseUp(InputState const & /*inputState*/) override {}
+    void OnShiftKeyDown(InputState const & /*inputState*/) override {}
+    void OnShiftKeyUp(InputState const & /*inputState*/) override {}
 
 private:
 
-    virtual void UpdateCurrentCursor()
+    void UpdateCurrentCursor()
     {
         wxImage cursorImage;
 
@@ -2396,13 +2396,13 @@ public:
 
 public:
 
-    virtual void Initialize(InputState const & inputState) override
+    void Initialize(InputState const & inputState) override
     {
         // Reset cursor
         SetCurrentCursor(inputState);
     }
 
-    virtual void OnLeftMouseDown(InputState const & inputState) override
+    void OnLeftMouseDown(InputState const & inputState) override
     {
         // Do snap
         mGameController.ApplyThanosSnapAt(inputState.MousePosition);
@@ -2412,7 +2412,7 @@ public:
         SetCurrentCursor(inputState);
     }
 
-    virtual void OnLeftMouseUp(InputState const & inputState) override
+    void OnLeftMouseUp(InputState const & inputState) override
     {
         // Update cursor
         SetCurrentCursor(inputState);
@@ -2441,7 +2441,7 @@ public:
 
 public:
 
-    virtual void Initialize(InputState const & inputState) override
+    void Initialize(InputState const & inputState) override
     {
         mIsEngaged = inputState.IsLeftMouseDown;
         mCurrentAction = inputState.IsShiftKeyDown ? ActionType::Attract : ActionType::Scare;
@@ -2450,7 +2450,7 @@ public:
         SetCurrentCursor();
     }
 
-    virtual void Deinitialize() override
+    void Deinitialize() override
     {
         if (mIsEngaged)
         {
@@ -2461,7 +2461,7 @@ public:
         }
     }
 
-    virtual void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
+    void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
     {
         // Calculate new state and eventually apply action
         bool newIsEngaged = inputState.IsLeftMouseDown;
@@ -2546,11 +2546,11 @@ public:
         }
     }
 
-    virtual void OnMouseMove(InputState const & /*inputState*/) override {}
-    virtual void OnLeftMouseDown(InputState const & /*inputState*/) override {}
-    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}
-    virtual void OnShiftKeyDown(InputState const & /*inputState*/) override {}
-    virtual void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+    void OnMouseMove(InputState const & /*inputState*/) override {}
+    void OnLeftMouseDown(InputState const & /*inputState*/) override {}
+    void OnLeftMouseUp(InputState const & /*inputState*/) override {}
+    void OnShiftKeyDown(InputState const & /*inputState*/) override {}
+    void OnShiftKeyUp(InputState const & /*inputState*/) override {}
 
 private:
 
@@ -2650,19 +2650,19 @@ public:
 
 public:
 
-    virtual void Initialize(InputState const & /*inputState*/) override
+    void Initialize(InputState const & /*inputState*/) override
     {
         // Reset cursor
         mToolCursorManager.SetToolCursor(mCursorImage);
     }
 
-    virtual void OnLeftMouseDown(InputState const & inputState) override
+    void OnLeftMouseDown(InputState const & inputState) override
     {
         // Toggle probe
         mGameController.TogglePhysicsProbeAt(inputState.MousePosition);
     }
 
-    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}
+    void OnLeftMouseUp(InputState const & /*inputState*/) override {}
 
 private:
 
@@ -2681,16 +2681,16 @@ public:
 
 public:
 
-    virtual void Initialize(InputState const & inputState) override
+    void Initialize(InputState const & inputState) override
     {
         mEngagementData.reset();
 
         SetCurrentCursor(inputState.IsShiftKeyDown);
     }
 
-    virtual void Deinitialize() override {}
+    void Deinitialize() override {}
 
-    virtual void UpdateSimulation(InputState const & inputState, float currentSimulationTime) override
+    void UpdateSimulation(InputState const & inputState, float currentSimulationTime) override
     {
         if (inputState.IsLeftMouseDown
             && !mEngagementData.has_value())
@@ -2827,10 +2827,10 @@ public:
         }
     }
 
-    virtual void OnMouseMove(InputState const & /*inputState*/) override {}
-    virtual void OnLeftMouseDown(InputState const & /*inputState*/) override {}
+    void OnMouseMove(InputState const & /*inputState*/) override {}
+    void OnLeftMouseDown(InputState const & /*inputState*/) override {}
 
-    virtual void OnLeftMouseUp(InputState const & inputState) override
+    void OnLeftMouseUp(InputState const & inputState) override
     {
         //
         // Restore to normal
@@ -2841,12 +2841,12 @@ public:
         SetCurrentCursor(inputState.IsShiftKeyDown);
     }
 
-    virtual void OnShiftKeyDown(InputState const & inputState) override
+    void OnShiftKeyDown(InputState const & inputState) override
     {
         SetCurrentCursor(inputState.IsShiftKeyDown);
     }
 
-    virtual void OnShiftKeyUp(InputState const & inputState) override
+    void OnShiftKeyUp(InputState const & inputState) override
     {
         SetCurrentCursor(inputState.IsShiftKeyDown);
     }
@@ -2916,19 +2916,19 @@ public:
 
 public:
 
-    virtual void Initialize(InputState const & /*inputState*/) override
+    void Initialize(InputState const & /*inputState*/) override
     {
         // Update cursor
         SetCurrentCursor();
     }
 
-    virtual void Deinitialize() override
+    void Deinitialize() override
     {
         // Stop sound
         mSoundController.StopElectricSparkSound();
     }
 
-    virtual void UpdateSimulation(InputState const & inputState, float currentSimulationTime) override
+    void UpdateSimulation(InputState const & inputState, float currentSimulationTime) override
     {
         if (inputState.IsLeftMouseDown)
         {
@@ -3012,11 +3012,11 @@ public:
         }
     }
 
-    virtual void OnMouseMove(InputState const & /*inputState*/) override {}
-    virtual void OnLeftMouseDown(InputState const & /*inputState*/) override {}
-    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}
-    virtual void OnShiftKeyDown(InputState const & /*inputState*/) override {}
-    virtual void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+    void OnMouseMove(InputState const & /*inputState*/) override {}
+    void OnLeftMouseDown(InputState const & /*inputState*/) override {}
+    void OnLeftMouseUp(InputState const & /*inputState*/) override {}
+    void OnShiftKeyDown(InputState const & /*inputState*/) override {}
+    void OnShiftKeyUp(InputState const & /*inputState*/) override {}
 
 private:
 
@@ -3073,7 +3073,7 @@ public:
 
 public:
 
-    virtual void Initialize(InputState const & /*inputState*/) override
+    void Initialize(InputState const & /*inputState*/) override
     {
         // Reset state
         mEngagementData.reset();
@@ -3081,7 +3081,7 @@ public:
         SetCurrentCursor();
     }
 
-    virtual void Deinitialize() override
+    void Deinitialize() override
     {
         if (mEngagementData.has_value())
         {
@@ -3089,7 +3089,7 @@ public:
         }
     }
 
-    virtual void UpdateSimulation(InputState const & inputState, float currentSimulationTime) override
+    void UpdateSimulation(InputState const & inputState, float currentSimulationTime) override
     {
         bool doUpdateCursor = false;
 
@@ -3226,17 +3226,17 @@ public:
         }
     }
 
-    virtual void OnMouseMove(InputState const & /*inputState*/) override {}
+    void OnMouseMove(InputState const & /*inputState*/) override {}
 
-    virtual void OnLeftMouseDown(InputState const & /*inputState*/) override
+    void OnLeftMouseDown(InputState const & /*inputState*/) override
     {
         // Whatever our state, let's restart from scratch
         mEngagementData.reset();
     }
 
-    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}
+    void OnLeftMouseUp(InputState const & /*inputState*/) override {}
 
-    virtual void OnShiftKeyDown(InputState const & /*inputState*/) override 
+    void OnShiftKeyDown(InputState const & /*inputState*/) override 
     {
         if (mEngagementData.has_value()
             && mEngagementData->CurrentState != EngagementData::StateType::TearDown)
@@ -3245,7 +3245,7 @@ public:
         }
     }
 
-    virtual void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+    void OnShiftKeyUp(InputState const & /*inputState*/) override {}
 
 private:
 
@@ -3339,14 +3339,14 @@ public:
 
 public:
 
-    virtual void Initialize(InputState const & /*inputState*/) override
+    void Initialize(InputState const & /*inputState*/) override
     {
         mEngagementData.reset();
 
         SetCurrentCursor();
     }
 
-    virtual void Deinitialize() override
+    void Deinitialize() override
     {
         if (mEngagementData.has_value())
         {
@@ -3355,7 +3355,7 @@ public:
         }
     }
 
-    virtual void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
+    void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
     {
         bool const isAmplified = inputState.IsShiftKeyDown;
 
@@ -3425,15 +3425,15 @@ public:
         }
     }
 
-    virtual void OnMouseMove(InputState const & /*inputState*/) override {}
+    void OnMouseMove(InputState const & /*inputState*/) override {}
 
-    virtual void OnLeftMouseDown(InputState const & /*inputState*/) override {}
+    void OnLeftMouseDown(InputState const & /*inputState*/) override {}
 
-    virtual void OnLeftMouseUp(InputState const & /*inputState*/) override {}
+    void OnLeftMouseUp(InputState const & /*inputState*/) override {}
 
-    virtual void OnShiftKeyDown(InputState const & /*inputState*/) override {}
+    void OnShiftKeyDown(InputState const & /*inputState*/) override {}
 
-    virtual void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+    void OnShiftKeyUp(InputState const & /*inputState*/) override {}
 
 private:
 
