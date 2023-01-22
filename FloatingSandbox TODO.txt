@@ -34,8 +34,10 @@
 									+ Do anti-cuspid and see if it fixes a) cuspid and b) not reaching target height
 										+ Wider?
 											+ If no works: use non-linear ratio, more radius at low values
-									- Cleanup
-									- See rates for fall vs raise, and fine-tune
+									+ Cleanup
+									= See rates for fall vs raise, and fine-tune
+										- Ask Mattia
+						- Take pointer size
 					- Find good values of k and damping
 					- Damping on fall higher than damping on rise
 						- Basically: less overshoot when falling - from Mattia
@@ -56,7 +58,7 @@
 				+ b3. @ calculate samples: add CurrentHeight from this new buffer
 					+ OR: copy (add) CurrentHeight to DeltaHeightBuffer at previous step
 				+ b4. Zero out TargetHeight
-			- c. Misc others:
+			- c. Misc other improvements to OceanSurface:
 				- Try texture anchor change
 				- Try changing speed of waves
 				- Try incorporating wind speed in SWE velocity field
@@ -64,10 +66,6 @@
 				- Tool: no need to invoke when turning off; just invoke simply each time mouse button is pressed
 					- Also cleanup OceanSurface::AdjustToHeight() then
 						- And remove current simulation time arg altogether
-				- Buffer:
-					- "CurrentHeight" -> "CurrentDeltaHeight"
-				- Use new CurrentHeight at all places at which we have to probe current height
-					- OR: see above
 				- Nuke old SWE interactive state machine
 
 	- Nuke default_ship.shp2 and make Titanic's filename in code		

@@ -305,15 +305,20 @@ private:
     struct InteractiveWaveElement
     {
         float TargetHeight; // Absolute; continuously updated to desired target during interacting
-        float CurrentCoefficient;
-        float TargetCoefficient;
-        float CoefficientRate;
 
-        InteractiveWaveElement()
-            : TargetHeight(SWEHeightFieldOffset) // TODOBETTER
-            , CurrentCoefficient(0.0f)
-            , TargetCoefficient(0.0f)
-            , CoefficientRate(0.0f)
+        // We reach target height by this "growth coefficient" (fraction) of the remaining height;
+        // the coefficient itself varies from current to target
+        float CurrentHeightGrowthCoefficient;
+        float TargetHeightGrowthCoefficient;
+
+        // The rate at which the growth coefficient grows itself
+        float HeightGrowthCoefficientGrowthRate;
+
+        InteractiveWaveElement(float targetHeight)
+            : TargetHeight(targetHeight)
+            , CurrentHeightGrowthCoefficient(0.0f)
+            , TargetHeightGrowthCoefficient(0.0f)
+            , HeightGrowthCoefficientGrowthRate(0.0f)
         {}
     };
 

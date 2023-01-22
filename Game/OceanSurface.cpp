@@ -15,6 +15,13 @@
 
 namespace Physics {
 
+// The speed at which the height growth coefficient of interactive waves raises for imparted waves
+float constexpr InteractiveRaiseHeightGrowthCoefficientGrowthRate = 0.007f;
+
+// The speed at which the height growth coefficient of interactive waves lowers after release
+//float constexpr InteractiveFallHeightGrowthCoefficientGrowthRate = 0.03f;
+float constexpr InteractiveFallHeightGrowthCoefficientGrowthRate = 0.1f;
+
 // The number of slices we want to render the water surface as;
 // this is our graphical resolution
 template<typename T>
@@ -61,7 +68,7 @@ OceanSurface::OceanSurface(
     mSamples.fill({ 0.0f, 0.0f });
     mSWEHeightField.fill(SWEHeightFieldOffset);
     mSWEVelocityField.fill(0.0f);
-    mInteractiveWaveBuffer.fill(InteractiveWaveElement());
+    mInteractiveWaveBuffer.fill(InteractiveWaveElement(SWEHeightFieldOffset));
     mDeltaHeightBuffer.fill(0.0f);
 
     // Initialize constant sample values
@@ -199,12 +206,18 @@ void OceanSurface::Update(
     //
     // 2. Interactive Waves Update
     //
+    // TODO: function? and verify it's SSE'd
 
     for (size_t i = 0; i < mInteractiveWaveBuffer.GetSize(); ++i)
     {
-        mInteractiveWaveBuffer[i].CurrentCoefficient += (mInteractiveWaveBuffer[i].TargetCoefficient - mInteractiveWaveBuffer[i].CurrentCoefficient) * mInteractiveWaveBuffer[i].CoefficientRate;
+        // Update growth coefficient
+        mInteractiveWaveBuffer[i].CurrentHeightGrowthCoefficient += 
+            (mInteractiveWaveBuffer[i].TargetHeightGrowthCoefficient - mInteractiveWaveBuffer[i].CurrentHeightGrowthCoefficient) 
+            * mInteractiveWaveBuffer[i].HeightGrowthCoefficientGrowthRate;
+
+        // Smooth current height to target according to current growth coefficient
         float const deltaHeight = mInteractiveWaveBuffer[i].TargetHeight - mSWEHeightField[i + SWEBufferPrefixSize];
-        mSWEHeightField[i + SWEBufferPrefixSize] += deltaHeight * mInteractiveWaveBuffer[i].CurrentCoefficient;
+        mSWEHeightField[i + SWEBufferPrefixSize] += deltaHeight * mInteractiveWaveBuffer[i].CurrentHeightGrowthCoefficient;
     }
 
     //
@@ -232,10 +245,12 @@ void OceanSurface::Update(
     // 5. Reset Interactive Waves
     //
 
+    // TODO: function? and verify it's SSE'd
+
     for (size_t i = 0; i < mInteractiveWaveBuffer.GetSize(); ++i)
     {
-        mInteractiveWaveBuffer[i].TargetCoefficient = 0.0f;
-        mInteractiveWaveBuffer[i].CoefficientRate = 0.03f;
+        mInteractiveWaveBuffer[i].TargetHeightGrowthCoefficient = 0.0f;
+        mInteractiveWaveBuffer[i].HeightGrowthCoefficientGrowthRate = InteractiveFallHeightGrowthCoefficientGrowthRate;
     }
 }
 
@@ -263,9 +278,7 @@ void OceanSurface::AdjustTo(
     vec2f const & worldCoordinates,
     float /*currentSimulationTime*/)
 {
-    float constexpr RaiseCoefficientRate = 0.007f;
-
-    auto const sampleIndex = ToSampleIndex(worldCoordinates.x);
+    auto const centerIndex = ToSampleIndex(worldCoordinates.x);
 
     float constexpr MaxAbsRelativeHeight = 6.0f;    
     float const targetRelativeHeight = Clamp(worldCoordinates.y / SWEHeightFieldAmplification, -MaxAbsRelativeHeight, MaxAbsRelativeHeight);
@@ -284,82 +297,31 @@ void OceanSurface::AdjustTo(
     // TODO: max with passed pointer size
     float const actionRadius = MaxRadius * heightFraction + alpha / (heightFraction + beta);
 
-    LogMessage("---------------- radius=", actionRadius);
-
-    mInteractiveWaveBuffer[sampleIndex].TargetHeight = targetAbsoluteHeight;
-    mInteractiveWaveBuffer[sampleIndex].TargetCoefficient = 1.0f;
-    mInteractiveWaveBuffer[sampleIndex].CoefficientRate = RaiseCoefficientRate;
+    // Set at central
+    mInteractiveWaveBuffer[centerIndex].TargetHeight = targetAbsoluteHeight;
+    mInteractiveWaveBuffer[centerIndex].TargetHeightGrowthCoefficient = 1.0f;
+    mInteractiveWaveBuffer[centerIndex].HeightGrowthCoefficientGrowthRate = InteractiveRaiseHeightGrowthCoefficientGrowthRate;
     
+    // Set around
     for (int64_t d = 1; d <= static_cast<int64_t>(std::floor(actionRadius)); ++d)
     {
         float const coeff =
             1.0f - (static_cast<float>(d) / actionRadius) * (static_cast<float>(d) / actionRadius);
 
-        if (sampleIndex - d >= 0)
+        if (centerIndex - d >= 0)
         {
-            mInteractiveWaveBuffer[sampleIndex - d].TargetHeight = targetAbsoluteHeight;
-            mInteractiveWaveBuffer[sampleIndex - d].TargetCoefficient = coeff;
-            mInteractiveWaveBuffer[sampleIndex - d].CoefficientRate = RaiseCoefficientRate;
+            mInteractiveWaveBuffer[centerIndex - d].TargetHeight = targetAbsoluteHeight;
+            mInteractiveWaveBuffer[centerIndex - d].TargetHeightGrowthCoefficient = coeff;
+            mInteractiveWaveBuffer[centerIndex - d].HeightGrowthCoefficientGrowthRate = InteractiveRaiseHeightGrowthCoefficientGrowthRate;
         }
 
-        if (sampleIndex + d < SamplesCount)
+        if (centerIndex + d < SamplesCount)
         {
-            mInteractiveWaveBuffer[sampleIndex + d].TargetHeight = targetAbsoluteHeight;
-            mInteractiveWaveBuffer[sampleIndex + d].TargetCoefficient = coeff;
-            mInteractiveWaveBuffer[sampleIndex + d].CoefficientRate = RaiseCoefficientRate;
+            mInteractiveWaveBuffer[centerIndex + d].TargetHeight = targetAbsoluteHeight;
+            mInteractiveWaveBuffer[centerIndex + d].TargetHeightGrowthCoefficient = coeff;
+            mInteractiveWaveBuffer[centerIndex + d].HeightGrowthCoefficientGrowthRate = InteractiveRaiseHeightGrowthCoefficientGrowthRate;
         }
     }
-
-    // TODOOLD
-    ////if (worldCoordinates.has_value())
-    ////{
-    ////    // Calculate target height
-    ////    float constexpr MaxRelativeHeight = 6.0f;
-    ////    float constexpr MinRelativeHeight = -6.0f;
-    ////    float targetHeight =
-    ////        Clamp(worldCoordinates->y / SWEHeightFieldAmplification, MinRelativeHeight, MaxRelativeHeight)
-    ////        + SWEHeightFieldOffset;
-
-    ////    // Check whether we are already advancing an interactive wave, or whether
-    ////    // we may smother the almost-complete existing one
-    ////    if (!mSWEInteractiveWaveStateMachine
-    ////        || mSWEInteractiveWaveStateMachine->MayBeOverridden())
-    ////    {
-    ////        //
-    ////        // Start advancing a new interactive wave
-    ////        //
-
-    ////        auto const sampleIndex = ToSampleIndex(worldCoordinates->x);
-
-    ////        size_t const centerIndex = SWEBufferPrefixSize + static_cast<size_t>(sampleIndex);
-
-    ////        // Start wave
-    ////        mSWEInteractiveWaveStateMachine.emplace(
-    ////            centerIndex,
-    ////            mSWEHeightField[centerIndex],  // LowHeight == current height
-    ////            targetHeight,               // HighHeight == target
-    ////            currentSimulationTime);
-    ////    }
-    ////    else
-    ////    {
-    ////        //
-    ////        // Restart currently-advancing interactive wave
-    ////        //
-
-    ////        mSWEInteractiveWaveStateMachine->Restart(
-    ////            targetHeight,
-    ////            currentSimulationTime);
-    ////    }
-    ////}
-    ////else
-    ////{
-    ////    //
-    ////    // Start release of currently-advancing interactive wave
-    ////    //
-
-    ////    assert(!!mSWEInteractiveWaveStateMachine);
-    ////    mSWEInteractiveWaveStateMachine->Release(currentSimulationTime);
-    ////}
 }
 
 void OceanSurface::ApplyThanosSnap(
