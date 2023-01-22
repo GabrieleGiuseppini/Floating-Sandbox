@@ -183,6 +183,10 @@ private:
         TRateDuration rate,
         TGraceDuration gracePeriod);
 
+    void UpdateInteractiveWaves();
+
+    void ResetInteractiveWaves();
+
     void SmoothDeltaBufferIntoHeightField();
 
     void ApplyDampingBoundaryConditions();

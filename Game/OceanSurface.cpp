@@ -199,20 +199,8 @@ void OceanSurface::Update(
     //
     // 2. Interactive Waves Update
     //
-    // TODO: function? and verify it's SSE'd
 
-    for (size_t i = 0; i < mInteractiveWaveBuffer.GetSize(); ++i)
-    {
-        // Update growth coefficient
-        mInteractiveWaveBuffer[i].CurrentHeightGrowthCoefficient += 
-            (mInteractiveWaveBuffer[i].TargetHeightGrowthCoefficient - mInteractiveWaveBuffer[i].CurrentHeightGrowthCoefficient) 
-            * mInteractiveWaveBuffer[i].HeightGrowthCoefficientGrowthRate;
-
-        // Smooth current height to target according to current growth coefficient
-        mSWEHeightField[i + SWEBufferPrefixSize] += 
-            (mInteractiveWaveBuffer[i].TargetHeight - mSWEHeightField[i + SWEBufferPrefixSize]) 
-            * mInteractiveWaveBuffer[i].CurrentHeightGrowthCoefficient;
-    }
+    UpdateInteractiveWaves();
 
     //
     // 3. SWE Update
@@ -239,13 +227,7 @@ void OceanSurface::Update(
     // 5. Reset Interactive Waves
     //
 
-    // TODO: function? and verify it's SSE'd
-
-    for (size_t i = 0; i < mInteractiveWaveBuffer.GetSize(); ++i)
-    {
-        mInteractiveWaveBuffer[i].TargetHeightGrowthCoefficient = 0.0f;
-        mInteractiveWaveBuffer[i].HeightGrowthCoefficientGrowthRate = 0.1f; // Magic number: rate with which we stop pinning the SWE height field
-    }
+    ResetInteractiveWaves();
 }
 
 void OceanSurface::Upload(Render::RenderContext & renderContext) const
@@ -824,6 +806,35 @@ void OceanSurface::AdvectFieldsTest()
         SWETotalSamples - 2 * SWEBoundaryConditionsSamples);
 }
 */
+
+void OceanSurface::UpdateInteractiveWaves()
+{
+    // TODO: verify it's SSE'd
+
+    for (size_t i = 0; i < mInteractiveWaveBuffer.GetSize(); ++i)
+    {
+        // Update growth coefficient
+        mInteractiveWaveBuffer[i].CurrentHeightGrowthCoefficient +=
+            (mInteractiveWaveBuffer[i].TargetHeightGrowthCoefficient - mInteractiveWaveBuffer[i].CurrentHeightGrowthCoefficient)
+            * mInteractiveWaveBuffer[i].HeightGrowthCoefficientGrowthRate;
+
+        // Smooth current height to target according to current growth coefficient
+        mSWEHeightField[i + SWEBufferPrefixSize] +=
+            (mInteractiveWaveBuffer[i].TargetHeight - mSWEHeightField[i + SWEBufferPrefixSize])
+            * mInteractiveWaveBuffer[i].CurrentHeightGrowthCoefficient;
+    }
+}
+
+void OceanSurface::ResetInteractiveWaves()
+{
+    // TODO: verify it's SSE'd
+
+    for (size_t i = 0; i < mInteractiveWaveBuffer.GetSize(); ++i)
+    {
+        mInteractiveWaveBuffer[i].TargetHeightGrowthCoefficient = 0.0f;
+        mInteractiveWaveBuffer[i].HeightGrowthCoefficientGrowthRate = 0.1f; // Magic number: rate with which we stop pinning the SWE height field
+    }
+}
 
 void OceanSurface::SmoothDeltaBufferIntoHeightField()
 {

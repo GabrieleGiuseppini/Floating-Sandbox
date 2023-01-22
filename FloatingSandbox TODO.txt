@@ -72,6 +72,7 @@
 				- Try changing speed of waves
 				- Try incorporating wind speed in SWE velocity field
 				- Try moving Tsunami & RogueWave to new Interactive system
+				- Try adding back field advection
 			- d. Cleanup:
 				+ Tool: no need to invoke when turning off; just invoke simply each time mouse button is pressed
 					+ Also cleanup OceanSurface::AdjustToHeight() then
