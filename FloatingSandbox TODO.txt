@@ -57,18 +57,20 @@
 				+ b3. @ calculate samples: add CurrentHeight from this new buffer
 					+ OR: copy (add) CurrentHeight to DeltaHeightBuffer at previous step
 				+ b4. Zero out TargetHeight
-			- c. Misc other improvements to OceanSurface:
-				= Try texture anchor change
-					- Nice when we anchor at bottom (e.g. 0.0f) and leave top "almost static" (static would be yTop - yVisibleWorldBottom, almost is yTop * 0.75f - yVisibleWorldBottom),
-					  but ugly when one zooms out
+			= c. Misc other improvements to OceanSurface:
+				+ Try with swapping coeff growth and height growth
+				+ Try texture anchor change
+					= Nice when we anchor at bottom (e.g. 0.0f) and leave top "almost static" (static would be yTop - yVisibleWorldBottom, almost is yTop * 0.75f - yVisibleWorldBottom),
+					  but ugly when one zooms out					 
+				+ Mid ocean border line more transparent
+				- Try adding back field advection
 				- Try changing speed of waves
 				- Try incorporating wind speed in SWE velocity field
 				+ Try moving Tsunami & RogueWave to new Interactive system
 					+ Still need state machines for these, which will invoke AdjustTo
 					+ Tsunami will want a slow growth, while RogueWave would be fine with current interactive speed
 						+ Pass AymptoticRate as param
-							+ Requires our curve to work better: serious 1.0 at low height, real AymptoticRate at 6.0
-				- Try adding back field advection
+							+ Requires our curve to work better: serious 1.0 at low height, real AymptoticRate at 6.0				
 			- d. Cleanup:
 				+ Tool: no need to invoke when turning off; just invoke simply each time mouse button is pressed
 					+ Also cleanup OceanSurface::AdjustToHeight() then

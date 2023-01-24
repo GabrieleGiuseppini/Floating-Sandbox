@@ -388,9 +388,9 @@ public:
         {
             case OceanRenderModeType::Texture:
             {
-                // Anchor textureY at 0.0 at top
-                oceanSegment.yTexture1 = 0.0f;
-                oceanSegment.yTexture2 = yTop - yVisibleWorldBottom; // Negative if yTop invisible, but then who cares
+                // We squash the top a little towards the rest position, to give a slight ondulation
+                oceanSegment.yTexture1 = yTop * 0.75f; 
+                oceanSegment.yTexture2 = yVisibleWorldBottom;
 
                 break;
             }

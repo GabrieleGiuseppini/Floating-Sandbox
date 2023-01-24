@@ -76,7 +76,7 @@ vec4 CalculateOceanPlaneColor(
         max(
             borderFront,
             max(
-                .9 * borderMid * borderFrontOpaqueness,
+                .8 * borderMid * borderFrontOpaqueness,
                 .7 * borderBack * borderFrontOpaqueness * borderMidOpaqueness));
 #else
     float borderAlpha = borderFront;
