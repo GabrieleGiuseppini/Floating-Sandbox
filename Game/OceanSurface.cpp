@@ -199,11 +199,12 @@ void OceanSurface::Update(
 
     SmoothDeltaBufferIntoHeightField();
 
-    ApplyDampingBoundaryConditions();
-
-    //AdvectFieldsTest();
+    ApplyDampingBoundaryConditions();    
 
     UpdateFields(gameParameters);
+
+    // Note: field advection does not seem to improve the simulation in any visible way
+    // AdvectFields();
 
     //
     // 4. Generate Samples
@@ -647,94 +648,6 @@ GameWallClock::time_point OceanSurface::CalculateNextAbnormalWaveTimestamp(
                 GameRandomEngine::GetInstance().GenerateExponentialReal(1.0f / rateSeconds)));
 }
 
-/* Note: in this implementation we let go of the field advections,
-   as they dont's seem to improve the simulation in any visible way.
-void OceanSurface::AdvectFieldsTest()
-{
-    //
-    // Semi-Lagrangian method
-    //
-
-    FixedSizeVector<float, SWETotalSamples + 1> newHeightField;
-
-    // Process all height samples, except for boundary condition samples
-    for (size_t i = SWEBoundaryConditionsSamples; i < SWETotalSamples - SWEBoundaryConditionsSamples; ++i)
-    {
-        // The height field values are at the center of the cell,
-        // while velocities are at the edges - hence we need to take
-        // the two neighboring velocities
-        float const v = (mSWEVelocityField[i] + mSWEVelocityField[i + 1]) / 2.0f;
-
-        // Calculate the (fractional) index that this height sample had one time step ago
-        float const prevCellIndex =
-            static_cast<float>(i)
-            - v * GameParameters::SimulationStepTimeDuration<float> / Dx;
-
-        // Transform index to ease interpolations, constraining the cell
-        // to our grid at the same time
-        float const prevCellIndex2 = std::min(
-            std::max(0.0f, prevCellIndex),
-            static_cast<float>(SWETotalSamples - 1));
-
-        // Calculate integral and fractional parts of the index
-        auto const prevCellIndexI = FastTruncateToArchInt(prevCellIndex2);
-        float const prevCellIndexF = prevCellIndex2 - prevCellIndexI;
-        assert(prevCellIndexF >= 0.0f && prevCellIndexF < 1.0f);
-
-        // Set this height field sample as the previous (in time) sample,
-        // interpolated between its two neighbors
-        newHeightField[i] =
-            (1.0f - prevCellIndexF) * mSWEHeightField[prevCellIndexI]
-            + prevCellIndexF * mSWEHeightField[prevCellIndexI + 1];
-    }
-
-    std::memcpy(
-        &(mSWEHeightField[SWEBoundaryConditionsSamples]),
-        &(newHeightField[SWEBoundaryConditionsSamples]),
-        SWETotalSamples - 2 * SWEBoundaryConditionsSamples);
-
-    /////////////////////////////////////////////////////////////
-
-    FixedSizeVector<float, SWETotalSamples + 1> newVelocityField;
-
-    // Process all velocity samples, except for boundary condition samples
-    //
-    // Note: the last velocity sample is the one after the last height field sample
-    for (size_t i = SWEBoundaryConditionsSamples; i <= SWETotalSamples - SWEBoundaryConditionsSamples; ++i)
-    {
-        // Velocity values are at the edges of the cell
-        float const v = mSWEVelocityField[i];
-
-        // Calculate the (fractional) index that this velocity sample had one time step ago
-        float const prevCellIndex =
-            static_cast<float>(i)
-            - v * GameParameters::SimulationStepTimeDuration<float> / Dx;
-
-        // Transform index to ease interpolations, constraining the cell
-        // to our grid at the same time
-        float const prevCellIndex2 = std::min(
-            std::max(0.0f, prevCellIndex),
-            static_cast<float>(SWETotalSamples - 1));
-
-        // Calculate integral and fractional parts of the index
-        auto const prevCellIndexI = FastTruncateToArchInt(prevCellIndex2);
-        float const prevCellIndexF = prevCellIndex2 - prevCellIndexI;
-        assert(prevCellIndexF >= 0.0f && prevCellIndexF < 1.0f);
-
-        // Set this velocity field sample as the previous (in time) sample,
-        // interpolated between its two neighbors
-        newVelocityField[i] =
-            (1.0f - prevCellIndexF) * mSWEVelocityField[prevCellIndexI]
-            + prevCellIndexF * mSWEVelocityField[prevCellIndexI + 1];
-    }
-
-    std::memcpy(
-        &(mSWEVelocityField[SWEBoundaryConditionsSamples]),
-        &(newVelocityField[SWEBoundaryConditionsSamples]),
-        SWETotalSamples - 2 * SWEBoundaryConditionsSamples);
-}
-*/
-
 void OceanSurface::ImpartInteractiveWave(
     float x,
     float targetRelativeHeight,
@@ -898,6 +811,87 @@ void OceanSurface::UpdateFields(GameParameters const & gameParameters)
         // Update velocity field
         velocityField[i] = previousV - G * Dt / Dx * (heightField[i] - heightField[i - 1]);
     }
+}
+
+void OceanSurface::AdvectFields()
+{
+    //
+    // Semi-Lagrangian method
+    // 
+    // Thew new value (of a field) at position i is obtained by backtracing 
+    // that position according to its current velocity.
+    //
+
+    float constexpr Dt = GameParameters::SimulationStepTimeDuration<float>;
+
+    // Height field
+
+    Buffer<float> newHeightField(SamplesCount);
+    newHeightField.fill(0.0f);
+
+    // For each index, move into it the height value that comes into it according to the current velocity
+    for (size_t i = 0; i < SamplesCount; ++i)
+    {
+        // Calculate the (current) velocity of this sample;
+        // the height field values are at the center of the cell,
+        // while velocities are at the edges - hence we need to take
+        // the two neighboring velocities
+        float const v = (mSWEVelocityField[SWEBufferPrefixSize + i] + mSWEVelocityField[SWEBufferPrefixSize + i + 1]) / 2.0f;
+
+        // Calculate the (fractional) index that this height sample had one time step ago
+        float const prevCellIndex = static_cast<float>(i) - v * Dt / Dx;
+        if (prevCellIndex >= 0 && prevCellIndex < SamplesCount - 1)
+        {
+            // Calculate integral and fractional parts of the index
+            auto const prevCellIndexI = FastTruncateToArchInt(prevCellIndex);
+            float const prevCellIndexF = prevCellIndex - prevCellIndexI;
+            assert(prevCellIndexF >= 0.0f && prevCellIndexF < 1.0f);
+
+            // Move into this height field sample the previous (in time) sample, interpolated according to its fractional nature 
+            newHeightField[i] =
+                (1.0f - prevCellIndexF) * mSWEHeightField[prevCellIndexI]
+                + prevCellIndexF * mSWEHeightField[prevCellIndexI + 1];
+        }
+    }
+
+    std::memcpy(
+        &(mSWEHeightField[SWEBufferPrefixSize]),
+        &(newHeightField[0]),
+        SamplesCount);
+
+    // Velocity field
+
+    Buffer<float> newVelocityField(SamplesCount + 1);
+    newVelocityField.fill(0.0f);
+
+    // For each index, move into it the velocity value that comes into it according to the current velocity
+    // Note: the last velocity sample is the one after the last height field sample
+    for (size_t i = 0; i <= SamplesCount; ++i)
+    {
+        // Calculate the (current) velocity of this sample;
+        // velocity values are at the edges of the cell
+        float const v = mSWEVelocityField[i];
+
+        // Calculate the (fractional) index that this velocity sample had one time step ago
+        float const prevCellIndex = static_cast<float>(i) - v * Dt / Dx;
+        if (prevCellIndex >= 0 && prevCellIndex < SamplesCount)
+        {
+            // Calculate integral and fractional parts of the index
+            auto const prevCellIndexI = FastTruncateToArchInt(prevCellIndex);
+            float const prevCellIndexF = prevCellIndex - prevCellIndexI;
+            assert(prevCellIndexF >= 0.0f && prevCellIndexF < 1.0f);
+
+            // Move into this velocity field sample the previous (in time) sample, interpolated according to its fractional nature
+            newVelocityField[i] =
+                (1.0f - prevCellIndexF) * mSWEVelocityField[prevCellIndexI]
+                + prevCellIndexF * mSWEVelocityField[prevCellIndexI + 1];
+        }
+    }
+
+    std::memcpy(
+        &(mSWEVelocityField[SWEBufferPrefixSize]),
+        &(newVelocityField[0]),
+        SamplesCount + 1);
 }
 
 void OceanSurface::GenerateSamples(

@@ -63,7 +63,8 @@
 					= Nice when we anchor at bottom (e.g. 0.0f) and leave top "almost static" (static would be yTop - yVisibleWorldBottom, almost is yTop * 0.75f - yVisibleWorldBottom),
 					  but ugly when one zooms out					 
 				+ Mid ocean border line more transparent
-				- Try adding back field advection
+				X Try adding back field advection
+					+ Add an interactive way to turn on and off to appreciate difference
 				- Try changing speed of waves
 				- Try incorporating wind speed in SWE velocity field
 				+ Try moving Tsunami & RogueWave to new Interactive system

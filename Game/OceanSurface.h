@@ -195,11 +195,11 @@ private:
 
     void SmoothDeltaBufferIntoHeightField();
 
-    void ApplyDampingBoundaryConditions();
-
-    //void AdvectFieldsTest();
+    void ApplyDampingBoundaryConditions();    
 
     void UpdateFields(GameParameters const & gameParameters);
+
+    void AdvectFields();
 
     void GenerateSamples(
         float currentSimulationTime,
