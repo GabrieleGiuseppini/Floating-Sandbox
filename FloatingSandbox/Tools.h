@@ -1902,12 +1902,16 @@ public:
 
     void Initialize(InputState const & inputState) override 
     {
+        mIsEngaged = false;
         SetCurrentCursor(inputState);
     }
 
     void Deinitialize() override
     {
-        mSoundController.StopWaveMakerSound();
+        if (mIsEngaged)
+        {
+            mSoundController.StopWaveMakerSound();
+        }
     }
 
     void UpdateSimulation(

@@ -78,9 +78,13 @@
 						+ And remove current simulation time arg altogether
 				+ Nuke old SWE interactive state machine
 					+ After replacing Tsunami & RogueWave with it
-		- 3. Port to Android:
+		+ 3. Try with from-to
+			+ If doesn't work: Tool: reset mIsEngaged
+			+ Test sound
+		- 4. Port to Android:
 			- Shader
 			- OceanSurface code
+		- Send for testing
 
 	- Nuke default_ship.shp2 and make Titanic's filename in code		
 
