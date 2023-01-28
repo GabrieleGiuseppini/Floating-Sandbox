@@ -156,21 +156,6 @@ private:
         return sampleIndexI;
     }
 
-    void AddHeightToSWEWaveHeightViaDeltaBuffer(
-        size_t centerIndex, // Coords are in SWE Buffer space
-        float height)
-    {
-        float const currentSWEHeight = mSWEHeightField[centerIndex];
-        mDeltaHeightBuffer[centerIndex - SWEBufferPrefixSize + DeltaHeightBufferPrefixSize] += (height - currentSWEHeight);
-    }
-
-    void AddDeltaHeightToSWEWaveHeightViaDeltaBuffer(
-        size_t centerIndex, // Coords are in SWE Buffer space
-        float deltaHeight)
-    {
-        mDeltaHeightBuffer[centerIndex - SWEBufferPrefixSize + DeltaHeightBufferPrefixSize] += deltaHeight;
-    }
-
     void RecalculateWaveCoefficients(
         Wind const & wind,
         GameParameters const & gameParameters);

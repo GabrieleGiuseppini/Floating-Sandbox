@@ -291,6 +291,10 @@ void OceanSurface::TriggerTsunami(float currentSimulationTime)
         tsunamiRelativeHeight,
         0.0004f,
         currentSimulationTime);
+
+    // Fire tsunami event
+    assert(mGameEventHandler);
+    mGameEventHandler->OnTsunami(centerX);
 }
 
 void OceanSurface::TriggerRogueWave(
