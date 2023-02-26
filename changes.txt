@@ -1,3 +1,6 @@
+1.17.6
+- Redesigned wave interactions
+
 1.17.5
 - Added new "Laser Cannon" tool
 - Improved behavior of lamps under extreme conditions:

@@ -35,7 +35,7 @@ public:
 
 public:
 
-    Buffer(size_t size)
+    explicit Buffer(size_t size)
         : mBuffer(make_unique_buffer_aligned_to_vectorization_word<TElement>(size))
         , mSize(size)
         , mCurrentPopulatedSize(0)

@@ -8,9 +8,9 @@
 
 	+ Show build date @ Credits
 
-	= New OceanSurface interaction experiment:
+	+ New OceanSurface interaction experiment:
 		+ 1. Tool: only interacts with OceanSurface at Update(), using last known button state & mouse position
-		= 2. OceanSurface:
+		+ 2. OceanSurface:
 			+ a. New "InteractiveWaves" buffer with:
 				+ CurrentHeight
 				+ TargetHeight
@@ -81,10 +81,7 @@
 		+ 3. Try with from-to
 			+ If doesn't work: Tool: reset mIsEngaged
 			+ Test sound
-		- 4. Port to Android:
-			- Shader
-			- OceanSurface code
-		- Send for testing
+		+ 4. Port to Android
 
 	- Nuke default_ship.shp2 and make Titanic's filename in code		
 

@@ -124,8 +124,8 @@ TextureAtlasFrameMetadata<TextureGroups> TextureAtlasFrameMetadata<TextureGroups
     return TextureAtlasFrameMetadata<TextureGroups>(
         textureSpaceWidth,
         textureSpaceHeight,
-        textureCoordinatesAnchorCenter,
         textureCoordinatesBottomLeft,
+        textureCoordinatesAnchorCenter,        
         textureCoordinatesTopRight,
         frameLeftX,
         frameBottomY,
@@ -232,60 +232,6 @@ TextureAtlas<TextureGroups> TextureAtlas<TextureGroups>::Deserialize(
 ////////////////////////////////////////////////////////////////////////////////
 // Builder
 ////////////////////////////////////////////////////////////////////////////////
-
-template <typename TextureGroups>
-TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::BuildAtlas(
-    TextureGroup<TextureGroups> const & group,
-    AtlasOptions options,
-    ProgressCallback const & progressCallback)
-{
-    // Build TextureInfo's
-    std::vector<TextureInfo> textureInfos;
-    AddTextureInfos(group, textureInfos);
-
-    // Build specification
-    auto const specification = BuildAtlasSpecification(textureInfos);
-
-    // Build atlas
-    return BuildAtlas(
-        specification,
-        options,
-        [&group](TextureFrameId<TextureGroups> const & frameId)
-        {
-            return group.LoadFrame(frameId.FrameIndex);
-        },
-        progressCallback);
-}
-
-template <typename TextureGroups>
-TextureAtlas<TextureGroups> TextureAtlasBuilder<TextureGroups>::BuildAtlas(
-    AtlasOptions options,
-    ProgressCallback const & progressCallback)
-{
-    // Build TextureInfo's
-    std::vector<TextureInfo> textureInfos;
-    for (auto const & frameSpecification : mTextureFrameSpecifications)
-    {
-        textureInfos.emplace_back(
-            frameSpecification.second.Metadata.FrameId,
-            frameSpecification.second.Metadata.Size);
-    }
-
-    // Build specification
-    auto const specification = BuildAtlasSpecification(textureInfos);
-
-    // Build atlas
-    return BuildAtlas(
-        specification,
-        options,
-        [this](TextureFrameId<TextureGroups> const & frameId)
-        {
-            return this->mTextureFrameSpecifications.at(frameId).LoadFrame();
-        },
-        progressCallback);
-}
-
-/////////////////////////////////////////////////////////////////////////////////////
 
 template <typename TextureGroups>
 typename TextureAtlasBuilder<TextureGroups>::AtlasSpecification TextureAtlasBuilder<TextureGroups>::BuildAtlasSpecification(std::vector<TextureInfo> const & inputTextureInfos)

@@ -201,7 +201,25 @@ public:
     static TextureAtlas<TextureGroups> BuildAtlas(
         TextureGroup<TextureGroups> const & group,
         AtlasOptions options,
-        ProgressCallback const & progressCallback);
+        ProgressCallback const & progressCallback)
+    {
+        // Build TextureInfo's
+        std::vector<TextureInfo> textureInfos;
+        AddTextureInfos(group, textureInfos);
+
+        // Build specification
+        auto const specification = BuildAtlasSpecification(textureInfos);
+
+        // Build atlas
+        return BuildAtlas(
+            specification,
+            options,
+            [&group](TextureFrameId<TextureGroups> const & frameId)
+            {
+                return group.LoadFrame(frameId.FrameIndex);
+            },
+            progressCallback);
+    }
 
     /*
      * Builds an atlas with the specified database, composed of a power of two number of
@@ -349,7 +367,30 @@ public:
      */
     TextureAtlas<TextureGroups> BuildAtlas(
         AtlasOptions options,
-        ProgressCallback const & progressCallback);
+        ProgressCallback const & progressCallback)
+    {
+        // Build TextureInfo's
+        std::vector<TextureInfo> textureInfos;
+        for (auto const & frameSpecification : mTextureFrameSpecifications)
+        {
+            textureInfos.emplace_back(
+                frameSpecification.second.Metadata.FrameId,
+                frameSpecification.second.Metadata.Size);
+        }
+
+        // Build specification
+        auto const specification = BuildAtlasSpecification(textureInfos);
+
+        // Build atlas
+        return BuildAtlas(
+            specification,
+            options,
+            [this](TextureFrameId<TextureGroups> const & frameId)
+            {
+                return this->mTextureFrameSpecifications.at(frameId).LoadFrame();
+            },
+            progressCallback);
+    }
 
 private:
 
