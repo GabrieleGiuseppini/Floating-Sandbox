@@ -2,8 +2,8 @@
 set(FS_USE_STATIC_LIBS ON)
 
 # Define dependency locations
-set(SDK_ROOT "/home/gg/fs_libs")
-set(REPOS_ROOT "/home/gg/git")
+set(SDK_ROOT "~/fs_libs")
+set(REPOS_ROOT "/home/lando/Documents")
 
 set(DevIL_ROOT_DIR "${SDK_ROOT}/DevIL")
 set(SFML_ROOT "${SDK_ROOT}/SFML/lib/cmake/SFML")

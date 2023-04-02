@@ -7,6 +7,7 @@
 
 #include <cstdint>
 #include <set>
+#include <cstddef>
 
 class SystemThreadManager final
 {
