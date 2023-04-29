@@ -6,6 +6,7 @@
 #pragma once
 
 #include "GameMath.h"
+#include "SysSpecifics.h"
 
 #include <algorithm>
 #include <cmath>
