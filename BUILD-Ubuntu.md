@@ -113,7 +113,7 @@ We are now ready to build DevIL in a folder named `build` under its checkout roo
 cd ~/git/DevIL
 mkdir build
 cd build
-cmake -DCMAKE_BUILD_TYPE=Release -DIL_NO_TIF=1 -DIL_NO_JP2=1 -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=~/fs_libs/DevIL ../DevIL 
+cmake -DCMAKE_BUILD_TYPE=Release -DIL_NO_TIF=1 -DIL_NO_JP2=1 -DIL_USE_DXTC_SQUISH=0 -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=~/fs_libs/DevIL ../DevIL 
 make install
 ```
 After the build is complete and installed, you should see the following under your new `~/fs_libs/DevIL` directory:
