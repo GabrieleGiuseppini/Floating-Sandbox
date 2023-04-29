@@ -1247,7 +1247,7 @@ void ShipFactory::ConnectSpringsAndTriangles(
     // 1. Build Point Pair -> Spring table
     //
 
-    std::unordered_map<PointPair, ElementIndex, PointPair::Hasher> pointPairToSpringMap;
+    PointPairToIndexMap pointPairToSpringMap;
 
     for (ElementIndex s = 0; s < springInfos2.size(); ++s)
     {
