@@ -83,11 +83,23 @@
 			+ Test sound
 		+ 4. Port to Android
 
-	- Nuke default_ship.shp2 and make Titanic's filename in code		
+	- Extra ports from SpringLab:
+		- TaskThreadPool, because of:
+			- Pointers to tasks
+
+	- Nuke default_ship.shp2 and make Titanic's filename in code
+		- So users don't see two Titanic's
 
 	= Lamps flashing when exploding
 		+ At depth
 		- Via sparkle tool
+
+	- Enhanced sea rendering
+		- Rays of light: TODOHERE
+
+	- Wrecking ball tool
+	- Replace points with quads from geometry shader
+	- Greyscaling before Thanos snap, and mass changes, and different phasing of ashing in band
 
 	- Buy new track for farewell: https://www.pond5.com/royalty-free-music/item/204959560-nearer-my-god-thee
 
@@ -98,6 +110,13 @@
 		- Take Dugongsmallwtrtight-Walter (ToTake folder)
 			- Name? (ASKED)
 			- Credits? (ASKED)
+		- See Discord
+
+	- Adjustable level of water
+		- Think of problem with flattening waves on bottom?
+
+	- Transparency setting for glass material
+		- Managed by Ship adjusting colors' alpha's
 
 	- Frozen structure (*)
 
