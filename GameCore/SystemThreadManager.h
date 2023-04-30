@@ -5,9 +5,9 @@
 ***************************************************************************************/
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
 #include <set>
-#include <cstddef>
 
 class SystemThreadManager final
 {

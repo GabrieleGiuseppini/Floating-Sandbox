@@ -81,6 +81,8 @@ WorldRenderContext::WorldRenderContext(
     // Textures
     , mCloudTextureAtlasMetadata()
     , mCloudTextureAtlasOpenGLHandle()
+    , mCloudShadowsTextureOpenGLHandle()
+    , mCloudShadowsTextureSize(0)
     , mUploadedWorldTextureManager()
     , mOceanTextureFrameSpecifications()
     , mOceanTextureOpenGLHandle()
@@ -383,6 +385,32 @@ WorldRenderContext::WorldRenderContext(
 
     glBindVertexArray(0);
 
+    //
+    // Initialize cloud shadows
+    //
+
+    {
+        glGenTextures(1, &tmpGLuint);
+        mCloudShadowsTextureOpenGLHandle = tmpGLuint;
+
+        // Bind texture
+        mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
+        glBindTexture(GL_TEXTURE_1D, *mCloudShadowsTextureOpenGLHandle);
+        CheckOpenGLError();
+
+        // Set repeat mode
+        glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        CheckOpenGLError();
+
+        // Set filtering
+        glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        CheckOpenGLError();
+
+        // Unbind texture
+        glBindTexture(GL_TEXTURE_1D, 0);
+    }
+
 
     //
     // Set generic linear texture in our shaders
@@ -639,6 +667,18 @@ void WorldRenderContext::UploadCloudsStart(size_t cloudCount)
 void WorldRenderContext::UploadCloudsEnd()
 {
     // Nop
+}
+
+void WorldRenderContext::UploadCloudShadows(
+    float const * shadowBuffer,
+    size_t shadowSampleCount)
+{
+    // We've been invoked on the render thread
+
+    mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
+    glBindTexture(GL_TEXTURE_1D, *mCloudShadowsTextureOpenGLHandle);
+    glTexImage1D(GL_TEXTURE_1D, 0, GL_RED, static_cast<GLsizei>(shadowSampleCount), 0, GL_RED, GL_FLOAT, shadowBuffer);
+    CheckOpenGLError();
 }
 
 void WorldRenderContext::UploadLandStart(size_t slices)
@@ -1018,6 +1058,11 @@ void WorldRenderContext::RenderDrawOcean(bool opaquely, RenderParameters const &
 
         case OceanRenderDetailType::Detailed:
         {
+            // Bind cloud shadows texture
+
+            mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
+            glBindTexture(GL_TEXTURE_1D, *mCloudShadowsTextureOpenGLHandle);
+            
             // Draw background if drawing opaquely, else foreground
 
             glBindVertexArray(*mOceanDetailedVAO);

@@ -94,12 +94,19 @@
 		+ At depth
 		- Via sparkle tool
 
-	- Enhanced sea rendering
-		- Rays of light: TODOHERE
+	= Enhanced sea rendering: rays of light
+		= Fuzzier borders
+		- Inclination
+			- Base
+			- Depending on time-of-day
+		- "Too many clouds => all black" problem:
+			- TODOHERE
+		- Too discrete borders, need interpolation
+		- Earlier depth-darkening of brightness enhancement
 
 	- Wrecking ball tool
 	- Replace points with quads from geometry shader
-	- Greyscaling before Thanos snap, and mass changes, and different phasing of ashing in band
+	- Greyscaling before Thanos snap, and mass changes (lighter), and different phasing of ashing in band
 
 	- Buy new track for farewell: https://www.pond5.com/royalty-free-music/item/204959560-nearer-my-god-thee
 

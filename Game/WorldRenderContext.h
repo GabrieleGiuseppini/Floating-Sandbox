@@ -268,6 +268,10 @@ public:
 
     void UploadCloudsEnd();
 
+    void UploadCloudShadows(
+        float const * shadowBuffer,
+        size_t shadowSampleCount);
+
     void UploadLandStart(size_t slices);
 
     inline void UploadLand(
@@ -1095,6 +1099,9 @@ private:
 
     std::unique_ptr<TextureAtlasMetadata<CloudTextureGroups>> mCloudTextureAtlasMetadata;
     GameOpenGLTexture mCloudTextureAtlasOpenGLHandle;
+
+    GameOpenGLTexture mCloudShadowsTextureOpenGLHandle;
+    size_t mCloudShadowsTextureSize;
 
     UploadedTextureManager<WorldTextureGroups> mUploadedWorldTextureManager;
 

@@ -19,6 +19,26 @@ namespace Physics {
 float constexpr CloudSpaceWidth = 3.0f;
 float constexpr MaxCloudSpaceX = CloudSpaceWidth / 2.0f;
 
+//
+// Shadows: we map the entire X range of the clouds onto the shadow buffer
+//
+
+static size_t constexpr ShadowBufferSize = 64;
+
+// ndc X (visible part only) -> index
+static float constexpr ShadowBufferDNdcx = static_cast<float>(ShadowBufferSize);
+
+// The thickness of the shadow edges, NDC
+static float constexpr ShadowEdgeHalfThicknessNdc = 0.05f;
+
+
+Clouds::Clouds()
+    : mLastCloudId(0)
+    , mClouds()
+    , mStormClouds()
+    , mShadowBuffer(ShadowBufferSize)
+{}
+
 void Clouds::Update(
     float /*currentSimulationTime*/,
     float baseAndStormSpeedMagnitude,
@@ -85,7 +105,6 @@ void Clouds::Update(
             });
     }
 
-
     //
     // Fill up to storm cloud count
     //
@@ -109,7 +128,6 @@ void Clouds::Update(
                     GameRandomEngine::GetInstance().GenerateNormalizedUniformReal())); // Initial growth phase
         }
     }
-
 
     //
     // Update clouds
@@ -179,6 +197,115 @@ void Clouds::Update(
         else
         {
             ++it;
+        }
+    }
+
+    //
+    // Update shadows
+    //
+
+    mShadowBuffer.fill(1.0f);
+
+    UpdateShadows(mClouds);
+    UpdateShadows(mStormClouds);
+}
+
+void Clouds::Upload(Render::RenderContext & renderContext) const
+{
+    //
+    // Upload clouds
+    //
+
+    renderContext.UploadCloudsStart(mClouds.size() + mStormClouds.size());
+
+    for (auto const & cloud : mClouds)
+    {
+        renderContext.UploadCloud(
+            cloud->Id,
+            cloud->X,
+            cloud->Y,
+            cloud->Z,
+            cloud->Scale,
+            cloud->Darkening,
+            cloud->GrowthProgress);
+    }
+
+    for (auto const & cloud : mStormClouds)
+    {
+        renderContext.UploadCloud(
+            cloud->Id,
+            cloud->X,
+            cloud->Y,
+            cloud->Z,
+            cloud->Scale,
+            cloud->Darkening,
+            cloud->GrowthProgress);
+    }
+
+    renderContext.UploadCloudsEnd();
+
+    //
+    // Upload shadows
+    //
+
+    renderContext.UploadCloudShadows(
+        mShadowBuffer.data(),
+        mShadowBuffer.GetSize());
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+namespace {
+
+    register_int NdcXToShadowBufferSampleIndex(float ndcX) // -> [0, ShadowBufferSize]
+    {
+        // Fractional index in the sample array
+        float const sampleIndexF = std::max((ndcX + 0.5f) * ShadowBufferDNdcx, 0.0f);
+
+        // Integral part
+        register_int const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
+
+        return std::min(sampleIndexI, static_cast<register_int>(ShadowBufferSize));
+    }
+}
+
+void Clouds::UpdateShadows(std::vector<std::unique_ptr<Cloud>> const & clouds)
+{
+    for (auto const & c : clouds)
+    {
+        // Check if cloud intesects screen
+
+        // TODO: solve cloud size (if needed)
+        float constexpr cloudSizeNdc = 0.4f;
+        float const leftEdgeX = c->X - cloudSizeNdc / 2.0f;
+        float const rightEdgeX = c->X + cloudSizeNdc / 2.0f;
+        if (leftEdgeX < 0.5f && rightEdgeX > -0.5f)
+        {
+            // Left edge
+            for (register_int i = NdcXToShadowBufferSampleIndex(leftEdgeX - ShadowEdgeHalfThicknessNdc);
+                i < NdcXToShadowBufferSampleIndex(leftEdgeX + ShadowEdgeHalfThicknessNdc);
+                ++i)
+            {
+                mShadowBuffer[i] *= 0.8f;
+            }
+
+            // Middle
+            for (register_int i = NdcXToShadowBufferSampleIndex(leftEdgeX + ShadowEdgeHalfThicknessNdc);
+                i < NdcXToShadowBufferSampleIndex(rightEdgeX - ShadowEdgeHalfThicknessNdc);
+                ++i)
+            {
+                // TODOTEST
+                //mShadowBuffer[i] *= 0.01f;
+                mShadowBuffer[i] *= 0.35f;
+            }
+
+            // Right edge
+            for (register_int i = NdcXToShadowBufferSampleIndex(rightEdgeX - ShadowEdgeHalfThicknessNdc);
+                i < NdcXToShadowBufferSampleIndex(rightEdgeX + ShadowEdgeHalfThicknessNdc);
+                ++i)
+            {
+                mShadowBuffer[i] *= 0.8f;
+            }
         }
     }
 }

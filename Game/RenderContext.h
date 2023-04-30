@@ -782,6 +782,20 @@ public:
         mWorldRenderContext->UploadCloudsEnd();
     }
 
+    inline void UploadCloudShadows(
+        float const * shadowBuffer,
+        size_t shadowSampleCount)
+    {
+        // Run upload asynchronously
+        mRenderThread.QueueTask(
+            [=]()
+            {
+                mWorldRenderContext->UploadCloudShadows(
+                    shadowBuffer,
+                    shadowSampleCount);
+            });
+    }
+
     inline void UploadLandStart(size_t slices)
     {
         mWorldRenderContext->UploadLandStart(slices);

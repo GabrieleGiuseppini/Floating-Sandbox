@@ -8,6 +8,7 @@
 #include "GameParameters.h"
 #include "RenderContext.h"
 
+#include <GameCore/Buffer.h>
 #include <GameCore/GameMath.h>
 #include <GameCore/GameRandomEngine.h>
 
@@ -23,11 +24,7 @@ class Clouds
 
 public:
 
-    Clouds()
-        : mLastCloudId(0)
-        , mClouds()
-        , mStormClouds()
-    {}
+    Clouds();
 
     void Update(
         float currentSimulationTime,
@@ -35,45 +32,26 @@ public:
         Storm::Parameters const & stormParameters,
         GameParameters const & gameParameters);
 
-    void Upload(Render::RenderContext & renderContext) const
-    {
-        renderContext.UploadCloudsStart(mClouds.size() + mStormClouds.size());
-
-        for (auto const & cloud : mClouds)
-        {
-            renderContext.UploadCloud(
-                cloud->Id,
-                cloud->X,
-                cloud->Y,
-                cloud->Z,
-                cloud->Scale,
-                cloud->Darkening,
-                cloud->GrowthProgress);
-        }
-
-        for (auto const & cloud : mStormClouds)
-        {
-            renderContext.UploadCloud(
-                cloud->Id,
-                cloud->X,
-                cloud->Y,
-                cloud->Z,
-                cloud->Scale,
-                cloud->Darkening,
-                cloud->GrowthProgress);
-        }
-
-        renderContext.UploadCloudsEnd();
-    }
+    void Upload(Render::RenderContext & renderContext) const;
 
 private:
+
+    struct Cloud;
+
+    void UpdateShadows(std::vector<std::unique_ptr<Cloud>> const & clouds);
+
+private:
+
+    //
+    // Clouds
+    //
 
     struct Cloud
     {
     public:
 
         uint32_t const Id; // Not consecutive, only guaranteed to be sticky and unique across all clouds (used as texture frame index)
-        float X;
+        float X; // NDC
         float const Y; // 0.0 -> 1.0 (above horizon)
         float const Z; // 0.0 -> 1.0
         float Scale;
@@ -124,6 +102,12 @@ private:
 
     std::vector<std::unique_ptr<Cloud>> mClouds;
     std::vector<std::unique_ptr<Cloud>> mStormClouds;
+
+    //
+    // Shadows
+    //
+
+    Buffer<float> mShadowBuffer;
 };
 
 }

@@ -145,7 +145,7 @@ enum class ProgramParameterType : uint8_t
     WidthNdc,
 
     // Textures
-    SharedTexture,                          // 0, for programs that don't use a dedicated unit and hence will keep binding different textures
+    SharedTexture,                          // 0, for programs that don't use a dedicated unit and hence will keep binding different textures (font, ship texture, stressed ship texture, cloud shadows)
     CloudsAtlasTexture,                     // 1
     ExplosionsAtlasTexture,                 // 2
     FishesAtlasTexture,                     // 3

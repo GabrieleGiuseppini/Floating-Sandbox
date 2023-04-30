@@ -108,6 +108,8 @@ RenderContext::RenderContext(
 
             // Initialize the shared texture unit once and for all
             mShaderManager->ActivateTexture<ProgramParameterType::SharedTexture>();
+            glEnable(GL_TEXTURE_1D);
+            glEnable(GL_TEXTURE_2D);
 
             //
             // Initialize global OpenGL settings

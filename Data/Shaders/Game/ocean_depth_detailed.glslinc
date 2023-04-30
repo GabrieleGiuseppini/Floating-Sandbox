@@ -11,13 +11,15 @@ in vec4 inOceanDetailed2;	// yBack/yMid/yFront/dYFront2 (float, world y)
 uniform mat4 paramOrthoMatrix;
 
 // Outputs
+out float xNdc;
 out float yWorld;
 out vec4 yVectorWorld; // yBackWorld/yMidWorld/yFrontWorld/dYFront2World
 
 void main()
-{
+{    
     gl_Position = paramOrthoMatrix * vec4(inOceanDetailed1.xy, -1.0, 1.0);
 
+    xNdc = gl_Position.x;
     yWorld = inOceanDetailed1.y;
     yVectorWorld = inOceanDetailed2;
 }
@@ -30,8 +32,12 @@ void main()
 #include "ocean_surface.glslinc"
 
 // Inputs from previous shader
+in float xNdc;
 in float yWorld;
 in vec4 yVectorWorld; // yBackWorld/yMidWorld/yFrontWorld/dYFront2World
+
+// Input textures
+uniform sampler1D paramSharedTexture;
 
 // Parameters
 uniform float paramEffectiveAmbientLightIntensity;
@@ -49,9 +55,15 @@ void main()
         paramOceanDepthColorEnd,
         darkMix * darkMix * darkMix);
 
-    // Apply detail
-    vec4 color = CalculateOceanPlaneColor(
+    // Apply shadows
+    vec4 baseColor = ApplyShadows(
         vec4(depthColor, (1.0 - paramOceanTransparency)),
+        xNdc,
+        paramSharedTexture);
+
+    // Apply detail
+    vec4 color = CalculateDetailedOceanPlaneColor(
+        baseColor,
         yWorld,
         yVectorWorld);
 
