@@ -107,7 +107,7 @@ vec4 ApplyShadows(
     float shadowSample = texture1D(shadowsBuffer, sampleX).x; // [0.0 ... 1.0]
 
     // Darken with depth
-    shadowSample *= 1.0 - exp(min(0.0, yWorld) * 0.05); // Darkening is based on world Y (more negative Y, more dark)
+    shadowSample *= exp(min(0.0, yWorld) * 0.07); // Darkening is based on world Y (more negative Y, more dark)
 
     // Map 0.0->1.0 to 0.5->1.0
     shadowSample = 0.5 + shadowSample / 2.0;

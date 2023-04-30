@@ -111,7 +111,7 @@
 		- "Too many clouds => all black" problem:
 			- TODOHERE
 		- Too discrete borders (stepping problem), need interpolation
-		- Earlier depth-darkening of brightness enhancement
+		- Depth-darkening of brightness enhancement, proportional to brightness
 
 	- Wrecking ball tool
 	- Replace points with quads from geometry shader
