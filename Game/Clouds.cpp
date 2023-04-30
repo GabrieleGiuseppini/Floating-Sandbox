@@ -276,7 +276,7 @@ void Clouds::UpdateShadows(std::vector<std::unique_ptr<Cloud>> const & clouds)
         // Check if cloud intesects screen
 
         // TODO: solve cloud size (if needed)
-        float constexpr cloudSizeNdc = 0.4f;
+        float const cloudSizeNdc = 0.4f * c->Scale;
         float const leftEdgeX = c->X - cloudSizeNdc / 2.0f;
         float const rightEdgeX = c->X + cloudSizeNdc / 2.0f;
         if (leftEdgeX < 0.5f && rightEdgeX > -0.5f)

@@ -787,6 +787,7 @@ private:
     void ApplyOceanTextureIndexChanges(RenderParameters const & renderParameters);
     void ApplyLandRenderParametersChanges(RenderParameters const & renderParameters);
     void ApplyLandTextureIndexChanges(RenderParameters const & renderParameters);
+    void ApplySunRaysInclinationChanges(RenderParameters const & renderParameters);
 
     void RecalculateWorldBorder(RenderParameters const & renderParameters);
 

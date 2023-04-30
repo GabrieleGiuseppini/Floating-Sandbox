@@ -350,6 +350,12 @@ public:
         mRenderParameters.IsLandTextureIndexDirty = true;
     }
 
+    void SetSunRaysInclination(float inclination)
+    {
+        mRenderParameters.SunRaysInclination = inclination;
+        mRenderParameters.IsSunRaysInclinationDirty = true;
+    }
+
     //
     // Ship rendering properties
     //

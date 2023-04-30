@@ -12,7 +12,7 @@ uniform mat4 paramOrthoMatrix;
 
 // Outputs
 out vec3 oceanColor;
-out float xNdc;
+out vec2 posNdc;
 out float yWorld;
 out vec4 yVectorWorld; // yBackWorld/yMidWorld/yFrontWorld/dYFront2World
 
@@ -22,7 +22,7 @@ void main()
     gl_Position = paramOrthoMatrix * vec4(inOceanDetailed1, -1.0, 1.0);
 
     // Pass values to fragment shader
-    xNdc = gl_Position.x;
+    posNdc = gl_Position.xy;
     yWorld = inOceanDetailed1.y;
     yVectorWorld = inOceanDetailed2;
 }
@@ -35,7 +35,7 @@ void main()
 #include "ocean_surface.glslinc"
 
 // Inputs from previous shader
-in float xNdc;
+in vec2 posNdc;
 in float yWorld;
 in vec4 yVectorWorld; // yBackWorld/yMidWorld/yFrontWorld/dYFront2World
 
@@ -46,13 +46,15 @@ uniform sampler1D paramSharedTexture;
 uniform float paramEffectiveAmbientLightIntensity;
 uniform float paramOceanTransparency;
 uniform vec3 paramOceanFlatColor;
+uniform float paramSunRaysInclination; // 0.0==vertical, 1.0/-1.0==45/-45 degrees
 
 void main()
 {
     // Apply shadows
     vec4 baseColor = ApplyShadows(
         vec4(paramOceanFlatColor, (1.0 - paramOceanTransparency)),
-        xNdc,
+        posNdc,
+        paramSunRaysInclination,
         paramSharedTexture);
 
     // Apply detail

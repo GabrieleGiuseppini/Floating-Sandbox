@@ -96,12 +96,21 @@
 
 	= Enhanced sea rendering: rays of light
 		= Fuzzier borders
-		- Inclination
-			- Base
+		= Inclination
+			= Base:
+				+ Param: sunRaysInclination: 0.0==vertical, 1.0/-1.0==45/-45 degrees
+					+ Shader
+					+ Params enum
+					+ Set to 1.0
+				= Use of param:
+					- TODO: scrolling up or down should change
 			- Depending on time-of-day
+				- Daylight state machine maps time of day so that:
+					- amb=1.0 => ri=1.0 (so that default is +45 degrees)
+					- amb=0.0 => ri=-1.0 (so that at night we've flipped to -45 degrees)
 		- "Too many clouds => all black" problem:
 			- TODOHERE
-		- Too discrete borders, need interpolation
+		- Too discrete borders (stepping problem), need interpolation
 		- Earlier depth-darkening of brightness enhancement
 
 	- Wrecking ball tool

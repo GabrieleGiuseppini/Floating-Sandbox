@@ -134,6 +134,7 @@ enum class ProgramParameterType : uint8_t
     RainDensity,
     StarTransparency,
     StressColorMap,
+    SunRaysInclination,
     TextLighteningStrength,
     TextureLighteningStrength,
     TextureScaling,
