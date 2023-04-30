@@ -98,12 +98,16 @@ vec4 CalculateDetailedOceanPlaneColor(
 
 vec4 ApplyShadows(
     vec4 baseColor,
-    vec2 posNdc, // [-1.0, 1.0]
-    float paramSunRaysInclination, // 0.0==vertical, 1.0/-1.0==45/-45 degrees
+    vec2 shadowPosNdc, // [-1.0, 1.0]
+    float yWorld,
+    float sunRaysInclination, // 0.0==vertical, 1.0/-1.0==45/-45 degrees
     sampler1D shadowsBuffer)
 {
-    float sampleX = (posNdc.x + 1.0) / 2.0 + paramSunRaysInclination * posNdc.y * .15;
+    float sampleX = (shadowPosNdc.x + 1.0) / 2.0 + sunRaysInclination * shadowPosNdc.y * .15;
     float shadowSample = texture1D(shadowsBuffer, sampleX).x; // [0.0 ... 1.0]
+
+    // Darken with depth
+    shadowSample *= 1.0 - exp(min(0.0, yWorld) * 0.05); // Darkening is based on world Y (more negative Y, more dark)
 
     // Map 0.0->1.0 to 0.5->1.0
     shadowSample = 0.5 + shadowSample / 2.0;

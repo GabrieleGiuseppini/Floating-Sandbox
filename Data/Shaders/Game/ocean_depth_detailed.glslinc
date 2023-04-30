@@ -22,7 +22,7 @@ void main()
     gl_Position = posNdc;
 
     // Pass values to fragment shader
-    shadowPosNdc = vec2(posNdc.x, posNdc.y - paramOrthoMatrix[1][2]);
+    shadowPosNdc = vec2(posNdc.x, posNdc.y - paramOrthoMatrix[3][1]);
     yWorld = inOceanDetailed1.y;
     yVectorWorld = inOceanDetailed2;
 }
@@ -63,6 +63,7 @@ void main()
     vec4 baseColor = ApplyShadows(
         vec4(depthColor, (1.0 - paramOceanTransparency)),
         shadowPosNdc,
+        yWorld,
         paramSunRaysInclination,
         paramSharedTexture);
 
