@@ -102,7 +102,7 @@ vec4 ApplyShadows(
     float paramSunRaysInclination, // 0.0==vertical, 1.0/-1.0==45/-45 degrees
     sampler1D shadowsBuffer)
 {
-    float sampleX = (posNdc.x + 1.0) / 2.0 + paramSunRaysInclination * posNdc.y * .25;
+    float sampleX = (posNdc.x + 1.0) / 2.0 + paramSunRaysInclination * posNdc.y * .20;
     float shadowSample = texture1D(shadowsBuffer, sampleX).x; // [0.0 ... 1.0]
 
     // Map 0.0->1.0 to 0.5->1.0

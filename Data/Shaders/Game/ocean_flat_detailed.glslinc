@@ -13,6 +13,7 @@ uniform mat4 paramOrthoMatrix;
 // Outputs
 out vec3 oceanColor;
 out vec2 posNdc;
+out float yOffsetNdc;
 out float yWorld;
 out vec4 yVectorWorld; // yBackWorld/yMidWorld/yFrontWorld/dYFront2World
 
@@ -23,6 +24,7 @@ void main()
 
     // Pass values to fragment shader
     posNdc = gl_Position.xy;
+    yOffsetNdc = (paramOrthoMatrix * vec4(0.0, 0.0, -1.0, 1.0)).y; // TODOHERE: really needed? Can't incorporate in posNdc already?
     yWorld = inOceanDetailed1.y;
     yVectorWorld = inOceanDetailed2;
 }
@@ -36,6 +38,7 @@ void main()
 
 // Inputs from previous shader
 in vec2 posNdc;
+in float yOffsetNdc;
 in float yWorld;
 in vec4 yVectorWorld; // yBackWorld/yMidWorld/yFrontWorld/dYFront2World
 
@@ -53,7 +56,7 @@ void main()
     // Apply shadows
     vec4 baseColor = ApplyShadows(
         vec4(paramOceanFlatColor, (1.0 - paramOceanTransparency)),
-        posNdc,
+        posNdc - vec2(0.0, yOffsetNdc),
         paramSunRaysInclination,
         paramSharedTexture);
 

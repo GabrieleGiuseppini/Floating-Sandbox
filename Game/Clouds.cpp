@@ -20,7 +20,7 @@ float constexpr CloudSpaceWidth = 3.0f;
 float constexpr MaxCloudSpaceX = CloudSpaceWidth / 2.0f;
 
 //
-// Shadows: we map the entire X range of the clouds onto the shadow buffer
+// Shadows: we map the visible X range of the clouds onto the shadow buffer
 //
 
 static size_t constexpr ShadowBufferSize = 64;
@@ -29,7 +29,7 @@ static size_t constexpr ShadowBufferSize = 64;
 static float constexpr ShadowBufferDNdcx = static_cast<float>(ShadowBufferSize);
 
 // The thickness of the shadow edges, NDC
-static float constexpr ShadowEdgeHalfThicknessNdc = 0.05f;
+static float constexpr ShadowEdgeHalfThicknessNdc = 0.025f;
 
 
 Clouds::Clouds()
