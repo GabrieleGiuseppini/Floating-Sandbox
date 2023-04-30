@@ -95,15 +95,14 @@
 		- Via sparkle tool
 
 	= Enhanced sea rendering: rays of light
-		= Fuzzier borders
+		+ Fuzzier borders
 		= Inclination
-			= Base:
+			+ Base:
 				+ Param: sunRaysInclination: 0.0==vertical, 1.0/-1.0==45/-45 degrees
 					+ Shader
 					+ Params enum
 					+ Set to 1.0
-				= Use of param:
-					- TODO: scrolling up or down should change
+				+ Use of param
 			- Depending on time-of-day
 				- Daylight state machine maps time of day so that:
 					- amb=1.0 => ri=1.0 (so that default is +45 degrees)
