@@ -107,9 +107,12 @@
 				- Daylight state machine maps time of day so that:
 					- amb=1.0 => ri=1.0 (so that default is +45 degrees)
 					- amb=0.0 => ri=-1.0 (so that at night we've flipped to -45 degrees)
-			- Should we map instead the _whole_ NDC space into the buffer (thus making the buffer 3x as large to maintain resolution), so to fix inclination?
+			= Should we map instead the _whole_ NDC space into the buffer (thus making the buffer 3x as large to maintain resolution), so to fix inclination?
 		- "Too many clouds => all black" problem:
-			- TODOHERE
+			- Option 1: add (1-mean) to all values, so that mean becomes 1.0
+				! Will have darks and lights
+			- Option 2: shift values up so that min of current values becomes 1.0
+				! Will have normal and lights, never darker
 		- Too discrete borders (stepping problem), need interpolation
 		- Depth-darkening of brightness enhancement, proportional to brightness
 

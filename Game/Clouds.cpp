@@ -20,16 +20,17 @@ float constexpr CloudSpaceWidth = 3.0f;
 float constexpr MaxCloudSpaceX = CloudSpaceWidth / 2.0f;
 
 //
-// Shadows: we map the visible X range of the clouds onto the shadow buffer
+// Shadows: we map the entire X range of the clouds onto the shadow buffer,
+// conceptually divided into three blocks
 //
 
-static size_t constexpr ShadowBufferSize = 64;
+static size_t constexpr ShadowBufferSize = 64 * 3;
 
-// ndc X (visible part only) -> index
-static float constexpr ShadowBufferDNdcx = static_cast<float>(ShadowBufferSize);
+// cloud X [-1.5, 1.5] -> index, or width of an element
+static float constexpr ShadowBufferDx = CloudSpaceWidth / static_cast<float>(ShadowBufferSize);
 
-// The thickness of the shadow edges, NDC
-static float constexpr ShadowEdgeHalfThicknessNdc = 0.025f;
+// The thickness of the shadow edges, in buffer elements
+static register_int constexpr ShadowEdgeHalfThicknessElementCount = 1;
 
 
 Clouds::Clouds()
@@ -255,54 +256,51 @@ void Clouds::Upload(Render::RenderContext & renderContext) const
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-namespace {
-
-    register_int NdcXToShadowBufferSampleIndex(float ndcX) // -> [0, ShadowBufferSize]
-    {
-        // Fractional index in the sample array
-        float const sampleIndexF = std::max((ndcX + 0.5f) * ShadowBufferDNdcx, 0.0f);
-
-        // Integral part
-        register_int const sampleIndexI = FastTruncateToArchInt(sampleIndexF);
-
-        return std::min(sampleIndexI, static_cast<register_int>(ShadowBufferSize));
-    }
-}
-
 void Clouds::UpdateShadows(std::vector<std::unique_ptr<Cloud>> const & clouds)
 {
+    float constexpr CloudSize = 0.4f; // In cloud X space
+    register_int const ClouseSizeElementCount = static_cast<register_int>(std::round(CloudSize / ShadowBufferDx));
+
     for (auto const & c : clouds)
     {
-        // Check if cloud intesects screen
+        float const leftEdgeX = c->X - CloudSize / 2.0f;
 
-        // TODO: solve cloud size (if needed)
-        float const cloudSizeNdc = 0.4f * c->Scale;
-        float const leftEdgeX = c->X - cloudSizeNdc / 2.0f;
-        float const rightEdgeX = c->X + cloudSizeNdc / 2.0f;
-        if (leftEdgeX < 0.5f && rightEdgeX > -0.5f)
+        // Fractional index in the sample array
+        float const leftEdgeIndexF = (leftEdgeX + CloudSpaceWidth / 2.0f) / ShadowBufferDx;
+
+        // Integral part
+        register_int const leftEdgeIndexI = FastTruncateToArchInt(leftEdgeIndexF);
+        assert(leftEdgeIndexI < static_cast<register_int>(ShadowBufferSize));
+
+        // Fractional part within sample index and the next sample index
+        // TODO: for interpolation
+        //float const sampleIndexDx = leftEdgeIndexF - leftEdgeIndexI;
+
+        // TODO: get rid of if's
+
+        // Left edge
+        register_int i = leftEdgeIndexI - ShadowEdgeHalfThicknessElementCount;
+        for (; i < leftEdgeIndexI + ShadowEdgeHalfThicknessElementCount; ++i)
         {
-            // Left edge
-            for (register_int i = NdcXToShadowBufferSampleIndex(leftEdgeX - ShadowEdgeHalfThicknessNdc);
-                i < NdcXToShadowBufferSampleIndex(leftEdgeX + ShadowEdgeHalfThicknessNdc);
-                ++i)
+            if (i >= 0 && i < ShadowBufferSize)
             {
                 mShadowBuffer[i] *= 0.8f;
             }
+        }
 
-            // Middle
-            for (register_int i = NdcXToShadowBufferSampleIndex(leftEdgeX + ShadowEdgeHalfThicknessNdc);
-                i < NdcXToShadowBufferSampleIndex(rightEdgeX - ShadowEdgeHalfThicknessNdc);
-                ++i)
+        // Middle
+        for (; i < leftEdgeIndexI + ClouseSizeElementCount - ShadowEdgeHalfThicknessElementCount; ++i)
+        {
+            if (i >= 0 && i < ShadowBufferSize)
             {
-                // TODOTEST
-                //mShadowBuffer[i] *= 0.01f;
                 mShadowBuffer[i] *= 0.35f;
             }
+        }
 
-            // Right edge
-            for (register_int i = NdcXToShadowBufferSampleIndex(rightEdgeX - ShadowEdgeHalfThicknessNdc);
-                i < NdcXToShadowBufferSampleIndex(rightEdgeX + ShadowEdgeHalfThicknessNdc);
-                ++i)
+        // Right edge
+        for (; i < leftEdgeIndexI + ClouseSizeElementCount + ShadowEdgeHalfThicknessElementCount; ++i)
+        {
+            if (i >= 0 && i < ShadowBufferSize)
             {
                 mShadowBuffer[i] *= 0.8f;
             }

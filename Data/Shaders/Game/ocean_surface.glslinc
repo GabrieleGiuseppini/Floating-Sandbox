@@ -103,7 +103,10 @@ vec4 ApplyShadows(
     float sunRaysInclination, // 0.0==vertical, 1.0/-1.0==45/-45 degrees
     sampler1D shadowsBuffer)
 {
-    float sampleX = (shadowPosNdc.x + 1.0) / 2.0 + sunRaysInclination * shadowPosNdc.y * .15;
+    // Maintain with code!
+    #define CloudSpaceWidthNdc (3.0 * 2.0)
+
+    float sampleX = (shadowPosNdc.x + CloudSpaceWidthNdc / 2.0) / CloudSpaceWidthNdc + sunRaysInclination * shadowPosNdc.y * .05;
     float shadowSample = texture1D(shadowsBuffer, sampleX).x; // [0.0 ... 1.0]
 
     // Darken with depth
