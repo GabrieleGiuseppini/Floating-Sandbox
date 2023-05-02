@@ -258,7 +258,7 @@ void Clouds::Upload(Render::RenderContext & renderContext) const
 
 void Clouds::UpdateShadows(std::vector<std::unique_ptr<Cloud>> const & clouds)
 {
-    float constexpr CloudSize = 0.4f; // In cloud X space
+    float constexpr CloudSize = 0.3f; // In cloud X space
     register_int const ClouseSizeElementCount = static_cast<register_int>(std::round(CloudSize / ShadowBufferDx));
 
     for (auto const & c : clouds)
