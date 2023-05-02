@@ -273,33 +273,35 @@ void Clouds::UpdateShadows(std::vector<std::unique_ptr<Cloud>> const & clouds)
         assert(leftEdgeIndexI < static_cast<register_int>(ShadowBufferSize));
 
         // Fractional part within sample index and the next sample index
-        // TODO: for interpolation
-        //float const sampleIndexDx = leftEdgeIndexF - leftEdgeIndexI;
+        float const sampleIndexDx = leftEdgeIndexF - leftEdgeIndexI;
 
-        // Edges
-        register_int const iLeftEdgeLeft = Clamp(leftEdgeIndexI - ShadowEdgeHalfThicknessElementCount, register_int(0), static_cast<register_int>(ShadowBufferSize - 1));
-        register_int const iLeftEdgeRight = Clamp(leftEdgeIndexI + ShadowEdgeHalfThicknessElementCount, register_int(0), static_cast<register_int>(ShadowBufferSize - 1));
-        register_int const iRightEdgeLeft = Clamp(leftEdgeIndexI + ClouseSizeElementCount - ShadowEdgeHalfThicknessElementCount, register_int(0), static_cast<register_int>(ShadowBufferSize - 1));
-        register_int const iRightEdgeRight = Clamp(leftEdgeIndexI + ClouseSizeElementCount + ShadowEdgeHalfThicknessElementCount, register_int(0), static_cast<register_int>(ShadowBufferSize - 1));
-
+        // Edge indices
+        register_int const iLeftEdgeLeft = Clamp(leftEdgeIndexI - ShadowEdgeHalfThicknessElementCount, register_int(0), static_cast<register_int>(ShadowBufferSize - 2));
+        register_int const iLeftEdgeRight = Clamp(leftEdgeIndexI + ShadowEdgeHalfThicknessElementCount, register_int(0), static_cast<register_int>(ShadowBufferSize - 2));
+        register_int const iRightEdgeLeft = Clamp(leftEdgeIndexI + ClouseSizeElementCount - ShadowEdgeHalfThicknessElementCount, register_int(0), static_cast<register_int>(ShadowBufferSize - 2));
+        register_int const iRightEdgeRight = Clamp(leftEdgeIndexI + ClouseSizeElementCount + ShadowEdgeHalfThicknessElementCount, register_int(0), static_cast<register_int>(ShadowBufferSize - 2));
+        
         register_int i;
 
         // Left edge
         for (i = iLeftEdgeLeft; i < iLeftEdgeRight; ++i)
         {
-            mShadowBuffer[i] *= 0.8f;
+            mShadowBuffer[i] *= 1.0f - (1.0f - 0.8f) * (1.0f - sampleIndexDx);
+            mShadowBuffer[i + 1] *= 1.0f - (1.0f - 0.8f) * (sampleIndexDx);
         }
 
         // Middle
         for (; i < iRightEdgeLeft; ++i)
         {
-            mShadowBuffer[i] *= 0.35f;
+            mShadowBuffer[i] *= 1.0f - (1.0f - 0.35f) * (1.0f - sampleIndexDx);
+            mShadowBuffer[i + 1] *= 1.0f - (1.0f - 0.35f) * (sampleIndexDx);
         }
 
         // Right edge
         for (; i < iRightEdgeRight; ++i)
         {
-            mShadowBuffer[i] *= 0.8f;
+            mShadowBuffer[i] *= 1.0f - (1.0f - 0.8f) * (1.0f - sampleIndexDx);
+            mShadowBuffer[i + 1] *= 1.0f - (1.0f - 0.8f) * (sampleIndexDx);
         }
     }
 }
