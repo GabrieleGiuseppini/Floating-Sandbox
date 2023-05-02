@@ -114,7 +114,7 @@
 			- Option 2: shift values up so that min of current values becomes 1.0
 				! Will have normal and lights, never darker
 		- Too discrete borders (stepping problem), need interpolation
-		- Depth-darkening of brightness enhancement, proportional to brightness
+		= Depth-darkening of brightness enhancement, proportional to brightness
 
 	- Wrecking ball tool
 	- Replace points with quads from geometry shader

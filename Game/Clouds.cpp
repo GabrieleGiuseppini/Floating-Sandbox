@@ -276,34 +276,30 @@ void Clouds::UpdateShadows(std::vector<std::unique_ptr<Cloud>> const & clouds)
         // TODO: for interpolation
         //float const sampleIndexDx = leftEdgeIndexF - leftEdgeIndexI;
 
-        // TODO: get rid of if's
+        // Edges
+        register_int const iLeftEdgeLeft = Clamp(leftEdgeIndexI - ShadowEdgeHalfThicknessElementCount, register_int(0), static_cast<register_int>(ShadowBufferSize - 1));
+        register_int const iLeftEdgeRight = Clamp(leftEdgeIndexI + ShadowEdgeHalfThicknessElementCount, register_int(0), static_cast<register_int>(ShadowBufferSize - 1));
+        register_int const iRightEdgeLeft = Clamp(leftEdgeIndexI + ClouseSizeElementCount - ShadowEdgeHalfThicknessElementCount, register_int(0), static_cast<register_int>(ShadowBufferSize - 1));
+        register_int const iRightEdgeRight = Clamp(leftEdgeIndexI + ClouseSizeElementCount + ShadowEdgeHalfThicknessElementCount, register_int(0), static_cast<register_int>(ShadowBufferSize - 1));
+
+        register_int i;
 
         // Left edge
-        register_int i = leftEdgeIndexI - ShadowEdgeHalfThicknessElementCount;
-        for (; i < leftEdgeIndexI + ShadowEdgeHalfThicknessElementCount; ++i)
+        for (i = iLeftEdgeLeft; i < iLeftEdgeRight; ++i)
         {
-            if (i >= 0 && i < ShadowBufferSize)
-            {
-                mShadowBuffer[i] *= 0.8f;
-            }
+            mShadowBuffer[i] *= 0.8f;
         }
 
         // Middle
-        for (; i < leftEdgeIndexI + ClouseSizeElementCount - ShadowEdgeHalfThicknessElementCount; ++i)
+        for (; i < iRightEdgeLeft; ++i)
         {
-            if (i >= 0 && i < ShadowBufferSize)
-            {
-                mShadowBuffer[i] *= 0.35f;
-            }
+            mShadowBuffer[i] *= 0.35f;
         }
 
         // Right edge
-        for (; i < leftEdgeIndexI + ClouseSizeElementCount + ShadowEdgeHalfThicknessElementCount; ++i)
+        for (; i < iRightEdgeRight; ++i)
         {
-            if (i >= 0 && i < ShadowBufferSize)
-            {
-                mShadowBuffer[i] *= 0.8f;
-            }
+            mShadowBuffer[i] *= 0.8f;
         }
     }
 }
