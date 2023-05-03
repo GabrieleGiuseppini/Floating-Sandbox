@@ -109,15 +109,16 @@ vec4 ApplyShadows(
     float sampleX = (shadowPosNdc.x + CloudSpaceWidthNdc / 2.0) / CloudSpaceWidthNdc + sunRaysInclination * shadowPosNdc.y * .05;
     float shadowSample = texture1D(shadowsBuffer, sampleX).x; // [0.0 ... 1.0]
 
-    // Darken with depth
+    // Darken > 1.0f with depth
     //TODO: try without sqrt
-    shadowSample *= exp(min(0.0, yWorld) * sqrt(shadowSample) * 0.05); // Darkening is based on world Y (more negative Y, more dark)
+    //shadowSample *= exp(min(0.0, yWorld) * sqrt(shadowSample) * 0.05); // Darkening is based on world Y (more negative Y, more dark)
+    //shadowSample *= exp(min(0.0, yWorld) * step(1.0, shadowSample) * (shadowSample - 1.0) * 0.05); // Darkening is based on world Y (more negative Y, more dark)
 
     // Map 0.0->1.0 to 0.5->1.0
-    shadowSample = 0.5 + shadowSample / 2.0;
+    //shadowSample = 0.5 + shadowSample / 2.0;
 
     // Apply shadow
-    vec3 innerColor = baseColor.xyz * vec3(shadowSample);
+    vec3 innerColor = baseColor.xyz * shadowSample;
 
     return vec4(
         innerColor,

@@ -168,7 +168,7 @@ void InitOpenGLExt_VertexArray(GLADloadproc load)
 }
 
 //////////////////////////////////////////////////////////////////////////
-// Texture Float
+// Texture Float (https://registry.khronos.org/OpenGL/extensions/ARB/ARB_texture_float.txt)
 //////////////////////////////////////////////////////////////////////////
 
 void InitOpenGLExt_TextureFloat(GLADloadproc /*load*/)
@@ -181,6 +181,23 @@ void InitOpenGLExt_TextureFloat(GLADloadproc /*load*/)
     else
     {
         throw GameException("Texture Float functionality is not supported");
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Texture RG (https://registry.khronos.org/OpenGL/extensions/ARB/ARB_texture_rg.txt)
+//////////////////////////////////////////////////////////////////////////
+
+void InitOpenGLExt_TextureRG(GLADloadproc /*load*/)
+{
+    if (GLVersion.major >= 3 // Core in 3.0
+        || HasExt("GL_ARB_texture_rg"))
+    {
+        // Core or ARB - maintains enumerants
+    }
+    else
+    {
+        throw GameException("Texture RG functionality is not supported");
     }
 }
 
@@ -234,6 +251,8 @@ void InitOpenGLExt()
                 InitOpenGLExt_VertexArray(&get_proc);
 
                 InitOpenGLExt_TextureFloat(&get_proc);
+
+                InitOpenGLExt_TextureRG(&get_proc);
 
                 InitOpenGLExt_Misc(&get_proc);
 

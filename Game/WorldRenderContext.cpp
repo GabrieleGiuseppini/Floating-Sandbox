@@ -677,7 +677,7 @@ void WorldRenderContext::UploadCloudShadows(
 
     mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
     glBindTexture(GL_TEXTURE_1D, *mCloudShadowsTextureOpenGLHandle);
-    glTexImage1D(GL_TEXTURE_1D, 0, GL_RED, static_cast<GLsizei>(shadowSampleCount), 0, GL_RED, GL_FLOAT, shadowBuffer);
+    glTexImage1D(GL_TEXTURE_1D, 0, GL_R32F, static_cast<GLsizei>(shadowSampleCount), 0, GL_RED, GL_FLOAT, shadowBuffer);
     CheckOpenGLError();
 }
 

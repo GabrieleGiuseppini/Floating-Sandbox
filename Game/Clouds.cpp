@@ -209,6 +209,42 @@ void Clouds::Update(
 
     UpdateShadows(mClouds);
     UpdateShadows(mStormClouds);
+
+    // Offset shadow values so that TODO
+    //
+    // Note: we only sample the visible (central) slice, so that we
+    // do not undergo non-linearities when clouds disappear
+    // at the edges of the cloud space
+
+    ////// TODOTEST: Option 1: mean
+
+    ////float sum = 0.0f;
+    ////float count = 0.0f;
+    ////for (size_t i = ShadowBufferSize / 3; i < ShadowBufferSize * 2 / 3; ++i)
+    ////{
+    ////    sum += mShadowBuffer[i];
+    ////    count += 1.0f;
+    ////}
+
+    ////float const adjustment = 1.0f - sum / count;
+    ////for (size_t i = 0; i < ShadowBufferSize; ++i)
+    ////{
+    ////    mShadowBuffer[i] += adjustment;
+    ////}
+
+    // TODOTEST: Option 2: min shifted to 1.0
+
+    float minValue = 1.0f;
+    for (size_t i = ShadowBufferSize / 3; i < ShadowBufferSize * 2 / 3; ++i)
+    {
+        minValue = std::min(minValue, mShadowBuffer[i]);
+    }
+
+    float const adjustment = 1.0f - minValue;
+    for (size_t i = 0; i < ShadowBufferSize; ++i)
+    {
+        mShadowBuffer[i] += adjustment;
+    }
 }
 
 void Clouds::Upload(Render::RenderContext & renderContext) const
