@@ -119,6 +119,7 @@
 			+ 2-way
 			- 3-way
 		+ Depth-darkening of brightness enhancement
+			+ Lighter should darken less
 
 	- Wrecking ball tool
 	- Replace points with quads from geometry shader
