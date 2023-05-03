@@ -118,7 +118,7 @@
 		= Too discrete borders (stepping problem), need interpolation
 			+ 2-way
 			- 3-way
-		= Depth-darkening of brightness enhancement, proportional to brightness
+		+ Depth-darkening of brightness enhancement
 
 	- Wrecking ball tool
 	- Replace points with quads from geometry shader
