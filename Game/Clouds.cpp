@@ -319,25 +319,28 @@ void Clouds::UpdateShadows(std::vector<std::unique_ptr<Cloud>> const & clouds)
         
         register_int i;
 
+        float constexpr EdgeShadow = 0.8f;
+        float constexpr FullShadow = 0.35f;
+
         // Left edge
         for (i = iLeftEdgeLeft; i < iLeftEdgeRight; ++i)
         {
-            mShadowBuffer[i] *= 1.0f - (1.0f - 0.8f) * (1.0f - sampleIndexDx);
-            mShadowBuffer[i + 1] *= 1.0f - (1.0f - 0.8f) * (sampleIndexDx);
+            mShadowBuffer[i] *= 1.0f - (1.0f - EdgeShadow) * (1.0f - sampleIndexDx);
+            mShadowBuffer[i + 1] *= 1.0f - (1.0f - EdgeShadow) * (sampleIndexDx);
         }
 
         // Middle
         for (; i < iRightEdgeLeft; ++i)
         {
-            mShadowBuffer[i] *= 1.0f - (1.0f - 0.35f) * (1.0f - sampleIndexDx);
-            mShadowBuffer[i + 1] *= 1.0f - (1.0f - 0.35f) * (sampleIndexDx);
+            mShadowBuffer[i] *= 1.0f - (1.0f - FullShadow) * (1.0f - sampleIndexDx);
+            mShadowBuffer[i + 1] *= 1.0f - (1.0f - FullShadow) * (sampleIndexDx);
         }
 
         // Right edge
         for (; i < iRightEdgeRight; ++i)
         {
-            mShadowBuffer[i] *= 1.0f - (1.0f - 0.8f) * (1.0f - sampleIndexDx);
-            mShadowBuffer[i + 1] *= 1.0f - (1.0f - 0.8f) * (sampleIndexDx);
+            mShadowBuffer[i] *= 1.0f - (1.0f - EdgeShadow) * (1.0f - sampleIndexDx);
+            mShadowBuffer[i + 1] *= 1.0f - (1.0f - EdgeShadow) * (sampleIndexDx);
         }
     }
 }
