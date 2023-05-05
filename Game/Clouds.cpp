@@ -319,8 +319,8 @@ void Clouds::UpdateShadows(std::vector<std::unique_ptr<Cloud>> const & clouds)
         
         register_int i;
 
-        float constexpr EdgeShadow = 0.8f;
-        float constexpr FullShadow = 0.5f;
+        float constexpr EdgeShadow = 0.7f;
+        float constexpr FullShadow = 0.4f;
 
         // Left edge
         for (i = iLeftEdgeLeft; i < iLeftEdgeRight; ++i)

@@ -115,6 +115,9 @@
 				! Will have normal and lights, never darker				
 			+ Constrain mean/min to visible only? Should have less jumpy behavior
 			- Need to constrain range, goes too high (white)
+				- Check first new algo for brightening
+				- Then, constrain range by mapping 1,2 to 1,1.8 in shader
+		- Double-check order of things in shader
 		= Too discrete borders (stepping problem), need interpolation
 			+ 2-way
 			- 3-way
