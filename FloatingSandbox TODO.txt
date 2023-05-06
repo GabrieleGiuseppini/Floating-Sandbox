@@ -111,16 +111,17 @@
 		= "Too many clouds => all black" problem:
 			= Option 1: add (1-mean) to all values, so that mean becomes 1.0
 				! Will have darks and lights
+				- Adjust so that we do not reduce darkness (0.0) when it's dark - YES, we keep it dark
+					- Think of new strategy: keep shadowSample's range, but cap its highest point
 			- Option 2: shift values up so that min of current values becomes 1.0
 				! Will have normal and lights, never darker				
 			+ Constrain mean/min to visible only? Should have less jumpy behavior
-			- Need to constrain range, goes too high (white)
-				- Check first new algo for brightening
-				- Then, constrain range by mapping 1,2 to 1,1.8 in shader
-		- Double-check order of things in shader
-		= Too discrete borders (stepping problem), need interpolation
+			+ Need to constrain range, goes too high (white)
+		+ Double-check order of things in shader
+			+ Shadows -> Darkening -> Border
+		+ Too discrete borders (stepping problem), need interpolation
 			+ 2-way
-			- 3-way
+			+ 3-way
 		+ Depth-darkening of brightness enhancement
 			+ Lighter should darken less
 

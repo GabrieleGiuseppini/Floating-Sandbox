@@ -111,7 +111,7 @@ vec4 ApplyShadows(
 
     // Darken > 1.0f with depth, but less so for brigther areas
     // Darkening is based on world Y (more negative Y, more dark)
-    shadowSample = 1.0 + (shadowSample - 1.0) * 0.4 * exp(min(0.0, yWorld) * (2.0 - shadowSample) * 0.05);
+    shadowSample = 1.0 + (shadowSample - 1.0) * 0.4 * exp(min(0.0, yWorld) * (2.0 - shadowSample) * 0.07);
     
     //TODO: try without sqrt
     //shadowSample *= exp(min(0.0, yWorld) * sqrt(shadowSample) * 0.05); // Darkening is based on world Y (more negative Y, more dark)

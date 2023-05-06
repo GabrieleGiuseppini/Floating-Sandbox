@@ -54,23 +54,26 @@ void main()
 {
     // Get texture color sample
     vec2 textureCoord2 = vec2(worldCoordsAndYTexture.x, worldCoordsAndYTexture.z);
-    float darkMix = 1.0 - exp(min(0.0, worldCoordsAndYTexture.y) * paramOceanDarkeningRate); // Darkening is based on world Y (more negative Y, more dark)
-    vec3 textureColor = mix(
-        texture2D(paramOceanTexture, textureCoord2 * paramTextureScaling).xyz,
-        vec3(0.),
-        darkMix * darkMix * darkMix);
+    vec4 textureColor = texture2D(paramOceanTexture, textureCoord2 * paramTextureScaling);
 
     // Apply shadows
-    vec4 baseColor = ApplyShadows(
-        vec4(textureColor, (1.0 - paramOceanTransparency)),
+    textureColor = ApplyShadows(
+        vec4(textureColor.xyz, textureColor.w * (1.0 - paramOceanTransparency)),
         shadowPosNdc,
         worldCoordsAndYTexture.y,
         paramSunRaysInclination,
         paramSharedTexture);
 
+    // Apply depth darkening
+    float darkMix = 1.0 - exp(min(0.0, worldCoordsAndYTexture.y) * paramOceanDarkeningRate); // Darkening is based on world Y (more negative Y, more dark)
+    textureColor = mix(
+        textureColor,
+        vec4(0., 0., 0., textureColor.w),
+        darkMix * darkMix * darkMix);
+
     // Apply detail
     vec4 color = CalculateDetailedOceanPlaneColor(
-        baseColor,
+        textureColor,
         worldCoordsAndYTexture.y,
         yVectorWorld);
 

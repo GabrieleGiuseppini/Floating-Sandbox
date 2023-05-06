@@ -216,35 +216,35 @@ void Clouds::Update(
     // do not undergo non-linearities when clouds disappear
     // at the edges of the cloud space
 
-    ////// TODOTEST: Option 1: mean
+    // TODOTEST: Option 1: mean
 
-    ////float sum = 0.0f;
-    ////float count = 0.0f;
-    ////for (size_t i = ShadowBufferSize / 3; i < ShadowBufferSize * 2 / 3; ++i)
-    ////{
-    ////    sum += mShadowBuffer[i];
-    ////    count += 1.0f;
-    ////}
-
-    ////float const adjustment = 1.0f - sum / count;
-    ////for (size_t i = 0; i < ShadowBufferSize; ++i)
-    ////{
-    ////    mShadowBuffer[i] += adjustment;
-    ////}
-
-    // TODOTEST: Option 2: min shifted to 1.0
-
-    float minValue = 1.0f;
+    float sum = 0.0f;
+    float count = 0.0f;
     for (size_t i = ShadowBufferSize / 3; i < ShadowBufferSize * 2 / 3; ++i)
     {
-        minValue = std::min(minValue, mShadowBuffer[i]);
+        sum += mShadowBuffer[i];
+        count += 1.0f;
     }
 
-    float const adjustment = 1.0f - minValue;
+    float const adjustment = 1.0f - sum / count;
     for (size_t i = 0; i < ShadowBufferSize; ++i)
     {
         mShadowBuffer[i] += adjustment;
     }
+
+    ////// TODOTEST: Option 2: min shifted to 1.0
+
+    ////float minValue = 1.0f;
+    ////for (size_t i = ShadowBufferSize / 3; i < ShadowBufferSize * 2 / 3; ++i)
+    ////{
+    ////    minValue = std::min(minValue, mShadowBuffer[i]);
+    ////}
+
+    ////float const adjustment = 1.0f - minValue;
+    ////for (size_t i = 0; i < ShadowBufferSize; ++i)
+    ////{
+    ////    mShadowBuffer[i] += adjustment;
+    ////}
 }
 
 void Clouds::Upload(Render::RenderContext & renderContext) const
@@ -312,35 +312,42 @@ void Clouds::UpdateShadows(std::vector<std::unique_ptr<Cloud>> const & clouds)
         float const sampleIndexDx = leftEdgeIndexF - leftEdgeIndexI;
 
         // Edge indices
-        register_int const iLeftEdgeLeft = Clamp(leftEdgeIndexI - ShadowEdgeHalfThicknessElementCount, register_int(0), static_cast<register_int>(ShadowBufferSize - 2));
-        register_int const iLeftEdgeRight = Clamp(leftEdgeIndexI + ShadowEdgeHalfThicknessElementCount, register_int(0), static_cast<register_int>(ShadowBufferSize - 2));
-        register_int const iRightEdgeLeft = Clamp(leftEdgeIndexI + ClouseSizeElementCount - ShadowEdgeHalfThicknessElementCount, register_int(0), static_cast<register_int>(ShadowBufferSize - 2));
-        register_int const iRightEdgeRight = Clamp(leftEdgeIndexI + ClouseSizeElementCount + ShadowEdgeHalfThicknessElementCount, register_int(0), static_cast<register_int>(ShadowBufferSize - 2));
+        register_int const iLeftEdgeLeft = Clamp(leftEdgeIndexI - ShadowEdgeHalfThicknessElementCount, register_int(1), static_cast<register_int>(ShadowBufferSize - 2));
+        register_int const iLeftEdgeRight = Clamp(leftEdgeIndexI + ShadowEdgeHalfThicknessElementCount, register_int(1), static_cast<register_int>(ShadowBufferSize - 2));
+        register_int const iRightEdgeLeft = Clamp(leftEdgeIndexI + ClouseSizeElementCount - ShadowEdgeHalfThicknessElementCount, register_int(1), static_cast<register_int>(ShadowBufferSize - 2));
+        register_int const iRightEdgeRight = Clamp(leftEdgeIndexI + ClouseSizeElementCount + ShadowEdgeHalfThicknessElementCount, register_int(1), static_cast<register_int>(ShadowBufferSize - 2));
         
         register_int i;
 
-        float constexpr EdgeShadow = 0.7f;
-        float constexpr FullShadow = 0.4f;
+        float constexpr EdgeShadow = 0.6f;
+        float constexpr FullShadow = 0.3f;
+
+        float const p1Fraction = sampleIndexDx / 2.0f; // Fraction of total shadow onto +1
+        float constexpr zFraction = 1.0f / 2.0f;
+        float const n1Fraction = (1.0f - sampleIndexDx) / 2.0f;
 
         // Left edge
         for (i = iLeftEdgeLeft; i < iLeftEdgeRight; ++i)
         {
-            mShadowBuffer[i] *= 1.0f - (1.0f - EdgeShadow) * (1.0f - sampleIndexDx);
-            mShadowBuffer[i + 1] *= 1.0f - (1.0f - EdgeShadow) * (sampleIndexDx);
+            mShadowBuffer[i - 1] *= 1.0f - (1.0f - EdgeShadow) * n1Fraction;
+            mShadowBuffer[i] *= 1.0f - (1.0f - EdgeShadow) * zFraction;
+            mShadowBuffer[i + 1] *= 1.0f - (1.0f - EdgeShadow) * p1Fraction;
         }
 
         // Middle
         for (; i < iRightEdgeLeft; ++i)
         {
-            mShadowBuffer[i] *= 1.0f - (1.0f - FullShadow) * (1.0f - sampleIndexDx);
-            mShadowBuffer[i + 1] *= 1.0f - (1.0f - FullShadow) * (sampleIndexDx);
+            mShadowBuffer[i - 1] *= 1.0f - (1.0f - FullShadow) * n1Fraction;
+            mShadowBuffer[i] *= 1.0f - (1.0f - FullShadow) * zFraction;
+            mShadowBuffer[i + 1] *= 1.0f - (1.0f - FullShadow) * p1Fraction;
         }
 
         // Right edge
         for (; i < iRightEdgeRight; ++i)
         {
-            mShadowBuffer[i] *= 1.0f - (1.0f - EdgeShadow) * (1.0f - sampleIndexDx);
-            mShadowBuffer[i + 1] *= 1.0f - (1.0f - EdgeShadow) * (sampleIndexDx);
+            mShadowBuffer[i - 1] *= 1.0f - (1.0f - EdgeShadow) * n1Fraction;
+            mShadowBuffer[i] *= 1.0f - (1.0f - EdgeShadow) * zFraction;
+            mShadowBuffer[i + 1] *= 1.0f - (1.0f - EdgeShadow) * p1Fraction;
         }
     }
 }
