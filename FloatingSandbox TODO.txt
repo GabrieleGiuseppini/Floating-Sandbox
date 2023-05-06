@@ -108,15 +108,15 @@
 					- amb=1.0 => ri=1.0 (so that default is +45 degrees)
 					- amb=0.0 => ri=-1.0 (so that at night we've flipped to -45 degrees)
 			+ Should we map instead the _whole_ NDC space into the buffer (thus making the buffer 3x as large to maintain resolution), so to fix inclination?
-		= "Too many clouds => all black" problem:
-			= Option 1: add (1-mean) to all values, so that mean becomes 1.0
+		+ "Too many clouds => all black" problem:
+			+ Option 1: add (1-mean) to all values, so that mean becomes 1.0
 				! Will have darks and lights
 				+ Adjust so that we do not reduce darkness (0.0) when it's dark - YES, we keep it dark
 					+ Think of new strategy: keep shadowSample's range, but cap its highest point
 						X 0.0->1.5: 0.0009090909 + 1.239091 * shadowSample - 0.2454545 * shadowSample * shadowSample;
 						+ 0.0->1.4: [0.001818182 +] 1.278182*x - 0.2909091*x^2
 					+ s = 1.0 + (s-1)*(exp ... * step(1.0, b))
-			- Option 2: shift values up so that min of current values becomes 1.0
+			X Option 2: shift values up so that min of current values becomes 1.0
 				! Will have normal and lights, never darker				
 			+ Constrain mean/min to visible only? Should have less jumpy behavior
 			+ Need to constrain range, goes too high (white)
@@ -127,6 +127,9 @@
 			+ 3-way
 		+ Depth-darkening of brightness enhancement
 			+ Lighter should darken less
+		- Test storm
+		- Lower # of clouds: 2 nicks down
+		- Test flat & depth ocean render mode
 
 	- Wrecking ball tool
 	- Replace points with quads from geometry shader
