@@ -115,6 +115,7 @@
 					+ Think of new strategy: keep shadowSample's range, but cap its highest point
 						X 0.0->1.5: 0.0009090909 + 1.239091 * shadowSample - 0.2454545 * shadowSample * shadowSample;
 						+ 0.0->1.4: [0.001818182 +] 1.278182*x - 0.2909091*x^2
+					- s = 1.0 + (s-1)*(exp ... * step(1.0, b))
 			- Option 2: shift values up so that min of current values becomes 1.0
 				! Will have normal and lights, never darker				
 			+ Constrain mean/min to visible only? Should have less jumpy behavior

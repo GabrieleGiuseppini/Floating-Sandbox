@@ -122,7 +122,7 @@ vec4 ApplyShadows(
     // Map 0.0->1.0 to 0.5->1.0
     //shadowSample = 0.5 + shadowSample / 2.0;
 
-    // Mapping shadow: [0.0, 2.0] -> [0.0, 1.4]
+    // Mapping shadow: [0.0, 1.0, 2.0] -> [0.0, 1.0, 1.4]
     shadowSample = 1.278182*shadowSample - 0.2909091*shadowSample*shadowSample;
 
     // Apply shadow
