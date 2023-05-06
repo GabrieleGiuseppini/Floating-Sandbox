@@ -195,8 +195,9 @@ private:
     void OnAutoFocusAtShipLoadMenuItemSelected(wxCommandEvent & event);
     void OnContinuousAutoFocusMenuItemSelected(wxCommandEvent & event);
     void OnResetViewMenuItemSelected(wxCommandEvent & event);
-    void OnAmbientLightUpMenuItemSelected(wxCommandEvent & event);
-    void OnAmbientLightDownMenuItemSelected(wxCommandEvent & event);
+    void OnTimeOfDayUpMenuItemSelected(wxCommandEvent & event);
+    void OnTimeOfDayDownMenuItemSelected(wxCommandEvent & event);
+    void OnFullTimeOfDayMenuItemSelected(wxCommandEvent & event);
     void OnPauseMenuItemSelected(wxCommandEvent & event);
     void OnStepMenuItemSelected(wxCommandEvent & event);
     void OnLoadShipMenuItemSelected(wxCommandEvent & event);

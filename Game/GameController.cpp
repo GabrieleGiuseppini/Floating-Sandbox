@@ -83,6 +83,7 @@ GameController::GameController(
     , mIsPulseUpdateSet(false)
     , mIsMoveToolEngaged(false)
     // Parameters that we own
+    , mTimeOfDay(1.0f)
     , mDoShowTsunamiNotifications(true)
     , mDoDrawHeatBlasterFlame(true)    
     // Doers
@@ -388,7 +389,7 @@ void GameController::RunGameIteration()
         //
 
         // Update state machines
-        UpdateStateMachines(mWorld->GetCurrentSimulationTime());
+        UpdateAllStateMachines(mWorld->GetCurrentSimulationTime());
 
         // Update notification layer
         mNotificationLayer.Update(nowGame);
@@ -590,6 +591,14 @@ void GameController::SetShowExtendedStatusText(bool value)
 void GameController::NotifySoundMuted(bool isSoundMuted)
 {
     mNotificationLayer.SetSoundMuteIndicator(isSoundMuted);
+}
+
+void GameController::ToggleToFullDayOrNight()
+{
+    if (mTimeOfDay >= 0.5f)
+        SetTimeOfDay(0.0f);
+    else
+        SetTimeOfDay(1.0f);
 }
 
 void GameController::ScareFish(
@@ -1356,6 +1365,23 @@ vec2f GameController::ScreenOffsetToWorldOffset(DisplayLogicalSize const & scree
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
+void GameController::SetTimeOfDay(float value)
+{
+    mTimeOfDay = value;
+
+    // Calculate new ambient light
+    mRenderContext->SetAmbientLightIntensity(
+        SmoothStep(
+            0.0f,
+            1.0f,
+            mTimeOfDay));
+
+    // Calcualate new sun rays inclination:
+    // TOD = 1 => inclination = +1 (45 degrees)
+    // TOD = 0 => inclination = -1 (45 degrees)
+    mRenderContext->SetSunRaysInclination(2.0f * mTimeOfDay - 1.0f);
+}
+
 void GameController::SetDoDayLightCycle(bool value)
 {
     mGameParameters.DoDayLightCycle = value;
@@ -1450,7 +1476,7 @@ void GameController::Reset(std::unique_ptr<Physics::World> newWorld)
     mWorld->SetEventRecorder(mEventRecorder.get());
 
     // Reset state machines
-    ResetStateMachines();
+    ResetAllStateMachines();
 
     // Reset notification layer
     mNotificationLayer.Reset();

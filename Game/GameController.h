@@ -175,6 +175,7 @@ public:
     //
 
     float GetCurrentSimulationTime() const override { return mWorld->GetCurrentSimulationTime(); }
+    void ToggleToFullDayOrNight() override;
     float GetEffectiveAmbientLightIntensity() const override { return mRenderContext->GetEffectiveAmbientLightIntensity(); }
     bool IsUnderwater(DisplayLogicalCoordinates const & screenCoordinates) const override { return mWorld->GetOceanSurface().IsUnderwater(ScreenToWorld(screenCoordinates)); }
     bool IsUnderwater(ElementId elementId) const override { return mWorld->IsUnderwater(elementId); }
@@ -334,6 +335,9 @@ public:
     void SetStaticPressureForceAdjustment(float value) override { mGameParameters.StaticPressureForceAdjustment = value; }
     float GetMinStaticPressureForceAdjustment() const override { return GameParameters::MinStaticPressureForceAdjustment; }
     float GetMaxStaticPressureForceAdjustment() const override { return GameParameters::MaxStaticPressureForceAdjustment; }
+
+    float GetTimeOfDay() const override { return mTimeOfDay; }
+    void SetTimeOfDay(float value) override;
 
     // Air
 
@@ -754,9 +758,6 @@ public:
     rgbColor const & GetFlatSkyColor() const override { return mRenderContext->GetFlatSkyColor(); }
     void SetFlatSkyColor(rgbColor const & color) override { mRenderContext->SetFlatSkyColor(color); }
 
-    float GetAmbientLightIntensity() const override { return mRenderContext->GetAmbientLightIntensity(); }
-    void SetAmbientLightIntensity(float value) override { mRenderContext->SetAmbientLightIntensity(value); }
-
     float GetOceanTransparency() const override { return mRenderContext->GetOceanTransparency(); }
     void SetOceanTransparency(float value) override { mRenderContext->SetOceanTransparency(value); }
 
@@ -895,29 +896,23 @@ private:
     struct TsunamiNotificationStateMachine;
     struct TsunamiNotificationStateMachineDeleter { void operator()(TsunamiNotificationStateMachine *) const; };
     std::unique_ptr<TsunamiNotificationStateMachine, TsunamiNotificationStateMachineDeleter> mTsunamiNotificationStateMachine;
-
     void StartTsunamiNotificationStateMachine(float x);
-
 
     struct ThanosSnapStateMachine;
     struct ThanosSnapStateMachineDeleter { void operator()(ThanosSnapStateMachine *) const; };
     std::vector<std::unique_ptr<ThanosSnapStateMachine, ThanosSnapStateMachineDeleter>> mThanosSnapStateMachines;
-
     void StartThanosSnapStateMachine(float x, float currentSimulationTime);
     bool UpdateThanosSnapStateMachine(ThanosSnapStateMachine & stateMachine, float currentSimulationTime);
-
 
     struct DayLightCycleStateMachine;
     struct DayLightCycleStateMachineDeleter { void operator()(DayLightCycleStateMachine *) const; };
     std::unique_ptr<DayLightCycleStateMachine, DayLightCycleStateMachineDeleter> mDayLightCycleStateMachine;
-
     void StartDayLightCycleStateMachine();
     void StopDayLightCycleStateMachine();
     bool UpdateDayLightCycleStateMachine(DayLightCycleStateMachine & stateMachine, float currentSimulationTime);
 
-
-    void ResetStateMachines();
-    void UpdateStateMachines(float currentSimulationTime);
+    void ResetAllStateMachines();
+    void UpdateAllStateMachines(float currentSimulationTime);
 
 private:
 
@@ -956,6 +951,7 @@ private:
     // The parameters that we own
     //
 
+    float mTimeOfDay;
     bool mDoShowTsunamiNotifications;
     bool mDoDrawHeatBlasterFlame;
 

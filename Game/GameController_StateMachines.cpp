@@ -280,7 +280,7 @@ struct GameController::DayLightCycleStateMachine
 {
     DayLightCycleStateMachine(
         GameParameters const & gameParameters,
-        std::shared_ptr<Render::RenderContext> renderContext);
+        IGameControllerSettings & gameControllerSettings);
 
     ~DayLightCycleStateMachine();
 
@@ -292,7 +292,7 @@ struct GameController::DayLightCycleStateMachine
 private:
 
     GameParameters const & mGameParameters;
-    std::shared_ptr<Render::RenderContext> mRenderContext;
+    IGameControllerSettings & mGameControllerSettings;
 
     enum class StateType
     {
@@ -312,9 +312,9 @@ void GameController::DayLightCycleStateMachineDeleter::operator()(DayLightCycleS
 
 GameController::DayLightCycleStateMachine::DayLightCycleStateMachine(
     GameParameters const & gameParameters,
-    std::shared_ptr<Render::RenderContext> renderContext)
+    IGameControllerSettings & gameControllerSettings)
     : mGameParameters(gameParameters)
-    , mRenderContext(std::move(renderContext))
+    , mGameControllerSettings(gameControllerSettings)
     , mCurrentState(StateType::SunSetting)
     , mLastChangeTimestamp(GameWallClock::GetInstance().NowAsFloat())
     , mSkipCounter(0)
@@ -336,17 +336,12 @@ void GameController::DayLightCycleStateMachine::Update()
 
     mSkipCounter = 0;
 
-    // We are stateless wrt ambient light intensity: we check each time where
+    // We are stateless wrt time of day: we check each time where
     // we are at and compute the next step, based exclusively on the current
     // rising/setting state. This allows the user to change the current
-    // ambient light intensity concurrently to this state machine.
-    //
-    // Our daylight curve is a SmoothStep, with time-of-day between 0.0 and 1.0;
-    // given the current ambient light intensity, we invert the curve to calculate
-    // the corresponding implied time-of-day, and we increment that by the time
-    // that has elapsed since the previous time.
+    // time of day concurrently to this state machine.
 
-    float timeOfDay = InverseSmoothStep(mRenderContext->GetAmbientLightIntensity());
+    float newTimeOfDay = mGameControllerSettings.GetTimeOfDay();
 
     // Calculate fraction of half-cycle elapsed since last time
     auto const now = GameWallClock::GetInstance().NowAsFloat();
@@ -359,11 +354,11 @@ void GameController::DayLightCycleStateMachine::Update()
     // Calculate new time of day
     if (StateType::SunRising == mCurrentState)
     {
-        timeOfDay += elapsedFraction;
-        if (timeOfDay >= 1.0f)
+        newTimeOfDay += elapsedFraction;
+        if (newTimeOfDay >= 1.0f)
         {
             // Climax
-            timeOfDay = 1.0f;
+            newTimeOfDay = 1.0f;
             mCurrentState = StateType::SunSetting;
         }
     }
@@ -371,21 +366,17 @@ void GameController::DayLightCycleStateMachine::Update()
     {
         assert(StateType::SunSetting == mCurrentState);
 
-        timeOfDay -= elapsedFraction;
-        if (timeOfDay <= 0.0f)
+        newTimeOfDay -= elapsedFraction;
+        if (newTimeOfDay <= 0.0f)
         {
             // Anticlimax
-            timeOfDay = 0.0f;
+            newTimeOfDay = 0.0f;
             mCurrentState = StateType::SunRising;
         }
     }
 
-    // Calculate new ambient light
-    mRenderContext->SetAmbientLightIntensity(
-        SmoothStep(
-            0.0f,
-            1.0f,
-            timeOfDay));
+    // Change time-of-day
+    mGameControllerSettings.SetTimeOfDay(newTimeOfDay);
 
     // Update last change timestamp
     mLastChangeTimestamp = now;
@@ -399,7 +390,7 @@ void GameController::StartDayLightCycleStateMachine()
         mDayLightCycleStateMachine.reset(
             new DayLightCycleStateMachine(
                 mGameParameters,
-                mRenderContext));
+                *this));
 
         mNotificationLayer.SetDayLightCycleIndicator(true);
     }
@@ -419,7 +410,7 @@ void GameController::StopDayLightCycleStateMachine()
 // All state machines
 ////////////////////////////////////////////////////////////////////////
 
-void GameController::UpdateStateMachines(float currentSimulationTime)
+void GameController::UpdateAllStateMachines(float currentSimulationTime)
 {
     // Tsunami notifications
     if (!!mTsunamiNotificationStateMachine)
@@ -456,7 +447,7 @@ void GameController::UpdateStateMachines(float currentSimulationTime)
     }
 }
 
-void GameController::ResetStateMachines()
+void GameController::ResetAllStateMachines()
 {
     mTsunamiNotificationStateMachine.reset();
 

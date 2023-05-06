@@ -75,10 +75,11 @@ struct IGameController
     virtual void NotifySoundMuted(bool isSoundMuted) = 0;
 
     //
-    // World Probing
+    // World
     //
 
     virtual float GetCurrentSimulationTime() const = 0;
+    virtual void ToggleToFullDayOrNight() = 0;
     virtual float GetEffectiveAmbientLightIntensity() const = 0;
     virtual bool IsUnderwater(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
     virtual bool IsUnderwater(ElementId elementId) const = 0;

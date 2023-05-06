@@ -176,14 +176,16 @@ public:
             mAmbientLightIntensity,
             mWorldRenderContext->GetStormAmbientDarkening());
         mRenderParameters.IsEffectiveAmbientLightIntensityDirty = true;
-
-        // Communicate sun rays inclination
-        mWorldRenderContext->SetSunRaysInclination(2.0f * intensity - 1.0f);
     }
 
     float GetEffectiveAmbientLightIntensity() const
     {
         return mRenderParameters.EffectiveAmbientLightIntensity;
+    }
+
+    void SetSunRaysInclination(float value)
+    {
+        mWorldRenderContext->SetSunRaysInclination(value);
     }
 
     //

@@ -48,6 +48,9 @@ struct IGameControllerSettings
     virtual float GetStaticPressureForceAdjustment() const = 0;
     virtual void SetStaticPressureForceAdjustment(float value) = 0;
 
+    virtual float GetTimeOfDay() const = 0;
+    virtual void SetTimeOfDay(float value) = 0;
+
     // Air
 
     virtual float GetAirDensityAdjustment() const = 0;
@@ -328,9 +331,6 @@ struct IGameControllerSettings
 
     virtual rgbColor const & GetFlatSkyColor() const = 0;
     virtual void SetFlatSkyColor(rgbColor const & color) = 0;
-
-    virtual float GetAmbientLightIntensity() const = 0;
-    virtual void SetAmbientLightIntensity(float value) = 0;
 
     virtual float GetOceanTransparency() const = 0;
     virtual void SetOceanTransparency(float value) = 0;

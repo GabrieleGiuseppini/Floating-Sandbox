@@ -59,8 +59,9 @@ long const ID_ZOOM_OUT_MENUITEM = wxNewId();
 long const ID_AUTO_FOCUS_AT_SHIP_LOAD_MENUITEM = wxNewId();
 long const ID_CONTINUOUS_AUTO_FOCUS_MENUITEM = wxNewId();
 long const ID_RESET_VIEW_MENUITEM = wxNewId();
-long const ID_AMBIENT_LIGHT_UP_MENUITEM = wxNewId();
-long const ID_AMBIENT_LIGHT_DOWN_MENUITEM = wxNewId();
+long const ID_TIME_OF_DAY_UP_MENUITEM = wxNewId();
+long const ID_TIME_OF_DAY_DOWN_MENUITEM = wxNewId();
+long const ID_FULL_TIME_OF_DAY_MENUITEM = wxNewId();
 long const ID_PAUSE_MENUITEM = wxNewId();
 long const ID_STEP_MENUITEM = wxNewId();
 
@@ -271,13 +272,17 @@ MainFrame::MainFrame(
 
             controlsMenu->Append(new wxMenuItem(controlsMenu, wxID_SEPARATOR));
 
-            wxMenuItem * amblientLightUpMenuItem = new wxMenuItem(controlsMenu, ID_AMBIENT_LIGHT_UP_MENUITEM, _("Bright Ambient Light") + wxS("\tPgUp"), wxEmptyString, wxITEM_NORMAL);
-            controlsMenu->Append(amblientLightUpMenuItem);
-            Connect(ID_AMBIENT_LIGHT_UP_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAmbientLightUpMenuItemSelected);
+            wxMenuItem * timeOfDayUpMenuItem = new wxMenuItem(controlsMenu, ID_TIME_OF_DAY_UP_MENUITEM, _("Bright Ambient Light") + wxS("\tPgUp"), wxEmptyString, wxITEM_NORMAL);
+            controlsMenu->Append(timeOfDayUpMenuItem);
+            Connect(ID_TIME_OF_DAY_UP_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnTimeOfDayUpMenuItemSelected);
 
-            wxMenuItem * ambientLightDownMenuItem = new wxMenuItem(controlsMenu, ID_AMBIENT_LIGHT_DOWN_MENUITEM, _("Dim Ambient Light") + wxS("\tPgDn"), wxEmptyString, wxITEM_NORMAL);
-            controlsMenu->Append(ambientLightDownMenuItem);
-            Connect(ID_AMBIENT_LIGHT_DOWN_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAmbientLightDownMenuItemSelected);
+            wxMenuItem * timeOfDayDownMenuItem = new wxMenuItem(controlsMenu, ID_TIME_OF_DAY_DOWN_MENUITEM, _("Dim Ambient Light") + wxS("\tPgDn"), wxEmptyString, wxITEM_NORMAL);
+            controlsMenu->Append(timeOfDayDownMenuItem);
+            Connect(ID_TIME_OF_DAY_DOWN_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnTimeOfDayDownMenuItemSelected);
+
+            wxMenuItem * fullTimeOfDayMenuItem = new wxMenuItem(controlsMenu, ID_FULL_TIME_OF_DAY_MENUITEM, _("Full Day/Night"), wxEmptyString, wxITEM_NORMAL);
+            controlsMenu->Append(fullTimeOfDayMenuItem);
+            Connect(ID_FULL_TIME_OF_DAY_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnFullTimeOfDayMenuItemSelected);
 
             controlsMenu->Append(new wxMenuItem(controlsMenu, wxID_SEPARATOR));
 
@@ -1703,18 +1708,24 @@ void MainFrame::OnResetViewMenuItemSelected(wxCommandEvent & /*event*/)
     mGameController->ResetView();
 }
 
-void MainFrame::OnAmbientLightUpMenuItemSelected(wxCommandEvent & /*event*/)
+void MainFrame::OnTimeOfDayUpMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mGameController);
-    float newAmbientLight = std::min(1.0f, mGameController->GetAmbientLightIntensity() * 1.02f);
-    mGameController->SetAmbientLightIntensity(newAmbientLight);
+    float newTimeOfDay = std::min(1.0f, mGameController->GetTimeOfDay() * 1.02f);
+    mGameController->SetTimeOfDay(newTimeOfDay);
 }
 
-void MainFrame::OnAmbientLightDownMenuItemSelected(wxCommandEvent & /*event*/)
+void MainFrame::OnTimeOfDayDownMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mGameController);
-    float newAmbientLight = mGameController->GetAmbientLightIntensity() / 1.02f;
-    mGameController->SetAmbientLightIntensity(newAmbientLight);
+    float newTimeOfDay = mGameController->GetTimeOfDay() / 1.02f;
+    mGameController->SetTimeOfDay(newTimeOfDay);
+}
+
+void MainFrame::OnFullTimeOfDayMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mGameController);
+    mGameController->ToggleToFullDayOrNight();
 }
 
 void MainFrame::OnPauseMenuItemSelected(wxCommandEvent & /*event*/)
