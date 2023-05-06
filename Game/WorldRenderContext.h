@@ -73,6 +73,12 @@ public:
 
 public:
 
+    void SetSunRaysInclination(float value)
+    {
+        mSunRaysInclination = value;
+        mIsSunRaysInclinationDirty = true;
+    }
+
     void UploadStart();
 
     void UploadStarsStart(
@@ -787,7 +793,6 @@ private:
     void ApplyOceanTextureIndexChanges(RenderParameters const & renderParameters);
     void ApplyLandRenderParametersChanges(RenderParameters const & renderParameters);
     void ApplyLandTextureIndexChanges(RenderParameters const & renderParameters);
-    void ApplySunRaysInclinationChanges(RenderParameters const & renderParameters);
 
     void RecalculateWorldBorder(RenderParameters const & renderParameters);
 
@@ -1117,6 +1122,13 @@ private:
 
     TextureAtlasMetadata<GenericLinearTextureGroups> const & mGenericLinearTextureAtlasMetadata;
 
+    //
+    // Parameters
+    //
+
+    float mSunRaysInclination;
+    bool mIsSunRaysInclinationDirty;
+
 private:
 
     // Shader manager
@@ -1125,10 +1137,6 @@ private:
     // Thumbnails
     std::vector<std::pair<std::string, RgbaImageData>> mOceanAvailableThumbnails;
     std::vector<std::pair<std::string, RgbaImageData>> mLandAvailableThumbnails;
-
-    //
-    // Externally-controlled calculated parameters
-    //
 };
 
 }

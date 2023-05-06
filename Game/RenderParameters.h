@@ -41,7 +41,6 @@ struct RenderParameters
     LandRenderModeType LandRenderMode;
     rgbColor FlatLandColor;
     size_t LandTextureIndex;
-    float SunRaysInclination;
 
     //
     // Ship
@@ -82,7 +81,6 @@ struct RenderParameters
     bool IsOceanTextureIndexDirty;
     bool AreLandRenderParametersDirty; // Tracks various land render mode parameters as a whole, for convenience
     bool IsLandTextureIndexDirty;
-    bool IsSunRaysInclinationDirty; // 0.0==vertical, 1.0/-1.0==45/-45 degrees
     // Ship
     bool IsShipAmbientLightSensitivityDirty;
     bool IsFlatLampLightColorDirty;

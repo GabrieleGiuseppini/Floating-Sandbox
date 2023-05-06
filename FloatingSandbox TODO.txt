@@ -103,10 +103,14 @@
 					+ Params enum
 					+ Set to 1.0
 				+ Use of param
-			- Depending on time-of-day
-				- Daylight state machine maps time of day so that:
+			= Depending on time-of-day
+				+ Daylight state machine maps time of day so that:
 					- amb=1.0 => ri=1.0 (so that default is +45 degrees)
 					- amb=0.0 => ri=-1.0 (so that at night we've flipped to -45 degrees)
+				- No: inclination set by RenderContext at SetAmbientLightIntensity
+					- Nuke from RenderParameter
+					- RenderContext calls WorldRenderContext::SetSunRaysInclination
+						- Dirty flag
 			+ Should we map instead the _whole_ NDC space into the buffer (thus making the buffer 3x as large to maintain resolution), so to fix inclination?
 		+ "Too many clouds => all black" problem:
 			+ Option 1: add (1-mean) to all values, so that mean becomes 1.0
@@ -128,8 +132,23 @@
 		+ Depth-darkening of brightness enhancement
 			+ Lighter should darken less
 		- Test storm
-		- Lower # of clouds: 2 nicks down
+		- Lower # of clouds: 32
 		- Test flat & depth ocean render mode
+
+	- New ambient light controls:
+		- Full day/night
+			- @ GameController:
+				! Toggles based on current time-of-day value
+				! Old controls are really about time-of-day
+				- GameController:Set/GetAmbientLightIntensity replaced by TimeOfDay
+					- Own parameter
+					- Up to MainFrame
+				- GameController::SetTimeOfDay maps tod to ambient light intensity (->RenderContext), sun rays inclination (->RenderContext); precisely:
+					- If no state machine: TODO
+					- Else: TODO
+				- GameController::DaylightCycle state machine's Update() returns tod
+					- And GameController calls own SetTimeOfDay (or InternalSetTimeOfDay if SetTimeOfDay deals with state machine)
+					- SM doesn't need RenderContext anymore
 
 	- Wrecking ball tool
 	- Replace points with quads from geometry shader

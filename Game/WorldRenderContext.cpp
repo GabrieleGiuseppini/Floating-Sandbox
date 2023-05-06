@@ -91,6 +91,9 @@ WorldRenderContext::WorldRenderContext(
     , mFishTextureAtlasMetadata()
     , mFishTextureAtlasOpenGLHandle()
     , mGenericLinearTextureAtlasMetadata(globalRenderContext.GetGenericLinearTextureAtlasMetadata())
+    // Parameters
+    , mSunRaysInclination(1.0f)
+    , mIsSunRaysInclinationDirty(1.0f)
     // ShaderManager
     , mShaderManager(shaderManager)
     // Thumbnails
@@ -797,11 +800,6 @@ void WorldRenderContext::ProcessParameterChanges(RenderParameters const & render
     {
         ApplyLandTextureIndexChanges(renderParameters);
     }
-
-    if (renderParameters.IsSunRaysInclinationDirty)
-    {
-        ApplySunRaysInclinationChanges(renderParameters);
-    }
 }
 
 void WorldRenderContext::RenderPrepareStars(RenderParameters const & /*renderParameters*/)
@@ -962,6 +960,10 @@ void WorldRenderContext::RenderDrawCloudsAndBackgroundLightnings(RenderParameter
 
 void WorldRenderContext::RenderPrepareOcean(RenderParameters const & renderParameters)
 {
+    //
+    // Buffers
+    //
+
     switch (renderParameters.OceanRenderDetail)
     {
         case OceanRenderDetailType::Basic:
@@ -1009,8 +1011,40 @@ void WorldRenderContext::RenderPrepareOcean(RenderParameters const & renderParam
         };
     }
 
-
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    //
+    // Parameters
+    //
+
+    if (mIsSunRaysInclinationDirty)
+    {
+        mShaderManager.ActivateProgram<ProgramType::OceanDepthDetailedBackground>();
+        mShaderManager.SetProgramParameter<ProgramType::OceanDepthDetailedBackground, ProgramParameterType::SunRaysInclination>(
+            mSunRaysInclination);
+
+        mShaderManager.ActivateProgram<ProgramType::OceanDepthDetailedForeground>();
+        mShaderManager.SetProgramParameter<ProgramType::OceanDepthDetailedForeground, ProgramParameterType::SunRaysInclination>(
+            mSunRaysInclination);
+
+        mShaderManager.ActivateProgram<ProgramType::OceanFlatDetailedBackground>();
+        mShaderManager.SetProgramParameter<ProgramType::OceanFlatDetailedBackground, ProgramParameterType::SunRaysInclination>(
+            mSunRaysInclination);
+
+        mShaderManager.ActivateProgram<ProgramType::OceanFlatDetailedForeground>();
+        mShaderManager.SetProgramParameter<ProgramType::OceanFlatDetailedForeground, ProgramParameterType::SunRaysInclination>(
+            mSunRaysInclination);
+
+        mShaderManager.ActivateProgram<ProgramType::OceanTextureDetailedBackground>();
+        mShaderManager.SetProgramParameter<ProgramType::OceanTextureDetailedBackground, ProgramParameterType::SunRaysInclination>(
+            mSunRaysInclination);
+
+        mShaderManager.ActivateProgram<ProgramType::OceanTextureDetailedForeground>();
+        mShaderManager.SetProgramParameter<ProgramType::OceanTextureDetailedForeground, ProgramParameterType::SunRaysInclination>(
+            mSunRaysInclination);
+
+        mIsRainDensityDirty = false;
+    }
 }
 
 void WorldRenderContext::RenderDrawOcean(bool opaquely, RenderParameters const & renderParameters)
@@ -1805,33 +1839,6 @@ void WorldRenderContext::ApplyLandTextureIndexChanges(RenderParameters const & r
         1.0f / landTextureFrame.Metadata.WorldWidth,
         1.0f / landTextureFrame.Metadata.WorldHeight);
     mShaderManager.SetTextureParameters<ProgramType::LandTexture>();
-}
-
-void WorldRenderContext::ApplySunRaysInclinationChanges(RenderParameters const & renderParameters)
-{
-    mShaderManager.ActivateProgram<ProgramType::OceanDepthDetailedBackground>();
-    mShaderManager.SetProgramParameter<ProgramType::OceanDepthDetailedBackground, ProgramParameterType::SunRaysInclination>(
-        renderParameters.SunRaysInclination);
-
-    mShaderManager.ActivateProgram<ProgramType::OceanDepthDetailedForeground>();
-    mShaderManager.SetProgramParameter<ProgramType::OceanDepthDetailedForeground, ProgramParameterType::SunRaysInclination>(
-        renderParameters.SunRaysInclination);
-
-    mShaderManager.ActivateProgram<ProgramType::OceanFlatDetailedBackground>();
-    mShaderManager.SetProgramParameter<ProgramType::OceanFlatDetailedBackground, ProgramParameterType::SunRaysInclination>(
-        renderParameters.SunRaysInclination);
-
-    mShaderManager.ActivateProgram<ProgramType::OceanFlatDetailedForeground>();
-    mShaderManager.SetProgramParameter<ProgramType::OceanFlatDetailedForeground, ProgramParameterType::SunRaysInclination>(
-        renderParameters.SunRaysInclination);
-
-    mShaderManager.ActivateProgram<ProgramType::OceanTextureDetailedBackground>();
-    mShaderManager.SetProgramParameter<ProgramType::OceanTextureDetailedBackground, ProgramParameterType::SunRaysInclination>(
-        renderParameters.SunRaysInclination);
-
-    mShaderManager.ActivateProgram<ProgramType::OceanTextureDetailedForeground>();
-    mShaderManager.SetProgramParameter<ProgramType::OceanTextureDetailedForeground, ProgramParameterType::SunRaysInclination>(
-        renderParameters.SunRaysInclination);
 }
 
 template <typename TVertexBuffer>

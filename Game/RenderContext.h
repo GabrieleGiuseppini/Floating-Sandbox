@@ -176,6 +176,9 @@ public:
             mAmbientLightIntensity,
             mWorldRenderContext->GetStormAmbientDarkening());
         mRenderParameters.IsEffectiveAmbientLightIntensityDirty = true;
+
+        // Communicate sun rays inclination
+        mWorldRenderContext->SetSunRaysInclination(2.0f * intensity - 1.0f);
     }
 
     float GetEffectiveAmbientLightIntensity() const
@@ -348,12 +351,6 @@ public:
     {
         mRenderParameters.LandTextureIndex = index;
         mRenderParameters.IsLandTextureIndexDirty = true;
-    }
-
-    void SetSunRaysInclination(float inclination)
-    {
-        mRenderParameters.SunRaysInclination = inclination;
-        mRenderParameters.IsSunRaysInclinationDirty = true;
     }
 
     //
