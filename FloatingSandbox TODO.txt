@@ -135,20 +135,19 @@
 		- Lower # of clouds: 32
 		- Test flat & depth ocean render mode
 
-	- New ambient light controls:
-		- Full day/night
-			- @ GameController:
-				! Toggles based on current time-of-day value
-				! Old controls are really about time-of-day
-				- GameController:Set/GetAmbientLightIntensity replaced by TimeOfDay
-					- Own parameter
-					- Up to MainFrame
-				- GameController::SetTimeOfDay maps tod to ambient light intensity (->RenderContext), sun rays inclination (->RenderContext); precisely:
-					- If no state machine: TODO
-					- Else: TODO
-				- GameController::DaylightCycle state machine's Update() returns tod
-					- And GameController calls own SetTimeOfDay (or InternalSetTimeOfDay if SetTimeOfDay deals with state machine)
-					- SM doesn't need RenderContext anymore
+	- New ambient light control: Full day/night
+		- @ GameController:
+			! Toggles based on current time-of-day value
+			! Old controls are really about time-of-day
+			- GameController:Set/GetAmbientLightIntensity replaced by TimeOfDay
+				- Own parameter
+				- Method renames up to MainFrame
+			- GameController::SetTimeOfDay maps tod to ambient light intensity (->RenderContext), sun rays inclination (->RenderContext)
+			- GameController::DaylightCycle state machine's Update() returns tod
+				- And GameController calls own SetTimeOfDay
+				- SM doesn't need RenderContext anymore
+		- MainFrame: menu item: "Full day/night"
+			- => Localization task
 
 	- Wrecking ball tool
 	- Replace points with quads from geometry shader
