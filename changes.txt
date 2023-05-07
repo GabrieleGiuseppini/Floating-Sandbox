@@ -1,5 +1,6 @@
-1.17.6
+1.17.6 - TODO
 - Redesigned wave interactions
+- Added menu entry to suddenly switch to full day or night
 
 1.17.5
 - Added new "Laser Cannon" tool

@@ -83,7 +83,7 @@ GameController::GameController(
     , mIsPulseUpdateSet(false)
     , mIsMoveToolEngaged(false)
     // Parameters that we own
-    , mTimeOfDay(1.0f)
+    , mTimeOfDay(0.0f) // We'll set it later
     , mDoShowTsunamiNotifications(true)
     , mDoDrawHeatBlasterFlame(true)    
     // Doers
@@ -110,6 +110,9 @@ GameController::GameController(
     , mLastPublishedTotalFrameCount(0u)
     , mSkippedFirstStatPublishes(0)
 {
+    // Initialize time-of-day
+    SetTimeOfDay(1.0f);
+
     // Create world
     mWorld = std::make_unique<Physics::World>(
         OceanFloorTerrain::LoadFromImage(resourceLocator.GetDefaultOceanFloorTerrainFilePath()),
@@ -1377,8 +1380,8 @@ void GameController::SetTimeOfDay(float value)
             mTimeOfDay));
 
     // Calcualate new sun rays inclination:
-    // TOD = 1 => inclination = +1 (45 degrees)
-    // TOD = 0 => inclination = -1 (45 degrees)
+    // ToD = 1 => inclination = +1 (45 degrees)
+    // ToD = 0 => inclination = -1 (45 degrees)
     mRenderContext->SetSunRaysInclination(2.0f * mTimeOfDay - 1.0f);
 }
 
