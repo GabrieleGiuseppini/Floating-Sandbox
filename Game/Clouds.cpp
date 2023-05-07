@@ -211,13 +211,11 @@ void Clouds::Update(
     UpdateShadows(mClouds);
     UpdateShadows(mStormClouds);
 
-    // Offset shadow values so that TODO
+    // Offset shadow values so that the mean is 1.0
     //
     // Note: we only sample the visible (central) slice, so that we
     // do not undergo non-linearities when clouds disappear
     // at the edges of the cloud space
-
-    // TODOTEST: Option 1: mean
 
     float sum = 0.0f;
     float count = 0.0f;
@@ -232,20 +230,6 @@ void Clouds::Update(
     {
         mShadowBuffer[i] += adjustment;
     }
-
-    ////// TODOTEST: Option 2: min shifted to 1.0
-
-    ////float minValue = 1.0f;
-    ////for (size_t i = ShadowBufferSize / 3; i < ShadowBufferSize * 2 / 3; ++i)
-    ////{
-    ////    minValue = std::min(minValue, mShadowBuffer[i]);
-    ////}
-
-    ////float const adjustment = 1.0f - minValue;
-    ////for (size_t i = 0; i < ShadowBufferSize; ++i)
-    ////{
-    ////    mShadowBuffer[i] += adjustment;
-    ////}
 }
 
 void Clouds::Upload(Render::RenderContext & renderContext) const
@@ -314,6 +298,21 @@ void Clouds::UpdateShadows(std::vector<std::unique_ptr<Cloud>> const & clouds)
         // Fractional part within sample index and the next sample index
         float const sampleIndexDx = leftEdgeIndexF - leftEdgeIndexI;
 
+        // Coeffs:
+        // i-1 (n1): fraction of total shadow onto i-1
+        // i (z): fraction of total shadow onto i
+        // i+1 (p1): fraction of total shadow onto i+1
+
+        float constexpr EdgeShadow = 0.6f;
+        float const edgeN1Coeff = 1.0f - (1.0f - EdgeShadow) * (1.0f - sampleIndexDx) / 2.0f;
+        float const edgeZCoeff = 1.0f - (1.0f - EdgeShadow) * 1.0f / 2.0f;
+        float const edgeP1Coeff = 1.0f - (1.0f - EdgeShadow) * sampleIndexDx / 2.0f;
+
+        float constexpr FullShadow = 0.6f;
+        float const fullN1Coeff = 1.0f - (1.0f - FullShadow) * (1.0f - sampleIndexDx) / 2.0f;
+        float const fullZCoeff = 1.0f - (1.0f - FullShadow) * 1.0f / 2.0f;
+        float const fullP1Coeff = 1.0f - (1.0f - FullShadow) * sampleIndexDx / 2.0f;
+
         // Edge indices
         register_int const iLeftEdgeLeft = Clamp(leftEdgeIndexI - ShadowEdgeHalfThicknessElementCount, register_int(1), static_cast<register_int>(ShadowBufferSize - 2));
         register_int const iLeftEdgeRight = Clamp(leftEdgeIndexI + ShadowEdgeHalfThicknessElementCount, register_int(1), static_cast<register_int>(ShadowBufferSize - 2));
@@ -322,35 +321,28 @@ void Clouds::UpdateShadows(std::vector<std::unique_ptr<Cloud>> const & clouds)
         
         register_int i;
 
-        float constexpr EdgeShadow = 0.6f;
-        float constexpr FullShadow = 0.3f;
-
-        float const p1Fraction = sampleIndexDx / 2.0f; // Fraction of total shadow onto +1
-        float constexpr zFraction = 1.0f / 2.0f;
-        float const n1Fraction = (1.0f - sampleIndexDx) / 2.0f;
-
         // Left edge
         for (i = iLeftEdgeLeft; i < iLeftEdgeRight; ++i)
         {
-            mShadowBuffer[i - 1] *= 1.0f - (1.0f - EdgeShadow) * n1Fraction;
-            mShadowBuffer[i] *= 1.0f - (1.0f - EdgeShadow) * zFraction;
-            mShadowBuffer[i + 1] *= 1.0f - (1.0f - EdgeShadow) * p1Fraction;
+            mShadowBuffer[i - 1] *= edgeN1Coeff;
+            mShadowBuffer[i] *= edgeZCoeff;
+            mShadowBuffer[i + 1] *= edgeP1Coeff;
         }
 
         // Middle
         for (; i < iRightEdgeLeft; ++i)
         {
-            mShadowBuffer[i - 1] *= 1.0f - (1.0f - FullShadow) * n1Fraction;
-            mShadowBuffer[i] *= 1.0f - (1.0f - FullShadow) * zFraction;
-            mShadowBuffer[i + 1] *= 1.0f - (1.0f - FullShadow) * p1Fraction;
+            mShadowBuffer[i - 1] *= fullN1Coeff;
+            mShadowBuffer[i] *= fullZCoeff;
+            mShadowBuffer[i + 1] *= fullP1Coeff;
         }
 
         // Right edge
         for (; i < iRightEdgeRight; ++i)
         {
-            mShadowBuffer[i - 1] *= 1.0f - (1.0f - EdgeShadow) * n1Fraction;
-            mShadowBuffer[i] *= 1.0f - (1.0f - EdgeShadow) * zFraction;
-            mShadowBuffer[i + 1] *= 1.0f - (1.0f - EdgeShadow) * p1Fraction;
+            mShadowBuffer[i - 1] *= edgeN1Coeff;
+            mShadowBuffer[i] *= edgeZCoeff;
+            mShadowBuffer[i + 1] *= edgeP1Coeff;
         }
     }
 }

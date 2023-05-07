@@ -142,9 +142,10 @@
 		+ Lower speed of clouds
 		+ Test storm
 		+ Lower # of clouds: 32
-		- Test flat & depth ocean render mode
-		- Cleanup clouds code
+		+ Test flat & depth ocean render mode
+		+ Cleanup clouds code
 		- Test on Dell, and check perf before & after
+		- Merge back into master
 
 	= Lamps flashing when exploding
 		+ At depth
