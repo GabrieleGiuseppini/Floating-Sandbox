@@ -687,8 +687,8 @@ void Points::UpdateCombustionLowFrequency(
     // - Combustion:
     //      - NotBurning->Developing transition (Ignition)
     //      - Burning->Decay, Extinguishing transition
-    // - Water ractivity:
-    //      - all transitions
+    // - Water reactivity:
+    //      - All transitions
     /////////////////////////////////////////////////////////////////////////////
 
     // Prepare candidate buffer; we'll pick the top N ones
