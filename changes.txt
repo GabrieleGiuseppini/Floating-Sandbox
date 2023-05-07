@@ -1,6 +1,8 @@
 1.17.6 - TODO
 - Redesigned wave interactions
 - Added menu entry to suddenly switch to full day or night
+- ...and a few more small improvements here and there!
+- Musical theme for this release: Random Forest, Ascension
 
 1.17.5
 - Added new "Laser Cannon" tool

@@ -697,8 +697,8 @@ void Points::UpdateCombustionLowFrequency(
     mCombustionExplosionCandidates.clear();
     mWaterReactionExplosionCandidates.clear();
 
-    // The cdf for rain: we stop burning with a probability equal to this
-    float const rainExtinguishCdf = FastPow(stormParameters.RainDensity, 0.5f);
+    // The cdf for rain: we stop burning during this call with a probability equal to this
+    float const rainExtinguishCdf = FastPow(stormParameters.RainDensity / 2.0f, 3.3f);
 
     //
     // Visit all points
@@ -781,10 +781,14 @@ void Points::UpdateCombustionLowFrequency(
                 //
 
                 SmotherCombustion(pointIndex, false);
+
+                // Lower heat or we'll start burning again (the trigger condition for smothering here
+                // is merely the presence of rain, not the temperature)
+                mTemperatureBuffer[pointIndex] = effectiveIgnitionTemperature + 1.5f * GameParameters::IgnitionTemperatureLowWatermark;
             }
             else
             {
-                // Apply effects of burning
+                // Apply low-frequency effects of burning
 
                 //
                 // 1. Decay burning point
