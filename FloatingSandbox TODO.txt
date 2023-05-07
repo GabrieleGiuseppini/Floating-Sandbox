@@ -147,9 +147,9 @@
 		- Test on Dell, and check perf before & after
 		- Merge back into master
 
-	= Lamps flashing when exploding
+	+ Lamps flashing when exploding		
 		+ At depth
-		- Via sparkle tool
+		+ Via sparkle tool
 
 	- Release:
 		- Localization (yes, it's dirty)

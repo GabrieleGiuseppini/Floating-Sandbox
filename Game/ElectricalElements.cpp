@@ -980,15 +980,22 @@ void ElectricalElements::OnElectricSpark(
                     currentSimulationTime + GameRandomEngine::GetInstance().GenerateUniformReal(4.0f, 8.0f);
 
                 // Handle electrification of this lamp
-                if (mElementStateBuffer[electricalElementIndex].Lamp.State == ElementState::LampState::StateType::LightOn
-                    && GameRandomEngine::GetInstance().GenerateUniformBoolean(0.05f))
+                if (mElementStateBuffer[electricalElementIndex].Lamp.State == ElementState::LampState::StateType::LightOn)
                 {
-                    // Explode
-                    Destroy(
-                        electricalElementIndex,
-                        DestroyReason::LampExplosion,
-                        currentSimulationTime,
-                        gameParameters);
+                    if (GameRandomEngine::GetInstance().GenerateUniformBoolean(0.05f))
+                    {
+                        // Explode
+                        Destroy(
+                            electricalElementIndex,
+                            DestroyReason::LampExplosion,
+                            currentSimulationTime,
+                            gameParameters);
+                    }
+                    else
+                    {
+                        // Flash
+                        mElementStateBuffer[electricalElementIndex].Lamp.State = ElementState::LampState::StateType::DisabledLeadIn1;
+                    }
                 }
 
                 break;
@@ -1659,7 +1666,7 @@ void ElectricalElements::UpdateSinks(
         + stormParameters.AirTemperatureDelta
         + 200.0f; // To ensure buoyancy
 
-    // If power has been severed, this is the OFF sequence type
+    // If power has been severed, this will be the OFF sequence type
     // for *all* lamps
     std::optional<LampOffSequenceType> powerFailureSequenceType;
     if (mPowerFailureReasonInCurrentStep)
@@ -2943,6 +2950,40 @@ void ElectricalElements::RunLampStateMachine(
                 ElectricalElements::DestroyReason::LampImplosion,
                 currentSimulationTime,
                 gameParameters);
+
+            break;
+        }
+
+        case ElementState::LampState::StateType::DisabledLeadIn1:
+        {
+            //
+            // Very brief flash
+            // 
+
+            CalculateLampCoefficients(
+                elementLampIndex,
+                2.5f, // Spread
+                2.0f); // Luminiscence
+
+            mAvailableLightBuffer[elementLampIndex] = 1.f;
+
+            // Transition state
+            lamp.State = ElementState::LampState::StateType::DisabledLeadIn2;
+
+            break;
+        }
+
+        case ElementState::LampState::StateType::DisabledLeadIn2:
+        {
+            // Reset coefficients
+            CalculateLampCoefficients(
+                elementLampIndex,
+                mCurrentLightSpreadAdjustment,
+                mCurrentLuminiscenceAdjustment);
+
+            // Transition state
+            mAvailableLightBuffer[elementLampIndex] = 0.0f;
+            lamp.State = ElementState::LampState::StateType::LightOff;
 
             break;
         }

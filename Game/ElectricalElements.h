@@ -211,7 +211,9 @@ private:
                 FlickerOvercharge,
                 LightOff,
                 ImplosionLeadIn,
-                Implosion
+                Implosion,
+                DisabledLeadIn1,
+                DisabledLeadIn2
             };
 
             static constexpr auto FlickerStartInterval = 100ms;
