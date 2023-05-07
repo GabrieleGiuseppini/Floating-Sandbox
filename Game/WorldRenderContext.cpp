@@ -1043,7 +1043,7 @@ void WorldRenderContext::RenderPrepareOcean(RenderParameters const & renderParam
         mShaderManager.SetProgramParameter<ProgramType::OceanTextureDetailedForeground, ProgramParameterType::SunRaysInclination>(
             mSunRaysInclination);
 
-        mIsRainDensityDirty = false;
+        mIsSunRaysInclinationDirty = false;
     }
 }
 

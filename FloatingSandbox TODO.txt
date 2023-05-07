@@ -106,10 +106,6 @@
 	- Nuke default_ship.shp2 and make Titanic's filename in code
 		- So users don't see two Titanic's
 
-	= Lamps flashing when exploding
-		+ At depth
-		- Via sparkle tool
-
 	= Enhanced sea rendering: rays of light
 		+ Fuzzier borders
 		+ Inclination
@@ -143,12 +139,17 @@
 			+ 3-way
 		+ Depth-darkening of brightness enhancement
 			+ Lighter should darken less
-		- Lower speed of clouds
-		- Test storm
+		+ Lower speed of clouds
+		+ Test storm
 		+ Lower # of clouds: 32
+		- See flames in storm
 		- Test flat & depth ocean render mode
 		- Cleanup clouds code
 		- Test on Dell, and check perf before & after
+
+	= Lamps flashing when exploding
+		+ At depth
+		- Via sparkle tool
 
 	- Release:
 		- Localization (yes, it's dirty)

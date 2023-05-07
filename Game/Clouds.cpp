@@ -141,7 +141,8 @@ void Clouds::Update(
     // Also, higher winds should make clouds move over-linearly faster.
     //
     // A linear factor of 1.0/8.0 worked fine at low wind speeds.
-    float const globalCloudSpeed = windSign * 0.03f * std::pow(std::abs(baseAndStormSpeedMagnitude), 1.7f);
+    //float const globalCloudSpeed = windSign * 0.03f * std::pow(std::abs(baseAndStormSpeedMagnitude), 1.7f); // 1.17.x
+    float const globalCloudSpeed = windSign * 0.005f * std::pow(std::abs(baseAndStormSpeedMagnitude), 2.1f);
 
     for (auto & cloud : mClouds)
     {
@@ -294,12 +295,14 @@ void Clouds::Upload(Render::RenderContext & renderContext) const
 
 void Clouds::UpdateShadows(std::vector<std::unique_ptr<Cloud>> const & clouds)
 {
-    float constexpr CloudSize = 0.3f; // In cloud X space
-    register_int const ClouseSizeElementCount = static_cast<register_int>(std::round(CloudSize / ShadowBufferDx));
+    float constexpr BaseCloudSize = 0.3f; // In cloud X space    
 
     for (auto const & c : clouds)
     {
-        float const leftEdgeX = c->X - CloudSize / 2.0f;
+        float const cloudSize = BaseCloudSize * c->Scale;
+        register_int const ClouseSizeElementCount = static_cast<register_int>(std::round(cloudSize / ShadowBufferDx));
+
+        float const leftEdgeX = c->X - cloudSize / 2.0f;
 
         // Fractional index in the sample array
         float const leftEdgeIndexF = (leftEdgeX + CloudSpaceWidth / 2.0f) / ShadowBufferDx;

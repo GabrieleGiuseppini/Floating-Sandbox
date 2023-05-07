@@ -327,8 +327,6 @@ GameController::DayLightCycleStateMachine::~DayLightCycleStateMachine()
 
 void GameController::DayLightCycleStateMachine::Update()
 {
-    assert(!!mRenderContext);
-
     // We don't want to run at each and every frame
     ++mSkipCounter;
     if (mSkipCounter < 4) // Magic number
