@@ -1108,6 +1108,7 @@ private:
 
     GameOpenGLTexture mCloudShadowsTextureOpenGLHandle;
     size_t mCloudShadowsTextureSize;
+    bool mHasCloudShadowsTextureBeenAllocated;
 
     UploadedTextureManager<WorldTextureGroups> mUploadedWorldTextureManager;
 

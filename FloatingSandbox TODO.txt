@@ -145,18 +145,29 @@
 		+ Test flat & depth ocean render mode
 		+ Cleanup clouds code
 		- Test on Dell, and check perf before & after
+			- See if Dell slowdown is due to R instead of RGBA
+			- Do texture upload conditionally on ocean surface being hi-quality
+				- But then, when we switch from not-detailed to detailed, what texture shall we have for that one frame? EDIT: should be fine?
+		- Rethink V scroll
 		- Merge back into master
 
 	+ Lamps flashing when exploding		
 		+ At depth
 		+ Via sparkle tool
 
+	- Greyscaling (of texture and particles) before Thanos snap, and mass changes (lighter), and different phasing of ashing in band
+		- Phasing: each particle randomly pulverizes, but towards band end prob is 100%
+		- Try with decay
+			- Make sure we only upload decay when we mark a dirty flag
+	
+	- Chainsaw sound still on when tool sounds are muted?
+
 	- Release:
 		- Localization (yes, it's dirty)
 
 	- Wrecking ball tool
+
 	- Replace points with quads from geometry shader
-	- Greyscaling before Thanos snap, and mass changes (lighter), and different phasing of ashing in band
 
 	- Buy new track for farewell: https://www.pond5.com/royalty-free-music/item/204959560-nearer-my-god-thee
 
@@ -164,10 +175,21 @@
 		- Just affects if/how we set Land::OceanDarkeningRate
 
 	- Ships:
+		- Stardust (train)  - UR LOCAL BRAZILIAN
+		- Shed x 2 - Higuys153#5865
+		- Bright mamooth - ⁵⁵𝐓𝐡𝐞 𝟐𝟒𝐭𝐡_𝐃𝐨𝐜𝐭𝐨𝐫-𝟏𝟗𝟐𝟐⁵⁵#1963
+		- Mauretania - UR LOCAL BRAZILIAN
+		- wood ship 2 - Gustav Shedletsky|Local RUS guy#8464
+		- SS.Statendam - p1x
+		- 4 ships from uneducated_potato, on Discord
+		- SS.dermark - desperate soldier
+		- RMS Desirable - desperate soldier
+		- UH-1 - desperate soldier
+		- SS Frederik IV - Pocketwatch
+		- Lanticimes (blimp) - UR LOCAL BRAZILIAN
 		- Take Dugongsmallwtrtight-Walter (ToTake folder)
 			- Name? (ASKED)
 			- Credits? (ASKED)
-		- See Discord
 
 	- Adjustable level of water
 		- Think of problem with flattening waves on bottom?

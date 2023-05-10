@@ -83,6 +83,7 @@ WorldRenderContext::WorldRenderContext(
     , mCloudTextureAtlasOpenGLHandle()
     , mCloudShadowsTextureOpenGLHandle()
     , mCloudShadowsTextureSize(0)
+    , mHasCloudShadowsTextureBeenAllocated(false)
     , mUploadedWorldTextureManager()
     , mOceanTextureFrameSpecifications()
     , mOceanTextureOpenGLHandle()
@@ -680,7 +681,15 @@ void WorldRenderContext::UploadCloudShadows(
 
     mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
     glBindTexture(GL_TEXTURE_1D, *mCloudShadowsTextureOpenGLHandle);
-    glTexImage1D(GL_TEXTURE_1D, 0, GL_R32F, static_cast<GLsizei>(shadowSampleCount), 0, GL_RED, GL_FLOAT, shadowBuffer);
+    if (!mHasCloudShadowsTextureBeenAllocated)
+    {
+        glTexImage1D(GL_TEXTURE_1D, 0, GL_R32F, static_cast<GLsizei>(shadowSampleCount), 0, GL_RED, GL_FLOAT, shadowBuffer);
+        mHasCloudShadowsTextureBeenAllocated = true;
+    }
+    else
+    {
+        glTexSubImage1D(GL_TEXTURE_1D, 0, 0, static_cast<GLsizei>(shadowSampleCount), GL_RED, GL_FLOAT, shadowBuffer);
+    }
     CheckOpenGLError();
 }
 
