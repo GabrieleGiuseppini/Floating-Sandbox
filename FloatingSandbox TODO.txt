@@ -106,7 +106,7 @@
 	- Nuke default_ship.shp2 and make Titanic's filename in code
 		- So users don't see two Titanic's
 
-	= Enhanced sea rendering: rays of light
+	+ Enhanced sea rendering: rays of light
 		+ Fuzzier borders
 		+ Inclination
 			+ Base:
@@ -147,7 +147,7 @@
 		+ Test on Dell, and check perf before & after
 			+ See if Dell slowdown is due to R instead of RGBA
 			+ Do texture upload conditionally on ocean surface being hi-quality
-		- Merge back into master
+		+ Merge back into master
 
 	+ Lamps flashing when exploding		
 		+ At depth

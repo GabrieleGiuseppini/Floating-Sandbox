@@ -1,6 +1,7 @@
 1.17.6 - TODO
 - Redesigned wave interactions
 - Added menu entry to suddenly switch to full day or night
+- Added lighting effects of clouds onto ocean
 - ...and a few more small improvements here and there!
 - Musical theme for this release: Random Forest, Ascension
 
