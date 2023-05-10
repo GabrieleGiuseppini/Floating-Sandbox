@@ -274,6 +274,11 @@ public:
 
     void UploadCloudsEnd();
 
+    bool IsCloudShadowsRenderingEnabled() const
+    {
+        return mIsDetailedOceanRenderEnabled;
+    }
+
     void UploadCloudShadows(
         float const * shadowBuffer,
         size_t shadowSampleCount);
@@ -789,7 +794,7 @@ private:
     void ApplyCanvasSizeChanges(RenderParameters const & renderParameters);
     void ApplyEffectiveAmbientLightIntensityChanges(RenderParameters const & renderParameters);
     void ApplyOceanDarkeningRateChanges(RenderParameters const & renderParameters);
-    void ApplyOceanRenderModeParametersChanges(RenderParameters const & renderParameters);
+    void ApplyOceanRenderParametersChanges(RenderParameters const & renderParameters);
     void ApplyOceanTextureIndexChanges(RenderParameters const & renderParameters);
     void ApplyLandRenderParametersChanges(RenderParameters const & renderParameters);
     void ApplyLandTextureIndexChanges(RenderParameters const & renderParameters);
@@ -1140,7 +1145,7 @@ private:
     std::vector<std::pair<std::string, RgbaImageData>> mLandAvailableThumbnails;
 
     // Other state
-    bool mIsDetailedOceanRenderModeEnabled;
+    bool mIsDetailedOceanRenderEnabled;
 };
 
 }

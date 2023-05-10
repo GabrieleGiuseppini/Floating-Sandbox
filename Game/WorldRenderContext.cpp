@@ -101,7 +101,7 @@ WorldRenderContext::WorldRenderContext(
     , mOceanAvailableThumbnails()
     , mLandAvailableThumbnails()
     // Other state
-    , mIsDetailedOceanRenderModeEnabled(false) // Will be recalculated
+    , mIsDetailedOceanRenderEnabled(false) // Will be recalculated
 {
     GLuint tmpGLuint;
 
@@ -791,9 +791,9 @@ void WorldRenderContext::ProcessParameterChanges(RenderParameters const & render
         ApplyOceanDarkeningRateChanges(renderParameters);
     }
 
-    if (renderParameters.AreOceanRenderModeParametersDirty)
+    if (renderParameters.AreOceanRenderParametersDirty)
     {
-        ApplyOceanRenderModeParametersChanges(renderParameters);
+        ApplyOceanRenderParametersChanges(renderParameters);
     }
 
     if (renderParameters.IsOceanTextureIndexDirty)
@@ -1690,9 +1690,9 @@ void WorldRenderContext::ApplyOceanDarkeningRateChanges(RenderParameters const &
         rate);
 }
 
-void WorldRenderContext::ApplyOceanRenderModeParametersChanges(RenderParameters const & renderParameters)
+void WorldRenderContext::ApplyOceanRenderParametersChanges(RenderParameters const & renderParameters)
 {    
-    mIsDetailedOceanRenderModeEnabled = (renderParameters.OceanRenderDetail == OceanRenderDetailType::Detailed);
+    mIsDetailedOceanRenderEnabled = (renderParameters.OceanRenderDetail == OceanRenderDetailType::Detailed);
 
     // Set ocean parameters in all water programs
 

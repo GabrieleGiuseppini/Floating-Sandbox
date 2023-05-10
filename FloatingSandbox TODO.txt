@@ -146,9 +146,7 @@
 		+ Cleanup clouds code
 		= Test on Dell, and check perf before & after
 			+ See if Dell slowdown is due to R instead of RGBA
-			- Do texture upload conditionally on ocean surface being hi-quality
-				- @ WorldRenderContext::ProcessOceanRenderModeChanges, store flag
-				- Use flag at ::UploadShadows - if not set, do nothing
+			+ Do texture upload conditionally on ocean surface being hi-quality
 		- Rethink V scroll
 		- Merge back into master
 
