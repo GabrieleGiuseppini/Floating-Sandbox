@@ -99,13 +99,6 @@
 			+ GameController::ToggleFullDayOrNight()
 			+ => Localization task
 
-	- Extra ports from SpringLab:
-		- TaskThreadPool, because of:
-			- Pointers to tasks
-
-	- Nuke default_ship.shp2 and make Titanic's filename in code
-		- So users don't see two Titanic's
-
 	+ Enhanced sea rendering: rays of light
 		+ Fuzzier borders
 		+ Inclination
@@ -152,6 +145,14 @@
 	+ Lamps flashing when exploding		
 		+ At depth
 		+ Via sparkle tool
+
+	- Extra ports from SpringLab:
+		- TaskThreadPool, because of:
+			- Pointers to tasks
+
+	- Nuke default_ship.shp2 and make Titanic's filename in code
+		- So users don't see two Titanic's
+
 
 	- Greyscaling (of texture and particles) before Thanos snap, and mass changes (lighter), and different phasing of ashing in band
 		- Phasing: each particle randomly pulverizes, but towards band end prob is 100%
