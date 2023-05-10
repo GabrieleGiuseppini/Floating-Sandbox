@@ -274,9 +274,9 @@ public:
 
     void UploadCloudsEnd();
 
-    bool IsCloudShadowsRenderingEnabled() const
+    bool IsCloudShadowsRenderingEnabled(RenderParameters const & renderParameters) const
     {
-        return mIsDetailedOceanRenderEnabled;
+        return renderParameters.OceanRenderDetail == OceanRenderDetailType::Detailed;
     }
 
     void UploadCloudShadows(
@@ -1143,9 +1143,6 @@ private:
     // Thumbnails
     std::vector<std::pair<std::string, RgbaImageData>> mOceanAvailableThumbnails;
     std::vector<std::pair<std::string, RgbaImageData>> mLandAvailableThumbnails;
-
-    // Other state
-    bool mIsDetailedOceanRenderEnabled;
 };
 
 }

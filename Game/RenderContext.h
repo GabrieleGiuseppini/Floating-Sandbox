@@ -303,7 +303,7 @@ public:
     void SetOceanRenderDetail(OceanRenderDetailType oceanRenderDetail)
     {
         mRenderParameters.OceanRenderDetail = oceanRenderDetail;
-        mRenderParameters.AreOceanRenderParametersDirty = true;
+        // No need to set dirty, this is picked up at each cycle anway
     }
 
     bool GetShowShipThroughOcean() const
@@ -791,7 +791,7 @@ public:
         float const * shadowBuffer,
         size_t shadowSampleCount)
     {
-        if (mWorldRenderContext->IsCloudShadowsRenderingEnabled())
+        if (mWorldRenderContext->IsCloudShadowsRenderingEnabled(mRenderParameters))
         {
             // Run upload asynchronously
             mRenderThread.QueueTask(

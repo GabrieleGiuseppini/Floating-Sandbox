@@ -100,8 +100,6 @@ WorldRenderContext::WorldRenderContext(
     // Thumbnails
     , mOceanAvailableThumbnails()
     , mLandAvailableThumbnails()
-    // Other state
-    , mIsDetailedOceanRenderEnabled(false) // Will be recalculated
 {
     GLuint tmpGLuint;
 
@@ -1692,8 +1690,6 @@ void WorldRenderContext::ApplyOceanDarkeningRateChanges(RenderParameters const &
 
 void WorldRenderContext::ApplyOceanRenderParametersChanges(RenderParameters const & renderParameters)
 {    
-    mIsDetailedOceanRenderEnabled = (renderParameters.OceanRenderDetail == OceanRenderDetailType::Detailed);
-
     // Set ocean parameters in all water programs
 
     vec3f const depthColorStart = renderParameters.DepthOceanColorStart.toVec3f();
