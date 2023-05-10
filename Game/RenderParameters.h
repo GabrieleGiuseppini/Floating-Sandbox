@@ -77,9 +77,9 @@ struct RenderParameters
     bool IsEffectiveAmbientLightIntensityDirty;
     bool IsFlatSkyColorDirty;
     bool IsOceanDarkeningRateDirty;
-    bool AreOceanRenderModeParametersDirty; // Tracks various render mode parameters as a whole, for convenience
+    bool AreOceanRenderParametersDirty; // Tracks various render parameters as a whole, for convenience
     bool IsOceanTextureIndexDirty;
-    bool AreLandRenderParametersDirty; // Tracks various land render mode parameters as a whole, for convenience
+    bool AreLandRenderParametersDirty; // Tracks various land render parameters as a whole, for convenience
     bool IsLandTextureIndexDirty;
     // Ship
     bool IsShipAmbientLightSensitivityDirty;

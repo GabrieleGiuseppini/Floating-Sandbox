@@ -1138,6 +1138,9 @@ private:
     // Thumbnails
     std::vector<std::pair<std::string, RgbaImageData>> mOceanAvailableThumbnails;
     std::vector<std::pair<std::string, RgbaImageData>> mLandAvailableThumbnails;
+
+    // Other state
+    bool mIsDetailedOceanRenderModeEnabled;
 };
 
 }

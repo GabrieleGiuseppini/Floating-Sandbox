@@ -231,7 +231,7 @@ public:
     void SetOceanRenderMode(OceanRenderModeType oceanRenderMode)
     {
         mRenderParameters.OceanRenderMode = oceanRenderMode;
-        mRenderParameters.AreOceanRenderModeParametersDirty = true;
+        mRenderParameters.AreOceanRenderParametersDirty = true;
 
         mRenderParameters.ShipWaterColor = CalculateShipWaterColor();
         mRenderParameters.IsShipWaterColorDirty = true;
@@ -245,7 +245,7 @@ public:
     void SetDepthOceanColorStart(rgbColor const & color)
     {
         mRenderParameters.DepthOceanColorStart = color;
-        mRenderParameters.AreOceanRenderModeParametersDirty = true;
+        mRenderParameters.AreOceanRenderParametersDirty = true;
 
         mRenderParameters.ShipWaterColor = CalculateShipWaterColor();
         mRenderParameters.IsShipWaterColorDirty = true;
@@ -259,7 +259,7 @@ public:
     void SetDepthOceanColorEnd(rgbColor const & color)
     {
         mRenderParameters.DepthOceanColorEnd = color;
-        mRenderParameters.AreOceanRenderModeParametersDirty = true;
+        mRenderParameters.AreOceanRenderParametersDirty = true;
 
         mRenderParameters.ShipWaterColor = CalculateShipWaterColor();
         mRenderParameters.IsShipWaterColorDirty = true;
@@ -273,7 +273,7 @@ public:
     void SetFlatOceanColor(rgbColor const & color)
     {
         mRenderParameters.FlatOceanColor = color;
-        mRenderParameters.AreOceanRenderModeParametersDirty = true;
+        mRenderParameters.AreOceanRenderParametersDirty = true;
 
         mRenderParameters.ShipWaterColor = CalculateShipWaterColor();
         mRenderParameters.IsShipWaterColorDirty = true;
@@ -303,7 +303,7 @@ public:
     void SetOceanRenderDetail(OceanRenderDetailType oceanRenderDetail)
     {
         mRenderParameters.OceanRenderDetail = oceanRenderDetail;
-        // No need to set dirty, this is picked up at each cycle anway
+        mRenderParameters.AreOceanRenderParametersDirty = true;
     }
 
     bool GetShowShipThroughOcean() const

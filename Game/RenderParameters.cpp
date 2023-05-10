@@ -49,7 +49,7 @@ RenderParameters::RenderParameters(
 	, IsEffectiveAmbientLightIntensityDirty(true)
 	, IsFlatSkyColorDirty(true)
 	, IsOceanDarkeningRateDirty(true)
-	, AreOceanRenderModeParametersDirty(true)
+	, AreOceanRenderParametersDirty(true)
 	, IsOceanTextureIndexDirty(true)
 	, AreLandRenderParametersDirty(true)
 	, IsLandTextureIndexDirty(true)
@@ -75,7 +75,7 @@ RenderParameters RenderParameters::TakeSnapshotAndClear()
 	IsEffectiveAmbientLightIntensityDirty = false;
 	IsFlatSkyColorDirty = false;
 	IsOceanDarkeningRateDirty = false;
-	AreOceanRenderModeParametersDirty = false;
+	AreOceanRenderParametersDirty = false;
 	IsOceanTextureIndexDirty = false;
 	AreLandRenderParametersDirty = false;
 	IsLandTextureIndexDirty = false;

@@ -144,10 +144,11 @@
 		+ Lower # of clouds: 32
 		+ Test flat & depth ocean render mode
 		+ Cleanup clouds code
-		- Test on Dell, and check perf before & after
-			- See if Dell slowdown is due to R instead of RGBA
+		= Test on Dell, and check perf before & after
+			+ See if Dell slowdown is due to R instead of RGBA
 			- Do texture upload conditionally on ocean surface being hi-quality
-				- But then, when we switch from not-detailed to detailed, what texture shall we have for that one frame? EDIT: should be fine?
+				- @ WorldRenderContext::ProcessOceanRenderModeChanges, store flag
+				- Use flag at ::UploadShadows - if not set, do nothing
 		- Rethink V scroll
 		- Merge back into master
 
