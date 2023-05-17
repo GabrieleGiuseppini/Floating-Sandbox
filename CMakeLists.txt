@@ -238,7 +238,7 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 		set(${flag_var} "${${flag_var}} /LTCG:incremental")
 	endforeach(flag_var)
 
-	# Enable LTCG in release
+	# Enable LTCG in Release
 	foreach(flag_var
 		CMAKE_EXE_LINKER_FLAGS_RELEASE)
 		if(${flag_var} MATCHES "/LTCG")

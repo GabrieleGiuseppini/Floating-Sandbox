@@ -13,13 +13,13 @@ RenderParameters::RenderParameters(
 	: View(1.0f, vec2f::zero(), initialCanvasSize, logicalToPhysicalDisplayFactor)
 	, EffectiveAmbientLightIntensity(1.0f) // Calculated
 	// World
-	, FlatSkyColor(0x87, 0xce, 0xfa) // (cornflower blue)
+	, FlatSkyColor(0x00, 0x77, 0xc4)
 	, OceanTransparency(0.8125f)
 	, OceanDarkeningRate(0.12795731425285339f)
-	, OceanRenderMode(OceanRenderModeType::Texture)
+	, OceanRenderMode(OceanRenderModeType::Flat)
 	, DepthOceanColorStart(0x4a, 0x84, 0x9f)
 	, DepthOceanColorEnd(0x00, 0x00, 0x00)
-	, FlatOceanColor(0x7d, 0xe2, 0xee)
+	, FlatOceanColor(0x00, 0x53, 0x91)
 	, OceanTextureIndex(0) // Wavy Clear Thin
 	, OceanRenderDetail(OceanRenderDetailType::Detailed)
 	, ShowShipThroughOcean(false)

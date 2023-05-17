@@ -211,24 +211,45 @@ void Clouds::Update(
     UpdateShadows(mClouds);
     UpdateShadows(mStormClouds);
 
-    // Offset shadow values so that the mean is 1.0
+    // TODOTEST
+    ////// Offset shadow values so that the mean is 1.0
+    //////
+    ////// Note: we only sample the visible (central) slice, so that we
+    ////// do not undergo non-linearities when clouds disappear
+    ////// at the edges of the cloud space
+
+    ////float sum = 0.0f;
+    ////float count = 0.0f;
+    ////for (size_t i = ShadowBufferSize / 3; i < ShadowBufferSize * 2 / 3; ++i)
+    ////{
+    ////    sum += mShadowBuffer[i];
+    ////    count += 1.0f;
+    ////}
+
+    ////float const adjustment = 1.0f - sum / count;
+    ////for (size_t i = 0; i < ShadowBufferSize; ++i)
+    ////{
+    ////    mShadowBuffer[i] += adjustment;
+    ////}
+
+    // Offset shadow values so that the min is 1.0
     //
     // Note: we only sample the visible (central) slice, so that we
     // do not undergo non-linearities when clouds disappear
     // at the edges of the cloud space
 
-    float sum = 0.0f;
-    float count = 0.0f;
+    float minShadow = 1.0f;
     for (size_t i = ShadowBufferSize / 3; i < ShadowBufferSize * 2 / 3; ++i)
     {
-        sum += mShadowBuffer[i];
-        count += 1.0f;
+        minShadow = std::min(minShadow, mShadowBuffer[i]);
     }
 
-    float const adjustment = 1.0f - sum / count;
+    float const adjustment = 1.0f - minShadow;
+    assert(adjustment >= 0.0f && adjustment <= 1.0f);
     for (size_t i = 0; i < ShadowBufferSize; ++i)
     {
         mShadowBuffer[i] += adjustment;
+        assert(mShadowBuffer[i] >= 0.0f && mShadowBuffer[i] <= 2.0f);
     }
 }
 

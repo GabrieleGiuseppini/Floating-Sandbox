@@ -91,7 +91,7 @@ GameParameters::GameParameters()
     , OceanFloorFriction(0.25f)
     , OceanFloorSiltHardness(0.25f)
     , NumberOfStars(1536)
-    , NumberOfClouds(32)
+    , NumberOfClouds(24)
     , DoDayLightCycle(false)
     , DayLightCycleDuration(std::chrono::minutes(4))
     // Interactions

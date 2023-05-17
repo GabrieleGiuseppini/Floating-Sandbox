@@ -45,8 +45,8 @@ uniform sampler1D paramSharedTexture;
 
 // Parameters
 uniform float paramEffectiveAmbientLightIntensity;
-uniform float paramOceanTransparency;
 uniform float paramOceanDarkeningRate;
+uniform float paramOceanTransparency;
 uniform float paramSunRaysInclination; // 0.0==vertical, 1.0/-1.0==45/-45 degrees
 uniform vec2 paramTextureScaling;
 

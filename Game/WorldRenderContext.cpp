@@ -1671,6 +1671,14 @@ void WorldRenderContext::ApplyOceanDarkeningRateChanges(RenderParameters const &
     mShaderManager.SetProgramParameter<ProgramType::OceanDepthDetailedForeground, ProgramParameterType::OceanDarkeningRate>(
         rate);
 
+    mShaderManager.ActivateProgram<ProgramType::OceanFlatDetailedBackground>();
+    mShaderManager.SetProgramParameter<ProgramType::OceanFlatDetailedBackground, ProgramParameterType::OceanDarkeningRate>(
+        rate);
+
+    mShaderManager.ActivateProgram<ProgramType::OceanFlatDetailedForeground>();
+    mShaderManager.SetProgramParameter<ProgramType::OceanFlatDetailedForeground, ProgramParameterType::OceanDarkeningRate>(
+        rate);
+
     mShaderManager.ActivateProgram<ProgramType::OceanTextureBasic>();
     mShaderManager.SetProgramParameter<ProgramType::OceanTextureBasic, ProgramParameterType::OceanDarkeningRate>(
         rate);
