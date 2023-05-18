@@ -936,7 +936,7 @@ void WorldRenderContext::RenderDrawCloudsAndBackgroundLightnings(RenderParameter
         mShaderManager.ActivateProgram<ProgramType::Lightning>();
 
         mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture>();
-        glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(1));
+        glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(NoiseType::Gross));
 
         glDrawArrays(GL_TRIANGLES,
             0,
@@ -1074,7 +1074,7 @@ void WorldRenderContext::RenderDrawOcean(bool opaquely, RenderParameters const &
                         transparency);
 
                     mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture>();
-                    glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(2));
+                    glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(NoiseType::Fine));
 
                     break;
                 }
@@ -1129,7 +1129,7 @@ void WorldRenderContext::RenderDrawOcean(bool opaquely, RenderParameters const &
                         transparency);
 
                     mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture>();
-                    glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(2));
+                    glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(NoiseType::Fine));
 
                     break;
                 }
@@ -1144,7 +1144,7 @@ void WorldRenderContext::RenderDrawOcean(bool opaquely, RenderParameters const &
                         transparency);
 
                     mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture>();
-                    glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(2));
+                    glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(NoiseType::Fine));
                     
                     break;
                 }
@@ -1349,7 +1349,7 @@ void WorldRenderContext::RenderDrawForegroundLightnings(RenderParameters const &
         mShaderManager.ActivateProgram<ProgramType::Lightning>();
 
         mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture>();
-        glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(1));
+        glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(NoiseType::Gross));
 
         glDrawArrays(GL_TRIANGLES,
             static_cast<GLsizei>(mLightningVertexBuffer.max_size() - mForegroundLightningVertexCount),

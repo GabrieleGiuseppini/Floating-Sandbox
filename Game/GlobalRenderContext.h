@@ -62,9 +62,9 @@ public:
         return *mExplosionTextureAtlasMetadata;
     }
 
-    inline GLuint GetNoiseTextureOpenGLHandle(TextureFrameIndex const & frameIndex) const
+    inline GLuint GetNoiseTextureOpenGLHandle(NoiseType noiseType) const
     {
-        return mUploadedNoiseTexturesManager.GetOpenGLHandle(NoiseTextureGroups::Noise, frameIndex);
+        return mUploadedNoiseTexturesManager.GetOpenGLHandle(NoiseTextureGroups::Noise, static_cast<TextureFrameIndex>(noiseType));
     }
 
 private:

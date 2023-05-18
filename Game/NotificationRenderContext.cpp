@@ -725,11 +725,11 @@ void NotificationRenderContext::RenderPrepare()
 void NotificationRenderContext::RenderDraw()
 {
     //
-    // Set noise 2 in the noise texture unit, as all our shaders require that one
+    // Set gross noise in the noise texture unit, as all our shaders require that one
     //
 
     mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture>();
-    glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(1));
+    glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(NoiseType::Gross));
 
     //
     // Draw

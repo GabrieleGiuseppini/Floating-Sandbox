@@ -151,7 +151,7 @@ void main()
     vec2 colorVirtualTextureCoords = fract(
         vec2(
             uv.x / ColorResolution,
-            uv.y / ColorResolution - paramFlameProgress * 1.5 + noiseOffset.x / 3.)); // Adding some per-flame random Y displacement
+            uv.y / ColorResolution - paramFlameProgress * 1.5 + noiseOffset.x)); // Adding some per-flame random Y displacement
 
     // Clamp to dead center pixels
     colorVirtualTextureCoords = clamp(colorVirtualTextureCoords, paramAtlasTile1Dx, vec2(1.0) - paramAtlasTile1Dx);

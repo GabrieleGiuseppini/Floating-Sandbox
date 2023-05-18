@@ -42,70 +42,13 @@ void GlobalRenderContext::InitializeNoiseTextures(ResourceLocator const & resour
 
     mUploadedNoiseTexturesManager.UploadNextFrame(
         noiseTextureDatabase.GetGroup(NoiseTextureGroups::Noise),
-        0,
+        static_cast<TextureFrameIndex>(NoiseType::Gross),
         GL_LINEAR);
 
     mUploadedNoiseTexturesManager.UploadNextFrame(
         noiseTextureDatabase.GetGroup(NoiseTextureGroups::Noise),
-        1,
+        static_cast<TextureFrameIndex>(NoiseType::Fine),
         GL_LINEAR);
-
-    mUploadedNoiseTexturesManager.UploadNextFrame(
-        noiseTextureDatabase.GetGroup(NoiseTextureGroups::Noise),
-        2,
-        GL_LINEAR);
-
-    // TODOHERE
-    /*
-    //
-    // Set noise 1 texture in shaders that require it
-    //
-
-    glBindTexture(GL_TEXTURE_2D, mUploadedNoiseTexturesManager.GetOpenGLHandle(NoiseTextureGroups::Noise, 0));
-    CheckOpenGLError();
-
-    mShaderManager.ActivateProgram<ProgramType::ShipFlamesBackground>();
-    mShaderManager.SetTextureParameters<ProgramType::ShipFlamesBackground>();
-    mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground>();
-    mShaderManager.SetTextureParameters<ProgramType::ShipFlamesForeground>();
-    mShaderManager.ActivateProgram<ProgramType::ShipJetEngineFlames>();
-    mShaderManager.SetTextureParameters<ProgramType::ShipJetEngineFlames>();
-
-    //
-    // Load noise 2
-    //
-
-    mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture2>();
-
-    mUploadedNoiseTexturesManager.UploadNextFrame(
-        noiseTextureDatabase.GetGroup(NoiseTextureGroups::Noise),
-        1,
-        GL_LINEAR);
-
-    //
-    // Set noise 2 texture in shaders that require it
-    //
-
-    glBindTexture(GL_TEXTURE_2D, mUploadedNoiseTexturesManager.GetOpenGLHandle(NoiseTextureGroups::Noise, 1));
-    CheckOpenGLError();
-
-    mShaderManager.ActivateProgram<ProgramType::LaserRay>();
-    mShaderManager.SetTextureParameters<ProgramType::LaserRay>();
-
-    //
-    // Load noise 3
-    //
-
-    mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture3>();
-
-    mUploadedNoiseTexturesManager.UploadNextFrame(
-        noiseTextureDatabase.GetGroup(NoiseTextureGroups::Noise),
-        2,
-        GL_LINEAR);
-
-    glBindTexture(GL_TEXTURE_2D, mUploadedNoiseTexturesManager.GetOpenGLHandle(NoiseTextureGroups::Noise, 2));
-    CheckOpenGLError();
-    */
 }
 
 void GlobalRenderContext::InitializeGenericTextures(ResourceLocator const & resourceLocator)

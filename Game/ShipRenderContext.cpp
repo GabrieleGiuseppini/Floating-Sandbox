@@ -1394,11 +1394,11 @@ void ShipRenderContext::RenderDraw(
     // We've been invoked on the render thread
 
     //
-    // Set noise 1 in the noise texture unit, as all our shaders require that one
+    // Set gross noise in the noise texture unit, as all our shaders require that one
     //
 
     mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture>();
-    glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(0));
+    glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(NoiseType::Gross));
 
     //
     // Render background flames
@@ -1822,8 +1822,6 @@ void ShipRenderContext::RenderDrawFlames(
         glBindVertexArray(*mFlameVAO);
 
         mShaderManager.ActivateProgram<FlameShaderType>();
-
-        // TODOHERE
 
         glDrawArrays(
             GL_TRIANGLES,

@@ -92,6 +92,12 @@ struct NoiseTextureDatabaseTraits
     }
 };
 
+enum class NoiseType : uint32_t
+{
+    Gross = 0,
+    Fine = 1
+};
+
 // Generic Mip-Mapped
 
 enum class GenericMipMappedTextureGroups : uint16_t
