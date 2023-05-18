@@ -1,3 +1,5 @@
+#include "static_parameters.glslinc"
+
 vec4 CalculateDetailedOceanPlaneColor(
     vec4 baseColor,    
     float yWorld,
@@ -127,7 +129,7 @@ vec3 ApplyDepthDarkening(
     // Dither
     //
 
-    vec2 noiseCoords = fragCoords / vec2(%NOISE_2_WIDTH%, %NOISE_2_HEIGHT%);
+    vec2 noiseCoords = fragCoords / vec2(NOISE_2_WIDTH, NOISE_2_HEIGHT);
     float noise = texture2D(noiseTexture, noiseCoords).x;
     c.xyz += mix(-0.5/255.0, 0.5/255.0, noise);
     return c;

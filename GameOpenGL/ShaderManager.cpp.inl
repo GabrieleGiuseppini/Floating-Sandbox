@@ -12,39 +12,24 @@
 #include <unordered_map>
 #include <unordered_set>
 
-static const std::string StaticParametersFilenameStem = "static_parameters";
-
 template<typename Traits>
 ShaderManager<Traits>::ShaderManager(std::filesystem::path const & shadersRoot)
 {
-    if (!std::filesystem::exists(shadersRoot))
-        throw GameException("Shaders root path \"" + shadersRoot.string() + "\" does not exist");
-
-    //
-    // Make static parameters
-    //
-
-    std::map<std::string, std::string> staticParameters;
-
-    // 1) From file
-    std::filesystem::path localStaticParametersFilepath = shadersRoot / (StaticParametersFilenameStem + ".glslinc");
-    if (std::filesystem::exists(localStaticParametersFilepath))
-    {
-        std::string localStaticParametersSource = Utils::LoadTextFile(localStaticParametersFilepath);
-        ParseLocalStaticParameters(localStaticParametersSource, staticParameters);
-    }
-
     //
     // Load all shader files
     //
+
+    if (!std::filesystem::exists(shadersRoot))
+    {
+        throw GameException("Shaders root path \"" + shadersRoot.string() + "\" does not exist");
+    }
 
     // Filename -> (isShader, source)
     std::unordered_map<std::string, std::pair<bool, std::string>> shaderSources;
 
     for (auto const & entryIt : std::filesystem::directory_iterator(shadersRoot))
     {
-        if (std::filesystem::is_regular_file(entryIt.path())
-            && entryIt.path().stem() != StaticParametersFilenameStem)
+        if (std::filesystem::is_regular_file(entryIt.path()))
         {
             if (entryIt.path().extension() == ".glsl" || entryIt.path().extension() == ".glslinc")
             {
@@ -65,7 +50,7 @@ ShaderManager<Traits>::ShaderManager(std::filesystem::path const & shadersRoot)
 
 
     //
-    // Compile all shader files
+    // Compile all and only shader files
     //
 
     for (auto const & entryIt : shaderSources)
@@ -75,8 +60,7 @@ ShaderManager<Traits>::ShaderManager(std::filesystem::path const & shadersRoot)
             CompileShader(
                 entryIt.first,
                 entryIt.second.second,
-                shaderSources,
-                staticParameters);
+                shaderSources);
         }
     }
 
@@ -98,8 +82,7 @@ template<typename Traits>
 void ShaderManager<Traits>::CompileShader(
     std::string const & shaderFilename,
     std::string const & shaderSource,
-    std::unordered_map<std::string, std::pair<bool, std::string>> const & allShaderSources,
-    std::map<std::string, std::string> const & staticParameters)
+    std::unordered_map<std::string, std::pair<bool, std::string>> const & allShaderSources)
 {
     try
     {
@@ -139,8 +122,6 @@ void ShaderManager<Traits>::CompileShader(
         // Compile vertex shader
         //
 
-        vertexShaderSource = SubstituteStaticParameters(vertexShaderSource, staticParameters);
-
         GameOpenGL::CompileShader(
             vertexShaderSource,
             GL_VERTEX_SHADER,
@@ -151,8 +132,6 @@ void ShaderManager<Traits>::CompileShader(
         //
         // Compile fragment shader
         //
-
-        fragmentShaderSource = SubstituteStaticParameters(fragmentShaderSource, staticParameters);
 
         GameOpenGL::CompileShader(
             fragmentShaderSource,
@@ -368,81 +347,6 @@ std::tuple<std::string, std::string> ShaderManager<Traits>::SplitSource(std::str
     return std::make_tuple(
         vertexShaderCode.str(),
         fragmentShaderCode.str());
-}
-
-template<typename Traits>
-void ShaderManager<Traits>::ParseLocalStaticParameters(
-    std::string const & localStaticParametersSource,
-    std::map<std::string, std::string> & staticParameters)
-{
-    static std::regex const StaticParamDefinitionRegex(R"!(^\s*([_a-zA-Z][_a-zA-Z0-9]*)\s*=\s*(.*?)\s*$)!");
-
-    std::stringstream sSource(localStaticParametersSource);
-    std::string line;
-    while (std::getline(sSource, line))
-    {
-        line = Utils::Trim(line);
-
-        if (!line.empty())
-        {
-            std::smatch match;
-            if (!std::regex_search(line, match, StaticParamDefinitionRegex))
-            {
-                throw GameException("Error parsing static parameter definition \"" + line + "\"");
-            }
-
-            assert(3 == match.size());
-            auto staticParameterName = match[1].str();
-            auto staticParameterValue = match[2].str();
-
-            // Check whether it's a dupe
-            if (staticParameters.count(staticParameterName) > 0)
-            {
-                throw GameException("Static parameters \"" + staticParameterName + "\" has already been defined");
-            }
-
-            // Store
-            staticParameters.insert(
-                std::make_pair(
-                    staticParameterName,
-                    staticParameterValue));
-        }
-    }
-}
-
-template<typename Traits>
-std::string ShaderManager<Traits>::SubstituteStaticParameters(
-    std::string const & source,
-    std::map<std::string, std::string> const & staticParameters)
-{
-    static std::regex const StaticParamNameRegex("%([_a-zA-Z][_a-zA-Z0-9]*)%");
-
-    std::string remainingSource = source;
-    std::stringstream sSubstitutedSource;
-    std::smatch match;
-    while (std::regex_search(remainingSource, match, StaticParamNameRegex))
-    {
-        assert(2 == match.size());
-        auto staticParameterName = match[1].str();
-
-        // Lookup the parameter
-        auto const & paramIt = staticParameters.find(staticParameterName);
-        if (paramIt == staticParameters.end())
-        {
-            throw GameException("Static parameter \"" + staticParameterName + "\" is not recognized");
-        }
-
-        // Substitute the parameter
-        sSubstitutedSource << match.prefix();
-        sSubstitutedSource << paramIt->second;
-
-        // Advance
-        remainingSource = match.suffix();
-    }
-
-    sSubstitutedSource << remainingSource;
-
-    return sSubstitutedSource.str();
 }
 
 template<typename Traits>

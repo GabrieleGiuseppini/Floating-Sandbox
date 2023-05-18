@@ -58,6 +58,8 @@ void main()
 
 #define in varying
 
+#include "static_parameters.glslinc"
+
 #if HEAT_RENDER_MODE != 0
 #include "ship_heat.glslinc"
 #endif
@@ -111,7 +113,7 @@ void main()
 #if HEAT_RENDER_MODE != 1
     // Apply decay
     float originalLightness = dot(vec3(1.0/3.0), vertexCol.xyz);
-    vec3 decayColor = mix(vec3(%ROT_GREEN_COLOR%), vec3(%ROT_BROWN_COLOR%), originalLightness);
+    vec3 decayColor = mix(vec3(ROT_GREEN_COLOR), vec3(ROT_BROWN_COLOR), originalLightness);
     vec3 fragColour = mix(decayColor, vertexCol.xyz, vertexAttributes.z);
 
     // Apply point water

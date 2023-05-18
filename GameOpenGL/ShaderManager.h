@@ -282,22 +282,13 @@ private:
     void CompileShader(
         std::string const & shaderFilename,
         std::string const & shaderSource,
-        std::unordered_map<std::string, std::pair<bool, std::string>> const & shaderSources,
-        std::map<std::string, std::string> const & staticParameters);
+        std::unordered_map<std::string, std::pair<bool, std::string>> const & shaderSources);
 
     static std::string ResolveIncludes(
         std::string const & shaderSource,
         std::unordered_map<std::string, std::pair<bool, std::string>> const & shaderSources);
 
     static std::tuple<std::string, std::string> SplitSource(std::string const & source);
-
-    static void ParseLocalStaticParameters(
-        std::string const & localStaticParametersSource,
-        std::map<std::string, std::string> & staticParameters);
-
-    static std::string SubstituteStaticParameters(
-        std::string const & source,
-        std::map<std::string, std::string> const & staticParameters);
 
     static std::set<std::string> ExtractVertexAttributeNames(GameOpenGLShaderProgram const & shaderProgram);
 
@@ -331,17 +322,6 @@ private:
     friend class ShaderManagerTests_SplitsShaders_ErrorsOnMissingVertexSection_Test;
     friend class ShaderManagerTests_SplitsShaders_ErrorsOnMissingVertexSection_EmptyFile_Test;
     friend class ShaderManagerTests_SplitsShaders_ErrorsOnMissingFragmentSection_Test;
-
-    friend class ShaderManagerTests_ParsesStaticParameters_Single_Test;
-    friend class ShaderManagerTests_ParsesStaticParameters_Multiple_Test;
-    friend class ShaderManagerTests_ParsesStaticParameters_Multiple_Test;
-    friend class ShaderManagerTests_ParsesStaticParameters_ErrorsOnRepeatedParameter_Test;
-    friend class ShaderManagerTests_ParsesStaticParameters_ErrorsOnMalformedDefinition_Test;
-
-    friend class ShaderManagerTests_SubstitutesStaticParameters_Single_Test;
-    friend class ShaderManagerTests_SubstitutesStaticParameters_Multiple_Different_Test;
-    friend class ShaderManagerTests_SubstitutesStaticParameters_Multiple_Repeated_Test;
-    friend class ShaderManagerTests_SubstitutesStaticParameters_ErrorsOnUnrecognizedParameter_Test;
 
     friend class ShaderManagerTests_ExtractsShaderParameters_Single_Test;
     friend class ShaderManagerTests_ExtractsShaderParameters_Multiple_Test;
