@@ -177,7 +177,6 @@
 				+ Ship Flames: 1
 				+ Ship Engine Flames: 1			
 			+ Cleanup GlobalRenderContext.cpp
-		- fix probe panel?
 		- "Dark stripe" issue
 			- See if it's possible that with the min-normalization we do, parts outside of the central visible stripe end up
 			  outside of the 0.0-2.0 range and thus on a bad spot of the dynamic range curve, which makes it zero or negative

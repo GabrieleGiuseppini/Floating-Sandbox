@@ -69,7 +69,7 @@ void main()
     
     float noise = GetNoise(
         vertexCoordinatesNdc.y / (.4 * paramWidthNdc * .5), 
-        .2 * step(midXNdc, vertexCoordinatesNdc.x), 
+        .2 * vertexCoordinatesNdc.x, 
         widthFraction / 5.);
     
     float flangeLengthNdc = (0.25 + noise * .4) * paramWidthNdc / 2.;
