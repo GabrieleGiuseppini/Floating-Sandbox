@@ -13,6 +13,7 @@ uniform mat4 paramOrthoMatrix;
 // Outputs
 out vec3 oceanColor;
 out vec2 shadowPosNdc;
+out vec2 stCoords;
 out float yWorld;
 out vec4 yVectorWorld; // yBackWorld/yMidWorld/yFrontWorld/dYFront2World
 
@@ -24,6 +25,7 @@ void main()
 
     // Pass values to fragment shader
     shadowPosNdc = vec2(posNdc.x, posNdc.y - paramOrthoMatrix[3][1]);
+    stCoords = posNdc.xy;
     yWorld = inOceanDetailed1.y;
     yVectorWorld = inOceanDetailed2;
 }
@@ -37,10 +39,12 @@ void main()
 
 // Inputs from previous shader
 in vec2 shadowPosNdc;
+in vec2 stCoords;
 in float yWorld;
 in vec4 yVectorWorld; // yBackWorld/yMidWorld/yFrontWorld/dYFront2World
 
 // Input textures
+uniform sampler2D paramNoiseTexture;
 uniform sampler1D paramSharedTexture;
 
 // Parameters
@@ -63,11 +67,13 @@ void main()
         paramSharedTexture);
 
     // Apply depth darkening
-    float darkMix = 1.0 - exp(min(0.0, yWorld) * paramOceanDarkeningRate); // Darkening is based on world Y (more negative Y, more dark)
-    baseColor = mix(
-        baseColor,
-        vec4(0., 0., 0., baseColor.w),
-        darkMix * darkMix * darkMix);
+    baseColor.xyz = ApplyDepthDarkening(
+        baseColor.xyz,
+        vec3(0.0),
+        yWorld,
+        paramOceanDarkeningRate,
+        stCoords,
+        paramNoiseTexture);
 
     // Apply detail
     vec4 color = CalculateDetailedOceanPlaneColor(

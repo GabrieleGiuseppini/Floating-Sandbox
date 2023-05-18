@@ -665,6 +665,8 @@ private:
 
 private:
 
+	GlobalRenderContext const & mGlobalRenderContext;
+
     ShaderManager<ShaderManagerTraits> & mShaderManager;
 
     float mScreenToNdcX;

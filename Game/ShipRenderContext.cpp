@@ -27,7 +27,10 @@ ShipRenderContext::ShipRenderContext(
     RenderParameters const & renderParameters,
     float shipFlameSizeAdjustment,
     float vectorFieldLengthMultiplier)
-    : mShipId(shipId)
+    : mGlobalRenderContext(globalRenderContext)
+    , mShaderManager(shaderManager)
+    //
+    , mShipId(shipId)
     , mPointCount(pointCount)
     , mShipCount(shipCount)
     , mMaxMaxPlaneId(0)
@@ -135,9 +138,7 @@ ShipRenderContext::ShipRenderContext(
     , mStressedSpringTextureOpenGLHandle()
     , mExplosionTextureAtlasMetadata(globalRenderContext.GetExplosionTextureAtlasMetadata())
     , mGenericLinearTextureAtlasMetadata(globalRenderContext.GetGenericLinearTextureAtlasMetadata())
-    , mGenericMipMappedTextureAtlasMetadata(globalRenderContext.GetGenericMipMappedTextureAtlasMetadata())
-    // Managers
-    , mShaderManager(shaderManager)
+    , mGenericMipMappedTextureAtlasMetadata(globalRenderContext.GetGenericMipMappedTextureAtlasMetadata())    
     // Non-render parameters - all of these will be calculated later
     , mHalfFlameQuadWidth(0.0f)
     , mFlameQuadHeight(0.0f)
@@ -347,6 +348,12 @@ ShipRenderContext::ShipRenderContext(
         glBindVertexArray(0);
     }
 
+    // Set texture parameters
+    mShaderManager.ActivateProgram<ProgramType::ShipFlamesBackground>();
+    mShaderManager.SetTextureParameters<ProgramType::ShipFlamesBackground>();
+    mShaderManager.ActivateProgram<ProgramType::ShipFlamesForeground>();
+    mShaderManager.SetTextureParameters<ProgramType::ShipFlamesForeground>();
+
 
     //
     // Initialize Jet Engine Flame VAO's
@@ -369,6 +376,10 @@ ShipRenderContext::ShipRenderContext(
 
         glBindVertexArray(0);
     }
+
+    // Set texture parameters
+    mShaderManager.ActivateProgram<ProgramType::ShipJetEngineFlames>();
+    mShaderManager.SetTextureParameters<ProgramType::ShipJetEngineFlames>();
 
 
     //
@@ -1383,6 +1394,13 @@ void ShipRenderContext::RenderDraw(
     // We've been invoked on the render thread
 
     //
+    // Set noise 1 in the noise texture unit, as all our shaders require that one
+    //
+
+    mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture>();
+    glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(0));
+
+    //
     // Render background flames
     //
 
@@ -1804,6 +1822,8 @@ void ShipRenderContext::RenderDrawFlames(
         glBindVertexArray(*mFlameVAO);
 
         mShaderManager.ActivateProgram<FlameShaderType>();
+
+        // TODOHERE
 
         glDrawArrays(
             GL_TRIANGLES,

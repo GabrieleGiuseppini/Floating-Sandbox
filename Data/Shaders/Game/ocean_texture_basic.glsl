@@ -23,10 +23,12 @@ void main()
 
 #define in varying
 
+#include "ocean_surface.glslinc"
+
 // Inputs from previous shader
 in vec3 textureCoord;
 
-// The texture
+// Input textures
 uniform sampler2D paramOceanTexture;
 
 // Parameters        
@@ -40,12 +42,14 @@ void main()
     // Back-sample 5.0 at top, slowly going to zero
     float sampleIncrement = -5.0 * (2.0 - 2.0 * smoothstep(-1.0, 1.0, textureCoord.z));
     vec2 textureCoord2 = vec2(textureCoord.x, textureCoord.z + sampleIncrement);
+    vec4 textureColor = texture2D(paramOceanTexture, textureCoord2 * paramTextureScaling);
 
-    float darkMix = 1.0 - exp(min(0.0, textureCoord.y) * paramOceanDarkeningRate); // Darkening is based on world Y (more negative Y, more dark)
-    vec4 textureColor = mix(
-        texture2D(paramOceanTexture, textureCoord2 * paramTextureScaling),
-        vec4(0,0,0,0), 
-        pow(darkMix, 3.0));
+    // Apply depth darkening
+    textureColor.xyz = ApplyDepthDarkening(
+        textureColor.xyz,
+        vec3(0.0),
+        textureCoord.y,
+        paramOceanDarkeningRate);
 
     // Lighten the top of the water
     textureColor *= 1.0 + (1.0 - smoothstep(0.0, 1.0, textureCoord.z)) * 0.1;

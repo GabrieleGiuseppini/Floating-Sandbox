@@ -22,8 +22,10 @@ ImageSize constexpr ThumbnailSize(32, 32);
 WorldRenderContext::WorldRenderContext(
     ShaderManager<ShaderManagerTraits> & shaderManager,
     GlobalRenderContext const & globalRenderContext)
+    : mGlobalRenderContext(globalRenderContext)
+    , mShaderManager(shaderManager)
     // Buffers
-    : mStarVertexBuffer()
+    , mStarVertexBuffer()
     , mDirtyStarsCount(0)
     , mStarVBO()
     , mStarVBOAllocatedVertexSize(0u)
@@ -92,14 +94,12 @@ WorldRenderContext::WorldRenderContext(
     , mFishTextureAtlasMetadata()
     , mFishTextureAtlasOpenGLHandle()
     , mGenericLinearTextureAtlasMetadata(globalRenderContext.GetGenericLinearTextureAtlasMetadata())
-    // Parameters
-    , mSunRaysInclination(1.0f)
-    , mIsSunRaysInclinationDirty(1.0f)
-    // ShaderManager
-    , mShaderManager(shaderManager)
     // Thumbnails
     , mOceanAvailableThumbnails()
     , mLandAvailableThumbnails()
+    // Parameters
+    , mSunRaysInclination(1.0f)
+    , mIsSunRaysInclinationDirty(1.0f)
 {
     GLuint tmpGLuint;
 
@@ -162,6 +162,10 @@ WorldRenderContext::WorldRenderContext(
 
     glBindVertexArray(0);
 
+    // Set texture parameters
+    mShaderManager.ActivateProgram<ProgramType::Lightning>();
+    mShaderManager.SetTextureParameters<ProgramType::Lightning>();
+
 
     //
     // Initialize Cloud VAO
@@ -223,6 +227,10 @@ WorldRenderContext::WorldRenderContext(
 
     glBindVertexArray(0);
 
+    // Set texture parameters
+    mShaderManager.ActivateProgram<ProgramType::OceanDepthBasic>();
+    mShaderManager.SetTextureParameters<ProgramType::OceanDepthBasic>();
+
 
     //
     // Initialize Ocean Detailed VAO
@@ -244,6 +252,16 @@ WorldRenderContext::WorldRenderContext(
     CheckOpenGLError();
 
     glBindVertexArray(0);
+
+    // Set texture parameters
+    mShaderManager.ActivateProgram<ProgramType::OceanFlatDetailedBackground>();
+    mShaderManager.SetTextureParameters<ProgramType::OceanFlatDetailedBackground>();
+    mShaderManager.ActivateProgram<ProgramType::OceanFlatDetailedForeground>();
+    mShaderManager.SetTextureParameters<ProgramType::OceanFlatDetailedForeground>();
+    mShaderManager.ActivateProgram<ProgramType::OceanDepthDetailedBackground>();
+    mShaderManager.SetTextureParameters<ProgramType::OceanDepthDetailedBackground>();
+    mShaderManager.ActivateProgram<ProgramType::OceanDepthDetailedForeground>();
+    mShaderManager.SetTextureParameters<ProgramType::OceanDepthDetailedForeground>();
 
 
     //
@@ -436,27 +454,6 @@ WorldRenderContext::WorldRenderContext(
     mShaderManager.SetProgramParameter<ProgramType::WorldBorder, ProgramParameterType::AtlasTile1Size>(
         worldBorderAtlasFrameMetadata.TextureSpaceWidth,
         worldBorderAtlasFrameMetadata.TextureSpaceHeight);
-
-
-    //
-    // Set noise textures in our shaders
-    //
-
-    // Noise 2
-
-    mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture2>();
-
-    glBindTexture(GL_TEXTURE_2D, globalRenderContext.GetNoiseTextureOpenGLHandle(1));
-    CheckOpenGLError();
-
-    mShaderManager.ActivateProgram<ProgramType::Lightning>();
-    mShaderManager.SetTextureParameters<ProgramType::Lightning>();
-
-
-    //
-    // Set initial values of non-render parameters from which
-    // other parameters are calculated
-    //
 }
 
 WorldRenderContext::~WorldRenderContext()
@@ -938,6 +935,9 @@ void WorldRenderContext::RenderDrawCloudsAndBackgroundLightnings(RenderParameter
 
         mShaderManager.ActivateProgram<ProgramType::Lightning>();
 
+        mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture>();
+        glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(1));
+
         glDrawArrays(GL_TRIANGLES,
             0,
             static_cast<GLsizei>(mBackgroundLightningVertexCount));
@@ -1073,6 +1073,9 @@ void WorldRenderContext::RenderDrawOcean(bool opaquely, RenderParameters const &
                     mShaderManager.SetProgramParameter<ProgramType::OceanDepthBasic, ProgramParameterType::OceanTransparency>(
                         transparency);
 
+                    mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture>();
+                    glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(2));
+
                     break;
                 }
 
@@ -1125,6 +1128,9 @@ void WorldRenderContext::RenderDrawOcean(bool opaquely, RenderParameters const &
                         oceanShader,
                         transparency);
 
+                    mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture>();
+                    glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(2));
+
                     break;
                 }
 
@@ -1137,6 +1143,9 @@ void WorldRenderContext::RenderDrawOcean(bool opaquely, RenderParameters const &
                         oceanShader,
                         transparency);
 
+                    mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture>();
+                    glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(2));
+                    
                     break;
                 }
 
@@ -1338,6 +1347,9 @@ void WorldRenderContext::RenderDrawForegroundLightnings(RenderParameters const &
         glBindVertexArray(*mLightningVAO);
 
         mShaderManager.ActivateProgram<ProgramType::Lightning>();
+
+        mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture>();
+        glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(1));
 
         glDrawArrays(GL_TRIANGLES,
             static_cast<GLsizei>(mLightningVertexBuffer.max_size() - mForegroundLightningVertexCount),

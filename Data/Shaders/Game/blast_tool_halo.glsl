@@ -34,11 +34,11 @@ in float progress;
 in float personalitySeed;
 
 // The texture
-uniform sampler2D paramNoiseTexture2;
+uniform sampler2D paramNoiseTexture;
 
 float GetNoise(float a, float b, float c) // -> (0.0, 1.0)
 {
-    return texture2D(paramNoiseTexture2, vec2(0.015 * b + c, a)).r;
+    return texture2D(paramNoiseTexture, vec2(0.015 * b + c, a)).r;
 }
 
 void main()

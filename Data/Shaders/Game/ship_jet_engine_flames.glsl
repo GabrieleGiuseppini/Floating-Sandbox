@@ -34,7 +34,7 @@ in vec2 flameSpacePosition; // (x=[-1.0, 1.0], y=[0.0, 1.0])
 in vec2 noiseOffset;
 
 // The textures
-uniform sampler2D paramNoiseTexture1;
+uniform sampler2D paramNoiseTexture;
 uniform sampler2D paramGenericLinearTexturesAtlasTexture;
 
 //
@@ -43,8 +43,8 @@ uniform sampler2D paramGenericLinearTexturesAtlasTexture;
 
 float GetNoise(vec2 uv) // -> (-0.375, 0.375)
 {
-    float n = (texture2D(paramNoiseTexture1, uv).r - 0.5) * 0.5; // -0.25, 0.25
-    n += (texture2D(paramNoiseTexture1, uv * 2.0).r - 0.5) * 0.5 * 0.5; // -0.375, 0.375
+    float n = (texture2D(paramNoiseTexture, uv).r - 0.5) * 0.5; // -0.25, 0.25
+    n += (texture2D(paramNoiseTexture, uv * 2.0).r - 0.5) * 0.5 * 0.5; // -0.375, 0.375
     
     return n;
 }

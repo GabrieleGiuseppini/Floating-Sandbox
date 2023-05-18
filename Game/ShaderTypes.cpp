@@ -452,10 +452,8 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::GenericMipMappedTexturesAtlasTexture;
     else if (str == "LandTexture")
         return ProgramParameterType::LandTexture;
-    else if (str == "NoiseTexture1")
-        return ProgramParameterType::NoiseTexture1;
-    else if (str == "NoiseTexture2")
-        return ProgramParameterType::NoiseTexture2;
+    else if (str == "NoiseTexture")
+        return ProgramParameterType::NoiseTexture;
     else if (str == "OceanTexture")
         return ProgramParameterType::OceanTexture;
     else
@@ -539,10 +537,8 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
         return "GenericMipMappedTexturesAtlasTexture";
     case ProgramParameterType::LandTexture:
         return "LandTexture";
-    case ProgramParameterType::NoiseTexture1:
-        return "NoiseTexture1";
-    case ProgramParameterType::NoiseTexture2:
-        return "NoiseTexture2";
+    case ProgramParameterType::NoiseTexture:
+        return "NoiseTexture";
     case ProgramParameterType::OceanTexture:
         return "OceanTexture";
     }

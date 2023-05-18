@@ -153,9 +153,8 @@ enum class ProgramParameterType : uint8_t
     GenericLinearTexturesAtlasTexture,      // 4
     GenericMipMappedTexturesAtlasTexture,   // 5
     LandTexture,                            // 6
-    NoiseTexture1,                          // 7
-    NoiseTexture2,                          // 8
-    OceanTexture,                           // 9
+    NoiseTexture,                           // 7
+    OceanTexture,                           // 8
 
     _FirstTexture = SharedTexture,
     _LastTexture = OceanTexture

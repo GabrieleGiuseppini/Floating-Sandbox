@@ -35,7 +35,7 @@ in vec2 flameSpacePosition; // (x=[-1.0, 1.0], y=[0.0, 1.0])
 in vec2 noiseOffset;
 
 // The textures
-uniform sampler2D paramNoiseTexture1;
+uniform sampler2D paramNoiseTexture;
 uniform sampler2D paramGenericLinearTexturesAtlasTexture;
 
 // Params
@@ -86,7 +86,7 @@ void main()
 
     #define NoiseResolution 0.4
     vec2 noiseUv = uv * NoiseResolution + noiseOffset;
-    float fragmentNoise = texture2D(paramNoiseTexture1, noiseUv).r * 0.5 + 0.25; // -> (0.25, 0.75)
+    float fragmentNoise = texture2D(paramNoiseTexture, noiseUv).r * 0.5 + 0.25; // -> (0.25, 0.75)
     
     
     //

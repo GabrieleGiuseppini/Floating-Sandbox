@@ -18,7 +18,8 @@ NotificationRenderContext::NotificationRenderContext(
     ResourceLocator const & resourceLocator,
     ShaderManager<ShaderManagerTraits> & shaderManager,
     GlobalRenderContext const & globalRenderContext)
-    : mShaderManager(shaderManager)
+    : mGlobalRenderContext(globalRenderContext)
+    , mShaderManager(shaderManager)
     , mScreenToNdcX(0.0f) // Will be recalculated
     , mScreenToNdcY(0.0f) // Will be recalculated
     // Textures
@@ -277,9 +278,7 @@ NotificationRenderContext::NotificationRenderContext(
 
         glBindVertexArray(0);
 
-        // Set noise in shader
-        mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture2>();
-        glBindTexture(GL_TEXTURE_2D, globalRenderContext.GetNoiseTextureOpenGLHandle(1));
+        // Set texture parameters
         mShaderManager.ActivateProgram<ProgramType::PhysicsProbePanel>();
         mShaderManager.SetTextureParameters<ProgramType::PhysicsProbePanel>();
     }
@@ -307,9 +306,7 @@ NotificationRenderContext::NotificationRenderContext(
 
         glBindVertexArray(0);
 
-        // Set noise in shader
-        mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture2>();
-        glBindTexture(GL_TEXTURE_2D, globalRenderContext.GetNoiseTextureOpenGLHandle(1));
+        // Set texture parameters
         mShaderManager.ActivateProgram<ProgramType::HeatBlasterFlameCool>();
         mShaderManager.SetTextureParameters<ProgramType::HeatBlasterFlameCool>();
         mShaderManager.ActivateProgram<ProgramType::HeatBlasterFlameHeat>();
@@ -339,9 +336,7 @@ NotificationRenderContext::NotificationRenderContext(
 
         glBindVertexArray(0);
 
-        // Set noise in shader
-        mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture2>();
-        glBindTexture(GL_TEXTURE_2D, globalRenderContext.GetNoiseTextureOpenGLHandle(1));
+        // Set texture parameters
         mShaderManager.ActivateProgram<ProgramType::FireExtinguisherSpray>();
         mShaderManager.SetTextureParameters<ProgramType::FireExtinguisherSpray>();
     }
@@ -371,9 +366,7 @@ NotificationRenderContext::NotificationRenderContext(
 
         glBindVertexArray(0);
 
-        // Set noise in shader
-        mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture2>();
-        glBindTexture(GL_TEXTURE_2D, globalRenderContext.GetNoiseTextureOpenGLHandle(1));
+        // Set texture parameters
         mShaderManager.ActivateProgram<ProgramType::BlastToolHalo>();
         mShaderManager.SetTextureParameters<ProgramType::BlastToolHalo>();
     }
@@ -429,9 +422,7 @@ NotificationRenderContext::NotificationRenderContext(
 
         glBindVertexArray(0);
 
-        // Set noise in shader
-        mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture2>();
-        glBindTexture(GL_TEXTURE_2D, globalRenderContext.GetNoiseTextureOpenGLHandle(1));
+        // Set texture parameters
         mShaderManager.ActivateProgram<ProgramType::WindSphere>();
         mShaderManager.SetTextureParameters<ProgramType::WindSphere>();
     }
@@ -460,6 +451,10 @@ NotificationRenderContext::NotificationRenderContext(
         CheckOpenGLError();
 
         glBindVertexArray(0);        
+
+        // Set texture parameters
+        mShaderManager.ActivateProgram<ProgramType::LaserRay>();
+        mShaderManager.SetTextureParameters<ProgramType::LaserRay>();
     }
 
     //
@@ -487,9 +482,7 @@ NotificationRenderContext::NotificationRenderContext(
 
         glBindVertexArray(0);
 
-        // Set noise in shader
-        mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture2>();
-        glBindTexture(GL_TEXTURE_2D, globalRenderContext.GetNoiseTextureOpenGLHandle(1));
+        // Set texture parameters
         mShaderManager.ActivateProgram<ProgramType::LaserRay>();
         mShaderManager.SetTextureParameters<ProgramType::LaserRay>();
     }
@@ -731,7 +724,18 @@ void NotificationRenderContext::RenderPrepare()
 
 void NotificationRenderContext::RenderDraw()
 {
+    //
+    // Set noise 2 in the noise texture unit, as all our shaders require that one
+    //
+
+    mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture>();
+    glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(1));
+
+    //
+    // Draw
+    //
     // Note the Z-order here!
+    //
 
     RenderDrawLaserRay();
     RenderDrawLaserCannon();

@@ -38,7 +38,7 @@ in float vertexIsOpening;
 
 // Textures
 uniform sampler2D paramGenericLinearTexturesAtlasTexture;
-uniform sampler2D paramNoiseTexture2;
+uniform sampler2D paramNoiseTexture;
 
 // Params
 uniform vec2 paramAtlasTile1LeftBottomTextureCoordinates;
@@ -47,8 +47,8 @@ uniform float paramWidthNdc;
 float GetNoise(float y, float seed, float time) // -> (0.0, 1.0)
 {
     #define NOISE_RESOLUTION 0.25
-    float s1 = texture2D(paramNoiseTexture2, vec2(NOISE_RESOLUTION * y + time, seed)).r;
-    float s2 = texture2D(paramNoiseTexture2, vec2(NOISE_RESOLUTION * y - time, seed)).r;
+    float s1 = texture2D(paramNoiseTexture, vec2(NOISE_RESOLUTION * y + time, seed)).r;
+    float s2 = texture2D(paramNoiseTexture, vec2(NOISE_RESOLUTION * y - time, seed)).r;
     
     #define NOISE_THRESHOLD .65
     s1 = (clamp(s1, NOISE_THRESHOLD, 1.) - NOISE_THRESHOLD) * 1. / (1. - NOISE_THRESHOLD);

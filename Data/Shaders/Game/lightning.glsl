@@ -42,14 +42,14 @@ in float renderProgress;
 in float personalitySeed;
 
 // Textures
-uniform sampler2D paramNoiseTexture2;
+uniform sampler2D paramNoiseTexture;
 
 // Parameters
 uniform float paramEffectiveAmbientLightIntensity;
 
 float GetNoise(float v) // -> (-1.0, 1.0)
 {
-    return (texture2D(paramNoiseTexture2, vec2(.2, v)).r - .5) * 2.;
+    return (texture2D(paramNoiseTexture, vec2(.2, v)).r - .5) * 2.;
 }
 
 void main()

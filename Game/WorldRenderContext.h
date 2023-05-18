@@ -803,6 +803,12 @@ private:
 
 private:
 
+    GlobalRenderContext const & mGlobalRenderContext;
+
+    ShaderManager<ShaderManagerTraits> & mShaderManager;
+
+private:
+
     //
     // Types
     //
@@ -1128,21 +1134,16 @@ private:
 
     TextureAtlasMetadata<GenericLinearTextureGroups> const & mGenericLinearTextureAtlasMetadata;
 
+    // Thumbnails
+    std::vector<std::pair<std::string, RgbaImageData>> mOceanAvailableThumbnails;
+    std::vector<std::pair<std::string, RgbaImageData>> mLandAvailableThumbnails;
+
     //
     // Parameters
     //
 
     float mSunRaysInclination;
     bool mIsSunRaysInclinationDirty;
-
-private:
-
-    // Shader manager
-    ShaderManager<ShaderManagerTraits> & mShaderManager;
-
-    // Thumbnails
-    std::vector<std::pair<std::string, RgbaImageData>> mOceanAvailableThumbnails;
-    std::vector<std::pair<std::string, RgbaImageData>> mLandAvailableThumbnails;
 };
 
 }

@@ -43,14 +43,14 @@ in float mainFrontRadiusWorld;
 in float mainFrontIntensity;
 
 // Texture
-uniform sampler2D paramNoiseTexture2;
+uniform sampler2D paramNoiseTexture;
 
 // Parameters
 uniform float paramTime;
 
 float GetNoise(vec2 uv) // -> (0.0, 1.0)
 {
-    return texture2D(paramNoiseTexture2, uv).r;
+    return texture2D(paramNoiseTexture, uv).r;
 }
 
 void main()

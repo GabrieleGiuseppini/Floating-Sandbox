@@ -35,16 +35,28 @@ void GlobalRenderContext::InitializeNoiseTextures(ResourceLocator const & resour
         resourceLocator.GetTexturesRootFolderPath());
 
     //
-    // Load noise 1
+    // Load noise frames
     //
 
-    mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture1>();
+    mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture>();
 
     mUploadedNoiseTexturesManager.UploadNextFrame(
         noiseTextureDatabase.GetGroup(NoiseTextureGroups::Noise),
         0,
         GL_LINEAR);
 
+    mUploadedNoiseTexturesManager.UploadNextFrame(
+        noiseTextureDatabase.GetGroup(NoiseTextureGroups::Noise),
+        1,
+        GL_LINEAR);
+
+    mUploadedNoiseTexturesManager.UploadNextFrame(
+        noiseTextureDatabase.GetGroup(NoiseTextureGroups::Noise),
+        2,
+        GL_LINEAR);
+
+    // TODOHERE
+    /*
     //
     // Set noise 1 texture in shaders that require it
     //
@@ -79,6 +91,21 @@ void GlobalRenderContext::InitializeNoiseTextures(ResourceLocator const & resour
 
     mShaderManager.ActivateProgram<ProgramType::LaserRay>();
     mShaderManager.SetTextureParameters<ProgramType::LaserRay>();
+
+    //
+    // Load noise 3
+    //
+
+    mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture3>();
+
+    mUploadedNoiseTexturesManager.UploadNextFrame(
+        noiseTextureDatabase.GetGroup(NoiseTextureGroups::Noise),
+        2,
+        GL_LINEAR);
+
+    glBindTexture(GL_TEXTURE_2D, mUploadedNoiseTexturesManager.GetOpenGLHandle(NoiseTextureGroups::Noise, 2));
+    CheckOpenGLError();
+    */
 }
 
 void GlobalRenderContext::InitializeGenericTextures(ResourceLocator const & resourceLocator)

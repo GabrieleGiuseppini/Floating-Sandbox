@@ -12,6 +12,7 @@ uniform mat4 paramOrthoMatrix;
 
 // Outputs
 out vec2 shadowPosNdc;
+out vec2 stCoords;
 out float yWorld;
 out vec4 yVectorWorld; // yBackWorld/yMidWorld/yFrontWorld/dYFront2World
 
@@ -23,6 +24,7 @@ void main()
 
     // Pass values to fragment shader
     shadowPosNdc = vec2(posNdc.x, posNdc.y - paramOrthoMatrix[3][1]);
+    stCoords = gl_Position.xy;
     yWorld = inOceanDetailed1.y;
     yVectorWorld = inOceanDetailed2;
 }
@@ -36,10 +38,12 @@ void main()
 
 // Inputs from previous shader
 in vec2 shadowPosNdc;
+in vec2 stCoords;
 in float yWorld;
 in vec4 yVectorWorld; // yBackWorld/yMidWorld/yFrontWorld/dYFront2World
 
 // Input textures
+uniform sampler2D paramNoiseTexture;
 uniform sampler1D paramSharedTexture;
 
 // Parameters
@@ -52,12 +56,13 @@ uniform float paramSunRaysInclination; // 0.0==vertical, 1.0/-1.0==45/-45 degree
 
 void main()
 {
-    // Get depth color sample
-    float darkMix = 1.0 - exp(min(0.0, yWorld) * paramOceanDarkeningRate); // Darkening is based on world Y (more negative Y, more dark)
-    vec3 depthColor = mix(
+    vec3 depthColor = ApplyDepthDarkening(
         paramOceanDepthColorStart,
         paramOceanDepthColorEnd,
-        darkMix * darkMix * darkMix);
+        yWorld,
+        paramOceanDarkeningRate,
+        stCoords,
+        paramNoiseTexture);
 
     // Apply shadows
     vec4 baseColor = ApplyShadows(

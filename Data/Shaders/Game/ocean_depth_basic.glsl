@@ -11,11 +11,13 @@ uniform mat4 paramOrthoMatrix;
 
 // Outputs
 out float oceanWorldY;
+out vec2 stCoords;
 
 void main()
 {
     gl_Position = paramOrthoMatrix * vec4(inOceanBasic.xy, -1.0, 1.0);
     oceanWorldY = inOceanBasic.y;
+    stCoords = gl_Position.xy;
 }
 
 
@@ -23,8 +25,14 @@ void main()
 
 #define in varying
 
+#include "ocean_surface.glslinc"
+
 // Inputs from previous shader
 in float oceanWorldY;
+in vec2 stCoords;
+
+// Input textures
+uniform sampler2D paramNoiseTexture;
 
 // Parameters
 uniform float paramEffectiveAmbientLightIntensity;
@@ -35,12 +43,13 @@ uniform float paramOceanDarkeningRate;
 
 void main()
 {
-    // Get depth color sample
-    float darkMix = 1.0 - exp(min(0.0, oceanWorldY) * paramOceanDarkeningRate); // Darkening is based on world Y (more negative Y, more dark)
-    vec3 oceanColor = mix(
+    vec3 oceanColor = ApplyDepthDarkening(
         paramOceanDepthColorStart,
-        paramOceanDepthColorEnd, 
-        darkMix * darkMix * darkMix);
+        paramOceanDepthColorEnd,
+        oceanWorldY,
+        paramOceanDarkeningRate,
+        stCoords,
+        paramNoiseTexture);
 
     gl_FragColor = vec4(oceanColor.xyz * paramEffectiveAmbientLightIntensity, 1.0 - paramOceanTransparency);
 } 

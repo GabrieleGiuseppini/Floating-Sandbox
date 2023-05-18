@@ -65,11 +65,11 @@ void main()
         paramSharedTexture);
 
     // Apply depth darkening
-    float darkMix = 1.0 - exp(min(0.0, worldCoordsAndYTexture.y) * paramOceanDarkeningRate); // Darkening is based on world Y (more negative Y, more dark)
-    textureColor = mix(
-        textureColor,
-        vec4(0., 0., 0., textureColor.w),
-        darkMix * darkMix * darkMix);
+    textureColor.xyz = ApplyDepthDarkening(
+        textureColor.xyz,
+        vec3(0.0),
+        worldCoordsAndYTexture.y,
+        paramOceanDarkeningRate);
 
     // Apply detail
     vec4 color = CalculateDetailedOceanPlaneColor(

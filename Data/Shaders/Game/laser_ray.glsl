@@ -33,14 +33,14 @@ in vec2 raySpacePosition;
 in float strength;
 
 // Textures
-uniform sampler2D paramNoiseTexture2;
+uniform sampler2D paramNoiseTexture;
 
 // Params
 uniform float paramTime;
 
 float getNoise(float x, float block) // -1.0, 1.0
 {
-    float n = (texture2D(paramNoiseTexture2, vec2(x, block)).r - 0.5) * 2.0;
+    float n = (texture2D(paramNoiseTexture, vec2(x, block)).r - 0.5) * 2.0;
     return n;
 }
 

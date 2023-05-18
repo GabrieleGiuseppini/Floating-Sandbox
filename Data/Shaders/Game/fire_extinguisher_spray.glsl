@@ -27,7 +27,7 @@ void main()
 in vec2 spraySpacePosition; // (x=[-0.5, 0.5], y=[-0.5, 0.5])
 
 // The texture
-uniform sampler2D paramNoiseTexture2;
+uniform sampler2D paramNoiseTexture;
 
 // Params
 uniform float paramTime;
@@ -45,7 +45,7 @@ mat2 GetRotationMatrix(float angle)
 
 float GetNoise(vec2 uv) // -> (0.0, 1.0)
 {
-    return texture2D(paramNoiseTexture2, uv).r;
+    return texture2D(paramNoiseTexture, uv).r;
 }
 
 vec2 GetSprayRadii(vec2 uv)

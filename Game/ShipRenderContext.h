@@ -1332,6 +1332,12 @@ private:
 
 private:
 
+    GlobalRenderContext const & mGlobalRenderContext;
+
+    ShaderManager<ShaderManagerTraits> & mShaderManager;
+
+private:
+
     ShipId const mShipId;
     size_t const mPointCount;
 
@@ -1721,13 +1727,7 @@ private:
     TextureAtlasMetadata<GenericMipMappedTextureGroups> const & mGenericMipMappedTextureAtlasMetadata;
 
 private:
-
-    //
-    // Managers
-    //
-
-    ShaderManager<ShaderManagerTraits> & mShaderManager;
-
+ 
     //
     // Externally-controlled parameters that only affect Upload (i.e. that do
     // not affect rendering directly) or that purely serve as input to calculated
