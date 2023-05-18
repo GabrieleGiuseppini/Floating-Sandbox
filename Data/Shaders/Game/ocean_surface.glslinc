@@ -114,7 +114,7 @@ vec3 ApplyDepthDarkening(
     vec3 endColor,
     float yWorld,
     float darkeningRate,
-    vec2 noiseStCoords,
+    vec2 fragCoords,
     sampler2D noiseTexture)
 {
     vec3 c = ApplyDepthDarkening(
@@ -123,10 +123,16 @@ vec3 ApplyDepthDarkening(
         yWorld,
         darkeningRate);
 
+    //
     // Dither
-    float noise = texture2D(noiseTexture, noiseStCoords).x;
-    //c.xyz += mix(-0.5/255.0, 0.5/255.0, noise);
-    c.xyz += mix(-50.0/255.0, 50.0/255.0, noise);
+    //
+
+    #define NOISE_2_WIDTH 256
+    #define NOISE_2_HEIGHT 256
+
+    vec2 noiseCoords = fragCoords / vec2(NOISE_2_WIDTH, NOISE_2_HEIGHT);
+    float noise = texture2D(noiseTexture, noiseCoords).x;
+    c.xyz += mix(-0.5/255.0, 0.5/255.0, noise);
     return c;
 }
 

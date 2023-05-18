@@ -11,13 +11,11 @@ uniform mat4 paramOrthoMatrix;
 
 // Outputs
 out float oceanWorldY;
-out vec2 stCoords;
 
 void main()
 {
     gl_Position = paramOrthoMatrix * vec4(inOceanBasic.xy, -1.0, 1.0);
     oceanWorldY = inOceanBasic.y;
-    stCoords = gl_Position.xy;
 }
 
 
@@ -29,7 +27,6 @@ void main()
 
 // Inputs from previous shader
 in float oceanWorldY;
-in vec2 stCoords;
 
 // Input textures
 uniform sampler2D paramNoiseTexture;
@@ -48,7 +45,7 @@ void main()
         paramOceanDepthColorEnd,
         oceanWorldY,
         paramOceanDarkeningRate,
-        stCoords,
+        gl_FragCoord.xy,
         paramNoiseTexture);
 
     gl_FragColor = vec4(oceanColor.xyz * paramEffectiveAmbientLightIntensity, 1.0 - paramOceanTransparency);

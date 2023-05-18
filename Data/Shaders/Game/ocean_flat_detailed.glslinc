@@ -13,7 +13,6 @@ uniform mat4 paramOrthoMatrix;
 // Outputs
 out vec3 oceanColor;
 out vec2 shadowPosNdc;
-out vec2 stCoords;
 out float yWorld;
 out vec4 yVectorWorld; // yBackWorld/yMidWorld/yFrontWorld/dYFront2World
 
@@ -25,7 +24,6 @@ void main()
 
     // Pass values to fragment shader
     shadowPosNdc = vec2(posNdc.x, posNdc.y - paramOrthoMatrix[3][1]);
-    stCoords = posNdc.xy;
     yWorld = inOceanDetailed1.y;
     yVectorWorld = inOceanDetailed2;
 }
@@ -39,7 +37,6 @@ void main()
 
 // Inputs from previous shader
 in vec2 shadowPosNdc;
-in vec2 stCoords;
 in float yWorld;
 in vec4 yVectorWorld; // yBackWorld/yMidWorld/yFrontWorld/dYFront2World
 
@@ -72,7 +69,7 @@ void main()
         vec3(0.0),
         yWorld,
         paramOceanDarkeningRate,
-        stCoords,
+        gl_FragCoord.xy,
         paramNoiseTexture);
 
     // Apply detail

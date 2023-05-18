@@ -162,6 +162,7 @@
 			- Make sure darkening (w/trick) is at:
 				- Flat detailed
 				- All depth's
+			- See if can get rid of noise 0 (Ship Flames, Ship Jet Engine)
 			- Test all shaders (*)
 		- "Dark stripe" issue
 			- See if it's possible that with the min-normalization we do, parts outside of the central visible stripe end up
