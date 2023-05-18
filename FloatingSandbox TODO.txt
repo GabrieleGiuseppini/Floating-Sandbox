@@ -157,11 +157,11 @@
 		- Flat detailed shader: see if two darkenings may be combined (for perf)
 		= Fix darkening bands issue
 			+ See if it repro's with "depth gradient" and using deep black as second color - IT DOES
-			= Search:
+			+ Search:
 				+ https://www.shadertoy.com/view/MlV3R1
-			- Make sure darkening (w/trick) is at:
-				- Flat detailed
-				- All depth's
+			+ Make sure darkening (w/trick) is at:
+				+ Flat detailed
+				+ All depth's
 			- See if can get rid of noise 0 (Ship Flames, Ship Jet Engine)
 			- Test all shaders (*)
 		- "Dark stripe" issue
