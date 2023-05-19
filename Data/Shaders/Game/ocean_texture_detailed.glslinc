@@ -64,7 +64,6 @@ void main()
         worldCoordsAndYTexture.y,
         paramSunRaysInclination,
         paramSharedTexture,
-        gl_FragCoord.xy,
         paramNoiseTexture);
 
     // Apply depth darkening

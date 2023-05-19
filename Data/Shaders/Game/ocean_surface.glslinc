@@ -141,7 +141,6 @@ vec4 ApplyShadows(
     float yWorld,
     float sunRaysInclination, // 0.0==vertical, 1.0/-1.0==45/-45 degrees
     sampler1D shadowsBuffer,
-    vec2 fragCoords,
     sampler2D noiseTexture)
 {
     // Maintain with code!
@@ -150,28 +149,16 @@ vec4 ApplyShadows(
     float sampleX = (shadowPosNdc.x + CloudSpaceWidthNdc / 2.0) / CloudSpaceWidthNdc + sunRaysInclination * shadowPosNdc.y * .05;
     float shadowSample = texture1D(shadowsBuffer, sampleX).x; // [0.0 ... 2.0]
 
-    // Darken portion > 1.0 with depth, but less so for brigther areas. No darkening for portion < 1.0.
-    // Darkening is based on world Y (more negative Y, more dark)
-    // TODOTEST
-    //vec2 depthNoiseCoords = vec2(sampleX * 10.0, 0); // TODO: comment on based on noise texture width; TODO: nuke fragcoords if not needed
-    //vec4 depthNoiseSample = texture2D(noiseTexture, depthNoiseCoords);
-    //float depth = min(0.0, yWorld) - 4.0 * (dot(depthNoiseSample.xyz, vec3(0.33333)) - 0.5); // depth is negative
-    //float depth = min(0.0, yWorld + 10.0); // depth is negative
-    //float depthBoost = (2.0 - shadowSample) * step(1.0, shadowSample); // No depth for shadow < 1.0
-    //shadowSample = 1.0 + (shadowSample - 1.0) * exp(depth * depthBoost * 0.07);
-
-    //vec2 depthNoiseCoords = vec2(sampleX * 15.0 + shadowSample * 0.2, 0); // TODO: comment on based on noise texture width; TODO: nuke fragcoords if not needed
-    vec2 depthNoiseCoords = vec2(sampleX * 5.0 + shadowSample * 0.2, 0); // TODO: comment on based on noise texture width; TODO: nuke fragcoords if not needed
+    // Darken portion > 1.0 with depth, but less so for brigther areas;
+    // add some noise to the depth to create flanges
+    vec2 depthNoiseCoords = vec2(sampleX * 5.0 + shadowSample * 0.2, 0);
     float depthNoiseSample = texture2D(noiseTexture, depthNoiseCoords).x;
     float depth = min(0.0, yWorld + 5.0) + depthNoiseSample * 5.0 * smoothstep(10.0, 30.0, -yWorld); 
-    float depthBoost = (2.0 - shadowSample) * step(1.0, shadowSample); // No depth for shadow < 1.0
+    float depthBoost = (2.0 - shadowSample);
     #define DEPTH_SPEED 0.1
     shadowSample = 1.0 + (shadowSample - 1.0) * exp(depth * depthBoost * DEPTH_SPEED);
-
     
-    // Adjust shadow range: [0.0, 1.0, 2.0] -> [0.0, 1.0, 1.3]
-    //shadowSample = 1.35 * shadowSample - 0.35 * shadowSample*shadowSample;
-    // Adjust shadow range: [0.0, 1.0, 2.0] -> [0.0, 1.0, 1.4]
+    // Adjust shadow's dynamic range: [0.0, 1.0, 2.0] -> [0.0, 1.0, 1.4]
     shadowSample = 1.3 * shadowSample - 0.3 * shadowSample*shadowSample;
 
     // Apply shadow
