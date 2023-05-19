@@ -230,6 +230,9 @@ WorldRenderContext::WorldRenderContext(
     // Set texture parameters
     mShaderManager.ActivateProgram<ProgramType::OceanDepthBasic>();
     mShaderManager.SetTextureParameters<ProgramType::OceanDepthBasic>();
+    mShaderManager.ActivateProgram<ProgramType::OceanTextureBasic>();
+    mShaderManager.SetTextureParameters<ProgramType::OceanTextureBasic>();
+
 
 
     //
@@ -254,15 +257,21 @@ WorldRenderContext::WorldRenderContext(
     glBindVertexArray(0);
 
     // Set texture parameters
+    
     mShaderManager.ActivateProgram<ProgramType::OceanFlatDetailedBackground>();
     mShaderManager.SetTextureParameters<ProgramType::OceanFlatDetailedBackground>();
     mShaderManager.ActivateProgram<ProgramType::OceanFlatDetailedForeground>();
     mShaderManager.SetTextureParameters<ProgramType::OceanFlatDetailedForeground>();
+
     mShaderManager.ActivateProgram<ProgramType::OceanDepthDetailedBackground>();
     mShaderManager.SetTextureParameters<ProgramType::OceanDepthDetailedBackground>();
     mShaderManager.ActivateProgram<ProgramType::OceanDepthDetailedForeground>();
     mShaderManager.SetTextureParameters<ProgramType::OceanDepthDetailedForeground>();
 
+    mShaderManager.ActivateProgram<ProgramType::OceanTextureDetailedBackground>();
+    mShaderManager.SetTextureParameters<ProgramType::OceanTextureDetailedBackground>();
+    mShaderManager.ActivateProgram<ProgramType::OceanTextureDetailedForeground>();
+    mShaderManager.SetTextureParameters<ProgramType::OceanTextureDetailedForeground>();
 
     //
     // Initialize Fish VAO
@@ -1794,19 +1803,16 @@ void WorldRenderContext::ApplyOceanTextureIndexChanges(RenderParameters const & 
     mShaderManager.SetProgramParameter<ProgramType::OceanTextureBasic, ProgramParameterType::TextureScaling>(
         1.0f / oceanTextureFrame.Metadata.WorldWidth,
         1.0f / oceanTextureFrame.Metadata.WorldHeight);
-    mShaderManager.SetTextureParameters<ProgramType::OceanTextureBasic>();
 
     mShaderManager.ActivateProgram<ProgramType::OceanTextureDetailedBackground>();
     mShaderManager.SetProgramParameter<ProgramType::OceanTextureDetailedBackground, ProgramParameterType::TextureScaling>(
         1.0f / oceanTextureFrame.Metadata.WorldWidth,
         1.0f / oceanTextureFrame.Metadata.WorldHeight);
-    mShaderManager.SetTextureParameters<ProgramType::OceanTextureDetailedBackground>();
 
     mShaderManager.ActivateProgram<ProgramType::OceanTextureDetailedForeground>();
     mShaderManager.SetProgramParameter<ProgramType::OceanTextureDetailedForeground, ProgramParameterType::TextureScaling>(
         1.0f / oceanTextureFrame.Metadata.WorldWidth,
         1.0f / oceanTextureFrame.Metadata.WorldHeight);
-    mShaderManager.SetTextureParameters<ProgramType::OceanTextureDetailedForeground>();
 }
 
 void WorldRenderContext::ApplyLandRenderParametersChanges(RenderParameters const & renderParameters)
