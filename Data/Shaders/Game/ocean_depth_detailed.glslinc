@@ -67,7 +67,9 @@ void main()
         shadowPosNdc,
         yWorld,
         paramSunRaysInclination,
-        paramSharedTexture);
+        paramSharedTexture,
+        gl_FragCoord.xy,
+        paramNoiseTexture);
 
     // Apply detail
     vec4 color = CalculateDetailedOceanPlaneColor(

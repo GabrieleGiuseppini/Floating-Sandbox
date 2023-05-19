@@ -61,7 +61,9 @@ void main()
         shadowPosNdc,
         yWorld,
         paramSunRaysInclination,
-        paramSharedTexture);
+        paramSharedTexture,
+        gl_FragCoord.xy,
+        paramNoiseTexture);
 
     // Apply depth darkening
     baseColor.xyz = ApplyDepthDarkening(

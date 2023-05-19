@@ -40,6 +40,7 @@ in vec3 worldCoordsAndYTexture;
 in vec4 yVectorWorld; // yBackWorld/yMidWorld/yFrontWorld/dYFront2World
 
 // Input textures
+uniform sampler2D paramNoiseTexture;
 uniform sampler2D paramOceanTexture;
 uniform sampler1D paramSharedTexture;
 
@@ -62,7 +63,9 @@ void main()
         shadowPosNdc,
         worldCoordsAndYTexture.y,
         paramSunRaysInclination,
-        paramSharedTexture);
+        paramSharedTexture,
+        gl_FragCoord.xy,
+        paramNoiseTexture);
 
     // Apply depth darkening
     textureColor.xyz = ApplyDepthDarkening(
