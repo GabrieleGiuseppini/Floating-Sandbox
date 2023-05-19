@@ -146,6 +146,7 @@ vec4 ApplyShadows(
     // Maintain with code!
     #define CloudSpaceWidthNdc (3.0 * 2.0)
 
+    // Sample shadow buffer
     float sampleX = (shadowPosNdc.x + CloudSpaceWidthNdc / 2.0) / CloudSpaceWidthNdc + sunRaysInclination * shadowPosNdc.y * .05;
     float shadowSample = texture1D(shadowsBuffer, sampleX).x; // [0.0 ... 2.0]
 
