@@ -16,6 +16,7 @@ out vec4 vertexTextureSpace;
 out float tailXNorm;
 out float tailSwing;
 out float tailProgress;
+out vec2 shadowPosNdc;
 
 // Params
 uniform mat4 paramOrthoMatrix;
@@ -39,12 +40,17 @@ void main()
         inFish1.xy 
         + rotationMatrix * inFish1.zw;
 
-    gl_Position = paramOrthoMatrix * vec4(worldPosition.xy, -1.0, 1.0);   
+    vec4 posNdc = paramOrthoMatrix * vec4(worldPosition.xy, -1.0, 1.0);
+    gl_Position = posNdc;
+
+    shadowPosNdc = vec2(posNdc.x, posNdc.y - paramOrthoMatrix[3][1]);
 }
 
 ###FRAGMENT-120
 
 #define in varying
+
+#include "ocean_surface.glslinc"
 
 // Inputs from previous shader
 in vec2 vertexTextureCoordinates;
@@ -53,13 +59,17 @@ in vec4 vertexTextureSpace;
 in float tailXNorm;
 in float tailSwing;
 in float tailProgress;
+in vec2 shadowPosNdc;
 
 // The texture
 uniform sampler2D paramFishesAtlasTexture;
+uniform sampler2D paramNoiseTexture;
+uniform sampler1D paramSharedTexture;
 
 // Parameters        
 uniform float paramEffectiveAmbientLightIntensity;
 uniform float paramOceanDarkeningRate;
+uniform float paramSunRaysInclination;
 
 void main()
 {
@@ -165,14 +175,25 @@ void main()
 
     vec4 fishSample = texture2D(paramFishesAtlasTexture, transformedTextureCoords);
 
-    float darkMix = 1.0 - exp(min(0.0, worldY) * paramOceanDarkeningRate); // Darkening is based on world Y (more negative Y, more dark)
-
-    vec4 textureColor = mix(
+    // Apply shadows
+    fishSample = ApplyShadows(
         fishSample,
-        vec4(0,0,0,0), 
-        pow(darkMix, 3.0));
+        shadowPosNdc,
+        worldY,
+        paramSunRaysInclination,
+        paramSharedTexture,
+        paramNoiseTexture);
+
+    // Apply depth darkening
+    fishSample.xyz = ApplyDepthDarkening(
+        fishSample.xyz,
+        vec3(0.0),
+        worldY,
+        paramOceanDarkeningRate,
+        gl_FragCoord.xy,
+        paramNoiseTexture);
 
     gl_FragColor = vec4(
-        textureColor.xyz * paramEffectiveAmbientLightIntensity,
+        fishSample.xyz * paramEffectiveAmbientLightIntensity,
         fishSample.w);
 } 

@@ -180,6 +180,7 @@
 				+ Ship Engine Flames: 1			
 			+ Cleanup GlobalRenderContext.cpp
 		- Try it on fish
+			- Do detailed/basic
 		- Test all 6 shaders
 		- Test on Dell
 		- Merge

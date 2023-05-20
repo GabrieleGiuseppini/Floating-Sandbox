@@ -605,7 +605,7 @@ void WorldRenderContext::InitializeFishTextures(ResourceLocator const & resource
     // Store metadata
     mFishTextureAtlasMetadata = std::make_unique<TextureAtlasMetadata<FishTextureGroups>>(fishTextureAtlas.Metadata);
 
-    // Set texture in shader
+    // Set textures in shader
     mShaderManager.ActivateProgram<ProgramType::Fishes>();
     mShaderManager.SetTextureParameters<ProgramType::Fishes>();
 }
@@ -1060,6 +1060,12 @@ void WorldRenderContext::RenderPrepareOcean(RenderParameters const & renderParam
         mShaderManager.SetProgramParameter<ProgramType::OceanTextureDetailedForeground, ProgramParameterType::SunRaysInclination>(
             mSunRaysInclination);
 
+
+        mShaderManager.ActivateProgram<ProgramType::Fishes>();
+        mShaderManager.SetProgramParameter<ProgramType::Fishes, ProgramParameterType::SunRaysInclination>(
+            mSunRaysInclination);
+
+
         mIsSunRaysInclinationDirty = false;
     }
 }
@@ -1261,6 +1267,9 @@ void WorldRenderContext::RenderDrawFishes(RenderParameters const & /*renderParam
         glBindVertexArray(*mFishVAO);
 
         mShaderManager.ActivateProgram<ProgramType::Fishes>();
+
+        mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture>();
+        glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(NoiseType::Fine));
 
         glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mFishVertexBuffer.size()));
         CheckOpenGLError();
