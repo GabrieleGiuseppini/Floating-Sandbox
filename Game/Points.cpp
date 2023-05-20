@@ -143,8 +143,9 @@ void Points::CreateEphemeralParticleAirBubble(
 
     StructuralMaterial const & airStructuralMaterial = mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Air);
 
-    // We want to limit the buoyancy applied to air - using 1.0 makes an air particle boost up too quickly
-    float const airBubbleBuoyancyVolumeFill = 0.003f * buoyancyVolumeFillAdjustment;;
+    // We want to limit the buoyancy applied to air - using 1.0 makes an air particle boost up too quickly;
+    // after all, bubbles encounter a lot of drag...
+    float const airBubbleBuoyancyVolumeFill = 0.002f * buoyancyVolumeFillAdjustment;
 
     assert(mIsDamagedBuffer[pointIndex] == false); // Ephemeral points are never damaged
     mMaterialsBuffer[pointIndex] = Materials(&airStructuralMaterial, nullptr);
