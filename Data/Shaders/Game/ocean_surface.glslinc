@@ -135,8 +135,7 @@ vec3 ApplyDepthDarkening(
     return c;
 }
 
-vec4 ApplyShadows(
-    vec4 baseColor,
+float GetShadowFactor(
     vec2 shadowPosNdc, // [-1.0, 1.0]
     float yWorld,
     float sunRaysInclination, // 0.0==vertical, 1.0/-1.0==45/-45 degrees
@@ -158,14 +157,6 @@ vec4 ApplyShadows(
     float depthBoost = (2.0 - shadowSample);
     #define DEPTH_SPEED 0.1
     shadowSample = 1.0 + (shadowSample - 1.0) * exp(depth * depthBoost * DEPTH_SPEED);
-    
-    // Adjust shadow's dynamic range: [0.0, 1.0, 2.0] -> [0.0, 1.0, 1.4]
-    shadowSample = 1.3 * shadowSample - 0.3 * shadowSample*shadowSample;
 
-    // Apply shadow
-    vec3 innerColor = baseColor.xyz * shadowSample;
-
-    return vec4(
-        innerColor,
-        baseColor.w);
+    return shadowSample;
 }

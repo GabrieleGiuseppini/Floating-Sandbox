@@ -176,13 +176,13 @@ void main()
     vec4 fishSample = texture2D(paramFishesAtlasTexture, transformedTextureCoords);
 
     // Apply shadows
-    fishSample = ApplyShadows(
-        fishSample,
+    float shadowFactor = GetShadowFactor(
         shadowPosNdc,
         worldY,
         paramSunRaysInclination,
         paramSharedTexture,
         paramNoiseTexture);
+    fishSample.xyz *= shadowFactor;
 
     // Apply depth darkening
     fishSample.xyz = ApplyDepthDarkening(

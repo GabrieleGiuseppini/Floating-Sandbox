@@ -58,13 +58,15 @@ void main()
     vec4 textureColor = texture2D(paramOceanTexture, textureCoord2 * paramTextureScaling);
 
     // Apply shadows
-    textureColor = ApplyShadows(
-        vec4(textureColor.xyz, textureColor.w * (1.0 - paramOceanTransparency)),
+    float shadowFactor = GetShadowFactor(
         shadowPosNdc,
         worldCoordsAndYTexture.y,
         paramSunRaysInclination,
         paramSharedTexture,
         paramNoiseTexture);
+    // Adjust shadow's dynamic range: [0.0, 1.0, 2.0] -> [0.0, 1.0, 1.4]
+    shadowFactor = 1.3 * shadowFactor - 0.3 * shadowFactor * shadowFactor;
+    textureColor = vec4(textureColor.xyz * shadowFactor, textureColor.w * (1.0 - paramOceanTransparency));
 
     // Apply depth darkening
     textureColor.xyz = ApplyDepthDarkening(
