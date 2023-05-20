@@ -180,9 +180,12 @@
 				+ Ship Engine Flames: 1			
 			+ Cleanup GlobalRenderContext.cpp
 		= Try it on fish
-			- Do detailed/basic:
-				- Split shader: basic and detailed, via include-and-#define trick
-				- Choose one shader or the other based on oceanRenderDetailMode
+			+ Do detailed/basic:
+				+ Split shader: basic and detailed, via include-and-#define trick
+				+ Choose one shader or the other based on oceanRenderDetailMode
+		- Boolean to toggle on-off
+			- TODOHERE: shaders?
+		- Try it on ship?
 		- Test all 6 shaders
 		- Test on Dell
 		- Merge

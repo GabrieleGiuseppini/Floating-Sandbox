@@ -606,8 +606,10 @@ void WorldRenderContext::InitializeFishTextures(ResourceLocator const & resource
     mFishTextureAtlasMetadata = std::make_unique<TextureAtlasMetadata<FishTextureGroups>>(fishTextureAtlas.Metadata);
 
     // Set textures in shader
-    mShaderManager.ActivateProgram<ProgramType::Fishes>();
-    mShaderManager.SetTextureParameters<ProgramType::Fishes>();
+    mShaderManager.ActivateProgram<ProgramType::FishesBasic>();
+    mShaderManager.SetTextureParameters<ProgramType::FishesBasic>();
+    mShaderManager.ActivateProgram<ProgramType::FishesDetailed>();
+    mShaderManager.SetTextureParameters<ProgramType::FishesDetailed>();
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -1061,8 +1063,8 @@ void WorldRenderContext::RenderPrepareOcean(RenderParameters const & renderParam
             mSunRaysInclination);
 
 
-        mShaderManager.ActivateProgram<ProgramType::Fishes>();
-        mShaderManager.SetProgramParameter<ProgramType::Fishes, ProgramParameterType::SunRaysInclination>(
+        mShaderManager.ActivateProgram<ProgramType::FishesDetailed>();
+        mShaderManager.SetProgramParameter<ProgramType::FishesDetailed, ProgramParameterType::SunRaysInclination>(
             mSunRaysInclination);
 
 
@@ -1260,13 +1262,31 @@ void WorldRenderContext::RenderPrepareFishes(RenderParameters const & /*renderPa
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void WorldRenderContext::RenderDrawFishes(RenderParameters const & /*renderParameters*/)
+void WorldRenderContext::RenderDrawFishes(RenderParameters const & renderParameters)
 {
     if (mFishVertexBuffer.size() > 0)
     {
         glBindVertexArray(*mFishVAO);
 
-        mShaderManager.ActivateProgram<ProgramType::Fishes>();
+        switch (renderParameters.OceanRenderDetail)
+        {
+            case OceanRenderDetailType::Basic:
+            {
+                mShaderManager.ActivateProgram<ProgramType::FishesBasic>();
+
+                break;
+            }
+
+            case OceanRenderDetailType::Detailed:
+            {
+                mShaderManager.ActivateProgram<ProgramType::FishesDetailed>();
+
+                mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
+                glBindTexture(GL_TEXTURE_1D, *mCloudShadowsTextureOpenGLHandle);
+
+                break;
+            }
+        }
 
         mShaderManager.ActivateTexture<ProgramParameterType::NoiseTexture>();
         glBindTexture(GL_TEXTURE_2D, mGlobalRenderContext.GetNoiseTextureOpenGLHandle(NoiseType::Fine));
@@ -1555,8 +1575,12 @@ void WorldRenderContext::ApplyViewModelChanges(RenderParameters const & renderPa
     mShaderManager.SetProgramParameter<ProgramType::OceanTextureDetailedForeground, ProgramParameterType::OrthoMatrix>(
         globalOrthoMatrix);
 
-    mShaderManager.ActivateProgram<ProgramType::Fishes>();
-    mShaderManager.SetProgramParameter<ProgramType::Fishes, ProgramParameterType::OrthoMatrix>(
+    mShaderManager.ActivateProgram<ProgramType::FishesBasic>();
+    mShaderManager.SetProgramParameter<ProgramType::FishesBasic, ProgramParameterType::OrthoMatrix>(
+        globalOrthoMatrix);
+
+    mShaderManager.ActivateProgram<ProgramType::FishesDetailed>();
+    mShaderManager.SetProgramParameter<ProgramType::FishesDetailed, ProgramParameterType::OrthoMatrix>(
         globalOrthoMatrix);
 
     mShaderManager.ActivateProgram<ProgramType::AMBombPreImplosion>();
@@ -1666,8 +1690,12 @@ void WorldRenderContext::ApplyEffectiveAmbientLightIntensityChanges(RenderParame
     mShaderManager.SetProgramParameter<ProgramType::OceanTextureDetailedForeground, ProgramParameterType::EffectiveAmbientLightIntensity>(
         renderParameters.EffectiveAmbientLightIntensity);
 
-    mShaderManager.ActivateProgram<ProgramType::Fishes>();
-    mShaderManager.SetProgramParameter<ProgramType::Fishes, ProgramParameterType::EffectiveAmbientLightIntensity>(
+    mShaderManager.ActivateProgram<ProgramType::FishesBasic>();
+    mShaderManager.SetProgramParameter<ProgramType::FishesBasic, ProgramParameterType::EffectiveAmbientLightIntensity>(
+        renderParameters.EffectiveAmbientLightIntensity);
+
+    mShaderManager.ActivateProgram<ProgramType::FishesDetailed>();
+    mShaderManager.SetProgramParameter<ProgramType::FishesDetailed, ProgramParameterType::EffectiveAmbientLightIntensity>(
         renderParameters.EffectiveAmbientLightIntensity);
 
     mShaderManager.ActivateProgram<ProgramType::Rain>();
@@ -1721,8 +1749,12 @@ void WorldRenderContext::ApplyOceanDarkeningRateChanges(RenderParameters const &
     mShaderManager.SetProgramParameter<ProgramType::OceanTextureDetailedForeground, ProgramParameterType::OceanDarkeningRate>(
         rate);
 
-    mShaderManager.ActivateProgram<ProgramType::Fishes>();
-    mShaderManager.SetProgramParameter<ProgramType::Fishes, ProgramParameterType::OceanDarkeningRate>(
+    mShaderManager.ActivateProgram<ProgramType::FishesBasic>();
+    mShaderManager.SetProgramParameter<ProgramType::FishesBasic, ProgramParameterType::OceanDarkeningRate>(
+        rate);
+
+    mShaderManager.ActivateProgram<ProgramType::FishesDetailed>();
+    mShaderManager.SetProgramParameter<ProgramType::FishesDetailed, ProgramParameterType::OceanDarkeningRate>(
         rate);
 }
 

@@ -64,12 +64,16 @@ in vec2 shadowPosNdc;
 // The texture
 uniform sampler2D paramFishesAtlasTexture;
 uniform sampler2D paramNoiseTexture;
+#ifdef DETAILED_FISHES
 uniform sampler1D paramSharedTexture;
+#endif
 
 // Parameters        
 uniform float paramEffectiveAmbientLightIntensity;
 uniform float paramOceanDarkeningRate;
+#ifdef DETAILED_FISHES
 uniform float paramSunRaysInclination;
+#endif
 
 void main()
 {
@@ -175,6 +179,8 @@ void main()
 
     vec4 fishSample = texture2D(paramFishesAtlasTexture, transformedTextureCoords);
 
+#ifdef DETAILED_FISHES
+
     // Apply shadows
     float shadowFactor = GetShadowFactor(
         shadowPosNdc,
@@ -183,6 +189,8 @@ void main()
         paramSharedTexture,
         paramNoiseTexture);
     fishSample.xyz *= shadowFactor;
+
+#endif
 
     // Apply depth darkening
     fishSample.xyz = ApplyDepthDarkening(

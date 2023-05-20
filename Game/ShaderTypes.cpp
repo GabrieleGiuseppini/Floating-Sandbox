@@ -27,8 +27,10 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::CrossOfLight;
     else if (lstr == "fire_extinguisher_spray")
         return ProgramType::FireExtinguisherSpray;
-    else if (lstr == "fishes")
-        return ProgramType::Fishes;
+    else if (lstr == "fishes_basic")
+        return ProgramType::FishesBasic;
+    else if (lstr == "fishes_detailed")
+        return ProgramType::FishesDetailed;
     else if (lstr == "generic_mipmapped_textures_ndc")
         return ProgramType::GenericMipMappedTexturesNdc;
     else if (lstr == "heat_blaster_flame_cool")
@@ -209,8 +211,10 @@ std::string ProgramTypeToStr(ProgramType program)
         return "CrossOfLight";
     case ProgramType::FireExtinguisherSpray:
         return "FireExtinguisherSpray";
-    case ProgramType::Fishes:
-        return "Fishes";
+    case ProgramType::FishesBasic:
+        return "FishesBasic";
+    case ProgramType::FishesDetailed:
+        return "FishesDetailed";
     case ProgramType::GenericMipMappedTexturesNdc:
         return "GenericMipMappedTexturesNdc";
     case ProgramType::HeatBlasterFlameCool:
