@@ -179,22 +179,19 @@
 				+ Ship Flames: 1
 				+ Ship Engine Flames: 1			
 			+ Cleanup GlobalRenderContext.cpp
-		= Try it on fish
+		+ Try it on fish
 			+ Do detailed/basic:
 				+ Split shader: basic and detailed, via include-and-#define trick
 				+ Choose one shader or the other based on oceanRenderDetailMode
-		- Boolean to toggle on-off
-			- TODOHERE: shaders?
-		- Try it on ship?
+		- Dark stripe issue
+		= Tried using shift on the flame tool, game instantly crashed
 		- Test all 6 shaders
 		- Test on Dell
 		- Merge
 		- changelist
-			= Credit guy
+			= Credit guy (asked name)
 
-	- Extra ports from SpringLab:
-		- TaskThreadPool, because of:
-			- Pointers to tasks
+	- Chainsaw sound still on when tool sounds are muted?
 
 	- Nuke default_ship.shp2 and make Titanic's filename in code
 		- So users don't see two Titanic's
@@ -205,7 +202,14 @@
 		- Try with decay
 			- Make sure we only upload decay when we mark a dirty flag
 	
-	- Chainsaw sound still on when tool sounds are muted?
+
+
+	- Extra ports from SpringLab:
+		- TaskThreadPool, because of:
+			- Pointers to tasks
+
+	- Night light
+		- Blue-ish, just like sun, but dimmer and blue
 
 	- Release:
 		- Localization (yes, it's dirty)
