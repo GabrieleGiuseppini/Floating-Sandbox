@@ -126,10 +126,10 @@ void main()
     fragColour = mix(fragColour, paramWaterColor, vertexColorWetness);
 
     // Complement missing ambient light with point's light
-    float effectiveLightIntensity = mix(vertexAttributes.x, 1.0, paramEffectiveAmbientLightIntensity);
+    float effectiveAmbientLightIntensity = mix(vertexAttributes.x, 1.0, paramEffectiveAmbientLightIntensity);
 
-    // Apply light
-    fragColour *= effectiveLightIntensity;
+    // Apply ambient light
+    fragColour *= effectiveAmbientLightIntensity;
 #endif
 
 
