@@ -332,6 +332,18 @@ struct IGameControllerSettings
     virtual rgbColor const & GetFlatSkyColor() const = 0;
     virtual void SetFlatSkyColor(rgbColor const & color) = 0;
 
+    virtual bool GetDoMoonlight() const = 0;
+    virtual void SetDoMoonlight(bool value) = 0;
+
+    virtual rgbColor const & GetMoonlightColor() const = 0;
+    virtual void SetMoonlightColor(rgbColor const & color) = 0;
+
+    virtual bool GetDoCrepuscularGradient() const = 0;
+    virtual void SetDoCrepuscularGradient(bool value) = 0;
+
+    virtual rgbColor const & GetCrepuscularColor() const = 0;
+    virtual void SetCrepuscularColor(rgbColor const & color) = 0;
+
     virtual float GetOceanTransparency() const = 0;
     virtual void SetOceanTransparency(float value) = 0;
 

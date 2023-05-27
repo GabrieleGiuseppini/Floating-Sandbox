@@ -758,6 +758,18 @@ public:
     rgbColor const & GetFlatSkyColor() const override { return mRenderContext->GetFlatSkyColor(); }
     void SetFlatSkyColor(rgbColor const & color) override { mRenderContext->SetFlatSkyColor(color); }
 
+    bool GetDoMoonlight() const override { return mRenderContext->GetDoMoonlight(); }
+    void SetDoMoonlight(bool value) override { mRenderContext->SetDoMoonlight(value); }
+
+    rgbColor const & GetMoonlightColor() const override { return mRenderContext->GetMoonlightColor(); }
+    void SetMoonlightColor(rgbColor const & color) override { mRenderContext->SetMoonlightColor(color); }
+
+    bool GetDoCrepuscularGradient() const override { return mRenderContext->GetDoCrepuscularGradient(); }
+    void SetDoCrepuscularGradient(bool value) override { mRenderContext->SetDoCrepuscularGradient(value); }
+
+    rgbColor const & GetCrepuscularColor() const override { return mRenderContext->GetCrepuscularColor(); }
+    void SetCrepuscularColor(rgbColor const & color) override { mRenderContext->SetCrepuscularColor(color); }
+
     float GetOceanTransparency() const override { return mRenderContext->GetOceanTransparency(); }
     void SetOceanTransparency(float value) override { mRenderContext->SetOceanTransparency(value); }
 

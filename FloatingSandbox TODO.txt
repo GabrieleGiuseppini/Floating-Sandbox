@@ -191,7 +191,47 @@
 		- changelist
 			= Credit guy (asked name)
 
+	- Night light
+		- Blue-ish, just like sun, but dimmer and blue
+		- Spec:
+			- Sky rendering step @ World
+				- First in Draw, takes place of cleaning
+					- Uses shader if doCrepuscolarGradient (incl. z), and glClear otherwise
+					- Move RenderContext::ApplyClearColorChanges to WorldRenderContext, and refactor as TODOHERE
+						- 
+			- bool "DoMoonlight"
+				! For all shaders except sky
+				- Dirty sky render parameters
+				- Used by:
+					- World:
+						- Calculate and set moonlight_color shader param value (black vs. moonlight_color) @ all world shaders
+					- Ship:
+						- ""
+			= rgbColor MoonlightColor
+				! For all shaders including sky (which will use it only if it's doing crepuscolar gradient)
+				+ Dirty sky render parameters
+				= Used by:
+					= World:
+						= Calculate and set moonlight_color shader param value (black vs. moonlight_color) @ all world shaders
+							+ Clouds
+							- Water
+							- Land
+					- Ship:
+						- ""
+					- Sky:
+						- Calculate and set moonlight_color shader param value (black vs. moonlight_color) @ sky shader
+			- bool "doCrepuscolarGradient"
+				- Just for sky shader
+				- TODO
+			- rgbColor "CrepuscolarColor"
+				- Just for sky shader
+				- TODO
+			- ocean shader might need to swap depth darkening and ambient darkening
+
 	- Chainsaw sound still on when tool sounds are muted?
+
+	- Combustion ignition: try starting with advanced development when much temperature delta wrt ignition
+		- So that explosion generates sudden, large flames
 
 	- Nuke default_ship.shp2 and make Titanic's filename in code
 		- So users don't see two Titanic's
@@ -207,9 +247,6 @@
 	- Extra ports from SpringLab:
 		- TaskThreadPool, because of:
 			- Pointers to tasks
-
-	- Night light
-		- Blue-ish, just like sun, but dimmer and blue
 
 	- Release:
 		- Localization (yes, it's dirty)

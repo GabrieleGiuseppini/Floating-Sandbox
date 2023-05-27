@@ -123,6 +123,10 @@ enum class GameSettings : size_t
 
     // Render
     FlatSkyColor,
+    DoMoonlight,
+    MoonlightColor,
+    DoCrepuscularGradient,
+    CrepuscularColor,
     OceanTransparency,
     OceanDarkeningRate,
     ShipAmbientLightSensitivity,

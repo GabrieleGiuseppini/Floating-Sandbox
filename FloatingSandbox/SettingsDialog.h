@@ -44,6 +44,7 @@ public:
 private:
 
     void OnOceanRenderModeRadioButtonClick(wxCommandEvent & event);
+    void OnSkyRenderModeRadioButtonClick(wxCommandEvent & event);
     void OnLandRenderModeRadioButtonClick(wxCommandEvent & event);
 
     void OnRevertToDefaultsButton(wxCommandEvent & event);
@@ -169,11 +170,16 @@ private:
     wxCheckBox * mSeeShipThroughOceanCheckBox;
     SliderControl<float> * mOceanTransparencySlider;
     SliderControl<float> * mOceanDarkeningRateSlider;
+    wxRadioButton * mFlatSkyRenderModeRadioButton;
+    wxColourPickerCtrl * mFlatSkyColorPicker;
+    wxRadioButton * mCrepuscularSkyRenderModeRadioButton;
+    wxColourPickerCtrl * mCrepuscularColorPicker;
+    wxCheckBox * mDoMoonlightCheckBox;
+    wxColourPickerCtrl * mMoonlightColorPicker;
     wxRadioButton * mTextureLandRenderModeRadioButton;
     wxBitmapComboBox * mTextureLandComboBox;
     wxRadioButton * mFlatLandRenderModeRadioButton;
     wxColourPickerCtrl * mFlatLandColorPicker;
-    wxColourPickerCtrl * mFlatSkyColorPicker;
     wxColourPickerCtrl * mFlatLampLightColorPicker;
     wxRadioBox * mHeatRenderModeRadioBox;
     SliderControl<float> * mHeatSensitivitySlider;
@@ -247,6 +253,8 @@ private:
     void SyncControlsWithSettings(Settings<GameSettings> const & settings);
     void ReconciliateOceanRenderModeSettings();
     void ReconciliateLandRenderModeSettings();
+    void ReconciliateSkyRenderModeSettings();
+    void ReconciliateMoonlightSettings();
     void OnLiveSettingsChanged();
     void ReconcileDirtyState();
 

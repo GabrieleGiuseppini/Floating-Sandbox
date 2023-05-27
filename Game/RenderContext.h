@@ -198,7 +198,51 @@ public:
     void SetFlatSkyColor(rgbColor const & color)
     {
         mRenderParameters.FlatSkyColor = color;
-        mRenderParameters.IsFlatSkyColorDirty = true;
+        mRenderParameters.IsSkyDirty = true;
+    }
+
+    bool GetDoMoonlight() const
+    {
+        return mRenderParameters.DoMoonlight;
+    }
+
+    void SetDoMoonlight(bool value)
+    {
+        mRenderParameters.DoMoonlight = value;
+        mRenderParameters.IsSkyDirty = true;
+    }
+
+    rgbColor const & GetMoonlightColor() const
+    {
+        return mRenderParameters.MoonlightColor;
+    }
+
+    void SetMoonlightColor(rgbColor const & color)
+    {
+        mRenderParameters.MoonlightColor = color;
+        mRenderParameters.IsSkyDirty = true;
+    }
+
+    bool GetDoCrepuscularGradient() const
+    {
+        return mRenderParameters.DoCrepuscularGradient;
+    }
+
+    void SetDoCrepuscularGradient(bool value)
+    {
+        mRenderParameters.DoCrepuscularGradient = value;
+        mRenderParameters.IsSkyDirty = true;
+    }
+
+    rgbColor const & GetCrepuscularColor() const
+    {
+        return mRenderParameters.CrepuscularColor;
+    }
+
+    void SetCrepuscularColor(rgbColor const & color)
+    {
+        mRenderParameters.CrepuscularColor = color;
+        mRenderParameters.IsSkyDirty = true;
     }
 
     float GetOceanTransparency() const

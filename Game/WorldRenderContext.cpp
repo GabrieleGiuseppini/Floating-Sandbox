@@ -792,6 +792,11 @@ void WorldRenderContext::ProcessParameterChanges(RenderParameters const & render
         ApplyEffectiveAmbientLightIntensityChanges(renderParameters);
     }
 
+    if (renderParameters.IsSkyDirty)
+    {
+        ApplySkyChanges(renderParameters);
+    }
+
     if (renderParameters.IsOceanDarkeningRateDirty)
     {
         ApplyOceanDarkeningRateChanges(renderParameters);
@@ -1705,6 +1710,19 @@ void WorldRenderContext::ApplyEffectiveAmbientLightIntensityChanges(RenderParame
     mShaderManager.ActivateProgram<ProgramType::WorldBorder>();
     mShaderManager.SetProgramParameter<ProgramType::WorldBorder, ProgramParameterType::EffectiveAmbientLightIntensity>(
         renderParameters.EffectiveAmbientLightIntensity);
+}
+
+void WorldRenderContext::ApplySkyChanges(RenderParameters const & renderParameters)
+{
+    // Set parameters in all programs
+
+    vec3f const moonlightColor = renderParameters.DoMoonlight
+        ? renderParameters.MoonlightColor.toVec3f()
+        : vec3f::zero();
+
+    mShaderManager.ActivateProgram<ProgramType::Clouds>();
+    mShaderManager.SetProgramParameter<ProgramType::Clouds, ProgramParameterType::MoonlightColor>(
+        moonlightColor);
 }
 
 void WorldRenderContext::ApplyOceanDarkeningRateChanges(RenderParameters const & renderParameters)

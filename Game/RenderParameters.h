@@ -29,6 +29,11 @@ struct RenderParameters
     //
 
     rgbColor FlatSkyColor;
+    bool DoMoonlight;
+    rgbColor MoonlightColor;
+    bool DoCrepuscularGradient;
+    rgbColor CrepuscularColor;
+
     float OceanTransparency;
     float OceanDarkeningRate;
     OceanRenderModeType OceanRenderMode;
@@ -38,6 +43,7 @@ struct RenderParameters
     size_t OceanTextureIndex;
     OceanRenderDetailType OceanRenderDetail;
     bool ShowShipThroughOcean;
+
     LandRenderModeType LandRenderMode;
     rgbColor FlatLandColor;
     size_t LandTextureIndex;
@@ -75,9 +81,9 @@ struct RenderParameters
     bool IsViewDirty;
     bool IsCanvasSizeDirty;
     bool IsEffectiveAmbientLightIntensityDirty;
-    bool IsFlatSkyColorDirty;
+    bool IsSkyDirty; // Tracks various sky render parameters as a whole, for convenience
     bool IsOceanDarkeningRateDirty;
-    bool AreOceanRenderParametersDirty; // Tracks various render parameters as a whole, for convenience
+    bool AreOceanRenderParametersDirty; // Tracks various ocean render parameters as a whole, for convenience
     bool IsOceanTextureIndexDirty;
     bool AreLandRenderParametersDirty; // Tracks various land render parameters as a whole, for convenience
     bool IsLandTextureIndexDirty;

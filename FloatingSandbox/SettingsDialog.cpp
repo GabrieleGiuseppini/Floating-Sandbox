@@ -374,6 +374,23 @@ void SettingsDialog::OnOceanRenderModeRadioButtonClick(wxCommandEvent & /*event*
     ReconciliateOceanRenderModeSettings();
 }
 
+void SettingsDialog::OnSkyRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
+{
+    if (mFlatSkyRenderModeRadioButton->GetValue())
+    {
+        mLiveSettings.SetValue(GameSettings::DoCrepuscularGradient, false);
+    }
+    else
+    {
+        assert(mCrepuscularSkyRenderModeRadioButton->GetValue());
+        mLiveSettings.SetValue(GameSettings::DoCrepuscularGradient, true);
+    }
+
+    ReconciliateSkyRenderModeSettings();
+
+    OnLiveSettingsChanged();
+}
+
 void SettingsDialog::OnLandRenderModeRadioButtonClick(wxCommandEvent & /*event*/)
 {
     if (mTextureLandRenderModeRadioButton->GetValue())
@@ -3925,7 +3942,141 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
         gridSizer->Add(
             boxSizer,
             wxGBPosition(0, 0),
-            wxGBSpan(2, 5),
+            wxGBSpan(1, 4),
+            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            CellBorderInner);
+    }
+
+    // Sky
+    {
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Sky"));
+
+        {
+            wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
+
+            // Render Mode
+            {
+                wxStaticBoxSizer * skyRenderModeBoxSizer = new wxStaticBoxSizer(wxVERTICAL, boxSizer->GetStaticBox(), _("Draw Mode"));
+
+                {
+                    wxGridBagSizer * skyRenderModeSizer = new wxGridBagSizer(5, 5);
+
+                    // Flat
+
+
+                    mFlatSkyRenderModeRadioButton = new wxRadioButton(skyRenderModeBoxSizer->GetStaticBox(), wxID_ANY, _("Flat"),
+                        wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+                    mFlatSkyRenderModeRadioButton->SetToolTip(_("Draws the sky using a static color."));
+                    mFlatSkyRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnSkyRenderModeRadioButtonClick, this);
+
+                    skyRenderModeSizer->Add(mFlatSkyRenderModeRadioButton, wxGBPosition(0, 0), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL, 0);
+
+
+                    mFlatSkyColorPicker = new wxColourPickerCtrl(skyRenderModeBoxSizer->GetStaticBox(), wxID_ANY);
+                    mFlatSkyColorPicker->SetToolTip(_("Sets the single color of the sky."));
+                    mFlatSkyColorPicker->Bind(
+                        wxEVT_COLOURPICKER_CHANGED,
+                        [this](wxColourPickerEvent & event)
+                        {
+                            auto color = event.GetColour();
+
+                            mLiveSettings.SetValue(
+                                GameSettings::FlatSkyColor,
+                                rgbColor(color.Red(), color.Green(), color.Blue()));
+
+                            OnLiveSettingsChanged();
+                        });
+
+                    skyRenderModeSizer->Add(mFlatSkyColorPicker, wxGBPosition(0, 1), wxGBSpan(1, 1), 0, 0);
+
+
+                    // Crepuscular
+
+                    mCrepuscularSkyRenderModeRadioButton = new wxRadioButton(skyRenderModeBoxSizer->GetStaticBox(), wxID_ANY, _("Crepuscular"));
+                    mCrepuscularSkyRenderModeRadioButton->SetToolTip(_("Draws the sky using a crepuscolar gradient."));
+                    mCrepuscularSkyRenderModeRadioButton->Bind(wxEVT_RADIOBUTTON, &SettingsDialog::OnSkyRenderModeRadioButtonClick, this);
+
+                    skyRenderModeSizer->Add(mCrepuscularSkyRenderModeRadioButton, wxGBPosition(1, 0), wxGBSpan(1, 1), wxALIGN_CENTER_VERTICAL, 0);
+
+
+                    mCrepuscularColorPicker = new wxColourPickerCtrl(skyRenderModeBoxSizer->GetStaticBox(), wxID_ANY);
+                    mCrepuscularColorPicker->SetToolTip(_("Sets the crepuscolar overtone of the sky."));
+                    mCrepuscularColorPicker->Bind(
+                        wxEVT_COLOURPICKER_CHANGED,
+                        [this](wxColourPickerEvent & event)
+                        {
+                            auto color = event.GetColour();
+
+                            mLiveSettings.SetValue(
+                                GameSettings::CrepuscularColor,
+                                rgbColor(color.Red(), color.Green(), color.Blue()));
+
+                            OnLiveSettingsChanged();
+                        });
+
+                    skyRenderModeSizer->Add(mCrepuscularColorPicker, wxGBPosition(1, 1), wxGBSpan(1, 1), 0, 0);
+
+                    skyRenderModeBoxSizer->Add(skyRenderModeSizer, 1, wxALL, StaticBoxInsetMargin2);
+                }
+
+                sizer->Add(
+                    skyRenderModeBoxSizer,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 2),
+                    wxALL,
+                    CellBorderInner);
+            }
+
+            // Moonlight
+            {
+                mDoMoonlightCheckBox = new wxCheckBox(boxSizer->GetStaticBox(), wxID_ANY, _("Moonlight"));
+                mDoMoonlightCheckBox->SetToolTip(_("Enables or disables the moon's light at night."));
+                mDoMoonlightCheckBox->Bind(wxEVT_COMMAND_CHECKBOX_CLICKED,
+                    [this](wxCommandEvent & event)
+                    {
+                        mLiveSettings.SetValue(GameSettings::DoMoonlight, event.IsChecked() ? true : false);
+                        OnLiveSettingsChanged();
+
+                        ReconciliateMoonlightSettings();
+                    });
+
+                sizer->Add(
+                    mDoMoonlightCheckBox,
+                    wxGBPosition(1, 0),
+                    wxGBSpan(1, 1),
+                    wxALL | wxALIGN_CENTER_VERTICAL,
+                    CellBorderInner);
+
+                mMoonlightColorPicker = new wxColourPickerCtrl(boxSizer->GetStaticBox(), wxID_ANY);
+                mMoonlightColorPicker->SetToolTip(_("Sets the color of the moon's light."));
+                mMoonlightColorPicker->Bind(
+                    wxEVT_COLOURPICKER_CHANGED,
+                    [this](wxColourPickerEvent & event)
+                    {
+                        auto color = event.GetColour();
+
+                        mLiveSettings.SetValue(
+                            GameSettings::MoonlightColor,
+                            rgbColor(color.Red(), color.Green(), color.Blue()));
+
+                        OnLiveSettingsChanged();
+                    });
+
+                sizer->Add(
+                    mMoonlightColorPicker,
+                    wxGBPosition(1, 1),
+                    wxGBSpan(1, 1),
+                    wxALL | wxALIGN_CENTER_VERTICAL,
+                    CellBorderInner);
+            }
+            
+            boxSizer->Add(sizer, 0, wxALL, StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            boxSizer,
+            wxGBPosition(0, 4),
+            wxGBSpan(1, 3),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderInner);
     }
@@ -4009,95 +4160,9 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(0, 5),
-            wxGBSpan(1, 5),
+            wxGBPosition(0, 7),
+            wxGBSpan(1, 3),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
-            CellBorderInner);
-    }
-
-    // Sky
-    {
-        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Sky"));
-
-        {
-            wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
-
-            // Sky color
-            {
-                mFlatSkyColorPicker = new wxColourPickerCtrl(boxSizer->GetStaticBox(), wxID_ANY);
-                mFlatSkyColorPicker->SetToolTip(_("Sets the color of the sky. Duh."));
-                mFlatSkyColorPicker->Bind(
-                    wxEVT_COLOURPICKER_CHANGED,
-                    [this](wxColourPickerEvent & event)
-                    {
-                        auto color = event.GetColour();
-
-                        mLiveSettings.SetValue(
-                            GameSettings::FlatSkyColor,
-                            rgbColor(color.Red(), color.Green(), color.Blue()));
-
-                        OnLiveSettingsChanged();
-                    });
-
-                sizer->Add(
-                    mFlatSkyColorPicker,
-                    wxGBPosition(0, 0),
-                    wxGBSpan(1, 1),
-                    wxALL,
-                    CellBorderInner);
-            }
-
-            boxSizer->Add(sizer, 0, wxALL, StaticBoxInsetMargin);
-        }
-
-        gridSizer->Add(
-            boxSizer,
-            wxGBPosition(1, 5),
-            wxGBSpan(1, 2),
-            wxALL | wxALIGN_LEFT,
-            CellBorderInner);
-    }
-
-    // Lamp Light
-    {
-        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Lamp Light"));
-
-        {
-            wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
-
-            // Lamp Light color
-            {
-                mFlatLampLightColorPicker = new wxColourPickerCtrl(boxSizer->GetStaticBox(), wxID_ANY);
-                mFlatLampLightColorPicker->SetToolTip(_("Sets the color of lamp lights."));
-                mFlatLampLightColorPicker->Bind(
-                    wxEVT_COLOURPICKER_CHANGED,
-                    [this](wxColourPickerEvent & event)
-                    {
-                        auto color = event.GetColour();
-
-                        mLiveSettings.SetValue(
-                            GameSettings::FlatLampLightColor,
-                            rgbColor(color.Red(), color.Green(), color.Blue()));
-
-                        OnLiveSettingsChanged();
-                    });
-
-                sizer->Add(
-                    mFlatLampLightColorPicker,
-                    wxGBPosition(0, 0),
-                    wxGBSpan(1, 1),
-                    wxALL,
-                    CellBorderInner);
-            }
-
-            boxSizer->Add(sizer, 0, wxALL, StaticBoxInsetMargin);
-        }
-
-        gridSizer->Add(
-            boxSizer,
-            wxGBPosition(1, 8),
-            wxGBSpan(1, 2),
-            wxALL | wxALIGN_RIGHT,
             CellBorderInner);
     }
 
@@ -4277,8 +4342,8 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(2, 0),
-            wxGBSpan(1, 5),
+            wxGBPosition(1, 0),
+            wxGBSpan(2, 6),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderInner);
     }
@@ -4372,8 +4437,51 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
 
         gridSizer->Add(
             boxSizer,
-            wxGBPosition(2, 5),
-            wxGBSpan(1, 5),
+            wxGBPosition(1, 6),
+            wxGBSpan(2, 2),
+            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            CellBorderInner);
+    }
+
+    // Lamp Light
+    {
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Lamp Light"));
+
+        {
+            wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
+
+            // Lamp Light color
+            {
+                mFlatLampLightColorPicker = new wxColourPickerCtrl(boxSizer->GetStaticBox(), wxID_ANY);
+                mFlatLampLightColorPicker->SetToolTip(_("Sets the color of lamp lights."));
+                mFlatLampLightColorPicker->Bind(
+                    wxEVT_COLOURPICKER_CHANGED,
+                    [this](wxColourPickerEvent & event)
+                    {
+                        auto color = event.GetColour();
+
+                mLiveSettings.SetValue(
+                    GameSettings::FlatLampLightColor,
+                    rgbColor(color.Red(), color.Green(), color.Blue()));
+
+                OnLiveSettingsChanged();
+                    });
+
+                sizer->Add(
+                    mFlatLampLightColorPicker,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxALL,
+                    CellBorderInner);
+            }
+
+            boxSizer->Add(sizer, 0, wxALL, StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            boxSizer,
+            wxGBPosition(1, 8),
+            wxGBSpan(1, 1),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderInner);
     }
@@ -5541,19 +5649,46 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
 
     ReconciliateOceanRenderModeSettings();
 
+
+    if (settings.GetValue<bool>(GameSettings::DoCrepuscularGradient))
+    {
+        mCrepuscularSkyRenderModeRadioButton->SetValue(true);
+    }
+    else
+    {
+        mFlatSkyRenderModeRadioButton->SetValue(true);
+    }
+
+    auto const flatSkyColor = settings.GetValue<rgbColor>(GameSettings::FlatSkyColor);
+    mFlatSkyColorPicker->SetColour(wxColor(flatSkyColor.r, flatSkyColor.g, flatSkyColor.b));
+
+    auto const crepuscolarColor = settings.GetValue<rgbColor>(GameSettings::CrepuscularColor);
+    mCrepuscularColorPicker->SetColour(wxColor(crepuscolarColor.r, crepuscolarColor.g, crepuscolarColor.b));
+
+    ReconciliateSkyRenderModeSettings();
+
+
+    mDoMoonlightCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoMoonlight));
+
+    auto const moonlightColor = settings.GetValue<rgbColor>(GameSettings::MoonlightColor);
+    mMoonlightColorPicker->SetColour(wxColor(moonlightColor.r, moonlightColor.g, moonlightColor.b));
+
+    ReconciliateMoonlightSettings();
+
+
     switch (settings.GetValue<LandRenderModeType>(GameSettings::LandRenderMode))
     {
-        case LandRenderModeType::Texture:
-        {
-            mTextureLandRenderModeRadioButton->SetValue(true);
-            break;
-        }
+    case LandRenderModeType::Texture:
+    {
+        mTextureLandRenderModeRadioButton->SetValue(true);
+        break;
+    }
 
-        case LandRenderModeType::Flat:
-        {
-            mFlatLandRenderModeRadioButton->SetValue(true);
-            break;
-        }
+    case LandRenderModeType::Flat:
+    {
+        mFlatLandRenderModeRadioButton->SetValue(true);
+        break;
+    }
     }
 
     mTextureLandComboBox->Select(static_cast<int>(settings.GetValue<size_t>(GameSettings::TextureLandTextureIndex)));
@@ -5563,8 +5698,6 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
 
     ReconciliateLandRenderModeSettings();
 
-    auto const flatSkyColor = settings.GetValue<rgbColor>(GameSettings::FlatSkyColor);
-    mFlatSkyColorPicker->SetColour(wxColor(flatSkyColor.r, flatSkyColor.g, flatSkyColor.b));
 
     auto flatLampLightColor = settings.GetValue<rgbColor>(GameSettings::FlatLampLightColor);
     mFlatLampLightColorPicker->SetColour(wxColor(flatLampLightColor.r, flatLampLightColor.g, flatLampLightColor.b));
@@ -5760,6 +5893,17 @@ void SettingsDialog::ReconciliateLandRenderModeSettings()
 {
     mTextureLandComboBox->Enable(mTextureLandRenderModeRadioButton->GetValue());
     mFlatLandColorPicker->Enable(mFlatLandRenderModeRadioButton->GetValue());
+}
+
+void SettingsDialog::ReconciliateSkyRenderModeSettings()
+{
+    mFlatSkyColorPicker->Enable(true);
+    mCrepuscularColorPicker->Enable(mCrepuscularSkyRenderModeRadioButton->GetValue());
+}
+
+void SettingsDialog::ReconciliateMoonlightSettings()
+{
+    mMoonlightColorPicker->Enable(mDoMoonlightCheckBox->IsChecked());
 }
 
 void SettingsDialog::OnLiveSettingsChanged()

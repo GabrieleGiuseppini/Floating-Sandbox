@@ -401,6 +401,8 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::LandFlatColor;
     else if (str == "MatteColor")
         return ProgramParameterType::MatteColor;
+    else if (str == "MoonlightColor")
+        return ProgramParameterType::MoonlightColor;
     else if (str == "OceanTransparency")
         return ProgramParameterType::OceanTransparency;
     else if (str == "OceanDarkeningRate")
@@ -486,6 +488,8 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
         return "LandFlatColor";
     case ProgramParameterType::MatteColor:
         return "MatteColor";
+    case ProgramParameterType::MoonlightColor:
+        return "MoonlightColor";
     case ProgramParameterType::OceanTransparency:
         return "OceanTransparency";
     case ProgramParameterType::OceanDarkeningRate:

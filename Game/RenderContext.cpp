@@ -628,7 +628,7 @@ void RenderContext::ProcessParameterChanges(RenderParameters const & renderParam
     }
 
     if (renderParameters.IsEffectiveAmbientLightIntensityDirty
-        || renderParameters.IsFlatSkyColorDirty)
+        || renderParameters.IsSkyDirty)
     {
         ApplyClearColorChanges(renderParameters);
     }

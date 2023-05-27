@@ -42,17 +42,21 @@ uniform sampler2D paramCloudsAtlasTexture;
 
 // Parameters        
 uniform float paramEffectiveAmbientLightIntensity;
+uniform vec3 paramMoonlightColor;
 
 void main()
 {
     // Sample texture
     vec4 textureColor = texture2D(paramCloudsAtlasTexture, texturePos);
 
+    // Adjust for ambient light and mooncolor
+    vec3 cloudColor = textureColor.xyz * mix(paramMoonlightColor, vec3(1.), paramEffectiveAmbientLightIntensity) * darkness;
+
     // Sample alpha
     vec2 alphaMaskTexturePos = textureCenterPos + (texturePos - textureCenterPos) * growthProgress;
     vec4 alphaMaskSample = texture2D(paramCloudsAtlasTexture, alphaMaskTexturePos);
        
     // Combine into final color
-    float alphaMultiplier = sqrt(textureColor.w * alphaMaskSample.w);
-    gl_FragColor = vec4(textureColor.xyz * paramEffectiveAmbientLightIntensity * darkness, alphaMultiplier);
+    float alpha = sqrt(textureColor.w * alphaMaskSample.w);
+    gl_FragColor = vec4(cloudColor, alpha);
 } 

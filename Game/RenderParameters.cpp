@@ -14,6 +14,10 @@ RenderParameters::RenderParameters(
 	, EffectiveAmbientLightIntensity(1.0f) // Calculated
 	// World
 	, FlatSkyColor(0x00, 0x77, 0xc4)
+	, DoMoonlight(true)
+	, MoonlightColor(0x17, 0x3d, 0x5b)
+	, DoCrepuscularGradient(true)
+	, CrepuscularColor (0xe5, 0xd3, 0xe5)
 	, OceanTransparency(0.8125f)
 	, OceanDarkeningRate(0.12795731425285339f)
 	, OceanRenderMode(OceanRenderModeType::Flat)
@@ -47,7 +51,7 @@ RenderParameters::RenderParameters(
 	, IsViewDirty(true)
 	, IsCanvasSizeDirty(true)
 	, IsEffectiveAmbientLightIntensityDirty(true)
-	, IsFlatSkyColorDirty(true)
+	, IsSkyDirty(true)
 	, IsOceanDarkeningRateDirty(true)
 	, AreOceanRenderParametersDirty(true)
 	, IsOceanTextureIndexDirty(true)
@@ -73,7 +77,7 @@ RenderParameters RenderParameters::TakeSnapshotAndClear()
 	IsViewDirty = false;
 	IsCanvasSizeDirty = false;
 	IsEffectiveAmbientLightIntensityDirty = false;
-	IsFlatSkyColorDirty = false;
+	IsSkyDirty = false;
 	IsOceanDarkeningRateDirty = false;
 	AreOceanRenderParametersDirty = false;
 	IsOceanTextureIndexDirty = false;
