@@ -181,6 +181,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::ShipTrianglesTextureIncandescenceStress;
     else if (lstr == "ship_vectors")
         return ProgramType::ShipVectors;
+    else if (lstr == "sky")
+        return ProgramType::Sky;
     else if (lstr == "stars")
         return ProgramType::Stars;
     else if (lstr == "text")
@@ -365,6 +367,8 @@ std::string ProgramTypeToStr(ProgramType program)
         return "ShipTrianglesTextureIncandescenceStress";
     case ProgramType::ShipVectors:
         return "ShipVectors";
+    case ProgramType::Sky:
+        return "Sky";
     case ProgramType::Stars:
         return "Stars";
     case ProgramType::Text:
@@ -389,10 +393,14 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::AtlasTile1LeftBottomTextureCoordinates;
     else if (str == "AtlasTile1Size")
         return ProgramParameterType::AtlasTile1Size;
+    else if (str == "CrepuscularColor")
+        return ProgramParameterType::CrepuscularColor;
     else if (str == "EffectiveAmbientLightIntensity")
         return ProgramParameterType::EffectiveAmbientLightIntensity;
     else if (str == "FlameProgress")
         return ProgramParameterType::FlameProgress;
+    else if (str == "FlatSkyColor")
+        return ProgramParameterType::FlatSkyColor;
     else if (str == "HeatShift")
         return ProgramParameterType::HeatShift;
     else if (str == "LampLightColor")
@@ -476,10 +484,14 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
         return "AtlasTile1LeftBottomTextureCoordinates";
     case ProgramParameterType::AtlasTile1Size:
         return "AtlasTile1Size";
+    case ProgramParameterType::CrepuscularColor:
+        return "CrepuscularColor";
     case ProgramParameterType::EffectiveAmbientLightIntensity:
         return "EffectiveAmbientLightIntensity";
     case ProgramParameterType::FlameProgress:
         return "FlameProgress";
+    case ProgramParameterType::FlatSkyColor:
+        return "FlatSkyColor";
     case ProgramParameterType::HeatShift:
         return "HeatShift";
     case ProgramParameterType::LampLightColor:
@@ -558,7 +570,9 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
 VertexAttributeType StrToVertexAttributeType(std::string const & str)
 {
     // World
-    if (Utils::CaseInsensitiveEquals(str, "Star"))
+    if (Utils::CaseInsensitiveEquals(str, "Sky"))
+        return VertexAttributeType::Sky;
+    else if (Utils::CaseInsensitiveEquals(str, "Star"))
         return VertexAttributeType::Star;
     else if (Utils::CaseInsensitiveEquals(str, "Lightning1"))
         return VertexAttributeType::Lightning1;

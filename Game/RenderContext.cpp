@@ -492,13 +492,6 @@ void RenderContext::Draw()
             }
 
             //
-            // Initialize
-            //
-
-            // Clear canvas - and depth buffer
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-            //
             // Prepare
             //
 
@@ -539,6 +532,8 @@ void RenderContext::Draw()
             //
 
             {
+                mWorldRenderContext->RenderDrawSky(renderParameters); // Acts as canvas glear
+
                 mWorldRenderContext->RenderDrawStars(renderParameters);
 
                 mWorldRenderContext->RenderDrawCloudsAndBackgroundLightnings(renderParameters);
@@ -626,12 +621,6 @@ void RenderContext::ProcessParameterChanges(RenderParameters const & renderParam
     {
         ApplyShipStructureRenderModeChanges(renderParameters);
     }
-
-    if (renderParameters.IsEffectiveAmbientLightIntensityDirty
-        || renderParameters.IsSkyDirty)
-    {
-        ApplyClearColorChanges(renderParameters);
-    }
 }
 
 void RenderContext::ApplyCanvasSizeChanges(RenderParameters const & renderParameters)
@@ -656,12 +645,6 @@ void RenderContext::ApplyShipStructureRenderModeChanges(RenderParameters const &
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     else
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-}
-
-void RenderContext::ApplyClearColorChanges(RenderParameters const & renderParameters)
-{
-    vec3f const clearColor = renderParameters.FlatSkyColor.toVec3f() * renderParameters.EffectiveAmbientLightIntensity;
-    glClearColor(clearColor.x, clearColor.y, clearColor.z, 1.0f);
 }
 
 float RenderContext::CalculateEffectiveAmbientLightIntensity(

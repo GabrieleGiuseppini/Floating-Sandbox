@@ -191,20 +191,29 @@
 		- changelist
 			= Credit guy (asked name)
 
-	- Night light
-		- Blue-ish, just like sun, but dimmer and blue
-		- Spec:
-			- Sky rendering step @ World
-				- First in Draw, takes place of cleaning
-					- Uses shader if doCrepuscolarGradient (incl. z), and glClear otherwise
-					- Move RenderContext::ApplyClearColorChanges to WorldRenderContext, and refactor as TODOHERE
-						- 
-			- bool "DoMoonlight"
+	= Night light
+		! Blue-ish, just like sun, but dimmer and blue
+		= Spec:
+			= Sky rendering step @ World
+				+ First in Draw, takes place of cleaning
+				= Uses shader if doCrepuscolarGradient (incl. z), and glClear otherwise
+					+ init, also load NDC coords
+					- Verify clears depth buffer
+				= Move RenderContext::ApplyClearColorChanges to WorldRenderContext, and refactor as:
+					= ApplyEffectiveAmbientLightIntensityChanges():
+						+ RecalculateClearCanvasColor()
+						- Set ambient light intensity in sky shader
+						+ ...anything else as now
+					= ApplySkyChanges():
+						+ RecalculateClearCanvasColor()
+						- Set moonlight_color shader param value (black vs. moonlight_color) and crepuscolar color in sky shader
+						= Set moonlight_color shader param value (black vs. moonlight_color) in all world shaders
+			= bool "DoMoonlight"
 				! For all shaders except sky
-				- Dirty sky render parameters
-				- Used by:
-					- World:
-						- Calculate and set moonlight_color shader param value (black vs. moonlight_color) @ all world shaders
+				+ Dirty sky render parameters
+				= Used by:
+					+ World:
+						+ Calculate and set moonlight_color shader param value (black vs. moonlight_color) @ all world shaders (above)
 					- Ship:
 						- ""
 			= rgbColor MoonlightColor
@@ -212,21 +221,26 @@
 				+ Dirty sky render parameters
 				= Used by:
 					= World:
-						= Calculate and set moonlight_color shader param value (black vs. moonlight_color) @ all world shaders
+						= Calculate and set moonlight_color shader param value (black vs. moonlight_color) @ all world shaders (above)
 							+ Clouds
-							- Water
+							= Ocean
+								+ flat detailed
+								+ flat basic
+								- depth detailed
+								- depth basic
+								- texture detailed
+								- texture basic
 							- Land
+							- Sky
 					- Ship:
 						- ""
-					- Sky:
-						- Calculate and set moonlight_color shader param value (black vs. moonlight_color) @ sky shader
 			- bool "doCrepuscolarGradient"
 				- Just for sky shader
 				- TODO
 			- rgbColor "CrepuscolarColor"
 				- Just for sky shader
 				- TODO
-			- ocean shader might need to swap depth darkening and ambient darkening
+			- ocean shader might need to swap depth darkening and ambient darkening, so that depth darkening takes place on moonlight
 
 	- Chainsaw sound still on when tool sounds are muted?
 

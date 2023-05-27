@@ -101,6 +101,7 @@ enum class ProgramType
     ShipTrianglesTextureIncandescence,
     ShipTrianglesTextureIncandescenceStress,
     ShipVectors,
+    Sky,
     Stars,
     Text,
     TextureNotifications,
@@ -119,8 +120,10 @@ enum class ProgramParameterType : uint8_t
     AtlasTile1Dx = 0,
     AtlasTile1LeftBottomTextureCoordinates,
     AtlasTile1Size,
+    CrepuscularColor,
     EffectiveAmbientLightIntensity,
     FlameProgress,
+    FlatSkyColor,
     HeatShift,
     LampLightColor,
     LandFlatColor,
@@ -174,6 +177,8 @@ enum class VertexAttributeType : GLuint
     //
     // World
     //
+
+    Sky = 0,
 
     Star = 0,
 

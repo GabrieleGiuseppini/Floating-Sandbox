@@ -669,6 +669,8 @@ public:
 
     void ProcessParameterChanges(RenderParameters const & renderParameters);
 
+    void RenderDrawSky(RenderParameters const & renderParameters);
+
     void RenderPrepareStars(RenderParameters const & renderParameters);
     void RenderDrawStars(RenderParameters const & renderParameters);
 
@@ -800,6 +802,7 @@ private:
     void ApplyLandRenderParametersChanges(RenderParameters const & renderParameters);
     void ApplyLandTextureIndexChanges(RenderParameters const & renderParameters);
 
+    void RecalculateClearCanvasColor(RenderParameters const & renderParameters);
     void RecalculateWorldBorder(RenderParameters const & renderParameters);
 
 private:
@@ -815,6 +818,19 @@ private:
     //
 
 #pragma pack(push, 1)
+
+    struct SkyVertex
+    {
+        float ndcX;
+        float ndcY;
+
+        SkyVertex(
+            float _ndcX,
+            float _ndcY)
+            : ndcX(_ndcX)
+            , ndcY(_ndcY)
+        {}
+    };
 
     struct StarVertex
     {
@@ -1039,6 +1055,8 @@ private:
     // VBOs and uploaded buffers and params
     //
 
+    GameOpenGLVBO mSkyVBO;
+
     BoundedVector<StarVertex> mStarVertexBuffer;
     size_t mDirtyStarsCount;
     GameOpenGLVBO mStarVBO;
@@ -1098,6 +1116,7 @@ private:
     // VAOs
     //
 
+    GameOpenGLVAO mSkyVAO;
     GameOpenGLVAO mStarVAO;
     GameOpenGLVAO mLightningVAO;
     GameOpenGLVAO mCloudVAO;
@@ -1140,7 +1159,7 @@ private:
     std::vector<std::pair<std::string, RgbaImageData>> mLandAvailableThumbnails;
 
     //
-    // Parameters
+    // Parameters (storage here)
     //
 
     float mSunRaysInclination;

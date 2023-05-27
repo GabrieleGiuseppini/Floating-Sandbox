@@ -1109,8 +1109,6 @@ private:
 
     void ApplyCanvasSizeChanges(RenderParameters const & renderParameters);
     void ApplyShipStructureRenderModeChanges(RenderParameters const & renderParameters);
-    void ApplyClearColorChanges(RenderParameters const & renderParameters);
-
 
     static float CalculateEffectiveAmbientLightIntensity(
         float ambientLightIntensity,

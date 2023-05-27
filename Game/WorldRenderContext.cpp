@@ -24,7 +24,8 @@ WorldRenderContext::WorldRenderContext(
     GlobalRenderContext const & globalRenderContext)
     : mGlobalRenderContext(globalRenderContext)
     , mShaderManager(shaderManager)
-    // Buffers
+    // Buffers and parameters
+    , mSkyVBO()
     , mStarVertexBuffer()
     , mDirtyStarsCount(0)
     , mStarVBO()
@@ -68,6 +69,7 @@ WorldRenderContext::WorldRenderContext(
     , mWorldBorderVertexBuffer()
     , mWorldBorderVBO()
     // VAOs
+    , mSkyVAO()
     , mStarVAO()
     , mLightningVAO()
     , mCloudVAO()
@@ -107,20 +109,57 @@ WorldRenderContext::WorldRenderContext(
     // Initialize buffers
     //
 
-    GLuint vbos[12];
-    glGenBuffers(12, vbos);
-    mStarVBO = vbos[0];
-    mLightningVBO = vbos[1];
-    mCloudVBO = vbos[2];
-    mLandSegmentVBO = vbos[3];
-    mOceanBasicSegmentVBO = vbos[4];
-    mOceanDetailedSegmentVBO = vbos[5];
-    mFishVBO = vbos[6];
-    mAMBombPreImplosionVBO = vbos[7];
-    mCrossOfLightVBO = vbos[8];
-    mAABBVBO = vbos[9];
-    mRainVBO = vbos[10];
-    mWorldBorderVBO = vbos[11];
+    GLuint vbos[13];
+    glGenBuffers(13, vbos);
+    mSkyVBO = vbos[0];
+    mStarVBO = vbos[1];
+    mLightningVBO = vbos[2];
+    mCloudVBO = vbos[3];
+    mLandSegmentVBO = vbos[4];
+    mOceanBasicSegmentVBO = vbos[5];
+    mOceanDetailedSegmentVBO = vbos[6];
+    mFishVBO = vbos[7];
+    mAMBombPreImplosionVBO = vbos[8];
+    mCrossOfLightVBO = vbos[9];
+    mAABBVBO = vbos[10];
+    mRainVBO = vbos[11];
+    mWorldBorderVBO = vbos[12];
+
+    //
+    // Initialize Sky VAO
+    //
+
+    {
+
+        glGenVertexArrays(1, &tmpGLuint);
+        mSkyVAO = tmpGLuint;
+
+        glBindVertexArray(*mSkyVAO);
+        CheckOpenGLError();
+
+        // Describe vertex attributes
+        glBindBuffer(GL_ARRAY_BUFFER, *mSkyVBO);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Sky));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Sky), 2, GL_FLOAT, GL_FALSE, sizeof(SkyVertex), (void *)0);
+        CheckOpenGLError();
+
+        // Upload whole screen NDC quad
+        {
+            SkyVertex skyVertices[6]{
+                {-1.0, 1.0},
+                {-1.0, -1.0},
+                {1.0, 1.0},
+                {-1.0, -1.0},
+                {1.0, 1.0},
+                {1.0, -1.0}
+            };
+
+            glBufferData(GL_ARRAY_BUFFER, sizeof(SkyVertex) * 6, skyVertices, GL_STATIC_DRAW);
+            CheckOpenGLError();
+        }
+
+        glBindVertexArray(0);
+    }
 
 
     //
@@ -367,34 +406,37 @@ WorldRenderContext::WorldRenderContext(
     // Initialize Rain VAO
     //
 
-    glGenVertexArrays(1, &tmpGLuint);
-    mRainVAO = tmpGLuint;
-
-    glBindVertexArray(*mRainVAO);
-    CheckOpenGLError();
-
-    // Describe vertex attributes
-    glBindBuffer(GL_ARRAY_BUFFER, *mRainVBO);
-    glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Rain));
-    glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Rain), 2, GL_FLOAT, GL_FALSE, sizeof(RainVertex), (void *)0);
-    CheckOpenGLError();
-
-    // Upload quad
     {
-        RainVertex rainVertices[6]{
-            {-1.0, 1.0},
-            {-1.0, -1.0},
-            {1.0, 1.0},
-            {-1.0, -1.0},
-            {1.0, 1.0},
-            {1.0, -1.0}
-        };
 
-        glBufferData(GL_ARRAY_BUFFER, sizeof(RainVertex) * 6, rainVertices, GL_STATIC_DRAW);
+        glGenVertexArrays(1, &tmpGLuint);
+        mRainVAO = tmpGLuint;
+
+        glBindVertexArray(*mRainVAO);
         CheckOpenGLError();
-    }
 
-    glBindVertexArray(0);
+        // Describe vertex attributes
+        glBindBuffer(GL_ARRAY_BUFFER, *mRainVBO);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Rain));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Rain), 2, GL_FLOAT, GL_FALSE, sizeof(RainVertex), (void *)0);
+        CheckOpenGLError();
+
+        // Upload whole screen NDC quad
+        {
+            RainVertex rainVertices[6]{
+                {-1.0, 1.0},
+                {-1.0, -1.0},
+                {1.0, 1.0},
+                {-1.0, -1.0},
+                {1.0, 1.0},
+                {1.0, -1.0}
+            };
+
+            glBufferData(GL_ARRAY_BUFFER, sizeof(RainVertex) * 6, rainVertices, GL_STATIC_DRAW);
+            CheckOpenGLError();
+        }
+
+        glBindVertexArray(0);
+    }
 
 
     //
@@ -440,7 +482,6 @@ WorldRenderContext::WorldRenderContext(
         // Unbind texture
         glBindTexture(GL_TEXTURE_1D, 0);
     }
-
 
     //
     // Set generic linear texture in our shaders
@@ -847,6 +888,35 @@ void WorldRenderContext::RenderPrepareStars(RenderParameters const & /*renderPar
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         mDirtyStarsCount = 0;
+    }
+}
+
+void WorldRenderContext::RenderDrawSky(RenderParameters const & renderParameters)
+{
+    //
+    // First step in pipeline, as it implicitly or explicitly clears the canvas
+    //
+
+    if (renderParameters.DoCrepuscularGradient)
+    {
+        // Use shader - it'll clear canvas
+
+        glBindVertexArray(*mSkyVAO);
+
+        mShaderManager.ActivateProgram<ProgramType::Sky>();
+
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        CheckOpenGLError();
+
+        glBindVertexArray(0);
+
+        // Clear depth buffer
+        glClear(GL_DEPTH_BUFFER_BIT);
+    }
+    else
+    {
+        // Clear canvas - and depth buffer
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 }
 
@@ -1637,7 +1707,13 @@ void WorldRenderContext::ApplyCanvasSizeChanges(RenderParameters const & renderP
 
 void WorldRenderContext::ApplyEffectiveAmbientLightIntensityChanges(RenderParameters const & renderParameters)
 {
+    RecalculateClearCanvasColor(renderParameters);
+
     // Set parameters in all programs
+
+    mShaderManager.ActivateProgram<ProgramType::Sky>();
+    mShaderManager.SetProgramParameter<ProgramType::Sky, ProgramParameterType::EffectiveAmbientLightIntensity>(
+        renderParameters.EffectiveAmbientLightIntensity);
 
     mShaderManager.ActivateProgram<ProgramType::Stars>();
     mShaderManager.SetProgramParameter<ProgramType::Stars, ProgramParameterType::StarTransparency>(
@@ -1714,15 +1790,49 @@ void WorldRenderContext::ApplyEffectiveAmbientLightIntensityChanges(RenderParame
 
 void WorldRenderContext::ApplySkyChanges(RenderParameters const & renderParameters)
 {
+    RecalculateClearCanvasColor(renderParameters);
+
     // Set parameters in all programs
 
     vec3f const moonlightColor = renderParameters.DoMoonlight
         ? renderParameters.MoonlightColor.toVec3f()
         : vec3f::zero();
 
+    vec3f const darkerMoonlightColor = moonlightColor * 0.5f; // TODO: decide if here or in shader - depends on how many shaders use one or the other
+
+
+    mShaderManager.ActivateProgram<ProgramType::Sky>();
+
+    mShaderManager.SetProgramParameter<ProgramType::Sky, ProgramParameterType::CrepuscularColor>(
+        renderParameters.CrepuscularColor.toVec3f());
+
+    mShaderManager.SetProgramParameter<ProgramType::Sky, ProgramParameterType::FlatSkyColor>(
+        renderParameters.FlatSkyColor.toVec3f());
+
+    mShaderManager.SetProgramParameter<ProgramType::Sky, ProgramParameterType::MoonlightColor>(
+        moonlightColor);
+
+
     mShaderManager.ActivateProgram<ProgramType::Clouds>();
     mShaderManager.SetProgramParameter<ProgramType::Clouds, ProgramParameterType::MoonlightColor>(
         moonlightColor);
+
+
+    mShaderManager.ActivateProgram<ProgramType::OceanFlatBasic>();
+    mShaderManager.SetProgramParameter<ProgramType::OceanFlatBasic, ProgramParameterType::MoonlightColor>(
+        darkerMoonlightColor);
+
+    mShaderManager.ActivateProgram<ProgramType::OceanFlatDetailedBackground>();
+    mShaderManager.SetProgramParameter<ProgramType::OceanFlatDetailedBackground, ProgramParameterType::MoonlightColor>(
+        darkerMoonlightColor);
+
+    mShaderManager.ActivateProgram<ProgramType::OceanFlatDetailedForeground>();
+    mShaderManager.SetProgramParameter<ProgramType::OceanFlatDetailedForeground, ProgramParameterType::MoonlightColor>(
+        darkerMoonlightColor);
+
+    // TODOHERE: other ocean's
+
+    // TODOHERE: land
 }
 
 void WorldRenderContext::ApplyOceanDarkeningRateChanges(RenderParameters const & renderParameters)
@@ -1952,6 +2062,12 @@ static void EmplaceWorldBorderQuad(
     buffer.emplace_back(x1, y2, tx1, ty2);
     buffer.emplace_back(x2, y1, tx2, ty1);
     buffer.emplace_back(x2, y2, tx2, ty2);
+}
+
+void WorldRenderContext::RecalculateClearCanvasColor(RenderParameters const & renderParameters)
+{
+    vec3f const clearColor = renderParameters.FlatSkyColor.toVec3f() * renderParameters.EffectiveAmbientLightIntensity;
+    glClearColor(clearColor.x, clearColor.y, clearColor.z, 1.0f);
 }
 
 void WorldRenderContext::RecalculateWorldBorder(RenderParameters const & renderParameters)
