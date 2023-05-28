@@ -42,8 +42,10 @@ void main()
 
     vec3 upperColor = paramFlatSkyColor * paramEffectiveAmbientLightIntensity;
 
-    // TODOHERE
-    vec3 lowerColor = mix(paramMoonlightColor, paramCrepuscularColor, paramEffectiveAmbientLightIntensity);
+    // AL between 0.5 and 1.0: interpolate between crepuscolar and flat, both darkened
+    // AL between 0.0 and 0.5: interpolate between moonlight and above (crepuscolar)
+    vec3 lowerColor = mix(paramCrepuscularColor, paramFlatSkyColor, max((paramEffectiveAmbientLightIntensity - 0.5) * (1/0.5), 0.0));
+    lowerColor = mix(paramMoonlightColor, lowerColor * paramEffectiveAmbientLightIntensity, min(paramEffectiveAmbientLightIntensity * (1/0.5), 1.0));
 
     // Combine
     vec3 color = mix(lowerColor, upperColor, max(ndcY - 0.5, 0.0) * 2.0);

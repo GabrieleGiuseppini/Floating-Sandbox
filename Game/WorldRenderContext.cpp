@@ -1794,11 +1794,11 @@ void WorldRenderContext::ApplySkyChanges(RenderParameters const & renderParamete
 
     // Set parameters in all programs
 
-    vec3f const moonlightColor = renderParameters.DoMoonlight
+    vec3f const effectiveMoonlightColor = renderParameters.DoMoonlight
         ? renderParameters.MoonlightColor.toVec3f()
         : vec3f::zero();
 
-    vec3f const darkerMoonlightColor = moonlightColor * 0.5f; // TODO: decide if here or in shader - depends on how many shaders use one or the other
+    vec3f const darkerMoonlightColor = effectiveMoonlightColor * 0.5f; // TODO: decide if here or in shader - depends on how many shaders use one or the other
 
 
     mShaderManager.ActivateProgram<ProgramType::Sky>();
@@ -1810,12 +1810,12 @@ void WorldRenderContext::ApplySkyChanges(RenderParameters const & renderParamete
         renderParameters.FlatSkyColor.toVec3f());
 
     mShaderManager.SetProgramParameter<ProgramType::Sky, ProgramParameterType::MoonlightColor>(
-        moonlightColor);
+        darkerMoonlightColor);
 
 
     mShaderManager.ActivateProgram<ProgramType::Clouds>();
     mShaderManager.SetProgramParameter<ProgramType::Clouds, ProgramParameterType::MoonlightColor>(
-        moonlightColor);
+        effectiveMoonlightColor);
 
 
     mShaderManager.ActivateProgram<ProgramType::OceanFlatBasic>();

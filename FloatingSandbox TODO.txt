@@ -198,7 +198,7 @@
 				+ First in Draw, takes place of cleaning
 				= Uses shader if doCrepuscolarGradient (incl. z), and glClear otherwise
 					+ init, also load NDC coords
-					- Verify clears depth buffer
+					+ Verify clears depth buffer
 				= Move RenderContext::ApplyClearColorChanges to WorldRenderContext, and refactor as:
 					= ApplyEffectiveAmbientLightIntensityChanges():
 						+ RecalculateClearCanvasColor()
@@ -206,7 +206,7 @@
 						+ ...anything else as now
 					= ApplySkyChanges():
 						+ RecalculateClearCanvasColor()
-						- Set moonlight_color shader param value (black vs. moonlight_color) and crepuscolar color in sky shader
+						+ Set moonlight_color shader param value (black vs. moonlight_color) and crepuscolar color in sky shader
 						= Set moonlight_color shader param value (black vs. moonlight_color) in all world shaders
 			= bool "DoMoonlight"
 				! For all shaders except sky
