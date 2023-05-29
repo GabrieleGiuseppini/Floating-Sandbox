@@ -193,14 +193,11 @@ void main()
 #endif
 
     // Apply depth darkening
-    // TODO: dither really needed ?
-    fishSample.xyz = ApplyDepthDarkeningWithDither(
+    fishSample.xyz = ApplyDepthDarkening(
         fishSample.xyz,
         vec3(0.0),
         worldY,
-        paramOceanDarkeningRate,
-        gl_FragCoord.xy,
-        paramNoiseTexture);
+        paramOceanDarkeningRate);
 
     gl_FragColor = vec4(
         fishSample.xyz * paramEffectiveAmbientLightIntensity,
