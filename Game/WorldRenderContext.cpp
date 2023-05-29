@@ -1798,6 +1798,7 @@ void WorldRenderContext::ApplySkyChanges(RenderParameters const & renderParamete
         ? renderParameters.MoonlightColor.toVec3f()
         : vec3f::zero();
 
+    // TODOHERE
     vec3f const darkerMoonlightColor = effectiveMoonlightColor * 0.5f; // TODO: decide if here or in shader - depends on how many shaders use one or the other
 
 
@@ -1820,15 +1821,15 @@ void WorldRenderContext::ApplySkyChanges(RenderParameters const & renderParamete
 
     mShaderManager.ActivateProgram<ProgramType::OceanFlatBasic>();
     mShaderManager.SetProgramParameter<ProgramType::OceanFlatBasic, ProgramParameterType::MoonlightColor>(
-        darkerMoonlightColor);
+        effectiveMoonlightColor);
 
     mShaderManager.ActivateProgram<ProgramType::OceanFlatDetailedBackground>();
     mShaderManager.SetProgramParameter<ProgramType::OceanFlatDetailedBackground, ProgramParameterType::MoonlightColor>(
-        darkerMoonlightColor);
+        effectiveMoonlightColor);
 
     mShaderManager.ActivateProgram<ProgramType::OceanFlatDetailedForeground>();
     mShaderManager.SetProgramParameter<ProgramType::OceanFlatDetailedForeground, ProgramParameterType::MoonlightColor>(
-        darkerMoonlightColor);
+        effectiveMoonlightColor);
 
     // TODOHERE: other ocean's
 

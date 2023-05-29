@@ -33,7 +33,7 @@ void main()
 
 #define in varying
 
-#include "ocean_surface.glslinc"
+#include "ocean.glslinc"
 
 // Inputs from previous shader
 in vec2 shadowPosNdc;
@@ -63,14 +63,14 @@ void main()
         paramNoiseTexture);
     // Adjust shadow's dynamic range: [0.0, 1.0, 2.0] -> [0.0, 1.0, 1.4]
     shadowFactor = 1.3 * shadowFactor - 0.3 * shadowFactor * shadowFactor;
-    vec4 color = vec4(paramOceanFlatColor * shadowFactor, (1.0 - paramOceanTransparency));
+    vec3 color = paramOceanFlatColor * shadowFactor;
 
     // Apply ambient light
-    color.xyz = color.xyz * mix(paramMoonlightColor, vec3(1.), paramEffectiveAmbientLightIntensity);
+    color = ApplyAmbientLight(color, paramMoonlightColor, paramEffectiveAmbientLightIntensity);
 
     // Apply depth darkening
-    color.xyz = ApplyDepthDarkening(
-        color.xyz,
+    color = ApplyDepthDarkeningWithDither(
+        color,
         vec3(0.0),
         yWorld,
         paramOceanDarkeningRate,
@@ -78,10 +78,8 @@ void main()
         paramNoiseTexture);
 
     // Apply detail
-    color = CalculateDetailedOceanPlaneColor(
-        color,
+    gl_FragColor = CalculateDetailedOceanPlaneColor(
+        vec4(color, (1.0 - paramOceanTransparency)),
         yWorld,
         yVectorWorld);
-
-    gl_FragColor = color;
 }

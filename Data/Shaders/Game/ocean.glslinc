@@ -111,7 +111,7 @@ vec3 ApplyDepthDarkening(
         darkMix * darkMix * darkMix);
 }
 
-vec3 ApplyDepthDarkening(
+vec3 ApplyDepthDarkeningWithDither(
     vec3 startColor,
     vec3 endColor,
     float yWorld,
@@ -159,4 +159,17 @@ float GetShadowFactor(
     shadowSample = 1.0 + (shadowSample - 1.0) * exp(depth * depthBoost * DEPTH_SPEED);
 
     return shadowSample;
+}
+
+vec3 ApplyAmbientLight(
+    vec3 baseColor,
+    vec3 moonlightColor,
+    float effectiveAmbientLightIntensity)
+{
+    return 
+        baseColor 
+        * mix(
+            moonlightColor * 0.5, 
+            vec3(1.), 
+            effectiveAmbientLightIntensity);
 }

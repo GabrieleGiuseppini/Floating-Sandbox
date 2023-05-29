@@ -184,7 +184,6 @@
 				+ Split shader: basic and detailed, via include-and-#define trick
 				+ Choose one shader or the other based on oceanRenderDetailMode
 		- Dark stripe issue
-		= Tried using shift on the flame tool, game instantly crashed
 		- Test all 6 shaders
 		- Test on Dell
 		- Merge
@@ -200,9 +199,9 @@
 					+ init, also load NDC coords
 					+ Verify clears depth buffer
 				= Move RenderContext::ApplyClearColorChanges to WorldRenderContext, and refactor as:
-					= ApplyEffectiveAmbientLightIntensityChanges():
+					+ ApplyEffectiveAmbientLightIntensityChanges():
 						+ RecalculateClearCanvasColor()
-						- Set ambient light intensity in sky shader
+						+ Set ambient light intensity in sky shader
 						+ ...anything else as now
 					= ApplySkyChanges():
 						+ RecalculateClearCanvasColor()
@@ -216,6 +215,7 @@
 						+ Calculate and set moonlight_color shader param value (black vs. moonlight_color) @ all world shaders (above)
 					- Ship:
 						- ""
+					- ...and all shaders on which we do ambient light modulation
 			= rgbColor MoonlightColor
 				! For all shaders including sky (which will use it only if it's doing crepuscolar gradient)
 				+ Dirty sky render parameters
@@ -234,15 +234,23 @@
 							- Sky
 					- Ship:
 						- ""
-			- bool "doCrepuscolarGradient"
-				- Just for sky shader
-				- TODO
-			- rgbColor "CrepuscolarColor"
-				- Just for sky shader
-				- TODO
-			- ocean shader might need to swap depth darkening and ambient darkening, so that depth darkening takes place on moonlight
+					- ...and all shaders on which we do ambient light modulation
+			+ bool "doCrepuscolarGradient"
+				+ Just for sky shader - either shader or glClear
+			+ rgbColor "CrepuscolarColor"
+				+ Just for sky shader
+			+ ocean shader might need to swap depth darkening and ambient darkening, so that depth darkening takes place on moonlight
+			- Move moonlight multipliers into shaders
+				+ Ocean: helper in ocean.glslinc					
+				- Sky
+					- Double-check current multiplier used (0.5)
+				- Clouds
+				- Remove 0.5 in code
+				- See if dithering really needed in fishes
 
 	- Chainsaw sound still on when tool sounds are muted?
+
+	- Black glass
 
 	- Combustion ignition: try starting with advanced development when much temperature delta wrt ignition
 		- So that explosion generates sudden, large flames

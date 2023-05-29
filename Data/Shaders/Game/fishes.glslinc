@@ -50,7 +50,7 @@ void main()
 
 #define in varying
 
-#include "ocean_surface.glslinc"
+#include "ocean.glslinc"
 
 // Inputs from previous shader
 in vec2 vertexTextureCoordinates;
@@ -193,7 +193,8 @@ void main()
 #endif
 
     // Apply depth darkening
-    fishSample.xyz = ApplyDepthDarkening(
+    // TODO: dither really needed ?
+    fishSample.xyz = ApplyDepthDarkeningWithDither(
         fishSample.xyz,
         vec3(0.0),
         worldY,

@@ -23,7 +23,7 @@ void main()
 
 #define in varying
 
-#include "ocean_surface.glslinc"
+#include "ocean.glslinc"
 
 // Inputs from previous shader
 in vec3 textureCoord;

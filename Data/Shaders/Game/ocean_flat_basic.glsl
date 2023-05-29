@@ -7,23 +7,10 @@
 in vec3 inOceanBasic;	// Position (vec2), IGNORED (float)
 
 // Parameters
-uniform float paramEffectiveAmbientLightIntensity;
-uniform vec3 paramMoonlightColor;
-uniform float paramOceanTransparency;
-uniform vec3 paramOceanFlatColor;
 uniform mat4 paramOrthoMatrix;
-
-// Outputs
-out vec4 oceanColor;
 
 void main()
 {
-    // Calculate color
-    oceanColor = vec4(paramOceanFlatColor.xyz, 1.0 - paramOceanTransparency);
-
-    // Apply ambient light
-    oceanColor.xyz = oceanColor.xyz * mix(paramMoonlightColor, vec3(1.), paramEffectiveAmbientLightIntensity);
-
     // Calculate position
     gl_Position = paramOrthoMatrix * vec4(inOceanBasic.xy, -1.0, 1.0);
 }
@@ -31,12 +18,19 @@ void main()
 
 ###FRAGMENT-120
 
+#include "ocean.glslinc"
+
 #define in varying
 
-// Inputs from previous shader
-in vec4 oceanColor;
+// Parameters
+uniform float paramEffectiveAmbientLightIntensity;
+uniform vec3 paramMoonlightColor;
+uniform float paramOceanTransparency;
+uniform vec3 paramOceanFlatColor;
 
 void main()
 {
-    gl_FragColor = oceanColor;
+    gl_FragColor = vec4(
+        ApplyAmbientLight(paramOceanFlatColor, paramMoonlightColor, paramEffectiveAmbientLightIntensity),
+        1.0 - paramOceanTransparency);
 } 

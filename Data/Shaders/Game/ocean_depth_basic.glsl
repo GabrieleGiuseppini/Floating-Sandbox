@@ -23,7 +23,7 @@ void main()
 
 #define in varying
 
-#include "ocean_surface.glslinc"
+#include "ocean.glslinc"
 
 // Inputs from previous shader
 in float oceanWorldY;
@@ -40,7 +40,7 @@ uniform float paramOceanDarkeningRate;
 
 void main()
 {
-    vec3 oceanColor = ApplyDepthDarkening(
+    vec3 oceanColor = ApplyDepthDarkeningWithDither(
         paramOceanDepthColorStart,
         paramOceanDepthColorEnd,
         oceanWorldY,
