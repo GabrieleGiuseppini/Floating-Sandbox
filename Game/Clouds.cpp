@@ -29,8 +29,8 @@ static size_t constexpr ShadowBufferSize = 64 * 3;
 // cloud X [-1.5, 1.5] -> index, or width of an element
 static float constexpr ShadowBufferDx = CloudSpaceWidth / static_cast<float>(ShadowBufferSize);
 
-// The thickness of the shadow edges, in buffer elements
-static register_int constexpr ShadowEdgeHalfThicknessElementCount = 1;
+// The thickness of half of the shadow edges, in buffer elements
+static int constexpr ShadowEdgeHalfThicknessElementCount = 1;
 
 
 Clouds::Clouds()
@@ -306,7 +306,7 @@ void Clouds::UpdateShadows(std::vector<std::unique_ptr<Cloud>> const & clouds)
     for (auto const & c : clouds)
     {
         float const cloudSize = BaseCloudSize * c->Scale;
-        register_int const ClouseSizeElementCount = static_cast<register_int>(std::round(cloudSize / ShadowBufferDx));
+        int const CloudSizeElementCount = static_cast<int>(std::round(cloudSize / ShadowBufferDx));
 
         float const leftEdgeX = c->X - cloudSize / 2.0f;
 
@@ -314,8 +314,9 @@ void Clouds::UpdateShadows(std::vector<std::unique_ptr<Cloud>> const & clouds)
         float const leftEdgeIndexF = (leftEdgeX + CloudSpaceWidth / 2.0f) / ShadowBufferDx;
 
         // Integral part
-        register_int const leftEdgeIndexI = FastTruncateToArchInt(leftEdgeIndexF);
-        assert(leftEdgeIndexI < static_cast<register_int>(ShadowBufferSize));
+        // Note: leftEdgeIndexF might be negative now, and we want I(-7.6)==-8 (because of left-right interpolation)
+        int const leftEdgeIndexI = static_cast<int>(std::floor(leftEdgeIndexF));
+        assert(leftEdgeIndexI < static_cast<int>(ShadowBufferSize));
 
         // Fractional part within sample index and the next sample index
         float const sampleIndexDx = leftEdgeIndexF - leftEdgeIndexI;
@@ -336,12 +337,14 @@ void Clouds::UpdateShadows(std::vector<std::unique_ptr<Cloud>> const & clouds)
         float const fullP1Coeff = 1.0f - (1.0f - FullShadow) * sampleIndexDx / 2.0f;
 
         // Edge indices
-        register_int const iLeftEdgeLeft = Clamp(leftEdgeIndexI - ShadowEdgeHalfThicknessElementCount, register_int(1), static_cast<register_int>(ShadowBufferSize - 2));
-        register_int const iLeftEdgeRight = Clamp(leftEdgeIndexI + ShadowEdgeHalfThicknessElementCount, register_int(1), static_cast<register_int>(ShadowBufferSize - 2));
-        register_int const iRightEdgeLeft = Clamp(leftEdgeIndexI + ClouseSizeElementCount - ShadowEdgeHalfThicknessElementCount, register_int(1), static_cast<register_int>(ShadowBufferSize - 2));
-        register_int const iRightEdgeRight = Clamp(leftEdgeIndexI + ClouseSizeElementCount + ShadowEdgeHalfThicknessElementCount, register_int(1), static_cast<register_int>(ShadowBufferSize - 2));
-        
-        register_int i;
+        int const iLeftEdgeLeft = Clamp(leftEdgeIndexI - ShadowEdgeHalfThicknessElementCount, int(1), static_cast<int>(ShadowBufferSize - 2));
+        int const iLeftEdgeRight = Clamp(leftEdgeIndexI + ShadowEdgeHalfThicknessElementCount, int(1), static_cast<int>(ShadowBufferSize - 2));
+        int const iRightEdgeLeft = Clamp(leftEdgeIndexI + CloudSizeElementCount - ShadowEdgeHalfThicknessElementCount, int(1), static_cast<int>(ShadowBufferSize - 2));
+        int const iRightEdgeRight = Clamp(leftEdgeIndexI + CloudSizeElementCount + ShadowEdgeHalfThicknessElementCount, int(1), static_cast<int>(ShadowBufferSize - 2));
+        assert(edgeN1Coeff <= 1.0f && edgeZCoeff <= 1.0f && edgeP1Coeff <= 1.0f);
+        assert(fullN1Coeff <= 1.0f && fullZCoeff <= 1.0f && fullP1Coeff <= 1.0f);
+
+        int i;
 
         // Left edge
         for (i = iLeftEdgeLeft; i < iLeftEdgeRight; ++i)

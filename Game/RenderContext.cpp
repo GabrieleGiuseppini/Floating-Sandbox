@@ -532,7 +532,7 @@ void RenderContext::Draw()
             //
 
             {
-                mWorldRenderContext->RenderDrawSky(renderParameters); // Acts as canvas glear
+                mWorldRenderContext->RenderDrawSky(renderParameters); // Acts as canvas clear
 
                 mWorldRenderContext->RenderDrawStars(renderParameters);
 

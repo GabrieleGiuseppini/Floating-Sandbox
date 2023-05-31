@@ -183,7 +183,11 @@
 			+ Do detailed/basic:
 				+ Split shader: basic and detailed, via include-and-#define trick
 				+ Choose one shader or the other based on oceanRenderDetailMode
-		- Dark stripe issue
+		+ Dark stripe issue
+			! Does not repro when clamping sampled shadow between 0 and 2
+			+ Double-check source values: FOUND - 2.02!!!
+				+ FastTruncateToArchInt(-0.0578765869) = 0 = > sampleIndexDX = -0.0578765869
+			+ Fix
 		- Test all 6 shaders
 		- Test on Dell
 		- Merge
