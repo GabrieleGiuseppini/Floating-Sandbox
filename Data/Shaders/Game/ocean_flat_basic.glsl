@@ -24,13 +24,13 @@ void main()
 
 // Parameters
 uniform float paramEffectiveAmbientLightIntensity;
-uniform vec3 paramMoonlightColor;
+uniform vec3 paramEffectiveMoonlightColor;
 uniform float paramOceanTransparency;
 uniform vec3 paramOceanFlatColor;
 
 void main()
 {
     gl_FragColor = vec4(
-        ApplyAmbientLight(paramOceanFlatColor, paramMoonlightColor, paramEffectiveAmbientLightIntensity),
+        ApplyAmbientLight(paramOceanFlatColor, paramEffectiveMoonlightColor, paramEffectiveAmbientLightIntensity),
         1.0 - paramOceanTransparency);
 } 

@@ -29,8 +29,7 @@ struct RenderParameters
     //
 
     rgbColor FlatSkyColor;
-    bool DoMoonlight;
-    rgbColor MoonlightColor;
+    rgbColor EffectiveMoonlightColor; // Calculated
     bool DoCrepuscularGradient;
     rgbColor CrepuscularColor;
 

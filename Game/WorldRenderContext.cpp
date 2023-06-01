@@ -1794,9 +1794,7 @@ void WorldRenderContext::ApplySkyChanges(RenderParameters const & renderParamete
 
     // Set parameters in all programs
 
-    vec3f const effectiveMoonlightColor = renderParameters.DoMoonlight
-        ? renderParameters.MoonlightColor.toVec3f()
-        : vec3f::zero();
+    vec3f const effectiveMoonlightColor = renderParameters.EffectiveMoonlightColor.toVec3f();
 
 
     mShaderManager.ActivateProgram<ProgramType::Sky>();
@@ -1807,28 +1805,50 @@ void WorldRenderContext::ApplySkyChanges(RenderParameters const & renderParamete
     mShaderManager.SetProgramParameter<ProgramType::Sky, ProgramParameterType::FlatSkyColor>(
         renderParameters.FlatSkyColor.toVec3f());
 
-    mShaderManager.SetProgramParameter<ProgramType::Sky, ProgramParameterType::MoonlightColor>(
+    mShaderManager.SetProgramParameter<ProgramType::Sky, ProgramParameterType::EffectiveMoonlightColor>(
         effectiveMoonlightColor);
 
 
     mShaderManager.ActivateProgram<ProgramType::Clouds>();
-    mShaderManager.SetProgramParameter<ProgramType::Clouds, ProgramParameterType::MoonlightColor>(
+    mShaderManager.SetProgramParameter<ProgramType::Clouds, ProgramParameterType::EffectiveMoonlightColor>(
         effectiveMoonlightColor);
 
 
     mShaderManager.ActivateProgram<ProgramType::OceanFlatBasic>();
-    mShaderManager.SetProgramParameter<ProgramType::OceanFlatBasic, ProgramParameterType::MoonlightColor>(
+    mShaderManager.SetProgramParameter<ProgramType::OceanFlatBasic, ProgramParameterType::EffectiveMoonlightColor>(
         effectiveMoonlightColor);
 
     mShaderManager.ActivateProgram<ProgramType::OceanFlatDetailedBackground>();
-    mShaderManager.SetProgramParameter<ProgramType::OceanFlatDetailedBackground, ProgramParameterType::MoonlightColor>(
+    mShaderManager.SetProgramParameter<ProgramType::OceanFlatDetailedBackground, ProgramParameterType::EffectiveMoonlightColor>(
         effectiveMoonlightColor);
 
     mShaderManager.ActivateProgram<ProgramType::OceanFlatDetailedForeground>();
-    mShaderManager.SetProgramParameter<ProgramType::OceanFlatDetailedForeground, ProgramParameterType::MoonlightColor>(
+    mShaderManager.SetProgramParameter<ProgramType::OceanFlatDetailedForeground, ProgramParameterType::EffectiveMoonlightColor>(
         effectiveMoonlightColor);
 
-    // TODOHERE: other ocean's
+    mShaderManager.ActivateProgram<ProgramType::OceanDepthBasic>();
+    mShaderManager.SetProgramParameter<ProgramType::OceanDepthBasic, ProgramParameterType::EffectiveMoonlightColor>(
+        effectiveMoonlightColor);
+
+    mShaderManager.ActivateProgram<ProgramType::OceanDepthDetailedBackground>();
+    mShaderManager.SetProgramParameter<ProgramType::OceanDepthDetailedBackground, ProgramParameterType::EffectiveMoonlightColor>(
+        effectiveMoonlightColor);
+
+    mShaderManager.ActivateProgram<ProgramType::OceanDepthDetailedForeground>();
+    mShaderManager.SetProgramParameter<ProgramType::OceanDepthDetailedForeground, ProgramParameterType::EffectiveMoonlightColor>(
+        effectiveMoonlightColor);
+
+    mShaderManager.ActivateProgram<ProgramType::OceanTextureBasic>();
+    mShaderManager.SetProgramParameter<ProgramType::OceanTextureBasic, ProgramParameterType::EffectiveMoonlightColor>(
+        effectiveMoonlightColor);
+
+    mShaderManager.ActivateProgram<ProgramType::OceanTextureDetailedBackground>();
+    mShaderManager.SetProgramParameter<ProgramType::OceanTextureDetailedBackground, ProgramParameterType::EffectiveMoonlightColor>(
+        effectiveMoonlightColor);
+
+    mShaderManager.ActivateProgram<ProgramType::OceanTextureDetailedForeground>();
+    mShaderManager.SetProgramParameter<ProgramType::OceanTextureDetailedForeground, ProgramParameterType::EffectiveMoonlightColor>(
+        effectiveMoonlightColor);
 
     // TODOHERE: land
 }

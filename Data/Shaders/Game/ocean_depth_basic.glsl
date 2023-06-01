@@ -33,6 +33,7 @@ uniform sampler2D paramNoiseTexture;
 
 // Parameters
 uniform float paramEffectiveAmbientLightIntensity;
+uniform vec3 paramEffectiveMoonlightColor;
 uniform float paramOceanTransparency;
 uniform vec3 paramOceanDepthColorStart;
 uniform vec3 paramOceanDepthColorEnd;
@@ -40,6 +41,7 @@ uniform float paramOceanDarkeningRate;
 
 void main()
 {
+    // Do depth gradient
     vec3 oceanColor = ApplyDepthDarkeningWithDither(
         paramOceanDepthColorStart,
         paramOceanDepthColorEnd,
@@ -48,5 +50,8 @@ void main()
         gl_FragCoord.xy,
         paramNoiseTexture);
 
-    gl_FragColor = vec4(oceanColor.xyz * paramEffectiveAmbientLightIntensity, 1.0 - paramOceanTransparency);
+    // Apply ambient light
+    oceanColor = ApplyAmbientLight(oceanColor, paramEffectiveMoonlightColor, paramEffectiveAmbientLightIntensity);
+
+    gl_FragColor = vec4(oceanColor, 1.0 - paramOceanTransparency);
 } 

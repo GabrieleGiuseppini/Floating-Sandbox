@@ -203,23 +203,33 @@ public:
 
     bool GetDoMoonlight() const
     {
-        return mRenderParameters.DoMoonlight;
+        return mDoMoonlight;
     }
 
     void SetDoMoonlight(bool value)
     {
-        mRenderParameters.DoMoonlight = value;
+        mDoMoonlight = value;
+
+        // Re-calculate effective moonlight color
+        mRenderParameters.EffectiveMoonlightColor = CalculateEffectiveMoonlightColor(
+            mMoonlightColor,
+            mDoMoonlight);
         mRenderParameters.IsSkyDirty = true;
     }
 
     rgbColor const & GetMoonlightColor() const
     {
-        return mRenderParameters.MoonlightColor;
+        return mMoonlightColor;
     }
 
     void SetMoonlightColor(rgbColor const & color)
     {
-        mRenderParameters.MoonlightColor = color;
+        mMoonlightColor = color;
+
+        // Re-calculate effective moonlight color
+        mRenderParameters.EffectiveMoonlightColor = CalculateEffectiveMoonlightColor(
+            mMoonlightColor,
+            mDoMoonlight);
         mRenderParameters.IsSkyDirty = true;
     }
 
@@ -1114,6 +1124,10 @@ private:
         float ambientLightIntensity,
         float stormAmbientDarkening);
 
+    static rgbColor CalculateEffectiveMoonlightColor(
+        rgbColor moonlightColor,
+        bool doMoonlight);
+
     vec3f CalculateShipWaterColor() const;
 
 private:
@@ -1158,7 +1172,9 @@ private:
     // in other contexts to control upload's)
     //
 
-    float mAmbientLightIntensity;
+    float mAmbientLightIntensity; // Combined with real-time stork darkening to make EffectiveAmbientLightIntensity
+    rgbColor mMoonlightColor; // Combined with below to make EffectiveMoonlightColor
+    bool mDoMoonlight; // Combined with above to make EffectiveMoonlightColor
     float mShipFlameSizeAdjustment;
     rgbColor mShipDefaultWaterColor;
     VectorFieldRenderModeType mVectorFieldRenderMode;

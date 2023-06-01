@@ -45,6 +45,7 @@ uniform sampler1D paramSharedTexture;
 
 // Parameters
 uniform float paramEffectiveAmbientLightIntensity;
+uniform vec3 paramEffectiveMoonlightColor;
 uniform float paramOceanTransparency;
 uniform vec3 paramOceanDepthColorStart;
 uniform vec3 paramOceanDepthColorEnd;
@@ -53,6 +54,7 @@ uniform float paramSunRaysInclination; // 0.0==vertical, 1.0/-1.0==45/-45 degree
 
 void main()
 {
+    // Do depth gradient
     vec3 depthColor = ApplyDepthDarkeningWithDither(
         paramOceanDepthColorStart,
         paramOceanDepthColorEnd,
@@ -70,14 +72,14 @@ void main()
         paramNoiseTexture);
     // Adjust shadow's dynamic range: [0.0, 1.0, 2.0] -> [0.0, 1.0, 1.4]
     shadowFactor = 1.3 * shadowFactor - 0.3 * shadowFactor * shadowFactor;
-    vec4 color = vec4(depthColor * shadowFactor, (1.0 - paramOceanTransparency));
+    depthColor = depthColor * shadowFactor;
+
+    // Apply ambient light
+    depthColor = ApplyAmbientLight(depthColor, paramEffectiveMoonlightColor, paramEffectiveAmbientLightIntensity);
 
     // Apply detail
-    color = CalculateDetailedOceanPlaneColor(
-        color,
+    gl_FragColor = CalculateDetailedOceanPlaneColor(
+        vec4(depthColor, (1.0 - paramOceanTransparency)),
         yWorld,
         yVectorWorld);
-
-    // Combine
-    gl_FragColor = vec4(color.xyz * paramEffectiveAmbientLightIntensity, color.w);
 }

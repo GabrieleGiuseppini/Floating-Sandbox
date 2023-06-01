@@ -14,8 +14,7 @@ RenderParameters::RenderParameters(
 	, EffectiveAmbientLightIntensity(1.0f) // Calculated
 	// World
 	, FlatSkyColor(0x00, 0x77, 0xc4)
-	, DoMoonlight(true)
-	, MoonlightColor(0x17, 0x3d, 0x5b)
+	, EffectiveMoonlightColor(0x00, 0x00, 0x00) // Calculated
 	, DoCrepuscularGradient(true)
 	, CrepuscularColor (0xe5, 0xd3, 0xe5)
 	, OceanTransparency(0.8125f)

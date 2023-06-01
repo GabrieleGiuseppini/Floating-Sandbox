@@ -33,6 +33,7 @@ uniform sampler2D paramOceanTexture;
 
 // Parameters        
 uniform float paramEffectiveAmbientLightIntensity;
+uniform vec3 paramEffectiveMoonlightColor;
 uniform float paramOceanTransparency;
 uniform vec2 paramTextureScaling;
 uniform float paramOceanDarkeningRate;
@@ -44,6 +45,9 @@ void main()
     vec2 textureCoord2 = vec2(textureCoord.x, textureCoord.z + sampleIncrement);
     vec4 textureColor = texture2D(paramOceanTexture, textureCoord2 * paramTextureScaling);
 
+    // Apply ambient light
+    textureColor.xyz = ApplyAmbientLight(textureColor.xyz, paramEffectiveMoonlightColor, paramEffectiveAmbientLightIntensity);
+
     // Apply depth darkening
     textureColor.xyz = ApplyDepthDarkening(
         textureColor.xyz,
@@ -54,5 +58,5 @@ void main()
     // Lighten the top of the water
     textureColor *= 1.0 + (1.0 - smoothstep(0.0, 1.0, textureCoord.z)) * 0.1;
 
-    gl_FragColor = vec4(textureColor.xyz * paramEffectiveAmbientLightIntensity, 1.0 - paramOceanTransparency);
+    gl_FragColor = vec4(textureColor.xyz, textureColor.w * (1.0 - paramOceanTransparency));
 } 

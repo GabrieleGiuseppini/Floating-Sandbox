@@ -42,15 +42,15 @@ uniform sampler2D paramCloudsAtlasTexture;
 
 // Parameters        
 uniform float paramEffectiveAmbientLightIntensity;
-uniform vec3 paramMoonlightColor;
+uniform vec3 paramEffectiveMoonlightColor;
 
 void main()
 {
     // Sample texture
     vec4 textureColor = texture2D(paramCloudsAtlasTexture, texturePos);
 
-    // Adjust for ambient light and mooncolor
-    vec3 cloudColor = textureColor.xyz * mix(paramMoonlightColor, vec3(1.), paramEffectiveAmbientLightIntensity) * darkness;
+    // Adjust for ambient light and mooncolor and (storm) darkness
+    vec3 cloudColor = textureColor.xyz * mix(paramEffectiveMoonlightColor, vec3(1.), paramEffectiveAmbientLightIntensity) * darkness;
 
     // Sample alpha
     vec2 alphaMaskTexturePos = textureCenterPos + (texturePos - textureCenterPos) * growthProgress;

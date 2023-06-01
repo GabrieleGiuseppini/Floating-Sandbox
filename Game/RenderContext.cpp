@@ -70,6 +70,8 @@ RenderContext::RenderContext(
     , mNotificationRenderContext()
     // Non-render parameters
     , mAmbientLightIntensity(1.0f)
+    , mMoonlightColor(0x17, 0x3d, 0x5b)
+    , mDoMoonlight(true)
     , mShipFlameSizeAdjustment(1.0f)
     , mShipDefaultWaterColor(0x00, 0x00, 0xcc)
     , mVectorFieldRenderMode(VectorFieldRenderModeType::None)
@@ -228,6 +230,8 @@ RenderContext::RenderContext(
             //
 
             SetAmbientLightIntensity(mAmbientLightIntensity);
+            SetMoonlightColor(mMoonlightColor);
+            SetDoMoonlight(mDoMoonlight);
             SetShipDefaultWaterColor(mShipDefaultWaterColor);
 
 
@@ -652,6 +656,15 @@ float RenderContext::CalculateEffectiveAmbientLightIntensity(
     float stormAmbientDarkening)
 {
     return ambientLightIntensity * stormAmbientDarkening;
+}
+
+rgbColor RenderContext::CalculateEffectiveMoonlightColor(
+    rgbColor moonlightColor,
+    bool doMoonlight)
+{
+    return doMoonlight
+        ? moonlightColor
+        : rgbColor::zero();
 }
 
 vec3f RenderContext::CalculateShipWaterColor() const

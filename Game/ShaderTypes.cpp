@@ -397,6 +397,8 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::CrepuscularColor;
     else if (str == "EffectiveAmbientLightIntensity")
         return ProgramParameterType::EffectiveAmbientLightIntensity;
+    else if (str == "EffectiveMoonlightColor")
+        return ProgramParameterType::EffectiveMoonlightColor;
     else if (str == "FlameProgress")
         return ProgramParameterType::FlameProgress;
     else if (str == "FlatSkyColor")
@@ -409,8 +411,6 @@ ProgramParameterType StrToProgramParameterType(std::string const & str)
         return ProgramParameterType::LandFlatColor;
     else if (str == "MatteColor")
         return ProgramParameterType::MatteColor;
-    else if (str == "MoonlightColor")
-        return ProgramParameterType::MoonlightColor;
     else if (str == "OceanTransparency")
         return ProgramParameterType::OceanTransparency;
     else if (str == "OceanDarkeningRate")
@@ -488,6 +488,8 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
         return "CrepuscularColor";
     case ProgramParameterType::EffectiveAmbientLightIntensity:
         return "EffectiveAmbientLightIntensity";
+    case ProgramParameterType::EffectiveMoonlightColor:
+        return "EffectiveMoonlightColor";
     case ProgramParameterType::FlameProgress:
         return "FlameProgress";
     case ProgramParameterType::FlatSkyColor:
@@ -500,8 +502,6 @@ std::string ProgramParameterTypeToStr(ProgramParameterType programParameter)
         return "LandFlatColor";
     case ProgramParameterType::MatteColor:
         return "MatteColor";
-    case ProgramParameterType::MoonlightColor:
-        return "MoonlightColor";
     case ProgramParameterType::OceanTransparency:
         return "OceanTransparency";
     case ProgramParameterType::OceanDarkeningRate:
