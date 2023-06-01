@@ -1850,6 +1850,15 @@ void WorldRenderContext::ApplySkyChanges(RenderParameters const & renderParamete
     mShaderManager.SetProgramParameter<ProgramType::OceanTextureDetailedForeground, ProgramParameterType::EffectiveMoonlightColor>(
         effectiveMoonlightColor);
 
+
+    mShaderManager.ActivateProgram<ProgramType::LandFlat>();
+    mShaderManager.SetProgramParameter<ProgramType::LandFlat, ProgramParameterType::EffectiveMoonlightColor>(
+        effectiveMoonlightColor);
+
+    mShaderManager.ActivateProgram<ProgramType::LandTexture>();
+    mShaderManager.SetProgramParameter<ProgramType::LandTexture, ProgramParameterType::EffectiveMoonlightColor>(
+        effectiveMoonlightColor);
+
     // TODOHERE: land
 }
 
@@ -1858,6 +1867,10 @@ void WorldRenderContext::ApplyOceanDarkeningRateChanges(RenderParameters const &
     // Set parameter in all programs
 
     float const rate = renderParameters.OceanDarkeningRate / 50.0f;
+
+    mShaderManager.ActivateProgram<ProgramType::LandFlat>();
+    mShaderManager.SetProgramParameter<ProgramType::LandFlat, ProgramParameterType::OceanDarkeningRate>(
+        rate);
 
     mShaderManager.ActivateProgram<ProgramType::LandTexture>();
     mShaderManager.SetProgramParameter<ProgramType::LandTexture, ProgramParameterType::OceanDarkeningRate>(

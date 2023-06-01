@@ -210,14 +210,14 @@
 					= ApplySkyChanges():
 						+ RecalculateClearCanvasColor()
 						+ Set moonlight_color shader param value (black vs. moonlight_color) and crepuscolar color in sky shader
-						= Set moonlight_color shader param value (black vs. moonlight_color) in all world shaders
+						= Set moonlight_color shader param value (black vs. moonlight_color) in all other shaders
 			= bool "DoMoonlight", MoonlightColor
 				! For all shaders except sky
 				+ Dirty sky render parameters
 				+ Do like EffectiveAmbientLightIntensity: calculate EffectiveMoonlightColor @ RenderContext, and _that_ is what's in RenderParameters and seen by all other contexts
 				= Used by:
 					+ World:
-						+ Calculate and set moonlight_color shader param value (black vs. moonlight_color) @ all world shaders (above)
+						+ Sky
 						+ Clouds
 						+ Ocean
 							+ flat basic
@@ -226,12 +226,12 @@
 							+ depth detailed
 							+ texture basic
 							+ texture detailed
-						- Land
-						- Sky
+						+ Land
+						- Fish: might want to keep it as-is (no moonlight) as pitch-black fish in the night are cool
 					- Ship:
 						- ""
 					- ...and all shaders on which we do ambient light modulation
-						- Fishes: might want to keep it as-is (no moonlight) as pitch-black fish in the night are cool
+						
 			+ bool "doCrepuscolarGradient"
 				+ Just for sky shader - either shader or glClear
 			+ rgbColor "CrepuscolarColor"

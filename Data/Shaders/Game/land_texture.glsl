@@ -21,6 +21,8 @@ void main()
 
 ###FRAGMENT-120
 
+#include "land.glslinc"
+
 #define in varying
 
 // Inputs from previous shader
@@ -31,6 +33,7 @@ uniform sampler2D paramLandTexture;
 
 // Parameters        
 uniform float paramEffectiveAmbientLightIntensity;
+uniform vec3 paramEffectiveMoonlightColor;
 uniform vec2 paramTextureScaling;
 uniform float paramOceanDarkeningRate;
 
@@ -39,15 +42,20 @@ void main()
     // Back-sample 10.0 at top, slowly going to zero
     float sampleIncrement = -10.0 * (2.0 - 2.0 * smoothstep(-3.0, 3.0, textureCoord.z));
     vec2 textureCoord2 = vec2(textureCoord.x, -textureCoord.y + sampleIncrement);
+    vec4 textureColor = texture2D(paramLandTexture, textureCoord2 * paramTextureScaling);
 
-    float darkMix = 1.0 - exp(min(0.0, textureCoord.y) * paramOceanDarkeningRate); // Darkening is based on world Y (more negative Y, more dark)
-    vec4 textureColor = mix(
-        texture2D(paramLandTexture, textureCoord2 * paramTextureScaling), 
-        vec4(0,0,0,0), 
-        pow(darkMix, 3.0));
+    // Apply depth darkening
+    textureColor.xyz = ApplyDepthDarkening(
+        textureColor.xyz,
+        vec3(0.),
+        textureCoord.y,
+        paramOceanDarkeningRate);
 
     // Anti-aliasing
     float alpha = textureCoord.z / (0.2 + abs(dFdx(textureCoord.z)));
 
-    gl_FragColor = vec4(textureColor.xyz * paramEffectiveAmbientLightIntensity, alpha);
+    // Apply ambient light and blend
+    gl_FragColor = vec4(
+        ApplyAmbientLight(textureColor.xyz, paramEffectiveMoonlightColor, paramEffectiveAmbientLightIntensity),
+        textureColor.w * alpha);
 } 

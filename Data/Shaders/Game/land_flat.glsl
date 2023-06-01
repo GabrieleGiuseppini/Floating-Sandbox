@@ -7,17 +7,14 @@
 in vec2 inLand; // Position
 
 // Parameters
-uniform float paramEffectiveAmbientLightIntensity;
-uniform vec3 paramLandFlatColor;
 uniform mat4 paramOrthoMatrix;
 
 // Outputs
-out vec4 landColor;
+out float yWorld;
 
 void main()
 {
-    // Calculate color
-    landColor = vec4(paramLandFlatColor * paramEffectiveAmbientLightIntensity, 1.0);
+    yWorld = inLand.y;
 
     // Calculate position
     gl_Position = paramOrthoMatrix * vec4(inLand.xy, -1.0, 1.0);
@@ -25,12 +22,30 @@ void main()
 
 ###FRAGMENT-120
 
+#include "land.glslinc"
+
 #define in varying
 
 // Inputs from previous shader
-in vec4 landColor;
+in float yWorld;
+
+// Parameters        
+uniform float paramEffectiveAmbientLightIntensity;
+uniform vec3 paramEffectiveMoonlightColor;
+uniform vec3 paramLandFlatColor;
+uniform float paramOceanDarkeningRate;
 
 void main()
 {
-    gl_FragColor = landColor;
+    // Apply depth darkening
+    vec3 color = ApplyDepthDarkening(
+        paramLandFlatColor,
+        vec3(0.),
+        yWorld,
+        paramOceanDarkeningRate);
+
+    // Apply ambient light
+    gl_FragColor = vec4(
+        ApplyAmbientLight(color, paramEffectiveMoonlightColor, paramEffectiveAmbientLightIntensity),
+        1.0);
 } 

@@ -1,0 +1,25 @@
+vec3 ApplyDepthDarkening(
+    vec3 startColor,
+    vec3 endColor,
+    float yWorld,
+    float darkeningRate)
+{
+    float darkMix = 1.0 - exp(min(0.0, yWorld) * darkeningRate); // Darkening is based on world Y (more negative Y, more dark)
+    return mix(
+        startColor,
+        endColor,
+        darkMix * darkMix * darkMix);
+}
+
+vec3 ApplyAmbientLight(
+    vec3 baseColor,
+    vec3 moonlightColor,
+    float effectiveAmbientLightIntensity)
+{
+    return 
+        baseColor 
+        * mix(
+            moonlightColor * 0.5, 
+            vec3(1.), 
+            effectiveAmbientLightIntensity);
+}
