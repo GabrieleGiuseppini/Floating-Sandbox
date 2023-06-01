@@ -227,6 +227,7 @@
 							+ texture basic
 							+ texture detailed
 						+ Land
+						+ Rain
 						- Fish: might want to keep it as-is (no moonlight) as pitch-black fish in the night are cool
 					- Ship:
 						- ""

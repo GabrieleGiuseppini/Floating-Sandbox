@@ -1859,7 +1859,10 @@ void WorldRenderContext::ApplySkyChanges(RenderParameters const & renderParamete
     mShaderManager.SetProgramParameter<ProgramType::LandTexture, ProgramParameterType::EffectiveMoonlightColor>(
         effectiveMoonlightColor);
 
-    // TODOHERE: land
+
+    mShaderManager.ActivateProgram<ProgramType::Rain>();
+    mShaderManager.SetProgramParameter<ProgramType::Rain, ProgramParameterType::EffectiveMoonlightColor>(
+        effectiveMoonlightColor);
 }
 
 void WorldRenderContext::ApplyOceanDarkeningRateChanges(RenderParameters const & renderParameters)

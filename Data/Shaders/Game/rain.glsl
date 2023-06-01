@@ -29,6 +29,7 @@ in vec2 uv;
 
 // Parameters        
 uniform float paramEffectiveAmbientLightIntensity;
+uniform vec3 paramEffectiveMoonlightColor;
 uniform float paramRainAngle;
 uniform float paramRainDensity;
 uniform float paramTime;
@@ -70,10 +71,14 @@ void main()
     
     vec2 st = 256. * (uvScaled * vec2(.5, .01) + timeVector + directionVector);
     
-    # define LUMINANCE 1.94 // The higher, the whiter
-    float alpha = noise(st) * noise(st * 0.773) * 0.485 * paramEffectiveAmbientLightIntensity;
+    float alpha = noise(st) * noise(st * 0.773) * 0.485;
     alpha = clamp(alpha, 0.0, 1.0) * step(1. - (.7 + paramRainDensity * .3), alpha);
-    vec3 col = vec3(1. - alpha);
+    vec3 col = 
+        vec3(1. - alpha)
+        * mix(
+            paramEffectiveMoonlightColor * 0.75, 
+            vec3(1.), 
+            paramEffectiveAmbientLightIntensity);
 
     //
     // ---------------------------------------------
