@@ -285,18 +285,22 @@
 	- Nuke default_ship.shp2 and make Titanic's filename in code
 		- So users don't see two Titanic's
 
+	- Optimizations integration:
+		- Benchmarks
+		- ThreadManager and ThreadPool
+			- Extra ports from SpringLab:
+				- TaskThreadPool, because of:
+					- Pointers to tasks
+		- SpringLab: non-intrinsics implementation (for benchmarking and experimenting)
+		- Layout optimization at ShipFactory - up to passing to Ship
+		- TODOHERE
+
 
 	- Greyscaling (of texture and particles) before Thanos snap, and mass changes (lighter), and different phasing of ashing in band
 		- Phasing: each particle randomly pulverizes, but towards band end prob is 100%
 		- Try with decay
 			- Make sure we only upload decay when we mark a dirty flag
 	
-
-
-	- Extra ports from SpringLab:
-		- TaskThreadPool, because of:
-			- Pointers to tasks
-
 	- Release:
 		- Localization (yes, it's dirty)
 
