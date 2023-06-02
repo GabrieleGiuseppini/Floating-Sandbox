@@ -196,82 +196,82 @@
 
 	= Night light
 		! Blue-ish, just like sun, but dimmer and blue
-		= Spec:
-			= Sky rendering step @ World
+		+ Spec:
+			+ Sky rendering step @ World
 				+ First in Draw, takes place of cleaning
 				+ Uses shader if doCrepuscolarGradient (incl. z), and glClear otherwise
 					+ init, also load NDC coords
 					+ Verify clears depth buffer
-				= Move RenderContext::ApplyClearColorChanges to WorldRenderContext, and refactor as:
+				+ Move RenderContext::ApplyClearColorChanges to WorldRenderContext, and refactor as:
 					+ ApplyEffectiveAmbientLightIntensityChanges():
 						+ RecalculateClearCanvasColor()
 						+ Set ambient light intensity in sky shader
 						+ ...anything else as now
-					= ApplySkyChanges():
+					+ ApplySkyChanges():
 						+ RecalculateClearCanvasColor()
 						+ Set moonlight_color shader param value (black vs. moonlight_color) and crepuscolar color in sky shader
-						= Set moonlight_color shader param value (black vs. moonlight_color) in all other shaders
-			= bool "DoMoonlight", MoonlightColor
-				! For all shaders except sky
-				+ Dirty sky render parameters
-				+ Do like EffectiveAmbientLightIntensity: calculate EffectiveMoonlightColor @ RenderContext, and _that_ is what's in RenderParameters and seen by all other contexts
-				= Used by:
-					= World:
-						+ Sky
-						+ Clouds
-						+ Ocean
-							+ flat basic
-							+ flat detailed
-							+ depth basic
-							+ depth detailed
-							+ texture basic
-							+ texture detailed
-						+ Land
-						+ Rain
-						X Fish: might want to keep it as-is (no moonlight) as pitch-black fish in the night are cool
-					= Ship:
-						+ ShipPointsColorIncandescence
-						+ ShipRopesIncandescence
-						+ ShipSpringsTextureIncandescence
-						+ ShipTrianglesTextureIncandescence
+						+ Set moonlight_color shader param value (black vs. moonlight_color) in all other shaders
+		+ bool "DoMoonlight", MoonlightColor
+			! For all shaders except sky
+			+ Dirty sky render parameters
+			+ Do like EffectiveAmbientLightIntensity: calculate EffectiveMoonlightColor @ RenderContext, and _that_ is what's in RenderParameters and seen by all other contexts
+			+ Used by:
+				+ World:
+					+ Sky
+					+ Clouds
+					+ Ocean
+						+ flat basic
+						+ flat detailed
+						+ depth basic
+						+ depth detailed
+						+ texture basic
+						+ texture detailed
+					+ Land
+					+ Rain
+					X Fish: might want to keep it as-is (no moonlight) as pitch-black fish in the night are cool
+				+ Ship:
+					+ ShipPointsColorIncandescence
+					+ ShipRopesIncandescence
+					+ ShipSpringsTextureIncandescence
+					+ ShipTrianglesTextureIncandescence
 
-						+ ShipPointsColorIncandescence + Stress
-						+ ShipRopesIncandescence + Stress
-						+ ShipSpringsTextureIncandescence + Stress
-						+ ShipTrianglesTextureIncandescence + Stress
+					+ ShipPointsColorIncandescence + Stress
+					+ ShipRopesIncandescence + Stress
+					+ ShipSpringsTextureIncandescence + Stress
+					+ ShipTrianglesTextureIncandescence + Stress
 
-						+ ShipPointsColor
-						+ ShipRopes
-						+ ShipSpringsTexture
-						+ ShipTrianglesTexture
+					+ ShipPointsColor
+					+ ShipRopes
+					+ ShipSpringsTexture
+					+ ShipTrianglesTexture
 
-						+ ShipPointsColor + Stress
-						+ ShipRopes + Stress
-						+ ShipSpringsTexture + Stress
-						+ ShipTrianglesTexture + Stress
+					+ ShipPointsColor + Stress
+					+ ShipRopes + Stress
+					+ ShipSpringsTexture + Stress
+					+ ShipTrianglesTexture + Stress
 
-						! Technically, these ones are sensitive to ambient light, but it doesn't make much sense to have moonlight for them:
-							X ShipSpringsDecay
-							X ShipSpringsInternalPressure
-							X ShipSpringsStrength
-							X ShipTrianglesDecay
-							X ShipTrianglesInternalPressure
-							X ShipTrianglesStrength
-							X All HeatOverlay variants
+					! Technically, these ones are sensitive to ambient light, but it doesn't make much sense to have moonlight for them:
+						X ShipSpringsDecay
+						X ShipSpringsInternalPressure
+						X ShipSpringsStrength
+						X ShipTrianglesDecay
+						X ShipTrianglesInternalPressure
+						X ShipTrianglesStrength
+						X All HeatOverlay variants
 
-						+ GenericMipMapTextures
-						- GenericMipMapTexturesNdc (laser)
-						
-			+ bool "doCrepuscolarGradient"
-				+ Just for sky shader - either shader or glClear
-			+ rgbColor "CrepuscolarColor"
-				+ Just for sky shader
-			+ ocean shader might need to swap depth darkening and ambient darkening, so that depth darkening takes place on moonlight
-			+ Move moonlight multipliers into shaders
-				+ Ocean: helper in ocean.glslinc					
-				+ Sky
-					+ Double-check current multiplier used (0.5)
-			- Need dithering for sky's crepuscolar gradient?
+					+ GenericMipMapTextures
+					+ GenericMipMapTexturesNdc (laser)
+					
+		+ bool "doCrepuscolarGradient"
+			+ Just for sky shader - either shader or glClear
+		+ rgbColor "CrepuscolarColor"
+			+ Just for sky shader
+		+ ocean shader might need to swap depth darkening and ambient darkening, so that depth darkening takes place on moonlight
+		+ Move moonlight multipliers into shaders
+			+ Ocean: helper in ocean.glslinc					
+			+ Sky
+				+ Double-check current multiplier used (0.5)
+		- Need dithering for sky's crepuscolar gradient?
 		- Changelist
 		- Merge to master
 

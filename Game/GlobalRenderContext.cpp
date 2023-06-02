@@ -230,6 +230,15 @@ void GlobalRenderContext::ProcessParameterChanges(RenderParameters const & rende
         mShaderManager.SetProgramParameter<ProgramType::GenericMipMappedTexturesNdc, ProgramParameterType::EffectiveAmbientLightIntensity>(
             renderParameters.EffectiveAmbientLightIntensity);
     }
+
+    if (renderParameters.IsSkyDirty)
+    {
+        vec3f const effectiveMoonlightColor = renderParameters.EffectiveMoonlightColor.toVec3f();
+
+        mShaderManager.ActivateProgram<ProgramType::GenericMipMappedTexturesNdc>();
+        mShaderManager.SetProgramParameter<ProgramType::GenericMipMappedTexturesNdc, ProgramParameterType::EffectiveMoonlightColor>(
+            effectiveMoonlightColor);
+    }
 }
 
 

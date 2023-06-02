@@ -39,16 +39,20 @@ in float vertexEffectiveAmbientLightIntensity;
 uniform sampler2D paramGenericMipMappedTexturesAtlasTexture;
 
 // Parameters        
-
+uniform vec3 paramEffectiveMoonlightColor;
 
 void main()
 {
     vec4 textureColor = texture2D(paramGenericMipMappedTexturesAtlasTexture, vertexTextureCoordinates);
 
-    //if (textureColor.w < 0.2)
-    //    discard;
+    // Apply ambient light
+    textureColor.xyz *= mix(
+        paramEffectiveMoonlightColor,
+        vec3(1.),
+        vertexEffectiveAmbientLightIntensity);
 
+    // Combine
     gl_FragColor = vec4(
-        textureColor.xyz * vertexEffectiveAmbientLightIntensity,
+        textureColor.xyz,
         textureColor.w * vertexAlpha);
 } 
