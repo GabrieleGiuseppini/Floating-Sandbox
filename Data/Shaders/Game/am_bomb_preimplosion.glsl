@@ -52,5 +52,5 @@ void main()
     
     float fadeout = 1. - smoothstep(.75, 1., vertexProgress);
         
-    gl_FragColor = vec4(204./255., 239./255., 240./255., (halo + waves) * fadeout);
+    gl_FragColor = vec4(204./255., 239./255., 240./255., (halo + waves) * fadeout * step(d, 1.0));
 }

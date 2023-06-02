@@ -2692,6 +2692,10 @@ void ShipRenderContext::ApplySkyChanges(RenderParameters const & renderParameter
             mShipTrianglesProgram,
             effectiveMoonlightColor);
     }
+
+    mShaderManager.ActivateProgram<ProgramType::ShipGenericMipMappedTextures>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipGenericMipMappedTextures, ProgramParameterType::EffectiveMoonlightColor>(
+        effectiveMoonlightColor);
 }
 
 void ShipRenderContext::ApplyFlatLampLightColorChanges(RenderParameters const & renderParameters)

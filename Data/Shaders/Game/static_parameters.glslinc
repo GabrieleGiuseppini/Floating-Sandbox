@@ -3,3 +3,6 @@
 
 #define NOISE_2_WIDTH 256
 #define NOISE_2_HEIGHT 256
+
+// After this -Y, moonlight is not visible anymore on ships
+#define SHIP_MOONLIGHT_MAX_DEPTH 1500.0

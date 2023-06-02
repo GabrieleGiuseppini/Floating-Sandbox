@@ -188,7 +188,7 @@
 			+ Double-check source values: FOUND - 2.02!!!
 				+ FastTruncateToArchInt(-0.0578765869) = 0 = > sampleIndexDX = -0.0578765869
 			+ Fix
-		- Test all 6 shaders
+		+ Test all 6 shaders
 		- Test on Dell
 		- Merge
 		- changelist
@@ -259,9 +259,8 @@
 							X ShipTrianglesStrength
 							X All HeatOverlay variants
 
-						- GenericMipMapTextures
-
-					- ...and many of the other shaders on which we do ambient light modulation
+						+ GenericMipMapTextures
+						- GenericMipMapTexturesNdc (laser)
 						
 			+ bool "doCrepuscolarGradient"
 				+ Just for sky shader - either shader or glClear
@@ -273,6 +272,8 @@
 				+ Sky
 					+ Double-check current multiplier used (0.5)
 			- Need dithering for sky's crepuscolar gradient?
+		- Changelist
+		- Merge to master
 
 	- Chainsaw sound still on when tool sounds are muted?
 

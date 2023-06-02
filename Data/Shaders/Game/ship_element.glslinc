@@ -134,9 +134,8 @@ void main()
     float effectiveAmbientLightIntensity = mix(vertexAttributes.x, 1.0, paramEffectiveAmbientLightIntensity);
 
     // Apply ambient light, with moonlight becoming darker (cheaply) with depth
-    #define MAX_DEPTH 1500
     fragColour *= mix(
-        paramEffectiveMoonlightColor * 0.7 * clamp(1.0 + vertexWorldY / MAX_DEPTH, 0.0, 1.0),
+        paramEffectiveMoonlightColor * 0.7 * clamp(1.0 + vertexWorldY / SHIP_MOONLIGHT_MAX_DEPTH, 0.0, 1.0),
         vec3(1.),
         effectiveAmbientLightIntensity);
 #endif
