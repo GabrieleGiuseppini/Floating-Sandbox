@@ -216,7 +216,7 @@
 				+ Dirty sky render parameters
 				+ Do like EffectiveAmbientLightIntensity: calculate EffectiveMoonlightColor @ RenderContext, and _that_ is what's in RenderParameters and seen by all other contexts
 				= Used by:
-					+ World:
+					= World:
 						+ Sky
 						+ Clouds
 						+ Ocean
@@ -228,10 +228,40 @@
 							+ texture detailed
 						+ Land
 						+ Rain
-						- Fish: might want to keep it as-is (no moonlight) as pitch-black fish in the night are cool
-					- Ship:
-						- ""
-					- ...and all shaders on which we do ambient light modulation
+						X Fish: might want to keep it as-is (no moonlight) as pitch-black fish in the night are cool
+					= Ship:
+						+ ShipPointsColorIncandescence
+						+ ShipRopesIncandescence
+						+ ShipSpringsTextureIncandescence
+						+ ShipTrianglesTextureIncandescence
+
+						+ ShipPointsColorIncandescence + Stress
+						+ ShipRopesIncandescence + Stress
+						+ ShipSpringsTextureIncandescence + Stress
+						+ ShipTrianglesTextureIncandescence + Stress
+
+						+ ShipPointsColor
+						+ ShipRopes
+						+ ShipSpringsTexture
+						+ ShipTrianglesTexture
+
+						+ ShipPointsColor + Stress
+						+ ShipRopes + Stress
+						+ ShipSpringsTexture + Stress
+						+ ShipTrianglesTexture + Stress
+
+						! Technically, these ones are sensitive to ambient light, but it doesn't make much sense to have moonlight for them:
+							X ShipSpringsDecay
+							X ShipSpringsInternalPressure
+							X ShipSpringsStrength
+							X ShipTrianglesDecay
+							X ShipTrianglesInternalPressure
+							X ShipTrianglesStrength
+							X All HeatOverlay variants
+
+						- GenericMipMapTextures
+
+					- ...and many of the other shaders on which we do ambient light modulation
 						
 			+ bool "doCrepuscolarGradient"
 				+ Just for sky shader - either shader or glClear

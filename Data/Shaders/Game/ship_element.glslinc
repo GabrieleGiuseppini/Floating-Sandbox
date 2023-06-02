@@ -16,7 +16,8 @@ in float inShipPointStress; // Stress
 in vec4 inShipPointColor;
 #endif
 
-// Outputs        
+// Outputs
+out float vertexWorldY;
 out vec3 vertexAttributes; // Light, Water, Decay
 #ifndef WITH_MATTE_COLOR
 out vec2 vertexTextureCoords;
@@ -35,6 +36,8 @@ uniform mat4 paramOrthoMatrix;
 
 void main()
 {      
+    vertexWorldY = inShipPointAttributeGroup1.y;
+
     vertexAttributes = inShipPointAttributeGroup2.xyw;
 
 #ifndef WITH_MATTE_COLOR
@@ -64,7 +67,8 @@ void main()
 #include "ship_heat.glslinc"
 #endif
 
-// Inputs from previous shader        
+// Inputs from previous shader
+in float vertexWorldY;
 in vec3 vertexAttributes; // Light, Water, Decay
 #ifndef  WITH_MATTE_COLOR
 in vec2 vertexTextureCoords;
@@ -81,6 +85,7 @@ in float vertexStress;
 // Params
 #if HEAT_RENDER_MODE != 1
 uniform float paramEffectiveAmbientLightIntensity;
+uniform vec3 paramEffectiveMoonlightColor;
 uniform vec3 paramWaterColor;
 uniform float paramWaterContrast;
 uniform float paramWaterLevelThreshold;
@@ -93,7 +98,7 @@ uniform float paramHeatShift;
 uniform vec4 paramStressColorMap[12];
 #endif
 
-#ifndef  WITH_MATTE_COLOR
+#ifndef WITH_MATTE_COLOR
 // Input texture
 uniform sampler2D paramSharedTexture;
 #endif
@@ -128,8 +133,12 @@ void main()
     // Complement missing ambient light with point's light
     float effectiveAmbientLightIntensity = mix(vertexAttributes.x, 1.0, paramEffectiveAmbientLightIntensity);
 
-    // Apply ambient light
-    fragColour *= effectiveAmbientLightIntensity;
+    // Apply ambient light, with moonlight becoming darker (cheaply) with depth
+    #define MAX_DEPTH 1500
+    fragColour *= mix(
+        paramEffectiveMoonlightColor * 0.7 * clamp(1.0 + vertexWorldY / MAX_DEPTH, 0.0, 1.0),
+        vec3(1.),
+        effectiveAmbientLightIntensity);
 #endif
 
 
@@ -160,14 +169,12 @@ void main()
 #else
 #error Unrecognized value for HEAT_RENDER_MODE
 #endif
-
     
     // Apply lamp color
     fragColour = mix(fragColour, paramLampLightColor, vertexAttributes.x);
 
     // Make final color, using original vertex's alpha
     gl_FragColor = vec4(fragColour, vertexCol.w);
-
 
     //
     // Stress

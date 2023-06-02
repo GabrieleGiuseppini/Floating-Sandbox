@@ -657,6 +657,7 @@ ShipRenderContext::ShipRenderContext(
     ApplyShipStructureRenderModeChanges(renderParameters);
     ApplyViewModelChanges(renderParameters);
     ApplyEffectiveAmbientLightIntensityChanges(renderParameters);
+    ApplySkyChanges(renderParameters);
     ApplyFlatLampLightColorChanges(renderParameters);
     ApplyWaterColorChanges(renderParameters);
     ApplyWaterContrastChanges(renderParameters);
@@ -1119,6 +1120,12 @@ void ShipRenderContext::ProcessParameterChanges(RenderParameters const & renderP
         || renderParameters.AreShipStructureRenderModeSelectorsDirty)
     {
         ApplyEffectiveAmbientLightIntensityChanges(renderParameters);
+    }
+
+    if (renderParameters.IsSkyDirty
+        || renderParameters.AreShipStructureRenderModeSelectorsDirty)
+    {
+        ApplySkyChanges(renderParameters);
     }
 
     if (renderParameters.IsFlatLampLightColorDirty
@@ -2657,6 +2664,34 @@ void ShipRenderContext::ApplyEffectiveAmbientLightIntensityChanges(RenderParamet
     mShaderManager.ActivateProgram<ProgramType::ShipGenericMipMappedTextures>();
     mShaderManager.SetProgramParameter<ProgramType::ShipGenericMipMappedTextures, ProgramParameterType::EffectiveAmbientLightIntensity>(
         effectiveAmbientLightIntensityParamValue);
+}
+
+void ShipRenderContext::ApplySkyChanges(RenderParameters const & renderParameters)
+{
+    vec3f const effectiveMoonlightColor = renderParameters.EffectiveMoonlightColor.toVec3f();
+
+    if (renderParameters.HeatRenderMode != HeatRenderModeType::HeatOverlay)
+    {
+        mShaderManager.ActivateProgram(mShipPointsProgram);
+        mShaderManager.SetProgramParameter<ProgramParameterType::EffectiveMoonlightColor>(
+            mShipPointsProgram,
+            effectiveMoonlightColor);
+
+        mShaderManager.ActivateProgram(mShipRopesProgram);
+        mShaderManager.SetProgramParameter<ProgramParameterType::EffectiveMoonlightColor>(
+            mShipRopesProgram,
+            effectiveMoonlightColor);
+
+        mShaderManager.ActivateProgram(mShipSpringsProgram);
+        mShaderManager.SetProgramParameter<ProgramParameterType::EffectiveMoonlightColor>(
+            mShipSpringsProgram,
+            effectiveMoonlightColor);
+
+        mShaderManager.ActivateProgram(mShipTrianglesProgram);
+        mShaderManager.SetProgramParameter<ProgramParameterType::EffectiveMoonlightColor>(
+            mShipTrianglesProgram,
+            effectiveMoonlightColor);
+    }
 }
 
 void ShipRenderContext::ApplyFlatLampLightColorChanges(RenderParameters const & renderParameters)
