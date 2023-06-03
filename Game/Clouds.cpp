@@ -145,9 +145,14 @@ void Clouds::Update(
     //float const globalCloudSpeed = windSign * 0.03f * std::pow(std::abs(baseAndStormSpeedMagnitude), 1.7f); // 1.17.x
     float const globalCloudSpeed = windSign * 0.005f * std::pow(std::abs(baseAndStormSpeedMagnitude), 2.1f);
 
+    // Convert wint speed into cloud "inner growth" speed.
+    float const growthProgressSpeed =
+        (1.0f / 45.0f) // Basal velocity
+        + std::abs(globalCloudSpeed) / (400.0f);
+
     for (auto & cloud : mClouds)
     {
-        cloud->Update(globalCloudSpeed);
+        cloud->Update(globalCloudSpeed, growthProgressSpeed);
 
         // Manage clouds leaving space: rollover and update darkening when crossing border
         if (baseAndStormSpeedMagnitude >= 0.0f && cloud->X > MaxCloudSpaceX)
@@ -159,12 +164,12 @@ void Clouds::Update(
         {
             cloud->X += CloudSpaceWidth;
             cloud->Darkening = stormParameters.CloudDarkening;
-        }
+        }        
     }
 
     for (auto it = mStormClouds.begin(); it != mStormClouds.end();)
     {
-        (*it)->Update(globalCloudSpeed);
+        (*it)->Update(globalCloudSpeed, growthProgressSpeed);
 
         // Manage clouds leaving space: retire when cross border if too many, else rollover
         if (baseAndStormSpeedMagnitude >= 0.0f && (*it)->X > MaxCloudSpaceX)

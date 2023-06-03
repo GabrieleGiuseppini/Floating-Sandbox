@@ -11,6 +11,7 @@
 #include <GameCore/Buffer.h>
 #include <GameCore/GameMath.h>
 #include <GameCore/GameRandomEngine.h>
+#include <GameCore/PrecalculatedFunction.h>
 
 #include <cmath>
 #include <memory>
@@ -81,17 +82,19 @@ private:
         {
         }
 
-        inline void Update(float globalCloudSpeed)
+        inline void Update(
+            float globalCloudSpeed,
+            float growthProgressSpeed)
         {
+            // Update position
+
             X += mLinearSpeedX * globalCloudSpeed * GameParameters::SimulationStepTimeDuration<float>;
 
-            float const growthProgressSpeed =
-                (1.0f / 45.0f) // Basal velocity
-                + std::abs(globalCloudSpeed) / (400.0f);
+            // Update growth progress
 
             mGrowthProgressPhase += growthProgressSpeed * GameParameters::SimulationStepTimeDuration<float>;
 
-            GrowthProgress = 0.3f + (1.0f + std::sin(mGrowthProgressPhase * Pi<float> * 2.0f)) * 0.7f / 2.0f;
+            GrowthProgress = 0.3f + (1.0f + PrecalcLoFreqSin.GetNearestPeriodic(mGrowthProgressPhase)) * 0.7f / 2.0f;
         }
 
     private:
