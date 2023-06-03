@@ -277,7 +277,7 @@ void Clouds::UpdateShadows(std::vector<std::unique_ptr<Cloud>> const & clouds)
 
         float const leftEdgeX = c->X - cloudSize / 2.0f;
 
-        // Fractional index in the sample array
+        // Fractional index in the sample array - might be negative
         float const leftEdgeIndexF = (leftEdgeX + CloudSpaceWidth / 2.0f) / ShadowBufferDx;
 
         // Integral part

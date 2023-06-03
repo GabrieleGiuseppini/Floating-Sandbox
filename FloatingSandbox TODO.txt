@@ -303,6 +303,7 @@
 			- ThreadManager decides whether to do render thread (based on BootSettings) and creates ThreadPool with max possible (doing main thread math)
 				- ThreadPool accessed as member &
 			- ThreadPool has both interfaces (for spring relaxation - knowing max is honored) and for "misc tasks" (with queing)
+				- NO: cannot have both; so make it that the main thread does first and all leftover ones
 		- SpringLab: non-intrinsics implementation (for benchmarking and experimenting)
 		- Port ThreadManager/ThreadPool from SpringLab
 			- OLD: Extra ports from SpringLab:
