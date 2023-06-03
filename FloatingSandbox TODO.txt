@@ -190,10 +190,12 @@
 			+ Fix
 		+ Test all 6 shaders
 		- Test on Dell
+			- Computation is expensive; to try:
+				- Optimize computation
+				- Make computation conditional on cloud shadows really being used (i.e. detailed ocean render mode)
 		- Merge
 		- changelist
 			= Credit guy (asked name)
-
 	= Night light
 		! Blue-ish, just like sun, but dimmer and blue
 		+ Spec:
@@ -272,6 +274,9 @@
 			+ Sky
 				+ Double-check current multiplier used (0.5)
 		- Need dithering for sky's crepuscolar gradient?
+		- Test on Dell
+			- Rendering is expensive; to try:
+				- Turn off crepuscolar depending on gfx card (like we do for ocean detail render mode)
 		- Changelist
 		- Merge to master
 
@@ -287,12 +292,18 @@
 
 	- Optimizations integration:
 		- Benchmarks
-		- ThreadManager and ThreadPool
-			- Extra ports from SpringLab:
+		- ThreadManager and ThreadPool - in SpringLab
+			- ThreadManager decides whether to do render thread (based on BootSettings) and creates ThreadPool with max possible (doing main thread math)
+				- ThreadPool accessed as member &
+			- ThreadPool has both interfaces (for spring relaxation - knowing max is honored) and for "misc tasks" (with queing)
+		- SpringLab: non-intrinsics implementation (for benchmarking and experimenting)
+		- Port ThreadManager/ThreadPool from SpringLab
+			- OLD: Extra ports from SpringLab:
 				- TaskThreadPool, because of:
 					- Pointers to tasks
-		- SpringLab: non-intrinsics implementation (for benchmarking and experimenting)
 		- Layout optimization at ShipFactory - up to passing to Ship
+			- First port Remapper
+			- Comment out old layout optimizations (now on Remapper)
 		- TODOHERE
 
 
@@ -1854,6 +1865,12 @@
 =================================================
 Current perf:
 =================================================
+1.18.0:
+- default ship:
+	- Old dell, RelWithDebInfo: FPS:30.6 UPD:21.7ms UPL:0.16ms RND:10.8ms (UPL:0.3xms MT=10.6xms)
+1.17.5.2:
+- default ship:
+	- Old dell, RelWithDebInfo: FPS:32.6 UPD:19.6ms UPL:0.18ms RND:11.14ms (UPL:0.5xms MT=11.2mxs)
 1.16.5:
 - default ship:
 	- Old dell, RelWithDebInfo: FPS:30.65 UPD:19.5ms UPL:0.18ms RND:12.80ms

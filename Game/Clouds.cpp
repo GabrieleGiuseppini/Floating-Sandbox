@@ -211,7 +211,6 @@ void Clouds::Update(
     UpdateShadows(mClouds);
     UpdateShadows(mStormClouds);
 
-
     ////// Offset shadow values so that the mean is 1.0
     //////
     ////// Note: we only sample the visible (central) slice, so that we
