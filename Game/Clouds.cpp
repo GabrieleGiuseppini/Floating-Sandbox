@@ -32,6 +32,7 @@ static float constexpr ShadowBufferDx = CloudSpaceWidth / static_cast<float>(Sha
 // The thickness of half of the shadow edges, in buffer elements
 static int constexpr ShadowEdgeHalfThicknessElementCount = 1;
 
+/////////////////////////////////////////////////////////////////////////////////
 
 Clouds::Clouds()
     : mLastCloudId(0)
