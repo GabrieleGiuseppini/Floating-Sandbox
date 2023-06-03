@@ -16,7 +16,7 @@ template<typename T>
 constexpr T Pi = T(3.1415926535897932385);
 
 /*
- * Converts the floating-point value to a 32-bit integer, truncating it down
+ * Converts the floating-point value to a 32-bit integer, truncating it towards zero.
  *
  * Assumes the result fits a 32-bit value. The behavior is undefined if it doesn't.
  *
@@ -32,7 +32,26 @@ inline register_int_32 FastTruncateToInt32(float value) noexcept
 }
 
 /*
- * Converts the floating-point value to a 64-bit integer, truncating it down.
+ * Converts the floating-point value to a 32-bit integer, truncating it towards negative infinity.
+ *
+ * Assumes the result fits a 32-bit value. The behavior is undefined if it doesn't.
+ *
+ * As one would expect, FastTruncateToInt32TowardsNInfinity(-7.6) == -8.
+ */
+inline register_int_32 FastTruncateToInt32TowardsNInfinity(float value) noexcept
+{
+    register_int_32 const v =
+#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
+        _mm_cvtt_ss2si(_mm_load_ss(&value));
+#else
+        static_cast<register_int_32>(value);
+#endif
+
+    return (v > value) ? v - 1 : v;
+}
+
+/*
+ * Converts the floating-point value to a 64-bit integer, truncating it towards zero.
  *
  * Assumes the result fits a 64-bit value. The behavior is undefined if it doesn't.
  *
@@ -48,10 +67,30 @@ inline register_int_64 FastTruncateToInt64(float value) noexcept
 }
 
 /*
+ *
+ * Converts the floating - point value to a 64 - bit integer, truncating it towards negative infinity.
+ *
+ * Assumes the result fits a 64 - bit value.The behavior is undefined if it doesn't.
+ *
+ * As one would expect, FastTruncateToInt64TowardsNInfinity(-7.6) == -8.
+ */
+inline register_int_64 FastTruncateToInt64TowardsNInfinity(float value) noexcept
+{
+    register_int_64 const v =
+#if FS_IS_ARCHITECTURE_X86_64()
+        _mm_cvttss_si64(_mm_load_ss(&value));
+#else
+        static_cast<register_int_64>(value);
+#endif
+
+    return (v > value) ? v - 1 : v;
+}
+
+/*
  * Converts the floating-point value to an integer of the same width as the
- * architecture's registers, truncating it down. Used when the implementation
- * doesn't really care about the returned type - for example because it needs
- * to be used as an index.
+ * architecture's registers, truncating it towards zero.
+ * Used when the implementation doesn't really care about the returned
+ * type - for example because it needs to be used as an index.
  *
  * Assumes the result fits the integer. The behavior is undefined if it doesn't.
  *
@@ -64,6 +103,26 @@ inline register_int FastTruncateToArchInt(float value) noexcept
     return FastTruncateToInt32(value);
 #elif FS_IS_REGISTER_WIDTH_64()
     return FastTruncateToInt64(value);
+#endif
+}
+
+/*
+ * Converts the floating-point value to an integer of the same width as the
+ * architecture's registers, truncating it towards negative infinity.
+ * Used when the implementation doesn't really care about the returned 
+ * type - for example because it needs to be used as an index.
+ *
+ * Assumes the result fits the integer. The behavior is undefined if it doesn't.
+ *
+ * As one would expect, FastTruncateToArchIntTowardsNInfinity(-7.6) == -8.
+ */
+
+inline register_int FastTruncateToArchIntTowardsNInfinity(float value) noexcept
+{
+#if FS_IS_REGISTER_WIDTH_32()
+    return FastTruncateToInt32TowardsNInfinity(value);
+#elif FS_IS_REGISTER_WIDTH_64()
+    return FastTruncateToInt64TowardsNInfinity(value);
 #endif
 }
 

@@ -194,3 +194,33 @@ TEST(GameMathTests, MixPiecewiseLinear_Basic)
 
 	EXPECT_TRUE(ApproxEquals(MixPiecewiseLinear(0.3f, 10.0f, 20.0f, 0.1f, 100.0f, 100.0f), 20.0f, 0.05f));
 }
+
+TEST(GameMathTests, FastTruncate)
+{
+    EXPECT_EQ(register_int(1), FastTruncateToArchInt(1.1f));
+    EXPECT_EQ(register_int(1), FastTruncateToArchInt(1.0f));
+    EXPECT_EQ(register_int(0), FastTruncateToArchInt(0.9f));
+    
+    EXPECT_EQ(register_int(0), FastTruncateToArchInt(0.1f));
+    EXPECT_EQ(register_int(0), FastTruncateToArchInt(0.0f));
+    EXPECT_EQ(register_int(0), FastTruncateToArchInt(-0.1f));
+
+    EXPECT_EQ(register_int(0), FastTruncateToArchInt(-0.9f));
+    EXPECT_EQ(register_int(-1), FastTruncateToArchInt(-1.0f));
+    EXPECT_EQ(register_int(-1), FastTruncateToArchInt(-1.1f));
+}
+
+TEST(GameMathTests, FastTruncateTowardsNInfinity)
+{
+    EXPECT_EQ(register_int(1), FastTruncateToArchIntTowardsNInfinity(1.1f));
+    EXPECT_EQ(register_int(1), FastTruncateToArchIntTowardsNInfinity(1.0f));
+    EXPECT_EQ(register_int(0), FastTruncateToArchIntTowardsNInfinity(0.9f));
+
+    EXPECT_EQ(register_int(0), FastTruncateToArchIntTowardsNInfinity(0.1f));
+    EXPECT_EQ(register_int(0), FastTruncateToArchIntTowardsNInfinity(0.0f));
+    EXPECT_EQ(register_int(-1), FastTruncateToArchIntTowardsNInfinity(-0.1f));
+
+    EXPECT_EQ(register_int(-1), FastTruncateToArchIntTowardsNInfinity(-0.9f));
+    EXPECT_EQ(register_int(-1), FastTruncateToArchIntTowardsNInfinity(-1.0f));
+    EXPECT_EQ(register_int(-2), FastTruncateToArchIntTowardsNInfinity(-1.1f));
+}
