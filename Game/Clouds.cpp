@@ -39,7 +39,8 @@ Clouds::Clouds()
     , mClouds()
     , mStormClouds()
     , mShadowBuffer(ShadowBufferSize)
-{}
+{
+}
 
 void Clouds::Update(
     float /*currentSimulationTime*/,
@@ -212,7 +213,7 @@ void Clouds::Update(
     // Update shadows
     //
 
-    mShadowBuffer.fill(1.0f);
+    mShadowBuffer.fill<ShadowBufferSize>(1.0f);
 
     UpdateShadows(mClouds);
     UpdateShadows(mStormClouds);

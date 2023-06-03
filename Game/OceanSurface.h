@@ -336,6 +336,8 @@ private:
     static size_t constexpr DeltaHeightBufferPrefixSize = DeltaHeightBufferAlignmentPrefixSize + (DeltaHeightSmoothing / 2);
     static_assert(is_aligned_to_float_element_count(DeltaHeightBufferPrefixSize));
 
+    static size_t constexpr DeltaHeightBufferSize = DeltaHeightBufferAlignmentPrefixSize + (DeltaHeightSmoothing / 2) + SamplesCount + (DeltaHeightSmoothing / 2);
+
     Buffer<float> mDeltaHeightBuffer;
 
 private:

@@ -69,6 +69,15 @@ public:
             mBuffer[i] = fillFunction(i);
     }
 
+    Buffer(
+        size_t size,
+        TElement fillValue)
+        : Buffer(size)
+    {
+        // Fill-in values
+        fill(fillValue);
+    }
+
     Buffer(Buffer && other) noexcept
         : mBuffer(std::move(other.mBuffer))
         , mSize(other.mSize)
@@ -115,13 +124,30 @@ public:
     /*
      * Fills the buffer with a value.
      */
-    void fill(TElement value)
+    inline void fill(TElement value)
     {
         TElement * restrict const ptr = mBuffer.get();
         for (size_t i = 0; i < mSize; ++i)
             ptr[i] = value;
 
         mCurrentPopulatedSize = mSize;
+    }
+
+    /*
+     * Fills the buffer with a value.
+     * This overload is when the caller has the buffer size at compile time;
+     * it's faster than the other overload.
+     */
+    template<size_t Size>
+    inline void fill(TElement value)
+    {
+        assert(mSize == Size);
+
+        TElement * restrict const ptr = mBuffer.get();
+        for (size_t i = 0; i < Size; ++i)
+            ptr[i] = value;
+
+        mCurrentPopulatedSize = Size;
     }
 
     /*

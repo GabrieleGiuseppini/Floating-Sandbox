@@ -55,7 +55,7 @@ OceanSurface::OceanSurface(
     , mInteractiveWaveCurrentHeightGrowthCoefficient(SamplesCount)
     , mInteractiveWaveTargetHeightGrowthCoefficient(SamplesCount)
     , mInteractiveWaveHeightGrowthCoefficientGrowthRate(SamplesCount)
-    , mDeltaHeightBuffer(DeltaHeightBufferAlignmentPrefixSize + (DeltaHeightSmoothing / 2) + SamplesCount + (DeltaHeightSmoothing / 2))
+    , mDeltaHeightBuffer(DeltaHeightBufferSize)
     ////////
     , mSWETsunamiWaveStateMachine()
     , mSWERogueWaveWaveStateMachine()
@@ -730,8 +730,8 @@ void OceanSurface::UpdateInteractiveWaves()
 
 void OceanSurface::ResetInteractiveWaves()
 {
-    mInteractiveWaveTargetHeightGrowthCoefficient.fill(0.0f);
-    mInteractiveWaveHeightGrowthCoefficientGrowthRate.fill(0.1f); // Magic number: rate with which we stop pinning the SWE height field
+    mInteractiveWaveTargetHeightGrowthCoefficient.fill<SamplesCount>(0.0f);
+    mInteractiveWaveHeightGrowthCoefficientGrowthRate.fill<SamplesCount>(0.1f); // Magic number: rate with which we stop pinning the SWE height field
 }
 
 void OceanSurface::SmoothDeltaBufferIntoHeightField()
@@ -748,7 +748,7 @@ void OceanSurface::SmoothDeltaBufferIntoHeightField()
         mSWEHeightField.data() + SWEBufferPrefixSize);
 
     // Clear delta-height buffer
-    mDeltaHeightBuffer.fill(0.0f);
+    mDeltaHeightBuffer.fill<DeltaHeightBufferSize>(0.0f);
 }
 
 void OceanSurface::ApplyDampingBoundaryConditions()
@@ -830,8 +830,7 @@ void OceanSurface::AdvectFields()
 
     // Height field
 
-    Buffer<float> newHeightField(SamplesCount);
-    newHeightField.fill(0.0f);
+    Buffer<float> newHeightField(SamplesCount, 0.0f);
 
     // For each index, move into it the height value that comes into it according to the current velocity
     for (size_t i = 0; i < SamplesCount; ++i)
@@ -865,8 +864,7 @@ void OceanSurface::AdvectFields()
 
     // Velocity field
 
-    Buffer<float> newVelocityField(SamplesCount + 1);
-    newVelocityField.fill(0.0f);
+    Buffer<float> newVelocityField(SamplesCount + 1, 0.0f);
 
     // For each index, move into it the velocity value that comes into it according to the current velocity
     // Note: the last velocity sample is the one after the last height field sample
