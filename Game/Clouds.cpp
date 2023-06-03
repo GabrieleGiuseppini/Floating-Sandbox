@@ -289,9 +289,9 @@ void Clouds::UpdateShadows(std::vector<std::unique_ptr<Cloud>> const & clouds)
         float const sampleIndexDx = leftEdgeIndexF - leftEdgeIndexI;
 
         // Coeffs:
-        // i-1 (n1): fraction of total shadow onto i-1
-        // i (z): fraction of total shadow onto i
-        // i+1 (p1): fraction of total shadow onto i+1
+        // i-1 (n1): fraction of total shadow onto i-1; depends on fraction of buffer cell covered
+        // i (z): fraction of total shadow onto i; independent on buffer cell (always 0.5)
+        // i+1 (p1): fraction of total shadow onto i+1; depends on fraction of buffer cell covered
 
         float constexpr EdgeShadow = 0.6f;
         float const edgeN1Coeff = 1.0f - (1.0f - EdgeShadow) * (1.0f - sampleIndexDx) / 2.0f;

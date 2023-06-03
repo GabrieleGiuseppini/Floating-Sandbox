@@ -189,15 +189,17 @@
 				+ FastTruncateToArchInt(-0.0578765869) = 0 = > sampleIndexDX = -0.0578765869
 			+ Fix
 		+ Test all 6 shaders
-		- Test on Dell
-			- Computation is expensive; to try:
-				- Optimize computation
-					- See if can do benchmark with a ton of clouds
-						- Clouds::Update: 0.60%, UpdateShadows: 0.43%
+		= Test on Dell
+			= Computation is expensive; to try:
+				= Optimize computation
+					+ Benchmark with a ton of clouds:
+						+ Clouds::Update: 0.60%, UpdateShadows: 0.43%
+					- Now: 0.54%, 0.45%
 				- Make computation conditional on cloud shadows really being used (i.e. detailed ocean render mode)
 					- First, verify sequence of events: changing detail mode => update => render u+d, and not e.g. update => change => render u+d
 					- Then: Clouds has new bool setter (and getter for Upload(), and cctor arg) - AreShadowsEnabled
 						- Evaluation of its value, which is based on render detail mode, comes from outside: from GameController::SetOceanRenderDetail(), who then gives it to World->Clouds
+							- Calc'd by GameController::<static method>
 		- Merge
 		- changelist
 			= Credit guy (asked name)
