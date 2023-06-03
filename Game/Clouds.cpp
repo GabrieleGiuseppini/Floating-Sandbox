@@ -212,46 +212,7 @@ void Clouds::Update(
     UpdateShadows(mClouds);
     UpdateShadows(mStormClouds);
 
-    ////// Offset shadow values so that the mean is 1.0
-    //////
-    ////// Note: we only sample the visible (central) slice, so that we
-    ////// do not undergo non-linearities when clouds disappear
-    ////// at the edges of the cloud space
-
-    ////float sum = 0.0f;
-    ////float count = 0.0f;
-    ////for (size_t i = ShadowBufferSize / 3; i < ShadowBufferSize * 2 / 3; ++i)
-    ////{
-    ////    sum += mShadowBuffer[i];
-    ////    count += 1.0f;
-    ////}
-
-    ////float const adjustment = 1.0f - sum / count;
-    ////for (size_t i = 0; i < ShadowBufferSize; ++i)
-    ////{
-    ////    mShadowBuffer[i] += adjustment;
-    ////}
-
-
-    // Offset shadow values so that the min is 1.0
-    //
-    // Note: we only sample the visible (central) slice, so that we
-    // do not undergo non-linearities when clouds disappear
-    // at the edges of the cloud space
-
-    float minShadow = 1.0f;
-    for (size_t i = ShadowBufferSize / 3; i < ShadowBufferSize * 2 / 3; ++i)
-    {
-        minShadow = std::min(minShadow, mShadowBuffer[i]);
-    }
-
-    float const adjustment = 1.0f - minShadow;
-    assert(adjustment >= 0.0f && adjustment <= 1.0f);
-    for (size_t i = 0; i < ShadowBufferSize; ++i)
-    {
-        mShadowBuffer[i] += adjustment;
-        assert(mShadowBuffer[i] >= 0.0f && mShadowBuffer[i] <= 2.0f);
-    }
+    OffsetShadowsBuffer_Min();
 }
 
 void Clouds::Upload(Render::RenderContext & renderContext) const
@@ -369,6 +330,52 @@ void Clouds::UpdateShadows(std::vector<std::unique_ptr<Cloud>> const & clouds)
             mShadowBuffer[i] *= edgeZCoeff;
             mShadowBuffer[i + 1] *= edgeP1Coeff;
         }
+    }
+}
+
+void Clouds::OffsetShadowsBuffer_Mean()
+{
+    // Offset shadow values so that the mean is 1.0
+    //
+    // Note: we only sample the visible (central) slice, so that we
+    // do not undergo non-linearities when clouds disappear
+    // at the edges of the cloud space
+
+    float sum = 0.0f;
+    float count = 0.0f;
+    for (size_t i = ShadowBufferSize / 3; i < ShadowBufferSize * 2 / 3; ++i)
+    {
+        sum += mShadowBuffer[i];
+        count += 1.0f;
+    }
+
+    float const adjustment = 1.0f - sum / count;
+    for (size_t i = 0; i < ShadowBufferSize; ++i)
+    {
+        mShadowBuffer[i] += adjustment;
+    }
+}
+
+void Clouds::OffsetShadowsBuffer_Min()
+{
+    // Offset shadow values so that the min is 1.0
+    //
+    // Note: we only sample the visible (central) slice, so that we
+    // do not undergo non-linearities when clouds disappear
+    // at the edges of the cloud space
+
+    float minShadow = 1.0f;
+    for (size_t i = ShadowBufferSize / 3; i < ShadowBufferSize * 2 / 3; ++i)
+    {
+        minShadow = std::min(minShadow, mShadowBuffer[i]);
+    }
+
+    float const adjustment = 1.0f - minShadow;
+    assert(adjustment >= 0.0f && adjustment <= 1.0f);
+    for (size_t i = 0; i < ShadowBufferSize; ++i)
+    {
+        mShadowBuffer[i] += adjustment;
+        assert(mShadowBuffer[i] >= 0.0f && mShadowBuffer[i] <= 2.0f);
     }
 }
 

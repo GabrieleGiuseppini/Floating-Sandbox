@@ -38,7 +38,9 @@ private:
 
     struct Cloud;
 
-    void UpdateShadows(std::vector<std::unique_ptr<Cloud>> const & clouds);
+    inline void UpdateShadows(std::vector<std::unique_ptr<Cloud>> const & clouds);
+    inline void OffsetShadowsBuffer_Mean();
+    inline void OffsetShadowsBuffer_Min();
 
 private:
 
