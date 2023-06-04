@@ -196,11 +196,14 @@
 						+ Clouds::Update: 0.60%, UpdateShadows: 0.43%
 					+ Now: 0.54%, 0.45%
 					+ Last: ~0.30%, ~0.20%
+				+ Simplify clamp's and add assert's
+				- TODO: faster loop for main cloud
+					- Calc first what we multiply full cloud with
 				- Make computation conditional on cloud shadows really being used (i.e. detailed ocean render mode)
-					- First, verify sequence of events: changing detail mode => update => render u+d, and not e.g. update => change => render u+d
-					- Then: Clouds has new bool setter (and getter for Upload(), and cctor arg) - AreShadowsEnabled
+					- Then: Clouds has new bool setter (and no getter, uses internally for Upload(), and cctor arg) - AreShadowsEnabled
 						- Evaluation of its value, which is based on render detail mode, comes from outside: from GameController::SetOceanRenderDetail(), who then gives it to World->Clouds
 							- Calc'd by GameController::<static method>
+					- Then verify sequence of events: changing detail mode => update => render u+d, and not e.g. update => change => render u+d
 		- Merge
 		- changelist
 			= Credit guy (asked name)
@@ -282,7 +285,7 @@
 			+ Sky
 				+ Double-check current multiplier used (0.5)
 		- Need dithering for sky's crepuscolar gradient?
-		- Test on Dell
+		= Test on Dell
 			- Rendering is expensive; to try:
 				- Turn off crepuscolar depending on gfx card (like we do for ocean detail render mode)
 		- Changelist
@@ -1876,7 +1879,7 @@ Current perf:
 =================================================
 1.18.0:
 - default ship:
-	- Old dell, RelWithDebInfo: FPS:30.6 UPD:21.7ms UPL:0.16ms RND:10.8ms (UPL:0.3xms MT=10.6xms)
+	- Old dell, RelWithDebInfo: FPS:30.6 UPD:21.7ms UPL:0.16ms RND:12.0ms (UPL:0.3xms MT=10.6xms)
 1.17.5.2:
 - default ship:
 	- Old dell, RelWithDebInfo: FPS:32.6 UPD:19.6ms UPL:0.18ms RND:11.14ms (UPL:0.5xms MT=11.2mxs)

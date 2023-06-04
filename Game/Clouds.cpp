@@ -310,14 +310,17 @@ void Clouds::UpdateShadows(std::vector<std::unique_ptr<Cloud>> const & clouds)
 
         // Edge indices
         register_int const iLeftEdgeLeft = Clamp(leftEdgeIndexI - ShadowEdgeHalfThicknessElementCount, register_int(1), static_cast<register_int>(ShadowBufferSize - 2));
-        register_int const iLeftEdgeRight = Clamp(leftEdgeIndexI + ShadowEdgeHalfThicknessElementCount, register_int(1), static_cast<register_int>(ShadowBufferSize - 2));
-        register_int const iRightEdgeLeft = Clamp(leftEdgeIndexI + cloudSizeElementCount - ShadowEdgeHalfThicknessElementCount, register_int(1), static_cast<register_int>(ShadowBufferSize - 2));
-        register_int const iRightEdgeRight = Clamp(leftEdgeIndexI + cloudSizeElementCount + ShadowEdgeHalfThicknessElementCount, register_int(1), static_cast<register_int>(ShadowBufferSize - 2));
-        register_int i;
+        register_int const iLeftEdgeRight = std::min(leftEdgeIndexI + ShadowEdgeHalfThicknessElementCount, static_cast<register_int>(ShadowBufferSize - 2));
+        register_int const iRightEdgeLeft = std::min(leftEdgeIndexI + cloudSizeElementCount - ShadowEdgeHalfThicknessElementCount, static_cast<register_int>(ShadowBufferSize - 2));
+        register_int const iRightEdgeRight = std::min(leftEdgeIndexI + cloudSizeElementCount + ShadowEdgeHalfThicknessElementCount, static_cast<register_int>(ShadowBufferSize - 2));
+
+        register_int i = iLeftEdgeLeft;
 
         // Left edge
-        for (i = iLeftEdgeLeft; i < iLeftEdgeRight; ++i)
+        for (; i < iLeftEdgeRight; ++i)
         {
+            assert(i >= 1 && i <= static_cast<register_int>(ShadowBufferSize - 2));
+
             shadowBuffer[i - 1] *= edgeN1Coeff;
             shadowBuffer[i] *= edgeZCoeff;
             shadowBuffer[i + 1] *= edgeP1Coeff;
@@ -326,6 +329,8 @@ void Clouds::UpdateShadows(std::vector<std::unique_ptr<Cloud>> const & clouds)
         // Middle
         for (; i < iRightEdgeLeft; ++i)
         {
+            assert(i >= 1 && i <= static_cast<register_int>(ShadowBufferSize - 2));
+
             shadowBuffer[i - 1] *= fullN1Coeff;
             shadowBuffer[i] *= fullZCoeff;
             shadowBuffer[i + 1] *= fullP1Coeff;
@@ -334,6 +339,8 @@ void Clouds::UpdateShadows(std::vector<std::unique_ptr<Cloud>> const & clouds)
         // Right edge
         for (; i < iRightEdgeRight; ++i)
         {
+            assert(i >= 1 && i <= static_cast<register_int>(ShadowBufferSize - 2));
+
             shadowBuffer[i - 1] *= edgeN1Coeff;
             shadowBuffer[i] *= edgeZCoeff;
             shadowBuffer[i + 1] *= edgeP1Coeff;
