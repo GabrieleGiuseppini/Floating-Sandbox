@@ -738,6 +738,7 @@ void WorldRenderContext::UploadCloudShadows(
     {
         glTexSubImage1D(GL_TEXTURE_1D, 0, 0, static_cast<GLsizei>(shadowSampleCount), GL_RED, GL_FLOAT, shadowBuffer);
     }
+
     CheckOpenGLError();
 }
 

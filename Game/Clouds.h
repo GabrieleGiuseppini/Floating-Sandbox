@@ -25,7 +25,9 @@ class Clouds
 
 public:
 
-    Clouds();
+    explicit Clouds(bool areShadowsEnabled);
+
+    void SetShadowsEnabled(bool value);
 
     void Update(
         float currentSimulationTime,
@@ -111,6 +113,8 @@ private:
     //
     // Shadows
     //
+
+    bool mAreShadowsEnabled; // Calculated from outside and given here; never read from here
 
     Buffer<float> mShadowBuffer;
 };

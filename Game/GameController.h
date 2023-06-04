@@ -816,7 +816,7 @@ public:
     void SetFlatOceanColor(rgbColor const & color) override { mRenderContext->SetFlatOceanColor(color); }
 
     OceanRenderDetailType GetOceanRenderDetail() const override { return mRenderContext->GetOceanRenderDetail(); }
-    void SetOceanRenderDetail(OceanRenderDetailType oceanRenderDetail) override { mRenderContext->SetOceanRenderDetail(oceanRenderDetail); }
+    void SetOceanRenderDetail(OceanRenderDetailType oceanRenderDetail) override;
 
     LandRenderModeType GetLandRenderMode() const override { return mRenderContext->GetLandRenderMode(); }
     void SetLandRenderMode(LandRenderModeType landRenderMode) override { mRenderContext->SetLandRenderMode(landRenderMode); }
@@ -898,6 +898,8 @@ private:
         ShipMetadata const & shipMetadata);
 
     void PublishStats(std::chrono::steady_clock::time_point nowReal);
+
+    static bool CalculateAreCloudShadowsEnabled(OceanRenderDetailType oceanRenderDetail);
 
 private:
 

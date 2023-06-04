@@ -116,6 +116,7 @@ GameController::GameController(
     // Create world
     mWorld = std::make_unique<Physics::World>(
         OceanFloorTerrain::LoadFromImage(resourceLocator.GetDefaultOceanFloorTerrainFilePath()),
+        CalculateAreCloudShadowsEnabled(mRenderContext->GetOceanRenderDetail()),
         mFishSpeciesDatabase,
         mGameEventDispatcher,
         mTaskThreadPool,
@@ -1399,6 +1400,13 @@ void GameController::SetDoDayLightCycle(bool value)
         StopDayLightCycleStateMachine();
     }
 }
+
+void GameController::SetOceanRenderDetail(OceanRenderDetailType oceanRenderDetail)
+{ 
+    mRenderContext->SetOceanRenderDetail(oceanRenderDetail); 
+    mWorld->SetAreCloudShadowsEnabled(CalculateAreCloudShadowsEnabled(oceanRenderDetail));
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////
 
 void GameController::OnTsunami(float x)
@@ -1436,6 +1444,7 @@ ShipMetadata GameController::InternalResetAndLoadShip(ShipLoadSpecifications con
     // Create a new world
     auto newWorld = std::make_unique<Physics::World>(
         OceanFloorTerrain(mWorld->GetOceanFloorTerrain()),
+        CalculateAreCloudShadowsEnabled(mRenderContext->GetOceanRenderDetail()),
         mFishSpeciesDatabase,
         mGameEventDispatcher,
         std::make_shared<TaskThreadPool>(),
@@ -1563,4 +1572,10 @@ void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)
         mRenderContext->GetZoom(),
         mRenderContext->GetCameraWorldPosition(),
         mRenderContext->GetStatistics());
+}
+
+bool GameController::CalculateAreCloudShadowsEnabled(OceanRenderDetailType oceanRenderDetail)
+{
+    // Note: also RenderContext infers applicability of shadows via detail, independently
+    return (oceanRenderDetail == OceanRenderDetailType::Detailed);
 }

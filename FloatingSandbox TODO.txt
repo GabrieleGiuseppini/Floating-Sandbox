@@ -199,11 +199,11 @@
 				+ Simplify clamp's and add assert's
 				+ Simplified (faster) loop for main cloud
 					+ Calc first what we multiply full cloud with
-				- Make computation conditional on cloud shadows really being used (i.e. detailed ocean render mode)
-					- Then: Clouds has new bool setter (and no getter, uses internally for Upload(), and cctor arg) - AreShadowsEnabled
-						- Evaluation of its value, which is based on render detail mode, comes from outside: from GameController::SetOceanRenderDetail(), who then gives it to World->Clouds
-							- Calc'd by GameController::<static method>
-					- Then verify sequence of events: changing detail mode => update => render u+d, and not e.g. update => change => render u+d
+				+ Make computation conditional on cloud shadows really being used (i.e. detailed ocean render mode)
+					+ Clouds has new bool setter (and no getter, uses internally for Upload(), and cctor arg) - AreShadowsEnabled
+						+ Evaluation of its value, which is based on render detail mode, comes from outside: from GameController::SetOceanRenderDetail(), who then gives it to World->Clouds
+							+ Calc'd by GameController::<static method>
+					+ Then verify sequence of events: changing detail mode => update => render u+d, and not e.g. update => change => render u+d
 		- Merge
 		- changelist
 			= Credit guy (asked name)

@@ -40,6 +40,7 @@ public:
 
     World(
         OceanFloorTerrain && oceanFloorTerrain,
+        bool areCloudShadowsEnabled,
         FishSpeciesDatabase const & fishSpeciesDatabase,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         std::shared_ptr<TaskThreadPool> taskThreadPool,
@@ -70,6 +71,11 @@ public:
     Geometry::AABBSet GetAllAABBs() const
     {
         return mAllAABBs;
+    }
+
+    void SetAreCloudShadowsEnabled(bool value)
+    {
+        mClouds.SetShadowsEnabled(value);
     }
 
     inline void DisturbOceanAt(

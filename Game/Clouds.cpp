@@ -34,12 +34,18 @@ static register_int constexpr ShadowEdgeHalfThicknessElementCount = 1;
 
 /////////////////////////////////////////////////////////////////////////////////
 
-Clouds::Clouds()
+Clouds::Clouds(bool areShadowsEnabled)
     : mLastCloudId(0)
     , mClouds()
     , mStormClouds()
+    , mAreShadowsEnabled(areShadowsEnabled)
     , mShadowBuffer(ShadowBufferSize)
 {
+}
+
+void Clouds::SetShadowsEnabled(bool value)
+{
+    mAreShadowsEnabled = value;
 }
 
 void Clouds::Update(
@@ -213,12 +219,15 @@ void Clouds::Update(
     // Update shadows
     //
 
-    mShadowBuffer.fill<ShadowBufferSize>(1.0f);
+    if (mAreShadowsEnabled)
+    {
+        mShadowBuffer.fill<ShadowBufferSize>(1.0f);
 
-    UpdateShadows(mClouds);
-    UpdateShadows(mStormClouds);
+        UpdateShadows(mClouds);
+        UpdateShadows(mStormClouds);
 
-    OffsetShadowsBuffer_Min();
+        OffsetShadowsBuffer_Min();
+    }
 }
 
 void Clouds::Upload(Render::RenderContext & renderContext) const
@@ -259,9 +268,12 @@ void Clouds::Upload(Render::RenderContext & renderContext) const
     // Upload shadows
     //
 
-    renderContext.UploadCloudShadows(
-        mShadowBuffer.data(),
-        mShadowBuffer.GetSize());
+    if (mAreShadowsEnabled)
+    {
+        renderContext.UploadCloudShadows(
+            mShadowBuffer.data(),
+            mShadowBuffer.GetSize());
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
