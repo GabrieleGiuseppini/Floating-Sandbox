@@ -292,7 +292,7 @@
 		+ Changelist
 		+ Merge to master
 
-	- Black glass
+	+ Black glass
 
 	- Combustion ignition: try starting with advanced development when much temperature delta wrt ignition
 		- So that explosion generates sudden, large flames

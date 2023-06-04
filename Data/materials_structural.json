@@ -2180,7 +2180,8 @@
                 "#C1FFFF",
                 "#3963FA",
                 "#CF24FF",
-                "#F5AE51"
+                "#F5AE51",
+		"#050607"
             ],
             "combustion_type": "Combustion",
             "ignition_temperature": 1000000.0,
@@ -2219,7 +2220,8 @@
                 "#E5FFFF",
                 "#A6C2FF",
                 "#FCC9FF",
-                "#FFBE54"
+                "#FFBE54",
+		"#050608"
             ],
             "combustion_type": "Combustion",
             "ignition_temperature": 1000000.0,
@@ -2259,7 +2261,8 @@
                 "#C1FFFE",
                 "#3963FB",
                 "#CF24FB",
-                "#F5AE52"
+                "#F5AE52",
+		"#050609"
             ],
             "combustion_type": "Combustion",
             "ignition_temperature": 1000000.0,
@@ -2298,7 +2301,8 @@
                 "#E5FFFE",
                 "#A6C2FE",
                 "#FCC9FE",
-                "#FFBE53"
+                "#FFBE53",
+		"#05060A"
             ],
             "combustion_type": "Combustion",
             "ignition_temperature": 1000000.0,
