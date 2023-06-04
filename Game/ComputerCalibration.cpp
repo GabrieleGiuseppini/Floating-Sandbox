@@ -70,10 +70,12 @@ void ComputerCalibrator::TuneGame(
         || score.NormalizedGfxScore < 0.1f)
     {
         renderContext.SetOceanRenderDetail(OceanRenderDetailType::Basic);
+        renderContext.SetDoCrepuscularGradient(false);
     }
     else
     {
         renderContext.SetOceanRenderDetail(OceanRenderDetailType::Detailed);
+        renderContext.SetDoCrepuscularGradient(true);
     }
 
     if (score.NormalizedGfxScore < 0.1f

@@ -159,6 +159,10 @@ WorldRenderContext::WorldRenderContext(
         }
 
         glBindVertexArray(0);
+
+        // Set texture parameters
+        mShaderManager.ActivateProgram<ProgramType::Sky>();
+        mShaderManager.SetTextureParameters<ProgramType::Sky>();
     }
 
 

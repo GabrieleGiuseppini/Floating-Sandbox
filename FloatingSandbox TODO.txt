@@ -146,9 +146,9 @@
 		+ At depth
 		+ Via sparkle tool
 
-	= Change ocean defaults, see color decision on Discord
-		- Changelist
-	= Cloud shadows:
+	+ Change ocean defaults, see color decision on Discord
+		+ Changelist
+	+ Cloud shadows:
 		+ Try with more pronounced depth-darkening delta
 			+ Should also darken "lighter" areas which are still < 1.0 but lighter than surroundings
 			+ Note that using e.g. 0.5 in lieu of 1.0 as the "threshold" in the shader for lighter vs. darker helps, but then the sea gets too dark
@@ -189,7 +189,7 @@
 				+ FastTruncateToArchInt(-0.0578765869) = 0 = > sampleIndexDX = -0.0578765869
 			+ Fix
 		+ Test all 6 shaders
-		= Test on Dell
+		+ Test on Dell
 			= Computation is expensive; to try:
 				+ Optimize computation
 					+ Benchmark with a ton of clouds:
@@ -204,10 +204,10 @@
 						+ Evaluation of its value, which is based on render detail mode, comes from outside: from GameController::SetOceanRenderDetail(), who then gives it to World->Clouds
 							+ Calc'd by GameController::<static method>
 					+ Then verify sequence of events: changing detail mode => update => render u+d, and not e.g. update => change => render u+d
-		- Merge
-		- changelist
-			= Credit guy (asked name)
-	= Night light
+		+ Merge
+		+ changelist
+			+ Credit guy (asked name)
+	+ Night light
 		! Blue-ish, just like sun, but dimmer and blue
 		+ Spec:
 			+ Sky rendering step @ World
@@ -284,12 +284,13 @@
 			+ Ocean: helper in ocean.glslinc					
 			+ Sky
 				+ Double-check current multiplier used (0.5)
-		- Need dithering for sky's crepuscolar gradient?
-		= Test on Dell
-			- Rendering is expensive; to try:
-				- Turn off crepuscolar depending on gfx card (like we do for ocean detail render mode)
-		- Changelist
-		- Merge to master
+		+ Need dithering for sky's crepuscolar gradient?
+			+ Cur RND=3.50
+		+ Test on Dell
+			+ Rendering is expensive; to try:
+				+ Turn off crepuscolar depending on gfx card (like we do for ocean detail render mode)
+		+ Changelist
+		+ Merge to master
 
 	- Chainsaw sound still on when tool sounds are muted?
 
@@ -1877,9 +1878,9 @@
 =================================================
 Current perf:
 =================================================
-1.18.0:
+1.18.0 (with crepuscolar and cloud shadows shortcuts):
 - default ship:
-	- Old dell, RelWithDebInfo: FPS:30.6 UPD:19.5ms UPL:0.19ms RND:12.8ms (UPL:0.3xms MT=10.6xms)
+	- Old dell, RelWithDebInfo: FPS:31.95 UPD:19.58ms UPL:0.16ms RND:11.42ms (UPL:0.3xms MT=11.6xms)
 1.17.5.2:
 - default ship:
 	- Old dell, RelWithDebInfo: FPS:32.6 UPD:19.6ms UPL:0.18ms RND:11.14ms (UPL:0.5xms MT=11.2mxs)

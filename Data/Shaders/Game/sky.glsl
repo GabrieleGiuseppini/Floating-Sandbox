@@ -22,16 +22,19 @@ void main()
 
 ###FRAGMENT-120
 
+#include "static_parameters.glslinc"
+
 #define in varying
 
 // Inputs from previous shader
 in float ndcY;
 
-// Parameters        
+// Parameters
+uniform vec3 paramCrepuscularColor;
 uniform float paramEffectiveAmbientLightIntensity;
 uniform vec3 paramEffectiveMoonlightColor;
-uniform vec3 paramCrepuscularColor;
 uniform vec3 paramFlatSkyColor;
+uniform sampler2D paramNoiseTexture;
 
 void main()
 {
@@ -49,6 +52,11 @@ void main()
 
     // Combine
     vec3 color = mix(lowerColor, upperColor, max(ndcY - 0.4, 0.0) * (1.0/0.6));
+
+    // Dither
+    vec2 noiseCoords = gl_FragCoord.xy / vec2(NOISE_2_WIDTH, NOISE_2_HEIGHT);
+    float noise = texture2D(paramNoiseTexture, noiseCoords).x;
+    color += mix(-0.5/255.0, 0.5/255.0, noise);
        
     // Output color
     gl_FragColor = vec4(color, 1.0);

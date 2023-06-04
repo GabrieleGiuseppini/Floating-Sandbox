@@ -1,9 +1,19 @@
 1.17.6 - TODO
-- Redesigned wave interactions
-- Added lighting effects of clouds onto ocean
-	- Thanks to Denis Nesterenco!
-- Improved rendering of ocean - especially gradients which were previously showing color banding, and changed rendering defaults for a more moving experience
-- Added menu entry to suddenly switch to full day or night
+- Re-designed wave interactions - user-spawned waves are now more natural and smooth
+- Revamped rendering of ocean
+	- Added lighting effects of clouds onto ocean
+		- Thanks to Denis Nesterenco for the fantastic idea!
+		- Note: disabled by default on lower-end computers
+	- Changed defaults for a more moving experience
+	- Fixed depth gradients (which were previously showing color banding)
+- Re-designed night ambient
+	- Added moon lighting
+		- Thanks to Joadix for the fantastic idea!
+		- Note: can be controlled in the "Rendering" section of the Settings window		
+	- Added crepuscolar gradient
+		- Note: can be controlled in the "Rendering" section of the Settings window
+		- Note: disabled by default on lower-end computers
+	- Added menu entry to suddenly switch to full day or full night
 - ...and a few more small improvements here and there!
 - Musical theme for this release: Random Forest, Ascension
 
