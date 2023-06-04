@@ -316,7 +316,10 @@ void Clouds::UpdateShadows(std::vector<std::unique_ptr<Cloud>> const & clouds)
 
         register_int i = iLeftEdgeLeft;
 
+        //
         // Left edge
+        //
+
         for (; i < iLeftEdgeRight; ++i)
         {
             assert(i >= 1 && i <= static_cast<register_int>(ShadowBufferSize - 2));
@@ -326,17 +329,49 @@ void Clouds::UpdateShadows(std::vector<std::unique_ptr<Cloud>> const & clouds)
             shadowBuffer[i + 1] *= edgeP1Coeff;
         }
 
+        //
         // Middle
-        for (; i < iRightEdgeLeft; ++i)
+        //
+        //     i         i
+        //   N Z P
+        //     N Z P
+        //       N Z P
+        //         N Z P
+        //           N Z P
+        //             N Z P
+        //
+
+        if (i < iRightEdgeLeft - 1)
         {
             assert(i >= 1 && i <= static_cast<register_int>(ShadowBufferSize - 2));
 
             shadowBuffer[i - 1] *= fullN1Coeff;
-            shadowBuffer[i] *= fullZCoeff;
-            shadowBuffer[i + 1] *= fullP1Coeff;
+            shadowBuffer[i] *= fullN1Coeff * fullZCoeff;
+
+            ++i;
         }
 
+        for (; i < iRightEdgeLeft - 1; ++i)
+        {
+            assert(i >= 1 && i <= static_cast<register_int>(ShadowBufferSize - 2));
+
+            shadowBuffer[i] *= FullShadow;
+        }
+
+        if (i < iRightEdgeLeft)
+        {
+            assert(i >= 1 && i <= static_cast<register_int>(ShadowBufferSize - 2));
+
+            shadowBuffer[i] *= fullZCoeff * fullP1Coeff;
+            shadowBuffer[i + 1] *= fullP1Coeff;
+
+            ++i;
+        }
+
+        //
         // Right edge
+        //
+
         for (; i < iRightEdgeRight; ++i)
         {
             assert(i >= 1 && i <= static_cast<register_int>(ShadowBufferSize - 2));

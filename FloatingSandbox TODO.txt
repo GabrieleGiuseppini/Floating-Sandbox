@@ -197,8 +197,8 @@
 					+ Now: 0.54%, 0.45%
 					+ Last: ~0.30%, ~0.20%
 				+ Simplify clamp's and add assert's
-				- TODO: faster loop for main cloud
-					- Calc first what we multiply full cloud with
+				+ Simplified (faster) loop for main cloud
+					+ Calc first what we multiply full cloud with
 				- Make computation conditional on cloud shadows really being used (i.e. detailed ocean render mode)
 					- Then: Clouds has new bool setter (and no getter, uses internally for Upload(), and cctor arg) - AreShadowsEnabled
 						- Evaluation of its value, which is based on render detail mode, comes from outside: from GameController::SetOceanRenderDetail(), who then gives it to World->Clouds
@@ -1879,7 +1879,7 @@ Current perf:
 =================================================
 1.18.0:
 - default ship:
-	- Old dell, RelWithDebInfo: FPS:30.6 UPD:21.7ms UPL:0.16ms RND:12.0ms (UPL:0.3xms MT=10.6xms)
+	- Old dell, RelWithDebInfo: FPS:30.6 UPD:19.5ms UPL:0.19ms RND:12.8ms (UPL:0.3xms MT=10.6xms)
 1.17.5.2:
 - default ship:
 	- Old dell, RelWithDebInfo: FPS:32.6 UPD:19.6ms UPL:0.18ms RND:11.14ms (UPL:0.5xms MT=11.2mxs)
