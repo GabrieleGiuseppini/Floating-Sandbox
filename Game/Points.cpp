@@ -2040,7 +2040,7 @@ void Points::UploadEphemeralParticles(
                 auto const & state = mEphemeralParticleAttributes2Buffer[pointIndex].State.AirBubble;
 
                 // Calculate scale based on lifetime
-                float constexpr ScaleMax = 0.275f;
+                float constexpr ScaleMax = 0.2f;
                 float constexpr ScaleMin = 0.04f;
                 float const scale =
                     ScaleMin + (ScaleMax - ScaleMin) * SmoothStep(0.0f, 2.0f, state.SimulationLifetime);
