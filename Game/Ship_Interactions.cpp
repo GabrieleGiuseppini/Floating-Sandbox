@@ -592,7 +592,7 @@ bool Ship::ExtinguishFireAt(
     float const squareRadius = radius * radius;
 
     float const heatRemoved =
-        1000000.0f
+        100000.0f
         * (gameParameters.IsUltraViolentMode ? 10.0f : 1.0f);
 
     // Search for burning points within the radius
@@ -613,12 +613,12 @@ bool Ship::ExtinguishFireAt(
                 //
 
                 mPoints.SmotherCombustion(pointIndex, true);
+            }
 
-                //
-                // Also lower the point's temperature, or else it'll start burning
-                // right away
-                //
-
+            // Check if the point is in a state in which we can lower its temperature, so that
+            // it won't start burning again right away
+            if (mPoints.IsBurningForExtinguisherHeatSubtraction(pointIndex))
+            {
                 float const strength = 1.0f - SmoothStep(
                     squareRadius * 3.0f / 4.0f,
                     squareRadius,

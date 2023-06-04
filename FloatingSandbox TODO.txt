@@ -294,12 +294,6 @@
 
 	+ Black glass
 
-	- Combustion ignition: try starting with advanced development when much temperature delta wrt ignition
-		- So that explosion generates sudden, large flames
-
-	- Nuke default_ship.shp2 and make Titanic's filename in code
-		- So users don't see two Titanic's
-
 	- Optimizations integration:
 		- Benchmarks
 		- ThreadManager and ThreadPool - in SpringLab

@@ -1505,6 +1505,21 @@ public:
             || combustionState == CombustionState::StateType::Extinguishing_Consumed;
     }
 
+    /*
+     * Checks whether a point is eligible for being subtracted heat during fire extinguishing.
+     */
+    bool IsBurningForExtinguisherHeatSubtraction(ElementIndex pointElementIndex) const
+    {
+        auto const combustionState = mCombustionStateBuffer[pointElementIndex].State;
+
+        return combustionState == CombustionState::StateType::Developing_1
+            || combustionState == CombustionState::StateType::Developing_2
+            || combustionState == CombustionState::StateType::Burning
+            || combustionState == CombustionState::StateType::Extinguishing_Consumed
+            || combustionState == CombustionState::StateType::Extinguishing_SmotheredRain
+            || combustionState == CombustionState::StateType::Extinguishing_SmotheredWater;
+    }
+
     void SmotherCombustion(
         ElementIndex pointElementIndex,
         bool isWater)
