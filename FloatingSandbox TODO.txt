@@ -294,18 +294,26 @@
 
 	+ Black glass
 
+	- Fix rays of light/zoom issue
+		- Might be due to shadowPosNdc using a zoomed version of the cam ([3][1])
+
 	- Optimizations integration:
-		- Benchmarks
+		- Benchmarks:
+			- Default Titanic:
+				- 
+			- Hesleden:
+				- Without lights:
+				- With lights:
 		- ThreadManager and ThreadPool - in SpringLab
 			- ThreadManager decides whether to do render thread (based on BootSettings) and creates ThreadPool with max possible (doing main thread math)
 				- ThreadPool accessed as member &
 			- ThreadPool has both interfaces (for spring relaxation - knowing max is honored) and for "misc tasks" (with queing)
 				- NO: cannot have both; so make it that the main thread does first and all leftover ones
-		- SpringLab: non-intrinsics implementation (for benchmarking and experimenting)
 		- Port ThreadManager/ThreadPool from SpringLab
 			- OLD: Extra ports from SpringLab:
 				- TaskThreadPool, because of:
 					- Pointers to tasks
+		- SpringLab: non-intrinsics implementation (for benchmarking and experimenting)
 		- Layout optimization at ShipFactory - up to passing to Ship
 			- First port Remapper
 			- Comment out old layout optimizations (now on Remapper)
@@ -414,7 +422,7 @@
 	- Add more background music:
 		+ "Symmetry" - Kevin MacLeod (incompetech.com)			
 		- "Shadowlands 5 - Antechamber" - Kevin MacLeod (incompetech.com)
-		- More from Kukaneffect?
+		- https://www.scottbuckley.com.au/library/soul-searcher/
 
 	- Make Mac instructions
 		- SFML build: https://github.com/SFML/SFML/issues/1496

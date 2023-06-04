@@ -66,7 +66,10 @@ void main()
     vec3 color = paramOceanFlatColor * shadowFactor;
 
     // Apply ambient light
-    color = ApplyAmbientLight(color, paramEffectiveMoonlightColor, paramEffectiveAmbientLightIntensity);
+    color = ApplyAmbientLight(
+        color, 
+        paramEffectiveMoonlightColor, 
+        paramEffectiveAmbientLightIntensity);
 
     // Apply depth darkening
     color = ApplyDepthDarkeningWithDither(
@@ -81,5 +84,7 @@ void main()
     gl_FragColor = CalculateDetailedOceanPlaneColor(
         vec4(color, (1.0 - paramOceanTransparency)),
         yWorld,
-        yVectorWorld);
+        yVectorWorld,
+        paramEffectiveMoonlightColor, 
+        paramEffectiveAmbientLightIntensity);
 }

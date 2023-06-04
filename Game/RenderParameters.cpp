@@ -13,7 +13,7 @@ RenderParameters::RenderParameters(
 	: View(1.0f, vec2f::zero(), initialCanvasSize, logicalToPhysicalDisplayFactor)
 	, EffectiveAmbientLightIntensity(1.0f) // Calculated
 	// World
-	, FlatSkyColor(0x00, 0x77, 0xc4)
+	, FlatSkyColor(0x39, 0xa8, 0xf2)
 	, EffectiveMoonlightColor(0x00, 0x00, 0x00) // Calculated
 	, DoCrepuscularGradient(true)
 	, CrepuscularColor (0xe5, 0xd3, 0xe5)

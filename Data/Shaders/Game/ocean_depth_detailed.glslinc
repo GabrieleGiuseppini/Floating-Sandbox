@@ -75,11 +75,16 @@ void main()
     depthColor = depthColor * shadowFactor;
 
     // Apply ambient light
-    depthColor = ApplyAmbientLight(depthColor, paramEffectiveMoonlightColor, paramEffectiveAmbientLightIntensity);
+    depthColor = ApplyAmbientLight(
+        depthColor, 
+        paramEffectiveMoonlightColor, 
+        paramEffectiveAmbientLightIntensity);
 
     // Apply detail
     gl_FragColor = CalculateDetailedOceanPlaneColor(
         vec4(depthColor, (1.0 - paramOceanTransparency)),
         yWorld,
-        yVectorWorld);
+        yVectorWorld, 
+        paramEffectiveMoonlightColor, 
+        paramEffectiveAmbientLightIntensity);
 }

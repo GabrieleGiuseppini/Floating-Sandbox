@@ -3,7 +3,9 @@
 vec4 CalculateDetailedOceanPlaneColor(
     vec4 baseColor,    
     float yWorld,
-    vec4 yVector) // Back, Mid, Front, d2Front    
+    vec4 yVector, // Back, Mid, Front, d2Front
+    vec3 moonlightColor,
+    float effectiveAmbientLightIntensity)
 {
     //
     // Calculate border width
@@ -90,9 +92,14 @@ vec4 CalculateDetailedOceanPlaneColor(
     // Combine border and color
     //
 
+    vec3 borderColor = mix(
+        moonlightColor * 0.5, 
+        vec3(1.), 
+        effectiveAmbientLightIntensity);
+
     vec4 finalColor = mix(
         vec4(baseColor.xyz, baseColorAlpha * baseColor.w),
-        vec4(1.), // Border color
+        vec4(borderColor, 1.),
         borderAlpha);
 
     return finalColor;
