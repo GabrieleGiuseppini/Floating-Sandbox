@@ -294,21 +294,30 @@
 
 	+ Black glass
 
-	- Fix rays of light/zoom issue
-		- Might be due to shadowPosNdc using a zoomed version of the cam ([3][1])
-
-	- Optimizations integration:
+	= Optimizations integration:
 		- Benchmarks:
-			- Default Titanic:
-				- 
+			- Default Titanic: 
 			- Hesleden:
 				- Without lights:
 				- With lights:
-		- ThreadManager and ThreadPool - in SpringLab
-			- ThreadManager decides whether to do render thread (based on BootSettings) and creates ThreadPool with max possible (doing main thread math)
-				- ThreadPool accessed as member &
-			- ThreadPool has both interfaces (for spring relaxation - knowing max is honored) and for "misc tasks" (with queing)
-				- NO: cannot have both; so make it that the main thread does first and all leftover ones
+		= ThreadManager and ThreadPool - in SpringLab
+			= 1. ParallelThreadPool -> ThreadPool
+				+ Make it that the main thread does first task and all leftover tasks
+				- Nuke TaskThreadPool & replace it (if it's even used)
+				+ Initialize threads via ThreadManager
+			- 2. ThreadManager decides whether to do render thread (based on BootSettings) and creates ThreadPool with max possible (doing main thread math)
+				- Call Initialize() from outside, when we have boot settings
+					- With "already initialized" check
+				- ThreadPool accessed as member &, "SimulationThreadPool"
+				- FS: RenderContext gets whether or not to do render thread from ThreadManager
+			- 3. Changing Settings' slider for "max simulation threads" (new slide) dooes:
+				- Set into ThreadManager (storage), who tells ThreadPool
+				- ThreadPool re-dims internally
+				- Then, call into Simulator::StateChanged() - same as now, and react to change					
+					- SpringLab simulators query singleton instance themselves, not passed
+						- No need to pollute StateChanged/Update, as only a few simulators require threads
+				- For Ship: Ship::Update takes ThreadManager&, and checks MaxSimulationThreads against own remembered value, and reacts on change by recalculating partitioning
+					- We do this to stress the fact that parallelism is a mutable parameter
 		- Port ThreadManager/ThreadPool from SpringLab
 			- OLD: Extra ports from SpringLab:
 				- TaskThreadPool, because of:
@@ -318,24 +327,35 @@
 			- First port Remapper
 			- Comment out old layout optimizations (now on Remapper)
 		- TODOHERE
+		- Notes:
+			- Ship decides # of parallelism for herself
+
+	- More parallelism at Ship::Update (was: Multi-threading, phase II):
+		- Now that we have MaxSimulationParallelism, we can easily see which steps take the longest
+		- Allow threads to publish events by having EventDispatcher allow multiple threads to store* event
+			- No locks needed on read and clean, as it's done after Update has finished
+		- Move PhysicsSimulation::UpdateWaterVelocities (8%) to separate thread
+			- If water is being read in parallel, make UpdateWaterVelocities take the newWater buffer, and swap it after the tasks have completed
+		- Springs: each iteration done in parallel with NThreads partitions
+			- Do
+				- Pool: if run 1, run straight away on main thread
+				- Spring indices need to be partitioned beforehand into multiple Buffer<ElementIndex>'s
+					- These are stored by Springs
+					- @ShipBuilder:
+						- Is given # of partitions
+							- ...caller uses mThreadPool->GetNumberOfThreads();
+						- N-1 partitions plus one "stitching" partition
+							- Partition points and all springs between those points
+							- Put cross-partition springs into last partition
+				- Prepare parallel tasks
+				- Run parallel tasks
+
 
 
 	- Greyscaling (of texture and particles) before Thanos snap, and mass changes (lighter), and different phasing of ashing in band
 		- Phasing: each particle randomly pulverizes, but towards band end prob is 100%
 		- Try with decay
 			- Make sure we only upload decay when we mark a dirty flag
-	
-	- Release:
-		- Localization (yes, it's dirty)
-
-	- Wrecking ball tool
-
-	- Replace points with quads from geometry shader
-
-	- Buy new track for farewell: https://www.pond5.com/royalty-free-music/item/204959560-nearer-my-god-thee
-
-	- Option to render ocean floor independently from darkening
-		- Just affects if/how we set Land::OceanDarkeningRate
 
 	- Ships:
 		- N.S._Savannah (Pocketwatch)
@@ -354,6 +374,15 @@
 		- Take Dugongsmallwtrtight-Walter (ToTake folder)
 			- Name? (ASKED)
 			- Credits? (ASKED)
+	
+	- Release:
+		- Localization (yes, it's dirty)
+
+	- Wrecking ball tool
+
+	- Replace points with quads from geometry shader
+
+	- Buy new track for farewell: https://www.pond5.com/royalty-free-music/item/204959560-nearer-my-god-thee
 
 	- Adjustable level of water
 		- Think of problem with flattening waves on bottom?
@@ -423,6 +452,7 @@
 		+ "Symmetry" - Kevin MacLeod (incompetech.com)			
 		- "Shadowlands 5 - Antechamber" - Kevin MacLeod (incompetech.com)
 		- https://www.scottbuckley.com.au/library/soul-searcher/
+		- https://www.scottbuckley.com.au/library/intervention/
 
 	- Make Mac instructions
 		- SFML build: https://github.com/SFML/SFML/issues/1496
@@ -432,23 +462,6 @@
 			- See why Bernoulli doesn't make inflow faster
 		- Negative pressure in Mylar bubble - bug?
 		- See why with high water density, water entering a ship goes above the waterline - bug?
-
-	- More parallelism at Ship::Update (was: Multi-threading, phase II):
-		- Move PhysicsSimulation::UpdateWaterVelocities (8%) to separate thread
-			- If water is being read in parallel, make UpdateWaterVelocities take the newWater buffer, and swap it after the tasks have completed
-		- Springs: each iteration done in parallel with NThreads partitions
-			- Do
-				- Pool: if run 1, run straight away on main thread
-				- Spring indices need to be partitioned beforehand into multiple Buffer<ElementIndex>'s
-					- These are stored by Springs
-					- @ShipBuilder:
-						- Is given # of partitions
-							- ...caller uses mThreadPool->GetNumberOfThreads();
-						- N-1 partitions plus one "stitching" partition
-							- Partition points and all springs between those points
-							- Put cross-partition springs into last partition
-				- Prepare parallel tasks
-				- Run parallel tasks
 
 	- Test using normalize_approx in spring loop
 		- Verify gain on Dell
