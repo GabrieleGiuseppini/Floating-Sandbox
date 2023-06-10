@@ -32,7 +32,7 @@ void ShipStrengthRandomizer::RandomizeStrength(
     vec2i const & pointIndexMatrixRegionOrigin,
     vec2i const & pointIndexMatrixRegionSize,
     std::vector<ShipFactoryPoint> & pointInfos2,
-    std::vector<ElementIndex> const & pointIndexRemap2,
+    IndexRemap const & pointIndexRemap,
     std::vector<ShipFactorySpring> const & springInfos2,
     std::vector<ShipFactoryTriangle> const & triangleInfos1,
     std::vector<ShipFactoryFrontier> const & shipFactoryFrontiers) const
@@ -42,7 +42,7 @@ void ShipStrengthRandomizer::RandomizeStrength(
         pointIndexMatrixRegionOrigin,
         pointIndexMatrixRegionSize,
         pointInfos2,
-        pointIndexRemap2,
+        pointIndexRemap,
         springInfos2,
         triangleInfos1,
         shipFactoryFrontiers);
@@ -126,7 +126,7 @@ void ShipStrengthRandomizer::RandomizeStrength_Batik(
     vec2i const & pointIndexMatrixRegionOrigin,
     vec2i const & pointIndexMatrixRegionSize,
     std::vector<ShipFactoryPoint> & pointInfos2,
-    std::vector<ElementIndex> const & pointIndexRemap2,
+    IndexRemap const & pointIndexRemap,
     std::vector<ShipFactorySpring> const & springInfos2,
     std::vector<ShipFactoryTriangle> const & triangleInfos1,
     std::vector<ShipFactoryFrontier> const & shipFactoryFrontiers) const
@@ -177,7 +177,7 @@ void ShipStrengthRandomizer::RandomizeStrength_Batik(
     {
         for (ElementIndex pointIndex1 : t.PointIndices1)
         {
-            auto const & coords = pointInfos2[pointIndexRemap2[pointIndex1]].DefinitionCoordinates;
+            auto const & coords = pointInfos2[pointIndexRemap.OldToNew(pointIndex1)].DefinitionCoordinates;
             if (coords.has_value())
             {
                 distanceMatrix[vec2i(coords->x + 1, coords->y + 1) - pointIndexMatrixRegionOrigin].Distance = std::numeric_limits<float>::max();
@@ -189,14 +189,14 @@ void ShipStrengthRandomizer::RandomizeStrength_Batik(
     {
         for (ElementIndex springIndex2 : frontier.EdgeIndices2)
         {
-            auto const pointAIndex2 = pointIndexRemap2[springInfos2[springIndex2].PointAIndex1];
+            auto const pointAIndex2 = pointIndexRemap.OldToNew(springInfos2[springIndex2].PointAIndex1);
             auto const & coordsA = pointInfos2[pointAIndex2].DefinitionCoordinates;
             if (coordsA.has_value())
             {
                 distanceMatrix[vec2i(coordsA->x + 1, coordsA->y + 1) - pointIndexMatrixRegionOrigin].Distance = 0.0f;
             }
 
-            auto const pointBIndex2 = pointIndexRemap2[springInfos2[springIndex2].PointBIndex1];
+            auto const pointBIndex2 = pointIndexRemap.OldToNew(springInfos2[springIndex2].PointBIndex1);
             auto const & coordsB = pointInfos2[pointBIndex2].DefinitionCoordinates;
             if (coordsB.has_value())
             {
@@ -229,7 +229,7 @@ void ShipStrengthRandomizer::RandomizeStrength_Batik(
         //
 
         auto const randomDraw = pointChoiceDistribution(randomEngine);
-        ElementIndex const startingPointIndex2 = pointIndexRemap2[triangleInfos1[randomDraw / 3].PointIndices1[randomDraw % 3]];
+        ElementIndex const startingPointIndex2 = pointIndexRemap.OldToNew(triangleInfos1[randomDraw / 3].PointIndices1[randomDraw % 3]);
         if (!pointInfos2[startingPointIndex2].DefinitionCoordinates.has_value())
             continue;
 
@@ -338,13 +338,13 @@ void ShipStrengthRandomizer::RandomizeStrength_Batik(
 
             if (auto const & pointIndex1 = pointIndexMatrix[pointCoords + pointIndexMatrixRegionOrigin];
                 pointIndex1.has_value()
-                && !pointInfos2[pointIndexRemap2[*pointIndex1]].ConnectedTriangles1.empty())
+                && !pointInfos2[pointIndexRemap.OldToNew(*pointIndex1)].ConnectedTriangles1.empty())
             {
                 if (distanceMatrix[pointCoords].IsCrack)
                 {
                     // Weaken
-                    float const weakening = pointInfos2[pointIndexRemap2[*pointIndex1]].Strength * mRandomizationExtent / 2.0f;
-                    pointInfos2[pointIndexRemap2[*pointIndex1]].Strength -= weakening;
+                    float const weakening = pointInfos2[pointIndexRemap.OldToNew(*pointIndex1)].Strength * mRandomizationExtent / 2.0f;
+                    pointInfos2[pointIndexRemap.OldToNew(*pointIndex1)].Strength -= weakening;
 
                     totalStrengthRemoved += weakening;
                 }
@@ -370,12 +370,12 @@ void ShipStrengthRandomizer::RandomizeStrength_Batik(
 
             if (auto const & pointIndex1 = pointIndexMatrix[pointCoords + pointIndexMatrixRegionOrigin];
                 pointIndex1.has_value()
-                && !pointInfos2[pointIndexRemap2[*pointIndex1]].ConnectedTriangles1.empty())
+                && !pointInfos2[pointIndexRemap.OldToNew(*pointIndex1)].ConnectedTriangles1.empty())
             {
                 if (!distanceMatrix[pointCoords].IsCrack)
                 {
                     // Distribute balancing strengthening
-                    pointInfos2[pointIndexRemap2[*pointIndex1]].Strength += perParticleWeakeningToDistribute;
+                    pointInfos2[pointIndexRemap.OldToNew(*pointIndex1)].Strength += perParticleWeakeningToDistribute;
                 }
             }
         }

@@ -43,6 +43,7 @@ public:
         std::shared_ptr<TaskThreadPool> taskThreadPool,
         Points && points,
         Springs && springs,
+        ElementCount perfectSquareCount,
         Triangles && triangles,
         ElectricalElements && electricalElements,
         Frontiers && frontiers);
@@ -807,6 +808,7 @@ private:
     // All the ship elements - never removed, the repositories maintain their own size forever
     Points mPoints;
     Springs mSprings;
+    ElementCount const mPerfectSquareCount;
     Triangles mTriangles;
     ElectricalElements mElectricalElements;
     Frontiers mFrontiers;

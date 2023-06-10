@@ -280,41 +280,24 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
         triangleInfos);
 
     //
-    // Optimize order of ShipFactoryPoint's and ShipFactorySpring's to minimize cache misses
+    // Optimize order of ShipFactoryPoint's and ShipFactorySpring's for our spring
+    // relaxation algorithm - and hopefully to improve cache hits
     //
 
     float originalSpringACMR = CalculateACMR(springInfos1);
 
-    // Tiling algorithm
-    //auto [pointInfos2, pointIndexRemap2, springInfos2, springIndexRemap2] = ReorderPointsAndSpringsOptimally_Tiling<2>(
-    auto [pointInfos2, pointIndexRemap2, springInfos2, springIndexRemap2] = ReorderPointsAndSpringsOptimally_Stripes<4>(
+    auto [pointInfos2, pointIndexRemap, springInfos2, springIndexRemap, perfectSquareCount] = OptimizeLayout(
+        pointIndexMatrix,
         pointInfos1,
-        springInfos1,
-        pointPairToSpringIndex1Map,
-        pointIndexMatrix);
+        springInfos1);
 
     float optimizedSpringACMR = CalculateACMR(springInfos2);
 
     LogMessage("ShipFactory: Spring ACMR: original=", originalSpringACMR, ", optimized=", optimizedSpringACMR);
 
-    //
-    // Optimize order of Triangles
-    //
-
     // Note: we don't optimize triangles, as tests indicate that performance gets (marginally) worse,
     // and at the same time, it makes sense to use the natural order of the triangles as it ensures
     // that higher elements in the ship cover lower elements when they are semi-detached.
-
-    ////float originalACMR = CalculateACMR(triangleInfos);
-    ////float originalVMR = CalculateVertexMissRatio(triangleInfos);
-
-    ////triangleInfos = ReorderTrianglesOptimally_TomForsyth(triangleInfos, pointInfos1.size());
-
-    ////float optimizedACMR = CalculateACMR(triangleInfos);
-    ////float optimizedVMR = CalculateVertexMissRatio(triangleInfos);
-
-    ////LogMessage("ShipFactory: Triangles ACMR: original=", originalACMR, ", optimized=", optimizedACMR);
-    ////LogMessage("ShipFactory: Triangles VMR: original=", originalVMR, ", optimized=", optimizedVMR);
 
     //
     // Associate all springs with the triangles that run through them (supertriangles)
@@ -332,11 +315,11 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
 
     std::vector<ShipFactoryFrontier> shipFactoryFrontiers = CreateShipFrontiers(
         pointIndexMatrix,
-        pointIndexRemap2,
+        pointIndexRemap,
         pointInfos2,
         springInfos2,
         pointPairToSpringIndex1Map,
-        springIndexRemap2);
+        springIndexRemap);
 
     auto const frontiersEndTime = std::chrono::steady_clock::now();
 
@@ -349,7 +332,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
         vec2i(minX, minY) + vec2i(1, 1), // Image -> PointIndexMatrix
         vec2i(maxX - minX + 1, maxY - minY + 1),
         pointInfos2,
-        pointIndexRemap2,
+        pointIndexRemap,
         springInfos2,
         triangleInfos,
         shipFactoryFrontiers);
@@ -375,7 +358,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
     Springs springs = CreateSprings(
         springInfos2,
         points,
-        pointIndexRemap2,
+        pointIndexRemap,
         parentWorld,
         gameEventDispatcher,
         gameParameters);
@@ -387,7 +370,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
     Triangles triangles = CreateTriangles(
         triangleInfos,
         points,
-        pointIndexRemap2);
+        pointIndexRemap);
 
     //
     // Create Electrical Elements
@@ -435,8 +418,9 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
 #endif
 
     LogMessage("ShipFactory: Created ship: W=", shipSize.width, ", H=", shipSize.height, ", ",
-        points.GetRawShipPointCount(), "/", points.GetBufferElementCount(), "buf points, ",
-        springs.GetElementCount(), " springs, ", triangles.GetElementCount(), " triangles, ",
+        points.GetRawShipPointCount(), "raw/", points.GetBufferElementCount(), "buf points, ",        
+        springs.GetElementCount(), " springs (", perfectSquareCount, " perfect squares, ", perfectSquareCount * 4 * 100 / std::max(1u, springs.GetElementCount()), "%),",
+        triangles.GetElementCount(), " triangles, ",
         electricalElements.GetElementCount(), " electrical elements, ",
         frontiers.GetElementCount(), " frontiers.");
 
@@ -448,6 +432,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
         std::move(taskThreadPool),
         std::move(points),
         std::move(springs),
+        perfectSquareCount,
         std::move(triangles),
         std::move(electricalElements),
         std::move(frontiers));
@@ -894,13 +879,458 @@ void ShipFactory::ConnectPointsToTriangles(
     }
 }
 
+ShipFactory::LayoutOptimizationResults ShipFactory::OptimizeLayout(
+    ShipFactoryPointIndexMatrix const & pointIndexMatrix,
+    std::vector<ShipFactoryPoint> const & pointInfos1,
+    std::vector<ShipFactorySpring> const & springInfos1)
+{
+    IndexRemap optimalPointRemap(pointInfos1.size());
+    IndexRemap optimalSpringRemap(springInfos1.size());
+
+    std::vector<bool> remappedPointMask(pointInfos1.size(), false);
+    std::vector<bool> remappedSpringMask(springInfos1.size(), false);
+    std::vector<bool> springFlipMask(springInfos1.size(), false);
+
+    // Build Point Pair -> Old Spring Index table
+    PointPairToIndexMap pointPairToOldSpringIndexMap;
+    for (ElementIndex s = 0; s < springInfos1.size(); ++s)
+    {
+        pointPairToOldSpringIndexMap.emplace(
+            std::piecewise_construct,
+            std::forward_as_tuple(springInfos1[s].PointAIndex1, springInfos1[s].PointBIndex1),
+            std::forward_as_tuple(s));
+    }
+
+    //
+    // 1. Find all "complete squares" from left-bottom
+    //
+    // A complete square looks like:
+    // 
+    //  If A is "even":
+    // 
+    //  D  C
+    //  |\/|
+    //  |/\|
+    //  A  B
+    // 
+    // Else (A is "odd"):
+    // 
+    //  D--C
+    //   \/
+    //   /\
+    //  A--B
+    // 
+    // For each perfect square, we re-order springs and their endpoints of each spring so that:
+    //  - The first two springs of the perfect square are the cross springs
+    //  - The endpoints A's of the cross springs are to be connected, and likewise 
+    //    the endpoint B's
+    //
+
+    ElementCount perfectSquareCount = 0;
+
+    for (int y = 0; y < pointIndexMatrix.height; ++y)
+    {
+        for (int x = 0; x < pointIndexMatrix.width; ++x)
+        {
+            // Check if this is vertex A of a square
+            if (pointIndexMatrix[{x, y}]
+                && x < pointIndexMatrix.width - 1 && pointIndexMatrix[{x + 1, y}]
+                && y < pointIndexMatrix.height - 1 && pointIndexMatrix[{x + 1, y + 1}]
+                && pointIndexMatrix[{x, y + 1}])
+            {
+                ElementIndex const a = *pointIndexMatrix[{x, y}];
+                ElementIndex const b = *pointIndexMatrix[{x + 1, y}];
+                ElementIndex const c = *pointIndexMatrix[{x + 1, y + 1}];
+                ElementIndex const d = *pointIndexMatrix[{x, y + 1}];
+
+                // Check existence - and availability - of all springs now
+
+                ElementIndex crossSpringACIndex;
+                if (auto const springIt = pointPairToOldSpringIndexMap.find({ a, c });
+                    springIt != pointPairToOldSpringIndexMap.cend() && !remappedSpringMask[springIt->second])
+                {
+                    crossSpringACIndex = springIt->second;
+                }
+                else
+                {
+                    continue;
+                }
+
+                ElementIndex crossSpringBDIndex;
+                if (auto const springIt = pointPairToOldSpringIndexMap.find({ b, d });
+                    springIt != pointPairToOldSpringIndexMap.cend() && !remappedSpringMask[springIt->second])
+                {
+                    crossSpringBDIndex = springIt->second;
+                }
+                else
+                {
+                    continue;
+                }
+
+                if ((x + y) % 2 == 0)
+                {
+                    // Even: check AD, BC
+
+                    ElementIndex sideSpringADIndex;
+                    if (auto const springIt = pointPairToOldSpringIndexMap.find({ a, d });
+                        springIt != pointPairToOldSpringIndexMap.cend() && !remappedSpringMask[springIt->second])
+                    {
+                        sideSpringADIndex = springIt->second;
+                    }
+                    else
+                    {
+                        continue;
+                    }
+
+                    ElementIndex sideSpringBCIndex;
+                    if (auto const springIt = pointPairToOldSpringIndexMap.find({ b, c });
+                        springIt != pointPairToOldSpringIndexMap.cend() && !remappedSpringMask[springIt->second])
+                    {
+                        sideSpringBCIndex = springIt->second;
+                    }
+                    else
+                    {
+                        continue;
+                    }
+
+                    // It'a a perfect square
+
+                    // Re-order springs and make sure they have the right directions:
+                    //  A->C
+                    //  B->D
+                    //  A->D
+                    //  B->C
+
+                    optimalSpringRemap.AddOld(crossSpringACIndex);
+                    remappedSpringMask[crossSpringACIndex] = true;
+                    if (springInfos1[crossSpringACIndex].PointBIndex1 != c)
+                    {
+                        assert(springInfos1[crossSpringACIndex].PointBIndex1 == a);
+                        springFlipMask[crossSpringACIndex] = true;
+                    }
+
+                    optimalSpringRemap.AddOld(crossSpringBDIndex);
+                    remappedSpringMask[crossSpringBDIndex] = true;
+                    if (springInfos1[crossSpringBDIndex].PointBIndex1 != d)
+                    {
+                        assert(springInfos1[crossSpringBDIndex].PointBIndex1 == b);
+                        springFlipMask[crossSpringBDIndex] = true;
+                    }
+
+                    optimalSpringRemap.AddOld(sideSpringADIndex);
+                    remappedSpringMask[sideSpringADIndex] = true;
+                    if (springInfos1[sideSpringADIndex].PointBIndex1 != d)
+                    {
+                        assert(springInfos1[sideSpringADIndex].PointBIndex1 == a);
+                        springFlipMask[sideSpringADIndex] = true;
+                    }
+
+                    optimalSpringRemap.AddOld(sideSpringBCIndex);
+                    remappedSpringMask[sideSpringBCIndex] = true;
+                    if (springInfos1[sideSpringBCIndex].PointBIndex1 != c)
+                    {
+                        assert(springInfos1[sideSpringBCIndex].PointBIndex1 == b);
+                        springFlipMask[sideSpringBCIndex] = true;
+                    }
+                }
+                else
+                {
+                    // Odd: check AB, CD
+
+                    ElementIndex sideSpringABIndex;
+                    if (auto const springIt = pointPairToOldSpringIndexMap.find({ a, b });
+                        springIt != pointPairToOldSpringIndexMap.cend() && !remappedSpringMask[springIt->second])
+                    {
+                        sideSpringABIndex = springIt->second;
+                    }
+                    else
+                    {
+                        continue;
+                    }
+
+                    ElementIndex sideSpringCDIndex;
+                    if (auto const springIt = pointPairToOldSpringIndexMap.find({ c, d });
+                        springIt != pointPairToOldSpringIndexMap.cend() && !remappedSpringMask[springIt->second])
+                    {
+                        sideSpringCDIndex = springIt->second;
+                    }
+                    else
+                    {
+                        continue;
+                    }
+
+                    // It'a a perfect square
+
+                    // Re-order springs abd make sure they have the right directions:
+                    //  A->C
+                    //  D->B
+                    //  A->B
+                    //  D->C
+
+                    optimalSpringRemap.AddOld(crossSpringACIndex);
+                    remappedSpringMask[crossSpringACIndex] = true;
+                    if (springInfos1[crossSpringACIndex].PointBIndex1 != c)
+                    {
+                        assert(springInfos1[crossSpringACIndex].PointBIndex1 == a);
+                        springFlipMask[crossSpringACIndex] = true;
+                    }
+
+                    optimalSpringRemap.AddOld(crossSpringBDIndex);
+                    remappedSpringMask[crossSpringBDIndex] = true;
+                    if (springInfos1[crossSpringBDIndex].PointBIndex1 != b)
+                    {
+                        assert(springInfos1[crossSpringBDIndex].PointBIndex1 == d);
+                        springFlipMask[crossSpringBDIndex] = true;
+                    }
+
+                    optimalSpringRemap.AddOld(sideSpringABIndex);
+                    remappedSpringMask[sideSpringABIndex] = true;
+                    if (springInfos1[sideSpringABIndex].PointBIndex1 != b)
+                    {
+                        assert(springInfos1[sideSpringABIndex].PointBIndex1 == a);
+                        springFlipMask[sideSpringABIndex] = true;
+                    }
+
+                    optimalSpringRemap.AddOld(sideSpringCDIndex);
+                    remappedSpringMask[sideSpringCDIndex] = true;
+                    if (springInfos1[sideSpringCDIndex].PointBIndex1 != c)
+                    {
+                        assert(springInfos1[sideSpringCDIndex].PointBIndex1 == d);
+                        springFlipMask[sideSpringCDIndex] = true;
+                    }
+                }
+
+                // If we're here, this was a perfect square
+
+                // Remap points
+
+                if (!remappedPointMask[a])
+                {
+                    optimalPointRemap.AddOld(a);
+                    remappedPointMask[a] = true;
+                }
+
+                if (!remappedPointMask[b])
+                {
+                    optimalPointRemap.AddOld(b);
+                    remappedPointMask[b] = true;
+                }
+
+                if (!remappedPointMask[c])
+                {
+                    optimalPointRemap.AddOld(c);
+                    remappedPointMask[c] = true;
+                }
+
+                if (!remappedPointMask[d])
+                {
+                    optimalPointRemap.AddOld(d);
+                    remappedPointMask[d] = true;
+                }
+
+                ++perfectSquareCount;
+            }
+        }
+    }
+
+    //
+    // Map leftovers now
+    //
+
+    LogMessage("LayoutOptimizer: ", std::count(remappedPointMask.cbegin(), remappedPointMask.cend(), false), " leftover points, ",
+        std::count(remappedSpringMask.cbegin(), remappedSpringMask.cend(), false), " leftover springs");
+
+    for (ElementIndex p = 0; p < pointInfos1.size(); ++p)
+    {
+        if (!remappedPointMask[p])
+        {
+            optimalPointRemap.AddOld(p);
+        }
+    }
+
+    for (ElementIndex s = 0; s < springInfos1.size(); ++s)
+    {
+        if (!remappedSpringMask[s])
+        {
+            optimalSpringRemap.AddOld(s);
+        }
+    }
+
+    //
+    // Remap
+    //
+
+    // Remap point info's
+
+    std::vector<ShipFactoryPoint> pointInfos2;
+    pointInfos2.reserve(pointInfos1.size());
+    for (ElementIndex oldP : optimalPointRemap.GetOldIndices())
+    {
+        pointInfos2.emplace_back(pointInfos1[oldP]);
+    }
+
+    // Remap spring info's
+
+    std::vector<ShipFactorySpring> springInfos2;
+    springInfos2.reserve(springInfos1.size());
+    for (ElementIndex oldS : optimalSpringRemap.GetOldIndices())
+    {
+        springInfos2.emplace_back(springInfos1[oldS]);
+
+        if (springFlipMask[oldS])
+        {
+            std::swap(springInfos2.back().PointAIndex1, springInfos2.back().PointBIndex1);
+        }
+    }
+
+    return std::make_tuple(
+        pointInfos2,
+        optimalPointRemap,
+        springInfos2,
+        optimalSpringRemap,
+        perfectSquareCount);
+}
+
+void ShipFactory::ConnectSpringsAndTriangles(
+    std::vector<ShipFactorySpring> & springInfos2,
+    std::vector<ShipFactoryTriangle> & triangleInfos2)
+{
+    //
+    // 1. Build Point Pair -> Spring table
+    //
+
+    PointPairToIndexMap pointPairToSpringMap;
+
+    for (ElementIndex s = 0; s < springInfos2.size(); ++s)
+    {
+        pointPairToSpringMap.emplace(
+            std::piecewise_construct,
+            std::forward_as_tuple(springInfos2[s].PointAIndex1, springInfos2[s].PointBIndex1),
+            std::forward_as_tuple(s));
+    }
+
+    //
+    // 2. Visit all triangles and connect them to their springs
+    //
+
+    for (ElementIndex t = 0; t < triangleInfos2.size(); ++t)
+    {
+        for (size_t p = 0; p < triangleInfos2[t].PointIndices1.size(); ++p)
+        {
+            ElementIndex const endpointIndex = triangleInfos2[t].PointIndices1[p];
+
+            ElementIndex const nextEndpointIndex =
+                p < triangleInfos2[t].PointIndices1.size() - 1
+                ? triangleInfos2[t].PointIndices1[p + 1]
+                : triangleInfos2[t].PointIndices1[0];
+
+            // Lookup spring for this pair
+            auto const springIt = pointPairToSpringMap.find({ endpointIndex, nextEndpointIndex });
+            assert(springIt != pointPairToSpringMap.end());
+
+            ElementIndex const springIndex = springIt->second;
+
+            // Tell this spring that it has this additional super triangle
+            springInfos2[springIndex].SuperTriangles2.push_back(t);
+            assert(springInfos2[springIndex].SuperTriangles2.size() <= 2);
+            ++(springInfos2[springIndex].CoveringTrianglesCount);
+            assert(springInfos2[springIndex].CoveringTrianglesCount <= 2);
+
+            // Tell the triangle about this sub spring
+            assert(!triangleInfos2[t].SubSprings2.contains(springIndex));
+            triangleInfos2[t].SubSprings2.push_back(springIndex);
+        }
+    }
+
+    //
+    // 3. Now find "traverse" springs - i.e. springs that are not edges of any triangles
+    // (because of our tessellation algorithm) - and see whether they're fully covered
+    // by two triangles; if they are, consider these springs as being covered by those
+    // two triangles.
+    //
+    // A "traverse" spring would be the B-C spring in the following pair of triangles:
+    //
+    //   A     B
+    //    *---*
+    //    |\  |
+    //    | \ |
+    //    |  \|
+    //    *---*
+    //   C     D
+    //
+
+    for (ElementIndex s = 0; s < springInfos2.size(); ++s)
+    {
+        if (2 == springInfos2[s].SuperTriangles2.size())
+        {
+            // This spring is the common edge between two triangles
+            // (A-D above)
+
+            //
+            // Find the B and C endpoints
+            //
+
+            ElementIndex endpoint1Index = NoneElementIndex;
+            ShipFactoryTriangle & triangle1 = triangleInfos2[springInfos2[s].SuperTriangles2[0]];
+            for (ElementIndex triangleVertex : triangle1.PointIndices1)
+            {
+                if (triangleVertex != springInfos2[s].PointAIndex1
+                    && triangleVertex != springInfos2[s].PointBIndex1)
+                {
+                    endpoint1Index = triangleVertex;
+                    break;
+                }
+            }
+
+            assert(NoneElementIndex != endpoint1Index);
+
+            ElementIndex endpoint2Index = NoneElementIndex;
+            ShipFactoryTriangle & triangle2 = triangleInfos2[springInfos2[s].SuperTriangles2[1]];
+            for (ElementIndex triangleVertex : triangle2.PointIndices1)
+            {
+                if (triangleVertex != springInfos2[s].PointAIndex1
+                    && triangleVertex != springInfos2[s].PointBIndex1)
+                {
+                    endpoint2Index = triangleVertex;
+                    break;
+                }
+            }
+
+            assert(NoneElementIndex != endpoint2Index);
+
+
+            //
+            // See if there's a B-C spring
+            //
+
+            auto const traverseSpringIt = pointPairToSpringMap.find({ endpoint1Index, endpoint2Index });
+            if (traverseSpringIt != pointPairToSpringMap.end())
+            {
+                // We have a traverse spring
+
+                assert(0 == springInfos2[traverseSpringIt->second].SuperTriangles2.size());
+
+                // Tell the traverse spring that it has these 2 covering triangles
+                springInfos2[traverseSpringIt->second].CoveringTrianglesCount += 2;
+                assert(springInfos2[traverseSpringIt->second].CoveringTrianglesCount == 2);
+
+                // Tell the triangles that they're covering this spring
+                assert(!triangle1.CoveredTraverseSpringIndex2.has_value());
+                triangle1.CoveredTraverseSpringIndex2 = traverseSpringIt->second;
+                assert(!triangle2.CoveredTraverseSpringIndex2.has_value());
+                triangle2.CoveredTraverseSpringIndex2 = traverseSpringIt->second;
+            }
+        }
+    }
+}
+
 std::vector<ShipFactoryFrontier> ShipFactory::CreateShipFrontiers(
     ShipFactoryPointIndexMatrix const & pointIndexMatrix,
-    std::vector<ElementIndex> const & pointIndexRemap2,
+    IndexRemap const & pointIndexRemap,
     std::vector<ShipFactoryPoint> const & pointInfos2,
     std::vector<ShipFactorySpring> const & springInfos2,
     PointPairToIndexMap const & pointPairToSpringIndex1Map,
-    std::vector<ElementIndex> const & springIndexRemap2)
+    IndexRemap const & springIndexRemap)
 {
     //
     // Detect and create frontiers
@@ -949,7 +1379,7 @@ std::vector<ShipFactoryFrontier> ShipFactory::CreateShipFrontiers(
                     }
                     else
                     {
-                        ElementIndex const springIndex2 = springIndexRemap2[springIndex1It->second];
+                        ElementIndex const springIndex2 = springIndexRemap.OldToNew(springIndex1It->second);
                         if (springInfos2[springIndex2].SuperTriangles2.empty())
                         {
                             // No triangles along this spring
@@ -973,7 +1403,7 @@ std::vector<ShipFactoryFrontier> ShipFactory::CreateShipFrontiers(
                         frontierEdges2,
                         springInfos2,
                         pointPairToSpringIndex1Map,
-                        springIndexRemap2);
+                        springIndexRemap);
 
                     if (!edgeIndices.empty())
                     {
@@ -993,12 +1423,12 @@ std::vector<ShipFactoryFrontier> ShipFactory::CreateShipFrontiers(
                 //
                 // We are entering the region of frontierable points iff:
                 //  - There's a point here, and
-                //  - There's at least one a triangle edge attached to this point
+                //  - There's at least one triangle edge attached to this point
 
                 if (pointIndexMatrix[{x, y}].has_value())
                 {
                     ElementIndex const pointIndex1 = *pointIndexMatrix[{x, y}];
-                    ElementIndex const pointIndex2 = pointIndexRemap2[pointIndex1];
+                    ElementIndex const pointIndex2 = pointIndexRemap.OldToNew(pointIndex1);
 
                     if (!pointInfos2[pointIndex2].ConnectedTriangles1.empty())
                     {
@@ -1017,7 +1447,7 @@ std::vector<ShipFactoryFrontier> ShipFactory::CreateShipFrontiers(
                             frontierEdges2,
                             springInfos2,
                             pointPairToSpringIndex1Map,
-                            springIndexRemap2);
+                            springIndexRemap);
 
                         if (!edgeIndices.empty())
                         {
@@ -1040,12 +1470,12 @@ std::vector<ShipFactoryFrontier> ShipFactory::CreateShipFrontiers(
 std::vector<ElementIndex> ShipFactory::PropagateFrontier(
     ElementIndex startPointIndex1,
     vec2i startPointCoordinates,
-    Octant startOctant, // Relative to starting point
+    Octant startOctant,
     ShipFactoryPointIndexMatrix const & pointIndexMatrix,
     std::set<ElementIndex> & frontierEdges2,
     std::vector<ShipFactorySpring> const & springInfos2,
     PointPairToIndexMap const & pointPairToSpringIndex1Map,
-    std::vector<ElementIndex> const & springIndexRemap2)
+    IndexRemap const & springIndexRemap)
 {
     std::vector<ElementIndex> edgeIndices;
 
@@ -1114,7 +1544,7 @@ std::vector<ElementIndex> ShipFactory::PropagateFrontier(
                 continue;
             }
 
-            springIndex2 = springIndexRemap2[springIndex1It->second];
+            springIndex2 = springIndexRemap.OldToNew(springIndex1It->second);
             if (springInfos2[springIndex2].SuperTriangles2.size() != 1)
             {
                 // No triangles along this spring, or two triangles along it
@@ -1239,145 +1669,11 @@ Physics::Points ShipFactory::CreatePoints(
     return points;
 }
 
-void ShipFactory::ConnectSpringsAndTriangles(
-    std::vector<ShipFactorySpring> & springInfos2,
-    std::vector<ShipFactoryTriangle> & triangleInfos2)
-{
-    //
-    // 1. Build Point Pair -> Spring table
-    //
-
-    PointPairToIndexMap pointPairToSpringMap;
-
-    for (ElementIndex s = 0; s < springInfos2.size(); ++s)
-    {
-        pointPairToSpringMap.emplace(
-            std::piecewise_construct,
-            std::forward_as_tuple(springInfos2[s].PointAIndex1, springInfos2[s].PointBIndex1),
-            std::forward_as_tuple(s));
-    }
-
-
-    //
-    // 2. Visit all triangles and connect them to their springs
-    //
-
-    for (ElementIndex t = 0; t < triangleInfos2.size(); ++t)
-    {
-        for (size_t p = 0; p < triangleInfos2[t].PointIndices1.size(); ++p)
-        {
-            ElementIndex const endpointIndex = triangleInfos2[t].PointIndices1[p];
-
-            ElementIndex const nextEndpointIndex =
-                p < triangleInfos2[t].PointIndices1.size() - 1
-                ? triangleInfos2[t].PointIndices1[p + 1]
-                : triangleInfos2[t].PointIndices1[0];
-
-            // Lookup spring for this pair
-            auto const springIt = pointPairToSpringMap.find({ endpointIndex, nextEndpointIndex });
-            assert(springIt != pointPairToSpringMap.end());
-
-            ElementIndex const springIndex = springIt->second;
-
-            // Tell this spring that it has this additional super triangle
-            springInfos2[springIndex].SuperTriangles2.push_back(t);
-            assert(springInfos2[springIndex].SuperTriangles2.size() <= 2);
-            ++(springInfos2[springIndex].CoveringTrianglesCount);
-            assert(springInfos2[springIndex].CoveringTrianglesCount <= 2);
-
-            // Tell the triangle about this sub spring
-            assert(!triangleInfos2[t].SubSprings2.contains(springIndex));
-            triangleInfos2[t].SubSprings2.push_back(springIndex);
-        }
-    }
-
-    //
-    // 3. Now find "traverse" springs - i.e. springs that are not edges of any triangles
-    // (because of our tessellation algorithm) - and see whether they're fully covered
-    // by two triangles; if they are, consider these springs as being covered by those
-    // two triangles.
-    //
-    // A "traverse" spring would be the B-C spring in the following pair of triangles:
-    //
-    //   A     B
-    //    *---*
-    //    |\  |
-    //    | \ |
-    //    |  \|
-    //    *---*
-    //   C     D
-    //
-
-    for (ElementIndex s = 0; s < springInfos2.size(); ++s)
-    {
-        if (2 == springInfos2[s].SuperTriangles2.size())
-        {
-            // This spring is the common edge between two triangles
-            // (A-D above)
-
-            //
-            // Find the B and C endpoints
-            //
-
-            ElementIndex endpoint1Index = NoneElementIndex;
-            ShipFactoryTriangle & triangle1 = triangleInfos2[springInfos2[s].SuperTriangles2[0]];
-            for (ElementIndex triangleVertex : triangle1.PointIndices1)
-            {
-                if (triangleVertex != springInfos2[s].PointAIndex1
-                    && triangleVertex != springInfos2[s].PointBIndex1)
-                {
-                    endpoint1Index = triangleVertex;
-                    break;
-                }
-            }
-
-            assert(NoneElementIndex != endpoint1Index);
-
-            ElementIndex endpoint2Index = NoneElementIndex;
-            ShipFactoryTriangle & triangle2 = triangleInfos2[springInfos2[s].SuperTriangles2[1]];
-            for (ElementIndex triangleVertex : triangle2.PointIndices1)
-            {
-                if (triangleVertex != springInfos2[s].PointAIndex1
-                    && triangleVertex != springInfos2[s].PointBIndex1)
-                {
-                    endpoint2Index = triangleVertex;
-                    break;
-                }
-            }
-
-            assert(NoneElementIndex != endpoint2Index);
-
-
-            //
-            // See if there's a B-C spring
-            //
-
-            auto const traverseSpringIt = pointPairToSpringMap.find({ endpoint1Index, endpoint2Index });
-            if (traverseSpringIt != pointPairToSpringMap.end())
-            {
-                // We have a traverse spring
-
-                assert(0 == springInfos2[traverseSpringIt->second].SuperTriangles2.size());
-
-                // Tell the traverse spring that it has these 2 covering triangles
-                springInfos2[traverseSpringIt->second].CoveringTrianglesCount += 2;
-                assert(springInfos2[traverseSpringIt->second].CoveringTrianglesCount == 2);
-
-                // Tell the triangles that they're covering this spring
-                assert(!triangle1.CoveredTraverseSpringIndex2.has_value());
-                triangle1.CoveredTraverseSpringIndex2 = traverseSpringIt->second;
-                assert(!triangle2.CoveredTraverseSpringIndex2.has_value());
-                triangle2.CoveredTraverseSpringIndex2 = traverseSpringIt->second;
-            }
-        }
-    }
-}
-
 Physics::Springs ShipFactory::CreateSprings(
     std::vector<ShipFactorySpring> const & springInfos2,
     Physics::Points & points,
-    std::vector<ElementIndex> const & pointIndexRemap,
-    World & parentWorld,
+    IndexRemap const & pointIndexRemap,
+    Physics::World & parentWorld,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     GameParameters const & gameParameters)
 {
@@ -1391,8 +1687,8 @@ Physics::Springs ShipFactory::CreateSprings(
     {
         // Create spring
         springs.Add(
-            pointIndexRemap[springInfos2[s].PointAIndex1],
-            pointIndexRemap[springInfos2[s].PointBIndex1],
+            pointIndexRemap.OldToNew(springInfos2[s].PointAIndex1),
+            pointIndexRemap.OldToNew(springInfos2[s].PointBIndex1),
             springInfos2[s].PointAAngle,
             springInfos2[s].PointBAngle,
             springInfos2[s].SuperTriangles2,
@@ -1401,13 +1697,13 @@ Physics::Springs ShipFactory::CreateSprings(
 
         // Add spring to its endpoints
         points.AddFactoryConnectedSpring(
-            pointIndexRemap[springInfos2[s].PointAIndex1],
+            pointIndexRemap.OldToNew(springInfos2[s].PointAIndex1),
             s,
-            pointIndexRemap[springInfos2[s].PointBIndex1]);
+            pointIndexRemap.OldToNew(springInfos2[s].PointBIndex1));
         points.AddFactoryConnectedSpring(
-            pointIndexRemap[springInfos2[s].PointBIndex1],
+            pointIndexRemap.OldToNew(springInfos2[s].PointBIndex1),
             s,
-            pointIndexRemap[springInfos2[s].PointAIndex1]);
+            pointIndexRemap.OldToNew(springInfos2[s].PointAIndex1));
     }
 
     return springs;
@@ -1416,7 +1712,7 @@ Physics::Springs ShipFactory::CreateSprings(
 Physics::Triangles ShipFactory::CreateTriangles(
     std::vector<ShipFactoryTriangle> const & triangleInfos2,
     Physics::Points & points,
-    std::vector<ElementIndex> const & pointIndexRemap)
+    IndexRemap const & pointIndexRemap)
 {
     Physics::Triangles triangles(static_cast<ElementIndex>(triangleInfos2.size()));
 
@@ -1426,18 +1722,18 @@ Physics::Triangles ShipFactory::CreateTriangles(
 
         // Create triangle
         triangles.Add(
-            pointIndexRemap[triangleInfos2[t].PointIndices1[0]],
-            pointIndexRemap[triangleInfos2[t].PointIndices1[1]],
-            pointIndexRemap[triangleInfos2[t].PointIndices1[2]],
+            pointIndexRemap.OldToNew(triangleInfos2[t].PointIndices1[0]),
+            pointIndexRemap.OldToNew(triangleInfos2[t].PointIndices1[1]),
+            pointIndexRemap.OldToNew(triangleInfos2[t].PointIndices1[2]),
             triangleInfos2[t].SubSprings2[0],
             triangleInfos2[t].SubSprings2[1],
             triangleInfos2[t].SubSprings2[2],
             triangleInfos2[t].CoveredTraverseSpringIndex2);
 
         // Add triangle to its endpoints
-        points.AddFactoryConnectedTriangle(pointIndexRemap[triangleInfos2[t].PointIndices1[0]], t, true); // Owner
-        points.AddFactoryConnectedTriangle(pointIndexRemap[triangleInfos2[t].PointIndices1[1]], t, false); // Not owner
-        points.AddFactoryConnectedTriangle(pointIndexRemap[triangleInfos2[t].PointIndices1[2]], t, false); // Not owner
+        points.AddFactoryConnectedTriangle(pointIndexRemap.OldToNew(triangleInfos2[t].PointIndices1[0]), t, true); // Owner
+        points.AddFactoryConnectedTriangle(pointIndexRemap.OldToNew(triangleInfos2[t].PointIndices1[1]), t, false); // Not owner
+        points.AddFactoryConnectedTriangle(pointIndexRemap.OldToNew(triangleInfos2[t].PointIndices1[2]), t, false); // Not owner
     }
 
     return triangles;
@@ -1619,658 +1915,11 @@ void ShipFactory::VerifyShipInvariants(
 #endif
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-// Reordering
+// Vertex cache optimization
 //////////////////////////////////////////////////////////////////////////////////////////////////
-
-template <int StripeLength>
-ShipFactory::ReorderingResults ShipFactory::ReorderPointsAndSpringsOptimally_Stripes(
-    std::vector<ShipFactoryPoint> const & pointInfos1,
-    std::vector<ShipFactorySpring> const & springInfos1,
-    PointPairToIndexMap const & pointPairToSpringIndex1Map,
-    ShipFactoryPointIndexMatrix const & pointIndexMatrix)
-{
-    //
-    // 1. Visit the point matrix by all rows, from top to bottom
-    //
-
-    std::vector<bool> reorderedPointInfos1(pointInfos1.size(), false);
-    std::vector<ShipFactoryPoint> pointInfos2;
-    pointInfos2.reserve(pointInfos1.size());
-    std::vector<ElementIndex> pointIndexRemap(pointInfos1.size(), NoneElementIndex);
-
-    std::vector<bool> reorderedSpringInfos1(springInfos1.size(), false);
-    std::vector<ShipFactorySpring> springInfos2;
-    springInfos2.reserve(springInfos1.size());
-    std::vector<ElementIndex> springIndexRemap(springInfos1.size(), NoneElementIndex);
-
-    // From top to bottom, starting at second row from top (i.e. first real row)
-    for (int y = pointIndexMatrix.height - 1; y >= 1; y -= (StripeLength - 1))
-    {
-        ReorderPointsAndSpringsOptimally_Stripes_Stripe<StripeLength>(
-            y,
-            pointInfos1,
-            reorderedPointInfos1,
-            springInfos1,
-            reorderedSpringInfos1,
-            pointIndexMatrix,
-            pointPairToSpringIndex1Map,
-            pointInfos2,
-            pointIndexRemap,
-            springInfos2,
-            springIndexRemap);
-    }
-
-
-    //
-    // 2. Add/Sort leftovers
-    //
-    // At this moment leftovers are:
-    //  - Points: rope endpoints (because unreachable via matrix)
-    //  - Springs: spring connecting points on left edge of ship with points SW of those points, and rope springs
-    //
-
-    // LogMessage(" Leftover points: ", pointInfos1.size() - pointInfos2.size() , " springs: ", springInfos1.size() - springInfos2.size());
-
-    // Here we use a greedy algorithm: for each not-yet-reordered point we add
-    // all of its connected springs that are still not reordered
-    for (size_t pointIndex1 = 0; pointIndex1 < pointInfos1.size(); ++pointIndex1)
-    {
-        if (!reorderedPointInfos1[pointIndex1])
-        {
-            // Add/sort point
-            pointIndexRemap[pointIndex1] = static_cast<ElementIndex>(pointInfos2.size());
-            pointInfos2.push_back(pointInfos1[pointIndex1]);
-
-            // Visit all connected not-yet-reordered springs
-            for (ElementIndex springIndex1 : pointInfos1[pointIndex1].ConnectedSprings1)
-            {
-                if (!reorderedSpringInfos1[springIndex1])
-                {
-                    // Add/sort spring
-                    springIndexRemap[springIndex1] = static_cast<ElementIndex>(springInfos2.size());
-                    springInfos2.push_back(springInfos1[springIndex1]);
-
-                    // Don't reorder this spring again
-                    reorderedSpringInfos1[springIndex1] = true;
-                }
-            }
-        }
-    }
-
-    // Finally add all not-yet-reordered springs
-    for (size_t springIndex1 = 0; springIndex1 < springInfos1.size(); ++springIndex1)
-    {
-        if (!reorderedSpringInfos1[springIndex1])
-        {
-            // Add/sort spring
-            springIndexRemap[springIndex1] = static_cast<ElementIndex>(springInfos2.size());
-            springInfos2.push_back(springInfos1[springIndex1]);
-        }
-    }
-
-    //
-    // 3. Return results
-    //
-
-    assert(pointInfos2.size() == pointInfos1.size());
-    assert(pointIndexRemap.size() == pointInfos1.size());
-    assert(springInfos2.size() == springInfos1.size());
-    assert(springIndexRemap.size() == springInfos1.size());
-
-    return std::make_tuple(pointInfos2, pointIndexRemap, springInfos2, springIndexRemap);
-}
-
-template <int StripeLength>
-void ShipFactory::ReorderPointsAndSpringsOptimally_Stripes_Stripe(
-    int y,
-    std::vector<ShipFactoryPoint> const & pointInfos1,
-    std::vector<bool> & reorderedPointInfos1,
-    std::vector<ShipFactorySpring> const & springInfos1,
-    std::vector<bool> & reorderedSpringInfos1,
-    ShipFactoryPointIndexMatrix const & pointIndexMatrix,
-    PointPairToIndexMap const & pointPairToSpringIndex1Map,
-    std::vector<ShipFactoryPoint> & pointInfos2,
-    std::vector<ElementIndex> & pointIndexRemap,
-    std::vector<ShipFactorySpring> & springInfos2,
-    std::vector<ElementIndex> & springIndexRemap)
-{
-    //
-    // Collect points in a vertical stripe - 2 cols wide, StripeLength high
-    //
-
-    std::vector<ElementIndex> stripePointIndices1;
-
-    // From left to right, start at first real col
-    for (int x1 = 1; x1 < pointIndexMatrix.width - 1; ++x1)
-    {
-        //
-        // 1. Build sets of indices of points left and right of the stripe
-        //
-
-        stripePointIndices1.clear();
-
-        // From top to bottom
-        for (int y1 = y; y1 > y - StripeLength && y1 >= 1; --y1)
-        {
-            // Check if left exists
-            if (!!pointIndexMatrix[{x1, y1}])
-            {
-                stripePointIndices1.push_back(*(pointIndexMatrix[{x1, y1}]));
-            }
-
-            // Check if right exists
-            if (!!pointIndexMatrix[{x1 + 1, y1}])
-            {
-                stripePointIndices1.push_back(*(pointIndexMatrix[{x1 + 1, y1}]));
-            }
-        }
-
-
-        //
-        // 2. Add/sort all not yet reordered springs connecting all points among themselves
-        //
-
-        for (int i1 = 0; i1 < static_cast<int>(stripePointIndices1.size()) - 1; ++i1)
-        {
-            for (int i2 = i1 + 1; i2 < static_cast<int>(stripePointIndices1.size()); ++i2)
-            {
-                auto const springIndexIt = pointPairToSpringIndex1Map.find({ stripePointIndices1[i1], stripePointIndices1[i2] });
-                if (springIndexIt != pointPairToSpringIndex1Map.end())
-                {
-                    ElementIndex const springIndex1 = springIndexIt->second;
-                    if (!reorderedSpringInfos1[springIndex1])
-                    {
-                        springIndexRemap[springIndex1] = static_cast<ElementIndex>(springInfos2.size());
-                        springInfos2.push_back(springInfos1[springIndex1]);
-
-                        // Don't reorder this spring again
-                        reorderedSpringInfos1[springIndex1] = true;
-                    }
-                }
-            }
-        }
-
-
-        //
-        // 3. Add/sort all not yet reordered points among all these points
-        //
-
-        for (ElementIndex pointIndex1 : stripePointIndices1)
-        {
-            if (!reorderedPointInfos1[pointIndex1])
-            {
-                pointIndexRemap[pointIndex1] = static_cast<ElementIndex>(pointInfos2.size());
-                pointInfos2.push_back(pointInfos1[pointIndex1]);
-
-                // Don't reorder this point again
-                reorderedPointInfos1[pointIndex1] = true;
-            }
-        }
-    }
-}
-
-ShipFactory::ReorderingResults ShipFactory::ReorderPointsAndSpringsOptimally_Blocks(
-    std::vector<ShipFactoryPoint> const & pointInfos1,
-    std::vector<ShipFactorySpring> const & springInfos1,
-    PointPairToIndexMap const & pointPairToSpringIndex1Map,
-    ShipFactoryPointIndexMatrix const & pointIndexMatrix)
-{
-    //
-    // 1. Visit the point matrix by all rows, from top to bottom
-    //
-
-    std::vector<bool> reorderedPointInfos1(pointInfos1.size(), false);
-    std::vector<ShipFactoryPoint> pointInfos2;
-    pointInfos2.reserve(pointInfos1.size());
-    std::vector<ElementIndex> pointIndexRemap(pointInfos1.size(), NoneElementIndex);
-
-    std::vector<bool> reorderedSpringInfos1(springInfos1.size(), false);
-    std::vector<ShipFactorySpring> springInfos2;
-    springInfos2.reserve(springInfos1.size());
-    std::vector<ElementIndex> springIndexRemap(springInfos1.size(), NoneElementIndex);
-
-    // From top to bottom, starting at second row from top (i.e. first real row),
-    // skipping one row of points to ensure full squares
-    for (int y = pointIndexMatrix.height - 1; y >= 1; y -= 2)
-    {
-        ReorderPointsAndSpringsOptimally_Blocks_Row(
-            y,
-            pointInfos1,
-            reorderedPointInfos1,
-            springInfos1,
-            reorderedSpringInfos1,
-            pointIndexMatrix,
-            pointPairToSpringIndex1Map,
-            pointInfos2,
-            pointIndexRemap,
-            springInfos2,
-            springIndexRemap);
-    }
-
-
-    //
-    // 2. Add/Sort leftovers
-    //
-    // At this moment leftovers are:
-    //  - Points: rope endpoints (because unreachable via matrix)
-    //  - Springs: spring connecting points on left edge of ship with points SW of those points, and rope springs
-    //
-
-    // Here we use a greedy algorithm: for each not-yet-reordered point we add
-    // all of its connected springs that are still not reordered
-    for (size_t pointIndex1 = 0; pointIndex1 < pointInfos1.size(); ++pointIndex1)
-    {
-        if (!reorderedPointInfos1[pointIndex1])
-        {
-            // Add/sort point
-            pointIndexRemap[pointIndex1] = static_cast<ElementIndex>(pointInfos2.size());
-            pointInfos2.push_back(pointInfos1[pointIndex1]);
-
-            // Visit all connected not-yet-reordered springs
-            for (ElementIndex springIndex1 : pointInfos1[pointIndex1].ConnectedSprings1)
-            {
-                if (!reorderedSpringInfos1[springIndex1])
-                {
-                    // Add/sort spring
-                    springIndexRemap[springIndex1] = static_cast<ElementIndex>(springInfos2.size());
-                    springInfos2.push_back(springInfos1[springIndex1]);
-
-                    // Don't reorder this spring again
-                    reorderedSpringInfos1[springIndex1] = true;
-                }
-            }
-        }
-    }
-
-    // Finally add all not-yet-reordered springs
-    for (size_t springIndex1 = 0; springIndex1 < springInfos1.size(); ++springIndex1)
-    {
-        if (!reorderedSpringInfos1[springIndex1])
-        {
-            // Add/sort spring
-            springIndexRemap[springIndex1] = static_cast<ElementIndex>(springInfos2.size());
-            springInfos2.push_back(springInfos1[springIndex1]);
-        }
-    }
-
-    //
-    // 3. Return results
-    //
-
-    assert(pointInfos2.size() == pointInfos1.size());
-    assert(pointIndexRemap.size() == pointInfos1.size());
-    assert(springInfos2.size() == springInfos1.size());
-    assert(springIndexRemap.size() == springInfos1.size());
-
-    return std::make_tuple(pointInfos2, pointIndexRemap, springInfos2, springIndexRemap);
-}
-
-void ShipFactory::ReorderPointsAndSpringsOptimally_Blocks_Row(
-    int y,
-    std::vector<ShipFactoryPoint> const & pointInfos1,
-    std::vector<bool> & reorderedPointInfos1,
-    std::vector<ShipFactorySpring> const & springInfos1,
-    std::vector<bool> & reorderedSpringInfos1,
-    ShipFactoryPointIndexMatrix const & pointIndexMatrix,
-    PointPairToIndexMap const & pointPairToSpringIndex1Map,
-    std::vector<ShipFactoryPoint> & pointInfos2,
-    std::vector<ElementIndex> & pointIndexRemap,
-    std::vector<ShipFactorySpring> & springInfos2,
-    std::vector<ElementIndex> & springIndexRemap)
-{
-    //
-    // Visit each square as follows:
-    //
-    //  b----c
-    //  |    |
-    //  a----d
-    //
-    // ...where b is the current point
-
-    std::vector<ElementIndex> squarePointIndices1;
-
-    // From left to right, start at first real col
-    for (int x = 1; x < pointIndexMatrix.width - 1; ++x)
-    {
-        squarePointIndices1.clear();
-
-        // Check if b exists
-        if (!!pointIndexMatrix[{x, y}])
-        {
-            //
-            // 1. Collect all the points that we have around this square
-            //
-
-            // Add a if it exists
-            if (!!pointIndexMatrix[{x, y - 1}])
-                squarePointIndices1.push_back(*(pointIndexMatrix[{x, y - 1}]));
-
-            // Add b
-            squarePointIndices1.push_back(*(pointIndexMatrix[{x, y}]));
-
-            // Add c if it exists
-            if (!!pointIndexMatrix[{x + 1, y}])
-                squarePointIndices1.push_back(*(pointIndexMatrix[{x + 1, y}]));
-
-            // Add d if it exists
-            if (!!pointIndexMatrix[{x + 1, y - 1}])
-                squarePointIndices1.push_back(*(pointIndexMatrix[{x + 1, y - 1}]));
-
-            //
-            // 2. Add/sort all existing, not-yet-reordered springs among all these points
-            //
-
-            for (size_t i1 = 0; i1 < squarePointIndices1.size() - 1; ++i1)
-            {
-                for (size_t i2 = i1 + 1; i2 < squarePointIndices1.size(); ++i2)
-                {
-                    auto const springIndexIt = pointPairToSpringIndex1Map.find({ squarePointIndices1[i1], squarePointIndices1[i2] });
-                    if (springIndexIt != pointPairToSpringIndex1Map.end())
-                    {
-                        ElementIndex const springIndex1 = springIndexIt->second;
-                        if (!reorderedSpringInfos1[springIndex1])
-                        {
-                            springIndexRemap[springIndex1] = static_cast<ElementIndex>(springInfos1.size());
-                            springInfos2.push_back(springInfos1[springIndex1]);
-
-                            // Don't reorder this spring again
-                            reorderedSpringInfos1[springIndex1] = true;
-                        }
-                    }
-                }
-            }
-
-
-            //
-            // 3. Add/sort all not yet reordered points among all these points
-            //
-
-            for (ElementIndex pointIndex1 : squarePointIndices1)
-            {
-                if (!reorderedPointInfos1[pointIndex1])
-                {
-                    pointIndexRemap[pointIndex1] = static_cast<ElementIndex>(pointInfos2.size());
-                    pointInfos2.push_back(pointInfos1[pointIndex1]);
-
-                    // Don't reorder this point again
-                    reorderedPointInfos1[pointIndex1] = true;
-                }
-            }
-        }
-    }
-}
-
-template <int BlockSize>
-ShipFactory::ReorderingResults ShipFactory::ReorderPointsAndSpringsOptimally_Tiling(
-    std::vector<ShipFactoryPoint> const & pointInfos1,
-    std::vector<ShipFactorySpring> const & springInfos1,
-    ShipFactoryPointIndexMatrix const & pointIndexMatrix)
-{
-    //
-    // 1. Visit the point matrix in 2x2 blocks, and add all springs connected to any
-    // of the included points (0..4 points), except for already-added ones
-    //
-
-    std::vector<bool> reorderedSpringInfos1(springInfos1.size(), false);
-    std::vector<ShipFactorySpring> springInfos2;
-    springInfos2.reserve(springInfos1.size());
-    std::vector<ElementIndex> springIndexRemap(springInfos1.size(), NoneElementIndex);
-
-    // From bottom to top
-    for (int y = 1; y < pointIndexMatrix.height - 1; y += BlockSize)
-    {
-        for (int x = 1; x < pointIndexMatrix.width - 1; x += BlockSize)
-        {
-            for (int y2 = 0; y2 < BlockSize && y + y2 < pointIndexMatrix.height - 1; ++y2)
-            {
-                for (int x2 = 0; x2 < BlockSize && x + x2 < pointIndexMatrix.width - 1; ++x2)
-                {
-                    if (!!pointIndexMatrix[{x + x2, y + y2}])
-                    {
-                        ElementIndex pointIndex = *(pointIndexMatrix[{x + x2, y + y2}]);
-
-                        // Add all springs connected to this point
-                        for (auto connectedSpringIndex1 : pointInfos1[pointIndex].ConnectedSprings1)
-                        {
-                            if (!reorderedSpringInfos1[connectedSpringIndex1])
-                            {
-                                springIndexRemap[connectedSpringIndex1] = static_cast<ElementIndex>(springInfos2.size());
-                                springInfos2.push_back(springInfos1[connectedSpringIndex1]);
-                                reorderedSpringInfos1[connectedSpringIndex1] = true;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    //
-    // 2. Add all remaining springs
-    //
-
-    for (size_t s = 0; s < springInfos1.size(); ++s)
-    {
-        if (!reorderedSpringInfos1[s])
-        {
-            springIndexRemap[s] = static_cast<ElementIndex>(springInfos2.size());
-            springInfos2.push_back(springInfos1[s]);
-        }
-    }
-
-    assert(springInfos2.size() == springInfos1.size());
-    assert(springIndexRemap.size() == springInfos1.size());
-
-
-    //
-    // 3. Order points in the order they first appear when visiting springs linearly
-    //
-    // a.k.a. Bas van den Berg's optimization!
-    //
-
-    std::vector<bool> reorderedPointInfos1(pointInfos1.size(), false);
-    std::vector<ShipFactoryPoint> pointInfos2;
-    pointInfos2.reserve(pointInfos1.size());
-    std::vector<ElementIndex> pointIndexRemap(pointInfos1.size(), NoneElementIndex);
-
-    for (auto const & springInfo : springInfos2)
-    {
-        if (!reorderedPointInfos1[springInfo.PointAIndex1])
-        {
-            pointIndexRemap[springInfo.PointAIndex1] = static_cast<ElementIndex>(pointInfos2.size());
-            pointInfos2.push_back(pointInfos1[springInfo.PointAIndex1]);
-            reorderedPointInfos1[springInfo.PointAIndex1] = true;
-        }
-
-        if (!reorderedPointInfos1[springInfo.PointBIndex1])
-        {
-            pointIndexRemap[springInfo.PointBIndex1] = static_cast<ElementIndex>(pointInfos2.size());
-            pointInfos2.push_back(pointInfos1[springInfo.PointBIndex1]);
-            reorderedPointInfos1[springInfo.PointBIndex1] = true;
-        }
-    }
-
-
-    //
-    // Add missing points
-    //
-
-    for (ElementIndex p = 0; p < pointInfos1.size(); ++p)
-    {
-        if (!reorderedPointInfos1[p])
-        {
-            pointIndexRemap[p] = static_cast<ElementIndex>(pointInfos2.size());
-            pointInfos2.push_back(pointInfos1[p]);
-        }
-    }
-
-    assert(pointInfos2.size() == pointInfos1.size());
-    assert(pointIndexRemap.size() == pointInfos1.size());
-
-
-    //
-    // 4. Return results
-    //
-
-    return std::make_tuple(pointInfos2, pointIndexRemap, springInfos2, springIndexRemap);
-}
-
-std::vector<ShipFactorySpring> ShipFactory::ReorderSpringsOptimally_TomForsyth(
-    std::vector<ShipFactorySpring> const & springInfos1,
-    size_t pointCount)
-{
-    std::vector<VertexData> vertexData(pointCount);
-    std::vector<ElementData> elementData(springInfos1.size());
-
-    // Fill-in cross-references between vertices and springs
-    for (size_t s = 0; s < springInfos1.size(); ++s)
-    {
-        vertexData[springInfos1[s].PointAIndex1].RemainingElementIndices.push_back(s);
-        vertexData[springInfos1[s].PointBIndex1].RemainingElementIndices.push_back(s);
-
-        elementData[s].VertexIndices.push_back(static_cast<size_t>(springInfos1[s].PointAIndex1));
-        elementData[s].VertexIndices.push_back(static_cast<size_t>(springInfos1[s].PointBIndex1));
-    }
-
-    // Get optimal indices
-    auto optimalIndices = ReorderOptimally<2>(
-        vertexData,
-        elementData);
-
-    // Build optimally-ordered set of springs
-    std::vector<ShipFactorySpring> springInfos2;
-    springInfos2.reserve(springInfos1.size());
-    for (size_t ti : optimalIndices)
-    {
-        springInfos2.push_back(springInfos1[ti]);
-    }
-
-    return springInfos2;
-}
-
-std::vector<ShipFactoryTriangle> ShipFactory::ReorderTrianglesOptimally_ReuseOptimization(
-    std::vector<ShipFactoryTriangle> const & triangleInfos1,
-    size_t /*pointCount*/)
-{
-    std::vector<ShipFactoryTriangle> triangleInfos2;
-    triangleInfos2.reserve(triangleInfos1.size());
-
-    std::array<ElementIndex, 3> previousVertices;
-
-    std::vector<bool> reorderedTriangles(triangleInfos1.size(), false);
-
-
-    //
-    // 1) Add triangles that have in common 2 vertices with the previous one
-    //
-
-    assert(triangleInfos1.size() > 0);
-
-    triangleInfos2.push_back(triangleInfos1[0]);
-    reorderedTriangles[0] = true;
-    std::copy(
-        triangleInfos1[0].PointIndices1.cbegin(),
-        triangleInfos1[0].PointIndices1.cend(),
-        previousVertices.begin());
-
-    for (size_t t = 1; t < triangleInfos1.size(); ++t)
-    {
-        std::optional<ElementIndex> chosenTriangle;
-        std::optional<ElementIndex> spareTriangle;
-        for (size_t t2 = 1; t2 < triangleInfos1.size(); ++t2)
-        {
-            if (!reorderedTriangles[t2])
-            {
-                size_t commonVertices = std::count_if(
-                    triangleInfos1[t2].PointIndices1.cbegin(),
-                    triangleInfos1[t2].PointIndices1.cend(),
-                    [&previousVertices](ElementIndex v)
-                    {
-                        return std::any_of(
-                            previousVertices.cbegin(),
-                            previousVertices.cend(),
-                            [v](ElementIndex v2)
-                            {
-                                return v2 == v;
-                            });
-                    });
-
-                if (commonVertices == 2)
-                {
-                    chosenTriangle = static_cast<ElementIndex>(t2);
-                    break;
-                }
-
-                // Remember first spare
-                if (!spareTriangle)
-                    spareTriangle = static_cast<ElementIndex>(t2);
-            }
-        }
-
-        if (!chosenTriangle)
-        {
-            // Choose first non-reordeded triangle
-            assert(!!spareTriangle);
-            chosenTriangle = spareTriangle;
-        }
-
-        //
-        // Use this triangle
-        //
-
-        triangleInfos2.push_back(triangleInfos1[*chosenTriangle]);
-        reorderedTriangles[*chosenTriangle] = true;
-
-        std::copy(
-            triangleInfos1[*chosenTriangle].PointIndices1.cbegin(),
-            triangleInfos1[*chosenTriangle].PointIndices1.cend(),
-            previousVertices.begin());
-    }
-
-    assert(triangleInfos2.size() == triangleInfos1.size());
-
-    return triangleInfos2;
-}
-
-std::vector<ShipFactoryTriangle> ShipFactory::ReorderTrianglesOptimally_TomForsyth(
-    std::vector<ShipFactoryTriangle> const & triangleInfos1,
-    size_t pointCount)
-{
-    std::vector<VertexData> vertexData(pointCount);
-    std::vector<ElementData> elementData(triangleInfos1.size());
-
-    // Fill-in cross-references between vertices and triangles
-    for (size_t t = 0; t < triangleInfos1.size(); ++t)
-    {
-        vertexData[triangleInfos1[t].PointIndices1[0]].RemainingElementIndices.push_back(t);
-        vertexData[triangleInfos1[t].PointIndices1[1]].RemainingElementIndices.push_back(t);
-        vertexData[triangleInfos1[t].PointIndices1[2]].RemainingElementIndices.push_back(t);
-
-        elementData[t].VertexIndices.push_back(static_cast<size_t>(triangleInfos1[t].PointIndices1[0]));
-        elementData[t].VertexIndices.push_back(static_cast<size_t>(triangleInfos1[t].PointIndices1[1]));
-        elementData[t].VertexIndices.push_back(static_cast<size_t>(triangleInfos1[t].PointIndices1[2]));
-    }
-
-    // Get optimal indices
-    auto optimalIndices = ReorderOptimally<3>(
-        vertexData,
-        elementData);
-
-    // Build optimally-ordered set of triangles
-    std::vector<ShipFactoryTriangle> triangleInfos2;
-    triangleInfos2.reserve(triangleInfos1.size());
-    for (size_t ti : optimalIndices)
-    {
-        triangleInfos2.push_back(triangleInfos1[ti]);
-    }
-
-    return triangleInfos2;
-}
 
 float ShipFactory::CalculateACMR(std::vector<ShipFactorySpring> const & springInfos)
 {
-    //size_t constexpr IntervalReportingSamples = 1000;
-
     //
     // Calculate the average cache miss ratio
     //
@@ -2283,31 +1932,18 @@ float ShipFactory::CalculateACMR(std::vector<ShipFactorySpring> const & springIn
     TestLRUVertexCache<VertexCacheSize> cache;
 
     float cacheMisses = 0.0f;
-    //float intervalCacheMisses = 0.0f;
 
     for (size_t s = 0; s < springInfos.size(); ++s)
     {
         if (!cache.UseVertex(springInfos[s].PointAIndex1))
         {
             cacheMisses += 1.0f;
-            //intervalCacheMisses += 1.0f;
         }
 
         if (!cache.UseVertex(springInfos[s].PointBIndex1))
         {
             cacheMisses += 1.0f;
-            //intervalCacheMisses += 1.0f;
         }
-
-        ////if (s < 6 + 5 + 5)
-        ////    LogMessage(s, ":", cacheMisses, " (", springInfos[s].PointAIndex1, " -> ", springInfos[s].PointBIndex1, ")");
-
-        ////if (s > 0 && 0 == (s % IntervalReportingSamples))
-        ////{
-        ////    LogMessage("   ACMR @ ", s, ": T-avg=", static_cast<float>(intervalCacheMisses) / static_cast<float>(IntervalReportingSamples),
-        ////        " So-far=", static_cast<float>(cacheMisses) / static_cast<float>(s));
-        ////    intervalCacheMisses = 0.0f;
-        ////}
     }
 
     return cacheMisses / static_cast<float>(springInfos.size());
@@ -2349,255 +1985,6 @@ float ShipFactory::CalculateACMR(std::vector<ShipFactoryTriangle> const & triang
     return cacheMisses / static_cast<float>(triangleInfos.size());
 }
 
-float ShipFactory::CalculateVertexMissRatio(std::vector<ShipFactoryTriangle> const & triangleInfos)
-{
-    //
-    // Ratio == 0 iff all triangles have two vertices in common with the previous triangle
-    //
-
-    std::array<ElementIndex, 3> previousVertices{ triangleInfos[0].PointIndices1 };
-
-    float sumMisses = 0.0f;
-    for (size_t t = 1; t < triangleInfos.size(); ++t)
-    {
-        auto commonVertices = std::count_if(
-            triangleInfos[t].PointIndices1.cbegin(),
-            triangleInfos[t].PointIndices1.cend(),
-            [&previousVertices](ElementIndex v)
-            {
-                return std::any_of(
-                    previousVertices.cbegin(),
-                    previousVertices.cend(),
-                    [v](ElementIndex v2)
-                    {
-                        return v2 == v;
-                    });
-            });
-
-        assert(commonVertices <= 2.0f);
-
-        sumMisses += 2.0f - static_cast<float>(commonVertices);
-
-        std::copy(
-            triangleInfos[t].PointIndices1.cbegin(),
-            triangleInfos[t].PointIndices1.cend(),
-            previousVertices.begin());
-    }
-
-    return sumMisses / (2.0f * static_cast<float>(triangleInfos.size()));
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
-// Vertex cache optimization
-//////////////////////////////////////////////////////////////////////////////////////////////////
-
-template <size_t VerticesInElement>
-std::vector<size_t> ShipFactory::ReorderOptimally(
-    std::vector<VertexData> & vertexData,
-    std::vector<ElementData> & elementData)
-{
-    // Calculate vertex scores
-    for (VertexData & v : vertexData)
-    {
-        v.CurrentScore = CalculateVertexScore<VerticesInElement>(v);
-    }
-
-    // Calculate element scores, remembering best so far
-    float bestElementScore = std::numeric_limits<float>::lowest();
-    std::optional<size_t> bestElementIndex(std::nullopt);
-    for (size_t ei = 0; ei < elementData.size(); ++ei)
-    {
-        for (size_t vi : elementData[ei].VertexIndices)
-        {
-            elementData[ei].CurrentScore += vertexData[vi].CurrentScore;
-        }
-
-        if (elementData[ei].CurrentScore > bestElementScore)
-        {
-            bestElementScore = elementData[ei].CurrentScore;
-            bestElementIndex = ei;
-        }
-    }
-
-
-    //
-    // Main loop - run until we've drawn all elements
-    //
-
-    std::list<size_t> modelLruVertexCache;
-
-    std::vector<size_t> optimalElementIndices;
-    optimalElementIndices.reserve(elementData.size());
-
-    while (optimalElementIndices.size() < elementData.size())
-    {
-        //
-        // Find best element
-        //
-
-        if (!bestElementIndex)
-        {
-            // Have to find best element
-            bestElementScore = std::numeric_limits<float>::lowest();
-            for (size_t ei = 0; ei < elementData.size(); ++ei)
-            {
-                if (!elementData[ei].HasBeenDrawn
-                    && elementData[ei].CurrentScore > bestElementScore)
-                {
-                    bestElementScore = elementData[ei].CurrentScore > bestElementScore;
-                    bestElementIndex = ei;
-                }
-            }
-        }
-
-        assert(!!bestElementIndex);
-        assert(!elementData[*bestElementIndex].HasBeenDrawn);
-
-        // Add the best element to the optimal list
-        optimalElementIndices.push_back(*bestElementIndex);
-
-        // Mark the best element as drawn
-        elementData[*bestElementIndex].HasBeenDrawn = true;
-
-        // Update all of the element's vertices
-        for (auto vi : elementData[*bestElementIndex].VertexIndices)
-        {
-            // Remove the best element element from the lists of remaining elements for this vertex
-            vertexData[vi].RemainingElementIndices.erase(
-                std::remove(
-                    vertexData[vi].RemainingElementIndices.begin(),
-                    vertexData[vi].RemainingElementIndices.end(),
-                    *bestElementIndex));
-
-            // Update the LRU cache with this vertex
-            AddVertexToCache(vi, modelLruVertexCache);
-        }
-
-        // Re-assign positions and scores of all vertices in the cache
-        size_t currentCachePosition = 0;
-        for (auto it = modelLruVertexCache.begin(); it != modelLruVertexCache.end(); ++it, ++currentCachePosition)
-        {
-            vertexData[*it].CachePosition = (currentCachePosition < VertexCacheSize)
-                ? static_cast<int32_t>(currentCachePosition)
-                : -1;
-
-            vertexData[*it].CurrentScore = CalculateVertexScore<VerticesInElement>(vertexData[*it]);
-
-            // Zero the score of this vertices' elements, as we'll be updating it next
-            for (size_t ei : vertexData[*it].RemainingElementIndices)
-            {
-                elementData[ei].CurrentScore = 0.0f;
-            }
-        }
-
-        // Update scores of all elements in the cache, maintaining best score at the same time
-        bestElementScore = std::numeric_limits<float>::lowest();
-        bestElementIndex = std::nullopt;
-        for (size_t vi : modelLruVertexCache)
-        {
-            for (size_t ei : vertexData[vi].RemainingElementIndices)
-            {
-                assert(!elementData[ei].HasBeenDrawn);
-
-                // Add this vertex's score to the element's score
-                elementData[ei].CurrentScore += vertexData[vi].CurrentScore;
-
-                // Check if best so far
-                if (elementData[ei].CurrentScore > bestElementScore)
-                {
-                    bestElementScore = elementData[ei].CurrentScore;
-                    bestElementIndex = ei;
-                }
-            }
-        }
-
-        // Shrink cache back to its size
-        if (modelLruVertexCache.size() > VertexCacheSize)
-        {
-            modelLruVertexCache.resize(VertexCacheSize);
-        }
-    }
-
-    return optimalElementIndices;
-}
-
-void ShipFactory::AddVertexToCache(
-    size_t vertexIndex,
-    ModelLRUVertexCache & cache)
-{
-    for (auto it = cache.begin(); it != cache.end(); ++it)
-    {
-        if (vertexIndex == *it)
-        {
-            // It's already in the cache...
-            // ...move it to front
-            cache.erase(it);
-            cache.push_front(vertexIndex);
-
-            return;
-        }
-    }
-
-    // Not in the cache...
-    // ...insert in front of cache
-    cache.push_front(vertexIndex);
-}
-
-template <size_t VerticesInElement>
-float ShipFactory::CalculateVertexScore(VertexData const & vertexData)
-{
-    static_assert(VerticesInElement < VertexCacheSize);
-
-    //
-    // Almost verbatim from Tom Forsyth
-    //
-
-    static constexpr float FindVertexScore_CacheDecayPower = 1.5f;
-    static constexpr float FindVertexScore_LastElementScore = 0.75f;
-    static constexpr float FindVertexScore_ValenceBoostScale = 2.0f;
-    static constexpr float FindVertexScore_ValenceBoostPower = 0.5f;
-
-    if (vertexData.RemainingElementIndices.size() == 0)
-    {
-        // No elements left using this vertex, give it a bad score
-        return -1.0f;
-    }
-
-    float score = 0.0f;
-    if (vertexData.CachePosition >= 0)
-    {
-        // This vertex is in the cache
-
-        if (static_cast<size_t>(vertexData.CachePosition) < VerticesInElement)
-        {
-            // This vertex was used in the last element,
-            // so it has a fixed score, whichever of the vertices
-            // it is. Otherwise, you can get very different
-            // answers depending on whether you add, for example,
-            // a triangle's 1,2,3 or 3,1,2 - which is silly.
-            score = FindVertexScore_LastElementScore;
-        }
-        else
-        {
-            assert(static_cast<size_t>(vertexData.CachePosition) < VertexCacheSize);
-
-            // Score vertices high for being high in the cache
-            float const scaler = 1.0f / (VertexCacheSize - VerticesInElement);
-            score = 1.0f - (vertexData.CachePosition - VerticesInElement) * scaler;
-            score = powf(score, FindVertexScore_CacheDecayPower);
-        }
-    }
-
-    // Bonus points for having a low number of elements still
-    // using this vertex, so we get rid of lone vertices quickly
-    float valenceBoost = powf(
-        static_cast<float>(vertexData.RemainingElementIndices.size()),
-        -FindVertexScore_ValenceBoostPower);
-    score += FindVertexScore_ValenceBoostScale * valenceBoost;
-
-    return score;
-}
-
 template<size_t Size>
 bool ShipFactory::TestLRUVertexCache<Size>::UseVertex(size_t vertexIndex)
 {
@@ -2627,23 +2014,4 @@ bool ShipFactory::TestLRUVertexCache<Size>::UseVertex(size_t vertexIndex)
 
     // It was a cache miss
     return false;
-}
-
-template<size_t Size>
-std::optional<size_t> ShipFactory::TestLRUVertexCache<Size>::GetCachePosition(size_t vertexIndex)
-{
-    size_t position = 0;
-    for (auto const & vi : mEntries)
-    {
-        if (vi == vertexIndex)
-        {
-            // Found!
-            return position;
-        }
-
-        ++position;
-    }
-
-    // Not found
-    return std::nullopt;
 }

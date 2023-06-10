@@ -1491,6 +1491,10 @@ void GameController::Reset(std::unique_ptr<Physics::World> newWorld)
     // Reset state machines
     ResetAllStateMachines();
 
+    // Reset perf stats
+    mTotalPerfStats->Reset();
+    mLastPublishedTotalPerfStats.Reset();
+
     // Reset notification layer
     mNotificationLayer.Reset();
 

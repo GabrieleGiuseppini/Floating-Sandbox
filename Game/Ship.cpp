@@ -76,6 +76,7 @@ Ship::Ship(
     std::shared_ptr<TaskThreadPool> taskThreadPool,
     Points && points,
     Springs && springs,
+    ElementCount perfectSquareCount,
     Triangles && triangles,
     ElectricalElements && electricalElements,
     Frontiers && frontiers)
@@ -87,6 +88,7 @@ Ship::Ship(
     , mEventRecorder(nullptr)
     , mPoints(std::move(points))
     , mSprings(std::move(springs))
+    , mPerfectSquareCount(perfectSquareCount)
     , mTriangles(std::move(triangles))
     , mElectricalElements(std::move(electricalElements))
     , mFrontiers(std::move(frontiers))

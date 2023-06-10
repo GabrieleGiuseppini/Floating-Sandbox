@@ -16,6 +16,7 @@
 #include "ShipTexturizer.h"
 
 #include <GameCore/GameTypes.h>
+#include <GameCore/IndexRemap.h>
 #include <GameCore/TaskThreadPool.h>
 
 #include <algorithm>
@@ -157,13 +158,24 @@ private:
         std::vector<ShipFactoryPoint> & pointInfos1,
         std::vector<ShipFactoryTriangle> const & triangleInfos1);
 
+    using LayoutOptimizationResults = std::tuple<std::vector<ShipFactoryPoint>, IndexRemap, std::vector<ShipFactorySpring>, IndexRemap, ElementCount>;
+
+    static LayoutOptimizationResults OptimizeLayout(
+        ShipFactoryPointIndexMatrix const & pointIndexMatrix,
+        std::vector<ShipFactoryPoint> const & pointInfos1,
+        std::vector<ShipFactorySpring> const & springInfos1);
+
+    static void ConnectSpringsAndTriangles(
+        std::vector<ShipFactorySpring> & springInfos2,
+        std::vector<ShipFactoryTriangle> & triangleInfos2);
+
     static std::vector<ShipFactoryFrontier> CreateShipFrontiers(
         ShipFactoryPointIndexMatrix const & pointIndexMatrix,
-        std::vector<ElementIndex> const & pointIndexRemap2,
+        IndexRemap const & pointIndexRemap,
         std::vector<ShipFactoryPoint> const & pointInfos2,
         std::vector<ShipFactorySpring> const & springInfos2,
         PointPairToIndexMap const & pointPairToSpringIndex1Map,
-        std::vector<ElementIndex> const & springIndexRemap2);
+        IndexRemap const & springIndexRemap);
 
     static std::vector<ElementIndex> PropagateFrontier(
         ElementIndex startPointIndex1,
@@ -173,7 +185,7 @@ private:
         std::set<ElementIndex> & frontierEdges2,
         std::vector<ShipFactorySpring> const & springInfos2,
         PointPairToIndexMap const & pointPairToSpringIndex1Map,
-        std::vector<ElementIndex> const & springIndexRemap2);
+        IndexRemap const & springIndexRemap);
 
     static Physics::Points CreatePoints(
         std::vector<ShipFactoryPoint> const & pointInfos2,
@@ -184,14 +196,10 @@ private:
         std::vector<ElectricalElementInstanceIndex> & electricalElementInstanceIndices,
         ShipPhysicsData const & physicsData);
 
-    static void ConnectSpringsAndTriangles(
-        std::vector<ShipFactorySpring> & springInfos2,
-        std::vector<ShipFactoryTriangle> & triangleInfos2);
-
     static Physics::Springs CreateSprings(
         std::vector<ShipFactorySpring> const & springInfos2,
         Physics::Points & points,
-        std::vector<ElementIndex> const & pointIndexRemap,
+        IndexRemap const & pointIndexRemap,
         Physics::World & parentWorld,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         GameParameters const & gameParameters);
@@ -199,7 +207,7 @@ private:
     static Physics::Triangles CreateTriangles(
         std::vector<ShipFactoryTriangle> const & triangleInfos2,
         Physics::Points & points,
-        std::vector<ElementIndex> const & pointIndexRemap);
+        IndexRemap const & pointIndexRemap);
 
     static Physics::ElectricalElements CreateElectricalElements(
         Physics::Points const & points,
@@ -224,126 +232,16 @@ private:
 
 private:
 
-    using ReorderingResults = std::tuple<std::vector<ShipFactoryPoint>, std::vector<ElementIndex>, std::vector<ShipFactorySpring>, std::vector<ElementIndex>>;
-
-    //
-    // Reordering
-    //
-
-    template <int StripeLength>
-    static ReorderingResults ReorderPointsAndSpringsOptimally_Stripes(
-        std::vector<ShipFactoryPoint> const & pointInfos1,
-        std::vector<ShipFactorySpring> const & springInfos1,
-        PointPairToIndexMap const & pointPairToSpringIndex1Map,
-        ShipFactoryPointIndexMatrix const & pointIndexMatrix);
-
-    template <int StripeLength>
-    static void ReorderPointsAndSpringsOptimally_Stripes_Stripe(
-        int y,
-        std::vector<ShipFactoryPoint> const & pointInfos1,
-        std::vector<bool> & reorderedPointInfos1,
-        std::vector<ShipFactorySpring> const & springInfos1,
-        std::vector<bool> & reorderedSpringInfos1,
-        ShipFactoryPointIndexMatrix const & pointIndexMatrix,
-        PointPairToIndexMap const & pointPairToSpringIndex1Map,
-        std::vector<ShipFactoryPoint> & pointInfos2,
-        std::vector<ElementIndex> & pointIndexRemap,
-        std::vector<ShipFactorySpring> & springInfos2,
-        std::vector<ElementIndex> & springIndexRemap);
-
-    static ReorderingResults ReorderPointsAndSpringsOptimally_Blocks(
-        std::vector<ShipFactoryPoint> const & pointInfos1,
-        std::vector<ShipFactorySpring> const & springInfos1,
-        PointPairToIndexMap const & pointPairToSpringIndex1Map,
-        ShipFactoryPointIndexMatrix const & pointIndexMatrix);
-
-    static void ReorderPointsAndSpringsOptimally_Blocks_Row(
-        int y,
-        std::vector<ShipFactoryPoint> const & pointInfos1,
-        std::vector<bool> & reorderedPointInfos1,
-        std::vector<ShipFactorySpring> const & springInfos1,
-        std::vector<bool> & reorderedSpringInfos1,
-        ShipFactoryPointIndexMatrix const & pointIndexMatrix,
-        PointPairToIndexMap const & pointPairToSpringIndex1Map,
-        std::vector<ShipFactoryPoint> & pointInfos2,
-        std::vector<ElementIndex> & pointIndexRemap,
-        std::vector<ShipFactorySpring> & springInfos2,
-        std::vector<ElementIndex> & springIndexRemap);
-
-    template <int BlockSize>
-    static ReorderingResults ReorderPointsAndSpringsOptimally_Tiling(
-        std::vector<ShipFactoryPoint> const & pointInfos1,
-        std::vector<ShipFactorySpring> const & springInfos1,
-        ShipFactoryPointIndexMatrix const & pointIndexMatrix);
-
-    static std::vector<ShipFactorySpring> ReorderSpringsOptimally_TomForsyth(
-        std::vector<ShipFactorySpring> const & springInfos1,
-        size_t pointCount);
-
-    static std::vector<ShipFactoryTriangle> ReorderTrianglesOptimally_ReuseOptimization(
-        std::vector<ShipFactoryTriangle> const & triangleInfos1,
-        size_t pointCount);
-
-    static std::vector<ShipFactoryTriangle> ReorderTrianglesOptimally_TomForsyth(
-        std::vector<ShipFactoryTriangle> const & triangleInfos1,
-        size_t pointCount);
+    /////////////////////////////////////////////////////////////////
+    // Vertex cache optimization
+    /////////////////////////////////////////////////////////////////
 
     static float CalculateACMR(std::vector<ShipFactorySpring> const & springInfos);
 
     static float CalculateACMR(std::vector<ShipFactoryTriangle> const & triangleInfos);
 
-    static float CalculateVertexMissRatio(std::vector<ShipFactoryTriangle> const & triangleInfos);
-
-private:
-
-    /////////////////////////////////////////////////////////////////
-    // Vertex cache optimization
-    /////////////////////////////////////////////////////////////////
-
     // See Tom Forsyth's comments: using 32 is good enough; apparently 64 does not yield significant differences
     static size_t constexpr VertexCacheSize = 32;
-
-    using ModelLRUVertexCache = std::list<size_t>;
-
-    struct VertexData
-    {
-        int32_t CachePosition;                          // Position in cache; -1 if not in cache
-        float CurrentScore;                             // Current score of the vertex
-        std::vector<size_t> RemainingElementIndices;    // Indices of not yet drawn elements that use this vertex
-
-        VertexData()
-            : CachePosition(-1)
-            , CurrentScore(0.0f)
-            , RemainingElementIndices()
-        {
-        }
-    };
-
-    struct ElementData
-    {
-        bool HasBeenDrawn;                  // Set to true when the element has been drawn already
-        float CurrentScore;                 // Current score of the element - sum of its vertices' scores
-        std::vector<size_t> VertexIndices;  // Indices of vertices in this element
-
-        ElementData()
-            : HasBeenDrawn(false)
-            , CurrentScore(0.0f)
-            , VertexIndices()
-        {
-        }
-    };
-
-    template <size_t VerticesInElement>
-    static std::vector<size_t> ReorderOptimally(
-        std::vector<VertexData> & vertexData,
-        std::vector<ElementData> & elementData);
-
-    static void AddVertexToCache(
-        size_t vertexIndex,
-        ModelLRUVertexCache & cache);
-
-    template <size_t VerticesInElement>
-    static float CalculateVertexScore(VertexData const & vertexData);
 
     template <size_t Size>
     class TestLRUVertexCache
@@ -351,8 +249,6 @@ private:
     public:
 
         bool UseVertex(size_t vertexIndex);
-
-        std::optional<size_t> GetCachePosition(size_t vertexIndex);
 
     private:
 

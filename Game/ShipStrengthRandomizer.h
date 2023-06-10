@@ -7,6 +7,7 @@
 
 #include "ShipFactoryTypes.h"
 
+#include <GameCore/IndexRemap.h>
 #include <GameCore/Matrix.h>
 #include <GameCore/Vectors.h>
 
@@ -25,7 +26,7 @@ public:
         vec2i const & pointIndexMatrixRegionOrigin,
         vec2i const & pointIndexMatrixRegionSize,
         std::vector<ShipFactoryPoint> & pointInfos2,
-        std::vector<ElementIndex> const & pointIndexRemap2,
+        IndexRemap const & pointIndexRemap,
         std::vector<ShipFactorySpring> const & springInfos2,
         std::vector<ShipFactoryTriangle> const & triangleInfos1,
         std::vector<ShipFactoryFrontier> const & shipFactoryFrontiers) const;
@@ -77,7 +78,7 @@ private:
         vec2i const & pointIndexMatrixRegionOrigin,
         vec2i const & pointIndexMatrixRegionSize,
         std::vector<ShipFactoryPoint> & pointInfos2,
-        std::vector<ElementIndex> const & pointIndexRemap2,
+        IndexRemap const & pointIndexRemap,
         std::vector<ShipFactorySpring> const & springInfos2,
         std::vector<ShipFactoryTriangle> const & triangleInfos1,
         std::vector<ShipFactoryFrontier> const & shipFactoryFrontiers) const;
