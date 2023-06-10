@@ -50,7 +50,6 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
     ShipTexturizer const & shipTexturizer,
     ShipStrengthRandomizer const & shipStrengthRandomizer,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-    std::shared_ptr<TaskThreadPool> taskThreadPool,
     GameParameters const & gameParameters)
 {
     auto const totalStartTime = std::chrono::steady_clock::now();
@@ -429,7 +428,6 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
         parentWorld,
         materialDatabase,
         std::move(gameEventDispatcher),
-        std::move(taskThreadPool),
         std::move(points),
         std::move(springs),
         perfectSquareCount,

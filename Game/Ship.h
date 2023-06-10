@@ -20,7 +20,7 @@
 #include <GameCore/Buffer.h>
 #include <GameCore/GameTypes.h>
 #include <GameCore/RunningAverage.h>
-#include <GameCore/TaskThreadPool.h>
+#include <GameCore/ThreadManager.h>
 #include <GameCore/Vectors.h>
 
 #include <list>
@@ -40,7 +40,6 @@ public:
         World & parentWorld,
         MaterialDatabase const & materialDatabase,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-        std::shared_ptr<TaskThreadPool> taskThreadPool,
         Points && points,
         Springs && springs,
         ElementCount perfectSquareCount,
@@ -79,6 +78,7 @@ public:
         GameParameters const & gameParameters,
         StressRenderModeType stressRenderMode,
         Geometry::AABBSet & externalAabbSet,
+        ThreadManager & threadManager,
         PerfStats & perfStats);
 
     void RenderUpload(Render::RenderContext & renderContext);
@@ -802,7 +802,6 @@ private:
     World & mParentWorld;
     MaterialDatabase const & mMaterialDatabase;
     std::shared_ptr<GameEventDispatcher> mGameEventHandler;
-    std::shared_ptr<TaskThreadPool> mTaskThreadPool;
     EventRecorder * mEventRecorder;
 
     // All the ship elements - never removed, the repositories maintain their own size forever

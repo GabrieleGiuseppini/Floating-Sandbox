@@ -19,7 +19,7 @@
 
 #include <GameCore/Log.h>
 #include <GameCore/SysSpecifics.h>
-#include <GameCore/SystemThreadManager.h>
+#include <GameCore/ThreadManager.h>
 
 #include <wx/app.h>
 #include <wx/cmdline.h>
@@ -170,7 +170,7 @@ MainApp::MainApp()
     // Initialize this thread
     //
 
-    SystemThreadManager::GetInstance().InitializeThisThread();
+    ThreadManager::InitializeThisThread();
 
     //
     // Install handler for unhandled exceptions

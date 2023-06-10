@@ -69,6 +69,11 @@ public:
 
 public:
 
+    bool IsRenderingMultiThreaded() const
+    {
+        return mIsRenderingMultithreaded;
+    }
+
     //
     // World and view properties
     //
@@ -1141,6 +1146,8 @@ private:
     //
     // Render Thread
     //
+
+    bool const mIsRenderingMultithreaded;
 
     // The thread running all of our OpenGL calls
     TaskThread mRenderThread;

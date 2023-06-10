@@ -3,19 +3,22 @@
 * Created:              2020-02-08
 * Copyright:            Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
-#include "TaskThreadPool.h"
+#include "ThreadPool.h"
 
 #include "Log.h"
-#include "SystemThreadManager.h"
+#include "SysSpecifics.h"
 
 #include <algorithm>
 
-TaskThreadPool::TaskThreadPool()
-    : TaskThreadPool(SystemThreadManager::GetInstance().GetNumberOfProcessors())
-{
-}
+#if FS_IS_OS_WINDOWS()
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#include <Windows.h>
+#endif
 
-TaskThreadPool::TaskThreadPool(size_t numberOfProcessors)
+ThreadPool::ThreadPool(
+    size_t parallelism,
+    ThreadManager & threadManager)
     : mLock()
     , mThreads()
     , mWorkerThreadSignal()
@@ -24,22 +27,19 @@ TaskThreadPool::TaskThreadPool(size_t numberOfProcessors)
     , mTasksToComplete(0)
     , mIsStop(false)
 {
-    assert(numberOfProcessors > 0);
+    assert(parallelism > 0);
 
-    // Cap threads to 2 as we don't need more than those
-    size_t const threadCount = std::min(size_t(2), numberOfProcessors - 1);
-
-    LogMessage("TaskThreadPool: number of processors: ", numberOfProcessors,
-        " number of threads in pool: ", threadCount);
-
-    // Start threads
-    for (size_t i = 0; i < threadCount; ++i)
+    // Start N-1 threads (main thread is one of them)
+    for (size_t i = 0; i < parallelism - 1; ++i)
     {
-        mThreads.emplace_back(&TaskThreadPool::ThreadLoop, this);
+        mThreads.emplace_back([this, &threadManager]()
+            {
+                ThreadLoop(threadManager);
+            });
     }
 }
 
-TaskThreadPool::~TaskThreadPool()
+ThreadPool::~ThreadPool()
 {
     // Tell all threads to stop
     {
@@ -58,7 +58,7 @@ TaskThreadPool::~TaskThreadPool()
     }
 }
 
-void TaskThreadPool::Run(std::vector<Task> const & tasks)
+void ThreadPool::Run(std::vector<Task> const & tasks)
 {
     assert(mRemainingTasks.empty());
     assert(0 == mTasksToComplete);
@@ -71,7 +71,7 @@ void TaskThreadPool::Run(std::vector<Task> const & tasks)
 
         for (size_t t = 1; t < tasks.size(); ++t)
         {
-            mRemainingTasks.push_back(tasks[t]);
+            mRemainingTasks.push_back(&(tasks[t]));
         }
 
         mTasksToComplete = mRemainingTasks.size();
@@ -111,13 +111,17 @@ void TaskThreadPool::Run(std::vector<Task> const & tasks)
     }
 }
 
-void TaskThreadPool::ThreadLoop()
+void ThreadPool::ThreadLoop(ThreadManager & threadManager)
 {
     //
     // Initialize thread
     //
 
-    SystemThreadManager::GetInstance().InitializeThisThread();
+    threadManager.InitializeThisThread();
+
+#if FS_IS_OS_WINDOWS()
+    LogMessage("Thread processor: ", GetCurrentProcessorNumber());
+#endif
 
     //
     // Run thread loop until thread pool is destroyed
@@ -158,7 +162,7 @@ void TaskThreadPool::ThreadLoop()
     LogMessage("Thread exiting");
 }
 
-void TaskThreadPool::RunRemainingTasksLoop()
+void ThreadPool::RunRemainingTasksLoop()
 {
     //
     // Run tasks until queue is empty
@@ -170,18 +174,18 @@ void TaskThreadPool::RunRemainingTasksLoop()
         // De-queue a task
         //
 
-        Task task;
+        Task const * task = nullptr;
         {
             std::unique_lock const lock{ mLock };
 
             if (!mRemainingTasks.empty())
             {
-                task = std::move(mRemainingTasks.front());
+                task = mRemainingTasks.front();
                 mRemainingTasks.pop_front();
             }
         }
 
-        if (!task)
+        if (task == nullptr)
         {
             // No more tasks
             return;
@@ -191,7 +195,7 @@ void TaskThreadPool::RunRemainingTasksLoop()
         // Run the task
         //
 
-        RunTask(task);
+        RunTask(*task);
 
         //
         // Signal task completion
@@ -214,7 +218,7 @@ void TaskThreadPool::RunRemainingTasksLoop()
     }
 }
 
-void TaskThreadPool::RunTask(Task const & task)
+void ThreadPool::RunTask(Task const & task)
 {
     try
     {

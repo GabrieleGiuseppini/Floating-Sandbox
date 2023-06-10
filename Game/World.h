@@ -21,7 +21,7 @@
 #include <GameCore/GameChronometer.h>
 #include <GameCore/GameTypes.h>
 #include <GameCore/ImageData.h>
-#include <GameCore/TaskThreadPool.h>
+#include <GameCore/ThreadManager.h>
 #include <GameCore/Vectors.h>
 
 #include <chrono>
@@ -43,7 +43,6 @@ public:
         bool areCloudShadowsEnabled,
         FishSpeciesDatabase const & fishSpeciesDatabase,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-        std::shared_ptr<TaskThreadPool> taskThreadPool,
         GameParameters const & gameParameters,
         VisibleWorld const & visibleWorld);
 
@@ -362,6 +361,7 @@ public:
         GameParameters const & gameParameters,
         VisibleWorld const & visibleWorld,
         StressRenderModeType stressRenderMode,
+        ThreadManager & threadManager,
         PerfStats & perfStats);
 
     void RenderUpload(
@@ -379,9 +379,6 @@ private:
 
     // The current event recorder (if any)
     EventRecorder * mEventRecorder;
-
-    // The task thread pool that we use for concurrency
-    std::shared_ptr<TaskThreadPool> mTaskThreadPool;
 
     // Repository
     std::vector<std::unique_ptr<Ship>> mAllShips;

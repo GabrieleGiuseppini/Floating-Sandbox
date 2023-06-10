@@ -64,13 +64,13 @@ set  (SOURCES
 	StrongTypeDef.h
 	SysSpecifics.cpp
 	SysSpecifics.h
-	SystemThreadManager.cpp
-	SystemThreadManager.h
 	TaskThread.cpp
 	TaskThread.h
-	TaskThreadPool.cpp
-	TaskThreadPool.h
 	TemporallyCoherentPriorityQueue.h
+	ThreadManager.cpp
+	ThreadManager.h
+	ThreadPool.cpp
+	ThreadPool.h
 	TruncatedPriorityQueue.h
 	TupleKeys.h
 	UniqueBuffer.h

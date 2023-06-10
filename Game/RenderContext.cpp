@@ -11,6 +11,7 @@
 #include <GameCore/GameException.h>
 #include <GameCore/Log.h>
 #include <GameCore/SysSpecifics.h>
+#include <GameCore/ThreadManager.h>
 
 #include <cstring>
 
@@ -31,21 +32,23 @@ namespace /*anonymous*/ {
         }
     }
 
-    bool CalculateDoForceNoMultithreadedRendering(std::optional<bool> override)
+    bool CalculateIsMultithreaded(std::optional<bool> doForceNoMultithreadedRenderingOverride)
     {
-        if (override.has_value())
+        bool const hasEnoughThreads = ThreadManager::GetNumberOfProcessors() > 1;
+
+        if (doForceNoMultithreadedRenderingOverride.has_value())
         {
             // Use override as-is
-            return *override;
+            return hasEnoughThreads && !(*doForceNoMultithreadedRenderingOverride);
         }
         else
         {
 #if FS_IS_OS_MACOS() // Do not use multi-threaded rendering on MacOS
-            return true;
-#elif FS_IS_OS_LINUX() // Do not use multi-threaded rendering on X11
-            return true;
-#else
             return false;
+#elif FS_IS_OS_LINUX() // Do not use multi-threaded rendering on X11
+            return false;
+#else
+            return hasEnoughThreads;
 #endif
         }
     }
@@ -58,7 +61,8 @@ RenderContext::RenderContext(
     ProgressCallback const & progressCallback)
     : mDoInvokeGlFinish(false) // Will be recalculated
     // Thread
-    , mRenderThread(CalculateDoForceNoMultithreadedRendering(renderDeviceProperties.DoForceNoMultithreadedRendering))
+    , mIsRenderingMultithreaded(CalculateIsMultithreaded(renderDeviceProperties.DoForceNoMultithreadedRendering))
+    , mRenderThread(mIsRenderingMultithreaded)
     , mLastRenderUploadEndCompletionIndicator()
     , mLastRenderDrawCompletionIndicator()
     // Shader manager

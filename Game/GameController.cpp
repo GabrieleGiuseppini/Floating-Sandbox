@@ -96,8 +96,10 @@ GameController::GameController(
         false /*isAutoFocusOn; loaded value will come later*/,
         mRenderContext->GetDisplayUnitsSystem(),
         mGameEventDispatcher)
+    , mThreadManager(
+        mRenderContext->IsRenderingMultiThreaded(),
+        8) // Given that most ships will be a few threads, we do not want to pay a ThreadPool price for too many threads
     , mViewManager(*mRenderContext, mNotificationLayer)
-    , mTaskThreadPool(std::make_shared<TaskThreadPool>())
     // Smoothing
     , mFloatParameterSmoothers()
     // Stats
@@ -119,7 +121,6 @@ GameController::GameController(
         CalculateAreCloudShadowsEnabled(mRenderContext->GetOceanRenderDetail()),
         mFishSpeciesDatabase,
         mGameEventDispatcher,
-        mTaskThreadPool,
         mGameParameters,
         mRenderContext->GetVisibleWorld());
 
@@ -297,7 +298,6 @@ ShipMetadata GameController::AddShip(ShipLoadSpecifications const & loadSpecs)
         mShipTexturizer,
         mShipStrengthRandomizer,
         mGameEventDispatcher,
-        mTaskThreadPool,
         mGameParameters);
 
     //
@@ -384,6 +384,7 @@ void GameController::RunGameIteration()
             mGameParameters,
             mRenderContext->GetVisibleWorld(),
             mRenderContext->GetStressRenderMode(),
+            mThreadManager,
             *mTotalPerfStats);
 
         // Flush events
@@ -1447,7 +1448,6 @@ ShipMetadata GameController::InternalResetAndLoadShip(ShipLoadSpecifications con
         CalculateAreCloudShadowsEnabled(mRenderContext->GetOceanRenderDetail()),
         mFishSpeciesDatabase,
         mGameEventDispatcher,
-        std::make_shared<TaskThreadPool>(),
         mGameParameters,
         mRenderContext->GetVisibleWorld());
 
@@ -1462,7 +1462,6 @@ ShipMetadata GameController::InternalResetAndLoadShip(ShipLoadSpecifications con
         mShipTexturizer,
         mShipStrengthRandomizer,
         mGameEventDispatcher,
-        mTaskThreadPool,
         mGameParameters);
 
     //

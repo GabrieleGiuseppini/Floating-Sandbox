@@ -6,7 +6,7 @@
 #include "TaskThread.h"
 
 #include "Log.h"
-#include "SystemThreadManager.h"
+#include "ThreadManager.h"
 
 #include <cassert>
 
@@ -14,17 +14,10 @@ TaskThread::TaskThread()
     : TaskThread(false)
 {}
 
-TaskThread::TaskThread(bool doForceNoMultiThreading)
-    : mIsStop(false)
+TaskThread::TaskThread(bool isMultithreaded)
+    : mHasThread(isMultithreaded)
+    , mIsStop(false)
 {
-    // Only use a real thread on multi-core boxes; on single-core
-    // boxes, we'll just emulate multi-threading by running all
-    // tasks directly - and synchronously - on the caller's thread
-    mHasThread = SystemThreadManager::GetInstance().GetNumberOfProcessors() > 1;
-
-    if (doForceNoMultiThreading)
-        mHasThread = false;
-
     if (mHasThread)
     {
         LogMessage("TaskThread::TaskThread(): starting thread...");
@@ -69,7 +62,7 @@ void TaskThread::ThreadLoop()
     // Initialize thread
     //
 
-    SystemThreadManager::GetInstance().InitializeThisThread();
+    ThreadManager::InitializeThisThread();
 
     //
     // Run loop

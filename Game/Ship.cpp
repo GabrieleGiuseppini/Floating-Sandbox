@@ -73,7 +73,6 @@ Ship::Ship(
     World & parentWorld,
     MaterialDatabase const & materialDatabase,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-    std::shared_ptr<TaskThreadPool> taskThreadPool,
     Points && points,
     Springs && springs,
     ElementCount perfectSquareCount,
@@ -84,7 +83,6 @@ Ship::Ship(
     , mParentWorld(parentWorld)
     , mMaterialDatabase(materialDatabase)
     , mGameEventHandler(std::move(gameEventDispatcher))
-    , mTaskThreadPool(std::move(taskThreadPool))
     , mEventRecorder(nullptr)
     , mPoints(std::move(points))
     , mSprings(std::move(springs))
@@ -213,13 +211,14 @@ void Ship::Update(
     GameParameters const & gameParameters,
     StressRenderModeType stressRenderMode,
     Geometry::AABBSet & externalAabbSet,
+    ThreadManager & threadManager,
     PerfStats & perfStats)
 {
     /////////////////////////////////////////////////////////////////
     //         This is where most of the magic happens             //
     /////////////////////////////////////////////////////////////////
 
-    std::vector<TaskThreadPool::Task> parallelTasks;
+    std::vector<ThreadPool::Task> parallelTasks;
 
     /////////////////////////////////////////////////////////////////
     // At this moment:
@@ -614,7 +613,7 @@ void Ship::Update(
             DiffuseLight(gameParameters);
         });
 
-    mTaskThreadPool->RunAndClear(parallelTasks);
+    threadManager.GetSimulationThreadPool().RunAndClear(parallelTasks);
 
     ///////////////////////////////////////////////////////////////////
     // Update spring parameters

@@ -17,7 +17,6 @@
 
 #include <GameCore/GameTypes.h>
 #include <GameCore/IndexRemap.h>
-#include <GameCore/TaskThreadPool.h>
 
 #include <algorithm>
 #include <cstdint>
@@ -46,7 +45,6 @@ public:
         ShipTexturizer const & shipTexturizer,
         ShipStrengthRandomizer const & shipStrengthRandomizer,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-        std::shared_ptr<TaskThreadPool> taskThreadPool,
         GameParameters const & gameParameters);
 
 private:

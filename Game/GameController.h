@@ -31,7 +31,7 @@
 #include <GameCore/ImageData.h>
 #include <GameCore/ParameterSmoother.h>
 #include <GameCore/ProgressCallback.h>
-#include <GameCore/TaskThreadPool.h>
+#include <GameCore/ThreadManager.h>
 #include <GameCore/Vectors.h>
 
 #include <algorithm>
@@ -973,13 +973,13 @@ private:
     //
     // The doers
     //
-
+    
     std::shared_ptr<Render::RenderContext> mRenderContext;
     std::shared_ptr<GameEventDispatcher> mGameEventDispatcher;
     NotificationLayer mNotificationLayer;
+    ThreadManager mThreadManager;
     ViewManager mViewManager;
-    std::unique_ptr<EventRecorder> mEventRecorder;
-    std::shared_ptr<TaskThreadPool> mTaskThreadPool;
+    std::unique_ptr<EventRecorder> mEventRecorder;    
 
 
     //

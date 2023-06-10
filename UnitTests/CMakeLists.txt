@@ -55,9 +55,9 @@ set (UNIT_TEST_SOURCES
 	StrongTypeDefTests.cpp
 	SysSpecificsTests.cpp
 	TaskThreadTests.cpp
-	TaskThreadPoolTests.cpp
 	TemporallyCoherentPriorityQueueTests.cpp
 	TextureAtlasTests.cpp
+	ThreadPoolTests.cpp
 	TruncatedPriorityQueueTests.cpp
 	TupleKeysTests.cpp
 	UniqueBufferTests.cpp

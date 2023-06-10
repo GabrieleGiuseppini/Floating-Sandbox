@@ -9,7 +9,7 @@
 
 #include <GameCore/GameMath.h>
 #include <GameCore/Log.h>
-#include <GameCore/SystemThreadManager.h>
+#include <GameCore/ThreadManager.h>
 #include <GameCore/Vectors.h>
 
 #include <chrono>
@@ -79,7 +79,7 @@ void ComputerCalibrator::TuneGame(
     }
 
     if (score.NormalizedGfxScore < 0.1f
-        || SystemThreadManager::GetInstance().GetNumberOfProcessors() == 1)
+        || ThreadManager::GetNumberOfProcessors() == 1)
     {
         renderContext.SetHeatRenderMode(HeatRenderModeType::None);
     }

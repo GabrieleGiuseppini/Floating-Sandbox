@@ -349,49 +349,37 @@
 			+ Nuke all current optimizations - keep only cache
 			+ Port layout optimization
 				+ Up to passing # of perfect squares to Ship, which for the moment just stores it
-		- Check Dell
-		- Check benchmarks
-		- Port ThreadManager & ThreadPool from SpringLab
-			- Note: port ThreadPool because of pointers to tasks (and ThreadManager &)
-			- Controller owns ThreadManager
-			- Ship::Update takes ThreadManager&
+		+ Port ThreadManager & ThreadPool from SpringLab
+			+ Note: port ThreadPool because of pointers to tasks (and ThreadManager &)
+			+ Controller owns ThreadManager
+			+ Ship::Update takes ThreadManager&
 				! We do this to stress the fact that parallelism is a mutable parameter
-				- Checks MaxSimulationThreads against own remembered value, and reacts on change by recalculating partitioning
-					- This also used for initial
-					- Ship decides # of parallelism for herself
-				- All code - intrinsics/non-intrinsics - goes in new Ship_SpringRelaxation.cpp
-					- TODOHERE
-			- RenderContext gets whether or not to do render thread from ThreadManager
+			+ RenderContext gets whether or not to do render thread from ThreadManager
+			+ Unit tests
+		+ Test boot settings
+		- Check Dell
+		- Ship parallelism:
+			- Ship::Update(ThreadManager &) checks MaxSimulationThreads against own remembered value, and reacts on change by recalculating partitioning
+				- This also used for initial
+				- Ship decides # of parallelism for herself
+			- All code - intrinsics/non-intrinsics - goes in new Ship_SpringRelaxation.cpp
+				- TODOHERE
 		- Parallelism setting/slider
 			- SettingsDialog: "Max Simulation Threads"
 				- Maxed by TM::GetMaxSimulationParallelism()
 			
 
-	- More parallelism at Ship::Update (was: Multi-threading, phase II):
-		- Now that we have MaxSimulationParallelism, we can easily see which steps take the longest
-		- Allow threads to publish events by having EventDispatcher allow multiple threads to store* event
-			- No locks needed on read and clean, as it's done after Update has finished
+	- More parallelism
 		- World::Update:
 			- T1: Stars, Clouds, Wind
 			- T2: OceanSurface
 				- Wind::StormParameters become WindParameters, so that T2 works on static (but one frame older) snapshot
-		- Move PhysicsSimulation::UpdateWaterVelocities (8%) to separate thread
-			- If water is being read in parallel, make UpdateWaterVelocities take the newWater buffer, and swap it after the tasks have completed
-		- Springs: each iteration done in parallel with NThreads partitions
-			- Do
-				- Pool: if run 1, run straight away on main thread
-				- Spring indices need to be partitioned beforehand into multiple Buffer<ElementIndex>'s
-					- These are stored by Springs
-					- @ShipBuilder:
-						- Is given # of partitions
-							- ...caller uses mThreadPool->GetNumberOfThreads();
-						- N-1 partitions plus one "stitching" partition
-							- Partition points and all springs between those points
-							- Put cross-partition springs into last partition
-				- Prepare parallel tasks
-				- Run parallel tasks
-
-
+		- At Ship::Update (was: Multi-threading, phase II):
+			- Now that we have MaxSimulationParallelism, we can easily see which steps take the longest
+			- Allow threads to publish events by having EventDispatcher allow multiple threads to store* event
+				- No locks needed on read and clean, as it's done after Update has finished
+			- Move PhysicsSimulation::UpdateWaterVelocities (8%) to separate thread
+				- If water is being read in parallel, make UpdateWaterVelocities take the newWater buffer, and swap it after the tasks have completed
 
 	- Greyscaling (of texture and particles) before Thanos snap, and mass changes (lighter), and different phasing of ashing in band
 		- Phasing: each particle randomly pulverizes, but towards band end prob is 100%

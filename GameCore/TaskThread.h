@@ -103,7 +103,7 @@ public:
 public:
 
     TaskThread();
-    explicit TaskThread(bool doForceNoMultiThreading);
+    explicit TaskThread(bool isMultithreaded);
 
     ~TaskThread();
 
@@ -206,7 +206,7 @@ private:
 private:
 
     std::thread mThread;
-    bool mHasThread; // Invariant: mHasThread==true <=> mThread.joinable(); we only use the flag as the perf impact of checking is_joinable() is unknown
+    bool const mHasThread; // Invariant: mHasThread==true <=> mThread.joinable(); we only use the flag as the perf impact of checking is_joinable() is unknown
 
     std::mutex mThreadLock;
     std::condition_variable mThreadSignal; // Just one, as each of {main thread, worker thread} can't be waiting and signaling at the same time

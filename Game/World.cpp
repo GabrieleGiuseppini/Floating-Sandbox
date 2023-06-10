@@ -17,14 +17,12 @@ World::World(
     bool areCloudShadowsEnabled,
     FishSpeciesDatabase const & fishSpeciesDatabase,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
-    std::shared_ptr<TaskThreadPool> taskThreadPool,
     GameParameters const & gameParameters,
     VisibleWorld const & /*visibleWorld*/)
     : mCurrentSimulationTime(0.0f)
     //
     , mGameEventHandler(std::move(gameEventDispatcher))
     , mEventRecorder(nullptr)
-    , mTaskThreadPool(std::move(taskThreadPool))
     //
     , mAllShips()
     , mStars()
@@ -995,6 +993,7 @@ void World::Update(
     GameParameters const & gameParameters,
     VisibleWorld const & visibleWorld,
     StressRenderModeType stressRenderMode,
+    ThreadManager & threadManager,
     PerfStats & perfStats)
 {
     // Update current time
@@ -1027,6 +1026,7 @@ void World::Update(
             gameParameters,
             stressRenderMode,
             mAllAABBs,
+            threadManager,
             perfStats);
     }
 

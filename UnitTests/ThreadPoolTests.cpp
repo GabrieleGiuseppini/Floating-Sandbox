@@ -1,4 +1,4 @@
-#include <GameCore/TaskThreadPool.h>
+#include <GameCore/ThreadPool.h>
 
 #include <algorithm>
 #include <functional>
@@ -6,16 +6,20 @@
 
 #include "gtest/gtest.h"
 
-class TaskThreadPoolTests_OneRuns : public testing::TestWithParam<size_t>
+class ThreadPoolTests_OneRuns : public testing::TestWithParam<size_t>
 {
 public:
     virtual void SetUp() {}
     virtual void TearDown() {}
+
+protected:
+
+    ThreadManager mThreadManager{ false, 16 };
 };
 
 INSTANTIATE_TEST_SUITE_P(
-    One_Runs,
-    TaskThreadPoolTests_OneRuns,
+    ThreadPoolTests_OneRuns,
+    ThreadPoolTests_OneRuns,
     ::testing::Values(
         0,
         1,
@@ -23,11 +27,11 @@ INSTANTIATE_TEST_SUITE_P(
         10
     ));
 
-TEST_P(TaskThreadPoolTests_OneRuns, One_Runs)
+TEST_P(ThreadPoolTests_OneRuns, One_Runs)
 {
     std::vector<bool> results(GetParam(), false);
 
-    std::vector<TaskThreadPool::Task> tasks;
+    std::vector<ThreadPool::Task> tasks;
     for (size_t t = 0; t < GetParam(); ++t)
     {
         tasks.emplace_back(
@@ -40,22 +44,26 @@ TEST_P(TaskThreadPoolTests_OneRuns, One_Runs)
     ASSERT_TRUE(std::none_of(results.cbegin(), results.cend(), [](bool b) { return b; }));
 
     // Run
-    TaskThreadPool t(1);
+    ThreadPool t(1, mThreadManager);
     t.Run(tasks);
 
     ASSERT_TRUE(std::all_of(results.cbegin(), results.cend(), [](bool b) { return b; }));
 }
 
-class TaskThreadPoolTests_FourRuns : public testing::TestWithParam<size_t>
+class ThreadPoolTests_FourRuns : public testing::TestWithParam<size_t>
 {
 public:
     virtual void SetUp() {}
     virtual void TearDown() {}
+
+protected:
+
+    ThreadManager mThreadManager{ false, 16 };
 };
 
 INSTANTIATE_TEST_SUITE_P(
-    Four_Runs,
-    TaskThreadPoolTests_FourRuns,
+    ThreadPoolTests_FourRuns,
+    ThreadPoolTests_FourRuns,
     ::testing::Values(
         0,
         1,
@@ -69,11 +77,11 @@ INSTANTIATE_TEST_SUITE_P(
         10
     ));
 
-TEST_P(TaskThreadPoolTests_FourRuns, Four_Runs)
+TEST_P(ThreadPoolTests_FourRuns, Four_Runs)
 {
     std::vector<bool> results(GetParam(), false);
 
-    std::vector<TaskThreadPool::Task> tasks;
+    std::vector<ThreadPool::Task> tasks;
     for (size_t t = 0; t < GetParam(); ++t)
     {
         tasks.emplace_back(
@@ -86,7 +94,7 @@ TEST_P(TaskThreadPoolTests_FourRuns, Four_Runs)
     ASSERT_TRUE(std::none_of(results.cbegin(), results.cend(), [](bool b) { return b; }));
 
     // Run
-    TaskThreadPool t(4);
+    ThreadPool t(4, mThreadManager);
     t.Run(tasks);
 
     ASSERT_TRUE(std::all_of(results.cbegin(), results.cend(), [](bool b) { return b; }));

@@ -5,6 +5,8 @@
 ***************************************************************************************/
 #pragma once
 
+#include "ThreadManager.h"
+
 #include <cassert>
 #include <condition_variable>
 #include <functional>
@@ -17,7 +19,7 @@
  * This class implements a thread pool that executes batches of tasks.
  *
  */
-class TaskThreadPool
+class ThreadPool final
 {
 public:
 
@@ -25,11 +27,16 @@ public:
 
 public:
 
-    TaskThreadPool();
+    explicit ThreadPool(
+        size_t parallelism,
+        ThreadManager & threadManager);
 
-    TaskThreadPool(size_t numberOfProcessors);
+    ~ThreadPool();
 
-    ~TaskThreadPool();
+    size_t GetParallelism() const
+    {
+        return mThreads.size() + 1;
+    }
 
     /*
      * The first task is guaranteed to run on the main thread.
@@ -47,7 +54,7 @@ public:
 
 private:
 
-    void ThreadLoop();
+    void ThreadLoop(ThreadManager & threadManager);
 
     void RunRemainingTasksLoop();
 
@@ -69,7 +76,7 @@ private:
 
     // The tasks currently awaiting to be picked up;
     // expected to be empty at each Run invocation
-    std::deque<Task> mRemainingTasks;
+    std::deque<Task const *> mRemainingTasks;
 
     // The number of tasks awaiting for completion
     size_t mTasksToComplete;
