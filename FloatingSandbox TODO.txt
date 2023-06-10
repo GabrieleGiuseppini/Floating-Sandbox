@@ -341,10 +341,14 @@
 					RND: (3.65-3.85) (UPL:0.31 MT=0.0)
 				+ With lights: 14.23-14.49 FPS
 					UPD: (0.0 + 67.80-68.25 (41.65%))
-		- Layout optimization at ShipFactory - up to passing to Ship
-			- First port Remapper
-			- Do, and Ship just stores for now
-			- Comment out old layout optimizations (now on Remapper)
+		= Layout optimization at ShipFactory - up to passing to Ship
+			+ Port IndexRemap
+			- Nuke all current optimizations - keep only cache
+			- Port layout optimization
+				- Up to passing # of super squares to Ship, which for the moment just stores it
+				- Comment out old layout optimizations (now on Remapper)
+		- Check Dell
+		- Check benchmarks
 		- Port ThreadManager & ThreadPool from SpringLab
 			- Note: port ThreadPool because of pointers to tasks (and ThreadManager &)
 			- Controller owns ThreadManager

@@ -43,6 +43,7 @@ set  (SOURCES
 	ImageData.h
 	ImageTools.cpp
 	ImageTools.h
+	IndexRemap.h
 	IntegralLinearSliderCore.h
 	ISliderCore.h	
 	LinearSliderCore.cpp
