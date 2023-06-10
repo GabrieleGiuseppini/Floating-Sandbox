@@ -295,45 +295,80 @@
 	+ Black glass
 
 	= Optimizations integration:
-		- Benchmarks:
-			- Default Titanic: 
-			- Hesleden:
-				- Without lights:
-				- With lights:
-		= ThreadManager and ThreadPool - in SpringLab
-			= 1. ParallelThreadPool -> ThreadPool
+		+ ThreadManager and ThreadPool - in SpringLab
+			! Vision:
+				! ThreadManager is passed to (OnStateChange() and) Update()
+					! We do this to stress the fact that parallelism is a mutable parameter
+					+ So not singleton
+				- Init args:
+					- render thread
+					- max max simu threads
+						+ SpringLab: 1
+						- FS: 8
+				+ Springlab: goes for all available threads and partitions
+				- FS: ship calculates own partitions
+			+ 1. ThreadManager:
+				+ cctor decides whether to do render thread (based on BootSettings) and creates ThreadPool with max possible (doing main thread math)
+				+ ThreadPool accessed as member &, "SimulationThreadPool"				
+			+ 2. ParallelThreadPool -> ThreadPool
 				+ Make it that the main thread does first task and all leftover tasks
-				- Nuke TaskThreadPool & replace it (if it's even used)
+				+ Decide with of the two pools to keep
+					+ See perf:
+						+ With (old) TaskThreadPool: 15, 11.5, 8.7, 8.8
+						+ With (new) ThreadPool: 15, 12.8, 9.3, 9.1
+					+ Keep old (which has Task *)
+						+ Nuke ThreadPool
+						+ Rename TaskThreadPool as ThreadPool
+						+ Fixup TaskManager
 				+ Initialize threads via ThreadManager
-			- 2. ThreadManager decides whether to do render thread (based on BootSettings) and creates ThreadPool with max possible (doing main thread math)
-				- Call Initialize() from outside, when we have boot settings
-					- With "already initialized" check
-				- ThreadPool accessed as member &, "SimulationThreadPool"
-				- FS: RenderContext gets whether or not to do render thread from ThreadManager
-			- 3. Changing Settings' slider for "max simulation threads" (new slide) dooes:
-				- Set into ThreadManager (storage), who tells ThreadPool
-				- ThreadPool re-dims internally
-				- Then, call into Simulator::StateChanged() - same as now, and react to change					
-					- SpringLab simulators query singleton instance themselves, not passed
-						- No need to pollute StateChanged/Update, as only a few simulators require threads
-				- For Ship: Ship::Update takes ThreadManager&, and checks MaxSimulationThreads against own remembered value, and reacts on change by recalculating partitioning
-					- We do this to stress the fact that parallelism is a mutable parameter
-		- Port ThreadManager/ThreadPool from SpringLab
-			- OLD: Extra ports from SpringLab:
-				- TaskThreadPool, because of:
-					- Pointers to tasks
-		- SpringLab: non-intrinsics implementation (for benchmarking and experimenting)
+			+ 3. Whole fixup, and changing Settings' slider for "max simulation threads" (SpringLab: existing slider, FS: new slider - both maxed out by TM::GetMaxSimulationParallelism()) dooes:
+				+ SpringLab: Controller owns ThreadManager
+				+ Set ThreadManager::SimulationParallelism (storage), who tells ThreadPool
+					+ Just re-creates ThreadPool from scratch
+				+ SpringLab: then, call into Simulator::StateChanged(ThreadManager &)/Update(ThreadManager &)
+			+ 4. Fix affinitization: must be thread-safe
+				X Removed affinitization altogether as it does not help
+		+ SpringLab: non-intrinsics implementation (for benchmarking and experimenting)
+			+ Integration: single templated func
+			+ Record benchmark
+		+ Benchmarks:
+			+ Default Titanic (823 spr): 64 FPS 
+				  UPD: (0.0 + 6.91 (74.2%)) UPL:(0.0+0.07)
+				  RND: (3.30) (UPL=0.20 MT=0.0)
+			+ Hesleden (1839 spr): 
+				+ Without lights: 25.64-26.85 FPS
+					UPD: (0.0 + 38.25-39.07 (73.5%)) UPL:(0.0 + 0.17)
+					RND: (3.65-3.85) (UPL:0.31 MT=0.0)
+				+ With lights: 14.23-14.49 FPS
+					UPD: (0.0 + 67.80-68.25 (41.65%))
 		- Layout optimization at ShipFactory - up to passing to Ship
 			- First port Remapper
+			- Do, and Ship just stores for now
 			- Comment out old layout optimizations (now on Remapper)
-		- TODOHERE
-		- Notes:
-			- Ship decides # of parallelism for herself
+		- Port ThreadManager & ThreadPool from SpringLab
+			- Note: port ThreadPool because of pointers to tasks (and ThreadManager &)
+			- Controller owns ThreadManager
+			- Ship::Update takes ThreadManager&
+				! We do this to stress the fact that parallelism is a mutable parameter
+				- Checks MaxSimulationThreads against own remembered value, and reacts on change by recalculating partitioning
+					- This also used for initial
+					- Ship decides # of parallelism for herself
+				- All code - intrinsics/non-intrinsics - goes in new Ship_SpringRelaxation.cpp
+					- TODOHERE
+			- RenderContext gets whether or not to do render thread from ThreadManager
+		- Parallelism setting/slider
+			- SettingsDialog: "Max Simulation Threads"
+				- Maxed by TM::GetMaxSimulationParallelism()
+			
 
 	- More parallelism at Ship::Update (was: Multi-threading, phase II):
 		- Now that we have MaxSimulationParallelism, we can easily see which steps take the longest
 		- Allow threads to publish events by having EventDispatcher allow multiple threads to store* event
 			- No locks needed on read and clean, as it's done after Update has finished
+		- World::Update:
+			- T1: Stars, Clouds, Wind
+			- T2: OceanSurface
+				- Wind::StormParameters become WindParameters, so that T2 works on static (but one frame older) snapshot
 		- Move PhysicsSimulation::UpdateWaterVelocities (8%) to separate thread
 			- If water is being read in parallel, make UpdateWaterVelocities take the newWater buffer, and swap it after the tasks have completed
 		- Springs: each iteration done in parallel with NThreads partitions
