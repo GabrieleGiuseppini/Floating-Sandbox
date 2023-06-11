@@ -103,6 +103,7 @@ set  (PHYSICS_SOURCES
 	Ship_ForceFields.cpp
 	Ship_Interactions.cpp
 	Ship_Interactions_Repair.cpp
+	Ship_SpringRelaxation.cpp
 	Ship_StateMachines.cpp
 	Ship_StateMachines.h
 	Ship.h

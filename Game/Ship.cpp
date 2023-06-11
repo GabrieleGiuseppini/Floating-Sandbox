@@ -122,6 +122,8 @@ Ship::Ship(
     , mLastQueriedPointIndex(NoneElementIndex)
     , mWindField()
     , mAirBubblesCreatedCount(0)
+    // Spring relaxation
+    , mCurrentSimulationParallelism(0) // We'll detect a difference on first run
     // Static pressure
     , mStaticPressureBuffer(mPoints.GetAlignedShipPointCount())
     , mStaticPressureNetForceMagnitudeSum(0.0f)
@@ -251,6 +253,9 @@ void Ship::Update(
     mElectricalElements.UpdateForGameParameters(
         gameParameters);
 
+    UpdateForSimulationParallelism(
+        threadManager);
+
     ///////////////////////////////////////////////////////////////////
     // Calculate some widely-used physical constants
     ///////////////////////////////////////////////////////////////////
@@ -276,40 +281,13 @@ void Ship::Update(
     // and ocean floor collision handling
     ///////////////////////////////////////////////////////////////////
 
-    auto const springsStartTime = std::chrono::steady_clock::now();
-
-    int const numMechanicalDynamicsIterations = gameParameters.NumMechanicalDynamicsIterations<int>();
-
-    // We run ocean floor collision handling every so often
-    int constexpr SeaFloorCollisionPeriod = 2;
-    float const seaFloorCollisionDt = gameParameters.MechanicalSimulationStepTimeDuration<float>() * static_cast<float>(SeaFloorCollisionPeriod);
-
-    for (int iter = 0; iter < numMechanicalDynamicsIterations; ++iter)
     {
-        // - DynamicForces = 0 | others at first iteration only
+        auto const springsStartTime = std::chrono::steady_clock::now();
 
-        // Apply spring forces
-        ApplySpringsForces_BySprings(gameParameters);
+        RunSpringRelaxationAndDynamicForcesIntegration(gameParameters, threadManager);
 
-        // - DynamicForces = fs | fs + others at first iteration only
-
-        // Integrate dynamic and static forces,
-        // and reset dynamic forces
-        IntegrateAndResetDynamicForces(gameParameters);
-
-        // - DynamicForces = 0
-
-        if ((iter % SeaFloorCollisionPeriod) == SeaFloorCollisionPeriod - 1)
-        {
-            // Handle collisions with sea floor
-            //  - Changes position and velocity
-            HandleCollisionsWithSeaFloor(
-                seaFloorCollisionDt,
-                gameParameters);
-        }
+        perfStats.TotalShipsSpringsUpdateDuration.Update(std::chrono::steady_clock::now() - springsStartTime);
     }
-
-    perfStats.TotalShipsSpringsUpdateDuration.Update(std::chrono::steady_clock::now() - springsStartTime);
 
     ///////////////////////////////////////////////////////////////////
     // Trim for world bounds
@@ -3041,6 +3019,19 @@ void Ship::RotPoints(
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // Private helpers
 ///////////////////////////////////////////////////////////////////////////////////////////////
+
+void Ship::UpdateForSimulationParallelism(ThreadManager const & threadManager)
+{
+    size_t const simulationParallelism = threadManager.GetSimulationParallelism();
+    if (simulationParallelism != mCurrentSimulationParallelism)
+    {
+        // Re-calculate spring relaxation parallelism
+        RecalculateSpringRelaxationParallelism(simulationParallelism);
+
+        // Remember new value
+        mCurrentSimulationParallelism = simulationParallelism;
+    }
+}
 
 //#define RENDER_FLOOD_DISTANCE
 

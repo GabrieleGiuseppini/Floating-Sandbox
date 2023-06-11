@@ -507,6 +507,13 @@ private:
         float effectiveWaterDensity,
         GameParameters const & gameParameters);
 
+    void RecalculateSpringRelaxationParallelism(size_t simulationParallelism);
+
+    void RunSpringRelaxationAndDynamicForcesIntegration(
+        GameParameters const & gameParameters,
+        ThreadManager & threadManager);
+
+    // TODOOLD
     void ApplySpringsForces_BySprings(GameParameters const & gameParameters);
 
     void IntegrateAndResetDynamicForces(GameParameters const & gameParameters);
@@ -586,6 +593,8 @@ private:
     /////////////////////////////////////////////////////////////////////////
     // Misc
     /////////////////////////////////////////////////////////////////////////
+
+    inline void UpdateForSimulationParallelism(ThreadManager const & threadManager);
 
     void RunConnectivityVisit();
 
@@ -874,6 +883,17 @@ private:
 
     // Counter of created bubble ephemeral particles
     std::uint64_t mAirBubblesCreatedCount;
+
+    //
+    // Spring relaxation
+    //
+
+    // The last thread pool simulation parallelism we've seen; used to
+    // detect changes
+    size_t mCurrentSimulationParallelism;
+
+    // The spring relaxation tasks
+    std::vector<typename ThreadPool::Task> mSpringRelaxationTasks;
 
     //
     // Static pressure

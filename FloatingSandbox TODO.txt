@@ -335,6 +335,9 @@
 			+ Default ship (19932 spr):
 				  UPD: (0.0 + 4.97 (75.5%)) UPL:(0.0 + 0.06)
 				  RND: (3.40) (UPL=0.18 MT=0.0)
+			+ Default ship DELL: 32.5 FPS
+				  UPD: (0.0 + 19.52 (77.1%)) UPL:(0.0 + 0.16)
+				  RND: (10.49) (UPL=0.32 MT=10.61)
 			+ Default Titanic (27424 spr): 64 FPS 
 				  UPD: (0.0 + 6.91 (74.2%)) UPL:(0.0+0.07)
 				  RND: (3.30) (UPL=0.20 MT=0.0)
@@ -357,23 +360,37 @@
 			+ RenderContext gets whether or not to do render thread from ThreadManager
 			+ Unit tests
 		+ Test boot settings
-		- Check Dell
-		- Ship parallelism:
-			- Ship::Update(ThreadManager &) checks MaxSimulationThreads against own remembered value, and reacts on change by recalculating partitioning
-				- This also used for initial
-				- Ship decides # of parallelism for herself
-			- All code - intrinsics/non-intrinsics - goes in new Ship_SpringRelaxation.cpp
-				- TODOHERE
+		+ Check Dell
+		= Ship parallelism:
+			! All code - intrinsics/non-intrinsics - goes in new Ship_SpringRelaxation.cpp
+			+ Encapsulate whole spring relaxation in new RunSpringRelaxationAndDynamicForcesIntegration()
+			= Dynamic forces
+				! Today we have: static forces, dynamic forces == spring + pressure
+					! Because pressure forces are to be applied only once with first integration at beginning of next Update() cycle
+				- Points::DynamicForces has them as an "array" (vector), size >= 1
+					- Initial is empty
+					- Points::Set/Foo/DynamicForces(...) all deal transparently with first element of array of buffers
+						- Assert there is at least one element in array; rely on Ship to calculate spring relaxation parallelism before DynamicForces is accessed						
+					- Array size changed via Points::SetDynamicForceParallelism(size_t parallelism)
+						- Also stores vector of restrict ptrs
+			- Test
+			= Ship::Update(ThreadManager &) checks SimulationParallelism against own remembered value, and reacts on change by recalculating partitioning
+				+ This also used for initial
+				- Ship decides # of parallelism for herself, < ThreadManager::SimulationParallelism
+					- Calculate table with SpringLab of # springs vs threads
+				- Log avail & decided
+			- Test
+			- TODOHERE: remaining of algo
 		- Parallelism setting/slider
 			- SettingsDialog: "Max Simulation Threads"
 				- Maxed by TM::GetMaxSimulationParallelism()
 			
 
-	- More parallelism
+	- More parallelism during Update()
 		- World::Update:
 			- T1: Stars, Clouds, Wind
 			- T2: OceanSurface
-				- Wind::StormParameters become WindParameters, so that T2 works on static (but one frame older) snapshot
+				- Wind::StormParameters becomes WindParameters, so that T2 works on static (but one frame older) snapshot
 		- At Ship::Update (was: Multi-threading, phase II):
 			- Now that we have MaxSimulationParallelism, we can easily see which steps take the longest
 			- Allow threads to publish events by having EventDispatcher allow multiple threads to store* event
