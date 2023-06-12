@@ -368,16 +368,26 @@
 				! Today we have: static forces, dynamic forces == spring + pressure
 					! Because pressure forces are to be applied only once with first integration at beginning of next Update() cycle
 				- Points::DynamicForces has them as an "array" (vector), size >= 1
-					- Initial is empty
+					- Initial size is 1
 					- Points::Set/Foo/DynamicForces(...) all deal transparently with first element of array of buffers
-						- Assert there is at least one element in array; rely on Ship to calculate spring relaxation parallelism before DynamicForces is accessed						
+						- Assert there is at least one element in array
 					- Array size changed via Points::SetDynamicForceParallelism(size_t parallelism)
-						- Also stores vector of restrict ptrs
+						- Maintains current buffers' contents (so operates via resize/emplace_back), so to save buf[0] dynamic forces
+						- Also maintains convenience vector of restrict ptrs
 			- Test
 			= Ship::Update(ThreadManager &) checks SimulationParallelism against own remembered value, and reacts on change by recalculating partitioning
 				+ This also used for initial
-				- Ship decides # of parallelism for herself, < ThreadManager::SimulationParallelism
-					- Calculate table with SpringLab of # springs vs threads
+				= Ship decides # of parallelism for herself, < ThreadManager::SimulationParallelism
+					= Calculate table with SpringLab of # springs vs threads (StructuralIntrinsicsMTVectorized)
+						+ SpringLab::MakeSyntheticObject
+							+ MainFrame menu item
+							+ ObjectBuilder
+						+     1,000: 1t=113  2t=124  3t=140  4t=  5t=  6t=  8t=
+						+    10,000: 1t=1070  2t=1100  3t=1200  4t=  5t=  6t=  8t=
+						+    50,000: 1t=5200  2t=4400  3t=4060  4t=3600  5t=3700  6t=  8t=
+						+   100,000: 1t=10600  2t=8100  3t=6800  4t=6100  5t=6300  6t=  8t=
+						+   500,000: 1t=57000  2t=38000  3t=31000  4t=28000  5t=31000  6t=29000  8t=
+						+ 1,000,000: 1t=140000  2t=89000  3t=75000  4t=68000  5t=76000  6t=  8t=140000
 				- Log avail & decided
 			- Test
 			- TODOHERE: remaining of algo
