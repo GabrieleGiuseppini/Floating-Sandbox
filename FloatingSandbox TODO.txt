@@ -448,24 +448,38 @@
 						- Physics::Springs::InternalUpdateForStrains<0>	524 (2.00%)
 		= At Ship::Update (was: Multi-threading, phase II):
 			! Now that we have MaxSimulationParallelism, we can easily see which steps take the longest
-			- Allow threads to publish events by having EventDispatcher allow multiple threads to store* event
-				- No locks needed on read and clean, as it's done after Update has finished
-			- Move PhysicsSimulation::UpdateWaterVelocities (8%) to separate thread
-				- If water is being read by other threads, make UpdateWaterVelocities take the newWater buffer, and swap it after the tasks have completed
-			- Ideal Parallelization 1:
+			+ Ideal Parallelization 1:
 				- UpdateWaterVelocities     14.23	T1
 				- ApplyStaticPressureForces  9.67	T2
 				- PropagateHeat              3.80	T2
-			- Ideal Parallelization 2:
+			+ Ideal Parallelization 2:
 				- EqualizeInternalPressure   2.68       T1
 				- InternalUpdateForStrains   2.00	T1
 				- ...					T1
 				- Light					T2
-
+			! Breakdown now:
+				- Main thread:
+					- Physics::World::Update	18827 (44.06%)
+						- Physics::Ship::Update	18422 (43.11%)
+							- Physics::Ship::RunSpringRelaxationAndDynamicForcesIntegration	10098 (23.63%)
+							- Physics::Ship::UpdateWaterVelocities	5485 (12.84%)
+							- Physics::Ship::EqualizeInternalPressure	1007 (2.36%)
+							- Physics::Springs::InternalUpdateForStrains<0>	692 (1.62%)
+							- Physics::Ship::ApplyWorldForces	564 (1.32%)
+							- Physics::Points::UpdateMasses	204 (0.48%)
+				- Pool thread:
+					- ThreadPool::RunTask	19678 (46.05%)
+						- Physics::Ship::ApplySpringsForces	14858 (34.77%) (because it's *3)
+						- Physics::Ship::ApplyStaticPressureForces	3265 (7.64%)
+						- Physics::Ship::PropagateHeat	1541 (3.61%)
+		- Parallel lights?
 		- World::Update:
 			- T1: Stars, Clouds, Wind
 			- T2: OceanSurface
 				- Wind::StormParameters becomes WindParameters, so that T2 works on static (but one frame older) snapshot
+		- If needed:
+			- Allow threads to publish events by having EventDispatcher allow multiple threads to store* event
+				- No locks needed on read and clean, as it's done after Update has finished
 
 	- Decide rigidity vs. speedup
 

@@ -353,22 +353,6 @@ void Ship::Update(
     // Cached depths are valid from now on --------------------------->
 
     ///////////////////////////////////////////////////////////////////
-    // Apply static pressure forces
-    ///////////////////////////////////////////////////////////////////
-
-    if (gameParameters.StaticPressureForceAdjustment > 0.0f)
-    {
-        // - Inputs: frontiers, positions, internal pressure
-        // - Outputs: dynamic forces 
-        // - Events: OnStaticPressureUpdated
-
-        ApplyStaticPressureForces(
-            effectiveAirDensity,
-            effectiveWaterDensity,
-            gameParameters);
-    }
-
-    ///////////////////////////////////////////////////////////////////
     // Rot points
     ///////////////////////////////////////////////////////////////////
 
@@ -454,22 +438,73 @@ void Ship::Update(
     // Equalize internal pressure
     //
 
-    // - Inputs: Position, InternalPressure, ConnectedSprings
-    // - Outpus: InternalPressure, DynamicForces
+    // - Inputs: InternalPressure, ConnectedSprings
+    // - Outpus: InternalPressure
     EqualizeInternalPressure(gameParameters);
 
-    //
-    // Diffuse water
-    //
+    ///////////////////////////////
+    // Parallel run 1 START
+    ///////////////////////////////
 
-    float waterSplashedInStep = 0.f;
+    assert(parallelTasks.empty()); // We want the first task to run on the main thread
 
-    // - Inputs: Position, Water, WaterVelocity, WaterMomentum, ConnectedSprings
-    // - Outpus: Water, WaterVelocity, WaterMomentum
-    UpdateWaterVelocities(gameParameters, waterSplashedInStep);
+    parallelTasks.emplace_back(
+        [&]()
+        {
+            //
+            // Diffuse water (Cost: 14)
+            //
 
-    // Notify
-    mGameEventHandler->OnWaterSplashed(waterSplashedInStep);
+            float waterSplashedInStep = 0.f;
+
+            // - Inputs: Position, Water, WaterVelocity, WaterMomentum, ConnectedSprings
+            // - Outpus: Water, WaterVelocity, WaterMomentum
+            UpdateWaterVelocities(gameParameters, waterSplashedInStep);
+
+            // Notify
+            mGameEventHandler->OnWaterSplashed(waterSplashedInStep);
+        });
+
+    parallelTasks.emplace_back(
+        [&]()
+        {
+            //
+            // Apply static pressure forces (Cost: 10)
+            //
+
+            if (gameParameters.StaticPressureForceAdjustment > 0.0f)
+            {
+                // - Inputs: frontiers, P.Position, P.InternalPressure
+                // - Outputs: P.DynamicForces
+                ApplyStaticPressureForces(
+                    effectiveAirDensity,
+                    effectiveWaterDensity,
+                    gameParameters);
+            }
+
+            //
+            // Propagate heat (Cost: 4)
+            //
+
+            // - Inputs: P.Position, P.Temperature, P.ConnectedSprings, P.Water
+            // - Outputs: P.Temperature
+            PropagateHeat(
+                currentSimulationTime,
+                GameParameters::SimulationStepTimeDuration<float>,
+                stormParameters,
+                gameParameters);
+        });
+
+    threadManager.GetSimulationThreadPool().RunAndClear(parallelTasks);
+
+    // Publish static pressure stats
+    mGameEventHandler->OnStaticPressureUpdated(
+        mStaticPressureNetForceMagnitudeCount != 0.0f ? mStaticPressureNetForceMagnitudeSum / mStaticPressureNetForceMagnitudeCount : 0.0f,
+        mStaticPressureIterationsCount != 0.0f ? mStaticPressureIterationsPercentagesSum / mStaticPressureIterationsCount : 0.0f);
+
+    ///////////////////////////////
+    // Parallel run 1 END
+    ///////////////////////////////
 
     //
     // Run sinking/unsinking detection
@@ -484,42 +519,30 @@ void Ship::Update(
     Verify(!mPoints.Diagnostic_ArePositionsDirty());
 #endif
 
-    ///////////////////////////////////////////////////////////////////
-    // Update electrical dynamics
-    ///////////////////////////////////////////////////////////////////
+    ///////////////////////////////
+    // Parallel run 2 START
+    ///////////////////////////////
 
-    // Generate a new visit sequence number
-    ++mCurrentElectricalVisitSequenceNumber;
-
-    mElectricalElements.Update(
-        currentWallClockTime,
-        currentSimulationTime,
-        mCurrentElectricalVisitSequenceNumber,
-        mPoints,
-        mSprings,
-        effectiveAirDensity,
-        effectiveWaterDensity,
-        stormParameters,
-        gameParameters);
-
-    ///////////////////////////////////////////////////////////////////
-    // Update heat dynamics
-    ///////////////////////////////////////////////////////////////////
-
-    assert(parallelTasks.empty()); // We want this to run on the main thread
+    assert(parallelTasks.empty()); // We want first task to run on the main thread
 
     parallelTasks.emplace_back(
         [&]()
         {
             //
-            // Propagate heat
+            // Update electrical dynamics
             //
 
-            // - Inputs: P.Position, P.Temperature, P.ConnectedSprings, P.Water
-            // - Outputs: P.Temperature
-            PropagateHeat(
+            // Generate a new visit sequence number
+            ++mCurrentElectricalVisitSequenceNumber;
+
+            mElectricalElements.Update(
+                currentWallClockTime,
                 currentSimulationTime,
-                GameParameters::SimulationStepTimeDuration<float>,
+                mCurrentElectricalVisitSequenceNumber,
+                mPoints,
+                mSprings,
+                effectiveAirDensity,
+                effectiveWaterDensity,
                 stormParameters,
                 gameParameters);
 
@@ -578,15 +601,27 @@ void Ship::Update(
                 mParentWorld.GetCurrentWindSpeed(),
                 mWindField,
                 gameParameters);
-        });
 
-    ///////////////////////////////////////////////////////////////////
-    // Diffuse light from lamps
-    ///////////////////////////////////////////////////////////////////
+            //
+            // Update highlights
+            //
+
+            mPoints.UpdateHighlights(currentWallClockTimeFloat);
+
+            //
+            // Update electric sparks
+            //
+
+            mElectricSparks.Update();
+        });
 
     parallelTasks.emplace_back(
         [&]()
         {
+            //
+            // Diffuse light
+            //
+
             // - Inputs: P.Position, P.PlaneId, EL.AvailableLight
             //      - EL.AvailableLight depends on electricals which depend on water
             // - Outputs: P.Light
@@ -594,6 +629,10 @@ void Ship::Update(
         });
 
     threadManager.GetSimulationThreadPool().RunAndClear(parallelTasks);
+
+    ///////////////////////////////
+    // Parallel run 2 END
+    ///////////////////////////////
 
     ///////////////////////////////////////////////////////////////////
     // Update spring parameters
@@ -631,18 +670,6 @@ void Ship::Update(
     mPoints.UpdateEphemeralParticles(
         currentSimulationTime,
         gameParameters);
-
-    ///////////////////////////////////////////////////////////////////
-    // Update highlights
-    ///////////////////////////////////////////////////////////////////
-
-    mPoints.UpdateHighlights(currentWallClockTimeFloat);
-
-    ///////////////////////////////////////////////////////////////////
-    // Electric sparks
-    ///////////////////////////////////////////////////////////////////
-
-    mElectricSparks.Update();
 
     ///////////////////////////////////////////////////////////////////
     // Diagnostics
@@ -1435,11 +1462,6 @@ void Ship::ApplyStaticPressureForces(
                 gameParameters);
         }
     }
-
-    // Publish stats
-    mGameEventHandler->OnStaticPressureUpdated(
-        mStaticPressureNetForceMagnitudeCount != 0.0f ? mStaticPressureNetForceMagnitudeSum / mStaticPressureNetForceMagnitudeCount : 0.0f,
-        mStaticPressureIterationsCount != 0.0f ? mStaticPressureIterationsPercentagesSum / mStaticPressureIterationsCount : 0.0f);
 }
 
 void Ship::ApplyStaticPressureForces(
