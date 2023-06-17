@@ -47,7 +47,8 @@ void Springs::Add(
     mRestLengthBuffer.emplace_back((points.GetPosition(pointAIndex) - points.GetPosition(pointBIndex)).length());
 
     // Dynamics coefficients recalculated later, but stiffness grows slowly and shrinks fast, hence we want to start high
-    mDynamicsCoefficientsBuffer.emplace_back(std::numeric_limits<float>::max(), 0.0f);
+    mStiffnessCoefficientBuffer.emplace_back(std::numeric_limits<float>::max());
+    mDampingCoefficientBuffer.emplace_back(0.0f);
 
     // Stiffness is average
     float const averageStiffness =
@@ -129,8 +130,8 @@ void Springs::Destroy(
     // Zero out our dynamics coefficients, so that we can still calculate Hooke's
     // and damping forces for this spring without running the risk of
     // affecting non-deleted points
-    mDynamicsCoefficientsBuffer[springElementIndex].StiffnessCoefficient = 0.0f;
-    mDynamicsCoefficientsBuffer[springElementIndex].DampingCoefficient = 0.0f;
+    mStiffnessCoefficientBuffer[springElementIndex] = 0.0f;
+    mDampingCoefficientBuffer[springElementIndex] = 0.0f;
 
     // Flag ourselves as deleted
     mIsDeletedBuffer[springElementIndex] = true;
@@ -496,16 +497,16 @@ void Springs::inline_UpdateCoefficients(
     // If the coefficient is growing (spring is becoming more stiff), then
     // approach the desired stiffness coefficient slowly,
     // or else we have too much discontinuity and might explode
-    if (desiredStiffnessCoefficient > mDynamicsCoefficientsBuffer[springIndex].StiffnessCoefficient)
+    if (desiredStiffnessCoefficient > mStiffnessCoefficientBuffer[springIndex])
     {
-        mDynamicsCoefficientsBuffer[springIndex].StiffnessCoefficient +=
+        mStiffnessCoefficientBuffer[springIndex] +=
             0.03f // 0.03: ~76 steps to 1/10th off target
-            * (desiredStiffnessCoefficient - mDynamicsCoefficientsBuffer[springIndex].StiffnessCoefficient);
+            * (desiredStiffnessCoefficient - mStiffnessCoefficientBuffer[springIndex]);
     }
     else
     {
         // Sudden decrease
-        mDynamicsCoefficientsBuffer[springIndex].StiffnessCoefficient = desiredStiffnessCoefficient;
+        mStiffnessCoefficientBuffer[springIndex] = desiredStiffnessCoefficient;
     }
 
     //
@@ -514,7 +515,7 @@ void Springs::inline_UpdateCoefficients(
     // Magnitude of the drag force on the relative velocity component along the spring.
     //
 
-    mDynamicsCoefficientsBuffer[springIndex].DampingCoefficient =
+    mDampingCoefficientBuffer[springIndex] =
         GameParameters::SpringDampingCoefficient
         * dampingAdjustment
         * massFactor

@@ -75,7 +75,6 @@ Ship::Ship(
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     Points && points,
     Springs && springs,
-    ElementCount perfectSquareCount,
     Triangles && triangles,
     ElectricalElements && electricalElements,
     Frontiers && frontiers)
@@ -86,7 +85,6 @@ Ship::Ship(
     , mEventRecorder(nullptr)
     , mPoints(std::move(points))
     , mSprings(std::move(springs))
-    , mPerfectSquareCount(perfectSquareCount)
     , mTriangles(std::move(triangles))
     , mElectricalElements(std::move(electricalElements))
     , mFrontiers(std::move(frontiers))
@@ -1646,7 +1644,6 @@ void Ship::ApplyStaticPressureForces(
                         float const newNetForceMagnitude = (netForce - thisForce * (1.0f - lambda)).length();
                         float const thisTorque = hp.TorqueArm.cross(thisForce);
                         float const newNetTorqueMagnitude = std::abs(netTorque - thisTorque * (1.0f - lambda));
-                        //LogMessage("      ", pointIndex, ": |F|=", newNetForceMagnitude, " T=", newNetTorqueMagnitude);
                         if (newNetForceMagnitude < minNetForceMagnitude - QuantizationRadius
                             || (newNetForceMagnitude < minNetForceMagnitude + QuantizationRadius && newNetTorqueMagnitude < minNetTorqueMagnitude))
                         {
@@ -1687,7 +1684,6 @@ void Ship::ApplyStaticPressureForces(
                         // Remember best
                         float const newNetForceMagnitude = (netForce - thisForce * (1.0f - lambda)).length();
                         float const newNetTorqueMagnitude = std::abs(netTorque - thisTorque * (1.0f - lambda));
-                        //LogMessage("      ", pointIndex, ": |F|=", newNetForceMagnitude, " T=", newNetTorque);
                         if (newNetTorqueMagnitude < minNetTorqueMagnitude - QuantizationRadius
                             || (newNetTorqueMagnitude < minNetTorqueMagnitude + QuantizationRadius && newNetForceMagnitude < minNetForceMagnitude))
                         {
@@ -1704,7 +1700,6 @@ void Ship::ApplyStaticPressureForces(
         if (!bestHPIndex.has_value())
         {
             // Couldn't find a minimizer, stop
-            //LogMessage("Iter ", iter + 1, ": done because none found");
             break;
         }
 
@@ -1717,8 +1712,6 @@ void Ship::ApplyStaticPressureForces(
         // Update net force and torque
         netForce -= thisForce * (1.0f - bestLambda);
         netTorque -= thisTorque * (1.0f - bestLambda);
-
-        //LogMessage("Iter ", iter + 1, ": best=", bestPointIndex, "/l=", bestLambda, " (@", mPoints.GetPosition(bestPointIndex), ") NetForce'=", netForce, " (", netForce.length(), ") NetTorque'=", netTorque);
     }
 
     // Update stats
@@ -1745,137 +1738,6 @@ void Ship::ApplyStaticPressureForces(
             mStaticPressureBuffer[hpi].PointIndex,
             mStaticPressureBuffer[hpi].ForceVector * forceMultiplier);
     }
-}
-
-void Ship::ApplySpringsForces_BySprings(GameParameters const & /*gameParameters*/)
-{
-    vec2f const * restrict const pointPositionBuffer = mPoints.GetPositionBufferAsVec2();
-    vec2f const * restrict const pointVelocityBuffer = mPoints.GetVelocityBufferAsVec2();
-    vec2f * restrict const pointDynamicForceBuffer = mPoints.GetDynamicForceBufferAsVec2();
-
-    Springs::Endpoints const * restrict const endpointsBuffer = mSprings.GetEndpointsBuffer();
-    float const * restrict const restLengthBuffer = mSprings.GetRestLengthBuffer();
-    Springs::DynamicsCoefficients const * restrict const dynamicsCoefficientsBuffer = mSprings.GetDynamicsCoefficientsBuffer();
-
-    ElementCount const springCount = mSprings.GetElementCount();
-    for (ElementIndex springIndex = 0; springIndex < springCount; ++springIndex)
-    {
-        auto const pointAIndex = endpointsBuffer[springIndex].PointAIndex;
-        auto const pointBIndex = endpointsBuffer[springIndex].PointBIndex;
-
-        // No need to check whether the spring is deleted, as a deleted spring
-        // has zero coefficients
-
-        vec2f const displacement = pointPositionBuffer[pointBIndex] - pointPositionBuffer[pointAIndex];
-        float const displacementLength = displacement.length();
-        vec2f const springDir = displacement.normalise(displacementLength);
-
-        //
-        // 1. Hooke's law
-        //
-
-        // Calculate spring force on point A
-        float const fSpring =
-            (displacementLength - restLengthBuffer[springIndex])
-            * dynamicsCoefficientsBuffer[springIndex].StiffnessCoefficient;
-
-        //
-        // 2. Damper forces
-        //
-        // Damp the velocities of the two points, as if the points were also connected by a damper
-        // along the same direction as the spring
-        //
-
-        // Calculate damp force on point A
-        vec2f const relVelocity = pointVelocityBuffer[pointBIndex] - pointVelocityBuffer[pointAIndex];
-        float const fDamp =
-            relVelocity.dot(springDir)
-            * dynamicsCoefficientsBuffer[springIndex].DampingCoefficient;
-
-        //
-        // Apply forces
-        //
-
-        vec2f const forceA = springDir * (fSpring + fDamp);
-        pointDynamicForceBuffer[pointAIndex] += forceA;
-        pointDynamicForceBuffer[pointBIndex] -= forceA;
-    }
-}
-
-void Ship::IntegrateAndResetDynamicForces(GameParameters const & gameParameters)
-{
-    float const dt = gameParameters.MechanicalSimulationStepTimeDuration<float>();
-
-    // Global damp - lowers velocity uniformly, damping oscillations originating between gravity and buoyancy
-    //
-    // Considering that:
-    //
-    //  v1 = d*v0
-    //  v2 = d*v1 =(d^2)*v0
-    //  ...
-    //  vN = (d^N)*v0
-    //
-    // ...the more the number of iterations, the more damped the initial velocity would be.
-    // We want damping to be independent from the number of iterations though, so we need to find the value
-    // d such that after N iterations the damping is the same as our reference value, which is based on
-    // 12 (basis) iterations. For example, double the number of iterations requires square root (1/2) of
-    // this value.
-    //
-
-    float const globalDamping = 1.0f -
-        pow((1.0f - GameParameters::GlobalDamping),
-            12.0f / gameParameters.NumMechanicalDynamicsIterations<float>());
-
-    // Incorporate adjustment
-    float const globalDampingCoefficient = 1.0f -
-        (
-            gameParameters.GlobalDampingAdjustment <= 1.0f
-            ? globalDamping * (1.0f - (gameParameters.GlobalDampingAdjustment - 1.0f) * (gameParameters.GlobalDampingAdjustment - 1.0f))
-            : globalDamping +
-                (gameParameters.GlobalDampingAdjustment - 1.0f) * (gameParameters.GlobalDampingAdjustment - 1.0f)
-                / ((gameParameters.MaxGlobalDampingAdjustment - 1.0f) * (gameParameters.MaxGlobalDampingAdjustment - 1.0f))
-                * (1.0f - globalDamping)
-        );
-
-    // Pre-divide damp coefficient by dt to provide the scalar factor which, when multiplied with a displacement,
-    // provides the final, damped velocity
-    float const velocityFactor = globalDampingCoefficient / dt;
-
-    //
-    // Take the four buffers that we need as restrict pointers, so that the compiler
-    // can better see it should parallelize this loop as much as possible
-    //
-    // This loop is compiled with single-precision packet SSE instructions on MSVC 17,
-    // integrating two points at each iteration
-    //
-
-    float * const restrict positionBuffer = mPoints.GetPositionBufferAsFloat();
-    float * const restrict velocityBuffer = mPoints.GetVelocityBufferAsFloat();
-    float * const restrict dynamicForceBuffer = mPoints.GetDynamicForceBufferAsFloat();
-    float const * const restrict staticForceBuffer = mPoints.GetStaticForceBufferAsFloat();
-    float const * const restrict integrationFactorBuffer = mPoints.GetIntegrationFactorBufferAsFloat();
-
-    size_t const count = mPoints.GetBufferElementCount() * 2; // Two components per vector
-    for (size_t i = 0; i < count; ++i)
-    {
-        //
-        // Verlet integration (fourth order, with velocity being first order)
-        //
-
-        float const deltaPos =
-            velocityBuffer[i] * dt
-            + (dynamicForceBuffer[i] + staticForceBuffer[i]) * integrationFactorBuffer[i];
-
-        positionBuffer[i] += deltaPos;
-        velocityBuffer[i] = deltaPos * velocityFactor;
-
-        // Zero out dynamic force now that we've integrated it
-        dynamicForceBuffer[i] = 0.0f;
-    }
-
-#ifdef _DEBUG
-    mPoints.Diagnostic_MarkPositionsAsDirty();
-#endif
 }
 
 void Ship::HandleCollisionsWithSeaFloor(

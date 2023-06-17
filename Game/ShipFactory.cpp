@@ -419,7 +419,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
 
     LogMessage("ShipFactory: Created ship: W=", shipSize.width, ", H=", shipSize.height, ", ",
         points.GetRawShipPointCount(), "raw/", points.GetBufferElementCount(), "buf points, ",        
-        springs.GetElementCount(), " springs (", perfectSquareCount, " perfect squares, ", perfectSquareCount * 4 * 100 / std::max(1u, springs.GetElementCount()), "%),",
+        springs.GetElementCount(), " springs (", perfectSquareCount, " perfect squares, ", perfectSquareCount * 4 * 100 / std::max(1u, springs.GetElementCount()), "%), ",
         triangles.GetElementCount(), " triangles, ",
         electricalElements.GetElementCount(), " electrical elements, ",
         frontiers.GetElementCount(), " frontiers.");
@@ -1135,7 +1135,7 @@ ShipFactory::LayoutOptimizationResults ShipFactory::OptimizeLayout(
     // Map leftovers now
     //
 
-    LogMessage("LayoutOptimizer: ", std::count(remappedPointMask.cbegin(), remappedPointMask.cend(), false), " leftover points, ",
+    LogMessage("LayoutOptimizer: ", perfectSquareCount, " perfect squares, ", std::count(remappedPointMask.cbegin(), remappedPointMask.cend(), false), " leftover points, ",
         std::count(remappedSpringMask.cbegin(), remappedSpringMask.cend(), false), " leftover springs");
 
     for (ElementIndex p = 0; p < pointInfos1.size(); ++p)

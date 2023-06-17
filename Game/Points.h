@@ -574,7 +574,7 @@ public:
         , mPositionBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mFactoryPositionBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mVelocityBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
-        , mDynamicForceBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
+        , mDynamicForceBuffers() // We'll start later with at least one
         , mStaticForceBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mAugmentedMaterialMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
@@ -676,6 +676,9 @@ public:
         , mDiagnostic_ArePositionsDirty(false)
 #endif
     {
+        // Add first (implicit) buffer
+        mDynamicForceBuffers.emplace_back(mBufferElementCount, shipPointCount, vec2f::zero());
+
         CalculateCombustionDecayParameters(mCurrentCombustionSpeedAdjustment, GameParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>);
     }
 
@@ -1029,36 +1032,81 @@ public:
 
     vec2f const & GetDynamicForce(ElementIndex pointElementIndex) const noexcept
     {
-        return mDynamicForceBuffer[pointElementIndex];
+        // First buffer implicitly
+        assert(mDynamicForceBuffers.size() >= 1);
+        return mDynamicForceBuffers[0][pointElementIndex];
     }
 
     float * GetDynamicForceBufferAsFloat()
     {
-        return reinterpret_cast<float *>(mDynamicForceBuffer.data());
+        // First buffer implicitly
+        assert(mDynamicForceBuffers.size() >= 1);
+        return reinterpret_cast<float *>(mDynamicForceBuffers[0].data());
     }
 
     vec2f * GetDynamicForceBufferAsVec2()
     {
-        return mDynamicForceBuffer.data();
+        // First buffer implicitly
+        assert(mDynamicForceBuffers.size() >= 1);
+        return mDynamicForceBuffers[0].data();
+    }
+
+    vec2f * GetParallelDynamicForceBuffer(size_t parallelIndex)
+    {
+        // First buffer implicitly
+        assert(parallelIndex < mDynamicForceBuffers.size());
+        return mDynamicForceBuffers[parallelIndex].data();
+    }
+
+    float * const * GetDynamicForceBuffersAsFloat()
+    {
+        return reinterpret_cast<float * const *>(mDynamicForceBuffers.data());
     }
 
     void SetDynamicForce(
         ElementIndex pointElementIndex,
         vec2f const & force) noexcept
     {
-        mDynamicForceBuffer[pointElementIndex] = force;
+        // First buffer implicitly
+        assert(mDynamicForceBuffers.size() >= 1);
+        mDynamicForceBuffers[0][pointElementIndex] = force;
     }
 
     void AddDynamicForce(
         ElementIndex pointElementIndex,
         vec2f const & force) noexcept
     {
-        mDynamicForceBuffer[pointElementIndex] += force;
+        // First buffer implicitly
+        assert(mDynamicForceBuffers.size() >= 1);
+        mDynamicForceBuffers[0][pointElementIndex] += force;
     }
 
     void ResetDynamicForces()
     {
-        mDynamicForceBuffer.fill(vec2f::zero());
+        // First buffer implicitly
+        assert(mDynamicForceBuffers.size() >= 1);
+        mDynamicForceBuffers[0].fill(vec2f::zero());
+    }
+
+    void SetDynamicForceParallelism(size_t parallelism)
+    {
+        assert(parallelism >= 1);
+
+        // Maintain current buffers' contents, so to save contents of first buffer
+        if (parallelism < mDynamicForceBuffers.size())
+        {
+            while (mDynamicForceBuffers.size() != parallelism)
+            {
+                mDynamicForceBuffers.pop_back();
+            }
+        }
+        else if (parallelism > mDynamicForceBuffers.size())
+        {
+            for (size_t b = mDynamicForceBuffers.size(); b < parallelism; ++b)
+            {
+                mDynamicForceBuffers.emplace_back(mBufferElementCount, vec2f::zero());
+            }
+        }
     }
 
     vec2f const & GetStaticForce(ElementIndex pointElementIndex) const noexcept
@@ -2039,7 +2087,7 @@ private:
     Buffer<vec2f> mPositionBuffer;
     Buffer<vec2f> mFactoryPositionBuffer;
     Buffer<vec2f> mVelocityBuffer;
-    Buffer<vec2f> mDynamicForceBuffer; // Forces that vary across the multiple mechanical iterations (i.e. spring, hydrostatic surface pressure)
+    std::vector<Buffer<vec2f>> mDynamicForceBuffers; // Forces that vary across the multiple mechanical iterations (i.e. spring, hydrostatic surface pressure) for each thread; always at least one.
     Buffer<vec2f> mStaticForceBuffer; // Forces that never change across the multiple mechanical iterations (all other forces)
     Buffer<float> mAugmentedMaterialMassBuffer; // Structural + Offset
     Buffer<float> mMassBuffer; // Augmented + Water

@@ -37,7 +37,9 @@ void Points::Add(
     mPositionBuffer.emplace_back(position);
     mFactoryPositionBuffer.emplace_back(position);
     mVelocityBuffer.emplace_back(vec2f::zero());
-    mDynamicForceBuffer.emplace_back(vec2f::zero());
+    // First buffer implicitly
+    assert(mDynamicForceBuffers.size() >= 1);
+    mDynamicForceBuffers[0].emplace_back(vec2f::zero());
     mStaticForceBuffer.emplace_back(vec2f::zero());
     mAugmentedMaterialMassBuffer.emplace_back(structuralMaterial.GetMass());
     mMassBuffer.emplace_back(structuralMaterial.GetMass());
@@ -151,7 +153,7 @@ void Points::CreateEphemeralParticleAirBubble(
     mMaterialsBuffer[pointIndex] = Materials(&airStructuralMaterial, nullptr);
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = vec2f::zero();
-    assert(mDynamicForceBuffer[pointIndex] == vec2f::zero()); // Ephemeral points never participate in dynamic forces (springs + surface pressure)
+    assert(mDynamicForceBuffers[0][pointIndex] == vec2f::zero()); // Ephemeral points never participate in dynamic forces (springs + surface pressure)
     mStaticForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
     mMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
@@ -230,7 +232,7 @@ void Points::CreateEphemeralParticleDebris(
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = velocity;
-    assert(mDynamicForceBuffer[pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs + surface pressure
+    assert(mDynamicForceBuffers[0][pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs + surface pressure
     mStaticForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = structuralMaterial.GetMass();
     mMassBuffer[pointIndex] = structuralMaterial.GetMass();
@@ -317,7 +319,7 @@ void Points::CreateEphemeralParticleSmoke(
     mMaterialsBuffer[pointIndex] = Materials(&airStructuralMaterial, nullptr);
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = vec2f::zero();
-    assert(mDynamicForceBuffer[pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs nor surface pressure
+    assert(mDynamicForceBuffers[0][pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs nor surface pressure
     mStaticForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
     mMassBuffer[pointIndex] = airStructuralMaterial.GetMass();
@@ -396,7 +398,7 @@ void Points::CreateEphemeralParticleSparkle(
     mMaterialsBuffer[pointIndex] = Materials(&structuralMaterial, nullptr);
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = velocity;
-    assert(mDynamicForceBuffer[pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs + surface pressure
+    assert(mDynamicForceBuffers[0][pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs + surface pressure
     mStaticForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = structuralMaterial.GetMass();
     mMassBuffer[pointIndex] = structuralMaterial.GetMass();
@@ -469,7 +471,7 @@ void Points::CreateEphemeralParticleWakeBubble(
     mMaterialsBuffer[pointIndex] = Materials(&waterStructuralMaterial, nullptr);
     mPositionBuffer[pointIndex] = position;
     mVelocityBuffer[pointIndex] = velocity;
-    assert(mDynamicForceBuffer[pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs + surface pressure
+    assert(mDynamicForceBuffers[0][pointIndex] == vec2f::zero()); // Ephemeral points never participate in springs + surface pressure
     mStaticForceBuffer[pointIndex] = vec2f::zero();
     mAugmentedMaterialMassBuffer[pointIndex] = waterStructuralMaterial.GetMass();
     mMassBuffer[pointIndex] = waterStructuralMaterial.GetMass();
@@ -1951,7 +1953,9 @@ void Points::UploadVectors(
         case VectorFieldRenderModeType::PointDynamicForce:
         {
             color = vec4f(1.0f, 0.266f, 0.16f, 1.0f);
-            vectorBuffer = mDynamicForceBuffer.data();
+            // First buffer implicitly
+            assert(mDynamicForceBuffers.size() >= 1);
+            vectorBuffer = mDynamicForceBuffers[0].data();
             lengthAdjustment = 0.000001f;
 
             break;

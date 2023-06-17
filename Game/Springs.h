@@ -52,22 +52,6 @@ public:
         {}
     };
 
-    /*
-     * The pre-calculated coefficients used for the spring dynamics.
-     */
-    struct DynamicsCoefficients
-    {
-        float StiffnessCoefficient;
-        float DampingCoefficient;
-
-        DynamicsCoefficients(
-            float stiffnessCoefficient,
-            float dampingCoefficient)
-            : StiffnessCoefficient(stiffnessCoefficient)
-            , DampingCoefficient(dampingCoefficient)
-        {}
-    };
-
 private:
 
     /*
@@ -136,10 +120,12 @@ public:
 
     Springs(
         ElementCount elementCount,
+        ElementCount perfectSquareCount,
         World & parentWorld,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         GameParameters const & gameParameters)
         : ElementContainer(elementCount)
+        , mPerfectSquareCount(perfectSquareCount)
         //////////////////////////////////
         // Buffers
         //////////////////////////////////
@@ -157,7 +143,8 @@ public:
         , mStrainStateBuffer(mBufferElementCount, mElementCount, StrainState(0.0f, 0.0f, false))
         , mFactoryRestLengthBuffer(mBufferElementCount, mElementCount, 1.0f)
         , mRestLengthBuffer(mBufferElementCount, mElementCount, 1.0f)
-        , mDynamicsCoefficientsBuffer(mBufferElementCount, mElementCount, DynamicsCoefficients(0.0f, 0.0f))
+        , mStiffnessCoefficientBuffer(mBufferElementCount, mElementCount, 0.0f)
+        , mDampingCoefficientBuffer(mBufferElementCount, mElementCount, 0.0f)
         , mMaterialPropertiesBuffer(mBufferElementCount, mElementCount, MaterialProperties(0.0f, 0.0f, 0.0f, 0.0f))
         , mBaseStructuralMaterialBuffer(mBufferElementCount, mElementCount, nullptr)
         , mIsRopeBuffer(mBufferElementCount, mElementCount, false)
@@ -285,6 +272,11 @@ public:
         Render::RenderContext & renderContext) const;
 
 public:
+
+    ElementCount GetPerfectSquareCount() const
+    {
+        return mPerfectSquareCount;
+    }
 
     //
     // IsDeleted
@@ -521,17 +513,22 @@ public:
 
     float GetStiffnessCoefficient(ElementIndex springElementIndex) const noexcept
     {
-        return mDynamicsCoefficientsBuffer[springElementIndex].StiffnessCoefficient;
+        return mStiffnessCoefficientBuffer[springElementIndex];
+    }
+
+    float const * GetStiffnessCoefficientBuffer() const noexcept
+    {
+        return mStiffnessCoefficientBuffer.data();
     }
 
     float GetDampingCoefficient(ElementIndex springElementIndex) const noexcept
     {
-        return mDynamicsCoefficientsBuffer[springElementIndex].DampingCoefficient;
+        return mDampingCoefficientBuffer[springElementIndex];
     }
 
-    DynamicsCoefficients const * GetDynamicsCoefficientsBuffer() const noexcept
+    float const * GetDampingCoefficientBuffer() const noexcept
     {
-        return mDynamicsCoefficientsBuffer.data();
+        return mDampingCoefficientBuffer.data();
     }
 
     float GetMaterialStrength(ElementIndex springElementIndex) const
@@ -684,6 +681,8 @@ private:
 
 private:
 
+    ElementCount const mPerfectSquareCount;
+
     //////////////////////////////////////////////////////////
     // Buffers
     //////////////////////////////////////////////////////////
@@ -716,7 +715,8 @@ private:
     Buffer<StrainState> mStrainStateBuffer;
     Buffer<float> mFactoryRestLengthBuffer;
     Buffer<float> mRestLengthBuffer;
-    Buffer<DynamicsCoefficients> mDynamicsCoefficientsBuffer;
+    Buffer<float> mStiffnessCoefficientBuffer;
+    Buffer<float> mDampingCoefficientBuffer;
     Buffer<MaterialProperties> mMaterialPropertiesBuffer;
     Buffer<StructuralMaterial const *> mBaseStructuralMaterialBuffer;
     Buffer<bool> mIsRopeBuffer;

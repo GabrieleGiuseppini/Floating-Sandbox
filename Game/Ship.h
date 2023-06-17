@@ -42,7 +42,6 @@ public:
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         Points && points,
         Springs && springs,
-        ElementCount perfectSquareCount,
         Triangles && triangles,
         ElectricalElements && electricalElements,
         Frontiers && frontiers);
@@ -513,10 +512,19 @@ private:
         GameParameters const & gameParameters,
         ThreadManager & threadManager);
 
-    // TODOOLD
-    void ApplySpringsForces_BySprings(GameParameters const & gameParameters);
+    void ApplySpringsForces(
+        ElementIndex startSpringIndex,
+        ElementIndex endSpringIndex, // Excluded
+        vec2f * restrict dynamicForceBuffer);
 
-    void IntegrateAndResetDynamicForces(GameParameters const & gameParameters);
+    inline void IntegrateAndResetDynamicForces(GameParameters const & gameParameters);
+
+    template<size_t N>
+    inline void IntegrateAndResetDynamicForces_N(GameParameters const & gameParameters);
+
+    inline void IntegrateAndResetDynamicForces_NN(
+        size_t n,
+        GameParameters const & gameParameters);
 
     void HandleCollisionsWithSeaFloor(
         float dt,
@@ -816,7 +824,6 @@ private:
     // All the ship elements - never removed, the repositories maintain their own size forever
     Points mPoints;
     Springs mSprings;
-    ElementCount const mPerfectSquareCount;
     Triangles mTriangles;
     ElectricalElements mElectricalElements;
     Frontiers mFrontiers;
