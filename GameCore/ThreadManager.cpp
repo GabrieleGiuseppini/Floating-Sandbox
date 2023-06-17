@@ -30,7 +30,10 @@ ThreadManager::ThreadManager(
     if (isRenderingMultithreaded)
         --availableThreads;
 
-    mMaxSimulationParallelism = std::max(availableThreads, 1);
+    mMaxSimulationParallelism = 
+        std::min(
+            std::max(availableThreads, 1), 
+            4); // For the time being we cap the # of threads at 4, as more than 4 spring relaxation threads has worse performance
 
     size_t const simulationParallelism = std::min(mMaxSimulationParallelism, maxInitialParallelism);
 

@@ -27,6 +27,9 @@ struct IGameControllerSettings
 {
     virtual float GetSimulationStepTimeDuration() const = 0;
 
+    virtual unsigned int GetMaxNumSimulationThreads() const = 0;
+    virtual void SetMaxNumSimulationThreads(unsigned int value) = 0;
+
     virtual float GetNumMechanicalDynamicsIterationsAdjustment() const = 0;
     virtual void SetNumMechanicalDynamicsIterationsAdjustment(float value) = 0;
 

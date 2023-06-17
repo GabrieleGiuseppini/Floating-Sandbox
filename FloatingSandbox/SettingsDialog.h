@@ -60,8 +60,7 @@ private:
     // Control tabs
     //////////////////////////////////////////////////////
 
-    // Mechanics and Thermodynamics
-    SliderControl<float> * mMechanicalQualitySlider;
+    // Mechanics and Thermodynamics    
     SliderControl<float> * mStrengthSlider;
     SliderControl<float> * mGlobalDampingAdjustmentSlider;
     SliderControl<float> * mStaticPressureForceAdjustmentSlider;
@@ -73,6 +72,8 @@ private:
     SliderControl<float> * mCombustionHeatAdjustmentSlider;
     SliderControl<unsigned int> * mMaxBurningParticlesSlider;
     BitmapToggleButton * mUltraViolentToggleButton;
+    SliderControl<unsigned int> * mMaxNumSimulationThreadsSlider;
+    SliderControl<float> * mMechanicalQualitySlider;
 
     // Ocean and Water
     SliderControl<float> * mWaterDensityAdjustmentSlider;

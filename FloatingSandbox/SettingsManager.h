@@ -13,7 +13,8 @@
 
 enum class GameSettings : size_t
 {
-    NumMechanicalDynamicsIterationsAdjustment = 0,
+    MaxNumSimulationThreads = 0,
+    NumMechanicalDynamicsIterationsAdjustment,
     SpringStiffnessAdjustment,
     SpringDampingAdjustment,
     SpringStrengthAdjustment,

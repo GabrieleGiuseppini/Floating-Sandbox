@@ -301,6 +301,11 @@ public:
 
     float GetSimulationStepTimeDuration() const override { return GameParameters::SimulationStepTimeDuration<float>; }
 
+    unsigned int GetMaxNumSimulationThreads() const override { return static_cast<unsigned int>(mThreadManager.GetSimulationParallelism()); }
+    void SetMaxNumSimulationThreads(unsigned int value) override { mThreadManager.SetSimulationParallelism(static_cast<size_t>(value)); }
+    unsigned int GetMinMaxNumSimulationThreads() const override { return 1; }
+    unsigned int GetMaxMaxNumSimulationThreads() const override { return static_cast<unsigned int>(mThreadManager.GetMaxSimulationParallelism()); }
+
     float GetNumMechanicalDynamicsIterationsAdjustment() const override { return mGameParameters.NumMechanicalDynamicsIterationsAdjustment; }
     void SetNumMechanicalDynamicsIterationsAdjustment(float value) override { mGameParameters.NumMechanicalDynamicsIterationsAdjustment = value; }
     float GetMinNumMechanicalDynamicsIterationsAdjustment() const override { return GameParameters::MinNumMechanicalDynamicsIterationsAdjustment; }

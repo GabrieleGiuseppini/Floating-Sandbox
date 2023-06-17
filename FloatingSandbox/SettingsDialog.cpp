@@ -526,34 +526,6 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
         {
             wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
 
-            // Simulation Quality
-            {
-                mMechanicalQualitySlider = new SliderControl<float>(
-                    boxSizer->GetStaticBox(),
-                    SliderControl<float>::DirectionType::Vertical,
-                    SliderWidth,
-                    SliderHeight,
-                    _("Simulation Quality"),
-                    _("Higher values improve the rigidity of simulated structures, at the expense of longer computation times."),
-                    [this](float value)
-                    {
-                        this->mLiveSettings.SetValue(GameSettings::NumMechanicalDynamicsIterationsAdjustment, value);
-                        this->OnLiveSettingsChanged();
-                    },
-                    std::make_unique<FixedTickSliderCore>(
-                        0.5f,
-                        mGameControllerSettingsOptions.GetMinNumMechanicalDynamicsIterationsAdjustment(),
-                        mGameControllerSettingsOptions.GetMaxNumMechanicalDynamicsIterationsAdjustment()),
-                    mWarningIcon.get());
-
-                sizer->Add(
-                    mMechanicalQualitySlider,
-                    wxGBPosition(0, 0),
-                    wxGBSpan(1, 1),
-                    wxEXPAND | wxALL,
-                    CellBorderInner);
-            }
-
             // Strength Adjust
             {
                 mStrengthSlider = new SliderControl<float>(
@@ -575,7 +547,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
 
                 sizer->Add(
                     mStrengthSlider,
-                    wxGBPosition(0, 1),
+                    wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
@@ -602,7 +574,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
 
                 sizer->Add(
                     mGlobalDampingAdjustmentSlider,
-                    wxGBPosition(0, 2),
+                    wxGBPosition(0, 1),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
@@ -629,7 +601,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
 
                 sizer->Add(
                     mStaticPressureForceAdjustmentSlider,
-                    wxGBPosition(0, 3),
+                    wxGBPosition(0, 2),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
                     CellBorderInner);
@@ -917,7 +889,83 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
         gridSizer->Add(
             combustionBoxSizer,
             wxGBPosition(1, 0),
-            wxGBSpan(1, 3),
+            wxGBSpan(1, 2),
+            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            CellBorderOuter);
+    }
+
+    //
+    // Performance
+    //
+
+    {
+        wxStaticBoxSizer * performanceBoxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("Performance"));
+
+        {
+            wxGridBagSizer * performanceSizer = new wxGridBagSizer(0, 0);
+
+            // Simulation Quality
+            {
+                mMechanicalQualitySlider = new SliderControl<float>(
+                    performanceBoxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Simulation Quality"),
+                    _("Higher values improve the rigidity of simulated structures, at the expense of longer computation times."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::NumMechanicalDynamicsIterationsAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<FixedTickSliderCore>(
+                        0.5f,
+                        mGameControllerSettingsOptions.GetMinNumMechanicalDynamicsIterationsAdjustment(),
+                        mGameControllerSettingsOptions.GetMaxNumMechanicalDynamicsIterationsAdjustment()),
+                        mWarningIcon.get());
+
+                performanceSizer->Add(
+                    mMechanicalQualitySlider,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            // Max Simulation Threads
+            {
+                mMaxNumSimulationThreadsSlider = new SliderControl<unsigned int>(
+                    performanceBoxSizer->GetStaticBox(),
+                    SliderControl<unsigned int>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Max Threads"),
+                    _("Sets a cap to the maximum number of threads used for the simulation."),
+                    [this](unsigned int value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::MaxNumSimulationThreads, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<IntegralLinearSliderCore<unsigned int>>(
+                        mGameControllerSettingsOptions.GetMinMaxNumSimulationThreads(),
+                        mGameControllerSettingsOptions.GetMaxMaxNumSimulationThreads()),
+                    mWarningIcon.get());
+                
+                performanceSizer->Add(
+                    mMaxNumSimulationThreadsSlider,
+                    wxGBPosition(0, 1),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            performanceBoxSizer->Add(performanceSizer, 1, wxALL, StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            performanceBoxSizer,
+            wxGBPosition(1, 2),
+            wxGBSpan(1, 1),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
@@ -5484,8 +5532,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     //
     // Mechanics and Thermodynamics
     //
-
-    mMechanicalQualitySlider->SetValue(settings.GetValue<float>(GameSettings::NumMechanicalDynamicsIterationsAdjustment));
+    
     mStrengthSlider->SetValue(settings.GetValue<float>(GameSettings::SpringStrengthAdjustment));
     mGlobalDampingAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::GlobalDampingAdjustment));
     mStaticPressureForceAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::StaticPressureForceAdjustment));
@@ -5497,6 +5544,8 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mCombustionHeatAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::CombustionHeatAdjustment));
     mMaxBurningParticlesSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::MaxBurningParticles));
     mUltraViolentToggleButton->SetValue(settings.GetValue<bool>(GameSettings::UltraViolentMode));
+    mMaxNumSimulationThreadsSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::MaxNumSimulationThreads));
+    mMechanicalQualitySlider->SetValue(settings.GetValue<float>(GameSettings::NumMechanicalDynamicsIterationsAdjustment));
 
     //
     // Water and Ocean

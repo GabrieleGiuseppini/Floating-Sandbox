@@ -294,7 +294,7 @@
 
 	+ Black glass
 
-	= Optimizations integration:
+	+ Optimizations integration:
 		+ ThreadManager and ThreadPool - in SpringLab
 			! Vision:
 				! ThreadManager is passed to (OnStateChange() and) Update()
@@ -415,10 +415,10 @@
 							+ N
 						+ Test C++ 1 & n
 			+ Test repair (possibly impacted by layout optimization)
-		- Parallelism setting/slider
-			- SettingsDialog: "Max Simulation Threads"
-				- Maxed by TM::GetMaxSimulationParallelism()
-		- Redo benchmark, and put it up
+		+ Parallelism setting/slider
+			+ SettingsDialog: "Max Simulation Threads"
+				+ Maxed by TM::GetMaxSimulationParallelism() & by 4
+		+ Redo benchmark, and put it up
 			
 	- More parallelism during Update()
 		- World::Update:
@@ -1973,12 +1973,31 @@
 =================================================
 Current perf:
 =================================================
+1.18.0 (parallel and vectorized spring relaxation):
++ Default ship (19932 spr): 64FPS
+	  UPD: (0.0 + 3.40 (64.3%)) UPL:(0.0 + 0.06)
+	  RND: (3.40) (UPL=0.18 MT=0.0)
++ Default ship DELL: TODO
+	  UPD: 
+	  RND: 
++ Default Titanic (27424 spr): 64 FPS 
+	  UPD: (0.0 + 4.58 (63.6%)) UPL:(0.0+0.06)
+	  RND: (3.24) (UPL=0.18 MT=0.0)
++ Hesleden (150407 spr):
+	+ Without lights: 49.74-56.31 FPS
+		UPD: (0.0 + 17.01-17.50 (54.5%)) UPL:(0.0 + 0.14)
+		RND: (3.77-3.84) (UPL:0.25 MT=0.0)
+	+ With lights: 19.50-19.96 FPS
+		UPD: (0.0 + 49.85-50.06 (20.72%))
+
 1.18.0 (with crepuscolar and cloud shadows shortcuts):
 - default ship:
 	- Old dell, RelWithDebInfo: FPS:31.95 UPD:19.58ms UPL:0.16ms RND:11.42ms (UPL:0.3xms MT=11.6xms)
+
 1.17.5.2:
 - default ship:
 	- Old dell, RelWithDebInfo: FPS:32.6 UPD:19.6ms UPL:0.18ms RND:11.14ms (UPL:0.5xms MT=11.2mxs)
+
 1.16.5:
 - default ship:
 	- Old dell, RelWithDebInfo: FPS:30.65 UPD:19.5ms UPL:0.18ms RND:12.80ms
