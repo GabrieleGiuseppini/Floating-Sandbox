@@ -90,8 +90,8 @@ private:
     {
         for (auto const springIndex1 : pointInfos1[pointIndex].ConnectedSprings1)
         {
-            if (!pointInfos1[springInfos1[springIndex1].PointAIndex1].IsRope
-                || !pointInfos1[springInfos1[springIndex1].PointBIndex1].IsRope)
+            if (!pointInfos1[springInfos1[springIndex1].PointAIndex].IsRope
+                || !pointInfos1[springInfos1[springIndex1].PointBIndex].IsRope)
             {
                 return true;
             }
@@ -165,7 +165,8 @@ private:
 
     static void ConnectSpringsAndTriangles(
         std::vector<ShipFactorySpring> & springInfos2,
-        std::vector<ShipFactoryTriangle> & triangleInfos2);
+        std::vector<ShipFactoryTriangle> & triangleInfos2,
+        IndexRemap const & pointIndexRemap);
 
     static std::vector<ShipFactoryFrontier> CreateShipFrontiers(
         ShipFactoryPointIndexMatrix const & pointIndexMatrix,
@@ -196,8 +197,8 @@ private:
 
     static Physics::Springs CreateSprings(
         std::vector<ShipFactorySpring> const & springInfos2,
+        ElementCount perfectSquareCount,
         Physics::Points & points,
-        IndexRemap const & pointIndexRemap,
         Physics::World & parentWorld,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         GameParameters const & gameParameters);

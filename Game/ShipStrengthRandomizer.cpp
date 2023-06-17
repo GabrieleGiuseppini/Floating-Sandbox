@@ -189,14 +189,14 @@ void ShipStrengthRandomizer::RandomizeStrength_Batik(
     {
         for (ElementIndex springIndex2 : frontier.EdgeIndices2)
         {
-            auto const pointAIndex2 = pointIndexRemap.OldToNew(springInfos2[springIndex2].PointAIndex1);
+            auto const pointAIndex2 = springInfos2[springIndex2].PointAIndex;
             auto const & coordsA = pointInfos2[pointAIndex2].DefinitionCoordinates;
             if (coordsA.has_value())
             {
                 distanceMatrix[vec2i(coordsA->x + 1, coordsA->y + 1) - pointIndexMatrixRegionOrigin].Distance = 0.0f;
             }
 
-            auto const pointBIndex2 = pointIndexRemap.OldToNew(springInfos2[springIndex2].PointBIndex1);
+            auto const pointBIndex2 = springInfos2[springIndex2].PointBIndex;
             auto const & coordsB = pointInfos2[pointBIndex2].DefinitionCoordinates;
             if (coordsB.has_value())
             {

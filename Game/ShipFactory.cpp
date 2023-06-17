@@ -304,7 +304,8 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
 
     ConnectSpringsAndTriangles(
         springInfos2,
-        triangleInfos);
+        triangleInfos,
+        pointIndexRemap);
 
     //
     // Create frontiers
@@ -356,8 +357,8 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
 
     Springs springs = CreateSprings(
         springInfos2,
+        perfectSquareCount,
         points,
-        pointIndexRemap,
         parentWorld,
         gameEventDispatcher,
         gameParameters);
@@ -430,7 +431,6 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
         std::move(gameEventDispatcher),
         std::move(points),
         std::move(springs),
-        perfectSquareCount,
         std::move(triangles),
         std::move(electricalElements),
         std::move(frontiers));
@@ -889,13 +889,13 @@ ShipFactory::LayoutOptimizationResults ShipFactory::OptimizeLayout(
     std::vector<bool> remappedSpringMask(springInfos1.size(), false);
     std::vector<bool> springFlipMask(springInfos1.size(), false);
 
-    // Build Point Pair -> Old Spring Index table
-    PointPairToIndexMap pointPairToOldSpringIndexMap;
+    // Build Point Pair (Old) -> Spring Index (Old) table
+    PointPairToIndexMap pointPair1ToSpringIndex1Map;
     for (ElementIndex s = 0; s < springInfos1.size(); ++s)
     {
-        pointPairToOldSpringIndexMap.emplace(
+        pointPair1ToSpringIndex1Map.emplace(
             std::piecewise_construct,
-            std::forward_as_tuple(springInfos1[s].PointAIndex1, springInfos1[s].PointBIndex1),
+            std::forward_as_tuple(springInfos1[s].PointAIndex, springInfos1[s].PointBIndex),
             std::forward_as_tuple(s));
     }
 
@@ -944,8 +944,8 @@ ShipFactory::LayoutOptimizationResults ShipFactory::OptimizeLayout(
                 // Check existence - and availability - of all springs now
 
                 ElementIndex crossSpringACIndex;
-                if (auto const springIt = pointPairToOldSpringIndexMap.find({ a, c });
-                    springIt != pointPairToOldSpringIndexMap.cend() && !remappedSpringMask[springIt->second])
+                if (auto const springIt = pointPair1ToSpringIndex1Map.find({ a, c });
+                    springIt != pointPair1ToSpringIndex1Map.cend() && !remappedSpringMask[springIt->second])
                 {
                     crossSpringACIndex = springIt->second;
                 }
@@ -955,8 +955,8 @@ ShipFactory::LayoutOptimizationResults ShipFactory::OptimizeLayout(
                 }
 
                 ElementIndex crossSpringBDIndex;
-                if (auto const springIt = pointPairToOldSpringIndexMap.find({ b, d });
-                    springIt != pointPairToOldSpringIndexMap.cend() && !remappedSpringMask[springIt->second])
+                if (auto const springIt = pointPair1ToSpringIndex1Map.find({ b, d });
+                    springIt != pointPair1ToSpringIndex1Map.cend() && !remappedSpringMask[springIt->second])
                 {
                     crossSpringBDIndex = springIt->second;
                 }
@@ -970,8 +970,8 @@ ShipFactory::LayoutOptimizationResults ShipFactory::OptimizeLayout(
                     // Even: check AD, BC
 
                     ElementIndex sideSpringADIndex;
-                    if (auto const springIt = pointPairToOldSpringIndexMap.find({ a, d });
-                        springIt != pointPairToOldSpringIndexMap.cend() && !remappedSpringMask[springIt->second])
+                    if (auto const springIt = pointPair1ToSpringIndex1Map.find({ a, d });
+                        springIt != pointPair1ToSpringIndex1Map.cend() && !remappedSpringMask[springIt->second])
                     {
                         sideSpringADIndex = springIt->second;
                     }
@@ -981,8 +981,8 @@ ShipFactory::LayoutOptimizationResults ShipFactory::OptimizeLayout(
                     }
 
                     ElementIndex sideSpringBCIndex;
-                    if (auto const springIt = pointPairToOldSpringIndexMap.find({ b, c });
-                        springIt != pointPairToOldSpringIndexMap.cend() && !remappedSpringMask[springIt->second])
+                    if (auto const springIt = pointPair1ToSpringIndex1Map.find({ b, c });
+                        springIt != pointPair1ToSpringIndex1Map.cend() && !remappedSpringMask[springIt->second])
                     {
                         sideSpringBCIndex = springIt->second;
                     }
@@ -1001,33 +1001,33 @@ ShipFactory::LayoutOptimizationResults ShipFactory::OptimizeLayout(
 
                     optimalSpringRemap.AddOld(crossSpringACIndex);
                     remappedSpringMask[crossSpringACIndex] = true;
-                    if (springInfos1[crossSpringACIndex].PointBIndex1 != c)
+                    if (springInfos1[crossSpringACIndex].PointBIndex != c)
                     {
-                        assert(springInfos1[crossSpringACIndex].PointBIndex1 == a);
+                        assert(springInfos1[crossSpringACIndex].PointBIndex == a);
                         springFlipMask[crossSpringACIndex] = true;
                     }
 
                     optimalSpringRemap.AddOld(crossSpringBDIndex);
                     remappedSpringMask[crossSpringBDIndex] = true;
-                    if (springInfos1[crossSpringBDIndex].PointBIndex1 != d)
+                    if (springInfos1[crossSpringBDIndex].PointBIndex != d)
                     {
-                        assert(springInfos1[crossSpringBDIndex].PointBIndex1 == b);
+                        assert(springInfos1[crossSpringBDIndex].PointBIndex == b);
                         springFlipMask[crossSpringBDIndex] = true;
                     }
 
                     optimalSpringRemap.AddOld(sideSpringADIndex);
                     remappedSpringMask[sideSpringADIndex] = true;
-                    if (springInfos1[sideSpringADIndex].PointBIndex1 != d)
+                    if (springInfos1[sideSpringADIndex].PointBIndex != d)
                     {
-                        assert(springInfos1[sideSpringADIndex].PointBIndex1 == a);
+                        assert(springInfos1[sideSpringADIndex].PointBIndex == a);
                         springFlipMask[sideSpringADIndex] = true;
                     }
 
                     optimalSpringRemap.AddOld(sideSpringBCIndex);
                     remappedSpringMask[sideSpringBCIndex] = true;
-                    if (springInfos1[sideSpringBCIndex].PointBIndex1 != c)
+                    if (springInfos1[sideSpringBCIndex].PointBIndex != c)
                     {
-                        assert(springInfos1[sideSpringBCIndex].PointBIndex1 == b);
+                        assert(springInfos1[sideSpringBCIndex].PointBIndex == b);
                         springFlipMask[sideSpringBCIndex] = true;
                     }
                 }
@@ -1036,8 +1036,8 @@ ShipFactory::LayoutOptimizationResults ShipFactory::OptimizeLayout(
                     // Odd: check AB, CD
 
                     ElementIndex sideSpringABIndex;
-                    if (auto const springIt = pointPairToOldSpringIndexMap.find({ a, b });
-                        springIt != pointPairToOldSpringIndexMap.cend() && !remappedSpringMask[springIt->second])
+                    if (auto const springIt = pointPair1ToSpringIndex1Map.find({ a, b });
+                        springIt != pointPair1ToSpringIndex1Map.cend() && !remappedSpringMask[springIt->second])
                     {
                         sideSpringABIndex = springIt->second;
                     }
@@ -1047,8 +1047,8 @@ ShipFactory::LayoutOptimizationResults ShipFactory::OptimizeLayout(
                     }
 
                     ElementIndex sideSpringCDIndex;
-                    if (auto const springIt = pointPairToOldSpringIndexMap.find({ c, d });
-                        springIt != pointPairToOldSpringIndexMap.cend() && !remappedSpringMask[springIt->second])
+                    if (auto const springIt = pointPair1ToSpringIndex1Map.find({ c, d });
+                        springIt != pointPair1ToSpringIndex1Map.cend() && !remappedSpringMask[springIt->second])
                     {
                         sideSpringCDIndex = springIt->second;
                     }
@@ -1067,33 +1067,33 @@ ShipFactory::LayoutOptimizationResults ShipFactory::OptimizeLayout(
 
                     optimalSpringRemap.AddOld(crossSpringACIndex);
                     remappedSpringMask[crossSpringACIndex] = true;
-                    if (springInfos1[crossSpringACIndex].PointBIndex1 != c)
+                    if (springInfos1[crossSpringACIndex].PointBIndex != c)
                     {
-                        assert(springInfos1[crossSpringACIndex].PointBIndex1 == a);
+                        assert(springInfos1[crossSpringACIndex].PointBIndex == a);
                         springFlipMask[crossSpringACIndex] = true;
                     }
 
                     optimalSpringRemap.AddOld(crossSpringBDIndex);
                     remappedSpringMask[crossSpringBDIndex] = true;
-                    if (springInfos1[crossSpringBDIndex].PointBIndex1 != b)
+                    if (springInfos1[crossSpringBDIndex].PointBIndex != b)
                     {
-                        assert(springInfos1[crossSpringBDIndex].PointBIndex1 == d);
+                        assert(springInfos1[crossSpringBDIndex].PointBIndex == d);
                         springFlipMask[crossSpringBDIndex] = true;
                     }
 
                     optimalSpringRemap.AddOld(sideSpringABIndex);
                     remappedSpringMask[sideSpringABIndex] = true;
-                    if (springInfos1[sideSpringABIndex].PointBIndex1 != b)
+                    if (springInfos1[sideSpringABIndex].PointBIndex != b)
                     {
-                        assert(springInfos1[sideSpringABIndex].PointBIndex1 == a);
+                        assert(springInfos1[sideSpringABIndex].PointBIndex == a);
                         springFlipMask[sideSpringABIndex] = true;
                     }
 
                     optimalSpringRemap.AddOld(sideSpringCDIndex);
                     remappedSpringMask[sideSpringCDIndex] = true;
-                    if (springInfos1[sideSpringCDIndex].PointBIndex1 != c)
+                    if (springInfos1[sideSpringCDIndex].PointBIndex != c)
                     {
-                        assert(springInfos1[sideSpringCDIndex].PointBIndex1 == d);
+                        assert(springInfos1[sideSpringCDIndex].PointBIndex == d);
                         springFlipMask[sideSpringCDIndex] = true;
                     }
                 }
@@ -1175,9 +1175,12 @@ ShipFactory::LayoutOptimizationResults ShipFactory::OptimizeLayout(
     {
         springInfos2.emplace_back(springInfos1[oldS]);
 
+        springInfos2.back().PointAIndex = optimalPointRemap.OldToNew(springInfos2.back().PointAIndex);
+        springInfos2.back().PointBIndex = optimalPointRemap.OldToNew(springInfos2.back().PointBIndex);
+
         if (springFlipMask[oldS])
         {
-            std::swap(springInfos2.back().PointAIndex1, springInfos2.back().PointBIndex1);
+            springInfos2.back().SwapEndpoints();
         }
     }
 
@@ -1191,19 +1194,20 @@ ShipFactory::LayoutOptimizationResults ShipFactory::OptimizeLayout(
 
 void ShipFactory::ConnectSpringsAndTriangles(
     std::vector<ShipFactorySpring> & springInfos2,
-    std::vector<ShipFactoryTriangle> & triangleInfos2)
+    std::vector<ShipFactoryTriangle> & triangleInfos2,
+    IndexRemap const & pointIndexRemap)
 {
     //
-    // 1. Build Point Pair -> Spring table
+    // 1. Build Point Pair (Old) -> Spring (New) table
     //
 
-    PointPairToIndexMap pointPairToSpringMap;
+    PointPairToIndexMap pointPair1ToSpring2Map;
 
     for (ElementIndex s = 0; s < springInfos2.size(); ++s)
     {
-        pointPairToSpringMap.emplace(
+        pointPair1ToSpring2Map.emplace(
             std::piecewise_construct,
-            std::forward_as_tuple(springInfos2[s].PointAIndex1, springInfos2[s].PointBIndex1),
+            std::forward_as_tuple(pointIndexRemap.NewToOld(springInfos2[s].PointAIndex), pointIndexRemap.NewToOld(springInfos2[s].PointBIndex)),
             std::forward_as_tuple(s));
     }
 
@@ -1215,28 +1219,28 @@ void ShipFactory::ConnectSpringsAndTriangles(
     {
         for (size_t p = 0; p < triangleInfos2[t].PointIndices1.size(); ++p)
         {
-            ElementIndex const endpointIndex = triangleInfos2[t].PointIndices1[p];
+            ElementIndex const endpointIndex1 = triangleInfos2[t].PointIndices1[p];
 
-            ElementIndex const nextEndpointIndex =
+            ElementIndex const nextEndpointIndex1 =
                 p < triangleInfos2[t].PointIndices1.size() - 1
                 ? triangleInfos2[t].PointIndices1[p + 1]
                 : triangleInfos2[t].PointIndices1[0];
 
             // Lookup spring for this pair
-            auto const springIt = pointPairToSpringMap.find({ endpointIndex, nextEndpointIndex });
-            assert(springIt != pointPairToSpringMap.end());
+            auto const springIt = pointPair1ToSpring2Map.find({ endpointIndex1, nextEndpointIndex1 });
+            assert(springIt != pointPair1ToSpring2Map.end());
 
-            ElementIndex const springIndex = springIt->second;
+            ElementIndex const springIndex2 = springIt->second;
 
             // Tell this spring that it has this additional super triangle
-            springInfos2[springIndex].SuperTriangles2.push_back(t);
-            assert(springInfos2[springIndex].SuperTriangles2.size() <= 2);
-            ++(springInfos2[springIndex].CoveringTrianglesCount);
-            assert(springInfos2[springIndex].CoveringTrianglesCount <= 2);
+            springInfos2[springIndex2].SuperTriangles.push_back(t);
+            assert(springInfos2[springIndex2].SuperTriangles.size() <= 2);
+            ++(springInfos2[springIndex2].CoveringTrianglesCount);
+            assert(springInfos2[springIndex2].CoveringTrianglesCount <= 2);
 
             // Tell the triangle about this sub spring
-            assert(!triangleInfos2[t].SubSprings2.contains(springIndex));
-            triangleInfos2[t].SubSprings2.push_back(springIndex);
+            assert(!triangleInfos2[t].SubSprings2.contains(springIndex2));
+            triangleInfos2[t].SubSprings2.push_back(springIndex2);
         }
     }
 
@@ -1259,23 +1263,23 @@ void ShipFactory::ConnectSpringsAndTriangles(
 
     for (ElementIndex s = 0; s < springInfos2.size(); ++s)
     {
-        if (2 == springInfos2[s].SuperTriangles2.size())
+        if (2 == springInfos2[s].SuperTriangles.size())
         {
             // This spring is the common edge between two triangles
             // (A-D above)
 
             //
-            // Find the B and C endpoints
+            // Find the B and C endpoints (old)
             //
 
             ElementIndex endpoint1Index = NoneElementIndex;
-            ShipFactoryTriangle & triangle1 = triangleInfos2[springInfos2[s].SuperTriangles2[0]];
-            for (ElementIndex triangleVertex : triangle1.PointIndices1)
+            ShipFactoryTriangle & triangle1 = triangleInfos2[springInfos2[s].SuperTriangles[0]];
+            for (ElementIndex triangleVertex1 : triangle1.PointIndices1)
             {
-                if (triangleVertex != springInfos2[s].PointAIndex1
-                    && triangleVertex != springInfos2[s].PointBIndex1)
+                if (triangleVertex1 != pointIndexRemap.NewToOld(springInfos2[s].PointAIndex)
+                    && triangleVertex1 != pointIndexRemap.NewToOld(springInfos2[s].PointBIndex))
                 {
-                    endpoint1Index = triangleVertex;
+                    endpoint1Index = triangleVertex1;
                     break;
                 }
             }
@@ -1283,13 +1287,13 @@ void ShipFactory::ConnectSpringsAndTriangles(
             assert(NoneElementIndex != endpoint1Index);
 
             ElementIndex endpoint2Index = NoneElementIndex;
-            ShipFactoryTriangle & triangle2 = triangleInfos2[springInfos2[s].SuperTriangles2[1]];
-            for (ElementIndex triangleVertex : triangle2.PointIndices1)
+            ShipFactoryTriangle & triangle2 = triangleInfos2[springInfos2[s].SuperTriangles[1]];
+            for (ElementIndex triangleVertex1 : triangle2.PointIndices1)
             {
-                if (triangleVertex != springInfos2[s].PointAIndex1
-                    && triangleVertex != springInfos2[s].PointBIndex1)
+                if (triangleVertex1 != pointIndexRemap.NewToOld(springInfos2[s].PointAIndex)
+                    && triangleVertex1 != pointIndexRemap.NewToOld(springInfos2[s].PointBIndex))
                 {
-                    endpoint2Index = triangleVertex;
+                    endpoint2Index = triangleVertex1;
                     break;
                 }
             }
@@ -1301,12 +1305,12 @@ void ShipFactory::ConnectSpringsAndTriangles(
             // See if there's a B-C spring
             //
 
-            auto const traverseSpringIt = pointPairToSpringMap.find({ endpoint1Index, endpoint2Index });
-            if (traverseSpringIt != pointPairToSpringMap.end())
+            auto const traverseSpringIt = pointPair1ToSpring2Map.find({ endpoint1Index, endpoint2Index });
+            if (traverseSpringIt != pointPair1ToSpring2Map.end())
             {
                 // We have a traverse spring
 
-                assert(0 == springInfos2[traverseSpringIt->second].SuperTriangles2.size());
+                assert(0 == springInfos2[traverseSpringIt->second].SuperTriangles.size());
 
                 // Tell the traverse spring that it has these 2 covering triangles
                 springInfos2[traverseSpringIt->second].CoveringTrianglesCount += 2;
@@ -1378,7 +1382,7 @@ std::vector<ShipFactoryFrontier> ShipFactory::CreateShipFrontiers(
                     else
                     {
                         ElementIndex const springIndex2 = springIndexRemap.OldToNew(springIndex1It->second);
-                        if (springInfos2[springIndex2].SuperTriangles2.empty())
+                        if (springInfos2[springIndex2].SuperTriangles.empty())
                         {
                             // No triangles along this spring
                             isInFrontierablePointsRegion = false;
@@ -1543,7 +1547,7 @@ std::vector<ElementIndex> ShipFactory::PropagateFrontier(
             }
 
             springIndex2 = springIndexRemap.OldToNew(springIndex1It->second);
-            if (springInfos2[springIndex2].SuperTriangles2.size() != 1)
+            if (springInfos2[springIndex2].SuperTriangles.size() != 1)
             {
                 // No triangles along this spring, or two triangles along it
                 continue;
@@ -1669,14 +1673,15 @@ Physics::Points ShipFactory::CreatePoints(
 
 Physics::Springs ShipFactory::CreateSprings(
     std::vector<ShipFactorySpring> const & springInfos2,
+    ElementCount perfectSquareCount,
     Physics::Points & points,
-    IndexRemap const & pointIndexRemap,
     Physics::World & parentWorld,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     GameParameters const & gameParameters)
 {
     Physics::Springs springs(
         static_cast<ElementIndex>(springInfos2.size()),
+        perfectSquareCount,
         parentWorld,
         std::move(gameEventDispatcher),
         gameParameters);
@@ -1685,23 +1690,23 @@ Physics::Springs ShipFactory::CreateSprings(
     {
         // Create spring
         springs.Add(
-            pointIndexRemap.OldToNew(springInfos2[s].PointAIndex1),
-            pointIndexRemap.OldToNew(springInfos2[s].PointBIndex1),
+            springInfos2[s].PointAIndex,
+            springInfos2[s].PointBIndex,
             springInfos2[s].PointAAngle,
             springInfos2[s].PointBAngle,
-            springInfos2[s].SuperTriangles2,
+            springInfos2[s].SuperTriangles,
             springInfos2[s].CoveringTrianglesCount,
             points);
 
         // Add spring to its endpoints
         points.AddFactoryConnectedSpring(
-            pointIndexRemap.OldToNew(springInfos2[s].PointAIndex1),
+            springInfos2[s].PointAIndex,
             s,
-            pointIndexRemap.OldToNew(springInfos2[s].PointBIndex1));
+            springInfos2[s].PointBIndex);
         points.AddFactoryConnectedSpring(
-            pointIndexRemap.OldToNew(springInfos2[s].PointBIndex1),
+            springInfos2[s].PointBIndex,
             s,
-            pointIndexRemap.OldToNew(springInfos2[s].PointAIndex1));
+            springInfos2[s].PointAIndex);
     }
 
     return springs;
@@ -1933,12 +1938,12 @@ float ShipFactory::CalculateACMR(std::vector<ShipFactorySpring> const & springIn
 
     for (size_t s = 0; s < springInfos.size(); ++s)
     {
-        if (!cache.UseVertex(springInfos[s].PointAIndex1))
+        if (!cache.UseVertex(springInfos[s].PointAIndex))
         {
             cacheMisses += 1.0f;
         }
 
-        if (!cache.UseVertex(springInfos[s].PointBIndex1))
+        if (!cache.UseVertex(springInfos[s].PointBIndex))
         {
             cacheMisses += 1.0f;
         }

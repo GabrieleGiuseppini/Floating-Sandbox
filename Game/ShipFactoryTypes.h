@@ -89,28 +89,34 @@ private:
 
 struct ShipFactorySpring
 {
-    ElementIndex PointAIndex1;
+    ElementIndex PointAIndex;
     uint32_t PointAAngle;
 
-    ElementIndex PointBIndex1;
+    ElementIndex PointBIndex;
     uint32_t PointBAngle;
 
-    FixedSizeVector<ElementIndex, 2> SuperTriangles2; // Triangles that have this spring as an edge
+    FixedSizeVector<ElementIndex, 2> SuperTriangles; // Triangles that have this spring as an edge
 
-    ElementCount CoveringTrianglesCount; // Triangles that cover this spring, not necessarily having is as an edge
+    ElementCount CoveringTrianglesCount; // Triangles that cover this spring, not necessarily having it as an edge
 
     ShipFactorySpring(
-        ElementIndex pointAIndex1,
+        ElementIndex pointAIndex,
         uint32_t pointAAngle,
-        ElementIndex pointBIndex1,
+        ElementIndex pointBIndex,
         uint32_t pointBAngle)
-        : PointAIndex1(pointAIndex1)
+        : PointAIndex(pointAIndex)
         , PointAAngle(pointAAngle)
-        , PointBIndex1(pointBIndex1)
+        , PointBIndex(pointBIndex)
         , PointBAngle(pointBAngle)
-        , SuperTriangles2()
+        , SuperTriangles()
         , CoveringTrianglesCount(0)
     {
+    }
+
+    void SwapEndpoints()
+    {
+        std::swap(PointAIndex, PointBIndex);
+        std::swap(PointAAngle, PointBAngle);
     }
 };
 
