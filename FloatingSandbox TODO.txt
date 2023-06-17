@@ -456,8 +456,11 @@
 				- UpdateWaterVelocities     14.23	T1
 				- ApplyStaticPressureForces  9.67	T2
 				- PropagateHeat              3.80	T2
-				- EqualizeInternalPressure   2.68
-				- InternalUpdateForStrains   2.00
+			- Ideal Parallelization 2:
+				- EqualizeInternalPressure   2.68       T1
+				- InternalUpdateForStrains   2.00	T1
+				- ...					T1
+				- Light					T2
 
 		- World::Update:
 			- T1: Stars, Clouds, Wind

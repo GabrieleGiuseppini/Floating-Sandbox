@@ -358,6 +358,10 @@ void Ship::Update(
 
     if (gameParameters.StaticPressureForceAdjustment > 0.0f)
     {
+        // - Inputs: frontiers, positions, internal pressure
+        // - Outputs: dynamic forces 
+        // - Events: OnStaticPressureUpdated
+
         ApplyStaticPressureForces(
             effectiveAirDensity,
             effectiveWaterDensity,
