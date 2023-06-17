@@ -361,7 +361,7 @@
 			+ Unit tests
 		+ Test boot settings
 		+ Check Dell
-		= Ship parallelism:
+		+ Ship parallelism:
 			! All code - intrinsics/non-intrinsics - goes in new Ship_SpringRelaxation.cpp
 			+ Encapsulate whole spring relaxation in new RunSpringRelaxationAndDynamicForcesIntegration()
 			+ Dynamic forces
@@ -413,10 +413,11 @@
 							+ 4
 							+ N
 						+ Test C++ 1 & n
-			- Test repair (possibly impacted by layout optimization)
+			+ Test repair (possibly impacted by layout optimization)
 		- Parallelism setting/slider
 			- SettingsDialog: "Max Simulation Threads"
 				- Maxed by TM::GetMaxSimulationParallelism()
+		- Redo benchmark, but put it up
 			
 	- Test on nVidia
 
