@@ -408,12 +408,14 @@
 						- Implementation for C++ (n): from SpringLab::PseudoVectorized n - the simple one
 
 						= Test SSE (and verify vectorized where needed)
-							- 1
+							+ 1
 							+ 2
-							- 3
-							- 4
+							+ 3
+							+ 4
 							- N
 						- Test C++ 1 & n
+
+						- See if Points::RawDynamicForceBuffers still needed
 		- Test repair (possibly impacted by layout optimization)
 		- Parallelism setting/slider
 			- SettingsDialog: "Max Simulation Threads"

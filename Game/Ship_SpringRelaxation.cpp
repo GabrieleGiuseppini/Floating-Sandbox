@@ -42,7 +42,7 @@ void Ship::RecalculateSpringRelaxationParallelism(size_t simulationParallelism)
     }
 
     // TODOTEST
-    springRelaxationParallelism = 2;
+    springRelaxationParallelism = 4;
 
     LogMessage("Ship::RecalculateSpringRelaxationParallelism: springs=", mSprings.GetElementCount(), " simulationParallelism=", simulationParallelism,
         " springRelaxationParallelism=", springRelaxationParallelism);
@@ -698,18 +698,10 @@ void Ship::IntegrateAndResetDynamicForces_N(
 
 #endif
 
-void Ship::IntegrateAndResetDynamicForces_1(GameParameters const & gameParameters)
+float Ship::CalculateIntegrationVelocityFactor(
+    float dt, 
+    GameParameters const & gameParameters) const
 {
-    // TODOHERE
-    (void)gameParameters;
-}
-
-void Ship::IntegrateAndResetDynamicForces_2(GameParameters const & gameParameters)
-{
-    assert(mSpringRelaxationTasks.size() == 2);
-
-    float const dt = gameParameters.MechanicalSimulationStepTimeDuration<float>();
-
     // Global damp - lowers velocity uniformly, damping oscillations originating between gravity and buoyancy
     //
     // Considering that:
@@ -733,25 +725,78 @@ void Ship::IntegrateAndResetDynamicForces_2(GameParameters const & gameParameter
     // Incorporate adjustment
     float const globalDampingCoefficient = 1.0f -
         (
-        gameParameters.GlobalDampingAdjustment <= 1.0f
-        ? globalDamping * (1.0f - (gameParameters.GlobalDampingAdjustment - 1.0f) * (gameParameters.GlobalDampingAdjustment - 1.0f))
-        : globalDamping +
-        (gameParameters.GlobalDampingAdjustment - 1.0f) * (gameParameters.GlobalDampingAdjustment - 1.0f)
-        / ((gameParameters.MaxGlobalDampingAdjustment - 1.0f) * (gameParameters.MaxGlobalDampingAdjustment - 1.0f))
-        * (1.0f - globalDamping)
+            gameParameters.GlobalDampingAdjustment <= 1.0f
+            ? globalDamping * (1.0f - (gameParameters.GlobalDampingAdjustment - 1.0f) * (gameParameters.GlobalDampingAdjustment - 1.0f))
+            : globalDamping +
+                (gameParameters.GlobalDampingAdjustment - 1.0f) * (gameParameters.GlobalDampingAdjustment - 1.0f)
+                / ((gameParameters.MaxGlobalDampingAdjustment - 1.0f) * (gameParameters.MaxGlobalDampingAdjustment - 1.0f))
+                * (1.0f - globalDamping)
         );
 
     // Pre-divide damp coefficient by dt to provide the scalar factor which, when multiplied with a displacement,
     // provides the final, damped velocity
     float const velocityFactor = globalDampingCoefficient / dt;
 
-    //
-    // Take the four buffers that we need as restrict pointers, so that the compiler
-    // can better see it should parallelize this loop as much as possible
+    return velocityFactor;
+}
+
+void Ship::IntegrateAndResetDynamicForces_1(GameParameters const & gameParameters)
+{
+    assert(mSpringRelaxationTasks.size() == 1);
+
     //
     // This loop is compiled with packed SSE instructions on MSVC 2022,
     // integrating two points at each iteration
     //
+
+    float const dt = gameParameters.MechanicalSimulationStepTimeDuration<float>();
+    float const velocityFactor = CalculateIntegrationVelocityFactor(dt, gameParameters);
+
+    // Take the four buffers that we need as restrict pointers, so that the compiler
+    // can better see it should parallelize this loop as much as possible
+
+    float * restrict const positionBuffer = mPoints.GetPositionBufferAsFloat();
+    float * restrict const velocityBuffer = mPoints.GetVelocityBufferAsFloat();
+    float const * const restrict staticForceBuffer = mPoints.GetStaticForceBufferAsFloat();
+    float const * const restrict integrationFactorBuffer = mPoints.GetIntegrationFactorBufferAsFloat();
+
+    float * const restrict dynamicForceBuffer = reinterpret_cast<float *>(mPoints.GetParallelDynamicForceBuffer(0));
+
+    size_t const count = mPoints.GetBufferElementCount() * 2; // Two components per vector
+    for (size_t i = 0; i < count; ++i)
+    {
+        float const totalDynamicForce = dynamicForceBuffer[i];
+
+        //
+        // Verlet integration (fourth order, with velocity being first order)
+        //
+
+        float const deltaPos =
+            velocityBuffer[i] * dt
+            + (totalDynamicForce + staticForceBuffer[i]) * integrationFactorBuffer[i];
+
+        positionBuffer[i] += deltaPos;
+        velocityBuffer[i] = deltaPos * velocityFactor;
+
+        // Zero out spring forces now that we've integrated them
+        dynamicForceBuffer[i] = 0.0f;
+    }
+}
+
+void Ship::IntegrateAndResetDynamicForces_2(GameParameters const & gameParameters)
+{
+    assert(mSpringRelaxationTasks.size() == 2);
+
+    //
+    // This loop is compiled with packed SSE instructions on MSVC 2022,
+    // integrating two points at each iteration
+    //
+
+    float const dt = gameParameters.MechanicalSimulationStepTimeDuration<float>();
+    float const velocityFactor = CalculateIntegrationVelocityFactor(dt, gameParameters);
+
+    // Take the four buffers that we need as restrict pointers, so that the compiler
+    // can better see it should parallelize this loop as much as possible
 
     float * restrict const positionBuffer = mPoints.GetPositionBufferAsFloat();
     float * restrict const velocityBuffer = mPoints.GetVelocityBufferAsFloat();
@@ -785,15 +830,98 @@ void Ship::IntegrateAndResetDynamicForces_2(GameParameters const & gameParameter
 
 void Ship::IntegrateAndResetDynamicForces_3(GameParameters const & gameParameters)
 {
-    // TODOHERE
-    (void)gameParameters;
-}
+    assert(mSpringRelaxationTasks.size() == 3);
 
+    //
+    // This loop is compiled with packed SSE instructions on MSVC 2022,
+    // integrating two points at each iteration
+    //
+
+    float const dt = gameParameters.MechanicalSimulationStepTimeDuration<float>();
+    float const velocityFactor = CalculateIntegrationVelocityFactor(dt, gameParameters);
+
+    // Take the four buffers that we need as restrict pointers, so that the compiler
+    // can better see it should parallelize this loop as much as possible
+
+    float * restrict const positionBuffer = mPoints.GetPositionBufferAsFloat();
+    float * restrict const velocityBuffer = mPoints.GetVelocityBufferAsFloat();
+    float const * const restrict staticForceBuffer = mPoints.GetStaticForceBufferAsFloat();
+    float const * const restrict integrationFactorBuffer = mPoints.GetIntegrationFactorBufferAsFloat();
+
+    float * const restrict dynamicForceBuffer1 = reinterpret_cast<float *>(mPoints.GetParallelDynamicForceBuffer(0));
+    float * const restrict dynamicForceBuffer2 = reinterpret_cast<float *>(mPoints.GetParallelDynamicForceBuffer(1));
+    float * const restrict dynamicForceBuffer3 = reinterpret_cast<float *>(mPoints.GetParallelDynamicForceBuffer(2));
+
+    size_t const count = mPoints.GetBufferElementCount() * 2; // Two components per vector
+    for (size_t i = 0; i < count; ++i)
+    {
+        float const totalDynamicForce = dynamicForceBuffer1[i] + dynamicForceBuffer2[i] + dynamicForceBuffer3[i];
+
+        //
+        // Verlet integration (fourth order, with velocity being first order)
+        //
+
+        float const deltaPos =
+            velocityBuffer[i] * dt
+            + (totalDynamicForce + staticForceBuffer[i]) * integrationFactorBuffer[i];
+
+        positionBuffer[i] += deltaPos;
+        velocityBuffer[i] = deltaPos * velocityFactor;
+
+        // Zero out spring forces now that we've integrated them
+        dynamicForceBuffer1[i] = 0.0f;
+        dynamicForceBuffer2[i] = 0.0f;
+        dynamicForceBuffer3[i] = 0.0f;
+    }
+}
 
 void Ship::IntegrateAndResetDynamicForces_4(GameParameters const & gameParameters)
 {
-    // TODOHERE
-    (void)gameParameters;
+    assert(mSpringRelaxationTasks.size() == 4);
+
+    //
+    // This loop is compiled with packed SSE instructions on MSVC 2022,
+    // integrating two points at each iteration
+    //
+
+    float const dt = gameParameters.MechanicalSimulationStepTimeDuration<float>();
+    float const velocityFactor = CalculateIntegrationVelocityFactor(dt, gameParameters);
+
+    // Take the four buffers that we need as restrict pointers, so that the compiler
+    // can better see it should parallelize this loop as much as possible
+
+    float * restrict const positionBuffer = mPoints.GetPositionBufferAsFloat();
+    float * restrict const velocityBuffer = mPoints.GetVelocityBufferAsFloat();
+    float const * const restrict staticForceBuffer = mPoints.GetStaticForceBufferAsFloat();
+    float const * const restrict integrationFactorBuffer = mPoints.GetIntegrationFactorBufferAsFloat();
+
+    float * const restrict dynamicForceBuffer1 = reinterpret_cast<float *>(mPoints.GetParallelDynamicForceBuffer(0));
+    float * const restrict dynamicForceBuffer2 = reinterpret_cast<float *>(mPoints.GetParallelDynamicForceBuffer(1));
+    float * const restrict dynamicForceBuffer3 = reinterpret_cast<float *>(mPoints.GetParallelDynamicForceBuffer(2));
+    float * const restrict dynamicForceBuffer4 = reinterpret_cast<float *>(mPoints.GetParallelDynamicForceBuffer(3));
+
+    size_t const count = mPoints.GetBufferElementCount() * 2; // Two components per vector
+    for (size_t i = 0; i < count; ++i)
+    {
+        float const totalDynamicForce = dynamicForceBuffer1[i] + dynamicForceBuffer2[i] + dynamicForceBuffer3[i] + dynamicForceBuffer4[i];
+
+        //
+        // Verlet integration (fourth order, with velocity being first order)
+        //
+
+        float const deltaPos =
+            velocityBuffer[i] * dt
+            + (totalDynamicForce + staticForceBuffer[i]) * integrationFactorBuffer[i];
+
+        positionBuffer[i] += deltaPos;
+        velocityBuffer[i] = deltaPos * velocityFactor;
+
+        // Zero out spring forces now that we've integrated them
+        dynamicForceBuffer1[i] = 0.0f;
+        dynamicForceBuffer2[i] = 0.0f;
+        dynamicForceBuffer3[i] = 0.0f;
+        dynamicForceBuffer4[i] = 0.0f;
+    }
 }
 
 }

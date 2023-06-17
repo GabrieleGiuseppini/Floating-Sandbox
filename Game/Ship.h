@@ -519,6 +519,7 @@ private:
 
     inline void IntegrateAndResetDynamicForces(GameParameters const & gameParameters);
 
+    inline float CalculateIntegrationVelocityFactor(float dt, GameParameters const & gameParameters) const;
     inline void IntegrateAndResetDynamicForces_1(GameParameters const & gameParameters);
     inline void IntegrateAndResetDynamicForces_2(GameParameters const & gameParameters);
     inline void IntegrateAndResetDynamicForces_3(GameParameters const & gameParameters);
