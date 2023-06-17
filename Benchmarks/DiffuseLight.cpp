@@ -58,9 +58,10 @@ static void DiffuseLight_Vectorized(benchmark::State & state)
     for (auto _ : state)
     {
         Algorithms::DiffuseLight_Vectorized(
-            pointPositions.get(),
-            pointPlaneIds.get(),
+            0,
             ElementIndex(pointsSize),
+            pointPositions.get(),
+            pointPlaneIds.get(),            
             lampPositions.get(),
             lampPlaneIds.get(),
             lampDistanceCoeffs.get(),

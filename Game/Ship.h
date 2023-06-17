@@ -552,7 +552,11 @@ private:
 
     // Electrical
 
-    void DiffuseLight(GameParameters const & gameParameters);
+    void RecalculateLightDiffusionParallelism(size_t simulationParallelism);
+
+    void DiffuseLight(
+        GameParameters const & gameParameters,
+        ThreadManager & threadManager);
 
     // Heat
 
@@ -891,13 +895,13 @@ private:
     // Counter of created bubble ephemeral particles
     std::uint64_t mAirBubblesCreatedCount;
 
-    //
-    // Spring relaxation
-    //
-
     // The last thread pool simulation parallelism we've seen; used to
     // detect changes
     size_t mCurrentSimulationParallelism;
+
+    //
+    // Spring relaxation
+    //
 
     // The spring relaxation tasks
     std::vector<typename ThreadPool::Task> mSpringRelaxationTasks;
@@ -934,6 +938,13 @@ private:
     float mStaticPressureNetForceMagnitudeCount;
     float mStaticPressureIterationsPercentagesSum;
     float mStaticPressureIterationsCount;
+
+    //
+    // Light diffusion
+    //
+
+    // The light diffusion tasks
+    std::vector<typename ThreadPool::Task> mLightDiffusionTasks;
 
     //
     // Render members

@@ -19,8 +19,7 @@ void Ship::RecalculateSpringRelaxationParallelism(size_t simulationParallelism)
     // the best parallelism for the spring relaxation algorithm
     // 
 
-    // Number of 4-spring blocks per thread, assuming we use all parallelism
-    ElementCount const numberOfSprings = static_cast<ElementCount>(mSprings.GetElementCount());
+    ElementCount const numberOfSprings = mSprings.GetElementCount();
 
     // Springs -> Threads:
     //     1,000 : 1t = 113  2t = 124  3t = 140  4t = 5t = 6t = 8t =
@@ -41,7 +40,7 @@ void Ship::RecalculateSpringRelaxationParallelism(size_t simulationParallelism)
         springRelaxationParallelism = std::min(size_t(4), simulationParallelism);
     }
 
-    LogMessage("Ship::RecalculateSpringRelaxationParallelism: springs=", mSprings.GetElementCount(), " simulationParallelism=", simulationParallelism,
+    LogMessage("Ship::RecalculateSpringRelaxationParallelism: springs=", numberOfSprings, " simulationParallelism=", simulationParallelism,
         " springRelaxationParallelism=", springRelaxationParallelism);
 
     //
@@ -54,6 +53,7 @@ void Ship::RecalculateSpringRelaxationParallelism(size_t simulationParallelism)
     // Prepare tasks
     //
 
+    assert(numberOfSprings >= static_cast<ElementCount>(springRelaxationParallelism) * 4);
     ElementCount const numberOfFourSpringsPerThread = numberOfSprings / (static_cast<ElementCount>(springRelaxationParallelism) * 4);
 
     ElementIndex springStart = 0;

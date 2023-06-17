@@ -164,9 +164,10 @@ TEST(AlgorithmsTests, DiffuseLight_Vectorized_4Lamps)
     aligned_to_vword float outLightBuffer[4];
 
     Algorithms::DiffuseLight_Vectorized(
+        0,
+        4,
         pointPositions,
         pointPlaneIds,
-        4,
         lampPositions,
         lampPlaneIds,
         lampDistanceCoeffs,
@@ -212,9 +213,10 @@ TEST(AlgorithmsTests, DiffuseLight_Vectorized_8Lamps)
     aligned_to_vword float outLightBuffer[4];
 
     Algorithms::DiffuseLight_Vectorized(
+        0,
+        4,
         pointPositions,
         pointPlaneIds,
-        4,
         lampPositions,
         lampPlaneIds,
         lampDistanceCoeffs,
@@ -261,9 +263,10 @@ TEST(AlgorithmsTests, DiffuseLight_SSEVectorized_4Lamps)
     aligned_to_vword float outLightBuffer[4];
 
     Algorithms::DiffuseLight_SSEVectorized(
+        0,
+        4,
         pointPositions,
         pointPlaneIds,
-        4,
         lampPositions,
         lampPlaneIds,
         lampDistanceCoeffs,
@@ -309,9 +312,10 @@ TEST(AlgorithmsTests, DiffuseLight_SSEVectorized_8Lamps)
     aligned_to_vword float outLightBuffer[4];
 
     Algorithms::DiffuseLight_SSEVectorized(
+        0,
+        4,
         pointPositions,
         pointPlaneIds,
-        4,
         lampPositions,
         lampPlaneIds,
         lampDistanceCoeffs,

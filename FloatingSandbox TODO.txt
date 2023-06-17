@@ -472,7 +472,11 @@
 						- Physics::Ship::ApplySpringsForces	14858 (34.77%) (because it's *3)
 						- Physics::Ship::ApplyStaticPressureForces	3265 (7.64%)
 						- Physics::Ship::PropagateHeat	1541 (3.61%)
-		- Parallel lights?
+		+ Parallel lights
+			+ Hesleden before: 21FPS (UPD 46-48ms)
+			+ Create tasks at UpdateForSimulationParallelism->RecalculateLightDiffusionParallelism
+			+ Hesleden after: 39FPS (UPD 23.9ms)
+			+ Fix benchmarks, unit tests
 		- World::Update:
 			- T1: Stars, Clouds, Wind
 			- T2: OceanSurface

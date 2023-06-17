@@ -120,7 +120,6 @@ Ship::Ship(
     , mLastQueriedPointIndex(NoneElementIndex)
     , mWindField()
     , mAirBubblesCreatedCount(0)
-    // Spring relaxation
     , mCurrentSimulationParallelism(0) // We'll detect a difference on first run
     // Static pressure
     , mStaticPressureBuffer(mPoints.GetAlignedShipPointCount())
@@ -519,120 +518,102 @@ void Ship::Update(
     Verify(!mPoints.Diagnostic_ArePositionsDirty());
 #endif
 
-    ///////////////////////////////
-    // Parallel run 2 START
-    ///////////////////////////////
+    //
+    // Update electrical dynamics
+    //
 
-    assert(parallelTasks.empty()); // We want first task to run on the main thread
+    // Generate a new visit sequence number
+    ++mCurrentElectricalVisitSequenceNumber;
 
-    parallelTasks.emplace_back(
-        [&]()
-        {
-            //
-            // Update electrical dynamics
-            //
+    mElectricalElements.Update(
+        currentWallClockTime,
+        currentSimulationTime,
+        mCurrentElectricalVisitSequenceNumber,
+        mPoints,
+        mSprings,
+        effectiveAirDensity,
+        effectiveWaterDensity,
+        stormParameters,
+        gameParameters);
 
-            // Generate a new visit sequence number
-            ++mCurrentElectricalVisitSequenceNumber;
+    //
+    // Diffuse light
+    //
 
-            mElectricalElements.Update(
-                currentWallClockTime,
-                currentSimulationTime,
-                mCurrentElectricalVisitSequenceNumber,
-                mPoints,
-                mSprings,
-                effectiveAirDensity,
-                effectiveWaterDensity,
-                stormParameters,
-                gameParameters);
+    // - Inputs: P.Position, P.PlaneId, EL.AvailableLight
+    //      - EL.AvailableLight depends on electricals which depend on water
+    // - Outputs: P.Light
+    DiffuseLight(
+        gameParameters, 
+        threadManager);
 
-            //
-            // Update slow combustion state machine
-            //
+    //
+    // Update slow combustion state machine
+    //
 
-            if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowStep1, GameParameters::ParticleUpdateLowFrequencyPeriod))
-            {
-                mPoints.UpdateCombustionLowFrequency(
-                    0,
-                    4,
-                    currentWallClockTimeFloat,
-                    currentSimulationTime,
-                    stormParameters,
-                    gameParameters);
-            }
-            else if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowStep2, GameParameters::ParticleUpdateLowFrequencyPeriod))
-            {
-                mPoints.UpdateCombustionLowFrequency(
-                    1,
-                    4,
-                    currentWallClockTimeFloat,
-                    currentSimulationTime,
-                    stormParameters,
-                    gameParameters);
-            }
-            else if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowStep3, GameParameters::ParticleUpdateLowFrequencyPeriod))
-            {
-                mPoints.UpdateCombustionLowFrequency(
-                    2,
-                    4,
-                    currentWallClockTimeFloat,
-                    currentSimulationTime,
-                    stormParameters,
-                    gameParameters);
-            }
-            else if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowStep4, GameParameters::ParticleUpdateLowFrequencyPeriod))
-            {
-                mPoints.UpdateCombustionLowFrequency(
-                    3,
-                    4,
-                    currentWallClockTimeFloat,
-                    currentSimulationTime,
-                    stormParameters,
-                    gameParameters);
-            }
+    if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowStep1, GameParameters::ParticleUpdateLowFrequencyPeriod))
+    {
+        mPoints.UpdateCombustionLowFrequency(
+            0,
+            4,
+            currentWallClockTimeFloat,
+            currentSimulationTime,
+            stormParameters,
+            gameParameters);
+    }
+    else if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowStep2, GameParameters::ParticleUpdateLowFrequencyPeriod))
+    {
+        mPoints.UpdateCombustionLowFrequency(
+            1,
+            4,
+            currentWallClockTimeFloat,
+            currentSimulationTime,
+            stormParameters,
+            gameParameters);
+    }
+    else if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowStep3, GameParameters::ParticleUpdateLowFrequencyPeriod))
+    {
+        mPoints.UpdateCombustionLowFrequency(
+            2,
+            4,
+            currentWallClockTimeFloat,
+            currentSimulationTime,
+            stormParameters,
+            gameParameters);
+    }
+    else if (mCurrentSimulationSequenceNumber.IsStepOf(CombustionStateMachineSlowStep4, GameParameters::ParticleUpdateLowFrequencyPeriod))
+    {
+        mPoints.UpdateCombustionLowFrequency(
+            3,
+            4,
+            currentWallClockTimeFloat,
+            currentSimulationTime,
+            stormParameters,
+            gameParameters);
+    }
 
-            //
-            // Update fast combustion state machine
-            //
+    //
+    // Update fast combustion state machine
+    //
 
-            mPoints.UpdateCombustionHighFrequency(
-                currentSimulationTime,
-                GameParameters::SimulationStepTimeDuration<float>,
-                mParentWorld.GetCurrentWindSpeed(),
-                mWindField,
-                gameParameters);
+    mPoints.UpdateCombustionHighFrequency(
+        currentSimulationTime,
+        GameParameters::SimulationStepTimeDuration<float>,
+        mParentWorld.GetCurrentWindSpeed(),
+        mWindField,
+        gameParameters);
 
-            //
-            // Update highlights
-            //
+    //
+    // Update highlights
+    //
 
-            mPoints.UpdateHighlights(currentWallClockTimeFloat);
+    mPoints.UpdateHighlights(currentWallClockTimeFloat);
 
-            //
-            // Update electric sparks
-            //
+    //
+    // Update electric sparks
+    //
 
-            mElectricSparks.Update();
-        });
-
-    parallelTasks.emplace_back(
-        [&]()
-        {
-            //
-            // Diffuse light
-            //
-
-            // - Inputs: P.Position, P.PlaneId, EL.AvailableLight
-            //      - EL.AvailableLight depends on electricals which depend on water
-            // - Outputs: P.Light
-            DiffuseLight(gameParameters);
-        });
-
-    threadManager.GetSimulationThreadPool().RunAndClear(parallelTasks);
-
-    ///////////////////////////////
-    // Parallel run 2 END
-    ///////////////////////////////
+    mElectricSparks.Update();
 
     ///////////////////////////////////////////////////////////////////
     // Update spring parameters
@@ -2584,7 +2565,69 @@ void Ship::UpdateSinking()
 // Electrical Dynamics
 ///////////////////////////////////////////////////////////////////////////////////
 
-void Ship::DiffuseLight(GameParameters const & gameParameters)
+void Ship::RecalculateLightDiffusionParallelism(size_t simulationParallelism)
+{
+    // Clear threading state
+    mLightDiffusionTasks.clear();
+
+    //
+    // Given the available simulation parallelism as a constraint (max), calculate 
+    // the best parallelism for the light diffusion algorithm
+    //
+
+    ElementCount const numberOfPoints = mPoints.GetAlignedShipPointCount(); // No real reason to skip ephemerals, other than they're not expected to have light
+
+    size_t lightDiffusionParallelism;
+    if (numberOfPoints < 10000)
+    {
+        // Not worth it
+        lightDiffusionParallelism = 1;
+    }
+    else
+    {
+        lightDiffusionParallelism = std::min(size_t(4), simulationParallelism);
+    }
+
+    LogMessage("Ship::RecalculateLightDiffusionParallelism: points=", numberOfPoints, " simulationParallelism=", simulationParallelism,
+        " lightDiffusionParallelism=", lightDiffusionParallelism);
+
+    //
+    // Prepare tasks
+    //
+
+    assert(numberOfPoints >= static_cast<ElementCount>(lightDiffusionParallelism) * 4);
+    ElementCount const numberOfFourPointsPerThread = numberOfPoints / (static_cast<ElementCount>(lightDiffusionParallelism) * 4);
+
+    ElementIndex pointStart = 0;
+    for (size_t t = 0; t < lightDiffusionParallelism; ++t)
+    {
+        ElementIndex const pointEnd = (t < lightDiffusionParallelism - 1)
+            ? pointStart + numberOfFourPointsPerThread * 4
+            : numberOfPoints;
+
+        mLightDiffusionTasks.emplace_back(
+            [this, pointStart, pointEnd]()
+            {
+                Algorithms::DiffuseLight(
+                    pointStart,
+                    pointEnd,
+                    mPoints.GetPositionBufferAsVec2(),
+                    mPoints.GetPlaneIdBufferAsPlaneId(),
+                    mElectricalElements.GetLampPositionWorkBuffer().data(),
+                    mElectricalElements.GetLampPlaneIdWorkBuffer().data(),
+                    mElectricalElements.GetLampDistanceCoefficientWorkBuffer().data(),
+                    mElectricalElements.GetLampLightSpreadMaxDistanceBufferAsFloat(),
+                    mElectricalElements.GetBufferLampCount(),
+                    mPoints.GetLightBufferAsFloat());
+            });
+
+        pointStart = pointEnd;
+    }
+}
+
+void Ship::DiffuseLight(
+    GameParameters const & gameParameters,
+    ThreadManager & threadManager)
 {
     //
     // Diffuse light from each lamp to all points on the same or lower plane ID,
@@ -2623,16 +2666,7 @@ void Ship::DiffuseLight(GameParameters const & gameParameters)
     // 2. Diffuse light
     //
 
-    Algorithms::DiffuseLight(
-        mPoints.GetPositionBufferAsVec2(),
-        mPoints.GetPlaneIdBufferAsPlaneId(),
-        mPoints.GetAlignedShipPointCount(), // No real reason to skip ephemerals, other than they're not expected to have light
-        lampPositions.data(),
-        lampPlaneIds.data(),
-        lampDistanceCoeffs.data(),
-        mElectricalElements.GetLampLightSpreadMaxDistanceBufferAsFloat(),
-        mElectricalElements.GetBufferLampCount(),
-        mPoints.GetLightBufferAsFloat());
+    threadManager.GetSimulationThreadPool().Run(mLightDiffusionTasks);
 
     // Remember that we've diffused light with this luminiscence adjustment
     mLastLuminiscenceAdjustmentDiffused = gameParameters.LuminiscenceAdjustment;
@@ -2911,6 +2945,9 @@ void Ship::UpdateForSimulationParallelism(ThreadManager const & threadManager)
     {
         // Re-calculate spring relaxation parallelism
         RecalculateSpringRelaxationParallelism(simulationParallelism);
+
+        // Re-calculate light diffusion parallelism
+        RecalculateLightDiffusionParallelism(simulationParallelism);
 
         // Remember new value
         mCurrentSimulationParallelism = simulationParallelism;

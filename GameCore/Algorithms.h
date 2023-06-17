@@ -178,9 +178,10 @@ inline void DiffuseLight_Naive(
 
 template<typename TVector>
 inline void DiffuseLight_Vectorized(
+    ElementIndex const pointStart,
+    ElementIndex const pointEnd,
     TVector const * restrict pointPositions,
     PlaneId const * restrict pointPlaneIds,
-    ElementIndex const pointCount,
     TVector const * restrict lampPositions,
     PlaneId const * restrict lampPlaneIds,
     float const * restrict lampDistanceCoeffs,
@@ -190,7 +191,8 @@ inline void DiffuseLight_Vectorized(
 {
     // This code is vectorized for 4 floats
     static_assert(vectorization_float_count<size_t> >= 4);
-    assert(is_aligned_to_float_element_count(pointCount));
+    assert(is_aligned_to_float_element_count(pointStart));
+    assert(is_aligned_to_float_element_count(pointEnd));
     assert(is_aligned_to_float_element_count(lampCount));
     assert(is_aligned_to_vectorization_word(pointPositions));
     assert(is_aligned_to_vectorization_word(pointPlaneIds));
@@ -205,15 +207,15 @@ inline void DiffuseLight_Vectorized(
 
     // Clear all output lights
     std::fill(
-        outLightBuffer,
-        outLightBuffer + pointCount,
+        outLightBuffer + pointStart,
+        outLightBuffer + pointEnd,
         0.0f);
 
     //
     // Visit all points, in groups of 4
     //
 
-    for (ElementIndex p = 0; p < pointCount; p += 4)
+    for (ElementIndex p = pointStart; p < pointEnd; p += 4)
     {
         TVector const * const restrict batchPointPositions = &(pointPositions[p]);
         PlaneId const * const restrict batchPointPlaneIds = &(pointPlaneIds[p]);
@@ -253,16 +255,19 @@ inline void DiffuseLight_Vectorized(
         //
 
         for (ElementIndex p2 = 0; p2 < 4; ++p2)
+        {
             batchOutLightBuffer[p2] = std::min(1.0f, batchOutLightBuffer[p2]);
+        }
     }
 }
 
 #if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
 template<typename TVector>
 inline void DiffuseLight_SSEVectorized(
+    ElementIndex const pointStart,
+    ElementIndex const pointEnd,
     TVector const * restrict pointPositions,
     PlaneId const * restrict pointPlaneIds,
-    ElementIndex const pointCount,
     TVector const * restrict lampPositions,
     PlaneId const * restrict lampPlaneIds,
     float const * restrict lampDistanceCoeffs,
@@ -272,7 +277,8 @@ inline void DiffuseLight_SSEVectorized(
 {
     // This code is vectorized for SSE = 4 floats
     static_assert(vectorization_float_count<size_t> >= 4);
-    assert(is_aligned_to_float_element_count(pointCount));
+    assert(is_aligned_to_float_element_count(pointStart));
+    assert(is_aligned_to_float_element_count(pointEnd));
     assert(is_aligned_to_float_element_count(lampCount));
     assert(is_aligned_to_vectorization_word(pointPositions));
     assert(is_aligned_to_vectorization_word(pointPlaneIds));
@@ -289,7 +295,7 @@ inline void DiffuseLight_SSEVectorized(
     // Visit all points in groups of 4
     //
 
-    for (ElementIndex p = 0; p < pointCount; p += 4)
+    for (ElementIndex p = pointStart; p < pointEnd; p += 4)
     {
         //
         // Prepare point data at slots 0,1,2,3
@@ -471,9 +477,10 @@ inline void DiffuseLight_SSEVectorized(
  */
 template<typename TVector>
 inline void DiffuseLight(
+    ElementIndex const pointStart,
+    ElementIndex const pointEnd,
     TVector const * pointPositions,
     PlaneId const * pointPlaneIds,
-    ElementIndex const pointCount,
     TVector const * lampPositions,
     PlaneId const * lampPlaneIds,
     float const * lampDistanceCoeffs,
@@ -483,9 +490,10 @@ inline void DiffuseLight(
 {
 #if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
     DiffuseLight_SSEVectorized(
+        pointStart,
+        pointEnd,
         pointPositions,
         pointPlaneIds,
-        pointCount,
         lampPositions,
         lampPlaneIds,
         lampDistanceCoeffs,
@@ -494,9 +502,10 @@ inline void DiffuseLight(
         outLightBuffer);
 #else
     DiffuseLight_Vectorized(
+        pointStart,
+        pointEnd,
         pointPositions,
         pointPlaneIds,
-        pointCount,
         lampPositions,
         lampPlaneIds,
         lampDistanceCoeffs,
