@@ -42,7 +42,7 @@ void Ship::RecalculateSpringRelaxationParallelism(size_t simulationParallelism)
     }
 
     // TODOTEST
-    springRelaxationParallelism = 4;
+    springRelaxationParallelism = 5;
 
     LogMessage("Ship::RecalculateSpringRelaxationParallelism: springs=", mSprings.GetElementCount(), " simulationParallelism=", simulationParallelism,
         " springRelaxationParallelism=", springRelaxationParallelism);
@@ -670,9 +670,67 @@ void Ship::IntegrateAndResetDynamicForces_N(
     size_t parallelism,
     GameParameters const & gameParameters)
 {
-    // TODOHERE: from SpringLab's Vectorized n (the one with explicit intrinsics)
-    (void)parallelism;
-    (void)gameParameters;
+    // This implementation is for 4-float SSE
+    static_assert(vectorization_float_count<int> >= 4);
+
+    float const dt = gameParameters.MechanicalSimulationStepTimeDuration<float>();
+    float const velocityFactor = CalculateIntegrationVelocityFactor(dt, gameParameters);
+
+    float * restrict const positionBuffer = mPoints.GetPositionBufferAsFloat();
+    float * restrict const velocityBuffer = mPoints.GetVelocityBufferAsFloat();
+    float const * const restrict staticForceBuffer = mPoints.GetStaticForceBufferAsFloat();
+    float const * const restrict integrationFactorBuffer = mPoints.GetIntegrationFactorBufferAsFloat();
+
+    float * const restrict * restrict const dynamicForceBufferOfBuffers = mPoints.GetDynamicForceBuffersAsFloat();
+
+    __m128 const zero_4 = _mm_setzero_ps();
+    __m128 const dt_4 = _mm_load1_ps(&dt);
+    __m128 const velocityFactor_4 = _mm_load1_ps(&velocityFactor);
+
+    size_t const count = mPoints.GetBufferElementCount() * 2; // Two components per vector
+    for (size_t i = 0; i < count; i += 4)
+    {
+        __m128 springForce_2 = zero_4;
+        for (size_t b = 0; b < parallelism; ++b)
+        {
+            springForce_2 =
+                _mm_add_ps(
+                    springForce_2,
+                    _mm_load_ps(dynamicForceBufferOfBuffers[b] + i));
+        }
+
+        // vec2f const deltaPos =
+        //    velocityBuffer[i] * dt
+        //    + (springForceBuffer[i] + externalForceBuffer[i]) * integrationFactorBuffer[i];
+        __m128 const deltaPos_2 =
+            _mm_add_ps(
+                _mm_mul_ps(
+                    _mm_load_ps(velocityBuffer + i),
+                    dt_4),
+                _mm_mul_ps(
+                    _mm_add_ps(
+                        springForce_2,
+                        _mm_load_ps(staticForceBuffer + i)),
+                    _mm_load_ps(integrationFactorBuffer + i)));
+
+        // positionBuffer[i] += deltaPos;
+        __m128 pos_2 = _mm_load_ps(positionBuffer + i);
+        pos_2 = _mm_add_ps(pos_2, deltaPos_2);
+        _mm_store_ps(positionBuffer + i, pos_2);
+
+        // velocityBuffer[i] = deltaPos * velocityFactor;
+        __m128 const vel_2 =
+            _mm_mul_ps(
+                deltaPos_2,
+                velocityFactor_4);
+        _mm_store_ps(velocityBuffer + i, vel_2);
+
+        // Zero out spring forces now that we've integrated them
+        for (size_t b = 0; b < parallelism; ++b)
+        {
+            _mm_store_ps(dynamicForceBufferOfBuffers[b] + i, zero_4);
+        }
+    }
 }
 
 #else

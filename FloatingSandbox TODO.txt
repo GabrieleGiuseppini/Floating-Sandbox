@@ -402,17 +402,17 @@
 				= Invoke integration
 					= Integration function differentiated based on arch (instrinsics+arch vs. c++)
 						! Impl's are in same Ship_SpringRelaxation.cpp
-						= Implementation for SSE (i): SpringLab's Vectorized i
-						- Implementation for SSE (n): from SpringLab's Vectorized n (with explicit intrinsics)
+						+ Implementation for SSE (i): SpringLab's Vectorized i
+						+ Implementation for SSE (n): from SpringLab's Vectorized n (with explicit intrinsics)
 						- Implementation for C++ (i): same as above, if verification succeeds
 						- Implementation for C++ (n): from SpringLab::PseudoVectorized n - the simple one
 
-						= Test SSE (and verify vectorized where needed)
+						+ Test SSE (and verify vectorized where needed)
 							+ 1
 							+ 2
 							+ 3
 							+ 4
-							- N
+							+ N
 						- Test C++ 1 & n
 
 						- See if Points::RawDynamicForceBuffers still needed
