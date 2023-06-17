@@ -2362,7 +2362,6 @@ void Ship::UpdateWaterVelocities(
             // Update total outbound flow weight
             totalOutboundWaterFlowWeight += springOutboundWaterFlowWeights[s];
 
-
             //
             // Update splash neighbors counts
             //
@@ -2373,8 +2372,6 @@ void Ship::UpdateWaterVelocities(
 
             pointSplashNeighbors += mSprings.GetWaterPermeability(cs.SpringIndex);
         }
-
-
 
         //
         // 2) Calculate normalization factor for water flows:
@@ -2393,7 +2390,6 @@ void Ship::UpdateWaterVelocities(
                 * mPoints.GetMaterialWaterDiffusionSpeed(pointIndex) * gameParameters.WaterDiffusionSpeedAdjustment
                 / totalOutboundWaterFlowWeight;
         }
-
 
         //
         // 3) Move water along all springs according to their flows,

@@ -420,17 +420,46 @@
 				+ Maxed by TM::GetMaxSimulationParallelism() & by 4
 		+ Redo benchmark, and put it up
 			
-	- More parallelism during Update()
-		- World::Update:
-			- T1: Stars, Clouds, Wind
-			- T2: OceanSurface
-				- Wind::StormParameters becomes WindParameters, so that T2 works on static (but one frame older) snapshot
-		- At Ship::Update (was: Multi-threading, phase II):
-			- Now that we have MaxSimulationParallelism, we can easily see which steps take the longest
+	= More parallelism during Update()
+		+ First, get breakdown, including World::Update
+			! Hesleden, 4 threads:
+				- Physics::Ship::RunSpringRelaxationAndDynamicForcesIntegration	8346 (23.10%)
+				- Physics::Ship::UpdateWaterVelocities	4343 (12.02%)
+				- Physics::Ship::ApplyStaticPressureForces	2808 (7.77%)
+				- Physics::Ship::PropagateHeat	1194 (3.30%)
+				- Physics::Ship::EqualizeInternalPressure	850 (2.35%)
+				- Physics::Springs::InternalUpdateForStrains<0>	631 (1.75%)
+				- ...
+				- Physics::OceanSurface::Update	294 (0.81%)
+			! Hesleden, 1 thread:
+				- Physics::World::Update	24325 (92.65%)	2 (0.01%)	floatingsandbox	IO | Kernel
+					- Physics::Ship::Update	24089 (91.75%)	0 (0.00%)	floatingsandbox	Kernel
+						- Physics::Ship::RunSpringRelaxationAndDynamicForcesIntegration	14781 (56.30%)	0 (0.00%)	floatingsandbox	Kernel
+							- Physics::Ship::ApplySpringsForces	12287 (46.80%)	12253 (46.67%)	floatingsandbox	
+							- Physics::Ship::IntegrateAndResetDynamicForces_1	1279 (4.87%)	1270 (4.84%)	floatingsandbox	
+							- Physics::Ship::HandleCollisionsWithSeaFloor	1209 (4.60%)	1205 (4.59%)	floatingsandbox	
+						- Physics::Ship::UpdateWaterVelocities	3736 (14.23%)	3567 (13.59%)	floatingsandbox	Kernel
+						- Physics::Ship::ApplyStaticPressureForces	2540 (9.67%)	3 (0.01%)	floatingsandbox	
+						- Physics::Ship::PropagateHeat	998 (3.80%)	983 (3.74%)	floatingsandbox	Kernel
+						- Physics::Ship::EqualizeInternalPressure	703 (2.68%)	702 (2.67%)	floatingsandbox	
+						- Physics::Springs::InternalUpdateForStrains<0>	524 (2.00%)	521 (1.98%)	floatingsandbox	
+		= At Ship::Update (was: Multi-threading, phase II):
+			! Now that we have MaxSimulationParallelism, we can easily see which steps take the longest
 			- Allow threads to publish events by having EventDispatcher allow multiple threads to store* event
 				- No locks needed on read and clean, as it's done after Update has finished
 			- Move PhysicsSimulation::UpdateWaterVelocities (8%) to separate thread
 				- If water is being read by other threads, make UpdateWaterVelocities take the newWater buffer, and swap it after the tasks have completed
+			- Ideal Parallelization 1:
+				- UpdateWaterVelocities     14.23
+				- ApplyStaticPressureForces  9.67
+				- PropagateHeat              3.80
+				- EqualizeInternalPressure   2.68
+				- InternalUpdateForStrains   2.00
+
+		- World::Update:
+			- T1: Stars, Clouds, Wind
+			- T2: OceanSurface
+				- Wind::StormParameters becomes WindParameters, so that T2 works on static (but one frame older) snapshot
 
 	- Decide rigidity vs. speedup
 
@@ -1985,7 +2014,7 @@ Current perf:
 	  RND: (3.24) (UPL=0.18 MT=0.0)
 + Hesleden (150407 spr):
 	+ Without lights: 49.74-56.31 FPS
-		UPD: (0.0 + 17.01-17.50 (54.5%)) UPL:(0.0 + 0.14)
+		UPD: (0.0 + 17.01-18.00 (50.0%-54.5%)) UPL:(0.0 + 0.14)
 		RND: (3.77-3.84) (UPL:0.25 MT=0.0)
 	+ With lights: 19.50-19.96 FPS
 		UPD: (0.0 + 49.85-50.06 (20.72%))
