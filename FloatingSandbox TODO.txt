@@ -402,16 +402,18 @@
 				= Invoke integration
 					= Integration function differentiated based on arch (instrinsics+arch vs. c++)
 						! Impl's are in same Ship_SpringRelaxation.cpp
-						= TODO: are the two impl's (SSE and C++) really different? If not unify (w/no arch #if)
-							- i.e., check if need to do an intrinsics explicitly
-						- SSE
-							- Check assembly and verify it's vectorized
-								- N
-								- NN
-							- Test
-						- C++ (take from SpringLab's PseudoIntrinsics simulator)
-							- Test
-		- Nuke those two old functions in Ship.cpp
+						= Implementation for SSE (i): SpringLab's Vectorized i
+						- Implementation for SSE (n): from SpringLab's Vectorized n (with explicit intrinsics)
+						- Implementation for C++ (i): same as above, if verification succeeds
+						- Implementation for C++ (n): from SpringLab::PseudoVectorized n - the simple one
+
+						= Test SSE (and verify vectorized where needed)
+							- 1
+							+ 2
+							- 3
+							- 4
+							- N
+						- Test C++ 1 & n
 		- Test repair (possibly impacted by layout optimization)
 		- Parallelism setting/slider
 			- SettingsDialog: "Max Simulation Threads"

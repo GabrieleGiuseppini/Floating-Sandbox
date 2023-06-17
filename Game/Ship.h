@@ -519,12 +519,11 @@ private:
 
     inline void IntegrateAndResetDynamicForces(GameParameters const & gameParameters);
 
-    template<size_t N>
-    inline void IntegrateAndResetDynamicForces_N(GameParameters const & gameParameters);
-
-    inline void IntegrateAndResetDynamicForces_NN(
-        size_t n,
-        GameParameters const & gameParameters);
+    inline void IntegrateAndResetDynamicForces_1(GameParameters const & gameParameters);
+    inline void IntegrateAndResetDynamicForces_2(GameParameters const & gameParameters);
+    inline void IntegrateAndResetDynamicForces_3(GameParameters const & gameParameters);
+    inline void IntegrateAndResetDynamicForces_4(GameParameters const & gameParameters);
+    inline void IntegrateAndResetDynamicForces_N(size_t parallelism, GameParameters const & gameParameters);
 
     void HandleCollisionsWithSeaFloor(
         float dt,

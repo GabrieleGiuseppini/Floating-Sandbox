@@ -41,6 +41,9 @@ void Ship::RecalculateSpringRelaxationParallelism(size_t simulationParallelism)
         springRelaxationParallelism = std::min(size_t(4), simulationParallelism);
     }
 
+    // TODOTEST
+    springRelaxationParallelism = 2;
+
     LogMessage("Ship::RecalculateSpringRelaxationParallelism: springs=", mSprings.GetElementCount(), " simulationParallelism=", simulationParallelism,
         " springRelaxationParallelism=", springRelaxationParallelism);
 
@@ -126,31 +129,31 @@ void Ship::IntegrateAndResetDynamicForces(GameParameters const & gameParameters)
     {
         case 1:
         {
-            IntegrateAndResetDynamicForces_N<1>(gameParameters);
+            IntegrateAndResetDynamicForces_1(gameParameters);
             break;
         }
 
         case 2:
         {
-            IntegrateAndResetDynamicForces_N<2>(gameParameters);
+            IntegrateAndResetDynamicForces_2(gameParameters);
             break;
         }
 
         case 3:
         {
-            IntegrateAndResetDynamicForces_N<3>(gameParameters);
+            IntegrateAndResetDynamicForces_3(gameParameters);
             break;
         }
 
         case 4:
         {
-            IntegrateAndResetDynamicForces_N<4>(gameParameters);
+            IntegrateAndResetDynamicForces_4(gameParameters);
             break;
         }
 
         default:
         {
-            IntegrateAndResetDynamicForces_NN(mSpringRelaxationTasks.size(), gameParameters);
+            IntegrateAndResetDynamicForces_N(mSpringRelaxationTasks.size(), gameParameters);
             break;
         }
     }
@@ -663,9 +666,48 @@ void Ship::ApplySpringsForces(
     }
 }
 
-template<size_t N>
-void Ship::IntegrateAndResetDynamicForces_N(GameParameters const & gameParameters)
+void Ship::IntegrateAndResetDynamicForces_N(
+    size_t parallelism,
+    GameParameters const & gameParameters)
 {
+    // TODOHERE: from SpringLab's Vectorized n (the one with explicit intrinsics)
+    (void)parallelism;
+    (void)gameParameters;
+}
+
+#else
+
+///////////////////////////////////////////////////////////////
+// Architecture-agnostic
+///////////////////////////////////////////////////////////////
+
+void Ship::ApplySpringsForces(
+    ElementIndex startSpringIndex,
+    ElementIndex stopSpringIndex,
+    vec2f * restrict dynamicForceBuffer)
+{
+    // TODOHERE
+}
+
+void Ship::IntegrateAndResetDynamicForces_N(
+    size_t parallelism,
+    GameParameters const & gameParameters)
+{
+    // TODOHERE: from SpringLab's Pseudo-vectorized n
+}
+
+#endif
+
+void Ship::IntegrateAndResetDynamicForces_1(GameParameters const & gameParameters)
+{
+    // TODOHERE
+    (void)gameParameters;
+}
+
+void Ship::IntegrateAndResetDynamicForces_2(GameParameters const & gameParameters)
+{
+    assert(mSpringRelaxationTasks.size() == 2);
+
     float const dt = gameParameters.MechanicalSimulationStepTimeDuration<float>();
 
     // Global damp - lowers velocity uniformly, damping oscillations originating between gravity and buoyancy
@@ -691,12 +733,12 @@ void Ship::IntegrateAndResetDynamicForces_N(GameParameters const & gameParameter
     // Incorporate adjustment
     float const globalDampingCoefficient = 1.0f -
         (
-            gameParameters.GlobalDampingAdjustment <= 1.0f
-            ? globalDamping * (1.0f - (gameParameters.GlobalDampingAdjustment - 1.0f) * (gameParameters.GlobalDampingAdjustment - 1.0f))
-            : globalDamping +
-                (gameParameters.GlobalDampingAdjustment - 1.0f) * (gameParameters.GlobalDampingAdjustment - 1.0f)
-                / ((gameParameters.MaxGlobalDampingAdjustment - 1.0f) * (gameParameters.MaxGlobalDampingAdjustment - 1.0f))
-                * (1.0f - globalDamping)
+        gameParameters.GlobalDampingAdjustment <= 1.0f
+        ? globalDamping * (1.0f - (gameParameters.GlobalDampingAdjustment - 1.0f) * (gameParameters.GlobalDampingAdjustment - 1.0f))
+        : globalDamping +
+        (gameParameters.GlobalDampingAdjustment - 1.0f) * (gameParameters.GlobalDampingAdjustment - 1.0f)
+        / ((gameParameters.MaxGlobalDampingAdjustment - 1.0f) * (gameParameters.MaxGlobalDampingAdjustment - 1.0f))
+        * (1.0f - globalDamping)
         );
 
     // Pre-divide damp coefficient by dt to provide the scalar factor which, when multiplied with a displacement,
@@ -707,25 +749,22 @@ void Ship::IntegrateAndResetDynamicForces_N(GameParameters const & gameParameter
     // Take the four buffers that we need as restrict pointers, so that the compiler
     // can better see it should parallelize this loop as much as possible
     //
-    // This loop is compiled with single-precision packet SSE instructions on MSVC 2022,
+    // This loop is compiled with packed SSE instructions on MSVC 2022,
     // integrating two points at each iteration
     //
-    
+
     float * restrict const positionBuffer = mPoints.GetPositionBufferAsFloat();
     float * restrict const velocityBuffer = mPoints.GetVelocityBufferAsFloat();
     float const * const restrict staticForceBuffer = mPoints.GetStaticForceBufferAsFloat();
-    float * const * const restrict dynamicForceBuffers = mPoints.GetDynamicForceBuffersAsFloat();
     float const * const restrict integrationFactorBuffer = mPoints.GetIntegrationFactorBufferAsFloat();
 
+    float * const restrict dynamicForceBuffer1 = reinterpret_cast<float *>(mPoints.GetParallelDynamicForceBuffer(0));
+    float * const restrict dynamicForceBuffer2 = reinterpret_cast<float *>(mPoints.GetParallelDynamicForceBuffer(1));
+
     size_t const count = mPoints.GetBufferElementCount() * 2; // Two components per vector
-    // TODO: see if vectorized; if not, go for intrinsics (from SpringLab's ...Vectorized), but with <N>
     for (size_t i = 0; i < count; ++i)
     {
-        float totalDynamicForce = 0.0f;
-        for (size_t p = 0; p < N; ++p)
-        {
-            totalDynamicForce += dynamicForceBuffers[p][i];
-        }
+        float const totalDynamicForce = dynamicForceBuffer1[i] + dynamicForceBuffer2[i];
 
         //
         // Verlet integration (fourth order, with velocity being first order)
@@ -739,49 +778,22 @@ void Ship::IntegrateAndResetDynamicForces_N(GameParameters const & gameParameter
         velocityBuffer[i] = deltaPos * velocityFactor;
 
         // Zero out spring forces now that we've integrated them
-        for (size_t p = 0; p < N; ++p)
-        {
-            dynamicForceBuffers[p][i] = 0.0f;
-        }
+        dynamicForceBuffer1[i] = 0.0f;
+        dynamicForceBuffer2[i] = 0.0f;
     }
 }
 
-void Ship::IntegrateAndResetDynamicForces_NN(
-    size_t n,
-    GameParameters const & gameParameters)
+void Ship::IntegrateAndResetDynamicForces_3(GameParameters const & gameParameters)
 {
-    // TODOHERE: copy from above, but change template N to arg
-    (void)n;
+    // TODOHERE
     (void)gameParameters;
 }
 
-#else
 
-///////////////////////////////////////////////////////////////
-// Architecture-agnostic
-///////////////////////////////////////////////////////////////
-
-void Ship::ApplySpringsForces(
-    ElementIndex startSpringIndex,
-    ElementIndex stopSpringIndex,
-    vec2f * restrict dynamicForceBuffer)
+void Ship::IntegrateAndResetDynamicForces_4(GameParameters const & gameParameters)
 {
     // TODOHERE
+    (void)gameParameters;
 }
-
-template<size_t N>
-void Ship::IntegrateAndResetDynamicForces_N(GameParameters const & gameParameters)
-{
-    // TODOHERE
-}
-
-void Ship::IntegrateAndResetDynamicForces_NN(
-    size_t n,
-    GameParameters const & gameParameters)
-{
-    // TODOHERE
-}
-
-#endif
 
 }

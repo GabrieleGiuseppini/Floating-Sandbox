@@ -575,6 +575,7 @@ public:
         , mFactoryPositionBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mVelocityBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mDynamicForceBuffers() // We'll start later with at least one
+        , mDynamicForceRawBuffers()
         , mStaticForceBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         , mAugmentedMaterialMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mMassBuffer(mBufferElementCount, shipPointCount, 1.0f)
@@ -678,6 +679,7 @@ public:
     {
         // Add first (implicit) buffer
         mDynamicForceBuffers.emplace_back(mBufferElementCount, shipPointCount, vec2f::zero());
+        mDynamicForceRawBuffers.emplace_back(reinterpret_cast<float *>(mDynamicForceBuffers[0].data()));
 
         CalculateCombustionDecayParameters(mCurrentCombustionSpeedAdjustment, GameParameters::ParticleUpdateLowFrequencyStepTimeDuration<float>);
     }
@@ -1060,7 +1062,7 @@ public:
 
     float * const * GetDynamicForceBuffersAsFloat()
     {
-        return reinterpret_cast<float * const *>(mDynamicForceBuffers.data());
+        return mDynamicForceRawBuffers.data();
     }
 
     void SetDynamicForce(
@@ -1098,6 +1100,7 @@ public:
             while (mDynamicForceBuffers.size() != parallelism)
             {
                 mDynamicForceBuffers.pop_back();
+                mDynamicForceRawBuffers.pop_back();
             }
         }
         else if (parallelism > mDynamicForceBuffers.size())
@@ -1105,6 +1108,7 @@ public:
             for (size_t b = mDynamicForceBuffers.size(); b < parallelism; ++b)
             {
                 mDynamicForceBuffers.emplace_back(mBufferElementCount, vec2f::zero());
+                mDynamicForceRawBuffers.emplace_back(reinterpret_cast<float *>(mDynamicForceBuffers.back().data()));
             }
         }
     }
@@ -2088,6 +2092,7 @@ private:
     Buffer<vec2f> mFactoryPositionBuffer;
     Buffer<vec2f> mVelocityBuffer;
     std::vector<Buffer<vec2f>> mDynamicForceBuffers; // Forces that vary across the multiple mechanical iterations (i.e. spring, hydrostatic surface pressure) for each thread; always at least one.
+    std::vector<float *> mDynamicForceRawBuffers;
     Buffer<vec2f> mStaticForceBuffer; // Forces that never change across the multiple mechanical iterations (all other forces)
     Buffer<float> mAugmentedMaterialMassBuffer; // Structural + Offset
     Buffer<float> mMassBuffer; // Augmented + Water
