@@ -74,6 +74,13 @@ public:
             -y);
     }
 
+    inline vec2f operator*(vec2f const & other) const
+    {
+        return vec2f(
+            x * other.x,
+            y * other.y);
+    }
+
     inline vec2f operator*(float other) const
     {
         return vec2f(

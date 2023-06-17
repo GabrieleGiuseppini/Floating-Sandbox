@@ -1065,6 +1065,11 @@ public:
         return mDynamicForceRawBuffers.data();
     }
 
+    vec2f * const * GetDynamicForceBuffersAsVec2()
+    {
+        return reinterpret_cast<vec2f * const *>(mDynamicForceRawBuffers.data());
+    }
+
     void SetDynamicForce(
         ElementIndex pointElementIndex,
         vec2f const & force) noexcept
@@ -1273,9 +1278,15 @@ public:
      * Only valid after a call to UpdateMasses() and when
      * neither water quantities nor masses have changed since then.
      */
+    
     float * GetIntegrationFactorBufferAsFloat()
     {
         return reinterpret_cast<float *>(mIntegrationFactorBuffer.data());
+    }
+
+    vec2f * GetIntegrationFactorBufferAsVec2()
+    {
+        return mIntegrationFactorBuffer.data();
     }
 
     // Changes the point's dynamics so that it freezes in place

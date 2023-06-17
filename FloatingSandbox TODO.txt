@@ -364,16 +364,16 @@
 		= Ship parallelism:
 			! All code - intrinsics/non-intrinsics - goes in new Ship_SpringRelaxation.cpp
 			+ Encapsulate whole spring relaxation in new RunSpringRelaxationAndDynamicForcesIntegration()
-			= Dynamic forces
+			+ Dynamic forces
 				! Today we have: static forces, dynamic forces == spring + pressure
 					! Because pressure forces are to be applied only once with first integration at beginning of next Update() cycle
-				= Points::DynamicForces has them as an "array" (vector), size >= 1
+				+ Points::DynamicForces has them as an "array" (vector), size >= 1
 					+ Initial size is 1
 					+ Points::Set/Foo/DynamicForces(...) all deal transparently with first element of array of buffers
 						+ Assert there is at least one element in array
-					= Array size changed via Points::SetDynamicForceParallelism(size_t parallelism)
+					+ Array size changed via Points::SetDynamicForceParallelism(size_t parallelism)
 						+ Maintains current buffers' contents (so operates via resize/emplace_back), so to save buf[0] dynamic forces
-						- Also maintains convenience vector of restrict ptrs?
+						+ Also maintains convenience vector of ptrs
 			+ Test
 			+ Ship::Update(ThreadManager &) checks SimulationParallelism against own remembered value, and reacts on change by recalculating partitioning
 				+ This also used for initial
@@ -391,32 +391,29 @@
 					+ Do
 				+ Log avail & decided
 					+ If we end up maxing out at 4, reduce max parallelism @ ThreadManager cctor
-			= RunSpringRelaxationAndDynamicForcesIntegration:
-				= Invoke spring relaxation tasks on thread pool
-					= Spring relaxation function differentiated based on arch (instrinsics+arch vs. c++)
+			+ RunSpringRelaxationAndDynamicForcesIntegration:
+				+ Invoke spring relaxation tasks on thread pool
+					+ Spring relaxation function differentiated based on arch (instrinsics+arch vs. c++)
 						! Impl's are in same Ship_SpringRelaxation.cpp
 						+ SSE
 							+ Test
-						- C++ (take from SpringLab's PseudoIntrinsics simulator)
-							- Test
-				= Invoke integration
-					= Integration function differentiated based on arch (instrinsics+arch vs. c++)
+						+ C++ (take from SpringLab's PseudoIntrinsics simulator)
+							+ Test
+				+ Invoke integration
+					+ Integration function differentiated based on arch (instrinsics+arch vs. c++)
 						! Impl's are in same Ship_SpringRelaxation.cpp
 						+ Implementation for SSE (i): SpringLab's Vectorized i
 						+ Implementation for SSE (n): from SpringLab's Vectorized n (with explicit intrinsics)
-						- Implementation for C++ (i): same as above, if verification succeeds
-						- Implementation for C++ (n): from SpringLab::PseudoVectorized n - the simple one
-
+						+ Implementation for C++ (i): same as above, if verification succeeds
+						+ Implementation for C++ (n): from SpringLab::PseudoVectorized n - the simple one
 						+ Test SSE (and verify vectorized where needed)
 							+ 1
 							+ 2
 							+ 3
 							+ 4
 							+ N
-						- Test C++ 1 & n
-
-						- See if Points::RawDynamicForceBuffers still needed
-		- Test repair (possibly impacted by layout optimization)
+						+ Test C++ 1 & n
+			- Test repair (possibly impacted by layout optimization)
 		- Parallelism setting/slider
 			- SettingsDialog: "Max Simulation Threads"
 				- Maxed by TM::GetMaxSimulationParallelism()

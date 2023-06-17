@@ -41,9 +41,6 @@ void Ship::RecalculateSpringRelaxationParallelism(size_t simulationParallelism)
         springRelaxationParallelism = std::min(size_t(4), simulationParallelism);
     }
 
-    // TODOTEST
-    springRelaxationParallelism = 5;
-
     LogMessage("Ship::RecalculateSpringRelaxationParallelism: springs=", mSprings.GetElementCount(), " simulationParallelism=", simulationParallelism,
         " springRelaxationParallelism=", springRelaxationParallelism);
 
@@ -741,17 +738,229 @@ void Ship::IntegrateAndResetDynamicForces_N(
 
 void Ship::ApplySpringsForces(
     ElementIndex startSpringIndex,
-    ElementIndex stopSpringIndex,
+    ElementIndex endSpringIndex,
     vec2f * restrict dynamicForceBuffer)
 {
-    // TODOHERE
+    static_assert(vectorization_float_count<int> >= 4);
+
+    vec2f const * restrict const positionBuffer = mPoints.GetPositionBufferAsVec2();
+    vec2f const * restrict const velocityBuffer = mPoints.GetVelocityBufferAsVec2();
+
+    Springs::Endpoints const * restrict const endpointsBuffer = mSprings.GetEndpointsBuffer();
+    float const * restrict const restLengthBuffer = mSprings.GetRestLengthBuffer();
+    float const * restrict const stiffnessCoefficientBuffer = mSprings.GetStiffnessCoefficientBuffer();
+    float const * restrict const dampingCoefficientBuffer = mSprings.GetDampingCoefficientBuffer();
+
+    ElementIndex s = startSpringIndex;
+
+    //
+    // 1. Perfect squares
+    //
+
+    ElementCount const endSpringIndexPerfectSquare = std::min(endSpringIndex, mSprings.GetPerfectSquareCount() * 4);
+
+    for (; s < endSpringIndexPerfectSquare; s += 4)
+    {
+        //
+        //    J          M   ---  a
+        //    |\        /|
+        //    | \s0  s1/ |
+        //    |  \    /  |
+        //  s2|   \  /   |s3
+        //    |    \/    |
+        //    |    /\    |
+        //    |   /  \   |
+        //    |  /    \  |
+        //    | /      \ |
+        //    |/        \|
+        //    K          L  ---  b
+        //
+
+        //
+        // Calculate displacements, string lengths, and spring directions
+        //
+
+        ElementIndex const pointJIndex = endpointsBuffer[s + 0].PointAIndex;
+        ElementIndex const pointKIndex = endpointsBuffer[s + 1].PointBIndex;
+        ElementIndex const pointLIndex = endpointsBuffer[s + 0].PointBIndex;
+        ElementIndex const pointMIndex = endpointsBuffer[s + 1].PointAIndex;
+
+        assert(pointJIndex == endpointsBuffer[s + 2].PointAIndex);
+        assert(pointKIndex == endpointsBuffer[s + 2].PointBIndex);
+        assert(pointLIndex == endpointsBuffer[s + 3].PointBIndex);
+        assert(pointMIndex == endpointsBuffer[s + 3].PointAIndex);
+
+        vec2f const pointJPos = positionBuffer[pointJIndex];
+        vec2f const pointKPos = positionBuffer[pointKIndex];
+        vec2f const pointLPos = positionBuffer[pointLIndex];
+        vec2f const pointMPos = positionBuffer[pointMIndex];
+
+        vec2f const s0_dis = pointLPos - pointJPos;
+        vec2f const s1_dis = pointKPos - pointMPos;
+        vec2f const s2_dis = pointKPos - pointJPos;
+        vec2f const s3_dis = pointLPos - pointMPos;
+
+        float const s0_len = s0_dis.length();
+        float const s1_len = s1_dis.length();
+        float const s2_len = s2_dis.length();
+        float const s3_len = s3_dis.length();
+
+        vec2f const s0_dir = s0_dis.normalise(s0_len);
+        vec2f const s1_dir = s1_dis.normalise(s1_len);
+        vec2f const s2_dir = s2_dis.normalise(s2_len);
+        vec2f const s3_dir = s3_dis.normalise(s3_len);
+
+        //////////////////////////////////////////////////////////////////////////////////////////////
+
+        //
+        // 1. Hooke's law
+        //
+
+        // Calculate springs' forces' moduli - for endpoint A:
+        //    (displacementLength[s] - restLength[s]) * stiffness[s]
+        //
+        // Strategy:
+        //
+        // ( springLength[s0] - restLength[s0] ) * stiffness[s0]
+        // ( springLength[s1] - restLength[s1] ) * stiffness[s1]
+        // ( springLength[s2] - restLength[s2] ) * stiffness[s2]
+        // ( springLength[s3] - restLength[s3] ) * stiffness[s3]
+        //
+
+        float const s0_hookForceMag = (s0_len - restLengthBuffer[s]) * stiffnessCoefficientBuffer[s];
+        float const s1_hookForceMag = (s1_len - restLengthBuffer[s + 1]) * stiffnessCoefficientBuffer[s + 1];
+        float const s2_hookForceMag = (s2_len - restLengthBuffer[s + 2]) * stiffnessCoefficientBuffer[s + 2];
+        float const s3_hookForceMag = (s3_len - restLengthBuffer[s + 3]) * stiffnessCoefficientBuffer[s + 3];
+
+        //
+        // 2. Damper forces
+        //
+        // Damp the velocities of each endpoint pair, as if the points were also connected by a damper
+        // along the same direction as the spring, for endpoint A:
+        //      relVelocity.dot(springDir) * dampingCoeff[s]
+        //
+
+        vec2f const pointJVel = velocityBuffer[pointJIndex];
+        vec2f const pointKVel = velocityBuffer[pointKIndex];
+        vec2f const pointLVel = velocityBuffer[pointLIndex];
+        vec2f const pointMVel = velocityBuffer[pointMIndex];
+
+        vec2f const s0_relVel = pointLVel - pointJVel;
+        vec2f const s1_relVel = pointKVel - pointMVel;
+        vec2f const s2_relVel = pointKVel - pointJVel;
+        vec2f const s3_relVel = pointLVel - pointMVel;
+
+        float const s0_dampForceMag = s0_relVel.dot(s0_dir) * dampingCoefficientBuffer[s];
+        float const s1_dampForceMag = s1_relVel.dot(s1_dir) * dampingCoefficientBuffer[s + 1];
+        float const s2_dampForceMag = s2_relVel.dot(s2_dir) * dampingCoefficientBuffer[s + 2];
+        float const s3_dampForceMag = s3_relVel.dot(s3_dir) * dampingCoefficientBuffer[s + 3];
+
+        //
+        // 3. Apply forces: 
+        //      force A = springDir * (hookeForce + dampingForce)
+        //      force B = - forceA
+        //
+
+        vec2f const s0_forceA = s0_dir * (s0_hookForceMag + s0_dampForceMag);
+        vec2f const s1_forceA = s1_dir * (s1_hookForceMag + s1_dampForceMag);
+        vec2f const s2_forceA = s2_dir * (s2_hookForceMag + s2_dampForceMag);
+        vec2f const s3_forceA = s3_dir * (s3_hookForceMag + s3_dampForceMag);
+
+        dynamicForceBuffer[pointJIndex] += (s0_forceA + s2_forceA);
+        dynamicForceBuffer[pointLIndex] -= (s0_forceA + s3_forceA);
+        dynamicForceBuffer[pointMIndex] += (s1_forceA + s3_forceA);
+        dynamicForceBuffer[pointKIndex] -= (s1_forceA + s2_forceA);
+    }
+
+    //
+    // 2. Remaining one-by-one's
+    //
+
+    for (; s < endSpringIndex; ++s)
+    {
+        auto const pointAIndex = endpointsBuffer[s].PointAIndex;
+        auto const pointBIndex = endpointsBuffer[s].PointBIndex;
+
+        vec2f const displacement = positionBuffer[pointBIndex] - positionBuffer[pointAIndex];
+        float const displacementLength = displacement.length();
+        vec2f const springDir = displacement.normalise(displacementLength);
+
+        //
+        // 1. Hooke's law
+        //
+
+        // Calculate spring force on point A
+        float const fSpring =
+            (displacementLength - restLengthBuffer[s])
+            * stiffnessCoefficientBuffer[s];
+
+        //
+        // 2. Damper forces
+        //
+        // Damp the velocities of each endpoint pair, as if the points were also connected by a damper
+        // along the same direction as the spring
+        //
+
+        // Calculate damp force on point A
+        vec2f const relVelocity = velocityBuffer[pointBIndex] - velocityBuffer[pointAIndex];
+        float const fDamp =
+            relVelocity.dot(springDir)
+            * dampingCoefficientBuffer[s];
+
+        //
+        // 3. Apply forces
+        //
+
+        vec2f const forceA = springDir * (fSpring + fDamp);
+        dynamicForceBuffer[pointAIndex] += forceA;
+        dynamicForceBuffer[pointBIndex] -= forceA;
+    }
 }
 
 void Ship::IntegrateAndResetDynamicForces_N(
     size_t parallelism,
     GameParameters const & gameParameters)
 {
-    // TODOHERE: from SpringLab's Pseudo-vectorized n
+    // This non-SSE implementation works on a vec2f at a time
+
+    float const dt = gameParameters.MechanicalSimulationStepTimeDuration<float>();
+    float const velocityFactor = CalculateIntegrationVelocityFactor(dt, gameParameters);
+
+    vec2f * const restrict positionBuffer = mPoints.GetPositionBufferAsVec2();
+    vec2f * const restrict velocityBuffer = mPoints.GetVelocityBufferAsVec2();
+    vec2f const * const restrict externalForceBuffer = mPoints.GetStaticForceBufferAsVec2();
+    vec2f const * const restrict integrationFactorBuffer = mPoints.GetIntegrationFactorBufferAsVec2();
+
+    vec2f * const restrict * restrict const dynamicForceBufferOfBuffers = mPoints.GetDynamicForceBuffersAsVec2();
+
+    ///////////////////////
+
+    size_t const count = mPoints.GetBufferElementCount();
+    for (size_t p = 0; p < count; ++p)
+    {
+        vec2f springForce = vec2f::zero();
+        for (size_t b = 0; b < parallelism; ++b)
+        {
+            springForce += dynamicForceBufferOfBuffers[b][p];
+        }
+
+        //
+        // Verlet integration (fourth order, with velocity being first order)
+        //
+
+        vec2f const deltaPos =
+            velocityBuffer[p] * dt
+            + (springForce + externalForceBuffer[p]) * integrationFactorBuffer[p];
+
+        positionBuffer[p] += deltaPos;
+        velocityBuffer[p] = deltaPos * velocityFactor;
+
+        // Zero out spring forces now that we've integrated them
+        for (size_t b = 0; b < parallelism; ++b)
+        {
+            dynamicForceBufferOfBuffers[b][p] = vec2f::zero();
+        }
+    }
 }
 
 #endif
