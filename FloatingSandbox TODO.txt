@@ -424,6 +424,9 @@
 		+ First, get breakdown, including World::Update
 			! Hesleden, 4 threads:
 				- Physics::Ship::RunSpringRelaxationAndDynamicForcesIntegration	8346 (23.10%)
+					- Physics::Ship::ApplySpringsForces	2933 (10.11%)
+					- Physics::Ship::IntegrateAndResetDynamicForces_4	2443 (8.42%)
+					- Physics::Ship::HandleCollisionsWithSeaFloor	1063 (3.67%)
 				- Physics::Ship::UpdateWaterVelocities	4343 (12.02%)
 				- Physics::Ship::ApplyStaticPressureForces	2808 (7.77%)
 				- Physics::Ship::PropagateHeat	1194 (3.30%)
@@ -432,17 +435,17 @@
 				- ...
 				- Physics::OceanSurface::Update	294 (0.81%)
 			! Hesleden, 1 thread:
-				- Physics::World::Update	24325 (92.65%)	2 (0.01%)	floatingsandbox	IO | Kernel
-					- Physics::Ship::Update	24089 (91.75%)	0 (0.00%)	floatingsandbox	Kernel
-						- Physics::Ship::RunSpringRelaxationAndDynamicForcesIntegration	14781 (56.30%)	0 (0.00%)	floatingsandbox	Kernel
-							- Physics::Ship::ApplySpringsForces	12287 (46.80%)	12253 (46.67%)	floatingsandbox	
-							- Physics::Ship::IntegrateAndResetDynamicForces_1	1279 (4.87%)	1270 (4.84%)	floatingsandbox	
-							- Physics::Ship::HandleCollisionsWithSeaFloor	1209 (4.60%)	1205 (4.59%)	floatingsandbox	
-						- Physics::Ship::UpdateWaterVelocities	3736 (14.23%)	3567 (13.59%)	floatingsandbox	Kernel
-						- Physics::Ship::ApplyStaticPressureForces	2540 (9.67%)	3 (0.01%)	floatingsandbox	
-						- Physics::Ship::PropagateHeat	998 (3.80%)	983 (3.74%)	floatingsandbox	Kernel
-						- Physics::Ship::EqualizeInternalPressure	703 (2.68%)	702 (2.67%)	floatingsandbox	
-						- Physics::Springs::InternalUpdateForStrains<0>	524 (2.00%)	521 (1.98%)	floatingsandbox	
+				- Physics::World::Update	24325 (92.65%)
+					- Physics::Ship::Update	24089 (91.75%)
+						- Physics::Ship::RunSpringRelaxationAndDynamicForcesIntegration	14781 (56.30%)
+							- Physics::Ship::ApplySpringsForces	12287 (46.80%)
+							- Physics::Ship::IntegrateAndResetDynamicForces_1	1279 (4.87%)
+							- Physics::Ship::HandleCollisionsWithSeaFloor	1209 (4.60%)
+						- Physics::Ship::UpdateWaterVelocities	3736 (14.23%)	3567 (13.59%)
+						- Physics::Ship::ApplyStaticPressureForces	2540 (9.67%)
+						- Physics::Ship::PropagateHeat			998 (3.80%)
+						- Physics::Ship::EqualizeInternalPressure	703 (2.68%)
+						- Physics::Springs::InternalUpdateForStrains<0>	524 (2.00%)
 		= At Ship::Update (was: Multi-threading, phase II):
 			! Now that we have MaxSimulationParallelism, we can easily see which steps take the longest
 			- Allow threads to publish events by having EventDispatcher allow multiple threads to store* event
@@ -450,9 +453,9 @@
 			- Move PhysicsSimulation::UpdateWaterVelocities (8%) to separate thread
 				- If water is being read by other threads, make UpdateWaterVelocities take the newWater buffer, and swap it after the tasks have completed
 			- Ideal Parallelization 1:
-				- UpdateWaterVelocities     14.23
-				- ApplyStaticPressureForces  9.67
-				- PropagateHeat              3.80
+				- UpdateWaterVelocities     14.23	T1
+				- ApplyStaticPressureForces  9.67	T2
+				- PropagateHeat              3.80	T2
 				- EqualizeInternalPressure   2.68
 				- InternalUpdateForStrains   2.00
 
