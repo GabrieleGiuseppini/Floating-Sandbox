@@ -1334,6 +1334,7 @@ void Ship::ApplyThanosSnap(
     float /*radius*/,
     float leftFrontX,
     float rightFrontX,
+    bool isSparseMode,
     float currentSimulationTime,
     GameParameters const & gameParameters)
 {
@@ -1359,6 +1360,11 @@ void Ship::ApplyThanosSnap(
         direction = 1.0f;
     }
 
+    // Calculate detach probability
+    float const detachProbability = isSparseMode
+        ? 0.01f
+        : 1.0f;
+
     // Visit all points (excluding ephemerals, there's nothing to detach there)
     bool atLeastOneDetached = false;
     for (auto const pointIndex : mPoints.RawShipPoints())
@@ -1369,26 +1375,30 @@ void Ship::ApplyThanosSnap(
             && !mPoints.GetConnectedSprings(pointIndex).ConnectedSprings.empty())
         {
             //
-            // Detach this point
+            // Detach this point with probability
+            // (which is however compounded multiple times, hence practically reaching 1.0)
             //
 
-            // Choose a detach velocity
-            vec2f detachVelocity = vec2f(
-                direction * GameRandomEngine::GetInstance().GenerateUniformReal(7.0f, 30.0f),
-                GameRandomEngine::GetInstance().GenerateUniformReal(-3.0f, 18.0f));
+            if (GameRandomEngine::GetInstance().GenerateUniformBoolean(detachProbability))
+            {
+                // Choose a detach velocity
+                vec2f detachVelocity = vec2f(
+                    direction * GameRandomEngine::GetInstance().GenerateUniformReal(7.0f, 30.0f),
+                    GameRandomEngine::GetInstance().GenerateUniformReal(-3.0f, 9.0f));
 
-            // Detach
-            mPoints.Detach(
-                pointIndex,
-                mPoints.GetVelocity(pointIndex) + detachVelocity,
-                Points::DetachOptions::None,
-                currentSimulationTime,
-                gameParameters);
+                // Detach
+                mPoints.Detach(
+                    pointIndex,
+                    mPoints.GetVelocity(pointIndex) + detachVelocity,
+                    Points::DetachOptions::None,
+                    currentSimulationTime,
+                    gameParameters);
 
-            // Set decay to min, so that debris gets darkened
-            mPoints.SetDecay(pointIndex, 0.0f);
+                // Set decay to min, so that debris gets darkened
+                mPoints.SetDecay(pointIndex, 0.0f);
 
-            atLeastOneDetached = true;
+                atLeastOneDetached = true;
+            }
         }
     }
 

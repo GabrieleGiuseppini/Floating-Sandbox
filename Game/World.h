@@ -311,6 +311,7 @@ public:
         float radius,
         float leftFrontX,
         float rightFrontX,
+        bool isSparseMode,
         float currentSimulationTime,
         GameParameters const & gameParameters);
 

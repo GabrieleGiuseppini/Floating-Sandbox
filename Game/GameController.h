@@ -221,7 +221,7 @@ public:
     std::optional<bool> AdjustOceanFloorTo(vec2f const & startWorldPosition, vec2f const & endWorldPosition) override;
     bool ScrubThrough(DisplayLogicalCoordinates const & startScreenCoordinates, DisplayLogicalCoordinates const & endScreenCoordinates) override;
     bool RotThrough(DisplayLogicalCoordinates const & startScreenCoordinates, DisplayLogicalCoordinates const & endScreenCoordinates) override;
-    void ApplyThanosSnapAt(DisplayLogicalCoordinates const & screenCoordinates) override;
+    void ApplyThanosSnapAt(DisplayLogicalCoordinates const & screenCoordinates, bool isSparseMode) override;
     std::optional<ElementId> GetNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const override;
     void QueryNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const override;
 
@@ -920,7 +920,7 @@ private:
     struct ThanosSnapStateMachine;
     struct ThanosSnapStateMachineDeleter { void operator()(ThanosSnapStateMachine *) const; };
     std::vector<std::unique_ptr<ThanosSnapStateMachine, ThanosSnapStateMachineDeleter>> mThanosSnapStateMachines;
-    void StartThanosSnapStateMachine(float x, float currentSimulationTime);
+    void StartThanosSnapStateMachine(float x, bool isSparseMode, float currentSimulationTime);
     bool UpdateThanosSnapStateMachine(ThanosSnapStateMachine & stateMachine, float currentSimulationTime);
 
     struct DayLightCycleStateMachine;

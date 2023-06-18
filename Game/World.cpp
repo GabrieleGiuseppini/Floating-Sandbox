@@ -804,6 +804,7 @@ void World::ApplyThanosSnap(
     float radius,
     float leftFrontX,
     float rightFrontX,
+    bool isSparseMode,
     float currentSimulationTime,
     GameParameters const & gameParameters)
 {
@@ -816,6 +817,7 @@ void World::ApplyThanosSnap(
             leftFrontX,
             rightFrontX,
             currentSimulationTime,
+            isSparseMode,
             gameParameters);
     }
 

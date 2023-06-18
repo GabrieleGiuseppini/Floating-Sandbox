@@ -169,12 +169,15 @@ void GameController::StartTsunamiNotificationStateMachine(float x)
 struct GameController::ThanosSnapStateMachine
 {
     float const CenterX;
+    bool const IsSparseMode;
     float const StartSimulationTimestamp;
 
     ThanosSnapStateMachine(
         float centerX,
+        float isSparseMode,
         float startSimulationTimestamp)
         : CenterX(centerX)
+        , IsSparseMode(isSparseMode)
         , StartSimulationTimestamp(startSimulationTimestamp)
     {}
 };
@@ -186,6 +189,7 @@ void GameController::ThanosSnapStateMachineDeleter::operator()(ThanosSnapStateMa
 
 void GameController::StartThanosSnapStateMachine(
     float x,
+    bool isSparseMode,
     float currentSimulationTime)
 {
     if (mThanosSnapStateMachines.empty())
@@ -214,6 +218,7 @@ void GameController::StartThanosSnapStateMachine(
     mThanosSnapStateMachines.emplace_back(
         new ThanosSnapStateMachine(
             x,
+            isSparseMode,
             currentSimulationTime));
 }
 
@@ -232,7 +237,6 @@ bool GameController::UpdateThanosSnapStateMachine(
         (currentSimulationTime - stateMachine.StartSimulationTimestamp)
         * AdvancingWaveSpeed;
 
-
     //
     // Apply Thanos Destructive Wave to both sides
     //
@@ -249,6 +253,7 @@ bool GameController::UpdateThanosSnapStateMachine(
             leftOuterEdgeX,
             leftInnerEdgeX,
             currentSimulationTime,
+            stateMachine.IsSparseMode,
             mGameParameters);
 
         hasAppliedWave = true;
@@ -264,6 +269,7 @@ bool GameController::UpdateThanosSnapStateMachine(
             rightInnerEdgeX,
             rightOuterEdgeX,
             currentSimulationTime,
+            stateMachine.IsSparseMode,
             mGameParameters);
 
         hasAppliedWave = true;

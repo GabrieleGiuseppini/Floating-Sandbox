@@ -125,7 +125,7 @@ struct IGameController
     virtual std::optional<bool> AdjustOceanFloorTo(vec2f const & startWorldPosition, vec2f const & endWorldPosition) = 0;
     virtual bool ScrubThrough(DisplayLogicalCoordinates const & startScreenCoordinates, DisplayLogicalCoordinates const & endScreenCoordinates) = 0;
     virtual bool RotThrough(DisplayLogicalCoordinates const & startScreenCoordinates, DisplayLogicalCoordinates const & endScreenCoordinates) = 0;
-    virtual void ApplyThanosSnapAt(DisplayLogicalCoordinates const & screenCoordinates) = 0;
+    virtual void ApplyThanosSnapAt(DisplayLogicalCoordinates const & screenCoordinates, bool isSparseMode) = 0;
     virtual std::optional<ElementId> GetNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
     virtual void QueryNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
 

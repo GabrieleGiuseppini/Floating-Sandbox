@@ -2409,7 +2409,7 @@ public:
     void OnLeftMouseDown(InputState const & inputState) override
     {
         // Do snap
-        mGameController.ApplyThanosSnapAt(inputState.MousePosition);
+        mGameController.ApplyThanosSnapAt(inputState.MousePosition, inputState.IsShiftKeyDown);
         mSoundController.PlayThanosSnapSound();
 
         // Update cursor

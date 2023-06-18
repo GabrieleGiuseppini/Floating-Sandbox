@@ -14,6 +14,8 @@
 		- Note: can be controlled in the "Rendering" section of the Settings window
 		- Note: disabled by default on lower-end computers
 	- Added menu entry to suddenly switch to full day or full night
+- Small improvements to various tools (among which, Thanos Snap, Anti-Matter Bomb, and Blast)
+	- Check out the new SHIFT mode with the Thanos Snap!
 - Added black glass material
 - ...and a few more small improvements here and there!
 - Musical theme for this release: Random Forest, Ascension

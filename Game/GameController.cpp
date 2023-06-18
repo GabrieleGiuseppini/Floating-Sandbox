@@ -1225,11 +1225,13 @@ bool GameController::RotThrough(
         mGameParameters);
 }
 
-void GameController::ApplyThanosSnapAt(DisplayLogicalCoordinates const & screenCoordinates)
+void GameController::ApplyThanosSnapAt(
+    DisplayLogicalCoordinates const & screenCoordinates, 
+    bool isSparseMode)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
-    StartThanosSnapStateMachine(worldCoordinates.x, mWorld->GetCurrentSimulationTime());
+    StartThanosSnapStateMachine(worldCoordinates.x, isSparseMode, mWorld->GetCurrentSimulationTime());
 }
 
 std::optional<ElementId> GameController::GetNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const

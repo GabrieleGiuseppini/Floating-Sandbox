@@ -269,7 +269,9 @@ void OceanSurface::ApplyThanosSnap(
     auto const sweIndexStart = SWEBufferPrefixSize + ToSampleIndex(std::max(leftFrontX, -GameParameters::HalfMaxWorldWidth));
     auto const sweIndexEnd = SWEBufferPrefixSize + ToSampleIndex(std::min(rightFrontX, GameParameters::HalfMaxWorldWidth));
 
-    float constexpr WaterDepression = 1.0f / SWEHeightFieldAmplification;
+    float constexpr WaterDepression = 
+        0.8f // Magic number
+        / SWEHeightFieldAmplification;
 
     for (auto idx = sweIndexStart; idx <= sweIndexEnd; ++idx)
         mSWEHeightField[idx] -= WaterDepression;
