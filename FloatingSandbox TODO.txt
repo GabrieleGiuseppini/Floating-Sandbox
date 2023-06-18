@@ -495,10 +495,10 @@
 				+ 2
 				+ 3
 				+ 4
-		- Check sweet spot of lighting
-			- Default ship:
-				- 1 thread: 
-				- 4 threads:
+		+ Check sweet spot of lighting
+			! Default ship:
+				- 1 thread: 3.27ms/3.28ms
+				- 4 threads: 3.25ms/3.26ms
 		- Make GameParameter constant for max # of threads
 			- Replace:
 				- GameController::MaxSimThreads constant

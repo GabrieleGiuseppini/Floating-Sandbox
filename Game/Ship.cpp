@@ -2583,7 +2583,7 @@ void Ship::RecalculateLightDiffusionParallelism(size_t simulationParallelism)
     ElementCount const numberOfPoints = mPoints.GetAlignedShipPointCount(); // No real reason to skip ephemerals, other than they're not expected to have light
 
     size_t lightDiffusionParallelism;
-    if (numberOfPoints < 10000)
+    if (numberOfPoints < 9000)
     {
         // Not worth it
         lightDiffusionParallelism = 1;
