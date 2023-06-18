@@ -2731,15 +2731,15 @@ public:
             {
                 case EngagementData::StateType::NormalPhase1:
                 {
-                    float constexpr BlastDuration1 = 0.5f;
+                    float constexpr BlastDuration1 = 0.75f;
 
                     float const progress = std::min(elapsed / BlastDuration1, 1.0f);
 
                     mGameController.ApplyBlastAt(
                         inputState.MousePosition,
-                        progress,
-                        1.0f,
-                        progress,
+                        progress, // radius m
+                        1.0f, // force m
+                        progress, // render
                         mEngagementData->PersonalitySeed);
 
                     if (progress == 1.0f)
@@ -2754,7 +2754,11 @@ public:
 
                 case EngagementData::StateType::NormalPhase2:
                 {
-                    float constexpr BlastDurationPause = 1.5f;
+                    //
+                    // No actions here, pause before last big jump
+                    //
+
+                    float constexpr BlastDurationPause = 0.5f;
 
                     float const progress = std::min(elapsed / BlastDurationPause, 1.0f);
 
@@ -2779,9 +2783,9 @@ public:
 
                     mGameController.ApplyBlastAt(
                         inputState.MousePosition,
-                        1.0f + progress * 2.5f,
-                        2.0f + 0.5f,
-                        progress,
+                        1.0f + progress * 2.5f, // radius m
+                        2.0f + 0.5f,  // force m
+                        progress, // render
                         mEngagementData->PersonalitySeed);
 
                     if (progress == 1.0f)

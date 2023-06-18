@@ -562,7 +562,11 @@
 			+ Sodium
 			+ Explosive combustion
 			+ Blimps
-		+ Test AM Bomb
+
+	+ Improve AM Bomb
+	+ Improve blast tool
+
+	- Send for testing
 
 	- Redo all benchmarks, including Dell
 	

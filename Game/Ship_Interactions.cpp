@@ -645,7 +645,7 @@ void Ship::ApplyBlastAt(
 {
     // Calculate blast force magnitude
     float const blastForceMagnitude =
-        105.0f * 50000.0f // Magic number
+        75.0f * 50000.0f // Magic number
         * forceMultiplier
         * gameParameters.BlastToolForceAdjustment
         * (gameParameters.IsUltraViolentMode ? 5.0f : 1.0f);
@@ -674,12 +674,12 @@ void Ship::ApplyBlastAt(Interaction::ArgumentsUnion::BlastArguments const & args
             //
             // Apply blast force
             //
-            // (inversely proportional to distance, not second power as one would expect though)
+            // (inversely proportional to square root of distance, not second power as one would expect though)
             //
 
             mPoints.AddStaticForce(
                 pointIndex,
-                pointRadius.normalise(pointRadiusLength) / std::max(pointRadiusLength, 1.0f) * args.Magnitude);
+                pointRadius.normalise(pointRadiusLength) * args.Magnitude / std::sqrt(std::max((pointRadiusLength * 0.4f) + 0.6f, 1.0f)));
         }
     }
 }
