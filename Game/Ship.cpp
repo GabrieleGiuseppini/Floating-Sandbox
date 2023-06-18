@@ -1754,7 +1754,7 @@ void Ship::HandleCollisionsWithSeaFloor(
     ElementIndex endPointIndex,
     GameParameters const & gameParameters)
 {
-    float const dt = gameParameters.MechanicalSimulationStepTimeDuration<float>() * static_cast<float>(SeaFloorCollisionPeriod);
+    float const dt = gameParameters.MechanicalSimulationStepTimeDuration<float>();
 
     OceanFloor const & oceanFloor = mParentWorld.GetOceanFloor();
 
@@ -1816,6 +1816,8 @@ void Ship::HandleCollisionsWithSeaFloor(
                 float const siltingCoeff = (oceanFloorHeight - position.y < 40.f) // Just make sure won't ever get buried too deep
                     ? siltingFactor1 + siltingFactor2 * LinearStep(0.0f, 10.0f, velocitySquared)
                     : 1.0f;
+
+                assert(siltingCoeff <= 1.0f);
 
                 //
                 // Impart final position and velocity
