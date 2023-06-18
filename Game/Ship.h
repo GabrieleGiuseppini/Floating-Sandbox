@@ -33,6 +33,11 @@ namespace Physics
 
 class Ship final : public IShipPhysicsHandler
 {
+private:
+
+    // We run the sea floor collision detection every these many iterations or the spring relaxation loop
+    static int constexpr SeaFloorCollisionPeriod = 2;
+
 public:
 
     Ship(
@@ -506,7 +511,9 @@ private:
         float effectiveWaterDensity,
         GameParameters const & gameParameters);
 
-    void RecalculateSpringRelaxationParallelism(size_t simulationParallelism);
+    void RecalculateSpringRelaxationParallelism(size_t simulationParallelism, GameParameters const & gameParameters);
+    void RecalculateSpringRelaxationSpringForcesParallelism(size_t simulationParallelism);
+    void RecalculateSpringRelaxationIntegrationAndSeaFloorCollisionParallelism(size_t simulationParallelism, GameParameters const & gameParameters);
 
     void RunSpringRelaxationAndDynamicForcesIntegration(
         GameParameters const & gameParameters,
@@ -514,20 +521,24 @@ private:
 
     void ApplySpringsForces(
         ElementIndex startSpringIndex,
-        ElementIndex endSpringIndex, // Excluded
+        ElementIndex endSpringIndex,
         vec2f * restrict dynamicForceBuffer);
 
-    inline void IntegrateAndResetDynamicForces(GameParameters const & gameParameters);
+    inline void IntegrateAndResetDynamicForces(
+        ElementIndex startPointIndex,
+        ElementIndex endPointIndex,
+        GameParameters const & gameParameters);
 
     inline float CalculateIntegrationVelocityFactor(float dt, GameParameters const & gameParameters) const;
-    inline void IntegrateAndResetDynamicForces_1(GameParameters const & gameParameters);
-    inline void IntegrateAndResetDynamicForces_2(GameParameters const & gameParameters);
-    inline void IntegrateAndResetDynamicForces_3(GameParameters const & gameParameters);
-    inline void IntegrateAndResetDynamicForces_4(GameParameters const & gameParameters);
-    inline void IntegrateAndResetDynamicForces_N(size_t parallelism, GameParameters const & gameParameters);
+    inline void IntegrateAndResetDynamicForces_1(ElementIndex startPointIndex, ElementIndex endPointIndex, GameParameters const & gameParameters);
+    inline void IntegrateAndResetDynamicForces_2(ElementIndex startPointIndex, ElementIndex endPointIndex, GameParameters const & gameParameters);
+    inline void IntegrateAndResetDynamicForces_3(ElementIndex startPointIndex, ElementIndex endPointIndex, GameParameters const & gameParameters);
+    inline void IntegrateAndResetDynamicForces_4(ElementIndex startPointIndex, ElementIndex endPointIndex, GameParameters const & gameParameters);
+    inline void IntegrateAndResetDynamicForces_N(size_t parallelism, ElementIndex startPointIndex, ElementIndex endPointIndex, GameParameters const & gameParameters);
 
     void HandleCollisionsWithSeaFloor(
-        float dt,
+        ElementIndex startPointIndex,
+        ElementIndex endPointIndex,
         GameParameters const & gameParameters);
 
     void TrimForWorldBounds(GameParameters const & gameParameters);
@@ -606,7 +617,9 @@ private:
     // Misc
     /////////////////////////////////////////////////////////////////////////
 
-    inline void UpdateForSimulationParallelism(ThreadManager const & threadManager);
+    inline void UpdateForSimulationParallelism(
+        GameParameters const & gameParameters,
+        ThreadManager & threadManager);
 
     void RunConnectivityVisit();
 
@@ -904,7 +917,9 @@ private:
     //
 
     // The spring relaxation tasks
-    std::vector<typename ThreadPool::Task> mSpringRelaxationTasks;
+    std::vector<typename ThreadPool::Task> mSpringRelaxationSpringForcesTasks;
+    std::vector<typename ThreadPool::Task> mSpringRelaxationIntegrationTasks;
+    std::vector<typename ThreadPool::Task> mSpringRelaxationIntegrationAndSeaFloorCollisionTasks;
 
     //
     // Static pressure

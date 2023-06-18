@@ -477,15 +477,47 @@
 			+ Create tasks at UpdateForSimulationParallelism->RecalculateLightDiffusionParallelism
 			+ Hesleden after: 39FPS (UPD 23.9ms)
 			+ Fix benchmarks, unit tests
-		- World::Update:
-			- T1: Stars, Clouds, Wind
-			- T2: OceanSurface
-				- Wind::StormParameters becomes WindParameters, so that T2 works on static (but one frame older) snapshot
+		+ Parallel integrate & collisions with ocean floor:
+			+ Two sets of tasks, with and without collisions
+				+ Calculated at RecalculateParallelismForSpringRelaxation
+				+ Find sweet spot, based on # of points
+					- Default ship (9328 pts):
+						- 1 thread: 3.33ms
+						- 4 threads: 3.26ms
+					- Titanic (11752 pts):
+						- 1 thread: 5.74ms - 4.40ms
+						- 4 threads: 5.57ms - 4.29ms
+					- Hesleden (w/out lights) (42708 pts):
+						- 1 thread: 14.9 ms (60.88%)
+						- 4 threads: 12.98ms
+			+ Re-verify assembly of all SSE integrations where we expect compiler to vectorize
+				+ 1
+				+ 2
+				+ 3
+				+ 4
+		- Check sweet spot of lighting
+			- Default ship:
+				- 1 thread: 
+				- 4 threads:
+		- Make GameParameter constant for max # of threads
+			- Replace:
+				- GameController::MaxSimThreads constant
+					! For ThreadPool cost
+				- ThreadMgt cctor (w/above)
+				- All parallelization max caps:
+					- Only SpringForces needed, and caps by 4 (local)
+					- Other max caps not needed? If so they are local
+		- Consider 4 as a limit only for spring forces, others may use 8
+			- Verify 8 better than 4 for lights
+			- Verify 8 better than 4 for integration & collisions
 		- If needed:
 			- Allow threads to publish events by having EventDispatcher allow multiple threads to store* event
 				- No locks needed on read and clean, as it's done after Update has finished
 
 	- Decide rigidity vs. speedup
+		- Use PocketWatch's USS Rhode Island
+
+	- Redo all benchmarks, including Dell
 
 	- Greyscaling (of texture and particles) before Thanos snap, and mass changes (lighter), and different phasing of ashing in band
 		- Phasing: each particle randomly pulverizes, but towards band end prob is 100%
@@ -2026,26 +2058,32 @@
 =================================================
 Current perf:
 =================================================
-1.18.0 (parallel and vectorized spring relaxation):
-+ Default ship (19932 spr): 64FPS
+1.18.0 (parallel and vectorized spring relaxation (30 iterations) and better parallelization):
++ Default ship (19932 spr, 9328 pts): 64FPS
 	  UPD: (0.0 + 3.40 (64.3%)) UPL:(0.0 + 0.06)
 	  RND: (3.40) (UPL=0.18 MT=0.0)
 + Default ship DELL: TODO
 	  UPD: 
 	  RND: 
-+ Default Titanic (27424 spr): 64 FPS 
++ Default Titanic (27424 spr, 11752 pts): 64 FPS 
 	  UPD: (0.0 + 4.58 (63.6%)) UPL:(0.0+0.06)
 	  RND: (3.24) (UPL=0.18 MT=0.0)
-+ Hesleden (150407 spr):
-	+ Without lights: 49.74-56.31 FPS
-		UPD: (0.0 + 17.01-18.00 (50.0%-54.5%)) UPL:(0.0 + 0.14)
-		RND: (3.77-3.84) (UPL:0.25 MT=0.0)
-	+ With lights: 19.50-19.96 FPS
-		UPD: (0.0 + 49.85-50.06 (20.72%))
++ Hesleden (150407 spr, 42708 pts):
+	+ Without lights: 63 FPS
+		UPD: (0.0 + 14.5 (62%)) UPL:(0.0 + 0.14)
+		RND: (3.77-3.84) (UPL:0.28 MT=0.0)
+	+ With lights: 42.0 FPS
+		UPD: (0.0 + 23.40 (38%%))
 
 1.18.0 (with crepuscolar and cloud shadows shortcuts):
 - default ship:
 	- Old dell, RelWithDebInfo: FPS:31.95 UPD:19.58ms UPL:0.16ms RND:11.42ms (UPL:0.3xms MT=11.6xms)
++ Default Titanic: 64 FPS 
+	  UPD: (0.0 + 7.80 (63.2%)) UPL:(0.0+0.07)
+	  RND: (3.20) (UPL=0.16 MT=0.0)
+- Hesleden:
+	- Without lights: 26.6 FPS (UPD: 36.6ms (72.5%))
+	- With lights: 14.6 FPS (UPD: 66.6ms (39.3%))
 
 1.17.5.2:
 - default ship:

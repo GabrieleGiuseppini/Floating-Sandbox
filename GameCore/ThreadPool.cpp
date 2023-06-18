@@ -63,7 +63,7 @@ void ThreadPool::Run(std::vector<Task> const & tasks)
     assert(mRemainingTasks.empty());
     assert(0 == mTasksToComplete);
 
-    // Queue all the tasks except the first one,
+    // Queue all the task (pointers) except the first one,
     // which we're gonna run immediately now to guarantee
     // that the first task always runs on the main thread
     {

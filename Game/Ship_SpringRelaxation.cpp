@@ -9,10 +9,18 @@
 
 namespace Physics {
 
-void Ship::RecalculateSpringRelaxationParallelism(size_t simulationParallelism)
+void Ship::RecalculateSpringRelaxationParallelism(
+    size_t simulationParallelism,
+    GameParameters const & gameParameters)
+{
+    RecalculateSpringRelaxationSpringForcesParallelism(simulationParallelism);
+    RecalculateSpringRelaxationIntegrationAndSeaFloorCollisionParallelism(simulationParallelism, gameParameters);
+}
+
+void Ship::RecalculateSpringRelaxationSpringForcesParallelism(size_t simulationParallelism)
 {
     // Clear threading state
-    mSpringRelaxationTasks.clear();
+    mSpringRelaxationSpringForcesTasks.clear();
 
     //
     // Given the available simulation parallelism as a constraint (max), calculate 
@@ -22,12 +30,9 @@ void Ship::RecalculateSpringRelaxationParallelism(size_t simulationParallelism)
     ElementCount const numberOfSprings = mSprings.GetElementCount();
 
     // Springs -> Threads:
-    //     1,000 : 1t = 113  2t = 124  3t = 140  4t = 5t = 6t = 8t =
-    //    10,000 : 1t = 1070  2t = 1100  3t = 1200  4t = 5t = 6t = 8t =
-    //    50,000 : 1t = 5200  2t = 4400  3t = 4060  4t = 3600  5t = 3700  6t = 8t =
-    //   100,000 : 1t = 10600  2t = 8100  3t = 6800  4t = 6100  5t = 6300  6t = 8t =
-    //   500,000 : 1t = 57000  2t = 38000  3t = 31000  4t = 28000  5t = 31000  6t = 29000  8t =
-    // 1,000,000 : 1t = 140000  2t = 89000  3t = 75000  4t = 68000  5t = 76000  6t = 7t = 8t = 128000
+    //    10,000 : 1t = 800  2t = 970  3t = 1000  4t = 5t = 6t = 8t =
+    //    50,000 : 1t = 4000  2t = 3600  3t = 2900  4t = 2900  5t = 3500  6t = 8t =
+    // 1,000,000 : 1t = 103000  2t = 66000  3t = 48000  4t = 56000  5t = 64000  6t = 7t = 8t = 122000
 
     size_t springRelaxationParallelism;
     if (numberOfSprings < 50000)
@@ -40,7 +45,7 @@ void Ship::RecalculateSpringRelaxationParallelism(size_t simulationParallelism)
         springRelaxationParallelism = std::min(size_t(4), simulationParallelism);
     }
 
-    LogMessage("Ship::RecalculateSpringRelaxationParallelism: springs=", numberOfSprings, " simulationParallelism=", simulationParallelism,
+    LogMessage("Ship::RecalculateSpringRelaxationSpringForcesParallelism: springs=", numberOfSprings, " simulationParallelism=", simulationParallelism,
         " springRelaxationParallelism=", springRelaxationParallelism);
 
     //
@@ -52,20 +57,22 @@ void Ship::RecalculateSpringRelaxationParallelism(size_t simulationParallelism)
     //
     // Prepare tasks
     //
+    // We want all but the last thread to work on a multiple of the vectorization word size
+    //
 
-    assert(numberOfSprings >= static_cast<ElementCount>(springRelaxationParallelism) * 4);
-    ElementCount const numberOfFourSpringsPerThread = numberOfSprings / (static_cast<ElementCount>(springRelaxationParallelism) * 4);
+    assert(numberOfSprings >= static_cast<ElementCount>(springRelaxationParallelism) * vectorization_float_count<ElementCount>);
+    ElementCount const numberOfVecSpringsPerThread = numberOfSprings / (static_cast<ElementCount>(springRelaxationParallelism) * vectorization_float_count<ElementCount>);
 
     ElementIndex springStart = 0;
     for (size_t t = 0; t < springRelaxationParallelism; ++t)
     {
         ElementIndex const springEnd = (t < springRelaxationParallelism - 1)
-            ? springStart + numberOfFourSpringsPerThread * 4
+            ? springStart + numberOfVecSpringsPerThread * vectorization_float_count<ElementCount>
             : numberOfSprings;
 
         vec2f * restrict const dynamicForceBuffer = mPoints.GetParallelDynamicForceBuffer(t);
 
-        mSpringRelaxationTasks.emplace_back(
+        mSpringRelaxationSpringForcesTasks.emplace_back(
             [this, springStart, springEnd, dynamicForceBuffer]()
             {
                 ApplySpringsForces(
@@ -78,41 +85,121 @@ void Ship::RecalculateSpringRelaxationParallelism(size_t simulationParallelism)
     }
 }
 
+void Ship::RecalculateSpringRelaxationIntegrationAndSeaFloorCollisionParallelism(
+    size_t simulationParallelism,
+    GameParameters const & gameParameters)
+{
+    // Clear threading state
+    mSpringRelaxationIntegrationTasks.clear();
+    mSpringRelaxationIntegrationAndSeaFloorCollisionTasks.clear();
+
+    //
+    // Given the available simulation parallelism as a constraint (max), calculate 
+    // the best parallelism for integration and collisions
+    //
+
+    ElementCount const numberOfPoints = mPoints.GetBufferElementCount();
+
+    size_t actualParallelism;
+    if (numberOfPoints < 9000)
+    {
+        // Not worth it
+        actualParallelism = 1;
+    }
+    else
+    {
+        actualParallelism = std::min(size_t(4), simulationParallelism);
+    }
+
+    LogMessage("Ship::RecalculateSpringRelaxationIntegrationAndSeaFloorCollisionParallelism: points=", numberOfPoints, " simulationParallelism=", simulationParallelism,
+        " actualParallelism=", actualParallelism);
+
+    //
+    // Prepare tasks
+    //
+    // We want each thread to work on a multiple of our vectorization word size
+    //
+
+    assert((numberOfPoints % (static_cast<ElementCount>(actualParallelism) * vectorization_float_count<ElementCount>)) == 0);
+    assert(numberOfPoints >= static_cast<ElementCount>(actualParallelism) * vectorization_float_count<ElementCount>);
+    ElementCount const numberOfVecPointsPerThread = numberOfPoints / (static_cast<ElementCount>(actualParallelism) * vectorization_float_count<ElementCount>);
+
+    ElementIndex pointStart = 0;
+    for (size_t t = 0; t < actualParallelism; ++t)
+    {
+        ElementIndex const pointEnd = (t < actualParallelism - 1)
+            ? pointStart + numberOfVecPointsPerThread * vectorization_float_count<ElementCount>
+            : numberOfPoints;
+
+        assert(((pointEnd - pointStart) % vectorization_float_count<ElementCount>) == 0);
+
+        // Note: we store a reference to GameParameters in the lambda; this is only safe
+        // if GameParameters is never re-created
+
+        mSpringRelaxationIntegrationTasks.emplace_back(
+            [this, pointStart, pointEnd, &gameParameters]()
+            {
+                IntegrateAndResetDynamicForces(
+                    pointStart,
+                    pointEnd,
+                    gameParameters);
+            });
+
+        mSpringRelaxationIntegrationAndSeaFloorCollisionTasks.emplace_back(
+            [this, pointStart, pointEnd, &gameParameters]()
+            {
+                IntegrateAndResetDynamicForces(
+                    pointStart,
+                    pointEnd,
+                    gameParameters);
+
+                HandleCollisionsWithSeaFloor(
+                    pointStart,
+                    pointEnd,
+                    gameParameters);
+            });
+
+        pointStart = pointEnd;
+    }
+}
+
 void Ship::RunSpringRelaxationAndDynamicForcesIntegration(
     GameParameters const & gameParameters,
     ThreadManager & threadManager)
 {    
-    int const numMechanicalDynamicsIterations = gameParameters.NumMechanicalDynamicsIterations<int>();
-
-    // We run ocean floor collision handling every so often
-    int constexpr SeaFloorCollisionPeriod = 2;
-    float const seaFloorCollisionDt = gameParameters.MechanicalSimulationStepTimeDuration<float>() * static_cast<float>(SeaFloorCollisionPeriod);
-
     auto & threadPool = threadManager.GetSimulationThreadPool();
 
+    int const numMechanicalDynamicsIterations = gameParameters.NumMechanicalDynamicsIterations<int>();
     for (int iter = 0; iter < numMechanicalDynamicsIterations; ++iter)
     {
         // - DynamicForces = 0 | others at first iteration only
 
         // Apply spring forces
-        threadPool.Run(mSpringRelaxationTasks);
+        threadPool.Run(mSpringRelaxationSpringForcesTasks);
 
         // - DynamicForces = sf | sf + others at first iteration only
 
-        // Integrate dynamic and static forces,
-        // and reset dynamic forces
-        IntegrateAndResetDynamicForces(gameParameters);
-
-        // - DynamicForces = 0
-
-        if ((iter % SeaFloorCollisionPeriod) == SeaFloorCollisionPeriod - 1)
+        if ((iter % SeaFloorCollisionPeriod) < SeaFloorCollisionPeriod - 1)
         {
+            // Integrate dynamic and static forces,
+            // and reset dynamic forces
+
+            threadPool.Run(mSpringRelaxationIntegrationTasks);
+        }
+        else
+        {
+            assert((iter % SeaFloorCollisionPeriod) == SeaFloorCollisionPeriod - 1);
+
+            // Integrate dynamic and static forces,
+            // and reset dynamic forces
+
             // Handle collisions with sea floor
             //  - Changes position and velocity
-            HandleCollisionsWithSeaFloor(
-                seaFloorCollisionDt,
-                gameParameters);
+
+            threadPool.Run(mSpringRelaxationIntegrationAndSeaFloorCollisionTasks);
         }
+
+        // - DynamicForces = 0
     }
 
 #ifdef _DEBUG
@@ -120,37 +207,40 @@ void Ship::RunSpringRelaxationAndDynamicForcesIntegration(
 #endif
 }
 
-void Ship::IntegrateAndResetDynamicForces(GameParameters const & gameParameters)
+void Ship::IntegrateAndResetDynamicForces(
+    ElementIndex startPointIndex,
+    ElementIndex endPointIndex,
+    GameParameters const & gameParameters)
 {
-    switch (mSpringRelaxationTasks.size())
+    switch (mSpringRelaxationSpringForcesTasks.size())
     {
         case 1:
         {
-            IntegrateAndResetDynamicForces_1(gameParameters);
+            IntegrateAndResetDynamicForces_1(startPointIndex, endPointIndex, gameParameters);
             break;
         }
 
         case 2:
         {
-            IntegrateAndResetDynamicForces_2(gameParameters);
+            IntegrateAndResetDynamicForces_2(startPointIndex, endPointIndex, gameParameters);
             break;
         }
 
         case 3:
         {
-            IntegrateAndResetDynamicForces_3(gameParameters);
+            IntegrateAndResetDynamicForces_3(startPointIndex, endPointIndex, gameParameters);
             break;
         }
 
         case 4:
         {
-            IntegrateAndResetDynamicForces_4(gameParameters);
+            IntegrateAndResetDynamicForces_4(startPointIndex, endPointIndex, gameParameters);
             break;
         }
 
         default:
         {
-            IntegrateAndResetDynamicForces_N(mSpringRelaxationTasks.size(), gameParameters);
+            IntegrateAndResetDynamicForces_N(mSpringRelaxationSpringForcesTasks.size(), startPointIndex, endPointIndex, gameParameters);
             break;
         }
     }
@@ -665,6 +755,8 @@ void Ship::ApplySpringsForces(
 
 void Ship::IntegrateAndResetDynamicForces_N(
     size_t parallelism,
+    ElementIndex startPointIndex,
+    ElementIndex endPointIndex,
     GameParameters const & gameParameters)
 {
     // This implementation is for 4-float SSE
@@ -684,8 +776,7 @@ void Ship::IntegrateAndResetDynamicForces_N(
     __m128 const dt_4 = _mm_load1_ps(&dt);
     __m128 const velocityFactor_4 = _mm_load1_ps(&velocityFactor);
 
-    size_t const count = mPoints.GetBufferElementCount() * 2; // Two components per vector
-    for (size_t i = 0; i < count; i += 4)
+    for (size_t i = startPointIndex * 2; i < endPointIndex * 2; i += 4) // Two components per vector
     {
         __m128 springForce_2 = zero_4;
         for (size_t b = 0; b < parallelism; ++b)
@@ -919,6 +1010,8 @@ void Ship::ApplySpringsForces(
 
 void Ship::IntegrateAndResetDynamicForces_N(
     size_t parallelism,
+    ElementIndex startPointIndex,
+    ElementIndex endPointIndex,
     GameParameters const & gameParameters)
 {
     // This non-SSE implementation works on a vec2f at a time
@@ -935,8 +1028,7 @@ void Ship::IntegrateAndResetDynamicForces_N(
 
     ///////////////////////
 
-    size_t const count = mPoints.GetBufferElementCount();
-    for (size_t p = 0; p < count; ++p)
+    for (size_t p = startPointIndex; p < endPointIndex; ++p)
     {
         vec2f springForce = vec2f::zero();
         for (size_t b = 0; b < parallelism; ++b)
@@ -1007,13 +1099,18 @@ float Ship::CalculateIntegrationVelocityFactor(
     return velocityFactor;
 }
 
-void Ship::IntegrateAndResetDynamicForces_1(GameParameters const & gameParameters)
+void Ship::IntegrateAndResetDynamicForces_1(
+    ElementIndex startPointIndex,
+    ElementIndex endPointIndex,
+    GameParameters const & gameParameters)
 {
-    assert(mSpringRelaxationTasks.size() == 1);
+    assert(mSpringRelaxationSpringForcesTasks.size() == 1);
 
     //
     // This loop is compiled with packed SSE instructions on MSVC 2022,
     // integrating two points at each iteration
+    //
+    // We loop by floats
     //
 
     float const dt = gameParameters.MechanicalSimulationStepTimeDuration<float>();
@@ -1022,15 +1119,15 @@ void Ship::IntegrateAndResetDynamicForces_1(GameParameters const & gameParameter
     // Take the four buffers that we need as restrict pointers, so that the compiler
     // can better see it should parallelize this loop as much as possible
 
-    float * restrict const positionBuffer = mPoints.GetPositionBufferAsFloat();
-    float * restrict const velocityBuffer = mPoints.GetVelocityBufferAsFloat();
-    float const * const restrict staticForceBuffer = mPoints.GetStaticForceBufferAsFloat();
-    float const * const restrict integrationFactorBuffer = mPoints.GetIntegrationFactorBufferAsFloat();
+    float * restrict const positionBuffer = mPoints.GetPositionBufferAsFloat() + startPointIndex * 2;
+    float * restrict const velocityBuffer = mPoints.GetVelocityBufferAsFloat() + startPointIndex * 2;
+    float const * const restrict staticForceBuffer = mPoints.GetStaticForceBufferAsFloat() + startPointIndex * 2;
+    float const * const restrict integrationFactorBuffer = mPoints.GetIntegrationFactorBufferAsFloat() + startPointIndex * 2;
 
-    float * const restrict dynamicForceBuffer = reinterpret_cast<float *>(mPoints.GetParallelDynamicForceBuffer(0));
+    float * const restrict dynamicForceBuffer = reinterpret_cast<float *>(mPoints.GetParallelDynamicForceBuffer(0)) + startPointIndex * 2;
 
-    size_t const count = mPoints.GetBufferElementCount() * 2; // Two components per vector
-    for (size_t i = 0; i < count; ++i)
+    size_t const count = (endPointIndex - startPointIndex) * 2;
+    for (size_t i = 0; i < count; ++i) 
     {
         float const totalDynamicForce = dynamicForceBuffer[i];
 
@@ -1050,13 +1147,18 @@ void Ship::IntegrateAndResetDynamicForces_1(GameParameters const & gameParameter
     }
 }
 
-void Ship::IntegrateAndResetDynamicForces_2(GameParameters const & gameParameters)
+void Ship::IntegrateAndResetDynamicForces_2(
+    ElementIndex startPointIndex,
+    ElementIndex endPointIndex,
+    GameParameters const & gameParameters)
 {
-    assert(mSpringRelaxationTasks.size() == 2);
+    assert(mSpringRelaxationSpringForcesTasks.size() == 2);
 
     //
     // This loop is compiled with packed SSE instructions on MSVC 2022,
     // integrating two points at each iteration
+    //
+    // We loop by floats
     //
 
     float const dt = gameParameters.MechanicalSimulationStepTimeDuration<float>();
@@ -1065,15 +1167,15 @@ void Ship::IntegrateAndResetDynamicForces_2(GameParameters const & gameParameter
     // Take the four buffers that we need as restrict pointers, so that the compiler
     // can better see it should parallelize this loop as much as possible
 
-    float * restrict const positionBuffer = mPoints.GetPositionBufferAsFloat();
-    float * restrict const velocityBuffer = mPoints.GetVelocityBufferAsFloat();
-    float const * const restrict staticForceBuffer = mPoints.GetStaticForceBufferAsFloat();
-    float const * const restrict integrationFactorBuffer = mPoints.GetIntegrationFactorBufferAsFloat();
+    float * restrict const positionBuffer = mPoints.GetPositionBufferAsFloat() + startPointIndex * 2;
+    float * restrict const velocityBuffer = mPoints.GetVelocityBufferAsFloat() + startPointIndex * 2;
+    float const * const restrict staticForceBuffer = mPoints.GetStaticForceBufferAsFloat() + startPointIndex * 2;
+    float const * const restrict integrationFactorBuffer = mPoints.GetIntegrationFactorBufferAsFloat() + startPointIndex * 2;
 
-    float * const restrict dynamicForceBuffer1 = reinterpret_cast<float *>(mPoints.GetParallelDynamicForceBuffer(0));
-    float * const restrict dynamicForceBuffer2 = reinterpret_cast<float *>(mPoints.GetParallelDynamicForceBuffer(1));
+    float * const restrict dynamicForceBuffer1 = reinterpret_cast<float *>(mPoints.GetParallelDynamicForceBuffer(0)) + startPointIndex * 2;
+    float * const restrict dynamicForceBuffer2 = reinterpret_cast<float *>(mPoints.GetParallelDynamicForceBuffer(1)) + startPointIndex * 2;
 
-    size_t const count = mPoints.GetBufferElementCount() * 2; // Two components per vector
+    size_t const count = (endPointIndex - startPointIndex) * 2;
     for (size_t i = 0; i < count; ++i)
     {
         float const totalDynamicForce = dynamicForceBuffer1[i] + dynamicForceBuffer2[i];
@@ -1095,13 +1197,18 @@ void Ship::IntegrateAndResetDynamicForces_2(GameParameters const & gameParameter
     }
 }
 
-void Ship::IntegrateAndResetDynamicForces_3(GameParameters const & gameParameters)
+void Ship::IntegrateAndResetDynamicForces_3(
+    ElementIndex startPointIndex,
+    ElementIndex endPointIndex,
+    GameParameters const & gameParameters)
 {
-    assert(mSpringRelaxationTasks.size() == 3);
+    assert(mSpringRelaxationSpringForcesTasks.size() == 3);
 
     //
     // This loop is compiled with packed SSE instructions on MSVC 2022,
     // integrating two points at each iteration
+    //
+    // We loop by floats
     //
 
     float const dt = gameParameters.MechanicalSimulationStepTimeDuration<float>();
@@ -1110,16 +1217,16 @@ void Ship::IntegrateAndResetDynamicForces_3(GameParameters const & gameParameter
     // Take the four buffers that we need as restrict pointers, so that the compiler
     // can better see it should parallelize this loop as much as possible
 
-    float * restrict const positionBuffer = mPoints.GetPositionBufferAsFloat();
-    float * restrict const velocityBuffer = mPoints.GetVelocityBufferAsFloat();
-    float const * const restrict staticForceBuffer = mPoints.GetStaticForceBufferAsFloat();
-    float const * const restrict integrationFactorBuffer = mPoints.GetIntegrationFactorBufferAsFloat();
+    float * restrict const positionBuffer = mPoints.GetPositionBufferAsFloat() + startPointIndex * 2;
+    float * restrict const velocityBuffer = mPoints.GetVelocityBufferAsFloat() + startPointIndex * 2;
+    float const * const restrict staticForceBuffer = mPoints.GetStaticForceBufferAsFloat() + startPointIndex * 2;
+    float const * const restrict integrationFactorBuffer = mPoints.GetIntegrationFactorBufferAsFloat() + startPointIndex * 2;
 
-    float * const restrict dynamicForceBuffer1 = reinterpret_cast<float *>(mPoints.GetParallelDynamicForceBuffer(0));
-    float * const restrict dynamicForceBuffer2 = reinterpret_cast<float *>(mPoints.GetParallelDynamicForceBuffer(1));
-    float * const restrict dynamicForceBuffer3 = reinterpret_cast<float *>(mPoints.GetParallelDynamicForceBuffer(2));
+    float * const restrict dynamicForceBuffer1 = reinterpret_cast<float *>(mPoints.GetParallelDynamicForceBuffer(0)) + startPointIndex * 2;
+    float * const restrict dynamicForceBuffer2 = reinterpret_cast<float *>(mPoints.GetParallelDynamicForceBuffer(1)) + startPointIndex * 2;
+    float * const restrict dynamicForceBuffer3 = reinterpret_cast<float *>(mPoints.GetParallelDynamicForceBuffer(2)) + startPointIndex * 2;
 
-    size_t const count = mPoints.GetBufferElementCount() * 2; // Two components per vector
+    size_t const count = (endPointIndex - startPointIndex) * 2;
     for (size_t i = 0; i < count; ++i)
     {
         float const totalDynamicForce = dynamicForceBuffer1[i] + dynamicForceBuffer2[i] + dynamicForceBuffer3[i];
@@ -1142,13 +1249,18 @@ void Ship::IntegrateAndResetDynamicForces_3(GameParameters const & gameParameter
     }
 }
 
-void Ship::IntegrateAndResetDynamicForces_4(GameParameters const & gameParameters)
+void Ship::IntegrateAndResetDynamicForces_4(
+    ElementIndex startPointIndex,
+    ElementIndex endPointIndex,
+    GameParameters const & gameParameters)
 {
-    assert(mSpringRelaxationTasks.size() == 4);
+    assert(mSpringRelaxationSpringForcesTasks.size() == 4);
 
     //
     // This loop is compiled with packed SSE instructions on MSVC 2022,
     // integrating two points at each iteration
+    //
+    // We loop by floats
     //
 
     float const dt = gameParameters.MechanicalSimulationStepTimeDuration<float>();
@@ -1157,17 +1269,17 @@ void Ship::IntegrateAndResetDynamicForces_4(GameParameters const & gameParameter
     // Take the four buffers that we need as restrict pointers, so that the compiler
     // can better see it should parallelize this loop as much as possible
 
-    float * restrict const positionBuffer = mPoints.GetPositionBufferAsFloat();
-    float * restrict const velocityBuffer = mPoints.GetVelocityBufferAsFloat();
-    float const * const restrict staticForceBuffer = mPoints.GetStaticForceBufferAsFloat();
-    float const * const restrict integrationFactorBuffer = mPoints.GetIntegrationFactorBufferAsFloat();
+    float * restrict const positionBuffer = mPoints.GetPositionBufferAsFloat() + startPointIndex * 2;
+    float * restrict const velocityBuffer = mPoints.GetVelocityBufferAsFloat() + startPointIndex * 2;
+    float const * const restrict staticForceBuffer = mPoints.GetStaticForceBufferAsFloat() + startPointIndex * 2;
+    float const * const restrict integrationFactorBuffer = mPoints.GetIntegrationFactorBufferAsFloat() + startPointIndex * 2;
 
-    float * const restrict dynamicForceBuffer1 = reinterpret_cast<float *>(mPoints.GetParallelDynamicForceBuffer(0));
-    float * const restrict dynamicForceBuffer2 = reinterpret_cast<float *>(mPoints.GetParallelDynamicForceBuffer(1));
-    float * const restrict dynamicForceBuffer3 = reinterpret_cast<float *>(mPoints.GetParallelDynamicForceBuffer(2));
-    float * const restrict dynamicForceBuffer4 = reinterpret_cast<float *>(mPoints.GetParallelDynamicForceBuffer(3));
+    float * const restrict dynamicForceBuffer1 = reinterpret_cast<float *>(mPoints.GetParallelDynamicForceBuffer(0)) + startPointIndex * 2;
+    float * const restrict dynamicForceBuffer2 = reinterpret_cast<float *>(mPoints.GetParallelDynamicForceBuffer(1)) + startPointIndex * 2;
+    float * const restrict dynamicForceBuffer3 = reinterpret_cast<float *>(mPoints.GetParallelDynamicForceBuffer(2)) + startPointIndex * 2;
+    float * const restrict dynamicForceBuffer4 = reinterpret_cast<float *>(mPoints.GetParallelDynamicForceBuffer(3)) + startPointIndex * 2;
 
-    size_t const count = mPoints.GetBufferElementCount() * 2; // Two components per vector
+    size_t const count = (endPointIndex - startPointIndex) * 2;
     for (size_t i = 0; i < count; ++i)
     {
         float const totalDynamicForce = dynamicForceBuffer1[i] + dynamicForceBuffer2[i] + dynamicForceBuffer3[i] + dynamicForceBuffer4[i];

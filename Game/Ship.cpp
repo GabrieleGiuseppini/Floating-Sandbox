@@ -13,6 +13,7 @@
 #include <GameCore/GameMath.h>
 #include <GameCore/GameRandomEngine.h>
 #include <GameCore/Log.h>
+#include <GameCore/SysSpecifics.h>
 
 #include <algorithm>
 #include <array>
@@ -251,6 +252,7 @@ void Ship::Update(
         gameParameters);
 
     UpdateForSimulationParallelism(
+        gameParameters,
         threadManager);
 
     ///////////////////////////////////////////////////////////////////
@@ -1748,9 +1750,12 @@ void Ship::ApplyStaticPressureForces(
 }
 
 void Ship::HandleCollisionsWithSeaFloor(
-    float dt,
+    ElementIndex startPointIndex,
+    ElementIndex endPointIndex,
     GameParameters const & gameParameters)
 {
+    float const dt = gameParameters.MechanicalSimulationStepTimeDuration<float>() * static_cast<float>(SeaFloorCollisionPeriod);
+
     OceanFloor const & oceanFloor = mParentWorld.GetOceanFloor();
 
     float const elasticityFactor = -gameParameters.OceanFloorElasticity;
@@ -1759,7 +1764,7 @@ void Ship::HandleCollisionsWithSeaFloor(
     float const siltingFactor1 = gameParameters.OceanFloorSiltHardness;
     float const siltingFactor2 = 1.0f - gameParameters.OceanFloorSiltHardness;
 
-    for (auto pointIndex : mPoints)
+    for (ElementIndex pointIndex = startPointIndex; pointIndex < endPointIndex; ++pointIndex)
     {
         auto const & position = mPoints.GetPosition(pointIndex);
 
@@ -2594,16 +2599,21 @@ void Ship::RecalculateLightDiffusionParallelism(size_t simulationParallelism)
     //
     // Prepare tasks
     //
+    // We want each thread to work on a multiple of our vectorization word size
+    //
 
-    assert(numberOfPoints >= static_cast<ElementCount>(lightDiffusionParallelism) * 4);
-    ElementCount const numberOfFourPointsPerThread = numberOfPoints / (static_cast<ElementCount>(lightDiffusionParallelism) * 4);
+    assert((numberOfPoints % (static_cast<ElementCount>(lightDiffusionParallelism) * vectorization_float_count<ElementCount>)) == 0);
+    assert(numberOfPoints >= static_cast<ElementCount>(lightDiffusionParallelism) * vectorization_float_count<ElementCount>);
+    ElementCount const numberOfVecPointsPerThread = numberOfPoints / (static_cast<ElementCount>(lightDiffusionParallelism) * vectorization_float_count<ElementCount>);
 
     ElementIndex pointStart = 0;
     for (size_t t = 0; t < lightDiffusionParallelism; ++t)
     {
         ElementIndex const pointEnd = (t < lightDiffusionParallelism - 1)
-            ? pointStart + numberOfFourPointsPerThread * 4
+            ? pointStart + numberOfVecPointsPerThread * vectorization_float_count<ElementCount>
             : numberOfPoints;
+
+        assert(((pointEnd - pointStart) % vectorization_float_count<ElementCount>) == 0);
 
         mLightDiffusionTasks.emplace_back(
             [this, pointStart, pointEnd]()
@@ -2938,13 +2948,15 @@ void Ship::RotPoints(
 // Private helpers
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
-void Ship::UpdateForSimulationParallelism(ThreadManager const & threadManager)
+void Ship::UpdateForSimulationParallelism(
+    GameParameters const & gameParameters,
+    ThreadManager & threadManager)
 {
     size_t const simulationParallelism = threadManager.GetSimulationParallelism();
     if (simulationParallelism != mCurrentSimulationParallelism)
     {
         // Re-calculate spring relaxation parallelism
-        RecalculateSpringRelaxationParallelism(simulationParallelism);
+        RecalculateSpringRelaxationParallelism(simulationParallelism, gameParameters);
 
         // Re-calculate light diffusion parallelism
         RecalculateLightDiffusionParallelism(simulationParallelism);
