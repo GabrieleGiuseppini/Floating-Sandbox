@@ -575,14 +575,13 @@
 				+ Make sure we only upload decay when we mark a dirty flag
 		+ Ocean Surface
 			+ Test in debug around borders
-
-
-	- Send for testing
+	+ Send for testing
+	+ Fix day/night rate
 
 	- Redo all benchmarks, including Dell
-	
-	- Redo timer bomb gfx
 
+	- Do IT localization and send for localization
+	
 	- Ships:
 		- N.S._Savannah (Pocketwatch)
 		- Stardust (train)  - UR LOCAL BRAZILIAN
@@ -603,6 +602,8 @@
 	
 	- Release:
 		- Localization (yes, it's dirty)
+
+	- Redo timer bomb gfx
 
 	- Wrecking ball tool
 

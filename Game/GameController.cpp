@@ -1375,6 +1375,8 @@ vec2f GameController::ScreenOffsetToWorldOffset(DisplayLogicalSize const & scree
 
 void GameController::SetTimeOfDay(float value)
 {
+    assert(value >= 0.0f && value <= 1.0f);
+
     mTimeOfDay = value;
 
     // Calculate new ambient light

@@ -1704,21 +1704,22 @@ void MainFrame::OnContinuousAutoFocusMenuItemSelected(wxCommandEvent & /*event*/
 void MainFrame::OnResetViewMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mGameController);
-
     mGameController->ResetView();
 }
+
+static float constexpr TimeOfDayStep = 0.01f;
 
 void MainFrame::OnTimeOfDayUpMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mGameController);
-    float newTimeOfDay = std::min(1.0f, mGameController->GetTimeOfDay() * 1.02f);
+    float const newTimeOfDay = std::min(1.0f, mGameController->GetTimeOfDay() + TimeOfDayStep);
     mGameController->SetTimeOfDay(newTimeOfDay);
 }
 
 void MainFrame::OnTimeOfDayDownMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mGameController);
-    float newTimeOfDay = mGameController->GetTimeOfDay() / 1.02f;
+    float const newTimeOfDay = std::max(0.0f, mGameController->GetTimeOfDay() - TimeOfDayStep);
     mGameController->SetTimeOfDay(newTimeOfDay);
 }
 
