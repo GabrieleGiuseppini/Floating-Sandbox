@@ -451,6 +451,7 @@ public:
     {
         LampImplosion,
         LampExplosion,
+        SilentRemoval,
         Other
     };
 

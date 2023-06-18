@@ -656,17 +656,31 @@ void ElectricalElements::Destroy(
             mAvailableLightBuffer[electricalElementIndex] = 0.0f;
 
             // Translate reason
-            if (reason == DestroyReason::LampExplosion)
+            switch (reason)
             {
-                destroySpecializationType = IShipPhysicsHandler::ElectricalElementDestroySpecializationType::LampExplosion;
-            }
-            else if (reason == DestroyReason::LampImplosion)
-            {
-                destroySpecializationType = IShipPhysicsHandler::ElectricalElementDestroySpecializationType::LampImplosion;
-            }
-            else
-            {
-                destroySpecializationType = IShipPhysicsHandler::ElectricalElementDestroySpecializationType::Lamp;
+                case DestroyReason::LampImplosion:
+                {
+                    destroySpecializationType = IShipPhysicsHandler::ElectricalElementDestroySpecializationType::LampImplosion;
+                    break;
+                }
+
+                case DestroyReason::LampExplosion:
+                {
+                    destroySpecializationType = IShipPhysicsHandler::ElectricalElementDestroySpecializationType::LampExplosion;
+                    break;
+                }
+
+                case DestroyReason::SilentRemoval:
+                {
+                    destroySpecializationType = IShipPhysicsHandler::ElectricalElementDestroySpecializationType::SilentRemoval;
+                    break;
+                }
+
+                case DestroyReason::Other:
+                {
+                    destroySpecializationType = IShipPhysicsHandler::ElectricalElementDestroySpecializationType::Lamp;
+                    break;
+                }
             }
 
             break;

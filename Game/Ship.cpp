@@ -3417,7 +3417,7 @@ void Ship::HandlePointDetach(
 
             mElectricalElements.Destroy(
                 electricalElementIndex, 
-                ElectricalElements::DestroyReason::Other,
+                fireDestroyEvent ? ElectricalElements::DestroyReason::Other : ElectricalElements::DestroyReason::SilentRemoval,
                 currentSimulationTime,
                 gameParameters);
 
@@ -3826,6 +3826,7 @@ void Ship::HandleElectricalElementDestroy(
             break;
         }
 
+        case ElectricalElementDestroySpecializationType::SilentRemoval:
         case ElectricalElementDestroySpecializationType::None:
         {
             // Nothing else

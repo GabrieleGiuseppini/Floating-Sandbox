@@ -566,16 +566,20 @@
 	+ Improve AM Bomb
 	+ Improve blast tool
 
+	- Improve Thanos:
+		+ Lamp sounds
+		+ Velocities
+		- Phasing: each particle randomly pulverizes, but towards band end prob is 100%
+		+ Greyscaling (of texture and particles) before Thanos snap, and mass changes (lighter), and different phasing of ashing in band			
+			+ Try with decay - WAS ALREADY DONE
+				+ Make sure we only upload decay when we mark a dirty flag
+
+
 	- Send for testing
 
 	- Redo all benchmarks, including Dell
 	
 	- Redo timer bomb gfx
-
-	- Greyscaling (of texture and particles) before Thanos snap, and mass changes (lighter), and different phasing of ashing in band
-		- Phasing: each particle randomly pulverizes, but towards band end prob is 100%
-		- Try with decay
-			- Make sure we only upload decay when we mark a dirty flag
 
 	- Ships:
 		- N.S._Savannah (Pocketwatch)

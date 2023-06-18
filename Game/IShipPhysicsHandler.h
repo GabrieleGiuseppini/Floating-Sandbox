@@ -20,7 +20,8 @@ struct IShipPhysicsHandler
         None,
         Lamp,
         LampExplosion,
-        LampImplosion        
+        LampImplosion,
+        SilentRemoval
     };
 
     //

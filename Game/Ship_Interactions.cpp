@@ -1374,7 +1374,7 @@ void Ship::ApplyThanosSnap(
 
             // Choose a detach velocity
             vec2f detachVelocity = vec2f(
-                direction * GameRandomEngine::GetInstance().GenerateUniformReal(35.0f, 60.0f),
+                direction * GameRandomEngine::GetInstance().GenerateUniformReal(7.0f, 30.0f),
                 GameRandomEngine::GetInstance().GenerateUniformReal(-3.0f, 18.0f));
 
             // Detach
