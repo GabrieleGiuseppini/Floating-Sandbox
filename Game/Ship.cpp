@@ -2582,16 +2582,9 @@ void Ship::RecalculateLightDiffusionParallelism(size_t simulationParallelism)
 
     ElementCount const numberOfPoints = mPoints.GetAlignedShipPointCount(); // No real reason to skip ephemerals, other than they're not expected to have light
 
-    size_t lightDiffusionParallelism;
-    if (numberOfPoints < 9000)
-    {
-        // Not worth it
-        lightDiffusionParallelism = 1;
-    }
-    else
-    {
-        lightDiffusionParallelism = std::min(size_t(4), simulationParallelism);
-    }
+    size_t const lightDiffusionParallelism = std::max(
+        std::min(static_cast<size_t>(numberOfPoints) / 2000, simulationParallelism),
+        size_t(1));
 
     LogMessage("Ship::RecalculateLightDiffusionParallelism: points=", numberOfPoints, " simulationParallelism=", simulationParallelism,
         " lightDiffusionParallelism=", lightDiffusionParallelism);

@@ -420,7 +420,7 @@
 				+ Maxed by TM::GetMaxSimulationParallelism() & by 4
 		+ Redo benchmark, and put it up
 			
-	= More parallelism during Update()
+	+ More parallelism during Update()
 		+ First, get breakdown, including World::Update
 			! Hesleden, 4 threads:
 				- Physics::Ship::RunSpringRelaxationAndDynamicForcesIntegration	8346 (23.10%)
@@ -446,7 +446,7 @@
 						- Physics::Ship::PropagateHeat			998 (3.80%)
 						- Physics::Ship::EqualizeInternalPressure	703 (2.68%)
 						- Physics::Springs::InternalUpdateForStrains<0>	524 (2.00%)
-		= At Ship::Update (was: Multi-threading, phase II):
+		+ At Ship::Update (was: Multi-threading, phase II):
 			! Now that we have MaxSimulationParallelism, we can easily see which steps take the longest
 			+ Ideal Parallelization 1:
 				- UpdateWaterVelocities     14.23	T1
@@ -499,20 +499,30 @@
 			! Default ship:
 				- 1 thread: 3.27ms/3.28ms
 				- 4 threads: 3.25ms/3.26ms
-		- Make GameParameter constant for max # of threads
-			- Replace:
-				- GameController::MaxSimThreads constant
-					! For ThreadPool cost
-				- ThreadMgt cctor (w/above)
-				- All parallelization max caps:
-					- Only SpringForces needed, and caps by 4 (local)
-					- Other max caps not needed? If so they are local
-		- Consider 4 as a limit only for spring forces, others may use 8
-			- Verify 8 better than 4 for lights
-			- Verify 8 better than 4 for integration & collisions
-		- If needed:
-			- Allow threads to publish events by having EventDispatcher allow multiple threads to store* event
-				- No locks needed on read and clean, as it's done after Update has finished
+		+ Max parallelism re-thinking:
+			+ Verify 8 better than 4 for lights: YES
+				- Hesleden 4: 19.9
+				- Hesleden 8: 18.8
+			+ Verify 8 better than 4 for integration & collisions: YES
+				- Hesleden (no lights) 4: 12.5
+				- Hesleden (no lights) 8: 12.4
+			+ Plan:
+				+ ThreadManager cap goes
+					+ Initialize with max initial = 8 though
+					- Verify SettingsDialog
+				+ Each RecalculateParallelism has own cap
+					+ In reality, only spring forces has cap
+					+ Other calc based on points
+						+ Verify lights
+							- Default ship:
+								- Before: 4 threads: 3.25ms/3.26ms
+								- Now: 2 threads: 3.35ms
+						+ Verify integration
+							- Default ship:
+								- Before: 4 threads: 3.25ms/3.26ms
+								- Now (w/ 2 lighting threads): 4 threads: 3.35ms
+							- Hesleden:
+								- Now (8, 8):18.07
 
 	- Decide rigidity vs. speedup
 		- Use PocketWatch's USS Rhode Island
@@ -1146,6 +1156,8 @@
 	- Looped sounds (engines, bells, horns, etc.): make them OGG with built-in loop points (see https://rpgmaker.net/tutorials/1341/)
 	- Redo SetEventRecorder dynamics between GameController/World/Ship
 		- Also GameController::Reset() should clear all events
+	- To further improve parallelism at Ship::Update, could allow threads to publish events by having EventDispatcher allow multiple threads to store* event
+		- No locks needed on read and clean, as it's done after Update has finished
 
 - Known issues:
 	- After many many hours, rain looks aweful - very likely due to timer values being high

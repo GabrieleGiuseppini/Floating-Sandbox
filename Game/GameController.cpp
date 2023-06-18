@@ -98,7 +98,7 @@ GameController::GameController(
         mGameEventDispatcher)
     , mThreadManager(
         mRenderContext->IsRenderingMultiThreaded(),
-        4) // Given that most ships will be a few threads, we do not want to pay a ThreadPool price for too many threads
+        8) // We start "zuinig", as we do not want to pay a ThreadPool price for too many threads
     , mViewManager(*mRenderContext, mNotificationLayer)
     // Smoothing
     , mFloatParameterSmoothers()

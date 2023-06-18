@@ -42,6 +42,7 @@ void Ship::RecalculateSpringRelaxationSpringForcesParallelism(size_t simulationP
     }
     else
     {
+        // Go for 4 - more than 4 makes algorithm always worse
         springRelaxationParallelism = std::min(size_t(4), simulationParallelism);
     }
 
@@ -100,16 +101,9 @@ void Ship::RecalculateSpringRelaxationIntegrationAndSeaFloorCollisionParallelism
 
     ElementCount const numberOfPoints = mPoints.GetBufferElementCount();
 
-    size_t actualParallelism;
-    if (numberOfPoints < 9000)
-    {
-        // Not worth it
-        actualParallelism = 1;
-    }
-    else
-    {
-        actualParallelism = std::min(size_t(4), simulationParallelism);
-    }
+    size_t const actualParallelism = std::max(
+        std::min(static_cast<size_t>(numberOfPoints) / 2000, simulationParallelism),
+        size_t(1));
 
     LogMessage("Ship::RecalculateSpringRelaxationIntegrationAndSeaFloorCollisionParallelism: points=", numberOfPoints, " simulationParallelism=", simulationParallelism,
         " actualParallelism=", actualParallelism);
