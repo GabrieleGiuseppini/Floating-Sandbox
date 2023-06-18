@@ -266,15 +266,30 @@ void OceanSurface::ApplyThanosSnap(
     float leftFrontX,
     float rightFrontX)
 {
-    auto const sweIndexStart = SWEBufferPrefixSize + ToSampleIndex(std::max(leftFrontX, -GameParameters::HalfMaxWorldWidth));
-    auto const sweIndexEnd = SWEBufferPrefixSize + ToSampleIndex(std::min(rightFrontX, GameParameters::HalfMaxWorldWidth));
+    auto const sweIndexLeft = SWEBufferPrefixSize + ToSampleIndex(std::max(leftFrontX, -GameParameters::HalfMaxWorldWidth));
+    auto const sweIndexRight = SWEBufferPrefixSize + ToSampleIndex(std::min(rightFrontX, GameParameters::HalfMaxWorldWidth));
 
     float constexpr WaterDepression = 
-        0.8f // Magic number
+        0.1f // Magic number
         / SWEHeightFieldAmplification;
 
-    for (auto idx = sweIndexStart; idx <= sweIndexEnd; ++idx)
-        mSWEHeightField[idx] -= WaterDepression;
+
+    if (sweIndexLeft > SWEBufferPrefixSize + SWEBoundaryConditionsSamples)
+        mSWEHeightField[sweIndexLeft - 1] -= WaterDepression * 0.5f;
+
+    mSWEHeightField[sweIndexLeft] -= WaterDepression;
+
+    if (sweIndexLeft < SWEBufferPrefixSize + SWEBoundaryConditionsSamples + SamplesCount + SWEBoundaryConditionsSamples - 1)
+        mSWEHeightField[sweIndexLeft + 1] -= WaterDepression * 0.5f;
+
+
+    if (sweIndexRight > SWEBufferPrefixSize + SWEBoundaryConditionsSamples)
+        mSWEHeightField[sweIndexRight - 1] -= WaterDepression * 0.5f;
+
+    mSWEHeightField[sweIndexRight] -= WaterDepression;
+
+    if (sweIndexRight < SWEBufferPrefixSize + SWEBoundaryConditionsSamples + SamplesCount + SWEBoundaryConditionsSamples - 1)
+        mSWEHeightField[sweIndexRight + 1] -= WaterDepression * 0.5f;
 }
 
 void OceanSurface::TriggerTsunami(float currentSimulationTime)

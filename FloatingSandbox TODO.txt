@@ -565,8 +565,7 @@
 
 	+ Improve AM Bomb
 	+ Improve blast tool
-
-	= Improve Thanos:
+	+ Improve Thanos:
 		+ Lamp sounds
 		+ Velocities
 		+ Phasing: each particle randomly pulverizes, but towards band end prob is 100%
@@ -574,7 +573,8 @@
 		+ Greyscaling (of texture and particles) before Thanos snap, and mass changes (lighter), and different phasing of ashing in band			
 			+ Try with decay - WAS ALREADY DONE
 				+ Make sure we only upload decay when we mark a dirty flag
-		- Ocean Surface
+		+ Ocean Surface
+			+ Test in debug around borders
 
 
 	- Send for testing
