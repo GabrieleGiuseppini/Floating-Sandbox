@@ -524,7 +524,7 @@
 							- Hesleden:
 								- Now (8, 8):18.07
 
-	- Decide rigidity vs. speedup
+	+ Decide rigidity vs. speedup
 		! Prior benchmarks:
 			+ @ 30:
 				+ Default ship (19932 spr, 9328 pts): 64FPS
@@ -562,9 +562,7 @@
 			+ Sodium
 			+ Explosive combustion
 			+ Blimps
-		= Test AM Bomb
-
-	- See to fix infinite combustion
+		+ Test AM Bomb
 
 	- Redo all benchmarks, including Dell
 	
