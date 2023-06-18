@@ -91,7 +91,7 @@ bool Ship::UpdateExplosionStateMachine(
 
                 mPoints.AddStaticForce(
                     pointIndex,
-                    blastDir / std::sqrt(std::max(pointRadiusLength, 1.0f)) * explosionStateMachine.BlastForce);
+                    blastDir * explosionStateMachine.BlastForce / std::sqrt(std::max((pointRadiusLength * 0.3f) + 0.7f, 1.0f)));
 
                 //
                 // Inject heat at this point

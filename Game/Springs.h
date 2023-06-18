@@ -637,7 +637,7 @@ private:
         //  - For small factory tolerances (~0.1), we are keen to get up to many times that tolerance
         //  - For large factory tolerances (~5.0), we are keen to get up to fewer times that tolerance
         //    (i.e. allow smaller change in length)
-        float constexpr MaxMeltingInducedTolerance = 20; // Was 20 up to 1.16.5
+        float constexpr MaxMeltingInducedTolerance = 20;
         float constexpr MinMeltingInducedTolerance = 0.0f;
         float constexpr StartStrength = 0.3f; // At this strength, we allow max tolerance
         float constexpr EndStrength = 3.0f; // At this strength, we allow min tolerance

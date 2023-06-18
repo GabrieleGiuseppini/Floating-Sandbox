@@ -584,5 +584,5 @@ private:
     // MechanicalIterationsAdjust.
     //
 
-    static constexpr size_t BasisNumMechanicalDynamicsIterations = 30;
+    static constexpr size_t BasisNumMechanicalDynamicsIterations = 40;
 };
