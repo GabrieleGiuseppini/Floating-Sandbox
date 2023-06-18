@@ -44,7 +44,7 @@ bool AntiMatterBombGadget::Update(
     Storm::Parameters const & /*stormParameters*/,
     GameParameters const & gameParameters)
 {
-    auto const elapsed = std::chrono::duration<float>(currentWallClockTime - mLastUpdateTimePoint);
+    auto const wallClockElapsedInFrame = std::chrono::duration<float>(currentWallClockTime - mLastUpdateTimePoint);
     mLastUpdateTimePoint = currentWallClockTime;
 
     switch (mState)
@@ -59,7 +59,7 @@ bool AntiMatterBombGadget::Update(
             }
 
             // Update cloud rotation angle
-            mCurrentCloudRotationAngle += ContainedCloudRevolutionSpeed * elapsed.count();
+            mCurrentCloudRotationAngle += ContainedCloudRevolutionSpeed * wallClockElapsedInFrame.count();
 
             return true;
         }
@@ -107,7 +107,7 @@ bool AntiMatterBombGadget::Update(
                     / static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(PreImplosionInterval).count());
 
                 // Update cloud rotation angle: going to zero with progress
-                mCurrentCloudRotationAngle += ContainedCloudRevolutionSpeed * (1.0f - mCurrentStateProgress) * elapsed.count();
+                mCurrentCloudRotationAngle += ContainedCloudRevolutionSpeed * (1.0f - mCurrentStateProgress) * wallClockElapsedInFrame.count();
 
                 // Invoke handler
                 mShipPhysicsHandler.DoAntiMatterBombPreimplosion(
@@ -190,7 +190,7 @@ bool AntiMatterBombGadget::Update(
                     / static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(ImplosionInterval).count());
 
                 // Update cloud rotation angle: going to max with progress
-                mCurrentCloudRotationAngle += ImplosionCloudRevolutionSpeed * mCurrentStateProgress * elapsed.count();
+                mCurrentCloudRotationAngle += ImplosionCloudRevolutionSpeed * mCurrentStateProgress * wallClockElapsedInFrame.count();
 
                 // Invoke handler
                 mShipPhysicsHandler.DoAntiMatterBombImplosion(

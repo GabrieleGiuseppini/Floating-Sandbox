@@ -61,7 +61,7 @@ void Ship::ApplyImplosionForceField(
             pointIndex,
             normalizedDisplacement
                 * strength
-                / (0.2f + sqrt(displacementLength))
+                / (0.2f + 0.5f * sqrt(displacementLength))
                 * massNormalization
                 * 10.0f); // Magic number
     }

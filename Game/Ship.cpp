@@ -3912,7 +3912,7 @@ void Ship::DoAntiMatterBombImplosion(
     GameParameters const & gameParameters)
 {
     float const strength =
-        (sequenceProgress * sequenceProgress * sequenceProgress)
+        (sequenceProgress * sequenceProgress)
         * gameParameters.AntiMatterBombImplosionStrength
         * 10000.0f
         * (gameParameters.IsUltraViolentMode ? 50.0f : 1.0f);
@@ -3934,11 +3934,10 @@ void Ship::DoAntiMatterBombExplosion(
 
     if (0.0f == sequenceProgress)
     {
+        // Apply the force field
         float const strength =
             30000.0f
             * (gameParameters.IsUltraViolentMode ? 50.0f : 1.0f);
-
-        // Apply the force field
         ApplyRadialExplosionForceField(
             centerPosition,
             strength);

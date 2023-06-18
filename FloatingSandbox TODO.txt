@@ -525,9 +525,50 @@
 								- Now (8, 8):18.07
 
 	- Decide rigidity vs. speedup
-		- Use PocketWatch's USS Rhode Island
+		! Prior benchmarks:
+			+ @ 30:
+				+ Default ship (19932 spr, 9328 pts): 64FPS
+					  UPD: (0.0 + 3.40 (64.3%)) UPL:(0.0 + 0.06)
+					  RND: (3.40) (UPL=0.18 MT=0.0)
+				+ Default ship DELL: TODO
+					  UPD: 
+					  RND: 
+				+ Default Titanic (27424 spr, 11752 pts): 64 FPS 
+					  UPD: (0.0 + 4.58 (63.6%)) UPL:(0.0+0.06)
+					  RND: (3.24) (UPL=0.18 MT=0.0)
+				+ Hesleden (150407 spr, 42708 pts):
+					+ Without lights: 63 FPS
+						UPD: (0.0 + 14.5 (62%)) UPL:(0.0 + 0.14)
+						RND: (3.77-3.84) (UPL:0.28 MT=0.0)
+					+ With lights: 42.0 FPS
+						UPD: (0.0 + 23.40 (38%%))
+			+ Prior version::
+				+ Default ship old Dell:
+					- FPS:31.95 UPD:19.58ms UPL:0.16ms RND:11.42ms (UPL:0.3xms MT=11.6xms)
+				+ Default Titanic: 64 FPS 
+					  UPD: (0.0 + 7.80 (63.2%)) UPL:(0.0+0.07)
+					  RND: (3.20) (UPL=0.16 MT=0.0)
+				+ Hesleden:
+					+ Without lights: 26.6 FPS (UPD: 36.6ms (72.5%))
+					+ With lights: 14.6 FPS (UPD: 66.6ms (39.3%))
+		+ New benchmarks w/40:
+			+ Titanic (w/lights): 5.80ms (65%)
+			+ Hesleden (wout/lights): 14.04ms (57%)
+			+ Hesleden (w/lights): 20.2ms (39%)
+		+ Fixup strength
+		+ Fixup explosions
+			+ Change blast radius dependency first
+			+ 3 bombs
+			+ Sodium
+			+ Explosive combustion
+			+ Blimps
+		= Test AM Bomb
+
+	- See to fix infinite combustion
 
 	- Redo all benchmarks, including Dell
+	
+	- Redo timer bomb gfx
 
 	- Greyscaling (of texture and particles) before Thanos snap, and mass changes (lighter), and different phasing of ashing in band
 		- Phasing: each particle randomly pulverizes, but towards band end prob is 100%
@@ -2074,7 +2115,7 @@ Current perf:
 + Default ship (19932 spr, 9328 pts): 64FPS
 	  UPD: (0.0 + 3.40 (64.3%)) UPL:(0.0 + 0.06)
 	  RND: (3.40) (UPL=0.18 MT=0.0)
-+ Default ship DELL: TODO
++ Default ship old Dell: TODO
 	  UPD: 
 	  RND: 
 + Default Titanic (27424 spr, 11752 pts): 64 FPS 
@@ -2088,14 +2129,14 @@ Current perf:
 		UPD: (0.0 + 23.40 (38%%))
 
 1.18.0 (with crepuscolar and cloud shadows shortcuts):
-- default ship:
-	- Old dell, RelWithDebInfo: FPS:31.95 UPD:19.58ms UPL:0.16ms RND:11.42ms (UPL:0.3xms MT=11.6xms)
++ Default ship old Dell:
+	- FPS:31.95 UPD:19.58ms UPL:0.16ms RND:11.42ms (UPL:0.3xms MT=11.6xms)
 + Default Titanic: 64 FPS 
 	  UPD: (0.0 + 7.80 (63.2%)) UPL:(0.0+0.07)
 	  RND: (3.20) (UPL=0.16 MT=0.0)
-- Hesleden:
-	- Without lights: 26.6 FPS (UPD: 36.6ms (72.5%))
-	- With lights: 14.6 FPS (UPD: 66.6ms (39.3%))
++ Hesleden:
+	+ Without lights: 26.6 FPS (UPD: 36.6ms (72.5%))
+	+ With lights: 14.6 FPS (UPD: 66.6ms (39.3%))
 
 1.17.5.2:
 - default ship:
