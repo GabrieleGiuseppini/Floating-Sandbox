@@ -587,6 +587,8 @@
 		X Small pool always parallelism=2, unless not enough threads
 			X May overlap threads with other pool, as threads run at different times
 
+	- Loading flipped ship flips the engines (Air Boat)
+
 	- Do IT localization and send for localization
 	
 	- Ships:

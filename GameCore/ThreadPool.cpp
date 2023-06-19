@@ -205,7 +205,7 @@ void ThreadPool::RunRemainingTasksLoop()
                 // All tasks completed...
 
                 // ...signal main thread
-                mMainThreadSignal.notify_all();
+                mMainThreadSignal.notify_one();
             }
         }
     }
