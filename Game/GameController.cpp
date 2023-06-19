@@ -335,7 +335,7 @@ void GameController::RunGameIteration()
         mStatsLastTimestampReal = nowReal;
 
         // In order to start from zero at first render, take global origin here
-        mOriginTimestampGame = nowReal;
+        mOriginTimestampGame = GameWallClock::GetInstance().Now();
 
         // Render initial status text
         PublishStats(nowReal);
@@ -1497,6 +1497,11 @@ void GameController::Reset(std::unique_ptr<Physics::World> newWorld)
     // Reset perf stats
     mTotalPerfStats->Reset();
     mLastPublishedTotalPerfStats.Reset();
+    mTotalFrameCount = 0;
+    mLastPublishedTotalFrameCount = 0;
+    mStatsOriginTimestampReal = std::chrono::steady_clock::time_point::min();
+    mStatsLastTimestampReal = std::chrono::steady_clock::time_point::min();
+    mSkippedFirstStatPublishes = 0;
 
     // Reset notification layer
     mNotificationLayer.Reset();

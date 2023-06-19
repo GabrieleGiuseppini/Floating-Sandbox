@@ -580,9 +580,12 @@
 	+ Fix wireframe mode
 	+ Thanos SHIFT icon
 
-	- ThreadPool optimization
+	X ThreadPool optimization
+		- Before: default ship: 4.05
+		- After:  default ship: 4.07
 
 	- Redo all benchmarks, including Dell
+
 	- Test rendering thread on Dell
 
 	- Do IT localization and send for localization
@@ -2125,11 +2128,28 @@
 =================================================
 Current perf:
 =================================================
-1.18.0 (parallel and vectorized spring relaxation (30 iterations) and better parallelization):
+1.18.0.1 (40 iterations):
++ Default ship (19932 spr, 9328 pts): 64FPS
+	  UPD: (0.0 + 4.18 (72.4%)) UPL:(0.0 + 0.05)
+	  RND: (3.30) (UPL=0.17 MT=0.0)
++ Default ship old Dell: 32.20 FPS
+	  UPD: (0.0 + 15.72 (72%) UPL:(0.0 + 0.18)
+	  RND:  (12.87) (UPL0.35 MT=13.17)
++ Default Titanic (w/power) (27424 spr, 11752 pts): 62.53 FPS 
+	  UPD: (0.0 + 5.94 (66.0%)) UPL:(0.0+0.06)
+	  RND: (3.00) (UPL=0.20 MT=0.0)
++ Hesleden (150407 spr, 42708 pts):
+	+ Without lights: 52.4 FPS
+		UPD: (0.0 + 16.82 (62%)) UPL:(0.0 + 0.15)
+		RND: (3.82) (UPL:0.28 MT=0.0)
+	+ With lights: 37.00 FPS
+		UPD: (0.0 + 25.80 (340.53%))
+
+1.18.0.0 (parallel and vectorized spring relaxation (30 iterations) and better parallelization):
 + Default ship (19932 spr, 9328 pts): 64FPS
 	  UPD: (0.0 + 3.40 (64.3%)) UPL:(0.0 + 0.06)
 	  RND: (3.40) (UPL=0.18 MT=0.0)
-+ Default ship old Dell: TODO
++ Default ship old Dell:
 	  UPD: 
 	  RND: 
 + Default Titanic (27424 spr, 11752 pts): 64 FPS 
@@ -2151,6 +2171,9 @@ Current perf:
 + Hesleden:
 	+ Without lights: 26.6 FPS (UPD: 36.6ms (72.5%))
 	+ With lights: 14.6 FPS (UPD: 66.6ms (39.3%))
+
+1.17.6:
+- default ship: UPD=3.46ms
 
 1.17.5.2:
 - default ship:
