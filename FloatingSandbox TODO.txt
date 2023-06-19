@@ -2129,20 +2129,20 @@ Current perf:
 =================================================
 1.18.0.1 (40 iterations):
 + Default ship (19932 spr, 9328 pts): 64FPS
-	  UPD: (0.0 + 4.07 (72.4%)) UPL:(0.0 + 0.05)
+	  UPD: (0.0 + 3.99-4.07 (71.7%-72.4%)) UPL:(0.0 + 0.05)
 	  RND: (3.30) (UPL=0.17 MT=0.0)
 + Default ship old Dell: 32.70 FPS
 	  UPD: (0.0 + 15.72 (71.8%) UPL:(0.0 + 0.18)
 	  RND:  (13.4) (UPL 0.35 MT=13.37)
 + Default Titanic (w/power) (27424 spr, 11752 pts): 62.53 FPS 
-	  UPD: (0.0 + 5.94 (66.0%)) UPL:(0.0+0.06)
-	  RND: (3.00) (UPL=0.20 MT=0.0)
+	  UPD: (0.0 + 5.76 (65.6%)) UPL:(0.0+0.06)
+	  RND: (3.13) (UPL=0.17 MT=0.0)
 + Hesleden (150407 spr, 42708 pts):
-	+ Without lights: 52.4 FPS
-		UPD: (0.0 + 16.82 (62%)) UPL:(0.0 + 0.15)
+	+ Without lights: 61.0 FPS
+		UPD: (0.0 + 13.7 (56.2%)) UPL:(0.0 + 0.15)
 		RND: (3.82) (UPL:0.28 MT=0.0)
-	+ With lights: 37.00 FPS
-		UPD: (0.0 + 25.80 (340.53%))
+	+ With lights: 47.44 FPS
+		UPD: (0.0 + 19.20 (38.40%))
 
 1.18.0.0 (parallel and vectorized spring relaxation (30 iterations) and better parallelization):
 + Default ship (19932 spr, 9328 pts): 64FPS
