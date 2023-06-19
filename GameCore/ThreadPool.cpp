@@ -98,7 +98,7 @@ void ThreadPool::Run(std::vector<Task> const & tasks)
             // Wait for signal
             mMainThreadSignal.wait(
                 lock,
-                [this]
+                [this]()
                 {
                     return 0 == mTasksToComplete;
                 });
@@ -134,7 +134,7 @@ void ThreadPool::ThreadLoop(ThreadManager & threadManager)
             // Wait for signal that tasks have been queued (or that we've been stopped)
             mWorkerThreadSignal.wait(
                 lock,
-                [this]
+                [this]()
                 {
                     return mIsStop || !mRemainingTasks.empty();
                 });
