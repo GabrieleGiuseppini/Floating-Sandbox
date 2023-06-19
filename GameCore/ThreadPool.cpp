@@ -138,7 +138,7 @@ void ThreadPool::ThreadLoop(ThreadManager & threadManager)
                 break;
             }
 
-            // Wait for signal
+            // Wait for signal that tasks have been queued (or that we've been stopped)
             mWorkerThreadSignal.wait(
                 lock,
                 [this]
