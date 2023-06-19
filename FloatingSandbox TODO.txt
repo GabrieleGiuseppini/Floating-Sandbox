@@ -578,7 +578,13 @@
 	+ Send for testing
 	+ Fix day/night rate
 
+	- Fix wareframe mode
+	+ Thanos SHIFT icon
+
+	- ThreadPool optimization
+
 	- Redo all benchmarks, including Dell
+	- Test rendering thread on Dell
 
 	- Do IT localization and send for localization
 	

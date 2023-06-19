@@ -2422,15 +2422,36 @@ public:
         SetCurrentCursor(inputState);
     }
 
+    void OnShiftKeyDown(InputState const & inputState) override
+    {
+        // Update cursor
+        SetCurrentCursor(inputState);
+    }
+
+    void OnShiftKeyUp(InputState const & inputState) override
+    {
+        // Update cursor
+        SetCurrentCursor(inputState);
+    }
+
 private:
 
     void SetCurrentCursor(InputState const & inputState)
     {
-        mToolCursorManager.SetToolCursor(inputState.IsLeftMouseDown ? mDownCursorImage : mUpCursorImage);
+        if (inputState.IsShiftKeyDown)
+        {
+            mToolCursorManager.SetToolCursor(inputState.IsLeftMouseDown ? mDownStructuralCursorImage : mUpStructuralCursorImage);
+        }
+        else
+        {
+            mToolCursorManager.SetToolCursor(inputState.IsLeftMouseDown ? mDownNormalCursorImage : mUpNormalCursorImage);
+        }
     }
 
-    wxImage const mUpCursorImage;
-    wxImage const mDownCursorImage;
+    wxImage const mUpNormalCursorImage;
+    wxImage const mUpStructuralCursorImage;
+    wxImage const mDownNormalCursorImage;
+    wxImage const mDownStructuralCursorImage;
 };
 
 class ScareFishTool final : public Tool

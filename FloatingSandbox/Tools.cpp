@@ -549,8 +549,10 @@ ThanosSnapTool::ThanosSnapTool(
         toolCursorManager,
         gameController,
         soundController)
-    , mUpCursorImage(WxHelpers::LoadCursorImage("thanos_snap_cursor_up", 15, 15, resourceLocator))
-    , mDownCursorImage(WxHelpers::LoadCursorImage("thanos_snap_cursor_down", 15, 15, resourceLocator))
+    , mUpNormalCursorImage(WxHelpers::LoadCursorImage("thanos_snap_cursor_up", 15, 15, resourceLocator))
+    , mUpStructuralCursorImage(WxHelpers::LoadCursorImage("thanos_snap_cursor_up_structural", 15, 15, resourceLocator))
+    , mDownNormalCursorImage(WxHelpers::LoadCursorImage("thanos_snap_cursor_down", 15, 15, resourceLocator))
+    , mDownStructuralCursorImage(WxHelpers::LoadCursorImage("thanos_snap_cursor_down_structural", 15, 15, resourceLocator))
 {
 }
 
