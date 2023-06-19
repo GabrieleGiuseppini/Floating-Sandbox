@@ -10,12 +10,6 @@
 
 #include <algorithm>
 
-#if FS_IS_OS_WINDOWS()
-#define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
-#include <Windows.h>
-#endif
-
 ThreadPool::ThreadPool(
     size_t parallelism,
     ThreadManager & threadManager)
@@ -27,6 +21,8 @@ ThreadPool::ThreadPool(
     , mTasksToComplete(0)
     , mIsStop(false)
 {
+    LogMessage("ThreadPool: creating thread pool with parallelism=", parallelism);
+
     assert(parallelism > 0);
 
     // Start N-1 threads (main thread is one of them)
@@ -62,6 +58,7 @@ void ThreadPool::Run(std::vector<Task> const & tasks)
 {
     assert(mRemainingTasks.empty());
     assert(0 == mTasksToComplete);
+    assert(tasks.size() <= mThreads.size() + 1);
 
     // Queue all the task (pointers) except the first one,
     // which we're gonna run immediately now to guarantee
@@ -118,10 +115,6 @@ void ThreadPool::ThreadLoop(ThreadManager & threadManager)
     //
 
     threadManager.InitializeThisThread();
-
-#if FS_IS_OS_WINDOWS()
-    LogMessage("Thread processor: ", GetCurrentProcessorNumber());
-#endif
 
     //
     // Run thread loop until thread pool is destroyed

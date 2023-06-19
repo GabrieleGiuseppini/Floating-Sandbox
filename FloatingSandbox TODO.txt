@@ -579,14 +579,13 @@
 	+ Fix day/night rate
 	+ Fix wireframe mode
 	+ Thanos SHIFT icon
-
 	X ThreadPool optimization
-		- Before: default ship: 4.05
-		- After:  default ship: 4.07
-
-	- Redo all benchmarks, including Dell
-
-	- Test rendering thread on Dell
+		! Before: default ship: 4.05
+		! After:  default ship: 4.07
+	+ Redo all benchmarks, including Dell
+	X Try with LargeThreadPool and SmallThreadPool
+		X Small pool always parallelism=2, unless not enough threads
+			X May overlap threads with other pool, as threads run at different times
 
 	- Do IT localization and send for localization
 	
@@ -2130,11 +2129,11 @@ Current perf:
 =================================================
 1.18.0.1 (40 iterations):
 + Default ship (19932 spr, 9328 pts): 64FPS
-	  UPD: (0.0 + 4.18 (72.4%)) UPL:(0.0 + 0.05)
+	  UPD: (0.0 + 4.07 (72.4%)) UPL:(0.0 + 0.05)
 	  RND: (3.30) (UPL=0.17 MT=0.0)
-+ Default ship old Dell: 32.20 FPS
-	  UPD: (0.0 + 15.72 (72%) UPL:(0.0 + 0.18)
-	  RND:  (12.87) (UPL0.35 MT=13.17)
++ Default ship old Dell: 32.70 FPS
+	  UPD: (0.0 + 15.72 (71.8%) UPL:(0.0 + 0.18)
+	  RND:  (13.4) (UPL 0.35 MT=13.37)
 + Default Titanic (w/power) (27424 spr, 11752 pts): 62.53 FPS 
 	  UPD: (0.0 + 5.94 (66.0%)) UPL:(0.0+0.06)
 	  RND: (3.00) (UPL=0.20 MT=0.0)

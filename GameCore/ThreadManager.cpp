@@ -11,6 +11,12 @@
 
 #include <cassert>
 
+#if FS_IS_OS_WINDOWS()
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#include <Windows.h>
+#endif
+
 size_t ThreadManager::GetNumberOfProcessors()
 {
     return std::max(
@@ -24,13 +30,13 @@ ThreadManager::ThreadManager(
 {
     auto const numberOfProcessors = GetNumberOfProcessors();
 
-    // Calculate max parallelism
+    // Calculate max simulation parallelism
 
     int availableThreads = static_cast<int>(numberOfProcessors);    
     if (isRenderingMultithreaded)
         --availableThreads;
 
-    mMaxSimulationParallelism = std::max(availableThreads, 1);
+    mMaxSimulationParallelism = std::max(availableThreads, 1); // Includes this thread
 
     size_t const simulationParallelism = std::min(mMaxSimulationParallelism, maxInitialParallelism);
 
@@ -38,7 +44,7 @@ ThreadManager::ThreadManager(
         " maxSimulationParallelism=", mMaxSimulationParallelism,
         " simulationParallism=", simulationParallelism);
 
-    // Setup current parallelism
+    // Set parallelism
     SetSimulationParallelism(simulationParallelism);
 }
 
@@ -57,7 +63,6 @@ void ThreadManager::SetSimulationParallelism(size_t parallelism)
 
     mSimulationThreadPool.reset();
 
-    LogMessage("ThreadManager: creating simulation thread pool with parallelism=", parallelism);
     mSimulationThreadPool = std::make_unique<ThreadPool>(parallelism, *this);
 }
 
@@ -68,6 +73,10 @@ ThreadPool & ThreadManager::GetSimulationThreadPool()
 
 void ThreadManager::InitializeThisThread()
 {
+#if FS_IS_OS_WINDOWS()
+    LogMessage("Thread processor: ", GetCurrentProcessorNumber());
+#endif
+
     //
     // Initialize floating point handling
     //
