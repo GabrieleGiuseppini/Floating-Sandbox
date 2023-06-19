@@ -903,7 +903,8 @@ void WorldRenderContext::RenderDrawSky(RenderParameters const & renderParameters
     // First step in pipeline, as it implicitly or explicitly clears the canvas
     //
 
-    if (renderParameters.DoCrepuscularGradient)
+    if (renderParameters.DoCrepuscularGradient
+        && renderParameters.DebugShipRenderMode != DebugShipRenderModeType::Wireframe)
     {
         // Use shader - it'll clear canvas
 

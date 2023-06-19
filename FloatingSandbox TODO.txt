@@ -577,8 +577,7 @@
 			+ Test in debug around borders
 	+ Send for testing
 	+ Fix day/night rate
-
-	- Fix wareframe mode
+	+ Fix wireframe mode
 	+ Thanos SHIFT icon
 
 	- ThreadPool optimization
