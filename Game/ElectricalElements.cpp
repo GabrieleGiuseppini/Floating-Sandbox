@@ -17,7 +17,10 @@ void ElectricalElements::Add(
     ElementIndex pointElementIndex,
     ElectricalElementInstanceIndex instanceIndex,
     std::optional<ElectricalPanel::ElementMetadata> const & panelElementMetadata,
-    ElectricalMaterial const & electricalMaterial,
+    ElectricalMaterial const & electricalMaterial,    
+    bool flipH,
+    bool flipV,
+    bool rotate90CW,
     Points const & points)
 {
     ElementIndex const elementIndex = static_cast<ElementIndex>(mIsDeletedBuffer.GetCurrentPopulatedSize());
@@ -54,9 +57,31 @@ void ElectricalElements::Add(
 
         case ElectricalMaterial::ElectricalElementType::Engine:
         {
+            float engineCcwRadiansDirection = electricalMaterial.EngineCCWDirection;
+
+            if (flipH)
+            {
+                engineCcwRadiansDirection = Pi<float> - engineCcwRadiansDirection;
+                if (engineCcwRadiansDirection >= 2.0f * Pi<float>)
+                    engineCcwRadiansDirection -= 2.0f * Pi<float>;
+            }
+
+            if (flipV)
+            {
+                engineCcwRadiansDirection *= -1.0f;
+            }
+
+            if (rotate90CW)
+            {
+                engineCcwRadiansDirection -= Pi<float> / 2.0f;
+                if (engineCcwRadiansDirection < 0.0f)
+                    engineCcwRadiansDirection += 2.0f * Pi<float>;
+            }
+
             // State
             mElementStateBuffer.emplace_back(
                 ElementState::EngineState(
+                    engineCcwRadiansDirection,
                     electricalMaterial.EnginePower * 746.0f, // HP => N*m/s (which we use as N)
                     electricalMaterial.EngineResponsiveness));
 
@@ -1327,7 +1352,7 @@ void ElectricalElements::UpdateEngineConductivity(
 
                                         // Calculate angle : CW angle between engine direction and engine->reference_point vector
                                         float engineCWAngle =
-                                            (2.0f * Pi<float> - mMaterialBuffer[ce]->EngineCCWDirection)
+                                            (2.0f * Pi<float> - engineState.CCWDirection)
                                             - OctantToCWAngle(OppositeOctant(incomingOctant));
 
                                         // Normalize

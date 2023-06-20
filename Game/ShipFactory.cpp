@@ -382,6 +382,9 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
         shipDefinition.Layers.ElectricalLayer
             ? shipDefinition.Layers.ElectricalLayer->Panel
             : ElectricalPanel(),
+        shipLoadOptions.FlipHorizontally,
+        shipLoadOptions.FlipVertically,
+        shipLoadOptions.Rotate90CW,
         shipId,
         parentWorld,
         gameEventDispatcher,
@@ -1746,6 +1749,9 @@ ElectricalElements ShipFactory::CreateElectricalElements(
     Physics::Points const & points,
     std::vector<ElectricalElementInstanceIndex> const & electricalElementInstanceIndices,
     ElectricalPanel const & electricalPanel,
+    bool flipH,
+    bool flipV,
+    bool rotate90CW,
     ShipId shipId,
     Physics::World & parentWorld,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
@@ -1840,6 +1846,9 @@ ElectricalElements ShipFactory::CreateElectricalElements(
             elementInfo.instanceIndex,
             elementInfo.panelElementMetadata,
             *electricalMaterial,
+            flipH,
+            flipV,
+            rotate90CW,
             points);
     }
 

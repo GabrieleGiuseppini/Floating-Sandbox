@@ -97,6 +97,7 @@ private:
 
         struct EngineState
         {
+            float CCWDirection;
             float ThrustCapacity;
             float Responsiveness;
 
@@ -120,9 +121,11 @@ private:
             EngineGroupIndex EngineGroup;
 
             EngineState(
+                float ccwDirection,
                 float thrustCapacity,
                 float responsiveness)
-                : ThrustCapacity(thrustCapacity)
+                : CCWDirection(ccwDirection)
+                , ThrustCapacity(thrustCapacity)
                 , Responsiveness(responsiveness)
                 , EngineConnectivityVisitSequenceNumber()
             {
@@ -535,7 +538,10 @@ public:
         ElementIndex pointElementIndex,
         ElectricalElementInstanceIndex instanceIndex,
         std::optional<ElectricalPanel::ElementMetadata> const & panelElementMetadata,
-        ElectricalMaterial const & electricalMaterial,
+        ElectricalMaterial const & electricalMaterial,        
+        bool flipH,
+        bool flipV,
+        bool rotate90CW,
         Points const & points);
 
     void AnnounceInstancedElements();

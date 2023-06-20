@@ -632,8 +632,7 @@
 		X Bad bouncing, and not that much gain
 	+ Equalize internal pressure on thread
 		+ Redo benchmarks
-
-	- Loading flipped ship flips the engines (Air Boat)
+	+ Loading flipped ship flips the engines (Air Boat)
 
 	- Do IT localization and send for localization
 	
