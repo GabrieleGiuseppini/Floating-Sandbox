@@ -586,6 +586,12 @@
 	X Try with LargeThreadPool and SmallThreadPool
 		X Small pool always parallelism=2, unless not enough threads
 			X May overlap threads with other pool, as threads run at different times
+	X Lazy condition variable: verify if perf gain with cold laptop
+
+	- Threadpool path for poor Dell - lockless and cond varless
+		- If ok, update changes.txt
+
+	- See if now that we've fixed ocean floor collisions, can have a larger period
 
 	- Loading flipped ship flips the engines (Air Boat)
 

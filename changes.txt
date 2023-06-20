@@ -1,7 +1,8 @@
 1.17.6 - TODO
 - Significant performance improvements, especially on multi-core CPU's
-	- Single-core CPU's: frames rate improved by TODO
-	- Multi-core CPU's: frames rate improved by at least TODO
+	- Parallelized integration, spring relaxation, and ocean floor collision detection
+	- Vectorized spring relaxation
+	- On multi-core CPU's, frame rates have improved by at least 2x
 - Re-designed wave interactions - user-spawned waves are now more natural and smooth
 - Revamped rendering of ocean
 	- Added lighting effects of clouds onto ocean

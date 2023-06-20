@@ -58,7 +58,6 @@ void ThreadPool::Run(std::vector<Task> const & tasks)
 {
     assert(mRemainingTasks.empty());
     assert(0 == mTasksToComplete);
-    assert(tasks.size() <= mThreads.size() + 1);
 
     // Queue all the task (pointers) except the first one,
     // which we're gonna run immediately now to guarantee
