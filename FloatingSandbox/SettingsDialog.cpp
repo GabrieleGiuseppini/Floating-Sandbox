@@ -911,7 +911,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
-                    _("Simulation Quality"),
+                    _("Rigidity Adjust"),
                     _("Higher values improve the rigidity of simulated structures, at the expense of longer computation times."),
                     [this](float value)
                     {
@@ -922,7 +922,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
                         0.5f,
                         mGameControllerSettingsOptions.GetMinNumMechanicalDynamicsIterationsAdjustment(),
                         mGameControllerSettingsOptions.GetMaxNumMechanicalDynamicsIterationsAdjustment()),
-                        mWarningIcon.get());
+                    mWarningIcon.get());
 
                 performanceSizer->Add(
                     mMechanicalQualitySlider,
