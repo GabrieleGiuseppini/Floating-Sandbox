@@ -163,6 +163,9 @@ void Ship::RunSpringRelaxationAndDynamicForcesIntegration(
     GameParameters const & gameParameters,
     ThreadManager & threadManager)
 {    
+    // We run the sea floor collision detection every these many iterations of the spring relaxation loop
+    int constexpr SeaFloorCollisionPeriod = 2;
+
     auto & threadPool = threadManager.GetSimulationThreadPool();
 
     int const numMechanicalDynamicsIterations = gameParameters.NumMechanicalDynamicsIterations<int>();

@@ -588,7 +588,6 @@
 			X May overlap threads with other pool, as threads run at different times
 	X Lazy condition variable: verify if perf gain with cold laptop
 	X Try atomic decrement in thread pool w/out lock
-
 	+ Threadpool path for poor Dell - lockless and cond varless
 		+ And for single-tasks
 			! So can test default ship on multi-core with just one integration and/or just one light
@@ -629,9 +628,8 @@
 		+ Old Dell:
 			+ 33.9 FPS (15.67)
 		X If ok, update changes.txt w/single-core fps
-
-
-	- See if now that we've fixed ocean floor collisions, can have a larger period
+	X See if now that we've fixed ocean floor collisions, can have a larger period
+		X Bad bouncing, and not that much gain
 
 	- Loading flipped ship flips the engines (Air Boat)
 

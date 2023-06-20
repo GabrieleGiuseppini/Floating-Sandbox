@@ -33,11 +33,6 @@ namespace Physics
 
 class Ship final : public IShipPhysicsHandler
 {
-private:
-
-    // We run the sea floor collision detection every these many iterations or the spring relaxation loop
-    static int constexpr SeaFloorCollisionPeriod = 2;
-
 public:
 
     Ship(
