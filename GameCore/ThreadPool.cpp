@@ -59,6 +59,18 @@ void ThreadPool::Run(std::vector<Task> const & tasks)
     assert(mRemainingTasks.empty());
     assert(0 == mTasksToComplete);
 
+    // Shortcut to avoid paying synchronization penalties
+    // in trivial cases
+    if (mThreads.empty() || tasks.size() == 1)
+    {
+        for (Task const & task : tasks)
+        {
+            RunTask(task);
+        }
+
+        return;
+    }
+
     // Queue all the task (pointers) except the first one,
     // which we're gonna run immediately now to guarantee
     // that the first task always runs on the main thread
