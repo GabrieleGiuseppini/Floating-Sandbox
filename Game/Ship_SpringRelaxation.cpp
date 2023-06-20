@@ -102,7 +102,9 @@ void Ship::RecalculateSpringRelaxationIntegrationAndSeaFloorCollisionParallelism
     ElementCount const numberOfPoints = mPoints.GetBufferElementCount();
 
     size_t const actualParallelism = std::max(
-        std::min(static_cast<size_t>(numberOfPoints) / 2000, simulationParallelism),
+        std::min(
+            numberOfPoints <= 12000 ? size_t(1) : size_t(1) + (numberOfPoints - 12000) / 4000,
+            simulationParallelism),
         size_t(1));
 
     LogMessage("Ship::RecalculateSpringRelaxationIntegrationAndSeaFloorCollisionParallelism: points=", numberOfPoints, " simulationParallelism=", simulationParallelism,

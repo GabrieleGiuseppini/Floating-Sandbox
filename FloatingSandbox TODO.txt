@@ -587,15 +587,16 @@
 		X Small pool always parallelism=2, unless not enough threads
 			X May overlap threads with other pool, as threads run at different times
 	X Lazy condition variable: verify if perf gain with cold laptop
+	X Try atomic decrement in thread pool w/out lock
 
-	= Threadpool path for poor Dell - lockless and cond varless
-		= And for single-tasks
+	+ Threadpool path for poor Dell - lockless and cond varless
+		+ And for single-tasks
 			! So can test default ship on multi-core with just one integration and/or just one light
-				! Original was 1-4-2
+				! Original was 1-4/5/8-2
 					+ Default ship: 4.03
 					+ Default Titanic (wout/power): 5.20
 					+ Default Titanic (w/power): 5.76
-					+ Hesleden (wout/lights): 14.3
+					+ Hesleden (wout/lights): 13.5/14.0
 					+ Hesleden (w/lights): 19.5
 				- 1 integration:	
 					- Default ship: 3.78, it's a take
@@ -609,25 +610,26 @@
 					- Default ship: 3.73, it's a take
 					- Titanic (wout/power): 4.96
 					- Titanic (w/power): 6.40
-			= New algo:
-				= Integration: Titanic and lower (cap: 15000) should use 1 integration thread
-					- No, different algo:
-						- Below 15,000: 1
-						- Above: TODOHERE
+			+ New algo:
+				X Integration: Titanic (11752) and default ship (9328) (cap: 15000) should use 1 integration thread
+				+ No, bad Hesleden; different algo:
+					- Below 12,000: 1
+					- 42708: 8 => 30000 = 7
 				+ Lights: leave alone					
-			= Re-check, including Hesleden
-				! cap 15000:
+			+ Re-check, including Hesleden
+				! was:
+					+ Hesleden (wout/lights): 13.5/14.0 (8 threads)
+					+ Hesleden (w/lights): 19.5
+				! / 15000:
 					+ Hesleden (wout/lights): 15.6
 					+ Hesleden (w/lights): 20.02
-				- TODO new algo
-					+ Hesleden (wout/lights):
+				! new algo:
+					+ Hesleden (wout/lights): 13.5 (8 threads)
 					+ Hesleden (w/lights):
 		+ Old Dell:
 			+ 33.9 FPS (15.67)
 		X If ok, update changes.txt w/single-core fps
 
-	- Try atomic decrement in thread pool w/out lock
-		- check num--
 
 	- See if now that we've fixed ocean floor collisions, can have a larger period
 
@@ -2173,22 +2175,22 @@
 =================================================
 Current perf:
 =================================================
-1.18.0.1 (40 iterations):
+1.18.0.1 (40 iterations, lowered integration threads):
 + Default ship (19932 spr, 9328 pts): 64FPS
-	  UPD: (0.0 + 3.99-4.07 (71.7%-72.4%)) UPL:(0.0 + 0.05)
+	  UPD: (0.0 + 3.8 (68.5%)) UPL:(0.0 + 0.05)
 	  RND: (3.30) (UPL=0.17 MT=0.0)
 + Default ship old Dell: 32.70 FPS
 	  UPD: (0.0 + 15.72 (71.8%) UPL:(0.0 + 0.18)
 	  RND:  (13.4) (UPL 0.35 MT=13.37)
 + Default Titanic (w/power) (27424 spr, 11752 pts): MAX FPS 
-	  UPD: (0.0 + 5.76 (65.6%)) UPL:(0.0+0.06)
+	  UPD: (0.0 + 5.66 (62.0%)) UPL:(0.0+0.06)
 	  RND: (3.13) (UPL=0.17 MT=0.0)
 + Default Titanic (wout/power) (27424 spr, 11752 pts): MAX FPS 
-	  UPD: (0.0 + 5.35 (73.0%)) UPL:(0.0+0.06)
+	  UPD: (0.0 + 5.01 (70.7%)) UPL:(0.0+0.06)
 	  RND: (3.20) (UPL=0.16 MT=0.0)
 + Hesleden (150407 spr, 42708 pts):
-	+ Without lights: 61.0 FPS
-		UPD: (0.0 + 13.7 (56.2%)) UPL:(0.0 + 0.15)
+	+ Without lights: 60.0 FPS
+		UPD: (0.0 + 13.9 (56.2%)) UPL:(0.0 + 0.15)
 		RND: (3.82) (UPL:0.28 MT=0.0)
 	+ With lights: 47.44 FPS
 		UPD: (0.0 + 19.20 (38.40%))
