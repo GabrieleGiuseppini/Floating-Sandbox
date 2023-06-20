@@ -630,6 +630,8 @@
 		X If ok, update changes.txt w/single-core fps
 	X See if now that we've fixed ocean floor collisions, can have a larger period
 		X Bad bouncing, and not that much gain
+	+ Equalize internal pressure on thread
+		+ Redo benchmarks
 
 	- Loading flipped ship flips the engines (Air Boat)
 
@@ -2173,25 +2175,25 @@
 =================================================
 Current perf:
 =================================================
-1.18.0.1 (40 iterations, lowered integration threads):
+1.18.0.1 (40 iterations, lowered integration threads, equalize internal pressure on thread):
 + Default ship (19932 spr, 9328 pts): 64FPS
-	  UPD: (0.0 + 3.8 (68.5%)) UPL:(0.0 + 0.05)
+	  UPD: (0.0 + 3.68 (71.0%)) UPL:(0.0 + 0.05)
 	  RND: (3.30) (UPL=0.17 MT=0.0)
 + Default ship old Dell: 32.70 FPS
 	  UPD: (0.0 + 15.72 (71.8%) UPL:(0.0 + 0.18)
 	  RND:  (13.4) (UPL 0.35 MT=13.37)
 + Default Titanic (w/power) (27424 spr, 11752 pts): MAX FPS 
-	  UPD: (0.0 + 5.66 (62.0%)) UPL:(0.0+0.06)
+	  UPD: (0.0 + 5.53 (64.0%)) UPL:(0.0+0.06)
 	  RND: (3.13) (UPL=0.17 MT=0.0)
 + Default Titanic (wout/power) (27424 spr, 11752 pts): MAX FPS 
-	  UPD: (0.0 + 5.01 (70.7%)) UPL:(0.0+0.06)
+	  UPD: (0.0 + 4.90 (72.5%)) UPL:(0.0+0.06)
 	  RND: (3.20) (UPL=0.16 MT=0.0)
 + Hesleden (150407 spr, 42708 pts):
 	+ Without lights: 60.0 FPS
-		UPD: (0.0 + 13.9 (56.2%)) UPL:(0.0 + 0.15)
+		UPD: (0.0 + 13.8 (56.0%)) UPL:(0.0 + 0.15)
 		RND: (3.82) (UPL:0.28 MT=0.0)
-	+ With lights: 47.44 FPS
-		UPD: (0.0 + 19.20 (38.40%))
+	+ With lights: 47.8 FPS
+		UPD: (0.0 + 19.10 (40.5%))
 
 1.18.0.0 (parallel and vectorized spring relaxation (30 iterations) and better parallelization):
 + Default ship (19932 spr, 9328 pts): 64FPS

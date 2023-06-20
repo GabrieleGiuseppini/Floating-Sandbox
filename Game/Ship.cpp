@@ -435,14 +435,6 @@ void Ship::Update(
         mGameEventHandler->OnWaterTaken(waterTakenInStep);
     }
 
-    //
-    // Equalize internal pressure
-    //
-
-    // - Inputs: InternalPressure, ConnectedSprings
-    // - Outpus: InternalPressure
-    EqualizeInternalPressure(gameParameters);
-
     ///////////////////////////////
     // Parallel run 1 START
     ///////////////////////////////
@@ -469,6 +461,14 @@ void Ship::Update(
     parallelTasks.emplace_back(
         [&]()
         {
+            //
+            // Equalize internal pressure (Cost: 1.5)
+            //
+
+            // - Inputs: InternalPressure, ConnectedSprings
+            // - Outpus: InternalPressure
+            EqualizeInternalPressure(gameParameters);
+
             //
             // Apply static pressure forces (Cost: 10)
             //

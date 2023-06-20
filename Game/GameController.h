@@ -902,6 +902,8 @@ private:
         RgbaImageData && textureImage,
         ShipMetadata const & shipMetadata);
 
+    void ResetStats();
+
     void PublishStats(std::chrono::steady_clock::time_point nowReal);
 
     static bool CalculateAreCloudShadowsEnabled(OceanRenderDetailType oceanRenderDetail);

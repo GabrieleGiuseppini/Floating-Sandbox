@@ -948,8 +948,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
                     },
                     std::make_unique<IntegralLinearSliderCore<unsigned int>>(
                         mGameControllerSettingsOptions.GetMinMaxNumSimulationThreads(),
-                        mGameControllerSettingsOptions.GetMaxMaxNumSimulationThreads()),
-                    mWarningIcon.get());
+                        mGameControllerSettingsOptions.GetMaxMaxNumSimulationThreads()));
                 
                 performanceSizer->Add(
                     mMaxNumSimulationThreadsSlider,

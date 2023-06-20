@@ -1494,14 +1494,8 @@ void GameController::Reset(std::unique_ptr<Physics::World> newWorld)
     // Reset state machines
     ResetAllStateMachines();
 
-    // Reset perf stats
-    mTotalPerfStats->Reset();
-    mLastPublishedTotalPerfStats.Reset();
-    mTotalFrameCount = 0;
-    mLastPublishedTotalFrameCount = 0;
-    mStatsOriginTimestampReal = std::chrono::steady_clock::time_point::min();
-    mStatsLastTimestampReal = std::chrono::steady_clock::time_point::min();
-    mSkippedFirstStatPublishes = 0;
+    // Reset stats
+    ResetStats();
 
     // Reset notification layer
     mNotificationLayer.Reset();
@@ -1543,6 +1537,17 @@ void GameController::InternalAddShip(
 
     // Announce
     mWorld->Announce();
+}
+
+void GameController::ResetStats()
+{
+    mTotalPerfStats->Reset();
+    mLastPublishedTotalPerfStats.Reset();
+    mTotalFrameCount = 0;
+    mLastPublishedTotalFrameCount = 0;
+    mStatsOriginTimestampReal = std::chrono::steady_clock::time_point::min();
+    mStatsLastTimestampReal = std::chrono::steady_clock::time_point::min();
+    mSkippedFirstStatPublishes = 0;
 }
 
 void GameController::PublishStats(std::chrono::steady_clock::time_point nowReal)
