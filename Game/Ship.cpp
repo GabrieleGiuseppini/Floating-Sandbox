@@ -2308,9 +2308,6 @@ void Ship::UpdateWaterVelocities(
         // WaterCrazyness=1   -> alpha=Wh
         float const alphaCrazyness = 1.0f + gameParameters.WaterCrazyness * (oldPointWaterBufferData[pointIndex] - 1.0f);
 
-        // Kinetic energy lost at this point
-        float pointKineticEnergyLoss = 0.0f;
-
         // Count of non-hull free and drowned neighbor points
         float pointSplashNeighbors = 0.0f;
         float pointSplashFreeNeighbors = 0.0f;
@@ -2412,6 +2409,9 @@ void Ship::UpdateWaterVelocities(
         // 3) Move water along all springs according to their flows,
         //    and update destination's momenta accordingly
         //
+
+        // Kinetic energy lost at this point
+        float pointKineticEnergyLoss = 0.0f;
 
         for (size_t s = 0; s < connectedSpringCount; ++s)
         {
