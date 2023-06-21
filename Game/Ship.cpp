@@ -2270,7 +2270,10 @@ void Ship::UpdateWaterVelocities(
 
     //
     // Precalculate point "freeness factors", i.e. how much each point's
-    // quantity of water "suppresses" splashes from adjacent kinetic energy losses
+    // quantity of water "suppresses" splashes from adjacent kinetic energy losses:
+    //
+    //  1.0f: point has no water
+    //  0.0f: point has water
     //
 
     auto pointFreenessFactorBuffer = mPoints.AllocateWorkBufferFloat();
@@ -2471,6 +2474,8 @@ void Ship::UpdateWaterVelocities(
             }
             else
             {
+                // Wall hit
+
                 // Deleted springs are removed from points' connected springs
                 assert(!mSprings.IsDeleted(cs.SpringIndex));
 
