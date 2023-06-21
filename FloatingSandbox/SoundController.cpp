@@ -1914,8 +1914,8 @@ void SoundController::OnWaterDisplaced(float waterDisplacedMagnitude)
             // Wave
             //
 
-            // 10 * (1 - 1.8^(-0.08 * x))
-            float const waveVolume = 10.f * (1.0f - std::pow(1.8f, -0.08f * waterDisplacedMagnitude));
+            // 10 * (1 - 1.8^(-0.5 * x))
+            float const waveVolume = 10.f * (1.0f - std::pow(1.8f, -0.5f * waterDisplacementMagnitudeDerivative));
 
             PlayOneShotMultipleChoiceSound(
                 SoundType::WaterDisplacementWave,
@@ -1929,8 +1929,8 @@ void SoundController::OnWaterDisplaced(float waterDisplacedMagnitude)
                 // Splash
                 //
 
-                // 40 * (1 - 1.2^(-0.1 * x))
-                float const splashVolume = 7.0f + 40.f * (1 - std::pow(1.2f, -0.1f * waterDisplacedMagnitude));
+                // 40 * (1 - 1.2^(-0.6 * x))
+                float const splashVolume = 7.0f + 40.f * (1 - std::pow(1.2f, -0.6f * waterDisplacementMagnitudeDerivative));
 
                 PlayOneShotMultipleChoiceSound(
                     SoundType::WaterDisplacementSplash,
