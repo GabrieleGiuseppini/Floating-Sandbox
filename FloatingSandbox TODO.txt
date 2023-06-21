@@ -633,6 +633,12 @@
 	+ Equalize internal pressure on thread
 		+ Redo benchmarks
 	+ Loading flipped ship flips the engines (Air Boat)
+	+ Impart inertia also to water
+
+	- Recalibrate cloth's stiffness(?)
+		- See also ropes, rubber ball
+
+	- Test sim quality
 
 	- Do IT localization and send for localization
 	

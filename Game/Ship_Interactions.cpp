@@ -104,6 +104,7 @@ void Ship::MoveBy(
                 if (!mPoints.IsPinned(p))
                 {
                     mPoints.SetVelocity(p, actualInertialVelocity);
+                    mPoints.SetWaterVelocity(p, -actualInertialVelocity);
                 }
 
                 // Zero-out already-existing forces
@@ -128,6 +129,7 @@ void Ship::MoveBy(
 
     vec2f * const restrict positionBuffer = mPoints.GetPositionBufferAsVec2();
     vec2f * const restrict velocityBuffer = mPoints.GetVelocityBufferAsVec2();
+    vec2f * const restrict waterVelocityBuffer = mPoints.GetWaterVelocityBufferAsVec2();
     vec2f * const restrict staticForceBuffer = mPoints.GetStaticForceBufferAsVec2();
     vec2f * const restrict dynamicForceBuffer = mPoints.GetDynamicForceBufferAsVec2();
 
@@ -135,6 +137,9 @@ void Ship::MoveBy(
     {
         positionBuffer[p] += offset;
         velocityBuffer[p] = actualInertialVelocity;
+        waterVelocityBuffer[p] = -actualInertialVelocity;
+
+        // Zero-out already-existing forces
         staticForceBuffer[p] = vec2f::zero();
         dynamicForceBuffer[p] = vec2f::zero();
     }
@@ -170,14 +175,13 @@ void Ship::RotateBy(
             {
                 vec2f const centeredPos = mPoints.GetPosition(p) - center;
                 vec2f const newPosition = vec2f(centeredPos.dot(rotX), centeredPos.dot(rotY)) + center;
-
                 mPoints.SetPosition(p, newPosition);
 
                 if (!mPoints.IsPinned(p))
                 {
-                    mPoints.SetVelocity(
-                        p,
-                        (vec2f(centeredPos.dot(inertialRotX), centeredPos.dot(inertialRotY)) - centeredPos) * inertiaMagnitude);
+                    vec2f const linearInertialVelocity = (vec2f(centeredPos.dot(inertialRotX), centeredPos.dot(inertialRotY)) - centeredPos) * inertiaMagnitude;
+                    mPoints.SetVelocity(p, linearInertialVelocity);
+                    mPoints.SetWaterVelocity(p, -linearInertialVelocity);
                 }
 
                 // Zero-out already-existing forces
@@ -208,16 +212,21 @@ void Ship::RotateBy(
 
     vec2f * const restrict positionBuffer = mPoints.GetPositionBufferAsVec2();
     vec2f * const restrict velocityBuffer = mPoints.GetVelocityBufferAsVec2();
+    vec2f * const restrict waterVelocityBuffer = mPoints.GetWaterVelocityBufferAsVec2();
     vec2f * const restrict staticForceBuffer = mPoints.GetStaticForceBufferAsVec2();
     vec2f * const restrict dynamicForceBuffer = mPoints.GetDynamicForceBufferAsVec2();
 
     for (auto const p : mPoints.BufferElements())
     {
         vec2f const centeredPos = positionBuffer[p] - center;
+        vec2f const newPosition = vec2f(centeredPos.dot(rotX), centeredPos.dot(rotY)) + center;
+        positionBuffer[p] = newPosition;
 
-        positionBuffer[p] = vec2f(centeredPos.dot(rotX), centeredPos.dot(rotY)) + center;
-        velocityBuffer[p] =
-            (vec2f(centeredPos.dot(inertialRotX), centeredPos.dot(inertialRotY)) - centeredPos) * inertiaMagnitude;
+        vec2f const linearInertialVelocity = (vec2f(centeredPos.dot(inertialRotX), centeredPos.dot(inertialRotY)) - centeredPos) * inertiaMagnitude;
+        velocityBuffer[p] = linearInertialVelocity;
+        waterVelocityBuffer[p] = -linearInertialVelocity;
+
+        // Zero-out already-existing forces
         staticForceBuffer[p] = vec2f::zero();
         dynamicForceBuffer[p] = vec2f::zero();
     }
