@@ -45,10 +45,10 @@ SoundController::SoundController(
     , mPlayStressSounds(true)
     , mPlayWindSound(true)
     , mPlayAirBubbleSurfaceSound(true)
-    , mLastWaterSplashed(0.0f)
-    , mCurrentWaterSplashedTrigger(WaveSplashTriggerSize)
     , mLastWindSpeedAbsoluteMagnitude(0.0f)
     , mWindVolumeRunningAverage()
+    , mLastWaterSplashed(0.0f)
+    , mCurrentWaterSplashedTrigger(WaveSplashTriggerSize)
     , mLastWaterDisplacedMagnitude(0.0f)
     , mLastWaterDisplacedMagnitudeDerivative(0.0f)
     // One-shot sounds
@@ -1617,10 +1617,10 @@ void SoundController::Reset()
     // Reset state
     //
 
-    mLastWaterSplashed = 0.0f;
-    mCurrentWaterSplashedTrigger = WaveSplashTriggerSize;
     mLastWindSpeedAbsoluteMagnitude = 0.0f;
     mWindVolumeRunningAverage.Reset();
+    mLastWaterSplashed = 0.0f;
+    mCurrentWaterSplashedTrigger = WaveSplashTriggerSize;
     mLastWaterDisplacedMagnitude = 0.0f;
     mLastWaterDisplacedMagnitudeDerivative = 0.0f;
 }

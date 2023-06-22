@@ -522,10 +522,12 @@ private:
     bool mPlayWindSound;
     bool mPlayAirBubbleSurfaceSound;
 
-    float mLastWaterSplashed;
-    float mCurrentWaterSplashedTrigger;
     float mLastWindSpeedAbsoluteMagnitude;
     RunningAverage<70> mWindVolumeRunningAverage;
+
+    // Water splash state
+    float mLastWaterSplashed;
+    float mCurrentWaterSplashedTrigger;
 
     // Water displacement state
     float mLastWaterDisplacedMagnitude;
@@ -565,6 +567,7 @@ private:
         switch (soundType)
         {
             case SoundType::WaterDisplacementWave:
+            case SoundType::Wave:
                 return std::chrono::milliseconds(100);
             case SoundType::Break:
             case SoundType::Destroy:
