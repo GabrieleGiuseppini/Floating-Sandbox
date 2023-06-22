@@ -634,14 +634,8 @@
 		+ Redo benchmarks
 	+ Loading flipped ship flips the engines (Air Boat)
 	+ Impart inertia also to water
-
-	- Inner water sound:
-		= Swap Wave and WaveDisplacement sounds
-			- Just sound file, so undo code changes, except for both having a 100ms interval
-				- Re-compare both just a last time
-
-	- Recalibrate cloth's stiffness(?)
-		- See also ropes, rubber ball
+	+ Inner water sound:
+		+ Swap Wave and WaveDisplacement sounds
 
 	= Test sim quality
 		- Fix strength adjustment? Starting from 40
@@ -650,7 +644,11 @@
 			- Calc linear relationship from 40 onwards (watch out: empirical strengths are on top of old calc'n)
 			- Test also downward
 
-	- Fix famous probe panel bug (*)
+	- Fix famous probe panel bug
+
+
+	- Recalibrate cloth's stiffness(?)
+		- See also ropes, rubber ball
 
 	- Do IT localization and send for localization
 	
