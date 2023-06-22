@@ -1079,22 +1079,22 @@ void NotificationRenderContext::RenderPreparePhysicsProbePanel()
             float opening = mPhysicsProbePanel->IsOpening ? 1.0f : 0.0f;
 
             // Get texture NDC dimensions (assuming all panels have equal dimensions)
-            float const textureWidthNdc = atlasFrame.TextureCoordinatesTopRight.x - atlasFrame.TextureCoordinatesBottomLeft.x;
-            float const textureHeightNdc = atlasFrame.TextureCoordinatesTopRight.y - atlasFrame.TextureCoordinatesBottomLeft.y;
+            float const textureWidth = atlasFrame.TextureCoordinatesTopRight.x - atlasFrame.TextureCoordinatesBottomLeft.x;
+            float const textureHeight = atlasFrame.TextureCoordinatesTopRight.y - atlasFrame.TextureCoordinatesBottomLeft.y;
 
             // Triangle 1
 
             // Top-left
             mPhysicsProbePanelVertexBuffer.emplace_back(
                 quadTopLeft,
-                vec2f(0.0f, textureHeightNdc),
+                vec2f(0.0f, textureHeight),
                 xLimits,
                 opening);
 
             // Top-right
             mPhysicsProbePanelVertexBuffer.emplace_back(
                 vec2f(quadBottomRight.x, quadTopLeft.y),
-                vec2f(textureWidthNdc, textureHeightNdc),
+                vec2f(textureWidth, textureHeight),
                 xLimits,
                 opening);
 
@@ -1110,7 +1110,7 @@ void NotificationRenderContext::RenderPreparePhysicsProbePanel()
             // Top-right
             mPhysicsProbePanelVertexBuffer.emplace_back(
                 vec2f(quadBottomRight.x, quadTopLeft.y),
-                vec2f(textureWidthNdc, textureHeightNdc),
+                vec2f(textureWidth, textureHeight),
                 xLimits,
                 opening);
 
@@ -1124,7 +1124,7 @@ void NotificationRenderContext::RenderPreparePhysicsProbePanel()
             // Bottom-right
             mPhysicsProbePanelVertexBuffer.emplace_back(
                 quadBottomRight,
-                vec2f(textureWidthNdc, 0.0f),
+                vec2f(textureWidth, 0.0f),
                 xLimits,
                 opening);
 

@@ -653,6 +653,7 @@
 		+ RenderPrepare: generate vertices and upload
 			+ No vertices anymore, just constant
 		- Also readings
+			- Note: panel size should not change with screen size; ndc dimensions eventually grow as screen becomes smaller
 
 
 	- Recalibrate cloth's stiffness(?)
