@@ -576,8 +576,6 @@ private:
 		textContext.AreTextLinesDirty = true;
 	}
 
-	void GeneratePhysicsProbePanelVertices();
-
 	void GenerateTextVertices(TextNotificationTypeContext & context) const;
 
 	void GenerateTextureNotificationVertices();

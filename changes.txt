@@ -21,6 +21,7 @@
 - Small improvements to various tools (among which, Thanos Snap, Anti-Matter Bomb, and Blast)
 	- Check out the new SHIFT mode with the Thanos Snap!
 - Fixed: loading flipped or rotated ships now flips and rotates engines accordingly
+- Fixed: resizing view now resizes physics probe panel accordingly (very ancient bug)
 - Added black glass material
 - ...and a few more small improvements here and there!
 - Musical theme for this release: Random Forest, Ascension

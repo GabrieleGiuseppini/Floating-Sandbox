@@ -636,6 +636,14 @@
 	+ Impart inertia also to water
 	+ Inner water sound:
 		+ Swap Wave and WaveDisplacement sounds
+	+ Fix famous probe panel bug
+		+ UploadPanel:
+			+ Store panel or reset it
+			+ mIsPhysicsProbePanelDirty = true
+		+ CanvasSizeChanged:
+			+ mIsPhysicsProbePanelDirty = true
+		+ RenderPrepare: generate vertices and upload
+			+ No vertices anymore, just constant
 
 	= Test sim quality
 		- Fix strength adjustment? Starting from 40
@@ -644,22 +652,12 @@
 			- Calc linear relationship from 40 onwards (watch out: empirical strengths are on top of old calc'n)
 			- Test also downward
 
-	= Fix famous probe panel bug
-		+ UploadPanel:
-			+ Store panel or reset it
-			+ mIsPhysicsProbePanelDirty = true
-		+ CanvasSizeChanged:
-			+ mIsPhysicsProbePanelDirty = true
-		+ RenderPrepare: generate vertices and upload
-			+ No vertices anymore, just constant
-		- Also readings
-			- Note: panel size should not change with screen size; ndc dimensions eventually grow as screen becomes smaller
-
-
 	- Recalibrate cloth's stiffness(?)
 		- See also ropes, rubber ball
 
 	- Do IT localization and send for localization
+
+	- Check on Dell if can raise Max burning particles
 	
 	- Ships:
 		- N.S._Savannah (Pocketwatch)

@@ -820,7 +820,7 @@ void NotificationRenderContext::ApplyCanvasSizeChanges(RenderParameters const & 
 
     // Make sure we re-calculate (and re-upload) the physics probe panel
     // at the next iteration
-    mIsTextureNotificationDataDirty = true;
+    mIsPhysicsProbeDataDirty = true;
 }
 
 void NotificationRenderContext::ApplyEffectiveAmbientLightIntensityChanges(RenderParameters const & renderParameters)
@@ -1631,11 +1631,6 @@ void NotificationRenderContext::GenerateTextVertices(TextNotificationTypeContext
             linePositionNdc.x += glyphWidthNdc;
         }
     }
-}
-
-void NotificationRenderContext::GeneratePhysicsProbePanelVertices()
-{
-    // TODOHERE
 }
 
 void NotificationRenderContext::GenerateTextureNotificationVertices()
