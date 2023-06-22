@@ -647,6 +647,7 @@
 
 	= Test sim quality
 		- Fix strength adjustment? Starting from 40
+			- See if can move constants in function
 			- See current calc'ns for 1.5, 2.0, max
 			- Decide desired strength adjustments for same points 
 			- Calc linear relationship from 40 onwards (watch out: empirical strengths are on top of old calc'n)

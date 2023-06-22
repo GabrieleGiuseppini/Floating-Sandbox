@@ -35,13 +35,13 @@ NotificationRenderContext::NotificationRenderContext(
     , mFontAtlasTextureHandle()
     // Texture notifications
     , mTextureNotifications()
-    , mIsTextureNotificationDataDirty(false)
+    , mIsTextureNotificationDataDirty(false) // We're ok with initial state (empty)
     , mTextureNotificationVAO()
     , mTextureNotificationVertexBuffer()
     , mTextureNotificationVBO()
     // Physics probe panel
     , mPhysicsProbePanel()
-    , mIsPhysicsProbeDataDirty(false)
+    , mIsPhysicsProbeDataDirty(false) // We're ok with initial state (empty)
     , mPhysicsProbePanelVAO()
     , mPhysicsProbePanelVertexBuffer()
     , mPhysicsProbePanelVBO()
