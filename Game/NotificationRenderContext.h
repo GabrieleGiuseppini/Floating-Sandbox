@@ -159,100 +159,17 @@ public:
 
 	inline void UploadPhysicsProbePanel(float open, bool isOpening)
 	{
-		// Clear vertex buffers
-		mPhysicsProbePanelVertexBuffer.clear();
-
 		if (open != 0.0f)
 		{
-			//
-			// Generate quad
-			//
-
-			// First 1/3rd of open: grow vertically
-			// Last 2/3rds of open: grow horizontally
-
-			float constexpr VerticalOpenFraction = 0.3333f;
-
-			float const verticalOpen = (open < VerticalOpenFraction)
-				? open / VerticalOpenFraction
-				: 1.0f;
-
-			float const MinHorizontalOpen = 0.0125f;
-
-			float const horizontalOpen = (open < VerticalOpenFraction)
-				? MinHorizontalOpen
-				: MinHorizontalOpen + (1.0f - MinHorizontalOpen) * (open - VerticalOpenFraction) / (1.0f - VerticalOpenFraction);
-
-			float const midYNdc = -1.f + mPhysicsProbePanelNdcDimensions.y / 2.0f;
-
-			vec2f const quadTopLeft = vec2f(
-				-1.0f,
-				midYNdc + verticalOpen * (mPhysicsProbePanelNdcDimensions.y / 2.0f));
-
-			vec2f const quadBottomRight = vec2f(
-				-1.0f + mPhysicsProbePanelNdcDimensions.x,
-				midYNdc - verticalOpen * (mPhysicsProbePanelNdcDimensions.y / 2.0f));
-
-			vec2f const xLimits = vec2f(
-				quadTopLeft.x + mPhysicsProbePanelNdcDimensions.x / 2.0f * (1.0f - horizontalOpen),
-				quadBottomRight.x - mPhysicsProbePanelNdcDimensions.x / 2.0f * (1.0f - horizontalOpen));
-
-			float opening = isOpening ? 1.0f : 0.0f;
-
-			// Get texture NDC dimensions (assuming all panels have equal dimensions)
-			auto const & atlasFrame = mGenericLinearTextureAtlasMetadata.GetFrameMetadata(TextureFrameId<GenericLinearTextureGroups>(GenericLinearTextureGroups::PhysicsProbePanel, 0));
-			float const textureWidthNdc = atlasFrame.TextureCoordinatesTopRight.x - atlasFrame.TextureCoordinatesBottomLeft.x;
-			float const textureHeightNdc = atlasFrame.TextureCoordinatesTopRight.y - atlasFrame.TextureCoordinatesBottomLeft.y;
-
-			// Triangle 1
-
-			// Top-left
-			mPhysicsProbePanelVertexBuffer.emplace_back(
-				quadTopLeft,
-				vec2f(0.0f, textureHeightNdc),
-				xLimits,
-				opening);
-
-			// Top-right
-			mPhysicsProbePanelVertexBuffer.emplace_back(
-				vec2f(quadBottomRight.x, quadTopLeft.y),
-				vec2f(textureWidthNdc, textureHeightNdc),
-				xLimits,
-				opening);
-
-			// Bottom-left
-			mPhysicsProbePanelVertexBuffer.emplace_back(
-				vec2f(quadTopLeft.x, quadBottomRight.y),
-				vec2f(0.0f, 0.0f),
-				xLimits,
-				opening);
-
-			// Triangle 2
-
-			// Top-right
-			mPhysicsProbePanelVertexBuffer.emplace_back(
-				vec2f(quadBottomRight.x, quadTopLeft.y),
-				vec2f(textureWidthNdc, textureHeightNdc),
-				xLimits,
-				opening);
-
-			// Bottom-left
-			mPhysicsProbePanelVertexBuffer.emplace_back(
-				vec2f(quadTopLeft.x, quadBottomRight.y),
-				vec2f(0.0f, 0.0f),
-				xLimits,
-				opening);
-
-			// Bottom-right
-			mPhysicsProbePanelVertexBuffer.emplace_back(
-				quadBottomRight,
-				vec2f(textureWidthNdc, 0.0f),
-				xLimits,
-				opening);
+			mPhysicsProbePanel.emplace(open, isOpening);
+		}
+		else
+		{
+			mPhysicsProbePanel.reset();
 		}
 
-		// Remember quad vertex buffer is dirty
-		mIsPhysicsProbePanelVertexBufferDirty = true;
+		// Remember panel is dirty
+		mIsPhysicsProbeDataDirty = true;
 	}
 
 	inline void UploadPhysicsProbeReading(
@@ -659,6 +576,8 @@ private:
 		textContext.AreTextLinesDirty = true;
 	}
 
+	void GeneratePhysicsProbePanelVertices();
+
 	void GenerateTextVertices(TextNotificationTypeContext & context) const;
 
 	void GenerateTextureNotificationVertices();
@@ -954,11 +873,25 @@ private:
 	// Physics probe panel
 	//
 
+	struct PhysicsProbePanel
+	{
+		float Open;
+		bool IsOpening;
+
+		PhysicsProbePanel(
+			float open,
+			bool isOpening)
+			: Open(open)
+			, IsOpening(isOpening)
+		{}
+	};
+
+	std::optional<PhysicsProbePanel> mPhysicsProbePanel;
+	bool mIsPhysicsProbeDataDirty; // When dirty, we'll re-build and re-upload the vertex data
+
 	GameOpenGLVAO mPhysicsProbePanelVAO;
-	std::vector<PhysicsProbePanelVertex> mPhysicsProbePanelVertexBuffer;
-	bool mIsPhysicsProbePanelVertexBufferDirty;
+	std::vector<PhysicsProbePanelVertex> mPhysicsProbePanelVertexBuffer; // Just to cache allocations
 	GameOpenGLVBO mPhysicsProbePanelVBO;
-	vec2f mPhysicsProbePanelNdcDimensions;
 
 	//
 	// Tool notifications

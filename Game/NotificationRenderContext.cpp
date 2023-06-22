@@ -40,11 +40,11 @@ NotificationRenderContext::NotificationRenderContext(
     , mTextureNotificationVertexBuffer()
     , mTextureNotificationVBO()
     // Physics probe panel
+    , mPhysicsProbePanel()
+    , mIsPhysicsProbeDataDirty(false)
     , mPhysicsProbePanelVAO()
     , mPhysicsProbePanelVertexBuffer()
-    , mIsPhysicsProbePanelVertexBufferDirty(false)
     , mPhysicsProbePanelVBO()
-    , mPhysicsProbePanelNdcDimensions(vec2f::zero()) // Will be recalculated
     // Tool notifications
     , mHeatBlasterFlameVAO()
     , mHeatBlasterFlameVBO()
@@ -818,16 +818,9 @@ void NotificationRenderContext::ApplyCanvasSizeChanges(RenderParameters const & 
     // at the next iteration
     mIsTextureNotificationDataDirty = true;
 
-    // Recalculate NDC dimensions of physics probe panel
-    auto const & atlasFrame = mGenericLinearTextureAtlasMetadata.GetFrameMetadata(TextureFrameId<GenericLinearTextureGroups>(GenericLinearTextureGroups::PhysicsProbePanel, 0));
-    mPhysicsProbePanelNdcDimensions = vec2f(
-        static_cast<float>(atlasFrame.FrameMetadata.Size.width) * mScreenToNdcX,
-        static_cast<float>(atlasFrame.FrameMetadata.Size.height) * mScreenToNdcY);
-
-    // Set parameters
-    mShaderManager.ActivateProgram<ProgramType::PhysicsProbePanel>();
-    mShaderManager.SetProgramParameter<ProgramType::PhysicsProbePanel, ProgramParameterType::WidthNdc>(
-        mPhysicsProbePanelNdcDimensions.x);
+    // Make sure we re-calculate (and re-upload) the physics probe panel
+    // at the next iteration
+    mIsTextureNotificationDataDirty = true;
 }
 
 void NotificationRenderContext::ApplyEffectiveAmbientLightIntensityChanges(RenderParameters const & renderParameters)
@@ -1026,19 +1019,131 @@ void NotificationRenderContext::RenderDrawTextureNotifications()
 
 void NotificationRenderContext::RenderPreparePhysicsProbePanel()
 {
-    if (mIsPhysicsProbePanelVertexBufferDirty)
+    if (mIsPhysicsProbeDataDirty)
     {
-        glBindBuffer(GL_ARRAY_BUFFER, *mPhysicsProbePanelVBO);
+        //
+        // Recalculate NDC dimensions of physics probe panel
+        //
 
-        glBufferData(GL_ARRAY_BUFFER,
-            sizeof(PhysicsProbePanelVertex) * mPhysicsProbePanelVertexBuffer.size(),
-            mPhysicsProbePanelVertexBuffer.data(),
-            GL_DYNAMIC_DRAW);
-        CheckOpenGLError();
+        auto const & atlasFrame = mGenericLinearTextureAtlasMetadata.GetFrameMetadata(TextureFrameId<GenericLinearTextureGroups>(GenericLinearTextureGroups::PhysicsProbePanel, 0));
+        vec2f const physicsProbePanelNdcDimensions = vec2f(
+            static_cast<float>(atlasFrame.FrameMetadata.Size.width) * mScreenToNdcX,
+            static_cast<float>(atlasFrame.FrameMetadata.Size.height) * mScreenToNdcY);
 
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        // Set parameters
+        mShaderManager.ActivateProgram<ProgramType::PhysicsProbePanel>();
+        mShaderManager.SetProgramParameter<ProgramType::PhysicsProbePanel, ProgramParameterType::WidthNdc>(
+            physicsProbePanelNdcDimensions.x);
 
-        mIsPhysicsProbePanelVertexBufferDirty = false;
+        //
+        // Generate vertices
+        //
+
+        mPhysicsProbePanelVertexBuffer.clear();
+
+        if (mPhysicsProbePanel)
+        {
+            //
+            // Generate quad
+            //
+
+            // First 1/3rd of open: grow vertically
+            // Last 2/3rds of open: grow horizontally
+
+            float constexpr VerticalOpenFraction = 0.3333f;
+
+            float const verticalOpen = (mPhysicsProbePanel->Open < VerticalOpenFraction)
+                ? mPhysicsProbePanel->Open / VerticalOpenFraction
+                : 1.0f;
+
+            float const MinHorizontalOpen = 0.0125f;
+
+            float const horizontalOpen = (mPhysicsProbePanel->Open < VerticalOpenFraction)
+                ? MinHorizontalOpen
+                : MinHorizontalOpen + (1.0f - MinHorizontalOpen) * (mPhysicsProbePanel->Open - VerticalOpenFraction) / (1.0f - VerticalOpenFraction);
+
+            float const midYNdc = -1.f + physicsProbePanelNdcDimensions.y / 2.0f;
+
+            vec2f const quadTopLeft = vec2f(
+                -1.0f,
+                midYNdc + verticalOpen * (physicsProbePanelNdcDimensions.y / 2.0f));
+
+            vec2f const quadBottomRight = vec2f(
+                -1.0f + physicsProbePanelNdcDimensions.x,
+                midYNdc - verticalOpen * (physicsProbePanelNdcDimensions.y / 2.0f));
+
+            vec2f const xLimits = vec2f(
+                quadTopLeft.x + physicsProbePanelNdcDimensions.x / 2.0f * (1.0f - horizontalOpen),
+                quadBottomRight.x - physicsProbePanelNdcDimensions.x / 2.0f * (1.0f - horizontalOpen));
+
+            float opening = mPhysicsProbePanel->IsOpening ? 1.0f : 0.0f;
+
+            // Get texture NDC dimensions (assuming all panels have equal dimensions)
+            float const textureWidthNdc = atlasFrame.TextureCoordinatesTopRight.x - atlasFrame.TextureCoordinatesBottomLeft.x;
+            float const textureHeightNdc = atlasFrame.TextureCoordinatesTopRight.y - atlasFrame.TextureCoordinatesBottomLeft.y;
+
+            // Triangle 1
+
+            // Top-left
+            mPhysicsProbePanelVertexBuffer.emplace_back(
+                quadTopLeft,
+                vec2f(0.0f, textureHeightNdc),
+                xLimits,
+                opening);
+
+            // Top-right
+            mPhysicsProbePanelVertexBuffer.emplace_back(
+                vec2f(quadBottomRight.x, quadTopLeft.y),
+                vec2f(textureWidthNdc, textureHeightNdc),
+                xLimits,
+                opening);
+
+            // Bottom-left
+            mPhysicsProbePanelVertexBuffer.emplace_back(
+                vec2f(quadTopLeft.x, quadBottomRight.y),
+                vec2f(0.0f, 0.0f),
+                xLimits,
+                opening);
+
+            // Triangle 2
+
+            // Top-right
+            mPhysicsProbePanelVertexBuffer.emplace_back(
+                vec2f(quadBottomRight.x, quadTopLeft.y),
+                vec2f(textureWidthNdc, textureHeightNdc),
+                xLimits,
+                opening);
+
+            // Bottom-left
+            mPhysicsProbePanelVertexBuffer.emplace_back(
+                vec2f(quadTopLeft.x, quadBottomRight.y),
+                vec2f(0.0f, 0.0f),
+                xLimits,
+                opening);
+
+            // Bottom-right
+            mPhysicsProbePanelVertexBuffer.emplace_back(
+                quadBottomRight,
+                vec2f(textureWidthNdc, 0.0f),
+                xLimits,
+                opening);
+
+            //
+            // Upload buffer
+            //
+
+            glBindBuffer(GL_ARRAY_BUFFER, *mPhysicsProbePanelVBO);
+
+            glBufferData(GL_ARRAY_BUFFER,
+                sizeof(PhysicsProbePanelVertex) * mPhysicsProbePanelVertexBuffer.size(),
+                mPhysicsProbePanelVertexBuffer.data(),
+                GL_DYNAMIC_DRAW);
+            CheckOpenGLError();
+
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+        }
+
+        mIsPhysicsProbeDataDirty = false;
     }
 }
 
@@ -1526,6 +1631,11 @@ void NotificationRenderContext::GenerateTextVertices(TextNotificationTypeContext
             linePositionNdc.x += glyphWidthNdc;
         }
     }
+}
+
+void NotificationRenderContext::GeneratePhysicsProbePanelVertices()
+{
+    // TODOHERE
 }
 
 void NotificationRenderContext::GenerateTextureNotificationVertices()

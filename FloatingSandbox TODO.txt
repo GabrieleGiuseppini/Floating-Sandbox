@@ -644,7 +644,15 @@
 			- Calc linear relationship from 40 onwards (watch out: empirical strengths are on top of old calc'n)
 			- Test also downward
 
-	- Fix famous probe panel bug
+	= Fix famous probe panel bug
+		+ UploadPanel:
+			+ Store panel or reset it
+			+ mIsPhysicsProbePanelDirty = true
+		+ CanvasSizeChanged:
+			+ mIsPhysicsProbePanelDirty = true
+		+ RenderPrepare: generate vertices and upload
+			+ No vertices anymore, just constant
+		- Also readings
 
 
 	- Recalibrate cloth's stiffness(?)
