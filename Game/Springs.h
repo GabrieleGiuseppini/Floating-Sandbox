@@ -159,7 +159,7 @@ public:
         , mGameEventHandler(std::move(gameEventDispatcher))
         , mShipPhysicsHandler(nullptr)
         , mCurrentNumMechanicalDynamicsIterations(gameParameters.NumMechanicalDynamicsIterations<float>())
-        , mCurrentNumMechanicalDynamicsIterationsAdjustment(gameParameters.NumMechanicalDynamicsIterationsAdjustment)
+        , mCurrentStrengthIterationsAdjustment(CalculateSpringStrengthIterationsAdjustment(mCurrentNumMechanicalDynamicsIterations))
         , mCurrentSpringStiffnessAdjustment(gameParameters.SpringStiffnessAdjustment)
         , mCurrentSpringDampingAdjustment(gameParameters.SpringDampingAdjustment)
         , mCurrentSpringStrengthAdjustment(gameParameters.SpringStrengthAdjustment)
@@ -209,12 +209,6 @@ public:
         UpdateCoefficientsForPartition(
             partition,
             partitionCount,
-            mCurrentNumMechanicalDynamicsIterations,
-            mCurrentSpringStiffnessAdjustment,
-            mCurrentSpringDampingAdjustment,
-            mCurrentSpringStrengthAdjustment,
-            CalculateSpringStrengthIterationsAdjustment(mCurrentNumMechanicalDynamicsIterationsAdjustment),
-            mCurrentMeltingTemperatureAdjustment,
             points);
     }
 
@@ -225,12 +219,6 @@ public:
         // Recalculate coefficients for this spring
         UpdateCoefficients(
             springElementIndex,
-            mCurrentNumMechanicalDynamicsIterations,
-            mCurrentSpringStiffnessAdjustment,
-            mCurrentSpringDampingAdjustment,
-            mCurrentSpringStrengthAdjustment,
-            CalculateSpringStrengthIterationsAdjustment(mCurrentNumMechanicalDynamicsIterationsAdjustment),
-            mCurrentMeltingTemperatureAdjustment,
             points);
     }
 
@@ -241,12 +229,6 @@ public:
         // Recalculate parameters for this spring
         UpdateCoefficients(
             springElementIndex,
-            mCurrentNumMechanicalDynamicsIterations,
-            mCurrentSpringStiffnessAdjustment,
-            mCurrentSpringDampingAdjustment,
-            mCurrentSpringStrengthAdjustment,
-            CalculateSpringStrengthIterationsAdjustment(mCurrentNumMechanicalDynamicsIterationsAdjustment),
-            mCurrentMeltingTemperatureAdjustment,
             points);
     }
 
@@ -609,75 +591,22 @@ private:
         GameParameters const & gameParameters,
         Points & points);
 
-    static float CalculateSpringStrengthIterationsAdjustment(float numMechanicalDynamicsIterationsAdjustment)
-    {
-        // We need to adjust the strength - i.e. the displacement tolerance or spring breaking point - based
-        // on the actual number of mechanics iterations we'll be performing.
-        //
-        // After one iteration the spring displacement dL = L - L0 is reduced to:
-        //  dL * (1-SRF)
-        // where SRF is the value of the SpringReductionFraction parameter. After N iterations this would be:
-        //  dL * (1-SRF)^N
-        //
-        // This formula suggests a simple exponential relationship, but empirical data (e.g. explosions on the Titanic)
-        // suggest the following relationship:
-        //
-        //  s' = s * 4 / (1 + 3*(R^1.3))
-        //
-        // Where R is the N'/N ratio.
-
-        return
-            4.0f
-            / (1.0f + 3.0f * pow(numMechanicalDynamicsIterationsAdjustment, 1.3f));
-    }
-
-    static float CalculateExtraMeltingInducedTolerance(float strength)
-    {
-        // The extra elongation tolerance due to melting:
-        //  - For small factory tolerances (~0.1), we are keen to get up to many times that tolerance
-        //  - For large factory tolerances (~5.0), we are keen to get up to fewer times that tolerance
-        //    (i.e. allow smaller change in length)
-        float constexpr MaxMeltingInducedTolerance = 20;
-        float constexpr MinMeltingInducedTolerance = 0.0f;
-        float constexpr StartStrength = 0.3f; // At this strength, we allow max tolerance
-        float constexpr EndStrength = 3.0f; // At this strength, we allow min tolerance
-
-        return MaxMeltingInducedTolerance -
-            (MaxMeltingInducedTolerance - MinMeltingInducedTolerance)
-            / (EndStrength - StartStrength)
-            * (Clamp(strength, StartStrength, EndStrength) - StartStrength);
-    }
-
     void UpdateCoefficientsForPartition(
         ElementIndex partition,
         ElementIndex partitionCount,
-        float numMechanicalDynamicsIterations,
-        float stiffnessAdjustment,
-        float dampingAdjustment,
-        float strengthAdjustment,
-        float strengthIterationsAdjustment,
-        float meltingTemperatureAdjustment,
         Points const & points);
 
     void UpdateCoefficients(
         ElementIndex springIndex,
-        float numMechanicalDynamicsIterations,
-        float stiffnessAdjustment,
-        float dampingAdjustment,
-        float strengthAdjustment,
-        float strengthIterationsAdjustment,
-        float meltingTemperatureAdjustment,
         Points const & points);
 
     inline void inline_UpdateCoefficients(
         ElementIndex springIndex,
-        float numMechanicalDynamicsIterations,
-        float stiffnessAdjustment,
-        float dampingAdjustment,
-        float strengthAdjustment,
-        float strengthIterationsAdjustment,
-        float meltingTemperatureAdjustment,
         Points const & points);
+
+    static float CalculateSpringStrengthIterationsAdjustment(float numMechanicalDynamicsIterations);
+
+    static float CalculateExtraMeltingInducedTolerance(float strength);
 
 private:
 
@@ -749,7 +678,7 @@ private:
     // in the values of these parameters will trigger a re-calculation
     // of pre-calculated coefficients
     float mCurrentNumMechanicalDynamicsIterations;
-    float mCurrentNumMechanicalDynamicsIterationsAdjustment;
+    float mCurrentStrengthIterationsAdjustment;
     float mCurrentSpringStiffnessAdjustment;
     float mCurrentSpringDampingAdjustment;
     float mCurrentSpringStrengthAdjustment;

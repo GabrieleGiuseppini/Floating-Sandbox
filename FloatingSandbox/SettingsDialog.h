@@ -73,7 +73,7 @@ private:
     SliderControl<unsigned int> * mMaxBurningParticlesSlider;
     BitmapToggleButton * mUltraViolentToggleButton;
     SliderControl<unsigned int> * mMaxNumSimulationThreadsSlider;
-    SliderControl<float> * mMechanicalQualitySlider;
+    SliderControl<float> * mNumMechanicalIterationsAdjustmentSlider;
 
     // Ocean and Water
     SliderControl<float> * mWaterDensityAdjustmentSlider;

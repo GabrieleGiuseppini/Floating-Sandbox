@@ -904,15 +904,15 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
         {
             wxGridBagSizer * performanceSizer = new wxGridBagSizer(0, 0);
 
-            // Simulation Quality
+            // Spring Iterations
             {
-                mMechanicalQualitySlider = new SliderControl<float>(
+                mNumMechanicalIterationsAdjustmentSlider = new SliderControl<float>(
                     performanceBoxSizer->GetStaticBox(),
                     SliderControl<float>::DirectionType::Vertical,
                     SliderWidth,
                     SliderHeight,
-                    _("Rigidity Adjust"),
-                    _("Higher values improve the rigidity of simulated structures, at the expense of longer computation times."),
+                    _("Spring Algo Adjust"),
+                    _("Higher values improve the rigidity of simulated structures, at the expense of longer computation times and decreased fragility."),
                     [this](float value)
                     {
                         this->mLiveSettings.SetValue(GameSettings::NumMechanicalDynamicsIterationsAdjustment, value);
@@ -925,7 +925,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
                     mWarningIcon.get());
 
                 performanceSizer->Add(
-                    mMechanicalQualitySlider,
+                    mNumMechanicalIterationsAdjustmentSlider,
                     wxGBPosition(0, 0),
                     wxGBSpan(1, 1),
                     wxEXPAND | wxALL,
@@ -5544,7 +5544,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mMaxBurningParticlesSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::MaxBurningParticles));
     mUltraViolentToggleButton->SetValue(settings.GetValue<bool>(GameSettings::UltraViolentMode));
     mMaxNumSimulationThreadsSlider->SetValue(settings.GetValue<unsigned int>(GameSettings::MaxNumSimulationThreads));
-    mMechanicalQualitySlider->SetValue(settings.GetValue<float>(GameSettings::NumMechanicalDynamicsIterationsAdjustment));
+    mNumMechanicalIterationsAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::NumMechanicalDynamicsIterationsAdjustment));
 
     //
     // Water and Ocean

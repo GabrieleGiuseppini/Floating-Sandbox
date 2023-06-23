@@ -644,14 +644,64 @@
 			+ mIsPhysicsProbePanelDirty = true
 		+ RenderPrepare: generate vertices and upload
 			+ No vertices anymore, just constant
+	+ Test sim quality
+		+ Fix strength adjustment
+			+ See if can move constants into function
+			! We accept the loss of breakability
+			+ We make a new curve that sets Titanic just above auto-stress
+				- Strength adjust for 0.5x over fixed 0.377548f: 3.234 = 1.220990232
+				- Strength adjust for 1.0x over fixed 0.377548f: 1.0 = 0.377548
+				- Strength adjust for 1.5x over fixed 0.377548f: 0.788 = 0.297507824
+				- Strength adjust for 2x over fixed 0.377548f: 0.771-0.788 = 0.291089508
+				- Strength adjust for 3x over fixed 0.377548f: 0.753-0.771 = 0.284293644
+				- Strength adjust for 4x over fixed 0.377548f: 0.735 = 0.27749778
+				- Strength adjust for 5x over fixed 0.377548f: 0.735 = 0.27749778
+					20	1.220990232
+					40	0.377548
+					60	0.297507824
+					80	0.291089508
+					120	0.284293644
+					160	0.27749778
+					200	0.27749778
+					y = 0.2832163 + 9.209594*e^(-0.1142279*x)
 
-	= Test sim quality
-		- Fix strength adjustment? Starting from 40
-			- See if can move constants in function
-			- See current calc'ns for 1.5, 2.0, max
-			- Decide desired strength adjustments for same points 
-			- Calc linear relationship from 40 onwards (watch out: empirical strengths are on top of old calc'n)
-			- Test also downward
+			X Get samples of CalculateSpringStrengthIterationsAdjustment:
+				+ 30 iterations: good strength adjust at:
+					- 0.5   == 15 is: 0.973911
+					- 1.0   == 30 is: 0.540126 - GOOD
+					- 1.333 == 40 is: 0.403038
+					- 1.5   == 45 is: 0.355225
+					- 2.0   == 60 is: 0.257605 - ~GOOD
+					- 4.0	== 120 is: ? - stresses out too much, breaks automatically, but not in half
+					- 5.0   == 150 is: 0.0853622 - too little, best if multiplied by 1.41 => 0.120360702
+				+ 40 iterations: good strength adjust at:
+					- 0.5  == 20 is: <experiment>
+					- 0.75 == 30 is: 0.492889
+					- 1.0  == 40 is: 0.377548 - GOOD
+					- 2.0  == 80 is: 0.180066 - too much for Titanic break, better with 0.699 => 0.125866134
+					- 4.0  == 160 is: 0.0787026 - too much, breaks automatically - best if multiplied by 1.87 => 0.147173862
+					- 5.0  == 200 is: <experiment>
+
+					30	0.540126
+					40	0.377548
+					60	0.257605
+					80	0.125866134	y = 40.07601*x^-1.264278
+					150	0.120360702
+					160	0.147173862	y = 0.121192 + (0.763759 - 0.121192)/(1 + (x/36.10479)^3.270411)
+
+										- 80 (2.0) => Titanic break: 0.753 => 0.118480032
+
+					30	0.540126
+					40	0.377548
+					60	0.257605
+					80	0.118480032
+										- 80: auto break, so: 0.112732 * 1.265 = 0.14260598
+
+		+ Function is on #ITERATIONS, not adjustment
+			+ Recalc mCurrentStrengthIterationsAdjustment @ each change (@params check)
+		+ Change the slider to "spring iterations" or "spring algo adjust", on actual iterations adjustment (which stays so that we have good slider)
+		+ See if can reduce frequency of calls, especially at Add()
+			+ Also don't need anymore mCurrentNumIterAdj
 
 	- Recalibrate cloth's stiffness(?)
 		- See also ropes, rubber ball

@@ -94,12 +94,6 @@ void Springs::Add(
     // Calculate parameters for this spring
     UpdateCoefficients(
         springIndex,
-        mCurrentNumMechanicalDynamicsIterations,
-        mCurrentSpringStiffnessAdjustment,
-        mCurrentSpringDampingAdjustment,
-        mCurrentSpringStrengthAdjustment,
-        CalculateSpringStrengthIterationsAdjustment(mCurrentNumMechanicalDynamicsIterationsAdjustment),
-        mCurrentMeltingTemperatureAdjustment,
         points);
 }
 
@@ -150,12 +144,6 @@ void Springs::Restore(
     // Recalculate coefficients for this spring
     UpdateCoefficients(
         springElementIndex,
-        mCurrentNumMechanicalDynamicsIterations,
-        mCurrentSpringStiffnessAdjustment,
-        mCurrentSpringDampingAdjustment,
-        mCurrentSpringStrengthAdjustment,
-        CalculateSpringStrengthIterationsAdjustment(mCurrentNumMechanicalDynamicsIterationsAdjustment),
-        mCurrentMeltingTemperatureAdjustment,
         points);
 
     // Invoke restore handler
@@ -170,7 +158,6 @@ void Springs::UpdateForGameParameters(
     Points const & points)
 {
     if (gameParameters.NumMechanicalDynamicsIterations<float>() != mCurrentNumMechanicalDynamicsIterations
-        || gameParameters.NumMechanicalDynamicsIterationsAdjustment != mCurrentNumMechanicalDynamicsIterationsAdjustment
         || gameParameters.SpringStiffnessAdjustment != mCurrentSpringStiffnessAdjustment
         || gameParameters.SpringDampingAdjustment != mCurrentSpringDampingAdjustment
         || gameParameters.SpringStrengthAdjustment != mCurrentSpringStrengthAdjustment
@@ -178,7 +165,7 @@ void Springs::UpdateForGameParameters(
     {
         // Update our version of the parameters
         mCurrentNumMechanicalDynamicsIterations = gameParameters.NumMechanicalDynamicsIterations<float>();
-        mCurrentNumMechanicalDynamicsIterationsAdjustment = gameParameters.NumMechanicalDynamicsIterationsAdjustment;
+        mCurrentStrengthIterationsAdjustment = CalculateSpringStrengthIterationsAdjustment(mCurrentNumMechanicalDynamicsIterations);
         mCurrentSpringStiffnessAdjustment = gameParameters.SpringStiffnessAdjustment;
         mCurrentSpringDampingAdjustment = gameParameters.SpringDampingAdjustment;
         mCurrentSpringStrengthAdjustment = gameParameters.SpringStrengthAdjustment;
@@ -187,12 +174,6 @@ void Springs::UpdateForGameParameters(
         // Recalc whole
         UpdateCoefficientsForPartition(
             0, 1,
-            mCurrentNumMechanicalDynamicsIterations,
-            mCurrentSpringStiffnessAdjustment,
-            mCurrentSpringDampingAdjustment,
-            mCurrentSpringStrengthAdjustment,
-            CalculateSpringStrengthIterationsAdjustment(mCurrentNumMechanicalDynamicsIterationsAdjustment),
-            mCurrentMeltingTemperatureAdjustment,
             points);
     }
 }
@@ -367,15 +348,8 @@ void Springs::InternalUpdateForStrains(
 void Springs::UpdateCoefficientsForPartition(
     ElementIndex partition,
     ElementIndex partitionCount,
-    float numMechanicalDynamicsIterations,
-    float stiffnessAdjustment,
-    float dampingAdjustment,
-    float strengthAdjustment,
-    float strengthIterationsAdjustment,
-    float meltingTemperatureAdjustment,
     Points const & points)
 {
-    // Recalc all parameters
     ElementCount const partitionSize = (GetElementCount() / partitionCount) + ((GetElementCount() % partitionCount) ? 1 : 0);
     ElementCount const startSpringIndex = partition * partitionSize;
     ElementCount const endSpringIndex = std::min(startSpringIndex + partitionSize, GetElementCount());
@@ -385,12 +359,6 @@ void Springs::UpdateCoefficientsForPartition(
         {
             inline_UpdateCoefficients(
                 s,
-                numMechanicalDynamicsIterations,
-                stiffnessAdjustment,
-                dampingAdjustment,
-                strengthAdjustment,
-                strengthIterationsAdjustment,
-                meltingTemperatureAdjustment,
                 points);
         }
     }
@@ -398,33 +366,15 @@ void Springs::UpdateCoefficientsForPartition(
 
 void Springs::UpdateCoefficients(
     ElementIndex springIndex,
-    float numMechanicalDynamicsIterations,
-    float stiffnessAdjustment,
-    float dampingAdjustment,
-    float strengthAdjustment,
-    float strengthIterationsAdjustment,
-    float meltingTemperatureAdjustment,
     Points const & points)
 {
     inline_UpdateCoefficients(
         springIndex,
-        numMechanicalDynamicsIterations,
-        stiffnessAdjustment,
-        dampingAdjustment,
-        strengthAdjustment,
-        strengthIterationsAdjustment,
-        meltingTemperatureAdjustment,
         points);
 }
 
 void Springs::inline_UpdateCoefficients(
     ElementIndex springIndex,
-    float numMechanicalDynamicsIterations,
-    float stiffnessAdjustment,
-    float dampingAdjustment,
-    float strengthAdjustment,
-    float strengthIterationsAdjustment,
-    float meltingTemperatureAdjustment,
     Points const & points)
 {
     auto const endpointAIndex = GetEndpointAIndex(springIndex);
@@ -434,7 +384,7 @@ void Springs::inline_UpdateCoefficients(
         (points.GetAugmentedMaterialMass(endpointAIndex) * points.GetAugmentedMaterialMass(endpointBIndex))
         / (points.GetAugmentedMaterialMass(endpointAIndex) + points.GetAugmentedMaterialMass(endpointBIndex));
 
-    float const dt = GameParameters::SimulationStepTimeDuration<float> / numMechanicalDynamicsIterations;
+    float const dt = GameParameters::SimulationStepTimeDuration<float> / mCurrentNumMechanicalDynamicsIterations;
 
     // Note: in 1.14 the spring temperature was the average of the two points.
     // Differences in temperature between adjacent points made it so that springs'
@@ -448,7 +398,7 @@ void Springs::inline_UpdateCoefficients(
     // if we're below the melting temperature
     float const meltingOverheat =
         springTemperature
-        - GetMaterialMeltingTemperature(springIndex) * meltingTemperatureAdjustment;
+        - GetMaterialMeltingTemperature(springIndex) * mCurrentMeltingTemperatureAdjustment;
 
     //
     // Stiffness coefficient
@@ -489,14 +439,17 @@ void Springs::inline_UpdateCoefficients(
     float const desiredStiffnessCoefficient =
         GameParameters::SpringReductionFraction
         * GetMaterialStiffness(springIndex)
-        * stiffnessAdjustment
+        * mCurrentSpringStiffnessAdjustment
         * massFactor
         / (dt * dt)
         * meltMultiplier;
 
     // If the coefficient is growing (spring is becoming more stiff), then
     // approach the desired stiffness coefficient slowly,
-    // or else we have too much discontinuity and might explode
+    // or else we have too much discontinuity and might explode.
+    // Note: this is wanted for cooling a melted spring, but it also gets
+    // in the way when we increase the number of iterations, as the ship takes
+    // a while to reach the target stiffness.
     if (desiredStiffnessCoefficient > mStiffnessCoefficientBuffer[springIndex])
     {
         mStiffnessCoefficientBuffer[springIndex] +=
@@ -517,7 +470,7 @@ void Springs::inline_UpdateCoefficients(
 
     mDampingCoefficientBuffer[springIndex] =
         GameParameters::SpringDampingCoefficient
-        * dampingAdjustment
+        * mCurrentSpringDampingAdjustment
         * massFactor
         / dt;
 
@@ -555,14 +508,50 @@ void Springs::inline_UpdateCoefficients(
 
     mStrainStateBuffer[springIndex].BreakingElongation =
         GetMaterialStrength(springIndex)
-        * strengthAdjustment
-        * 0.839501f // Magic number: from 1.14, after #iterations increased from 24 to 30
-        * 0.643389f // Magic number: in 1.15.2 we've shortened the simulation time step from 0.2 to 0.156
-        * 0.699f    // Magic number: in 1.18.0 #iterations increased from 30 to 40
-        * strengthIterationsAdjustment
+        * mCurrentSpringStrengthAdjustment
+        * mCurrentStrengthIterationsAdjustment
         * springDecay
         * GetRestLength(springIndex) // To make strain comparison independent from rest length
         * (1.0f + GetExtraMeltingInducedTolerance(springIndex) * meltDepthFraction); // When melting, springs are more tolerant to elongation
+}
+
+float Springs::CalculateSpringStrengthIterationsAdjustment(float numMechanicalDynamicsIterations)
+{
+    // We need to adjust the strength - i.e. the displacement tolerance or spring breaking point - based
+    // on the actual number of mechanics iterations we'll be performing.
+    //
+    // After one iteration the spring displacement dL = L - L0 is reduced to:
+    //  dL * (1-SRF)
+    // where SRF is the value of the SpringReductionFraction parameter. After N iterations this would be:
+    //  dL * (1-SRF)^N
+    //
+    // This formula suggests a simple exponential relationship, but empirical data (e.g. auto-stress on the Titanic)
+    // suggest the following relationship:
+    //
+    //  y = 0.2832163 + 9.209594*e^(-0.1142279*x)
+    //
+    // Where x is the total number of iterations.
+
+    float const adjustment = 0.2832163f + 9.209594f * std::exp(-0.1142279f * numMechanicalDynamicsIterations);
+
+    return adjustment;
+}
+
+float Springs::CalculateExtraMeltingInducedTolerance(float strength)
+{
+    // The extra elongation tolerance due to melting:
+    //  - For small factory tolerances (~0.1), we are keen to get up to many times that tolerance
+    //  - For large factory tolerances (~5.0), we are keen to get up to fewer times that tolerance
+    //    (i.e. allow smaller change in length)
+    float constexpr MaxMeltingInducedTolerance = 20;
+    float constexpr MinMeltingInducedTolerance = 0.0f;
+    float constexpr StartStrength = 0.3f; // At this strength, we allow max tolerance
+    float constexpr EndStrength = 3.0f; // At this strength, we allow min tolerance
+
+    return MaxMeltingInducedTolerance -
+        (MaxMeltingInducedTolerance - MinMeltingInducedTolerance)
+        / (EndStrength - StartStrength)
+        * (Clamp(strength, StartStrength, EndStrength) - StartStrength);
 }
 
 }
