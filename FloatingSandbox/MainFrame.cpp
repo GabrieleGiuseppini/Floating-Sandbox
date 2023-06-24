@@ -2701,9 +2701,17 @@ void MainFrame::SwitchFromShipBuilder(std::optional<std::filesystem::path> shipF
     }
     else
     {
-        // Reload current ship
+        // Reload current ship - if still exists (might have been renamed)
         assert(mCurrentShipLoadSpecs.has_value());
-        LoadShip(*mCurrentShipLoadSpecs, false);
+        if (std::filesystem::exists(mCurrentShipLoadSpecs->DefinitionFilepath))
+        {
+            LoadShip(*mCurrentShipLoadSpecs, false);
+        }
+        else
+        {
+            ShipLoadSpecifications loadSpecs(ChooseDefaultShip(mResourceLocator));
+            LoadShip(loadSpecs, false);
+        }
     }
 
     // Restart
