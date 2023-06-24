@@ -23,6 +23,7 @@
 - Fixed: loading flipped or rotated ships now flips and rotates engines accordingly
 - Fixed: resizing view now resizes physics probe panel accordingly (very ancient bug)
 - Added black glass material
+- Added 10 new ships
 - ...and a few more small improvements here and there!
 - Musical theme for this release: Random Forest, Ascension
 
