@@ -458,7 +458,7 @@ namespace Utils
 
         for (size_t i = 0; i < str.length(); ++i)
         {
-            if (str[i] != '\\' && str[i] != '/' && str[i] != ':')
+            if (str[i] != '\\' && str[i] != '/' && str[i] != ':' && str[i] != '\"' && str[i] != '*')
             {
                 std::string const charString = str.substr(i, 1);
                 std::string const strTest = result + charString;
