@@ -106,9 +106,9 @@ void CreditsPanel::RenderCredits(wxSize panelSize)
         {1, wxS("Daniel Tammeling (linux)"), VMargin3},
 
         {0, _("SHIP ENGINEERING"), 0},
-        {2, wxS("Matthew Anderson    DennisDanielGrimaldo    blue_funnel    Charles Calvin    Denis    Aqua"), 0},
-        {2, wxS("Pac0master    CorbinPasta93    Yorkie    Bluefox    KikoTheBoatBuilder    Raynair    Menta1ity"), 0},
-        {2, wxS("MasterGarfield    Aur\xe9lien WOLFF    Alex di Roma    2017 Leonardo    FER ZCL    AvSimplified"), 0},
+        {2, wxS("Pac0master    CorbinPasta93    Yorkie    Bluefox    KikoTheBoatBuilder    Raynair    Menta1ity    Transportation Fan"), 0},
+        {2, wxS("Matthew Anderson    DennisDanielGrimaldo    blue_funnel    Charles Calvin    Denis    Aqua    Hellooping"), 0},
+        {2, wxS("MasterGarfield    Aur\xe9lien WOLFF    Alex di Roma    2017 Leonardo    FER ZCL    AvSimplified    Walter"), 0},
         {2, wxS("Albert Windsor    Takara    Rockabilly Rebel    McShooter2018    sinking_feeling    braun    P1X"), 0},
         {2, wxS("TopHatLemons    Truce#3326    RetroGraczzPL    Nomadavid    Wreno    R.M.S. Atlantic    Golden"), 0},
         {2, wxS("Dumbphones    NotTelling    Hugo_2503    _ASTYuu_    Serhiiiihres    CPM    Pocketwatch    MTF"), 0},
