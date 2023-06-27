@@ -24,14 +24,24 @@ NPC particles will all be made of the same "NPC" material, which simulates human
 NPC Rendering
 ===========
 
-We have three options for the rendering of NPCs:
-1) Prepared textures with all the frames necessary for movements
-2) Prepared frames with vertices of limbs for each in-between frame, which then get interpolated
-3) Fully physical stick-men
+The particle of a "Human" NPC is considered to be its feet. An additional particle - the head - is attached to the feet via a spring, and only used for rendering purposes. This allows for bending and angular momentum.
+This additional particle's mechanical physics is updated at the same loop as the main particle's mechanical physics, but doesn't participate in anything else.
+If the concept works fine, we can enhance it later with additional springs for limbs.
+
+The two particles define a simple elongated quad. This quad is then rendered with textures, from an atlas containing all frames.
+The texture groups' are the "movement types" (e.g. "walking", "falling", "swimming", etc.). Each movement type has 1 or more frames, numbered consecutively.
 
 
 Details
 ===========
+
+- Type hierarchy:
+	- NpcKindType:
+		- Human
+			- HumanNpcRoleType:
+				- Passenger
+				- ...
+		- In the future: Furniture, etc.
 
 - In the constrained regime:
 	- A particle always belongs to a triangle
@@ -55,8 +65,16 @@ Details
 					- In the direction perpendicular to the triangle's side
 						- So that we correctly apply it also when NPC is upside-down
 				- Forces acting on NPC (gravity, etc.)
-		- Algo:
-			- Perform "ray tracing" from SR to EW, in order to:
+		- Algo for physics update of one NPC:
+			- 1. F = {g, ext forces}
+			- 2. If NPC on spring:
+				- Calculate Fa == apparent force due to difference between (current) world position of NPC (SW) and current position of triangle's pos (World(SR))
+				- F' = opposite of component of (F+Fa) perpendicular to spring (from inside of triangle)
+				- F' += (non-linear) friction due to normal component of (F+Fa) above, tangential to spring
+			- 3. Integrate (F + F') and of course NPC's velocity, calculating EW
+			- 4. Perform ray tracing; if collision, move NPC and update velocity as usual (i.e. with normal and tangential velocity responses)
+		- Details on ray tracing: 
+			- Perform ray tracing from SR to EW, in order to:
 				- Determine exit & entry through all triangles in path
 				- Eventually stop at a floor
 			- Details:
@@ -69,8 +87,8 @@ Details
 						- Determine side of ST that SR->E'R path crossed
 							- It's gotta be one and only one
 						- Check if that side is floor; if it is: apply "collision" logic and stop
-						- Find next triangle (triangle opposite that side)
-						- If there's no triangle: enter "free regime" and top
+						- (if not floor) Find next triangle (triangle opposite that side)
+						- If there's no triangle: enter "free regime" and stop
 						- ST = this new triangle; continue loop
 		- Details:
 			- Barycentric coords, and intersection of segment with triangle:
@@ -79,6 +97,51 @@ Details
 				- https://web.archive.org/web/20170517125238/http://www.cs.virginia.edu/~gfx/courses/2003/ImageSynthesis/papers/Acceleration/Fast%20MinimumStorage%20RayTriangle%20Intersection.pdf
 			- Plucker coords, and intersection of segment with triangle:
 				- https://members.loria.fr/SLazard/ARC-Visi3D/Pant-project/files/Line_Segment_Triangle.html
+				- 2D: https://www.geogebra.org/m/aRMTsu62
+
+
+Code
+===========
+Arch:
+- One single NPC class owned and managed by World
+- Rendered dispatched to individual ShipRenderContext's, as each ship has own Z world
+	- Though we could have a NpnRenderContext which passes ship's Z in vertex buffers
+
+Details:
+- NPCs class:
+	- Container of NPCs
+	- Owned by World; accessed - when needed - by Ships via ParentWorld
+	- Contains all NPCs from all ships
+		- Organized internally by ship, so that ships may easy access all their NPCs easily e.g. when doing interactions
+			- N buffers of buffer<NPC>: <ShipId; -> local ordinal (unstable and not visible from outside)>
+				- Innermost buffer kept compact during removals and additions to Ship's specific buffer, hence the reason why the ordinal in that buffer is not stable
+		- One single buffer per-physical quantity though, across all ships, so that we do physics updates with one single pass
+			- Buffer is pre-sized to max # of NPCs
+			- Need same tricks as other physics buffers wrt additions/removals, e.g. zeroing coeffs so that update steps are essentially nop's
+		- Identification:
+			- Each NPC contains a stable, globally unique single-integer ID, unrelated to the position it occupies in NPC buffers, but
+			  equal to the position it occupies in the physics buffer(s)
+		- NPC struct:
+			- Index: ElementIndex (ordinal in physics buffer)
+			- Type: NpcKindType
+			- Union of all kind-specific attributes
+				- Note: many attributes will be common, hence we're saving room
+	- AddHumanNPC(..)
+	- Update()
+	- Upload(iShip, ShipRenderContext)
+		- Invoked by World for each ship separately
+		- Invokes ShipRenderContext::UploadNPC:
+			- A TextureGroup enum - declared in RenderTypes like AntiMatterBomb is for example - is used to identify the "movement types" for rendering. An additional index provides the sub-frame. The whole coordinate is a TextureFrameId<NPC group>.
+
+
+
+
+
+
+
+
+
+
 
 - OLD:
 - "Walkability"
