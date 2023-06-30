@@ -12,27 +12,27 @@ msgstr ""
 "X-Generator: Poedit 2.4\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: ..\FloatingSandbox\MainFrame.cpp:300
+#: ..\FloatingSandbox\MainFrame.cpp:305
 msgid "&Controls"
 msgstr "&Controlli"
 
-#: ..\FloatingSandbox\MainFrame.cpp:239
+#: ..\FloatingSandbox\MainFrame.cpp:244
 msgid "&File"
 msgstr "&File"
 
-#: ..\FloatingSandbox\MainFrame.cpp:617
+#: ..\FloatingSandbox\MainFrame.cpp:622
 msgid "&Help"
 msgstr "&Aiuto"
 
-#: ..\FloatingSandbox\MainFrame.cpp:565
+#: ..\FloatingSandbox\MainFrame.cpp:570
 msgid "&Options"
 msgstr "&Opzioni"
 
-#: ..\FloatingSandbox\MainFrame.cpp:581
+#: ..\FloatingSandbox\MainFrame.cpp:586
 msgid "&ShipBuilder"
 msgstr "&ShipBuilder"
 
-#: ..\FloatingSandbox\MainFrame.cpp:503
+#: ..\FloatingSandbox\MainFrame.cpp:508
 msgid "&Tools"
 msgstr "&Strumenti"
 
@@ -89,7 +89,7 @@ msgstr "Interrompi l'operazione di incollaggio."
 msgid "About %s"
 msgstr "Informazioni su %s"
 
-#: ..\FloatingSandbox\MainFrame.cpp:593
+#: ..\FloatingSandbox\MainFrame.cpp:598
 msgid "About and Credits"
 msgstr "Informazioni e ringraziamenti"
 
@@ -101,7 +101,7 @@ msgstr "Aggiungi o azzera il layer."
 msgid "Add/Clear"
 msgstr "Aggiungi/azzera"
 
-#: ..\FloatingSandbox\MainFrame.cpp:445
+#: ..\FloatingSandbox\MainFrame.cpp:450
 msgid "Adjust Terrain"
 msgstr "Regola fondale"
 
@@ -557,7 +557,7 @@ msgstr ""
 "Al momento non è possibile verificare la disponibilità di aggiornamenti; "
 "riprova più tardi..."
 
-#: ..\FloatingSandbox\MainFrame.cpp:380
+#: ..\FloatingSandbox\MainFrame.cpp:385
 msgid "Attract/Repel"
 msgstr "Attrai/respingi"
 
@@ -577,7 +577,7 @@ msgstr ""
 msgid "Author(s), e.g. \"Ellen Ripley; David Gahan\""
 msgstr "Autore/i; per esempio, \"Ellen Ripley; David Gahan\""
 
-#: ..\FloatingSandbox\MainFrame.cpp:260
+#: ..\FloatingSandbox\MainFrame.cpp:265
 #: ..\FloatingSandbox\PreferencesDialog.cpp:952
 msgid "Auto-Focus at Ship Load"
 msgstr "Auto-focus al caricamento della nave"
@@ -617,7 +617,7 @@ msgstr "Copia nave"
 msgid "Base Speed"
 msgstr "Velocità di base"
 
-#: ..\FloatingSandbox\MainFrame.cpp:370
+#: ..\FloatingSandbox\MainFrame.cpp:375
 msgid "Blast"
 msgstr "Esplosione"
 
@@ -649,7 +649,7 @@ msgstr "Bombe"
 msgid "Boot Settings"
 msgstr "Parametri d'avvio"
 
-#: ..\FloatingSandbox\MainFrame.cpp:275
+#: ..\FloatingSandbox\MainFrame.cpp:280
 msgid "Bright Ambient Light"
 msgstr "Aumenta luminosità"
 
@@ -755,7 +755,7 @@ msgstr ""
 msgid "Check for Updates on Startup"
 msgstr "Controlla aggiornamenti all'avvio"
 
-#: ..\FloatingSandbox\MainFrame.cpp:599
+#: ..\FloatingSandbox\MainFrame.cpp:604
 msgid "Check for Updates..."
 msgstr "Controlla disponibilità aggiornamenti..."
 
@@ -825,7 +825,7 @@ msgstr ""
 msgid "Contiguous Only:"
 msgstr "Solo confinante:"
 
-#: ..\FloatingSandbox\MainFrame.cpp:264
+#: ..\FloatingSandbox\MainFrame.cpp:269
 #: ..\FloatingSandbox\PreferencesDialog.cpp:937
 msgid "Continuous Auto-Focus"
 msgstr "Auto-Focus continuo"
@@ -872,7 +872,7 @@ msgstr "Copyright (c) 2011 Paul Mineiro"
 msgid "Copyright (c) Laurent Gomila"
 msgstr "Copyright (c) Laurent Gomila"
 
-#: ..\FloatingSandbox\MainFrame.cpp:573
+#: ..\FloatingSandbox\MainFrame.cpp:578
 msgid "Create New Ship..."
 msgstr "Crea nuova nave..."
 
@@ -979,11 +979,11 @@ msgstr "Strumenti di distruzione"
 msgid "Detail"
 msgstr "Dettaglio"
 
-#: ..\FloatingSandbox\MainFrame.cpp:479
+#: ..\FloatingSandbox\MainFrame.cpp:484
 msgid "Detonate Anti-Matter Bombs"
 msgstr "Innesca bombe anti-materia"
 
-#: ..\FloatingSandbox\MainFrame.cpp:471
+#: ..\FloatingSandbox\MainFrame.cpp:476
 msgid "Detonate RC Bombs"
 msgstr "Innesca bombe telecomandate"
 
@@ -995,7 +995,7 @@ msgstr "Diesel"
 msgid "Diffusion Speed"
 msgstr "Velocità di diffusione"
 
-#: ..\FloatingSandbox\MainFrame.cpp:279
+#: ..\FloatingSandbox\MainFrame.cpp:284
 msgid "Dim Ambient Light"
 msgstr "Diminuisci luminosità"
 
@@ -1040,7 +1040,7 @@ msgstr "Non mostrare più descrizioni quando le navi vengono caricate"
 msgid "Don't show this tip again"
 msgstr "Non mostrare più questo suggerimento"
 
-#: ..\FloatingSandbox\MainFrame.cpp:603
+#: ..\FloatingSandbox\MainFrame.cpp:608
 msgid "Donate..."
 msgstr "Dona..."
 
@@ -1167,7 +1167,7 @@ msgstr "Modifica"
 msgid "Edit Panel"
 msgstr "Modifica pannello"
 
-#: ..\FloatingSandbox\MainFrame.cpp:577
+#: ..\FloatingSandbox\MainFrame.cpp:582
 msgid "Edit This Ship..."
 msgstr "Modifica questa nave..."
 
@@ -1189,7 +1189,7 @@ msgstr "Volume effetti sonori"
 msgid "Elasticity"
 msgstr "Elasticità"
 
-#: ..\FloatingSandbox\MainFrame.cpp:375
+#: ..\FloatingSandbox\MainFrame.cpp:380
 msgid "Electric Spark"
 msgstr "Arco elettrico"
 
@@ -1217,11 +1217,11 @@ msgstr "Densità di emissione"
 msgid "Enable Shoaling"
 msgstr "Abilita Branco"
 
-#: ..\FloatingSandbox\MainFrame.cpp:260
+#: ..\FloatingSandbox\MainFrame.cpp:265
 msgid "Enable or disable auto-focus when a ship is loaded."
 msgstr "Abilita o disabilita l'auto-focus quando una nave viene caricata."
 
-#: ..\FloatingSandbox\MainFrame.cpp:264
+#: ..\FloatingSandbox\MainFrame.cpp:269
 msgid "Enable or disable continuous auto-focus."
 msgstr "Abilita o disabilita l'auto-focus continuo."
 
@@ -1536,7 +1536,7 @@ msgstr "Modalità riempimento:"
 msgid "Fill an area with structure particles."
 msgstr "Riempi un'area con particelle strutturali."
 
-#: ..\FloatingSandbox\MainFrame.cpp:365
+#: ..\FloatingSandbox\MainFrame.cpp:370
 msgid "Fire Extinguisher"
 msgstr "Estintore"
 
@@ -1633,7 +1633,7 @@ msgstr ""
 "quest'opzione non è abilitata, lo strumento semplicemente sostituisce un "
 "materiale con un altro."
 
-#: ..\FloatingSandbox\MainFrame.cpp:400
+#: ..\FloatingSandbox\MainFrame.cpp:405
 msgid "Flood/Dry"
 msgstr "Inonda/asciuga"
 
@@ -1684,11 +1684,11 @@ msgstr "Resistenza di attrito"
 msgid "From Image"
 msgstr "Da immagine"
 
-#: ..\FloatingSandbox\MainFrame.cpp:283
+#: ..\FloatingSandbox\MainFrame.cpp:288
 msgid "Full Day/Night"
 msgstr "Giorno/Notte"
 
-#: ..\FloatingSandbox\MainFrame.cpp:550
+#: ..\FloatingSandbox\MainFrame.cpp:555
 msgid "Full Screen"
 msgstr "Schermo pieno"
 
@@ -1700,7 +1700,7 @@ msgstr "Gioco"
 msgid "Game Preferences"
 msgstr "Preferenze"
 
-#: ..\FloatingSandbox\MainFrame.cpp:520
+#: ..\FloatingSandbox\MainFrame.cpp:525
 msgid "Game Preferences..."
 msgstr "Preferenze..."
 
@@ -1724,11 +1724,11 @@ msgstr "Genera scintille"
 msgid "Generator"
 msgstr "Generatore"
 
-#: ..\FloatingSandbox\MainFrame.cpp:223
+#: ..\FloatingSandbox\MainFrame.cpp:224
 msgid "Get More Ships..."
 msgstr "Scarica ulteriori navi..."
 
-#: ..\FloatingSandbox\MainFrame.cpp:589
+#: ..\FloatingSandbox\MainFrame.cpp:594
 msgid "Get help about the simulator"
 msgstr "Mostra la guida del simulatore"
 
@@ -1760,7 +1760,7 @@ msgstr "Vai alla cartella con le tune navi"
 msgid "Green Screen"
 msgstr "Schermo verde"
 
-#: ..\FloatingSandbox\MainFrame.cpp:589
+#: ..\FloatingSandbox\MainFrame.cpp:594
 msgid "Guide"
 msgstr "Guida"
 
@@ -1804,7 +1804,7 @@ msgstr "Mappa calore"
 msgid "HeatBlaster"
 msgstr "HeatBlaster"
 
-#: ..\FloatingSandbox\MainFrame.cpp:360
+#: ..\FloatingSandbox\MainFrame.cpp:365
 msgid "HeatBlaster/CoolBlaster"
 msgstr "HeatBlaster/CoolBlaster"
 
@@ -1930,7 +1930,7 @@ msgstr "Inizializzazione rumore..."
 msgid "Inject Pressure Tool"
 msgstr "Strumento pressurizzazione"
 
-#: ..\FloatingSandbox\MainFrame.cpp:395
+#: ..\FloatingSandbox\MainFrame.cpp:400
 msgid "Inject/Remove Pressure"
 msgstr "Pressurizza/depressurizza"
 
@@ -1987,7 +1987,7 @@ msgstr "Lingua"
 msgid "Laser Ray"
 msgstr "Raggio laser"
 
-#: ..\FloatingSandbox\MainFrame.cpp:440
+#: ..\FloatingSandbox\MainFrame.cpp:445
 msgid "LaserCannon"
 msgstr "Cannone laser"
 
@@ -2038,7 +2038,7 @@ msgstr "Carica parametri"
 msgid "Load Ship"
 msgstr "Carica nave"
 
-#: ..\FloatingSandbox\MainFrame.cpp:208
+#: ..\FloatingSandbox\MainFrame.cpp:209
 msgid "Load Ship..."
 msgstr "Carica nave..."
 
@@ -2135,7 +2135,7 @@ msgstr "Ingrandisce o rimpicciolisce le dimensioni dei pesci."
 msgid "Magnify the view (+)."
 msgstr "Ingrandisci (+)."
 
-#: ..\FloatingSandbox\MainFrame.cpp:2347 ..\ShipBuilderLib\MainFrame.cpp:5483
+#: ..\FloatingSandbox\MainFrame.cpp:2352 ..\ShipBuilderLib\MainFrame.cpp:5483
 msgid "Maritime Disaster"
 msgstr "Disastro marittimo"
 
@@ -2219,15 +2219,15 @@ msgstr "Modula vento"
 msgid "Moonlight"
 msgstr "Luce lunare"
 
-#: ..\FloatingSandbox\MainFrame.cpp:341
+#: ..\FloatingSandbox\MainFrame.cpp:346
 msgid "Move All/Rotate All"
 msgstr "Muovi tutto/ruota tutto"
 
-#: ..\FloatingSandbox\MainFrame.cpp:336
+#: ..\FloatingSandbox\MainFrame.cpp:341
 msgid "Move/Rotate"
 msgstr "Muovi/ruota"
 
-#: ..\FloatingSandbox\MainFrame.cpp:560
+#: ..\FloatingSandbox\MainFrame.cpp:565
 msgid "Mute"
 msgstr "Disattivazione suono"
 
@@ -2326,7 +2326,7 @@ msgstr "Forza nominale"
 msgid "None"
 msgstr "Nessuno"
 
-#: ..\FloatingSandbox\MainFrame.cpp:554
+#: ..\FloatingSandbox\MainFrame.cpp:559
 msgid "Normal Screen"
 msgstr "Schermo normale"
 
@@ -2383,7 +2383,7 @@ msgstr ""
 "nel layer strutturale sottostante. Le particelle nel layer elettrico devono "
 "sempre essere sovrapposte a particelle nel layer strutturale."
 
-#: ..\FloatingSandbox\MainFrame.cpp:613
+#: ..\FloatingSandbox\MainFrame.cpp:618
 msgid "Open Download Page"
 msgstr "Apri pagina di download"
 
@@ -2391,19 +2391,23 @@ msgstr "Apri pagina di download"
 msgid "Open Electrical Panel at Load"
 msgstr "Apri pannello elettrico automaticamente"
 
-#: ..\FloatingSandbox\MainFrame.cpp:609
+#: ..\FloatingSandbox\MainFrame.cpp:614
 msgid "Open Home Page"
 msgstr "Apri home page"
 
-#: ..\FloatingSandbox\MainFrame.cpp:526
+#: ..\FloatingSandbox\MainFrame.cpp:531
 msgid "Open Log Window"
 msgstr "Finestra di log"
 
-#: ..\FloatingSandbox\MainFrame.cpp:573
+#: ..\FloatingSandbox\MainFrame.cpp:234
+msgid "Open Screenshots Folder"
+msgstr "Apri cartella degli screenshot"
+
+#: ..\FloatingSandbox\MainFrame.cpp:578
 msgid "Open the ShipBuilder to create a new ship"
 msgstr "Apri lo ShipBuilder per creare una nuova nave"
 
-#: ..\FloatingSandbox\MainFrame.cpp:577
+#: ..\FloatingSandbox\MainFrame.cpp:582
 msgid "Open the ShipBuilder to edit the currently-loaded ship"
 msgstr "Apri lo ShipBuilder per modificare questa nave"
 
@@ -2483,11 +2487,11 @@ msgstr "Incolla la clipboard."
 msgid "Paste the content of the clipboard into the ship (Ctrl+V)."
 msgstr "Incolla il contenuto della clipboard nella nave (Ctrl+V)."
 
-#: ..\FloatingSandbox\MainFrame.cpp:289
+#: ..\FloatingSandbox\MainFrame.cpp:294
 msgid "Pause"
 msgstr "Pausa"
 
-#: ..\FloatingSandbox\MainFrame.cpp:289
+#: ..\FloatingSandbox\MainFrame.cpp:294
 msgid "Pause the game"
 msgstr "Pausa simulatore"
 
@@ -2507,7 +2511,7 @@ msgstr "Durata"
 msgid "Physics"
 msgstr "Fisica"
 
-#: ..\FloatingSandbox\MainFrame.cpp:345
+#: ..\FloatingSandbox\MainFrame.cpp:350
 msgid "Pick-n-Pull"
 msgstr "Pinza"
 
@@ -2625,7 +2629,7 @@ msgstr "Specifica una password"
 msgid "Push Button"
 msgstr "Interruttore a pressione"
 
-#: ..\FloatingSandbox\MainFrame.cpp:235 ..\ShipBuilderLib\MainFrame.cpp:892
+#: ..\FloatingSandbox\MainFrame.cpp:240 ..\ShipBuilderLib\MainFrame.cpp:892
 msgid "Quit"
 msgstr "Esci"
 
@@ -2633,7 +2637,7 @@ msgstr "Esci"
 msgid "Quit and leave the program (ALT+F4)."
 msgstr "Esci (ALT+F4)."
 
-#: ..\FloatingSandbox\MainFrame.cpp:235
+#: ..\FloatingSandbox\MainFrame.cpp:240
 msgid "Quit the game"
 msgstr "Esci dal simulatore"
 
@@ -2669,15 +2673,15 @@ msgstr "Schermo rosso"
 msgid "Reduce the view (-)."
 msgstr "Rimpicciolisci (-)."
 
-#: ..\FloatingSandbox\MainFrame.cpp:212
+#: ..\FloatingSandbox\MainFrame.cpp:213
 msgid "Reload Current Ship"
 msgstr "Ri-carica nave corrente"
 
-#: ..\FloatingSandbox\MainFrame.cpp:516
+#: ..\FloatingSandbox\MainFrame.cpp:521
 msgid "Reload Last-Modified Simulation Settings"
 msgstr "Carica precedenti parametri simulazione"
 
-#: ..\FloatingSandbox\MainFrame.cpp:216
+#: ..\FloatingSandbox\MainFrame.cpp:217
 msgid "Reload Previous Ship"
 msgstr "Carica nave precedente"
 
@@ -2733,7 +2737,7 @@ msgstr ""
 "Visualizza l'oceano con ulteriori dettagli. Richiede maggiori tempi di "
 "calcolo."
 
-#: ..\FloatingSandbox\MainFrame.cpp:450
+#: ..\FloatingSandbox\MainFrame.cpp:455
 msgid "Repair"
 msgstr "Ripara"
 
@@ -2745,7 +2749,7 @@ msgstr "Strumento ripara"
 msgid "Replace Saved Settings with Current"
 msgstr "Sostituisci parametri salvati con parametri correnti"
 
-#: ..\FloatingSandbox\MainFrame.cpp:268 ..\ShipBuilderLib\MainFrame.cpp:989
+#: ..\FloatingSandbox\MainFrame.cpp:273 ..\ShipBuilderLib\MainFrame.cpp:989
 msgid "Reset View"
 msgstr "Ripristina panoramica"
 
@@ -2907,7 +2911,7 @@ msgstr "Salva e torna"
 msgid "Save Current Settings"
 msgstr "Salva parametri correnti"
 
-#: ..\FloatingSandbox\MainFrame.cpp:229
+#: ..\FloatingSandbox\MainFrame.cpp:230
 msgid "Save Screenshot"
 msgstr "Salva screenshot"
 
@@ -2963,7 +2967,7 @@ msgstr "Salva questa nave"
 msgid "Saves the current settings using the specified name."
 msgstr "Salva i parametri correnti sotto il nome selezionato."
 
-#: ..\FloatingSandbox\MainFrame.cpp:460
+#: ..\FloatingSandbox\MainFrame.cpp:465
 msgid "Scare/Allure Fishes"
 msgstr "Impaurisci/attrai pesci"
 
@@ -2971,7 +2975,7 @@ msgstr "Impaurisci/attrai pesci"
 msgid "Screenshot directory:"
 msgstr "Cartella degli screenshot:"
 
-#: ..\FloatingSandbox\MainFrame.cpp:455
+#: ..\FloatingSandbox\MainFrame.cpp:460
 msgid "Scrub/Rot"
 msgstr "Strofina/arrugginisci"
 
@@ -3181,11 +3185,11 @@ msgstr "Mostra AABBs"
 msgid "Show Electrical Notifications"
 msgstr "Mostra notifiche elementi elettrici"
 
-#: ..\FloatingSandbox\MainFrame.cpp:530
+#: ..\FloatingSandbox\MainFrame.cpp:535
 msgid "Show Event Ticker"
 msgstr "Event ticker"
 
-#: ..\FloatingSandbox\MainFrame.cpp:544
+#: ..\FloatingSandbox\MainFrame.cpp:549
 #: ..\FloatingSandbox\PreferencesDialog.cpp:573
 msgid "Show Extended Status Text"
 msgstr "Informazioni diagnostiche addizionali"
@@ -3194,7 +3198,7 @@ msgstr "Informazioni diagnostiche addizionali"
 msgid "Show Frontiers"
 msgstr "Mostra bordi"
 
-#: ..\FloatingSandbox\MainFrame.cpp:535
+#: ..\FloatingSandbox\MainFrame.cpp:540
 msgid "Show Probe Panel"
 msgstr "Grafici"
 
@@ -3202,7 +3206,7 @@ msgstr "Grafici"
 msgid "Show Ship Descriptions at Load"
 msgstr "Mostra descrizioni navi"
 
-#: ..\FloatingSandbox\MainFrame.cpp:540
+#: ..\FloatingSandbox\MainFrame.cpp:545
 #: ..\FloatingSandbox\PreferencesDialog.cpp:541
 msgid "Show Status Text"
 msgstr "Informazioni diagnostiche"
@@ -3219,7 +3223,7 @@ msgstr "Mostra suggerimenti all'avvio"
 msgid "Show Tsunami Notifications"
 msgstr "Mostra notifiche tsunami"
 
-#: ..\FloatingSandbox\MainFrame.cpp:593
+#: ..\FloatingSandbox\MainFrame.cpp:598
 msgid "Show credits and other I'vedunnit stuff"
 msgstr "Mostra i titoli di coda"
 
@@ -3239,7 +3243,7 @@ msgstr "Durezza sedimento"
 msgid "Simulation Settings"
 msgstr "Parametri simulazione"
 
-#: ..\FloatingSandbox\MainFrame.cpp:512
+#: ..\FloatingSandbox\MainFrame.cpp:517
 msgid "Simulation Settings..."
 msgstr "Parametri simulatore..."
 
@@ -3256,11 +3260,11 @@ msgstr "Moltiplicatore dimensioni"
 msgid "Sky"
 msgstr "Cielo"
 
-#: ..\FloatingSandbox\MainFrame.cpp:355
+#: ..\FloatingSandbox\MainFrame.cpp:360
 msgid "Slice"
 msgstr "Taglia"
 
-#: ..\FloatingSandbox\MainFrame.cpp:350
+#: ..\FloatingSandbox\MainFrame.cpp:355
 msgid "Smash"
 msgstr "Distruggi"
 
@@ -3355,11 +3359,11 @@ msgstr "Pressione statica netta"
 msgid "Steam"
 msgstr "A vapore"
 
-#: ..\FloatingSandbox\DebugDialog.cpp:316 ..\FloatingSandbox\MainFrame.cpp:295
+#: ..\FloatingSandbox\DebugDialog.cpp:316 ..\FloatingSandbox\MainFrame.cpp:300
 msgid "Step"
 msgstr "Passo"
 
-#: ..\FloatingSandbox\MainFrame.cpp:295
+#: ..\FloatingSandbox\MainFrame.cpp:300
 msgid "Step one frame at a time"
 msgstr "Incrementa un frame alla volta"
 
@@ -3409,7 +3413,7 @@ msgstr "File struttura navi"
 msgid "Success"
 msgstr "Successo"
 
-#: ..\FloatingSandbox\MainFrame.cpp:385
+#: ..\FloatingSandbox\MainFrame.cpp:390
 msgid "Swirl/Counterswirl"
 msgstr "Vortice/anti-vortice"
 
@@ -3461,7 +3465,7 @@ msgstr "Trasparenza texture"
 msgid "Texture mode: view ship with texture."
 msgstr "Modalità texture: visualizza la nave con la texture."
 
-#: ..\FloatingSandbox\MainFrame.cpp:425
+#: ..\FloatingSandbox\MainFrame.cpp:430
 msgid "Thanos' Snap"
 msgstr "Snap di Thanos"
 
@@ -3849,23 +3853,23 @@ msgstr ""
 "Questo software è dato in licenza a Mattia, Elia, e a tutti gli altri "
 "bambini del mondo!"
 
-#: ..\FloatingSandbox\MainFrame.cpp:420
+#: ..\FloatingSandbox\MainFrame.cpp:425
 msgid "Toggle Anti-Matter Bomb"
 msgstr "Bomba anti-materia"
 
-#: ..\FloatingSandbox\MainFrame.cpp:415
+#: ..\FloatingSandbox\MainFrame.cpp:420
 msgid "Toggle Impact Bomb"
 msgstr "Bomba a impatto"
 
-#: ..\FloatingSandbox\MainFrame.cpp:465
+#: ..\FloatingSandbox\MainFrame.cpp:470
 msgid "Toggle Physics Probe"
 msgstr "Sonda fisica"
 
-#: ..\FloatingSandbox\MainFrame.cpp:390
+#: ..\FloatingSandbox\MainFrame.cpp:395
 msgid "Toggle Pin"
 msgstr "Spillo"
 
-#: ..\FloatingSandbox\MainFrame.cpp:410
+#: ..\FloatingSandbox\MainFrame.cpp:415
 msgid "Toggle RC Bomb"
 msgstr "Bomba telecomandata"
 
@@ -3873,7 +3877,7 @@ msgstr "Bomba telecomandata"
 msgid "Toggle Switch"
 msgstr "Interruttore a levetta"
 
-#: ..\FloatingSandbox\MainFrame.cpp:405
+#: ..\FloatingSandbox\MainFrame.cpp:410
 msgid "Toggle Timer Bomb"
 msgstr "Bomba ad orologeria"
 
@@ -3909,19 +3913,19 @@ msgstr "Trasparente:"
 msgid "Triangles"
 msgstr "Triangoli"
 
-#: ..\FloatingSandbox\MainFrame.cpp:499
+#: ..\FloatingSandbox\MainFrame.cpp:504
 msgid "Trigger Lightning"
 msgstr "Provoca fulmine"
 
-#: ..\FloatingSandbox\MainFrame.cpp:490
+#: ..\FloatingSandbox\MainFrame.cpp:495
 msgid "Trigger Rogue Wave"
 msgstr "Provoca onda anomala"
 
-#: ..\FloatingSandbox\MainFrame.cpp:494
+#: ..\FloatingSandbox\MainFrame.cpp:499
 msgid "Trigger Storm"
 msgstr "Provoca tempesta"
 
-#: ..\FloatingSandbox\MainFrame.cpp:486
+#: ..\FloatingSandbox\MainFrame.cpp:491
 msgid "Trigger Tsunami"
 msgstr "Provoca tsunami"
 
@@ -4090,7 +4094,7 @@ msgstr "Fattore tenuta stagna"
 msgid "Wave Phenomena"
 msgstr "Fenomeni marini"
 
-#: ..\FloatingSandbox\MainFrame.cpp:430
+#: ..\FloatingSandbox\MainFrame.cpp:435
 msgid "WaveMaker"
 msgstr "WaveMaker"
 
@@ -4189,7 +4193,7 @@ msgstr "Vento e onde"
 msgid "Wind speed conjured by the WindMaker tool (Km/h)."
 msgstr "Velocità del vento generato dallo strumento WindMaker (Km/h)."
 
-#: ..\FloatingSandbox\MainFrame.cpp:435
+#: ..\FloatingSandbox\MainFrame.cpp:440
 msgid "WindMaker"
 msgstr "WindMaker"
 
@@ -4217,7 +4221,7 @@ msgstr "Si, voglio utilizzare il nome suggerito"
 msgid "Zero"
 msgstr "Zero"
 
-#: ..\FloatingSandbox\MainFrame.cpp:248 ..\ShipBuilderLib\MainFrame.cpp:937
+#: ..\FloatingSandbox\MainFrame.cpp:253 ..\ShipBuilderLib\MainFrame.cpp:937
 msgid "Zoom In"
 msgstr "Ingrandisci"
 
@@ -4226,7 +4230,7 @@ msgstr "Ingrandisci"
 msgid "Zoom Increment"
 msgstr "Incremento di zoom"
 
-#: ..\FloatingSandbox\MainFrame.cpp:254 ..\ShipBuilderLib\MainFrame.cpp:963
+#: ..\FloatingSandbox\MainFrame.cpp:259 ..\ShipBuilderLib\MainFrame.cpp:963
 msgid "Zoom Out"
 msgstr "Rimpicciolisci"
 

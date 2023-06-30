@@ -704,8 +704,6 @@
 			+ Also don't need anymore mCurrentNumIterAdj
 	X Check on Dell if can raise Max burning particles
 		X No, too much rendering overhead
-
-	- Test Hesleden with code for 5-8 threads
 	
 	= Ships:
 		+ N.S._Savannah (Pocketwatch)
@@ -719,15 +717,11 @@
 		+ Friesenland, Galeb, Lamartine, Transilvania - Hellooping
 			+ Asked name
 			+ Add to credits
+		+ Take Dugong - Walter
+			+ Name? (ASKED) - I made "Walter"
+				+ He wants Techo
+				+ Redo credits x 2
 
-		= Take Dugong - Walter
-			= Name? (ASKED) - I made "Walter"
-				- He wants Techo
-				- Redo credits x 2
-			= Credits? (ASKED) - I made
-			= If won't work:
-				+ Hack and edit
-				- Add "Walter" to credits
 		- Test:
 			- Saturn V (Ur local brazilian#0842, aka Transportation Fan)
 
@@ -792,34 +786,7 @@
 			- Upload changes2.txt
 				- Test w/old FS
 
-	- Redo timer bomb
-
-	- Wrecking ball tool
-
-	- Replace points with quads from geometry shader
-
-	- Buy new track for farewell: https://www.pond5.com/royalty-free-music/item/204959560-nearer-my-god-thee
-
-	- Adjustable level of water
-		- Think of problem with flattening waves on bottom?
-
-	- Transparency setting for glass material
-		- Managed by Ship adjusting colors' alpha's
-
-	- Frozen structure (*)
-
-	- Windows 11 issue: try to play with vsync
-		- https://stackoverflow.com/questions/589064/how-to-enable-vertical-sync-in-opengl
-
-	- Bubbles issue (that "old" issue)
-		- Add temp code to calc total internal water, and see if it's true that it keeps increasing
-		- Do same for "other internal pressure"
-
-	- Fireworks (*)
-
-	- Review rope strength:
-		- 0.025 is better, but stresses too much
-			- Add optional stress_strength_fraction material property, default=current value, for ropes=100%
+	- Fix "2022" copyright notices
 
 	- Quad rendering with indices
 		- Sharing VBOs in VAOs: 
@@ -864,6 +831,44 @@
 			- Text (NotificationContext)
 			- Fishes
 
+
+	- Redo timer bomb
+		- How?
+
+	- Wrecking ball tool
+	- New tool 2: Punch
+		- Spec:
+			- Works only on frontier from outside->in
+				- Might want to try, at end, also from inside->out
+		- Impl:
+			- TODOHERE
+
+
+	- Replace points with quads from geometry shader
+
+	- Buy new track for farewell: https://www.pond5.com/royalty-free-music/item/204959560-nearer-my-god-thee
+
+	- Adjustable level of water
+		- Think of problem with flattening waves on bottom?
+
+	- Transparency setting for glass material
+		- Managed by Ship adjusting colors' alpha's
+
+	- Frozen structure (*)
+
+	- Windows 11 issue: try to play with vsync
+		- https://stackoverflow.com/questions/589064/how-to-enable-vertical-sync-in-opengl
+
+	- Bubbles issue (that "old" issue)
+		- Add temp code to calc total internal water, and see if it's true that it keeps increasing
+		- Do same for "other internal pressure"
+
+	- Fireworks (*)
+
+	- Review rope strength:
+		- 0.025 is better, but stresses too much
+			- Add optional stress_strength_fraction material property, default=current value, for ropes=100%
+
 	- Add more background music:
 		+ "Symmetry" - Kevin MacLeod (incompetech.com)			
 		- "Shadowlands 5 - Antechamber" - Kevin MacLeod (incompetech.com)
@@ -878,11 +883,6 @@
 			- See why Bernoulli doesn't make inflow faster
 		- Negative pressure in Mylar bubble - bug?
 		- See why with high water density, water entering a ship goes above the waterline - bug?
-
-	- Test using normalize_approx in spring loop
-		- Verify gain on Dell
-
-	- Spring relaxation with intrinsics
 
 	- Lights improvement options (*)
 
@@ -905,13 +905,6 @@
 					- LightSource::Add/RemoveDynamicSource
 					- Ephemeral particle state @ Point stores the index in LightSource, which is needed for setting params, removing, etc.
 			- Used by lighting algorithm AND by shader (after Lights Improvements work (*))
-
-	- New tool 2: Punch
-		- Spec:
-			- Works only on frontier from outside->in
-				- Might want to try, at end, also from inside->out
-		- Impl:
-			- TODOHERE
 
 	- Sound space (*)
 

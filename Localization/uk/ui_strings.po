@@ -2,39 +2,39 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Floating Sandbox\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-06-24 03:09+0300\n"
+"PO-Revision-Date: 2023-06-30 19:35+0200\n"
 "Last-Translator: Gabriele Giuseppini <gabrielegiuseppini@gmail.com>\n"
 "Language-Team: Ilya Voloshin; Roman Shavernew (DioxCode)\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
-"n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
-"X-Generator: Poedit 3.3.1\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
+"X-Generator: Poedit 2.4\n"
 "X-Poedit-Basepath: .\n"
 
-#: ..\FloatingSandbox\MainFrame.cpp:300
+#: ..\FloatingSandbox\MainFrame.cpp:305
 msgid "&Controls"
 msgstr "&Управління"
 
-#: ..\FloatingSandbox\MainFrame.cpp:239
+#: ..\FloatingSandbox\MainFrame.cpp:244
 msgid "&File"
 msgstr "&Файл"
 
-#: ..\FloatingSandbox\MainFrame.cpp:617
+#: ..\FloatingSandbox\MainFrame.cpp:622
 msgid "&Help"
 msgstr "&Довідка"
 
-#: ..\FloatingSandbox\MainFrame.cpp:565
+#: ..\FloatingSandbox\MainFrame.cpp:570
 msgid "&Options"
 msgstr "&Параметри"
 
-#: ..\FloatingSandbox\MainFrame.cpp:581
+#: ..\FloatingSandbox\MainFrame.cpp:586
 msgid "&ShipBuilder"
 msgstr "&Суднобудівник"
 
-#: ..\FloatingSandbox\MainFrame.cpp:503
+#: ..\FloatingSandbox\MainFrame.cpp:508
 msgid "&Tools"
 msgstr "&Інструменти"
 
@@ -91,7 +91,7 @@ msgstr "Скасувати операцію вставки."
 msgid "About %s"
 msgstr "Про гру %s"
 
-#: ..\FloatingSandbox\MainFrame.cpp:593
+#: ..\FloatingSandbox\MainFrame.cpp:598
 msgid "About and Credits"
 msgstr "Про Гру та Подяки"
 
@@ -103,7 +103,7 @@ msgstr "Додайте або очистіть цей пласт."
 msgid "Add/Clear"
 msgstr "Додати/прибрати"
 
-#: ..\FloatingSandbox\MainFrame.cpp:445
+#: ..\FloatingSandbox\MainFrame.cpp:450
 msgid "Adjust Terrain"
 msgstr "Налаштування Рельєфу"
 
@@ -564,7 +564,7 @@ msgstr ""
 "Наразі неможливо перевірити наявність оновлень; будь ласка, спробуйте "
 "пізніше..."
 
-#: ..\FloatingSandbox\MainFrame.cpp:380
+#: ..\FloatingSandbox\MainFrame.cpp:385
 msgid "Attract/Repel"
 msgstr "Притягання/Відштовхування"
 
@@ -584,7 +584,7 @@ msgstr ""
 msgid "Author(s), e.g. \"Ellen Ripley; David Gahan\""
 msgstr "Автор(и), наприклад, \"Еллен Ріплі; Девід Гаан\"."
 
-#: ..\FloatingSandbox\MainFrame.cpp:260
+#: ..\FloatingSandbox\MainFrame.cpp:265
 #: ..\FloatingSandbox\PreferencesDialog.cpp:952
 msgid "Auto-Focus at Ship Load"
 msgstr "Автофокусування під час завантаження судна"
@@ -622,7 +622,7 @@ msgstr "Резервний корабель"
 msgid "Base Speed"
 msgstr "Базова швидкість"
 
-#: ..\FloatingSandbox\MainFrame.cpp:370
+#: ..\FloatingSandbox\MainFrame.cpp:375
 msgid "Blast"
 msgstr "Вибух"
 
@@ -654,7 +654,7 @@ msgstr "Бомби"
 msgid "Boot Settings"
 msgstr "Налаштування Завантаження"
 
-#: ..\FloatingSandbox\MainFrame.cpp:275
+#: ..\FloatingSandbox\MainFrame.cpp:280
 msgid "Bright Ambient Light"
 msgstr "Освітлити навколишнє Світло"
 
@@ -761,7 +761,7 @@ msgstr ""
 msgid "Check for Updates on Startup"
 msgstr "Перевірка наявності оновлень під час запуску"
 
-#: ..\FloatingSandbox\MainFrame.cpp:599
+#: ..\FloatingSandbox\MainFrame.cpp:604
 msgid "Check for Updates..."
 msgstr "Перевірити Наявність Оновлень..."
 
@@ -831,7 +831,7 @@ msgstr "Вітаємо! Корабель не має проблем і може 
 msgid "Contiguous Only:"
 msgstr "Тільки суміжні:"
 
-#: ..\FloatingSandbox\MainFrame.cpp:264
+#: ..\FloatingSandbox\MainFrame.cpp:269
 #: ..\FloatingSandbox\PreferencesDialog.cpp:937
 msgid "Continuous Auto-Focus"
 msgstr "Безперервне автофокусування"
@@ -878,7 +878,7 @@ msgstr "Copyright (c) 2011 Paul Mineiro"
 msgid "Copyright (c) Laurent Gomila"
 msgstr "Copyright (c) Laurent Gomila"
 
-#: ..\FloatingSandbox\MainFrame.cpp:573
+#: ..\FloatingSandbox\MainFrame.cpp:578
 msgid "Create New Ship..."
 msgstr "Створити новий корабель..."
 
@@ -985,11 +985,11 @@ msgstr "Руйнівні інструменти"
 msgid "Detail"
 msgstr "Деталі"
 
-#: ..\FloatingSandbox\MainFrame.cpp:479
+#: ..\FloatingSandbox\MainFrame.cpp:484
 msgid "Detonate Anti-Matter Bombs"
 msgstr "Підірвати Анти-Матеріальні Бомби"
 
-#: ..\FloatingSandbox\MainFrame.cpp:471
+#: ..\FloatingSandbox\MainFrame.cpp:476
 msgid "Detonate RC Bombs"
 msgstr "Підірвати радіокеровані бомби"
 
@@ -1001,7 +1001,7 @@ msgstr "Дизель"
 msgid "Diffusion Speed"
 msgstr "Швидкість дифузії"
 
-#: ..\FloatingSandbox\MainFrame.cpp:279
+#: ..\FloatingSandbox\MainFrame.cpp:284
 msgid "Dim Ambient Light"
 msgstr "Затемнити навколишнє Світло"
 
@@ -1046,7 +1046,7 @@ msgstr "Не показувати описи під час завантажен�
 msgid "Don't show this tip again"
 msgstr "Не показувати цю пораду знову"
 
-#: ..\FloatingSandbox\MainFrame.cpp:603
+#: ..\FloatingSandbox\MainFrame.cpp:608
 msgid "Donate..."
 msgstr "Пожертва..."
 
@@ -1173,7 +1173,7 @@ msgstr "Редагувати"
 msgid "Edit Panel"
 msgstr "Панель редагування"
 
-#: ..\FloatingSandbox\MainFrame.cpp:577
+#: ..\FloatingSandbox\MainFrame.cpp:582
 msgid "Edit This Ship..."
 msgstr "Редагувати цей корабель..."
 
@@ -1197,7 +1197,7 @@ msgstr "Гучність ефектів"
 msgid "Elasticity"
 msgstr "Еластичність"
 
-#: ..\FloatingSandbox\MainFrame.cpp:375
+#: ..\FloatingSandbox\MainFrame.cpp:380
 msgid "Electric Spark"
 msgstr "Електрична іскра"
 
@@ -1225,11 +1225,11 @@ msgstr "Коефіцієнт викидів"
 msgid "Enable Shoaling"
 msgstr "Увімкнути обміління"
 
-#: ..\FloatingSandbox\MainFrame.cpp:260
+#: ..\FloatingSandbox\MainFrame.cpp:265
 msgid "Enable or disable auto-focus when a ship is loaded."
 msgstr "Увімкнути або вимкнути автофокусування під час завантаження корабля."
 
-#: ..\FloatingSandbox\MainFrame.cpp:264
+#: ..\FloatingSandbox\MainFrame.cpp:269
 msgid "Enable or disable continuous auto-focus."
 msgstr "Увімкнення або вимкнення безперервного автофокусування."
 
@@ -1534,7 +1534,7 @@ msgstr "Режим заповнення:"
 msgid "Fill an area with structure particles."
 msgstr "Заповніть область частинками структури."
 
-#: ..\FloatingSandbox\MainFrame.cpp:365
+#: ..\FloatingSandbox\MainFrame.cpp:370
 msgid "Fire Extinguisher"
 msgstr "Вогнегасник"
 
@@ -1629,7 +1629,7 @@ msgstr ""
 "Заливає тільки частинки, що стикаються одна з одною. Якщо прапорець не "
 "встановлено, інструмент заливки ефективно замінює матеріал іншим."
 
-#: ..\FloatingSandbox\MainFrame.cpp:400
+#: ..\FloatingSandbox\MainFrame.cpp:405
 msgid "Flood/Dry"
 msgstr "Насос"
 
@@ -1682,11 +1682,11 @@ msgstr "Регулювання опору до тертя"
 msgid "From Image"
 msgstr "Із зображення"
 
-#: ..\FloatingSandbox\MainFrame.cpp:283
+#: ..\FloatingSandbox\MainFrame.cpp:288
 msgid "Full Day/Night"
 msgstr "Повний день/ніч"
 
-#: ..\FloatingSandbox\MainFrame.cpp:550
+#: ..\FloatingSandbox\MainFrame.cpp:555
 msgid "Full Screen"
 msgstr "Повний Екран"
 
@@ -1698,7 +1698,7 @@ msgstr "Гра"
 msgid "Game Preferences"
 msgstr "Ігрові Вподобання"
 
-#: ..\FloatingSandbox\MainFrame.cpp:520
+#: ..\FloatingSandbox\MainFrame.cpp:525
 msgid "Game Preferences..."
 msgstr "Ігрові Вподобання..."
 
@@ -1722,11 +1722,11 @@ msgstr "Створити іскри"
 msgid "Generator"
 msgstr "Генератор"
 
-#: ..\FloatingSandbox\MainFrame.cpp:223
+#: ..\FloatingSandbox\MainFrame.cpp:224
 msgid "Get More Ships..."
 msgstr "Отримати більше кораблів..."
 
-#: ..\FloatingSandbox\MainFrame.cpp:589
+#: ..\FloatingSandbox\MainFrame.cpp:594
 msgid "Get help about the simulator"
 msgstr "Отримайте допомогу щодо симулятора"
 
@@ -1758,7 +1758,7 @@ msgstr "Перейдіть у папку \"Кораблі\""
 msgid "Green Screen"
 msgstr "Зелений екран"
 
-#: ..\FloatingSandbox\MainFrame.cpp:589
+#: ..\FloatingSandbox\MainFrame.cpp:594
 msgid "Guide"
 msgstr "Керівництво"
 
@@ -1802,7 +1802,7 @@ msgstr "Теплове накладення"
 msgid "HeatBlaster"
 msgstr "Тепловий Бластер"
 
-#: ..\FloatingSandbox\MainFrame.cpp:360
+#: ..\FloatingSandbox\MainFrame.cpp:365
 msgid "HeatBlaster/CoolBlaster"
 msgstr "Тепловий бластер/Крижаний бластер"
 
@@ -1928,7 +1928,7 @@ msgstr "Ініціалізація шуму ..."
 msgid "Inject Pressure Tool"
 msgstr "Інструмент для нагнітання тиску"
 
-#: ..\FloatingSandbox\MainFrame.cpp:395
+#: ..\FloatingSandbox\MainFrame.cpp:400
 msgid "Inject/Remove Pressure"
 msgstr "Впорснути/Прибрати тиск"
 
@@ -1985,7 +1985,7 @@ msgstr "Мова"
 msgid "Laser Ray"
 msgstr "Лазерний промінь"
 
-#: ..\FloatingSandbox\MainFrame.cpp:440
+#: ..\FloatingSandbox\MainFrame.cpp:445
 msgid "LaserCannon"
 msgstr "ЛазернаГармата"
 
@@ -2036,7 +2036,7 @@ msgstr "Завантажити налаштування"
 msgid "Load Ship"
 msgstr "Завантажити корабель"
 
-#: ..\FloatingSandbox\MainFrame.cpp:208
+#: ..\FloatingSandbox\MainFrame.cpp:209
 msgid "Load Ship..."
 msgstr "Завантажити корабель..."
 
@@ -2134,7 +2134,7 @@ msgstr "Збільшує або зменшує фізичний розмір р�
 msgid "Magnify the view (+)."
 msgstr "Збільште огляд (+)."
 
-#: ..\FloatingSandbox\MainFrame.cpp:2347 ..\ShipBuilderLib\MainFrame.cpp:5483
+#: ..\FloatingSandbox\MainFrame.cpp:2352 ..\ShipBuilderLib\MainFrame.cpp:5483
 msgid "Maritime Disaster"
 msgstr "Морська катастрофа"
 
@@ -2218,15 +2218,15 @@ msgstr "Модулювати Вітри"
 msgid "Moonlight"
 msgstr "Місячне світло"
 
-#: ..\FloatingSandbox\MainFrame.cpp:341
+#: ..\FloatingSandbox\MainFrame.cpp:346
 msgid "Move All/Rotate All"
 msgstr "Перемістити всі/Повернути всі"
 
-#: ..\FloatingSandbox\MainFrame.cpp:336
+#: ..\FloatingSandbox\MainFrame.cpp:341
 msgid "Move/Rotate"
 msgstr "Рухати/Повертати"
 
-#: ..\FloatingSandbox\MainFrame.cpp:560
+#: ..\FloatingSandbox\MainFrame.cpp:565
 msgid "Mute"
 msgstr "Беззвучний"
 
@@ -2325,7 +2325,7 @@ msgstr "Номінальне зусилля"
 msgid "None"
 msgstr "None"
 
-#: ..\FloatingSandbox\MainFrame.cpp:554
+#: ..\FloatingSandbox\MainFrame.cpp:559
 msgid "Normal Screen"
 msgstr "Віконний екран"
 
@@ -2382,7 +2382,7 @@ msgstr ""
 "структурному шарі. Частинки в електричному шарі завжди мають перебувати над "
 "частинками в структурному шарі."
 
-#: ..\FloatingSandbox\MainFrame.cpp:613
+#: ..\FloatingSandbox\MainFrame.cpp:618
 msgid "Open Download Page"
 msgstr "Відкрити сторінку завантаження"
 
@@ -2390,19 +2390,23 @@ msgstr "Відкрити сторінку завантаження"
 msgid "Open Electrical Panel at Load"
 msgstr "Відкрити електричну панель під час навантаження"
 
-#: ..\FloatingSandbox\MainFrame.cpp:609
+#: ..\FloatingSandbox\MainFrame.cpp:614
 msgid "Open Home Page"
 msgstr "Відкрити домашню сторінку"
 
-#: ..\FloatingSandbox\MainFrame.cpp:526
+#: ..\FloatingSandbox\MainFrame.cpp:531
 msgid "Open Log Window"
 msgstr "Відкрити вікно журналу"
 
-#: ..\FloatingSandbox\MainFrame.cpp:573
+#: ..\FloatingSandbox\MainFrame.cpp:234
+msgid "Open Screenshots Folder"
+msgstr "Открыть папку скриншотов"
+
+#: ..\FloatingSandbox\MainFrame.cpp:578
 msgid "Open the ShipBuilder to create a new ship"
 msgstr "Відкрийте Суднобудівник для створення нового корабля"
 
-#: ..\FloatingSandbox\MainFrame.cpp:577
+#: ..\FloatingSandbox\MainFrame.cpp:582
 msgid "Open the ShipBuilder to edit the currently-loaded ship"
 msgstr ""
 "Відкрийте Суднобудівник для редагування завантаженого в даний момент корабля"
@@ -2483,11 +2487,11 @@ msgstr "Вставити буфер обміну."
 msgid "Paste the content of the clipboard into the ship (Ctrl+V)."
 msgstr "Вставте вміст буфера обміну в корабель (Ctrl+V)."
 
-#: ..\FloatingSandbox\MainFrame.cpp:289
+#: ..\FloatingSandbox\MainFrame.cpp:294
 msgid "Pause"
 msgstr "Пауза"
 
-#: ..\FloatingSandbox\MainFrame.cpp:289
+#: ..\FloatingSandbox\MainFrame.cpp:294
 msgid "Pause the game"
 msgstr "Призупинити гру"
 
@@ -2507,7 +2511,7 @@ msgstr "Налаштування стійкості диму"
 msgid "Physics"
 msgstr "Фізика"
 
-#: ..\FloatingSandbox\MainFrame.cpp:345
+#: ..\FloatingSandbox\MainFrame.cpp:350
 msgid "Pick-n-Pull"
 msgstr "Плоскогубці"
 
@@ -2622,7 +2626,7 @@ msgstr "Введіть пароль"
 msgid "Push Button"
 msgstr "Натисніть кнопку"
 
-#: ..\FloatingSandbox\MainFrame.cpp:235 ..\ShipBuilderLib\MainFrame.cpp:892
+#: ..\FloatingSandbox\MainFrame.cpp:240 ..\ShipBuilderLib\MainFrame.cpp:892
 msgid "Quit"
 msgstr "Вийти"
 
@@ -2630,7 +2634,7 @@ msgstr "Вийти"
 msgid "Quit and leave the program (ALT+F4)."
 msgstr "Вийти з програми (ALT+F4)."
 
-#: ..\FloatingSandbox\MainFrame.cpp:235
+#: ..\FloatingSandbox\MainFrame.cpp:240
 msgid "Quit the game"
 msgstr "Вийти з гри"
 
@@ -2666,15 +2670,15 @@ msgstr "Червоний екран"
 msgid "Reduce the view (-)."
 msgstr "Зменшіть огляд (-)."
 
-#: ..\FloatingSandbox\MainFrame.cpp:212
+#: ..\FloatingSandbox\MainFrame.cpp:213
 msgid "Reload Current Ship"
 msgstr "Перезавантажити поточний корабель"
 
-#: ..\FloatingSandbox\MainFrame.cpp:516
+#: ..\FloatingSandbox\MainFrame.cpp:521
 msgid "Reload Last-Modified Simulation Settings"
 msgstr "Перезавантажити останні змінені налаштування моделювання"
 
-#: ..\FloatingSandbox\MainFrame.cpp:216
+#: ..\FloatingSandbox\MainFrame.cpp:217
 msgid "Reload Previous Ship"
 msgstr "Перезавантажити попередній корабель"
 
@@ -2730,7 +2734,7 @@ msgstr ""
 "Відображає океан із додатковими деталями. (Потрібно більше обчислювальних "
 "ресурсів)."
 
-#: ..\FloatingSandbox\MainFrame.cpp:450
+#: ..\FloatingSandbox\MainFrame.cpp:455
 msgid "Repair"
 msgstr "Ремонт"
 
@@ -2742,7 +2746,7 @@ msgstr "Інструмент для ремонту"
 msgid "Replace Saved Settings with Current"
 msgstr "Замінити збережені налаштування поточними"
 
-#: ..\FloatingSandbox\MainFrame.cpp:268 ..\ShipBuilderLib\MainFrame.cpp:989
+#: ..\FloatingSandbox\MainFrame.cpp:273 ..\ShipBuilderLib\MainFrame.cpp:989
 msgid "Reset View"
 msgstr "Скинути вигляд"
 
@@ -2910,7 +2914,7 @@ msgstr "Зберегти і повернути"
 msgid "Save Current Settings"
 msgstr "Зберегти поточні налаштування"
 
-#: ..\FloatingSandbox\MainFrame.cpp:229
+#: ..\FloatingSandbox\MainFrame.cpp:230
 msgid "Save Screenshot"
 msgstr "Зберегти знімок екрана"
 
@@ -2966,7 +2970,7 @@ msgstr "Зберегти цей корабель"
 msgid "Saves the current settings using the specified name."
 msgstr "Зберігає поточні налаштування під зазначеним ім'ям."
 
-#: ..\FloatingSandbox\MainFrame.cpp:460
+#: ..\FloatingSandbox\MainFrame.cpp:465
 msgid "Scare/Allure Fishes"
 msgstr "Лякати/приманювати риб"
 
@@ -2974,7 +2978,7 @@ msgstr "Лякати/приманювати риб"
 msgid "Screenshot directory:"
 msgstr "Каталог знімків екрана:"
 
-#: ..\FloatingSandbox\MainFrame.cpp:455
+#: ..\FloatingSandbox\MainFrame.cpp:460
 msgid "Scrub/Rot"
 msgstr "Губка/Гниття"
 
@@ -3186,11 +3190,11 @@ msgstr "Показати AABB"
 msgid "Show Electrical Notifications"
 msgstr "Показати електричні повідомлення"
 
-#: ..\FloatingSandbox\MainFrame.cpp:530
+#: ..\FloatingSandbox\MainFrame.cpp:535
 msgid "Show Event Ticker"
 msgstr "Показати Тікер Подій"
 
-#: ..\FloatingSandbox\MainFrame.cpp:544
+#: ..\FloatingSandbox\MainFrame.cpp:549
 #: ..\FloatingSandbox\PreferencesDialog.cpp:573
 msgid "Show Extended Status Text"
 msgstr "Показати розширений текст стану"
@@ -3199,7 +3203,7 @@ msgstr "Показати розширений текст стану"
 msgid "Show Frontiers"
 msgstr "Показати межі"
 
-#: ..\FloatingSandbox\MainFrame.cpp:535
+#: ..\FloatingSandbox\MainFrame.cpp:540
 msgid "Show Probe Panel"
 msgstr "Показати панель зонда"
 
@@ -3207,7 +3211,7 @@ msgstr "Показати панель зонда"
 msgid "Show Ship Descriptions at Load"
 msgstr "Показати опис судна під час завантаження"
 
-#: ..\FloatingSandbox\MainFrame.cpp:540
+#: ..\FloatingSandbox\MainFrame.cpp:545
 #: ..\FloatingSandbox\PreferencesDialog.cpp:541
 msgid "Show Status Text"
 msgstr "Показати текст статусу"
@@ -3224,7 +3228,7 @@ msgstr "Показувати поради під час запуску"
 msgid "Show Tsunami Notifications"
 msgstr "Показувати Повідомлення Про Цунамі"
 
-#: ..\FloatingSandbox\MainFrame.cpp:593
+#: ..\FloatingSandbox\MainFrame.cpp:598
 msgid "Show credits and other I'vedunnit stuff"
 msgstr "Показувати Повідомлення Про Цунамі"
 
@@ -3244,7 +3248,7 @@ msgstr "Мулова твердість"
 msgid "Simulation Settings"
 msgstr "Налаштування Моделювання"
 
-#: ..\FloatingSandbox\MainFrame.cpp:512
+#: ..\FloatingSandbox\MainFrame.cpp:517
 msgid "Simulation Settings..."
 msgstr "Параметри Моделювання..."
 
@@ -3261,11 +3265,11 @@ msgstr "Множник розміру"
 msgid "Sky"
 msgstr "Небо"
 
-#: ..\FloatingSandbox\MainFrame.cpp:355
+#: ..\FloatingSandbox\MainFrame.cpp:360
 msgid "Slice"
 msgstr "Пила"
 
-#: ..\FloatingSandbox\MainFrame.cpp:350
+#: ..\FloatingSandbox\MainFrame.cpp:355
 msgid "Smash"
 msgstr "Молоток"
 
@@ -3360,11 +3364,11 @@ msgstr "Сила Статичного Тиску"
 msgid "Steam"
 msgstr "Пар"
 
-#: ..\FloatingSandbox\DebugDialog.cpp:316 ..\FloatingSandbox\MainFrame.cpp:295
+#: ..\FloatingSandbox\DebugDialog.cpp:316 ..\FloatingSandbox\MainFrame.cpp:300
 msgid "Step"
 msgstr "Крок"
 
-#: ..\FloatingSandbox\MainFrame.cpp:295
+#: ..\FloatingSandbox\MainFrame.cpp:300
 msgid "Step one frame at a time"
 msgstr "Крок один кадр за раз"
 
@@ -3414,7 +3418,7 @@ msgstr "Файли зображень тільки зі структурою"
 msgid "Success"
 msgstr "Успіх"
 
-#: ..\FloatingSandbox\MainFrame.cpp:385
+#: ..\FloatingSandbox\MainFrame.cpp:390
 msgid "Swirl/Counterswirl"
 msgstr "Завихрення/протидія"
 
@@ -3466,7 +3470,7 @@ msgstr "Прозорість текстури"
 msgid "Texture mode: view ship with texture."
 msgstr "Режим текстури: перегляд корабля з текстурою."
 
-#: ..\FloatingSandbox\MainFrame.cpp:425
+#: ..\FloatingSandbox\MainFrame.cpp:430
 msgid "Thanos' Snap"
 msgstr "Клацання Таноса"
 
@@ -3858,23 +3862,23 @@ msgid ""
 "world!"
 msgstr "Ліцензія для Маттіа, Елії та всіх інших дітей світу!"
 
-#: ..\FloatingSandbox\MainFrame.cpp:420
+#: ..\FloatingSandbox\MainFrame.cpp:425
 msgid "Toggle Anti-Matter Bomb"
 msgstr "Антиматеріальна бомба"
 
-#: ..\FloatingSandbox\MainFrame.cpp:415
+#: ..\FloatingSandbox\MainFrame.cpp:420
 msgid "Toggle Impact Bomb"
 msgstr "Граната"
 
-#: ..\FloatingSandbox\MainFrame.cpp:465
+#: ..\FloatingSandbox\MainFrame.cpp:470
 msgid "Toggle Physics Probe"
 msgstr "Переключити фізичний зонд"
 
-#: ..\FloatingSandbox\MainFrame.cpp:390
+#: ..\FloatingSandbox\MainFrame.cpp:395
 msgid "Toggle Pin"
 msgstr "Причепити шпильку (гвоздик)"
 
-#: ..\FloatingSandbox\MainFrame.cpp:410
+#: ..\FloatingSandbox\MainFrame.cpp:415
 msgid "Toggle RC Bomb"
 msgstr "Радіокерована бомба"
 
@@ -3882,7 +3886,7 @@ msgstr "Радіокерована бомба"
 msgid "Toggle Switch"
 msgstr "Радіокерована бомба"
 
-#: ..\FloatingSandbox\MainFrame.cpp:405
+#: ..\FloatingSandbox\MainFrame.cpp:410
 msgid "Toggle Timer Bomb"
 msgstr "Бомба з таймером"
 
@@ -3918,19 +3922,19 @@ msgstr "Прозорість:"
 msgid "Triangles"
 msgstr "Трикутники"
 
-#: ..\FloatingSandbox\MainFrame.cpp:499
+#: ..\FloatingSandbox\MainFrame.cpp:504
 msgid "Trigger Lightning"
 msgstr "Вдарити блискавкою"
 
-#: ..\FloatingSandbox\MainFrame.cpp:490
+#: ..\FloatingSandbox\MainFrame.cpp:495
 msgid "Trigger Rogue Wave"
 msgstr "Викликати хвилю"
 
-#: ..\FloatingSandbox\MainFrame.cpp:494
+#: ..\FloatingSandbox\MainFrame.cpp:499
 msgid "Trigger Storm"
 msgstr "Викликати шторм"
 
-#: ..\FloatingSandbox\MainFrame.cpp:486
+#: ..\FloatingSandbox\MainFrame.cpp:491
 msgid "Trigger Tsunami"
 msgstr "Викликати цунамі"
 
@@ -4102,7 +4106,7 @@ msgstr "Фактор водонепроникності"
 msgid "Wave Phenomena"
 msgstr "Хвильові явища"
 
-#: ..\FloatingSandbox\MainFrame.cpp:430
+#: ..\FloatingSandbox\MainFrame.cpp:435
 msgid "WaveMaker"
 msgstr "Творець хвиль"
 
@@ -4197,7 +4201,7 @@ msgstr "Вітер і хвилі"
 msgid "Wind speed conjured by the WindMaker tool (Km/h)."
 msgstr "Швидкість вітру, розрахована інструментом Потік Повітря (км/год)."
 
-#: ..\FloatingSandbox\MainFrame.cpp:435
+#: ..\FloatingSandbox\MainFrame.cpp:440
 msgid "WindMaker"
 msgstr "Потік повітря"
 
@@ -4225,7 +4229,7 @@ msgstr "Так, я хочу використовувати запропонов�
 msgid "Zero"
 msgstr "Нуль"
 
-#: ..\FloatingSandbox\MainFrame.cpp:248 ..\ShipBuilderLib\MainFrame.cpp:937
+#: ..\FloatingSandbox\MainFrame.cpp:253 ..\ShipBuilderLib\MainFrame.cpp:937
 msgid "Zoom In"
 msgstr "Збільшити"
 
@@ -4234,7 +4238,7 @@ msgstr "Збільшити"
 msgid "Zoom Increment"
 msgstr "Збільшення масштабу"
 
-#: ..\FloatingSandbox\MainFrame.cpp:254 ..\ShipBuilderLib\MainFrame.cpp:963
+#: ..\FloatingSandbox\MainFrame.cpp:259 ..\ShipBuilderLib\MainFrame.cpp:963
 msgid "Zoom Out"
 msgstr "Зменшити"
 
