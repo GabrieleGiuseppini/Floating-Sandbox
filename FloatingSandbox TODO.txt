@@ -704,8 +704,7 @@
 			+ Also don't need anymore mCurrentNumIterAdj
 	X Check on Dell if can raise Max burning particles
 		X No, too much rendering overhead
-	
-	= Ships:
+	+ Ships:
 		+ N.S._Savannah (Pocketwatch)
 		+ SS.Statendam - "P1X"
 			+ Asked name
@@ -721,33 +720,21 @@
 			+ Name? (ASKED) - I made "Walter"
 				+ He wants Techo
 				+ Redo credits x 2
-
-		- Test:
-			- Saturn V (Ur local brazilian#0842, aka Transportation Fan)
-
-
-		= Shed x 2 - Higuys153#5865
-			+ Asked name: Higuys153
-			- Add to credits
-		= Bright mamooth - ⁵⁵𝐓𝐡𝐞 𝟐𝟒𝐭𝐡_𝐃𝐨𝐜𝐭𝐨𝐫-𝟏𝟗𝟐𝟐⁵⁵#1963
-			= Asked name
-			- Add to credits
-		= wood ship 2 - Gustav Shedletsky|Local RUS guy#8464
+		+ wood ship 2 - Gustav Shedletsky|Local RUS guy#8464
 			+ Asked name and ship year: Gustav Shedletsky, 1821
-			- Add to credits
-			- Add year
+			+ Add to credits
+			+ Add year
+		+ Shed x 2 - Higuys153#5865
+			+ Asked name: Higuys153
+			+ Add to credits
+		+ Re-balance credits
+	+ Localization:
+		+ IT
+		+ ES
+		+ RU
+		+ UK
 
 	- Send beta
-
-	= Localization:
-		+ IT
-		= ES
-			+ Got back
-			- Abrir carpeta de capturas de pantalla
-		= RU
-			- Asked po
-		= UK
-			- Asked po
 	
 	- Release:
 		- Windows
@@ -1054,32 +1041,14 @@
 			+ Test
 			+ Meta: The package includes 11 ships. The name of this pack is: The Mateusz's Small Steamship ShipPack. Author: "The Mateusz"
 	- New ships:
-		- TO_TRY\Ships\ 
-			- "Dimitri Warin" or "Hellooping" (gmail)
-			- Asked name
-			- Asked ShipBucket credits
-		- Check out from FS server:
-			- You can find the best ships in the #architect-creations channel
-			- Theres some really good ones in #creation-sharing as well so dont forget about that
-		- Ships to make:
-			- HMS Victoria: make yourself w/texture from ShipBucket or else
-				- Needs to sink vertically!
-			- http://www.shipbucket.com/drawings/1821
-			- http://www.shipbucket.com/drawings/6850
-
-		- To test and to choose from:
-			- Architect Creations
-			- mrpasta444_ship_pack
-			- TheodoreRoosevelt
-			- Graza's from awesomeyorkie
-				+ Asked if ropes of abandoned are cut on purpose: yes
-				- Fix Antonia vs Antonio
-				- Require .shp to limit initial sink
-			- Pac0master's Structures
-			- Ryanair's planes
-			- Kazindel
-				+ Asked latest SpaceX and airplanes packs
-				- Credits: "Kazindel"
+		- _TO_TEST:
+			- Saturn V (Ur local brazilian#0842, aka Transportation Fan - already in credits)
+			- "Hellooping"
+				+ Guy is already credited
+		= _TO_TAKE:
+			- Bright mamooth - ⁵⁵𝐓𝐡𝐞 𝟐𝟒𝐭𝐡_𝐃𝐨𝐜𝐭𝐨𝐫-𝟏𝟗𝟐𝟐⁵⁵#1963
+				= Asked name
+				- Add to credits
 
 - Ubuntu:
 	+ Event polling issue:
