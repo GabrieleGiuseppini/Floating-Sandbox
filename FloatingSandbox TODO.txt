@@ -702,34 +702,58 @@
 		+ Change the slider to "spring iterations" or "spring algo adjust", on actual iterations adjustment (which stays so that we have good slider)
 		+ See if can reduce frequency of calls, especially at Add()
 			+ Also don't need anymore mCurrentNumIterAdj
+	X Check on Dell if can raise Max burning particles
+		X No, too much rendering overhead
 
-	- Check on Dell if can raise Max burning particles
-
-	- Send beta, and for localization
+	- Test Hesleden with code for 5-8 threads
 	
-	- Ships:
-		- N.S._Savannah (Pocketwatch)
-		- Stardust (train)  - UR LOCAL BRAZILIAN
-		- Shed x 2 - Higuys153#5865
-		- Bright mamooth - ⁵⁵𝐓𝐡𝐞 𝟐𝟒𝐭𝐡_𝐃𝐨𝐜𝐭𝐨𝐫-𝟏𝟗𝟐𝟐⁵⁵#1963
-		- Mauretania - UR LOCAL BRAZILIAN
-		- wood ship 2 - Gustav Shedletsky|Local RUS guy#8464
-		- SS.Statendam - p1x
-		- 4 ships from uneducated_potato, on Discord
-		- SS.dermark - desperate soldier
-		- RMS Desirable - desperate soldier
-		- UH-1 - desperate soldier
-		- SS Frederik IV - Pocketwatch
-		- Lanticimes (blimp) - UR LOCAL BRAZILIAN
-		- Take Dugongsmallwtrtight-Walter (ToTake folder)
-			- Name? (ASKED)
-			- Credits? (ASKED)
+	= Ships:
+		+ N.S._Savannah (Pocketwatch)
+		+ SS.Statendam - "P1X"
+			+ Asked name
+			+ Add to credits
+		+ SS Frederik IV - Pocketwatch
+		+ Stardust (train) and R.M.S. Mauretania - UR LOCAL BRAZILIAN (Ur local brazilian#0842, aka Transportation Fan)
+			+ Asked name
+			+ Add to credits
+		+ Friesenland, Galeb, Lamartine, Transilvania - Hellooping
+			+ Asked name
+			+ Add to credits
+
+		= Take Dugong - Walter
+			= Name? (ASKED) - I made "Walter"
+				- He wants Techo
+				- Redo credits x 2
+			= Credits? (ASKED) - I made
+			= If won't work:
+				+ Hack and edit
+				- Add "Walter" to credits
+		- Test:
+			- Saturn V (Ur local brazilian#0842, aka Transportation Fan)
+
+
+		= Shed x 2 - Higuys153#5865
+			+ Asked name: Higuys153
+			- Add to credits
+		= Bright mamooth - ⁵⁵𝐓𝐡𝐞 𝟐𝟒𝐭𝐡_𝐃𝐨𝐜𝐭𝐨𝐫-𝟏𝟗𝟐𝟐⁵⁵#1963
+			= Asked name
+			- Add to credits
+		= wood ship 2 - Gustav Shedletsky|Local RUS guy#8464
+			+ Asked name and ship year: Gustav Shedletsky, 1821
+			- Add to credits
+			- Add year
+
+	- Send beta
 
 	= Localization:
 		+ IT
-		- ES
-		- RU
-		- UK
+		= ES
+			+ Got back
+			- Abrir carpeta de capturas de pantalla
+		= RU
+			- Asked po
+		= UK
+			- Asked po
 	
 	- Release:
 		- Windows
@@ -768,7 +792,7 @@
 			- Upload changes2.txt
 				- Test w/old FS
 
-	- Redo timer bomb gfx
+	- Redo timer bomb
 
 	- Wrecking ball tool
 

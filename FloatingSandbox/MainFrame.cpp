@@ -52,6 +52,7 @@ long const ID_RELOAD_CURRENT_SHIP_MENUITEM = wxNewId();
 long const ID_RELOAD_PREVIOUS_SHIP_MENUITEM = wxNewId();
 long const ID_MORE_SHIPS_MENUITEM = wxNewId();
 long const ID_SAVE_SCREENSHOT_MENUITEM = wxNewId();
+long const ID_OPEN_SCREENSHOT_FOLDER_MENUITEM = wxNewId();
 long const ID_QUIT_MENUITEM = wxNewId();
 
 long const ID_ZOOM_IN_MENUITEM = wxNewId();
@@ -229,6 +230,10 @@ MainFrame::MainFrame(
             wxMenuItem * saveScreenshotMenuItem = new wxMenuItem(fileMenu, ID_SAVE_SCREENSHOT_MENUITEM, _("Save Screenshot") + wxS("\tCtrl+C"), wxEmptyString, wxITEM_NORMAL);
             fileMenu->Append(saveScreenshotMenuItem);
             Connect(ID_SAVE_SCREENSHOT_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnSaveScreenshotMenuItemSelected);
+
+            wxMenuItem * openScreenshotFolderMenuItem = new wxMenuItem(fileMenu, ID_OPEN_SCREENSHOT_FOLDER_MENUITEM, _("Open Screenshots Folder"));
+            fileMenu->Append(openScreenshotFolderMenuItem);
+            fileMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [this](wxCommandEvent &) { wxLaunchDefaultBrowser(mUIPreferencesManager->GetScreenshotsFolderPath().string()); }, ID_OPEN_SCREENSHOT_FOLDER_MENUITEM);
 
             fileMenu->Append(new wxMenuItem(fileMenu, wxID_SEPARATOR));
 
