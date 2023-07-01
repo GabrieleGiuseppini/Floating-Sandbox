@@ -734,7 +734,7 @@
 		+ RU
 		+ UK
 
-	- Send beta
+	= Send beta
 	
 	- Release:
 		- Windows

@@ -1321,7 +1321,7 @@ void MainFrame::OnQuit(wxCommandEvent & /*event*/)
     LogMessage("MainFrame::OnQuit()");
 
     // Close frame
-    Close();
+    Close(true);
 }
 
 void MainFrame::OnMainPanelKeyDown(wxKeyEvent & event)
@@ -2351,15 +2351,14 @@ void MainFrame::OnError(
     // Show message
     wxMessageBox(message, _("Maritime Disaster"), wxICON_ERROR);
 
+    // Restart game
+    ThawGame();
+
     if (die)
     {
         // Exit
-        this->Destroy();
+        Close(true);
     }
-
-    // Restart game
-    // (yes, even if destroyed, we'll freeze again on exit)
-    ThawGame();
 }
 
 void MainFrame::FreezeGame()
