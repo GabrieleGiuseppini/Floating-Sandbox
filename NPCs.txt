@@ -36,6 +36,34 @@ If the concept works fine, we can enhance it later with additional springs for l
 The two particles define a simple elongated quad. This quad is then rendered with textures, from an atlas containing all NPC frames.
 The texture groups' are the "movement types" (e.g. "walking", "falling", "swimming", etc.) (together with furniture NPC types, such as "table", etc.). Each movement type has 1 or more frames, numbered consecutively.
 
+Color coding:
+- TODO: https://www.reddit.com/r/gamedev/comments/3215xb/replacing_texture_colors_in_opengl/
+- texture3d: 
+	- Basics: https://stackoverflow.com/questions/20012676/glsl-change-specific-color-of-texture-to-another-color and https://www.reddit.com/r/opengl/comments/1x2rq1/how_can_i_replace_one_color_from_a_texture/
+	- To create LUT table: http://kpulv.com/359/Dev_Log__Color_Grading_Shader/
+
+Frame rules:
+1. Frame size is 64x64
+	Max 4096 frames
+2. Try to maximize canvas usage. Ideally, for the "standing" frame, the feet touch the bottom edge, and the topmost pixel (above the head) touches to top edge
+3. Each frame will have to be duplicated for man and woman appearances
+4. We're going to use color coding. Basically, some of the colors in each frame will be changed at rendering time to allow for differently-colored uniforms for different roles.
+	So for example we can have role-specific colors for the pants/skirts, jackets/shirts, and if we want, stripes on the arms and/or legs, and hats
+	Like at https://www.reddit.com/r/gamedev/comments/3215xb/replacing_texture_colors_in_opengl/
+4a. Background has to be full white (255, 255, 255)
+	If we need actual white in the frame, we can use a slightly darker white
+4b. (and this part I still have to think through completely, but we can start with this)
+	You may use any colors you want, but these are special and will be replaced by role-specific colors
+	medium red: 128, 0, 0: upper body (shirt/jacket)
+	light red: 255, 0, 0: lower body (pants/shirt)
+	medium green: 0, 128, 0: shoes
+	light green: 0, 255, 0: hat
+	medium blue: 0, 0, 128: unassigned at this moment (don't use)
+	light blue: 0, 0, 255: unassigned at this moment (don't use)
+5. Walking frames: 
+5a. 3 frames (1: left leg ahead, 2: both legs vertical, 3: right leg ahead)
+5b. The upper body vertical axis needs to be horizontally centered and needs to stay aligned vertically - basically, the animation needs to look fluid if you alternate the three frames always at the same position
+
 Details
 ===========
 
@@ -73,6 +101,8 @@ Details
 						- So that we correctly apply it also when NPC is upside-down
 				- Forces acting on NPC (gravity, etc.)
 		- Algo for physics update of one NPC:
+			- 0. If current triangle (guaranteed to be set) has been deleted, transition to free regime
+				- Note: triangle deleted <=> spring deleted, so this is regardless of whether NPC is on spring or not
 			- 1. F = {g, ext forces}
 			- 2. If NPC on spring:
 				- Calculate Fa == apparent force due to difference between (current) world position of NPC (SW) and current position of triangle's pos (World(SR))
@@ -106,7 +136,11 @@ Details
 				- https://members.loria.fr/SLazard/ARC-Visi3D/Pant-project/files/Line_Segment_Triangle.html
 				- 2D: https://www.geogebra.org/m/aRMTsu62
 
-
+- Rendering:
+	- NPCs will have two sets of vertex attributes:
+		- Static ones: contain static properties (colors, )
+			- Only reloaded at e.g. NPC insertion/removal
+		- Dynamics ones: contain world vertices, texture coords
 Code
 ===========
 Arch:

@@ -739,6 +739,9 @@
 	+ Make 1.17 settings? (or "pre-1.18")
 		+ And then "1.0" ?
 
+	- Re-check Dugong
+	- Do Ukrainian screenshots folder: Відкрийти папку Скріншоти
+
 	= Launch plan:
 		+ Make video
 			+ Lights
@@ -792,9 +795,11 @@
 		- Cut tag on github
 		- Upload packages to GameJolt
 			- Report file as safe (https://gamejolt.com/privacy)
+			- Remove Vista from requirements
 			- Post
 		- www.floatingsandbox.com:
 			- Update current version in FAQ
+			- Remove Vista from requirements
 			- Wait a day or two, to exclude disastrous bugs
 			- Upload changes2.txt
 				- Test w/old FS

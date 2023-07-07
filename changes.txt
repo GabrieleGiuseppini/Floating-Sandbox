@@ -3,6 +3,7 @@
 	- Parallelized integration, spring relaxation, and ocean floor collision detection
 	- Vectorized spring relaxation
 	- Used a small part of the performance gains to improve rigidity by 33%
+	- Note: remember that Floating Sandbox is capped at 64FPS, so do not expect to get more than that. These performance improvements benefit large ships which in previous versions would run at less than 64FPS
 - Re-designed wave interactions - user-spawned waves are now more natural and smooth
 - Revamped rendering of ocean
 	- Added lighting effects of clouds onto ocean
