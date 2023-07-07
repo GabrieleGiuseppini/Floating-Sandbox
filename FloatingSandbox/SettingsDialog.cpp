@@ -5360,7 +5360,7 @@ void SettingsDialog::PopulateSettingsManagementPanel(wxPanel * panel)
                         "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
                         "0123456789"
                         " "
-                        "_-"));
+                        "_-."));
                 validator.SuppressBellOnError();
 
                 mSaveSettingsNameTextCtrl = new wxTextCtrl(

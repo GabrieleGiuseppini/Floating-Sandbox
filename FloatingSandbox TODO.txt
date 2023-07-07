@@ -734,7 +734,33 @@
 		+ RU
 		+ UK
 
-	= Send beta
+	+ Send beta
+
+	+ Make 1.17 settings? (or "pre-1.18")
+		+ And then "1.0" ?
+
+	= Launch plan:
+		+ Make video
+			+ Lights
+			+ Crepuscolar gradient
+			+ Soundtrack: https://www.scottbuckley.com.au/library/the-old-ones/
+				+ Add credits to video
+		+ GameJolt: post update, "entered final beta testing phase", link to blog and to video
+			Dear shipmates,
+			We are delighted to announce that Floating Sandbox 1.18.0 has entered the final beta testing phase! 
+			The performance improvements in this release are so profound that we're going to need some time for testing before releasing to the general public, so expect another couple of weeks before this update is made public.
+			In the meantime, you can read more about our adventures with the performance optimizations in the latest installment of our technical blog, [https://gabrielegiuseppini.wordpress.com/2023/07/02/adventures-with-2d-mass-spring-networks-part-iii/],
+			and you can catch a quick preview of the rendering enhancements in our latest video:
+			[https://www.youtube.com/watch?v=0oV8LMHAKVk]
+
+
+		- Enlarged testing round
+			- Check first if bugs from dev server
+			- Ask TimCan/Pocketwatch first
+
+			- Make ad-hoc 64-bit installer
+			- Distribute installer to members of server, limited time only (2days)				
+			- Bump up build version
 	
 	- Release:
 		- Windows
@@ -774,6 +800,17 @@
 				- Test w/old FS
 
 	- Fix "2022" copyright notices
+
+	- Redo timer bomb
+		- How?
+
+	- Wrecking ball tool
+	- New tool 2: Punch
+		- Spec:
+			- Works only on frontier from outside->in
+				- Might want to try, at end, also from inside->out
+		- Impl:
+			- TODOHERE
 
 	- Quad rendering with indices
 		- Sharing VBOs in VAOs: 
@@ -817,18 +854,6 @@
 			- Generic textures
 			- Text (NotificationContext)
 			- Fishes
-
-
-	- Redo timer bomb
-		- How?
-
-	- Wrecking ball tool
-	- New tool 2: Punch
-		- Spec:
-			- Works only on frontier from outside->in
-				- Might want to try, at end, also from inside->out
-		- Impl:
-			- TODOHERE
 
 
 	- Replace points with quads from geometry shader
@@ -1417,16 +1442,10 @@
 					- Water
 					- Heat
 
-	- 2** Try with SpringRelaxation updating only positions **2 (*)
-		- RelaxSprings() updates position directly, no forces involved
-			- So no need to integrate afterwards
-		- However, need to update velocity, and it's faster if we do it for each point rather than for each spring:
-			- Save positions first
-			- Do iteration
-			- Add resulting velocity: (newPos-oldPos)/(DT/NumMechanicalIterations)
-		- Finalization:
-			- Initial positions snapshot and UpdateVelocitiesFromPositionDeltas: we only need them for the particles
-			  that might have springs - we definitely don't need ephemerals
+	- Investigate Gauss-Seidel from SpringLab
+		- It has better stiffness (bending large model: 180 vs. 108)
+		- It can *not* be parallelized (easily), need to find a way to parallelize
+		- Needs spring reduction coeff = 0.468750 to be stable
 
 	= GPUCalc:
 		+ 1: Simple OpenGLContext

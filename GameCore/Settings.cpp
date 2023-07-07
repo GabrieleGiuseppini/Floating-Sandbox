@@ -94,7 +94,7 @@ void SettingsStorage::ListSettings(
 	PersistedSettingsStorageTypes storageType,
     std::vector<PersistedSettingsMetadata> & outPersistedSettingsMetadata) const
 {
-    static std::regex const SettingsFilenameRegex("^([^\\.]+)\\." + SettingsStreamName + "\\." + SettingsExtension + "$");
+    static std::regex const SettingsFilenameRegex("^(.+)\\." + SettingsStreamName + "\\." + SettingsExtension + "$");
 
     std::smatch filenameMatch;
     for (auto const & filepath : mFileSystem->ListFiles(directoryPath))

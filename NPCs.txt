@@ -133,7 +133,10 @@ Details:
 			- Type: NpcKindType
 			- Union of all kind-specific attributes
 				- Note: many attributes will be common, hence we're saving room
-	- AddHumanNPC(..) -> ID
+	- World::AddHumanNPC(..) -> ID
+		- World finds ship by inverse Z order, using Ship.GetTriangles().GetTriangleContaining(.)
+			- If not found, pick last by default
+		- Then World calls NPCs::AddHumanNPC(.., ship const &, triangle index)
 	- Update()
 	- Upload(iShip, ShipRenderContext)
 		- Invoked by World for each ship separately

@@ -1,0 +1,13 @@
+{
+  "description": "Feeling nostalgic for the old times of Floating Sandbox? Go back to the look-and-feel of 1.13!",
+  "settings": {
+    "do_crepuscular_gradient": false,
+    "do_moonlight": false,
+    "flat_sky_color": "87cefa",
+    "number_of_clouds": 48,
+    "number_of_fishes": 0,
+    "ocean_render_detail": 0,
+    "ocean_render_mode": 0
+  },
+  "version": "1.18.0.3"
+}
