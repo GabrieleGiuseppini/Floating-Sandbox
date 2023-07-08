@@ -733,16 +733,10 @@
 		+ ES
 		+ RU
 		+ UK
-
 	+ Send beta
-
 	+ Make 1.17 settings? (or "pre-1.18")
 		+ And then "1.0" ?
-
-	- Re-check Dugong
-	- Do Ukrainian screenshots folder: Відкрийти папку Скріншоти
-
-	= Launch plan:
+	+ Launch plan:
 		+ Make video
 			+ Lights
 			+ Crepuscolar gradient
@@ -754,18 +748,10 @@
 			The performance improvements in this release are so profound that we're going to need some time for testing before releasing to the general public, so expect another couple of weeks before this update is made public.
 			In the meantime, you can read more about our adventures with the performance optimizations in the latest installment of our technical blog, [https://gabrielegiuseppini.wordpress.com/2023/07/02/adventures-with-2d-mass-spring-networks-part-iii/],
 			and you can catch a quick preview of the rendering enhancements in our latest video:
-			[https://www.youtube.com/watch?v=0oV8LMHAKVk]
-
-
-		- Enlarged testing round
-			- Check first if bugs from dev server
-			- Ask TimCan/Pocketwatch first
-
-			- Make ad-hoc 64-bit installer
-			- Distribute installer to members of server, limited time only (2days)				
-			- Bump up build version
-	
+			[https://www.youtube.com/watch?v=0oV8LMHAKVk]	
 	- Release:
+		- TODO: do version & Linux first
+		+ 1.18.0.4
 		- Windows
 			- MSI variable
 			- Commit & push
@@ -803,6 +789,8 @@
 			- Wait a day or two, to exclude disastrous bugs
 			- Upload changes2.txt
 				- Test w/old FS
+
+	- Tell Ticho Dugong
 
 	- Fix "2022" copyright notices
 

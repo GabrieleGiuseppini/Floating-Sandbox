@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Floating Sandbox\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-06-30 19:35+0200\n"
+"PO-Revision-Date: 2023-07-08 10:41+0200\n"
 "Last-Translator: Gabriele Giuseppini <gabrielegiuseppini@gmail.com>\n"
 "Language-Team: Ilya Voloshin; Roman Shavernew (DioxCode)\n"
 "Language: ru\n"
@@ -2400,7 +2400,7 @@ msgstr "Відкрити вікно журналу"
 
 #: ..\FloatingSandbox\MainFrame.cpp:234
 msgid "Open Screenshots Folder"
-msgstr "Открыть папку скриншотов"
+msgstr "Відкрийти папку Скріншоти"
 
 #: ..\FloatingSandbox\MainFrame.cpp:578
 msgid "Open the ShipBuilder to create a new ship"

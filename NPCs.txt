@@ -183,6 +183,7 @@ Details:
 		- With this call the tool is switched to the NPC-placing tool, but the old one is remembered so that once an NPC is placed, we can go back to the previous tool (unless SHIFT is pressed)
 	- Initialization of the tool makes a call into NPCs::AddHumanNPC(..) stating its state is "being placed" and gets the ID
 		- At this moment GameController starts skipping updated of everything but NPCs - calling a special UpdateXXX() function to only update the rendering state of being-placed NPCs
+	- Placement check: either not in a triangle, or in a triangle with at least one side NON-floor
 	- When placed, tool calls NPCs::ResetNPC(ID) which starts the NPC's state machine
 		- And GameController returns to normal
 
