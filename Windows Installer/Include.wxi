@@ -2,7 +2,7 @@
 <Include xmlns="http://schemas.microsoft.com/wix/2006/wi">
 
     <!-- Change at each release!!! -->
-	<?define ProductCode = "A855706D-F3C0-4FA6-ACFA-7378BD9D136B"?> <!-- 1.17.5 -->
+	<?define ProductCode = "12671513-70E2-4420-8F2F-FC766F7AA951"?> <!-- 1.18.0 -->
 
 	<!-- Static properties -->
     <?define UpgradeCode = "2DDDB95C-9D3E-4EFE-95BC-FD06A2F33FA7"?> <!-- First used in 1.12.0 -->

@@ -749,10 +749,10 @@
 			In the meantime, you can read more about our adventures with the performance optimizations in the latest installment of our technical blog, [https://gabrielegiuseppini.wordpress.com/2023/07/02/adventures-with-2d-mass-spring-networks-part-iii/],
 			and you can catch a quick preview of the rendering enhancements in our latest video:
 			[https://www.youtube.com/watch?v=0oV8LMHAKVk]	
-	- Release:
+	= Release:
 		+ 1.18.0.4
-		- Windows
-			- MSI variable
+		= Windows
+			+ MSI variable
 			- Commit & push
 			- 64-bit MSI
 				- Cleanup Install
@@ -766,15 +766,15 @@
 				- Make MSI
 				- Rename MSI
 				- Test clean install
-		- Ubuntu
-			- rm -rf ~/floating-sandbox
-			- pull 
-			- rm -rf build; mkdir build; cd build
-			- cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
-			- make install
-			- Make tar ("cd floating-sandbox && tar -cvf ../Floating-Sandbox-1.16.5-x64.tar . && cd -")
-			- Zip tar
-			- Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
+		+ Ubuntu
+			+ rm -rf ~/floating-sandbox
+			+ pull 
+			+ rm -rf build; mkdir build; cd build
+			+ cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
+			+ make install
+			+ Make tar ("cd ~/floating-sandbox && tar -cvf ../Floating-Sandbox-1.18.0-x64.tar . && cd -")
+			+ Zip tar
+			+ Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
 		- Get 3 installers tested on dev server
 		- Wait for test results
 		- Cut tag on github
@@ -974,7 +974,7 @@
 		- rm -rf build; mkdir build; cd build
 		- cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
 		- make install
-		- Make tar ("cd floating-sandbox && tar -cvf ../Floating-Sandbox-1.16.5-x64.tar . && cd -")
+		- Make tar ("cd ~/floating-sandbox && tar -cvf ../Floating-Sandbox-1.16.5-x64.tar . && cd -")
 		- Zip tar
 		- Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
 	- Get 3 installers tested on dev server
