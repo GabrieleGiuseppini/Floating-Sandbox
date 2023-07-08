@@ -750,7 +750,6 @@
 			and you can catch a quick preview of the rendering enhancements in our latest video:
 			[https://www.youtube.com/watch?v=0oV8LMHAKVk]	
 	- Release:
-		- TODO: do version & Linux first
 		+ 1.18.0.4
 		- Windows
 			- MSI variable

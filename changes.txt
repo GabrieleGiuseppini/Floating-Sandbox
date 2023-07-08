@@ -10,7 +10,7 @@
 		- Thanks to Denis Nesterenco for the fantastic idea!
 		- Note: disabled by default on lower-end computers
 	- Changed defaults for a more moving experience
-	- Fixed depth gradients (which were previously showing color banding)
+	- Fixed depth gradients (which were suffering from color banding)
 - Re-designed night ambient
 	- Added moon lighting
 		- Thanks to Joadix for the fantastic idea!
@@ -19,7 +19,7 @@
 		- Note: can be controlled in the "Rendering" section of the Settings window
 		- Note: disabled by default on lower-end computers
 	- Added menu entry to suddenly switch to full day or full night
-- Small improvements to various tools (among which, Thanos Snap, Anti-Matter Bomb, and Blast)
+- Small improvements to various tools (among which Thanos Snap, Anti-Matter Bomb, and Blast)
 	- Check out the new SHIFT mode with the Thanos Snap!
 - Fixed: loading flipped or rotated ships now flips and rotates engines accordingly
 - Fixed: resizing view now resizes physics probe panel accordingly (very ancient bug)

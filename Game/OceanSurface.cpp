@@ -717,7 +717,7 @@ void OceanSurface::ImpartInteractiveWave(
             mInteractiveWaveHeightGrowthCoefficientGrowthRate[centerIndex - d] = growthRate;
         }
 
-        if (centerIndex + d < SamplesCount && d != 0)
+        if (centerIndex + d < static_cast<int64_t>(SamplesCount) && d != 0)
         {
             mInteractiveWaveTargetHeight[centerIndex + d] = targetAbsoluteHeight;
             mInteractiveWaveTargetHeightGrowthCoefficient[centerIndex + d] = coeff;
