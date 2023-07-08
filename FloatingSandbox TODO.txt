@@ -751,21 +751,21 @@
 			[https://www.youtube.com/watch?v=0oV8LMHAKVk]	
 	= Release:
 		+ 1.18.0.4
-		= Windows
+		+ Windows
 			+ MSI variable
-			- Commit & push
-			- 64-bit MSI
-				- Cleanup Install
-				- Build Release Install (after clean)
-				- Make MSI
-				- Rename MSI
-				- Test upgrade from previous version
-			- 32-bit MSI
-				- Cleanup Install
-				- Build Release Install (after clean)
-				- Make MSI
-				- Rename MSI
-				- Test clean install
+			+ Commit & push
+			+ 64-bit MSI
+				+ Cleanup Install
+				+ Build Release Install (after clean)
+				+ Make MSI
+				+ Rename MSI
+				+ Test upgrade from previous version
+			+ 32-bit MSI
+				+ Cleanup Install
+				+ Build Release Install (after clean)
+				+ Make MSI
+				+ Rename MSI
+				+ Test clean install
 		+ Ubuntu
 			+ rm -rf ~/floating-sandbox
 			+ pull 
@@ -775,9 +775,9 @@
 			+ Make tar ("cd ~/floating-sandbox && tar -cvf ../Floating-Sandbox-1.18.0-x64.tar . && cd -")
 			+ Zip tar
 			+ Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
-		- Get 3 installers tested on dev server
-		- Wait for test results
-		- Cut tag on github
+		+ Get 3 installers tested on dev server
+		+ Wait for test results
+		- Commit, push, & cut tag on github
 		- Upload packages to GameJolt
 			- Report file as safe (https://gamejolt.com/privacy)
 			- Remove Vista from requirements
@@ -789,17 +789,16 @@
 			- Upload changes2.txt
 				- Test w/old FS
 
-	- Tell Ticho Dugong
-
 	- Fix "2022" copyright notices
 
 	- Redo timer bomb
-		- How?
+		- Shader for fuse + sparks
 
 	- Wrecking ball tool
 	- New tool 2: Punch
 		- Spec:
-			- Works only on frontier from outside->in
+			- Like ocean floor collision
+			- OLD: Works only on frontier from outside->in
 				- Might want to try, at end, also from inside->out
 		- Impl:
 			- TODOHERE

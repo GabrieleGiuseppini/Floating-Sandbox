@@ -705,7 +705,7 @@ void OceanSurface::ImpartInteractiveWave(
         worldRadius); // Take into account also the interactive radius
 
     // Set at center and around
-    for (int64_t d = 0; d <= static_cast<int64_t>(std::floor(actionRadius)); ++d)
+    for (register_int d = 0; d <= static_cast<register_int>(std::floor(actionRadius)); ++d)
     {
         float const coeff =
             1.0f - (static_cast<float>(d) / actionRadius) * (static_cast<float>(d) / actionRadius);
@@ -717,7 +717,7 @@ void OceanSurface::ImpartInteractiveWave(
             mInteractiveWaveHeightGrowthCoefficientGrowthRate[centerIndex - d] = growthRate;
         }
 
-        if (centerIndex + d < static_cast<int64_t>(SamplesCount) && d != 0)
+        if (centerIndex + d < static_cast<register_int>(SamplesCount) && d != 0)
         {
             mInteractiveWaveTargetHeight[centerIndex + d] = targetAbsoluteHeight;
             mInteractiveWaveTargetHeightGrowthCoefficient[centerIndex + d] = coeff;

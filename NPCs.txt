@@ -130,6 +130,7 @@ Details
 		- Details:
 			- Barycentric coords, and intersection of segment with triangle:
 				- https://math.stackexchange.com/questions/2382016/determine-if-a-line-segment-passes-through-a-triangle
+			- Cartesian to Barycentric: https://en.wikipedia.org/wiki/Barycentric_coordinate_system#Conversion_between_barycentric_and_Cartesian_coordinates
 			- More barycentric coords, and ray tracing w/C algo:
 				- https://web.archive.org/web/20170517125238/http://www.cs.virginia.edu/~gfx/courses/2003/ImageSynthesis/papers/Acceleration/Fast%20MinimumStorage%20RayTriangle%20Intersection.pdf
 			- Plucker coords, and intersection of segment with triangle:
