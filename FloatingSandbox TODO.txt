@@ -777,14 +777,16 @@
 			+ Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
 		+ Get 3 installers tested on dev server
 		+ Wait for test results
-		- Commit, push, & cut tag on github
+		+ Commit, push, & cut tag on github
 		- Upload packages to GameJolt
 			- Report file as safe (https://gamejolt.com/privacy)
 			- Remove Vista from requirements
+			- Update screenshots
 			- Post
 		- www.floatingsandbox.com:
 			- Update current version in FAQ
 			- Remove Vista from requirements
+			- Update screenshots
 			- Wait a day or two, to exclude disastrous bugs
 			- Upload changes2.txt
 				- Test w/old FS

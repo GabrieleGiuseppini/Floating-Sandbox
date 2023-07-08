@@ -36,11 +36,11 @@ There are lots of improvements that I'm currently working on; some of these are:
 
 These and other ideas will come out with frequent releases.
 
-The game is also featured at [GameJolt](https://gamejolt.com/games/floating-sandbox/353572), and plenty of videos may be found on Youtube. 
+The game is also featured at [GameJolt](https://gamejolt.com/games/floating-sandbox/353572), and plenty of videos may be found on any major social media. 
 
 # System Requirements
 - Windows:
-	- Windows Vista, 7, 8, 10, or 11, either 64-bit or 32-bit
+	- Windows 7, 8, 10, or 11, either 64-bit or 32-bit
 		- The 64-bit build of Floating Sandbox runs ~7% faster than the 32-bit build, so if you're running a 64-bit Windows it is advisable to install the 64-bit build of Floating Sandbox
 	- OpenGL 2.1 or later
 		- If your graphics card does not support OpenGL 2.1, try upgrading its drivers - most likely there's a newer version with support for 2.1
@@ -56,8 +56,7 @@ The game is also featured at [GameJolt](https://gamejolt.com/games/floating-sand
 I started coding this game after stumbling upon Luke Wren's and Francis Racicot's (Pac0master) [Ship Sandbox](https://github.com/Wren6991/Ship-Sandbox). After becoming fascinated by it, I [forked](https://github.com/GabrieleGiuseppini/Ship-Sandbox) Luke's GitHub repo and started playing with the source code. After less than a year I realized I had rewritten all of the original code, while improving the game's FPS rate from 7 to 30 (on my 2009 laptop!). At this moment I decided that my new project was worthy of a new name and a new source code repository, the one you are looking at now.
 
 # Performance Characteristics
-The bottleneck at the moment is the spring relaxation algorithm, which requires about 80% of the time spent for the simulation of each single frame. I have an alternative version of the same algorithm written with intrinsics in the Benchmarks project, which shows a 20%-27% perf improvement. Sooner or later I'll integrate that in the game, but it's not gonna be a...game changer (pun intended). Instead, I plan to revisit the spring relaxation algorithm altogether after the next two major versions (see roadmap at https://gamejolt.com/games/floating-sandbox/353572/devlog/the-future-of-floating-sandbox-cdk2c9yi). There is a different family of algorithms based on minimization of potential energy, which supposedly requires less iterations and on top of that is easily parallelizable - the current iterative algorithm is not (easily) parallelize-able.
-This said, in the current implementation, what matters the most is CPU speed - the whole simulation is basically single-threaded (some small steps are parallelized, but they're puny compared with the spring relaxation). My 2010 laptop is a single-core, 2.2GHz Intel box, and the plain Titanic runs at ~22 FPS.
+The bottleneck at the moment is the spring relaxation algorithm (aka rigidity simulation), which requires about 60% of the time spent for the simulation of each single frame. This algorithm has been heavily optimized as of version 1.18.0 (you may read about these optimizations on [my technical blog](https://gabrielegiuseppini.wordpress.com/2023/04/01/adventures-with-2d-mass-spring-networks-part-i/)), and the entire simulation can now make use of multiple threads; nonetheless, rigidity simulation is still the bottleneck. 
 
 Rendering is a different story. At some point I've moved all the rendering code to a separate thread, allowing simulation updates and rendering to run in parallel. Obviously, only multi-core boxes benefit from parallel rendering, and boxes with very slow or emulated graphics hardware benefit the most. In any case, at this moment rendering requires a fraction of the time needed for updating the simulation, so CPU speed still dominates the performance you get, compared to GPU speed.
 
