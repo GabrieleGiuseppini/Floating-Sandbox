@@ -77,7 +77,7 @@ void Npcs::OnShipRemoved(ShipId shipId)
 		}
 	}
 
-	mGameEventHandler->OnNpcStatisticsUpdated(
+	mGameEventHandler->OnNpcCountsUpdated(
 		mNpcCount,
 		mConstrainedRegimeHumanNpcCount,
 		mFreeRegimeHumanNpcCount,
@@ -186,7 +186,7 @@ NpcId Npcs::AddHumanNpc(
 		++mFreeRegimeHumanNpcCount;
 	}
 
-	mGameEventHandler->OnNpcStatisticsUpdated(
+	mGameEventHandler->OnNpcCountsUpdated(
 		mNpcCount,
 		mConstrainedRegimeHumanNpcCount,
 		mFreeRegimeHumanNpcCount,
@@ -245,7 +245,7 @@ void Npcs::RemoveNpc(NpcId const id)
 		}
 	}
 
-	mGameEventHandler->OnNpcStatisticsUpdated(
+	mGameEventHandler->OnNpcCountsUpdated(
 		mNpcCount,
 		mConstrainedRegimeHumanNpcCount,
 		mFreeRegimeHumanNpcCount,

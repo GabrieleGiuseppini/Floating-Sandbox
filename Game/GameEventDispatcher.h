@@ -25,6 +25,7 @@ class GameEventDispatcher final
     , public IStatisticsGameEventHandler
     , public IAtmosphereGameEventHandler
     , public IElectricalElementGameEventHandler
+    , public INpcGameEventHandler
     , public IGenericGameEventHandler
 {
 public:
@@ -56,6 +57,7 @@ public:
         , mStatisticsSinks()
         , mAtmosphereSinks()
         , mElectricalElementSinks()
+        , mNpcSinks()
         , mGenericSinks()
     {
     }
@@ -545,6 +547,22 @@ public:
     }
 
     //
+    // NPC
+    //
+
+    void OnNpcCountsUpdated(
+        unsigned int totalNpcCount,
+        unsigned int constrainedHumanNpcCount,
+        unsigned int freeHumanNpcCount,
+        unsigned int remainingNpcAllowanceCount) override
+    {
+        for (auto sink : mNpcSinks)
+        {
+            sink->OnNpcCountsUpdated(totalNpcCount, constrainedHumanNpcCount, freeHumanNpcCount, remainingNpcAllowanceCount);
+        }
+    }
+
+    //
     // Generic
     //
 
@@ -993,6 +1011,11 @@ public:
         mElectricalElementSinks.push_back(sink);
     }
 
+    void RegisterNpcEventHandler(INpcGameEventHandler * sink)
+    {
+        mNpcSinks.push_back(sink);
+    }
+
     void RegisterGenericEventHandler(IGenericGameEventHandler * sink)
     {
         mGenericSinks.push_back(sink);
@@ -1028,5 +1051,6 @@ private:
     std::vector<IStatisticsGameEventHandler *> mStatisticsSinks;
     std::vector<IAtmosphereGameEventHandler *> mAtmosphereSinks;
     std::vector<IElectricalElementGameEventHandler *> mElectricalElementSinks;
+    std::vector<INpcGameEventHandler *> mNpcSinks;
     std::vector<IGenericGameEventHandler *> mGenericSinks;
 };

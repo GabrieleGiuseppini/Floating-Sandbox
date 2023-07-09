@@ -54,6 +54,7 @@ class MainFrame final
     : public wxFrame
     , public ILifecycleGameEventHandler
     , public IAtmosphereGameEventHandler
+    , public INpcGameEventHandler
     , public IGenericGameEventHandler
 {
 public:
@@ -124,6 +125,8 @@ private:
     wxMenu * mToolsMenu;
     wxMenuItem * mSmashMenuItem;
     wxMenuItem * mScareFishMenuItem;
+    wxMenuItem * mAddNpcMenuItem;
+    wxMenuItem * mRemoveNpcMenuItem;
     wxMenuItem * mRCBombsDetonateMenuItem;
     wxMenuItem * mAntiMatterBombsDetonateMenuItem;
     wxMenuItem * mTriggerStormMenuItem;
@@ -231,6 +234,8 @@ private:
     void OnRepairStructureMenuItemSelected(wxCommandEvent & event);
     void OnScrubMenuItemSelected(wxCommandEvent & event);
     void OnScareFishMenuItemSelected(wxCommandEvent & event);
+    void OnAddHumanNpcMenuItemSelected(HumanNpcRoleType role);
+    void OnRemoveNpcMenuItemSelected(wxCommandEvent & event);
     void OnTriggerLightningMenuItemSelected(wxCommandEvent & event);
     void OnRCBombDetonateMenuItemSelected(wxCommandEvent & event);
     void OnAntiMatterBombDetonateMenuItemSelected(wxCommandEvent & event);
@@ -264,6 +269,7 @@ private:
     {
         gameController.RegisterLifecycleEventHandler(this);
         gameController.RegisterAtmosphereEventHandler(this);
+        gameController.RegisterNpcEventHandler(this);
         gameController.RegisterGenericEventHandler(this);
     }
 
@@ -338,6 +344,16 @@ private:
     virtual void OnFishCountUpdated(size_t count) override
     {
         mScareFishMenuItem->Enable(count > 0);
+    }
+
+    virtual void OnNpcCountsUpdated(
+        unsigned int totalNpcCount,
+        unsigned int /*constrainedHumanNpcCount*/,
+        unsigned int /*freeHumanNpcCount*/,
+        unsigned int remainingNpcAllowanceCount) override
+    {
+        mAddNpcMenuItem->Enable(remainingNpcAllowanceCount > 0);
+        mRemoveNpcMenuItem->Enable(totalNpcCount > 0);
     }
 
 private:

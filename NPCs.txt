@@ -169,7 +169,7 @@ Details:
 			- Type: NpcKindType
 			- Union of all kind-specific attributes
 				- Note: many attributes will be common, hence we'll be saving room
-	+ AddShip(shipID)/RemoveShip(shipID)
+	- AddShip(shipID)/RemoveShip(shipID)
 	- TODOHERE: review dynamics of adding, considering that we can't drop in certain triangles:
 		World::AddHumanNPC(..) -> ID
 		- World finds ship by inverse Z order, using Ship.GetTriangles().GetTriangleContaining(.)
@@ -187,16 +187,17 @@ Details:
 - Placing an NPC:
 	- The user selects the "place NPC" tool at the same time as choosing the type and sub-type via menus
 	- Once the tool is selected, ToolController is notified via a dedicated API (which takes type/subtype)
-		- With this call the tool is switched to the NPC-placing tool, but the old one is remembered so that once an NPC is placed, we can go back to the previous tool (unless SHIFT is pressed)
-	- Initialization of the tool makes a call into NPCs::AddHumanNPC(..) stating its state is "being placed" and gets the ID
-		- At this moment GameController starts skipping updates of everything but NPCs - calling a special NPCs::UpdateXXX() function to only update the rendering state of being-placed NPCs
-	- Placement check: either not in a triangle, or in a triangle with at least one side NON-floor
-	- When placed, tool calls NPCs::ResetNPC(ID) which starts the NPC's state machine
-		- And GameController returns to normal
-
-
-- TODOs:
-
+		- With this call the tool is switched to the NPC-placing tool, but the old one is remembered so that once an NPC is placed, we can go back to the previous tool (unless SHIFT is pressed)	
+	- Initialization of the tool makes a call into GameController::BeginHumanNpcPlacing(role, pos), and de-initialization calls GameController::EndNpcPlacing()
+		- The NPCs class has a "special slot" for a single NPC being placed, initialized and removed with these two calls
+		- Note: check leave window/enter window
+	- Moving the tool: 
+		- At movement, tool calls GameController::MoveNpcPlacing(pos) -> bool telling whether or not it's a good place (and whether or not there's still room for NPCs)
+			- Npcs::MoveNpcPlacing: always moves
+			- Placement check: either not in a triangle, or in a triangle with at least one side NON-floor
+			- Tool remembers whether current position is OK for placement (storing in opt<position>, if set then ok else not)
+		- Mouse down: only if that opt<position> is set, calls into GameController::AddHumanNpc(...)
+			- Note: placing continues, even if all NPC slots used
 
 
 

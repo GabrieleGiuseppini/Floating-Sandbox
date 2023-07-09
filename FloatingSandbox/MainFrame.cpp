@@ -470,6 +470,52 @@ MainFrame::MainFrame(
                 ADD_TOOL_MENUITEM(_("Toggle Physics Probe"), wxS(""), "physics_probe_cursor", OnPhysicsProbeMenuItemSelected);
             }
 
+            {
+                // Type hierarchy menu
+                wxMenu * npcSubMenu = nullptr;
+                {
+                    wxMenu * humanTypeSubMenu = new wxMenu(_(""));
+                    {
+                        {
+                            auto const commandId = wxNewId();
+                            humanTypeSubMenu->Append(new wxMenuItem(nullptr, commandId, _("Passenger"), wxEmptyString, wxITEM_NORMAL));
+                            humanTypeSubMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [this](wxCommandEvent &) { OnAddHumanNpcMenuItemSelected(HumanNpcRoleType::Passenger); }, commandId);
+                        }
+
+                        // TODOTEST
+                        {
+                            auto const commandId = wxNewId();
+                            humanTypeSubMenu->Append(new wxMenuItem(nullptr, commandId, _("Programmer"), wxEmptyString, wxITEM_NORMAL));
+                            humanTypeSubMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [this](wxCommandEvent &) { OnAddHumanNpcMenuItemSelected(static_cast<HumanNpcRoleType>(42)); }, commandId);
+                        }
+                    }
+                    
+                    // FUTUREWORK: when we'll have more NPC types, we'll create a submenu here between AddNpc and the various types
+                    npcSubMenu = humanTypeSubMenu;
+                }
+
+                // Create menu
+                mAddNpcMenuItem = new wxMenuItem(mToolsMenu, wxID_ANY, _("Add NPC..."), wxEmptyString, wxITEM_RADIO, npcSubMenu);
+                auto img1 = wxImage(resourceLocator.GetIconFilePath("add_npc_icon").string(), wxBITMAP_TYPE_PNG);
+                img1.Rescale(16, 16, wxIMAGE_QUALITY_HIGH);
+                auto img2 = WxHelpers::RetintCursorImage(img1, rgbColor(0x00, 0x90, 0x00));
+                mAddNpcMenuItem->SetBitmaps(wxBitmap(img2), wxBitmap(img1));
+                mToolsMenu->Append(mAddNpcMenuItem);
+                mAddNpcMenuItem->Enable(true); // Note: here we're assuming we _can_ add NPCs; unfortunately the NPCs class is created _before_ we register for events, hence have to guess here
+            }
+
+            {
+                auto const id = wxNewId();
+                mRemoveNpcMenuItem = new wxMenuItem(mToolsMenu, id, _("Remove NPC"), wxEmptyString, wxITEM_RADIO);
+                auto img1 = wxImage(resourceLocator.GetIconFilePath("remove_npc_icon").string(), wxBITMAP_TYPE_PNG);
+                img1.Rescale(16, 16, wxIMAGE_QUALITY_HIGH);
+                auto img2 = WxHelpers::RetintCursorImage(img1, rgbColor(0x00, 0x90, 0x00));
+                mRemoveNpcMenuItem->SetBitmaps(wxBitmap(img2), wxBitmap(img1));
+                mToolsMenu->Append(mRemoveNpcMenuItem);
+                Connect(id, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnRemoveNpcMenuItemSelected);
+                mRemoveNpcMenuItem->Enable(false);
+            }
+
             mToolsMenu->Append(new wxMenuItem(mToolsMenu, wxID_SEPARATOR));
 
             {
@@ -1894,6 +1940,21 @@ void MainFrame::OnScareFishMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mToolController);
     mToolController->SetTool(ToolType::ScareFish);
+}
+
+void MainFrame::OnAddHumanNpcMenuItemSelected(HumanNpcRoleType role)
+{
+    mAddNpcMenuItem->Check(true);
+
+    assert(!!mToolController);
+    // TODOHERE
+}
+
+void MainFrame::OnRemoveNpcMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    // TODOHERE
+    LogMessage("OnRemoveNpcMenuItemSelected");
+    assert(!!mToolController);
 }
 
 void MainFrame::OnTriggerLightningMenuItemSelected(wxCommandEvent & /*event*/)

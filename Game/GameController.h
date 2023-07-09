@@ -127,6 +127,12 @@ public:
         mGameEventDispatcher->RegisterElectricalElementEventHandler(handler);
     }
 
+    void RegisterNpcEventHandler(INpcGameEventHandler * handler) override
+    {
+        assert(!!mGameEventDispatcher);
+        mGameEventDispatcher->RegisterNpcEventHandler(handler);
+    }
+
     void RegisterGenericEventHandler(IGenericGameEventHandler * handler) override
     {
         assert(!!mGameEventDispatcher);

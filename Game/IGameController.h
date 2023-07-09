@@ -39,6 +39,7 @@ struct IGameController
     virtual void RegisterStatisticsEventHandler(IStatisticsGameEventHandler * handler) = 0;
     virtual void RegisterAtmosphereEventHandler(IAtmosphereGameEventHandler * handler) = 0;
     virtual void RegisterElectricalElementEventHandler(IElectricalElementGameEventHandler * handler) = 0;
+    virtual void RegisterNpcEventHandler(INpcGameEventHandler * handler) = 0;
     virtual void RegisterGenericEventHandler(IGenericGameEventHandler * handler) = 0;
 
     virtual ShipMetadata ResetAndLoadShip(ShipLoadSpecifications const & loadSpecs) = 0;

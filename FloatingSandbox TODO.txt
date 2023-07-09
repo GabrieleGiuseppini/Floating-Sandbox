@@ -781,16 +781,15 @@
 		+ Make screenshots
 			+ GameJolt's cover image
 			+ GameJolt's fire image
-		= Upload packages to GameJolt
+		+ Upload packages to GameJolt
 			+ Remove Vista from requirements
 			+ Update screenshots
 				+ Also replace video w/https://youtu.be/0oV8LMHAKVk
-			- Post
+			+ Post
 		- www.floatingsandbox.com:
 			- Update current version in FAQ
 			- Remove Vista from requirements
 			- Update screenshots
-			- Wait a day or two, to exclude disastrous bugs
 			- Upload changes2.txt
 				- Test w/old FS
 		- Update screenshots at GitHub

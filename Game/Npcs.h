@@ -121,6 +121,11 @@ public:
         , mConstrainedRegimeHumanNpcCount(0)
         , mAreElementsDirtyForRendering(true)
     {
+        mGameEventHandler->OnNpcCountsUpdated(
+            mNpcCount,
+            mConstrainedRegimeHumanNpcCount,
+            mFreeRegimeHumanNpcCount,
+            GameParameters::MaxNpcs - mNpcCount);
     }
 
     Npcs(Npcs && other) = default;

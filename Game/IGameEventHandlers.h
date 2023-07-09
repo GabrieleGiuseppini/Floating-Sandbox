@@ -148,15 +148,6 @@ struct IStatisticsGameEventHandler
     {
         // Default-implemented
     }
-
-    virtual void OnNpcStatisticsUpdated(
-        unsigned int /*totalNpcCount*/,
-        unsigned int /*constrainedHumanNpcCount*/,
-        unsigned int /*freeHumanNpcCount*/,
-        unsigned int /*remainingNpcAllowanceCount*/)
-    {
-        // Default-implemented
-    }
 };
 
 struct IAtmosphereGameEventHandler
@@ -371,6 +362,18 @@ struct IElectricalElementGameEventHandler
     virtual void OnWatertightDoorUpdated(
         ElectricalElementId /*electricalElementId*/,
         bool /*isOpen*/)
+    {
+        // Default-implemented
+    }
+};
+
+struct INpcGameEventHandler
+{
+    virtual void OnNpcCountsUpdated(
+        unsigned int /*totalNpcCount*/,
+        unsigned int /*constrainedHumanNpcCount*/,
+        unsigned int /*freeHumanNpcCount*/,
+        unsigned int /*remainingNpcAllowanceCount*/)
     {
         // Default-implemented
     }
