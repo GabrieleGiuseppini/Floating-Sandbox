@@ -10,7 +10,7 @@
 namespace Physics
 {
 
-void NpcParticles::Add(
+ElementIndex NpcParticles::Add(
     vec2f const & position,
     StructuralMaterial const & structuralMaterial)
 {
@@ -32,6 +32,8 @@ void NpcParticles::Add(
     
     // Remember we're dirty
     mAreElementsDirtyForRendering = true;
+
+    return p;
 }
 
 void NpcParticles::Remove(

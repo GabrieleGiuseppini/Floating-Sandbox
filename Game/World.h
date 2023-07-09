@@ -41,6 +41,7 @@ public:
     World(
         OceanFloorTerrain && oceanFloorTerrain,
         bool areCloudShadowsEnabled,
+        MaterialDatabase const & materialDatabase,
         FishSpeciesDatabase const & fishSpeciesDatabase,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
         GameParameters const & gameParameters,

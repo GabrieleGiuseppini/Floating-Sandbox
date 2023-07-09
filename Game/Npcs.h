@@ -8,6 +8,7 @@
 #include "GameEventDispatcher.h"
 #include "GameParameters.h"
 #include "Materials.h"
+#include "MaterialDatabase.h"
 #include "NpcParticles.h"
 
 #include <GameCore/Buffer.h>
@@ -48,9 +49,13 @@ private:
         struct HumanState
         {
             HumanNpcRoleType Role;
+            ElementIndex FeetParticleIndex;
 
-            HumanState(HumanNpcRoleType role)
+            HumanState(
+                HumanNpcRoleType role,
+                ElementIndex feetParticleIndex)
                 : Role(role)
+                , FeetParticleIndex(feetParticleIndex)
             {}
         };
 
@@ -101,13 +106,15 @@ private:
 public:
 
     Npcs(
+        MaterialDatabase const & materialDatabase,
         std::shared_ptr<GameEventDispatcher> gameEventDispatcher)
-        : mGameEventHandler(std::move(gameEventDispatcher))
+        : mMaterialDatabase(materialDatabase)
+        , mGameEventHandler(std::move(gameEventDispatcher))
         // Storage
         , mStateByShip()
         , mShipIdToShipOrdinalIndex()
         , mNpcIdToNpcOrdinalIndex()
-        , mNpcParticles(GameParameters::MaxNpcs) // TODO: multiply accordingly when moving on to non-single-particle NPCs
+        , mParticles(GameParameters::MaxNpcs) // TODO: multiply accordingly when moving on to non-single-particle NPCs
         // State
         , mNpcCount(0)
         , mFreeRegimeHumanNpcCount(0)
@@ -125,6 +132,7 @@ public:
     NpcId AddHumanNpc(
         HumanNpcRoleType role,
         Ship const & ship,
+        vec2f const & position,
         std::optional<ElementIndex> triangleIndex);
 
     void RemoveNpc(NpcId const id);
@@ -133,10 +141,11 @@ private:
 
 private:
 
+    MaterialDatabase const & mMaterialDatabase;
     std::shared_ptr<GameEventDispatcher> const mGameEventHandler;
 
     //
-    // Storage
+    // Container
     //    
 
     // State: organized by ship index (not ship ID), compacted at addition/removal
@@ -147,7 +156,7 @@ private:
     std::vector<std::vector<ElementIndex>> mNpcIdToNpcOrdinalIndex; // Indexed by ship ID
 
     // All particles
-    NpcParticles mNpcParticles;
+    NpcParticles mParticles;
 
     //
     // State

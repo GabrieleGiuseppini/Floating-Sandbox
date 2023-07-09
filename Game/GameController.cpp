@@ -119,6 +119,7 @@ GameController::GameController(
     mWorld = std::make_unique<Physics::World>(
         OceanFloorTerrain::LoadFromImage(resourceLocator.GetDefaultOceanFloorTerrainFilePath()),
         CalculateAreCloudShadowsEnabled(mRenderContext->GetOceanRenderDetail()),
+        mMaterialDatabase,
         mFishSpeciesDatabase,
         mGameEventDispatcher,
         mGameParameters,
@@ -1450,6 +1451,7 @@ ShipMetadata GameController::InternalResetAndLoadShip(ShipLoadSpecifications con
     auto newWorld = std::make_unique<Physics::World>(
         OceanFloorTerrain(mWorld->GetOceanFloorTerrain()),
         CalculateAreCloudShadowsEnabled(mRenderContext->GetOceanRenderDetail()),
+        mMaterialDatabase,
         mFishSpeciesDatabase,
         mGameEventDispatcher,
         mGameParameters,

@@ -15,6 +15,7 @@ namespace Physics {
 World::World(
     OceanFloorTerrain && oceanFloorTerrain,
     bool areCloudShadowsEnabled,
+    MaterialDatabase const & materialDatabase,
     FishSpeciesDatabase const & fishSpeciesDatabase,
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     GameParameters const & gameParameters,
@@ -32,7 +33,7 @@ World::World(
     , mOceanSurface(*this, mGameEventHandler)
     , mOceanFloor(std::move(oceanFloorTerrain))
     , mFishes(fishSpeciesDatabase, mGameEventHandler)
-    , mNpcs(mGameEventHandler)
+    , mNpcs(materialDatabase, mGameEventHandler)
     //
     , mAllAABBs()
 {

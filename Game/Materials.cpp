@@ -87,12 +87,13 @@ StructuralMaterial StructuralMaterial::Create(
         float const windReceptivity = Utils::GetMandatoryJsonMember<float>(structuralMaterialJson, "wind_receptivity");
         float const waterReactivity = Utils::GetOptionalJsonMember<float>(structuralMaterialJson, "water_reactivity", 0.0f);
         bool isLegacyElectrical = Utils::GetOptionalJsonMember<bool>(structuralMaterialJson, "is_legacy_electrical", false);
+        bool isExemptFromPalette = Utils::GetOptionalJsonMember<bool>(structuralMaterialJson, "is_exempt_from_palette", false);
 
         // Palette coordinates
 
         std::optional<MaterialPaletteCoordinatesType> paletteCoordinates;
         auto const & paletteCoordinatesJson = Utils::GetOptionalJsonObject(structuralMaterialJson, "palette_coordinates");
-        if (!isLegacyElectrical)
+        if (!isExemptFromPalette)
         {
             if (!paletteCoordinatesJson.has_value())
             {
@@ -135,6 +136,7 @@ StructuralMaterial StructuralMaterial::Create(
             windReceptivity,
             waterReactivity,
             isLegacyElectrical,
+            isExemptFromPalette,
             // Palette
             paletteCoordinates);
     }
@@ -160,6 +162,8 @@ StructuralMaterial::MaterialUniqueType StructuralMaterial::StrToMaterialUniqueTy
         return MaterialUniqueType::Air;
     if (Utils::CaseInsensitiveEquals(str, "Glass"))
         return MaterialUniqueType::Glass;
+    if (Utils::CaseInsensitiveEquals(str, "Human"))
+        return MaterialUniqueType::Human;
     else if (Utils::CaseInsensitiveEquals(str, "Rope"))
         return MaterialUniqueType::Rope;
     else if (Utils::CaseInsensitiveEquals(str, "Water"))

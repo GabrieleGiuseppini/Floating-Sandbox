@@ -55,7 +55,7 @@ public:
 
     NpcParticles(NpcParticles && other) = default;
 
-    void Add(
+    ElementIndex Add(
         vec2f const & position,
         StructuralMaterial const & structuralMaterial);
 

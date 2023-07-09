@@ -12,10 +12,10 @@ namespace Physics {
 void Npcs::OnShipAdded(ShipId shipId)
 {
 	//
-	// Buffers
+	// State buffer
 	//
 
-	// Add buffers
+	// Make new state buffer
 	ElementIndex const newShipOrdinal = static_cast<ElementIndex>(mStateByShip.size());
 	mStateByShip.emplace_back();
 
@@ -46,9 +46,48 @@ void Npcs::OnShipRemoved(ShipId shipId)
 	assert(oldShipOrdinal != NoneElementIndex);
 
 	//
-	// Buffers
+	// Update NPCs
 	//
 
+	for (auto const & state : mStateByShip[oldShipOrdinal])
+	{
+		--mNpcCount;
+
+		switch (state.Type)
+		{
+			case NpcType::Human:
+			{
+				// Free particle
+				mParticles.Remove(state.TypeSpecificState.Human.FeetParticleIndex);
+
+				// Update stats
+
+				if (state.IsInConstrainedRegime())
+				{
+					--mConstrainedRegimeHumanNpcCount;
+				}
+
+				if (state.IsInFreeRegime())
+				{
+					--mFreeRegimeHumanNpcCount;
+				}
+
+				break;
+			}
+		}
+	}
+
+	mGameEventHandler->OnNpcStatisticsUpdated(
+		mNpcCount,
+		mConstrainedRegimeHumanNpcCount,
+		mFreeRegimeHumanNpcCount,
+		GameParameters::MaxNpcs - mNpcCount);
+
+	//
+	// State buffer
+	//
+
+	// Remove state buffer
 	mStateByShip.erase(mStateByShip.begin() + oldShipOrdinal);
 
 	//
@@ -78,8 +117,11 @@ void Npcs::OnShipRemoved(ShipId shipId)
 NpcId Npcs::AddHumanNpc(
 	HumanNpcRoleType role,
 	Ship const & ship,
+	vec2f const & position,
 	std::optional<ElementIndex> triangleIndex)
 {
+	assert(mNpcCount < GameParameters::MaxNpcs); // We still have room for an extra NPC
+
 	auto const shipId = ship.GetId();
 
 	// We know about this ship
@@ -115,13 +157,18 @@ NpcId Npcs::AddHumanNpc(
 	}
 
 	//
-	// Buffers
+	// State buffer
 	//
 
-	// Add buffers	
+	// Take particle
+	ElementIndex const feetParticleIndex = mParticles.Add(
+		position,
+		mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Human));
+
+	// Add NPC state
 	auto const & state = mStateByShip[shipOrdinal].emplace_back(
 		triangleIndex,
-		TypeSpecificNpcState::HumanState(role));
+		TypeSpecificNpcState::HumanState(role, feetParticleIndex));
 
 	//
 	// Update state
@@ -168,21 +215,34 @@ void Npcs::RemoveNpc(NpcId const id)
 	assert(oldNpcOrdinal != NoneElementIndex);
 
 	//
-	// Update state
+	// Update NPC
 	//
 
 	auto const & state = mStateByShip[shipOrdinal][oldNpcOrdinal];
 
 	--mNpcCount;
 
-	if (state.IsInConstrainedRegime())
+	switch (state.Type)
 	{
-		--mConstrainedRegimeHumanNpcCount;
-	}
+		case NpcType::Human:
+		{
+			// Free particle
+			mParticles.Remove(state.TypeSpecificState.Human.FeetParticleIndex);
 
-	if (state.IsInFreeRegime())
-	{
-		--mFreeRegimeHumanNpcCount;
+			// Update stats
+
+			if (state.IsInConstrainedRegime())
+			{
+				--mConstrainedRegimeHumanNpcCount;
+			}
+
+			if (state.IsInFreeRegime())
+			{
+				--mFreeRegimeHumanNpcCount;
+			}
+
+			break;
+		}
 	}
 
 	mGameEventHandler->OnNpcStatisticsUpdated(
@@ -192,9 +252,10 @@ void Npcs::RemoveNpc(NpcId const id)
 		GameParameters::MaxNpcs - mNpcCount);
 
 	//
-	// Buffers
+	// State buffers
 	//
 
+	// Remove NPC state
 	mStateByShip[shipOrdinal].erase(mStateByShip[shipOrdinal].begin() + oldNpcOrdinal);
 
 	//

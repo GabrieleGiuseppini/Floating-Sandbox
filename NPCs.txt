@@ -170,17 +170,16 @@ Details:
 			- Union of all kind-specific attributes
 				- Note: many attributes will be common, hence we'll be saving room
 	+ AddShip(shipID)/RemoveShip(shipID)
-	- 
 	- TODOHERE: review dynamics of adding, considering that we can't drop in certain triangles:
 		World::AddHumanNPC(..) -> ID
 		- World finds ship by inverse Z order, using Ship.GetTriangles().GetTriangleContaining(.)
 			- If not found, pick last by default
 			- If no triangle found, NPC is added with free regime
 		- Then World calls NPCs::AddHumanNPC(.., ship const &, opt<triangle index>)	
-	- RemoveNPC(ID)
+	+ RemoveNPC(ID)
 
-	- Update()
-	- Upload(iShip, ShipRenderContext)
+	- Update(Ship const &)
+	- Upload(Ship const &, ShipRenderContext)
 		- Invoked by World for each ship separately
 		- Invokes ShipRenderContext::UploadNPC:
 			- A TextureGroup enum - declared in RenderTypes like AntiMatterBomb is for example - is used to identify the "movement types" for rendering. An additional index provides the sub-frame. The whole coordinate is a TextureFrameId<NPC group>.
