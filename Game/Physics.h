@@ -12,6 +12,7 @@ namespace Physics
     class Fishes;
     class Frontiers;
     class Gadgets;
+    class Npcs;
     class OceanFloor;
     class OceanSurface;
     class PinnedPoints;
@@ -42,6 +43,7 @@ namespace Physics
 
 #include "Clouds.h"
 #include "Fishes.h"
+#include "Npcs.h"
 #include "Stars.h"
 #include "OceanFloor.h"
 #include "OceanSurface.h"

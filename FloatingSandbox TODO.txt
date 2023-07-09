@@ -778,10 +778,13 @@
 		+ Get 3 installers tested on dev server
 		+ Wait for test results
 		+ Commit, push, & cut tag on github
-		- Upload packages to GameJolt
-			- Report file as safe (https://gamejolt.com/privacy)
-			- Remove Vista from requirements
-			- Update screenshots
+		+ Make screenshots
+			+ GameJolt's cover image
+			+ GameJolt's fire image
+		= Upload packages to GameJolt
+			+ Remove Vista from requirements
+			+ Update screenshots
+				+ Also replace video w/https://youtu.be/0oV8LMHAKVk
 			- Post
 		- www.floatingsandbox.com:
 			- Update current version in FAQ
@@ -790,6 +793,7 @@
 			- Wait a day or two, to exclude disastrous bugs
 			- Upload changes2.txt
 				- Test w/old FS
+		- Update screenshots at GitHub
 
 	- Fix "2022" copyright notices
 

@@ -85,6 +85,10 @@ set  (PHYSICS_SOURCES
 	ImpactBombGadget.cpp
 	ImpactBombGadget.h
 	IShipPhysicsHandler.h
+	Npcs.cpp
+	Npcs.h
+	NpcParticles.cpp
+	NpcParticles.h
 	OceanFloor.cpp
 	OceanFloor.h
 	OceanSurface.cpp

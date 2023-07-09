@@ -68,7 +68,7 @@ Details
 ===========
 
 - Type hierarchy:
-	- NpcKindType:
+	- NpcType:
 		- Human
 			- HumanNpcRoleType:
 				- Passenger
@@ -142,6 +142,8 @@ Details
 		- Static ones: contain static properties (colors, )
 			- Only reloaded at e.g. NPC insertion/removal
 		- Dynamics ones: contain world vertices, texture coords
+	- TODO: do we need indices like ships?
+
 Code
 ===========
 Arch:
@@ -154,24 +156,29 @@ Details:
 	- Container of NPCs
 	- Owned by World; accessed - when needed - by Ships via ParentWorld
 	- Contains all NPCs from all ships
-		- Organized internally by ship, so that ships may easy access all their NPCs easily e.g. when doing interactions
-			- N buffers of buffer<NPC>: <ShipId; -> local ordinal (unstable and not visible from outside)>
-				- Innermost buffer kept compact during removals and additions to Ship's specific buffer, hence the reason why the ordinal in that buffer is not stable
-		- One single buffer per-physical quantity though, across all ships, so that we do physics updates with one single pass
+		- Organized internally by ship, so that updates - which require ship triangles, etc. - are optimized, and ships may easy access all their NPCs easily e.g. when doing interactions
+			- For each ship there is a vector (e.g. std::vector<NPCState>), kept compact during removals and additions of NPCs
+			- The vector of ships is also itself kept compact during removals and additions of ships
+			- Separately, a "ship index" vector and a "NPC index" vector for each ship form a two-tier "index" for mapping stable ShipIDs and NPCIDs to elements in these buffers
+				- Index also kept up-to-date at Ship and NPC addition/removal
+				- The pair of these indices is the NPC's stable, globally-unique ID, unrelated to the position it occupies in NPC buffers
+		- One single buffer per-physical quantity though, across all ships and NPCs, so that we do physics updates with one single pass
 			- Buffer is pre-sized to max # of NPCs
 			- Need same tricks as other physics buffers wrt additions/removals, e.g. zeroing coeffs so that update steps are essentially nop's
-		- Identification:
-			- Each NPC contains a stable, globally unique single-integer ID, unrelated to the position it occupies in NPC buffers, but
-			  equal to the position it occupies in the physics buffer(s)
 		- NPC struct:
-			- Index: ElementIndex (ordinal in physics buffer)
 			- Type: NpcKindType
 			- Union of all kind-specific attributes
-				- Note: many attributes will be common, hence we're saving room
-	- World::AddHumanNPC(..) -> ID
+				- Note: many attributes will be common, hence we'll be saving room
+	+ AddShip(shipID)/RemoveShip(shipID)
+	- 
+	- TODOHERE: review dynamics of adding, considering that we can't drop in certain triangles:
+		World::AddHumanNPC(..) -> ID
 		- World finds ship by inverse Z order, using Ship.GetTriangles().GetTriangleContaining(.)
 			- If not found, pick last by default
-		- Then World calls NPCs::AddHumanNPC(.., ship const &, triangle index)
+			- If no triangle found, NPC is added with free regime
+		- Then World calls NPCs::AddHumanNPC(.., ship const &, opt<triangle index>)	
+	- RemoveNPC(ID)
+
 	- Update()
 	- Upload(iShip, ShipRenderContext)
 		- Invoked by World for each ship separately
@@ -183,13 +190,13 @@ Details:
 	- Once the tool is selected, ToolController is notified via a dedicated API (which takes type/subtype)
 		- With this call the tool is switched to the NPC-placing tool, but the old one is remembered so that once an NPC is placed, we can go back to the previous tool (unless SHIFT is pressed)
 	- Initialization of the tool makes a call into NPCs::AddHumanNPC(..) stating its state is "being placed" and gets the ID
-		- At this moment GameController starts skipping updated of everything but NPCs - calling a special UpdateXXX() function to only update the rendering state of being-placed NPCs
+		- At this moment GameController starts skipping updates of everything but NPCs - calling a special NPCs::UpdateXXX() function to only update the rendering state of being-placed NPCs
 	- Placement check: either not in a triangle, or in a triangle with at least one side NON-floor
 	- When placed, tool calls NPCs::ResetNPC(ID) which starts the NPC's state machine
 		- And GameController returns to normal
 
 
-
+- TODOs:
 
 
 

@@ -84,6 +84,14 @@ static FrontierId constexpr NoneFrontierId = std::numeric_limits<FrontierId>::ma
 using LocalGadgetId = std::uint32_t;
 
 /*
+ * NPC (local) identifiers.
+ *
+ * Comparable and ordered. Start from 0.
+ */
+using LocalNpcId = std::uint32_t;
+static LocalNpcId constexpr NoneLocalNpcId = std::numeric_limits<LocalNpcId>::max();
+
+/*
  * Object ID's, identifying objects of ships across ships.
  *
  * An ObjectId is unique only in the context in which it's used; for example,
@@ -172,6 +180,9 @@ using GadgetId = ObjectId<LocalGadgetId, struct GadgetTypeTag>;
 
 // ID for electrical elements (switches, probes, etc.)
 using ElectricalElementId = ObjectId<ElementIndex, struct ElectricalElementTypeTag>;
+
+// ID for NPCs
+using NpcId = ObjectId<LocalNpcId, struct NpcTypeTag>;
 
 /*
  * A sequence number which is never zero.
@@ -950,6 +961,22 @@ enum class MaterialLayerType
 {
     Structural,
     Electrical
+};
+
+/*
+ * Types of NPCs.
+ */
+enum class NpcType
+{
+    Human
+};
+
+/*
+ * Roles for human NPCs.
+ */
+enum class HumanNpcRoleType
+{
+    Passenger
 };
 
 /*

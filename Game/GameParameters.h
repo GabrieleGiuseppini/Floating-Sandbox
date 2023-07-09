@@ -561,6 +561,7 @@ struct GameParameters
 
     static_assert(HalfMaxWorldHeight >= MaxSeaDepth); // Make sure deepest bottom of the ocean is visible
 
+    static size_t constexpr MaxNpcs = 1024u;
 
     static size_t constexpr MaxGadgets = 64u;
     static size_t constexpr MaxPinnedPoints = 64u;

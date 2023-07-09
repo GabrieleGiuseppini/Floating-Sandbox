@@ -148,6 +148,15 @@ struct IStatisticsGameEventHandler
     {
         // Default-implemented
     }
+
+    virtual void OnNpcStatisticsUpdated(
+        unsigned int /*totalNpcCount*/,
+        unsigned int /*constrainedHumanNpcCount*/,
+        unsigned int /*freeHumanNpcCount*/,
+        unsigned int /*remainingNpcAllowanceCount*/)
+    {
+        // Default-implemented
+    }
 };
 
 struct IAtmosphereGameEventHandler

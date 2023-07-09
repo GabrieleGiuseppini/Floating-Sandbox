@@ -390,6 +390,7 @@ private:
     OceanSurface mOceanSurface;
     OceanFloor mOceanFloor;
     Fishes mFishes;
+    Npcs mNpcs;
 
     // The set of all AABB's in the world, updated at each
     // simulation cycle and at each ship addition

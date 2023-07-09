@@ -32,6 +32,7 @@ World::World(
     , mOceanSurface(*this, mGameEventHandler)
     , mOceanFloor(std::move(oceanFloorTerrain))
     , mFishes(fishSpeciesDatabase, mGameEventHandler)
+    , mNpcs(mGameEventHandler)
     //
     , mAllAABBs()
 {
@@ -46,15 +47,22 @@ World::World(
 
 ShipId World::GetNextShipId() const
 {
+    // FUTUREWORK: for now this is OK as we do not remove ships; when we do, however,
+    // this could re-use an existing ID, hence the algo here will need to change
     return static_cast<ShipId>(mAllShips.size());
 }
 
 void World::AddShip(std::unique_ptr<Ship> ship)
 {
+    auto const shipId = ship->GetId();
     auto const shipAABBs = ship->CalculateAABBs();
 
+    // Store ship
     assert(ship->GetId() == static_cast<ShipId>(mAllShips.size()));
     mAllShips.push_back(std::move(ship));
+
+    // Tell NPCs
+    mNpcs.OnShipAdded(shipId);
 
     // Update AABBSet
     for (auto const & aabb : shipAABBs.GetItems())
