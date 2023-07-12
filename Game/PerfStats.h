@@ -94,6 +94,7 @@ struct PerfStats
 
     // Update
     Ratio TotalUpdateDuration;
+    Ratio TotalNpcUpdateDuration;
     Ratio TotalFishUpdateDuration;
     Ratio TotalOceanSurfaceUpdateDuration;
     Ratio TotalShipsUpdateDuration;
@@ -118,6 +119,7 @@ struct PerfStats
     void Reset()
     {
         TotalUpdateDuration.Reset();
+        TotalNpcUpdateDuration.Reset();
         TotalFishUpdateDuration.Reset();
         TotalOceanSurfaceUpdateDuration.Reset();
         TotalShipsUpdateDuration.Reset();
@@ -141,6 +143,7 @@ inline PerfStats operator-(PerfStats const & lhs, PerfStats const & rhs)
     PerfStats perfStats;
 
     perfStats.TotalUpdateDuration = lhs.TotalUpdateDuration - rhs.TotalUpdateDuration;
+    perfStats.TotalNpcUpdateDuration = lhs.TotalNpcUpdateDuration - rhs.TotalNpcUpdateDuration;
     perfStats.TotalFishUpdateDuration = lhs.TotalFishUpdateDuration - rhs.TotalFishUpdateDuration;
     perfStats.TotalOceanSurfaceUpdateDuration = lhs.TotalOceanSurfaceUpdateDuration - rhs.TotalOceanSurfaceUpdateDuration;
     perfStats.TotalShipsUpdateDuration = lhs.TotalShipsUpdateDuration - rhs.TotalShipsUpdateDuration;

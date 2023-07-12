@@ -1098,6 +1098,14 @@ void World::Update(
     {
         auto const startTime = std::chrono::steady_clock::now();
 
+        mNpcs.Update(mCurrentSimulationTime, gameParameters);
+
+        perfStats.TotalNpcUpdateDuration.Update(std::chrono::steady_clock::now() - startTime);
+    }
+
+    {
+        auto const startTime = std::chrono::steady_clock::now();
+
         mFishes.Update(mCurrentSimulationTime, mOceanSurface, mOceanFloor, gameParameters, visibleWorld, mAllAABBs);
 
         perfStats.TotalFishUpdateDuration.Update(std::chrono::steady_clock::now() - startTime);
@@ -1134,6 +1142,8 @@ void World::RenderUpload(
 
         renderContext.UploadShipsEnd();
     }
+
+    mNpcs.Upload(renderContext);
 
     // AABBs
     if (renderContext.GetShowAABBs())

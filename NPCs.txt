@@ -152,18 +152,9 @@ Arch:
 	X Though we could have a NpcRenderContext which passes ship's Z in vertex buffers, but then there's the order/alpha problem; best if rendered by each ship individually
 
 - TODOHERE:
-	= Tooling:
-		+ Nuke all "human_npc_cursor" cursors
-		= Decide on cursor(s) for Place, Move, & Remove
-			+ Cleanup Resources folders
-			+ Move NPC icon: same as Place but with arrows
-			= Cursors for Place and Move: picking fingers, up and down
-			= Cursor for Remove
-		- Finish plumbing of ToolController/Tool for Place, Move, & Remove
-			= Incl. MainFrame menu for the three of them
-		- Add AbortNpcPlacement
-			- Invoked by tool at Deinitialize()
-
+	- Reset: why break? Debug path from Abort()
+	- Do Rendering
+	- Rethink double structure of Npcs: just one vector, with vector & metadata inside?
 	- New spring getter: IsNpcSurface
 		- ShipFactory: populate with IsHull for the time being (w/comment)
 

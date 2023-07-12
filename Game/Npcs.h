@@ -52,13 +52,10 @@ private:
         struct HumanState
         {
             HumanNpcRoleType Role;
-            ElementIndex FeetParticleIndex;
 
             HumanState(
-                HumanNpcRoleType role,
-                ElementIndex feetParticleIndex)
+                HumanNpcRoleType role)
                 : Role(role)
-                , FeetParticleIndex(feetParticleIndex)
             {}
         };
 
@@ -79,6 +76,9 @@ private:
         // Current regime
         RegimeType Regime;
 
+        // (Primary) particle for this NPC
+        ElementIndex PrimaryParticleIndex;
+
         // Current hightlight
         NpcHighlightType Highlight;
 
@@ -88,32 +88,24 @@ private:
         // Randomness specific to this NPC
         float RandomNormalizedUniformSeed;
 
-        // The type-specific state
+        // The type-specific additional state
         TypeSpecificNpcState TypeSpecificState;
 
         NpcState(
             RegimeType regime,
+            ElementIndex primaryParticleIndex,
             NpcHighlightType highlight,
             std::optional<ElementIndex> const & triangleIndex,
             TypeSpecificNpcState::HumanState const & humanState)
             : Type(NpcType::Human)
             , Regime(regime)
+            , PrimaryParticleIndex(primaryParticleIndex)
             , Highlight(highlight)
             , TriangleIndex(triangleIndex)
             , RandomNormalizedUniformSeed(GameRandomEngine::GetInstance().GenerateNormalizedUniformReal())
             , TypeSpecificState(humanState)
 
         {}
-
-        bool IsInFreeRegime() const
-        {
-            return !TriangleIndex.has_value();
-        }
-
-        bool IsInConstrainedRegime() const
-        {
-            return TriangleIndex.has_value();
-        }
     };
 
 public:
@@ -146,6 +138,12 @@ public:
     void OnShipAdded(Ship const & ship);
 
     void OnShipRemoved(ShipId shipId);
+
+    void Update(
+        float currentSimulationTime,
+        GameParameters const & gameParameters);
+
+    void Upload(Render::RenderContext & renderContext) const;
 
     // Interactions
 
@@ -181,15 +179,21 @@ private:
 
     NpcId AddHumanNpc(
         HumanNpcRoleType role,
-        vec2f const & position,
+        vec2f const & initialPosition,
         RegimeType initialRegime,      
         NpcHighlightType initialHighlight,
         ShipId const & shipId,
         std::optional<ElementIndex> triangleIndex);
 
+    void OnNpcDestroyed(NpcState const & state);
+
     inline NpcState & GetNpcState(ShipId const & shipId, LocalNpcId const & localNpcId);
 
     inline std::optional<ElementId> FindContainingTriangle(vec2f const & position) const;
+
+    inline bool IsTriangleSuitableForNpc(
+        NpcType type,
+        std::optional<ElementId> const & triangleId) const;
 
     ShipId GetTopmostShipId() const;
 

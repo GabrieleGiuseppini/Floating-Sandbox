@@ -5,7 +5,10 @@
 ***************************************************************************************/
 #include "Physics.h"
 
+#include <GameCore/GameGeometry.h>
+
 #include <cassert>
+#include <limits>
 
 namespace Physics {
 
@@ -47,35 +50,12 @@ void Npcs::OnShipRemoved(ShipId shipId)
 	assert(oldShipOrdinal != NoneElementIndex);
 
 	//
-	// Update NPCs
+	// Destroy all NPCs of this ship
 	//
 
 	for (auto const & state : mStateByShip[oldShipOrdinal])
 	{
-		--mNpcCount;
-
-		switch (state.Type)
-		{
-			case NpcType::Human:
-			{
-				// Free particle
-				mParticles.Remove(state.TypeSpecificState.Human.FeetParticleIndex);
-
-				// Update stats
-
-				if (state.IsInConstrainedRegime())
-				{
-					--mConstrainedRegimeHumanNpcCount;
-				}
-
-				if (state.IsInFreeRegime())
-				{
-					--mFreeRegimeHumanNpcCount;
-				}
-
-				break;
-			}
-		}
+		OnNpcDestroyed(state);
 	}
 
 	mGameEventHandler->OnNpcCountsUpdated(
@@ -114,6 +94,32 @@ void Npcs::OnShipRemoved(ShipId shipId)
 	mAreStaticRenderAttributesDirty = true;
 }
 
+void Npcs::Update(
+	float currentSimulationTime,
+	GameParameters const & gameParameters)
+{
+	// TODOHERE
+	(void)currentSimulationTime;
+	(void)gameParameters;
+}
+
+void Npcs::Upload(Render::RenderContext & renderContext) const
+{
+	// Upload all ships
+	for (auto const & npcShip : mShipIdToShipIndex)
+	{
+		if (npcShip)
+		{
+			Render::ShipRenderContext & shipRenderContext = renderContext.GetShipRenderContext(npcShip->ShipRef.GetId());
+
+			// TODOHERE
+			(void)shipRenderContext;
+		}
+	}
+}
+
+// Interactions
+
 std::optional<NpcId> Npcs::PickNpc(vec2f const & position) const
 {
 	// TODO
@@ -141,6 +147,8 @@ NpcId Npcs::BeginMoveNewHumanNpc(
 {
 	// Find triangle that this NPC belongs to
 	auto const triangleId = FindContainingTriangle(initialPosition);
+
+	LogMessage("TODOTEST: BeginMove: triangleId=", triangleId ? triangleId->ToString() : "<NONE>");
 
 	// Create NPC in placement regime
 	return AddHumanNpc(
@@ -170,12 +178,23 @@ bool Npcs::MoveNpcBy(
 {
 	// Eventually moves around ships, but no regime change
 
-	// TODO: assert it's in Placement regime
+	auto const shipId = id.GetShipId();
+	auto const localNpcId = id.GetLocalObjectId();
+	auto const & npcState = GetNpcState(shipId, localNpcId);
 
-	// TODO
-	(void)id;
-	(void)offset;
-	return true;
+	assert(npcState.Regime == RegimeType::Placement);
+
+	// Calculate new position
+	vec2f const newPosition = mParticles.GetPosition(npcState.PrimaryParticleIndex) + offset;
+
+	// Calculate new triangle index
+	auto const newTriangleId = FindContainingTriangle(newPosition);
+
+	// Figure out if the NPC needs to move ships
+	// TODOHERE
+
+	// Now tell caller if this is a suitable position
+	return IsTriangleSuitableForNpc(npcState.Type, newTriangleId);
 }
 
 void Npcs::EndMoveNpc(
@@ -221,35 +240,10 @@ void Npcs::RemoveNpc(NpcId const & id)
 	ElementIndex const oldNpcOrdinal = mNpcIdToNpcOrdinalIndex[static_cast<size_t>(shipId)][static_cast<size_t>(localNpcId)];
 
 	//
-	// Update NPC
+	// Destroy NPC
 	//
 
-	--mNpcCount;
-
-	switch (npcState.Type)
-	{
-		case NpcType::Human:
-		{
-			// Free particle
-			mParticles.Remove(npcState.TypeSpecificState.Human.FeetParticleIndex);
-
-			// Update stats
-			if (npcState.Regime != RegimeType::Placement)
-			{
-				if (npcState.IsInConstrainedRegime())
-				{
-					--mConstrainedRegimeHumanNpcCount;
-				}
-
-				if (npcState.IsInFreeRegime())
-				{
-					--mFreeRegimeHumanNpcCount;
-				}
-			}
-
-			break;
-		}
-	}
+	OnNpcDestroyed(npcState);
 
 	mGameEventHandler->OnNpcCountsUpdated(
 		mNpcCount,
@@ -258,14 +252,14 @@ void Npcs::RemoveNpc(NpcId const & id)
 		GameParameters::MaxNpcs - mNpcCount);
 
 	//
-	// State buffers
+	// Remove State buffers
 	//
 
 	// Remove NPC state
 	mStateByShip[shipOrdinal].erase(mStateByShip[shipOrdinal].begin() + oldNpcOrdinal);
 
 	//
-	// Indices
+	// Maintain indices
 	//
 
 	// Forget about this NPC
@@ -289,7 +283,7 @@ void Npcs::RemoveNpc(NpcId const & id)
 
 NpcId Npcs::AddHumanNpc(
 	HumanNpcRoleType role,
-	vec2f const & position,
+	vec2f const & initialPosition,
 	RegimeType initialRegime,
 	NpcHighlightType initialHighlight,
 	ShipId const & shipId,
@@ -336,34 +330,31 @@ NpcId Npcs::AddHumanNpc(
 
 	// Take particle
 	ElementIndex const feetParticleIndex = mParticles.Add(
-		position,
+		initialPosition,
 		mMaterialDatabase.GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType::Human));
 
 	// Add NPC state
 	auto const & state = mStateByShip[shipOrdinal].emplace_back(
 		initialRegime,
+		feetParticleIndex,
 		initialHighlight,
 		triangleIndex,
-		TypeSpecificNpcState::HumanState(role, feetParticleIndex));
+		TypeSpecificNpcState::HumanState(role));
 
 	//
-	// Update state
+	// Update stats
 	//
+
+	if (state.Regime == RegimeType::Constrained)
+	{
+		++mConstrainedRegimeHumanNpcCount;
+	}
+	else if (state.Regime == RegimeType::Free)
+	{
+		++mFreeRegimeHumanNpcCount;
+	}
 
 	++mNpcCount;
-
-	if (initialRegime != RegimeType::Placement)
-	{
-		if (state.IsInConstrainedRegime())
-		{
-			++mConstrainedRegimeHumanNpcCount;
-		}
-
-		if (state.IsInFreeRegime())
-		{
-			++mFreeRegimeHumanNpcCount;
-		}
-	}
 
 	mGameEventHandler->OnNpcCountsUpdated(
 		mNpcCount,
@@ -375,6 +366,26 @@ NpcId Npcs::AddHumanNpc(
 	mAreStaticRenderAttributesDirty = true;
 
 	return NpcId(shipId, newNpcId);
+}
+
+void Npcs::OnNpcDestroyed(NpcState const & state)
+{
+	// Free particle
+
+	mParticles.Remove(state.PrimaryParticleIndex);
+
+	// Update stats
+
+	if (state.Regime == RegimeType::Constrained)
+	{
+		--mConstrainedRegimeHumanNpcCount;
+	}
+	else if (state.Regime == RegimeType::Free)
+	{
+		--mFreeRegimeHumanNpcCount;
+	}
+
+	--mNpcCount;
 }
 
 Npcs::NpcState & Npcs::GetNpcState(ShipId const & shipId, LocalNpcId const & localNpcId)
@@ -396,25 +407,74 @@ Npcs::NpcState & Npcs::GetNpcState(ShipId const & shipId, LocalNpcId const & loc
 
 std::optional<ElementId> Npcs::FindContainingTriangle(vec2f const & position) const
 {
-	// TODO
-	(void)position;
+	// Visit all ships in reverse ship ID order (i.e. from topmost to bottommost)
+	for (auto it = mShipIdToShipIndex.rbegin(); it != mShipIdToShipIndex.rend(); ++it)
+	{		
+		if ((*it).has_value())
+		{
+			// Find the triangle in this ship containing this position and having the highest plane ID
+
+			auto const & shipPoints = (*it)->ShipRef.GetPoints();
+			auto const & shipTriangles = (*it)->ShipRef.GetTriangles();
+
+			std::optional<ElementIndex> bestTriangleIndex;
+			PlaneId bestPlaneId = std::numeric_limits<PlaneId>::lowest();
+			for (auto const triangleIndex : shipTriangles)
+			{
+				vec2f const aPosition = shipPoints.GetPosition(shipTriangles.GetPointAIndex(triangleIndex));
+				vec2f const bPosition = shipPoints.GetPosition(shipTriangles.GetPointBIndex(triangleIndex));
+				vec2f const cPosition = shipPoints.GetPosition(shipTriangles.GetPointCIndex(triangleIndex));
+
+				if (IsPointInTriangle(position, aPosition, bPosition, cPosition)
+					&& (!bestTriangleIndex || shipPoints.GetPlaneId(shipTriangles.GetPointAIndex(triangleIndex)) > bestPlaneId))
+				{
+					bestTriangleIndex = triangleIndex;
+					bestPlaneId = shipPoints.GetPlaneId(shipTriangles.GetPointAIndex(triangleIndex));
+				}
+			}
+
+			if (bestTriangleIndex)
+			{
+				// Found a triangle on this ship
+				return ElementId((*it)->ShipRef.GetId(), *bestTriangleIndex);
+			}
+		}
+	}
+
+	// No triangle found
 	return std::nullopt;
+}
+
+bool Npcs::IsTriangleSuitableForNpc(
+	NpcType type,
+	std::optional<ElementId> const & triangleId) const
+{
+	if (!triangleId || type != NpcType::Human)
+	{
+		// Outside of a shipL always good
+		// Not a human: always good
+		
+		return true;
+	}
+
+	// TODOHERE: check conditions (need new Springs getter: IsNpcSurface)
+	return true;
 }
 
 ShipId Npcs::GetTopmostShipId() const
 {
 	assert(mShipIdToShipIndex.size() >= 1);
 
-	for (ShipId shipId = static_cast<ShipId>(mShipIdToShipIndex.size()) - 1; ; )
+	for (auto it = mShipIdToShipIndex.rbegin(); it != mShipIdToShipIndex.rend(); ++it)
 	{
-		if (mShipIdToShipIndex[shipId].has_value())
+		if ((*it).has_value())
 		{
-			return shipId;
+			return (*it)->ShipRef.GetId();
 		}
-
-		assert(shipId > 0);
-		--shipId;
 	}
+
+	assert(false);
+	return NoneShip;
 }
 
 }
