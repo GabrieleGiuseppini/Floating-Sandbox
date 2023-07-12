@@ -6,795 +6,7 @@
 
 - Roadmap:
 
-	+ Show build date @ Credits
-
-	+ New OceanSurface interaction experiment:
-		+ 1. Tool: only interacts with OceanSurface at Update(), using last known button state & mouse position
-		+ 2. OceanSurface:
-			+ a. New "InteractiveWaves" buffer with:
-				+ CurrentHeight
-				+ TargetHeight
-				+ CurrentVelocity
-			+ b. @ Update():				
-				+ b1. Remove SWE interactive state machine update
-				+ b2. Add new InteractiveWaves update
-					+ Magick goes here
-					+ State machine should take into account current SWE height field to avoid adding delta's over delta's:
-						+ Interactive state machine:
-							X Opt 1: TargetHeight is absolute, so might also be reached naturally by SWE
-								X Then force exherted must depend on delta behind current SWE height and target 
-								X TODO: but then we have a problem with zero-ing - if we zero target to current SWE height, perturbations never disappear
-							X Opt 2: TargetHeight is relative (to 0.0), but we need some kung-fu when we incorporate into SWE height field in order to prevent adding delta's over delta's
-								- TODO: but then we compound delta's: we add a delta to SWE height field, then we add it again at the next iteration
-							+ Opt 3:
-								+ Target height is absolute
-								+ Target height reset to SWE height field at end of Update
-								+ At beginning of update: interactive state machine updated, and _now_ its output set into SWE height, _before_ SWE height update
-								+ Try coefficient approach
-									+ Do anti-cuspid and see if it fixes a) cuspid and b) not reaching target height
-										+ Wider?
-											+ If no works: use non-linear ratio, more radius at low values
-									+ Cleanup									
-									X Try without height growth coefficient growth
-									+ Try larger cuspid
-									+ Add comment on fall rate
-									+ See rates for fall vs raise, and fine-tune
-										+ Ask Mattia
-									+ See if we want waves to rise faster at small H
-										+ GrowthCoeffGrowtRate should be higher at small height
-											+ 1.0f at 0.0, InteractiveRaiseHeightGrowthCoefficientGrowthRate at ~1.0
-									+ Cleanup 2
-										+ Incl. vectorization
-						+ Take pointer size
-					+ Fix cuspid
-						+ Analysis:
-							+ The cuspid we see is the result of setting H and running two field cycles;
-								+ First, the H we set at x=X becomes Dt / Dx * (velocityField[i] - velocityField[i + 1]) smaller
-								+ Then, for any target H, there are two "regime" H's:
-									+ The one at x=X - lower than H - and the one in the neighborhood, extending to infinite
-									+ The cuspid itself is our interpolation! It's just that the regime H at x=X is way higher than the regime H at its neighboring cells
-										+ Add all of this as comment to code, top of OceanSurface
-				+ b3. @ calculate samples: add CurrentHeight from this new buffer
-					+ OR: copy (add) CurrentHeight to DeltaHeightBuffer at previous step
-				+ b4. Zero out TargetHeight
-			+ c. Misc other improvements to OceanSurface:
-				+ Try with swapping coeff growth and height growth
-				+ Try texture anchor change
-					= Nice when we anchor at bottom (e.g. 0.0f) and leave top "almost static" (static would be yTop - yVisibleWorldBottom, almost is yTop * 0.75f - yVisibleWorldBottom),
-					  but ugly when one zooms out					 
-				+ Mid ocean border line more transparent
-				X Try adding back field advection
-					+ Add an interactive way to turn on and off to appreciate difference
-				X Try changing speed of waves
-				X Try incorporating wind speed in SWE velocity field
-				+ Try moving Tsunami & RogueWave to new Interactive system
-					+ Still need state machines for these, which will invoke AdjustTo
-					+ Tsunami will want a slow growth, while RogueWave would be fine with current interactive speed
-						+ Pass AymptoticRate as param
-							+ Requires our curve to work better: serious 1.0 at low height, real AymptoticRate at 6.0				
-			+ d. Cleanup:
-				+ Tool: no need to invoke when turning off; just invoke simply each time mouse button is pressed
-					+ Also cleanup OceanSurface::AdjustToHeight() then
-						+ And remove current simulation time arg altogether
-				+ Nuke old SWE interactive state machine
-					+ After replacing Tsunami & RogueWave with it
-		+ 3. Try with from-to
-			+ If doesn't work: Tool: reset mIsEngaged
-			+ Test sound
-		+ 4. Port to Android
-
-	+ New ambient light control: Full day/night
-		+ @ GameController:
-			! Toggles based on current time-of-day value
-			! Old controls are really about time-of-day
-			+ GameController:Set/GetAmbientLightIntensity replaced by TimeOfDay
-				+ Own parameter
-				+ Method renames up to MainFrame
-				+ Initial ToD
-			+ GameController::SetTimeOfDay maps tod to ambient light intensity (->RenderContext), sun rays inclination (->RenderContext)
-			+ GameController::DaylightCycle state machine's Update() calls IGameControllerSettings::SetTimeOfDay()
-				+ SM doesn't need RenderContext anymore
-			+ GameController::ToggleFullDayOrNight()
-		+ MainFrame: menu item: "Full day/night"
-			+ GameController::ToggleFullDayOrNight()
-			+ => Localization task
-
-	+ Enhanced sea rendering: rays of light
-		+ Fuzzier borders
-		+ Inclination
-			+ Base:
-				+ Param: sunRaysInclination: 0.0==vertical, 1.0/-1.0==45/-45 degrees
-					+ Shader
-					+ Params enum
-					+ Set to 1.0
-				+ Use of param
-			+ Depending on time-of-day
-				+ Map time of day so that:
-					- amb=1.0 => ri=1.0 (so that default is +45 degrees)
-					- amb=0.0 => ri=-1.0 (so that at night we've flipped to -45 degrees)
-			+ Should we map instead the _whole_ NDC space into the buffer (thus making the buffer 3x as large to maintain resolution), so to fix inclination?
-		+ "Too many clouds => all black" problem:
-			+ Option 1: add (1-mean) to all values, so that mean becomes 1.0
-				! Will have darks and lights
-				+ Adjust so that we do not reduce darkness (0.0) when it's dark - YES, we keep it dark
-					+ Think of new strategy: keep shadowSample's range, but cap its highest point
-						X 0.0->1.5: 0.0009090909 + 1.239091 * shadowSample - 0.2454545 * shadowSample * shadowSample;
-						+ 0.0->1.4: [0.001818182 +] 1.278182*x - 0.2909091*x^2
-					+ s = 1.0 + (s-1)*(exp ... * step(1.0, b))
-			X Option 2: shift values up so that min of current values becomes 1.0
-				! Will have normal and lights, never darker				
-			+ Constrain mean/min to visible only? Should have less jumpy behavior
-			+ Need to constrain range, goes too high (white)
-		+ Double-check order of things in shader
-			+ Shadows -> Darkening -> Border
-		+ Too discrete borders (stepping problem), need interpolation
-			+ 2-way
-			+ 3-way
-		+ Depth-darkening of brightness enhancement
-			+ Lighter should darken less
-		+ Lower speed of clouds
-		+ Test storm
-		+ Lower # of clouds: 32
-		+ Test flat & depth ocean render mode
-		+ Cleanup clouds code
-		+ Test on Dell, and check perf before & after
-			+ See if Dell slowdown is due to R instead of RGBA
-			+ Do texture upload conditionally on ocean surface being hi-quality
-		+ Merge back into master
-
-	+ Lamps flashing when exploding		
-		+ At depth
-		+ Via sparkle tool
-
-	+ Change ocean defaults, see color decision on Discord
-		+ Changelist
-	+ Cloud shadows:
-		+ Try with more pronounced depth-darkening delta
-			+ Should also darken "lighter" areas which are still < 1.0 but lighter than surroundings
-			+ Note that using e.g. 0.5 in lieu of 1.0 as the "threshold" in the shader for lighter vs. darker helps, but then the sea gets too dark
-			  as we're darkening also the base color
-			+ Should we try again with normalizing to 1.0 rather than to mean?
-			+ Test injecting noise for darkening, so we can have flanges
-			+ Try as it looks good:
-			+ Have a last look
-		+ Fix darkening bands issue
-			+ See if it repro's with "depth gradient" and using deep black as second color - IT DOES
-			+ Search:
-				+ https://www.shadertoy.com/view/MlV3R1
-			+ Make sure darkening (w/trick) is at:
-				+ Flat detailed
-				+ All depth's
-			+ See if can get rid of noise 0 (Ship Flames, Ship Jet Engine)
-			+ Test all shaders:
-				+ Lighting: 2
-				+ Ocean: 3
-
-				+ Physics probe: 2
-				+ HeatBlaster: 2
-				+ Fire Extinguisher: 2
-				+ Blast tool: 2
-				+ Wind sphere: 2
-				+ Laser ray: 2
-
-				+ Ship Flames: 1
-				+ Ship Engine Flames: 1			
-			+ Cleanup GlobalRenderContext.cpp
-		+ Try it on fish
-			+ Do detailed/basic:
-				+ Split shader: basic and detailed, via include-and-#define trick
-				+ Choose one shader or the other based on oceanRenderDetailMode
-		+ Dark stripe issue
-			! Does not repro when clamping sampled shadow between 0 and 2
-			+ Double-check source values: FOUND - 2.02!!!
-				+ FastTruncateToArchInt(-0.0578765869) = 0 = > sampleIndexDX = -0.0578765869
-			+ Fix
-		+ Test all 6 shaders
-		+ Test on Dell
-			= Computation is expensive; to try:
-				+ Optimize computation
-					+ Benchmark with a ton of clouds:
-						+ Clouds::Update: 0.60%, UpdateShadows: 0.43%
-					+ Now: 0.54%, 0.45%
-					+ Last: ~0.30%, ~0.20%
-				+ Simplify clamp's and add assert's
-				+ Simplified (faster) loop for main cloud
-					+ Calc first what we multiply full cloud with
-				+ Make computation conditional on cloud shadows really being used (i.e. detailed ocean render mode)
-					+ Clouds has new bool setter (and no getter, uses internally for Upload(), and cctor arg) - AreShadowsEnabled
-						+ Evaluation of its value, which is based on render detail mode, comes from outside: from GameController::SetOceanRenderDetail(), who then gives it to World->Clouds
-							+ Calc'd by GameController::<static method>
-					+ Then verify sequence of events: changing detail mode => update => render u+d, and not e.g. update => change => render u+d
-		+ Merge
-		+ changelist
-			+ Credit guy (asked name)
-	+ Night light
-		! Blue-ish, just like sun, but dimmer and blue
-		+ Spec:
-			+ Sky rendering step @ World
-				+ First in Draw, takes place of cleaning
-				+ Uses shader if doCrepuscolarGradient (incl. z), and glClear otherwise
-					+ init, also load NDC coords
-					+ Verify clears depth buffer
-				+ Move RenderContext::ApplyClearColorChanges to WorldRenderContext, and refactor as:
-					+ ApplyEffectiveAmbientLightIntensityChanges():
-						+ RecalculateClearCanvasColor()
-						+ Set ambient light intensity in sky shader
-						+ ...anything else as now
-					+ ApplySkyChanges():
-						+ RecalculateClearCanvasColor()
-						+ Set moonlight_color shader param value (black vs. moonlight_color) and crepuscolar color in sky shader
-						+ Set moonlight_color shader param value (black vs. moonlight_color) in all other shaders
-		+ bool "DoMoonlight", MoonlightColor
-			! For all shaders except sky
-			+ Dirty sky render parameters
-			+ Do like EffectiveAmbientLightIntensity: calculate EffectiveMoonlightColor @ RenderContext, and _that_ is what's in RenderParameters and seen by all other contexts
-			+ Used by:
-				+ World:
-					+ Sky
-					+ Clouds
-					+ Ocean
-						+ flat basic
-						+ flat detailed
-						+ depth basic
-						+ depth detailed
-						+ texture basic
-						+ texture detailed
-					+ Land
-					+ Rain
-					X Fish: might want to keep it as-is (no moonlight) as pitch-black fish in the night are cool
-				+ Ship:
-					+ ShipPointsColorIncandescence
-					+ ShipRopesIncandescence
-					+ ShipSpringsTextureIncandescence
-					+ ShipTrianglesTextureIncandescence
-
-					+ ShipPointsColorIncandescence + Stress
-					+ ShipRopesIncandescence + Stress
-					+ ShipSpringsTextureIncandescence + Stress
-					+ ShipTrianglesTextureIncandescence + Stress
-
-					+ ShipPointsColor
-					+ ShipRopes
-					+ ShipSpringsTexture
-					+ ShipTrianglesTexture
-
-					+ ShipPointsColor + Stress
-					+ ShipRopes + Stress
-					+ ShipSpringsTexture + Stress
-					+ ShipTrianglesTexture + Stress
-
-					! Technically, these ones are sensitive to ambient light, but it doesn't make much sense to have moonlight for them:
-						X ShipSpringsDecay
-						X ShipSpringsInternalPressure
-						X ShipSpringsStrength
-						X ShipTrianglesDecay
-						X ShipTrianglesInternalPressure
-						X ShipTrianglesStrength
-						X All HeatOverlay variants
-
-					+ GenericMipMapTextures
-					+ GenericMipMapTexturesNdc (laser)
-					
-		+ bool "doCrepuscolarGradient"
-			+ Just for sky shader - either shader or glClear
-		+ rgbColor "CrepuscolarColor"
-			+ Just for sky shader
-		+ ocean shader might need to swap depth darkening and ambient darkening, so that depth darkening takes place on moonlight
-		+ Move moonlight multipliers into shaders
-			+ Ocean: helper in ocean.glslinc					
-			+ Sky
-				+ Double-check current multiplier used (0.5)
-		+ Need dithering for sky's crepuscolar gradient?
-			+ Cur RND=3.50
-		+ Test on Dell
-			+ Rendering is expensive; to try:
-				+ Turn off crepuscolar depending on gfx card (like we do for ocean detail render mode)
-		+ Changelist
-		+ Merge to master
-
-	+ Black glass
-
-	+ Optimizations integration:
-		+ ThreadManager and ThreadPool - in SpringLab
-			! Vision:
-				! ThreadManager is passed to (OnStateChange() and) Update()
-					! We do this to stress the fact that parallelism is a mutable parameter
-					+ So not singleton
-				- Init args:
-					- render thread
-					- max max simu threads
-						+ SpringLab: 1
-						- FS: 8
-				+ Springlab: goes for all available threads and partitions
-				- FS: ship calculates own partitions
-			+ 1. ThreadManager:
-				+ cctor decides whether to do render thread (based on BootSettings) and creates ThreadPool with max possible (doing main thread math)
-				+ ThreadPool accessed as member &, "SimulationThreadPool"				
-			+ 2. ParallelThreadPool -> ThreadPool
-				+ Make it that the main thread does first task and all leftover tasks
-				+ Decide with of the two pools to keep
-					+ See perf:
-						+ With (old) TaskThreadPool: 15, 11.5, 8.7, 8.8
-						+ With (new) ThreadPool: 15, 12.8, 9.3, 9.1
-					+ Keep old (which has Task *)
-						+ Nuke ThreadPool
-						+ Rename TaskThreadPool as ThreadPool
-						+ Fixup TaskManager
-				+ Initialize threads via ThreadManager
-			+ 3. Whole fixup, and changing Settings' slider for "max simulation threads" (SpringLab: existing slider, FS: new slider - both maxed out by TM::GetMaxSimulationParallelism()) dooes:
-				+ SpringLab: Controller owns ThreadManager
-				+ Set ThreadManager::SimulationParallelism (storage), who tells ThreadPool
-					+ Just re-creates ThreadPool from scratch
-				+ SpringLab: then, call into Simulator::StateChanged(ThreadManager &)/Update(ThreadManager &)
-			+ 4. Fix affinitization: must be thread-safe
-				X Removed affinitization altogether as it does not help
-		+ SpringLab: non-intrinsics implementation (for benchmarking and experimenting)
-			+ Integration: single templated func
-			+ Record benchmark
-		+ Benchmarks:
-			+ Default ship (19932 spr):
-				  UPD: (0.0 + 4.97 (75.5%)) UPL:(0.0 + 0.06)
-				  RND: (3.40) (UPL=0.18 MT=0.0)
-			+ Default ship DELL: 32.5 FPS
-				  UPD: (0.0 + 19.52 (77.1%)) UPL:(0.0 + 0.16)
-				  RND: (10.49) (UPL=0.32 MT=10.61)
-			+ Default Titanic (27424 spr): 64 FPS 
-				  UPD: (0.0 + 6.91 (74.2%)) UPL:(0.0+0.07)
-				  RND: (3.30) (UPL=0.20 MT=0.0)
-			+ Hesleden (150407 spr): 
-				+ Without lights: 25.64-26.85 FPS
-					UPD: (0.0 + 38.25-39.07 (73.5%)) UPL:(0.0 + 0.17)
-					RND: (3.65-3.85) (UPL:0.31 MT=0.0)
-				+ With lights: 14.23-14.49 FPS
-					UPD: (0.0 + 67.80-68.25 (41.65%))
-		+ Layout optimization at ShipFactory - up to passing to Ship
-			+ Port IndexRemap
-			+ Nuke all current optimizations - keep only cache
-			+ Port layout optimization
-				+ Up to passing # of perfect squares to Ship, which for the moment just stores it
-		+ Port ThreadManager & ThreadPool from SpringLab
-			+ Note: port ThreadPool because of pointers to tasks (and ThreadManager &)
-			+ Controller owns ThreadManager
-			+ Ship::Update takes ThreadManager&
-				! We do this to stress the fact that parallelism is a mutable parameter
-			+ RenderContext gets whether or not to do render thread from ThreadManager
-			+ Unit tests
-		+ Test boot settings
-		+ Check Dell
-		+ Ship parallelism:
-			! All code - intrinsics/non-intrinsics - goes in new Ship_SpringRelaxation.cpp
-			+ Encapsulate whole spring relaxation in new RunSpringRelaxationAndDynamicForcesIntegration()
-			+ Dynamic forces
-				! Today we have: static forces, dynamic forces == spring + pressure
-					! Because pressure forces are to be applied only once with first integration at beginning of next Update() cycle
-				+ Points::DynamicForces has them as an "array" (vector), size >= 1
-					+ Initial size is 1
-					+ Points::Set/Foo/DynamicForces(...) all deal transparently with first element of array of buffers
-						+ Assert there is at least one element in array
-					+ Array size changed via Points::SetDynamicForceParallelism(size_t parallelism)
-						+ Maintains current buffers' contents (so operates via resize/emplace_back), so to save buf[0] dynamic forces
-						+ Also maintains convenience vector of ptrs
-			+ Test
-			+ Ship::Update(ThreadManager &) checks SimulationParallelism against own remembered value, and reacts on change by recalculating partitioning
-				+ This also used for initial
-				+ Ship decides # of parallelism for herself, < ThreadManager::SimulationParallelism
-					+ Calculate table with SpringLab of # springs vs threads (StructuralIntrinsicsMTVectorized)
-						+ SpringLab::MakeSyntheticObject
-							+ MainFrame menu item
-							+ ObjectBuilder
-						+     1,000: 1t=113  2t=124  3t=140  4t=  5t=  6t=  8t=
-						+   100,000: 1t=10600  2t=8100  3t=6800  4t=6100  5t=6300  6t=  8t=
-						+   500,000: 1t=57000  2t=38000  3t=31000  4t=28000  5t=31000  6t=29000  8t=
-						REDONE below here
-						+    10,000: 1t=800  2t=970  3t=1000  4t=  5t=  6t=  8t=
-						+    50,000: 1t=4000  2t=3600  3t=2900  4t=2900  5t=3500  6t=  8t=
-						+ 1,000,000: 1t=103000  2t=66000  3t=48000  4t=56000  5t=64000  6t= 7t=  8t=122000
-					+ Do
-				+ Log avail & decided
-					+ If we end up maxing out at 4, reduce max parallelism @ ThreadManager cctor
-			+ RunSpringRelaxationAndDynamicForcesIntegration:
-				+ Invoke spring relaxation tasks on thread pool
-					+ Spring relaxation function differentiated based on arch (instrinsics+arch vs. c++)
-						! Impl's are in same Ship_SpringRelaxation.cpp
-						+ SSE
-							+ Test
-						+ C++ (take from SpringLab's PseudoIntrinsics simulator)
-							+ Test
-				+ Invoke integration
-					+ Integration function differentiated based on arch (instrinsics+arch vs. c++)
-						! Impl's are in same Ship_SpringRelaxation.cpp
-						+ Implementation for SSE (i): SpringLab's Vectorized i
-						+ Implementation for SSE (n): from SpringLab's Vectorized n (with explicit intrinsics)
-						+ Implementation for C++ (i): same as above, if verification succeeds
-						+ Implementation for C++ (n): from SpringLab::PseudoVectorized n - the simple one
-						+ Test SSE (and verify vectorized where needed)
-							+ 1
-							+ 2
-							+ 3
-							+ 4
-							+ N
-						+ Test C++ 1 & n
-			+ Test repair (possibly impacted by layout optimization)
-		+ Parallelism setting/slider
-			+ SettingsDialog: "Max Simulation Threads"
-				+ Maxed by TM::GetMaxSimulationParallelism() & by 4
-		+ Redo benchmark, and put it up
-			
-	+ More parallelism during Update()
-		+ First, get breakdown, including World::Update
-			! Hesleden, 4 threads:
-				- Physics::Ship::RunSpringRelaxationAndDynamicForcesIntegration	8346 (23.10%)
-					- Physics::Ship::ApplySpringsForces	2933 (10.11%)
-					- Physics::Ship::IntegrateAndResetDynamicForces_4	2443 (8.42%)
-					- Physics::Ship::HandleCollisionsWithSeaFloor	1063 (3.67%)
-				- Physics::Ship::UpdateWaterVelocities	4343 (12.02%)
-				- Physics::Ship::ApplyStaticPressureForces	2808 (7.77%)
-				- Physics::Ship::PropagateHeat	1194 (3.30%)
-				- Physics::Ship::EqualizeInternalPressure	850 (2.35%)
-				- Physics::Springs::InternalUpdateForStrains<0>	631 (1.75%)
-				- ...
-				- Physics::OceanSurface::Update	294 (0.81%)
-			! Hesleden, 1 thread:
-				- Physics::World::Update	24325 (92.65%)
-					- Physics::Ship::Update	24089 (91.75%)
-						- Physics::Ship::RunSpringRelaxationAndDynamicForcesIntegration	14781 (56.30%)
-							- Physics::Ship::ApplySpringsForces	12287 (46.80%)
-							- Physics::Ship::IntegrateAndResetDynamicForces_1	1279 (4.87%)
-							- Physics::Ship::HandleCollisionsWithSeaFloor	1209 (4.60%)
-						- Physics::Ship::UpdateWaterVelocities	3736 (14.23%)	3567 (13.59%)
-						- Physics::Ship::ApplyStaticPressureForces	2540 (9.67%)
-						- Physics::Ship::PropagateHeat			998 (3.80%)
-						- Physics::Ship::EqualizeInternalPressure	703 (2.68%)
-						- Physics::Springs::InternalUpdateForStrains<0>	524 (2.00%)
-		+ At Ship::Update (was: Multi-threading, phase II):
-			! Now that we have MaxSimulationParallelism, we can easily see which steps take the longest
-			+ Ideal Parallelization 1:
-				- UpdateWaterVelocities     14.23	T1
-				- ApplyStaticPressureForces  9.67	T2
-				- PropagateHeat              3.80	T2
-			+ Ideal Parallelization 2:
-				- EqualizeInternalPressure   2.68       T1
-				- InternalUpdateForStrains   2.00	T1
-				- ...					T1
-				- Light					T2
-			! Breakdown now:
-				- Main thread:
-					- Physics::World::Update	18827 (44.06%)
-						- Physics::Ship::Update	18422 (43.11%)
-							- Physics::Ship::RunSpringRelaxationAndDynamicForcesIntegration	10098 (23.63%)
-							- Physics::Ship::UpdateWaterVelocities	5485 (12.84%)
-							- Physics::Ship::EqualizeInternalPressure	1007 (2.36%)
-							- Physics::Springs::InternalUpdateForStrains<0>	692 (1.62%)
-							- Physics::Ship::ApplyWorldForces	564 (1.32%)
-							- Physics::Points::UpdateMasses	204 (0.48%)
-				- Pool thread:
-					- ThreadPool::RunTask	19678 (46.05%)
-						- Physics::Ship::ApplySpringsForces	14858 (34.77%) (because it's *3)
-						- Physics::Ship::ApplyStaticPressureForces	3265 (7.64%)
-						- Physics::Ship::PropagateHeat	1541 (3.61%)
-		+ Parallel lights
-			+ Hesleden before: 21FPS (UPD 46-48ms)
-			+ Create tasks at UpdateForSimulationParallelism->RecalculateLightDiffusionParallelism
-			+ Hesleden after: 39FPS (UPD 23.9ms)
-			+ Fix benchmarks, unit tests
-		+ Parallel integrate & collisions with ocean floor:
-			+ Two sets of tasks, with and without collisions
-				+ Calculated at RecalculateParallelismForSpringRelaxation
-				+ Find sweet spot, based on # of points
-					- Default ship (9328 pts):
-						- 1 thread: 3.33ms
-						- 4 threads: 3.26ms
-					- Titanic (11752 pts):
-						- 1 thread: 5.74ms - 4.40ms
-						- 4 threads: 5.57ms - 4.29ms
-					- Hesleden (w/out lights) (42708 pts):
-						- 1 thread: 14.9 ms (60.88%)
-						- 4 threads: 12.98ms
-			+ Re-verify assembly of all SSE integrations where we expect compiler to vectorize
-				+ 1
-				+ 2
-				+ 3
-				+ 4
-		+ Check sweet spot of lighting
-			! Default ship:
-				- 1 thread: 3.27ms/3.28ms
-				- 4 threads: 3.25ms/3.26ms
-		+ Max parallelism re-thinking:
-			+ Verify 8 better than 4 for lights: YES
-				- Hesleden 4: 19.9
-				- Hesleden 8: 18.8
-			+ Verify 8 better than 4 for integration & collisions: YES
-				- Hesleden (no lights) 4: 12.5
-				- Hesleden (no lights) 8: 12.4
-			+ Plan:
-				+ ThreadManager cap goes
-					+ Initialize with max initial = 8 though
-					- Verify SettingsDialog
-				+ Each RecalculateParallelism has own cap
-					+ In reality, only spring forces has cap
-					+ Other calc based on points
-						+ Verify lights
-							- Default ship:
-								- Before: 4 threads: 3.25ms/3.26ms
-								- Now: 2 threads: 3.35ms
-						+ Verify integration
-							- Default ship:
-								- Before: 4 threads: 3.25ms/3.26ms
-								- Now (w/ 2 lighting threads): 4 threads: 3.35ms
-							- Hesleden:
-								- Now (8, 8):18.07
-
-	+ Decide rigidity vs. speedup
-		! Prior benchmarks:
-			+ @ 30:
-				+ Default ship (19932 spr, 9328 pts): 64FPS
-					  UPD: (0.0 + 3.40 (64.3%)) UPL:(0.0 + 0.06)
-					  RND: (3.40) (UPL=0.18 MT=0.0)
-				+ Default ship DELL: TODO
-					  UPD: 
-					  RND: 
-				+ Default Titanic (27424 spr, 11752 pts): 64 FPS 
-					  UPD: (0.0 + 4.58 (63.6%)) UPL:(0.0+0.06)
-					  RND: (3.24) (UPL=0.18 MT=0.0)
-				+ Hesleden (150407 spr, 42708 pts):
-					+ Without lights: 63 FPS
-						UPD: (0.0 + 14.5 (62%)) UPL:(0.0 + 0.14)
-						RND: (3.77-3.84) (UPL:0.28 MT=0.0)
-					+ With lights: 42.0 FPS
-						UPD: (0.0 + 23.40 (38%%))
-			+ Prior version::
-				+ Default ship old Dell:
-					- FPS:31.95 UPD:19.58ms UPL:0.16ms RND:11.42ms (UPL:0.3xms MT=11.6xms)
-				+ Default Titanic: 64 FPS 
-					  UPD: (0.0 + 7.80 (63.2%)) UPL:(0.0+0.07)
-					  RND: (3.20) (UPL=0.16 MT=0.0)
-				+ Hesleden:
-					+ Without lights: 26.6 FPS (UPD: 36.6ms (72.5%))
-					+ With lights: 14.6 FPS (UPD: 66.6ms (39.3%))
-		+ New benchmarks w/40:
-			+ Titanic (w/lights): 5.80ms (65%)
-			+ Hesleden (wout/lights): 14.04ms (57%)
-			+ Hesleden (w/lights): 20.2ms (39%)
-		+ Fixup strength
-		+ Fixup explosions
-			+ Change blast radius dependency first
-			+ 3 bombs
-			+ Sodium
-			+ Explosive combustion
-			+ Blimps
-
-	+ Improve AM Bomb
-	+ Improve blast tool
-	+ Improve Thanos:
-		+ Lamp sounds
-		+ Velocities
-		+ Phasing: each particle randomly pulverizes, but towards band end prob is 100%
-			+ Fix formula for prob
-		+ Greyscaling (of texture and particles) before Thanos snap, and mass changes (lighter), and different phasing of ashing in band			
-			+ Try with decay - WAS ALREADY DONE
-				+ Make sure we only upload decay when we mark a dirty flag
-		+ Ocean Surface
-			+ Test in debug around borders
-	+ Send for testing
-	+ Fix day/night rate
-	+ Fix wireframe mode
-	+ Thanos SHIFT icon
-	X ThreadPool optimization
-		! Before: default ship: 4.05
-		! After:  default ship: 4.07
-	+ Redo all benchmarks, including Dell
-	X Try with LargeThreadPool and SmallThreadPool
-		X Small pool always parallelism=2, unless not enough threads
-			X May overlap threads with other pool, as threads run at different times
-	X Lazy condition variable: verify if perf gain with cold laptop
-	X Try atomic decrement in thread pool w/out lock
-	+ Threadpool path for poor Dell - lockless and cond varless
-		+ And for single-tasks
-			! So can test default ship on multi-core with just one integration and/or just one light
-				! Original was 1-4/5/8-2
-					+ Default ship: 4.03
-					+ Default Titanic (wout/power): 5.20
-					+ Default Titanic (w/power): 5.76
-					+ Hesleden (wout/lights): 13.5/14.0
-					+ Hesleden (w/lights): 19.5
-				- 1 integration:	
-					- Default ship: 3.78, it's a take
-					- Titanic (wout/power): 5.02
-					- Titanic (w/power): 5.66
-				- 1 light:
-					- Default ship: 4.01
-					- Titanic (wout/power): 5.18 - NO
-					- Titanic (w/power): 6.62 - NO
-				- 1 light + 1 integration:
-					- Default ship: 3.73, it's a take
-					- Titanic (wout/power): 4.96
-					- Titanic (w/power): 6.40
-			+ New algo:
-				X Integration: Titanic (11752) and default ship (9328) (cap: 15000) should use 1 integration thread
-				+ No, bad Hesleden; different algo:
-					- Below 12,000: 1
-					- 42708: 8 => 30000 = 7
-				+ Lights: leave alone					
-			+ Re-check, including Hesleden
-				! was:
-					+ Hesleden (wout/lights): 13.5/14.0 (8 threads)
-					+ Hesleden (w/lights): 19.5
-				! / 15000:
-					+ Hesleden (wout/lights): 15.6
-					+ Hesleden (w/lights): 20.02
-				! new algo:
-					+ Hesleden (wout/lights): 13.5 (8 threads)
-					+ Hesleden (w/lights):
-		+ Old Dell:
-			+ 33.9 FPS (15.67)
-		X If ok, update changes.txt w/single-core fps
-	X See if now that we've fixed ocean floor collisions, can have a larger period
-		X Bad bouncing, and not that much gain
-	+ Equalize internal pressure on thread
-		+ Redo benchmarks
-	+ Loading flipped ship flips the engines (Air Boat)
-	+ Impart inertia also to water
-	+ Inner water sound:
-		+ Swap Wave and WaveDisplacement sounds
-	+ Fix famous probe panel bug
-		+ UploadPanel:
-			+ Store panel or reset it
-			+ mIsPhysicsProbePanelDirty = true
-		+ CanvasSizeChanged:
-			+ mIsPhysicsProbePanelDirty = true
-		+ RenderPrepare: generate vertices and upload
-			+ No vertices anymore, just constant
-	+ Test sim quality
-		+ Fix strength adjustment
-			+ See if can move constants into function
-			! We accept the loss of breakability
-			+ We make a new curve that sets Titanic just above auto-stress
-				- Strength adjust for 0.5x over fixed 0.377548f: 3.234 = 1.220990232
-				- Strength adjust for 1.0x over fixed 0.377548f: 1.0 = 0.377548
-				- Strength adjust for 1.5x over fixed 0.377548f: 0.788 = 0.297507824
-				- Strength adjust for 2x over fixed 0.377548f: 0.771-0.788 = 0.291089508
-				- Strength adjust for 3x over fixed 0.377548f: 0.753-0.771 = 0.284293644
-				- Strength adjust for 4x over fixed 0.377548f: 0.735 = 0.27749778
-				- Strength adjust for 5x over fixed 0.377548f: 0.735 = 0.27749778
-					20	1.220990232
-					40	0.377548
-					60	0.297507824
-					80	0.291089508
-					120	0.284293644
-					160	0.27749778
-					200	0.27749778
-					y = 0.2832163 + 9.209594*e^(-0.1142279*x)
-
-			X Get samples of CalculateSpringStrengthIterationsAdjustment:
-				+ 30 iterations: good strength adjust at:
-					- 0.5   == 15 is: 0.973911
-					- 1.0   == 30 is: 0.540126 - GOOD
-					- 1.333 == 40 is: 0.403038
-					- 1.5   == 45 is: 0.355225
-					- 2.0   == 60 is: 0.257605 - ~GOOD
-					- 4.0	== 120 is: ? - stresses out too much, breaks automatically, but not in half
-					- 5.0   == 150 is: 0.0853622 - too little, best if multiplied by 1.41 => 0.120360702
-				+ 40 iterations: good strength adjust at:
-					- 0.5  == 20 is: <experiment>
-					- 0.75 == 30 is: 0.492889
-					- 1.0  == 40 is: 0.377548 - GOOD
-					- 2.0  == 80 is: 0.180066 - too much for Titanic break, better with 0.699 => 0.125866134
-					- 4.0  == 160 is: 0.0787026 - too much, breaks automatically - best if multiplied by 1.87 => 0.147173862
-					- 5.0  == 200 is: <experiment>
-
-					30	0.540126
-					40	0.377548
-					60	0.257605
-					80	0.125866134	y = 40.07601*x^-1.264278
-					150	0.120360702
-					160	0.147173862	y = 0.121192 + (0.763759 - 0.121192)/(1 + (x/36.10479)^3.270411)
-
-										- 80 (2.0) => Titanic break: 0.753 => 0.118480032
-
-					30	0.540126
-					40	0.377548
-					60	0.257605
-					80	0.118480032
-										- 80: auto break, so: 0.112732 * 1.265 = 0.14260598
-
-		+ Function is on #ITERATIONS, not adjustment
-			+ Recalc mCurrentStrengthIterationsAdjustment @ each change (@params check)
-		+ Change the slider to "spring iterations" or "spring algo adjust", on actual iterations adjustment (which stays so that we have good slider)
-		+ See if can reduce frequency of calls, especially at Add()
-			+ Also don't need anymore mCurrentNumIterAdj
-	X Check on Dell if can raise Max burning particles
-		X No, too much rendering overhead
-	+ Ships:
-		+ N.S._Savannah (Pocketwatch)
-		+ SS.Statendam - "P1X"
-			+ Asked name
-			+ Add to credits
-		+ SS Frederik IV - Pocketwatch
-		+ Stardust (train) and R.M.S. Mauretania - UR LOCAL BRAZILIAN (Ur local brazilian#0842, aka Transportation Fan)
-			+ Asked name
-			+ Add to credits
-		+ Friesenland, Galeb, Lamartine, Transilvania - Hellooping
-			+ Asked name
-			+ Add to credits
-		+ Take Dugong - Walter
-			+ Name? (ASKED) - I made "Walter"
-				+ He wants Techo
-				+ Redo credits x 2
-		+ wood ship 2 - Gustav Shedletsky|Local RUS guy#8464
-			+ Asked name and ship year: Gustav Shedletsky, 1821
-			+ Add to credits
-			+ Add year
-		+ Shed x 2 - Higuys153#5865
-			+ Asked name: Higuys153
-			+ Add to credits
-		+ Re-balance credits
-	+ Localization:
-		+ IT
-		+ ES
-		+ RU
-		+ UK
-	+ Send beta
-	+ Make 1.17 settings? (or "pre-1.18")
-		+ And then "1.0" ?
-	+ Launch plan:
-		+ Make video
-			+ Lights
-			+ Crepuscolar gradient
-			+ Soundtrack: https://www.scottbuckley.com.au/library/the-old-ones/
-				+ Add credits to video
-		+ GameJolt: post update, "entered final beta testing phase", link to blog and to video
-			Dear shipmates,
-			We are delighted to announce that Floating Sandbox 1.18.0 has entered the final beta testing phase! 
-			The performance improvements in this release are so profound that we're going to need some time for testing before releasing to the general public, so expect another couple of weeks before this update is made public.
-			In the meantime, you can read more about our adventures with the performance optimizations in the latest installment of our technical blog, [https://gabrielegiuseppini.wordpress.com/2023/07/02/adventures-with-2d-mass-spring-networks-part-iii/],
-			and you can catch a quick preview of the rendering enhancements in our latest video:
-			[https://www.youtube.com/watch?v=0oV8LMHAKVk]	
-	= Release:
-		+ 1.18.0.4
-		+ Windows
-			+ MSI variable
-			+ Commit & push
-			+ 64-bit MSI
-				+ Cleanup Install
-				+ Build Release Install (after clean)
-				+ Make MSI
-				+ Rename MSI
-				+ Test upgrade from previous version
-			+ 32-bit MSI
-				+ Cleanup Install
-				+ Build Release Install (after clean)
-				+ Make MSI
-				+ Rename MSI
-				+ Test clean install
-		+ Ubuntu
-			+ rm -rf ~/floating-sandbox
-			+ pull 
-			+ rm -rf build; mkdir build; cd build
-			+ cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
-			+ make install
-			+ Make tar ("cd ~/floating-sandbox && tar -cvf ../Floating-Sandbox-1.18.0-x64.tar . && cd -")
-			+ Zip tar
-			+ Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
-		+ Get 3 installers tested on dev server
-		+ Wait for test results
-		+ Commit, push, & cut tag on github
-		+ Make screenshots
-			+ GameJolt's cover image
-			+ GameJolt's fire image
-		+ Upload packages to GameJolt
-			+ Remove Vista from requirements
-			+ Update screenshots
-				+ Also replace video w/https://youtu.be/0oV8LMHAKVk
-			+ Post
-		- www.floatingsandbox.com:
-			- Update current version in FAQ
-			- Remove Vista from requirements
-			- Update screenshots
-			- Upload changes2.txt
-				- Test w/old FS
-		- Update screenshots at GitHub
-
-	- Npcs - take 1
+	= Npcs - take 1
 
 	- Fix "2022" copyright notices
 
@@ -15707,4 +14919,791 @@ IF WX:
 				+ Upload changes2.txt
 					+ Test w/old FS
 
-		-----------------
+	+ 1.18.0:
+		+ Show build date @ Credits
+
+		+ New OceanSurface interaction experiment:
+			+ 1. Tool: only interacts with OceanSurface at Update(), using last known button state & mouse position
+			+ 2. OceanSurface:
+				+ a. New "InteractiveWaves" buffer with:
+					+ CurrentHeight
+					+ TargetHeight
+					+ CurrentVelocity
+				+ b. @ Update():				
+					+ b1. Remove SWE interactive state machine update
+					+ b2. Add new InteractiveWaves update
+						+ Magick goes here
+						+ State machine should take into account current SWE height field to avoid adding delta's over delta's:
+							+ Interactive state machine:
+								X Opt 1: TargetHeight is absolute, so might also be reached naturally by SWE
+									X Then force exherted must depend on delta behind current SWE height and target 
+									X TODO: but then we have a problem with zero-ing - if we zero target to current SWE height, perturbations never disappear
+								X Opt 2: TargetHeight is relative (to 0.0), but we need some kung-fu when we incorporate into SWE height field in order to prevent adding delta's over delta's
+									- TODO: but then we compound delta's: we add a delta to SWE height field, then we add it again at the next iteration
+								+ Opt 3:
+									+ Target height is absolute
+									+ Target height reset to SWE height field at end of Update
+									+ At beginning of update: interactive state machine updated, and _now_ its output set into SWE height, _before_ SWE height update
+									+ Try coefficient approach
+										+ Do anti-cuspid and see if it fixes a) cuspid and b) not reaching target height
+											+ Wider?
+												+ If no works: use non-linear ratio, more radius at low values
+										+ Cleanup									
+										X Try without height growth coefficient growth
+										+ Try larger cuspid
+										+ Add comment on fall rate
+										+ See rates for fall vs raise, and fine-tune
+											+ Ask Mattia
+										+ See if we want waves to rise faster at small H
+											+ GrowthCoeffGrowtRate should be higher at small height
+												+ 1.0f at 0.0, InteractiveRaiseHeightGrowthCoefficientGrowthRate at ~1.0
+										+ Cleanup 2
+											+ Incl. vectorization
+							+ Take pointer size
+						+ Fix cuspid
+							+ Analysis:
+								+ The cuspid we see is the result of setting H and running two field cycles;
+									+ First, the H we set at x=X becomes Dt / Dx * (velocityField[i] - velocityField[i + 1]) smaller
+									+ Then, for any target H, there are two "regime" H's:
+										+ The one at x=X - lower than H - and the one in the neighborhood, extending to infinite
+										+ The cuspid itself is our interpolation! It's just that the regime H at x=X is way higher than the regime H at its neighboring cells
+											+ Add all of this as comment to code, top of OceanSurface
+					+ b3. @ calculate samples: add CurrentHeight from this new buffer
+						+ OR: copy (add) CurrentHeight to DeltaHeightBuffer at previous step
+					+ b4. Zero out TargetHeight
+				+ c. Misc other improvements to OceanSurface:
+					+ Try with swapping coeff growth and height growth
+					+ Try texture anchor change
+						= Nice when we anchor at bottom (e.g. 0.0f) and leave top "almost static" (static would be yTop - yVisibleWorldBottom, almost is yTop * 0.75f - yVisibleWorldBottom),
+						  but ugly when one zooms out					 
+					+ Mid ocean border line more transparent
+					X Try adding back field advection
+						+ Add an interactive way to turn on and off to appreciate difference
+					X Try changing speed of waves
+					X Try incorporating wind speed in SWE velocity field
+					+ Try moving Tsunami & RogueWave to new Interactive system
+						+ Still need state machines for these, which will invoke AdjustTo
+						+ Tsunami will want a slow growth, while RogueWave would be fine with current interactive speed
+							+ Pass AymptoticRate as param
+								+ Requires our curve to work better: serious 1.0 at low height, real AymptoticRate at 6.0				
+				+ d. Cleanup:
+					+ Tool: no need to invoke when turning off; just invoke simply each time mouse button is pressed
+						+ Also cleanup OceanSurface::AdjustToHeight() then
+							+ And remove current simulation time arg altogether
+					+ Nuke old SWE interactive state machine
+						+ After replacing Tsunami & RogueWave with it
+			+ 3. Try with from-to
+				+ If doesn't work: Tool: reset mIsEngaged
+				+ Test sound
+			+ 4. Port to Android
+
+		+ New ambient light control: Full day/night
+			+ @ GameController:
+				! Toggles based on current time-of-day value
+				! Old controls are really about time-of-day
+				+ GameController:Set/GetAmbientLightIntensity replaced by TimeOfDay
+					+ Own parameter
+					+ Method renames up to MainFrame
+					+ Initial ToD
+				+ GameController::SetTimeOfDay maps tod to ambient light intensity (->RenderContext), sun rays inclination (->RenderContext)
+				+ GameController::DaylightCycle state machine's Update() calls IGameControllerSettings::SetTimeOfDay()
+					+ SM doesn't need RenderContext anymore
+				+ GameController::ToggleFullDayOrNight()
+			+ MainFrame: menu item: "Full day/night"
+				+ GameController::ToggleFullDayOrNight()
+				+ => Localization task
+
+		+ Enhanced sea rendering: rays of light
+			+ Fuzzier borders
+			+ Inclination
+				+ Base:
+					+ Param: sunRaysInclination: 0.0==vertical, 1.0/-1.0==45/-45 degrees
+						+ Shader
+						+ Params enum
+						+ Set to 1.0
+					+ Use of param
+				+ Depending on time-of-day
+					+ Map time of day so that:
+						- amb=1.0 => ri=1.0 (so that default is +45 degrees)
+						- amb=0.0 => ri=-1.0 (so that at night we've flipped to -45 degrees)
+				+ Should we map instead the _whole_ NDC space into the buffer (thus making the buffer 3x as large to maintain resolution), so to fix inclination?
+			+ "Too many clouds => all black" problem:
+				+ Option 1: add (1-mean) to all values, so that mean becomes 1.0
+					! Will have darks and lights
+					+ Adjust so that we do not reduce darkness (0.0) when it's dark - YES, we keep it dark
+						+ Think of new strategy: keep shadowSample's range, but cap its highest point
+							X 0.0->1.5: 0.0009090909 + 1.239091 * shadowSample - 0.2454545 * shadowSample * shadowSample;
+							+ 0.0->1.4: [0.001818182 +] 1.278182*x - 0.2909091*x^2
+						+ s = 1.0 + (s-1)*(exp ... * step(1.0, b))
+				X Option 2: shift values up so that min of current values becomes 1.0
+					! Will have normal and lights, never darker				
+				+ Constrain mean/min to visible only? Should have less jumpy behavior
+				+ Need to constrain range, goes too high (white)
+			+ Double-check order of things in shader
+				+ Shadows -> Darkening -> Border
+			+ Too discrete borders (stepping problem), need interpolation
+				+ 2-way
+				+ 3-way
+			+ Depth-darkening of brightness enhancement
+				+ Lighter should darken less
+			+ Lower speed of clouds
+			+ Test storm
+			+ Lower # of clouds: 32
+			+ Test flat & depth ocean render mode
+			+ Cleanup clouds code
+			+ Test on Dell, and check perf before & after
+				+ See if Dell slowdown is due to R instead of RGBA
+				+ Do texture upload conditionally on ocean surface being hi-quality
+			+ Merge back into master
+
+		+ Lamps flashing when exploding		
+			+ At depth
+			+ Via sparkle tool
+
+		+ Change ocean defaults, see color decision on Discord
+			+ Changelist
+		+ Cloud shadows:
+			+ Try with more pronounced depth-darkening delta
+				+ Should also darken "lighter" areas which are still < 1.0 but lighter than surroundings
+				+ Note that using e.g. 0.5 in lieu of 1.0 as the "threshold" in the shader for lighter vs. darker helps, but then the sea gets too dark
+				  as we're darkening also the base color
+				+ Should we try again with normalizing to 1.0 rather than to mean?
+				+ Test injecting noise for darkening, so we can have flanges
+				+ Try as it looks good:
+				+ Have a last look
+			+ Fix darkening bands issue
+				+ See if it repro's with "depth gradient" and using deep black as second color - IT DOES
+				+ Search:
+					+ https://www.shadertoy.com/view/MlV3R1
+				+ Make sure darkening (w/trick) is at:
+					+ Flat detailed
+					+ All depth's
+				+ See if can get rid of noise 0 (Ship Flames, Ship Jet Engine)
+				+ Test all shaders:
+					+ Lighting: 2
+					+ Ocean: 3
+
+					+ Physics probe: 2
+					+ HeatBlaster: 2
+					+ Fire Extinguisher: 2
+					+ Blast tool: 2
+					+ Wind sphere: 2
+					+ Laser ray: 2
+
+					+ Ship Flames: 1
+					+ Ship Engine Flames: 1			
+				+ Cleanup GlobalRenderContext.cpp
+			+ Try it on fish
+				+ Do detailed/basic:
+					+ Split shader: basic and detailed, via include-and-#define trick
+					+ Choose one shader or the other based on oceanRenderDetailMode
+			+ Dark stripe issue
+				! Does not repro when clamping sampled shadow between 0 and 2
+				+ Double-check source values: FOUND - 2.02!!!
+					+ FastTruncateToArchInt(-0.0578765869) = 0 = > sampleIndexDX = -0.0578765869
+				+ Fix
+			+ Test all 6 shaders
+			+ Test on Dell
+				= Computation is expensive; to try:
+					+ Optimize computation
+						+ Benchmark with a ton of clouds:
+							+ Clouds::Update: 0.60%, UpdateShadows: 0.43%
+						+ Now: 0.54%, 0.45%
+						+ Last: ~0.30%, ~0.20%
+					+ Simplify clamp's and add assert's
+					+ Simplified (faster) loop for main cloud
+						+ Calc first what we multiply full cloud with
+					+ Make computation conditional on cloud shadows really being used (i.e. detailed ocean render mode)
+						+ Clouds has new bool setter (and no getter, uses internally for Upload(), and cctor arg) - AreShadowsEnabled
+							+ Evaluation of its value, which is based on render detail mode, comes from outside: from GameController::SetOceanRenderDetail(), who then gives it to World->Clouds
+								+ Calc'd by GameController::<static method>
+						+ Then verify sequence of events: changing detail mode => update => render u+d, and not e.g. update => change => render u+d
+			+ Merge
+			+ changelist
+				+ Credit guy (asked name)
+		+ Night light
+			! Blue-ish, just like sun, but dimmer and blue
+			+ Spec:
+				+ Sky rendering step @ World
+					+ First in Draw, takes place of cleaning
+					+ Uses shader if doCrepuscolarGradient (incl. z), and glClear otherwise
+						+ init, also load NDC coords
+						+ Verify clears depth buffer
+					+ Move RenderContext::ApplyClearColorChanges to WorldRenderContext, and refactor as:
+						+ ApplyEffectiveAmbientLightIntensityChanges():
+							+ RecalculateClearCanvasColor()
+							+ Set ambient light intensity in sky shader
+							+ ...anything else as now
+						+ ApplySkyChanges():
+							+ RecalculateClearCanvasColor()
+							+ Set moonlight_color shader param value (black vs. moonlight_color) and crepuscolar color in sky shader
+							+ Set moonlight_color shader param value (black vs. moonlight_color) in all other shaders
+			+ bool "DoMoonlight", MoonlightColor
+				! For all shaders except sky
+				+ Dirty sky render parameters
+				+ Do like EffectiveAmbientLightIntensity: calculate EffectiveMoonlightColor @ RenderContext, and _that_ is what's in RenderParameters and seen by all other contexts
+				+ Used by:
+					+ World:
+						+ Sky
+						+ Clouds
+						+ Ocean
+							+ flat basic
+							+ flat detailed
+							+ depth basic
+							+ depth detailed
+							+ texture basic
+							+ texture detailed
+						+ Land
+						+ Rain
+						X Fish: might want to keep it as-is (no moonlight) as pitch-black fish in the night are cool
+					+ Ship:
+						+ ShipPointsColorIncandescence
+						+ ShipRopesIncandescence
+						+ ShipSpringsTextureIncandescence
+						+ ShipTrianglesTextureIncandescence
+
+						+ ShipPointsColorIncandescence + Stress
+						+ ShipRopesIncandescence + Stress
+						+ ShipSpringsTextureIncandescence + Stress
+						+ ShipTrianglesTextureIncandescence + Stress
+
+						+ ShipPointsColor
+						+ ShipRopes
+						+ ShipSpringsTexture
+						+ ShipTrianglesTexture
+
+						+ ShipPointsColor + Stress
+						+ ShipRopes + Stress
+						+ ShipSpringsTexture + Stress
+						+ ShipTrianglesTexture + Stress
+
+						! Technically, these ones are sensitive to ambient light, but it doesn't make much sense to have moonlight for them:
+							X ShipSpringsDecay
+							X ShipSpringsInternalPressure
+							X ShipSpringsStrength
+							X ShipTrianglesDecay
+							X ShipTrianglesInternalPressure
+							X ShipTrianglesStrength
+							X All HeatOverlay variants
+
+						+ GenericMipMapTextures
+						+ GenericMipMapTexturesNdc (laser)
+						
+			+ bool "doCrepuscolarGradient"
+				+ Just for sky shader - either shader or glClear
+			+ rgbColor "CrepuscolarColor"
+				+ Just for sky shader
+			+ ocean shader might need to swap depth darkening and ambient darkening, so that depth darkening takes place on moonlight
+			+ Move moonlight multipliers into shaders
+				+ Ocean: helper in ocean.glslinc					
+				+ Sky
+					+ Double-check current multiplier used (0.5)
+			+ Need dithering for sky's crepuscolar gradient?
+				+ Cur RND=3.50
+			+ Test on Dell
+				+ Rendering is expensive; to try:
+					+ Turn off crepuscolar depending on gfx card (like we do for ocean detail render mode)
+			+ Changelist
+			+ Merge to master
+
+		+ Black glass
+
+		+ Optimizations integration:
+			+ ThreadManager and ThreadPool - in SpringLab
+				! Vision:
+					! ThreadManager is passed to (OnStateChange() and) Update()
+						! We do this to stress the fact that parallelism is a mutable parameter
+						+ So not singleton
+					- Init args:
+						- render thread
+						- max max simu threads
+							+ SpringLab: 1
+							- FS: 8
+					+ Springlab: goes for all available threads and partitions
+					- FS: ship calculates own partitions
+				+ 1. ThreadManager:
+					+ cctor decides whether to do render thread (based on BootSettings) and creates ThreadPool with max possible (doing main thread math)
+					+ ThreadPool accessed as member &, "SimulationThreadPool"				
+				+ 2. ParallelThreadPool -> ThreadPool
+					+ Make it that the main thread does first task and all leftover tasks
+					+ Decide with of the two pools to keep
+						+ See perf:
+							+ With (old) TaskThreadPool: 15, 11.5, 8.7, 8.8
+							+ With (new) ThreadPool: 15, 12.8, 9.3, 9.1
+						+ Keep old (which has Task *)
+							+ Nuke ThreadPool
+							+ Rename TaskThreadPool as ThreadPool
+							+ Fixup TaskManager
+					+ Initialize threads via ThreadManager
+				+ 3. Whole fixup, and changing Settings' slider for "max simulation threads" (SpringLab: existing slider, FS: new slider - both maxed out by TM::GetMaxSimulationParallelism()) dooes:
+					+ SpringLab: Controller owns ThreadManager
+					+ Set ThreadManager::SimulationParallelism (storage), who tells ThreadPool
+						+ Just re-creates ThreadPool from scratch
+					+ SpringLab: then, call into Simulator::StateChanged(ThreadManager &)/Update(ThreadManager &)
+				+ 4. Fix affinitization: must be thread-safe
+					X Removed affinitization altogether as it does not help
+			+ SpringLab: non-intrinsics implementation (for benchmarking and experimenting)
+				+ Integration: single templated func
+				+ Record benchmark
+			+ Benchmarks:
+				+ Default ship (19932 spr):
+					  UPD: (0.0 + 4.97 (75.5%)) UPL:(0.0 + 0.06)
+					  RND: (3.40) (UPL=0.18 MT=0.0)
+				+ Default ship DELL: 32.5 FPS
+					  UPD: (0.0 + 19.52 (77.1%)) UPL:(0.0 + 0.16)
+					  RND: (10.49) (UPL=0.32 MT=10.61)
+				+ Default Titanic (27424 spr): 64 FPS 
+					  UPD: (0.0 + 6.91 (74.2%)) UPL:(0.0+0.07)
+					  RND: (3.30) (UPL=0.20 MT=0.0)
+				+ Hesleden (150407 spr): 
+					+ Without lights: 25.64-26.85 FPS
+						UPD: (0.0 + 38.25-39.07 (73.5%)) UPL:(0.0 + 0.17)
+						RND: (3.65-3.85) (UPL:0.31 MT=0.0)
+					+ With lights: 14.23-14.49 FPS
+						UPD: (0.0 + 67.80-68.25 (41.65%))
+			+ Layout optimization at ShipFactory - up to passing to Ship
+				+ Port IndexRemap
+				+ Nuke all current optimizations - keep only cache
+				+ Port layout optimization
+					+ Up to passing # of perfect squares to Ship, which for the moment just stores it
+			+ Port ThreadManager & ThreadPool from SpringLab
+				+ Note: port ThreadPool because of pointers to tasks (and ThreadManager &)
+				+ Controller owns ThreadManager
+				+ Ship::Update takes ThreadManager&
+					! We do this to stress the fact that parallelism is a mutable parameter
+				+ RenderContext gets whether or not to do render thread from ThreadManager
+				+ Unit tests
+			+ Test boot settings
+			+ Check Dell
+			+ Ship parallelism:
+				! All code - intrinsics/non-intrinsics - goes in new Ship_SpringRelaxation.cpp
+				+ Encapsulate whole spring relaxation in new RunSpringRelaxationAndDynamicForcesIntegration()
+				+ Dynamic forces
+					! Today we have: static forces, dynamic forces == spring + pressure
+						! Because pressure forces are to be applied only once with first integration at beginning of next Update() cycle
+					+ Points::DynamicForces has them as an "array" (vector), size >= 1
+						+ Initial size is 1
+						+ Points::Set/Foo/DynamicForces(...) all deal transparently with first element of array of buffers
+							+ Assert there is at least one element in array
+						+ Array size changed via Points::SetDynamicForceParallelism(size_t parallelism)
+							+ Maintains current buffers' contents (so operates via resize/emplace_back), so to save buf[0] dynamic forces
+							+ Also maintains convenience vector of ptrs
+				+ Test
+				+ Ship::Update(ThreadManager &) checks SimulationParallelism against own remembered value, and reacts on change by recalculating partitioning
+					+ This also used for initial
+					+ Ship decides # of parallelism for herself, < ThreadManager::SimulationParallelism
+						+ Calculate table with SpringLab of # springs vs threads (StructuralIntrinsicsMTVectorized)
+							+ SpringLab::MakeSyntheticObject
+								+ MainFrame menu item
+								+ ObjectBuilder
+							+     1,000: 1t=113  2t=124  3t=140  4t=  5t=  6t=  8t=
+							+   100,000: 1t=10600  2t=8100  3t=6800  4t=6100  5t=6300  6t=  8t=
+							+   500,000: 1t=57000  2t=38000  3t=31000  4t=28000  5t=31000  6t=29000  8t=
+							REDONE below here
+							+    10,000: 1t=800  2t=970  3t=1000  4t=  5t=  6t=  8t=
+							+    50,000: 1t=4000  2t=3600  3t=2900  4t=2900  5t=3500  6t=  8t=
+							+ 1,000,000: 1t=103000  2t=66000  3t=48000  4t=56000  5t=64000  6t= 7t=  8t=122000
+						+ Do
+					+ Log avail & decided
+						+ If we end up maxing out at 4, reduce max parallelism @ ThreadManager cctor
+				+ RunSpringRelaxationAndDynamicForcesIntegration:
+					+ Invoke spring relaxation tasks on thread pool
+						+ Spring relaxation function differentiated based on arch (instrinsics+arch vs. c++)
+							! Impl's are in same Ship_SpringRelaxation.cpp
+							+ SSE
+								+ Test
+							+ C++ (take from SpringLab's PseudoIntrinsics simulator)
+								+ Test
+					+ Invoke integration
+						+ Integration function differentiated based on arch (instrinsics+arch vs. c++)
+							! Impl's are in same Ship_SpringRelaxation.cpp
+							+ Implementation for SSE (i): SpringLab's Vectorized i
+							+ Implementation for SSE (n): from SpringLab's Vectorized n (with explicit intrinsics)
+							+ Implementation for C++ (i): same as above, if verification succeeds
+							+ Implementation for C++ (n): from SpringLab::PseudoVectorized n - the simple one
+							+ Test SSE (and verify vectorized where needed)
+								+ 1
+								+ 2
+								+ 3
+								+ 4
+								+ N
+							+ Test C++ 1 & n
+				+ Test repair (possibly impacted by layout optimization)
+			+ Parallelism setting/slider
+				+ SettingsDialog: "Max Simulation Threads"
+					+ Maxed by TM::GetMaxSimulationParallelism() & by 4
+			+ Redo benchmark, and put it up
+				
+		+ More parallelism during Update()
+			+ First, get breakdown, including World::Update
+				! Hesleden, 4 threads:
+					- Physics::Ship::RunSpringRelaxationAndDynamicForcesIntegration	8346 (23.10%)
+						- Physics::Ship::ApplySpringsForces	2933 (10.11%)
+						- Physics::Ship::IntegrateAndResetDynamicForces_4	2443 (8.42%)
+						- Physics::Ship::HandleCollisionsWithSeaFloor	1063 (3.67%)
+					- Physics::Ship::UpdateWaterVelocities	4343 (12.02%)
+					- Physics::Ship::ApplyStaticPressureForces	2808 (7.77%)
+					- Physics::Ship::PropagateHeat	1194 (3.30%)
+					- Physics::Ship::EqualizeInternalPressure	850 (2.35%)
+					- Physics::Springs::InternalUpdateForStrains<0>	631 (1.75%)
+					- ...
+					- Physics::OceanSurface::Update	294 (0.81%)
+				! Hesleden, 1 thread:
+					- Physics::World::Update	24325 (92.65%)
+						- Physics::Ship::Update	24089 (91.75%)
+							- Physics::Ship::RunSpringRelaxationAndDynamicForcesIntegration	14781 (56.30%)
+								- Physics::Ship::ApplySpringsForces	12287 (46.80%)
+								- Physics::Ship::IntegrateAndResetDynamicForces_1	1279 (4.87%)
+								- Physics::Ship::HandleCollisionsWithSeaFloor	1209 (4.60%)
+							- Physics::Ship::UpdateWaterVelocities	3736 (14.23%)	3567 (13.59%)
+							- Physics::Ship::ApplyStaticPressureForces	2540 (9.67%)
+							- Physics::Ship::PropagateHeat			998 (3.80%)
+							- Physics::Ship::EqualizeInternalPressure	703 (2.68%)
+							- Physics::Springs::InternalUpdateForStrains<0>	524 (2.00%)
+			+ At Ship::Update (was: Multi-threading, phase II):
+				! Now that we have MaxSimulationParallelism, we can easily see which steps take the longest
+				+ Ideal Parallelization 1:
+					- UpdateWaterVelocities     14.23	T1
+					- ApplyStaticPressureForces  9.67	T2
+					- PropagateHeat              3.80	T2
+				+ Ideal Parallelization 2:
+					- EqualizeInternalPressure   2.68       T1
+					- InternalUpdateForStrains   2.00	T1
+					- ...					T1
+					- Light					T2
+				! Breakdown now:
+					- Main thread:
+						- Physics::World::Update	18827 (44.06%)
+							- Physics::Ship::Update	18422 (43.11%)
+								- Physics::Ship::RunSpringRelaxationAndDynamicForcesIntegration	10098 (23.63%)
+								- Physics::Ship::UpdateWaterVelocities	5485 (12.84%)
+								- Physics::Ship::EqualizeInternalPressure	1007 (2.36%)
+								- Physics::Springs::InternalUpdateForStrains<0>	692 (1.62%)
+								- Physics::Ship::ApplyWorldForces	564 (1.32%)
+								- Physics::Points::UpdateMasses	204 (0.48%)
+					- Pool thread:
+						- ThreadPool::RunTask	19678 (46.05%)
+							- Physics::Ship::ApplySpringsForces	14858 (34.77%) (because it's *3)
+							- Physics::Ship::ApplyStaticPressureForces	3265 (7.64%)
+							- Physics::Ship::PropagateHeat	1541 (3.61%)
+			+ Parallel lights
+				+ Hesleden before: 21FPS (UPD 46-48ms)
+				+ Create tasks at UpdateForSimulationParallelism->RecalculateLightDiffusionParallelism
+				+ Hesleden after: 39FPS (UPD 23.9ms)
+				+ Fix benchmarks, unit tests
+			+ Parallel integrate & collisions with ocean floor:
+				+ Two sets of tasks, with and without collisions
+					+ Calculated at RecalculateParallelismForSpringRelaxation
+					+ Find sweet spot, based on # of points
+						- Default ship (9328 pts):
+							- 1 thread: 3.33ms
+							- 4 threads: 3.26ms
+						- Titanic (11752 pts):
+							- 1 thread: 5.74ms - 4.40ms
+							- 4 threads: 5.57ms - 4.29ms
+						- Hesleden (w/out lights) (42708 pts):
+							- 1 thread: 14.9 ms (60.88%)
+							- 4 threads: 12.98ms
+				+ Re-verify assembly of all SSE integrations where we expect compiler to vectorize
+					+ 1
+					+ 2
+					+ 3
+					+ 4
+			+ Check sweet spot of lighting
+				! Default ship:
+					- 1 thread: 3.27ms/3.28ms
+					- 4 threads: 3.25ms/3.26ms
+			+ Max parallelism re-thinking:
+				+ Verify 8 better than 4 for lights: YES
+					- Hesleden 4: 19.9
+					- Hesleden 8: 18.8
+				+ Verify 8 better than 4 for integration & collisions: YES
+					- Hesleden (no lights) 4: 12.5
+					- Hesleden (no lights) 8: 12.4
+				+ Plan:
+					+ ThreadManager cap goes
+						+ Initialize with max initial = 8 though
+						- Verify SettingsDialog
+					+ Each RecalculateParallelism has own cap
+						+ In reality, only spring forces has cap
+						+ Other calc based on points
+							+ Verify lights
+								- Default ship:
+									- Before: 4 threads: 3.25ms/3.26ms
+									- Now: 2 threads: 3.35ms
+							+ Verify integration
+								- Default ship:
+									- Before: 4 threads: 3.25ms/3.26ms
+									- Now (w/ 2 lighting threads): 4 threads: 3.35ms
+								- Hesleden:
+									- Now (8, 8):18.07
+
+		+ Decide rigidity vs. speedup
+			! Prior benchmarks:
+				+ @ 30:
+					+ Default ship (19932 spr, 9328 pts): 64FPS
+						  UPD: (0.0 + 3.40 (64.3%)) UPL:(0.0 + 0.06)
+						  RND: (3.40) (UPL=0.18 MT=0.0)
+					+ Default ship DELL: TODO
+						  UPD: 
+						  RND: 
+					+ Default Titanic (27424 spr, 11752 pts): 64 FPS 
+						  UPD: (0.0 + 4.58 (63.6%)) UPL:(0.0+0.06)
+						  RND: (3.24) (UPL=0.18 MT=0.0)
+					+ Hesleden (150407 spr, 42708 pts):
+						+ Without lights: 63 FPS
+							UPD: (0.0 + 14.5 (62%)) UPL:(0.0 + 0.14)
+							RND: (3.77-3.84) (UPL:0.28 MT=0.0)
+						+ With lights: 42.0 FPS
+							UPD: (0.0 + 23.40 (38%%))
+				+ Prior version::
+					+ Default ship old Dell:
+						- FPS:31.95 UPD:19.58ms UPL:0.16ms RND:11.42ms (UPL:0.3xms MT=11.6xms)
+					+ Default Titanic: 64 FPS 
+						  UPD: (0.0 + 7.80 (63.2%)) UPL:(0.0+0.07)
+						  RND: (3.20) (UPL=0.16 MT=0.0)
+					+ Hesleden:
+						+ Without lights: 26.6 FPS (UPD: 36.6ms (72.5%))
+						+ With lights: 14.6 FPS (UPD: 66.6ms (39.3%))
+			+ New benchmarks w/40:
+				+ Titanic (w/lights): 5.80ms (65%)
+				+ Hesleden (wout/lights): 14.04ms (57%)
+				+ Hesleden (w/lights): 20.2ms (39%)
+			+ Fixup strength
+			+ Fixup explosions
+				+ Change blast radius dependency first
+				+ 3 bombs
+				+ Sodium
+				+ Explosive combustion
+				+ Blimps
+
+		+ Improve AM Bomb
+		+ Improve blast tool
+		+ Improve Thanos:
+			+ Lamp sounds
+			+ Velocities
+			+ Phasing: each particle randomly pulverizes, but towards band end prob is 100%
+				+ Fix formula for prob
+			+ Greyscaling (of texture and particles) before Thanos snap, and mass changes (lighter), and different phasing of ashing in band			
+				+ Try with decay - WAS ALREADY DONE
+					+ Make sure we only upload decay when we mark a dirty flag
+			+ Ocean Surface
+				+ Test in debug around borders
+		+ Send for testing
+		+ Fix day/night rate
+		+ Fix wireframe mode
+		+ Thanos SHIFT icon
+		X ThreadPool optimization
+			! Before: default ship: 4.05
+			! After:  default ship: 4.07
+		+ Redo all benchmarks, including Dell
+		X Try with LargeThreadPool and SmallThreadPool
+			X Small pool always parallelism=2, unless not enough threads
+				X May overlap threads with other pool, as threads run at different times
+		X Lazy condition variable: verify if perf gain with cold laptop
+		X Try atomic decrement in thread pool w/out lock
+		+ Threadpool path for poor Dell - lockless and cond varless
+			+ And for single-tasks
+				! So can test default ship on multi-core with just one integration and/or just one light
+					! Original was 1-4/5/8-2
+						+ Default ship: 4.03
+						+ Default Titanic (wout/power): 5.20
+						+ Default Titanic (w/power): 5.76
+						+ Hesleden (wout/lights): 13.5/14.0
+						+ Hesleden (w/lights): 19.5
+					- 1 integration:	
+						- Default ship: 3.78, it's a take
+						- Titanic (wout/power): 5.02
+						- Titanic (w/power): 5.66
+					- 1 light:
+						- Default ship: 4.01
+						- Titanic (wout/power): 5.18 - NO
+						- Titanic (w/power): 6.62 - NO
+					- 1 light + 1 integration:
+						- Default ship: 3.73, it's a take
+						- Titanic (wout/power): 4.96
+						- Titanic (w/power): 6.40
+				+ New algo:
+					X Integration: Titanic (11752) and default ship (9328) (cap: 15000) should use 1 integration thread
+					+ No, bad Hesleden; different algo:
+						- Below 12,000: 1
+						- 42708: 8 => 30000 = 7
+					+ Lights: leave alone					
+				+ Re-check, including Hesleden
+					! was:
+						+ Hesleden (wout/lights): 13.5/14.0 (8 threads)
+						+ Hesleden (w/lights): 19.5
+					! / 15000:
+						+ Hesleden (wout/lights): 15.6
+						+ Hesleden (w/lights): 20.02
+					! new algo:
+						+ Hesleden (wout/lights): 13.5 (8 threads)
+						+ Hesleden (w/lights):
+			+ Old Dell:
+				+ 33.9 FPS (15.67)
+			X If ok, update changes.txt w/single-core fps
+		X See if now that we've fixed ocean floor collisions, can have a larger period
+			X Bad bouncing, and not that much gain
+		+ Equalize internal pressure on thread
+			+ Redo benchmarks
+		+ Loading flipped ship flips the engines (Air Boat)
+		+ Impart inertia also to water
+		+ Inner water sound:
+			+ Swap Wave and WaveDisplacement sounds
+		+ Fix famous probe panel bug
+			+ UploadPanel:
+				+ Store panel or reset it
+				+ mIsPhysicsProbePanelDirty = true
+			+ CanvasSizeChanged:
+				+ mIsPhysicsProbePanelDirty = true
+			+ RenderPrepare: generate vertices and upload
+				+ No vertices anymore, just constant
+		+ Test sim quality
+			+ Fix strength adjustment
+				+ See if can move constants into function
+				! We accept the loss of breakability
+				+ We make a new curve that sets Titanic just above auto-stress
+					- Strength adjust for 0.5x over fixed 0.377548f: 3.234 = 1.220990232
+					- Strength adjust for 1.0x over fixed 0.377548f: 1.0 = 0.377548
+					- Strength adjust for 1.5x over fixed 0.377548f: 0.788 = 0.297507824
+					- Strength adjust for 2x over fixed 0.377548f: 0.771-0.788 = 0.291089508
+					- Strength adjust for 3x over fixed 0.377548f: 0.753-0.771 = 0.284293644
+					- Strength adjust for 4x over fixed 0.377548f: 0.735 = 0.27749778
+					- Strength adjust for 5x over fixed 0.377548f: 0.735 = 0.27749778
+						20	1.220990232
+						40	0.377548
+						60	0.297507824
+						80	0.291089508
+						120	0.284293644
+						160	0.27749778
+						200	0.27749778
+						y = 0.2832163 + 9.209594*e^(-0.1142279*x)
+
+				X Get samples of CalculateSpringStrengthIterationsAdjustment:
+					+ 30 iterations: good strength adjust at:
+						- 0.5   == 15 is: 0.973911
+						- 1.0   == 30 is: 0.540126 - GOOD
+						- 1.333 == 40 is: 0.403038
+						- 1.5   == 45 is: 0.355225
+						- 2.0   == 60 is: 0.257605 - ~GOOD
+						- 4.0	== 120 is: ? - stresses out too much, breaks automatically, but not in half
+						- 5.0   == 150 is: 0.0853622 - too little, best if multiplied by 1.41 => 0.120360702
+					+ 40 iterations: good strength adjust at:
+						- 0.5  == 20 is: <experiment>
+						- 0.75 == 30 is: 0.492889
+						- 1.0  == 40 is: 0.377548 - GOOD
+						- 2.0  == 80 is: 0.180066 - too much for Titanic break, better with 0.699 => 0.125866134
+						- 4.0  == 160 is: 0.0787026 - too much, breaks automatically - best if multiplied by 1.87 => 0.147173862
+						- 5.0  == 200 is: <experiment>
+
+						30	0.540126
+						40	0.377548
+						60	0.257605
+						80	0.125866134	y = 40.07601*x^-1.264278
+						150	0.120360702
+						160	0.147173862	y = 0.121192 + (0.763759 - 0.121192)/(1 + (x/36.10479)^3.270411)
+
+											- 80 (2.0) => Titanic break: 0.753 => 0.118480032
+
+						30	0.540126
+						40	0.377548
+						60	0.257605
+						80	0.118480032
+											- 80: auto break, so: 0.112732 * 1.265 = 0.14260598
+
+			+ Function is on #ITERATIONS, not adjustment
+				+ Recalc mCurrentStrengthIterationsAdjustment @ each change (@params check)
+			+ Change the slider to "spring iterations" or "spring algo adjust", on actual iterations adjustment (which stays so that we have good slider)
+			+ See if can reduce frequency of calls, especially at Add()
+				+ Also don't need anymore mCurrentNumIterAdj
+		X Check on Dell if can raise Max burning particles
+			X No, too much rendering overhead
+		+ Ships:
+			+ N.S._Savannah (Pocketwatch)
+			+ SS.Statendam - "P1X"
+				+ Asked name
+				+ Add to credits
+			+ SS Frederik IV - Pocketwatch
+			+ Stardust (train) and R.M.S. Mauretania - UR LOCAL BRAZILIAN (Ur local brazilian#0842, aka Transportation Fan)
+				+ Asked name
+				+ Add to credits
+			+ Friesenland, Galeb, Lamartine, Transilvania - Hellooping
+				+ Asked name
+				+ Add to credits
+			+ Take Dugong - Walter
+				+ Name? (ASKED) - I made "Walter"
+					+ He wants Techo
+					+ Redo credits x 2
+			+ wood ship 2 - Gustav Shedletsky|Local RUS guy#8464
+				+ Asked name and ship year: Gustav Shedletsky, 1821
+				+ Add to credits
+				+ Add year
+			+ Shed x 2 - Higuys153#5865
+				+ Asked name: Higuys153
+				+ Add to credits
+			+ Re-balance credits
+		+ Localization:
+			+ IT
+			+ ES
+			+ RU
+			+ UK
+		+ Send beta
+		+ Make 1.17 settings? (or "pre-1.18")
+			+ And then "1.0" ?
+		+ Launch plan:
+			+ Make video
+				+ Lights
+				+ Crepuscolar gradient
+				+ Soundtrack: https://www.scottbuckley.com.au/library/the-old-ones/
+					+ Add credits to video
+			+ GameJolt: post update, "entered final beta testing phase", link to blog and to video
+				Dear shipmates,
+				We are delighted to announce that Floating Sandbox 1.18.0 has entered the final beta testing phase! 
+				The performance improvements in this release are so profound that we're going to need some time for testing before releasing to the general public, so expect another couple of weeks before this update is made public.
+				In the meantime, you can read more about our adventures with the performance optimizations in the latest installment of our technical blog, [https://gabrielegiuseppini.wordpress.com/2023/07/02/adventures-with-2d-mass-spring-networks-part-iii/],
+				and you can catch a quick preview of the rendering enhancements in our latest video:
+				[https://www.youtube.com/watch?v=0oV8LMHAKVk]	
+		+ Release:
+			+ 1.18.0.4
+			+ Windows
+				+ MSI variable
+				+ Commit & push
+				+ 64-bit MSI
+					+ Cleanup Install
+					+ Build Release Install (after clean)
+					+ Make MSI
+					+ Rename MSI
+					+ Test upgrade from previous version
+				+ 32-bit MSI
+					+ Cleanup Install
+					+ Build Release Install (after clean)
+					+ Make MSI
+					+ Rename MSI
+					+ Test clean install
+			+ Ubuntu
+				+ rm -rf ~/floating-sandbox
+				+ pull 
+				+ rm -rf build; mkdir build; cd build
+				+ cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
+				+ make install
+				+ Make tar ("cd ~/floating-sandbox && tar -cvf ../Floating-Sandbox-1.18.0-x64.tar . && cd -")
+				+ Zip tar
+				+ Smoke-test tar ("rm -rf tmp && mkdir tmp && cd tmp && cp ../Floating-Sandbox*.tar.gz . && tar -xf Floating-Sandbox*.tar.gz")
+			+ Get 3 installers tested on dev server
+			+ Wait for test results
+			+ Commit, push, & cut tag on github
+			+ Make screenshots
+				+ GameJolt's cover image
+				+ GameJolt's fire image
+			+ Upload packages to GameJolt
+				+ Remove Vista from requirements
+				+ Update screenshots
+					+ Also replace video w/https://youtu.be/0oV8LMHAKVk
+				+ Post
+			+ www.floatingsandbox.com:
+				+ Update current version in FAQ
+				+ Remove Vista from requirements
+				+ Update screenshots
+				+ Upload changes2.txt
+					+ Test w/old FS
+

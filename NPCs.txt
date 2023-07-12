@@ -151,6 +151,29 @@ Arch:
 - Render dispatched to individual ShipRenderContext's, as each ship has own Z world
 	X Though we could have a NpcRenderContext which passes ship's Z in vertex buffers, but then there's the order/alpha problem; best if rendered by each ship individually
 
+- Placing an NPC:
+	- The user selects the "place NPC" tool at the same time as choosing the type and sub-type via menus
+	- TODOHERE: 
+	- Once the tool is selected, ToolController is notified via a dedicated API (which takes type/subtype)
+		- With this call the tool is switched to the NPC-placing tool, but the old one is remembered so that once an NPC is placed, we can go back to the previous tool (unless SHIFT is pressed)	
+	- Initialization of the tool makes a call into GameController::BeginHumanNpcPlacing(role, pos), and de-initialization calls GameController::EndNpcPlacing()
+		- The NPCs class has a "special slot" for a single NPC being placed, initialized and removed with these two calls
+		- Note: check leave window/enter window
+	- Moving the tool: 
+		- At movement, tool calls GameController::MoveNpcPlacing(pos) -> bool telling whether or not it's a good place (and whether or not there's still room for NPCs)
+			- Npcs::MoveNpcPlacing: always moves
+			- Placement check: either not in a triangle, or in a triangle with at least one side NON-floor
+			- Tool remembers whether current position is OK for placement (storing in opt<position>, if set then ok else not)
+		- Mouse down: only if that opt<position> is set, calls into GameController::AddHumanNpc(...)
+			- Note: placing continues, even if all NPC slots used
+
+- Removing an NPC:
+	- We first find the triangle/ship (eventually none), then ask NPCs for closest to that -> NpcId
+	- Tool highlights NPC at mouse move via Npcs::HighlightNpc(NpcId, true/false)
+
+- Moving an NPC:
+	- TODOHERE
+
 Details:
 - NPCs class:
 	- Container of NPCs
@@ -172,9 +195,8 @@ Details:
 	- AddShip(shipID)/RemoveShip(shipID)
 	- TODOHERE: review dynamics of adding, considering that we can't drop in certain triangles:
 		World::AddHumanNPC(..) -> ID
-		- World finds ship by inverse Z order, using Ship.GetTriangles().GetTriangleContaining(.)
-			- If not found, pick last by default
-			- If no triangle found, NPC is added with free regime
+		- World finds ship by inverse Z order, using Ship.GetTriangles().GetTriangleContaining(.)			
+			- If no triangle found, NPC is added with free regime, on last (topmost Z) ship
 		- Then World calls NPCs::AddHumanNPC(.., ship const &, opt<triangle index>)	
 	+ RemoveNPC(ID)
 
@@ -184,21 +206,20 @@ Details:
 		- Invokes ShipRenderContext::UploadNPC:
 			- A TextureGroup enum - declared in RenderTypes like AntiMatterBomb is for example - is used to identify the "movement types" for rendering. An additional index provides the sub-frame. The whole coordinate is a TextureFrameId<NPC group>.
 				- TODO: actually the enum might not have to be in RenderTypes; we could use a generic "state" enum in GameTypes which *also* serves as a groups enum
-- Placing an NPC:
-	- The user selects the "place NPC" tool at the same time as choosing the type and sub-type via menus
-	- Once the tool is selected, ToolController is notified via a dedicated API (which takes type/subtype)
-		- With this call the tool is switched to the NPC-placing tool, but the old one is remembered so that once an NPC is placed, we can go back to the previous tool (unless SHIFT is pressed)	
-	- Initialization of the tool makes a call into GameController::BeginHumanNpcPlacing(role, pos), and de-initialization calls GameController::EndNpcPlacing()
-		- The NPCs class has a "special slot" for a single NPC being placed, initialized and removed with these two calls
-		- Note: check leave window/enter window
-	- Moving the tool: 
-		- At movement, tool calls GameController::MoveNpcPlacing(pos) -> bool telling whether or not it's a good place (and whether or not there's still room for NPCs)
-			- Npcs::MoveNpcPlacing: always moves
-			- Placement check: either not in a triangle, or in a triangle with at least one side NON-floor
-			- Tool remembers whether current position is OK for placement (storing in opt<position>, if set then ok else not)
-		- Mouse down: only if that opt<position> is set, calls into GameController::AddHumanNpc(...)
-			- Note: placing continues, even if all NPC slots used
+- Physical Interactions:
+	- Wind: all ships, only in free regime
+	- Ship-specific explosions: only of that ship, or free regime
+	- Swirl, etc.: all ships, all regimes
 
+- Work in progress:
+	- Triangles::FindTriangleContaining
+		- Optimize: TODO
+	- New spring getter: IsNpcSurface
+		- ShipFactory: populate with IsHull
+	- Complete World::ProbeNpcPlacing
+
+	- If we stick to cursor frames for human NPC, use one of these cursors also for menu
+		- And get rid of icon file
 
 
 
