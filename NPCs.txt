@@ -151,6 +151,23 @@ Arch:
 - Render dispatched to individual ShipRenderContext's, as each ship has own Z world
 	X Though we could have a NpcRenderContext which passes ship's Z in vertex buffers, but then there's the order/alpha problem; best if rendered by each ship individually
 
+- TODOHERE:
+	= Tooling:
+		+ Nuke all "human_npc_cursor" cursors
+		= Decide on cursor(s) for Place, Move, & Remove
+			+ Cleanup Resources folders
+			+ Move NPC icon: same as Place but with arrows
+			= Cursors for Place and Move: picking fingers, up and down
+			= Cursor for Remove
+		- Finish plumbing of ToolController/Tool for Place, Move, & Remove
+			= Incl. MainFrame menu for the three of them
+		- Add AbortNpcPlacement
+			- Invoked by tool at Deinitialize()
+
+	- New spring getter: IsNpcSurface
+		- ShipFactory: populate with IsHull for the time being (w/comment)
+
+
 - Placing an NPC:
 	- The user selects the "place NPC" tool at the same time as choosing the type and sub-type via menus
 	- TODOHERE: 
@@ -211,15 +228,6 @@ Details:
 	- Ship-specific explosions: only of that ship, or free regime
 	- Swirl, etc.: all ships, all regimes
 
-- Work in progress:
-	- Triangles::FindTriangleContaining
-		- Optimize: TODO
-	- New spring getter: IsNpcSurface
-		- ShipFactory: populate with IsHull
-	- Complete World::ProbeNpcPlacing
-
-	- If we stick to cursor frames for human NPC, use one of these cursors also for menu
-		- And get rid of icon file
 
 
 

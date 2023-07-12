@@ -980,6 +980,17 @@ enum class HumanNpcRoleType
 };
 
 /*
+ * Types of hightlight for NPCs.
+ */
+
+enum class NpcHighlightType
+{
+    Error,
+    Selected,
+    None
+};
+
+/*
  * Types of frontiers (duh).
  */
 enum class FrontierType

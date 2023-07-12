@@ -126,6 +126,7 @@ private:
     wxMenuItem * mSmashMenuItem;
     wxMenuItem * mScareFishMenuItem;
     wxMenuItem * mAddNpcMenuItem;
+    wxMenuItem * mMoveNpcMenuItem;
     wxMenuItem * mRemoveNpcMenuItem;
     wxMenuItem * mRCBombsDetonateMenuItem;
     wxMenuItem * mAntiMatterBombsDetonateMenuItem;
@@ -235,6 +236,7 @@ private:
     void OnScrubMenuItemSelected(wxCommandEvent & event);
     void OnScareFishMenuItemSelected(wxCommandEvent & event);
     void OnAddHumanNpcMenuItemSelected(HumanNpcRoleType role);
+    void OnMoveNpcMenuItemSelected(wxCommandEvent & event);
     void OnRemoveNpcMenuItemSelected(wxCommandEvent & event);
     void OnTriggerLightningMenuItemSelected(wxCommandEvent & event);
     void OnRCBombDetonateMenuItemSelected(wxCommandEvent & event);
@@ -353,6 +355,7 @@ private:
         unsigned int remainingNpcAllowanceCount) override
     {
         mAddNpcMenuItem->Enable(remainingNpcAllowanceCount > 0);
+        mMoveNpcMenuItem->Enable(totalNpcCount > 0);
         mRemoveNpcMenuItem->Enable(totalNpcCount > 0);
     }
 

@@ -89,6 +89,16 @@ struct IGameController
     // Interactions
     //
 
+    virtual std::optional<NpcId> PickNpc(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
+    virtual void BeginMoveNpc(NpcId const & npcId) = 0;
+    virtual NpcId BeginMoveNewHumanNpc(HumanNpcRoleType role, DisplayLogicalCoordinates const & initialScreenCoordinates) = 0;
+    virtual bool IsSuitableNpcPosition(NpcId const & npcId, DisplayLogicalCoordinates const & screenCoordinates) const = 0;
+    virtual bool MoveNpcBy(NpcId const & npcId, DisplayLogicalSize const & screenOffset) = 0;
+    virtual void EndMoveNpc(NpcId const & npcId, DisplayLogicalSize const & finalScreenOffset) = 0;
+    virtual void AbortNewNpc(NpcId const & id) = 0;
+    virtual void HighlightNpc(NpcId const & npcId, NpcHighlightType highlight) = 0;
+    virtual void RemoveNpc(NpcId const & npcId) = 0;
+
     virtual void ScareFish(DisplayLogicalCoordinates const & screenCoordinates, float radius, std::chrono::milliseconds delay) = 0;
     virtual void AttractFish(DisplayLogicalCoordinates const & screenCoordinates, float radius, std::chrono::milliseconds delay) = 0;
 

@@ -470,6 +470,8 @@ MainFrame::MainFrame(
                 ADD_TOOL_MENUITEM(_("Toggle Physics Probe"), wxS(""), "physics_probe_cursor", OnPhysicsProbeMenuItemSelected);
             }
 
+            mToolsMenu->Append(new wxMenuItem(mToolsMenu, wxID_SEPARATOR));
+
             {
                 // Type hierarchy menu
                 wxMenu * npcSubMenu = nullptr;
@@ -502,6 +504,18 @@ MainFrame::MainFrame(
                 mAddNpcMenuItem->SetBitmaps(wxBitmap(img2), wxBitmap(img1));
                 mToolsMenu->Append(mAddNpcMenuItem);
                 mAddNpcMenuItem->Enable(true); // Note: here we're assuming we _can_ add NPCs; unfortunately the NPCs class is created _before_ we register for events, hence have to guess here
+            }
+
+            {
+                auto const id = wxNewId();
+                mMoveNpcMenuItem = new wxMenuItem(mToolsMenu, id, _("Move NPC"), wxEmptyString, wxITEM_RADIO);
+                auto img1 = wxImage(resourceLocator.GetIconFilePath("move_npc_icon").string(), wxBITMAP_TYPE_PNG);
+                img1.Rescale(16, 16, wxIMAGE_QUALITY_HIGH);
+                auto img2 = WxHelpers::RetintCursorImage(img1, rgbColor(0x00, 0x90, 0x00));
+                mMoveNpcMenuItem->SetBitmaps(wxBitmap(img2), wxBitmap(img1));
+                mToolsMenu->Append(mMoveNpcMenuItem);
+                Connect(id, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnMoveNpcMenuItemSelected);
+                mMoveNpcMenuItem->Enable(false);
             }
 
             {
@@ -1947,14 +1961,19 @@ void MainFrame::OnAddHumanNpcMenuItemSelected(HumanNpcRoleType role)
     mAddNpcMenuItem->Check(true);
 
     assert(!!mToolController);
-    // TODOHERE
+    mToolController->SetHumanNpcPlaceTool(role);
+}
+
+void MainFrame::OnMoveNpcMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mToolController);
+    mToolController->SetTool(ToolType::MoveNpc);
 }
 
 void MainFrame::OnRemoveNpcMenuItemSelected(wxCommandEvent & /*event*/)
 {
-    // TODOHERE
-    LogMessage("OnRemoveNpcMenuItemSelected");
     assert(!!mToolController);
+    mToolController->SetTool(ToolType::RemoveNpc);
 }
 
 void MainFrame::OnTriggerLightningMenuItemSelected(wxCommandEvent & /*event*/)

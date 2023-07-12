@@ -132,6 +132,34 @@ public:
     // Interactions
     //
 
+    std::optional<NpcId> PickNpc(vec2f const & position) const;
+
+    void BeginMoveNpc(NpcId const & npcId);
+
+    NpcId BeginMoveNewHumanNpc(
+        HumanNpcRoleType role,
+        vec2f const & initialPosition);
+
+    bool IsSuitableNpcPosition(
+        NpcId const & npcId,
+        vec2f const & position) const;
+
+    bool MoveNpcBy(
+        NpcId const & npcId,
+        vec2f const & offset);
+
+    void EndMoveNpc(
+        NpcId const & npcId,
+        vec2f const & finalOffset);
+
+    void AbortNewNpc(NpcId const & npcId);
+
+    void HighlightNpc(
+        NpcId const & npcId,
+        NpcHighlightType highlight);
+
+    void RemoveNpc(NpcId const & npcId);
+
     void ScareFish(
         vec2f const & position,
         float radius,

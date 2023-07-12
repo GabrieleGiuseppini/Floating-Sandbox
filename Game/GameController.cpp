@@ -608,6 +608,70 @@ void GameController::ToggleToFullDayOrNight()
         SetTimeOfDay(1.0f);
 }
 
+std::optional<NpcId> GameController::PickNpc(DisplayLogicalCoordinates const & screenCoordinates) const
+{
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+
+    assert(!!mWorld);
+    return mWorld->PickNpc(worldCoordinates);
+}
+
+void GameController::BeginMoveNpc(NpcId const & npcId)
+{
+    assert(!!mWorld);
+    mWorld->BeginMoveNpc(npcId);
+}
+
+NpcId GameController::BeginMoveNewHumanNpc(HumanNpcRoleType role, DisplayLogicalCoordinates const & initialScreenCoordinates)
+{
+    vec2f const initialWorldCoordinates = mRenderContext->ScreenToWorld(initialScreenCoordinates);
+
+    assert(!!mWorld);
+    return mWorld->BeginMoveNewHumanNpc(role, initialWorldCoordinates);
+}
+
+bool GameController::IsSuitableNpcPosition(NpcId const & npcId, DisplayLogicalCoordinates const & screenCoordinates) const
+{
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+
+    assert(!!mWorld);
+    return mWorld->IsSuitableNpcPosition(npcId, worldCoordinates);
+}
+
+bool GameController::MoveNpcBy(NpcId const & npcId, DisplayLogicalSize const & screenOffset)
+{
+    vec2f const worldOffset = mRenderContext->ScreenOffsetToWorldOffset(screenOffset);
+
+    assert(!!mWorld);
+    return mWorld->MoveNpcBy(npcId, worldOffset);
+}
+
+void GameController::EndMoveNpc(NpcId const & npcId, DisplayLogicalSize const & finalScreenOffset)
+{
+    vec2f const finalWorldOffset = mRenderContext->ScreenOffsetToWorldOffset(finalScreenOffset);
+
+    assert(!!mWorld);
+    mWorld->EndMoveNpc(npcId, finalWorldOffset);
+}
+
+void GameController::AbortNewNpc(NpcId const & npcId)
+{
+    assert(!!mWorld);
+    mWorld->AbortNewNpc(npcId);
+}
+
+void GameController::HighlightNpc(NpcId const & npcId, NpcHighlightType highlight)
+{
+    assert(!!mWorld);
+    mWorld->HighlightNpc(npcId, highlight);
+}
+
+void GameController::RemoveNpc(NpcId const & npcId)
+{
+    assert(!!mWorld);
+    mWorld->RemoveNpc(npcId);
+}
+
 void GameController::ScareFish(
     DisplayLogicalCoordinates const & screenCoordinates,
     float radius,

@@ -685,3 +685,56 @@ LaserCannonTool::LaserCannonTool(
     , mDownCursorImage(WxHelpers::LoadCursorImage("crosshair_cursor_down", 15, 15, resourceLocator))
 {
 }
+
+////////////////////////////////////////////////////////////////////////
+// NPCs
+////////////////////////////////////////////////////////////////////////
+
+PlaceHumanNpcTool::PlaceHumanNpcTool(
+    IToolCursorManager & toolCursorManager,
+    IGameController & gameController,
+    SoundController & soundController,
+    ResourceLocator const & resourceLocator)
+    : PlaceNpcToolBase(
+        ToolType::PlaceHumanNpc,
+        toolCursorManager,
+        gameController,
+        soundController)
+    , mRole(HumanNpcRoleType::Passenger) // Just as a start
+    , mClosedCursorImage(WxHelpers::LoadCursorImage("move_npc_cursor_down", 11, 29, resourceLocator))
+    , mOpenCursorImage(WxHelpers::LoadCursorImage("move_npc_cursor_up", 11, 29, resourceLocator))
+{
+}
+
+MoveNpcTool::MoveNpcTool(
+    IToolCursorManager & toolCursorManager,
+    IGameController & gameController,
+    SoundController & soundController,
+    ResourceLocator const & resourceLocator)
+    : Tool(
+        ToolType::MoveNpc,
+        toolCursorManager,
+        gameController,
+        soundController)
+    , mEngagementData()
+    , mClosedCursorImage(WxHelpers::LoadCursorImage("move_npc_cursor_down", 11, 29, resourceLocator))
+    , mOpenCursorImage(WxHelpers::LoadCursorImage("move_npc_cursor_up", 11, 29, resourceLocator))
+{
+}
+
+RemoveNpcTool::RemoveNpcTool(
+    IToolCursorManager & toolCursorManager,
+    IGameController & gameController,
+    SoundController & soundController,
+    ResourceLocator const & resourceLocator)
+    : OneShotTool(
+        ToolType::RemoveNpc,
+        toolCursorManager,
+        gameController,
+        soundController)
+    , mEngagementData()
+    , mIsInClosedCursorState(false)
+    , mClosedCursorImage(WxHelpers::LoadCursorImage("remove_npc_cursor_down", 20, 29, resourceLocator))
+    , mOpenCursorImage(WxHelpers::LoadCursorImage("remove_npc_cursor_up", 20, 29, resourceLocator))
+{
+}

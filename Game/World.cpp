@@ -55,7 +55,6 @@ ShipId World::GetNextShipId() const
 
 void World::AddShip(std::unique_ptr<Ship> ship)
 {
-    auto const shipId = ship->GetId();
     auto const shipAABBs = ship->CalculateAABBs();
 
     // Store ship
@@ -63,7 +62,7 @@ void World::AddShip(std::unique_ptr<Ship> ship)
     mAllShips.push_back(std::move(ship));
 
     // Tell NPCs
-    mNpcs.OnShipAdded(shipId);
+    mNpcs.OnShipAdded(*mAllShips.back());
 
     // Update AABBSet
     for (auto const & aabb : shipAABBs.GetItems())
@@ -129,6 +128,61 @@ bool World::IsUnderwater(ElementId elementId) const
 //////////////////////////////////////////////////////////////////////////////
 // Interactions
 //////////////////////////////////////////////////////////////////////////////
+
+std::optional<NpcId> World::PickNpc(vec2f const & position) const
+{
+    return mNpcs.PickNpc(position);
+}
+
+void World::BeginMoveNpc(NpcId const & id)
+{
+    mNpcs.BeginMoveNpc(id);
+}
+
+NpcId World::BeginMoveNewHumanNpc(
+    HumanNpcRoleType role,
+    vec2f const & initialPosition)
+{
+    return mNpcs.BeginMoveNewHumanNpc(role, initialPosition);
+}
+
+bool World::IsSuitableNpcPosition(
+    NpcId const & npcId,
+    vec2f const & position) const
+{
+    return mNpcs.IsSuitableNpcPosition(npcId, position);
+}
+
+bool World::MoveNpcBy(
+    NpcId const & npcId,
+    vec2f const & offset)
+{
+    return mNpcs.MoveNpcBy(npcId, offset);
+}
+
+void World::EndMoveNpc(
+    NpcId const & npcId,
+    vec2f const & finalOffset)
+{
+    mNpcs.EndMoveNpc(npcId, finalOffset);
+}
+
+void World::AbortNewNpc(NpcId const & npcId)
+{
+    mNpcs.AbortNewNpc(npcId);
+}
+
+void World::HighlightNpc(
+    NpcId const & npcId,
+    NpcHighlightType highlight)
+{
+    mNpcs.HighlightNpc(npcId, highlight);
+}
+
+void World::RemoveNpc(NpcId const & npcId)
+{
+    mNpcs.RemoveNpc(npcId);
+}
 
 void World::ScareFish(
     vec2f const & position,

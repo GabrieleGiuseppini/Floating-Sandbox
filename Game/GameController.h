@@ -190,6 +190,16 @@ public:
     // Interactions
     //
 
+    std::optional<NpcId> PickNpc(DisplayLogicalCoordinates const & screenCoordinates) const override;
+    void BeginMoveNpc(NpcId const & npcId) override;
+    NpcId BeginMoveNewHumanNpc(HumanNpcRoleType role, DisplayLogicalCoordinates const & initialScreenCoordinates) override;
+    bool IsSuitableNpcPosition(NpcId const & npcId, DisplayLogicalCoordinates const & screenCoordinates) const override;
+    bool MoveNpcBy(NpcId const & npcId, DisplayLogicalSize const & screenOffset) override;
+    void EndMoveNpc(NpcId const & npcId, DisplayLogicalSize const & finalScreenOffset) override;
+    void AbortNewNpc(NpcId const & npcId) override;
+    void HighlightNpc(NpcId const & npcId, NpcHighlightType highlight) override;
+    void RemoveNpc(NpcId const & npcId) override;
+
     void ScareFish(DisplayLogicalCoordinates const & screenCoordinates, float radius, std::chrono::milliseconds delay) override;
     void AttractFish(DisplayLogicalCoordinates const & screenCoordinates, float radius, std::chrono::milliseconds delay) override;
 

@@ -25,6 +25,8 @@
 namespace Physics
 {
 
+class Ship;
+
 /*
  * Container of NPCs.
  */
@@ -38,7 +40,8 @@ private:
     enum class RegimeType
     {
         Constrained,
-        Free
+        Free,
+        Placement
     };
 
     /*
@@ -73,7 +76,13 @@ private:
     {
         NpcType Type;
 
-        // When not set it's in free regime
+        // Current regime
+        RegimeType Regime;
+
+        // Current hightlight
+        NpcHighlightType Highlight;
+
+        // Only set in constrained regime
         std::optional<ElementIndex> TriangleIndex;
 
         // Randomness specific to this NPC
@@ -83,9 +92,13 @@ private:
         TypeSpecificNpcState TypeSpecificState;
 
         NpcState(
+            RegimeType regime,
+            NpcHighlightType highlight,
             std::optional<ElementIndex> const & triangleIndex,
             TypeSpecificNpcState::HumanState const & humanState)
             : Type(NpcType::Human)
+            , Regime(regime)
+            , Highlight(highlight)
             , TriangleIndex(triangleIndex)
             , RandomNormalizedUniformSeed(GameRandomEngine::GetInstance().GenerateNormalizedUniformReal())
             , TypeSpecificState(humanState)
@@ -112,14 +125,14 @@ public:
         , mGameEventHandler(std::move(gameEventDispatcher))
         // Storage
         , mStateByShip()
-        , mShipIdToShipOrdinalIndex()
+        , mShipIdToShipIndex()
         , mNpcIdToNpcOrdinalIndex()
         , mParticles(GameParameters::MaxNpcs) // TODO: multiply accordingly when moving on to non-single-particle NPCs
         // State
         , mNpcCount(0)
         , mFreeRegimeHumanNpcCount(0)
         , mConstrainedRegimeHumanNpcCount(0)
-        , mAreElementsDirtyForRendering(true)
+        , mAreStaticRenderAttributesDirty(true)
     {
         mGameEventHandler->OnNpcCountsUpdated(
             mNpcCount,
@@ -130,19 +143,55 @@ public:
 
     Npcs(Npcs && other) = default;
 
-    void OnShipAdded(ShipId shipId);
+    void OnShipAdded(Ship const & ship);
 
     void OnShipRemoved(ShipId shipId);
 
-    NpcId AddHumanNpc(
-        HumanNpcRoleType role,
-        Ship const & ship,
-        vec2f const & position,
-        std::optional<ElementIndex> triangleIndex);
+    // Interactions
 
-    void RemoveNpc(NpcId const id);
+    std::optional<NpcId> PickNpc(vec2f const & position) const;
+
+    void BeginMoveNpc(NpcId const & id);
+
+    NpcId BeginMoveNewHumanNpc(
+        HumanNpcRoleType role,
+        vec2f const & initialPosition);
+
+    bool IsSuitableNpcPosition(
+        NpcId const & id,
+        vec2f const & position) const;
+
+    bool MoveNpcBy(
+        NpcId const & id,
+        vec2f const & offset);
+
+    void EndMoveNpc(
+        NpcId const & id,
+        vec2f const & finalOffset);
+
+    void AbortNewNpc(NpcId const & id);
+
+    void HighlightNpc(
+        NpcId const & id, 
+        NpcHighlightType highlight);
+
+    void RemoveNpc(NpcId const & id);
 
 private:
+
+    NpcId AddHumanNpc(
+        HumanNpcRoleType role,
+        vec2f const & position,
+        RegimeType initialRegime,      
+        NpcHighlightType initialHighlight,
+        ShipId const & shipId,
+        std::optional<ElementIndex> triangleIndex);
+
+    inline NpcState & GetNpcState(ShipId const & shipId, LocalNpcId const & localNpcId);
+
+    inline std::optional<ElementId> FindContainingTriangle(vec2f const & position) const;
+
+    ShipId GetTopmostShipId() const;
 
 private:
 
@@ -151,14 +200,27 @@ private:
 
     //
     // Container
-    //    
+    //
+
+    struct NpcShip
+    {
+        Ship const & ShipRef;
+        ElementIndex Ordinal;
+
+        NpcShip(
+            Ship const & shipRef,
+            ElementIndex ordinal)
+            : ShipRef(shipRef)
+            , Ordinal(ordinal)
+        {}
+    };
 
     // State: organized by ship index (not ship ID), compacted at addition/removal
     std::vector<std::vector<NpcState>> mStateByShip;
 
     // Indices mapping global IDs to our ordinals
-    std::vector<ElementIndex> mShipIdToShipOrdinalIndex;
-    std::vector<std::vector<ElementIndex>> mNpcIdToNpcOrdinalIndex; // Indexed by ship ID
+    std::vector<std::optional<NpcShip>> mShipIdToShipIndex; // Indexed by ship ID
+    std::vector<std::vector<ElementIndex>> mNpcIdToNpcOrdinalIndex; // Indexed by ship ID and local NPC ID
 
     // All particles
     NpcParticles mParticles;
@@ -175,7 +237,7 @@ private:
     // Flag remembering whether the set of NPCs is dirty
     // (i.e. whether there are more or less NPCs than previously
     // reported to the rendering engine)
-    bool mutable mAreElementsDirtyForRendering;
+    bool mutable mAreStaticRenderAttributesDirty;
 };
 
 }

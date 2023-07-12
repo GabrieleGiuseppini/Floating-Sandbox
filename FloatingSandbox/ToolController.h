@@ -49,6 +49,13 @@ public:
         InternalSetCurrentToolCursor();
     }
 
+    void SetHumanNpcPlaceTool(HumanNpcRoleType role)
+    {
+        PlaceHumanNpcTool * tool = dynamic_cast<PlaceHumanNpcTool *>(mAllTools[static_cast<size_t>(ToolType::PlaceHumanNpc)].get());
+        tool->SetRole(role);
+        SetTool(ToolType::PlaceHumanNpc);
+    }
+
     void UnsetTool()
     {
         // Notify old tool

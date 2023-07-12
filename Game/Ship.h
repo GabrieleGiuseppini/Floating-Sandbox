@@ -57,8 +57,12 @@ public:
 
     inline size_t GetPointCount() const { return mPoints.GetElementCount(); }
 
-    inline auto const & GetPoints() const { return mPoints; }
-    inline auto & GetPoints() { return mPoints; }
+    inline Points const & GetPoints() const { return mPoints; }
+    inline Points & GetPoints() { return mPoints; }
+
+    inline Springs const & GetSprings() const { return mSprings; }
+
+    inline Triangles const & GetTriangles() const { return mTriangles; }
 
     bool IsUnderwater(ElementIndex pointElementIndex) const
     {

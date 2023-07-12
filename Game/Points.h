@@ -968,6 +968,11 @@ public:
         return mPositionBuffer[pointElementIndex];
     }
 
+    Buffer<vec2f> const & GetPositionBuffer() const
+    {
+        return mPositionBuffer;
+    }
+
     vec2f * GetPositionBufferAsVec2()
     {
         return mPositionBuffer.data();
