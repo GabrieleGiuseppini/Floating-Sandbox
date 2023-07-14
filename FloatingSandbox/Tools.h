@@ -3544,9 +3544,7 @@ public:
     {
         if (mEngagementData)
         {
-            auto const offset = inputState.MousePosition - mEngagementData->LastPosition;
-            bool const isSuitablePosition = mGameController.MoveNpcBy(mEngagementData->CurrentNpcId, offset);
-            mGameController.HighlightNpc(mEngagementData->CurrentNpcId, isSuitablePosition ? NpcHighlightType::None : NpcHighlightType::Error);
+            Move(inputState.MousePosition);
 
             mEngagementData->LastPosition = inputState.MousePosition;
         }
@@ -3556,14 +3554,12 @@ public:
     {
         if (mEngagementData)
         {
-            auto const offset = inputState.MousePosition - mEngagementData->LastPosition;
-            bool const isSuitablePosition = mGameController.MoveNpcBy(mEngagementData->CurrentNpcId, offset);
-            mGameController.HighlightNpc(mEngagementData->CurrentNpcId, isSuitablePosition ? NpcHighlightType::None : NpcHighlightType::Error);
-
+            bool const isSuitablePosition = Move(inputState.MousePosition);
             if (isSuitablePosition)
             {
                 // Finish placement
                 mGameController.EndMoveNpc(mEngagementData->CurrentNpcId, DisplayLogicalSize(0, 0));
+                mGameController.HighlightNpc(mEngagementData->CurrentNpcId, NpcHighlightType::None);
                 mEngagementData.reset();
 
                 SetCurrentCursor();
@@ -3595,6 +3591,15 @@ public:
 protected:
 
     virtual NpcId Begin(DisplayLogicalCoordinates position) = 0;
+
+    bool Move(DisplayLogicalCoordinates mousePosition)
+    {
+        auto const offset = mousePosition - mEngagementData->LastPosition;
+        bool const isSuitablePosition = mGameController.MoveNpcBy(mEngagementData->CurrentNpcId, offset);
+        mGameController.HighlightNpc(mEngagementData->CurrentNpcId, isSuitablePosition ? NpcHighlightType::Selected : NpcHighlightType::Error);
+
+        return isSuitablePosition;
+    }
 
     virtual void SetCurrentCursor() = 0;
 
@@ -3635,9 +3640,13 @@ protected:
 
     NpcId Begin(DisplayLogicalCoordinates position) override
     {
-        return mGameController.BeginMoveNewHumanNpc(            
+        NpcId const npcId = mGameController.BeginMoveNewHumanNpc(
             mRole,
             position);
+
+        mGameController.HighlightNpc(npcId, NpcHighlightType::Selected);
+
+        return npcId;
     }
 
     void SetCurrentCursor() override

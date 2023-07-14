@@ -116,10 +116,9 @@ public:
         : mMaterialDatabase(materialDatabase)
         , mGameEventHandler(std::move(gameEventDispatcher))
         // Storage
-        , mStateByShip()
-        , mShipIdToShipIndex()
-        , mNpcIdToNpcOrdinalIndex()
-        , mParticles(GameParameters::MaxNpcs) // TODO: multiply accordingly when moving on to non-single-particle NPCs
+        , mNpcShipsByShipId()
+        , mNpcOrdinalsByNpcId()
+        , mParticles(GameParameters::MaxNpcs) // FUTUREWORK: multiply accordingly when moving on to non-single-particle NPCs
         // State
         , mNpcCount(0)
         , mFreeRegimeHumanNpcCount(0)
@@ -209,22 +208,17 @@ private:
     struct NpcShip
     {
         Ship const & ShipRef;
-        ElementIndex Ordinal;
+        std::vector<NpcState> NpcStates;
 
-        NpcShip(
-            Ship const & shipRef,
-            ElementIndex ordinal)
+        NpcShip(Ship const & shipRef)
             : ShipRef(shipRef)
-            , Ordinal(ordinal)
+            , NpcStates()
         {}
     };
 
-    // State: organized by ship index (not ship ID), compacted at addition/removal
-    std::vector<std::vector<NpcState>> mStateByShip;
-
-    // Indices mapping global IDs to our ordinals
-    std::vector<std::optional<NpcShip>> mShipIdToShipIndex; // Indexed by ship ID
-    std::vector<std::vector<ElementIndex>> mNpcIdToNpcOrdinalIndex; // Indexed by ship ID and local NPC ID
+    // Indices mapping global IDs to our data
+    std::vector<std::optional<NpcShip>> mNpcShipsByShipId; // Indexed by ship ID
+    std::vector<std::vector<std::optional<ElementIndex>>> mNpcOrdinalsByNpcId; // Indexed by ship ID and local NPC ID
 
     // All particles
     NpcParticles mParticles;

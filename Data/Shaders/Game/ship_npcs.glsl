@@ -48,7 +48,7 @@ void main()
     
     float borderDepth = 
         step(Radius - BorderWidth, r)
-        * step(r, Radius);
+        * (1.0 - smoothstep(Radius - BorderWidth / 2.0, Radius, r));
 
     vec4 col = vec4(
         (vec3(0.870, 0.855, 0.00) * bodyDepth + vec3(0.3, 0.3, 0.3) * borderDepth) * paramEffectiveAmbientLightIntensity,
@@ -58,7 +58,9 @@ void main()
     float highlightDepth = step(r, 1.0);
     col = 
         col * col.a
-        + vertexHighlightColor * step(Radius, r) * step(r, 1.0);
+        + vertexHighlightColor 
+            * step(Radius, r) 
+            * (1.0 - smoothstep(Radius + (1.0 - Radius) / 2.0,  1.0, r));
 
     ////////////////////
 
