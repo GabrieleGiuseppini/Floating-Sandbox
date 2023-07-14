@@ -22,8 +22,12 @@
 		- Impl:
 			- TODOHERE
 
+	- Consider invoking World::Upload from render thread (via RenderContext, as func<>)
+		- So that may upload to GPU buffers directly, instead of local temp buffers
+			- Eventually using mapped buffers
+
 	- Quad rendering with indices
-		- Sharing VBOs in VAOs: 
+		- Sharing VBOs (for indices) in VAOs: 
 			- https://computergraphics.stackexchange.com/questions/4623/multiple-vao-share-a-vbo
 			- https://stackoverflow.com/questions/23542355/using-a-vertex-buffer-in-two-different-vertex-array-objects
 			- Idea: one single "TriangleQuadIndexSeries" (or "sequence") VBO for all render contexts, created and initialized in GlobalRenderContext, and passed

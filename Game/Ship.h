@@ -55,6 +55,11 @@ public:
 
     Geometry::AABBSet CalculateAABBs() const;
 
+    PlaneId GetMaxPlaneId() const
+    {
+        return mMaxMaxPlaneId;
+    }
+
     inline size_t GetPointCount() const { return mPoints.GetElementCount(); }
 
     inline Points const & GetPoints() const { return mPoints; }

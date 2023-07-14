@@ -12,6 +12,8 @@
 
 namespace Physics {
 
+static float constexpr HumanNpcSize = 1.80f;
+
 void Npcs::OnShipAdded(Ship const & ship)
 {
 	//
@@ -112,10 +114,44 @@ void Npcs::Upload(Render::RenderContext & renderContext) const
 		{
 			Render::ShipRenderContext & shipRenderContext = renderContext.GetShipRenderContext(npcShip->ShipRef.GetId());
 
-			// TODOHERE
-			(void)shipRenderContext;
+			auto const & npcStates = mStateByShip[npcShip->Ordinal];
+
+			if (mAreStaticRenderAttributesDirty)
+			{
+				shipRenderContext.UploadNpcStaticAttributesStart(npcStates.size());
+
+				for (auto const & npcState : npcStates)
+				{
+					static vec4f constexpr HightlightColors[] = {
+						vec4f(0.760f, 0.114f, 0.114f, 1.0f),	// Error
+						vec4f(0.208f, 0.590f, 0.0177f, 1.0f),	// Selected
+						vec4f::zero()							// None
+					};
+
+					shipRenderContext.UploadNpcStaticAttributes(HightlightColors[static_cast<size_t>(npcState.Highlight)]);
+				}
+
+				shipRenderContext.UploadNpcStaticAttributesEnd();
+			}
+
+			shipRenderContext.UploadNpcQuadsStart(npcStates.size());
+
+			for (auto const & npcState : npcStates)
+			{
+				shipRenderContext.UploadNpcQuad(
+					npcState.TriangleIndex
+						? npcShip->ShipRef.GetPoints().GetPlaneId(npcShip->ShipRef.GetTriangles().GetPointAIndex(*npcState.TriangleIndex))
+						: npcShip->ShipRef.GetMaxPlaneId(),
+					mParticles.GetPosition(npcState.PrimaryParticleIndex),
+					vec2f(0, HumanNpcSize),
+					HumanNpcSize);
+			}
+
+			shipRenderContext.UploadNpcQuadsEnd();
 		}
 	}
+
+	mAreStaticRenderAttributesDirty;
 }
 
 // Interactions
@@ -157,7 +193,7 @@ NpcId Npcs::BeginMoveNewHumanNpc(
 		RegimeType::Placement,
 		NpcHighlightType::None,
 		triangleId ? triangleId->GetShipId() : GetTopmostShipId(),
-		triangleId ? triangleId->GetLocalObjectId() : NoneElementIndex);
+		triangleId ? triangleId->GetLocalObjectId() : std::optional<ElementIndex>());
 }
 
 bool Npcs::IsSuitableNpcPosition(
@@ -186,6 +222,7 @@ bool Npcs::MoveNpcBy(
 
 	// Calculate new position
 	vec2f const newPosition = mParticles.GetPosition(npcState.PrimaryParticleIndex) + offset;
+	mParticles.SetPosition(npcState.PrimaryParticleIndex, newPosition);
 
 	// Calculate new triangle index
 	auto const newTriangleId = FindContainingTriangle(newPosition);
@@ -221,12 +258,15 @@ void Npcs::HighlightNpc(
 	NpcId const & id,
 	NpcHighlightType highlight)
 {
-	// TODO: find NPC and set highlight
-	// TODO: remember elements dirty
+	auto const shipId = id.GetShipId();
+	auto const localNpcId = id.GetLocalObjectId();
 
-	// TODO
-	(void)id;
-	(void)highlight;
+	auto & npcState = GetNpcState(shipId, localNpcId);
+
+	npcState.Highlight = highlight;
+
+	// Remember to re-upload this static attribute
+	mAreStaticRenderAttributesDirty = true;
 }
 
 void Npcs::RemoveNpc(NpcId const & id)
@@ -457,7 +497,7 @@ bool Npcs::IsTriangleSuitableForNpc(
 		return true;
 	}
 
-	// TODOHERE: check conditions (need new Springs getter: IsNpcSurface)
+	// TODOHERE: check conditions (need new Springs getter, see plan)
 	return true;
 }
 

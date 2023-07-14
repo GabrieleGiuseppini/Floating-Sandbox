@@ -55,6 +55,7 @@ enum class ProgramType
     ShipFrontierEdges,
     ShipGenericMipMappedTextures,
     ShipJetEngineFlames,
+    ShipNpcs,
     ShipPointToPointArrows,
     ShipPointsColor,
     ShipPointsColorStress,
@@ -224,6 +225,10 @@ enum class VertexAttributeType : GLuint
     ShipPointStress = 4,
     ShipPointAuxiliaryData = 5,
     ShipPointFrontierColor = 6,
+
+    NpcStaticAttributeGroup1 = 0,
+    NpcQuad1 = 1,
+    NpcQuad2 = 2,
 
     ElectricSpark1 = 0,
 

@@ -217,6 +217,117 @@ public:
     void UploadElementFrontierEdgesEnd();
 
     //
+    // NPCs
+    //
+
+    void UploadNpcStaticAttributesStart(size_t count);
+
+    inline void UploadNpcStaticAttributes(vec4f const & highlightColor)
+    {
+        //
+        // Append vertices - two triangles
+        //
+
+        // Top-left
+        mNpcStaticAttributeVertexBuffer.emplace_back(
+            highlightColor);
+
+        // Top-Right
+        mNpcStaticAttributeVertexBuffer.emplace_back(
+            highlightColor);
+
+        // Bottom-left
+        mNpcStaticAttributeVertexBuffer.emplace_back(
+            highlightColor);
+
+        // Top-Right
+        mNpcStaticAttributeVertexBuffer.emplace_back(
+            highlightColor);
+
+        // Bottom-left
+        mNpcStaticAttributeVertexBuffer.emplace_back(
+            highlightColor);
+
+        // Bottom-right
+        mNpcStaticAttributeVertexBuffer.emplace_back(
+            highlightColor);
+    }
+
+    void UploadNpcStaticAttributesEnd();
+
+    void UploadNpcQuadsStart(size_t count);
+
+    inline void UploadNpcQuad(
+        PlaneId planeId,
+        vec2f const & position,
+        vec2f const & verticalUp,
+        float width)
+    {
+        float const fPlaneId = static_cast<float>(planeId);
+
+        //
+        // Calculate quad vertices
+        //
+        // C---E---D
+        // |   |   |
+        // |   |   |
+        // |   |   |
+        // |   |   |
+        // |   |   |
+        // A---S---B
+        //
+
+        vec2f const n = verticalUp.to_perpendicular().normalise_approx();
+
+        vec2f const a = position - n * width / 2.0f;
+        vec2f const b = position + n * width / 2.0f;
+        vec2f const c = position + verticalUp - n * width / 2.0f;
+        vec2f const d = position + verticalUp + n * width / 2.0f;
+        
+        //
+        // Append vertices - two triangles
+        //
+
+        // Top-left
+        mNpcQuadVertexBuffer.emplace_back(
+            c,
+            vec2f(-1.0f, 1.0f),
+            fPlaneId);
+
+        // Top-Right
+        mNpcQuadVertexBuffer.emplace_back(
+            d,
+            vec2f(1.0f, 1.0f),
+            fPlaneId);
+
+        // Bottom-left
+        mNpcQuadVertexBuffer.emplace_back(
+            a,
+            vec2f(-1.0f, -1.0f),
+            fPlaneId);
+
+        // Top-Right
+        mNpcQuadVertexBuffer.emplace_back(
+            d,
+            vec2f(1.0f, 1.0f),
+            fPlaneId);
+
+        // Bottom-left
+        mNpcQuadVertexBuffer.emplace_back(
+            a,
+            vec2f(-1.0f, -1.0f),
+            fPlaneId);
+
+        // Bottom-right
+        mNpcQuadVertexBuffer.emplace_back(
+            b,
+            vec2f(1.0f, -1.0f),
+            fPlaneId);
+    }
+
+    void UploadNpcQuadsEnd();
+
+    //
     // Electric sparks
     //
 
@@ -493,7 +604,6 @@ public:
     }
 
     void UploadJetEngineFlamesEnd();
-
 
     //
     // Explosions
@@ -1284,6 +1394,9 @@ private:
 
 private:
 
+    void RenderPrepareNpcs(RenderParameters const & renderParameters);
+    void RenderDrawNpcs(RenderParameters const & renderParameters);
+
     void RenderPrepareElectricSparks(RenderParameters const & renderParameters);
     void RenderDrawElectricSparks(RenderParameters const & renderParameters);
 
@@ -1379,6 +1492,31 @@ private:
         int pointIndex1;
         int pointIndex2;
         int pointIndex3;
+    };
+
+    struct NpcStaticAttributeVertex
+    {
+        vec4f highlightColor;
+
+        NpcStaticAttributeVertex(vec4f _highlightColor)
+            : highlightColor(_highlightColor)
+        {}
+    };
+
+    struct NpcQuadVertex
+    {
+        vec2f vertexPosition;
+        vec2f quadSpacePosition;
+        float planeId;        
+
+        NpcQuadVertex(
+            vec2f _vertexPosition,
+            vec2f _quadSpacePosition,
+            float _planeId)
+            : vertexPosition(_vertexPosition)
+            , quadSpacePosition(_quadSpacePosition)
+            , planeId(_planeId)
+        {}
     };
 
     struct ElectricSparkVertex
@@ -1618,6 +1756,15 @@ private:
     GameOpenGLVBO mFrontierEdgeElementVBO;
     size_t mFrontierEdgeElementVBOAllocatedElementSize;
 
+    BoundedVector<NpcStaticAttributeVertex> mNpcStaticAttributeVertexBuffer;
+    bool mIsNpcStaticAttributeVertexBufferDirty;
+    GameOpenGLVBO mNpcStaticAttributeVBO;
+    size_t mNpcStaticAttributeVBOAllocatedVertexSize;
+
+    BoundedVector<NpcQuadVertex> mNpcQuadVertexBuffer;
+    GameOpenGLVBO mNpcQuadVBO;
+    size_t mNpcQuadVBOAllocatedVertexSize;
+
     BoundedVector<ElectricSparkVertex> mElectricSparkVertexBuffer;
     GameOpenGLVBO mElectricSparkVBO;
     size_t mElectricSparkVBOAllocatedVertexSize;
@@ -1695,6 +1842,7 @@ private:
     //
 
     GameOpenGLVAO mShipVAO;
+    GameOpenGLVAO mNpcVAO;
     GameOpenGLVAO mElectricSparkVAO;
     GameOpenGLVAO mFlameVAO;
     GameOpenGLVAO mJetEngineFlameVAO;

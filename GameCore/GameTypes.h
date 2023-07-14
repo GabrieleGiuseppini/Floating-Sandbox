@@ -983,9 +983,9 @@ enum class HumanNpcRoleType
  * Types of hightlight for NPCs.
  */
 
-enum class NpcHighlightType
+enum class NpcHighlightType : size_t
 {
-    Error,
+    Error = 0,
     Selected,
     None
 };

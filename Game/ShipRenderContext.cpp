@@ -55,6 +55,15 @@ ShipRenderContext::ShipRenderContext(
     , mFrontierEdgeElementVBO()
     , mFrontierEdgeElementVBOAllocatedElementSize(0u)
     //
+    , mNpcStaticAttributeVertexBuffer()
+    , mIsNpcStaticAttributeVertexBufferDirty(true)
+    , mNpcStaticAttributeVBO()
+    , mNpcStaticAttributeVBOAllocatedVertexSize(0u)
+    //
+    , mNpcQuadVertexBuffer()
+    , mNpcQuadVBO()
+    , mNpcQuadVBOAllocatedVertexSize(0u)
+    //
     , mElectricSparkVertexBuffer()
     , mElectricSparkVBO()
     , mElectricSparkVBOAllocatedVertexSize(0u)
@@ -119,6 +128,7 @@ ShipRenderContext::ShipRenderContext(
     , mTriangleElementVBOStartIndex(0)
     // VAOs
     , mShipVAO()
+    , mNpcVAO()
     , mElectricSparkVAO()
     , mFlameVAO()
     , mJetEngineFlameVAO()
@@ -154,8 +164,8 @@ ShipRenderContext::ShipRenderContext(
     // Initialize buffers
     //
 
-    GLuint vbos[19];
-    glGenBuffers(19, vbos);
+    GLuint vbos[21];
+    glGenBuffers(21, vbos);
     CheckOpenGLError();
 
     mPointAttributeGroup1VBO = vbos[0];
@@ -201,26 +211,30 @@ ShipRenderContext::ShipRenderContext(
 
     mFrontierEdgeElementVBO = vbos[8];
 
-    mElectricSparkVBO = vbos[9];
+    mNpcStaticAttributeVBO = vbos[9];
 
-    mFlameVBO = vbos[10];
+    mNpcQuadVBO = vbos[10];
 
-    mJetEngineFlameVBO = vbos[11];
+    mElectricSparkVBO = vbos[11];
 
-    mExplosionVBO = vbos[12];
+    mFlameVBO = vbos[12];
 
-    mSparkleVBO = vbos[13];
+    mJetEngineFlameVBO = vbos[13];
+
+    mExplosionVBO = vbos[14];
+
+    mSparkleVBO = vbos[15];
     mSparkleVertexBuffer.reserve(256); // Arbitrary
 
-    mGenericMipMappedTextureVBO = vbos[14];
+    mGenericMipMappedTextureVBO = vbos[16];
 
-    mHighlightVBO = vbos[15];
+    mHighlightVBO = vbos[17];
 
-    mVectorArrowVBO = vbos[16];
+    mVectorArrowVBO = vbos[18];
 
-    mCenterVBO = vbos[17];
+    mCenterVBO = vbos[19];
 
-    mPointToPointArrowVBO = vbos[18];
+    mPointToPointArrowVBO = vbos[20];
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -236,7 +250,6 @@ ShipRenderContext::ShipRenderContext(
     mSpringElementBuffer.reserve(pointCount * GameParameters::MaxSpringsPerPoint);
     mRopeElementBuffer.reserve(pointCount); // Arbitrary
     mTriangleElementBuffer.reserve(pointCount * GameParameters::MaxTrianglesPerPoint);
-
 
     //
     // Initialize Ship VAO
@@ -299,6 +312,36 @@ ShipRenderContext::ShipRenderContext(
         // in the VAO. So we won't associate the element VBO here, but rather before each drawing call.
         ////glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mPointElementVBO);
         ////CheckOpenGLError();
+
+        glBindVertexArray(0);
+    }
+
+    //
+    // Initialize NPC VAO
+    //
+
+    {
+        glGenVertexArrays(1, &tmpGLuint);
+        mNpcVAO = tmpGLuint;
+
+        glBindVertexArray(*mNpcVAO);
+        CheckOpenGLError();
+
+        // Describe static attributes vertex attributes
+        glBindBuffer(GL_ARRAY_BUFFER, *mNpcStaticAttributeVBO);
+        static_assert(sizeof(NpcStaticAttributeVertex) == (4) * sizeof(float));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::NpcStaticAttributeGroup1));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::NpcStaticAttributeGroup1), 4, GL_FLOAT, GL_FALSE, sizeof(NpcStaticAttributeVertex), (void *)(0));
+        CheckOpenGLError();
+
+        // Describe quad vertex attributes
+        glBindBuffer(GL_ARRAY_BUFFER, *mNpcQuadVBO);
+        static_assert(sizeof(NpcQuadVertex) == (2 + 1 + 2) * sizeof(float));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::NpcQuad1));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::NpcQuad1), 4, GL_FLOAT, GL_FALSE, sizeof(NpcQuadVertex), (void *)(0));
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::NpcQuad2));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::NpcQuad2), 1, GL_FLOAT, GL_FALSE, sizeof(NpcQuadVertex), (void *)((4) * sizeof(float)));
+        CheckOpenGLError();
 
         glBindVertexArray(0);
     }
@@ -977,6 +1020,37 @@ void ShipRenderContext::UploadElementFrontierEdgesEnd()
     // Nop
 }
 
+void ShipRenderContext::UploadNpcStaticAttributesStart(size_t count)
+{
+    //
+    // NPC static attributes are sticky: we upload them once in a while and reuse
+    // them as needed
+    //
+
+    // No need to clear, we'll repopulate everything
+    mNpcStaticAttributeVertexBuffer.reset(count * 6);
+    mIsNpcStaticAttributeVertexBufferDirty = true;
+}
+
+void ShipRenderContext::UploadNpcStaticAttributesEnd()
+{
+    // Nop
+}
+
+void ShipRenderContext::UploadNpcQuadsStart(size_t count)
+{
+    //
+    // NPC quads are not sticky: we upload them at each frame
+    //
+
+    mNpcQuadVertexBuffer.reset(6 * count);
+}
+
+void ShipRenderContext::UploadNpcQuadsEnd()
+{
+    // Nop
+}
+
 void ShipRenderContext::UploadElectricSparksStart(size_t count)
 {
     //
@@ -1346,6 +1420,12 @@ void ShipRenderContext::RenderPrepare(RenderParameters const & renderParameters)
     }
 
     //
+    // Prepare NPCs
+    //
+
+    RenderPrepareNpcs(renderParameters);
+
+    //
     // Prepare electric sparks
     //
 
@@ -1654,6 +1734,12 @@ void ShipRenderContext::RenderDraw(
     }
 
     //
+    // Render NPCs
+    //
+
+    RenderDrawNpcs(renderParameters);
+
+    //
     // Render electric sparks
     //
 
@@ -1730,6 +1816,73 @@ void ShipRenderContext::RenderDraw(
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
+
+void ShipRenderContext::RenderPrepareNpcs(RenderParameters const & /*renderParameters*/)
+{
+    if (mIsNpcStaticAttributeVertexBufferDirty)
+    {
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mNpcStaticAttributeVBO);
+
+        if (mNpcStaticAttributeVertexBuffer.size() > mNpcStaticAttributeVBOAllocatedVertexSize)
+        {
+            // Re-allocate VBO buffer and upload
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, mNpcStaticAttributeVertexBuffer.size() * sizeof(NpcStaticAttributeVertex), mNpcStaticAttributeVertexBuffer.data(), GL_STATIC_DRAW);
+            CheckOpenGLError();
+
+            mNpcStaticAttributeVBOAllocatedVertexSize = mNpcStaticAttributeVertexBuffer.size();
+        }
+        else
+        {
+            // No size change, just upload VBO buffer
+            glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, mNpcStaticAttributeVertexBuffer.size() * sizeof(NpcStaticAttributeVertex), mNpcStaticAttributeVertexBuffer.data());
+            CheckOpenGLError();
+        }
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+        mIsNpcStaticAttributeVertexBufferDirty = false;
+    }
+
+    if (!mNpcQuadVertexBuffer.empty())
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, *mNpcQuadVBO);
+
+        if (mNpcQuadVertexBuffer.size() > mNpcQuadVBOAllocatedVertexSize)
+        {
+            // Re-allocate VBO buffer and upload
+            glBufferData(GL_ARRAY_BUFFER, mNpcQuadVertexBuffer.size() * sizeof(NpcQuadVertex), mNpcQuadVertexBuffer.data(), GL_DYNAMIC_DRAW);
+            CheckOpenGLError();
+
+            mNpcQuadVBOAllocatedVertexSize = mNpcQuadVertexBuffer.size();
+        }
+        else
+        {
+            // No size change, just upload VBO buffer
+            glBufferSubData(GL_ARRAY_BUFFER, 0, mNpcQuadVertexBuffer.size() * sizeof(NpcQuadVertex), mNpcQuadVertexBuffer.data());
+            CheckOpenGLError();
+        }
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+}
+
+void ShipRenderContext::RenderDrawNpcs(RenderParameters const & renderParameters)
+{
+    if (!mNpcQuadVertexBuffer.empty())
+    {
+        glBindVertexArray(*mNpcVAO);
+
+        mShaderManager.ActivateProgram<ProgramType::ShipNpcs>();
+
+        if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Wireframe)
+            glLineWidth(0.1f);
+
+        assert(0 == (mNpcQuadVertexBuffer.size() % 6));
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mNpcQuadVertexBuffer.size()));
+
+        glBindVertexArray(0);
+    }
+}
 
 void ShipRenderContext::RenderPrepareElectricSparks(RenderParameters const & /*renderParameters*/)
 {
@@ -2318,18 +2471,19 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
     //          - Triangles are always drawn temporally before ropes and springs though, to avoid anti-aliasing issues
     //      - 4: Stressed springs, Frontier edges (temporally after)
     //      - 5: Points
-    //      - 6: Electric sparks, Flames (foreground), Jet engine flames
-    //      - 7: Sparkles
-    //      - 8: Generic textures
-    //      - 9: Explosions
-    //      - 10: Highlights, Centers
-    //      - 11: Vectors, Point-to-Point Arrows
+    //      - 6: NPCs
+    //      - 7: Electric sparks, Flames (foreground), Jet engine flames
+    //      - 8: Sparkles
+    //      - 9: Generic textures
+    //      - 10: Explosions
+    //      - 11: Highlights, Centers
+    //      - 12: Vectors, Point-to-Point Arrows
     //
 
     constexpr float ShipRegionZStart = 1.0f; // Far
     constexpr float ShipRegionZWidth = -2.0f; // Near (-1)
 
-    constexpr int NLayers = 12;
+    constexpr int NLayers = 13;
 
     auto const & view = renderParameters.View;
 
@@ -2476,7 +2630,7 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
         shipOrthoMatrix);
 
     //
-    // Layer 6: Electric Sparks, Flames - foreground, Jet engine flames
+    // Layer 6: NPCs
     //
 
     view.CalculateShipOrthoMatrix(
@@ -2486,6 +2640,24 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
         static_cast<int>(mShipCount),
         static_cast<int>(mMaxMaxPlaneId),
         6,
+        NLayers,
+        shipOrthoMatrix);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipNpcs>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipNpcs, ProgramParameterType::OrthoMatrix>(
+        shipOrthoMatrix);
+
+    //
+    // Layer 7: Electric Sparks, Flames - foreground, Jet engine flames
+    //
+
+    view.CalculateShipOrthoMatrix(
+        ShipRegionZStart,
+        ShipRegionZWidth,
+        static_cast<int>(mShipId),
+        static_cast<int>(mShipCount),
+        static_cast<int>(mMaxMaxPlaneId),
+        7,
         NLayers,
         shipOrthoMatrix);
 
@@ -2502,25 +2674,7 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
         shipOrthoMatrix);
 
     //
-    // Layer 7: Sparkles
-    //
-
-    view.CalculateShipOrthoMatrix(
-        ShipRegionZStart,
-        ShipRegionZWidth,
-        static_cast<int>(mShipId),
-        static_cast<int>(mShipCount),
-        static_cast<int>(mMaxMaxPlaneId),
-        7,
-        NLayers,
-        shipOrthoMatrix);
-
-    mShaderManager.ActivateProgram<ProgramType::ShipSparkles>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipSparkles, ProgramParameterType::OrthoMatrix>(
-        shipOrthoMatrix);
-
-    //
-    // Layer 8: Generic Textures
+    // Layer 8: Sparkles
     //
 
     view.CalculateShipOrthoMatrix(
@@ -2533,12 +2687,12 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
         NLayers,
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<ProgramType::ShipGenericMipMappedTextures>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipGenericMipMappedTextures, ProgramParameterType::OrthoMatrix>(
+    mShaderManager.ActivateProgram<ProgramType::ShipSparkles>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipSparkles, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
 
     //
-    // Layer 9: Explosions
+    // Layer 9: Generic Textures
     //
 
     view.CalculateShipOrthoMatrix(
@@ -2551,12 +2705,12 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
         NLayers,
         shipOrthoMatrix);
 
-    mShaderManager.ActivateProgram<ProgramType::ShipExplosions>();
-    mShaderManager.SetProgramParameter<ProgramType::ShipExplosions, ProgramParameterType::OrthoMatrix>(
+    mShaderManager.ActivateProgram<ProgramType::ShipGenericMipMappedTextures>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipGenericMipMappedTextures, ProgramParameterType::OrthoMatrix>(
         shipOrthoMatrix);
 
     //
-    // Layer 10: Highlights, Centers
+    // Layer 10: Explosions
     //
 
     view.CalculateShipOrthoMatrix(
@@ -2566,6 +2720,24 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
         static_cast<int>(mShipCount),
         static_cast<int>(mMaxMaxPlaneId),
         10,
+        NLayers,
+        shipOrthoMatrix);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipExplosions>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipExplosions, ProgramParameterType::OrthoMatrix>(
+        shipOrthoMatrix);
+
+    //
+    // Layer 11: Highlights, Centers
+    //
+
+    view.CalculateShipOrthoMatrix(
+        ShipRegionZStart,
+        ShipRegionZWidth,
+        static_cast<int>(mShipId),
+        static_cast<int>(mShipCount),
+        static_cast<int>(mMaxMaxPlaneId),
+        11,
         NLayers,
         shipOrthoMatrix);
 
@@ -2582,7 +2754,7 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
         shipOrthoMatrix);
 
     //
-    // Layer 11: Vectors, Point-to-Point Arrows
+    // Layer 12: Vectors, Point-to-Point Arrows
     //
 
     view.CalculateShipOrthoMatrix(
@@ -2591,7 +2763,7 @@ void ShipRenderContext::ApplyViewModelChanges(RenderParameters const & renderPar
         static_cast<int>(mShipId),
         static_cast<int>(mShipCount),
         static_cast<int>(mMaxMaxPlaneId),
-        11,
+        12,
         NLayers,
         shipOrthoMatrix);
 
@@ -2659,6 +2831,10 @@ void ShipRenderContext::ApplyEffectiveAmbientLightIntensityChanges(RenderParamet
 
     mShaderManager.ActivateProgram<ProgramType::ShipTrianglesStrength>();
     mShaderManager.SetProgramParameter<ProgramType::ShipTrianglesStrength, ProgramParameterType::EffectiveAmbientLightIntensity>(
+        effectiveAmbientLightIntensityParamValue);
+
+    mShaderManager.ActivateProgram<ProgramType::ShipNpcs>();
+    mShaderManager.SetProgramParameter<ProgramType::ShipNpcs, ProgramParameterType::EffectiveAmbientLightIntensity>(
         effectiveAmbientLightIntensityParamValue);
 
     mShaderManager.ActivateProgram<ProgramType::ShipGenericMipMappedTextures>();

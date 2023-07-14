@@ -121,6 +121,10 @@ MainFrame::MainFrame(
     , mMainGLCanvas(nullptr)
     , mMainGLCanvasContext()
     , mCurrentOpenGLCanvas(nullptr)
+    // UI members checked for existance
+    , mProbePanel(nullptr)
+    , mEventTickerPanel(nullptr)
+    , mElectricalPanel(nullptr)
     // State
     , mInitialShipFilePath(initialShipFilePath)
     , mCurrentShipLoadSpecs()
@@ -2638,7 +2642,7 @@ void MainFrame::LoadShip(
     //
 
     assert(mToolController);
-    mToolController->Reset();
+    mToolController->ResetStart();
 
     assert(mSoundController);
     mSoundController->Reset();
@@ -2690,6 +2694,9 @@ void MainFrame::LoadShip(
     {
         OnError(ex.what(), false);
     }
+
+    assert(mToolController);
+    mToolController->ResetEnd();
 }
 
 void MainFrame::OnShipLoaded(ShipLoadSpecifications loadSpecs)

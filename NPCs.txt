@@ -152,11 +152,12 @@ Arch:
 	X Though we could have a NpcRenderContext which passes ship's Z in vertex buffers, but then there's the order/alpha problem; best if rendered by each ship individually
 
 - TODOHERE:
-	- Reset: why break? Debug path from Abort()
-	- Do Rendering
+	- Fix issue with tool & zoom
 	- Rethink double structure of Npcs: just one vector, with vector & metadata inside?
-	- New spring getter: IsNpcSurface
-		- ShipFactory: populate with IsHull for the time being (w/comment)
+	- New spring getter: NpcSurfaceType
+		- ShipFactory: populate as "Floor" using IsHull for the time being (w/comment), @ point matrix
+			- But split factory vs. effective, for doors
+		- Then can do Npcs::IsSuitable
 
 
 - Placing an NPC:

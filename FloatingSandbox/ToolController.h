@@ -83,11 +83,18 @@ public:
         }
     }
 
-    void Reset()
+    void ResetStart()
     {
         if (nullptr != mCurrentTool)
         {
             mCurrentTool->Deinitialize();
+        }
+    }
+
+    void ResetEnd()
+    {
+        if (nullptr != mCurrentTool)
+        {
             mCurrentTool->Initialize(mInputState);
 
             InternalSetCurrentToolCursor();
