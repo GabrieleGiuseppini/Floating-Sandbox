@@ -3522,6 +3522,8 @@ public:
 
     void Initialize(InputState const & inputState) override
     {
+        // Note: the specified position might be far away, as it could be where we left the canvas to open the menu
+
         mEngagementData.emplace(
             Begin(inputState.MousePosition),
             inputState.MousePosition);

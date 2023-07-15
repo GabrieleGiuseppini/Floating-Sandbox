@@ -110,10 +110,12 @@ void Npcs::Upload(Render::RenderContext & renderContext) const
 					shipRenderContext.UploadNpcStaticAttributes(HightlightColors[static_cast<size_t>(npcState.Highlight)]);
 				}
 
+				auto const planeId = npcState.TriangleIndex
+					? ship.GetPoints().GetPlaneId(ship.GetTriangles().GetPointAIndex(*(npcState.TriangleIndex)))
+					: ship.GetMaxPlaneId();
+
 				shipRenderContext.UploadNpcQuad(
-					npcState.TriangleIndex
-						? ship.GetPoints().GetPlaneId(ship.GetTriangles().GetPointAIndex(*(npcState.TriangleIndex)))
-						: ship.GetMaxPlaneId(),
+					planeId,
 					mParticles.GetPosition(npcState.PrimaryParticleIndex),
 					vec2f(0, HumanNpcSize),
 					HumanNpcSize);
@@ -413,6 +415,8 @@ Npcs::NpcState & Npcs::InternalMoveNpcBy(
 	ShipId newShipId;
 	if (!newTriangleId)
 	{
+		// * -> Outside
+
 		if (!oldState.TriangleIndex)
 		{
 			// Outside -> Outside, nop
@@ -423,11 +427,17 @@ Npcs::NpcState & Npcs::InternalMoveNpcBy(
 			// Inside -> Outside, move to topmost ship
 			newShipId = GetTopmostShipId();
 		}
+
+		// Store new triangle index
+		oldState.TriangleIndex.reset();
 	}
 	else
 	{
 		// * -> Inside, move to triangle's ship
 		newShipId = newTriangleId->GetShipId();
+
+		// Store new triangle index
+		oldState.TriangleIndex = newTriangleId->GetLocalObjectId();
 	}
 
 	if (newShipId != oldShipId)

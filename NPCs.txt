@@ -152,7 +152,6 @@ Arch:
 	X Though we could have a NpcRenderContext which passes ship's Z in vertex buffers, but then there's the order/alpha problem; best if rendered by each ship individually
 
 - TODOHERE:
-	- Fix missing Z plane
 	- Complete moving/placing
 	- Shader: discard  when transparent
 		- But only after testing with two connected components & e.g. flames
