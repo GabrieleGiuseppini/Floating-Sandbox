@@ -41,26 +41,39 @@ void main()
 {
     float r = distance(vertexQuadSpacePosition, vec2(.0, .0));
     
-    #define Radius 0.95
+    #define NpcRadius 0.90
     #define BorderWidth 0.03
     
-    float bodyDepth = step(r, Radius - BorderWidth);
+    // Border goes half inside and half outside of NpcRadius
+    
+    float bodyDepth = step(r, NpcRadius);
     
     float borderDepth = 
-        step(Radius - BorderWidth, r)
-        * (1.0 - smoothstep(Radius - BorderWidth / 2.0, Radius, r));
+        smoothstep(NpcRadius - BorderWidth / 2.0, NpcRadius - BorderWidth / 4.0, r)
+        * (1.0 - smoothstep(NpcRadius + BorderWidth / 4.0, NpcRadius + BorderWidth / 2.0, r));
 
-    vec4 col = vec4(
-        (vec3(0.870, 0.855, 0.00) * bodyDepth + vec3(0.3, 0.3, 0.3) * borderDepth) * paramEffectiveAmbientLightIntensity,
-        step(r, Radius));
+    vec4 col = mix(
+        vec4(0.870, 0.855, 0.00, bodyDepth),
+        vec4(0.3, 0.3, 0.3, borderDepth),
+        borderDepth);
+        
         
     // Add highlight
-    float highlightDepth = step(r, 1.0);
-    col = 
-        col * col.a
-        + vertexHighlightColor 
-            * step(Radius, r) 
-            * (1.0 - smoothstep(Radius + (1.0 - Radius) / 2.0,  1.0, r));
+    
+    #define HighlightWidth 0.1
+    
+    float highlightDepth = 
+        (1.0 - smoothstep(1.0 - BorderWidth / 4.0, 1.0, r))
+        * vertexHighlightColor.a;
+        
+    col = mix(
+        col,
+        vertexHighlightColor,
+        highlightDepth - col.a);
+
+    // Apply ambient light
+
+    col.rgb *= paramEffectiveAmbientLightIntensity;
 
     ////////////////////
 
