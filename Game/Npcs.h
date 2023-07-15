@@ -71,6 +71,8 @@ private:
      */
     struct NpcState
     {
+        NpcId Id;
+
         NpcType Type;
 
         // Current regime
@@ -92,12 +94,14 @@ private:
         TypeSpecificNpcState TypeSpecificState;
 
         NpcState(
+            NpcId const & id,
             RegimeType regime,
             ElementIndex primaryParticleIndex,
             NpcHighlightType highlight,
             std::optional<ElementIndex> const & triangleIndex,
             TypeSpecificNpcState::HumanState const & humanState)
-            : Type(NpcType::Human)
+            : Id(id)
+            , Type(NpcType::Human)
             , Regime(regime)
             , PrimaryParticleIndex(primaryParticleIndex)
             , Highlight(highlight)
@@ -117,7 +121,7 @@ public:
         , mGameEventHandler(std::move(gameEventDispatcher))
         // Storage
         , mNpcShipsByShipId()
-        , mNpcOrdinalsByNpcId()
+        , mNpcEntriesByNpcId()
         , mParticles(GameParameters::MaxNpcs) // FUTUREWORK: multiply accordingly when moving on to non-single-particle NPCs
         // State
         , mNpcCount(0)
@@ -184,15 +188,21 @@ private:
         ShipId const & shipId,
         std::optional<ElementIndex> triangleIndex);
 
-    void OnNpcDestroyed(NpcState const & state);
+    NpcState & InternalMoveNpcBy(
+        NpcId const & id,
+        vec2f const & offset);
 
+    void OnNpcDestroyed(NpcState const & state);
+    
+    inline NpcState & GetNpcState(NpcId const & id);
     inline NpcState & GetNpcState(ShipId const & shipId, LocalNpcId const & localNpcId);
 
-    inline std::optional<ElementId> FindContainingTriangle(vec2f const & position) const;
+    inline std::optional<ElementId> FindTopmostContainingTriangle(vec2f const & position) const;
 
     inline bool IsTriangleSuitableForNpc(
         NpcType type,
-        std::optional<ElementId> const & triangleId) const;
+        ShipId shipId,
+        std::optional<ElementIndex> const & triangleIndex) const;
 
     ShipId GetTopmostShipId() const;
 
@@ -216,9 +226,24 @@ private:
         {}
     };
 
-    // Indices mapping global IDs to our data
     std::vector<std::optional<NpcShip>> mNpcShipsByShipId; // Indexed by ship ID
-    std::vector<std::vector<std::optional<ElementIndex>>> mNpcOrdinalsByNpcId; // Indexed by ship ID and local NPC ID
+
+    struct NpcEntry
+    {
+        ShipId Ship;
+        ElementIndex StateOrdinal;
+
+        NpcEntry(
+            ShipId ship,
+            ElementIndex stateOrdinal)
+            : Ship(ship)
+            , StateOrdinal(stateOrdinal)
+        {}
+    };
+
+    // Here we lie a bit: the local NPC ID is actually *global*, or else we can't guarantee its stability
+    // when an NPC changes ships
+    std::vector<std::optional<NpcEntry>> mNpcEntriesByNpcId; // Indexed by local (actually global) NPC ID
 
     // All particles
     NpcParticles mParticles;

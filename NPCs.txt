@@ -152,15 +152,22 @@ Arch:
 	X Though we could have a NpcRenderContext which passes ship's Z in vertex buffers, but then there's the order/alpha problem; best if rendered by each ship individually
 
 - TODOHERE:
+	- Fix issue with IDs:
+		- Local NPC ID cannot be per-ship, or else it's not stable when an NPC moves across ships
+		- Cannnot have all NPC ordinals indexed just by (local) NPC ID, or else we cannot adjust ordinals of a ship's NPCs when an NPC is removed from that ship
+			- At the same time, cannot have all NPC ordinals indexed by both ship ID and (local) NPC ID, because of above: we need a global view on all IDs in order to generate new
+		- Solution:
 	- Complete moving/placing
 	- Shader: discard  when transparent
 		- But only after testing with two connected components & e.g. flames
 	- Fix issue with tool & zoom
 		- Tool works in world coordinates
+			- TODO: absolute or world?
+			- Stop doing offsets other than at MoveNpc(.)
 			- IGameController: already has coord tx methods?
 			- IGameController Npc methods take abs world coordinates
-			- Tool works only in Update()
-				- In addition, if no state change, checks if new world coords != last and, if so, moves NPC
+			- Update():
+				- Checks if new world coords != last and, if so, moves NPC
 	- New spring getter: NpcSurfaceType
 		- ShipFactory: populate as "Floor" using IsHull for the time being (w/comment), @ point matrix
 			- But split factory vs. effective, for doors

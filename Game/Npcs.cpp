@@ -18,17 +18,14 @@ void Npcs::OnShipAdded(Ship const & ship)
 {
 	size_t const s = static_cast<size_t>(ship.GetId());
 
-	// Make room in indices
-	assert(mNpcShipsByShipId.size() == mNpcOrdinalsByNpcId.size());
+	// Make room for ship
 	while (s >= mNpcShipsByShipId.size())
 	{
 		mNpcShipsByShipId.emplace_back();
-		mNpcOrdinalsByNpcId.emplace_back();
 	}
 
 	// We do not know about this ship yet
 	assert(!mNpcShipsByShipId[s].has_value());
-	assert(mNpcOrdinalsByNpcId[s].empty());
 
 	// Initialize NPC Ship
 	mNpcShipsByShipId[s].emplace(ship);
@@ -40,7 +37,6 @@ void Npcs::OnShipRemoved(ShipId shipId)
 
 	// We know about this ship
 	assert(s < mNpcShipsByShipId.size());
-	assert(s < mNpcOrdinalsByNpcId.size());
 	assert(mNpcShipsByShipId[s].has_value());
 
 	//
@@ -63,9 +59,6 @@ void Npcs::OnShipRemoved(ShipId shipId)
 	//
 
 	mNpcShipsByShipId[s].reset();
-
-	// Forget about the NPCs of this ship
-	mNpcOrdinalsByNpcId[s].clear();
 
 	// Remember to re-upload static render attributes
 	mAreStaticRenderAttributesDirty = true;
@@ -142,7 +135,8 @@ void Npcs::Upload(Render::RenderContext & renderContext) const
 
 std::optional<NpcId> Npcs::PickNpc(vec2f const & position) const
 {
-	// TODO
+	// TODO: FindTopmostContainingTriangle, and search on that ship; no search in other ships
+
 	(void)position;
 	return std::nullopt;
 }
@@ -168,7 +162,7 @@ NpcId Npcs::BeginMoveNewHumanNpc(
 	vec2f const & initialPosition)
 {
 	// Find triangle that this NPC belongs to
-	auto const triangleId = FindContainingTriangle(initialPosition);
+	auto const triangleId = FindTopmostContainingTriangle(initialPosition);
 
 	LogMessage("Npcs: BeginMoveNew: triangleId=", triangleId ? triangleId->ToString() : "<NONE>");
 
@@ -198,26 +192,17 @@ bool Npcs::MoveNpcBy(
 	NpcId const & id,
 	vec2f const & offset)
 {
+	//
 	// Eventually moves around ships, but no regime change
+	//
 
-	auto const shipId = id.GetShipId();
-	auto const localNpcId = id.GetLocalObjectId();
-	auto const & npcState = GetNpcState(shipId, localNpcId);
+	assert(GetNpcState(id).Regime == RegimeType::Placement);
 
-	assert(npcState.Regime == RegimeType::Placement);
+	// Move NPC - eventually moving around ships
+	auto & npcState = InternalMoveNpcBy(id, offset);
 
-	// Calculate new position
-	vec2f const newPosition = mParticles.GetPosition(npcState.PrimaryParticleIndex) + offset;
-	mParticles.SetPosition(npcState.PrimaryParticleIndex, newPosition);
-
-	// Calculate new triangle index
-	auto const newTriangleId = FindContainingTriangle(newPosition);
-
-	// Figure out if the NPC needs to move ships
-	// TODOHERE
-
-	// Now tell caller if this is a suitable position
-	return IsTriangleSuitableForNpc(npcState.Type, newTriangleId);
+	// Tell caller whether this is a suitable position (as a hint, not binding)
+	return IsTriangleSuitableForNpc(npcState.Type, npcState.Id.GetShipId(), npcState.TriangleIndex);
 }
 
 void Npcs::EndMoveNpc(
@@ -226,14 +211,31 @@ void Npcs::EndMoveNpc(
 {
 	LogMessage("Npcs: EndMoveNpc: id=", id);
 
-	// Find triangle ID; exit placement regime
+	assert(GetNpcState(id).Regime == RegimeType::Placement);
 
-	// TODO: assert it's in Placement regime
-	// TODO: remember to update stats for exiting placement
+	// Move NPC - eventually moving around ships
+	auto & npcState = InternalMoveNpcBy(id, finalOffset);
 
-	// TODO
-	(void)id;
-	(void)finalOffset;
+	// Exit placement regime
+
+	if (npcState.TriangleIndex.has_value())
+	{
+		npcState.Regime = RegimeType::Constrained;
+
+		if (npcState.Type == NpcType::Human)
+		{
+			++mConstrainedRegimeHumanNpcCount;
+		}
+	}
+	else
+	{
+		npcState.Regime = RegimeType::Free;
+
+		if (npcState.Type == NpcType::Human)
+		{
+			++mFreeRegimeHumanNpcCount;
+		}
+	}
 }
 
 void Npcs::AbortNewNpc(NpcId const & id)
@@ -248,10 +250,7 @@ void Npcs::HighlightNpc(
 	NpcId const & id,
 	NpcHighlightType highlight)
 {
-	auto const shipId = id.GetShipId();
-	auto const localNpcId = id.GetLocalObjectId();
-
-	auto & npcState = GetNpcState(shipId, localNpcId);
+	auto & npcState = GetNpcState(id);
 
 	npcState.Highlight = highlight;
 
@@ -269,10 +268,9 @@ void Npcs::RemoveNpc(NpcId const & id)
 	size_t const s = static_cast<size_t>(shipId);
 	size_t const ln = static_cast<size_t>(localNpcId);
 
-	assert(s < mNpcOrdinalsByNpcId.size());
-	assert(ln < mNpcOrdinalsByNpcId[s].size());
-	assert(mNpcOrdinalsByNpcId[s][ln].has_value());
-	ElementIndex const npcOrdinal = *(mNpcOrdinalsByNpcId[s][ln]);
+	assert(ln < mNpcEntriesByNpcId.size());
+	assert(mNpcEntriesByNpcId[ln].has_value());
+	ElementIndex const npcOrdinal = mNpcEntriesByNpcId[ln]->StateOrdinal;
 
 	//
 	// Destroy NPC
@@ -288,19 +286,17 @@ void Npcs::RemoveNpc(NpcId const & id)
 
 	// Remove NPC state
 	assert(mNpcShipsByShipId[s].has_value());
-	assert(ln < mNpcShipsByShipId[s]->NpcStates.size());
+	assert(npcOrdinal < mNpcShipsByShipId[s]->NpcStates.size());
 	mNpcShipsByShipId[s]->NpcStates.erase(mNpcShipsByShipId[s]->NpcStates.begin() + npcOrdinal);
 
-	// Forget about this NPC's ordinal
-	mNpcOrdinalsByNpcId[s][ln] = NoneElementIndex;
-
 	// Update subsequent NPC ordinals
-	for (auto & o : mNpcOrdinalsByNpcId[s])
+	for (auto & npcEntry : mNpcEntriesByNpcId)
 	{
-		if (o.has_value()
-			&& *o > npcOrdinal)
+		if (npcEntry.has_value()
+			&& npcEntry->Ship == shipId
+			&& npcEntry->StateOrdinal > npcOrdinal)
 		{
-			--(*o);
+			--(npcEntry->StateOrdinal);
 		}
 	}
 
@@ -324,36 +320,38 @@ NpcId Npcs::AddHumanNpc(
 
 	// We know about this ship
 	assert(s < mNpcShipsByShipId.size());
-	assert(s < mNpcOrdinalsByNpcId.size());
 	assert(mNpcShipsByShipId[s].has_value());
 
 	// Make ordinal for this NPC
 	ElementIndex const newNpcOrdinal = static_cast<ElementIndex>(mNpcShipsByShipId[s]->NpcStates.size());
 
 	//
-	// Make (ship-local) stable ID for this NPC, and update indices
+	// Make (ship-local, but in reality global) stable ID for this NPC, and update ordinals
 	//
 
-	LocalNpcId newNpcId = NoneLocalNpcId;
+	LocalNpcId newLocalNpcId = NoneLocalNpcId;
 
 	// Find an unused ID
-	for (size_t ln = 0; ln < mNpcOrdinalsByNpcId[s].size(); ++ln)
+	for (size_t ln = 0; ln < mNpcEntriesByNpcId.size(); ++ln)
 	{
-		if (!mNpcOrdinalsByNpcId[s][ln].has_value())
+		if (!mNpcEntriesByNpcId[ln].has_value())
 		{
 			// Found!
-			newNpcId = static_cast<LocalNpcId>(ln);
-			mNpcOrdinalsByNpcId[s][ln].emplace(newNpcOrdinal);
+			newLocalNpcId = static_cast<LocalNpcId>(ln);
+			mNpcEntriesByNpcId[ln].emplace(shipId, newNpcOrdinal);
 			break;
 		}
 	}
 
-	if (newNpcId == NoneLocalNpcId)
+	if (newLocalNpcId == NoneLocalNpcId)
 	{
 		// Add to the end
-		newNpcId = static_cast<LocalNpcId>(mNpcOrdinalsByNpcId[s].size());
-		mNpcOrdinalsByNpcId[s].emplace_back(newNpcOrdinal);
+		newLocalNpcId = static_cast<LocalNpcId>(mNpcEntriesByNpcId.size());
+		mNpcEntriesByNpcId.emplace_back();
+		mNpcEntriesByNpcId.back().emplace(shipId, newNpcOrdinal);
 	}
+
+	NpcId const npcId = NpcId(shipId, newLocalNpcId);
 
 	//
 	// Create NPC state
@@ -366,6 +364,7 @@ NpcId Npcs::AddHumanNpc(
 
 	// Add NPC state
 	auto const & state = mNpcShipsByShipId[s]->NpcStates.emplace_back(
+		npcId,
 		initialRegime,
 		feetParticleIndex,
 		initialHighlight,
@@ -396,11 +395,109 @@ NpcId Npcs::AddHumanNpc(
 	// Remember to re-upload static render attributes
 	mAreStaticRenderAttributesDirty = true;
 
-	return NpcId(shipId, newNpcId);
+	return npcId;
+}
+
+Npcs::NpcState & Npcs::InternalMoveNpcBy(
+	NpcId const & id,
+	vec2f const & offset)
+{
+	ShipId const oldShipId = id.GetShipId();
+	NpcState & oldState = GetNpcState(id);
+
+	// Move NPC's particle(s)
+	vec2f const newPosition = mParticles.GetPosition(oldState.PrimaryParticleIndex) + offset;
+	mParticles.SetPosition(oldState.PrimaryParticleIndex, newPosition);
+
+	// Calculate new triangle index
+	auto const newTriangleId = FindTopmostContainingTriangle(newPosition);
+
+	// Figure out if the NPC needs to move ships
+	ShipId newShipId;
+	if (!newTriangleId)
+	{
+		if (!oldState.TriangleIndex)
+		{
+			// Outside -> Outside, nop
+			newShipId = oldShipId;
+		}
+		else
+		{
+			// Inside -> Outside, move to topmost ship
+			newShipId = GetTopmostShipId();
+		}
+	}
+	else
+	{
+		// * -> Inside, move to triangle's ship
+		newShipId = newTriangleId->GetShipId();
+	}
+
+	if (newShipId != oldShipId)
+	{
+		LogMessage("Moving NPC from ship ", oldShipId, " to ship ", newShipId);
+
+		size_t const os = static_cast<size_t>(oldShipId);
+		assert(os < mNpcShipsByShipId.size());
+		assert(mNpcShipsByShipId[os].has_value());
+
+		size_t const ns = static_cast<size_t>(newShipId);
+		assert(ns < mNpcShipsByShipId.size());
+		assert(mNpcShipsByShipId[ns].has_value());
+
+		size_t const ln = static_cast<size_t>(id.GetLocalObjectId());
+		assert(ln < mNpcEntriesByNpcId.size());
+		assert(mNpcEntriesByNpcId[ln].has_value());
+
+		// Get old ordinal
+		ElementIndex const oldNpcOrdinal = mNpcEntriesByNpcId[ln]->StateOrdinal;
+
+		// Calculate new ordinal for this NPC in new ship
+		ElementIndex const newNpcOrdinal = static_cast<ElementIndex>(mNpcShipsByShipId[ns]->NpcStates.size());
+
+		// Add state to new ship
+		mNpcShipsByShipId[ns]->NpcStates.emplace_back(oldState);
+		//mNpcShipsByShipId[ns]->NpcStates.back().Id = TODOHERE; // more broken!
+
+		// Update entry of this NPC
+		mNpcEntriesByNpcId[ln]->Ship = newShipId;
+		mNpcEntriesByNpcId[ln]->StateOrdinal = newNpcOrdinal;
+
+		// Remove state from old ship
+		assert(mNpcShipsByShipId[os].has_value());
+		assert(oldNpcOrdinal < mNpcShipsByShipId[os]->NpcStates.size());
+		mNpcShipsByShipId[os]->NpcStates.erase(mNpcShipsByShipId[os]->NpcStates.begin() + oldNpcOrdinal);
+
+		// Update subsequent NPC ordinals
+		for (auto & npcEntry : mNpcEntriesByNpcId)
+		{
+			if (npcEntry.has_value()
+				&& npcEntry->Ship == oldShipId
+				&& npcEntry->StateOrdinal > oldNpcOrdinal)
+			{
+				--(npcEntry->StateOrdinal);
+			}
+		}
+
+		return mNpcShipsByShipId[ns]->NpcStates.back();
+	}
+	else
+	{
+		return oldState;
+	}
 }
 
 void Npcs::OnNpcDestroyed(NpcState const & state)
 {
+	// We know about this NPC
+
+	assert(static_cast<size_t>(state.Id.GetLocalObjectId()) < mNpcEntriesByNpcId.size());
+	assert(mNpcEntriesByNpcId[static_cast<size_t>(state.Id.GetLocalObjectId())].has_value());
+
+	// Free NPC entry
+
+	mNpcEntriesByNpcId[static_cast<size_t>(state.Id.GetLocalObjectId())].reset();
+
 	// Free particle
 
 	mParticles.Remove(state.PrimaryParticleIndex);
@@ -409,14 +506,21 @@ void Npcs::OnNpcDestroyed(NpcState const & state)
 
 	if (state.Regime == RegimeType::Constrained)
 	{
+		assert(mConstrainedRegimeHumanNpcCount > 0);
 		--mConstrainedRegimeHumanNpcCount;
 	}
 	else if (state.Regime == RegimeType::Free)
 	{
+		assert(mFreeRegimeHumanNpcCount > 0);
 		--mFreeRegimeHumanNpcCount;
 	}
 
 	--mNpcCount;
+}
+
+Npcs::NpcState & Npcs::GetNpcState(NpcId const & id)
+{
+	return GetNpcState(id.GetShipId(), id.GetLocalObjectId());
 }
 
 Npcs::NpcState & Npcs::GetNpcState(ShipId const & shipId, LocalNpcId const & localNpcId)
@@ -426,18 +530,17 @@ Npcs::NpcState & Npcs::GetNpcState(ShipId const & shipId, LocalNpcId const & loc
 
 	// We know about this ship
 	assert(s < mNpcShipsByShipId.size());
-	assert(s < mNpcOrdinalsByNpcId.size());
 	assert(mNpcShipsByShipId[s].has_value());
 
 	// We know about this NPC
-	assert(ln < mNpcShipsByShipId[s]->NpcStates.size());
-	assert(ln < mNpcOrdinalsByNpcId[s].size());
-	assert(mNpcOrdinalsByNpcId[s][ln].has_value());
+	assert(ln < mNpcEntriesByNpcId.size());
+	assert(mNpcEntriesByNpcId[ln].has_value());
+	assert(mNpcEntriesByNpcId[ln]->StateOrdinal < mNpcShipsByShipId[s]->NpcStates.size());
 
-	return mNpcShipsByShipId[s]->NpcStates[*mNpcOrdinalsByNpcId[s][ln]];
+	return mNpcShipsByShipId[s]->NpcStates[mNpcEntriesByNpcId[ln]->StateOrdinal];
 }
 
-std::optional<ElementId> Npcs::FindContainingTriangle(vec2f const & position) const
+std::optional<ElementId> Npcs::FindTopmostContainingTriangle(vec2f const & position) const
 {
 	// Visit all ships in reverse ship ID order (i.e. from topmost to bottommost)
 	for (auto it = mNpcShipsByShipId.rbegin(); it != mNpcShipsByShipId.rend(); ++it)
@@ -479,17 +582,19 @@ std::optional<ElementId> Npcs::FindContainingTriangle(vec2f const & position) co
 
 bool Npcs::IsTriangleSuitableForNpc(
 	NpcType type,
-	std::optional<ElementId> const & triangleId) const
+	ShipId shipId,
+	std::optional<ElementIndex> const & triangleIndex) const
 {
-	if (!triangleId || type != NpcType::Human)
+	if (!triangleIndex || type != NpcType::Human)
 	{
-		// Outside of a shipL always good
+		// Outside of a ship: always good
 		// Not a human: always good
 		
 		return true;
 	}
 
 	// TODOHERE: check conditions (need new Springs getter, see plan)
+	(void)shipId;
 	return true;
 }
 
