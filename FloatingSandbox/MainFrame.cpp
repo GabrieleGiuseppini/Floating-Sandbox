@@ -318,12 +318,14 @@ MainFrame::MainFrame(
             {
 
 #ifdef __WXMSW__
-#define SET_BITMAP(img) \
+#define SET_BITMAP(toolMenuItem, img) \
+        img.Rescale(16, 16, wxIMAGE_QUALITY_HIGH);\
         auto img2 = WxHelpers::RetintCursorImage(img, rgbColor(0x00, 0x90, 0x00));\
-        toolMenuItem->SetBitmaps(wxBitmap(img2), wxBitmap(img));
+        (toolMenuItem)->SetBitmaps(wxBitmap(img2), wxBitmap(img));
 #else
-#define SET_BITMAP(img) \
-        toolMenuItem->SetBitmap(wxBitmap(img));
+#define SET_BITMAP(toolMenuItem, img) \
+        img.Rescale(16, 16, wxIMAGE_QUALITY_HIGH);\
+        (toolMenuItem)->SetBitmap(wxBitmap(img));
 #endif
 
 #define ADD_TOOL_MENUITEM(label, shortcut, bitmap_path, handler) \
@@ -331,11 +333,10 @@ MainFrame::MainFrame(
         {\
             auto const id = wxNewId();\
             wxMenuItem * toolMenuItem = new wxMenuItem(mToolsMenu, (id), (label) + (shortcut), wxEmptyString, wxITEM_RADIO);\
-            auto img1 = wxImage(\
+            auto img = wxImage(\
                 resourceLocator.GetCursorFilePath((bitmap_path)).string(),\
                 wxBITMAP_TYPE_PNG);\
-            img1.Rescale(16, 16, wxIMAGE_QUALITY_HIGH);\
-            SET_BITMAP(img1)\
+            SET_BITMAP(toolMenuItem, img)\
             mToolsMenu->Append(toolMenuItem);\
             Connect((id), wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::handler);\
             return toolMenuItem;\
@@ -500,10 +501,8 @@ MainFrame::MainFrame(
 
                 // Create menu
                 mAddNpcMenuItem = new wxMenuItem(mToolsMenu, wxID_ANY, _("Add NPC..."), wxEmptyString, wxITEM_RADIO, npcSubMenu);
-                auto img1 = wxImage(resourceLocator.GetIconFilePath("add_npc_icon").string(), wxBITMAP_TYPE_PNG);
-                img1.Rescale(16, 16, wxIMAGE_QUALITY_HIGH);
-                auto img2 = WxHelpers::RetintCursorImage(img1, rgbColor(0x00, 0x90, 0x00));
-                mAddNpcMenuItem->SetBitmaps(wxBitmap(img2), wxBitmap(img1));
+                auto img = wxImage(resourceLocator.GetIconFilePath("add_npc_icon").string(), wxBITMAP_TYPE_PNG);
+                SET_BITMAP(mAddNpcMenuItem, img);
                 mToolsMenu->Append(mAddNpcMenuItem);
                 mAddNpcMenuItem->Enable(true); // Note: here we're assuming we _can_ add NPCs; unfortunately the NPCs class is created _before_ we register for events, hence have to guess here
             }
@@ -511,10 +510,8 @@ MainFrame::MainFrame(
             {
                 auto const id = wxNewId();
                 mMoveNpcMenuItem = new wxMenuItem(mToolsMenu, id, _("Move NPC"), wxEmptyString, wxITEM_RADIO);
-                auto img1 = wxImage(resourceLocator.GetIconFilePath("move_npc_icon").string(), wxBITMAP_TYPE_PNG);
-                img1.Rescale(16, 16, wxIMAGE_QUALITY_HIGH);
-                auto img2 = WxHelpers::RetintCursorImage(img1, rgbColor(0x00, 0x90, 0x00));
-                mMoveNpcMenuItem->SetBitmaps(wxBitmap(img2), wxBitmap(img1));
+                auto img = wxImage(resourceLocator.GetIconFilePath("move_npc_icon").string(), wxBITMAP_TYPE_PNG);
+                SET_BITMAP(mMoveNpcMenuItem, img);
                 mToolsMenu->Append(mMoveNpcMenuItem);
                 Connect(id, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnMoveNpcMenuItemSelected);
                 mMoveNpcMenuItem->Enable(false);
@@ -523,10 +520,8 @@ MainFrame::MainFrame(
             {
                 auto const id = wxNewId();
                 mRemoveNpcMenuItem = new wxMenuItem(mToolsMenu, id, _("Remove NPC"), wxEmptyString, wxITEM_RADIO);
-                auto img1 = wxImage(resourceLocator.GetIconFilePath("remove_npc_icon").string(), wxBITMAP_TYPE_PNG);
-                img1.Rescale(16, 16, wxIMAGE_QUALITY_HIGH);
-                auto img2 = WxHelpers::RetintCursorImage(img1, rgbColor(0x00, 0x90, 0x00));
-                mRemoveNpcMenuItem->SetBitmaps(wxBitmap(img2), wxBitmap(img1));
+                auto img = wxImage(resourceLocator.GetIconFilePath("remove_npc_icon").string(), wxBITMAP_TYPE_PNG);
+                SET_BITMAP(mRemoveNpcMenuItem, img);
                 mToolsMenu->Append(mRemoveNpcMenuItem);
                 Connect(id, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnRemoveNpcMenuItemSelected);
                 mRemoveNpcMenuItem->Enable(false);

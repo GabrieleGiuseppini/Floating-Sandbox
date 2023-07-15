@@ -1821,12 +1821,12 @@ void ShipRenderContext::RenderPrepareNpcs(RenderParameters const & /*renderParam
 {
     if (mIsNpcStaticAttributeVertexBufferDirty)
     {
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *mNpcStaticAttributeVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, *mNpcStaticAttributeVBO);
 
         if (mNpcStaticAttributeVertexBuffer.size() > mNpcStaticAttributeVBOAllocatedVertexSize)
         {
             // Re-allocate VBO buffer and upload
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, mNpcStaticAttributeVertexBuffer.size() * sizeof(NpcStaticAttributeVertex), mNpcStaticAttributeVertexBuffer.data(), GL_STATIC_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, mNpcStaticAttributeVertexBuffer.size() * sizeof(NpcStaticAttributeVertex), mNpcStaticAttributeVertexBuffer.data(), GL_STATIC_DRAW);
             CheckOpenGLError();
 
             mNpcStaticAttributeVBOAllocatedVertexSize = mNpcStaticAttributeVertexBuffer.size();
@@ -1834,11 +1834,11 @@ void ShipRenderContext::RenderPrepareNpcs(RenderParameters const & /*renderParam
         else
         {
             // No size change, just upload VBO buffer
-            glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, mNpcStaticAttributeVertexBuffer.size() * sizeof(NpcStaticAttributeVertex), mNpcStaticAttributeVertexBuffer.data());
+            glBufferSubData(GL_ARRAY_BUFFER, 0, mNpcStaticAttributeVertexBuffer.size() * sizeof(NpcStaticAttributeVertex), mNpcStaticAttributeVertexBuffer.data());
             CheckOpenGLError();
         }
 
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         mIsNpcStaticAttributeVertexBufferDirty = false;
     }
