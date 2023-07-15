@@ -474,8 +474,6 @@ MainFrame::MainFrame(
                 ADD_TOOL_MENUITEM(_("Toggle Physics Probe"), wxS(""), "physics_probe_cursor", OnPhysicsProbeMenuItemSelected);
             }
 
-            mToolsMenu->Append(new wxMenuItem(mToolsMenu, wxID_SEPARATOR));
-
             {
                 // Type hierarchy menu
                 wxMenu * npcSubMenu = nullptr;

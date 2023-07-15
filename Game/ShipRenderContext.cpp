@@ -336,7 +336,7 @@ ShipRenderContext::ShipRenderContext(
 
         // Describe quad vertex attributes
         glBindBuffer(GL_ARRAY_BUFFER, *mNpcQuadVBO);
-        static_assert(sizeof(NpcQuadVertex) == (2 + 1 + 2) * sizeof(float));
+        static_assert(sizeof(NpcQuadVertex) == (2 + 2 + 1) * sizeof(float));
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::NpcQuad1));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::NpcQuad1), 4, GL_FLOAT, GL_FALSE, sizeof(NpcQuadVertex), (void *)(0));
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::NpcQuad2));

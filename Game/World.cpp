@@ -134,7 +134,7 @@ std::optional<NpcId> World::PickNpc(vec2f const & position) const
     return mNpcs.PickNpc(position);
 }
 
-void World::BeginMoveNpc(NpcId const & id)
+void World::BeginMoveNpc(NpcId id)
 {
     mNpcs.BeginMoveNpc(id);
 }
@@ -147,39 +147,39 @@ NpcId World::BeginMoveNewHumanNpc(
 }
 
 bool World::IsSuitableNpcPosition(
-    NpcId const & npcId,
+    NpcId npcId,
     vec2f const & position) const
 {
     return mNpcs.IsSuitableNpcPosition(npcId, position);
 }
 
 bool World::MoveNpcBy(
-    NpcId const & npcId,
+    NpcId npcId,
     vec2f const & offset)
 {
     return mNpcs.MoveNpcBy(npcId, offset);
 }
 
 void World::EndMoveNpc(
-    NpcId const & npcId,
+    NpcId npcId,
     vec2f const & finalOffset)
 {
     mNpcs.EndMoveNpc(npcId, finalOffset);
 }
 
-void World::AbortNewNpc(NpcId const & npcId)
+void World::AbortNewNpc(NpcId npcId)
 {
     mNpcs.AbortNewNpc(npcId);
 }
 
 void World::HighlightNpc(
-    NpcId const & npcId,
+    NpcId npcId,
     NpcHighlightType highlight)
 {
     mNpcs.HighlightNpc(npcId, highlight);
 }
 
-void World::RemoveNpc(NpcId const & npcId)
+void World::RemoveNpc(NpcId npcId)
 {
     mNpcs.RemoveNpc(npcId);
 }

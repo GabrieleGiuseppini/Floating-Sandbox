@@ -79,17 +79,17 @@ using FrontierId = std::uint32_t;
 static FrontierId constexpr NoneFrontierId = std::numeric_limits<FrontierId>::max();
 
 /*
- * Various other identifiers.
- */
-using LocalGadgetId = std::uint32_t;
-
-/*
- * NPC (local) identifiers.
+ * NPC (global) identifiers.
  *
  * Comparable and ordered. Start from 0.
  */
-using LocalNpcId = std::uint32_t;
-static LocalNpcId constexpr NoneLocalNpcId = std::numeric_limits<LocalNpcId>::max();
+using NpcId = std::uint32_t;
+static NpcId constexpr NoneNpcId = std::numeric_limits<NpcId>::max();
+
+/*
+ * Various other identifiers.
+ */
+using LocalGadgetId = std::uint32_t;
 
 /*
  * Object ID's, identifying objects of ships across ships.
@@ -180,9 +180,6 @@ using GadgetId = ObjectId<LocalGadgetId, struct GadgetTypeTag>;
 
 // ID for electrical elements (switches, probes, etc.)
 using ElectricalElementId = ObjectId<ElementIndex, struct ElectricalElementTypeTag>;
-
-// ID for NPCs
-using NpcId = ObjectId<LocalNpcId, struct NpcTypeTag>;
 
 /*
  * A sequence number which is never zero.

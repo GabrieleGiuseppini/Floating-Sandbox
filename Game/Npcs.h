@@ -71,7 +71,8 @@ private:
      */
     struct NpcState
     {
-        NpcId Id;
+        NpcId Id; // Global ID, here for convenience
+        ShipId SId; // Here for convenience
 
         NpcType Type;
 
@@ -94,13 +95,15 @@ private:
         TypeSpecificNpcState TypeSpecificState;
 
         NpcState(
-            NpcId const & id,
+            NpcId id,
+            ShipId sId,
             RegimeType regime,
             ElementIndex primaryParticleIndex,
             NpcHighlightType highlight,
             std::optional<ElementIndex> const & triangleIndex,
             TypeSpecificNpcState::HumanState const & humanState)
             : Id(id)
+            , SId(sId)
             , Type(NpcType::Human)
             , Regime(regime)
             , PrimaryParticleIndex(primaryParticleIndex)
@@ -108,7 +111,6 @@ private:
             , TriangleIndex(triangleIndex)
             , RandomNormalizedUniformSeed(GameRandomEngine::GetInstance().GenerateNormalizedUniformReal())
             , TypeSpecificState(humanState)
-
         {}
     };
 
@@ -152,31 +154,31 @@ public:
 
     std::optional<NpcId> PickNpc(vec2f const & position) const;
 
-    void BeginMoveNpc(NpcId const & id);
+    void BeginMoveNpc(NpcId id);
 
     NpcId BeginMoveNewHumanNpc(
         HumanNpcRoleType role,
         vec2f const & initialPosition);
 
     bool IsSuitableNpcPosition(
-        NpcId const & id,
+        NpcId id,
         vec2f const & position) const;
 
     bool MoveNpcBy(
-        NpcId const & id,
+        NpcId id,
         vec2f const & offset);
 
     void EndMoveNpc(
-        NpcId const & id,
+        NpcId id,
         vec2f const & finalOffset);
 
-    void AbortNewNpc(NpcId const & id);
+    void AbortNewNpc(NpcId id);
 
     void HighlightNpc(
-        NpcId const & id, 
+        NpcId id, 
         NpcHighlightType highlight);
 
-    void RemoveNpc(NpcId const & id);
+    void RemoveNpc(NpcId id);
 
 private:
 
@@ -189,13 +191,12 @@ private:
         std::optional<ElementIndex> triangleIndex);
 
     NpcState & InternalMoveNpcBy(
-        NpcId const & id,
+        NpcId id,
         vec2f const & offset);
 
     void OnNpcDestroyed(NpcState const & state);
     
-    inline NpcState & GetNpcState(NpcId const & id);
-    inline NpcState & GetNpcState(ShipId const & shipId, LocalNpcId const & localNpcId);
+    inline NpcState & GetNpcState(NpcId id);
 
     inline std::optional<ElementId> FindTopmostContainingTriangle(vec2f const & position) const;
 
@@ -226,24 +227,22 @@ private:
         {}
     };
 
-    std::vector<std::optional<NpcShip>> mNpcShipsByShipId; // Indexed by ship ID
+    std::vector<std::optional<NpcShip>> mNpcShipsByShipId; // Indexed by (global) ship ID
 
     struct NpcEntry
     {
-        ShipId Ship;
+        ShipId SId;
         ElementIndex StateOrdinal;
 
         NpcEntry(
-            ShipId ship,
+            ShipId sId,
             ElementIndex stateOrdinal)
-            : Ship(ship)
+            : SId(sId)
             , StateOrdinal(stateOrdinal)
         {}
     };
 
-    // Here we lie a bit: the local NPC ID is actually *global*, or else we can't guarantee its stability
-    // when an NPC changes ships
-    std::vector<std::optional<NpcEntry>> mNpcEntriesByNpcId; // Indexed by local (actually global) NPC ID
+    std::vector<std::optional<NpcEntry>> mNpcEntriesByNpcId; // Indexed by (global) NPC ID
 
     // All particles
     NpcParticles mParticles;

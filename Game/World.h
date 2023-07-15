@@ -134,31 +134,31 @@ public:
 
     std::optional<NpcId> PickNpc(vec2f const & position) const;
 
-    void BeginMoveNpc(NpcId const & npcId);
+    void BeginMoveNpc(NpcId npcId);
 
     NpcId BeginMoveNewHumanNpc(
         HumanNpcRoleType role,
         vec2f const & initialPosition);
 
     bool IsSuitableNpcPosition(
-        NpcId const & npcId,
+        NpcId npcId,
         vec2f const & position) const;
 
     bool MoveNpcBy(
-        NpcId const & npcId,
+        NpcId npcId,
         vec2f const & offset);
 
     void EndMoveNpc(
-        NpcId const & npcId,
+        NpcId npcId,
         vec2f const & finalOffset);
 
-    void AbortNewNpc(NpcId const & npcId);
+    void AbortNewNpc(NpcId npcId);
 
     void HighlightNpc(
-        NpcId const & npcId,
+        NpcId npcId,
         NpcHighlightType highlight);
 
-    void RemoveNpc(NpcId const & npcId);
+    void RemoveNpc(NpcId npcId);
 
     void ScareFish(
         vec2f const & position,

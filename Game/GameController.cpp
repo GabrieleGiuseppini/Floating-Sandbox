@@ -616,7 +616,7 @@ std::optional<NpcId> GameController::PickNpc(DisplayLogicalCoordinates const & s
     return mWorld->PickNpc(worldCoordinates);
 }
 
-void GameController::BeginMoveNpc(NpcId const & npcId)
+void GameController::BeginMoveNpc(NpcId npcId)
 {
     assert(!!mWorld);
     mWorld->BeginMoveNpc(npcId);
@@ -630,7 +630,7 @@ NpcId GameController::BeginMoveNewHumanNpc(HumanNpcRoleType role, DisplayLogical
     return mWorld->BeginMoveNewHumanNpc(role, initialWorldCoordinates);
 }
 
-bool GameController::IsSuitableNpcPosition(NpcId const & npcId, DisplayLogicalCoordinates const & screenCoordinates) const
+bool GameController::IsSuitableNpcPosition(NpcId npcId, DisplayLogicalCoordinates const & screenCoordinates) const
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
@@ -638,7 +638,7 @@ bool GameController::IsSuitableNpcPosition(NpcId const & npcId, DisplayLogicalCo
     return mWorld->IsSuitableNpcPosition(npcId, worldCoordinates);
 }
 
-bool GameController::MoveNpcBy(NpcId const & npcId, DisplayLogicalSize const & screenOffset)
+bool GameController::MoveNpcBy(NpcId npcId, DisplayLogicalSize const & screenOffset)
 {
     vec2f const worldOffset = mRenderContext->ScreenOffsetToWorldOffset(screenOffset);
 
@@ -646,7 +646,7 @@ bool GameController::MoveNpcBy(NpcId const & npcId, DisplayLogicalSize const & s
     return mWorld->MoveNpcBy(npcId, worldOffset);
 }
 
-void GameController::EndMoveNpc(NpcId const & npcId, DisplayLogicalSize const & finalScreenOffset)
+void GameController::EndMoveNpc(NpcId npcId, DisplayLogicalSize const & finalScreenOffset)
 {
     vec2f const finalWorldOffset = mRenderContext->ScreenOffsetToWorldOffset(finalScreenOffset);
 
@@ -654,19 +654,19 @@ void GameController::EndMoveNpc(NpcId const & npcId, DisplayLogicalSize const & 
     mWorld->EndMoveNpc(npcId, finalWorldOffset);
 }
 
-void GameController::AbortNewNpc(NpcId const & npcId)
+void GameController::AbortNewNpc(NpcId npcId)
 {
     assert(!!mWorld);
     mWorld->AbortNewNpc(npcId);
 }
 
-void GameController::HighlightNpc(NpcId const & npcId, NpcHighlightType highlight)
+void GameController::HighlightNpc(NpcId npcId, NpcHighlightType highlight)
 {
     assert(!!mWorld);
     mWorld->HighlightNpc(npcId, highlight);
 }
 
-void GameController::RemoveNpc(NpcId const & npcId)
+void GameController::RemoveNpc(NpcId npcId)
 {
     assert(!!mWorld);
     mWorld->RemoveNpc(npcId);
