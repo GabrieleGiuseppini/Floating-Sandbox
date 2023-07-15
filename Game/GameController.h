@@ -190,7 +190,7 @@ public:
     // Interactions
     //
 
-    std::optional<NpcId> PickNpc(DisplayLogicalCoordinates const & screenCoordinates) const override;
+    std::optional<PickedObjectId<NpcId>> PickNpc(DisplayLogicalCoordinates const & screenCoordinates) const override;
     void BeginMoveNpc(NpcId npcId) override;
     NpcId BeginMoveNewHumanNpc(HumanNpcRoleType role, DisplayLogicalCoordinates const & initialScreenCoordinates) override;
     bool IsSuitableNpcPosition(NpcId npcId, DisplayLogicalCoordinates const & screenCoordinates) const override;

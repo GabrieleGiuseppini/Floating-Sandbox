@@ -608,7 +608,7 @@ void GameController::ToggleToFullDayOrNight()
         SetTimeOfDay(1.0f);
 }
 
-std::optional<NpcId> GameController::PickNpc(DisplayLogicalCoordinates const & screenCoordinates) const
+std::optional<PickedObjectId<NpcId>> GameController::PickNpc(DisplayLogicalCoordinates const & screenCoordinates) const
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 

@@ -89,7 +89,7 @@ struct IGameController
     // Interactions
     //
 
-    virtual std::optional<NpcId> PickNpc(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
+    virtual std::optional<PickedObjectId<NpcId>> PickNpc(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
     virtual void BeginMoveNpc(NpcId npcId) = 0;
     virtual NpcId BeginMoveNewHumanNpc(HumanNpcRoleType role, DisplayLogicalCoordinates const & initialScreenCoordinates) = 0;
     virtual bool IsSuitableNpcPosition(NpcId npcId, DisplayLogicalCoordinates const & screenCoordinates) const = 0;

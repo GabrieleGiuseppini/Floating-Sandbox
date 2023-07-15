@@ -132,7 +132,7 @@ public:
     // Interactions
     //
 
-    std::optional<NpcId> PickNpc(vec2f const & position) const;
+    std::optional<PickedObjectId<NpcId>> PickNpc(vec2f const & position) const;
 
     void BeginMoveNpc(NpcId npcId);
 

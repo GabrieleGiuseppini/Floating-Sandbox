@@ -135,7 +135,7 @@ void Npcs::Upload(Render::RenderContext & renderContext) const
 
 // Interactions
 
-std::optional<NpcId> Npcs::PickNpc(vec2f const & position) const
+std::optional<PickedObjectId<NpcId>> Npcs::PickNpc(vec2f const & position) const
 {
 	// TODO: FindTopmostContainingTriangle, and search on that ship; no search in other ships
 	// Algo: nearest to position on same plane wins; if none on same plane. then simply nearest

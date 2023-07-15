@@ -293,6 +293,37 @@ namespace std {
     };
 }
 
+/*
+ * Return type of picking an object.
+ */
+template<typename TObjectId>
+struct PickedObjectId
+{
+    using ObjectId = TObjectId;
+
+    PickedObjectId(
+        ObjectId objectId,
+        vec2f const & worldOffset)
+        : mObjectId(objectId)
+        , mWorldOffset(worldOffset)
+    {}
+
+    inline ObjectId GetObjectId() const noexcept
+    {
+        return mObjectId;
+    };
+
+    inline vec2f const & GetWorldOffset() const noexcept
+    {
+        return mWorldOffset;
+    }
+
+private:
+
+    ObjectId mObjectId;
+    vec2f mWorldOffset;
+};
+
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // Geometry
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -985,6 +1016,15 @@ enum class NpcHighlightType : size_t
     Error = 0,
     Selected,
     None
+};
+
+/*
+ * The different types of floor on which NPCs move.
+ */
+enum class NpcSurfaceType
+{
+    Floor,
+    Open
 };
 
 /*

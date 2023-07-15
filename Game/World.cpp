@@ -129,7 +129,7 @@ bool World::IsUnderwater(ElementId elementId) const
 // Interactions
 //////////////////////////////////////////////////////////////////////////////
 
-std::optional<NpcId> World::PickNpc(vec2f const & position) const
+std::optional<PickedObjectId<NpcId>> World::PickNpc(vec2f const & position) const
 {
     return mNpcs.PickNpc(position);
 }
