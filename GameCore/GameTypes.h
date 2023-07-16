@@ -1014,7 +1014,8 @@ enum class HumanNpcRoleType
 enum class NpcHighlightType : size_t
 {
     Error = 0,
-    Selected,
+    Picked,
+    Hovered,
     None
 };
 

@@ -155,12 +155,9 @@ Arch:
 	- New spring getter: NpcSurfaceType
 		+ GameType
 		- ShipFactory: populate as "Floor" using IsHull for the time being (w/comment), @ point matrix
-			- But split factory vs. effective, for doors
+			- @Springs: split factory vs. effective, for doors
 		- Then can do Npcs::IsSuitable
 	- Complete moving/placing
-	- Different highglight while being moved?
-	- See if also other Move tools need the same (fix for zoom/pan while moving)
-		! Yes they do
 	- Shader: discard  when transparent
 		- But only after testing with two connected components - & inverse order of drawing; should bug out when near NPC is drawn before far NPC and they are on top of each other
 			- Requires following their triangle

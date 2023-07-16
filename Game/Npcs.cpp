@@ -103,7 +103,8 @@ void Npcs::Upload(Render::RenderContext & renderContext) const
 				{
 					static vec4f constexpr HightlightColors[] = {
 						vec4f(0.760f, 0.114f, 0.114f, 1.0f),	// Error
-						vec4f(0.208f, 0.590f, 0.0177f, 1.0f),	// Selected
+						vec4f(0.208f, 0.590f, 0.0177f, 1.0f),	// Picked
+						vec4f(1.0f, 1.0f, 1.0f, 1.0f),			// Hovered
 						vec4f::zero()							// None
 					};
 

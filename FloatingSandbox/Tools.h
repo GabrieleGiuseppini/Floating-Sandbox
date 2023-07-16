@@ -3599,7 +3599,7 @@ protected:
         if (worldPosition != mEngagementData->LastPosition)
         {
             bool const isSuitablePosition = mGameController.MoveNpcTo(mEngagementData->CurrentNpcId, worldPosition, mEngagementData->Offset);
-            mGameController.HighlightNpc(mEngagementData->CurrentNpcId, isSuitablePosition ? NpcHighlightType::Selected : NpcHighlightType::Error);
+            mGameController.HighlightNpc(mEngagementData->CurrentNpcId, isSuitablePosition ? NpcHighlightType::Picked : NpcHighlightType::Error);
             mEngagementData->LastPosition = worldPosition;
             mEngagementData->IsLastPositionSuitable = isSuitablePosition;
         }
@@ -3658,7 +3658,7 @@ protected:
             mRole,
             worldPosition);
 
-        mGameController.HighlightNpc(pickedId.GetObjectId(), NpcHighlightType::Selected);
+        mGameController.HighlightNpc(pickedId.GetObjectId(), NpcHighlightType::Picked);
 
         return EngagementData(
             pickedId.GetObjectId(),
@@ -3746,7 +3746,7 @@ public:
             if (pickedNpc.has_value())
             {
                 mGameController.BeginMoveNpc(pickedNpc->GetObjectId());
-                mGameController.HighlightNpc(pickedNpc->GetObjectId(), NpcHighlightType::Selected);
+                mGameController.HighlightNpc(pickedNpc->GetObjectId(), NpcHighlightType::Picked);
 
                 mEngagementData.emplace(
                     pickedNpc->GetObjectId(),
@@ -3800,7 +3800,7 @@ private:
             {
                 // Give feedback on suitability of this position
                 bool const isSuitablePosition = mGameController.MoveNpcTo(mEngagementData->CurrentNpcId, worldPosition, mEngagementData->Offset);
-                mGameController.HighlightNpc(mEngagementData->CurrentNpcId, isSuitablePosition ? NpcHighlightType::Selected : NpcHighlightType::Error);
+                mGameController.HighlightNpc(mEngagementData->CurrentNpcId, isSuitablePosition ? NpcHighlightType::Picked : NpcHighlightType::Error);
                 mEngagementData->LastPosition = worldPosition;
                 mEngagementData->IsLastPositionSuitable = isSuitablePosition;
             }
@@ -3817,7 +3817,7 @@ private:
                 if (pickedNpc.has_value())
                 {
                     mCurrentHoveredNpc = pickedNpc->GetObjectId();
-                    mGameController.HighlightNpc(*mCurrentHoveredNpc, NpcHighlightType::Selected);
+                    mGameController.HighlightNpc(*mCurrentHoveredNpc, NpcHighlightType::Hovered);
                 }
             }
 
@@ -3947,7 +3947,7 @@ private:
             if (pickedNpc.has_value())
             {
                 mCurrentHoveredNpc = pickedNpc->GetObjectId();
-                mGameController.HighlightNpc(*mCurrentHoveredNpc, NpcHighlightType::Selected);
+                mGameController.HighlightNpc(*mCurrentHoveredNpc, NpcHighlightType::Hovered);
             }
 
             mLastMouseWorldCoordinates = worldPosition;
