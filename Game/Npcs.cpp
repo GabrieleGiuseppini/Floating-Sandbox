@@ -135,13 +135,90 @@ void Npcs::Upload(Render::RenderContext & renderContext) const
 
 // Interactions
 
-std::optional<PickedObjectId<NpcId>> Npcs::PickNpc(vec2f const & position) const
+std::optional<PickedObjectId<NpcId>> Npcs::PickNpc(
+	vec2f const & position,
+	GameParameters const & gameParameters) const
 {
-	// TODO: FindTopmostContainingTriangle, and search on that ship; no search in other ships
-	// Algo: nearest to position on same plane wins; if none on same plane. then simply nearest
+	//
+	// Determine ship and plane of this position
+	//
 
-	(void)position;
-	return std::nullopt;
+	ShipId shipId;
+	PlaneId planeId;
+
+	// Find topmost triangle containing this position
+	auto const topmostTriangle = FindTopmostContainingTriangle(position);
+	if (topmostTriangle)
+	{
+		shipId = topmostTriangle->GetShipId();
+
+		size_t const s = static_cast<size_t>(shipId);
+		assert(s < mNpcShipsByShipId.size());
+		assert(mNpcShipsByShipId[s].has_value());
+		planeId = mNpcShipsByShipId[s]->ShipRef.GetPoints().GetPlaneId(mNpcShipsByShipId[s]->ShipRef.GetTriangles().GetPointAIndex(topmostTriangle->GetLocalObjectId()));
+	}
+	else
+	{
+		shipId = GetTopmostShipId();
+
+		size_t const s = static_cast<size_t>(shipId);
+		assert(s < mNpcShipsByShipId.size());
+		assert(mNpcShipsByShipId[s].has_value());
+		planeId = mNpcShipsByShipId[s]->ShipRef.GetMaxPlaneId();
+	}
+
+	//
+	// Search on this ship and plane only
+	//
+
+	float const squareSearchRadius = gameParameters.ToolSearchRadius * gameParameters.ToolSearchRadius;
+
+	size_t const s = static_cast<size_t>(shipId);
+	assert(s < mNpcShipsByShipId.size());
+	assert(mNpcShipsByShipId[s].has_value());
+
+	NpcId nearestNpc = NoneNpcId;
+	float nearestNpcSquareDistance = std::numeric_limits<float>::max();
+	vec2f nearestNpcPosition = vec2f::zero();
+	for (NpcState const & npcState : mNpcShipsByShipId[s]->NpcStates)
+	{
+		// Get plane of this NPC
+		PlaneId candidateNpcPlane;
+		if (npcState.TriangleIndex)
+		{
+			candidateNpcPlane = mNpcShipsByShipId[s]->ShipRef.GetPoints().GetPlaneId(mNpcShipsByShipId[s]->ShipRef.GetTriangles().GetPointAIndex(*(npcState.TriangleIndex)));
+		}
+		else
+		{
+			candidateNpcPlane = mNpcShipsByShipId[s]->ShipRef.GetMaxPlaneId();
+		}
+
+		if (candidateNpcPlane == planeId)
+		{
+			// Calculate distance of primary particle from search point
+			vec2f const candidateNpcPosition = mParticles.GetPosition(npcState.PrimaryParticleIndex);
+			float const squareDistance = (candidateNpcPosition - position).squareLength();
+			if (squareDistance < squareSearchRadius && squareDistance < nearestNpcSquareDistance)
+			{
+				nearestNpc = npcState.Id;
+				nearestNpcSquareDistance = squareDistance;
+				nearestNpcPosition = candidateNpcPosition;
+			}
+		}
+	}
+
+	if (nearestNpc != NoneNpcId)
+	{
+		LogMessage("Npcs: PickNpc: id=", nearestNpc);
+
+		return PickedObjectId<NpcId>(
+			nearestNpc,
+			position - nearestNpcPosition);
+	}
+	else
+	{
+		return std::nullopt;
+	}
 }
 
 void Npcs::BeginMoveNpc(NpcId id)
@@ -160,7 +237,7 @@ void Npcs::BeginMoveNpc(NpcId id)
 	mAreStaticRenderAttributesDirty = true;
 }
 
-NpcId Npcs::BeginMoveNewHumanNpc(
+PickedObjectId<NpcId> Npcs::BeginMoveNewHumanNpc(
 	HumanNpcRoleType role,
 	vec2f const & initialPosition)
 {
@@ -170,29 +247,36 @@ NpcId Npcs::BeginMoveNewHumanNpc(
 	LogMessage("Npcs: BeginMoveNew: triangleId=", triangleId ? triangleId->ToString() : "<NONE>");
 
 	// Create NPC in placement regime
-	return AddHumanNpc(
+	NpcId const id = AddHumanNpc(
 		role,
 		initialPosition,
 		RegimeType::Placement,
 		NpcHighlightType::None,
 		triangleId ? triangleId->GetShipId() : GetTopmostShipId(),
 		triangleId ? triangleId->GetLocalObjectId() : std::optional<ElementIndex>());
+
+	return PickedObjectId<NpcId>(
+		id,
+		vec2f::zero());
 }
 
 bool Npcs::IsSuitableNpcPosition(
 	NpcId id,
-	vec2f const & position) const
+	vec2f const & position,
+	vec2f const & offset) const
 {
 	// Find triangle ID; check conditions
 
 	// TODO
 	(void)id;
 	(void)position;
+	(void)offset;
 	return true;
 }
 
-bool Npcs::MoveNpcBy(
+bool Npcs::MoveNpcTo(
 	NpcId id,
+	vec2f const & position,
 	vec2f const & offset)
 {
 	//
@@ -202,22 +286,19 @@ bool Npcs::MoveNpcBy(
 	assert(GetNpcState(id).Regime == RegimeType::Placement);
 
 	// Move NPC - eventually moving around ships
-	auto & npcState = InternalMoveNpcBy(id, offset);
+	auto & npcState = InternalMoveNpcTo(id, position - offset);
 
 	// Tell caller whether this is a suitable position (as a hint, not binding)
 	return IsTriangleSuitableForNpc(npcState.Type, npcState.SId, npcState.TriangleIndex);
 }
 
-void Npcs::EndMoveNpc(
-	NpcId id,
-	vec2f const & finalOffset)
+void Npcs::EndMoveNpc(NpcId id)
 {
-	LogMessage("Npcs: EndMoveNpc: id=", id);
+	LogMessage("Npcs: EndMoveNpc: id=", id);	
+
+	auto & npcState = GetNpcState(id);
 
 	assert(GetNpcState(id).Regime == RegimeType::Placement);
-
-	// Move NPC - eventually moving around ships
-	auto & npcState = InternalMoveNpcBy(id, finalOffset);
 
 	// Exit placement regime
 
@@ -398,19 +479,18 @@ NpcId Npcs::AddHumanNpc(
 	return newNpcId;
 }
 
-Npcs::NpcState & Npcs::InternalMoveNpcBy(
+Npcs::NpcState & Npcs::InternalMoveNpcTo(
 	NpcId id,
-	vec2f const & offset)
+	vec2f const & position)
 {
 	NpcState & oldState = GetNpcState(id);
 	ShipId const oldShipId = oldState.SId;
 
 	// Move NPC's particle(s)
-	vec2f const newPosition = mParticles.GetPosition(oldState.PrimaryParticleIndex) + offset;
-	mParticles.SetPosition(oldState.PrimaryParticleIndex, newPosition);
+	mParticles.SetPosition(oldState.PrimaryParticleIndex, position);
 
 	// Calculate new triangle index
-	auto const newTriangleId = FindTopmostContainingTriangle(newPosition);
+	auto const newTriangleId = FindTopmostContainingTriangle(position);
 
 	// Figure out if the NPC needs to move ships
 	ShipId newShipId;

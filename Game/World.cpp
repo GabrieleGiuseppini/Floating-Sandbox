@@ -129,9 +129,11 @@ bool World::IsUnderwater(ElementId elementId) const
 // Interactions
 //////////////////////////////////////////////////////////////////////////////
 
-std::optional<PickedObjectId<NpcId>> World::PickNpc(vec2f const & position) const
+std::optional<PickedObjectId<NpcId>> World::PickNpc(
+    vec2f const & position,
+    GameParameters const & gameParameters) const
 {
-    return mNpcs.PickNpc(position);
+    return mNpcs.PickNpc(position, gameParameters);
 }
 
 void World::BeginMoveNpc(NpcId id)
@@ -139,7 +141,7 @@ void World::BeginMoveNpc(NpcId id)
     mNpcs.BeginMoveNpc(id);
 }
 
-NpcId World::BeginMoveNewHumanNpc(
+PickedObjectId<NpcId> World::BeginMoveNewHumanNpc(
     HumanNpcRoleType role,
     vec2f const & initialPosition)
 {
@@ -148,23 +150,23 @@ NpcId World::BeginMoveNewHumanNpc(
 
 bool World::IsSuitableNpcPosition(
     NpcId npcId,
-    vec2f const & position) const
+    vec2f const & position,
+    vec2f const & offset) const
 {
-    return mNpcs.IsSuitableNpcPosition(npcId, position);
+    return mNpcs.IsSuitableNpcPosition(npcId, position, offset);
 }
 
-bool World::MoveNpcBy(
+bool World::MoveNpcTo(
     NpcId npcId,
+    vec2f const & position,
     vec2f const & offset)
 {
-    return mNpcs.MoveNpcBy(npcId, offset);
+    return mNpcs.MoveNpcTo(npcId, position, offset);
 }
 
-void World::EndMoveNpc(
-    NpcId npcId,
-    vec2f const & finalOffset)
+void World::EndMoveNpc(NpcId npcId)
 {
-    mNpcs.EndMoveNpc(npcId, finalOffset);
+    mNpcs.EndMoveNpc(npcId);
 }
 
 void World::AbortNewNpc(NpcId npcId)

@@ -89,12 +89,12 @@ struct IGameController
     // Interactions
     //
 
-    virtual std::optional<PickedObjectId<NpcId>> PickNpc(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
+    virtual std::optional<PickedObjectId<NpcId>> PickNpc(vec2f const & worldPosition) const = 0;
     virtual void BeginMoveNpc(NpcId npcId) = 0;
-    virtual NpcId BeginMoveNewHumanNpc(HumanNpcRoleType role, DisplayLogicalCoordinates const & initialScreenCoordinates) = 0;
-    virtual bool IsSuitableNpcPosition(NpcId npcId, DisplayLogicalCoordinates const & screenCoordinates) const = 0;
-    virtual bool MoveNpcBy(NpcId npcId, DisplayLogicalSize const & screenOffset) = 0;
-    virtual void EndMoveNpc(NpcId npcId, DisplayLogicalSize const & finalScreenOffset) = 0;
+    virtual PickedObjectId<NpcId> BeginMoveNewHumanNpc(HumanNpcRoleType role, vec2f const & initialWorldPosition) = 0;
+    virtual bool IsSuitableNpcPosition(NpcId npcId, vec2f const & worldPosition, vec2f const & offset) const = 0;
+    virtual bool MoveNpcTo(NpcId npcId, vec2f const & worldPosition, vec2f const & offset) = 0;
+    virtual void EndMoveNpc(NpcId npcId) = 0;
     virtual void AbortNewNpc(NpcId npcId) = 0;
     virtual void HighlightNpc(NpcId npcId, NpcHighlightType highlight) = 0;
     virtual void RemoveNpc(NpcId npcId) = 0;

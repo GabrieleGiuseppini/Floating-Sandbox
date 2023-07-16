@@ -152,17 +152,9 @@ Arch:
 	X Though we could have a NpcRenderContext which passes ship's Z in vertex buffers, but then there's the order/alpha problem; best if rendered by each ship individually
 
 - TODOHERE:
-	- Fix issue with tool & zoom
-		- Tool works in world coordinates
-			+ Picking returns PickedObject == <ObjectId, world offset>
-				+ GameType
-			- Tool keeps world offset and talks absolute coords with GameController
-			- Also, stop doing offsets other than at MoveNpc(.)
-			+ IGameController: already has coord tx methods
-			- Update():
-				- Replaces MouseMove: checks if new world coords != last and, if so, moves NPC
-		- See if also Move tools need the same
 	- Complete moving/placing
+	- See if also Move tools need the same (fix for zoom/pan while moving)
+		- Yes they do
 	- Shader: discard  when transparent
 		- But only after testing with two connected components & e.g. flames - & inverse order of drawing
 	- New spring getter: NpcSurfaceType

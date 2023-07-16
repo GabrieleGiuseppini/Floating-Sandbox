@@ -63,17 +63,18 @@ void main()
     #define HighlightWidth 0.1
     
     float highlightDepth = 
-        (1.0 - smoothstep(1.0 - BorderWidth / 4.0, 1.0, r))
+        step(NpcRadius, r)
+        * (1.0 - smoothstep(1.0 - BorderWidth / 4.0, 1.0, r))
         * vertexHighlightColor.a;
         
     col = mix(
         col,
         vertexHighlightColor,
         highlightDepth - col.a);
-
+        
     // Apply ambient light
 
-    col.rgb *= paramEffectiveAmbientLightIntensity;
+    col.rgb *= paramEffectiveAmbientLightIntensity;        
 
     ////////////////////
 

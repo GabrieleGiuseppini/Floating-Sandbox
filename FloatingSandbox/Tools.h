@@ -3524,9 +3524,7 @@ public:
     {
         // Note: the specified position might be far away, as it could be where we left the canvas to open the menu
 
-        mEngagementData.emplace(
-            Begin(inputState.MousePosition),
-            inputState.MousePosition);
+        mEngagementData = Begin(inputState.MousePosition);
 
         SetCurrentCursor();
     }
@@ -3540,35 +3538,34 @@ public:
         }
     }
 
-    void UpdateSimulation(InputState const & /*inputState*/, float /*currentSimulationTime*/) override {}
+    void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override 
+    {
+        if (mEngagementData)
+        {
+            InternalMove(inputState.MousePosition);
+        }
+    }
 
     void OnMouseMove(InputState const & inputState) override 
     {
         if (mEngagementData)
         {
-            Move(inputState.MousePosition);
-
-            mEngagementData->LastPosition = inputState.MousePosition;
+            InternalMove(inputState.MousePosition);
         }
     }
 
-    void OnLeftMouseDown(InputState const & inputState) override 
+    void OnLeftMouseDown(InputState const & /*inputState*/) override
     {
         if (mEngagementData)
         {
-            bool const isSuitablePosition = Move(inputState.MousePosition);
-            if (isSuitablePosition)
+            if (mEngagementData->IsLastPositionSuitable)
             {
                 // Finish placement
-                mGameController.EndMoveNpc(mEngagementData->CurrentNpcId, DisplayLogicalSize(0, 0));
+                mGameController.EndMoveNpc(mEngagementData->CurrentNpcId);
                 mGameController.HighlightNpc(mEngagementData->CurrentNpcId, NpcHighlightType::None);
                 mEngagementData.reset();
 
                 SetCurrentCursor();
-            }
-            else
-            {
-                mEngagementData->LastPosition = inputState.MousePosition;
             }
         }
     }
@@ -3578,9 +3575,7 @@ public:
         if (!mEngagementData)
         {
             // Time to engage
-            mEngagementData.emplace(
-                Begin(inputState.MousePosition),
-                inputState.MousePosition);
+            mEngagementData = Begin(inputState.MousePosition); 
 
             SetCurrentCursor();
         }
@@ -3592,15 +3587,24 @@ public:
 
 protected:
 
-    virtual NpcId Begin(DisplayLogicalCoordinates position) = 0;
+    struct EngagementData;
 
-    bool Move(DisplayLogicalCoordinates mousePosition)
+    virtual EngagementData Begin(DisplayLogicalCoordinates const & position) = 0;
+
+    bool InternalMove(DisplayLogicalCoordinates const & position)
     {
-        auto const offset = mousePosition - mEngagementData->LastPosition;
-        bool const isSuitablePosition = mGameController.MoveNpcBy(mEngagementData->CurrentNpcId, offset);
-        mGameController.HighlightNpc(mEngagementData->CurrentNpcId, isSuitablePosition ? NpcHighlightType::Selected : NpcHighlightType::Error);
+        assert(mEngagementData);
 
-        return isSuitablePosition;
+        vec2f const worldPosition = mGameController.ScreenToWorld(position);
+        if (worldPosition != mEngagementData->LastPosition)
+        {
+            bool const isSuitablePosition = mGameController.MoveNpcTo(mEngagementData->CurrentNpcId, worldPosition, mEngagementData->Offset);
+            mGameController.HighlightNpc(mEngagementData->CurrentNpcId, isSuitablePosition ? NpcHighlightType::Selected : NpcHighlightType::Error);
+            mEngagementData->LastPosition = worldPosition;
+            mEngagementData->IsLastPositionSuitable = isSuitablePosition;
+        }
+
+        return mEngagementData->IsLastPositionSuitable;
     }
 
     virtual void SetCurrentCursor() = 0;
@@ -3608,13 +3612,19 @@ protected:
     struct EngagementData
     {
         NpcId CurrentNpcId;
-        DisplayLogicalCoordinates LastPosition;
+        vec2f Offset;
+        vec2f LastPosition;
+        bool IsLastPositionSuitable;
 
         EngagementData(
-            NpcId currentNpcId,
-            DisplayLogicalCoordinates lastPosition)
-            : CurrentNpcId(currentNpcId)
-            , LastPosition(lastPosition)
+            NpcId npcId,
+            vec2f offset,
+            vec2f const & initialPosition,
+            bool isInitialPositionSuitable)
+            : CurrentNpcId(npcId)
+            , Offset(offset)
+            , LastPosition(initialPosition)
+            , IsLastPositionSuitable(isInitialPositionSuitable)
         {}
     };
     
@@ -3640,15 +3650,21 @@ public:
 
 protected:
 
-    NpcId Begin(DisplayLogicalCoordinates position) override
+    EngagementData Begin(DisplayLogicalCoordinates const & position) override
     {
-        NpcId const npcId = mGameController.BeginMoveNewHumanNpc(
+        vec2f const worldPosition = mGameController.ScreenToWorld(position);
+
+        PickedObjectId<NpcId> const pickedId = mGameController.BeginMoveNewHumanNpc(
             mRole,
-            position);
+            worldPosition);
 
-        mGameController.HighlightNpc(npcId, NpcHighlightType::Selected);
+        mGameController.HighlightNpc(pickedId.GetObjectId(), NpcHighlightType::Selected);
 
-        return npcId;
+        return EngagementData(
+            pickedId.GetObjectId(),
+            pickedId.GetWorldOffset(),
+            worldPosition,
+            mGameController.IsSuitableNpcPosition(pickedId.GetObjectId(), worldPosition, pickedId.GetWorldOffset()));
     }
 
     void SetCurrentCursor() override
@@ -3680,31 +3696,34 @@ public:
     void Initialize(InputState const & /*inputState*/) override
     {
         mEngagementData.reset();
+        mLastMouseWorldCoordinates.reset();
+        mCurrentHoveredNpc.reset();
 
         SetCurrentCursor();
     }
 
     void Deinitialize() override
     {
+        if (mCurrentHoveredNpc)
+        {
+            mGameController.HighlightNpc(*mCurrentHoveredNpc, NpcHighlightType::None);
+            mCurrentHoveredNpc.reset();
+        }
+
         if (mEngagementData)
         {
-            mGameController.EndMoveNpc(mEngagementData->CurrentNpcId, DisplayLogicalSize(0, 0));
-            mEngagementData.reset();
+            DropNpc();
         }
     }
 
-    void UpdateSimulation(InputState const & /*inputState*/, float /*currentSimulationTime*/) override {}
+    void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override 
+    {
+        InternalUpdateForMousePosition(inputState.MousePosition);
+    }
 
     void OnMouseMove(InputState const & inputState) override
     {
-        if (mEngagementData)
-        {
-            auto const offset = inputState.MousePosition - mEngagementData->LastPosition;
-            bool const isSuitablePosition = mGameController.MoveNpcBy(mEngagementData->CurrentNpcId, offset);
-            mGameController.HighlightNpc(mEngagementData->CurrentNpcId, isSuitablePosition ? NpcHighlightType::None : NpcHighlightType::Error);
-
-            mEngagementData->LastPosition = inputState.MousePosition;
-        }
+        InternalUpdateForMousePosition(inputState.MousePosition);
     }
 
     void OnLeftMouseDown(InputState const & inputState) override
@@ -3715,40 +3734,47 @@ public:
         }
         else
         {
-            // Pick a new NPC
-            auto const npcId = mGameController.PickNpc(inputState.MousePosition);
-            if (npcId.has_value())
+            if (mCurrentHoveredNpc)
             {
+                mGameController.HighlightNpc(*mCurrentHoveredNpc, NpcHighlightType::None);
+                mCurrentHoveredNpc.reset();
+            }
+
+            // Pick a new NPC
+            vec2f const worldPosition = mGameController.ScreenToWorld(inputState.MousePosition);
+            auto const pickedNpc = mGameController.PickNpc(worldPosition);
+            if (pickedNpc.has_value())
+            {
+                mGameController.BeginMoveNpc(pickedNpc->GetObjectId());
+                mGameController.HighlightNpc(pickedNpc->GetObjectId(), NpcHighlightType::Selected);
+
                 mEngagementData.emplace(
-                    *npcId,
-                    inputState.MousePosition);
+                    pickedNpc->GetObjectId(),
+                    pickedNpc->GetWorldOffset(),
+                    worldPosition,
+                    true); // We picked the NPC at this position, hence we assume it's suitable
 
                 SetCurrentCursor();
             }
         }
     }
 
-    void OnLeftMouseUp(InputState const & inputState) override
+    void OnLeftMouseUp(InputState const & /*inputState*/) override
     {
         if (mEngagementData)
         {
-            auto const offset = inputState.MousePosition - mEngagementData->LastPosition;
-            bool const isSuitablePosition = mGameController.MoveNpcBy(mEngagementData->CurrentNpcId, offset);
-            mGameController.HighlightNpc(mEngagementData->CurrentNpcId, isSuitablePosition ? NpcHighlightType::None : NpcHighlightType::Error);
-
-            // See if can drop the NPC here
-            if (isSuitablePosition)
+            // Check if this is a suitable position
+            if (mEngagementData->IsLastPositionSuitable)
             {
                 // Finish placement
-                mGameController.EndMoveNpc(mEngagementData->CurrentNpcId, DisplayLogicalSize(0, 0));
-                mEngagementData.reset();
+                DropNpc();
 
                 SetCurrentCursor();
             }
-            else
-            {
-                mEngagementData->LastPosition = inputState.MousePosition;
-            }
+        }
+        else
+        {
+            // Nop
         }
     }
 
@@ -3758,6 +3784,47 @@ public:
 
 private:
 
+    void DropNpc()
+    {
+        mGameController.EndMoveNpc(mEngagementData->CurrentNpcId); // Note: we might drop the NPC in an unsuitable position
+        mGameController.HighlightNpc(mEngagementData->CurrentNpcId, NpcHighlightType::None);
+        mEngagementData.reset();
+    }
+
+    void InternalUpdateForMousePosition(DisplayLogicalCoordinates const & position)
+    {
+        vec2f const worldPosition = mGameController.ScreenToWorld(position);
+        if (worldPosition != mLastMouseWorldCoordinates)
+        {
+            if (mEngagementData)
+            {
+                // Give feedback on suitability of this position
+                bool const isSuitablePosition = mGameController.MoveNpcTo(mEngagementData->CurrentNpcId, worldPosition, mEngagementData->Offset);
+                mGameController.HighlightNpc(mEngagementData->CurrentNpcId, isSuitablePosition ? NpcHighlightType::Selected : NpcHighlightType::Error);
+                mEngagementData->LastPosition = worldPosition;
+                mEngagementData->IsLastPositionSuitable = isSuitablePosition;
+            }
+            else
+            {
+                if (mCurrentHoveredNpc)
+                {
+                    mGameController.HighlightNpc(*mCurrentHoveredNpc, NpcHighlightType::None);
+                    mCurrentHoveredNpc.reset();
+                }
+
+                // Search an NPC at this location
+                auto const pickedNpc = mGameController.PickNpc(worldPosition);
+                if (pickedNpc.has_value())
+                {
+                    mCurrentHoveredNpc = pickedNpc->GetObjectId();
+                    mGameController.HighlightNpc(*mCurrentHoveredNpc, NpcHighlightType::Selected);
+                }
+            }
+
+            mLastMouseWorldCoordinates = worldPosition;
+        }
+    }
+
     void SetCurrentCursor()
     {
         mToolCursorManager.SetToolCursor(mEngagementData.has_value() ? mClosedCursorImage : mOpenCursorImage);
@@ -3766,17 +3833,26 @@ private:
     struct EngagementData
     {
         NpcId CurrentNpcId;
-        DisplayLogicalCoordinates LastPosition;
+        vec2f Offset;
+        vec2f LastPosition;
+        bool IsLastPositionSuitable;
 
         EngagementData(
-            NpcId currentNpcId,
-            DisplayLogicalCoordinates lastPosition)
-            : CurrentNpcId(currentNpcId)
-            , LastPosition(lastPosition)
+            NpcId npcId,
+            vec2f offset,
+            vec2f const & initialPosition,
+            bool isInitialPositionSuitable)
+            : CurrentNpcId(npcId)
+            , Offset(offset)
+            , LastPosition(initialPosition)
+            , IsLastPositionSuitable(isInitialPositionSuitable)
         {}
     };
 
     std::optional<EngagementData> mEngagementData;
+
+    std::optional<vec2f> mLastMouseWorldCoordinates; // To prevent checking for an NPC continuously
+    std::optional<NpcId> mCurrentHoveredNpc; // Remembers which NPC we have highlighted as selected last; used only when not engaged
 
     // The cursors
     wxImage const mClosedCursorImage;
@@ -3795,9 +3871,10 @@ public:
 
 public:
 
-    void Initialize(InputState const & /*inputState*/) override 
+    void Initialize(InputState const & /*inputState*/) override
     {
-        mEngagementData.reset();
+        mLastMouseWorldCoordinates.reset();
+        mCurrentHoveredNpc.reset();
 
         mIsInClosedCursorState = false;
         SetCurrentCursor();
@@ -3805,72 +3882,86 @@ public:
 
     void Deinitialize() override
     {
-        if (mEngagementData)
+        if (mCurrentHoveredNpc)
         {
-            mGameController.HighlightNpc(mEngagementData->LastHighlightedNpcId, NpcHighlightType::None);
+            mGameController.HighlightNpc(*mCurrentHoveredNpc, NpcHighlightType::None);
         }
+    }
+
+    void UpdateSimulation(InputState const & inputState, float /*currentSimulationTime*/) override
+    {
+        InternalUpdateForMousePosition(inputState.MousePosition);
     }
 
     void OnMouseMove(InputState const & inputState) override
     {
-        if (mEngagementData)
-        {
-            mGameController.HighlightNpc(mEngagementData->LastHighlightedNpcId, NpcHighlightType::None);
-            mEngagementData.reset();
-        }
-
-        auto const npcId = mGameController.PickNpc(inputState.MousePosition);
-        if (npcId.has_value())
-        {
-            mGameController.HighlightNpc(*npcId, NpcHighlightType::Selected);
-            mEngagementData.emplace(*npcId);
-        }
+        InternalUpdateForMousePosition(inputState.MousePosition);
     }
 
-    void OnLeftMouseDown(InputState const & inputState) override 
+    void OnLeftMouseDown(InputState const & inputState) override
     {
-        if (mEngagementData)
+        if (mCurrentHoveredNpc)
         {
-            mGameController.HighlightNpc(mEngagementData->LastHighlightedNpcId, NpcHighlightType::None);
-            mEngagementData.reset();
+            mGameController.HighlightNpc(*mCurrentHoveredNpc, NpcHighlightType::None);
+            mCurrentHoveredNpc.reset();
         }
 
-        auto const npcId = mGameController.PickNpc(inputState.MousePosition);
-        if (npcId.has_value())
+        // Pick a new NPC
+        vec2f const worldPosition = mGameController.ScreenToWorld(inputState.MousePosition);
+        auto const pickedNpc = mGameController.PickNpc(worldPosition);
+        if (pickedNpc.has_value())
         {
-            mGameController.RemoveNpc(*npcId);
+            // Remove it
+            mGameController.RemoveNpc(pickedNpc->GetObjectId());
 
             mIsInClosedCursorState = true;
             SetCurrentCursor();
         }
     }
 
-    void OnLeftMouseUp(InputState const & /*inputState*/) override 
+    void OnLeftMouseUp(InputState const & /*inputState*/) override
     {
-        if (mIsInClosedCursorState)
-        {
-            mIsInClosedCursorState = false;
-            SetCurrentCursor();
-        }
+        mIsInClosedCursorState = false;
+        SetCurrentCursor();
     }
 
+    void OnShiftKeyDown(InputState const & /*inputState*/) override {}
+
+    void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+
 private:
+
+    void InternalUpdateForMousePosition(DisplayLogicalCoordinates const & position)
+    {
+        vec2f const worldPosition = mGameController.ScreenToWorld(position);
+        if (worldPosition != mLastMouseWorldCoordinates)
+        {
+            if (mCurrentHoveredNpc)
+            {
+                mGameController.HighlightNpc(*mCurrentHoveredNpc, NpcHighlightType::None);
+                mCurrentHoveredNpc.reset();
+            }
+
+            // Search an NPC at this location
+            auto const pickedNpc = mGameController.PickNpc(worldPosition);
+            if (pickedNpc.has_value())
+            {
+                mCurrentHoveredNpc = pickedNpc->GetObjectId();
+                mGameController.HighlightNpc(*mCurrentHoveredNpc, NpcHighlightType::Selected);
+            }
+
+            mLastMouseWorldCoordinates = worldPosition;
+        }
+    }
 
     void SetCurrentCursor()
     {
         mToolCursorManager.SetToolCursor(mIsInClosedCursorState ? mClosedCursorImage : mOpenCursorImage);
     }
 
-    struct EngagementData
-    {
-        NpcId LastHighlightedNpcId;
+    std::optional<vec2f> mLastMouseWorldCoordinates; // To prevent checking for an NPC continuously
 
-        EngagementData(NpcId currentNpcId)
-            : LastHighlightedNpcId(currentNpcId)
-        {}
-    };
-
-    std::optional<EngagementData> mEngagementData;
+    std::optional<NpcId> mCurrentHoveredNpc; // Remembers which NPC we have highlighted as selected last
 
     // The cursors
     bool mIsInClosedCursorState;

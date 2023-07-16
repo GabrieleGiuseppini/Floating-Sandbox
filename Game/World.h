@@ -132,25 +132,27 @@ public:
     // Interactions
     //
 
-    std::optional<PickedObjectId<NpcId>> PickNpc(vec2f const & position) const;
+    std::optional<PickedObjectId<NpcId>> PickNpc(
+        vec2f const & position,
+        GameParameters const & gameParameters) const;
 
     void BeginMoveNpc(NpcId npcId);
 
-    NpcId BeginMoveNewHumanNpc(
+    PickedObjectId<NpcId> BeginMoveNewHumanNpc(
         HumanNpcRoleType role,
         vec2f const & initialPosition);
 
     bool IsSuitableNpcPosition(
         NpcId npcId,
-        vec2f const & position) const;
+        vec2f const & position,
+        vec2f const & offset) const;
 
-    bool MoveNpcBy(
+    bool MoveNpcTo(
         NpcId npcId,
+        vec2f const & position,
         vec2f const & offset);
 
-    void EndMoveNpc(
-        NpcId npcId,
-        vec2f const & finalOffset);
+    void EndMoveNpc(NpcId npcId);
 
     void AbortNewNpc(NpcId npcId);
 

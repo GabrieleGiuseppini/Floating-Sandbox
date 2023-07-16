@@ -190,12 +190,12 @@ public:
     // Interactions
     //
 
-    std::optional<PickedObjectId<NpcId>> PickNpc(DisplayLogicalCoordinates const & screenCoordinates) const override;
+    std::optional<PickedObjectId<NpcId>> PickNpc(vec2f const & worldPosition) const override;
     void BeginMoveNpc(NpcId npcId) override;
-    NpcId BeginMoveNewHumanNpc(HumanNpcRoleType role, DisplayLogicalCoordinates const & initialScreenCoordinates) override;
-    bool IsSuitableNpcPosition(NpcId npcId, DisplayLogicalCoordinates const & screenCoordinates) const override;
-    bool MoveNpcBy(NpcId npcId, DisplayLogicalSize const & screenOffset) override;
-    void EndMoveNpc(NpcId npcId, DisplayLogicalSize const & finalScreenOffset) override;
+    PickedObjectId<NpcId> BeginMoveNewHumanNpc(HumanNpcRoleType role, vec2f const & initialWorldPosition) override;
+    bool IsSuitableNpcPosition(NpcId npcId, vec2f const & worldPosition, vec2f const & offset) const override;
+    bool MoveNpcTo(NpcId npcId, vec2f const & worldPosition, vec2f const & offset) override;
+    void EndMoveNpc(NpcId npcId) override;
     void AbortNewNpc(NpcId npcId) override;
     void HighlightNpc(NpcId npcId, NpcHighlightType highlight) override;
     void RemoveNpc(NpcId npcId) override;

@@ -717,6 +717,8 @@ MoveNpcTool::MoveNpcTool(
         gameController,
         soundController)
     , mEngagementData()
+    , mLastMouseWorldCoordinates()
+    , mCurrentHoveredNpc()
     , mClosedCursorImage(WxHelpers::LoadCursorImage("move_npc_cursor_down", 11, 29, resourceLocator))
     , mOpenCursorImage(WxHelpers::LoadCursorImage("move_npc_cursor_up", 11, 29, resourceLocator))
 {
@@ -732,7 +734,8 @@ RemoveNpcTool::RemoveNpcTool(
         toolCursorManager,
         gameController,
         soundController)
-    , mEngagementData()
+    , mLastMouseWorldCoordinates()
+    , mCurrentHoveredNpc()
     , mIsInClosedCursorState(false)
     , mClosedCursorImage(WxHelpers::LoadCursorImage("remove_npc_cursor_down", 20, 29, resourceLocator))
     , mOpenCursorImage(WxHelpers::LoadCursorImage("remove_npc_cursor_up", 20, 29, resourceLocator))

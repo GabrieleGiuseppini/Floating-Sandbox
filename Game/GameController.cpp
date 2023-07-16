@@ -608,12 +608,10 @@ void GameController::ToggleToFullDayOrNight()
         SetTimeOfDay(1.0f);
 }
 
-std::optional<PickedObjectId<NpcId>> GameController::PickNpc(DisplayLogicalCoordinates const & screenCoordinates) const
+std::optional<PickedObjectId<NpcId>> GameController::PickNpc(vec2f const & worldPosition) const
 {
-    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
-
     assert(!!mWorld);
-    return mWorld->PickNpc(worldCoordinates);
+    return mWorld->PickNpc(worldPosition, mGameParameters);
 }
 
 void GameController::BeginMoveNpc(NpcId npcId)
@@ -622,36 +620,28 @@ void GameController::BeginMoveNpc(NpcId npcId)
     mWorld->BeginMoveNpc(npcId);
 }
 
-NpcId GameController::BeginMoveNewHumanNpc(HumanNpcRoleType role, DisplayLogicalCoordinates const & initialScreenCoordinates)
+PickedObjectId<NpcId> GameController::BeginMoveNewHumanNpc(HumanNpcRoleType role, vec2f const & initialWorldPosition)
 {
-    vec2f const initialWorldCoordinates = mRenderContext->ScreenToWorld(initialScreenCoordinates);
-
     assert(!!mWorld);
-    return mWorld->BeginMoveNewHumanNpc(role, initialWorldCoordinates);
+    return mWorld->BeginMoveNewHumanNpc(role, initialWorldPosition);
 }
 
-bool GameController::IsSuitableNpcPosition(NpcId npcId, DisplayLogicalCoordinates const & screenCoordinates) const
+bool GameController::IsSuitableNpcPosition(NpcId npcId, vec2f const & worldPosition, vec2f const & offset) const
 {
-    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
-
     assert(!!mWorld);
-    return mWorld->IsSuitableNpcPosition(npcId, worldCoordinates);
+    return mWorld->IsSuitableNpcPosition(npcId, worldPosition, offset);
 }
 
-bool GameController::MoveNpcBy(NpcId npcId, DisplayLogicalSize const & screenOffset)
+bool GameController::MoveNpcTo(NpcId npcId, vec2f const & worldPosition, vec2f const & offset)
 {
-    vec2f const worldOffset = mRenderContext->ScreenOffsetToWorldOffset(screenOffset);
-
     assert(!!mWorld);
-    return mWorld->MoveNpcBy(npcId, worldOffset);
+    return mWorld->MoveNpcTo(npcId, worldPosition, offset);
 }
 
-void GameController::EndMoveNpc(NpcId npcId, DisplayLogicalSize const & finalScreenOffset)
+void GameController::EndMoveNpc(NpcId npcId)
 {
-    vec2f const finalWorldOffset = mRenderContext->ScreenOffsetToWorldOffset(finalScreenOffset);
-
     assert(!!mWorld);
-    mWorld->EndMoveNpc(npcId, finalWorldOffset);
+    mWorld->EndMoveNpc(npcId);
 }
 
 void GameController::AbortNewNpc(NpcId npcId)

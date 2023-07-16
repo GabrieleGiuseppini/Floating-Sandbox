@@ -152,25 +152,27 @@ public:
 
     // Interactions
 
-    std::optional<PickedObjectId<NpcId>> PickNpc(vec2f const & position) const;
+    std::optional<PickedObjectId<NpcId>> PickNpc(
+        vec2f const & position,
+        GameParameters const & gameParameters) const;
 
     void BeginMoveNpc(NpcId id);
 
-    NpcId BeginMoveNewHumanNpc(
+    PickedObjectId<NpcId> BeginMoveNewHumanNpc(
         HumanNpcRoleType role,
         vec2f const & initialPosition);
 
     bool IsSuitableNpcPosition(
         NpcId id,
-        vec2f const & position) const;
+        vec2f const & position,
+        vec2f const & offset) const;
 
-    bool MoveNpcBy(
+    bool MoveNpcTo(
         NpcId id,
+        vec2f const & position,
         vec2f const & offset);
 
-    void EndMoveNpc(
-        NpcId id,
-        vec2f const & finalOffset);
+    void EndMoveNpc(NpcId id);
 
     void AbortNewNpc(NpcId id);
 
@@ -190,9 +192,9 @@ private:
         ShipId const & shipId,
         std::optional<ElementIndex> triangleIndex);
 
-    NpcState & InternalMoveNpcBy(
+    NpcState & InternalMoveNpcTo(
         NpcId id,
-        vec2f const & offset);
+        vec2f const & position);
 
     void OnNpcDestroyed(NpcState const & state);
     
