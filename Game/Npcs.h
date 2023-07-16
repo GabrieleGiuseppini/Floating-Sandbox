@@ -198,6 +198,8 @@ private:
 
     void OnNpcDestroyed(NpcState const & state);
     
+    inline NpcState const & GetNpcState(NpcId id) const;
+
     inline NpcState & GetNpcState(NpcId id);
 
     inline std::optional<ElementId> FindTopmostContainingTriangle(vec2f const & position) const;

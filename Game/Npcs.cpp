@@ -265,13 +265,19 @@ bool Npcs::IsSuitableNpcPosition(
 	vec2f const & position,
 	vec2f const & offset) const
 {
-	// Find triangle ID; check conditions
+	vec2f const actualPosition = position - offset;
 
-	// TODO
-	(void)id;
-	(void)position;
-	(void)offset;
-	return true;
+	// Find triangle that this position belongs to
+	auto const triangleId = FindTopmostContainingTriangle(actualPosition);
+
+	// Get NPC state
+	auto const & npcState = GetNpcState(id);
+
+	// Check conditions
+	return IsTriangleSuitableForNpc(
+		npcState.Type,
+		triangleId ? triangleId->GetShipId() : GetTopmostShipId(),
+		triangleId ? triangleId->GetLocalObjectId() : std::optional<ElementIndex>());
 }
 
 bool Npcs::MoveNpcTo(
@@ -279,6 +285,8 @@ bool Npcs::MoveNpcTo(
 	vec2f const & position,
 	vec2f const & offset)
 {
+	vec2f const actualPosition = position - offset;
+
 	//
 	// Eventually moves around ships, but no regime change
 	//
@@ -286,7 +294,7 @@ bool Npcs::MoveNpcTo(
 	assert(GetNpcState(id).Regime == RegimeType::Placement);
 
 	// Move NPC - eventually moving around ships
-	auto & npcState = InternalMoveNpcTo(id, position - offset);
+	auto & npcState = InternalMoveNpcTo(id, actualPosition);
 
 	// Tell caller whether this is a suitable position (as a hint, not binding)
 	return IsTriangleSuitableForNpc(npcState.Type, npcState.SId, npcState.TriangleIndex);
@@ -606,6 +614,18 @@ void Npcs::OnNpcDestroyed(NpcState const & state)
 	}
 
 	--mNpcCount;
+}
+
+Npcs::NpcState const & Npcs::GetNpcState(NpcId id) const
+{
+	size_t const n = static_cast<size_t>(id);
+
+	// We know about this NPC
+	assert(n < mNpcEntriesByNpcId.size());
+	assert(mNpcEntriesByNpcId[n].has_value());
+	assert(mNpcEntriesByNpcId[n]->StateOrdinal < mNpcShipsByShipId[mNpcEntriesByNpcId[n]->SId]->NpcStates.size());
+
+	return mNpcShipsByShipId[mNpcEntriesByNpcId[n]->SId]->NpcStates[mNpcEntriesByNpcId[n]->StateOrdinal];
 }
 
 Npcs::NpcState & Npcs::GetNpcState(NpcId id)
