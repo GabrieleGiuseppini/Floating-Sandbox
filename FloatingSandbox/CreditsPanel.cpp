@@ -1,8 +1,4 @@
-/***************************************************************************************
- * Original Author:		Gabriele Giuseppini
- * Created:				2020-08-03
- * Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
- ***************************************************************************************/
+
 #include "CreditsPanel.h"
 
 #include <GameCore/BuildInfo.h>
