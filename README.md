@@ -24,7 +24,6 @@ The simulator comes with a built-in ShipBuilder that allows you to create ships 
 
 In coding this game I'm trying to avoid as much as possible tricks that just please the eye; every bit of the simulation is instead grounded as close as possible into real physics. For example, the material system has been put together using actual physical attributes of real-world materials, and all of the interactions are constructed according to the laws of physics. This makes it sometimes hard to build structures that sustain their own weight or float easily - as it is in reality, after all - but the reward is a realistic world-in-a-sandbox where every action and corresponding reaction are not pre-programmed, but rather are evolved naturally by the physics simulation engine.
 
-The game currently comes with a few example objects - mostly ships - and I'm always busy making new ships and objects. Anyone is encouraged to make their own objects, and if you'd like them to be included in the game, just get in touch with me - you'll get proper recognition in the About dialog, of course. Also have a look at [the official Floating Sandbox web site](https://floatingsandbox.com/), where you can find plenty of Ship Packs!
 
 There are lots of improvements that I'm currently working on; some of these are:
 - Improved rigid body simulation algorithm
