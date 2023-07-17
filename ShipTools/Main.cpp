@@ -1,8 +1,4 @@
-/***************************************************************************************
- * Original Author:		Gabriele Giuseppini
- * Created:				2018-06-25
- * Copyright:			Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
- ***************************************************************************************/
+
 
 #include "Baker.h"
 #include "Quantizer.h"
