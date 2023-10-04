@@ -1750,6 +1750,12 @@ public:
                 return ct == triangleElementIndex;
             }));
 
+        assert(!mConnectedTrianglesBuffer[pointElementIndex].ConnectedTriangles.contains(
+            [triangleElementIndex](auto const & ct)
+            {
+                return ct == triangleElementIndex;
+            }));
+
         mConnectedTrianglesBuffer[pointElementIndex].ConnectTriangle(
             triangleElementIndex,
             isAtOwner);

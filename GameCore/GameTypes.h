@@ -1004,7 +1004,8 @@ enum class NpcType
  */
 enum class HumanNpcRoleType
 {
-    Passenger
+    Passenger,
+    Programmer // TODO
 };
 
 /*

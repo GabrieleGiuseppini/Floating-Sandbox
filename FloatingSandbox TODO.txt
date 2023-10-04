@@ -8,17 +8,47 @@
 
 	= Npcs - take 1
 
+	- Doesn't say "PAUSED" anymore
+
+	- See if can use keys to pan along diagonals
+
+	- Ship engines should not work when not underwater
+
+	- Ship passwords only to prevent being edited, but allow them to be inspected
+
+	- See issue with copy'n'paste of electrical materials losing instance ID
+
 	- Fix "2022" copyright notices
+
+	- Render glowing particles after burning
+		- Ship points rendering: temperature should be enough; swap rot with temperature?
+			- Do we still see browned particles?
 
 	- Redo timer bomb
 		- Shader for fuse + sparks
 
-	- Wrecking ball tool
-	- New tool 2: Punch
+	- Terrain tool: guide
+		- SHIFT starts guide == line via NotificationLayer
+			- Shift only used for engagement, doesn't matter what happens next
+		- Terrain is then drawn only at left button up
+
+	- Try with parallel "water" subsystem, but for "bulk" (gravel, etc.)
+		- May co-exist with water
+		- Physics slightly different (more dense)
+		- Placed via "Hopper" tool, w/submenu for different materials
+			- From materials DB, but hidden from builder
+			- OR: just single material, for simplicity?
+		- Physics impl:
+			- Same subsystem as water (now renamed "Internal Fluids"), own buffers
+			- UpdateWaterMomenta: double calculations in existing loops
+				- Only difference: horizontal propagation is subject to "friction"
+
+	- New tool 2: Punch (was: wrecking ball tool)
 		- Spec:
-			- Like ocean floor collision
+			- Like ocean floor collision, against a sphere (which only grows quickly at initial engagement)
 			- OLD: Works only on frontier from outside->in
 				- Might want to try, at end, also from inside->out
+				- TODO-WHY OLD: because doing like ocean floor collisions is essentially the same, except that it also works on ropes
 		- Impl:
 			- TODOHERE
 
@@ -285,8 +315,8 @@
 			- "Hellooping"
 				+ Guy is already credited
 		= _TO_TAKE:
-			- Bright mamooth - ⁵⁵𝐓𝐡𝐞 𝟐𝟒𝐭𝐡_𝐃𝐨𝐜𝐭𝐨𝐫-𝟏𝟗𝟐𝟐⁵⁵#1963
-				= Asked name
+			- Bright mammooth - ⁵⁵𝐓𝐡𝐞 𝟐𝟒𝐭𝐡_𝐃𝐨𝐜𝐭𝐨𝐫-𝟏𝟗𝟐𝟐⁵⁵#1963
+				+ Asked name: doctor1922
 				- Add to credits
 
 - Ubuntu:

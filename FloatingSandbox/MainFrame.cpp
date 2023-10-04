@@ -487,11 +487,10 @@ MainFrame::MainFrame(
                             humanTypeSubMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [this](wxCommandEvent &) { OnAddHumanNpcMenuItemSelected(HumanNpcRoleType::Passenger); }, commandId);
                         }
 
-                        // TODOTEST
                         {
                             auto const commandId = wxNewId();
                             humanTypeSubMenu->Append(new wxMenuItem(nullptr, commandId, _("Programmer"), wxEmptyString, wxITEM_NORMAL));
-                            humanTypeSubMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [this](wxCommandEvent &) { OnAddHumanNpcMenuItemSelected(static_cast<HumanNpcRoleType>(42)); }, commandId);
+                            humanTypeSubMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [this](wxCommandEvent &) { OnAddHumanNpcMenuItemSelected(HumanNpcRoleType::Programmer); }, commandId);
                         }
                     }
                     

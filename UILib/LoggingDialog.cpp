@@ -5,7 +5,6 @@
 ***************************************************************************************/
 #include "LoggingDialog.h"
 
-#include <GameCore/GameWallClock.h>
 #include <GameCore/Log.h>
 
 #include <wx/clipbrd.h>

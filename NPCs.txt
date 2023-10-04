@@ -104,12 +104,23 @@ Details
 			- 0. If current triangle (guaranteed to be set) has been deleted, transition to free regime
 				- Note: triangle deleted <=> spring deleted, so this is regardless of whether NPC is on spring or not
 			- 1. F = {g & world forces, ext forces}
-			- 2. If NPC on spring:
+			- 2. TODOHERE: the below is apparently not needed if we take care of impact response when on edge (below); verify that we can take care of friction well in the edge code,
+			     when we have no idea of relative movements
+			     - If NPC on spring:
+				- And: allow when in floor to move like ghost, so if NPC on spring _and_ not all springs of triangle are floor
 				- Calculate Fa == apparent force due to difference between (current) world position of NPC (SW) and current position of triangle's pos (World(SR))
 				- F' = opposite of component of (F+Fa) perpendicular to spring (from inside of triangle)
+					- Note: only if normal is right direction wrt trajectory
 				- F' += (non-linear) friction due to normal component of (F+Fa) above, tangential to spring
+					- Static and kynetic friction:
+						- http://www.epi-eng.com/mechanical_engineering_basics/force_and_friction.htm
+						- https://www.motioncontroltips.com/why-is-static-friction-greater-than-kinetic-friction/#:~:text=Static%20friction%20is%20what%20keeps,once%20they%27re%20in%20motion.
+						- https://openstax.org/books/university-physics-volume-1/pages/6-2-friction
+							- The direction of friction is always opposite that of motion, parallel to the surface between objects, and perpendicular to the normal force.
 			- 3. Integrate (F + F') and of course NPC's velocity, calculating EW
+			- 3b. Reset ext forces
 			- 4. Perform ray tracing; if collision, move NPC and update velocity (bounce) as usual (i.e. with normal and tangential velocity responses)
+				- Impact forces: https://www.studysmarter.co.uk/explanations/physics/force/impact-forces/
 		- Details on ray tracing: 
 			- Perform ray tracing from SR to EW, in order to:
 				- Determine exit & entry through all triangles in path
@@ -141,7 +152,7 @@ Details
 	- NPCs will have two sets of vertex attributes:
 		- Static ones: contain static properties (colors, )
 			- Only reloaded at e.g. NPC insertion/removal
-		- Dynamics ones: contain world vertices, texture coords
+		- Dynamics ones: contain world vertices, texture coords (because these are atlas coords and thus change between frames)
 	- TODO: do we need indices like ships?
 
 Code
@@ -155,14 +166,14 @@ Arch:
 	- New spring getter: NpcSurfaceType
 		+ GameType
 		- ShipFactory: populate as "Floor" using IsHull for the time being (w/comment), @ point matrix
+			- See Floorplan Layer below (*)
 			- @Springs: split factory vs. effective, for doors
 		- Then can do Npcs::IsSuitable
-	- Complete moving/placing
 	- Shader: discard  when transparent
 		- But only after testing with two connected components - & inverse order of drawing; should bug out when near NPC is drawn before far NPC and they are on top of each other
 			- Requires following their triangle
-	- Update:
-		- 
+	- Make sure triangle destruction is forwarded to NPCs
+		- Any constrained NPC on a destroyed triangle becomes free
 
 Details:
 - NPCs class:
@@ -182,6 +193,16 @@ Details:
 			- Type: NpcKindType
 			- Union of all kind-specific attributes
 				- Note: many attributes will be common, hence we'll be saving room
+			- type: NpcParticleState
+				- ElementIndex ParticleIndex (index in NpcParticles)
+				- opt<ConstrainedStateType> ConstrainedState
+					- TriangleElementIndex
+					- BaryCoords
+					- opt<OnFloorStateType> OnFloorState
+						- EdgeOrdinal
+						- SimulationTime startTime - TODO: dynamics of when reset
+			- NpcParticleStateType PrimaryParticleState (i.e. feet)
+			- opt<NpcParticleStateType> SecondaryParticleState (i.e. head)
 	- Update(Ship const &)
 	- Upload(Ship const &, ShipRenderContext)
 		- Invoked by World for each ship separately
@@ -189,29 +210,50 @@ Details:
 			- A TextureGroup enum - declared in RenderTypes like AntiMatterBomb is for example - is used to identify the "movement types" for rendering. An additional index provides the sub-frame. The whole coordinate is a TextureFrameId<NPC group>.
 				- TODO: actually the enum might not have to be in RenderTypes; we could use a generic "state" enum in GameTypes which *also* serves as a groups enum
 - Physical Interactions:
+	- Lights: second pass of lighting algorith with all NPC particles, for each ship
+		- Adding to NPC particles' _light_ buffer
 	- Wind: all ships, only in free regime
 	- Ship-specific explosions: only of that ship, or free regime
 	- Swirl, etc.: all ships, all regimes
+	- Move tool:
+		- While MoveAll may be used to move everything, Move (component) only moves mesh, thus subjecting NPCs to apparent forces!
 
 
+- Dipole:
+	- Attempt 1:
+		- Normal physics: calc spring forces first (in new particle's buffer) and include those forces when calculating trajectory
+		- However, when on an edge, friction might get in the way of reunification of the particles, hence: attempt 2
+	- Attempt 2:
+		- If both not on edge: normal physics: calc spring forces first (in new particle's buffer) and include those forces when calculating (non-edge) trajectory
+		- Else:
+			- Each particle for which other is on edge: after calculating flattened traj which includes friction and all, calc how much extra movement is needed to reach rest length,
+			  and add particle's portion of that to traj (half or whole, depending on whether both are on edge or only one)
+				- The important part here is that this happens _after_ friction
+
+	- Misc OLD:
+	- Try:
+		- Before all particle's state updates, we force positions for dipoles too far apart or too close to go back into a tolerance, then we allow spring forces to occur
+			- We then need to recalc bary coords of both - but according to the old mesh positions - HOW?
+
+- Walking, etc.:
+	- Erection is maintained by applying a continuous adjusting torque
+	- Torque to adjust to erect depends on float equlibrium (0->1)
+	- Equlibrium itself depends on for how long we're within parameters to be in equilibrium
+		- Equlibrium is lowered/reset at impacts, TODO: also when too much not erect, but then it would reset itself during erection
+		
+	- OLD: When an NPC is in Walking state:
+		- At trajectory calculation: when on an edge (which should be satsified already if in Walking state?)
+			- Calculate total force that NPC is subject to (already doing that?)
+			- If this total force is "within parameters" for walking (incl. right downward pressure):
+				- Cheat by skipping integration and hard-calculating deltaPos, taking into account slope		
 
 
-
+- Floorplan layer:
+	- A specific "FloorPlan" layer provides a bitmask indicating particles' (and thus, springs') floorness
+		- In the future, also "floor areas"
+	- When the layer is absent, the layer is created automatically with the hullness of particles
 
 - OLD:
-- "Walkability"
-	- A particle is either "walkable" or not
-	- A spring is "walkable" only if both endpoints are "walkable"
-		- "Walkabaility" of springs is maintained at destroy and repair
-	- A specific "Paths" (or "FloorPlan") layer provides a bitmask indicating which particles are walkable and which are not
-		- When the layer is absent, the bitmask is created automatically with the hullness of particles
-
-- Walking:
-	- A given walkable spring has effectively two sides, and thus we need to remember on which side we are
-		- Example: we're walking on a spring, and then ship is rotated by 180 degrees: we need now to fall, rather than continue walking on the other side of the spring
-	- An NPC then remembers:
-		- Which spring it's walking on, and
-		- Which of the two endpoints is at its *right* when the NPC is staring at us
 
 - State machine(s):
 	- Constrained regime:
