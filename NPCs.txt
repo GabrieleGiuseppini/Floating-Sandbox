@@ -101,43 +101,44 @@ Details
 						- So that we correctly apply it also when NPC is upside-down
 				- Forces acting on NPC (gravity, etc.)
 		- Algo for physics update of one NPC:
-			- 0. If current triangle (guaranteed to be set) has been deleted, transition to free regime
-				- Note: triangle deleted <=> spring deleted, so this is regardless of whether NPC is on spring or not
-			- 1. F = {g & world forces, ext forces}
-			- 2. TODOHERE: the below is apparently not needed if we take care of impact response when on edge (below); verify that we can take care of friction well in the edge code,
-			     when we have no idea of relative movements
-			     - If NPC on spring:
-				- And: allow when in floor to move like ghost, so if NPC on spring _and_ not all springs of triangle are floor
-				- Calculate Fa == apparent force due to difference between (current) world position of NPC (SW) and current position of triangle's pos (World(SR))
-				- F' = opposite of component of (F+Fa) perpendicular to spring (from inside of triangle)
-					- Note: only if normal is right direction wrt trajectory
-				- F' += (non-linear) friction due to normal component of (F+Fa) above, tangential to spring
-					- Static and kynetic friction:
-						- http://www.epi-eng.com/mechanical_engineering_basics/force_and_friction.htm
-						- https://www.motioncontroltips.com/why-is-static-friction-greater-than-kinetic-friction/#:~:text=Static%20friction%20is%20what%20keeps,once%20they%27re%20in%20motion.
-						- https://openstax.org/books/university-physics-volume-1/pages/6-2-friction
-							- The direction of friction is always opposite that of motion, parallel to the surface between objects, and perpendicular to the normal force.
-			- 3. Integrate (F + F') and of course NPC's velocity, calculating EW
-			- 3b. Reset ext forces
-			- 4. Perform ray tracing; if collision, move NPC and update velocity (bounce) as usual (i.e. with normal and tangential velocity responses)
-				- Impact forces: https://www.studysmarter.co.uk/explanations/physics/force/impact-forces/
-		- Details on ray tracing: 
-			- Perform ray tracing from SR to EW, in order to:
-				- Determine exit & entry through all triangles in path
-				- Eventually stop at a floor
-			- Details:
-				- Start in SR triangle == ST
-				- Loop:
-					- Calculate relative coords of EW in ST == E'R
-					- If E'R is *within* ST:
-						- We're done
-					- Else:
-						- Determine side of ST that SR->E'R path crossed
-							- It's gotta be one and only one
-						- Check if that side is floor; if it is: apply "collision" logic and stop
-						- (if not floor) Find next triangle (triangle opposite that side)
-						- If there's no triangle: enter "free regime" and stop
-						- ST = this new triangle; continue loop
+			- Done at BaryLab
+				- 0. If current triangle (guaranteed to be set) has been deleted, transition to free regime
+					- Note: triangle deleted <=> spring deleted, so this is regardless of whether NPC is on spring or not
+				- 1. F = {g & world forces, ext forces}
+				- 2. Note: the below is apparently not needed if we take care of impact response when on edge (below); verify that we can take care of friction well in the edge code,
+				     when we have no idea of relative movements
+				     - If NPC on spring:
+					- And: allow when in floor to move like ghost, so if NPC on spring _and_ not all springs of triangle are floor
+					- Calculate Fa == apparent force due to difference between (current) world position of NPC (SW) and current position of triangle's pos (World(SR))
+					- F' = opposite of component of (F+Fa) perpendicular to spring (from inside of triangle)
+						- Note: only if normal is right direction wrt trajectory
+					- F' += (non-linear) friction due to normal component of (F+Fa) above, tangential to spring
+						- Static and kynetic friction:
+							- http://www.epi-eng.com/mechanical_engineering_basics/force_and_friction.htm
+							- https://www.motioncontroltips.com/why-is-static-friction-greater-than-kinetic-friction/#:~:text=Static%20friction%20is%20what%20keeps,once%20they%27re%20in%20motion.
+							- https://openstax.org/books/university-physics-volume-1/pages/6-2-friction
+								- The direction of friction is always opposite that of motion, parallel to the surface between objects, and perpendicular to the normal force.
+				- 3. Integrate (F + F') and of course NPC's velocity, calculating EW
+				- 3b. Reset ext forces
+				- 4. Perform ray tracing; if collision, move NPC and update velocity (bounce) as usual (i.e. with normal and tangential velocity responses)
+					- Impact forces: https://www.studysmarter.co.uk/explanations/physics/force/impact-forces/
+				- Details on ray tracing: 
+					- Perform ray tracing from SR to EW, in order to:
+						- Determine exit & entry through all triangles in path
+						- Eventually stop at a floor
+					- Details:
+						- Start in SR triangle == ST
+						- Loop:
+							- Calculate relative coords of EW in ST == E'R
+							- If E'R is *within* ST:
+								- We're done
+							- Else:
+								- Determine side of ST that SR->E'R path crossed
+									- It's gotta be one and only one
+								- Check if that side is floor; if it is: apply "collision" logic and stop
+								- (if not floor) Find next triangle (triangle opposite that side)
+								- If there's no triangle: enter "free regime" and stop
+								- ST = this new triangle; continue loop
 		- Details:
 			- Barycentric coords, and intersection of segment with triangle:
 				- https://math.stackexchange.com/questions/2382016/determine-if-a-line-segment-passes-through-a-triangle
@@ -148,34 +149,90 @@ Details
 				- https://members.loria.fr/SLazard/ARC-Visi3D/Pant-project/files/Line_Segment_Triangle.html
 				- 2D: https://www.geogebra.org/m/aRMTsu62
 
+- Behavioral state machine(s):
+	- Constrained regime:
+		- Freefall state:
+			! In this state an NPC is falling down a non-walkable spring
+			- Do hole check to check for transition to Free regime
+			- When mid-spring: slide along spring in the direction that is most aligned with gravity
+			- When the NPC reaches an endpoint of the spring:
+				- If the point is non-walkable:
+					- Choose the next spring (by definition: non-walkable): 
+						- The one most aligned with gravity
+					- Keep falling (stay in this state)
+				- Else (the point is walkable):
+					- Transition to Landed state
+		- Landed state:
+			! Temporary state, exists for animation
+			- Do hole check to check for transition to Free regime
+			- TODOHERE: incorporate "remembering *right* endpoint of spring we're walking on" from here on
+			- From here, after some time: choose a walking direction: "left" or "right", then transition to Walking_MakeNextChoice
+				- TODO: see below if we actually can find next spring without having an incoming spring
+		- Walking:
+			! When an NPC is walking, it follows a predefined direction, either "left" or "right"
+			- Do hole check to check for transition to Free regime
+			- Walking displacement physics:
+				- Trajectory is added a forceful displacement, calculated based on walking/running velocity
+					- Velocity is then updated for free
+			- When the NPC reaches an endpoint of the walkable spring: transition to Walking_MakeNextChoice state
+			- State:
+				- Erection is maintained by applying a continuous adjusting torque
+				- Torque to adjust to erect depends on float equlibrium (0->1)
+				- Equlibrium itself depends on for how long we're within parameters to be in equilibrium
+					- Equlibrium is lowered/reset at impacts, TODO: also when too much not erect, but then it would reset itself during erection
+				- Parameters for equlibrium:
+					- Includes right downward pressure
+					- TODO
+		- Walking_MakeNextChoice:
+			- Do hole check to check for transition to Free regime
+			- Choose the next spring:
+				! Could be the same as the incoming in case we're sliding
+				- The first non-deleted walkable spring (first in CW direction if going R, else CCW if going L, from the incoming spring)
+					- TODO: see if can do without having to remember incoming spring: redefine how we choose next spring knowing only the wanted direction
+				- If it is in the walking direction, and if it is not too steep
+					- Steepness check uses friction of walkabaility
+			- If a choice can't be made: invert direction
+				- Stay in this state so we still need to make a choice
+
+
 - Rendering:
 	- NPCs will have two sets of vertex attributes:
 		- Static ones: contain static properties (colors, )
 			- Only reloaded at e.g. NPC insertion/removal
 		- Dynamics ones: contain world vertices, texture coords (because these are atlas coords and thus change between frames)
-	- TODO: do we need indices like ships?
+	- TODO: do we need indices like ships? TODO: what indices?
 
-Code
-===========
-Arch:
-- One single NPCs container class owned and managed by World
-- Render dispatched to individual ShipRenderContext's, as each ship has own Z world
-	X Though we could have a NpcRenderContext which passes ship's Z in vertex buffers, but then there's the order/alpha problem; best if rendered by each ship individually
+- Physical Interactions:
+	- Lights: second pass of lighting algorith with all NPC particles, for each ship
+		- Adding to NPC particles' _light_ buffer
+	- Wind: all ships, only in free regime
+	- Ship-specific explosions: only of that ship, or free regime
+	- Swirl, etc.: all ships, all regimes
+	- Move tool:
+		- While MoveAll may be used to move everything, Move (component) only moves mesh, thus subjecting NPCs to apparent forces!
 
-- TODOHERE:
-	- New spring getter: NpcSurfaceType
-		+ GameType
-		- ShipFactory: populate as "Floor" using IsHull for the time being (w/comment), @ point matrix
-			- See Floorplan Layer below (*)
-			- @Springs: split factory vs. effective, for doors
-		- Then can do Npcs::IsSuitable
-	- Shader: discard  when transparent
-		- But only after testing with two connected components - & inverse order of drawing; should bug out when near NPC is drawn before far NPC and they are on top of each other
-			- Requires following their triangle
-	- Make sure triangle destruction is forwarded to NPCs
-		- Any constrained NPC on a destroyed triangle becomes free
 
-Details:
+- Dipole:
+	- Attempt 1:
+		- Normal physics: calc spring forces first (in new particle's buffer) and include those forces when calculating trajectory
+		- However, when on an edge, friction might get in the way of reunification of the particles, hence: attempt 2
+	- Attempt 2:
+		- If both not on edge: normal physics: calc spring forces first (in new particle's buffer) and include those forces when calculating (non-edge) trajectory
+		- Else:
+			- Each particle for which other is on edge: after calculating flattened traj which includes friction and all, calc how much extra movement is needed to reach rest length,
+			  and add particle's portion of that to traj (half or whole, depending on whether both are on edge or only one)
+				- The important part here is that this happens _after_ friction
+
+	- Misc OLD:
+	- Try:
+		- Before all particle's state updates, we force positions for dipoles too far apart or too close to go back into a tolerance, then we allow spring forces to occur
+			- We then need to recalc bary coords of both - but according to the old mesh positions - HOW?
+
+- Floorplan layer:
+	- A specific "FloorPlan" layer provides a bitmask indicating particles' (and thus, springs') floorness
+		- In the future, also "floor areas"
+	- When the layer is absent, the layer is created automatically with the hullness of particles
+
 - NPCs class:
 	- Container of NPCs
 	- Owned by World; accessed - when needed - by Ships via ParentWorld
@@ -209,90 +266,27 @@ Details:
 		- Invokes ShipRenderContext::UploadNPC:
 			- A TextureGroup enum - declared in RenderTypes like AntiMatterBomb is for example - is used to identify the "movement types" for rendering. An additional index provides the sub-frame. The whole coordinate is a TextureFrameId<NPC group>.
 				- TODO: actually the enum might not have to be in RenderTypes; we could use a generic "state" enum in GameTypes which *also* serves as a groups enum
-- Physical Interactions:
-	- Lights: second pass of lighting algorith with all NPC particles, for each ship
-		- Adding to NPC particles' _light_ buffer
-	- Wind: all ships, only in free regime
-	- Ship-specific explosions: only of that ship, or free regime
-	- Swirl, etc.: all ships, all regimes
-	- Move tool:
-		- While MoveAll may be used to move everything, Move (component) only moves mesh, thus subjecting NPCs to apparent forces!
 
+Arch
+===========
+- One single NPCs container class owned and managed by World
+- Render dispatched to individual ShipRenderContext's, as each ship has own Z world
+	X Though we could have a NpcRenderContext which passes ship's Z in vertex buffers, but then there's the order/alpha problem; best if rendered by each ship individually
 
-- Dipole:
-	- Attempt 1:
-		- Normal physics: calc spring forces first (in new particle's buffer) and include those forces when calculating trajectory
-		- However, when on an edge, friction might get in the way of reunification of the particles, hence: attempt 2
-	- Attempt 2:
-		- If both not on edge: normal physics: calc spring forces first (in new particle's buffer) and include those forces when calculating (non-edge) trajectory
-		- Else:
-			- Each particle for which other is on edge: after calculating flattened traj which includes friction and all, calc how much extra movement is needed to reach rest length,
-			  and add particle's portion of that to traj (half or whole, depending on whether both are on edge or only one)
-				- The important part here is that this happens _after_ friction
+Impl:
+===========
+TODOHERE
+- New spring getter: NpcSurfaceType
+	+ GameType
+	- ShipFactory: populate as "Floor" using IsHull for the time being (w/comment), @ point matrix
+		- See Floorplan Layer below (*)
+		- @Springs: split factory vs. effective, for doors
+	- Then can do Npcs::IsSuitable
+- Shader: 
+	- Copy BaryLab shader
+	- Discard  when transparent
+		- But only after testing with two connected components - & inverse order of drawing; should bug out when near NPC is drawn before far NPC and they are on top of each other
+			- Requires following their triangle
+- Make sure triangle destruction is forwarded to NPCs
+	- Any constrained NPC on a destroyed triangle becomes free
 
-	- Misc OLD:
-	- Try:
-		- Before all particle's state updates, we force positions for dipoles too far apart or too close to go back into a tolerance, then we allow spring forces to occur
-			- We then need to recalc bary coords of both - but according to the old mesh positions - HOW?
-
-- Walking, etc.:
-	- Erection is maintained by applying a continuous adjusting torque
-	- Torque to adjust to erect depends on float equlibrium (0->1)
-	- Equlibrium itself depends on for how long we're within parameters to be in equilibrium
-		- Equlibrium is lowered/reset at impacts, TODO: also when too much not erect, but then it would reset itself during erection
-		
-	- OLD: When an NPC is in Walking state:
-		- At trajectory calculation: when on an edge (which should be satsified already if in Walking state?)
-			- Calculate total force that NPC is subject to (already doing that?)
-			- If this total force is "within parameters" for walking (incl. right downward pressure):
-				- Cheat by skipping integration and hard-calculating deltaPos, taking into account slope		
-
-
-- Floorplan layer:
-	- A specific "FloorPlan" layer provides a bitmask indicating particles' (and thus, springs') floorness
-		- In the future, also "floor areas"
-	- When the layer is absent, the layer is created automatically with the hullness of particles
-
-- OLD:
-
-- State machine(s):
-	- Constrained regime:
-		- Freefall state:
-			! In this state an NPC is falling down a non-walkable spring
-			- Do hole check to check for transition to Free regime
-			- When mid-spring: slide along spring in the direction that is most aligned with gravity
-			- When the NPC reaches an endpoint of the spring:
-				- If the point is non-walkable:
-					- Choose the next spring (by definition: non-walkable): 
-						- The one most aligned with gravity
-					- Keep falling (stay in this state)
-				- Else (the point is walkable):
-					- Transition to Landed state
-		- Landed state:
-			! Temporary state, exists for animation
-			- Do hole check to check for transition to Free regime
-			- TODOHERE: incorporate "remembering *right* endpoint of spring we're walking on" from here on
-			- From here, after some time: choose a walking direction: "left" or "right", then transition to Walking_MakeNextChoice
-				- TODO: see below if we actually can find next spring without having an incoming spring
-		- Walking:
-			! When an NPC is walking, it follows a predefined direction, either "left" or "right"
-			- Do hole check to check for transition to Free regime
-			- When mid-spring:
-				- Calculate velocity:
-					- TODO: resultant of constant WalkingVelocity in the direction of the walk with gravity (projected along spring) + friction
-					- TODO: incorporate "remembering *right* endpoint of spring we're walking on" from here on
-				- Move by velocity
-			- When the NPC reaches an endpoint of the walkable spring: transition to Walking_MakeNextChoice state
-		- Walking_MakeNextChoice:
-			- Do hole check to check for transition to Free regime
-			- Choose the next spring:
-				! Could be the same as the incoming in case we're sliding
-				- The first non-deleted walkable spring (first in CW direction if going R, else CCW if going L, from the incoming spring)
-					- TODO: see if can do without having to remember incoming spring: redefine how we choose next spring knowing only the wanted direction
-				- If it is in the walking direction, and if it is not too steep
-					- Steepness check uses friction of walkabaility
-			- If a choice can't be made: invert direction
-				- Stay in this state so we still need to make a choice
-
-	- Free regime:
-		-
