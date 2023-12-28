@@ -8,7 +8,10 @@
 
 	= Npcs - take 1
 
-	- Doesn't say "PAUSED" anymore
+	- Fix all 2022 copyright years, and add g2-labs to:
+		- Credits
+
+	- Doesn't say "PAUSED" anymore - REALLY?
 
 	- See if can use keys to pan along diagonals
 
@@ -42,6 +45,9 @@
 			- Same subsystem as water (now renamed "Internal Fluids"), own buffers
 			- UpdateWaterMomenta: double calculations in existing loops
 				- Only difference: horizontal propagation is subject to "friction"
+
+	- "Random" button to load random ship
+		- At LoadDialog?
 
 	- New tool 2: Punch (was: wrecking ball tool)
 		- Spec:

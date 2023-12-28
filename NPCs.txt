@@ -149,51 +149,131 @@ Details
 				- https://members.loria.fr/SLazard/ARC-Visi3D/Pant-project/files/Line_Segment_Triangle.html
 				- 2D: https://www.geogebra.org/m/aRMTsu62
 
-- Behavioral state machine(s):
-	- Constrained regime:
-		- Freefall state:
-			! In this state an NPC is falling down a non-walkable spring
-			- Do hole check to check for transition to Free regime
-			- When mid-spring: slide along spring in the direction that is most aligned with gravity
-			- When the NPC reaches an endpoint of the spring:
-				- If the point is non-walkable:
-					- Choose the next spring (by definition: non-walkable): 
-						- The one most aligned with gravity
-					- Keep falling (stay in this state)
-				- Else (the point is walkable):
-					- Transition to Landed state
-		- Landed state:
-			! Temporary state, exists for animation
-			- Do hole check to check for transition to Free regime
-			- TODOHERE: incorporate "remembering *right* endpoint of spring we're walking on" from here on
-			- From here, after some time: choose a walking direction: "left" or "right", then transition to Walking_MakeNextChoice
-				- TODO: see below if we actually can find next spring without having an incoming spring
-		- Walking:
-			! When an NPC is walking, it follows a predefined direction, either "left" or "right"
-			- Do hole check to check for transition to Free regime
-			- Walking displacement physics:
-				- Trajectory is added a forceful displacement, calculated based on walking/running velocity
-					- Velocity is then updated for free
-			- When the NPC reaches an endpoint of the walkable spring: transition to Walking_MakeNextChoice state
-			- State:
-				- Erection is maintained by applying a continuous adjusting torque
-				- Torque to adjust to erect depends on float equlibrium (0->1)
-				- Equlibrium itself depends on for how long we're within parameters to be in equilibrium
-					- Equlibrium is lowered/reset at impacts, TODO: also when too much not erect, but then it would reset itself during erection
-				- Parameters for equlibrium:
-					- Includes right downward pressure
-					- TODO
-		- Walking_MakeNextChoice:
-			- Do hole check to check for transition to Free regime
-			- Choose the next spring:
-				! Could be the same as the incoming in case we're sliding
-				- The first non-deleted walkable spring (first in CW direction if going R, else CCW if going L, from the incoming spring)
-					- TODO: see if can do without having to remember incoming spring: redefine how we choose next spring knowing only the wanted direction
-				- If it is in the walking direction, and if it is not too steep
-					- Steepness check uses friction of walkabaility
-			- If a choice can't be made: invert direction
-				- Stay in this state so we still need to make a choice
+- Human behavioral state machine(s):
+	- Principles:
+		- Most transitions happen with "convergence" of some quantity
+			- Only the convergence rate is a state-specific parameter; the threshold for reaching a target is not (i.e. it's a global constant)
+				- So that there's only one param per state controlling timing
+	- States:
+		+ State:KnockedOut
+			! Does nothing
+			+ Transitions out: 
+				+ When whole NPC becomes free: transition to FreeKnockedOut
+				+ When the following applies for at least Tx: transition to Rising
+					+ P particle:
+						+ On (at least one) floor edge (& in constrained state)
+						+ Zero relative velocity
+					+ S particle:
+						+ On (at least one) floor edge (& in constrained state)
+						+ Zero relative velocity
+		= State:Rising
+			! Tries to stand up (applying torque)
+			+ Transitions out:
+				+ When whole NPC becomes free: transition to FreeKnockedOut
+				+ When the following stops applying: transition to KnockedOut
+					+ P particle:
+						+ On (at least one) floor edge (& in constrained state)
+						+ Zero relative velocity
+				+ When MaintainAndCheckEquilibrium() returns false: transition to KnockedOut				
+				+ When line from S to P is aligned with GravityDir: transition to Equilibrium
+			- External out transitions:
+				- Impact: transition to KnockedOut
+					- UpdateStep() takes NpcState as well, and calls Npcs::OnHumanNpcImpact(NpcState, impact quantities) upon impact
+						- OnHumanNpcImpact: switches on state
+		+ MaintainAndCheckEquilibrium() -> bool:
+			+ Does torque calculation and reaches/maintains equilibrium, but also checks if conditions to stay in equlibrium  apply; stops equlibrium (and returns false) if:
+				+ HumanVector is outside of -alpha->alpha sector around vertical, with rotation velocity towards outside of sector
+		+ Impart torque:
+			+ With Particles::VoluntaryForces
+				= Reset at state transitions
+			+ Formula:
+				+ Force perpendicular to human vector; magnitude depends on angle
+				+ See why primary moves: is it because of spring being compressed?
+					+ It's because at beginning each step stretches it, then the spring recoils to the point that the other endpoint needs to move
+				+ Force can't be directional - or else it cancels gravity - not that it's important, but highlights un-soundness of approach
+					+ Go full rotational spring
+				+ See if can raise faster with less overshooting
+		= State:Equilibrium
+			! Stands up; continues to adjust alignment with torque
+			+ Transitions out:
+				+ When whole NPC becomes free: transition to FreeKnockedOut
+				+ When the following stops applying: transition to KnockedOut
+					+ P particle:
+						+ On (at least one) floor edge (& in constrained state)
+						+ Zero relative velocity
+				+ When MaintainAndCheckEquilibrium() returns false: transition to KnockedOut
+				+ When enough time has passed in this state: transition to Walking
+			- External out transitions:
+				- Impact: transition to KnockedOut
+		= State:Walking
+			! Walks; continues to adjust alignment with torque
+			+ Transitions out:				
+				+ When whole NPC becomes free: transition to FreeKnockedOut
+				+ When the following stops applying: transition to KnockedOut
+					+ P particle:
+						+ On (at least one) floor edge (& in constrained state)
+						+ Zero relative velocity (excld. walking)
+				+ When MaintainAndCheckEquilibrium() returns false: transition to KnockedOut
+			- External out transitions:
+				- Impact: transition to KnockedOut
+			+ Walking state machine:
+				+ Impart displacement
+					+ First, allow traj calculation to also pre-calculate final (absolute) velocity
+						+ Traj calc state keeps it, "TargetAbsoluteVelocity"
+						+ UpdateTrajState() returns it when completing w/out impact
+							+ finalParticleState has velocity not as optional but as mandatory
+								+ No more automatic vel calc'n at end of UpdateTrajState()
+							+ Always provide target vel from within UpdateTrajState()
+								+ Assert it matches a calculated one - when no impact has happened						
+					+ Then: at traj calculation, superimpose raw walking displacement (calcd at HumanUpdate and stored in VoluntarySuperimposedDisplacement) to traj, without affecting velocity
+					+ FIX: secondary trails primary
+						+ @ TrajCalculation: when we incorporate walking displacement, if it's primary we save same vector as displacement of secondary
+						+ At HumanNpcStateUpdate: clear also secondary displacement on transitions out
+				
 
+		+ Problem: while walking, difference in slope is giving us troubles:
+			+ When moving from edge floor to edge floor with lower slope, we lose contact with edge
+				+ And this happens because once we climb to other triangle, the trajectory end in bary coords does not lie anymore on edge
+			+ When moving from edge floor to edge floor with higher slope, primary has impact and gains bounce velocity (because we check traj)
+			+ Solution: might need to change how impact works, if walking reaching slope that it should try to climb causes noticeable impact
+				+ We can solve it @ impact detection by checking slope first, and not causing impact bounce when slope is gentle - but still climbing over edge in order to "land" on slope
+				+ Do rearc 
+
+		- TODO: do we really want primary non-inertial do gain physical velocity when walking? Example: climbing up, gains however down velocity until this one overpasses walking
+				- May be it's OK after all...
+			- Also: BUG: impact of secondary when discounting walk vector results in anti-impact
+			- Algo for fix:
+				- If result is opposite sign of phys, shouldn't gain phys but zero instead
+					- If result is opposite sign of zero, should gain zero (this is now)
+					- In other words: velocity gain should never been opposite of result (actual)
+				- Generalization: velocity gain max should be:
+					- Result > 0: max(phys, 0) // e.g. climbing up on \* : only gains > 0
+					- Result < 0: min(phys, 0) // e.g. climbing up on */ : only gains < 0
+				- Do at 3 places (TODOHEREx):
+					- NonConstrained move-to-place
+					- Constrained move-to-place
+					- Bounce when calculating incident velocity
+
+		= Impacts:
+			+ At each impact, call OnImpact(...particle..., ...impact quantities...)
+			= OnImpact: if human, check state machine and do following transitions:
+				+ If walking and impact V (velocity of particle along normal) is in direction of walking:
+					+ Flip direction
+				- TODOHERE - and see above - for other state transitions
+
+		- State:FreeKnockedOut:
+			! Does nothing
+			- TODOHERE
+
+	- Other walking features:
+		- See if can detect that will hit a wall/well by projecting forward primary particle along triangle edge; if will hit, turn around
+		- "staircases": floors can be marked as "stairs", and that is used in two places:
+			- Bounce detection: when walking, no bounce regardless of slope (do continuation case)
+				- Only when we're walking
+			- Walk vector flattening: forcibly extend walk along edge, even if exactly orthogonal
+			- Auto-build: when two three consecutive edges wind up to 360 degrees
+		- "manholes"
+			- Floor info is on Triangle, not on Spring
 
 - Rendering:
 	- NPCs will have two sets of vertex attributes:
@@ -201,6 +281,8 @@ Details
 			- Only reloaded at e.g. NPC insertion/removal
 		- Dynamics ones: contain world vertices, texture coords (because these are atlas coords and thus change between frames)
 	- TODO: do we need indices like ships? TODO: what indices?
+	- NpcType needs an associated NpcOrientation, because the way a quad is laid out around the particles for a human is different than that of a table
+		- Uhm: after all a table is not that simple - think of flipping it
 
 - Physical Interactions:
 	- Lights: second pass of lighting algorith with all NPC particles, for each ship
