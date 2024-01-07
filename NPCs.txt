@@ -239,21 +239,92 @@ Details
 				+ We can solve it @ impact detection by checking slope first, and not causing impact bounce when slope is gentle - but still climbing over edge in order to "land" on slope
 				+ Do rearc 
 
-		- TODO: do we really want primary non-inertial do gain physical velocity when walking? Example: climbing up, gains however down velocity until this one overpasses walking
+		= TODO: do we really want primary non-inertial do gain physical velocity when walking? Example: climbing up, gains however down velocity until this one overpasses walking
 				- May be it's OK after all...
 			- Also: BUG: impact of secondary when discounting walk vector results in anti-impact
-			- Algo for fix:
-				- If result is opposite sign of phys, shouldn't gain phys but zero instead
-					- If result is opposite sign of zero, should gain zero (this is now)
-					- In other words: velocity gain should never been opposite of result (actual)
-				- Generalization: velocity gain max should be:
-					- Result > 0: max(phys, 0) // e.g. climbing up on \* : only gains > 0
-					- Result < 0: min(phys, 0) // e.g. climbing up on */ : only gains < 0
-				- Do at 3 places (TODOHEREx):
-					- NonConstrained move-to-place
-					- Constrained move-to-place
-					- Bounce when calculating incident velocity
-
+			X Algo 1 for fix:
+				! If result is opposite sign of phys, shouldn't gain phys but zero instead
+					! If result is opposite sign of zero, should gain zero (this is now)
+					! In other words: velocity gain should never be opposite of result (actual)
+				! Generalization: velocity gain max should be:
+					! Result > 0: max(phys, 0) // e.g. climbing up on \* : only gains > 0
+					! Result < 0: min(phys, 0) // e.g. climbing up on */ : only gains < 0
+				X Do:
+					X Do new velocity calculation at 3 places (TODOHEREx):
+						= 1: NonConstrained move-to-place: here we do with edgeDir
+						= 2: Constrained move-to-place: here we do with absolute positions; velocity is:
+							- Direction: of result (i.e. result_dir)
+							- Magnitude: as above, with phys projected onto result_dir
+							- TODOHERE: conflicts with torque!
+						- 3: Bounce when calculating incident velocity - incident velocity must be same as in 1 and/or 2
+					- Double-check passed walked total/planned vs primary/secondary
+						- Primary: totalEdgeWalkedActual starts from zero and grows step-by-step
+						- Secondary: totalEdgeWalkedActual is resultant from primary since the beginning, and immutable
+			= Algo 2 for fix:
+				! Add walk *displacement* calculated to *fill-in* (desired) walk vector
+					! If (planned) physics is already more, then displacement is zero
+					! The displacement then takes part in normal velocity calculations
+					! This displacement is the one which, summed up, goes to secondary
+				+ Plan:
+					+ Undo other changes (surgically)
+					+ Main loop:
+						+ Primary: new plannedWalk calculation
+							+ if walk in same direction as edgeDir:
+								- plannedWalkVector = edgeDir * max(walk desired along edge - planned phys along edge, 0)
+								OR - so that we don't walk on too steep:
+								- plannedWalkVector = edgeDir * min(max(walk desired along edge - planned phys along edge, 0), walk desired along edge)
+							+ else:
+								- ...
+							+ actualWalk is then added to total (as now)
+							+ plannedWalk is added to plannedPhys to make plannedTotal (as now)
+						+ Secondary:
+							+ actualWalk taken from primary (as now)
+					+ All three velocity calculations:
+						+ Back to basics: just take whole, real displacement - hear nothing of "walked"
+							+ Remove "walked" and "phys/total" args
+								+ Unless phys/total is used for assert - keep "total" for that
+					+ Problem fix
+						+ Disable storing equilibrium torque
+						+ Disable secondary displacement
+						X At phys force calc: if NPC is walking and this is secondary, calc additional force - on top of calcd - needed to bring sec'ry on top of primary
+							X Do in "distance" space
+						+ Do normal torque here
+				= Things to fix:
+					= Bump with vertical wall: going back (when floor is sloped down-right) is not constrained anymore because of |\*| <--
+						! Which means we do another bump (albeit negligible but still against direction, dot is 0.06) and thus another flip
+						= Option 1: at main loop: if we are at a cuspid, we shouldn't be too hasty in deciding non-inertial vs inertial; should move out of cuspid first
+							= Almost same loop as in NonInertial: until in triangle or becomes free or hits floor
+							- TODOHERE: REALLY? Also calc walk vector (though not flattened yet) to traj very early
+								- Use it then to figure out traj when rotating through cuspids
+								- Later on, use it also for against-the-floor decision
+					= Walks on too steep of a wall
+						+ Happens because friction zeroes out G
+						X This should be fixed with less friction
+						= Two-sided fix:
+							+ Clip and squash dot product at actual walk plan calculation ("apply G resistance")
+							- MaintainWalk: flip if too long at V opposite of W
+								- Replaces having to flip at well detection? Verify it can, both sides
+					- While we're here: On(Human)WellDetected
+						- Instead of current ad-hoc code
+						- TODO: only if above doesn't work to replace flipping at well detection
+					- See if can lose equilibrium when secondary too skewed but not too much relative opposite vel because of secondary being blocked
+				- Test:
+					- Flying off
+						- Primary into inertial
+						- Secondary into inertial
+						- Primary into free
+						- Secondary into free
+					- Starting at vertex
+				- Cleanups if ok:
+					- CalculatePhysForces
+					- Old torque 
+						- And "voluntary" buffer for torque force?
+					- Do we still need "voluntary" displacement of secondary?
+					- Do we still need to keep track of walked?
+						- Yes, because of animation
+		= Add velocity damp
+			= And slider
+			- Test
 		= Impacts:
 			+ At each impact, call OnImpact(...particle..., ...impact quantities...)
 			= OnImpact: if human, check state machine and do following transitions:
