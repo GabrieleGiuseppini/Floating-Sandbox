@@ -289,14 +289,11 @@ Details
 						X At phys force calc: if NPC is walking and this is secondary, calc additional force - on top of calcd - needed to bring sec'ry on top of primary
 							X Do in "distance" space
 						+ Do normal torque here
-				= Things to fix:
-					= Bump with vertical wall: going back (when floor is sloped down-right) is not constrained anymore because of |\*| <--
+				+ Things to fix:
+					+ Bump with vertical wall: going back (when floor is sloped down-right) is not constrained anymore because of |\*| <--
 						! Which means we do another bump (albeit negligible but still against direction, dot is 0.06) and thus another flip
-						= Option 1: at main loop: if we are at a cuspid, we shouldn't be too hasty in deciding non-inertial vs inertial; should move out of cuspid first
+						+ Option 1: at main loop: if we are at a cuspid, we shouldn't be too hasty in deciding non-inertial vs inertial; should move out of cuspid first
 							+ Almost same loop as in NonInertial: until in triangle or becomes free or hits floor
-							- TODOHERE: REALLY? Also calc walk vector (though not flattened yet) to traj very early
-								- Use it then to figure out traj when rotating through cuspids
-								- Later on, use it also for against-the-floor decision
 					+ Walks on too steep of a wall
 						+ Happens because friction zeroes out G
 						X This should be fixed with less friction
@@ -322,10 +319,13 @@ Details
 				+ Higher static and kinetic friction
 					X Google V for change from S to K
 				+ Lower walking speed
-				- FIX? going too fast downhill
-					- Add "walk button"
-					- Try to bump up friction - it's not for balls anyway, and it may be greater than 1.0
+				- Fix torque w/mesh velocity
+					- Is it that at torque calc we see primary already moved - by a lot - while secondary hasn't moved yet?
 				- Flip also when *secondary* bounces
+				- Sea level:
+					- Param, UI
+					- World forces: if free
+					- Material buoyancy
 				- Test:
 					- Flying off
 						- Primary into inertial
@@ -334,13 +334,14 @@ Details
 						- Secondary into free
 					- Starting at vertex
 					- With mesh moving
-				- Cleanups if ok:
-					- CalculatePhysForces
-					- Old torque 
-						- And "voluntary" buffer for torque force?
-					- Do we still need "voluntary" displacement of secondary?
-					- Do we still need to keep track of walked?
-						- Yes, because of animation
+				+ Cleanups if ok:
+					+ CalculatePhysForces
+					+ Old torque 
+						+ And "voluntary" buffer for torque force?
+					+ Do we still need "voluntary" displacement of secondary?
+				- Store total walked (for animation)
+					- New HumanState member
+					- Reset it when entering Walking state
 		= Add velocity damp
 			= And slider
 			- Test
