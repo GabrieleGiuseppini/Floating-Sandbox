@@ -293,21 +293,39 @@ Details
 					= Bump with vertical wall: going back (when floor is sloped down-right) is not constrained anymore because of |\*| <--
 						! Which means we do another bump (albeit negligible but still against direction, dot is 0.06) and thus another flip
 						= Option 1: at main loop: if we are at a cuspid, we shouldn't be too hasty in deciding non-inertial vs inertial; should move out of cuspid first
-							= Almost same loop as in NonInertial: until in triangle or becomes free or hits floor
+							+ Almost same loop as in NonInertial: until in triangle or becomes free or hits floor
 							- TODOHERE: REALLY? Also calc walk vector (though not flattened yet) to traj very early
 								- Use it then to figure out traj when rotating through cuspids
 								- Later on, use it also for against-the-floor decision
-					= Walks on too steep of a wall
+					+ Walks on too steep of a wall
 						+ Happens because friction zeroes out G
 						X This should be fixed with less friction
-						= Two-sided fix:
+						+ Two-sided fix:
 							+ Clip and squash dot product at actual walk plan calculation ("apply G resistance")
-							- MaintainWalk: flip if too long at V opposite of W
-								- Replaces having to flip at well detection? Verify it can, both sides
-					- While we're here: On(Human)WellDetected
-						- Instead of current ad-hoc code
-						- TODO: only if above doesn't work to replace flipping at well detection
-					- See if can lose equilibrium when secondary too skewed but not too much relative opposite vel because of secondary being blocked
+							+ MaintainWalk: flip if too long at V opposite of W
+								+ 1: Check condition (V opposite of W); if true: TargetFlipDecision=1.0; else: Target&CurrentFlipDecision=0.0
+								+ 2: Advance CurrentFlipDecision towards TargetFlipDecision
+								+ 3: If CurrentFlipDecision > 0.95: flip, & set Target&CurrentFlipDecision=0.0
+								+ Replaces having to flip at well detection? Verify it can, both sides
+									+ Turn off first for test
+									+ Verify it replaces it
+								+ Set FlipDecisions to zero at bounce flip
+								+ HumanFlip(isImmediate)
+									+ Called by both places at which we flip
+								+ Later: test with a margin above @ 1 so that we also flip when yes V in same direction as W but not quite there
+									+ FIX: looping around 0.0/~-0.0
+					+ See if can lose equilibrium when secondary too skewed but not too much relative opposite vel because of secondary being blocked
+						+ In equilibrium only, CheckEq breaks Eq at lower threshold - even when relative V is same sign but quite low
+					+ Slow when walking downhill: because of "gravity resistance", which shouldn't apply when downhill (only uphill)
+						+ Do better curve w/Smoothstep
+						+ "GravityAllowance"
+				+ Higher static and kinetic friction
+					X Google V for change from S to K
+				+ Lower walking speed
+				- FIX? going too fast downhill
+					- Add "walk button"
+					- Try to bump up friction - it's not for balls anyway, and it may be greater than 1.0
+				- Flip also when *secondary* bounces
 				- Test:
 					- Flying off
 						- Primary into inertial
@@ -315,6 +333,7 @@ Details
 						- Primary into free
 						- Secondary into free
 					- Starting at vertex
+					- With mesh moving
 				- Cleanups if ok:
 					- CalculatePhysForces
 					- Old torque 
