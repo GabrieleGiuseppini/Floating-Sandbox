@@ -319,13 +319,53 @@ Details
 				+ Higher static and kinetic friction
 					X Google V for change from S to K
 				+ Lower walking speed
-				- Fix torque w/mesh velocity
-					- Is it that at torque calc we see primary already moved - by a lot - while secondary hasn't moved yet?
-				- Flip also when *secondary* bounces
-				- Sea level:
-					- Param, UI
-					- World forces: if free
-					- Material buoyancy
+				+ Fix torque w/mesh velocity
+					+ Is it that at torque calc we see primary already moved - by a lot - while secondary hasn't moved yet?
+				+ Video
+					+ Code for script
+					+ Fix little jump
+						+ Add tolerance
+						+ Don't invoke walk update when not on edge - w/comment on not needing to silence walk mag as we don't apply walking when inertial (i.e. when not on edge)
+						+ Test flying off
+				+ "Jump tolerance" also for other two states
+					+ 1. Thus regardless of state
+						+ HumanState.CurrentEquilibriumSoftTerminationDecision
+							+ Reset also at transitions to Rising & Equilibrium
+						+ Do not start walking if not on edge
+					+ Test w/walk & ball
+					+ Commit before next one
+					+ 2. Do not apply torque while not on edge
+						+ Go back to having NpcParticle float buffer (w/1.0 or 0.0) for torque
+						+ reset() buffer before NPC loop
+							+ w/note for prelim forces
+						+ Set it from CheckAndMaintainEq(...isOnEdge...)
+							+ Simply iff on edge
+						X Make sure we zero it when leaving any of the states
+						+ Use at torque calculation
+				+ Flip also when *secondary* bounces
+				+ Sea level:
+					+ Param, UI
+					+ World forces: if free
+						+ Find sweet spot for thickness of interface/buoying at shoulders
+							+ Offset for sea level to account for head
+						+ Forces rearc:
+							+ NpcParticle has PreliminaryForces
+								+ All those we can calc @ beginning
+							+ Npcs::CalculatePreliminaryForces()
+								+ Takes care or cleaning - if needed
+							+ Npcs::CalculateDefinitiveForces()
+					+ Material buoyancy
+					+ Rendering
+				= Cleanups if ok:
+					+ CalculatePhysForces
+					+ Old torque 
+						+ And "voluntary" buffer for torque force?
+					+ Do we still need "voluntary" displacement of secondary?
+					- Make triangle-finding (rotate through vertices/cuspids) a function
+						- Return: <do_stop> (note: no need to return traveled - it never moves)
+						- Integrate it with "look-ahead for planning" functionality that we need
+					- "TODO: get rid of this" (local triangle index)
+				- When finding triangles (e.g. opposite triangle, but also initializations), check if triangle is deleted
 				- Test:
 					- Flying off
 						- Primary into inertial
@@ -333,15 +373,32 @@ Details
 						- Primary into free
 						- Secondary into free
 					- Starting at vertex
-					- With mesh moving
-				+ Cleanups if ok:
-					+ CalculatePhysForces
-					+ Old torque 
-						+ And "voluntary" buffer for torque force?
-					+ Do we still need "voluntary" displacement of secondary?
-				- Store total walked (for animation)
-					- New HumanState member
-					- Reset it when entering Walking state
+					+ With mesh moving
+
+		- Animation:
+			- Store total travelled (displaced)
+				- New HumanState member
+				- Reset it when entering Walking state
+				- Also in inertial mode, as we now might be walking
+					- But check this only later
+			- Do formula
+				- TODO: point-wise, instead of leg-wise?
+					- If point-wise:
+						- Move points (new Human members) @ Update
+							- Each state is responsible for it
+							- Walking:
+								- Points are along current edge's direction
+
+		- Code rearcs:
+			- Rearc source files in NPC folder
+			- NpcDatabase
+				- TODOHERE
+			- NpcTypes: all struct def's
+				- HumanNpcState:
+					- Union for behavior states
+						- Unions' cctors are used to reset state
+			- Various static helpers (e.g. is IsFloorToParticle, ...)
+
 		= Add velocity damp
 			= And slider
 			- Test
@@ -363,6 +420,11 @@ Details
 				- Only when we're walking
 			- Walk vector flattening: forcibly extend walk along edge, even if exactly orthogonal
 			- Auto-build: when two three consecutive edges wind up to 360 degrees
+			- TODO: the above is actually option 2; option 1 would be to change tessellation (redundant triangle choice) when the spring being lost is the only floor
+				- Test if FS is ok with it:
+					- Frontiers
+					- Anything else?
+				- Test if BaryLab's triangle navigation algo's are ok with it
 		- "manholes"
 			- Floor info is on Triangle, not on Spring
 
