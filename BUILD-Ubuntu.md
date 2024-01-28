@@ -189,7 +189,7 @@ Configured wxWidgets 3.1.4 for `x86_64-pc-linux-gnu'
 ```
 Now, it's time to build wxWidgets - launch this and go grab a cup of coffee:
 ```
-make install
+make install -j$(nproc)
 ```
 After the build is complete and installed, you should see the following under your new `~/fs_libs/wxWidgets` directory:
 ```
@@ -221,6 +221,7 @@ Luckily you're going to find a pre-cooked `UserSettings.example-linux.cmake` fil
 cd ~/git/Floating-Sandbox
 cp UserSettings.example-linux.cmake UserSettings.cmake
 ```
+Remember to change the user name in the file to reflect your home folder.
 On the other hand, if you've customized paths of checkouts and library roots, just make your own `UserSettings.cmake`, eventually using `UserSettings.example-linux.cmake` as a template.
 ### Building
 We're gonna build Floating Sandbox in a folder named `build` under its checkout root, and make it install under `~/floating-sandbox`. Note that the `INSTALL` target will create the whole directory structure as expected by the simulator, including all resource and ship files.
@@ -229,7 +230,7 @@ cd ~/git/Floating-Sandbox
 mkdir build
 cd build
 cmake -DCMAKE_BUILD_TYPE=Release -DFS_BUILD_BENCHMARKS=OFF -DFS_USE_STATIC_LIBS=ON -DwxWidgets_USE_DEBUG=OFF -DwxWidgets_USE_UNICODE=ON -DwxWidgets_USE_STATIC=ON -DFS_INSTALL_DIRECTORY=~/floating-sandbox ..
-make install
+make install -j$(nproc)
 ```
 ### Running
 At this moment you should have the game neatly laid out under your `~/floating-sandbox` directory:
@@ -248,6 +249,6 @@ drwxr-xr-x  2 gg gg     57344 mei 23 15:57 Ships/
 ```
 To start the game, go into that directory and launch `FloatingSandbox`. 
 
-Note that many Linux distributions nowadays use Wayland for their desktop environments, and Floating Sandbox will encounter an error when launching. To rectify this, set the environment variable "GDK_BACKEND" to "x11".
+Note that many Linux distributions nowadays use Wayland for their desktop environments, and Floating Sandbox will sometimes encounter an error when launching. To rectify this, set the environment variable "GDK_BACKEND" to "x11".
 
 Enjoy!
