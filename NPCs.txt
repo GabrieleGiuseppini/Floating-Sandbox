@@ -373,25 +373,49 @@ Details
 						- Primary into free
 						- Secondary into free
 					- Starting at vertex
-					+ With mesh moving
+					- With mesh moving
+
+		- See why head stays above floor at WalkingTests mesh
 
 		- Animation:
+			= Store current edge
+				! Needed for foot points
+				+ ConstrainedState::CurrentVirtualEdge // not really valid when at cuspids
+				+ Set after call to NonInertial
+				+ Render it (dark red)
+				- FIX: when trying to walk up, virt edge is the vertical one
+					- TODO: Vertical is really the body
+				- Fix rendering: do not render all edges but just triangles'
+			+ Move behavior update: update behavior before animation, after physics
+				+ FIX: it's broken
+					+ Because we lose EquilibriumTorque, move reset afterwards
+				+ Test
+			+ Shader
+				+ Basic
+				+ Do ellipses
 			- Store total travelled (displaced)
-				- New HumanState member
+				- New HumanState member: float TotalEdgeTraveledWhileWalking
 				- Reset it when entering Walking state
 				- Also in inertial mode, as we now might be walking
 					- But check this only later
-			- Do formula
-				- TODO: point-wise, instead of leg-wise?
-					- If point-wise:
-						- Move points (new Human members) @ Update
-							- Each state is responsible for it
-							- Walking:
-								- Points are along current edge's direction
-
+			= Move points (new Human members) @ Update
+				! Each state is responsible for it
+				- Walking:
+					- 1. Formula calculating angle, as rotation of legs
+						- Angle members, and points as well (points will be useful for more calc's later, see below)
+							! We want angles so that we can smooth-merge sequences
+							- CurrentLegRightAngle, no need for Target
+							- AnimationUpdate calc's targets and smooths currents to it
+						- Formula:
+							- A: atan-based along horiz (horiz because human is vertical)
+						- Calc points: trivial
+					- 2. Constrain points to be along current edge's direction
+						- Direction dictated by angle, it's only *length* of leg that changes to stop at current edge
+							- TODO for formula
 		- Code rearcs:
 			- Rearc source files in NPC folder
 			- NpcDatabase
+				- 
 				- TODOHERE
 			- NpcTypes: all struct def's
 				- HumanNpcState:
