@@ -239,9 +239,9 @@ Details
 				+ We can solve it @ impact detection by checking slope first, and not causing impact bounce when slope is gentle - but still climbing over edge in order to "land" on slope
 				+ Do rearc 
 
-		= TODO: do we really want primary non-inertial do gain physical velocity when walking? Example: climbing up, gains however down velocity until this one overpasses walking
+		+ RETHINK: do we really want primary non-inertial to gain physical velocity when walking? Example: climbing up, gains however down velocity until this one overpasses walking
 				- May be it's OK after all...
-			- Also: BUG: impact of secondary when discounting walk vector results in anti-impact
+			! Also: BUG: impact of secondary when discounting walk vector results in anti-impact
 			X Algo 1 for fix:
 				! If result is opposite sign of phys, shouldn't gain phys but zero instead
 					! If result is opposite sign of zero, should gain zero (this is now)
@@ -260,7 +260,7 @@ Details
 					- Double-check passed walked total/planned vs primary/secondary
 						- Primary: totalEdgeWalkedActual starts from zero and grows step-by-step
 						- Secondary: totalEdgeWalkedActual is resultant from primary since the beginning, and immutable
-			= Algo 2 for fix:
+			+ Algo 2 for fix:
 				! Add walk *displacement* calculated to *fill-in* (desired) walk vector
 					! If (planned) physics is already more, then displacement is zero
 					! The displacement then takes part in normal velocity calculations
@@ -356,12 +356,12 @@ Details
 							+ Npcs::CalculateDefinitiveForces()
 					+ Material buoyancy
 					+ Rendering
-				= Cleanups if ok:
+				+ Cleanups if ok:
 					+ CalculatePhysForces
 					+ Old torque 
 						+ And "voluntary" buffer for torque force?
 					+ Do we still need "voluntary" displacement of secondary?
-					= Make triangle-finding (rotate through vertices/cuspids) a function ("NavigateVertex")
+					+ Make triangle-finding (rotate through vertices/cuspids) a function ("NavigateVertex")
 						+ Return: <do_stop> (note: no need to return traveled - it never moves)
 						+ Issues found along the way:
 							! With this func we bounce when we normally didn't
@@ -371,22 +371,23 @@ Details
 								+ FloorEncounteredOutcome/intervening
 								+ ~became free
 								+ ~completed navigation
-						- Integrate with NonConstrained loop
-						- Cleanup old code
+						+ Integrate with NonConstrained loop
+						+ Test
+						+ Cleanup old code
 					+ "TODO: get rid of this" (local triangle index)
-					- @BlabTypes: baryCoords // copy vec3f parts we need
-						- TryGetVertexOrdinal() -> opt<int>
-				- When finding triangles (e.g. opposite triangle, but also initializations), check if triangle is deleted
-				- Test:
-					- Flying off
-						- Primary into inertial
-						- Secondary into inertial
-						- Primary into free
-						- Secondary into free
-					- Starting at vertex
-					- With mesh moving
+					+ @BlabTypes: baryCoords // copy vec3f parts we need
+						+ TryGetVertexOrdinal() -> opt<int>
+				+ When finding triangles (e.g. opposite triangle, but also initializations), check if triangle is deleted
+				+ Test:
+					+ Flying off
+						+ Primary into inertial
+						+ Secondary into inertial
+						+ Primary into free
+						+ Secondary into free
+					+ Starting at vertex
+					+ With mesh moving
 
-		- See why buoyancy on single particle is so bad (particle flies)
+		- Video
 
 		= Animation:
 			= Store current edge
@@ -408,6 +409,7 @@ Details
 				+ Reset it when entering Walking state
 				+ Also in inertial mode, as we now might be walking
 					+ Do it now and see if it looks weird
+			- Decide where to put human body proportion constants
 			= Move points (new Human members) @ Update
 				! Each state is responsible for it
 				= Walking:
@@ -444,6 +446,10 @@ Details
 							- Based off distance traveled (whose s-phase-triangle is calc'd here), etc.
 						- Points calc'd at AnimationUpdate
 							- Or not, depends on walking option 2
+			- Video
+			- Add arms
+				- Redo whole body, make proportion constants at top of file
+				- For now, arms angle fixed at little
 			- BehaviorUpdate: set target angles at all states, and converge with custom rates
 			- "Initial placement" state, and interactive tool for placement
 				- "Being placed" is an NPC property
@@ -482,14 +488,13 @@ Details
 			- TODOHERE
 
 		- State::Free_Aerial: (was: FreeKnockedOut)
+			= We transition here at UpdateBehavior, NOT at BecomingFree!
 			- Becomes InWater if both points in water
 		- State::Free_InWater:
 			- Converges towards Free_Swimming by going to target==rel_val.normalize().dot(human_vector.normalize())
 			- Becomes Aerial if no points in water
 		- @ Becoming free: decide between Free_Aerial vs Free_InWater depending on OceanSurface
 		- State::Free_Swimming:
-
-	- "BeingPlaced" is a property of Npc
 
 	- Other walking features:
 		- See if can detect that will hit a wall/well by projecting forward primary particle along triangle edge; if will hit, turn around
