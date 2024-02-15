@@ -387,7 +387,7 @@ Details
 					+ Starting at vertex
 					+ With mesh moving
 
-		- Video
+		+ Video
 
 		= Animation:
 			= Store current edge
@@ -409,7 +409,8 @@ Details
 				+ Reset it when entering Walking state
 				+ Also in inertial mode, as we now might be walking
 					+ Do it now and see if it looks weird
-			- Decide where to put human body proportion constants
+			+ Decide where to put human body proportion constants
+				+ LabParameters
 			= Move points (new Human members) @ Update
 				! Each state is responsible for it
 				= Walking:
@@ -422,25 +423,77 @@ Details
 							+ A: atan-based along horiz (horiz because human is vertical)
 						+ Calc points: trivial
 						+ Adjust step size
-					- 2. Constrain points to be along current edge's direction
-						- Direction dictated by angle, it's only *length* of leg that changes to stop at current edge
-							- Option 1: by calculating from a "virtual crotch" perpendicular to edge
+					+ 2. Constrain points to be along current edge's direction
+						+ Direction dictated by angle, it's only *length* of leg that changes to stop at current edge
+						+ Option 1: https://math.stackexchange.com/questions/406864/intersection-of-two-lines-in-vector-form
+						- Option 2: by calculating from a "virtual crotch" perpendicular to edge
+					+ 3. Limit leg angles based on slope
+					+ Smooth out transition between current virtual edge presence & slope:
+						+ First off: if and when smoothing points, we don't smooth absolute positions (as limbs would elongate/shrink with fast moves) but rather angle & length, 
+						  or position relative to shoulder/crotch
+							! Same is for angles, but that comes by itself: angle gives position only after taking current absolute positions into account
+						+ New plan:
+							+ Each switch case calcs target angle and target length
+							+ Function then smooths those and calcs vectors - relative to shoulder (F/B), crotch (F/B)
+						+ Finish target leg length calculation
+						+ Lengths:
+							+ head, neck, shoulder, crotch, feet: based on current dipole length
+							+ arms, legs: based on ideal * adjustment
+					- Video
+					- Decide between feet non-constrained and feet constrained
+
+			- Fix neverending navigation:
+
+Opposite Tr 46 oppositeTriangleCrossedEdgeOrdinal=0 newBCoords={_Elems=0x00000017b298da68 {1.00000000, 0.00000000, 0.00000000} }
+vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.00169372594, -3.49245965e-10} }
+preV=2 nexV=1 => crossedEdgeOrdinal=0
+
+Opposite Tr=81, oppositeTriangleCrossedEdgeOrdinal=1 newBCoords={_Elems=0x00000017b298da68 {0.00000000, 0.00000000, 1.00000000} }
+vertexOrdinal=2 TrajEndBCoords={_Elems=0x00000017b298ddd0 {-1.61526414e-09, 0.00169372361, 0.998306274} }
+prevV=1 nextV=2 => crossedEdgeOrdinal=1
+
+Opposite Tr 46 oppositeTriangleCrossedEdgeOrdinal=0 newBCoords={_Elems=0x00000017b298da68 {1.00000000, 0.00000000, 0.00000000} }
+vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.00169372594, -3.49245965e-10} }
+
+81:
+|\
+| \
+|  \
+----
+\  |
+ \ |
+  \| 46
+
+			- HumanNpcLengthAdjustment
+				- Use @ spring force calc'ns
+					- Pre-computed params?
+				- SettingsDialog
 			+ * Make UpdateNpcParticle_ConstrainedNonInertial return <opt?totalEdgeWalked, doContinue> as tuple
-			- Fix mesh rendering: do not render all edges but just triangles'
-				- With repetitions is fine...
-			- HumanState."TotalWhateverSinceWalking" -> "TotalDistanceTraveledSinceStateStart"
+			+ Fix mesh rendering: do not render all edges but just triangles'
+				! With repetitions is fine...
+			+ Do state transitions via func: TransitionState(newState, currentSimTime); func switch'es
+				+ Npcs::Update takes float currentSimulationTime
+				+ Uses union-structs internally for resetting & setting up (** below)
+				+ Resets TotalWhateverSinceWalking and StateStartSimulationTimestamp
+
+			- Transition func: move from struct to Npcs, so that may change other things as well (e.g. DipoleState)
+				- Move then resetting of Equilibrium.... there
+
+			= HumanState."TotalWhateverSinceWalking" -> "TotalDistanceTraveledSinceStateStart"
 				! For swimming et al
 				- Also for Free state
 					- @ transitions (i.e. "becoming") is kinda pointless, but try to do anyway
-				- Also timestamp of state start
-					- Find name
-				- Reset at state transitions
-					- Do state trans via func: TransitionState(newState, currentSimTime); func switch'es
-						- Uses union-structs internally for resetting & setting up (** below)
+				+ Also timestamp of state start
+				+ Reset at state transitions
+					+ Do state trans via func: TransitionState(newState, currentSimTime); func switch'es
+						+ Uses union-structs internally for resetting & setting up (** below)
+
 			- Crotch offset updated while walking
 				- New DipoleProperties member - "DipoleLengthMultiplier"
 				- Use at SpringForces
-				- Updated at walk update - and reset upon state changes
+				- Updated at walk update - and reset upon transitions out of Walking
+					- @BehaviorUpdate: based on leg angle
+					- TODOOLD: WAS:
 					- Updated based on current leg angle:
 						- Angles calc'd at BehaviorUpdate
 							- Based off distance traveled (whose s-phase-triangle is calc'd here), etc.
@@ -450,19 +503,23 @@ Details
 			- Add arms
 				- Redo whole body, make proportion constants at top of file
 				- For now, arms angle fixed at little
-			- BehaviorUpdate: set target angles at all states, and converge with custom rates
+			- Initialize NPC anim members when we initialize NPC state - by invoking UpdateAnimation
+				- Make sure initial *current* angles are set 
+			- BehaviorUpdate: finish setting target angles for all states
 			- "Initial placement" state, and interactive tool for placement
 				- "Being placed" is an NPC property
+			
 			- Face direction re-design:
-				~ float x dir (like now, but includes 0)
-				- enum FrontBack
-				- Initial state:
-					- Initialize NPC anim members when we initialize NPC state
+				+ float x dir (like now, but includes 0)
+				+ enum FrontBack
+				- Initial state
+					
 				- Integrate in rendering
 					- API calls take L/R/F/B info
 					- Rendering honors L/R/F/B with shader hints
 
 		- Code rearcs:
+			- LogMessage/LogDebug -> LogNpcDebug (w/local #ifdef)
 			- Rearc source files in NPC folder
 			- NpcDatabase
 				- 
@@ -482,10 +539,6 @@ Details
 				+ If walking and impact V (velocity of particle along normal) is in direction of walking:
 					+ Flip direction
 				- TODOHERE - and see above - for other state transitions
-
-		- State:FreeKnockedOut:
-			! Does nothing
-			- TODOHERE
 
 		- State::Free_Aerial: (was: FreeKnockedOut)
 			= We transition here at UpdateBehavior, NOT at BecomingFree!
