@@ -411,9 +411,9 @@ Details
 					+ Do it now and see if it looks weird
 			+ Decide where to put human body proportion constants
 				+ LabParameters
-			= Move points (new Human members) @ Update
+			+ Move points (new Human members) @ Update
 				! Each state is responsible for it
-				= Walking:
+				+ Walking:
 					+ 1. Formula calculating angle, as rotation of legs
 						+ Angle members, and points as well (points will be useful for more calc's later, see below)
 							! We want angles so that we can smooth-merge sequences
@@ -439,10 +439,10 @@ Details
 						+ Lengths:
 							+ head, neck, shoulder, crotch, feet: based on current dipole length
 							+ arms, legs: based on ideal * adjustment
-					- Make human walk up slope faster
-					- Video
-					- Decide between feet non-constrained and feet constrained
-
+					+ Make human walk up slope faster
+						+ Change formula
+			+ Add arms
+				+ Redo whole body, make proportion constants at top of file
 			+ Fix "running away" issue:
 				! Repro: start at vec2f const position = vec2f(-0.634f, -2.0f);
 				! At second iteration of main loop, dt is very small but trajectory is still original:
@@ -515,34 +515,32 @@ Details
 18:15:32.445000:        edgeWalkedActual=0 totalEdgeWalkedActual=(-0.00405463250354, 0.00406018318608)
 18:15:32.445077:    EndPosition=(-3.00204181671, -2.99852323532) EndVelocity=(-33.2597427368, 0.0227583609521) EndMRVelocity=(-33.2597427368, 0.0227583609521)
 
-			+ 0: Build repro with ball & velocity first
+				+ 0: Build repro with ball & velocity first
 
-			+ Attempt 1: budget-based:
-				+ 1: first flattening stores "budget" == length (abs) of flattened traj
-					! "budget" is the maximum *total* distance that we are allowed to travel in current time quantum
-				+ 2: "budget" is reduced after each iteration by (abs) scalar amount traveled (capped to zero - though shouldn't be needed)
-				+ 3a: any subsequent non-inertial flattening adjusts flattened trajectory to ensure its abs length is not over budget
-					X Adjust how we calc dt consumed - no need as long as we update edge total planned
-					X Adjust physical planned - no need as it's not used anymore
-					+ Adjust walk planned, which is used 
-				X 3b: any subsequent inertial travel adjusts trajectory to ensure its abs length is not over budget
-					! Not needed: velocity here is calc'd from total trajectory in step divided by theoretical (whole) dt, so it's really physical
-				+ Then:
-					X a: Fn calculation (for friction) must take dt into account
-						! Actually, is not needed - N and FT would both be smaller - as smaller as T is
-					X b: Also bounce response must take dt into account?
-						! Actually, is not needed - bounce response is calc'd based on (flattened) trajectory and (remaining) dt
-					+ c: Impact continuation must also calc velocity as it might be last
-						! Next step might have 0 to travel after we shorten up traj
-						+ Test assert on non-inertial always leaving a crumble of distance to travel wrt budget
-							+ Seems to hold
+				+ Attempt 1: budget-based:
+					+ 1: first flattening stores "budget" == length (abs) of flattened traj
+						! "budget" is the maximum *total* distance that we are allowed to travel in current time quantum
+					+ 2: "budget" is reduced after each iteration by (abs) scalar amount traveled (capped to zero - though shouldn't be needed)
+					+ 3a: any subsequent non-inertial flattening adjusts flattened trajectory to ensure its abs length is not over budget
+						X Adjust how we calc dt consumed - no need as long as we update edge total planned
+						X Adjust physical planned - no need as it's not used anymore
+						+ Adjust walk planned, which is used 
+					X 3b: any subsequent inertial travel adjusts trajectory to ensure its abs length is not over budget
+						! Not needed: velocity here is calc'd from total trajectory in step divided by theoretical (whole) dt, so it's really physical
+					+ Then:
+						X a: Fn calculation (for friction) must take dt into account
+							! Actually, is not needed - N and FT would both be smaller - as smaller as T is
+						X b: Also bounce response must take dt into account?
+							! Actually, is not needed - bounce response is calc'd based on (flattened) trajectory and (remaining) dt
+						+ c: Impact continuation must also calc velocity as it might be last
+							! Next step might have 0 to travel after we shorten up traj
+							+ Test assert on non-inertial always leaving a crumble of distance to travel wrt budget
+								+ Seems to hold
 
-			+ Finalize, Cleanup, Merge
+				+ Finalize, Cleanup, Merge
 
 			- Fix "neverending navigation" issue:
-
-				- Repro: 
-
+				- Build repro 
 				- Do dual-side (0.0 and 1.0) clamping for each coord
 
 Opposite Tr 46 oppositeTriangleCrossedEdgeOrdinal=0 newBCoords={_Elems=0x00000017b298da68 {1.00000000, 0.00000000, 0.00000000} }
@@ -565,6 +563,8 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
  \ |
   \| 46
 
+			- Video
+
 			- HumanNpcLengthAdjustment
 				- Use @ spring force calc'ns
 					- Pre-computed params?
@@ -582,7 +582,7 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 
 			= HumanState."TotalWhateverSinceWalking" -> "TotalDistanceTraveledSinceStateStart"
 				! For swimming et al
-				- Also for Free state
+				- Also for Free state (for swimming)
 					- @ transitions (i.e. "becoming") is kinda pointless, but try to do anyway
 				+ Also timestamp of state start
 				+ Reset at state transitions
@@ -601,9 +601,6 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 						- Points calc'd at AnimationUpdate
 							- Or not, depends on walking option 2
 			- Video
-			- Add arms
-				- Redo whole body, make proportion constants at top of file
-				- For now, arms angle fixed at little
 			- Initialize NPC anim members when we initialize NPC state - by invoking UpdateAnimation
 				- Make sure initial *current* angles are set 
 			- BehaviorUpdate: finish setting target angles for all states
