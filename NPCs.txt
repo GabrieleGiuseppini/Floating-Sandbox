@@ -439,10 +439,111 @@ Details
 						+ Lengths:
 							+ head, neck, shoulder, crotch, feet: based on current dipole length
 							+ arms, legs: based on ideal * adjustment
+					- Make human walk up slope faster
 					- Video
 					- Decide between feet non-constrained and feet constrained
 
-			- Fix neverending navigation:
+			+ Fix "running away" issue:
+				! Repro: start at vec2f const position = vec2f(-0.634f, -2.0f);
+				! At second iteration of main loop, dt is very small but trajectory is still original:
+
+18:15:32.440066:----------------------------------
+18:15:32.440189:NPC 0
+18:15:32.440283:----------------------------------
+18:15:32.440332:  Primary
+18:15:32.440459:    Constrained: velocity=(-0.261195093393, 0.261552661657) prelimF=(-0.0128953512758, -676.190979004) physicsDeltaPos=(-0.00408126460388, -0.00069833220914)
+18:15:32.440640:    ------------------------
+18:15:32.440714:    Triangle=46 B-Coords=(0.995942652225, 0, 0.00405734777451) RemainingDt=0.015625
+18:15:32.440788:    TrajectoryStartAbsolutePosition=(-2.994607687, -3.00258564949) PhysicsDeltaPos=(-0.00408126460388, -0.00069833220914) TotalEdgeWalkedActual=(0, 0) => TrajectoryEndAbsolutePosition=(-2.99868893623, -3.00328397751) Trajectory=(-0.00408124923706, -0.000698328018188) !!! THIS IS THE GOOD START
+18:15:32.440917:    Checking edges
+18:15:32.441028:      edge 2: isFloor=1
+18:15:32.441124:    ConstrainedNonInertial: triangle=46 edgeOrdinal=2 bCoords=(0.995942652225, 0, 0.00405734777451) trajectory=(-0.00408124923706, -0.000698328018188)
+18:15:32.441273:    StartPosition=(-2.994607687, -3.00258564949) StartVelocity=(-0.261195093393, 0.261552661657) MeshVelocity=(0, 0) StartMRVelocity=(-0.261195093393, 0.261552661657)
+18:15:32.441439:        friction: trajectoryN=0.00338131 relVel=(-0.261195093393, 0.261552661657) trajectoryT=0.00238977 tFriction=-0.00238977
+18:15:32.441534:        idealWalkMagnitude=0.015625 gravityResistance=0.630361 => edgeWalkedPlanned=0.0057756 (@0.999999)
+18:15:32.441614:        flattenedTrajectory=(-0.00408117333427, 0.0040867603384) flattenedTrajectoryEndAbsolutePosition=(-2.99868893623, -2.99849891663) flattenedTrajectoryEndBarycentricCoords=(1.00002670288, 0, -2.67028808594e-05)
+18:15:32.441716:        edgePhysicalTraveledPlanned=0 edgeWalkedPlanned=0.0057756 !!! No physical planned because of friction (also in good case)
+18:15:32.441785:      Target is outside triangle
+18:15:32.441841:      Moving to intersection vertex 0: (1, 0, 0)
+18:15:32.441916:        edgeTraveled=0.00573804
+18:15:32.441973:    NavigateVertex: iter=0
+18:15:32.442029:      Triangle=46 Vertex=0 TrajectoryEndBarycentricCoords=(1.00002670288, 0, -2.67028808594e-05)
+18:15:32.442109:      Trajectory crosses triangle: crossedEdgeOrdinal=0
+18:15:32.442163:      Moving to edge 1 of opposite triangle 81
+18:15:32.442213:      B-Coords: (1, 0, 0) -> (0, 0, 1)
+18:15:32.442292:      TrajEndB-Coords: (2.64461905317e-05, -2.67209816229e-05, 1.00000023842)
+18:15:32.442370:    NavigateVertex: iter=1
+18:15:32.442425:      Triangle=81 Vertex=2 TrajectoryEndBarycentricCoords=(2.64461905317e-05, -2.67209816229e-05, 1.00000023842)
+18:15:32.442506:      Trajectory crosses triangle: crossedEdgeOrdinal=2
+18:15:32.442563:      Moving to edge 1 of opposite triangle 78
+18:15:32.442623:      B-Coords: (0, 0, 1) -> (0, 0, 1)
+18:15:32.442711:      TrajEndB-Coords: (2.67209888989e-05, -2.7480564313e-07, 0.999973595142)
+18:15:32.442791:    NavigateVertex: iter=2
+18:15:32.442840:      Triangle=78 Vertex=2 TrajectoryEndBarycentricCoords=(2.67209888989e-05, -2.7480564313e-07, 0.999973595142)
+18:15:32.442919:      Trajectory crosses triangle: crossedEdgeOrdinal=2
+18:15:32.442966:      Moving to edge 0 of opposite triangle 79
+18:15:32.443015:      B-Coords: (0, 0, 1) -> (0, 1, 0)
+18:15:32.443093:      TrajEndB-Coords: (2.64461850747e-05, 0.999973297119, 2.38418579102e-07)
+18:15:32.443158:    NavigateVertex: iter=3
+18:15:32.443201:      Triangle=79 Vertex=1 TrajectoryEndBarycentricCoords=(2.64461850747e-05, 0.999973297119, 2.38418579102e-07)
+18:15:32.443274:      Trajectory extends inside triangle - CompletedNavigation
+18:15:32.443321:    Actual edge traveled in non-inertial step: 0.00573804
+18:15:32.443374:        dtFractionConsumed=0.993497
+18:15:32.443428:        edgeWalkedActual=0.00573804 totalEdgeWalkedActual=(-0.00405463250354, 0.00406018318608)
+18:15:32.443507:    EndPosition=(-2.994607687, -3.00258564949) EndVelocity=(-0.261195093393, 0.261552661657) EndMRVelocity=(-0.261195093393, 0.261552661657)
+
+
+18:15:32.443629:    ------------------------
+18:15:32.443676:    Triangle=79 B-Coords=(0, 1, 0) RemainingDt=0.000101614 !!!!!!!!!!!!!!!!!!!! TODOHERE
+18:15:32.443758:    TrajectoryStartAbsolutePosition=(-2.99866223335, -2.99852538109) PhysicsDeltaPos=(-0.00408126460388, -0.00069833220914) TotalEdgeWalkedActual=(-0.00405463250354, 0.00406018318608) => TrajectoryEndAbsolutePosition=(-3.00274348259, -2.99922370911) Trajectory=(-0.00408124923706, -0.000698328018188) !!!!!! Note: TrajectoryStartAbsolutePosition has changed (by walked), and thus Trajectory is same
+!!!!! Note: TrajectoryEndAbsolutePosition is (almost) the same as in good case, and so is Trajectory - yet we've consumed most of the time quantum; when we navigate this trajectory we'll have incredible speed
+18:15:32.443885:    NavigateVertex: iter=0
+18:15:32.443934:      Triangle=79 Vertex=1 TrajectoryEndBarycentricCoords=(-0.000701120472513, 0.9959192276, 0.00478184223175)
+18:15:32.444010:      Trajectory crosses triangle: crossedEdgeOrdinal=1
+18:15:32.444070:      Crossed edge is floor - EncounteredFloor
+18:15:32.444117:    Checking edges
+18:15:32.444171:      edge 1: isFloor=1
+18:15:32.444229:    ConstrainedNonInertial: triangle=79 edgeOrdinal=1 bCoords=(0, 1, 0) trajectory=(-0.00408124923706, -0.000698328018188)
+18:15:32.444321:    StartPosition=(-2.994607687, -3.00258564949) StartVelocity=(-0.261195093393, 0.261552661657) MeshVelocity=(0, 0) StartMRVelocity=(-0.261195093393, 0.261552661657)
+18:15:32.444433:        friction: trajectoryN=0.00070112 relVel=(-0.261195093393, 0.261552661657) trajectoryT=0.00408077 tFriction=-0.00070112
+18:15:32.444558:        idealWalkMagnitude=0.000101614 gravityResistance=0 => edgeWalkedPlanned=0 (@0.999999)
+18:15:32.444634:        flattenedTrajectory=(-0.00337964924984, 2.31256376537e-06) flattenedTrajectoryEndAbsolutePosition=(-3.00204181671, -2.9985229969) flattenedTrajectoryEndBarycentricCoords=(0, 0.996620476246, 0.00337952375412)
+18:15:32.444738:        edgePhysicalTraveledPlanned=0.00337965 edgeWalkedPlanned=0 !!!!!!!!!!! Walked planned is zero because of the tiny dt
+18:15:32.444817:      Target is on/in triangle, moving to target
+18:15:32.444869:        edgeTraveledPlanned=0.00337965 absoluteVelocity=(-33.2597427368, 0.0227583609521)
+18:15:32.444939:    Actual edge traveled in non-inertial step: 0.00337965
+18:15:32.445000:        edgeWalkedActual=0 totalEdgeWalkedActual=(-0.00405463250354, 0.00406018318608)
+18:15:32.445077:    EndPosition=(-3.00204181671, -2.99852323532) EndVelocity=(-33.2597427368, 0.0227583609521) EndMRVelocity=(-33.2597427368, 0.0227583609521)
+
+			+ 0: Build repro with ball & velocity first
+
+			+ Attempt 1: budget-based:
+				+ 1: first flattening stores "budget" == length (abs) of flattened traj
+					! "budget" is the maximum *total* distance that we are allowed to travel in current time quantum
+				+ 2: "budget" is reduced after each iteration by (abs) scalar amount traveled (capped to zero - though shouldn't be needed)
+				+ 3a: any subsequent non-inertial flattening adjusts flattened trajectory to ensure its abs length is not over budget
+					X Adjust how we calc dt consumed - no need as long as we update edge total planned
+					X Adjust physical planned - no need as it's not used anymore
+					+ Adjust walk planned, which is used 
+				X 3b: any subsequent inertial travel adjusts trajectory to ensure its abs length is not over budget
+					! Not needed: velocity here is calc'd from total trajectory in step divided by theoretical (whole) dt, so it's really physical
+				+ Then:
+					X a: Fn calculation (for friction) must take dt into account
+						! Actually, is not needed - N and FT would both be smaller - as smaller as T is
+					X b: Also bounce response must take dt into account?
+						! Actually, is not needed - bounce response is calc'd based on (flattened) trajectory and (remaining) dt
+					+ c: Impact continuation must also calc velocity as it might be last
+						! Next step might have 0 to travel after we shorten up traj
+						+ Test assert on non-inertial always leaving a crumble of distance to travel wrt budget
+							+ Seems to hold
+
+			+ Finalize, Cleanup, Merge
+
+			- Fix "neverending navigation" issue:
+
+				- Repro: 
+
+				- Do dual-side (0.0 and 1.0) clamping for each coord
 
 Opposite Tr 46 oppositeTriangleCrossedEdgeOrdinal=0 newBCoords={_Elems=0x00000017b298da68 {1.00000000, 0.00000000, 0.00000000} }
 vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.00169372594, -3.49245965e-10} }
