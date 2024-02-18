@@ -390,13 +390,13 @@ Details
 		+ Video
 
 		= Animation:
-			= Store current edge
+			+ Store current edge
 				! Needed for foot points
 				+ ConstrainedState::CurrentVirtualEdge // not really valid when at cuspids
 				+ Set after call to NonInertial
 				+ Render it (dark red)
-				- FIX: when trying to walk up, virt edge is the vertical one
-					- TODO: see below, at walking points-along-edge - see how it goes
+				X FIX: when trying to walk up, virt edge is the vertical one
+					! see below, at walking points-along-edge - see how it goes - WELL
 			+ Move behavior update: update behavior before animation, after physics
 				+ FIX: it's broken
 					+ Because we lose EquilibriumTorque, move reset afterwards
@@ -539,9 +539,9 @@ Details
 
 				+ Finalize, Cleanup, Merge
 
-			- Fix "neverending navigation" issue:
-				- Build repro 
-				- Do dual-side (0.0 and 1.0) clamping for each coord
+			+ Fix "neverending navigation" issue:
+				+ Build repro 
+				~ Do dual-side (0.0 and 1.0) clamping for each coord
 
 Opposite Tr 46 oppositeTriangleCrossedEdgeOrdinal=0 newBCoords={_Elems=0x00000017b298da68 {1.00000000, 0.00000000, 0.00000000} }
 vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.00169372594, -3.49245965e-10} }
@@ -562,8 +562,53 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 \  |
  \ |
   \| 46
+				+ Now that we clamp, we have the issue of bouncing once reached the edge - because of walk velocity going up
+					! Repro: vel=1.8, slightly rotated CCW
+					X Attempt 1: do not gain y velocity from walk
+						! But does it make sense? If we run up, we have velocity up...no?
+						X Attempt 2: limit y velocity from walk
+					+ Attempt 3: better bounce tolerance and equilibrium termination
+						+ Bounce tolerance to slope vs walking dir
+							! Repro: max speed & mesh rotated CW (1xV)
+						+ Equilibrium termination: provided we're reasonably vertical, if we lose it because of non-edge, be more tolerant
+						+ But now we have relative velocity kicking in
+							! Rethink relative velocity - after all we have walking velocity now!
+							+ If not walking: like now
+							+ Else:
+								X If against walk dir by limit1: break
+									! We do not need this - after all we flip - and also generates issue below (slamming against wall)
+								+ If more than walk velocity by limit2: break
+								+ Only consider component of MRV along walk dir
+							+ FIX: when we slam hard against a wall, we flip but still have old V => it looks like a lot of opposite
+								+ Attempt 1: see above: removing "Walking state abandonment" when too much opposite vel fixed this
+
+				+ Sfarfallio when we reach slope 
+					! Repro: speed=1.75, rotated cw a bit (6 x -3.1f * 12.0f)
+					! We do impact continuation & try go up slope, but too much friction/nowalk/etc. and no move and go down
+					! We end up in a well, alternating last edge: 14-17-14-17 - detected well; 17-14-17-14 - detected well; 14-17-14-17...
+					+ Should detect well at second 14
+					+ New issue: freezing along wall:
+						! Repro: like for bounces above: vel=1.75, slightly rotated CCW (4 rotations of 3.1f * 3.0f)
+						! We are at 102
+						! We navigate to 137 (returning EncounteredFloor)
+						! Queue: 137 137 137
+						! We do non-inertial step: 102
+						! We don't see 102 in queue
+						! Loop
+						+ Fix: 
+							+ Initialize with first before machinery
+							+ Update _after_ non-inertial step
+						+ Verify both well issues are fixed
 
 			- Video
+
+			- Per-human PanicLevel [0.0f, +inf)
+				- When !=0 -> arms still flipping but up
+				- Adds to walking speed
+				- Adds (marginally) to equilibrium torque
+				- Increases converge rates for start rising and start equilibrium
+				- Lowers time to start walking
+				- GUI slider
 
 			- HumanNpcLengthAdjustment
 				- Use @ spring force calc'ns
