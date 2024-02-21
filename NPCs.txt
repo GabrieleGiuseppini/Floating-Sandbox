@@ -645,11 +645,15 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 				+ Panic arms: now they look like it's flying :-) 
 					+ Try: simply flap them around vertical _up_ rather than down
 				+ Panic arms at slope: npc is slow and arms also - should use time for arms
-				= Swimming
+				+ Swimming
 					+ Flight down should be faster
 						+ Do poor man's "mod" with asymmetric interval (ifs)
 					+ Also bottom angle should become more "flat" (around pi/2) when at surface
-					- Don't start until rotation is small
+					+ Don't start until rotation is small
+				+ Free_Aerial and Free_InWater - where we do "arms pointing downward": also move legs somehow
+					+ When arms are at highest, legs are 100% tight; when arms are at lowest, they are X apart (same X as now, initial)
+					+ Around center angle that is opposite to relvel component against perp to humanDir, with magnitude depending on that relval component magnitude
+				+ Swimming: speed affected by pani
 				- Try "Constrained_Falling" state
 					- Get here from: the three Constrained_X when same conditions for KnockedOut (replaces that transition)
 					- From here: to KnockedOut when |RelVelSec-RelVelPrim| ~= 0.0
@@ -658,9 +662,6 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 							- Perpendicular to HumanDir (+/- PI/2)
 							- Sign: direction of fall == (RelVelSec-RelVelPrim).cross(HumanDir)
 							- note: ain't direction of arms simply in MRV of head?
-				- Free_Aerial et al where we do "arms pointing downward": also move legs somehow
-					- Only move legs if human has velocity *or* is rotating
-					 - TODO
 
 			- Allow more slope to undergo impact continuation if we're walking against it
 
