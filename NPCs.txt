@@ -150,10 +150,10 @@ Details
 				- 2D: https://www.geogebra.org/m/aRMTsu62
 
 - Human behavioral state machine(s):
-	- Principles:
-		- Most transitions happen with "convergence" of some quantity
-			- Only the convergence rate is a state-specific parameter; the threshold for reaching a target is not (i.e. it's a global constant)
-				- So that there's only one param per state controlling timing
+	! Principles:
+		! Most transitions happen with "convergence" of some quantity
+			! Only the convergence rate is a state-specific parameter; the threshold for reaching a target is not (i.e. it's a global constant)
+				! So that there's only one param per state controlling timing
 	- States:
 		+ State:KnockedOut
 			! Does nothing
@@ -600,20 +600,101 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 							+ Update _after_ non-inertial step
 						+ Verify both well issues are fixed
 
-			- Video
+			+ Video
+				+ Put back temporarily orig values
 
-			- Per-human PanicLevel [0.0f, +inf)
-				- When !=0 -> arms still flipping but up
-				- Adds to walking speed
-				- Adds (marginally) to equilibrium torque
-				- Increases converge rates for start rising and start equilibrium
-				- Lowers time to start walking
-				- GUI slider
+			+ Per-human PanicLevel [0.0f, +inf)
+				+ Walking anim: when !=0 -> arms still flipping but up
+				+ Adds to walking speed
+					+ Npcs::CalculateActualHumanWalkingAbsoluteSpeed(humanState, labParams)
+						+ Panic, Magnitude, labParams
+					+ Use it wherever magnitude is used
+					+ Test with max walking speed
+				+ Adds (marginally) to equilibrium torque
+				+ Increases converge rates for start rising
+				+ Lowers time to start walking
+				+ GUI slider
+					+ Npcs::SetPanicLevelForAll(panicLevel)
+
+			+ Play
+
+			- Global state machine:
+				+ Face direction re-design with FrontBack
+				- Add "BeingPlaced" to regime
+				- Copy placement from FS (Add, Move only; no Remove at this moment)
+					- Tool & methods on Npcs (& LabController)
+				- New "BeingPlaced" BehaviorType for humans
+					- Matches -regime- TODO (which is leading)
+						- Same transitions
+				+ RenderUpload: implement
+					+ F/B vs L/R geometry
+						+ Front
+						+ Back
+						+ Left
+						+ Right
+						+ Test flip
+					+ API calls take L/R/F/B info
+					+ API also takes *quads* rather than vector+width, for perf
+					+ Rendering honors L/R/F/B with shader hints
+						+ depth
+						+ L/R
+
+			- Animation improvements:
+				+ Shading also at F: centered 
+					+ direction basically shifts, can use it verbatim
+				+ Panic arms: now they look like it's flying :-) 
+					+ Try: simply flap them around vertical _up_ rather than down
+				+ Panic arms at slope: npc is slow and arms also - should use time for arms
+				= Swimming
+					+ Flight down should be faster
+						+ Do poor man's "mod" with asymmetric interval (ifs)
+					+ Also bottom angle should become more "flat" (around pi/2) when at surface
+					- Don't start until rotation is small
+				- Try "Constrained_Falling" state
+					- Get here from: the three Constrained_X when same conditions for KnockedOut (replaces that transition)
+					- From here: to KnockedOut when |RelVelSec-RelVelPrim| ~= 0.0
+					- Animation:
+						- Arms shielding fall:
+							- Perpendicular to HumanDir (+/- PI/2)
+							- Sign: direction of fall == (RelVelSec-RelVelPrim).cross(HumanDir)
+							- note: ain't direction of arms simply in MRV of head?
+				- Free_Aerial et al where we do "arms pointing downward": also move legs somehow
+					- Only move legs if human has velocity *or* is rotating
+					 - TODO
+
+			- Allow more slope to undergo impact continuation if we're walking against it
+
+			- Remaining state machines:
+				- See above for "Impact" responses at the various states 
+					- There is remaining (=) work above for this!
+				+ State::Free_Aerial: (was: FreeKnockedOut)
+					+ We transition here at UpdateBehavior, NOT at BecomingFree!
+					+ Becomes InWater if both points in water
+				+ State::Free_InWater:
+					+ Converges towards Free_Swimming by going to target==head_vel.normalize().dot(human_vector.normalize())
+					+ Becomes Aerial if no points in water
+				+ @ Becoming free: decide between Free_Aerial vs Free_InWater depending on OceanSurface
+				= State::Free_Swimming:
+					+ Becomes Aerial if no points in water
+					= Animation
+				- BeingPlaced:
+					- Animation:
+						- Init dir=1.0/0.0 (front/-)
+						- Arms & legs: flipping between 1/4 PI to 3/4 PI with both time and distance
+							- Offset between arms and legs is random
+				+ Impacts:
+					+ At each impact, call OnImpact(...particle..., ...impact quantities...)
+					+ OnImpact: if human, check state machine and do following transitions:
+						+ If walking and impact V (velocity of particle along normal) is in direction of walking:
+							+ Flip direction
+
+			- BehaviorUpdate: finish setting target angles for all states
 
 			- HumanNpcLengthAdjustment
 				- Use @ spring force calc'ns
 					- Pre-computed params?
 				- SettingsDialog
+
 			+ * Make UpdateNpcParticle_ConstrainedNonInertial return <opt?totalEdgeWalked, doContinue> as tuple
 			+ Fix mesh rendering: do not render all edges but just triangles'
 				! With repetitions is fine...
@@ -622,75 +703,46 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 				+ Uses union-structs internally for resetting & setting up (** below)
 				+ Resets TotalWhateverSinceWalking and StateStartSimulationTimestamp
 
-			- Transition func: move from struct to Npcs, so that may change other things as well (e.g. DipoleState)
-				- Move then resetting of Equilibrium.... there
-
-			= HumanState."TotalWhateverSinceWalking" -> "TotalDistanceTraveledSinceStateStart"
+			+ HumanState."TotalWhateverSinceWalking" -> "TotalDistanceTraveledSinceStateStart"
 				! For swimming et al
-				- Also for Free state (for swimming)
-					- @ transitions (i.e. "becoming") is kinda pointless, but try to do anyway
+				+ Also for Free state (for swimming)
+					X @ transitions (i.e. "becoming") is kinda pointless, but try to do anyway
 				+ Also timestamp of state start
 				+ Reset at state transitions
 					+ Do state trans via func: TransitionState(newState, currentSimTime); func switch'es
 						+ Uses union-structs internally for resetting & setting up (** below)
 
-			- Crotch offset updated while walking
-				- New DipoleProperties member - "DipoleLengthMultiplier"
-				- Use at SpringForces
-				- Updated at walk update - and reset upon transitions out of Walking
-					- @BehaviorUpdate: based on leg angle
-					- TODOOLD: WAS:
-					- Updated based on current leg angle:
-						- Angles calc'd at BehaviorUpdate
-							- Based off distance traveled (whose s-phase-triangle is calc'd here), etc.
-						- Points calc'd at AnimationUpdate
-							- Or not, depends on walking option 2
-			- Video
-			- Initialize NPC anim members when we initialize NPC state - by invoking UpdateAnimation
-				- Make sure initial *current* angles are set 
-			- BehaviorUpdate: finish setting target angles for all states
-			- "Initial placement" state, and interactive tool for placement
-				- "Being placed" is an NPC property
-			
-			- Face direction re-design:
-				+ float x dir (like now, but includes 0)
-				+ enum FrontBack
-				- Initial state
-					
-				- Integrate in rendering
-					- API calls take L/R/F/B info
-					- Rendering honors L/R/F/B with shader hints
+			- Things to try:
+				- Crotch offset updated while walking
+					- New DipoleProperties member - "DipoleLengthMultiplier"
+					- Use at SpringForces
+					- Updated at walk update - and reset upon transitions out of Walking
+						- @BehaviorUpdate: based on leg angle
+					- See if really worth it
 
-		- Code rearcs:
-			- LogMessage/LogDebug -> LogNpcDebug (w/local #ifdef)
-			- Rearc source files in NPC folder
-			- NpcDatabase
-				- 
-				- TODOHERE
-			- NpcTypes: all struct def's (** above)
-				- HumanNpcState:
-					- Union for behavior states
-						- Unions' cctors are used to reset state
-			- Various static helpers (e.g. is IsFloorToParticle, ...)
+			- Video
 
 		= Add velocity damp
 			= And slider
 			- Test
-		= Impacts:
-			+ At each impact, call OnImpact(...particle..., ...impact quantities...)
-			= OnImpact: if human, check state machine and do following transitions:
-				+ If walking and impact V (velocity of particle along normal) is in direction of walking:
-					+ Flip direction
-				- TODOHERE - and see above - for other state transitions
-
-		- State::Free_Aerial: (was: FreeKnockedOut)
-			= We transition here at UpdateBehavior, NOT at BecomingFree!
-			- Becomes InWater if both points in water
-		- State::Free_InWater:
-			- Converges towards Free_Swimming by going to target==rel_val.normalize().dot(human_vector.normalize())
-			- Becomes Aerial if no points in water
-		- @ Becoming free: decide between Free_Aerial vs Free_InWater depending on OceanSurface
-		- State::Free_Swimming:
+			
+		- Code rearcs & integration:
+			! Goal: be able to copy folder of files seamlessly across FS and BL
+			+ LogMessage/LogDebug -> LogNpcDebug (w/local #ifdef)
+			- Get rid of mesh
+				- TODOHERE
+			- Rearc source files in NPC folder
+				! No namespace: some types are in GameTypes anyway...
+			- All "BLab" -> "Game"
+			- Import NpcParticles FS->BL
+			- Decide: should we keep the per-ship FS structure, or is it enough to have ShipId at each NPC?
+				- Remember that we want to render per-ship
+			- NpcTypes: all struct def's (** above)
+				- Decide; after all we need also "common" ones which will be in GameTypes
+			- NpcDatabase
+				- TODOHERE: what would be here?
+					- For each human type: the texture frame names (or rely on filename matching?)
+			- Various static helpers (e.g. is IsFloorToParticle, ...)
 
 	- Other walking features:
 		- See if can detect that will hit a wall/well by projecting forward primary particle along triangle edge; if will hit, turn around
