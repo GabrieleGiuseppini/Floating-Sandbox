@@ -653,15 +653,63 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 				+ Free_Aerial and Free_InWater - where we do "arms pointing downward": also move legs somehow
 					+ When arms are at highest, legs are 100% tight; when arms are at lowest, they are X apart (same X as now, initial)
 					+ Around center angle that is opposite to relvel component against perp to humanDir, with magnitude depending on that relval component magnitude
-				+ Swimming: speed affected by pani
+				+ Swimming: speed affected by panic
+
+				= Constrained_KnockedOut rearc:
+					+ Double-check all transitions _to_ Constrained_KnockedOut
+					+ Falling: constrain arm angles to the half-plane in the face direction
+					+ Try to progress aerial to falling (rather than immediately)
+						+ Also gets rid of becoming falling when hitting head
+					+ Try to aerial->falling also for head 
+					- @ Falling: arms should not extend perp...
+						a) in air when still on the back, and 
+						b) against floor when on belly
+					- Anim @ Falling: move arms towards zero depending on progress to knockout
+					- Avoid arms going up when we become Falling when we're basically still
+						- WAS:
+							- Anim @ Falling: amount of pi/2 is scaled towards zero with magnitude of head vel along perp
+							
+
+				- Less walking in the air
+					- Could have two "distance traveled" members: one on_edge, one total
+						- on_edge only updated with NonInertial
+						- animation for C_Walking uses only "on_edge"
+
+				- Another possible rearc, of animation:
+					- C_Aerial, C_Falling, C_KO: we interpolate one to the other based on progress
+
+				- Rising: go to "rest legs", but leg against floor does less angle
+
+				- Animation: should be check constrained-ness when we touch it?
+
+				- TODOOLD
+				= Constrained_KnockedOut:
+					- If foot on the ground:
+						- Arms shielding fall:
+							- Perpendicular to HumanDir (+/- PI/2)
+							- Sign: direction of fall == (MRelVelSec-MRelVelPrim).cross(HumanDir)
+							- note: ain't direction of arms simply sign of MRV of head along body perp?
+						- Legs: ?
+					- Else:
+						- Fallthrough to do like in Free_Aerial+Free_InWater
+					- Fix:
+						- Initial fall has legs too wide
 				- Try "Constrained_Falling" state
-					- Get here from: the three Constrained_X when same conditions for KnockedOut (replaces that transition)
-					- From here: to KnockedOut when |RelVelSec-RelVelPrim| ~= 0.0
+					- Temporarily move Constrained_KnockedOut animation to exactly like free's
+					- Get here from: the three Constrained_X when: 
+						- Same current conditions for out transition (to KnockedOut), but:
+						- Feet on edge
+						- Upon transitioning to this state we 0/flip to this direction
+							- Not in transition function but in behavior change itself
+					- From here: to KnockedOut when:
+						- |MRelVelSec-MRelVelPrim| along body perpendicular ~= 0.0
+						- OR feet have not been on edge for a while
 					- Animation:
 						- Arms shielding fall:
 							- Perpendicular to HumanDir (+/- PI/2)
-							- Sign: direction of fall == (RelVelSec-RelVelPrim).cross(HumanDir)
-							- note: ain't direction of arms simply in MRV of head?
+							- Sign: direction of fall == (MRelVelSec-MRelVelPrim).cross(HumanDir)
+							- note: ain't direction of arms simply sign of MRV of head along body perp?
+						- Legs: ?
 
 			- Allow more slope to undergo impact continuation if we're walking against it
 
