@@ -149,12 +149,12 @@ Details
 				- https://members.loria.fr/SLazard/ARC-Visi3D/Pant-project/files/Line_Segment_Triangle.html
 				- 2D: https://www.geogebra.org/m/aRMTsu62
 
-- Human behavioral state machine(s):
+= Human behavioral state machine(s):
 	! Principles:
 		! Most transitions happen with "convergence" of some quantity
 			! Only the convergence rate is a state-specific parameter; the threshold for reaching a target is not (i.e. it's a global constant)
 				! So that there's only one param per state controlling timing
-	- States:
+	= States:
 		+ State:KnockedOut
 			! Does nothing
 			+ Transitions out: 
@@ -618,26 +618,18 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 
 			+ Play
 
-			- Global state machine:
-				+ Face direction re-design with FrontBack
-				- Add "BeingPlaced" to regime
-				- Copy placement from FS (Add, Move only; no Remove at this moment)
-					- Tool & methods on Npcs (& LabController)
-				- New "BeingPlaced" BehaviorType for humans
-					- Matches -regime- TODO (which is leading)
-						- Same transitions
-				+ RenderUpload: implement
-					+ F/B vs L/R geometry
-						+ Front
-						+ Back
-						+ Left
-						+ Right
-						+ Test flip
-					+ API calls take L/R/F/B info
-					+ API also takes *quads* rather than vector+width, for perf
-					+ Rendering honors L/R/F/B with shader hints
-						+ depth
-						+ L/R
+			+ RenderUpload: implement
+				+ F/B vs L/R geometry
+					+ Front
+					+ Back
+					+ Left
+					+ Right
+					+ Test flip
+				+ API calls take L/R/F/B info
+				+ API also takes *quads* rather than vector+width, for perf
+				+ Rendering honors L/R/F/B with shader hints
+					+ depth
+					+ L/R
 
 			- Animation improvements:
 				+ Shading also at F: centered 
@@ -654,95 +646,45 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 					+ When arms are at highest, legs are 100% tight; when arms are at lowest, they are X apart (same X as now, initial)
 					+ Around center angle that is opposite to relvel component against perp to humanDir, with magnitude depending on that relval component magnitude
 				+ Swimming: speed affected by panic
-
-				= Constrained_KnockedOut rearc:
+				+ Constrained_KnockedOut rearc:
 					+ Double-check all transitions _to_ Constrained_KnockedOut
 					+ Falling: constrain arm angles to the half-plane in the face direction
 					+ Try to progress aerial to falling (rather than immediately)
 						+ Also gets rid of becoming falling when hitting head
 					+ Try to aerial->falling also for head 
-					- @ Falling: arms should not extend perp...
+					 @ Falling: arms should not extend perp...
 						a) in air when still on the back, and 
 						b) against floor when on belly
-					- Anim @ Falling: move arms towards zero depending on progress to knockout
-					- Avoid arms going up when we become Falling when we're basically still
-						- WAS:
-							- Anim @ Falling: amount of pi/2 is scaled towards zero with magnitude of head vel along perp
-							
+						+ Scale target by abs magnitude of head rel/abs vel along perp
+						 + Fight bounces
+					X Anim @ Falling: move arms towards zero depending on progress to knockout
+					X Avoid arms going up when we become Falling when we're basically still
+				+ Less walking in the air
+					+ Could have two "distance traveled" members: one on_edge, one not on edge (exclusive)
+						+ on_edge only updated with NonInertial
+						+ animation for C_Walking uses linear combo of both
+						+ animation for swimming uses not-on-edge
+				+ Less "dead body" when KO
+					+ Transition to aerial
 
-				- Less walking in the air
-					- Could have two "distance traveled" members: one on_edge, one total
-						- on_edge only updated with NonInertial
-						- animation for C_Walking uses only "on_edge"
+				= Rising improvements: 
+					+ Go to "rest legs"
+					+ Convergence rate = 0.2 + depth
+					+ Go to "rest legs", but leg against floor does less angle
+					+ Arm against floor helps body come up
+					+ Arm should open w/body rising up
+					+ Rethink other arm
+						+ Helps first
+					= Rethink legs
+					- Do edge limiting for arms (?)
 
-				- Another possible rearc, of animation:
-					- C_Aerial, C_Falling, C_KO: we interpolate one to the other based on progress
+				= C_Aerial -> C_Falling: at this moment it makes for an ugly start, as we touch the floor and flip immediately
+					+ Do transition to falling only if there's some movement of H or F
+						+ Use only applicable velocity's *component along edge|H*			
+					+ Need a transition to (somewhat) rising or else we'll never start walking
+						+ Go to knocked out if H|F on floor but no velocity?
 
-				- Rising: go to "rest legs", but leg against floor does less angle
-
-				- Animation: should be check constrained-ness when we touch it?
-
-				- TODOOLD
-				= Constrained_KnockedOut:
-					- If foot on the ground:
-						- Arms shielding fall:
-							- Perpendicular to HumanDir (+/- PI/2)
-							- Sign: direction of fall == (MRelVelSec-MRelVelPrim).cross(HumanDir)
-							- note: ain't direction of arms simply sign of MRV of head along body perp?
-						- Legs: ?
-					- Else:
-						- Fallthrough to do like in Free_Aerial+Free_InWater
-					- Fix:
-						- Initial fall has legs too wide
-				- Try "Constrained_Falling" state
-					- Temporarily move Constrained_KnockedOut animation to exactly like free's
-					- Get here from: the three Constrained_X when: 
-						- Same current conditions for out transition (to KnockedOut), but:
-						- Feet on edge
-						- Upon transitioning to this state we 0/flip to this direction
-							- Not in transition function but in behavior change itself
-					- From here: to KnockedOut when:
-						- |MRelVelSec-MRelVelPrim| along body perpendicular ~= 0.0
-						- OR feet have not been on edge for a while
-					- Animation:
-						- Arms shielding fall:
-							- Perpendicular to HumanDir (+/- PI/2)
-							- Sign: direction of fall == (MRelVelSec-MRelVelPrim).cross(HumanDir)
-							- note: ain't direction of arms simply sign of MRV of head along body perp?
-						- Legs: ?
-
-			- Allow more slope to undergo impact continuation if we're walking against it
-
-			- Remaining state machines:
-				- See above for "Impact" responses at the various states 
-					- There is remaining (=) work above for this!
-				+ State::Free_Aerial: (was: FreeKnockedOut)
-					+ We transition here at UpdateBehavior, NOT at BecomingFree!
-					+ Becomes InWater if both points in water
-				+ State::Free_InWater:
-					+ Converges towards Free_Swimming by going to target==head_vel.normalize().dot(human_vector.normalize())
-					+ Becomes Aerial if no points in water
-				+ @ Becoming free: decide between Free_Aerial vs Free_InWater depending on OceanSurface
-				= State::Free_Swimming:
-					+ Becomes Aerial if no points in water
-					= Animation
-				- BeingPlaced:
-					- Animation:
-						- Init dir=1.0/0.0 (front/-)
-						- Arms & legs: flipping between 1/4 PI to 3/4 PI with both time and distance
-							- Offset between arms and legs is random
-				+ Impacts:
-					+ At each impact, call OnImpact(...particle..., ...impact quantities...)
-					+ OnImpact: if human, check state machine and do following transitions:
-						+ If walking and impact V (velocity of particle along normal) is in direction of walking:
-							+ Flip direction
-
-			- BehaviorUpdate: finish setting target angles for all states
-
-			- HumanNpcLengthAdjustment
-				- Use @ spring force calc'ns
-					- Pre-computed params?
-				- SettingsDialog
+				+ @ Animation: check constrained-ness when we touch it
 
 			+ * Make UpdateNpcParticle_ConstrainedNonInertial return <opt?totalEdgeWalked, doContinue> as tuple
 			+ Fix mesh rendering: do not render all edges but just triangles'
@@ -761,24 +703,13 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 					+ Do state trans via func: TransitionState(newState, currentSimTime); func switch'es
 						+ Uses union-structs internally for resetting & setting up (** below)
 
-			- Things to try:
-				- Crotch offset updated while walking
-					- New DipoleProperties member - "DipoleLengthMultiplier"
-					- Use at SpringForces
-					- Updated at walk update - and reset upon transitions out of Walking
-						- @BehaviorUpdate: based on leg angle
-					- See if really worth it
 
-			- Video
 
-		= Add velocity damp
-			= And slider
-			- Test
-			
 		- Code rearcs & integration:
 			! Goal: be able to copy folder of files seamlessly across FS and BL
 			+ LogMessage/LogDebug -> LogNpcDebug (w/local #ifdef)
 			- Get rid of mesh
+				- Rename as Ship
 				- TODOHERE
 			- Rearc source files in NPC folder
 				! No namespace: some types are in GameTypes anyway...
@@ -793,6 +724,59 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 					- For each human type: the texture frame names (or rely on filename matching?)
 			- Various static helpers (e.g. is IsFloorToParticle, ...)
 
+		- Placement:
+			- Add "BeingPlaced" to regime
+			- Copy placement from FS (Add, Move only; no Remove at this moment)
+				- Tool & methods on Npcs (& LabController)
+			- New "BeingPlaced" BehaviorType for humans
+				- Matches -regime- TODO (which is leading)
+					- Same transitions
+			- Animation:
+				- Init dir=1.0/0.0 (front/-)
+				- Arms & legs: flipping between 1/4 PI to 3/4 PI with both time and distance
+					- Offset between arms and legs is random
+
+		- Remaining state machines:
+			- See above for "Impact" responses at the various states 
+				- There is remaining (=) work above for this!
+			+ State::Free_Aerial: (was: FreeKnockedOut)
+				+ We transition here at UpdateBehavior, NOT at BecomingFree!
+				+ Becomes InWater if both points in water
+			+ State::Free_InWater:
+				+ Converges towards Free_Swimming by going to target==head_vel.normalize().dot(human_vector.normalize())
+				+ Becomes Aerial if no points in water
+			+ @ Becoming free: decide between Free_Aerial vs Free_InWater depending on OceanSurface
+			+ State::Free_Swimming:
+				+ Becomes Aerial if no points in water
+				+ Animation
+			+ Impacts:
+				+ At each impact, call OnImpact(...particle..., ...impact quantities...)
+				+ OnImpact: if human, check state machine and do following transitions:
+					+ If walking and impact V (velocity of particle along normal) is in direction of walking:
+						+ Flip direction
+
+		- Allow more slope to undergo impact continuation if we're walking against it
+
+		- HumanNpcLengthAdjustment
+			- Use @ spring force calc'ns
+				- Pre-computed params?
+			- SettingsDialog
+		- Randomize human height
+			- HumanState::Height member init'd with gaussian - see real distribution params
+			- Replace all accesses to params::HumanLength with this member
+
+		- Other animation improvements:
+			- Try crotch offset updated while walking
+				- New DipoleProperties member - "DipoleLengthMultiplier"
+				- Use at SpringForces
+				- Updated at walk update - and reset upon transitions out of Walking
+					- @BehaviorUpdate: based on leg angle
+				- See if really worth it
+
+		= Add velocity damp
+			= And slider
+			- Test
+			
 	- Other walking features:
 		- See if can detect that will hit a wall/well by projecting forward primary particle along triangle edge; if will hit, turn around
 		- "staircases": floors can be marked as "stairs", and that is used in two places:
@@ -813,7 +797,7 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 		- Static ones: contain static properties (colors, )
 			- Only reloaded at e.g. NPC insertion/removal
 		- Dynamics ones: contain world vertices, texture coords (because these are atlas coords and thus change between frames)
-	- TODO: do we need indices like ships? TODO: what indices?
+	- TODO: do we need indices like ships? (indices of quad vertices)
 	- NpcType needs an associated NpcOrientation, because the way a quad is laid out around the particles for a human is different than that of a table
 		- Uhm: after all a table is not that simple - think of flipping it
 
@@ -825,23 +809,6 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 	- Swirl, etc.: all ships, all regimes
 	- Move tool:
 		- While MoveAll may be used to move everything, Move (component) only moves mesh, thus subjecting NPCs to apparent forces!
-
-
-- Dipole:
-	- Attempt 1:
-		- Normal physics: calc spring forces first (in new particle's buffer) and include those forces when calculating trajectory
-		- However, when on an edge, friction might get in the way of reunification of the particles, hence: attempt 2
-	- Attempt 2:
-		- If both not on edge: normal physics: calc spring forces first (in new particle's buffer) and include those forces when calculating (non-edge) trajectory
-		- Else:
-			- Each particle for which other is on edge: after calculating flattened traj which includes friction and all, calc how much extra movement is needed to reach rest length,
-			  and add particle's portion of that to traj (half or whole, depending on whether both are on edge or only one)
-				- The important part here is that this happens _after_ friction
-
-	- Misc OLD:
-	- Try:
-		- Before all particle's state updates, we force positions for dipoles too far apart or too close to go back into a tolerance, then we allow spring forces to occur
-			- We then need to recalc bary coords of both - but according to the old mesh positions - HOW?
 
 - Floorplan layer:
 	- A specific "FloorPlan" layer provides a bitmask indicating particles' (and thus, springs') floorness
