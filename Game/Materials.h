@@ -40,7 +40,7 @@ public:
         Glass,
         Human,
         Rope,
-        Water,        
+        Water,
 
         _Last = Water
     };
@@ -100,7 +100,7 @@ public:
 
     // Misc
     float WindReceptivity;
-    float WaterReactivity;    
+    float WaterReactivity;
     bool IsLegacyElectrical;
     bool IsExemptFromPalette;
 
@@ -283,7 +283,7 @@ public:
     };
 
     enum class EngineControllerElementType
-    {        
+    {
         Telegraph,
         JetThrottle,
         JetThrust

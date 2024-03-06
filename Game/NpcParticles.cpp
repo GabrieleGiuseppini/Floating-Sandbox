@@ -29,7 +29,7 @@ ElementIndex NpcParticles::Add(
     mIntegrationFactorBuffer[p] = vec2f(integrationFactor, integrationFactor);
 
     ++mParticleInUseCount;
-    
+
     // Remember we're dirty
     mAreElementsDirtyForRendering = true;
 
@@ -42,6 +42,7 @@ void NpcParticles::Remove(
     assert(mIsInUseBuffer[particleIndex]);
 
     mIsInUseBuffer[particleIndex] = false;
+    // TODO: set free search start to min (free search start, this)
 
     --mParticleInUseCount;
 

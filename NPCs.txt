@@ -634,27 +634,62 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 					+ Do state trans via func: TransitionState(newState, currentSimTime); func switch'es
 						+ Uses union-structs internally for resetting & setting up (** below)
 
+		+ Floor @ triangles
 
-		- Code rearcs & integration:
+		= Code rearcs & integration - 1 (BL only):
 			! Goal: be able to copy folder of files seamlessly across FS and BL
 			+ LogMessage/LogDebug -> LogNpcDebug (w/local #ifdef)
-			- Make Barylab branch
-			- Renames (files and classes)
-				- Mesh->Ship
-				- Edges->Springs
-				- Vertices->Points
-				- MaterialXYZ -> NPCMaterialXYZ (clone from FS)
-			- NpcParticles:
-				- "MaterialProperties"
-			- All "BLab" -> "Game"
+			+ Make Barylab branch
+			+ Renames (files and classes)
+				+ Mesh->Ship
+					+ And put in Physics namespace
+				+ Redo OppositeTriangles @ Triangles (array of 3)
+					+ ShipBuilder
+					+ Use it instead of other call: replace all calls to Edges::GetOppositeTriangle
+						+ And cleanup edge element indices if we don't need them
+							+ We need them to get opposite edge - store alsi this in OppositeTriangles
+				+ Edges->Springs
+					+ And put in Physics namespace
+				+ Vertices->Points
+					+ And put in Physics namespace
+				+ Fuse StructuralMaterial/Database into FS
+					+ Rename both to FS: Materials and MaterialDatabase
+					+ Split current StructuralMaterial into:
+						+ StructuralMaterial
+						+ NpcMaterial
+							+ Enum with all materials, as we'll be picking them in code based on NpcType
+						+ MaterialDatabase:
+							+ Loads two jsons (materials_structural.json and materials_npc.json)
+								- Split current json
+							+ MaterialDatabase: expose getters for both
+								+ The getters for StructuralMaterial will stay private to BaryLab
+								+ The getters for NpcMaterial will be copied to FS 
+						+ NPCs takes DB
+				+ "EventDispatcher" -> "GameEventDispatcher"
+				- All "BLab" -> "Game"			
 			- Rearc source files in NpcSimulation folder
 				! No namespace: some types are in GameTypes anyway...
+				! Not VS GUI
 				- Npcs, Npcs_*, NpcParticles
 
-			- Copy NpcParticles' "reservation" system from FS
-				- Actually, see if FS is a superset of BL
+			- Merge NpcParticles: FS + BL => BL
+				- Copy NpcParticles' "reservation" system from FS
+				- See anything else in FS that is not in BL
 
-			- Copy NPCs container from FS (main + index, ships, etc.)
+			- Merge Npcs: FS + BL => BL 
+				! NPCs container from FS (main + index, ship &, etc.)
+				- Consequences:
+					- Npcs::Update does not take Ship anymore
+
+		- Prepare for optimizations
+			- New compiler symbol: BARYLAB_DEBUG (replaces IN_BARYLAB at LogNpcDebug)
+				- Set only on BaryLab, only in Debug CMake build type
+				- Use around various publishing code
+			- Add PerfStats
+				- NpcSimulation time (take namnig from FS)
+				- Display
+			- Add TODO:mechanism for TODO quantity of human NPCs
+			- Final measurement: TODO us for TODO NPCs
 
 
 		- Placement:
@@ -671,6 +706,21 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 				- Init dir=1.0/0.0 (front/-)
 				- Arms & legs: flipping between 1/4 PI to 3/4 PI with both time and distance
 					- Offset between arms and legs is random
+
+		- Video
+
+		- Integration into FS - 2
+			! Goal: be able to copy folder of files seamlessly across FS and BL
+			- Triangles: add BL features
+				- Barycentric math (replace FS')
+				- SurfaceType
+				- OppositeTriangle
+				- etc?
+			- Move Npc simulation files under NpcSimulation folder
+				- Not VS GUI
+			- TODOHERE: not copy but port, as we've probably fused! -- WAS: Copy Npc material source files (NpcMaterial and NpcMaterialDatabase)
+				- Then load NPC DB @ GameController, & store it as a member together with the other
+			- TODOHERE
 
 		- Remaining state machines:
 			- See above for "Impact" responses at the various states 
@@ -705,6 +755,8 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 			- Walking: arms aperture depends on walking speed (when not in panic mode)
 			- Aerial: upon impact, rotate face direction by one
 				- If looks good, use somehow also at swimming
+			- Transition between Free_InWater and Free_Swimming should be smoother
+				- NPC starts swimming too quickly
 			- Swimming: 
 				- 1. Small "Period3" pause
 				- 2. Overlapping periods: Arms (1 up, 2 down, 3 pause), Legs (4 up, 5 down, 6 pause)
