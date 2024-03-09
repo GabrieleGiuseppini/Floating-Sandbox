@@ -666,24 +666,47 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 								+ The getters for NpcMaterial will be copied to FS 
 						+ NPCs takes DB
 				+ "EventDispatcher" -> "GameEventDispatcher"
-				- All "BLab" -> "Game"			
-			- Rearc source files in NpcSimulation folder
+				+ All "BLab" -> "Game"	
+				+ LabParameters
+			+ Rearc source files in NpcSimulation folder
 				! No namespace: some types are in GameTypes anyway...
 				! Not VS GUI
-				- Npcs, Npcs_*, NpcParticles
+				+ Npcs, Npcs_*, NpcParticles
 
-			- Merge NpcParticles: FS + BL => BL
-				- Copy NpcParticles' "reservation" system from FS
-				- See anything else in FS that is not in BL
+			+ Move what used to be GameCore files to GameCore lib
+				+ Then rearc all #include's for dual "section"
 
-			- Merge Npcs: FS + BL => BL 
-				! NPCs container from FS (main + index, ship &, etc.)
-				- Consequences:
-					- Npcs::Update does not take Ship anymore
+			+ Merge NpcParticles: FS + BL => BL
+				+ Copy NpcParticles' "reservation" system from FS
+					+ Integrate into Npcs::Add(...)
+				+ See anything else in FS that is not in BL
+				+ Finalize NpcParticles:
+					+ Getter for # of free particles remaining (replaces current getter for # of particles)
+
+			- ~Merge Npcs: FS + BL => BL
+				- Kind hierarchy (@GameType):
+					- NpcKind (Furniture, Human)
+					- HumanNpcKind, FurnitureNpcKind
+						- Reflected into union of state structs in Npc::StateType
+						- Independent from NpcMaterial::KindType
+				- ~NPCs container from FS (main + index, ship &, etc.)
+					- Use cases:
+						- 1. Reaching all NPCs of a specific ship (e.g. because of ship-wide interactions, such as electrical tool, alarm, deleting ship, etc.)
+						- 2. Allow an NPC to move ships (e.g. the one "being placed")
+						- 3. Reaching an NPC by its ID
+						- TODO: document all of the above in code
+					- Design:
+						- Single vector of (opt) StateType - null'ed when removed
+						- NpcId is shipless, and an index in the above
+						- Separate vector (shipID-indexed) of vectors (indices in single vector of StateType)
+							- Contains ShipMesh at head
+						- When an NPC is moved to a different ship, its ShipId member is changed
+					- Consequences:
+						- Npcs::Update does not take Ship anymore
 
 		- Prepare for optimizations
-			- New compiler symbol: BARYLAB_DEBUG (replaces IN_BARYLAB at LogNpcDebug)
-				- Set only on BaryLab, only in Debug CMake build type
+			= New compiler symbol: BARYLAB_DEBUG (replaces IN_BARYLAB at LogNpcDebug)
+				+ Set only on BaryLab, only in Debug CMake build type
 				- Use around various publishing code
 			- Add PerfStats
 				- NpcSimulation time (take namnig from FS)
@@ -696,6 +719,8 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 			- Add "BeingPlaced" to regime
 			- Copy placement from FS (Add, Move, Remove)
 				- Tools & methods on Npcs (& LabController)
+					- Possibly new: TryAddBegin() returns true/false depending on whether Npcs::CanAddNewNpc(Kind) returns true/false, which in turn
+					  depends on # of NPCs and # of free NpcParticles
 				- Add
 				- Move
 				- Remove

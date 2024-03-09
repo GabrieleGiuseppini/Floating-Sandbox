@@ -11,6 +11,7 @@
 #include <GameCore/Buffer.h>
 #include <GameCore/ElementContainer.h>
 #include <GameCore/GameTypes.h>
+#include <GameCore/SysSpecifics.h>
 #include <GameCore/Vectors.h>
 
 #include <cassert>
@@ -161,7 +162,7 @@ private:
 
     // Convenience counter
     ElementCount mParticleInUseCount;
-    
+
     // The index at which to start searching for free particles
     // (just an optimization over restarting from zero each time)
     ElementIndex mFreeParticleSearchStartIndex;

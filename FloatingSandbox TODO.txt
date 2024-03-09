@@ -21,8 +21,6 @@
 
 	- See issue with copy'n'paste of electrical materials losing instance ID
 
-	- Fix "2022" copyright notices
-
 	- Render glowing particles after burning
 		- Ship points rendering: temperature should be enough; swap rot with temperature?
 			- Do we still see browned particles?
