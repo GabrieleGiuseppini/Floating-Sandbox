@@ -636,7 +636,7 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 
 		+ Floor @ triangles
 
-		= Code rearcs & integration - 1 (BL only):
+		+ Code rearcs & integration - 1 (BL only):
 			! Goal: be able to copy folder of files seamlessly across FS and BL
 			+ LogMessage/LogDebug -> LogNpcDebug (w/local #ifdef)
 			+ Make Barylab branch
@@ -683,26 +683,185 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 				+ Finalize NpcParticles:
 					+ Getter for # of free particles remaining (replaces current getter for # of particles)
 
-			- ~Merge Npcs: FS + BL => BL
-				- Kind hierarchy (@GameType):
-					- NpcKind (Furniture, Human)
-					- HumanNpcKind, FurnitureNpcKind
-						- Reflected into union of state structs in Npc::StateType
-						- Independent from NpcMaterial::KindType
-				- ~NPCs container from FS (main + index, ship &, etc.)
-					- Use cases:
-						- 1. Reaching all NPCs of a specific ship (e.g. because of ship-wide interactions, such as electrical tool, alarm, deleting ship, etc.)
-						- 2. Allow an NPC to move ships (e.g. the one "being placed")
-						- 3. Reaching an NPC by its ID
-						- TODO: document all of the above in code
-					- Design:
-						- Single vector of (opt) StateType - null'ed when removed
-						- NpcId is shipless, and an index in the above
-						- Separate vector (shipID-indexed) of vectors (indices in single vector of StateType)
-							- Contains ShipMesh at head
-						- When an NPC is moved to a different ship, its ShipId member is changed
-					- Consequences:
-						- Npcs::Update does not take Ship anymore
+			+ ~Merge Npcs: FS + BL => BL
+				+ Kind hierarchy (@GameType):
+					+ NpcKind (Furniture, Human)
+					+ HumanNpcKind, FurnitureNpcKind
+						+ Reflected into union of state structs in Npc::StateType
+						! Independent from NpcMaterial::KindType
+				+ NPCs container from FS (main + index, ship &, etc.)
+					! Use cases:
+						! 1. Reaching all NPCs of a specific ship (e.g. because of ship-wide interactions, such as electrical tool, alarm, deleting ship, etc.)
+						! 2. Allow an NPC to move ships (e.g. the one "being placed")
+						! 3. Reaching an NPC by its ID
+					+ Design:
+						+ Single vector of (opt) StateType - null'ed when removed
+							+ Stable index
+						+ NpcId is shipless, and an index in the above
+						+ Separate vector (shipID-indexed) of opt containing vectors (indices in single vector of StateType)
+							+ Also contains ShipMesh at head
+						! When an NPC is moved to a different ship, its ShipId member is changed, and the ShipID "index" is updated
+						+ void OnShipAdded(Ship const & ship) (from FS)
+						+ void OnShipRemoved(ShipId shipId) (from FS)
+					+ Decisions:
+						+ Physical rendering: it is only in Barylab mode
+						+ Rendering:
+							+ Move NpcRenderingMode into RenderContext
+							+ Probe from NPCs in BaryLab mode for Physical mode
+							+ Else, upload NpcQuads (Limbs->Quads)
+								- But in BaryLab's RenderContext, if Limbs vs Texture, use Limbs shader instead of Texture shader
+
+					+ TODOs:
+						+ Npcs::Update does not take Ship anymore
+						+ Finish changing code for new container
+						+ "Materialization" of NPC state, at:
+							+ MoveParticleBy
+							+ OnPointMoved
+						+ "Initialization" of human, at:
+							+ "Materialization" of NPC state
+						+ "TODO's" in code:
+							+ Npcs.h: possibly superfluous methods
+							+ Publishing of behavior change at human initialization
+								+ Need CurrentlySelectedNpcId, opt
+									+ Auto-select from LabController at BeginPlacement, and reset at Abort
+
+
+		= Placement:
+			! Spec:
+				! Add: Click @ pos (w/eventual error if no room for new NPCs) -> Move -> Abort|Confirm
+				- Move: Hover around (w/highlight) -> Click (picking last hovered) -> Move -> Finish
+				- Remove: Hover around (w/highlight) -> Click (picking last hovered) && immediately removed
+
+			+ Prep work:
+				+ LabController start: no NPC
+				+ OnShipAdded: called with Ship (we need this so that Npcs has all ships)
+
+			= API:
+				+ opt<PickedObjectId<NpcId>> BeginPlaceNewHumanNpc(HumanKind, pos)
+					+ Returns nullopt if there's no room anymore for humans
+					+ Creates NPC at topmost ship in "BeingPlaced mode"
+					+ Redo materialization using FindTopmostTriangle
+				+ opt<PickedObjectId<NpcId>> ProbeNpcAt(pos)
+					+ Returns nullopt if no NPC at position
+					+ Resuscitate FindTopmostContainingTriangle
+						+ Need to have PlaneId at Points
+				- void BeginMoveNpc(NpcId)
+					- Move to topmost ship - via TransferNpcToShip(..., see below)
+					- Set to BeingPlaced X 2
+					- Maintain stats & publish
+				+ void MoveNpcTo(NpcId id, vec2f const & position, vec2f const & offset)
+					+ Remember to calculate velocity(-ies) for particle
+				+ void EndMoveNpc(NpcId)
+					+ Ship finding:
+						+ ResetNpcStateToWorld is responsible for finding ship
+							+ Doesn't take ship anymore
+							+ Callers don't need per-ship loop
+					+ Update stats
+						+ See OnNewNpc vs what we would be doing here
+				+ void CompleteNewNpc(NpcId id)
+					+ Call EndMoveNpc
+				- void RemoveNpc(NpcId)
+					- Remember for LabController to ask Npcs to DeselectNpc() if it's that one
+					- Update stats
+				- void AbortNewNpc(NpcId id)
+					- Call RemoveNpc
+				+ void HighlightNpc(NpcId, HighlightType)
+					+ Rendering
+
+			+ "Upload" -> "RenderUpload"
+
+			- PlaneId rearc
+				- Go back to Ship instead of ShipMesh, so we have GetHighestPlaneId
+					- Copy method name from FS
+				- @ creation/begin move: topmost ship ID and its highest plane ID
+					- PlaneId *not* taken care of by TransferNpc()
+				- @ end move: triangle's ship ID and plane ID, or topmost ship ID and its highest plane ID
+
+			= Tools:
+				+ NewNpc: polymorphic hierarchy, Human and Furniture which just differ in tiny protected method for starting					
+					+ Better error cursor
+				- MoveNpc
+					- States:
+						- Hovering
+							- CandidateNpc: as long as set, it's highlighted
+						- Moving
+							- PickedObject
+					- Deinitialize: un-highlight
+				- RemoveNpc
+
+			- Follow-up NPC work:
+				+ @BeginPlacement: regime is BeingPlaced
+				+ Physics update: if regime==BeingPlaced: no physics steps if Human && Secondary, or !Human
+					! MoveTo calculates velocity(-ies) though
+				+ New "BeingPlaced" BehaviorType for humans
+					+ Implicitly matches flag for secondary
+				+ No stats update at begin placement & at abort
+					+ Based on regime
+				- @ NPC materialization: when we decide ship, make sure we move the NPC to it
+					- ResetNpcStateToWorld() - the one that finds ship - calls TransferNpcToShip(npc &, from, to)
+					- TransferNpcToShip(npc &, from, to)
+						- Sets ship ID in NPC
+						- Maintains indices of ships
+						! Does *not* worry about plane ID
+
+
+				- Stats: remove NpcCount from stats; just do Inside/OutsideShips
+					- Remove now superflous calls to PublishStats
+					- Update the below
+				- Stats update at confirm placement & at removal
+					+ BeginPlaceNewHumanNpc
+					- BeginMoveNpc
+					+ EndMoveNpc
+					+ CompleteNewNpc
+					- RemoveNpc
+					- Abort
+					- AbortNewNpc
+				- Stats update at constrained<->free
+					- @ TransitionHumanToFree
+						! Only invoked from Constrained
+					- @ TransitionHumanToConstrained (new)
+						- Invoke from all Free->Constrained transitions, which are: TODO
+							- ? Particle becoming constrained at UpdateNpcs?
+				= Avoid publishing stats for each NPC at ShipDestroy
+					= Nuke UpdateStatsOnXXX(); skeleton implemented as needed:
+						- Update Free/Constrained count
+						- Update count
+						- Publish
+
+
+				+ Animation @ BeingPlaced:
+					+ Init dir=1.0/0.0 (front/-)
+					+ Arms & legs: flipping between 1/4 PI to 3/4 PI with both time and distance
+						+ Offset between arms and legs is random
+
+		- PanicLevel rearc
+			- Multiple vals, both global and local, and step @ Update to make one
+
+		- Merge back into master
+
+		- Stop "hanging head" issue
+			- Happens when we allow head (sec) to be contrained while feet (pri) are not
+			- Should actually only allow the opposite: whole NPC is constrained if at least feet (pri) are not
+
+		- Other animation improvements:
+			- See if we can change NPC's first state after placement from KO'd to Aerial
+			- Aerial: <TODOHERE>
+			- Walking: arms aperture depends on walking speed (when not in panic mode)
+			- Aerial: upon impact, rotate face direction by one
+				- If looks good, use somehow also at swimming
+			- Transition between Free_InWater and Free_Swimming should be smoother
+				- NPC starts swimming too quickly
+			- Swimming: 
+				- 1. Small "Period3" pause
+				- 2. Overlapping periods: Arms (1 up, 2 down, 3 pause), Legs (4 up, 5 down, 6 pause)
+			- Try crotch offset updated while walking
+				- New DipoleProperties member - "DipoleLengthMultiplier"
+				- Use at SpringForces
+				- Updated at walk update - and reset upon transitions out of Walking
+					- @BehaviorUpdate: based on leg angle
+				- See if really worth it
+
+		- Video
 
 		- Prepare for optimizations
 			= New compiler symbol: BARYLAB_DEBUG (replaces IN_BARYLAB at LogNpcDebug)
@@ -713,26 +872,6 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 				- Display
 			- Add TODO:mechanism for TODO quantity of human NPCs
 			- Final measurement: TODO us for TODO NPCs
-
-
-		- Placement:
-			- Add "BeingPlaced" to regime
-			- Copy placement from FS (Add, Move, Remove)
-				- Tools & methods on Npcs (& LabController)
-					- Possibly new: TryAddBegin() returns true/false depending on whether Npcs::CanAddNewNpc(Kind) returns true/false, which in turn
-					  depends on # of NPCs and # of free NpcParticles
-				- Add
-				- Move
-				- Remove
-			- New "BeingPlaced" BehaviorType for humans
-				- Matches -regime- TODO (which is leading)
-					- Same transitions
-			- Animation:
-				- Init dir=1.0/0.0 (front/-)
-				- Arms & legs: flipping between 1/4 PI to 3/4 PI with both time and distance
-					- Offset between arms and legs is random
-
-		- Video
 
 		- Integration into FS - 2
 			! Goal: be able to copy folder of files seamlessly across FS and BL
@@ -776,22 +915,6 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 			- HumanState::Height member init'd with gaussian - see real distribution params
 			- Replace all accesses to params::HumanLength with this member
 
-		- Other animation improvements:
-			- Walking: arms aperture depends on walking speed (when not in panic mode)
-			- Aerial: upon impact, rotate face direction by one
-				- If looks good, use somehow also at swimming
-			- Transition between Free_InWater and Free_Swimming should be smoother
-				- NPC starts swimming too quickly
-			- Swimming: 
-				- 1. Small "Period3" pause
-				- 2. Overlapping periods: Arms (1 up, 2 down, 3 pause), Legs (4 up, 5 down, 6 pause)
-			- Try crotch offset updated while walking
-				- New DipoleProperties member - "DipoleLengthMultiplier"
-				- Use at SpringForces
-				- Updated at walk update - and reset upon transitions out of Walking
-					- @BehaviorUpdate: based on leg angle
-				- See if really worth it
-
 		= Add velocity damp
 			= And slider
 			- Test
@@ -812,16 +935,19 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 			- Floor info is on Triangle, not on Spring
 
 - Rendering:
-	- Atlas textures are aligned with NpcType, e.g.:
-		- NpcType:
+	- Atlas textures are aligned with HumanNpcKindType and FurnitureNpcKindType, e.g.:
+		- HumanNpcKindType:
 			- Passenger = 1
 			- Captain = 4
 			- Officer = 7
-		- Adding 0, 1, and 2 gives front, left, and right
+		- FurnitureNpcKindType:
+			- Table = 8
+			- Chair = 9
+		- For humans: adding 0, 1, and 2 gives front, back, and side
 	- NPCs will have two sets of vertex attributes:
-		- Static ones: contain static properties (colors, texture coords)
-			- Only reloaded at e.g. NPC insertion/removal, or when face direction of at least one NPC changes
-				- Face direction changes done via helper that marks "face direction dirty" via a single Npcs-wide boolean
+		- Static ones: contain static properties (colors - incl, highlight, texture coords)
+			- Only reloaded at e.g. NPC insertion/removal, or when face direction of at least one NPC changes, or when highlight of at least one NPC changes
+				- Face direction changes done via helper, which also marks "static render attributes dirty" (a single Npcs-wide boolean)
 		- Dynamics ones: contain things that change at each frame (world vertices, )
 	- Use indices for quad vertices
 		- Good use case to experiment with the "quad single index buffer" feature
@@ -831,11 +957,18 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 - Physical Interactions:
 	- Lights: second pass of lighting algorith with all NPC particles, for each ship
 		- Adding to NPC particles' _light_ buffer
+	- Fire:
+		- When <TODO> vertices of triangle are on fire, NPC catches fire as well
+			- Rendering: Ship asks Npcs (via World) at RenderUpload time, so that flames are in same buffer
+				- Need count and Npcs::RenderUploadFlames(...), both by Ship
 	- Wind: all ships, only in free regime
 	- Ship-specific explosions: only of that ship, or free regime
 	- Swirl, etc.: all ships, all regimes
 	- Move tool:
 		- While MoveAll may be used to move everything, Move (component) only moves mesh, thus subjecting NPCs to apparent forces!
+	- Electric spark:
+		- Electrification must be stored with Points
+		- NPC update looks at own triangle's Points
 
 - Floorplan layer:
 	- A specific "FloorPlan" layer provides a bitmask indicating particles' (and thus, springs') floorness

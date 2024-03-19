@@ -299,16 +299,14 @@ namespace std {
 template<typename TObjectId>
 struct PickedObjectId
 {
-    using ObjectId = TObjectId;
-
     PickedObjectId(
-        ObjectId objectId,
+        TObjectId objectId,
         vec2f const & worldOffset)
         : mObjectId(objectId)
         , mWorldOffset(worldOffset)
     {}
 
-    inline ObjectId GetObjectId() const noexcept
+    inline TObjectId GetObjectId() const noexcept
     {
         return mObjectId;
     };
@@ -320,7 +318,7 @@ struct PickedObjectId
 
 private:
 
-    ObjectId mObjectId;
+    TObjectId mObjectId;
     vec2f mWorldOffset;
 };
 
