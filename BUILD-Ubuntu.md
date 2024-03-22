@@ -1,4 +1,4 @@
-These are instructions on how to build Floating Sandbox on a *clean* Ubuntu 18.04. These instructions were written at the time of Floating Sandbox 1.16.4, and tested on a completely clean VM. Note that I'm writing this mostly for myself, as I'm a Linux newbie (I'm a hardcore Windows developer), so forgive the verbosity.
+These are instructions on how to build Floating Sandbox on a *clean* Ubuntu 20.04. These instructions were written at the time of Floating Sandbox 1.19.0, and tested on a completely clean VM. Note that I'm writing this mostly for myself, as I'm a Linux newbie (I'm a hardcore Windows developer), so forgive the verbosity.
 
 # Installing Prerequisite Tooling and SDKs
 
@@ -26,7 +26,7 @@ If the `cmake` package for your Ubuntu version is later than or equal 3.12, just
 ```
 sudo apt install cmake
 ```
-Otherwise, if - like me - you're running an older Ubuntu whose `cmake` package is earlier than 3.12 (Ubuntu 18.04 comes with cmake 3.10), then follow these instructions.
+Otherwise, if you're running an older Ubuntu whose `cmake` package is earlier than 3.12 (Ubuntu 18.04 comes with cmake 3.10 for example), then follow these instructions.
 
 First of all, go to https://cmake.org/download/ and download the latest `Unix/Linux Source` tar package - at the time of writing, that would be `cmake-3.20.2.tar.gz`.
 Unpack the tar, go into its output directory, and build and install it as follows:
@@ -158,7 +158,7 @@ Configured wxWidgets 3.1.4 for `x86_64-pc-linux-gnu'
                                        wxWidgets 3.0      yes
   Which libraries should wxWidgets use?
                                        STL                no
-                                       jpeg               no
+                                       jpeg               sys
                                        png                sys
                                        regex              builtin
                                        tiff               no
