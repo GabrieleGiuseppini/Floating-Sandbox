@@ -125,12 +125,6 @@ endif()
 
 message(STATUS "SFML_ROOT:" ${SFML_ROOT})
 
-if(FS_USE_STATIC_LIBS)
-	if(NOT WIN32) # No real reason, other than I'm slightly nervous to embed SFML code in FloatingSandbox.exe		
-		set(SFML_STATIC_LIBRARIES TRUE)
-	endif()
-endif()
-
 find_package(SFML 2.5 COMPONENTS system audio REQUIRED)
 
 if(WIN32)
