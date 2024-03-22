@@ -856,8 +856,12 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 					+ Arms & legs: flipping between 1/4 PI to 3/4 PI with both time and distance
 						+ Offset between arms and legs is random
 
-		- PanicLevel rearc
-			- Multiple vals, both global and local, and step @ Update to make one
+		+ PanicLevel rearc
+			+ Multiple vals
+			+ HumanBehavior update: @ end:
+				+ Calc resultant
+				+ Decay others
+			+ Use resultant where needed
 
 		- Merge back into master
 
