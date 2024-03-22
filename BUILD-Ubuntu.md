@@ -78,6 +78,11 @@ sudo apt install libpng-dev
 ```
 sudo apt install libjpeg-dev
 ```
+### SFML SDK
+SFML is a multi-media library. Floating Sandbox uses it mostly for sound support. We're going to need version 2.5.
+```
+sudo apt install libsfml-dev
+```
 # Preparing Prerequisite Libraries
 Here we clone and build the libraries required by Floating Sandbox. Some notes:
 * In these instructions we'll be cloning all library sources under `~/git`; change as you like
@@ -120,30 +125,6 @@ After the build is complete and installed, you should see the following under yo
 ```
 drwxrwxr-x 3 gg gg 4096 mei 22 17:52 include/
 drwxrwxr-x 3 gg gg 4096 mei 22 17:52 lib/
-```
-## SFML 2.5.1
-SFML is a multi-media library. Floating Sandbox uses it mostly for sound support.
-### Cloning
-```
-cd ~/git
-git clone https://github.com/SFML/SFML.git
-cd SFML
-git checkout 2.5.1
-```
-### Building
-We're gonna build SFML in a folder named `build` under its checkout root.
-```
-cd ~/git/SFML
-mkdir build
-cd build
-cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=FALSE -DSFML_BUILD_WINDOW=FALSE -DSFML_BUILD_GRAPHICS=FALSE -DSFML_BUILD_DOC=FALSE -DSFML_BUILD_EXAMPLES=FALSE -DCMAKE_INSTALL_PREFIX=~/fs_libs/SFML ..
-make install
-```
-After the build is complete and installed, you should see the following under your new `~/fs_libs/SFML` directory:
-```
-drwxr-xr-x 3 gg gg 4096 mei 22 18:39 include/
-drwxrwxr-x 4 gg gg 4096 mei 22 18:39 lib/
-drwxrwxr-x 3 gg gg 4096 mei 22 18:39 share/
 ```
 ## WxWidgets 3.1.4
 Finally, we're gonna build _wxWidgets_, a cross-platform library for windowing and user interfaces. Floating Sandbox uses wxWidgets for the "administrative" UI of the simulator, such as the menu bars and the various dialogs for settings and preferences.
