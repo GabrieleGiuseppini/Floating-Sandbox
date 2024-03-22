@@ -726,7 +726,7 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 									+ Auto-select from LabController at BeginPlacement, and reset at Abort
 
 
-		= Placement:
+		+ Placement:
 			! Spec:
 				! Add: Click @ pos (w/eventual error if no room for new NPCs) -> Move -> Abort|Confirm
 				- Move: Hover around (w/highlight) -> Click (picking last hovered) -> Move -> Finish
@@ -736,7 +736,7 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 				+ LabController start: no NPC
 				+ OnShipAdded: called with Ship (we need this so that Npcs has all ships)
 
-			= API:
+			+ API:
 				+ opt<PickedObjectId<NpcId>> BeginPlaceNewHumanNpc(HumanKind, pos)
 					+ Returns nullopt if there's no room anymore for humans
 					+ Creates NPC at topmost ship in "BeingPlaced mode"
@@ -745,10 +745,10 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 					+ Returns nullopt if no NPC at position
 					+ Resuscitate FindTopmostContainingTriangle
 						+ Need to have PlaneId at Points
-				- void BeginMoveNpc(NpcId)
-					- Move to topmost ship - via TransferNpcToShip(..., see below)
-					- Set to BeingPlaced X 2
-					- Maintain stats & publish
+				+ void BeginMoveNpc(NpcId)
+					+ Move to topmost ship - via TransferNpcToShip(..., see below)
+					+ Set to BeingPlaced X 2
+					+ Maintain stats & publish
 				+ void MoveNpcTo(NpcId id, vec2f const & position, vec2f const & offset)
 					+ Remember to calculate velocity(-ies) for particle
 				+ void EndMoveNpc(NpcId)
@@ -760,36 +760,49 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 						+ See OnNewNpc vs what we would be doing here
 				+ void CompleteNewNpc(NpcId id)
 					+ Call EndMoveNpc
-				- void RemoveNpc(NpcId)
-					- Remember for LabController to ask Npcs to DeselectNpc() if it's that one
-					- Update stats
-				- void AbortNewNpc(NpcId id)
-					- Call RemoveNpc
+				+ void RemoveNpc(NpcId)
+					+Update ship indices
+					+ Update stats
+						+ Regime, w/publish
+						+ Count
+					+ Remember for LabController to ask Npcs to DeselectNpc() if it's that one
+				+ void AbortNewNpc(NpcId id)
+					+ Call RemoveNpc
+					X Test with MainFrame key changing tool
 				+ void HighlightNpc(NpcId, HighlightType)
 					+ Rendering
 
 			+ "Upload" -> "RenderUpload"
 
-			- PlaneId rearc
-				- Go back to Ship instead of ShipMesh, so we have GetHighestPlaneId
-					- Copy method name from FS
-				- @ creation/begin move: topmost ship ID and its highest plane ID
-					- PlaneId *not* taken care of by TransferNpc()
-				- @ end move: triangle's ship ID and plane ID, or topmost ship ID and its highest plane ID
+			+ PlaneId rearc
+				+ Go back to Ship instead of ShipMesh, so we have GetHighestPlaneId
+					+ Copy method name from FS
+				+ StateType:
+					- opt<PlaneId>, not set for topmost
+				+ Do TransferNpc()
+				+ @ ResetNpcStateToWorld: (primary's) triangle's (ship ID and) plane ID, or (topmost ship ID and) its highest plane ID
+				+ @ creation/begin move: topmost ship ID and its highest plane ID
+					+ PlaneId *not* taken care of by TransferNpc()
+				+ @ end move: triangle's ship ID and plane ID, or topmost ship ID and its highest plane ID
+					+ Taken care of by ResetNpcStateToWorld
+				+ Upload PlaneId @ Render
+					+ Pick topmost if nullopt
+					+ Though our RenderContext doesn't use it
 
-			= Tools:
+			+ Tools:
 				+ NewNpc: polymorphic hierarchy, Human and Furniture which just differ in tiny protected method for starting					
 					+ Better error cursor
-				- MoveNpc
-					- States:
-						- Hovering
-							- CandidateNpc: as long as set, it's highlighted
-						- Moving
-							- PickedObject
-					- Deinitialize: un-highlight
-				- RemoveNpc
+				+ MoveNpc
+					+ States:
+						+ Hovering
+							+ CandidateNpc: as long as set, it's highlighted
+						+ Moving
+							+ PickedObject
+					+ Deinitialize: un-highlight
+					+ Fix: mouse move after npc picked does not update offset
+				+ RemoveNpc
 
-			- Follow-up NPC work:
+			+ Follow-up NPC work:
 				+ @BeginPlacement: regime is BeingPlaced
 				+ Physics update: if regime==BeingPlaced: no physics steps if Human && Secondary, or !Human
 					! MoveTo calculates velocity(-ies) though
@@ -797,36 +810,45 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 					+ Implicitly matches flag for secondary
 				+ No stats update at begin placement & at abort
 					+ Based on regime
-				- @ NPC materialization: when we decide ship, make sure we move the NPC to it
-					- ResetNpcStateToWorld() - the one that finds ship - calls TransferNpcToShip(npc &, from, to)
-					- TransferNpcToShip(npc &, from, to)
-						- Sets ship ID in NPC
-						- Maintains indices of ships
+				+ @ NPC materialization: when we decide ship, make sure we move the NPC to it
+					+ ResetNpcStateToWorld() - the one that finds ship - calls TransferNpcToShip(npc &, from, to)
+					+ TransferNpcToShip(npc &, from, to)
+						+ Sets ship ID in NPC
+						+ Maintains indices of ships
 						! Does *not* worry about plane ID
 
+				+ Stats rearc:
+					+ First off, display stats @ panel
+					+ Stats: remove NpcCount from stats; just do Inside/OutsideShips *but only for humans*
+						+ Go through the following, updating stats and removing now superflous calls to PublishStats:
+							+ All calls to PublishNpcStats
+							+ BeginPlaceNewHumanNpc
+								+ Just ++npccount
+							+ BeginMoveNpc
+								+ Stats update iff human & starting from those regimes
+							+ EndMoveNpc
+								+ Assert old regime
+								+ Stats update iff human & falling in those regimes
+							+ CompleteNewNpc
+								+ Assert old regime
+								+ Stats update iff human & falling in those regimes
+							+ RemoveNpc
+								+ Stats update iff human & starting from those regimes
+							X AbortNewNpc
+							+ Ship removal
+								+ Stats update iff human & starting from those regimes
+								+ Publish once
 
-				- Stats: remove NpcCount from stats; just do Inside/OutsideShips
-					- Remove now superflous calls to PublishStats
-					- Update the below
-				- Stats update at confirm placement & at removal
-					+ BeginPlaceNewHumanNpc
-					- BeginMoveNpc
-					+ EndMoveNpc
-					+ CompleteNewNpc
-					- RemoveNpc
-					- Abort
-					- AbortNewNpc
-				- Stats update at constrained<->free
-					- @ TransitionHumanToFree
-						! Only invoked from Constrained
-					- @ TransitionHumanToConstrained (new)
-						- Invoke from all Free->Constrained transitions, which are: TODO
-							- ? Particle becoming constrained at UpdateNpcs?
-				= Avoid publishing stats for each NPC at ShipDestroy
-					= Nuke UpdateStatsOnXXX(); skeleton implemented as needed:
-						- Update Free/Constrained count
-						- Update count
-						- Publish
+					+ Stats update at constrained<->free
+						+ OnMayBeNpcRegimeChanged(old_regime, npc)
+							+ Invoked each time after ResetToWorldState, even when we know old is BeingPlaced
+						+ TransitionParticleToConstrained/Free(...)
+							+ Which does it, then recalcs regime and invokes the above
+					+ Avoid publishing stats for each NPC at ShipDestroy
+						+ Nuke UpdateStatsOnXXX(); skeleton implemented as needed:
+							! Update Free/Constrained count
+							! Update count
+							! Publish
 
 
 				+ Animation @ BeingPlaced:
@@ -841,11 +863,14 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 
 		- Stop "hanging head" issue
 			- Happens when we allow head (sec) to be contrained while feet (pri) are not
-			- Should actually only allow the opposite: whole NPC is constrained if at least feet (pri) are not
+			- Should actually only allow the opposite: whole NPC is constrained if at least feet (pri) are; rules:
+				- Regime::Constrained: iff feet (pri) constrained
+				- Regime::Free: iff feet (pri) !constrained
 
 		- Other animation improvements:
 			- See if we can change NPC's first state after placement from KO'd to Aerial
-			- Aerial: <TODOHERE>
+			- Aerial: 
+				- Try 1: arms are always "up" in direction of head, but a bit less so when NPC is horizontal
 			- Walking: arms aperture depends on walking speed (when not in panic mode)
 			- Aerial: upon impact, rotate face direction by one
 				- If looks good, use somehow also at swimming
