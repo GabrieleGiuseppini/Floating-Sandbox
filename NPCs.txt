@@ -863,7 +863,7 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 				+ Decay others
 			+ Use resultant where needed
 
-		- Merge back into master
+		+ Merge back into master
 
 		- Stop "hanging head" issue
 			- Happens when we allow head (sec) to be contrained while feet (pri) are not
@@ -871,16 +871,34 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 				- Regime::Constrained: iff feet (pri) constrained
 				- Regime::Free: iff feet (pri) !constrained
 
-		- Other animation improvements:
-			- See if we can change NPC's first state after placement from KO'd to Aerial
-			- Aerial: 
-				- Try 1: arms are always "up" in direction of head, but a bit less so when NPC is horizontal
-			- Walking: arms aperture depends on walking speed (when not in panic mode)
-			- Aerial: upon impact, rotate face direction by one
-				- If looks good, use somehow also at swimming
-			- Transition between Free_InWater and Free_Swimming should be smoother
-				- NPC starts swimming too quickly
-			- Swimming: 
+		+ When moving head across floors, feet get stuck
+			+ Isn't it enough to make both particles free?
+
+		= Other animation improvements:
+			+ See if we can change NPC's first state after placement from KO'd to Aerial
+			+ Aerial: 
+				+ Try 1: arms are always "up" in direction of head, but a bit less so when NPC is horizontal
+				+ Transitions out:
+					+ If enough time (very short, 2-3 frames) constantly with:
+						+ a: foot on edge
+						X b: reasonably vertical
+						+ Then: go to rising
+					+ If enough time (quite short, > 7 frames) constantly with:
+						+ a: foot on edge
+						+ b: relvel "falling down" (away from vertical)
+						+ Then: go to falling
+			+ Aerial: arms are up too soon - make them go there slower
+			+ Falling->Aerial (i.e. when on the floor and bouncing up): faster
+			+ FIX: ending move makes arms start from scratch; need continuation of human state
+			+ Aerial: lower arms when foot on the floor
+			+ Walking: arms aperture depends on walking speed (when not in panic mode)
+			X Aerial: upon impact, rotate face direction by one
+				X If looks good, use somehow also at swimming
+			+ Transition between Free_InWater and Free_Swimming should be smoother
+				+ NPC starts swimming too quickly
+			- Walking: realize earlier than we're falling - but don't confuse with little bump
+			- Swimming:
+				- Rethink what we want
 				- 1. Small "Period3" pause
 				- 2. Overlapping periods: Arms (1 up, 2 down, 3 pause), Legs (4 up, 5 down, 6 pause)
 			- Try crotch offset updated while walking
@@ -897,9 +915,9 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 				+ Set only on BaryLab, only in Debug CMake build type
 				- Use around various publishing code
 			- Add PerfStats
-				- NpcSimulation time (take namnig from FS)
+				- NpcSimulation time (take naming from FS)
 				- Display
-			- Add TODO:mechanism for TODO quantity of human NPCs
+			- Add TODO:mechanism for injecting TODO quantity of human NPCs
 			- Final measurement: TODO us for TODO NPCs
 
 		- Integration into FS - 2
@@ -910,9 +928,8 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 				- OppositeTriangle
 				- etc?
 			- Move Npc simulation files under NpcSimulation folder
-				- Not VS GUI
-			- TODOHERE: not copy but port, as we've probably fused! -- WAS: Copy Npc material source files (NpcMaterial and NpcMaterialDatabase)
-				- Then load NPC DB @ GameController, & store it as a member together with the other
+				- Not VS GUI, that's "Physics"
+			- Port NpcMaterial.* and NpcMaterialDatabase.* into Materials.* and MaterialDatabase.*
 			- TODOHERE
 
 		- Remaining state machines:
