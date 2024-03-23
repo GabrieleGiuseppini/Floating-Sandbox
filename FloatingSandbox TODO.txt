@@ -11,6 +11,10 @@
 	- Fix all 2022 copyright years, and add g2-labs to:
 		- Credits
 
+	- @ next release:
+		- Update GameJolt to say Ubuntu 20.04
+		- Delete my Ubuntu 18 VM way after next release
+
 	- Doesn't say "PAUSED" anymore - REALLY?
 
 	- See if can use keys to pan along diagonals

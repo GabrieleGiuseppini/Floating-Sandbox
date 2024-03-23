@@ -896,23 +896,37 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 				X If looks good, use somehow also at swimming
 			+ Transition between Free_InWater and Free_Swimming should be smoother
 				+ NPC starts swimming too quickly
-			- Walking: 
+			= Walking: 
 				- Realize earlier than we're falling - but don't confuse with little bump
-					- Acceptable down V: -6.12
-					- Alternatively: move arms like Aerial iff not foot on edge while walking
-				- Fix: when very fast, we lose equilibrium too much because feet start fast and head not => StaticDisplacementAngleCW becomes large
-			- Swimming:
-				- Rethink what we want
-				- Initial pause whie gathering limbs
-
-				- 1. Small "Period3" pause
-				- 2. Overlapping periods: Arms (1 up, 2 down, 3 pause), Legs (4 up, 5 down, 6 pause)
+					! Acceptable down V: -6.12
+					- Can relax: if we're walking at normal speed, our tolerance to vert V could be very small					
+				+ Fix: when very fast, we lose equilibrium too much because feet start fast and head not => StaticDisplacementAngleCW becomes large
+					+ More tolerance
+				- Fix: when very fast and up a slope, we do little bump (which is OK) but then when we land we bounce and thus flip
+					- OnImpact(0.0341793, (-0.606217503548, -0.795298933983)); velocity=(-3.19136810303, 2.45355224609)
+			= Swimming:
+				+ Initial pause while gathering limbs
+				= Multiple styles:
+					! This one
+					= Trappelen (leg lengths) together with arms
+					- Trappelen (leg lengths) with one arm above
 			- Try crotch offset updated while walking
 				- New DipoleProperties member - "DipoleLengthMultiplier"
 				- Use at SpringForces
 				- Updated at walk update - and reset upon transitions out of Walking
 					- @BehaviorUpdate: based on leg angle
 				- See if really worth it
+			+ Fix: when in Free_Aerial and floating, it never goes to swimming
+
+		= HumanNpcLengthAdjustment
+			+ Use @ spring force calc'ns
+				+ At adjustment change detection: update all humans' DipoleLength's
+			+ SettingsDialog
+			+ Initial dipole state
+			- Fix: torque calculation currently hiddenly depends on dipole length; needs to become independent from it
+		- Randomize human height
+			- HumanState::Height member init'd with gaussian - see real distribution params
+			- Replace all accesses to GameParameters::HumanNpcGeometry::BodyLength with this member
 
 		- Video
 
@@ -936,7 +950,11 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 			- Move Npc simulation files under NpcSimulation folder
 				- Not VS GUI, that's "Physics"
 			- Port NpcMaterial.* and NpcMaterialDatabase.* into Materials.* and MaterialDatabase.*
+			- Port GameParameters settings that we need
 			- TODOHERE
+			- Settings:
+				- SettingsManager
+				- SettingsDialog
 
 		- Remaining state machines:
 			- See above for "Impact" responses at the various states 
@@ -958,14 +976,6 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 						+ Flip direction
 
 		- Allow more slope to undergo impact continuation if we're walking against it
-
-		- HumanNpcLengthAdjustment
-			- Use @ spring force calc'ns
-				- Pre-computed params?
-			- SettingsDialog
-		- Randomize human height
-			- HumanState::Height member init'd with gaussian - see real distribution params
-			- Replace all accesses to params::HumanLength with this member
 
 		= Add velocity damp
 			= And slider
