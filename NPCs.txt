@@ -896,9 +896,15 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 				X If looks good, use somehow also at swimming
 			+ Transition between Free_InWater and Free_Swimming should be smoother
 				+ NPC starts swimming too quickly
-			- Walking: realize earlier than we're falling - but don't confuse with little bump
+			- Walking: 
+				- Realize earlier than we're falling - but don't confuse with little bump
+					- Acceptable down V: -6.12
+					- Alternatively: move arms like Aerial iff not foot on edge while walking
+				- Fix: when very fast, we lose equilibrium too much because feet start fast and head not => StaticDisplacementAngleCW becomes large
 			- Swimming:
 				- Rethink what we want
+				- Initial pause whie gathering limbs
+
 				- 1. Small "Period3" pause
 				- 2. Overlapping periods: Arms (1 up, 2 down, 3 pause), Legs (4 up, 5 down, 6 pause)
 			- Try crotch offset updated while walking
