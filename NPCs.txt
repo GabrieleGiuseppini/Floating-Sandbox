@@ -166,7 +166,7 @@ Details
 					+ S particle:
 						+ On (at least one) floor edge (& in constrained state)
 						+ Zero relative velocity
-		= State:Rising
+		+ State:Rising
 			! Tries to stand up (applying torque)
 			+ Transitions out:
 				+ When whole NPC becomes free: transition to FreeKnockedOut
@@ -176,10 +176,10 @@ Details
 						+ Zero relative velocity
 				+ When MaintainAndCheckEquilibrium() returns false: transition to KnockedOut				
 				+ When line from S to P is aligned with GravityDir: transition to Equilibrium
-			- External out transitions:
-				- Impact: transition to KnockedOut
-					- UpdateStep() takes NpcState as well, and calls Npcs::OnHumanNpcImpact(NpcState, impact quantities) upon impact
-						- OnHumanNpcImpact: switches on state
+			+ External out transitions:
+				+ Impact: transition to KnockedOut
+					+ UpdateStep() takes NpcState as well, and calls Npcs::OnHumanNpcImpact(NpcState, impact quantities) upon impact
+						+ OnHumanNpcImpact: switches on state
 		+ MaintainAndCheckEquilibrium() -> bool:
 			+ Does torque calculation and reaches/maintains equilibrium, but also checks if conditions to stay in equlibrium  apply; stops equlibrium (and returns false) if:
 				+ HumanVector is outside of -alpha->alpha sector around vertical, with rotation velocity towards outside of sector
@@ -193,7 +193,7 @@ Details
 				+ Force can't be directional - or else it cancels gravity - not that it's important, but highlights un-soundness of approach
 					+ Go full rotational spring
 				+ See if can raise faster with less overshooting
-		= State:Equilibrium
+		+ State:Equilibrium
 			! Stands up; continues to adjust alignment with torque
 			+ Transitions out:
 				+ When whole NPC becomes free: transition to FreeKnockedOut
@@ -203,9 +203,9 @@ Details
 						+ Zero relative velocity
 				+ When MaintainAndCheckEquilibrium() returns false: transition to KnockedOut
 				+ When enough time has passed in this state: transition to Walking
-			- External out transitions:
-				- Impact: transition to KnockedOut
-		= State:Walking
+			+ External out transitions:
+				+ Impact: transition to KnockedOut
+		+ State:Walking
 			! Walks; continues to adjust alignment with torque
 			+ Transitions out:				
 				+ When whole NPC becomes free: transition to FreeKnockedOut
@@ -214,8 +214,8 @@ Details
 						+ On (at least one) floor edge (& in constrained state)
 						+ Zero relative velocity (excld. walking)
 				+ When MaintainAndCheckEquilibrium() returns false: transition to KnockedOut
-			- External out transitions:
-				- Impact: transition to KnockedOut
+			X External out transitions:
+				X Impact: transition to KnockedOut
 			+ Walking state machine:
 				+ Impart displacement
 					+ First, allow traj calculation to also pre-calculate final (absolute) velocity
@@ -904,12 +904,12 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 					+ More tolerance
 				- Fix: when very fast and up a slope, we do little bump (which is OK) but then when we land we bounce and thus flip
 					- OnImpact(0.0341793, (-0.606217503548, -0.795298933983)); velocity=(-3.19136810303, 2.45355224609)
-			= Swimming:
+			+ Swimming:
 				+ Initial pause while gathering limbs
-				= Multiple styles:
+				+ Multiple styles:
 					! This one
-					= Trappelen (leg lengths) together with arms
-					- Trappelen (leg lengths) with one arm above
+					+ Trappelen (leg lengths) together with arms
+					+ Trappelen (leg lengths) with one arm above
 			- Try crotch offset updated while walking
 				- New DipoleProperties member - "DipoleLengthMultiplier"
 				- Use at SpringForces
@@ -918,12 +918,13 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 				- See if really worth it
 			+ Fix: when in Free_Aerial and floating, it never goes to swimming
 
-		= HumanNpcLengthAdjustment
+		+ HumanNpcLengthAdjustment
 			+ Use @ spring force calc'ns
 				+ At adjustment change detection: update all humans' DipoleLength's
 			+ SettingsDialog
 			+ Initial dipole state
-			- Fix: torque calculation currently hiddenly depends on dipole length; needs to become independent from it
+			+ Fix: torque calculation currently hiddenly depends on dipole length; needs to become independent from it
+				+ Symptoms: small man always flips, small human never rises once KO'd
 		- Randomize human height
 			- HumanState::Height member init'd with gaussian - see real distribution params
 			- Replace all accesses to GameParameters::HumanNpcGeometry::BodyLength with this member
@@ -956,9 +957,9 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 				- SettingsManager
 				- SettingsDialog
 
-		- Remaining state machines:
-			- See above for "Impact" responses at the various states 
-				- There is remaining (=) work above for this!
+		+ Remaining state machines:
+			+ See above for "Impact" responses at the various states 
+				+ There is remaining (=) work above for this!
 			+ State::Free_Aerial: (was: FreeKnockedOut)
 				+ We transition here at UpdateBehavior, NOT at BecomingFree!
 				+ Becomes InWater if both points in water
