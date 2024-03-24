@@ -865,12 +865,6 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 
 		+ Merge back into master
 
-		- Stop "hanging head" issue
-			- Happens when we allow head (sec) to be contrained while feet (pri) are not
-			- Should actually only allow the opposite: whole NPC is constrained if at least feet (pri) are; rules:
-				- Regime::Constrained: iff feet (pri) constrained
-				- Regime::Free: iff feet (pri) !constrained
-
 		+ When moving head across floors, feet get stuck
 			+ Isn't it enough to make both particles free?
 
@@ -896,14 +890,14 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 				X If looks good, use somehow also at swimming
 			+ Transition between Free_InWater and Free_Swimming should be smoother
 				+ NPC starts swimming too quickly
-			= Walking: 
-				- Realize earlier than we're falling - but don't confuse with little bump
+			+ Walking: 
+				+ Realize earlier than we're falling - but don't confuse with little bump
 					! Acceptable down V: -6.12
-					- Can relax: if we're walking at normal speed, our tolerance to vert V could be very small					
+					= Can relax: if we're walking at normal speed, our tolerance to vert V could be very small					
+				X Fix: when very fast and up a slope, we do little bump (which is OK) but then when we land we bounce and thus flip
+					! OnImpact(0.0341793, (-0.606217503548, -0.795298933983)); velocity=(-3.19136810303, 2.45355224609)
 				+ Fix: when very fast, we lose equilibrium too much because feet start fast and head not => StaticDisplacementAngleCW becomes large
 					+ More tolerance
-				- Fix: when very fast and up a slope, we do little bump (which is OK) but then when we land we bounce and thus flip
-					- OnImpact(0.0341793, (-0.606217503548, -0.795298933983)); velocity=(-3.19136810303, 2.45355224609)
 			+ Swimming:
 				+ Initial pause while gathering limbs
 				+ Multiple styles:
@@ -911,6 +905,8 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 					+ Trappelen (leg lengths) together with arms
 					+ Trappelen (leg lengths) with one arm above
 			- Try crotch offset updated while walking
+				- First off: move periodic function calculation from UpdateAnimation to UpdateHumanBehavior, setting new HumanState member
+					- This change we keep - so commit
 				- New DipoleProperties member - "DipoleLengthMultiplier"
 				- Use at SpringForces
 				- Updated at walk update - and reset upon transitions out of Walking
@@ -925,9 +921,31 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 			+ Initial dipole state
 			+ Fix: torque calculation currently hiddenly depends on dipole length; needs to become independent from it
 				+ Symptoms: small man always flips, small human never rises once KO'd
-		- Randomize human height
-			- HumanState::Height member init'd with gaussian - see real distribution params
-			- Replace all accesses to GameParameters::HumanNpcGeometry::BodyLength with this member
+		+ Randomize human height
+			+ HumanState::Height member init'd with gaussian - see real distribution params
+			+ Replace all accesses to GameParameters::HumanNpcGeometry::BodyLength with this member
+			+ Influences also walking speed
+				+ GameParameters: "base" + "adjustment"
+					+ SettingsDialog
+				+ HumanState::WalkingSpeedBase (const) member init'd here
+				+ Replace all accesses to GameParameters::HumanWalkingSpeed with this member
+				+ Check high and low speed
+				+ Check tall and short adjust
+
+		- Stop "hanging head" issue
+			- Case 1: one constrained and one free
+				- Happens when we allow head (sec) to be contrained while feet (pri) are not
+				- Should actually only allow the opposite: whole NPC is constrained if at least feet (pri) are; rules:
+					- Regime::Constrained: iff feet (pri) constrained
+					- Regime::Free: iff feet (pri) !constrained
+					- Do at:
+						- CalculateRegime
+						- Human behavior transitions (only to free exist)
+					- Secondary (head) which was free becoming constrained
+					- Primary (feet) which was free should never become constrained
+				- Change "IsEdgeFloorToParticle": TODOHERE
+			Case 2: floor between head and feet - when both are constrained
+				- Change "IsEdgeFloorToParticle": TODOHERE
 
 		- Video
 
@@ -1018,6 +1036,9 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 		- Uhm: after all a table is not that simple - think of flipping it
 
 - Physical Interactions:
+	- Swimming humans generate bubbles
+	- Swimming humans generate small waves
+		- Need to have moved periodic function to UpdateHumanBehavior()
 	- Lights: second pass of lighting algorith with all NPC particles, for each ship
 		- Adding to NPC particles' _light_ buffer
 	- Fire:
