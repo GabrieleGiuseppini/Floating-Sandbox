@@ -909,7 +909,7 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 		+ When moving head across floors, feet get stuck
 			+ Isn't it enough to make both particles free?
 
-		= Other animation improvements:
+		+ Other animation improvements:
 			+ See if we can change NPC's first state after placement from KO'd to Aerial
 			+ Aerial: 
 				+ Try 1: arms are always "up" in direction of head, but a bit less so when NPC is horizontal
@@ -945,15 +945,11 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 					! This one
 					+ Trappelen (leg lengths) together with arms
 					+ Trappelen (leg lengths) with one arm above
-			- Try crotch offset updated while walking
-				- First off: move leg angle calculation from UpdateAnimation to UpdateHumanBehavior, setting new HumanState::WalkingState member ("walkphase")
-					- Do @UpdateWalk
-					- UpdateAnimation: use that
-				- New DipoleProperties member - "DipoleLengthMultiplier"
-				- Use at SpringForces
-				- Updated at walk update - and reset upon transitions out of Walking
-					- @UpdateWalk: based on (just calculated) leg angle
-				- See if really worth it
+			+ Try crotch offset updated while walking
+				! Completely animation-based
+				+ UpdateAnimation has new member: ~"crotch height adjustment"
+					+ Updated based on locally-calcuated leg angle
+				+ RenderUpload calcs human points taking ~"crotch height adjustment" into account
 			+ Fix: when in Free_Aerial and floating, it never goes to swimming
 
 		+ HumanNpcLengthAdjustment
@@ -1006,6 +1002,7 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 		- See if can get rid of floor type @ Springs
 
 		- Video
+			- TODO
 
 		- Prepare for optimizations
 			- Use IN_BARYLAB around various publishing code
@@ -1025,11 +1022,12 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 						- TODO: really? ain't it fine if we use the situation "before"?
 						- Initialization - as "free"
 						- After ConstrainedNonInertial, where we may be:
-							- Still non-inertial
-							- Become inertial or free
+							- Still non-inertial, (but might be on a different triangle and thus edge)
+							- Become inertial 
+							- Become free
 						- After ConstrainedInertial:
 							- Always "free" (-1), as we only decide we become on an edge @ ConstrainedNonInertial
-						- Free: assert
+						- Free: assert it's -1
 
 
 		- Integration into FS - 2
