@@ -67,6 +67,9 @@ Frame rules:
 Details
 ===========
 
+Arch
+===========
+
 - Type hierarchy:
 	- NpcType:
 		- Human
@@ -77,6 +80,44 @@ Details
 			- FurnitureNpcType:
 				- Table
 				- ...
+
+- One single NPCs container class owned and managed by World
+- Render dispatched to individual ShipRenderContext's, as each ship has own Z world
+	X Though we could have a NpcRenderContext which passes ship's Z in vertex buffers, but then there's the order/alpha problem; best if rendered by each ship individually
+
+- NPCs class:
+	- Container of NPCs
+	- Owned by World; accessed - when needed - by Ships via ParentWorld
+	- Contains all NPCs from all ships
+		- Organized internally by ship, so that updates - which require ship triangles, etc. - are optimized, and ships may easy access all their NPCs easily e.g. when doing interactions
+			- For each ship there is a vector (e.g. std::vector<NPCState>), kept compact during removals and additions of NPCs
+			- The vector of ships is also itself kept compact during removals and additions of ships
+			- Separately, a "ship index" vector and a "NPC index" vector for each ship form a two-tier "index" for mapping stable ShipIDs and NPCIDs to elements in these buffers
+				- Index also kept up-to-date at Ship and NPC addition/removal
+				- The pair of these indices is the NPC's stable, globally-unique ID, unrelated to the position it occupies in NPC buffers
+		- One single buffer per-physical quantity though, across all ships and NPCs, so that we do physics updates with one single pass
+			- Buffer is pre-sized to max # of NPCs
+			- Need same tricks as other physics buffers wrt additions/removals, e.g. zeroing coeffs so that update steps are essentially nop's
+		- NPC struct:
+			- Type: NpcKindType
+			- Union of all kind-specific attributes
+				- Note: many attributes will be common, hence we'll be saving room
+			- type: NpcParticleState
+				- ElementIndex ParticleIndex (index in NpcParticles)
+				- opt<ConstrainedStateType> ConstrainedState
+					- TriangleElementIndex
+					- BaryCoords
+					- opt<OnFloorStateType> OnFloorState
+						- EdgeOrdinal
+						- SimulationTime startTime - TODO: dynamics of when reset
+			- NpcParticleStateType PrimaryParticleState (i.e. feet)
+			- opt<NpcParticleStateType> SecondaryParticleState (i.e. head)
+	- Update(Ship const &)
+	- Upload(Ship const &, ShipRenderContext)
+		- Invoked by World for each ship separately
+		- Invokes ShipRenderContext::UploadNPC:
+			- A TextureGroup enum - declared in RenderTypes like AntiMatterBomb is for example - is used to identify the "movement types" for rendering. An additional index provides the sub-frame. The whole coordinate is a TextureFrameId<NPC group>.
+				- TODO: actually the enum might not have to be in RenderTypes; we could use a generic "state" enum in GameTypes which *also* serves as a groups enum
 
 - In the constrained regime:
 	- A particle always belongs to a triangle
@@ -960,12 +1001,6 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 				! Plan B: ray-trace from sec'ry to pri'ry, if no more edges found (other than the edge that the sec'ry is on): not a floor
 			+ Cleanup
 
-		- See if can get rid of IsOnFloorEdge - by using CurrentVirtualEdge
-			! Currently used for:
-				- Human behavior update: transitions depend on whether feet/head are on edge
-				- Human animation update: rag doll, etc.
-			- As long as CurrentVirtualEdge is only and always set when we know we're on an edge (ConstrainedNonInertial)
-
 		- Test with single particle ("furniture")
 
 		- See if can get rid of floor type @ Springs
@@ -979,6 +1014,23 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 				- Display
 			- Add TODO:mechanism for injecting TODO quantity of human NPCs
 			- Final measurement: TODO us for TODO NPCs
+
+		- Optimizations:
+			- See if can get rid of IsOnFloorEdge - by using CurrentVirtualEdge
+				! IsOnFloorEdge() is currently used for:
+					- Human behavior update: transitions depend on whether feet/head are on edge
+					- Human animation update: rag doll, etc.
+				- As long as CurrentVirtualEdge is only and always set when we know we're on an edge (ConstrainedNonInertial)
+					- At this moment it's set _before_; we need to set it _after_, reflecting actual situation _after_
+						- TODO: really? ain't it fine if we use the situation "before"?
+						- Initialization - as "free"
+						- After ConstrainedNonInertial, where we may be:
+							- Still non-inertial
+							- Become inertial or free
+						- After ConstrainedInertial:
+							- Always "free" (-1), as we only decide we become on an edge @ ConstrainedNonInertial
+						- Free: assert
+
 
 		- Integration into FS - 2
 			! Goal: be able to copy folder of files seamlessly across FS and BL
@@ -1022,7 +1074,7 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 			- When constrained
 				- At all velocity calculations, but only when we ended up not on an edge (i.e. when moving to "inside triangle")
 					- Is that simply at ConstrainedInertial and _never_ at ConstrainedNonInertial?
-					- And: doing it at ConstrainedInertial kills equilibrium, as secondary doesn't gain enough velocity from walk
+					- And: doing it at ConstrainedInertial kills equilibrium, as secondary doesn't gain enough velocity from walk -- TODOHERE: requires thought
 			+ And slider
 			- Test
 			
@@ -1066,9 +1118,15 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 	- Use indices for quad vertices
 		- Good use case to experiment with the "quad single index buffer" feature
 	- NpcType needs an associated NpcOrientation, because the way a quad is laid out around the particles for a human is different than that of a table
-		- Uhm: after all a table is not that simple - think of flipping it
+		- Uhm: after all a table is not that simple - think when flipping it
+	- Quad shader:
+		- Discard  when transparent
+			- But only after testing with two connected components - & inverse order of drawing; should bug out when near NPC is drawn before far NPC and they are on top of each other
+				- Requires following their triangle
 
 - Physical Interactions:
+	- Make sure triangle destruction is forwarded to NPCs
+		- Any constrained NPC on a destroyed triangle becomes free
 	- Swimming humans generate bubbles
 	- Swimming humans generate small waves
 		- Need to have moved periodic function to UpdateHumanBehavior()
@@ -1086,6 +1144,8 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 	- Electric spark:
 		- Electrification must be stored with Points
 		- NPC update looks at own triangle's Points
+	- Doors:
+		- Triangle edge/floors: split "factory" vs. "actual"
 
 - Layers:
 	- Floorplan layer:
@@ -1099,61 +1159,4 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 	- Both layers make up the "Interior view"
 	- User can choose between "Exterior" view and "Interior" view, via menu
 		- While an NPC placement tool is selected, the game switches temporarily to "Interior" view, regardless of current setting
-
-- NPCs class:
-	- Container of NPCs
-	- Owned by World; accessed - when needed - by Ships via ParentWorld
-	- Contains all NPCs from all ships
-		- Organized internally by ship, so that updates - which require ship triangles, etc. - are optimized, and ships may easy access all their NPCs easily e.g. when doing interactions
-			- For each ship there is a vector (e.g. std::vector<NPCState>), kept compact during removals and additions of NPCs
-			- The vector of ships is also itself kept compact during removals and additions of ships
-			- Separately, a "ship index" vector and a "NPC index" vector for each ship form a two-tier "index" for mapping stable ShipIDs and NPCIDs to elements in these buffers
-				- Index also kept up-to-date at Ship and NPC addition/removal
-				- The pair of these indices is the NPC's stable, globally-unique ID, unrelated to the position it occupies in NPC buffers
-		- One single buffer per-physical quantity though, across all ships and NPCs, so that we do physics updates with one single pass
-			- Buffer is pre-sized to max # of NPCs
-			- Need same tricks as other physics buffers wrt additions/removals, e.g. zeroing coeffs so that update steps are essentially nop's
-		- NPC struct:
-			- Type: NpcKindType
-			- Union of all kind-specific attributes
-				- Note: many attributes will be common, hence we'll be saving room
-			- type: NpcParticleState
-				- ElementIndex ParticleIndex (index in NpcParticles)
-				- opt<ConstrainedStateType> ConstrainedState
-					- TriangleElementIndex
-					- BaryCoords
-					- opt<OnFloorStateType> OnFloorState
-						- EdgeOrdinal
-						- SimulationTime startTime - TODO: dynamics of when reset
-			- NpcParticleStateType PrimaryParticleState (i.e. feet)
-			- opt<NpcParticleStateType> SecondaryParticleState (i.e. head)
-	- Update(Ship const &)
-	- Upload(Ship const &, ShipRenderContext)
-		- Invoked by World for each ship separately
-		- Invokes ShipRenderContext::UploadNPC:
-			- A TextureGroup enum - declared in RenderTypes like AntiMatterBomb is for example - is used to identify the "movement types" for rendering. An additional index provides the sub-frame. The whole coordinate is a TextureFrameId<NPC group>.
-				- TODO: actually the enum might not have to be in RenderTypes; we could use a generic "state" enum in GameTypes which *also* serves as a groups enum
-
-Arch
-===========
-- One single NPCs container class owned and managed by World
-- Render dispatched to individual ShipRenderContext's, as each ship has own Z world
-	X Though we could have a NpcRenderContext which passes ship's Z in vertex buffers, but then there's the order/alpha problem; best if rendered by each ship individually
-
-Impl:
-===========
-TODOHERE
-- New spring getter: NpcSurfaceType
-	+ GameType
-	- ShipFactory: populate as "Floor" using IsHull for the time being (w/comment), @ point matrix
-		- See Floorplan Layer below (*)
-		- @Springs: split factory vs. effective, for doors
-	- Then can do Npcs::IsSuitable
-- Shader: 
-	- Copy BaryLab shader
-	- Discard  when transparent
-		- But only after testing with two connected components - & inverse order of drawing; should bug out when near NPC is drawn before far NPC and they are on top of each other
-			- Requires following their triangle
-- Make sure triangle destruction is forwarded to NPCs
-	- Any constrained NPC on a destroyed triangle becomes free
 
