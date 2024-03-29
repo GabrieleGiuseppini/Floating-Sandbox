@@ -905,12 +905,13 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 					+ Trappelen (leg lengths) together with arms
 					+ Trappelen (leg lengths) with one arm above
 			- Try crotch offset updated while walking
-				- First off: move periodic function calculation from UpdateAnimation to UpdateHumanBehavior, setting new HumanState member
-					- This change we keep - so commit
+				- First off: move leg angle calculation from UpdateAnimation to UpdateHumanBehavior, setting new HumanState::WalkingState member ("walkphase")
+					- Do @UpdateWalk
+					- UpdateAnimation: use that
 				- New DipoleProperties member - "DipoleLengthMultiplier"
 				- Use at SpringForces
 				- Updated at walk update - and reset upon transitions out of Walking
-					- @BehaviorUpdate: based on leg angle
+					- @UpdateWalk: based on (just calculated) leg angle
 				- See if really worth it
 			+ Fix: when in Free_Aerial and floating, it never goes to swimming
 
@@ -932,27 +933,47 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 				+ Check high and low speed
 				+ Check tall and short adjust
 
-		- Stop "hanging head" issue
-			- Case 1: one constrained and one free
-				- Happens when we allow head (sec) to be contrained while feet (pri) are not
-				- Should actually only allow the opposite: whole NPC is constrained if at least feet (pri) are; rules:
-					- Regime::Constrained: iff feet (pri) constrained
-					- Regime::Free: iff feet (pri) !constrained
-					- Do at:
-						- CalculateRegime
-						- Human behavior transitions (only to free exist)
-					- Secondary (head) which was free becoming constrained
-					- Primary (feet) which was free should never become constrained
-				- Change "IsEdgeFloorToParticle": TODOHERE
-			Case 2: floor between head and feet - when both are constrained
-				- Change "IsEdgeFloorToParticle": TODOHERE
+		+ Stop "hanging head" issue
+			! We want to allow feet (primary) constrained and head (secondary) free, as secondary is allowed to become constrained
+			+ Rearc:
+				+ 0. Test pri/sec free and other not				
+				+ 1. When pri becomes free, sec becomes also free
+					+ @ TransitionParticleToFreeState
+					+ Test:
+						+ Head flying off while feet on ship: stays in-ship
+						+ Feet flying off while head on ship: whole becomes free
+				+ 2. IsEdgeToFloor: taken care of by tessellation, including "sealed but crossing makes free"
+					+ Make test mesh and check current behavior
+					+ 2a. Reduce IsEdgeToFloor to just check surface type; verify broken
+					+ 2b. Do at tessellation
+						+ Triangle's subedge is floor if:
+							+ Edge is floor, and
+							+ Not is sealed, or (is sealed and) there's no triangle on the other side of this subedge
+					+ 2c. Test:
+						+ Temporarily remove call to other function
+						+ Head/feet in sealed triangle, internal
+						+ Head/feet in sealed triangle, on border to free
+				+ 3. Other func: verify is broken now w/sleeping giant; fix w/TODO
+					+ Separation + human vertical
+				+ 4. Rewrite floor check
+						+ Nuke & replace with direct check for surface type
+				! Plan B: ray-trace from sec'ry to pri'ry, if no more edges found (other than the edge that the sec'ry is on): not a floor
+			+ Cleanup
+
+		- See if can get rid of IsOnFloorEdge - by using CurrentVirtualEdge
+			! Currently used for:
+				- Human behavior update: transitions depend on whether feet/head are on edge
+				- Human animation update: rag doll, etc.
+			- As long as CurrentVirtualEdge is only and always set when we know we're on an edge (ConstrainedNonInertial)
+
+		- Test with single particle ("furniture")
+
+		- See if can get rid of floor type @ Springs
 
 		- Video
 
 		- Prepare for optimizations
-			= New compiler symbol: BARYLAB_DEBUG (replaces IN_BARYLAB at LogNpcDebug)
-				+ Set only on BaryLab, only in Debug CMake build type
-				- Use around various publishing code
+			- Use IN_BARYLAB around various publishing code
 			- Add PerfStats
 				- NpcSimulation time (take naming from FS)
 				- Display
@@ -997,7 +1018,12 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 		- Allow more slope to undergo impact continuation if we're walking against it
 
 		= Add velocity damp
-			= And slider
+			+ When free
+			- When constrained
+				- At all velocity calculations, but only when we ended up not on an edge (i.e. when moving to "inside triangle")
+					- Is that simply at ConstrainedInertial and _never_ at ConstrainedNonInertial?
+					- And: doing it at ConstrainedInertial kills equilibrium, as secondary doesn't gain enough velocity from walk
+			+ And slider
 			- Test
 			
 	- Other walking features:
@@ -1014,6 +1040,13 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 				- Test if BaryLab's triangle navigation algo's are ok with it
 		- "manholes"
 			- Floor info is on Triangle, not on Spring
+
+- NpcDatabase:
+	- Provides info on humans (e.g. role colors, frame IDs) and furniture (dimensions, orientation, frame IDs)
+	- Two sections, each own schema:
+		- Humans
+		- Furniture
+	- json refers to frames by name, but cctor - which also takes texture DB - stores references by numeric ID
 
 - Rendering:
 	- Atlas textures are aligned with HumanNpcKindType and FurnitureNpcKindType, e.g.:
@@ -1054,10 +1087,18 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 		- Electrification must be stored with Points
 		- NPC update looks at own triangle's Points
 
-- Floorplan layer:
-	- A specific "FloorPlan" layer provides a bitmask indicating particles' (and thus, springs') floorness
-		- In the future, also "floor areas"
-	- When the layer is absent, the layer is created automatically with the hullness of particles
+- Layers:
+	- Floorplan layer:
+		- A specific "FloorPlan" layer provides a bitmask indicating points' (and thus, springs') floorness
+			- Technically, it's a mappping between *pairs* of Points and the FloorType enum
+			- In the future, also "floor areas"
+		- When the layer is absent, the layer is created automatically (@ ShipFactory) with the hullness of particles
+	- Interior layer
+		- A new texture layer
+		- When the layer is absent, it is created automatically (@ShipFactory) from the structural layer (+ material texturization if enabled)
+	- Both layers make up the "Interior view"
+	- User can choose between "Exterior" view and "Interior" view, via menu
+		- While an NPC placement tool is selected, the game switches temporarily to "Interior" view, regardless of current setting
 
 - NPCs class:
 	- Container of NPCs
