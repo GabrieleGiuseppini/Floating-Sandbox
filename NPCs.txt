@@ -195,7 +195,7 @@ Arch
 		! Most transitions happen with "convergence" of some quantity
 			! Only the convergence rate is a state-specific parameter; the threshold for reaching a target is not (i.e. it's a global constant)
 				! So that there's only one param per state controlling timing
-	= States:
+	+ States:
 		+ State:KnockedOut
 			! Does nothing
 			+ Transitions out: 
@@ -997,22 +997,49 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 				! Plan B: ray-trace from sec'ry to pri'ry, if no more edges found (other than the edge that the sec'ry is on): not a floor
 			+ Cleanup
 
-		- Test with single particle ("furniture")
+		+ Test with single particle ("furniture")
 
-		- See if can get rid of floor type @ Springs
+		X See if can get rid of floor type @ Springs
 
-		- Video
-			- TODO
+		+ Leg length also should be adjusted w/crotch
+			+ After all: crotch is down, hence leg is also down now
+		+ No buoyancy while being placed
 
-		- Prepare for optimizations
-			- Use IN_BARYLAB around various publishing code
-			- Add PerfStats
-				- NpcSimulation time (take naming from FS)
-				- Display
-			- Add TODO:mechanism for injecting TODO quantity of human NPCs
-			- Final measurement: TODO us for TODO NPCs
+		+ Video
+			+ Things to show:
+				- Placement
+				- Walking
+				- Rag doll
+				- Many humans
+				- With ship movements
+				[]
+				- Panic
+				[]
+				- Swimming - when many, so we show different styles
 
-		- Optimizations:
+	+ Prepare for optimizations
+		+ IN_BARYLAB defines BARYLAB_PROBING
+		+ Use BARYLAB_PROBING around various publishing code
+			+ Test compiling w/out IN_BARYLAB
+		+ Add PerfStats
+			+ NpcSimulation time (take naming from FS)
+			+ Display
+		+ Add RenderUpload to PerfStats
+			+ Separate measurement, separate output
+		+ Add mechanism for jumpstarting with 100's of human NPCs
+			+ Npcs::Add (== BeingPlace+EndMove)
+			+ Call from LabController @ initialization
+		+ Initial measurement: 
+			+ 1024 human NPCs, all walking:
+				- Update: 0.34ms
+				- RenderUpload: 0.25ms
+			+ 8192 human NPCs, all walking:
+				- Update: 2.7ms
+				- RenderUpload:  1.9ms
+
+	- Optimizations:
+		- Run perf analysis
+		- Update:
 			- See if can get rid of IsOnFloorEdge - by using CurrentVirtualEdge
 				! IsOnFloorEdge() is currently used for:
 					- Human behavior update: transitions depend on whether feet/head are on edge
@@ -1028,53 +1055,59 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 						- After ConstrainedInertial:
 							- Always "free" (-1), as we only decide we become on an edge @ ConstrainedNonInertial
 						- Free: assert it's -1
+			- @UpdateAnimation:
+				- Walking:
+					- Leg length adjustments: see if may re-use anything
+			- Bary coords:									
+				- Can do two coords in parallel via SIMD?
+					- Move to Algorithms, then add unit tests (all of this in FS first)
+				- Read https://fgiesen.wordpress.com/2013/02/10/optimizing-the-basic-rasterizer/
 
+	- Integration into FS - 2
+		! Goal: be able to copy folder of files seamlessly across FS and BL
+		- Triangles: add BL features
+			- Barycentric math (replace FS')
+			- SurfaceType
+			- OppositeTriangle
+			- etc?
+		- Move Npc simulation files under NpcSimulation folder
+			- Not VS GUI, that's "Physics"
+		- Port NpcMaterial.* and NpcMaterialDatabase.* into Materials.* and MaterialDatabase.*
+		- Port GameParameters settings that we need
+		- TODOHERE
+		- Settings:
+			- SettingsManager
+			- SettingsDialog
 
-		- Integration into FS - 2
-			! Goal: be able to copy folder of files seamlessly across FS and BL
-			- Triangles: add BL features
-				- Barycentric math (replace FS')
-				- SurfaceType
-				- OppositeTriangle
-				- etc?
-			- Move Npc simulation files under NpcSimulation folder
-				- Not VS GUI, that's "Physics"
-			- Port NpcMaterial.* and NpcMaterialDatabase.* into Materials.* and MaterialDatabase.*
-			- Port GameParameters settings that we need
-			- TODOHERE
-			- Settings:
-				- SettingsManager
-				- SettingsDialog
+	+ Remaining state machines:
+		+ See above for "Impact" responses at the various states 
+			+ There is remaining (=) work above for this!
+		+ State::Free_Aerial: (was: FreeKnockedOut)
+			+ We transition here at UpdateBehavior, NOT at BecomingFree!
+			+ Becomes InWater if both points in water
+		+ State::Free_InWater:
+			+ Converges towards Free_Swimming by going to target==head_vel.normalize().dot(human_vector.normalize())
+			+ Becomes Aerial if no points in water
+		+ @ Becoming free: decide between Free_Aerial vs Free_InWater depending on OceanSurface
+		+ State::Free_Swimming:
+			+ Becomes Aerial if no points in water
+			+ Animation
+		+ Impacts:
+			+ At each impact, call OnImpact(...particle..., ...impact quantities...)
+			+ OnImpact: if human, check state machine and do following transitions:
+				+ If walking and impact V (velocity of particle along normal) is in direction of walking:
+					+ Flip direction
 
-		+ Remaining state machines:
-			+ See above for "Impact" responses at the various states 
-				+ There is remaining (=) work above for this!
-			+ State::Free_Aerial: (was: FreeKnockedOut)
-				+ We transition here at UpdateBehavior, NOT at BecomingFree!
-				+ Becomes InWater if both points in water
-			+ State::Free_InWater:
-				+ Converges towards Free_Swimming by going to target==head_vel.normalize().dot(human_vector.normalize())
-				+ Becomes Aerial if no points in water
-			+ @ Becoming free: decide between Free_Aerial vs Free_InWater depending on OceanSurface
-			+ State::Free_Swimming:
-				+ Becomes Aerial if no points in water
-				+ Animation
-			+ Impacts:
-				+ At each impact, call OnImpact(...particle..., ...impact quantities...)
-				+ OnImpact: if human, check state machine and do following transitions:
-					+ If walking and impact V (velocity of particle along normal) is in direction of walking:
-						+ Flip direction
+	- Allow more slope to undergo impact continuation if we're walking against it
 
-		- Allow more slope to undergo impact continuation if we're walking against it
-
-		= Add velocity damp
-			+ When free
-			- When constrained
-				- At all velocity calculations, but only when we ended up not on an edge (i.e. when moving to "inside triangle")
-					- Is that simply at ConstrainedInertial and _never_ at ConstrainedNonInertial?
-					- And: doing it at ConstrainedInertial kills equilibrium, as secondary doesn't gain enough velocity from walk -- TODOHERE: requires thought
-			+ And slider
-			- Test
+	= Add velocity damp
+		+ When free
+		- When constrained
+			- At all velocity calculations, but only when we ended up not on an edge (i.e. when moving to "inside triangle")
+				- Is that simply at ConstrainedInertial and _never_ at ConstrainedNonInertial?
+				- And: doing it at ConstrainedInertial kills equilibrium, as secondary doesn't gain enough velocity from walk -- TODOHERE: requires thought
+		+ And slider
+		- Test
 			
 	- Other walking features:
 		- See if can detect that will hit a wall/well by projecting forward primary particle along triangle edge; if will hit, turn around
@@ -1126,8 +1159,8 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 	- Make sure triangle destruction is forwarded to NPCs
 		- Any constrained NPC on a destroyed triangle becomes free
 	- Swimming humans generate bubbles
-	- Swimming humans generate small waves
-		- Need to have moved periodic function to UpdateHumanBehavior()
+	- Humans on air-water interface generate small waves
+		- Need to produce as side-effect: Swimming humans generate small waves
 	- Lights: second pass of lighting algorith with all NPC particles, for each ship
 		- Adding to NPC particles' _light_ buffer
 	- Fire:
@@ -1144,6 +1177,8 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 		- NPC update looks at own triangle's Points
 	- Doors:
 		- Triangle edge/floors: split "factory" vs. "actual"
+	- NPCs add mass to particle
+		- Ship::Update asks NPCs (via ParentWorld) to add themselves to Points' masses
 
 - Layers:
 	- Floorplan layer:
