@@ -1036,10 +1036,69 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 			+ 8192 human NPCs, all walking:
 				- Update: 2.7ms
 				- RenderUpload:  1.9ms
+				+++
+				- Current best: 2.6, 1.7
 
-	- Optimizations:
-		- Run perf analysis
+	= Optimizations:
+		+ Run perf analysis
+			+ Npcs::UpdateNpcs: 41.33%
+				- Npcs::UpdateNpcParticlePhysics: 19.08%
+					- Npcs::CalculateNpcParticleDefinitiveForces: 5.29%
+						- atan2f: 2.36%
+				- Npcs::UpdateNpcAnimation: 9.84%
+				- Npcs::UpdateHuman: 5.55%
+				- Npcs::CalculateNpcParticlePreliminaryForces: 2.53% => 2.41%
+			+ Npcs::RenderUpload: 45.22%
+				- Npcs::RenderNpc: 30.63%
+					- RenderContext::UploadNpcQuad: 21.31% => 18.04%->18.25%
+			++++++
+			+ sin: 5.39%
+			+ atan2f: 4.34%
 		- Update:
+			- CalculateNpcParticlePreliminaryForces:
+				= Precalc most spring force factors
+					+ Figure out what to do with BaryLab's specific parameters (gravity adj/gate, mass adj)
+						+ 1. Npcs own the BaryLab-specific params (GravityAdj/Gate, MassAdj)
+							+ Out of GameParameters, and LabController sets them in Npcs
+							+ Members are in #IN_BARYLAB
+						+ 2. Npcs: upon getting changes, stores in members and calls RecalculateSpringForceParameters()
+						+ 3. Npcs::RecalculateSpringForceParameters:
+							+ Calcs with common params first
+								+ See if in FS we take these as args or use the mCurrent values
+							+ Then if #IN_BARYLAB multiplies by adjustments
+						+ 4. Update: upon detecting param changes, calls RecalculateSpringForceParameters
+						+ Test:
+							+ Mass
+							+ Gravity
+							+ Spring 1
+							+ Spring 2
+			= UpdateNpcAnimation:
+				+ Try with calculating cos & sin once there (after target angle calc'n) and reusing those @ multiplier calculation _after_ target angle
+					+ Count first
+					+ New sub-struct: AnimationState
+					+ UpdateAnimation()
+						+ Use cos/sin @ Walking/LegMult
+					+ RenderUpload()
+				+ Those "TODO" optimization while walking
+				+ Fix edge/cross thing
+					X Option 1: NavigateVertex after bounce @ NonInertial, if on a vertex
+						! Too complex, requires calc'n of new traj end which itself depends on bounce response velocity
+					X Option 2: no adjustment if negative
+					+ Option 3: limit lambda
+			- Own sincos_p4 from http://gruntthepeon.free.fr/ssemath/sse_mathfun.h
+				+ 1. Merge GameMath
+				- 2. FS: UnitTests
+				- 3. FS: Benchmark
+				- 4. Use in BaryLab
+					- Make AnimationState members as vectors4
+			- Own atan2
+				- See intrinsics/approx implementations - A: cephes
+				- 2. FS: UnitTests
+				- 3. FS: Benchmark
+				- 4. Use in BaryLab
+			- CalculateNpcParticleDefinitiveForces: see if can do without atan2
+				- Precalc?
+			- Various normalize() -> approx
 			- See if can get rid of IsOnFloorEdge - by using CurrentVirtualEdge
 				! IsOnFloorEdge() is currently used for:
 					- Human behavior update: transitions depend on whether feet/head are on edge
@@ -1062,6 +1121,11 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 				- Can do two coords in parallel via SIMD?
 					- Move to Algorithms, then add unit tests (all of this in FS first)
 				- Read https://fgiesen.wordpress.com/2013/02/10/optimizing-the-basic-rasterizer/
+		- RenderUpload:
+			+ Pre-alloc quad buffer
+			= BoundedVector: find way to reserve+take pointer+advance pointer; see if improves
+				- Add to list of things to port to FS
+			- Reuse edges
 
 	- Integration into FS - 2
 		! Goal: be able to copy folder of files seamlessly across FS and BL

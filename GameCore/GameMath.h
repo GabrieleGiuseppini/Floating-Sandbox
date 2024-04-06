@@ -15,6 +15,9 @@
 template<typename T>
 constexpr T Pi = T(3.1415926535897932385);
 
+template<typename T>
+constexpr T Epsilon = T(1e-7);
+
 /*
  * Converts the floating-point value to a 32-bit integer, truncating it towards zero.
  *
@@ -109,7 +112,7 @@ inline register_int FastTruncateToArchInt(float value) noexcept
 /*
  * Converts the floating-point value to an integer of the same width as the
  * architecture's registers, truncating it towards negative infinity.
- * Used when the implementation doesn't really care about the returned 
+ * Used when the implementation doesn't really care about the returned
  * type - for example because it needs to be used as an index.
  *
  * Assumes the result fits the integer. The behavior is undefined if it doesn't.
@@ -240,7 +243,7 @@ inline float Step(
     return x < lEdge ? 0.0f : 1.0f;
 }
 
-template <typename T> 
+template <typename T>
 inline int Sign(T val)  // 0.0 returns +1.0
 {
     return (T(0) <= val) - (val < T(0));
@@ -297,18 +300,34 @@ inline float InverseSmoothStep(float x) noexcept
  * such that when x is 1.0, output is oneOutput.
  */
 inline float MixPiecewiseLinear(
-	float minOutput,
-	float oneOutput,
-	float maxOutput,
-	float minX,
-	float maxX,
-	float x) noexcept
+    float minOutput,
+    float oneOutput,
+    float maxOutput,
+    float minX,
+    float maxX,
+    float x) noexcept
 {
-	assert((minOutput <= oneOutput) && (oneOutput <= maxOutput));
-	assert(minX <= x && x <= maxX);
-	assert(minX < 1.0 && 1.0 < maxX);
+    assert((minOutput <= oneOutput) && (oneOutput <= maxOutput));
+    assert(minX <= x && x <= maxX);
+    assert(minX < 1.0 && 1.0 < maxX);
 
-	return x <= 1.0f
-		? minOutput + (oneOutput - minOutput) * (x - minX) / (1.0f - minX)
-		: oneOutput + (maxOutput - oneOutput) * (x - 1.0f) / (maxX - 1.0f);
+    return x <= 1.0f
+        ? minOutput + (oneOutput - minOutput) * (x - minX) / (1.0f - minX)
+        : oneOutput + (maxOutput - oneOutput) * (x - 1.0f) / (maxX - 1.0f);
+}
+
+inline bool IsAlmostZero(float value, float epsilon)
+{
+    return (value > -epsilon) && (value < epsilon);
+}
+
+inline bool IsAlmostZero(float value)
+{
+    return IsAlmostZero(value, Epsilon<float>);
+}
+
+inline bool AreAlmostEqual(float value1, float value2, float epsilon)
+{
+    float const d = value1 - value2;
+    return (d > -epsilon) && (d < epsilon);
 }
