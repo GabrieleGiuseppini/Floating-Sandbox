@@ -151,6 +151,14 @@ inline constexpr T ceil_square_power_of_two(T value)
 // Alignment
 ////////////////////////////////////////////////////////////////////////////////////////
 
+#ifdef _MSC_VER
+# define FS_ALIGN16_BEG __declspec(align(16))
+# define FS_ALIGN16_END
+#else
+# define FS_ALIGN16_BEG
+# define FS_ALIGN16_END __attribute__((aligned(16)))
+#endif
+
 // The number of floats we want to be able to compute in a single vectorization step.
 // Dictates alignment of buffers.
 // Targeting SSE

@@ -1085,11 +1085,14 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 						! Too complex, requires calc'n of new traj end which itself depends on bounce response velocity
 					X Option 2: no adjustment if negative
 					+ Option 3: limit lambda
-			- Own sincos_p4 from http://gruntthepeon.free.fr/ssemath/sse_mathfun.h
+			= Own sincos_p4 from http://gruntthepeon.free.fr/ssemath/sse_mathfun.h
 				+ 1. Merge GameMath
-				- 2. FS: UnitTests
-				- 3. FS: Benchmark
-				- 4. Use in BaryLab
+				+ 2. FS: UnitTests
+				+ 3. FS: Benchmark
+				= 4. Impl
+					- Verify assembly for those constant loads
+					- See if can use 4f constants elsewhere
+				- 5. Use in BaryLab
 					- Make AnimationState members as vectors4
 			- Own atan2
 				- See intrinsics/approx implementations - A: cephes

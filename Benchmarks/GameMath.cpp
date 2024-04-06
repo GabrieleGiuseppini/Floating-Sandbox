@@ -153,3 +153,47 @@ static void Smoothstep2(benchmark::State& state)
     benchmark::DoNotOptimize(results);
 }
 BENCHMARK(Smoothstep2);
+
+static void SinCos4_Base(benchmark::State & state)
+{
+    auto x = MakeFloats(Size * 4);
+    std::vector<float> s(Size * 4);
+    std::vector<float> c(Size * 4);
+    for (auto _ : state)
+    {
+        for (size_t i = 0; i < Size; ++i)
+        {
+            s[i * 4 + 0] = std::sinf(x[i * 4 + 0]);
+            s[i * 4 + 1] = std::sinf(x[i * 4 + 1]);
+            s[i * 4 + 2] = std::sinf(x[i * 4 + 2]);
+            s[i * 4 + 3] = std::sinf(x[i * 4 + 3]);
+
+            c[i * 4 + 0] = std::cosf(x[i * 4 + 0]);
+            c[i * 4 + 1] = std::cosf(x[i * 4 + 1]);
+            c[i * 4 + 2] = std::cosf(x[i * 4 + 2]);
+            c[i * 4 + 3] = std::cosf(x[i * 4 + 3]);
+        }
+    }
+
+    benchmark::DoNotOptimize(s);
+    benchmark::DoNotOptimize(c);
+}
+BENCHMARK(SinCos4_Base);
+
+static void SinCos4(benchmark::State & state)
+{
+    auto x = MakeFloats(Size * 4);
+    std::vector<float> s(Size * 4);
+    std::vector<float> c(Size * 4);
+    for (auto _ : state)
+    {
+        for (size_t i = 0; i < Size; ++i)
+        {
+            SinCos4(&(x[i * 4]), &(s[i * 4]), &(c[i * 4]));
+        }
+    }
+
+    benchmark::DoNotOptimize(s);
+    benchmark::DoNotOptimize(c);
+}
+BENCHMARK(SinCos4);
