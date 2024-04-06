@@ -1038,6 +1038,7 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 				- RenderUpload:  1.9ms
 				+++
 				- Current best: 2.6, 1.7
+				- Current best: 2.5, 1.6
 
 	= Optimizations:
 		+ Run perf analysis
@@ -1085,18 +1086,18 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 						! Too complex, requires calc'n of new traj end which itself depends on bounce response velocity
 					X Option 2: no adjustment if negative
 					+ Option 3: limit lambda
-				- Vectorized target progress X 2
-			= Own sincos_p4 from http://gruntthepeon.free.fr/ssemath/sse_mathfun.h
+				+ Vectorize target progress
+			+ Own sincos_p4 from http://gruntthepeon.free.fr/ssemath/sse_mathfun.h
 				+ 1. Merge GameMath
 				+ 2. FS: UnitTests
 				+ 3. FS: Benchmark
 				+ 4. Impl
 					+ Verify assembly for those constant loads
 					+ See if can use 4f constants elsewhere
-				- 5. Use in BaryLab
-					- Make AnimationState members as vectors4
+				+ 5. Use in BaryLab
+					+ Make AnimationState members as vectors4
 			X Own atan2
-				- Merge vectors
+				+ Merge vectors
 			- CalculateNpcParticleDefinitiveForces: see if can do without atan2
 				- Precalc?
 			- Various normalize() -> approx

@@ -376,7 +376,7 @@ DECLARE_4F_CONST(CosCofP2, 4.166664568298827E-002f);
 inline void SinCos4(float const * const xPtr, float * const sPtr, float * const cPtr)
 {
 #if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
-    __m128 x = _mm_load_ps(xPtr);
+    __m128 x = _mm_loadu_ps(xPtr);
 
     __m128 sign_bit_sin = x;
     /* take the absolute value */
@@ -462,8 +462,8 @@ inline void SinCos4(float const * const xPtr, float * const sPtr, float * const 
     xmm2 = _mm_add_ps(y, y2);
 
     /* update the sign */
-    _mm_store_ps(sPtr, _mm_xor_ps(xmm1, sign_bit_sin));
-    _mm_store_ps(cPtr, _mm_xor_ps(xmm2, sign_bit_cos));
+    _mm_storeu_ps(sPtr, _mm_xor_ps(xmm1, sign_bit_sin));
+    _mm_storeu_ps(cPtr, _mm_xor_ps(xmm2, sign_bit_cos));
 #else
     sPtr[0] = std::sinf(xPtr[0]);
     sPtr[1] = std::sinf(xPtr[1]);
