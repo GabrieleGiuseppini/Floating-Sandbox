@@ -18,7 +18,7 @@ static void FastPow_Pow(benchmark::State& state)
     {
         for (size_t i = 0; i < Size; ++i)
         {
-            results.push_back(pow(bases[i], exponents[i]));
+            results[i] = pow(bases[i], exponents[i]);
         }
     }
 
@@ -35,7 +35,7 @@ static void FastPow_FastPow(benchmark::State& state)
     {
         for (size_t i = 0; i < Size; ++i)
         {
-            results.push_back(FastPow(bases[i], exponents[i]));
+            results[i] = FastPow(bases[i], exponents[i]);
         }
     }
 
@@ -51,7 +51,7 @@ static void FastExp_Exp(benchmark::State& state)
     {
         for (size_t i = 0; i < Size; ++i)
         {
-            results.push_back(exp(exponents[i]));
+            results[i] = exp(exponents[i]);
         }
     }
 
@@ -67,7 +67,7 @@ static void FastExp_FastExp(benchmark::State& state)
     {
         for (size_t i = 0; i < Size; ++i)
         {
-            results.push_back(FastExp(exponents[i]));
+            results[i] = FastExp(exponents[i]);
         }
     }
 
@@ -110,7 +110,7 @@ static void Smoothstep1(benchmark::State& state)
     {
         for (size_t i = 0; i < Size - 2; ++i)
         {
-            results.push_back(SmoothStep1(vals[i], vals[i + 1], vals[i + 3]));
+            results[i] = SmoothStep1(vals[i], vals[i + 1], vals[i + 3]);
         }
     }
 
@@ -146,7 +146,7 @@ static void Smoothstep2(benchmark::State& state)
     {
         for (size_t i = 0; i < Size - 2; ++i)
         {
-            results.push_back(SmoothStep2(vals[i], vals[i + 1], vals[i + 3]));
+            results[i] = SmoothStep2(vals[i], vals[i + 1], vals[i + 3]);
         }
     }
 

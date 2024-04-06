@@ -227,9 +227,6 @@ TEST(GameMathTests, FastTruncateTowardsNInfinity)
 
 class SinCos4Test : public testing::TestWithParam<std::tuple<float, float, float, float>>
 {
-public:
-    virtual void SetUp() {}
-    virtual void TearDown() {}
 };
 
 INSTANTIATE_TEST_SUITE_P(
@@ -273,3 +270,4 @@ TEST_P(SinCos4Test, SinCos4Test)
     EXPECT_TRUE(ApproxEquals(c[2], std::cosf(x[2]), 0.000001f));
     EXPECT_TRUE(ApproxEquals(c[3], std::cosf(x[3]), 0.000001f));
 }
+

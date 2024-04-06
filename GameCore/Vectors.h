@@ -264,7 +264,7 @@ public:
      */
     inline float angleCw(vec2f const & other) const
     {
-        return -std::atan2(
+        return -std::atan2f(
             x * other.y - y * other.x,
             x * other.x + y * other.y);
     }

@@ -356,6 +356,8 @@ inline bool AreAlmostEqual(float value1, float value2, float epsilon)
 }
 
 ////////////////////////////////////////////////
+// Trigonometric
+////////////////////////////////////////////////
 
 /*
  * Adapted from Julien Pommier - Copyright (C) 2007 Julien Pommier.

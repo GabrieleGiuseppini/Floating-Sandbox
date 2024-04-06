@@ -1085,6 +1085,7 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 						! Too complex, requires calc'n of new traj end which itself depends on bounce response velocity
 					X Option 2: no adjustment if negative
 					+ Option 3: limit lambda
+				- Vectorized target progress X 2
 			= Own sincos_p4 from http://gruntthepeon.free.fr/ssemath/sse_mathfun.h
 				+ 1. Merge GameMath
 				+ 2. FS: UnitTests
@@ -1094,11 +1095,8 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 					+ See if can use 4f constants elsewhere
 				- 5. Use in BaryLab
 					- Make AnimationState members as vectors4
-			- Own atan2
-				- See intrinsics/approx implementations - A: cephes
-				- 2. FS: UnitTests
-				- 3. FS: Benchmark
-				- 4. Use in BaryLab
+			X Own atan2
+				- Merge vectors
 			- CalculateNpcParticleDefinitiveForces: see if can do without atan2
 				- Precalc?
 			- Various normalize() -> approx
@@ -1126,6 +1124,7 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 				- Read https://fgiesen.wordpress.com/2013/02/10/optimizing-the-basic-rasterizer/
 		- RenderUpload:
 			+ Pre-alloc quad buffer
+			- Vectorized rotation?
 			= BoundedVector: find way to reserve+take pointer+advance pointer; see if improves
 				- Add to list of things to port to FS
 			- Reuse edges
