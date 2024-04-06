@@ -1089,9 +1089,9 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 				+ 1. Merge GameMath
 				+ 2. FS: UnitTests
 				+ 3. FS: Benchmark
-				= 4. Impl
-					- Verify assembly for those constant loads
-					- See if can use 4f constants elsewhere
+				+ 4. Impl
+					+ Verify assembly for those constant loads
+					+ See if can use 4f constants elsewhere
 				- 5. Use in BaryLab
 					- Make AnimationState members as vectors4
 			- Own atan2

@@ -271,44 +271,6 @@ BENCHMARK(VectorNormalization_Vectorized_AndLengthStorage_Reciprocal_FullInstrin
 
 #endif
 
-#if FS_IS_ARCHITECTURE_X86_32() || FS_IS_ARCHITECTURE_X86_64()
-
-static void VectorNormalization_Algorithm(benchmark::State & state)
-{
-    auto const size = MakeSize(SampleSize);
-
-    std::vector<vec2f> points;
-    std::vector<SpringEndpoints> springs;
-    MakeGraph(size, points, springs);
-
-    std::vector<vec2f> results;
-    results.resize(size);
-
-    std::vector<float> lengths;
-    lengths.resize(size);
-
-    vec2f const * restrict pointData = points.data();
-    SpringEndpoints const * restrict springData = springs.data();
-    vec2f * restrict resultData = results.data();
-    float * restrict lengthData = lengths.data();
-
-    for (auto _ : state)
-    {
-        Algorithms::CalculateVectorDirsAndReciprocalLengths_SSE(
-            pointData,
-            springData,
-            resultData,
-            lengthData,
-            size);
-    }
-
-    benchmark::DoNotOptimize(results);
-    benchmark::DoNotOptimize(lengths);
-}
-BENCHMARK(VectorNormalization_Algorithm);
-
-#endif
-
 //////////////////////////////////////////////////////////////////////////////
 
 /* Two passes make it considerably worse
