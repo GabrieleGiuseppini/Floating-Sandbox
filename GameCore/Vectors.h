@@ -35,8 +35,8 @@ public:
         float angle) // Angle is CW, starting FROM E (1.0, 0.0); angle 0.0 <=> (1.0, 0.0); angle +PI/2 <=> (0.0, -1.0)
     {
         return vec2f(
-            magnitude * std::cos(angle),
-            -magnitude * std::sin(angle)); // Angle is CW and our positive points up
+            magnitude * std::cosf(angle),
+            -magnitude * std::sinf(angle)); // Angle is CW and our positive points up
     }
 
     inline constexpr vec2f()
@@ -53,42 +53,42 @@ public:
     {
     }
 
-    inline vec2f operator+(vec2f const & other) const
+    inline constexpr vec2f operator+(vec2f const & other) const
     {
         return vec2f(
             x + other.x,
             y + other.y);
     }
 
-    inline vec2f operator-(vec2f const & other) const
+    inline constexpr vec2f operator-(vec2f const & other) const
     {
         return vec2f(
             x - other.x,
             y - other.y);
     }
 
-    inline vec2f operator-() const
+    inline constexpr vec2f operator-() const
     {
         return vec2f(
             -x,
             -y);
     }
 
-    inline vec2f operator*(vec2f const & other) const
-    {
-        return vec2f(
-            x * other.x,
-            y * other.y);
-    }
-
-    inline vec2f operator*(float other) const
+    inline constexpr vec2f operator*(float other) const
     {
         return vec2f(
             x * other,
             y * other);
     }
 
-    inline vec2f operator/(float other) const
+    inline constexpr vec2f operator*(vec2f const & other) const
+    {
+        return vec2f(
+            x * other.x,
+            y * other.y);
+    }
+
+    inline constexpr vec2f operator/(float other) const
     {
         return vec2f(
             x / other,
@@ -169,7 +169,7 @@ public:
 
     inline float length() const noexcept
     {
-        return std::sqrt(x * x + y * y);
+        return std::sqrtf(x * x + y * y);
     }
 
     inline float squareLength() const noexcept
@@ -182,7 +182,7 @@ public:
         float const squareLength = x * x + y * y;
         if (squareLength != 0)
         {
-            return (*this) / std::sqrt(squareLength);
+            return (*this) / std::sqrtf(squareLength);
         }
         else
         {
@@ -281,7 +281,7 @@ public:
     }
 
     /*
-     * Returns the vector rotated by PI/2.
+     * Returns the vector rotated (CCW) by PI/2.
      */
     inline vec2f to_perpendicular() const noexcept
     {
@@ -293,9 +293,14 @@ public:
      */
     inline vec2f rotate(float angle) const noexcept
     {
-        float const cosAngle = std::cos(angle);
-        float const sinAngle = std::sin(angle);
+        return rotate(std::cosf(angle), std::sinf(angle));
+    }
 
+    /*
+     * Rotates the vector by the specified cos/sin (radians, CCW, starting at E).
+     */
+    inline vec2f rotate(float cosAngle, float sinAngle) const noexcept
+    {
         return vec2f(
             x * cosAngle - y * sinAngle,
             x * sinAngle + y * cosAngle);
@@ -461,7 +466,7 @@ public:
 
     float length() const noexcept
     {
-        return std::sqrt(x * x + y * y + z * z);
+        return std::sqrtf(x * x + y * y + z * z);
     }
 
     float squareLength() const noexcept
@@ -474,7 +479,7 @@ public:
         float const squareLength = x * x + y * y + z * z;
         if (squareLength != 0)
         {
-            return (*this) / std::sqrt(squareLength);
+            return (*this) / std::sqrtf(squareLength);
         }
         else
         {
