@@ -64,35 +64,36 @@
 		- So that may upload to GPU buffers directly, instead of local temp buffers
 			- Eventually using mapped buffers
 
-	- Quad rendering with indices
-		- Sharing VBOs (for indices) in VAOs: 
-			- https://computergraphics.stackexchange.com/questions/4623/multiple-vao-share-a-vbo
-			- https://stackoverflow.com/questions/23542355/using-a-vertex-buffer-in-two-different-vertex-array-objects
-			- Idea: one single "TriangleQuadIndexSeries" (or "sequence") VBO for all render contexts, created and initialized in GlobalRenderContext, and passed
-			  to all child contextes via cctor
-				- New class in OpenGL lib: TriangleQuadIndexSeriesVBO (or "sequence")
-					- Wraps VBO (private) and local buffer (BoundedVector, private)
-						- VBO created in static factory (read below, instance of TriangleQuadIndexSeriesVBO is deferred-init'd as uq_ptr)
-					- Exposes void ensure_size(# of quads)
-						- If # of quads > current: enlarge & populate local buffer, flag as dirty
-						- Starts empty
-					- Exposes IsDirty()
-					- Exposes Bind()
-					- Exposes Upload()
-						- Binds and uploads
-					- OLD:						
-						- Exposes void ensure_size(# of quads)
-							- If # of quads > current: enlarge & populate local buffer, re-allocates VBO and uploads new portion
-							- Starts empty
-						- Exposes VBO via getter
+	= Quad rendering with indices
+		= Sharing VBOs (for indices) in VAOs: 
+			! https://computergraphics.stackexchange.com/questions/4623/multiple-vao-share-a-vbo
+				! Binding the (GL_ELEMENT_ARRAY_BUFFER) buffer ties it to the currently bound VAO
+			! https://stackoverflow.com/questions/23542355/using-a-vertex-buffer-in-two-different-vertex-array-objects
+				! You can bind the ELEMENT_ARRAY_BUFFER in the setup as well. That binding is part of the VAO state
+			= Idea: one single "TriangleQuadElementArrayVBO" VBO for all render contexts, created and initialized in GlobalRenderContext, and passed
+			  to all child contextes via cctor - as non-const &
+				+ New class in OpenGL lib: TriangleQuadElementArrayVBO
+					+ Wraps VBO (private) and local buffer (BoundedVector, private)
+						+ VBO created in static factory (read below, instance of TriangleQuadElementArrayVBO is deferred-init'd as uq_ptr)
+					+ Exposes void ensure_size(# of quads)
+						+ If # of quads > current: enlarge & populate local buffer, flag as dirty
+						+ Starts empty
+					+ static Create() -> uq_ptr
+						+ Creates VBO
+					+ Exposes IsDirty()
+					+ Exposes Bind()
+					+ Exposes Upload()
+						+ Binds and uploads
+				- Copy from BaryLab
 				- One single instance owned by GlobalRenderContext, as uq_ptr (w/deferred creation via static Create())
 					- At GlobalRenderContext::cctor() (verify doable)
-				- Passed to child contextes as reference
+				- Passed to child contextes as non-const reference				
 				- GlobalContext does:
-					- @RenderPrepare: if TriangleQuadsSeriesVBO.IsDirty: Upload()
-				- Child contextes do:				
-					- Upload(): ensure_size(# of quads)
-					- Draw: Bind before drawing quads
+					- @ Own setup: create it - via static Create() -> uq_ptr -> member
+					- @RenderPrepare: if TriangleQuadElementArrayVBO.IsDirty: Upload()
+				- Child contextes do:	
+					-  @ VAO Setups: Bind()
+					- Own Upload(): ensure_size(# of quads)
 		- Test with bubbles
 			- Do
 			- New Dell: 

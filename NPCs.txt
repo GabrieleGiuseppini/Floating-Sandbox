@@ -1036,12 +1036,12 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 			+ 8192 human NPCs, all walking:
 				- Update: 2.7ms
 				- RenderUpload:  1.9ms
-				+++
-				- Current best: 2.6, 1.7
-				- Current best: 2.5, 1.6
+				
 
 	= Optimizations:
 		+ Run perf analysis
+
+			++++++ Initial
 			+ Npcs::UpdateNpcs: 41.33%
 				- Npcs::UpdateNpcParticlePhysics: 19.08%
 					- Npcs::CalculateNpcParticleDefinitiveForces: 5.29%
@@ -1052,12 +1052,49 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 			+ Npcs::RenderUpload: 45.22%
 				- Npcs::RenderNpc: 30.63%
 					- RenderContext::UploadNpcQuad: 21.31% => 18.04%->18.25%
-			++++++
+			++
 			+ sin: 5.39%
 			+ atan2f: 4.34%
+
+			++++++ Interim 1
+			+ Npcs::UpdateNpcs: 38.86%
+				- Npcs::UpdateNpcParticlePhysics: 18.90%
+					- Npcs::CalculateNpcParticleDefinitiveForces: 5.24%
+						- atan2f: 2.25%
+				- Npcs::UpdateNpcAnimation: 8.38%
+					- atanf: 1.02%
+				- Npcs::UpdateHuman: 5.19%
+				- Npcs::CalculateNpcParticlePreliminaryForces: 1.83%
+			+ Npcs::RenderUpload: 41.76%
+				- Npcs::RenderNpc: 28.27%
+					- RenderContext::UploadNpcQuad: 20.18%
+			++
+			+ atan2f: 4.75%
+			+ atanf: 1.02%
+			++
+			+ Measurements 2.5/2.6, 1.2
+
+			++++++ Interim 2 (equilibrium torque)
+			+ Npcs::UpdateNpcs: TODOHERE38.86%
+				- Npcs::UpdateNpcParticlePhysics: 18.90%
+					- Npcs::CalculateNpcParticleDefinitiveForces: 5.24%
+						- atan2f: 2.25%
+				- Npcs::UpdateNpcAnimation: 8.38%
+					- atanf: 1.02%
+				- Npcs::UpdateHuman: 5.19%
+				- Npcs::CalculateNpcParticlePreliminaryForces: 1.83%
+			+ Npcs::RenderUpload: 41.76%
+				- Npcs::RenderNpc: 28.27%
+					- RenderContext::UploadNpcQuad: 20.18%
+			++
+			+ atan2f: 4.75%
+			+ atanf: 1.02%
+			++
+			+ Measurements 2.4, 1.2
+
 		- Update:
-			- CalculateNpcParticlePreliminaryForces:
-				= Precalc most spring force factors
+			+ CalculateNpcParticlePreliminaryForces:
+				+ Precalc most spring force factors
 					+ Figure out what to do with BaryLab's specific parameters (gravity adj/gate, mass adj)
 						+ 1. Npcs own the BaryLab-specific params (GravityAdj/Gate, MassAdj)
 							+ Out of GameParameters, and LabController sets them in Npcs
@@ -1087,6 +1124,9 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 					X Option 2: no adjustment if negative
 					+ Option 3: limit lambda
 				+ Vectorize target progress
+				+ Traverse dir's do redundant normalization
+					+ F/B
+					+ L/R
 			+ Own sincos_p4 from http://gruntthepeon.free.fr/ssemath/sse_mathfun.h
 				+ 1. Merge GameMath
 				+ 2. FS: UnitTests
@@ -1098,37 +1138,71 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 					+ Make AnimationState members as vectors4
 			X Own atan2
 				+ Merge vectors
-			- CalculateNpcParticleDefinitiveForces: see if can do without atan2
-				- Precalc?
+			= See if can do without atan2
+				+ CalculateNpcParticleDefinitiveForces: radial rearc: similar to springs:
+					+ Torque force is radial, and resultant of two components:
+						+ 1: Hookean force proportional to length of arc to destination, directed towards the ideal head position
+							- But we approximate the arc with the chord, i.e. the distance between source and destination
+								- Source is *predicted* source
+						+ 2: Damp force proportional to component of relative velocity that is orthogonal to human vector, opposite that velocity
+					+ If ok:
+						+ Cleanup/Optimize
+						+ Test:
+							+ Panic
+							+ Different human height
+				- CheckAndMaintainHumanEquilibrium: work with cos (i.e. dot)
+			X See SSE load immediate
+			+ Make limb vectors aligned 
+				+ Change loadu/storeu back to a - Algorithms and GameMath
 			- Various normalize() -> approx
+			- See if there are any ray-tracing bcoord conversions that are redundant if we have abs positions
+				- The TODOHERE's
+			- Inline various simulation funcs
+				- NavigateVertex
+				- ...
 			- See if can get rid of IsOnFloorEdge - by using CurrentVirtualEdge
 				! IsOnFloorEdge() is currently used for:
 					- Human behavior update: transitions depend on whether feet/head are on edge
 					- Human animation update: rag doll, etc.
 				- As long as CurrentVirtualEdge is only and always set when we know we're on an edge (ConstrainedNonInertial)
 					- At this moment it's set _before_; we need to set it _after_, reflecting actual situation _after_
-						- TODO: really? ain't it fine if we use the situation "before"?
 						- Initialization - as "free"
 						- After ConstrainedNonInertial, where we may be:
-							- Still non-inertial, (but might be on a different triangle and thus edge)
-							- Become inertial 
-							- Become free
+							- Still non-inertial, (but might be on a different triangle and thus different edge, but definitely on an edge)
+							- Have become inertial (so not on an edge)
+							- Have become free (so not even constrained)
+							- SO: just use edge if at exit we're constrained *and* on an edge
 						- After ConstrainedInertial:
 							- Always "free" (-1), as we only decide we become on an edge @ ConstrainedNonInertial
-						- Free: assert it's -1
-			- @UpdateAnimation:
-				- Walking:
-					- Leg length adjustments: see if may re-use anything
-			- Bary coords:									
+						- Free: assert it's -1 (actually, does it even exist?)
+			- Bary coords:
+				- Check assembly
 				- Can do two coords in parallel via SIMD?
 					- Move to Algorithms, then add unit tests (all of this in FS first)
 				- Read https://fgiesen.wordpress.com/2013/02/10/optimizing-the-basic-rasterizer/
 		- RenderUpload:
 			+ Pre-alloc quad buffer
-			- Vectorized rotation?
+			X UploadNpcQuad force-inlined
+				! Didn't change anything
+			+ Analyze asm
+			- Vectorized rotation
+				- Broadcast first actualBodyVDir.x to __m128 x and actualBodyVDir.y to __m128 y
+				- Sin and Cos are already vectors
+				- xx[0] = x[0]*c[0] - y[0]*s[0]
+				- yy[0] = x[0]*s[0] + y[0]*c[0]
+				- L Arm is (xx[0], yy[0])
+				- ...
+
+				- Alternative:
+				- __m128 v = (actualBodyVDir.x, actualBodyVDir.y, actualBodyVDir.x, actualBodyVDir.y)
+				- xx[0] = v[0]*c[0] - v[1]*s[0] ?!?!?!
+
 			= BoundedVector: find way to reserve+take pointer+advance pointer; see if improves
 				- Add to list of things to port to FS
-			- Reuse edges
+			+ Index work to lower # of vertices per quad
+				+ Use at RenderContext
+			- Reuse edges?
+		- Profile swimming (free)
 
 	- Integration into FS - 2
 		! Goal: be able to copy folder of files seamlessly across FS and BL
