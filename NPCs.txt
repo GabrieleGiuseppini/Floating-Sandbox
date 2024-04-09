@@ -1075,24 +1075,26 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 			+ Measurements 2.5/2.6, 1.2
 
 			++++++ Interim 2 (equilibrium torque)
-			+ Npcs::UpdateNpcs: TODOHERE38.86%
-				- Npcs::UpdateNpcParticlePhysics: 18.90%
-					- Npcs::CalculateNpcParticleDefinitiveForces: 5.24%
-						- atan2f: 2.25%
-				- Npcs::UpdateNpcAnimation: 8.38%
-					- atanf: 1.02%
-				- Npcs::UpdateHuman: 5.19%
-				- Npcs::CalculateNpcParticlePreliminaryForces: 1.83%
-			+ Npcs::RenderUpload: 41.76%
-				- Npcs::RenderNpc: 28.27%
-					- RenderContext::UploadNpcQuad: 20.18%
-			++
-			+ atan2f: 4.75%
-			+ atanf: 1.02%
-			++
 			+ Measurements 2.4, 1.2
 
-		- Update:
+			++++++ Interim 3 (equilibrium maintenance, last atan)
+			+ Npcs::UpdateNpcs: 42.22%
+				- Npcs::UpdateNpcParticlePhysics: 20.98%
+					- Npcs::CalculateNpcParticleDefinitiveForces: 3.52%
+					- ToBarycentricCoords: 2.10%
+				- Npcs::UpdateNpcAnimation: 10.23%
+					- atanf: 1.01%
+				- Npcs::UpdateHuman: 2.93%
+				- Npcs::CalculateNpcParticlePreliminaryForces: 2.28%
+			+ Npcs::RenderUpload: 33.77%
+				- Npcs::RenderNpc: 22.69%
+					- RenderContext::UploadNpcQuad: 14.66%
+			++
+			+ atanf: 1.01%
+			++
+			+ Measurements 2.3, 1.1
+
+		= Update:
 			+ CalculateNpcParticlePreliminaryForces:
 				+ Precalc most spring force factors
 					+ Figure out what to do with BaryLab's specific parameters (gravity adj/gate, mass adj)
@@ -1138,7 +1140,7 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 					+ Make AnimationState members as vectors4
 			X Own atan2
 				+ Merge vectors
-			= See if can do without atan2
+			+ See if can do without atan2
 				+ CalculateNpcParticleDefinitiveForces: radial rearc: similar to springs:
 					+ Torque force is radial, and resultant of two components:
 						+ 1: Hookean force proportional to length of arc to destination, directed towards the ideal head position
@@ -1150,7 +1152,12 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 						+ Test:
 							+ Panic
 							+ Different human height
-				- CheckAndMaintainHumanEquilibrium: work with cos (i.e. dot)
+				+ CheckAndMaintainHumanEquilibrium: work with cos (i.e. dot) and cross
+					+ Angle wrt vertical: use y component of normalized vector (+1.0 if fully vertical, i.e. cos); we're out if y < cos(MaxAngle)
+					+ Angle rel vel: 
+						+ We're out (diverging) if RV dot perp(humanDir) < or > 0 depending on whether H is left or right of IH
+							+ => out iff RV dot perp(humanDir) * (IH.x - H.x) > 0
+					+ Also calc RV only if needed
 			X See SSE load immediate
 			+ Make limb vectors aligned 
 				+ Change loadu/storeu back to a - Algorithms and GameMath
@@ -1159,22 +1166,29 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 				- The TODOHERE's
 			- Inline various simulation funcs
 				- NavigateVertex
+				- Bary coords
 				- ...
+			- See if can do without tan
 			- See if can get rid of IsOnFloorEdge - by using CurrentVirtualEdge
 				! IsOnFloorEdge() is currently used for:
 					- Human behavior update: transitions depend on whether feet/head are on edge
 					- Human animation update: rag doll, etc.
 				- As long as CurrentVirtualEdge is only and always set when we know we're on an edge (ConstrainedNonInertial)
 					- At this moment it's set _before_; we need to set it _after_, reflecting actual situation _after_
+						! Current impl seems broken when we bounce
 						- Initialization - as "free"
 						- After ConstrainedNonInertial, where we may be:
 							- Still non-inertial, (but might be on a different triangle and thus different edge, but definitely on an edge)
 							- Have become inertial (so not on an edge)
 							- Have become free (so not even constrained)
 							- SO: just use edge if at exit we're constrained *and* on an edge
+								- TODO: no this is broken, 1) when we're at a vertex
+								- TODO: see solution on notebook
 						- After ConstrainedInertial:
 							- Always "free" (-1), as we only decide we become on an edge @ ConstrainedNonInertial
 						- Free: assert it's -1 (actually, does it even exist?)
+					- While we're here: see if ConstrainedNonInertial can rollback current tri/coords at bounce, so we can get rid of "vertical edge" issue
+						- But then see effect of this change on gravity well
 			- Bary coords:
 				- Check assembly
 				- Can do two coords in parallel via SIMD?
@@ -1197,12 +1211,16 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 				- __m128 v = (actualBodyVDir.x, actualBodyVDir.y, actualBodyVDir.x, actualBodyVDir.y)
 				- xx[0] = v[0]*c[0] - v[1]*s[0] ?!?!?!
 
-			= BoundedVector: find way to reserve+take pointer+advance pointer; see if improves
+			= BoundedVector: find way to reserve+take_pointer+advance pointer; see if improves
 				- Add to list of things to port to FS
 			+ Index work to lower # of vertices per quad
 				+ Use at RenderContext
 			- Reuse edges?
-		- Profile swimming (free)
+
+		- Profile swimming (free regime)
+
+	- Aerial: go to Knocked Out on impact only if head hit
+	- See if recovers from hanging on feet
 
 	- Integration into FS - 2
 		! Goal: be able to copy folder of files seamlessly across FS and BL
@@ -1239,8 +1257,6 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 				+ If walking and impact V (velocity of particle along normal) is in direction of walking:
 					+ Flip direction
 
-	- Allow more slope to undergo impact continuation if we're walking against it
-
 	= Add velocity damp
 		+ When free
 		- When constrained
@@ -1263,7 +1279,7 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 					- Anything else?
 				- Test if BaryLab's triangle navigation algo's are ok with it
 		- "manholes"
-			- Floor info is on Triangle, not on Spring
+			+ Enabled by having floor info on Triangle, not on Spring
 
 - NpcDatabase:
 	- Provides info on humans (e.g. role colors, frame IDs) and furniture (dimensions, orientation, frame IDs)
@@ -1334,3 +1350,7 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 	- User can choose between "Exterior" view and "Interior" view, via menu
 		- While an NPC placement tool is selected, the game switches temporarily to "Interior" view, regardless of current setting
 
+- Sounds:
+	- Like we do with others: NpcMaterial has (own) SoundType property
+	- Human events:
+		- Hit (@ bounce), Exclamation (@ loss of equilibrium)
