@@ -1092,9 +1092,9 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 			++
 			+ atanf: 1.01%
 			++
-			+ Measurements 2.3, 1.1
+			+ Measurements 2.3, 1.1/1.2
 
-		= Update:
+		+ Update:
 			+ CalculateNpcParticlePreliminaryForces:
 				+ Precalc most spring force factors
 					+ Figure out what to do with BaryLab's specific parameters (gravity adj/gate, mass adj)
@@ -1112,7 +1112,7 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 							+ Gravity
 							+ Spring 1
 							+ Spring 2
-			= UpdateNpcAnimation:
+			+ UpdateNpcAnimation:
 				+ Try with calculating cos & sin once there (after target angle calc'n) and reusing those @ multiplier calculation _after_ target angle
 					+ Count first
 					+ New sub-struct: AnimationState
@@ -1161,19 +1161,39 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 			X See SSE load immediate
 			+ Make limb vectors aligned 
 				+ Change loadu/storeu back to a - Algorithms and GameMath
-			- Various normalize() -> approx
-			- See if there are any ray-tracing bcoord conversions that are redundant if we have abs positions
-				- The TODOHERE's
-			- Inline various simulation funcs
-				- NavigateVertex
-				- Bary coords
-				- ...
-			- See if can do without tan
-			- See if can get rid of IsOnFloorEdge - by using CurrentVirtualEdge
+			+ RenderUpload: should not need any normalization()
+			+ Various normalize() -> approx
+				+ RenderUpload Quads
+				+ Equilibrium torque
+				+ Walking: limb-on-edge constrains (angle+length)
+				+ Falling limbs
+				+ Rag-doll limbs
+				+ Equilibrium maintenance
+				+ 2.2/1.2
+			+ See if there are any ray-tracing bcoord conversions that are redundant if we have abs positions
+			+ Fix walking speed adj changes not picked up
+				+ Test panic
+			+ The TODO:perf at walking
+			+ See why flipping walk when on slope and mesh rotates
+			+ Inline various simulation funcs
+				+ NavigateVertex
+				+ Bary coords
+				+ 2.1/1.2
+			+ See if can do without atan @ UpdateAnimation - Constrained_Walking
+				+ 2.1/1.2
+			+ Fix: going through wall - repro: all humans, slight inclination
+			+ Fix: getting stuck - repro: all humans, slight inclination
+				! Definitely due to epsilon too small: got a case with -1.00127444e-07/-1.45286322e-07
+				+ Algo for "other side of edge":
+					+ InternalCalc takes vertex ordinal "anchor" and two other vertex ordinals (as non-anchors)
+					+ Calc coords using any of not-edge as anchors (=> edge is one of the two coords calc'd)
+					+ Then clamp edge and calc 3rd coeff via 1-...
+				+ Cleanup
+			+ See if can get rid of IsOnFloorEdge - by using CurrentVirtualEdge
 				! IsOnFloorEdge() is currently used for:
 					- Human behavior update: transitions depend on whether feet/head are on edge
 					- Human animation update: rag doll, etc.
-				- As long as CurrentVirtualEdge is only and always set when we know we're on an edge (ConstrainedNonInertial)
+				! As long as CurrentVirtualEdge is only and always set when we know we're on an edge (ConstrainedNonInertial)
 					- At this moment it's set _before_; we need to set it _after_, reflecting actual situation _after_
 						! Current impl seems broken when we bounce
 						- Initialization - as "free"
@@ -1189,11 +1209,33 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 						- Free: assert it's -1 (actually, does it even exist?)
 					- While we're here: see if ConstrainedNonInertial can rollback current tri/coords at bounce, so we can get rid of "vertical edge" issue
 						- But then see effect of this change on gravity well
-			- Bary coords:
-				- Check assembly
-				- Can do two coords in parallel via SIMD?
-					- Move to Algorithms, then add unit tests (all of this in FS first)
-				- Read https://fgiesen.wordpress.com/2013/02/10/optimizing-the-basic-rasterizer/
+				+ Impl:
+					+ Undo cur changes - diff first!
+					+ GameTypes: TriangleEdge (TriangleElementIndex, EdgeOrdinal)
+						+ Never "None" indices/ordinals
+						X Also replace in well detection machinery
+							! That one has bary coords
+					+ CurrentVirtualFloor: opt<TriangleEdge>
+					+ Do code changes
+						+ Mostly cosmetic, with the only change being the triangle being correct now
+					+ Verify walk-bounce animation behavior now (legs angles & lengths)
+					+ Try with older (higher) convergence rate now
+					+ IsOnFloorEdge: see if may nuke it & replace with check for CurrentVirtualFloor
+						+ Do parallel+check first, with logging
+						+ Some dynamics have changed, see if for better or worse
+							+ Set current_virtual_floor at *inertial* bounce - after all it's a floor edge we're on at that (infinitesimal, frame) moment
+				+ Tests:
+					+ Constrained_Aerial -> Falling (feet or head have V)
+					+ Constrained_Aerial -> Rising (no V)
+					+ Animation of rising: helping leg/arm
+					+ Animation of walking: leg lengths and leg angle limits
+				+ Cleanups:
+					+ Nuke IsOnFloorEdge
+		- Bary coords:
+			+ Check assembly
+			- Can do two coords in parallel via SIMD?
+				- Move to Algorithms, then add unit tests (all of this in FS first)
+			- Read https://fgiesen.wordpress.com/2013/02/10/optimizing-the-basic-rasterizer/
 		- RenderUpload:
 			+ Pre-alloc quad buffer
 			X UploadNpcQuad force-inlined
@@ -1219,8 +1261,28 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 
 		- Profile swimming (free regime)
 
-	- Aerial: go to Knocked Out on impact only if head hit
-	- See if recovers from hanging on feet
+	- Problem with running up a slope (messy stumbling): adjust max slope for flip upon inertial bounce? It's not _walk_ hit after all
+		- Re-check role of bounce in that mess to see if this is really the case
+	- Lower human elast
+	- Lower max speed
+	= Add velocity damp
+		+ When free
+		- When constrained
+			- At all velocity calculations, but only when we ended up not on an edge (i.e. when moving to "inside triangle")
+				- Is that simply at ConstrainedInertial and _never_ at ConstrainedNonInertial?
+				- Only do it if we are NOT in a state at which we apply torque (because damp kills equilibrium, as secondary doesn't gain enough velocity from walk)
+		+ And slider
+		- Test
+	- See if now recovers from hanging on feet
+		- Requires velocity damp work below (*)
+
+	+ Random width
+		+ Skew: thin stddev 0.05, fat 0.15
+			+ And cap for safety
+	+ Randomize to-rising convergence rates
+	+ Wave simulation
+
+	- Video
 
 	- Integration into FS - 2
 		! Goal: be able to copy folder of files seamlessly across FS and BL
@@ -1229,8 +1291,9 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 			- SurfaceType
 			- OppositeTriangle
 			- etc?
+		- GameTypes: BaryLab->FS
 		- Move Npc simulation files under NpcSimulation folder
-			- Not VS GUI, that's "Physics"
+			- Not VS GUI, that's still "Physics"
 		- Port NpcMaterial.* and NpcMaterialDatabase.* into Materials.* and MaterialDatabase.*
 		- Port GameParameters settings that we need
 		- TODOHERE
@@ -1256,15 +1319,6 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 			+ OnImpact: if human, check state machine and do following transitions:
 				+ If walking and impact V (velocity of particle along normal) is in direction of walking:
 					+ Flip direction
-
-	= Add velocity damp
-		+ When free
-		- When constrained
-			- At all velocity calculations, but only when we ended up not on an edge (i.e. when moving to "inside triangle")
-				- Is that simply at ConstrainedInertial and _never_ at ConstrainedNonInertial?
-				- And: doing it at ConstrainedInertial kills equilibrium, as secondary doesn't gain enough velocity from walk -- TODOHERE: requires thought
-		+ And slider
-		- Test
 			
 	- Other walking features:
 		- See if can detect that will hit a wall/well by projecting forward primary particle along triangle edge; if will hit, turn around
@@ -1301,11 +1355,11 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 	- NPCs will have two sets of vertex attributes:
 		- Static ones: contain static properties (colors - incl, highlight, texture coords)
 			- Only reloaded at e.g. NPC insertion/removal, or when face direction of at least one NPC changes, or when highlight of at least one NPC changes
-				- Face direction changes done via helper, which also marks "static render attributes dirty" (a single Npcs-wide boolean)
+				- Face direction changes done via single helper, which also marks "static render attributes dirty" (a single Npcs-wide boolean)
 		- Dynamics ones: contain things that change at each frame (world vertices, )
-	- Use indices for quad vertices
-		- Good use case to experiment with the "quad single index buffer" feature
-	- NpcType needs an associated NpcOrientation, because the way a quad is laid out around the particles for a human is different than that of a table
+	+ Use indices for quad vertices
+		+ Good use case to experiment with the "quad single index buffer" feature
+	- NpcType needs an associated per-NPC NpcOrientation, because the way a quad is laid out around the particles for a human is different than that of a table
 		- Uhm: after all a table is not that simple - think when flipping it
 	- Quad shader:
 		- Discard  when transparent
@@ -1335,7 +1389,7 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 	- Doors:
 		- Triangle edge/floors: split "factory" vs. "actual"
 	- NPCs add mass to particle
-		- Ship::Update asks NPCs (via ParentWorld) to add themselves to Points' masses
+		- Ship::Update asks NPCs (via ParentWorld) to add themselves to Points' (definitive) masses
 
 - Layers:
 	- Floorplan layer:
