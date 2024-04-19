@@ -1094,6 +1094,9 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 			++
 			+ Measurements 2.3, 1.1/1.2
 
+			++++++ Interim 4
+			+ Measurements 2.1, 1.1/1.2
+
 		+ Update:
 			+ CalculateNpcParticlePreliminaryForces:
 				+ Precalc most spring force factors
@@ -1231,7 +1234,7 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 					+ Animation of walking: leg lengths and leg angle limits
 				+ Cleanups:
 					+ Nuke IsOnFloorEdge
-		- Bary coords:
+		= Bary coords:
 			+ Check assembly
 			- Can do two coords in parallel via SIMD?
 				- Move to Algorithms, then add unit tests (all of this in FS first)
@@ -1240,7 +1243,37 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 			+ Pre-alloc quad buffer
 			X UploadNpcQuad force-inlined
 				! Didn't change anything
-			+ Analyze asm
+			- Analyze asm
+				+ Lots of things seem optimizable, make sure compiler has optimized them
+				- Any chance this may be reduced?
+					- Pass less args - let renderctx do the quad
+
+00007FF65BF70F90 F3 0F 11 44 24 20    movss       dword ptr [rsp+20h],xmm0  
+00007FF65BF70F96 F3 0F 5C F3          subss       xmm6,xmm3  
+00007FF65BF70F9A 0F 28 D7             movaps      xmm2,xmm7  
+00007FF65BF70F9D F3 0F 10 5C 24 5C    movss       xmm3,dword ptr [rsp+5Ch]  
+00007FF65BF70FA3 F3 0F 58 D5          addss       xmm2,xmm5  
+00007FF65BF70FA7 F3 0F 5C FD          subss       xmm7,xmm5  
+00007FF65BF70FAB F3 0F 11 5C 24 30    movss       dword ptr [rsp+30h],xmm3  
+00007FF65BF70FB1 F3 0F 10 9B C0 00 00 00 movss       xmm3,dword ptr [rbx+0C0h]  
+00007FF65BF70FB9 F3 44 0F 11 44 24 34 movss       dword ptr [rsp+34h],xmm8  
+00007FF65BF70FC0 F3 0F 11 74 24 40    movss       dword ptr [rsp+40h],xmm6  
+00007FF65BF70FC6 F3 0F 11 64 24 48    movss       dword ptr [rsp+48h],xmm4  
+00007FF65BF70FCC F3 0F 11 7C 24 44    movss       dword ptr [rsp+44h],xmm7  
+00007FF65BF70FD2 F3 0F 11 54 24 4C    movss       dword ptr [rsp+4Ch],xmm2  
+00007FF65BF70FD8 E8 13 1B 00 00       call        RenderContext::UploadNpcQuad (07FF65BF72AF0h)  
+
+						planeId,
+						Quadf(
+							leftArmJointPosition - leftArmTraverseVector,
+							leftArmJointPosition + leftArmTraverseVector,
+							leftArmJointPosition + leftArmVector - leftArmTraverseVector,
+							leftArmJointPosition + leftArmVector + leftArmTraverseVector),
+						humanNpcState.CurrentFaceOrientation,
+						humanNpcState.CurrentFaceDirectionX,
+						npc.Highlight);
+
+
 			- Vectorized rotation
 				- Broadcast first actualBodyVDir.x to __m128 x and actualBodyVDir.y to __m128 y
 				- Sin and Cos are already vectors
@@ -1249,32 +1282,47 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 				- L Arm is (xx[0], yy[0])
 				- ...
 
-				- Alternative:
-				- __m128 v = (actualBodyVDir.x, actualBodyVDir.y, actualBodyVDir.x, actualBodyVDir.y)
-				- xx[0] = v[0]*c[0] - v[1]*s[0] ?!?!?!
-
 			= BoundedVector: find way to reserve+take_pointer+advance pointer; see if improves
 				- Add to list of things to port to FS
 			+ Index work to lower # of vertices per quad
 				+ Use at RenderContext
-			- Reuse edges?
 
 		- Profile swimming (free regime)
 
-	- Problem with running up a slope (messy stumbling): adjust max slope for flip upon inertial bounce? It's not _walk_ hit after all
-		- Re-check role of bounce in that mess to see if this is really the case
+	- Problem with running up a slope (messy stumbling): it's due to the human angle becoming too low, after feet bounce on floor
+		- There isn't much to do here?
+	- Lower max speed - REALLY?
 	- Lower human elast
-	- Lower max speed
-	= Add velocity damp
+	+ Add velocity damp
 		+ When free
-		- When constrained
-			- At all velocity calculations, but only when we ended up not on an edge (i.e. when moving to "inside triangle")
-				- Is that simply at ConstrainedInertial and _never_ at ConstrainedNonInertial?
-				- Only do it if we are NOT in a state at which we apply torque (because damp kills equilibrium, as secondary doesn't gain enough velocity from walk)
-		+ And slider
-		- Test
+		+ When constrained (*)
+			! Problem 1: needs to be only relative velocity part to be damped, not mesh velocity
+			! Problem 2: only secondary has torque velocity, so we'd always apply damping to primary (feet)
+				- Can solve with check on human behavior (one of those three behavior types)
+			+ Rearc:				
+				+ 1: replace NpcParticles' Torque buffer with HumanState::EquilibriumTorque (float)
+					+ Reset at UpdateHumanBehavior
+					+ Set when we currently set it
+				+ 2: apply torque conditionally at CalculateDefinitiveForces():
+					+ If Human && EquilibriumTorque != 0.0 && is secondary
+				+ Test & commit
+				+ 3: apply damp:
+					! General principle: damp should only apply to relative velocity (relative to mesh)
+					+ At all velocity calculations (both pri+sec), but only if NOT (Human && EquilibriumTorque != 0.0) 
+						! Because damp kills equilibrium, as secondary doesn't gain enough velocity from walk
+						+ Apply to non-mesh portion of absolute velocity
+					+ Include bounce velocity (because it's calculated from new absolute) 
+						+ But only to relative velocity part (same trick - removing mesh velocity?)
+					+ Except gravity well velocity (because mesh velocity is not to be damped)
+				+ Tests:
+					+ Jumping while ship is in motion: damp should NOT apply (as relative velocity is zero)
+		+ Add slider
 	- See if now recovers from hanging on feet
-		- Requires velocity damp work below (*)
+		+ Requires velocity damp work above (*)
+		- Also has new problem: head hitting floor when rising up
+			- Because indeed angle is not "quite vertical", so we consider it a floor
+				- y is actually 0.6: even opposite sign of what we consider "quite vertical" for the purposes of "hanging head (w/head on top)"
+				- TODOHERE: how to fix this?
 
 	+ Random width
 		+ Skew: thin stddev 0.05, fat 0.15
