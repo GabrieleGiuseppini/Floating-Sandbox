@@ -1095,7 +1095,7 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 			+ Measurements 2.3, 1.1/1.2
 
 			++++++ Interim 4
-			+ Measurements 2.1, 1.1/1.2
+			+ Measurements 2.1/2.16, 1.1/1.2
 
 		+ Update:
 			+ CalculateNpcParticlePreliminaryForces:
@@ -1274,13 +1274,16 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 						npc.Highlight);
 
 
-			- Vectorized rotation
-				- Broadcast first actualBodyVDir.x to __m128 x and actualBodyVDir.y to __m128 y
-				- Sin and Cos are already vectors
-				- xx[0] = x[0]*c[0] - y[0]*s[0]
-				- yy[0] = x[0]*s[0] + y[0]*c[0]
-				- L Arm is (xx[0], yy[0])
-				- ...
+			x Vectorized rotation
+				! Broadcast first actualBodyVDir.x to __m128 x and actualBodyVDir.y to __m128 y
+				! Sin and Cos are already vectors
+				! xx[0] = x[0]*c[0] - y[0]*s[0]
+				! yy[0] = x[0]*s[0] + y[0]*c[0]
+				! L Arm is (xx[0], yy[0])
+				! ...
+				X Do at:
+					X F/B
+					X R/L
 
 			= BoundedVector: find way to reserve+take_pointer+advance pointer; see if improves
 				- Add to list of things to port to FS
@@ -1329,6 +1332,10 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 			+ And cap for safety
 	+ Randomize to-rising convergence rates
 	+ Wave simulation
+
+	= Note: LogDebug/NpcDebug evals args - have Log.h defined as macro
+		+ Do
+		- Integrate into FS - and test build
 
 	- Video
 
@@ -1384,11 +1391,26 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 			+ Enabled by having floor info on Triangle, not on Spring
 
 - NpcDatabase:
-	- Provides info on humans (e.g. role colors, frame IDs) and furniture (dimensions, orientation, frame IDs)
-	- Two sections, each own schema:
-		- Humans
-		- Furniture
-	- json refers to frames by name, but cctor - which also takes texture DB - stores references by numeric ID
+	- Spec:
+		- Provides info on humans (e.g. role colors, frame IDs) and furniture (dimensions, orientation, frame IDs)
+		- Two sections, each own schema:
+			- Humans
+			- Furniture
+		- json refers to frames by name, but cctor - which also takes texture DB - stores references (or even directly coords!) by numeric ID
+		- Allow for mergning of multiple "packs"
+			- So SubKind domain is expandable at runtime
+		- Also affects UI (for menu with list of subkind names, which might have multiple languages)
+	- Details:
+		- NpcSubKindId: uint
+			- TODO: want to differentiate btwn NpcKind's?
+		- Humans:
+			- (NpcSubKindId) -> TextureCoords, colors
+				- TODO: initialization gets texture DB to populate this
+			- (NpcSubKindId, Language) -> Name
+		- Furniture:
+			- (NpcSubKindId) -> TextureCoords
+			- (NpcSubKindId) -> IsDipole ? (Length, Width, Orientation, ...)
+			- (NpcSubKindId, Language) -> Name
 
 - Rendering:
 	- Atlas textures are aligned with HumanNpcKindType and FurnitureNpcKindType, e.g.:
