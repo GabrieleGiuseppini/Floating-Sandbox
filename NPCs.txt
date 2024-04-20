@@ -1333,9 +1333,9 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 	+ Randomize to-rising convergence rates
 	+ Wave simulation
 
-	= Note: LogDebug/NpcDebug evals args - have Log.h defined as macro
+	+ Note: LogDebug/NpcDebug evals args - have Log.h defined as macro
 		+ Do
-		- Integrate into FS - and test build
+		+ Integrate into FS - and test build
 
 	- Video
 
