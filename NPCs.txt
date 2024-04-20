@@ -1037,8 +1037,7 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 				- Update: 2.7ms
 				- RenderUpload:  1.9ms
 				
-
-	= Optimizations:
+	+ Optimizations:
 		+ Run perf analysis
 
 			++++++ Initial
@@ -1234,46 +1233,17 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 					+ Animation of walking: leg lengths and leg angle limits
 				+ Cleanups:
 					+ Nuke IsOnFloorEdge
-		= Bary coords:
+		+ Bary coords:
 			+ Check assembly
-			- Can do two coords in parallel via SIMD?
-				- Move to Algorithms, then add unit tests (all of this in FS first)
-			- Read https://fgiesen.wordpress.com/2013/02/10/optimizing-the-basic-rasterizer/
-		- RenderUpload:
+			X Can do two coords in parallel via SIMD?
+				X Move to Algorithms, then add unit tests (all of this in FS first)
+			= Read https://fgiesen.wordpress.com/2013/02/10/optimizing-the-basic-rasterizer/
+		+ RenderUpload:
 			+ Pre-alloc quad buffer
 			X UploadNpcQuad force-inlined
 				! Didn't change anything
-			- Analyze asm
+			+ Analyze asm
 				+ Lots of things seem optimizable, make sure compiler has optimized them
-				- Any chance this may be reduced?
-					- Pass less args - let renderctx do the quad
-
-00007FF65BF70F90 F3 0F 11 44 24 20    movss       dword ptr [rsp+20h],xmm0  
-00007FF65BF70F96 F3 0F 5C F3          subss       xmm6,xmm3  
-00007FF65BF70F9A 0F 28 D7             movaps      xmm2,xmm7  
-00007FF65BF70F9D F3 0F 10 5C 24 5C    movss       xmm3,dword ptr [rsp+5Ch]  
-00007FF65BF70FA3 F3 0F 58 D5          addss       xmm2,xmm5  
-00007FF65BF70FA7 F3 0F 5C FD          subss       xmm7,xmm5  
-00007FF65BF70FAB F3 0F 11 5C 24 30    movss       dword ptr [rsp+30h],xmm3  
-00007FF65BF70FB1 F3 0F 10 9B C0 00 00 00 movss       xmm3,dword ptr [rbx+0C0h]  
-00007FF65BF70FB9 F3 44 0F 11 44 24 34 movss       dword ptr [rsp+34h],xmm8  
-00007FF65BF70FC0 F3 0F 11 74 24 40    movss       dword ptr [rsp+40h],xmm6  
-00007FF65BF70FC6 F3 0F 11 64 24 48    movss       dword ptr [rsp+48h],xmm4  
-00007FF65BF70FCC F3 0F 11 7C 24 44    movss       dword ptr [rsp+44h],xmm7  
-00007FF65BF70FD2 F3 0F 11 54 24 4C    movss       dword ptr [rsp+4Ch],xmm2  
-00007FF65BF70FD8 E8 13 1B 00 00       call        RenderContext::UploadNpcQuad (07FF65BF72AF0h)  
-
-						planeId,
-						Quadf(
-							leftArmJointPosition - leftArmTraverseVector,
-							leftArmJointPosition + leftArmTraverseVector,
-							leftArmJointPosition + leftArmVector - leftArmTraverseVector,
-							leftArmJointPosition + leftArmVector + leftArmTraverseVector),
-						humanNpcState.CurrentFaceOrientation,
-						humanNpcState.CurrentFaceDirectionX,
-						npc.Highlight);
-
-
 			x Vectorized rotation
 				! Broadcast first actualBodyVDir.x to __m128 x and actualBodyVDir.y to __m128 y
 				! Sin and Cos are already vectors
@@ -1284,14 +1254,15 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 				X Do at:
 					X F/B
 					X R/L
-
-			= BoundedVector: find way to reserve+take_pointer+advance pointer; see if improves
-				- Add to list of things to port to FS
+			X BoundedVector: find way to reserve+take_pointer+advance pointer; see if improves
+				X Doesn't change anything
 			+ Index work to lower # of vertices per quad
 				+ Use at RenderContext
 
-		- Profile swimming (free regime)
+		+ Profile swimming (free regime)
 
+	- Some more randomization of behaviors
+		- See with 8K NPCs
 	- Problem with running up a slope (messy stumbling): it's due to the human angle becoming too low, after feet bounce on floor
 		- There isn't much to do here?
 	- Lower max speed - REALLY?
@@ -1323,9 +1294,18 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 	- See if now recovers from hanging on feet
 		+ Requires velocity damp work above (*)
 		- Also has new problem: head hitting floor when rising up
-			- Because indeed angle is not "quite vertical", so we consider it a floor
-				- y is actually 0.6: even opposite sign of what we consider "quite vertical" for the purposes of "hanging head (w/head on top)"
-				- TODOHERE: how to fix this?
+			! Because indeed angle is not "quite vertical", so we consider it a floor
+				! y is actually 0.6: even opposite sign of what we consider "quite vertical" for the purposes of "hanging head (w/head on top)"
+			- Fix: HumanBehaviorUpdate-@KnockedOut: when we decide time is ripe to transition to Rising:
+				- Before doing the transition to Rising, check condition to detect hanging-by-feet: 
+					- TODOHERE
+				- If condition met: set primary's "GhostParticlePulse" to true
+					- Else: go to rising, as before
+				- GhostParticlePulse:
+					- Init'd as False @ beginning of HumanBehaviorUpdate (just like EquilibriumTorque)
+					- Check it @ IsFloorToParticle()
+
+
 
 	+ Random width
 		+ Skew: thin stddev 0.05, fat 0.15
@@ -1347,7 +1327,7 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 			- OppositeTriangle
 			- etc?
 		- GameTypes: BaryLab->FS
-		- Move Npc simulation files under NpcSimulation folder
+		- Move Npc simulation source files under NpcSimulation folder
 			- Not VS GUI, that's still "Physics"
 		- Port NpcMaterial.* and NpcMaterialDatabase.* into Materials.* and MaterialDatabase.*
 		- Port GameParameters settings that we need
@@ -1376,19 +1356,19 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 					+ Flip direction
 			
 	- Other walking features:
-		- See if can detect that will hit a wall/well by projecting forward primary particle along triangle edge; if will hit, turn around
+		- See if can detect that will hit a wall/well by projecting forward primary particle along immediately following triangle edge; if will hit, turn around
+
+- Tessellation changes to allow slopes left and right
+	- Test if FS is ok with it:
+		- Frontiers
+		- Anything else?
+	- Test if BaryLab's triangle navigation algo's are ok with it
+	- Plan B:
 		- "staircases": floors can be marked as "stairs", and that is used in two places:
 			- Bounce detection: when walking, no bounce regardless of slope (do continuation case)
 				- Only when we're walking
 			- Walk vector flattening: forcibly extend walk along edge, even if exactly orthogonal
 			- Auto-build: when two three consecutive edges wind up to 360 degrees
-			- TODO: the above is actually option 2; option 1 would be to change tessellation (redundant triangle choice) when the spring being lost is the only floor
-				- Test if FS is ok with it:
-					- Frontiers
-					- Anything else?
-				- Test if BaryLab's triangle navigation algo's are ok with it
-		- "manholes"
-			+ Enabled by having floor info on Triangle, not on Spring
 
 - NpcDatabase:
 	- Spec:
@@ -1400,6 +1380,8 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 		- Allow for mergning of multiple "packs"
 			- So SubKind domain is expandable at runtime
 		- Also affects UI (for menu with list of subkind names, which might have multiple languages)
+		- Problem of quad dimensions (currently dictated by GameParameters::HumanNpcGeometry) vs texture frame dimensions:
+			- Could solve this by fixing, at DB init time, one of the two frame dimensions and calculating other based on frame dimensions
 	- Details:
 		- NpcSubKindId: uint
 			- TODO: want to differentiate btwn NpcKind's?
@@ -1465,7 +1447,9 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 	- Floorplan layer:
 		- A specific "FloorPlan" layer provides a bitmask indicating points' (and thus, springs') floorness
 			- Technically, it's a mappping between *pairs* of Points and the FloorType enum
-			- In the future, also "floor areas"
+			- Floor types:
+				- "Manhole": from L/R/T/B
+				- In the future, also "floor areas"
 		- When the layer is absent, the layer is created automatically (@ ShipFactory) with the hullness of particles
 	- Interior layer
 		- A new texture layer
