@@ -1261,12 +1261,79 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 
 		+ Profile swimming (free regime)
 
+	+ normalize_approx
 	- Some more randomization of behaviors
+		- -1...+1
 		- See with 8K NPCs
+	+ shorter time to converge walking magnitude to 1.0
 	- Problem with running up a slope (messy stumbling): it's due to the human angle becoming too low, after feet bounce on floor
 		- There isn't much to do here?
-	- Lower max speed - REALLY?
-	- Lower human elast
+	+ Better rising animation
+		+ New arm
+			+ Try to move arms earlier
+			+ Accept and cleanup 
+		+ Try both legs bent
+			+ ThighLegLengthFraction member
+			+ ThighFraction: "nothing" is 1.0, and RenderUpload does UpperLeg always with that length
+				+ @ member
+			+ AnimationUpdate:
+				+ At beginning: set to 0
+				+ At walking: <see notebook>
+				+ ThighFraction default is 1.0
+				+ New ThighFraction values dynamics
+				+ Do ThighFraction and leg angles only if L/R
+			+ RenderUpload:
+				+ Carve room in ShipRenderContext for thighs
+					+ Decide whether we want to precisely calc or overshoot instead
+						+ Though that would cause more churn in BoundedVector
+						+ Decided: overshoot
+				+ Do legs with if depending on ThighLegLengthFraction
+				+ Only when sideways
+				+ Do UpperLeg always (preliminary quad), using ThighFraction
+					+ And lower leg (opt) iff 1.0-ThighFraction > 0.0
+				+ Calc traverse vector for lower leg
+			+ Straight legs earlier
+			+ More separation between two legs - until when we zero angles out
+			+ Increase arms angle
+			+ Introduce Constrained_PreRising state:
+				+ HumanBehavior state update: 
+					+ Conditions to stay: same as KnockedOut
+					+ Conditions to go to Rising: same as KnockedOut
+				+ Go to PreRising instead of Rising
+					+ Only from KnockedOut
+						! Aerial->Rising is not suitable
+						X Others?
+				+ AnimationUpdate:
+					+ Arms: angle towards PI/2 and length multiplier towards 0.0
+				+ Rising animation:
+					+ Arms: 
+						+ Early stage: length multiplier towards 1.0, and angle fixed ad where it is (PI/2)
+						+ Late stage: no length multiplier, and angle like now
+					! Legs: unchanged
+				+ Replace angle-taking at PreRising with alignment with floor (dot><0)
+				+ Replace PI for HumanAngle at Rising with negative
+					+ Basis
+					+ Optimized
+					+ And complete arm length multipliers @ Rising
+				+ Improve arm length recoil at rising
+					+ Make it touch floor - use pseudo tan
+				+ See how Constrained_Aerial->Rising transition looks like
+			+ Animation knees: do case where we're facing away from floor
+				+ Facing away from floor: iff face_dirx <> left case or right case
+				+ Simply opposite angle for legs?
+		- Reduce rising speed
+			X 1. More damp: >= 0025
+			- 2. Torque relationship wrt head-idealhead distance: sub-linear (less when distance high - so rises slow - and more when small - so converges earlier)
+				- Use a quadratic relationship anchored to current force we get at say PI/4
+	X See if slow growth of thigh is really needed - can do 0.5 right away (and thus constant the whole time)?
+	= Pass texture coords @ RenderUpload (as stand-in of future real textures, but improving knees with current shader)
+		+ Do special for knee - cals based on upper/lower lengths
+		- Should we do quad join? Or find another escamotage?
+	- Test rising on slope
+	- Redo perf measurements & profiling
+
+	+ Lower max speed
+	+ Lower human elast
 	+ Add velocity damp
 		+ When free
 		+ When constrained (*)
@@ -1291,19 +1358,19 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 				+ Tests:
 					+ Jumping while ship is in motion: damp should NOT apply (as relative velocity is zero)
 		+ Add slider
-	- See if now recovers from hanging on feet
+	+ See if now recovers from hanging on feet
 		+ Requires velocity damp work above (*)
-		- Also has new problem: head hitting floor when rising up
+		+ Also has new problem: head hitting floor when rising up
 			! Because indeed angle is not "quite vertical", so we consider it a floor
 				! y is actually 0.6: even opposite sign of what we consider "quite vertical" for the purposes of "hanging head (w/head on top)"
-			- Fix: HumanBehaviorUpdate-@KnockedOut: when we decide time is ripe to transition to Rising:
-				- Before doing the transition to Rising, check condition to detect hanging-by-feet: 
-					- TODOHERE
-				- If condition met: set primary's "GhostParticlePulse" to true
-					- Else: go to rising, as before
-				- GhostParticlePulse:
-					- Init'd as False @ beginning of HumanBehaviorUpdate (just like EquilibriumTorque)
-					- Check it @ IsFloorToParticle()
+			+ Fix: HumanBehaviorUpdate-@KnockedOut: when we decide time is ripe to transition to Rising:
+				+ Before doing the transition to Rising, check condition to detect hanging-by-feet: 
+					+ Feet on floor, head not on floor, and reasonably vertical heads down
+				+ If condition met: set primary's "GhostParticlePulse" to true
+					+ Else: go to rising, as before
+				+ GhostParticlePulse:
+					+ Init'd as False @ beginning of HumanBehaviorUpdate (just like EquilibriumTorque)
+					+ Check it @ IsFloorToParticle()
 
 
 
@@ -1357,6 +1424,17 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 			
 	- Other walking features:
 		- See if can detect that will hit a wall/well by projecting forward primary particle along immediately following triangle edge; if will hit, turn around
+			- Note: detect both slope up (requires "globalizing" the max slope constant) and slope down
+			- Impl:
+				- WalkingBehaviorState: new member: ElementIndex (or TriangleEdge?)) LastPlanTriangleOrigin, init'd as None
+				- Walking update: if triangle != LastPlanTriangleOrigin:
+					- Find next floor in cur triangle along walking direction
+						- CanProceedInDirection(TriangleEdge, xDir) -> bool
+							- xDir translated into CCW or CW, then proceeds with analytical vertex finding until floor
+					- TODOHERE - also include random choice of whether to fall or not
+					- TODOHERE - also at initial direction choice
+					- LastPlanTriangleOrigin = triangle
+					
 
 - Tessellation changes to allow slopes left and right
 	- Test if FS is ok with it:
