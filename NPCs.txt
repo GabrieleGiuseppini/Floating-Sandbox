@@ -1262,12 +1262,15 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 		+ Profile swimming (free regime)
 
 	+ normalize_approx
-	- Some more randomization of behaviors
-		- -1...+1
-		- See with 8K NPCs
+	+ Some more randomization of behaviors
+		+ -1...+1
+		+ BeingPlaced
+		+ KnockedOut->PreRising
+		+ PreRising->Rising
+		+ See with 8K NPCs
 	+ shorter time to converge walking magnitude to 1.0
-	- Problem with running up a slope (messy stumbling): it's due to the human angle becoming too low, after feet bounce on floor
-		- There isn't much to do here?
+	X Problem with running up a slope (messy stumbling): it's due to the human angle becoming too low, after feet bounce on floor
+		+ There isn't much to do here?
 	+ Better rising animation
 		+ New arm
 			+ Try to move arms earlier
@@ -1321,17 +1324,37 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 			+ Animation knees: do case where we're facing away from floor
 				+ Facing away from floor: iff face_dirx <> left case or right case
 				+ Simply opposite angle for legs?
-		- Reduce rising speed
+		+ Reduce rising speed
 			X 1. More damp: >= 0025
-			- 2. Torque relationship wrt head-idealhead distance: sub-linear (less when distance high - so rises slow - and more when small - so converges earlier)
+			X 2. Torque relationship wrt head-idealhead distance: sub-linear (less when distance high - so rises slow - and more when small - so converges earlier)
 				- Use a quadratic relationship anchored to current force we get at say PI/4
+			+ 3. Less stiffnes: 0.0044 -> 0.004
 	X See if slow growth of thigh is really needed - can do 0.5 right away (and thus constant the whole time)?
-	= Pass texture coords @ RenderUpload (as stand-in of future real textures, but improving knees with current shader)
-		+ Do special for knee - cals based on upper/lower lengths
-		- Should we do quad join? Or find another escamotage?
-	- Test rising on slope
-	- Redo perf measurements & profiling
+	+ Pass texture coords @ RenderUpload (as stand-in of future real textures, but improving knees with current shader)
+		+ Do special for knee - calc based on upper/lower lengths
+		+ Try with quad joint
+	+ Fix issue with first frame of Rising on sloped floor
+		! Due to:
+23:55:17.525119:humanEdgeAngle1:-8.11901e-06 !!! This is supposed to be 0.0
+23:55:17.525342:humanEdgeAngle2:3.14158 isOnLeftSide:1
+23:55:17.541765:humanEdgeAngle1:-8.11901e-06
+23:55:17.541927:humanEdgeAngle2:3.14158 isOnLeftSide:1
+23:55:17.557376:humanEdgeAngle1:0.00420773
+23:55:17.557538:humanEdgeAngle2:0.00420773 isOnLeftSide:1
+		! And we need the adjustment because of: (when facing right)
+00:01:31.062011:humanEdgeAngle1:-3.14159 !!! This is supposed to be +3.14
+00:01:31.062248:humanEdgeAngle2:-3.14159 isOnLeftSide:1
+00:01:31.077365:humanEdgeAngle1:-3.14159
+00:01:31.077609:humanEdgeAngle2:-3.14159 isOnLeftSide:1
+00:01:31.092681:humanEdgeAngle1:3.13885
+00:01:31.092874:humanEdgeAngle2:0.002738 isOnLeftSide:0
+00:01:31.108497:humanEdgeAngle1:3.1336
+00:01:31.108717:humanEdgeAngle2:0.00799489 isOnLeftSide:0
+00:01:31.124679:humanEdgeAngle1:3.12604
 
+
+	- Test rising on slope
+	- Test mesh spikes (head/feet)
 	+ Lower max speed
 	+ Lower human elast
 	+ Add velocity damp
@@ -1522,13 +1545,42 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 		- Ship::Update asks NPCs (via ParentWorld) to add themselves to Points' (definitive) masses
 
 - Layers:
+	- Overall design:
+		- There are floors and there are stairs
+		- When *in walking state* and arriving at a vertex at which there are more than two *viable* floors there (incl. incoming, so >= 2+1), choose which one to take
+			- Note: *viable* == with right slope for walking on it
+			- Perf: triangle vertices (or points) remember the # of floors connected to it *at factory time*, so we can avoid doing the check when e.g. it's a simple junction among two floors
+		- Mechanics of check for existance of floors:
+		
+
+		- OLD:
+		! Axiom: a wall is not a floor, and a stair is neither
+		- Floor edges are one of three types:
+			- S: stairs (diag)
+			- H: horiz
+			- V: vert (TBD: H/V distinction really needed?)
+		- When on H or V: if arriving at S and there are more than two *viable* floors there (the incoming, the S, and another H (e.g. floor continuation) or V): choose whether to take S or the other H/V
+			- Note: *viable* == with right slope for walking on it
+			- TODO: do we need to make a distiction for where we're coming from? Can't we also choose if we come from S?
+		- When on S: a H in the same triangle is transparent (case of hitting ceiling with feet when going up the stairs)
+			- And when primary on S, any H is transparent to a secondary (to overcome head being triangles away from feet)
+				- Both of the above only if *walking* - otherwise cannot fall between S and H
+			- But the V is still very much floor, NPC hits but it's ok (it's a wall after all)
+
+
 	- Floorplan layer:
 		- A specific "FloorPlan" layer provides a bitmask indicating points' (and thus, springs') floorness
 			- Technically, it's a mappping between *pairs* of Points and the FloorType enum
 			- Floor types:
+				- TODOHERE: see how overall design works
 				- "Manhole": from L/R/T/B
+					- Might not work as-is; needs to say that a side of a triangle is "transparent" if approached CW or CCW
 				- In the future, also "floor areas"
+						
 		- When the layer is absent, the layer is created automatically (@ ShipFactory) with the hullness of particles
+			- Algo for creation should take care of following aspects:
+				- Make sure walls not too crowded
+				- Make sure there are stairs (evt. creating them)
 	- Interior layer
 		- A new texture layer
 		- When the layer is absent, it is created automatically (@ShipFactory) from the structural layer (+ material texturization if enabled)
@@ -1540,3 +1592,9 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 	- Like we do with others: NpcMaterial has (own) SoundType property
 	- Human events:
 		- Hit (@ bounce), Exclamation (@ loss of equilibrium)
+
+===================
+Next release:
+
+- Rendering:
+	- Knee when rising: flatten it (extra triangle)

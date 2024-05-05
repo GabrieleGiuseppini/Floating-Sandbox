@@ -51,6 +51,8 @@
 	- "Random" button to load random ship
 		- At LoadDialog?
 
+	- Option to have larger world size
+
 	- New tool 2: Punch (was: wrecking ball tool)
 		- Spec:
 			- Like ocean floor collision, against a sphere (which only grows quickly at initial engagement)
