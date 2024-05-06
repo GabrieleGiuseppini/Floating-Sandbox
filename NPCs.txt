@@ -1334,27 +1334,16 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 		+ Do special for knee - calc based on upper/lower lengths
 		+ Try with quad joint
 	+ Fix issue with first frame of Rising on sloped floor
-		! Due to:
-23:55:17.525119:humanEdgeAngle1:-8.11901e-06 !!! This is supposed to be 0.0
-23:55:17.525342:humanEdgeAngle2:3.14158 isOnLeftSide:1
-23:55:17.541765:humanEdgeAngle1:-8.11901e-06
-23:55:17.541927:humanEdgeAngle2:3.14158 isOnLeftSide:1
-23:55:17.557376:humanEdgeAngle1:0.00420773
-23:55:17.557538:humanEdgeAngle2:0.00420773 isOnLeftSide:1
-		! And we need the adjustment because of: (when facing right)
-00:01:31.062011:humanEdgeAngle1:-3.14159 !!! This is supposed to be +3.14
-00:01:31.062248:humanEdgeAngle2:-3.14159 isOnLeftSide:1
-00:01:31.077365:humanEdgeAngle1:-3.14159
-00:01:31.077609:humanEdgeAngle2:-3.14159 isOnLeftSide:1
-00:01:31.092681:humanEdgeAngle1:3.13885
-00:01:31.092874:humanEdgeAngle2:0.002738 isOnLeftSide:0
-00:01:31.108497:humanEdgeAngle1:3.1336
-00:01:31.108717:humanEdgeAngle2:0.00799489 isOnLeftSide:0
-00:01:31.124679:humanEdgeAngle1:3.12604
-
-
-	- Test rising on slope
-	- Test mesh spikes (head/feet)
+	+ Test rising on slope
+		+ Fix: not human-edge angle but wrt vertical
+		+ Fix: rising on high slope causes microbursts of ConstrainedInertial during Rising and thus animation goes bananas
+			+ Still problem of discontinuity; can be solved by remembering current virtual edge that we're rising on - as an "animation" member
+				+ As optional, as we're not guaranteed to be on the edge initially
+				+ We store it at animation update when we're against the edge
+					+ So we also update it
+				+ We use it when we're not against the edge in that small burst, if we have it
+					+ Otherwise we go through "remain" codepath
+	+ Test mesh spikes (head/feet)
 	+ Lower max speed
 	+ Lower human elast
 	+ Add velocity damp
@@ -1544,35 +1533,60 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 	- NPCs add mass to particle
 		- Ship::Update asks NPCs (via ParentWorld) to add themselves to Points' (definitive) masses
 
-- Layers:
-	- Overall design:
-		- There are floors and there are stairs
-		- When *in walking state* and arriving at a vertex at which there are more than two *viable* floors there (incl. incoming, so >= 2+1), choose which one to take
+- Walk paths/manholes/stairs:
+	! Concerns to be addressed by design:
+		- 1. NPC needs to be able to choose among multiple options when walking at an intersection, e.g. between a staircase going up, a staircase going down, and continuing flat beyond the staircase
+			- 1a: But NPC cannot choose to "go free" if there's a floor that separates it from free region
+		- 2. When walking up a slope (e.g. staircase, but also V or H wall when ship is rotated) NPC should not bang their head 
+	- Overall design option 1:
+		- 1. When *in walking state* and arriving at a vertex at which there are more than two *viable* floors there (incl. incoming, so >= 2+1), choose which one to take
+				- It's like "not seeing" certain floors
+				- Caveat: choosing a floor means we'll move through floors that would otherwise be impenetrable
+					- This implies that there wouldn't be any impenetrable walls (case of _|_) - but we could add a specific type (to be used in builder and attempted to be used by the algo)
 			- Note: *viable* == with right slope for walking on it
-			- Perf: triangle vertices (or points) remember the # of floors connected to it *at factory time*, so we can avoid doing the check when e.g. it's a simple junction among two floors
-		- Mechanics of check for existance of floors:
+				- We only consider those floors that are in a sector centered around walk (face) dir, and amplitude equal to =/-MaxSlopeForWalking
+				- We only choose in our direction because the simulation is still very much physical, i.e. informed by trajectory
+			- A vertical (i.e. outside of sector) wall does NOT stop search/availability of floors behind it
+				- So we can e.g. walk under a stair: -->__\__
+				- Caveat: a _|_ configuration looks like a choice and thus we might go through the wall; this means that vertical walls would randomly be penetrated
+				- TODOHERE: since we care about _\_ case, can we use depth here?
+			- We adopt a "making a choice upon arrival" principle, hence we make this choice @ ConstrainedNonInertial's NavigateVertex site, since the 1st NavigateVertex site is 
+			  either for "initial state" (e.g. after a bounce) or for after we've already encountered a vertex in ConstrainedNonInertial and decided to continue; technically we do this 
+			  first NavigateVertex just to see the floor triangle after a bounce (instead of the vertical wall triangle)
+			- Impl:
+				- ConstrainedNonInertial: when reached a vertex and following direction to find next floor, we navigate around the vertex - according to the walk direction, i.e. CW/CCW - and
+				  collect all viable floors we encounter
+				  - The search stops at:
+					- New triangle == starting triangle, or
+					- We encounter a free region before any floors (candidate or NOT candidate) are found (current case in old code)
+						- This is because we're still very much physical and it makes sense to break free
+						- TODO: what do we do in this case?
+					- TODO: can we stop early as soon as slope is beyond hope? Think of folded triangle case and whether we want to follow a folded triangle's edge if its slope is viable
+				- Check number of viable candidates found:
+					- 0: TODO: does this mean becoming free? If so, we become free and return ConvertedToFreeOutcome
+						- (case of going down \ and hitting vertical walls above and below)
+					- 1: take this single viable and return CompletedNavigationOutcome (most common case when walking on multi-edge surface) 
+					- 2..N: choose one
+						- Then set current triangle+bcoords to choice, and return FloorEncounteredOutcome
+				
+				- Note: at next iteration we call NavigateVertex again when on new vertex, but direction still agrees and it's exactly like going through a long floor with the old code
+			
+			- Perf: 
+				- Triangle vertices (or points) remember the # of floors connected to it *at factory time*, so we can avoid doing the check when e.g. it's a simple junction among two floors
+					- No need to keep updated with mesh updates (destruction/repair) as it's just a hint, so we can avoid the effort
+				- Search may use local array dimensioned with max # of floors to keep candidates found
+
+		- 2. Floors have a new "depth" attribute: say 1 and 2, with 1 being those floors that are H or V at factory time, and 2 being those floors that are diagonal at factory time
+			- If we're walking on depth X (primary on X) we only bang (secondary) on X
+			- Smart because: S can become H/V and viceversa - they are just two planes
+
 		
-
-		- OLD:
-		! Axiom: a wall is not a floor, and a stair is neither
-		- Floor edges are one of three types:
-			- S: stairs (diag)
-			- H: horiz
-			- V: vert (TBD: H/V distinction really needed?)
-		- When on H or V: if arriving at S and there are more than two *viable* floors there (the incoming, the S, and another H (e.g. floor continuation) or V): choose whether to take S or the other H/V
-			- Note: *viable* == with right slope for walking on it
-			- TODO: do we need to make a distiction for where we're coming from? Can't we also choose if we come from S?
-		- When on S: a H in the same triangle is transparent (case of hitting ceiling with feet when going up the stairs)
-			- And when primary on S, any H is transparent to a secondary (to overcome head being triangles away from feet)
-				- Both of the above only if *walking* - otherwise cannot fall between S and H
-			- But the V is still very much floor, NPC hits but it's ok (it's a wall after all)
-
-
+- Layers:
 	- Floorplan layer:
 		- A specific "FloorPlan" layer provides a bitmask indicating points' (and thus, springs') floorness
 			- Technically, it's a mappping between *pairs* of Points and the FloorType enum
 			- Floor types:
-				- TODOHERE: see how overall design works
+				- TODOHERE: see how overall design above works
 				- "Manhole": from L/R/T/B
 					- Might not work as-is; needs to say that a side of a triangle is "transparent" if approached CW or CCW
 				- In the future, also "floor areas"
