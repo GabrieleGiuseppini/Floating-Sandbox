@@ -1546,28 +1546,54 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 			- Note: *viable* == with right slope for walking on it
 				- We only consider those floors that are in a sector centered around walk (face) dir, and amplitude equal to =/-MaxSlopeForWalking
 				- We only choose in our direction because the simulation is still very much physical, i.e. informed by trajectory
-			- A vertical (i.e. outside of sector) wall does NOT stop search/availability of floors behind it
-				- So we can e.g. walk under a stair: -->__\__
-				- Caveat: a _|_ configuration looks like a choice and thus we might go through the wall; this means that vertical walls would randomly be penetrated
-				- TODOHERE: since we care about _\_ case, can we use depth here?
+			- Handling non-viable floors:
+				- An acute staircase (i.e. non-viable and of other depth) does NOT stop search/availability of floors behind it, so that we can e.g. walk under a stair: -->__\__
+				- A "vertical" wall instead (i.e. non-viable and of same depth) *DOES* stop search/availability of floors behind it, so that vertical walls are never penetrated
 			- We adopt a "making a choice upon arrival" principle, hence we make this choice @ ConstrainedNonInertial's NavigateVertex site, since the 1st NavigateVertex site is 
 			  either for "initial state" (e.g. after a bounce) or for after we've already encountered a vertex in ConstrainedNonInertial and decided to continue; technically we do this 
 			  first NavigateVertex just to see the floor triangle after a bounce (instead of the vertical wall triangle)
 			- Impl:
-				- ConstrainedNonInertial: when reached a vertex and following direction to find next floor, we navigate around the vertex - according to the walk direction, i.e. CW/CCW - and
-				  collect all viable floors we encounter
-				  - The search stops at:
-					- New triangle == starting triangle, or
-					- We encounter a free region before any floors (candidate or NOT candidate) are found (current case in old code)
+				! Gist: ConstrainedNonInertial: when reached a vertex and following direction to find next floor, we navigate around the vertex - according to the walk direction, i.e. CW/CCW - and
+				  collect all floors (viable and not viable) that we encounter
+
+				- candidates={}, first_non_viable_floor=None
+				- While true:
+					- If traj extends into triangle:
+						- Check if next edge is a viable floor; if so => add to candidates
+						- break (to make a choice)
+					- Find next edge that we intersect at this vertex
+					- If floor:
+						- If viable => add to candidates
+						- Else:
+							- // Remember first floor we find - regardless of depth for now
+							- If first_non_viable_floor is None:
+								- first_non_viable_floor = floor
+							- Note: later: if this is of other depth bounce; if not: if no candidates bounce, else ignore
+							- Perf: if same depth might break now, pointless to keep searching as we'll bounce on it
+					- Climb: if no next triangle exists (finding free region):
+						- If it's before any floors (candidate or NOT candidate) are found (current case in old code):
+							- Follow the fall: become free and return "free" outcome							
+						- Else (haven't seen any floors):
+							- break (to make a choice)
 						- This is because we're still very much physical and it makes sense to break free
-						- TODO: what do we do in this case?
-					- TODO: can we stop early as soon as slope is beyond hope? Think of folded triangle case and whether we want to follow a folded triangle's edge if its slope is viable
-				- Check number of viable candidates found:
-					- 0: TODO: does this mean becoming free? If so, we become free and return ConvertedToFreeOutcome
-						- (case of going down \ and hitting vertical walls above and below)
-					- 1: take this single viable and return CompletedNavigationOutcome (most common case when walking on multi-edge surface) 
-					- 2..N: choose one
-						- Then set current triangle+bcoords to choice, and return FloorEncounteredOutcome
+					- Move to triangle
+				- // Processing results
+				- If first_non_viable_floor is not None:
+					// Cases here at which we want to bounce: 
+					//	1. Vertical wall but not acute staircase (first_non_viable_floor is not None AND same depth)
+					//	2. Acute staircase with no candidates (the acute angle is the only constrained place we have)
+					- If same depth or no candidates:
+						- Bounce and return "bounce" outcome - regardless of candidates
+							- Note: no slope check here (or else it would have been a candidate)
+						- We could have done (part of) this in the loop but want to react to both cases together
+					- Else => continue: if different depth and candidates exist, we'll ignore it
+				- // From now on we ignore non-viable floors
+				- If no candidates:
+					- // "Nothing" case: walking on floor that ends (constrained) with next edge not viable, i.e. "Traj extends into triangle" case
+					- Move to tri+bcoords of point of encounter // shouldn't we already be there now? After all we've broken the loop for this
+				- Else:
+					- Choose a candidate
+					- Then set current triangle+bcoords to choice's point of encounter, and return "floor encountered" outcome (impact continuation)
 				
 				- Note: at next iteration we call NavigateVertex again when on new vertex, but direction still agrees and it's exactly like going through a long floor with the old code
 			
