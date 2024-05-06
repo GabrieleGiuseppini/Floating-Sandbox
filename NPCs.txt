@@ -1549,6 +1549,7 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 			- Handling non-viable floors:
 				- An acute staircase (i.e. non-viable and of other depth) does NOT stop search/availability of floors behind it, so that we can e.g. walk under a stair: -->__\__
 				- A "vertical" wall instead (i.e. non-viable and of same depth) *DOES* stop search/availability of floors behind it, so that vertical walls are never penetrated
+					- And we bounce against it
 			- We adopt a "making a choice upon arrival" principle, hence we make this choice @ ConstrainedNonInertial's NavigateVertex site, since the 1st NavigateVertex site is 
 			  either for "initial state" (e.g. after a bounce) or for after we've already encountered a vertex in ConstrainedNonInertial and decided to continue; technically we do this 
 			  first NavigateVertex just to see the floor triangle after a bounce (instead of the vertical wall triangle)
@@ -1556,7 +1557,8 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 				! Gist: ConstrainedNonInertial: when reached a vertex and following direction to find next floor, we navigate around the vertex - according to the walk direction, i.e. CW/CCW - and
 				  collect all floors (viable and not viable) that we encounter
 
-				- candidates={}, first_non_viable_floor=None
+				- candidates={}
+				- first_non_viable_floor=None // Pri: same depth trumps different depth
 				- While true:
 					- If traj extends into triangle:
 						- Check if next edge is a viable floor; if so => add to candidates
@@ -1565,8 +1567,8 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 					- If floor:
 						- If viable => add to candidates
 						- Else:
-							- // Remember first floor we find - regardless of depth for now
-							- If first_non_viable_floor is None:
+							- // Remember first floor we find - in prio (same depth trumps other depth)
+							- If first_non_viable_floor is None or not same depth as us:
 								- first_non_viable_floor = floor
 							- Note: later: if this is of other depth bounce; if not: if no candidates bounce, else ignore
 							- Perf: if same depth might break now, pointless to keep searching as we'll bounce on it
