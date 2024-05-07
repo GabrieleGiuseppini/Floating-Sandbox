@@ -1544,7 +1544,8 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 				- Caveat: choosing a floor means we'll move through floors that would otherwise be impenetrable
 					- This implies that there wouldn't be any impenetrable walls (case of _|_) - but we could add a specific type (to be used in builder and attempted to be used by the algo)
 			- Note: *viable* == with right slope for walking on it
-				- We only consider those floors that are in a sector centered around walk (face) dir, and amplitude equal to =/-MaxSlopeForWalking
+				- We only consider those floors that are in a sector centered around walk (face) dir, up amplitude equal to =/-MaxSlopeForWalking, and down amplitude slightly less than vertical
+					- This allows us to take a down "stair" that is almost vertical
 				- We only choose in our direction because the simulation is still very much physical, i.e. informed by trajectory
 			- Handling non-viable floors:
 				- An acute staircase (i.e. non-viable and of other depth) does NOT stop search/availability of floors behind it, so that we can e.g. walk under a stair: -->__\__
@@ -1554,8 +1555,9 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 			  either for "initial state" (e.g. after a bounce) or for after we've already encountered a vertex in ConstrainedNonInertial and decided to continue; technically we do this 
 			  first NavigateVertex just to see the floor triangle after a bounce (instead of the vertical wall triangle)
 			- Impl:
-				! Gist: ConstrainedNonInertial: when reached a vertex and following direction to find next floor, we navigate around the vertex - according to the walk direction, i.e. CW/CCW - and
+				! Gist: ConstrainedNonInertial: when primary+walking and reached a vertex and following direction to find next floor, we navigate around the vertex - according to the walk direction, i.e. CW/CCW - and
 				  collect all floors (viable and not viable) that we encounter
+				  ! If not primary or not walking: simple NavigateVertex as with old code
 
 				- candidates={}
 				- first_non_viable_floor=None // Pri: same depth trumps different depth
@@ -1563,6 +1565,10 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 					- If traj extends into triangle:
 						- Check if next edge is a viable floor; if so => add to candidates
 						- break (to make a choice)
+							- TODO: breaking now might cause us not seeing a ladder going down if this edge is a floor and we're infinitesimally above it
+								- Note that case where this edge is not floor is ok, as we'll continue from this vertex and probably navigate down
+							- BUT: not breaking might make us see wall going down, which we want to ignore
+							- Might solve it by checking *two* next ones
 					- Find next edge that we intersect at this vertex
 					- If floor:
 						- If viable => add to candidates
@@ -1619,12 +1625,12 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 					- Might not work as-is; needs to say that a side of a triangle is "transparent" if approached CW or CCW
 				- In the future, also "floor areas"
 						
-		- When the layer is absent, the layer is created automatically (@ ShipFactory) with the hullness of particles
+		- When the layer is absent, the layer is created automatically (@ new ShipFloorplanizer) with the hullness of particles
 			- Algo for creation should take care of following aspects:
 				- Make sure walls not too crowded
 				- Make sure there are stairs (evt. creating them)
 	- Interior layer
-		- A new texture layer
+		- A new texture layer (for graphical purposes only)
 		- When the layer is absent, it is created automatically (@ShipFactory) from the structural layer (+ material texturization if enabled)
 	- Both layers make up the "Interior view"
 	- User can choose between "Exterior" view and "Interior" view, via menu
