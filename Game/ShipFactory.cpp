@@ -421,7 +421,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
 #endif
 
     LogMessage("ShipFactory: Created ship: W=", shipSize.width, ", H=", shipSize.height, ", ",
-        points.GetRawShipPointCount(), "raw/", points.GetBufferElementCount(), "buf points, ",        
+        points.GetRawShipPointCount(), "raw/", points.GetBufferElementCount(), "buf points, ",
         springs.GetElementCount(), " springs (", perfectSquareCount, " perfect squares, ", perfectSquareCount * 4 * 100 / std::max(1u, springs.GetElementCount()), "%), ",
         triangles.GetElementCount(), " triangles, ",
         electricalElements.GetElementCount(), " electrical elements, ",
@@ -906,24 +906,24 @@ ShipFactory::LayoutOptimizationResults ShipFactory::OptimizeLayout(
     // 1. Find all "complete squares" from left-bottom
     //
     // A complete square looks like:
-    // 
+    //
     //  If A is "even":
-    // 
+    //
     //  D  C
     //  |\/|
     //  |/\|
     //  A  B
-    // 
+    //
     // Else (A is "odd"):
-    // 
+    //
     //  D--C
     //   \/
     //   /\
     //  A--B
-    // 
+    //
     // For each perfect square, we re-order springs and their endpoints of each spring so that:
     //  - The first two springs of the perfect square are the cross springs
-    //  - The endpoints A's of the cross springs are to be connected, and likewise 
+    //  - The endpoints A's of the cross springs are to be connected, and likewise
     //    the endpoint B's
     //
 
