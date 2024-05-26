@@ -1639,90 +1639,20 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 						= We shouldn't consider as bounceable (and obviously also viable) those floors that are not aligned w/our direction 
 							= TODOHERE: better algo for finding when we've gone out of alignment with trajectory
 
-		+ ShipFloorplanizer: why removes diag in VideoMesh?
-			+ It's pattern 5, for sealed_triangles_test mesh
-
 		- Secondary must not hit head on different depth
+			- If we're walking on depth X (i.e. primary is on X) we only bang (secondary) on depth X
+				- TODO: try to use CurrentVirtualEdge to figure out depth of where we're walking on
 
 		- Cleanups:
 			- Do same CW/CCW early determination at NavigateVertex at well
 
+		+ ShipFloorplanizer: why removes diag in VideoMesh?
+			+ It's pattern 5, for sealed_triangles_test mesh
 		
-		
-		- TODOOLD: below is case without any impenetrable walls
-		- 1. When *in walking state* and arriving at a vertex at which there are more than two *viable* floors there (incl. incoming, so >= 2+1), choose which one to take
-				- It's like "not seeing" certain floors
-				- Caveat: choosing a floor means we'll move through floors that would otherwise be impenetrable
-					- This implies that there wouldn't be any impenetrable walls (case of _|_) - but we could add a specific type (to be used in builder and attempted to be used by the algo)
-			- Note: *viable* == with right slope for walking on it
-				- We only consider those floors that are in a sector centered around walk (face) dir, up amplitude equal to =/-MaxSlopeForWalking, and down amplitude slightly less than vertical
-					- This allows us to take a down "stair" that is almost vertical
-				- We only choose in our direction because the simulation is still very much physical, i.e. informed by trajectory
-			- Handling non-viable floors:
-				- An acute staircase (i.e. non-viable and of other depth) does NOT stop search/availability of floors behind it, so that we can e.g. walk under a stair: -->__\__
-				- A "vertical" wall instead (i.e. non-viable and of same depth) *DOES* stop search/availability of floors behind it, so that vertical walls are never penetrated
-					- And we bounce against it
-			- We adopt a "making a choice upon arrival" principle, hence we make this choice @ ConstrainedNonInertial's NavigateVertex site, since the 1st NavigateVertex site is 
-			  either for "initial state" (e.g. after a bounce) or for after we've already encountered a vertex in ConstrainedNonInertial and decided to continue; technically we do this 
-			  first NavigateVertex just to see the floor triangle after a bounce (instead of the vertical wall triangle)
-			- Impl:
-				! Gist: ConstrainedNonInertial: when primary+walking and reached a vertex and following direction to find next floor, we navigate around the vertex - according to the walk direction, i.e. CW/CCW - and
-				  collect all floors (viable and not viable) that we encounter
-				  ! If not primary or not walking: simple NavigateVertex as with old code
-
-				- candidates={}
-				- first_non_viable_floor=None // Pri: same depth trumps different depth
-				- While true:
-					- If traj extends into triangle:
-						- Check if next edge (in the CW/CCW rotation) is a viable floor (i.e. try to overcome infinitesimal distance from floor)); if so => add to candidates
-						- break (to make a choice)
-							- TODO: breaking now might cause us not seeing a ladder going down if this edge is a floor and we're infinitesimally above it
-								- Note that case where this edge is not floor is ok, as we'll continue from this vertex and probably navigate down
-							- BUT: not breaking might make us see wall going down, which we want to ignore
-							- Might solve it by checking *two* next ones
-					- Find next edge that we intersect at this vertex
-					- If floor:
-						- If viable => add to candidates
-						- Else:
-							- // Remember first floor we find - in prio (same depth trumps other depth)
-							- If first_non_viable_floor is None or it is not same depth as us:
-								- first_non_viable_floor = floor
-							- Note: later: if this is of same depth as us bounce; if not: if no candidates bounce, else ignore
-							- Perf: if same depth might break now, pointless to keep searching as we'll bounce on it
-					- Climb: if no next triangle exists (finding free region):
-						- If it's before any floors (candidate or NOT candidate) are found (current case in old code):
-							- Follow the fall: become free and return "free" outcome							
-						- Else (have seen other floors, viable or not):
-							- break (to make a choice or bounce)
-						- This is because we're still very much physical and it makes sense to break free
-					- Move to triangle
-				- // Processing results
-				- If first_non_viable_floor is not None:
-					// Cases here at which we want to bounce: 
-					//	1. Vertical wall but not acute staircase (first_non_viable_floor is not None AND same depth)
-					//	2. Acute staircase with no candidates (the acute angle is the only constrained place we have)
-					//	TODO: can we have a vertical wall (same depth) but candidates before it, which would force us to choose?
-						- May be not, as non-viable is supposed to come (rotation-wise) before viable; assert then
-					- If same depth or no candidates:
-						- Bounce and return "bounce" outcome - regardless of candidates
-							- Note: no slope check here (or else it would have been a candidate)
-						- We could have done (part of) this in the loop but want to react to both cases together
-					- Else => continue: if different depth and candidates exist, we'll ignore it
-				- // From now on we ignore non-viable floors
-				- If no candidates:
-					- // "Nothing" case: walking on floor that ends (constrained) with next edge not viable, i.e. "Traj extends into triangle" case
-					- Move to tri+bcoords of point of encounter // shouldn't we already be there now? After all we've broken the loop for this
-				- Else:
-					- Choose a candidate
-					- Then set current triangle+bcoords to choice's point of encounter, and return "floor encountered" outcome (impact continuation)
-				
-				- Note: at next iteration we call NavigateVertex again when on new vertex, but direction still agrees and it's exactly like going through a long floor with the old code
+		- Perf: 
+			- Triangle vertices (or points) remember the # of floors connected to it *at factory time*, so we can avoid doing the check when e.g. it's a simple junction among two floors
+				- No need to keep updated with mesh updates (destruction/repair) as it's just a hint, so we can avoid the effort
 			
-			- Perf: 
-				- Triangle vertices (or points) remember the # of floors connected to it *at factory time*, so we can avoid doing the check when e.g. it's a simple junction among two floors
-					- No need to keep updated with mesh updates (destruction/repair) as it's just a hint, so we can avoid the effort
-				+ Search may use local array dimensioned with max # of floors to keep candidates found
-	
 	- Merge back into master
 
 		
