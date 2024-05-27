@@ -1639,40 +1639,40 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 						= We shouldn't consider as bounceable (and obviously also viable) those floors that are not aligned w/our direction 
 							= TODOHERE: better algo for finding when we've gone out of alignment with trajectory
 
-			- ALTERNATIVE ALGO for NavigateVertex_Walking viability & walls:
-				- // Can assume we haven't gotten around (check for having gone too far stays)
-				- // We have calculated directionX based off trajectory.x <> 0
-				- If edge is floor:
-					- // Gist: it's bounceable only if we hit it with direction
-						- // In direction: synthetic_dir.dot(edge.to_perpendicular) > 0.0 == trajectory.dot(edge.to_perpendicular) > 0.0
-							- But also: !interiorTriangle.has_value()
-					- // Candidate (viability) and impenetrability are orthogonal:
-						- An impenetrable wall might be a candidate (and thus it's the last candidate)
-						- A candidate might be an impenetrable wall
-					- // Why depth-trumping? Why should we not bounce on S when HonS if there's HonV later? Or not bounce on V when SonV if there's a SonS later?
-						- Argument was: An acute staircase (i.e. non-viable and of other depth) does NOT stop search/availability of floors behind it, so that we can e.g. walk under a stair: -->__\__
-						- But we can still allow bump on S if there's also HonV immediately afterwards - though bounce direction would be odd
-						- So: keep depth-trumping, reason: _\|_ and we want to bounce on vertical -- also "semi-hidden" nature of S
-					- // Impenetrable: iff HonV or VonH
-						- We allow SonS to be penetrable, so that while we go down ladder and encounter ladder going up, we may go beyond it if there's a floor/wall
-					- Calculate viability:
-						- Not too steep (if going up) and at most vertical (if going down)
-						- The sector thing, exactly
-						- Math:
-							- If CCW: if edgeDir.x < 0 && -edgeDir.y <= MaxSlope
-							- If CW: if edgeDir.x < 0 && edgeDir.y <= MaxSlope
-					- If viable: 
-						- Add to candidates
-					- Else:
-						- If in direction (i.e. if !interiorTriangle.has_value()):
-							- Store first_bounceable if this is first/with trumping
-								- Trumping reason: 
-									- If no other walls - nor candidates - exist, we're ok with bouncing on S at --> _\
-									- But when given a choice with vertical - e.g. --> _\| - we prefer bouncing on vertical, for better physics
-										- Honoring semi-invisible nature of S
-					- If impenetrable: stop
-						- // If this was viable, we'll choose it; if it was not viable, we'll bounce on it if it was in direction
-							- Note: if it's not in direction (i.e. if we have an interior), and if we have no candidates and no bounceable - we will take the interior
+			= ALTERNATIVE ALGO for NavigateVertex_Walking viability & walls:
+				+ // Can assume we haven't gotten around (check for having gone too far stays)
+				+ If edge is floor:
+					+ Add following !'s to comments
+					! Gist: it's bounceable only if we hit it with direction
+						! In direction: synthetic_dir.dot(edge.to_perpendicular) > 0.0 == trajectory.dot(edge.to_perpendicular) > 0.0
+							! But also: !interiorTriangle.has_value()
+					! Candidate (viability) and impenetrability are orthogonal:
+						! An impenetrable wall might be a candidate (and thus it's the last candidate)
+						! A candidate might be an impenetrable wall
+					! // Why depth-trumping? Why should we not bounce on S when HonS if there's HonV later? Or not bounce on V when SonV if there's a SonS later?
+						! Argument was: An acute staircase (i.e. non-viable and of other depth) does NOT stop search/availability of floors behind it, so that we can e.g. walk under a stair: -->__\__
+						! But we can still allow bump on S if there's also HonV immediately afterwards - though bounce direction would be odd
+						! So: keep depth-trumping, reason: _\|_ and we want to bounce on vertical -- also "semi-hidden" nature of S
+					! // Impenetrable: iff HonV or VonH
+						! We allow SonS to be penetrable, so that while we go down ladder and encounter ladder going up, we may go beyond it if there's a floor/wall
+					+ Calculate viability:
+						+ Not too steep (if going up) and at most vertical (if going down)
+							+ The sector thing, exactly
+						+ Math:
+							+ If CCW: if edgeDir.x < 0 && -edgeDir.y <= MaxSlope
+							+ If CW: if edgeDir.x < 0 && edgeDir.y <= MaxSlope
+					+ If viable: 
+						+ Add to candidates
+					! Else:
+						+ If in direction (i.e. if !interiorTriangle.has_value()):
+							+ Store first_bounceable if this is first/with trumping
+								! Trumping reason: 
+									! If no other walls - nor candidates - exist, we're ok with bouncing on S at --> _\
+									! But when given a choice with vertical - e.g. --> _\| - we prefer bouncing on vertical, for better physics
+										! Honoring semi-invisible nature of S
+					+ If impenetrable: stop
+						+ // If this was viable, we'll choose it; if it was not viable, we'll bounce on it if it was in direction
+							+ Note: if it's not in direction (i.e. if we have an interior), and if we have no candidates and no bounceable - we will take the interior
 
 		- Secondary must not hit head on different depth
 			- If we're a human walking on depth X (i.e. primary is on X) we only bang (secondary) on depth X
