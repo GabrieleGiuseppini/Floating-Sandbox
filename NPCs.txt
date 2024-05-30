@@ -1674,19 +1674,40 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 						+ // If this was viable, we'll choose it; if it was not viable, we'll bounce on it if it was in direction
 							+ Note: if it's not in direction (i.e. if we have an interior), and if we have no candidates and no bounceable - we will take the interior
 
-		- Secondary must not hit head on different depth
-			- If we're a human walking on depth X (i.e. primary is on X) we only bang (secondary) on depth X
-				- Test: try to use CurrentVirtualEdge to figure out depth of where we're walking on
+		= Secondary must not hit head on different depth
+			+ Add 2S1 and 2S2 depth
+			= If we're a human walking on depth X (i.e. primary is on X) we only bang (secondary) on depth X, and other rules from notebook
+				= Test: try to use CurrentVirtualEdge to figure out depth of where we're walking on
 
-		- See dynamics of NPC stuck in vertex of V: why does it not climb?
+		- Problems:
+			+ ShipFloorplanizer: why removes diag in VideoMesh?
+				+ It's pattern 5, for sealed_triangles_test mesh
+			+ Fix tessellation: the "arbitrary" choice between two S hurts in some cases
+				+ Test 1: wins the spring that has the highest count of "continuations"?
+			+ Bouncing on floor when coming from below and having wall
+				+ Not even sure fixing it adds anything; test fixing it and see if worth it:
+					+ Second depth 1 trumps first depth 1 when we're on S
+						! We want to enter depth 1 space from depth 2
+			- Bouncing on wall (normally) and skipping choice (of stair below):
+				- TODO: would not doing "bounce optimization" help here?
+				- TODO: might be fixed with merging NavigateVertex:
+					- 1. NavigateVertex():
+						- If (walking et al...): NavigateVertex_Walking
+						- Else: NavigateVertex_NotWalking
+							- Determination of bounce based on slope done all here, also NavigateVertex_NotWalking
+							- Returns bounce only if really has to do bounce, else returns whatever we return now from NavigateVertex_NotWalking when slop is OK for taking it
+						- Called by both places
+						- Bounce still handled by caller though
+							- And for the below: only by Constrained_NonInertial caller
+					- 2. (TODO: may be not because of bounce problem) call NavigateVertex() ONLY from main loop (i.e. not anymore from Contrained_NonInertial)
+						- NavigateVertex() then does bounce (at both places)
+			- See dynamics of NPC stuck in vertex of V: why does it not climb?
 
-		+ ShipFloorplanizer: why removes diag in VideoMesh?
-			+ It's pattern 5, for sealed_triangles_test mesh
-		
-		- Perf: 
-			- Triangle vertices (or points) remember the # of floors connected to it *at factory time*, so we can avoid doing the check when e.g. it's a simple junction among two floors
-				- No need to keep updated with mesh updates (destruction/repair) as it's just a hint, so we can avoid the effort
-			
+		- Cleanups:
+			- Wanna clean NpcFloorType/Depth?
+				- See https://stackoverflow.com/questions/21295935/can-a-c-enum-class-have-methods
+					
+	- Profile
 	- Merge back into master
 
 		
