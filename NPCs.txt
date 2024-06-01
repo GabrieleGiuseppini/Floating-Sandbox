@@ -1551,14 +1551,14 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 		- 1. NPC needs to be able to choose among multiple options when walking at an intersection, e.g. between a staircase going up, a staircase going down, and continuing flat beyond the staircase
 			- 1a: But NPC cannot choose to "go free" if there's a floor that separates it from free region
 		- 2. When walking up a slope (e.g. staircase, but also V or H wall when ship is rotated) NPC should not bang their head 
-	- Overall design:
-		- When *in walking state* and arriving at a vertex at which there are more than two *viable* floors there (incl. incoming, so >= 2+1), choose which one to take
-				- It's like "not seeing" certain floors
-			- Note: *viable* == with right slope for walking on it
-				- We only consider those floors that are in a sector centered around walk (face) dir, up amplitude equal to =/-MaxSlopeForWalking, and down amplitude slightly less than vertical
-					- This allows us to take a down "stair" that is almost vertical
-				- We only choose in our direction because the simulation is still very much physical, i.e. informed by trajectory
-		- Floors have a new "depth" attribute: say 1 and 2, with 1 being those floors that are H or V at factory time, and 2 being those floors that are diagonal at factory time
+	= Overall design:
+		! When *in walking state* and arriving at a vertex at which there are more than two *viable* floors there (incl. incoming, so >= 2+1), choose which one to take
+				! It's like "not seeing" certain floors
+			! Note: *viable* == with right slope for walking on it
+				! We only consider those floors that are in a sector centered around walk (face) dir, up amplitude equal to =/-MaxSlopeForWalking, and down amplitude slightly less than vertical
+					! This allows us to take a down "stair" that is almost vertical
+				! We only choose in our direction because the simulation is still very much physical, i.e. informed by trajectory
+		! Floors have a new "depth" attribute: say 1 and 2, with 1 being those floors that are H or V at factory time, and 2 being those floors that are diagonal at factory time
 			- If we're walking on depth X (primary on X) we only bang (secondary) on X
 			- Moreover, we further break down depth 1 (H/V), so we have three floor types:
 				- Depth 1 H
@@ -1567,20 +1567,20 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 			- When on H (V) an NPC can never go through a V (H)
 				- But when on S can always go through any S, even orthogonal ones
 			- Smart because: S can become H/V and viceversa - they are just two planes
-		- Q1: Does a non-viable floor (=>outside sector) stop search/availability of floors behind it?
+		! Q1: Does a non-viable floor (=>outside sector) stop search/availability of floors behind it?
 			- A1: Only if same depth (i.e. HonV or VonH, but also HonH/VonV, though it might hardly happen)
 				- We want to allow e.g. H or V to walk under an acute S (e.g. stair:  * -> _\ -> )
 					- An acute staircase (i.e. non-viable and of other depth) does NOT stop search/availability of floors behind it, so that we can e.g. walk under a stair: -->__\__
 				- A "vertical" wall instead (i.e. non-viable and of same depth) *DOES* stop search/availability of floors behind it, so that vertical walls are never penetrated
 					- And we bounce against them
-		- Q2: does a free region stop search?
+		! Q2: does a free region stop search?
 			- A2: yes - mostly because it's physical
-		- Q3: when do we make the choice?
+		! Q3: when do we make the choice?
 			- A3: We adopt a "making a choice upon arrival" principle, hence we make this choice @ ConstrainedNonInertial's NavigateVertex site, since the 1st NavigateVertex site is 
 			  either for "initial state" (e.g. after a bounce) or for after we've already encountered a vertex in ConstrainedNonInertial and decided to continue; technically we do this 
 			  first NavigateVertex just to see the floor triangle after a bounce (instead of the vertical wall triangle)
 			
-		- Impl:
+		= Impl:
 			! Gist: ConstrainedNonInertial: when primary+walking and reached a vertex and following direction to find next floor, we navigate around the vertex - according to the walk direction, i.e. CW/CCW - and
 			  collect all floors (viable and not viable) that we encounter
 			  ! If not primary or not walking: simple NavigateVertex as with old code
@@ -1633,13 +1633,13 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 						+ Fix:
 							+ Use again "from edge" variant for calculating trajectoryEndBarycentricCoords
 							+ Only calculate trajectoryEndBarycentricCoords if we don't have interior triangle
-					= Problem: when going around, we add self floor to candidates!
-						= Problem with isViable when going CCW && edgeDirWrtMovement==(-1, 0)
-					= Problem: we bounce on self floor - because it's not viable and we remember it
-						= We shouldn't consider as bounceable (and obviously also viable) those floors that are not aligned w/our direction 
-							= TODOHERE: better algo for finding when we've gone out of alignment with trajectory
+					+ Problem: when going around, we add self floor to candidates!
+						+ Problem with isViable when going CCW && edgeDirWrtMovement==(-1, 0)
+					+ Problem: we bounce on self floor - because it's not viable and we remember it
+						+ We shouldn't consider as bounceable (and obviously also viable) those floors that are not aligned w/our direction 
+							+ We need a better algo for finding when we've gone out of alignment with trajectory - see ALTERNATIVE ALGO below
 
-			= ALTERNATIVE ALGO for NavigateVertex_Walking viability & walls:
+			+ ALTERNATIVE ALGO for NavigateVertex_Walking viability & walls:
 				+ // Can assume we haven't gotten around (check for having gone too far stays)
 				+ If edge is floor:
 					+ Add following !'s to comments
@@ -1674,33 +1674,143 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 						+ // If this was viable, we'll choose it; if it was not viable, we'll bounce on it if it was in direction
 							+ Note: if it's not in direction (i.e. if we have an interior), and if we have no candidates and no bounceable - we will take the interior
 
-		= Secondary must not hit head on different depth
+		+ Secondary must not hit head on different depth
 			+ Add 2S1 and 2S2 depth
-			= If we're a human walking on depth X (i.e. primary is on X) we only bang (secondary) on depth X, and other rules from notebook
-				= Test: try to use CurrentVirtualEdge to figure out depth of where we're walking on
+			+ If we're a human walking on depth X (i.e. primary is on X) we only bang (secondary) on depth X, and other rules from notebook
+				+ Test: try to use CurrentVirtualEdge to figure out depth of where we're walking on
 
-		- Problems:
+		= Problems:
 			+ ShipFloorplanizer: why removes diag in VideoMesh?
 				+ It's pattern 5, for sealed_triangles_test mesh
 			+ Fix tessellation: the "arbitrary" choice between two S hurts in some cases
 				+ Test 1: wins the spring that has the highest count of "continuations"?
 			+ Bouncing on floor when coming from below and having wall
-				+ Not even sure fixing it adds anything; test fixing it and see if worth it:
-					+ Second depth 1 trumps first depth 1 when we're on S
-						! We want to enter depth 1 space from depth 2
-			- Bouncing on wall (normally) and skipping choice (of stair below):
-				- TODO: would not doing "bounce optimization" help here?
-				- TODO: might be fixed with merging NavigateVertex:
-					- 1. NavigateVertex():
-						- If (walking et al...): NavigateVertex_Walking
-						- Else: NavigateVertex_NotWalking
-							- Determination of bounce based on slope done all here, also NavigateVertex_NotWalking
-							- Returns bounce only if really has to do bounce, else returns whatever we return now from NavigateVertex_NotWalking when slop is OK for taking it
-						- Called by both places
-						- Bounce still handled by caller though
-							- And for the below: only by Constrained_NonInertial caller
-					- 2. (TODO: may be not because of bounce problem) call NavigateVertex() ONLY from main loop (i.e. not anymore from Contrained_NonInertial)
-						- NavigateVertex() then does bounce (at both places)
+				+ Second depth 1 trumps first depth 1 when we're on S
+					! We want to enter depth 1 space from depth 2
+			= Bouncing on wall (normally) and skipping choice (of stair below):
+				= Fix with merging NavigateVertex:
+					! If (walking et al...): NavigateVertex_Walking
+					! Else: NavigateVertex_NotWalking
+						! Determination of bounce based on slope done all here, also NavigateVertex_NotWalking
+						! Returns bounce only if really has to do bounce, else returns whatever we return now from NavigateVertex_NotWalking when slop is OK for taking it
+					! Called by both places
+					! Bounce still handled by caller though
+						! And for the below: only by Constrained_NonInertial caller
+					+ Details:
+						+ NavigateVertex()
+							+ Walking
+							+ Not Walking
+								+ Do viability "old way"
+						+ Callers:
+							+ ConstrainedNonInertial:
+								+ Check outcome and:
+									+ Do bounce:
+										    vec2f const floorEdgeDir =
+											shipMesh.GetTriangles().GetSubSpringVector(
+											    firstBounceableFloor->TriangleElementIndex,
+											    firstBounceableFloor->EdgeOrdinal,
+											    shipMesh.GetPoints())
+											.normalise();
+										    vec2f const floorEdgeNormal = floorEdgeDir.to_perpendicular();
+
+										    LogNpcDebug("    floorEdgeDir=", floorEdgeDir, " floorEdgeNormal=", floorEdgeNormal);
+
+										    vec2f const bounceAbsolutePosition = shipMesh.GetTriangles().FromBarycentricCoordinates(
+											currentAbsoluteBCoords.BCoords, // Same as initial - in absolute coords
+											currentAbsoluteBCoords.TriangleElementIndex,
+											shipMesh.GetPoints());
+
+										    BounceConstrainedNpcParticle(
+											npc,
+											true,
+											trajectory,
+											bounceAbsolutePosition,
+											floorEdgeNormal,
+											meshVelocity,
+											dt,
+											particles,
+											currentSimulationTime,
+											gameParameters);
+
+										   + TODO: move to coords of vertex in triangle that we started with (initial?)
+
+									+ Do free:
+										    TransitionParticleToFreeState(npc, true);
+
+										    UpdateNpcParticle_Free(
+											npcParticle,
+											particleStartAbsolutePosition,
+											trajectoryEndAbsolutePosition,
+											particles,
+											gameParameters);
+									+ Translate outcome
+							+ Loop at beginning
+								+ Comment on conditions leading here - initial or bounce 
+								+ Check outcome and:
+									+ Bounce, Free: continue ("handled by ConstrainedNonInertial")
+									+ Translate outcome
+
+					+ FIX: at bounce going up on S we restart from lower tri
+						+ Plan Z: move current bcoords to bounce point (like it used to be), we'll re-navigate and then choose
+					= FIX: Now we do double choice 
+						- Rearc: what would happen if we also stored "currentEdge" with (Constrained) state?
+							- As a means to basically bypass NavigateVertex#1 if we know where we're going
+							- Doesn't need to be particle member, can be just loop local variable
+							- opt<int> CurrentEdgeOrdinal
+								- Only set when we are NonInertial
+								- When set, we are on that edge and can jump straight away to non-inertial flattening against that floor and ConstrainedNonInertial,
+								  bypassing NavigateVertex#1 completely
+								- When not set:
+									- If we are at a vertex: we have to NavigateVertex to find edge we want to be on (choice if walking, continuation if not walking)
+										- If detect becoming free: we become free
+										- If detect into triangle: continue Inertial
+										- If detect onto edge: that's what we're looking for
+										- If detect against wall: that's what we're looking for also
+											- Note: in this case we do NOT want to bounce - we only want to bounce after flattening
+									- Else:
+										- We set it to the first floor that we find we move against
+								- ConstrainedNonInertial:
+									- Move to where it can move in triangle
+									- If reached a vertex:
+										- NavigateVertex()#2; outcomes: [note: we will bypass NavigateVertex is currentEdge will be set by then]
+											- Free:
+												- Become free
+												- currentEdge=nullopt
+												- [we're done]
+											- InTriangle:
+												- currentEdge=nullopt
+												- TODOHERE: we'll also re-find this at next NavigateVertex#1
+											- OnEdge:
+												- currentEdge=the_edge
+											- Impact:
+												- Do impact
+												- currentEdge=nullopt <cannot keep it, as we want next NavigateVertex#1 to navigate>
+							- Misc:
+								- See if this may replace CurrentVirtualEdge completely - NO it can't, as we want CurrentVirtualEdge to be the once before the bounce
+
+						= Overall simplified design, encompassing above:
+							+ ConstrainedNonInertial: also returns opt<edge>
+							+ We store that in local loop member (which is init'd as nullopt)
+							+ We bypass NavigateVertex when the member is set
+							+ ConstrainedNonInertial determines the next value of the member based on decision tree above
+								+ i.e. we make sure the member is always renewed after the ConstrainedNonInertial call
+							+ We lose the member when we go ConstrainedInertial
+							- TODOHERE: are we fine with completely bypassing NavigateVertex then?
+
+
+					- Tests:
+						- Becoming free: check velocity imparted
+
+			- If can choose between walking and falling, don't go for falling
+				- Currently happens at this (right-hand side of fulltest):
+						|
+					      --|
+					       /|
+				- Possible fix 1: gist: take "very vertical" only if it's the only choice
+						- Edge is viable (edgeDir=(-0.00516510521993, -0.99998664856))  !!! Very vertical
+					- Very vertical may come at any time, hence we'd better skip at choice making
+						- Even more important then that we make the choice once
+								
 			- See dynamics of NPC stuck in vertex of V: why does it not climb?
 
 		- Cleanups:
