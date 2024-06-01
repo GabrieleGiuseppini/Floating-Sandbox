@@ -1396,8 +1396,6 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 		+ Do
 		+ Integrate into FS - and test build
 
-	- Video
-
 	- Integration into FS - 2
 		! Goal: be able to copy folder of files seamlessly across FS and BL
 		- Triangles: add BL features
@@ -1580,7 +1578,7 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 			  either for "initial state" (e.g. after a bounce) or for after we've already encountered a vertex in ConstrainedNonInertial and decided to continue; technically we do this 
 			  first NavigateVertex just to see the floor triangle after a bounce (instead of the vertical wall triangle)
 			
-		= Impl:
+		+ Impl:
 			! Gist: ConstrainedNonInertial: when primary+walking and reached a vertex and following direction to find next floor, we navigate around the vertex - according to the walk direction, i.e. CW/CCW - and
 			  collect all floors (viable and not viable) that we encounter
 			  ! If not primary or not walking: simple NavigateVertex as with old code
@@ -1604,13 +1602,22 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 				+ Else:
 					+ NavigateVertex(); // current code
 				
-			= 3. NavigateVertex_Walking:
+			+ 3. NavigateVertex_Walking:
 				+ Make sure we have a local that allows us to get floor type of original floor (floor we're coming from)
 				+ NpcTypes: triangle+bcoords ("AbsoluteTriangleBCoords")
 					+ Also @ Npc StateType
-				= Algo
+				+ Algo
 					+ Viability
-					- Choice
+					+ Choice
+						+ If can choose between walking and falling, don't go for falling
+							+ Currently happens at this (right-hand side of fulltest):
+									|
+								      --|
+								       /|
+							+ Possible fix 1: gist: take "very vertical" only if it's the only choice
+									- Edge is viable (edgeDir=(-0.00516510521993, -0.99998664856))  !!! Very vertical
+								- Very vertical may come at any time, hence we'd better skip at choice making
+									- Even more important then that we make the choice once
 					+ Bump
 					+ HonV/VonH should enter candidates if it's viable
 						+ Problem with not choosing edge; fix:
@@ -1679,7 +1686,7 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 			+ If we're a human walking on depth X (i.e. primary is on X) we only bang (secondary) on depth X, and other rules from notebook
 				+ Test: try to use CurrentVirtualEdge to figure out depth of where we're walking on
 
-		= Problems:
+		+ Problems:
 			+ ShipFloorplanizer: why removes diag in VideoMesh?
 				+ It's pattern 5, for sealed_triangles_test mesh
 			+ Fix tessellation: the "arbitrary" choice between two S hurts in some cases
@@ -1687,7 +1694,7 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 			+ Bouncing on floor when coming from below and having wall
 				+ Second depth 1 trumps first depth 1 when we're on S
 					! We want to enter depth 1 space from depth 2
-			= Bouncing on wall (normally) and skipping choice (of stair below):
+			+ Bouncing on wall (normally) and skipping choice (of stair below):
 				= Fix with merging NavigateVertex:
 					! If (walking et al...): NavigateVertex_Walking
 					! Else: NavigateVertex_NotWalking
@@ -1752,71 +1759,29 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 
 					+ FIX: at bounce going up on S we restart from lower tri
 						+ Plan Z: move current bcoords to bounce point (like it used to be), we'll re-navigate and then choose
-					= FIX: Now we do double choice 
-						- Rearc: what would happen if we also stored "currentEdge" with (Constrained) state?
-							- As a means to basically bypass NavigateVertex#1 if we know where we're going
-							- Doesn't need to be particle member, can be just loop local variable
-							- opt<int> CurrentEdgeOrdinal
-								- Only set when we are NonInertial
-								- When set, we are on that edge and can jump straight away to non-inertial flattening against that floor and ConstrainedNonInertial,
-								  bypassing NavigateVertex#1 completely
-								- When not set:
-									- If we are at a vertex: we have to NavigateVertex to find edge we want to be on (choice if walking, continuation if not walking)
-										- If detect becoming free: we become free
-										- If detect into triangle: continue Inertial
-										- If detect onto edge: that's what we're looking for
-										- If detect against wall: that's what we're looking for also
-											- Note: in this case we do NOT want to bounce - we only want to bounce after flattening
-									- Else:
-										- We set it to the first floor that we find we move against
-								- ConstrainedNonInertial:
-									- Move to where it can move in triangle
-									- If reached a vertex:
-										- NavigateVertex()#2; outcomes: [note: we will bypass NavigateVertex is currentEdge will be set by then]
-											- Free:
-												- Become free
-												- currentEdge=nullopt
-												- [we're done]
-											- InTriangle:
-												- currentEdge=nullopt
-												- TODOHERE: we'll also re-find this at next NavigateVertex#1
-											- OnEdge:
-												- currentEdge=the_edge
-											- Impact:
-												- Do impact
-												- currentEdge=nullopt <cannot keep it, as we want next NavigateVertex#1 to navigate>
-							- Misc:
-								- See if this may replace CurrentVirtualEdge completely - NO it can't, as we want CurrentVirtualEdge to be the once before the bounce
-
-						= Overall simplified design, encompassing above:
+					+ FIX: Now we do double choice 
+						+ Remember choice from ConstrainedNonInertial (i.e. from its NavigateVertex):
 							+ ConstrainedNonInertial: also returns opt<edge>
 							+ We store that in local loop member (which is init'd as nullopt)
 							+ We bypass NavigateVertex when the member is set
 							+ ConstrainedNonInertial determines the next value of the member based on decision tree above
 								+ i.e. we make sure the member is always renewed after the ConstrainedNonInertial call
 							+ We lose the member when we go ConstrainedInertial
-							- TODOHERE: are we fine with completely bypassing NavigateVertex then?
 
 
-					- Tests:
-						- Becoming free: check velocity imparted
+					+ Tests:
+						+ Becoming free: check velocity imparted
 
-			- If can choose between walking and falling, don't go for falling
-				- Currently happens at this (right-hand side of fulltest):
-						|
-					      --|
-					       /|
-				- Possible fix 1: gist: take "very vertical" only if it's the only choice
-						- Edge is viable (edgeDir=(-0.00516510521993, -0.99998664856))  !!! Very vertical
-					- Very vertical may come at any time, hence we'd better skip at choice making
-						- Even more important then that we make the choice once
-								
-			- See dynamics of NPC stuck in vertex of V: why does it not climb?
-
+		+ Do secondary S/H check also during Rising
 		- Cleanups:
+			- Old code
 			- Wanna clean NpcFloorType/Depth?
 				- See https://stackoverflow.com/questions/21295935/can-a-c-enum-class-have-methods
-					
+
+	+ FIX: secondary doesn't gain bounce velocity
+
+	- See dynamics of NPC stuck in vertex of V: why does it not climb?					
+
 	- Profile
 	- Merge back into master
 
