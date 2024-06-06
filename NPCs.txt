@@ -1534,8 +1534,6 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 	- Electric spark:
 		- Electrification must be stored with Points
 		- NPC update looks at own triangle's Points
-	- Doors:
-		- Triangle edge/floors: split "factory" vs. "actual"
 	- NPCs add mass to particle
 		- Mass is proportional to body length adjustment (square, we're 2D)
 			- And so is buoyancy
@@ -1549,7 +1547,7 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 		- 1. NPC needs to be able to choose among multiple options when walking at an intersection, e.g. between a staircase going up, a staircase going down, and continuing flat beyond the staircase
 			- 1a: But NPC cannot choose to "go free" if there's a floor that separates it from free region
 		- 2. When walking up a slope (e.g. staircase, but also V or H wall when ship is rotated) NPC should not bang their head 
-	= Overall design:
+	+ Overall design:
 		! When *in walking state* and arriving at a vertex at which there are more than two *viable* floors there (incl. incoming, so >= 2+1), choose which one to take
 				! It's like "not seeing" certain floors
 			! Note: *viable* == with right slope for walking on it
@@ -1773,17 +1771,109 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 						+ Becoming free: check velocity imparted
 
 		+ Do secondary S/H check also during Rising
-		- Cleanups:
-			- Old code
-			- Wanna clean NpcFloorType/Depth?
-				- See https://stackoverflow.com/questions/21295935/can-a-c-enum-class-have-methods
+		+ Cleanups:
+			+ Old code
+			+ Clean NpcFloorType/Depth
+				+ NpcFloorType == NotAFloor, DefaultFloor
+				+ NpcFloorGeometryType == NotAFloor, H1,...
 
 	+ FIX: secondary doesn't gain bounce velocity
 
-	- See dynamics of NPC stuck in vertex of V: why does it not climb?					
+	+ See moving faster on 0.87 slope
+		+ And then see if can adjust slope to walk on higher slopes
+	+ See shy secondary bump doesn't invert motion
+	+ Test with mesh velocity
+	+ FIX: flying off constrained inertial does not make NPC fly
+		+ Verify CW/CCW determination is wrong
+		+ Add comment on it
+		+ Fix by setting curEdge to -1 at Interior outcome from UpdateNpcParticle_ConstrainedNonInertial
+	- Impenetrability: ok H on V, but really VonH?
+		- @ NavigateVertex_Walking
+		- @ IsParticleFloorToEdge ?
+
+	+ FIX: slowdown
+
+	+ FIX: if we slide nicely into new triangle over its edge, CNI says "no edge" because traj end is "inside" triangle (because of numerics)
+		! And thus we follow with CI, and generate a bounce (because of trajectory taking gravity with it)
+		! Repro: particle sliding along floor - little bumps (YES, the old little bumps problem! It's back!)
+		! Happens at both CNI and NavigateVertex
+		! IS THE CAUSE OF HUMANS EXPLODING
+			- Due to bounce, but how? Are diagonals involved?
+			- Investigation tips:
+				- Try to repro on long diagonal
+				- Try to repro with particles only
+				- Publish max bounce magnitude and see if we can catch that in debugger
+		! Due to the earlier fix for NPC falling from edge and taking new floor: we are saying -1 but we do want to determine new edge based off adjusted/flattened trajectory
+			- But when we restart loop, we are at a vertex and need to determine edge
+		+ Possible fix: if NavigateVertex1 or previous NavigateVertex2/CNI returned ContinueToInterior, we decide floor with old-style floor-normal decision, even if we are
+		  at a vertex
+			+ So, possible states for currentNonInertialFloorEdgeOrdinal:
+				+ Empty: we have to determine, either w/vertex style or w/floor-normal style
+					+ But vertex style might send to floor-normal style if it detects ContinueToInterior
+				+ Set to -1: we decide floor-normal style
+					+ And CNI returns this when itself or its NavigateVertex2 detects ContinueToInterior
+				+ Set to X: nothing to detect
+		+ Do best floor				
+		+ Add comments
+
+	- FIX: stuck on top of (quite) sloped S  /-  (aka Infinite Bounce problem)
+		- Only repro's at vertex, not at edge
+		- Cause: at beginning of loop we don't know we're walking, hence trajectory is "fall" and choose floor itself;
+		  then we move but hit the ceiling, do a small bounce, and stay
+		  - Should be the age-old problem of starting iter at a vertex
+			+ Verify repro's with particle starting in a V - both at vertex and at floor
+		- Note: any solution should also involve ConstrainedInertial
+		- Gist option 1:
+			- This happens because even if the particle has zero relative velocity (hasn't moved), we calculate its bounce velocity based on *projected*
+			  trjectory (which includes gravity), which we have not traveled at all
+				- And so the particle gains velocity which in turn generates a non-zero trajectory and the problem compounds
+			= Fix attempt:
+				- When calculating bounce response, we calculate apparent particle velocity as:
+					- If we have moved at all during whole dt: 
+						- apparentParticleVelocity=trajectory/dt
+						- Here we take into account new forces that sprung up just before this iteration
+					- Else:
+						- Here we want to account for the case where the previous iteration stopped just short at the bounce
+						- We assume new forces that sprung up just before this iteration have no effect on bounce as particle is already on floor, hence:
+						- apparentParticleVelocity=meshRelativeVelocity + meshVelocity
+							- Because meshRelativeVelocity does not include yet mesh move in this step
+				- Add comments with above thoughts
+				- Cleanups:
+					- Might avoid calling together Bounce() if no reason
+
+		- TODO: other ideas:
+		= Plan A: can we make sure we are NEVER at a vertex as a continuation?
+			- Implies that "going inside a triangle" is strictly inside, so that moving to a vertex (precisely) is followed by a bounce
+		- Plan B: use relative velocity OR edge traveled
+		- Plan C: The bounce response is currently calculated based on (desired) trajectory, and it doesn't take into account the 
+		    actual space traveled - which in this case is zero; by doing so we acquire velocity anyways, against initial floor
+			- So: in ConstrainedNonInertial: do not bounce if we have moved zero
+			- TODO: think if there are cases where we start ConstrainedNonInertial at a vertex after which we should bounce
+				- After all, when we hit a wall, we now do that at the NavigateVertex at the end of ConstrainedNonInertial
+		- Plan B: MinRelativeVelocityAgreementToAcceptWalk = 0.04f; // Max velocity we gain if we start still and hit ceiling
+
+		- Tests: {particle} x {edge, vertex} x {placed synthetically at *, hit precisely * at end of a trajectory} x {w/mesh velocity, w/out}
+
+	- FIX: floors become ghost
+		- Repro: zero stiffness, head under stair, feet over stair
+		- Then, Rising->Falling and head ghosts floor
+		- It's rule 1 (after revising rule 2): "other depth is never floor"
+			- So e.g. walking up a stair doesn't make us bang our head on the floor above
+		- Test 1: try to apply rules at all behaviors
+		- Can we be saved by just checking if there's free on the other side?
 
 	- Profile
 	- Merge back into master
+
+	- Video
+		- "The Last Walk in Our Toy Ship"
+		- Segment 1: fulltest mesh; single NPC; when close to a junction, zoom; going back and forth at that junction to show choices
+			- Text overlay explaining that the NPC can now choose when it encounters more than one viable floor
+		- Segment 2: "           "; add many NPCs; they start filling all spaces
+			- 
+		- Segment 3: video mesh; full 8192 crowd; at some moment, zoom out and shaken
+			- 
+		- "Planning what will be in the first release and what in subsequent releases"
 
 		
 - Layers:
@@ -1857,6 +1947,13 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 	- User can choose between "Exterior" view and "Interior" view, via menu
 		- As soon as NPC count goes from zero to non-zero (including BeingPlaced), if current view is "Exterior" GameController switches to "Interior", regardless of current setting
 		- As soon as NPC count goes from non-zero to zero, if current view is "Interior" GameController switches to "Exterior" view, regardless of current setting
+
+- Doors:
+	- New electrical element (with both ON/OFF types), controls floorness of springs (and thus triangle edges) among neighboring pairs of them
+		- Triangle edge/floors: split "factory" vs. "actual"
+			- Iff we end up having H1,V1,S2,etc. floor types, as resetting door would need to know that
+			- Otherwise, if we only have Floor+Open, can live without factory
+	
 
 - Sounds:
 	- Like we do with others: NpcMaterial has (own) SoundType property
