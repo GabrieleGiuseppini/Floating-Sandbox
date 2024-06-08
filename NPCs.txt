@@ -1453,19 +1453,6 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 					- TODOHERE - also at initial direction choice
 					- LastPlanTriangleOrigin = triangle
 					
-
-- Tessellation changes to allow slopes left and right
-	- Test if FS is ok with it:
-		- Frontiers
-		- Anything else?
-	- Test if BaryLab's triangle navigation algo's are ok with it
-	- Plan B:
-		- "staircases": floors can be marked as "stairs", and that is used in two places:
-			- Bounce detection: when walking, no bounce regardless of slope (do continuation case)
-				- Only when we're walking
-			- Walk vector flattening: forcibly extend walk along edge, even if exactly orthogonal
-			- Auto-build: when two three consecutive edges wind up to 360 degrees
-
 - NpcDatabase:
 	- Spec:
 		- Provides info on humans (e.g. role colors, frame IDs) and furniture (dimensions, orientation, frame IDs)
@@ -1542,7 +1529,7 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 		- Ship::Update asks NPCs (via ParentWorld) to add themselves to Points' (definitive) masses
 	- NPC bounces transfer impact forces to ship's particles
 
-- Walk paths/manholes/stairs:
++ Walk paths/manholes/stairs:
 	! Concerns to be addressed by design:
 		- 1. NPC needs to be able to choose among multiple options when walking at an intersection, e.g. between a staircase going up, a staircase going down, and continuing flat beyond the staircase
 			- 1a: But NPC cannot choose to "go free" if there's a floor that separates it from free region
@@ -1787,9 +1774,6 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 		+ Verify CW/CCW determination is wrong
 		+ Add comment on it
 		+ Fix by setting curEdge to -1 at Interior outcome from UpdateNpcParticle_ConstrainedNonInertial
-	- Impenetrability: ok H on V, but really VonH?
-		- @ NavigateVertex_Walking
-		- @ IsParticleFloorToEdge ?
 
 	+ FIX: slowdown
 
@@ -1841,65 +1825,31 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 					+ Might avoid calling together Bounce() if no reason
 		! Plan B: MinRelativeVelocityAgreementToAcceptWalk = 0.04f; // Max velocity we gain if we start still and hit ceiling
 
-	- FIX: floors become ghost
-		- Repro: zero stiffness, head under stair, feet over stair
-		- Then, Rising->Falling and head ghosts floor
-		- It's rule 1 (after revising rule 2): "other depth is never floor"
-			- So e.g. walking up a stair doesn't make us bang our head on the floor above
-		- Test option 1: try to apply rules at all behaviors
-		- Test option 2:
+	+ FIX: floors become ghost
+		! Repro: zero stiffness, head under stair, feet over stair
+			! Then, Rising->Falling and head ghosts floor
+		! It's rule 1 (after revising rule 2): "other depth is never floor"
+			! So e.g. walking up a stair doesn't make us bang our head on the floor above
+		+ Test option 1: when rising, do not ghost edge that head is resting on (CurrentVirtualEdge)
+		X Test option 2: try to apply rules at all behaviors
+		X Test option 3:
 			- NPC has a "LastEnteredFloorDepth" (NpcFloorDepth):
 				- None: all floors are floors
 				- Depth1: only depth1 are floors
 				- Depth2: TODOHERE all depth2 are floors and for depth 1:
 					- If Walking|Rising: none is floor
 					- Else: other geometry only OR like now
-			- Init: NoFloor (both furniture and human)
+			+ Init: NoFloor (both furniture and human)
 			- Set at (by primary only, both furniture and human):
-				- Any bump
-				- NavigateVertex1
-				- CNI return
+				+ Any bump
+				+ NavigateVertex1
+				+ CNI return
+				- Becoming free - via TransitionParticleToFreeState
 
-	- Profile
-	- Merge back into master
+	+ Profile
+	+ Merge back into master
 
 	+ Video
-		+ Subtitle: TODO: "Walk Decisions" or "The Last Walk in a Toy Ship"
-		= Segment 1: fulltest mesh; single NPC; when close to a junction, zoom; going back and forth at that junction to show choices
-			- Text overlay explaining that the NPC can now choose when it encounters more than one viable floor
-
-			- Seq:
-				- Prep: load FullTest, first V for zoom
-				- V-Appear @
-				- -> V-Immediate pause
-				- V-Resume: @
-				- V-Zoom
-				- ...
-
-			- Music: 
-				intro from 01:21
-				first drum loop @ 01:45 (24s thus)
-		+ Segment 2: "           ";
-			- Starts with two NPCs in "pause" stance - which start walking on cue with music starting second drum loop @ 02:22
-			- Automagically many NPCs are added @ 03:02; they slowly start filling all spaces
-		- Segment 3: video mesh
-			- Crowd: 04:23; at some moment, zoom out and shaken
-			- With explosive music?
-
-		- The Last Walk in a Toy Ship
-This video is very likely going to be the last installment in our series that showcases the progress with NPCs in our toy ship development environment, dubbed "BaryLab". In here we demonstrate our two most recent work items:
-1. Floorplan generation: even though future versions of Floating Sandbox will allow creators to construct custom floorplans for their ships, we still need to generate reasonable floorplans for ships that don't have any, and here you see the results of our initial algorithm that does exactly that.
-2. Complex walk paths: an engaging floorplan is undoubtedly made of floors and staircases, and NPCs need to be able to reach all the crannies and corners of a ship. Thanks to an idea from our friend Dario Bazzichetto, our NPCs now detect the presence of alternative paths in the floor and decide which one to take.
-
-Tomorrow we will officially begin the work to integrate the NPCs in Floating Sandbox, after which some more work will need to be taken care of. 
-Some basic things in fact will need to be implemented soon - such as physical interactions with the world (e.g. explosions and fire), skinning and rendering, and floorplan visualization - while some others may come later - such as sounds, furniture, role-play of passengers, more complex behaviors, and the ability to build complex floorplans in the ShipBuilder - and thus we'll also have to plan what will be in the first release and what instead may come later in subsequent updates.
-
-Stay tuned for our next video, which will undoubtedly be set straight inside the world of Floating Sandbox!
-
-Music:
-T-Rex Echoes (Live Version)
-by Carbon Based Lifeforms
-carbonbasedlifeforms.net
 
 
 - Walk planning:
