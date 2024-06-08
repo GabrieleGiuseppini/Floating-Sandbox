@@ -8,12 +8,18 @@
 
 	= Npcs - take 1
 
-	- Try to get rid of CoveredSprings in Triangles
+	- Try to lower global damping - seems quite slow
+
+	- Try to get rid of CoveredSprings in Triangles - seem useless
 		- Triangles
 		- ShipFactory
 
 	- Fix all 2022 copyright years, and add g2-labs to:
 		- Credits
+	- New startup sequence:
+		- Start fullscreen/normal screen depending on current preferences (like now)
+		- 1. G2-Labs Sequence
+		- 2. "Loading" splashscreen with ship sinking
 
 	- @ next release:
 		- Update GameJolt to say Ubuntu 20.04

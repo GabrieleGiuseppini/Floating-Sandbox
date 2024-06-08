@@ -1816,65 +1816,102 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 		+ Do best floor				
 		+ Add comments
 
-	- FIX: stuck on top of (quite) sloped S  /-  (aka Infinite Bounce problem)
-		- Only repro's at vertex, not at edge
-		- Cause: at beginning of loop we don't know we're walking, hence trajectory is "fall" and choose floor itself;
+	+ FIX: stuck on top of (quite) sloped S  /-  (aka Infinite Bounce problem)
+		! Only repro's at vertex, not at edge
+		! Cause: at beginning of loop we don't know we're walking, hence trajectory is "fall" and choose floor itself;
 		  then we move but hit the ceiling, do a small bounce, and stay
-		  - Should be the age-old problem of starting iter at a vertex
+		  ! Should be the age-old problem of starting iter at a vertex
 			+ Verify repro's with particle starting in a V - both at vertex and at floor
-		- Note: any solution should also involve ConstrainedInertial
-		- Gist option 1:
-			- This happens because even if the particle has zero relative velocity (hasn't moved), we calculate its bounce velocity based on *projected*
+		+ Note: any solution should also involve ConstrainedInertial
+		+ Gist option 1:
+			! This happens because even if the particle has zero relative velocity (hasn't moved), we calculate its bounce velocity based on *projected*
 			  trjectory (which includes gravity), which we have not traveled at all
 				- And so the particle gains velocity which in turn generates a non-zero trajectory and the problem compounds
-			= Fix attempt:
-				- When calculating bounce response, we calculate apparent particle velocity as:
-					- If we have moved at all during whole dt: 
-						- apparentParticleVelocity=trajectory/dt
-						- Here we take into account new forces that sprung up just before this iteration
-					- Else:
-						- Here we want to account for the case where the previous iteration stopped just short at the bounce
-						- We assume new forces that sprung up just before this iteration have no effect on bounce as particle is already on floor, hence:
-						- apparentParticleVelocity=meshRelativeVelocity + meshVelocity
-							- Because meshRelativeVelocity does not include yet mesh move in this step
-				- Add comments with above thoughts
-				- Cleanups:
-					- Might avoid calling together Bounce() if no reason
-
-		- TODO: other ideas:
-		= Plan A: can we make sure we are NEVER at a vertex as a continuation?
-			- Implies that "going inside a triangle" is strictly inside, so that moving to a vertex (precisely) is followed by a bounce
-		- Plan B: use relative velocity OR edge traveled
-		- Plan C: The bounce response is currently calculated based on (desired) trajectory, and it doesn't take into account the 
-		    actual space traveled - which in this case is zero; by doing so we acquire velocity anyways, against initial floor
-			- So: in ConstrainedNonInertial: do not bounce if we have moved zero
-			- TODO: think if there are cases where we start ConstrainedNonInertial at a vertex after which we should bounce
-				- After all, when we hit a wall, we now do that at the NavigateVertex at the end of ConstrainedNonInertial
-		- Plan B: MinRelativeVelocityAgreementToAcceptWalk = 0.04f; // Max velocity we gain if we start still and hit ceiling
-
-		- Tests: {particle} x {edge, vertex} x {placed synthetically at *, hit precisely * at end of a trajectory} x {w/mesh velocity, w/out}
+			+ Fix attempt:
+				+ When calculating bounce response, we calculate apparent particle velocity as:
+					+ If we have moved at all during whole dt: 
+						+ apparentParticleVelocity=trajectory/dt
+						! Here we take into account new forces that sprung up just before this iteration
+					+ Else:
+						! Here we want to account for the case where the previous iteration stopped just short at the bounce
+						! We assume new forces that sprung up just before this iteration have no effect on bounce as particle is already on floor, hence:
+						+ apparentParticleVelocity=meshRelativeVelocity
+				+ Add comments with above thoughts
+				+ Cleanups:
+					+ Might avoid calling together Bounce() if no reason
+		! Plan B: MinRelativeVelocityAgreementToAcceptWalk = 0.04f; // Max velocity we gain if we start still and hit ceiling
 
 	- FIX: floors become ghost
 		- Repro: zero stiffness, head under stair, feet over stair
 		- Then, Rising->Falling and head ghosts floor
 		- It's rule 1 (after revising rule 2): "other depth is never floor"
 			- So e.g. walking up a stair doesn't make us bang our head on the floor above
-		- Test 1: try to apply rules at all behaviors
-		- Can we be saved by just checking if there's free on the other side?
+		- Test option 1: try to apply rules at all behaviors
+		- Test option 2:
+			- NPC has a "LastEnteredFloorDepth" (NpcFloorDepth):
+				- None: all floors are floors
+				- Depth1: only depth1 are floors
+				- Depth2: TODOHERE all depth2 are floors and for depth 1:
+					- If Walking|Rising: none is floor
+					- Else: other geometry only OR like now
+			- Init: NoFloor (both furniture and human)
+			- Set at (by primary only, both furniture and human):
+				- Any bump
+				- NavigateVertex1
+				- CNI return
 
 	- Profile
 	- Merge back into master
 
-	- Video
-		- "The Last Walk in Our Toy Ship"
-		- Segment 1: fulltest mesh; single NPC; when close to a junction, zoom; going back and forth at that junction to show choices
+	+ Video
+		+ Subtitle: TODO: "Walk Decisions" or "The Last Walk in a Toy Ship"
+		= Segment 1: fulltest mesh; single NPC; when close to a junction, zoom; going back and forth at that junction to show choices
 			- Text overlay explaining that the NPC can now choose when it encounters more than one viable floor
-		- Segment 2: "           "; add many NPCs; they start filling all spaces
-			- 
-		- Segment 3: video mesh; full 8192 crowd; at some moment, zoom out and shaken
-			- 
-		- "Planning what will be in the first release and what in subsequent releases"
 
+			- Seq:
+				- Prep: load FullTest, first V for zoom
+				- V-Appear @
+				- -> V-Immediate pause
+				- V-Resume: @
+				- V-Zoom
+				- ...
+
+			- Music: 
+				intro from 01:21
+				first drum loop @ 01:45 (24s thus)
+		+ Segment 2: "           ";
+			- Starts with two NPCs in "pause" stance - which start walking on cue with music starting second drum loop @ 02:22
+			- Automagically many NPCs are added @ 03:02; they slowly start filling all spaces
+		- Segment 3: video mesh
+			- Crowd: 04:23; at some moment, zoom out and shaken
+			- With explosive music?
+
+		- The Last Walk in a Toy Ship
+This video is very likely going to be the last installment in our series that showcases the progress with NPCs in our toy ship development environment, dubbed "BaryLab". In here we demonstrate our two most recent work items:
+1. Floorplan generation: even though future versions of Floating Sandbox will allow creators to construct custom floorplans for their ships, we still need to generate reasonable floorplans for ships that don't have any, and here you see the results of our initial algorithm that does exactly that.
+2. Complex walk paths: an engaging floorplan is undoubtedly made of floors and staircases, and NPCs need to be able to reach all the crannies and corners of a ship. Thanks to an idea from our friend Dario Bazzichetto, our NPCs now detect the presence of alternative paths in the floor and decide which one to take.
+
+Tomorrow we will officially begin the work to integrate the NPCs in Floating Sandbox, after which some more work will need to be taken care of. 
+Some basic things in fact will need to be implemented soon - such as physical interactions with the world (e.g. explosions and fire), skinning and rendering, and floorplan visualization - while some others may come later - such as sounds, furniture, role-play of passengers, more complex behaviors, and the ability to build complex floorplans in the ShipBuilder - and thus we'll also have to plan what will be in the first release and what instead may come later in subsequent updates.
+
+Stay tuned for our next video, which will undoubtedly be set straight inside the world of Floating Sandbox!
+
+Music:
+T-Rex Echoes (Live Version)
+by Carbon Based Lifeforms
+carbonbasedlifeforms.net
+
+
+- Walk planning:
+	- First off: WalkingBehaviorState remembers CurrentTriangleElementIndex (of primary)
+		- Init'd to None at each transition into Walking
+	- @ UpdateBehavior while walking (or at WalkingUpdate):
+		- If current primary triangle != current:
+			- First off: immediate things, such as:
+				- Check fire at location
+				- Check bomb at location
+			- Then, planning:
+				- TODO: walk along triangle and check where we end up at end - what about alternatives?
 		
 - Layers:
 	- Floorplan layer:
