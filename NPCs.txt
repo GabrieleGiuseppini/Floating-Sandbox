@@ -190,7 +190,258 @@ Arch
 				- https://members.loria.fr/SLazard/ARC-Visi3D/Pant-project/files/Line_Segment_Triangle.html
 				- 2D: https://www.geogebra.org/m/aRMTsu62
 
-= Human behavioral state machine(s):
+								
+- Integration into FS
+	! Goal: be able to copy folder of files seamlessly across FS and BL
+	- FixedSizeVector: BaryLab->FS: check diff
+	- Triangles: BaryLab->FS: add BL features
+		- Barycentric math (replace FS')
+		- SurfaceType
+		- OppositeTriangle
+		- etc?
+	- GameTypes: BaryLab->FS: add new types (and changes?)
+	- Tessellation @ ShipFactory
+		- Consider that members in BL have different names in FS
+		- ShipFactoryTypes
+		- ShipFloorplanizer
+		- ShipFactory
+		- Test consequences of new tessellation (i.e. triangle edges in new directions)
+			- Look
+			- Frontier
+	- All in one go - GO1:
+		- Move Npc simulation source files under NpcSimulation folder
+			- Not VS GUI, that's still "Physics"
+		- Port NpcMaterial.* and NpcMaterialDatabase.* into Materials.* and MaterialDatabase.*
+		- Port GameParameters settings that we need
+		- Shader: port Limbs
+			- & ShaderManager
+		- RenderContext: port Limbs
+		- TODOHERE
+	- Settings:
+		- SettingsManager
+		- SettingsDialog
+
+- Furniture:
+	= Would be nice to re-architect as follows:
+		+ Primary and Dipole are fused into NPCParticleMesh, which contains:
+			+ Up to 4 ParticleState, each having own ConstrainedState (like now)
+			+ Up to 6 SpringProperties, each containing:
+				- ParticleIndex of endpoints
+				- Length
+				- MassFactor
+				- Stiffness & Damping coefficients
+		+ All "isPrimary" become "npcParticleOrdinal"
+		- Fix: PickNPC
+		- Fix: need 0.81 spring coeff
+			- From materials - TODOHERE: OR FROM NPC database?!?!?
+		- Tests:
+			- Quad furniture
+				- Check springs: flexibility _and_ stiffness
+			- Secondary free becoming constrained (primary must be constrained)
+				- Human
+				- Quad
+		- Profile
+			- Old:
+				Npcs::UpdateNpcs: 44.99 (self: 6.71) -> 52.41 (self: 14.50)
+					UpdateNpcParticlePhysics: 20.50 -> 19.13
+						Def: 2.92
+						CI: 1.82
+						Bary: 1.49
+						CNI: 1.10
+					UpdateNpcAnimation: 11.17 -> 10.42
+					CalcPrelim: 2.68 -> 3.31
+					UpdateHuman: 2.38 -> 3.96
+					CalcPartConstrState: 1.52 -> 1.07
+				Npcs::RenderUpload: 40.32
+		= Optimize:
+			+ Spring forces calculated over all springs
+
+- NpcDatabase:
+	- Spec:
+		- Provides info on humans (e.g. role colors, frame IDs) and furniture (dimensions, orientation, frame IDs)
+		- Two sections, each own schema:
+			- Humans
+			- Furniture
+		- json refers to frames (in NPC texture DB) by name, but cctor - which also takes texture DB - stores references (or even directly coords!) by numeric ID
+			- json tells all frame names for all applicable variants, including limbs together with orientation variants
+				- Yes, the json for humans will list all frames for variants and all
+					- Might have a new GameType that holds together all texture info's for a human (e.g. "head front", "head side", etc.) and the json basically fills this
+		- Allow for merging of multiple "packs"
+			- So SubKind domain is expandable at runtime
+		- Also affects UI (for menu with list of subkind names, which might have multiple languages)
+		- Problem of quad dimensions (currently dictated by GameParameters::HumanNpcGeometry) vs texture frame dimensions:
+			- Could solve this by fixing, at DB init time, one of the two frame dimensions and calculating other based on frame dimensions
+	- Details:
+		- NpcSubKindIdType: alis for uint
+			- No different aliases for the two different NpcKind's - so we can have a 2D coord for a specific subkind (NpcKindType, NpcSubKindIdType)
+		- Humans:
+			- (NpcSubKindIdType) -> TextureCoords (or that new GameType we talk about above which holds together all texture info's for all variants), colors
+				- Initialization gets texture DB to populate this
+			- (NpcSubKindIdType, Language) -> Name
+		- Furniture:
+			- (NpcSubKindIdType) -> TextureCoords
+			- (NpcSubKindIdType) -> IsDipole ? (Length, Width, Orientation, ...) - or NpcParticleMesh info if we implement this
+			- (NpcSubKindIdType, Language) -> Name
+
+- Rendering:
+	- Atlas textures are simply flat frames and all, NpcDatabase groups them together
+		- But we use naming conventions to not go crazy ourselves
+	- NPCs will have two sets of vertex attributes:
+		- Static ones: contain static properties (colors - incl, highlight, texture coords)
+			- Only reloaded at e.g. NPC insertion/removal, or when face direction of at least one NPC changes, or when highlight of at least one NPC changes
+				- Face direction changes done via single helper, which also marks "static render attributes dirty" (a single Npcs-wide boolean)
+		- Dynamics ones: contain things that change at each frame (world vertices, )
+	+ Use indices for quad vertices
+		+ Good use case to experiment with the "quad single index buffer" feature
+	- NpcType needs an associated per-NPC NpcOrientation, because the way a quad is laid out around the particles for a human is different than that of a table
+		- Uhm: after all a table is not that simple - think when flipping it
+		- TODO: going for NpcParticleMesh would fix this
+	- Quad shader:
+		- Discard  when transparent
+			- But only after testing with two connected components - & inverse order of drawing; should bug out when near NPC is drawn before far NPC and they are on top of each other
+				- Requires following their triangle
+
+- Physical Interactions:
+	- Make sure triangle destruction is forwarded to NPCs
+		- Any constrained NPC on a destroyed triangle becomes free
+	- Swimming humans generate bubbles
+	- Humans on air-water interface generate small waves
+		- Need to produce as side-effect: Swimming humans generate small waves
+	- Lights: second pass of lighting algorith with all NPC particles, for each ship
+		- Adding to NPC particles' _light_ buffer
+	- Fire:
+		- When <TODO> vertices of triangle are on fire, NPC catches fire as well
+			- Done with "entering new triangle" detection, elsewhere here in plan
+			- Rendering: Ship asks Npcs (via World) at RenderUpload time, so that flames are in same buffer
+				- Need count and Npcs::RenderUploadFlames(...), both called by Ship
+	- Wind: all ships, only in free regime
+	- Ship-specific explosions: only of that ship, or free regime
+	- Swirl, etc.: all ships, all regimes
+	- Move tool:
+		- While MoveAll may be used to move everything, Move (component) only moves mesh, thus subjecting NPCs to apparent forces!
+	- Electric spark:
+		- Electrification must be stored with Points
+		- NPC update looks at own triangle's Points
+	- NPCs add mass to particle
+		- Mass is proportional to body length adjustment (square, we're 2D)
+			- And so is buoyancy
+			- Recalc both at changes and store as particle attributes
+				- Primary & secondary
+		- Ship::Update asks NPCs (via ParentWorld) to add themselves to Points' (definitive) masses
+	- NPC bounces transfer impact forces to ship's particles
+
+- Walk planning:
+	- First off: WalkingBehaviorState remembers CurrentTriangleElementIndex (of primary)
+		- Init'd to None at each transition into Walking
+	- @ UpdateBehavior while walking (or at WalkingUpdate):
+		- If current primary triangle != current:
+			- First off: immediate things, such as:
+				- Check fire at location
+				- Check bomb at location
+			- Then, planning:
+				- TODO: walk along triangle and check where we end up at end - what about alternatives?
+				- Find next floor in cur triangle along walking direction
+					- CanProceedInDirection(TriangleEdge, xDir) -> bool
+						- xDir translated into CCW or CW, then proceeds with analytical vertex finding until floor
+		
+- Layers:
+	- Floorplan layer:
+		- A specific "FloorPlan" layer provides list of *pairs* of Points and the FloorType enum
+			- Floor types:
+				- Floor: yeah, just one
+					- Then, @ShipFactory, we assign FloorDepth based on H/V/Diag
+						- The current NpcFloorType enum becomes NpcFloorDepth, and NpcFloorType only retains "Floor" and "Open"
+						- Triangles' edges also remember both (type and depth) - actually store struct with two members
+				- In the future, also "floor areas"
+						
+		- When the layer is absent, the layer is created automatically (@ new ShipFloorplanizer) with the hullness of particles
+			- Algo for creation should take care of following aspects:
+				- Make sure walls not too crowded
+				- Make sure there are stairs (evt. creating them)
+	- Interior layer
+		- A new texture layer (for graphical purposes only)
+		- When the layer is absent, it is created automatically (@ShipFactory) from the structural layer (+ material texturization if enabled)
+			+ Floorplan generation:
+				X Naive algorithm: use hull springs, but ignore "join" hull springs
+					+ Put back definition coords (opt unfortunately...) in ShipFactoryPoint
+					+ Do cases
+					+ Algo structure:
+						+ Visit springs that have "structural" endpoints (coords not nullopt)
+							+ Verify in FS that the optionality of definition_coords really reflects this
+						+ For each spring, check its connected triangles
+							+ Make sure we do this _after_ factory points are connected to springs
+						+ Given the triangle we want to check, get def coords of its vertices and use PointIndexMatrix to check for "extensions"
+					+ TessellationDirections @ GameTypes
+					+ using ShipFactoryFloorPlan...
+					+ FindNextHullOctant(..., directionOctants=1|7)
+						+ Cleanup 
+					+ Do two-pass algo
+						+ ShipFactoryFloorPlan: not of ShipPointPair but of ShipFactoryFloor
+							+ Which constains ElementIndex spring
+						+ Use FloorPlan to determine hullness of springs, rather than ship itself
+				X Algo 2:
+					X Remove springs that are:
+						+ a: Long one (nothing on their exact elongaments x 2), and
+						+ b: Incident on "long" lines (TODOHERE: multiple incident long ones? And, must this be just "first" spring?)
+					- TODO:
+						+ Should "a" not consider "internal" (in sealed-triangle) springs? CHECK: should remove trivial diagonals in upper-left corner of video_mesh
+						+ Should we avoid interior springs - CHECK: should remove interior springs from video_mesh
+						- All the above cause first H segment of each floor in test_floorplan to disappear, as it's internal
+							- Note: it's not viable, so we should not check for "internal" when checking incidence on long floor, as that internal might become a floor
+								- Do not check for internal at first loop
+								- Do not check for internal at IsFloorIncidentOnLongFloors, but check all (half-viable) springs
+				X Algo 3: floor walk-mapping:
+					- For each line, from bottom:
+						- IsInside=False
+						- For x=0 to last:
+							- If encounter a hull point that has at least one triangle (i.e. which belongs to an edge) (if !IsInside) or encounter a non-floor point (if IsInside)
+							  and the point doesn't have a floor assigned
+									- TODO: what about *face*? Can we encounter same point twice for two different floors? YES (e.g. point between two separate floors)
+									- TODO: develop this "floor assignment/marking" thing
+								- Start walk from here
+									- Enter algo with point & direction
+										- Direction depends on IsInside
+									- Algo keeps looking for hull-springs-that-are-triangle-sides
+									- Algo builds:
+										- Floor springs (map)
+											- Note: might add same spring multiple times, e.g. both sides of it
+										- Set of removed springs (set)
+											- Mostly to faciliate algo
+											- Note: should not add same spring multiple times, as we make sure we don't consider removed springs
+									- Walk termination: first spring that might be removed is next, and so we stop when we are trying to re-check from here
+								- Flip IsInside
+				+ Algo 4: vertex-pattern based
+	- Both layers make up the "Interior view"
+	- User can choose between "Exterior" view and "Interior" view, via menu
+		- As soon as NPC count goes from zero to non-zero (including BeingPlaced), if current view is "Exterior" GameController switches to "Interior", regardless of current setting
+		- As soon as NPC count goes from non-zero to zero, if current view is "Interior" GameController switches to "Exterior" view, regardless of current setting
+
+- Doors:
+	- New electrical element (with both ON/OFF types), controls floorness of springs (and thus triangle edges) among neighboring pairs of them
+		- Triangle edge/floors: split "factory" vs. "actual"
+			- Iff we end up having H1,V1,S2,etc. floor types, as resetting door would need to know that
+			- Otherwise, if we only have Floor+Open, can live without factory
+	
+
+- Sounds:
+	- Like we do with others: NpcMaterial has (own) SoundType property
+	- Human events:
+		- Hit (@ bounce), Exclamation (@ loss of equilibrium)
+
+===================
+Next release:
+
+- Rendering:
+	- Knee when rising: flatten it (extra triangle)
+
+
+===================
+===================
+COMPLETED
+===================
+===================
+
++ Human behavioral state machine(s):
 	! Principles:
 		! Most transitions happen with "convergence" of some quantity
 			! Only the convergence rate is a state-specific parameter; the threshold for reaching a target is not (i.e. it's a global constant)
@@ -1396,31 +1647,6 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 		+ Do
 		+ Integrate into FS - and test build
 
-	- Integration into FS - 2
-		! Goal: be able to copy folder of files seamlessly across FS and BL
-		- Triangles: add BL features
-			- Barycentric math (replace FS')
-			- SurfaceType
-			- OppositeTriangle
-			- etc?
-		- GameTypes: BaryLab->FS
-		- Tessellation @ ShipFactory
-			- Consider that members in BL have different names in FS
-			- ShipFactoryTypes
-			- ShipFloorplanizer
-			- ShipFactory
-			- Test consequences of new tessellation (i.e. triangle edges in new directions)
-				- Look
-				- Frontier
-		- Move Npc simulation source files under NpcSimulation folder
-			- Not VS GUI, that's still "Physics"
-		- Port NpcMaterial.* and NpcMaterialDatabase.* into Materials.* and MaterialDatabase.*
-		- Port GameParameters settings that we need
-		- TODOHERE
-		- Settings:
-			- SettingsManager
-			- SettingsDialog
-
 	+ Remaining state machines:
 		+ See above for "Impact" responses at the various states 
 			+ There is remaining (=) work above for this!
@@ -1439,95 +1665,6 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 			+ OnImpact: if human, check state machine and do following transitions:
 				+ If walking and impact V (velocity of particle along normal) is in direction of walking:
 					+ Flip direction
-			
-	- Other walking features:
-		- See if can detect that will hit a wall/well by projecting forward primary particle along immediately following triangle edge; if will hit, turn around
-			- Note: detect both slope up (requires "globalizing" the max slope constant) and slope down
-			- Impl:
-				- WalkingBehaviorState: new member: ElementIndex (or TriangleEdge?)) LastPlanTriangleOrigin, init'd as None
-				- Walking update: if triangle != LastPlanTriangleOrigin:
-					- Find next floor in cur triangle along walking direction
-						- CanProceedInDirection(TriangleEdge, xDir) -> bool
-							- xDir translated into CCW or CW, then proceeds with analytical vertex finding until floor
-					- TODOHERE - also include random choice of whether to fall or not
-					- TODOHERE - also at initial direction choice
-					- LastPlanTriangleOrigin = triangle
-					
-- NpcDatabase:
-	- Spec:
-		- Provides info on humans (e.g. role colors, frame IDs) and furniture (dimensions, orientation, frame IDs)
-		- Two sections, each own schema:
-			- Humans
-			- Furniture
-		- json refers to frames by name, but cctor - which also takes texture DB - stores references (or even directly coords!) by numeric ID
-		- Allow for mergning of multiple "packs"
-			- So SubKind domain is expandable at runtime
-		- Also affects UI (for menu with list of subkind names, which might have multiple languages)
-		- Problem of quad dimensions (currently dictated by GameParameters::HumanNpcGeometry) vs texture frame dimensions:
-			- Could solve this by fixing, at DB init time, one of the two frame dimensions and calculating other based on frame dimensions
-	- Details:
-		- NpcSubKindId: uint
-			- TODO: want to differentiate btwn NpcKind's?
-		- Humans:
-			- (NpcSubKindId) -> TextureCoords, colors
-				- TODO: initialization gets texture DB to populate this
-			- (NpcSubKindId, Language) -> Name
-		- Furniture:
-			- (NpcSubKindId) -> TextureCoords
-			- (NpcSubKindId) -> IsDipole ? (Length, Width, Orientation, ...)
-			- (NpcSubKindId, Language) -> Name
-
-- Rendering:
-	- Atlas textures are aligned with HumanNpcKindType and FurnitureNpcKindType, e.g.:
-		- HumanNpcKindType:
-			- Passenger = 1
-			- Captain = 4
-			- Officer = 7
-		- FurnitureNpcKindType:
-			- Table = 8
-			- Chair = 9
-		- For humans: adding 0, 1, and 2 gives front, back, and side
-	- NPCs will have two sets of vertex attributes:
-		- Static ones: contain static properties (colors - incl, highlight, texture coords)
-			- Only reloaded at e.g. NPC insertion/removal, or when face direction of at least one NPC changes, or when highlight of at least one NPC changes
-				- Face direction changes done via single helper, which also marks "static render attributes dirty" (a single Npcs-wide boolean)
-		- Dynamics ones: contain things that change at each frame (world vertices, )
-	+ Use indices for quad vertices
-		+ Good use case to experiment with the "quad single index buffer" feature
-	- NpcType needs an associated per-NPC NpcOrientation, because the way a quad is laid out around the particles for a human is different than that of a table
-		- Uhm: after all a table is not that simple - think when flipping it
-	- Quad shader:
-		- Discard  when transparent
-			- But only after testing with two connected components - & inverse order of drawing; should bug out when near NPC is drawn before far NPC and they are on top of each other
-				- Requires following their triangle
-
-- Physical Interactions:
-	- Make sure triangle destruction is forwarded to NPCs
-		- Any constrained NPC on a destroyed triangle becomes free
-	- Swimming humans generate bubbles
-	- Humans on air-water interface generate small waves
-		- Need to produce as side-effect: Swimming humans generate small waves
-	- Lights: second pass of lighting algorith with all NPC particles, for each ship
-		- Adding to NPC particles' _light_ buffer
-	- Fire:
-		- When <TODO> vertices of triangle are on fire, NPC catches fire as well
-			- Rendering: Ship asks Npcs (via World) at RenderUpload time, so that flames are in same buffer
-				- Need count and Npcs::RenderUploadFlames(...), both by Ship
-	- Wind: all ships, only in free regime
-	- Ship-specific explosions: only of that ship, or free regime
-	- Swirl, etc.: all ships, all regimes
-	- Move tool:
-		- While MoveAll may be used to move everything, Move (component) only moves mesh, thus subjecting NPCs to apparent forces!
-	- Electric spark:
-		- Electrification must be stored with Points
-		- NPC update looks at own triangle's Points
-	- NPCs add mass to particle
-		- Mass is proportional to body length adjustment (square, we're 2D)
-			- And so is buoyancy
-			- Recalc both at changes and store as particle attributes
-				- Primary & secondary
-		- Ship::Update asks NPCs (via ParentWorld) to add themselves to Points' (definitive) masses
-	- NPC bounces transfer impact forces to ship's particles
 
 + Walk paths/manholes/stairs:
 	! Concerns to be addressed by design:
@@ -1851,104 +1988,3 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 
 	+ Video
 
-
-- Walk planning:
-	- First off: WalkingBehaviorState remembers CurrentTriangleElementIndex (of primary)
-		- Init'd to None at each transition into Walking
-	- @ UpdateBehavior while walking (or at WalkingUpdate):
-		- If current primary triangle != current:
-			- First off: immediate things, such as:
-				- Check fire at location
-				- Check bomb at location
-			- Then, planning:
-				- TODO: walk along triangle and check where we end up at end - what about alternatives?
-		
-- Layers:
-	- Floorplan layer:
-		- A specific "FloorPlan" layer provides list of *pairs* of Points and the FloorType enum
-			- Floor types:
-				- Floor: yeah, just one
-					- Then, @ShipFactory, we assign FloorDepth based on H/V/Diag
-						- The current NpcFloorType enum becomes NpcFloorDepth, and NpcFloorType only retains "Floor" and "Open"
-						- Triangles' edges also remember both (type and depth) - actually store struct with two members
-				- In the future, also "floor areas"
-						
-		- When the layer is absent, the layer is created automatically (@ new ShipFloorplanizer) with the hullness of particles
-			- Algo for creation should take care of following aspects:
-				- Make sure walls not too crowded
-				- Make sure there are stairs (evt. creating them)
-	- Interior layer
-		- A new texture layer (for graphical purposes only)
-		- When the layer is absent, it is created automatically (@ShipFactory) from the structural layer (+ material texturization if enabled)
-			+ Floorplan generation:
-				X Naive algorithm: use hull springs, but ignore "join" hull springs
-					+ Put back definition coords (opt unfortunately...) in ShipFactoryPoint
-					+ Do cases
-					+ Algo structure:
-						+ Visit springs that have "structural" endpoints (coords not nullopt)
-							+ Verify in FS that the optionality of definition_coords really reflects this
-						+ For each spring, check its connected triangles
-							+ Make sure we do this _after_ factory points are connected to springs
-						+ Given the triangle we want to check, get def coords of its vertices and use PointIndexMatrix to check for "extensions"
-					+ TessellationDirections @ GameTypes
-					+ using ShipFactoryFloorPlan...
-					+ FindNextHullOctant(..., directionOctants=1|7)
-						+ Cleanup 
-					+ Do two-pass algo
-						+ ShipFactoryFloorPlan: not of ShipPointPair but of ShipFactoryFloor
-							+ Which constains ElementIndex spring
-						+ Use FloorPlan to determine hullness of springs, rather than ship itself
-				X Algo 2:
-					X Remove springs that are:
-						+ a: Long one (nothing on their exact elongaments x 2), and
-						+ b: Incident on "long" lines (TODOHERE: multiple incident long ones? And, must this be just "first" spring?)
-					- TODO:
-						+ Should "a" not consider "internal" (in sealed-triangle) springs? CHECK: should remove trivial diagonals in upper-left corner of video_mesh
-						+ Should we avoid interior springs - CHECK: should remove interior springs from video_mesh
-						- All the above cause first H segment of each floor in test_floorplan to disappear, as it's internal
-							- Note: it's not viable, so we should not check for "internal" when checking incidence on long floor, as that internal might become a floor
-								- Do not check for internal at first loop
-								- Do not check for internal at IsFloorIncidentOnLongFloors, but check all (half-viable) springs
-				X Algo 3: floor walk-mapping:
-					- For each line, from bottom:
-						- IsInside=False
-						- For x=0 to last:
-							- If encounter a hull point that has at least one triangle (i.e. which belongs to an edge) (if !IsInside) or encounter a non-floor point (if IsInside)
-							  and the point doesn't have a floor assigned
-									- TODO: what about *face*? Can we encounter same point twice for two different floors? YES (e.g. point between two separate floors)
-									- TODO: develop this "floor assignment/marking" thing
-								- Start walk from here
-									- Enter algo with point & direction
-										- Direction depends on IsInside
-									- Algo keeps looking for hull-springs-that-are-triangle-sides
-									- Algo builds:
-										- Floor springs (map)
-											- Note: might add same spring multiple times, e.g. both sides of it
-										- Set of removed springs (set)
-											- Mostly to faciliate algo
-											- Note: should not add same spring multiple times, as we make sure we don't consider removed springs
-									- Walk termination: first spring that might be removed is next, and so we stop when we are trying to re-check from here
-								- Flip IsInside
-				+ Algo 4: vertex-pattern based
-	- Both layers make up the "Interior view"
-	- User can choose between "Exterior" view and "Interior" view, via menu
-		- As soon as NPC count goes from zero to non-zero (including BeingPlaced), if current view is "Exterior" GameController switches to "Interior", regardless of current setting
-		- As soon as NPC count goes from non-zero to zero, if current view is "Interior" GameController switches to "Exterior" view, regardless of current setting
-
-- Doors:
-	- New electrical element (with both ON/OFF types), controls floorness of springs (and thus triangle edges) among neighboring pairs of them
-		- Triangle edge/floors: split "factory" vs. "actual"
-			- Iff we end up having H1,V1,S2,etc. floor types, as resetting door would need to know that
-			- Otherwise, if we only have Floor+Open, can live without factory
-	
-
-- Sounds:
-	- Like we do with others: NpcMaterial has (own) SoundType property
-	- Human events:
-		- Hit (@ bounce), Exclamation (@ loss of equilibrium)
-
-===================
-Next release:
-
-- Rendering:
-	- Knee when rising: flatten it (extra triangle)
