@@ -211,7 +211,7 @@ Arch
 	- All in one go - GO1:
 		- Move Npc simulation source files under NpcSimulation folder
 			- Not VS GUI, that's still "Physics"
-		- Port NpcMaterial.* and NpcMaterialDatabase.* into Materials.* and MaterialDatabase.*
+		- Port NpcMaterial.* and NpcMaterialDatabase.* (from Material*) into Materials.* and MaterialDatabase.*
 		- Port GameParameters settings that we need
 		- Shader: port Limbs
 			- & ShaderManager
@@ -231,15 +231,29 @@ Arch
 				- MassFactor
 				- Stiffness & Damping coefficients
 		+ All "isPrimary" become "npcParticleOrdinal"
-		- Fix: PickNPC
-		- Fix: need 0.81 spring coeff
-			- From materials - TODOHERE: OR FROM NPC database?!?!?
+		+ Fix: shaking a lot - also humans - goes beyond max iters in ConstrainedInertial
+			+ First off, see if it happens on master: YES
+			+ Could very well be legit, due to long trajectory - check with humongous iter limit
+		+ Fix: PickNPC
+			+ Need function 
+			+ Picking strategy for quad
+				+ Offset is off primary
+			+ And when moving, move all particles together
+				+ Calc pos diff wrt primary, and apply to all
+		+ Fix: need 0.81 spring stiffness coeff
+			+ From materials
+			+ And then global adjustments
+				+ SettingsDialog
+		+ Add tool for placing quads
+			+ "Crate" Kind -> "Quad"
+		- Fix: still want a better strategy for picking quads
+		- Fix: folding of quads?
 		- Tests:
-			- Quad furniture
-				- Check springs: flexibility _and_ stiffness
-			- Secondary free becoming constrained (primary must be constrained)
-				- Human
-				- Quad
+			+ Quad furniture
+				+ Check springs: flexibility _and_ stiffness
+			+ Secondary free becoming constrained (primary must be constrained)
+				+ Human
+				+ Quad
 		- Profile
 			- Old:
 				Npcs::UpdateNpcs: 44.99 (self: 6.71) -> 52.41 (self: 14.50)
@@ -256,9 +270,17 @@ Arch
 		= Optimize:
 			+ Spring forces calculated over all springs
 
+	- See if can get rid of CurrentPlaneId being optional-and-thus-standing-for-topmost, so that we
+	  can get NPCs on a ship covered by debris
+		- See if the reason was exactly to avoid this
+
+	- Merge to master
+
 - NpcDatabase:
 	- Spec:
-		- Provides info on humans (e.g. role colors, frame IDs) and furniture (dimensions, orientation, frame IDs)
+		- Provides info on humans (e.g. role colors, height & width, frame IDs) and furniture (height, orientation, frame IDs)
+			- Furniture height: used to calculate width based off texture frame
+			- Human height & width: just for consistency, doesn't use frames to calc anything
 		- Two sections, each own schema:
 			- Humans
 			- Furniture
