@@ -222,7 +222,7 @@ Arch
 		- SettingsDialog
 
 - Furniture:
-	= Would be nice to re-architect as follows:
+	+ Would be nice to re-architect as follows:
 		+ Primary and Dipole are fused into NPCParticleMesh, which contains:
 			+ Up to 4 ParticleState, each having own ConstrainedState (like now)
 			+ Up to 6 SpringProperties, each containing:
@@ -246,16 +246,15 @@ Arch
 				+ SettingsDialog
 		+ Add tool for placing quads
 			+ "Crate" Kind -> "Quad"
-		- Fix: still want a better strategy for picking quads
-		- Fix: folding of quads?
-		- Tests:
+		+ Fix: still want a better strategy for picking quads
+		+ Tests:
 			+ Quad furniture
 				+ Check springs: flexibility _and_ stiffness
 			+ Secondary free becoming constrained (primary must be constrained)
 				+ Human
 				+ Quad
-		- Profile
-			- Old:
+		+ Profile
+			! Old:
 				Npcs::UpdateNpcs: 44.99 (self: 6.71) -> 52.41 (self: 14.50)
 					UpdateNpcParticlePhysics: 20.50 -> 19.13
 						Def: 2.92
@@ -267,20 +266,28 @@ Arch
 					UpdateHuman: 2.38 -> 3.96
 					CalcPartConstrState: 1.52 -> 1.07
 				Npcs::RenderUpload: 40.32
-		= Optimize:
+		+ Optimize:
 			+ Spring forces calculated over all springs
 
 	- See if can get rid of CurrentPlaneId being optional-and-thus-standing-for-topmost, so that we
 	  can get NPCs on a ship covered by debris
-		- See if the reason was exactly to avoid this
+	  	- See if the reason was exactly to avoid this
+		- TODO: may be leave it optional, and do the below:
+		- When BeingPlaced, it's "implicit topmost" 
+			- This is the only case in which we need "implicit topmost", may be can do this without opt but checking BeingPlaced at RenderUpload time?
+		- When free, can take max from ship at that moment, and fine to stick with it
+		- Make sure it's reset to right depth once we become constrained again
 
 	- Merge to master
 
 - NpcDatabase:
 	- Spec:
-		- Provides info on humans (e.g. role colors, height & width, frame IDs) and furniture (height, orientation, frame IDs)
+		- Provides info on humans (e.g. role colors, height & width, frame IDs) and furniture (height, orientation, frame IDs, material)
 			- Furniture height: used to calculate width based off texture frame
 			- Human height & width: just for consistency, doesn't use frames to calc anything
+				- Replaces GameParameters'
+			- Furniture material: json references material by NpcMaterial::Kind (string)
+				- NpcDatabase uses NpcMaterial::StrToKind(.) to parse it
 		- Two sections, each own schema:
 			- Humans
 			- Furniture
@@ -291,10 +298,8 @@ Arch
 		- Allow for merging of multiple "packs"
 			- So SubKind domain is expandable at runtime
 		- Also affects UI (for menu with list of subkind names, which might have multiple languages)
-		- Problem of quad dimensions (currently dictated by GameParameters::HumanNpcGeometry) vs texture frame dimensions:
-			- Could solve this by fixing, at DB init time, one of the two frame dimensions and calculating other based on frame dimensions
 	- Details:
-		- NpcSubKindIdType: alis for uint
+		- NpcSubKindIdType: alias for uint
 			- No different aliases for the two different NpcKind's - so we can have a 2D coord for a specific subkind (NpcKindType, NpcSubKindIdType)
 		- Humans:
 			- (NpcSubKindIdType) -> TextureCoords (or that new GameType we talk about above which holds together all texture info's for all variants), colors
@@ -380,9 +385,6 @@ Arch
 			- Algo for creation should take care of following aspects:
 				- Make sure walls not too crowded
 				- Make sure there are stairs (evt. creating them)
-	- Interior layer
-		- A new texture layer (for graphical purposes only)
-		- When the layer is absent, it is created automatically (@ShipFactory) from the structural layer (+ material texturization if enabled)
 			+ Floorplan generation:
 				X Naive algorithm: use hull springs, but ignore "join" hull springs
 					+ Put back definition coords (opt unfortunately...) in ShipFactoryPoint
@@ -433,10 +435,34 @@ Arch
 									- Walk termination: first spring that might be removed is next, and so we stop when we are trying to re-check from here
 								- Flip IsInside
 				+ Algo 4: vertex-pattern based
+
+	- InteriorTexture layer
+		- A new texture layer (for graphical purposes only)
+		- When the layer is absent, it is created automatically (@ShipFactory) from the structural layer (+ material texturization if enabled)
 	- Both layers make up the "Interior view"
 	- User can choose between "Exterior" view and "Interior" view, via menu
 		- As soon as NPC count goes from zero to non-zero (including BeingPlaced), if current view is "Exterior" GameController switches to "Interior", regardless of current setting
 		- As soon as NPC count goes from non-zero to zero, if current view is "Interior" GameController switches to "Exterior" view, regardless of current setting
+	- Impl gist:
+		- TextureData ShipTexturizer::MakeInteriorViewLayer( // Stateless, basically static
+			- const floorplanLayer, // From ship spec
+			- const interiorTexture, // Created as above
+			- float interiorTextureAlpha, // 1.0 if interiorTexture is from user, 0.something if created (or we always create it with this alpha)
+		- Another overload that does it for a quad and returns that quad
+			- Both need to be oh-so-fast, as we might invoke this multiple times per-frame when there's widespread destruction
+		- Dynamics of floorplan changes (destruction, repair):
+			- Ship::OnTriangleDestroyed() -> invoke ShipTexturizer() method to generate new Interior view texture, and subsequently give it to ShipRenderContext 
+				- This implies that Ship must hold:
+					- floorplan, interior texture
+		- ShipRenderContext:
+			- Keeps ahold of both Exterior and Interior view textures
+			- Upon change of the view type (Exterior<->Interior), ShipRenderContext uploads right one of the two to OpenGL
+				- So we save an OpenGL texture
+			- The Interior view texture might change (from outside) - either entirely or a quad only; in which case ShipRenderContext does the right thing (wrt threading) to store it and eventually
+			  re-upload it (eventually a portion of it) if current view type is Interior
+				- ShipRenderContext:: two uq_ptr for InteriorView texture - one set from outside, the other used by thread
+				- When a change happens, the caller ends up setting the "outside uq_ptr"
+				- At <don't remember where exactly, when it's safe to swipe main thread things>, we move outside to inside and remember that we have to upload it, and what portion of it
 
 - Doors:
 	- New electrical element (with both ON/OFF types), controls floorness of springs (and thus triangle edges) among neighboring pairs of them
@@ -448,7 +474,8 @@ Arch
 - Sounds:
 	- Like we do with others: NpcMaterial has (own) SoundType property
 	- Human events:
-		- Hit (@ bounce), Exclamation (@ loss of equilibrium)
+		- Hit (@ bounce)
+		- Exclamation (@ loss of equilibrium)
 
 ===================
 Next release:
