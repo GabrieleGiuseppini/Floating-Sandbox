@@ -191,15 +191,15 @@ Arch
 				- 2D: https://www.geogebra.org/m/aRMTsu62
 
 								
-- Integration into FS
+= Integration into FS
 	! Goal: be able to copy folder of files seamlessly across FS and BL
-	- FixedSizeVector: BaryLab->FS: check diff
+	+ FixedSizeVector: BaryLab->FS: check diff
+	- GameTypes: BaryLab->FS: add new types (and changes?)
 	- Triangles: BaryLab->FS: add BL features
 		- Barycentric math (replace FS')
 		- SurfaceType
 		- OppositeTriangle
 		- etc?
-	- GameTypes: BaryLab->FS: add new types (and changes?)
 	- Tessellation @ ShipFactory
 		- Consider that members in BL have different names in FS
 		- ShipFactoryTypes

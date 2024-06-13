@@ -13,7 +13,7 @@
 #include <iterator>
 
 /*
- * This class is a fixed-size vector for value elements, whose size is specified at compile time.
+ * This class is basically an array with a "current size" state member. The maximum size is specified at compile time.
  *
  * Elements can be added up to the specified maximum size, after which the behavior is undefined.
  *
@@ -265,11 +265,13 @@ public:
     }
 
     template <typename ...TArgs>
-    void emplace_back(TArgs&&... args) noexcept
+    TElement & emplace_back(TArgs&&... args) noexcept
     {
         assert(mCurrentSize < MaxSize);
 
-        mArray[mCurrentSize++] = TElement(std::forward<TArgs>(args)...);
+        TElement & newElement = mArray[mCurrentSize++];
+        newElement = TElement(std::forward<TArgs>(args)...);
+        return newElement;
     }
 
     void erase(size_t index) noexcept
