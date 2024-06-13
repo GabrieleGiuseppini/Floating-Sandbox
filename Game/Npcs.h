@@ -51,10 +51,10 @@ private:
     {
         struct HumanState
         {
-            HumanNpcRoleType Role;
+            HumanNpcKindType Role;
 
             HumanState(
-                HumanNpcRoleType role)
+                HumanNpcKindType role)
                 : Role(role)
             {}
         };
@@ -74,7 +74,7 @@ private:
         NpcId Id; // Global ID, here for convenience
         ShipId SId; // Here for convenience
 
-        NpcType Type;
+        NpcKindType Type;
 
         // Current regime
         RegimeType Regime;
@@ -104,7 +104,7 @@ private:
             TypeSpecificNpcState::HumanState const & humanState)
             : Id(id)
             , SId(sId)
-            , Type(NpcType::Human)
+            , Type(NpcKindType::Human)
             , Regime(regime)
             , PrimaryParticleIndex(primaryParticleIndex)
             , Highlight(highlight)
@@ -159,7 +159,7 @@ public:
     void BeginMoveNpc(NpcId id);
 
     PickedObjectId<NpcId> BeginMoveNewHumanNpc(
-        HumanNpcRoleType role,
+        HumanNpcKindType role,
         vec2f const & initialPosition);
 
     bool IsSuitableNpcPosition(
@@ -177,7 +177,7 @@ public:
     void AbortNewNpc(NpcId id);
 
     void HighlightNpc(
-        NpcId id, 
+        NpcId id,
         NpcHighlightType highlight);
 
     void RemoveNpc(NpcId id);
@@ -185,9 +185,9 @@ public:
 private:
 
     NpcId AddHumanNpc(
-        HumanNpcRoleType role,
+        HumanNpcKindType role,
         vec2f const & initialPosition,
-        RegimeType initialRegime,      
+        RegimeType initialRegime,
         NpcHighlightType initialHighlight,
         ShipId const & shipId,
         std::optional<ElementIndex> triangleIndex);
@@ -197,7 +197,7 @@ private:
         vec2f const & position);
 
     void OnNpcDestroyed(NpcState const & state);
-    
+
     inline NpcState const & GetNpcState(NpcId id) const;
 
     inline NpcState & GetNpcState(NpcId id);
@@ -205,7 +205,7 @@ private:
     inline std::optional<ElementId> FindTopmostContainingTriangle(vec2f const & position) const;
 
     inline bool IsTriangleSuitableForNpc(
-        NpcType type,
+        NpcKindType type,
         ShipId shipId,
         std::optional<ElementIndex> const & triangleIndex) const;
 

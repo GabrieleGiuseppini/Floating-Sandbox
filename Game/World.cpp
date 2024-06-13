@@ -142,7 +142,7 @@ void World::BeginMoveNpc(NpcId id)
 }
 
 PickedObjectId<NpcId> World::BeginMoveNewHumanNpc(
-    HumanNpcRoleType role,
+    HumanNpcKindType role,
     vec2f const & initialPosition)
 {
     return mNpcs.BeginMoveNewHumanNpc(role, initialPosition);

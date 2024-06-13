@@ -26,21 +26,6 @@ using namespace Physics;
 
 //////////////////////////////////////////////////////////////////////////////
 
-// This is our local circular order (clockwise, starting from E)
-// Note: cardinal directions are labeled according to y growing upwards
-static int const TessellationCircularOrderDirections[8][2] = {
-    {  1,  0 },  // 0: E
-    {  1, -1 },  // 1: SE
-    {  0, -1 },  // 2: S
-    { -1, -1 },  // 3: SW
-    { -1,  0 },  // 4: W
-    { -1,  1 },  // 5: NW
-    {  0,  1 },  // 6: N
-    {  1,  1 }   // 7: NE
-};
-
-//////////////////////////////////////////////////////////////////////////////
-
 std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
     ShipId shipId,
     World & parentWorld,

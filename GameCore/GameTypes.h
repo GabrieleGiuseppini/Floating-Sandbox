@@ -5,6 +5,7 @@
 ***************************************************************************************/
 #pragma once
 
+#include "BarycentricCoords.h"
 #include "Colors.h"
 #include "EnumFlags.h"
 #include "GameMath.h"
@@ -299,27 +300,15 @@ namespace std {
 template<typename TObjectId>
 struct PickedObjectId
 {
+    TObjectId ObjectId;
+    vec2f WorldOffset;
+
     PickedObjectId(
         TObjectId objectId,
         vec2f const & worldOffset)
-        : mObjectId(objectId)
-        , mWorldOffset(worldOffset)
+        : ObjectId(objectId)
+        , WorldOffset(worldOffset)
     {}
-
-    inline TObjectId GetObjectId() const noexcept
-    {
-        return mObjectId;
-    };
-
-    inline vec2f const & GetWorldOffset() const noexcept
-    {
-        return mWorldOffset;
-    }
-
-private:
-
-    TObjectId mObjectId;
-    vec2f mWorldOffset;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -332,6 +321,12 @@ private:
  * Octant 0 is E, octant 1 is SE, ..., Octant 7 is NE.
  */
 using Octant = std::int32_t;
+
+/*
+ * Our local circular order (clockwise, starting from E), indexes by Octant.
+ * Note: cardinal directions are labeled according to x growing to the right and y growing upwards
+ */
+extern int const TessellationCircularOrderDirections[8][2];
 
 /*
  * Generic directions.
@@ -958,6 +953,66 @@ struct FloatRect
 
 #pragma pack(pop)
 
+/*
+ * Identifies the edge of a triangle among all edges on a ship.
+ */
+struct TriangleAndEdge
+{
+    ElementIndex TriangleElementIndex;
+    int EdgeOrdinal;
+
+    TriangleAndEdge() = default;
+
+    TriangleAndEdge(
+        ElementIndex triangleElementIndex,
+        int edgeOrdinal)
+        : TriangleElementIndex(triangleElementIndex)
+        , EdgeOrdinal(edgeOrdinal)
+    {
+        assert(triangleElementIndex != NoneElementIndex);
+        assert(edgeOrdinal >= 0 && edgeOrdinal < 3);
+    }
+};
+
+/*
+ * Barycentric coordinates in a specific triangle.
+ */
+struct AbsoluteTriangleBCoords
+{
+    ElementIndex TriangleElementIndex;
+    bcoords3f BCoords;
+
+    AbsoluteTriangleBCoords() = default;
+
+    AbsoluteTriangleBCoords(
+        ElementIndex triangleElementIndex,
+        bcoords3f bCoords)
+        : TriangleElementIndex(triangleElementIndex)
+        , BCoords(bCoords)
+    {
+        assert(triangleElementIndex != NoneElementIndex);
+    }
+
+    bool operator==(AbsoluteTriangleBCoords const & other) const
+    {
+        return this->TriangleElementIndex == other.TriangleElementIndex
+            && this->BCoords == other.BCoords;
+    }
+
+    std::string ToString() const
+    {
+        std::stringstream ss;
+        ss << TriangleElementIndex << ":" << BCoords;
+        return ss.str();
+    }
+};
+
+inline std::basic_ostream<char> & operator<<(std::basic_ostream<char> & os, AbsoluteTriangleBCoords const & is)
+{
+    os << is.ToString();
+    return os;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // Game
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -990,41 +1045,91 @@ enum class MaterialLayerType
 };
 
 /*
- * Types of NPCs.
+ * Top level of NPC type hierarchy.
  */
-enum class NpcType
+enum class NpcKindType
 {
+    Furniture,
     Human
 };
 
 /*
- * Roles for human NPCs.
+ * Furniture NPC types (second level).
+ * TODO: will be replaced by opaque int, managed via NpcDatabase.
  */
-enum class HumanNpcRoleType
+enum class FurnitureNpcKindType
+{
+    Particle,
+    Quad
+};
+
+/*
+ * Human NPC types (second level).
+ * TODO: will be replaced by opaque int, managed via NpcDatabase.
+ */
+enum class HumanNpcKindType
 {
     Passenger,
-    Programmer // TODO
+    Programmer
 };
+
+enum class NpcFloorKindType
+{
+    NotAFloor,
+    DefaultFloor // Futurework: areas, etc.
+};
+
+enum class NpcFloorGeometryDepthType
+{
+    NotAFloor,
+    Depth1, // Main depth: H-V
+    Depth2 // Staircases: S-S
+};
+
+enum class NpcFloorGeometryType
+{
+    NotAFloor,
+    // Depth 1: main depth
+    Depth1H,
+    Depth1V,
+    // Depth 2: staircases
+    Depth2S1,
+    Depth2S2
+};
+
+inline NpcFloorGeometryDepthType NpcFloorGeometryDepth(NpcFloorGeometryType geometry)
+{
+    switch (geometry)
+    {
+        case NpcFloorGeometryType::NotAFloor:
+        {
+            return NpcFloorGeometryDepthType::NotAFloor;
+        }
+
+        case NpcFloorGeometryType::Depth1H:
+        case NpcFloorGeometryType::Depth1V:
+        {
+            return NpcFloorGeometryDepthType::Depth1;
+        }
+
+        case NpcFloorGeometryType::Depth2S1:
+        case NpcFloorGeometryType::Depth2S2:
+        {
+            return NpcFloorGeometryDepthType::Depth2;
+        }
+    }
+
+    assert(false);
+    return NpcFloorGeometryDepthType::NotAFloor;
+}
 
 /*
  * Types of hightlight for NPCs.
  */
-
-enum class NpcHighlightType : size_t
+enum class NpcHighlightType
 {
-    Error = 0,
-    Picked,
-    Hovered,
-    None
-};
-
-/*
- * The different types of floor on which NPCs move.
- */
-enum class NpcSurfaceType
-{
-    Floor,
-    Open
+    None,
+    Candidate
 };
 
 /*
@@ -1312,3 +1417,36 @@ namespace std {
     };
 
 }
+
+struct TextureQuad
+{
+    vec2f TopLeftPosition;
+    vec2f TopLeftTexture;
+    vec2f TopRightPosition;
+    vec2f TopRightTexture;
+    vec2f BottomLeftPosition;
+    vec2f BottomLeftTexture;
+    vec2f BottomRightPosition;
+    vec2f BottomRightTexture;
+
+    TextureQuad() = default;
+
+    TextureQuad(
+        vec2f topLeftPosition,
+        vec2f topLeftTexture,
+        vec2f topRightPosition,
+        vec2f topRightTexture,
+        vec2f bottomLeftPosition,
+        vec2f bottomLeftTexture,
+        vec2f bottomRightPosition,
+        vec2f bottomRightTexture)
+        : TopLeftPosition(topLeftPosition)
+        , TopLeftTexture(topLeftTexture)
+        , TopRightPosition(topRightPosition)
+        , TopRightTexture(topRightTexture)
+        , BottomLeftPosition(bottomLeftPosition)
+        , BottomLeftTexture(bottomLeftTexture)
+        , BottomRightPosition(bottomRightPosition)
+        , BottomRightTexture(bottomRightTexture)
+    {}
+};

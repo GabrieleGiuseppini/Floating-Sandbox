@@ -139,7 +139,7 @@ public:
     void BeginMoveNpc(NpcId npcId);
 
     PickedObjectId<NpcId> BeginMoveNewHumanNpc(
-        HumanNpcRoleType role,
+        HumanNpcKindType role,
         vec2f const & initialPosition);
 
     bool IsSuitableNpcPosition(

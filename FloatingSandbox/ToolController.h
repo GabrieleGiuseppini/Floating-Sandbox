@@ -49,7 +49,7 @@ public:
         InternalSetCurrentToolCursor();
     }
 
-    void SetHumanNpcPlaceTool(HumanNpcRoleType role)
+    void SetHumanNpcPlaceTool(HumanNpcKindType role)
     {
         PlaceHumanNpcTool * tool = dynamic_cast<PlaceHumanNpcTool *>(mAllTools[static_cast<size_t>(ToolType::PlaceHumanNpc)].get());
         tool->SetRole(role);

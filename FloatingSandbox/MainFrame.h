@@ -235,7 +235,7 @@ private:
     void OnRepairStructureMenuItemSelected(wxCommandEvent & event);
     void OnScrubMenuItemSelected(wxCommandEvent & event);
     void OnScareFishMenuItemSelected(wxCommandEvent & event);
-    void OnAddHumanNpcMenuItemSelected(HumanNpcRoleType role);
+    void OnAddHumanNpcMenuItemSelected(HumanNpcKindType role);
     void OnMoveNpcMenuItemSelected(wxCommandEvent & event);
     void OnRemoveNpcMenuItemSelected(wxCommandEvent & event);
     void OnTriggerLightningMenuItemSelected(wxCommandEvent & event);

@@ -700,7 +700,7 @@ PlaceHumanNpcTool::PlaceHumanNpcTool(
         toolCursorManager,
         gameController,
         soundController)
-    , mRole(HumanNpcRoleType::Passenger) // Just as a start
+    , mRole(HumanNpcKindType::Passenger) // Just as a start
     , mClosedCursorImage(WxHelpers::LoadCursorImage("move_npc_cursor_down", 11, 29, resourceLocator))
     , mOpenCursorImage(WxHelpers::LoadCursorImage("move_npc_cursor_up", 11, 29, resourceLocator))
 {

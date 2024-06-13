@@ -484,16 +484,16 @@ MainFrame::MainFrame(
                         {
                             auto const commandId = wxNewId();
                             humanTypeSubMenu->Append(new wxMenuItem(nullptr, commandId, _("Passenger"), wxEmptyString, wxITEM_NORMAL));
-                            humanTypeSubMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [this](wxCommandEvent &) { OnAddHumanNpcMenuItemSelected(HumanNpcRoleType::Passenger); }, commandId);
+                            humanTypeSubMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [this](wxCommandEvent &) { OnAddHumanNpcMenuItemSelected(HumanNpcKindType::Passenger); }, commandId);
                         }
 
                         {
                             auto const commandId = wxNewId();
                             humanTypeSubMenu->Append(new wxMenuItem(nullptr, commandId, _("Programmer"), wxEmptyString, wxITEM_NORMAL));
-                            humanTypeSubMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [this](wxCommandEvent &) { OnAddHumanNpcMenuItemSelected(HumanNpcRoleType::Programmer); }, commandId);
+                            humanTypeSubMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [this](wxCommandEvent &) { OnAddHumanNpcMenuItemSelected(HumanNpcKindType::Programmer); }, commandId);
                         }
                     }
-                    
+
                     // FUTUREWORK: when we'll have more NPC types, we'll create a submenu here between AddNpc and the various types
                     npcSubMenu = humanTypeSubMenu;
                 }
@@ -1142,7 +1142,7 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
                 mResourceLocator,
                 mLocalizationManager,
                 mGameController->GetMaterialDatabase(),
-                mGameController->GetShipTexturizer(),                
+                mGameController->GetShipTexturizer(),
                 [this](std::optional<std::filesystem::path> shipFilePath)
                 {
                     this->SwitchFromShipBuilder(shipFilePath);
@@ -1434,7 +1434,7 @@ void MainFrame::OnCheckUpdatesTimerTrigger(wxTimerEvent & /*event*/)
 
 void MainFrame::OnIdle(wxIdleEvent & /*event*/)
 {
-    if (mHasStartupTipBeenChecked 
+    if (mHasStartupTipBeenChecked
         && (mGameTimer != nullptr && !mGameTimer->IsRunning())
         && !mIsGameFrozen)
     {
@@ -1451,7 +1451,7 @@ void MainFrame::OnMainGLCanvasPaint(wxPaintEvent & event)
     if (mSplashScreenDialog)
     {
         //
-        // Now that the glCanvas is visible, we may transfer the 
+        // Now that the glCanvas is visible, we may transfer the
         // OpenGL context to the canvas and close the splash screen
         //
 
@@ -1952,7 +1952,7 @@ void MainFrame::OnScareFishMenuItemSelected(wxCommandEvent & /*event*/)
     mToolController->SetTool(ToolType::ScareFish);
 }
 
-void MainFrame::OnAddHumanNpcMenuItemSelected(HumanNpcRoleType role)
+void MainFrame::OnAddHumanNpcMenuItemSelected(HumanNpcKindType role)
 {
     mAddNpcMenuItem->Check(true);
 
@@ -2643,7 +2643,7 @@ void MainFrame::LoadShip(
     mMusicController->Reset();
 
     ResetShipUIState();
-    
+
     //
     // Load ship
     //

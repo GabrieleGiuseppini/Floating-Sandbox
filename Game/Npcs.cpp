@@ -239,7 +239,7 @@ void Npcs::BeginMoveNpc(NpcId id)
 }
 
 PickedObjectId<NpcId> Npcs::BeginMoveNewHumanNpc(
-	HumanNpcRoleType role,
+	HumanNpcKindType role,
 	vec2f const & initialPosition)
 {
 	// Find triangle that this NPC belongs to
@@ -303,7 +303,7 @@ bool Npcs::MoveNpcTo(
 
 void Npcs::EndMoveNpc(NpcId id)
 {
-	LogMessage("Npcs: EndMoveNpc: id=", id);	
+	LogMessage("Npcs: EndMoveNpc: id=", id);
 
 	auto & npcState = GetNpcState(id);
 
@@ -315,7 +315,7 @@ void Npcs::EndMoveNpc(NpcId id)
 	{
 		npcState.Regime = RegimeType::Constrained;
 
-		if (npcState.Type == NpcType::Human)
+		if (npcState.Type == NpcKindType::Human)
 		{
 			++mConstrainedRegimeHumanNpcCount;
 		}
@@ -324,7 +324,7 @@ void Npcs::EndMoveNpc(NpcId id)
 	{
 		npcState.Regime = RegimeType::Free;
 
-		if (npcState.Type == NpcType::Human)
+		if (npcState.Type == NpcKindType::Human)
 		{
 			++mFreeRegimeHumanNpcCount;
 		}
@@ -398,7 +398,7 @@ void Npcs::RemoveNpc(NpcId id)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 NpcId Npcs::AddHumanNpc(
-	HumanNpcRoleType role,
+	HumanNpcKindType role,
 	vec2f const & initialPosition,
 	RegimeType initialRegime,
 	NpcHighlightType initialHighlight,
@@ -645,7 +645,7 @@ std::optional<ElementId> Npcs::FindTopmostContainingTriangle(vec2f const & posit
 {
 	// Visit all ships in reverse ship ID order (i.e. from topmost to bottommost)
 	for (auto it = mNpcShipsByShipId.rbegin(); it != mNpcShipsByShipId.rend(); ++it)
-	{		
+	{
 		if ((*it).has_value())
 		{
 			// Find the triangle in this ship containing this position and having the highest plane ID
@@ -684,11 +684,11 @@ std::optional<ElementId> Npcs::FindTopmostContainingTriangle(vec2f const & posit
 }
 
 bool Npcs::IsTriangleSuitableForNpc(
-	NpcType type,
+	NpcKindType type,
 	ShipId shipId,
 	std::optional<ElementIndex> const & triangleIndex) const
 {
-	if (!triangleIndex || type != NpcType::Human)
+	if (!triangleIndex || type != NpcKindType::Human)
 	{
 		// Outside of a ship: always good
 		// Not a human: always good (furniture could be tucked in a floor corner)

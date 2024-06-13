@@ -85,7 +85,7 @@ GameController::GameController(
     // Parameters that we own
     , mTimeOfDay(0.0f) // We'll set it later
     , mDoShowTsunamiNotifications(true)
-    , mDoDrawHeatBlasterFlame(true)    
+    , mDoDrawHeatBlasterFlame(true)
     // Doers
     , mRenderContext(std::move(renderContext))
     , mGameEventDispatcher(std::move(gameEventDispatcher))
@@ -620,7 +620,7 @@ void GameController::BeginMoveNpc(NpcId npcId)
     mWorld->BeginMoveNpc(npcId);
 }
 
-PickedObjectId<NpcId> GameController::BeginMoveNewHumanNpc(HumanNpcRoleType role, vec2f const & initialWorldPosition)
+PickedObjectId<NpcId> GameController::BeginMoveNewHumanNpc(HumanNpcKindType role, vec2f const & initialWorldPosition)
 {
     assert(!!mWorld);
     return mWorld->BeginMoveNewHumanNpc(role, initialWorldPosition);
@@ -1038,7 +1038,7 @@ void GameController::ApplyRadialWindFrom(
 }
 
 bool GameController::ApplyLaserCannonThrough(
-    DisplayLogicalCoordinates const & startScreenCoordinates, 
+    DisplayLogicalCoordinates const & startScreenCoordinates,
     DisplayLogicalCoordinates const & endScreenCoordinates,
     std::optional<float> strength)
 {
@@ -1227,7 +1227,7 @@ void GameController::DetonateAntiMatterBombs()
 }
 
 void GameController::AdjustOceanSurfaceTo(
-    DisplayLogicalCoordinates const & screenCoordinates, 
+    DisplayLogicalCoordinates const & screenCoordinates,
     int screenRadius)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
@@ -1239,7 +1239,7 @@ void GameController::AdjustOceanSurfaceTo(
 }
 
 std::optional<bool> GameController::AdjustOceanFloorTo(
-    vec2f const & startWorldPosition, 
+    vec2f const & startWorldPosition,
     vec2f const & endWorldPosition)
 {
     assert(!!mWorld);
@@ -1281,7 +1281,7 @@ bool GameController::RotThrough(
 }
 
 void GameController::ApplyThanosSnapAt(
-    DisplayLogicalCoordinates const & screenCoordinates, 
+    DisplayLogicalCoordinates const & screenCoordinates,
     bool isSparseMode)
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
@@ -1462,8 +1462,8 @@ void GameController::SetDoDayLightCycle(bool value)
 }
 
 void GameController::SetOceanRenderDetail(OceanRenderDetailType oceanRenderDetail)
-{ 
-    mRenderContext->SetOceanRenderDetail(oceanRenderDetail); 
+{
+    mRenderContext->SetOceanRenderDetail(oceanRenderDetail);
     mWorld->SetAreCloudShadowsEnabled(CalculateAreCloudShadowsEnabled(oceanRenderDetail));
 }
 

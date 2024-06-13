@@ -192,7 +192,7 @@ public:
 
     std::optional<PickedObjectId<NpcId>> PickNpc(vec2f const & worldPosition) const override;
     void BeginMoveNpc(NpcId npcId) override;
-    PickedObjectId<NpcId> BeginMoveNewHumanNpc(HumanNpcRoleType role, vec2f const & initialWorldPosition) override;
+    PickedObjectId<NpcId> BeginMoveNewHumanNpc(HumanNpcKindType role, vec2f const & initialWorldPosition) override;
     bool IsSuitableNpcPosition(NpcId npcId, vec2f const & worldPosition, vec2f const & offset) const override;
     bool MoveNpcTo(NpcId npcId, vec2f const & worldPosition, vec2f const & offset) override;
     void EndMoveNpc(NpcId npcId) override;
@@ -996,13 +996,13 @@ private:
     //
     // The doers
     //
-    
+
     std::shared_ptr<Render::RenderContext> mRenderContext;
     std::shared_ptr<GameEventDispatcher> mGameEventDispatcher;
     NotificationLayer mNotificationLayer;
     ThreadManager mThreadManager;
     ViewManager mViewManager;
-    std::unique_ptr<EventRecorder> mEventRecorder;    
+    std::unique_ptr<EventRecorder> mEventRecorder;
 
 
     //

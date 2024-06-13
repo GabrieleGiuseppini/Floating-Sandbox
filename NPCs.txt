@@ -194,12 +194,13 @@ Arch
 = Integration into FS
 	! Goal: be able to copy folder of files seamlessly across FS and BL
 	+ FixedSizeVector: BaryLab->FS: check diff
-	- GameTypes: BaryLab->FS: add new types (and changes?)
+	+ GameTypes: BaryLab->FS: add new types (and changes?)
 	- Triangles: BaryLab->FS: add BL features
 		- Barycentric math (replace FS')
 		- SurfaceType
 		- OppositeTriangle
 		- etc?
+	- Have a working FS here for subsequent tests
 	- Tessellation @ ShipFactory
 		- Consider that members in BL have different names in FS
 		- ShipFactoryTypes
@@ -217,6 +218,7 @@ Arch
 			- & ShaderManager
 		- RenderContext: port Limbs
 		- TODOHERE
+		- ToolsController & Tools
 	- Settings:
 		- SettingsManager
 		- SettingsDialog
