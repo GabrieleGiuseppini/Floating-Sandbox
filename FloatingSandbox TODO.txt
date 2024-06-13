@@ -10,10 +10,6 @@
 
 	- Try to lower global damping - seems quite slow
 
-	- Try to get rid of CoveredSprings in Triangles - seem useless
-		- Triangles
-		- ShipFactory
-
 	- Fix all 2022 copyright years, and add g2-labs to:
 		- Credits
 	- New startup sequence:

@@ -195,21 +195,22 @@ Arch
 	! Goal: be able to copy folder of files seamlessly across FS and BL
 	+ FixedSizeVector: BaryLab->FS: check diff
 	+ GameTypes: BaryLab->FS: add new types (and changes?)
-	- Triangles: BaryLab->FS: add BL features
-		- Barycentric math (replace FS')
-		- SurfaceType
-		- OppositeTriangle
-		- etc?
 	- Have a working FS here for subsequent tests
-	- Tessellation @ ShipFactory
-		- Consider that members in BL have different names in FS
-		- ShipFactoryTypes
-		- ShipFloorplanizer
-		- ShipFactory
-		- Test consequences of new tessellation (i.e. triangle edges in new directions)
-			- Look
-			- Frontier
-	- All in one go - GO1:
+	- All in one go - GO1: 
+		- Triangles: BaryLab->FS: add BL features
+			- Barycentric math (replace FS')
+			- SurfaceType
+			- OppositeTriangle
+			- etc?
+		- Tessellation @ ShipFactory
+			- Consider that members in BL have different names in FS
+			- ShipFactoryTypes
+			- ShipFloorplanizer
+			- ShipFactory
+			- Test consequences of new tessellation (i.e. triangle edges in new directions)
+				- Look
+				- Frontier
+	- All in one go - GO2:
 		- Move Npc simulation source files under NpcSimulation folder
 			- Not VS GUI, that's still "Physics"
 		- Port NpcMaterial.* and NpcMaterialDatabase.* (from Material*) into Materials.* and MaterialDatabase.*
@@ -387,17 +388,21 @@ Arch
 		- As soon as NPC count goes from zero to non-zero (including BeingPlaced), if current view is "Exterior" GameController switches to "Interior", regardless of current setting
 		- As soon as NPC count goes from non-zero to zero, if current view is "Interior" GameController switches to "Exterior" view, regardless of current setting
 	- Impl gist:
+		- TODO: the below requires keeping the folloring textures data in memory - see if can save anything:
+			- Interior texture
+			- InteriorView texture (in ShipRenderContext, to upload it as needed) 
+			- ExteriorView texture (in ShipRenderContext, to upload it as needed)
 		- TextureData ShipTexturizer::MakeInteriorViewLayer( // Stateless, basically static
-			- const Triangles &,
-				- Requires triangles to hold factory coords
+			- Triangles const &, 
+			- Points const &, // Point for texture coords
 			- const interiorTexture, // Created as above
 			- float interiorTextureAlpha, // 1.0 if interiorTexture is from user, 0.something if created (or we always create it with this alpha)
-			- Just visits triangles
+			- Just visits triangles and uses Points' texture coords
 		- Another overload that does it for a single triangle and returns its quad
 		- Dynamics of floorplan changes (doors)
-			- IShipPhysicsHandler::OnFloorModified(Triangle, ordinal) -> invoke ShipTexturizer() method to generate new Interior view texture, and subsequently give it to ShipRenderContext 
+			- IShipPhysicsHandler::HandleNpcFloorUpdated(Triangle, ordinal) -> invoke ShipTexturizer() method to generate new Interior view texture, and subsequently give it to ShipRenderContext 
 				- This implies that Ship must hold:
-					- floorplan, interior texture
+					- interior texture
 		- ShipRenderContext:
 			- Keeps ahold of both Exterior and Interior view textures
 			- Upon change of the view type (Exterior<->Interior), ShipRenderContext uploads right one of the two to OpenGL
