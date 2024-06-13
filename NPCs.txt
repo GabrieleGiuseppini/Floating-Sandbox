@@ -221,65 +221,6 @@ Arch
 		- SettingsManager
 		- SettingsDialog
 
-- Furniture:
-	+ Would be nice to re-architect as follows:
-		+ Primary and Dipole are fused into NPCParticleMesh, which contains:
-			+ Up to 4 ParticleState, each having own ConstrainedState (like now)
-			+ Up to 6 SpringProperties, each containing:
-				- ParticleIndex of endpoints
-				- Length
-				- MassFactor
-				- Stiffness & Damping coefficients
-		+ All "isPrimary" become "npcParticleOrdinal"
-		+ Fix: shaking a lot - also humans - goes beyond max iters in ConstrainedInertial
-			+ First off, see if it happens on master: YES
-			+ Could very well be legit, due to long trajectory - check with humongous iter limit
-		+ Fix: PickNPC
-			+ Need function 
-			+ Picking strategy for quad
-				+ Offset is off primary
-			+ And when moving, move all particles together
-				+ Calc pos diff wrt primary, and apply to all
-		+ Fix: need 0.81 spring stiffness coeff
-			+ From materials
-			+ And then global adjustments
-				+ SettingsDialog
-		+ Add tool for placing quads
-			+ "Crate" Kind -> "Quad"
-		+ Fix: still want a better strategy for picking quads
-		+ Tests:
-			+ Quad furniture
-				+ Check springs: flexibility _and_ stiffness
-			+ Secondary free becoming constrained (primary must be constrained)
-				+ Human
-				+ Quad
-		+ Profile
-			! Old:
-				Npcs::UpdateNpcs: 44.99 (self: 6.71) -> 52.41 (self: 14.50)
-					UpdateNpcParticlePhysics: 20.50 -> 19.13
-						Def: 2.92
-						CI: 1.82
-						Bary: 1.49
-						CNI: 1.10
-					UpdateNpcAnimation: 11.17 -> 10.42
-					CalcPrelim: 2.68 -> 3.31
-					UpdateHuman: 2.38 -> 3.96
-					CalcPartConstrState: 1.52 -> 1.07
-				Npcs::RenderUpload: 40.32
-		+ Optimize:
-			+ Spring forces calculated over all springs
-
-	- See if can get rid of CurrentPlaneId being optional-and-thus-standing-for-topmost, so that we
-	  can get NPCs on a ship covered by debris
-	  	- See if the reason was exactly to avoid this
-		- TODO: may be leave it optional, and do the below:
-		- When BeingPlaced, it's "implicit topmost" 
-			- This is the only case in which we need "implicit topmost", may be can do this without opt but checking BeingPlaced at RenderUpload time?
-		- When free, can take max from ship at that moment, and fine to stick with it
-		- Make sure it's reset to right depth once we become constrained again
-
-	- Merge to master
-
 - NpcDatabase:
 	- Spec:
 		- Provides info on humans (e.g. role colors, height & width, frame IDs) and furniture (height, orientation, frame IDs, material)
@@ -445,13 +386,14 @@ Arch
 		- As soon as NPC count goes from non-zero to zero, if current view is "Interior" GameController switches to "Exterior" view, regardless of current setting
 	- Impl gist:
 		- TextureData ShipTexturizer::MakeInteriorViewLayer( // Stateless, basically static
-			- const floorplanLayer, // From ship spec
+			- const Triangles &,
+				- Requires triangles to hold factory coords
 			- const interiorTexture, // Created as above
 			- float interiorTextureAlpha, // 1.0 if interiorTexture is from user, 0.something if created (or we always create it with this alpha)
-		- Another overload that does it for a quad and returns that quad
-			- Both need to be oh-so-fast, as we might invoke this multiple times per-frame when there's widespread destruction
-		- Dynamics of floorplan changes (destruction, repair):
-			- Ship::OnTriangleDestroyed() -> invoke ShipTexturizer() method to generate new Interior view texture, and subsequently give it to ShipRenderContext 
+			- Just visits triangles
+		- Another overload that does it for a single triangle and returns its quad
+		- Dynamics of floorplan changes (doors)
+			- IShipPhysicsHandler::OnFloorModified(Triangle, ordinal) -> invoke ShipTexturizer() method to generate new Interior view texture, and subsequently give it to ShipRenderContext 
 				- This implies that Ship must hold:
 					- floorplan, interior texture
 		- ShipRenderContext:
@@ -469,6 +411,7 @@ Arch
 		- Triangle edge/floors: split "factory" vs. "actual"
 			- Iff we end up having H1,V1,S2,etc. floor types, as resetting door would need to know that
 			- Otherwise, if we only have Floor+Open, can live without factory
+	- See what we do with Watertight doors and whether they can also act as doors, in which case we can put them in the same category (Watertight door == door but also controlling WaterPermeability)
 	
 
 - Sounds:
@@ -2036,4 +1979,62 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 	+ Merge back into master
 
 	+ Video
+
++ Furniture:
+	+ Would be nice to re-architect as follows:
+		+ Primary and Dipole are fused into NPCParticleMesh, which contains:
+			+ Up to 4 ParticleState, each having own ConstrainedState (like now)
+			+ Up to 6 SpringProperties, each containing:
+				- ParticleIndex of endpoints
+				- Length
+				- MassFactor
+				- Stiffness & Damping coefficients
+		+ All "isPrimary" become "npcParticleOrdinal"
+		+ Fix: shaking a lot - also humans - goes beyond max iters in ConstrainedInertial
+			+ First off, see if it happens on master: YES
+			+ Could very well be legit, due to long trajectory - check with humongous iter limit
+		+ Fix: PickNPC
+			+ Need function 
+			+ Picking strategy for quad
+				+ Offset is off primary
+			+ And when moving, move all particles together
+				+ Calc pos diff wrt primary, and apply to all
+		+ Fix: need 0.81 spring stiffness coeff
+			+ From materials
+			+ And then global adjustments
+				+ SettingsDialog
+		+ Add tool for placing quads
+			+ "Crate" Kind -> "Quad"
+		+ Fix: still want a better strategy for picking quads
+		+ Tests:
+			+ Quad furniture
+				+ Check springs: flexibility _and_ stiffness
+			+ Secondary free becoming constrained (primary must be constrained)
+				+ Human
+				+ Quad
+		+ Profile
+			! Old:
+				Npcs::UpdateNpcs: 44.99 (self: 6.71) -> 52.41 (self: 14.50)
+					UpdateNpcParticlePhysics: 20.50 -> 19.13
+						Def: 2.92
+						CI: 1.82
+						Bary: 1.49
+						CNI: 1.10
+					UpdateNpcAnimation: 11.17 -> 10.42
+					CalcPrelim: 2.68 -> 3.31
+					UpdateHuman: 2.38 -> 3.96
+					CalcPartConstrState: 1.52 -> 1.07
+				Npcs::RenderUpload: 40.32
+		+ Optimize:
+			+ Spring forces calculated over all springs
+
+	+ See if can get rid of CurrentPlaneId being optional-and-thus-standing-for-topmost, so that we
+	  can get NPCs on a ship covered by debris
+		+ When BeingPlaced, it's "implicit topmost" 
+			+ Check BeingPlaced at RenderUpload time
+		+ When starting as free, can take max from ship at that moment, and fine to stick with it
+		+ When becoming free, leave as-is
+		+ Make sure it's reset to right depth once we become constrained again
+
+	+ Merge to master
 
