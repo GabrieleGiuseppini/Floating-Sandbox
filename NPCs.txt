@@ -195,13 +195,13 @@ Arch
 	! Goal: be able to copy folder of files seamlessly across FS and BL
 	+ FixedSizeVector: BaryLab->FS: check diff
 	+ GameTypes: BaryLab->FS: add new types (and changes?)
-	- Have a working FS here for subsequent tests
-	- All in one go - GO1: 
-		- Triangles: BaryLab->FS: add BL features
-			- Barycentric math (replace FS')
-			- SurfaceType
-			- OppositeTriangle
-			- etc?
+	+ Have a working FS here for subsequent tests
+	= All in one go - GO1: 
+		= Triangles: BaryLab->FS: add BL features
+			+ Barycentric math (replace FS')
+			+ SurfaceType
+			+ OppositeTriangle
+			+ etc?
 		- Tessellation @ ShipFactory
 			- Consider that members in BL have different names in FS
 			- ShipFactoryTypes
@@ -210,6 +210,7 @@ Arch
 			- Test consequences of new tessellation (i.e. triangle edges in new directions)
 				- Look
 				- Frontier
+		- Rendering of floors?
 	- All in one go - GO2:
 		- Move Npc simulation source files under NpcSimulation folder
 			- Not VS GUI, that's still "Physics"
@@ -389,7 +390,7 @@ Arch
 		- As soon as NPC count goes from non-zero to zero, if current view is "Interior" GameController switches to "Exterior" view, regardless of current setting
 	- Impl gist:
 		- TODO: the below requires keeping the folloring textures data in memory - see if can save anything:
-			- Interior texture
+			- Interior texture (for re-creating InterriorView texture as doors change)
 			- InteriorView texture (in ShipRenderContext, to upload it as needed) 
 			- ExteriorView texture (in ShipRenderContext, to upload it as needed)
 		- TextureData ShipTexturizer::MakeInteriorViewLayer( // Stateless, basically static

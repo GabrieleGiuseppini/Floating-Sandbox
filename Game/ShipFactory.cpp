@@ -1719,6 +1719,9 @@ Physics::Triangles ShipFactory::CreateTriangles(
             triangleInfos2[t].SubSprings2[0],
             triangleInfos2[t].SubSprings2[1],
             triangleInfos2[t].SubSprings2[2],
+            // TODOHERE: just to make it compile
+            { NoneElementIndex, -1 }, { NoneElementIndex, -1 }, { NoneElementIndex, -1 },
+            { NpcFloorKindType::NotAFloor, NpcFloorGeometryType::NotAFloor }, { NpcFloorKindType::NotAFloor, NpcFloorGeometryType::NotAFloor }, { NpcFloorKindType::NotAFloor, NpcFloorGeometryType::NotAFloor },
             triangleInfos2[t].CoveredTraverseSpringIndex2);
 
         // Add triangle to its endpoints
