@@ -125,14 +125,14 @@ struct ShipFactoryTriangle
 {
     std::array<ElementIndex, 3> PointIndices1;
 
-    FixedSizeVector<ElementIndex, 3> SubSprings2;
+    FixedSizeVector<ElementIndex, 3> Springs2;
 
     std::optional<ElementIndex> CoveredTraverseSpringIndex2;
 
     ShipFactoryTriangle(
         std::array<ElementIndex, 3> const & pointIndices1)
         : PointIndices1(pointIndices1)
-        , SubSprings2()
+        , Springs2()
         , CoveredTraverseSpringIndex2()
     {
     }

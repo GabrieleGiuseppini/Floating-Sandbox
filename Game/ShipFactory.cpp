@@ -8,6 +8,7 @@
 #include "ShipFactory.h"
 
 #include "Formulae.h"
+#include "ShipFloorplanizer.h"
 
 #include <GameCore/GameDebug.h>
 #include <GameCore/GameMath.h>
@@ -323,6 +324,17 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
         shipFactoryFrontiers);
 
     //
+    // Create floorplan
+    //
+
+    ShipFloorplanizer shipFloorplanizer;
+
+    ShipFactoryFloorPlan floorPlan2 = shipFloorplanizer.BuildFloorplan(
+        pointIndexMatrix,
+        pointInfos2,
+        springInfos2);
+
+    //
     // Visit all ShipFactoryPoint's and create Points, i.e. the entire set of points
     //
 
@@ -355,7 +367,9 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
     Triangles triangles = CreateTriangles(
         triangleInfos,
         points,
-        pointIndexRemap);
+        pointIndexRemap,
+        springInfos2,
+        floorPlan2);
 
     //
     // Create Electrical Elements
@@ -1452,8 +1466,8 @@ void ShipFactory::ConnectSpringsAndTriangles(
             assert(springInfos2[springIndex2].CoveringTrianglesCount <= 2);
 
             // Tell the triangle about this sub spring
-            assert(!triangleInfos2[t].SubSprings2.contains(springIndex2));
-            triangleInfos2[t].SubSprings2.push_back(springIndex2);
+            assert(!triangleInfos2[t].Springs2.contains(springIndex2));
+            triangleInfos2[t].Springs2.push_back(springIndex2);
         }
     }
 
@@ -1928,25 +1942,114 @@ Physics::Springs ShipFactory::CreateSprings(
 Physics::Triangles ShipFactory::CreateTriangles(
     std::vector<ShipFactoryTriangle> const & triangleInfos2,
     Physics::Points & points,
-    IndexRemap const & pointIndexRemap)
+    IndexRemap const & pointIndexRemap,
+    std::vector<ShipFactorySpring> const & springInfos2,
+    ShipFactoryFloorPlan const & floorPlan2)
 {
     Physics::Triangles triangles(static_cast<ElementIndex>(triangleInfos2.size()));
 
     for (ElementIndex t = 0; t < triangleInfos2.size(); ++t)
     {
-        assert(triangleInfos2[t].SubSprings2.size() == 3);
+        assert(triangleInfos2[t].Springs2.size() == 3);
+
+        // Derive whether this is a sealed triangle
+        bool isSealedTriangle = true;
+        for (int iEdge = 0; iEdge < 3; ++iEdge)
+        {
+            ElementIndex const springIndex2 = triangleInfos2[t].Springs2[iEdge];
+
+            ElementIndex const edgePointAIndex2 = springInfos2[springIndex2].PointAIndex;
+            ElementIndex const edgePointBIndex2 = springInfos2[springIndex2].PointBIndex;
+
+            isSealedTriangle = isSealedTriangle && (floorPlan2.find({ edgePointAIndex2, edgePointBIndex2 }) != floorPlan2.end());
+        }
+
+        // Calculate opposite triangles and floor types
+        std::array<std::pair<ElementIndex, int>, 3> subSpringsOppositeTriangle;
+        std::array<NpcFloorKindType, 3> subSpringsFloorKind;
+        std::array<NpcFloorGeometryType, 3> subSpringsFloorGeometry;
+        for (int iEdge = 0; iEdge < 3; ++iEdge)
+        {
+            ElementIndex const springIndex2 = triangleInfos2[t].Springs2[iEdge];
+            assert(springInfos2[springIndex2].Triangles.size() >= 1 && springInfos2[springIndex2].Triangles.size() <= 2);
+
+            if (springInfos2[springIndex2].Triangles[0] == t)
+            {
+                if (springInfos2[springIndex2].Triangles.size() >= 2)
+                {
+                    assert(springInfos2[springIndex2].Triangles.size() == 2);
+                    subSpringsOppositeTriangle[iEdge].first = springInfos2[springIndex2].Triangles[1];
+                }
+                else
+                {
+                    subSpringsOppositeTriangle[iEdge].first = NoneElementIndex;
+                }
+            }
+            else if (springInfos2[springIndex2].Triangles.size() >= 2)
+            {
+                assert(springInfos2[springIndex2].Triangles.size() == 2);
+                assert(springInfos2[springIndex2].Triangles[1] == t);
+                subSpringsOppositeTriangle[iEdge].first = springInfos2[springIndex2].Triangles[0];
+            }
+            else
+            {
+                subSpringsOppositeTriangle[iEdge].first = NoneElementIndex;
+            }
+
+            if (subSpringsOppositeTriangle[iEdge].first != NoneElementIndex)
+            {
+                if (triangleInfos2[subSpringsOppositeTriangle[iEdge].first].Springs2[0] == triangleInfos2[t].Springs2[iEdge])
+                {
+                    subSpringsOppositeTriangle[iEdge].second = 0;
+                }
+                else if (triangleInfos2[subSpringsOppositeTriangle[iEdge].first].Springs2[1] == triangleInfos2[t].Springs2[iEdge])
+                {
+                    subSpringsOppositeTriangle[iEdge].second = 1;
+                }
+                else
+                {
+                    assert(triangleInfos2[subSpringsOppositeTriangle[iEdge].first].Springs2[2] == triangleInfos2[t].Springs2[iEdge]);
+                    subSpringsOppositeTriangle[iEdge].second = 2;
+                }
+            }
+
+            //
+            // Triangle's subedge is floor if:
+            //  - Spring is floor, AND
+            //  - NOT is sealed, OR (is sealed and) there's no triangle on the other side of this subedge
+            //
+
+            ElementIndex const edgePointAIndex2 = springInfos2[springIndex2].PointAIndex;
+            ElementIndex const edgePointBIndex2 = springInfos2[springIndex2].PointBIndex;
+
+            if (const auto floorIt = floorPlan2.find({ edgePointAIndex2, edgePointBIndex2 });
+                floorIt != floorPlan2.cend()
+                && (!isSealedTriangle || subSpringsOppositeTriangle[iEdge].first == NoneElementIndex))
+            {
+                subSpringsFloorKind[iEdge] = floorIt->second.FloorKind;
+                subSpringsFloorGeometry[iEdge] = floorIt->second.FloorGeometry;
+            }
+            else
+            {
+                subSpringsFloorKind[iEdge] = NpcFloorKindType::NotAFloor;
+                subSpringsFloorGeometry[iEdge] = NpcFloorGeometryType::NotAFloor;
+            }
+        }
 
         // Create triangle
         triangles.Add(
             pointIndexRemap.OldToNew(triangleInfos2[t].PointIndices1[0]),
             pointIndexRemap.OldToNew(triangleInfos2[t].PointIndices1[1]),
             pointIndexRemap.OldToNew(triangleInfos2[t].PointIndices1[2]),
-            triangleInfos2[t].SubSprings2[0],
-            triangleInfos2[t].SubSprings2[1],
-            triangleInfos2[t].SubSprings2[2],
-            // TODOHERE: just to make it compile
-            { NoneElementIndex, -1 }, { NoneElementIndex, -1 }, { NoneElementIndex, -1 },
-            { NpcFloorKindType::NotAFloor, NpcFloorGeometryType::NotAFloor }, { NpcFloorKindType::NotAFloor, NpcFloorGeometryType::NotAFloor }, { NpcFloorKindType::NotAFloor, NpcFloorGeometryType::NotAFloor },
+            triangleInfos2[t].Springs2[0],
+            triangleInfos2[t].Springs2[1],
+            triangleInfos2[t].Springs2[2],
+            { subSpringsOppositeTriangle[0].first, subSpringsOppositeTriangle[0].second },
+            { subSpringsOppositeTriangle[1].first, subSpringsOppositeTriangle[1].second },
+            { subSpringsOppositeTriangle[2].first, subSpringsOppositeTriangle[2].second },
+            { subSpringsFloorKind[0], subSpringsFloorGeometry[0] },
+            { subSpringsFloorKind[1], subSpringsFloorGeometry[1] },
+            { subSpringsFloorKind[2], subSpringsFloorGeometry[2] },
             triangleInfos2[t].CoveredTraverseSpringIndex2);
 
         // Add triangle to its endpoints

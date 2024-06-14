@@ -176,7 +176,9 @@ private:
     static Physics::Triangles CreateTriangles(
         std::vector<ShipFactoryTriangle> const & triangleInfos2,
         Physics::Points & points,
-        IndexRemap const & pointIndexRemap);
+        IndexRemap const & pointIndexRemap,
+        std::vector<ShipFactorySpring> const & springInfos2,
+        ShipFactoryFloorPlan const & floorPlan2);
 
     static Physics::ElectricalElements CreateElectricalElements(
         Physics::Points const & points,
