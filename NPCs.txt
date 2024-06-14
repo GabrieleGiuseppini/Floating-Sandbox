@@ -197,13 +197,13 @@ Arch
 	+ GameTypes: BaryLab->FS: add new types (and changes?)
 	+ Have a working FS here for subsequent tests
 	= All in one go - GO1: 
-		= Triangles: BaryLab->FS: add BL features
+		+ Triangles: BaryLab->FS: add BL features
 			+ Barycentric math (replace FS')
 			+ SurfaceType
 			+ OppositeTriangle
 			+ etc?
 		- Tessellation @ ShipFactory
-			- Consider that members in BL have different names in FS
+			! Consider that members in BL have different names in FS
 			- ShipFactoryTypes
 			- ShipFloorplanizer
 			- ShipFactory
@@ -401,7 +401,8 @@ Arch
 			- Just visits triangles and uses Points' texture coords
 		- Another overload that does it for a single triangle and returns its quad
 		- Dynamics of floorplan changes (doors)
-			- IShipPhysicsHandler::HandleNpcFloorUpdated(Triangle, ordinal) -> invoke ShipTexturizer() method to generate new Interior view texture, and subsequently give it to ShipRenderContext 
+			- IShipPhysicsHandler::HandleNpcFloorUpdated(Triangle, ordinal) -> invoke ShipTexturizer() method (on & member) to generate new Interior view texture quad, 
+			  and subsequently give it to ShipRenderContext which will a) upload to texture as subtexture, and b) apply to own Interior view texture
 				- This implies that Ship must hold:
 					- interior texture
 		- ShipRenderContext:

@@ -22,6 +22,7 @@
 #include "ShipFactory.h"
 #include "ShipLoadSpecifications.h"
 #include "ShipMetadata.h"
+#include "ShipTexturizer.h"
 #include "ViewManager.h"
 
 #include <GameCore/Colors.h>
