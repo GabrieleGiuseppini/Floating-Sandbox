@@ -53,36 +53,6 @@ private:
     // Building helpers
     /////////////////////////////////////////////////////////////////
 
-    struct PointPair
-    {
-        ElementIndex Endpoint1Index;
-        ElementIndex Endpoint2Index;
-
-        PointPair(
-            ElementIndex endpoint1Index,
-            ElementIndex endpoint2Index)
-            : Endpoint1Index(std::min(endpoint1Index, endpoint2Index))
-            , Endpoint2Index(std::max(endpoint1Index, endpoint2Index))
-        {}
-
-        bool operator==(PointPair const & other) const
-        {
-            return this->Endpoint1Index == other.Endpoint1Index
-                && this->Endpoint2Index == other.Endpoint2Index;
-        }
-
-        struct Hasher
-        {
-            size_t operator()(PointPair const & p) const
-            {
-                return p.Endpoint1Index * 23
-                    + p.Endpoint2Index;
-            }
-        };
-    };
-
-    using PointPairToIndexMap = std::unordered_map<PointPair, ElementIndex, PointPair::Hasher>;
-
     static inline bool IsConnectedToNonRopePoints(
         ElementIndex pointIndex,
         std::vector<ShipFactoryPoint> const & pointInfos1,
@@ -137,13 +107,13 @@ private:
         ShipFactoryPointIndexMatrix const & pointIndexMatrix,
         std::vector<ShipFactoryPoint> & pointInfos1,
         std::vector<ShipFactorySpring> & springInfos1,
-        PointPairToIndexMap & pointPairToSpringIndex1Map);
+        ShipFactoryPointPairToIndexMap & pointPairToSpringIndex1Map);
 
     static void CreateShipElementInfos(
         ShipFactoryPointIndexMatrix const & pointIndexMatrix,
         std::vector<ShipFactoryPoint> & pointInfos1,
         std::vector<ShipFactorySpring> & springInfos1,
-        PointPairToIndexMap & pointPairToSpringIndex1Map,
+        ShipFactoryPointPairToIndexMap & pointPairToSpringIndex1Map,
         std::vector<ShipFactoryTriangle> & triangleInfos1,
         size_t & leakingPointsCount);
 
@@ -173,7 +143,7 @@ private:
         IndexRemap const & pointIndexRemap,
         std::vector<ShipFactoryPoint> const & pointInfos2,
         std::vector<ShipFactorySpring> const & springInfos2,
-        PointPairToIndexMap const & pointPairToSpringIndex1Map,
+        ShipFactoryPointPairToIndexMap const & pointPairToSpringIndex1Map,
         IndexRemap const & springIndexRemap);
 
     static std::vector<ElementIndex> PropagateFrontier(
@@ -183,7 +153,7 @@ private:
         ShipFactoryPointIndexMatrix const & pointIndexMatrix,
         std::set<ElementIndex> & frontierEdges2,
         std::vector<ShipFactorySpring> const & springInfos2,
-        PointPairToIndexMap const & pointPairToSpringIndex1Map,
+        ShipFactoryPointPairToIndexMap const & pointPairToSpringIndex1Map,
         IndexRemap const & springIndexRemap);
 
     static Physics::Points CreatePoints(

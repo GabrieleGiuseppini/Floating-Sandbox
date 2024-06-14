@@ -210,8 +210,8 @@ Arch
 				+ Frontier
 		= Tessellation @ ShipFactory
 			! Consider that members in BL have different names in FS
-			- ShipFactoryTypes
-			- ShipFloorplanizer
+			+ ShipFactoryTypes
+			+ ShipFloorplanizer
 			- ShipFactory
 		- Rendering of floors?
 	- All in one go - GO2:

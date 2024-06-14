@@ -40,6 +40,7 @@ set  (GAME_SOURCES
 	RopeBuffer.h
 	ShipAutoTexturizationSettings.cpp
 	ShipAutoTexturizationSettings.h
+	ShipDefinition.h
 	ShipDefinitionFormatDeSerializer.cpp
 	ShipDefinitionFormatDeSerializer.h
 	ShipDeSerializer.cpp
@@ -47,7 +48,8 @@ set  (GAME_SOURCES
 	ShipFactory.cpp
 	ShipFactory.h
 	ShipFactoryTypes.h
-	ShipDefinition.h
+	ShipFloorplanizer.cpp
+	ShipFloorplanizer.h
 	ShipLegacyFormatDeSerializer.cpp
 	ShipLegacyFormatDeSerializer.h
 	ShipLoadOptions.h

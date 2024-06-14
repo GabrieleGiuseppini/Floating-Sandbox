@@ -213,7 +213,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
 
     std::vector<ShipFactorySpring> springInfos1;
 
-    PointPairToIndexMap pointPairToSpringIndex1Map;
+    ShipFactoryPointPairToIndexMap pointPairToSpringIndex1Map;
 
     if (shipDefinition.Layers.RopesLayer)
     {
@@ -442,7 +442,7 @@ void ShipFactory::AppendRopes(
     ShipFactoryPointIndexMatrix const & pointIndexMatrix,
     std::vector<ShipFactoryPoint> & pointInfos1,
     std::vector<ShipFactorySpring> & springInfos1,
-    PointPairToIndexMap & pointPairToSpringIndex1Map)
+    ShipFactoryPointPairToIndexMap & pointPairToSpringIndex1Map)
 {
     //
     // - Fill-in points between each pair of endpoints, creating additional ShipFactoryPoint's for them
@@ -658,7 +658,7 @@ void ShipFactory::CreateShipElementInfos(
     ShipFactoryPointIndexMatrix const & pointIndexMatrix,
     std::vector<ShipFactoryPoint> & pointInfos1,
     std::vector<ShipFactorySpring> & springInfos1,
-    PointPairToIndexMap & pointPairToSpringIndex1Map,
+    ShipFactoryPointPairToIndexMap & pointPairToSpringIndex1Map,
     std::vector<ShipFactoryTriangle> & triangleInfos1,
     size_t & leakingPointsCount)
 {
@@ -1103,7 +1103,7 @@ ShipFactory::LayoutOptimizationResults ShipFactory::OptimizeLayout(
     std::vector<bool> springFlipMask(springInfos1.size(), false);
 
     // Build Point Pair (Old) -> Spring Index (Old) table
-    PointPairToIndexMap pointPair1ToSpringIndex1Map;
+    ShipFactoryPointPairToIndexMap pointPair1ToSpringIndex1Map;
     for (ElementIndex s = 0; s < springInfos1.size(); ++s)
     {
         pointPair1ToSpringIndex1Map.emplace(
@@ -1414,7 +1414,7 @@ void ShipFactory::ConnectSpringsAndTriangles(
     // 1. Build Point Pair (Old) -> Spring (New) table
     //
 
-    PointPairToIndexMap pointPair1ToSpring2Map;
+    ShipFactoryPointPairToIndexMap pointPair1ToSpring2Map;
 
     for (ElementIndex s = 0; s < springInfos2.size(); ++s)
     {
@@ -1445,9 +1445,9 @@ void ShipFactory::ConnectSpringsAndTriangles(
 
             ElementIndex const springIndex2 = springIt->second;
 
-            // Tell this spring that it has this additional super triangle
-            springInfos2[springIndex2].SuperTriangles.push_back(t);
-            assert(springInfos2[springIndex2].SuperTriangles.size() <= 2);
+            // Tell this spring that it has this additional triangle
+            springInfos2[springIndex2].Triangles.push_back(t);
+            assert(springInfos2[springIndex2].Triangles.size() <= 2);
             ++(springInfos2[springIndex2].CoveringTrianglesCount);
             assert(springInfos2[springIndex2].CoveringTrianglesCount <= 2);
 
@@ -1476,7 +1476,7 @@ void ShipFactory::ConnectSpringsAndTriangles(
 
     for (ElementIndex s = 0; s < springInfos2.size(); ++s)
     {
-        if (2 == springInfos2[s].SuperTriangles.size())
+        if (2 == springInfos2[s].Triangles.size())
         {
             // This spring is the common edge between two triangles
             // (A-D above)
@@ -1486,7 +1486,7 @@ void ShipFactory::ConnectSpringsAndTriangles(
             //
 
             ElementIndex endpoint1Index = NoneElementIndex;
-            ShipFactoryTriangle & triangle1 = triangleInfos2[springInfos2[s].SuperTriangles[0]];
+            ShipFactoryTriangle & triangle1 = triangleInfos2[springInfos2[s].Triangles[0]];
             for (ElementIndex triangleVertex1 : triangle1.PointIndices1)
             {
                 if (triangleVertex1 != pointIndexRemap.NewToOld(springInfos2[s].PointAIndex)
@@ -1500,7 +1500,7 @@ void ShipFactory::ConnectSpringsAndTriangles(
             assert(NoneElementIndex != endpoint1Index);
 
             ElementIndex endpoint2Index = NoneElementIndex;
-            ShipFactoryTriangle & triangle2 = triangleInfos2[springInfos2[s].SuperTriangles[1]];
+            ShipFactoryTriangle & triangle2 = triangleInfos2[springInfos2[s].Triangles[1]];
             for (ElementIndex triangleVertex1 : triangle2.PointIndices1)
             {
                 if (triangleVertex1 != pointIndexRemap.NewToOld(springInfos2[s].PointAIndex)
@@ -1523,7 +1523,7 @@ void ShipFactory::ConnectSpringsAndTriangles(
             {
                 // We have a traverse spring
 
-                assert(0 == springInfos2[traverseSpringIt->second].SuperTriangles.size());
+                assert(0 == springInfos2[traverseSpringIt->second].Triangles.size());
 
                 // Tell the traverse spring that it has these 2 covering triangles
                 springInfos2[traverseSpringIt->second].CoveringTrianglesCount += 2;
@@ -1544,7 +1544,7 @@ std::vector<ShipFactoryFrontier> ShipFactory::CreateShipFrontiers(
     IndexRemap const & pointIndexRemap,
     std::vector<ShipFactoryPoint> const & pointInfos2,
     std::vector<ShipFactorySpring> const & springInfos2,
-    PointPairToIndexMap const & pointPairToSpringIndex1Map,
+    ShipFactoryPointPairToIndexMap const & pointPairToSpringIndex1Map,
     IndexRemap const & springIndexRemap)
 {
     //
@@ -1595,7 +1595,7 @@ std::vector<ShipFactoryFrontier> ShipFactory::CreateShipFrontiers(
                     else
                     {
                         ElementIndex const springIndex2 = springIndexRemap.OldToNew(springIndex1It->second);
-                        if (springInfos2[springIndex2].SuperTriangles.empty())
+                        if (springInfos2[springIndex2].Triangles.empty())
                         {
                             // No triangles along this spring
                             isInFrontierablePointsRegion = false;
@@ -1689,7 +1689,7 @@ std::vector<ElementIndex> ShipFactory::PropagateFrontier(
     ShipFactoryPointIndexMatrix const & pointIndexMatrix,
     std::set<ElementIndex> & frontierEdges2,
     std::vector<ShipFactorySpring> const & springInfos2,
-    PointPairToIndexMap const & pointPairToSpringIndex1Map,
+    ShipFactoryPointPairToIndexMap const & pointPairToSpringIndex1Map,
     IndexRemap const & springIndexRemap)
 {
     std::vector<ElementIndex> edgeIndices;
@@ -1760,7 +1760,7 @@ std::vector<ElementIndex> ShipFactory::PropagateFrontier(
             }
 
             springIndex2 = springIndexRemap.OldToNew(springIndex1It->second);
-            if (springInfos2[springIndex2].SuperTriangles.size() != 1)
+            if (springInfos2[springIndex2].Triangles.size() != 1)
             {
                 // No triangles along this spring, or two triangles along it
                 continue;
@@ -1907,7 +1907,7 @@ Physics::Springs ShipFactory::CreateSprings(
             springInfos2[s].PointBIndex,
             springInfos2[s].PointAAngle,
             springInfos2[s].PointBAngle,
-            springInfos2[s].SuperTriangles,
+            springInfos2[s].Triangles,
             springInfos2[s].CoveringTrianglesCount,
             points);
 
