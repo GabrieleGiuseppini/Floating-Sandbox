@@ -202,14 +202,17 @@ Arch
 			+ SurfaceType
 			+ OppositeTriangle
 			+ etc?
-		- Tessellation @ ShipFactory
+		+ Tessellation @ ShipFactory
+			! Consider that members in BL have different names in FS
+			+ ShipFactory
+			+ Test consequences of new tessellation (i.e. triangle edges in new directions)
+				+ Look
+				+ Frontier
+		= Tessellation @ ShipFactory
 			! Consider that members in BL have different names in FS
 			- ShipFactoryTypes
 			- ShipFloorplanizer
 			- ShipFactory
-			- Test consequences of new tessellation (i.e. triangle edges in new directions)
-				- Look
-				- Frontier
 		- Rendering of floors?
 	- All in one go - GO2:
 		- Move Npc simulation source files under NpcSimulation folder

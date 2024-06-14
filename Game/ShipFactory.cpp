@@ -676,7 +676,7 @@ void ShipFactory::CreateShipElementInfos(
     for (int y = 1; y < pointIndexMatrix.height - 1; ++y)
     {
         // We're starting a new row, so we're not in a ship now
-        bool isInShip = false;
+        bool isRowInShip = false;
 
         // From left to right - excluding extras at boundaries
         for (int x = 1; x < pointIndexMatrix.width - 1; ++x)
@@ -706,7 +706,7 @@ void ShipFactory::CreateShipElementInfos(
                 }
 
                 //
-                // Check if a spring exists
+                // Springs
                 //
 
                 // First four directions out of 8: from 0 deg (+x) through to 225 deg (-x -y),
@@ -744,22 +744,216 @@ void ShipFactory::CreateShipElementInfos(
                         // Add the spring to its endpoints
                         pointInfos1[pointIndex1].AddConnectedSpring1(springIndex1);
                         pointInfos1[otherEndpointIndex1].AddConnectedSpring1(springIndex1);
+                    }
+                }
 
+                //
+                // Triangles
+                //
 
-                        //
-                        // Check if a triangle exists
-                        // - If this is the first point that is in a ship, we check all the way up to W;
-                        // - Else, we check only up to S, so to avoid covering areas already covered by the triangulation
-                        //   at the previous point
-                        //
+                //              P
+                //  W (4) o --- * --- o  E (0)
+                //            / | \
+                //           /  |  \
+                //          /   |   \
+                //  SW (3) o    o    o SE (1)
+                //             S (2)
+                //
 
-                        // Check adjacent point in next CW direction
-                        int adjx2 = x + TessellationCircularOrderDirections[i + 1][0];
-                        int adjy2 = y + TessellationCircularOrderDirections[i + 1][1];
-                        if ((!isInShip || i < 2)
-                            && !!pointIndexMatrix[{adjx2, adjy2}])
+                // - If this is the first point in the row that is in a ship, we check from E CW all the way up to SW;
+                // - Else, we check only up to S, so to avoid covering areas already covered by the triangulation
+                //   at the previous point
+                //
+
+                //
+                // Quad: P - E - SE - S
+                //
+
+                auto const pointECoordinates = vec2i(x + TessellationCircularOrderDirections[0][0], y + TessellationCircularOrderDirections[0][1]);
+                auto const & pointE = pointIndexMatrix[pointECoordinates];
+                auto const pointSECoordinates = vec2i(x + TessellationCircularOrderDirections[1][0], y + TessellationCircularOrderDirections[1][1]);
+                auto const & pointSE = pointIndexMatrix[pointSECoordinates];
+                auto const pointSCoordinates = vec2i(x + TessellationCircularOrderDirections[2][0], y + TessellationCircularOrderDirections[2][1]);
+                auto const & pointS = pointIndexMatrix[pointSCoordinates];
+
+                if (pointE.has_value())
+                {
+                    if (pointSE.has_value())
+                    {
+                        if (pointS.has_value())
                         {
-                            // This point is adjacent to the first point at one of SE, S, SW, W
+                            //
+                            // We can choose if two triangles along P-SE diagonal, or two triangles along S-E diagonal;
+                            // we prioritize the one that is hull, so we honor hull edges for NPC floors (since floors
+                            // may only exist on hull springs)
+                            //
+
+                            bool const isP_SE_hull = pointInfos1[pointIndex1].StructuralMtl.IsHull && pointInfos1[*pointSE].StructuralMtl.IsHull;
+                            bool const isS_E_hull = pointInfos1[*pointS].StructuralMtl.IsHull && pointInfos1[*pointE].StructuralMtl.IsHull;
+
+                            if (isS_E_hull)
+                            {
+                                if (isP_SE_hull)
+                                {
+                                    // Both are hull - the one with the most "continuations" wins
+
+                                    // S-E
+                                    int seCount = 0;
+                                    // S.SW
+                                    auto contCoord = vec2i(pointSCoordinates.x + TessellationCircularOrderDirections[3][0], pointSCoordinates.y + TessellationCircularOrderDirections[3][1]);
+                                    if (pointIndexMatrix[contCoord].has_value()
+                                        && pointInfos1[*pointIndexMatrix[contCoord]].StructuralMtl.IsHull)
+                                        ++seCount;
+                                    // E.NE
+                                    contCoord = vec2i(pointECoordinates.x + TessellationCircularOrderDirections[7][0], pointECoordinates.y + TessellationCircularOrderDirections[7][1]);
+                                    if (pointIndexMatrix[contCoord].has_value()
+                                        && pointInfos1[*pointIndexMatrix[contCoord]].StructuralMtl.IsHull)
+                                        ++seCount;
+
+                                    // P-SE
+                                    int pseCount = 0;
+                                    // P.NW
+                                    contCoord = vec2i(x + TessellationCircularOrderDirections[5][0], y + TessellationCircularOrderDirections[5][1]);
+                                    if (pointIndexMatrix[contCoord].has_value()
+                                        && pointInfos1[*pointIndexMatrix[contCoord]].StructuralMtl.IsHull)
+                                        ++pseCount;
+                                    // SE.SE
+                                    contCoord = vec2i(pointSECoordinates.x + TessellationCircularOrderDirections[1][0], pointSECoordinates.y + TessellationCircularOrderDirections[1][1]);
+                                    if (pointIndexMatrix[contCoord].has_value()
+                                        && pointInfos1[*pointIndexMatrix[contCoord]].StructuralMtl.IsHull)
+                                        ++pseCount;
+
+                                    if (pseCount >= seCount)
+                                    {
+                                        // P - E - SE
+
+                                        //
+                                        // Create ShipFactoryTriangle
+                                        //
+
+                                        triangleInfos1.emplace_back(
+                                            std::array<ElementIndex, 3>( // Points are in CW order
+                                                {
+                                                    pointIndex1,
+                                                    *pointE,
+                                                    *pointSE
+                                                }));
+
+                                        // P - SE - S
+
+                                        //
+                                        // Create ShipFactoryTriangle
+                                        //
+
+                                        triangleInfos1.emplace_back(
+                                            std::array<ElementIndex, 3>( // Points are in CW order
+                                                {
+                                                    pointIndex1,
+                                                    *pointSE,
+                                                    *pointS
+                                                }));
+
+                                    }
+                                    else
+                                    {
+                                        // P - E - S
+
+                                        //
+                                        // Create ShipFactoryTriangle
+                                        //
+
+                                        triangleInfos1.emplace_back(
+                                            std::array<ElementIndex, 3>( // Points are in CW order
+                                                {
+                                                    pointIndex1,
+                                                    *pointE,
+                                                    *pointS
+                                                }));
+
+                                        // S - E - SE
+
+                                        //
+                                        // Create ShipFactoryTriangle
+                                        //
+
+                                        triangleInfos1.emplace_back(
+                                            std::array<ElementIndex, 3>( // Points are in CW order
+                                                {
+                                                    *pointS,
+                                                    *pointE,
+                                                    *pointSE
+                                                }));
+                                    }
+                                }
+                                else
+                                {
+                                    // Only S-E is hull
+
+                                    // P - E - S
+
+                                    //
+                                    // Create ShipFactoryTriangle
+                                    //
+
+                                    triangleInfos1.emplace_back(
+                                        std::array<ElementIndex, 3>( // Points are in CW order
+                                            {
+                                                pointIndex1,
+                                                *pointE,
+                                                *pointS
+                                            }));
+
+                                    // S - E - SE
+
+                                    //
+                                    // Create ShipFactoryTriangle
+                                    //
+
+                                    triangleInfos1.emplace_back(
+                                        std::array<ElementIndex, 3>( // Points are in CW order
+                                            {
+                                                *pointS,
+                                                *pointE,
+                                                *pointSE
+                                            }));
+                                }
+                            }
+                            else
+                            {
+                                // Only P-SE is hull or neither is hull; in the last case P-SE wins arbitrarily
+
+                                // P - E - SE
+
+                                //
+                                // Create ShipFactoryTriangle
+                                //
+
+                                triangleInfos1.emplace_back(
+                                    std::array<ElementIndex, 3>( // Points are in CW order
+                                        {
+                                            pointIndex1,
+                                            *pointE,
+                                            *pointSE
+                                        }));
+
+                                // P - SE - S
+
+                                //
+                                // Create ShipFactoryTriangle
+                                //
+
+                                triangleInfos1.emplace_back(
+                                    std::array<ElementIndex, 3>( // Points are in CW order
+                                        {
+                                            pointIndex1,
+                                            *pointSE,
+                                            *pointS
+                                        }));
+                            }
+                        }
+                        else
+                        {
+                            // P - E - SE
 
                             //
                             // Create ShipFactoryTriangle
@@ -769,40 +963,71 @@ void ShipFactory::CreateShipElementInfos(
                                 std::array<ElementIndex, 3>( // Points are in CW order
                                     {
                                         pointIndex1,
-                                        otherEndpointIndex1,
-                                        *pointIndexMatrix[{adjx2, adjy2}]
+                                        *pointE,
+                                        *pointSE
                                     }));
                         }
+                    }
+                    else if (pointS.has_value())
+                    {
+                        // P - E - S
 
-                        // Now, we also want to check whether the single "irregular" triangle from this point exists,
-                        // i.e. the triangle between this point, the point at its E, and the point at its
-                        // S, in case there is no point at SE.
-                        // We do this so that we can forget the entire W side for inner points and yet ensure
-                        // full coverage of the area
-                        if (i == 0
-                            && !pointIndexMatrix[{x + TessellationCircularOrderDirections[1][0], y + TessellationCircularOrderDirections[1][1]}]
-                            && !!pointIndexMatrix[{x + TessellationCircularOrderDirections[2][0], y + TessellationCircularOrderDirections[2][1]}])
-                        {
-                            // If we're here, the point at E exists
-                            assert(!!pointIndexMatrix[vec2i(x + TessellationCircularOrderDirections[0][0], y + TessellationCircularOrderDirections[0][1])]);
+                        //
+                        // Create ShipFactoryTriangle
+                        //
 
-                            //
-                            // Create ShipFactoryTriangle
-                            //
+                        triangleInfos1.emplace_back(
+                            std::array<ElementIndex, 3>( // Points are in CW order
+                                {
+                                    pointIndex1,
+                                    *pointE,
+                                    *pointS
+                                }));
+                    }
+                }
+                else if (pointSE.has_value() && pointS.has_value())
+                {
+                    // P - SE - S
 
-                            triangleInfos1.emplace_back(
-                                std::array<ElementIndex, 3>( // Points are in CW order
-                                    {
-                                        pointIndex1,
-                                        * pointIndexMatrix[{x + TessellationCircularOrderDirections[0][0], y + TessellationCircularOrderDirections[0][1]}],
-                                        * pointIndexMatrix[{x + TessellationCircularOrderDirections[2][0], y + TessellationCircularOrderDirections[2][1]}]
-                                    }));
-                        }
+                    //
+                    // Create ShipFactoryTriangle
+                    //
+
+                    triangleInfos1.emplace_back(
+                        std::array<ElementIndex, 3>( // Points are in CW order
+                            {
+                                pointIndex1,
+                                *pointSE,
+                                *pointS
+                            }));
+                }
+
+                //
+                // Triangle: P - S - SW
+                //
+
+                if (!isRowInShip)
+                {
+                    auto const & pointSW = pointIndexMatrix[{x + TessellationCircularOrderDirections[3][0], y + TessellationCircularOrderDirections[3][1]}];
+
+                    if (pointS.has_value() && pointSW.has_value())
+                    {
+                        //
+                        // Create ShipFactoryTriangle
+                        //
+
+                        triangleInfos1.emplace_back(
+                            std::array<ElementIndex, 3>( // Points are in CW order
+                                {
+                                    pointIndex1,
+                                    *pointS,
+                                    *pointSW
+                                }));
                     }
                 }
 
                 // Remember now that we're in a ship
-                isInShip = true;
+                isRowInShip = true;
             }
             else
             {
@@ -811,7 +1036,7 @@ void ShipFactory::CreateShipElementInfos(
                 //
 
                 // From now on we're not in a ship anymore
-                isInShip = false;
+                isRowInShip = false;
             }
         }
     }
