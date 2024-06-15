@@ -7,6 +7,7 @@
 
 #include "Layers.h"
 #include "MaterialDatabase.h"
+#include "Physics.h"
 #include "ResourceLocator.h"
 #include "ShipAutoTexturizationSettings.h"
 
@@ -40,6 +41,13 @@ public:
         int magnificationFactor,
         ShipAutoTexturizationSettings const & settings) const;
 
+    RgbaImageData MakeInteriorViewTexture(
+        Physics::Triangles const & triangles,
+        Physics::Points const & points,
+        RgbaImageData const & backgroundTexture,
+        float backgroundAlpha) const;
+
+
     void RenderShipInto(
         StructuralLayerData const & structuralLayer,
         ShipSpaceRect const & structuralLayerRegion,
@@ -48,12 +56,12 @@ public:
         int magnificationFactor) const;
 
     template<typename TMaterial>
-    RgbaImageData MakeTextureSample(
+    RgbaImageData MakeMaterialTextureSample(
         std::optional<ShipAutoTexturizationSettings> const & settings,
         ImageSize const & sampleSize,
         TMaterial const & material) const
     {
-        return MakeTextureSample(
+        return MakeMaterialTextureSample(
             settings,
             sampleSize,
             material.RenderColor,
@@ -101,7 +109,7 @@ private:
 
     static float MaterialTextureMagnificationToPixelConversionFactor(float magnification);
 
-    RgbaImageData MakeTextureSample(
+    RgbaImageData MakeMaterialTextureSample(
         std::optional<ShipAutoTexturizationSettings> const & settings,
         ImageSize const & sampleSize,
         rgbaColor const & renderColor,

@@ -487,7 +487,7 @@ wxToggleButton * MaterialPalette<TLayer>::CreateMaterialButton(
 
         categoryButton->SetBitmap(
             WxHelpers::MakeBitmap(
-                shipTexturizer.MakeTextureSample(
+                shipTexturizer.MakeMaterialTextureSample(
                     texturizationSettings,
                     size,
                     material)));

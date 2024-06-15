@@ -418,15 +418,18 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData, RgbaImageData> ShipFac
             *shipDefinition.Layers.StructuralLayer, // Flat
             ShipAutoTexturizationSettings(
                 ShipAutoTexturizationModeType::FlatStructure,
-                0.0f,
+                1.0f,
                 0.0f));
 
     //
     // Create interior view
     //
 
-    // Futurework: interiorViewImage = interiorTexture + triangles' floors, by ShipTexturizer
-    RgbaImageData interiorViewImage = interiorTextureImage.Clone();
+    RgbaImageData interiorViewImage = shipTexturizer.MakeInteriorViewTexture(
+        triangles,
+        points,
+        interiorTextureImage,
+        shipDefinition.Layers.InteriorTextureLayer ? 1.0f : 0.5f);
 
     //
     // We're done!

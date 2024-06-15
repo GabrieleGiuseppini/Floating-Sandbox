@@ -6097,7 +6097,7 @@ void MainFrame::ReconciliateUIWithStructuralMaterial(StructuralMaterial const * 
             if (material != nullptr)
             {
                 wxBitmap foreStructuralBitmap = WxHelpers::MakeBitmap(
-                    mShipTexturizer.MakeTextureSample(
+                    mShipTexturizer.MakeMaterialTextureSample(
                         std::nullopt, // Use shared settings
                         MaterialSwathSize,
                         *material));
@@ -6119,7 +6119,7 @@ void MainFrame::ReconciliateUIWithStructuralMaterial(StructuralMaterial const * 
             if (material != nullptr)
             {
                 wxBitmap backStructuralBitmap = WxHelpers::MakeBitmap(
-                    mShipTexturizer.MakeTextureSample(
+                    mShipTexturizer.MakeMaterialTextureSample(
                         std::nullopt, // Use shared settings
                         MaterialSwathSize,
                         *material));
@@ -6193,7 +6193,7 @@ void MainFrame::ReconciliateUIWithRopesMaterial(StructuralMaterial const * mater
             if (material != nullptr)
             {
                 wxBitmap foreRopesBitmap = WxHelpers::MakeBitmap(
-                    mShipTexturizer.MakeTextureSample(
+                    mShipTexturizer.MakeMaterialTextureSample(
                         std::nullopt, // Use shared settings
                         MaterialSwathSize,
                         *material));
@@ -6215,7 +6215,7 @@ void MainFrame::ReconciliateUIWithRopesMaterial(StructuralMaterial const * mater
             if (material != nullptr)
             {
                 wxBitmap backRopesBitmap = WxHelpers::MakeBitmap(
-                    mShipTexturizer.MakeTextureSample(
+                    mShipTexturizer.MakeMaterialTextureSample(
                         std::nullopt, // Use shared settings
                         MaterialSwathSize,
                         *material));

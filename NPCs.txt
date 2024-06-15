@@ -435,10 +435,11 @@ Arch
 						+ Texture selection
 					+ Run unit tests
 		+ InteriorTexture goes to Ship		
-		- ShipFactory: invoke ShipTexturizer to create InteriorViewImage
+		+ ShipFactory: invoke ShipTexturizer to create InteriorViewImage
 		- RenderContext:
 			- Need to keep hold of both textures and UploadMipmapped as needed
-		- TODOHERE
+		- ShipTexturizer:
+			- TODOHERE
 
 - Doors:
 	- New electrical element (with both ON/OFF types), controls floorness of springs (and thus triangle edges) among neighboring pairs of them

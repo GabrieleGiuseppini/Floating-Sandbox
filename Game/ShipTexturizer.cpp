@@ -322,6 +322,20 @@ void ShipTexturizer::AutoTexturizeInto(
     }
 }
 
+RgbaImageData ShipTexturizer::MakeInteriorViewTexture(
+    Physics::Triangles const & triangles,
+    Physics::Points const & points,
+    RgbaImageData const & backgroundTexture,
+    float backgroundAlpha) const
+{
+    // TODOHERE
+    (void)triangles;
+    (void)points;
+    (void)backgroundAlpha;
+
+    return backgroundTexture.Clone();
+}
+
 void ShipTexturizer::RenderShipInto(
     StructuralLayerData const & structuralLayer,
     ShipSpaceRect const & structuralLayerRegion,
@@ -604,7 +618,7 @@ float ShipTexturizer::MaterialTextureMagnificationToPixelConversionFactor(float 
     return 1.0f / (0.08f * magnification);
 }
 
-RgbaImageData ShipTexturizer::MakeTextureSample(
+RgbaImageData ShipTexturizer::MakeMaterialTextureSample(
     std::optional<ShipAutoTexturizationSettings> const & settings,
     ImageSize const & sampleSize,
     rgbaColor const & renderColor,
