@@ -27,7 +27,7 @@ using namespace Physics;
 
 //////////////////////////////////////////////////////////////////////////////
 
-std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
+std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData, RgbaImageData> ShipFactory::Create(
     ShipId shipId,
     World & parentWorld,
     ShipDefinition && shipDefinition,
@@ -399,14 +399,34 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
         springs);
 
     //
-    // Create texture, if needed
+    // Create exterior texture
     //
 
-    RgbaImageData textureImage = shipDefinition.Layers.TextureLayer
-        ? std::move(shipDefinition.Layers.TextureLayer->Buffer) // Use provided texture
+    RgbaImageData exteriorTextureImage = shipDefinition.Layers.ExteriorTextureLayer
+        ? std::move(shipDefinition.Layers.ExteriorTextureLayer->Buffer) // Use provided texture
         : shipTexturizer.MakeAutoTexture(
             *shipDefinition.Layers.StructuralLayer,
             shipDefinition.AutoTexturizationSettings); // Auto-texturize
+
+    //
+    // Create interior texture
+    //
+
+    RgbaImageData interiorTextureImage = shipDefinition.Layers.InteriorTextureLayer
+        ? std::move(shipDefinition.Layers.InteriorTextureLayer->Buffer) // Use provided texture
+        : shipTexturizer.MakeAutoTexture(
+            *shipDefinition.Layers.StructuralLayer, // Flat
+            ShipAutoTexturizationSettings(
+                ShipAutoTexturizationModeType::FlatStructure,
+                0.0f,
+                0.0f));
+
+    //
+    // Create interior view
+    //
+
+    // Futurework: interiorViewImage = interiorTexture + triangles' floors, by ShipTexturizer
+    RgbaImageData interiorViewImage = interiorTextureImage.Clone();
 
     //
     // We're done!
@@ -435,7 +455,8 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
         std::move(springs),
         std::move(triangles),
         std::move(electricalElements),
-        std::move(frontiers));
+        std::move(frontiers),
+        std::move(interiorTextureImage));
 
     LogMessage("ShipFactory: Create() took ",
         std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - totalStartTime).count(),
@@ -443,7 +464,8 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> ShipFactory::Create(
 
     return std::make_tuple(
         std::move(ship),
-        std::move(textureImage));
+        std::move(exteriorTextureImage),
+        std::move(interiorViewImage));
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

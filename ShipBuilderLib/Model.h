@@ -115,8 +115,11 @@ public:
             case LayerType::Ropes:
                 return (bool)mLayers.RopesLayer;
 
-            case LayerType::Texture:
-                return (bool)mLayers.TextureLayer;
+            case LayerType::ExteriorTexture:
+                return (bool)mLayers.ExteriorTextureLayer;
+
+            case LayerType::InteriorTexture:
+                return (bool)mLayers.InteriorTextureLayer;
         }
 
         assert(false);
@@ -192,12 +195,17 @@ public:
             assert(mLayers.RopesLayer);
             return mLayers.RopesLayer->Clone();
         }
+        else if constexpr (TLayer == LayerType::ExteriorTexture)
+        {
+            assert(mLayers.ExteriorTextureLayer);
+            return mLayers.ExteriorTextureLayer->Clone();
+        }
         else
         {
-            static_assert(TLayer == LayerType::Texture);
+            static_assert(TLayer == LayerType::InteriorTexture);
 
-            assert(mLayers.TextureLayer);
-            return mLayers.TextureLayer->Clone();
+            assert(mLayers.InteriorTextureLayer);
+            return mLayers.InteriorTextureLayer->Clone();
         }
     }
 
@@ -254,23 +262,41 @@ public:
     std::unique_ptr<RopesLayerData> CloneRopesLayer() const;
     void RestoreRopesLayer(std::unique_ptr<RopesLayerData> ropesLayer);
 
-    TextureLayerData const & GetTextureLayer() const
+    TextureLayerData const & GetExteriorTextureLayer() const
     {
-        assert(mLayers.TextureLayer);
-        return *mLayers.TextureLayer;
+        assert(mLayers.ExteriorTextureLayer);
+        return *mLayers.ExteriorTextureLayer;
     }
 
-    TextureLayerData & GetTextureLayer()
+    TextureLayerData & GetExteriorTextureLayer()
     {
-        assert(mLayers.TextureLayer);
-        return *mLayers.TextureLayer;
+        assert(mLayers.ExteriorTextureLayer);
+        return *mLayers.ExteriorTextureLayer;
     }
 
-    void SetTextureLayer(TextureLayerData && textureLayer);
-    void RemoveTextureLayer();
+    void SetExteriorTextureLayer(TextureLayerData && exteriorTextureLayer);
+    void RemoveExteriorTextureLayer();
 
-    std::unique_ptr<TextureLayerData> CloneTextureLayer() const;
-    void RestoreTextureLayer(std::unique_ptr<TextureLayerData> textureLayer);
+    std::unique_ptr<TextureLayerData> CloneExteriorTextureLayer() const;
+    void RestoreExteriorTextureLayer(std::unique_ptr<TextureLayerData> exteriorTextureLayer);
+
+    TextureLayerData const & GetInteriorTextureLayer() const
+    {
+        assert(mLayers.InteriorTextureLayer);
+        return *mLayers.InteriorTextureLayer;
+    }
+
+    TextureLayerData & GetInteriorTextureLayer()
+    {
+        assert(mLayers.InteriorTextureLayer);
+        return *mLayers.InteriorTextureLayer;
+    }
+
+    void SetInteriorTextureLayer(TextureLayerData && interiorTextureLayer);
+    void RemoveInteriorTextureLayer();
+
+    std::unique_ptr<TextureLayerData> CloneInteriorTextureLayer() const;
+    void RestoreInteriorTextureLayer(std::unique_ptr<TextureLayerData> interiorTextureLayer);
 
 private:
 

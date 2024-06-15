@@ -248,7 +248,7 @@ struct LayerTypeTraits<LayerType::Ropes>
 };
 
 //////////////////////////////////////////////////////////////////
-// Texture
+// Texture (X 2)
 //////////////////////////////////////////////////////////////////
 
 struct TextureLayerData
@@ -298,7 +298,14 @@ struct TextureLayerData
 };
 
 template <>
-struct LayerTypeTraits<LayerType::Texture>
+struct LayerTypeTraits<LayerType::ExteriorTexture>
+{
+    using buffer_type = ImageData<rgbaColor>;
+    using layer_data_type = TextureLayerData;
+};
+
+template <>
+struct LayerTypeTraits<LayerType::InteriorTexture>
 {
     using buffer_type = ImageData<rgbaColor>;
     using layer_data_type = TextureLayerData;
@@ -317,19 +324,22 @@ struct ShipLayers
     std::unique_ptr<StructuralLayerData> StructuralLayer;
     std::unique_ptr<ElectricalLayerData> ElectricalLayer;
     std::unique_ptr<RopesLayerData> RopesLayer;
-    std::unique_ptr<TextureLayerData> TextureLayer;
+    std::unique_ptr<TextureLayerData> ExteriorTextureLayer;
+    std::unique_ptr<TextureLayerData> InteriorTextureLayer;
 
     ShipLayers(
         ShipSpaceSize const & size,
         std::unique_ptr<StructuralLayerData> && structuralLayer,
         std::unique_ptr<ElectricalLayerData> && electricalLayer,
         std::unique_ptr<RopesLayerData> && ropesLayer,
-        std::unique_ptr<TextureLayerData> && textureLayer)
+        std::unique_ptr<TextureLayerData> && exteriorTextureLayer,
+        std::unique_ptr<TextureLayerData> && interiorTextureLayer)
         : Size(size)
         , StructuralLayer(std::move(structuralLayer))
         , ElectricalLayer(std::move(electricalLayer))
         , RopesLayer(std::move(ropesLayer))
-        , TextureLayer(std::move(textureLayer))
+        , ExteriorTextureLayer(std::move(exteriorTextureLayer))
+        , InteriorTextureLayer(std::move(interiorTextureLayer))
     {}
 
     ShipLayers Clone() const
@@ -339,7 +349,8 @@ struct ShipLayers
             StructuralLayer ? std::make_unique<StructuralLayerData>(StructuralLayer->Clone()) : nullptr,
             ElectricalLayer ? std::make_unique<ElectricalLayerData>(ElectricalLayer->Clone()) : nullptr,
             RopesLayer ? std::make_unique<RopesLayerData>(RopesLayer->Clone()) : nullptr,
-            TextureLayer ? std::make_unique<TextureLayerData>(TextureLayer->Clone()) : nullptr);
+            ExteriorTextureLayer ? std::make_unique<TextureLayerData>(ExteriorTextureLayer->Clone()) : nullptr,
+            InteriorTextureLayer ? std::make_unique<TextureLayerData>(InteriorTextureLayer->Clone()) : nullptr);
     }
 
     void Flip(DirectionType direction);

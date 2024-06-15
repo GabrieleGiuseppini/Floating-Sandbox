@@ -195,7 +195,8 @@ ShipDefinition ShipDefinitionFormatDeSerializer::Load(
             std::move(structuralLayer),
             std::move(electricalLayer),
             std::move(ropesLayer),
-            std::move(textureLayer)),
+            std::move(textureLayer),
+            nullptr), // TODO: InteriorLayer
         *shipMetadata,
         shipPhysicsData,
         shipAutoTexturizationSettings);
@@ -348,7 +349,7 @@ void ShipDefinitionFormatDeSerializer::Save(
     ShipAttributes const shipAttributes = ShipAttributes(
         Version::CurrentVersion(),
         shipDefinition.Layers.Size,
-        (bool)shipDefinition.Layers.TextureLayer,
+        (bool)shipDefinition.Layers.ExteriorTextureLayer,
         (bool)shipDefinition.Layers.ElectricalLayer,
         PortableTimepoint::Now());
 
@@ -368,7 +369,7 @@ void ShipDefinitionFormatDeSerializer::Save(
         [&]() { return AppendMetadata(shipDefinition.Metadata, buffer); },
         buffer);
 
-    if (shipDefinition.Layers.TextureLayer)
+    if (shipDefinition.Layers.ExteriorTextureLayer)
     {
         //
         // Write texture
@@ -377,7 +378,7 @@ void ShipDefinitionFormatDeSerializer::Save(
         AppendSection(
             outputFile,
             static_cast<std::uint32_t>(MainSectionTagType::TextureLayer_PNG),
-            [&]() { return AppendPngImage(shipDefinition.Layers.TextureLayer->Buffer, buffer); },
+            [&]() { return AppendPngImage(shipDefinition.Layers.ExteriorTextureLayer->Buffer, buffer); },
             buffer);
     }
     else if (shipDefinition.Layers.StructuralLayer)

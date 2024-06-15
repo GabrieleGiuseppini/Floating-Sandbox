@@ -91,7 +91,7 @@ protected:
 
     ShipSpaceCoordinates ScreenToShipSpace(DisplayLogicalCoordinates const & displayCoordinates) const;
     ShipSpaceCoordinates ScreenToShipSpaceNearest(DisplayLogicalCoordinates const & displayCoordinates) const;
-    ImageCoordinates ScreenToTextureSpace(DisplayLogicalCoordinates const & displayCoordinates) const;
+    ImageCoordinates ScreenToTextureSpace(LayerType layerType, DisplayLogicalCoordinates const & displayCoordinates) const;
 
 protected:
 

@@ -28,7 +28,8 @@ public:
 	std::optional<StructuralLayerData> StructuralLayerRegionBackup;
 	std::optional<ElectricalLayerData> ElectricalLayerRegionBackup;
 	std::optional<RopesLayerData> RopesLayerRegionBackup;
-	std::optional<TextureLayerData> TextureLayerRegionBackup;
+	std::optional<TextureLayerData> ExteriorTextureLayerRegionBackup;
+	std::optional<TextureLayerData> InteriorTextureLayerRegionBackup;
 
 	// Futurework: if needed, one day may add other elements, e.g. metadata
 
@@ -41,12 +42,14 @@ public:
 		std::optional<StructuralLayerData> && structuralLayerRegionBackup,
 		std::optional<ElectricalLayerData > && electricalLayerRegionBackup,
 		std::optional<RopesLayerData> && ropesLayerRegionBackup,
-		std::optional<TextureLayerData> && textureLayerRegionBackup)
+		std::optional<TextureLayerData> && exteriorTextureLayerRegionBackup,
+		std::optional<TextureLayerData> && interiorTextureLayerRegionBackup)
 		: Origin(origin)
 		, StructuralLayerRegionBackup(std::move(structuralLayerRegionBackup))
 		, ElectricalLayerRegionBackup(std::move(electricalLayerRegionBackup))
 		, RopesLayerRegionBackup(std::move(ropesLayerRegionBackup))
-		, TextureLayerRegionBackup(std::move(textureLayerRegionBackup))
+		, ExteriorTextureLayerRegionBackup(std::move(exteriorTextureLayerRegionBackup))
+		, InteriorTextureLayerRegionBackup(std::move(interiorTextureLayerRegionBackup))
 	{}
 
 	size_t GetTotalCost() const
@@ -55,7 +58,8 @@ public:
 			(StructuralLayerRegionBackup ? StructuralLayerRegionBackup->Buffer.GetByteSize() : 0)
 			+ (ElectricalLayerRegionBackup ? ElectricalLayerRegionBackup->Buffer.GetByteSize() : 0)
 			+ (RopesLayerRegionBackup ? RopesLayerRegionBackup->Buffer.GetByteSize() : 0)
-			+ (TextureLayerRegionBackup ? TextureLayerRegionBackup->Buffer.GetByteSize() : 0);
+			+ (ExteriorTextureLayerRegionBackup ? ExteriorTextureLayerRegionBackup->Buffer.GetByteSize() : 0)
+			+ (InteriorTextureLayerRegionBackup ? InteriorTextureLayerRegionBackup->Buffer.GetByteSize() : 0);
 	}
 
 	std::vector<LayerType> GetAffectedLayers() const
@@ -77,9 +81,14 @@ public:
 			affectedLayers.emplace_back(LayerType::Ropes);
 		}
 
-		if (TextureLayerRegionBackup.has_value())
+		if (ExteriorTextureLayerRegionBackup.has_value())
 		{
-			affectedLayers.emplace_back(LayerType::Texture);
+			affectedLayers.emplace_back(LayerType::ExteriorTexture);
+		}
+
+		if (InteriorTextureLayerRegionBackup.has_value())
+		{
+			affectedLayers.emplace_back(LayerType::InteriorTexture);
 		}
 
 		return affectedLayers;

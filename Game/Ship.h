@@ -19,6 +19,7 @@
 #include <GameCore/AABBSet.h>
 #include <GameCore/Buffer.h>
 #include <GameCore/GameTypes.h>
+#include <GameCore/ImageData.h>
 #include <GameCore/RunningAverage.h>
 #include <GameCore/ThreadManager.h>
 #include <GameCore/Vectors.h>
@@ -44,7 +45,8 @@ public:
         Springs && springs,
         Triangles && triangles,
         ElectricalElements && electricalElements,
-        Frontiers && frontiers);
+        Frontiers && frontiers,
+        RgbaImageData && interiorTextureImage);
 
     void Announce();
 
@@ -849,6 +851,7 @@ private:
     Triangles mTriangles;
     ElectricalElements mElectricalElements;
     Frontiers mFrontiers;
+    RgbaImageData mInteriorTextureImage;
 
     // Pinned points
     PinnedPoints mPinnedPoints;

@@ -127,7 +127,8 @@ public:
     void OnStructuralLayerVisualizationModeChanged(StructuralLayerVisualizationModeType mode) override;
     void OnElectricalLayerVisualizationModeChanged(ElectricalLayerVisualizationModeType mode) override;
     void OnRopesLayerVisualizationModeChanged(RopesLayerVisualizationModeType mode) override;
-    void OnTextureLayerVisualizationModeChanged(TextureLayerVisualizationModeType mode) override;
+    void OnExteriorTextureLayerVisualizationModeChanged(ExteriorTextureLayerVisualizationModeType mode) override;
+    void OnInteriorTextureLayerVisualizationModeChanged(InteriorTextureLayerVisualizationModeType mode) override;
 
     void OnOtherVisualizationsOpacityChanged(float opacity) override;
 
@@ -234,7 +235,7 @@ private:
 
     void ImportLayerFromShip(LayerType layer);
 
-    void ImportTextureLayerFromImage();
+    void ImportExteriorTextureLayerFromImage();
 
     void OnPreferences();
 
@@ -358,7 +359,8 @@ private:
     void ReconciliateUIWithStructuralLayerVisualizationModeSelection(StructuralLayerVisualizationModeType mode);
     void ReconciliateUIWithElectricalLayerVisualizationModeSelection(ElectricalLayerVisualizationModeType mode);
     void ReconciliateUIWithRopesLayerVisualizationModeSelection(RopesLayerVisualizationModeType mode);
-    void ReconciliateUIWithTextureLayerVisualizationModeSelection(TextureLayerVisualizationModeType mode);
+    void ReconciliateUIWithExteriorTextureLayerVisualizationModeSelection(ExteriorTextureLayerVisualizationModeType mode);
+    void ReconciliateUIWithInteriorTextureLayerVisualizationModeSelection(InteriorTextureLayerVisualizationModeType mode);
 
     void ReconciliateUIWithOtherVisualizationsOpacity(float opacity);
 
@@ -437,7 +439,7 @@ private:
     std::array<wxPanel *, VisualizationCount> mVisualizationModePanels;
     BitmapRadioButton * mGameVisualizationNoneModeButton;
     BitmapRadioButton * mGameVisualizationAutoTexturizationModeButton;
-    BitmapRadioButton * mGameVisualizationTextureModeButton;
+    BitmapRadioButton * mGameVisualizationExteriorTextureModeButton;
     BitmapRadioButton * mStructuralLayerVisualizationNoneModeButton;
     BitmapRadioButton * mStructuralLayerVisualizationMeshModeButton;
     BitmapRadioButton * mStructuralLayerVisualizationPixelModeButton;
@@ -445,8 +447,8 @@ private:
     BitmapRadioButton * mElectricalLayerVisualizationPixelModeButton;
     BitmapRadioButton * mRopesLayerVisualizationNoneModeButton;
     BitmapRadioButton * mRopesLayerVisualizationLinesModeButton;
-    BitmapRadioButton * mTextureLayerVisualizationNoneModeButton;
-    BitmapRadioButton * mTextureLayerVisualizationMatteModeButton;
+    BitmapRadioButton * mExteriorTextureLayerVisualizationNoneModeButton;
+    BitmapRadioButton * mExteriorTextureLayerVisualizationMatteModeButton;
     BitmapToggleButton * mViewWaterlineMarkersButton;
     BitmapToggleButton * mViewGridButton;
 

@@ -699,7 +699,8 @@ public:
     void AddShip(
         ShipId shipId,
         size_t pointCount,
-        RgbaImageData texture);
+        RgbaImageData exteriorTextureImage,
+        RgbaImageData interiorViewImage);
 
     inline ShipRenderContext & GetShipRenderContext(ShipId shipId) const
     {

@@ -916,7 +916,8 @@ private:
 
     void InternalAddShip(
         std::unique_ptr<Physics::Ship> ship,
-        RgbaImageData && textureImage,
+        RgbaImageData && exteriorTextureImage,
+        RgbaImageData && interiorViewImage,
         ShipMetadata const & shipMetadata);
 
     void ResetStats();

@@ -80,7 +80,8 @@ WorkbenchState::WorkbenchState(
     mStructuralLayerVisualizationMode = StructuralLayerVisualizationModeType::PixelMode;
     mElectricalLayerVisualizationMode = ElectricalLayerVisualizationModeType::PixelMode;
     mRopesLayerVisualizationMode = RopesLayerVisualizationModeType::LinesMode;
-    mTextureLayerVisualizationMode = TextureLayerVisualizationModeType::MatteMode;
+    mExteriorTextureLayerVisualizationMode = ExteriorTextureLayerVisualizationModeType::MatteMode;
+    mInteriorTextureLayerVisualizationMode = InteriorTextureLayerVisualizationModeType::MatteMode;
     mOtherVisualizationsOpacity = 0.75f;
     mIsWaterlineMarkersEnabled = false;
     mIsGridEnabled = false;

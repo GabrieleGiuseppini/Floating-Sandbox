@@ -139,9 +139,14 @@ public:
         return mViewModel.ScreenToShipSpaceNearest(displayCoordinates);
     }
 
-    ImageCoordinates ScreenToTextureSpace(DisplayLogicalCoordinates const & displayCoordinates) const
+    ImageCoordinates ScreenToExteriorTextureSpace(DisplayLogicalCoordinates const & displayCoordinates) const
     {
-        return mViewModel.ScreenToTextureSpace(displayCoordinates);
+        return mViewModel.ScreenToExteriorTextureSpace(displayCoordinates);
+    }
+
+    ImageCoordinates ScreenToInteriorTextureSpace(DisplayLogicalCoordinates const & displayCoordinates) const
+    {
+        return mViewModel.ScreenToInteriorTextureSpace(displayCoordinates);
     }
 
 public:
@@ -232,20 +237,37 @@ public:
     }
 
     //
-    // Texture layer viz (all sticky)
+    // Exterior Texture layer viz (all sticky)
     //
 
-    void UploadTextureLayerVisualization(RgbaImageData const & texture);
+    void UploadExteriorTextureLayerVisualization(RgbaImageData const & texture);
 
-    void UpdateTextureLayerVisualization(
+    void UpdateExteriorTextureLayerVisualization(
         RgbaImageData const & subTexture,
         ImageCoordinates const & origin);
 
-    void RemoveTextureLayerVisualization();
+    void RemoveExteriorTextureLayerVisualization();
 
-    bool HasTextureLayerVisualization() const
+    bool HasExteriorTextureLayerVisualization() const
     {
-        return mHasTextureLayerVisualization;
+        return mHasExteriorTextureLayerVisualization;
+    }
+
+    //
+    // Interior Texture layer viz (all sticky)
+    //
+
+    void UploadInteriorTextureLayerVisualization(RgbaImageData const & texture);
+
+    void UpdateInteriorTextureLayerVisualization(
+        RgbaImageData const & subTexture,
+        ImageCoordinates const & origin);
+
+    void RemoveInteriorTextureLayerVisualization();
+
+    bool HasInteriorTextureLayerVisualization() const
+    {
+        return mHasInteriorTextureLayerVisualization;
     }
 
     //
@@ -273,8 +295,13 @@ public:
         ShipSpaceRect const & rect,
         OverlayMode mode);
 
-    // Texture space
-    void UploadRectOverlay(
+    // Exterior Texture space
+    void UploadRectOverlayExteriorTexture(
+        ImageRect const & rect,
+        OverlayMode mode);
+
+    // Interior Texture space
+    void UploadRectOverlayInteriorTexture(
         ImageRect const & rect,
         OverlayMode mode);
 
@@ -346,7 +373,8 @@ private:
     void RenderStructuralLayerVisualization();
     void RenderElectricalLayerVisualization();
     void RenderRopesLayerVisualization();
-    void RenderTextureLayerVisualization();
+    void RenderExteriorTextureLayerVisualization();
+    void RenderInteriorTextureLayerVisualization();
 
     vec3f GetOverlayColor(OverlayMode mode) const;
 
@@ -568,11 +596,17 @@ private:
     GameOpenGLVBO mRopesVBO;
     size_t mRopeCount;
 
-    // Texture layer visualization
-    GameOpenGLVAO mTextureLayerVisualizationVAO;
-    GameOpenGLVBO mTextureLayerVisualizationVBO;
-    GameOpenGLTexture mTextureLayerVisualizationTexture;
-    bool mHasTextureLayerVisualization;
+    // Exterior Texture layer visualization
+    GameOpenGLVAO mExteriorTextureLayerVisualizationVAO;
+    GameOpenGLVBO mExteriorTextureLayerVisualizationVBO;
+    GameOpenGLTexture mExteriorTextureLayerVisualizationTexture;
+    bool mHasExteriorTextureLayerVisualization;
+
+    // Interior Texture layer visualization
+    GameOpenGLVAO mInteriorTextureLayerVisualizationVAO;
+    GameOpenGLVBO mInteriorTextureLayerVisualizationVBO;
+    GameOpenGLTexture mInteriorTextureLayerVisualizationTexture;
+    bool mHasInteriorTextureLayerVisualization;
 
     // Grid
     GameOpenGLVAO mGridVAO;
@@ -596,7 +630,8 @@ private:
     GameOpenGLVAO mRectOverlayVAO;
     GameOpenGLVBO mRectOverlayVBO;
     std::optional<ShipSpaceRect> mRectOverlayShipSpaceRect;
-    std::optional<ImageRect> mRectOverlayTextureSpaceRect;
+    std::optional<ImageRect> mRectOverlayExteriorTextureSpaceRect;
+    std::optional<ImageRect> mRectOverlayInteriorTextureSpaceRect;
     vec3f mRectOverlayColor;
 
     // DashedLineOverlay

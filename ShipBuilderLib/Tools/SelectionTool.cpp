@@ -44,12 +44,23 @@ RopeSelectionTool::RopeSelectionTool(
         resourceLocator)
 {}
 
-TextureSelectionTool::TextureSelectionTool(
+ExteriorTextureSelectionTool::ExteriorTextureSelectionTool(
     Controller & controller,
     SelectionManager & selectionManager,
     ResourceLocator const & resourceLocator)
     : SelectionTool(
-        ToolType::TextureSelection,
+        ToolType::ExteriorTextureSelection,
+        controller,
+        selectionManager,
+        resourceLocator)
+{}
+
+InteriorTextureSelectionTool::InteriorTextureSelectionTool(
+    Controller & controller,
+    SelectionManager & selectionManager,
+    ResourceLocator const & resourceLocator)
+    : SelectionTool(
+        ToolType::InteriorTextureSelection,
         controller,
         selectionManager,
         resourceLocator)

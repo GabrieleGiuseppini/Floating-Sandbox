@@ -48,7 +48,8 @@ public:
         ShipId shipId,
         size_t pointCount,
         size_t shipCount,
-        RgbaImageData shipTexture,
+        RgbaImageData exteriorTextureImage,
+        RgbaImageData interiorViewImage,
         ShaderManager<ShaderManagerTraits> & shaderManager,
         GlobalRenderContext const & globalRenderContext,
         RenderParameters const & renderParameters,
@@ -283,7 +284,7 @@ public:
         vec2f const b = position + n * width / 2.0f;
         vec2f const c = position + verticalUp - n * width / 2.0f;
         vec2f const d = position + verticalUp + n * width / 2.0f;
-        
+
         //
         // Append vertices - two triangles
         //
@@ -764,7 +765,7 @@ public:
         // Calculate quad coordinates
         vec2f const velocityDir = velocity.normalise();
         vec2f const top = position + velocityDir * sparkleLength;
-        
+
         vec2f const velocityDirPerp = velocityDir.to_perpendicular();
         vec2f const topLeft = top - velocityDirPerp * sparkleWidth / 2.0f;
         vec2f const toRight = top + velocityDirPerp * sparkleWidth / 2.0f;
@@ -1507,7 +1508,7 @@ private:
     {
         vec2f vertexPosition;
         vec2f quadSpacePosition;
-        float planeId;        
+        float planeId;
 
         NpcQuadVertex(
             vec2f _vertexPosition,
@@ -1876,7 +1877,7 @@ private:
     TextureAtlasMetadata<GenericMipMappedTextureGroups> const & mGenericMipMappedTextureAtlasMetadata;
 
 private:
- 
+
     //
     // Externally-controlled parameters that only affect Upload (i.e. that do
     // not affect rendering directly) or that purely serve as input to calculated

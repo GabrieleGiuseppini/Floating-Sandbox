@@ -723,7 +723,8 @@ ShipDefinition ShipLegacyFormatDeSerializer::LoadFromDefinitionImages(
             hasStructuralElements ? std::make_unique<StructuralLayerData>(std::move(structuralLayer)) : nullptr,
             hasElectricalElements ? std::make_unique<ElectricalLayerData>(std::move(electricalLayer)) : nullptr,
             hasRopeElements ? std::make_unique<RopesLayerData>(std::move(ropesLayer)) : nullptr,
-            std::move(textureLayer)),
+            std::move(textureLayer),
+            nullptr),
         metadata,
         physicsData,
         autoTexturizationSettings);

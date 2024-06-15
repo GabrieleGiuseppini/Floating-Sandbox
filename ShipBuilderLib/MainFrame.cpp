@@ -573,9 +573,14 @@ void MainFrame::OnRopesLayerVisualizationModeChanged(RopesLayerVisualizationMode
     ReconciliateUIWithRopesLayerVisualizationModeSelection(mode);
 }
 
-void MainFrame::OnTextureLayerVisualizationModeChanged(TextureLayerVisualizationModeType mode)
+void MainFrame::OnExteriorTextureLayerVisualizationModeChanged(ExteriorTextureLayerVisualizationModeType mode)
 {
-    ReconciliateUIWithTextureLayerVisualizationModeSelection(mode);
+    ReconciliateUIWithExteriorTextureLayerVisualizationModeSelection(mode);
+}
+
+void MainFrame::OnInteriorTextureLayerVisualizationModeChanged(InteriorTextureLayerVisualizationModeType mode)
+{
+    ReconciliateUIWithInteriorTextureLayerVisualizationModeSelection(mode);
 }
 
 void MainFrame::OnOtherVisualizationsOpacityChanged(float opacity)
@@ -1080,9 +1085,9 @@ wxRibbonPage * MainFrame::CreateLayersRibbonPage(wxRibbonBar * parent)
         CreateLayerRibbonPanel(page, LayerType::Ropes);
     }
 
-    // Texture
+    // Exterior Texture
     {
-        CreateLayerRibbonPanel(page, LayerType::Texture);
+        CreateLayerRibbonPanel(page, LayerType::ExteriorTexture);
     }
 
     return page;
@@ -1113,9 +1118,15 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
             break;
         }
 
-        case LayerType::Texture:
+        case LayerType::ExteriorTexture:
         {
-            panelLabel = _("Texture Layer");
+            panelLabel = _("Exterior Layer");
+            break;
+        }
+
+        case LayerType::InteriorTexture:
+        {
+            panelLabel = _("Interior Layer");
             break;
         }
     }
@@ -1154,10 +1165,17 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
                 break;
             }
 
-            case LayerType::Texture:
+            case LayerType::ExteriorTexture:
             {
-                visualization = VisualizationType::TextureLayer;
-                buttonBitmapName = "texture_layer";
+                visualization = VisualizationType::ExteriorTextureLayer;
+                buttonBitmapName = "exterior_texture_layer";
+                break;
+            }
+
+            case LayerType::InteriorTexture:
+            {
+                visualization = VisualizationType::InteriorTextureLayer;
+                buttonBitmapName = "interior_texture_layer";
                 break;
             }
         }
@@ -1246,9 +1264,17 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
                     break;
                 }
 
-                case LayerType::Texture:
+                case LayerType::ExteriorTexture:
                 {
-                    ImportTextureLayerFromImage();
+                    ImportExteriorTextureLayerFromImage();
+
+                    break;
+                }
+
+                case LayerType::InteriorTexture:
+                {
+                    // TODOHERE
+                    //ImportInteriorTextureLayerFromImage();
 
                     break;
                 }
@@ -1256,7 +1282,7 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
         };
 
         RibbonToolbarButton<BitmapButton> * newButton;
-        if (layer != LayerType::Texture)
+        if (layer != LayerType::ExteriorTexture && layer != LayerType::InteriorTexture)
         {
             newButton = new RibbonToolbarButton<BitmapButton>(
                 panel,
@@ -1371,11 +1397,11 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
                             break;
                         }
 
-                        case LayerType::Texture:
+                        case LayerType::ExteriorTexture:
                         {
-                            assert(mController->GetModelController().HasLayer(LayerType::Texture));
+                            assert(mController->GetModelController().HasLayer(LayerType::ExteriorTexture));
 
-                            if (mController->GetModelController().IsLayerDirty(LayerType::Texture))
+                            if (mController->GetModelController().IsLayerDirty(LayerType::ExteriorTexture))
                             {
                                 if (!AskUserIfSure(sureQuestion))
                                 {
@@ -1384,7 +1410,25 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
                                 }
                             }
 
-                            mController->RemoveTextureLayer();
+                            mController->RemoveExteriorTextureLayer();
+
+                            break;
+                        }
+
+                        case LayerType::InteriorTexture:
+                        {
+                            assert(mController->GetModelController().HasLayer(LayerType::InteriorTexture));
+
+                            if (mController->GetModelController().IsLayerDirty(LayerType::InteriorTexture))
+                            {
+                                if (!AskUserIfSure(sureQuestion))
+                                {
+                                    // Changed their mind
+                                    return;
+                                }
+                            }
+
+                            mController->RemoveInteriorTextureLayer();
 
                             break;
                         }
@@ -1420,7 +1464,8 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
         RibbonToolbarButton<BitmapButton> * exportButton;
 
         if (layer == LayerType::Structural
-            || layer == LayerType::Texture)
+            || layer == LayerType::ExteriorTexture
+            || layer == LayerType::InteriorTexture)
         {
             exportButton = new RibbonToolbarButton<BitmapButton>(
                 panel,
@@ -1439,12 +1484,18 @@ wxRibbonPanel * MainFrame::CreateLayerRibbonPanel(wxRibbonPage * parent, LayerTy
                                 mController->GetModelController().GetStructuralLayer(),
                                 dlg.GetChosenFilepath());
                         }
+                        else if (layer == LayerType::ExteriorTexture)
+                        {
+                            ImageFileTools::SavePngImage(
+                                mController->GetModelController().GetExteriorTextureLayer().Buffer,
+                                dlg.GetChosenFilepath());
+                        }
                         else
                         {
-                            assert(layer == LayerType::Texture);
+                            assert(layer == LayerType::InteriorTexture);
 
                             ImageFileTools::SavePngImage(
-                                mController->GetModelController().GetTextureLayer().Buffer,
+                                mController->GetModelController().GetInteriorTextureLayer().Buffer,
                                 dlg.GetChosenFilepath());
                         }
                     }
@@ -2479,7 +2530,9 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
                 0);
 
             mToolSettingsPanels.emplace_back(
-                std::vector<ToolType>{ ToolType::TextureMagicWand },
+                std::vector<ToolType>{
+                    ToolType::ExteriorTextureMagicWand,
+                    ToolType::InteriorTextureMagicWand},
                 dynamicPanel);
         }
     }
@@ -2533,7 +2586,9 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
                 0);
 
             mToolSettingsPanels.emplace_back(
-                std::vector<ToolType>{ ToolType::TextureEraser },
+                std::vector<ToolType>{
+                    ToolType::ExteriorTextureEraser,
+                    ToolType::InteriorTextureEraser},
                 dynamicPanel);
         }
     }
@@ -2646,7 +2701,8 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
                     ToolType::StructuralSelection,
                     ToolType::ElectricalSelection,
                     ToolType::RopeSelection,
-                    ToolType::TextureSelection},
+                    ToolType::ExteriorTextureSelection,
+                    ToolType::InteriorTextureSelection},
                 dynamicPanel);
         }
     }
@@ -2985,7 +3041,8 @@ wxRibbonPanel * MainFrame::CreateEditToolSettingsRibbonPanel(wxRibbonPage * pare
                     ToolType::StructuralPaste,
                     ToolType::ElectricalPaste,
                     ToolType::RopePaste,
-                    ToolType::TexturePaste},
+                    ToolType::ExteriorTexturePaste,
+                    ToolType::InteriorTexturePaste},
                 dynamicPanel);
         }
     }
@@ -3242,7 +3299,7 @@ wxPanel * MainFrame::CreateVisualizationModeHeaderPanel(wxWindow * parent)
         mVisualizationModeHeaderPanels[static_cast<size_t>(VisualizationType::RopesLayer)] = modePanel;
     }
 
-    // Texture layer mode
+    // Exterior Texture layer mode
     {
         wxPanel * modePanel = new wxPanel(panel);
 
@@ -3253,7 +3310,7 @@ wxPanel * MainFrame::CreateVisualizationModeHeaderPanel(wxWindow * parent)
             auto * staticBitmap = new wxStaticBitmap(
                 modePanel,
                 wxID_ANY,
-                WxHelpers::LoadBitmap("texture_layer", mResourceLocator));
+                WxHelpers::LoadBitmap("exterior_texture_layer", mResourceLocator));
 
             sizer->Add(
                 staticBitmap,
@@ -3265,7 +3322,7 @@ wxPanel * MainFrame::CreateVisualizationModeHeaderPanel(wxWindow * parent)
 
         // Label
         {
-            auto * staticText = new wxStaticText(modePanel, wxID_ANY, _("Texture Layer"));
+            auto * staticText = new wxStaticText(modePanel, wxID_ANY, _("Exterior Layer"));
 
             sizer->Add(
                 staticText,
@@ -3285,7 +3342,28 @@ wxPanel * MainFrame::CreateVisualizationModeHeaderPanel(wxWindow * parent)
 
         mVisualizationModeHeaderPanelsSizer->Hide(modePanel);
 
-        mVisualizationModeHeaderPanels[static_cast<size_t>(VisualizationType::TextureLayer)] = modePanel;
+        mVisualizationModeHeaderPanels[static_cast<size_t>(VisualizationType::ExteriorTextureLayer)] = modePanel;
+    }
+
+    // Interior Texture layer mode
+    {
+        wxPanel * modePanel = new wxPanel(panel);
+
+        auto * sizer = new wxGridBagSizer(0, 0);
+
+        // TODOHERE
+
+        modePanel->SetSizerAndFit(sizer);
+
+        mVisualizationModeHeaderPanelsSizer->Add(
+            modePanel,
+            0,
+            wxALIGN_CENTER_HORIZONTAL,
+            0);
+
+        mVisualizationModeHeaderPanelsSizer->Hide(modePanel);
+
+        mVisualizationModeHeaderPanels[static_cast<size_t>(VisualizationType::InteriorTextureLayer)] = modePanel;
     }
 
     panel->SetSizerAndFit(mVisualizationModeHeaderPanelsSizer);
@@ -3382,20 +3460,20 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
 
             // Texture mode
             {
-                mGameVisualizationTextureModeButton = new BitmapRadioButton(
+                mGameVisualizationExteriorTextureModeButton = new BitmapRadioButton(
                     gameVisualizationModesPanel,
                     mResourceLocator.GetBitmapFilePath("structural_texture_mode_icon_small"),
                     [this]()
                     {
                         assert(mController);
-                        mController->SetGameVisualizationMode(GameVisualizationModeType::TextureMode);
+                        mController->SetGameVisualizationMode(GameVisualizationModeType::ExteriorTextureMode);
 
                         DeviateFocus();
                     },
-                    _("Texture mode: view ship with texture."));
+                    _("Texture mode: view ship with exterior texture."));
 
                 vSizer->Add(
-                    mGameVisualizationTextureModeButton,
+                    mGameVisualizationExteriorTextureModeButton,
                     0, // Retain V size
                     wxALIGN_CENTER_HORIZONTAL,
                     0);
@@ -3618,28 +3696,28 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
             mVisualizationModePanels[static_cast<size_t>(VisualizationType::RopesLayer)] = ropesLayerVisualizationModesPanel;
         }
 
-        // Texture viz mode
+        // Exterior Texture viz mode
         {
-            wxPanel * textureLayerVisualizationModesPanel = new wxPanel(panel);
+            wxPanel * exteriorTextureLayerVisualizationModesPanel = new wxPanel(panel);
 
             wxSizer * vSizer = new wxBoxSizer(wxVERTICAL);
 
             // None mode
             {
-                mTextureLayerVisualizationNoneModeButton = new BitmapRadioButton(
-                    textureLayerVisualizationModesPanel,
+                mExteriorTextureLayerVisualizationNoneModeButton = new BitmapRadioButton(
+                    exteriorTextureLayerVisualizationModesPanel,
                     mResourceLocator.GetBitmapFilePath("x_small"),
                     [this]()
                     {
                         assert(mController);
-                        mController->SetTextureLayerVisualizationMode(TextureLayerVisualizationModeType::None);
+                        mController->SetExteriorTextureLayerVisualizationMode(ExteriorTextureLayerVisualizationModeType::None);
 
                         DeviateFocus();
                     },
                     _("No visualization: the texture layer is not drawn."));
 
                 vSizer->Add(
-                    mTextureLayerVisualizationNoneModeButton,
+                    mExteriorTextureLayerVisualizationNoneModeButton,
                     0, // Retain V size
                     wxALIGN_CENTER_HORIZONTAL,
                     0);
@@ -3649,34 +3727,34 @@ wxPanel * MainFrame::CreateVisualizationDetailsPanel(wxWindow * parent)
 
             // Matte mode
             {
-                mTextureLayerVisualizationMatteModeButton = new BitmapRadioButton(
-                    textureLayerVisualizationModesPanel,
+                mExteriorTextureLayerVisualizationMatteModeButton = new BitmapRadioButton(
+                    exteriorTextureLayerVisualizationModesPanel,
                     mResourceLocator.GetBitmapFilePath("texture_mode_icon_small"),
                     [this]()
                     {
                         assert(mController);
-                        mController->SetTextureLayerVisualizationMode(TextureLayerVisualizationModeType::MatteMode);
+                        mController->SetExteriorTextureLayerVisualizationMode(ExteriorTextureLayerVisualizationModeType::MatteMode);
 
                         DeviateFocus();
                     },
                     _("Matte mode: view texture as an opaque image."));
 
                 vSizer->Add(
-                    mTextureLayerVisualizationMatteModeButton,
+                    mExteriorTextureLayerVisualizationMatteModeButton,
                     0, // Retain V size
                     wxALIGN_CENTER_HORIZONTAL,
                     0);
             }
 
-            textureLayerVisualizationModesPanel->SetSizerAndFit(vSizer);
+            exteriorTextureLayerVisualizationModesPanel->SetSizerAndFit(vSizer);
 
             mVisualizationModePanelsSizer->Add(
-                textureLayerVisualizationModesPanel,
+                exteriorTextureLayerVisualizationModesPanel,
                 0,
                 wxALIGN_CENTER_HORIZONTAL,
                 0);
 
-            mVisualizationModePanels[static_cast<size_t>(VisualizationType::TextureLayer)] = textureLayerVisualizationModesPanel;
+            mVisualizationModePanels[static_cast<size_t>(VisualizationType::ExteriorTextureLayer)] = exteriorTextureLayerVisualizationModesPanel;
         }
 
         mVisualizationModePanelsSizer->AddSpacer(10);
@@ -4392,13 +4470,13 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
     }
 
     //
-    // Texture toolbar
+    // Exterior Texture toolbar
     //
 
     {
-        wxPanel * textureToolbarPanel = new wxPanel(panel, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+        wxPanel * exteriorTextureToolbarPanel = new wxPanel(panel, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 
-        wxBoxSizer * textureToolbarSizer = new wxBoxSizer(wxVERTICAL);
+        wxBoxSizer * exteriorTextureToolbarSizer = new wxBoxSizer(wxVERTICAL);
 
         // Tools
 
@@ -4408,8 +4486,8 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
             // Eraser
             {
                 auto button = makeToolButton(
-                    ToolType::TextureEraser,
-                    textureToolbarPanel,
+                    ToolType::ExteriorTextureEraser,
+                    exteriorTextureToolbarPanel,
                     "eraser_icon",
                     _("Erase individual texture pixels."));
 
@@ -4424,8 +4502,8 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
             // Magic wand
             {
                 auto button = makeToolButton(
-                    ToolType::TextureMagicWand,
-                    textureToolbarPanel,
+                    ToolType::ExteriorTextureMagicWand,
+                    exteriorTextureToolbarPanel,
                     "magic_wand_icon",
                     _("Erase background."));
 
@@ -4440,8 +4518,8 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
             // Selection
             {
                 auto button = makeToolButton(
-                    ToolType::TextureSelection,
-                    textureToolbarPanel,
+                    ToolType::ExteriorTextureSelection,
+                    exteriorTextureToolbarPanel,
                     "selection_icon",
                     _("Select an area for copying and/or cutting."));
 
@@ -4456,8 +4534,8 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
             // Paste
             {
                 auto button = makeToolButton(
-                    ToolType::TexturePaste,
-                    textureToolbarPanel,
+                    ToolType::ExteriorTexturePaste,
+                    exteriorTextureToolbarPanel,
                     "paste_icon",
                     _("Paste clipboard."));
 
@@ -4469,25 +4547,50 @@ wxPanel * MainFrame::CreateToolbarPanel(wxWindow * parent)
                     0);
             }
 
-            textureToolbarSizer->Add(
+            exteriorTextureToolbarSizer->Add(
                 toolsSizer,
                 0,
                 wxALIGN_CENTER_HORIZONTAL,
                 0);
         }
 
-        textureToolbarPanel->SetSizerAndFit(textureToolbarSizer);
+        exteriorTextureToolbarPanel->SetSizerAndFit(exteriorTextureToolbarSizer);
 
         mToolbarPanelsSizer->Add(
-            textureToolbarPanel,
+            exteriorTextureToolbarPanel,
             0,
             wxALIGN_CENTER_HORIZONTAL,
             0);
 
-        mToolbarPanelsSizer->Hide(textureToolbarPanel);
+        mToolbarPanelsSizer->Hide(exteriorTextureToolbarPanel);
 
         // Store toolbar panel
-        mToolbarPanels[static_cast<size_t>(LayerType::Texture)] = textureToolbarPanel;
+        mToolbarPanels[static_cast<size_t>(LayerType::ExteriorTexture)] = exteriorTextureToolbarPanel;
+    }
+
+    //
+    // Exterior Texture toolbar
+    //
+
+    {
+        wxPanel * interiorTextureToolbarPanel = new wxPanel(panel, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+
+        wxBoxSizer * interiorTextureToolbarSizer = new wxBoxSizer(wxVERTICAL);
+
+        // TODOHERE
+
+        interiorTextureToolbarPanel->SetSizerAndFit(interiorTextureToolbarSizer);
+
+        mToolbarPanelsSizer->Add(
+            interiorTextureToolbarPanel,
+            0,
+            wxALIGN_CENTER_HORIZONTAL,
+            0);
+
+        mToolbarPanelsSizer->Hide(interiorTextureToolbarPanel);
+
+        // Store toolbar panel
+        mToolbarPanels[static_cast<size_t>(LayerType::InteriorTexture)] = interiorTextureToolbarPanel;
     }
 
     panel->SetSizer(mToolbarPanelsSizer);
@@ -5173,20 +5276,37 @@ void MainFrame::ImportLayerFromShip(LayerType layer)
                 break;
             }
 
-            case LayerType::Texture:
+            case LayerType::ExteriorTexture:
             {
-                if (!shipDefinition->Layers.TextureLayer)
+                if (!shipDefinition->Layers.ExteriorTextureLayer)
                 {
-                    ShowError(_("The selected ship does not have a texture layer"));
+                    ShowError(_("The selected ship does not have an exterior layer"));
                     return;
                 }
 
                 // No need to resize, as texture image doesn't have to match;
                 // we'll leave it to the user, though, to ensure the *ratio* matches
-                mController->SetTextureLayer(
-                    _("Import Texture Layer"),
-                    std::move(*(shipDefinition->Layers.TextureLayer.release())),
+                mController->SetExteriorTextureLayer(
+                    _("Import Exterior Layer"),
+                    std::move(*(shipDefinition->Layers.ExteriorTextureLayer.release())),
                     shipDefinition->Metadata.ArtCredits); // Import also art credits
+
+                break;
+            }
+
+            case LayerType::InteriorTexture:
+            {
+                if (!shipDefinition->Layers.InteriorTextureLayer)
+                {
+                    ShowError(_("The selected ship does not have an interior layer"));
+                    return;
+                }
+
+                // No need to resize, as texture image doesn't have to match;
+                // we'll leave it to the user, though, to ensure the *ratio* matches
+                mController->SetInteriorTextureLayer(
+                    _("Import Interior Layer"),
+                    std::move(*(shipDefinition->Layers.InteriorTextureLayer.release())));
 
                 break;
             }
@@ -5197,7 +5317,7 @@ void MainFrame::ImportLayerFromShip(LayerType layer)
     }
 }
 
-void MainFrame::ImportTextureLayerFromImage()
+void MainFrame::ImportExteriorTextureLayerFromImage()
 {
     ImageLoadDialog dlg(this);
     auto const ret = dlg.ShowModal();
@@ -5252,8 +5372,8 @@ void MainFrame::ImportTextureLayerFromImage()
             }
 
             // Set texture
-            mController->SetTextureLayer(
-                _("Import Texture Layer"),
+            mController->SetExteriorTextureLayer(
+                _("Import Exterior Layer"),
                 TextureLayerData(std::move(image)),
                 std::nullopt);
         }
@@ -5324,7 +5444,7 @@ void MainFrame::OnShipPropertiesEdit()
         mController->GetModelController().GetShipPhysicsData(),
         mController->GetModelController().GetShipAutoTexturizationSettings(),
         *shipPreviewImage,
-        mController->GetModelController().HasLayer(LayerType::Texture));
+        mController->GetModelController().HasLayer(LayerType::ExteriorTexture));
 }
 
 void MainFrame::OnElectricalPanelEdit()
@@ -5817,9 +5937,14 @@ size_t MainFrame::LayerToVisualizationIndex(LayerType layer) const
             return static_cast<size_t>(VisualizationType::RopesLayer);
         }
 
-        case LayerType::Texture:
+        case LayerType::ExteriorTexture:
         {
-            return static_cast<size_t>(VisualizationType::TextureLayer);
+            return static_cast<size_t>(VisualizationType::ExteriorTextureLayer);
+        }
+
+        case LayerType::InteriorTexture:
+        {
+            return static_cast<size_t>(VisualizationType::InteriorTextureLayer);
         }
     }
 
@@ -5842,7 +5967,8 @@ void MainFrame::ReconciliateUIWithWorkbenchState()
     ReconciliateUIWithStructuralLayerVisualizationModeSelection(mWorkbenchState.GetStructuralLayerVisualizationMode());
     ReconciliateUIWithElectricalLayerVisualizationModeSelection(mWorkbenchState.GetElectricalLayerVisualizationMode());
     ReconciliateUIWithRopesLayerVisualizationModeSelection(mWorkbenchState.GetRopesLayerVisualizationMode());
-    ReconciliateUIWithTextureLayerVisualizationModeSelection(mWorkbenchState.GetTextureLayerVisualizationMode());
+    ReconciliateUIWithExteriorTextureLayerVisualizationModeSelection(mWorkbenchState.GetExteriorTextureLayerVisualizationMode());
+    ReconciliateUIWithInteriorTextureLayerVisualizationModeSelection(mWorkbenchState.GetInteriorTextureLayerVisualizationMode());
 
     ReconciliateUIWithOtherVisualizationsOpacity(mWorkbenchState.GetOtherVisualizationsOpacity());
 
@@ -5894,6 +6020,10 @@ void MainFrame::ReconciliateUIWithLayerPresence(IModelObservable const & model)
 
     for (uint32_t iLayer = 0; iLayer < LayerCount; ++iLayer)
     {
+        // TODOHERE: not yet implemented
+        if (iLayer == static_cast<int>(LayerType::InteriorTexture))
+            continue;
+
         bool const hasLayer = model.HasLayer(static_cast<LayerType>(iLayer));
 
         mVisualizationSelectButtons[LayerToVisualizationIndex(static_cast<LayerType>(iLayer))]->Enable(hasLayer);
@@ -5911,15 +6041,15 @@ void MainFrame::ReconciliateUIWithLayerPresence(IModelObservable const & model)
         }
     }
 
-    if (model.HasLayer(LayerType::Texture))
+    if (model.HasLayer(LayerType::ExteriorTexture))
     {
         mGameVisualizationAutoTexturizationModeButton->Enable(false);
-        mGameVisualizationTextureModeButton->Enable(true);
+        mGameVisualizationExteriorTextureModeButton->Enable(true);
     }
     else
     {
         mGameVisualizationAutoTexturizationModeButton->Enable(true);
-        mGameVisualizationTextureModeButton->Enable(false);
+        mGameVisualizationExteriorTextureModeButton->Enable(false);
     }
 
     mVisualizationSelectButtons[static_cast<size_t>(mWorkbenchState.GetPrimaryVisualization())]->SetFocus(); // Prevent other random buttons from getting focus
@@ -6111,6 +6241,14 @@ void MainFrame::ReconciliateUIWithSelectedTool(
     // Select this tool's button and unselect the others
     for (size_t i = 0; i < mToolButtons.size(); ++i)
     {
+        // TODOHERE: not yet implemented
+        if (auto const tt = static_cast<ToolType>(i);
+            tt == ToolType::InteriorTextureEraser
+            || tt == ToolType::InteriorTextureMagicWand
+            || tt == ToolType::InteriorTexturePaste
+            || tt == ToolType::InteriorTextureSelection)
+            continue;
+
         bool const mustBeSelected = (i == static_cast<size_t>(tool));
 
         if (mToolButtons[i]->GetValue() != mustBeSelected)
@@ -6120,8 +6258,15 @@ void MainFrame::ReconciliateUIWithSelectedTool(
     }
 
     // Consistency of Paste buttons enablement<->selection
-    for (ToolType t : {ToolType::StructuralPaste, ToolType::ElectricalPaste, ToolType::RopePaste, ToolType::TexturePaste})
+    for (ToolType t : {ToolType::StructuralPaste, ToolType::ElectricalPaste, ToolType::RopePaste, ToolType::ExteriorTexturePaste, ToolType::InteriorTexturePaste})
     {
+        // TODOHERE: not yet implemented
+        if (t == ToolType::InteriorTextureEraser
+            || t == ToolType::InteriorTextureMagicWand
+            || t == ToolType::InteriorTexturePaste
+            || t == ToolType::InteriorTextureSelection)
+            continue;
+
         bool mustBeEnabled = mToolButtons[static_cast<size_t>(t)]->GetValue();
 
         if (mToolButtons[static_cast<size_t>(t)]->IsEnabled() != mustBeEnabled)
@@ -6158,7 +6303,8 @@ void MainFrame::ReconciliateUIWithSelectedTool(
         {
             case ToolType::StructuralEraser:
             case ToolType::ElectricalEraser:
-            case ToolType::TextureEraser:
+            case ToolType::ExteriorTextureEraser:
+            case ToolType::InteriorTextureEraser:
             {
                 mToolSettingsRibbonPanel->SetLabel("Eraser");
                 break;
@@ -6182,7 +6328,8 @@ void MainFrame::ReconciliateUIWithSelectedTool(
                 break;
             }
 
-            case ToolType::TextureMagicWand:
+            case ToolType::ExteriorTextureMagicWand:
+            case ToolType::InteriorTextureMagicWand:
             {
                 mToolSettingsRibbonPanel->SetLabel("Background Eraser");
                 break;
@@ -6191,7 +6338,8 @@ void MainFrame::ReconciliateUIWithSelectedTool(
             case ToolType::StructuralSelection:
             case ToolType::ElectricalSelection:
             case ToolType::RopeSelection:
-            case ToolType::TextureSelection:
+            case ToolType::ExteriorTextureSelection:
+            case ToolType::InteriorTextureSelection:
             {
                 mToolSettingsRibbonPanel->SetLabel("Selection");
                 break;
@@ -6200,7 +6348,8 @@ void MainFrame::ReconciliateUIWithSelectedTool(
             case ToolType::StructuralPaste:
             case ToolType::ElectricalPaste:
             case ToolType::RopePaste:
-            case ToolType::TexturePaste:
+            case ToolType::ExteriorTexturePaste:
+            case ToolType::InteriorTexturePaste:
             {
                 mToolSettingsRibbonPanel->SetLabel("Paste");
                 break;
@@ -6254,6 +6403,10 @@ void MainFrame::ReconciliateUIWithPrimaryVisualizationSelection(VisualizationTyp
     auto const iPrimaryVisualization = static_cast<uint32_t>(primaryVisualization);
     for (uint32_t iVisualization = 0; iVisualization < VisualizationCount; ++iVisualization)
     {
+        // TODOHERE: not yet implemented
+        if (iVisualization == static_cast<int>(VisualizationType::InteriorTextureLayer))
+            continue;
+
         bool const isVisualizationSelected = (iVisualization == iPrimaryVisualization);
 
         // Visualization mode header panels
@@ -6314,7 +6467,7 @@ void MainFrame::ReconciliateUIWithGameVisualizationModeSelection(GameVisualizati
 {
     mGameVisualizationNoneModeButton->SetValue(mode == GameVisualizationModeType::None);
     mGameVisualizationAutoTexturizationModeButton->SetValue(mode == GameVisualizationModeType::AutoTexturizationMode);
-    mGameVisualizationTextureModeButton->SetValue(mode == GameVisualizationModeType::TextureMode);
+    mGameVisualizationExteriorTextureModeButton->SetValue(mode == GameVisualizationModeType::ExteriorTextureMode);
 }
 
 void MainFrame::ReconciliateUIWithStructuralLayerVisualizationModeSelection(StructuralLayerVisualizationModeType mode)
@@ -6336,10 +6489,16 @@ void MainFrame::ReconciliateUIWithRopesLayerVisualizationModeSelection(RopesLaye
     mRopesLayerVisualizationLinesModeButton->SetValue(mode == RopesLayerVisualizationModeType::LinesMode);
 }
 
-void MainFrame::ReconciliateUIWithTextureLayerVisualizationModeSelection(TextureLayerVisualizationModeType mode)
+void MainFrame::ReconciliateUIWithExteriorTextureLayerVisualizationModeSelection(ExteriorTextureLayerVisualizationModeType mode)
 {
-    mTextureLayerVisualizationNoneModeButton->SetValue(mode == TextureLayerVisualizationModeType::None);
-    mTextureLayerVisualizationMatteModeButton->SetValue(mode == TextureLayerVisualizationModeType::MatteMode);
+    mExteriorTextureLayerVisualizationNoneModeButton->SetValue(mode == ExteriorTextureLayerVisualizationModeType::None);
+    mExteriorTextureLayerVisualizationMatteModeButton->SetValue(mode == ExteriorTextureLayerVisualizationModeType::MatteMode);
+}
+
+void MainFrame::ReconciliateUIWithInteriorTextureLayerVisualizationModeSelection(InteriorTextureLayerVisualizationModeType mode)
+{
+    // TODOHERE
+    (void)mode;
 }
 
 void MainFrame::ReconciliateUIWithOtherVisualizationsOpacity(float opacity)

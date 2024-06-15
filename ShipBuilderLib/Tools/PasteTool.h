@@ -158,11 +158,22 @@ public:
         ResourceLocator const & resourceLocator);
 };
 
-class TexturePasteTool : public PasteTool
+class ExteriorTexturePasteTool : public PasteTool
 {
 public:
 
-    TexturePasteTool(
+    ExteriorTexturePasteTool(
+        ShipLayers && pasteRegion,
+        bool isTransparent,
+        Controller & controller,
+        ResourceLocator const & resourceLocator);
+};
+
+class InteriorTexturePasteTool : public PasteTool
+{
+public:
+
+    InteriorTexturePasteTool(
         ShipLayers && pasteRegion,
         bool isTransparent,
         Controller & controller,

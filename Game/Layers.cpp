@@ -111,9 +111,14 @@ void ShipLayers::Flip(DirectionType direction)
         RopesLayer->Buffer.Flip(direction);
     }
 
-    if (TextureLayer)
+    if (ExteriorTextureLayer)
     {
-        TextureLayer->Buffer.Flip(direction);
+        ExteriorTextureLayer->Buffer.Flip(direction);
+    }
+
+    if (InteriorTextureLayer)
+    {
+        InteriorTextureLayer->Buffer.Flip(direction);
     }
 }
 
@@ -134,9 +139,14 @@ void ShipLayers::Rotate90(RotationDirectionType direction)
         RopesLayer->Buffer.Rotate90(direction);
     }
 
-    if (TextureLayer)
+    if (ExteriorTextureLayer)
     {
-        TextureLayer->Buffer.Rotate90(direction);
+        ExteriorTextureLayer->Buffer.Rotate90(direction);
+    }
+
+    if (InteriorTextureLayer)
+    {
+        InteriorTextureLayer->Buffer.Rotate90(direction);
     }
 
     Size = ShipSpaceSize(Size.height, Size.width);

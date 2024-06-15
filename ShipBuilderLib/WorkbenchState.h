@@ -377,14 +377,24 @@ public:
         mRopesLayerVisualizationMode = mode;
     }
 
-    TextureLayerVisualizationModeType GetTextureLayerVisualizationMode() const
+    ExteriorTextureLayerVisualizationModeType GetExteriorTextureLayerVisualizationMode() const
     {
-        return mTextureLayerVisualizationMode;
+        return mExteriorTextureLayerVisualizationMode;
     }
 
-    void SetTextureLayerVisualizationMode(TextureLayerVisualizationModeType mode)
+    void SetExteriorTextureLayerVisualizationMode(ExteriorTextureLayerVisualizationModeType mode)
     {
-        mTextureLayerVisualizationMode = mode;
+        mExteriorTextureLayerVisualizationMode = mode;
+    }
+
+    InteriorTextureLayerVisualizationModeType GetInteriorTextureLayerVisualizationMode() const
+    {
+        return mInteriorTextureLayerVisualizationMode;
+    }
+
+    void SetInteriorTextureLayerVisualizationMode(InteriorTextureLayerVisualizationModeType mode)
+    {
+        mInteriorTextureLayerVisualizationMode = mode;
     }
 
     float GetOtherVisualizationsOpacity() const
@@ -507,7 +517,8 @@ private:
     StructuralLayerVisualizationModeType mStructuralLayerVisualizationMode;
     ElectricalLayerVisualizationModeType mElectricalLayerVisualizationMode;
     RopesLayerVisualizationModeType mRopesLayerVisualizationMode;
-    TextureLayerVisualizationModeType mTextureLayerVisualizationMode;
+    ExteriorTextureLayerVisualizationModeType mExteriorTextureLayerVisualizationMode;
+    InteriorTextureLayerVisualizationModeType mInteriorTextureLayerVisualizationMode;
     float mOtherVisualizationsOpacity;
     bool mIsWaterlineMarkersEnabled;
     bool mIsGridEnabled;

@@ -277,9 +277,11 @@ ShipMetadata GameController::AddShip(ShipLoadSpecifications const & loadSpecs)
     // Load ship definition
     auto shipDefinition = ShipDeSerializer::LoadShip(loadSpecs.DefinitionFilepath, mMaterialDatabase);
 
-    // Pre-validate ship's texture, if any
-    if (shipDefinition.Layers.TextureLayer)
-        mRenderContext->ValidateShipTexture(shipDefinition.Layers.TextureLayer->Buffer);
+    // Pre-validate ship's textures, if any
+    if (shipDefinition.Layers.ExteriorTextureLayer)
+        mRenderContext->ValidateShipTexture(shipDefinition.Layers.ExteriorTextureLayer->Buffer);
+    if (shipDefinition.Layers.InteriorTextureLayer)
+        mRenderContext->ValidateShipTexture(shipDefinition.Layers.InteriorTextureLayer->Buffer);
 
     // Remember metadata
     ShipMetadata shipMetadata(shipDefinition.Metadata);
@@ -290,7 +292,7 @@ ShipMetadata GameController::AddShip(ShipLoadSpecifications const & loadSpecs)
 
     auto const shipId = mWorld->GetNextShipId();
 
-    auto [ship, textureImage] = ShipFactory::Create(
+    auto [ship, exteriorTextureImage, interiorViewImage] = ShipFactory::Create(
         shipId,
         *mWorld,
         std::move(shipDefinition),
@@ -307,7 +309,8 @@ ShipMetadata GameController::AddShip(ShipLoadSpecifications const & loadSpecs)
 
     InternalAddShip(
         std::move(ship),
-        std::move(textureImage),
+        std::move(exteriorTextureImage),
+        std::move(interiorViewImage),
         shipMetadata);
 
     return shipMetadata;
@@ -1494,9 +1497,11 @@ ShipMetadata GameController::InternalResetAndLoadShip(ShipLoadSpecifications con
     // Load ship definition
     auto shipDefinition = ShipDeSerializer::LoadShip(loadSpecs.DefinitionFilepath, mMaterialDatabase);
 
-    // Pre-validate ship's texture
-    if (shipDefinition.Layers.TextureLayer)
-        mRenderContext->ValidateShipTexture(shipDefinition.Layers.TextureLayer->Buffer);
+    // Pre-validate ship's textures, if any
+    if (shipDefinition.Layers.ExteriorTextureLayer)
+        mRenderContext->ValidateShipTexture(shipDefinition.Layers.ExteriorTextureLayer->Buffer);
+    if (shipDefinition.Layers.InteriorTextureLayer)
+        mRenderContext->ValidateShipTexture(shipDefinition.Layers.InteriorTextureLayer->Buffer);
 
     // Save metadata
     ShipMetadata shipMetadata(shipDefinition.Metadata);
@@ -1513,7 +1518,7 @@ ShipMetadata GameController::InternalResetAndLoadShip(ShipLoadSpecifications con
 
     // Produce ship
     auto const shipId = newWorld->GetNextShipId();
-    auto [ship, textureImage] = ShipFactory::Create(
+    auto [ship, exteriorTextureImage, interiorViewImage] = ShipFactory::Create(
         shipId,
         *newWorld,
         std::move(shipDefinition),
@@ -1532,7 +1537,8 @@ ShipMetadata GameController::InternalResetAndLoadShip(ShipLoadSpecifications con
 
     InternalAddShip(
         std::move(ship),
-        std::move(textureImage),
+        std::move(exteriorTextureImage),
+        std::move(interiorViewImage),
         shipMetadata);
 
     return shipMetadata;
@@ -1566,7 +1572,8 @@ void GameController::Reset(std::unique_ptr<Physics::World> newWorld)
 
 void GameController::InternalAddShip(
     std::unique_ptr<Physics::Ship> ship,
-    RgbaImageData && textureImage,
+    RgbaImageData && exteriorTextureImage,
+    RgbaImageData && interiorViewImage,
     ShipMetadata const & shipMetadata)
 {
     ShipId const shipId = ship->GetId();
@@ -1581,7 +1588,8 @@ void GameController::InternalAddShip(
     mRenderContext->AddShip(
         shipId,
         mWorld->GetShipPointCount(shipId),
-        std::move(textureImage));
+        std::move(exteriorTextureImage),
+        std::move(interiorViewImage));
 
     // Tell view manager
     mViewManager.OnNewShip(mWorld->GetAllAABBs());

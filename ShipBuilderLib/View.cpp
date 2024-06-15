@@ -40,7 +40,8 @@ View::View(
     , mStructuralLayerVisualizationShader(ProgramType::Texture) // Will be overwritten
     , mHasElectricalLayerVisualization(false)
     , mRopeCount(false)
-    , mHasTextureLayerVisualization(false)
+    , mHasExteriorTextureLayerVisualization(false)
+    , mHasInteriorTextureLayerVisualization(false)
     , mIsGridEnabled(isGridEnabled)
     , mDebugRegionOverlayVertexBuffer()
     , mIsDebugRegionOverlayBufferDirty(false)
@@ -48,7 +49,8 @@ View::View(
     , mCircleOverlayColor(vec3f::zero()) // Will be overwritten
     , mHasCircleOverlay(false)
     , mRectOverlayShipSpaceRect()
-    , mRectOverlayTextureSpaceRect()
+    , mRectOverlayExteriorTextureSpaceRect()
+    , mRectOverlayInteriorTextureSpaceRect()
     , mRectOverlayColor(vec3f::zero()) // Will be overwritten
     , mDashedLineOverlayColor(vec3f::zero()) // Will be overwritten
     , mHasCenterOfBuoyancyWaterlineMarker(false)
@@ -396,7 +398,7 @@ View::View(
     }
 
     //
-    // Initialize texture layer visualization and VAO
+    // Initialize exterior texture layer visualization and VAO
     //
 
     {
@@ -408,11 +410,11 @@ View::View(
 
         // Create texture OpenGL handle
         glGenTextures(1, &tmpGLuint);
-        mTextureLayerVisualizationTexture = tmpGLuint;
+        mExteriorTextureLayerVisualizationTexture = tmpGLuint;
 
         // Configure texture
         mShaderManager->ActivateTexture<ProgramParameterType::TextureUnit1>();
-        glBindTexture(GL_TEXTURE_2D, *mTextureLayerVisualizationTexture);
+        glBindTexture(GL_TEXTURE_2D, *mExteriorTextureLayerVisualizationTexture);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -425,16 +427,63 @@ View::View(
 
         // Create VAO
         glGenVertexArrays(1, &tmpGLuint);
-        mTextureLayerVisualizationVAO = tmpGLuint;
-        glBindVertexArray(*mTextureLayerVisualizationVAO);
+        mExteriorTextureLayerVisualizationVAO = tmpGLuint;
+        glBindVertexArray(*mExteriorTextureLayerVisualizationVAO);
         CheckOpenGLError();
 
         // Create VBO
         glGenBuffers(1, &tmpGLuint);
-        mTextureLayerVisualizationVBO = tmpGLuint;
+        mExteriorTextureLayerVisualizationVBO = tmpGLuint;
 
         // Describe vertex attributes
-        glBindBuffer(GL_ARRAY_BUFFER, *mTextureLayerVisualizationVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, *mExteriorTextureLayerVisualizationVBO);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Texture));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Texture), 4, GL_FLOAT, GL_FALSE, sizeof(TextureVertex), (void *)0);
+        CheckOpenGLError();
+
+        glBindVertexArray(0);
+    }
+
+    //
+    // Initialize interior texture layer visualization and VAO
+    //
+
+    {
+        GLuint tmpGLuint;
+
+        //
+        // Texture
+        //
+
+        // Create texture OpenGL handle
+        glGenTextures(1, &tmpGLuint);
+        mInteriorTextureLayerVisualizationTexture = tmpGLuint;
+
+        // Configure texture
+        mShaderManager->ActivateTexture<ProgramParameterType::TextureUnit1>();
+        glBindTexture(GL_TEXTURE_2D, *mInteriorTextureLayerVisualizationTexture);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        CheckOpenGLError();
+
+        //
+        // VAO
+        //
+
+        // Create VAO
+        glGenVertexArrays(1, &tmpGLuint);
+        mInteriorTextureLayerVisualizationVAO = tmpGLuint;
+        glBindVertexArray(*mInteriorTextureLayerVisualizationVAO);
+        CheckOpenGLError();
+
+        // Create VBO
+        glGenBuffers(1, &tmpGLuint);
+        mInteriorTextureLayerVisualizationVBO = tmpGLuint;
+
+        // Describe vertex attributes
+        glBindBuffer(GL_ARRAY_BUFFER, *mInteriorTextureLayerVisualizationVBO);
         glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::Texture));
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::Texture), 4, GL_FLOAT, GL_FALSE, sizeof(TextureVertex), (void *)0);
         CheckOpenGLError();
@@ -956,14 +1005,14 @@ void View::RemoveRopesLayerVisualization()
     mRopeCount = 0;
 }
 
-void View::UploadTextureLayerVisualization(RgbaImageData const & texture)
+void View::UploadExteriorTextureLayerVisualization(RgbaImageData const & texture)
 {
     //
     // Upload texture
     //
 
     // Bind texture
-    glBindTexture(GL_TEXTURE_2D, *mTextureLayerVisualizationTexture);
+    glBindTexture(GL_TEXTURE_2D, *mExteriorTextureLayerVisualizationTexture);
     CheckOpenGLError();
 
     // Upload texture
@@ -994,29 +1043,29 @@ void View::UploadTextureLayerVisualization(RgbaImageData const & texture)
         shipWidth - QuadOffsetX, 1.0f - texOffsetX,
         QuadOffsetY, texOffsetY,
         shipHeight - QuadOffsetY, 1.0f - texOffsetY,
-        mTextureLayerVisualizationVBO);
+        mExteriorTextureLayerVisualizationVBO);
 
     //
     // Remember we have this visualization
     //
 
-    mHasTextureLayerVisualization = true;
+    mHasExteriorTextureLayerVisualization = true;
 
     //
     // Tell view model
     //
 
-    mViewModel.SetTextureLayerVisualizationTextureSize(texture.Size);
+    mViewModel.SetExteriorTextureLayerVisualizationTextureSize(texture.Size);
 }
 
-void View::UpdateTextureLayerVisualization(
+void View::UpdateExteriorTextureLayerVisualization(
     RgbaImageData const & subTexture,
     ImageCoordinates const & origin)
 {
-    assert(mHasTextureLayerVisualization);
+    assert(mHasExteriorTextureLayerVisualization);
 
     // Bind texture
-    glBindTexture(GL_TEXTURE_2D, *mTextureLayerVisualizationTexture);
+    glBindTexture(GL_TEXTURE_2D, *mExteriorTextureLayerVisualizationTexture);
     CheckOpenGLError();
 
     // Upload texture region
@@ -1028,11 +1077,90 @@ void View::UpdateTextureLayerVisualization(
         subTexture.Size.height);
 }
 
-void View::RemoveTextureLayerVisualization()
+void View::RemoveExteriorTextureLayerVisualization()
 {
-    mHasTextureLayerVisualization = false;
+    mHasExteriorTextureLayerVisualization = false;
 
-    mViewModel.RemoveTextureLayerVisualizationTextureSize();
+    mViewModel.RemoveExteriorTextureLayerVisualizationTextureSize();
+}
+
+void View::UploadInteriorTextureLayerVisualization(RgbaImageData const & texture)
+{
+    //
+    // Upload texture
+    //
+
+    // Bind texture
+    glBindTexture(GL_TEXTURE_2D, *mInteriorTextureLayerVisualizationTexture);
+    CheckOpenGLError();
+
+    // Upload texture
+    GameOpenGL::UploadTexture(texture);
+
+    //
+    // Create vertices
+    //
+    // Here we do something that technically is wrong, but we have to continue doing
+    // it for historical reasons. We do so to mimic exactly what we do at ShipFactory
+    // time when we create texture coords for each particle.
+    //
+    // The texture _is_ mapped to the (0,0)->(ship_width,ship_height) quad, but considering
+    // that of the (w,h) quad only the sub-region starting at the center of the corner ship
+    // squares is visible, we map the texture to the (0.5,0.5)->(w-0.5,h-0.5) quad, and
+    // cut out its outer border (of thickness 0.5 ship space).
+    //
+
+    float const shipWidth = static_cast<float>(mViewModel.GetShipSize().width);
+    float const shipHeight = static_cast<float>(mViewModel.GetShipSize().height);
+    float constexpr QuadOffsetX = 0.5f; // Center of a ship quad
+    float constexpr QuadOffsetY = 0.5f; // Center of a ship quad
+    float const texOffsetX = 0.5f / shipWidth; // Skip one half of a ship quad (in texture space coords)
+    float const texOffsetY = 0.5f / shipHeight; // Skip one half of a ship quad (in texture space coords)
+
+    UploadTextureVerticesTriangleStripQuad(
+        QuadOffsetX, texOffsetX,
+        shipWidth - QuadOffsetX, 1.0f - texOffsetX,
+        QuadOffsetY, texOffsetY,
+        shipHeight - QuadOffsetY, 1.0f - texOffsetY,
+        mInteriorTextureLayerVisualizationVBO);
+
+    //
+    // Remember we have this visualization
+    //
+
+    mHasInteriorTextureLayerVisualization = true;
+
+    //
+    // Tell view model
+    //
+
+    mViewModel.SetInteriorTextureLayerVisualizationTextureSize(texture.Size);
+}
+
+void View::UpdateInteriorTextureLayerVisualization(
+    RgbaImageData const & subTexture,
+    ImageCoordinates const & origin)
+{
+    assert(mHasInteriorTextureLayerVisualization);
+
+    // Bind texture
+    glBindTexture(GL_TEXTURE_2D, *mInteriorTextureLayerVisualizationTexture);
+    CheckOpenGLError();
+
+    // Upload texture region
+    GameOpenGL::UploadTextureRegion(
+        subTexture.Data.get(),
+        origin.x,
+        origin.y,
+        subTexture.Size.width,
+        subTexture.Size.height);
+}
+
+void View::RemoveInteriorTextureLayerVisualization()
+{
+    mHasInteriorTextureLayerVisualization = false;
+
+    mViewModel.RemoveInteriorTextureLayerVisualizationTextureSize();
 }
 
 void View::UploadDebugRegionOverlay(ShipSpaceRect const & rect)
@@ -1107,7 +1235,8 @@ void View::UploadRectOverlay(
     ShipSpaceRect const & rect,
     OverlayMode mode)
 {
-    assert(!mRectOverlayTextureSpaceRect.has_value());
+    assert(!mRectOverlayExteriorTextureSpaceRect.has_value());
+    assert(!mRectOverlayInteriorTextureSpaceRect.has_value());
 
     // Store rect
     mRectOverlayShipSpaceRect = rect;
@@ -1119,14 +1248,32 @@ void View::UploadRectOverlay(
     UpdateRectOverlay();
 }
 
-void View::UploadRectOverlay(
+void View::UploadRectOverlayExteriorTexture(
     ImageRect const & rect,
     OverlayMode mode)
 {
     assert(!mRectOverlayShipSpaceRect.has_value());
+    assert(!mRectOverlayInteriorTextureSpaceRect.has_value());
 
     // Store rect
-    mRectOverlayTextureSpaceRect = rect;
+    mRectOverlayExteriorTextureSpaceRect = rect;
+
+    // Store color
+    mRectOverlayColor = GetOverlayColor(mode);
+
+    // Update overlay
+    UpdateRectOverlay();
+}
+
+void View::UploadRectOverlayInteriorTexture(
+    ImageRect const & rect,
+    OverlayMode mode)
+{
+    assert(!mRectOverlayShipSpaceRect.has_value());
+    assert(!mRectOverlayExteriorTextureSpaceRect.has_value());
+
+    // Store rect
+    mRectOverlayInteriorTextureSpaceRect = rect;
 
     // Store color
     mRectOverlayColor = GetOverlayColor(mode);
@@ -1137,10 +1284,11 @@ void View::UploadRectOverlay(
 
 void View::RemoveRectOverlay()
 {
-    assert(mRectOverlayShipSpaceRect || mRectOverlayTextureSpaceRect);
+    assert(mRectOverlayShipSpaceRect || mRectOverlayExteriorTextureSpaceRect || mRectOverlayInteriorTextureSpaceRect);
 
     mRectOverlayShipSpaceRect.reset();
-    mRectOverlayTextureSpaceRect.reset();
+    mRectOverlayExteriorTextureSpaceRect.reset();
+    mRectOverlayInteriorTextureSpaceRect.reset();
 }
 
 void View::UploadDashedLineOverlay(
@@ -1431,11 +1579,19 @@ void View::Render()
         }
     }
 
-    if (mPrimaryVisualization != VisualizationType::TextureLayer)
+    if (mPrimaryVisualization != VisualizationType::ExteriorTextureLayer)
     {
-        if (mHasTextureLayerVisualization)
+        if (mHasExteriorTextureLayerVisualization)
         {
-            RenderTextureLayerVisualization();
+            RenderExteriorTextureLayerVisualization();
+        }
+    }
+
+    if (mPrimaryVisualization != VisualizationType::InteriorTextureLayer)
+    {
+        if (mHasInteriorTextureLayerVisualization)
+        {
+            RenderInteriorTextureLayerVisualization();
         }
     }
 
@@ -1454,11 +1610,18 @@ void View::Render()
             RenderStructuralLayerVisualization();
         }
     }
-    else if (mPrimaryVisualization == VisualizationType::TextureLayer)
+    else if (mPrimaryVisualization == VisualizationType::ExteriorTextureLayer)
     {
-        if (mHasTextureLayerVisualization)
+        if (mHasExteriorTextureLayerVisualization)
         {
-            RenderTextureLayerVisualization();
+            RenderExteriorTextureLayerVisualization();
+        }
+    }
+    else if (mPrimaryVisualization == VisualizationType::InteriorTextureLayer)
+    {
+        if (mHasInteriorTextureLayerVisualization)
+        {
+            RenderInteriorTextureLayerVisualization();
         }
     }
 
@@ -1507,7 +1670,7 @@ void View::Render()
     }
 
     // Rect overlay
-    if (mRectOverlayShipSpaceRect || mRectOverlayTextureSpaceRect)
+    if (mRectOverlayShipSpaceRect || mRectOverlayExteriorTextureSpaceRect || mRectOverlayInteriorTextureSpaceRect)
     {
         // Bind VAO
         glBindVertexArray(*mRectOverlayVAO);
@@ -1646,7 +1809,7 @@ void View::OnViewModelUpdated()
         UpdateCircleOverlay();
     }
 
-    if (mRectOverlayShipSpaceRect || mRectOverlayTextureSpaceRect)
+    if (mRectOverlayShipSpaceRect || mRectOverlayExteriorTextureSpaceRect || mRectOverlayInteriorTextureSpaceRect)
     {
         UpdateRectOverlay();
     }
@@ -1963,7 +2126,7 @@ void View::UpdateRectOverlay()
     vec2f topLeftShipSpace;
     vec2f bottomRightShipSpace;
     vec2f rectPhysSize; // Number of physical display pixels along W and H of this rect
-    if (mRectOverlayShipSpaceRect)
+    if (mRectOverlayShipSpaceRect.has_value())
     {
         topLeftShipSpace = vec2f(
             static_cast<float>(mRectOverlayShipSpaceRect->origin.x),
@@ -1975,24 +2138,22 @@ void View::UpdateRectOverlay()
 
         rectPhysSize = mViewModel.ShipSpaceSizeToPhysicalDisplaySize(mRectOverlayShipSpaceRect->size).ToFloat();
     }
-    else
+    else if (mRectOverlayExteriorTextureSpaceRect.has_value())
     {
-        assert(mRectOverlayTextureSpaceRect);
-
         float const shipSpaceQuantum = mViewModel.GetShipSpaceForOnePhysicalDisplayPixel();
 
-        vec2f const rawTopLeftShipSpace = mViewModel.TextureSpaceToFractionalShipSpace({
-            mRectOverlayTextureSpaceRect->origin.x,
-            mRectOverlayTextureSpaceRect->origin.y + mRectOverlayTextureSpaceRect->size.height });
+        vec2f const rawTopLeftShipSpace = mViewModel.ExteriorTextureSpaceToFractionalShipSpace({
+            mRectOverlayExteriorTextureSpaceRect->origin.x,
+            mRectOverlayExteriorTextureSpaceRect->origin.y + mRectOverlayExteriorTextureSpaceRect->size.height });
 
         // Quantize to physical pixel
         topLeftShipSpace = vec2f(
             std::floor(rawTopLeftShipSpace.x / shipSpaceQuantum) * shipSpaceQuantum,
             std::floor(rawTopLeftShipSpace.y / shipSpaceQuantum) * shipSpaceQuantum);
 
-        vec2f const rawBottomRightShipSpace = mViewModel.TextureSpaceToFractionalShipSpace({
-            mRectOverlayTextureSpaceRect->origin.x + mRectOverlayTextureSpaceRect->size.width,
-            mRectOverlayTextureSpaceRect->origin.y });
+        vec2f const rawBottomRightShipSpace = mViewModel.ExteriorTextureSpaceToFractionalShipSpace({
+            mRectOverlayExteriorTextureSpaceRect->origin.x + mRectOverlayExteriorTextureSpaceRect->size.width,
+            mRectOverlayExteriorTextureSpaceRect->origin.y });
 
         // Quantize to physical pixel
         bottomRightShipSpace = vec2f(
@@ -2000,6 +2161,32 @@ void View::UpdateRectOverlay()
             std::floor(rawBottomRightShipSpace.y / shipSpaceQuantum) * shipSpaceQuantum);
 
         rectPhysSize = mViewModel.FractionalShipSpaceSizeToFractionalPhysicalDisplaySize({ bottomRightShipSpace.x - topLeftShipSpace.x, topLeftShipSpace.y - bottomRightShipSpace.y});
+    }
+    else
+    {
+        assert(mRectOverlayInteriorTextureSpaceRect.has_value());
+
+        float const shipSpaceQuantum = mViewModel.GetShipSpaceForOnePhysicalDisplayPixel();
+
+        vec2f const rawTopLeftShipSpace = mViewModel.InteriorTextureSpaceToFractionalShipSpace({
+            mRectOverlayInteriorTextureSpaceRect->origin.x,
+            mRectOverlayInteriorTextureSpaceRect->origin.y + mRectOverlayInteriorTextureSpaceRect->size.height });
+
+        // Quantize to physical pixel
+        topLeftShipSpace = vec2f(
+            std::floor(rawTopLeftShipSpace.x / shipSpaceQuantum) * shipSpaceQuantum,
+            std::floor(rawTopLeftShipSpace.y / shipSpaceQuantum) * shipSpaceQuantum);
+
+        vec2f const rawBottomRightShipSpace = mViewModel.InteriorTextureSpaceToFractionalShipSpace({
+            mRectOverlayInteriorTextureSpaceRect->origin.x + mRectOverlayInteriorTextureSpaceRect->size.width,
+            mRectOverlayInteriorTextureSpaceRect->origin.y });
+
+        // Quantize to physical pixel
+        bottomRightShipSpace = vec2f(
+            std::floor(rawBottomRightShipSpace.x / shipSpaceQuantum) * shipSpaceQuantum,
+            std::floor(rawBottomRightShipSpace.y / shipSpaceQuantum) * shipSpaceQuantum);
+
+        rectPhysSize = mViewModel.FractionalShipSpaceSizeToFractionalPhysicalDisplaySize({ bottomRightShipSpace.x - topLeftShipSpace.x, topLeftShipSpace.y - bottomRightShipSpace.y });
     }
 
     // Left, Top
@@ -2337,21 +2524,42 @@ void View::RenderRopesLayerVisualization()
     CheckOpenGLError();
 }
 
-void View::RenderTextureLayerVisualization()
+void View::RenderExteriorTextureLayerVisualization()
 {
     // Set this texture in the shader's sampler
     mShaderManager->ActivateTexture<ProgramParameterType::TextureUnit1>();
-    glBindTexture(GL_TEXTURE_2D, *mTextureLayerVisualizationTexture);
+    glBindTexture(GL_TEXTURE_2D, *mExteriorTextureLayerVisualizationTexture);
 
     // Bind VAO
-    glBindVertexArray(*mTextureLayerVisualizationVAO);
+    glBindVertexArray(*mExteriorTextureLayerVisualizationVAO);
 
     // Activate program
     mShaderManager->ActivateProgram<ProgramType::Texture>();
 
     // Set opacity
     mShaderManager->SetProgramParameter<ProgramType::Texture, ProgramParameterType::Opacity>(
-        mPrimaryVisualization == VisualizationType::TextureLayer ? 1.0f : mOtherVisualizationsOpacity);
+        mPrimaryVisualization == VisualizationType::ExteriorTextureLayer ? 1.0f : mOtherVisualizationsOpacity);
+
+    // Draw
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    CheckOpenGLError();
+}
+
+void View::RenderInteriorTextureLayerVisualization()
+{
+    // Set this texture in the shader's sampler
+    mShaderManager->ActivateTexture<ProgramParameterType::TextureUnit1>();
+    glBindTexture(GL_TEXTURE_2D, *mInteriorTextureLayerVisualizationTexture);
+
+    // Bind VAO
+    glBindVertexArray(*mInteriorTextureLayerVisualizationVAO);
+
+    // Activate program
+    mShaderManager->ActivateProgram<ProgramType::Texture>();
+
+    // Set opacity
+    mShaderManager->SetProgramParameter<ProgramType::Texture, ProgramParameterType::Opacity>(
+        mPrimaryVisualization == VisualizationType::InteriorTextureLayer ? 1.0f : mOtherVisualizationsOpacity);
 
     // Draw
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);

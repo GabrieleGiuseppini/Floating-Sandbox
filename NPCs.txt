@@ -213,7 +213,7 @@ Arch
 			+ ShipFactoryTypes
 			+ ShipFloorplanizer
 			+ ShipFactory
-		- Rendering of floors?
+		= Rendering of floors			
 	- All in one go - GO2:
 		- Move Npc simulation source files under NpcSimulation folder
 			- Not VS GUI, that's still "Physics"
@@ -322,12 +322,9 @@ Arch
 - Layers:
 	- Floorplan layer:
 		- A specific "FloorPlan" layer provides list of *pairs* of Points and the FloorType enum
-			- Floor types:
-				- Floor: yeah, just one
-					- Then, @ShipFactory, we assign FloorDepth based on H/V/Diag
-						- The current NpcFloorType enum becomes NpcFloorDepth, and NpcFloorType only retains "Floor" and "Open"
-						- Triangles' edges also remember both (type and depth) - actually store struct with two members
-				- In the future, also "floor areas"
+			+ Then, @ShipFactory, we assign FloorDepth based on H/V/Diag
+				+ The current NpcFloorType enum becomes NpcFloorDepth, and NpcFloorType only retains "Floor" and "Open"
+				+ Triangles' edges also remember both (type and depth) - actually store struct with two members
 						
 		- When the layer is absent, the layer is created automatically (@ new ShipFloorplanizer) with the hullness of particles
 			- Algo for creation should take care of following aspects:
@@ -386,28 +383,32 @@ Arch
 
 	- InteriorTexture layer
 		- A new texture layer (for graphical purposes only)
-		- When the layer is absent, it is created automatically (@ShipFactory) from the structural layer (+ material texturization if enabled)
+		- When the layer is absent, it is created automatically (@ShipFactory) from the structural layer
+		- Owned by ship (for re-creating doors)
 	- Both layers make up the "Interior view"
 	- User can choose between "Exterior" view and "Interior" view, via menu
 		- As soon as NPC count goes from zero to non-zero (including BeingPlaced), if current view is "Exterior" GameController switches to "Interior", regardless of current setting
+			- Tells MainFrame via event, which changes current menu
 		- As soon as NPC count goes from non-zero to zero, if current view is "Interior" GameController switches to "Exterior" view, regardless of current setting
+			- Tells MainFrame via event, which changes current menu
 	- Impl gist:
-		- TODO: the below requires keeping the folloring textures data in memory - see if can save anything:
-			- Interior texture (for re-creating InterriorView texture as doors change)
+		- The below requires keeping the folloring textures data in memory - see if can save anything:
+			- Interior texture (in Ship, for re-creating InteriorView texture as doors change)
 			- InteriorView texture (in ShipRenderContext, to upload it as needed) 
-			- ExteriorView texture (in ShipRenderContext, to upload it as needed)
+			- Exterior texture (in ShipRenderContext, to upload it as needed)
 		- TextureData ShipTexturizer::MakeInteriorViewLayer( // Stateless, basically static
 			- Triangles const &, 
 			- Points const &, // Point for texture coords
-			- const interiorTexture, // Created as above
+			- const interiorTexture, // Created/loaded as above
 			- float interiorTextureAlpha, // 1.0 if interiorTexture is from user, 0.something if created (or we always create it with this alpha)
 			- Just visits triangles and uses Points' texture coords
-		- Another overload that does it for a single triangle and returns its quad
+		- Another overload that does it for a single triangle and returns its quad (w/origin (ImageCoordinates), as new SubImageData type at ImageData.h)
 		- Dynamics of floorplan changes (doors)
-			- IShipPhysicsHandler::HandleNpcFloorUpdated(Triangle, ordinal) -> invoke ShipTexturizer() method (on & member) to generate new Interior view texture quad, 
-			  and subsequently give it to ShipRenderContext which will a) upload to texture as subtexture, and b) apply to own Interior view texture
-				- This implies that Ship must hold:
-					- interior texture
+			- IShipPhysicsHandler::HandleNpcFloorUpdated(Triangle, ordinal) -> invoke ShipTexturizer() method (on ShipTexturizer& member) to generate new Interior view texture quad, 
+			  which it then stores in a (temporary) list member of Ship
+			- At Ship::RenderUpload time, it gives (std::move) the list to ShipRenderContext which will a) upload to texture as subtextures, and b) apply to own Interior view texture
+			= This implies that Ship must hold:
+				+ interior texture
 		- ShipRenderContext:
 			- Keeps ahold of both Exterior and Interior view textures
 			- Upon change of the view type (Exterior<->Interior), ShipRenderContext uploads right one of the two to OpenGL
@@ -416,13 +417,41 @@ Arch
 			  re-upload it (eventually a portion of it) if current view type is Interior
 				- ShipRenderContext:: two uq_ptr for InteriorView texture - one set from outside, the other used by thread
 				- When a change happens, the caller ends up setting the "outside uq_ptr"
-				- At <don't remember where exactly, when it's safe to swipe main thread things>, we move outside to inside and remember that we have to upload it, and what portion of it
+				- At <don't remember where exactly, when it's safe to swipe main thread things>, we move/blit outside to inside and remember that we have to upload it, and what portion of it
+	= Impl:		
+		+ Add InteriorTexture layer to everything (and change old to ExteriorTexture)
+			+ Game
+			+ ShipBuilder
+				+ Controller, ModelController, Model
+				+ MainFrame
+				+ View:
+					+ Duplicate Texture viz's
+						+ ViewModel: duplicate all "texture space" as "external" and "internal"
+							+ Requires two texture sizes
+				+ Tests:
+					+ TextureEraser
+					+ TextureMagicWand
+					+ Texture C&P&X
+						+ Texture selection
+					+ Run unit tests
+		+ InteriorTexture goes to Ship		
+		- ShipFactory: invoke ShipTexturizer to create InteriorViewImage
+		- RenderContext:
+			- Need to keep hold of both textures and UploadMipmapped as needed
+		- TODOHERE
 
 - Doors:
 	- New electrical element (with both ON/OFF types), controls floorness of springs (and thus triangle edges) among neighboring pairs of them
 		- Triangle edge/floors: split "factory" vs. "actual"
 			- Iff we end up having H1,V1,S2,etc. floor types, as resetting door would need to know that
 			- Otherwise, if we only have Floor+Open, can live without factory
+	- Dynamics of door-induced floorplan changes
+		- IShipPhysicsHandler::HandleNpcFloorUpdated(Triangle, ordinal) -> invoke ShipTexturizer() method (on ShipTexturizer& member) (passing also own InteriorTexture) to generate new Interior view texture quad, 
+		  which it then stores in a (temporary) list member of Ship
+		- At Ship::RenderUpload time, it gives (std::move) the list to ShipRenderContext which will a) upload to texture as subtextures, and b) apply to own Interior view texture (so that it's also
+		  persistent across view switches)
+	- Sounds
+
 	- See what we do with Watertight doors and whether they can also act as doors, in which case we can put them in the same category (Watertight door == door but also controlling WaterPermeability)
 	
 
@@ -438,6 +467,13 @@ Next release:
 - Rendering:
 	- Knee when rising: flatten it (extra triangle)
 
+- InternalTexture layer:
+	- ShipDe/Serialization
+		- Make sure that:
+			- Old FS can read new ship with layer
+			- New FS can read old ship (without layer obviously)
+	- ShipBuilder
+		- Re-enable/take care of various TODOHERE for not-yet implemented things
 
 ===================
 ===================

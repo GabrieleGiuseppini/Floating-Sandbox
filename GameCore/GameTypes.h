@@ -1032,7 +1032,8 @@ enum class LayerType : std::uint32_t
     Structural = 0,
     Electrical = 1,
     Ropes = 2,
-    Texture = 3
+    ExteriorTexture = 3,
+    InteriorTexture = 4
 };
 
 /*

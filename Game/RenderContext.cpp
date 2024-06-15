@@ -317,20 +317,23 @@ void RenderContext::ValidateShipTexture(RgbaImageData const & texture) const
     if (texture.Size.width > GameOpenGL::MaxTextureSize
         || texture.Size.height > GameOpenGL::MaxTextureSize)
     {
-        throw GameException("We are sorry, but this ship's texture image is too large for your graphics card.");
+        throw GameException("We are sorry, but this ship's texture image is too large for your graphics card. The texture size is " +
+            texture.Size.ToString() + " while the maximum supported by your graphics cards is " + ImageSize(GameOpenGL::MaxTextureSize, GameOpenGL::MaxTextureSize).ToString());
     }
 }
 
 void RenderContext::AddShip(
     ShipId shipId,
     size_t pointCount,
-    RgbaImageData texture)
+    RgbaImageData exteriorTextureImage,
+    RgbaImageData interiorViewImage)
 {
     //
     // Validate ship
     //
 
-    ValidateShipTexture(texture);
+    ValidateShipTexture(exteriorTextureImage);
+    ValidateShipTexture(interiorViewImage);
 
     //
     // Add ship
@@ -355,7 +358,8 @@ void RenderContext::AddShip(
                     shipId,
                     pointCount,
                     newShipCount,
-                    std::move(texture),
+                    std::move(exteriorTextureImage),
+                    std::move(interiorViewImage),
                     *mShaderManager,
                     *mGlobalRenderContext,
                     mRenderParameters,

@@ -18,15 +18,12 @@
 
 namespace ShipBuilder {
 
+template<LayerType TLayerType>
 class TextureEraserTool : public Tool
 {
 public:
 
-    TextureEraserTool(
-        Controller & controller,
-        ResourceLocator const & resourceLocator);
-
-    ~TextureEraserTool();
+    virtual ~TextureEraserTool();
 
     void OnMouseMove(DisplayLogicalCoordinates const & mouseCoordinates) override;
     void OnLeftMouseDown() override;
@@ -36,6 +33,13 @@ public:
     void OnShiftKeyDown() override;
     void OnShiftKeyUp() override;
     void OnMouseLeft() override;
+
+protected:
+
+    TextureEraserTool(
+        ToolType toolType,
+        Controller & controller,
+        ResourceLocator const & resourceLocator);
 
 private:
 
@@ -94,6 +98,24 @@ private:
 
     // Whether SHIFT is currently down or not
     bool mIsShiftDown;
+};
+
+class ExteriorTextureEraserTool final : public TextureEraserTool<LayerType::ExteriorTexture>
+{
+public:
+
+    ExteriorTextureEraserTool(
+        Controller & controller,
+        ResourceLocator const & resourceLocator);
+};
+
+class InteriorTextureEraserTool final : public TextureEraserTool<LayerType::InteriorTexture>
+{
+public:
+
+    InteriorTextureEraserTool(
+        Controller & controller,
+        ResourceLocator const & resourceLocator);
 };
 
 }

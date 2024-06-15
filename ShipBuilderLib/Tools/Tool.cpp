@@ -85,9 +85,17 @@ ShipSpaceCoordinates Tool::ScreenToShipSpaceNearest(DisplayLogicalCoordinates co
     return mController.GetView().ScreenToShipSpaceNearest(displayCoordinates);
 }
 
-ImageCoordinates Tool::ScreenToTextureSpace(DisplayLogicalCoordinates const & displayCoordinates) const
+ImageCoordinates Tool::ScreenToTextureSpace(LayerType layerType, DisplayLogicalCoordinates const & displayCoordinates) const
 {
-    return mController.GetView().ScreenToTextureSpace(displayCoordinates);
+    if (layerType == LayerType::ExteriorTexture)
+    {
+        return mController.GetView().ScreenToExteriorTextureSpace(displayCoordinates);
+    }
+    else
+    {
+        assert(layerType == LayerType::InteriorTexture);
+        return mController.GetView().ScreenToInteriorTextureSpace(displayCoordinates);
+    }
 }
 
 }

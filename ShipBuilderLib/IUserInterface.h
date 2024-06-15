@@ -63,7 +63,8 @@ struct IUserInterface
     virtual void OnStructuralLayerVisualizationModeChanged(StructuralLayerVisualizationModeType mode) = 0;
     virtual void OnElectricalLayerVisualizationModeChanged(ElectricalLayerVisualizationModeType mode) = 0;
     virtual void OnRopesLayerVisualizationModeChanged(RopesLayerVisualizationModeType mode) = 0;
-    virtual void OnTextureLayerVisualizationModeChanged(TextureLayerVisualizationModeType mode) = 0;
+    virtual void OnExteriorTextureLayerVisualizationModeChanged(ExteriorTextureLayerVisualizationModeType mode) = 0;
+    virtual void OnInteriorTextureLayerVisualizationModeChanged(InteriorTextureLayerVisualizationModeType mode) = 0;
 
     virtual void OnOtherVisualizationsOpacityChanged(float opacity) = 0;
 

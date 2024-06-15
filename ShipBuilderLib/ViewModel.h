@@ -47,7 +47,8 @@ public:
             initialDisplaySize.width * logicalToPhysicalPixelFactor,
             initialDisplaySize.height * logicalToPhysicalPixelFactor)
         , mShipSize(initialShipSize)
-        , mTextureLayerVisualizationTextureSize()
+        , mExteriorTextureLayerVisualizationTextureSize()
+        , mInteriorTextureLayerVisualizationTextureSize()
         , mDisplayPhysicalToShipSpaceFactor(0) // Will be recalculated
         , mCamLimits(0, 0) // Will be recalculated
     {
@@ -146,16 +147,28 @@ public:
         RecalculateAttributes();
     }
 
-    void SetTextureLayerVisualizationTextureSize(ImageSize const & size)
+    void SetExteriorTextureLayerVisualizationTextureSize(ImageSize const & size)
     {
-        mTextureLayerVisualizationTextureSize = size;
+        mExteriorTextureLayerVisualizationTextureSize = size;
 
         // No need to recalc attributes
     }
 
-    void RemoveTextureLayerVisualizationTextureSize()
+    void RemoveExteriorTextureLayerVisualizationTextureSize()
     {
-        mTextureLayerVisualizationTextureSize.reset();
+        mExteriorTextureLayerVisualizationTextureSize.reset();
+    }
+
+    void SetInteriorTextureLayerVisualizationTextureSize(ImageSize const & size)
+    {
+        mInteriorTextureLayerVisualizationTextureSize = size;
+
+        // No need to recalc attributes
+    }
+
+    void RemoveInteriorTextureLayerVisualizationTextureSize()
+    {
+        mInteriorTextureLayerVisualizationTextureSize.reset();
     }
 
     DisplayPhysicalSize const & GetDisplayPhysicalSize() const
@@ -241,7 +254,7 @@ public:
     ShipSpaceCoordinates ScreenToShipSpaceNearest(DisplayLogicalCoordinates const & displayCoordinates) const
     {
         return ShipSpaceCoordinates::FromFloatRound(ScreenToFractionalShipSpace(displayCoordinates));
-    }    
+    }
 
     float GetShipSpaceForOnePhysicalDisplayPixel() const
     {
@@ -261,7 +274,7 @@ public:
             vec2f(
                 static_cast<float>(shipSpaceSize.width),
                 static_cast<float>(shipSpaceSize.height)));
-        
+
         return DisplayPhysicalSize(
             static_cast<int>(fractionalPhysicalDisplaySize.x),
             static_cast<int>(fractionalPhysicalDisplaySize.y));
@@ -279,24 +292,44 @@ public:
         return ShipSpaceToDisplayPhysical(shipSpaceOffset);
     }
 
-    ImageCoordinates ScreenToTextureSpace(DisplayLogicalCoordinates const & displayCoordinates) const
+    ImageCoordinates ScreenToExteriorTextureSpace(DisplayLogicalCoordinates const & displayCoordinates) const
     {
-        assert(mTextureLayerVisualizationTextureSize.has_value());
+        assert(mExteriorTextureLayerVisualizationTextureSize.has_value());
 
         vec2f const fractionalShipSpaceCoordinates = ScreenToFractionalShipSpace(displayCoordinates);
-        
+
         return ImageCoordinates(
-            fractionalShipSpaceCoordinates.x / static_cast<float>(mShipSize.width) * static_cast<float>(mTextureLayerVisualizationTextureSize->width),
-            fractionalShipSpaceCoordinates.y / static_cast<float>(mShipSize.height) * static_cast<float>(mTextureLayerVisualizationTextureSize->height));
+            fractionalShipSpaceCoordinates.x / static_cast<float>(mShipSize.width) * static_cast<float>(mExteriorTextureLayerVisualizationTextureSize->width),
+            fractionalShipSpaceCoordinates.y / static_cast<float>(mShipSize.height) * static_cast<float>(mExteriorTextureLayerVisualizationTextureSize->height));
     }
 
-    vec2f TextureSpaceToFractionalShipSpace(ImageCoordinates const & coords) const
+    vec2f ExteriorTextureSpaceToFractionalShipSpace(ImageCoordinates const & coords) const
     {
-        assert(mTextureLayerVisualizationTextureSize.has_value());
+        assert(mExteriorTextureLayerVisualizationTextureSize.has_value());
 
         return vec2f(
-            static_cast<float>(coords.x) / static_cast<float>(mTextureLayerVisualizationTextureSize->width) * static_cast<float>(mShipSize.width),
-            static_cast<float>(coords.y) / static_cast<float>(mTextureLayerVisualizationTextureSize->height) * static_cast<float>(mShipSize.height));
+            static_cast<float>(coords.x) / static_cast<float>(mExteriorTextureLayerVisualizationTextureSize->width) * static_cast<float>(mShipSize.width),
+            static_cast<float>(coords.y) / static_cast<float>(mExteriorTextureLayerVisualizationTextureSize->height) * static_cast<float>(mShipSize.height));
+    }
+
+    ImageCoordinates ScreenToInteriorTextureSpace(DisplayLogicalCoordinates const & displayCoordinates) const
+    {
+        assert(mInteriorTextureLayerVisualizationTextureSize.has_value());
+
+        vec2f const fractionalShipSpaceCoordinates = ScreenToFractionalShipSpace(displayCoordinates);
+
+        return ImageCoordinates(
+            fractionalShipSpaceCoordinates.x / static_cast<float>(mShipSize.width) * static_cast<float>(mInteriorTextureLayerVisualizationTextureSize->width),
+            fractionalShipSpaceCoordinates.y / static_cast<float>(mShipSize.height) * static_cast<float>(mInteriorTextureLayerVisualizationTextureSize->height));
+    }
+
+    vec2f InteriorTextureSpaceToFractionalShipSpace(ImageCoordinates const & coords) const
+    {
+        assert(mInteriorTextureLayerVisualizationTextureSize.has_value());
+
+        return vec2f(
+            static_cast<float>(coords.x) / static_cast<float>(mInteriorTextureLayerVisualizationTextureSize->width) * static_cast<float>(mShipSize.width),
+            static_cast<float>(coords.y) / static_cast<float>(mInteriorTextureLayerVisualizationTextureSize->height) * static_cast<float>(mShipSize.height));
     }
 
     ProjectionMatrix const & GetOrthoMatrix() const
@@ -395,7 +428,8 @@ private:
     DisplayLogicalSize mDisplayLogicalSize;
     DisplayPhysicalSize mDisplayPhysicalSize;
     ShipSpaceSize mShipSize;
-    std::optional<ImageSize> mTextureLayerVisualizationTextureSize;
+    std::optional<ImageSize> mExteriorTextureLayerVisualizationTextureSize;
+    std::optional<ImageSize> mInteriorTextureLayerVisualizationTextureSize;
 
     // Calculated attributes
     float mDisplayPhysicalToShipSpaceFactor; // # ship pixels for 1 display pixel

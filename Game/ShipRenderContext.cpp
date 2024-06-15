@@ -21,7 +21,8 @@ ShipRenderContext::ShipRenderContext(
     ShipId shipId,
     size_t pointCount,
     size_t shipCount,
-    RgbaImageData shipTexture,
+    RgbaImageData exteriorTextureImage,
+    RgbaImageData interiorViewImage,
     ShaderManager<ShaderManagerTraits> & shaderManager,
     GlobalRenderContext const & globalRenderContext,
     RenderParameters const & renderParameters,
@@ -148,7 +149,7 @@ ShipRenderContext::ShipRenderContext(
     , mStressedSpringTextureOpenGLHandle()
     , mExplosionTextureAtlasMetadata(globalRenderContext.GetExplosionTextureAtlasMetadata())
     , mGenericLinearTextureAtlasMetadata(globalRenderContext.GetGenericLinearTextureAtlasMetadata())
-    , mGenericMipMappedTextureAtlasMetadata(globalRenderContext.GetGenericMipMappedTextureAtlasMetadata())    
+    , mGenericMipMappedTextureAtlasMetadata(globalRenderContext.GetGenericMipMappedTextureAtlasMetadata())
     // Non-render parameters - all of these will be calculated later
     , mHalfFlameQuadWidth(0.0f)
     , mFlameQuadHeight(0.0f)
@@ -593,7 +594,7 @@ ShipRenderContext::ShipRenderContext(
 
 
     //
-    // Initialize Ship texture
+    // Initialize ship Texture
     //
 
     glGenTextures(1, &tmpGLuint);
@@ -605,7 +606,10 @@ ShipRenderContext::ShipRenderContext(
     CheckOpenGLError();
 
     // Upload texture
-    GameOpenGL::UploadMipmappedTexture(std::move(shipTexture));
+    // TODOHERE:
+    //  - Do not upload now but via ApplyViewModeChanges (the one that switches between exterior and interior)
+    GameOpenGL::UploadMipmappedTexture(std::move(exteriorTextureImage));
+    (void)interiorViewImage;
 
     // Set repeat mode
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -1102,7 +1106,7 @@ void ShipRenderContext::UploadJetEngineFlamesEnd()
 
 void ShipRenderContext::UploadElementEphemeralPointsStart()
 {
-    // Client wants to upload a new set of ephemeral point elements    
+    // Client wants to upload a new set of ephemeral point elements
 
     // Empty buffer
     mEphemeralPointElementBuffer.clear();
@@ -1181,7 +1185,7 @@ void ShipRenderContext::ProcessParameterChanges(RenderParameters const & renderP
         ApplyShipStructureRenderModeChanges(renderParameters); // Also selects shaders for following functions to set parameters on
     }
 
-    if (renderParameters.IsViewDirty 
+    if (renderParameters.IsViewDirty
         || mIsViewModelDirty
         || renderParameters.AreShipStructureRenderModeSelectorsDirty)
     {
@@ -3070,7 +3074,7 @@ void ShipRenderContext::ApplyStressRenderModeChanges(RenderParameters const & re
             };
 
             stressColorMap = StressColorMap.data();
-            
+
             break;
         }
 

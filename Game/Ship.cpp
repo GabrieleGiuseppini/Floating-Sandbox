@@ -78,7 +78,8 @@ Ship::Ship(
     Springs && springs,
     Triangles && triangles,
     ElectricalElements && electricalElements,
-    Frontiers && frontiers)
+    Frontiers && frontiers,
+    RgbaImageData && interiorTextureImage)
     : mId(id)
     , mParentWorld(parentWorld)
     , mMaterialDatabase(materialDatabase)
@@ -89,6 +90,7 @@ Ship::Ship(
     , mTriangles(std::move(triangles))
     , mElectricalElements(std::move(electricalElements))
     , mFrontiers(std::move(frontiers))
+    , mInteriorTextureImage(std::move(interiorTextureImage))
     , mPinnedPoints(
         mParentWorld,
         mGameEventHandler,
@@ -546,7 +548,7 @@ void Ship::Update(
     //      - EL.AvailableLight depends on electricals which depend on water
     // - Outputs: P.Light
     DiffuseLight(
-        gameParameters, 
+        gameParameters,
         threadManager);
 
     //
@@ -2583,7 +2585,7 @@ void Ship::RecalculateLightDiffusionParallelism(size_t simulationParallelism)
     mLightDiffusionTasks.clear();
 
     //
-    // Given the available simulation parallelism as a constraint (max), calculate 
+    // Given the available simulation parallelism as a constraint (max), calculate
     // the best parallelism for the light diffusion algorithm
     //
 
@@ -3220,7 +3222,7 @@ void Ship::GenerateAirBubble(
     float const vortexPeriod = GameRandomEngine::GetInstance().GenerateUniformReal(
         1.5f,  // seconds
         4.5f); // seconds
-    
+
     float constexpr StartBuoyancyVolumeFillAdjustment = 1.25f;
     float constexpr EndBuoyancyVolumeFillAdjustment = 0.75f;
     float const buoyancyVolumeFillAdjustment =
@@ -3421,7 +3423,7 @@ void Ship::HandlePointDetach(
             assert(mElectricalElements.GetConductingConnectedElectricalElements(electricalElementIndex).empty());
 
             mElectricalElements.Destroy(
-                electricalElementIndex, 
+                electricalElementIndex,
                 fireDestroyEvent ? ElectricalElements::DestroyReason::Other : ElectricalElements::DestroyReason::SilentRemoval,
                 currentSimulationTime,
                 gameParameters);
@@ -3552,14 +3554,14 @@ void Ship::HandleSpringDestroy(
 
 
     //
-    // If endpoints are electrical elements connected to each other, then 
-    // disconnect them from each other - i.e. remove them from each other's 
+    // If endpoints are electrical elements connected to each other, then
+    // disconnect them from each other - i.e. remove them from each other's
     // set of connected electrical elements
     //
-    
+
     if (auto const electricalElementAIndex = mPoints.GetElectricalElement(pointAIndex);
         NoneElementIndex != electricalElementAIndex)
-    {        
+    {
         if (auto electricalElementBIndex = mPoints.GetElectricalElement(pointBIndex);
             NoneElementIndex != electricalElementBIndex)
         {

@@ -163,19 +163,30 @@ public:
         ShipSpaceCoordinates const & origin);
     void RestoreRopesLayerForUndo(std::unique_ptr<RopesLayerData> ropesLayer);
 
-    // Texture layer
+    // Exterior Texture layer
 
-    void SetTextureLayer(
+    void SetExteriorTextureLayer(
         wxString actionTitle,
-        TextureLayerData && textureLayer,
+        TextureLayerData && exteriorTextureLayer,
         std::optional<std::string> textureArtCredits);
-    void RemoveTextureLayer();
-    void RestoreTextureLayerRegionBackupForUndo(
+    void RemoveExteriorTextureLayer();
+    void RestoreExteriorTextureLayerRegionBackupForUndo(
         TextureLayerData && layerRegionBackup,
         ImageCoordinates const & origin);
-    void RestoreTextureLayerForUndo(
-        std::unique_ptr<TextureLayerData> textureLayer,
+    void RestoreExteriorTextureLayerForUndo(
+        std::unique_ptr<TextureLayerData> exteriorTextureLayer,
         std::optional<std::string> originalTextureArtCredits);
+
+    // Interior Texture layer
+
+    void SetInteriorTextureLayer(
+        wxString actionTitle,
+        TextureLayerData && interiorTextureLayer);
+    void RemoveInteriorTextureLayer();
+    void RestoreInteriorTextureLayerRegionBackupForUndo(
+        TextureLayerData && layerRegionBackup,
+        ImageCoordinates const & origin);
+    void RestoreInteriorTextureLayerForUndo(std::unique_ptr<TextureLayerData> interiorTextureLayer);
 
     //
     // Misc editing
@@ -186,8 +197,9 @@ public:
         std::unique_ptr<StructuralLayerData> structuralLayer,
         std::unique_ptr<ElectricalLayerData> electricalLayer,
         std::unique_ptr<RopesLayerData> ropesLayer,
-        std::unique_ptr<TextureLayerData> textureLayer,
-        std::optional<std::string> originalTextureArtCredits);
+        std::unique_ptr<TextureLayerData> exteriorTextureLayer,
+        std::optional<std::string> originalExteriorTextureArtCredits,
+        std::unique_ptr<TextureLayerData> interiorTextureLayer);
 
     void Restore(GenericUndoPayload && undoPayload);
 
@@ -235,8 +247,8 @@ public:
     void SetStructuralLayerVisualizationMode(StructuralLayerVisualizationModeType mode);
     void SetElectricalLayerVisualizationMode(ElectricalLayerVisualizationModeType mode);
     void SetRopesLayerVisualizationMode(RopesLayerVisualizationModeType mode);
-
-    void SetTextureLayerVisualizationMode(TextureLayerVisualizationModeType mode);
+    void SetExteriorTextureLayerVisualizationMode(ExteriorTextureLayerVisualizationModeType mode);
+    void SetInteriorTextureLayerVisualizationMode(InteriorTextureLayerVisualizationModeType mode);
 
     void SetOtherVisualizationsOpacity(float opacity);
 
@@ -333,7 +345,7 @@ private:
 
     void InternalSelectPrimaryVisualization(VisualizationType primaryVisualization);
 
-    void InternalReconciliateTextureVisualizationMode();
+    void InternalReconciliateExteriorTextureVisualizationMode();
 
     void InternalUpdateModelControllerVisualizationModes();
 

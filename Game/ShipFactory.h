@@ -36,7 +36,7 @@ class ShipFactory
 {
 public:
 
-    static std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData> Create(
+    static std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData, RgbaImageData> Create(
         ShipId shipId,
         Physics::World & parentWorld,
         ShipDefinition && shipDefinition,
