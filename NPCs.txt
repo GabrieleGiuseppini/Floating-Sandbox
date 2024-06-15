@@ -436,10 +436,20 @@ Arch
 					+ Run unit tests
 		+ InteriorTexture goes to Ship		
 		+ ShipFactory: invoke ShipTexturizer to create InteriorViewImage
-		- RenderContext:
-			- Need to keep hold of both textures and UploadMipmapped as needed
+		- GameTypes: ShipViewModeType == {Exterior, Interior}
+		- RenderContext owns the param, exactly like e.g. DebugShipRenderModeType
+			- Hook param set/get up to IGameController
+			- Upon change detected:
+				- UploadMipmapped right view image
+					- RenderContext keeps hold of both textures
+			- Trigger a change detected at initialization, so we start with default view
+		- MainFrame:
+			- view/control menu: add two mutex menus, "Exterior View" and "Interior View"
+			- For now MainFrame just reacts and invokes GameController
 		- ShipTexturizer:
-			- TODOHERE
+			- 1. Create image with size of background, multiplied by alpha
+			- 2. Visit all triangles:
+				- TODOHERE
 
 - Doors:
 	- New electrical element (with both ON/OFF types), controls floorness of springs (and thus triangle edges) among neighboring pairs of them
