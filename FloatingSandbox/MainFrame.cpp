@@ -1081,7 +1081,11 @@ void MainFrame::OnPostInitializeTrigger(wxTimerEvent & /*event*/)
         *mMusicController,
         mLocalizationManager);
 
-    ReconciliateUIWithUIPreferences();
+    //
+    // Reconciliate UI
+    //
+
+    ReconciliateUIWithUIPreferencesAndSettings();
 
 
     //
@@ -2097,7 +2101,7 @@ void MainFrame::OnOpenPreferencesWindowMenuItemSelected(wxCommandEvent & /*event
             *mUIPreferencesManager,
             [this]()
             {
-                this->ReconciliateUIWithUIPreferences();
+                this->ReconciliateUIWithUIPreferencesAndSettings();
             });
     }
 
@@ -2614,13 +2618,17 @@ void MainFrame::StartLowFrequencyTimer()
         false); // Continuous
 }
 
-void MainFrame::ReconciliateUIWithUIPreferences()
+void MainFrame::ReconciliateUIWithUIPreferencesAndSettings()
 {
+    assert(mGameController);
     assert(mUIPreferencesManager);
 
     mAutoFocusAtShipLoadMenuItem->Check(mUIPreferencesManager->GetDoAutoFocusAtShipLoad());
 
     mContinuousAutoFocusMenuItem->Check(mUIPreferencesManager->GetDoContinuousAutoFocus());
+
+    mShipViewExteriorMenuItem->Check(mGameController->GetShipViewMode() == ShipViewModeType::Exterior);
+    mShipViewInteriorMenuItem->Check(mGameController->GetShipViewMode() == ShipViewModeType::Interior);
 
     mFullScreenMenuItem->Enable(!mUIPreferencesManager->GetStartInFullScreen());
     mNormalScreenMenuItem->Enable(mUIPreferencesManager->GetStartInFullScreen());

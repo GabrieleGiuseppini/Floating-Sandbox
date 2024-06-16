@@ -393,10 +393,10 @@ Arch
 				+ UploadMipmapped right view image
 					+ RenderContext keeps hold of both textures
 			+ Trigger a fake change at initialization, so we start with default view
-		= MainFrame:
+		+ MainFrame:
 			+ view/control menu: add two mutex menus, "Exterior View" and "Interior View"
 			+ For now MainFrame just reacts and invokes GameController
-			- Reconciliate
+			+ Reconciliate
 		- ShipTexturizer:
 			- 1. Create image with size of background, multiplied by alpha
 				- See what the size is - and see if we might want to lower the default resolution of the non-material-texturized structures (and thus also of background)

@@ -418,7 +418,7 @@ private:
 
     void StartLowFrequencyTimer();
 
-    void ReconciliateUIWithUIPreferences();
+    void ReconciliateUIWithUIPreferencesAndSettings();
 
     static std::filesystem::path ChooseDefaultShip(ResourceLocator const & resourceLocator);
 
