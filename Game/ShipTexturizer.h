@@ -44,9 +44,8 @@ public:
     RgbaImageData MakeInteriorViewTexture(
         Physics::Triangles const & triangles,
         Physics::Points const & points,
-        RgbaImageData const & backgroundTexture,
-        float backgroundAlpha) const;
-
+        ShipSpaceSize const & shipSize,
+        RgbaImageData const & backgroundTexture) const;
 
     void RenderShipInto(
         StructuralLayerData const & structuralLayer,

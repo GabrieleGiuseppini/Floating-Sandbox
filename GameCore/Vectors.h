@@ -95,6 +95,13 @@ public:
             y / other);
     }
 
+    inline constexpr vec2f operator/(vec2f const & other) const
+    {
+        return vec2f(
+            x / other.x,
+            y / other.y);
+    }
+
     inline vec2f & operator+=(vec2f const & other)
     {
         x += other.x;

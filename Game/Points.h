@@ -1283,7 +1283,7 @@ public:
      * Only valid after a call to UpdateMasses() and when
      * neither water quantities nor masses have changed since then.
      */
-    
+
     float * GetIntegrationFactorBufferAsFloat()
     {
         return reinterpret_cast<float *>(mIntegrationFactorBuffer.data());
@@ -1977,6 +1977,11 @@ public:
     vec4f & GetColor(ElementIndex pointElementIndex)
     {
         return mColorBuffer[pointElementIndex];
+    }
+
+    vec2f const & GetTextureCoordinates(ElementIndex pointElementIndex) const
+    {
+        return mTextureCoordinatesBuffer[pointElementIndex];
     }
 
     // Mostly for debugging

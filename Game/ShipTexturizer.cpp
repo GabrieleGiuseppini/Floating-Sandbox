@@ -325,15 +325,103 @@ void ShipTexturizer::AutoTexturizeInto(
 RgbaImageData ShipTexturizer::MakeInteriorViewTexture(
     Physics::Triangles const & triangles,
     Physics::Points const & points,
-    RgbaImageData const & backgroundTexture,
-    float backgroundAlpha) const
+    ShipSpaceSize const & shipSize,
+    RgbaImageData const & backgroundTexture) const
 {
-    // TODOHERE
-    (void)triangles;
-    (void)points;
-    (void)backgroundAlpha;
+    //
+    // Start with a copy of the background
+    //
 
-    return backgroundTexture.Clone();
+    RgbaImageData interiorView = backgroundTexture.Clone();
+
+    //
+    // Visit all triangles and render their floors
+    //
+
+    vec2f const shipSizeF = shipSize.ToFloat();
+    vec2f const textureSizeF = interiorView.Size.ToFloat();
+
+    // Size of the quad occupied by two triangles adjoined along
+    // their diagonals, in pixels
+    ImageSize const quadSize = ImageSize::FromFloatFloor(textureSizeF / shipSizeF);
+
+    // Thickness of a floor, in pixels
+    auto const floorThickness = std::max(
+        std::max(
+            quadSize.width / 10,
+            quadSize.height / 10),
+        3);
+
+    rgbaColor constexpr FloorColor = rgbaColor(0, 0, 0, rgbaColor::data_type_max);
+
+    for (auto const t : triangles)
+    {
+        // TODOHERE: make code for one triangle an internal helper
+
+        for (int e = 0; e < 3; ++e)
+        {
+            // TODOTEST
+            //if (triangles.GetSubSpringNpcFloorKind(t, e) != NpcFloorKindType::NotAFloor)
+            {
+                // Map edge's endpoints to pixels in texture
+
+                ElementIndex const pointAIndex = triangles.GetPointIndices(t)[e];
+                vec2f const pointATextureCoords = points.GetTextureCoordinates(pointAIndex);
+                ImageCoordinates const endpointA = ImageCoordinates::FromFloatFloor(pointATextureCoords * textureSizeF);
+
+                ElementIndex const pointBIndex = triangles.GetPointIndices(t)[(e + 1) % 3];
+                vec2f const pointBTextureCoords = points.GetTextureCoordinates(pointBIndex);
+                ImageCoordinates const endpointB = ImageCoordinates::FromFloatFloor(pointBTextureCoords * textureSizeF);
+
+                // Check direction
+                if (endpointA.x == endpointB.x)
+                {
+                    // Vertical
+                    assert(endpointA.y != endpointB.y);
+
+                    // TODOHERE
+                }
+                else if (endpointA.y == endpointB.y)
+                {
+                    // Horizontal
+
+                    int xStart = endpointA.x;
+                    int xStartIncr = 0;
+                    int xEnd = endpointB.x;
+                    int xEndIncr = 0;
+                    int xIncr = (endpointA.x < endpointB.x) ? 1 : -1;
+
+                    // TODO: broken: need quad
+                    int yStart = endpointA.y;
+                    int yEnd = endpointA.y - floorThickness;
+                    int yIncr = -1;
+
+                    for (int y = yStart; y != yEnd; y += yIncr)
+                    {
+                        for (int x = xStart; x != xEnd; x += xIncr)
+                        {
+                            interiorView[{x, y}] = FloorColor;
+                        }
+
+                        xStart += xStartIncr;
+                        xEnd += xEndIncr;
+                    }
+                }
+                else
+                {
+                    // Diagonal
+
+                    // TODOHERE
+                }
+
+
+                // TODOHERE
+                (void)floorThickness;
+            }
+        }
+    }
+
+    return interiorView;
 }
 
 void ShipTexturizer::RenderShipInto(

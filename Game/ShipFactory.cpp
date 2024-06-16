@@ -421,6 +421,11 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData, RgbaImageData> ShipFac
                 1.0f,
                 0.0f));
 
+    ImageTools::BlendWithColor(
+        interiorTextureImage,
+        rgbColor(rgbColor::data_type_max, rgbColor::data_type_max, rgbColor::data_type_max),
+        0.5f);
+
     //
     // Create interior view
     //
@@ -428,8 +433,8 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData, RgbaImageData> ShipFac
     RgbaImageData interiorViewImage = shipTexturizer.MakeInteriorViewTexture(
         triangles,
         points,
-        interiorTextureImage,
-        shipDefinition.Layers.InteriorTextureLayer ? 1.0f : 0.5f);
+        shipSize,
+        interiorTextureImage);
 
     //
     // We're done!
@@ -448,6 +453,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData, RgbaImageData> ShipFac
         triangles.GetElementCount(), " triangles, ",
         electricalElements.GetElementCount(), " electrical elements, ",
         frontiers.GetElementCount(), " frontiers.");
+    LogMessage("             ExteriorView texture: ", exteriorTextureImage.Size, " InteriorView texture: ", interiorViewImage.Size);
 
     auto ship = std::make_unique<Ship>(
         shipId,

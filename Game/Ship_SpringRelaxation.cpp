@@ -23,9 +23,9 @@ void Ship::RecalculateSpringRelaxationSpringForcesParallelism(size_t simulationP
     mSpringRelaxationSpringForcesTasks.clear();
 
     //
-    // Given the available simulation parallelism as a constraint (max), calculate 
+    // Given the available simulation parallelism as a constraint (max), calculate
     // the best parallelism for the spring relaxation algorithm
-    // 
+    //
 
     ElementCount const numberOfSprings = mSprings.GetElementCount();
 
@@ -61,7 +61,6 @@ void Ship::RecalculateSpringRelaxationSpringForcesParallelism(size_t simulationP
     // We want all but the last thread to work on a multiple of the vectorization word size
     //
 
-    assert(numberOfSprings >= static_cast<ElementCount>(springRelaxationParallelism) * vectorization_float_count<ElementCount>);
     ElementCount const numberOfVecSpringsPerThread = numberOfSprings / (static_cast<ElementCount>(springRelaxationParallelism) * vectorization_float_count<ElementCount>);
 
     ElementIndex springStart = 0;
@@ -95,7 +94,7 @@ void Ship::RecalculateSpringRelaxationIntegrationAndSeaFloorCollisionParallelism
     mSpringRelaxationIntegrationAndSeaFloorCollisionTasks.clear();
 
     //
-    // Given the available simulation parallelism as a constraint (max), calculate 
+    // Given the available simulation parallelism as a constraint (max), calculate
     // the best parallelism for integration and collisions
     //
 
@@ -162,7 +161,7 @@ void Ship::RecalculateSpringRelaxationIntegrationAndSeaFloorCollisionParallelism
 void Ship::RunSpringRelaxationAndDynamicForcesIntegration(
     GameParameters const & gameParameters,
     ThreadManager & threadManager)
-{    
+{
     // We run the sea floor collision detection every these many iterations of the spring relaxation loop
     int constexpr SeaFloorCollisionPeriod = 2;
 
@@ -302,25 +301,25 @@ void Ship::ApplySpringsForces(
         // Calculate displacements, string lengths, and spring directions
         //
         // Steps:
-        // 
+        //
         // l_pos_x   -   j_pos_x   =  s0_dis_x
         // l_pos_y   -   j_pos_y   =  s0_dis_y
         // k_pos_x   -   m_pos_x   =  s1_dis_x
         // k_pos_y   -   m_pos_y   =  s1_dis_y
-        // 
+        //
         // Swap 2H with 2L in first register, then:
-        // 
+        //
         // k_pos_x   -   j_pos_x   =  s2_dis_x
         // k_pos_y   -   j_pos_y   =  s2_dis_y
         // l_pos_x   -   m_pos_x   =  s3_dis_x
         // l_pos_y   -   m_pos_y   =  s3_dis_y
-        // 
+        //
 
         ElementIndex const pointJIndex = endpointsBuffer[s + 0].PointAIndex;
         ElementIndex const pointKIndex = endpointsBuffer[s + 1].PointBIndex;
         ElementIndex const pointLIndex = endpointsBuffer[s + 0].PointBIndex;
         ElementIndex const pointMIndex = endpointsBuffer[s + 1].PointAIndex;
-        
+
         assert(pointJIndex == endpointsBuffer[s + 2].PointAIndex);
         assert(pointKIndex == endpointsBuffer[s + 2].PointBIndex);
         assert(pointLIndex == endpointsBuffer[s + 3].PointBIndex);
@@ -362,7 +361,7 @@ void Ship::ApplySpringsForces(
                 _mm_mul_ps(s0s1s2s3_dis_x, s0s1s2s3_dis_x),
                 _mm_mul_ps(s0s1s2s3_dis_y, s0s1s2s3_dis_y));
 
-        __m128 const validMask = _mm_cmpneq_ps(sq_len, Zero); // SL==0 => 1/SL==0, to maintain "normalized == (0, 0)", as in vec2f        
+        __m128 const validMask = _mm_cmpneq_ps(sq_len, Zero); // SL==0 => 1/SL==0, to maintain "normalized == (0, 0)", as in vec2f
 
         __m128 const s0s1s2s3_springLength_inv =
             _mm_and_ps(
@@ -374,7 +373,7 @@ void Ship::ApplySpringsForces(
                 _mm_rcp_ps(s0s1s2s3_springLength_inv),
                 validMask);
 
-        // Calculate spring directions        
+        // Calculate spring directions
         __m128 const s0s1s2s3_sdir_x = _mm_mul_ps(s0s1s2s3_dis_x, s0s1s2s3_springLength_inv);
         __m128 const s0s1s2s3_sdir_y = _mm_mul_ps(s0s1s2s3_dis_y, s0s1s2s3_springLength_inv);
 
@@ -409,8 +408,8 @@ void Ship::ApplySpringsForces(
         // along the same direction as the spring, for endpoint A:
         //      relVelocity.dot(springDir) * dampingCoeff[s]
         //
-        // Strategy: 
-        // 
+        // Strategy:
+        //
         // (s0_relv_x * s0_sdir_x  +  s0_relv_y * s0_sdir_y) * dampCoeff[s0]
         // (s1_relv_x * s1_sdir_x  +  s1_relv_y * s1_sdir_y) * dampCoeff[s1]
         // (s2_relv_x * s2_sdir_x  +  s2_relv_y * s2_sdir_y) * dampCoeff[s2]
@@ -443,18 +442,18 @@ void Ship::ApplySpringsForces(
                 _mm_load_ps(dampingCoefficientBuffer + s));
 
         //
-        // 3. Apply forces: 
+        // 3. Apply forces:
         //      force A = springDir * (hookeForce + dampingForce)
         //      force B = - forceA
         //
         // Strategy:
         //
-        //  s0_tforce_a_x  =   s0_sdir_x  *  (  hookeForce[s0] + dampingForce[s0] ) 
+        //  s0_tforce_a_x  =   s0_sdir_x  *  (  hookeForce[s0] + dampingForce[s0] )
         //  s1_tforce_a_x  =   s1_sdir_x  *  (  hookeForce[s1] + dampingForce[s1] )
         //  s2_tforce_a_x  =   s2_sdir_x  *  (  hookeForce[s2] + dampingForce[s2] )
         //  s3_tforce_a_x  =   s3_sdir_x  *  (  hookeForce[s3] + dampingForce[s3] )
         //
-        //  s0_tforce_a_y  =   s0_sdir_y  *  (  hookeForce[s0] + dampingForce[s0] ) 
+        //  s0_tforce_a_y  =   s0_sdir_y  *  (  hookeForce[s0] + dampingForce[s0] )
         //  s1_tforce_a_y  =   s1_sdir_y  *  (  hookeForce[s1] + dampingForce[s1] )
         //  s2_tforce_a_y  =   s2_sdir_y  *  (  hookeForce[s2] + dampingForce[s2] )
         //  s3_tforce_a_y  =   s3_sdir_y  *  (  hookeForce[s3] + dampingForce[s3] )
@@ -479,7 +478,7 @@ void Ship::ApplySpringsForces(
         //
         // j_sforce += s0_a_tforce + s2_a_tforce
         // m_sforce += s1_a_tforce + s3_a_tforce
-        // 
+        //
         // l_sforce -= s0_a_tforce + s3_a_tforce
         // k_sforce -= s1_a_tforce + s2_a_tforce
 
@@ -569,7 +568,7 @@ void Ship::ApplySpringsForces(
         // Calculate spring directions
         __m128 const s0s1s2s3_sdir_x = _mm_mul_ps(s0s1s2s3_displacement_x, s0s1s2s3_springLength_inv);
         __m128 const s0s1s2s3_sdir_y = _mm_mul_ps(s0s1s2s3_displacement_y, s0s1s2s3_springLength_inv);
-        
+
         //////////////////////////////////////////////////////////////////////////////////////////////
 
         //
@@ -601,7 +600,7 @@ void Ship::ApplySpringsForces(
         // along the same direction as the spring, for endpoint A:
         //      relVelocity.dot(springDir) * dampingCoeff[s]
         //
-        // Strategy: 
+        // Strategy:
         //
         // ( relV[s0].x * sprDir[s0].x  +  relV[s0].y * sprDir[s0].y )  *  dampCoeff[s0]
         // ( relV[s1].x * sprDir[s1].x  +  relV[s1].y * sprDir[s1].y )  *  dampCoeff[s1]
@@ -656,18 +655,18 @@ void Ship::ApplySpringsForces(
                 s0s1s2s3_dampingCoeff);
 
         //
-        // 3. Apply forces: 
+        // 3. Apply forces:
         //      force A = springDir * (hookeForce + dampingForce)
         //      force B = - forceA
         //
         // Strategy:
         //
-        //  total_forceA[s0].x  =   springDir[s0].x  *  (  hookeForce[s0] + dampingForce[s0] ) 
+        //  total_forceA[s0].x  =   springDir[s0].x  *  (  hookeForce[s0] + dampingForce[s0] )
         //  total_forceA[s1].x  =   springDir[s1].x  *  (  hookeForce[s1] + dampingForce[s1] )
         //  total_forceA[s2].x  =   springDir[s2].x  *  (  hookeForce[s2] + dampingForce[s2] )
         //  total_forceA[s3].x  =   springDir[s3].x  *  (  hookeForce[s3] + dampingForce[s3] )
         //
-        //  total_forceA[s0].y  =   springDir[s0].y  *  (  hookeForce[s0] + dampingForce[s0] ) 
+        //  total_forceA[s0].y  =   springDir[s0].y  *  (  hookeForce[s0] + dampingForce[s0] )
         //  total_forceA[s1].y  =   springDir[s1].y  *  (  hookeForce[s1] + dampingForce[s1] )
         //  total_forceA[s2].y  =   springDir[s2].y  *  (  hookeForce[s2] + dampingForce[s2] )
         //  total_forceA[s3].y  =   springDir[s3].y  *  (  hookeForce[s3] + dampingForce[s3] )
@@ -946,7 +945,7 @@ void Ship::ApplySpringsForces(
         float const s3_dampForceMag = s3_relVel.dot(s3_dir) * dampingCoefficientBuffer[s + 3];
 
         //
-        // 3. Apply forces: 
+        // 3. Apply forces:
         //      force A = springDir * (hookeForce + dampingForce)
         //      force B = - forceA
         //
@@ -1057,7 +1056,7 @@ void Ship::IntegrateAndResetDynamicForces_N(
 #endif
 
 float Ship::CalculateIntegrationVelocityFactor(
-    float dt, 
+    float dt,
     GameParameters const & gameParameters) const
 {
     // Global damp - lowers velocity uniformly, damping oscillations originating between gravity and buoyancy
@@ -1126,7 +1125,7 @@ void Ship::IntegrateAndResetDynamicForces_1(
     float * const restrict dynamicForceBuffer = reinterpret_cast<float *>(mPoints.GetParallelDynamicForceBuffer(0)) + startPointIndex * 2;
 
     size_t const count = (endPointIndex - startPointIndex) * 2;
-    for (size_t i = 0; i < count; ++i) 
+    for (size_t i = 0; i < count; ++i)
     {
         float const totalDynamicForce = dynamicForceBuffer[i];
 
