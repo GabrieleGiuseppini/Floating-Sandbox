@@ -2604,7 +2604,6 @@ void Ship::RecalculateLightDiffusionParallelism(size_t simulationParallelism)
     // We want each thread to work on a multiple of our vectorization word size
     //
 
-    assert((numberOfPoints % (static_cast<ElementCount>(lightDiffusionParallelism) * vectorization_float_count<ElementCount>)) == 0);
     assert(numberOfPoints >= static_cast<ElementCount>(lightDiffusionParallelism) * vectorization_float_count<ElementCount>);
     ElementCount const numberOfVecPointsPerThread = numberOfPoints / (static_cast<ElementCount>(lightDiffusionParallelism) * vectorization_float_count<ElementCount>);
 

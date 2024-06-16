@@ -418,6 +418,17 @@ public:
     // Ship rendering properties
     //
 
+    ShipViewModeType GetShipViewMode() const
+    {
+        return mRenderParameters.ShipViewMode;
+    }
+
+    void SetShipViewMode(ShipViewModeType shipViewMode)
+    {
+        mRenderParameters.ShipViewMode = shipViewMode;
+        mRenderParameters.IsShipViewModeDirty = true;
+    }
+
     float GetShipAmbientLightSensitivity() const
     {
         return mRenderParameters.ShipAmbientLightSensitivity;

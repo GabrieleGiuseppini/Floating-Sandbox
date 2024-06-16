@@ -818,9 +818,6 @@ public:
     bool GetShowShipThroughOcean() const override { return mRenderContext->GetShowShipThroughOcean(); }
     void SetShowShipThroughOcean(bool value) override { mRenderContext->SetShowShipThroughOcean(value); }
 
-    DebugShipRenderModeType GetDebugShipRenderMode() const override { return mRenderContext->GetDebugShipRenderMode(); }
-    void SetDebugShipRenderMode(DebugShipRenderModeType debugShipRenderMode) override { mRenderContext->SetDebugShipRenderMode(debugShipRenderMode); }
-
     OceanRenderModeType GetOceanRenderMode() const override { return mRenderContext->GetOceanRenderMode(); }
     void SetOceanRenderMode(OceanRenderModeType oceanRenderMode) override { mRenderContext->SetOceanRenderMode(oceanRenderMode); }
 
@@ -849,6 +846,12 @@ public:
 
     rgbColor const & GetFlatLandColor() const override { return mRenderContext->GetFlatLandColor(); }
     void SetFlatLandColor(rgbColor const & color) override { mRenderContext->SetFlatLandColor(color); }
+
+    ShipViewModeType GetShipViewMode() const override { return mRenderContext->GetShipViewMode(); }
+    void SetShipViewMode(ShipViewModeType shipViewMode) override { mRenderContext->SetShipViewMode(shipViewMode); }
+
+    DebugShipRenderModeType GetDebugShipRenderMode() const override { return mRenderContext->GetDebugShipRenderMode(); }
+    void SetDebugShipRenderMode(DebugShipRenderModeType debugShipRenderMode) override { mRenderContext->SetDebugShipRenderMode(debugShipRenderMode); }
 
     VectorFieldRenderModeType GetVectorFieldRenderMode() const override { return mRenderContext->GetVectorFieldRenderMode(); }
     void SetVectorFieldRenderMode(VectorFieldRenderModeType VectorFieldRenderMode) override { mRenderContext->SetVectorFieldRenderMode(VectorFieldRenderMode); }

@@ -60,6 +60,8 @@ long const ID_ZOOM_OUT_MENUITEM = wxNewId();
 long const ID_AUTO_FOCUS_AT_SHIP_LOAD_MENUITEM = wxNewId();
 long const ID_CONTINUOUS_AUTO_FOCUS_MENUITEM = wxNewId();
 long const ID_RESET_VIEW_MENUITEM = wxNewId();
+long const ID_CHANGE_SHIP_VIEW_EXTERIOR_MENUITEM = wxNewId();
+long const ID_CHANGE_SHIP_VIEW_INTERIOR_MENUITEM = wxNewId();
 long const ID_TIME_OF_DAY_UP_MENUITEM = wxNewId();
 long const ID_TIME_OF_DAY_DOWN_MENUITEM = wxNewId();
 long const ID_FULL_TIME_OF_DAY_MENUITEM = wxNewId();
@@ -278,6 +280,16 @@ MainFrame::MainFrame(
             controlsMenu->Append(resetViewMenuItem);
             Connect(ID_RESET_VIEW_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnResetViewMenuItemSelected);
             ADD_PLAIN_ACCELERATOR_KEY(WXK_HOME, resetViewMenuItem);
+
+            controlsMenu->Append(new wxMenuItem(controlsMenu, wxID_SEPARATOR));
+
+            mShipViewExteriorMenuItem = new wxMenuItem(controlsMenu, ID_CHANGE_SHIP_VIEW_EXTERIOR_MENUITEM, _("Exterior View"), wxEmptyString, wxITEM_RADIO);
+            controlsMenu->Append(mShipViewExteriorMenuItem);
+            Connect(ID_CHANGE_SHIP_VIEW_EXTERIOR_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnShipViewMenuItemSelected);
+
+            mShipViewInteriorMenuItem = new wxMenuItem(controlsMenu, ID_CHANGE_SHIP_VIEW_INTERIOR_MENUITEM, _("Interior View"), wxEmptyString, wxITEM_RADIO);
+            controlsMenu->Append(mShipViewInteriorMenuItem);
+            Connect(ID_CHANGE_SHIP_VIEW_INTERIOR_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnShipViewMenuItemSelected);
 
             controlsMenu->Append(new wxMenuItem(controlsMenu, wxID_SEPARATOR));
 
@@ -1766,6 +1778,21 @@ void MainFrame::OnResetViewMenuItemSelected(wxCommandEvent & /*event*/)
 {
     assert(!!mGameController);
     mGameController->ResetView();
+}
+
+void MainFrame::OnShipViewMenuItemSelected(wxCommandEvent & /*event*/)
+{
+    assert(!!mGameController);
+    if (mShipViewExteriorMenuItem->IsChecked())
+    {
+        assert(!mShipViewInteriorMenuItem->IsChecked());
+        mGameController->SetShipViewMode(ShipViewModeType::Exterior);
+    }
+    else
+    {
+        assert(mShipViewInteriorMenuItem->IsChecked());
+        mGameController->SetShipViewMode(ShipViewModeType::Interior);
+    }
 }
 
 static float constexpr TimeOfDayStep = 0.01f;

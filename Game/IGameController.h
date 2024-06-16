@@ -176,7 +176,6 @@ struct IGameController
     virtual float GetMinCameraSpeedAdjustment() const = 0;
     virtual float GetMaxCameraSpeedAdjustment() const = 0;
 
-
     virtual bool GetDoAutoFocusOnShipLoad() const = 0;
     virtual void SetDoAutoFocusOnShipLoad(bool value) = 0;
 

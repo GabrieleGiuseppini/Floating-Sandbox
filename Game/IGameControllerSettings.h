@@ -371,9 +371,6 @@ struct IGameControllerSettings
     virtual bool GetShowShipThroughOcean() const = 0;
     virtual void SetShowShipThroughOcean(bool value) = 0;
 
-    virtual DebugShipRenderModeType GetDebugShipRenderMode() const = 0;
-    virtual void SetDebugShipRenderMode(DebugShipRenderModeType debugShipRenderMode) = 0;
-
     virtual OceanRenderModeType GetOceanRenderMode() const = 0;
     virtual void SetOceanRenderMode(OceanRenderModeType oceanRenderMode) = 0;
 
@@ -400,6 +397,12 @@ struct IGameControllerSettings
 
     virtual rgbColor const & GetFlatLandColor() const = 0;
     virtual void SetFlatLandColor(rgbColor const & color) = 0;
+
+    virtual ShipViewModeType GetShipViewMode() const = 0;
+    virtual void SetShipViewMode(ShipViewModeType shipViewMode) = 0;
+
+    virtual DebugShipRenderModeType GetDebugShipRenderMode() const = 0;
+    virtual void SetDebugShipRenderMode(DebugShipRenderModeType debugShipRenderMode) = 0;
 
     virtual VectorFieldRenderModeType GetVectorFieldRenderMode() const = 0;
     virtual void SetVectorFieldRenderMode(VectorFieldRenderModeType VectorFieldRenderMode) = 0;

@@ -48,7 +48,7 @@ public:
         ShipId shipId,
         size_t pointCount,
         size_t shipCount,
-        RgbaImageData exteriorTextureImage,
+        RgbaImageData exteriorViewImage,
         RgbaImageData interiorViewImage,
         ShaderManager<ShaderManagerTraits> & shaderManager,
         GlobalRenderContext const & globalRenderContext,
@@ -1432,6 +1432,7 @@ private:
     void RenderPreparePointToPointArrows(RenderParameters const & renderParameters);
     void RenderDrawPointToPointArrows(RenderParameters const & renderParameters);
 
+    void ApplyShipViewModeChanges(RenderParameters const & renderParameters);
     void ApplyShipStructureRenderModeChanges(RenderParameters const & renderParameters);
     void ApplyViewModelChanges(RenderParameters const & renderParameters);
     void ApplyEffectiveAmbientLightIntensityChanges(RenderParameters const & renderParameters);
@@ -1867,6 +1868,9 @@ private:
     //
     // Textures
     //
+
+    RgbaImageData mExteriorViewImage;
+    RgbaImageData mInteriorViewImage;
 
     GameOpenGLTexture mShipTextureOpenGLHandle;
     GameOpenGLTexture mStressedSpringTextureOpenGLHandle;

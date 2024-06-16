@@ -120,6 +120,8 @@ private:
     wxMenuItem * mReloadPreviousShipMenuItem;
     wxMenuItem * mAutoFocusAtShipLoadMenuItem;
     wxMenuItem * mContinuousAutoFocusMenuItem;
+    wxMenuItem * mShipViewExteriorMenuItem;
+    wxMenuItem * mShipViewInteriorMenuItem;
     wxMenuItem * mPauseMenuItem;
     wxMenuItem * mStepMenuItem;
     wxMenu * mToolsMenu;
@@ -199,6 +201,7 @@ private:
     void OnAutoFocusAtShipLoadMenuItemSelected(wxCommandEvent & event);
     void OnContinuousAutoFocusMenuItemSelected(wxCommandEvent & event);
     void OnResetViewMenuItemSelected(wxCommandEvent & event);
+    void OnShipViewMenuItemSelected(wxCommandEvent & event);
     void OnTimeOfDayUpMenuItemSelected(wxCommandEvent & event);
     void OnTimeOfDayDownMenuItemSelected(wxCommandEvent & event);
     void OnFullTimeOfDayMenuItemSelected(wxCommandEvent & event);

@@ -330,57 +330,6 @@ Arch
 			- Algo for creation should take care of following aspects:
 				- Make sure walls not too crowded
 				- Make sure there are stairs (evt. creating them)
-			+ Floorplan generation:
-				X Naive algorithm: use hull springs, but ignore "join" hull springs
-					+ Put back definition coords (opt unfortunately...) in ShipFactoryPoint
-					+ Do cases
-					+ Algo structure:
-						+ Visit springs that have "structural" endpoints (coords not nullopt)
-							+ Verify in FS that the optionality of definition_coords really reflects this
-						+ For each spring, check its connected triangles
-							+ Make sure we do this _after_ factory points are connected to springs
-						+ Given the triangle we want to check, get def coords of its vertices and use PointIndexMatrix to check for "extensions"
-					+ TessellationDirections @ GameTypes
-					+ using ShipFactoryFloorPlan...
-					+ FindNextHullOctant(..., directionOctants=1|7)
-						+ Cleanup 
-					+ Do two-pass algo
-						+ ShipFactoryFloorPlan: not of ShipPointPair but of ShipFactoryFloor
-							+ Which constains ElementIndex spring
-						+ Use FloorPlan to determine hullness of springs, rather than ship itself
-				X Algo 2:
-					X Remove springs that are:
-						+ a: Long one (nothing on their exact elongaments x 2), and
-						+ b: Incident on "long" lines (TODOHERE: multiple incident long ones? And, must this be just "first" spring?)
-					- TODO:
-						+ Should "a" not consider "internal" (in sealed-triangle) springs? CHECK: should remove trivial diagonals in upper-left corner of video_mesh
-						+ Should we avoid interior springs - CHECK: should remove interior springs from video_mesh
-						- All the above cause first H segment of each floor in test_floorplan to disappear, as it's internal
-							- Note: it's not viable, so we should not check for "internal" when checking incidence on long floor, as that internal might become a floor
-								- Do not check for internal at first loop
-								- Do not check for internal at IsFloorIncidentOnLongFloors, but check all (half-viable) springs
-				X Algo 3: floor walk-mapping:
-					- For each line, from bottom:
-						- IsInside=False
-						- For x=0 to last:
-							- If encounter a hull point that has at least one triangle (i.e. which belongs to an edge) (if !IsInside) or encounter a non-floor point (if IsInside)
-							  and the point doesn't have a floor assigned
-									- TODO: what about *face*? Can we encounter same point twice for two different floors? YES (e.g. point between two separate floors)
-									- TODO: develop this "floor assignment/marking" thing
-								- Start walk from here
-									- Enter algo with point & direction
-										- Direction depends on IsInside
-									- Algo keeps looking for hull-springs-that-are-triangle-sides
-									- Algo builds:
-										- Floor springs (map)
-											- Note: might add same spring multiple times, e.g. both sides of it
-										- Set of removed springs (set)
-											- Mostly to faciliate algo
-											- Note: should not add same spring multiple times, as we make sure we don't consider removed springs
-									- Walk termination: first spring that might be removed is next, and so we stop when we are trying to re-check from here
-								- Flip IsInside
-				+ Algo 4: vertex-pattern based
-
 	- InteriorTexture layer
 		- A new texture layer (for graphical purposes only)
 		- When the layer is absent, it is created automatically (@ShipFactory) from the structural layer
@@ -407,8 +356,8 @@ Arch
 			- IShipPhysicsHandler::HandleNpcFloorUpdated(Triangle, ordinal) -> invoke ShipTexturizer() method (on ShipTexturizer& member) to generate new Interior view texture quad, 
 			  which it then stores in a (temporary) list member of Ship
 			- At Ship::RenderUpload time, it gives (std::move) the list to ShipRenderContext which will a) upload to texture as subtextures, and b) apply to own Interior view texture
-			= This implies that Ship must hold:
-				+ interior texture
+			- This implies that Ship must hold:
+				- interior texture
 		- ShipRenderContext:
 			- Keeps ahold of both Exterior and Interior view textures
 			- Upon change of the view type (Exterior<->Interior), ShipRenderContext uploads right one of the two to OpenGL
@@ -436,20 +385,35 @@ Arch
 					+ Run unit tests
 		+ InteriorTexture goes to Ship		
 		+ ShipFactory: invoke ShipTexturizer to create InteriorViewImage
-		- GameTypes: ShipViewModeType == {Exterior, Interior}
-		- RenderContext owns the param, exactly like e.g. DebugShipRenderModeType
-			- Hook param set/get up to IGameController
-			- Upon change detected:
-				- UploadMipmapped right view image
-					- RenderContext keeps hold of both textures
-			- Trigger a change detected at initialization, so we start with default view
-		- MainFrame:
-			- view/control menu: add two mutex menus, "Exterior View" and "Interior View"
-			- For now MainFrame just reacts and invokes GameController
+		+ GameTypes: ShipViewModeType == {Exterior, Interior}
+		+ RenderContext (actually, RenderParameters) owns the param, exactly like e.g. DebugShipRenderModeType
+			+ Hook param set/get up to IGameController
+			+ Initialization: store both textures and do NOT upload them
+			+ Upon change detected:
+				+ UploadMipmapped right view image
+					+ RenderContext keeps hold of both textures
+			+ Trigger a fake change at initialization, so we start with default view
+		= MainFrame:
+			+ view/control menu: add two mutex menus, "Exterior View" and "Interior View"
+			+ For now MainFrame just reacts and invokes GameController
+			- Reconciliate
 		- ShipTexturizer:
 			- 1. Create image with size of background, multiplied by alpha
+				- See what the size is - and see if we might want to lower the default resolution of the non-material-texturized structures (and thus also of background)
 			- 2. Visit all triangles:
 				- TODOHERE
+
+		- Tests:
+			- Test performance then (also with old Dell) and decide whether mipmapping on-demand is really feasible
+				- Also consider reducing the number of texture levels
+
+			- Full ShipBuilder test, up to saving
+
+===================
+Next release:
+
+- NPC Rendering:
+	- Knee when rising: flatten it (extra triangle)
 
 - Doors:
 	- New electrical element (with both ON/OFF types), controls floorness of springs (and thus triangle edges) among neighboring pairs of them
@@ -457,6 +421,7 @@ Arch
 			- Iff we end up having H1,V1,S2,etc. floor types, as resetting door would need to know that
 			- Otherwise, if we only have Floor+Open, can live without factory
 	- Dynamics of door-induced floorplan changes
+		- Ship has InteriorTexture, so it can re-build parts of InteriorView upon floor state changes
 		- IShipPhysicsHandler::HandleNpcFloorUpdated(Triangle, ordinal) -> invoke ShipTexturizer() method (on ShipTexturizer& member) (passing also own InteriorTexture) to generate new Interior view texture quad, 
 		  which it then stores in a (temporary) list member of Ship
 		- At Ship::RenderUpload time, it gives (std::move) the list to ShipRenderContext which will a) upload to texture as subtextures, and b) apply to own Interior view texture (so that it's also
@@ -472,19 +437,16 @@ Arch
 		- Hit (@ bounce)
 		- Exclamation (@ loss of equilibrium)
 
-===================
-Next release:
 
-- Rendering:
-	- Knee when rising: flatten it (extra triangle)
-
-- InternalTexture layer:
+- InternalTexture layer from user:
 	- ShipDe/Serialization
 		- Make sure that:
 			- Old FS can read new ship with layer
 			- New FS can read old ship (without layer obviously)
 	- ShipBuilder
-		- Re-enable/take care of various TODOHERE for not-yet implemented things
+		- Re-enable/take care of various "TODOHERE"'s for not-yet implemented things
+		- Ability to auto-generate InteriorTexture from structure
+			- via ShipTexturizer
 
 ===================
 ===================
@@ -2038,6 +2000,59 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 	+ Merge back into master
 
 	+ Video
+
++ Automatic Floorplan Generation:
+	X Naive algorithm: use hull springs, but ignore "join" hull springs
+		+ Put back definition coords (opt unfortunately...) in ShipFactoryPoint
+		+ Do cases
+		+ Algo structure:
+			+ Visit springs that have "structural" endpoints (coords not nullopt)
+				+ Verify in FS that the optionality of definition_coords really reflects this
+			+ For each spring, check its connected triangles
+				+ Make sure we do this _after_ factory points are connected to springs
+			+ Given the triangle we want to check, get def coords of its vertices and use PointIndexMatrix to check for "extensions"
+		+ TessellationDirections @ GameTypes
+		+ using ShipFactoryFloorPlan...
+		+ FindNextHullOctant(..., directionOctants=1|7)
+			+ Cleanup 
+		+ Do two-pass algo
+			+ ShipFactoryFloorPlan: not of ShipPointPair but of ShipFactoryFloor
+				+ Which constains ElementIndex spring
+			+ Use FloorPlan to determine hullness of springs, rather than ship itself
+	X Algo 2:
+		X Remove springs that are:
+			+ a: Long one (nothing on their exact elongaments x 2), and
+			+ b: Incident on "long" lines (TODOHERE: multiple incident long ones? And, must this be just "first" spring?)
+		- TODO:
+			+ Should "a" not consider "internal" (in sealed-triangle) springs? CHECK: should remove trivial diagonals in upper-left corner of video_mesh
+			+ Should we avoid interior springs - CHECK: should remove interior springs from video_mesh
+			- All the above cause first H segment of each floor in test_floorplan to disappear, as it's internal
+				- Note: it's not viable, so we should not check for "internal" when checking incidence on long floor, as that internal might become a floor
+					- Do not check for internal at first loop
+					- Do not check for internal at IsFloorIncidentOnLongFloors, but check all (half-viable) springs
+	X Algo 3: floor walk-mapping:
+		- For each line, from bottom:
+			- IsInside=False
+			- For x=0 to last:
+				- If encounter a hull point that has at least one triangle (i.e. which belongs to an edge) (if !IsInside) or encounter a non-floor point (if IsInside)
+				  and the point doesn't have a floor assigned
+						- TODO: what about *face*? Can we encounter same point twice for two different floors? YES (e.g. point between two separate floors)
+						- TODO: develop this "floor assignment/marking" thing
+					- Start walk from here
+						- Enter algo with point & direction
+							- Direction depends on IsInside
+						- Algo keeps looking for hull-springs-that-are-triangle-sides
+						- Algo builds:
+							- Floor springs (map)
+								- Note: might add same spring multiple times, e.g. both sides of it
+							- Set of removed springs (set)
+								- Mostly to faciliate algo
+								- Note: should not add same spring multiple times, as we make sure we don't consider removed springs
+						- Walk termination: first spring that might be removed is next, and so we stop when we are trying to re-check from here
+					- Flip IsInside
+	+ Algo 4: vertex-pattern based
+
+
 
 + Furniture:
 	+ Would be nice to re-architect as follows:

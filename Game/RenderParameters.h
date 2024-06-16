@@ -51,6 +51,7 @@ struct RenderParameters
     // Ship
     //
 
+    ShipViewModeType ShipViewMode;
     float ShipAmbientLightSensitivity;
     rgbColor FlatLampLightColor;
     bool DrawExplosions;
@@ -87,6 +88,7 @@ struct RenderParameters
     bool AreLandRenderParametersDirty; // Tracks various land render parameters as a whole, for convenience
     bool IsLandTextureIndexDirty;
     // Ship
+    bool IsShipViewModeDirty;
     bool IsShipAmbientLightSensitivityDirty;
     bool IsFlatLampLightColorDirty;
     bool IsShipWaterColorDirty;

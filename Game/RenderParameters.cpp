@@ -30,6 +30,7 @@ RenderParameters::RenderParameters(
 	, FlatLandColor(0x72, 0x46, 0x05)
 	, LandTextureIndex(3) // Rock Coarse 3
 	// Ship
+	, ShipViewMode(ShipViewModeType::Exterior)
 	, ShipAmbientLightSensitivity(1.0f)
 	, FlatLampLightColor(0xff, 0xff, 0xbf)
 	, DrawExplosions(true)
@@ -56,6 +57,7 @@ RenderParameters::RenderParameters(
 	, IsOceanTextureIndexDirty(true)
 	, AreLandRenderParametersDirty(true)
 	, IsLandTextureIndexDirty(true)
+	, IsShipViewModeDirty(true)
 	, IsShipAmbientLightSensitivityDirty(true)
 	, IsFlatLampLightColorDirty(true)
 	, IsShipWaterColorDirty(true)
@@ -83,6 +85,7 @@ RenderParameters RenderParameters::TakeSnapshotAndClear()
 	AreLandRenderParametersDirty = false;
 	IsLandTextureIndexDirty = false;
 	//
+	IsShipViewModeDirty = false;
 	IsShipAmbientLightSensitivityDirty = false;
 	IsFlatLampLightColorDirty = false;
 	IsShipWaterColorDirty = false;
