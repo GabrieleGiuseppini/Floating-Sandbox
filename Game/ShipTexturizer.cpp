@@ -346,6 +346,9 @@ RgbaImageData ShipTexturizer::MakeInteriorViewTexture(
     ImageSize const quadSize = ImageSize::FromFloatFloor(textureSizeF / shipSizeF);
 
     // Thickness of a floor, in pixels
+    //
+    // Futurework: should incorporate ship's scale, as we calculate the thickness assuming
+    // width and height are 1:1 with meters
     auto const floorThickness = std::max(
         std::max(
             quadSize.width / 10,
@@ -360,8 +363,7 @@ RgbaImageData ShipTexturizer::MakeInteriorViewTexture(
 
         for (int e = 0; e < 3; ++e)
         {
-            // TODOTEST
-            //if (triangles.GetSubSpringNpcFloorKind(t, e) != NpcFloorKindType::NotAFloor)
+            if (triangles.GetSubSpringNpcFloorKind(t, e) != NpcFloorKindType::NotAFloor)
             {
                 // Map edge's endpoints to pixels in texture
 
@@ -373,13 +375,41 @@ RgbaImageData ShipTexturizer::MakeInteriorViewTexture(
                 vec2f const pointBTextureCoords = points.GetTextureCoordinates(pointBIndex);
                 ImageCoordinates const endpointB = ImageCoordinates::FromFloatFloor(pointBTextureCoords * textureSizeF);
 
+                ElementIndex const pointCIndex = triangles.GetPointIndices(t)[(e + 2) % 3];
+                vec2f const pointCTextureCoords = points.GetTextureCoordinates(pointCIndex);
+                ImageCoordinates const endpointC = ImageCoordinates::FromFloatFloor(pointCTextureCoords * textureSizeF);
+
                 // Check direction
                 if (endpointA.x == endpointB.x)
                 {
                     // Vertical
                     assert(endpointA.y != endpointB.y);
 
-                    // TODOHERE
+                    int xStart = endpointA.x;
+                    int xEnd;
+                    int xIncr;
+                    if (endpointA.x < endpointC.x)
+                    {
+                        xEnd = xStart + floorThickness;
+                        xIncr = 1;
+                    }
+                    else
+                    {
+                        xEnd = xStart - floorThickness;
+                        xIncr = -1;
+                    }
+
+                    int yStart = endpointA.y;
+                    int yEnd = endpointB.y;
+                    int yIncr = (yStart < yEnd) ? 1 : -1;
+
+                    for (int y = yStart; y != yEnd; y += yIncr)
+                    {
+                        for (int x = xStart; x != xEnd; x += xIncr)
+                        {
+                            interiorView[{x, y}] = FloorColor;
+                        }
+                    }
                 }
                 else if (endpointA.y == endpointB.y)
                 {
@@ -391,10 +421,19 @@ RgbaImageData ShipTexturizer::MakeInteriorViewTexture(
                     int xEndIncr = 0;
                     int xIncr = (endpointA.x < endpointB.x) ? 1 : -1;
 
-                    // TODO: broken: need quad
                     int yStart = endpointA.y;
-                    int yEnd = endpointA.y - floorThickness;
-                    int yIncr = -1;
+                    int yEnd;
+                    int yIncr;
+                    if (endpointC.y > endpointA.y)
+                    {
+                        yEnd = yStart + floorThickness;
+                        yIncr = 1;
+                    }
+                    else
+                    {
+                        yEnd = yStart - floorThickness;
+                        yIncr = -1;
+                    }
 
                     for (int y = yStart; y != yEnd; y += yIncr)
                     {
@@ -411,12 +450,49 @@ RgbaImageData ShipTexturizer::MakeInteriorViewTexture(
                 {
                     // Diagonal
 
-                    // TODOHERE
+                    int xStart = endpointA.x;
+                    int xStartIncr;
+                    int xEnd;
+                    int xEndIncr;
+                    int xIncr;
+
+                    if (endpointC.x <= std::min(endpointA.x, endpointB.x))
+                    {
+                        xEnd = xStart - floorThickness;
+                        xIncr = -1;
+                    }
+                    else
+                    {
+                        xEnd = xStart + floorThickness;
+                        xIncr = 1;
+                    }
+
+                    if (endpointA.x < endpointB.x)
+                    {
+                        xStartIncr = 1;
+                        xEndIncr = 1;
+                    }
+                    else
+                    {
+                        xStartIncr = -1;
+                        xEndIncr = -1;
+                    }
+
+                    int yStart = endpointA.y;
+                    int yEnd = endpointB.y;
+                    int yIncr = (yStart < yEnd) ? 1 : -1;
+
+                    for (int y = yStart; y != yEnd; y += yIncr)
+                    {
+                        for (int x = xStart; x != xEnd; x += xIncr)
+                        {
+                            interiorView[{x, y}] = FloorColor;
+                        }
+
+                        xStart += xStartIncr;
+                        xEnd += xEndIncr;
+                    }
                 }
-
-
-                // TODOHERE
-                (void)floorThickness;
             }
         }
     }

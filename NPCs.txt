@@ -400,24 +400,16 @@ Arch
 			+ Doesn't take alpha (remove that), but ShipFactory does the right thing here in creating InteriorTexture background
 				+ Use Transform()?
 			+ 1. Create image by Clone() of background
-			- Take ship size for floor thickness (pixels) and quad size (pixels)
-				- Add comment on ScaleFactor needed here in future
+			= Take ship size for floor thickness (pixels) and quad size (pixels)
+				+ Add comment on ScaleFactor needed here in future
 				- Also needs to go to Ship()
-			= 2. Visit all triangles:
-				- TODOHERE: is this needed?
-					- // Need to group triangles adjacent by diagonal by quad
-					- If triangle's diagonal edge (assert there is always 1 and only 1) has another triangle:
-						- If that other triangle's index is > this:
-							- Quad is covering quad
-						- Else:
-							- Nothing
-					- Else:
-						- Quad is covering quad
-				- Invoke internal helper here, re-used by other overload as well
+			+ 2. Visit all triangles
+			- TODO: check again (springs % 4)
 			- 3. Internal Helper: works on a single triangle
 				- For each floor edge:
 					- TODOHERE
 		
+		- See why floorplanizer is creating diagonal at base of T's
 		- See if can lower the resolution of the auto-generated InteriorTexture (and thus also of view)
 			- e.g., cap by 2048 instead of 4096
 		- Tests:
@@ -462,6 +454,8 @@ Next release:
 					- InteriorView
 				- Calcs rectangle, creates buffer (copied from rect of InteriorView)
 					- Rectangle could be two actual sub-quads, iff triangles are joined on H or V edge
+						- Just do union of quads of each triangle
+					- Also: if joined on diag, rectangle must extend to include two other quad left and right, for we now do diag's writing outside of single quad
 				- Proceeds with already-existing internal helper, for each triangle
 				- Returns also origin of new InteriorView texture quad within InteriorView pixel space
 			- Store new InteriorView texture quad to a (temporary) list member of Ship, together with origin
