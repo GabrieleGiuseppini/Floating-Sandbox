@@ -403,13 +403,13 @@ Arch
 			= Take ship size for floor thickness (pixels) and quad size (pixels)
 				+ Add comment on ScaleFactor needed here in future
 				- Also needs to go to Ship()
-			+ 2. Visit all triangles
-			- TODO: check again (springs % 4)
+			+ 2. Visit all triangles			
 			- 3. Internal Helper: works on a single triangle
 				- For each floor edge:
 					- TODOHERE
-		
+
 		- See why floorplanizer is creating diagonal at base of T's
+			- Make default ship with other mesh we're used at		
 		- See if can lower the resolution of the auto-generated InteriorTexture (and thus also of view)
 			- e.g., cap by 2048 instead of 4096
 		- Tests:

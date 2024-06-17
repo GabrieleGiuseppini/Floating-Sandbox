@@ -8,6 +8,7 @@
 #include "ShipFactoryTypes.h"
 
 #include <GameCore/GameTypes.h>
+#include <GameCore/IndexRemap.h>
 
 #include <array>
 #include <unordered_set>
@@ -21,6 +22,7 @@ public:
 	ShipFactoryFloorPlan BuildFloorplan(
 		ShipFactoryPointIndexMatrix const & pointIndexMatrix,
 		std::vector<ShipFactoryPoint> const & pointInfos,
+		IndexRemap const & pointIndexRemap,
 		std::vector<ShipFactorySpring> const & springInfos) const;
 
 private:

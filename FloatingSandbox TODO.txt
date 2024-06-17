@@ -1022,6 +1022,9 @@
 		- Use at:
 			= ShipFactory
 			- ShipLoad Preview Window, when displaying size
+			- ShipTexturizer::MakeInteriorViewTexture, when calculating floor thickness
+			- Spring physics
+				- ...to figure out all the places where we assume spring lengths are 1 or sqrt(2)
 
 	- Time slowing down, both automatically (at explosions, at big events, etc.) and by user
 

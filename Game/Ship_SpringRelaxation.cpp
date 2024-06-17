@@ -61,6 +61,7 @@ void Ship::RecalculateSpringRelaxationSpringForcesParallelism(size_t simulationP
     // We want all but the last thread to work on a multiple of the vectorization word size
     //
 
+    //assert(numberOfSprings >= static_cast<ElementCount>(springRelaxationParallelism) * vectorization_float_count<ElementCount>); // Commented out because: numberOfSprings may be < 4
     ElementCount const numberOfVecSpringsPerThread = numberOfSprings / (static_cast<ElementCount>(springRelaxationParallelism) * vectorization_float_count<ElementCount>);
 
     ElementIndex springStart = 0;
@@ -102,7 +103,7 @@ void Ship::RecalculateSpringRelaxationIntegrationAndSeaFloorCollisionParallelism
 
     size_t const actualParallelism = std::max(
         std::min(
-            numberOfPoints <= 12000 ? size_t(1) : size_t(1) + (numberOfPoints - 12000) / 4000,
+            numberOfPoints <= 12000 ? size_t(1) : (size_t(1) + (numberOfPoints - 12000) / 4000),
             simulationParallelism),
         size_t(1));
 
@@ -115,7 +116,7 @@ void Ship::RecalculateSpringRelaxationIntegrationAndSeaFloorCollisionParallelism
     // We want each thread to work on a multiple of our vectorization word size
     //
 
-    assert((numberOfPoints % (static_cast<ElementCount>(actualParallelism) * vectorization_float_count<ElementCount>)) == 0);
+    //assert((numberOfPoints % (static_cast<ElementCount>(actualParallelism) * vectorization_float_count<ElementCount>)) == 0); // Commented out because: only applies to non-last thread
     assert(numberOfPoints >= static_cast<ElementCount>(actualParallelism) * vectorization_float_count<ElementCount>);
     ElementCount const numberOfVecPointsPerThread = numberOfPoints / (static_cast<ElementCount>(actualParallelism) * vectorization_float_count<ElementCount>);
 

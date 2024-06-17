@@ -14,6 +14,7 @@
 ShipFactoryFloorPlan ShipFloorplanizer::BuildFloorplan(
 	ShipFactoryPointIndexMatrix const & pointIndexMatrix,
 	std::vector<ShipFactoryPoint> const & pointInfos,
+	IndexRemap const & pointIndexRemap,
 	std::vector<ShipFactorySpring> const & springInfos) const
 {
 	//
@@ -34,15 +35,28 @@ ShipFactoryFloorPlan ShipFloorplanizer::BuildFloorplan(
 			{
 				for (int xb = 0; xb < 3; ++xb)
 				{
-					if (pointIndexMatrix[{x + xb, y + yb}].has_value()
-						&& pointInfos[*pointIndexMatrix[{x + xb, y + yb}]].StructuralMtl.IsHull)
+					ElementIndex pointIndex2 = NoneElementIndex;
+
+					auto const pointIndex1 = pointIndexMatrix[{x + xb, y + yb}];
+					if (pointIndex1.has_value())
 					{
-						vertexBlock[xb][yb] = *pointIndexMatrix[{x + xb, y + yb}];
+						auto const pointIndex1Mapped = pointIndexRemap.OldToNew(*pointIndex1);
+						if (pointInfos[pointIndex1Mapped].StructuralMtl.IsHull)
+						{
+							pointIndex2 = pointIndex1Mapped;
+						}
 					}
-					else
-					{
-						vertexBlock[xb][yb] = NoneElementIndex;
-					}
+					vertexBlock[xb][yb] = pointIndex2;
+
+					////if (pointIndexMatrix[{x + xb, y + yb}].has_value()
+					////	&& pointInfos[*pointIndexMatrix[{x + xb, y + yb}]].StructuralMtl.IsHull)
+					////{
+					////	vertexBlock[xb][yb] = pointIndexRemap.OldToNew(*pointIndexMatrix[{x + xb, y + yb}]);
+					////}
+					////else
+					////{
+					////	vertexBlock[xb][yb] = NoneElementIndex;
+					////}
 				}
 			}
 

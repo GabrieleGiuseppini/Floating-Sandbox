@@ -332,6 +332,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData, RgbaImageData> ShipFac
     ShipFactoryFloorPlan floorPlan2 = shipFloorplanizer.BuildFloorplan(
         pointIndexMatrix,
         pointInfos2,
+        pointIndexRemap,
         springInfos2);
 
     //
