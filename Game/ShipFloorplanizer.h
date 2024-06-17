@@ -21,15 +21,15 @@ public:
 
 	ShipFactoryFloorPlan BuildFloorplan(
 		ShipFactoryPointIndexMatrix const & pointIndexMatrix,
-		std::vector<ShipFactoryPoint> const & pointInfos,
+		std::vector<ShipFactoryPoint> const & pointInfos2,
 		IndexRemap const & pointIndexRemap,
-		std::vector<ShipFactorySpring> const & springInfos) const;
+		std::vector<ShipFactorySpring> const & springInfos2) const;
 
 private:
 
 	bool IsSpringViableForFloor(
-		ShipFactorySpring const & springInfo,
-		std::vector<ShipFactoryPoint> const & pointInfos) const;
+		ShipFactorySpring const & springInfo2,
+		std::vector<ShipFactoryPoint> const & pointInfos2) const;
 
 	using VertexBlock = std::array<std::array<ElementIndex, 3>, 3>;
 	using SpringExclusionSet = std::unordered_set<ShipFactoryPointPair, ShipFactoryPointPair::Hasher>;
