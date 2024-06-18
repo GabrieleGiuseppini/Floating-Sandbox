@@ -848,12 +848,12 @@ void ShipTexturizer::DrawTriangleFloorInto(
                 int xIncr;
                 if (endpointA.x < endpointC.x)
                 {
-                    xEnd = xStart + floorThickness;
+                    xEnd = xStart + floorThickness - 1;
                     xIncr = 1;
                 }
                 else
                 {
-                    xEnd = xStart - floorThickness;
+                    xEnd = xStart - floorThickness + 1;
                     xIncr = -1;
                 }
 
@@ -876,12 +876,12 @@ void ShipTexturizer::DrawTriangleFloorInto(
                 int yIncr;
                 if (endpointC.y > endpointA.y)
                 {
-                    yEnd = yStart + floorThickness;
+                    yEnd = yStart + floorThickness - 1;
                     yIncr = 1;
                 }
                 else
                 {
-                    yEnd = yStart - floorThickness;
+                    yEnd = yStart - floorThickness + 1;
                     yIncr = -1;
                 }
 
@@ -906,12 +906,12 @@ void ShipTexturizer::DrawTriangleFloorInto(
 
                 if (endpointC.x <= std::min(endpointA.x, endpointB.x))
                 {
-                    xEnd = xStart - floorThickness;
+                    xEnd = xStart - floorThickness + 1;
                     xIncr = -1;
                 }
                 else
                 {
-                    xEnd = xStart + floorThickness;
+                    xEnd = xStart + floorThickness - 1;
                     xIncr = 1;
                 }
 

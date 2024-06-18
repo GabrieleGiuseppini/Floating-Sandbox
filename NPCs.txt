@@ -421,8 +421,10 @@ Arch
 			+ Use GameChronometer
 		+ See if can lower the resolution of the auto-generated InteriorTexture (and thus also of view)
 			+ e.g., cap by 2048 instead of 4096
-		- See if should use (mipmapped) nearest neghbor for interior view
+		X See if should use (mipmapped) nearest neghbor for interior view
+		- See if coords really match
 		- Think of fix for double-edges meeting at 90 deg
+		- ShipStrengthRandomizer optimization?
 		- Tests:
 			- Single-particle ship
 			- Single-triangle ship
