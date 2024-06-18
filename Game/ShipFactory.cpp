@@ -404,7 +404,8 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData, RgbaImageData> ShipFac
         ? std::move(shipDefinition.Layers.ExteriorTextureLayer->Buffer) // Use provided texture
         : shipTexturizer.MakeAutoTexture(
             *shipDefinition.Layers.StructuralLayer,
-            shipDefinition.AutoTexturizationSettings); // Auto-texturize
+            shipDefinition.AutoTexturizationSettings, // Auto-texturize
+            ShipTexturizer::MaxHighDefinitionTextureSize);
 
     //
     // Create interior texture
@@ -417,7 +418,8 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData, RgbaImageData> ShipFac
             ShipAutoTexturizationSettings(
                 ShipAutoTexturizationModeType::FlatStructure,
                 1.0f,
-                0.0f));
+                0.0f),
+            2048);
 
     ImageTools::BlendWithColor(
         interiorTextureImage,

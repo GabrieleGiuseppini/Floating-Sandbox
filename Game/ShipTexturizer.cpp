@@ -54,25 +54,28 @@ ShipTexturizer::ShipTexturizer(
 {
 }
 
-int ShipTexturizer::CalculateHighDefinitionTextureMagnificationFactor(ShipSpaceSize const & shipSize)
+int ShipTexturizer::CalculateHighDefinitionTextureMagnificationFactor(
+    ShipSpaceSize const & shipSize,
+    int maxTextureSize)
 {
     //
     // Calculate target texture size: integral multiple of structure size, but without
-    // exceeding 4096 (magic number, also max texture size for low-end gfx cards),
+    // exceeding maxTextureSize (magic number, also max texture size for low-end gfx cards),
     // and no more than 32 times the original size
     //
 
     int const maxDimension = std::max(shipSize.width, shipSize.height);
     assert(maxDimension > 0);
 
-    int const magnificationFactor = std::min(32, std::max(1, 4096 / maxDimension));
+    int const magnificationFactor = std::min(32, std::max(1, maxTextureSize / maxDimension));
 
     return magnificationFactor;
 }
 
 RgbaImageData ShipTexturizer::MakeAutoTexture(
     StructuralLayerData const & structuralLayer,
-    std::optional<ShipAutoTexturizationSettings> const & settings) const
+    std::optional<ShipAutoTexturizationSettings> const & settings,
+    int maxTextureSize) const
 {
     auto const startTime = GameChronometer::now();
 
@@ -81,7 +84,7 @@ RgbaImageData ShipTexturizer::MakeAutoTexture(
 
     // Calculate texture size
     ShipSpaceSize const shipSize = structuralLayer.Buffer.Size;
-    int magnificationFactor = CalculateHighDefinitionTextureMagnificationFactor(shipSize);
+    int magnificationFactor = CalculateHighDefinitionTextureMagnificationFactor(shipSize, maxTextureSize);
     ImageSize const textureSize = ImageSize(
         shipSize.width * magnificationFactor,
         shipSize.height * magnificationFactor);
@@ -356,6 +359,8 @@ RgbaImageData ShipTexturizer::MakeInteriorViewTexture(
         std::max(
             quadSize.width / 10,
             quadSize.height / 10),
+        // TODOTEST
+        //1);
         3);
 
     for (auto const t : triangles)

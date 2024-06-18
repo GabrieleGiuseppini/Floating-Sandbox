@@ -2614,7 +2614,9 @@ void ModelController::UpdateVisualizations(View & view)
         if (!mGameVisualizationTexture)
         {
             // Initialize game visualization texture
-            mGameVisualizationTextureMagnificationFactor = ShipTexturizer::CalculateHighDefinitionTextureMagnificationFactor(mModel.GetShipSize());
+            mGameVisualizationTextureMagnificationFactor = ShipTexturizer::CalculateHighDefinitionTextureMagnificationFactor(
+                mModel.GetShipSize(),
+                ShipTexturizer::MaxHighDefinitionTextureSize);
             ImageSize const textureSize = ImageSize(
                 mModel.GetShipSize().width * mGameVisualizationTextureMagnificationFactor,
                 mModel.GetShipSize().height * mGameVisualizationTextureMagnificationFactor);

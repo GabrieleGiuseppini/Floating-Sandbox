@@ -24,15 +24,22 @@ class ShipTexturizer
 {
 public:
 
+    static int constexpr MaxHighDefinitionTextureSize = 4096; // Max texture size for low-end gfx cards
+
+public:
+
     ShipTexturizer(
         MaterialDatabase const & materialDatabase,
         ResourceLocator const & resourceLocator);
 
-    static int CalculateHighDefinitionTextureMagnificationFactor(ShipSpaceSize const & shipSize);
+    static int CalculateHighDefinitionTextureMagnificationFactor(
+        ShipSpaceSize const & shipSize,
+        int maxTextureSize);
 
     RgbaImageData MakeAutoTexture(
         StructuralLayerData const & structuralLayer,
-        std::optional<ShipAutoTexturizationSettings> const & settings) const;
+        std::optional<ShipAutoTexturizationSettings> const & settings,
+        int maxTextureSize) const;
 
     void AutoTexturizeInto(
         StructuralLayerData const & structuralLayer,
