@@ -8,6 +8,8 @@
 
 	= Npcs - take 1
 
+	- Remove too much logging from ShipLoadDialog
+
 	- Try to lower global damping - seems quite slow
 
 	- Fix all 2022 copyright years, and add g2-labs to:

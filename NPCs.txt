@@ -396,18 +396,16 @@ Arch
 			+ view/control menu: add two mutex menus, "Exterior View" and "Interior View"
 			+ For now MainFrame just reacts and invokes GameController
 			+ Reconciliate
-		= ShipTexturizer:
+		+ ShipTexturizer:
 			+ Doesn't take alpha (remove that), but ShipFactory does the right thing here in creating InteriorTexture background
 				+ Use Transform()?
 			+ 1. Create image by Clone() of background
-			= Take ship size for floor thickness (pixels) and quad size (pixels)
+			+ Take ship size for floor thickness (pixels) and quad size (pixels)
 				+ Add comment on ScaleFactor needed here in future
-				- Also needs to go to Ship()
 			+ 2. Visit all triangles			
-			= 3. Internal Helper: works on a single triangle
+			+ 3. Internal Helper: works on a single triangle
 				+ For each floor edge: ...
-				- Internal helper for drawing EdgeFloor
-					- TODOHERE
+				+ Internal helper for drawing EdgeFloor
 		+ Add timings to ShipFactory
 			+ Use GameChronometer
 		- See if can lower the resolution of the auto-generated InteriorTexture (and thus also of view)

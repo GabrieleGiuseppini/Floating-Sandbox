@@ -815,8 +815,6 @@ void ShipTexturizer::DrawTriangleFloorInto(
     int const floorThickness,
     RgbaImageData & targetTextureImage) const
 {
-    rgbaColor constexpr FloorColor = rgbaColor(0, 0, 0, rgbaColor::data_type_max);
-
     // Visit all edges
     for (int e = 0; e < 3; ++e)
     {
@@ -842,7 +840,7 @@ void ShipTexturizer::DrawTriangleFloorInto(
                 // Vertical
                 assert(endpointA.y != endpointB.y);
 
-                int xStart = endpointA.x;
+                int const xStart = endpointA.x;
                 int xEnd;
                 int xIncr;
                 if (endpointA.x < endpointC.x)
@@ -856,29 +854,21 @@ void ShipTexturizer::DrawTriangleFloorInto(
                     xIncr = -1;
                 }
 
-                int yStart = endpointA.y;
-                int yEnd = endpointB.y;
-                int yIncr = (yStart < yEnd) ? 1 : -1;
-
-                for (int y = yStart; y != yEnd; y += yIncr)
-                {
-                    for (int x = xStart; x != xEnd; x += xIncr)
-                    {
-                        targetTextureImage[{x, y}] = FloorColor;
-                    }
-                }
+                DrawEdgeFloorInto(
+                    xStart,
+                    xEnd,
+                    xIncr,
+                    0, // xLimitIncr
+                    endpointA.y, // yStart
+                    endpointB.y, // yEnd
+                    (endpointA.y < endpointB.y) ? 1 : -1, // yIncr
+                    targetTextureImage);
             }
             else if (endpointA.y == endpointB.y)
             {
                 // Horizontal
 
-                int xStart = endpointA.x;
-                int xStartIncr = 0;
-                int xEnd = endpointB.x;
-                int xEndIncr = 0;
-                int xIncr = (endpointA.x < endpointB.x) ? 1 : -1;
-
-                int yStart = endpointA.y;
+                int const yStart = endpointA.y;
                 int yEnd;
                 int yIncr;
                 if (endpointC.y > endpointA.y)
@@ -892,26 +882,24 @@ void ShipTexturizer::DrawTriangleFloorInto(
                     yIncr = -1;
                 }
 
-                for (int y = yStart; y != yEnd; y += yIncr)
-                {
-                    for (int x = xStart; x != xEnd; x += xIncr)
-                    {
-                        targetTextureImage[{x, y}] = FloorColor;
-                    }
-
-                    xStart += xStartIncr;
-                    xEnd += xEndIncr;
-                }
+                DrawEdgeFloorInto(
+                    endpointA.x, // xStart
+                    endpointB.x, // xEnd
+                    (endpointA.x < endpointB.x) ? 1 : -1, // xIncr
+                    0, // xLimitIncr
+                    yStart,
+                    yEnd,
+                    yIncr,
+                    targetTextureImage);
             }
             else
             {
                 // Diagonal
 
-                int xStart = endpointA.x;
-                int xStartIncr;
+                int const xStart = endpointA.x;
                 int xEnd;
-                int xEndIncr;
                 int xIncr;
+                int xLimitIncr;
 
                 if (endpointC.x <= std::min(endpointA.x, endpointB.x))
                 {
@@ -926,31 +914,48 @@ void ShipTexturizer::DrawTriangleFloorInto(
 
                 if (endpointA.x < endpointB.x)
                 {
-                    xStartIncr = 1;
-                    xEndIncr = 1;
+                    xLimitIncr = 1;
                 }
                 else
                 {
-                    xStartIncr = -1;
-                    xEndIncr = -1;
+                    xLimitIncr = -1;
                 }
 
-                int yStart = endpointA.y;
-                int yEnd = endpointB.y;
-                int yIncr = (yStart < yEnd) ? 1 : -1;
-
-                for (int y = yStart; y != yEnd; y += yIncr)
-                {
-                    for (int x = xStart; x != xEnd; x += xIncr)
-                    {
-                        targetTextureImage[{x, y}] = FloorColor;
-                    }
-
-                    xStart += xStartIncr;
-                    xEnd += xEndIncr;
-                }
+                DrawEdgeFloorInto(
+                    xStart,
+                    xEnd,
+                    xIncr,
+                    xLimitIncr,
+                    endpointA.y, // yStart
+                    endpointB.y, // yEnd
+                    (endpointA.y < endpointB.y) ? 1 : -1, // yIncr
+                    targetTextureImage);
             }
         }
+    }
+}
+
+void ShipTexturizer::DrawEdgeFloorInto(
+    int xStart,
+    int xEnd,
+    int xIncr,
+    int xLimitIncr,
+    int yStart,
+    int yEnd,
+    int yIncr,
+    RgbaImageData & targetTextureImage) const
+{
+    rgbaColor constexpr FloorColor = rgbaColor(0, 0, 0, rgbaColor::data_type_max);
+
+    for (int y = yStart; y != yEnd; y += yIncr)
+    {
+        for (int x = xStart; x != xEnd; x += xIncr)
+        {
+            targetTextureImage[{x, y}] = FloorColor;
+        }
+
+        xStart += xLimitIncr;
+        xEnd += xLimitIncr;
     }
 }
 

@@ -128,6 +128,16 @@ private:
         int const floorThickness,
         RgbaImageData & targetTextureImage) const;
 
+    inline void DrawEdgeFloorInto(
+        int xStart,
+        int xEnd,
+        int xIncr,
+        int xLimitIncr,
+        int yStart,
+        int yEnd,
+        int yIncr,
+        RgbaImageData & targetTextureImage) const;
+
     inline rgbaColor SampleTextureBilinearConstrained(
         RgbaImageData const & texture,
         float pixelX,
