@@ -120,6 +120,14 @@ private:
 
     void PurgeMaterialTextureCache(size_t maxSize) const;
 
+    inline void DrawTriangleFloorInto(
+        ElementIndex triangleIndex,
+        Physics::Points const & points,
+        Physics::Triangles const & triangles,
+        vec2f const & textureSizeF,
+        int const floorThickness,
+        RgbaImageData & targetTextureImage) const;
+
     inline rgbaColor SampleTextureBilinearConstrained(
         RgbaImageData const & texture,
         float pixelX,

@@ -352,152 +352,21 @@ RgbaImageData ShipTexturizer::MakeInteriorViewTexture(
     //
     // Futurework: should incorporate ship's scale, as we calculate the thickness assuming
     // width and height are 1:1 with meters
-    auto const floorThickness = std::max(
+    int const floorThickness = std::max(
         std::max(
             quadSize.width / 10,
             quadSize.height / 10),
         3);
 
-    rgbaColor constexpr FloorColor = rgbaColor(0, 0, 0, rgbaColor::data_type_max);
-
     for (auto const t : triangles)
     {
-        // TODOHERE: make code for one triangle an internal helper
-
-        for (int e = 0; e < 3; ++e)
-        {
-            if (triangles.GetSubSpringNpcFloorKind(t, e) != NpcFloorKindType::NotAFloor)
-            {
-                // Map edge's endpoints to pixels in texture
-
-                ElementIndex const pointAIndex = triangles.GetPointIndices(t)[e];
-                vec2f const pointATextureCoords = points.GetTextureCoordinates(pointAIndex);
-                ImageCoordinates const endpointA = ImageCoordinates::FromFloatFloor(pointATextureCoords * textureSizeF);
-
-                ElementIndex const pointBIndex = triangles.GetPointIndices(t)[(e + 1) % 3];
-                vec2f const pointBTextureCoords = points.GetTextureCoordinates(pointBIndex);
-                ImageCoordinates const endpointB = ImageCoordinates::FromFloatFloor(pointBTextureCoords * textureSizeF);
-
-                ElementIndex const pointCIndex = triangles.GetPointIndices(t)[(e + 2) % 3];
-                vec2f const pointCTextureCoords = points.GetTextureCoordinates(pointCIndex);
-                ImageCoordinates const endpointC = ImageCoordinates::FromFloatFloor(pointCTextureCoords * textureSizeF);
-
-                // Check direction
-                if (endpointA.x == endpointB.x)
-                {
-                    // Vertical
-                    assert(endpointA.y != endpointB.y);
-
-                    int xStart = endpointA.x;
-                    int xEnd;
-                    int xIncr;
-                    if (endpointA.x < endpointC.x)
-                    {
-                        xEnd = xStart + floorThickness;
-                        xIncr = 1;
-                    }
-                    else
-                    {
-                        xEnd = xStart - floorThickness;
-                        xIncr = -1;
-                    }
-
-                    int yStart = endpointA.y;
-                    int yEnd = endpointB.y;
-                    int yIncr = (yStart < yEnd) ? 1 : -1;
-
-                    for (int y = yStart; y != yEnd; y += yIncr)
-                    {
-                        for (int x = xStart; x != xEnd; x += xIncr)
-                        {
-                            interiorView[{x, y}] = FloorColor;
-                        }
-                    }
-                }
-                else if (endpointA.y == endpointB.y)
-                {
-                    // Horizontal
-
-                    int xStart = endpointA.x;
-                    int xStartIncr = 0;
-                    int xEnd = endpointB.x;
-                    int xEndIncr = 0;
-                    int xIncr = (endpointA.x < endpointB.x) ? 1 : -1;
-
-                    int yStart = endpointA.y;
-                    int yEnd;
-                    int yIncr;
-                    if (endpointC.y > endpointA.y)
-                    {
-                        yEnd = yStart + floorThickness;
-                        yIncr = 1;
-                    }
-                    else
-                    {
-                        yEnd = yStart - floorThickness;
-                        yIncr = -1;
-                    }
-
-                    for (int y = yStart; y != yEnd; y += yIncr)
-                    {
-                        for (int x = xStart; x != xEnd; x += xIncr)
-                        {
-                            interiorView[{x, y}] = FloorColor;
-                        }
-
-                        xStart += xStartIncr;
-                        xEnd += xEndIncr;
-                    }
-                }
-                else
-                {
-                    // Diagonal
-
-                    int xStart = endpointA.x;
-                    int xStartIncr;
-                    int xEnd;
-                    int xEndIncr;
-                    int xIncr;
-
-                    if (endpointC.x <= std::min(endpointA.x, endpointB.x))
-                    {
-                        xEnd = xStart - floorThickness;
-                        xIncr = -1;
-                    }
-                    else
-                    {
-                        xEnd = xStart + floorThickness;
-                        xIncr = 1;
-                    }
-
-                    if (endpointA.x < endpointB.x)
-                    {
-                        xStartIncr = 1;
-                        xEndIncr = 1;
-                    }
-                    else
-                    {
-                        xStartIncr = -1;
-                        xEndIncr = -1;
-                    }
-
-                    int yStart = endpointA.y;
-                    int yEnd = endpointB.y;
-                    int yIncr = (yStart < yEnd) ? 1 : -1;
-
-                    for (int y = yStart; y != yEnd; y += yIncr)
-                    {
-                        for (int x = xStart; x != xEnd; x += xIncr)
-                        {
-                            interiorView[{x, y}] = FloorColor;
-                        }
-
-                        xStart += xStartIncr;
-                        xEnd += xEndIncr;
-                    }
-                }
-            }
-        }
+        DrawTriangleFloorInto(
+            t,
+            points,
+            triangles,
+            textureSizeF,
+            floorThickness,
+            interiorView);
     }
 
     LogMessage("ShipTexturizer: completed interior view:",
@@ -935,6 +804,153 @@ void ShipTexturizer::PurgeMaterialTextureCache(size_t maxSize) const
     for (size_t i = 0; i < maxSize && i < keyUsages.size(); ++i)
     {
         mMaterialTextureCache.erase(keyUsages[i].first);
+    }
+}
+
+void ShipTexturizer::DrawTriangleFloorInto(
+    ElementIndex triangleIndex,
+    Physics::Points const & points,
+    Physics::Triangles const & triangles,
+    vec2f const & textureSizeF,
+    int const floorThickness,
+    RgbaImageData & targetTextureImage) const
+{
+    rgbaColor constexpr FloorColor = rgbaColor(0, 0, 0, rgbaColor::data_type_max);
+
+    // Visit all edges
+    for (int e = 0; e < 3; ++e)
+    {
+        if (triangles.GetSubSpringNpcFloorKind(triangleIndex, e) != NpcFloorKindType::NotAFloor)
+        {
+            // Map edge's endpoints to pixels in texture
+
+            ElementIndex const pointAIndex = triangles.GetPointIndices(triangleIndex)[e];
+            vec2f const pointATextureCoords = points.GetTextureCoordinates(pointAIndex);
+            ImageCoordinates const endpointA = ImageCoordinates::FromFloatFloor(pointATextureCoords * textureSizeF);
+
+            ElementIndex const pointBIndex = triangles.GetPointIndices(triangleIndex)[(e + 1) % 3];
+            vec2f const pointBTextureCoords = points.GetTextureCoordinates(pointBIndex);
+            ImageCoordinates const endpointB = ImageCoordinates::FromFloatFloor(pointBTextureCoords * textureSizeF);
+
+            ElementIndex const pointCIndex = triangles.GetPointIndices(triangleIndex)[(e + 2) % 3];
+            vec2f const pointCTextureCoords = points.GetTextureCoordinates(pointCIndex);
+            ImageCoordinates const endpointC = ImageCoordinates::FromFloatFloor(pointCTextureCoords * textureSizeF);
+
+            // Check direction
+            if (endpointA.x == endpointB.x)
+            {
+                // Vertical
+                assert(endpointA.y != endpointB.y);
+
+                int xStart = endpointA.x;
+                int xEnd;
+                int xIncr;
+                if (endpointA.x < endpointC.x)
+                {
+                    xEnd = xStart + floorThickness;
+                    xIncr = 1;
+                }
+                else
+                {
+                    xEnd = xStart - floorThickness;
+                    xIncr = -1;
+                }
+
+                int yStart = endpointA.y;
+                int yEnd = endpointB.y;
+                int yIncr = (yStart < yEnd) ? 1 : -1;
+
+                for (int y = yStart; y != yEnd; y += yIncr)
+                {
+                    for (int x = xStart; x != xEnd; x += xIncr)
+                    {
+                        targetTextureImage[{x, y}] = FloorColor;
+                    }
+                }
+            }
+            else if (endpointA.y == endpointB.y)
+            {
+                // Horizontal
+
+                int xStart = endpointA.x;
+                int xStartIncr = 0;
+                int xEnd = endpointB.x;
+                int xEndIncr = 0;
+                int xIncr = (endpointA.x < endpointB.x) ? 1 : -1;
+
+                int yStart = endpointA.y;
+                int yEnd;
+                int yIncr;
+                if (endpointC.y > endpointA.y)
+                {
+                    yEnd = yStart + floorThickness;
+                    yIncr = 1;
+                }
+                else
+                {
+                    yEnd = yStart - floorThickness;
+                    yIncr = -1;
+                }
+
+                for (int y = yStart; y != yEnd; y += yIncr)
+                {
+                    for (int x = xStart; x != xEnd; x += xIncr)
+                    {
+                        targetTextureImage[{x, y}] = FloorColor;
+                    }
+
+                    xStart += xStartIncr;
+                    xEnd += xEndIncr;
+                }
+            }
+            else
+            {
+                // Diagonal
+
+                int xStart = endpointA.x;
+                int xStartIncr;
+                int xEnd;
+                int xEndIncr;
+                int xIncr;
+
+                if (endpointC.x <= std::min(endpointA.x, endpointB.x))
+                {
+                    xEnd = xStart - floorThickness;
+                    xIncr = -1;
+                }
+                else
+                {
+                    xEnd = xStart + floorThickness;
+                    xIncr = 1;
+                }
+
+                if (endpointA.x < endpointB.x)
+                {
+                    xStartIncr = 1;
+                    xEndIncr = 1;
+                }
+                else
+                {
+                    xStartIncr = -1;
+                    xEndIncr = -1;
+                }
+
+                int yStart = endpointA.y;
+                int yEnd = endpointB.y;
+                int yIncr = (yStart < yEnd) ? 1 : -1;
+
+                for (int y = yStart; y != yEnd; y += yIncr)
+                {
+                    for (int x = xStart; x != xEnd; x += xIncr)
+                    {
+                        targetTextureImage[{x, y}] = FloorColor;
+                    }
+
+                    xStart += xStartIncr;
+                    xEnd += xEndIncr;
+                }
+            }
+        }
     }
 }
 

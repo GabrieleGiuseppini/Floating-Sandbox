@@ -404,8 +404,9 @@ Arch
 				+ Add comment on ScaleFactor needed here in future
 				- Also needs to go to Ship()
 			+ 2. Visit all triangles			
-			- 3. Internal Helper: works on a single triangle
-				- For each floor edge:
+			= 3. Internal Helper: works on a single triangle
+				+ For each floor edge: ...
+				- Internal helper for drawing EdgeFloor
 					- TODOHERE
 		+ Add timings to ShipFactory
 			+ Use GameChronometer
