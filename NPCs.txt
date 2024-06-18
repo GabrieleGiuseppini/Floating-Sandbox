@@ -421,9 +421,8 @@ Arch
 			+ Use GameChronometer
 		+ See if can lower the resolution of the auto-generated InteriorTexture (and thus also of view)
 			+ e.g., cap by 2048 instead of 4096
-		- Fix floor rendering
-			- H not reaching end?
-			- Two diagonals meeting?
+		- See if should use (mipmapped) nearest neghbor for interior view
+		- Think of fix for double-edges meeting at 90 deg
 		- Tests:
 			- Single-particle ship
 			- Single-triangle ship

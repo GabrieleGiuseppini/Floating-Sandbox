@@ -359,9 +359,7 @@ RgbaImageData ShipTexturizer::MakeInteriorViewTexture(
         std::max(
             quadSize.width / 10,
             quadSize.height / 10),
-        // TODOTEST
-        //1);
-        3);
+        1);
 
     for (auto const t : triangles)
     {
@@ -952,11 +950,21 @@ void ShipTexturizer::DrawEdgeFloorInto(
 {
     rgbaColor constexpr FloorColor = rgbaColor(0, 0, 0, rgbaColor::data_type_max);
 
-    for (int y = yStart; y != yEnd; y += yIncr)
+    for (int y = yStart; ; y += yIncr)
     {
-        for (int x = xStart; x != xEnd; x += xIncr)
+        for (int x = xStart; ; x += xIncr)
         {
             targetTextureImage[{x, y}] = FloorColor;
+
+            if (x == xEnd)
+            {
+                break;
+            }
+        }
+
+        if (y == yEnd)
+        {
+            break;
         }
 
         xStart += xLimitIncr;
