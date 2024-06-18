@@ -407,11 +407,11 @@ Arch
 			- 3. Internal Helper: works on a single triangle
 				- For each floor edge:
 					- TODOHERE
-
-		- See why floorplanizer is creating diagonal at base of T's
-			- Make default ship with other mesh we're used at		
+		+ Add timings to ShipFactory
+			+ Use GameChronometer
 		- See if can lower the resolution of the auto-generated InteriorTexture (and thus also of view)
 			- e.g., cap by 2048 instead of 4096
+		- Port ShipFloorplanizer back into Barylab
 		- Tests:
 			- Single-particle ship
 			- Single-triangle ship

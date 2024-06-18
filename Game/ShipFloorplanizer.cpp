@@ -7,9 +7,11 @@
 
 #include "GameParameters.h"
 
+#include <GameCore/GameChronometer.h>
 #include <GameCore/Log.h>
 
 #include <cassert>
+#include <chrono>
 
 ShipFactoryFloorPlan ShipFloorplanizer::BuildFloorplan(
 	ShipFactoryPointIndexMatrix const & pointIndexMatrix,
@@ -17,6 +19,8 @@ ShipFactoryFloorPlan ShipFloorplanizer::BuildFloorplan(
 	IndexRemap const & pointIndexRemap,
 	std::vector<ShipFactorySpring> const & springInfos2) const
 {
+	auto const startTime = GameChronometer::now();
+
 	//
 	// 1. Build list of springs that we do not want to use as floors;
 	//    we do so by detecting specific vertex patterns in 3x3 blocks
@@ -135,6 +139,9 @@ ShipFactoryFloorPlan ShipFloorplanizer::BuildFloorplan(
 			(void)isInserted;
 		}
 	}
+
+	LogMessage("ShipFloorplanizer: completed floorplan: floorTiles=", floorPlan.size(),
+		" time=", std::chrono::duration_cast<std::chrono::microseconds>(GameChronometer::now() - startTime).count(), "us");
 
 	return floorPlan;
 }

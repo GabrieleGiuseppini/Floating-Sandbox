@@ -10,6 +10,7 @@
 #include "Formulae.h"
 #include "ShipFloorplanizer.h"
 
+#include <GameCore/GameChronometer.h>
 #include <GameCore/GameDebug.h>
 #include <GameCore/GameMath.h>
 #include <GameCore/ImageTools.h>
@@ -38,7 +39,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData, RgbaImageData> ShipFac
     std::shared_ptr<GameEventDispatcher> gameEventDispatcher,
     GameParameters const & gameParameters)
 {
-    auto const totalStartTime = std::chrono::steady_clock::now();
+    auto const totalStartTime = GameChronometer::now();
 
     //
     // Process load options
@@ -297,8 +298,6 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData, RgbaImageData> ShipFac
     // Create frontiers
     //
 
-    auto const frontiersStartTime = std::chrono::steady_clock::now();
-
     std::vector<ShipFactoryFrontier> shipFactoryFrontiers = CreateShipFrontiers(
         pointIndexMatrix,
         pointIndexRemap,
@@ -306,8 +305,6 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData, RgbaImageData> ShipFac
         springInfos2,
         pointPairToSpringIndex1Map,
         springIndexRemap);
-
-    auto const frontiersEndTime = std::chrono::steady_clock::now();
 
     //
     // Randomize strength
@@ -454,7 +451,6 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData, RgbaImageData> ShipFac
         triangles.GetElementCount(), " triangles, ",
         electricalElements.GetElementCount(), " electrical elements, ",
         frontiers.GetElementCount(), " frontiers.");
-    LogMessage("             ExteriorView texture: ", exteriorTextureImage.Size, " InteriorView texture: ", interiorViewImage.Size);
 
     auto ship = std::make_unique<Ship>(
         shipId,
@@ -469,8 +465,7 @@ std::tuple<std::unique_ptr<Physics::Ship>, RgbaImageData, RgbaImageData> ShipFac
         std::move(interiorTextureImage));
 
     LogMessage("ShipFactory: Create() took ",
-        std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - totalStartTime).count(),
-        " us (frontiers: ", std::chrono::duration_cast<std::chrono::microseconds>(frontiersEndTime - frontiersStartTime).count(), " us)");
+        std::chrono::duration_cast<std::chrono::microseconds>(GameChronometer::now() - totalStartTime).count(), "us");
 
     return std::make_tuple(
         std::move(ship),
@@ -1593,6 +1588,8 @@ std::vector<ShipFactoryFrontier> ShipFactory::CreateShipFrontiers(
     ShipFactoryPointPairToIndexMap const & pointPairToSpringIndex1Map,
     IndexRemap const & springIndexRemap)
 {
+    auto const startTime = GameChronometer::now();
+
     //
     // Detect and create frontiers
     //
@@ -1724,6 +1721,9 @@ std::vector<ShipFactoryFrontier> ShipFactory::CreateShipFrontiers(
             }
         }
     }
+
+    LogMessage("ShipFactory: completed frontiers:",
+        " time=", std::chrono::duration_cast<std::chrono::microseconds>(GameChronometer::now() - startTime).count(), "us");
 
     return shipFactoryFrontiers;
 }
