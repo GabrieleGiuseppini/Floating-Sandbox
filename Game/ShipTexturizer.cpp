@@ -843,24 +843,10 @@ void ShipTexturizer::DrawTriangleFloorInto(
                 // Vertical
                 assert(endpointA.y != endpointB.y);
 
-                int const xStart = endpointA.x;
-                int xEnd;
-                int xIncr;
-                if (endpointA.x < endpointC.x)
-                {
-                    xEnd = xStart + floorThickness - 1;
-                    xIncr = 1;
-                }
-                else
-                {
-                    xEnd = xStart - floorThickness + 1;
-                    xIncr = -1;
-                }
-
                 DrawEdgeFloorInto(
-                    xStart,
-                    xEnd,
-                    xIncr,
+                    endpointA.x - floorThickness / 2, // xStart
+                    endpointA.x + floorThickness / 2, // xEnd
+                    1, // xIncr,
                     0, // xLimitIncr
                     endpointA.y, // yStart
                     endpointB.y, // yEnd
@@ -871,50 +857,21 @@ void ShipTexturizer::DrawTriangleFloorInto(
             {
                 // Horizontal
 
-                int const yStart = endpointA.y;
-                int yEnd;
-                int yIncr;
-                if (endpointC.y > endpointA.y)
-                {
-                    yEnd = yStart + floorThickness - 1;
-                    yIncr = 1;
-                }
-                else
-                {
-                    yEnd = yStart - floorThickness + 1;
-                    yIncr = -1;
-                }
-
                 DrawEdgeFloorInto(
                     endpointA.x, // xStart
                     endpointB.x, // xEnd
                     (endpointA.x < endpointB.x) ? 1 : -1, // xIncr
                     0, // xLimitIncr
-                    yStart,
-                    yEnd,
-                    yIncr,
+                    endpointA.y - floorThickness / 2, // yStart
+                    endpointA.y + floorThickness / 2, // yEnd
+                    1, // yIncr
                     targetTextureImage);
             }
             else
             {
                 // Diagonal
 
-                int const xStart = endpointA.x;
-                int xEnd;
-                int xIncr;
                 int xLimitIncr;
-
-                if (endpointC.x <= std::min(endpointA.x, endpointB.x))
-                {
-                    xEnd = xStart - floorThickness + 1;
-                    xIncr = -1;
-                }
-                else
-                {
-                    xEnd = xStart + floorThickness - 1;
-                    xIncr = 1;
-                }
-
                 if (endpointA.x < endpointB.x)
                 {
                     xLimitIncr = 1;
@@ -925,9 +882,9 @@ void ShipTexturizer::DrawTriangleFloorInto(
                 }
 
                 DrawEdgeFloorInto(
-                    xStart,
-                    xEnd,
-                    xIncr,
+                    endpointA.x - floorThickness / 2, // xStart
+                    endpointA.x + floorThickness / 2, // xEnd
+                    1, // xIncr
                     xLimitIncr,
                     endpointA.y, // yStart
                     endpointB.y, // yEnd
@@ -940,11 +897,11 @@ void ShipTexturizer::DrawTriangleFloorInto(
 
 void ShipTexturizer::DrawEdgeFloorInto(
     int xStart,
-    int xEnd,
+    int xEnd, // Included
     int xIncr,
     int xLimitIncr,
     int yStart,
-    int yEnd,
+    int yEnd, // Included
     int yIncr,
     RgbaImageData & targetTextureImage) const
 {

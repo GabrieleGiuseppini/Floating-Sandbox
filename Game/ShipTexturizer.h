@@ -137,11 +137,11 @@ private:
 
     inline void DrawEdgeFloorInto(
         int xStart,
-        int xEnd,
+        int xEnd, // Included
         int xIncr,
         int xLimitIncr,
         int yStart,
-        int yEnd,
+        int yEnd, // Included
         int yIncr,
         RgbaImageData & targetTextureImage) const;
 

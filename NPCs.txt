@@ -422,8 +422,10 @@ Arch
 		+ See if can lower the resolution of the auto-generated InteriorTexture (and thus also of view)
 			+ e.g., cap by 2048 instead of 4096
 		X See if should use (mipmapped) nearest neghbor for interior view
-		- See if coords really match
 		- Think of fix for double-edges meeting at 90 deg
+			- Center floor over edge
+				- Changes everything for quad selection @ doors, rewrite spec
+		- See if coords really match
 		- ShipStrengthRandomizer optimization?
 		- Tests:
 			- Single-particle ship
@@ -466,12 +468,17 @@ Next release:
 				- It's a nice-to-have (for perf) iff joined by a H or V spring
 			- Invoke ShipTexturizer() method (on ShipTexturizer& member) -> new InteriorView texture quad:
 					- First triangle as TriangleElementIndex (never None)
-					- Second triangle as TriangleElementIndex (evt. None)
+					- Second triangle as TriangleElementIndex (evt. None) // Joined to first
 					- InteriorView
 				- Calcs rectangle, creates buffer (copied from rect of InteriorView)
-					- Rectangle could be two actual sub-quads, iff triangles are joined on H or V edge
-						- Just do union of quads of each triangle
-					- Also: if joined on diag, rectangle must extend to include two other quad left and right, for we now do diag's writing outside of single quad
+					- Quads used for buffer (i.e. workspace):
+						- // Because drawing an edge goes out to other quads
+						- One triangle:
+							- For a diag edge: need L and R quads
+							- For a vert edge: need either L (if V edge is left) or R (if V edge is right) quads
+							- For a horiz edge: need either T (if H edge is top) or B (if H edge is bottom) quads
+						- Two triangles:
+							- Same as above, and do union
 				- Proceeds with already-existing internal helper, for each triangle
 				- Returns also origin of new InteriorView texture quad within InteriorView pixel space
 			- Store new InteriorView texture quad to a (temporary) list member of Ship, together with origin
@@ -501,6 +508,10 @@ Next release:
 		- Re-enable/take care of various "TODOHERE"'s for not-yet implemented things
 		- Ability to auto-generate InteriorTexture from structure
 			- via ShipTexturizer
+
+- Floorplan layer from user:
+	- ShipFactory: when a floorplan layer is present, it needs to inform tessellation (i.e. triangle selection) which needs
+	  to use floor information (ipv hull springs) to decide between covering triangles
 
 ===================
 ===================
