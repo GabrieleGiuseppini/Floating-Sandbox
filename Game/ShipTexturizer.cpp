@@ -827,11 +827,11 @@ void ShipTexturizer::DrawTriangleFloorInto(
 
             ElementIndex const pointAIndex = triangles.GetPointIndices(triangleIndex)[e];
             vec2f const pointATextureCoords = points.GetTextureCoordinates(pointAIndex);
-            ImageCoordinates const endpointA = ImageCoordinates::FromFloatFloor(pointATextureCoords * textureSizeF);
+            ImageCoordinates const endpointA = ImageCoordinates::FromFloatRound(pointATextureCoords * textureSizeF);
 
             ElementIndex const pointBIndex = triangles.GetPointIndices(triangleIndex)[(e + 1) % 3];
             vec2f const pointBTextureCoords = points.GetTextureCoordinates(pointBIndex);
-            ImageCoordinates const endpointB = ImageCoordinates::FromFloatFloor(pointBTextureCoords * textureSizeF);
+            ImageCoordinates const endpointB = ImageCoordinates::FromFloatRound(pointBTextureCoords * textureSizeF);
 
             assert(floorThickness >= 2);
 

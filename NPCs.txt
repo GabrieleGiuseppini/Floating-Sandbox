@@ -432,7 +432,7 @@ Arch
 				+ Disable edge springs
 				+ Rotate triangle and verify all edges
 			+ Thickness always 2n, half in and half out of triangle
-		- See why some diagonal lines seems jagged (Aegis Mark 2)
+		+ See why some diagonal lines seems jagged (Aegis Mark 2)
 		- Tests:
 			- Single-particle ship
 			= Single-triangle ship
