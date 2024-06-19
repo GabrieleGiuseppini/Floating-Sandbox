@@ -353,7 +353,7 @@ RgbaImageData ShipTexturizer::MakeInteriorViewTexture(
 
     // Thickness of a floor, in pixels
     //
-    // Futurework: should incorporate ship's scale, as we calculate the thickness assuming
+    // Futurework: should incorporate ship's scale, as now we calculate thickness assuming
     // width and height are 1:1 with meters
     int const floorThickness = std::max(
         std::max(

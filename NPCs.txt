@@ -432,9 +432,6 @@ Arch
 				+ Disable edge springs
 				+ Rotate triangle and verify all edges
 			- Thickness always 2n, half in and half out of triangle
-			OLD:
-			- If we lose 1-wide edges:
-				- Try forcing min=3
 		- Tests:
 			- Single-particle ship
 			= Single-triangle ship
