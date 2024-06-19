@@ -427,11 +427,12 @@ Arch
 				+ Changes everything for quad selection @ doors, rewrite spec
 		+ ShipRenderContext: draw edge springs only if Exterior view
 			+ New member for view type, set at ApplyViewModeChanges
-		= See if coords really match
+		+ See if coords really match
 			+ Test:
 				+ Disable edge springs
 				+ Rotate triangle and verify all edges
-			- Thickness always 2n, half in and half out of triangle
+			+ Thickness always 2n, half in and half out of triangle
+		- See why some diagonal lines seems jagged (Aegis Mark 2)
 		- Tests:
 			- Single-particle ship
 			= Single-triangle ship

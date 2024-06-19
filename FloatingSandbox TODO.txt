@@ -14,10 +14,18 @@
 
 	- Fix all 2022 copyright years, and add g2-labs to:
 		- Credits
-	- New startup sequence:
-		- Start fullscreen/normal screen depending on current preferences (like now)
-		- 1. G2-Labs Sequence
-		- 2. "Loading" splashscreen with ship sinking
+
+	- New SplashScreenDialog:
+		- Upper part OpenGL, lower part progress bar
+			- RenderContext on main thread, like now
+		- Dialog has own timer, updating animation in OpenGL quadrant as follows:
+			- 0: OpenGL quadrant occupies whole dialog
+			- 1. G2-Labs Sequence
+			- 2. Fade to black
+			- 3. OpenGL quadrant gets resized to allow for progress bar underneath
+				- Or OpenGL quadrant stays, and dialog becomes taller downwards for progress bar quadrant
+			- 4. Progress bar shows progress, and OpenGL quadrant shows ship sinking, stepping with progress
+		- OnProgress is always called, but has a visible effect only from step 3 onwards
 
 	- @ next release:
 		- Update GameJolt to say Ubuntu 20.04

@@ -359,7 +359,7 @@ RgbaImageData ShipTexturizer::MakeInteriorViewTexture(
         std::max(
             quadSize.width / 10,
             quadSize.height / 10),
-        1);
+        2);
 
     for (auto const t : triangles)
     {
@@ -833,6 +833,8 @@ void ShipTexturizer::DrawTriangleFloorInto(
             vec2f const pointBTextureCoords = points.GetTextureCoordinates(pointBIndex);
             ImageCoordinates const endpointB = ImageCoordinates::FromFloatFloor(pointBTextureCoords * textureSizeF);
 
+            assert(floorThickness >= 2);
+
             // Check direction
             if (endpointA.x == endpointB.x)
             {
@@ -841,7 +843,7 @@ void ShipTexturizer::DrawTriangleFloorInto(
 
                 DrawEdgeFloorInto(
                     endpointA.x - floorThickness / 2, // xStart
-                    endpointA.x + floorThickness / 2, // xEnd
+                    endpointA.x + floorThickness / 2 - 1, // xEnd
                     1, // xIncr,
                     0, // xLimitIncr
                     endpointA.y, // yStart
@@ -859,7 +861,7 @@ void ShipTexturizer::DrawTriangleFloorInto(
                     (endpointA.x < endpointB.x) ? 1 : -1, // xIncr
                     0, // xLimitIncr
                     endpointA.y - floorThickness / 2, // yStart
-                    endpointA.y + floorThickness / 2, // yEnd
+                    endpointA.y + floorThickness / 2 - 1, // yEnd
                     1, // yIncr
                     targetTextureImage);
             }
@@ -869,7 +871,7 @@ void ShipTexturizer::DrawTriangleFloorInto(
 
                 DrawEdgeFloorInto(
                     endpointA.x - floorThickness / 2, // xStart
-                    endpointA.x + floorThickness / 2, // xEnd
+                    endpointA.x + floorThickness / 2 - 1, // xEnd
                     1, // xIncr
                     (endpointA.x < endpointB.x) ? 1 : -1, // xLimitIncr
                     endpointA.y, // yStart
