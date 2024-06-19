@@ -147,6 +147,7 @@ ShipRenderContext::ShipRenderContext(
     // Textures
     , mExteriorViewImage(std::move(exteriorViewImage))
     , mInteriorViewImage(std::move(interiorViewImage))
+    , mShipViewModeType(ShipViewModeType::Exterior) // Will be recalculated
     , mShipTextureOpenGLHandle()
     , mStressedSpringTextureOpenGLHandle()
     , mExplosionTextureAtlasMetadata(globalRenderContext.GetExplosionTextureAtlasMetadata())
@@ -1625,7 +1626,7 @@ void ShipRenderContext::RenderDraw(
         if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Springs
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::EdgeSprings
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Structure
-            || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::None
+            || (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::None && mShipViewModeType == ShipViewModeType::Exterior) // No edge springs in non-Exterior view
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Decay
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::InternalPressure
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Strength)
@@ -2486,6 +2487,8 @@ void ShipRenderContext::ApplyShipViewModeChanges(RenderParameters const & render
     CheckOpenGLError();
 
     glBindTexture(GL_TEXTURE_2D, 0);
+
+    mShipViewModeType = renderParameters.ShipViewMode;
 }
 
 void ShipRenderContext::ApplyShipStructureRenderModeChanges(RenderParameters const & renderParameters)

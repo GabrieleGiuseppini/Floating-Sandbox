@@ -425,8 +425,16 @@ Arch
 		+ Think of fix for double-edges meeting at 90 deg
 			+ Center floor over edge
 				+ Changes everything for quad selection @ doors, rewrite spec
-		- See if coords really match
-		- ShipStrengthRandomizer optimization?
+		+ ShipRenderContext: draw edge springs only if Exterior view
+			+ New member for view type, set at ApplyViewModeChanges
+		= See if coords really match
+			+ Test:
+				+ Disable edge springs
+				+ Rotate triangle and verify all edges
+			- Thickness always 2n, half in and half out of triangle
+			OLD:
+			- If we lose 1-wide edges:
+				- Try forcing min=3
 		- Tests:
 			- Single-particle ship
 			= Single-triangle ship

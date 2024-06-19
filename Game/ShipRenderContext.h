@@ -1871,6 +1871,7 @@ private:
 
     RgbaImageData mExteriorViewImage;
     RgbaImageData mInteriorViewImage;
+    ShipViewModeType mShipViewModeType;
 
     GameOpenGLTexture mShipTextureOpenGLHandle;
     GameOpenGLTexture mStressedSpringTextureOpenGLHandle;
