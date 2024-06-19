@@ -29,9 +29,12 @@
 
 	- Ship engines should not work when not underwater
 
-	- Ship passwords only to prevent being edited, but allow them to be inspected
+	- Ship passwords only to prevent being edited, but allow password-protected ships to be inspected
 
 	- See issue with copy'n'paste of electrical materials losing instance ID
+
+	- ShipStrengthRandomizer: try to optimize
+		- Responsible for half of loading time
 
 	- Render glowing particles after burning
 		- Ship points rendering: temperature should be enough; swap rot with temperature?

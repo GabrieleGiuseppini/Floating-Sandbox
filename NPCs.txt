@@ -422,14 +422,14 @@ Arch
 		+ See if can lower the resolution of the auto-generated InteriorTexture (and thus also of view)
 			+ e.g., cap by 2048 instead of 4096
 		X See if should use (mipmapped) nearest neghbor for interior view
-		- Think of fix for double-edges meeting at 90 deg
-			- Center floor over edge
-				- Changes everything for quad selection @ doors, rewrite spec
+		+ Think of fix for double-edges meeting at 90 deg
+			+ Center floor over edge
+				+ Changes everything for quad selection @ doors, rewrite spec
 		- See if coords really match
 		- ShipStrengthRandomizer optimization?
 		- Tests:
 			- Single-particle ship
-			- Single-triangle ship
+			= Single-triangle ship
 			- Test performance (also with old Dell) and decide whether mipmapping on-demand is really feasible
 				- Eventually consider reducing the number of texture levels
 			- Full ShipBuilder test, up to saving

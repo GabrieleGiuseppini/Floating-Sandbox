@@ -833,10 +833,6 @@ void ShipTexturizer::DrawTriangleFloorInto(
             vec2f const pointBTextureCoords = points.GetTextureCoordinates(pointBIndex);
             ImageCoordinates const endpointB = ImageCoordinates::FromFloatFloor(pointBTextureCoords * textureSizeF);
 
-            ElementIndex const pointCIndex = triangles.GetPointIndices(triangleIndex)[(e + 2) % 3];
-            vec2f const pointCTextureCoords = points.GetTextureCoordinates(pointCIndex);
-            ImageCoordinates const endpointC = ImageCoordinates::FromFloatFloor(pointCTextureCoords * textureSizeF);
-
             // Check direction
             if (endpointA.x == endpointB.x)
             {
@@ -871,21 +867,11 @@ void ShipTexturizer::DrawTriangleFloorInto(
             {
                 // Diagonal
 
-                int xLimitIncr;
-                if (endpointA.x < endpointB.x)
-                {
-                    xLimitIncr = 1;
-                }
-                else
-                {
-                    xLimitIncr = -1;
-                }
-
                 DrawEdgeFloorInto(
                     endpointA.x - floorThickness / 2, // xStart
                     endpointA.x + floorThickness / 2, // xEnd
                     1, // xIncr
-                    xLimitIncr,
+                    (endpointA.x < endpointB.x) ? 1 : -1, // xLimitIncr
                     endpointA.y, // yStart
                     endpointB.y, // yEnd
                     (endpointA.y < endpointB.y) ? 1 : -1, // yIncr
