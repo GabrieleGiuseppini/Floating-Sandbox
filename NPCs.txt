@@ -222,40 +222,50 @@ Arch
 		- Shader: port Limbs
 			- & ShaderManager
 		- RenderContext: port Limbs
+		- Plumb interactions:
+			- GameController & World
+			- ToolController & Tools
 		- TODOHERE
-		- ToolsController & Tools
 	- Settings:
 		- SettingsManager
 		- SettingsDialog
 
 - NpcDatabase:
 	- Spec:
-		- Provides info on humans (e.g. role colors, height & width, frame IDs) and furniture (height, orientation, frame IDs, material)
+		- Provides info on humans (e.g. role colors, height & width, frame IDs) and furniture (height, frame IDs, material)
 			- Furniture height: used to calculate width based off texture frame
 			- Human height & width: just for consistency, doesn't use frames to calc anything
 				- Replaces GameParameters'
 			- Furniture material: json references material by NpcMaterial::Kind (string)
 				- NpcDatabase uses NpcMaterial::StrToKind(.) to parse it
+			- Human material: also for consistency
+				- Can then remove hardcoded "Head" and "Feet", and related enums
 		- Two sections, each own schema:
 			- Humans
+				- Global
+					- Materials, dimensions
+				- Per-role
+					- Role colors, frame IDs
 			- Furniture
+				- Per-type
+					- Material, dimensions, frame IDs
 		- json refers to frames (in NPC texture DB) by name, but cctor - which also takes texture DB - stores references (or even directly coords!) by numeric ID
 			- json tells all frame names for all applicable variants, including limbs together with orientation variants
 				- Yes, the json for humans will list all frames for variants and all
-					- Might have a new GameType that holds together all texture info's for a human (e.g. "head front", "head side", etc.) and the json basically fills this
+					- Might have a new type (at NpcDatabse or as as new GameType) that holds together all texture info's for a human (e.g. "head front", "head side", etc.) and the json basically fills this
 		- Allow for merging of multiple "packs"
 			- So SubKind domain is expandable at runtime
 		- Also affects UI (for menu with list of subkind names, which might have multiple languages)
 	- Details:
 		- NpcSubKindIdType: alias for uint
-			- No different aliases for the two different NpcKind's - so we can have a 2D coord for a specific subkind (NpcKindType, NpcSubKindIdType)
+			- No different aliases for the two different NpcKind's - we will have a 2D coord for a specific subkind (NpcKindType, NpcSubKindIdType)
 		- Humans:
 			- (NpcSubKindIdType) -> TextureCoords (or that new GameType we talk about above which holds together all texture info's for all variants), colors
 				- Initialization gets texture DB to populate this
 			- (NpcSubKindIdType, Language) -> Name
 		- Furniture:
 			- (NpcSubKindIdType) -> TextureCoords
-			- (NpcSubKindIdType) -> IsDipole ? (Length, Width, Orientation, ...) - or NpcParticleMesh info if we implement this
+			- (NpcSubKindIdType) -> NpcParticleMesh info
 			- (NpcSubKindIdType, Language) -> Name
 
 - Rendering:
@@ -268,11 +278,8 @@ Arch
 		- Dynamics ones: contain things that change at each frame (world vertices, )
 	+ Use indices for quad vertices
 		+ Good use case to experiment with the "quad single index buffer" feature
-	- NpcType needs an associated per-NPC NpcOrientation, because the way a quad is laid out around the particles for a human is different than that of a table
-		- Uhm: after all a table is not that simple - think when flipping it
-		- TODO: going for NpcParticleMesh would fix this
 	- Quad shader:
-		- Discard  when transparent
+		- Discard when transparent
 			- But only after testing with two connected components - & inverse order of drawing; should bug out when near NPC is drawn before far NPC and they are on top of each other
 				- Requires following their triangle
 
