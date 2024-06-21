@@ -196,7 +196,7 @@ Arch
 	+ FixedSizeVector: BaryLab->FS: check diff
 	+ GameTypes: BaryLab->FS: add new types (and changes?)
 	+ Have a working FS here for subsequent tests
-	= All in one go - GO1: 
+	+ All in one go - GO1: 
 		+ Triangles: BaryLab->FS: add BL features
 			+ Barycentric math (replace FS')
 			+ SurfaceType
@@ -213,7 +213,7 @@ Arch
 			+ ShipFactoryTypes
 			+ ShipFloorplanizer
 			+ ShipFactory
-		= Rendering of floors			
+		+ Rendering of floors			
 	- All in one go - GO2:
 		- Move Npc simulation source files under NpcSimulation folder
 			- Not VS GUI, that's still "Physics"
@@ -297,13 +297,21 @@ Arch
 	- Electric spark:
 		- Electrification must be stored with Points
 		- NPC update looks at own triangle's Points
-	- NPCs add mass to particle
-		- Mass is proportional to body length adjustment (square, we're 2D)
-			- And so is buoyancy
-			- Recalc both at changes and store as particle attributes
-				- Primary & secondary
-		- Ship::Update asks NPCs (via ParentWorld) to add themselves to Points' (definitive) masses
-	- NPC bounces transfer impact forces to ship's particles
+	- Mass/forces: these two may be done together:
+			- NPCs add mass to particle
+				- Ship::Update asks NPCs (via ParentWorld) to add themselves to Points' (definitive) masses
+			- NPC bounces transfer impact forces to ship's particles
+		- ...By adding external forces to ship's particles at these places:
+			- At end of NonInertial, using the last "flattened out" displacement to calc force (*m/dt2)
+			- At bounce, using the bounced displacement
+				- Need to make sure that a bounce at non-inertial is not followed by the force in the previous bullet
+			- Requires Ship in NPC to not be const
+				- And see if can get rid of naming member "ShipMesh" - may be "HomeShip"?
+	- Incorporate material's elasticity and friction in calculations for bounce and friction
+	- Mass is proportional to body length adjustment (square, we're 2D)
+		- And so is buoyancy
+		- Recalc both at changes and store as particle attributes
+			- Primary & secondary
 	- When ship is repaired, all NPCs do a little dance
 		- Sync is simulation clock (so all are in sync)
 		- Signal from outside (OnShipRepaired) sets global flag
@@ -323,123 +331,13 @@ Arch
 		- If current primary triangle != current:
 			- First off: immediate things, such as:
 				- Check fire at location
-				- Check bomb at location
+				- Check bomb presence at location
 			- Then, planning:
 				- TODO: walk along triangle and check where we end up at end - what about alternatives?
 				- Find next floor in cur triangle along walking direction
 					- CanProceedInDirection(TriangleEdge, xDir) -> bool
 						- xDir translated into CCW or CW, then proceeds with analytical vertex finding until floor
 		
-- Layers:
-	- Floorplan layer:
-		- A specific "FloorPlan" layer provides list of *pairs* of Points and the FloorType enum
-			+ Then, @ShipFactory, we assign FloorDepth based on H/V/Diag
-				+ The current NpcFloorType enum becomes NpcFloorDepth, and NpcFloorType only retains "Floor" and "Open"
-				+ Triangles' edges also remember both (type and depth) - actually store struct with two members
-						
-		- When the layer is absent, the layer is created automatically (@ new ShipFloorplanizer) with the hullness of particles
-			- Algo for creation should take care of following aspects:
-				- Make sure walls not too crowded
-				- Make sure there are stairs (evt. creating them)
-	- InteriorTexture layer
-		- A new texture layer (for graphical purposes only)
-		- When the layer is absent, it is created automatically (@ShipFactory) from the structural layer
-		- Owned by ship (for re-creating doors)
-	- Both layers make up the "Interior view"
-	- User can choose between "Exterior" view and "Interior" view, via menu
-		- As soon as NPC count goes from zero to non-zero (including BeingPlaced), if current view is "Exterior" GameController switches to "Interior", regardless of current setting
-			- Tells MainFrame via event, which changes current menu
-		- As soon as NPC count goes from non-zero to zero, if current view is "Interior" GameController switches to "Exterior" view, regardless of current setting
-			- Tells MainFrame via event, which changes current menu
-	- Impl gist:
-		- The below requires keeping the folloring textures data in memory - see if can save anything:
-			- Interior texture (in Ship, for re-creating InteriorView texture as doors change)
-			- InteriorView texture (in ShipRenderContext, to upload it as needed) 
-			- Exterior texture (in ShipRenderContext, to upload it as needed)
-		- TextureData ShipTexturizer::MakeInteriorViewLayer( // Stateless, basically static
-			- Triangles const &, 
-			- Points const &, // Point for texture coords
-			- const interiorTexture, // Created/loaded as above
-			- Just visits triangles and uses Points' texture coords
-		- Another overload that does it for a single triangle and returns its quad (w/origin (ImageCoordinates), as new SubImageData type at ImageData.h)
-		- Dynamics of floorplan changes (doors)
-			- IShipPhysicsHandler::HandleNpcFloorUpdated(Triangle, ordinal) -> invoke ShipTexturizer() method (on ShipTexturizer& member) to generate new Interior view texture quad, 
-			  which it then stores in a (temporary) list member of Ship
-			- At Ship::RenderUpload time, it gives (std::move) the list to ShipRenderContext which will a) upload to texture as subtextures, and b) apply to own Interior view texture
-			- This implies that Ship must hold:
-				- interior texture
-		- ShipRenderContext:
-			- Keeps ahold of both Exterior and Interior view textures
-			- Upon change of the view type (Exterior<->Interior), ShipRenderContext uploads right one of the two to OpenGL
-				- So we save an OpenGL texture
-			- The Interior view texture might change (from outside) - either entirely or a quad only; in which case ShipRenderContext does the right thing (wrt threading) to store it and eventually
-			  re-upload it (eventually a portion of it) if current view type is Interior
-				- ShipRenderContext:: two uq_ptr for InteriorView texture - one set from outside, the other used by thread
-				- When a change happens, the caller ends up setting the "outside uq_ptr"
-				- At <don't remember where exactly, when it's safe to swipe main thread things>, we move/blit outside to inside and remember that we have to upload it, and what portion of it
-	= Impl:		
-		+ Add InteriorTexture layer to everything (and change old to ExteriorTexture)
-			+ Game
-			+ ShipBuilder
-				+ Controller, ModelController, Model
-				+ MainFrame
-				+ View:
-					+ Duplicate Texture viz's
-						+ ViewModel: duplicate all "texture space" as "external" and "internal"
-							+ Requires two texture sizes
-				+ Tests:
-					+ TextureEraser
-					+ TextureMagicWand
-					+ Texture C&P&X
-						+ Texture selection
-					+ Run unit tests
-		+ InteriorTexture goes to Ship		
-		+ ShipFactory: invoke ShipTexturizer to create InteriorViewImage
-		+ GameTypes: ShipViewModeType == {Exterior, Interior}
-		+ RenderContext (actually, RenderParameters) owns the param, exactly like e.g. DebugShipRenderModeType
-			+ Hook param set/get up to IGameController
-			+ Initialization: store both textures and do NOT upload them
-			+ Upon change detected:
-				+ UploadMipmapped right view image
-					+ RenderContext keeps hold of both textures
-			+ Trigger a fake change at initialization, so we start with default view
-		+ MainFrame:
-			+ view/control menu: add two mutex menus, "Exterior View" and "Interior View"
-			+ For now MainFrame just reacts and invokes GameController
-			+ Reconciliate
-		+ ShipTexturizer:
-			+ Doesn't take alpha (remove that), but ShipFactory does the right thing here in creating InteriorTexture background
-				+ Use Transform()?
-			+ 1. Create image by Clone() of background
-			+ Take ship size for floor thickness (pixels) and quad size (pixels)
-				+ Add comment on ScaleFactor needed here in future
-			+ 2. Visit all triangles			
-			+ 3. Internal Helper: works on a single triangle
-				+ For each floor edge: ...
-				+ Internal helper for drawing EdgeFloor
-		+ Add timings to ShipFactory
-			+ Use GameChronometer
-		+ See if can lower the resolution of the auto-generated InteriorTexture (and thus also of view)
-			+ e.g., cap by 2048 instead of 4096
-		X See if should use (mipmapped) nearest neghbor for interior view
-		+ Think of fix for double-edges meeting at 90 deg
-			+ Center floor over edge
-				+ Changes everything for quad selection @ doors, rewrite spec
-		+ ShipRenderContext: draw edge springs only if Exterior view
-			+ New member for view type, set at ApplyViewModeChanges
-		+ See if coords really match
-			+ Test:
-				+ Disable edge springs
-				+ Rotate triangle and verify all edges
-			+ Thickness always 2n, half in and half out of triangle
-		+ See why some diagonal lines seems jagged (Aegis Mark 2)
-		- Tests:
-			- Single-particle ship
-			= Single-triangle ship
-			- Test performance (also with old Dell) and decide whether mipmapping on-demand is really feasible
-				- Eventually consider reducing the number of texture levels
-			- Full ShipBuilder test, up to saving
-		- Port ShipFloorplanizer back into Barylab
 
 ===================
 Next release:
@@ -488,7 +386,7 @@ Next release:
 				- Proceeds with already-existing internal helper, for each triangle
 				- Returns also origin of new InteriorView texture quad within InteriorView pixel space
 			- Store new InteriorView texture quad to a (temporary) list member of Ship, together with origin
-		- @ Ship::RenderUpload(): gives (std::move) the list to ShipRenderContext which will a) upload to texture as subtextures, and b) apply to own Interior view texture (so that it's also
+		- @ Ship::RenderUpload(): gives (std::move) the list to ShipRenderContext which will a) upload to texture as subtextures (on thread!), and b) apply to own Interior view texture (so that it's also
 		  persistent across view switches)
 	- Initialize door states at ship initialization
 		- So that floors are the ones in agreement with hinges' operation
@@ -2183,3 +2081,116 @@ vertexOrdinal=0 TrajEndBCoords={_Elems=0x00000017b298ddd0 {0.998306274, 0.001693
 
 	+ Merge to master
 
+
+
++ Layers:
+	! Spec:
+		- Floorplan layer:
+			- A specific "FloorPlan" layer provides list of *pairs* of Points and the FloorType enum
+				+ Then, @ShipFactory, we assign FloorDepth based on H/V/Diag
+					+ The current NpcFloorType enum becomes NpcFloorDepth, and NpcFloorType only retains "Floor" and "Open"
+					+ Triangles' edges also remember both (type and depth) - actually store struct with two members
+							
+			- When the layer is absent, the layer is created automatically (@ new ShipFloorplanizer) with the hullness of particles
+				- Algo for creation should take care of following aspects:
+					- Make sure walls not too crowded
+					- Make sure there are stairs (evt. creating them)
+		- InteriorTexture layer
+			- A new texture layer (for graphical purposes only)
+			- When the layer is absent, it is created automatically (@ShipFactory) from the structural layer
+			- Owned by ship (for re-creating doors)
+		- Both layers make up the "Interior view"
+		- User can choose between "Exterior" view and "Interior" view, via menu
+			- As soon as NPC count goes from zero to non-zero (including BeingPlaced), if current view is "Exterior" GameController switches to "Interior", regardless of current setting
+				- Tells MainFrame via event, which changes current menu
+			- As soon as NPC count goes from non-zero to zero, if current view is "Interior" GameController switches to "Exterior" view, regardless of current setting
+				- Tells MainFrame via event, which changes current menu
+	! Impl gist:
+		- The below requires keeping the folloring textures data in memory - see if can save anything:
+			- Interior texture (in Ship, for re-creating InteriorView texture as doors change)
+			- InteriorView texture (in ShipRenderContext, to upload it as needed) 
+			- Exterior texture (in ShipRenderContext, to upload it as needed)
+		- TextureData ShipTexturizer::MakeInteriorViewLayer( // Stateless, basically static
+			- Triangles const &, 
+			- Points const &, // Point for texture coords
+			- const interiorTexture, // Created/loaded as above
+			- Just visits triangles and uses Points' texture coords
+		- Another overload that does it for a single triangle and returns its quad (w/origin (ImageCoordinates), as new SubImageData type at ImageData.h)
+		- Dynamics of floorplan changes (doors)
+			- IShipPhysicsHandler::HandleNpcFloorUpdated(Triangle, ordinal) -> invoke ShipTexturizer() method (on ShipTexturizer& member) to generate new Interior view texture quad, 
+			  which it then stores in a (temporary) list member of Ship
+			- At Ship::RenderUpload time, it gives (std::move) the list to ShipRenderContext which will a) upload to texture as subtextures, and b) apply to own Interior view texture
+			- This implies that Ship must hold:
+				- interior texture
+		- ShipRenderContext:
+			- Keeps ahold of both Exterior and Interior view textures
+			- Upon change of the view type (Exterior<->Interior), ShipRenderContext uploads right one of the two to OpenGL
+				- So we save an OpenGL texture
+			- The Interior view texture might change (from outside) - either entirely or a quad only; in which case ShipRenderContext does the right thing (wrt threading) to store it and eventually
+			  re-upload it (eventually a portion of it) if current view type is Interior
+				- ShipRenderContext:: two uq_ptr for InteriorView texture - one set from outside, the other used by thread
+				- When a change happens, the caller ends up setting the "outside uq_ptr"
+				- At <don't remember where exactly, when it's safe to swipe main thread things>, we move/blit outside to inside and remember that we have to upload it, and what portion of it
+	+ Impl:		
+		+ Add InteriorTexture layer to everything (and change old to ExteriorTexture)
+			+ Game
+			+ ShipBuilder
+				+ Controller, ModelController, Model
+				+ MainFrame
+				+ View:
+					+ Duplicate Texture viz's
+						+ ViewModel: duplicate all "texture space" as "external" and "internal"
+							+ Requires two texture sizes
+				+ Tests:
+					+ TextureEraser
+					+ TextureMagicWand
+					+ Texture C&P&X
+						+ Texture selection
+					+ Run unit tests
+		+ InteriorTexture goes to Ship		
+		+ ShipFactory: invoke ShipTexturizer to create InteriorViewImage
+		+ GameTypes: ShipViewModeType == {Exterior, Interior}
+		+ RenderContext (actually, RenderParameters) owns the param, exactly like e.g. DebugShipRenderModeType
+			+ Hook param set/get up to IGameController
+			+ Initialization: store both textures and do NOT upload them
+			+ Upon change detected:
+				+ UploadMipmapped right view image
+					+ RenderContext keeps hold of both textures
+			+ Trigger a fake change at initialization, so we start with default view
+		+ MainFrame:
+			+ view/control menu: add two mutex menus, "Exterior View" and "Interior View"
+			+ For now MainFrame just reacts and invokes GameController
+			+ Reconciliate
+		+ ShipTexturizer:
+			+ Doesn't take alpha (remove that), but ShipFactory does the right thing here in creating InteriorTexture background
+				+ Use Transform()?
+			+ 1. Create image by Clone() of background
+			+ Take ship size for floor thickness (pixels) and quad size (pixels)
+				+ Add comment on ScaleFactor needed here in future
+			+ 2. Visit all triangles			
+			+ 3. Internal Helper: works on a single triangle
+				+ For each floor edge: ...
+				+ Internal helper for drawing EdgeFloor
+		+ Add timings to ShipFactory
+			+ Use GameChronometer
+		+ See if can lower the resolution of the auto-generated InteriorTexture (and thus also of view)
+			+ e.g., cap by 2048 instead of 4096
+		X See if should use (mipmapped) nearest neghbor for interior view
+		+ Think of fix for double-edges meeting at 90 deg
+			+ Center floor over edge
+				+ Changes everything for quad selection @ doors, rewrite spec
+		+ ShipRenderContext: draw edge springs only if Exterior view
+			+ New member for view type, set at ApplyViewModeChanges
+		+ See if coords really match
+			+ Test:
+				+ Disable edge springs
+				+ Rotate triangle and verify all edges
+			+ Thickness always 2n, half in and half out of triangle
+		+ See why some diagonal lines seem jagged (Aegis Mark 2)
+		+ Tests:
+			+ Single-particle ship
+			+ Single-triangle ship
+			+ Fix texture issue with old Dell
+			+ Test performance (also with old Dell) and decide whether mipmapping on-demand is really feasible
+			+ Full ShipBuilder test, up to saving
+		+ Port ShipFloorplanizer back into Barylab

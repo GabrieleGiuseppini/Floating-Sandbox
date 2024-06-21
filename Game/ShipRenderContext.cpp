@@ -595,61 +595,6 @@ ShipRenderContext::ShipRenderContext(
         glBindVertexArray(0);
     }
 
-
-    //
-    // Initialize ship texture
-    //
-
-    {
-        glGenTextures(1, &tmpGLuint);
-        mShipTextureOpenGLHandle = tmpGLuint;
-
-        // Bind texture
-        mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
-        glBindTexture(GL_TEXTURE_2D, *mShipTextureOpenGLHandle);
-        CheckOpenGLError();
-
-        // Set repeat mode
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        CheckOpenGLError();
-
-        // Set filtering
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        CheckOpenGLError();
-
-        // Set texture parameter
-        mShaderManager.ActivateProgram<ProgramType::ShipSpringsTexture>();
-        mShaderManager.SetTextureParameters<ProgramType::ShipSpringsTexture>();
-        mShaderManager.ActivateProgram<ProgramType::ShipSpringsTextureStress>();
-        mShaderManager.SetTextureParameters<ProgramType::ShipSpringsTextureStress>();
-        mShaderManager.ActivateProgram<ProgramType::ShipSpringsTextureHeatOverlay>();
-        mShaderManager.SetTextureParameters<ProgramType::ShipSpringsTextureHeatOverlay>();
-        mShaderManager.ActivateProgram<ProgramType::ShipSpringsTextureHeatOverlayStress>();
-        mShaderManager.SetTextureParameters<ProgramType::ShipSpringsTextureHeatOverlayStress>();
-        mShaderManager.ActivateProgram<ProgramType::ShipSpringsTextureIncandescence>();
-        mShaderManager.SetTextureParameters<ProgramType::ShipSpringsTextureIncandescence>();
-        mShaderManager.ActivateProgram<ProgramType::ShipSpringsTextureIncandescenceStress>();
-        mShaderManager.SetTextureParameters<ProgramType::ShipSpringsTextureIncandescenceStress>();
-        mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTexture>();
-        mShaderManager.SetTextureParameters<ProgramType::ShipTrianglesTexture>();
-        mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTextureStress>();
-        mShaderManager.SetTextureParameters<ProgramType::ShipTrianglesTextureStress>();
-        mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTextureHeatOverlay>();
-        mShaderManager.SetTextureParameters<ProgramType::ShipTrianglesTextureHeatOverlay>();
-        mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTextureHeatOverlayStress>();
-        mShaderManager.SetTextureParameters<ProgramType::ShipTrianglesTextureHeatOverlayStress>();
-        mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTextureIncandescence>();
-        mShaderManager.SetTextureParameters<ProgramType::ShipTrianglesTextureIncandescence>();
-        mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTextureIncandescenceStress>();
-        mShaderManager.SetTextureParameters<ProgramType::ShipTrianglesTextureIncandescenceStress>();
-
-        // Unbind texture
-        glBindTexture(GL_TEXTURE_2D, 0);
-    }
-
-
     //
     // Initialize StressedSpring texture
     //
@@ -2463,10 +2408,36 @@ void ShipRenderContext::RenderDrawPointToPointArrows(RenderParameters const & /*
 
 void ShipRenderContext::ApplyShipViewModeChanges(RenderParameters const & renderParameters)
 {
+    //
+    // Initialize ship texture
+    //
+    // We re-create the whole mipmap chain from scratch, as old cards
+    // (e.g. Intel) do not like texture sizes changing for a level
+    // while other levels are set
+    //
+
+    mShipTextureOpenGLHandle.reset();
+
+    GLuint tmpGLuint;
+    glGenTextures(1, &tmpGLuint);
+    mShipTextureOpenGLHandle = tmpGLuint;
+
+    // Bind texture
     mShaderManager.ActivateTexture<ProgramParameterType::SharedTexture>();
     glBindTexture(GL_TEXTURE_2D, *mShipTextureOpenGLHandle);
     CheckOpenGLError();
 
+    // Set repeat mode
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    CheckOpenGLError();
+
+    // Set filtering
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    CheckOpenGLError();
+
+    // Upload texture mipmap chain
     switch (renderParameters.ShipViewMode)
     {
         case ShipViewModeType::Exterior:
@@ -2484,8 +2455,33 @@ void ShipRenderContext::ApplyShipViewModeChanges(RenderParameters const & render
         }
     }
 
-    CheckOpenGLError();
+    // Set texture parameter in shaders
+    mShaderManager.ActivateProgram<ProgramType::ShipSpringsTexture>();
+    mShaderManager.SetTextureParameters<ProgramType::ShipSpringsTexture>();
+    mShaderManager.ActivateProgram<ProgramType::ShipSpringsTextureStress>();
+    mShaderManager.SetTextureParameters<ProgramType::ShipSpringsTextureStress>();
+    mShaderManager.ActivateProgram<ProgramType::ShipSpringsTextureHeatOverlay>();
+    mShaderManager.SetTextureParameters<ProgramType::ShipSpringsTextureHeatOverlay>();
+    mShaderManager.ActivateProgram<ProgramType::ShipSpringsTextureHeatOverlayStress>();
+    mShaderManager.SetTextureParameters<ProgramType::ShipSpringsTextureHeatOverlayStress>();
+    mShaderManager.ActivateProgram<ProgramType::ShipSpringsTextureIncandescence>();
+    mShaderManager.SetTextureParameters<ProgramType::ShipSpringsTextureIncandescence>();
+    mShaderManager.ActivateProgram<ProgramType::ShipSpringsTextureIncandescenceStress>();
+    mShaderManager.SetTextureParameters<ProgramType::ShipSpringsTextureIncandescenceStress>();
+    mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTexture>();
+    mShaderManager.SetTextureParameters<ProgramType::ShipTrianglesTexture>();
+    mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTextureStress>();
+    mShaderManager.SetTextureParameters<ProgramType::ShipTrianglesTextureStress>();
+    mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTextureHeatOverlay>();
+    mShaderManager.SetTextureParameters<ProgramType::ShipTrianglesTextureHeatOverlay>();
+    mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTextureHeatOverlayStress>();
+    mShaderManager.SetTextureParameters<ProgramType::ShipTrianglesTextureHeatOverlayStress>();
+    mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTextureIncandescence>();
+    mShaderManager.SetTextureParameters<ProgramType::ShipTrianglesTextureIncandescence>();
+    mShaderManager.ActivateProgram<ProgramType::ShipTrianglesTextureIncandescenceStress>();
+    mShaderManager.SetTextureParameters<ProgramType::ShipTrianglesTextureIncandescenceStress>();
 
+    // Unbind texture
     glBindTexture(GL_TEXTURE_2D, 0);
 
     mShipViewModeType = renderParameters.ShipViewMode;
