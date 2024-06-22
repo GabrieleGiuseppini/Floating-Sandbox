@@ -105,6 +105,8 @@ private:
 
     static constexpr auto RopeUniqueMaterialIndex = static_cast<size_t>(StructuralMaterial::MaterialUniqueType::Rope);
 
+    using NpcMaterialMap = std::map<std::string, NpcMaterial>;
+
 public:
 
     // Only movable
@@ -140,6 +142,24 @@ public:
         return nullptr;
     }
 
+    StructuralMaterial const & GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType uniqueType) const
+    {
+        assert(static_cast<size_t>(uniqueType) < mUniqueStructuralMaterials.size());
+        assert(nullptr != mUniqueStructuralMaterials[static_cast<size_t>(uniqueType)].second);
+
+        return *(mUniqueStructuralMaterials[static_cast<size_t>(uniqueType)].second);
+    }
+
+    bool IsUniqueStructuralMaterialColorKey(
+        StructuralMaterial::MaterialUniqueType uniqueType,
+        MaterialColorKey const & colorKey) const
+    {
+        assert(static_cast<size_t>(uniqueType) < mUniqueStructuralMaterials.size());
+        assert(nullptr != mUniqueStructuralMaterials[static_cast<size_t>(uniqueType)].second);
+
+        return colorKey == mUniqueStructuralMaterials[static_cast<size_t>(uniqueType)].first;
+    }
+
     MaterialMap<StructuralMaterial> const & GetStructuralMaterialMap() const
     {
         return mStructuralMaterialMap;
@@ -153,6 +173,11 @@ public:
     Palette<StructuralMaterial> const & GetRopeMaterialPalette() const
     {
         return mRopeMaterialPalette;
+    }
+
+    float GetLargestStructuralMass() const
+    {
+        return mLargestStructuralMass;
     }
 
     // ------------------------
@@ -201,40 +226,24 @@ public:
         return mElectricalMaterialPalette;
     }
 
-    // ------------------------
-
-    StructuralMaterial const & GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType uniqueType) const
-    {
-        assert(static_cast<size_t>(uniqueType) < mUniqueStructuralMaterials.size());
-        assert(nullptr != mUniqueStructuralMaterials[static_cast<size_t>(uniqueType)].second);
-
-        return *(mUniqueStructuralMaterials[static_cast<size_t>(uniqueType)].second);
-    }
-
-    bool IsUniqueStructuralMaterialColorKey(
-        StructuralMaterial::MaterialUniqueType uniqueType,
-        MaterialColorKey const & colorKey) const
-    {
-        assert(static_cast<size_t>(uniqueType) < mUniqueStructuralMaterials.size());
-        assert(nullptr != mUniqueStructuralMaterials[static_cast<size_t>(uniqueType)].second);
-
-        return colorKey == mUniqueStructuralMaterials[static_cast<size_t>(uniqueType)].first;
-    }
-
     static ElectricalElementInstanceIndex ExtractElectricalElementInstanceIndex(MaterialColorKey const & colorKey)
     {
         static_assert(sizeof(ElectricalElementInstanceIndex) >= sizeof(MaterialColorKey::data_type));
         return static_cast<ElectricalElementInstanceIndex>(colorKey.b);
     }
 
-    float GetLargestMass() const
-    {
-        return mLargestMass;
-    }
+    // ------------------------
 
-    float GetLargestStrength() const
+    // Note: not supposed to be invoked at runtime - only at NpcDatabase initialization
+    NpcMaterial const & GetNpcMaterial(std::string const & name) const
     {
-        return mLargestStrength;
+        if (auto const srchIt = mNpcMaterialMap.find(name);
+            srchIt != mNpcMaterialMap.end())
+        {
+            return srchIt->second;
+        }
+
+        throw GameException("Cannot find NPC material \"" + name + "\"");
     }
 
 private:
@@ -252,23 +261,23 @@ private:
 
     MaterialDatabase(
         MaterialMap<StructuralMaterial> structuralMaterialMap,
+        UniqueStructuralMaterialsArray uniqueStructuralMaterials,
         Palette<StructuralMaterial> structuralMaterialPalette,
         Palette<StructuralMaterial> ropeMaterialPalette,
+        float largestStructuralMass,
         MaterialMap<ElectricalMaterial> electricalMaterialMap,
         std::map<MaterialColorKey, ElectricalMaterial const *, InstancedColorKeyComparer> instancedElectricalMaterialMap,
         Palette<ElectricalMaterial> electricalMaterialPalette,
-        UniqueStructuralMaterialsArray uniqueStructuralMaterials,
-        float largestMass,
-        float largestStrength)
+        NpcMaterialMap npcMaterialMap)
         : mStructuralMaterialMap(std::move(structuralMaterialMap))
+        , mUniqueStructuralMaterials(uniqueStructuralMaterials)
         , mStructuralMaterialPalette(std::move(structuralMaterialPalette))
         , mRopeMaterialPalette(std::move(ropeMaterialPalette))
+        , mLargestStructuralMass(largestStructuralMass)
         , mElectricalMaterialMap(std::move(electricalMaterialMap))
         , mInstancedElectricalMaterialMap(std::move(instancedElectricalMaterialMap))
         , mElectricalMaterialPalette(std::move(electricalMaterialPalette))
-        , mUniqueStructuralMaterials(uniqueStructuralMaterials)
-        , mLargestMass(largestMass)
-        , mLargestStrength(largestStrength)
+        , mNpcMaterialMap(std::move(npcMaterialMap))
     {
     }
 
@@ -276,15 +285,16 @@ private:
 
     // Structural
     MaterialMap<StructuralMaterial> mStructuralMaterialMap;
+    UniqueStructuralMaterialsArray mUniqueStructuralMaterials;
     Palette<StructuralMaterial> mStructuralMaterialPalette;
     Palette<StructuralMaterial> mRopeMaterialPalette;
+    float mLargestStructuralMass;
 
     // Electrical
     MaterialMap<ElectricalMaterial> mElectricalMaterialMap;
     std::map<MaterialColorKey, ElectricalMaterial const *, InstancedColorKeyComparer> mInstancedElectricalMaterialMap; // Redundant map for (legacy) instanced material lookup
     Palette<ElectricalMaterial> mElectricalMaterialPalette;
 
-    UniqueStructuralMaterialsArray mUniqueStructuralMaterials;
-    float mLargestMass;
-    float mLargestStrength;
+    // NPC
+    NpcMaterialMap mNpcMaterialMap;
 };

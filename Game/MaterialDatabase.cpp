@@ -33,8 +33,7 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
 
     picojson::object const & structuralMaterialsRootObj = structuralMaterialsRoot.get<picojson::object>();
 
-    float largestMass = 0.0f;
-    float largestStrength = 0.0f;
+    float largestStructuralMass = 0.0f;
 
     // Parse structural palette
     Palette<StructuralMaterial> structuralMaterialPalette = Palette<StructuralMaterial>::Parse(
@@ -176,8 +175,7 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
             }
 
             // Update extremes
-            largestMass = std::max(material.GetMass(), largestMass);
-            largestStrength = std::max(material.Strength, largestStrength);
+            largestStructuralMass = std::max(material.GetMass(), largestStructuralMass);
         }
     }
 
@@ -332,16 +330,64 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
         }
     }
 
+    //
+    // NPC
+    //
+
+    NpcMaterialMap npcMaterialMap;
+
+    picojson::value const npcMaterialsRoot = Utils::ParseJSONFile(
+        materialsRootDirectory / "materials_npc.json");
+
+    if (!npcMaterialsRoot.is<picojson::object>())
+    {
+        throw GameException("NPC materials definition is not a JSON object");
+    }
+
+    picojson::object const & npcMaterialsRootObj = npcMaterialsRoot.get<picojson::object>();
+
+    // Parse materials
+    picojson::array const & npcMaterialsRootArray = Utils::GetMandatoryJsonArray(npcMaterialsRootObj, "materials");
+    for (auto const & materialElem : npcMaterialsRootArray)
+    {
+        if (!materialElem.is<picojson::object>())
+        {
+            throw GameException("Found a non-object in NPC materials definition");
+        }
+
+        picojson::object const & materialObject = materialElem.get<picojson::object>();
+
+        // Create instance of this material
+        NpcMaterial const material = NpcMaterial::Create(materialObject);
+
+        // Make sure there are no dupes
+        if (auto const searchIt = npcMaterialMap.find(material.Name);
+            searchIt != npcMaterialMap.end())
+        {
+            throw GameException("NPC material name \"" + material.Name + "\" is not unique.");
+        }
+
+        // Store
+        auto const storedEntry = npcMaterialMap.emplace(
+            std::make_pair(
+                material.Name,
+                material));
+    }
+
+    //
+    // Wrap it up
+    //
+
     return MaterialDatabase(
         std::move(structuralMaterialMap),
+        uniqueStructuralMaterials,
         std::move(structuralMaterialPalette),
         std::move(ropeMaterialPalette),
+        largestStructuralMass,
         std::move(electricalMaterialMap),
         std::move(instancedElectricalMaterialMap),
         std::move(electricalMaterialPalette),
-        uniqueStructuralMaterials,
-        largestMass,
-        largestStrength);
+        std::move(npcMaterialMap));
 }
 
 ///////////////////////////////////////////////////////////////////////

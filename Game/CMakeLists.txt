@@ -87,10 +87,12 @@ set  (PHYSICS_SOURCES
 	ImpactBombGadget.cpp
 	ImpactBombGadget.h
 	IShipPhysicsHandler.h
-	Npcs.cpp
-	Npcs.h
-	NpcParticles.cpp
-	NpcParticles.h
+	NpcSimulation/NpcParticles.cpp
+	NpcSimulation/NpcParticles.h
+	NpcSimulation/Npcs.cpp
+	NpcSimulation/Npcs.h
+	NpcSimulation/Npcs_HumanSimulation.cpp
+	NpcSimulation/Npcs_Simulation.cpp
 	OceanFloor.cpp
 	OceanFloor.h
 	OceanSurface.cpp
@@ -166,6 +168,7 @@ source_group("Render" FILES ${RENDER_SOURCES})
 add_library (GameLib ${GAME_SOURCES} ${PHYSICS_SOURCES} ${RENDER_SOURCES})
 
 target_include_directories(GameLib PRIVATE ${IL_INCLUDE_DIR})
+target_include_directories(GameLib PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(GameLib PUBLIC ${LIBSIMDPP_INCLUDE_DIRS})
 target_include_directories(GameLib PUBLIC ${PICOJSON_INCLUDE_DIRS})
 target_include_directories(GameLib INTERFACE ..)

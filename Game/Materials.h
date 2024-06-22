@@ -474,3 +474,44 @@ public:
 
     std::string MakeInstancedElementLabel(ElectricalElementInstanceIndex instanceIndex) const;
 };
+
+struct NpcMaterial
+{
+public:
+
+    std::string Name; // Unique, key
+    rgbaColor RenderColor;
+
+    float Mass;
+    float SpringReductionFraction;
+    float SpringDampingCoefficient;
+    float StaticFriction;
+    float KineticFriction;
+    float Elasticity;
+    float BuoyancyVolumeFill;
+
+public:
+
+    static NpcMaterial Create(picojson::object const & npcMaterialJson);
+
+    NpcMaterial(
+        std::string name,
+        rgbaColor const & renderColor,
+        float mass,
+        float springReductionFraction,
+        float springDampingCoefficient,
+        float staticFriction,
+        float kineticFriction,
+        float elasticity,
+        float buoyancyVolumeFill)
+        : Name(name)
+        , RenderColor(renderColor)
+        , Mass(mass)
+        , SpringReductionFraction(springReductionFraction)
+        , SpringDampingCoefficient(springDampingCoefficient)
+        , StaticFriction(staticFriction)
+        , KineticFriction(kineticFriction)
+        , Elasticity(elasticity)
+        , BuoyancyVolumeFill(buoyancyVolumeFill)
+    {}
+};

@@ -89,19 +89,6 @@ struct IGameController
     // Interactions
     //
 
-    virtual std::optional<PickedObjectId<NpcId>> PickNpc(vec2f const & worldPosition) const = 0;
-    virtual void BeginMoveNpc(NpcId npcId) = 0;
-    virtual PickedObjectId<NpcId> BeginMoveNewHumanNpc(HumanNpcKindType role, vec2f const & initialWorldPosition) = 0;
-    virtual bool IsSuitableNpcPosition(NpcId npcId, vec2f const & worldPosition, vec2f const & offset) const = 0;
-    virtual bool MoveNpcTo(NpcId npcId, vec2f const & worldPosition, vec2f const & offset) = 0;
-    virtual void EndMoveNpc(NpcId npcId) = 0;
-    virtual void AbortNewNpc(NpcId npcId) = 0;
-    virtual void HighlightNpc(NpcId npcId, NpcHighlightType highlight) = 0;
-    virtual void RemoveNpc(NpcId npcId) = 0;
-
-    virtual void ScareFish(DisplayLogicalCoordinates const & screenCoordinates, float radius, std::chrono::milliseconds delay) = 0;
-    virtual void AttractFish(DisplayLogicalCoordinates const & screenCoordinates, float radius, std::chrono::milliseconds delay) = 0;
-
     virtual void PickObjectToMove(DisplayLogicalCoordinates const & screenCoordinates, std::optional<ElementId> & elementId) = 0;
     virtual void PickObjectToMove(DisplayLogicalCoordinates const & screenCoordinates, std::optional<ShipId> & shipId) = 0;
     virtual void MoveBy(ElementId elementId, DisplayLogicalSize const & screenOffset, DisplayLogicalSize const & inertialScreenOffset) = 0;
@@ -137,6 +124,18 @@ struct IGameController
     virtual bool ScrubThrough(DisplayLogicalCoordinates const & startScreenCoordinates, DisplayLogicalCoordinates const & endScreenCoordinates) = 0;
     virtual bool RotThrough(DisplayLogicalCoordinates const & startScreenCoordinates, DisplayLogicalCoordinates const & endScreenCoordinates) = 0;
     virtual void ApplyThanosSnapAt(DisplayLogicalCoordinates const & screenCoordinates, bool isSparseMode) = 0;
+    virtual void ScareFish(DisplayLogicalCoordinates const & screenCoordinates, float radius, std::chrono::milliseconds delay) = 0;
+    virtual void AttractFish(DisplayLogicalCoordinates const & screenCoordinates, float radius, std::chrono::milliseconds delay) = 0;
+    virtual std::optional<PickedObjectId<NpcId>> BeginPlaceNewFurnitureNpc(FurnitureNpcKindType humanKind, DisplayLogicalCoordinates const & screenCoordinates) = 0;
+    virtual std::optional<PickedObjectId<NpcId>> BeginPlaceNewHumanNpc(HumanNpcKindType humanKind, DisplayLogicalCoordinates const & screenCoordinates) = 0;
+    virtual std::optional<PickedObjectId<NpcId>> ProbeNpcAt(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
+    virtual void BeginMoveNpc(NpcId id) = 0;
+    virtual void MoveNpcTo(NpcId id, DisplayLogicalCoordinates const & screenCoordinates, vec2f const & worldOffset) = 0;
+    virtual void EndMoveNpc(NpcId id) = 0;
+    virtual void CompleteNewNpc(NpcId id) = 0;
+    virtual void RemoveNpc(NpcId id) = 0;
+    virtual void AbortNewNpc(NpcId id) = 0;
+    virtual void HighlightNpc(NpcId id, NpcHighlightType highlight) = 0;
     virtual std::optional<ElementId> GetNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
     virtual void QueryNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const = 0;
 

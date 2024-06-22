@@ -214,24 +214,35 @@ Arch
 			+ ShipFloorplanizer
 			+ ShipFactory
 		+ Rendering of floors			
-	- All in one go - GO2:
-		- Move Npc simulation source files under NpcSimulation folder
-			- Not VS GUI, that's still "Physics"
-		- Port NpcMaterial.* and NpcMaterialDatabase.* (from Material*) into Materials.* and MaterialDatabase.*
-		- Port GameParameters settings that we need
-		- Shader: port Limbs
-			- & ShaderManager
-		- RenderContext: port Limbs
+	= All in one go - GO2:
+		+ Move Npc simulation source files under NpcSimulation folder
+			+ Not VS GUI, that's still "Physics"
+		+ Port NpcMaterial.* and NpcMaterialDatabase.* (from Material*) into Materials.* and MaterialDatabase.*
+		+ Port GameParameters settings that we need
+		+ Shader: port Limbs
+			+ & ShaderManager
+			+ PlaneID
+		= (Ship)RenderContext: port Limbs
+			+ No TextureQuad though - we'll have texture coords separate
+			+ Indices work, with ownership as in big, final plan
+			- Fix: BaryLab tells total NPC quad count to RenderContext, and then goes on to individual Ships; must instead do ship-by-ship
+				- TODO: shall we move NPC rendering to individual ships, who will asks NPCs to upload own?
+		- TODO: GameParameters: port Static and Kinetic friction adjustments as NPC params
+			- TODO: or: have global StaticFrictionAdj, KineticFrictionAdj, and ElasticityAdj, which apply to NPC and to OceanFloor
 		- Plumb interactions:
-			- GameController & World
-			- ToolController & Tools
-		- TODOHERE
+			+ GameController & World
+			- ToolController & Tools		
 	- Settings:
 		- SettingsManager
 		- SettingsDialog
+	- Backport:
+		- NpcSimulation folder: FS -> BaryLab 
+			- Nuke TextureQuad from GameTypes
+			- GameParameters: move Static and Kinetic friction adjustments as NPC params
 
 - NpcDatabase:
 	- Spec:
+		- cctor takes MaterialDatabase (for taking NpcMaterials referenced to by name in json) and NPC TextureDatabase (for taking TextureCoords)
 		- Provides info on humans (e.g. role colors, height & width, frame IDs) and furniture (height, frame IDs, material)
 			- Furniture height: used to calculate width based off texture frame
 			- Human height & width: just for consistency, doesn't use frames to calc anything
@@ -257,16 +268,22 @@ Arch
 			- So SubKind domain is expandable at runtime
 		- Also affects UI (for menu with list of subkind names, which might have multiple languages)
 	- Details:
-		- NpcSubKindIdType: alias for uint
+		- NpcSubKindIdType: alias for uint 
+			- @ GameTypes
+				- Nuke old FurnitureNpcKindType, NpcKindType
 			- No different aliases for the two different NpcKind's - we will have a 2D coord for a specific subkind (NpcKindType, NpcSubKindIdType)
 		- Humans:
+			- (NpcSubKindIdType) -> NpcMaterial
 			- (NpcSubKindIdType) -> TextureCoords (or that new GameType we talk about above which holds together all texture info's for all variants), colors
 				- Initialization gets texture DB to populate this
 			- (NpcSubKindIdType, Language) -> Name
 		- Furniture:
+			- (NpcSubKindIdType) -> NpcMaterial
 			- (NpcSubKindIdType) -> TextureCoords
 			- (NpcSubKindIdType) -> NpcParticleMesh info
 			- (NpcSubKindIdType, Language) -> Name
+	- Impl:
+		- NpcDatabase replaces MaterialDatabase in Npcs
 
 - Rendering:
 	- Atlas textures are simply flat frames and all, NpcDatabase groups them together
@@ -278,17 +295,19 @@ Arch
 		- Dynamics ones: contain things that change at each frame (world vertices, )
 	+ Use indices for quad vertices
 		+ Good use case to experiment with the "quad single index buffer" feature
-	- Quad shader:
+	- Shader ("ship_npcs_texture"):
+		- We keep existing limb-based shader, just change all its vertex attributes/parameters/etc. to become "texture"
 		- Discard when transparent
 			- But only after testing with two connected components - & inverse order of drawing; should bug out when near NPC is drawn before far NPC and they are on top of each other
 				- Requires following their triangle
+		- Night time color
 
 - Physical Interactions:
 	- Make sure triangle destruction is forwarded to NPCs
 		- Any constrained NPC on a destroyed triangle becomes free
 	- Swimming humans generate bubbles
 	- Humans on air-water interface generate small waves
-		- Need to produce as side-effect: Swimming humans generate small waves
+		- Need to produce as side-effect: swimming humans generate small waves
 	- Lights: second pass of lighting algorith with all NPC particles, for each ship
 		- Adding to NPC particles' _light_ buffer
 	- Fire:
@@ -314,7 +333,7 @@ Arch
 				- Need to make sure that a bounce at non-inertial is not followed by the force in the previous bullet
 			- Requires Ship in NPC to not be const
 				- And see if can get rid of naming member "ShipMesh" - may be "HomeShip"?
-	- Incorporate material's elasticity and friction in calculations for bounce and friction
+	- Incorporate ship material's elasticity and friction in calculations for bounce and friction
 	- Mass is proportional to body length adjustment (square, we're 2D)
 		- And so is buoyancy
 		- Recalc both at changes and store as particle attributes

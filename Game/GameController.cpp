@@ -435,8 +435,7 @@ void GameController::RunGameIteration()
         assert(!!mWorld);
         mWorld->RenderUpload(
             mGameParameters,
-            *mRenderContext,
-            *mTotalPerfStats);
+            *mRenderContext);
 
         //
         // Upload notification layer
@@ -609,90 +608,6 @@ void GameController::ToggleToFullDayOrNight()
         SetTimeOfDay(0.0f);
     else
         SetTimeOfDay(1.0f);
-}
-
-std::optional<PickedObjectId<NpcId>> GameController::PickNpc(vec2f const & worldPosition) const
-{
-    assert(!!mWorld);
-    return mWorld->PickNpc(worldPosition, mGameParameters);
-}
-
-void GameController::BeginMoveNpc(NpcId npcId)
-{
-    assert(!!mWorld);
-    mWorld->BeginMoveNpc(npcId);
-}
-
-PickedObjectId<NpcId> GameController::BeginMoveNewHumanNpc(HumanNpcKindType role, vec2f const & initialWorldPosition)
-{
-    assert(!!mWorld);
-    return mWorld->BeginMoveNewHumanNpc(role, initialWorldPosition);
-}
-
-bool GameController::IsSuitableNpcPosition(NpcId npcId, vec2f const & worldPosition, vec2f const & offset) const
-{
-    assert(!!mWorld);
-    return mWorld->IsSuitableNpcPosition(npcId, worldPosition, offset);
-}
-
-bool GameController::MoveNpcTo(NpcId npcId, vec2f const & worldPosition, vec2f const & offset)
-{
-    assert(!!mWorld);
-    return mWorld->MoveNpcTo(npcId, worldPosition, offset);
-}
-
-void GameController::EndMoveNpc(NpcId npcId)
-{
-    assert(!!mWorld);
-    mWorld->EndMoveNpc(npcId);
-}
-
-void GameController::AbortNewNpc(NpcId npcId)
-{
-    assert(!!mWorld);
-    mWorld->AbortNewNpc(npcId);
-}
-
-void GameController::HighlightNpc(NpcId npcId, NpcHighlightType highlight)
-{
-    assert(!!mWorld);
-    mWorld->HighlightNpc(npcId, highlight);
-}
-
-void GameController::RemoveNpc(NpcId npcId)
-{
-    assert(!!mWorld);
-    mWorld->RemoveNpc(npcId);
-}
-
-void GameController::ScareFish(
-    DisplayLogicalCoordinates const & screenCoordinates,
-    float radius,
-    std::chrono::milliseconds delay)
-{
-    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
-
-    // Apply action
-    assert(!!mWorld);
-    mWorld->ScareFish(
-        worldCoordinates,
-        radius,
-        delay);
-}
-
-void GameController::AttractFish(
-    DisplayLogicalCoordinates const & screenCoordinates,
-    float radius,
-    std::chrono::milliseconds delay)
-{
-    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
-
-    // Apply action
-    assert(!!mWorld);
-    mWorld->AttractFish(
-        worldCoordinates,
-        radius,
-        delay);
 }
 
 void GameController::PickObjectToMove(
@@ -1290,6 +1205,126 @@ void GameController::ApplyThanosSnapAt(
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
 
     StartThanosSnapStateMachine(worldCoordinates.x, isSparseMode, mWorld->GetCurrentSimulationTime());
+}
+
+void GameController::ScareFish(
+    DisplayLogicalCoordinates const & screenCoordinates,
+    float radius,
+    std::chrono::milliseconds delay)
+{
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+
+    // Apply action
+    assert(!!mWorld);
+    mWorld->ScareFish(
+        worldCoordinates,
+        radius,
+        delay);
+}
+
+void GameController::AttractFish(
+    DisplayLogicalCoordinates const & screenCoordinates,
+    float radius,
+    std::chrono::milliseconds delay)
+{
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+
+    // Apply action
+    assert(!!mWorld);
+    mWorld->AttractFish(
+        worldCoordinates,
+        radius,
+        delay);
+}
+
+std::optional<PickedObjectId<NpcId>> GameController::BeginPlaceNewFurnitureNpc(
+    FurnitureNpcKindType furnitureKind,
+    DisplayLogicalCoordinates const & screenCoordinates)
+{
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+
+    assert(!!mWorld);
+    auto const pickedObjectId = mWorld->BeginPlaceNewFurnitureNpc(
+        furnitureKind,
+        worldCoordinates);
+    return pickedObjectId;
+}
+
+std::optional<PickedObjectId<NpcId>> GameController::BeginPlaceNewHumanNpc(
+    HumanNpcKindType humanKind,
+    DisplayLogicalCoordinates const & screenCoordinates)
+{
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+
+    assert(!!mWorld);
+    auto const pickedObjectId = mWorld->BeginPlaceNewHumanNpc(
+        humanKind,
+        worldCoordinates);
+    return pickedObjectId;
+}
+
+std::optional<PickedObjectId<NpcId>> GameController::ProbeNpcAt(DisplayLogicalCoordinates const & screenCoordinates) const
+{
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+
+    assert(!!mWorld);
+    return mWorld->ProbeNpcAt(
+        worldCoordinates,
+        GameParameters::NpcProbeSearchRadius);
+}
+
+void GameController::BeginMoveNpc(NpcId id)
+{
+    assert(!!mWorld);
+    mWorld->BeginMoveNpc(id);
+}
+
+void GameController::MoveNpcTo(
+    NpcId id,
+    DisplayLogicalCoordinates const & screenCoordinates,
+    vec2f const & worldOffset)
+{
+    vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+
+    assert(!!mWorld);
+    mWorld->MoveNpcTo(
+        id,
+        worldCoordinates,
+        worldOffset);
+}
+
+void GameController::EndMoveNpc(NpcId id)
+{
+    assert(!!mWorld);
+    mWorld->EndMoveNpc(id);
+}
+
+void GameController::CompleteNewNpc(NpcId id)
+{
+    assert(!!mWorld);
+    mWorld->CompleteNewNpc(id);
+}
+
+void GameController::RemoveNpc(NpcId id)
+{
+    assert(!!mWorld);
+    mWorld->RemoveNpc(id);
+}
+
+void GameController::AbortNewNpc(NpcId id)
+{
+    assert(!!mWorld);
+    mWorld->AbortNewNpc(id);
+}
+
+void GameController::HighlightNpc(
+    NpcId id,
+    NpcHighlightType highlight)
+{
+    assert(!!mWorld);
+    mWorld->HighlightNpc(
+        id,
+        highlight);
 }
 
 std::optional<ElementId> GameController::GetNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const

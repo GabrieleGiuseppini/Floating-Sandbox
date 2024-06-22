@@ -1427,36 +1427,3 @@ namespace std {
     };
 
 }
-
-struct TextureQuad
-{
-    vec2f TopLeftPosition;
-    vec2f TopLeftTexture;
-    vec2f TopRightPosition;
-    vec2f TopRightTexture;
-    vec2f BottomLeftPosition;
-    vec2f BottomLeftTexture;
-    vec2f BottomRightPosition;
-    vec2f BottomRightTexture;
-
-    TextureQuad() = default;
-
-    TextureQuad(
-        vec2f topLeftPosition,
-        vec2f topLeftTexture,
-        vec2f topRightPosition,
-        vec2f topRightTexture,
-        vec2f bottomLeftPosition,
-        vec2f bottomLeftTexture,
-        vec2f bottomRightPosition,
-        vec2f bottomRightTexture)
-        : TopLeftPosition(topLeftPosition)
-        , TopLeftTexture(topLeftTexture)
-        , TopRightPosition(topRightPosition)
-        , TopRightTexture(topRightTexture)
-        , BottomLeftPosition(bottomLeftPosition)
-        , BottomLeftTexture(bottomLeftTexture)
-        , BottomRightPosition(bottomRightPosition)
-        , BottomRightTexture(bottomRightTexture)
-    {}
-};

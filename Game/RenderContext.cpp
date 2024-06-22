@@ -508,6 +508,8 @@ void RenderContext::Draw()
             //
 
             {
+                mGlobalRenderContext->RenderPrepare();
+
                 mWorldRenderContext->RenderPrepareStars(renderParameters);
 
                 mWorldRenderContext->RenderPrepareLightnings(renderParameters);

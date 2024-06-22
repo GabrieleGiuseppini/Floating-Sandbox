@@ -33,7 +33,7 @@ World::World(
     , mOceanSurface(*this, mGameEventHandler)
     , mOceanFloor(std::move(oceanFloorTerrain))
     , mFishes(fishSpeciesDatabase, mGameEventHandler)
-    , mNpcs(materialDatabase, mGameEventHandler)
+    , mNpcs(std::make_unique<Npcs>(*this, materialDatabase, mGameEventHandler))
     //
     , mAllAABBs()
 {
@@ -62,7 +62,8 @@ void World::AddShip(std::unique_ptr<Ship> ship)
     mAllShips.push_back(std::move(ship));
 
     // Tell NPCs
-    mNpcs.OnShipAdded(*mAllShips.back());
+    assert(mNpcs);
+    mNpcs->OnShipAdded(*mAllShips.back());
 
     // Update AABBSet
     for (auto const & aabb : shipAABBs.GetItems())
@@ -128,79 +129,6 @@ bool World::IsUnderwater(ElementId elementId) const
 //////////////////////////////////////////////////////////////////////////////
 // Interactions
 //////////////////////////////////////////////////////////////////////////////
-
-std::optional<PickedObjectId<NpcId>> World::PickNpc(
-    vec2f const & position,
-    GameParameters const & gameParameters) const
-{
-    return mNpcs.PickNpc(position, gameParameters);
-}
-
-void World::BeginMoveNpc(NpcId id)
-{
-    mNpcs.BeginMoveNpc(id);
-}
-
-PickedObjectId<NpcId> World::BeginMoveNewHumanNpc(
-    HumanNpcKindType role,
-    vec2f const & initialPosition)
-{
-    return mNpcs.BeginMoveNewHumanNpc(role, initialPosition);
-}
-
-bool World::IsSuitableNpcPosition(
-    NpcId npcId,
-    vec2f const & position,
-    vec2f const & offset) const
-{
-    return mNpcs.IsSuitableNpcPosition(npcId, position, offset);
-}
-
-bool World::MoveNpcTo(
-    NpcId npcId,
-    vec2f const & position,
-    vec2f const & offset)
-{
-    return mNpcs.MoveNpcTo(npcId, position, offset);
-}
-
-void World::EndMoveNpc(NpcId npcId)
-{
-    mNpcs.EndMoveNpc(npcId);
-}
-
-void World::AbortNewNpc(NpcId npcId)
-{
-    mNpcs.AbortNewNpc(npcId);
-}
-
-void World::HighlightNpc(
-    NpcId npcId,
-    NpcHighlightType highlight)
-{
-    mNpcs.HighlightNpc(npcId, highlight);
-}
-
-void World::RemoveNpc(NpcId npcId)
-{
-    mNpcs.RemoveNpc(npcId);
-}
-
-void World::ScareFish(
-    vec2f const & position,
-    float radius,
-    std::chrono::milliseconds delay)
-{
-    mFishes.DisturbAt(position, radius, delay);
-}
-
-void World::AttractFish(
-    vec2f const & position,
-    float radius,
-    std::chrono::milliseconds delay)
-{
-    mFishes.AttractAt(position, radius, delay);
-}
 
 void World::PickPointToMove(
     vec2f const & pickPosition,
@@ -1036,6 +964,112 @@ void World::SetSilence(float silenceAmount)
     mWind.SetSilence(silenceAmount);
 }
 
+void World::ScareFish(
+    vec2f const & position,
+    float radius,
+    std::chrono::milliseconds delay)
+{
+    mFishes.DisturbAt(position, radius, delay);
+}
+
+void World::AttractFish(
+    vec2f const & position,
+    float radius,
+    std::chrono::milliseconds delay)
+{
+    mFishes.AttractAt(position, radius, delay);
+}
+
+std::optional<PickedObjectId<NpcId>> World::BeginPlaceNewFurnitureNpc(
+    FurnitureNpcKindType furnitureKind,
+    vec2f const & position)
+{
+    assert(mNpcs);
+    auto const pickedObjectId = mNpcs->BeginPlaceNewFurnitureNpc(
+        furnitureKind,
+        position,
+        mCurrentSimulationTime);
+
+    return pickedObjectId;
+}
+
+std::optional<PickedObjectId<NpcId>> World::BeginPlaceNewHumanNpc(
+    HumanNpcKindType humanKind,
+    vec2f const & position)
+{
+    assert(mNpcs);
+    auto const pickedObjectId = mNpcs->BeginPlaceNewHumanNpc(
+        humanKind,
+        position,
+        mCurrentSimulationTime);
+
+    return pickedObjectId;
+}
+
+std::optional<PickedObjectId<NpcId>> World::ProbeNpcAt(
+    vec2f const & position,
+    float radius) const
+{
+    assert(mNpcs);
+    return mNpcs->ProbeNpcAt(
+        position,
+        radius);
+}
+
+void World::BeginMoveNpc(NpcId id)
+{
+    assert(mNpcs);
+    mNpcs->BeginMoveNpc(
+        id,
+        mCurrentSimulationTime);
+}
+
+void World::MoveNpcTo(
+    NpcId id,
+    vec2f const & position,
+    vec2f const & offset)
+{
+    assert(mNpcs);
+    mNpcs->MoveNpcTo(
+        id,
+        position,
+        offset);
+}
+
+void World::EndMoveNpc(NpcId id)
+{
+    assert(mNpcs);
+    mNpcs->EndMoveNpc(id, mCurrentSimulationTime);
+}
+
+void World::CompleteNewNpc(NpcId id)
+{
+    assert(mNpcs);
+    mNpcs->CompleteNewNpc(id, mCurrentSimulationTime);
+}
+
+void World::RemoveNpc(NpcId id)
+{
+    assert(mNpcs);
+    mNpcs->RemoveNpc(id);
+}
+
+void World::AbortNewNpc(NpcId id)
+{
+    assert(mNpcs);
+    mNpcs->AbortNewNpc(id);
+}
+
+void World::HighlightNpc(
+    NpcId id,
+    NpcHighlightType highlight)
+{
+    assert(mNpcs);
+    mNpcs->HighlightNpc(
+        id,
+        highlight);
+}
+
 bool World::DestroyTriangle(ElementId triangleId)
 {
     auto const shipId = triangleId.GetShipId();
@@ -1100,7 +1134,8 @@ void World::Update(
     {
         auto const startTime = std::chrono::steady_clock::now();
 
-        mNpcs.Update(mCurrentSimulationTime, gameParameters);
+        assert(mNpcs);
+        mNpcs->Update(mCurrentSimulationTime, gameParameters);
 
         perfStats.TotalNpcUpdateDuration.Update(std::chrono::steady_clock::now() - startTime);
     }
@@ -1116,8 +1151,7 @@ void World::Update(
 
 void World::RenderUpload(
     GameParameters const & gameParameters,
-    Render::RenderContext & renderContext,
-    PerfStats & /*perfStats*/)
+    Render::RenderContext & renderContext)
 {
     mStars.Upload(renderContext);
 
@@ -1145,7 +1179,8 @@ void World::RenderUpload(
         renderContext.UploadShipsEnd();
     }
 
-    mNpcs.Upload(renderContext);
+    assert(mNpcs);
+    mNpcs->Upload(renderContext);
 
     // AABBs
     if (renderContext.GetShowAABBs())

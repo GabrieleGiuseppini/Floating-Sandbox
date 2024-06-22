@@ -14,6 +14,7 @@
 
 #include <GameOpenGL/GameOpenGL.h>
 #include <GameOpenGL/ShaderManager.h>
+#include <GameOpenGL/TriangleQuadElementArrayVBO.h>
 
 #include <cassert>
 #include <memory>
@@ -36,7 +37,15 @@ public:
 
     void ProcessParameterChanges(RenderParameters const & renderParameters);
 
+    void RenderPrepare();
+
 public:
+
+    inline TriangleQuadElementArrayVBO & GetElementIndices()
+    {
+        assert(!!mElementIndices);
+        return *mElementIndices;
+    }
 
     inline TextureAtlasMetadata<GenericLinearTextureGroups> const & GetGenericLinearTextureAtlasMetadata() const
     {
@@ -70,6 +79,12 @@ public:
 private:
 
     ShaderManager<ShaderManagerTraits> & mShaderManager;
+
+    //
+    // Element indices
+    //
+
+    std::unique_ptr<TriangleQuadElementArrayVBO> mElementIndices;
 
     //
     // Textures

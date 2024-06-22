@@ -132,46 +132,6 @@ public:
     // Interactions
     //
 
-    std::optional<PickedObjectId<NpcId>> PickNpc(
-        vec2f const & position,
-        GameParameters const & gameParameters) const;
-
-    void BeginMoveNpc(NpcId npcId);
-
-    PickedObjectId<NpcId> BeginMoveNewHumanNpc(
-        HumanNpcKindType role,
-        vec2f const & initialPosition);
-
-    bool IsSuitableNpcPosition(
-        NpcId npcId,
-        vec2f const & position,
-        vec2f const & offset) const;
-
-    bool MoveNpcTo(
-        NpcId npcId,
-        vec2f const & position,
-        vec2f const & offset);
-
-    void EndMoveNpc(NpcId npcId);
-
-    void AbortNewNpc(NpcId npcId);
-
-    void HighlightNpc(
-        NpcId npcId,
-        NpcHighlightType highlight);
-
-    void RemoveNpc(NpcId npcId);
-
-    void ScareFish(
-        vec2f const & position,
-        float radius,
-        std::chrono::milliseconds delay);
-
-    void AttractFish(
-        vec2f const & position,
-        float radius,
-        std::chrono::milliseconds delay);
-
     void PickPointToMove(
         vec2f const & pickPosition,
         std::optional<ElementId> & elementId,
@@ -383,6 +343,47 @@ public:
 
     void SetSilence(float silenceAmount);
 
+    void ScareFish(
+        vec2f const & position,
+        float radius,
+        std::chrono::milliseconds delay);
+
+    void AttractFish(
+        vec2f const & position,
+        float radius,
+        std::chrono::milliseconds delay);
+
+    std::optional<PickedObjectId<NpcId>> BeginPlaceNewFurnitureNpc(
+        FurnitureNpcKindType humanKind,
+        vec2f const & position);
+
+    std::optional<PickedObjectId<NpcId>> BeginPlaceNewHumanNpc(
+        HumanNpcKindType humanKind,
+        vec2f const & position);
+
+    std::optional<PickedObjectId<NpcId>> ProbeNpcAt(
+        vec2f const & position,
+        float radius) const;
+
+    void BeginMoveNpc(NpcId id);
+
+    void MoveNpcTo(
+        NpcId id,
+        vec2f const & position,
+        vec2f const & offset);
+
+    void EndMoveNpc(NpcId id);
+
+    void CompleteNewNpc(NpcId id);
+
+    void RemoveNpc(NpcId id);
+
+    void AbortNewNpc(NpcId id);
+
+    void HighlightNpc(
+        NpcId id,
+        NpcHighlightType highlight);
+
     bool DestroyTriangle(ElementId triangleId);
 
     bool RestoreTriangle(ElementId triangleId);
@@ -398,8 +399,7 @@ public:
 
     void RenderUpload(
         GameParameters const & gameParameters,
-        Render::RenderContext & renderContext,
-        PerfStats & perfStats);
+        Render::RenderContext & renderContext);
 
 private:
 
@@ -421,7 +421,7 @@ private:
     OceanSurface mOceanSurface;
     OceanFloor mOceanFloor;
     Fishes mFishes;
-    Npcs mNpcs;
+    std::unique_ptr<Npcs> mNpcs; // Pointer simply because of #include dependencies
 
     // The set of all AABB's in the world, updated at each
     // simulation cycle and at each ship addition

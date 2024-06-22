@@ -53,7 +53,7 @@ struct GameParameters
 
     // Gravity
     static constexpr vec2f Gravity = vec2f(0.0f, -9.80f);
-    static constexpr vec2f GravityNormalized = vec2f(0.0f, -1.0f);
+    static constexpr vec2f GravityDir = vec2f(0.0f, -1.0f);
     static float constexpr GravityMagnitude = 9.80f; // m/s
 
     // Air
@@ -428,6 +428,69 @@ struct GameParameters
     static float constexpr MinFishShoalRadiusAdjustment = 0.1f;
     static float constexpr MaxFishShoalRadiusAdjustment = 100.0f;
 
+    //
+    // NPCs
+    //
+
+    float NpcSpringReductionFractionAdjustment;
+    static float constexpr MinNpcSpringReductionFractionAdjustment = 0.0f;
+    static float constexpr MaxNpcSpringReductionFractionAdjustment = 5.0f;
+
+    float NpcSpringDampingCoefficientAdjustment;
+    static float constexpr MinNpcSpringDampingCoefficientAdjustment = 0.0f;
+    static float constexpr MaxNpcSpringDampingCoefficientAdjustment = 2.0f;
+
+    float HumanNpcEquilibriumTorqueStiffnessCoefficient;
+    static float constexpr MinHumanNpcEquilibriumTorqueStiffnessCoefficient = 0.0f;
+    static float constexpr MaxHumanNpcEquilibriumTorqueStiffnessCoefficient = 0.01f;
+
+    float HumanNpcEquilibriumTorqueDampingCoefficient;
+    static float constexpr MinHumanNpcEquilibriumTorqueDampingCoefficient = 0.0f;
+    static float constexpr MaxHumanNpcEquilibriumTorqueDampingCoefficient = 0.01f;
+
+    static float constexpr HumanNpcWalkingSpeedBase = 1.0f; // m/s
+    float HumanNpcWalkingSpeedAdjustment;
+    static float constexpr MinHumanNpcWalkingSpeedAdjustment = 0.5f;
+    static float constexpr MaxHumanNpcWalkingSpeedAdjustment = 2.5f;
+
+    static float constexpr MaxHumanNpcTotalWalkingSpeedAdjustment = 3.5f; // Absolute cap
+
+    static float constexpr MaxHumanNpcWalkSinSlope = 0.87f; // Max sin of slope we're willing to climb up: ___*\___<W---  (60.5 degrees)
+
+    struct HumanNpcGeometry
+    {
+        static float constexpr BodyLengthMean = 1.65f;
+        static float constexpr BodyLengthStdDev = 0.065f;
+        static float constexpr BodyWidthNarrowMultiplierStdDev = 0.045f;
+        static float constexpr BodyWidthWideMultiplierStdDev = 0.15f;
+
+        // All fractions below ar relative to BodyLength
+
+        static float constexpr HeadLengthFraction = 1.0f / 8.0f;
+        static float constexpr HeadWidthFraction = 1.0f / 10.0f;
+        static float constexpr HeadDepthFraction = HeadWidthFraction;
+
+        static float constexpr TorsoLengthFraction = 1.0f / 2.0f - HeadLengthFraction;
+        static float constexpr TorsoWidthFraction = 1.0f / 7.0f;
+        static float constexpr TorsoDepthFraction = 1.0f / 6.0f;
+
+        static float constexpr ArmLengthFraction = 3.0f / 8.0f;
+        static float constexpr ArmWidthFraction = 1.0f / 10.0f;
+        static float constexpr ArmDepthFraction = ArmWidthFraction;
+
+        static float constexpr LegLengthFraction = 1.0f / 2.0f;
+        static float constexpr LegWidthFraction = 1.0f / 10.0f;
+        static float constexpr LegDepthFraction = LegWidthFraction;
+
+        static_assert(LegLengthFraction + TorsoLengthFraction + HeadLengthFraction == 1.0f);
+
+        static float constexpr StepLengthFraction = 0.43f; // From foot to foot at longest separation
+    };
+
+    float HumanNpcBodyLengthAdjustment;
+    static float constexpr MinHumanNpcBodyLengthAdjustment = 0.2f;
+    static float constexpr MaxHumanNpcBodyLengthAdjustment = 10.0f;
+
     // Misc
 
     float SeaDepth;
@@ -476,6 +539,8 @@ struct GameParameters
     // Interactions
 
     float ToolSearchRadius;
+
+    static float constexpr NpcProbeSearchRadius = 0.3f;
 
     float DestroyRadius;
     static float constexpr MinDestroyRadius = 0.5f;
@@ -561,14 +626,16 @@ struct GameParameters
 
     static_assert(HalfMaxWorldHeight >= MaxSeaDepth); // Make sure deepest bottom of the ocean is visible
 
+    static size_t constexpr MaxSpringsPerPoint = 8u + 1u; // 8 neighbours and 1 rope spring, when this is a rope endpoint
+    static size_t constexpr MaxTrianglesPerPoint = 8u;
+
     static size_t constexpr MaxNpcs = 1024u;
+    static size_t constexpr MaxParticlesPerNpc = 4u;
+    static size_t constexpr MaxSpringsPerNpc = 6u;
 
     static size_t constexpr MaxGadgets = 64u;
     static size_t constexpr MaxPinnedPoints = 64u;
     static size_t constexpr MaxThanosSnaps = 8u;
-
-    static size_t constexpr MaxSpringsPerPoint = 8u + 1u; // 8 neighbours and 1 rope spring, when this is a rope endpoint
-    static size_t constexpr MaxTrianglesPerPoint = 8u;
 
     static unsigned int constexpr EngineControllerTelegraphDegreesOfFreedom = 11;
     static_assert((EngineControllerTelegraphDegreesOfFreedom % 2) != 0); // Make sure there's room for central position, and it's symmetric

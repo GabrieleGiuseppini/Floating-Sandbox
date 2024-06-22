@@ -113,13 +113,16 @@ void NotificationLayer::SetStatusTexts(
 			float const shipsSpringsUpdatePercent = (totalNetUpdate != 0.0f)
 				? lastDeltaPerfStats.TotalShipsSpringsUpdateDuration.ToRatio<std::chrono::milliseconds>() * 100.0f / totalNetUpdate
 				: 0.0f;
+			float const npcsUpdatePercent = (totalNetUpdate != 0.0f)
+				? lastDeltaPerfStats.TotalNpcUpdateDuration.ToRatio<std::chrono::milliseconds>() * 100.0f / totalNetUpdate
+				: 0.0f;
 
 			ss << std::fixed
 				<< std::setprecision(2)
 				<< "UPD:" << totalPerfStats.TotalUpdateDuration.ToRatio<std::chrono::milliseconds>() << "MS"
 				<< " (W=" << lastDeltaPerfStats.TotalWaitForRenderUploadDuration.ToRatio<std::chrono::milliseconds>() << "MS +"
 				<< " " << totalNetUpdate << "MS"
-				<< " (S=" << shipsSpringsUpdatePercent << "%))"
+				<< " (S=" << shipsSpringsUpdatePercent << "%) (N=" << npcsUpdatePercent << "%))"
 				<< " UPL:(W=" << lastDeltaPerfStats.TotalWaitForRenderDrawDuration.ToRatio<std::chrono::milliseconds>() << "MS +"
 				<< " " << lastDeltaPerfStats.TotalNetRenderUploadDuration.ToRatio<std::chrono::milliseconds>() << "MS)"
 				;

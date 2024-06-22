@@ -1140,7 +1140,7 @@ void Points::UpdateCombustionHighFrequency(
                 // 0.9 + 1.0*(1 - cos(theta)): 2.9 N, 0.9 S, 1.9 W and E
                 vec2f const springDir = (GetPosition(otherEndpointIndex) - pointPosition).normalise();
                 float const dirAlpha =
-                    (0.9f + 1.0f * (1.0f - springDir.dot(GameParameters::GravityNormalized)));
+                    (0.9f + 1.0f * (1.0f - springDir.dot(GameParameters::GravityDir)));
                 // No normalization: when using normalization flame does not propagate along rope
 
                 // Add heat to the neighbor, diminishing with the neighbor's decay
@@ -2246,7 +2246,7 @@ void Points::CalculateCombustionDecayParameters(
     //  alpha_i ^ n_i = 0.5
     //
 
-    assert(mMaterialDatabase.GetLargestMass() == 2400.0f);
+    assert(mMaterialDatabase.GetLargestMass() == 2400.0f); // Sentinel to recalc below in case mass changes
 
     float constexpr m1 = 0.6f;
     float constexpr t1 = 12.0f;

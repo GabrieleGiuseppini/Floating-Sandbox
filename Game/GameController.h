@@ -191,19 +191,6 @@ public:
     // Interactions
     //
 
-    std::optional<PickedObjectId<NpcId>> PickNpc(vec2f const & worldPosition) const override;
-    void BeginMoveNpc(NpcId npcId) override;
-    PickedObjectId<NpcId> BeginMoveNewHumanNpc(HumanNpcKindType role, vec2f const & initialWorldPosition) override;
-    bool IsSuitableNpcPosition(NpcId npcId, vec2f const & worldPosition, vec2f const & offset) const override;
-    bool MoveNpcTo(NpcId npcId, vec2f const & worldPosition, vec2f const & offset) override;
-    void EndMoveNpc(NpcId npcId) override;
-    void AbortNewNpc(NpcId npcId) override;
-    void HighlightNpc(NpcId npcId, NpcHighlightType highlight) override;
-    void RemoveNpc(NpcId npcId) override;
-
-    void ScareFish(DisplayLogicalCoordinates const & screenCoordinates, float radius, std::chrono::milliseconds delay) override;
-    void AttractFish(DisplayLogicalCoordinates const & screenCoordinates, float radius, std::chrono::milliseconds delay) override;
-
     void PickObjectToMove(DisplayLogicalCoordinates const & screenCoordinates, std::optional<ElementId> & elementId) override;
     void PickObjectToMove(DisplayLogicalCoordinates const & screenCoordinates, std::optional<ShipId> & shipId) override;
     void MoveBy(ElementId elementId, DisplayLogicalSize const & screenOffset, DisplayLogicalSize const & inertialScreenOffset) override;
@@ -239,6 +226,18 @@ public:
     bool ScrubThrough(DisplayLogicalCoordinates const & startScreenCoordinates, DisplayLogicalCoordinates const & endScreenCoordinates) override;
     bool RotThrough(DisplayLogicalCoordinates const & startScreenCoordinates, DisplayLogicalCoordinates const & endScreenCoordinates) override;
     void ApplyThanosSnapAt(DisplayLogicalCoordinates const & screenCoordinates, bool isSparseMode) override;
+    void ScareFish(DisplayLogicalCoordinates const & screenCoordinates, float radius, std::chrono::milliseconds delay) override;
+    void AttractFish(DisplayLogicalCoordinates const & screenCoordinates, float radius, std::chrono::milliseconds delay) override;
+    std::optional<PickedObjectId<NpcId>> BeginPlaceNewFurnitureNpc(FurnitureNpcKindType humanKind, DisplayLogicalCoordinates const & screenCoordinates) override;
+    std::optional<PickedObjectId<NpcId>> BeginPlaceNewHumanNpc(HumanNpcKindType humanKind, DisplayLogicalCoordinates const & screenCoordinates) override;
+    std::optional<PickedObjectId<NpcId>> ProbeNpcAt(DisplayLogicalCoordinates const & screenCoordinates) const override;
+    void BeginMoveNpc(NpcId id) override;
+    void MoveNpcTo(NpcId id, DisplayLogicalCoordinates const & screenCoordinates, vec2f const & worldOffset) override;
+    void EndMoveNpc(NpcId id) override;
+    void CompleteNewNpc(NpcId id) override;
+    void RemoveNpc(NpcId id) override;
+    void AbortNewNpc(NpcId id) override;
+    void HighlightNpc(NpcId id, NpcHighlightType highlight) override;
     std::optional<ElementId> GetNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const override;
     void QueryNearestPointAt(DisplayLogicalCoordinates const & screenCoordinates) const override;
 

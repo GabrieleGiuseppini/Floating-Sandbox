@@ -10,13 +10,17 @@ set  (SOURCES
 	GameOpenGL_Ext.h
 	GameOpenGLMappedBuffer.h
 	ShaderManager.cpp.inl
-	ShaderManager.h)
+	ShaderManager.h
+	TriangleQuadElementArrayVBO.cpp
+	TriangleQuadElementArrayVBO.h
+)
 
 set  (GLAD_SOURCES
 	glad/glad.c
 	glad/glad.h
 	glad/g_glad.h
-	glad/khrplatform.h)
+	glad/khrplatform.h
+)
 
 source_group(" " FILES ${SOURCES})
 source_group("glad" FILES ${GLAD_SOURCES})

@@ -11,6 +11,7 @@ namespace Render {
 
 GlobalRenderContext::GlobalRenderContext(ShaderManager<ShaderManagerTraits> & shaderManager)
     : mShaderManager(shaderManager)
+    , mElementIndices(TriangleQuadElementArrayVBO::Create())
     // Textures
     , mGenericLinearTextureAtlasOpenGLHandle()
     , mGenericLinearTextureAtlasMetadata()
@@ -241,5 +242,12 @@ void GlobalRenderContext::ProcessParameterChanges(RenderParameters const & rende
     }
 }
 
+void GlobalRenderContext::RenderPrepare()
+{
+    if (mElementIndices->IsDirty())
+    {
+        mElementIndices->Upload();
+    }
+}
 
 }

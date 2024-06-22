@@ -89,8 +89,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::ShipGenericMipMappedTextures;
     else if (lstr == "ship_jet_engine_flames")
         return ProgramType::ShipJetEngineFlames;
-    else if (lstr == "ship_npcs")
-        return ProgramType::ShipNpcs;
+    else if (lstr == "ship_npcs_texture")
+        return ProgramType::ShipNpcsTexture;
     else if (lstr == "ship_point_to_point_arrows")
         return ProgramType::ShipPointToPointArrows;
     else if (lstr == "ship_points_color")
@@ -277,8 +277,8 @@ std::string ProgramTypeToStr(ProgramType program)
         return "ShipGenericMipMappedTextures";
     case ProgramType::ShipJetEngineFlames:
         return "ShipJetEngineFlames";
-    case ProgramType::ShipNpcs:
-        return "ShipNpcs";
+    case ProgramType::ShipNpcsTexture:
+        return "ShipNpcsTexture";
     case ProgramType::ShipPointToPointArrows:
         return "ShipPointToPointArrows";
     case ProgramType::ShipPointsColor:
@@ -633,12 +633,14 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::ShipPointAuxiliaryData;
     else if (Utils::CaseInsensitiveEquals(str, "ShipPointFrontierColor"))
         return VertexAttributeType::ShipPointFrontierColor;
-    else if (Utils::CaseInsensitiveEquals(str, "NpcStaticAttributeGroup1"))
-        return VertexAttributeType::NpcStaticAttributeGroup1;
-    else if (Utils::CaseInsensitiveEquals(str, "NpcQuad1"))
-        return VertexAttributeType::NpcQuad1;
-    else if (Utils::CaseInsensitiveEquals(str, "NpcQuad2"))
-        return VertexAttributeType::NpcQuad2;
+    else if (Utils::CaseInsensitiveEquals(str, "NpcTextureStaticAttributeGroup1"))
+        return VertexAttributeType::NpcTextureStaticAttributeGroup1;
+    else if (Utils::CaseInsensitiveEquals(str, "NpcTextureAttributeGroup1"))
+        return VertexAttributeType::NpcTextureAttributeGroup1;
+    else if (Utils::CaseInsensitiveEquals(str, "NpcTextureAttributeGroup2"))
+        return VertexAttributeType::NpcTextureAttributeGroup2;
+    else if (Utils::CaseInsensitiveEquals(str, "NpcTextureAttributeGroup3"))
+        return VertexAttributeType::NpcTextureAttributeGroup3;
     else if (Utils::CaseInsensitiveEquals(str, "ElectricSpark1"))
         return VertexAttributeType::ElectricSpark1;
     else if (Utils::CaseInsensitiveEquals(str, "Explosion1"))

@@ -13,6 +13,7 @@ namespace Physics
     class Frontiers;
     class Gadgets;
     class Npcs;
+    class NpcParticles;
     class OceanFloor;
     class OceanSurface;
     class PinnedPoints;
@@ -40,10 +41,10 @@ namespace Physics
 #include "Triangles.h"
 #include "ElectricalElements.h"
 #include "Frontiers.h"
+#include "NpcSimulation/NpcParticles.h"
 
 #include "Clouds.h"
 #include "Fishes.h"
-#include "Npcs.h"
 #include "Stars.h"
 #include "OceanFloor.h"
 #include "OceanSurface.h"
@@ -57,7 +58,7 @@ namespace Physics
 #include "RCBombGadget.h"
 #include "TimerBombGadget.h"
 #include "Gadgets.h"
-
 #include "PinnedPoints.h"
-
 #include "Ship.h"
+
+#include "NpcSimulation/Npcs.h"

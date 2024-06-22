@@ -55,7 +55,7 @@ enum class ProgramType
     ShipFrontierEdges,
     ShipGenericMipMappedTextures,
     ShipJetEngineFlames,
-    ShipNpcs,
+    ShipNpcsTexture,
     ShipPointToPointArrows,
     ShipPointsColor,
     ShipPointsColorStress,
@@ -129,7 +129,7 @@ enum class ProgramParameterType : uint8_t
     HeatShift,
     LampLightColor,
     LandFlatColor,
-    MatteColor,    
+    MatteColor,
     OceanTransparency,
     OceanDarkeningRate,
     OceanDepthColorStart,
@@ -226,9 +226,10 @@ enum class VertexAttributeType : GLuint
     ShipPointAuxiliaryData = 5,
     ShipPointFrontierColor = 6,
 
-    NpcStaticAttributeGroup1 = 0,
-    NpcQuad1 = 1,
-    NpcQuad2 = 2,
+    NpcTextureStaticAttributeGroup1 = 0,
+    NpcTextureAttributeGroup1 = 0,
+    NpcTextureAttributeGroup2 = 1,
+    NpcTextureAttributeGroup3 = 2,
 
     ElectricSpark1 = 0,
 

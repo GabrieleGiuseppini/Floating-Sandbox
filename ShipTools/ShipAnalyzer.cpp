@@ -69,7 +69,7 @@ ShipAnalyzer::AnalysisInfo ShipAnalyzer::Analyze(
         // (Xg - Xb) x (M * G0)
         analysisInfo.EquilibriumMomentum =
             (analysisInfo.CenterOfMass - analysisInfo.CenterOfDisplacedDensity)
-            .cross(GameParameters::GravityNormalized * totalMass);
+            .cross(GameParameters::GravityDir * totalMass);
     }
 
     analysisInfo.TotalMass = totalMass;

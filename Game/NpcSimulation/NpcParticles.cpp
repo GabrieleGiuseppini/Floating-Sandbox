@@ -1,37 +1,38 @@
 /***************************************************************************************
 * Original Author:      Gabriele Giuseppini
-* Created:              2023-07-08
+* Created:              2020-05-15
 * Copyright:            Gabriele Giuseppini  (https://github.com/GabrieleGiuseppini)
 ***************************************************************************************/
-#include "NpcParticles.h"
+#include "Physics.h"
 
-#include <stdexcept>
+#include <GameCore/GameException.h>
+#include <GameCore/Log.h>
 
-namespace Physics
-{
+namespace Physics {
 
 ElementIndex NpcParticles::Add(
+    float mass,
+    float staticFriction,
+    float kineticFriction,
+    float elasticity,
+    float buoyancyVolumeFill,
     vec2f const & position,
-    StructuralMaterial const & structuralMaterial)
+    rgbaColor const & color)
 {
     // Find first free particle
     ElementIndex const p = FindFreeParticleIndex();
 
     mIsInUseBuffer[p] = true;
 
-    mMaterialBuffer[p] = &structuralMaterial;
+    mPhysicalPropertiesBuffer[p] = PhysicalProperties(mass, staticFriction, kineticFriction, elasticity, buoyancyVolumeFill);
     mPositionBuffer[p] = position;
     mVelocityBuffer[p] = vec2f::zero();
+    mPreliminaryForcesBuffer[p] = vec2f::zero();
     mExternalForcesBuffer[p] = vec2f::zero();
-    mMassBuffer[p] = structuralMaterial.GetMass();
-    mMaterialBuoyancyVolumeFillBuffer[p] = structuralMaterial.BuoyancyVolumeFill;
-    float const integrationFactor = GameParameters::SimulationStepTimeDuration<float> *GameParameters::SimulationStepTimeDuration<float> / structuralMaterial.GetMass();;
-    mIntegrationFactorBuffer[p] = vec2f(integrationFactor, integrationFactor);
+
+    mRenderColorBuffer[p] = color;
 
     ++mParticleInUseCount;
-
-    // Remember we're dirty
-    mAreElementsDirtyForRendering = true;
 
     return p;
 }
@@ -42,12 +43,15 @@ void NpcParticles::Remove(
     assert(mIsInUseBuffer[particleIndex]);
 
     mIsInUseBuffer[particleIndex] = false;
-    // TODO: set free search start to min (free search start, this)
+    mFreeParticleSearchStartIndex = std::min(mFreeParticleSearchStartIndex, particleIndex);
 
     --mParticleInUseCount;
+}
 
-    // Remember we're dirty
-    mAreElementsDirtyForRendering = true;
+void NpcParticles::Query(ElementIndex particleElementIndex) const
+{
+    LogMessage("ParticleIndex: ", particleElementIndex);
+    LogMessage("P=", mPositionBuffer[particleElementIndex].toString(), " V=", mVelocityBuffer[particleElementIndex].toString());
 }
 
 ElementIndex NpcParticles::FindFreeParticleIndex()
@@ -79,7 +83,7 @@ ElementIndex NpcParticles::FindFreeParticleIndex()
     }
 
     // If we're here, no luck
-    throw std::runtime_error("Cannot find free NPC particle");
+    throw GameException("Cannot find free NPC particle");
 }
 
 }

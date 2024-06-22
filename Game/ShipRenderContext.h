@@ -51,7 +51,7 @@ public:
         RgbaImageData exteriorViewImage,
         RgbaImageData interiorViewImage,
         ShaderManager<ShaderManagerTraits> & shaderManager,
-        GlobalRenderContext const & globalRenderContext,
+        GlobalRenderContext & globalRenderContext,
         RenderParameters const & renderParameters,
         float shipFlameSizeAdjustment,
         float vectorFieldLengthMultiplier);
@@ -256,77 +256,65 @@ public:
 
     void UploadNpcStaticAttributesEnd();
 
-    void UploadNpcQuadsStart(size_t count);
+    void UploadNpcTextureQuadsStart(size_t quadCount);
 
-    inline void UploadNpcQuad(
+    inline void UploadNpcTextureQuad(
         PlaneId planeId,
-        vec2f const & position,
-        vec2f const & verticalUp,
-        float width)
+        vec2f topLeftPosition,
+        vec2f topLeftTexture,
+        vec2f topRightPosition,
+        vec2f topRightTexture,
+        vec2f bottomLeftPosition,
+        vec2f bottomLeftTexture,
+        vec2f bottomRightPosition,
+        vec2f bottomRightTexture,
+        float faceOrientation,
+        NpcHighlightType highlight)
     {
         float const fPlaneId = static_cast<float>(planeId);
 
-        //
-        // Calculate quad vertices
-        //
-        // C---E---D
-        // |   |   |
-        // |   |   |
-        // |   |   |
-        // |   |   |
-        // |   |   |
-        // A---S---B
-        //
+        float const backDepth = std::max(-faceOrientation, 0.0f);
+        float const orientationDepth = 1.0f - std::abs(faceOrientation);
+        vec4f const overlayColor = NpcHighlightToOverlayColor(highlight);
 
-        vec2f const n = verticalUp.to_perpendicular().normalise_approx();
+        // TopLeft
+        mNpcTextureQuadVertexBuffer.emplace_back(
+            topLeftPosition,
+            topLeftTexture,
+            fPlaneId,
+            backDepth,
+            orientationDepth,
+            overlayColor);
 
-        vec2f const a = position - n * width / 2.0f;
-        vec2f const b = position + n * width / 2.0f;
-        vec2f const c = position + verticalUp - n * width / 2.0f;
-        vec2f const d = position + verticalUp + n * width / 2.0f;
+        // BottomLeft
+        mNpcTextureQuadVertexBuffer.emplace_back(
+            bottomLeftPosition,
+            bottomLeftTexture,
+            fPlaneId,
+            backDepth,
+            orientationDepth,
+            overlayColor);
 
-        //
-        // Append vertices - two triangles
-        //
+        // TopRight
+        mNpcTextureQuadVertexBuffer.emplace_back(
+            topRightPosition,
+            topRightTexture,
+            fPlaneId,
+            backDepth,
+            orientationDepth,
+            overlayColor);
 
-        // Top-left
-        mNpcQuadVertexBuffer.emplace_back(
-            c,
-            vec2f(-1.0f, 1.0f),
-            fPlaneId);
-
-        // Top-Right
-        mNpcQuadVertexBuffer.emplace_back(
-            d,
-            vec2f(1.0f, 1.0f),
-            fPlaneId);
-
-        // Bottom-left
-        mNpcQuadVertexBuffer.emplace_back(
-            a,
-            vec2f(-1.0f, -1.0f),
-            fPlaneId);
-
-        // Top-Right
-        mNpcQuadVertexBuffer.emplace_back(
-            d,
-            vec2f(1.0f, 1.0f),
-            fPlaneId);
-
-        // Bottom-left
-        mNpcQuadVertexBuffer.emplace_back(
-            a,
-            vec2f(-1.0f, -1.0f),
-            fPlaneId);
-
-        // Bottom-right
-        mNpcQuadVertexBuffer.emplace_back(
-            b,
-            vec2f(1.0f, -1.0f),
-            fPlaneId);
+        // BottomRight
+        mNpcTextureQuadVertexBuffer.emplace_back(
+            bottomRightPosition,
+            bottomRightTexture,
+            fPlaneId,
+            backDepth,
+            orientationDepth,
+            overlayColor);
     }
 
-    void UploadNpcQuadsEnd();
+    void UploadNpcTextureQuadsEnd();
 
     //
     // Electric sparks
@@ -1393,6 +1381,25 @@ private:
             ambientLightSensitivity);
     }
 
+    vec4f NpcHighlightToOverlayColor(NpcHighlightType highlight)
+    {
+        switch (highlight)
+        {
+            case NpcHighlightType::None:
+            {
+                return vec4f::zero();
+            }
+
+            case NpcHighlightType::Candidate:
+            {
+                return vec4f(0.981f, 1.00f, 0.0800f, 1.0f);
+            }
+        }
+
+        assert(false);
+        return vec4f::zero();
+    }
+
 private:
 
     void RenderPrepareNpcs(RenderParameters const & renderParameters);
@@ -1448,7 +1455,7 @@ private:
 
 private:
 
-    GlobalRenderContext const & mGlobalRenderContext;
+    GlobalRenderContext & mGlobalRenderContext;
 
     ShaderManager<ShaderManagerTraits> & mShaderManager;
 
@@ -1505,19 +1512,28 @@ private:
         {}
     };
 
-    struct NpcQuadVertex
+    struct NpcTextureQuadVertex
     {
         vec2f vertexPosition;
         vec2f quadSpacePosition;
         float planeId;
+        float backDepth;
+        float orientationDepth;
+        vec4f overlayColor;
 
-        NpcQuadVertex(
-            vec2f _vertexPosition,
+        NpcTextureQuadVertex(
+            vec2f const & _vertexPosition,
             vec2f _quadSpacePosition,
-            float _planeId)
+            float _planeId,
+            float _backDepth,
+            float _orientationDepth,
+            vec4f _overlayColor)
             : vertexPosition(_vertexPosition)
             , quadSpacePosition(_quadSpacePosition)
             , planeId(_planeId)
+            , backDepth(_backDepth)
+            , orientationDepth(_orientationDepth)
+            , overlayColor(_overlayColor)
         {}
     };
 
@@ -1763,9 +1779,9 @@ private:
     GameOpenGLVBO mNpcStaticAttributeVBO;
     size_t mNpcStaticAttributeVBOAllocatedVertexSize;
 
-    BoundedVector<NpcQuadVertex> mNpcQuadVertexBuffer;
-    GameOpenGLVBO mNpcQuadVBO;
-    size_t mNpcQuadVBOAllocatedVertexSize;
+    BoundedVector<NpcTextureQuadVertex> mNpcTextureQuadVertexBuffer;
+    GameOpenGLVBO mNpcTextureQuadVBO;
+    size_t mNpcTextureQuadVBOAllocatedVertexSize;
 
     BoundedVector<ElectricSparkVertex> mElectricSparkVertexBuffer;
     GameOpenGLVBO mElectricSparkVBO;
@@ -1844,7 +1860,7 @@ private:
     //
 
     GameOpenGLVAO mShipVAO;
-    GameOpenGLVAO mNpcVAO;
+    GameOpenGLVAO mNpcTextureQuadVAO;
     GameOpenGLVAO mElectricSparkVAO;
     GameOpenGLVAO mFlameVAO;
     GameOpenGLVAO mJetEngineFlameVAO;

@@ -10,14 +10,60 @@
 
 	- Remove too much logging from ShipLoadDialog
 
-	- Try to lower global damping - seems quite slow
+	= Quad rendering with indices
+		+ Sharing VBOs (for indices) in VAOs: 
+			! https://computergraphics.stackexchange.com/questions/4623/multiple-vao-share-a-vbo
+				! Binding the (GL_ELEMENT_ARRAY_BUFFER) buffer ties it to the currently bound VAO
+			! https://stackoverflow.com/questions/23542355/using-a-vertex-buffer-in-two-different-vertex-array-objects
+				! You can bind the ELEMENT_ARRAY_BUFFER in the setup as well. That binding is part of the VAO state
+			+ Idea: one single "TriangleQuadElementArrayVBO" VBO for all render contexts, created and initialized in GlobalRenderContext, and passed
+			  to all child contextes via cctor - as non-const &
+				+ New class in OpenGL lib: TriangleQuadElementArrayVBO
+					+ Wraps VBO (private) and local buffer (BoundedVector, private)
+						+ VBO created in static factory (read below, instance of TriangleQuadElementArrayVBO is deferred-init'd as uq_ptr)
+					+ Exposes void ensure_size(# of quads)
+						+ If # of quads > current: enlarge & populate local buffer, flag as dirty
+						+ Starts empty
+					+ static Create() -> uq_ptr
+						+ Creates VBO
+					+ Exposes IsDirty()
+					+ Exposes Bind()
+					+ Exposes Upload()
+						+ Binds and uploads
+				+ Copy from BaryLab
+				+ One single instance owned by GlobalRenderContext, as uq_ptr (w/deferred creation via static Create())
+					+ At GlobalRenderContext::cctor() (verify doable)
+				+ Accessed by child contextes via GlobalRenderContext
+				+ GlobalContext does:
+					+ @ Own setup: create it - via static Create() -> uq_ptr -> member
+					+ @RenderPrepare: if TriangleQuadElementArrayVBO.IsDirty: Upload()
+				+ Child contextes do:	
+					+  @ VAO Setups: Bind() (though pointless because of Intel bug)
+					+ Own Upload(): ensure_size(# of quads)
+					+ Own RenderDraw: Bind() (because of Intel bug)
+		- Test with bubbles
+			- Do
+			- New Dell: 
+				- Before: upload= render=
+				- After: upload= render=
+			- Old Dell: 
+				- Before: upload= render=
+				- After: upload= render=
+		- If works, other candidates:
+			- Clouds
+			- Generic textures
+			- Text (NotificationContext)
+			- Fishes
+
 
 	- Fix all 2022 copyright years, and add g2-labs to:
 		- Credits
 
+	- Try to lower global damping - seems quite slow
+
 	- New SplashScreenDialog:
 		- Upper part OpenGL, lower part progress bar
-			- RenderContext on main thread, like now
+			- Own OpenGLContext (a third one) on own thread
 		- Dialog has own timer, updating animation in OpenGL quadrant as follows:
 			- 0: OpenGL quadrant occupies whole dialog
 			- 1. G2-Labs Sequence
@@ -84,51 +130,6 @@
 	- Consider invoking World::Upload from render thread (via RenderContext, as func<>)
 		- So that may upload to GPU buffers directly, instead of local temp buffers
 			- Eventually using mapped buffers
-
-	= Quad rendering with indices
-		= Sharing VBOs (for indices) in VAOs: 
-			! https://computergraphics.stackexchange.com/questions/4623/multiple-vao-share-a-vbo
-				! Binding the (GL_ELEMENT_ARRAY_BUFFER) buffer ties it to the currently bound VAO
-			! https://stackoverflow.com/questions/23542355/using-a-vertex-buffer-in-two-different-vertex-array-objects
-				! You can bind the ELEMENT_ARRAY_BUFFER in the setup as well. That binding is part of the VAO state
-			= Idea: one single "TriangleQuadElementArrayVBO" VBO for all render contexts, created and initialized in GlobalRenderContext, and passed
-			  to all child contextes via cctor - as non-const &
-				+ New class in OpenGL lib: TriangleQuadElementArrayVBO
-					+ Wraps VBO (private) and local buffer (BoundedVector, private)
-						+ VBO created in static factory (read below, instance of TriangleQuadElementArrayVBO is deferred-init'd as uq_ptr)
-					+ Exposes void ensure_size(# of quads)
-						+ If # of quads > current: enlarge & populate local buffer, flag as dirty
-						+ Starts empty
-					+ static Create() -> uq_ptr
-						+ Creates VBO
-					+ Exposes IsDirty()
-					+ Exposes Bind()
-					+ Exposes Upload()
-						+ Binds and uploads
-				- Copy from BaryLab
-				- One single instance owned by GlobalRenderContext, as uq_ptr (w/deferred creation via static Create())
-					- At GlobalRenderContext::cctor() (verify doable)
-				- Passed to child contextes as non-const reference				
-				- GlobalContext does:
-					- @ Own setup: create it - via static Create() -> uq_ptr -> member
-					- @RenderPrepare: if TriangleQuadElementArrayVBO.IsDirty: Upload()
-				- Child contextes do:	
-					-  @ VAO Setups: Bind()
-					- Own Upload(): ensure_size(# of quads)
-		- Test with bubbles
-			- Do
-			- New Dell: 
-				- Before: upload= render=
-				- After: upload= render=
-			- Old Dell: 
-				- Before: upload= render=
-				- After: upload= render=
-		- If works, other candidates:
-			- Clouds
-			- Generic textures
-			- Text (NotificationContext)
-			- Fishes
-
 
 	- Replace points with quads from geometry shader
 
