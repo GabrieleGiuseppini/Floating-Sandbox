@@ -37,7 +37,7 @@ void Npcs::ResetNpcStateToWorld(
         ResetNpcStateToWorld(
             npc,
             currentSimulationTime,
-            mShips[topmostTriangle->GetShipId()]->ShipMesh,
+            mShips[topmostTriangle->GetShipId()]->HomeShip,
             topmostTriangle->GetLocalObjectId());
     }
     else
@@ -55,7 +55,7 @@ void Npcs::ResetNpcStateToWorld(
         ResetNpcStateToWorld(
             npc,
             currentSimulationTime,
-            mShips[GetTopmostShipId()]->ShipMesh,
+            mShips[GetTopmostShipId()]->HomeShip,
             std::nullopt);
     }
 }
@@ -63,7 +63,7 @@ void Npcs::ResetNpcStateToWorld(
 void Npcs::ResetNpcStateToWorld(
     StateType & npc,
     float currentSimulationTime,
-    Ship const & shipMesh,
+    Ship const & homeShip,
     std::optional<ElementIndex> primaryParticleTriangleIndex) const
 {
     // Plane ID
@@ -73,14 +73,14 @@ void Npcs::ResetNpcStateToWorld(
         // Constrained
 
         // Use the plane ID of this triangle
-        ElementIndex const trianglePointIndex = shipMesh.GetTriangles().GetPointAIndex(*primaryParticleTriangleIndex);
-        npc.CurrentPlaneId = shipMesh.GetPoints().GetPlaneId(trianglePointIndex);
+        ElementIndex const trianglePointIndex = homeShip.GetTriangles().GetPointAIndex(*primaryParticleTriangleIndex);
+        npc.CurrentPlaneId = homeShip.GetPoints().GetPlaneId(trianglePointIndex);
     }
     else
     {
         // Primary is free, hence this NPC is on the topmost plane ID of its current ship;
         // fine to stick to this plane so that if new planes come up, they will cover the NPC!
-        npc.CurrentPlaneId = shipMesh.GetMaxPlaneId();
+        npc.CurrentPlaneId = homeShip.GetMaxPlaneId();
     }
 
     // Particles
@@ -92,7 +92,7 @@ void Npcs::ResetNpcStateToWorld(
             // Primary
             npc.ParticleMesh.Particles[p].ConstrainedState = CalculateParticleConstrainedState(
                 mParticles.GetPosition(npc.ParticleMesh.Particles[p].ParticleIndex),
-                shipMesh,
+                homeShip,
                 primaryParticleTriangleIndex);
         }
         else
@@ -111,7 +111,7 @@ void Npcs::ResetNpcStateToWorld(
             {
                 npc.ParticleMesh.Particles[p].ConstrainedState = CalculateParticleConstrainedState(
                     mParticles.GetPosition(npc.ParticleMesh.Particles[p].ParticleIndex),
-                    shipMesh,
+                    homeShip,
                     std::nullopt);
             }
         }
@@ -191,24 +191,24 @@ void Npcs::TransitionParticleToFreeState(
 
 std::optional<Npcs::StateType::NpcParticleStateType::ConstrainedStateType> Npcs::CalculateParticleConstrainedState(
     vec2f const & position,
-    Ship const & shipMesh,
+    Ship const & homeShip,
     std::optional<ElementIndex> triangleIndex)
 {
     std::optional<StateType::NpcParticleStateType::ConstrainedStateType> constrainedState;
 
     if (!triangleIndex.has_value())
     {
-        triangleIndex = FindTriangleContaining(position, shipMesh);
+        triangleIndex = FindTriangleContaining(position, homeShip);
     }
 
     assert(triangleIndex.has_value());
 
-    if (triangleIndex != NoneElementIndex && !shipMesh.GetTriangles().IsDeleted(*triangleIndex))
+    if (triangleIndex != NoneElementIndex && !homeShip.GetTriangles().IsDeleted(*triangleIndex))
     {
-        bcoords3f const barycentricCoords = shipMesh.GetTriangles().ToBarycentricCoordinatesFromWithinTriangle(
+        bcoords3f const barycentricCoords = homeShip.GetTriangles().ToBarycentricCoordinatesFromWithinTriangle(
             position,
             *triangleIndex,
-            shipMesh.GetPoints());
+            homeShip.GetPoints());
 
         assert(barycentricCoords.is_on_edge_or_internal());
 
@@ -304,7 +304,7 @@ void Npcs::UpdateNpcs(
         if (npcState.has_value())
         {
             assert(mShips[npcState->CurrentShipId].has_value());
-            auto const & shipMesh = mShips[npcState->CurrentShipId]->ShipMesh;
+            auto const & homeShip = mShips[npcState->CurrentShipId]->HomeShip;
 
             // Preliminary forces for primary
 
@@ -326,7 +326,7 @@ void Npcs::UpdateNpcs(
 
                     auto newConstrainedState = CalculateParticleConstrainedState(
                         mParticles.GetPosition(npcState->ParticleMesh.Particles[p].ParticleIndex),
-                        shipMesh,
+                        homeShip,
                         std::nullopt);
 
                     if (newConstrainedState.has_value())
@@ -353,7 +353,7 @@ void Npcs::UpdateNpcs(
                 UpdateNpcParticlePhysics(
                     *npcState,
                     static_cast<int>(p),
-                    shipMesh,
+                    homeShip,
                     currentSimulationTime,
                     gameParameters);
             }
@@ -372,7 +372,7 @@ void Npcs::UpdateNpcs(
         if (npcState.has_value())
         {
             assert(mShips[npcState->CurrentShipId].has_value());
-            auto const & shipMesh = mShips[npcState->CurrentShipId]->ShipMesh;
+            auto const & homeShip = mShips[npcState->CurrentShipId]->HomeShip;
 
             // Behavior
 
@@ -381,7 +381,7 @@ void Npcs::UpdateNpcs(
                 UpdateHuman(
                     *npcState,
                     currentSimulationTime,
-                    shipMesh,
+                    homeShip,
                     gameParameters);
             }
 
@@ -390,7 +390,7 @@ void Npcs::UpdateNpcs(
             UpdateNpcAnimation(
                 *npcState,
                 currentSimulationTime,
-                shipMesh);
+                homeShip);
         }
     }
 }
@@ -398,7 +398,7 @@ void Npcs::UpdateNpcs(
 void Npcs::UpdateNpcParticlePhysics(
     StateType & npc,
     int npcParticleOrdinal,
-    Ship const & shipMesh,
+    Ship const & homeShip,
     float currentSimulationTime,
     GameParameters const & gameParameters)
 {
@@ -515,10 +515,10 @@ void Npcs::UpdateNpcParticlePhysics(
         // Initialize trajectory start (wrt current triangle) as the absolute pos of the particle as if it just
         // moved with the mesh, staying in its position wrt its triangle; in other words, it's the new theoretical
         // position after just mesh displacement
-        vec2f trajectoryStartAbsolutePosition = shipMesh.GetTriangles().FromBarycentricCoordinates(
+        vec2f trajectoryStartAbsolutePosition = homeShip.GetTriangles().FromBarycentricCoordinates(
             npcParticle.ConstrainedState->CurrentBCoords.BCoords,
             npcParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex,
-            shipMesh.GetPoints());
+            homeShip.GetPoints());
 
         // Calculate mesh velocity for the whole loop as the pure displacement of the triangle containing this particle
         // (end in-triangle position - start absolute position)
@@ -648,10 +648,10 @@ void Npcs::UpdateNpcParticlePhysics(
 
                     // Check what comes next
 
-                    bcoords3f const trajectoryEndBarycentricCoords = shipMesh.GetTriangles().ToBarycentricCoordinates(
+                    bcoords3f const trajectoryEndBarycentricCoords = homeShip.GetTriangles().ToBarycentricCoordinates(
                         trajectoryEndAbsolutePosition,
                         npcParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex,
-                        shipMesh.GetPoints());
+                        homeShip.GetPoints());
 
                     auto const outcome = NavigateVertex(
                         npc,
@@ -661,7 +661,7 @@ void Npcs::UpdateNpcParticlePhysics(
                         trajectory,
                         trajectoryEndAbsolutePosition,
                         trajectoryEndBarycentricCoords,
-                        shipMesh,
+                        homeShip,
                         mParticles);
 
                     switch (outcome.Type)
@@ -726,10 +726,10 @@ void Npcs::UpdateNpcParticlePhysics(
                                 {
                                     int const edgeOrdinal = (vi + 1) % 3;
 
-                                    vec2f const edgeVector = shipMesh.GetTriangles().GetSubSpringVector(
+                                    vec2f const edgeVector = homeShip.GetTriangles().GetSubSpringVector(
                                         npcParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex,
                                         edgeOrdinal,
-                                        shipMesh.GetPoints());
+                                        homeShip.GetPoints());
                                     vec2f const edgeDir = edgeVector.normalise();
                                     vec2f const edgeNormal = edgeDir.to_perpendicular(); // Points outside of triangle (i.e. towards floor)
                                     assert(trajectory.dot(edgeNormal) < 0.01f);
@@ -783,7 +783,7 @@ void Npcs::UpdateNpcParticlePhysics(
                         LogNpcDebug("    On an edge: ", edgeOrdinal, " of triangle ", npcParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex);
 
                         // Check if this is really a floor to this particle
-                        if (IsEdgeFloorToParticle(npcParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex, edgeOrdinal, npc, npcParticleOrdinal, mParticles, shipMesh))
+                        if (IsEdgeFloorToParticle(npcParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex, edgeOrdinal, npc, npcParticleOrdinal, mParticles, homeShip))
                         {
                             // The edge is a floor
 
@@ -791,10 +791,10 @@ void Npcs::UpdateNpcParticlePhysics(
 
                             // Check now whether we're moving *against* the floor
 
-                            vec2f const edgeVector = shipMesh.GetTriangles().GetSubSpringVector(
+                            vec2f const edgeVector = homeShip.GetTriangles().GetSubSpringVector(
                                 npcParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex,
                                 edgeOrdinal,
-                                shipMesh.GetPoints());
+                                homeShip.GetPoints());
                             vec2f const edgeNormal = edgeVector.to_perpendicular(); // Points outside of triangle (i.e. towards floor)
                             float const headsOnNess = trajectory.dot(edgeNormal);
                             if (trajectory.dot(edgeNormal) >= 0.0f) // If 0, no normal force - hence no friction; however we want to take this codepath anyways for consistency
@@ -861,10 +861,10 @@ void Npcs::UpdateNpcParticlePhysics(
                 // along (i.e. tangent) edge, positive when in the direction of the edge
                 //
 
-                vec2f const edgeDir = shipMesh.GetTriangles().GetSubSpringVector(
+                vec2f const edgeDir = homeShip.GetTriangles().GetSubSpringVector(
                     npcParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex,
                     nonInertialEdgeOrdinal,
-                    shipMesh.GetPoints()).normalise();
+                    homeShip.GetPoints()).normalise();
 
                 float trajectoryT = trajectory.dot(edgeDir);
 
@@ -1026,10 +1026,10 @@ void Npcs::UpdateNpcParticlePhysics(
 
                 vec2f flattenedTrajectoryEndAbsolutePosition = trajectoryStartAbsolutePosition + flattenedTrajectory;
 
-                bcoords3f flattenedTrajectoryEndBarycentricCoords = shipMesh.GetTriangles().ToBarycentricCoordinates(
+                bcoords3f flattenedTrajectoryEndBarycentricCoords = homeShip.GetTriangles().ToBarycentricCoordinates(
                     flattenedTrajectoryEndAbsolutePosition,
                     npcParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex,
-                    shipMesh.GetPoints());
+                    homeShip.GetPoints());
 
                 //
                 // Due to numerical slack, ensure target barycentric coords are still along edge
@@ -1071,7 +1071,7 @@ void Npcs::UpdateNpcParticlePhysics(
                     (edgeDistanceTraveledTotal > 0.0f), // hasMovedInStep
                     meshVelocity,
                     remainingDt,
-                    shipMesh,
+                    homeShip,
                     mParticles,
                     currentSimulationTime,
                     gameParameters);
@@ -1110,10 +1110,10 @@ void Npcs::UpdateNpcParticlePhysics(
 
                             // Update particle's physics, considering that we are in a well and thus still (wrt mesh)
 
-                            vec2f const particleEndAbsolutePosition = shipMesh.GetTriangles().FromBarycentricCoordinates(
+                            vec2f const particleEndAbsolutePosition = homeShip.GetTriangles().FromBarycentricCoordinates(
                                 npcParticle.ConstrainedState->CurrentBCoords.BCoords,
                                 npcParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex,
-                                shipMesh.GetPoints());
+                                homeShip.GetPoints());
 
                             mParticles.SetPosition(npcParticle.ParticleIndex, particleEndAbsolutePosition);
 
@@ -1214,10 +1214,10 @@ void Npcs::UpdateNpcParticlePhysics(
                 // Calculate target barycentric coords
                 //
 
-                bcoords3f const trajectoryEndBarycentricCoords = shipMesh.GetTriangles().ToBarycentricCoordinates(
+                bcoords3f const trajectoryEndBarycentricCoords = homeShip.GetTriangles().ToBarycentricCoordinates(
                     trajectoryEndAbsolutePosition,
                     npcParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex,
-                    shipMesh.GetPoints());
+                    homeShip.GetPoints());
 
                 //
                 // Move towards target bary coords
@@ -1233,7 +1233,7 @@ void Npcs::UpdateNpcParticlePhysics(
                     (edgeDistanceTraveledTotal > 0.0f),
                     meshVelocity,
                     remainingDt,
-                    shipMesh,
+                    homeShip,
                     mParticles,
                     currentSimulationTime,
                     gameParameters);
@@ -1281,10 +1281,10 @@ void Npcs::UpdateNpcParticlePhysics(
             //
 
             // Current (virtual, not yet real) position of this particle
-            trajectoryStartAbsolutePosition = shipMesh.GetTriangles().FromBarycentricCoordinates(
+            trajectoryStartAbsolutePosition = homeShip.GetTriangles().FromBarycentricCoordinates(
                 npcParticle.ConstrainedState->CurrentBCoords.BCoords,
                 npcParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex,
-                shipMesh.GetPoints());
+                homeShip.GetPoints());
         }
     }
 
@@ -1600,7 +1600,7 @@ Npcs::ConstrainedNonInertialOutcome Npcs::UpdateNpcParticle_ConstrainedNonInerti
     bool hasMovedInStep,
     vec2f const meshVelocity,
     float dt,
-    Ship const & shipMesh,
+    Ship const & homeShip,
     NpcParticles & particles,
     float currentSimulationTime,
     GameParameters const & gameParameters)
@@ -1721,11 +1721,11 @@ Npcs::ConstrainedNonInertialOutcome Npcs::UpdateNpcParticle_ConstrainedNonInerti
     }
     else
     {
-        vec2f const intersectionAbsolutePosition = shipMesh.GetPoints().GetPosition(shipMesh.GetTriangles().GetPointIndices(npcParticleConstrainedState.CurrentBCoords.TriangleElementIndex)[intersectionVertexOrdinal]);
-        assert(intersectionAbsolutePosition == shipMesh.GetTriangles().FromBarycentricCoordinates(
+        vec2f const intersectionAbsolutePosition = homeShip.GetPoints().GetPosition(homeShip.GetTriangles().GetPointIndices(npcParticleConstrainedState.CurrentBCoords.TriangleElementIndex)[intersectionVertexOrdinal]);
+        assert(intersectionAbsolutePosition == homeShip.GetTriangles().FromBarycentricCoordinates(
             intersectionBarycentricCoords,
             npcParticleConstrainedState.CurrentBCoords.TriangleElementIndex,
-            shipMesh.GetPoints()));
+            homeShip.GetPoints()));
 
         edgeTraveled = (intersectionAbsolutePosition - trajectoryStartAbsolutePosition).dot(edgeDir);
     }
@@ -1747,7 +1747,7 @@ Npcs::ConstrainedNonInertialOutcome Npcs::UpdateNpcParticle_ConstrainedNonInerti
         flattenedTrajectory,
         flattenedTrajectoryEndAbsolutePosition,
         flattenedTrajectoryEndBarycentricCoords,
-        shipMesh,
+        homeShip,
         particles);
 
     switch (navigationOutcome.Type)
@@ -1805,17 +1805,17 @@ Npcs::ConstrainedNonInertialOutcome Npcs::UpdateNpcParticle_ConstrainedNonInerti
             // Bounce
 
             vec2f const floorEdgeDir =
-                shipMesh.GetTriangles().GetSubSpringVector(
+                homeShip.GetTriangles().GetSubSpringVector(
                     navigationOutcome.TriangleBCoords.TriangleElementIndex,
                     navigationOutcome.FloorEdgeOrdinal,
-                    shipMesh.GetPoints())
+                    homeShip.GetPoints())
                 .normalise();
             vec2f const floorEdgeNormal = floorEdgeDir.to_perpendicular();
 
-            vec2f const bounceAbsolutePosition = shipMesh.GetTriangles().FromBarycentricCoordinates(
+            vec2f const bounceAbsolutePosition = homeShip.GetTriangles().FromBarycentricCoordinates(
                 navigationOutcome.TriangleBCoords.BCoords,
                 navigationOutcome.TriangleBCoords.TriangleElementIndex,
-                shipMesh.GetPoints());
+                homeShip.GetPoints());
 
             BounceConstrainedNpcParticle(
                 npc,
@@ -1856,7 +1856,7 @@ float Npcs::UpdateNpcParticle_ConstrainedInertial(
     bool hasMovedInStep,
     vec2f const meshVelocity,
     float segmentDt,
-    Ship const & shipMesh,
+    Ship const & homeShip,
     NpcParticles & particles,
     float currentSimulationTime,
     GameParameters const & gameParameters)
@@ -2014,12 +2014,12 @@ float Npcs::UpdateNpcParticle_ConstrainedInertial(
         // Check if impacted with floor
         //
 
-        vec2f const intersectionAbsolutePosition = shipMesh.GetTriangles().FromBarycentricCoordinates(
+        vec2f const intersectionAbsolutePosition = homeShip.GetTriangles().FromBarycentricCoordinates(
             intersectionBarycentricCoords,
             npcParticleConstrainedState.CurrentBCoords.TriangleElementIndex,
-            shipMesh.GetPoints());
+            homeShip.GetPoints());
 
-        if (IsEdgeFloorToParticle(npcParticleConstrainedState.CurrentBCoords.TriangleElementIndex, intersectionEdgeOrdinal, npc, npcParticleOrdinal, mParticles, shipMesh))
+        if (IsEdgeFloorToParticle(npcParticleConstrainedState.CurrentBCoords.TriangleElementIndex, intersectionEdgeOrdinal, npc, npcParticleOrdinal, mParticles, homeShip))
         {
             //
             // Impact and bounce
@@ -2035,10 +2035,10 @@ float Npcs::UpdateNpcParticle_ConstrainedInertial(
             vec2f const trajectory = segmentTrajectoryEndAbsolutePosition - segmentTrajectoryStartAbsolutePosition;
 
             vec2f const intersectionEdgeDir =
-                shipMesh.GetTriangles().GetSubSpringVector(
+                homeShip.GetTriangles().GetSubSpringVector(
                     npcParticleConstrainedState.CurrentBCoords.TriangleElementIndex,
                     intersectionEdgeOrdinal,
-                    shipMesh.GetPoints())
+                    homeShip.GetPoints())
                 .normalise();
             vec2f const intersectionEdgeNormal = intersectionEdgeDir.to_perpendicular();
 
@@ -2074,8 +2074,8 @@ float Npcs::UpdateNpcParticle_ConstrainedInertial(
         LogNpcDebug("      Climbing over non-floor edge");
 
         // Find opposite triangle
-        auto const & oppositeTriangleInfo = shipMesh.GetTriangles().GetOppositeTriangle(npcParticleConstrainedState.CurrentBCoords.TriangleElementIndex, intersectionEdgeOrdinal);
-        if (oppositeTriangleInfo.TriangleElementIndex == NoneElementIndex || shipMesh.GetTriangles().IsDeleted(oppositeTriangleInfo.TriangleElementIndex))
+        auto const & oppositeTriangleInfo = homeShip.GetTriangles().GetOppositeTriangle(npcParticleConstrainedState.CurrentBCoords.TriangleElementIndex, intersectionEdgeOrdinal);
+        if (oppositeTriangleInfo.TriangleElementIndex == NoneElementIndex || homeShip.GetTriangles().IsDeleted(oppositeTriangleInfo.TriangleElementIndex))
         {
             //
             // Become free
@@ -2124,10 +2124,10 @@ float Npcs::UpdateNpcParticle_ConstrainedInertial(
             auto const oldSegmentTrajectoryEndBarycentricCoords = segmentTrajectoryEndBarycentricCoords; // For logging
             // Note: here we introduce a lot of error - the target bary coords are not anymore
             // guaranteed to lie exactly on the (continuation of the) edge
-            segmentTrajectoryEndBarycentricCoords = shipMesh.GetTriangles().ToBarycentricCoordinatesInsideEdge(
+            segmentTrajectoryEndBarycentricCoords = homeShip.GetTriangles().ToBarycentricCoordinatesInsideEdge(
                 segmentTrajectoryEndAbsolutePosition,
                 oppositeTriangleInfo.TriangleElementIndex,
-                shipMesh.GetPoints(),
+                homeShip.GetPoints(),
                 oppositeTriangleInfo.EdgeOrdinal);
 
             LogNpcDebug("      TrajEndB-Coords: ", oldSegmentTrajectoryEndBarycentricCoords, " -> ", segmentTrajectoryEndBarycentricCoords);
@@ -2145,7 +2145,7 @@ inline Npcs::NavigateVertexOutcome Npcs::NavigateVertex(
     vec2f const & trajectory,
     vec2f const & trajectoryEndAbsolutePosition,
     bcoords3f trajectoryEndBarycentricCoords, // Mutable
-    Ship const & shipMesh,
+    Ship const & homeShip,
     NpcParticles const & particles)
 {
     // Rules of the code:
@@ -2204,7 +2204,7 @@ inline Npcs::NavigateVertexOutcome Npcs::NavigateVertex(
 
         AbsoluteTriangleBCoords currentAbsoluteBCoords = npcParticle.ConstrainedState->CurrentBCoords;
 
-        vec2f const vertexAbsolutePosition = shipMesh.GetPoints().GetPosition(shipMesh.GetTriangles().GetPointIndices(currentAbsoluteBCoords.TriangleElementIndex)[vertexOrdinal]);
+        vec2f const vertexAbsolutePosition = homeShip.GetPoints().GetPosition(homeShip.GetTriangles().GetPointIndices(currentAbsoluteBCoords.TriangleElementIndex)[vertexOrdinal]);
 
         // The two vertices around the vertex we are on - seen in clockwise order
         int nextVertexOrdinal = (vertexOrdinal + 1) % 3;
@@ -2228,7 +2228,7 @@ inline Npcs::NavigateVertexOutcome Npcs::NavigateVertex(
             : RotationDirectionType::Clockwise;
 
         // Remember floor geometry of starting edge
-        NpcFloorGeometryType const initialFloorGeometry = shipMesh.GetTriangles().GetSubSpringNpcFloorGeometry(walkedEdge->TriangleElementIndex, walkedEdge->EdgeOrdinal);
+        NpcFloorGeometryType const initialFloorGeometry = homeShip.GetTriangles().GetSubSpringNpcFloorGeometry(walkedEdge->TriangleElementIndex, walkedEdge->EdgeOrdinal);
 
         for (int iIter = 0; ; ++iIter)
         {
@@ -2277,8 +2277,8 @@ inline Npcs::NavigateVertexOutcome Npcs::NavigateVertex(
             // Check whether we've gone too far around
             //
 
-            auto const & nextVertexPos = shipMesh.GetPoints().GetPosition(shipMesh.GetTriangles().GetPointIndices(currentAbsoluteBCoords.TriangleElementIndex)[nextVertexOrdinal]);
-            auto const & prevVertexPos = shipMesh.GetPoints().GetPosition(shipMesh.GetTriangles().GetPointIndices(currentAbsoluteBCoords.TriangleElementIndex)[prevVertexOrdinal]);
+            auto const & nextVertexPos = homeShip.GetPoints().GetPosition(homeShip.GetTriangles().GetPointIndices(currentAbsoluteBCoords.TriangleElementIndex)[nextVertexOrdinal]);
+            auto const & prevVertexPos = homeShip.GetPoints().GetPosition(homeShip.GetTriangles().GetPointIndices(currentAbsoluteBCoords.TriangleElementIndex)[prevVertexOrdinal]);
             if (prevVertexPos.x <= vertexAbsolutePosition.x && nextVertexPos.x > vertexAbsolutePosition.x)
             {
                 LogNpcDebug("      Gone too far - may stop search here");
@@ -2289,13 +2289,13 @@ inline Npcs::NavigateVertexOutcome Npcs::NavigateVertex(
             // Check whether this new edge is floor
             //
 
-            if (IsEdgeFloorToParticle(currentAbsoluteBCoords.TriangleElementIndex, crossedEdgeOrdinal, npc, npcParticleOrdinal, particles, shipMesh))
+            if (IsEdgeFloorToParticle(currentAbsoluteBCoords.TriangleElementIndex, crossedEdgeOrdinal, npc, npcParticleOrdinal, particles, homeShip))
             {
                 //
                 // Encountered floor
                 //
 
-                auto const crossedEdgeFloorGeometry = shipMesh.GetTriangles().GetSubSpringNpcFloorGeometry(currentAbsoluteBCoords.TriangleElementIndex, crossedEdgeOrdinal);
+                auto const crossedEdgeFloorGeometry = homeShip.GetTriangles().GetSubSpringNpcFloorGeometry(currentAbsoluteBCoords.TriangleElementIndex, crossedEdgeOrdinal);
 
                 LogNpcDebug("        Crossed edge is floor (geometry:", int(crossedEdgeFloorGeometry), ")");
 
@@ -2309,10 +2309,10 @@ inline Npcs::NavigateVertexOutcome Npcs::NavigateVertex(
                 //  - Viability is based on actual gravity direction - not on *apparent* gravity
                 //
 
-                vec2f const crossedEdgeDir = shipMesh.GetTriangles().GetSubSpringVector(
+                vec2f const crossedEdgeDir = homeShip.GetTriangles().GetSubSpringVector(
                     currentAbsoluteBCoords.TriangleElementIndex,
                     crossedEdgeOrdinal,
-                    shipMesh.GetPoints()).normalise();
+                    homeShip.GetPoints()).normalise();
 
                 bool const isViable =
                     crossedEdgeDir.x < 0.0f
@@ -2378,7 +2378,7 @@ inline Npcs::NavigateVertexOutcome Npcs::NavigateVertex(
                         }
                         else
                         {
-                            auto const currentBounceableFloorGeometry = shipMesh.GetTriangles().GetSubSpringNpcFloorGeometry(firstBounceableFloor->TriangleBCoords.TriangleElementIndex, firstBounceableFloor->EdgeOrdinal);
+                            auto const currentBounceableFloorGeometry = homeShip.GetTriangles().GetSubSpringNpcFloorGeometry(firstBounceableFloor->TriangleBCoords.TriangleElementIndex, firstBounceableFloor->EdgeOrdinal);
                             if ((NpcFloorGeometryDepth(currentBounceableFloorGeometry) != NpcFloorGeometryDepth(initialFloorGeometry) && NpcFloorGeometryDepth(crossedEdgeFloorGeometry) == NpcFloorGeometryDepth(initialFloorGeometry))
                                 ||
                                 (
@@ -2423,8 +2423,8 @@ inline Npcs::NavigateVertexOutcome Npcs::NavigateVertex(
             //
 
             // Find opposite triangle
-            auto const & oppositeTriangleInfo = shipMesh.GetTriangles().GetOppositeTriangle(currentAbsoluteBCoords.TriangleElementIndex, crossedEdgeOrdinal);
-            if (oppositeTriangleInfo.TriangleElementIndex == NoneElementIndex || shipMesh.GetTriangles().IsDeleted(oppositeTriangleInfo.TriangleElementIndex))
+            auto const & oppositeTriangleInfo = homeShip.GetTriangles().GetOppositeTriangle(currentAbsoluteBCoords.TriangleElementIndex, crossedEdgeOrdinal);
+            if (oppositeTriangleInfo.TriangleElementIndex == NoneElementIndex || homeShip.GetTriangles().IsDeleted(oppositeTriangleInfo.TriangleElementIndex))
             {
                 //
                 // Found a free region
@@ -2509,10 +2509,10 @@ inline Npcs::NavigateVertexOutcome Npcs::NavigateVertex(
 
             if (!firstTriangleInterior.has_value())
             {
-                trajectoryEndBarycentricCoords = shipMesh.GetTriangles().ToBarycentricCoordinatesInsideEdge(
+                trajectoryEndBarycentricCoords = homeShip.GetTriangles().ToBarycentricCoordinatesInsideEdge(
                     trajectoryEndAbsolutePosition,
                     oppositeTriangleInfo.TriangleElementIndex,
-                    shipMesh.GetPoints(),
+                    homeShip.GetPoints(),
                     oppositeTriangleInfo.EdgeOrdinal);
 
                 LogNpcDebug("        New TrajEndB-Coords: ", trajectoryEndBarycentricCoords);
@@ -2637,7 +2637,7 @@ inline Npcs::NavigateVertexOutcome Npcs::NavigateVertex(
             // Check whether this new edge is floor
             //
 
-            if (IsEdgeFloorToParticle(currentAbsoluteBCoords.TriangleElementIndex, crossedEdgeOrdinal, npc, npcParticleOrdinal, particles, shipMesh))
+            if (IsEdgeFloorToParticle(currentAbsoluteBCoords.TriangleElementIndex, crossedEdgeOrdinal, npc, npcParticleOrdinal, particles, homeShip))
             {
                 //
                 // Encountered floor
@@ -2647,10 +2647,10 @@ inline Npcs::NavigateVertexOutcome Npcs::NavigateVertex(
 
                 // Determine viability of floor: check angle between desired (original) trajectory and edge
 
-                vec2f const floorEdgeDir = shipMesh.GetTriangles().GetSubSpringVector(
+                vec2f const floorEdgeDir = homeShip.GetTriangles().GetSubSpringVector(
                     currentAbsoluteBCoords.TriangleElementIndex,
                     crossedEdgeOrdinal,
-                    shipMesh.GetPoints()).normalise();
+                    homeShip.GetPoints()).normalise();
                 vec2f const floorEdgeNormal = floorEdgeDir.to_perpendicular();
 
                 float const trajProjOntoEdgeNormal = trajectory.normalise().dot(floorEdgeNormal);
@@ -2673,8 +2673,8 @@ inline Npcs::NavigateVertexOutcome Npcs::NavigateVertex(
             //
 
             // Find opposite triangle
-            auto const & oppositeTriangleInfo = shipMesh.GetTriangles().GetOppositeTriangle(currentAbsoluteBCoords.TriangleElementIndex, crossedEdgeOrdinal);
-            if (oppositeTriangleInfo.TriangleElementIndex == NoneElementIndex || shipMesh.GetTriangles().IsDeleted(oppositeTriangleInfo.TriangleElementIndex))
+            auto const & oppositeTriangleInfo = homeShip.GetTriangles().GetOppositeTriangle(currentAbsoluteBCoords.TriangleElementIndex, crossedEdgeOrdinal);
+            if (oppositeTriangleInfo.TriangleElementIndex == NoneElementIndex || homeShip.GetTriangles().IsDeleted(oppositeTriangleInfo.TriangleElementIndex))
             {
                 //
                 // Become free
@@ -2721,10 +2721,10 @@ inline Npcs::NavigateVertexOutcome Npcs::NavigateVertex(
             // Translate target bary coords
             //
 
-            trajectoryEndBarycentricCoords = shipMesh.GetTriangles().ToBarycentricCoordinatesInsideEdge(
+            trajectoryEndBarycentricCoords = homeShip.GetTriangles().ToBarycentricCoordinatesInsideEdge(
                 trajectoryEndAbsolutePosition,
                 oppositeTriangleInfo.TriangleElementIndex,
-                shipMesh.GetPoints(),
+                homeShip.GetPoints(),
                 oppositeTriangleInfo.EdgeOrdinal);
 
             LogNpcDebug("      TrajEndB-Coords: ", trajectoryEndBarycentricCoords);
@@ -2862,7 +2862,7 @@ void Npcs::OnImpact(
 void Npcs::UpdateNpcAnimation(
     StateType & npc,
     float currentSimulationTime,
-    Ship const & shipMesh)
+    Ship const & homeShip)
 {
     if (npc.Kind == NpcKindType::Human) // Take the primary as the only representative of a human
     {
@@ -2929,10 +2929,10 @@ void Npcs::UpdateNpcAnimation(
 
                 if (primaryContrainedState.has_value() && primaryContrainedState->CurrentVirtualFloor.has_value())
                 {
-                    vec2f const edgeVector = shipMesh.GetTriangles().GetSubSpringVector(
+                    vec2f const edgeVector = homeShip.GetTriangles().GetSubSpringVector(
                         primaryContrainedState->CurrentVirtualFloor->TriangleElementIndex,
                         primaryContrainedState->CurrentVirtualFloor->EdgeOrdinal,
-                        shipMesh.GetPoints());
+                        homeShip.GetPoints());
                     vec2f const head = mParticles.GetPosition(secondaryParticleIndex);
                     vec2f const feet = mParticles.GetPosition(primaryParticleIndex);
 
@@ -2976,10 +2976,10 @@ void Npcs::UpdateNpcAnimation(
                 if (humanNpcState.CurrentBehaviorState.Constrained_Rising.VirtualEdgeRisingAgainst.TriangleElementIndex != NoneElementIndex)
                 {
 
-                    vec2f const edgeVector = shipMesh.GetTriangles().GetSubSpringVector(
+                    vec2f const edgeVector = homeShip.GetTriangles().GetSubSpringVector(
                         humanNpcState.CurrentBehaviorState.Constrained_Rising.VirtualEdgeRisingAgainst.TriangleElementIndex,
                         humanNpcState.CurrentBehaviorState.Constrained_Rising.VirtualEdgeRisingAgainst.EdgeOrdinal,
-                        shipMesh.GetPoints());
+                        homeShip.GetPoints());
                     vec2f const head = mParticles.GetPosition(secondaryParticleIndex);
                     vec2f const feet = mParticles.GetPosition(primaryParticleIndex);
 
@@ -3194,11 +3194,11 @@ void Npcs::UpdateNpcAnimation(
                     //
 
                     ElementIndex const edgeElementIndex =
-                        shipMesh.GetTriangles().GetSubSprings(primaryContrainedState->CurrentVirtualFloor->TriangleElementIndex)
+                        homeShip.GetTriangles().GetSubSprings(primaryContrainedState->CurrentVirtualFloor->TriangleElementIndex)
                         .SpringIndices[primaryContrainedState->CurrentVirtualFloor->EdgeOrdinal];
                     // Note: we do not care if not in CW order
-                    edg1 = shipMesh.GetSprings().GetEndpointAPosition(edgeElementIndex, shipMesh.GetPoints());
-                    edg2 = shipMesh.GetSprings().GetEndpointBPosition(edgeElementIndex, shipMesh.GetPoints());
+                    edg1 = homeShip.GetSprings().GetEndpointAPosition(edgeElementIndex, homeShip.GetPoints());
+                    edg2 = homeShip.GetSprings().GetEndpointBPosition(edgeElementIndex, homeShip.GetPoints());
                     edgVector = edg2 - edg1;
                     edgDir = edgVector.normalise_approx();
 

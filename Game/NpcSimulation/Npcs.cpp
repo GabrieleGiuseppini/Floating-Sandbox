@@ -11,6 +11,8 @@
 #include <algorithm>
 #include <cassert>
 
+#pragma warning(disable : 4324) // std::optional of StateType gets padded because of alignment requirements
+
 namespace Physics {
 
 /*
@@ -74,7 +76,7 @@ void Npcs::Upload(Render::RenderContext & renderContext)
 					auto const & state = *mStateBuffer[npcId];
 
 					auto const planeId = (state.CurrentRegime == StateType::RegimeType::BeingPlaced)
-						? mShips[shipId]->ShipMesh.GetMaxPlaneId()
+						? mShips[shipId]->HomeShip.GetMaxPlaneId()
 						: state.CurrentPlaneId;
 
 					// Particles
@@ -106,18 +108,20 @@ void Npcs::Upload(Render::RenderContext & renderContext)
 
 		return;
 	}
-#endif
 
 	assert(renderContext.GetNpcRenderMode() == NpcRenderModeType::Limbs);
 
-	// Futurework
-	renderContext.UploadNpcTextureQuadsStart(mFurnitureNpcCount * 4 + mHumanNpcCount * (6 + 2));
+#endif
 
 	for (ShipId shipId = 0; shipId < mShips.size(); ++shipId)
 	{
 		if (mShips[shipId].has_value())
 		{
 			auto & shipRenderContext = renderContext.GetShipRenderContext(shipId);
+
+			shipRenderContext.UploadNpcTextureQuadsStart(
+				mShips[shipId]->FurnitureNpcCount			// Furniture: one single quad
+				+ mShips[shipId]->HumanNpcCount * (6 + 2)); // Human: max 8 quads (limbs)
 
 			for (NpcId const npcId : mShips[shipId]->Npcs)
 			{
@@ -126,10 +130,10 @@ void Npcs::Upload(Render::RenderContext & renderContext)
 
 				RenderNpc(state, shipRenderContext);
 			}
+
+			shipRenderContext.UploadNpcTextureQuadsEnd();
 		}
 	}
-
-	renderContext.UploadNpcTextureQuadsEnd();
 
 #ifdef IN_BARYLAB
 
@@ -162,7 +166,7 @@ void Npcs::Upload(Render::RenderContext & renderContext)
 
 ///////////////////////////////
 
-void Npcs::OnShipAdded(Ship const & ship)
+void Npcs::OnShipAdded(Ship & ship)
 {
 	size_t const s = static_cast<size_t>(ship.GetId());
 
@@ -211,14 +215,6 @@ void Npcs::OnShipRemoved(ShipId shipId)
 				--mFreeRegimeHumanNpcCount;
 				doPublishHumanNpcStats = true;
 			}
-
-			--mHumanNpcCount;
-		}
-		else
-		{
-			assert(mStateBuffer[npcId]->Kind == NpcKindType::Furniture);
-
-			--mFurnitureNpcCount;
 		}
 
 		mStateBuffer[npcId].reset();
@@ -242,10 +238,10 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 	float /*currentSimulationTime*/)
 {
 	//
-	// Check if there are enough NPCs
+	// Check if there are too many NPCs
 	//
 
-	if ((mHumanNpcCount + mFurnitureNpcCount) >= GameParameters::MaxNpcs)
+	if (CalculateTotalNpcCount() >= GameParameters::MaxNpcs)
 	{
 		return std::nullopt;
 	}
@@ -431,7 +427,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 	// Update stats
 	//
 
-	++mFurnitureNpcCount;
+	++(mShips[shipId]->FurnitureNpcCount);
 
 	return PickedObjectId<NpcId>(npcId, vec2f::zero());
 }
@@ -445,7 +441,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
 	// Check if there are enough NPCs and particles
 	//
 
-	if ((mHumanNpcCount + mFurnitureNpcCount) >= GameParameters::MaxNpcs || mParticles.GetRemainingParticlesCount() < 2)
+	if (CalculateTotalNpcCount() >= GameParameters::MaxNpcs || mParticles.GetRemainingParticlesCount() < 2)
 	{
 		return std::nullopt;
 	}
@@ -476,7 +472,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
 		worldCoordinates - vec2f(0.0f, 1.0f) * height * mCurrentHumanNpcBodyLengthAdjustment,
 		feetMaterial.RenderColor);
 
-	auto & primaryParticle = particleMesh.Particles.emplace_back(primaryParticleIndex, std::nullopt);
+	particleMesh.Particles.emplace_back(primaryParticleIndex, std::nullopt);
 
 	// Head (secondary)
 
@@ -492,7 +488,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
 		worldCoordinates,
 		headMaterial.RenderColor);
 
-	auto & secondaryParticle = particleMesh.Particles.emplace_back(secondaryParticleIndex, std::nullopt);
+	particleMesh.Particles.emplace_back(secondaryParticleIndex, std::nullopt);
 
 	// Dipole spring
 
@@ -570,7 +566,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
 	// Update stats
 	//
 
-	++mHumanNpcCount;
+	++(mShips[shipId]->HumanNpcCount);
 
 	return PickedObjectId<NpcId>(npcId, vec2f::zero());
 }
@@ -604,10 +600,10 @@ std::optional<PickedObjectId<NpcId>> Npcs::ProbeNpcAt(
 		assert(mShips[topmostTriangle->GetShipId()].has_value());
 		auto const & ship = *mShips[topmostTriangle->GetShipId()];
 
-		ElementIndex const trianglePointIndex = ship.ShipMesh.GetTriangles().GetPointAIndex(topmostTriangle->GetLocalObjectId());
-		PlaneId const planeId = ship.ShipMesh.GetPoints().GetPlaneId(trianglePointIndex);
+		ElementIndex const trianglePointIndex = ship.HomeShip.GetTriangles().GetPointAIndex(topmostTriangle->GetLocalObjectId());
+		PlaneId const planeId = ship.HomeShip.GetPoints().GetPlaneId(trianglePointIndex);
 
-		probeDepth = { ship.ShipMesh.GetId(), planeId };
+		probeDepth = { ship.HomeShip.GetId(), planeId };
 	}
 	else
 	{
@@ -653,8 +649,6 @@ std::optional<PickedObjectId<NpcId>> Npcs::ProbeNpcAt(
 	{
 		if (state.has_value())
 		{
-			auto const & ship = mShips[state->CurrentShipId];
-
 			switch (state->Kind)
 			{
 				case NpcKindType::Furniture:
@@ -921,33 +915,38 @@ void Npcs::CompleteNewNpc(
 void Npcs::RemoveNpc(NpcId id)
 {
 	assert(mStateBuffer[id].has_value());
+	assert(mShips[mStateBuffer[id]->CurrentShipId].has_value());
 
 	//
 	// Maintain stats
 	//
 
-	if (mStateBuffer[id]->Kind == NpcKindType::Human)
+	switch (mStateBuffer[id]->Kind)
 	{
-		if (mStateBuffer[id]->CurrentRegime == StateType::RegimeType::Constrained)
+		case NpcKindType::Furniture:
 		{
-			assert(mConstrainedRegimeHumanNpcCount > 0);
-			--mConstrainedRegimeHumanNpcCount;
-			PublishHumanNpcStats();
-		}
-		else if (mStateBuffer[id]->CurrentRegime == StateType::RegimeType::Free)
-		{
-			assert(mFreeRegimeHumanNpcCount > 0);
-			--mFreeRegimeHumanNpcCount;
-			PublishHumanNpcStats();
+			--(mShips[mStateBuffer[id]->CurrentShipId]->FurnitureNpcCount);
 		}
 
-		--mHumanNpcCount;
-	}
-	else
-	{
-		assert(mStateBuffer[id]->Kind == NpcKindType::Furniture);
+		case NpcKindType::Human:
+		{
+			--(mShips[mStateBuffer[id]->CurrentShipId]->HumanNpcCount);
 
-		--mFurnitureNpcCount;
+			if (mStateBuffer[id]->CurrentRegime == StateType::RegimeType::Constrained)
+			{
+				assert(mConstrainedRegimeHumanNpcCount > 0);
+				--mConstrainedRegimeHumanNpcCount;
+				PublishHumanNpcStats();
+			}
+			else if (mStateBuffer[id]->CurrentRegime == StateType::RegimeType::Free)
+			{
+				assert(mFreeRegimeHumanNpcCount > 0);
+				--mFreeRegimeHumanNpcCount;
+				PublishHumanNpcStats();
+			}
+
+			break;
+		}
 	}
 
 	//
@@ -1134,7 +1133,7 @@ void Npcs::RotateParticlesWithShip(
 						centerPos,
 						cosAngle,
 						sinAngle,
-						ship->ShipMesh);
+						ship->HomeShip);
 				}
 			}
 		}
@@ -1146,7 +1145,7 @@ void Npcs::RotateParticleWithShip(
 	vec2f const & centerPos,
 	float cosAngle,
 	float sinAngle,
-	Ship const & shipMesh)
+	Ship const & homeShip)
 {
 	vec2f newPosition;
 
@@ -1154,10 +1153,10 @@ void Npcs::RotateParticleWithShip(
 	{
 		// Simply set position from current bary coords
 
-		newPosition = shipMesh.GetTriangles().FromBarycentricCoordinates(
+		newPosition = homeShip.GetTriangles().FromBarycentricCoordinates(
 			npcParticleState.ConstrainedState->CurrentBCoords.BCoords,
 			npcParticleState.ConstrainedState->CurrentBCoords.TriangleElementIndex,
-			shipMesh.GetPoints());
+			homeShip.GetPoints());
 	}
 	else
 	{
@@ -1243,7 +1242,7 @@ bool Npcs::IsSpringHostingCurrentlySelectedParticle(ElementIndex springIndex) co
 						if (particle.ParticleIndex == *mCurrentlySelectedParticle
 							&& particle.ConstrainedState.has_value()
 							&& particle.ConstrainedState->CurrentVirtualFloor.has_value()
-							&& ship->ShipMesh.GetTriangles()
+							&& ship->HomeShip.GetTriangles()
 							.GetSubSprings(particle.ConstrainedState->CurrentVirtualFloor->TriangleElementIndex).SpringIndices[particle.ConstrainedState->CurrentVirtualFloor->EdgeOrdinal] == springIndex)
 						{
 							return true;
@@ -1277,7 +1276,7 @@ void Npcs::Publish() const
 				auto const & state = *mStateBuffer[n];
 
 				assert(mShips[state.CurrentShipId].has_value());
-				auto const & shipMesh = mShips[state.CurrentShipId]->ShipMesh;
+				auto const & homeShip = mShips[state.CurrentShipId]->HomeShip;
 
 				for (auto const & particle : state.ParticleMesh.Particles)
 				{
@@ -1289,10 +1288,10 @@ void Npcs::Publish() const
 
 							if (mCurrentOriginTriangle.has_value())
 							{
-								subjectParticleBarycentricCoordinatesWrtOriginTriangleChanged = shipMesh.GetTriangles().ToBarycentricCoordinates(
+								subjectParticleBarycentricCoordinatesWrtOriginTriangleChanged = homeShip.GetTriangles().ToBarycentricCoordinates(
 									mParticles.GetPosition(particle.ParticleIndex),
 									*mCurrentOriginTriangle,
-									shipMesh.GetPoints());
+									homeShip.GetPoints());
 							}
 						}
 
@@ -1408,6 +1407,22 @@ NpcId Npcs::GetNewNpcId()
 	return newNpcId;
 }
 
+size_t Npcs::CalculateTotalNpcCount() const
+{
+	size_t totalCount = 0;
+
+	for (auto const & s : mShips)
+	{
+		if (s.has_value())
+		{
+			totalCount += s->FurnitureNpcCount;
+			totalCount += s->HumanNpcCount;
+		}
+	}
+
+	return totalCount;
+}
+
 ShipId Npcs::GetTopmostShipId() const
 {
 	assert(mShips.size() > 0);
@@ -1441,23 +1456,23 @@ std::optional<ElementId> Npcs::FindTopmostTriangleContaining(vec2f const & posit
 		{
 			// Find the triangle in this ship containing this position and having the highest plane ID
 
-			auto const & shipMesh = mShips[s]->ShipMesh;
+			auto const & homeShip = mShips[s]->HomeShip;
 
 			// TODO: this might be optimized
 
 			std::optional<ElementIndex> bestTriangleIndex;
 			PlaneId bestPlaneId = std::numeric_limits<PlaneId>::lowest();
-			for (auto const triangleIndex : shipMesh.GetTriangles())
+			for (auto const triangleIndex : homeShip.GetTriangles())
 			{
-				vec2f const aPosition = shipMesh.GetPoints().GetPosition(shipMesh.GetTriangles().GetPointAIndex(triangleIndex));
-				vec2f const bPosition = shipMesh.GetPoints().GetPosition(shipMesh.GetTriangles().GetPointBIndex(triangleIndex));
-				vec2f const cPosition = shipMesh.GetPoints().GetPosition(shipMesh.GetTriangles().GetPointCIndex(triangleIndex));
+				vec2f const aPosition = homeShip.GetPoints().GetPosition(homeShip.GetTriangles().GetPointAIndex(triangleIndex));
+				vec2f const bPosition = homeShip.GetPoints().GetPosition(homeShip.GetTriangles().GetPointBIndex(triangleIndex));
+				vec2f const cPosition = homeShip.GetPoints().GetPosition(homeShip.GetTriangles().GetPointCIndex(triangleIndex));
 
 				if (IsPointInTriangle(position, aPosition, bPosition, cPosition)
-					&& (!bestTriangleIndex || shipMesh.GetPoints().GetPlaneId(shipMesh.GetTriangles().GetPointAIndex(triangleIndex)) > bestPlaneId))
+					&& (!bestTriangleIndex || homeShip.GetPoints().GetPlaneId(homeShip.GetTriangles().GetPointAIndex(triangleIndex)) > bestPlaneId))
 				{
 					bestTriangleIndex = triangleIndex;
-					bestPlaneId = shipMesh.GetPoints().GetPlaneId(shipMesh.GetTriangles().GetPointAIndex(triangleIndex));
+					bestPlaneId = homeShip.GetPoints().GetPlaneId(homeShip.GetTriangles().GetPointAIndex(triangleIndex));
 				}
 			}
 
@@ -1479,13 +1494,13 @@ std::optional<ElementId> Npcs::FindTopmostTriangleContaining(vec2f const & posit
 
 ElementIndex Npcs::FindTriangleContaining(
 	vec2f const & position,
-	Ship const & shipMesh)
+	Ship const & homeShip)
 {
-	for (auto const triangleIndex : shipMesh.GetTriangles())
+	for (auto const triangleIndex : homeShip.GetTriangles())
 	{
-		vec2f const aPosition = shipMesh.GetPoints().GetPosition(shipMesh.GetTriangles().GetPointAIndex(triangleIndex));
-		vec2f const bPosition = shipMesh.GetPoints().GetPosition(shipMesh.GetTriangles().GetPointBIndex(triangleIndex));
-		vec2f const cPosition = shipMesh.GetPoints().GetPosition(shipMesh.GetTriangles().GetPointCIndex(triangleIndex));
+		vec2f const aPosition = homeShip.GetPoints().GetPosition(homeShip.GetTriangles().GetPointAIndex(triangleIndex));
+		vec2f const bPosition = homeShip.GetPoints().GetPosition(homeShip.GetTriangles().GetPointBIndex(triangleIndex));
+		vec2f const cPosition = homeShip.GetPoints().GetPosition(homeShip.GetTriangles().GetPointCIndex(triangleIndex));
 
 		if (IsPointInTriangle(position, aPosition, bPosition, cPosition))
 		{
@@ -1525,6 +1540,29 @@ void Npcs::TransferNpcToShip(
 	mShips[newShip]->Npcs.push_back(newShip);
 
 	//
+	// Maintain stats
+	//
+
+	switch (npc.Kind)
+	{
+		case NpcKindType::Furniture:
+		{
+			--(mShips[npc.CurrentShipId]->FurnitureNpcCount);
+			++(mShips[newShip]->FurnitureNpcCount);
+
+			break;
+		}
+
+		case NpcKindType::Human:
+		{
+			--(mShips[npc.CurrentShipId]->HumanNpcCount);
+			++(mShips[newShip]->HumanNpcCount);
+
+			break;
+		}
+	}
+
+	//
 	// Set ShipId in npc
 	//
 
@@ -1538,7 +1576,7 @@ void Npcs::RenderNpc(
 	assert(mShips[npc.CurrentShipId].has_value());
 
 	auto const planeId = (npc.CurrentRegime == StateType::RegimeType::BeingPlaced)
-		? mShips[npc.CurrentShipId]->ShipMesh.GetMaxPlaneId()
+		? mShips[npc.CurrentShipId]->HomeShip.GetMaxPlaneId()
 		: npc.CurrentPlaneId;
 
 	switch(npc.Kind)

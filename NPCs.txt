@@ -222,23 +222,39 @@ Arch
 		+ Shader: port Limbs
 			+ & ShaderManager
 			+ PlaneID
-		= (Ship)RenderContext: port Limbs
+		+ (Ship)RenderContext: port Limbs
 			+ No TextureQuad though - we'll have texture coords separate
 			+ Indices work, with ownership as in big, final plan
-			- Fix: BaryLab tells total NPC quad count to RenderContext, and then goes on to individual Ships; must instead do ship-by-ship
-				- TODO: shall we move NPC rendering to individual ships, who will asks NPCs to upload own?
+			+ Fix: BaryLab tells total NPC quad count to RenderContext, and then goes on to individual Ships; must instead do ship-by-ship
+				+ Keep per-NPCShip stats
+					+ Follow all mFurnitureNpcCount and mHumanNpcCount
 		- TODO: GameParameters: port Static and Kinetic friction adjustments as NPC params
 			- TODO: or: have global StaticFrictionAdj, KineticFrictionAdj, and ElasticityAdj, which apply to NPC and to OceanFloor
-		- Plumb interactions:
+			- Research response of impact of two materials
+			- Gist 1:
+				- Ocean floor has own Elasticity and Friction as GameParameters, adjustable
+				- Other materials (Structural, NPC) have global Adjustments
+			- Gist 2:
+				- Ocean floor has own Elasticity and Friction as GameParameters, constants
+				- All materials (Ocean floor, Structural, NPC) have global Adjustments
+		= Plumb interactions:
 			+ GameController & World
-			- ToolController & Tools		
+			+ ToolController & Tools
+				+ Incl. Resources
+			- MainFrame menu
+				- New main menu
 	- Settings:
+		- TODO: which ones?
 		- SettingsManager
 		- SettingsDialog
 	- Backport:
-		- NpcSimulation folder: FS -> BaryLab 
+		- NpcSimulation folder: FS -> BaryLab 			
 			- Nuke TextureQuad from GameTypes
-			- GameParameters: move Static and Kinetic friction adjustments as NPC params
+			- Adapt RenderContext
+			- GameParameters
+		- Tests:
+			- DEBUG
+			- Large number of NPCs 
 
 - NpcDatabase:
 	- Spec:

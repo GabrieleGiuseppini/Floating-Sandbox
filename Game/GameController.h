@@ -228,7 +228,7 @@ public:
     void ApplyThanosSnapAt(DisplayLogicalCoordinates const & screenCoordinates, bool isSparseMode) override;
     void ScareFish(DisplayLogicalCoordinates const & screenCoordinates, float radius, std::chrono::milliseconds delay) override;
     void AttractFish(DisplayLogicalCoordinates const & screenCoordinates, float radius, std::chrono::milliseconds delay) override;
-    std::optional<PickedObjectId<NpcId>> BeginPlaceNewFurnitureNpc(FurnitureNpcKindType humanKind, DisplayLogicalCoordinates const & screenCoordinates) override;
+    std::optional<PickedObjectId<NpcId>> BeginPlaceNewFurnitureNpc(FurnitureNpcKindType furnitureKind, DisplayLogicalCoordinates const & screenCoordinates) override;
     std::optional<PickedObjectId<NpcId>> BeginPlaceNewHumanNpc(HumanNpcKindType humanKind, DisplayLogicalCoordinates const & screenCoordinates) override;
     std::optional<PickedObjectId<NpcId>> ProbeNpcAt(DisplayLogicalCoordinates const & screenCoordinates) const override;
     void BeginMoveNpc(NpcId id) override;

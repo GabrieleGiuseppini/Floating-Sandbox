@@ -690,6 +690,38 @@ LaserCannonTool::LaserCannonTool(
 // NPCs
 ////////////////////////////////////////////////////////////////////////
 
+PlaceNpcToolBase::PlaceNpcToolBase(
+    ToolType toolType,
+    IToolCursorManager & toolCursorManager,
+    IGameController & gameController,
+    SoundController & soundController,
+    ResourceLocator const & resourceLocator)
+    : Tool(
+        toolType,
+        toolCursorManager,
+        gameController,
+        soundController)
+    , mCurrentEngagementState(std::nullopt)
+    , mClosedCursorImage(WxHelpers::LoadCursorImage("move_npc_cursor_down", 11, 29, resourceLocator))
+    , mOpenCursorImage(WxHelpers::LoadCursorImage("move_npc_cursor_up", 11, 29, resourceLocator))
+    , mErrorCursorImage(WxHelpers::LoadCursorImage("move_npc_cursor_error", 11, 29, resourceLocator))
+{}
+
+PlaceFurnitureNpcTool::PlaceFurnitureNpcTool(
+    IToolCursorManager & toolCursorManager,
+    IGameController & gameController,
+    SoundController & soundController,
+    ResourceLocator const & resourceLocator)
+    : PlaceNpcToolBase(
+        ToolType::PlaceFurnitureNpc,
+        toolCursorManager,
+        gameController,
+        soundController,
+        resourceLocator)
+    , mKind(FurnitureNpcKindType::Quad) // Just as a start
+{
+}
+
 PlaceHumanNpcTool::PlaceHumanNpcTool(
     IToolCursorManager & toolCursorManager,
     IGameController & gameController,
@@ -699,10 +731,9 @@ PlaceHumanNpcTool::PlaceHumanNpcTool(
         ToolType::PlaceHumanNpc,
         toolCursorManager,
         gameController,
-        soundController)
-    , mRole(HumanNpcKindType::Passenger) // Just as a start
-    , mClosedCursorImage(WxHelpers::LoadCursorImage("move_npc_cursor_down", 11, 29, resourceLocator))
-    , mOpenCursorImage(WxHelpers::LoadCursorImage("move_npc_cursor_up", 11, 29, resourceLocator))
+        soundController,
+        resourceLocator)
+    , mKind(HumanNpcKindType::Passenger) // Just as a start
 {
 }
 
@@ -716,9 +747,8 @@ MoveNpcTool::MoveNpcTool(
         toolCursorManager,
         gameController,
         soundController)
-    , mEngagementData()
-    , mLastMouseWorldCoordinates()
-    , mCurrentHoveredNpc()
+    , mNpc()
+    , mIsMouseDown(false) // Will use actual mouse state at Init()
     , mClosedCursorImage(WxHelpers::LoadCursorImage("move_npc_cursor_down", 11, 29, resourceLocator))
     , mOpenCursorImage(WxHelpers::LoadCursorImage("move_npc_cursor_up", 11, 29, resourceLocator))
 {
@@ -729,14 +759,13 @@ RemoveNpcTool::RemoveNpcTool(
     IGameController & gameController,
     SoundController & soundController,
     ResourceLocator const & resourceLocator)
-    : OneShotTool(
+    : Tool(
         ToolType::RemoveNpc,
         toolCursorManager,
         gameController,
         soundController)
-    , mLastMouseWorldCoordinates()
-    , mCurrentHoveredNpc()
-    , mIsInClosedCursorState(false)
+    , mNpc()
+    , mIsMouseDown(false) // Will use actual mouse state at Init()
     , mClosedCursorImage(WxHelpers::LoadCursorImage("remove_npc_cursor_down", 20, 29, resourceLocator))
     , mOpenCursorImage(WxHelpers::LoadCursorImage("remove_npc_cursor_up", 20, 29, resourceLocator))
 {

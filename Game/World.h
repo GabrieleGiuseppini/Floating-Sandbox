@@ -354,7 +354,7 @@ public:
         std::chrono::milliseconds delay);
 
     std::optional<PickedObjectId<NpcId>> BeginPlaceNewFurnitureNpc(
-        FurnitureNpcKindType humanKind,
+        FurnitureNpcKindType furnitureKind,
         vec2f const & position);
 
     std::optional<PickedObjectId<NpcId>> BeginPlaceNewHumanNpc(
