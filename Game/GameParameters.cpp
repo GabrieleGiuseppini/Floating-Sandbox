@@ -84,6 +84,7 @@ GameParameters::GameParameters()
     , DoFishShoaling(true)
     , FishShoalRadiusAdjustment(1.0f)
     // NPCs
+    , NpcGlobalDamping(0.0078f)
     , NpcMaterialElasticityAdjustment(1.0f)
     , NpcMaterialStaticFrictionAdjustment(1.0f)
     , NpcMaterialKineticFrictionAdjustment(1.0f)

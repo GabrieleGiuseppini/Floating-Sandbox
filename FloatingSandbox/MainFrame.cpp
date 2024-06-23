@@ -599,6 +599,13 @@ MainFrame::MainFrame(
             }
 
             mainMenuBar->Append(npcsMenu, _("&Npcs"));
+
+            // TODOTEST
+            auto foobar = npcsMenu->GetMenuItems();
+            for (auto & foo : foobar)
+            {
+                foo->Check(false);
+            }
         }
 
         // Options
