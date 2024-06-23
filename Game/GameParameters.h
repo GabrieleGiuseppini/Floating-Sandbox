@@ -432,9 +432,9 @@ struct GameParameters
     // NPCs
     //
 
-    float NpcGlobalDamping;
-    static float constexpr MinNpcGlobalDamping = 0.0f;
-    static float constexpr MaxNpcGlobalDamping = 1.0f;
+    float NpcDamping; // NPCs have their own as the "physics" one is applied over multiple sub-steps, while the NPCs' one is applied in one step
+    static float constexpr MinNpcDamping = 0.0f;
+    static float constexpr MaxNpcDamping = 1.0f;
 
     float NpcMaterialElasticityAdjustment;
     static float constexpr MinNpcMaterialElasticityAdjustment = 0.0f;

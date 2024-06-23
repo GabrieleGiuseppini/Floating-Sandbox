@@ -255,7 +255,9 @@ Arch
 					+ If current view is "Interior" GameController switches to "Exterior"
 					+ Disable Move/Remove
 		= Check global damping
-		= Check buoyancy
+			- Make NpcDamping subject to other adjustment
+				- Npcs class reacts to changes and calculates own mDampingCoefficient == (1.0f - gameParameters.NpcDamping)
+		+ Check buoyancy
 	- Settings:
 		- TODO: which ones?
 		- SettingsManager
