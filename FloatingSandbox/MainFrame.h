@@ -127,12 +127,13 @@ private:
     wxMenu * mToolsMenu;
     wxMenuItem * mSmashMenuItem;
     wxMenuItem * mScareFishMenuItem;
-    wxMenuItem * mAddNpcMenuItem;
-    wxMenuItem * mMoveNpcMenuItem;
-    wxMenuItem * mRemoveNpcMenuItem;
     wxMenuItem * mRCBombsDetonateMenuItem;
     wxMenuItem * mAntiMatterBombsDetonateMenuItem;
     wxMenuItem * mTriggerStormMenuItem;
+    wxMenuItem * mAddHumanNpcMenuItem;
+    wxMenuItem * mAddFurnitureNpcMenuItem;
+    wxMenuItem * mMoveNpcMenuItem;
+    wxMenuItem * mRemoveNpcMenuItem;
     wxMenuItem * mReloadLastModifiedSettingsMenuItem;
     wxMenuItem * mShowEventTickerMenuItem;
     wxMenuItem * mShowProbePanelMenuItem;
@@ -238,7 +239,8 @@ private:
     void OnRepairStructureMenuItemSelected(wxCommandEvent & event);
     void OnScrubMenuItemSelected(wxCommandEvent & event);
     void OnScareFishMenuItemSelected(wxCommandEvent & event);
-    void OnAddHumanNpcMenuItemSelected(HumanNpcKindType role);
+    void OnAddHumanNpcMenuItemSelected(HumanNpcKindType kind);
+    void OnAddFurnitureNpcMenuItemSelected(FurnitureNpcKindType kind);
     void OnMoveNpcMenuItemSelected(wxCommandEvent & event);
     void OnRemoveNpcMenuItemSelected(wxCommandEvent & event);
     void OnTriggerLightningMenuItemSelected(wxCommandEvent & event);
@@ -351,15 +353,32 @@ private:
         mScareFishMenuItem->Enable(count > 0);
     }
 
-    virtual void OnNpcCountsUpdated(
-        unsigned int totalNpcCount,
-        unsigned int /*constrainedHumanNpcCount*/,
-        unsigned int /*freeHumanNpcCount*/,
-        unsigned int remainingNpcAllowanceCount) override
+    virtual void OnNpcCountsUpdated(size_t totalNpcCount) override
     {
-        mAddNpcMenuItem->Enable(remainingNpcAllowanceCount > 0);
-        mMoveNpcMenuItem->Enable(totalNpcCount > 0);
-        mRemoveNpcMenuItem->Enable(totalNpcCount > 0);
+        if (mCurrentNpcCount == 0 && totalNpcCount > 0)
+        {
+            // Switch to interior view
+            mGameController->SetShipViewMode(ShipViewModeType::Interior);
+            mShipViewExteriorMenuItem->Check(false);
+            mShipViewInteriorMenuItem->Check(true);
+
+            // Enable Move/Remove menu items
+            mMoveNpcMenuItem->Enable(true);
+            mRemoveNpcMenuItem->Enable(true);
+        }
+        else if (mCurrentNpcCount > 0 && totalNpcCount == 0)
+        {
+            // Switch to exterior view
+            mGameController->SetShipViewMode(ShipViewModeType::Exterior);
+            mShipViewExteriorMenuItem->Check(true);
+            mShipViewInteriorMenuItem->Check(false);
+
+            // Disable Move/Remove menu items
+            mMoveNpcMenuItem->Enable(false);
+            mRemoveNpcMenuItem->Enable(false);
+        }
+
+        mCurrentNpcCount = totalNpcCount;
     }
 
 private:
@@ -453,6 +472,7 @@ private:
     std::vector<std::string> mCurrentShipTitles;
     size_t mCurrentRCBombCount;
     size_t mCurrentAntiMatterBombCount;
+    size_t mCurrentNpcCount;
     bool mIsShiftKeyDown;
     bool mIsMouseCapturedByGLCanvas;
 };

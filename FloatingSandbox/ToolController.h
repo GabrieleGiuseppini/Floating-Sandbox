@@ -56,7 +56,7 @@ public:
         SetTool(ToolType::PlaceFurnitureNpc);
     }
 
-    void SetHumanNpcPlaceTool(HumanNpcKindType humanNpcKind)
+    void SetPlaceHumanNpcTool(HumanNpcKindType humanNpcKind)
     {
         PlaceHumanNpcTool * tool = dynamic_cast<PlaceHumanNpcTool *>(mAllTools[static_cast<size_t>(ToolType::PlaceHumanNpc)].get());
         tool->SetKind(humanNpcKind);

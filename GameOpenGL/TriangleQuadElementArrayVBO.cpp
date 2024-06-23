@@ -22,8 +22,6 @@ void TriangleQuadElementArrayVBO::Grow(size_t quadCount)
 {
 	assert(quadCount > mQuadCount);
 
-	size_t const existingSize = mIndices.size();
-
 	// Enlarge buffer
 	size_t requiredSize = quadCount * 6; // 6 indices per quad
 	mIndices.ensure_size(requiredSize);

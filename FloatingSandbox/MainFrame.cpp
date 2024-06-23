@@ -138,6 +138,7 @@ MainFrame::MainFrame(
     , mCurrentShipTitles()
     , mCurrentRCBombCount(0u)
     , mCurrentAntiMatterBombCount(0u)
+    , mCurrentNpcCount(0u)
     , mIsShiftKeyDown(false)
     , mIsMouseCapturedByGLCanvas(false)
 {
@@ -487,56 +488,6 @@ MainFrame::MainFrame(
                 ADD_TOOL_MENUITEM(_("Toggle Physics Probe"), wxS(""), "physics_probe_cursor", OnPhysicsProbeMenuItemSelected);
             }
 
-            {
-                // Type hierarchy menu
-                wxMenu * npcSubMenu = nullptr;
-                {
-                    wxMenu * humanTypeSubMenu = new wxMenu(_(""));
-                    {
-                        {
-                            auto const commandId = wxNewId();
-                            humanTypeSubMenu->Append(new wxMenuItem(nullptr, commandId, _("Passenger"), wxEmptyString, wxITEM_NORMAL));
-                            humanTypeSubMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [this](wxCommandEvent &) { OnAddHumanNpcMenuItemSelected(HumanNpcKindType::Passenger); }, commandId);
-                        }
-
-                        {
-                            auto const commandId = wxNewId();
-                            humanTypeSubMenu->Append(new wxMenuItem(nullptr, commandId, _("Programmer"), wxEmptyString, wxITEM_NORMAL));
-                            humanTypeSubMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [this](wxCommandEvent &) { OnAddHumanNpcMenuItemSelected(HumanNpcKindType::Programmer); }, commandId);
-                        }
-                    }
-
-                    // FUTUREWORK: when we'll have more NPC types, we'll create a submenu here between AddNpc and the various types
-                    npcSubMenu = humanTypeSubMenu;
-                }
-
-                // Create menu
-                mAddNpcMenuItem = new wxMenuItem(mToolsMenu, wxID_ANY, _("Add NPC..."), wxEmptyString, wxITEM_RADIO, npcSubMenu);
-                auto img = wxImage(resourceLocator.GetIconFilePath("add_npc_icon").string(), wxBITMAP_TYPE_PNG);
-                SET_BITMAP(mAddNpcMenuItem, img);
-                mToolsMenu->Append(mAddNpcMenuItem);
-                mAddNpcMenuItem->Enable(true); // Note: here we're assuming we _can_ add NPCs; unfortunately the NPCs class is created _before_ we register for events, hence have to guess here
-            }
-
-            {
-                auto const id = wxNewId();
-                mMoveNpcMenuItem = new wxMenuItem(mToolsMenu, id, _("Move NPC"), wxEmptyString, wxITEM_RADIO);
-                auto img = wxImage(resourceLocator.GetIconFilePath("move_npc_icon").string(), wxBITMAP_TYPE_PNG);
-                SET_BITMAP(mMoveNpcMenuItem, img);
-                mToolsMenu->Append(mMoveNpcMenuItem);
-                Connect(id, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnMoveNpcMenuItemSelected);
-                mMoveNpcMenuItem->Enable(false);
-            }
-
-            {
-                auto const id = wxNewId();
-                mRemoveNpcMenuItem = new wxMenuItem(mToolsMenu, id, _("Remove NPC"), wxEmptyString, wxITEM_RADIO);
-                auto img = wxImage(resourceLocator.GetIconFilePath("remove_npc_icon").string(), wxBITMAP_TYPE_PNG);
-                SET_BITMAP(mRemoveNpcMenuItem, img);
-                mToolsMenu->Append(mRemoveNpcMenuItem);
-                Connect(id, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnRemoveNpcMenuItemSelected);
-                mRemoveNpcMenuItem->Enable(false);
-            }
 
             mToolsMenu->Append(new wxMenuItem(mToolsMenu, wxID_SEPARATOR));
 
@@ -576,6 +527,79 @@ MainFrame::MainFrame(
             mainMenuBar->Append(mToolsMenu, _("&Tools"));
         }
 
+        // NPCs
+
+        {
+            wxMenu * npcsMenu = new wxMenu();
+
+            // Add human
+            {
+                wxMenu * humanNpcSubMenu = new wxMenu(_(""));
+                {
+                    // Futurework: kinds come from database
+                    {
+                        auto const commandId = wxNewId();
+                        humanNpcSubMenu->Append(new wxMenuItem(nullptr, commandId, _("Passenger"), wxEmptyString, wxITEM_NORMAL));
+                        humanNpcSubMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [this](wxCommandEvent &) { OnAddHumanNpcMenuItemSelected(HumanNpcKindType::Passenger); }, commandId);
+                    }
+
+                    {
+                        auto const commandId = wxNewId();
+                        humanNpcSubMenu->Append(new wxMenuItem(nullptr, commandId, _("Programmer"), wxEmptyString, wxITEM_NORMAL));
+                        humanNpcSubMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [this](wxCommandEvent &) { OnAddHumanNpcMenuItemSelected(HumanNpcKindType::Programmer); }, commandId);
+                    }
+                }
+
+                // Create menu
+                mAddHumanNpcMenuItem = new wxMenuItem(npcsMenu, wxID_ANY, _("Add Human NPC..."), wxEmptyString, wxITEM_RADIO, humanNpcSubMenu);
+                auto img = wxImage(resourceLocator.GetIconFilePath("add_human_npc_icon").string(), wxBITMAP_TYPE_PNG);
+                SET_BITMAP(mAddHumanNpcMenuItem, img);
+                npcsMenu->Append(mAddHumanNpcMenuItem);
+                mAddHumanNpcMenuItem->Enable(true); // Note: here we're assuming we _can_ add NPCs; unfortunately the NPCs class is created _before_ we register for events, hence have to guess here
+            }
+
+            // Add furniture
+            {
+                wxMenu * furnitureNpcSubMenu = new wxMenu(_(""));
+                {
+                    // Futurework: kinds come from database
+                    {
+                        auto const commandId = wxNewId();
+                        furnitureNpcSubMenu->Append(new wxMenuItem(nullptr, commandId, _("Quad"), wxEmptyString, wxITEM_NORMAL));
+                        furnitureNpcSubMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [this](wxCommandEvent &) { OnAddFurnitureNpcMenuItemSelected(FurnitureNpcKindType::Quad); }, commandId);
+                    }
+                }
+
+                // Create menu
+                mAddFurnitureNpcMenuItem = new wxMenuItem(npcsMenu, wxID_ANY, _("Add Furniture NPC..."), wxEmptyString, wxITEM_RADIO, furnitureNpcSubMenu);
+                auto img = wxImage(resourceLocator.GetIconFilePath("add_furniture_npc_icon").string(), wxBITMAP_TYPE_PNG);
+                SET_BITMAP(mAddFurnitureNpcMenuItem, img);
+                npcsMenu->Append(mAddFurnitureNpcMenuItem);
+                mAddFurnitureNpcMenuItem->Enable(true); // Note: here we're assuming we _can_ add NPCs; unfortunately the NPCs class is created _before_ we register for events, hence have to guess here
+            }
+
+            {
+                auto const id = wxNewId();
+                mMoveNpcMenuItem = new wxMenuItem(mToolsMenu, id, _("Move NPC"), wxEmptyString, wxITEM_RADIO);
+                auto img = wxImage(resourceLocator.GetIconFilePath("move_npc_icon").string(), wxBITMAP_TYPE_PNG);
+                SET_BITMAP(mMoveNpcMenuItem, img);
+                npcsMenu->Append(mMoveNpcMenuItem);
+                Connect(id, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnMoveNpcMenuItemSelected);
+                mMoveNpcMenuItem->Enable(false);
+            }
+
+            {
+                auto const id = wxNewId();
+                mRemoveNpcMenuItem = new wxMenuItem(mToolsMenu, id, _("Remove NPC"), wxEmptyString, wxITEM_RADIO);
+                auto img = wxImage(resourceLocator.GetIconFilePath("remove_npc_icon").string(), wxBITMAP_TYPE_PNG);
+                SET_BITMAP(mRemoveNpcMenuItem, img);
+                npcsMenu->Append(mRemoveNpcMenuItem);
+                Connect(id, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnRemoveNpcMenuItemSelected);
+                mRemoveNpcMenuItem->Enable(false);
+            }
+
+            mainMenuBar->Append(npcsMenu, _("&Npcs"));
+        }
 
         // Options
 
@@ -1983,12 +2007,20 @@ void MainFrame::OnScareFishMenuItemSelected(wxCommandEvent & /*event*/)
     mToolController->SetTool(ToolType::ScareFish);
 }
 
-void MainFrame::OnAddHumanNpcMenuItemSelected(HumanNpcKindType role)
+void MainFrame::OnAddHumanNpcMenuItemSelected(HumanNpcKindType kind)
 {
-    mAddNpcMenuItem->Check(true);
+    mAddHumanNpcMenuItem->Check(true);
 
     assert(!!mToolController);
-    mToolController->SetHumanNpcPlaceTool(role);
+    mToolController->SetPlaceHumanNpcTool(kind);
+}
+
+void MainFrame::OnAddFurnitureNpcMenuItemSelected(FurnitureNpcKindType kind)
+{
+    mAddFurnitureNpcMenuItem->Check(true);
+
+    assert(!!mToolController);
+    mToolController->SetPlaceFurnitureNpcTool(kind);
 }
 
 void MainFrame::OnMoveNpcMenuItemSelected(wxCommandEvent & /*event*/)

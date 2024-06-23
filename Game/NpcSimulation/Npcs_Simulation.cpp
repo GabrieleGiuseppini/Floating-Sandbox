@@ -10,6 +10,8 @@
 #include <array>
 #include <limits>
 
+#pragma warning(disable : 4324) // std::optional of StateType gets padded because of alignment requirements
+
 namespace Physics {
 
 void Npcs::ResetNpcStateToWorld(
@@ -889,12 +891,12 @@ void Npcs::UpdateNpcParticlePhysics(
                     if (std::abs(npcParticle.ConstrainedState->MeshRelativeVelocity.dot(edgeDir)) > 0.01f) // Magic number
                     {
                         // Kinetic friction
-                        frictionCoefficient = mParticles.GetPhysicalProperties(npcParticle.ParticleIndex).KineticFriction * gameParameters.KineticFrictionAdjustment;
+                        frictionCoefficient = mParticles.GetPhysicalProperties(npcParticle.ParticleIndex).KineticFriction * gameParameters.NpcMaterialKineticFrictionAdjustment;
                     }
                     else
                     {
                         // Static friction
-                        frictionCoefficient = mParticles.GetPhysicalProperties(npcParticle.ParticleIndex).StaticFriction * gameParameters.StaticFrictionAdjustment;
+                        frictionCoefficient = mParticles.GetPhysicalProperties(npcParticle.ParticleIndex).StaticFriction * gameParameters.NpcMaterialStaticFrictionAdjustment;
                     }
 
                     // Calculate friction (integrated) force magnitude (along edgeDir),
@@ -1375,8 +1377,6 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
 
 void Npcs::CalculateNpcParticleSpringForces(StateType const & npc)
 {
-    float constexpr dt = GameParameters::SimulationStepTimeDuration<float>;
-
     for (auto const & spring : npc.ParticleMesh.Springs)
     {
         vec2f const springDisplacement = mParticles.GetPosition(spring.EndpointAIndex) - mParticles.GetPosition(spring.EndpointBIndex); // Towards A
@@ -1956,8 +1956,6 @@ float Npcs::UpdateNpcParticle_ConstrainedInertial(
 
         for (int vi = 0; vi < 3; ++vi)
         {
-            int const edgeOrdinal = (vi + 1) % 3;
-
             // Only consider edges that we ancounter ahead along the trajectory
             if (segmentTrajectoryEndBarycentricCoords[vi] < 0.0f)
             {
@@ -1973,7 +1971,7 @@ float Npcs::UpdateNpcParticle_ConstrainedInertial(
 
                 assert(t > -Epsilon<float>); // Some numeric slack, trajectory is here guaranteed to be pointing into this edge
 
-                LogNpcDebug("        t[v", vi, " e", edgeOrdinal, "] = ", t);
+                LogNpcDebug("        t[v", vi, " e", ((vi + 1) % 3), "] = ", t);
 
                 if (t < minIntersectionT)
                 {
@@ -2785,12 +2783,12 @@ void Npcs::BounceConstrainedNpcParticle(
         vec2f const normalResponse =
             -normalVelocity
             * particles.GetPhysicalProperties(npcParticle.ParticleIndex).Elasticity
-            * gameParameters.ElasticityAdjustment;
+            * gameParameters.NpcMaterialElasticityAdjustment;
 
         // Calculate tangential response: Vt' = a*Vt (a = (1.0-friction), [0.0 - 1.0])
         vec2f const tangentialResponse =
             tangentialVelocity
-            * std::max(0.0f, 1.0f - particles.GetPhysicalProperties(npcParticle.ParticleIndex).KineticFriction * gameParameters.KineticFrictionAdjustment);
+            * std::max(0.0f, 1.0f - particles.GetPhysicalProperties(npcParticle.ParticleIndex).KineticFriction * gameParameters.NpcMaterialKineticFrictionAdjustment);
 
         // Calculate whole response (which, given that we've been working in *apparent* space (we've calc'd the collision response to *trajectory* which is apparent displacement)),
         // is a relative velocity (relative to mesh)

@@ -550,9 +550,19 @@ public:
     // NPC
     //
 
+    void OnNpcCountsUpdated(
+        size_t totalNpcCount) override
+    {
+        for (auto sink : mNpcSinks)
+        {
+            sink->OnNpcCountsUpdated(totalNpcCount);
+        }
+    }
+
+
     void OnHumanNpcCountsUpdated(
-        unsigned int insideShipCount,
-        unsigned int outsideShipCount) override
+        size_t insideShipCount,
+        size_t outsideShipCount) override
     {
         for (auto sink : mNpcSinks)
         {

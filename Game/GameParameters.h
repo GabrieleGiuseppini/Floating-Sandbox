@@ -432,6 +432,18 @@ struct GameParameters
     // NPCs
     //
 
+    float NpcMaterialElasticityAdjustment;
+    static float constexpr MinNpcMaterialElasticityAdjustment = 0.0f;
+    static float constexpr MaxNpcMaterialElasticityAdjustment = 4.0f;
+
+    float NpcMaterialStaticFrictionAdjustment;
+    static float constexpr MinNpcMaterialStaticFrictionAdjustment = 0.0f;
+    static float constexpr MaxNpcMaterialStaticFrictionAdjustment = 40.0f;
+
+    float NpcMaterialKineticFrictionAdjustment;
+    static float constexpr MinNpcMaterialKineticFrictionAdjustment = 0.0f;
+    static float constexpr MaxNpcMaterialKineticFrictionAdjustment = 40.0f;
+
     float NpcSpringReductionFractionAdjustment;
     static float constexpr MinNpcSpringReductionFractionAdjustment = 0.0f;
     static float constexpr MaxNpcSpringReductionFractionAdjustment = 5.0f;

@@ -228,21 +228,29 @@ Arch
 			+ Fix: BaryLab tells total NPC quad count to RenderContext, and then goes on to individual Ships; must instead do ship-by-ship
 				+ Keep per-NPCShip stats
 					+ Follow all mFurnitureNpcCount and mHumanNpcCount
-		- TODO: GameParameters: port Static and Kinetic friction adjustments as NPC params
-			- TODO: or: have global StaticFrictionAdj, KineticFrictionAdj, and ElasticityAdj, which apply to NPC and to OceanFloor
-			- Research response of impact of two materials
-			- Gist 1:
-				- Ocean floor has own Elasticity and Friction as GameParameters, adjustable
-				- Other materials (Structural, NPC) have global Adjustments
-			- Gist 2:
-				- Ocean floor has own Elasticity and Friction as GameParameters, constants
-				- All materials (Ocean floor, Structural, NPC) have global Adjustments
+		+ GameParameters: port Static and Kinetic friction adjustments and elasticity as NPC params
+			! We don't want structural materials to have own coeffs, as that would slow down TerrainImpact which is already quite expensive; so for these we are happy
+			  with just Ocean Floor coeffs and happy that an "own elasticity" pops up thanks to stiffness
 		= Plumb interactions:
 			+ GameController & World
 			+ ToolController & Tools
 				+ Incl. Resources
-			- MainFrame menu
-				- New main menu
+			= MainFrame menu
+				- New menu
+					- Reconciliate menu items between tools<->NPCs
+						- 1. Tool menu handlers are argument-less funcs, specified to ADD_TOOL_MENUITEM
+						- 2. ADD_TOOL_MENUITEM connects to lambda that first disables all RADIO npc menu child items, then calls argument-less func
+						- 3. NPC menu handlers are argument-less funcs
+						- 4. NPC menu building connects to lambda that first disables all RADIO tool menu child items, then calls argument-less func
+				+ Npc stats event: add totalNpcs (must include BeingPlaced)
+					+ And publish from BeginPlace/Abort/and everywhere it may change
+				+ MainFrame registers for NPC stats
+				= As soon as NPC count goes from zero to non-zero (including BeingPlaced):
+					+ If current view is "Exterior" MainFrame switches to "Interior"
+					+ Enable Move/Remove
+				= As soon as NPC count goes from non-zero to zero:
+					+ If current view is "Interior" GameController switches to "Exterior"
+					+ Disable Move/Remove
 	- Settings:
 		- TODO: which ones?
 		- SettingsManager

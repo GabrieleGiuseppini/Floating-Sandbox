@@ -369,9 +369,15 @@ struct IElectricalElementGameEventHandler
 
 struct INpcGameEventHandler
 {
+    virtual void OnNpcCountsUpdated(
+        size_t /*totalNpcCount*/)
+    {
+        // Default-implemented
+    }
+
     virtual void OnHumanNpcCountsUpdated(
-        unsigned int /*insideShipCount*/,
-        unsigned int /*outsideShipCount*/)
+        size_t /*insideShipCount*/,
+        size_t /*outsideShipCount*/)
     {
         // Default-implemented
     }

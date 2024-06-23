@@ -428,6 +428,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 	//
 
 	++(mShips[shipId]->FurnitureNpcCount);
+	mGameEventHandler->OnNpcCountsUpdated(CalculateTotalNpcCount());
 
 	return PickedObjectId<NpcId>(npcId, vec2f::zero());
 }
@@ -567,6 +568,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
 	//
 
 	++(mShips[shipId]->HumanNpcCount);
+	mGameEventHandler->OnNpcCountsUpdated(CalculateTotalNpcCount());
 
 	return PickedObjectId<NpcId>(npcId, vec2f::zero());
 }
@@ -926,6 +928,8 @@ void Npcs::RemoveNpc(NpcId id)
 		case NpcKindType::Furniture:
 		{
 			--(mShips[mStateBuffer[id]->CurrentShipId]->FurnitureNpcCount);
+
+			break;
 		}
 
 		case NpcKindType::Human:
@@ -948,6 +952,8 @@ void Npcs::RemoveNpc(NpcId id)
 			break;
 		}
 	}
+
+	mGameEventHandler->OnNpcCountsUpdated(CalculateTotalNpcCount());
 
 	//
 	// Update ship indices
