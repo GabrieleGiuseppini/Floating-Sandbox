@@ -3595,6 +3595,12 @@ public:
         }
     }
 
+    void OnMouseMove(InputState const & /*inputState*/) override {}
+    void OnLeftMouseDown(InputState const & /*inputState*/) override {}
+    void OnLeftMouseUp(InputState const & /*inputState*/) override {}
+    void OnShiftKeyDown(InputState const & /*inputState*/) override {}
+    void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+
 protected:
 
     virtual std::optional<PickedObjectId<NpcId>> InternalBeginPlaceNewNpc(DisplayLogicalCoordinates const & screenCoordinates) = 0;
@@ -3817,6 +3823,12 @@ public:
         }
     }
 
+    void OnMouseMove(InputState const & /*inputState*/) override {}
+    void OnLeftMouseDown(InputState const & /*inputState*/) override {}
+    void OnLeftMouseUp(InputState const & /*inputState*/) override {}
+    void OnShiftKeyDown(InputState const & /*inputState*/) override {}
+    void OnShiftKeyUp(InputState const & /*inputState*/) override {}
+
 private:
 
     void SetCurrentCursor()
@@ -3946,6 +3958,12 @@ public:
             }
         }
     }
+
+    void OnMouseMove(InputState const & /*inputState*/) override {}
+    void OnLeftMouseDown(InputState const & /*inputState*/) override {}
+    void OnLeftMouseUp(InputState const & /*inputState*/) override {}
+    void OnShiftKeyDown(InputState const & /*inputState*/) override {}
+    void OnShiftKeyUp(InputState const & /*inputState*/) override {}
 
 private:
 

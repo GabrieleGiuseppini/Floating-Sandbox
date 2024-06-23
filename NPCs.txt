@@ -242,6 +242,8 @@ Arch
 						- 2. ADD_TOOL_MENUITEM connects to lambda that first disables all RADIO npc menu child items, then calls argument-less func
 						- 3. NPC menu handlers are argument-less funcs
 						- 4. NPC menu building connects to lambda that first disables all RADIO tool menu child items, then calls argument-less func
+					- FIX: Add NPC is initially set; should not, as there is already a tool set
+						- See if can unset all menu items in radio group
 				+ Npc stats event: add totalNpcs (must include BeingPlaced)
 					+ And publish from BeginPlace/Abort/and everywhere it may change
 				+ MainFrame registers for NPC stats
@@ -251,6 +253,8 @@ Arch
 				= As soon as NPC count goes from non-zero to zero:
 					+ If current view is "Interior" GameController switches to "Exterior"
 					+ Disable Move/Remove
+		- Check global damping
+		- Check buoyancy
 	- Settings:
 		- TODO: which ones?
 		- SettingsManager

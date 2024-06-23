@@ -336,18 +336,17 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
 
     NpcMaterialMap npcMaterialMap;
 
-    picojson::value const npcMaterialsRoot = Utils::ParseJSONFile(
+    picojson::value const npcMaterialsJson = Utils::ParseJSONFile(
         materialsRootDirectory / "materials_npc.json");
 
-    if (!npcMaterialsRoot.is<picojson::object>())
+    if (!npcMaterialsJson.is<picojson::array>())
     {
-        throw GameException("NPC materials definition is not a JSON object");
+        throw GameException("NPC materials definition is not a JSON array");
     }
 
-    picojson::object const & npcMaterialsRootObj = npcMaterialsRoot.get<picojson::object>();
+    picojson::array const & npcMaterialsRootArray = npcMaterialsJson.get<picojson::array>();
 
     // Parse materials
-    picojson::array const & npcMaterialsRootArray = Utils::GetMandatoryJsonArray(npcMaterialsRootObj, "materials");
     for (auto const & materialElem : npcMaterialsRootArray)
     {
         if (!materialElem.is<picojson::object>())
