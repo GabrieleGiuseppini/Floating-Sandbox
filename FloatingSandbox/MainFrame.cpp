@@ -226,13 +226,13 @@ MainFrame::MainFrame(
             Connect(ID_RELOAD_PREVIOUS_SHIP_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnReloadPreviousShipMenuItemSelected);
             mReloadPreviousShipMenuItem->Enable(false);
 
-            fileMenu->Append(new wxMenuItem(fileMenu, wxID_SEPARATOR));
+            fileMenu->AppendSeparator();
 
             wxMenuItem * reloadShipsMenuItem = new wxMenuItem(fileMenu, ID_MORE_SHIPS_MENUITEM, _("Get More Ships..."));
             fileMenu->Append(reloadShipsMenuItem);
             fileMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [](wxCommandEvent &) { wxLaunchDefaultBrowser("https://floatingsandbox.com/ship-packs/"); }, ID_MORE_SHIPS_MENUITEM);
 
-            fileMenu->Append(new wxMenuItem(fileMenu, wxID_SEPARATOR));
+            fileMenu->AppendSeparator();
 
             wxMenuItem * saveScreenshotMenuItem = new wxMenuItem(fileMenu, ID_SAVE_SCREENSHOT_MENUITEM, _("Save Screenshot") + wxS("\tCtrl+C"), wxEmptyString, wxITEM_NORMAL);
             fileMenu->Append(saveScreenshotMenuItem);
@@ -242,7 +242,7 @@ MainFrame::MainFrame(
             fileMenu->Append(openScreenshotFolderMenuItem);
             fileMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [this](wxCommandEvent &) { wxLaunchDefaultBrowser(mUIPreferencesManager->GetScreenshotsFolderPath().string()); }, ID_OPEN_SCREENSHOT_FOLDER_MENUITEM);
 
-            fileMenu->Append(new wxMenuItem(fileMenu, wxID_SEPARATOR));
+            fileMenu->AppendSeparator();
 
             wxMenuItem * quitMenuItem = new wxMenuItem(fileMenu, ID_QUIT_MENUITEM, _("Quit") + wxS("\tAlt+F4"), _("Quit the game"), wxITEM_NORMAL);
             fileMenu->Append(quitMenuItem);
@@ -282,7 +282,7 @@ MainFrame::MainFrame(
             Connect(ID_RESET_VIEW_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnResetViewMenuItemSelected);
             ADD_PLAIN_ACCELERATOR_KEY(WXK_HOME, resetViewMenuItem);
 
-            controlsMenu->Append(new wxMenuItem(controlsMenu, wxID_SEPARATOR));
+            controlsMenu->AppendSeparator();
 
             mShipViewExteriorMenuItem = new wxMenuItem(controlsMenu, ID_CHANGE_SHIP_VIEW_EXTERIOR_MENUITEM, _("Exterior View"), wxEmptyString, wxITEM_RADIO);
             controlsMenu->Append(mShipViewExteriorMenuItem);
@@ -292,7 +292,7 @@ MainFrame::MainFrame(
             controlsMenu->Append(mShipViewInteriorMenuItem);
             Connect(ID_CHANGE_SHIP_VIEW_INTERIOR_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnShipViewMenuItemSelected);
 
-            controlsMenu->Append(new wxMenuItem(controlsMenu, wxID_SEPARATOR));
+            controlsMenu->AppendSeparator();
 
             wxMenuItem * timeOfDayUpMenuItem = new wxMenuItem(controlsMenu, ID_TIME_OF_DAY_UP_MENUITEM, _("Bright Ambient Light") + wxS("\tPgUp"), wxEmptyString, wxITEM_NORMAL);
             controlsMenu->Append(timeOfDayUpMenuItem);
@@ -306,7 +306,7 @@ MainFrame::MainFrame(
             controlsMenu->Append(fullTimeOfDayMenuItem);
             Connect(ID_FULL_TIME_OF_DAY_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnFullTimeOfDayMenuItemSelected);
 
-            controlsMenu->Append(new wxMenuItem(controlsMenu, wxID_SEPARATOR));
+            controlsMenu->AppendSeparator();
 
             mPauseMenuItem = new wxMenuItem(controlsMenu, ID_PAUSE_MENUITEM, _("Pause") + wxS("\tSpace"), _("Pause the game"), wxITEM_CHECK);
             controlsMenu->Append(mPauseMenuItem);
@@ -488,8 +488,73 @@ MainFrame::MainFrame(
                 ADD_TOOL_MENUITEM(_("Toggle Physics Probe"), wxS(""), "physics_probe_cursor", OnPhysicsProbeMenuItemSelected);
             }
 
+            // Add human
+            {
+                wxMenu * humanNpcSubMenu = new wxMenu(_(""));
+                {
+                    // Futurework: kinds come from database
+                    {
+                        auto const commandId = wxNewId();
+                        humanNpcSubMenu->Append(new wxMenuItem(nullptr, commandId, _("Passenger"), wxEmptyString, wxITEM_NORMAL));
+                        humanNpcSubMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [this](wxCommandEvent &) { OnAddHumanNpcMenuItemSelected(HumanNpcKindType::Passenger); }, commandId);
+                    }
 
-            mToolsMenu->Append(new wxMenuItem(mToolsMenu, wxID_SEPARATOR));
+                    {
+                        auto const commandId = wxNewId();
+                        humanNpcSubMenu->Append(new wxMenuItem(nullptr, commandId, _("Programmer"), wxEmptyString, wxITEM_NORMAL));
+                        humanNpcSubMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [this](wxCommandEvent &) { OnAddHumanNpcMenuItemSelected(HumanNpcKindType::Programmer); }, commandId);
+                    }
+                }
+
+                // Create menu
+                mAddHumanNpcMenuItem = new wxMenuItem(mToolsMenu, wxID_ANY, _("Add Human NPC..."), wxEmptyString, wxITEM_RADIO, humanNpcSubMenu);
+                auto img = wxImage(resourceLocator.GetIconFilePath("add_human_npc_icon").string(), wxBITMAP_TYPE_PNG);
+                SET_BITMAP(mAddHumanNpcMenuItem, img);
+                mToolsMenu->Append(mAddHumanNpcMenuItem);
+                mAddHumanNpcMenuItem->Enable(true); // Note: here we're assuming we _can_ add NPCs; unfortunately the NPCs class is created _before_ we register for events, hence have to guess here
+            }
+
+            // Add furniture
+            {
+                wxMenu * furnitureNpcSubMenu = new wxMenu(_(""));
+                {
+                    // Futurework: kinds come from database
+                    {
+                        auto const commandId = wxNewId();
+                        furnitureNpcSubMenu->Append(new wxMenuItem(nullptr, commandId, _("Quad"), wxEmptyString, wxITEM_NORMAL));
+                        furnitureNpcSubMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [this](wxCommandEvent &) { OnAddFurnitureNpcMenuItemSelected(FurnitureNpcKindType::Quad); }, commandId);
+                    }
+                }
+
+                // Create menu
+                mAddFurnitureNpcMenuItem = new wxMenuItem(mToolsMenu, wxID_ANY, _("Add Furniture NPC..."), wxEmptyString, wxITEM_RADIO, furnitureNpcSubMenu);
+                auto img = wxImage(resourceLocator.GetIconFilePath("add_furniture_npc_icon").string(), wxBITMAP_TYPE_PNG);
+                SET_BITMAP(mAddFurnitureNpcMenuItem, img);
+                mToolsMenu->Append(mAddFurnitureNpcMenuItem);
+                mAddFurnitureNpcMenuItem->Enable(true); // Note: here we're assuming we _can_ add NPCs; unfortunately the NPCs class is created _before_ we register for events, hence have to guess here
+            }
+
+            {
+                auto const id = wxNewId();
+                mMoveNpcMenuItem = new wxMenuItem(mToolsMenu, id, _("Move NPC"), wxEmptyString, wxITEM_RADIO);
+                auto img = wxImage(resourceLocator.GetIconFilePath("move_npc_icon").string(), wxBITMAP_TYPE_PNG);
+                SET_BITMAP(mMoveNpcMenuItem, img);
+                mToolsMenu->Append(mMoveNpcMenuItem);
+                Connect(id, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnMoveNpcMenuItemSelected);
+                mMoveNpcMenuItem->Enable(false);
+            }
+
+            {
+                auto const id = wxNewId();
+                mRemoveNpcMenuItem = new wxMenuItem(mToolsMenu, id, _("Remove NPC"), wxEmptyString, wxITEM_RADIO);
+                auto img = wxImage(resourceLocator.GetIconFilePath("remove_npc_icon").string(), wxBITMAP_TYPE_PNG);
+                SET_BITMAP(mRemoveNpcMenuItem, img);
+                mToolsMenu->Append(mRemoveNpcMenuItem);
+                Connect(id, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnRemoveNpcMenuItemSelected);
+                mRemoveNpcMenuItem->Enable(false);
+            }
+
+            mToolsMenu->AppendSeparator();
 
             {
                 mRCBombsDetonateMenuItem = new wxMenuItem(mToolsMenu, ID_RCBOMBDETONATE_MENUITEM, _("Detonate RC Bombs") + wxS("\tD"), wxEmptyString, wxITEM_NORMAL);
@@ -527,87 +592,6 @@ MainFrame::MainFrame(
             mainMenuBar->Append(mToolsMenu, _("&Tools"));
         }
 
-        // NPCs
-
-        {
-            wxMenu * npcsMenu = new wxMenu();
-
-            // Add human
-            {
-                wxMenu * humanNpcSubMenu = new wxMenu(_(""));
-                {
-                    // Futurework: kinds come from database
-                    {
-                        auto const commandId = wxNewId();
-                        humanNpcSubMenu->Append(new wxMenuItem(nullptr, commandId, _("Passenger"), wxEmptyString, wxITEM_NORMAL));
-                        humanNpcSubMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [this](wxCommandEvent &) { OnAddHumanNpcMenuItemSelected(HumanNpcKindType::Passenger); }, commandId);
-                    }
-
-                    {
-                        auto const commandId = wxNewId();
-                        humanNpcSubMenu->Append(new wxMenuItem(nullptr, commandId, _("Programmer"), wxEmptyString, wxITEM_NORMAL));
-                        humanNpcSubMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [this](wxCommandEvent &) { OnAddHumanNpcMenuItemSelected(HumanNpcKindType::Programmer); }, commandId);
-                    }
-                }
-
-                // Create menu
-                mAddHumanNpcMenuItem = new wxMenuItem(npcsMenu, wxID_ANY, _("Add Human NPC..."), wxEmptyString, wxITEM_RADIO, humanNpcSubMenu);
-                auto img = wxImage(resourceLocator.GetIconFilePath("add_human_npc_icon").string(), wxBITMAP_TYPE_PNG);
-                SET_BITMAP(mAddHumanNpcMenuItem, img);
-                npcsMenu->Append(mAddHumanNpcMenuItem);
-                mAddHumanNpcMenuItem->Enable(true); // Note: here we're assuming we _can_ add NPCs; unfortunately the NPCs class is created _before_ we register for events, hence have to guess here
-            }
-
-            // Add furniture
-            {
-                wxMenu * furnitureNpcSubMenu = new wxMenu(_(""));
-                {
-                    // Futurework: kinds come from database
-                    {
-                        auto const commandId = wxNewId();
-                        furnitureNpcSubMenu->Append(new wxMenuItem(nullptr, commandId, _("Quad"), wxEmptyString, wxITEM_NORMAL));
-                        furnitureNpcSubMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [this](wxCommandEvent &) { OnAddFurnitureNpcMenuItemSelected(FurnitureNpcKindType::Quad); }, commandId);
-                    }
-                }
-
-                // Create menu
-                mAddFurnitureNpcMenuItem = new wxMenuItem(npcsMenu, wxID_ANY, _("Add Furniture NPC..."), wxEmptyString, wxITEM_RADIO, furnitureNpcSubMenu);
-                auto img = wxImage(resourceLocator.GetIconFilePath("add_furniture_npc_icon").string(), wxBITMAP_TYPE_PNG);
-                SET_BITMAP(mAddFurnitureNpcMenuItem, img);
-                npcsMenu->Append(mAddFurnitureNpcMenuItem);
-                mAddFurnitureNpcMenuItem->Enable(true); // Note: here we're assuming we _can_ add NPCs; unfortunately the NPCs class is created _before_ we register for events, hence have to guess here
-            }
-
-            {
-                auto const id = wxNewId();
-                mMoveNpcMenuItem = new wxMenuItem(mToolsMenu, id, _("Move NPC"), wxEmptyString, wxITEM_RADIO);
-                auto img = wxImage(resourceLocator.GetIconFilePath("move_npc_icon").string(), wxBITMAP_TYPE_PNG);
-                SET_BITMAP(mMoveNpcMenuItem, img);
-                npcsMenu->Append(mMoveNpcMenuItem);
-                Connect(id, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnMoveNpcMenuItemSelected);
-                mMoveNpcMenuItem->Enable(false);
-            }
-
-            {
-                auto const id = wxNewId();
-                mRemoveNpcMenuItem = new wxMenuItem(mToolsMenu, id, _("Remove NPC"), wxEmptyString, wxITEM_RADIO);
-                auto img = wxImage(resourceLocator.GetIconFilePath("remove_npc_icon").string(), wxBITMAP_TYPE_PNG);
-                SET_BITMAP(mRemoveNpcMenuItem, img);
-                npcsMenu->Append(mRemoveNpcMenuItem);
-                Connect(id, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnRemoveNpcMenuItemSelected);
-                mRemoveNpcMenuItem->Enable(false);
-            }
-
-            mainMenuBar->Append(npcsMenu, _("&Npcs"));
-
-            // TODOTEST
-            auto foobar = npcsMenu->GetMenuItems();
-            for (auto & foo : foobar)
-            {
-                foo->Check(false);
-            }
-        }
-
         // Options
 
         {
@@ -625,7 +609,7 @@ MainFrame::MainFrame(
             optionsMenu->Append(openPreferencesWindowMenuItem);
             Connect(ID_OPEN_PREFERENCES_WINDOW_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnOpenPreferencesWindowMenuItemSelected);
 
-            optionsMenu->Append(new wxMenuItem(optionsMenu, wxID_SEPARATOR));
+            optionsMenu->AppendSeparator();
 
             wxMenuItem * openLogWindowMenuItem = new wxMenuItem(optionsMenu, ID_OPEN_LOG_WINDOW_MENUITEM, _("Open Log Window") + wxS("\tCtrl+L"), wxEmptyString, wxITEM_NORMAL);
             optionsMenu->Append(openLogWindowMenuItem);
@@ -649,7 +633,7 @@ MainFrame::MainFrame(
             optionsMenu->Append(mShowExtendedStatusTextMenuItem);
             Connect(ID_SHOW_EXTENDED_STATUS_TEXT_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnShowExtendedStatusTextMenuItemSelected);
 
-            optionsMenu->Append(new wxMenuItem(optionsMenu, wxID_SEPARATOR));
+            optionsMenu->AppendSeparator();
 
             mFullScreenMenuItem = new wxMenuItem(optionsMenu, ID_FULL_SCREEN_MENUITEM, _("Full Screen") + wxS("\tF11"), wxEmptyString, wxITEM_NORMAL);
             optionsMenu->Append(mFullScreenMenuItem);
@@ -659,7 +643,7 @@ MainFrame::MainFrame(
             optionsMenu->Append(mNormalScreenMenuItem);
             Connect(ID_NORMAL_SCREEN_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnNormalScreenMenuItemSelected);
 
-            optionsMenu->Append(new wxMenuItem(optionsMenu, wxID_SEPARATOR));
+            optionsMenu->AppendSeparator();
 
             mMuteMenuItem = new wxMenuItem(optionsMenu, ID_MUTE_MENUITEM, _("Mute") + wxS("\tCtrl+M"), wxEmptyString, wxITEM_CHECK);
             optionsMenu->Append(mMuteMenuItem);
@@ -698,7 +682,7 @@ MainFrame::MainFrame(
             helpMenu->Append(aboutMenuItem);
             Connect(ID_ABOUT_MENUITEM, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnAboutMenuItemSelected);
 
-            helpMenu->Append(new wxMenuItem(helpMenu, wxID_SEPARATOR));
+            helpMenu->AppendSeparator();
 
             wxMenuItem * checkForUpdatesMenuItem = new wxMenuItem(helpMenu, ID_CHECK_FOR_UPDATES_MENUITEM, _("Check for Updates..."), wxEmptyString, wxITEM_NORMAL);
             helpMenu->Append(checkForUpdatesMenuItem);
@@ -708,7 +692,7 @@ MainFrame::MainFrame(
             helpMenu->Append(donateMenuItem);
             helpMenu->Bind(wxEVT_COMMAND_MENU_SELECTED, [](wxCommandEvent &) { wxLaunchDefaultBrowser("https://floatingsandbox.com/donate/"); }, ID_DONATE_MENUITEM);
 
-            helpMenu->Append(new wxMenuItem(helpMenu, wxID_SEPARATOR));
+            helpMenu->AppendSeparator();
 
             wxMenuItem * openHomePageMenuItem = new wxMenuItem(helpMenu, ID_OPEN_HOME_PAGE_MENUITEM, _("Open Home Page"));
             helpMenu->Append(openHomePageMenuItem);
