@@ -448,6 +448,9 @@ void Npcs::UpdateNpcParticlePhysics(
             gameParameters);
 
         physicsDeltaPos = mParticles.GetVelocity(npcParticle.ParticleIndex) * dt + (physicalForces / particleMass) * dt * dt;
+
+        LogNpcDebug("    physicsDeltaPos=", physicsDeltaPos, " ( v=", mParticles.GetVelocity(npcParticle.ParticleIndex) * dt,
+            " f=", (physicalForces / particleMass) * dt * dt, ")");
     }
 
     if (npc.CurrentRegime == StateType::RegimeType::BeingPlaced
@@ -496,8 +499,6 @@ void Npcs::UpdateNpcParticlePhysics(
 
         assert(npcParticle.ConstrainedState.has_value());
 
-        LogNpcDebug("    Constrained: velocity=", mParticles.GetVelocity(npcParticle.ParticleIndex), " prelimF=", mParticles.GetPreliminaryForces(npcParticle.ParticleIndex), " physicsDeltaPos=", physicsDeltaPos);
-
         // Loop tracing trajectory from TrajectoryStart (== current bary coords in new mesh state) to TrajectoryEnd (== start absolute pos + deltaPos);
         // each step moves the next TrajectoryStart a bit ahead.
         // Each iteration of the loop either exits (completes), or moves current bary coords (and calcs remaining dt) when it wants
@@ -525,6 +526,8 @@ void Npcs::UpdateNpcParticlePhysics(
         // Calculate mesh velocity for the whole loop as the pure displacement of the triangle containing this particle
         // (end in-triangle position - start absolute position)
         vec2f const meshVelocity = (trajectoryStartAbsolutePosition - particleStartAbsolutePosition) / dt;
+
+        LogNpcDebug("    Constrained: velocity=", mParticles.GetVelocity(npcParticle.ParticleIndex), " meshVelocity=", meshVelocity, " physicsDeltaPos=", physicsDeltaPos);
 
         // Machinery to detect 2- or 3-iteration paths that don't move particle (positional well,
         // aka gravity well)

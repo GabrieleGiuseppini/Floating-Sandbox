@@ -246,14 +246,33 @@ Arch
 				+ As soon as NPC count goes from non-zero to zero:
 					+ If current view is "Interior" GameController switches to "Exterior"
 					+ Disable Move/Remove
-		- See why takes forever to rise
-			- Cleanup:
-				- BaryLab
-				- FS: LogMessage @ HumanUpdate
-		= Check global damping
-			- Make NpcDamping subject to other adjustment
-				- Npcs class reacts to changes and calculates own mDampingCoefficient == (1.0f - gameParameters.NpcDamping)
-		+ Check buoyancy
+		= See why takes forever to rise
+			+ Cleanup:
+				+ BaryLab
+				+ FS
+			! Problem: feet are often not on edge
+				+ Because of micro-ondulations
+				+ Log:
+					+ Mesh velocity
+					+ Two components of physicsDeltaPos: due to F and due to V
+				+ Cleanup & commit
+			- Possible solution 1:
+				- Different timings, as in Moleskine
+			- Possible solution 2:
+				- IsAlmostOnFloor(particle state):
+					- Returns true iff bary coord almost 0 on edge that is floor (simply floor)
+						- OR: see if we have sticky "virtual floor edge" and whether we should just check that
+					- Used at HumanSimulation state-out checks replacing AreFeetOnEdge:
+						- Prerising-to-rising
+						- Constrained_Falling-to-KnockedOut
+					- Also used at animation
+				- Plan B: when feet not on edge, don't lower progress of:
+					- Prerising-to-rising
+					- Constrained_Falling-to-KnockedOut
+			- Faster prerising
+			- Simplify code if OK (no need for targets if we don't change progress)
+		- Make NpcDamping subject to other adjustment
+			- Npcs class reacts to changes and calculates own mDampingCoefficient == (1.0f - gameParameters.NpcDamping)
 	- Settings:
 		- TODO: which ones?
 		- SettingsManager
@@ -266,6 +285,11 @@ Arch
 		- Tests:
 			- DEBUG
 			- Large number of NPCs 
+
+	- Misc possible improvements:
+		- See how folds come to be
+			- Maintain spring lengths during BeingPlaced (to avoid elongations)
+			- How to avoid folding (==compressions) at bounce?
 
 - NpcDatabase:
 	- Spec:
