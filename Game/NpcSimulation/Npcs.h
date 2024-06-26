@@ -42,6 +42,10 @@
 #define LogNpcDebug(...)
 #endif
 
+// TODOTEST
+////#undef LogNpcDebug
+////#define LogNpcDebug(...) LogMessage(__VA_ARGS__);
+
 namespace Physics {
 
 class Npcs final
@@ -622,10 +626,10 @@ public:
 		, mFreeRegimeHumanNpcCount(0)
 		, mConstrainedRegimeHumanNpcCount(0)
 		// Simulation Parameters
-		, mCurrentHumanNpcBodyLengthAdjustment(std::numeric_limits<float>::lowest())
-		, mCurrentHumanNpcWalkingSpeedAdjustment(std::numeric_limits<float>::lowest())
-		, mCurrentSpringReductionFractionAdjustment(std::numeric_limits<float>::lowest())
-		, mCurrentSpringDampingCoefficientAdjustment(std::numeric_limits<float>::lowest())
+		, mCurrentHumanNpcBodyLengthAdjustment(1.0f)
+		, mCurrentHumanNpcWalkingSpeedAdjustment(1.0f)
+		, mCurrentSpringReductionFractionAdjustment(1.0f)
+		, mCurrentSpringDampingCoefficientAdjustment(1.0f)
 	{}
 
 	void Update(

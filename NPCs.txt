@@ -264,14 +264,16 @@ Arch
 
 	+ Fix: PreRising->KO: angled half-leg becomes long leg, with outcome being "kick"
 
-	- Backport:
-		- NpcSimulation folder: FS -> BaryLab 			
-			- Nuke TextureQuad from GameTypes
-			- Adapt RenderContext
-			- GameParameters
-		- Tests:
-			- DEBUG
-			- Large number of NPCs 
+	+ Backport:
+		+ NpcSimulation folder: FS -> BaryLab 			
+			+ Nuke TextureQuad from GameTypes
+			+ Adapt RenderContext
+			+ GameParameters
+			+ NpcMaterial interface from MaterialDB
+		+ Tests:
+			+ DEBUG
+			+ Large number of NPCs
+			+ Panic
 	
 	- Make NpcDamping subject to other adjustment
 		- Npcs class reacts to changes and calculates own mDampingCoefficient == (1.0f - gameParameters.NpcDamping)
@@ -280,12 +282,12 @@ Arch
 		- SettingsManager
 		- SettingsDialog
 
-	- Backport
-
 	- Misc possible improvements:
-		- See how folds come to be
-			- Maintain spring lengths during BeingPlaced (to avoid elongations)
-			- How to avoid folding (==compressions) at bounce?
+		- Maintain spring lengths during BeingPlaced (to avoid elongations)
+		- How to avoid folding (==compressions) at bounce?
+			- See how folds come to be
+
+	- Backport
 
 - NpcDatabase:
 	- Spec:

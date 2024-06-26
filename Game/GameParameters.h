@@ -22,7 +22,7 @@ struct GameParameters
     //
 
     template <typename T>
-    static constexpr T SimulationStepTimeDuration = 1.0f / 64.0f; // 64 frames/sec == 1 second, matches Windows' timer resolution
+    static T constexpr SimulationStepTimeDuration = 1.0f / 64.0f; // 64 frames/sec == 1 second, matches Windows' timer resolution
 
     template <typename T>
     inline T MechanicalSimulationStepTimeDuration() const
@@ -41,10 +41,10 @@ struct GameParameters
     // Low-frequency updates
     //
 
-    static constexpr int ParticleUpdateLowFrequencyPeriod = 36; // Number of simulation steps for low-frequency particle updates
+    static int constexpr ParticleUpdateLowFrequencyPeriod = 36; // Number of simulation steps for low-frequency particle updates
 
     template <typename T>
-    static constexpr T ParticleUpdateLowFrequencyStepTimeDuration = SimulationStepTimeDuration<T> * static_cast<T>(ParticleUpdateLowFrequencyPeriod);
+    static T constexpr ParticleUpdateLowFrequencyStepTimeDuration = SimulationStepTimeDuration<T> * static_cast<T>(ParticleUpdateLowFrequencyPeriod);
 
 
     //
@@ -52,8 +52,8 @@ struct GameParameters
     //
 
     // Gravity
-    static constexpr vec2f Gravity = vec2f(0.0f, -9.80f);
-    static constexpr vec2f GravityDir = vec2f(0.0f, -1.0f);
+    static vec2f constexpr Gravity = vec2f(0.0f, -9.80f);
+    static vec2f constexpr GravityDir = vec2f(0.0f, -1.0f);
     static float constexpr GravityMagnitude = 9.80f; // m/s
 
     // Air

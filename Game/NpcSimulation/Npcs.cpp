@@ -1828,27 +1828,7 @@ void Npcs::RenderNpc(
 					vec2f BottomRightTexture;
 
 					TextureQuad() = default;
-
-					////TextureQuad(
-					////	vec2f topLeftPosition,
-					////	vec2f topLeftTexture,
-					////	vec2f topRightPosition,
-					////	vec2f topRightTexture,
-					////	vec2f bottomLeftPosition,
-					////	vec2f bottomLeftTexture,
-					////	vec2f bottomRightPosition,
-					////	vec2f bottomRightTexture)
-					////	: TopLeftPosition(topLeftPosition)
-					////	, TopLeftTexture(topLeftTexture)
-					////	, TopRightPosition(topRightPosition)
-					////	, TopRightTexture(topRightTexture)
-					////	, BottomLeftPosition(bottomLeftPosition)
-					////	, BottomLeftTexture(bottomLeftTexture)
-					////	, BottomRightPosition(bottomRightPosition)
-					////	, BottomRightTexture(bottomRightTexture)
-					////{}
 				};
-
 
 				float const halfHeadD = (adjustedIdealHumanHeight * GameParameters::HumanNpcGeometry::HeadDepthFraction * humanNpcState.WidthMultipier) / 2.0f;
 				float const halfTorsoD = (adjustedIdealHumanHeight * GameParameters::HumanNpcGeometry::TorsoDepthFraction * humanNpcState.WidthMultipier) / 2.0f;
