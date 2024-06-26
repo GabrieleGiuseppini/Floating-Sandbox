@@ -477,8 +477,7 @@ void Npcs::UpdateNpcParticlePhysics(
             npcParticle,
             particleStartAbsolutePosition,
             particleStartAbsolutePosition + physicsDeltaPos,
-            mParticles,
-            gameParameters);
+            mParticles);
 
         LogNpcDebug("    EndPosition=", mParticles.GetPosition(npcParticle.ParticleIndex), " EndVelocity=", mParticles.GetVelocity(npcParticle.ParticleIndex));
 
@@ -681,8 +680,7 @@ void Npcs::UpdateNpcParticlePhysics(
                                 npcParticle,
                                 particleStartAbsolutePosition,
                                 trajectoryEndAbsolutePosition,
-                                mParticles,
-                                gameParameters);
+                                mParticles);
 
                             remainingDt = 0.0f;
 
@@ -1570,8 +1568,7 @@ void Npcs::UpdateNpcParticle_Free(
     StateType::NpcParticleStateType & particle,
     vec2f const & startPosition,
     vec2f const & endPosition,
-    NpcParticles & particles,
-    GameParameters const & gameParameters) const
+    NpcParticles & particles) const
 {
     float constexpr dt = GameParameters::SimulationStepTimeDuration<float>;
 
@@ -1586,7 +1583,7 @@ void Npcs::UpdateNpcParticle_Free(
     // Use whole time quantum for velocity, as communicated start/end positions are those planned for whole dt
     particles.SetVelocity(
         particle.ParticleIndex,
-        (endPosition - startPosition) / dt * (1.0f - gameParameters.NpcDamping));
+        (endPosition - startPosition) / dt * mGlobalDampingFactor);
 }
 
 Npcs::ConstrainedNonInertialOutcome Npcs::UpdateNpcParticle_ConstrainedNonInertial(
@@ -1656,7 +1653,7 @@ Npcs::ConstrainedNonInertialOutcome Npcs::UpdateNpcParticle_ConstrainedNonInerti
 
         vec2f const absoluteVelocity =
             // Do not damp velocity if we're trying to maintain equilibrium
-            relativeVelocity * ((npc.Kind != NpcKindType::Human || npc.KindSpecificState.HumanNpcState.EquilibriumTorque == 0.0f) ? (1.0f - gameParameters.NpcDamping) : 1.0f)
+            relativeVelocity * ((npc.Kind != NpcKindType::Human || npc.KindSpecificState.HumanNpcState.EquilibriumTorque == 0.0f) ? mGlobalDampingFactor : 1.0f)
             + meshVelocity;
 
         particles.SetVelocity(npcParticle.ParticleIndex, absoluteVelocity);
@@ -1765,8 +1762,7 @@ Npcs::ConstrainedNonInertialOutcome Npcs::UpdateNpcParticle_ConstrainedNonInerti
                 npcParticle,
                 particleStartAbsolutePosition,
                 flattenedTrajectoryEndAbsolutePosition,
-                particles,
-                gameParameters);
+                particles);
 
             // Terminate
             return {
@@ -1907,7 +1903,7 @@ float Npcs::UpdateNpcParticle_ConstrainedInertial(
 
             // Do not damp velocity if we're trying to maintain equilibrium
             vec2f const absoluteVelocity =
-                relativeVelocity * ((npc.Kind != NpcKindType::Human || npc.KindSpecificState.HumanNpcState.EquilibriumTorque == 0.0f) ? (1.0f - gameParameters.NpcDamping) : 1.0f)
+                relativeVelocity * ((npc.Kind != NpcKindType::Human || npc.KindSpecificState.HumanNpcState.EquilibriumTorque == 0.0f) ? mGlobalDampingFactor : 1.0f)
                 + meshVelocity;
 
             particles.SetVelocity(npcParticle.ParticleIndex, absoluteVelocity);
@@ -2094,8 +2090,7 @@ float Npcs::UpdateNpcParticle_ConstrainedInertial(
                 npcParticle,
                 particleStartAbsolutePosition,
                 segmentTrajectoryEndAbsolutePosition,
-                particles,
-                gameParameters);
+                particles);
 
             vec2f const totalTraveledVector = intersectionAbsolutePosition - particleStartAbsolutePosition; // We consider constrained portion only
             return totalTraveledVector.length();
@@ -2799,7 +2794,7 @@ void Npcs::BounceConstrainedNpcParticle(
 
         // Do not damp velocity if we're trying to maintain equilibrium
         vec2f const resultantAbsoluteVelocity =
-            resultantRelativeVelocity * ((npc.Kind != NpcKindType::Human || npc.KindSpecificState.HumanNpcState.EquilibriumTorque == 0.0f) ? (1.0f - gameParameters.NpcDamping) : 1.0f)
+            resultantRelativeVelocity * ((npc.Kind != NpcKindType::Human || npc.KindSpecificState.HumanNpcState.EquilibriumTorque == 0.0f) ? mGlobalDampingFactor : 1.0f)
             + meshVelocity;
 
         LogNpcDebug("        Impact: trajectory=", trajectory, " apparentParticleVelocity=", apparentParticleVelocity, " nr=", normalResponse, " tr=", tangentialResponse, " rr=", resultantRelativeVelocity);
@@ -3691,4 +3686,8 @@ void Npcs::UpdateNpcAnimation(
     }
 }
 
+void Npcs::RecalculateGlobalDampingFactor()
+{
+    mGlobalDampingFactor = 1.0f - GameParameters::NpcDamping * mCurrentGlobalDampingAdjustment;
+}
 }

@@ -625,12 +625,16 @@ public:
 		// Stats
 		, mFreeRegimeHumanNpcCount(0)
 		, mConstrainedRegimeHumanNpcCount(0)
-		// Simulation Parameters
+		// Simulation parameters
+		, mGlobalDampingFactor(0.0f) // Will be calculated
+		, mCurrentGlobalDampingAdjustment(1.0f)
 		, mCurrentHumanNpcBodyLengthAdjustment(1.0f)
 		, mCurrentHumanNpcWalkingSpeedAdjustment(1.0f)
 		, mCurrentSpringReductionFractionAdjustment(1.0f)
 		, mCurrentSpringDampingCoefficientAdjustment(1.0f)
-	{}
+	{
+		RecalculateGlobalDampingFactor();
+	}
 
 	void Update(
 		float currentSimulationTime,
@@ -912,8 +916,7 @@ private:
 		StateType::NpcParticleStateType & particle,
 		vec2f const & startPosition,
 		vec2f const & endPosition,
-		NpcParticles & particles,
-		GameParameters const & gameParameters) const;
+		NpcParticles & particles) const;
 
 	struct ConstrainedNonInertialOutcome
 	{
@@ -1180,6 +1183,8 @@ private:
 		return CalculateVerticalAlignment(CalculateDipoleVector(primaryParticleIndex, secondaryParticleIndex, particles));
 	}
 
+	void RecalculateGlobalDampingFactor();
+
 	//
 	// Human simulation
 	//
@@ -1281,7 +1286,10 @@ private:
 	// Simulation parameters
 	//
 
+	float mGlobalDampingFactor;
+
 	// Cached from game parameters
+	float mCurrentGlobalDampingAdjustment;
 	float mCurrentHumanNpcBodyLengthAdjustment;
 	float mCurrentHumanNpcWalkingSpeedAdjustment;
 	float mCurrentSpringReductionFractionAdjustment;

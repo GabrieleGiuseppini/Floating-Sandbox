@@ -275,8 +275,6 @@ Arch
 			+ Large number of NPCs
 			+ Panic
 	
-	- Make NpcDamping subject to other adjustment
-		- Npcs class reacts to changes and calculates own mDampingCoefficient == (1.0f - gameParameters.NpcDamping)
 	- Settings:
 		- TODO: which ones?
 		- SettingsManager
@@ -286,6 +284,8 @@ Arch
 		- Maintain spring lengths during BeingPlaced (to avoid elongations)
 		- How to avoid folding (==compressions) at bounce?
 			- See how folds come to be
+		- fmod improvements
+			- See https://cboard.cprogramming.com/c-programming/105096-fmod.html
 
 	- Backport
 
@@ -352,6 +352,8 @@ Arch
 		- Night time color
 
 - Physical Interactions:
+	+ Make NpcDamping subject to other adjustment
+		+ Npcs class reacts to changes and calculates own mDampingCoefficient == (1.0f - gameParameters.NpcDamping)
 	- Make sure triangle destruction is forwarded to NPCs
 		- Any constrained NPC on a destroyed triangle becomes free
 	- Swimming humans generate bubbles

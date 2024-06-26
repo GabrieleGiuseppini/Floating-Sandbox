@@ -28,6 +28,13 @@ void Npcs::Update(
 	// Update parameters
 	//
 
+	if (gameParameters.GlobalDampingAdjustment != mCurrentGlobalDampingAdjustment)
+	{
+		mCurrentGlobalDampingAdjustment = gameParameters.GlobalDampingAdjustment;
+
+		RecalculateGlobalDampingFactor();
+	}
+
 	if (gameParameters.HumanNpcBodyLengthAdjustment != mCurrentHumanNpcBodyLengthAdjustment)
 	{
 		mCurrentHumanNpcBodyLengthAdjustment = gameParameters.HumanNpcBodyLengthAdjustment;
