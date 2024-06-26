@@ -262,7 +262,7 @@ Arch
 					+ Undo changes below first
 			+ Faster prerising
 
-	- Fix: PreRising->KO: angled half-leg becomes long leg, with outcome being "kick"
+	+ Fix: PreRising->KO: angled half-leg becomes long leg, with outcome being "kick"
 
 	- Backport:
 		- NpcSimulation folder: FS -> BaryLab 			

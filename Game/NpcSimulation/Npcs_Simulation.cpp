@@ -3315,6 +3315,11 @@ void Npcs::UpdateNpcAnimation(
 
                 convergenceRate = 0.05f; // Quite slow
 
+                // Upper length fraction: when we transition from Rising (which has UpperLengthFraction < 1.0) to KnockedOut,
+                // changing UpperLengthFraction immediately to 0.0 causes a "kick" (because leg angles are 90 degrees at that moment);
+                // smooth that kick here
+                targetUpperLegLengthFraction = animationState.UpperLegLengthFraction + (1.0f - animationState.UpperLegLengthFraction) * 0.3f;
+
                 break;
             }
 
