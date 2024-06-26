@@ -374,16 +374,17 @@ Arch
 	- Electric spark:
 		- Electrification must be stored with Points
 		- NPC update looks at own triangle's Points
-	- Mass/forces: these two may be done together:
+	= Mass/forces: these two may be done together:
 			- NPCs add mass to particle
 				- Ship::Update asks NPCs (via ParentWorld) to add themselves to Points' (definitive) masses
 			- NPC bounces transfer impact forces to ship's particles
-		- ...By adding external forces to ship's particles at these places:
-			- At end of NonInertial, using the last "flattened out" displacement to calc force (*m/dt2)
+		- ...By adding StaticForce's to ship's particles at these places:
+			+ At return from NonInertial, using the last "flattened out" displacement to calc force (*m/dt2)
 			- At bounce, using the bounced displacement
-				- Need to make sure that a bounce at non-inertial is not followed by the force in the previous bullet
-			- Requires Ship in NPC to not be const
-				- And see if can get rid of naming member "ShipMesh" - may be "HomeShip"?
+				+ Need to make sure that a bounce at non-inertial is not followed by the force in the previous bullet
+				- BounceConstrained...() needs to take bounceEdgeTriangle, bounceEdgeBCoords, bounceEdgeOrdinal, and Ship - but can lose bounceEdgeNormal
+			+ Requires Ship in NPC to not be const
+				+ And see if can get rid of naming member "ShipMesh" - may be "HomeShip"?
 	- Incorporate ship material's elasticity and friction in calculations for bounce and friction
 	- Mass is proportional to body length adjustment (square, we're 2D)
 		- And so is buoyancy
@@ -402,7 +403,7 @@ Arch
 				- Do dance
 	- Air & water density effect on:
 		- Damping
-		- TODO: anything else?
+		- Buoyancy
 
 - Walk planning:
 	- First off: WalkingBehaviorState remembers CurrentTriangleElementIndex (of primary)

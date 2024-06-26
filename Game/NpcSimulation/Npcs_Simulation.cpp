@@ -1796,7 +1796,7 @@ Npcs::ConstrainedNonInertialOutcome Npcs::UpdateNpcParticle_ConstrainedNonInerti
             return {
                 edgeTraveled,
                 false,
-                -1 }; // Our next edge is...no edge
+                -1 }; // Our next edge is...must determine with floor normals
         }
 
         case NavigateVertexOutcome::OutcomeType::ImpactOnFloor:
