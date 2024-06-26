@@ -214,7 +214,7 @@ Arch
 			+ ShipFloorplanizer
 			+ ShipFactory
 		+ Rendering of floors			
-	= All in one go - GO2:
+	+ All in one go - GO2:
 		+ Move Npc simulation source files under NpcSimulation folder
 			+ Not VS GUI, that's still "Physics"
 		+ Port NpcMaterial.* and NpcMaterialDatabase.* (from Material*) into Materials.* and MaterialDatabase.*
@@ -246,7 +246,7 @@ Arch
 				+ As soon as NPC count goes from non-zero to zero:
 					+ If current view is "Interior" GameController switches to "Exterior"
 					+ Disable Move/Remove
-		= See why takes forever to rise
+		+ See why takes forever to rise
 			+ Cleanup:
 				+ BaryLab
 				+ FS
@@ -256,27 +256,14 @@ Arch
 					+ Mesh velocity
 					+ Two components of physicsDeltaPos: due to F and due to V
 				+ Cleanup & commit
-			- Possible solution 1:
-				- Different timings, as in Moleskine
-			- Possible solution 2:
-				- IsAlmostOnFloor(particle state):
-					- Returns true iff bary coord almost 0 on edge that is floor (simply floor)
-						- OR: see if we have sticky "virtual floor edge" and whether we should just check that
-					- Used at HumanSimulation state-out checks replacing AreFeetOnEdge:
-						- Prerising-to-rising
-						- Constrained_Falling-to-KnockedOut
-					- Also used at animation
-				- Plan B: when feet not on edge, don't lower progress of:
-					- Prerising-to-rising
-					- Constrained_Falling-to-KnockedOut
-			- Faster prerising
-			- Simplify code if OK (no need for targets if we don't change progress)
-		- Make NpcDamping subject to other adjustment
-			- Npcs class reacts to changes and calculates own mDampingCoefficient == (1.0f - gameParameters.NpcDamping)
-	- Settings:
-		- TODO: which ones?
-		- SettingsManager
-		- SettingsDialog
+			! HA! The problem is that progress falls faster than it rises!
+			+ Possible solution 1:
+				+ Redo PreRising, Falling, KnockedOut, and all the ones looking at feet/headOnFloor: constant fraction progress, up or down
+					+ Undo changes below first
+			+ Faster prerising
+
+	- Fix: PreRising->KO: angled half-leg becomes long leg, with outcome being "kick"
+
 	- Backport:
 		- NpcSimulation folder: FS -> BaryLab 			
 			- Nuke TextureQuad from GameTypes
@@ -285,6 +272,15 @@ Arch
 		- Tests:
 			- DEBUG
 			- Large number of NPCs 
+	
+	- Make NpcDamping subject to other adjustment
+		- Npcs class reacts to changes and calculates own mDampingCoefficient == (1.0f - gameParameters.NpcDamping)
+	- Settings:
+		- TODO: which ones?
+		- SettingsManager
+		- SettingsDialog
+
+	- Backport
 
 	- Misc possible improvements:
 		- See how folds come to be
@@ -400,6 +396,9 @@ Arch
 					- Transitions out with same out transitions as Equilibrium
 			- At UpdateSimulation:
 				- Do dance
+	- Air & water density effect on:
+		- Damping
+		- TODO: anything else?
 
 - Walk planning:
 	- First off: WalkingBehaviorState remembers CurrentTriangleElementIndex (of primary)

@@ -93,6 +93,8 @@ void Npcs::UpdateHuman(
 
 	bool const isFree = !primaryParticleState.ConstrainedState.has_value();
 
+	LogNpcDebug("CurrentBehavior: ", int(humanState.CurrentBehavior));
+
 	switch (humanState.CurrentBehavior)
 	{
 		case HumanNpcStateType::BehaviorType::BeingPlaced:
@@ -231,6 +233,13 @@ void Npcs::UpdateHuman(
 
 		case HumanNpcStateType::BehaviorType::Constrained_Falling:
 		{
+			//
+			// From here:
+			//	- Free_X
+			//	- Constrained_KnockedOut - when "mostly" with feet on floor
+			//	- Constrained_Aerial - when "consistently" feet and head in air
+			//
+
 			if (isFree)
 			{
 				// Transition
@@ -239,32 +248,41 @@ void Npcs::UpdateHuman(
 				break;
 			}
 
-			// Check conditions for knocked out
+			assert(primaryParticleState.ConstrainedState.has_value()); // Or else we'd have been free
 
-			bool const areFeetOnFloor = primaryParticleState.ConstrainedState.has_value() && primaryParticleState.ConstrainedState->CurrentVirtualFloor.has_value();
+			bool const areFeetOnFloor = primaryParticleState.ConstrainedState->CurrentVirtualFloor.has_value();
+			bool const isHeadOnFloor = secondaryParticleState.ConstrainedState.has_value() && secondaryParticleState.ConstrainedState->CurrentVirtualFloor.has_value();
 
-			float knockedOutTarget = 0.0f;
+			// Advance towards knocked out
+
+			float toKnockedOutIncrement;
 			float constexpr MaxRelativeVelocityForKnockedOut = 1.2f;
 			if (areFeetOnFloor
 				&& primaryParticleState.ConstrainedState->MeshRelativeVelocity.length() < MaxRelativeVelocityForKnockedOut
 				&& secondaryParticleState.GetApplicableVelocity(mParticles).length() < MaxRelativeVelocityForKnockedOut)
 			{
-				knockedOutTarget = 1.0f;
+				toKnockedOutIncrement = 1.0f;
+			}
+			else
+			{
+				toKnockedOutIncrement = -1.5f;
 			}
 
-			// Advance towards knocked out
+			humanState.CurrentBehaviorState.Constrained_Falling.ProgressToKnockedOut = std::max(
+				humanState.CurrentBehaviorState.Constrained_Falling.ProgressToKnockedOut + toKnockedOutIncrement,
+				0.0f);
 
-			float const toKnockedConvergenceRate = 0.14f + std::min(humanState.ResultantPanicLevel, 1.0f) * 0.07f;
-			humanState.CurrentBehaviorState.Constrained_Falling.ProgressToKnockedOut +=
-				(knockedOutTarget - humanState.CurrentBehaviorState.Constrained_Falling.ProgressToKnockedOut)
-				* toKnockedConvergenceRate;
+			// 31 (panic 0) -> 20 (panic +INF)
+			float const toKnockedOutTarget =
+				31.0f
+				- std::min(humanState.ResultantPanicLevel, 1.0f) * 11.0f;
 
 #ifdef BARYLAB_PROBING
-			if (knockedOutTarget > 0.0f)
-				publishStateQuantity = std::make_tuple("ProgressToKnockedOut", std::to_string(humanState.CurrentBehaviorState.Constrained_Falling.ProgressToKnockedOut));
+			if (toKnockedOutIncrement > 0.0f)
+				publishStateQuantity = std::make_tuple("ProgressToKnockedOut", std::to_string(humanState.CurrentBehaviorState.Constrained_Falling.ProgressToKnockedOut / toKnockedOutTarget));
 #endif
 
-			if (IsAtTarget(humanState.CurrentBehaviorState.Constrained_Falling.ProgressToKnockedOut, 1.0f))
+			if (humanState.CurrentBehaviorState.Constrained_Falling.ProgressToKnockedOut >= toKnockedOutTarget)
 			{
 				// Transition
 
@@ -281,8 +299,6 @@ void Npcs::UpdateHuman(
 			}
 
 			// Check conditions for aerial
-
-			bool const isHeadOnFloor = secondaryParticleState.ConstrainedState.has_value() && secondaryParticleState.ConstrainedState->CurrentVirtualFloor.has_value();
 
 			if (!areFeetOnFloor && !isHeadOnFloor)
 			{
@@ -332,6 +348,13 @@ void Npcs::UpdateHuman(
 
 		case HumanNpcStateType::BehaviorType::Constrained_KnockedOut:
 		{
+			//
+			// From here:
+			//	- Free_X
+			//	- Constrained_PreRising - when "mostly" with feet on floor
+			//	- Constrained_Aerial - when "consistently" feet and head in air
+			//
+
 			if (isFree)
 			{
 				// Transition
@@ -340,36 +363,39 @@ void Npcs::UpdateHuman(
 				break;
 			}
 
-			// Check conditions for pre-rising
+			assert(primaryParticleState.ConstrainedState.has_value()); // Or else we'd have been free
 
-			bool const areFeetOnFloor = primaryParticleState.ConstrainedState.has_value() && primaryParticleState.ConstrainedState->CurrentVirtualFloor.has_value();
+			bool const areFeetOnFloor = primaryParticleState.ConstrainedState->CurrentVirtualFloor.has_value();
 			bool const isHeadOnFloor = secondaryParticleState.ConstrainedState.has_value() && secondaryParticleState.ConstrainedState->CurrentVirtualFloor.has_value();
 
-			float preRisingTarget = 0.0f;
+			// Advance towards pre-rising
+
+			float toPreRisingIncrement;
 			if (areFeetOnFloor
 				&& primaryParticleState.ConstrainedState->MeshRelativeVelocity.length() < MaxRelativeVelocityMagnitudeForEquilibrium
 				&& secondaryParticleState.GetApplicableVelocity(mParticles).length() < MaxRelativeVelocityMagnitudeForEquilibrium)
 			{
-				preRisingTarget = 1.0f;
+				toPreRisingIncrement = 1.0f;
+			}
+			else
+			{
+				toPreRisingIncrement = -1.5f;
 			}
 
-			// Advance towards pre-rising
+			humanState.CurrentBehaviorState.Constrained_KnockedOut.ProgressToPreRising = std::max(
+				humanState.CurrentBehaviorState.Constrained_KnockedOut.ProgressToPreRising + toPreRisingIncrement,
+				0.0f);
 
-			float const toPreRisingConvergenceRate =
-				0.075f
-				+ npc.RandomNormalizedUniformSeed * 0.035f // Range with randomness: 0.04-0.11
-				+ std::min(humanState.ResultantPanicLevel, 1.0f) * 0.07f
-				;
-
-			humanState.CurrentBehaviorState.Constrained_KnockedOut.ProgressToPreRising +=
-				(preRisingTarget - humanState.CurrentBehaviorState.Constrained_KnockedOut.ProgressToPreRising)
-				* toPreRisingConvergenceRate;
+			// 30-40-50 (panic 0) -> 15-20-25 (panic +INF)
+			float const toPreRisingTarget =
+				(40.0f + npc.RandomNormalizedUniformSeed * 10.0f)
+				/ (1.0f + std::min(humanState.ResultantPanicLevel, 1.0f));
 
 #ifdef BARYLAB_PROBING
-			publishStateQuantity = std::make_tuple("ProgressToPreRising", std::to_string(humanState.CurrentBehaviorState.Constrained_KnockedOut.ProgressToPreRising));
+			publishStateQuantity = std::make_tuple("ProgressToPreRising", std::to_string(humanState.CurrentBehaviorState.Constrained_KnockedOut.ProgressToPreRising / toPreRisingTarget));
 #endif
 
-			if (IsAtTarget(humanState.CurrentBehaviorState.Constrained_KnockedOut.ProgressToPreRising, 1.0f))
+			if (humanState.CurrentBehaviorState.Constrained_KnockedOut.ProgressToPreRising >= toPreRisingTarget)
 			{
 				// Small hack: given that we've established we can rise (and thus we've been static
 				// for a while in our current position), see if may be we're hanging by the feet onto
@@ -457,6 +483,13 @@ void Npcs::UpdateHuman(
 
 		case HumanNpcStateType::BehaviorType::Constrained_PreRising:
 		{
+			//
+			// From here:
+			//	- Free_X
+			//	- Constrained_Rising - when "mostly" with feet on floor
+			//	- Constrained_Aerial - when "consistently" feet and head in air
+			//
+
 			if (isFree)
 			{
 				// Transition
@@ -465,36 +498,39 @@ void Npcs::UpdateHuman(
 				break;
 			}
 
-			// Check conditions for rising
+			assert(primaryParticleState.ConstrainedState.has_value()); // Or else we'd have been free
 
-			bool const areFeetOnFloor = primaryParticleState.ConstrainedState.has_value() && primaryParticleState.ConstrainedState->CurrentVirtualFloor.has_value();
+			bool const areFeetOnFloor = primaryParticleState.ConstrainedState->CurrentVirtualFloor.has_value();
 			bool const isHeadOnFloor = secondaryParticleState.ConstrainedState.has_value() && secondaryParticleState.ConstrainedState->CurrentVirtualFloor.has_value();
 
-			float risingTarget = 0.0f;
+			// Advance towards rising
+
+			float toRisingIncrement;
 			if (areFeetOnFloor
 				&& primaryParticleState.ConstrainedState->MeshRelativeVelocity.length() < MaxRelativeVelocityMagnitudeForEquilibrium
 				&& secondaryParticleState.GetApplicableVelocity(mParticles).length() < MaxRelativeVelocityMagnitudeForEquilibrium)
 			{
-				risingTarget = 1.0f;
+				toRisingIncrement = 1.0f;
+			}
+			else
+			{
+				toRisingIncrement = -1.5f;
 			}
 
-			// Advance towards rising
+			humanState.CurrentBehaviorState.Constrained_PreRising.ProgressToRising = std::max(
+				humanState.CurrentBehaviorState.Constrained_PreRising.ProgressToRising + toRisingIncrement,
+				0.0f);
 
-			float const toRisingConvergenceRate =
-				0.3f
-				+ npc.RandomNormalizedUniformSeed * 0.1f // Range with randomness: 0.2-0.4
-				+ std::min(humanState.ResultantPanicLevel, 1.0f) * 0.12f
-				;
-
-			humanState.CurrentBehaviorState.Constrained_PreRising.ProgressToRising +=
-				(risingTarget - humanState.CurrentBehaviorState.Constrained_PreRising.ProgressToRising)
-				* toRisingConvergenceRate;
+			// 10-13-16
+			float const toRisingTarget =
+				13.0f
+				+ npc.RandomNormalizedUniformSeed * 3.0f;
 
 #ifdef BARYLAB_PROBING
-			publishStateQuantity = std::make_tuple("ProgressToRising", std::to_string(humanState.CurrentBehaviorState.Constrained_PreRising.ProgressToRising));
+			publishStateQuantity = std::make_tuple("ProgressToRising", std::to_string(humanState.CurrentBehaviorState.Constrained_PreRising.ProgressToRising / toRisingTarget));
 #endif
 
-			if (IsAtTarget(humanState.CurrentBehaviorState.Constrained_PreRising.ProgressToRising, 1.0f))
+			if (humanState.CurrentBehaviorState.Constrained_PreRising.ProgressToRising >= toRisingTarget)
 			{
 				// Transition
 
