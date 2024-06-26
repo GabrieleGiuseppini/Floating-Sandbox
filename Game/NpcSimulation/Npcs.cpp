@@ -75,7 +75,7 @@ void Npcs::Upload(Render::RenderContext & renderContext)
 		{
 			if (mShips[shipId].has_value())
 			{
-				ShipRenderContext & shipRenderContext = renderContext.GetShipRenderContext(shipId);
+				Render::ShipRenderContext & shipRenderContext = renderContext.GetShipRenderContext(shipId);
 
 				for (NpcId const npcId : mShips[shipId]->Npcs)
 				{
