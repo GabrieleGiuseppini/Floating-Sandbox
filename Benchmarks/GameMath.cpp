@@ -9,6 +9,41 @@
 
 static constexpr size_t Size = 10000000;
 
+static void FastMod_Mod(benchmark::State & state)
+{
+    auto values = MakeFloats(Size);
+    auto divisors = MakeFloats(Size);
+    std::vector<float> results(Size);
+    for (auto _ : state)
+    {
+        for (size_t i = 0; i < Size; ++i)
+        {
+            results[i] = std::fmod(values[i], divisors[i]);
+        }
+    }
+
+    benchmark::DoNotOptimize(results);
+}
+BENCHMARK(FastMod_Mod);
+
+static void FastMod_FastMod(benchmark::State & state)
+{
+    auto values = MakeFloats(Size);
+    auto divisors = MakeFloats(Size);
+    std::vector<float> results(Size);
+    for (auto _ : state)
+    {
+        for (size_t i = 0; i < Size; ++i)
+        {
+            results[i] = FastMod(values[i], divisors[i]);
+        }
+    }
+
+    benchmark::DoNotOptimize(results);
+}
+BENCHMARK(FastMod_FastMod);
+
+
 static void FastPow_Pow(benchmark::State& state)
 {
     auto bases = MakeFloats(Size);

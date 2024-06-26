@@ -3147,7 +3147,7 @@ void Npcs::UpdateNpcAnimation(
                 float const distance =
                     humanNpcState.TotalDistanceTraveledOnEdgeSinceStateTransition
                     + 0.3f * humanNpcState.TotalDistanceTraveledOffEdgeSinceStateTransition;
-                float const distanceInTwoSteps = std::fmod(distance + 3.0f * stepLength / 2.0f, stepLength * 2.0f);
+                float const distanceInTwoSteps = FastMod(distance + 3.0f * stepLength / 2.0f, stepLength * 2.0f);
 
                 float const legAngle = std::abs(stepLength - distanceInTwoSteps) / stepLength * 2.0f * MaxLegAngle - MaxLegAngle;
 
@@ -3170,7 +3170,7 @@ void Npcs::UpdateNpcAnimation(
 
                     float const elapsed = currentSimulationTime - humanNpcState.CurrentStateTransitionSimulationTimestamp;
                     float const halfPeriod = 1.0f - 0.6f * std::min(humanNpcState.ResultantPanicLevel, 4.0f) / 4.0f;
-                    float const inPeriod = std::fmod(elapsed, halfPeriod * 2.0f);
+                    float const inPeriod = FastMod(elapsed, halfPeriod * 2.0f);
 
                     float constexpr MaxAngle = Pi<float> / 2.0f;
                     float const angle = std::abs(halfPeriod - inPeriod) / halfPeriod * 2.0f * MaxAngle - MaxAngle;
@@ -3402,7 +3402,7 @@ void Npcs::UpdateNpcAnimation(
                     + elapsed * 2.6f * panicAccelerator
                     + humanNpcState.TotalDistanceTraveledOffEdgeSinceStateTransition * 0.7f;
 
-                float const inPeriod = fmod(arg, (Period1 + Period2));
+                float const inPeriod = FastMod(arg, (Period1 + Period2));
                 // y: [0.0 ... 1.0]
                 float const y = (inPeriod < Period1)
                     ? std::sqrt(inPeriod / Period1)
@@ -3452,7 +3452,7 @@ void Npcs::UpdateNpcAnimation(
                     elapsed * 2.6f * panicAccelerator
                     + humanNpcState.TotalDistanceTraveledOffEdgeSinceStateTransition * 0.7f;
 
-                float const inPeriod = fmod(arg, Period);
+                float const inPeriod = FastMod(arg, Period);
                 // periodicValue: [0.0 ... 1.0]
                 periodicValue = (inPeriod < Period / 2.0f)
                     ? inPeriod / (Period / 2.0f)
@@ -3488,7 +3488,7 @@ void Npcs::UpdateNpcAnimation(
                     elapsed * 2.6f * panicAccelerator
                     + humanNpcState.TotalDistanceTraveledOffEdgeSinceStateTransition * 0.7f;
 
-                float const inPeriod = fmod(arg, Period);
+                float const inPeriod = FastMod(arg, Period);
                 // periodicValue: [0.0 ... 1.0]
                 periodicValue = (inPeriod < Period / 2.0f)
                     ? inPeriod / (Period / 2.0f)

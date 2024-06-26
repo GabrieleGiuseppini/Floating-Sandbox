@@ -152,6 +152,11 @@ inline register_int FastTruncateToArchIntTowardsNInfinity(float value) noexcept
 #endif
 }
 
+inline float FastMod(float value, float divisor)
+{
+    return value - ((int)(value / divisor)) * divisor;
+}
+
 /*
  * Adapted from Paul Mineiro - Copyright (C) 2011 Paul Mineiro.
  */

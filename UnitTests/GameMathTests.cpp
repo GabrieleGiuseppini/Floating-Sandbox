@@ -6,6 +6,45 @@
 
 #include "gtest/gtest.h"
 
+class FastModTest : public testing::TestWithParam<std::tuple<float, float>>
+{
+public:
+    virtual void SetUp() {}
+    virtual void TearDown() {}
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    GameMathTests,
+    FastModTest,
+    ::testing::Values(
+        std::make_tuple(8.0f, 1.0f),
+        std::make_tuple(1.0f, 8.0f),
+        std::make_tuple(0.02f, 4.0f),
+        std::make_tuple(0.02f, 0.004f),
+        std::make_tuple(0.02f, 0.01f),
+
+        std::make_tuple(-8.0f, 1.0f),
+        std::make_tuple(-1.0f, 8.0f),
+        std::make_tuple(-0.02f, 4.0f),
+        std::make_tuple(-0.02f, 0.004f),
+        std::make_tuple(-0.02f, 0.01f),
+
+        std::make_tuple(8.0f, -1.0f),
+        std::make_tuple(1.0f, -8.0f),
+        std::make_tuple(0.02f, -4.0f),
+        std::make_tuple(0.02f, -0.004f),
+        std::make_tuple(0.02f, -0.01f)
+    ));
+
+TEST_P(FastModTest, FastModTest)
+{
+    float result = FastMod(std::get<0>(GetParam()), std::get<1>(GetParam()));
+    float expectedResult = std::fmod(std::get<0>(GetParam()), std::get<1>(GetParam()));
+
+    EXPECT_TRUE(ApproxEquals(result, expectedResult, 0.00001f));
+}
+
+
 TEST(GameMathTests, FastPowTest_Basic)
 {
     float result = FastPow(0.1f, 2.0f);

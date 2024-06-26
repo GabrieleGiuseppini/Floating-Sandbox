@@ -284,8 +284,8 @@ Arch
 		- Maintain spring lengths during BeingPlaced (to avoid elongations)
 		- How to avoid folding (==compressions) at bounce?
 			- See how folds come to be
-		- fmod improvements
-			- See https://cboard.cprogramming.com/c-programming/105096-fmod.html
+		+ fmod improvements
+			+ See https://cboard.cprogramming.com/c-programming/105096-fmod.html
 
 	- Backport
 
