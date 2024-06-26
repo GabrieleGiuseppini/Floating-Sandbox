@@ -536,11 +536,12 @@ MainFrame::MainFrame(
 
             {
                 auto const id = wxNewId();
-                mMoveNpcMenuItem = new wxMenuItem(mToolsMenu, id, _("Move NPC"), wxEmptyString, wxITEM_RADIO);
+                mMoveNpcMenuItem = new wxMenuItem(mToolsMenu, id, _("Move NPC\t3"), wxEmptyString, wxITEM_RADIO);
                 auto img = wxImage(resourceLocator.GetIconFilePath("move_npc_icon").string(), wxBITMAP_TYPE_PNG);
                 SET_BITMAP(mMoveNpcMenuItem, img);
                 mToolsMenu->Append(mMoveNpcMenuItem);
                 Connect(id, wxEVT_COMMAND_MENU_SELECTED, (wxObjectEventFunction)&MainFrame::OnMoveNpcMenuItemSelected);
+                ADD_PLAIN_ACCELERATOR_KEY('3', mMoveNpcMenuItem);
                 mMoveNpcMenuItem->Enable(false);
             }
 
