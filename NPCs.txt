@@ -286,9 +286,16 @@ Arch
 				- Do we need to check orientation of our current triangle @ beginning of Update()?
 
 	- Settings:
-		- TODO: which ones?
+		- List:
+			- HumanNpcHeight("Size")Adj
+				- Yeah rename param to "NpcSizeAdjustment"
+					- Apply its effect also to furniture
+			- ElasticityAdj, FrictionAdj
+			// Human section:
+			- HumanWalkingSpeedAdj
 		- SettingsManager
 		- SettingsDialog
+			- New NPC tab
 
 	- Misc possible improvements:
 		- Maintain spring lengths during BeingPlaced (to avoid elongations)
@@ -365,18 +372,22 @@ Arch
 	+ Make NpcDamping subject to other adjustment
 		+ Npcs class reacts to changes and calculates own mDampingCoefficient == (1.0f - gameParameters.NpcDamping)
 	- Make sure triangle destruction is forwarded to NPCs
+		- Npcs::OnDestroyedTriangle (~) (ShipId, TriangleElementIndex)
 		- Any constrained NPC on a destroyed triangle becomes free
 	- Swimming humans generate bubbles
 	- Humans on air-water interface generate small waves
 		- Need to produce as side-effect: swimming humans generate small waves
+		- Do surface displacement proportional to (signed) V velocity
 	- Lights: second pass of lighting algorith with all NPC particles, for each ship
 		- Adding to NPC particles' _light_ buffer
+			- But test it first, as humans are dipoles and dubious result
 	- Fire:
 		- When <TODO> vertices of triangle are on fire, NPC catches fire as well
 			- Done with "entering new triangle" detection, elsewhere here in plan
 			- Rendering: Ship asks Npcs (via World) at RenderUpload time, so that flames are in same buffer
 				- Need count and Npcs::RenderUploadFlames(...), both called by Ship
 	- Wind: all ships, only in free regime
+		- NpcMaterial::WindReceptivity
 	- Ship-specific explosions: only of that ship, or free regime
 	- Swirl, etc.: all ships, all regimes
 	- Move tool:
@@ -395,11 +406,18 @@ Arch
 				+ BounceConstrained...() needs to take bounceEdgeTriangle, bounceEdgeBCoords, bounceEdgeOrdinal, and Ship - but can lose bounceEdgeNormal
 			+ Requires Ship in NPC to not be const
 				+ And see if can get rid of naming member "ShipMesh" - may be "HomeShip"?
-	- Incorporate ship material's elasticity and friction in calculations for bounce and friction
 	- Mass is proportional to body length adjustment (square, we're 2D)
 		- And so is buoyancy
 		- Recalc both at changes and store as particle attributes
 			- Primary & secondary
+			- Via static float CalculateParticleMass(base mass, dimensions adjustment, mass adj (iff BaryLab)), CalculateParticleBuoyancy(base mass, dimensions adjustment, buoyancy adj (iff BaryLab) , mass adj?)
+				- Buoyancy: only needs to affect "volume"
+				- Called @ Update() upon changes to dimensions adj, mass adj, buoyancy adj
+				- Called @ AddNpc's
+			- These new particle attributes replace:
+				- Various local particleMass calculations
+				- Buoyancy 
+	- Incorporate ship material's elasticity and friction in calculations for bounce and friction
 	- When ship is repaired, all NPCs do a little dance
 		- Sync is simulation clock (so all are in sync)
 		- Signal from outside (OnShipRepaired) sets global flag
@@ -414,6 +432,13 @@ Arch
 	- Air & water density effect on:
 		- Damping
 		- Buoyancy
+	- Panic:
+		- Close to bomb
+			- Done with "entering new triangle" detection, elsewhere here in plan
+		- Close to fire
+			- Ditto
+		- Close to water entering (leaking point w/inflow)
+			- Ditto
 
 - Walk planning:
 	- First off: WalkingBehaviorState remembers CurrentTriangleElementIndex (of primary)
