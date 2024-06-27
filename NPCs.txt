@@ -380,6 +380,11 @@ Arch
 			- NPC bounces transfer impact forces to ship's particles
 		- ...By adding StaticForce's to ship's particles at these places:
 			+ At return from NonInertial, using the last "flattened out" displacement to calc force (*m/dt2)
+			- FIX: test with Inflatable Balloon: infinite loop
+				- Due to folded triangle?
+					- If so: bail out to free upon entering a folded tri
+						- At all places where we enter triangles
+						- Do we also need a check at update() for own triangle?
 			- At bounce, using the bounced displacement
 				+ Need to make sure that a bounce at non-inertial is not followed by the force in the previous bullet
 				- BounceConstrained...() needs to take bounceEdgeTriangle, bounceEdgeBCoords, bounceEdgeOrdinal, and Ship - but can lose bounceEdgeNormal

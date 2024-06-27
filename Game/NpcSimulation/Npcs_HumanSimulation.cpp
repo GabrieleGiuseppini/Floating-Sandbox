@@ -311,7 +311,7 @@ void Npcs::UpdateHuman(
 					* ToAerialConvergenceRate;
 
 #ifdef BARYLAB_PROBING
-				if (knockedOutTarget == 0.0f)
+				if (toKnockedOutIncrement <= 0.0f)
 					publishStateQuantity = std::make_tuple("ProgressToAerial", std::to_string(humanState.CurrentBehaviorState.Constrained_Falling.ProgressToAerial));
 #endif
 
@@ -338,7 +338,7 @@ void Npcs::UpdateHuman(
 				humanState.CurrentBehaviorState.Constrained_Falling.ProgressToAerial = 0.0f;
 
 #ifdef BARYLAB_PROBING
-				if (knockedOutTarget == 0.0f)
+				if (toKnockedOutIncrement <= 0.0f)
 					publishStateQuantity = std::make_tuple("ProgressToAerial", std::to_string(humanState.CurrentBehaviorState.Constrained_Falling.ProgressToAerial));
 #endif
 			}
@@ -473,7 +473,7 @@ void Npcs::UpdateHuman(
 				humanState.CurrentBehaviorState.Constrained_KnockedOut.ProgressToAerial = 0.0f;
 
 #ifdef BARYLAB_PROBING
-				if (preRisingTarget == 0.0f)
+				if (toPreRisingIncrement <= 0.0f)
 					publishStateQuantity = std::make_tuple("ProgressToAerial", std::to_string(humanState.CurrentBehaviorState.Constrained_KnockedOut.ProgressToAerial));
 #endif
 			}
@@ -585,7 +585,7 @@ void Npcs::UpdateHuman(
 				humanState.CurrentBehaviorState.Constrained_PreRising.ProgressToAerial = 0.0f;
 
 #ifdef BARYLAB_PROBING
-				if (risingTarget == 0.0f)
+				if (toRisingIncrement <= 0.0f)
 					publishStateQuantity = std::make_tuple("ProgressToAerial", std::to_string(humanState.CurrentBehaviorState.Constrained_PreRising.ProgressToAerial));
 #endif
 			}

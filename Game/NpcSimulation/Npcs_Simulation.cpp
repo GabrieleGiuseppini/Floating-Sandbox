@@ -306,7 +306,7 @@ void Npcs::UpdateNpcs(
         if (npcState.has_value())
         {
             assert(mShips[npcState->CurrentShipId].has_value());
-            auto const & homeShip = mShips[npcState->CurrentShipId]->HomeShip;
+            auto & homeShip = mShips[npcState->CurrentShipId]->HomeShip;
 
             // Preliminary forces for primary
 
@@ -400,7 +400,7 @@ void Npcs::UpdateNpcs(
 void Npcs::UpdateNpcParticlePhysics(
     StateType & npc,
     int npcParticleOrdinal,
-    Ship const & homeShip,
+    Ship & homeShip,
     float currentSimulationTime,
     GameParameters const & gameParameters)
 {
@@ -837,13 +837,17 @@ void Npcs::UpdateNpcParticlePhysics(
                 LogNpcDebug("    ConstrainedNonInertial: triangle=", npcParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex, " nonInertialEdgeOrdinal=", nonInertialEdgeOrdinal, " bCoords=", npcParticle.ConstrainedState->CurrentBCoords.BCoords, " trajectory=", trajectory);
                 LogNpcDebug("    StartPosition=", mParticles.GetPosition(npcParticle.ParticleIndex), " StartVelocity=", mParticles.GetVelocity(npcParticle.ParticleIndex), " MeshVelocity=", meshVelocity, " StartMRVelocity=", npcParticle.ConstrainedState->MeshRelativeVelocity);
 
-                // Set now our current edge-ness for the rest of this simulation step, which is
+                // Save the coords of the touch point
+                AbsoluteTriangleBCoords const edgeTouchPointBCoords = npcParticle.ConstrainedState->CurrentBCoords;
+                assert(edgeTouchPointBCoords.BCoords.is_on_edge());
+
+                // Set now our current edge-ness for the rest of this simulation step,
                 // mostly for animation purposes.
                 //
                 // In fact, the subsequent UpdateNpcParticle_ConstrainedNonInertial call has 5 outcomes:
                 //  - We end up inside the triangle - along this same edge;
                 //  - We travel up to a vertex, and then:
-                //      - End towards interior of triangle: in this case we might have reached a new triangle,
+                //      - End navigation at the interior of a triangle: in this case we might have reached a new triangle,
                 //        but we'll go through this again and become inertial (resetting this edge-ness);
                 //      - Ready to continue on a new edge: we could update this edge-ness to the new edge, but we'll go
                 //        through this again, and thus we save the effort;
@@ -1034,10 +1038,7 @@ void Npcs::UpdateNpcParticlePhysics(
                     npcParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex,
                     homeShip.GetPoints());
 
-                //
                 // Due to numerical slack, ensure target barycentric coords are still along edge
-                //
-
                 int const edgeVertexOrdinal = (nonInertialEdgeOrdinal + 2) % 3;
                 flattenedTrajectoryEndBarycentricCoords[edgeVertexOrdinal] = 0.0f;
                 flattenedTrajectoryEndBarycentricCoords[(edgeVertexOrdinal + 1) % 3] = 1.0f - flattenedTrajectoryEndBarycentricCoords[(edgeVertexOrdinal + 2) % 3];
@@ -1060,7 +1061,7 @@ void Npcs::UpdateNpcParticlePhysics(
 
                 LogNpcDebug("        edgePhysicalTraveledPlanned=", edgePhysicalTraveledPlanned, " edgeWalkedPlanned=", edgeWalkedPlanned);
 
-                auto const [edgeTraveledActual, doStop, newFloorEdgeOrdinal] = UpdateNpcParticle_ConstrainedNonInertial(
+                auto const nonInertialOutcome = UpdateNpcParticle_ConstrainedNonInertial(
                     npc,
                     npcParticleOrdinal,
                     nonInertialEdgeOrdinal,
@@ -1088,16 +1089,39 @@ void Npcs::UpdateNpcParticlePhysics(
                     LogNpcDebug("    Became free");
                 }
 
-                LogNpcDebug("    Actual edge traveled in non-inertial step: ", edgeTraveledActual);
+                LogNpcDebug("    Actual edge traveled in non-inertial step: ", nonInertialOutcome.EdgeTraveled);
 
-                if (doStop)
+                if (nonInertialOutcome.DoStop)
                 {
                     // Completed
                     remainingDt = 0.0f;
+
+                    if (!nonInertialOutcome.HasBounced)
+                    {
+                        // We have reached destination, impart force onto mesh
+                        // for the component of the original trajectory that was
+                        // stopped by the edge
+
+                        vec2f const edgeN = edgeDir.to_perpendicular();
+                        vec2f const trajectoryN = edgeN * (trajectory.dot(edgeN));
+                        vec2f const impartedForce = trajectoryN * particleMass / (dt * dt);
+
+                        // Divide among two vertices
+
+                        int edgeVertex1Ordinal = nonInertialEdgeOrdinal;
+                        ElementIndex edgeVertex1PointIndex = homeShip.GetTriangles().GetPointIndices(edgeTouchPointBCoords.TriangleElementIndex)[edgeVertex1Ordinal];
+                        float const vertex1InterpCoeff = edgeTouchPointBCoords.BCoords[edgeVertex1Ordinal];
+                        homeShip.GetPoints().AddStaticForce(edgeVertex1PointIndex, impartedForce * vertex1InterpCoeff);
+
+                        int edgeVertex2Ordinal = (nonInertialEdgeOrdinal + 1) % 3;
+                        ElementIndex edgeVertex2PointIndex = homeShip.GetTriangles().GetPointIndices(edgeTouchPointBCoords.TriangleElementIndex)[edgeVertex2Ordinal];
+                        float const vertex2InterpCoeff = edgeTouchPointBCoords.BCoords[edgeVertex2Ordinal];
+                        homeShip.GetPoints().AddStaticForce(edgeVertex2PointIndex, impartedForce * vertex2InterpCoeff);
+                    }
                 }
                 else
                 {
-                    if (edgeTraveledActual == 0.0f)
+                    if (nonInertialOutcome.EdgeTraveled == 0.0f)
                     {
                         // No movement
 
@@ -1140,9 +1164,9 @@ void Npcs::UpdateNpcParticlePhysics(
                         // We have moved
 
                         // Calculate consumed dt
-                        assert(edgeTraveledActual * adjustedEdgeTraveledPlanned >= 0.0f); // Should have same sign
+                        assert(nonInertialOutcome.EdgeTraveled * adjustedEdgeTraveledPlanned >= 0.0f); // Should have same sign
                         float const dtFractionConsumed = adjustedEdgeTraveledPlanned != 0.0f
-                            ? std::min(edgeTraveledActual / adjustedEdgeTraveledPlanned, 1.0f) // Signs should agree anyway
+                            ? std::min(nonInertialOutcome.EdgeTraveled / adjustedEdgeTraveledPlanned, 1.0f) // Signs should agree anyway
                             : 1.0f; // If we were planning no travel, any movement is a whole consumption
                         LogNpcDebug("        dtFractionConsumed=", dtFractionConsumed);
                         remainingDt *= (1.0f - dtFractionConsumed);
@@ -1155,7 +1179,7 @@ void Npcs::UpdateNpcParticlePhysics(
                 }
 
                 // Update total (absolute) distance traveled along (an) edge
-                edgeDistanceTraveledTotal += std::abs(edgeTraveledActual);
+                edgeDistanceTraveledTotal += std::abs(nonInertialOutcome.EdgeTraveled);
 
                 // If we haven't completed, there is still some distance remaining in the budget
                 //
@@ -1169,14 +1193,14 @@ void Npcs::UpdateNpcParticlePhysics(
                     && npcParticleOrdinal == 0) // Human is represented by primary particle
                 {
                     // Note: does not include eventual distance traveled after becoming free; fine because we will transition and wipe out total traveled
-                    npc.KindSpecificState.HumanNpcState.TotalDistanceTraveledOnEdgeSinceStateTransition += std::abs(edgeTraveledActual);
+                    npc.KindSpecificState.HumanNpcState.TotalDistanceTraveledOnEdgeSinceStateTransition += std::abs(nonInertialOutcome.EdgeTraveled);
                 }
 
                 // Update total vector walked along edge
                 // Note: we use unadjusted edge traveled planned, as edge walked planned is also unadjusted,
                 // and we are only interested in the ratio anyway
                 float const edgeWalkedActual = edgeTraveledPlanned != 0.0f
-                    ? edgeTraveledActual * (edgeWalkedPlanned / edgeTraveledPlanned)
+                    ? nonInertialOutcome.EdgeTraveled * (edgeWalkedPlanned / edgeTraveledPlanned)
                     : 0.0f; // Unlikely, but read above for rationale behind 0.0
                 totalEdgeWalkedActual += edgeDir * edgeWalkedActual;
                 LogNpcDebug("        edgeWalkedActual=", edgeWalkedActual, " totalEdgeWalkedActual=", totalEdgeWalkedActual);
@@ -1189,7 +1213,7 @@ void Npcs::UpdateNpcParticlePhysics(
                 }
 
                 // Update current floor edge we're walking on, or inside triangle
-                currentNonInertialFloorEdgeOrdinal = newFloorEdgeOrdinal;
+                currentNonInertialFloorEdgeOrdinal = nonInertialOutcome.FloorEdgeOrdinal;
 
                 if (npcParticle.ConstrainedState.has_value())
                 {
@@ -1296,7 +1320,7 @@ void Npcs::UpdateNpcParticlePhysics(
     {
         // Publish final velocities
 
-        vec2f const particleVelocity = (mParticles.GetPosition(npcParticle.ParticleIndex) - particleStartAbsolutePosition) / GameParameters::SimulationTimeStepDuration;
+        vec2f const particleVelocity = (mParticles.GetPosition(npcParticle.ParticleIndex) - particleStartAbsolutePosition) / GameParameters::SimulationStepTimeDuration<float>;
 
         mGameEventHandler->OnCustomProbe("VelX", particleVelocity.x);
         mGameEventHandler->OnCustomProbe("VelY", particleVelocity.y);
@@ -1662,10 +1686,7 @@ Npcs::ConstrainedNonInertialOutcome Npcs::UpdateNpcParticle_ConstrainedNonInerti
         LogNpcDebug("        edgeTraveleded (==planned)=", edgeTraveledPlanned, " absoluteVelocity=", particles.GetVelocity(npcParticle.ParticleIndex));
 
         // Complete
-        return {
-            edgeTraveledPlanned,    // We moved by how much we planned
-            true,                   // Stop here
-            -1 };                   // No edge (but we're stopping anyways)
+        return ConstrainedNonInertialOutcome::MakeStopOutcome(edgeTraveledPlanned, false);
     }
 
     //
@@ -1765,10 +1786,7 @@ Npcs::ConstrainedNonInertialOutcome Npcs::UpdateNpcParticle_ConstrainedNonInerti
                 particles);
 
             // Terminate
-            return {
-                edgeTraveled,
-                true,
-                std::nullopt };
+            return ConstrainedNonInertialOutcome::MakeStopOutcome(edgeTraveled, false);
         }
 
         case NavigateVertexOutcome::OutcomeType::ContinueAlongFloor:
@@ -1779,10 +1797,9 @@ Npcs::ConstrainedNonInertialOutcome Npcs::UpdateNpcParticle_ConstrainedNonInerti
             npcParticleConstrainedState.CurrentBCoords = navigationOutcome.TriangleBCoords;
 
             // Continue
-            return {
+            return ConstrainedNonInertialOutcome::MakeContinueOutcome(
                 edgeTraveled,
-                false,
-                navigationOutcome.FloorEdgeOrdinal }; // This is the edge we want to be on, we may bypass the next NavigateVertex
+                navigationOutcome.FloorEdgeOrdinal); // This is the edge we want to be on, we may bypass the next NavigateVertex
         }
 
         case NavigateVertexOutcome::OutcomeType::ContinueToInterior:
@@ -1793,10 +1810,9 @@ Npcs::ConstrainedNonInertialOutcome Npcs::UpdateNpcParticle_ConstrainedNonInerti
             npcParticleConstrainedState.CurrentBCoords = navigationOutcome.TriangleBCoords;
 
             // Continue
-            return {
+            return ConstrainedNonInertialOutcome::MakeContinueOutcome(
                 edgeTraveled,
-                false,
-                -1 }; // Our next edge is...must determine with floor normals
+                -1); // Must determine next edge via normals
         }
 
         case NavigateVertexOutcome::OutcomeType::ImpactOnFloor:
@@ -1834,15 +1850,12 @@ Npcs::ConstrainedNonInertialOutcome Npcs::UpdateNpcParticle_ConstrainedNonInerti
             npcParticleConstrainedState.CurrentBCoords = navigationOutcome.TriangleBCoords;
 
             // Terminate
-            return {
-                edgeTraveled,
-                true,
-                std::nullopt }; // Certainly the edge we bounce on is not the one we want to be on - and moreover, we are done with the loop now
+            return ConstrainedNonInertialOutcome::MakeStopOutcome(edgeTraveled, true);
         }
     }
 
     assert(false);
-    return { edgeTraveled, false, -1 };
+    return ConstrainedNonInertialOutcome::MakeStopOutcome(edgeTraveled, false); // Just to return something
 }
 
 float Npcs::UpdateNpcParticle_ConstrainedInertial(

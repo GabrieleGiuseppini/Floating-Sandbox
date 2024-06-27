@@ -887,7 +887,7 @@ private:
 	void UpdateNpcParticlePhysics(
 		StateType & npc,
 		int npcParticleOrdinal,
-		Ship const & homeShip,
+		Ship & homeShip,
 		float currentSimulationTime,
 		GameParameters const & gameParameters);
 
@@ -920,9 +920,45 @@ private:
 
 	struct ConstrainedNonInertialOutcome
 	{
-		float EdgeTraveled;						// During this single step
-		bool DoStop;							// When set, we can stop
-		std::optional<int> FloorEdgeOrdinal;	// This is the next edge we have chosen to walk upon
+		float EdgeTraveled;				// During this single step; always valid
+		bool DoStop;					// When set, we can stop
+		bool HasBounced;				// If we have bounced (and then stopped)
+		int FloorEdgeOrdinal;			// If we continue, this is the next edge we have chosen to walk upon; -1 if have to determine with floor normals
+
+		static ConstrainedNonInertialOutcome MakeContinueOutcome(
+			float edgeTraveled,
+			int floorEdgeOrdinal)
+		{
+			return ConstrainedNonInertialOutcome(
+				edgeTraveled,
+				false,
+				false,
+				floorEdgeOrdinal);
+		}
+
+		static ConstrainedNonInertialOutcome MakeStopOutcome(
+			float edgeTraveled,
+			bool hasBounced)
+		{
+			return ConstrainedNonInertialOutcome(
+				edgeTraveled,
+				true,
+				hasBounced,
+				-1); // Irrelevant
+		}
+
+	private:
+
+		ConstrainedNonInertialOutcome(
+			float edgeTraveled,
+			bool doStop,
+			bool hasBounced,
+			int floorEdgeOrdinal)
+			: EdgeTraveled(edgeTraveled)
+			, DoStop(doStop)
+			, HasBounced(hasBounced)
+			, FloorEdgeOrdinal(floorEdgeOrdinal)
+		{}
 	};
 
 	// Returns total edge traveled (in step), and isStop
