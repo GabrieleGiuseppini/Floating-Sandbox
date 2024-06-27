@@ -275,6 +275,16 @@ Arch
 			+ Large number of NPCs
 			+ Panic
 	
+	- FIX: Inflatable Balloon: infinite loop
+		- Figure out if due to folded triangle
+		- If so:
+			- Plan A: deal with it
+			- Plan B: whenever we move from a triangle with orientation X to a triangle to orientation Y, consider the edge a floor (and evt bounce on it)
+				- TODO: needs to be integrated with IsEdgeFloorToParticle?
+			- Plan C: same as above, but becoming free
+			- Various points:
+				- Do we need to check orientation of our current triangle @ beginning of Update()?
+
 	- Settings:
 		- TODO: which ones?
 		- SettingsManager
@@ -374,20 +384,15 @@ Arch
 	- Electric spark:
 		- Electrification must be stored with Points
 		- NPC update looks at own triangle's Points
-	= Mass/forces: these two may be done together:
+	+ Mass/forces: these two may be done together:
 			- NPCs add mass to particle
 				- Ship::Update asks NPCs (via ParentWorld) to add themselves to Points' (definitive) masses
 			- NPC bounces transfer impact forces to ship's particles
-		- ...By adding StaticForce's to ship's particles at these places:
+		+ ...By adding StaticForce's to ship's particles at these places:
 			+ At return from NonInertial, using the last "flattened out" displacement to calc force (*m/dt2)
-			- FIX: test with Inflatable Balloon: infinite loop
-				- Due to folded triangle?
-					- If so: bail out to free upon entering a folded tri
-						- At all places where we enter triangles
-						- Do we also need a check at update() for own triangle?
-			- At bounce, using the bounced displacement
+			+ At bounce, using the bounced displacement
 				+ Need to make sure that a bounce at non-inertial is not followed by the force in the previous bullet
-				- BounceConstrained...() needs to take bounceEdgeTriangle, bounceEdgeBCoords, bounceEdgeOrdinal, and Ship - but can lose bounceEdgeNormal
+				+ BounceConstrained...() needs to take bounceEdgeTriangle, bounceEdgeBCoords, bounceEdgeOrdinal, and Ship - but can lose bounceEdgeNormal
 			+ Requires Ship in NPC to not be const
 				+ And see if can get rid of naming member "ShipMesh" - may be "HomeShip"?
 	- Incorporate ship material's elasticity and friction in calculations for bounce and friction

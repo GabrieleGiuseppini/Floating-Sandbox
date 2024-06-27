@@ -976,7 +976,7 @@ private:
 		bool hasMovedInStep,
 		vec2f const meshVelocity,
 		float dt,
-		Ship const & homeShip,
+		Ship & homeShip,
 		NpcParticles & particles,
 		float currentSimulationTime,
 		GameParameters const & gameParameters);
@@ -991,7 +991,7 @@ private:
 		bool hasMovedInStep,
 		vec2f const meshVelocity,
 		float segmentDt,
-		Ship const & homeShip,
+		Ship & homeShip,
 		NpcParticles & particles,
 		float currentSimulationTime,
 		GameParameters const & gameParameters);
@@ -1064,9 +1064,10 @@ private:
 		vec2f const & trajectory,
 		bool hasMovedInStep,
 		vec2f const & bouncePosition,
-		vec2f const & bounceEdgeNormal,
+		int bounceEdgeOrdinal,
 		vec2f const meshVelocity,
 		float dt,
+		Ship & homeShip,
 		NpcParticles & particles,
 		float currentSimulationTime,
 		GameParameters const & gameParameters) const;
