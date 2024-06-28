@@ -86,6 +86,9 @@ enum class GameSettings : size_t
     DoFishShoaling,
     FishShoalRadiusAdjustment,
 
+    // NPCs
+    NpcSizeAdjustment,
+
     // Misc
     OceanFloorTerrain,
     SeaDepth,

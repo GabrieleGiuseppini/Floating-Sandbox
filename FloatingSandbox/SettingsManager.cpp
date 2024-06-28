@@ -113,6 +113,9 @@ BaseSettingsManager<GameSettings>::BaseSettingsManagerFactory SettingsManager::M
     ADD_GC_SETTING(bool, DoFishShoaling);
     ADD_GC_SETTING(float, FishShoalRadiusAdjustment);
 
+    // NPCs
+    ADD_GC_SETTING(float, NpcSizeAdjustment);
+
     // Misc
     ADD_GC_SETTING(OceanFloorTerrain, OceanFloorTerrain);
     ADD_GC_SETTING_WITH_IMMEDIATE(float, SeaDepth);

@@ -1490,7 +1490,7 @@ vec2f Npcs::CalculateNpcParticleDefinitiveForces(
         //  - But we approximate the arc with the chord, i.e.the distance between source and destination
         //
 
-        vec2f const idealHeadPosition = feetPosition + vec2f(0.0f, npc.KindSpecificState.HumanNpcState.Height * mCurrentHumanNpcBodyLengthAdjustment);
+        vec2f const idealHeadPosition = feetPosition + vec2f(0.0f, npc.KindSpecificState.HumanNpcState.Height * mCurrentSizeAdjustment);
 
         float const stiffnessCoefficient =
             gameParameters.HumanNpcEquilibriumTorqueStiffnessCoefficient
@@ -1520,13 +1520,28 @@ vec2f Npcs::CalculateNpcParticleDefinitiveForces(
         vec2f const equilibriumTorqueForce =
             radialDir
             * (force1Magnitude + force2Magnitude)
-            / mCurrentHumanNpcBodyLengthAdjustment // Note: we divide by human length adjustment to maintain torque independent from lever length
+            / mCurrentSizeAdjustment // Note: we divide by size adjustment to maintain torque independent from lever length
             * particleMass / (dt * dt);
 
         definitiveForces += equilibriumTorqueForce;
     }
 
     return definitiveForces;
+}
+
+void Npcs::RecalculateSizeParameters()
+{
+    for (auto & state : mStateBuffer)
+    {
+        if (state.has_value())
+        {
+            if (state->Kind == NpcKindType::Human)
+            {
+                assert(state->ParticleMesh.Springs.size() == 1);
+                state->ParticleMesh.Springs[0].DipoleLength = CalculateHumanNpcDipoleLength(state->KindSpecificState.HumanNpcState.Height);
+            }
+        }
+    }
 }
 
 void Npcs::RecalculateSpringForceParameters()
@@ -1568,24 +1583,9 @@ void Npcs::RecalculateSpringForceParameters(StateType::NpcSpringStateType & spri
         / dt;
 }
 
-void Npcs::RecalculateHumanNpcDipoleLengths()
-{
-    for (auto & state : mStateBuffer)
-    {
-        if (state.has_value())
-        {
-            if (state->Kind == NpcKindType::Human)
-            {
-                assert(state->ParticleMesh.Springs.size() == 1);
-                state->ParticleMesh.Springs[0].DipoleLength = CalculateHumanNpcDipoleLength(state->KindSpecificState.HumanNpcState.Height);
-            }
-        }
-    }
-}
-
 float Npcs::CalculateHumanNpcDipoleLength(float baseHeight) const
 {
-    return baseHeight * mCurrentHumanNpcBodyLengthAdjustment;
+    return baseHeight * mCurrentSizeAdjustment;
 }
 
 void Npcs::UpdateNpcParticle_Free(
@@ -3186,7 +3186,7 @@ void Npcs::UpdateNpcAnimation(
                     0.41f // std::atan((GameParameters::HumanNpcGeometry::StepLengthFraction / 2.0f) / GameParameters::HumanNpcGeometry::LegLengthFraction)
                     * std::sqrt(actualWalkingSpeed * 0.9f);
 
-                adjustedStandardHumanHeight = humanNpcState.Height * mCurrentHumanNpcBodyLengthAdjustment;
+                adjustedStandardHumanHeight = humanNpcState.Height * mCurrentSizeAdjustment;
                 float const stepLength = GameParameters::HumanNpcGeometry::StepLengthFraction * adjustedStandardHumanHeight;
                 float const distance =
                     humanNpcState.TotalDistanceTraveledOnEdgeSinceStateTransition
@@ -3358,6 +3358,12 @@ void Npcs::UpdateNpcAnimation(
                 // changing UpperLengthFraction immediately to 0.0 causes a "kick" (because leg angles are 90 degrees at that moment);
                 // smooth that kick here
                 targetUpperLegLengthFraction = animationState.UpperLegLengthFraction + (1.0f - animationState.UpperLegLengthFraction) * 0.3f;
+
+                // But converge to one definitely
+                if (targetUpperLegLengthFraction >= 0.98f)
+                {
+                    targetUpperLegLengthFraction = 1.0f;
+                }
 
                 break;
             }

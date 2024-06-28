@@ -35,11 +35,11 @@ void Npcs::Update(
 		RecalculateGlobalDampingFactor();
 	}
 
-	if (gameParameters.HumanNpcBodyLengthAdjustment != mCurrentHumanNpcBodyLengthAdjustment)
+	if (gameParameters.NpcSizeAdjustment != mCurrentSizeAdjustment)
 	{
-		mCurrentHumanNpcBodyLengthAdjustment = gameParameters.HumanNpcBodyLengthAdjustment;
+		mCurrentSizeAdjustment = gameParameters.NpcSizeAdjustment;
 
-		RecalculateHumanNpcDipoleLengths();
+		RecalculateSizeParameters();
 	}
 
 	if (gameParameters.HumanNpcWalkingSpeedAdjustment != mCurrentHumanNpcWalkingSpeedAdjustment)
@@ -272,8 +272,8 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 
 			// Particles
 
-			float constexpr SideLength = 1.5f;
-			float constexpr DiagonalSideLength = SideLength * 1.41421356f; // sqrt(2)
+			float const sideLength = 1.5f * mCurrentSizeAdjustment;
+			float const diagonalSideLength = sideLength * std::sqrtf(2.0f);
 
 			// Futurework: from mNpcDatabase
 			auto const & furnitureMaterial = mMaterialDatabase.GetNpcMaterial("Crate");
@@ -284,11 +284,11 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 				vec2f particlePosition = worldCoordinates;
 				if (p == 1 || p == 2)
 				{
-					particlePosition.x += SideLength;
+					particlePosition.x += sideLength;
 				}
 				if (p == 2 || p == 3)
 				{
-					particlePosition.y -= SideLength;
+					particlePosition.y -= sideLength;
 				}
 
 				auto const particleIndex = mParticles.Add(
@@ -321,7 +321,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 			{
 				baseSpring.EndpointAIndex = particleMesh.Particles[0].ParticleIndex;
 				baseSpring.EndpointBIndex = particleMesh.Particles[1].ParticleIndex;
-				baseSpring.DipoleLength = SideLength;
+				baseSpring.DipoleLength = sideLength;
 				auto & spring = particleMesh.Springs.emplace_back(baseSpring);
 				RecalculateSpringForceParameters(spring);
 			}
@@ -330,7 +330,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 			{
 				baseSpring.EndpointAIndex = particleMesh.Particles[0].ParticleIndex;
 				baseSpring.EndpointBIndex = particleMesh.Particles[3].ParticleIndex;
-				baseSpring.DipoleLength = SideLength;
+				baseSpring.DipoleLength = sideLength;
 				auto & spring = particleMesh.Springs.emplace_back(baseSpring);
 				RecalculateSpringForceParameters(spring);
 			}
@@ -339,7 +339,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 			{
 				baseSpring.EndpointAIndex = particleMesh.Particles[0].ParticleIndex;
 				baseSpring.EndpointBIndex = particleMesh.Particles[2].ParticleIndex;
-				baseSpring.DipoleLength = DiagonalSideLength;
+				baseSpring.DipoleLength = diagonalSideLength;
 				auto & spring = particleMesh.Springs.emplace_back(baseSpring);
 				RecalculateSpringForceParameters(spring);
 			}
@@ -348,7 +348,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 			{
 				baseSpring.EndpointAIndex = particleMesh.Particles[1].ParticleIndex;
 				baseSpring.EndpointBIndex = particleMesh.Particles[2].ParticleIndex;
-				baseSpring.DipoleLength = SideLength;
+				baseSpring.DipoleLength = sideLength;
 				auto & spring = particleMesh.Springs.emplace_back(baseSpring);
 				RecalculateSpringForceParameters(spring);
 			}
@@ -357,7 +357,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 			{
 				baseSpring.EndpointAIndex = particleMesh.Particles[2].ParticleIndex;
 				baseSpring.EndpointBIndex = particleMesh.Particles[3].ParticleIndex;
-				baseSpring.DipoleLength = SideLength;
+				baseSpring.DipoleLength = sideLength;
 				auto & spring = particleMesh.Springs.emplace_back(baseSpring);
 				RecalculateSpringForceParameters(spring);
 			}
@@ -366,7 +366,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 			{
 				baseSpring.EndpointAIndex = particleMesh.Particles[1].ParticleIndex;
 				baseSpring.EndpointBIndex = particleMesh.Particles[3].ParticleIndex;
-				baseSpring.DipoleLength = DiagonalSideLength;
+				baseSpring.DipoleLength = diagonalSideLength;
 				auto & spring = particleMesh.Springs.emplace_back(baseSpring);
 				RecalculateSpringForceParameters(spring);
 			}
@@ -477,7 +477,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
 		feetMaterial.KineticFriction,
 		feetMaterial.Elasticity,
 		feetMaterial.BuoyancyVolumeFill,
-		worldCoordinates - vec2f(0.0f, 1.0f) * height * mCurrentHumanNpcBodyLengthAdjustment,
+		worldCoordinates - vec2f(0.0f, 1.0f) * height * mCurrentSizeAdjustment,
 		feetMaterial.RenderColor);
 
 	particleMesh.Particles.emplace_back(primaryParticleIndex, std::nullopt);
@@ -1617,7 +1617,7 @@ void Npcs::RenderNpc(
 			vec2f const shoulderPosition = neckPosition - actualBodyVector * GameParameters::HumanNpcGeometry::ArmDepthFraction / 2.0f;
 
 			// Arm and Leg lengths are relative to ideal
-			float const adjustedIdealHumanHeight = humanNpcState.Height * mCurrentHumanNpcBodyLengthAdjustment;
+			float const adjustedIdealHumanHeight = humanNpcState.Height * mCurrentSizeAdjustment;
 			float const leftArmLength = adjustedIdealHumanHeight * GameParameters::HumanNpcGeometry::ArmLengthFraction * animationState.LimbLengthMultipliers.LeftArm;
 			float const rightArmLength = adjustedIdealHumanHeight * GameParameters::HumanNpcGeometry::ArmLengthFraction * animationState.LimbLengthMultipliers.RightArm;
 			float const leftLegLength = adjustedIdealHumanHeight * GameParameters::HumanNpcGeometry::LegLengthFraction * animationState.LimbLengthMultipliers.LeftLeg;

@@ -628,7 +628,7 @@ public:
 		// Simulation parameters
 		, mGlobalDampingFactor(0.0f) // Will be calculated
 		, mCurrentGlobalDampingAdjustment(1.0f)
-		, mCurrentHumanNpcBodyLengthAdjustment(1.0f)
+		, mCurrentSizeAdjustment(1.0f)
 		, mCurrentHumanNpcWalkingSpeedAdjustment(1.0f)
 		, mCurrentSpringReductionFractionAdjustment(1.0f)
 		, mCurrentSpringDampingCoefficientAdjustment(1.0f)
@@ -904,11 +904,11 @@ private:
 		float particleMass,
 		GameParameters const & gameParameters) const;
 
+	void RecalculateSizeParameters();
+
 	void RecalculateSpringForceParameters();
 
 	void RecalculateSpringForceParameters(StateType::NpcSpringStateType & spring) const;
-
-	void RecalculateHumanNpcDipoleLengths();
 
 	float CalculateHumanNpcDipoleLength(float baseHeight) const;
 
@@ -1327,7 +1327,7 @@ private:
 
 	// Cached from game parameters
 	float mCurrentGlobalDampingAdjustment;
-	float mCurrentHumanNpcBodyLengthAdjustment;
+	float mCurrentSizeAdjustment;
 	float mCurrentHumanNpcWalkingSpeedAdjustment;
 	float mCurrentSpringReductionFractionAdjustment;
 	float mCurrentSpringDampingCoefficientAdjustment;

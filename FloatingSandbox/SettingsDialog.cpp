@@ -187,15 +187,15 @@ SettingsDialog::SettingsDialog(
     }
 
     //
-    // Lights, Electricals, and Fishes
+    // Lights, Electricals, Fishes, NPCs
     //
 
     {
         wxPanel * panel = new wxPanel(notebook);
 
-        PopulateLightsElectricalAndFishesPanel(panel);
+        PopulateLightsElectricalFishesNpcsPanel(panel);
 
-        notebook->AddPage(panel, _("Lights, Electricals, and Fishes"));
+        notebook->AddPage(panel, _("Lights, Electricals, Fishes, NPCs"));
     }
 
     //
@@ -949,7 +949,7 @@ void SettingsDialog::PopulateMechanicsAndThermodynamicsPanel(
                     std::make_unique<IntegralLinearSliderCore<unsigned int>>(
                         mGameControllerSettingsOptions.GetMinMaxNumSimulationThreads(),
                         mGameControllerSettingsOptions.GetMaxMaxNumSimulationThreads()));
-                
+
                 performanceSizer->Add(
                     mMaxNumSimulationThreadsSlider,
                     wxGBPosition(0, 1),
@@ -2502,7 +2502,7 @@ void SettingsDialog::PopulateAirAndSkyPanel(wxPanel * panel)
     panel->SetSizer(gridSizer);
 }
 
-void SettingsDialog::PopulateLightsElectricalAndFishesPanel(wxPanel * panel)
+void SettingsDialog::PopulateLightsElectricalFishesNpcsPanel(wxPanel * panel)
 {
     wxGridBagSizer * gridSizer = new wxGridBagSizer(0, 0);
 
@@ -2849,7 +2849,54 @@ void SettingsDialog::PopulateLightsElectricalAndFishesPanel(wxPanel * panel)
         gridSizer->Add(
             boxSizer,
             wxGBPosition(1, 0),
-            wxGBSpan(1, 2),
+            wxGBSpan(1, 1),
+            wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
+            CellBorderOuter);
+    }
+
+    //
+    // NPCs
+    //
+
+    {
+        wxStaticBoxSizer * boxSizer = new wxStaticBoxSizer(wxVERTICAL, panel, _("NPCs"));
+
+        {
+            wxGridBagSizer * sizer = new wxGridBagSizer(0, 0);
+
+            // Size Adjust
+            {
+                mNpcSizeAdjustmentSlider = new SliderControl<float>(
+                    boxSizer->GetStaticBox(),
+                    SliderControl<float>::DirectionType::Vertical,
+                    SliderWidth,
+                    SliderHeight,
+                    _("Size Adjust"),
+                    _("Adjusts the size of NPCs."),
+                    [this](float value)
+                    {
+                        this->mLiveSettings.SetValue(GameSettings::NpcSizeAdjustment, value);
+                        this->OnLiveSettingsChanged();
+                    },
+                    std::make_unique<LinearSliderCore>(
+                        mGameControllerSettingsOptions.GetMinNpcSizeAdjustment(),
+                        mGameControllerSettingsOptions.GetMaxNpcSizeAdjustment()));
+
+                sizer->Add(
+                    mNpcSizeAdjustmentSlider,
+                    wxGBPosition(0, 0),
+                    wxGBSpan(1, 1),
+                    wxEXPAND | wxALL,
+                    CellBorderInner);
+            }
+
+            boxSizer->Add(sizer, 1, wxALL, StaticBoxInsetMargin);
+        }
+
+        gridSizer->Add(
+            boxSizer,
+            wxGBPosition(1, 1),
+            wxGBSpan(1, 1),
             wxEXPAND | wxALL | wxALIGN_CENTER_HORIZONTAL,
             CellBorderOuter);
     }
@@ -4116,7 +4163,7 @@ void SettingsDialog::PopulateRenderingPanel(wxPanel * panel)
                     wxALL | wxALIGN_CENTER_VERTICAL,
                     CellBorderInner);
             }
-            
+
             boxSizer->Add(sizer, 0, wxALL, StaticBoxInsetMargin);
         }
 
@@ -5531,7 +5578,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     //
     // Mechanics and Thermodynamics
     //
-    
+
     mStrengthSlider->SetValue(settings.GetValue<float>(GameSettings::SpringStrengthAdjustment));
     mGlobalDampingAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::GlobalDampingAdjustment));
     mStaticPressureForceAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::StaticPressureForceAdjustment));
@@ -5610,7 +5657,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mDayLightCycleDurationSlider->Enable(settings.GetValue<bool>(GameSettings::DoDayLightCycle));
 
     //
-    // Lights, Electricals, and Fishes
+    // Lights, Electricals, Fishes, NPCs
     //
 
     mLuminiscenceSlider->SetValue(settings.GetValue<float>(GameSettings::LuminiscenceAdjustment));
@@ -5625,6 +5672,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     mDoFishShoalingCheckBox->SetValue(settings.GetValue<bool>(GameSettings::DoFishShoaling));
     mFishShoalRadiusAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::FishShoalRadiusAdjustment));
     mFishShoalRadiusAdjustmentSlider->Enable(settings.GetValue<bool>(GameSettings::DoFishShoaling));
+    mNpcSizeAdjustmentSlider->SetValue(settings.GetValue<float>(GameSettings::NpcSizeAdjustment));
 
     //
     // Destructive Tools
@@ -5642,7 +5690,7 @@ void SettingsDialog::SyncControlsWithSettings(Settings<GameSettings> const & set
     //
     // Other Tools
     //
-    
+
     mFloodRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::FloodRadius));
     mFloodQuantitySlider->SetValue(settings.GetValue<float>(GameSettings::FloodQuantity));
     mHeatBlasterRadiusSlider->SetValue(settings.GetValue<float>(GameSettings::HeatBlasterRadius));

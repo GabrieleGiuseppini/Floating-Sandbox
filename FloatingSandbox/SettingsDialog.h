@@ -60,7 +60,7 @@ private:
     // Control tabs
     //////////////////////////////////////////////////////
 
-    // Mechanics and Thermodynamics    
+    // Mechanics and Thermodynamics
     SliderControl<float> * mStrengthSlider;
     SliderControl<float> * mGlobalDampingAdjustmentSlider;
     SliderControl<float> * mStaticPressureForceAdjustmentSlider;
@@ -125,7 +125,7 @@ private:
     wxCheckBox * mDoDayLightCycleCheckBox;
     SliderControl<std::chrono::minutes::rep> * mDayLightCycleDurationSlider;
 
-    // Lights, Electricals, and Fishes
+    // Lights, Electricals, Fishes, NPCs
     SliderControl<float> * mLuminiscenceSlider;
     SliderControl<float> * mLightSpreadSlider;
     wxCheckBox * mGenerateEngineWakeCheckBox;
@@ -137,6 +137,7 @@ private:
     SliderControl<float> * mFishSpeedAdjustmentSlider;
     wxCheckBox * mDoFishShoalingCheckBox;
     SliderControl<float> * mFishShoalRadiusAdjustmentSlider;
+    SliderControl<float> * mNpcSizeAdjustmentSlider;
 
     // Destructive Tools
     SliderControl<float> * mDestroyRadiusSlider;
@@ -244,7 +245,7 @@ private:
     void PopulateWaterAndOceanPanel(wxPanel * panel);
     void PopulateWindAndWavesPanel(wxPanel * panel);
     void PopulateAirAndSkyPanel(wxPanel * panel);
-    void PopulateLightsElectricalAndFishesPanel(wxPanel * panel);
+    void PopulateLightsElectricalFishesNpcsPanel(wxPanel * panel);
     void PopulateDestructiveToolsPanel(wxPanel * panel, ResourceLocator const & resourceLocator);
     void PopulateOtherToolsPanel(wxPanel * panel, ResourceLocator const & resourceLocator);
     void PopulateRenderingPanel(wxPanel * panel);

@@ -228,6 +228,12 @@ struct IGameControllerSettings
     virtual float GetFishShoalRadiusAdjustment() const = 0;
     virtual void SetFishShoalRadiusAdjustment(float value) = 0;
 
+    // NPCs
+
+    virtual float GetNpcSizeAdjustment() const = 0;
+    virtual void SetNpcSizeAdjustment(float value) = 0;
+
+
     // Misc
 
     virtual OceanFloorTerrain const & GetOceanFloorTerrain() const = 0;

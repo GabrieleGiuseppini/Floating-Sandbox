@@ -207,6 +207,11 @@ struct IGameControllerSettingsOptions
     virtual float GetMinFishShoalRadiusAdjustment() const = 0;
     virtual float GetMaxFishShoalRadiusAdjustment() const = 0;
 
+    // NPCs
+
+    virtual float GetMinNpcSizeAdjustment() const = 0;
+    virtual float GetMaxNpcSizeAdjustment() const = 0;
+
     // Misc
 
     virtual float GetMinSeaDepth() const = 0;

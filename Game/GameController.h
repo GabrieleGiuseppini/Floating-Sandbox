@@ -610,6 +610,14 @@ public:
     float GetMinFishShoalRadiusAdjustment() const override { return GameParameters::MinFishShoalRadiusAdjustment; }
     float GetMaxFishShoalRadiusAdjustment() const override { return GameParameters::MaxFishShoalRadiusAdjustment; }
 
+    // NPCs
+
+    float GetNpcSizeAdjustment() const override { return mGameParameters.NpcSizeAdjustment; }
+    void SetNpcSizeAdjustment(float value) override { mGameParameters.NpcSizeAdjustment = value; }
+    float GetMinNpcSizeAdjustment() const override { return GameParameters::MinNpcSizeAdjustment; }
+    float GetMaxNpcSizeAdjustment() const override { return GameParameters::MaxNpcSizeAdjustment; }
+
+
     // Misc
 
     OceanFloorTerrain const & GetOceanFloorTerrain() const override { return mWorld->GetOceanFloorTerrain(); }

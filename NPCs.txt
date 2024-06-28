@@ -285,17 +285,19 @@ Arch
 			- Various points:
 				- Do we need to check orientation of our current triangle @ beginning of Update()?
 
-	- Settings:
+	- Primary/Secondary edge-separation at floor check: see if can be improved by looking at third vertex of triangle of particle for which we check
+
+	= Settings:
 		- List:
-			- HumanNpcHeight("Size")Adj
-				- Yeah rename param to "NpcSizeAdjustment"
+			+ HumanNpcHeight("Size")Adj
+				+ Yeah rename param to "NpcSizeAdjustment"
 					- Apply its effect also to furniture
 			- ElasticityAdj, FrictionAdj
 			// Human section:
 			- HumanWalkingSpeedAdj
 		- SettingsManager
 		- SettingsDialog
-			- New NPC tab
+			+ Lights, Electricals, Fishes, and NPCs
 
 	- Misc possible improvements:
 		- Maintain spring lengths during BeingPlaced (to avoid elongations)
@@ -406,17 +408,34 @@ Arch
 				+ BounceConstrained...() needs to take bounceEdgeTriangle, bounceEdgeBCoords, bounceEdgeOrdinal, and Ship - but can lose bounceEdgeNormal
 			+ Requires Ship in NPC to not be const
 				+ And see if can get rid of naming member "ShipMesh" - may be "HomeShip"?
-	- Mass is proportional to body length adjustment (square, we're 2D)
+	= Mass is proportional to body length adjustment (square, we're 2D)
 		- And so is buoyancy
-		- Recalc both at changes and store as particle attributes
-			- Primary & secondary
-			- Via static float CalculateParticleMass(base mass, dimensions adjustment, mass adj (iff BaryLab)), CalculateParticleBuoyancy(base mass, dimensions adjustment, buoyancy adj (iff BaryLab) , mass adj?)
-				- Buoyancy: only needs to affect "volume"
-				- Called @ Update() upon changes to dimensions adj, mass adj, buoyancy adj
-				- Called @ AddNpc's
-			- These new particle attributes replace:
-				- Various local particleMass calculations
-				- Buoyancy 
+		- NPCParticle attributes (changeable from outside)
+			- BaseMass (already there somehow?)
+			- Mass // Adjusted
+				- Use wherever we use mass - which should also be always adjusted with MassAdjustment
+			- BuoyancyFactor
+				- Use @ Bouyancy
+		- @ Npcs::Add (x2):
+			- Calculate Mass via static float CalculateParticleMass(base mass, dimensions adjustment, mass adj (iff BaryLab))
+			- Calculate BuoyancyFactor via static float CalculateParticleBuoyancy(base mass, dimensions adjustment, buoyancy adj (iff BaryLab) , mass adj?)
+			- Calculate spring lengths via static float TODO
+				- Spring lengths used for:
+					- Hooke force (as dipoleLength)
+					- Particles' positions at Add() (as height*adjust)
+					- Render (as height*adjust)
+					- Equilibrium Torque (as height*adjust)
+					- Animation (walking) (as height*adjust)
+			- Calculate spring mass factors via static float TODO
+		- @ Npcs::Update:
+			- At size adjustment detected: (and mass & buoyancy iff barylab)
+				- RecalculateSizeParameters:
+					- Recalculate all NpcParticles::Mass via static float CalculateParticleMass(base mass, dimensions adjustment, mass adj (iff BaryLab))
+					- Recalculate all NpcParticles::BuoyancyFactor via static float CalculateParticleBuoyancy(base mass, dimensions adjustment, buoyancy adj (iff BaryLab) , mass adj?)
+					- Recalculate all spring lengths via static float TODO
+						- Replaces CalculateHumanNpcDipoleLength(.)
+					- Recalculate all spring mass factors via static float TODO
+				- Store in mCurrentSizeAdjustment
 	- Incorporate ship material's elasticity and friction in calculations for bounce and friction
 	- When ship is repaired, all NPCs do a little dance
 		- Sync is simulation clock (so all are in sync)
