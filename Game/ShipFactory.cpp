@@ -2267,11 +2267,7 @@ void ShipFactory::VerifyShipInvariants(
 
     for (auto t : triangles)
     {
-        auto const pa = points.GetPosition(triangles.GetPointAIndex(t));
-        auto const pb = points.GetPosition(triangles.GetPointBIndex(t));
-        auto const pc = points.GetPosition(triangles.GetPointCIndex(t));
-
-        Verify((pb.x - pa.x) * (pc.y - pa.y) - (pc.x - pa.x) * (pb.y - pa.y) < 0);
+        Verify(triangles.AreVerticesInCwOrder(t, points));
     }
 }
 #endif

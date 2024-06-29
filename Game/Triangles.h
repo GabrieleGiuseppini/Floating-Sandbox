@@ -216,7 +216,7 @@ public:
         return mEndpointsBuffer[triangleElementIndex].PointIndices[2];
     }
 
-    inline bool ArePointsInCwOrder(
+    inline bool IsVertexSequenceInCwOrder(
         ElementIndex triangleElementIndex,
         ElementIndex point1Index,
         ElementIndex point2Index) const
@@ -456,6 +456,24 @@ public:
             positionA * barycentricCoordinates[0]
             + positionB * barycentricCoordinates[1]
             + positionC * barycentricCoordinates[2];
+    }
+
+    //
+    // Misc
+    //
+
+    /*
+     * Also useful for checking whether a triangle is folded.
+     */
+    inline bool AreVerticesInCwOrder(
+        ElementIndex triangleElementIndex,
+        Points const & points) const
+    {
+        auto const pa = points.GetPosition(GetPointAIndex(triangleElementIndex));
+        auto const pb = points.GetPosition(GetPointBIndex(triangleElementIndex));
+        auto const pc = points.GetPosition(GetPointCIndex(triangleElementIndex));
+
+        return (pb.x - pa.x) * (pc.y - pa.y) - (pc.x - pa.x) * (pb.y - pa.y) < 0;
     }
 
 private:

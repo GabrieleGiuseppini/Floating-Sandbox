@@ -275,7 +275,7 @@ Arch
 			+ Large number of NPCs
 			+ Panic
 	
-	- FIX: Inflatable Balloon: infinite loop
+	= FIX: Inflatable Balloon: infinite loop
 		- Figure out if due to folded triangle
 		- If so:
 			- Plan A: deal with it
@@ -284,7 +284,7 @@ Arch
 			- Plan C: same as above, but becoming free
 			- Various points:
 				- Do we need to check orientation of our current triangle @ beginning of Update()?
-
+	- See why rendering internal view does not show springs
 	- Primary/Secondary edge-separation at floor check: see if can be improved by looking at third vertex of triangle of particle for which we check
 
 	= Settings:
