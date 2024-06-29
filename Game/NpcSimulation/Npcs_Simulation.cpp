@@ -413,14 +413,8 @@ void Npcs::UpdateNpcParticlePhysics(
     LogNpcDebug("----------------------------------");
     LogNpcDebug("  Particle ", npcParticleOrdinal);
 
-    float const particleMass =
-        mParticles.GetPhysicalProperties(npcParticle.ParticleIndex).Mass
-#ifdef IN_BARYLAB
-        * mCurrentMassAdjustment
-#endif
-        ;
-
     float constexpr dt = GameParameters::SimulationStepTimeDuration<float>;
+    float const particleMass = mParticles.GetMass(npcParticle.ParticleIndex);
 
     vec2f const particleStartAbsolutePosition = mParticles.GetPosition(npcParticle.ParticleIndex);
 
@@ -444,7 +438,6 @@ void Npcs::UpdateNpcParticlePhysics(
         vec2f const physicalForces = CalculateNpcParticleDefinitiveForces(
             npc,
             npcParticleOrdinal,
-            particleMass,
             gameParameters);
 
         physicsDeltaPos = mParticles.GetVelocity(npcParticle.ParticleIndex) * dt + (physicalForces / particleMass) * dt * dt;
@@ -896,12 +889,12 @@ void Npcs::UpdateNpcParticlePhysics(
                     if (std::abs(npcParticle.ConstrainedState->MeshRelativeVelocity.dot(edgeDir)) > 0.01f) // Magic number
                     {
                         // Kinetic friction
-                        frictionCoefficient = mParticles.GetPhysicalProperties(npcParticle.ParticleIndex).KineticFriction * gameParameters.NpcMaterialKineticFrictionAdjustment;
+                        frictionCoefficient = mParticles.GetMaterialProperties(npcParticle.ParticleIndex).KineticFriction * gameParameters.NpcMaterialKineticFrictionAdjustment;
                     }
                     else
                     {
                         // Static friction
-                        frictionCoefficient = mParticles.GetPhysicalProperties(npcParticle.ParticleIndex).StaticFriction * gameParameters.NpcMaterialStaticFrictionAdjustment;
+                        frictionCoefficient = mParticles.GetMaterialProperties(npcParticle.ParticleIndex).StaticFriction * gameParameters.NpcMaterialStaticFrictionAdjustment;
                     }
 
                     // Calculate friction (integrated) force magnitude (along edgeDir),
@@ -1339,12 +1332,7 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
     // Calculate world forces
     //
 
-    float const particleMass =
-        mParticles.GetPhysicalProperties(npcParticle.ParticleIndex).Mass
-#ifdef IN_BARYLAB
-        * mCurrentMassAdjustment
-#endif
-        ;
+    float const particleMass = mParticles.GetMass(npcParticle.ParticleIndex);
 
     // 1. World forces - gravity
 
@@ -1377,11 +1365,7 @@ void Npcs::CalculateNpcParticlePreliminaryForces(
             // 2. World forces - buoyancy
 
             preliminaryForces.y +=
-                GameParameters::GravityMagnitude * 1000.0f
-                * mParticles.GetPhysicalProperties(npcParticle.ParticleIndex).BuoyancyVolumeFill
-#ifdef IN_BARYLAB
-                * gameParameters.BuoyancyAdjustment
-#endif
+                mParticles.GetBuoyancyFactor(npcParticle.ParticleIndex)\
                 * uwCoefficient;
 
             // 3. World forces - water drag
@@ -1414,7 +1398,7 @@ void Npcs::CalculateNpcParticleSpringForces(StateType const & npc)
 
         // Calculate spring force on this particle
         float const fSpring =
-            (springDisplacementLength - spring.DipoleLength)
+            (springDisplacementLength - spring.RestLength)
             * spring.SpringStiffnessFactor;
 
         //
@@ -1444,7 +1428,6 @@ void Npcs::CalculateNpcParticleSpringForces(StateType const & npc)
 vec2f Npcs::CalculateNpcParticleDefinitiveForces(
     StateType const & npc,
     int npcParticleOrdinal,
-    float particleMass,
     GameParameters const & gameParameters) const
 {
     float constexpr dt = GameParameters::SimulationStepTimeDuration<float>;
@@ -1490,7 +1473,8 @@ vec2f Npcs::CalculateNpcParticleDefinitiveForces(
         //  - But we approximate the arc with the chord, i.e.the distance between source and destination
         //
 
-        vec2f const idealHeadPosition = feetPosition + vec2f(0.0f, npc.KindSpecificState.HumanNpcState.Height * mCurrentSizeAdjustment);
+        assert(npc.ParticleMesh.Springs.size() == 1);
+        vec2f const idealHeadPosition = feetPosition + vec2f(0.0f, npc.ParticleMesh.Springs[0].RestLength);
 
         float const stiffnessCoefficient =
             gameParameters.HumanNpcEquilibriumTorqueStiffnessCoefficient
@@ -1521,7 +1505,7 @@ vec2f Npcs::CalculateNpcParticleDefinitiveForces(
             radialDir
             * (force1Magnitude + force2Magnitude)
             / mCurrentSizeAdjustment // Note: we divide by size adjustment to maintain torque independent from lever length
-            * particleMass / (dt * dt);
+            * mParticles.GetMass(npcParticle.ParticleIndex) / (dt * dt);
 
         definitiveForces += equilibriumTorqueForce;
     }
@@ -1529,63 +1513,152 @@ vec2f Npcs::CalculateNpcParticleDefinitiveForces(
     return definitiveForces;
 }
 
-void Npcs::RecalculateSizeParameters()
+void Npcs::RecalculateSizeAndMassParameters()
 {
     for (auto & state : mStateBuffer)
     {
         if (state.has_value())
         {
-            if (state->Kind == NpcKindType::Human)
+            //
+            // Particles
+            //
+
+            for (auto & particle : state->ParticleMesh.Particles)
             {
-                assert(state->ParticleMesh.Springs.size() == 1);
-                state->ParticleMesh.Springs[0].DipoleLength = CalculateHumanNpcDipoleLength(state->KindSpecificState.HumanNpcState.Height);
+                mParticles.SetMass(particle.ParticleIndex,
+                    CalculateParticleMass(
+                        mParticles.GetMaterialProperties(particle.ParticleIndex).Mass,
+                        mCurrentSizeAdjustment
+#ifdef IN_BARYLAB
+                        , mCurrentMassAdjustment
+#endif
+                    ));
+
+                mParticles.SetBuoyancyFactor(particle.ParticleIndex,
+                    CalculateParticleBuoyancyFactor(
+                        mParticles.GetMaterialProperties(particle.ParticleIndex).BuoyancyVolumeFill,
+                        mCurrentSizeAdjustment
+#ifdef IN_BARYLAB
+                        , mCurrentBuoyancyAdjustment
+#endif
+                    ));
             }
+
+            //
+            // Springs
+            //
+
+            CalculateSprings(
+                mCurrentSizeAdjustment,
+#ifdef IN_BARYLAB
+                mCurrentMassAdjustment,
+#endif
+                mCurrentSpringReductionFractionAdjustment,
+                mCurrentSpringDampingCoefficientAdjustment,
+                mParticles,
+                state->ParticleMesh);
         }
     }
 }
 
-void Npcs::RecalculateSpringForceParameters()
+float Npcs::CalculateParticleMass(
+    float baseMass,
+    float sizeAdjustment
+#ifdef IN_BARYLAB
+    , float massAdjustment
+#endif
+    )
 {
-    // Visit all springs
+    float const particleMass =
+        baseMass
+        * (sizeAdjustment * sizeAdjustment) // 2D "volume" adjustment
+#ifdef IN_BARYLAB
+        * massAdjustment
+#endif
+        ;
 
-    for (auto & npc : mStateBuffer)
-    {
-        if (npc.has_value())
-        {
-            for (auto & spring : npc->ParticleMesh.Springs)
-            {
-                RecalculateSpringForceParameters(spring);
-            }
-        }
-    }
+    return particleMass;
 }
 
-void Npcs::RecalculateSpringForceParameters(StateType::NpcSpringStateType & spring) const
+float Npcs::CalculateParticleBuoyancyFactor(
+    float baseBuoyancyVolumeFill,
+    float sizeAdjustment
+#ifdef IN_BARYLAB
+    , float buoyancyAdjustment
+#endif
+)
+{
+    float const buoyancyFactor =
+        GameParameters::GravityMagnitude * 1000.0f
+        * (sizeAdjustment * sizeAdjustment) // 2D "volume" adjustment
+        * baseBuoyancyVolumeFill
+#ifdef IN_BARYLAB
+        * buoyancyAdjustment
+#endif
+        ;
+
+    return buoyancyFactor;
+}
+
+void Npcs::CalculateSprings(
+    float sizeAdjustment,
+#ifdef IN_BARYLAB
+    float massAdjustment,
+#endif
+    float springReductionFractionAdjustment,
+    float springDampingCoefficientAdjustment,
+    NpcParticles const & particles,
+    StateType::ParticleMeshType & mesh)
 {
     float constexpr dt = GameParameters::SimulationStepTimeDuration<float>;
 
-    spring.SpringStiffnessFactor =
-        spring.SpringReductionFraction
-        * spring.MassFactor
-#ifdef IN_BARYLAB
-        * mCurrentMassAdjustment
-#endif
-        * mCurrentSpringReductionFractionAdjustment
-        / (dt * dt);
+    for (auto & spring : mesh.Springs)
+    {
+        // Spring rest length
 
-    spring.SpringDampingFactor =
-        spring.SpringDampingCoefficient
-        * spring.MassFactor
+        spring.RestLength = CalculateSpringLength(spring.BaseRestLength, sizeAdjustment);
+
+        // Spring force factors
+
+        float const baseMass1 = particles.GetMaterialProperties(spring.EndpointAIndex).Mass;
+        float const baseMass2 = particles.GetMaterialProperties(spring.EndpointBIndex).Mass;
+
+        float const baseMassFactor =
+            (baseMass1 * baseMass2)
+            / (baseMass1 + baseMass2);
+
+        spring.SpringStiffnessFactor =
+            spring.BaseSpringReductionFraction
+            * springReductionFractionAdjustment
+            * baseMassFactor
 #ifdef IN_BARYLAB
-        * mCurrentMassAdjustment
+            * massAdjustment
 #endif
-        * mCurrentSpringDampingCoefficientAdjustment
-        / dt;
+            * (sizeAdjustment * sizeAdjustment) // 2D
+            / (dt * dt);
+
+        spring.SpringDampingFactor =
+            spring.BaseSpringDampingCoefficient
+            * springDampingCoefficientAdjustment
+            * baseMassFactor
+#ifdef IN_BARYLAB
+            * massAdjustment
+#endif
+            * (sizeAdjustment * sizeAdjustment) // 2D
+            / dt;
+    }
 }
 
-float Npcs::CalculateHumanNpcDipoleLength(float baseHeight) const
+float Npcs::CalculateSpringLength(
+    float baseLength,
+    float sizeAdjustment)
 {
-    return baseHeight * mCurrentSizeAdjustment;
+    return baseLength * sizeAdjustment;
+}
+
+void Npcs::RecalculateGlobalDampingFactor()
+{
+    mGlobalDampingFactor = 1.0f - GameParameters::NpcDamping * mCurrentGlobalDampingAdjustment;
 }
 
 void Npcs::UpdateNpcParticle_Free(
@@ -2796,13 +2869,13 @@ void Npcs::BounceConstrainedNpcParticle(
         // Calculate normal reponse: Vn' = -e*Vn (e = elasticity, [0.0 - 1.0])
         vec2f const normalResponse =
             -normalVelocity
-            * particles.GetPhysicalProperties(npcParticle.ParticleIndex).Elasticity
+            * particles.GetMaterialProperties(npcParticle.ParticleIndex).Elasticity
             * gameParameters.NpcMaterialElasticityAdjustment;
 
         // Calculate tangential response: Vt' = a*Vt (a = (1.0-friction), [0.0 - 1.0])
         vec2f const tangentialResponse =
             tangentialVelocity
-            * std::max(0.0f, 1.0f - particles.GetPhysicalProperties(npcParticle.ParticleIndex).KineticFriction * gameParameters.NpcMaterialKineticFrictionAdjustment);
+            * std::max(0.0f, 1.0f - particles.GetMaterialProperties(npcParticle.ParticleIndex).KineticFriction * gameParameters.NpcMaterialKineticFrictionAdjustment);
 
         // Calculate whole response (which, given that we've been working in *apparent* space (we've calc'd the collision response to *trajectory* which is apparent displacement)),
         // is a relative velocity (relative to mesh)
@@ -2828,16 +2901,9 @@ void Npcs::BounceConstrainedNpcParticle(
         // Impart force against edge
         //
 
-        float const particleMass =
-            mParticles.GetPhysicalProperties(npcParticle.ParticleIndex).Mass
-#ifdef IN_BARYLAB
-            * mCurrentMassAdjustment
-#endif
-            ;
-
         vec2f const impartedForce =
             (normalVelocity - normalResponse)
-            * particleMass
+            * mParticles.GetMass(npcParticle.ParticleIndex)
             / dt;
 
         // Divide among two vertices
@@ -2911,6 +2977,7 @@ void Npcs::UpdateNpcAnimation(
         using HumanNpcStateType = StateType::KindSpecificStateType::HumanNpcStateType;
 
         assert(npc.ParticleMesh.Particles.size() == 2);
+        assert(npc.ParticleMesh.Springs.size() == 1);
         ElementIndex const primaryParticleIndex = npc.ParticleMesh.Particles[0].ParticleIndex;
         auto const & primaryContrainedState = npc.ParticleMesh.Particles[0].ConstrainedState;
         ElementIndex const secondaryParticleIndex = npc.ParticleMesh.Particles[1].ParticleIndex;
@@ -3186,7 +3253,7 @@ void Npcs::UpdateNpcAnimation(
                     0.41f // std::atan((GameParameters::HumanNpcGeometry::StepLengthFraction / 2.0f) / GameParameters::HumanNpcGeometry::LegLengthFraction)
                     * std::sqrt(actualWalkingSpeed * 0.9f);
 
-                adjustedStandardHumanHeight = humanNpcState.Height * mCurrentSizeAdjustment;
+                adjustedStandardHumanHeight = npc.ParticleMesh.Springs[0].RestLength;
                 float const stepLength = GameParameters::HumanNpcGeometry::StepLengthFraction * adjustedStandardHumanHeight;
                 float const distance =
                     humanNpcState.TotalDistanceTraveledOnEdgeSinceStateTransition
@@ -3736,8 +3803,4 @@ void Npcs::UpdateNpcAnimation(
     }
 }
 
-void Npcs::RecalculateGlobalDampingFactor()
-{
-    mGlobalDampingFactor = 1.0f - GameParameters::NpcDamping * mCurrentGlobalDampingAdjustment;
-}
 }

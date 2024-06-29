@@ -811,7 +811,7 @@ void Npcs::UpdateHuman(
 			{
 				// Check if reached alignment (note: here so that we may keep torque as we'll be transitioning to Equilibrium)
 
-				float const alignment = CalculateDipoleVerticalAlignment(primaryParticleState.ParticleIndex, secondaryParticleState.ParticleIndex, mParticles);
+				float const alignment = CalculateSpringVerticalAlignment(primaryParticleState.ParticleIndex, secondaryParticleState.ParticleIndex, mParticles);
 
 #ifdef BARYLAB_PROBING
 				publishStateQuantity = std::make_tuple("Alignment", std::to_string(alignment));

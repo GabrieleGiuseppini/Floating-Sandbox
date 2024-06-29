@@ -35,25 +35,31 @@ void Npcs::Update(
 		RecalculateGlobalDampingFactor();
 	}
 
-	if (gameParameters.NpcSizeAdjustment != mCurrentSizeAdjustment)
+	if (gameParameters.NpcSizeAdjustment != mCurrentSizeAdjustment
+		|| gameParameters.NpcSpringReductionFractionAdjustment != mCurrentSpringReductionFractionAdjustment
+		|| gameParameters.NpcSpringDampingCoefficientAdjustment != mCurrentSpringDampingCoefficientAdjustment
+#ifdef IN_BARYLAB
+		|| gameParameters.MassAdjustment != mCurrentMassAdjustment
+		|| gameParameters.BuoyancyAdjustment != mCurrentBuoyancyAdjustment
+		|| gameParameters.GravityAdjustment != mCurrentGravityAdjustment
+#endif
+		)
 	{
 		mCurrentSizeAdjustment = gameParameters.NpcSizeAdjustment;
+		mCurrentSpringReductionFractionAdjustment = gameParameters.NpcSpringReductionFractionAdjustment;
+		mCurrentSpringDampingCoefficientAdjustment = gameParameters.NpcSpringDampingCoefficientAdjustment;
+#ifdef IN_BARYLAB
+		mCurrentMassAdjustment = gameParameters.MassAdjustment;
+		mCurrentBuoyancyAdjustment = gameParameters.BuoyancyAdjustment;
+		mCurrentGravityAdjustment = gameParameters.GravityAdjustment;
+#endif
 
-		RecalculateSizeParameters();
+		RecalculateSizeAndMassParameters();
 	}
 
 	if (gameParameters.HumanNpcWalkingSpeedAdjustment != mCurrentHumanNpcWalkingSpeedAdjustment)
 	{
 		mCurrentHumanNpcWalkingSpeedAdjustment = gameParameters.HumanNpcWalkingSpeedAdjustment;
-	}
-
-	if (gameParameters.NpcSpringReductionFractionAdjustment != mCurrentSpringReductionFractionAdjustment
-		|| gameParameters.NpcSpringDampingCoefficientAdjustment != mCurrentSpringDampingCoefficientAdjustment)
-	{
-		mCurrentSpringReductionFractionAdjustment = gameParameters.NpcSpringReductionFractionAdjustment;
-		mCurrentSpringDampingCoefficientAdjustment = gameParameters.NpcSpringDampingCoefficientAdjustment;
-
-		RecalculateSpringForceParameters();
 	}
 
 	//
@@ -259,6 +265,8 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 
 	StateType::ParticleMeshType particleMesh;
 
+	vec2f anchorOffset;
+
 	switch (furnitureKind)
 	{
 		case FurnitureNpcKindType::Quad:
@@ -270,25 +278,56 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 				return std::nullopt;
 			}
 
-			// Particles
+			// Create Particles
 
-			float const sideLength = 1.5f * mCurrentSizeAdjustment;
-			float const diagonalSideLength = sideLength * std::sqrtf(2.0f);
+			float const baseWidth = 1.5f; // Futurework: from NPC database
+			float const baseHeight = 1.5f; // Futurework: from NPC database
+			auto const & furnitureMaterial = mMaterialDatabase.GetNpcMaterial("Crate"); // Futurework: from NPC database
 
-			// Futurework: from mNpcDatabase
-			auto const & furnitureMaterial = mMaterialDatabase.GetNpcMaterial("Crate");
+			float const mass = CalculateParticleMass(
+				furnitureMaterial.Mass,
+				mCurrentSizeAdjustment
+#ifdef IN_BARYLAB
+				, mCurrentMassAdjustment
+#endif
+			);
 
+			float const buoyancyFactor = CalculateParticleBuoyancyFactor(
+				furnitureMaterial.BuoyancyVolumeFill,
+				mCurrentSizeAdjustment
+#ifdef IN_BARYLAB
+				, mCurrentBuoyancyAdjustment
+#endif
+			);
+
+			float const baseDiagonal = std::sqrtf(baseWidth * baseWidth + baseHeight * baseHeight);
+
+			// 0 - 1
+			// |   |
+			// 3 - 2
+			float const width = CalculateSpringLength(baseWidth, mCurrentSizeAdjustment);
+			float const height = CalculateSpringLength(baseHeight, mCurrentSizeAdjustment);
 			for (int p = 0; p < 4; ++p)
 			{
 				// CW order
 				vec2f particlePosition = worldCoordinates;
-				if (p == 1 || p == 2)
+
+				if (p == 0 || p == 3)
 				{
-					particlePosition.x += sideLength;
+					particlePosition.x -= width / 2.0f;
 				}
-				if (p == 2 || p == 3)
+				else
 				{
-					particlePosition.y -= sideLength;
+					particlePosition.x += width / 2.0f;
+				}
+
+				if (p == 0 || p == 1)
+				{
+					particlePosition.y += height / 2.0f;
+				}
+				else
+				{
+					particlePosition.y -= height / 2.0f;
 				}
 
 				auto const particleIndex = mParticles.Add(
@@ -297,6 +336,8 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 					furnitureMaterial.KineticFriction,
 					furnitureMaterial.Elasticity,
 					furnitureMaterial.BuoyancyVolumeFill,
+					mass,
+					buoyancyFactor,
 					particlePosition,
 					furnitureMaterial.RenderColor);
 
@@ -305,71 +346,72 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 
 			// Springs
 
-			float const massFactor =
-				(furnitureMaterial.Mass * furnitureMaterial.Mass)
-				/ (furnitureMaterial.Mass + furnitureMaterial.Mass);
-
 			StateType::NpcSpringStateType baseSpring(
 				NoneElementIndex,
 				NoneElementIndex,
 				0,
 				furnitureMaterial.SpringReductionFraction,
-				furnitureMaterial.SpringDampingCoefficient,
-				massFactor);
+				furnitureMaterial.SpringDampingCoefficient);
 
 			// 0 - 1
 			{
 				baseSpring.EndpointAIndex = particleMesh.Particles[0].ParticleIndex;
 				baseSpring.EndpointBIndex = particleMesh.Particles[1].ParticleIndex;
-				baseSpring.DipoleLength = sideLength;
-				auto & spring = particleMesh.Springs.emplace_back(baseSpring);
-				RecalculateSpringForceParameters(spring);
+				baseSpring.BaseRestLength = baseWidth;
+				particleMesh.Springs.emplace_back(baseSpring);
 			}
 
 			// 0 | 3
 			{
 				baseSpring.EndpointAIndex = particleMesh.Particles[0].ParticleIndex;
 				baseSpring.EndpointBIndex = particleMesh.Particles[3].ParticleIndex;
-				baseSpring.DipoleLength = sideLength;
-				auto & spring = particleMesh.Springs.emplace_back(baseSpring);
-				RecalculateSpringForceParameters(spring);
+				baseSpring.BaseRestLength = baseHeight;
+				particleMesh.Springs.emplace_back(baseSpring);
 			}
 
 			// 0 \ 2
 			{
 				baseSpring.EndpointAIndex = particleMesh.Particles[0].ParticleIndex;
 				baseSpring.EndpointBIndex = particleMesh.Particles[2].ParticleIndex;
-				baseSpring.DipoleLength = diagonalSideLength;
-				auto & spring = particleMesh.Springs.emplace_back(baseSpring);
-				RecalculateSpringForceParameters(spring);
+				baseSpring.BaseRestLength = baseDiagonal;
+				particleMesh.Springs.emplace_back(baseSpring);
 			}
 
 			// 1 | 2
 			{
 				baseSpring.EndpointAIndex = particleMesh.Particles[1].ParticleIndex;
 				baseSpring.EndpointBIndex = particleMesh.Particles[2].ParticleIndex;
-				baseSpring.DipoleLength = sideLength;
-				auto & spring = particleMesh.Springs.emplace_back(baseSpring);
-				RecalculateSpringForceParameters(spring);
+				baseSpring.BaseRestLength = baseHeight;
+				particleMesh.Springs.emplace_back(baseSpring);
 			}
 
 			// 2 - 3
 			{
 				baseSpring.EndpointAIndex = particleMesh.Particles[2].ParticleIndex;
 				baseSpring.EndpointBIndex = particleMesh.Particles[3].ParticleIndex;
-				baseSpring.DipoleLength = sideLength;
-				auto & spring = particleMesh.Springs.emplace_back(baseSpring);
-				RecalculateSpringForceParameters(spring);
+				baseSpring.BaseRestLength = baseWidth;
+				particleMesh.Springs.emplace_back(baseSpring);
 			}
 
 			// 1 / 3
 			{
 				baseSpring.EndpointAIndex = particleMesh.Particles[1].ParticleIndex;
 				baseSpring.EndpointBIndex = particleMesh.Particles[3].ParticleIndex;
-				baseSpring.DipoleLength = diagonalSideLength;
-				auto & spring = particleMesh.Springs.emplace_back(baseSpring);
-				RecalculateSpringForceParameters(spring);
+				baseSpring.BaseRestLength = baseDiagonal;
+				particleMesh.Springs.emplace_back(baseSpring);
 			}
+
+			CalculateSprings(
+				mCurrentSizeAdjustment,
+#ifdef IN_BARYLAB
+				mCurrentMassAdjustment,
+#endif
+				mCurrentSpringReductionFractionAdjustment,
+				mCurrentSpringDampingCoefficientAdjustment,
+				mParticles,
+				particleMesh);
+
+			anchorOffset = vec2f(width / 2.0f, -height / 2.0f);
 
 			break;
 		}
@@ -385,8 +427,23 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 
 			// Primary
 
-			// Futurework: from mNpcDatabase
-			auto const & furnitureMaterial = mMaterialDatabase.GetNpcMaterial("Crate");
+			auto const & furnitureMaterial = mMaterialDatabase.GetNpcMaterial("Crate"); // Futurework: from mNpcDatabase
+
+			float const mass = CalculateParticleMass(
+				furnitureMaterial.Mass,
+				mCurrentSizeAdjustment
+#ifdef IN_BARYLAB
+				, mCurrentMassAdjustment
+#endif
+			);
+
+			float const buoyancyFactor = CalculateParticleBuoyancyFactor(
+				furnitureMaterial.BuoyancyVolumeFill,
+				mCurrentSizeAdjustment
+#ifdef IN_BARYLAB
+				, mCurrentBuoyancyAdjustment
+#endif
+			);
 
 			auto const primaryParticleIndex = mParticles.Add(
 				furnitureMaterial.Mass,
@@ -394,10 +451,14 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 				furnitureMaterial.KineticFriction,
 				furnitureMaterial.Elasticity,
 				furnitureMaterial.BuoyancyVolumeFill,
+				mass,
+				buoyancyFactor,
 				worldCoordinates,
 				furnitureMaterial.RenderColor);
 
 			particleMesh.Particles.emplace_back(primaryParticleIndex, std::nullopt);
+
+			anchorOffset = vec2f(0.0f, 0.0f);
 
 			break;
 		}
@@ -437,7 +498,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 	++(mShips[shipId]->FurnitureNpcCount);
 	mGameEventHandler->OnNpcCountsUpdated(CalculateTotalNpcCount());
 
-	return PickedObjectId<NpcId>(npcId, vec2f::zero());
+	return PickedObjectId<NpcId>(npcId, anchorOffset);
 }
 
 std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
@@ -460,16 +521,34 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
 
 	StateType::ParticleMeshType particleMesh;
 
-	// Decide height
+	// Calculate height
 
-	float const height = GameRandomEngine::GetInstance().GenerateNormalReal(
+	float const baseHeight = GameRandomEngine::GetInstance().GenerateNormalReal(
 		GameParameters::HumanNpcGeometry::BodyLengthMean,
 		GameParameters::HumanNpcGeometry::BodyLengthStdDev);
+
+	float const height = CalculateSpringLength(baseHeight, mCurrentSizeAdjustment);
 
 	// Feet (primary)
 
 	// Futurework: from mNpcDatabase
 	auto const & feetMaterial = mMaterialDatabase.GetNpcMaterial("HumanFeet");
+
+	float const feetMass = CalculateParticleMass(
+		feetMaterial.Mass,
+		mCurrentSizeAdjustment
+#ifdef IN_BARYLAB
+		, mCurrentMassAdjustment
+#endif
+	);
+
+	float const feetBuoyancyFactor = CalculateParticleBuoyancyFactor(
+		feetMaterial.BuoyancyVolumeFill,
+		mCurrentSizeAdjustment
+#ifdef IN_BARYLAB
+		, mCurrentBuoyancyAdjustment
+#endif
+	);
 
 	auto const primaryParticleIndex = mParticles.Add(
 		feetMaterial.Mass,
@@ -477,7 +556,9 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
 		feetMaterial.KineticFriction,
 		feetMaterial.Elasticity,
 		feetMaterial.BuoyancyVolumeFill,
-		worldCoordinates - vec2f(0.0f, 1.0f) * height * mCurrentSizeAdjustment,
+		feetMass,
+		feetBuoyancyFactor,
+		worldCoordinates - vec2f(0.0f, 1.0f) * height,
 		feetMaterial.RenderColor);
 
 	particleMesh.Particles.emplace_back(primaryParticleIndex, std::nullopt);
@@ -487,12 +568,30 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
 	// Futurework: from mNpcDatabase
 	auto const & headMaterial = mMaterialDatabase.GetNpcMaterial("HumanHead");
 
+	float const headMass = CalculateParticleMass(
+		headMaterial.Mass,
+		mCurrentSizeAdjustment
+#ifdef IN_BARYLAB
+		, mCurrentMassAdjustment
+#endif
+	);
+
+	float const headBuoyancyFactor = CalculateParticleBuoyancyFactor(
+		headMaterial.BuoyancyVolumeFill,
+		mCurrentSizeAdjustment
+#ifdef IN_BARYLAB
+		, mCurrentBuoyancyAdjustment
+#endif
+	);
+
 	auto const secondaryParticleIndex = mParticles.Add(
 		headMaterial.Mass,
 		headMaterial.StaticFriction,
 		headMaterial.KineticFriction,
 		headMaterial.Elasticity,
 		headMaterial.BuoyancyVolumeFill,
+		headMass,
+		headBuoyancyFactor,
 		worldCoordinates,
 		headMaterial.RenderColor);
 
@@ -500,19 +599,22 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
 
 	// Dipole spring
 
-	float const massFactor =
-		(feetMaterial.Mass * headMaterial.Mass)
-		/ (feetMaterial.Mass + headMaterial.Mass);
-
-	auto & dipoleSpring = particleMesh.Springs.emplace_back(
+	particleMesh.Springs.emplace_back(
 		primaryParticleIndex,
 		secondaryParticleIndex,
-		CalculateHumanNpcDipoleLength(height),
+		baseHeight,
 		headMaterial.SpringReductionFraction,
-		headMaterial.SpringDampingCoefficient,
-		massFactor);
+		headMaterial.SpringDampingCoefficient);
 
-	RecalculateSpringForceParameters(dipoleSpring);
+	CalculateSprings(
+		mCurrentSizeAdjustment,
+#ifdef IN_BARYLAB
+		mCurrentMassAdjustment,
+#endif
+		mCurrentSpringReductionFractionAdjustment,
+		mCurrentSpringDampingCoefficientAdjustment,
+		mParticles,
+		particleMesh);
 
 	// Human
 
@@ -534,11 +636,10 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
 
 	float const walkingSpeedBase =
 		1.0f
-		* height / 1.65f; // Just comes from 1m/s looking good when human is 1.65
+		* baseHeight / 1.65f; // Just comes from 1m/s looking good when human is 1.65
 
 	StateType::KindSpecificStateType::HumanNpcStateType humanState = StateType::KindSpecificStateType::HumanNpcStateType(
 		humanKind,
-		height,
 		widthMultiplier,
 		walkingSpeedBase,
 		StateType::KindSpecificStateType::HumanNpcStateType::BehaviorType::BeingPlaced,
@@ -1597,6 +1698,7 @@ void Npcs::RenderNpc(
 		case NpcKindType::Human:
 		{
 			assert(npc.ParticleMesh.Particles.size() == 2);
+			assert(npc.ParticleMesh.Springs.size() == 1);
 			auto const & humanNpcState = npc.KindSpecificState.HumanNpcState;
 			auto const & animationState = humanNpcState.AnimationState;
 
@@ -1616,8 +1718,8 @@ void Npcs::RenderNpc(
 			vec2f const neckPosition = headPosition - actualBodyVector * GameParameters::HumanNpcGeometry::HeadLengthFraction;
 			vec2f const shoulderPosition = neckPosition - actualBodyVector * GameParameters::HumanNpcGeometry::ArmDepthFraction / 2.0f;
 
-			// Arm and Leg lengths are relative to ideal
-			float const adjustedIdealHumanHeight = humanNpcState.Height * mCurrentSizeAdjustment;
+			// Arm and Leg lengths are relative to base height
+			float const adjustedIdealHumanHeight = npc.ParticleMesh.Springs[0].RestLength;
 			float const leftArmLength = adjustedIdealHumanHeight * GameParameters::HumanNpcGeometry::ArmLengthFraction * animationState.LimbLengthMultipliers.LeftArm;
 			float const rightArmLength = adjustedIdealHumanHeight * GameParameters::HumanNpcGeometry::ArmLengthFraction * animationState.LimbLengthMultipliers.RightArm;
 			float const leftLegLength = adjustedIdealHumanHeight * GameParameters::HumanNpcGeometry::LegLengthFraction * animationState.LimbLengthMultipliers.LeftLeg;

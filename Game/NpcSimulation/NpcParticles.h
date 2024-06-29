@@ -25,7 +25,7 @@ class NpcParticles final : public ElementContainer
 {
 public:
 
-    struct PhysicalProperties
+    struct MaterialProperties
     {
         float Mass;
         float StaticFriction;
@@ -33,7 +33,7 @@ public:
         float Elasticity;
         float BuoyancyVolumeFill;
 
-        PhysicalProperties(
+        MaterialProperties(
             float mass,
             float staticFriction,
             float kineticFriction,
@@ -55,7 +55,9 @@ public:
         //////////////////////////////////
         , mIsInUseBuffer(maxParticleCount, false)
         // Physics
-        , mPhysicalPropertiesBuffer(maxParticleCount, PhysicalProperties(0.0f, 0.0f, 0.0f, 0.0f, 0.0f))
+        , mMaterialPropertiesBuffer(maxParticleCount, MaterialProperties(0.0f, 0.0f, 0.0f, 0.0f, 0.0f))
+        , mMassBuffer(maxParticleCount, 0.0f)
+        , mBuoyancyFactorBuffer(maxParticleCount, 0.0f)
         , mPositionBuffer(maxParticleCount, vec2f::zero())
         , mVelocityBuffer(maxParticleCount, vec2f::zero())
         , mPreliminaryForcesBuffer(maxParticleCount, vec2f::zero())
@@ -79,11 +81,13 @@ public:
     }
 
     ElementIndex Add(
+        float materialMass,
+        float materialStaticFriction,
+        float materialKineticFriction,
+        float materialElasticity,
+        float materialBuoyancyVolumeFill,
         float mass,
-        float staticFriction,
-        float kineticFriction,
-        float elasticity,
-        float buoyancyVolumeFill,
+        float buoyancyFactor,
         vec2f const & position,
         rgbaColor const & color);
 
@@ -98,9 +102,33 @@ public:
     // Physics
     //
 
-    PhysicalProperties const & GetPhysicalProperties(ElementIndex particleElementIndex) const noexcept
+    MaterialProperties const & GetMaterialProperties(ElementIndex particleElementIndex) const noexcept
     {
-        return mPhysicalPropertiesBuffer[particleElementIndex];
+        return mMaterialPropertiesBuffer[particleElementIndex];
+    }
+
+    float const GetMass(ElementIndex particleElementIndex) const noexcept
+    {
+        return mMassBuffer[particleElementIndex];
+    }
+
+    void SetMass(
+        ElementIndex particleElementIndex,
+        float value) noexcept
+    {
+        mMassBuffer[particleElementIndex] = value;
+    }
+
+    float const GetBuoyancyFactor(ElementIndex particleElementIndex) const noexcept
+    {
+        return mBuoyancyFactorBuffer[particleElementIndex];
+    }
+
+    void SetBuoyancyFactor(
+        ElementIndex particleElementIndex,
+        float value) noexcept
+    {
+        mBuoyancyFactorBuffer[particleElementIndex] = value;
     }
 
     vec2f const & GetPosition(ElementIndex particleElementIndex) const noexcept
@@ -221,7 +249,9 @@ private:
     // Physics
     //
 
-    Buffer<PhysicalProperties> mPhysicalPropertiesBuffer;
+    Buffer<MaterialProperties> mMaterialPropertiesBuffer;
+    Buffer<float> mMassBuffer; // Adjusted
+    Buffer<float> mBuoyancyFactorBuffer; // Adjusted
     Buffer<vec2f> mPositionBuffer;
     Buffer<vec2f> mVelocityBuffer;
     Buffer<vec2f> mPreliminaryForcesBuffer;

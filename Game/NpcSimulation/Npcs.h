@@ -171,12 +171,13 @@ private:
 			ElementIndex EndpointAIndex; // Index in NpcParticles
 			ElementIndex EndpointBIndex; // Index in NpcParticles
 
-			float DipoleLength; // Adjusted
-			float SpringReductionFraction;
-			float SpringDampingCoefficient;
-			float MassFactor; // Purely from materials
+			// Constants
+			float BaseRestLength;
+			float BaseSpringReductionFraction;
+			float BaseSpringDampingCoefficient;
 
 			// Calculated
+			float RestLength; // Adjusted
 			float SpringStiffnessFactor;
 			float SpringDampingFactor;
 
@@ -185,16 +186,15 @@ private:
 			NpcSpringStateType(
 				ElementIndex endpointAIndex,
 				ElementIndex endpointBIndex,
-				float dipoleLength,
-				float springReductionFraction,
-				float springDampingCoefficient,
-				float massFactor)
+				float baseRestLength,
+				float baseSpringReductionFraction,
+				float baseSpringDampingCoefficient)
 				: EndpointAIndex(endpointAIndex)
 				, EndpointBIndex(endpointBIndex)
-				, DipoleLength(dipoleLength)
-				, SpringReductionFraction(springReductionFraction)
-				, SpringDampingCoefficient(springDampingCoefficient)
-				, MassFactor(massFactor)
+				, BaseRestLength(baseRestLength)
+				, BaseSpringReductionFraction(baseSpringReductionFraction)
+				, BaseSpringDampingCoefficient(baseSpringDampingCoefficient)
+				, RestLength(0.0f) // Calculated later
 				, SpringStiffnessFactor(0.0f) // Calculated later
 				, SpringDampingFactor(0.0f) // Calculated later
 			{}
@@ -221,7 +221,6 @@ private:
 			struct HumanNpcStateType final
 			{
 				HumanNpcKindType const Kind;
-				float const Height; // This is "ideal"; dipole length is "real"
 				float const WidthMultipier; // Randomization
 				float const WalkingSpeedBase;
 
@@ -419,13 +418,11 @@ private:
 
 				HumanNpcStateType(
 					HumanNpcKindType kind,
-					float height,
 					float widthMultipier,
 					float walkingSpeedBase,
 					BehaviorType initialBehavior,
 					float currentSimulationTime)
 					: Kind(kind)
-					, Height(height)
 					, WidthMultipier(widthMultipier)
 					, WalkingSpeedBase(walkingSpeedBase)
 					, EquilibriumTorque(0.0f)
@@ -730,24 +727,6 @@ public:
 
 	void OnPointMoved(float currentSimulationTime);
 
-	void OnMassAdjustmentChanged(float massAdjustment)
-	{
-		if (massAdjustment != mCurrentMassAdjustment)
-		{
-			mCurrentMassAdjustment = massAdjustment;
-			RecalculateSpringForceParameters();
-		}
-	}
-
-	void OnGravityAdjustmentChanged(float gravityAdjustment)
-	{
-		if (gravityAdjustment != mCurrentGravityAdjustment)
-		{
-			mCurrentGravityAdjustment = gravityAdjustment;
-			RecalculateSpringForceParameters();
-		}
-	}
-
 	//
 	// Probing
 	//
@@ -901,16 +880,41 @@ private:
 	vec2f CalculateNpcParticleDefinitiveForces(
 		StateType const & npc,
 		int npcParticleOrdinal,
-		float particleMass,
 		GameParameters const & gameParameters) const;
 
-	void RecalculateSizeParameters();
+	void RecalculateSizeAndMassParameters();
 
-	void RecalculateSpringForceParameters();
+	static float CalculateParticleMass(
+		float baseMass,
+		float sizeAdjustment
+#ifdef IN_BARYLAB
+		, float massAdjustment
+#endif
+		);
 
-	void RecalculateSpringForceParameters(StateType::NpcSpringStateType & spring) const;
+	static float CalculateParticleBuoyancyFactor(
+		float baseBuoyancyVolumeFill,
+		float sizeAdjustment
+#ifdef IN_BARYLAB
+		, float buoyancyAdjustment
+#endif
+		);
 
-	float CalculateHumanNpcDipoleLength(float baseHeight) const;
+	static void CalculateSprings(
+		float sizeAdjustment,
+#ifdef IN_BARYLAB
+		float massAdjustment,
+#endif
+		float springReductionFractionAdjustment,
+		float springDampingCoefficientAdjustment,
+		NpcParticles const & particles,
+		StateType::ParticleMeshType & mesh); // In/Out
+
+	static float CalculateSpringLength(
+		float baseLength,
+		float sizeAdjustment);
+
+	void RecalculateGlobalDampingFactor();
 
 	void UpdateNpcParticle_Free(
 		StateType::NpcParticleStateType & particle,
@@ -1205,7 +1209,7 @@ private:
 		return false;
 	}
 
-	static vec2f CalculateDipoleVector(ElementIndex primaryParticleIndex, ElementIndex secondaryParticleIndex, NpcParticles const & particles)
+	static vec2f CalculateSpringVector(ElementIndex primaryParticleIndex, ElementIndex secondaryParticleIndex, NpcParticles const & particles)
 	{
 		return particles.GetPosition(primaryParticleIndex) - particles.GetPosition(secondaryParticleIndex);
 	}
@@ -1215,12 +1219,10 @@ private:
 		return vector.normalise().dot(GameParameters::GravityDir);
 	}
 
-	static float CalculateDipoleVerticalAlignment(ElementIndex primaryParticleIndex, ElementIndex secondaryParticleIndex, NpcParticles const & particles)
+	static float CalculateSpringVerticalAlignment(ElementIndex primaryParticleIndex, ElementIndex secondaryParticleIndex, NpcParticles const & particles)
 	{
-		return CalculateVerticalAlignment(CalculateDipoleVector(primaryParticleIndex, secondaryParticleIndex, particles));
+		return CalculateVerticalAlignment(CalculateSpringVector(primaryParticleIndex, secondaryParticleIndex, particles));
 	}
-
-	void RecalculateGlobalDampingFactor();
 
 	//
 	// Human simulation
@@ -1336,6 +1338,7 @@ private:
 
 	// Cached from LabController
 	float mCurrentMassAdjustment{ 1.0f };
+	float mCurrentBuoyancyAdjustment{ 1.0f };
 	float mCurrentGravityAdjustment{ 1.0f };
 
 #endif

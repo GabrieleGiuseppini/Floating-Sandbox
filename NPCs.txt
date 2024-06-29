@@ -408,34 +408,40 @@ Arch
 				+ BounceConstrained...() needs to take bounceEdgeTriangle, bounceEdgeBCoords, bounceEdgeOrdinal, and Ship - but can lose bounceEdgeNormal
 			+ Requires Ship in NPC to not be const
 				+ And see if can get rid of naming member "ShipMesh" - may be "HomeShip"?
-	= Mass is proportional to body length adjustment (square, we're 2D)
-		- And so is buoyancy
-		- NPCParticle attributes (changeable from outside)
-			- BaseMass (already there somehow?)
-			- Mass // Adjusted
-				- Use wherever we use mass - which should also be always adjusted with MassAdjustment
-			- BuoyancyFactor
-				- Use @ Bouyancy
-		- @ Npcs::Add (x2):
-			- Calculate Mass via static float CalculateParticleMass(base mass, dimensions adjustment, mass adj (iff BaryLab))
-			- Calculate BuoyancyFactor via static float CalculateParticleBuoyancy(base mass, dimensions adjustment, buoyancy adj (iff BaryLab) , mass adj?)
-			- Calculate spring lengths via static float TODO
-				- Spring lengths used for:
-					- Hooke force (as dipoleLength)
-					- Particles' positions at Add() (as height*adjust)
-					- Render (as height*adjust)
-					- Equilibrium Torque (as height*adjust)
-					- Animation (walking) (as height*adjust)
-			- Calculate spring mass factors via static float TODO
-		- @ Npcs::Update:
-			- At size adjustment detected: (and mass & buoyancy iff barylab)
-				- RecalculateSizeParameters:
-					- Recalculate all NpcParticles::Mass via static float CalculateParticleMass(base mass, dimensions adjustment, mass adj (iff BaryLab))
-					- Recalculate all NpcParticles::BuoyancyFactor via static float CalculateParticleBuoyancy(base mass, dimensions adjustment, buoyancy adj (iff BaryLab) , mass adj?)
-					- Recalculate all spring lengths via static float TODO
+	+ Mass is proportional to body length adjustment (square, we're 2D)
+		! And so is buoyancy
+		+ Port to BL
+		+ NPCParticle attributes (changeable from outside)
+			+ PhysicalProperties->MaterialProperties
+			+ MaterialProperties.Mass
+			+ Mass // Adjusted 
+				+ Use wherever we use mass - which should also be always adjusted with MassAdjustment
+			+ BuoyancyFactor
+				+ Use @ Bouyancy
+		+ Springs attributes:
+			+ BaseRestLength, RestLength (was DipoleLength)
+				+ Use for humans whever we take height*adjust
+		+ @ Npcs::Add (x2):
+			+ Calculate Mass via static float CalculateParticleMass(base mass, dimensions adjustment, mass adj (iff BaryLab))
+			+ Calculate BuoyancyFactor via static float CalculateParticleBuoyancy(base mass, dimensions adjustment, buoyancy adj (iff BaryLab) , mass adj?)
+			+ Calculate spring lengths and force coeffs via static float CalculateSprings(..., mesh in/out)
+				+ Spring lengths used for:
+					+ Hooke force (as dipoleLength)
+					+ Particles' positions at Add() (as height*adjust)
+					+ Render (as height*adjust)
+					+ Equilibrium Torque (as height*adjust)
+					+ Animation (walking) (as height*adjust)
+		+ @ Npcs::Update:
+			+ At size adjustment detected: (and mass & buoyancy iff barylab)
+				+ RecalculateSizeAndMassParameters:
+					+ Recalculate all NpcParticles::Mass via static float CalculateParticleMass(base mass, dimensions adjustment, mass adj (iff BaryLab))
+					+ Recalculate all NpcParticles::BuoyancyFactor via static float CalculateParticleBuoyancy(base mass, dimensions adjustment, buoyancy adj (iff BaryLab) , mass adj?)
+					+ Recalculate all spring lengths and force coeffs via static float CalculateSprings(..., mesh in/out)
 						- Replaces CalculateHumanNpcDipoleLength(.)
-					- Recalculate all spring mass factors via static float TODO
-				- Store in mCurrentSizeAdjustment
+		+ Finals:
+			+ Make sure mCurrentSizeAdjustment is only used in funcs to calc/recalc
+			+ Make sure mCurrentMassAdjustment is only used in funcs to calc/recalc
+		+ Port to FS
 	- Incorporate ship material's elasticity and friction in calculations for bounce and friction
 	- When ship is repaired, all NPCs do a little dance
 		- Sync is simulation clock (so all are in sync)
