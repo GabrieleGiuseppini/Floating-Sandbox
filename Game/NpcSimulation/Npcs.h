@@ -1209,6 +1209,13 @@ private:
 		return false;
 	}
 
+	static bool IsTriangleFolded(
+		ElementIndex triangleElementIndex,
+		Ship const & homeShip)
+	{
+		return !homeShip.GetTriangles().AreVerticesInCwOrder(triangleElementIndex, homeShip.GetPoints());
+	}
+
 	static vec2f CalculateSpringVector(ElementIndex primaryParticleIndex, ElementIndex secondaryParticleIndex, NpcParticles const & particles)
 	{
 		return particles.GetPosition(primaryParticleIndex) - particles.GetPosition(secondaryParticleIndex);
