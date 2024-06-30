@@ -276,14 +276,47 @@ Arch
 			+ Panic
 	
 	= FIX: Inflatable Balloon: infinite loop
-		- Figure out if due to folded triangle
-		- If so:
-			- Plan A: deal with it
-			- Plan B: whenever we move from a triangle with orientation X to a triangle to orientation Y, consider the edge a floor (and evt bounce on it)
-				- TODO: needs to be integrated with IsEdgeFloorToParticle?
-			- Plan C: same as above, but becoming free
-			- Various points:
-				- Do we need to check orientation of our current triangle @ beginning of Update()?
+		+ Figure out if due to folded triangle
+		+ If so:
+			X Plan A: deal with it
+				+ Can not: crossing one edge wil make it go back and forth
+			X Plan B: whenever we move from a triangle with orientation X to a triangle to orientation Y, consider the edge a floor (and evt bounce on it)
+				+ Test normal movement (inertial) and walk in a folder world
+					= Barylab: fold
+						+ On key hit, after NPC has found its own triangle
+						- X
+							- Test:
+								- Constrained falling
+								- Walking
+						- Y
+							- Test:
+								- Constrained falling
+								- Walking
+					+ Isses found:
+						+ Cannot stand up
+						+ Cannot find that NPC belongs to triangle when NPC is being placed
+					
+				X Impl:
+					X Take orientation at beginning, and pass it around down the chain; we want to stick to that orientation for the entire simulation step and never change it
+					X At each place where we climb an edge into a triangle, check if that triangle orientation is different than initial; if so, bounce on edge			
+			+ Plan C:
+				+ 1. At start of step, check orientation: if folded, become free
+				X Option 1: - STASHED
+					+ 2. At each place where we climb an edge into a triangle, check if that triangle is folded; if so, bounce on edge
+						+ 2a. UpdateNpcParticle_ConstrainedInertial
+						+ 2b. NavigateVertex - HumanWalking
+						+ 2c. NavigateVertex - *
+					- 3. Edge should also look like floor for the purposes of:
+						- Detecting non-inertial
+						X HumanSimulation (e.g. to go to KO, or else stays aerial) (doesn't need it, uses VirtualEdge)						
+						X Animation (doesn't need it)
+				+ Option 2:
+					+ At IsEdgeFloorToParticle(.)
+		- Lower "progress going back" when conditions not met at all 3 places
+			- Then retest inflatable balloon
+		- Profile
+
+	- Larger search radius for NPC
 	- See why rendering internal view does not show springs
 	- Primary/Secondary edge-separation at floor check: see if can be improved by looking at third vertex of triangle of particle for which we check
 
@@ -373,9 +406,8 @@ Arch
 - Physical Interactions:
 	+ Make NpcDamping subject to other adjustment
 		+ Npcs class reacts to changes and calculates own mDampingCoefficient == (1.0f - gameParameters.NpcDamping)
-	- Make sure triangle destruction is forwarded to NPCs
-		- Npcs::OnDestroyedTriangle (~) (ShipId, TriangleElementIndex)
-		- Any constrained NPC on a destroyed triangle becomes free
+	- Triangle destruction: 
+		- Should be enough to check for current triangle being deleted at beginning of UpdateNpc(.), and if so, become free
 	- Swimming humans generate bubbles
 	- Humans on air-water interface generate small waves
 		- Need to produce as side-effect: swimming humans generate small waves

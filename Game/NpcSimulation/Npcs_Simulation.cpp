@@ -457,14 +457,23 @@ void Npcs::UpdateNpcParticlePhysics(
 
         LogNpcDebug("    Being placed");
     }
-    else if (!npcParticle.ConstrainedState.has_value())
+    else if (!npcParticle.ConstrainedState.has_value()
+        // We do not want to be in a folded triangle
+        || IsTriangleFolded(npcParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex, homeShip))
     {
         //
-        // Particle is free
+        // Particle is free or its triangle became folded
         //
 
-        LogNpcDebug("    Free: velocity=", mParticles.GetVelocity(npcParticle.ParticleIndex), " prelimF=", mParticles.GetPreliminaryForces(npcParticle.ParticleIndex), " physicsDeltaPos=", physicsDeltaPos);
+        LogNpcDebug("    Free (folded=", IsTriangleFolded(npcParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex, homeShip), "):",
+            "velocity=", mParticles.GetVelocity(npcParticle.ParticleIndex), " prelimF=", mParticles.GetPreliminaryForces(npcParticle.ParticleIndex), " physicsDeltaPos=", physicsDeltaPos);
         LogNpcDebug("    StartPosition=", particleStartAbsolutePosition, " StartVelocity=", mParticles.GetVelocity(npcParticle.ParticleIndex));
+
+        // Transition to free if we are not
+        if (npcParticle.ConstrainedState.has_value())
+        {
+            TransitionParticleToFreeState(npc, npcParticleOrdinal);
+        }
 
         UpdateNpcParticle_Free(
             npcParticle,
@@ -2860,7 +2869,7 @@ void Npcs::BounceConstrainedNpcParticle(
     LogNpcDebug("      BounceConstrainedNpcParticle: apparentParticleVelocity=", apparentParticleVelocity, " (hasMovedInStep=", hasMovedInStep,
         " meshRelativeVelocity=", npcParticle.ConstrainedState->MeshRelativeVelocity, ")");
 
-    if (apparentParticleVelocityAlongNormal != 0.0f)
+    if (apparentParticleVelocityAlongNormal > 0.0f)
     {
         // Decompose apparent particle velocity into normal and tangential
         vec2f const normalVelocity = floorEdgeNormal * apparentParticleVelocityAlongNormal;
@@ -2898,25 +2907,29 @@ void Npcs::BounceConstrainedNpcParticle(
         npcParticle.ConstrainedState->MeshRelativeVelocity = resultantRelativeVelocity;
 
         //
-        // Impart force against edge
+        // Impart force against edge - but only if hit was "substantial", so
+        // we don't end up in infinite loops bouncing against a soft mesh
         //
 
-        vec2f const impartedForce =
-            (normalVelocity - normalResponse)
-            * mParticles.GetMass(npcParticle.ParticleIndex)
-            / dt;
+        if (apparentParticleVelocityAlongNormal > 2.0f)
+        {
+            vec2f const impartedForce =
+                (normalVelocity - normalResponse)
+                * mParticles.GetMass(npcParticle.ParticleIndex)
+                / dt;
 
-        // Divide among two vertices
+            // Divide among two vertices
 
-        int edgeVertex1Ordinal = bounceEdgeOrdinal;
-        ElementIndex edgeVertex1PointIndex = homeShip.GetTriangles().GetPointIndices(npcParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex)[edgeVertex1Ordinal];
-        float const vertex1InterpCoeff = npcParticle.ConstrainedState->CurrentBCoords.BCoords[edgeVertex1Ordinal];
-        homeShip.GetPoints().AddStaticForce(edgeVertex1PointIndex, impartedForce * vertex1InterpCoeff);
+            int edgeVertex1Ordinal = bounceEdgeOrdinal;
+            ElementIndex edgeVertex1PointIndex = homeShip.GetTriangles().GetPointIndices(npcParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex)[edgeVertex1Ordinal];
+            float const vertex1InterpCoeff = npcParticle.ConstrainedState->CurrentBCoords.BCoords[edgeVertex1Ordinal];
+            homeShip.GetPoints().AddStaticForce(edgeVertex1PointIndex, impartedForce * vertex1InterpCoeff);
 
-        int edgeVertex2Ordinal = (bounceEdgeOrdinal + 1) % 3;
-        ElementIndex edgeVertex2PointIndex = homeShip.GetTriangles().GetPointIndices(npcParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex)[edgeVertex2Ordinal];
-        float const vertex2InterpCoeff = npcParticle.ConstrainedState->CurrentBCoords.BCoords[edgeVertex2Ordinal];
-        homeShip.GetPoints().AddStaticForce(edgeVertex2PointIndex, impartedForce * vertex2InterpCoeff);
+            int edgeVertex2Ordinal = (bounceEdgeOrdinal + 1) % 3;
+            ElementIndex edgeVertex2PointIndex = homeShip.GetTriangles().GetPointIndices(npcParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex)[edgeVertex2Ordinal];
+            float const vertex2InterpCoeff = npcParticle.ConstrainedState->CurrentBCoords.BCoords[edgeVertex2Ordinal];
+            homeShip.GetPoints().AddStaticForce(edgeVertex2PointIndex, impartedForce * vertex2InterpCoeff);
+        }
 
         //
         // Publish impact
