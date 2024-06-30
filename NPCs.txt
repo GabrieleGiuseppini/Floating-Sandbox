@@ -312,8 +312,8 @@ Arch
 						X Animation (doesn't need it)
 				+ Option 2:
 					+ At IsEdgeFloorToParticle(.)
-		- Lower "progress going back" when conditions not met at all 3 places
-			- Then retest inflatable balloon
+		+ Lower "progress going back" when conditions not met at all 3 places
+			+ Then retest inflatable balloon
 		- Profile
 
 	- Larger search radius for NPC

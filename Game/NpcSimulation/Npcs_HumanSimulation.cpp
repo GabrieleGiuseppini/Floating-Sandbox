@@ -265,7 +265,7 @@ void Npcs::UpdateHuman(
 			}
 			else
 			{
-				toKnockedOutIncrement = -1.5f;
+				toKnockedOutIncrement = -1.0f;
 			}
 
 			humanState.CurrentBehaviorState.Constrained_Falling.ProgressToKnockedOut = std::max(
@@ -379,7 +379,7 @@ void Npcs::UpdateHuman(
 			}
 			else
 			{
-				toPreRisingIncrement = -1.5f;
+				toPreRisingIncrement = -1.0f;
 			}
 
 			humanState.CurrentBehaviorState.Constrained_KnockedOut.ProgressToPreRising = std::max(
@@ -514,7 +514,7 @@ void Npcs::UpdateHuman(
 			}
 			else
 			{
-				toRisingIncrement = -1.5f;
+				toRisingIncrement = -1.0f;
 			}
 
 			humanState.CurrentBehaviorState.Constrained_PreRising.ProgressToRising = std::max(
