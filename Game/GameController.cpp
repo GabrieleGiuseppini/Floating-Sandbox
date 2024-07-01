@@ -1266,11 +1266,12 @@ std::optional<PickedObjectId<NpcId>> GameController::BeginPlaceNewHumanNpc(
 std::optional<PickedObjectId<NpcId>> GameController::ProbeNpcAt(DisplayLogicalCoordinates const & screenCoordinates) const
 {
     vec2f const worldCoordinates = mRenderContext->ScreenToWorld(screenCoordinates);
+    float const npcProbeSearchRadius = 1.0f / std::sqrtf(mRenderContext->GetZoom());
 
     assert(!!mWorld);
     return mWorld->ProbeNpcAt(
         worldCoordinates,
-        GameParameters::NpcProbeSearchRadius);
+        npcProbeSearchRadius);
 }
 
 void GameController::BeginMoveNpc(NpcId id)

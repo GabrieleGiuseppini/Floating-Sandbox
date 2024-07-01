@@ -817,7 +817,7 @@ std::optional<PickedObjectId<NpcId>> Npcs::ProbeNpcAt(
 
 				case NpcKindType::Human:
 				{
-					// Head
+					// Proximity search for Head only
 
 					assert(state->ParticleMesh.Particles.size() == 2);
 

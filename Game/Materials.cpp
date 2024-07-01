@@ -97,7 +97,7 @@ StructuralMaterial StructuralMaterial::Create(
         {
             if (!paletteCoordinatesJson.has_value())
             {
-                throw GameException(std::string("Non-legacy-electrical material \"") + name + "\" doesn't have palette_coordinates member");
+                throw GameException(std::string("Non-exempt structural material \"") + name + "\" doesn't have palette_coordinates member");
             }
 
             paletteCoordinates = DeserializePaletteCoordinates(*paletteCoordinatesJson);

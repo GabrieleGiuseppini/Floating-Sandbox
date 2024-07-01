@@ -273,7 +273,7 @@ public:
         vec2f const ndcCoordinates = vec2f(
             static_cast<float>(screenCoordinates.x * mLogicalToPhysicalDisplayFactor) / static_cast<float>(mCanvasPhysicalSize.width) * 2.0f - 1.0f,
             -static_cast<float>(screenCoordinates.y * mLogicalToPhysicalDisplayFactor) / static_cast<float>(mCanvasPhysicalSize.height) * 2.0f + 1.0f);
-        
+
         return ndcCoordinates;
     }
 
@@ -488,7 +488,7 @@ private:
     float mZoom;
     vec2f mCam; // World coordinates
     DisplayLogicalSize mCanvasLogicalSize;
-    DisplayPhysicalSize mCanvasPhysicalSize;    
+    DisplayPhysicalSize mCanvasPhysicalSize;
     int mLogicalToPhysicalDisplayFactor;
     float mPixelOffsetX;
     float mPixelOffsetY;

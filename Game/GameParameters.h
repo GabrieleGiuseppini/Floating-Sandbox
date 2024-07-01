@@ -554,8 +554,6 @@ struct GameParameters
 
     float ToolSearchRadius;
 
-    static float constexpr NpcProbeSearchRadius = 0.3f;
-
     float DestroyRadius;
     static float constexpr MinDestroyRadius = 0.5f;
     static float constexpr MaxDestroyRadius = 50.0f;

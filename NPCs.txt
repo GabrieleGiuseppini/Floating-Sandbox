@@ -318,20 +318,33 @@ Arch
 			+ Baseline first: 2.4/2.5 (long term)
 			+ Backport
 			+ Profile
-
-	- Larger search radius for NPC
+	+ Larger search radius for NPC
+		+ Based on zoom
 	- See why rendering internal view does not show springs
 	- Primary/Secondary edge-separation at floor check: see if can be improved by looking at third vertex of triangle of particle for which we check
 
-	- Material rearc: nuke NpcMaterial and use only StructuralMaterial		
-		- Port NPC materials to structural_materials
-			- See if there's anything that's NPC-specific
-			- See how to hide it from palette
-		- Requires MaterialDB to index StructuralMaterial also by name
-			- See if there are dupe names
-		- Nuke NpcMaterial
-		- Use at Npcs
-		- Rewrite NpcDB spec
+	- Material rearc: nuke NpcMaterial and use only StructuralMaterial	
+		- 1. MaterialDB: index StructuralMaterial also by name
+			- See if there are any dupe names
+		- 2. Port NPCMaterial to StructuralMaterial
+			- Port GameParameters::OceanFloorElasticity and OceanFloorFriction to all materials, and get rid of OceanFloorElasticity and OceanFloorFriction
+				- Friction: static and kinetic
+				- Points: store these three in new Buffer<CollisionMaterialProperties>
+					- UpdateForGameParameters: recalc upon adjustment changes
+				- HandleCollisionsWithSeaFloor: use static friction (arbitrarily)
+					- Or implement static/kinetic
+				- GameParameters: make global adjustments
+					- Also used by NPC code
+				- SettingsDialog
+			- Add SpringReductionCoeff, SpringDampingCoeff as NpcSpringReductionCoeff, NpcSpringDampingCoeff 
+				- optional, defaults = <reasonable>
+		- 3. StructuralMaterial:
+			- Do not store (& expose) IsExemptFromPalette
+		- 4. Port NPC materials to structural_materials
+			- Hide it from palette
+		- 5. Nuke NpcMaterial (json and class/es)
+		- 6. Use at Npcs
+		- Rewrite NpcDB spec below
 		- Backport to BaryLab
 
 	= Settings:
