@@ -1578,15 +1578,19 @@ std::optional<ElementId> Npcs::FindTopmostTriangleContaining(vec2f const & posit
 			PlaneId bestPlaneId = std::numeric_limits<PlaneId>::lowest();
 			for (auto const triangleIndex : homeShip.GetTriangles())
 			{
-				vec2f const aPosition = homeShip.GetPoints().GetPosition(homeShip.GetTriangles().GetPointAIndex(triangleIndex));
-				vec2f const bPosition = homeShip.GetPoints().GetPosition(homeShip.GetTriangles().GetPointBIndex(triangleIndex));
-				vec2f const cPosition = homeShip.GetPoints().GetPosition(homeShip.GetTriangles().GetPointCIndex(triangleIndex));
-
-				if (IsPointInTriangle(position, aPosition, bPosition, cPosition)
-					&& (!bestTriangleIndex || homeShip.GetPoints().GetPlaneId(homeShip.GetTriangles().GetPointAIndex(triangleIndex)) > bestPlaneId))
+				if (!homeShip.GetTriangles().IsDeleted(triangleIndex))
 				{
-					bestTriangleIndex = triangleIndex;
-					bestPlaneId = homeShip.GetPoints().GetPlaneId(homeShip.GetTriangles().GetPointAIndex(triangleIndex));
+					vec2f const aPosition = homeShip.GetPoints().GetPosition(homeShip.GetTriangles().GetPointAIndex(triangleIndex));
+					vec2f const bPosition = homeShip.GetPoints().GetPosition(homeShip.GetTriangles().GetPointBIndex(triangleIndex));
+					vec2f const cPosition = homeShip.GetPoints().GetPosition(homeShip.GetTriangles().GetPointCIndex(triangleIndex));
+
+					if (IsPointInTriangle(position, aPosition, bPosition, cPosition)
+						&& (!bestTriangleIndex || homeShip.GetPoints().GetPlaneId(homeShip.GetTriangles().GetPointAIndex(triangleIndex)) > bestPlaneId)
+						&& !IsTriangleFolded(triangleIndex, homeShip))
+					{
+						bestTriangleIndex = triangleIndex;
+						bestPlaneId = homeShip.GetPoints().GetPlaneId(homeShip.GetTriangles().GetPointAIndex(triangleIndex));
+					}
 				}
 			}
 
@@ -1612,13 +1616,17 @@ ElementIndex Npcs::FindTriangleContaining(
 {
 	for (auto const triangleIndex : homeShip.GetTriangles())
 	{
-		vec2f const aPosition = homeShip.GetPoints().GetPosition(homeShip.GetTriangles().GetPointAIndex(triangleIndex));
-		vec2f const bPosition = homeShip.GetPoints().GetPosition(homeShip.GetTriangles().GetPointBIndex(triangleIndex));
-		vec2f const cPosition = homeShip.GetPoints().GetPosition(homeShip.GetTriangles().GetPointCIndex(triangleIndex));
-
-		if (IsPointInTriangle(position, aPosition, bPosition, cPosition))
+		if (!homeShip.GetTriangles().IsDeleted(triangleIndex))
 		{
-			return triangleIndex;
+			vec2f const aPosition = homeShip.GetPoints().GetPosition(homeShip.GetTriangles().GetPointAIndex(triangleIndex));
+			vec2f const bPosition = homeShip.GetPoints().GetPosition(homeShip.GetTriangles().GetPointBIndex(triangleIndex));
+			vec2f const cPosition = homeShip.GetPoints().GetPosition(homeShip.GetTriangles().GetPointCIndex(triangleIndex));
+
+			if (IsPointInTriangle(position, aPosition, bPosition, cPosition)
+				&& !IsTriangleFolded(triangleIndex, homeShip))
+			{
+				return triangleIndex;
+			}
 		}
 	}
 

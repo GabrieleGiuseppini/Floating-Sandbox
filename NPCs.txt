@@ -320,8 +320,12 @@ Arch
 			+ Profile
 	+ Larger search radius for NPC
 		+ Based on zoom
-	- See why rendering internal view does not show springs
+	+ See why rendering internal view does not show springs
 	- Primary/Secondary edge-separation at floor check: see if can be improved by looking at third vertex of triangle of particle for which we check
+		- Backport to barylab first
+		- Repro in BaryLab with a million puppets
+		- Fix in barylab
+		- Port to FS
 
 	- Material rearc: nuke NpcMaterial and use only StructuralMaterial	
 		- 1. MaterialDB: index StructuralMaterial also by name

@@ -1580,7 +1580,8 @@ void ShipRenderContext::RenderDraw(
         if (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Springs
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::EdgeSprings
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Structure
-            || (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::None && mShipViewModeType == ShipViewModeType::Exterior) // No edge springs in non-Exterior view
+            || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::None
+            //|| (renderParameters.DebugShipRenderMode == DebugShipRenderModeType::None && mShipViewModeType == ShipViewModeType::Exterior) // No edge springs in non-Exterior view
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Decay
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::InternalPressure
             || renderParameters.DebugShipRenderMode == DebugShipRenderModeType::Strength)

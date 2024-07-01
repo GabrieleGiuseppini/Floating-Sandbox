@@ -756,7 +756,7 @@ bool Ship::ApplyLaserCannonThrough(
     //
 
     int cutCount = 0;
-    
+
     for (auto springIndex : mSprings)
     {
         if (!mSprings.IsDeleted(springIndex)
@@ -1016,49 +1016,52 @@ std::optional<ToolApplicationLocus> Ship::InjectPressureAt(
         // So if the point is inside a triangle, inject at the closest non-hull endpoint
         for (auto const & t : mTriangles)
         {
-            auto const pointAIndex = mTriangles.GetPointAIndex(t);
-            auto const pointBIndex = mTriangles.GetPointBIndex(t);
-            auto const pointCIndex = mTriangles.GetPointCIndex(t);
-
-            auto const pointAPosition = mPoints.GetPosition(pointAIndex);
-            auto const pointBPosition = mPoints.GetPosition(pointBIndex);
-            auto const pointCPosition = mPoints.GetPosition(pointCIndex);
-
-            if (IsPointInTriangle(
-                targetPos,
-                pointAPosition,
-                pointBPosition,
-                pointCPosition))
+            if (!mTriangles.IsDeleted(t))
             {
-                if ((targetPos - pointAPosition).length() < (targetPos - pointBPosition).length()
-                    && !mPoints.GetIsHull(pointAIndex))
+                auto const pointAIndex = mTriangles.GetPointAIndex(t);
+                auto const pointBIndex = mTriangles.GetPointBIndex(t);
+                auto const pointCIndex = mTriangles.GetPointCIndex(t);
+
+                auto const pointAPosition = mPoints.GetPosition(pointAIndex);
+                auto const pointBPosition = mPoints.GetPosition(pointBIndex);
+                auto const pointCPosition = mPoints.GetPosition(pointCIndex);
+
+                if (IsPointInTriangle(
+                    targetPos,
+                    pointAPosition,
+                    pointBPosition,
+                    pointCPosition))
                 {
-                    // Closer to A than B
-                    if ((targetPos - pointAPosition).length() < (targetPos - pointCPosition).length()
-                        || mPoints.GetIsHull(pointCIndex))
+                    if ((targetPos - pointAPosition).length() < (targetPos - pointBPosition).length()
+                        && !mPoints.GetIsHull(pointAIndex))
                     {
-                        bestPointIndex = pointAIndex;
+                        // Closer to A than B
+                        if ((targetPos - pointAPosition).length() < (targetPos - pointCPosition).length()
+                            || mPoints.GetIsHull(pointCIndex))
+                        {
+                            bestPointIndex = pointAIndex;
+                        }
+                        else
+                        {
+                            bestPointIndex = pointCIndex;
+                        }
                     }
                     else
                     {
-                        bestPointIndex = pointCIndex;
+                        // Closer to B than A
+                        if (((targetPos - pointBPosition).length() < (targetPos - pointCPosition).length() || mPoints.GetIsHull(pointCIndex))
+                            && !mPoints.GetIsHull(pointBIndex))
+                        {
+                            bestPointIndex = pointBIndex;
+                        }
+                        else if (!mPoints.GetIsHull(pointCIndex))
+                        {
+                            bestPointIndex = pointCIndex;
+                        }
                     }
-                }
-                else
-                {
-                    // Closer to B than A
-                    if (((targetPos - pointBPosition).length() < (targetPos - pointCPosition).length() || mPoints.GetIsHull(pointCIndex))
-                        && !mPoints.GetIsHull(pointBIndex))
-                    {
-                        bestPointIndex = pointBIndex;
-                    }
-                    else if (!mPoints.GetIsHull(pointCIndex))
-                    {
-                        bestPointIndex = pointCIndex;
-                    }
-                }
 
-                break;
+                    break;
+                }
             }
         }
     }
