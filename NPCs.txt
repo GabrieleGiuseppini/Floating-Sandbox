@@ -327,28 +327,38 @@ Arch
 		- Fix in barylab
 		- Port to FS
 
-	- Material rearc: nuke NpcMaterial and use only StructuralMaterial	
-		- 1. MaterialDB: index StructuralMaterial also by name
-			- See if there are any dupe names
+	= Material rearc: nuke NpcMaterial and use only StructuralMaterial	
+		= 1. MaterialDB: index StructuralMaterial also by name
+			+ See if there are any dupe names
+				+ Add to script as check
+					+ Together with is_exempt+palette
+			= Do indexing
 		- 2. Port NPCMaterial to StructuralMaterial
-			- Port GameParameters::OceanFloorElasticity and OceanFloorFriction to all materials, and get rid of OceanFloorElasticity and OceanFloorFriction
-				- Friction: static and kinetic
-				- Points: store these three in new Buffer<CollisionMaterialProperties>
+			- Port GameParameters::OceanFloorElasticity and OceanFloorFriction to all materials as ElasticityCoefficient, StaticFrictionCoefficient, KineticFrictionCoefficient (same values)
+				- Script: fill-in 
+				- Material parse & expose
+				+ Leave OceanFloorElasticity and OceanFloorFriction in GameParameters and SettingsDialog
+				- GameParameters: add ElasticityAdjustment, FrictionAdjustment
+					- SettingsDialog
+					- Use by NPC code 
+				- Points: new Buffer<OceanFloorCollisionProperties>
+					- Contains (Ocean+Material) / 2 * Adjustment, and eventually other transformations needed by ocean collision code
 					- UpdateForGameParameters: recalc upon adjustment changes
-				- HandleCollisionsWithSeaFloor: use static friction (arbitrarily)
+				- HandleCollisionsWithSeaFloor: 
+					- Use these
+						- Use static friction (arbitrarily)
 					- Or implement static/kinetic
-				- GameParameters: make global adjustments
-					- Also used by NPC code
-				- SettingsDialog
 			- Add SpringReductionCoeff, SpringDampingCoeff as NpcSpringReductionCoeff, NpcSpringDampingCoeff 
 				- optional, defaults = <reasonable>
 		- 3. StructuralMaterial:
 			- Do not store (& expose) IsExemptFromPalette
 		- 4. Port NPC materials to structural_materials
 			- Hide it from palette
-		- 5. Nuke NpcMaterial (json and class/es)
+		- 5. Nuke NpcMaterial (json and class/es) from Materials/MaterialDatabase
 		- 6. Use at Npcs
+			- Do average
 		- Rewrite NpcDB spec below
+		- Merge material_rearc into npcs_v1
 		- Backport to BaryLab
 
 	= Settings:

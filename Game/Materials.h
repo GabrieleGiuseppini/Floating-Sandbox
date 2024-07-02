@@ -102,7 +102,6 @@ public:
     float WindReceptivity;
     float WaterReactivity;
     bool IsLegacyElectrical;
-    bool IsExemptFromPalette;
 
     // Palette
     std::optional<MaterialPaletteCoordinatesType> PaletteCoordinates;
@@ -175,7 +174,6 @@ public:
         float windReceptivity,
         float waterReactivity,
         bool isLegacyElectrical,
-        bool isExemptFromPalette,
         // Palette
         std::optional<MaterialPaletteCoordinatesType> paletteCoordinates)
         : ColorKey(colorKey)
@@ -207,7 +205,6 @@ public:
         , WindReceptivity(windReceptivity)
         , WaterReactivity(waterReactivity)
         , IsLegacyElectrical(isLegacyElectrical)
-        , IsExemptFromPalette(isExemptFromPalette)
         , PaletteCoordinates(paletteCoordinates)
     {}
 
@@ -245,7 +242,6 @@ public:
         , WindReceptivity(1.0f)
         , WaterReactivity(0.0f)
         , IsLegacyElectrical(false)
-        , IsExemptFromPalette(false)
         , PaletteCoordinates(std::nullopt)
     {}
 };

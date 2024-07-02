@@ -86,6 +86,20 @@ def make_color_set(json_obj):
     return colors
 
 
+def make_name_set(json_obj):
+    names = set()
+    for material in json_obj["materials"]:
+        if 'name' not in material:
+            print("ERROR: missing 'name' field")
+            continue
+        name = material['name']
+        if name in names:
+            print("ERROR: material name '{}' is duplicate".format(name))
+        else:
+            names.add(name)
+    return names
+
+
 def find_palette_group(json_obj, material_group_name):
     for palette_name in ["structural_palette", "ropes_palette", "electrical_palette"]:
         palettes_obj = json_obj["palettes"]
@@ -105,11 +119,12 @@ def verify(filename):
     # Verify colors
     make_color_set(json_obj)
 
-    for material in json_obj["materials"]:
-        if not 'name' in material:
-            print("ERROR: missing 'name' field")
-            continue
+    # Verify names
+    names = make_name_set(json_obj)
 
+    for material in json_obj["materials"]:
+        
+        assert 'name' in material
         material_name = material['name']
 
         # Verify mandatory fields
@@ -124,6 +139,11 @@ def verify(filename):
             rgb = hex_to_rgb(hex_color)
             if (not "unique_type" in material or material["unique_type"] != "Rope") and rgb[0] == 0 and rgb[1] < 16:
                 print("ERROR: {}: color key clashes with legacy ropes's color keys".format(material_name))
+
+        # Verify palette
+        if not 'palette_coordinates' in material:
+            if not 'is_exempt_from_palette' in material or material['is_exempt_from_palette'] == False:
+                print("ERROR: {}: has no 'palette_coordinates' but is not exempt from palette".format(material_name))
 
 
 def add_variant_material(material, variant_key, variants):

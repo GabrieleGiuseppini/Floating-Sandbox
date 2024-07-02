@@ -136,7 +136,6 @@ StructuralMaterial StructuralMaterial::Create(
             windReceptivity,
             waterReactivity,
             isLegacyElectrical,
-            isExemptFromPalette,
             // Palette
             paletteCoordinates);
     }

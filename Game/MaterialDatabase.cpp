@@ -15,7 +15,8 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
     // Structural
     //
 
-    MaterialMap<StructuralMaterial> structuralMaterialMap;
+    MaterialColorMap<StructuralMaterial> structuralMaterialColorMap;
+    MaterialNameMap<StructuralMaterial> structuralMaterialNameMap;
 
     // Prepare unique structural materials
     UniqueStructuralMaterialsArray uniqueStructuralMaterials;
@@ -131,28 +132,39 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
                 throw GameException("Structural material \"" + material.Name + "\" has the same color key as the \"empty material\"");
             }
 
-            // Make sure there are no dupes
-            if (structuralMaterialMap.count(colorKey) != 0)
+            // Store by color - making sure there are no dupes
+            auto const [instanceIt, isColorInserted] = structuralMaterialColorMap.emplace(
+                std::make_pair(
+                    colorKey,
+                    material));
+            if (!isColorInserted)
             {
                 throw GameException("Color key \"" + Utils::RgbColor2Hex(colorKey) + "\" of structural material \"" + material.Name + "\" already belongs to another material");
             }
 
-            // Store
-            auto const storedEntry = structuralMaterialMap.emplace(
-                std::make_pair(
-                    colorKey,
-                    material));
+            // Store by name (first instance only) - making sure there are no dupes
+            if (iColorKey == 0)
+            {
+                auto const [_, isNameInserted] = structuralMaterialNameMap.emplace(
+                    std::make_pair(
+                        material.Name,
+                        material));
+                if (!isNameInserted)
+                {
+                    throw GameException("Material name \"" + material.Name + "\" already belongs to another material");
+                }
+            }
 
             // Add to palettes
             if (material.PaletteCoordinates.has_value())
             {
                 if (structuralMaterialPalette.HasCategory(material.PaletteCoordinates->Category))
                 {
-                    structuralMaterialPalette.InsertMaterial(storedEntry.first->second, *material.PaletteCoordinates);
+                    structuralMaterialPalette.InsertMaterial(instanceIt->second, *material.PaletteCoordinates);
                 }
                 else if (ropeMaterialPalette.HasCategory(material.PaletteCoordinates->Category))
                 {
-                    ropeMaterialPalette.InsertMaterial(storedEntry.first->second, *material.PaletteCoordinates);
+                    ropeMaterialPalette.InsertMaterial(instanceIt->second, *material.PaletteCoordinates);
                 }
                 else
                 {
@@ -171,7 +183,7 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
 
                 uniqueStructuralMaterials[uniqueTypeIndex] = std::make_pair(
                     colorKey,
-                    &(storedEntry.first->second));
+                    &(instanceIt->second));
             }
 
             // Update extremes
@@ -189,7 +201,7 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
     }
 
     // Make sure there are no clashes with indexed rope colors
-    for (auto const & entry : structuralMaterialMap)
+    for (auto const & entry : structuralMaterialColorMap)
     {
         if ((!entry.second.UniqueType || StructuralMaterial::MaterialUniqueType::Rope != *(entry.second.UniqueType))
             && entry.first.r == uniqueStructuralMaterials[RopeUniqueMaterialIndex].first.r
@@ -203,13 +215,13 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
     structuralMaterialPalette.CheckComplete();
     ropeMaterialPalette.CheckComplete();
 
-    LogMessage("Loaded " + std::to_string(structuralMaterialMap.size()) + " structural materials.");
+    LogMessage("Loaded " + std::to_string(structuralMaterialColorMap.size()) + " structural materials.");
 
     //
     // Electrical materials
     //
 
-    MaterialMap<ElectricalMaterial> electricalMaterialMap;
+    MaterialColorMap<ElectricalMaterial> electricalMaterialColorMap;
     std::map<MaterialColorKey, ElectricalMaterial const *, InstancedColorKeyComparer> instancedElectricalMaterialMap;
 
     picojson::value const electricalMaterialsRoot = Utils::ParseJSONFile(
@@ -269,19 +281,19 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
         }
 
         // Make sure there are no dupes
-        if (auto const searchIt = electricalMaterialMap.find(colorKey);
-            searchIt != electricalMaterialMap.end())
+        if (auto const searchIt = electricalMaterialColorMap.find(colorKey);
+            searchIt != electricalMaterialColorMap.cend())
         {
             throw GameException("Electrical material \"" + material.Name + "\" has a color key conflicting with the \"" + searchIt->second.Name+ "\" material.");
         }
         if (auto const searchIt = instancedElectricalMaterialMap.find(colorKey);
-            searchIt != instancedElectricalMaterialMap.end())
+            searchIt != instancedElectricalMaterialMap.cend())
         {
             throw GameException("Electrical material \"" + material.Name + "\" has a color key conflicting with the \"" + searchIt->second->Name + "\" material.");
         }
 
         // Store
-        auto const storedEntry = electricalMaterialMap.emplace(
+        auto const storedEntry = electricalMaterialColorMap.emplace(
             std::make_pair(
                 colorKey,
                 material));
@@ -312,7 +324,7 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
     // Make sure the palette is fully-populated
     electricalMaterialPalette.CheckComplete();
 
-    LogMessage("Loaded " + std::to_string(electricalMaterialMap.size()) + " electrical materials.");
+    LogMessage("Loaded " + std::to_string(electricalMaterialColorMap.size()) + " electrical materials.");
 
     //
     // Make sure there are no structural materials whose key appears
@@ -320,10 +332,10 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
     // materials
     //
 
-    for (auto const & kv : structuralMaterialMap)
+    for (auto const & kv : structuralMaterialColorMap)
     {
         if (!kv.second.IsLegacyElectrical
-            && (0 != electricalMaterialMap.count(kv.first)
+            && (0 != electricalMaterialColorMap.count(kv.first)
                 || 0 != instancedElectricalMaterialMap.count(kv.first)))
         {
             throw GameException("Color key of structural material \"" + kv.second.Name + "\" is also present among electrical materials");
@@ -378,12 +390,13 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
     //
 
     return MaterialDatabase(
-        std::move(structuralMaterialMap),
+        std::move(structuralMaterialColorMap),
+        std::move(structuralMaterialNameMap),
         uniqueStructuralMaterials,
         std::move(structuralMaterialPalette),
         std::move(ropeMaterialPalette),
         largestStructuralMass,
-        std::move(electricalMaterialMap),
+        std::move(electricalMaterialColorMap),
         std::move(instancedElectricalMaterialMap),
         std::move(electricalMaterialPalette),
         std::move(npcMaterialMap));
