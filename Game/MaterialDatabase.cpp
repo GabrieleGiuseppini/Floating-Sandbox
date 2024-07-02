@@ -293,17 +293,18 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
         }
 
         // Store
-        auto const storedEntry = electricalMaterialColorMap.emplace(
+        auto const [instanceIt, isInserted] = electricalMaterialColorMap.emplace(
             std::make_pair(
                 colorKey,
                 material));
+        assert(isInserted);
 
         // Add to palette
         if (material.PaletteCoordinates.has_value())
         {
             if (electricalMaterialPalette.HasCategory(material.PaletteCoordinates->Category))
             {
-                electricalMaterialPalette.InsertMaterial(storedEntry.first->second, *material.PaletteCoordinates);
+                electricalMaterialPalette.InsertMaterial(instanceIt->second, *material.PaletteCoordinates);
             }
             else
             {
@@ -317,7 +318,7 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
             instancedElectricalMaterialMap.emplace(
                 std::make_pair(
                     colorKey,
-                    &(storedEntry.first->second)));
+                    &(instanceIt->second)));
         }
     }
 
