@@ -100,7 +100,7 @@ public:
     using MaterialColorMap = std::map<MaterialColorKey, TMaterial>;
 
     template<typename TMaterial>
-    using MaterialNameMap = std::map<std::string, TMaterial>;
+    using MaterialNameMap = std::map<std::string, TMaterial const &>;
 
 private:
 
@@ -143,6 +143,18 @@ public:
 
         // No luck
         return nullptr;
+    }
+
+    StructuralMaterial const & GetStructuralMaterial(std::string const & name) const
+    {
+        if (auto const srchIt = mStructuralMaterialNameMap.find(name);
+            srchIt != mStructuralMaterialNameMap.cend())
+        {
+            // Found
+            return srchIt->second;
+        }
+
+        throw GameException("Cannot find material \"" + name + "\"");
     }
 
     StructuralMaterial const & GetUniqueStructuralMaterial(StructuralMaterial::MaterialUniqueType uniqueType) const

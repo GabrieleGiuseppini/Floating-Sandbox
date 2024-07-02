@@ -328,11 +328,11 @@ Arch
 		- Port to FS
 
 	= Material rearc: nuke NpcMaterial and use only StructuralMaterial	
-		= 1. MaterialDB: index StructuralMaterial also by name
+		+ 1. MaterialDB: index StructuralMaterial also by name
 			+ See if there are any dupe names
 				+ Add to script as check
 					+ Together with is_exempt+palette
-			= Do indexing
+			+ Do indexing
 		- 2. Port NPCMaterial to StructuralMaterial
 			- Port GameParameters::OceanFloorElasticity and OceanFloorFriction to all materials as ElasticityCoefficient, StaticFrictionCoefficient, KineticFrictionCoefficient (same values)
 				- Script: fill-in 

@@ -148,7 +148,7 @@ MaterialDatabase MaterialDatabase::Load(std::filesystem::path materialsRootDirec
                 auto const [_, isNameInserted] = structuralMaterialNameMap.emplace(
                     std::make_pair(
                         material.Name,
-                        material));
+                        instanceIt->second));
                 if (!isNameInserted)
                 {
                     throw GameException("Material name \"" + material.Name + "\" already belongs to another material");
