@@ -73,6 +73,9 @@ public:
     float BuoyancyVolumeFill;
     float Stiffness;
     float StrainThresholdFraction;
+    float ElasticityCoefficient;
+    float KineticFrictionCoefficient;
+    float StaticFrictionCoefficient;
 
     std::optional<MaterialUniqueType> UniqueType;
 
@@ -151,6 +154,9 @@ public:
         float buoyancyVolumeFill,
         float stiffness,
         float strainThresholdFraction,
+        float elasticityCoefficient,
+        float kineticFrictionCoefficient,
+        float staticFrictionCoefficient,
         std::optional<MaterialUniqueType> uniqueType,
         std::optional<MaterialSoundType> materialSound,
         std::optional<std::string> materialTextureName,
@@ -185,6 +191,9 @@ public:
         , BuoyancyVolumeFill(buoyancyVolumeFill)
         , Stiffness(stiffness)
         , StrainThresholdFraction(strainThresholdFraction)
+        , ElasticityCoefficient(elasticityCoefficient)
+        , KineticFrictionCoefficient(kineticFrictionCoefficient)
+        , StaticFrictionCoefficient(staticFrictionCoefficient)
         , UniqueType(uniqueType)
         , MaterialSound(materialSound)
         , MaterialTextureName(materialTextureName)

@@ -15,6 +15,9 @@
                 "#111111"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1783.15,
             "is_hull": true,
             "mass": {
@@ -54,6 +57,9 @@
                 "#151515"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1783.15,
             "is_hull": true,
             "mass": {
@@ -93,6 +99,9 @@
                 "#181818"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1783.15,
             "is_hull": true,
             "mass": {
@@ -132,6 +141,9 @@
                 "#101112"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1783.15,
             "is_hull": false,
             "mass": {
@@ -171,6 +183,9 @@
                 "#222222"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1783.15,
             "is_hull": false,
             "mass": {
@@ -210,6 +225,9 @@
                 "#211f1e"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1783.15,
             "is_hull": false,
             "mass": {
@@ -249,6 +267,9 @@
                 "#333333"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1643.15,
             "is_hull": true,
             "mass": {
@@ -288,6 +309,9 @@
                 "#373737"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1643.15,
             "is_hull": true,
             "mass": {
@@ -327,6 +351,9 @@
                 "#3A3A3A"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1643.15,
             "is_hull": true,
             "mass": {
@@ -366,6 +393,9 @@
                 "#121212"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1643.15,
             "is_hull": false,
             "mass": {
@@ -406,6 +436,9 @@
                 "#262626"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1643.15,
             "is_hull": false,
             "mass": {
@@ -445,6 +478,9 @@
                 "#141516"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1643.15,
             "is_hull": false,
             "mass": {
@@ -484,6 +520,9 @@
                 "#555555"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1473.15,
             "is_hull": true,
             "mass": {
@@ -523,6 +562,9 @@
                 "#595959"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1473.15,
             "is_hull": true,
             "mass": {
@@ -562,6 +604,9 @@
                 "#5C5C5C"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1473.15,
             "is_hull": true,
             "mass": {
@@ -601,6 +646,9 @@
                 "#606060"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1473.15,
             "is_hull": false,
             "mass": {
@@ -640,6 +688,9 @@
                 "#666666"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1473.15,
             "is_hull": false,
             "mass": {
@@ -679,6 +730,9 @@
                 "#636363"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1473.15,
             "is_hull": false,
             "mass": {
@@ -718,6 +772,9 @@
                 "#757575"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1000000.0,
             "is_hull": true,
             "mass": {
@@ -757,6 +814,9 @@
                 "#7C7C7C"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1000000.0,
             "is_hull": true,
             "mass": {
@@ -796,6 +856,9 @@
                 "#838383"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1000000.0,
             "is_hull": true,
             "mass": {
@@ -835,6 +898,9 @@
                 "#717171"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1000000.0,
             "is_hull": false,
             "mass": {
@@ -874,6 +940,9 @@
                 "#989898"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1000000.0,
             "is_hull": false,
             "mass": {
@@ -913,6 +982,9 @@
                 "#525252"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1000000.0,
             "is_hull": false,
             "mass": {
@@ -952,6 +1024,9 @@
                 "#070707"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 453.0,
             "is_hull": true,
             "mass": {
@@ -991,6 +1066,9 @@
                 "#0B0B0B"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 453.0,
             "is_hull": true,
             "mass": {
@@ -1030,6 +1108,9 @@
                 "#0A0A0A"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 453.0,
             "is_hull": true,
             "mass": {
@@ -1069,6 +1150,9 @@
                 "#090909"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 453.0,
             "is_hull": false,
             "mass": {
@@ -1108,6 +1192,9 @@
                 "#080908"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 453.0,
             "is_hull": false,
             "mass": {
@@ -1147,6 +1234,9 @@
                 "#0C0C0C"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 453.0,
             "is_hull": false,
             "mass": {
@@ -1186,6 +1276,9 @@
                 "#140024"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 453.0,
             "is_hull": true,
             "mass": {
@@ -1225,6 +1318,9 @@
                 "#3B5251"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 453.0,
             "is_hull": true,
             "mass": {
@@ -1264,6 +1360,9 @@
                 "#405859"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 453.0,
             "is_hull": true,
             "mass": {
@@ -1303,6 +1402,9 @@
                 "#455E61"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 453.0,
             "is_hull": true,
             "mass": {
@@ -1342,6 +1444,9 @@
                 "#496469"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 453.0,
             "is_hull": false,
             "mass": {
@@ -1381,6 +1486,9 @@
                 "#527078"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 453.0,
             "is_hull": false,
             "mass": {
@@ -1420,6 +1528,9 @@
                 "#4E6A71"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 453.0,
             "is_hull": false,
             "mass": {
@@ -1459,6 +1570,9 @@
                 "#0B190F"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 453.0,
             "is_hull": true,
             "mass": {
@@ -1498,6 +1612,9 @@
                 "#060606"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 393.15,
             "is_hull": false,
             "mass": {
@@ -1535,6 +1652,9 @@
                 "#c74900"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 973.15,
             "is_hull": true,
             "mass": {
@@ -1572,6 +1692,9 @@
                 "#e3721b"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 973.15,
             "is_hull": false,
             "mass": {
@@ -1599,8 +1722,11 @@
             "buoyancy_volume_fill": 1.0,
             "color_key": "#1E1E1E",
             "combustion_type": "Explosion",
+            "elasticity_coefficient": 0.5,
             "explosive_combustion_radius": 1.15,
             "explosive_combustion_strength": 50.0,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 483.15,
             "is_hull": true,
             "mass": {
@@ -1630,8 +1756,11 @@
             "buoyancy_volume_fill": 1.0,
             "color_key": "#2E1E1E",
             "combustion_type": "Explosion",
+            "elasticity_coefficient": 0.5,
             "explosive_combustion_radius": 7.0,
             "explosive_combustion_strength": 95.0,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 693.15,
             "is_hull": false,
             "mass": {
@@ -1660,8 +1789,11 @@
             "buoyancy_volume_fill": 1.0,
             "color_key": "#2F1F1F",
             "combustion_type": "Explosion",
+            "elasticity_coefficient": 0.5,
             "explosive_combustion_radius": 8.0,
             "explosive_combustion_strength": 100.0,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 693.15,
             "is_hull": false,
             "mass": {
@@ -1690,6 +1822,9 @@
             "buoyancy_volume_fill": 1.0,
             "color_key": "#F5F5E9",
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 388.15,
             "is_hull": false,
             "mass": {
@@ -1730,6 +1865,9 @@
                 "#383432"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1000000.0,
             "is_hull": true,
             "mass": {
@@ -1769,6 +1907,9 @@
                 "#525150"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1000000.0,
             "is_hull": false,
             "mass": {
@@ -1808,6 +1949,9 @@
                 "#1c1612"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 491.15,
             "is_hull": true,
             "mass": {
@@ -1848,6 +1992,9 @@
                 "#423b36"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 491.15,
             "is_hull": false,
             "mass": {
@@ -1877,6 +2024,9 @@
             "buoyancy_volume_fill": 0.0,
             "color_key": "#F2F5F5",
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 450.15,
             "is_hull": true,
             "mass": {
@@ -1907,6 +2057,9 @@
             "buoyancy_volume_fill": 0.3,
             "color_key": "#FCFAFA",
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 450.15,
             "is_hull": false,
             "mass": {
@@ -1948,6 +2101,9 @@
                 "#0d0903"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1643.15,
             "is_hull": true,
             "mass": {
@@ -1987,6 +2143,9 @@
                 "#737363"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1643.15,
             "is_hull": true,
             "mass": {
@@ -2027,6 +2186,9 @@
                 "#B9B9A9"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1643.15,
             "is_hull": false,
             "mass": {
@@ -2067,6 +2229,9 @@
                 "#30302f"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1473.15,
             "is_hull": true,
             "mass": {
@@ -2106,6 +2271,9 @@
                 "#1c0b02"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1783.15,
             "is_hull": true,
             "mass": {
@@ -2146,6 +2314,9 @@
             ],
             "combustion_type": "Combustion",
             "description": "The most fragile material of them all.",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1213.0,
             "is_hull": false,
             "mass": {
@@ -2181,9 +2352,12 @@
                 "#3963FA",
                 "#CF24FF",
                 "#F5AE51",
-		"#050607"
+                "#050607"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1000000.0,
             "is_hull": true,
             "mass": {
@@ -2221,9 +2395,12 @@
                 "#A6C2FF",
                 "#FCC9FF",
                 "#FFBE54",
-		"#050608"
+                "#050608"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1000000.0,
             "is_hull": false,
             "mass": {
@@ -2262,9 +2439,12 @@
                 "#3963FB",
                 "#CF24FB",
                 "#F5AE52",
-		"#050609"
+                "#050609"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1000000.0,
             "is_hull": true,
             "mass": {
@@ -2302,9 +2482,12 @@
                 "#A6C2FE",
                 "#FCC9FE",
                 "#FFBE53",
-		"#05060A"
+                "#05060A"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1000000.0,
             "is_hull": false,
             "mass": {
@@ -2338,6 +2521,9 @@
                 "#BFBFE1"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 553.15,
             "is_hull": true,
             "mass": {
@@ -2371,6 +2557,9 @@
                 "#CFCFE1"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 553.15,
             "is_hull": false,
             "mass": {
@@ -2404,6 +2593,9 @@
                 "#B8B8E1"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 553.15,
             "is_hull": true,
             "mass": {
@@ -2437,6 +2629,9 @@
                 "#C7C7E1"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 553.15,
             "is_hull": false,
             "mass": {
@@ -2477,6 +2672,9 @@
                 "#959585"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1000000.0,
             "is_hull": true,
             "mass": {
@@ -2516,6 +2714,9 @@
                 "#A5A595"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1000000.0,
             "is_hull": false,
             "mass": {
@@ -2551,6 +2752,9 @@
                 "#050505"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 689.15,
             "is_hull": true,
             "mass": {
@@ -2587,6 +2791,9 @@
                 "#080808"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 689.15,
             "is_hull": false,
             "mass": {
@@ -2616,6 +2823,9 @@
             "buoyancy_volume_fill": 0.0,
             "color_key": "#0101C0",
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1000000.0,
             "is_hull": true,
             "mass": {
@@ -2647,6 +2857,9 @@
             "color_key": "#F0F0F0",
             "combustion_type": "Combustion",
             "description": "This opaque variant is the one we use as representative of the 'Air' unique type.",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1000000.0,
             "is_hull": false,
             "mass": {
@@ -2678,6 +2891,9 @@
             "buoyancy_volume_fill": 1.0,
             "color_key": "#F0F0F1",
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1000000.0,
             "is_hull": false,
             "mass": {
@@ -2708,8 +2924,11 @@
             "buoyancy_volume_fill": 1.0,
             "color_key": "#CECECE",
             "combustion_type": "Explosion",
+            "elasticity_coefficient": 0.5,
             "explosive_combustion_radius": 1.0,
             "explosive_combustion_strength": 100.0,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 773.15,
             "is_hull": false,
             "mass": {
@@ -2739,8 +2958,11 @@
             "buoyancy_volume_fill": 1.0,
             "color_key": "#CECECD",
             "combustion_type": "Explosion",
+            "elasticity_coefficient": 0.5,
             "explosive_combustion_radius": 1.0,
             "explosive_combustion_strength": 100.0,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 773.15,
             "is_hull": false,
             "mass": {
@@ -2770,8 +2992,11 @@
             "buoyancy_volume_fill": 1.0,
             "color_key": "#BEBEBE",
             "combustion_type": "Explosion",
+            "elasticity_coefficient": 0.5,
             "explosive_combustion_radius": 1.0,
             "explosive_combustion_strength": 100.0,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1000000.0,
             "is_hull": false,
             "mass": {
@@ -2801,8 +3026,11 @@
             "buoyancy_volume_fill": 1.0,
             "color_key": "#BEBECE",
             "combustion_type": "Explosion",
+            "elasticity_coefficient": 0.5,
             "explosive_combustion_radius": 1.0,
             "explosive_combustion_strength": 100.0,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1000000.0,
             "is_hull": false,
             "mass": {
@@ -2843,6 +3071,9 @@
                 "#616251"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1000000.0,
             "is_hull": true,
             "mass": {
@@ -2883,6 +3114,9 @@
                 "#8E8F7E"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1000000.0,
             "is_hull": false,
             "mass": {
@@ -2912,6 +3146,9 @@
             "buoyancy_volume_fill": 0.0,
             "color_key": "#E6E6E6",
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1000000.0,
             "is_hull": true,
             "mass": {
@@ -2942,6 +3179,9 @@
             "buoyancy_volume_fill": 1.0,
             "color_key": "#EDEDED",
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1000000.0,
             "is_hull": false,
             "mass": {
@@ -2972,6 +3212,9 @@
             "buoyancy_volume_fill": 0.0,
             "color_key": "#14CEE3",
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1000000.0,
             "is_hull": true,
             "mass": {
@@ -3001,6 +3244,9 @@
             "buoyancy_volume_fill": 1.0,
             "color_key": "#19E1F7",
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1000000.0,
             "is_hull": false,
             "mass": {
@@ -3027,13 +3273,15 @@
             "water_retention": 0.2,
             "wind_receptivity": 0.1
         },
-
         {
             "buoyancy_volume_fill": 1.0,
             "color_key": "#747474",
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 760.0,
-	    "is_exempt_from_palette": true,
+            "is_exempt_from_palette": true,
             "is_hull": true,
             "mass": {
                 "density": 0.07,
@@ -3047,20 +3295,21 @@
             "stiffness": 1.0,
             "strength": 1.0,
             "thermal_conductivity": 0.52,
-	    "unique_type": "Human",
+            "unique_type": "Human",
             "water_diffusion_speed": 0.0,
             "water_retention": 0.0,
             "wind_receptivity": 0.3
         },
-
-
         {
             "buoyancy_volume_fill": 1.0,
             "color_key": "#FFFF00",
             "combustion_type": "Combustion",
             "description": "This material is here exclusively to ease development of one-layer ships; the proper way to make circuits is to develop a separate electrical layer. Choosing this material for a point in the structural layer will automatically make the point inherit the electrical properties from the same material that is found in the materials_electrical json file.",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1000000.0,
-	    "is_exempt_from_palette": true,
+            "is_exempt_from_palette": true,
             "is_hull": false,
             "is_legacy_electrical": true,
             "mass": {
@@ -3084,8 +3333,11 @@
             "color_key": "#FFE010",
             "combustion_type": "Combustion",
             "description": "This material is here exclusively to ease development of one-layer ships; the proper way to make circuits is to develop a separate electrical layer. Choosing this material for a point in the structural layer will automatically make the point inherit the electrical properties from the same material that is found in the materials_electrical json file.",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1000000.0,
-	    "is_exempt_from_palette": true,
+            "is_exempt_from_palette": true,
             "is_hull": false,
             "is_legacy_electrical": true,
             "mass": {
@@ -3109,8 +3361,11 @@
             "color_key": "#FC0808",
             "combustion_type": "Combustion",
             "description": "This material is here exclusively to ease development of one-layer ships; the proper way to make circuits is to develop a separate electrical layer. Choosing this material for a point in the structural layer will automatically make the point inherit the electrical properties from the same material that is found in the materials_electrical json file.",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1000000.0,
-	    "is_exempt_from_palette": true,
+            "is_exempt_from_palette": true,
             "is_hull": false,
             "is_legacy_electrical": true,
             "mass": {
@@ -3134,8 +3389,11 @@
             "color_key": "#4C0000",
             "combustion_type": "Combustion",
             "description": "This material is here exclusively to ease development of one-layer ships; the proper way to make circuits is to develop a separate electrical layer. Choosing this material for a point in the structural layer will automatically make the point inherit the electrical properties from the same material that is found in the materials_electrical json file.",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 689.15,
-	    "is_exempt_from_palette": true,
+            "is_exempt_from_palette": true,
             "is_hull": true,
             "is_legacy_electrical": true,
             "mass": {
@@ -3159,8 +3417,11 @@
             "color_key": "#700000",
             "combustion_type": "Combustion",
             "description": "This material is here exclusively to ease development of one-layer ships; the proper way to make circuits is to develop a separate electrical layer. Choosing this material for a point in the structural layer will automatically make the point inherit the electrical properties from the same material that is found in the materials_electrical json file.",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 689.15,
-	    "is_exempt_from_palette": true,
+            "is_exempt_from_palette": true,
             "is_hull": false,
             "is_legacy_electrical": true,
             "mass": {
@@ -3184,8 +3445,11 @@
             "color_key": "#FC2020",
             "combustion_type": "Combustion",
             "description": "This material is here exclusively to ease development of one-layer ships; the proper way to make circuits is to develop a separate electrical layer. Choosing this material for a point in the structural layer will automatically make the point inherit the electrical properties from the same material that is found in the materials_electrical json file.",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 353.0,
-	    "is_exempt_from_palette": true,
+            "is_exempt_from_palette": true,
             "is_hull": false,
             "is_legacy_electrical": true,
             "mass": {
@@ -3219,6 +3483,9 @@
                 "#260200"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 393.15,
             "is_hull": false,
             "mass": {
@@ -3258,6 +3525,9 @@
                 "#757779"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 393.15,
             "is_hull": false,
             "mass": {
@@ -3296,6 +3566,9 @@
                 "#241616"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1000000.0,
             "is_hull": false,
             "mass": {
@@ -3335,6 +3608,9 @@
                 "#706f6e"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1000000.0,
             "is_hull": false,
             "mass": {
@@ -3374,6 +3650,9 @@
                 "#3b3c3d"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 1000000.0,
             "is_hull": false,
             "mass": {
@@ -3413,6 +3692,9 @@
                 "#54504c"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 553.15,
             "is_hull": false,
             "mass": {
@@ -3453,6 +3735,9 @@
                 "#041220"
             ],
             "combustion_type": "Combustion",
+            "elasticity_coefficient": 0.5,
+            "friction_kinetic_coefficient": 0.25,
+            "friction_static_coefficient": 0.25,
             "ignition_temperature": 553.15,
             "is_hull": false,
             "mass": {

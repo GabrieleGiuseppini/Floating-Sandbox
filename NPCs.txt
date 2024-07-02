@@ -333,10 +333,10 @@ Arch
 				+ Add to script as check
 					+ Together with is_exempt+palette
 			+ Do indexing
-		- 2. Port NPCMaterial to StructuralMaterial
-			- Port GameParameters::OceanFloorElasticity and OceanFloorFriction to all materials as ElasticityCoefficient, StaticFrictionCoefficient, KineticFrictionCoefficient (same values)
-				- Script: fill-in 
-				- Material parse & expose
+		= 2. Port NPCMaterial to StructuralMaterial
+			= Port GameParameters::OceanFloorElasticity and OceanFloorFriction to all materials as ElasticityCoefficient, StaticFrictionCoefficient, KineticFrictionCoefficient (same values)
+				+ Script: fill-in 
+				+ Material: parse & expose
 				+ Leave OceanFloorElasticity and OceanFloorFriction in GameParameters and SettingsDialog
 				- GameParameters: add ElasticityAdjustment, FrictionAdjustment
 					- SettingsDialog
