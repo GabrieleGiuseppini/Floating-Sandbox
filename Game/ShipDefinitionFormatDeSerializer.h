@@ -341,19 +341,19 @@ private:
     static void ReadStructuralLayer(
         DeSerializationBuffer<BigEndianess> const & buffer,
         ShipAttributes const & shipAttributes,
-        MaterialDatabase::MaterialMap<StructuralMaterial> const & materialMap,
+        MaterialDatabase::MaterialColorMap<StructuralMaterial> const & materialColorMap,
         std::unique_ptr<StructuralLayerData> & structuralLayer);
 
     static void ReadElectricalLayer(
         DeSerializationBuffer<BigEndianess> const & buffer,
         ShipAttributes const & shipAttributes,
-        MaterialDatabase::MaterialMap<ElectricalMaterial> const & materialMap,
+        MaterialDatabase::MaterialColorMap<ElectricalMaterial> const & materialColorMap,
         std::unique_ptr<ElectricalLayerData> & electricalLayer);
 
     static void ReadRopesLayer(
         DeSerializationBuffer<BigEndianess> const & buffer,
         ShipAttributes const & shipAttributes,
-        MaterialDatabase::MaterialMap<StructuralMaterial> const & materialMap,
+        MaterialDatabase::MaterialColorMap<StructuralMaterial> const & materialColorMap,
         std::unique_ptr<RopesLayerData> & ropesLayer);
 
 private:
