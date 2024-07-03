@@ -121,6 +121,18 @@ struct GameParameters
     static float constexpr MinGlobalDampingAdjustment = 0.0f;
     static float constexpr MaxGlobalDampingAdjustment = 10.0f;
 
+    float ElasticityAdjustment;
+    static float constexpr MinElasticityAdjustment = 0.0f;
+    static float constexpr MaxElasticityAdjustment = 4.0f;
+
+    float StaticFrictionAdjustment;
+    static float constexpr MinStaticFrictionAdjustment = 0.05f; // Keeps some sanity at lower end
+    static float constexpr MaxStaticFrictionAdjustment = 40.0f;
+
+    float KineticFrictionAdjustment;
+    static float constexpr MinKineticFrictionAdjustment = 0.05f; // Keeps some sanity at lower end
+    static float constexpr MaxKineticFrictionAdjustment = 40.0f;
+
     float RotAcceler8r;
     static float constexpr MinRotAcceler8r = 0.0f;
     static float constexpr MaxRotAcceler8r = 1000.0f;
@@ -434,18 +446,6 @@ struct GameParameters
 
     static float constexpr NpcDamping = 0.0078f; // NPCs have their own as the "physics" one is applied over multiple sub-steps, while the NPCs' one is applied in one step
 
-    float NpcMaterialElasticityAdjustment;
-    static float constexpr MinNpcMaterialElasticityAdjustment = 0.0f;
-    static float constexpr MaxNpcMaterialElasticityAdjustment = 4.0f;
-
-    float NpcMaterialStaticFrictionAdjustment;
-    static float constexpr MinNpcMaterialStaticFrictionAdjustment = 0.0f;
-    static float constexpr MaxNpcMaterialStaticFrictionAdjustment = 40.0f;
-
-    float NpcMaterialKineticFrictionAdjustment;
-    static float constexpr MinNpcMaterialKineticFrictionAdjustment = 0.0f;
-    static float constexpr MaxNpcMaterialKineticFrictionAdjustment = 40.0f;
-
     float NpcSpringReductionFractionAdjustment;
     static float constexpr MinNpcSpringReductionFractionAdjustment = 0.0f;
     static float constexpr MaxNpcSpringReductionFractionAdjustment = 5.0f;
@@ -524,13 +524,13 @@ struct GameParameters
     static float constexpr MinOceanFloorDetailAmplification = 0.0f;
     static float constexpr MaxOceanFloorDetailAmplification = 200.0f;
 
-    float OceanFloorElasticity;
-    static float constexpr MinOceanFloorElasticity = 0.0f;
-    static float constexpr MaxOceanFloorElasticity = 1.0f;
+    float OceanFloorElasticityCoefficient;
+    static float constexpr MinOceanFloorElasticityCoefficient = 0.0f;
+    static float constexpr MaxOceanFloorElasticityCoefficient = 1.0f;
 
-    float OceanFloorFriction;
-    static float constexpr MinOceanFloorFriction = 0.05f; // Keeps some sanity at lower end
-    static float constexpr MaxOceanFloorFriction = 1.0f;
+    float OceanFloorFrictionCoefficient;
+    static float constexpr MinOceanFloorFrictionCoefficient = 0.05f; // Keeps some sanity at lower end
+    static float constexpr MaxOceanFloorFrictionCoefficient = 1.0f;
 
     float OceanFloorSiltHardness;
     static float constexpr MinOceanFloorSiltHardness = 0.0f;

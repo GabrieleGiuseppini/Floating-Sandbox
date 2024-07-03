@@ -898,12 +898,12 @@ void Npcs::UpdateNpcParticlePhysics(
                     if (std::abs(npcParticle.ConstrainedState->MeshRelativeVelocity.dot(edgeDir)) > 0.01f) // Magic number
                     {
                         // Kinetic friction
-                        frictionCoefficient = mParticles.GetMaterialProperties(npcParticle.ParticleIndex).KineticFriction * gameParameters.NpcMaterialKineticFrictionAdjustment;
+                        frictionCoefficient = mParticles.GetMaterialProperties(npcParticle.ParticleIndex).KineticFriction * gameParameters.KineticFrictionAdjustment;
                     }
                     else
                     {
                         // Static friction
-                        frictionCoefficient = mParticles.GetMaterialProperties(npcParticle.ParticleIndex).StaticFriction * gameParameters.NpcMaterialStaticFrictionAdjustment;
+                        frictionCoefficient = mParticles.GetMaterialProperties(npcParticle.ParticleIndex).StaticFriction * gameParameters.StaticFrictionAdjustment;
                     }
 
                     // Calculate friction (integrated) force magnitude (along edgeDir),
@@ -2879,12 +2879,12 @@ void Npcs::BounceConstrainedNpcParticle(
         vec2f const normalResponse =
             -normalVelocity
             * particles.GetMaterialProperties(npcParticle.ParticleIndex).Elasticity
-            * gameParameters.NpcMaterialElasticityAdjustment;
+            * gameParameters.ElasticityAdjustment;
 
         // Calculate tangential response: Vt' = a*Vt (a = (1.0-friction), [0.0 - 1.0])
         vec2f const tangentialResponse =
             tangentialVelocity
-            * std::max(0.0f, 1.0f - particles.GetMaterialProperties(npcParticle.ParticleIndex).KineticFriction * gameParameters.NpcMaterialKineticFrictionAdjustment);
+            * std::max(0.0f, 1.0f - particles.GetMaterialProperties(npcParticle.ParticleIndex).KineticFriction * gameParameters.KineticFrictionAdjustment);
 
         // Calculate whole response (which, given that we've been working in *apparent* space (we've calc'd the collision response to *trajectory* which is apparent displacement)),
         // is a relative velocity (relative to mesh)

@@ -52,6 +52,15 @@ void Points::Add(
     mBuoyancyCoefficientsBuffer.emplace_back(CalculateBuoyancyCoefficients(
         structuralMaterial.BuoyancyVolumeFill,
         structuralMaterial.ThermalExpansionCoefficient));
+    mOceanFloorCollisionFactorsBuffer.emplace_back(CalculateOceanFloorCollisionFactors(
+        mCurrentElasticityAdjustment,
+        mCurrentStaticFrictionAdjustment,
+        mCurrentKineticFrictionAdjustment,
+        mCurrentOceanFloorElasticityCoefficient,
+        mCurrentOceanFloorFrictionCoefficient,
+        structuralMaterial.ElasticityCoefficient,
+        structuralMaterial.StaticFrictionCoefficient,
+        structuralMaterial.KineticFrictionCoefficient));
     mCachedDepthBuffer.emplace_back(mParentWorld.GetOceanSurface().GetDepth(position));
 
     mIntegrationFactorBuffer.emplace_back(vec2f::zero());
@@ -165,6 +174,15 @@ void Points::CreateEphemeralParticleAirBubble(
     mBuoyancyCoefficientsBuffer[pointIndex] = CalculateBuoyancyCoefficients(
         airBubbleBuoyancyVolumeFill,
         airStructuralMaterial.ThermalExpansionCoefficient);
+    mOceanFloorCollisionFactorsBuffer[pointIndex] = CalculateOceanFloorCollisionFactors(
+        mCurrentElasticityAdjustment,
+        mCurrentStaticFrictionAdjustment,
+        mCurrentKineticFrictionAdjustment,
+        mCurrentOceanFloorElasticityCoefficient,
+        mCurrentOceanFloorFrictionCoefficient,
+        airStructuralMaterial.ElasticityCoefficient,
+        airStructuralMaterial.StaticFrictionCoefficient,
+        airStructuralMaterial.KineticFrictionCoefficient);
     mCachedDepthBuffer[pointIndex] = depth;
 
     //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
@@ -331,6 +349,15 @@ void Points::CreateEphemeralParticleSmoke(
     mBuoyancyCoefficientsBuffer[pointIndex] = CalculateBuoyancyCoefficients(
         airStructuralMaterial.BuoyancyVolumeFill,
         airStructuralMaterial.ThermalExpansionCoefficient);
+    mOceanFloorCollisionFactorsBuffer[pointIndex] = CalculateOceanFloorCollisionFactors(
+        mCurrentElasticityAdjustment,
+        mCurrentStaticFrictionAdjustment,
+        mCurrentKineticFrictionAdjustment,
+        mCurrentOceanFloorElasticityCoefficient,
+        mCurrentOceanFloorFrictionCoefficient,
+        airStructuralMaterial.ElasticityCoefficient,
+        airStructuralMaterial.StaticFrictionCoefficient,
+        airStructuralMaterial.KineticFrictionCoefficient);
     mCachedDepthBuffer[pointIndex] = depth;
 
     //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
@@ -483,6 +510,15 @@ void Points::CreateEphemeralParticleWakeBubble(
     mBuoyancyCoefficientsBuffer[pointIndex] = CalculateBuoyancyCoefficients(
         waterStructuralMaterial.BuoyancyVolumeFill,
         waterStructuralMaterial.ThermalExpansionCoefficient);
+    mOceanFloorCollisionFactorsBuffer[pointIndex] = CalculateOceanFloorCollisionFactors(
+        mCurrentElasticityAdjustment,
+        mCurrentStaticFrictionAdjustment,
+        mCurrentKineticFrictionAdjustment,
+        mCurrentOceanFloorElasticityCoefficient,
+        mCurrentOceanFloorFrictionCoefficient,
+        waterStructuralMaterial.ElasticityCoefficient,
+        waterStructuralMaterial.StaticFrictionCoefficient,
+        waterStructuralMaterial.KineticFrictionCoefficient);
     mCachedDepthBuffer[pointIndex] = depth;
 
     //mInternalPressureBuffer[pointIndex] = 0.0f; // There's no hull hence we won't need it
@@ -648,6 +684,42 @@ void Points::UpdateForGameParameters(GameParameters const & gameParameters)
 
         // Remember the new value
         mCurrentNumMechanicalDynamicsIterations = numMechanicalDynamicsIterations;
+    }
+
+    float const elasticityAdjustment = gameParameters.ElasticityAdjustment;
+    float const staticFrictionAdjustment = gameParameters.StaticFrictionAdjustment;
+    float const kineticFrictionAdjustment = gameParameters.KineticFrictionAdjustment;
+    float const oceanFloorElasticityCoefficient = gameParameters.OceanFloorElasticityCoefficient;
+    float const oceanFloorFrictionCoefficient = gameParameters.OceanFloorFrictionCoefficient;
+    if (elasticityAdjustment != mCurrentElasticityAdjustment
+        || staticFrictionAdjustment != mCurrentStaticFrictionAdjustment
+        || kineticFrictionAdjustment != mCurrentKineticFrictionAdjustment
+        || oceanFloorElasticityCoefficient != mCurrentOceanFloorElasticityCoefficient
+        || oceanFloorFrictionCoefficient != mCurrentOceanFloorFrictionCoefficient)
+    {
+        // Recalc ocean floor coefficients
+        for (ElementIndex i : *this)
+        {
+            if (mMaterialsBuffer[i].Structural != nullptr)
+            {
+                mOceanFloorCollisionFactorsBuffer[i] = CalculateOceanFloorCollisionFactors(
+                    elasticityAdjustment,
+                    staticFrictionAdjustment,
+                    kineticFrictionAdjustment,
+                    oceanFloorElasticityCoefficient,
+                    oceanFloorFrictionCoefficient,
+                    mMaterialsBuffer[i].Structural->ElasticityCoefficient,
+                    mMaterialsBuffer[i].Structural->StaticFrictionCoefficient,
+                    mMaterialsBuffer[i].Structural->KineticFrictionCoefficient);
+            }
+        }
+
+        // Remember the new values
+        mCurrentOceanFloorElasticityCoefficient = oceanFloorElasticityCoefficient;
+        mCurrentOceanFloorFrictionCoefficient = oceanFloorFrictionCoefficient;
+        mCurrentElasticityAdjustment = elasticityAdjustment;
+        mCurrentStaticFrictionAdjustment = staticFrictionAdjustment;
+        mCurrentKineticFrictionAdjustment = kineticFrictionAdjustment;
     }
 
     float const cumulatedIntakenWaterThresholdForAirBubbles = GameParameters::AirBubblesDensityToCumulatedIntakenWater(gameParameters.AirBubblesDensity);

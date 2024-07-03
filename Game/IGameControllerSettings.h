@@ -250,11 +250,11 @@ struct IGameControllerSettings
     virtual void SetOceanFloorDetailAmplification(float value) = 0;
     virtual void SetOceanFloorDetailAmplificationImmediate(float value) = 0;
 
-    virtual float GetOceanFloorElasticity() const = 0;
-    virtual void SetOceanFloorElasticity(float value) = 0;
+    virtual float GetOceanFloorElasticityCoefficient() const = 0;
+    virtual void SetOceanFloorElasticityCoefficient(float value) = 0;
 
-    virtual float GetOceanFloorFriction() const = 0;
-    virtual void SetOceanFloorFriction(float value) = 0;
+    virtual float GetOceanFloorFrictionCoefficient() const = 0;
+    virtual void SetOceanFloorFrictionCoefficient(float value) = 0;
 
     virtual float GetOceanFloorSiltHardness() const = 0;
     virtual void SetOceanFloorSiltHardness(float value) = 0;

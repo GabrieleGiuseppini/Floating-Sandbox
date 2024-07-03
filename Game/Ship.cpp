@@ -1760,9 +1760,6 @@ void Ship::HandleCollisionsWithSeaFloor(
 
     OceanFloor const & oceanFloor = mParentWorld.GetOceanFloor();
 
-    float const elasticityFactor = -gameParameters.OceanFloorElasticity;
-    float const inverseFriction = 1.0f - gameParameters.OceanFloorFriction;
-
     float const siltingFactor1 = gameParameters.OceanFloorSiltHardness;
     float const siltingFactor2 = 1.0f - gameParameters.OceanFloorSiltHardness;
 
@@ -1802,14 +1799,18 @@ void Ship::HandleCollisionsWithSeaFloor(
                 vec2f const tangentialVelocity = pointVelocity - normalVelocity;
 
                 // Calculate normal reponse: Vn' = -e*Vn (e = elasticity, [0.0 - 1.0])
+                float const elasticityFactor = mPoints.GetOceanFloorCollisionFactors(pointIndex).ElasticityFactor;
                 vec2f const normalResponse =
                     normalVelocity
                     * elasticityFactor; // Already negative
 
                 // Calculate tangential response: Vt' = a*Vt (a = (1.0-friction), [0.0 - 1.0])
+                float const frictionFactor = (std::abs(tangentialVelocity.x) > 0.01f || std::abs(tangentialVelocity.y) > 0.01f)
+                    ? mPoints.GetOceanFloorCollisionFactors(pointIndex).KineticFrictionFactor
+                    : mPoints.GetOceanFloorCollisionFactors(pointIndex).StaticFrictionFactor;
                 vec2f const tangentialResponse =
                     tangentialVelocity
-                    * inverseFriction;
+                    * frictionFactor;
 
                 // Calculate silting coefficient:
                 //  0.0: freefall - with zero accumulation of velocity though
@@ -1854,7 +1855,7 @@ void Ship::TrimForWorldBounds(GameParameters const & gameParameters)
 
     // Elasticity of the bounce against world boundaries
     //  - We use the ocean floor's elasticity for convenience
-    float const elasticity = gameParameters.OceanFloorElasticity;
+    float const elasticity = gameParameters.OceanFloorElasticityCoefficient;
 
     // We clamp velocity to damp system instabilities at extreme events
     static constexpr float MaxBounceVelocity = 150.0f; // Magic number

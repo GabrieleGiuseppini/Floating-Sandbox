@@ -640,15 +640,15 @@ public:
     float GetMinOceanFloorDetailAmplification() const override { return GameParameters::MinOceanFloorDetailAmplification; }
     float GetMaxOceanFloorDetailAmplification() const override { return GameParameters::MaxOceanFloorDetailAmplification; }
 
-    float GetOceanFloorElasticity() const override { return mGameParameters.OceanFloorElasticity; }
-    void SetOceanFloorElasticity(float value) override { mGameParameters.OceanFloorElasticity = value; }
-    float GetMinOceanFloorElasticity() const override { return GameParameters::MinOceanFloorElasticity; }
-    float GetMaxOceanFloorElasticity() const override { return GameParameters::MaxOceanFloorElasticity; }
+    float GetOceanFloorElasticityCoefficient() const override { return mGameParameters.OceanFloorElasticityCoefficient; }
+    void SetOceanFloorElasticityCoefficient(float value) override { mGameParameters.OceanFloorElasticityCoefficient = value; }
+    float GetMinOceanFloorElasticityCoefficient() const override { return GameParameters::MinOceanFloorElasticityCoefficient; }
+    float GetMaxOceanFloorElasticityCoefficient() const override { return GameParameters::MaxOceanFloorElasticityCoefficient; }
 
-    float GetOceanFloorFriction() const override { return mGameParameters.OceanFloorFriction; }
-    void SetOceanFloorFriction(float value) override { mGameParameters.OceanFloorFriction = value; }
-    float GetMinOceanFloorFriction() const override { return GameParameters::MinOceanFloorFriction; }
-    float GetMaxOceanFloorFriction() const override { return GameParameters::MaxOceanFloorFriction; }
+    float GetOceanFloorFrictionCoefficient() const override { return mGameParameters.OceanFloorFrictionCoefficient; }
+    void SetOceanFloorFrictionCoefficient(float value) override { mGameParameters.OceanFloorFrictionCoefficient = value; }
+    float GetMinOceanFloorFrictionCoefficient() const override { return GameParameters::MinOceanFloorFrictionCoefficient; }
+    float GetMaxOceanFloorFrictionCoefficient() const override { return GameParameters::MaxOceanFloorFrictionCoefficient; }
 
     float GetOceanFloorSiltHardness() const override { return mGameParameters.OceanFloorSiltHardness; }
     void SetOceanFloorSiltHardness(float value) override { mGameParameters.OceanFloorSiltHardness = value; }

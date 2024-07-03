@@ -184,8 +184,6 @@ public:
         {}
     };
 
-private:
-
     /*
      * Packed precalculated buoyancy coefficients.
      */
@@ -201,6 +199,27 @@ private:
             , Coefficient2(coefficient2)
         {}
     };
+
+    /*
+     * Packed ocean floor collision factors.
+     */
+    struct OceanFloorCollisionFactors
+    {
+        float ElasticityFactor;
+        float StaticFrictionFactor;
+        float KineticFrictionFactor;
+
+        OceanFloorCollisionFactors(
+            float elasticityFactor,
+            float staticFrictionFactor,
+            float kineticFrictionFactor)
+            : ElasticityFactor(elasticityFactor)
+            , StaticFrictionFactor(staticFrictionFactor)
+            , KineticFrictionFactor(kineticFrictionFactor)
+        {}
+    };
+
+private:
 
     /*
      * The combustion state.
@@ -587,6 +606,7 @@ public:
         , mFrozenCoefficientBuffer(mBufferElementCount, shipPointCount, 1.0f)
         , mIntegrationFactorTimeCoefficientBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mBuoyancyCoefficientsBuffer(mBufferElementCount, shipPointCount, BuoyancyCoefficients(0.0f, 0.0f))
+        , mOceanFloorCollisionFactorsBuffer(mBufferElementCount, shipPointCount, OceanFloorCollisionFactors(0.0f, 0.0f, 0.0f))
         , mCachedDepthBuffer(mBufferElementCount, shipPointCount, 0.0f)
         , mIntegrationFactorBuffer(mBufferElementCount, shipPointCount, vec2f::zero())
         // Pressure and water dynamics
@@ -662,6 +682,11 @@ public:
         , mShipPhysicsHandler(nullptr)
         , mHaveWholeBuffersBeenUploadedOnce(false)
         , mCurrentNumMechanicalDynamicsIterations(gameParameters.NumMechanicalDynamicsIterations<float>())
+        , mCurrentElasticityAdjustment(gameParameters.ElasticityAdjustment)
+        , mCurrentStaticFrictionAdjustment(gameParameters.StaticFrictionAdjustment)
+        , mCurrentKineticFrictionAdjustment(gameParameters.KineticFrictionAdjustment)
+        , mCurrentOceanFloorElasticityCoefficient(gameParameters.OceanFloorElasticityCoefficient)
+        , mCurrentOceanFloorFrictionCoefficient(gameParameters.OceanFloorFrictionCoefficient)
         , mCurrentCumulatedIntakenWaterThresholdForAirBubbles(GameParameters::AirBubblesDensityToCumulatedIntakenWater(gameParameters.AirBubblesDensity))
         , mCurrentCombustionSpeedAdjustment(gameParameters.CombustionSpeedAdjustment)
         , mFloatBufferAllocator(mBufferElementCount)
@@ -1242,6 +1267,11 @@ public:
     BuoyancyCoefficients const & GetBuoyancyCoefficients(ElementIndex pointElementIndex)
     {
         return mBuoyancyCoefficientsBuffer[pointElementIndex];
+    }
+
+    OceanFloorCollisionFactors const & GetOceanFloorCollisionFactors(ElementIndex pointElementIndex)
+    {
+        return mOceanFloorCollisionFactorsBuffer[pointElementIndex];
     }
 
     /*
@@ -2061,6 +2091,26 @@ private:
             coefficient2);
     }
 
+    static inline OceanFloorCollisionFactors CalculateOceanFloorCollisionFactors(
+        float elasticityAdjustment,
+        float staticFrictionAdjustment,
+        float kineticFrictionAdjustment,
+        float oceanFloorElasticityCoefficient,
+        float oceanFloorFrictionCoefficient,
+        float materialElasticityCoefficient,
+        float materialStaticFrictionCoefficient,
+        float materialKineticFrictionCoefficient)
+    {
+        //
+        // Somewhat arbitrarily, we use the average of the ocean's and material's coefficients
+        //
+
+        return OceanFloorCollisionFactors(
+            -(materialElasticityCoefficient + oceanFloorElasticityCoefficient) / 2.0f * elasticityAdjustment,
+            1.0f - (materialStaticFrictionCoefficient + oceanFloorFrictionCoefficient) / 2.0f * staticFrictionAdjustment,
+            1.0f - (materialKineticFrictionCoefficient + oceanFloorFrictionCoefficient) / 2.0f * kineticFrictionAdjustment);
+    }
+
     static inline float RandomizeCumulatedIntakenWater(float cumulatedIntakenWaterThresholdForAirBubbles)
     {
         return GameRandomEngine::GetInstance().GenerateUniformReal(
@@ -2130,6 +2180,7 @@ private:
     bool mutable mIsDecayBufferDirty; // Only tracks non-ephemerals
     Buffer<float> mFrozenCoefficientBuffer; // 1.0: not frozen; 0.0f: frozen
     Buffer<float> mIntegrationFactorTimeCoefficientBuffer; // dt^2 or zero when the point is frozen
+    Buffer<OceanFloorCollisionFactors> mOceanFloorCollisionFactorsBuffer;
     Buffer<BuoyancyCoefficients> mBuoyancyCoefficientsBuffer;
     Buffer<float> mCachedDepthBuffer; // Positive when underwater
 
@@ -2295,6 +2346,11 @@ private:
     // in the values of these parameters will trigger a re-calculation
     // of pre-calculated coefficients
     float mCurrentNumMechanicalDynamicsIterations;
+    float mCurrentElasticityAdjustment;
+    float mCurrentStaticFrictionAdjustment;
+    float mCurrentKineticFrictionAdjustment;
+    float mCurrentOceanFloorElasticityCoefficient;
+    float mCurrentOceanFloorFrictionCoefficient;
     float mCurrentCumulatedIntakenWaterThresholdForAirBubbles;
     float mCurrentCombustionSpeedAdjustment;
 

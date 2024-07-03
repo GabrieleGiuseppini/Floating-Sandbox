@@ -338,25 +338,36 @@ Arch
 				+ Script: fill-in 
 				+ Material: parse & expose
 				+ Leave OceanFloorElasticity and OceanFloorFriction in GameParameters and SettingsDialog
-				- GameParameters: add ElasticityAdjustment, FrictionAdjustment
-					- SettingsDialog
-					- Use by NPC code 
-				- Points: new Buffer<OceanFloorCollisionProperties>
-					- Contains (Ocean+Material) / 2 * Adjustment, and eventually other transformations needed by ocean collision code
-					- UpdateForGameParameters: recalc upon adjustment changes
-				- HandleCollisionsWithSeaFloor: 
-					- Use these
-						- Use static friction (arbitrarily)
-					- Or implement static/kinetic
+				= GameParameters: add ElasticityAdjustment, FrictionAdjustment X 2 replacing the "NpcMaterial" ones
+					- IGameControllerSettings, etc.
+					- SettingsDialog (under "Mechanics" pane)
+				+ Points: new Buffer<OceanFloorCollisionFactors>
+					+ Contains (Ocean+Material) / 2 * Adjustment, and eventually other transformations needed by ocean collision code
+					+ UpdateForGameParameters: recalc upon adjustment changes
+				+ HandleCollisionsWithSeaFloor:
+					+ Use these
+						+ With static/kinetic
+					+ Verify same values:
+						+ Old elasticityFactor: -0.5
+						+ Old frictionFactor: 0.75					
+				- Tests:
+					- Functional: before & after
+					- Functional: verify picks up adjustments X 5
+					- Perf on old Dell:
+						- Before:
+						- After:
 			- Add SpringReductionCoeff, SpringDampingCoeff as NpcSpringReductionCoeff, NpcSpringDampingCoeff 
 				- optional, defaults = <reasonable>
 		- 3. StructuralMaterial:
 			- Do not store (& expose) IsExemptFromPalette
 		- 4. Port NPC materials to structural_materials
+			- Elast and two frictions: new values so that (new + ocean) / 2 == current in json (which is used by NPC code)
 			- Hide it from palette
 		- 5. Nuke NpcMaterial (json and class/es) from Materials/MaterialDatabase
 		- 6. Use at Npcs
-			- Do average
+			- Two materials (pure) - average
+			- Adjustments (elast, static friction, kinetic friction)
+		- 7. Material propertygrid @ ShipBuilder
 		- Rewrite NpcDB spec below
 		- Merge material_rearc into npcs_v1
 		- Backport to BaryLab
@@ -365,8 +376,7 @@ Arch
 		- List:
 			+ HumanNpcHeight("Size")Adj
 				+ Yeah rename param to "NpcSizeAdjustment"
-					- Apply its effect also to furniture
-			- ElasticityAdj, FrictionAdj
+					= Apply its effect also to furniture
 			// Human section:
 			- HumanWalkingSpeedAdj
 		- SettingsManager
