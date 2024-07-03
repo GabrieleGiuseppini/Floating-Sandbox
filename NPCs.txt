@@ -338,9 +338,9 @@ Arch
 				+ Script: fill-in 
 				+ Material: parse & expose
 				+ Leave OceanFloorElasticity and OceanFloorFriction in GameParameters and SettingsDialog
-				= GameParameters: add ElasticityAdjustment, FrictionAdjustment X 2 replacing the "NpcMaterial" ones
-					- IGameControllerSettings, etc.
-					- SettingsDialog (under "Mechanics" pane)
+				+ GameParameters: add ElasticityAdjustment, FrictionAdjustment X 2 replacing the "NpcMaterial" ones
+					+ IGameControllerSettings, etc.
+					+ SettingsDialog (under "Mechanics" pane)
 				+ Points: new Buffer<OceanFloorCollisionFactors>
 					+ Contains (Ocean+Material) / 2 * Adjustment, and eventually other transformations needed by ocean collision code
 					+ UpdateForGameParameters: recalc upon adjustment changes
@@ -353,6 +353,9 @@ Arch
 				- Tests:
 					- Functional: before & after
 					- Functional: verify picks up adjustments X 5
+						- Check ranges
+							- See min zero for both frictions
+							- KineticAdj: 40 is too much
 					- Perf on old Dell:
 						- Before:
 						- After:
@@ -365,8 +368,8 @@ Arch
 			- Hide it from palette
 		- 5. Nuke NpcMaterial (json and class/es) from Materials/MaterialDatabase
 		- 6. Use at Npcs
-			- Two materials (pure) - average
-			- Adjustments (elast, static friction, kinetic friction)
+			- Structural materials
+			- Elast, frictions: consider both materials - make average and use adjustments
 		- 7. Material propertygrid @ ShipBuilder
 		- Rewrite NpcDB spec below
 		- Merge material_rearc into npcs_v1

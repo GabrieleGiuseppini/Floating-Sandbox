@@ -45,6 +45,15 @@ struct IGameControllerSettings
     virtual float GetGlobalDampingAdjustment() const = 0;
     virtual void SetGlobalDampingAdjustment(float value) = 0;
 
+    virtual float GetElasticityAdjustment() const = 0;
+    virtual void SetElasticityAdjustment(float value) = 0;
+
+    virtual float GetStaticFrictionAdjustment() const = 0;
+    virtual void SetStaticFrictionAdjustment(float value) = 0;
+
+    virtual float GetKineticFrictionAdjustment() const = 0;
+    virtual void SetKineticFrictionAdjustment(float value) = 0;
+
     virtual float GetRotAcceler8r() const = 0;
     virtual void SetRotAcceler8r(float value) = 0;
 

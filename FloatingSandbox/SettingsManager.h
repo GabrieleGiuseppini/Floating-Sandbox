@@ -19,6 +19,9 @@ enum class GameSettings : size_t
     SpringDampingAdjustment,
     SpringStrengthAdjustment,
     GlobalDampingAdjustment,
+    ElasticityAdjustment,
+    StaticFrictionAdjustment,
+    KineticFrictionAdjustment,
     RotAcceler8r,
     StaticPressureForceAdjustment,
 

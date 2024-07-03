@@ -347,6 +347,21 @@ public:
     float GetMinGlobalDampingAdjustment() const override { return GameParameters::MinGlobalDampingAdjustment; }
     float GetMaxGlobalDampingAdjustment() const override { return GameParameters::MaxGlobalDampingAdjustment; }
 
+    float GetElasticityAdjustment() const override { return mGameParameters.ElasticityAdjustment; }
+    void SetElasticityAdjustment(float value) override { mGameParameters.ElasticityAdjustment = value; }
+    float GetMinElasticityAdjustment() const override { return GameParameters::MinElasticityAdjustment; }
+    float GetMaxElasticityAdjustment() const override { return GameParameters::MaxElasticityAdjustment; }
+
+    float GetStaticFrictionAdjustment() const override { return mGameParameters.StaticFrictionAdjustment; }
+    void SetStaticFrictionAdjustment(float value) override { mGameParameters.StaticFrictionAdjustment = value; }
+    float GetMinStaticFrictionAdjustment() const override { return GameParameters::MinStaticFrictionAdjustment; }
+    float GetMaxStaticFrictionAdjustment() const override { return GameParameters::MaxStaticFrictionAdjustment; }
+
+    float GetKineticFrictionAdjustment() const override { return mGameParameters.KineticFrictionAdjustment; }
+    void SetKineticFrictionAdjustment(float value) override { mGameParameters.KineticFrictionAdjustment = value; }
+    float GetMinKineticFrictionAdjustment() const override { return GameParameters::MinKineticFrictionAdjustment; }
+    float GetMaxKineticFrictionAdjustment() const override { return GameParameters::MaxKineticFrictionAdjustment; }
+
     float GetRotAcceler8r() const override { return mGameParameters.RotAcceler8r; }
     void SetRotAcceler8r(float value) override { mGameParameters.RotAcceler8r = value; }
     float GetMinRotAcceler8r() const override { return GameParameters::MinRotAcceler8r; }

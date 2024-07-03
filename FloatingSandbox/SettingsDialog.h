@@ -63,6 +63,9 @@ private:
     // Mechanics and Thermodynamics
     SliderControl<float> * mStrengthSlider;
     SliderControl<float> * mGlobalDampingAdjustmentSlider;
+    SliderControl<float> * mElasticityAdjustmentSlider;
+    SliderControl<float> * mStaticFrictionAdjustmentSlider;
+    SliderControl<float> * mKineticFrictionAdjustmentSlider;
     SliderControl<float> * mStaticPressureForceAdjustmentSlider;
     SliderControl<float> * mThermalConductivityAdjustmentSlider;
     SliderControl<float> * mHeatDissipationAdjustmentSlider;
@@ -72,8 +75,6 @@ private:
     SliderControl<float> * mCombustionHeatAdjustmentSlider;
     SliderControl<unsigned int> * mMaxBurningParticlesSlider;
     BitmapToggleButton * mUltraViolentToggleButton;
-    SliderControl<unsigned int> * mMaxNumSimulationThreadsSlider;
-    SliderControl<float> * mNumMechanicalIterationsAdjustmentSlider;
 
     // Ocean and Water
     SliderControl<float> * mWaterDensityAdjustmentSlider;
@@ -213,6 +214,8 @@ private:
     wxRadioBox * mVectorFieldRenderModeRadioBox;
     wxCheckBox * mGenerateDebrisCheckBox;
     wxCheckBox * mGenerateSparklesForCutsCheckBox;
+    SliderControl<unsigned int> * mMaxNumSimulationThreadsSlider;
+    SliderControl<float> * mNumMechanicalIterationsAdjustmentSlider;
 
     // Settings Management
     wxListCtrl * mPersistedSettingsListCtrl;

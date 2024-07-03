@@ -42,6 +42,15 @@ struct IGameControllerSettingsOptions
     virtual float GetMinGlobalDampingAdjustment() const = 0;
     virtual float GetMaxGlobalDampingAdjustment() const = 0;
 
+    virtual float GetMinElasticityAdjustment() const = 0;
+    virtual float GetMaxElasticityAdjustment() const = 0;
+
+    virtual float GetMinStaticFrictionAdjustment() const = 0;
+    virtual float GetMaxStaticFrictionAdjustment() const = 0;
+
+    virtual float GetMinKineticFrictionAdjustment() const = 0;
+    virtual float GetMaxKineticFrictionAdjustment() const = 0;
+
     virtual float GetMinRotAcceler8r() const = 0;
     virtual float GetMaxRotAcceler8r() const = 0;
 
