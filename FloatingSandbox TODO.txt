@@ -98,9 +98,9 @@
 		- Shader for fuse + sparks
 
 	= Terrain tool: guide
-		- SHIFT starts guide == line via NotificationLayer
-			- While Shift is pressed, guide snaps to horizontal
-			- Releasing shift removes snapping but guide mode is maintained
+		+ SHIFT starts guide == line via NotificationLayer
+			+ While Shift is pressed, guide snaps to horizontal
+			+ Releasing shift removes snapping but guide mode is maintained
 		+ Terrain is then drawn only at left button up
 		+ Impl:
 			+ Completely separate state machine, guided by mEngagementData == enum mode, union of structs

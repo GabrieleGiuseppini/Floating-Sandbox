@@ -2078,8 +2078,7 @@ public:
                     if (inputState.IsShiftKeyDown)
                     {
                         // Snap to horizontal if angle small enough
-                        vec2f const dir = (end.ToFloat() - start.ToFloat()).normalise();
-                        if (std::abs(dir.y) < 0.09f) // 5 degrees
+                        if (std::abs(end.y - start.y) < 20)
                         {
                             end.y = start.y;
                         }
