@@ -477,7 +477,7 @@ TerrainAdjustTool::TerrainAdjustTool(
         toolCursorManager,
         gameController,
         soundController)
-    , mCurrentTrajectoryPreviousWorldPosition()
+    , mEngagementData()
     , mCurrentCursor(nullptr)
     , mUpCursorImage(WxHelpers::LoadCursorImage("terrain_adjust_cursor_up", 15, 15, resourceLocator))
     , mDownCursorImage(WxHelpers::LoadCursorImage("terrain_adjust_cursor_down", 15, 15, resourceLocator))

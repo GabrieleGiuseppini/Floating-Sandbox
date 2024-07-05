@@ -272,6 +272,8 @@ void NotificationLayer::Reset()
 	mWindSphereToRender2.reset();
 	mLaserCannonToRender1.reset();
 	mLaserCannonToRender2.reset();
+	mLineGuideToRender1.reset();
+	mLineGuideToRender2.reset();
 }
 
 void NotificationLayer::Update(float now)
@@ -472,6 +474,9 @@ void NotificationLayer::Update(float now)
 
 	mLaserCannonToRender2 = mLaserCannonToRender1;
 	mLaserCannonToRender1.reset();
+
+	mLineGuideToRender2 = mLineGuideToRender1;
+	mLineGuideToRender1.reset();
 }
 
 void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
@@ -711,6 +716,14 @@ void NotificationLayer::RenderUpload(Render::RenderContext & renderContext)
 		notificationRenderContext.UploadLaserCannon(
 			mLaserCannonToRender2->Center,
 			mLaserCannonToRender2->Strength,
+			renderContext.GetViewModel());
+	}
+
+	if (mLineGuideToRender2.has_value())
+	{
+		notificationRenderContext.UploadLineGuide(
+			mLineGuideToRender2->Start,
+			mLineGuideToRender2->End,
 			renderContext.GetViewModel());
 	}
 }

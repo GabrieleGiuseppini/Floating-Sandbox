@@ -177,6 +177,12 @@ public:
 
     void NotifySoundMuted(bool isSoundMuted) override;
 
+    // Not sticky
+    void SetLineGuide(
+        DisplayLogicalCoordinates const & start,
+        DisplayLogicalCoordinates const & end) override;
+
+
     //
     // World probing
     //

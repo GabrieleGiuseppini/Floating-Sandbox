@@ -97,10 +97,21 @@
 	- Redo timer bomb
 		- Shader for fuse + sparks
 
-	- Terrain tool: guide
+	= Terrain tool: guide
 		- SHIFT starts guide == line via NotificationLayer
-			- Shift only used for engagement, doesn't matter what happens next
-		- Terrain is then drawn only at left button up
+			- While Shift is pressed, guide snaps to horizontal
+			- Releasing shift removes snapping but guide mode is maintained
+		+ Terrain is then drawn only at left button up
+		+ Impl:
+			+ Completely separate state machine, guided by mEngagementData == enum mode, union of structs
+				+ When in guide mode, we reason in screen coords - so e.g. start point is fixed on screen
+				+ SimulationUpdate: talk to GameController iff in guide mode
+			+ NotificationLayer/Context
+		- Test:
+			- Sound
+			- Cursor
+			- Error
+		- Add to changelist
 
 	- Try with parallel "water" subsystem, but for "bulk" (gravel, etc.)
 		- May co-exist with water

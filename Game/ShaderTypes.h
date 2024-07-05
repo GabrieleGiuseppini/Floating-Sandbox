@@ -33,6 +33,7 @@ enum class ProgramType
     LandTexture,
     LaserRay,
     Lightning,
+    LineGuide,
     OceanDepthBasic,
     OceanDepthDetailedBackground,
     OceanDepthDetailedForeground,
@@ -290,6 +291,8 @@ enum class VertexAttributeType : GLuint
 
     LaserRay1 = 0,
     LaserRay2 = 1,
+
+    LineGuide1 = 0,
 
     //
     // Global

@@ -45,6 +45,8 @@ ProgramType ShaderFilenameToProgramType(std::string const & str)
         return ProgramType::LaserRay;
     else if (lstr == "lightning")
         return ProgramType::Lightning;
+    else if (lstr == "line_guide")
+        return ProgramType::LineGuide;
     else if (lstr == "ocean_depth_basic")
         return ProgramType::OceanDepthBasic;
     else if (lstr == "ocean_depth_detailed_background")
@@ -233,6 +235,8 @@ std::string ProgramTypeToStr(ProgramType program)
         return "LaserRay";
     case ProgramType::Lightning:
         return "Lightning";
+    case ProgramType::LineGuide:
+        return "LineGuide";
     case ProgramType::OceanDepthBasic:
         return "OceanDepthBasic";
     case ProgramType::OceanDepthDetailedBackground:
@@ -582,6 +586,8 @@ VertexAttributeType StrToVertexAttributeType(std::string const & str)
         return VertexAttributeType::Lightning1;
     else if (Utils::CaseInsensitiveEquals(str, "Lightning2"))
         return VertexAttributeType::Lightning2;
+    else if (Utils::CaseInsensitiveEquals(str, "LineGuide1"))
+        return VertexAttributeType::LineGuide1;
     else if (Utils::CaseInsensitiveEquals(str, "Cloud1"))
         return VertexAttributeType::Cloud1;
     else if (Utils::CaseInsensitiveEquals(str, "Cloud2"))

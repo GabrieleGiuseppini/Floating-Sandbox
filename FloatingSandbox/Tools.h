@@ -1992,20 +1992,13 @@ public:
 
 public:
 
-    void Initialize(InputState const & inputState) override
+    void Initialize(InputState const & /*inputState*/) override
     {
         mCurrentCursor = nullptr;
 
-        if (inputState.IsLeftMouseDown)
-        {
-            mCurrentTrajectoryPreviousWorldPosition = mGameController.ScreenToWorld(inputState.MousePosition);
-            SetCurrentCursor(&mDownCursorImage);
-        }
-        else
-        {
-            mCurrentTrajectoryPreviousWorldPosition.reset();
-            SetCurrentCursor(&mUpCursorImage);
-        }
+        mEngagementData.reset();
+
+        SetCurrentCursor(&mUpCursorImage);
     }
 
     void Deinitialize() override
@@ -2016,45 +2009,115 @@ public:
     {
         if (inputState.IsLeftMouseDown)
         {
-            vec2f const mouseWorldPosition = mGameController.ScreenToWorld(inputState.MousePosition);
-
-            if (!mCurrentTrajectoryPreviousWorldPosition)
+            if (!mEngagementData)
             {
-                mCurrentTrajectoryPreviousWorldPosition = mouseWorldPosition;
+                // Init engagement
+
+                if (inputState.IsShiftKeyDown)
+                {
+                    mEngagementData.emplace(
+                        EngagementData::ToolModeType::LineGuide,
+                        EngagementData::ToolModeSpecificStateType(
+                            EngagementData::ToolModeSpecificStateType::LineGuideStateType(
+                                inputState.MousePosition)));
+                }
+                else
+                {
+                    mEngagementData.emplace(
+                        EngagementData::ToolModeType::Immediate,
+                        EngagementData::ToolModeSpecificStateType(
+                            EngagementData::ToolModeSpecificStateType::ImmediateStateType(
+                                mGameController.ScreenToWorld(inputState.MousePosition))));
+                }
             }
 
-            vec2f const targetPosition = inputState.IsShiftKeyDown
-                ? vec2f(mouseWorldPosition.x, mCurrentTrajectoryPreviousWorldPosition->y)
-                : mouseWorldPosition;
+            assert(mEngagementData);
 
-            auto const isAdjusted = mGameController.AdjustOceanFloorTo(
-                *mCurrentTrajectoryPreviousWorldPosition,
-                targetPosition);
-
-            if (isAdjusted.has_value())
+            switch (mEngagementData->ToolMode)
             {
-                // Adjusted, eventually idempotent
-                if (*isAdjusted)
+                case EngagementData::ToolModeType::Immediate:
                 {
-                    mSoundController.PlayTerrainAdjustSound();
+                    vec2f const mouseWorldPosition = mGameController.ScreenToWorld(inputState.MousePosition);
+
+                    vec2f const targetPosition = inputState.IsShiftKeyDown
+                        ? vec2f(mouseWorldPosition.x, mEngagementData->State.ImmediateState.CurrentTrajectoryPreviousWorldPosition.y)
+                        : mouseWorldPosition;
+
+                    auto const isAdjusted = mGameController.AdjustOceanFloorTo(
+                        mEngagementData->State.ImmediateState.CurrentTrajectoryPreviousWorldPosition,
+                        targetPosition);
+
+                    if (isAdjusted.has_value())
+                    {
+                        // Adjusted, eventually idempotent
+                        if (*isAdjusted)
+                        {
+                            mSoundController.PlayTerrainAdjustSound();
+                        }
+
+                        SetCurrentCursor(&mDownCursorImage);
+                    }
+                    else
+                    {
+                        // No adjustment
+                        mSoundController.PlayErrorSound();
+                        SetCurrentCursor(&mErrorCursorImage);
+                    }
+
+                    // Remember this coordinate as the starting point of the
+                    // next stride
+                    mEngagementData->State.ImmediateState.CurrentTrajectoryPreviousWorldPosition = targetPosition;
+
+                    break;
                 }
 
-                SetCurrentCursor(&mDownCursorImage);
-            }
-            else
-            {
-                // No adjustment
-                mSoundController.PlayErrorSound();
-                SetCurrentCursor(&mErrorCursorImage);
-            }
+                case EngagementData::ToolModeType::LineGuide:
+                {
+                    DisplayLogicalCoordinates const & start = mEngagementData->State.LineGuideState.Start;
+                    DisplayLogicalCoordinates end = inputState.MousePosition;
+                    if (inputState.IsShiftKeyDown)
+                    {
+                        // Snap to horizontal if angle small enough
+                        vec2f const dir = (end.ToFloat() - start.ToFloat()).normalise();
+                        if (std::abs(dir.y) < 0.09f) // 5 degrees
+                        {
+                            end.y = start.y;
+                        }
+                    }
 
-            // Remember this coordinate as the starting point of the
-            // next stride
-            mCurrentTrajectoryPreviousWorldPosition = targetPosition;
+                    // Draw guide
+                    mGameController.SetLineGuide(
+                        start,
+                        end);
+
+                    SetCurrentCursor(&mDownCursorImage);
+
+                    break;
+                }
+            }
         }
         else
         {
-            mCurrentTrajectoryPreviousWorldPosition.reset();
+            if (mEngagementData
+                && mEngagementData->ToolMode == EngagementData::ToolModeType::LineGuide)
+            {
+                // Finalize
+
+                vec2f const worldStart = mGameController.ScreenToWorld(mEngagementData->State.LineGuideState.Start);
+                vec2f const worldEnd = mGameController.ScreenToWorld(inputState.MousePosition);
+
+                auto const isAdjusted = mGameController.AdjustOceanFloorTo(worldStart, worldEnd);
+                if (isAdjusted.has_value())
+                {
+                    // Adjusted, eventually idempotent
+                    if (*isAdjusted)
+                    {
+                        mSoundController.PlayTerrainAdjustSound();
+                    }
+                }
+            }
+
+            mEngagementData.reset();
             SetCurrentCursor(&mUpCursorImage);
         }
     }
@@ -2076,8 +2139,57 @@ private:
         }
     }
 
+    struct EngagementData
+    {
+        enum class ToolModeType
+        {
+            Immediate,
+            LineGuide
+        };
+
+        ToolModeType ToolMode;
+
+        union ToolModeSpecificStateType
+        {
+            struct ImmediateStateType final
+            {
+                vec2f CurrentTrajectoryPreviousWorldPosition;
+
+                explicit ImmediateStateType(vec2f const & currentTrajectoryPreviousWorldPosition)
+                    : CurrentTrajectoryPreviousWorldPosition(currentTrajectoryPreviousWorldPosition)
+                {}
+            } ImmediateState;
+
+            struct LineGuideStateType final
+            {
+                DisplayLogicalCoordinates const Start;
+
+                explicit LineGuideStateType(DisplayLogicalCoordinates const & start)
+                    : Start(start)
+                {}
+            } LineGuideState;
+
+            explicit ToolModeSpecificStateType(ImmediateStateType && state)
+                : ImmediateState(state)
+            {}
+
+            explicit ToolModeSpecificStateType(LineGuideStateType && state)
+                : LineGuideState(state)
+            {}
+        };
+
+        ToolModeSpecificStateType State;
+
+        EngagementData(
+            ToolModeType toolMode,
+            ToolModeSpecificStateType state)
+            : ToolMode(toolMode)
+            , State(state)
+        { }
+    };
+
     // Our state
-    std::optional<vec2f> mCurrentTrajectoryPreviousWorldPosition; // When set, indicates it's engaged
+    std::optional<EngagementData> mEngagementData;
 
     // The cursors
     wxImage const * mCurrentCursor; // To track cursor changes

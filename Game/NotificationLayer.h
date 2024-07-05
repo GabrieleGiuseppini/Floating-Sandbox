@@ -136,6 +136,16 @@ public:
 			strength);
 	}
 
+	// One frame only; after Update() it's gone
+	inline void SetLineGuide(
+		DisplayLogicalCoordinates const & start,
+		DisplayLogicalCoordinates const & end)
+	{
+		mLineGuideToRender1.emplace(
+			start,
+			end);
+	}
+
 	void Reset();
 
     void Update(float now);
@@ -411,4 +421,20 @@ private:
 
 	std::optional<LaserCannon> mLaserCannonToRender1;
 	std::optional<LaserCannon> mLaserCannonToRender2;
+
+	struct LineGuide
+	{
+		DisplayLogicalCoordinates Start;
+		DisplayLogicalCoordinates End;
+
+		LineGuide(
+			DisplayLogicalCoordinates const & start,
+			DisplayLogicalCoordinates const & end)
+			: Start(start)
+			, End(end)
+		{}
+	};
+
+	std::optional<LineGuide> mLineGuideToRender1;
+	std::optional<LineGuide> mLineGuideToRender2;
 };

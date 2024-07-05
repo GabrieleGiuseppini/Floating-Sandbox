@@ -62,6 +62,8 @@ NotificationRenderContext::NotificationRenderContext(
     , mLaserCannonVBO()
     , mLaserRayVAO()
     , mLaserRayVBO()
+    , mLineGuideVAO()
+    , mLineGuideVBO()
 {
     GLuint tmpGLuint;
 
@@ -439,7 +441,7 @@ NotificationRenderContext::NotificationRenderContext(
         CheckOpenGLError();
 
         glGenBuffers(1, &tmpGLuint);
-        mLaserCannonVBO = tmpGLuint;        
+        mLaserCannonVBO = tmpGLuint;
 
         // Describe vertex attributes
         static_assert(sizeof(LaserCannonVertex) == (4 + 3) * sizeof(float));
@@ -450,11 +452,7 @@ NotificationRenderContext::NotificationRenderContext(
         glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::GenericMipMappedTextureNdc2), 3, GL_FLOAT, GL_FALSE, sizeof(LaserCannonVertex), (void *)(4 * sizeof(float)));
         CheckOpenGLError();
 
-        glBindVertexArray(0);        
-
-        // Set texture parameters
-        mShaderManager.ActivateProgram<ProgramType::LaserRay>();
-        mShaderManager.SetTextureParameters<ProgramType::LaserRay>();
+        glBindVertexArray(0);
     }
 
     //
@@ -487,6 +485,30 @@ NotificationRenderContext::NotificationRenderContext(
         mShaderManager.SetTextureParameters<ProgramType::LaserRay>();
     }
 
+    //
+    // Initialize Line Guide
+    //
+
+    {
+        glGenVertexArrays(1, &tmpGLuint);
+        mLineGuideVAO = tmpGLuint;
+
+        glBindVertexArray(*mLineGuideVAO);
+        CheckOpenGLError();
+
+        glGenBuffers(1, &tmpGLuint);
+        mLineGuideVBO = tmpGLuint;
+
+        // Describe vertex attributes
+        static_assert(sizeof(LineGuideVertex) == (2 + 1) * sizeof(float));
+        glBindBuffer(GL_ARRAY_BUFFER, *mLineGuideVBO);
+        glEnableVertexAttribArray(static_cast<GLuint>(VertexAttributeType::LineGuide1));
+        glVertexAttribPointer(static_cast<GLuint>(VertexAttributeType::LineGuide1), (2 + 1), GL_FLOAT, GL_FALSE, sizeof(LineGuideVertex), (void *)0);
+        CheckOpenGLError();
+
+        glBindVertexArray(0);
+    }
+
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
@@ -512,6 +534,9 @@ void NotificationRenderContext::UploadStart()
 
     // Reset laser ray, it's uploaded as needed
     mLaserRayVertexBuffer.clear();
+
+    // Reset LineGuide, it's uploaded as needed
+    mLineGuideVertexBuffer.clear();
 }
 
 void NotificationRenderContext::UploadLaserCannon(
@@ -563,7 +588,7 @@ void NotificationRenderContext::UploadLaserCannon(
 
             // Cannon origin: H=mid, V=bottom, calculated considering retreat when there is not enough room
             vec2f const screenOrigin = screenCorner - rayDir * std::max(screenCannonLength - screenRayLength, 0.0f);
-            
+
             vec2f const ndcCannonBottomLeft = viewModel.ScreenToNdc(DisplayLogicalCoordinates::FromFloatRound(screenOrigin + rayPerpDir * screenCannonWidth / 2.0f));
             vec2f const ndcCannonBottomRight = viewModel.ScreenToNdc(DisplayLogicalCoordinates::FromFloatRound(screenOrigin - rayPerpDir * screenCannonWidth / 2.0f));
             vec2f const ndcCannonTopLeft = viewModel.ScreenToNdc(DisplayLogicalCoordinates::FromFloatRound(screenOrigin + rayDir * screenCannonLength + rayPerpDir * screenCannonWidth / 2.0f));
@@ -671,6 +696,34 @@ void NotificationRenderContext::UploadLaserCannon(
     }
 }
 
+void NotificationRenderContext::UploadLineGuide(
+    DisplayLogicalCoordinates const & screenStart,
+    DisplayLogicalCoordinates const & screenEnd,
+    ViewModel const & viewModel)
+{
+    //
+    // Create line vertices
+    //
+
+    vec2f const ndcStart = viewModel.ScreenToNdc(screenStart);
+    vec2f const ndcEnd = viewModel.ScreenToNdc(screenEnd);
+
+    float pixelLength = (screenEnd.ToFloat() - screenStart.ToFloat()).length();
+
+    // Normalize length so it's a multiple of the period + 1/2 period
+    float constexpr DashPeriod = 16.0f; // 8 + 8
+    float const leftover = std::fmod(pixelLength + DashPeriod / 2.0f, DashPeriod);
+    pixelLength += (DashPeriod - leftover);
+
+    mLineGuideVertexBuffer.emplace_back(
+        ndcStart,
+        0.0f);
+
+    mLineGuideVertexBuffer.emplace_back(
+        ndcEnd,
+        pixelLength);
+}
+
 void NotificationRenderContext::UploadEnd()
 {
     // Nop
@@ -720,6 +773,8 @@ void NotificationRenderContext::RenderPrepare()
     RenderPrepareLaserCannon();
 
     RenderPrepareLaserRay();
+
+    RenderPrepareLineGuide();
 }
 
 void NotificationRenderContext::RenderDraw()
@@ -740,7 +795,7 @@ void NotificationRenderContext::RenderDraw()
     RenderDrawLaserRay();
     RenderDrawLaserCannon();
 
-    RenderDrawPhysicsProbePanel(); 
+    RenderDrawPhysicsProbePanel();
 
     RenderDrawTextNotifications();
 
@@ -755,6 +810,8 @@ void NotificationRenderContext::RenderDraw()
     RenderDrawPressureInjectionHalo();
 
     RenderDrawWindSphere();
+
+    RenderDrawLineGuide();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -798,9 +855,6 @@ void NotificationRenderContext::ApplyViewModelChanges(RenderParameters const & r
 
 void NotificationRenderContext::ApplyCanvasSizeChanges(RenderParameters const & renderParameters)
 {
-    // TODO: we'd need to recalculate the physics panel probe panel vertices,
-    // as the pixel size of the panel is constant and thus its NDC size is changing
-
     auto const & view = renderParameters.View;
 
     // Recalculate screen -> NDC conversion factors
@@ -1426,6 +1480,41 @@ void NotificationRenderContext::RenderDrawLaserRay()
         glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(mLaserRayVertexBuffer.size()));
 
         glBindVertexArray(0);
+    }
+}
+
+void NotificationRenderContext::RenderPrepareLineGuide()
+{
+    if (!mLineGuideVertexBuffer.empty())
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, *mLineGuideVBO);
+
+        glBufferData(GL_ARRAY_BUFFER,
+            sizeof(LineGuideVertex) * mLineGuideVertexBuffer.size(),
+            mLineGuideVertexBuffer.data(),
+            GL_DYNAMIC_DRAW);
+        CheckOpenGLError();
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+}
+
+void NotificationRenderContext::RenderDrawLineGuide()
+{
+    if (!mLineGuideVertexBuffer.empty())
+    {
+        // Bind VAO
+        glBindVertexArray(*mLineGuideVAO);
+
+        // Activate program
+        mShaderManager.ActivateProgram<ProgramType::LineGuide>();
+
+        // Set line width
+        glLineWidth(2.0f);
+
+        // Draw
+        glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(mLineGuideVertexBuffer.size()));
+        CheckOpenGLError();
     }
 }
 

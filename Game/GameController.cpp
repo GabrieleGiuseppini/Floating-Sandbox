@@ -602,6 +602,13 @@ void GameController::NotifySoundMuted(bool isSoundMuted)
     mNotificationLayer.SetSoundMuteIndicator(isSoundMuted);
 }
 
+void GameController::SetLineGuide(
+    DisplayLogicalCoordinates const & start,
+    DisplayLogicalCoordinates const & end)
+{
+    mNotificationLayer.SetLineGuide(start, end);
+}
+
 void GameController::ToggleToFullDayOrNight()
 {
     if (mTimeOfDay >= 0.5f)

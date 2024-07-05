@@ -496,6 +496,11 @@ public:
 		std::optional<float> strength,
 		ViewModel const & viewModel);
 
+	void UploadLineGuide(
+		DisplayLogicalCoordinates const & screenStart,
+		DisplayLogicalCoordinates const & screenEnd,
+		ViewModel const & viewModel);
+
 	void UploadEnd();
 
 	void ProcessParameterChanges(RenderParameters const & renderParameters);
@@ -540,6 +545,9 @@ private:
 
 	inline void RenderPrepareLaserRay();
 	inline void RenderDrawLaserRay();
+
+	inline void RenderPrepareLineGuide();
+	inline void RenderDrawLineGuide();
 
 private:
 
@@ -748,6 +756,21 @@ private:
 		{}
 	};
 
+	struct LineGuideVertex
+	{
+		vec2f ndcPosition;
+		float pixelCoord; //  PixelSpace
+
+		LineGuideVertex() = default;
+
+		LineGuideVertex(
+			vec2f _ndcPosition,
+			float _pixelCoord)
+			: ndcPosition(_ndcPosition)
+			, pixelCoord(_pixelCoord)
+		{}
+	};
+
 #pragma pack(pop)
 
 	//
@@ -839,7 +862,7 @@ private:
 
 	//
 	// Texture notifications
-	//	
+	//
 
 	struct TextureNotification
 	{
@@ -924,6 +947,10 @@ private:
 	GameOpenGLVAO mLaserRayVAO;
 	std::vector<LaserRayVertex> mLaserRayVertexBuffer;
 	GameOpenGLVBO mLaserRayVBO;
+
+	GameOpenGLVAO mLineGuideVAO;
+	std::vector<LineGuideVertex> mLineGuideVertexBuffer;
+	GameOpenGLVBO mLineGuideVBO;
 };
 
 }
