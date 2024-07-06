@@ -341,11 +341,11 @@ Arch
 				+ GameParameters: add ElasticityAdjustment, FrictionAdjustment X 2 replacing the "NpcMaterial" ones
 					+ IGameControllerSettings, etc.
 					+ SettingsDialog (under "Mechanics" pane)
-				= Points: new Buffer<OceanFloorCollisionFactors>
+				+ Points: new Buffer<OceanFloorCollisionFactors>
 					+ Contains (Ocean+Material) / 2 * Adjustment, and eventually other transformations needed by ocean collision code
 					+ UpdateForGameParameters: recalc upon adjustment changes
-					- Clamp values?
-						- Friction: max 1.0 (or else backfires)
+					+ Clamp values?
+						+ Friction: max 1.0 (or else backfires)
 				+ HandleCollisionsWithSeaFloor:
 					+ Use these
 						+ With static/kinetic
@@ -353,13 +353,13 @@ Arch
 						+ Old elasticityFactor: -0.5
 						+ Old frictionFactor: 0.75					
 				- Tests:
-					- Functional: compare behavior before & after
-					- Functional: verify picks up adjustments X 5
+					+ Functional: compare behavior before & after
+					= Functional: verify picks up adjustments X 5
 						- Check ranges
 							- See min zero for both frictions
-							- KineticAdj: 40 is too much
+							+ KineticAdj: 40 is too much
 					- Perf on old Dell:
-						- Before:
+						- Before: 
 						- After:
 			- Add SpringReductionCoeff, SpringDampingCoeff as NpcSpringReductionCoeff, NpcSpringDampingCoeff 
 				- optional, defaults = <reasonable>

@@ -123,15 +123,15 @@ struct GameParameters
 
     float ElasticityAdjustment;
     static float constexpr MinElasticityAdjustment = 0.0f;
-    static float constexpr MaxElasticityAdjustment = 4.0f;
+    static float constexpr MaxElasticityAdjustment = 10.0f;
 
     float StaticFrictionAdjustment;
     static float constexpr MinStaticFrictionAdjustment = 0.05f; // Keeps some sanity at lower end
-    static float constexpr MaxStaticFrictionAdjustment = 40.0f;
+    static float constexpr MaxStaticFrictionAdjustment = 10.0f;
 
     float KineticFrictionAdjustment;
     static float constexpr MinKineticFrictionAdjustment = 0.05f; // Keeps some sanity at lower end
-    static float constexpr MaxKineticFrictionAdjustment = 40.0f;
+    static float constexpr MaxKineticFrictionAdjustment = 10.0f;
 
     float RotAcceler8r;
     static float constexpr MinRotAcceler8r = 0.0f;

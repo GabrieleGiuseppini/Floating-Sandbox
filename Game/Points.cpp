@@ -5,7 +5,6 @@
 ***************************************************************************************/
 #include "Physics.h"
 
-#include <GameCore/GameMath.h>
 #include <GameCore/Log.h>
 #include <GameCore/PrecalculatedFunction.h>
 

@@ -18,6 +18,7 @@
 #include <GameCore/ElementIndexRangeIterator.h>
 #include <GameCore/EnumFlags.h>
 #include <GameCore/FixedSizeVector.h>
+#include <GameCore/GameMath.h>
 #include <GameCore/GameRandomEngine.h>
 #include <GameCore/GameTypes.h>
 #include <GameCore/GameWallClock.h>
@@ -2106,9 +2107,9 @@ private:
         //
 
         return OceanFloorCollisionFactors(
-            -(materialElasticityCoefficient + oceanFloorElasticityCoefficient) / 2.0f * elasticityAdjustment,
-            1.0f - (materialStaticFrictionCoefficient + oceanFloorFrictionCoefficient) / 2.0f * staticFrictionAdjustment,
-            1.0f - (materialKineticFrictionCoefficient + oceanFloorFrictionCoefficient) / 2.0f * kineticFrictionAdjustment);
+            Clamp(-(materialElasticityCoefficient + oceanFloorElasticityCoefficient) / 2.0f * elasticityAdjustment, -1.0f, 0.0f),
+            Clamp(1.0f - (materialStaticFrictionCoefficient + oceanFloorFrictionCoefficient) / 2.0f * staticFrictionAdjustment, 0.0f, 1.0f),
+            Clamp(1.0f - (materialKineticFrictionCoefficient + oceanFloorFrictionCoefficient) / 2.0f * kineticFrictionAdjustment, 0.0f, 1.0f));
     }
 
     static inline float RandomizeCumulatedIntakenWater(float cumulatedIntakenWaterThresholdForAirBubbles)
