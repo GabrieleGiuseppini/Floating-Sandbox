@@ -366,24 +366,24 @@ Arch
 					+ Figure out first why we can't stop tangential response
 				+ Fix adjust terrain: calculate world end taking into account snap (use helper)
 				= Check again role of silting in friction test at 30deg
-					- Siltness at 0.5
-						- Double-check
 					- Rethink silting:
 						- SiltingCoeff=Bell curve centered at VdotN equal to V acquired via G in time quantum
 							- Verify value
+					- Siltness at 0.5
+						- Double-check
 			- Add SpringReductionCoeff, SpringDampingCoeff as NpcSpringReductionCoeff, NpcSpringDampingCoeff 
 				- optional, defaults = <reasonable>
 		- 3. StructuralMaterial:
 			- Do not store (& expose) IsExemptFromPalette
 		- 4. Port NPC materials to structural_materials
-			- Elast and two frictions: new values so that (new + ocean) / 2 == current in json (which is used by NPC code)
+			- Elast and two frictions: new values so that (new + ocean) / 2 == current in json (ocean because that's the value for ship materials now)
 			- Hide it from palette
 		- 5. Nuke NpcMaterial (json and class/es) from Materials/MaterialDatabase
 		- 6. Use at Npcs
 			- Structural materials
 			- Elast, frictions: consider both materials - make average and use adjustments
 		- 7. Material propertygrid @ ShipBuilder
-		- Rewrite NpcDB spec below
+		+ Rewrite NpcDB spec below for material fetching
 		- Merge material_rearc into npcs_v1
 		- Backport to BaryLab
 
@@ -392,7 +392,6 @@ Arch
 			+ HumanNpcHeight("Size")Adj
 				+ Yeah rename param to "NpcSizeAdjustment"
 					= Apply its effect also to furniture
-			// Human section:
 			- HumanWalkingSpeedAdj
 		- SettingsManager
 		- SettingsDialog
@@ -405,19 +404,16 @@ Arch
 		+ fmod improvements
 			+ See https://cboard.cprogramming.com/c-programming/105096-fmod.html
 
-	- Backport
-
 - NpcDatabase:
 	- Spec:
-		- cctor takes MaterialDatabase (for taking NpcMaterials referenced to by name in json) and NPC TextureDatabase (for taking TextureCoords)
+		- cctor takes MaterialDatabase (for taking Materials referenced to by name in json) and NPC TextureDatabase (for taking TextureCoords)
 		- Provides info on humans (e.g. role colors, height & width, frame IDs) and furniture (height, frame IDs, material)
 			- Furniture height: used to calculate width based off texture frame
 			- Human height & width: just for consistency, doesn't use frames to calc anything
 				- Replaces GameParameters'
-			- Furniture material: json references material by NpcMaterial::Kind (string)
-				- NpcDatabase uses NpcMaterial::StrToKind(.) to parse it
-			- Human material: also for consistency
-				- Can then remove hardcoded "Head" and "Feet", and related enums
+				- Only height though? We don't need width, right?
+			- Furniture and human materials: json references structural materials by name
+				- Human references both (head & feet)
 		- Two sections, each own schema:
 			- Humans
 				- Global
@@ -440,17 +436,17 @@ Arch
 				- Nuke old FurnitureNpcKindType, NpcKindType
 			- No different aliases for the two different NpcKind's - we will have a 2D coord for a specific subkind (NpcKindType, NpcSubKindIdType)
 		- Humans:
-			- (NpcSubKindIdType) -> NpcMaterial
+			- (NpcSubKindIdType) -> Material X 2
 			- (NpcSubKindIdType) -> TextureCoords (or that new GameType we talk about above which holds together all texture info's for all variants), colors
 				- Initialization gets texture DB to populate this
 			- (NpcSubKindIdType, Language) -> Name
 		- Furniture:
-			- (NpcSubKindIdType) -> NpcMaterial
+			- (NpcSubKindIdType) -> Material
 			- (NpcSubKindIdType) -> TextureCoords
 			- (NpcSubKindIdType) -> NpcParticleMesh info
 			- (NpcSubKindIdType, Language) -> Name
 	- Impl:
-		- NpcDatabase replaces MaterialDatabase in Npcs
+		- NpcDatabase replaces MaterialDatabase that is passed over to Npcs class
 
 - Rendering:
 	- Atlas textures are simply flat frames and all, NpcDatabase groups them together
