@@ -22,6 +22,7 @@
 #include <cmath>
 #include <memory>
 #include <optional>
+#include <sstream>
 #include <vector>
 
 struct IToolCursorManager
@@ -2089,6 +2090,27 @@ public:
                         start,
                         end);
 
+                    // Display angle
+
+                    int lineAngle = static_cast<int>(std::roundf((end - start).ToFloat().angleCw() / (2.0f * Pi<float>) * 360.0f));
+                    if (lineAngle > 90)
+                    {
+                        lineAngle = 180 - lineAngle;
+                    }
+                    else if (lineAngle < -90)
+                    {
+                        lineAngle = -180 - lineAngle;
+                    }
+
+                    if (lineAngle != mEngagementData->State.LineGuideState.LastDisplayedAngle)
+                    {
+                        std::ostringstream ss;
+                        ss << lineAngle << "'";
+                        mGameController.DisplayEphemeralTextLine(ss.str());
+
+                        mEngagementData->State.LineGuideState.LastDisplayedAngle = lineAngle;
+                    }
+
                     SetCurrentCursor(&mDownCursorImage);
 
                     break;
@@ -2097,27 +2119,40 @@ public:
         }
         else
         {
-            if (mEngagementData
-                && mEngagementData->ToolMode == EngagementData::ToolModeType::LineGuide)
+            if (mEngagementData)
             {
-                // Finalize
-
-                vec2f const worldStart = mGameController.ScreenToWorld(mEngagementData->State.LineGuideState.Start);
-                vec2f const worldEnd = mGameController.ScreenToWorld(inputState.MousePosition);
-
-                auto const isAdjusted = mGameController.AdjustOceanFloorTo(worldStart, worldEnd);
-                if (isAdjusted.has_value())
+                if (mEngagementData->ToolMode == EngagementData::ToolModeType::LineGuide)
                 {
-                    // Adjusted, eventually idempotent
-                    if (*isAdjusted)
+                    // Finalize
+
+                    vec2f const worldStart = mGameController.ScreenToWorld(mEngagementData->State.LineGuideState.Start);
+                    vec2f const worldEnd = mGameController.ScreenToWorld(inputState.MousePosition);
+
+                    auto const isAdjusted = mGameController.AdjustOceanFloorTo(worldStart, worldEnd);
+                    if (isAdjusted.has_value())
                     {
-                        mSoundController.PlayTerrainAdjustSound();
+                        // Adjusted, eventually idempotent
+                        if (*isAdjusted)
+                        {
+                            mSoundController.PlayTerrainAdjustSound();
+                        }
+
+                        SetCurrentCursor(&mUpCursorImage);
+                    }
+                    else
+                    {
+                        // No adjustment
+                        mSoundController.PlayErrorSound();
+                        SetCurrentCursor(&mErrorCursorImage);
                     }
                 }
-            }
 
-            mEngagementData.reset();
-            SetCurrentCursor(&mUpCursorImage);
+                mEngagementData.reset();
+            }
+            else
+            {
+                SetCurrentCursor(&mUpCursorImage);
+            }
         }
     }
 
@@ -2162,9 +2197,11 @@ private:
             struct LineGuideStateType final
             {
                 DisplayLogicalCoordinates const Start;
+                std::optional<int> LastDisplayedAngle;
 
                 explicit LineGuideStateType(DisplayLogicalCoordinates const & start)
                     : Start(start)
+                    , LastDisplayedAngle()
                 {}
             } LineGuideState;
 

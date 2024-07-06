@@ -597,6 +597,11 @@ void GameController::SetShowExtendedStatusText(bool value)
     mNotificationLayer.SetExtendedStatusTextEnabled(value);
 }
 
+void GameController::DisplayEphemeralTextLine(std::string const & text)
+{
+    mNotificationLayer.AddEphemeralTextLine(text);
+}
+
 void GameController::NotifySoundMuted(bool isSoundMuted)
 {
     mNotificationLayer.SetSoundMuteIndicator(isSoundMuted);

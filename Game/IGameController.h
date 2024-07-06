@@ -73,6 +73,8 @@ struct IGameController
     virtual bool GetShowExtendedStatusText() const = 0;
     virtual void SetShowExtendedStatusText(bool value) = 0;
 
+    virtual void DisplayEphemeralTextLine(std::string const & text) = 0;
+
     virtual void NotifySoundMuted(bool isSoundMuted) = 0;
 
     // Not sticky

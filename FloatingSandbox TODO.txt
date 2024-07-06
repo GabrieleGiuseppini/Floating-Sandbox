@@ -56,7 +56,7 @@
 			- Fishes
 
 
-	- Fix all 2022 copyright years, and add g2-labs to:
+	- Fix all 2022 copyright years (big #define?), and add g2-labs to:
 		- Credits
 
 	- Try to lower global damping - seems quite slow
@@ -76,8 +76,6 @@
 	- @ next release:
 		- Update GameJolt to say Ubuntu 20.04
 		- Delete my Ubuntu 18 VM way after next release
-
-	- Doesn't say "PAUSED" anymore - REALLY?
 
 	- See if can use keys to pan along diagonals
 
@@ -107,11 +105,13 @@
 				+ When in guide mode, we reason in screen coords - so e.g. start point is fixed on screen
 				+ SimulationUpdate: talk to GameController iff in guide mode
 			+ NotificationLayer/Context
-		- Test:
-			- Sound
-			- Cursor
-			- Error
-		- Add to changelist
+		+ Display degrees
+		+ Test:
+			+ Sound
+			+ Cursor
+			+ Error		
+		+ Add to changelist
+		- Redo ephemeral text notifications?
 
 	- Try with parallel "water" subsystem, but for "bulk" (gravel, etc.)
 		- May co-exist with water

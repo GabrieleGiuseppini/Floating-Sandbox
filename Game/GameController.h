@@ -175,6 +175,8 @@ public:
     bool GetShowExtendedStatusText() const override;
     void SetShowExtendedStatusText(bool value) override;
 
+    void DisplayEphemeralTextLine(std::string const & text) override;
+
     void NotifySoundMuted(bool isSoundMuted) override;
 
     // Not sticky
