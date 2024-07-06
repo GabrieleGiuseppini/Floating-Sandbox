@@ -1820,11 +1820,11 @@ void Ship::HandleCollisionsWithSeaFloor(
                     * frictionFactor;
 
                 // Calculate silting coefficient:
-                //  0.0: freefall - with zero accumulation of velocity though
-                //  1.0: bounce
+                //  0.0: full silting - i.e. burrowing into floor; also zero accumulation of velocity
+                //  1.0: full restore of before-impact position; also full impact response velocity
                 float const velocitySquared = pointVelocity.squareLength();
                 float const siltingCoeff = (oceanFloorHeight - position.y < 40.f) // Just make sure won't ever get buried too deep
-                    ? siltingFactor1 + siltingFactor2 * LinearStep(0.0f, 10.0f, velocitySquared)
+                    ? siltingFactor1 + siltingFactor2 * LinearStep(0.0f, 10.0f, velocitySquared) // The faster, the less silting
                     : 1.0f;
 
                 assert(siltingCoeff <= 1.0f);

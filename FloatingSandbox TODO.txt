@@ -10,6 +10,14 @@
 
 	- Remove too much logging from ShipLoadDialog
 
+	- Redo notifications' EphemeralText
+		- As RollingText
+		- TODO: spec
+
+	- Lower these materials' friction:
+		- Glass
+		- Fiberglass
+
 	= Quad rendering with indices
 		+ Sharing VBOs (for indices) in VAOs: 
 			! https://computergraphics.stackexchange.com/questions/4623/multiple-vao-share-a-vbo
@@ -95,7 +103,7 @@
 	- Redo timer bomb
 		- Shader for fuse + sparks
 
-	= Terrain tool: guide
+	+ Terrain tool: guide
 		+ SHIFT starts guide == line via NotificationLayer
 			+ While Shift is pressed, guide snaps to horizontal
 			+ Releasing shift removes snapping but guide mode is maintained
@@ -111,7 +119,6 @@
 			+ Cursor
 			+ Error		
 		+ Add to changelist
-		- Redo ephemeral text notifications?
 
 	- Try with parallel "water" subsystem, but for "bulk" (gravel, etc.)
 		- May co-exist with water

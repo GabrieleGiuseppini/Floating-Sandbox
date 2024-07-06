@@ -352,15 +352,25 @@ Arch
 					+ Verify same values:
 						+ Old elasticityFactor: -0.5
 						+ Old frictionFactor: 0.75					
-				- Tests:
+				+ Tests:
 					+ Functional: compare behavior before & after
-					= Functional: verify picks up adjustments X 5
-						- Check ranges
-							- See min zero for both frictions
+					+ Functional: verify picks up adjustments X 5
+						+ Check ranges
+							+ See min zero for both frictions
 							+ KineticAdj: 40 is too much
-					- Perf on old Dell:
-						- Before: 
-						- After:
+					+ Perf on old Dell:
+						+ Before: 18.2 (17.8->18.2)
+						+ After: 17.7
+				+ Add comment @ ImpactWithOceanFloor() on nature of friction
+				+ Higher threshold for static friction -> kinetic friction
+					+ Figure out first why we can't stop tangential response
+				+ Fix adjust terrain: calculate world end taking into account snap (use helper)
+				= Check again role of silting in friction test at 30deg
+					- Siltness at 0.5
+						- Double-check
+					- Rethink silting:
+						- SiltingCoeff=Bell curve centered at VdotN equal to V acquired via G in time quantum
+							- Verify value
 			- Add SpringReductionCoeff, SpringDampingCoeff as NpcSpringReductionCoeff, NpcSpringDampingCoeff 
 				- optional, defaults = <reasonable>
 		- 3. StructuralMaterial:
