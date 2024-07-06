@@ -2075,15 +2075,9 @@ public:
                 case EngagementData::ToolModeType::LineGuide:
                 {
                     DisplayLogicalCoordinates const & start = mEngagementData->State.LineGuideState.Start;
-                    DisplayLogicalCoordinates end = inputState.MousePosition;
-                    if (inputState.IsShiftKeyDown)
-                    {
-                        // Snap to horizontal if angle small enough
-                        if (std::abs(end.y - start.y) < 20)
-                        {
-                            end.y = start.y;
-                        }
-                    }
+                    DisplayLogicalCoordinates end = CalculateEndMousePosition(
+                        start,
+                        inputState);
 
                     // Draw guide
                     mGameController.SetLineGuide(
@@ -2126,7 +2120,10 @@ public:
                     // Finalize
 
                     vec2f const worldStart = mGameController.ScreenToWorld(mEngagementData->State.LineGuideState.Start);
-                    vec2f const worldEnd = mGameController.ScreenToWorld(inputState.MousePosition);
+                    vec2f const worldEnd = mGameController.ScreenToWorld(
+                        CalculateEndMousePosition(
+                            mEngagementData->State.LineGuideState.Start,
+                            inputState));
 
                     auto const isAdjusted = mGameController.AdjustOceanFloorTo(worldStart, worldEnd);
                     if (isAdjusted.has_value())
@@ -2171,6 +2168,23 @@ private:
             mToolCursorManager.SetToolCursor(*cursor);
             mCurrentCursor = cursor;
         }
+    }
+
+    DisplayLogicalCoordinates CalculateEndMousePosition(
+        DisplayLogicalCoordinates const & startPosition,
+        InputState const & inputState) const
+    {
+        DisplayLogicalCoordinates end = inputState.MousePosition;
+        if (inputState.IsShiftKeyDown)
+        {
+            // Snap to horizontal if angle small enough
+            if (std::abs(end.y - startPosition.y) < 20)
+            {
+                end.y = startPosition.y;
+            }
+        }
+
+        return end;
     }
 
     struct EngagementData

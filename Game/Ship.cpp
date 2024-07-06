@@ -1756,6 +1756,12 @@ void Ship::HandleCollisionsWithSeaFloor(
     ElementIndex endPointIndex,
     GameParameters const & gameParameters)
 {
+    //
+    // Note: this implementation of friction imparts directly displacement and velocity,
+    // rather than imparting forces, and is an approximation of real friction in that it's
+    // independent from the force against the surface
+    //
+
     float const dt = gameParameters.MechanicalSimulationStepTimeDuration<float>();
 
     OceanFloor const & oceanFloor = mParentWorld.GetOceanFloor();
@@ -1805,7 +1811,8 @@ void Ship::HandleCollisionsWithSeaFloor(
                     * elasticityFactor; // Already negative
 
                 // Calculate tangential response: Vt' = a*Vt (a = (1.0-friction), [0.0 - 1.0])
-                float const frictionFactor = (std::abs(tangentialVelocity.x) > 0.01f || std::abs(tangentialVelocity.y) > 0.01f)
+                float constexpr KineticThreshold = 2.0f;
+                float const frictionFactor = (std::abs(tangentialVelocity.x) > KineticThreshold || std::abs(tangentialVelocity.y) > KineticThreshold)
                     ? mPoints.GetOceanFloorCollisionFactors(pointIndex).KineticFrictionFactor
                     : mPoints.GetOceanFloorCollisionFactors(pointIndex).StaticFrictionFactor;
                 vec2f const tangentialResponse =
@@ -1828,7 +1835,7 @@ void Ship::HandleCollisionsWithSeaFloor(
 
                 // Move point back along its velocity direction (i.e. towards where it was in the previous step,
                 // which is guaranteed to be more towards the outside), but not too much - or else springs
-                // might start oscillating between the point  burrowing down and then bouncing up
+                // might start oscillating between the point burrowing down and then bouncing up
                 vec2f deltaPosition = pointVelocity * dt * siltingCoeff;
                 float const deltaPositionLength = deltaPosition.length();
                 deltaPosition = deltaPosition.normalise_approx(deltaPositionLength) * std::min(deltaPositionLength, 0.01f); // Magic number, empirical
