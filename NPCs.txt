@@ -334,7 +334,7 @@ Arch
 					+ Together with is_exempt+palette
 			+ Do indexing
 		= 2. Port NPCMaterial to StructuralMaterial
-			= Port GameParameters::OceanFloorElasticity and OceanFloorFriction to all materials as ElasticityCoefficient, StaticFrictionCoefficient, KineticFrictionCoefficient (same values)
+			+ Port GameParameters::OceanFloorElasticity and OceanFloorFriction to all materials as ElasticityCoefficient, StaticFrictionCoefficient, KineticFrictionCoefficient (same values)
 				+ Script: fill-in 
 				+ Material: parse & expose
 				+ Leave OceanFloorElasticity and OceanFloorFriction in GameParameters and SettingsDialog
@@ -365,15 +365,7 @@ Arch
 				+ Higher threshold for static friction -> kinetic friction
 					+ Figure out first why we can't stop tangential response
 				+ Fix adjust terrain: calculate world end taking into account snap (use helper)
-				= Check again role of silting in friction test at 30deg
-					- Rethink silting:
-						- Renames "hardness"
-						- Lower vel threshold for max hardness
-						- Plan B:
-							- SiltingCoeff=Bell curve centered at VdotN equal to V acquired via G in time quantum
-								- Verify value
-						- Siltness at 0.5
-							- Double-check
+				+ Check again role of silting in friction test at 30deg
 			- Add SpringReductionCoeff, SpringDampingCoeff as NpcSpringReductionCoeff, NpcSpringDampingCoeff 
 				- optional, defaults = <reasonable>
 		- 3. StructuralMaterial:

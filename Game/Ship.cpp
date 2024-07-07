@@ -1822,13 +1822,13 @@ void Ship::HandleCollisionsWithSeaFloor(
                 // Calculate floor hardness:
                 //  0.0: full silting - i.e. burrowing into floor; also zero accumulation of velocity
                 //  1.0: full restore of before-impact position; also full impact response velocity
-                //
                 // As follows:
-                //  Changes from Config (e.g. 0.5) to 1.0 linearly with magnitude of velocity, up to a maximum velocity at which
-                //  moment hardness is max (simulating mud where you borrow when still and stay still if move)
+                //  Changes from current param (e.g. 0.5) to 1.0 linearly with magnitude of velocity, up to a maximum velocity at which
+                //  moment hardness is max/1.0 (simulating mud where you borrow when still and stay still if move)
                 float const velocitySquared = pointVelocity.squareLength();
+                float constexpr MaxVelocityForSilting = 2.0f; // Empirical - was 10.0 < 1.19
                 float const floorHardness = (oceanFloorHeight - position.y < 40.f) // Just make sure won't ever get buried too deep
-                    ? siltingFactor1 + siltingFactor2 * LinearStep(0.0f, 10.0f, velocitySquared) // The faster, the less silting
+                    ? siltingFactor1 + siltingFactor2 * LinearStep(0.0f, MaxVelocityForSilting, velocitySquared) // The faster, the less silting
                     : 1.0f;
 
                 assert(floorHardness <= 1.0f);
