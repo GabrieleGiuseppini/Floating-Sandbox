@@ -1819,15 +1819,15 @@ void Ship::HandleCollisionsWithSeaFloor(
                     tangentialVelocity
                     * frictionFactor;
 
-                // Calculate silting coefficient:
+                // Calculate floor hardness:
                 //  0.0: full silting - i.e. burrowing into floor; also zero accumulation of velocity
                 //  1.0: full restore of before-impact position; also full impact response velocity
                 float const velocitySquared = pointVelocity.squareLength();
-                float const siltingCoeff = (oceanFloorHeight - position.y < 40.f) // Just make sure won't ever get buried too deep
+                float const floorHardness = (oceanFloorHeight - position.y < 40.f) // Just make sure won't ever get buried too deep
                     ? siltingFactor1 + siltingFactor2 * LinearStep(0.0f, 10.0f, velocitySquared) // The faster, the less silting
                     : 1.0f;
 
-                assert(siltingCoeff <= 1.0f);
+                assert(floorHardness <= 1.0f);
 
                 //
                 // Impart final position and velocity
@@ -1836,7 +1836,7 @@ void Ship::HandleCollisionsWithSeaFloor(
                 // Move point back along its velocity direction (i.e. towards where it was in the previous step,
                 // which is guaranteed to be more towards the outside), but not too much - or else springs
                 // might start oscillating between the point burrowing down and then bouncing up
-                vec2f deltaPosition = pointVelocity * dt * siltingCoeff;
+                vec2f deltaPosition = pointVelocity * dt * floorHardness;
                 float const deltaPositionLength = deltaPosition.length();
                 deltaPosition = deltaPosition.normalise_approx(deltaPositionLength) * std::min(deltaPositionLength, 0.01f); // Magic number, empirical
                 mPoints.SetPosition(
@@ -1846,7 +1846,7 @@ void Ship::HandleCollisionsWithSeaFloor(
                 // Set velocity to resultant collision velocity
                 mPoints.SetVelocity(
                     pointIndex,
-                    (normalResponse + tangentialResponse) * siltingCoeff);
+                    (normalResponse + tangentialResponse) * floorHardness);
             }
         }
     }
