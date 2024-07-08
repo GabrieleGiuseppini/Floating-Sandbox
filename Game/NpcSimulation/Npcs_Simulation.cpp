@@ -903,14 +903,14 @@ void Npcs::UpdateNpcParticlePhysics(
                     {
                         // Kinetic friction
                         frictionCoefficient =
-                            (mParticles.GetMaterialProperties(npcParticle.ParticleIndex).KineticFriction + meshMaterial.KineticFrictionCoefficient) / 2.0f
+                            (mParticles.GetMaterial(npcParticle.ParticleIndex).KineticFrictionCoefficient + meshMaterial.KineticFrictionCoefficient) / 2.0f
                             * gameParameters.KineticFrictionAdjustment;
                     }
                     else
                     {
                         // Static friction
                         frictionCoefficient =
-                            (mParticles.GetMaterialProperties(npcParticle.ParticleIndex).StaticFriction + meshMaterial.StaticFrictionCoefficient) / 2.0f
+                            (mParticles.GetMaterial(npcParticle.ParticleIndex).StaticFrictionCoefficient + meshMaterial.StaticFrictionCoefficient) / 2.0f
                             * gameParameters.StaticFrictionAdjustment;
                     }
 
@@ -1544,7 +1544,7 @@ void Npcs::RecalculateSizeAndMassParameters()
             {
                 mParticles.SetMass(particle.ParticleIndex,
                     CalculateParticleMass(
-                        mParticles.GetMaterialProperties(particle.ParticleIndex).Mass,
+                        mParticles.GetMaterial(particle.ParticleIndex).GetMass(),
                         mCurrentSizeAdjustment
 #ifdef IN_BARYLAB
                         , mCurrentMassAdjustment
@@ -1553,7 +1553,7 @@ void Npcs::RecalculateSizeAndMassParameters()
 
                 mParticles.SetBuoyancyFactor(particle.ParticleIndex,
                     CalculateParticleBuoyancyFactor(
-                        mParticles.GetMaterialProperties(particle.ParticleIndex).BuoyancyVolumeFill,
+                        mParticles.GetMaterial(particle.ParticleIndex).BuoyancyVolumeFill,
                         mCurrentSizeAdjustment
 #ifdef IN_BARYLAB
                         , mCurrentBuoyancyAdjustment
@@ -1637,8 +1637,8 @@ void Npcs::CalculateSprings(
 
         // Spring force factors
 
-        float const baseMass1 = particles.GetMaterialProperties(spring.EndpointAIndex).Mass;
-        float const baseMass2 = particles.GetMaterialProperties(spring.EndpointBIndex).Mass;
+        float const baseMass1 = particles.GetMaterial(spring.EndpointAIndex).GetMass();
+        float const baseMass2 = particles.GetMaterial(spring.EndpointBIndex).GetMass();
 
         float const baseMassFactor =
             (baseMass1 * baseMass2)
@@ -2888,14 +2888,14 @@ void Npcs::BounceConstrainedNpcParticle(
             homeShip.GetTriangles().GetPointIndices(npcParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex)[bounceEdgeOrdinal]);
 
         // Calculate normal reponse: Vn' = -e*Vn (e = elasticity, [0.0 - 1.0])
-        float const materialElasticityCoefficient = (particles.GetMaterialProperties(npcParticle.ParticleIndex).Elasticity + meshMaterial.ElasticityCoefficient) / 2.0f;
+        float const materialElasticityCoefficient = (particles.GetMaterial(npcParticle.ParticleIndex).ElasticityCoefficient + meshMaterial.ElasticityCoefficient) / 2.0f;
         vec2f const normalResponse =
             -normalVelocity
             * materialElasticityCoefficient
             * gameParameters.ElasticityAdjustment;
 
         // Calculate tangential response: Vt' = a*Vt (a = (1.0-friction), [0.0 - 1.0])
-        float const materialFrictionCoefficient = (particles.GetMaterialProperties(npcParticle.ParticleIndex).KineticFriction + meshMaterial.KineticFrictionCoefficient) / 2.0f;
+        float const materialFrictionCoefficient = (particles.GetMaterial(npcParticle.ParticleIndex).KineticFrictionCoefficient + meshMaterial.KineticFrictionCoefficient) / 2.0f;
         vec2f const tangentialResponse =
             tangentialVelocity
             * std::max(0.0f, 1.0f - materialFrictionCoefficient * gameParameters.KineticFrictionAdjustment);

@@ -11,13 +11,9 @@
 namespace Physics {
 
 ElementIndex NpcParticles::Add(
-    float materialMass,
-    float materialStaticFriction,
-    float materialKineticFriction,
-    float materialElasticity,
-    float materialBuoyancyVolumeFill,
     float mass,
     float buoyancyFactor,
+    StructuralMaterial const * material,
     vec2f const & position,
     rgbaColor const & color)
 {
@@ -26,9 +22,9 @@ ElementIndex NpcParticles::Add(
 
     mIsInUseBuffer[p] = true;
 
-    mMaterialPropertiesBuffer[p] = MaterialProperties(materialMass, materialStaticFriction, materialKineticFriction, materialElasticity, materialBuoyancyVolumeFill);
     mMassBuffer[p] = mass;
     mBuoyancyFactorBuffer[p] = buoyancyFactor;
+    mMaterialBuffer[p] = material;
     mPositionBuffer[p] = position;
     mVelocityBuffer[p] = vec2f::zero();
     mPreliminaryForcesBuffer[p] = vec2f::zero();

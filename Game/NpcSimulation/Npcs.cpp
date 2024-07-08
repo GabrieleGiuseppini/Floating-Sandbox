@@ -331,13 +331,9 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 				}
 
 				auto const particleIndex = mParticles.Add(
-					furnitureMaterial.GetMass(),
-					furnitureMaterial.StaticFrictionCoefficient,
-					furnitureMaterial.KineticFrictionCoefficient,
-					furnitureMaterial.ElasticityCoefficient,
-					furnitureMaterial.BuoyancyVolumeFill,
 					mass,
 					buoyancyFactor,
+					&furnitureMaterial,
 					particlePosition,
 					furnitureMaterial.RenderColor);
 
@@ -446,13 +442,9 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewFurnitureNpc(
 			);
 
 			auto const primaryParticleIndex = mParticles.Add(
-				furnitureMaterial.GetMass(),
-				furnitureMaterial.StaticFrictionCoefficient,
-				furnitureMaterial.KineticFrictionCoefficient,
-				furnitureMaterial.ElasticityCoefficient,
-				furnitureMaterial.BuoyancyVolumeFill,
 				mass,
 				buoyancyFactor,
+				&furnitureMaterial,
 				worldCoordinates,
 				furnitureMaterial.RenderColor);
 
@@ -551,13 +543,9 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
 	);
 
 	auto const primaryParticleIndex = mParticles.Add(
-		feetMaterial.GetMass(),
-		feetMaterial.StaticFrictionCoefficient,
-		feetMaterial.KineticFrictionCoefficient,
-		feetMaterial.ElasticityCoefficient,
-		feetMaterial.BuoyancyVolumeFill,
 		feetMass,
 		feetBuoyancyFactor,
+		&feetMaterial,
 		worldCoordinates - vec2f(0.0f, 1.0f) * height,
 		feetMaterial.RenderColor);
 
@@ -585,13 +573,9 @@ std::optional<PickedObjectId<NpcId>> Npcs::BeginPlaceNewHumanNpc(
 	);
 
 	auto const secondaryParticleIndex = mParticles.Add(
-		headMaterial.GetMass(),
-		headMaterial.StaticFrictionCoefficient,
-		headMaterial.KineticFrictionCoefficient,
-		headMaterial.ElasticityCoefficient,
-		headMaterial.BuoyancyVolumeFill,
 		headMass,
 		headBuoyancyFactor,
+		&headMaterial,
 		worldCoordinates,
 		headMaterial.RenderColor);
 

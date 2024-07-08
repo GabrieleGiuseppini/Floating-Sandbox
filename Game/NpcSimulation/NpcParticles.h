@@ -6,6 +6,7 @@
 #pragma once
 
 #include "GameParameters.h"
+#include "Materials.h"
 
 #include <GameCore/Buffer.h>
 #include <GameCore/Colors.h>
@@ -25,28 +26,6 @@ class NpcParticles final : public ElementContainer
 {
 public:
 
-    struct MaterialProperties
-    {
-        float Mass;
-        float StaticFriction;
-        float KineticFriction;
-        float Elasticity;
-        float BuoyancyVolumeFill;
-
-        MaterialProperties(
-            float mass,
-            float staticFriction,
-            float kineticFriction,
-            float elasticity,
-            float buoyancyVolumeFill)
-            : Mass(mass)
-            , StaticFriction(staticFriction)
-            , KineticFriction(kineticFriction)
-            , Elasticity(elasticity)
-            , BuoyancyVolumeFill(buoyancyVolumeFill)
-        {}
-    };
-
     NpcParticles(ElementCount maxParticleCount)
         : ElementContainer(make_aligned_float_element_count(maxParticleCount))
         , mMaxParticleCount(maxParticleCount)
@@ -55,7 +34,7 @@ public:
         //////////////////////////////////
         , mIsInUseBuffer(maxParticleCount, false)
         // Physics
-        , mMaterialPropertiesBuffer(maxParticleCount, MaterialProperties(0.0f, 0.0f, 0.0f, 0.0f, 0.0f))
+        , mMaterialBuffer(maxParticleCount, nullptr)
         , mMassBuffer(maxParticleCount, 0.0f)
         , mBuoyancyFactorBuffer(maxParticleCount, 0.0f)
         , mPositionBuffer(maxParticleCount, vec2f::zero())
@@ -81,13 +60,9 @@ public:
     }
 
     ElementIndex Add(
-        float materialMass,
-        float materialStaticFriction,
-        float materialKineticFriction,
-        float materialElasticity,
-        float materialBuoyancyVolumeFill,
         float mass,
         float buoyancyFactor,
+        StructuralMaterial const * material,
         vec2f const & position,
         rgbaColor const & color);
 
@@ -102,9 +77,10 @@ public:
     // Physics
     //
 
-    MaterialProperties const & GetMaterialProperties(ElementIndex particleElementIndex) const noexcept
+    StructuralMaterial const & GetMaterial(ElementIndex particleElementIndex) const noexcept
     {
-        return mMaterialPropertiesBuffer[particleElementIndex];
+        assert(mMaterialBuffer[particleElementIndex] != nullptr);
+        return *(mMaterialBuffer[particleElementIndex]);
     }
 
     float const GetMass(ElementIndex particleElementIndex) const noexcept
@@ -249,7 +225,7 @@ private:
     // Physics
     //
 
-    Buffer<MaterialProperties> mMaterialPropertiesBuffer;
+    Buffer<StructuralMaterial const *> mMaterialBuffer;
     Buffer<float> mMassBuffer; // Adjusted
     Buffer<float> mBuoyancyFactorBuffer; // Adjusted
     Buffer<vec2f> mPositionBuffer;

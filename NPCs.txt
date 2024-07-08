@@ -394,8 +394,9 @@ Arch
 					- Floating
 						- BuoyancyVolumeFill: was 0.05, now 1.0
 			- Nuke npc json
-		- 6b. See if may nuke NpcParticles::MaterialProperties in favor of StructuralMaterial &
+		+ 6b. See if may nuke NpcParticles::MaterialProperties in favor of StructuralMaterial &
 		- 7. Material propertygrid @ ShipBuilder
+			- See if there's room
 		- Change friction of:
 			- Steel, Iron
 			- Fiberglass
