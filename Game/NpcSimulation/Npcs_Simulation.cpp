@@ -465,7 +465,7 @@ void Npcs::UpdateNpcParticlePhysics(
         // Particle is free or its triangle became folded
         //
 
-        LogNpcDebug("    Free (folded=", IsTriangleFolded(npcParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex, homeShip), "):",
+        LogNpcDebug("    Free (folded=", npcParticle.ConstrainedState ? IsTriangleFolded(npcParticle.ConstrainedState->CurrentBCoords.TriangleElementIndex, homeShip) : false, "):",
             "velocity=", mParticles.GetVelocity(npcParticle.ParticleIndex), " prelimF=", mParticles.GetPreliminaryForces(npcParticle.ParticleIndex), " physicsDeltaPos=", physicsDeltaPos);
         LogNpcDebug("    StartPosition=", particleStartAbsolutePosition, " StartVelocity=", mParticles.GetVelocity(npcParticle.ParticleIndex));
 

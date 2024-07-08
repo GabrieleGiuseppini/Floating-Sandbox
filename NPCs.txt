@@ -321,11 +321,6 @@ Arch
 	+ Larger search radius for NPC
 		+ Based on zoom
 	+ See why rendering internal view does not show springs
-	- Primary/Secondary edge-separation at floor check: see if can be improved by looking at third vertex of triangle of particle for which we check
-		- Backport to barylab first
-		- Repro in BaryLab with a million puppets
-		- Fix in barylab
-		- Port to FS
 
 	= Material rearc: nuke NpcMaterial and use only StructuralMaterial	
 		+ 1. MaterialDB: index StructuralMaterial also by name
@@ -392,7 +387,7 @@ Arch
 					- Slide (friction)
 					- Bounce (friction & elasticity)
 					- Floating
-						- BuoyancyVolumeFill: was 0.05, now 1.0
+						- BuoyancyVolumeFill: was 0.05, now 1.0 - TODOHERE
 			- Nuke npc json
 		+ 6b. See if may nuke NpcParticles::MaterialProperties in favor of StructuralMaterial &
 		- 7. Material propertygrid @ ShipBuilder
@@ -403,7 +398,10 @@ Arch
 			- Concrete (up)
 		+ Rewrite NpcDB spec below for material fetching
 		- Merge material_rearc into npcs_v1
-		- Backport to BaryLab
+		= Backport to BaryLab
+			+ See human sliding on feet
+			+ Profile
+			- Merge into master
 
 		- For reference: this was Crate:
 			{
@@ -419,7 +417,6 @@ Arch
 			"buoyancy_volume_fill": 0.05
 			},
 
-
 	= Settings:
 		- List:
 			+ HumanNpcHeight("Size")Adj
@@ -429,6 +426,12 @@ Arch
 		- SettingsManager
 		- SettingsDialog
 			+ Lights, Electricals, Fishes, and NPCs
+
+	- Primary/Secondary edge-separation at floor check: see if can be improved by looking at third vertex of triangle of particle for which we check
+		- Backport to barylab first
+		- Repro in BaryLab with a million puppets
+		- Fix in barylab
+		- Port to FS
 
 	- Misc possible improvements:
 		- Maintain spring lengths during BeingPlaced (to avoid elongations)
